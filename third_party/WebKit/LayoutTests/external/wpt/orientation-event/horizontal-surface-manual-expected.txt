@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-FAIL X angleassert_approx_equals: expected a number but got a "undefined"
-FAIL Y angleassert_approx_equals: expected a number but got a "undefined"
+FAIL X angle assert_approx_equals: expected a number but got a "undefined"
+FAIL Y angle assert_approx_equals: expected a number but got a "undefined"
 Harness: the test ran to completion.
 

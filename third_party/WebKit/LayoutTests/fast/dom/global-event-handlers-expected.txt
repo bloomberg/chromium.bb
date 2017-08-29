@@ -154,16 +154,16 @@ PASS Enumerate Document.ondragenter
 PASS Set Window.ondragenter
 PASS Enumerate Window.ondragenter
 PASS No Element.ondragexit
-FAIL Set HTMLElement.ondragexitassert_equals: Initially null expected (object) null but got (undefined) undefined
-FAIL Enumerate HTMLElement.ondragexitassert_true: expected true got undefined
-FAIL Reflect HTMLElement.ondragexitassert_equals: Convert to function expected "function" but got "undefined"
-FAIL Set SVGElement.ondragexitassert_equals: Initially null expected (object) null but got (undefined) undefined
-FAIL Enumerate SVGElement.ondragexitassert_true: expected true got undefined
-FAIL Reflect SVGElement.ondragexitassert_equals: Convert to function expected "function" but got "undefined"
-FAIL Set Document.ondragexitassert_equals: Initially null expected (object) null but got (undefined) undefined
-FAIL Enumerate Document.ondragexitassert_true: expected true got undefined
-FAIL Set Window.ondragexitassert_equals: Initially null expected (object) null but got (undefined) undefined
-FAIL Enumerate Window.ondragexitassert_true: expected true got undefined
+FAIL Set HTMLElement.ondragexit assert_equals: Initially null expected (object) null but got (undefined) undefined
+FAIL Enumerate HTMLElement.ondragexit assert_true: expected true got undefined
+FAIL Reflect HTMLElement.ondragexit assert_equals: Convert to function expected "function" but got "undefined"
+FAIL Set SVGElement.ondragexit assert_equals: Initially null expected (object) null but got (undefined) undefined
+FAIL Enumerate SVGElement.ondragexit assert_true: expected true got undefined
+FAIL Reflect SVGElement.ondragexit assert_equals: Convert to function expected "function" but got "undefined"
+FAIL Set Document.ondragexit assert_equals: Initially null expected (object) null but got (undefined) undefined
+FAIL Enumerate Document.ondragexit assert_true: expected true got undefined
+FAIL Set Window.ondragexit assert_equals: Initially null expected (object) null but got (undefined) undefined
+FAIL Enumerate Window.ondragexit assert_true: expected true got undefined
 PASS No Element.ondragleave
 PASS Set HTMLElement.ondragleave
 PASS Enumerate HTMLElement.ondragleave
@@ -572,16 +572,16 @@ PASS Enumerate Document.onselect
 PASS Set Window.onselect
 PASS Enumerate Window.onselect
 PASS No Element.onsort
-FAIL Set HTMLElement.onsortassert_equals: Initially null expected (object) null but got (undefined) undefined
-FAIL Enumerate HTMLElement.onsortassert_true: expected true got undefined
-FAIL Reflect HTMLElement.onsortassert_equals: Convert to function expected "function" but got "undefined"
-FAIL Set SVGElement.onsortassert_equals: Initially null expected (object) null but got (undefined) undefined
-FAIL Enumerate SVGElement.onsortassert_true: expected true got undefined
-FAIL Reflect SVGElement.onsortassert_equals: Convert to function expected "function" but got "undefined"
-FAIL Set Document.onsortassert_equals: Initially null expected (object) null but got (undefined) undefined
-FAIL Enumerate Document.onsortassert_true: expected true got undefined
-FAIL Set Window.onsortassert_equals: Initially null expected (object) null but got (undefined) undefined
-FAIL Enumerate Window.onsortassert_true: expected true got undefined
+FAIL Set HTMLElement.onsort assert_equals: Initially null expected (object) null but got (undefined) undefined
+FAIL Enumerate HTMLElement.onsort assert_true: expected true got undefined
+FAIL Reflect HTMLElement.onsort assert_equals: Convert to function expected "function" but got "undefined"
+FAIL Set SVGElement.onsort assert_equals: Initially null expected (object) null but got (undefined) undefined
+FAIL Enumerate SVGElement.onsort assert_true: expected true got undefined
+FAIL Reflect SVGElement.onsort assert_equals: Convert to function expected "function" but got "undefined"
+FAIL Set Document.onsort assert_equals: Initially null expected (object) null but got (undefined) undefined
+FAIL Enumerate Document.onsort assert_true: expected true got undefined
+FAIL Set Window.onsort assert_equals: Initially null expected (object) null but got (undefined) undefined
+FAIL Enumerate Window.onsort assert_true: expected true got undefined
 PASS No Element.onstalled
 PASS Set HTMLElement.onstalled
 PASS Enumerate HTMLElement.onstalled

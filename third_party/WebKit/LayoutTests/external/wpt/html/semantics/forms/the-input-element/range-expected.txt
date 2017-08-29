@@ -15,7 +15,7 @@ PASS default value with step control when both min and max attributes are given
 PASS default value when both min and max attributes are given, while min > max
 PASS The default step scale factor is 1, unless min attribute has non-integer value
 PASS Step scale factor behavior when min attribute has integer value but max attribute is non-integer 
-FAIL The default scale factor is 1 even if step attribute is explicitly set to non-integer value, unless min attribute has non-integer valueassert_equals: expected "1" but got "0.5"
+FAIL The default scale factor is 1 even if step attribute is explicitly set to non-integer value, unless min attribute has non-integer value assert_equals: expected "1" but got "0.5"
 PASS Solving the step mismatch
 PASS Performing stepUp()
 PASS Performing stepDown()

@@ -1,4 +1,4 @@
 This is a testharness.js-based test.
-FAIL Test mutable copy from a KeyframeEffectReadOnly sourceFailed to construct 'KeyframeEffect': 2 arguments required, but only 1 present.
+FAIL Test mutable copy from a KeyframeEffectReadOnly source Failed to construct 'KeyframeEffect': 2 arguments required, but only 1 present.
 Harness: the test ran to completion.
 

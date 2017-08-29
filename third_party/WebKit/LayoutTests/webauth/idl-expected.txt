@@ -1,8 +1,8 @@
 This is a testharness.js-based test.
-FAIL PublicKeyCredential interface: existence and properties of interface objectCannot read property 'has_extended_attribute' of undefined
+FAIL PublicKeyCredential interface: existence and properties of interface object Cannot read property 'has_extended_attribute' of undefined
 PASS PublicKeyCredential interface object length
 PASS PublicKeyCredential interface object name
-FAIL PublicKeyCredential interface: existence and properties of interface prototype objectCannot read property 'has_extended_attribute' of undefined
+FAIL PublicKeyCredential interface: existence and properties of interface prototype object Cannot read property 'has_extended_attribute' of undefined
 PASS PublicKeyCredential interface: existence and properties of interface prototype object's "constructor" property
 PASS PublicKeyCredential interface: attribute rawId
 PASS PublicKeyCredential interface: attribute response

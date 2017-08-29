@@ -84,7 +84,7 @@ PASS syntax:'<percentage>|unsEt', initialValue:'2%' is invalid
 PASS syntax:'*', initialValue:'initial' is invalid
 PASS syntax:'*', initialValue:'inherit' is invalid
 PASS syntax:'*', initialValue:'unset' is invalid
-FAIL syntax:'*', initialValue:'revert' is invalidassert_throws: function "() => CSS.registerProperty({name: name, syntax: syntax, initialValue: initialValue})" did not throw
+FAIL syntax:'*', initialValue:'revert' is invalid assert_throws: function "() => CSS.registerProperty({name: name, syntax: syntax, initialValue: initialValue})" did not throw
 PASS syntax:'<custom-ident>', initialValue:'initial' is invalid
 PASS syntax:'<custom-ident>+', initialValue:'foo inherit bar' is invalid
 PASS syntax:'*', initialValue:')' is invalid

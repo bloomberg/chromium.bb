@@ -118,7 +118,7 @@ PASS Range 57 [xmlDocfrag, 0, xmlDocfrag, 0] setBaseAndExtent()
 PASS Reverse range 57 [xmlDocfrag, 0, xmlDocfrag, 0] setBaseAndExtent()
 PASS setBaseAndExtent() with index larger than length
 PASS setBaseAndExtent() with negative index
-FAIL setBaseAndExtent() with null nodesassert_equals: focus node, got an TypeError exception expected "TypeError" but got "Error"
+FAIL setBaseAndExtent() with null nodes assert_equals: focus node, got an TypeError exception expected "TypeError" but got "Error"
 PASS setBaseAndExtent() with too few params
 Harness: the test ran to completion.
 

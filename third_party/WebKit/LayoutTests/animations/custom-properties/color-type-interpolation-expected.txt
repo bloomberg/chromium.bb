@@ -32,10 +32,10 @@ PASS CSS Transitions: property <--color> from [black] to [orange] at (1) is [rgb
 PASS CSS Transitions: property <--color> from [black] to [orange] at (1.5) is [rgb(255, 248, 0)]
 PASS CSS Transitions: property <--color> from [black] to [currentcolor] at (-0.3) is [rgb(0, 0, 0)]
 PASS CSS Transitions: property <--color> from [black] to [currentcolor] at (0) is [rgb(0, 0, 0)]
-FAIL CSS Transitions: property <--color> from [black] to [currentcolor] at (0.3) is [rgb(0, 0, 0)]assert_equals: expected "rgb ( 0 , 77 , 0 ) " but got "rgb ( 0 , 0 , 0 ) "
-FAIL CSS Transitions: property <--color> from [black] to [currentcolor] at (0.6) is [rgb(0, 0, 0)]assert_equals: expected "rgb ( 0 , 153 , 0 ) " but got "rgb ( 0 , 0 , 0 ) "
-FAIL CSS Transitions: property <--color> from [black] to [currentcolor] at (1) is [rgb(0, 0, 0)]assert_equals: expected "rgb ( 0 , 255 , 0 ) " but got "rgb ( 0 , 0 , 0 ) "
-FAIL CSS Transitions: property <--color> from [black] to [currentcolor] at (1.5) is [rgb(0, 0, 0)]assert_equals: expected "rgb ( 0 , 255 , 0 ) " but got "rgb ( 0 , 0 , 0 ) "
+FAIL CSS Transitions: property <--color> from [black] to [currentcolor] at (0.3) is [rgb(0, 0, 0)] assert_equals: expected "rgb ( 0 , 77 , 0 ) " but got "rgb ( 0 , 0 , 0 ) "
+FAIL CSS Transitions: property <--color> from [black] to [currentcolor] at (0.6) is [rgb(0, 0, 0)] assert_equals: expected "rgb ( 0 , 153 , 0 ) " but got "rgb ( 0 , 0 , 0 ) "
+FAIL CSS Transitions: property <--color> from [black] to [currentcolor] at (1) is [rgb(0, 0, 0)] assert_equals: expected "rgb ( 0 , 255 , 0 ) " but got "rgb ( 0 , 0 , 0 ) "
+FAIL CSS Transitions: property <--color> from [black] to [currentcolor] at (1.5) is [rgb(0, 0, 0)] assert_equals: expected "rgb ( 0 , 255 , 0 ) " but got "rgb ( 0 , 0 , 0 ) "
 PASS CSS Transitions: property <--color> from [-webkit-activelink] to [green] at (-0.3) is [rgb(255, 0, 0)]
 PASS CSS Transitions: property <--color> from [-webkit-activelink] to [green] at (0) is [rgb(255, 0, 0)]
 PASS CSS Transitions: property <--color> from [-webkit-activelink] to [green] at (0.3) is [rgb(179, 38, 0)]
@@ -80,10 +80,10 @@ PASS CSS Animations: property <--color> from [black] to [orange] at (1) is [rgb(
 PASS CSS Animations: property <--color> from [black] to [orange] at (1.5) is [rgb(255, 248, 0)]
 PASS CSS Animations: property <--color> from [black] to [currentcolor] at (-0.3) is [rgb(0, 0, 0)]
 PASS CSS Animations: property <--color> from [black] to [currentcolor] at (0) is [rgb(0, 0, 0)]
-FAIL CSS Animations: property <--color> from [black] to [currentcolor] at (0.3) is [rgb(0, 0, 0)]assert_equals: expected "rgb ( 0 , 77 , 0 ) " but got "rgb ( 0 , 0 , 0 ) "
-FAIL CSS Animations: property <--color> from [black] to [currentcolor] at (0.6) is [rgb(0, 0, 0)]assert_equals: expected "rgb ( 0 , 153 , 0 ) " but got "rgb ( 0 , 0 , 0 ) "
-FAIL CSS Animations: property <--color> from [black] to [currentcolor] at (1) is [rgb(0, 0, 0)]assert_equals: expected "rgb ( 0 , 255 , 0 ) " but got "rgb ( 0 , 0 , 0 ) "
-FAIL CSS Animations: property <--color> from [black] to [currentcolor] at (1.5) is [rgb(0, 0, 0)]assert_equals: expected "rgb ( 0 , 255 , 0 ) " but got "rgb ( 0 , 0 , 0 ) "
+FAIL CSS Animations: property <--color> from [black] to [currentcolor] at (0.3) is [rgb(0, 0, 0)] assert_equals: expected "rgb ( 0 , 77 , 0 ) " but got "rgb ( 0 , 0 , 0 ) "
+FAIL CSS Animations: property <--color> from [black] to [currentcolor] at (0.6) is [rgb(0, 0, 0)] assert_equals: expected "rgb ( 0 , 153 , 0 ) " but got "rgb ( 0 , 0 , 0 ) "
+FAIL CSS Animations: property <--color> from [black] to [currentcolor] at (1) is [rgb(0, 0, 0)] assert_equals: expected "rgb ( 0 , 255 , 0 ) " but got "rgb ( 0 , 0 , 0 ) "
+FAIL CSS Animations: property <--color> from [black] to [currentcolor] at (1.5) is [rgb(0, 0, 0)] assert_equals: expected "rgb ( 0 , 255 , 0 ) " but got "rgb ( 0 , 0 , 0 ) "
 PASS CSS Animations: property <--color> from [-webkit-activelink] to [green] at (-0.3) is [rgb(255, 0, 0)]
 PASS CSS Animations: property <--color> from [-webkit-activelink] to [green] at (0) is [rgb(255, 0, 0)]
 PASS CSS Animations: property <--color> from [-webkit-activelink] to [green] at (0.3) is [rgb(179, 38, 0)]

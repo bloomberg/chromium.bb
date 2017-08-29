@@ -6,7 +6,7 @@ PASS Adding open from 'details' (no children) should fire a toggle event at the 
 PASS Calling open twice on 'details' fires only one toggle event
 PASS Calling setAttribute('open', '') to 'details' should fire a toggle event at the 'details' element
 PASS Calling removeAttribute('open') to 'details' should fire a toggle event at the 'details' element
-FAIL Setting open=true to opened 'details' element should not fire a toggle event at the 'details' elementassert_true: expected true got false
+FAIL Setting open=true to opened 'details' element should not fire a toggle event at the 'details' element assert_true: expected true got false
 PASS Setting open=false to closed 'details' element should not fire a toggle event at the 'details' element
 PASS Adding open to 'details' (not in the document) should fire a toggle event at the 'details' element
 Harness: the test ran to completion.

@@ -15,8 +15,8 @@ PASS A platform object that supports indexed properties should be treated as a s
 PASS ToUint32 should be applied to the length and any exceptions should be propagated.
 PASS Getters and value conversions should happen in order until an exception is thrown.
 PASS ToString should be called on elements of the blobParts array and any exceptions should be propagated.
-FAIL Changes to the blobParts array should be reflected in the returned Blob (pop).assert_equals: expected 4 but got 13
-FAIL Changes to the blobParts array should be reflected in the returned Blob (unshift).assert_equals: expected 4 but got 2
+FAIL Changes to the blobParts array should be reflected in the returned Blob (pop). assert_equals: expected 4 but got 13
+FAIL Changes to the blobParts array should be reflected in the returned Blob (unshift). assert_equals: expected 4 but got 2
 PASS ToString should be called on elements of the blobParts array.
 PASS ArrayBuffer elements of the blobParts array should be supported.
 PASS Passing typed arrays as elements of the blobParts array should work.
@@ -28,7 +28,7 @@ PASS Array with two blobs
 PASS Array with two buffers
 PASS Array with two bufferviews
 PASS Array with mixed types
-FAIL The 'endings' property should be ignored.Failed to construct 'Blob': The provided value 'invalidEnumValue' is not a valid enum value of type NormalizeLineEndings.
+FAIL The 'endings' property should be ignored. Failed to construct 'Blob': The provided value 'invalidEnumValue' is not a valid enum value of type NormalizeLineEndings.
 PASS options properties should be accessed in lexicographic order.
 PASS Arguments should be evaluated from left to right.
 PASS Passing null (index 0) for options should use the defaults.
@@ -44,7 +44,7 @@ PASS Passing object "/regex/" (index 4) for options should use the defaults (wit
 PASS Passing function "function () {}" (index 5) for options should use the defaults.
 PASS Passing function "function () {}" (index 5) for options should use the defaults (with newlines).
 PASS Newlines should not change when endings is 'transparent'.
-FAIL Newlines should not change when endings is 'native'.assert_equals: expected 9 but got 13
+FAIL Newlines should not change when endings is 'native'. assert_equals: expected 9 but got 13
 PASS Blob with type ""
 PASS Blob with type "a"
 PASS Blob with type "A"

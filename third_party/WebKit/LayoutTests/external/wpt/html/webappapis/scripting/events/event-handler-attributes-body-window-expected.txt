@@ -5,10 +5,10 @@ PASS focus
 PASS load
 PASS resize
 PASS scroll
-FAIL afterprintassert_equals: expected (function) function "function f() {
+FAIL afterprint assert_equals: expected (function) function "function f() {
   return 0;
 }" but got (undefined) undefined
-FAIL beforeprintassert_equals: expected (function) function "function f() {
+FAIL beforeprint assert_equals: expected (function) function "function f() {
   return 0;
 }" but got (undefined) undefined
 PASS beforeunload
@@ -28,8 +28,8 @@ PASS focus removal
 PASS load removal
 PASS resize removal
 PASS scroll removal
-FAIL afterprint removalassert_equals: expected (object) null but got (undefined) undefined
-FAIL beforeprint removalassert_equals: expected (object) null but got (undefined) undefined
+FAIL afterprint removal assert_equals: expected (object) null but got (undefined) undefined
+FAIL beforeprint removal assert_equals: expected (object) null but got (undefined) undefined
 PASS beforeunload removal
 PASS hashchange removal
 PASS languagechange removal

@@ -1,8 +1,8 @@
 This is a testharness.js-based test.
-FAIL SecurityPolicyViolationEvent interface: existence and properties of interface objectCannot read property 'has_extended_attribute' of undefined
+FAIL SecurityPolicyViolationEvent interface: existence and properties of interface object Cannot read property 'has_extended_attribute' of undefined
 PASS SecurityPolicyViolationEvent interface object length
 PASS SecurityPolicyViolationEvent interface object name
-FAIL SecurityPolicyViolationEvent interface: existence and properties of interface prototype objectCannot read property 'has_extended_attribute' of undefined
+FAIL SecurityPolicyViolationEvent interface: existence and properties of interface prototype object Cannot read property 'has_extended_attribute' of undefined
 PASS SecurityPolicyViolationEvent interface: existence and properties of interface prototype object's "constructor" property
 PASS SecurityPolicyViolationEvent interface: attribute documentURI
 PASS SecurityPolicyViolationEvent interface: attribute referrer
@@ -16,7 +16,7 @@ PASS SecurityPolicyViolationEvent interface: attribute statusCode
 PASS SecurityPolicyViolationEvent interface: attribute lineNumber
 PASS SecurityPolicyViolationEvent interface: attribute columnNumber
 PASS SecurityPolicyViolationEvent must be primary interface of new SecurityPolicyViolationEvent({})
-FAIL Stringification of new SecurityPolicyViolationEvent({})Cannot read property 'has_stringifier' of undefined
+FAIL Stringification of new SecurityPolicyViolationEvent({}) Cannot read property 'has_stringifier' of undefined
 PASS SecurityPolicyViolationEvent interface: new SecurityPolicyViolationEvent({}) must inherit property "documentURI" with the proper type
 PASS SecurityPolicyViolationEvent interface: new SecurityPolicyViolationEvent({}) must inherit property "referrer" with the proper type
 PASS SecurityPolicyViolationEvent interface: new SecurityPolicyViolationEvent({}) must inherit property "blockedURI" with the proper type

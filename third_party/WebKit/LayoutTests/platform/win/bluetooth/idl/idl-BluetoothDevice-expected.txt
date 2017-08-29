@@ -1,6 +1,6 @@
 CONSOLE MESSAGE: line 169: Web Bluetooth is experimental on this platform. See https://github.com/WebBluetoothCG/web-bluetooth/blob/gh-pages/implementation-status.md
 This is a testharness.js-based test.
-FAIL BluetoothDevice IDL testTest bug: need to pass exception to assert_throws()
+FAIL BluetoothDevice IDL test Test bug: need to pass exception to assert_throws()
 PASS BluetoothDevice attributes.
 Harness: the test ran to completion.
 

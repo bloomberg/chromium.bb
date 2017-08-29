@@ -2,7 +2,7 @@ This is a testharness.js-based test.
 PASS XMLHttpRequest: setRequestHeader() value argument checks
 PASS XMLHttpRequest: setRequestHeader() value argument checks 1
 PASS XMLHttpRequest: setRequestHeader() value argument checks 2
-FAIL XMLHttpRequest: setRequestHeader() value argument checks 3assert_throws:  given value ﾃｽﾄ, function "function () { client.setRequestHeader("x-test", "ﾃｽﾄ") }" threw object "SyntaxError: Failed to execute 'setRequestHeader' on 'XMLHttpRequest': 'ﾃｽﾄ' is not a valid HTTP header field value." ("SyntaxError") expected object "TypeError" ("TypeError")
+FAIL XMLHttpRequest: setRequestHeader() value argument checks 3 assert_throws:  given value ﾃｽﾄ, function "function () { client.setRequestHeader("x-test", "ﾃｽﾄ") }" threw object "SyntaxError: Failed to execute 'setRequestHeader' on 'XMLHttpRequest': 'ﾃｽﾄ' is not a valid HTTP header field value." ("SyntaxError") expected object "TypeError" ("TypeError")
 PASS Omitted value argument
 Harness: the test ran to completion.
 

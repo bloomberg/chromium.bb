@@ -30,7 +30,7 @@ PASS PaymentAddress interface object name
 PASS PaymentAddress interface: existence and properties of interface prototype object
 PASS PaymentAddress interface: existence and properties of interface prototype object's "constructor" property
 PASS PaymentAddress interface: operation toJSON()
-FAIL Test default toJSON operation of PaymentAddressIllegal invocation
+FAIL Test default toJSON operation of PaymentAddress Illegal invocation
 PASS PaymentAddress interface: attribute country
 PASS PaymentAddress interface: attribute addressLine
 PASS PaymentAddress interface: attribute region
@@ -48,7 +48,7 @@ PASS PaymentResponse interface object name
 PASS PaymentResponse interface: existence and properties of interface prototype object
 PASS PaymentResponse interface: existence and properties of interface prototype object's "constructor" property
 PASS PaymentResponse interface: operation toJSON()
-FAIL Test default toJSON operation of PaymentResponseIllegal invocation
+FAIL Test default toJSON operation of PaymentResponse Illegal invocation
 PASS PaymentResponse interface: attribute requestId
 PASS PaymentResponse interface: attribute methodName
 PASS PaymentResponse interface: attribute details

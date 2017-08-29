@@ -1,6 +1,6 @@
 This is a testharness.js-based test.
 Found 1704 tests; 1671 PASS, 33 FAIL, 0 TIMEOUT, 0 NOTRUN.
-FAIL [["removeformat",""]] "foo[]bar": execCommand("removeformat", false, "") return valueassert_equals: expected true but got false
+FAIL [["removeformat",""]] "foo[]bar": execCommand("removeformat", false, "") return value assert_equals: expected true but got false
 PASS [["removeformat",""]] "foo[]bar" checks for modifications to non-editable content
 PASS [["removeformat",""]] "foo[]bar" compare innerHTML
 PASS [["removeformat",""]] "foo[]bar" queryCommandIndeterm("removeformat") before
@@ -9,7 +9,7 @@ PASS [["removeformat",""]] "foo[]bar" queryCommandValue("removeformat") before
 PASS [["removeformat",""]] "foo[]bar" queryCommandIndeterm("removeformat") after
 PASS [["removeformat",""]] "foo[]bar" queryCommandState("removeformat") after
 PASS [["removeformat",""]] "foo[]bar" queryCommandValue("removeformat") after
-FAIL [["removeformat",""]] "<span>foo</span>{}<span>bar</span>": execCommand("removeformat", false, "") return valueassert_equals: expected true but got false
+FAIL [["removeformat",""]] "<span>foo</span>{}<span>bar</span>": execCommand("removeformat", false, "") return value assert_equals: expected true but got false
 PASS [["removeformat",""]] "<span>foo</span>{}<span>bar</span>" checks for modifications to non-editable content
 PASS [["removeformat",""]] "<span>foo</span>{}<span>bar</span>" compare innerHTML
 PASS [["removeformat",""]] "<span>foo</span>{}<span>bar</span>" queryCommandIndeterm("removeformat") before
@@ -18,7 +18,7 @@ PASS [["removeformat",""]] "<span>foo</span>{}<span>bar</span>" queryCommandValu
 PASS [["removeformat",""]] "<span>foo</span>{}<span>bar</span>" queryCommandIndeterm("removeformat") after
 PASS [["removeformat",""]] "<span>foo</span>{}<span>bar</span>" queryCommandState("removeformat") after
 PASS [["removeformat",""]] "<span>foo</span>{}<span>bar</span>" queryCommandValue("removeformat") after
-FAIL [["removeformat",""]] "<span>foo[</span><span>]bar</span>": execCommand("removeformat", false, "") return valueassert_equals: expected true but got false
+FAIL [["removeformat",""]] "<span>foo[</span><span>]bar</span>": execCommand("removeformat", false, "") return value assert_equals: expected true but got false
 PASS [["removeformat",""]] "<span>foo[</span><span>]bar</span>" checks for modifications to non-editable content
 PASS [["removeformat",""]] "<span>foo[</span><span>]bar</span>" compare innerHTML
 PASS [["removeformat",""]] "<span>foo[</span><span>]bar</span>" queryCommandIndeterm("removeformat") before
@@ -32,7 +32,7 @@ PASS [["stylewithcss","true"],["removeformat",""]] "[foo<b>bar</b>baz]": execCom
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<b>bar</b>baz]" checks for modifications to non-editable content
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<b>bar</b>baz]" compare innerHTML
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<b>bar</b>baz]" queryCommandIndeterm("stylewithcss") before
-FAIL [["stylewithcss","true"],["removeformat",""]] "[foo<b>bar</b>baz]" queryCommandState("stylewithcss") beforeassert_equals: Wrong result returned expected false but got true
+FAIL [["stylewithcss","true"],["removeformat",""]] "[foo<b>bar</b>baz]" queryCommandState("stylewithcss") before assert_equals: Wrong result returned expected false but got true
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<b>bar</b>baz]" queryCommandValue("stylewithcss") before
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<b>bar</b>baz]" queryCommandIndeterm("stylewithcss") after
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<b>bar</b>baz]" queryCommandState("stylewithcss") after
@@ -254,7 +254,7 @@ PASS [["stylewithcss","false"],["removeformat",""]] "foo<span style=\"font-weigh
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<span style=\"font-variant: small-caps\">bar</span>baz]": execCommand("stylewithcss", false, "true") return value
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<span style=\"font-variant: small-caps\">bar</span>baz]": execCommand("removeformat", false, "") return value
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<span style=\"font-variant: small-caps\">bar</span>baz]" checks for modifications to non-editable content
-FAIL [["stylewithcss","true"],["removeformat",""]] "[foo<span style=\"font-variant: small-caps\">bar</span>baz]" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "foobarbaz" but got "foo<span style=\"font-variant-numeric:normal\">bar</span>baz"
+FAIL [["stylewithcss","true"],["removeformat",""]] "[foo<span style=\"font-variant: small-caps\">bar</span>baz]" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foobarbaz" but got "foo<span style=\"font-variant-numeric:normal\">bar</span>baz"
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<span style=\"font-variant: small-caps\">bar</span>baz]" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<span style=\"font-variant: small-caps\">bar</span>baz]" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","true"],["removeformat",""]] "[foo<span style=\"font-variant: small-caps\">bar</span>baz]" queryCommandValue("stylewithcss") before
@@ -270,7 +270,7 @@ PASS [["stylewithcss","true"],["removeformat",""]] "[foo<span style=\"font-varia
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<span style=\"font-variant: small-caps\">bar</span>baz]": execCommand("stylewithcss", false, "false") return value
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<span style=\"font-variant: small-caps\">bar</span>baz]": execCommand("removeformat", false, "") return value
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<span style=\"font-variant: small-caps\">bar</span>baz]" checks for modifications to non-editable content
-FAIL [["stylewithcss","false"],["removeformat",""]] "[foo<span style=\"font-variant: small-caps\">bar</span>baz]" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "foobarbaz" but got "foo<span style=\"font-variant-numeric:normal\">bar</span>baz"
+FAIL [["stylewithcss","false"],["removeformat",""]] "[foo<span style=\"font-variant: small-caps\">bar</span>baz]" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foobarbaz" but got "foo<span style=\"font-variant-numeric:normal\">bar</span>baz"
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<span style=\"font-variant: small-caps\">bar</span>baz]" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<span style=\"font-variant: small-caps\">bar</span>baz]" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","false"],["removeformat",""]] "[foo<span style=\"font-variant: small-caps\">bar</span>baz]" queryCommandValue("stylewithcss") before
@@ -286,7 +286,7 @@ PASS [["stylewithcss","false"],["removeformat",""]] "[foo<span style=\"font-vari
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<span style=\"font-variant: small-caps\">b[a]r</span>baz": execCommand("stylewithcss", false, "true") return value
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<span style=\"font-variant: small-caps\">b[a]r</span>baz": execCommand("removeformat", false, "") return value
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<span style=\"font-variant: small-caps\">b[a]r</span>baz" checks for modifications to non-editable content
-FAIL [["stylewithcss","true"],["removeformat",""]] "foo<span style=\"font-variant: small-caps\">b[a]r</span>baz" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<span style=\"font-variant:small-caps\">b</span>a<span style=\"font-variant:small-caps\">r</span>baz" but got "foo<span style=\"font-variant:small-caps\">b</span><span style=\"font-variant-numeric:normal\">a</span><span style=\"font-variant:small-caps\">r</span>baz"
+FAIL [["stylewithcss","true"],["removeformat",""]] "foo<span style=\"font-variant: small-caps\">b[a]r</span>baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<span style=\"font-variant:small-caps\">b</span>a<span style=\"font-variant:small-caps\">r</span>baz" but got "foo<span style=\"font-variant:small-caps\">b</span><span style=\"font-variant-numeric:normal\">a</span><span style=\"font-variant:small-caps\">r</span>baz"
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<span style=\"font-variant: small-caps\">b[a]r</span>baz" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<span style=\"font-variant: small-caps\">b[a]r</span>baz" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","true"],["removeformat",""]] "foo<span style=\"font-variant: small-caps\">b[a]r</span>baz" queryCommandValue("stylewithcss") before
@@ -302,7 +302,7 @@ PASS [["stylewithcss","true"],["removeformat",""]] "foo<span style=\"font-varian
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<span style=\"font-variant: small-caps\">b[a]r</span>baz": execCommand("stylewithcss", false, "false") return value
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<span style=\"font-variant: small-caps\">b[a]r</span>baz": execCommand("removeformat", false, "") return value
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<span style=\"font-variant: small-caps\">b[a]r</span>baz" checks for modifications to non-editable content
-FAIL [["stylewithcss","false"],["removeformat",""]] "foo<span style=\"font-variant: small-caps\">b[a]r</span>baz" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<span style=\"font-variant:small-caps\">b</span>a<span style=\"font-variant:small-caps\">r</span>baz" but got "foo<span style=\"font-variant:small-caps\">b</span><span style=\"font-variant-numeric:normal\">a</span><span style=\"font-variant:small-caps\">r</span>baz"
+FAIL [["stylewithcss","false"],["removeformat",""]] "foo<span style=\"font-variant: small-caps\">b[a]r</span>baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<span style=\"font-variant:small-caps\">b</span>a<span style=\"font-variant:small-caps\">r</span>baz" but got "foo<span style=\"font-variant:small-caps\">b</span><span style=\"font-variant-numeric:normal\">a</span><span style=\"font-variant:small-caps\">r</span>baz"
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<span style=\"font-variant: small-caps\">b[a]r</span>baz" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<span style=\"font-variant: small-caps\">b[a]r</span>baz" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<span style=\"font-variant: small-caps\">b[a]r</span>baz" queryCommandValue("stylewithcss") before
@@ -417,7 +417,7 @@ PASS [["removeformat",""]] "foo<a href=foo>b[a]r</a>baz" queryCommandState("remo
 PASS [["removeformat",""]] "foo<a href=foo>b[a]r</a>baz" queryCommandValue("removeformat") after
 PASS [["removeformat",""]] "[foo<abbr>bar</abbr>baz]": execCommand("removeformat", false, "") return value
 PASS [["removeformat",""]] "[foo<abbr>bar</abbr>baz]" checks for modifications to non-editable content
-FAIL [["removeformat",""]] "[foo<abbr>bar</abbr>baz]" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "foobarbaz" but got "foo<abbr>bar</abbr>baz"
+FAIL [["removeformat",""]] "[foo<abbr>bar</abbr>baz]" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foobarbaz" but got "foo<abbr>bar</abbr>baz"
 PASS [["removeformat",""]] "[foo<abbr>bar</abbr>baz]" queryCommandIndeterm("removeformat") before
 PASS [["removeformat",""]] "[foo<abbr>bar</abbr>baz]" queryCommandState("removeformat") before
 PASS [["removeformat",""]] "[foo<abbr>bar</abbr>baz]" queryCommandValue("removeformat") before
@@ -426,7 +426,7 @@ PASS [["removeformat",""]] "[foo<abbr>bar</abbr>baz]" queryCommandState("removef
 PASS [["removeformat",""]] "[foo<abbr>bar</abbr>baz]" queryCommandValue("removeformat") after
 PASS [["removeformat",""]] "foo<abbr>b[a]r</abbr>baz": execCommand("removeformat", false, "") return value
 PASS [["removeformat",""]] "foo<abbr>b[a]r</abbr>baz" checks for modifications to non-editable content
-FAIL [["removeformat",""]] "foo<abbr>b[a]r</abbr>baz" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<abbr>b</abbr>a<abbr>r</abbr>baz" but got "foo<abbr>bar</abbr>baz"
+FAIL [["removeformat",""]] "foo<abbr>b[a]r</abbr>baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<abbr>b</abbr>a<abbr>r</abbr>baz" but got "foo<abbr>bar</abbr>baz"
 PASS [["removeformat",""]] "foo<abbr>b[a]r</abbr>baz" queryCommandIndeterm("removeformat") before
 PASS [["removeformat",""]] "foo<abbr>b[a]r</abbr>baz" queryCommandState("removeformat") before
 PASS [["removeformat",""]] "foo<abbr>b[a]r</abbr>baz" queryCommandValue("removeformat") before
@@ -453,7 +453,7 @@ PASS [["removeformat",""]] "foo<acronym>b[a]r</acronym>baz" queryCommandState("r
 PASS [["removeformat",""]] "foo<acronym>b[a]r</acronym>baz" queryCommandValue("removeformat") after
 PASS [["removeformat",""]] "[foo<bdi dir=rtl>bar</bdi>baz]": execCommand("removeformat", false, "") return value
 PASS [["removeformat",""]] "[foo<bdi dir=rtl>bar</bdi>baz]" checks for modifications to non-editable content
-FAIL [["removeformat",""]] "[foo<bdi dir=rtl>bar</bdi>baz]" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "foobarbaz" but got "foo<bdi dir=\"rtl\">bar</bdi>baz"
+FAIL [["removeformat",""]] "[foo<bdi dir=rtl>bar</bdi>baz]" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foobarbaz" but got "foo<bdi dir=\"rtl\">bar</bdi>baz"
 PASS [["removeformat",""]] "[foo<bdi dir=rtl>bar</bdi>baz]" queryCommandIndeterm("removeformat") before
 PASS [["removeformat",""]] "[foo<bdi dir=rtl>bar</bdi>baz]" queryCommandState("removeformat") before
 PASS [["removeformat",""]] "[foo<bdi dir=rtl>bar</bdi>baz]" queryCommandValue("removeformat") before
@@ -462,7 +462,7 @@ PASS [["removeformat",""]] "[foo<bdi dir=rtl>bar</bdi>baz]" queryCommandState("r
 PASS [["removeformat",""]] "[foo<bdi dir=rtl>bar</bdi>baz]" queryCommandValue("removeformat") after
 PASS [["removeformat",""]] "foo<bdi dir=rtl>b[a]r</bdi>baz": execCommand("removeformat", false, "") return value
 PASS [["removeformat",""]] "foo<bdi dir=rtl>b[a]r</bdi>baz" checks for modifications to non-editable content
-FAIL [["removeformat",""]] "foo<bdi dir=rtl>b[a]r</bdi>baz" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<bdi dir=\"rtl\">b</bdi>a<bdi dir=\"rtl\">r</bdi>baz" but got "foo<bdi dir=\"rtl\">bar</bdi>baz"
+FAIL [["removeformat",""]] "foo<bdi dir=rtl>b[a]r</bdi>baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<bdi dir=\"rtl\">b</bdi>a<bdi dir=\"rtl\">r</bdi>baz" but got "foo<bdi dir=\"rtl\">bar</bdi>baz"
 PASS [["removeformat",""]] "foo<bdi dir=rtl>b[a]r</bdi>baz" queryCommandIndeterm("removeformat") before
 PASS [["removeformat",""]] "foo<bdi dir=rtl>b[a]r</bdi>baz" queryCommandState("removeformat") before
 PASS [["removeformat",""]] "foo<bdi dir=rtl>b[a]r</bdi>baz" queryCommandValue("removeformat") before
@@ -507,7 +507,7 @@ PASS [["removeformat",""]] "foo<big>b[a]r</big>baz" queryCommandState("removefor
 PASS [["removeformat",""]] "foo<big>b[a]r</big>baz" queryCommandValue("removeformat") after
 PASS [["removeformat",""]] "[foo<blink>bar</blink>baz]": execCommand("removeformat", false, "") return value
 PASS [["removeformat",""]] "[foo<blink>bar</blink>baz]" checks for modifications to non-editable content
-FAIL [["removeformat",""]] "[foo<blink>bar</blink>baz]" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "foobarbaz" but got "foo<blink>bar</blink>baz"
+FAIL [["removeformat",""]] "[foo<blink>bar</blink>baz]" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foobarbaz" but got "foo<blink>bar</blink>baz"
 PASS [["removeformat",""]] "[foo<blink>bar</blink>baz]" queryCommandIndeterm("removeformat") before
 PASS [["removeformat",""]] "[foo<blink>bar</blink>baz]" queryCommandState("removeformat") before
 PASS [["removeformat",""]] "[foo<blink>bar</blink>baz]" queryCommandValue("removeformat") before
@@ -516,7 +516,7 @@ PASS [["removeformat",""]] "[foo<blink>bar</blink>baz]" queryCommandState("remov
 PASS [["removeformat",""]] "[foo<blink>bar</blink>baz]" queryCommandValue("removeformat") after
 PASS [["removeformat",""]] "foo<blink>b[a]r</blink>baz": execCommand("removeformat", false, "") return value
 PASS [["removeformat",""]] "foo<blink>b[a]r</blink>baz" checks for modifications to non-editable content
-FAIL [["removeformat",""]] "foo<blink>b[a]r</blink>baz" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<blink>b</blink>a<blink>r</blink>baz" but got "foo<blink>bar</blink>baz"
+FAIL [["removeformat",""]] "foo<blink>b[a]r</blink>baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<blink>b</blink>a<blink>r</blink>baz" but got "foo<blink>bar</blink>baz"
 PASS [["removeformat",""]] "foo<blink>b[a]r</blink>baz" queryCommandIndeterm("removeformat") before
 PASS [["removeformat",""]] "foo<blink>b[a]r</blink>baz" queryCommandState("removeformat") before
 PASS [["removeformat",""]] "foo<blink>b[a]r</blink>baz" queryCommandValue("removeformat") before
@@ -843,7 +843,7 @@ PASS [["removeformat",""]] "foo<kbd>b[a]r</kbd>baz" queryCommandState("removefor
 PASS [["removeformat",""]] "foo<kbd>b[a]r</kbd>baz" queryCommandValue("removeformat") after
 PASS [["removeformat",""]] "[foo<mark>bar</mark>baz]": execCommand("removeformat", false, "") return value
 PASS [["removeformat",""]] "[foo<mark>bar</mark>baz]" checks for modifications to non-editable content
-FAIL [["removeformat",""]] "[foo<mark>bar</mark>baz]" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "foobarbaz" but got "foo<mark>bar</mark>baz"
+FAIL [["removeformat",""]] "[foo<mark>bar</mark>baz]" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foobarbaz" but got "foo<mark>bar</mark>baz"
 PASS [["removeformat",""]] "[foo<mark>bar</mark>baz]" queryCommandIndeterm("removeformat") before
 PASS [["removeformat",""]] "[foo<mark>bar</mark>baz]" queryCommandState("removeformat") before
 PASS [["removeformat",""]] "[foo<mark>bar</mark>baz]" queryCommandValue("removeformat") before
@@ -852,7 +852,7 @@ PASS [["removeformat",""]] "[foo<mark>bar</mark>baz]" queryCommandState("removef
 PASS [["removeformat",""]] "[foo<mark>bar</mark>baz]" queryCommandValue("removeformat") after
 PASS [["removeformat",""]] "foo<mark>b[a]r</mark>baz": execCommand("removeformat", false, "") return value
 PASS [["removeformat",""]] "foo<mark>b[a]r</mark>baz" checks for modifications to non-editable content
-FAIL [["removeformat",""]] "foo<mark>b[a]r</mark>baz" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<mark>b</mark>a<mark>r</mark>baz" but got "foo<mark>bar</mark>baz"
+FAIL [["removeformat",""]] "foo<mark>b[a]r</mark>baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<mark>b</mark>a<mark>r</mark>baz" but got "foo<mark>bar</mark>baz"
 PASS [["removeformat",""]] "foo<mark>b[a]r</mark>baz" queryCommandIndeterm("removeformat") before
 PASS [["removeformat",""]] "foo<mark>b[a]r</mark>baz" queryCommandState("removeformat") before
 PASS [["removeformat",""]] "foo<mark>b[a]r</mark>baz" queryCommandValue("removeformat") before
@@ -997,7 +997,7 @@ PASS [["removeformat",""]] "foo<small>b[a]r</small>baz" queryCommandState("remov
 PASS [["removeformat",""]] "foo<small>b[a]r</small>baz" queryCommandValue("removeformat") after
 PASS [["removeformat",""]] "[foo<span>bar</span>baz]": execCommand("removeformat", false, "") return value
 PASS [["removeformat",""]] "[foo<span>bar</span>baz]" checks for modifications to non-editable content
-FAIL [["removeformat",""]] "[foo<span>bar</span>baz]" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "foobarbaz" but got "foo<span>bar</span>baz"
+FAIL [["removeformat",""]] "[foo<span>bar</span>baz]" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foobarbaz" but got "foo<span>bar</span>baz"
 PASS [["removeformat",""]] "[foo<span>bar</span>baz]" queryCommandIndeterm("removeformat") before
 PASS [["removeformat",""]] "[foo<span>bar</span>baz]" queryCommandState("removeformat") before
 PASS [["removeformat",""]] "[foo<span>bar</span>baz]" queryCommandValue("removeformat") before
@@ -1006,7 +1006,7 @@ PASS [["removeformat",""]] "[foo<span>bar</span>baz]" queryCommandState("removef
 PASS [["removeformat",""]] "[foo<span>bar</span>baz]" queryCommandValue("removeformat") after
 PASS [["removeformat",""]] "foo<span>b[a]r</span>baz": execCommand("removeformat", false, "") return value
 PASS [["removeformat",""]] "foo<span>b[a]r</span>baz" checks for modifications to non-editable content
-FAIL [["removeformat",""]] "foo<span>b[a]r</span>baz" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<span>b</span>a<span>r</span>baz" but got "foobarbaz"
+FAIL [["removeformat",""]] "foo<span>b[a]r</span>baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<span>b</span>a<span>r</span>baz" but got "foobarbaz"
 PASS [["removeformat",""]] "foo<span>b[a]r</span>baz" queryCommandIndeterm("removeformat") before
 PASS [["removeformat",""]] "foo<span>b[a]r</span>baz" queryCommandState("removeformat") before
 PASS [["removeformat",""]] "foo<span>b[a]r</span>baz" queryCommandValue("removeformat") before
@@ -1433,7 +1433,7 @@ PASS [["removeformat",""]] "foo<nonexistentelement style=\"display: block\">b[a]
 PASS [["removeformat",""]] "foo<nonexistentelement style=\"display: block\">b[a]r</nonexistentelement>baz" queryCommandValue("removeformat") after
 PASS [["removeformat",""]] "[foo<span id=foo>bar</span>baz]": execCommand("removeformat", false, "") return value
 PASS [["removeformat",""]] "[foo<span id=foo>bar</span>baz]" checks for modifications to non-editable content
-FAIL [["removeformat",""]] "[foo<span id=foo>bar</span>baz]" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "foobarbaz" but got "foo<span id=\"foo\">bar</span>baz"
+FAIL [["removeformat",""]] "[foo<span id=foo>bar</span>baz]" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foobarbaz" but got "foo<span id=\"foo\">bar</span>baz"
 PASS [["removeformat",""]] "[foo<span id=foo>bar</span>baz]" queryCommandIndeterm("removeformat") before
 PASS [["removeformat",""]] "[foo<span id=foo>bar</span>baz]" queryCommandState("removeformat") before
 PASS [["removeformat",""]] "[foo<span id=foo>bar</span>baz]" queryCommandValue("removeformat") before
@@ -1442,7 +1442,7 @@ PASS [["removeformat",""]] "[foo<span id=foo>bar</span>baz]" queryCommandState("
 PASS [["removeformat",""]] "[foo<span id=foo>bar</span>baz]" queryCommandValue("removeformat") after
 PASS [["removeformat",""]] "foo<span id=foo>b[a]r</span>baz": execCommand("removeformat", false, "") return value
 PASS [["removeformat",""]] "foo<span id=foo>b[a]r</span>baz" checks for modifications to non-editable content
-FAIL [["removeformat",""]] "foo<span id=foo>b[a]r</span>baz" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<span id=\"foo\">b</span>a<span>r</span>baz" but got "foo<span id=\"foo\">bar</span>baz"
+FAIL [["removeformat",""]] "foo<span id=foo>b[a]r</span>baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<span id=\"foo\">b</span>a<span>r</span>baz" but got "foo<span id=\"foo\">bar</span>baz"
 PASS [["removeformat",""]] "foo<span id=foo>b[a]r</span>baz" queryCommandIndeterm("removeformat") before
 PASS [["removeformat",""]] "foo<span id=foo>b[a]r</span>baz" queryCommandState("removeformat") before
 PASS [["removeformat",""]] "foo<span id=foo>b[a]r</span>baz" queryCommandValue("removeformat") before
@@ -1451,7 +1451,7 @@ PASS [["removeformat",""]] "foo<span id=foo>b[a]r</span>baz" queryCommandState("
 PASS [["removeformat",""]] "foo<span id=foo>b[a]r</span>baz" queryCommandValue("removeformat") after
 PASS [["removeformat",""]] "[foo<span class=foo>bar</span>baz]": execCommand("removeformat", false, "") return value
 PASS [["removeformat",""]] "[foo<span class=foo>bar</span>baz]" checks for modifications to non-editable content
-FAIL [["removeformat",""]] "[foo<span class=foo>bar</span>baz]" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "foobarbaz" but got "foo<span class=\"foo\">bar</span>baz"
+FAIL [["removeformat",""]] "[foo<span class=foo>bar</span>baz]" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foobarbaz" but got "foo<span class=\"foo\">bar</span>baz"
 PASS [["removeformat",""]] "[foo<span class=foo>bar</span>baz]" queryCommandIndeterm("removeformat") before
 PASS [["removeformat",""]] "[foo<span class=foo>bar</span>baz]" queryCommandState("removeformat") before
 PASS [["removeformat",""]] "[foo<span class=foo>bar</span>baz]" queryCommandValue("removeformat") before
@@ -1460,7 +1460,7 @@ PASS [["removeformat",""]] "[foo<span class=foo>bar</span>baz]" queryCommandStat
 PASS [["removeformat",""]] "[foo<span class=foo>bar</span>baz]" queryCommandValue("removeformat") after
 PASS [["removeformat",""]] "foo<span class=foo>b[a]r</span>baz": execCommand("removeformat", false, "") return value
 PASS [["removeformat",""]] "foo<span class=foo>b[a]r</span>baz" checks for modifications to non-editable content
-FAIL [["removeformat",""]] "foo<span class=foo>b[a]r</span>baz" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<span class=\"foo\">b</span>a<span class=\"foo\">r</span>baz" but got "foo<span class=\"foo\">bar</span>baz"
+FAIL [["removeformat",""]] "foo<span class=foo>b[a]r</span>baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<span class=\"foo\">b</span>a<span class=\"foo\">r</span>baz" but got "foo<span class=\"foo\">bar</span>baz"
 PASS [["removeformat",""]] "foo<span class=foo>b[a]r</span>baz" queryCommandIndeterm("removeformat") before
 PASS [["removeformat",""]] "foo<span class=foo>b[a]r</span>baz" queryCommandState("removeformat") before
 PASS [["removeformat",""]] "foo<span class=foo>b[a]r</span>baz" queryCommandValue("removeformat") before
@@ -1533,7 +1533,7 @@ PASS [["stylewithcss","false"],["removeformat",""]] "foo<b style=\"font-weight: 
 PASS [["stylewithcss","false"],["removeformat",""]] "foo<b style=\"font-weight: normal\">b[a]r</b>baz" queryCommandValue("removeformat") after
 PASS [["removeformat",""]] "<p style=\"background-color: aqua\">foo[bar]baz</p>": execCommand("removeformat", false, "") return value
 PASS [["removeformat",""]] "<p style=\"background-color: aqua\">foo[bar]baz</p>" checks for modifications to non-editable content
-FAIL [["removeformat",""]] "<p style=\"background-color: aqua\">foo[bar]baz</p>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p style=\"background-color:rgb(0, 255, 255)\">foobarbaz</p>" but got "<p style=\"\"><span style=\"background-color:rgb(0, 255, 255)\">foo</span>bar<span style=\"background-color:rgb(0, 255, 255)\">baz</span></p>"
+FAIL [["removeformat",""]] "<p style=\"background-color: aqua\">foo[bar]baz</p>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p style=\"background-color:rgb(0, 255, 255)\">foobarbaz</p>" but got "<p style=\"\"><span style=\"background-color:rgb(0, 255, 255)\">foo</span>bar<span style=\"background-color:rgb(0, 255, 255)\">baz</span></p>"
 PASS [["removeformat",""]] "<p style=\"background-color: aqua\">foo[bar]baz</p>" queryCommandIndeterm("removeformat") before
 PASS [["removeformat",""]] "<p style=\"background-color: aqua\">foo[bar]baz</p>" queryCommandState("removeformat") before
 PASS [["removeformat",""]] "<p style=\"background-color: aqua\">foo[bar]baz</p>" queryCommandValue("removeformat") before
@@ -1575,7 +1575,7 @@ PASS [["stylewithcss","false"],["removeformat",""]] "<p><span style=\"background
 PASS [["stylewithcss","true"],["removeformat",""]] "<p style=\"font-weight: bold\">foo[bar]baz</p>": execCommand("stylewithcss", false, "true") return value
 PASS [["stylewithcss","true"],["removeformat",""]] "<p style=\"font-weight: bold\">foo[bar]baz</p>": execCommand("removeformat", false, "") return value
 PASS [["stylewithcss","true"],["removeformat",""]] "<p style=\"font-weight: bold\">foo[bar]baz</p>" checks for modifications to non-editable content
-FAIL [["stylewithcss","true"],["removeformat",""]] "<p style=\"font-weight: bold\">foo[bar]baz</p>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><span style=\"font-weight:bold\">foo</span>bar<span style=\"font-weight:bold\">baz</span></p>" but got "<p style=\"\"><span style=\"font-weight:bold\">foo</span>bar<span style=\"font-weight:bold\">baz</span></p>"
+FAIL [["stylewithcss","true"],["removeformat",""]] "<p style=\"font-weight: bold\">foo[bar]baz</p>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><span style=\"font-weight:bold\">foo</span>bar<span style=\"font-weight:bold\">baz</span></p>" but got "<p style=\"\"><span style=\"font-weight:bold\">foo</span>bar<span style=\"font-weight:bold\">baz</span></p>"
 PASS [["stylewithcss","true"],["removeformat",""]] "<p style=\"font-weight: bold\">foo[bar]baz</p>" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","true"],["removeformat",""]] "<p style=\"font-weight: bold\">foo[bar]baz</p>" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","true"],["removeformat",""]] "<p style=\"font-weight: bold\">foo[bar]baz</p>" queryCommandValue("stylewithcss") before
@@ -1591,7 +1591,7 @@ PASS [["stylewithcss","true"],["removeformat",""]] "<p style=\"font-weight: bold
 PASS [["stylewithcss","false"],["removeformat",""]] "<p style=\"font-weight: bold\">foo[bar]baz</p>": execCommand("stylewithcss", false, "false") return value
 PASS [["stylewithcss","false"],["removeformat",""]] "<p style=\"font-weight: bold\">foo[bar]baz</p>": execCommand("removeformat", false, "") return value
 PASS [["stylewithcss","false"],["removeformat",""]] "<p style=\"font-weight: bold\">foo[bar]baz</p>" checks for modifications to non-editable content
-FAIL [["stylewithcss","false"],["removeformat",""]] "<p style=\"font-weight: bold\">foo[bar]baz</p>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><b>foo</b>bar<b>baz</b></p>" but got "<p style=\"\"><span style=\"font-weight:bold\">foo</span>bar<b>baz</b></p>"
+FAIL [["stylewithcss","false"],["removeformat",""]] "<p style=\"font-weight: bold\">foo[bar]baz</p>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><b>foo</b>bar<b>baz</b></p>" but got "<p style=\"\"><span style=\"font-weight:bold\">foo</span>bar<b>baz</b></p>"
 PASS [["stylewithcss","false"],["removeformat",""]] "<p style=\"font-weight: bold\">foo[bar]baz</p>" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","false"],["removeformat",""]] "<p style=\"font-weight: bold\">foo[bar]baz</p>" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","false"],["removeformat",""]] "<p style=\"font-weight: bold\">foo[bar]baz</p>" queryCommandValue("stylewithcss") before
@@ -1607,7 +1607,7 @@ PASS [["stylewithcss","false"],["removeformat",""]] "<p style=\"font-weight: bol
 PASS [["stylewithcss","true"],["removeformat",""]] "<b><p style=\"font-weight: bold\">foo[bar]baz</p></b>": execCommand("stylewithcss", false, "true") return value
 PASS [["stylewithcss","true"],["removeformat",""]] "<b><p style=\"font-weight: bold\">foo[bar]baz</p></b>": execCommand("removeformat", false, "") return value
 PASS [["stylewithcss","true"],["removeformat",""]] "<b><p style=\"font-weight: bold\">foo[bar]baz</p></b>" checks for modifications to non-editable content
-FAIL [["stylewithcss","true"],["removeformat",""]] "<b><p style=\"font-weight: bold\">foo[bar]baz</p></b>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><span style=\"font-weight:bold\">foo</span>bar<span style=\"font-weight:bold\">baz</span></p>" but got "<p style=\"\"><b><span style=\"font-weight:bold\">foo</span></b>bar<b>baz</b></p>"
+FAIL [["stylewithcss","true"],["removeformat",""]] "<b><p style=\"font-weight: bold\">foo[bar]baz</p></b>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><span style=\"font-weight:bold\">foo</span>bar<span style=\"font-weight:bold\">baz</span></p>" but got "<p style=\"\"><b><span style=\"font-weight:bold\">foo</span></b>bar<b>baz</b></p>"
 PASS [["stylewithcss","true"],["removeformat",""]] "<b><p style=\"font-weight: bold\">foo[bar]baz</p></b>" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","true"],["removeformat",""]] "<b><p style=\"font-weight: bold\">foo[bar]baz</p></b>" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","true"],["removeformat",""]] "<b><p style=\"font-weight: bold\">foo[bar]baz</p></b>" queryCommandValue("stylewithcss") before
@@ -1623,7 +1623,7 @@ PASS [["stylewithcss","true"],["removeformat",""]] "<b><p style=\"font-weight: b
 PASS [["stylewithcss","false"],["removeformat",""]] "<b><p style=\"font-weight: bold\">foo[bar]baz</p></b>": execCommand("stylewithcss", false, "false") return value
 PASS [["stylewithcss","false"],["removeformat",""]] "<b><p style=\"font-weight: bold\">foo[bar]baz</p></b>": execCommand("removeformat", false, "") return value
 PASS [["stylewithcss","false"],["removeformat",""]] "<b><p style=\"font-weight: bold\">foo[bar]baz</p></b>" checks for modifications to non-editable content
-FAIL [["stylewithcss","false"],["removeformat",""]] "<b><p style=\"font-weight: bold\">foo[bar]baz</p></b>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><b>foo</b>bar<b>baz</b></p>" but got "<p style=\"\"><b><span style=\"font-weight:bold\">foo</span></b>bar<b>baz</b></p>"
+FAIL [["stylewithcss","false"],["removeformat",""]] "<b><p style=\"font-weight: bold\">foo[bar]baz</p></b>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><b>foo</b>bar<b>baz</b></p>" but got "<p style=\"\"><b><span style=\"font-weight:bold\">foo</span></b>bar<b>baz</b></p>"
 PASS [["stylewithcss","false"],["removeformat",""]] "<b><p style=\"font-weight: bold\">foo[bar]baz</p></b>" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","false"],["removeformat",""]] "<b><p style=\"font-weight: bold\">foo[bar]baz</p></b>" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","false"],["removeformat",""]] "<b><p style=\"font-weight: bold\">foo[bar]baz</p></b>" queryCommandValue("stylewithcss") before
@@ -1638,7 +1638,7 @@ PASS [["stylewithcss","false"],["removeformat",""]] "<b><p style=\"font-weight: 
 PASS [["stylewithcss","false"],["removeformat",""]] "<b><p style=\"font-weight: bold\">foo[bar]baz</p></b>" queryCommandValue("removeformat") after
 PASS [["removeformat",""]] "<p style=\"font-variant: small-caps\">foo[bar]baz</p>": execCommand("removeformat", false, "") return value
 PASS [["removeformat",""]] "<p style=\"font-variant: small-caps\">foo[bar]baz</p>" checks for modifications to non-editable content
-FAIL [["removeformat",""]] "<p style=\"font-variant: small-caps\">foo[bar]baz</p>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p style=\"font-variant:small-caps\">foobarbaz</p>" but got "<p style=\"font-variant-numeric:normal\"><span style=\"font-variant-ligatures:normal; font-variant-caps:small-caps\">foo</span>bar<span style=\"font-variant-caps:small-caps\">baz</span></p>"
+FAIL [["removeformat",""]] "<p style=\"font-variant: small-caps\">foo[bar]baz</p>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p style=\"font-variant:small-caps\">foobarbaz</p>" but got "<p style=\"font-variant-numeric:normal\"><span style=\"font-variant-ligatures:normal; font-variant-caps:small-caps\">foo</span>bar<span style=\"font-variant-caps:small-caps\">baz</span></p>"
 PASS [["removeformat",""]] "<p style=\"font-variant: small-caps\">foo[bar]baz</p>" queryCommandIndeterm("removeformat") before
 PASS [["removeformat",""]] "<p style=\"font-variant: small-caps\">foo[bar]baz</p>" queryCommandState("removeformat") before
 PASS [["removeformat",""]] "<p style=\"font-variant: small-caps\">foo[bar]baz</p>" queryCommandValue("removeformat") before
@@ -1647,7 +1647,7 @@ PASS [["removeformat",""]] "<p style=\"font-variant: small-caps\">foo[bar]baz</p
 PASS [["removeformat",""]] "<p style=\"font-variant: small-caps\">foo[bar]baz</p>" queryCommandValue("removeformat") after
 PASS [["removeformat",""]] "{<p style=\"font-variant: small-caps\">foobarbaz</p>}": execCommand("removeformat", false, "") return value
 PASS [["removeformat",""]] "{<p style=\"font-variant: small-caps\">foobarbaz</p>}" checks for modifications to non-editable content
-FAIL [["removeformat",""]] "{<p style=\"font-variant: small-caps\">foobarbaz</p>}" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p style=\"font-variant:small-caps\">foobarbaz</p>" but got "<p style=\"font-variant-numeric:normal\">foobarbaz</p>"
+FAIL [["removeformat",""]] "{<p style=\"font-variant: small-caps\">foobarbaz</p>}" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p style=\"font-variant:small-caps\">foobarbaz</p>" but got "<p style=\"font-variant-numeric:normal\">foobarbaz</p>"
 PASS [["removeformat",""]] "{<p style=\"font-variant: small-caps\">foobarbaz</p>}" queryCommandIndeterm("removeformat") before
 PASS [["removeformat",""]] "{<p style=\"font-variant: small-caps\">foobarbaz</p>}" queryCommandState("removeformat") before
 PASS [["removeformat",""]] "{<p style=\"font-variant: small-caps\">foobarbaz</p>}" queryCommandValue("removeformat") before
@@ -1656,7 +1656,7 @@ PASS [["removeformat",""]] "{<p style=\"font-variant: small-caps\">foobarbaz</p>
 PASS [["removeformat",""]] "{<p style=\"font-variant: small-caps\">foobarbaz</p>}" queryCommandValue("removeformat") after
 PASS [["removeformat",""]] "<p style=\"text-indent: 2em\">foo[bar]baz</p>": execCommand("removeformat", false, "") return value
 PASS [["removeformat",""]] "<p style=\"text-indent: 2em\">foo[bar]baz</p>" checks for modifications to non-editable content
-FAIL [["removeformat",""]] "<p style=\"text-indent: 2em\">foo[bar]baz</p>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p style=\"text-indent:2em\">foobarbaz</p>" but got "<p style=\"\">foobarbaz</p>"
+FAIL [["removeformat",""]] "<p style=\"text-indent: 2em\">foo[bar]baz</p>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p style=\"text-indent:2em\">foobarbaz</p>" but got "<p style=\"\">foobarbaz</p>"
 PASS [["removeformat",""]] "<p style=\"text-indent: 2em\">foo[bar]baz</p>" queryCommandIndeterm("removeformat") before
 PASS [["removeformat",""]] "<p style=\"text-indent: 2em\">foo[bar]baz</p>" queryCommandState("removeformat") before
 PASS [["removeformat",""]] "<p style=\"text-indent: 2em\">foo[bar]baz</p>" queryCommandValue("removeformat") before
@@ -1665,7 +1665,7 @@ PASS [["removeformat",""]] "<p style=\"text-indent: 2em\">foo[bar]baz</p>" query
 PASS [["removeformat",""]] "<p style=\"text-indent: 2em\">foo[bar]baz</p>" queryCommandValue("removeformat") after
 PASS [["removeformat",""]] "{<p style=\"text-indent: 2em\">foobarbaz</p>}": execCommand("removeformat", false, "") return value
 PASS [["removeformat",""]] "{<p style=\"text-indent: 2em\">foobarbaz</p>}" checks for modifications to non-editable content
-FAIL [["removeformat",""]] "{<p style=\"text-indent: 2em\">foobarbaz</p>}" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p style=\"text-indent:2em\">foobarbaz</p>" but got "<p style=\"\">foobarbaz</p>"
+FAIL [["removeformat",""]] "{<p style=\"text-indent: 2em\">foobarbaz</p>}" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p style=\"text-indent:2em\">foobarbaz</p>" but got "<p style=\"\">foobarbaz</p>"
 PASS [["removeformat",""]] "{<p style=\"text-indent: 2em\">foobarbaz</p>}" queryCommandIndeterm("removeformat") before
 PASS [["removeformat",""]] "{<p style=\"text-indent: 2em\">foobarbaz</p>}" queryCommandState("removeformat") before
 PASS [["removeformat",""]] "{<p style=\"text-indent: 2em\">foobarbaz</p>}" queryCommandValue("removeformat") before
@@ -1675,7 +1675,7 @@ PASS [["removeformat",""]] "{<p style=\"text-indent: 2em\">foobarbaz</p>}" query
 PASS [["stylewithcss","true"],["removeformat",""]] "<table data-start=0 data-end=1><tr><td><b>foo</b></table>": execCommand("stylewithcss", false, "true") return value
 PASS [["stylewithcss","true"],["removeformat",""]] "<table data-start=0 data-end=1><tr><td><b>foo</b></table>": execCommand("removeformat", false, "") return value
 PASS [["stylewithcss","true"],["removeformat",""]] "<table data-start=0 data-end=1><tr><td><b>foo</b></table>" checks for modifications to non-editable content
-FAIL [["stylewithcss","true"],["removeformat",""]] "<table data-start=0 data-end=1><tr><td><b>foo</b></table>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<table><tbody><tr><td>foo</td></tr></tbody></table>" but got "<table><tbody><tr><td><b>foo</b></td></tr></tbody></table>"
+FAIL [["stylewithcss","true"],["removeformat",""]] "<table data-start=0 data-end=1><tr><td><b>foo</b></table>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<table><tbody><tr><td>foo</td></tr></tbody></table>" but got "<table><tbody><tr><td><b>foo</b></td></tr></tbody></table>"
 PASS [["stylewithcss","true"],["removeformat",""]] "<table data-start=0 data-end=1><tr><td><b>foo</b></table>" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","true"],["removeformat",""]] "<table data-start=0 data-end=1><tr><td><b>foo</b></table>" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","true"],["removeformat",""]] "<table data-start=0 data-end=1><tr><td><b>foo</b></table>" queryCommandValue("stylewithcss") before
@@ -1691,7 +1691,7 @@ PASS [["stylewithcss","true"],["removeformat",""]] "<table data-start=0 data-end
 PASS [["stylewithcss","false"],["removeformat",""]] "<table data-start=0 data-end=1><tr><td><b>foo</b></table>": execCommand("stylewithcss", false, "false") return value
 PASS [["stylewithcss","false"],["removeformat",""]] "<table data-start=0 data-end=1><tr><td><b>foo</b></table>": execCommand("removeformat", false, "") return value
 PASS [["stylewithcss","false"],["removeformat",""]] "<table data-start=0 data-end=1><tr><td><b>foo</b></table>" checks for modifications to non-editable content
-FAIL [["stylewithcss","false"],["removeformat",""]] "<table data-start=0 data-end=1><tr><td><b>foo</b></table>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<table><tbody><tr><td>foo</td></tr></tbody></table>" but got "<table><tbody><tr><td><b>foo</b></td></tr></tbody></table>"
+FAIL [["stylewithcss","false"],["removeformat",""]] "<table data-start=0 data-end=1><tr><td><b>foo</b></table>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<table><tbody><tr><td>foo</td></tr></tbody></table>" but got "<table><tbody><tr><td><b>foo</b></td></tr></tbody></table>"
 PASS [["stylewithcss","false"],["removeformat",""]] "<table data-start=0 data-end=1><tr><td><b>foo</b></table>" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","false"],["removeformat",""]] "<table data-start=0 data-end=1><tr><td><b>foo</b></table>" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","false"],["removeformat",""]] "<table data-start=0 data-end=1><tr><td><b>foo</b></table>" queryCommandValue("stylewithcss") before

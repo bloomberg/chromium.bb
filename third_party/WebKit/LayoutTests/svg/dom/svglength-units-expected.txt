@@ -1,6 +1,6 @@
 This is a testharness.js-based test.
 PASS Test valid unit types are accepted in valueAsString
-FAIL Test invalid unit types are not accepted in valueAsStringTest bug: need to pass exception to assert_throws()
+FAIL Test invalid unit types are not accepted in valueAsString Test bug: need to pass exception to assert_throws()
 PASS Test that unit constants that are supposed to be exposed are available
 PASS Test that unit constants that are not supposed to be exposed are not available
 PASS Test result from valueInSpecifiedUnits

@@ -3,7 +3,7 @@ PASS HTMLCanvasElement interface: operation captureStream(double)
 PASS HTMLCanvasElement interface: [object HTMLCanvasElement] must inherit property "captureStream(double)" with the proper type
 PASS HTMLCanvasElement interface: calling captureStream(double) on [object HTMLCanvasElement] with too few arguments must throw TypeError
 PASS HTMLMediaElement interface: operation captureStream()
-FAIL HTMLMediaElement interface: [object HTMLUnknownElement] must inherit property "captureStream()" with the proper typeassert_inherits: property "captureStream" not found in prototype chain
+FAIL HTMLMediaElement interface: [object HTMLUnknownElement] must inherit property "captureStream()" with the proper type assert_inherits: property "captureStream" not found in prototype chain
 PASS CanvasCaptureMediaStreamTrack interface: existence and properties of interface object
 PASS CanvasCaptureMediaStreamTrack interface object length
 PASS CanvasCaptureMediaStreamTrack interface object name

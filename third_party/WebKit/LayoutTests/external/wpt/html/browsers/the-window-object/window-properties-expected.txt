@@ -69,10 +69,10 @@ PASS Window readonly attribute: sessionStorage
 PASS Window readonly attribute: localStorage
 PASS Window attribute: name
 PASS Window attribute: status
-FAIL Window attribute: openerassert_equals: expected "function" but got "undefined"
+FAIL Window attribute: opener assert_equals: expected "function" but got "undefined"
 PASS Window attribute: onabort
-FAIL Window attribute: onafterprintassert_true: onafterprint in window expected true got false
-FAIL Window attribute: onbeforeprintassert_true: onbeforeprint in window expected true got false
+FAIL Window attribute: onafterprint assert_true: onafterprint in window expected true got false
+FAIL Window attribute: onbeforeprint assert_true: onbeforeprint in window expected true got false
 PASS Window attribute: onbeforeunload
 PASS Window attribute: onblur
 PASS Window attribute: oncancel
@@ -129,7 +129,7 @@ PASS Window attribute: onscroll
 PASS Window attribute: onseeked
 PASS Window attribute: onseeking
 PASS Window attribute: onselect
-FAIL Window attribute: onshowassert_true: onshow in window expected true got false
+FAIL Window attribute: onshow assert_true: onshow in window expected true got false
 PASS Window attribute: onstalled
 PASS Window attribute: onstorage
 PASS Window attribute: onsubmit
@@ -138,21 +138,21 @@ PASS Window attribute: ontimeupdate
 PASS Window attribute: onunload
 PASS Window attribute: onvolumechange
 PASS Window attribute: onwaiting
-FAIL Window unforgeable attribute: windowassert_equals: expected "function" but got "undefined"
+FAIL Window unforgeable attribute: window assert_equals: expected "function" but got "undefined"
 PASS Window unforgeable attribute: document
-FAIL Window unforgeable attribute: locationassert_equals: expected "function" but got "undefined"
-FAIL Window unforgeable attribute: topassert_equals: expected "function" but got "undefined"
-FAIL Window replaceable attribute: selfassert_equals: expected "function" but got "undefined"
+FAIL Window unforgeable attribute: location assert_equals: expected "function" but got "undefined"
+FAIL Window unforgeable attribute: top assert_equals: expected "function" but got "undefined"
+FAIL Window replaceable attribute: self assert_equals: expected "function" but got "undefined"
 PASS Window replaceable attribute: locationbar
 PASS Window replaceable attribute: menubar
 PASS Window replaceable attribute: personalbar
 PASS Window replaceable attribute: scrollbars
 PASS Window replaceable attribute: statusbar
 PASS Window replaceable attribute: toolbar
-FAIL Window replaceable attribute: framesassert_equals: expected "function" but got "undefined"
-FAIL Window replaceable attribute: parentassert_equals: expected "function" but got "undefined"
+FAIL Window replaceable attribute: frames assert_equals: expected "function" but got "undefined"
+FAIL Window replaceable attribute: parent assert_equals: expected "function" but got "undefined"
 PASS Window replaceable attribute: external
-FAIL Window replaceable attribute: lengthassert_equals: expected "function" but got "undefined"
+FAIL Window replaceable attribute: length assert_equals: expected "function" but got "undefined"
 PASS Window replaceable attribute: screen
 PASS Window replaceable attribute: scrollX
 PASS Window replaceable attribute: scrollY

@@ -1,6 +1,6 @@
 This is a testharness.js-based test.
 PASS window.performance is defined
 PASS window.performance.getEntriesByType is defined
-FAIL redirectStart, redirectEnd, domainLookupStart, domainLookupEnd, connectStart, connectEnd, secureConnectionStart, requestStart, and responseStart -- should NOT be all returned as 0 when the Timing-Allow-Origin header value list contains a wildcard ("*") and TAO algorithm passesassert_true: redirectStart, redirectEnd, domainLookupStart, domainLookupEnd, connectStart, connectEnd, secureConnectionStart, requestStart, and responseStart -- should NOT be all returned as 0 when the Timing-Allow-Origin header value list contains a wildcard ("*") and TAO algorithm passes expected true got false
+FAIL redirectStart, redirectEnd, domainLookupStart, domainLookupEnd, connectStart, connectEnd, secureConnectionStart, requestStart, and responseStart -- should NOT be all returned as 0 when the Timing-Allow-Origin header value list contains a wildcard ("*") and TAO algorithm passes assert_true: redirectStart, redirectEnd, domainLookupStart, domainLookupEnd, connectStart, connectEnd, secureConnectionStart, requestStart, and responseStart -- should NOT be all returned as 0 when the Timing-Allow-Origin header value list contains a wildcard ("*") and TAO algorithm passes expected true got false
 Harness: the test ran to completion.
 

@@ -1,4 +1,4 @@
 This is a testharness.js-based test.
-FAIL context is destroyed; call across contextTest bug: need to pass exception to assert_throws()
+FAIL context is destroyed; call across context Test bug: need to pass exception to assert_throws()
 Harness: the test ran to completion.
 

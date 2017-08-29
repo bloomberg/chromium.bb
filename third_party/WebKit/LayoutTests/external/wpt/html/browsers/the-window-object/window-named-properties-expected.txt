@@ -1,8 +1,8 @@
 This is a testharness.js-based test.
 PASS Static name
 PASS Static name on the prototype
-FAIL constructorassert_false: gsp.hasOwnProperty("constructor") expected false got true
-FAIL duplicate property namesassert_equals: expected 1 but got 0
+FAIL constructor assert_false: gsp.hasOwnProperty("constructor") expected false got true
+FAIL duplicate property names assert_equals: expected 1 but got 0
 PASS Dynamic name
 PASS Ghost name
 Harness: the test ran to completion.

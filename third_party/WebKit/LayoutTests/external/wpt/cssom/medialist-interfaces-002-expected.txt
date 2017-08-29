@@ -1,6 +1,6 @@
 This is a testharness.js-based test.
 PASS deleteMedium_called_without_argument
 PASS deleteMedium_removes_correct_medium
-FAIL deleteMedium_no_matching_medium_to_removeFailed to execute 'deleteMedium' on 'MediaList': Failed to delete 'screen'.
+FAIL deleteMedium_no_matching_medium_to_remove Failed to execute 'deleteMedium' on 'MediaList': Failed to delete 'screen'.
 Harness: the test ran to completion.
 

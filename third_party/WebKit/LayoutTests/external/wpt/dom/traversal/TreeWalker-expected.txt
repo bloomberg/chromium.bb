@@ -1,6 +1,6 @@
 This is a testharness.js-based test.
 Found 741 tests; 740 PASS, 1 FAIL, 0 TIMEOUT, 0 NOTRUN.
-FAIL Recursive filters need to throwassert_throws: function "function () { walker.parentNode() }" did not throw
+FAIL Recursive filters need to throw assert_throws: function "function () { walker.parentNode() }" did not throw
 PASS document.createTreeWalker(paras[0], 0, null)
 PASS document.createTreeWalker(paras[0], 0, (function(node) { return true }))
 PASS document.createTreeWalker(paras[0], 0, (function(node) { return false }))

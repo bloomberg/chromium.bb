@@ -1,7 +1,7 @@
 This is a testharness.js-based test.
 PASS clicking and preventDefaulting a checkbox causes the checkbox to be checked during the click handler but reverted
-FAIL a checkbox input emits click, input, change events in order after synthetic clickassert_array_equals: lengths differ, expected 3 got 2
-FAIL a checkbox input emits click, input, change events in order after dispatching click eventassert_array_equals: lengths differ, expected 3 got 2
+FAIL a checkbox input emits click, input, change events in order after synthetic click assert_array_equals: lengths differ, expected 3 got 2
+FAIL a checkbox input emits click, input, change events in order after dispatching click event assert_array_equals: lengths differ, expected 3 got 2
 PASS checkbox input respects cancel behavior on synthetic clicks
 Harness: the test ran to completion.
 

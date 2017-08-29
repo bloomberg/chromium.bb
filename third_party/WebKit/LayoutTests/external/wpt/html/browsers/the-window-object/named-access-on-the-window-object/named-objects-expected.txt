@@ -1,6 +1,6 @@
 This is a testharness.js-based test.
 PASS Check if the first nested browsing context is returned by window['c']
-FAIL Check if window['a'] contains all applet, embed, form, img, and object elements, and their orderassert_equals: The length should be 5. expected 5 but got 4
+FAIL Check if window['a'] contains all applet, embed, form, img, and object elements, and their order assert_equals: The length should be 5. expected 5 but got 4
 PASS Check that window['fs'] does not return the frameset element with name='fs' (historical)
 PASS Check if window['b'] returns the elements with the id='b'
 PASS Check if window['d'] returns the element with id='d'

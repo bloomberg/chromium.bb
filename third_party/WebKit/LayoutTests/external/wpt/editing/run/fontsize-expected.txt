@@ -14,7 +14,7 @@ PASS [["stylewithcss","true"],["fontsize","4"]] "<p>[foo</p> <p>bar]</p>": execC
 PASS [["stylewithcss","true"],["fontsize","4"]] "<p>[foo</p> <p>bar]</p>" checks for modifications to non-editable content
 PASS [["stylewithcss","true"],["fontsize","4"]] "<p>[foo</p> <p>bar]</p>" compare innerHTML
 PASS [["stylewithcss","true"],["fontsize","4"]] "<p>[foo</p> <p>bar]</p>" queryCommandIndeterm("stylewithcss") before
-FAIL [["stylewithcss","true"],["fontsize","4"]] "<p>[foo</p> <p>bar]</p>" queryCommandState("stylewithcss") beforeassert_equals: Wrong result returned expected false but got true
+FAIL [["stylewithcss","true"],["fontsize","4"]] "<p>[foo</p> <p>bar]</p>" queryCommandState("stylewithcss") before assert_equals: Wrong result returned expected false but got true
 PASS [["stylewithcss","true"],["fontsize","4"]] "<p>[foo</p> <p>bar]</p>" queryCommandValue("stylewithcss") before
 PASS [["stylewithcss","true"],["fontsize","4"]] "<p>[foo</p> <p>bar]</p>" queryCommandIndeterm("stylewithcss") after
 PASS [["stylewithcss","true"],["fontsize","4"]] "<p>[foo</p> <p>bar]</p>" queryCommandState("stylewithcss") after
@@ -76,7 +76,7 @@ PASS [["stylewithcss","false"],["fontsize","4"]] "<span>[foo</span> <span>bar]</
 PASS [["stylewithcss","true"],["fontsize","4"]] "<p>[foo</p><p> <span>bar</span> </p><p>baz]</p>": execCommand("stylewithcss", false, "true") return value
 PASS [["stylewithcss","true"],["fontsize","4"]] "<p>[foo</p><p> <span>bar</span> </p><p>baz]</p>": execCommand("fontsize", false, "4") return value
 PASS [["stylewithcss","true"],["fontsize","4"]] "<p>[foo</p><p> <span>bar</span> </p><p>baz]</p>" checks for modifications to non-editable content
-FAIL [["stylewithcss","true"],["fontsize","4"]] "<p>[foo</p><p> <span>bar</span> </p><p>baz]</p>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><span style=\"font-size:large\">foo</span></p><p> <span style=\"font-size:large\"><span>bar</span></span> </p><p><span style=\"font-size:large\">baz</span></p>" but got "<p><span style=\"font-size:large\">foo</span></p><p> <span style=\"font-size:large\"><span>bar</span> </span></p><p><span style=\"font-size:large\">baz</span></p>"
+FAIL [["stylewithcss","true"],["fontsize","4"]] "<p>[foo</p><p> <span>bar</span> </p><p>baz]</p>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><span style=\"font-size:large\">foo</span></p><p> <span style=\"font-size:large\"><span>bar</span></span> </p><p><span style=\"font-size:large\">baz</span></p>" but got "<p><span style=\"font-size:large\">foo</span></p><p> <span style=\"font-size:large\"><span>bar</span> </span></p><p><span style=\"font-size:large\">baz</span></p>"
 PASS [["stylewithcss","true"],["fontsize","4"]] "<p>[foo</p><p> <span>bar</span> </p><p>baz]</p>" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","true"],["fontsize","4"]] "<p>[foo</p><p> <span>bar</span> </p><p>baz]</p>" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","true"],["fontsize","4"]] "<p>[foo</p><p> <span>bar</span> </p><p>baz]</p>" queryCommandValue("stylewithcss") before
@@ -92,7 +92,7 @@ PASS [["stylewithcss","true"],["fontsize","4"]] "<p>[foo</p><p> <span>bar</span>
 PASS [["stylewithcss","false"],["fontsize","4"]] "<p>[foo</p><p> <span>bar</span> </p><p>baz]</p>": execCommand("stylewithcss", false, "false") return value
 PASS [["stylewithcss","false"],["fontsize","4"]] "<p>[foo</p><p> <span>bar</span> </p><p>baz]</p>": execCommand("fontsize", false, "4") return value
 PASS [["stylewithcss","false"],["fontsize","4"]] "<p>[foo</p><p> <span>bar</span> </p><p>baz]</p>" checks for modifications to non-editable content
-FAIL [["stylewithcss","false"],["fontsize","4"]] "<p>[foo</p><p> <span>bar</span> </p><p>baz]</p>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><font size=\"4\">foo</font></p><p> <font size=\"4\"><span>bar</span></font> </p><p><font size=\"4\">baz</font></p>" but got "<p><font size=\"4\">foo</font></p><p> <font size=\"4\"><span>bar</span> </font></p><p><font size=\"4\">baz</font></p>"
+FAIL [["stylewithcss","false"],["fontsize","4"]] "<p>[foo</p><p> <span>bar</span> </p><p>baz]</p>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><font size=\"4\">foo</font></p><p> <font size=\"4\"><span>bar</span></font> </p><p><font size=\"4\">baz</font></p>" but got "<p><font size=\"4\">foo</font></p><p> <font size=\"4\"><span>bar</span> </font></p><p><font size=\"4\">baz</font></p>"
 PASS [["stylewithcss","false"],["fontsize","4"]] "<p>[foo</p><p> <span>bar</span> </p><p>baz]</p>" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","false"],["fontsize","4"]] "<p>[foo</p><p> <span>bar</span> </p><p>baz]</p>" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","false"],["fontsize","4"]] "<p>[foo</p><p> <span>bar</span> </p><p>baz]</p>" queryCommandValue("stylewithcss") before
@@ -108,7 +108,7 @@ PASS [["stylewithcss","false"],["fontsize","4"]] "<p>[foo</p><p> <span>bar</span
 PASS [["stylewithcss","true"],["fontsize","4"]] "<p>[foo<p><br><p>bar]": execCommand("stylewithcss", false, "true") return value
 PASS [["stylewithcss","true"],["fontsize","4"]] "<p>[foo<p><br><p>bar]": execCommand("fontsize", false, "4") return value
 PASS [["stylewithcss","true"],["fontsize","4"]] "<p>[foo<p><br><p>bar]" checks for modifications to non-editable content
-FAIL [["stylewithcss","true"],["fontsize","4"]] "<p>[foo<p><br><p>bar]" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><span style=\"font-size:large\">foo</span></p><p><br></p><p><span style=\"font-size:large\">bar</span></p>" but got "<p><span style=\"font-size:large\">foo</span></p><p><span style=\"font-size:large\"><br></span></p><p><span style=\"font-size:large\">bar</span></p>"
+FAIL [["stylewithcss","true"],["fontsize","4"]] "<p>[foo<p><br><p>bar]" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><span style=\"font-size:large\">foo</span></p><p><br></p><p><span style=\"font-size:large\">bar</span></p>" but got "<p><span style=\"font-size:large\">foo</span></p><p><span style=\"font-size:large\"><br></span></p><p><span style=\"font-size:large\">bar</span></p>"
 PASS [["stylewithcss","true"],["fontsize","4"]] "<p>[foo<p><br><p>bar]" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","true"],["fontsize","4"]] "<p>[foo<p><br><p>bar]" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","true"],["fontsize","4"]] "<p>[foo<p><br><p>bar]" queryCommandValue("stylewithcss") before
@@ -118,13 +118,13 @@ PASS [["stylewithcss","true"],["fontsize","4"]] "<p>[foo<p><br><p>bar]" queryCom
 PASS [["stylewithcss","true"],["fontsize","4"]] "<p>[foo<p><br><p>bar]" queryCommandIndeterm("fontsize") before
 PASS [["stylewithcss","true"],["fontsize","4"]] "<p>[foo<p><br><p>bar]" queryCommandState("fontsize") before
 PASS [["stylewithcss","true"],["fontsize","4"]] "<p>[foo<p><br><p>bar]" queryCommandValue("fontsize") before
-FAIL [["stylewithcss","true"],["fontsize","4"]] "<p>[foo<p><br><p>bar]" queryCommandIndeterm("fontsize") afterassert_equals: Wrong result returned expected true but got false
+FAIL [["stylewithcss","true"],["fontsize","4"]] "<p>[foo<p><br><p>bar]" queryCommandIndeterm("fontsize") after assert_equals: Wrong result returned expected true but got false
 PASS [["stylewithcss","true"],["fontsize","4"]] "<p>[foo<p><br><p>bar]" queryCommandState("fontsize") after
 PASS [["stylewithcss","true"],["fontsize","4"]] "<p>[foo<p><br><p>bar]" queryCommandValue("fontsize") after
 PASS [["stylewithcss","false"],["fontsize","4"]] "<p>[foo<p><br><p>bar]": execCommand("stylewithcss", false, "false") return value
 PASS [["stylewithcss","false"],["fontsize","4"]] "<p>[foo<p><br><p>bar]": execCommand("fontsize", false, "4") return value
 PASS [["stylewithcss","false"],["fontsize","4"]] "<p>[foo<p><br><p>bar]" checks for modifications to non-editable content
-FAIL [["stylewithcss","false"],["fontsize","4"]] "<p>[foo<p><br><p>bar]" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><font size=\"4\">foo</font></p><p><br></p><p><font size=\"4\">bar</font></p>" but got "<p><font size=\"4\">foo</font></p><p><font size=\"4\"><br></font></p><p><font size=\"4\">bar</font></p>"
+FAIL [["stylewithcss","false"],["fontsize","4"]] "<p>[foo<p><br><p>bar]" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><font size=\"4\">foo</font></p><p><br></p><p><font size=\"4\">bar</font></p>" but got "<p><font size=\"4\">foo</font></p><p><font size=\"4\"><br></font></p><p><font size=\"4\">bar</font></p>"
 PASS [["stylewithcss","false"],["fontsize","4"]] "<p>[foo<p><br><p>bar]" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","false"],["fontsize","4"]] "<p>[foo<p><br><p>bar]" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","false"],["fontsize","4"]] "<p>[foo<p><br><p>bar]" queryCommandValue("stylewithcss") before
@@ -134,7 +134,7 @@ PASS [["stylewithcss","false"],["fontsize","4"]] "<p>[foo<p><br><p>bar]" queryCo
 PASS [["stylewithcss","false"],["fontsize","4"]] "<p>[foo<p><br><p>bar]" queryCommandIndeterm("fontsize") before
 PASS [["stylewithcss","false"],["fontsize","4"]] "<p>[foo<p><br><p>bar]" queryCommandState("fontsize") before
 PASS [["stylewithcss","false"],["fontsize","4"]] "<p>[foo<p><br><p>bar]" queryCommandValue("fontsize") before
-FAIL [["stylewithcss","false"],["fontsize","4"]] "<p>[foo<p><br><p>bar]" queryCommandIndeterm("fontsize") afterassert_equals: Wrong result returned expected true but got false
+FAIL [["stylewithcss","false"],["fontsize","4"]] "<p>[foo<p><br><p>bar]" queryCommandIndeterm("fontsize") after assert_equals: Wrong result returned expected true but got false
 PASS [["stylewithcss","false"],["fontsize","4"]] "<p>[foo<p><br><p>bar]" queryCommandState("fontsize") after
 PASS [["stylewithcss","false"],["fontsize","4"]] "<p>[foo<p><br><p>bar]" queryCommandValue("fontsize") after
 PASS [["fontsize","4"]] "<b>foo[]bar</b>": execCommand("fontsize", false, "4") return value
@@ -432,7 +432,7 @@ PASS [["stylewithcss","false"],["fontsize","6"]] "foo[bar]baz" queryCommandValue
 PASS [["stylewithcss","true"],["fontsize","7"]] "foo[bar]baz": execCommand("stylewithcss", false, "true") return value
 PASS [["stylewithcss","true"],["fontsize","7"]] "foo[bar]baz": execCommand("fontsize", false, "7") return value
 PASS [["stylewithcss","true"],["fontsize","7"]] "foo[bar]baz" checks for modifications to non-editable content
-FAIL [["stylewithcss","true"],["fontsize","7"]] "foo[bar]baz" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<font size=\"7\">bar</font>baz" but got "foo<span style=\"font-size:-webkit-xxx-large\">bar</span>baz"
+FAIL [["stylewithcss","true"],["fontsize","7"]] "foo[bar]baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<font size=\"7\">bar</font>baz" but got "foo<span style=\"font-size:-webkit-xxx-large\">bar</span>baz"
 PASS [["stylewithcss","true"],["fontsize","7"]] "foo[bar]baz" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","true"],["fontsize","7"]] "foo[bar]baz" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","true"],["fontsize","7"]] "foo[bar]baz" queryCommandValue("stylewithcss") before
@@ -464,7 +464,7 @@ PASS [["stylewithcss","false"],["fontsize","7"]] "foo[bar]baz" queryCommandValue
 PASS [["stylewithcss","true"],["fontsize","8"]] "foo[bar]baz": execCommand("stylewithcss", false, "true") return value
 PASS [["stylewithcss","true"],["fontsize","8"]] "foo[bar]baz": execCommand("fontsize", false, "8") return value
 PASS [["stylewithcss","true"],["fontsize","8"]] "foo[bar]baz" checks for modifications to non-editable content
-FAIL [["stylewithcss","true"],["fontsize","8"]] "foo[bar]baz" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<font size=\"7\">bar</font>baz" but got "foo<span style=\"font-size:-webkit-xxx-large\">bar</span>baz"
+FAIL [["stylewithcss","true"],["fontsize","8"]] "foo[bar]baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<font size=\"7\">bar</font>baz" but got "foo<span style=\"font-size:-webkit-xxx-large\">bar</span>baz"
 PASS [["stylewithcss","true"],["fontsize","8"]] "foo[bar]baz" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","true"],["fontsize","8"]] "foo[bar]baz" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","true"],["fontsize","8"]] "foo[bar]baz" queryCommandValue("stylewithcss") before
@@ -496,7 +496,7 @@ PASS [["stylewithcss","false"],["fontsize","8"]] "foo[bar]baz" queryCommandValue
 PASS [["stylewithcss","true"],["fontsize","100"]] "foo[bar]baz": execCommand("stylewithcss", false, "true") return value
 PASS [["stylewithcss","true"],["fontsize","100"]] "foo[bar]baz": execCommand("fontsize", false, "100") return value
 PASS [["stylewithcss","true"],["fontsize","100"]] "foo[bar]baz" checks for modifications to non-editable content
-FAIL [["stylewithcss","true"],["fontsize","100"]] "foo[bar]baz" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<font size=\"7\">bar</font>baz" but got "foo<span style=\"font-size:-webkit-xxx-large\">bar</span>baz"
+FAIL [["stylewithcss","true"],["fontsize","100"]] "foo[bar]baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<font size=\"7\">bar</font>baz" but got "foo<span style=\"font-size:-webkit-xxx-large\">bar</span>baz"
 PASS [["stylewithcss","true"],["fontsize","100"]] "foo[bar]baz" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","true"],["fontsize","100"]] "foo[bar]baz" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","true"],["fontsize","100"]] "foo[bar]baz" queryCommandValue("stylewithcss") before
@@ -525,24 +525,24 @@ PASS [["stylewithcss","false"],["fontsize","100"]] "foo[bar]baz" queryCommandVal
 PASS [["stylewithcss","false"],["fontsize","100"]] "foo[bar]baz" queryCommandIndeterm("fontsize") after
 PASS [["stylewithcss","false"],["fontsize","100"]] "foo[bar]baz" queryCommandState("fontsize") after
 PASS [["stylewithcss","false"],["fontsize","100"]] "foo[bar]baz" queryCommandValue("fontsize") after
-FAIL [["fontsize","2em"]] "foo[bar]baz": execCommand("fontsize", false, "2em") return valueassert_equals: expected false but got true
+FAIL [["fontsize","2em"]] "foo[bar]baz": execCommand("fontsize", false, "2em") return value assert_equals: expected false but got true
 PASS [["fontsize","2em"]] "foo[bar]baz" checks for modifications to non-editable content
-FAIL [["fontsize","2em"]] "foo[bar]baz" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "foobarbaz" but got "foo<font size=\"2\">bar</font>baz"
+FAIL [["fontsize","2em"]] "foo[bar]baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foobarbaz" but got "foo<font size=\"2\">bar</font>baz"
 PASS [["fontsize","2em"]] "foo[bar]baz" queryCommandIndeterm("fontsize") before
 PASS [["fontsize","2em"]] "foo[bar]baz" queryCommandState("fontsize") before
 PASS [["fontsize","2em"]] "foo[bar]baz" queryCommandValue("fontsize") before
 PASS [["fontsize","2em"]] "foo[bar]baz" queryCommandIndeterm("fontsize") after
 PASS [["fontsize","2em"]] "foo[bar]baz" queryCommandState("fontsize") after
-FAIL [["fontsize","2em"]] "foo[bar]baz" queryCommandValue("fontsize") afterassert_equals: Wrong result returned expected "3" but got "2"
-FAIL [["fontsize","20pt"]] "foo[bar]baz": execCommand("fontsize", false, "20pt") return valueassert_equals: expected false but got true
+FAIL [["fontsize","2em"]] "foo[bar]baz" queryCommandValue("fontsize") after assert_equals: Wrong result returned expected "3" but got "2"
+FAIL [["fontsize","20pt"]] "foo[bar]baz": execCommand("fontsize", false, "20pt") return value assert_equals: expected false but got true
 PASS [["fontsize","20pt"]] "foo[bar]baz" checks for modifications to non-editable content
-FAIL [["fontsize","20pt"]] "foo[bar]baz" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "foobarbaz" but got "foo<font size=\"7\">bar</font>baz"
+FAIL [["fontsize","20pt"]] "foo[bar]baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foobarbaz" but got "foo<font size=\"7\">bar</font>baz"
 PASS [["fontsize","20pt"]] "foo[bar]baz" queryCommandIndeterm("fontsize") before
 PASS [["fontsize","20pt"]] "foo[bar]baz" queryCommandState("fontsize") before
 PASS [["fontsize","20pt"]] "foo[bar]baz" queryCommandValue("fontsize") before
 PASS [["fontsize","20pt"]] "foo[bar]baz" queryCommandIndeterm("fontsize") after
 PASS [["fontsize","20pt"]] "foo[bar]baz" queryCommandState("fontsize") after
-FAIL [["fontsize","20pt"]] "foo[bar]baz" queryCommandValue("fontsize") afterassert_equals: Wrong result returned expected "3" but got "7"
+FAIL [["fontsize","20pt"]] "foo[bar]baz" queryCommandValue("fontsize") after assert_equals: Wrong result returned expected "3" but got "7"
 PASS [["fontsize","xx-large"]] "foo[bar]baz": execCommand("fontsize", false, "xx-large") return value
 PASS [["fontsize","xx-large"]] "foo[bar]baz" checks for modifications to non-editable content
 PASS [["fontsize","xx-large"]] "foo[bar]baz" compare innerHTML
@@ -584,15 +584,15 @@ PASS [["stylewithcss","false"],["fontsize"," 1 "]] "foo[bar]baz" queryCommandVal
 PASS [["stylewithcss","false"],["fontsize"," 1 "]] "foo[bar]baz" queryCommandIndeterm("fontsize") after
 PASS [["stylewithcss","false"],["fontsize"," 1 "]] "foo[bar]baz" queryCommandState("fontsize") after
 PASS [["stylewithcss","false"],["fontsize"," 1 "]] "foo[bar]baz" queryCommandValue("fontsize") after
-FAIL [["fontsize","1."]] "foo[bar]baz": execCommand("fontsize", false, "1.") return valueassert_equals: expected false but got true
+FAIL [["fontsize","1."]] "foo[bar]baz": execCommand("fontsize", false, "1.") return value assert_equals: expected false but got true
 PASS [["fontsize","1."]] "foo[bar]baz" checks for modifications to non-editable content
-FAIL [["fontsize","1."]] "foo[bar]baz" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "foobarbaz" but got "foo<font size=\"1\">bar</font>baz"
+FAIL [["fontsize","1."]] "foo[bar]baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foobarbaz" but got "foo<font size=\"1\">bar</font>baz"
 PASS [["fontsize","1."]] "foo[bar]baz" queryCommandIndeterm("fontsize") before
 PASS [["fontsize","1."]] "foo[bar]baz" queryCommandState("fontsize") before
 PASS [["fontsize","1."]] "foo[bar]baz" queryCommandValue("fontsize") before
 PASS [["fontsize","1."]] "foo[bar]baz" queryCommandIndeterm("fontsize") after
 PASS [["fontsize","1."]] "foo[bar]baz" queryCommandState("fontsize") after
-FAIL [["fontsize","1."]] "foo[bar]baz" queryCommandValue("fontsize") afterassert_equals: Wrong result returned expected "3" but got "1"
+FAIL [["fontsize","1."]] "foo[bar]baz" queryCommandValue("fontsize") after assert_equals: Wrong result returned expected "3" but got "1"
 PASS [["stylewithcss","true"],["fontsize","1.0"]] "foo[bar]baz": execCommand("stylewithcss", false, "true") return value
 PASS [["stylewithcss","true"],["fontsize","1.0"]] "foo[bar]baz": execCommand("fontsize", false, "1.0") return value
 PASS [["stylewithcss","true"],["fontsize","1.0"]] "foo[bar]baz" checks for modifications to non-editable content
@@ -765,7 +765,7 @@ PASS [["stylewithcss","false"],["fontsize","+1"]] "foo[bar]baz" queryCommandValu
 PASS [["stylewithcss","true"],["fontsize","+9"]] "foo[bar]baz": execCommand("stylewithcss", false, "true") return value
 PASS [["stylewithcss","true"],["fontsize","+9"]] "foo[bar]baz": execCommand("fontsize", false, "+9") return value
 PASS [["stylewithcss","true"],["fontsize","+9"]] "foo[bar]baz" checks for modifications to non-editable content
-FAIL [["stylewithcss","true"],["fontsize","+9"]] "foo[bar]baz" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<font size=\"7\">bar</font>baz" but got "foo<span style=\"font-size:-webkit-xxx-large\">bar</span>baz"
+FAIL [["stylewithcss","true"],["fontsize","+9"]] "foo[bar]baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<font size=\"7\">bar</font>baz" but got "foo<span style=\"font-size:-webkit-xxx-large\">bar</span>baz"
 PASS [["stylewithcss","true"],["fontsize","+9"]] "foo[bar]baz" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","true"],["fontsize","+9"]] "foo[bar]baz" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","true"],["fontsize","+9"]] "foo[bar]baz" queryCommandValue("stylewithcss") before
@@ -1019,7 +1019,7 @@ PASS [["stylewithcss","true"],["fontsize","4"]] "<table data-start=0 data-end=1>
 PASS [["stylewithcss","true"],["fontsize","4"]] "<table data-start=0 data-end=1><tbody><tr><td>foo<td>bar<td>baz</table>" queryCommandValue("fontsize") before
 PASS [["stylewithcss","true"],["fontsize","4"]] "<table data-start=0 data-end=1><tbody><tr><td>foo<td>bar<td>baz</table>" queryCommandIndeterm("fontsize") after
 PASS [["stylewithcss","true"],["fontsize","4"]] "<table data-start=0 data-end=1><tbody><tr><td>foo<td>bar<td>baz</table>" queryCommandState("fontsize") after
-FAIL [["stylewithcss","true"],["fontsize","4"]] "<table data-start=0 data-end=1><tbody><tr><td>foo<td>bar<td>baz</table>" queryCommandValue("fontsize") afterassert_equals: Wrong result returned expected "4" but got "3"
+FAIL [["stylewithcss","true"],["fontsize","4"]] "<table data-start=0 data-end=1><tbody><tr><td>foo<td>bar<td>baz</table>" queryCommandValue("fontsize") after assert_equals: Wrong result returned expected "4" but got "3"
 PASS [["stylewithcss","false"],["fontsize","4"]] "<table data-start=0 data-end=1><tbody><tr><td>foo<td>bar<td>baz</table>": execCommand("stylewithcss", false, "false") return value
 PASS [["stylewithcss","false"],["fontsize","4"]] "<table data-start=0 data-end=1><tbody><tr><td>foo<td>bar<td>baz</table>": execCommand("fontsize", false, "4") return value
 PASS [["stylewithcss","false"],["fontsize","4"]] "<table data-start=0 data-end=1><tbody><tr><td>foo<td>bar<td>baz</table>" checks for modifications to non-editable content
@@ -1035,7 +1035,7 @@ PASS [["stylewithcss","false"],["fontsize","4"]] "<table data-start=0 data-end=1
 PASS [["stylewithcss","false"],["fontsize","4"]] "<table data-start=0 data-end=1><tbody><tr><td>foo<td>bar<td>baz</table>" queryCommandValue("fontsize") before
 PASS [["stylewithcss","false"],["fontsize","4"]] "<table data-start=0 data-end=1><tbody><tr><td>foo<td>bar<td>baz</table>" queryCommandIndeterm("fontsize") after
 PASS [["stylewithcss","false"],["fontsize","4"]] "<table data-start=0 data-end=1><tbody><tr><td>foo<td>bar<td>baz</table>" queryCommandState("fontsize") after
-FAIL [["stylewithcss","false"],["fontsize","4"]] "<table data-start=0 data-end=1><tbody><tr><td>foo<td>bar<td>baz</table>" queryCommandValue("fontsize") afterassert_equals: Wrong result returned expected "4" but got "3"
+FAIL [["stylewithcss","false"],["fontsize","4"]] "<table data-start=0 data-end=1><tbody><tr><td>foo<td>bar<td>baz</table>" queryCommandValue("fontsize") after assert_equals: Wrong result returned expected "4" but got "3"
 PASS [["stylewithcss","true"],["fontsize","4"]] "{<table><tr><td>foo<td>bar<td>baz</table>}": execCommand("stylewithcss", false, "true") return value
 PASS [["stylewithcss","true"],["fontsize","4"]] "{<table><tr><td>foo<td>bar<td>baz</table>}": execCommand("fontsize", false, "4") return value
 PASS [["stylewithcss","true"],["fontsize","4"]] "{<table><tr><td>foo<td>bar<td>baz</table>}" checks for modifications to non-editable content
@@ -1051,7 +1051,7 @@ PASS [["stylewithcss","true"],["fontsize","4"]] "{<table><tr><td>foo<td>bar<td>b
 PASS [["stylewithcss","true"],["fontsize","4"]] "{<table><tr><td>foo<td>bar<td>baz</table>}" queryCommandValue("fontsize") before
 PASS [["stylewithcss","true"],["fontsize","4"]] "{<table><tr><td>foo<td>bar<td>baz</table>}" queryCommandIndeterm("fontsize") after
 PASS [["stylewithcss","true"],["fontsize","4"]] "{<table><tr><td>foo<td>bar<td>baz</table>}" queryCommandState("fontsize") after
-FAIL [["stylewithcss","true"],["fontsize","4"]] "{<table><tr><td>foo<td>bar<td>baz</table>}" queryCommandValue("fontsize") afterassert_equals: Wrong result returned expected "4" but got "3"
+FAIL [["stylewithcss","true"],["fontsize","4"]] "{<table><tr><td>foo<td>bar<td>baz</table>}" queryCommandValue("fontsize") after assert_equals: Wrong result returned expected "4" but got "3"
 PASS [["stylewithcss","false"],["fontsize","4"]] "{<table><tr><td>foo<td>bar<td>baz</table>}": execCommand("stylewithcss", false, "false") return value
 PASS [["stylewithcss","false"],["fontsize","4"]] "{<table><tr><td>foo<td>bar<td>baz</table>}": execCommand("fontsize", false, "4") return value
 PASS [["stylewithcss","false"],["fontsize","4"]] "{<table><tr><td>foo<td>bar<td>baz</table>}" checks for modifications to non-editable content
@@ -1067,7 +1067,7 @@ PASS [["stylewithcss","false"],["fontsize","4"]] "{<table><tr><td>foo<td>bar<td>
 PASS [["stylewithcss","false"],["fontsize","4"]] "{<table><tr><td>foo<td>bar<td>baz</table>}" queryCommandValue("fontsize") before
 PASS [["stylewithcss","false"],["fontsize","4"]] "{<table><tr><td>foo<td>bar<td>baz</table>}" queryCommandIndeterm("fontsize") after
 PASS [["stylewithcss","false"],["fontsize","4"]] "{<table><tr><td>foo<td>bar<td>baz</table>}" queryCommandState("fontsize") after
-FAIL [["stylewithcss","false"],["fontsize","4"]] "{<table><tr><td>foo<td>bar<td>baz</table>}" queryCommandValue("fontsize") afterassert_equals: Wrong result returned expected "4" but got "3"
+FAIL [["stylewithcss","false"],["fontsize","4"]] "{<table><tr><td>foo<td>bar<td>baz</table>}" queryCommandValue("fontsize") after assert_equals: Wrong result returned expected "4" but got "3"
 PASS [["stylewithcss","true"],["fontsize","4"]] "foo<font size=1>[bar]</font>baz": execCommand("stylewithcss", false, "true") return value
 PASS [["stylewithcss","true"],["fontsize","4"]] "foo<font size=1>[bar]</font>baz": execCommand("fontsize", false, "4") return value
 PASS [["stylewithcss","true"],["fontsize","4"]] "foo<font size=1>[bar]</font>baz" checks for modifications to non-editable content
@@ -1103,7 +1103,7 @@ PASS [["stylewithcss","false"],["fontsize","4"]] "foo<font size=1>[bar]</font>ba
 PASS [["stylewithcss","true"],["fontsize","4"]] "<font size=1>foo[bar]baz</font>": execCommand("stylewithcss", false, "true") return value
 PASS [["stylewithcss","true"],["fontsize","4"]] "<font size=1>foo[bar]baz</font>": execCommand("fontsize", false, "4") return value
 PASS [["stylewithcss","true"],["fontsize","4"]] "<font size=1>foo[bar]baz</font>" checks for modifications to non-editable content
-FAIL [["stylewithcss","true"],["fontsize","4"]] "<font size=1>foo[bar]baz</font>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<font size=\"1\">foo<span style=\"font-size:large\">bar</span>baz</font>" but got "<font size=\"1\">foo</font><span style=\"font-size:large\">bar</span><font size=\"1\">baz</font>"
+FAIL [["stylewithcss","true"],["fontsize","4"]] "<font size=1>foo[bar]baz</font>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<font size=\"1\">foo<span style=\"font-size:large\">bar</span>baz</font>" but got "<font size=\"1\">foo</font><span style=\"font-size:large\">bar</span><font size=\"1\">baz</font>"
 PASS [["stylewithcss","true"],["fontsize","4"]] "<font size=1>foo[bar]baz</font>" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","true"],["fontsize","4"]] "<font size=1>foo[bar]baz</font>" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","true"],["fontsize","4"]] "<font size=1>foo[bar]baz</font>" queryCommandValue("stylewithcss") before
@@ -1119,7 +1119,7 @@ PASS [["stylewithcss","true"],["fontsize","4"]] "<font size=1>foo[bar]baz</font>
 PASS [["stylewithcss","false"],["fontsize","4"]] "<font size=1>foo[bar]baz</font>": execCommand("stylewithcss", false, "false") return value
 PASS [["stylewithcss","false"],["fontsize","4"]] "<font size=1>foo[bar]baz</font>": execCommand("fontsize", false, "4") return value
 PASS [["stylewithcss","false"],["fontsize","4"]] "<font size=1>foo[bar]baz</font>" checks for modifications to non-editable content
-FAIL [["stylewithcss","false"],["fontsize","4"]] "<font size=1>foo[bar]baz</font>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<font size=\"1\">foo<font size=\"4\">bar</font>baz</font>" but got "<font size=\"1\">foo</font><font size=\"4\">bar</font><font size=\"1\">baz</font>"
+FAIL [["stylewithcss","false"],["fontsize","4"]] "<font size=1>foo[bar]baz</font>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<font size=\"1\">foo<font size=\"4\">bar</font>baz</font>" but got "<font size=\"1\">foo</font><font size=\"4\">bar</font><font size=\"1\">baz</font>"
 PASS [["stylewithcss","false"],["fontsize","4"]] "<font size=1>foo[bar]baz</font>" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","false"],["fontsize","4"]] "<font size=1>foo[bar]baz</font>" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","false"],["fontsize","4"]] "<font size=1>foo[bar]baz</font>" queryCommandValue("stylewithcss") before
@@ -1167,7 +1167,7 @@ PASS [["stylewithcss","false"],["fontsize","4"]] "foo<font size=3>[bar]</font>ba
 PASS [["stylewithcss","true"],["fontsize","4"]] "<font size=3>foo[bar]baz</font>": execCommand("stylewithcss", false, "true") return value
 PASS [["stylewithcss","true"],["fontsize","4"]] "<font size=3>foo[bar]baz</font>": execCommand("fontsize", false, "4") return value
 PASS [["stylewithcss","true"],["fontsize","4"]] "<font size=3>foo[bar]baz</font>" checks for modifications to non-editable content
-FAIL [["stylewithcss","true"],["fontsize","4"]] "<font size=3>foo[bar]baz</font>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<font size=\"3\">foo<span style=\"font-size:large\">bar</span>baz</font>" but got "<font size=\"3\">foo</font><span style=\"font-size:large\">bar</span><font size=\"3\">baz</font>"
+FAIL [["stylewithcss","true"],["fontsize","4"]] "<font size=3>foo[bar]baz</font>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<font size=\"3\">foo<span style=\"font-size:large\">bar</span>baz</font>" but got "<font size=\"3\">foo</font><span style=\"font-size:large\">bar</span><font size=\"3\">baz</font>"
 PASS [["stylewithcss","true"],["fontsize","4"]] "<font size=3>foo[bar]baz</font>" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","true"],["fontsize","4"]] "<font size=3>foo[bar]baz</font>" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","true"],["fontsize","4"]] "<font size=3>foo[bar]baz</font>" queryCommandValue("stylewithcss") before
@@ -1183,7 +1183,7 @@ PASS [["stylewithcss","true"],["fontsize","4"]] "<font size=3>foo[bar]baz</font>
 PASS [["stylewithcss","false"],["fontsize","4"]] "<font size=3>foo[bar]baz</font>": execCommand("stylewithcss", false, "false") return value
 PASS [["stylewithcss","false"],["fontsize","4"]] "<font size=3>foo[bar]baz</font>": execCommand("fontsize", false, "4") return value
 PASS [["stylewithcss","false"],["fontsize","4"]] "<font size=3>foo[bar]baz</font>" checks for modifications to non-editable content
-FAIL [["stylewithcss","false"],["fontsize","4"]] "<font size=3>foo[bar]baz</font>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<font size=\"3\">foo<font size=\"4\">bar</font>baz</font>" but got "<font size=\"3\">foo</font><font size=\"4\">bar</font><font size=\"3\">baz</font>"
+FAIL [["stylewithcss","false"],["fontsize","4"]] "<font size=3>foo[bar]baz</font>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<font size=\"3\">foo<font size=\"4\">bar</font>baz</font>" but got "<font size=\"3\">foo</font><font size=\"4\">bar</font><font size=\"3\">baz</font>"
 PASS [["stylewithcss","false"],["fontsize","4"]] "<font size=3>foo[bar]baz</font>" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","false"],["fontsize","4"]] "<font size=3>foo[bar]baz</font>" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","false"],["fontsize","4"]] "<font size=3>foo[bar]baz</font>" queryCommandValue("stylewithcss") before
@@ -1199,7 +1199,7 @@ PASS [["stylewithcss","false"],["fontsize","4"]] "<font size=3>foo[bar]baz</font
 PASS [["stylewithcss","true"],["fontsize","4"]] "foo<font size=4>[bar]</font>baz": execCommand("stylewithcss", false, "true") return value
 PASS [["stylewithcss","true"],["fontsize","4"]] "foo<font size=4>[bar]</font>baz": execCommand("fontsize", false, "4") return value
 PASS [["stylewithcss","true"],["fontsize","4"]] "foo<font size=4>[bar]</font>baz" checks for modifications to non-editable content
-FAIL [["stylewithcss","true"],["fontsize","4"]] "foo<font size=4>[bar]</font>baz" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<span style=\"font-size:large\">bar</span>baz" but got "foo<font size=\"4\">bar</font>baz"
+FAIL [["stylewithcss","true"],["fontsize","4"]] "foo<font size=4>[bar]</font>baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<span style=\"font-size:large\">bar</span>baz" but got "foo<font size=\"4\">bar</font>baz"
 PASS [["stylewithcss","true"],["fontsize","4"]] "foo<font size=4>[bar]</font>baz" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","true"],["fontsize","4"]] "foo<font size=4>[bar]</font>baz" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","true"],["fontsize","4"]] "foo<font size=4>[bar]</font>baz" queryCommandValue("stylewithcss") before
@@ -1240,7 +1240,7 @@ PASS [["fontsize","4"]] "<font size=4>foo[bar]baz</font>" queryCommandValue("fon
 PASS [["stylewithcss","true"],["fontsize","4"]] "foo<font size=+1>[bar]</font>baz": execCommand("stylewithcss", false, "true") return value
 PASS [["stylewithcss","true"],["fontsize","4"]] "foo<font size=+1>[bar]</font>baz": execCommand("fontsize", false, "4") return value
 PASS [["stylewithcss","true"],["fontsize","4"]] "foo<font size=+1>[bar]</font>baz" checks for modifications to non-editable content
-FAIL [["stylewithcss","true"],["fontsize","4"]] "foo<font size=+1>[bar]</font>baz" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<span style=\"font-size:large\">bar</span>baz" but got "foo<font size=\"+1\">bar</font>baz"
+FAIL [["stylewithcss","true"],["fontsize","4"]] "foo<font size=+1>[bar]</font>baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<span style=\"font-size:large\">bar</span>baz" but got "foo<font size=\"+1\">bar</font>baz"
 PASS [["stylewithcss","true"],["fontsize","4"]] "foo<font size=+1>[bar]</font>baz" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","true"],["fontsize","4"]] "foo<font size=+1>[bar]</font>baz" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","true"],["fontsize","4"]] "foo<font size=+1>[bar]</font>baz" queryCommandValue("stylewithcss") before
@@ -1256,7 +1256,7 @@ PASS [["stylewithcss","true"],["fontsize","4"]] "foo<font size=+1>[bar]</font>ba
 PASS [["stylewithcss","false"],["fontsize","4"]] "foo<font size=+1>[bar]</font>baz": execCommand("stylewithcss", false, "false") return value
 PASS [["stylewithcss","false"],["fontsize","4"]] "foo<font size=+1>[bar]</font>baz": execCommand("fontsize", false, "4") return value
 PASS [["stylewithcss","false"],["fontsize","4"]] "foo<font size=+1>[bar]</font>baz" checks for modifications to non-editable content
-FAIL [["stylewithcss","false"],["fontsize","4"]] "foo<font size=+1>[bar]</font>baz" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<font size=\"4\">bar</font>baz" but got "foo<font size=\"+1\">bar</font>baz"
+FAIL [["stylewithcss","false"],["fontsize","4"]] "foo<font size=+1>[bar]</font>baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<font size=\"4\">bar</font>baz" but got "foo<font size=\"+1\">bar</font>baz"
 PASS [["stylewithcss","false"],["fontsize","4"]] "foo<font size=+1>[bar]</font>baz" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","false"],["fontsize","4"]] "foo<font size=+1>[bar]</font>baz" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","false"],["fontsize","4"]] "foo<font size=+1>[bar]</font>baz" queryCommandValue("stylewithcss") before
@@ -1281,7 +1281,7 @@ PASS [["fontsize","4"]] "<font size=+1>foo[bar]baz</font>" queryCommandValue("fo
 PASS [["stylewithcss","true"],["fontsize","4"]] "<font size=4>foo<font size=1>b[a]r</font>baz</font>": execCommand("stylewithcss", false, "true") return value
 PASS [["stylewithcss","true"],["fontsize","4"]] "<font size=4>foo<font size=1>b[a]r</font>baz</font>": execCommand("fontsize", false, "4") return value
 PASS [["stylewithcss","true"],["fontsize","4"]] "<font size=4>foo<font size=1>b[a]r</font>baz</font>" checks for modifications to non-editable content
-FAIL [["stylewithcss","true"],["fontsize","4"]] "<font size=4>foo<font size=1>b[a]r</font>baz</font>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<font size=\"4\">foo<span style=\"font-size:x-small\">b</span>a<span style=\"font-size:x-small\">r</span>baz</font>" but got "<font size=\"4\">foo<font size=\"1\">b</font>a<font size=\"1\">r</font>baz</font>"
+FAIL [["stylewithcss","true"],["fontsize","4"]] "<font size=4>foo<font size=1>b[a]r</font>baz</font>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<font size=\"4\">foo<span style=\"font-size:x-small\">b</span>a<span style=\"font-size:x-small\">r</span>baz</font>" but got "<font size=\"4\">foo<font size=\"1\">b</font>a<font size=\"1\">r</font>baz</font>"
 PASS [["stylewithcss","true"],["fontsize","4"]] "<font size=4>foo<font size=1>b[a]r</font>baz</font>" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","true"],["fontsize","4"]] "<font size=4>foo<font size=1>b[a]r</font>baz</font>" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","true"],["fontsize","4"]] "<font size=4>foo<font size=1>b[a]r</font>baz</font>" queryCommandValue("stylewithcss") before
@@ -1322,7 +1322,7 @@ PASS [["stylewithcss","true"],["fontsize","4"]] "foo<span style=\"font-size: xx-
 PASS [["stylewithcss","true"],["fontsize","4"]] "foo<span style=\"font-size: xx-small\">[bar]</span>baz" queryCommandValue("stylewithcss") after
 PASS [["stylewithcss","true"],["fontsize","4"]] "foo<span style=\"font-size: xx-small\">[bar]</span>baz" queryCommandIndeterm("fontsize") before
 PASS [["stylewithcss","true"],["fontsize","4"]] "foo<span style=\"font-size: xx-small\">[bar]</span>baz" queryCommandState("fontsize") before
-FAIL [["stylewithcss","true"],["fontsize","4"]] "foo<span style=\"font-size: xx-small\">[bar]</span>baz" queryCommandValue("fontsize") beforeassert_equals: Wrong result returned expected "1" but got "0"
+FAIL [["stylewithcss","true"],["fontsize","4"]] "foo<span style=\"font-size: xx-small\">[bar]</span>baz" queryCommandValue("fontsize") before assert_equals: Wrong result returned expected "1" but got "0"
 PASS [["stylewithcss","true"],["fontsize","4"]] "foo<span style=\"font-size: xx-small\">[bar]</span>baz" queryCommandIndeterm("fontsize") after
 PASS [["stylewithcss","true"],["fontsize","4"]] "foo<span style=\"font-size: xx-small\">[bar]</span>baz" queryCommandState("fontsize") after
 PASS [["stylewithcss","true"],["fontsize","4"]] "foo<span style=\"font-size: xx-small\">[bar]</span>baz" queryCommandValue("fontsize") after
@@ -1338,14 +1338,14 @@ PASS [["stylewithcss","false"],["fontsize","4"]] "foo<span style=\"font-size: xx
 PASS [["stylewithcss","false"],["fontsize","4"]] "foo<span style=\"font-size: xx-small\">[bar]</span>baz" queryCommandValue("stylewithcss") after
 PASS [["stylewithcss","false"],["fontsize","4"]] "foo<span style=\"font-size: xx-small\">[bar]</span>baz" queryCommandIndeterm("fontsize") before
 PASS [["stylewithcss","false"],["fontsize","4"]] "foo<span style=\"font-size: xx-small\">[bar]</span>baz" queryCommandState("fontsize") before
-FAIL [["stylewithcss","false"],["fontsize","4"]] "foo<span style=\"font-size: xx-small\">[bar]</span>baz" queryCommandValue("fontsize") beforeassert_equals: Wrong result returned expected "1" but got "0"
+FAIL [["stylewithcss","false"],["fontsize","4"]] "foo<span style=\"font-size: xx-small\">[bar]</span>baz" queryCommandValue("fontsize") before assert_equals: Wrong result returned expected "1" but got "0"
 PASS [["stylewithcss","false"],["fontsize","4"]] "foo<span style=\"font-size: xx-small\">[bar]</span>baz" queryCommandIndeterm("fontsize") after
 PASS [["stylewithcss","false"],["fontsize","4"]] "foo<span style=\"font-size: xx-small\">[bar]</span>baz" queryCommandState("fontsize") after
 PASS [["stylewithcss","false"],["fontsize","4"]] "foo<span style=\"font-size: xx-small\">[bar]</span>baz" queryCommandValue("fontsize") after
 PASS [["stylewithcss","true"],["fontsize","4"]] "<span style=\"font-size: xx-small\">foo[bar]baz</span>": execCommand("stylewithcss", false, "true") return value
 PASS [["stylewithcss","true"],["fontsize","4"]] "<span style=\"font-size: xx-small\">foo[bar]baz</span>": execCommand("fontsize", false, "4") return value
 PASS [["stylewithcss","true"],["fontsize","4"]] "<span style=\"font-size: xx-small\">foo[bar]baz</span>" checks for modifications to non-editable content
-FAIL [["stylewithcss","true"],["fontsize","4"]] "<span style=\"font-size: xx-small\">foo[bar]baz</span>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<span style=\"font-size:xx-small\">foo<span style=\"font-size:large\">bar</span>baz</span>" but got "<span style=\"font-size:xx-small\">foo</span><span style=\"font-size:large\">bar</span><span style=\"font-size:xx-small\">baz</span>"
+FAIL [["stylewithcss","true"],["fontsize","4"]] "<span style=\"font-size: xx-small\">foo[bar]baz</span>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<span style=\"font-size:xx-small\">foo<span style=\"font-size:large\">bar</span>baz</span>" but got "<span style=\"font-size:xx-small\">foo</span><span style=\"font-size:large\">bar</span><span style=\"font-size:xx-small\">baz</span>"
 PASS [["stylewithcss","true"],["fontsize","4"]] "<span style=\"font-size: xx-small\">foo[bar]baz</span>" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","true"],["fontsize","4"]] "<span style=\"font-size: xx-small\">foo[bar]baz</span>" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","true"],["fontsize","4"]] "<span style=\"font-size: xx-small\">foo[bar]baz</span>" queryCommandValue("stylewithcss") before
@@ -1354,14 +1354,14 @@ PASS [["stylewithcss","true"],["fontsize","4"]] "<span style=\"font-size: xx-sma
 PASS [["stylewithcss","true"],["fontsize","4"]] "<span style=\"font-size: xx-small\">foo[bar]baz</span>" queryCommandValue("stylewithcss") after
 PASS [["stylewithcss","true"],["fontsize","4"]] "<span style=\"font-size: xx-small\">foo[bar]baz</span>" queryCommandIndeterm("fontsize") before
 PASS [["stylewithcss","true"],["fontsize","4"]] "<span style=\"font-size: xx-small\">foo[bar]baz</span>" queryCommandState("fontsize") before
-FAIL [["stylewithcss","true"],["fontsize","4"]] "<span style=\"font-size: xx-small\">foo[bar]baz</span>" queryCommandValue("fontsize") beforeassert_equals: Wrong result returned expected "1" but got "0"
+FAIL [["stylewithcss","true"],["fontsize","4"]] "<span style=\"font-size: xx-small\">foo[bar]baz</span>" queryCommandValue("fontsize") before assert_equals: Wrong result returned expected "1" but got "0"
 PASS [["stylewithcss","true"],["fontsize","4"]] "<span style=\"font-size: xx-small\">foo[bar]baz</span>" queryCommandIndeterm("fontsize") after
 PASS [["stylewithcss","true"],["fontsize","4"]] "<span style=\"font-size: xx-small\">foo[bar]baz</span>" queryCommandState("fontsize") after
 PASS [["stylewithcss","true"],["fontsize","4"]] "<span style=\"font-size: xx-small\">foo[bar]baz</span>" queryCommandValue("fontsize") after
 PASS [["stylewithcss","false"],["fontsize","4"]] "<span style=\"font-size: xx-small\">foo[bar]baz</span>": execCommand("stylewithcss", false, "false") return value
 PASS [["stylewithcss","false"],["fontsize","4"]] "<span style=\"font-size: xx-small\">foo[bar]baz</span>": execCommand("fontsize", false, "4") return value
 PASS [["stylewithcss","false"],["fontsize","4"]] "<span style=\"font-size: xx-small\">foo[bar]baz</span>" checks for modifications to non-editable content
-FAIL [["stylewithcss","false"],["fontsize","4"]] "<span style=\"font-size: xx-small\">foo[bar]baz</span>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<span style=\"font-size:xx-small\">foo<font size=\"4\">bar</font>baz</span>" but got "<span style=\"font-size:xx-small\">foo</span><font size=\"4\">bar</font><span style=\"font-size:xx-small\">baz</span>"
+FAIL [["stylewithcss","false"],["fontsize","4"]] "<span style=\"font-size: xx-small\">foo[bar]baz</span>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<span style=\"font-size:xx-small\">foo<font size=\"4\">bar</font>baz</span>" but got "<span style=\"font-size:xx-small\">foo</span><font size=\"4\">bar</font><span style=\"font-size:xx-small\">baz</span>"
 PASS [["stylewithcss","false"],["fontsize","4"]] "<span style=\"font-size: xx-small\">foo[bar]baz</span>" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","false"],["fontsize","4"]] "<span style=\"font-size: xx-small\">foo[bar]baz</span>" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","false"],["fontsize","4"]] "<span style=\"font-size: xx-small\">foo[bar]baz</span>" queryCommandValue("stylewithcss") before
@@ -1370,7 +1370,7 @@ PASS [["stylewithcss","false"],["fontsize","4"]] "<span style=\"font-size: xx-sm
 PASS [["stylewithcss","false"],["fontsize","4"]] "<span style=\"font-size: xx-small\">foo[bar]baz</span>" queryCommandValue("stylewithcss") after
 PASS [["stylewithcss","false"],["fontsize","4"]] "<span style=\"font-size: xx-small\">foo[bar]baz</span>" queryCommandIndeterm("fontsize") before
 PASS [["stylewithcss","false"],["fontsize","4"]] "<span style=\"font-size: xx-small\">foo[bar]baz</span>" queryCommandState("fontsize") before
-FAIL [["stylewithcss","false"],["fontsize","4"]] "<span style=\"font-size: xx-small\">foo[bar]baz</span>" queryCommandValue("fontsize") beforeassert_equals: Wrong result returned expected "1" but got "0"
+FAIL [["stylewithcss","false"],["fontsize","4"]] "<span style=\"font-size: xx-small\">foo[bar]baz</span>" queryCommandValue("fontsize") before assert_equals: Wrong result returned expected "1" but got "0"
 PASS [["stylewithcss","false"],["fontsize","4"]] "<span style=\"font-size: xx-small\">foo[bar]baz</span>" queryCommandIndeterm("fontsize") after
 PASS [["stylewithcss","false"],["fontsize","4"]] "<span style=\"font-size: xx-small\">foo[bar]baz</span>" queryCommandState("fontsize") after
 PASS [["stylewithcss","false"],["fontsize","4"]] "<span style=\"font-size: xx-small\">foo[bar]baz</span>" queryCommandValue("fontsize") after
@@ -1409,7 +1409,7 @@ PASS [["stylewithcss","false"],["fontsize","4"]] "foo<span style=\"font-size: me
 PASS [["stylewithcss","true"],["fontsize","4"]] "<span style=\"font-size: medium\">foo[bar]baz</span>": execCommand("stylewithcss", false, "true") return value
 PASS [["stylewithcss","true"],["fontsize","4"]] "<span style=\"font-size: medium\">foo[bar]baz</span>": execCommand("fontsize", false, "4") return value
 PASS [["stylewithcss","true"],["fontsize","4"]] "<span style=\"font-size: medium\">foo[bar]baz</span>" checks for modifications to non-editable content
-FAIL [["stylewithcss","true"],["fontsize","4"]] "<span style=\"font-size: medium\">foo[bar]baz</span>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<span style=\"font-size:medium\">foo<span style=\"font-size:large\">bar</span>baz</span>" but got "<span style=\"font-size:medium\">foo</span><span style=\"font-size:large\">bar</span><span style=\"font-size:medium\">baz</span>"
+FAIL [["stylewithcss","true"],["fontsize","4"]] "<span style=\"font-size: medium\">foo[bar]baz</span>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<span style=\"font-size:medium\">foo<span style=\"font-size:large\">bar</span>baz</span>" but got "<span style=\"font-size:medium\">foo</span><span style=\"font-size:large\">bar</span><span style=\"font-size:medium\">baz</span>"
 PASS [["stylewithcss","true"],["fontsize","4"]] "<span style=\"font-size: medium\">foo[bar]baz</span>" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","true"],["fontsize","4"]] "<span style=\"font-size: medium\">foo[bar]baz</span>" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","true"],["fontsize","4"]] "<span style=\"font-size: medium\">foo[bar]baz</span>" queryCommandValue("stylewithcss") before
@@ -1425,7 +1425,7 @@ PASS [["stylewithcss","true"],["fontsize","4"]] "<span style=\"font-size: medium
 PASS [["stylewithcss","false"],["fontsize","4"]] "<span style=\"font-size: medium\">foo[bar]baz</span>": execCommand("stylewithcss", false, "false") return value
 PASS [["stylewithcss","false"],["fontsize","4"]] "<span style=\"font-size: medium\">foo[bar]baz</span>": execCommand("fontsize", false, "4") return value
 PASS [["stylewithcss","false"],["fontsize","4"]] "<span style=\"font-size: medium\">foo[bar]baz</span>" checks for modifications to non-editable content
-FAIL [["stylewithcss","false"],["fontsize","4"]] "<span style=\"font-size: medium\">foo[bar]baz</span>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<span style=\"font-size:medium\">foo<font size=\"4\">bar</font>baz</span>" but got "<span style=\"font-size:medium\">foo</span><font size=\"4\">bar</font><span style=\"font-size:medium\">baz</span>"
+FAIL [["stylewithcss","false"],["fontsize","4"]] "<span style=\"font-size: medium\">foo[bar]baz</span>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<span style=\"font-size:medium\">foo<font size=\"4\">bar</font>baz</span>" but got "<span style=\"font-size:medium\">foo</span><font size=\"4\">bar</font><span style=\"font-size:medium\">baz</span>"
 PASS [["stylewithcss","false"],["fontsize","4"]] "<span style=\"font-size: medium\">foo[bar]baz</span>" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","false"],["fontsize","4"]] "<span style=\"font-size: medium\">foo[bar]baz</span>" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","false"],["fontsize","4"]] "<span style=\"font-size: medium\">foo[bar]baz</span>" queryCommandValue("stylewithcss") before
@@ -1472,7 +1472,7 @@ PASS [["stylewithcss","false"],["fontsize","4"]] "foo<span style=\"font-size: la
 PASS [["stylewithcss","false"],["fontsize","4"]] "foo<span style=\"font-size: large\">[bar]</span>baz" queryCommandValue("fontsize") after
 PASS [["fontsize","4"]] "<span style=\"font-size: large\">foo[bar]baz</span>": execCommand("fontsize", false, "4") return value
 PASS [["fontsize","4"]] "<span style=\"font-size: large\">foo[bar]baz</span>" checks for modifications to non-editable content
-FAIL [["fontsize","4"]] "<span style=\"font-size: large\">foo[bar]baz</span>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<span style=\"font-size:large\">foobarbaz</span>" but got "<span style=\"font-size:large\">foo</span><font size=\"4\">bar</font><span style=\"font-size:large\">baz</span>"
+FAIL [["fontsize","4"]] "<span style=\"font-size: large\">foo[bar]baz</span>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<span style=\"font-size:large\">foobarbaz</span>" but got "<span style=\"font-size:large\">foo</span><font size=\"4\">bar</font><span style=\"font-size:large\">baz</span>"
 PASS [["fontsize","4"]] "<span style=\"font-size: large\">foo[bar]baz</span>" queryCommandIndeterm("fontsize") before
 PASS [["fontsize","4"]] "<span style=\"font-size: large\">foo[bar]baz</span>" queryCommandState("fontsize") before
 PASS [["fontsize","4"]] "<span style=\"font-size: large\">foo[bar]baz</span>" queryCommandValue("fontsize") before
@@ -1482,7 +1482,7 @@ PASS [["fontsize","4"]] "<span style=\"font-size: large\">foo[bar]baz</span>" qu
 PASS [["stylewithcss","true"],["fontsize","4"]] "<span style=\"font-size: large\">foo<span style=\"font-size: xx-small\">b[a]r</span>baz</span>": execCommand("stylewithcss", false, "true") return value
 PASS [["stylewithcss","true"],["fontsize","4"]] "<span style=\"font-size: large\">foo<span style=\"font-size: xx-small\">b[a]r</span>baz</span>": execCommand("fontsize", false, "4") return value
 PASS [["stylewithcss","true"],["fontsize","4"]] "<span style=\"font-size: large\">foo<span style=\"font-size: xx-small\">b[a]r</span>baz</span>" checks for modifications to non-editable content
-FAIL [["stylewithcss","true"],["fontsize","4"]] "<span style=\"font-size: large\">foo<span style=\"font-size: xx-small\">b[a]r</span>baz</span>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<span style=\"font-size:large\">foo<span style=\"font-size:xx-small\">b</span>a<span style=\"font-size:xx-small\">r</span>baz</span>" but got "<span style=\"font-size:large\">foo</span><span style=\"font-size:xx-small\">b</span><span style=\"font-size:large\">a</span><span style=\"font-size:xx-small\">r</span><span style=\"font-size:large\">baz</span>"
+FAIL [["stylewithcss","true"],["fontsize","4"]] "<span style=\"font-size: large\">foo<span style=\"font-size: xx-small\">b[a]r</span>baz</span>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<span style=\"font-size:large\">foo<span style=\"font-size:xx-small\">b</span>a<span style=\"font-size:xx-small\">r</span>baz</span>" but got "<span style=\"font-size:large\">foo</span><span style=\"font-size:xx-small\">b</span><span style=\"font-size:large\">a</span><span style=\"font-size:xx-small\">r</span><span style=\"font-size:large\">baz</span>"
 PASS [["stylewithcss","true"],["fontsize","4"]] "<span style=\"font-size: large\">foo<span style=\"font-size: xx-small\">b[a]r</span>baz</span>" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","true"],["fontsize","4"]] "<span style=\"font-size: large\">foo<span style=\"font-size: xx-small\">b[a]r</span>baz</span>" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","true"],["fontsize","4"]] "<span style=\"font-size: large\">foo<span style=\"font-size: xx-small\">b[a]r</span>baz</span>" queryCommandValue("stylewithcss") before
@@ -1491,14 +1491,14 @@ PASS [["stylewithcss","true"],["fontsize","4"]] "<span style=\"font-size: large\
 PASS [["stylewithcss","true"],["fontsize","4"]] "<span style=\"font-size: large\">foo<span style=\"font-size: xx-small\">b[a]r</span>baz</span>" queryCommandValue("stylewithcss") after
 PASS [["stylewithcss","true"],["fontsize","4"]] "<span style=\"font-size: large\">foo<span style=\"font-size: xx-small\">b[a]r</span>baz</span>" queryCommandIndeterm("fontsize") before
 PASS [["stylewithcss","true"],["fontsize","4"]] "<span style=\"font-size: large\">foo<span style=\"font-size: xx-small\">b[a]r</span>baz</span>" queryCommandState("fontsize") before
-FAIL [["stylewithcss","true"],["fontsize","4"]] "<span style=\"font-size: large\">foo<span style=\"font-size: xx-small\">b[a]r</span>baz</span>" queryCommandValue("fontsize") beforeassert_equals: Wrong result returned expected "1" but got "0"
+FAIL [["stylewithcss","true"],["fontsize","4"]] "<span style=\"font-size: large\">foo<span style=\"font-size: xx-small\">b[a]r</span>baz</span>" queryCommandValue("fontsize") before assert_equals: Wrong result returned expected "1" but got "0"
 PASS [["stylewithcss","true"],["fontsize","4"]] "<span style=\"font-size: large\">foo<span style=\"font-size: xx-small\">b[a]r</span>baz</span>" queryCommandIndeterm("fontsize") after
 PASS [["stylewithcss","true"],["fontsize","4"]] "<span style=\"font-size: large\">foo<span style=\"font-size: xx-small\">b[a]r</span>baz</span>" queryCommandState("fontsize") after
 PASS [["stylewithcss","true"],["fontsize","4"]] "<span style=\"font-size: large\">foo<span style=\"font-size: xx-small\">b[a]r</span>baz</span>" queryCommandValue("fontsize") after
 PASS [["stylewithcss","false"],["fontsize","4"]] "<span style=\"font-size: large\">foo<span style=\"font-size: xx-small\">b[a]r</span>baz</span>": execCommand("stylewithcss", false, "false") return value
 PASS [["stylewithcss","false"],["fontsize","4"]] "<span style=\"font-size: large\">foo<span style=\"font-size: xx-small\">b[a]r</span>baz</span>": execCommand("fontsize", false, "4") return value
 PASS [["stylewithcss","false"],["fontsize","4"]] "<span style=\"font-size: large\">foo<span style=\"font-size: xx-small\">b[a]r</span>baz</span>" checks for modifications to non-editable content
-FAIL [["stylewithcss","false"],["fontsize","4"]] "<span style=\"font-size: large\">foo<span style=\"font-size: xx-small\">b[a]r</span>baz</span>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<span style=\"font-size:large\">foo<span style=\"font-size:xx-small\">b</span>a<span style=\"font-size:xx-small\">r</span>baz</span>" but got "<font size=\"4\">foo</font><span style=\"font-size:xx-small\">b</span><font size=\"4\">a</font><span style=\"font-size:xx-small\">r</span><font size=\"4\">baz</font>"
+FAIL [["stylewithcss","false"],["fontsize","4"]] "<span style=\"font-size: large\">foo<span style=\"font-size: xx-small\">b[a]r</span>baz</span>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<span style=\"font-size:large\">foo<span style=\"font-size:xx-small\">b</span>a<span style=\"font-size:xx-small\">r</span>baz</span>" but got "<font size=\"4\">foo</font><span style=\"font-size:xx-small\">b</span><font size=\"4\">a</font><span style=\"font-size:xx-small\">r</span><font size=\"4\">baz</font>"
 PASS [["stylewithcss","false"],["fontsize","4"]] "<span style=\"font-size: large\">foo<span style=\"font-size: xx-small\">b[a]r</span>baz</span>" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","false"],["fontsize","4"]] "<span style=\"font-size: large\">foo<span style=\"font-size: xx-small\">b[a]r</span>baz</span>" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","false"],["fontsize","4"]] "<span style=\"font-size: large\">foo<span style=\"font-size: xx-small\">b[a]r</span>baz</span>" queryCommandValue("stylewithcss") before
@@ -1507,7 +1507,7 @@ PASS [["stylewithcss","false"],["fontsize","4"]] "<span style=\"font-size: large
 PASS [["stylewithcss","false"],["fontsize","4"]] "<span style=\"font-size: large\">foo<span style=\"font-size: xx-small\">b[a]r</span>baz</span>" queryCommandValue("stylewithcss") after
 PASS [["stylewithcss","false"],["fontsize","4"]] "<span style=\"font-size: large\">foo<span style=\"font-size: xx-small\">b[a]r</span>baz</span>" queryCommandIndeterm("fontsize") before
 PASS [["stylewithcss","false"],["fontsize","4"]] "<span style=\"font-size: large\">foo<span style=\"font-size: xx-small\">b[a]r</span>baz</span>" queryCommandState("fontsize") before
-FAIL [["stylewithcss","false"],["fontsize","4"]] "<span style=\"font-size: large\">foo<span style=\"font-size: xx-small\">b[a]r</span>baz</span>" queryCommandValue("fontsize") beforeassert_equals: Wrong result returned expected "1" but got "0"
+FAIL [["stylewithcss","false"],["fontsize","4"]] "<span style=\"font-size: large\">foo<span style=\"font-size: xx-small\">b[a]r</span>baz</span>" queryCommandValue("fontsize") before assert_equals: Wrong result returned expected "1" but got "0"
 PASS [["stylewithcss","false"],["fontsize","4"]] "<span style=\"font-size: large\">foo<span style=\"font-size: xx-small\">b[a]r</span>baz</span>" queryCommandIndeterm("fontsize") after
 PASS [["stylewithcss","false"],["fontsize","4"]] "<span style=\"font-size: large\">foo<span style=\"font-size: xx-small\">b[a]r</span>baz</span>" queryCommandState("fontsize") after
 PASS [["stylewithcss","false"],["fontsize","4"]] "<span style=\"font-size: large\">foo<span style=\"font-size: xx-small\">b[a]r</span>baz</span>" queryCommandValue("fontsize") after
@@ -1546,7 +1546,7 @@ PASS [["stylewithcss","false"],["fontsize","4"]] "foo<span style=\"font-size: 2e
 PASS [["stylewithcss","true"],["fontsize","4"]] "<span style=\"font-size: 2em\">foo[bar]baz</span>": execCommand("stylewithcss", false, "true") return value
 PASS [["stylewithcss","true"],["fontsize","4"]] "<span style=\"font-size: 2em\">foo[bar]baz</span>": execCommand("fontsize", false, "4") return value
 PASS [["stylewithcss","true"],["fontsize","4"]] "<span style=\"font-size: 2em\">foo[bar]baz</span>" checks for modifications to non-editable content
-FAIL [["stylewithcss","true"],["fontsize","4"]] "<span style=\"font-size: 2em\">foo[bar]baz</span>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<span style=\"font-size:2em\">foo<span style=\"font-size:large\">bar</span>baz</span>" but got "<span style=\"font-size:2em\">foo</span><span style=\"font-size:large\">bar</span><span style=\"font-size:2em\">baz</span>"
+FAIL [["stylewithcss","true"],["fontsize","4"]] "<span style=\"font-size: 2em\">foo[bar]baz</span>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<span style=\"font-size:2em\">foo<span style=\"font-size:large\">bar</span>baz</span>" but got "<span style=\"font-size:2em\">foo</span><span style=\"font-size:large\">bar</span><span style=\"font-size:2em\">baz</span>"
 PASS [["stylewithcss","true"],["fontsize","4"]] "<span style=\"font-size: 2em\">foo[bar]baz</span>" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","true"],["fontsize","4"]] "<span style=\"font-size: 2em\">foo[bar]baz</span>" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","true"],["fontsize","4"]] "<span style=\"font-size: 2em\">foo[bar]baz</span>" queryCommandValue("stylewithcss") before
@@ -1562,7 +1562,7 @@ PASS [["stylewithcss","true"],["fontsize","4"]] "<span style=\"font-size: 2em\">
 PASS [["stylewithcss","false"],["fontsize","4"]] "<span style=\"font-size: 2em\">foo[bar]baz</span>": execCommand("stylewithcss", false, "false") return value
 PASS [["stylewithcss","false"],["fontsize","4"]] "<span style=\"font-size: 2em\">foo[bar]baz</span>": execCommand("fontsize", false, "4") return value
 PASS [["stylewithcss","false"],["fontsize","4"]] "<span style=\"font-size: 2em\">foo[bar]baz</span>" checks for modifications to non-editable content
-FAIL [["stylewithcss","false"],["fontsize","4"]] "<span style=\"font-size: 2em\">foo[bar]baz</span>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<span style=\"font-size:2em\">foo<font size=\"4\">bar</font>baz</span>" but got "<span style=\"font-size:2em\">foo</span><font size=\"4\">bar</font><span style=\"font-size:2em\">baz</span>"
+FAIL [["stylewithcss","false"],["fontsize","4"]] "<span style=\"font-size: 2em\">foo[bar]baz</span>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<span style=\"font-size:2em\">foo<font size=\"4\">bar</font>baz</span>" but got "<span style=\"font-size:2em\">foo</span><font size=\"4\">bar</font><span style=\"font-size:2em\">baz</span>"
 PASS [["stylewithcss","false"],["fontsize","4"]] "<span style=\"font-size: 2em\">foo[bar]baz</span>" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","false"],["fontsize","4"]] "<span style=\"font-size: 2em\">foo[bar]baz</span>" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","false"],["fontsize","4"]] "<span style=\"font-size: 2em\">foo[bar]baz</span>" queryCommandValue("stylewithcss") before
@@ -1578,7 +1578,7 @@ PASS [["stylewithcss","false"],["fontsize","4"]] "<span style=\"font-size: 2em\"
 PASS [["stylewithcss","true"],["fontsize","4"]] "<p style=\"font-size: xx-small\">foo[bar]baz</p>": execCommand("stylewithcss", false, "true") return value
 PASS [["stylewithcss","true"],["fontsize","4"]] "<p style=\"font-size: xx-small\">foo[bar]baz</p>": execCommand("fontsize", false, "4") return value
 PASS [["stylewithcss","true"],["fontsize","4"]] "<p style=\"font-size: xx-small\">foo[bar]baz</p>" checks for modifications to non-editable content
-FAIL [["stylewithcss","true"],["fontsize","4"]] "<p style=\"font-size: xx-small\">foo[bar]baz</p>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p style=\"font-size:xx-small\">foo<span style=\"font-size:large\">bar</span>baz</p>" but got "<p style=\"\"><span style=\"font-size:xx-small\">foo</span><span style=\"font-size:large\">bar</span><span style=\"font-size:xx-small\">baz</span></p>"
+FAIL [["stylewithcss","true"],["fontsize","4"]] "<p style=\"font-size: xx-small\">foo[bar]baz</p>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p style=\"font-size:xx-small\">foo<span style=\"font-size:large\">bar</span>baz</p>" but got "<p style=\"\"><span style=\"font-size:xx-small\">foo</span><span style=\"font-size:large\">bar</span><span style=\"font-size:xx-small\">baz</span></p>"
 PASS [["stylewithcss","true"],["fontsize","4"]] "<p style=\"font-size: xx-small\">foo[bar]baz</p>" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","true"],["fontsize","4"]] "<p style=\"font-size: xx-small\">foo[bar]baz</p>" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","true"],["fontsize","4"]] "<p style=\"font-size: xx-small\">foo[bar]baz</p>" queryCommandValue("stylewithcss") before
@@ -1587,14 +1587,14 @@ PASS [["stylewithcss","true"],["fontsize","4"]] "<p style=\"font-size: xx-small\
 PASS [["stylewithcss","true"],["fontsize","4"]] "<p style=\"font-size: xx-small\">foo[bar]baz</p>" queryCommandValue("stylewithcss") after
 PASS [["stylewithcss","true"],["fontsize","4"]] "<p style=\"font-size: xx-small\">foo[bar]baz</p>" queryCommandIndeterm("fontsize") before
 PASS [["stylewithcss","true"],["fontsize","4"]] "<p style=\"font-size: xx-small\">foo[bar]baz</p>" queryCommandState("fontsize") before
-FAIL [["stylewithcss","true"],["fontsize","4"]] "<p style=\"font-size: xx-small\">foo[bar]baz</p>" queryCommandValue("fontsize") beforeassert_equals: Wrong result returned expected "1" but got "0"
+FAIL [["stylewithcss","true"],["fontsize","4"]] "<p style=\"font-size: xx-small\">foo[bar]baz</p>" queryCommandValue("fontsize") before assert_equals: Wrong result returned expected "1" but got "0"
 PASS [["stylewithcss","true"],["fontsize","4"]] "<p style=\"font-size: xx-small\">foo[bar]baz</p>" queryCommandIndeterm("fontsize") after
 PASS [["stylewithcss","true"],["fontsize","4"]] "<p style=\"font-size: xx-small\">foo[bar]baz</p>" queryCommandState("fontsize") after
 PASS [["stylewithcss","true"],["fontsize","4"]] "<p style=\"font-size: xx-small\">foo[bar]baz</p>" queryCommandValue("fontsize") after
 PASS [["stylewithcss","false"],["fontsize","4"]] "<p style=\"font-size: xx-small\">foo[bar]baz</p>": execCommand("stylewithcss", false, "false") return value
 PASS [["stylewithcss","false"],["fontsize","4"]] "<p style=\"font-size: xx-small\">foo[bar]baz</p>": execCommand("fontsize", false, "4") return value
 PASS [["stylewithcss","false"],["fontsize","4"]] "<p style=\"font-size: xx-small\">foo[bar]baz</p>" checks for modifications to non-editable content
-FAIL [["stylewithcss","false"],["fontsize","4"]] "<p style=\"font-size: xx-small\">foo[bar]baz</p>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p style=\"font-size:xx-small\">foo<font size=\"4\">bar</font>baz</p>" but got "<p style=\"\"><span style=\"font-size:xx-small\">foo</span><font size=\"4\">bar</font><span style=\"font-size:xx-small\">baz</span></p>"
+FAIL [["stylewithcss","false"],["fontsize","4"]] "<p style=\"font-size: xx-small\">foo[bar]baz</p>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p style=\"font-size:xx-small\">foo<font size=\"4\">bar</font>baz</p>" but got "<p style=\"\"><span style=\"font-size:xx-small\">foo</span><font size=\"4\">bar</font><span style=\"font-size:xx-small\">baz</span></p>"
 PASS [["stylewithcss","false"],["fontsize","4"]] "<p style=\"font-size: xx-small\">foo[bar]baz</p>" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","false"],["fontsize","4"]] "<p style=\"font-size: xx-small\">foo[bar]baz</p>" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","false"],["fontsize","4"]] "<p style=\"font-size: xx-small\">foo[bar]baz</p>" queryCommandValue("stylewithcss") before
@@ -1603,14 +1603,14 @@ PASS [["stylewithcss","false"],["fontsize","4"]] "<p style=\"font-size: xx-small
 PASS [["stylewithcss","false"],["fontsize","4"]] "<p style=\"font-size: xx-small\">foo[bar]baz</p>" queryCommandValue("stylewithcss") after
 PASS [["stylewithcss","false"],["fontsize","4"]] "<p style=\"font-size: xx-small\">foo[bar]baz</p>" queryCommandIndeterm("fontsize") before
 PASS [["stylewithcss","false"],["fontsize","4"]] "<p style=\"font-size: xx-small\">foo[bar]baz</p>" queryCommandState("fontsize") before
-FAIL [["stylewithcss","false"],["fontsize","4"]] "<p style=\"font-size: xx-small\">foo[bar]baz</p>" queryCommandValue("fontsize") beforeassert_equals: Wrong result returned expected "1" but got "0"
+FAIL [["stylewithcss","false"],["fontsize","4"]] "<p style=\"font-size: xx-small\">foo[bar]baz</p>" queryCommandValue("fontsize") before assert_equals: Wrong result returned expected "1" but got "0"
 PASS [["stylewithcss","false"],["fontsize","4"]] "<p style=\"font-size: xx-small\">foo[bar]baz</p>" queryCommandIndeterm("fontsize") after
 PASS [["stylewithcss","false"],["fontsize","4"]] "<p style=\"font-size: xx-small\">foo[bar]baz</p>" queryCommandState("fontsize") after
 PASS [["stylewithcss","false"],["fontsize","4"]] "<p style=\"font-size: xx-small\">foo[bar]baz</p>" queryCommandValue("fontsize") after
 PASS [["stylewithcss","true"],["fontsize","4"]] "<p style=\"font-size: medium\">foo[bar]baz</p>": execCommand("stylewithcss", false, "true") return value
 PASS [["stylewithcss","true"],["fontsize","4"]] "<p style=\"font-size: medium\">foo[bar]baz</p>": execCommand("fontsize", false, "4") return value
 PASS [["stylewithcss","true"],["fontsize","4"]] "<p style=\"font-size: medium\">foo[bar]baz</p>" checks for modifications to non-editable content
-FAIL [["stylewithcss","true"],["fontsize","4"]] "<p style=\"font-size: medium\">foo[bar]baz</p>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p style=\"font-size:medium\">foo<span style=\"font-size:large\">bar</span>baz</p>" but got "<p style=\"\"><span style=\"font-size:medium\">foo</span><span style=\"font-size:large\">bar</span>baz</p>"
+FAIL [["stylewithcss","true"],["fontsize","4"]] "<p style=\"font-size: medium\">foo[bar]baz</p>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p style=\"font-size:medium\">foo<span style=\"font-size:large\">bar</span>baz</p>" but got "<p style=\"\"><span style=\"font-size:medium\">foo</span><span style=\"font-size:large\">bar</span>baz</p>"
 PASS [["stylewithcss","true"],["fontsize","4"]] "<p style=\"font-size: medium\">foo[bar]baz</p>" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","true"],["fontsize","4"]] "<p style=\"font-size: medium\">foo[bar]baz</p>" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","true"],["fontsize","4"]] "<p style=\"font-size: medium\">foo[bar]baz</p>" queryCommandValue("stylewithcss") before
@@ -1626,7 +1626,7 @@ PASS [["stylewithcss","true"],["fontsize","4"]] "<p style=\"font-size: medium\">
 PASS [["stylewithcss","false"],["fontsize","4"]] "<p style=\"font-size: medium\">foo[bar]baz</p>": execCommand("stylewithcss", false, "false") return value
 PASS [["stylewithcss","false"],["fontsize","4"]] "<p style=\"font-size: medium\">foo[bar]baz</p>": execCommand("fontsize", false, "4") return value
 PASS [["stylewithcss","false"],["fontsize","4"]] "<p style=\"font-size: medium\">foo[bar]baz</p>" checks for modifications to non-editable content
-FAIL [["stylewithcss","false"],["fontsize","4"]] "<p style=\"font-size: medium\">foo[bar]baz</p>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p style=\"font-size:medium\">foo<font size=\"4\">bar</font>baz</p>" but got "<p style=\"\"><span style=\"font-size:medium\">foo</span><font size=\"4\">bar</font>baz</p>"
+FAIL [["stylewithcss","false"],["fontsize","4"]] "<p style=\"font-size: medium\">foo[bar]baz</p>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p style=\"font-size:medium\">foo<font size=\"4\">bar</font>baz</p>" but got "<p style=\"\"><span style=\"font-size:medium\">foo</span><font size=\"4\">bar</font>baz</p>"
 PASS [["stylewithcss","false"],["fontsize","4"]] "<p style=\"font-size: medium\">foo[bar]baz</p>" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","false"],["fontsize","4"]] "<p style=\"font-size: medium\">foo[bar]baz</p>" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","false"],["fontsize","4"]] "<p style=\"font-size: medium\">foo[bar]baz</p>" queryCommandValue("stylewithcss") before
@@ -1641,7 +1641,7 @@ PASS [["stylewithcss","false"],["fontsize","4"]] "<p style=\"font-size: medium\"
 PASS [["stylewithcss","false"],["fontsize","4"]] "<p style=\"font-size: medium\">foo[bar]baz</p>" queryCommandValue("fontsize") after
 PASS [["fontsize","4"]] "<p style=\"font-size: large\">foo[bar]baz</p>": execCommand("fontsize", false, "4") return value
 PASS [["fontsize","4"]] "<p style=\"font-size: large\">foo[bar]baz</p>" checks for modifications to non-editable content
-FAIL [["fontsize","4"]] "<p style=\"font-size: large\">foo[bar]baz</p>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p style=\"font-size:large\">foobarbaz</p>" but got "<p style=\"\"><span style=\"font-size:large\">foo</span><font size=\"4\">barbaz</font></p>"
+FAIL [["fontsize","4"]] "<p style=\"font-size: large\">foo[bar]baz</p>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p style=\"font-size:large\">foobarbaz</p>" but got "<p style=\"\"><span style=\"font-size:large\">foo</span><font size=\"4\">barbaz</font></p>"
 PASS [["fontsize","4"]] "<p style=\"font-size: large\">foo[bar]baz</p>" queryCommandIndeterm("fontsize") before
 PASS [["fontsize","4"]] "<p style=\"font-size: large\">foo[bar]baz</p>" queryCommandState("fontsize") before
 PASS [["fontsize","4"]] "<p style=\"font-size: large\">foo[bar]baz</p>" queryCommandValue("fontsize") before
@@ -1651,7 +1651,7 @@ PASS [["fontsize","4"]] "<p style=\"font-size: large\">foo[bar]baz</p>" queryCom
 PASS [["stylewithcss","true"],["fontsize","4"]] "<p style=\"font-size: 2em\">foo[bar]baz</p>": execCommand("stylewithcss", false, "true") return value
 PASS [["stylewithcss","true"],["fontsize","4"]] "<p style=\"font-size: 2em\">foo[bar]baz</p>": execCommand("fontsize", false, "4") return value
 PASS [["stylewithcss","true"],["fontsize","4"]] "<p style=\"font-size: 2em\">foo[bar]baz</p>" checks for modifications to non-editable content
-FAIL [["stylewithcss","true"],["fontsize","4"]] "<p style=\"font-size: 2em\">foo[bar]baz</p>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p style=\"font-size:2em\">foo<span style=\"font-size:large\">bar</span>baz</p>" but got "<p style=\"\"><span style=\"font-size:2em\">foo</span><span style=\"font-size:large\">bar</span><span style=\"font-size:2em\">baz</span></p>"
+FAIL [["stylewithcss","true"],["fontsize","4"]] "<p style=\"font-size: 2em\">foo[bar]baz</p>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p style=\"font-size:2em\">foo<span style=\"font-size:large\">bar</span>baz</p>" but got "<p style=\"\"><span style=\"font-size:2em\">foo</span><span style=\"font-size:large\">bar</span><span style=\"font-size:2em\">baz</span></p>"
 PASS [["stylewithcss","true"],["fontsize","4"]] "<p style=\"font-size: 2em\">foo[bar]baz</p>" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","true"],["fontsize","4"]] "<p style=\"font-size: 2em\">foo[bar]baz</p>" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","true"],["fontsize","4"]] "<p style=\"font-size: 2em\">foo[bar]baz</p>" queryCommandValue("stylewithcss") before
@@ -1667,7 +1667,7 @@ PASS [["stylewithcss","true"],["fontsize","4"]] "<p style=\"font-size: 2em\">foo
 PASS [["stylewithcss","false"],["fontsize","4"]] "<p style=\"font-size: 2em\">foo[bar]baz</p>": execCommand("stylewithcss", false, "false") return value
 PASS [["stylewithcss","false"],["fontsize","4"]] "<p style=\"font-size: 2em\">foo[bar]baz</p>": execCommand("fontsize", false, "4") return value
 PASS [["stylewithcss","false"],["fontsize","4"]] "<p style=\"font-size: 2em\">foo[bar]baz</p>" checks for modifications to non-editable content
-FAIL [["stylewithcss","false"],["fontsize","4"]] "<p style=\"font-size: 2em\">foo[bar]baz</p>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p style=\"font-size:2em\">foo<font size=\"4\">bar</font>baz</p>" but got "<p style=\"\"><span style=\"font-size:2em\">foo</span><font size=\"4\">bar</font><span style=\"font-size:2em\">baz</span></p>"
+FAIL [["stylewithcss","false"],["fontsize","4"]] "<p style=\"font-size: 2em\">foo[bar]baz</p>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p style=\"font-size:2em\">foo<font size=\"4\">bar</font>baz</p>" but got "<p style=\"\"><span style=\"font-size:2em\">foo</span><font size=\"4\">bar</font><span style=\"font-size:2em\">baz</span></p>"
 PASS [["stylewithcss","false"],["fontsize","4"]] "<p style=\"font-size: 2em\">foo[bar]baz</p>" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","false"],["fontsize","4"]] "<p style=\"font-size: 2em\">foo[bar]baz</p>" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","false"],["fontsize","4"]] "<p style=\"font-size: 2em\">foo[bar]baz</p>" queryCommandValue("stylewithcss") before
@@ -1683,7 +1683,7 @@ PASS [["stylewithcss","false"],["fontsize","4"]] "<p style=\"font-size: 2em\">fo
 PASS [["stylewithcss","true"],["fontsize","3"]] "<p style=\"font-size: xx-small\">foo[bar]baz</p>": execCommand("stylewithcss", false, "true") return value
 PASS [["stylewithcss","true"],["fontsize","3"]] "<p style=\"font-size: xx-small\">foo[bar]baz</p>": execCommand("fontsize", false, "3") return value
 PASS [["stylewithcss","true"],["fontsize","3"]] "<p style=\"font-size: xx-small\">foo[bar]baz</p>" checks for modifications to non-editable content
-FAIL [["stylewithcss","true"],["fontsize","3"]] "<p style=\"font-size: xx-small\">foo[bar]baz</p>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><span style=\"font-size:xx-small\">foo</span>bar<span style=\"font-size:xx-small\">baz</span></p>" but got "<p style=\"\"><span style=\"font-size:xx-small\">foo</span>bar<span style=\"font-size:xx-small\">baz</span></p>"
+FAIL [["stylewithcss","true"],["fontsize","3"]] "<p style=\"font-size: xx-small\">foo[bar]baz</p>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><span style=\"font-size:xx-small\">foo</span>bar<span style=\"font-size:xx-small\">baz</span></p>" but got "<p style=\"\"><span style=\"font-size:xx-small\">foo</span>bar<span style=\"font-size:xx-small\">baz</span></p>"
 PASS [["stylewithcss","true"],["fontsize","3"]] "<p style=\"font-size: xx-small\">foo[bar]baz</p>" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","true"],["fontsize","3"]] "<p style=\"font-size: xx-small\">foo[bar]baz</p>" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","true"],["fontsize","3"]] "<p style=\"font-size: xx-small\">foo[bar]baz</p>" queryCommandValue("stylewithcss") before
@@ -1692,14 +1692,14 @@ PASS [["stylewithcss","true"],["fontsize","3"]] "<p style=\"font-size: xx-small\
 PASS [["stylewithcss","true"],["fontsize","3"]] "<p style=\"font-size: xx-small\">foo[bar]baz</p>" queryCommandValue("stylewithcss") after
 PASS [["stylewithcss","true"],["fontsize","3"]] "<p style=\"font-size: xx-small\">foo[bar]baz</p>" queryCommandIndeterm("fontsize") before
 PASS [["stylewithcss","true"],["fontsize","3"]] "<p style=\"font-size: xx-small\">foo[bar]baz</p>" queryCommandState("fontsize") before
-FAIL [["stylewithcss","true"],["fontsize","3"]] "<p style=\"font-size: xx-small\">foo[bar]baz</p>" queryCommandValue("fontsize") beforeassert_equals: Wrong result returned expected "1" but got "0"
+FAIL [["stylewithcss","true"],["fontsize","3"]] "<p style=\"font-size: xx-small\">foo[bar]baz</p>" queryCommandValue("fontsize") before assert_equals: Wrong result returned expected "1" but got "0"
 PASS [["stylewithcss","true"],["fontsize","3"]] "<p style=\"font-size: xx-small\">foo[bar]baz</p>" queryCommandIndeterm("fontsize") after
 PASS [["stylewithcss","true"],["fontsize","3"]] "<p style=\"font-size: xx-small\">foo[bar]baz</p>" queryCommandState("fontsize") after
 PASS [["stylewithcss","true"],["fontsize","3"]] "<p style=\"font-size: xx-small\">foo[bar]baz</p>" queryCommandValue("fontsize") after
 PASS [["stylewithcss","false"],["fontsize","3"]] "<p style=\"font-size: xx-small\">foo[bar]baz</p>": execCommand("stylewithcss", false, "false") return value
 PASS [["stylewithcss","false"],["fontsize","3"]] "<p style=\"font-size: xx-small\">foo[bar]baz</p>": execCommand("fontsize", false, "3") return value
 PASS [["stylewithcss","false"],["fontsize","3"]] "<p style=\"font-size: xx-small\">foo[bar]baz</p>" checks for modifications to non-editable content
-FAIL [["stylewithcss","false"],["fontsize","3"]] "<p style=\"font-size: xx-small\">foo[bar]baz</p>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><span style=\"font-size:xx-small\">foo</span>bar<span style=\"font-size:xx-small\">baz</span></p>" but got "<p style=\"\"><span style=\"font-size:xx-small\">foo</span>bar<span style=\"font-size:xx-small\">baz</span></p>"
+FAIL [["stylewithcss","false"],["fontsize","3"]] "<p style=\"font-size: xx-small\">foo[bar]baz</p>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><span style=\"font-size:xx-small\">foo</span>bar<span style=\"font-size:xx-small\">baz</span></p>" but got "<p style=\"\"><span style=\"font-size:xx-small\">foo</span>bar<span style=\"font-size:xx-small\">baz</span></p>"
 PASS [["stylewithcss","false"],["fontsize","3"]] "<p style=\"font-size: xx-small\">foo[bar]baz</p>" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","false"],["fontsize","3"]] "<p style=\"font-size: xx-small\">foo[bar]baz</p>" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","false"],["fontsize","3"]] "<p style=\"font-size: xx-small\">foo[bar]baz</p>" queryCommandValue("stylewithcss") before
@@ -1708,13 +1708,13 @@ PASS [["stylewithcss","false"],["fontsize","3"]] "<p style=\"font-size: xx-small
 PASS [["stylewithcss","false"],["fontsize","3"]] "<p style=\"font-size: xx-small\">foo[bar]baz</p>" queryCommandValue("stylewithcss") after
 PASS [["stylewithcss","false"],["fontsize","3"]] "<p style=\"font-size: xx-small\">foo[bar]baz</p>" queryCommandIndeterm("fontsize") before
 PASS [["stylewithcss","false"],["fontsize","3"]] "<p style=\"font-size: xx-small\">foo[bar]baz</p>" queryCommandState("fontsize") before
-FAIL [["stylewithcss","false"],["fontsize","3"]] "<p style=\"font-size: xx-small\">foo[bar]baz</p>" queryCommandValue("fontsize") beforeassert_equals: Wrong result returned expected "1" but got "0"
+FAIL [["stylewithcss","false"],["fontsize","3"]] "<p style=\"font-size: xx-small\">foo[bar]baz</p>" queryCommandValue("fontsize") before assert_equals: Wrong result returned expected "1" but got "0"
 PASS [["stylewithcss","false"],["fontsize","3"]] "<p style=\"font-size: xx-small\">foo[bar]baz</p>" queryCommandIndeterm("fontsize") after
 PASS [["stylewithcss","false"],["fontsize","3"]] "<p style=\"font-size: xx-small\">foo[bar]baz</p>" queryCommandState("fontsize") after
 PASS [["stylewithcss","false"],["fontsize","3"]] "<p style=\"font-size: xx-small\">foo[bar]baz</p>" queryCommandValue("fontsize") after
 PASS [["fontsize","3"]] "<p style=\"font-size: medium\">foo[bar]baz</p>": execCommand("fontsize", false, "3") return value
 PASS [["fontsize","3"]] "<p style=\"font-size: medium\">foo[bar]baz</p>" checks for modifications to non-editable content
-FAIL [["fontsize","3"]] "<p style=\"font-size: medium\">foo[bar]baz</p>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p style=\"font-size:medium\">foobarbaz</p>" but got "<p style=\"\"><span style=\"font-size:medium\">foo</span>barbaz</p>"
+FAIL [["fontsize","3"]] "<p style=\"font-size: medium\">foo[bar]baz</p>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p style=\"font-size:medium\">foobarbaz</p>" but got "<p style=\"\"><span style=\"font-size:medium\">foo</span>barbaz</p>"
 PASS [["fontsize","3"]] "<p style=\"font-size: medium\">foo[bar]baz</p>" queryCommandIndeterm("fontsize") before
 PASS [["fontsize","3"]] "<p style=\"font-size: medium\">foo[bar]baz</p>" queryCommandState("fontsize") before
 PASS [["fontsize","3"]] "<p style=\"font-size: medium\">foo[bar]baz</p>" queryCommandValue("fontsize") before
@@ -1724,7 +1724,7 @@ PASS [["fontsize","3"]] "<p style=\"font-size: medium\">foo[bar]baz</p>" queryCo
 PASS [["stylewithcss","true"],["fontsize","3"]] "<p style=\"font-size: large\">foo[bar]baz</p>": execCommand("stylewithcss", false, "true") return value
 PASS [["stylewithcss","true"],["fontsize","3"]] "<p style=\"font-size: large\">foo[bar]baz</p>": execCommand("fontsize", false, "3") return value
 PASS [["stylewithcss","true"],["fontsize","3"]] "<p style=\"font-size: large\">foo[bar]baz</p>" checks for modifications to non-editable content
-FAIL [["stylewithcss","true"],["fontsize","3"]] "<p style=\"font-size: large\">foo[bar]baz</p>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><span style=\"font-size:large\">foo</span>bar<span style=\"font-size:large\">baz</span></p>" but got "<p style=\"\"><span style=\"font-size:large\">foo</span>bar<span style=\"font-size:large\">baz</span></p>"
+FAIL [["stylewithcss","true"],["fontsize","3"]] "<p style=\"font-size: large\">foo[bar]baz</p>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><span style=\"font-size:large\">foo</span>bar<span style=\"font-size:large\">baz</span></p>" but got "<p style=\"\"><span style=\"font-size:large\">foo</span>bar<span style=\"font-size:large\">baz</span></p>"
 PASS [["stylewithcss","true"],["fontsize","3"]] "<p style=\"font-size: large\">foo[bar]baz</p>" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","true"],["fontsize","3"]] "<p style=\"font-size: large\">foo[bar]baz</p>" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","true"],["fontsize","3"]] "<p style=\"font-size: large\">foo[bar]baz</p>" queryCommandValue("stylewithcss") before
@@ -1740,7 +1740,7 @@ PASS [["stylewithcss","true"],["fontsize","3"]] "<p style=\"font-size: large\">f
 PASS [["stylewithcss","false"],["fontsize","3"]] "<p style=\"font-size: large\">foo[bar]baz</p>": execCommand("stylewithcss", false, "false") return value
 PASS [["stylewithcss","false"],["fontsize","3"]] "<p style=\"font-size: large\">foo[bar]baz</p>": execCommand("fontsize", false, "3") return value
 PASS [["stylewithcss","false"],["fontsize","3"]] "<p style=\"font-size: large\">foo[bar]baz</p>" checks for modifications to non-editable content
-FAIL [["stylewithcss","false"],["fontsize","3"]] "<p style=\"font-size: large\">foo[bar]baz</p>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><font size=\"4\">foo</font>bar<font size=\"4\">baz</font></p>" but got "<p style=\"\"><span style=\"font-size:large\">foo</span>bar<font size=\"4\">baz</font></p>"
+FAIL [["stylewithcss","false"],["fontsize","3"]] "<p style=\"font-size: large\">foo[bar]baz</p>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><font size=\"4\">foo</font>bar<font size=\"4\">baz</font></p>" but got "<p style=\"\"><span style=\"font-size:large\">foo</span>bar<font size=\"4\">baz</font></p>"
 PASS [["stylewithcss","false"],["fontsize","3"]] "<p style=\"font-size: large\">foo[bar]baz</p>" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","false"],["fontsize","3"]] "<p style=\"font-size: large\">foo[bar]baz</p>" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","false"],["fontsize","3"]] "<p style=\"font-size: large\">foo[bar]baz</p>" queryCommandValue("stylewithcss") before
@@ -1756,7 +1756,7 @@ PASS [["stylewithcss","false"],["fontsize","3"]] "<p style=\"font-size: large\">
 PASS [["stylewithcss","true"],["fontsize","3"]] "<p style=\"font-size: 2em\">foo[bar]baz</p>": execCommand("stylewithcss", false, "true") return value
 PASS [["stylewithcss","true"],["fontsize","3"]] "<p style=\"font-size: 2em\">foo[bar]baz</p>": execCommand("fontsize", false, "3") return value
 PASS [["stylewithcss","true"],["fontsize","3"]] "<p style=\"font-size: 2em\">foo[bar]baz</p>" checks for modifications to non-editable content
-FAIL [["stylewithcss","true"],["fontsize","3"]] "<p style=\"font-size: 2em\">foo[bar]baz</p>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><span style=\"font-size:2em\">foo</span>bar<span style=\"font-size:2em\">baz</span></p>" but got "<p style=\"\"><span style=\"font-size:2em\">foo</span>bar<span style=\"font-size:2em\">baz</span></p>"
+FAIL [["stylewithcss","true"],["fontsize","3"]] "<p style=\"font-size: 2em\">foo[bar]baz</p>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><span style=\"font-size:2em\">foo</span>bar<span style=\"font-size:2em\">baz</span></p>" but got "<p style=\"\"><span style=\"font-size:2em\">foo</span>bar<span style=\"font-size:2em\">baz</span></p>"
 PASS [["stylewithcss","true"],["fontsize","3"]] "<p style=\"font-size: 2em\">foo[bar]baz</p>" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","true"],["fontsize","3"]] "<p style=\"font-size: 2em\">foo[bar]baz</p>" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","true"],["fontsize","3"]] "<p style=\"font-size: 2em\">foo[bar]baz</p>" queryCommandValue("stylewithcss") before
@@ -1772,7 +1772,7 @@ PASS [["stylewithcss","true"],["fontsize","3"]] "<p style=\"font-size: 2em\">foo
 PASS [["stylewithcss","false"],["fontsize","3"]] "<p style=\"font-size: 2em\">foo[bar]baz</p>": execCommand("stylewithcss", false, "false") return value
 PASS [["stylewithcss","false"],["fontsize","3"]] "<p style=\"font-size: 2em\">foo[bar]baz</p>": execCommand("fontsize", false, "3") return value
 PASS [["stylewithcss","false"],["fontsize","3"]] "<p style=\"font-size: 2em\">foo[bar]baz</p>" checks for modifications to non-editable content
-FAIL [["stylewithcss","false"],["fontsize","3"]] "<p style=\"font-size: 2em\">foo[bar]baz</p>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><span style=\"font-size:2em\">foo</span>bar<span style=\"font-size:2em\">baz</span></p>" but got "<p style=\"\"><span style=\"font-size:2em\">foo</span>bar<span style=\"font-size:2em\">baz</span></p>"
+FAIL [["stylewithcss","false"],["fontsize","3"]] "<p style=\"font-size: 2em\">foo[bar]baz</p>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><span style=\"font-size:2em\">foo</span>bar<span style=\"font-size:2em\">baz</span></p>" but got "<p style=\"\"><span style=\"font-size:2em\">foo</span>bar<span style=\"font-size:2em\">baz</span></p>"
 PASS [["stylewithcss","false"],["fontsize","3"]] "<p style=\"font-size: 2em\">foo[bar]baz</p>" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","false"],["fontsize","3"]] "<p style=\"font-size: 2em\">foo[bar]baz</p>" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","false"],["fontsize","3"]] "<p style=\"font-size: 2em\">foo[bar]baz</p>" queryCommandValue("stylewithcss") before
@@ -1820,7 +1820,7 @@ PASS [["stylewithcss","false"],["fontsize","3"]] "<font size=6>foo <span style=\
 PASS [["stylewithcss","true"],["fontsize","3"]] "foo<big>[bar]</big>baz": execCommand("stylewithcss", false, "true") return value
 PASS [["stylewithcss","true"],["fontsize","3"]] "foo<big>[bar]</big>baz": execCommand("fontsize", false, "3") return value
 PASS [["stylewithcss","true"],["fontsize","3"]] "foo<big>[bar]</big>baz" checks for modifications to non-editable content
-FAIL [["stylewithcss","true"],["fontsize","3"]] "foo<big>[bar]</big>baz" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<big><span style=\"font-size:medium\">bar</span></big>baz" but got "foo<big style=\"font-size:medium\">bar</big>baz"
+FAIL [["stylewithcss","true"],["fontsize","3"]] "foo<big>[bar]</big>baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<big><span style=\"font-size:medium\">bar</span></big>baz" but got "foo<big style=\"font-size:medium\">bar</big>baz"
 PASS [["stylewithcss","true"],["fontsize","3"]] "foo<big>[bar]</big>baz" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","true"],["fontsize","3"]] "foo<big>[bar]</big>baz" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","true"],["fontsize","3"]] "foo<big>[bar]</big>baz" queryCommandValue("stylewithcss") before
@@ -1884,7 +1884,7 @@ PASS [["stylewithcss","false"],["fontsize","3"]] "foo<big>b[a]r</big>baz" queryC
 PASS [["stylewithcss","true"],["fontsize","3"]] "foo<small>[bar]</small>baz": execCommand("stylewithcss", false, "true") return value
 PASS [["stylewithcss","true"],["fontsize","3"]] "foo<small>[bar]</small>baz": execCommand("fontsize", false, "3") return value
 PASS [["stylewithcss","true"],["fontsize","3"]] "foo<small>[bar]</small>baz" checks for modifications to non-editable content
-FAIL [["stylewithcss","true"],["fontsize","3"]] "foo<small>[bar]</small>baz" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<small><span style=\"font-size:medium\">bar</span></small>baz" but got "foo<small style=\"font-size:medium\">bar</small>baz"
+FAIL [["stylewithcss","true"],["fontsize","3"]] "foo<small>[bar]</small>baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<small><span style=\"font-size:medium\">bar</span></small>baz" but got "foo<small style=\"font-size:medium\">bar</small>baz"
 PASS [["stylewithcss","true"],["fontsize","3"]] "foo<small>[bar]</small>baz" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","true"],["fontsize","3"]] "foo<small>[bar]</small>baz" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","true"],["fontsize","3"]] "foo<small>[bar]</small>baz" queryCommandValue("stylewithcss") before
@@ -1948,14 +1948,14 @@ PASS [["stylewithcss","false"],["fontsize","3"]] "foo<small>b[a]r</small>baz" qu
 PASS [["stylewithcss","true"],["fontsize","4"]] "fo[o<font size=2>b]ar</font>baz": execCommand("stylewithcss", false, "true") return value
 PASS [["stylewithcss","true"],["fontsize","4"]] "fo[o<font size=2>b]ar</font>baz": execCommand("fontsize", false, "4") return value
 PASS [["stylewithcss","true"],["fontsize","4"]] "fo[o<font size=2>b]ar</font>baz" checks for modifications to non-editable content
-FAIL [["stylewithcss","true"],["fontsize","4"]] "fo[o<font size=2>b]ar</font>baz" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "fo<span style=\"font-size:large\">o</span><font size=\"2\"><span style=\"font-size:large\">b</span>ar</font>baz" but got "fo<span style=\"font-size:large\">ob</span><font size=\"2\">ar</font>baz"
+FAIL [["stylewithcss","true"],["fontsize","4"]] "fo[o<font size=2>b]ar</font>baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "fo<span style=\"font-size:large\">o</span><font size=\"2\"><span style=\"font-size:large\">b</span>ar</font>baz" but got "fo<span style=\"font-size:large\">ob</span><font size=\"2\">ar</font>baz"
 PASS [["stylewithcss","true"],["fontsize","4"]] "fo[o<font size=2>b]ar</font>baz" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","true"],["fontsize","4"]] "fo[o<font size=2>b]ar</font>baz" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","true"],["fontsize","4"]] "fo[o<font size=2>b]ar</font>baz" queryCommandValue("stylewithcss") before
 PASS [["stylewithcss","true"],["fontsize","4"]] "fo[o<font size=2>b]ar</font>baz" queryCommandIndeterm("stylewithcss") after
 PASS [["stylewithcss","true"],["fontsize","4"]] "fo[o<font size=2>b]ar</font>baz" queryCommandState("stylewithcss") after
 PASS [["stylewithcss","true"],["fontsize","4"]] "fo[o<font size=2>b]ar</font>baz" queryCommandValue("stylewithcss") after
-FAIL [["stylewithcss","true"],["fontsize","4"]] "fo[o<font size=2>b]ar</font>baz" queryCommandIndeterm("fontsize") beforeassert_equals: Wrong result returned expected true but got false
+FAIL [["stylewithcss","true"],["fontsize","4"]] "fo[o<font size=2>b]ar</font>baz" queryCommandIndeterm("fontsize") before assert_equals: Wrong result returned expected true but got false
 PASS [["stylewithcss","true"],["fontsize","4"]] "fo[o<font size=2>b]ar</font>baz" queryCommandState("fontsize") before
 PASS [["stylewithcss","true"],["fontsize","4"]] "fo[o<font size=2>b]ar</font>baz" queryCommandValue("fontsize") before
 PASS [["stylewithcss","true"],["fontsize","4"]] "fo[o<font size=2>b]ar</font>baz" queryCommandIndeterm("fontsize") after
@@ -1964,14 +1964,14 @@ PASS [["stylewithcss","true"],["fontsize","4"]] "fo[o<font size=2>b]ar</font>baz
 PASS [["stylewithcss","false"],["fontsize","4"]] "fo[o<font size=2>b]ar</font>baz": execCommand("stylewithcss", false, "false") return value
 PASS [["stylewithcss","false"],["fontsize","4"]] "fo[o<font size=2>b]ar</font>baz": execCommand("fontsize", false, "4") return value
 PASS [["stylewithcss","false"],["fontsize","4"]] "fo[o<font size=2>b]ar</font>baz" checks for modifications to non-editable content
-FAIL [["stylewithcss","false"],["fontsize","4"]] "fo[o<font size=2>b]ar</font>baz" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "fo<font size=\"4\">o</font><font size=\"2\"><font size=\"4\">b</font>ar</font>baz" but got "fo<font size=\"4\">ob</font><font size=\"2\">ar</font>baz"
+FAIL [["stylewithcss","false"],["fontsize","4"]] "fo[o<font size=2>b]ar</font>baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "fo<font size=\"4\">o</font><font size=\"2\"><font size=\"4\">b</font>ar</font>baz" but got "fo<font size=\"4\">ob</font><font size=\"2\">ar</font>baz"
 PASS [["stylewithcss","false"],["fontsize","4"]] "fo[o<font size=2>b]ar</font>baz" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","false"],["fontsize","4"]] "fo[o<font size=2>b]ar</font>baz" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","false"],["fontsize","4"]] "fo[o<font size=2>b]ar</font>baz" queryCommandValue("stylewithcss") before
 PASS [["stylewithcss","false"],["fontsize","4"]] "fo[o<font size=2>b]ar</font>baz" queryCommandIndeterm("stylewithcss") after
 PASS [["stylewithcss","false"],["fontsize","4"]] "fo[o<font size=2>b]ar</font>baz" queryCommandState("stylewithcss") after
 PASS [["stylewithcss","false"],["fontsize","4"]] "fo[o<font size=2>b]ar</font>baz" queryCommandValue("stylewithcss") after
-FAIL [["stylewithcss","false"],["fontsize","4"]] "fo[o<font size=2>b]ar</font>baz" queryCommandIndeterm("fontsize") beforeassert_equals: Wrong result returned expected true but got false
+FAIL [["stylewithcss","false"],["fontsize","4"]] "fo[o<font size=2>b]ar</font>baz" queryCommandIndeterm("fontsize") before assert_equals: Wrong result returned expected true but got false
 PASS [["stylewithcss","false"],["fontsize","4"]] "fo[o<font size=2>b]ar</font>baz" queryCommandState("fontsize") before
 PASS [["stylewithcss","false"],["fontsize","4"]] "fo[o<font size=2>b]ar</font>baz" queryCommandValue("fontsize") before
 PASS [["stylewithcss","false"],["fontsize","4"]] "fo[o<font size=2>b]ar</font>baz" queryCommandIndeterm("fontsize") after
@@ -1980,14 +1980,14 @@ PASS [["stylewithcss","false"],["fontsize","4"]] "fo[o<font size=2>b]ar</font>ba
 PASS [["stylewithcss","true"],["fontsize","4"]] "foo<font size=2>ba[r</font>b]az": execCommand("stylewithcss", false, "true") return value
 PASS [["stylewithcss","true"],["fontsize","4"]] "foo<font size=2>ba[r</font>b]az": execCommand("fontsize", false, "4") return value
 PASS [["stylewithcss","true"],["fontsize","4"]] "foo<font size=2>ba[r</font>b]az" checks for modifications to non-editable content
-FAIL [["stylewithcss","true"],["fontsize","4"]] "foo<font size=2>ba[r</font>b]az" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<font size=\"2\">ba<span style=\"font-size:large\">r</span></font><span style=\"font-size:large\">b</span>az" but got "foo<font size=\"2\">ba</font><span style=\"font-size:large\">rb</span>az"
+FAIL [["stylewithcss","true"],["fontsize","4"]] "foo<font size=2>ba[r</font>b]az" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<font size=\"2\">ba<span style=\"font-size:large\">r</span></font><span style=\"font-size:large\">b</span>az" but got "foo<font size=\"2\">ba</font><span style=\"font-size:large\">rb</span>az"
 PASS [["stylewithcss","true"],["fontsize","4"]] "foo<font size=2>ba[r</font>b]az" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","true"],["fontsize","4"]] "foo<font size=2>ba[r</font>b]az" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","true"],["fontsize","4"]] "foo<font size=2>ba[r</font>b]az" queryCommandValue("stylewithcss") before
 PASS [["stylewithcss","true"],["fontsize","4"]] "foo<font size=2>ba[r</font>b]az" queryCommandIndeterm("stylewithcss") after
 PASS [["stylewithcss","true"],["fontsize","4"]] "foo<font size=2>ba[r</font>b]az" queryCommandState("stylewithcss") after
 PASS [["stylewithcss","true"],["fontsize","4"]] "foo<font size=2>ba[r</font>b]az" queryCommandValue("stylewithcss") after
-FAIL [["stylewithcss","true"],["fontsize","4"]] "foo<font size=2>ba[r</font>b]az" queryCommandIndeterm("fontsize") beforeassert_equals: Wrong result returned expected true but got false
+FAIL [["stylewithcss","true"],["fontsize","4"]] "foo<font size=2>ba[r</font>b]az" queryCommandIndeterm("fontsize") before assert_equals: Wrong result returned expected true but got false
 PASS [["stylewithcss","true"],["fontsize","4"]] "foo<font size=2>ba[r</font>b]az" queryCommandState("fontsize") before
 PASS [["stylewithcss","true"],["fontsize","4"]] "foo<font size=2>ba[r</font>b]az" queryCommandValue("fontsize") before
 PASS [["stylewithcss","true"],["fontsize","4"]] "foo<font size=2>ba[r</font>b]az" queryCommandIndeterm("fontsize") after
@@ -1996,14 +1996,14 @@ PASS [["stylewithcss","true"],["fontsize","4"]] "foo<font size=2>ba[r</font>b]az
 PASS [["stylewithcss","false"],["fontsize","4"]] "foo<font size=2>ba[r</font>b]az": execCommand("stylewithcss", false, "false") return value
 PASS [["stylewithcss","false"],["fontsize","4"]] "foo<font size=2>ba[r</font>b]az": execCommand("fontsize", false, "4") return value
 PASS [["stylewithcss","false"],["fontsize","4"]] "foo<font size=2>ba[r</font>b]az" checks for modifications to non-editable content
-FAIL [["stylewithcss","false"],["fontsize","4"]] "foo<font size=2>ba[r</font>b]az" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<font size=\"2\">ba<font size=\"4\">r</font></font><font size=\"4\">b</font>az" but got "foo<font size=\"2\">ba</font><font size=\"4\">rb</font>az"
+FAIL [["stylewithcss","false"],["fontsize","4"]] "foo<font size=2>ba[r</font>b]az" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<font size=\"2\">ba<font size=\"4\">r</font></font><font size=\"4\">b</font>az" but got "foo<font size=\"2\">ba</font><font size=\"4\">rb</font>az"
 PASS [["stylewithcss","false"],["fontsize","4"]] "foo<font size=2>ba[r</font>b]az" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","false"],["fontsize","4"]] "foo<font size=2>ba[r</font>b]az" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","false"],["fontsize","4"]] "foo<font size=2>ba[r</font>b]az" queryCommandValue("stylewithcss") before
 PASS [["stylewithcss","false"],["fontsize","4"]] "foo<font size=2>ba[r</font>b]az" queryCommandIndeterm("stylewithcss") after
 PASS [["stylewithcss","false"],["fontsize","4"]] "foo<font size=2>ba[r</font>b]az" queryCommandState("stylewithcss") after
 PASS [["stylewithcss","false"],["fontsize","4"]] "foo<font size=2>ba[r</font>b]az" queryCommandValue("stylewithcss") after
-FAIL [["stylewithcss","false"],["fontsize","4"]] "foo<font size=2>ba[r</font>b]az" queryCommandIndeterm("fontsize") beforeassert_equals: Wrong result returned expected true but got false
+FAIL [["stylewithcss","false"],["fontsize","4"]] "foo<font size=2>ba[r</font>b]az" queryCommandIndeterm("fontsize") before assert_equals: Wrong result returned expected true but got false
 PASS [["stylewithcss","false"],["fontsize","4"]] "foo<font size=2>ba[r</font>b]az" queryCommandState("fontsize") before
 PASS [["stylewithcss","false"],["fontsize","4"]] "foo<font size=2>ba[r</font>b]az" queryCommandValue("fontsize") before
 PASS [["stylewithcss","false"],["fontsize","4"]] "foo<font size=2>ba[r</font>b]az" queryCommandIndeterm("fontsize") after
@@ -2019,7 +2019,7 @@ PASS [["stylewithcss","true"],["fontsize","4"]] "fo[o<font size=2>bar</font>b]az
 PASS [["stylewithcss","true"],["fontsize","4"]] "fo[o<font size=2>bar</font>b]az" queryCommandIndeterm("stylewithcss") after
 PASS [["stylewithcss","true"],["fontsize","4"]] "fo[o<font size=2>bar</font>b]az" queryCommandState("stylewithcss") after
 PASS [["stylewithcss","true"],["fontsize","4"]] "fo[o<font size=2>bar</font>b]az" queryCommandValue("stylewithcss") after
-FAIL [["stylewithcss","true"],["fontsize","4"]] "fo[o<font size=2>bar</font>b]az" queryCommandIndeterm("fontsize") beforeassert_equals: Wrong result returned expected true but got false
+FAIL [["stylewithcss","true"],["fontsize","4"]] "fo[o<font size=2>bar</font>b]az" queryCommandIndeterm("fontsize") before assert_equals: Wrong result returned expected true but got false
 PASS [["stylewithcss","true"],["fontsize","4"]] "fo[o<font size=2>bar</font>b]az" queryCommandState("fontsize") before
 PASS [["stylewithcss","true"],["fontsize","4"]] "fo[o<font size=2>bar</font>b]az" queryCommandValue("fontsize") before
 PASS [["stylewithcss","true"],["fontsize","4"]] "fo[o<font size=2>bar</font>b]az" queryCommandIndeterm("fontsize") after
@@ -2035,7 +2035,7 @@ PASS [["stylewithcss","false"],["fontsize","4"]] "fo[o<font size=2>bar</font>b]a
 PASS [["stylewithcss","false"],["fontsize","4"]] "fo[o<font size=2>bar</font>b]az" queryCommandIndeterm("stylewithcss") after
 PASS [["stylewithcss","false"],["fontsize","4"]] "fo[o<font size=2>bar</font>b]az" queryCommandState("stylewithcss") after
 PASS [["stylewithcss","false"],["fontsize","4"]] "fo[o<font size=2>bar</font>b]az" queryCommandValue("stylewithcss") after
-FAIL [["stylewithcss","false"],["fontsize","4"]] "fo[o<font size=2>bar</font>b]az" queryCommandIndeterm("fontsize") beforeassert_equals: Wrong result returned expected true but got false
+FAIL [["stylewithcss","false"],["fontsize","4"]] "fo[o<font size=2>bar</font>b]az" queryCommandIndeterm("fontsize") before assert_equals: Wrong result returned expected true but got false
 PASS [["stylewithcss","false"],["fontsize","4"]] "fo[o<font size=2>bar</font>b]az" queryCommandState("fontsize") before
 PASS [["stylewithcss","false"],["fontsize","4"]] "fo[o<font size=2>bar</font>b]az" queryCommandValue("fontsize") before
 PASS [["stylewithcss","false"],["fontsize","4"]] "fo[o<font size=2>bar</font>b]az" queryCommandIndeterm("fontsize") after
@@ -2044,7 +2044,7 @@ PASS [["stylewithcss","false"],["fontsize","4"]] "fo[o<font size=2>bar</font>b]a
 PASS [["stylewithcss","true"],["fontsize","4"]] "foo[<font size=2>b]ar</font>baz": execCommand("stylewithcss", false, "true") return value
 PASS [["stylewithcss","true"],["fontsize","4"]] "foo[<font size=2>b]ar</font>baz": execCommand("fontsize", false, "4") return value
 PASS [["stylewithcss","true"],["fontsize","4"]] "foo[<font size=2>b]ar</font>baz" checks for modifications to non-editable content
-FAIL [["stylewithcss","true"],["fontsize","4"]] "foo[<font size=2>b]ar</font>baz" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<font size=\"2\"><span style=\"font-size:large\">b</span>ar</font>baz" but got "foo<span style=\"font-size:large\">b</span><font size=\"2\">ar</font>baz"
+FAIL [["stylewithcss","true"],["fontsize","4"]] "foo[<font size=2>b]ar</font>baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<font size=\"2\"><span style=\"font-size:large\">b</span>ar</font>baz" but got "foo<span style=\"font-size:large\">b</span><font size=\"2\">ar</font>baz"
 PASS [["stylewithcss","true"],["fontsize","4"]] "foo[<font size=2>b]ar</font>baz" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","true"],["fontsize","4"]] "foo[<font size=2>b]ar</font>baz" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","true"],["fontsize","4"]] "foo[<font size=2>b]ar</font>baz" queryCommandValue("stylewithcss") before
@@ -2060,7 +2060,7 @@ PASS [["stylewithcss","true"],["fontsize","4"]] "foo[<font size=2>b]ar</font>baz
 PASS [["stylewithcss","false"],["fontsize","4"]] "foo[<font size=2>b]ar</font>baz": execCommand("stylewithcss", false, "false") return value
 PASS [["stylewithcss","false"],["fontsize","4"]] "foo[<font size=2>b]ar</font>baz": execCommand("fontsize", false, "4") return value
 PASS [["stylewithcss","false"],["fontsize","4"]] "foo[<font size=2>b]ar</font>baz" checks for modifications to non-editable content
-FAIL [["stylewithcss","false"],["fontsize","4"]] "foo[<font size=2>b]ar</font>baz" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<font size=\"2\"><font size=\"4\">b</font>ar</font>baz" but got "foo<font size=\"4\">b</font><font size=\"2\">ar</font>baz"
+FAIL [["stylewithcss","false"],["fontsize","4"]] "foo[<font size=2>b]ar</font>baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<font size=\"2\"><font size=\"4\">b</font>ar</font>baz" but got "foo<font size=\"4\">b</font><font size=\"2\">ar</font>baz"
 PASS [["stylewithcss","false"],["fontsize","4"]] "foo[<font size=2>b]ar</font>baz" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","false"],["fontsize","4"]] "foo[<font size=2>b]ar</font>baz" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","false"],["fontsize","4"]] "foo[<font size=2>b]ar</font>baz" queryCommandValue("stylewithcss") before
@@ -2076,7 +2076,7 @@ PASS [["stylewithcss","false"],["fontsize","4"]] "foo[<font size=2>b]ar</font>ba
 PASS [["stylewithcss","true"],["fontsize","4"]] "foo<font size=2>ba[r</font>]baz": execCommand("stylewithcss", false, "true") return value
 PASS [["stylewithcss","true"],["fontsize","4"]] "foo<font size=2>ba[r</font>]baz": execCommand("fontsize", false, "4") return value
 PASS [["stylewithcss","true"],["fontsize","4"]] "foo<font size=2>ba[r</font>]baz" checks for modifications to non-editable content
-FAIL [["stylewithcss","true"],["fontsize","4"]] "foo<font size=2>ba[r</font>]baz" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<font size=\"2\">ba<span style=\"font-size:large\">r</span></font>baz" but got "foo<font size=\"2\">ba</font><span style=\"font-size:large\">r</span>baz"
+FAIL [["stylewithcss","true"],["fontsize","4"]] "foo<font size=2>ba[r</font>]baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<font size=\"2\">ba<span style=\"font-size:large\">r</span></font>baz" but got "foo<font size=\"2\">ba</font><span style=\"font-size:large\">r</span>baz"
 PASS [["stylewithcss","true"],["fontsize","4"]] "foo<font size=2>ba[r</font>]baz" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","true"],["fontsize","4"]] "foo<font size=2>ba[r</font>]baz" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","true"],["fontsize","4"]] "foo<font size=2>ba[r</font>]baz" queryCommandValue("stylewithcss") before
@@ -2092,7 +2092,7 @@ PASS [["stylewithcss","true"],["fontsize","4"]] "foo<font size=2>ba[r</font>]baz
 PASS [["stylewithcss","false"],["fontsize","4"]] "foo<font size=2>ba[r</font>]baz": execCommand("stylewithcss", false, "false") return value
 PASS [["stylewithcss","false"],["fontsize","4"]] "foo<font size=2>ba[r</font>]baz": execCommand("fontsize", false, "4") return value
 PASS [["stylewithcss","false"],["fontsize","4"]] "foo<font size=2>ba[r</font>]baz" checks for modifications to non-editable content
-FAIL [["stylewithcss","false"],["fontsize","4"]] "foo<font size=2>ba[r</font>]baz" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<font size=\"2\">ba<font size=\"4\">r</font></font>baz" but got "foo<font size=\"2\">ba</font><font size=\"4\">r</font>baz"
+FAIL [["stylewithcss","false"],["fontsize","4"]] "foo<font size=2>ba[r</font>]baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<font size=\"2\">ba<font size=\"4\">r</font></font>baz" but got "foo<font size=\"2\">ba</font><font size=\"4\">r</font>baz"
 PASS [["stylewithcss","false"],["fontsize","4"]] "foo<font size=2>ba[r</font>]baz" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","false"],["fontsize","4"]] "foo<font size=2>ba[r</font>]baz" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","false"],["fontsize","4"]] "foo<font size=2>ba[r</font>]baz" queryCommandValue("stylewithcss") before
@@ -2204,14 +2204,14 @@ PASS [["stylewithcss","false"],["fontsize","4"]] "foo{<font size=2>bar</font>}ba
 PASS [["stylewithcss","true"],["fontsize","4"]] "<font size=1>fo[o</font><span style=font-size:xx-small>b]ar</span>": execCommand("stylewithcss", false, "true") return value
 PASS [["stylewithcss","true"],["fontsize","4"]] "<font size=1>fo[o</font><span style=font-size:xx-small>b]ar</span>": execCommand("fontsize", false, "4") return value
 PASS [["stylewithcss","true"],["fontsize","4"]] "<font size=1>fo[o</font><span style=font-size:xx-small>b]ar</span>" checks for modifications to non-editable content
-FAIL [["stylewithcss","true"],["fontsize","4"]] "<font size=1>fo[o</font><span style=font-size:xx-small>b]ar</span>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<font size=\"1\">fo<span style=\"font-size:large\">o</span></font><span style=\"font-size:xx-small\"><span style=\"font-size:large\">b</span>ar</span>" but got "<font size=\"1\">fo</font><span style=\"font-size:large\">ob</span><span style=\"font-size:xx-small\">ar</span>"
+FAIL [["stylewithcss","true"],["fontsize","4"]] "<font size=1>fo[o</font><span style=font-size:xx-small>b]ar</span>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<font size=\"1\">fo<span style=\"font-size:large\">o</span></font><span style=\"font-size:xx-small\"><span style=\"font-size:large\">b</span>ar</span>" but got "<font size=\"1\">fo</font><span style=\"font-size:large\">ob</span><span style=\"font-size:xx-small\">ar</span>"
 PASS [["stylewithcss","true"],["fontsize","4"]] "<font size=1>fo[o</font><span style=font-size:xx-small>b]ar</span>" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","true"],["fontsize","4"]] "<font size=1>fo[o</font><span style=font-size:xx-small>b]ar</span>" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","true"],["fontsize","4"]] "<font size=1>fo[o</font><span style=font-size:xx-small>b]ar</span>" queryCommandValue("stylewithcss") before
 PASS [["stylewithcss","true"],["fontsize","4"]] "<font size=1>fo[o</font><span style=font-size:xx-small>b]ar</span>" queryCommandIndeterm("stylewithcss") after
 PASS [["stylewithcss","true"],["fontsize","4"]] "<font size=1>fo[o</font><span style=font-size:xx-small>b]ar</span>" queryCommandState("stylewithcss") after
 PASS [["stylewithcss","true"],["fontsize","4"]] "<font size=1>fo[o</font><span style=font-size:xx-small>b]ar</span>" queryCommandValue("stylewithcss") after
-FAIL [["stylewithcss","true"],["fontsize","4"]] "<font size=1>fo[o</font><span style=font-size:xx-small>b]ar</span>" queryCommandIndeterm("fontsize") beforeassert_equals: Wrong result returned expected true but got false
+FAIL [["stylewithcss","true"],["fontsize","4"]] "<font size=1>fo[o</font><span style=font-size:xx-small>b]ar</span>" queryCommandIndeterm("fontsize") before assert_equals: Wrong result returned expected true but got false
 PASS [["stylewithcss","true"],["fontsize","4"]] "<font size=1>fo[o</font><span style=font-size:xx-small>b]ar</span>" queryCommandState("fontsize") before
 PASS [["stylewithcss","true"],["fontsize","4"]] "<font size=1>fo[o</font><span style=font-size:xx-small>b]ar</span>" queryCommandValue("fontsize") before
 PASS [["stylewithcss","true"],["fontsize","4"]] "<font size=1>fo[o</font><span style=font-size:xx-small>b]ar</span>" queryCommandIndeterm("fontsize") after
@@ -2220,14 +2220,14 @@ PASS [["stylewithcss","true"],["fontsize","4"]] "<font size=1>fo[o</font><span s
 PASS [["stylewithcss","false"],["fontsize","4"]] "<font size=1>fo[o</font><span style=font-size:xx-small>b]ar</span>": execCommand("stylewithcss", false, "false") return value
 PASS [["stylewithcss","false"],["fontsize","4"]] "<font size=1>fo[o</font><span style=font-size:xx-small>b]ar</span>": execCommand("fontsize", false, "4") return value
 PASS [["stylewithcss","false"],["fontsize","4"]] "<font size=1>fo[o</font><span style=font-size:xx-small>b]ar</span>" checks for modifications to non-editable content
-FAIL [["stylewithcss","false"],["fontsize","4"]] "<font size=1>fo[o</font><span style=font-size:xx-small>b]ar</span>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<font size=\"1\">fo<font size=\"4\">o</font></font><span style=\"font-size:xx-small\"><font size=\"4\">b</font>ar</span>" but got "<font size=\"1\">fo</font><font size=\"4\">ob</font><span style=\"font-size:xx-small\">ar</span>"
+FAIL [["stylewithcss","false"],["fontsize","4"]] "<font size=1>fo[o</font><span style=font-size:xx-small>b]ar</span>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<font size=\"1\">fo<font size=\"4\">o</font></font><span style=\"font-size:xx-small\"><font size=\"4\">b</font>ar</span>" but got "<font size=\"1\">fo</font><font size=\"4\">ob</font><span style=\"font-size:xx-small\">ar</span>"
 PASS [["stylewithcss","false"],["fontsize","4"]] "<font size=1>fo[o</font><span style=font-size:xx-small>b]ar</span>" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","false"],["fontsize","4"]] "<font size=1>fo[o</font><span style=font-size:xx-small>b]ar</span>" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","false"],["fontsize","4"]] "<font size=1>fo[o</font><span style=font-size:xx-small>b]ar</span>" queryCommandValue("stylewithcss") before
 PASS [["stylewithcss","false"],["fontsize","4"]] "<font size=1>fo[o</font><span style=font-size:xx-small>b]ar</span>" queryCommandIndeterm("stylewithcss") after
 PASS [["stylewithcss","false"],["fontsize","4"]] "<font size=1>fo[o</font><span style=font-size:xx-small>b]ar</span>" queryCommandState("stylewithcss") after
 PASS [["stylewithcss","false"],["fontsize","4"]] "<font size=1>fo[o</font><span style=font-size:xx-small>b]ar</span>" queryCommandValue("stylewithcss") after
-FAIL [["stylewithcss","false"],["fontsize","4"]] "<font size=1>fo[o</font><span style=font-size:xx-small>b]ar</span>" queryCommandIndeterm("fontsize") beforeassert_equals: Wrong result returned expected true but got false
+FAIL [["stylewithcss","false"],["fontsize","4"]] "<font size=1>fo[o</font><span style=font-size:xx-small>b]ar</span>" queryCommandIndeterm("fontsize") before assert_equals: Wrong result returned expected true but got false
 PASS [["stylewithcss","false"],["fontsize","4"]] "<font size=1>fo[o</font><span style=font-size:xx-small>b]ar</span>" queryCommandState("fontsize") before
 PASS [["stylewithcss","false"],["fontsize","4"]] "<font size=1>fo[o</font><span style=font-size:xx-small>b]ar</span>" queryCommandValue("fontsize") before
 PASS [["stylewithcss","false"],["fontsize","4"]] "<font size=1>fo[o</font><span style=font-size:xx-small>b]ar</span>" queryCommandIndeterm("fontsize") after
@@ -2236,7 +2236,7 @@ PASS [["stylewithcss","false"],["fontsize","4"]] "<font size=1>fo[o</font><span 
 PASS [["stylewithcss","true"],["fontsize","4"]] "<font size=2>fo[o</font><span style=font-size:small>b]ar</span>": execCommand("stylewithcss", false, "true") return value
 PASS [["stylewithcss","true"],["fontsize","4"]] "<font size=2>fo[o</font><span style=font-size:small>b]ar</span>": execCommand("fontsize", false, "4") return value
 PASS [["stylewithcss","true"],["fontsize","4"]] "<font size=2>fo[o</font><span style=font-size:small>b]ar</span>" checks for modifications to non-editable content
-FAIL [["stylewithcss","true"],["fontsize","4"]] "<font size=2>fo[o</font><span style=font-size:small>b]ar</span>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<font size=\"2\">fo<span style=\"font-size:large\">o</span></font><span style=\"font-size:small\"><span style=\"font-size:large\">b</span>ar</span>" but got "<font size=\"2\">fo</font><span style=\"font-size:large\">ob</span><span style=\"font-size:small\">ar</span>"
+FAIL [["stylewithcss","true"],["fontsize","4"]] "<font size=2>fo[o</font><span style=font-size:small>b]ar</span>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<font size=\"2\">fo<span style=\"font-size:large\">o</span></font><span style=\"font-size:small\"><span style=\"font-size:large\">b</span>ar</span>" but got "<font size=\"2\">fo</font><span style=\"font-size:large\">ob</span><span style=\"font-size:small\">ar</span>"
 PASS [["stylewithcss","true"],["fontsize","4"]] "<font size=2>fo[o</font><span style=font-size:small>b]ar</span>" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","true"],["fontsize","4"]] "<font size=2>fo[o</font><span style=font-size:small>b]ar</span>" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","true"],["fontsize","4"]] "<font size=2>fo[o</font><span style=font-size:small>b]ar</span>" queryCommandValue("stylewithcss") before
@@ -2252,7 +2252,7 @@ PASS [["stylewithcss","true"],["fontsize","4"]] "<font size=2>fo[o</font><span s
 PASS [["stylewithcss","false"],["fontsize","4"]] "<font size=2>fo[o</font><span style=font-size:small>b]ar</span>": execCommand("stylewithcss", false, "false") return value
 PASS [["stylewithcss","false"],["fontsize","4"]] "<font size=2>fo[o</font><span style=font-size:small>b]ar</span>": execCommand("fontsize", false, "4") return value
 PASS [["stylewithcss","false"],["fontsize","4"]] "<font size=2>fo[o</font><span style=font-size:small>b]ar</span>" checks for modifications to non-editable content
-FAIL [["stylewithcss","false"],["fontsize","4"]] "<font size=2>fo[o</font><span style=font-size:small>b]ar</span>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<font size=\"2\">fo<font size=\"4\">o</font></font><span style=\"font-size:small\"><font size=\"4\">b</font>ar</span>" but got "<font size=\"2\">fo</font><font size=\"4\">ob</font><span style=\"font-size:small\">ar</span>"
+FAIL [["stylewithcss","false"],["fontsize","4"]] "<font size=2>fo[o</font><span style=font-size:small>b]ar</span>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<font size=\"2\">fo<font size=\"4\">o</font></font><span style=\"font-size:small\"><font size=\"4\">b</font>ar</span>" but got "<font size=\"2\">fo</font><font size=\"4\">ob</font><span style=\"font-size:small\">ar</span>"
 PASS [["stylewithcss","false"],["fontsize","4"]] "<font size=2>fo[o</font><span style=font-size:small>b]ar</span>" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","false"],["fontsize","4"]] "<font size=2>fo[o</font><span style=font-size:small>b]ar</span>" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","false"],["fontsize","4"]] "<font size=2>fo[o</font><span style=font-size:small>b]ar</span>" queryCommandValue("stylewithcss") before
@@ -2268,7 +2268,7 @@ PASS [["stylewithcss","false"],["fontsize","4"]] "<font size=2>fo[o</font><span 
 PASS [["stylewithcss","true"],["fontsize","4"]] "<font size=3>fo[o</font><span style=font-size:medium>b]ar</span>": execCommand("stylewithcss", false, "true") return value
 PASS [["stylewithcss","true"],["fontsize","4"]] "<font size=3>fo[o</font><span style=font-size:medium>b]ar</span>": execCommand("fontsize", false, "4") return value
 PASS [["stylewithcss","true"],["fontsize","4"]] "<font size=3>fo[o</font><span style=font-size:medium>b]ar</span>" checks for modifications to non-editable content
-FAIL [["stylewithcss","true"],["fontsize","4"]] "<font size=3>fo[o</font><span style=font-size:medium>b]ar</span>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<font size=\"3\">fo<span style=\"font-size:large\">o</span></font><span style=\"font-size:medium\"><span style=\"font-size:large\">b</span>ar</span>" but got "<font size=\"3\">fo</font><span style=\"font-size:large\">ob</span><span style=\"font-size:medium\">ar</span>"
+FAIL [["stylewithcss","true"],["fontsize","4"]] "<font size=3>fo[o</font><span style=font-size:medium>b]ar</span>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<font size=\"3\">fo<span style=\"font-size:large\">o</span></font><span style=\"font-size:medium\"><span style=\"font-size:large\">b</span>ar</span>" but got "<font size=\"3\">fo</font><span style=\"font-size:large\">ob</span><span style=\"font-size:medium\">ar</span>"
 PASS [["stylewithcss","true"],["fontsize","4"]] "<font size=3>fo[o</font><span style=font-size:medium>b]ar</span>" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","true"],["fontsize","4"]] "<font size=3>fo[o</font><span style=font-size:medium>b]ar</span>" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","true"],["fontsize","4"]] "<font size=3>fo[o</font><span style=font-size:medium>b]ar</span>" queryCommandValue("stylewithcss") before
@@ -2284,7 +2284,7 @@ PASS [["stylewithcss","true"],["fontsize","4"]] "<font size=3>fo[o</font><span s
 PASS [["stylewithcss","false"],["fontsize","4"]] "<font size=3>fo[o</font><span style=font-size:medium>b]ar</span>": execCommand("stylewithcss", false, "false") return value
 PASS [["stylewithcss","false"],["fontsize","4"]] "<font size=3>fo[o</font><span style=font-size:medium>b]ar</span>": execCommand("fontsize", false, "4") return value
 PASS [["stylewithcss","false"],["fontsize","4"]] "<font size=3>fo[o</font><span style=font-size:medium>b]ar</span>" checks for modifications to non-editable content
-FAIL [["stylewithcss","false"],["fontsize","4"]] "<font size=3>fo[o</font><span style=font-size:medium>b]ar</span>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<font size=\"3\">fo<font size=\"4\">o</font></font><span style=\"font-size:medium\"><font size=\"4\">b</font>ar</span>" but got "<font size=\"3\">fo</font><font size=\"4\">ob</font><span style=\"font-size:medium\">ar</span>"
+FAIL [["stylewithcss","false"],["fontsize","4"]] "<font size=3>fo[o</font><span style=font-size:medium>b]ar</span>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<font size=\"3\">fo<font size=\"4\">o</font></font><span style=\"font-size:medium\"><font size=\"4\">b</font>ar</span>" but got "<font size=\"3\">fo</font><font size=\"4\">ob</font><span style=\"font-size:medium\">ar</span>"
 PASS [["stylewithcss","false"],["fontsize","4"]] "<font size=3>fo[o</font><span style=font-size:medium>b]ar</span>" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","false"],["fontsize","4"]] "<font size=3>fo[o</font><span style=font-size:medium>b]ar</span>" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","false"],["fontsize","4"]] "<font size=3>fo[o</font><span style=font-size:medium>b]ar</span>" queryCommandValue("stylewithcss") before
@@ -2299,7 +2299,7 @@ PASS [["stylewithcss","false"],["fontsize","4"]] "<font size=3>fo[o</font><span 
 PASS [["stylewithcss","false"],["fontsize","4"]] "<font size=3>fo[o</font><span style=font-size:medium>b]ar</span>" queryCommandValue("fontsize") after
 PASS [["fontsize","4"]] "<font size=4>fo[o</font><span style=font-size:large>b]ar</span>": execCommand("fontsize", false, "4") return value
 PASS [["fontsize","4"]] "<font size=4>fo[o</font><span style=font-size:large>b]ar</span>" checks for modifications to non-editable content
-FAIL [["fontsize","4"]] "<font size=4>fo[o</font><span style=font-size:large>b]ar</span>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<font size=\"4\">foo</font><span style=\"font-size:large\">bar</span>" but got "<font size=\"4\">foob</font><span style=\"font-size:large\">ar</span>"
+FAIL [["fontsize","4"]] "<font size=4>fo[o</font><span style=font-size:large>b]ar</span>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<font size=\"4\">foo</font><span style=\"font-size:large\">bar</span>" but got "<font size=\"4\">foob</font><span style=\"font-size:large\">ar</span>"
 PASS [["fontsize","4"]] "<font size=4>fo[o</font><span style=font-size:large>b]ar</span>" queryCommandIndeterm("fontsize") before
 PASS [["fontsize","4"]] "<font size=4>fo[o</font><span style=font-size:large>b]ar</span>" queryCommandState("fontsize") before
 PASS [["fontsize","4"]] "<font size=4>fo[o</font><span style=font-size:large>b]ar</span>" queryCommandValue("fontsize") before
@@ -2309,7 +2309,7 @@ PASS [["fontsize","4"]] "<font size=4>fo[o</font><span style=font-size:large>b]a
 PASS [["stylewithcss","true"],["fontsize","4"]] "<font size=5>fo[o</font><span style=font-size:x-large>b]ar</span>": execCommand("stylewithcss", false, "true") return value
 PASS [["stylewithcss","true"],["fontsize","4"]] "<font size=5>fo[o</font><span style=font-size:x-large>b]ar</span>": execCommand("fontsize", false, "4") return value
 PASS [["stylewithcss","true"],["fontsize","4"]] "<font size=5>fo[o</font><span style=font-size:x-large>b]ar</span>" checks for modifications to non-editable content
-FAIL [["stylewithcss","true"],["fontsize","4"]] "<font size=5>fo[o</font><span style=font-size:x-large>b]ar</span>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<font size=\"5\">fo<span style=\"font-size:large\">o</span></font><span style=\"font-size:x-large\"><span style=\"font-size:large\">b</span>ar</span>" but got "<font size=\"5\">fo</font><span style=\"font-size:large\">ob</span><span style=\"font-size:x-large\">ar</span>"
+FAIL [["stylewithcss","true"],["fontsize","4"]] "<font size=5>fo[o</font><span style=font-size:x-large>b]ar</span>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<font size=\"5\">fo<span style=\"font-size:large\">o</span></font><span style=\"font-size:x-large\"><span style=\"font-size:large\">b</span>ar</span>" but got "<font size=\"5\">fo</font><span style=\"font-size:large\">ob</span><span style=\"font-size:x-large\">ar</span>"
 PASS [["stylewithcss","true"],["fontsize","4"]] "<font size=5>fo[o</font><span style=font-size:x-large>b]ar</span>" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","true"],["fontsize","4"]] "<font size=5>fo[o</font><span style=font-size:x-large>b]ar</span>" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","true"],["fontsize","4"]] "<font size=5>fo[o</font><span style=font-size:x-large>b]ar</span>" queryCommandValue("stylewithcss") before
@@ -2325,7 +2325,7 @@ PASS [["stylewithcss","true"],["fontsize","4"]] "<font size=5>fo[o</font><span s
 PASS [["stylewithcss","false"],["fontsize","4"]] "<font size=5>fo[o</font><span style=font-size:x-large>b]ar</span>": execCommand("stylewithcss", false, "false") return value
 PASS [["stylewithcss","false"],["fontsize","4"]] "<font size=5>fo[o</font><span style=font-size:x-large>b]ar</span>": execCommand("fontsize", false, "4") return value
 PASS [["stylewithcss","false"],["fontsize","4"]] "<font size=5>fo[o</font><span style=font-size:x-large>b]ar</span>" checks for modifications to non-editable content
-FAIL [["stylewithcss","false"],["fontsize","4"]] "<font size=5>fo[o</font><span style=font-size:x-large>b]ar</span>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<font size=\"5\">fo<font size=\"4\">o</font></font><span style=\"font-size:x-large\"><font size=\"4\">b</font>ar</span>" but got "<font size=\"5\">fo</font><font size=\"4\">ob</font><span style=\"font-size:x-large\">ar</span>"
+FAIL [["stylewithcss","false"],["fontsize","4"]] "<font size=5>fo[o</font><span style=font-size:x-large>b]ar</span>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<font size=\"5\">fo<font size=\"4\">o</font></font><span style=\"font-size:x-large\"><font size=\"4\">b</font>ar</span>" but got "<font size=\"5\">fo</font><font size=\"4\">ob</font><span style=\"font-size:x-large\">ar</span>"
 PASS [["stylewithcss","false"],["fontsize","4"]] "<font size=5>fo[o</font><span style=font-size:x-large>b]ar</span>" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","false"],["fontsize","4"]] "<font size=5>fo[o</font><span style=font-size:x-large>b]ar</span>" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","false"],["fontsize","4"]] "<font size=5>fo[o</font><span style=font-size:x-large>b]ar</span>" queryCommandValue("stylewithcss") before
@@ -2341,7 +2341,7 @@ PASS [["stylewithcss","false"],["fontsize","4"]] "<font size=5>fo[o</font><span 
 PASS [["stylewithcss","true"],["fontsize","4"]] "<font size=6>fo[o</font><span style=font-size:xx-large>b]ar</span>": execCommand("stylewithcss", false, "true") return value
 PASS [["stylewithcss","true"],["fontsize","4"]] "<font size=6>fo[o</font><span style=font-size:xx-large>b]ar</span>": execCommand("fontsize", false, "4") return value
 PASS [["stylewithcss","true"],["fontsize","4"]] "<font size=6>fo[o</font><span style=font-size:xx-large>b]ar</span>" checks for modifications to non-editable content
-FAIL [["stylewithcss","true"],["fontsize","4"]] "<font size=6>fo[o</font><span style=font-size:xx-large>b]ar</span>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<font size=\"6\">fo<span style=\"font-size:large\">o</span></font><span style=\"font-size:xx-large\"><span style=\"font-size:large\">b</span>ar</span>" but got "<font size=\"6\">fo</font><span style=\"font-size:large\">ob</span><span style=\"font-size:xx-large\">ar</span>"
+FAIL [["stylewithcss","true"],["fontsize","4"]] "<font size=6>fo[o</font><span style=font-size:xx-large>b]ar</span>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<font size=\"6\">fo<span style=\"font-size:large\">o</span></font><span style=\"font-size:xx-large\"><span style=\"font-size:large\">b</span>ar</span>" but got "<font size=\"6\">fo</font><span style=\"font-size:large\">ob</span><span style=\"font-size:xx-large\">ar</span>"
 PASS [["stylewithcss","true"],["fontsize","4"]] "<font size=6>fo[o</font><span style=font-size:xx-large>b]ar</span>" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","true"],["fontsize","4"]] "<font size=6>fo[o</font><span style=font-size:xx-large>b]ar</span>" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","true"],["fontsize","4"]] "<font size=6>fo[o</font><span style=font-size:xx-large>b]ar</span>" queryCommandValue("stylewithcss") before
@@ -2357,7 +2357,7 @@ PASS [["stylewithcss","true"],["fontsize","4"]] "<font size=6>fo[o</font><span s
 PASS [["stylewithcss","false"],["fontsize","4"]] "<font size=6>fo[o</font><span style=font-size:xx-large>b]ar</span>": execCommand("stylewithcss", false, "false") return value
 PASS [["stylewithcss","false"],["fontsize","4"]] "<font size=6>fo[o</font><span style=font-size:xx-large>b]ar</span>": execCommand("fontsize", false, "4") return value
 PASS [["stylewithcss","false"],["fontsize","4"]] "<font size=6>fo[o</font><span style=font-size:xx-large>b]ar</span>" checks for modifications to non-editable content
-FAIL [["stylewithcss","false"],["fontsize","4"]] "<font size=6>fo[o</font><span style=font-size:xx-large>b]ar</span>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<font size=\"6\">fo<font size=\"4\">o</font></font><span style=\"font-size:xx-large\"><font size=\"4\">b</font>ar</span>" but got "<font size=\"6\">fo</font><font size=\"4\">ob</font><span style=\"font-size:xx-large\">ar</span>"
+FAIL [["stylewithcss","false"],["fontsize","4"]] "<font size=6>fo[o</font><span style=font-size:xx-large>b]ar</span>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<font size=\"6\">fo<font size=\"4\">o</font></font><span style=\"font-size:xx-large\"><font size=\"4\">b</font>ar</span>" but got "<font size=\"6\">fo</font><font size=\"4\">ob</font><span style=\"font-size:xx-large\">ar</span>"
 PASS [["stylewithcss","false"],["fontsize","4"]] "<font size=6>fo[o</font><span style=font-size:xx-large>b]ar</span>" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","false"],["fontsize","4"]] "<font size=6>fo[o</font><span style=font-size:xx-large>b]ar</span>" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","false"],["fontsize","4"]] "<font size=6>fo[o</font><span style=font-size:xx-large>b]ar</span>" queryCommandValue("stylewithcss") before

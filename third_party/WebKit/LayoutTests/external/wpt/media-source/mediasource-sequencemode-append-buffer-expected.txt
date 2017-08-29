@@ -1,6 +1,6 @@
 This is a testharness.js-based test.
-FAIL Test sequence AppendMode appendBuffer(first media segment)assert_equals: sourceBuffer.buffered range begins where expected before EOS expected 0.112 but got 0
-FAIL Test sequence AppendMode appendBuffer(second media segment)assert_equals: sourceBuffer.buffered range begins where expected before EOS expected 0.001 but got 0
-FAIL Test sequence AppendMode appendBuffer(second media segment, then first media segment)assert_equals: expectedTimestampOffset expected 0.802 but got 0.801
+FAIL Test sequence AppendMode appendBuffer(first media segment) assert_equals: sourceBuffer.buffered range begins where expected before EOS expected 0.112 but got 0
+FAIL Test sequence AppendMode appendBuffer(second media segment) assert_equals: sourceBuffer.buffered range begins where expected before EOS expected 0.001 but got 0
+FAIL Test sequence AppendMode appendBuffer(second media segment, then first media segment) assert_equals: expectedTimestampOffset expected 0.802 but got 0.801
 Harness: the test ran to completion.
 

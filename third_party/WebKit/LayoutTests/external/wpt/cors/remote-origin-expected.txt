@@ -21,14 +21,14 @@ PASS Disallow origin: http://www1.web-platform.test:8001#
 PASS Disallow origin: http://www1.web-platform.test:8001%23
 PASS Disallow origin: http://www1.web-platform.test:8001:80
 PASS Disallow origin: http://www1.web-platform.test:8001,_*
-FAIL Disallow origin: http://www1.web-platform.test:8001\0assert_equals: expected "error" but got "load"
+FAIL Disallow origin: http://www1.web-platform.test:8001\0 assert_equals: expected "error" but got "load"
 PASS Disallow origin: HTTP://WWW1.WEB-PLATFORM.TEST:8001
 PASS Disallow origin: HTTP://www1.web-platform.test:8001
 PASS Disallow origin: http://WWW1.WEB-PLATFORM.TEST:8001
 PASS Disallow origin: -
 PASS Disallow origin: **
-FAIL Disallow origin: \0*assert_equals: expected "error" but got "load"
-FAIL Disallow origin: *\0assert_equals: expected "error" but got "load"
+FAIL Disallow origin: \0* assert_equals: expected "error" but got "load"
+FAIL Disallow origin: *\0 assert_equals: expected "error" but got "load"
 PASS Disallow origin: '*'
 PASS Disallow origin: "*"
 PASS Disallow origin: *_*
@@ -36,7 +36,7 @@ PASS Disallow origin: *http://*
 PASS Disallow origin: *http://www1.web-platform.test:8001
 PASS Disallow origin: *_http://www1.web-platform.test:8001
 PASS Disallow origin: *,_http://www1.web-platform.test:8001
-FAIL Disallow origin: \0http://www1.web-platform.test:8001assert_equals: expected "error" but got "load"
+FAIL Disallow origin: \0http://www1.web-platform.test:8001 assert_equals: expected "error" but got "load"
 PASS Disallow origin: null_http://www1.web-platform.test:8001
 PASS Disallow origin: http://example.net
 PASS Disallow origin: null

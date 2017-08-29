@@ -308,7 +308,7 @@
     function resultLine(test) {
         let result = `${convertResult(test.status)} ${sanitize(test.name)}`;
         if (test.message) {
-            result += sanitize(test.message).trim();
+            result += ' ' + sanitize(test.message).trim();
         }
         return result + '\n';
     }

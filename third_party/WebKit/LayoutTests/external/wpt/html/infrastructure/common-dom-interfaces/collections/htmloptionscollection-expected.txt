@@ -10,10 +10,10 @@ PASS Insert <optgroup><optgroup><option>6</option></optgroup></optgroup> into <s
 PASS namedItem id attribute
 PASS namedItem name attribute
 PASS namedItem doesn't match anything
-FAIL namedItem multiple IDsassert_equals: expected (string) "3" but got (undefined) undefined
-FAIL namedItem multiple namesassert_equals: expected (string) "5" but got (undefined) undefined
-FAIL namedItem multiple name and IDassert_equals: expected (string) "7" but got (undefined) undefined
-FAIL namedItem multiple name and ID with multiple attributesassert_equals: expected (string) "9" but got (undefined) undefined
+FAIL namedItem multiple IDs assert_equals: expected (string) "3" but got (undefined) undefined
+FAIL namedItem multiple names assert_equals: expected (string) "5" but got (undefined) undefined
+FAIL namedItem multiple name and ID assert_equals: expected (string) "7" but got (undefined) undefined
+FAIL namedItem multiple name and ID with multiple attributes assert_equals: expected (string) "9" but got (undefined) undefined
 PASS namedItem id attribute multiple attributes one element
 PASS namedItem name attribute multiple attributes one element
 PASS HTMLOptionsCollection [index] method return the item with index

@@ -1,11 +1,11 @@
 This is a testharness.js-based test.
-FAIL Initialize a new RTCPeerConnection with no iceCandidatePoolSizepc.getConfiguration is not a function
-FAIL Initialize a new RTCPeerConnection with iceCandidatePoolSize: 0pc.getConfiguration is not a function
-FAIL Initialize a new RTCPeerConnection with iceCandidatePoolSize: 255pc.getConfiguration is not a function
+FAIL Initialize a new RTCPeerConnection with no iceCandidatePoolSize pc.getConfiguration is not a function
+FAIL Initialize a new RTCPeerConnection with iceCandidatePoolSize: 0 pc.getConfiguration is not a function
+FAIL Initialize a new RTCPeerConnection with iceCandidatePoolSize: 255 pc.getConfiguration is not a function
 PASS Initialize a new RTCPeerConnection with iceCandidatePoolSize: -1 (Out Of Range)
 PASS Initialize a new RTCPeerConnection with iceCandidatePoolSize: 256 (Out Of Range)
-FAIL Reconfigure RTCPeerConnection instance iceCandidatePoolSize to 0pc.getConfiguration is not a function
-FAIL Reconfigure RTCPeerConnection instance iceCandidatePoolSize to 255pc.getConfiguration is not a function
+FAIL Reconfigure RTCPeerConnection instance iceCandidatePoolSize to 0 pc.getConfiguration is not a function
+FAIL Reconfigure RTCPeerConnection instance iceCandidatePoolSize to 255 pc.getConfiguration is not a function
 PASS Reconfigure RTCPeerConnection instance iceCandidatePoolSize to -1 (Out Of Range)
 PASS Reconfigure RTCPeerConnection instance iceCandidatePoolSize to 256 (Out Of Range)
 Harness: the test ran to completion.

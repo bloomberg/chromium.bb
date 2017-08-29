@@ -2,6 +2,6 @@ This is a testharness.js-based test.
 PASS mediatest_medialist_serialize_element
 PASS mediatest_medialist_serialize_comma
 PASS mediatest_medialist_serialize_empty
-FAIL mediatest_medialist_serialize_lexicographicalassert_equals: expected "all, print, screen" but got "all, screen, print"
+FAIL mediatest_medialist_serialize_lexicographical assert_equals: expected "all, print, screen" but got "all, screen, print"
 Harness: the test ran to completion.
 

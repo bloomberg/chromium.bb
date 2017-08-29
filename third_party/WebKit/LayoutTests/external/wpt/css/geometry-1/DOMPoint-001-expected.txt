@@ -1,24 +1,24 @@
 This is a testharness.js-based test.
 PASS testConstructor0
-FAIL testConstructor1assert_throws: function "function () { new DOMPoint(1);}" did not throw
+FAIL testConstructor1 assert_throws: function "function () { new DOMPoint(1);}" did not throw
 PASS testConstructor2
 PASS testConstructor3
 PASS testConstructor4
 PASS testConstructor5
-FAIL testConstructorDictionary0assert_equals: Expected value for x is 0 expected 0 but got NaN
-FAIL testConstructorDictionary1assert_equals: Expected value for x is 1 expected 1 but got NaN
-FAIL testConstructorDictionary2assert_equals: Expected value for x is 1 expected 1 but got NaN
-FAIL testConstructorDictionary3assert_equals: Expected value for x is 1 expected 1 but got NaN
-FAIL testConstructorDictionary4assert_equals: Expected value for x is 1 expected 1 but got NaN
-FAIL testConstructorDictionary5assert_equals: Expected value for x is 1 expected 1 but got NaN
-FAIL testConstructorDictionary2irregularassert_equals: Expected value for x is 1 expected 1 but got NaN
-FAIL testConstructorDictionary2undefinedassert_equals: Expected value for x is 1 expected 1 but got NaN
-FAIL testConstructorDOMPointassert_equals: Expected value for x is 1 expected 1 but got NaN
+FAIL testConstructorDictionary0 assert_equals: Expected value for x is 0 expected 0 but got NaN
+FAIL testConstructorDictionary1 assert_equals: Expected value for x is 1 expected 1 but got NaN
+FAIL testConstructorDictionary2 assert_equals: Expected value for x is 1 expected 1 but got NaN
+FAIL testConstructorDictionary3 assert_equals: Expected value for x is 1 expected 1 but got NaN
+FAIL testConstructorDictionary4 assert_equals: Expected value for x is 1 expected 1 but got NaN
+FAIL testConstructorDictionary5 assert_equals: Expected value for x is 1 expected 1 but got NaN
+FAIL testConstructorDictionary2irregular assert_equals: Expected value for x is 1 expected 1 but got NaN
+FAIL testConstructorDictionary2undefined assert_equals: Expected value for x is 1 expected 1 but got NaN
+FAIL testConstructorDOMPoint assert_equals: Expected value for x is 1 expected 1 but got NaN
 PASS testConstructor2undefined
 PASS testConstructorUndefined1
-FAIL testConstructorUndefined2assert_equals: Expected value for y is NaN expected NaN but got 0
-FAIL testConstructorIllegal1assert_throws: function "function () { new DOMPointReadOnly();}" did not throw
-FAIL testConstructorIllegal2assert_throws: function "function () { new DOMPointReadOnly(1, 2, 3, 4);}" did not throw
+FAIL testConstructorUndefined2 assert_equals: Expected value for y is NaN expected NaN but got 0
+FAIL testConstructorIllegal1 assert_throws: function "function () { new DOMPointReadOnly();}" did not throw
+FAIL testConstructorIllegal2 assert_throws: function "function () { new DOMPointReadOnly(1, 2, 3, 4);}" did not throw
 PASS testAttributesUndefined
 PASS testAttributesNaNInfinity
 Harness: the test ran to completion.

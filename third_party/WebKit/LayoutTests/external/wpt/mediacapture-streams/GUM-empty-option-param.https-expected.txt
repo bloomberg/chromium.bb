@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-FAIL Tests that getUserMedia raises a NOT_SUPPORTED_ERR exception when used with an empty options parameterassert_throws: function "function () {
+FAIL Tests that getUserMedia raises a NOT_SUPPORTED_ERR exception when used with an empty options parameter assert_throws: function "function () {
       navigator.getUserMedia({}, t.step_func(function (stream) {
         assert_unreached("This should never be triggered since the constraints parameter is empty");
         t.done();

@@ -42,19 +42,19 @@ PASS MediaStreamTrack interface: operation getCapabilities()
 PASS MediaStreamTrack interface: operation getConstraints()
 PASS MediaStreamTrack interface: operation getSettings()
 PASS MediaStreamTrack interface: operation applyConstraints(MediaTrackConstraints)
-FAIL MediaStreamTrack interface: attribute onoverconstrainedassert_true: The prototype object must have a property "onoverconstrained" expected true got false
-FAIL MediaStreamTrackEvent interface: existence and properties of interface objectCannot read property 'has_extended_attribute' of undefined
+FAIL MediaStreamTrack interface: attribute onoverconstrained assert_true: The prototype object must have a property "onoverconstrained" expected true got false
+FAIL MediaStreamTrackEvent interface: existence and properties of interface object Cannot read property 'has_extended_attribute' of undefined
 PASS MediaStreamTrackEvent interface object length
 PASS MediaStreamTrackEvent interface object name
-FAIL MediaStreamTrackEvent interface: existence and properties of interface prototype objectCannot read property 'has_extended_attribute' of undefined
+FAIL MediaStreamTrackEvent interface: existence and properties of interface prototype object Cannot read property 'has_extended_attribute' of undefined
 PASS MediaStreamTrackEvent interface: existence and properties of interface prototype object's "constructor" property
 PASS MediaStreamTrackEvent interface: attribute track
-FAIL OverconstrainedErrorEvent interface: existence and properties of interface objectassert_own_property: self does not have own property "OverconstrainedErrorEvent" expected property "OverconstrainedErrorEvent" missing
-FAIL OverconstrainedErrorEvent interface object lengthassert_own_property: self does not have own property "OverconstrainedErrorEvent" expected property "OverconstrainedErrorEvent" missing
-FAIL OverconstrainedErrorEvent interface object nameassert_own_property: self does not have own property "OverconstrainedErrorEvent" expected property "OverconstrainedErrorEvent" missing
-FAIL OverconstrainedErrorEvent interface: existence and properties of interface prototype objectassert_own_property: self does not have own property "OverconstrainedErrorEvent" expected property "OverconstrainedErrorEvent" missing
-FAIL OverconstrainedErrorEvent interface: existence and properties of interface prototype object's "constructor" propertyassert_own_property: self does not have own property "OverconstrainedErrorEvent" expected property "OverconstrainedErrorEvent" missing
-FAIL OverconstrainedErrorEvent interface: attribute errorassert_own_property: self does not have own property "OverconstrainedErrorEvent" expected property "OverconstrainedErrorEvent" missing
+FAIL OverconstrainedErrorEvent interface: existence and properties of interface object assert_own_property: self does not have own property "OverconstrainedErrorEvent" expected property "OverconstrainedErrorEvent" missing
+FAIL OverconstrainedErrorEvent interface object length assert_own_property: self does not have own property "OverconstrainedErrorEvent" expected property "OverconstrainedErrorEvent" missing
+FAIL OverconstrainedErrorEvent interface object name assert_own_property: self does not have own property "OverconstrainedErrorEvent" expected property "OverconstrainedErrorEvent" missing
+FAIL OverconstrainedErrorEvent interface: existence and properties of interface prototype object assert_own_property: self does not have own property "OverconstrainedErrorEvent" expected property "OverconstrainedErrorEvent" missing
+FAIL OverconstrainedErrorEvent interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "OverconstrainedErrorEvent" expected property "OverconstrainedErrorEvent" missing
+FAIL OverconstrainedErrorEvent interface: attribute error assert_own_property: self does not have own property "OverconstrainedErrorEvent" expected property "OverconstrainedErrorEvent" missing
 PASS MediaDevices interface: existence and properties of interface object
 PASS MediaDevices interface object length
 PASS MediaDevices interface object name
@@ -80,11 +80,11 @@ PASS MediaDeviceInfo interface: attribute deviceId
 PASS MediaDeviceInfo interface: attribute kind
 PASS MediaDeviceInfo interface: attribute label
 PASS MediaDeviceInfo interface: attribute groupId
-FAIL InputDeviceInfo interface: existence and properties of interface objectassert_own_property: self does not have own property "InputDeviceInfo" expected property "InputDeviceInfo" missing
-FAIL InputDeviceInfo interface object lengthassert_own_property: self does not have own property "InputDeviceInfo" expected property "InputDeviceInfo" missing
-FAIL InputDeviceInfo interface object nameassert_own_property: self does not have own property "InputDeviceInfo" expected property "InputDeviceInfo" missing
-FAIL InputDeviceInfo interface: existence and properties of interface prototype objectassert_own_property: self does not have own property "InputDeviceInfo" expected property "InputDeviceInfo" missing
-FAIL InputDeviceInfo interface: existence and properties of interface prototype object's "constructor" propertyassert_own_property: self does not have own property "InputDeviceInfo" expected property "InputDeviceInfo" missing
-FAIL InputDeviceInfo interface: operation getCapabilities()assert_own_property: self does not have own property "InputDeviceInfo" expected property "InputDeviceInfo" missing
+FAIL InputDeviceInfo interface: existence and properties of interface object assert_own_property: self does not have own property "InputDeviceInfo" expected property "InputDeviceInfo" missing
+FAIL InputDeviceInfo interface object length assert_own_property: self does not have own property "InputDeviceInfo" expected property "InputDeviceInfo" missing
+FAIL InputDeviceInfo interface object name assert_own_property: self does not have own property "InputDeviceInfo" expected property "InputDeviceInfo" missing
+FAIL InputDeviceInfo interface: existence and properties of interface prototype object assert_own_property: self does not have own property "InputDeviceInfo" expected property "InputDeviceInfo" missing
+FAIL InputDeviceInfo interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "InputDeviceInfo" expected property "InputDeviceInfo" missing
+FAIL InputDeviceInfo interface: operation getCapabilities() assert_own_property: self does not have own property "InputDeviceInfo" expected property "InputDeviceInfo" missing
 Harness: the test ran to completion.
 

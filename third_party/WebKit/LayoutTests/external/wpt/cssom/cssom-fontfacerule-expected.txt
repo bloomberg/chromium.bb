@@ -1,4 +1,4 @@
 This is a testharness.js-based test.
-FAIL CSSStyleDeclaration values are represented within CSSFontFaceRuleassert_equals: expected "url(http://foo/bar/font.ttf)" but got "url(\"http://foo/bar/font.ttf\")"
+FAIL CSSStyleDeclaration values are represented within CSSFontFaceRule assert_equals: expected "url(http://foo/bar/font.ttf)" but got "url(\"http://foo/bar/font.ttf\")"
 Harness: the test ran to completion.
 

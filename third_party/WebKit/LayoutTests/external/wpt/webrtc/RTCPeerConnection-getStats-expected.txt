@@ -1,13 +1,13 @@
 This is a testharness.js-based test.
 PASS getStats() with no argument should succeed
-FAIL getStats(null) should succeedpromise_test: Unhandled rejection with value: object "TypeError: Failed to execute 'getStats' on 'RTCPeerConnection': The callback provided as parameter 1 is not a function."
-FAIL getStats() with track not added to connection should reject with InvalidAccessErrorpromise_test: Unhandled rejection with value: object "NotSupportedError: Only secure origins are allowed (see: https://goo.gl/Y0ZkNV)."
-FAIL getStats() with track added via addTrack should succeedpromise_test: Unhandled rejection with value: object "NotSupportedError: Only secure origins are allowed (see: https://goo.gl/Y0ZkNV)."
-FAIL getStats() with track added via addTransceiver should succeedassert_idl_attribute: Expect pc to have addTransceiver() method property "addTransceiver" not found in prototype chain
-FAIL getStats() with track associated with more than one sender should reject with InvalidAccessErrorpromise_test: Unhandled rejection with value: object "NotSupportedError: Only secure origins are allowed (see: https://goo.gl/Y0ZkNV)."
-FAIL getStats() with track associated with both sender and receiver should reject with InvalidAccessErrorpc.addTransceiver is not a function
-FAIL getStats() with no argument should return stats report containing peer-connection statsassert_equals: Expect dictionary.timeStamp to be number expected "number" but got "undefined"
-FAIL getStats() on track associated with RtpSender should return stats report containing outbound-rtp statspromise_test: Unhandled rejection with value: object "NotSupportedError: Only secure origins are allowed (see: https://goo.gl/Y0ZkNV)."
-FAIL getStats() on track associated with RtpReceiver should return stats report containing inbound-rtp statspc.addTransceiver is not a function
+FAIL getStats(null) should succeed promise_test: Unhandled rejection with value: object "TypeError: Failed to execute 'getStats' on 'RTCPeerConnection': The callback provided as parameter 1 is not a function."
+FAIL getStats() with track not added to connection should reject with InvalidAccessError promise_test: Unhandled rejection with value: object "NotSupportedError: Only secure origins are allowed (see: https://goo.gl/Y0ZkNV)."
+FAIL getStats() with track added via addTrack should succeed promise_test: Unhandled rejection with value: object "NotSupportedError: Only secure origins are allowed (see: https://goo.gl/Y0ZkNV)."
+FAIL getStats() with track added via addTransceiver should succeed assert_idl_attribute: Expect pc to have addTransceiver() method property "addTransceiver" not found in prototype chain
+FAIL getStats() with track associated with more than one sender should reject with InvalidAccessError promise_test: Unhandled rejection with value: object "NotSupportedError: Only secure origins are allowed (see: https://goo.gl/Y0ZkNV)."
+FAIL getStats() with track associated with both sender and receiver should reject with InvalidAccessError pc.addTransceiver is not a function
+FAIL getStats() with no argument should return stats report containing peer-connection stats assert_equals: Expect dictionary.timeStamp to be number expected "number" but got "undefined"
+FAIL getStats() on track associated with RtpSender should return stats report containing outbound-rtp stats promise_test: Unhandled rejection with value: object "NotSupportedError: Only secure origins are allowed (see: https://goo.gl/Y0ZkNV)."
+FAIL getStats() on track associated with RtpReceiver should return stats report containing inbound-rtp stats pc.addTransceiver is not a function
 Harness: the test ran to completion.
 

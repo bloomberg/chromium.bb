@@ -1,4 +1,4 @@
 This is a testharness.js-based test.
-FAIL Blacklisted content type and isContentHandlerRegisterednavigator.registerContentHandler is not a function
+FAIL Blacklisted content type and isContentHandlerRegistered navigator.registerContentHandler is not a function
 Harness: the test ran to completion.
 

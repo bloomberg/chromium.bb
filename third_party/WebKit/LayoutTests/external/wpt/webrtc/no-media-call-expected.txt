@@ -1,4 +1,4 @@
 This is a testharness.js-based test.
-FAIL Can set up a basic WebRTC call with no data.assert_unreached: WebRTC called error callback for createOffer Reached unreachable code
+FAIL Can set up a basic WebRTC call with no data. assert_unreached: WebRTC called error callback for createOffer Reached unreachable code
 Harness: the test ran to completion.
 

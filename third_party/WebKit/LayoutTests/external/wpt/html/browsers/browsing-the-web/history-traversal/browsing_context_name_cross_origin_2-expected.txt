@@ -1,4 +1,4 @@
 This is a testharness.js-based test.
-FAIL Restoring window.name on cross-origin history traversalassert_equals: Initial load expected "test3" but got "test"
+FAIL Restoring window.name on cross-origin history traversal assert_equals: Initial load expected "test3" but got "test"
 Harness: the test ran to completion.
 

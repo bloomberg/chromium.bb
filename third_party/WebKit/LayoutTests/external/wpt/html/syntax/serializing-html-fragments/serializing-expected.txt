@@ -9,7 +9,7 @@ PASS innerHTML 5 <a b="&nbsp;"></a>
 PASS innerHTML 6 <a b="&quot;"></a>
 PASS innerHTML 7 <a b="<"></a>
 PASS innerHTML 8 <a b=">"></a>
-FAIL innerHTML 9 <svg xlink:href="a"></svg>assert_equals: expected "<svg xlink:href=\"a\"></svg>" but got "<svg xmlns:xlink=\"http://www.w3.org/1999/xlink\" xlink:href=\"a\"></svg>"
+FAIL innerHTML 9 <svg xlink:href="a"></svg> assert_equals: expected "<svg xlink:href=\"a\"></svg>" but got "<svg xmlns:xlink=\"http://www.w3.org/1999/xlink\" xlink:href=\"a\"></svg>"
 PASS innerHTML 10 <svg xmlns:svg="test"></svg>
 PASS innerHTML 11 a
 PASS innerHTML 12 &amp;
@@ -20,10 +20,10 @@ PASS innerHTML 16 "
 PASS innerHTML 17 <style><&></style>
 PASS innerHTML 18 <script type="test"><&></script>
 PASS innerHTML 19 <xmp><&></xmp>
-FAIL innerHTML 20 <iframe><&></iframe>assert_equals: expected "<iframe><&></iframe>" but got "<iframe>&lt;&amp;&gt;</iframe>"
-FAIL innerHTML 21 <noembed><&></noembed>assert_equals: expected "<noembed><&></noembed>" but got "<noembed>&lt;&amp;&gt;</noembed>"
-FAIL innerHTML 22 <noframes><&></noframes>assert_equals: expected "<noframes><&></noframes>" but got "<noframes>&lt;&amp;&gt;</noframes>"
-FAIL innerHTML 23 <noscript><&></noscript>assert_equals: expected "<noscript><&></noscript>" but got "<noscript>&lt;&amp;&gt;</noscript>"
+FAIL innerHTML 20 <iframe><&></iframe> assert_equals: expected "<iframe><&></iframe>" but got "<iframe>&lt;&amp;&gt;</iframe>"
+FAIL innerHTML 21 <noembed><&></noembed> assert_equals: expected "<noembed><&></noembed>" but got "<noembed>&lt;&amp;&gt;</noembed>"
+FAIL innerHTML 22 <noframes><&></noframes> assert_equals: expected "<noframes><&></noframes>" but got "<noframes>&lt;&amp;&gt;</noframes>"
+FAIL innerHTML 23 <noscript><&></noscript> assert_equals: expected "<noscript><&></noscript>" but got "<noscript>&lt;&amp;&gt;</noscript>"
 PASS innerHTML 24 <!--data-->
 PASS innerHTML 25 <a><b><c></c></b><d>e</d><f><g>h</g></f></a>
 PASS innerHTML 26 
@@ -36,7 +36,7 @@ PASS outerHTML 5 <span><a b="&nbsp;"></a></span>
 PASS outerHTML 6 <span><a b="&quot;"></a></span>
 PASS outerHTML 7 <span><a b="<"></a></span>
 PASS outerHTML 8 <span><a b=">"></a></span>
-FAIL outerHTML 9 <span><svg xlink:href="a"></svg></span>assert_equals: expected "<span><svg xlink:href=\"a\"></svg></span>" but got "<span><svg xmlns:xlink=\"http://www.w3.org/1999/xlink\" xlink:href=\"a\"></svg></span>"
+FAIL outerHTML 9 <span><svg xlink:href="a"></svg></span> assert_equals: expected "<span><svg xlink:href=\"a\"></svg></span>" but got "<span><svg xmlns:xlink=\"http://www.w3.org/1999/xlink\" xlink:href=\"a\"></svg></span>"
 PASS outerHTML 10 <span><svg xmlns:svg="test"></svg></span>
 PASS outerHTML 11 <span>a</span>
 PASS outerHTML 12 <span>&amp;</span>
@@ -47,21 +47,21 @@ PASS outerHTML 16 <span>"</span>
 PASS outerHTML 17 <span><style><&></style></span>
 PASS outerHTML 18 <span><script type="test"><&></script></span>
 PASS outerHTML 19 <span><xmp><&></xmp></span>
-FAIL outerHTML 20 <span><iframe><&></iframe></span>assert_equals: expected "<span><iframe><&></iframe></span>" but got "<span><iframe>&lt;&amp;&gt;</iframe></span>"
-FAIL outerHTML 21 <span><noembed><&></noembed></span>assert_equals: expected "<span><noembed><&></noembed></span>" but got "<span><noembed>&lt;&amp;&gt;</noembed></span>"
-FAIL outerHTML 22 <span><noframes><&></noframes></span>assert_equals: expected "<span><noframes><&></noframes></span>" but got "<span><noframes>&lt;&amp;&gt;</noframes></span>"
-FAIL outerHTML 23 <span><noscript><&></noscript></span>assert_equals: expected "<span><noscript><&></noscript></span>" but got "<span><noscript>&lt;&amp;&gt;</noscript></span>"
+FAIL outerHTML 20 <span><iframe><&></iframe></span> assert_equals: expected "<span><iframe><&></iframe></span>" but got "<span><iframe>&lt;&amp;&gt;</iframe></span>"
+FAIL outerHTML 21 <span><noembed><&></noembed></span> assert_equals: expected "<span><noembed><&></noembed></span>" but got "<span><noembed>&lt;&amp;&gt;</noembed></span>"
+FAIL outerHTML 22 <span><noframes><&></noframes></span> assert_equals: expected "<span><noframes><&></noframes></span>" but got "<span><noframes>&lt;&amp;&gt;</noframes></span>"
+FAIL outerHTML 23 <span><noscript><&></noscript></span> assert_equals: expected "<span><noscript><&></noscript></span>" but got "<span><noscript>&lt;&amp;&gt;</noscript></span>"
 PASS outerHTML 24 <span><!--data--></span>
 PASS outerHTML 25 <span><a><b><c></c></b><d>e</d><f><g>h</g></f></a></span>
 PASS outerHTML 26 <span b="c"></span>
 PASS innerHTML Attribute in the XML namespace
-FAIL innerHTML Attribute in the XML namespace with the prefix not set to xml:assert_equals: expected "<svg xml:foo=\"test\"></svg>" but got "<svg abc:foo=\"test\"></svg>"
+FAIL innerHTML Attribute in the XML namespace with the prefix not set to xml: assert_equals: expected "<svg xml:foo=\"test\"></svg>" but got "<svg abc:foo=\"test\"></svg>"
 PASS innerHTML Non-'xmlns' attribute in the xmlns namespace
 PASS innerHTML 'xmlns' attribute in the xmlns namespace
 PASS innerHTML Attribute in non-standard namespace
 PASS innerHTML <span> starting with U+000A
 PASS outerHTML Attribute in the XML namespace
-FAIL outerHTML Attribute in the XML namespace with the prefix not set to xml:assert_equals: expected "<span><svg xml:foo=\"test\"></svg></span>" but got "<span><svg abc:foo=\"test\"></svg></span>"
+FAIL outerHTML Attribute in the XML namespace with the prefix not set to xml: assert_equals: expected "<span><svg xml:foo=\"test\"></svg></span>" but got "<span><svg abc:foo=\"test\"></svg></span>"
 PASS outerHTML Non-'xmlns' attribute in the xmlns namespace
 PASS outerHTML 'xmlns' attribute in the xmlns namespace
 PASS outerHTML Attribute in non-standard namespace

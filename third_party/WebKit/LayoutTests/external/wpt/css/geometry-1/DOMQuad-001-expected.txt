@@ -1,40 +1,40 @@
 This is a testharness.js-based test.
 PASS testConstructor0: points
-FAIL testConstructor0: boundsCannot read property 'x' of undefined
+FAIL testConstructor0: bounds Cannot read property 'x' of undefined
 PASS testConstructor1
 PASS testConstructor2
 PASS testConstructor3
 PASS testConstructor4
-FAIL testConstructor5: pointsassert_equals: Expected value for p2.x is 110 expected 110 but got 0
-FAIL testConstructor5: boundsCannot read property 'x' of undefined
-FAIL testConstructor6: pointsassert_equals: Expected value for p2.x is -90 expected -90 but got 0
-FAIL testConstructor6: boundsCannot read property 'x' of undefined
-FAIL testConstructor7: pointsassert_equals: Expected value for p2.x is NaN expected NaN but got 0
-FAIL testConstructor7: boundsCannot read property 'x' of undefined
+FAIL testConstructor5: points assert_equals: Expected value for p2.x is 110 expected 110 but got 0
+FAIL testConstructor5: bounds Cannot read property 'x' of undefined
+FAIL testConstructor6: points assert_equals: Expected value for p2.x is -90 expected -90 but got 0
+FAIL testConstructor6: bounds Cannot read property 'x' of undefined
+FAIL testConstructor7: points assert_equals: Expected value for p2.x is NaN expected NaN but got 0
+FAIL testConstructor7: bounds Cannot read property 'x' of undefined
 PASS testConstructor8: points
-FAIL testConstructor8: boundsCannot read property 'x' of undefined
+FAIL testConstructor8: bounds Cannot read property 'x' of undefined
 PASS testConstructor9: points
-FAIL testConstructor9: boundsCannot read property 'x' of undefined
+FAIL testConstructor9: bounds Cannot read property 'x' of undefined
 PASS testConstructor10: points
-FAIL testConstructor10: boundsCannot read property 'x' of undefined
+FAIL testConstructor10: bounds Cannot read property 'x' of undefined
 PASS testConstructor11: points
-FAIL testConstructor11: boundsCannot read property 'x' of undefined
+FAIL testConstructor11: bounds Cannot read property 'x' of undefined
 PASS testConstructor12: points
-FAIL testConstructor12: boundsCannot read property 'x' of undefined
+FAIL testConstructor12: bounds Cannot read property 'x' of undefined
 PASS testConstructor13: points
-FAIL testConstructor13: boundsCannot read property 'x' of undefined
+FAIL testConstructor13: bounds Cannot read property 'x' of undefined
 PASS testConstructor14: points
-FAIL testConstructor14: boundsCannot read property 'x' of undefined
+FAIL testConstructor14: bounds Cannot read property 'x' of undefined
 PASS testConstructor15
 PASS testConstructor16: points
-FAIL testConstructor16: boundsCannot read property 'x' of undefined
+FAIL testConstructor16: bounds Cannot read property 'x' of undefined
 PASS p1Top4Attributes0: points
-FAIL p1Top4Attributes0: boundsCannot read property 'x' of undefined
+FAIL p1Top4Attributes0: bounds Cannot read property 'x' of undefined
 PASS p1Top4Attributes1: points
-FAIL p1Top4Attributes1: boundsCannot read property 'x' of undefined
+FAIL p1Top4Attributes1: bounds Cannot read property 'x' of undefined
 PASS boundsAttribute0: points
-FAIL boundsAttribute0: boundsassert_equals: Expected value for bounds.x is 0 expected 0 but got 10
-FAIL boundsAttribute1: pointsCannot set property 'x' of undefined
-FAIL boundsAttribute1: boundsCannot set property 'x' of undefined
+FAIL boundsAttribute0: bounds assert_equals: Expected value for bounds.x is 0 expected 0 but got 10
+FAIL boundsAttribute1: points Cannot set property 'x' of undefined
+FAIL boundsAttribute1: bounds Cannot set property 'x' of undefined
 Harness: the test ran to completion.
 

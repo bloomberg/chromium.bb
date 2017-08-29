@@ -1,7 +1,7 @@
 This is a testharness.js-based test.
-FAIL Test copied keyframeEffectReadOnly has the same targetFailed to construct 'KeyframeEffectReadOnly': 2 arguments required, but only 1 present.
-FAIL Test copied keyframeEffectReadOnly has the same keyframesFailed to construct 'KeyframeEffectReadOnly': 2 arguments required, but only 1 present.
-FAIL Test copied keyframeEffectReadOnly has the same keyframeEffectOptionsFailed to construct 'KeyframeEffectReadOnly': 2 arguments required, but only 1 present.
-FAIL Test copied keyframeEffectReadOnly has the same timing contentFailed to construct 'KeyframeEffectReadOnly': 2 arguments required, but only 1 present.
+FAIL Test copied keyframeEffectReadOnly has the same target Failed to construct 'KeyframeEffectReadOnly': 2 arguments required, but only 1 present.
+FAIL Test copied keyframeEffectReadOnly has the same keyframes Failed to construct 'KeyframeEffectReadOnly': 2 arguments required, but only 1 present.
+FAIL Test copied keyframeEffectReadOnly has the same keyframeEffectOptions Failed to construct 'KeyframeEffectReadOnly': 2 arguments required, but only 1 present.
+FAIL Test copied keyframeEffectReadOnly has the same timing content Failed to construct 'KeyframeEffectReadOnly': 2 arguments required, but only 1 present.
 Harness: the test ran to completion.
 

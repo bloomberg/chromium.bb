@@ -5,6 +5,6 @@ PASS Signaling 'network' error via endOfStream() before initialization segment h
 PASS Signaling 'decode' error via endOfStream() after initialization segment has been appended and the HTMLMediaElement has reached HAVE_METADATA.
 PASS Signaling 'network' error via endOfStream() after initialization segment has been appended and the HTMLMediaElement has reached HAVE_METADATA.
 PASS Signaling 'decode' error via segment parser loop algorithm after initialization segment has been appended.
-FAIL Signaling 'decode' error via segment parser loop algorithm.assert_unreached: 'loadedmetadata' should not be fired on mediaElement Reached unreachable code
+FAIL Signaling 'decode' error via segment parser loop algorithm. assert_unreached: 'loadedmetadata' should not be fired on mediaElement Reached unreachable code
 Harness: the test ran to completion.
 

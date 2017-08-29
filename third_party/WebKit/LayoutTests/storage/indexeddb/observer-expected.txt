@@ -1,6 +1,6 @@
 This is a testharness.js-based test.
 PASS Registering observe call with empty transaction
-FAIL Cannot observe during version changeTest bug: need to pass exception to assert_throws()
+FAIL Cannot observe during version change Test bug: need to pass exception to assert_throws()
 PASS Abort transaction associated with observer
 PASS Aborted transaction not recorded by observer
 Harness: the test ran to completion.

@@ -306,7 +306,7 @@ PASS clear: left
 PASS clear: right
 PASS clear: both
 PASS clear: inherit
-FAIL clip: rect(1em, auto, 0.5px, 2000em)assert_equals: clip raw inline style declaration expected "rect(1em, auto, 0.5px, 2000em)" but got "rect(1em auto 0.5px 2000em)"
+FAIL clip: rect(1em, auto, 0.5px, 2000em) assert_equals: clip raw inline style declaration expected "rect(1em, auto, 0.5px, 2000em)" but got "rect(1em auto 0.5px 2000em)"
 PASS clip: auto
 PASS clip: inherit
 PASS color: black
@@ -320,7 +320,7 @@ PASS content: "string"
 PASS content: 'string'
 PASS content: url("http://localhost/")
 PASS content: url(http://localhost/)
-FAIL content: counter(par-num)assert_equals: content raw inline style declaration expected "counter(par-num, decimal)" but got "counter(par-num)"
+FAIL content: counter(par-num) assert_equals: content raw inline style declaration expected "counter(par-num, decimal)" but got "counter(par-num)"
 PASS content: counter(par-num, upper-roman)
 PASS content: attr(foo-bar)
 PASS content: attr(foo_bar)
@@ -393,7 +393,7 @@ PASS font-style: normal
 PASS font-style: italic
 PASS font-style: oblique
 PASS font-style: inherit
-FAIL font-variant: normalassert_equals: font-variant raw inline style declaration expected "normal" but got ""
+FAIL font-variant: normal assert_equals: font-variant raw inline style declaration expected "normal" but got ""
 PASS font-variant: small-caps
 PASS font-variant: inherit
 PASS font-weight: normal
@@ -523,7 +523,7 @@ PASS outline-color: black
 PASS outline-color: red
 PASS outline-color: rgb(50, 75, 100)
 PASS outline-color: rgba(5, 7, 10, 0.5)
-FAIL outline-color: invertassert_equals: outline-color raw inline style declaration expected "invert" but got ""
+FAIL outline-color: invert assert_equals: outline-color raw inline style declaration expected "invert" but got ""
 PASS outline-color: inherit
 PASS outline-style: none
 PASS outline-style: dotted
@@ -571,20 +571,20 @@ PASS padding-left: .1em
 PASS padding-left: 5%
 PASS padding-left: .5%
 PASS padding-left: inherit
-FAIL page-break-after: autoassert_equals: page-break-after raw inline style declaration expected "auto" but got ""
-FAIL page-break-after: alwaysassert_equals: page-break-after raw inline style declaration expected "always" but got ""
-FAIL page-break-after: avoidassert_equals: page-break-after raw inline style declaration expected "avoid" but got ""
-FAIL page-break-after: leftassert_equals: page-break-after raw inline style declaration expected "left" but got ""
-FAIL page-break-after: rightassert_equals: page-break-after raw inline style declaration expected "right" but got ""
+FAIL page-break-after: auto assert_equals: page-break-after raw inline style declaration expected "auto" but got ""
+FAIL page-break-after: always assert_equals: page-break-after raw inline style declaration expected "always" but got ""
+FAIL page-break-after: avoid assert_equals: page-break-after raw inline style declaration expected "avoid" but got ""
+FAIL page-break-after: left assert_equals: page-break-after raw inline style declaration expected "left" but got ""
+FAIL page-break-after: right assert_equals: page-break-after raw inline style declaration expected "right" but got ""
 PASS page-break-after: inherit
-FAIL page-break-before: autoassert_equals: page-break-before raw inline style declaration expected "auto" but got ""
-FAIL page-break-before: alwaysassert_equals: page-break-before raw inline style declaration expected "always" but got ""
-FAIL page-break-before: avoidassert_equals: page-break-before raw inline style declaration expected "avoid" but got ""
-FAIL page-break-before: leftassert_equals: page-break-before raw inline style declaration expected "left" but got ""
-FAIL page-break-before: rightassert_equals: page-break-before raw inline style declaration expected "right" but got ""
+FAIL page-break-before: auto assert_equals: page-break-before raw inline style declaration expected "auto" but got ""
+FAIL page-break-before: always assert_equals: page-break-before raw inline style declaration expected "always" but got ""
+FAIL page-break-before: avoid assert_equals: page-break-before raw inline style declaration expected "avoid" but got ""
+FAIL page-break-before: left assert_equals: page-break-before raw inline style declaration expected "left" but got ""
+FAIL page-break-before: right assert_equals: page-break-before raw inline style declaration expected "right" but got ""
 PASS page-break-before: inherit
-FAIL page-break-inside: avoidassert_equals: page-break-inside raw inline style declaration expected "avoid" but got ""
-FAIL page-break-inside: autoassert_equals: page-break-inside raw inline style declaration expected "auto" but got ""
+FAIL page-break-inside: avoid assert_equals: page-break-inside raw inline style declaration expected "avoid" but got ""
+FAIL page-break-inside: auto assert_equals: page-break-inside raw inline style declaration expected "auto" but got ""
 PASS page-break-inside: inherit
 PASS position: static
 PASS position: relative

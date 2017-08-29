@@ -1,4 +1,4 @@
 This is a testharness.js-based test.
-FAIL NavigatorLanguage: the most preferred language is the one returned by navigator.languageassert_equals: navigator.languages is the most preferred language first expected (string) "en-US" but got (undefined) undefined
+FAIL NavigatorLanguage: the most preferred language is the one returned by navigator.language assert_equals: navigator.languages is the most preferred language first expected (string) "en-US" but got (undefined) undefined
 Harness: the test ran to completion.
 

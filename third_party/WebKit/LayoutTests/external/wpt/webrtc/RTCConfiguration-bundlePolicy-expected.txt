@@ -1,9 +1,9 @@
 This is a testharness.js-based test.
-FAIL Default bundlePolicy should be balancedpc.getConfiguration is not a function
-FAIL new RTCPeerConnection({ bundlePolicy: undefined }) should have bundlePolicy balancedpc.getConfiguration is not a function
-FAIL new RTCPeerConnection({ bundlePolicy: 'balanced' }) should succeedpc.getConfiguration is not a function
-FAIL new RTCPeerConnection({ bundlePolicy: 'max-compat' }) should succeedpc.getConfiguration is not a function
-FAIL new RTCPeerConnection({ bundlePolicy: 'max-bundle' }) should succeedpc.getConfiguration is not a function
+FAIL Default bundlePolicy should be balanced pc.getConfiguration is not a function
+FAIL new RTCPeerConnection({ bundlePolicy: undefined }) should have bundlePolicy balanced pc.getConfiguration is not a function
+FAIL new RTCPeerConnection({ bundlePolicy: 'balanced' }) should succeed pc.getConfiguration is not a function
+FAIL new RTCPeerConnection({ bundlePolicy: 'max-compat' }) should succeed pc.getConfiguration is not a function
+FAIL new RTCPeerConnection({ bundlePolicy: 'max-bundle' }) should succeed pc.getConfiguration is not a function
 PASS setConfiguration({}) with initial default bundlePolicy balanced should succeed
 PASS setConfiguration({}) with initial bundlePolicy balanced should succeed
 PASS setConfiguration({ bundlePolicy: balanced }) with initial default bundlePolicy balanced should succeed
@@ -12,9 +12,9 @@ PASS setConfiguration({ bundlePolicy: 'max-compat' }) with initial bundlePolicy 
 PASS setConfiguration({ bundlePolicy: 'max-bundle' }) with initial bundlePolicy max-bundle should succeed
 PASS new RTCPeerConnection({ bundlePolicy: null }) should throw TypeError
 PASS new RTCPeerConnection({ bundlePolicy: 'invalid' }) should throw TypeError
-FAIL setConfiguration({ bundlePolicy: 'max-compat' }) with initial bundlePolicy max-bundle should throw InvalidModificationErrorassert_throws: function "() =>
+FAIL setConfiguration({ bundlePolicy: 'max-compat' }) with initial bundlePolicy max-bundle should throw InvalidModificationError assert_throws: function "() =>
       pc.setConfiguration({ bundlePolicy: 'max-compat' })" did not throw
-FAIL setConfiguration({}) with initial bundlePolicy max-bundle should throw InvalidModificationErrorassert_throws: function "() =>
+FAIL setConfiguration({}) with initial bundlePolicy max-bundle should throw InvalidModificationError assert_throws: function "() =>
       pc.setConfiguration({})" did not throw
 Harness: the test ran to completion.
 

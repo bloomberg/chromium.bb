@@ -1,4 +1,4 @@
 This is a testharness.js-based test.
-FAIL Tests calc() on presentation and non-presentation attr in svgLengthTest bug: need to pass exception to assert_throws()
+FAIL Tests calc() on presentation and non-presentation attr in svgLength Test bug: need to pass exception to assert_throws()
 Harness: the test ran to completion.
 

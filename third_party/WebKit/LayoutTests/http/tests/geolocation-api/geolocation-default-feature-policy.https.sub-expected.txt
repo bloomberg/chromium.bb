@@ -2,7 +2,7 @@ CONSOLE WARNING: line 14: getCurrentPosition and watchPosition usage in cross-or
 This is a testharness.js-based test.
 PASS Default "geolocation" feature policy ["self"] allows the top-level document.
 PASS Default "geolocation" feature policy ["self"] allows same-origin iframes.
-FAIL Default "geolocation" feature policy ["self"] disallows cross-origin iframes.assert_equals: expected "#PositionError" but got "#OK"
+FAIL Default "geolocation" feature policy ["self"] disallows cross-origin iframes. assert_equals: expected "#PositionError" but got "#OK"
 PASS Feature policy "geolocation" can be enabled in cross-origin iframes using "allow" attribute.
 Harness: the test ran to completion.
 

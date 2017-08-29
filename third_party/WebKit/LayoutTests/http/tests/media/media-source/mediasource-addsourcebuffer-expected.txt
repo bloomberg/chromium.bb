@@ -8,8 +8,8 @@ PASS Test addSourceBuffer() with Vorbis and VP8
 PASS Test addSourceBuffer() with Vorbis and VP8 in separate SourceBuffers
 PASS Test addSourceBuffer() video only
 PASS Test addSourceBuffer() audio only
-FAIL Test addSourceBuffer() with AAC and H.264assert_true: video/mp4;codecs="avc1.4D4001,mp4a.40.2" is supported expected true got false
-FAIL Test addSourceBuffer() with AAC and H.264 in separate SourceBuffersassert_true: video/mp4;codecs="avc1.4D4001" is supported expected true got false
+FAIL Test addSourceBuffer() with AAC and H.264 assert_true: video/mp4;codecs="avc1.4D4001,mp4a.40.2" is supported expected true got false
+FAIL Test addSourceBuffer() with AAC and H.264 in separate SourceBuffers assert_true: video/mp4;codecs="avc1.4D4001" is supported expected true got false
 PASS Test addSourceBuffer() throws QuotaExceededError after MediaSource has completed init.
 PASS Test addSourceBuffer() succeeds while incomplete init segment is appended, fails after MediaSource init completed.
 Harness: the test ran to completion.

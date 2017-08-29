@@ -1,6 +1,6 @@
 This is a testharness.js-based test.
 PASS Throws if the promise [[state]] is not "interactive"
-FAIL Calling abort must not change the [[state]] until after "interactive"assert_true: Unexpected promise rejection: Request failed expected true got false
-FAIL calling .abort() causes acceptPromise to reject and closes the request.assert_true: Unexpected promise rejection: Request failed expected true got false
+FAIL Calling abort must not change the [[state]] until after "interactive" assert_true: Unexpected promise rejection: Request failed expected true got false
+FAIL calling .abort() causes acceptPromise to reject and closes the request. assert_true: Unexpected promise rejection: Request failed expected true got false
 Harness: the test ran to completion.
 

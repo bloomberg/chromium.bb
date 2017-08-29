@@ -9,9 +9,9 @@ PASS VTTCue interface: attribute region
 PASS VTTCue interface: attribute vertical
 PASS VTTCue interface: attribute snapToLines
 PASS VTTCue interface: attribute line
-FAIL VTTCue interface: attribute lineAlignassert_true: The prototype object must have a property "lineAlign" expected true got false
+FAIL VTTCue interface: attribute lineAlign assert_true: The prototype object must have a property "lineAlign" expected true got false
 PASS VTTCue interface: attribute position
-FAIL VTTCue interface: attribute positionAlignassert_true: The prototype object must have a property "positionAlign" expected true got false
+FAIL VTTCue interface: attribute positionAlign assert_true: The prototype object must have a property "positionAlign" expected true got false
 PASS VTTCue interface: attribute size
 PASS VTTCue interface: attribute align
 PASS VTTCue interface: attribute text
@@ -22,9 +22,9 @@ PASS VTTCue interface: new VTTCue(0, 0, "") must inherit property "region" with 
 PASS VTTCue interface: new VTTCue(0, 0, "") must inherit property "vertical" with the proper type
 PASS VTTCue interface: new VTTCue(0, 0, "") must inherit property "snapToLines" with the proper type
 PASS VTTCue interface: new VTTCue(0, 0, "") must inherit property "line" with the proper type
-FAIL VTTCue interface: new VTTCue(0, 0, "") must inherit property "lineAlign" with the proper typeassert_inherits: property "lineAlign" not found in prototype chain
+FAIL VTTCue interface: new VTTCue(0, 0, "") must inherit property "lineAlign" with the proper type assert_inherits: property "lineAlign" not found in prototype chain
 PASS VTTCue interface: new VTTCue(0, 0, "") must inherit property "position" with the proper type
-FAIL VTTCue interface: new VTTCue(0, 0, "") must inherit property "positionAlign" with the proper typeassert_inherits: property "positionAlign" not found in prototype chain
+FAIL VTTCue interface: new VTTCue(0, 0, "") must inherit property "positionAlign" with the proper type assert_inherits: property "positionAlign" not found in prototype chain
 PASS VTTCue interface: new VTTCue(0, 0, "") must inherit property "size" with the proper type
 PASS VTTCue interface: new VTTCue(0, 0, "") must inherit property "align" with the proper type
 PASS VTTCue interface: new VTTCue(0, 0, "") must inherit property "text" with the proper type
@@ -34,7 +34,7 @@ PASS VTTRegion interface object length
 PASS VTTRegion interface object name
 PASS VTTRegion interface: existence and properties of interface prototype object
 PASS VTTRegion interface: existence and properties of interface prototype object's "constructor" property
-FAIL VTTRegion interface: attribute idassert_true: The prototype object must have a property "id" expected true got false
+FAIL VTTRegion interface: attribute id assert_true: The prototype object must have a property "id" expected true got false
 PASS VTTRegion interface: attribute width
 PASS VTTRegion interface: attribute lines
 PASS VTTRegion interface: attribute regionAnchorX
@@ -44,7 +44,7 @@ PASS VTTRegion interface: attribute viewportAnchorY
 PASS VTTRegion interface: attribute scroll
 PASS VTTRegion must be primary interface of new VTTRegion()
 PASS Stringification of new VTTRegion()
-FAIL VTTRegion interface: new VTTRegion() must inherit property "id" with the proper typeassert_inherits: property "id" not found in prototype chain
+FAIL VTTRegion interface: new VTTRegion() must inherit property "id" with the proper type assert_inherits: property "id" not found in prototype chain
 PASS VTTRegion interface: new VTTRegion() must inherit property "width" with the proper type
 PASS VTTRegion interface: new VTTRegion() must inherit property "lines" with the proper type
 PASS VTTRegion interface: new VTTRegion() must inherit property "regionAnchorX" with the proper type
