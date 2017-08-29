@@ -9726,16 +9726,19 @@
           'caption': '''Allow data migration''',
         },
       ],
-      'supported_on': ['chrome_os:60-'],
+      'supported_on': ['chrome_os:60-60'],
       'device_only': True,
       'features': {
         'dynamic_refresh': True,
       },
+      'deprecated': True,
       'example_value': 1,
       'id': 374,
       'caption': '''Migration strategy for ecryptfs''',
       'tags': [],
-      'desc': '''Specifies how a device should behave that shipped with ecryptfs and needs to transition to ext4 encryption.
+      'desc': '''This policy is deprecated in M61, please use EcryptfsMigrationStrategy instead.
+
+      Specifies how a device should behave that shipped with ecryptfs and needs to transition to ext4 encryption.
 
       If you set this policy to 'DisallowArc', Android apps will be disabled for all users on the device (including those that have ext4 encryption already) and no migration from ecryptfs to ext4 encryption will be offered to any users.
 
