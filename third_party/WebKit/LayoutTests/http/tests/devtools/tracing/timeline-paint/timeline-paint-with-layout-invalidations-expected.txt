@@ -1,0 +1,57 @@
+Tests the Timeline API instrumentation of paint events with layout invalidations.
+
+PASS
+
+
+Running: testLocalFrame
+paint invalidations[
+    {
+        cause : {reason: Inline CSS style declaration was mutated, stackTrace: http://127.0.0.1:8000/devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations.html:9}
+        changedAttribute : undefined
+        changedClass : undefined
+        changedId : undefined
+        changedPseudo : undefined
+        extraData : ""
+        nodeName : "BODY"
+        selectorPart : undefined
+        type : "StyleRecalcInvalidationTracking"
+    }
+]
+
+Running: testSubframe
+second paint invalidations[
+    {
+        cause : {reason: Inline CSS style declaration was mutated, stackTrace: http://127.0.0.1:8000/devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations.html:17}
+        changedAttribute : undefined
+        changedClass : undefined
+        changedId : undefined
+        changedPseudo : undefined
+        extraData : ""
+        nodeName : "DIV"
+        selectorPart : undefined
+        type : "StyleRecalcInvalidationTracking"
+    }
+    {
+        cause : {reason: Style changed, stackTrace: http://127.0.0.1:8000/devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations.html:18}
+        changedAttribute : undefined
+        changedClass : undefined
+        changedId : undefined
+        changedPseudo : undefined
+        extraData : undefined
+        nodeName : "DIV"
+        selectorPart : undefined
+        type : "LayoutInvalidationTracking"
+    }
+    {
+        cause : {reason: Unknown, stackTrace: http://127.0.0.1:8000/devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations.html:18}
+        changedAttribute : undefined
+        changedClass : undefined
+        changedId : undefined
+        changedPseudo : undefined
+        extraData : undefined
+        nodeName : "#document"
+        selectorPart : undefined
+        type : "LayoutInvalidationTracking"
+    }
+]
+

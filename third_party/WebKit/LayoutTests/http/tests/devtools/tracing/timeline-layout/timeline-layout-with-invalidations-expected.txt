@@ -1,0 +1,61 @@
+Tests the Timeline API instrumentation of layout events with invalidations.
+
+PASS
+ 
+
+Running: testLocalFrame
+first layout invalidations[
+    {
+        cause : {reason: Style changed, stackTrace: http://127.0.0.1:8000/devtools/tracing/timeline-layout/timeline-layout-with-invalidations.html:10}
+        changedAttribute : undefined
+        changedClass : undefined
+        changedId : undefined
+        changedPseudo : undefined
+        extraData : undefined
+        nodeName : "DIV id='testElement'"
+        selectorPart : undefined
+        type : "LayoutInvalidationTracking"
+    }
+]
+second layout invalidations[
+    {
+        cause : {reason: Style changed, stackTrace: http://127.0.0.1:8000/devtools/tracing/timeline-layout/timeline-layout-with-invalidations.html:12}
+        changedAttribute : undefined
+        changedClass : undefined
+        changedId : undefined
+        changedPseudo : undefined
+        extraData : undefined
+        nodeName : "DIV id='testElement'"
+        selectorPart : undefined
+        type : "LayoutInvalidationTracking"
+    }
+]
+
+Running: testSubframe
+first layout invalidations[
+    {
+        cause : {reason: Style changed, stackTrace: http://127.0.0.1:8000/devtools/tracing/timeline-layout/timeline-layout-with-invalidations.html:19}
+        changedAttribute : undefined
+        changedClass : undefined
+        changedId : undefined
+        changedPseudo : undefined
+        extraData : undefined
+        nodeName : "DIV"
+        selectorPart : undefined
+        type : "LayoutInvalidationTracking"
+    }
+]
+second layout invalidations[
+    {
+        cause : {reason: Style changed, stackTrace: http://127.0.0.1:8000/devtools/tracing/timeline-layout/timeline-layout-with-invalidations.html:21}
+        changedAttribute : undefined
+        changedClass : undefined
+        changedId : undefined
+        changedPseudo : undefined
+        extraData : undefined
+        nodeName : "DIV"
+        selectorPart : undefined
+        type : "LayoutInvalidationTracking"
+    }
+]
+

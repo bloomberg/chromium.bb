@@ -1,0 +1,129 @@
+<html>
+<head>
+<script src="../../../inspector/inspector-test.js"></script>
+<script src="../../../inspector/timeline-test.js"></script>
+<script>
+function test() {
+  function checkStringContains(string, contains) {
+    var doesContain = string.indexOf(contains) >= 0;
+    TestRunner.check(doesContain, contains + ' should be present in ' + string);
+    TestRunner.addResult('PASS - record contained ' + contains);
+  }
+
+  TestRunner.runTestSuite([
+    function testTimerInstall(next) {
+      function setTimeoutFunction() {
+        return new Promise((fulfill) => setTimeout(fulfill, 0));
+      }
+
+      var source = setTimeoutFunction.toString();
+      source += '\n//# sourceURL=setTimeoutFunction.js';
+      TestRunner.evaluateInPage(source);
+
+      PerformanceTestRunner.invokeAsyncWithTimeline('setTimeoutFunction', finishAndRunNextTest);
+      function finishAndRunNextTest() {
+        var linkifier = new Components.Linkifier();
+        var event = PerformanceTestRunner.findTimelineEvent('TimerFire');
+        TestRunner.check(event, 'Should receive a TimerFire event.');
+        var contentHelper = new Timeline.TimelineDetailsContentHelper(
+            PerformanceTestRunner.timelineModel().targetByEvent(event), linkifier, true);
+        Timeline.TimelineUIUtils._generateCauses(
+            event, PerformanceTestRunner.timelineModel().targetByEvent(event), null, contentHelper);
+        var causes = contentHelper.element.deepTextContent();
+        TestRunner.check(causes, 'Should generate causes');
+        checkStringContains(causes, 'Timer Installed\nPromise @ setTimeoutFunction.js:');
+        next();
+      }
+    },
+
+    function testRequestAnimationFrame(next) {
+      function requestAnimationFrameFunction(callback) {
+        return new Promise((fulfill) => requestAnimationFrame(fulfill));
+      }
+
+      var source = requestAnimationFrameFunction.toString();
+      source += '\n//# sourceURL=requestAnimationFrameFunction.js';
+      TestRunner.evaluateInPage(source);
+
+      PerformanceTestRunner.invokeAsyncWithTimeline('requestAnimationFrameFunction', finishAndRunNextTest);
+      function finishAndRunNextTest() {
+        var linkifier = new Components.Linkifier();
+        var event = PerformanceTestRunner.findTimelineEvent('FireAnimationFrame');
+        TestRunner.check(event, 'Should receive a FireAnimationFrame event.');
+        var contentHelper = new Timeline.TimelineDetailsContentHelper(
+            PerformanceTestRunner.timelineModel().targetByEvent(event), linkifier, true);
+        Timeline.TimelineUIUtils._generateCauses(
+            event, PerformanceTestRunner.timelineModel().targetByEvent(event), null, contentHelper);
+        var causes = contentHelper.element.deepTextContent();
+        TestRunner.check(causes, 'Should generate causes');
+        checkStringContains(causes, 'Animation Frame Requested\nPromise @ requestAnimationFrameFunction.js:');
+        next();
+      }
+    },
+
+    function testStyleRecalc(next) {
+      function styleRecalcFunction() {
+        var element = document.getElementById('testElement');
+        element.style.backgroundColor = 'papayawhip';
+        var forceLayout = element.offsetWidth;
+      }
+
+      var source = styleRecalcFunction.toString();
+      source += '\n//# sourceURL=styleRecalcFunction.js';
+      TestRunner.evaluateInPage(source);
+
+      PerformanceTestRunner.evaluateWithTimeline('styleRecalcFunction()', finishAndRunNextTest);
+      function finishAndRunNextTest() {
+        var linkifier = new Components.Linkifier();
+        var event = PerformanceTestRunner.findTimelineEvent('UpdateLayoutTree');
+        TestRunner.check(event, 'Should receive a UpdateLayoutTree event.');
+        var contentHelper = new Timeline.TimelineDetailsContentHelper(
+            PerformanceTestRunner.timelineModel().targetByEvent(event), linkifier, true);
+        Timeline.TimelineUIUtils._generateCauses(
+            event, PerformanceTestRunner.timelineModel().targetByEvent(event), null, contentHelper);
+        var causes = contentHelper.element.deepTextContent();
+        TestRunner.check(causes, 'Should generate causes');
+        checkStringContains(causes, 'First Invalidated\nstyleRecalcFunction @ styleRecalcFunction.js:');
+        next();
+      }
+    },
+
+    function testLayout(next) {
+      function layoutFunction() {
+        var element = document.getElementById('testElement');
+        element.style.width = '200px';
+        var forceLayout = element.offsetWidth;
+      }
+
+      var source = layoutFunction.toString();
+      source += '\n//# sourceURL=layoutFunction.js';
+      TestRunner.evaluateInPage(source);
+
+      PerformanceTestRunner.evaluateWithTimeline('layoutFunction()', finishAndRunNextTest);
+      function finishAndRunNextTest() {
+        var linkifier = new Components.Linkifier();
+        var event = PerformanceTestRunner.findTimelineEvent('Layout');
+        TestRunner.check(event, 'Should receive a Layout event.');
+        var contentHelper = new Timeline.TimelineDetailsContentHelper(
+            PerformanceTestRunner.timelineModel().targetByEvent(event), linkifier, true);
+        Timeline.TimelineUIUtils._generateCauses(
+            event, PerformanceTestRunner.timelineModel().targetByEvent(event), null, contentHelper);
+        var causes = contentHelper.element.deepTextContent();
+        TestRunner.check(causes, 'Should generate causes');
+        checkStringContains(causes, 'Layout Forced\nlayoutFunction @ layoutFunction.js:');
+        checkStringContains(causes, 'First Layout Invalidation\nlayoutFunction @ layoutFunction.js:');
+        next();
+      }
+    }
+  ]);
+}
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Test that causes are correctly generated for various types of events.
+</p>
+<div id="testElement"></div>
+</body>
+</html>

@@ -1,0 +1,54 @@
+<html>
+<head>
+  <script src="../../inspector/inspector-test.js"></script>
+  <script src="../resources/profiler-test.js"></script>
+<script>
+
+function pageFunction() {
+    (function () {
+        console.profile("profile");
+        console.profileEnd("profile");
+    })();
+}
+
+function test() {
+  function checkFunction(tree, name, url) {
+    var node = tree.children[0];
+    if (!node)
+      TestRunner.addResult('no node');
+    while (node) {
+      var nodeURL = node.element().children[2].lastChild.textContent;
+      if (node.functionName === name && (!url || url === nodeURL)) {
+        TestRunner.addResult('found ' + name + ' ' + (url || ''));
+        return;
+      }
+      node = node.traverseNextNode(true, null, true);
+    }
+    TestRunner.addResult(name + ' not found');
+  }
+
+  ProfilerTestRunner.runProfilerTestSuite([function testProfiling(next) {
+    function findPageFunctionInProfileView(view) {
+      var tree = view.profileDataGridTree;
+      if (!tree)
+        TestRunner.addResult('no tree');
+      checkFunction(tree, 'pageFunction', 'cpu-profiler-profiling.html:7');
+      checkFunction(tree, '(anonymous)');
+      next();
+    }
+    ProfilerTestRunner.showProfileWhenAdded('profile');
+    ProfilerTestRunner.waitUntilProfileViewIsShown('profile', findPageFunctionInProfileView);
+    TestRunner.evaluateInPage('pageFunction()', function done() {});
+  }]);
+}
+
+</script>
+</head>
+<body onload="runTest()">
+<p>
+Tests that CPU profiling works.
+
+<a href="https://bugs.webkit.org/show_bug.cgi?id=52634">Bug 52634.</a>
+</p>
+</body>
+</html>

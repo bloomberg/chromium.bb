@@ -1,0 +1,83 @@
+<html>
+<head>
+  <script src="../../inspector/inspector-test.js"></script>
+  <script src="../resources/heap-snapshot-test.js"></script>
+<script>
+
+function test() {
+  var instanceCount = 24;
+  function createHeapSnapshotA() {
+    return ProfilerTestRunner.createHeapSnapshot(instanceCount, 5);
+  }
+  function createHeapSnapshotB() {
+    return ProfilerTestRunner.createHeapSnapshot(instanceCount + 1, 5 + instanceCount);
+  }
+
+  ProfilerTestRunner.runHeapSnapshotTestSuite([function testExpansionPreservedWhenSorting(next) {
+    ProfilerTestRunner.takeAndOpenSnapshot(createHeapSnapshotA, createSnapshotB);
+    function createSnapshotB() {
+      ProfilerTestRunner.takeAndOpenSnapshot(createHeapSnapshotB, step1);
+    }
+
+    function step1() {
+      ProfilerTestRunner.switchToView('Comparison', step2);
+    }
+
+    var columns;
+    function step2() {
+      columns = ProfilerTestRunner.viewColumns();
+      ProfilerTestRunner.clickColumn(columns[0], step3);
+    }
+
+    function step3() {
+      var row = ProfilerTestRunner.findRow('B');
+      TestRunner.assertEquals(true, !!row, '"B" row');
+      ProfilerTestRunner.expandRow(row, showNext);
+      function showNext(row) {
+        var buttonsNode = ProfilerTestRunner.findButtonsNode(row);
+        TestRunner.assertEquals(true, !!buttonsNode, 'no buttons node found!');
+        ProfilerTestRunner.clickShowMoreButton('showAll', buttonsNode, step4);
+      }
+    }
+
+    function step4() {
+      var row = ProfilerTestRunner.findRow('B');
+      TestRunner.assertEquals(true, !!row, '"B" row');
+      function deletedNodeMatcher(data) {
+        return data._isDeletedNode && data._name.charAt(0) === 'B';
+      }
+      var bInstanceRow = ProfilerTestRunner.findMatchingRow(deletedNodeMatcher, row);
+      TestRunner.assertEquals(true, !!bInstanceRow, '"B" instance row');
+      var buttonsNode = ProfilerTestRunner.findButtonsNode(row, bInstanceRow);
+      TestRunner.assertEquals(false, !!buttonsNode, 'buttons node found!');
+      step5();
+    }
+
+    var nodeCount;
+    function step5() {
+      nodeCount = ProfilerTestRunner.columnContents(columns[0]).length;
+      TestRunner.assertEquals(true, nodeCount > 0, 'nodeCount > 0');
+
+      ProfilerTestRunner.clickColumn(columns[0], clickTwice);
+      function clickTwice() {
+        ProfilerTestRunner.clickColumn(columns[0], step6);
+      }
+    }
+
+    function step6() {
+      var newNodeCount = ProfilerTestRunner.columnContents(columns[0]).length;
+      TestRunner.assertEquals(nodeCount, newNodeCount);
+      setTimeout(next, 0);
+    }
+  }]);
+}
+
+</script>
+</head>
+<body onload="runTest()">
+<p>
+Tests Comparison view of detailed heap snapshots.
+Shown node count must be preserved after sorting.
+</p>
+</body>
+</html>

@@ -48,8 +48,10 @@ crbug.com/438499 [ Linux ] fast/workers/simultaneous-errors.html [ Timeout ]
 crbug.com/438499 [ Linux ] fast/workers/worker-multi-startup.html [ Timeout ]
 crbug.com/438499 [ Linux ] http/tests/websocket/workers/worker-simple.html [ Timeout ]
 crbug.com/438499 [ Linux ] http/tests/workers/text-encoding.html [ Timeout ]
-crbug.com/438499 [ Linux ] inspector/profiler/heap-snapshot-loader.html [ Timeout ]
-crbug.com/438499 [ Linux ] inspector/profiler/heap-snapshot-containment-show-all.html [ Timeout ]
+crbug.com/438499 [ Linux ] http/tests/devtools/profiler/heap-snapshot-loader.html [ Timeout ]
+crbug.com/667560 [ Linux ] virtual/mojo-loading/http/tests/devtools/profiler/heap-snapshot-loader.html [ Timeout ]
+crbug.com/438499 [ Linux ] http/tests/devtools/profiler/heap-snapshot-containment-show-all.html [ Timeout ]
+crbug.com/667560 [ Linux ] virtual/mojo-loading/http/tests/devtools/profiler/heap-snapshot-containment-show-all.html [ Timeout ]
 crbug.com/438499 [ Linux ] virtual/threaded/animations/unanimated-style.html [ Timeout ]
 
 # Flakily timeout on Linux ASAN bots.

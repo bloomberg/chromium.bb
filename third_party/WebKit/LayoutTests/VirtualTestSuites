@@ -233,7 +233,7 @@
   },
   {
     "prefix": "threaded",
-    "base": "inspector/tracing",
+    "base": "http/tests/devtools/tracing",
     "args": ["--enable-threaded-compositing"]
   },
   {

@@ -1,0 +1,70 @@
+<html>
+<head>
+<script src="../../../inspector/inspector-test.js"></script>
+<script src="../../../inspector/timeline-test.js"></script>
+<script>
+
+function test() {
+  function performActions() {
+    var callback;
+    var promise = new Promise((fulfill) => callback = fulfill);
+    var timerOne = setTimeout('1 + 1', 10);
+    var timerTwo = setInterval(intervalTimerWork, 20);
+    var iteration = 0;
+    return promise;
+
+    function intervalTimerWork() {
+      if (++iteration < 2)
+        return;
+      clearInterval(timerTwo);
+      callback();
+    }
+  }
+
+  var source = performActions.toString();
+  source += '\n//# sourceURL=performActions.js';
+  TestRunner.evaluateInPage(source, startTimeline);
+
+  function startTimeline() {
+    PerformanceTestRunner.invokeAsyncWithTimeline('performActions', finish);
+  }
+
+  var linkifier = new Components.Linkifier();
+
+  var recordTypes = new Set(['TimerInstall', 'TimerRemove', 'FunctionCall']);
+  function formatter(event) {
+    if (!recordTypes.has(event.name))
+      return;
+
+    var detailsText = Timeline.TimelineUIUtils.buildDetailsTextForTraceEvent(
+        event, PerformanceTestRunner.timelineModel().targetByEvent(event));
+    TestRunner.addResult('detailsTextContent for ' + event.name + ' event: \'' + detailsText + '\'');
+
+    var details = Timeline.TimelineUIUtils.buildDetailsNodeForTraceEvent(
+        event, PerformanceTestRunner.timelineModel().targetByEvent(event), linkifier);
+    if (!details)
+      return;
+    TestRunner.addResult(
+        'details.textContent for ' + event.name + ' event: \'' + details.textContent.replace(/VM[\d]+/, 'VM') + '\'');
+  }
+
+  function finish() {
+    PerformanceTestRunner.walkTimelineEventTree(formatter);
+    TestRunner.completeTest();
+  }
+}
+
+if (!window.testRunner)
+    setTimeout(performActions, 2000);
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Test that checks location resolving mechanics for TimerInstall TimerRemove and FunctionCall events with scriptId.
+</p><p>
+It expects two FunctionCall for InjectedScript, two TimerInstall events, two FunctionCall events and one TimerRemove event to be logged with performActions.js script name and some line number.
+</p>
+</body>
+</html>

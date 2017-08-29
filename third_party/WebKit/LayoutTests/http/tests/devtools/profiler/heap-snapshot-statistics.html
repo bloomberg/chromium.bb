@@ -1,0 +1,56 @@
+<html>
+<head>
+  <script src="../../inspector/inspector-test.js"></script>
+  <script src="../resources/heap-snapshot-test.js"></script>
+<script>
+
+function test() {
+  function createHeapSnapshot() {
+    var builder = new ProfilerTestRunner.HeapSnapshotBuilder();
+    var index = 0;
+    for (type in ProfilerTestRunner.HeapNode.Type) {
+      if (!ProfilerTestRunner.HeapNode.Type.hasOwnProperty(type))
+        continue;
+      if (type === ProfilerTestRunner.HeapNode.Type.synthetic)
+        continue;
+      if (type === ProfilerTestRunner.HeapNode.Type.number)
+        continue;
+      ++index;
+      var size = index * Math.pow(10, index - 1);
+      var node = new ProfilerTestRunner.HeapNode(type, size, ProfilerTestRunner.HeapNode.Type[type]);
+      TestRunner.addResult(type + ' node size: ' + size);
+      builder.rootNode.linkNode(node, ProfilerTestRunner.HeapEdge.Type.internal, type + 'Link');
+    }
+    var jsArrayNode = new ProfilerTestRunner.HeapNode('Array', 8, ProfilerTestRunner.HeapNode.Type.object);
+    builder.rootNode.linkNode(jsArrayNode, ProfilerTestRunner.HeapEdge.Type.internal, 'JSArrayLink');
+    var jsArrayContentsNode = new ProfilerTestRunner.HeapNode('', 12, ProfilerTestRunner.HeapNode.Type.array);
+    jsArrayNode.linkNode(jsArrayContentsNode, ProfilerTestRunner.HeapEdge.Type.internal, 'elements');
+    var gcRootsNode = new ProfilerTestRunner.HeapNode('(GC roots)', 0, ProfilerTestRunner.HeapNode.Type.synthetic);
+    builder.rootNode.linkNode(gcRootsNode, ProfilerTestRunner.HeapEdge.Type.internal, '0');
+    var strongRoots = new ProfilerTestRunner.HeapNode('(Strong roots)', 0, ProfilerTestRunner.HeapNode.Type.synthetic);
+    gcRootsNode.linkNode(strongRoots, ProfilerTestRunner.HeapEdge.Type.internal, '0');
+    var systemObj = new ProfilerTestRunner.HeapNode('SystemObject', 900000000, ProfilerTestRunner.HeapNode.Type.object);
+    strongRoots.linkNode(systemObj, ProfilerTestRunner.HeapEdge.Type.internal, '0');
+    return builder.generateSnapshot();
+  }
+
+  ProfilerTestRunner.runHeapSnapshotTestSuite([function testStatistics(next) {
+    TestRunner.addSniffer(Profiler.HeapSnapshotView.prototype, '_retrieveStatistics', step1);
+    ProfilerTestRunner.takeAndOpenSnapshot(createHeapSnapshot, () => {});
+
+    async function step1(arg, result) {
+      var statistics = await result;
+      TestRunner.addResult(JSON.stringify(statistics));
+      setTimeout(next, 0);
+    }
+  }]);
+}
+
+</script>
+</head>
+<body onload="runTest()">
+<p>
+Tests Statistics view of detailed heap snapshots.
+</p>
+</body>
+</html>

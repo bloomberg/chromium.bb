@@ -1,9 +1,0 @@
-#!/bin/bash
-
-
-for f in $*
-do
-    echo "Fixing $f"
-    sed -i -f fix_path $f
-done
-

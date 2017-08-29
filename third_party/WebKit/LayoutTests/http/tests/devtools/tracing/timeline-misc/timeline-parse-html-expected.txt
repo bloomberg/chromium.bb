@@ -1,0 +1,44 @@
+Tests the Timeline API instrumentation of ParseHTML
+
+Test data
+ParseHTML Properties:
+{
+    data : {
+        beginData : {
+            frame : <string>
+            stackTrace : <object>
+            startLine : 0
+            url : http://127.0.0.1:8000/devtools/tracing/timeline-misc/timeline-parse-html.html
+        }
+        endData : {
+            endLine : -1
+        }
+    }
+    endTime : <number>
+    frameId : <string>
+    stackTrace : <object>
+    startTime : <number>
+    type : "ParseHTML"
+}
+Text details for ParseHTML: timeline-parse-html.html [1…]
+ParseHTML Properties:
+{
+    data : {
+        beginData : {
+            frame : <string>
+            stackTrace : <object>
+            startLine : 0
+            url : http://127.0.0.1:8000/devtools/tracing/timeline-misc/timeline-parse-html.html
+        }
+        endData : {
+            endLine : -1
+        }
+    }
+    endTime : <number>
+    frameId : <string>
+    stackTrace : <object>
+    startTime : <number>
+    type : "ParseHTML"
+}
+Text details for ParseHTML: timeline-parse-html.html [1…]
+

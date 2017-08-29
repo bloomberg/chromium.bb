@@ -1,0 +1,54 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<script src="../../../inspector/inspector-test.js"></script>
+<script src="../../../inspector/timeline-test.js"></script>
+<script>
+function display()
+{
+    document.body.style.backgroundColor = "blue";
+    document.getElementById("testElement").style.backgroundColor = "salmon";
+    return waitForFrame();
+}
+
+function updateSubframeAndDisplay()
+{
+    frames[0].document.body.children[0].style.backgroundColor = "green";
+    return waitForFrame();
+}
+
+function test() {
+  Runtime.experiments.enableForTest('timelineInvalidationTracking');
+
+  TestRunner.runTestSuite([
+    function testLocalFrame(next) {
+      PerformanceTestRunner.invokeAsyncWithTimeline('display', function() {
+        PerformanceTestRunner.dumpInvalidations(
+            TimelineModel.TimelineModel.RecordType.Paint, 0, 'first paint invalidations');
+        next();
+      });
+    },
+
+    function testSubframe(next) {
+      PerformanceTestRunner.invokeAsyncWithTimeline('updateSubframeAndDisplay', function() {
+        // The first paint corresponds to the local frame and should have no invalidations.
+        var firstPaintEvent = PerformanceTestRunner.findTimelineEvent(TimelineModel.TimelineModel.RecordType.Paint);
+        var firstInvalidations = TimelineModel.InvalidationTracker.invalidationEventsFor(firstPaintEvent);
+        TestRunner.assertEquals(firstInvalidations, null);
+
+        // The second paint corresponds to the subframe and should have our style invalidations.
+        PerformanceTestRunner.dumpInvalidations(
+            TimelineModel.TimelineModel.RecordType.Paint, 1, 'second paint invalidations');
+        next();
+      });
+    }
+  ]);
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests the Timeline API instrumentation of paint events with style recalc invalidations.</p>
+<div id="testElement">PASS</div>
+<iframe src="../resources/timeline-iframe-paint.html" style="position: absolute; left: 40px; top: 40px; width: 100px; height: 100px; border: none"></iframe>
+</body>
+</html>

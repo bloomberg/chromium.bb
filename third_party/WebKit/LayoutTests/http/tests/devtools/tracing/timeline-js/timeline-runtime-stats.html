@@ -1,0 +1,39 @@
+<html>
+<head>
+<script src="../../../inspector/inspector-test.js"></script>
+<script src="../../../inspector/timeline-test.js"></script>
+<script>
+
+function performActions()
+{
+    var div = document.getElementById("foo")
+    div.style.width = "10px";
+    return div.offsetWidth;
+}
+
+function test() {
+  Runtime.experiments.enableForTest('timelineV8RuntimeCallStats');
+  Runtime.experiments.enableForTest('timelineShowAllEvents');
+  PerformanceTestRunner.evaluateWithTimeline('performActions()', finish);
+
+  function finish() {
+    var frame = PerformanceTestRunner.timelineModel()
+                    .mainThreadEvents()
+                    .filter(e => e.name === TimelineModel.TimelineModel.RecordType.JSFrame)
+                    .map(e => e.args['data']['callFrame'])
+                    .find(frame => frame.functionName === 'FunctionCallback' && frame.url === 'native V8Runtime');
+    TestRunner.assertTrue(!!frame, 'FunctionCallback frame not found');
+    TestRunner.completeTest();
+  }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<div id="foo" />
+<p>
+Check that RuntimeCallStats are present in profile.
+</p>
+</body>
+</html>

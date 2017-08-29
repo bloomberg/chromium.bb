@@ -1,0 +1,81 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<script src="../../../inspector/inspector-test.js"></script>
+<script src="../../../inspector/timeline-test.js"></script>
+<script>
+function changeStylesAndDisplay()
+{
+    document.getElementById("testElementOne").style.color = "red";
+    document.getElementById("testElementTwo").style.color = "blue";
+    var forceLayout = document.body.offsetTop;
+    return waitForFrame();
+}
+
+function changeMultipleStylesAndDisplay()
+{
+    var elementOne = document.getElementById("testElementOne");
+    var elementTwo = document.getElementById("testElementTwo");
+    var elementThree = document.getElementById("testElementThree");
+
+    elementOne.style.backgroundColor = "orangered";
+    var forceStyleRecalc1 = document.body.offsetTop;
+    elementOne.style.color = "mediumvioletred";
+    elementTwo.style.color = "deepskyblue";
+    var forceStyleRecalc2 = document.body.offsetTop;
+    elementOne.style.color = "tomato";
+    elementTwo.style.color = "mediumslateblue";
+    elementThree.style.color = "mediumspringgreen";
+    var forceStyleRecalc3 = document.body.offsetTop;
+    return waitForFrame();
+}
+
+function changeSubframeStylesAndDisplay()
+{
+    frames[0].document.body.style.backgroundColor = "papayawhip";
+    frames[0].document.body.children[0].style.width = "200px";
+    var forceLayout = frames[0].document.body.offsetTop;
+    return waitForFrame();
+}
+
+function test() {
+  Runtime.experiments.enableForTest('timelineInvalidationTracking');
+
+  TestRunner.runTestSuite([
+    function testLocalFrame(next) {
+      PerformanceTestRunner.invokeAsyncWithTimeline('changeStylesAndDisplay', function() {
+        PerformanceTestRunner.dumpInvalidations(
+            TimelineModel.TimelineModel.RecordType.UpdateLayoutTree, 0, 'first recalc style invalidations');
+        next();
+      });
+    },
+
+    function multipleStyleRecalcs(next) {
+      PerformanceTestRunner.invokeAsyncWithTimeline('changeMultipleStylesAndDisplay', function() {
+        PerformanceTestRunner.dumpInvalidations(
+            TimelineModel.TimelineModel.RecordType.UpdateLayoutTree, 0, 'first recalc style invalidations');
+        PerformanceTestRunner.dumpInvalidations(
+            TimelineModel.TimelineModel.RecordType.UpdateLayoutTree, 1, 'second recalc style invalidations');
+        PerformanceTestRunner.dumpInvalidations(
+            TimelineModel.TimelineModel.RecordType.UpdateLayoutTree, 2, 'third recalc style invalidations');
+        next();
+      });
+    },
+
+    function testSubframe(next) {
+      PerformanceTestRunner.invokeAsyncWithTimeline('changeSubframeStylesAndDisplay', function() {
+        PerformanceTestRunner.dumpInvalidations(
+            TimelineModel.TimelineModel.RecordType.UpdateLayoutTree, 0, 'first recalc style invalidations');
+        next();
+      });
+    }
+  ]);
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests the Timeline API instrumentation of style recalc events with invalidations.</p>
+<div id="testElementOne">PASS</div><div id="testElementTwo">PASS</div><div id="testElementThree">PASS</div>
+<iframe src="../resources/timeline-iframe-paint.html" style="position: absolute; left: 40px; top: 40px; width: 100px; height: 100px; border: none"></iframe>
+</body>
+</html>

@@ -1,0 +1,28 @@
+CONSOLE MESSAGE: line 1: SCRIPT TAG
+Tests the Timeline instrumentation for CompileScript event.
+
+v8.compile Properties:
+{
+    data : {
+        columnNumber : <number>
+        lineNumber : <number>
+        url : 
+    }
+    endTime : <number>
+    startTime : <number>
+    type : "v8.compile"
+}
+Text details for v8.compile: undefined
+v8.compile Properties:
+{
+    data : {
+        columnNumber : <number>
+        lineNumber : <number>
+        url : http://127.0.0.1:8000/devtools/tracing/timeline-js/resources/timeline-script-tag-2.js
+    }
+    endTime : <number>
+    startTime : <number>
+    type : "v8.compile"
+}
+Text details for v8.compile: timeline-script-tag-2.js:1
+

@@ -1,0 +1,80 @@
+<html>
+<head>
+  <script src="../../inspector/inspector-test.js"></script>
+  <script src="../resources/heap-snapshot-test.js"></script>
+<script>
+
+function test() {
+  var instanceCount = 25;
+  function createHeapSnapshot() {
+    return ProfilerTestRunner.createHeapSnapshot(instanceCount);
+  }
+
+  ProfilerTestRunner.runHeapSnapshotTestSuite([function testSearch(next) {
+    ProfilerTestRunner.takeAndOpenSnapshot(createHeapSnapshot, step1a);
+    function addSearchResultSniffer(step) {
+      function jumpToSearchResult() {
+        step(ProfilerTestRunner.currentProfileView()._searchResults.length);
+      }
+      TestRunner.addSniffer(ProfilerTestRunner.currentProfileView(), '_jumpToSearchResult', jumpToSearchResult);
+    }
+
+    function addNodeSelectedSniffer(callback) {
+      TestRunner.addSniffer(ProfilerTestRunner.currentProfileView(), '_selectRevealedNode', callback);
+    }
+
+    function step1a() {
+      ProfilerTestRunner.switchToView('Summary', step1b);
+    }
+
+    function step1b() {
+      var row = ProfilerTestRunner.findRow('Window');
+      TestRunner.assertEquals(true, !!row, '"Window" class row');
+      ProfilerTestRunner.expandRow(row, step1c);
+    }
+
+    function step1c(row) {
+      TestRunner.assertEquals(1, row.children.length, 'single Window object');
+      var windowRow = row.children[0];
+      TestRunner.assertEquals(true, !!windowRow, '"Window" instance row');
+      ProfilerTestRunner.expandRow(windowRow, step2);
+    }
+
+    function step2() {
+      addSearchResultSniffer(step3);
+      ProfilerTestRunner.currentProfileView().performSearch({query: 'window', caseSensitive: false});
+    }
+
+    function step3(resultCount) {
+      TestRunner.assertEquals(1, resultCount, 'Search for existing node');
+      addSearchResultSniffer(step4);
+      ProfilerTestRunner.currentProfileView().performSearch({query: 'foo', caseSensitive: false});
+    }
+
+    function step4(resultCount) {
+      TestRunner.assertEquals(0, resultCount, 'Search for not-existing node');
+      addNodeSelectedSniffer(step5);
+      ProfilerTestRunner.currentProfileView().performSearch({query: '@999', caseSensitive: false});
+    }
+
+    function step5(node) {
+      TestRunner.assertEquals(false, !!node, 'Search for not-existing node by id');
+      addNodeSelectedSniffer(step6);
+      ProfilerTestRunner.currentProfileView().performSearch({query: '@83', caseSensitive: false});
+    }
+
+    function step6(node) {
+      TestRunner.assertEquals(true, !!node, 'Search for existing node by id');
+      next();
+    }
+  }]);
+}
+
+</script>
+</head>
+<body onload="runTest()">
+<p>
+Tests search in Summary view of detailed heap snapshots.
+</p>
+</body>
+</html>
