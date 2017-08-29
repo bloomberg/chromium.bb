@@ -4878,7 +4878,8 @@ void av1_encode_tile(AV1_COMP *cpi, ThreadData *td, int tile_row,
 #endif  // CONFIG_PVQ
 
 #if CONFIG_LOOPFILTERING_ACROSS_TILES
-  av1_setup_across_tile_boundary_info(cm, tile_info);
+  if (!cm->loop_filter_across_tiles_enabled)
+    av1_setup_across_tile_boundary_info(cm, tile_info);
 #endif
 
 #if CONFIG_LV_MAP
