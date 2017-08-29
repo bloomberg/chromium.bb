@@ -1,0 +1,96 @@
+This is a testharness.js-based test.
+Found 92 tests; 6 PASS, 86 FAIL, 0 TIMEOUT, 0 NOTRUN.
+PASS {a: 1, m11: 2} (invalid)
+PASS {b: 0, m12: -1} (invalid)
+PASS {c: Infinity, m21: -Infinity} (invalid)
+PASS {d: 0, m22: NaN} (invalid)
+PASS {e: 1, m41: 1.00000001} (invalid)
+PASS {f: 0, m42: 5e-324} (invalid)
+FAIL Sanity check without dictionary ctx.getTransform is not a function
+FAIL {m13: 1, is2D: true} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {m14: 1, is2D: true} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {m23: 1, is2D: true} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {m24: 1, is2D: true} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {m31: 1, is2D: true} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {m32: 1, is2D: true} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {m33: 0, is2D: true} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {m33: -0, is2D: true} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {m33: -1, is2D: true} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {m34: 1, is2D: true} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {m43: 1, is2D: true} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {m44: 0, is2D: true} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {is2D: undefined} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {a: 1, m11: 1} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {b: 0, m12: undefined} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {c: 0, m21: 0} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {c: 0, m21: -0} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {c: -0, m21: 0} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {c: -0, m21: -0} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {d: Infinity, m22: Infinity} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {e: -Infinity, m41: -Infinity} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {f: NaN, m42: NaN} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {f: NaN, m42: NaN, is2D: true} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {f: 0, m42: null} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {f: -0, m42: null} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {a: 2} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {b: 2} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {c: 2} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {d: 2} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {e: 2} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {f: 2} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {a: -0, b: -0, c: -0, d: -0, e: -0, f: -0} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {a: -0, b: -0, c: -0, d: -0, e: -0, f: -0, is2D: true} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {m11: 2} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {m12: 2} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {m21: 2} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {m22: 2} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {m41: 2} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {m42: 2} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {m11: -0, m12: -0, m21: -0, m22: -0, m41: -0, m42: -0} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {m11: -0, m12: -0, m21: -0, m22: -0, m41: -0, m42: -0, is2D: true} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {m13: 0, is2D: true} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {m13: -0, is2D: true} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {m14: 0, is2D: true} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {m14: -0, is2D: true} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {m23: 0, is2D: true} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {m23: -0, is2D: true} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {m24: 0, is2D: true} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {m24: -0, is2D: true} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {m31: 0, is2D: true} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {m31: -0, is2D: true} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {m32: 0, is2D: true} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {m32: -0, is2D: true} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {m33: 1, is2D: true} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {m34: 0, is2D: true} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {m34: -0, is2D: true} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {m43: 0, is2D: true} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {m43: -0, is2D: true} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {m44: 1, is2D: true} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {is2D: true} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {m13: 1, is2D: false} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {m14: 1, is2D: false} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {m23: 1, is2D: false} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {m24: 1, is2D: false} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {m31: 1, is2D: false} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {m32: 1, is2D: false} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {m33: 0, is2D: false} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {m33: -0, is2D: false} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {m33: -1, is2D: false} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {m34: 1, is2D: false} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {m43: 1, is2D: false} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {m44: 0, is2D: false} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {m13: 1} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {m14: 1} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {m23: 1} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {m24: 1} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {m31: 1} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {m32: 1} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {m33: 0} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {m34: 1} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {m43: 1} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {m44: 0} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {is2D: false} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+FAIL {is2D: null} Failed to execute 'setTransform' on 'CanvasRenderingContext2D': 6 arguments required, but only 1 present.
+Harness: the test ran to completion.
+
