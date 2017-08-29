@@ -151,12 +151,16 @@ class TestOverscrollDelegate : public OverscrollControllerDelegate {
 
   OverscrollMode current_mode() const { return current_mode_; }
   OverscrollMode completed_mode() const { return completed_mode_; }
+  const std::vector<OverscrollMode>& historical_modes() const {
+    return historical_modes_;
+  }
   float delta_x() const { return delta_x_; }
   float delta_y() const { return delta_y_; }
 
   void Reset() {
     current_mode_ = OVERSCROLL_NONE;
     completed_mode_ = OVERSCROLL_NONE;
+    historical_modes_.clear();
     delta_x_ = delta_y_ = 0.f;
   }
 
@@ -185,6 +189,7 @@ class TestOverscrollDelegate : public OverscrollControllerDelegate {
                               OverscrollSource source) override {
     EXPECT_EQ(current_mode_, old_mode);
     current_mode_ = new_mode;
+    historical_modes_.push_back(new_mode);
     delta_x_ = delta_y_ = 0.f;
   }
 
@@ -196,6 +201,8 @@ class TestOverscrollDelegate : public OverscrollControllerDelegate {
   base::Optional<float> delta_cap_;
   OverscrollMode current_mode_;
   OverscrollMode completed_mode_;
+  std::vector<OverscrollMode> historical_modes_;
+
   float delta_x_;
   float delta_y_;
 
@@ -4902,6 +4909,65 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest, OverscrollDirectionChange) {
   EXPECT_EQ(1U, sink_->message_count());
   EXPECT_EQ(OVERSCROLL_NONE, overscroll_mode());
   EXPECT_EQ(OverscrollSource::NONE, overscroll_source());
+}
+
+TEST_F(RenderWidgetHostViewAuraOverscrollTest,
+       CompleteOverscrollOnGestureScrollEndAck) {
+  SetUpOverscrollEnvironment();
+
+  SimulateGestureEvent(WebInputEvent::kGestureScrollBegin,
+                       blink::kWebGestureDeviceTouchscreen);
+  SendScrollBeginAckIfNeeded(INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_EQ(OVERSCROLL_NONE, overscroll_mode());
+  EXPECT_EQ(OverscrollSource::NONE, overscroll_source());
+  EXPECT_EQ(OVERSCROLL_NONE, overscroll_delegate()->current_mode());
+  EXPECT_EQ(OVERSCROLL_NONE, overscroll_delegate()->completed_mode());
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+
+  // Send GSU to trigger overscroll.
+  SimulateGestureScrollUpdateEvent(300, -5, 0);
+  // Send GSE immediately before ACKing GSU.
+  SimulateGestureEvent(WebInputEvent::kGestureScrollEnd,
+                       blink::kWebGestureDeviceTouchscreen);
+
+  // Now ACK the GSU. Should see a completed overscroll.
+  SendInputEventACK(WebInputEvent::kGestureScrollUpdate,
+                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(OVERSCROLL_NONE, overscroll_mode());
+  EXPECT_EQ(OverscrollSource::NONE, overscroll_source());
+  EXPECT_EQ(OVERSCROLL_NONE, overscroll_delegate()->current_mode());
+  EXPECT_EQ(OVERSCROLL_EAST, overscroll_delegate()->completed_mode());
+}
+
+TEST_F(RenderWidgetHostViewAuraOverscrollTest,
+       InterleavedScrollUpdateAckAndScrollEnd) {
+  SetUpOverscrollEnvironment();
+
+  SimulateGestureEvent(WebInputEvent::kGestureScrollBegin,
+                       blink::kWebGestureDeviceTouchscreen);
+  SendScrollBeginAckIfNeeded(INPUT_EVENT_ACK_STATE_CONSUMED);
+
+  // Send the first GSU which shouldn't trigger overscroll.
+  SimulateGestureScrollUpdateEvent(30, -5, 0);
+  SendInputEventACK(WebInputEvent::kGestureScrollUpdate,
+                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+
+  EXPECT_EQ(0U, overscroll_delegate()->historical_modes().size());
+
+  // Send the second GSU which should be able to trigger overscroll if combined.
+  SimulateGestureScrollUpdateEvent(30, -5, 0);
+
+  // Send GSE immediately before ACKing GSU.
+  SimulateGestureEvent(WebInputEvent::kGestureScrollEnd,
+                       blink::kWebGestureDeviceTouchscreen);
+
+  // Now ACK the second GSU, should see overscroll being triggered and cleared.
+  SendInputEventACK(WebInputEvent::kGestureScrollUpdate,
+                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+
+  EXPECT_EQ(2U, overscroll_delegate()->historical_modes().size());
+  EXPECT_EQ(OVERSCROLL_EAST, overscroll_delegate()->historical_modes().at(0));
+  EXPECT_EQ(OVERSCROLL_NONE, overscroll_delegate()->historical_modes().at(1));
 }
 
 void RenderWidgetHostViewAuraOverscrollTest::
