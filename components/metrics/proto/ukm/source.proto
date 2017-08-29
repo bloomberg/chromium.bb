@@ -9,7 +9,7 @@ package ukm;
 option optimize_for = LITE_RUNTIME;
 
 // Source contains data related to a top-level navigation.
-// Next tag: 7
+// Next tag: 8
 message Source {
   // An identifier for the source. This should be unique within a session.
   optional int64 id = 1;
@@ -26,6 +26,9 @@ message Source {
   // (e.g. it was redirected), otherwise unset. If this URL has not been
   // discovered by Google's crawler, it should not be recorded.
   optional string initial_url = 6;
+
+  // Flag indicating if the metric was collected while inside a "custom tab".
+  optional bool is_custom_tab = 7;
 
   // Timestamp of navigation to this Source, as seen by the client. Time of
   // events related to this Source will generally be relative to this timestamp.

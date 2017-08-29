@@ -6,6 +6,8 @@
 
 #include "jni/FeatureUtilities_jni.h"
 
+#include "components/ukm/ukm_source.h"
+
 using base::android::JavaParamRef;
 
 namespace {
@@ -32,6 +34,7 @@ static void SetCustomTabVisible(JNIEnv* env,
                                 const JavaParamRef<jclass>& clazz,
                                 jboolean visible) {
   custom_tab_visible = visible;
+  ukm::UkmSource::SetCustomTabVisible(visible);
 }
 
 static void SetIsInMultiWindowMode(JNIEnv* env,
