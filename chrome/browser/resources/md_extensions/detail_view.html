@@ -1,6 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/cr_icons_css.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_link_row/cr_link_row.html">
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/paper_toggle_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/policy/cr_tooltip_icon.html">
@@ -238,14 +239,10 @@
           <button class="icon-external" is="paper-icon-button-light"></button>
         </div>
       </div>
-      <div class="section actionable"
-          hidden="[[isControlled_(data.controlledInfo)]]" id="remove-extension"
-          on-tap="onRemoveTap_">
-        <div class="control-line">
-          <span>$i18n{itemRemoveExtension}</span>
-          <button class="subpage-arrow" is="paper-icon-button-light"></button>
-        </div>
-      </div>
+      <button is="cr-link-row" hidden="[[isControlled_(data.controlledInfo)]]"
+          icon-class="subpage-arrow" id="remove-extension"
+          label="$i18n{itemRemoveExtension}" on-tap="onRemoveTap_">
+      </button>
       <div class="section block">
         <div class="section-title">$i18n{itemSource}</div>
         <div class="section-content">

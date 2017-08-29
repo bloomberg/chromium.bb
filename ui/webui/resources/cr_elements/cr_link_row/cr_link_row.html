@@ -1,0 +1,73 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/cr_elements/cr_icons_css.html">
+<link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/default-theme.html">
+
+<dom-module id="cr-link-row">
+  <template strip-whitespace="">
+    <style include="cr-hidden-style cr-icons">
+      :host {
+        background: none;
+        border: none;
+        color: inherit;
+        cursor: pointer;
+        line-height: 154%;  /* 20px. */
+        margin: 0;
+        outline: none;
+        padding: 0;
+        position: relative;
+        width: 100%;
+        @apply(--cr-section);
+      }
+
+      :host(.continuation),
+      :host(.first) {
+        border-top: none;
+      }
+
+      :host([disabled]) {
+        color: var(--paper-grey-500);
+        cursor: auto;
+        pointer-events: none;
+      }
+
+      #label,
+      #subLabel {
+        display: flex;
+      }
+
+      #labelWrapper {
+        flex: 1;
+        flex-basis: 0.000000001px;
+      }
+
+      #outer {
+        align-items: center;
+        display: flex;
+        min-height: var(--cr-section-two-line-min-height);
+        width: 100%;
+      }
+
+      #outer[noSubLabel] {
+        min-height: var(--cr-section-min-height);
+      }
+
+      #subLabel {
+        /* TODO(dschuyler): replace with: @apply(--cr-secondary-text); */
+        color: var(--paper-grey-600);
+        font-weight: 400;
+      }
+    </style>
+    <div id="outer" noSubLabel$="[[!subLabel]]">
+      <div id="labelWrapper" hidden="[[!label]]">
+        <div id="label" class="label">[[label]]</div>
+        <div id="subLabel" class="secondary label">[[subLabel]]</div>
+      </div>
+      <button class$="[[iconClass]]" is="paper-icon-button-light"></button>
+    </div>
+  </template>
+  <script src="cr_link_row.js"></script>
+</dom-module>
