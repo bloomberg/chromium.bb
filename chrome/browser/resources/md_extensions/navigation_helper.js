@@ -41,14 +41,12 @@ cr.define('extensions', function() {
    * page), we use this object to manage the history and url conversions.
    */
   class NavigationHelper {
-    /**
-     * @param {!function(!PageState):void} onHistoryChange A function to call
-     *     when the page has changed as a result of the user going back or
-     *     forward in history; called with the new active page.
-     */
-    constructor(onHistoryChange) {
+    constructor() {
+      /** @private {!Array<function(!PageState)>} */
+      this.listeners_ = [];
+
       window.addEventListener('popstate', () => {
-        onHistoryChange(this.getCurrentPage());
+        this.notifyRouteChanged_(this.getCurrentPage());
       });
     }
 
@@ -75,6 +73,40 @@ cr.define('extensions', function() {
         return {page: Page.LIST, type: extensions.ShowingType.APPS};
 
       return {page: Page.LIST, type: extensions.ShowingType.EXTENSIONS};
+    }
+
+    /**
+     * Function to add subscribers.
+     * @param {!function(!PageState)} listener
+     */
+    onRouteChanged(listener) {
+      this.listeners_.push(listener);
+    }
+
+    /**
+     * Function to notify subscribers.
+     * @private
+     */
+    notifyRouteChanged_(newPage) {
+      for (const listener of this.listeners_) {
+        listener(newPage);
+      }
+    }
+
+    /**
+     * @param {!PageState} newPage the page to navigate to.
+     */
+    navigateTo(newPage) {
+      let currentPage = this.getCurrentPage();
+      if (currentPage && currentPage.page == newPage.page &&
+          currentPage.type == newPage.type &&
+          currentPage.subpage == newPage.subpage &&
+          currentPage.extensionId == newPage.extensionId) {
+        return;
+      }
+
+      this.updateHistory(newPage);
+      this.notifyRouteChanged_(newPage);
     }
 
     /**
@@ -109,7 +141,8 @@ cr.define('extensions', function() {
       const state = {url: path};
       const currentPage = this.getCurrentPage();
       const isDialogNavigation = currentPage.page == entry.page &&
-          currentPage.extensionId == entry.extensionId;
+          currentPage.extensionId == entry.extensionId &&
+          currentPage.type == entry.type;
       // Navigating to a dialog doesn't visually change pages; it just opens
       // a dialog. As such, we replace state rather than pushing a new state
       // on the stack so that hitting the back button doesn't just toggle the
@@ -121,5 +154,9 @@ cr.define('extensions', function() {
     }
   }
 
-  return {NavigationHelper: NavigationHelper};
+  const navigation = new NavigationHelper();
+
+  return {
+    navigation: navigation,
+  };
 });

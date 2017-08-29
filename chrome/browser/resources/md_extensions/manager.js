@@ -72,12 +72,6 @@ cr.define('extensions', function() {
        */
       detailViewItem_: Object,
 
-      /**
-       * The helper object to maintain page state.
-       * @private {!extensions.NavigationHelper}
-       */
-      navigationHelper_: Object,
-
       /** @type {!Array<!chrome.developerPrivate.ExtensionInfo>} */
       extensions: {
         type: Array,
@@ -129,15 +123,10 @@ cr.define('extensions', function() {
     },
 
     ready: function() {
-      /** @type {extensions.Sidebar} */
-      this.sidebar =
-          /** @type {extensions.Sidebar} */ (this.$$('extensions-sidebar'));
       this.toolbar =
           /** @type {extensions.Toolbar} */ (this.$$('extensions-toolbar'));
-      this.listHelper_ = new ListHelper(this);
-      this.sidebar.setListDelegate(this.listHelper_);
       this.readyPromiseResolver.resolve();
-      this.navigationHelper_ = new extensions.NavigationHelper(newPage => {
+      extensions.navigation.onRouteChanged(newPage => {
         this.changePage(newPage, true);
       });
     },
@@ -168,7 +157,7 @@ cr.define('extensions', function() {
      */
     initPage: function() {
       this.didInitPage_ = true;
-      this.changePage(this.navigationHelper_.getCurrentPage(), true);
+      this.changePage(extensions.navigation.getCurrentPage(), true);
     },
 
     /**
@@ -316,6 +305,8 @@ cr.define('extensions', function() {
      *     of the change.
      */
     changePage: function(newPage, isSilent) {
+      // TODO(scottchen): Remove this once all calls go through
+      // extensions.navigateTo.
       if (this.currentPage_ && this.currentPage_.page == newPage.page &&
           this.currentPage_.type == newPage.type &&
           this.currentPage_.subpage == newPage.subpage &&
@@ -357,8 +348,10 @@ cr.define('extensions', function() {
 
       this.currentPage_ = newPage;
 
+      // TODO(scottchen): Remove this once all calls go through
+      // extensions.navigateTo.
       if (!isSilent)
-        this.navigationHelper_.updateHistory(newPage);
+        extensions.navigation.updateHistory(newPage);
     },
 
     /**
@@ -431,25 +424,6 @@ cr.define('extensions', function() {
       }
     }
   });
-
-  /** @implements {extensions.SidebarListDelegate} */
-  class ListHelper {
-    /** @param {extensions.Manager} manager */
-    constructor(manager) {
-      this.manager_ = manager;
-    }
-
-    /** @override */
-    showType(listType) {
-      let items;
-      this.manager_.changePage({page: Page.LIST, type: listType});
-    }
-
-    /** @override */
-    showKeyboardShortcuts() {
-      this.manager_.changePage({page: Page.SHORTCUTS});
-    }
-  }
 
   return {Manager: Manager};
 });

@@ -4,33 +4,12 @@
 
 /** @fileoverview Suite of tests for extension-sidebar. */
 cr.define('extension_sidebar_tests', function() {
-  /**
-   * A mock delegate for the sidebar.
-   * @constructor
-   * @implements {extensions.SidebarListDelegate}
-   * @extends {extension_test_util.ClickMock}
-   */
-  function MockDelegate() {}
-
-  MockDelegate.prototype = {
-    __proto__: extension_test_util.ClickMock.prototype,
-
-    /** @override */
-    showType: function() {},
-
-    /** @override */
-    showKeyboardShortcuts: function() {},
-  };
-
   /** @enum {string} */
   var TestNames = {
     LayoutAndClickHandlers: 'layout and click handlers',
   };
 
   suite('ExtensionSidebarTest', function() {
-    /** @type {MockDelegate} */
-    var mockDelegate;
-
     /** @type {extensions.Sidebar} */
     var sidebar;
 
@@ -42,9 +21,7 @@ cr.define('extension_sidebar_tests', function() {
     setup(function() {
       var manager = document.querySelector('extensions-manager');
       manager.$.drawer.openDrawer();
-      sidebar = manager.sidebar;
-      mockDelegate = new MockDelegate();
-      sidebar.setListDelegate(mockDelegate);
+      sidebar = manager.$.sidebar;
     });
 
     test(assert(TestNames.LayoutAndClickHandlers), function() {
@@ -56,14 +33,22 @@ cr.define('extension_sidebar_tests', function() {
       testVisible('#sections-shortcuts', true);
       testVisible('#more-extensions', true);
 
-      mockDelegate.testClickingCalls(
-          sidebar.$$('#sections-extensions'), 'showType',
-          [extensions.ShowingType.EXTENSIONS]);
-      mockDelegate.testClickingCalls(
-          sidebar.$$('#sections-apps'), 'showType',
-          [extensions.ShowingType.APPS]);
-      mockDelegate.testClickingCalls(
-          sidebar.$$('#sections-shortcuts'), 'showKeyboardShortcuts', []);
+      var currentPage;
+      extensions.navigation.onRouteChanged(newPage => {
+        currentPage = newPage;
+      });
+
+      MockInteractions.tap(sidebar.$$('#sections-apps'));
+      expectDeepEquals(
+          currentPage, {page: Page.LIST, type: extensions.ShowingType.APPS});
+
+      MockInteractions.tap(sidebar.$$('#sections-extensions'));
+      expectDeepEquals(
+          currentPage,
+          {page: Page.LIST, type: extensions.ShowingType.EXTENSIONS});
+
+      MockInteractions.tap(sidebar.$$('#sections-shortcuts'));
+      expectDeepEquals(currentPage, {page: Page.SHORTCUTS});
     });
   });
 
