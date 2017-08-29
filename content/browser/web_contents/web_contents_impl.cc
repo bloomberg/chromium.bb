@@ -1649,7 +1649,8 @@ void WebContentsImpl::AttachToOuterWebContentsFrame(
 
   if (outer_web_contents_impl->frame_tree_.GetFocusedFrame() ==
       outer_contents_frame_impl->frame_tree_node()) {
-    SetFocusedFrame(frame_tree_.root(), nullptr);
+    SetFocusedFrame(frame_tree_.root(),
+                    outer_contents_frame->GetSiteInstance());
   }
 
   // Set up the the guest's AX tree to point back at the embedder's AX tree.
@@ -5268,14 +5269,36 @@ void WebContentsImpl::SetAsFocusedWebContentsIfNecessary() {
 
 void WebContentsImpl::SetFocusedFrame(FrameTreeNode* node,
                                       SiteInstance* source) {
-  SetAsFocusedWebContentsIfNecessary();
-
   frame_tree_.SetFocusedFrame(node, source);
 
-  WebContentsImpl* inner_contents = node_.GetInnerWebContentsInFrame(node);
-
-  WebContentsImpl* contents_to_focus = inner_contents ? inner_contents : this;
-  contents_to_focus->SetAsFocusedWebContentsIfNecessary();
+  if (auto* inner_contents = node_.GetInnerWebContentsInFrame(node)) {
+    // |this| is an outer WebContents and |node| represents an inner
+    // WebContents. Transfer the focus to the inner contents if |this| is
+    // focused.
+    if (GetFocusedWebContents() == this)
+      inner_contents->SetAsFocusedWebContentsIfNecessary();
+  } else if (node_.OuterContentsFrameTreeNode() &&
+             node_.OuterContentsFrameTreeNode()
+                     ->current_frame_host()
+                     ->GetSiteInstance() == source) {
+    // |this| is an inner WebContents, |node| is its main FrameTreeNode and
+    // the outer WebContents FrameTreeNode is at |source|'s SiteInstance.
+    // Transfer the focus to the inner WebContents if the outer WebContents is
+    // focused. This branch is used when an inner WebContents is focused through
+    // its RenderFrameProxyHost (via FrameHostMsg_FrameFocused IPC, used to
+    // implement the window.focus() API).
+    if (GetFocusedWebContents() == GetOuterWebContents())
+      SetAsFocusedWebContentsIfNecessary();
+  } else if (!GetOuterWebContents()) {
+    // This is an outermost WebContents.
+    SetAsFocusedWebContentsIfNecessary();
+  } else if (!GuestMode::IsCrossProcessFrameGuest(this) &&
+             GetOuterWebContents()) {
+    // TODO(lfg, paulmeyer): Allows BrowserPlugins to set themselves as the
+    // focused WebContents. This works around a bug in FindRequestManager that
+    // doesn't support properly traversing BrowserPlugins.
+    SetAsFocusedWebContentsIfNecessary();
+  }
 }
 
 RenderFrameHost* WebContentsImpl::GetFocusedFrameIncludingInnerWebContents() {
@@ -5299,6 +5322,18 @@ RenderFrameHost* WebContentsImpl::GetFocusedFrameIncludingInnerWebContents() {
     focused_node = contents->frame_tree_.GetFocusedFrame();
     if (!focused_node)
       return contents->GetMainFrame();
+  }
+}
+
+void WebContentsImpl::OnAdvanceFocus(RenderFrameHostImpl* source_rfh) {
+  // When a RenderFrame needs to advance focus to a RenderFrameProxy (by hitting
+  // TAB), the RenderFrameProxy sends an IPC to RenderFrameProxyHost. When this
+  // RenderFrameProxyHost represents an inner WebContents, the outer WebContents
+  // needs to focus the inner WebContents.
+  if (GetOuterWebContents() &&
+      GetOuterWebContents() == source_rfh->delegate()->GetAsWebContents() &&
+      GetFocusedWebContents() == GetOuterWebContents()) {
+    SetAsFocusedWebContentsIfNecessary();
   }
 }
 
