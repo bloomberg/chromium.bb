@@ -71,7 +71,7 @@ enum ContentSettingsType {
   // specific origin.
   CONTENT_SETTINGS_TYPE_MEDIA_ENGAGEMENT,
 
-  // Content setting which stores whether or not the site can play audible
+  // Website setting which stores whether or not the site can play audible
   // sound. This will not block playback but instead the user will not hear it.
   CONTENT_SETTINGS_TYPE_SOUND,
 
@@ -91,13 +91,6 @@ enum ContentSettingsType {
   // accelerometer, gyroscope and magnetometer. These are all mapped to a single
   // ContentSettingsType.
   CONTENT_SETTINGS_TYPE_SENSORS,
-
-  // Content setting which stores whether or not the user has granted the site
-  // permission to respond to accessibility events, which can be used to
-  // provide a custom accessibility experience. Requires explicit user consent
-  // because some users may not want sites to know they're using assistive
-  // technology.
-  CONTENT_SETTINGS_TYPE_ACCESSIBILITY_EVENTS,
 
   CONTENT_SETTINGS_NUM_TYPES,
 };

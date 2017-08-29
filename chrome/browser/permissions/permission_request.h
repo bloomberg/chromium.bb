@@ -37,7 +37,6 @@ enum class PermissionRequestType {
   PERMISSION_FLASH,
   PERMISSION_MEDIASTREAM_MIC,
   PERMISSION_MEDIASTREAM_CAMERA,
-  PERMISSION_ACCESSIBILITY_EVENTS,
   // NUM must be the last value in the enum.
   NUM
 };

@@ -24,8 +24,6 @@ LINK_RESOURCE_ID(IDR_INFOBAR_TRANSLATE, R.drawable.infobar_translate)
 LINK_RESOURCE_ID(IDR_BLOCKED_POPUPS, R.drawable.infobar_blocked_popups)
 
 // Android only infobars.
-DECLARE_RESOURCE_ID(IDR_ANDROID_INFOBAR_ACCESSIBILITY_EVENTS,
-                    R.drawable.infobar_accessibility_events)
 DECLARE_RESOURCE_ID(IDR_ANDROID_INFOBAR_FROZEN_TAB, R.drawable.infobar_restore)
 DECLARE_RESOURCE_ID(IDR_ANDROID_INFOBAR_GEOLOCATION,
                     R.drawable.infobar_geolocation)

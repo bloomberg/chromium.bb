@@ -82,11 +82,8 @@
 #include "modules/accessibility/AXTableColumn.h"
 #include "modules/accessibility/AXTableHeaderContainer.h"
 #include "modules/accessibility/AXTableRow.h"
-#include "modules/permissions/PermissionUtils.h"
 #include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/PtrUtil.h"
-#include "public/platform/modules/permissions/permission.mojom-blink.h"
-#include "public/platform/modules/permissions/permission_status.mojom-blink.h"
 #include "public/web/WebFrameClient.h"
 
 namespace blink {
@@ -99,18 +96,12 @@ AXObjectCache* AXObjectCacheImpl::Create(Document& document) {
 }
 
 AXObjectCacheImpl::AXObjectCacheImpl(Document& document)
-    : AXObjectCacheBase(document),
-      document_(document),
+    : document_(document),
       modification_count_(0),
       notification_post_timer_(
           TaskRunnerHelper::Get(TaskType::kUnspecedTimer, &document),
           this,
-          &AXObjectCacheImpl::NotificationPostTimerFired),
-      accessibility_event_permission_(mojom::PermissionStatus::ASK),
-      permission_observer_binding_(this) {
-  if (document_->LoadEventFinished())
-    AddPermissionStatusListener();
-}
+          &AXObjectCacheImpl::NotificationPostTimerFired) {}
 
 AXObjectCacheImpl::~AXObjectCacheImpl() {
 #if DCHECK_IS_ON()
@@ -1223,7 +1214,6 @@ void AXObjectCacheImpl::DidHideMenuListPopup(LayoutMenuList* menu_list) {
 
 void AXObjectCacheImpl::HandleLoadComplete(Document* document) {
   PostNotification(GetOrCreate(document), AXObjectCache::kAXLoadComplete);
-  AddPermissionStatusListener();
 }
 
 void AXObjectCacheImpl::HandleLayoutComplete(Document* document) {
@@ -1295,49 +1285,6 @@ void AXObjectCacheImpl::SetCanvasObjectBounds(HTMLCanvasElement* canvas,
     return;
 
   obj->SetElementRect(rect, ax_canvas);
-}
-
-void AXObjectCacheImpl::AddPermissionStatusListener() {
-  ConnectToPermissionService(document_->GetExecutionContext(),
-                             mojo::MakeRequest(&permission_service_));
-
-  if (permission_observer_binding_.is_bound())
-    permission_observer_binding_.Close();
-
-  mojom::blink::PermissionObserverPtr observer;
-  permission_observer_binding_.Bind(mojo::MakeRequest(&observer));
-  permission_service_->AddPermissionObserver(
-      CreatePermissionDescriptor(
-          mojom::blink::PermissionName::ACCESSIBILITY_EVENTS),
-      document_->GetExecutionContext()->GetSecurityOrigin(),
-      accessibility_event_permission_, std::move(observer));
-}
-
-void AXObjectCacheImpl::OnPermissionStatusChange(
-    mojom::PermissionStatus status) {
-  accessibility_event_permission_ = status;
-}
-
-bool AXObjectCacheImpl::CanCallAOMEventListeners() const {
-  return accessibility_event_permission_ == mojom::PermissionStatus::GRANTED;
-}
-
-void AXObjectCacheImpl::RequestAOMEventListenerPermission() {
-  if (accessibility_event_permission_ != mojom::PermissionStatus::ASK)
-    return;
-
-  permission_service_->RequestPermission(
-      CreatePermissionDescriptor(
-          mojom::blink::PermissionName::ACCESSIBILITY_EVENTS),
-      document_->GetExecutionContext()->GetSecurityOrigin(),
-      UserGestureIndicator::ProcessingUserGesture(),
-      ConvertToBaseCallback(WTF::Bind(
-          &AXObjectCacheImpl::OnPermissionStatusChange, WrapPersistent(this))));
-}
-
-void AXObjectCacheImpl::ContextDestroyed(ExecutionContext*) {
-  permission_service_.reset();
-  permission_observer_binding_.Close();
 }
 
 DEFINE_TRACE(AXObjectCacheImpl) {

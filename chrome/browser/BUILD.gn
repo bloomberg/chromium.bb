@@ -70,8 +70,6 @@ split_static_library("browser") {
   sources = [
     "about_flags.cc",
     "about_flags.h",
-    "accessibility/accessibility_permission_context.cc",
-    "accessibility/accessibility_permission_context.h",
     "after_startup_task_utils.cc",
     "after_startup_task_utils.h",
     "app_controller_mac.h",

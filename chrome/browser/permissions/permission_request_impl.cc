@@ -68,8 +68,6 @@ PermissionRequest::IconId PermissionRequestImpl::GetIconId() const {
       return IDR_ANDROID_INFOBAR_MEDIA_STREAM_MIC;
     case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
       return IDR_ANDROID_INFOBAR_MEDIA_STREAM_CAMERA;
-    case CONTENT_SETTINGS_TYPE_ACCESSIBILITY_EVENTS:
-      return IDR_ANDROID_INFOBAR_ACCESSIBILITY_EVENTS;
     default:
       NOTREACHED();
       return IDR_ANDROID_INFOBAR_WARNING;
@@ -94,8 +92,6 @@ PermissionRequest::IconId PermissionRequestImpl::GetIconId() const {
       return vector_icons::kMicrophoneIcon;
     case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
       return vector_icons::kVideocamIcon;
-    case CONTENT_SETTINGS_TYPE_ACCESSIBILITY_EVENTS:
-      return vector_icons::kAccessibilityIcon;
     default:
       NOTREACHED();
       return kExtensionIcon;
@@ -125,9 +121,6 @@ base::string16 PermissionRequestImpl::GetMessageText() const {
       break;
     case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
       message_id = IDS_MEDIA_CAPTURE_VIDEO_ONLY;
-      break;
-    case CONTENT_SETTINGS_TYPE_ACCESSIBILITY_EVENTS:
-      message_id = IDS_ACCESSIBILITY_EVENTS_INFOBAR_QUESTION;
       break;
     default:
       NOTREACHED();
@@ -166,9 +159,6 @@ base::string16 PermissionRequestImpl::GetMessageTextFragment() const {
       break;
     case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
       message_id = IDS_MEDIA_CAPTURE_VIDEO_ONLY_PERMISSION_FRAGMENT;
-      break;
-    case CONTENT_SETTINGS_TYPE_ACCESSIBILITY_EVENTS:
-      message_id = IDS_ACCESSIBILITY_EVENTS_PERMISSION_FRAGMENT;
       break;
     default:
       NOTREACHED();

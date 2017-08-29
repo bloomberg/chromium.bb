@@ -182,8 +182,6 @@ void LayoutTestMessageFilter::OnSetPermission(
     type = PermissionType::PROTECTED_MEDIA_IDENTIFIER;
   } else if (name == "background-sync") {
     type = PermissionType::BACKGROUND_SYNC;
-  } else if (name == "accessibility-events") {
-    type = PermissionType::ACCESSIBILITY_EVENTS;
   } else {
     NOTREACHED();
     type = PermissionType::NOTIFICATIONS;
