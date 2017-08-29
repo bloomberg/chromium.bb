@@ -19,7 +19,6 @@ import org.junit.runner.RunWith;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ShortcutHelper;
@@ -37,19 +36,21 @@ public class WebappSplashScreenHomescreenIconTest {
     @Rule
     public final WebappActivityTestRule mActivityTestRule = new WebappActivityTestRule();
 
+    private ViewGroup mSplashScreen;
+
     @Before
     public void setUp() throws Exception {
-        mActivityTestRule.startWebappActivity(mActivityTestRule.createIntent().putExtra(
-                ShortcutHelper.EXTRA_ICON, WebappActivityTestRule.TEST_ICON));
+        mSplashScreen = mActivityTestRule.startWebappActivityAndWaitForSplashScreen(
+                mActivityTestRule.createIntent().putExtra(
+                        ShortcutHelper.EXTRA_ICON, WebappActivityTestRule.TEST_ICON));
     }
 
     @Test
     @SmallTest
     @Feature({"Webapps"})
     public void testShowFallbackIcon() {
-        ViewGroup splashScreen = mActivityTestRule.waitUntilSplashScreenAppears();
-        ImageView splashImage = (ImageView) splashScreen.findViewById(
-                R.id.webapp_splash_screen_icon);
+        ImageView splashImage =
+                (ImageView) mSplashScreen.findViewById(R.id.webapp_splash_screen_icon);
         BitmapDrawable drawable = (BitmapDrawable) splashImage.getDrawable();
 
         Assert.assertEquals(192, drawable.getBitmap().getWidth());
@@ -59,7 +60,6 @@ public class WebappSplashScreenHomescreenIconTest {
     @Test
     @SmallTest
     @Feature({"Webapps"})
-    @RetryOnFailure
     public void testUmaFallbackIcon() {
         Assert.assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(

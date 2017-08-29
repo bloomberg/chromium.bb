@@ -4,15 +4,16 @@
 
 package org.chromium.chrome.browser.webapps;
 
-import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
-
 import android.content.Intent;
 import android.net.Uri;
 import android.view.ViewGroup;
 
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
+
+import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -20,6 +21,7 @@ import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.net.test.EmbeddedTestServerRule;
 
 /**
  * Custom {@link ChromeActivityTestRule} for tests using {@link WebappActivity}.
@@ -64,8 +66,15 @@ public class WebappActivityTestRule extends ChromeActivityTestRule<WebappActivit
             + "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
             + "AAAAAAAAAOA3AvAAAdln8YgAAAAASUVORK5CYII=";
 
+    @Rule
+    private EmbeddedTestServerRule mTestServerRule = new EmbeddedTestServerRule();
+
     public WebappActivityTestRule() {
         super(WebappActivity0.class);
+    }
+
+    public String getUrlFromTestServer(String relativeUrl) {
+        return mTestServerRule.getServer().getURL(relativeUrl);
     }
 
     /**
@@ -86,7 +95,7 @@ public class WebappActivityTestRule extends ChromeActivityTestRule<WebappActivit
 
     @Override
     public Statement apply(final Statement base, Description description) {
-        return new Statement() {
+        Statement webappTestRuleStatement = new Statement() {
             @Override
             public void evaluate() throws Throwable {
                 // Register the webapp so when the data storage is opened, the test doesn't crash.
@@ -95,12 +104,13 @@ public class WebappActivityTestRule extends ChromeActivityTestRule<WebappActivit
                 WebappRegistry.getInstance().register(WEBAPP_ID, callback);
                 callback.waitForCallback(0);
                 callback.getStorage().updateFromShortcutIntent(createIntent());
-
                 base.evaluate();
-
                 WebappRegistry.getInstance().clearForTesting();
             }
         };
+
+        Statement testServerStatement = mTestServerRule.apply(webappTestRuleStatement, description);
+        return super.apply(testServerStatement, description);
     }
 
     /**
@@ -141,6 +151,46 @@ public class WebappActivityTestRule extends ChromeActivityTestRule<WebappActivit
     }
 
     /**
+     * Starts up the WebappActivity and sets up the test observer.
+     * Wait till Splashscreen full loaded.
+     */
+    public final ViewGroup startWebappActivityAndWaitForSplashScreen() throws Exception {
+        return startWebappActivityAndWaitForSplashScreen(createIntent());
+    }
+
+    /**
+     * Starts up the WebappActivity and sets up the test observer.
+     * Wait till Splashscreen full loaded.
+     * Intent url is modified to one that takes more time to load.
+     */
+    public final ViewGroup startWebappActivityAndWaitForSplashScreen(Intent intent)
+            throws Exception {
+        // Reset the url to one that takes more time to load.
+        // This is to make sure splash screen won't disappear during test.
+        intent.putExtra(ShortcutHelper.EXTRA_URL, getUrlFromTestServer("/slow?2"));
+        launchActivity(intent);
+        getInstrumentation().waitForIdleSync();
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                // we are waiting for WebappActivity#getActivityTab() to be non-null because we want
+                // to ensure that native has been loaded.
+                // We also wait till the splash screen has finished initializing.
+                ViewGroup splashScreen = getActivity().getSplashScreenForTests();
+                return getActivity().getActivityTab() != null && splashScreen != null
+                        && splashScreen.getChildCount() > 0;
+            }
+        }, STARTUP_TIMEOUT, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+
+        getInstrumentation().waitForIdleSync();
+        ViewGroup splashScreen = getActivity().getSplashScreenForTests();
+        if (splashScreen == null) {
+            Assert.fail("No splash screen available.");
+        }
+        return splashScreen;
+    }
+
+    /**
      * Waits for the splash screen to be hidden.
      */
     public void waitUntilSplashscreenHides() {
@@ -150,21 +200,6 @@ public class WebappActivityTestRule extends ChromeActivityTestRule<WebappActivit
                 return !isSplashScreenVisible();
             }
         }, STARTUP_TIMEOUT, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
-    }
-
-    public ViewGroup waitUntilSplashScreenAppears() {
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return getActivity().getSplashScreenForTests() != null;
-            }
-        });
-
-        ViewGroup splashScreen = getActivity().getSplashScreenForTests();
-        if (splashScreen == null) {
-            Assert.fail("No splash screen available.");
-        }
-        return splashScreen;
     }
 
     public boolean isSplashScreenVisible() {

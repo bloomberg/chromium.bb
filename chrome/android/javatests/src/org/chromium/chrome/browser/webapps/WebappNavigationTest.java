@@ -40,7 +40,6 @@ import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.net.test.EmbeddedTestServerRule;
 import org.chromium.ui.base.PageTransition;
 
 /**
@@ -57,9 +56,6 @@ public class WebappNavigationTest {
 
     @Rule
     public final WebappActivityTestRule mActivityTestRule = new WebappActivityTestRule();
-
-    @Rule
-    public EmbeddedTestServerRule mTestServerRule = new EmbeddedTestServerRule();
 
     @Test
     @SmallTest
@@ -122,7 +118,7 @@ public class WebappNavigationTest {
     public void testInScopeNewTabLinkOpensInCct() throws Exception {
         runWebappActivityAndWaitForIdle(mActivityTestRule.createIntent().putExtra(
                 ShortcutHelper.EXTRA_THEME_COLOR, (long) Color.CYAN));
-        addAnchor("testId", mTestServerRule.getServer().getURL(IN_SCOPE_PAGE_PATH), "_blank");
+        addAnchor("testId", mActivityTestRule.getUrlFromTestServer(IN_SCOPE_PAGE_PATH), "_blank");
         DOMUtils.clickNode(
                 mActivityTestRule.getActivity().getActivityTab().getContentViewCore(), "testId");
         CustomTabActivity customTab = waitFor(CustomTabActivity.class);
@@ -167,7 +163,7 @@ public class WebappNavigationTest {
     public void testInScopeNavigationStaysInWebapp() throws Exception {
         runWebappActivityAndWaitForIdle(mActivityTestRule.createIntent());
 
-        String otherPageUrl = mTestServerRule.getServer().getURL(IN_SCOPE_PAGE_PATH);
+        String otherPageUrl = mActivityTestRule.getUrlFromTestServer(IN_SCOPE_PAGE_PATH);
         mActivityTestRule.loadUrlInTab(otherPageUrl, PageTransition.LINK,
                 mActivityTestRule.getActivity().getActivityTab());
 
@@ -220,7 +216,7 @@ public class WebappNavigationTest {
         mActivityTestRule.waitUntilIdle(tabbedChrome);
 
         Assert.assertEquals("Tab in tabbed activity should show the Web App page",
-                mTestServerRule.getServer().getURL(WEB_APP_PATH),
+                mActivityTestRule.getUrlFromTestServer(WEB_APP_PATH),
                 tabbedChrome.getActivityTab().getUrl());
         Assert.assertSame("WebContents should be reparented from Web App to tabbed Chrome",
                 webAppWebContents, tabbedChrome.getActivityTab().getWebContents());
@@ -261,7 +257,7 @@ public class WebappNavigationTest {
 
     private void runWebappActivityAndWaitForIdle(Intent intent) throws Exception {
         mActivityTestRule.startWebappActivity(intent.putExtra(
-                ShortcutHelper.EXTRA_URL, mTestServerRule.getServer().getURL(WEB_APP_PATH)));
+                ShortcutHelper.EXTRA_URL, mActivityTestRule.getUrlFromTestServer(WEB_APP_PATH)));
 
         mActivityTestRule.waitUntilSplashscreenHides();
         mActivityTestRule.waitUntilIdle();
