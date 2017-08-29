@@ -17,7 +17,6 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/media/router/create_presentation_connection_request.h"
 #include "chrome/browser/media/router/event_page_request_manager.h"
 #include "chrome/browser/media/router/event_page_request_manager_factory.h"
 #include "chrome/browser/media/router/issues_observer.h"
@@ -259,22 +258,24 @@ MediaRouterUI::~MediaRouterUI() {
   if (presentation_service_delegate_.get())
     presentation_service_delegate_->RemoveDefaultPresentationRequestObserver(
         this);
-  // If |create_session_request_| still exists, then it means presentation route
-  // request was never attempted.
-  if (create_session_request_) {
+  // If |start_presentation_context_| still exists, then it means presentation
+  // route request was never attempted.
+  if (start_presentation_context_) {
     bool presentation_sinks_available = std::any_of(
         sinks_.begin(), sinks_.end(), [](const MediaSinkWithCastModes& sink) {
           return base::ContainsKey(sink.cast_modes,
                                    MediaCastMode::PRESENTATION);
         });
     if (presentation_sinks_available) {
-      create_session_request_->InvokeErrorCallback(content::PresentationError(
-          content::PRESENTATION_ERROR_PRESENTATION_REQUEST_CANCELLED,
-          "Dialog closed."));
+      start_presentation_context_->InvokeErrorCallback(
+          content::PresentationError(
+              content::PRESENTATION_ERROR_PRESENTATION_REQUEST_CANCELLED,
+              "Dialog closed."));
     } else {
-      create_session_request_->InvokeErrorCallback(content::PresentationError(
-          content::PRESENTATION_ERROR_NO_AVAILABLE_SCREENS,
-          "No screens found."));
+      start_presentation_context_->InvokeErrorCallback(
+          content::PresentationError(
+              content::PRESENTATION_ERROR_NO_AVAILABLE_SCREENS,
+              "No screens found."));
     }
   }
 }
@@ -302,22 +303,22 @@ void MediaRouterUI::InitWithDefaultMediaSource(
   }
 }
 
-void MediaRouterUI::InitWithPresentationSessionRequest(
+void MediaRouterUI::InitWithStartPresentationContext(
     content::WebContents* initiator,
     PresentationServiceDelegateImpl* delegate,
-    std::unique_ptr<CreatePresentationConnectionRequest>
-        create_session_request) {
+    std::unique_ptr<StartPresentationContext> context) {
   DCHECK(initiator);
   DCHECK(delegate);
-  DCHECK(create_session_request);
-  DCHECK(!create_session_request_);
+  DCHECK(context);
+  DCHECK(!start_presentation_context_);
   DCHECK(!query_result_manager_);
 
-  create_session_request_ = std::move(create_session_request);
+  start_presentation_context_ = std::move(context);
   presentation_service_delegate_ = delegate->GetWeakPtr();
 
   InitCommon(initiator);
-  OnDefaultPresentationChanged(create_session_request_->presentation_request());
+  OnDefaultPresentationChanged(
+      start_presentation_context_->presentation_request());
 }
 
 void MediaRouterUI::InitCommon(content::WebContents* initiator) {
@@ -329,7 +330,7 @@ void MediaRouterUI::InitCommon(content::WebContents* initiator) {
 
   // Presentation requests from content must show the origin requesting
   // presentation: crbug.com/704964
-  if (create_session_request_)
+  if (start_presentation_context_)
     forced_cast_mode_ = MediaCastMode::PRESENTATION;
 
   router_->OnUserGesture();
@@ -380,16 +381,16 @@ void MediaRouterUI::InitForTest(
     MediaRouter* router,
     content::WebContents* initiator,
     MediaRouterWebUIMessageHandler* handler,
-    std::unique_ptr<CreatePresentationConnectionRequest> create_session_request,
+    std::unique_ptr<StartPresentationContext> context,
     std::unique_ptr<MediaRouterFileDialog> file_dialog) {
   router_ = router;
   handler_ = handler;
-  create_session_request_ = std::move(create_session_request);
+  start_presentation_context_ = std::move(context);
   InitForTest(std::move(file_dialog));
   InitCommon(initiator);
-  if (create_session_request_) {
+  if (start_presentation_context_) {
     OnDefaultPresentationChanged(
-        create_session_request_->presentation_request());
+        start_presentation_context_->presentation_request());
   }
 }
 
@@ -559,26 +560,25 @@ bool MediaRouterUI::SetRouteParameters(
   // notified. In case (2) the dialog will be closed.
   // (1) Non-presentation route request (e.g., mirroring). No additional
   // notification necessary.
-  // (2) Presentation route request for a Presentation API startSession call.
-  // The startSession (CreatePresentationConnectionRequest) will need to be
-  // answered with the route response.
-  // (3) Browser-initiated presentation route request. If successful,
+  // (2) Presentation route request for a PresentationRequest.start() call.
+  // The StartPresentationContext will need to be answered with the route
+  // response. (3) Browser-initiated presentation route request. If successful,
   // PresentationServiceDelegateImpl will have to be notified. Note that we
   // treat subsequent route requests from a Presentation API-initiated dialogs
   // as browser-initiated.
-  if (!for_presentation_source || !create_session_request_) {
+  if (!for_presentation_source || !start_presentation_context_) {
     route_response_callbacks->push_back(base::BindOnce(
         &MediaRouterUI::OnRouteResponseReceived, weak_factory_.GetWeakPtr(),
         current_route_request_id_, sink_id, cast_mode,
         base::UTF8ToUTF16(GetTruncatedPresentationRequestSourceName())));
   }
   if (for_presentation_source) {
-    if (create_session_request_) {
-      // |create_session_request_| will be nullptr after this call, as the
+    if (start_presentation_context_) {
+      // |start_presentation_context_| will be nullptr after this call, as the
       // object will be transferred to the callback.
-      route_response_callbacks->push_back(base::BindOnce(
-          &CreatePresentationConnectionRequest::HandleRouteResponse,
-          base::Passed(&create_session_request_)));
+      route_response_callbacks->push_back(
+          base::BindOnce(&StartPresentationContext::HandleRouteResponse,
+                         std::move(start_presentation_context_)));
       route_response_callbacks->push_back(base::BindOnce(
           &MediaRouterUI::HandleCreateSessionRequestRouteResponse,
           weak_factory_.GetWeakPtr()));

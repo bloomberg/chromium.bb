@@ -24,8 +24,6 @@ static_library("router") {
   sources = [
     "browser_presentation_connection_proxy.cc",
     "browser_presentation_connection_proxy.h",
-    "create_presentation_connection_request.cc",
-    "create_presentation_connection_request.h",
     "issue_manager.cc",
     "issue_manager.h",
     "issues_observer.cc",

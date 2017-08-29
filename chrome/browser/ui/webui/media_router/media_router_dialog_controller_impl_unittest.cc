@@ -252,18 +252,16 @@ TEST_F(MediaRouterDialogControllerImplTest, NotifyActionController) {
   dialog_controller_->HideMediaRouterDialog();
 
   EXPECT_CALL(*action_controller, OnDialogShown());
-  dialog_controller_->ShowMediaRouterDialogForPresentation(
-      std::unique_ptr<CreatePresentationConnectionRequest>(
-          new CreatePresentationConnectionRequest(
-              content::PresentationRequest(
-                  {1, 2}, {GURL("http://test.com"), GURL("http://test2.com")},
-                  url::Origin(GURL("http://example.com"))),
-              base::Bind(&MediaRouterDialogControllerImplTest::
-                             PresentationSuccessCallback,
-                         base::Unretained(this)),
-              base::Bind(&MediaRouterDialogControllerImplTest::
-                             PresentationErrorCallback,
-                         base::Unretained(this)))));
+  EXPECT_TRUE(dialog_controller_->ShowMediaRouterDialogForPresentation(
+      content::PresentationRequest(
+          {1, 2}, {GURL("http://test.com"), GURL("http://test2.com")},
+          url::Origin(GURL("http://example.com"))),
+      base::Bind(
+          &MediaRouterDialogControllerImplTest::PresentationSuccessCallback,
+          base::Unretained(this)),
+      base::Bind(
+          &MediaRouterDialogControllerImplTest::PresentationErrorCallback,
+          base::Unretained(this))));
 
   // When |dialog_controller_| is destroyed with its dialog open,
   // |action_controller| should be notified.

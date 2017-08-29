@@ -14,7 +14,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/media/router/browser_presentation_connection_proxy.h"
-#include "chrome/browser/media/router/create_presentation_connection_request.h"
 #include "chrome/browser/media/router/media_router.h"
 #include "chrome/browser/media/router/media_router_dialog_controller.h"
 #include "chrome/browser/media/router/media_router_factory.h"
@@ -467,22 +466,16 @@ void PresentationServiceDelegateImpl::StartPresentation(
     return;
   }
 
-  std::unique_ptr<CreatePresentationConnectionRequest> start_request(
-      new CreatePresentationConnectionRequest(
+  MediaRouterDialogController* controller =
+      MediaRouterDialogController::GetOrCreateForWebContents(web_contents_);
+  if (!controller->ShowMediaRouterDialogForPresentation(
           request,
           base::BindOnce(
               &PresentationServiceDelegateImpl::OnStartPresentationSucceeded,
               GetWeakPtr(), render_frame_host_id, std::move(success_cb)),
-          std::move(error_cb)));
-  MediaRouterDialogController* controller =
-      MediaRouterDialogController::GetOrCreateForWebContents(web_contents_);
-  if (!controller->ShowMediaRouterDialogForPresentation(
-          std::move(start_request))) {
+          std::move(error_cb))) {
     LOG(ERROR)
-        << "Media router dialog already exists. Ignoring StartPresentation.";
-    std::move(error_cb).Run(content::PresentationError(
-        content::PRESENTATION_ERROR_UNKNOWN, "Unable to create dialog."));
-    return;
+        << "StartPresentation failed: unable to create Media Router dialog.";
   }
 }
 
