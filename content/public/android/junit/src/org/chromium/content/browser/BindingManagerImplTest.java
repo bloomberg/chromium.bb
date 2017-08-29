@@ -47,8 +47,7 @@ public class BindingManagerImplTest {
                 false /* bindToCallerCheck */, false /* bindAsExternalService */,
                 null /* serviceBundle */);
         connection.setPid(pid);
-        connection.start(false /* useStrongBinding */, null /* serviceCallback */,
-                false /* retryOnTimeout */);
+        connection.start(false /* useStrongBinding */, null /* serviceCallback */);
         if (manager != null) {
             manager.addNewConnection(pid, connection);
         }

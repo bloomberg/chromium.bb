@@ -650,6 +650,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Android.ChildProcessLauncher.OnServiceConnectedTime"
     units="ms">
+  <obsolete>
+    Deprecated 08/2017. Made decision in issue 736066 with already acquired
+    data. So this is no longer needed.
+  </obsolete>
   <owner>boliu@chromium.org</owner>
   <summary>
     Measure time from bindService call to onServiceConnected. This is part of
@@ -660,6 +664,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Android.ChildProcessLauncher.OnServiceConnectedTimedOut"
     enum="BooleanTimedOut">
+  <obsolete>
+    Deprecated 08/2017. Made decision in issue 736066 with already acquired
+    data. So this is no longer needed.
+  </obsolete>
   <owner>boliu@chromium.org</owner>
   <summary>
     Boolean histogram that records whether bindServiced timed out. Timeout is
