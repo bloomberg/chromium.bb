@@ -10,6 +10,7 @@
 
 namespace blink {
 
+class AudioWorkletGlobalScope;
 class AudioWorkletMessagingProxy;
 
 class MODULES_EXPORT AudioWorkletObjectProxy final
@@ -18,13 +19,16 @@ class MODULES_EXPORT AudioWorkletObjectProxy final
   AudioWorkletObjectProxy(AudioWorkletMessagingProxy*,
                           ParentFrameTaskRunners*);
 
-  void EvaluateScript(const String& source,
-                      const KURL& script_url,
-                      WorkerThread*) final;
+  // Implements WorkerReportingProxy.
+  void DidCreateWorkerGlobalScope(WorkerOrWorkletGlobalScope*) override;
+  void DidEvaluateModuleScript(bool success) override;
+  void WillDestroyWorkerGlobalScope() override;
 
  private:
   CrossThreadWeakPersistent<AudioWorkletMessagingProxy>
       GetAudioWorkletMessagingProxyWeakPtr();
+
+  CrossThreadPersistent<AudioWorkletGlobalScope> global_scope_;
 };
 
 }  // namespace blink
