@@ -121,6 +121,12 @@ std::string GetSuffixForList(const ActivationList& type) {
       return "PhishingInterstitial";
     case ActivationList::SUBRESOURCE_FILTER:
       return "SubresourceFilterOnly";
+    case ActivationList::BETTER_ADS:
+      return "BetterAds";
+    case ActivationList::ABUSIVE_ADS:
+      return "AbusiveAds";
+    case ActivationList::ALL_ADS:
+      return "AllAds";
     case ActivationList::NONE:
       return std::string();
   }
@@ -135,18 +141,25 @@ struct ActivationListTestData {
 };
 
 const ActivationListTestData kActivationListTestData[] = {
-    {subresource_filter::kActivationListSocialEngineeringAdsInterstitial,
+    {kActivationListSocialEngineeringAdsInterstitial,
      ActivationList::SOCIAL_ENG_ADS_INTERSTITIAL,
      safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
      safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS},
-    {subresource_filter::kActivationListPhishingInterstitial,
-     ActivationList::PHISHING_INTERSTITIAL,
+    {kActivationListPhishingInterstitial, ActivationList::PHISHING_INTERSTITIAL,
      safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
      safe_browsing::ThreatPatternType::NONE},
-    {subresource_filter::kActivationListSubresourceFilter,
-     ActivationList::SUBRESOURCE_FILTER,
+    {kActivationListSubresourceFilter, ActivationList::SUBRESOURCE_FILTER,
      safe_browsing::SB_THREAT_TYPE_SUBRESOURCE_FILTER,
      safe_browsing::ThreatPatternType::NONE},
+    {kActivationListBetterAds, ActivationList::BETTER_ADS,
+     safe_browsing::SB_THREAT_TYPE_SUBRESOURCE_FILTER,
+     safe_browsing::ThreatPatternType::SUBRESOURCE_FILTER_BETTER_ADS},
+    {kActivationListAbusiveAds, ActivationList::ABUSIVE_ADS,
+     safe_browsing::SB_THREAT_TYPE_SUBRESOURCE_FILTER,
+     safe_browsing::ThreatPatternType::SUBRESOURCE_FILTER_ABUSIVE_ADS},
+    {kActivationListAllAds, ActivationList::ALL_ADS,
+     safe_browsing::SB_THREAT_TYPE_SUBRESOURCE_FILTER,
+     safe_browsing::ThreatPatternType::SUBRESOURCE_FILTER_ALL_ADS},
 };
 
 }  //  namespace
