@@ -13,8 +13,12 @@
 namespace media {
 
 // TODO(chcunningham): Find some authoritative list of frame rates.
-const int kFrameRateBuckets[] = {5,  10, 20,  25,  30,  40,  50,  60, 70,
-                                 80, 90, 100, 120, 150, 200, 250, 300};
+// Framerates in this list go way beyond typical values to account for changes
+// to playback rate.
+const int kFrameRateBuckets[] = {5,   10,  20,  25,  30,  40,  50,   60,
+                                 70,  80,  90,  100, 120, 150, 200,  250,
+                                 300, 350, 400, 450, 500, 550, 600,  650,
+                                 700, 750, 800, 850, 900, 950, 1000, 1500};
 
 // A mix of width and height dimensions for common and not-so-common resolutions
 // spanning 144p -> 12K.
@@ -373,6 +377,10 @@ int VideoDecodeStatsReporter::GetFpsBucket(double raw_fps) const {
   const int* upper_bound =
       std::upper_bound(std::begin(kFrameRateBuckets),
                        std::end(kFrameRateBuckets), std::round(rounded_fps));
+
+  // If no bucket is larger than |rounded_fps|, just used the last bucket;
+  if (upper_bound == std::end(kFrameRateBuckets))
+    return *(upper_bound - 1);
 
   // Return early if its the first bucket.
   if (upper_bound == std::begin(kFrameRateBuckets))
