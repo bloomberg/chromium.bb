@@ -14,7 +14,7 @@ function verifyLog(assert, index, expectedEvent, expectedPhase) {
       actual.type, remoting.ChromotingEvent.Type.CHROMOTING_DOT_COM_MIGRATION,
       'ChromotingEvent.type == CHROMOTING_DOT_COM_MIGRATION');
   assert.equal(
-      actual.chromoting_dot_com_migration.event, expectedEvent,
+      actual.chromoting_dot_com_migration.event_type, expectedEvent,
       'ChromotingEvent.chromoting_dot_com_migration.event matched.');
   assert.equal(
       actual.chromoting_dot_com_migration.phase, expectedPhase,
