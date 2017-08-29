@@ -127,7 +127,7 @@ class VrShellGl : public device::mojom::VRPresentationProvider,
   void DrawWebVr();
   bool WebVrPoseByteIsValid(int pose_index_byte);
 
-  void UpdateController(const gfx::Vector3dF& head_direction);
+  void UpdateController(const gfx::Transform& head_pose);
   void HandleWebVrCompatibilityClick();
   std::unique_ptr<blink::WebMouseEvent> MakeMouseEvent(
       blink::WebInputEvent::Type type,

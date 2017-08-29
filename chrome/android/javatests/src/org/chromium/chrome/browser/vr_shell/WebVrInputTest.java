@@ -211,4 +211,25 @@ public class WebVrInputTest {
             }
         });
     }
+
+    /**
+     * Verifies that pressing the Daydream controller's 'app' button causes the user to exit
+     * WebVR presentation even when the page is not submitting frames.
+     */
+    @Test
+    @MediumTest
+    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
+    @RetryOnFailure(message = "Very rarely, button press not registered (race condition?)")
+    public void testAppButtonAfterPageStopsSubmitting() throws InterruptedException {
+        mVrTestFramework.loadUrlAndAwaitInitialization(
+                VrTestFramework.getHtmlTestFile("webvr_page_submits_once"), PAGE_LOAD_TIMEOUT_S);
+        VrTransitionUtils.enterPresentationOrFail(mVrTestFramework.getFirstTabCvc());
+        // Wait for page to stop submitting frames.
+        mVrTestFramework.waitOnJavaScriptStep(mVrTestFramework.getFirstTabWebContents());
+        EmulatedVrController controller = new EmulatedVrController(mVrTestRule.getActivity());
+        controller.pressReleaseAppButton();
+        Assert.assertTrue("App button exited WebVR presentation",
+                mVrTestFramework.pollJavaScriptBoolean("!vrDisplay.isPresenting",
+                        POLL_TIMEOUT_SHORT_MS, mVrTestFramework.getFirstTabWebContents()));
+    }
 }

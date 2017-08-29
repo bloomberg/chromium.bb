@@ -483,12 +483,17 @@ void VrShellGl::InitializeRenderer() {
   browser_->GvrDelegateReady(gvr_api_->GetViewerType());
 }
 
-void VrShellGl::UpdateController(const gfx::Vector3dF& head_direction) {
+void VrShellGl::UpdateController(const gfx::Transform& head_pose) {
+  TRACE_EVENT0("gpu", "VrShellGl::UpdateController");
+  gfx::Vector3dF head_direction = GetForwardVector(head_pose);
+
   controller_->UpdateState(head_direction);
   controller_info_.laser_origin = controller_->GetPointerStart();
 
   device::GvrGamepadData controller_data = controller_->GetGamepadData();
   browser_->UpdateGamepadData(controller_data);
+
+  HandleControllerInput(head_direction);
 }
 
 void VrShellGl::HandleControllerInput(const gfx::Vector3dF& head_direction) {
@@ -838,15 +843,9 @@ void VrShellGl::DrawFrame(int16_t frame_index) {
   scene_->OnBeginFrame(current_time,
                        GetForwardVector(render_info_primary_.head_pose));
 
-  {
-    // TODO(crbug.com/704690): Acquire controller state in a way that's timely
-    // for both the gamepad API and UI input handling.
-    TRACE_EVENT0("gpu", "VrShellGl::UpdateController");
-    gfx::Vector3dF head_direction =
-        GetForwardVector(render_info_primary_.head_pose);
-    UpdateController(head_direction);
-    HandleControllerInput(head_direction);
-  }
+  // WebVR handles controller input in OnVsync.
+  if (!ShouldDrawWebVr())
+    UpdateController(render_info_primary_.head_pose);
 
   // Ensure that all elements are ready before drawing. Eg., elements may have
   // been dirtied due to animation on input processing and need to regenerate
@@ -1111,7 +1110,15 @@ void VrShellGl::OnVSync(base::TimeTicks frame_time) {
     pending_vsync_ = true;
     pending_time_ = frame_time;
   }
-  if (!ShouldDrawWebVr()) {
+  if (ShouldDrawWebVr()) {
+    // When drawing WebVR, controller input doesn't need to be synchronized with
+    // rendering as WebVR uses the gamepad api. To ensure we always handle input
+    // like app button presses, update the controller here, but not in
+    // DrawFrame.
+    gfx::Transform head_pose;
+    device::GvrDelegate::GetGvrPoseWithNeckModel(gvr_api_.get(), &head_pose);
+    UpdateController(render_info_primary_.head_pose);
+  } else {
     DrawFrame(-1);
   }
 }
