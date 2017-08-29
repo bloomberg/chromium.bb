@@ -2031,11 +2031,6 @@ class TestGitCl(TestCase):
     self.mock(git_common, 'is_dirty_git_tree', lambda x: True)
     self.assertNotEqual(git_cl.main(['patch', '123456']), 0)
 
-  def test_diff_when_dirty(self):
-    # Do 'git cl diff' when local tree is dirty
-    self.mock(git_common, 'is_dirty_git_tree', lambda x: True)
-    self.assertNotEqual(git_cl.main(['diff']), 0)
-
   @staticmethod
   def _get_gerrit_codereview_server_calls(branch, value=None,
                                           git_short_host='host',

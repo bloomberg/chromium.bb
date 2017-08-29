@@ -5724,43 +5724,27 @@ def CMDdiff(parser, args):
   if args:
     parser.error('Unrecognized args: %s' % ' '.join(args))
 
-  # Uncommitted (staged and unstaged) changes will be destroyed by
-  # "git reset --hard" if there are merging conflicts in CMDPatchIssue().
-  # Staged changes would be committed along with the patch from last
-  # upload, hence counted toward the "last upload" side in the final
-  # diff output, and this is not what we want.
-  if git_common.is_dirty_git_tree('diff'):
-    return 1
-
   cl = Changelist(auth_config=auth_config)
   issue = cl.GetIssue()
   branch = cl.GetBranch()
   if not issue:
     DieWithError('No issue found for current branch (%s)' % branch)
-  TMP_BRANCH = 'git-cl-diff'
-  base_branch = cl.GetCommonAncestorWithUpstream()
 
-  # Create a new branch based on the merge-base
-  RunGit(['checkout', '-q', '-b', TMP_BRANCH, base_branch])
-  # Clear cached branch in cl object, to avoid overwriting original CL branch
-  # properties.
-  cl.ClearBranch()
-  try:
-    rtn = cl.CMDPatchIssue(issue, reject=False, nocommit=False, directory=None)
-    if rtn != 0:
-      RunGit(['reset', '--hard'])
-      return rtn
+  base = cl._GitGetBranchConfigValue('last-upload-hash')
+  if not base:
+    base = cl._GitGetBranchConfigValue('gerritsquashhash')
+  if not base:
+    detail = cl._GetChangeDetail(['CURRENT_REVISION', 'CURRENT_COMMIT'])
+    revision_info = detail['revisions'][detail['current_revision']]
+    fetch_info = revision_info['fetch']['http']
+    RunGit(['fetch', fetch_info['url'], fetch_info['ref']])
+    base = 'FETCH_HEAD'
 
-    # Switch back to starting branch and diff against the temporary
-    # branch containing the latest rietveld patch.
-    cmd = ['git', 'diff']
-    if options.stat:
-      cmd.append('--stat')
-    cmd.extend([TMP_BRANCH, branch, '--'])
-    subprocess2.check_call(cmd)
-  finally:
-    RunGit(['checkout', '-q', branch])
-    RunGit(['branch', '-D', TMP_BRANCH])
+  cmd = ['git', 'diff']
+  if options.stat:
+    cmd.append('--stat')
+  cmd.append(base)
+  subprocess2.check_call(cmd)
 
   return 0
 
