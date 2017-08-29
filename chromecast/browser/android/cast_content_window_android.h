@@ -24,8 +24,6 @@ namespace shell {
 // CastWebContentsActivity.
 class CastContentWindowAndroid : public CastContentWindow {
  public:
-  static bool RegisterJni(JNIEnv* env);
-
   ~CastContentWindowAndroid() override;
 
   // CastContentWindow implementation:
