@@ -18,8 +18,9 @@ constexpr uint32_t kMaxRegionsPerSurface = 1024;
 constexpr uint32_t kMaxSize = 100 * 1024;
 
 bool ValidateHitTestRegion(const mojom::HitTestRegionPtr& hit_test_region) {
-  if (hit_test_region->flags == mojom::kHitTestChildSurface) {
-    if (!hit_test_region->surface_id.is_valid())
+  if (hit_test_region->flags & mojom::kHitTestChildSurface) {
+    if (!hit_test_region->local_surface_id.has_value() ||
+        !hit_test_region->local_surface_id->is_valid())
       return false;
   }
 
@@ -193,7 +194,7 @@ size_t HitTestAggregator::AppendRegion(AggregatedHitTestRegion* regions,
                                        const mojom::HitTestRegionPtr& region) {
   AggregatedHitTestRegion* element = &regions[region_index];
 
-  element->frame_sink_id = region->surface_id.frame_sink_id();
+  element->frame_sink_id = region->frame_sink_id;
   element->flags = region->flags;
   element->rect = region->rect;
   element->transform = region->transform;
@@ -204,8 +205,10 @@ size_t HitTestAggregator::AppendRegion(AggregatedHitTestRegion* regions,
     return region_index;
   }
 
-  if (region->flags == mojom::kHitTestChildSurface) {
-    auto search = active_.find(region->surface_id);
+  if (region->flags & mojom::kHitTestChildSurface) {
+    auto surface_id =
+        SurfaceId(region->frame_sink_id, region->local_surface_id.value());
+    auto search = active_.find(surface_id);
     if (search == active_.end()) {
       // Surface HitTestRegionList not found - it may be late.
       // Don't include this region so that it doesn't receive events.

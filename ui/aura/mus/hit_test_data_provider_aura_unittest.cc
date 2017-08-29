@@ -132,6 +132,9 @@ class HitTestDataProviderAuraTest : public test::AuraTestBaseMus {
   DISALLOW_COPY_AND_ASSIGN(HitTestDataProviderAuraTest);
 };
 
+// TODO(riajiang): Add test cases for kHitTestChildSurface to ensure
+// that local_surface_id is set and used correctly.
+
 // Tests that the order of reported hit-test regions matches windows Z-order.
 TEST_F(HitTestDataProviderAuraTest, Stacking) {
   const auto hit_test_data_1 = hit_test_data_provider()->GetHitTestData();
@@ -144,8 +147,6 @@ TEST_F(HitTestDataProviderAuraTest, Stacking) {
                                  viz::mojom::kHitTestTouch);
     EXPECT_EQ(region->frame_sink_id,
               WindowPortMus::Get(expected_order_1[i])->GetFrameSinkId());
-    EXPECT_EQ(region->surface_id.local_surface_id(),
-              WindowMus::Get(expected_order_1[i])->GetLocalSurfaceId());
     EXPECT_EQ(region->rect.ToString(),
               expected_order_1[i]->bounds().ToString());
     i++;
@@ -163,8 +164,6 @@ TEST_F(HitTestDataProviderAuraTest, Stacking) {
                                  viz::mojom::kHitTestTouch);
     EXPECT_EQ(region->frame_sink_id,
               WindowPortMus::Get(expected_order_2[i])->GetFrameSinkId());
-    EXPECT_EQ(region->surface_id.local_surface_id(),
-              WindowMus::Get(expected_order_2[i])->GetLocalSurfaceId());
     EXPECT_EQ(region->rect.ToString(),
               expected_order_2[i]->bounds().ToString());
     i++;
@@ -195,8 +194,6 @@ TEST_F(HitTestDataProviderAuraTest, CustomTargeter) {
   for (const auto& region : hit_test_data->regions) {
     EXPECT_EQ(region->frame_sink_id,
               WindowPortMus::Get(expected_windows[i])->GetFrameSinkId());
-    EXPECT_EQ(region->surface_id.local_surface_id(),
-              WindowMus::Get(expected_windows[i])->GetLocalSurfaceId());
     EXPECT_EQ(region->flags, expected_flags[i]);
     gfx::Rect expected_bounds = expected_windows[i]->bounds();
     expected_bounds.Inset(gfx::Insets(expected_insets[i]));
@@ -235,8 +232,6 @@ TEST_F(HitTestDataProviderAuraTest, HoleTargeter) {
   for (const auto& region : hit_test_data->regions) {
     EXPECT_EQ(region->frame_sink_id,
               WindowPortMus::Get(expected_windows[i])->GetFrameSinkId());
-    EXPECT_EQ(region->surface_id.local_surface_id(),
-              WindowMus::Get(expected_windows[i])->GetLocalSurfaceId());
     EXPECT_EQ(region->flags, expected_flags);
     EXPECT_EQ(region->rect.ToString(), expected_bounds[i].ToString());
     i++;
