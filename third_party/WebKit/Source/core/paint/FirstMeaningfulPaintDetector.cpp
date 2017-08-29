@@ -103,6 +103,15 @@ void FirstMeaningfulPaintDetector::NotifyPaint() {
   had_user_input_before_provisional_first_meaningful_paint_ = had_user_input_;
   provisional_first_meaningful_paint_swap_ = 0.0;
   RegisterNotifySwapTime(PaintEvent::kProvisionalFirstMeaningfulPaint);
+
+  // Ignore the first meaningful paint candidate as this generally is the first
+  // contentful paint itself.
+  if (!seen_first_meaningful_paint_candidate_) {
+    seen_first_meaningful_paint_candidate_ = true;
+    return;
+  }
+  paint_timing_->SetFirstMeaningfulPaintCandidate(
+      provisional_first_meaningful_paint_);
 }
 
 // This is called only on FirstMeaningfulPaintDetector for main frame.
@@ -167,22 +176,26 @@ void FirstMeaningfulPaintDetector::Network2QuietTimerFired(TimerBase*) {
   network2_quiet_reached_ = true;
 
   if (provisional_first_meaningful_paint_) {
-    double first_meaningful_paint2_quiet_swap = 0.0;
+    // If there's only been one contentful paint, then there won't have been
+    // a meaningful paint signalled to the Scheduler, so mark one now.
+    // This is a no-op if a FMPC has already been marked.
+    paint_timing_->SetFirstMeaningfulPaintCandidate(
+        provisional_first_meaningful_paint_);
     // Enforce FirstContentfulPaint <= FirstMeaningfulPaint.
     if (provisional_first_meaningful_paint_ <
         paint_timing_->FirstContentfulPaintRendered()) {
       first_meaningful_paint2_quiet_ =
           paint_timing_->FirstContentfulPaintRendered();
-      first_meaningful_paint2_quiet_swap =
+      first_meaningful_paint2_quiet_swap_ =
           paint_timing_->FirstContentfulPaint();
       // It's possible that this timer fires between when the first contentful
       // paint is set and its SwapPromise is fulfilled. If this happens, defer
       // until NotifyFirstContentfulPaint() is called.
-      if (first_meaningful_paint2_quiet_swap == 0.0)
+      if (first_meaningful_paint2_quiet_swap_ == 0.0)
         defer_first_meaningful_paint_ = kDeferFirstContentfulPaintNotSet;
     } else {
       first_meaningful_paint2_quiet_ = provisional_first_meaningful_paint_;
-      first_meaningful_paint2_quiet_swap =
+      first_meaningful_paint2_quiet_swap_ =
           provisional_first_meaningful_paint_swap_;
       // We might still be waiting for one or more swap promises, in which case
       // we want to defer reporting first meaningful paint until they complete.
@@ -194,8 +207,9 @@ void FirstMeaningfulPaintDetector::Network2QuietTimerFired(TimerBase*) {
     if (defer_first_meaningful_paint_ == kDoNotDefer) {
       // Report FirstMeaningfulPaint when the page reached network 2-quiet if
       // we aren't waiting for a swap timestamp.
-      SetFirstMeaningfulPaint(first_meaningful_paint2_quiet_,
-                              first_meaningful_paint2_quiet_swap);
+      paint_timing_->SetFirstMeaningfulPaint(
+          first_meaningful_paint2_quiet_, first_meaningful_paint2_quiet_swap_,
+          had_user_input_before_provisional_first_meaningful_paint_);
     }
   }
   ReportHistograms();
@@ -277,20 +291,14 @@ void FirstMeaningfulPaintDetector::ReportSwapTime(
   probe::paintTiming(GetDocument(), "firstMeaningfulPaintCandidate",
                      provisional_first_meaningful_paint_swap_);
 
-  // Ignore the first meaningful paint candidate as this generally is the first
-  // contentful paint itself.
-  if (!seen_first_meaningful_paint_candidate_) {
-    seen_first_meaningful_paint_candidate_ = true;
-  } else {
-    paint_timing_->SetFirstMeaningfulPaintCandidate(
-        provisional_first_meaningful_paint_swap_);
-  }
-
   if (defer_first_meaningful_paint_ == kDeferOutstandingSwapPromises &&
       outstanding_swap_promise_count_ == 0) {
     DCHECK_GT(first_meaningful_paint2_quiet_, 0.0);
-    SetFirstMeaningfulPaint(provisional_first_meaningful_paint_,
-                            provisional_first_meaningful_paint_swap_);
+    first_meaningful_paint2_quiet_swap_ =
+        provisional_first_meaningful_paint_swap_;
+    paint_timing_->SetFirstMeaningfulPaint(
+        first_meaningful_paint2_quiet_, first_meaningful_paint2_quiet_swap_,
+        had_user_input_before_provisional_first_meaningful_paint_);
   }
 }
 
@@ -298,23 +306,10 @@ void FirstMeaningfulPaintDetector::NotifyFirstContentfulPaint(
     double swap_stamp) {
   if (defer_first_meaningful_paint_ != kDeferFirstContentfulPaintNotSet)
     return;
-  SetFirstMeaningfulPaint(first_meaningful_paint2_quiet_, swap_stamp);
-}
-
-void FirstMeaningfulPaintDetector::SetFirstMeaningfulPaint(double stamp,
-                                                           double swap_stamp) {
-  DCHECK_EQ(paint_timing_->FirstMeaningfulPaint(), 0.0);
-  DCHECK_GE(swap_stamp, stamp);
-  DCHECK_GT(swap_stamp, 0.0);
-  DCHECK(network2_quiet_reached_);
-
-  // If there's only been one contentful paint, then there won't have been
-  // a meaningful paint signalled to the Scheduler, so mark one now.
-  // This is a no-op if a FMPC has already been marked.
-  paint_timing_->SetFirstMeaningfulPaintCandidate(swap_stamp);
-
+  DCHECK_EQ(first_meaningful_paint2_quiet_swap_, 0.0);
+  first_meaningful_paint2_quiet_swap_ = swap_stamp;
   paint_timing_->SetFirstMeaningfulPaint(
-      stamp, swap_stamp,
+      first_meaningful_paint2_quiet_, first_meaningful_paint2_quiet_swap_,
       had_user_input_before_provisional_first_meaningful_paint_);
 }
 

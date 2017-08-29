@@ -78,7 +78,6 @@ class CORE_EXPORT FirstMeaningfulPaintDetector
   void Network2QuietTimerFired(TimerBase*);
   void ReportHistograms();
   void RegisterNotifySwapTime(PaintEvent);
-  void SetFirstMeaningfulPaint(double stamp, double swap_stamp);
 
   bool next_paint_is_meaningful_ = false;
   HadUserInput had_user_input_ = kNoUserInput;
@@ -96,6 +95,7 @@ class CORE_EXPORT FirstMeaningfulPaintDetector
   bool network2_quiet_reached_ = false;
   double first_meaningful_paint0_quiet_ = 0.0;
   double first_meaningful_paint2_quiet_ = 0.0;
+  double first_meaningful_paint2_quiet_swap_ = 0.0;
   unsigned outstanding_swap_promise_count_ = 0;
   DeferFirstMeaningfulPaint defer_first_meaningful_paint_ = kDoNotDefer;
   TaskRunnerTimer<FirstMeaningfulPaintDetector> network0_quiet_timer_;
