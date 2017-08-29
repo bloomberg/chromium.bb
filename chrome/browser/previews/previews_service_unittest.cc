@@ -121,42 +121,17 @@ TEST_F(PreviewsServiceTest, TestClientLoFiFieldTrialNotSet) {
   EXPECT_FALSE(io_data()->IsPreviewEnabled(previews::PreviewsType::LOFI));
 }
 
-TEST_F(PreviewsServiceTest, TestServerLoFiFieldTrialEnabled) {
-  base::FieldTrialList::CreateFieldTrial("DataCompressionProxyLoFi", "Enabled");
-  EXPECT_TRUE(io_data()->IsPreviewEnabled(previews::PreviewsType::LOFI));
-}
-
-TEST_F(PreviewsServiceTest, TestServerLoFiFieldTrialDisabled) {
-  base::FieldTrialList::CreateFieldTrial("DataCompressionProxyLoFi",
-                                         "Disabled");
-  EXPECT_FALSE(io_data()->IsPreviewEnabled(previews::PreviewsType::LOFI));
-}
-
-TEST_F(PreviewsServiceTest, TestServerLoFiFieldTrialNotSet) {
-  EXPECT_FALSE(io_data()->IsPreviewEnabled(previews::PreviewsType::LOFI));
-}
-
-TEST_F(PreviewsServiceTest, TestLitePageFieldTrialEnabledPreview) {
+TEST_F(PreviewsServiceTest, TestServerLoFiNotEnabled) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndDisableFeature(
       data_reduction_proxy::features::kDataReductionProxyDecidesTransform);
-  base::FieldTrialList::CreateFieldTrial("DataCompressionProxyLoFi",
-                                         "Enabled_Preview");
-  EXPECT_TRUE(io_data()->IsPreviewEnabled(previews::PreviewsType::LITE_PAGE));
+  EXPECT_FALSE(io_data()->IsPreviewEnabled(previews::PreviewsType::LOFI));
 }
 
-TEST_F(PreviewsServiceTest, TestLitePageFieldTrialEnabled) {
-  base::FieldTrialList::CreateFieldTrial("DataCompressionProxyLoFi", "Enabled");
-  EXPECT_FALSE(io_data()->IsPreviewEnabled(previews::PreviewsType::LITE_PAGE));
-}
-
-TEST_F(PreviewsServiceTest, TestLitePageFieldTrialDisabled) {
-  base::FieldTrialList::CreateFieldTrial("DataCompressionProxyLoFi",
-                                         "Disabled");
-  EXPECT_FALSE(io_data()->IsPreviewEnabled(previews::PreviewsType::LITE_PAGE));
-}
-
-TEST_F(PreviewsServiceTest, TestLitePageFieldTrialNotSet) {
+TEST_F(PreviewsServiceTest, TestLitePageNotEnabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      data_reduction_proxy::features::kDataReductionProxyDecidesTransform);
   EXPECT_FALSE(io_data()->IsPreviewEnabled(previews::PreviewsType::LITE_PAGE));
 }
 
@@ -164,7 +139,7 @@ TEST_F(PreviewsServiceTest, TestServerLoFiProxyDecidesTransform) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
       data_reduction_proxy::features::kDataReductionProxyDecidesTransform);
-  EXPECT_TRUE(io_data()->IsPreviewEnabled(previews::PreviewsType::LITE_PAGE));
+  EXPECT_TRUE(io_data()->IsPreviewEnabled(previews::PreviewsType::LOFI));
 }
 
 TEST_F(PreviewsServiceTest, TestLitePageProxyDecidesTransform) {

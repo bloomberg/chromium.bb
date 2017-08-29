@@ -30,7 +30,6 @@ namespace {
 const char kEnabled[] = "Enabled";
 const char kControl[] = "Control";
 const char kDisabled[] = "Disabled";
-const char kLitePage[] = "Enabled_Preview";
 const char kDefaultSecureProxyCheckUrl[] = "http://check.googlezip.net/connect";
 const char kDefaultWarmupUrl[] = "http://check.googlezip.net/generate_204";
 
@@ -140,25 +139,6 @@ const char* GetLoFiFieldTrialName() {
 
 const char* GetLoFiFlagFieldTrialName() {
   return kLoFiFlagFieldTrial;
-}
-
-bool IsIncludedInLoFiEnabledFieldTrial() {
-  return !IsLoFiOnViaFlags() && !IsLoFiDisabledViaFlags() &&
-         IsIncludedInFieldTrial(GetLoFiFieldTrialName());
-}
-
-bool IsIncludedInLoFiControlFieldTrial() {
-  return !IsLoFiOnViaFlags() && !IsLoFiDisabledViaFlags() &&
-         base::StartsWith(
-             base::FieldTrialList::FindFullName(GetLoFiFieldTrialName()),
-             kControl, base::CompareCase::SENSITIVE);
-}
-
-bool IsIncludedInLitePageFieldTrial() {
-  return !IsLoFiOnViaFlags() && !IsLoFiDisabledViaFlags() &&
-         base::StartsWith(
-             base::FieldTrialList::FindFullName(GetLoFiFieldTrialName()),
-             kLitePage, base::CompareCase::SENSITIVE);
 }
 
 bool IsIncludedInServerExperimentsFieldTrial() {
