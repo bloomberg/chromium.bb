@@ -69,8 +69,8 @@ function print_help {
     echo "                      to resolve the base table" >&2
     echo "  EDITOR              program that is used to open the working file" >&2
     echo "" >&2
-    echo "Report bugs to liblouis-liblouisxml@freelists.org." >&2
-    echo "Liblouis home page: <http://www.liblouis.org>" >&2
+    echo "Report bugs to @PACKAGE_BUGREPORT@." >&2
+    echo "@PACKAGE_NAME@ home page: <@PACKAGE_URL@>" >&2
 }
 
 HELP=false
