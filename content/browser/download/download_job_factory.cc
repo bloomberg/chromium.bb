@@ -21,13 +21,15 @@ namespace content {
 namespace {
 
 // Returns if the download can be parallelized.
-bool IsParallelizableDownload(const DownloadCreateInfo& create_info) {
+bool IsParallelizableDownload(const DownloadCreateInfo& create_info,
+                              DownloadItemImpl* download_item) {
   // To enable parallel download, following conditions need to be satisfied.
   // 1. Feature |kParallelDownloading| enabled.
   // 2. Strong validators response headers. i.e. ETag and Last-Modified.
-  // 3. Accept-Ranges header.
+  // 3. Accept-Ranges or Content-Range header.
   // 4. Content-Length header.
-  // 5. Content-Length is no less than the minimum slice size configuration.
+  // 5. Content-Length is no less than the minimum slice size configuration, or
+  // persisted slices alreay exist.
   // 6. HTTP/1.1 protocol, not QUIC nor HTTP/1.0.
   // 7. HTTP or HTTPS scheme with GET method in the initial request.
 
@@ -38,6 +40,7 @@ bool IsParallelizableDownload(const DownloadCreateInfo& create_info) {
       !create_info.etag.empty() || !create_info.last_modified.empty();
   bool has_content_length = create_info.total_bytes > 0;
   bool satisfy_min_file_size =
+      !download_item->GetReceivedSlices().empty() ||
       create_info.total_bytes >= GetMinSliceSizeConfig();
   bool satisfy_connection_type = create_info.connection_info ==
                                  net::HttpResponseInfo::CONNECTION_INFO_HTTP1_1;
@@ -97,7 +100,7 @@ std::unique_ptr<DownloadJob> DownloadJobFactory::CreateJob(
                                                     std::move(req_handle));
   }
 
-  bool is_parallelizable = IsParallelizableDownload(create_info);
+  bool is_parallelizable = IsParallelizableDownload(create_info, download_item);
   // Build parallel download job.
   if (IsParallelDownloadEnabled() && is_parallelizable) {
     return base::MakeUnique<ParallelDownloadJob>(download_item,

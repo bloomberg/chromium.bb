@@ -418,9 +418,9 @@ TEST_F(ParallelDownloadJobTest, InterruptOnStartup) {
   EXPECT_CALL(callback, Run(_)).Times(1);
   job_->MakeFileInitialized(callback.Get(), DOWNLOAD_INTERRUPT_REASON_NONE);
 
-  // Simulate and inject an error from IO thread after file initializd.
-  EXPECT_CALL(*download_item_.get(), GetLastReason())
-      .WillOnce(Return(DOWNLOAD_INTERRUPT_REASON_NETWORK_DISCONNECTED));
+  // Simulate and inject an error from IO thread after file initialized.
+  EXPECT_CALL(*download_item_.get(), GetState())
+      .WillRepeatedly(Return(DownloadItem::DownloadState::INTERRUPTED));
 
   // Because of the error, no parallel requests are built.
   task_environment_.RunUntilIdle();

@@ -2723,6 +2723,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
                download->GetTargetFilePath().BaseName().value().c_str());
 }
 
+// Verify parallel download in normal case.
 IN_PROC_BROWSER_TEST_F(ParallelDownloadTest, ParallelDownloadComplete) {
   EXPECT_TRUE(base::FeatureList::IsEnabled(features::kParallelDownloading));
 
@@ -2739,6 +2740,76 @@ IN_PROC_BROWSER_TEST_F(ParallelDownloadTest, ParallelDownloadComplete) {
 
   DownloadItem* download =
       StartDownloadAndReturnItem(shell(), request_handler.url());
+  WaitForCompletion(download);
+
+  TestDownloadRequestHandler::CompletedRequests completed_requests;
+  request_handler.GetCompletedRequestInfo(&completed_requests);
+  EXPECT_EQ(kTestRequestCount, static_cast<int>(completed_requests.size()));
+
+  ReadAndVerifyFileContents(parameters.pattern_generator_seed, parameters.size,
+                            download->GetTargetFilePath());
+}
+
+// Verify parallel download resumption.
+IN_PROC_BROWSER_TEST_F(ParallelDownloadTest, ParallelDownloadResumption) {
+  EXPECT_TRUE(base::FeatureList::IsEnabled(features::kParallelDownloading));
+
+  TestDownloadRequestHandler request_handler;
+  TestDownloadRequestHandler::Parameters parameters;
+  parameters.etag = "ABC";
+  parameters.size = 3000000;
+  parameters.last_modified = std::string();
+  parameters.connection_type = net::HttpResponseInfo::CONNECTION_INFO_HTTP1_1;
+  request_handler.StartServing(parameters);
+
+  base::FilePath intermediate_file_path =
+      GetDownloadDirectory().AppendASCII("intermediate");
+  std::vector<GURL> url_chain;
+  url_chain.push_back(request_handler.url());
+
+  // Create an intermediate file that contains 3 chunks of data.
+  const int kIntermediateSize = 1000;
+  std::vector<char> buffer(kIntermediateSize);
+  request_handler.GetPatternBytes(parameters.pattern_generator_seed, 0,
+                                  buffer.size(), buffer.data());
+  {
+    base::ThreadRestrictions::ScopedAllowIO allow_io_for_test_setup;
+    base::File file(intermediate_file_path,
+                    base::File::FLAG_CREATE | base::File::FLAG_WRITE);
+    ASSERT_TRUE(file.IsValid());
+    request_handler.GetPatternBytes(parameters.pattern_generator_seed, 0,
+                                    buffer.size(), buffer.data());
+    EXPECT_EQ(kIntermediateSize,
+              file.Write(0, buffer.data(), kIntermediateSize));
+    request_handler.GetPatternBytes(parameters.pattern_generator_seed, 1000000,
+                                    buffer.size(), buffer.data());
+    EXPECT_EQ(kIntermediateSize,
+              file.Write(1000000, buffer.data(), kIntermediateSize));
+    request_handler.GetPatternBytes(parameters.pattern_generator_seed, 2000000,
+                                    buffer.size(), buffer.data());
+    EXPECT_EQ(kIntermediateSize,
+              file.Write(2000000, buffer.data(), kIntermediateSize));
+    file.Close();
+  }
+
+  // Create the received slices data that reflects the data in the file.
+  std::vector<DownloadItem::ReceivedSlice> received_slices = {
+      DownloadItem::ReceivedSlice(0, 1000),
+      DownloadItem::ReceivedSlice(1000000, 1000),
+      DownloadItem::ReceivedSlice(2000000, 1000)};
+
+  DownloadItem* download = DownloadManagerForShell(shell())->CreateDownloadItem(
+      "F7FB1F59-7DE1-4845-AFDB-8A688F70F583", 1, intermediate_file_path,
+      base::FilePath(), url_chain, GURL(), GURL(), GURL(), GURL(),
+      "application/octet-stream", "application/octet-stream", base::Time::Now(),
+      base::Time(), parameters.etag, parameters.last_modified,
+      kIntermediateSize * 3, parameters.size, std::string(),
+      DownloadItem::INTERRUPTED, DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+      DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED, false, base::Time(), false,
+      received_slices);
+
+  // Resume the parallel download with sparse file and received slices data.
+  download->Resume();
   WaitForCompletion(download);
 
   TestDownloadRequestHandler::CompletedRequests completed_requests;

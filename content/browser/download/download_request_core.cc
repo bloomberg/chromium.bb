@@ -278,8 +278,14 @@ bool DownloadRequestCore::OnResponseStarted(
     if (!headers->GetMimeType(&create_info->original_mime_type))
       create_info->original_mime_type.clear();
 
+    // Content-Range is validated in HandleSuccessfulServerResponse.
+    // In RFC 7233, a single part 206 partial response must generate
+    // Content-Range. Accept-Range may be sent in 200 response to indicate the
+    // server can handle range request, but optional in 206 response.
     create_info->accept_range =
-        headers->HasHeaderValue("Accept-Ranges", "bytes");
+        headers->HasHeaderValue("Accept-Ranges", "bytes") ||
+        (headers->HasHeader("Content-Range") &&
+         headers->response_code() == net::HTTP_PARTIAL_CONTENT);
   }
 
   // GURL::GetOrigin() doesn't support getting the inner origin of a blob URL.
