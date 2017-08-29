@@ -498,12 +498,6 @@ extern const char kProfilesDeleted[];
 extern const char kStabilityOtherUserCrashCount[];
 extern const char kStabilityKernelCrashCount[];
 extern const char kStabilitySystemUncleanShutdownCount[];
-#if defined(OS_ANDROID)
-extern const char kStabilityForegroundActivityType[];
-extern const char kStabilityLaunchedActivityFlags[];
-extern const char kStabilityLaunchedActivityCounts[];
-extern const char kStabilityCrashedActivityCounts[];
-#endif  // defined(OS_ANDROID)
 
 extern const char kStabilityPluginStats[];
 extern const char kStabilityPluginName[];

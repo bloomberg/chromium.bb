@@ -1404,29 +1404,6 @@ const char kStabilityKernelCrashCount[] =
 const char kStabilitySystemUncleanShutdownCount[] =
     "user_experience_metrics.stability.system_unclean_shutdowns";
 
-#if defined(OS_ANDROID)
-// Activity type that is currently in the foreground for the UMA session.
-// Uses the ActivityTypeIds::Type enum.
-const char kStabilityForegroundActivityType[] =
-    "user_experience_metrics.stability.current_foreground_activity_type";
-
-// Tracks which Activities were launched during the last session.
-// See |metrics_service_android.cc| for its usage.
-const char kStabilityLaunchedActivityFlags[] =
-    "user_experience_metrics.stability.launched_activity_flags";
-
-// List pref: Counts how many times each Activity was launched.
-// Indexed into by ActivityTypeIds::Type.
-const char kStabilityLaunchedActivityCounts[] =
-    "user_experience_metrics.stability.launched_activity_counts";
-
-// List pref: Counts how many times each Activity type was in the foreground
-// when a UMA session failed to be shut down properly.
-// Indexed into by ActivityTypeIds::Type.
-const char kStabilityCrashedActivityCounts[] =
-    "user_experience_metrics.stability.crashed_activity_counts";
-#endif  // defined(OS_ANDROID)
-
 // The keys below are used for the dictionaries in the
 // kStabilityPluginStats list.
 const char kStabilityPluginName[] = "name";
