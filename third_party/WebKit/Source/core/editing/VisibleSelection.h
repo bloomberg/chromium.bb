@@ -114,7 +114,6 @@ class CORE_TEMPLATE_CLASS_EXPORT VisibleSelectionTemplate {
 
   Element* RootEditableElement() const;
   bool IsContentEditable() const;
-  bool IsContentRichlyEditable() const;
 
   bool IsValidFor(const Document&) const;
 
