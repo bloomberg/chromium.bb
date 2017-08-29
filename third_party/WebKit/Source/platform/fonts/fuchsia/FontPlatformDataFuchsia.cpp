@@ -35,8 +35,7 @@ namespace blink {
 void FontPlatformData::SetupPaint(SkPaint* paint,
                                   float device_scale_factor,
                                   const Font*) const {
-  // TODO(fuchsia): Implement this when UI support is ready. crbug.com/750946
-  NOTIMPLEMENTED();
+  paint->setTypeface(typeface_);
 }
 
 }  // namespace blink
