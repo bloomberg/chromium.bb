@@ -486,14 +486,24 @@ void AppListItemView::OnGestureEvent(ui::GestureEvent* event) {
       break;
     case ui::ET_GESTURE_TAP:
     case ui::ET_GESTURE_TAP_CANCEL:
-      if (state() != STATE_DISABLED)
+      if (state() != STATE_DISABLED) {
+        touch_drag_timer_.Stop();
         SetState(STATE_NORMAL);
+      }
       break;
     case ui::ET_GESTURE_LONG_TAP:
     case ui::ET_GESTURE_END:
       touch_drag_timer_.Stop();
       SetTouchDragging(false);
       apps_grid_view_->EndDrag(false);
+      break;
+    case ui::ET_GESTURE_TWO_FINGER_TAP:
+      if (touch_dragging_) {
+        SetTouchDragging(false);
+        apps_grid_view_->EndDrag(false);
+      } else {
+        touch_drag_timer_.Stop();
+      }
       break;
     default:
       break;
