@@ -58,6 +58,8 @@ class TestPrefetchImporter : public PrefetchImporter {
 
 }  // namespace
 
+// TODO(carlosk, jianli): Update this test to extend and use the functionality
+// provided by TaskTestBase.
 class ImportArchivesTaskTest : public testing::Test {
  public:
   ImportArchivesTaskTest();
