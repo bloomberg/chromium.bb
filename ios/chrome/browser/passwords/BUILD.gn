@@ -7,8 +7,12 @@ import("//ios/web/js_compile.gni")
 source_set("passwords") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "credential_manager.h",
+    "credential_manager.mm",
     "credential_manager_features.cc",
     "credential_manager_features.h",
+    "credential_manager_util.h",
+    "credential_manager_util.mm",
     "ios_chrome_password_manager_client.h",
     "ios_chrome_password_manager_client.mm",
     "ios_chrome_password_manager_driver.h",
@@ -98,6 +102,7 @@ source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
+    "credential_manager_util_unittest.cc",
     "password_controller_js_unittest.mm",
     "password_controller_off_the_record_unittest.mm",
     "password_controller_unittest.mm",
