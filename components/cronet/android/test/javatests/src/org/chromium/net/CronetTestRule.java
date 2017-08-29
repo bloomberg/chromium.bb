@@ -104,7 +104,7 @@ public class CronetTestRule implements CronetTestCommonCallback, TestRule {
 
         // Find the API version required by the test.
         int requiredApiVersion = mTestCommon.getMaximumAvailableApiLevel();
-        for (Annotation a : desc.getAnnotations()) {
+        for (Annotation a : desc.getTestClass().getAnnotations()) {
             if (a instanceof RequiresMinApi) {
                 requiredApiVersion = ((RequiresMinApi) a).value();
             }
