@@ -213,10 +213,10 @@ class RemoteSuggestionsProviderImpl final : public RemoteSuggestionsProvider {
     // The additional information about a category.
     CategoryInfo info;
 
+    // TODO(vitaliii): Remove this field. It is always true, because we now
+    // remove categories not included in the last fetch.
     // True iff the server returned results in this category in the last fetch.
-    // We never remove categories that the server still provides, but if the
-    // server stops providing a category, we won't yet report it as NOT_PROVIDED
-    // while we still have non-expired suggestions in it.
+    // We never remove categories that the server still provides.
     bool included_in_last_server_response = true;
 
     // All currently active suggestions (excl. the dismissed ones).
