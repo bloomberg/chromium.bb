@@ -67,7 +67,7 @@ void WelcomeHandler::HandleUserDecline(const base::ListValue* args) {
   // attempted to sign in.
   result_ = (result_ == WelcomeResult::ATTEMPTED)
                 ? WelcomeResult::ATTEMPTED_DECLINED
-                : result_ = WelcomeResult::DECLINED;
+                : WelcomeResult::DECLINED;
   GoToNewTabPage();
 }
 
