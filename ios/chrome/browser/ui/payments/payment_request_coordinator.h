@@ -31,13 +31,10 @@ class ChromeBrowserState;
 }  // namespace ios
 
 namespace payments {
-class PaymentRequest;
-}  // namespace payments
-
-namespace web {
 class PaymentDetails;
+class PaymentRequest;
 class PaymentShippingOption;
-}  // namespace web
+}  // namespace payments
 
 @class PaymentRequestCoordinator;
 
@@ -65,7 +62,7 @@ class PaymentShippingOption;
 // Notifies the delegate that the user has selected a shipping option.
 - (void)paymentRequestCoordinator:(PaymentRequestCoordinator*)coordinator
           didSelectShippingOption:
-              (const web::PaymentShippingOption&)shippingOption;
+              (const payments::PaymentShippingOption&)shippingOption;
 
 @end
 
@@ -134,7 +131,7 @@ requestFullCreditCard:(const autofill::CreditCard&)card
                resultDelegate;
 
 // Updates the payment details of the PaymentRequest and updates the UI.
-- (void)updatePaymentDetails:(web::PaymentDetails)paymentDetails;
+- (void)updatePaymentDetails:(payments::PaymentDetails)paymentDetails;
 
 // Displays an error message. Invokes |callback| when the message is dismissed.
 - (void)displayErrorWithCallback:(ProceduralBlock)callback;

@@ -12,6 +12,7 @@
 #include "components/payments/core/address_normalization_manager.h"
 #include "components/payments/core/journey_logger.h"
 #include "components/payments/core/payment_request_data_util.h"
+#include "components/payments/core/payment_shipping_option.h"
 #include "ios/chrome/browser/payments/payment_request.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -76,7 +77,7 @@ void PaymentResponseHelper::AddressNormalizationCompleted() {
         data_util::GetPaymentAddressFromAutofillProfile(
             shipping_address_, payment_request_->GetApplicationLocale()));
 
-    web::PaymentShippingOption* shippingOption =
+    PaymentShippingOption* shippingOption =
         payment_request_->selected_shipping_option();
     DCHECK(shippingOption);
     response.shipping_option = shippingOption->id;

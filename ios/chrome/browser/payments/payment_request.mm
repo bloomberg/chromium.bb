@@ -20,7 +20,9 @@
 #include "components/payments/core/autofill_payment_instrument.h"
 #include "components/payments/core/currency_formatter.h"
 #include "components/payments/core/features.h"
+#include "components/payments/core/payment_details.h"
 #include "components/payments/core/payment_request_data_util.h"
+#include "components/payments/core/payment_shipping_option.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "ios/chrome/browser/application_context.h"
@@ -194,7 +196,7 @@ PrefService* PaymentRequest::GetPrefService() {
   return browser_state_->GetPrefs();
 }
 
-void PaymentRequest::UpdatePaymentDetails(const web::PaymentDetails& details) {
+void PaymentRequest::UpdatePaymentDetails(const PaymentDetails& details) {
   web_payment_request_.details = details;
   PopulateAvailableShippingOptions();
   SetSelectedShippingOption();
@@ -466,7 +468,7 @@ void PaymentRequest::PopulateAvailableShippingOptions() {
   std::transform(std::begin(web_payment_request_.details.shipping_options),
                  std::end(web_payment_request_.details.shipping_options),
                  std::back_inserter(shipping_options_),
-                 [](web::PaymentShippingOption& option) { return &option; });
+                 [](PaymentShippingOption& option) { return &option; });
 }
 
 void PaymentRequest::SetSelectedShippingOption() {

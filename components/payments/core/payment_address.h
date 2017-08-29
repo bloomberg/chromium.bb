@@ -12,7 +12,7 @@
 
 // C++ bindings for the PaymentRequest API PaymentAddress. Conforms to the
 // following spec:
-// https://w3c.github.io/browser-payment-api/#paymentaddress-interface
+// https://w3c.github.io/payment-request/#dom-paymentaddress
 
 namespace base {
 class DictionaryValue;

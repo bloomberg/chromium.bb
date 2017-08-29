@@ -4,8 +4,6 @@
 
 #include "components/payments/core/payment_address.h"
 
-#include <vector>
-
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

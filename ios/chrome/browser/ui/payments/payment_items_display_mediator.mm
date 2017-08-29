@@ -10,6 +10,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/payments/core/currency_formatter.h"
+#include "components/payments/core/payment_item.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/payments/payment_request.h"
 #import "ios/chrome/browser/ui/payments/cells/price_item.h"
@@ -68,7 +69,7 @@
 }
 
 - (NSArray<CollectionViewItem*>*)lineItems {
-  const std::vector<web::PaymentItem>& paymentItems =
+  const std::vector<payments::PaymentItem>& paymentItems =
       _paymentRequest->payment_details().display_items;
   NSMutableArray<CollectionViewItem*>* lineItems =
       [NSMutableArray arrayWithCapacity:paymentItems.size()];

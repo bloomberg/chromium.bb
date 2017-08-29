@@ -12,8 +12,13 @@
 #include "base/strings/string16.h"
 #include "components/payments/core/basic_card_response.h"
 #include "components/payments/core/payment_address.h"
+#include "components/payments/core/payment_details.h"
 #include "components/payments/core/payment_method_data.h"
 #include "components/payments/core/payment_options_provider.h"
+
+// TODO(crbug.com/759167): Web layer is not supposed to depend on components.
+// Move definitions and implementations of PaymentOptions, PaymentRequest, and
+// PaymentResponse to components/payments/core or ios/chrome/browser/payments.
 
 // C++ bindings for the PaymentRequest API. Conforms to the following specs:
 // https://w3c.github.io/browser-payment-api/ (18 July 2016 editor's draft)
@@ -29,170 +34,6 @@ namespace web {
 // payment response data from an external application.
 extern const char kPaymentRequestIDExternal[];
 extern const char kPaymentRequestDataExternal[];
-
-// Supplies monetary amounts.
-class PaymentCurrencyAmount {
- public:
-  PaymentCurrencyAmount();
-  ~PaymentCurrencyAmount();
-
-  bool operator==(const PaymentCurrencyAmount& other) const;
-  bool operator!=(const PaymentCurrencyAmount& other) const;
-
-  // Populates the properties of this PaymentCurrencyAmount from |value|.
-  // Returns true if the required values are present.
-  bool FromDictionaryValue(const base::DictionaryValue& value);
-
-  // Creates a base::DictionaryValue with the properties of this
-  // PaymentCurrencyAmount.
-  std::unique_ptr<base::DictionaryValue> ToDictionaryValue() const;
-
-  // A currency identifier. The most common identifiers are three-letter
-  // alphabetic codes as defined by ISO 4217 (for example, "USD" for US Dollars)
-  // however any string is considered valid.
-  base::string16 currency;
-
-  // A string containing the decimal monetary value.
-  base::string16 value;
-
-  // A URL that indicates the currency system that the currency identifier
-  // belongs to.
-  base::string16 currency_system;
-};
-
-// Information indicating what the payment request is for and the value asked
-// for.
-class PaymentItem {
- public:
-  PaymentItem();
-  ~PaymentItem();
-
-  bool operator==(const PaymentItem& other) const;
-  bool operator!=(const PaymentItem& other) const;
-
-  // Populates the properties of this PaymentItem from |value|. Returns true if
-  // the required values are present.
-  bool FromDictionaryValue(const base::DictionaryValue& value);
-
-  // Creates a base::DictionaryValue with the properties of this
-  // PaymentItem.
-  std::unique_ptr<base::DictionaryValue> ToDictionaryValue() const;
-
-  // A human-readable description of the item.
-  base::string16 label;
-
-  // The monetary amount for the item.
-  PaymentCurrencyAmount amount;
-
-  // When set to true this flag means that the amount field is not final. This
-  // is commonly used to show items such as shipping or tax amounts that depend
-  // upon selection of shipping address or shipping option.
-  bool pending;
-};
-
-// Information describing a shipping option.
-class PaymentShippingOption {
- public:
-  PaymentShippingOption();
-  PaymentShippingOption(const PaymentShippingOption& other);
-  ~PaymentShippingOption();
-
-  bool operator==(const PaymentShippingOption& other) const;
-  bool operator!=(const PaymentShippingOption& other) const;
-
-  // Populates the properties of this PaymentShippingOption from |value|.
-  // Returns true if the required values are present.
-  bool FromDictionaryValue(const base::DictionaryValue& value);
-
-  // An identifier used to reference this PaymentShippingOption. It is unique
-  // for a given PaymentRequest.
-  base::string16 id;
-
-  // A human-readable description of the item. The user agent should use this
-  // string to display the shipping option to the user.
-  base::string16 label;
-
-  // A PaymentCurrencyAmount containing the monetary amount for the option.
-  PaymentCurrencyAmount amount;
-
-  // This is set to true to indicate that this is the default selected
-  // PaymentShippingOption in a sequence. User agents should display this option
-  // by default in the user interface.
-  bool selected;
-};
-
-// Details that modify the PaymentDetails based on the payment method
-// identifier.
-class PaymentDetailsModifier {
- public:
-  PaymentDetailsModifier();
-  PaymentDetailsModifier(const PaymentDetailsModifier& other);
-  ~PaymentDetailsModifier();
-
-  bool operator==(const PaymentDetailsModifier& other) const;
-  bool operator!=(const PaymentDetailsModifier& other) const;
-
-  // Creates a base::DictionaryValue with the properties of this
-  // PaymentDetailsModifier.
-  std::unique_ptr<base::DictionaryValue> ToDictionaryValue() const;
-
-  // A sequence of payment method identifiers. The remaining fields in the
-  // PaymentDetailsModifier apply only if the user selects a payment method
-  // included in this sequence.
-  std::vector<base::string16> supported_methods;
-
-  // This value overrides the total field in the PaymentDetails dictionary for
-  // the payment method identifiers in the supportedMethods field.
-  PaymentItem total;
-
-  // Provides additional display items that are appended to the displayItems
-  // field in the PaymentDetails dictionary for the payment method identifiers
-  // in the supportedMethods field. This field is commonly used to add a
-  // discount or surcharge line item indicating the reason for the different
-  // total amount for the selected payment method that the user agent may
-  // display.
-  std::vector<PaymentItem> additional_display_items;
-};
-
-// Details about the requested transaction.
-class PaymentDetails {
- public:
-  PaymentDetails();
-  PaymentDetails(const PaymentDetails& other);
-  ~PaymentDetails();
-
-  bool operator==(const PaymentDetails& other) const;
-  bool operator!=(const PaymentDetails& other) const;
-
-  // Populates the properties of this PaymentDetails from |value|. Returns true
-  // if the required values are present. If |requires_total| is true, the total
-  // property has to be present.
-  bool FromDictionaryValue(const base::DictionaryValue& value,
-                           bool requires_total);
-
-  // The unique free-form identifier for this payment request.
-  std::string id;
-
-  // The total amount of the payment request.
-  PaymentItem total;
-
-  // Line items for the payment request that the user agent may display. For
-  // example, it might include details of products or breakdown of tax and
-  // shipping.
-  std::vector<PaymentItem> display_items;
-
-  // The different shipping options for the user to choose from. If empty, this
-  // indicates that the merchant cannot ship to the current shipping address.
-  std::vector<PaymentShippingOption> shipping_options;
-
-  // Modifiers for particular payment method identifiers. For example, it allows
-  // adjustment to the total amount based on payment method.
-  std::vector<PaymentDetailsModifier> modifiers;
-
-  // If non-empty, this is the error message the user agent should display to
-  // the user when the payment request is updated using updateWith.
-  base::string16 error;
-};
 
 // Information describing a shipping option.
 class PaymentOptions {
@@ -260,7 +101,7 @@ class PaymentRequest {
   // Properties set via the constructor for communicating from the page to the
   // browser UI.
   std::vector<payments::PaymentMethodData> method_data;
-  PaymentDetails details;
+  payments::PaymentDetails details;
   PaymentOptions options;
 };
 

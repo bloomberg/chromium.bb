@@ -14,6 +14,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "components/payments/core/payment_details.h"
 #include "components/payments/core/payment_instrument.h"
 #include "ios/web/public/navigation_item.h"
 #include "ios/web/public/navigation_manager.h"
@@ -238,7 +239,7 @@ IOSPaymentInstrumentLauncher::SerializeCertificateChain(
 }
 
 std::unique_ptr<base::ListValue>
-IOSPaymentInstrumentLauncher::SerializeModifiers(web::PaymentDetails details) {
+IOSPaymentInstrumentLauncher::SerializeModifiers(PaymentDetails details) {
   std::unique_ptr<base::ListValue> modifiers =
       base::MakeUnique<base::ListValue>();
   size_t numModifiers = details.modifiers.size();
