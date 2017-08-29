@@ -7195,6 +7195,13 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="2" label="Has enough SCTs"/>
 </enum>
 
+<enum name="CustomTabsConnection">
+  <int value="0" label="Disconnected from service w/o KeepAlive connection"/>
+  <int value="1" label="Disconnected from service with KeepAlive connection"/>
+  <int value="2" label="Connected to service w/o KeepAlive connection"/>
+  <int value="3" label="Connected to service with KeepAlive connection"/>
+</enum>
+
 <enum name="CustomTabsSpeculationStatusOnStart">
   <int value="0"
       label="Speculation allowed. If started, the kind will also be recorded"/>
