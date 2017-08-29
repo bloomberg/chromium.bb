@@ -29,6 +29,7 @@
 #include "mojo/public/cpp/system/platform_handle.h"
 
 #if defined(OS_POSIX)
+#include "base/posix/eintr_wrapper.h"
 #include "ipc/ipc_platform_file_attachment_posix.h"
 #endif
 
@@ -134,8 +135,9 @@ MojoResult WrapMxHandle(mx_handle_t handle,
 
 #if defined(OS_POSIX)
 base::ScopedFD TakeOrDupFile(internal::PlatformFileAttachment* attachment) {
-  return attachment->Owns() ? base::ScopedFD(attachment->TakePlatformFile())
-                            : base::ScopedFD(dup(attachment->file()));
+  return attachment->Owns()
+             ? base::ScopedFD(attachment->TakePlatformFile())
+             : base::ScopedFD(HANDLE_EINTR(dup(attachment->file())));
 }
 #endif  // defined(OS_POSIX)
 

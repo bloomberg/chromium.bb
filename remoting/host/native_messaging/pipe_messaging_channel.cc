@@ -15,6 +15,8 @@
 
 #if defined(OS_POSIX)
 #include <unistd.h>
+
+#include "base/posix/eintr_wrapper.h"
 #endif
 
 namespace {
@@ -34,7 +36,7 @@ base::File DuplicatePlatformFile(base::File file) {
   }
   return base::File(result);
 #elif defined(OS_POSIX)
-  result = dup(file.GetPlatformFile());
+  result = HANDLE_EINTR(dup(file.GetPlatformFile()));
   return base::File(result);
 #else
 #error Not implemented.

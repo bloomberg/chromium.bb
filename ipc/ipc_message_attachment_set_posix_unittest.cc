@@ -25,7 +25,7 @@ int GetSafeFd() {
 
 // Returns true if fd was already closed.  Closes fd if not closed.
 bool VerifyClosed(int fd) {
-  const int duped = dup(fd);
+  const int duped = HANDLE_EINTR(dup(fd));
   if (duped != -1) {
     EXPECT_NE(IGNORE_EINTR(close(duped)), -1);
     EXPECT_NE(IGNORE_EINTR(close(fd)), -1);
