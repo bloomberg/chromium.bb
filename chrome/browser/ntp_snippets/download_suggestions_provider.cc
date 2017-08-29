@@ -119,7 +119,10 @@ bool CorrespondsToOfflinePage(const ContentSuggestion::ID& suggestion_id) {
 }
 
 bool IsAssetDownloadCompleted(const DownloadItem& item) {
-  return item.GetState() == DownloadItem::DownloadState::COMPLETE &&
+  // Transient downloads are cleaned up after completion, therefore, they should
+  // be ignored.
+  return !item.IsTransient() &&
+         item.GetState() == DownloadItem::DownloadState::COMPLETE &&
          !item.GetFileExternallyRemoved();
 }
 
