@@ -1682,37 +1682,21 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
     int i;
     for (i = 0; i < MAX_SEGMENTS; i++) {
 #if CONFIG_EXT_DELTA_Q
-      xd->plane[0].seg_dequant[i][0] =
-          av1_dc_quant(av1_get_qindex(&cm->seg, i, xd->current_qindex),
-                       cm->y_dc_delta_q, cm->bit_depth);
-      xd->plane[0].seg_dequant[i][1] = av1_ac_quant(
-          av1_get_qindex(&cm->seg, i, xd->current_qindex), 0, cm->bit_depth);
-      xd->plane[1].seg_dequant[i][0] =
-          av1_dc_quant(av1_get_qindex(&cm->seg, i, xd->current_qindex),
-                       cm->uv_dc_delta_q, cm->bit_depth);
-      xd->plane[1].seg_dequant[i][1] =
-          av1_ac_quant(av1_get_qindex(&cm->seg, i, xd->current_qindex),
-                       cm->uv_ac_delta_q, cm->bit_depth);
-      xd->plane[2].seg_dequant[i][0] =
-          av1_dc_quant(av1_get_qindex(&cm->seg, i, xd->current_qindex),
-                       cm->uv_dc_delta_q, cm->bit_depth);
-      xd->plane[2].seg_dequant[i][1] =
-          av1_ac_quant(av1_get_qindex(&cm->seg, i, xd->current_qindex),
-                       cm->uv_ac_delta_q, cm->bit_depth);
+      const int current_qindex =
+          av1_get_qindex(&cm->seg, i, xd->current_qindex);
 #else
-      xd->plane[0].seg_dequant[i][0] =
-          av1_dc_quant(xd->current_qindex, cm->y_dc_delta_q, cm->bit_depth);
-      xd->plane[0].seg_dequant[i][1] =
-          av1_ac_quant(xd->current_qindex, 0, cm->bit_depth);
-      xd->plane[1].seg_dequant[i][0] =
-          av1_dc_quant(xd->current_qindex, cm->uv_dc_delta_q, cm->bit_depth);
-      xd->plane[1].seg_dequant[i][1] =
-          av1_ac_quant(xd->current_qindex, cm->uv_ac_delta_q, cm->bit_depth);
-      xd->plane[2].seg_dequant[i][0] =
-          av1_dc_quant(xd->current_qindex, cm->uv_dc_delta_q, cm->bit_depth);
-      xd->plane[2].seg_dequant[i][1] =
-          av1_ac_quant(xd->current_qindex, cm->uv_ac_delta_q, cm->bit_depth);
-#endif
+      const int current_qindex = xd->current_qindex;
+#endif  // CONFIG_EXT_DELTA_Q
+      int j;
+      for (j = 0; j < MAX_MB_PLANE; ++j) {
+        const int dc_delta_q = j == 0 ? cm->y_dc_delta_q : cm->uv_dc_delta_q;
+        const int ac_delta_q = j == 0 ? 0 : cm->uv_ac_delta_q;
+
+        xd->plane[j].seg_dequant[i][0] =
+            av1_dc_quant(current_qindex, dc_delta_q, cm->bit_depth);
+        xd->plane[j].seg_dequant[i][1] =
+            av1_ac_quant(current_qindex, ac_delta_q, cm->bit_depth);
+      }
     }
   }
 #endif
@@ -2453,18 +2437,16 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
 #if CONFIG_DELTA_Q
     if (cm->delta_q_present_flag) {
       for (i = 0; i < MAX_SEGMENTS; i++) {
-        xd->plane[0].seg_dequant[i][0] =
-            av1_dc_quant(xd->current_qindex, cm->y_dc_delta_q, cm->bit_depth);
-        xd->plane[0].seg_dequant[i][1] =
-            av1_ac_quant(xd->current_qindex, 0, cm->bit_depth);
-        xd->plane[1].seg_dequant[i][0] =
-            av1_dc_quant(xd->current_qindex, cm->uv_dc_delta_q, cm->bit_depth);
-        xd->plane[1].seg_dequant[i][1] =
-            av1_ac_quant(xd->current_qindex, cm->uv_ac_delta_q, cm->bit_depth);
-        xd->plane[2].seg_dequant[i][0] =
-            av1_dc_quant(xd->current_qindex, cm->uv_dc_delta_q, cm->bit_depth);
-        xd->plane[2].seg_dequant[i][1] =
-            av1_ac_quant(xd->current_qindex, cm->uv_ac_delta_q, cm->bit_depth);
+        int j;
+        for (j = 0; j < MAX_MB_PLANE; ++j) {
+          const int dc_delta_q = j == 0 ? cm->y_dc_delta_q : cm->uv_dc_delta_q;
+          const int ac_delta_q = j == 0 ? 0 : cm->uv_ac_delta_q;
+
+          xd->plane[j].seg_dequant[i][0] =
+              av1_dc_quant(xd->current_qindex, dc_delta_q, cm->bit_depth);
+          xd->plane[j].seg_dequant[i][1] =
+              av1_ac_quant(xd->current_qindex, ac_delta_q, cm->bit_depth);
+        }
       }
     }
 #endif
