@@ -5424,18 +5424,6 @@ the Bookmarks menu.">
         Reset to default zoom level
       </message>
 
-      <!-- Accessibility permission -->
-      <message name="IDS_ACCESSIBILITY_EVENTS_PERMISSION_FRAGMENT" desc="Permission request shown if the user is visiting a site that wants to respond to accessibility events, for example if the user is using a screen reader and the site has custom accessibility features. Follows a prompt: 'This site would like to:'">
-        Respond to Accessibility Events
-      </message>
-      <if expr="is_android">
-        <message name="IDS_ACCESSIBILITY_EVENTS_INFOBAR_QUESTION" desc="Question asked on the info bar whenever URL wants to listen to accessibility events, for example if the user has a screen reader or braille device enabled">
-          <ph name="URL">
-            $1<ex>maps.google.com</ex>
-          </ph> wants to respond to accessibility events.
-        </message>
-      </if>
-
       <!-- Feature Engagement Tracker strings -->
       <message name="IDS_BOOKMARK_PROMO_0" desc="Text shown on promotional UI appearing next to the Bookmarks button, which encourages users to use it.">
         Bookmark this page to easily find it later

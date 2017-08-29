@@ -30,7 +30,7 @@ class CORE_EXPORT AXObjectCacheBase : public AXObjectCache {
   virtual AXObject* GetOrCreate(LayoutObject*) = 0;
 
  protected:
-  AXObjectCacheBase(Document&);
+  AXObjectCacheBase();
 };
 
 // This is the only subclass of AXObjectCache.

@@ -25,8 +25,6 @@ var PermissionsHelper = (function() {
         return {name: "geolocation"};
       case "background-sync":
         return {name: "background-sync"};
-      case "accessibility-events":
-        return {name: "accessibility-events"};
       default:
         throw "Invalid permission name provided";
     }

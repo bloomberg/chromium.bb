@@ -3,6 +3,4 @@ include_rules = [
     "+modules/ModulesExport.h",
     "+modules/accessibility",
     "+modules/media_controls",
-    "+modules/permissions",
-    "+mojo/public/cpp/bindings/binding.h",
 ]

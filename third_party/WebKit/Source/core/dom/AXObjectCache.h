@@ -44,16 +44,14 @@ class LineLayoutItem;
 class LocalFrameView;
 
 class CORE_EXPORT AXObjectCache
-    : public GarbageCollectedFinalized<AXObjectCache>,
-      public ContextLifecycleObserver {
+    : public GarbageCollectedFinalized<AXObjectCache> {
   WTF_MAKE_NONCOPYABLE(AXObjectCache);
-  USING_GARBAGE_COLLECTED_MIXIN(AXObjectCache);
 
  public:
   static AXObjectCache* Create(Document&);
 
   virtual ~AXObjectCache();
-  DECLARE_VIRTUAL_TRACE();
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
 
   enum AXNotification {
     kAXActiveDescendantChanged,
@@ -158,7 +156,7 @@ class CORE_EXPORT AXObjectCache
   static bool IsInsideFocusableElementOrARIAWidget(const Node&);
 
  protected:
-  AXObjectCache(Document&);
+  AXObjectCache();
 
  private:
   static AXObjectCacheCreateFunction create_function_;

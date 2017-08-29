@@ -112,14 +112,6 @@ PermissionDescriptorPtr ParsePermission(ScriptState* script_state,
 
     return CreatePermissionDescriptor(PermissionName::SENSORS);
   }
-  if (name == "accessibility-events") {
-    if (!RuntimeEnabledFeatures::AccessibilityObjectModelEnabled()) {
-      exception_state.ThrowTypeError(
-          "Accessibility Object Model is not enabled.");
-      return nullptr;
-    }
-    return CreatePermissionDescriptor(PermissionName::ACCESSIBILITY_EVENTS);
-  }
 
   return nullptr;
 }

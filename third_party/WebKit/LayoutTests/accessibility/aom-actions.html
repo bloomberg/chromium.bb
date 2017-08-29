@@ -2,7 +2,6 @@
 <script src="../resources/gc.js"></script>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="../http/tests/resources/permissions-helper.js"></script>
 
 <!--
 
@@ -20,53 +19,34 @@ test(function(t) {
 <button id="target1">Target</button>
 
 <script>
-function enableAccessibilityEventsPermission() {
-  return new Promise(function(resolve, reject) {
-    PermissionsHelper.setPermission(
-        'accessibility-events', 'granted').then(function() {
-      // Make sure AXObjectCacheImpl gets the notification too, its
-      // listener may fire after this one.
-      window.setTimeout(function() {
-        resolve();
-      }, 0);
-    });
-  });
-}
+test(function(t) {
+  var target1 = document.getElementById("target1");
+  var axTarget1 = accessibilityController.accessibleElementById("target1");
 
-async_test(function(t) {
-  enableAccessibilityEventsPermission().then(function() {
-    var target1 = document.getElementById("target1");
-    var axTarget1 = accessibilityController.accessibleElementById("target1");
+  var success = false;
+  target1.accessibleNode.onaccessibleclick = function() {
+    success = true;
+  };
+  axTarget1.press();
 
-    var success = false;
-    target1.accessibleNode.onaccessibleclick = function() {
-      success = true;
-    };
-    axTarget1.press();
-
-    assert_true(success);
-    t.done();
-  });
+  assert_true(success);
 }, "AccessibleNode.onaccessibleclick");
 </script>
 
 <button id="target2">Target</button>
 
 <script>
-async_test(function(t) {
-  enableAccessibilityEventsPermission().then(function() {
-    var target2 = document.getElementById("target2");
-    var axTarget2 = accessibilityController.accessibleElementById("target2");
+test(function(t) {
+  var target2 = document.getElementById("target2");
+  var axTarget2 = accessibilityController.accessibleElementById("target2");
 
-    var success = false;
-    target2.accessibleNode.addEventListener("accessibleclick", function() {
-      success = true;
-    }, false);
-    axTarget2.press();
+  var success = false;
+  target2.accessibleNode.addEventListener("accessibleclick", function() {
+    success = true;
+  }, false);
+  axTarget2.press();
 
-    assert_true(success);
-    t.done();
-  });
+  assert_true(success);
 }, "AccessibleNode.addEventListener('accessibleclick')");
 </script>
 
@@ -74,44 +54,41 @@ async_test(function(t) {
 <button id="target3b">Target with preventDefault</button>
 
 <script>
-async_test(function(t) {
-  enableAccessibilityEventsPermission().then(function() {
-    var target3a = document.getElementById("target3a");
-    var target3b = document.getElementById("target3b");
-    var axTarget3a = accessibilityController.accessibleElementById("target3a");
-    var axTarget3b = accessibilityController.accessibleElementById("target3b");
+test(function(t) {
+  var target3a = document.getElementById("target3a");
+  var target3b = document.getElementById("target3b");
+  var axTarget3a = accessibilityController.accessibleElementById("target3a");
+  var axTarget3b = accessibilityController.accessibleElementById("target3b");
 
-    // Without preventDefault, the AOM event listener gets called
-    // first, and then the DOM event listener.
-    var calledAOMForTargetA = false;
-    target3a.accessibleNode.onaccessibleclick = function() {
-      calledAOMForTargetA = true;
-    };
-    var calledDOMForTargetA = false;
-    target3a.addEventListener("click", function() {
-      calledDOMForTargetA = true;
-    }, false);
-    axTarget3a.press();
+  // Without preventDefault, the AOM event listener gets called
+  // first, and then the DOM event listener.
+  var calledAOMForTargetA = false;
+  target3a.accessibleNode.onaccessibleclick = function() {
+    calledAOMForTargetA = true;
+  };
+  var calledDOMForTargetA = false;
+  target3a.addEventListener("click", function() {
+    calledDOMForTargetA = true;
+  }, false);
+  axTarget3a.press();
 
-    assert_true(calledAOMForTargetA, "called AOM for target A");
-    assert_true(calledDOMForTargetA, "called DOM for target A");
+  assert_true(calledAOMForTargetA, "called AOM for target A");
+  assert_true(calledDOMForTargetA, "called DOM for target A");
 
-    // With preventDefault, the AOM event listener gets called only.
-    var calledAOMForTargetB = false;
-    target3b.accessibleNode.onaccessibleclick = function(evt) {
-      calledAOMForTargetB = true;
-      evt.preventDefault();
-    };
-    var calledDOMForTargetB = false;
-    target3b.addEventListener("click", function() {
-      calledDOMForTargetB = true;
-    }, false);
-    axTarget3b.press();
+  // With preventDefault, the AOM event listener gets called only.
+  var calledAOMForTargetB = false;
+  target3b.accessibleNode.onaccessibleclick = function(evt) {
+    calledAOMForTargetB = true;
+    evt.preventDefault();
+  };
+  var calledDOMForTargetB = false;
+  target3b.addEventListener("click", function() {
+    calledDOMForTargetB = true;
+  }, false);
+  axTarget3b.press();
 
-    assert_true(calledAOMForTargetB, "called AOM for target B");
-    assert_false(calledDOMForTargetB, "called DOM for target B");
-    t.done();
-  });
+  assert_true(calledAOMForTargetB, "called AOM for target B");
+  assert_false(calledDOMForTargetB, "called DOM for target B");
 }, "AOM events preventDefault");
 </script>
 
@@ -120,20 +97,17 @@ async_test(function(t) {
 </p>
 
 <script>
-async_test(function(t) {
-  enableAccessibilityEventsPermission().then(function() {
-    var p4 = document.getElementById("p4");
-    var axTarget4 = accessibilityController.accessibleElementById("target4");
+test(function(t) {
+  var p4 = document.getElementById("p4");
+  var axTarget4 = accessibilityController.accessibleElementById("target4");
 
-    var success = false;
-    p4.accessibleNode.onaccessibleclick = function() {
-      success = true;
-    };
-    axTarget4.press();
+  var success = false;
+  p4.accessibleNode.onaccessibleclick = function() {
+    success = true;
+  };
+  axTarget4.press();
 
-    assert_true(success);
-    t.done();
-  });
+  assert_true(success);
 }, "AOM events bubble");
 </script>
 
@@ -146,63 +120,61 @@ async_test(function(t) {
 </section>
 
 <script>
-async_test(function(t) {
-  enableAccessibilityEventsPermission().then(function() {
-    var section5 = document.getElementById("section5");
-    var ul5 = document.getElementById("ul5");
-    var li5 = document.getElementById("li5");
-    var target5 = document.getElementById("target5");
+test(function(t) {
+  var section5 = document.getElementById("section5");
+  var ul5 = document.getElementById("ul5");
+  var li5 = document.getElementById("li5");
+  var target5 = document.getElementById("target5");
 
-    var axTarget5 = accessibilityController.accessibleElementById("target5");
+  var axTarget5 = accessibilityController.accessibleElementById("target5");
 
-    var seq = [];
+  var seq = [];
 
-    section5.accessibleNode.addEventListener("accessibleclick", function() {
-      seq.push("AOM capture SECTION");
-    }, true);
-    section5.accessibleNode.addEventListener("accessibleclick", function() {
-      seq.push("AOM bubble SECTION");
-    }, false);
-    section5.addEventListener("click", function() {
-      seq.push("DOM capture SECTION");
-    }, true);
-    section5.addEventListener("click", function() {
-      seq.push("DOM bubble SECTION");
-    }, false);
-    ul5.accessibleNode.addEventListener("accessibleclick", function() {
-      seq.push("AOM capture UL");
-    }, true);
-    ul5.accessibleNode.addEventListener("accessibleclick", function() {
-      seq.push("AOM bubble UL");
-    }, false);
-    li5.accessibleNode.addEventListener("accessibleclick", function() {
-      seq.push("AOM capture LI");
-    }, true);
-    li5.accessibleNode.addEventListener("accessibleclick", function() {
-      seq.push("AOM bubble LI");
-    }, false);
-    target5.accessibleNode.addEventListener("accessibleclick", function() {
-      seq.push("AOM main event listener BUTTON");
-    }, false);
-    target5.addEventListener("click", function() {
-      seq.push("DOM main event listener BUTTON");
-    }, false);
+  section5.accessibleNode.addEventListener("accessibleclick", function() {
+    seq.push("AOM capture SECTION");
+  }, true);
+  section5.accessibleNode.addEventListener("accessibleclick", function() {
+    seq.push("AOM bubble SECTION");
+  }, false);
+  section5.addEventListener("click", function() {
+    seq.push("DOM capture SECTION");
+  }, true);
+  section5.addEventListener("click", function() {
+    seq.push("DOM bubble SECTION");
+  }, false);
+  ul5.accessibleNode.addEventListener("accessibleclick", function() {
+    seq.push("AOM capture UL");
+  }, true);
+  ul5.accessibleNode.addEventListener("accessibleclick", function() {
+    seq.push("AOM bubble UL");
+  }, false);
+  li5.accessibleNode.addEventListener("accessibleclick", function() {
+    seq.push("AOM capture LI");
+  }, true);
+  li5.accessibleNode.addEventListener("accessibleclick", function() {
+    seq.push("AOM bubble LI");
+  }, false);
+  target5.accessibleNode.addEventListener("accessibleclick", function() {
+    seq.push("AOM main event listener BUTTON");
+  }, false);
+  target5.addEventListener("click", function() {
+    seq.push("DOM main event listener BUTTON");
+  }, false);
 
-    axTarget5.press();
+  axTarget5.press();
 
-    assert_equals(seq.join(", "),
-                  "AOM capture SECTION, " +
-                  "AOM capture UL, " +
-                  "AOM capture LI, " +
-                  "AOM main event listener BUTTON, " +
-                  "AOM bubble LI, " +
-                  "AOM bubble UL, " +
-                  "AOM bubble SECTION, " +
-                  "DOM capture SECTION, " +
-                  "DOM main event listener BUTTON, " +
-                  "DOM bubble SECTION");
-    t.done();
-  });
+  assert_equals(seq.join(", "),
+                "AOM capture SECTION, " +
+                "AOM capture UL, " +
+                "AOM capture LI, " +
+                "AOM main event listener BUTTON, " +
+                "AOM bubble LI, " +
+                "AOM bubble UL, " +
+                "AOM bubble SECTION, " +
+                "DOM capture SECTION, " +
+                "DOM main event listener BUTTON, " +
+                "DOM bubble SECTION");
+2
 }, "AOM event capturing and bubbling");
 </script>
 
@@ -215,28 +187,25 @@ async_test(function(t) {
 </section>
 
 <script>
-async_test(function(t) {
-  enableAccessibilityEventsPermission().then(function() {
-    var ul6a = document.getElementById("ul6a");
-    var ul6b = document.getElementById("ul6b");
-    var li6b = document.getElementById("li6b");
+test(function(t) {
+  var ul6a = document.getElementById("ul6a");
+  var ul6b = document.getElementById("ul6b");
+  var li6b = document.getElementById("li6b");
 
-    var axLI6B = accessibilityController.accessibleElementById("li6b");
+  var axLI6B = accessibilityController.accessibleElementById("li6b");
 
-    var ul6a_got_event = false;
-    var ul6b_got_event = false;
+  var ul6a_got_event = false;
+  var ul6b_got_event = false;
 
-    ul6a.accessibleNode.addEventListener("accessibleclick", function() {
-      ul6a_got_event = true;
-    }, false);
-    ul6b.accessibleNode.addEventListener("accessibleclick", function() {
-      ul6b_got_event = true;
-    }, false);
+  ul6a.accessibleNode.addEventListener("accessibleclick", function() {
+    ul6a_got_event = true;
+  }, false);
+  ul6b.accessibleNode.addEventListener("accessibleclick", function() {
+    ul6b_got_event = true;
+  }, false);
 
-    axLI6B.press();
-    assert_true(ul6a_got_event);
-    assert_false(ul6b_got_event);
-    t.done();
-  });
+  axLI6B.press();
+  assert_true(ul6a_got_event);
+  assert_false(ul6b_got_event);
 }, "AOM event bubbling respects aria-owns over DOM parent chain");
 </script>
