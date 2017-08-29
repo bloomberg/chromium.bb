@@ -76,7 +76,10 @@ class PLATFORM_EXPORT PaintArtifactCompositor
   // While not part of the normal output of this class, this provides a simple
   // way of locating the layers of interest, since there are still a slew of
   // placeholder layers required.
-  struct ExtraDataForTesting {
+  struct PLATFORM_EXPORT ExtraDataForTesting {
+    std::unique_ptr<WebLayer> ContentWebLayerAt(unsigned index);
+    std::unique_ptr<WebLayer> ScrollHitTestWebLayerAt(unsigned index);
+
     Vector<scoped_refptr<cc::Layer>> content_layers;
     Vector<scoped_refptr<cc::Layer>> synthesized_clip_layers;
     Vector<scoped_refptr<cc::Layer>> scroll_hit_test_layers;
