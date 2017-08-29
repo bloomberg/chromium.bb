@@ -51,8 +51,14 @@ interface Blob {
   GetInternalUUID() => (string uuid);
 };
 
-// This interface is the primary access point to the blob system. This interface
-// provides methods to register new blobs and get references to existing blobs.
+// An opaque handle passed from the browser process to a child process to
+// manage the lifetime of the returned Blob URL. The URL is revoked when
+// this handle is dropped.
+interface BlobURLHandle {
+};
+
+// This interface is the primary access point from renderer to the browser's blob system.
+// This interface provides methods to register new blobs and get references to existing blobs.
 interface BlobRegistry {
   // Registers a new blob with the blob registry.
   // TODO(mek): Make this method non-sync and get rid of the UUID parameter once
@@ -60,6 +66,11 @@ interface BlobRegistry {
   [Sync] Register(Blob& blob, string uuid,
                   string content_type, string content_disposition,
                   array<DataElement> elements) => ();
+
+  // Registers a public Blob URL with the blob registry.
+  // TODO(kinuko,mek): This should probably create and return a new blob: URL rather
+  // than letting the caller in the renderer provide one.
+  [Sync] RegisterURL(Blob blob, url.mojom.Url url) => (BlobURLHandle url_handle);
 
   // Returns a reference to an existing blob. Should not be used by new code,
   // is only exposed to make converting existing blob using code easier.

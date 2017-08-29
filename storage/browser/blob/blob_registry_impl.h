@@ -25,6 +25,7 @@ class STORAGE_EXPORT BlobRegistryImpl : public mojom::BlobRegistry {
     virtual ~Delegate() {}
     virtual bool CanReadFile(const base::FilePath& file) = 0;
     virtual bool CanReadFileSystemFile(const FileSystemURL& url) = 0;
+    virtual bool CanCommitURL(const GURL& url) = 0;
   };
 
   BlobRegistryImpl(BlobStorageContext* context,
@@ -43,11 +44,20 @@ class STORAGE_EXPORT BlobRegistryImpl : public mojom::BlobRegistry {
   void GetBlobFromUUID(mojom::BlobRequest blob,
                        const std::string& uuid) override;
 
+  void RegisterURL(mojom::BlobPtr blob,
+                   const GURL& url,
+                   RegisterURLCallback callback) override;
+
   size_t BlobsUnderConstructionForTesting() const {
     return blobs_under_construction_.size();
   }
 
  private:
+  void RegisterURLWithUUID(const GURL& url,
+                           mojom::BlobPtr blob,
+                           RegisterURLCallback callback,
+                           const std::string& uuid);
+
   class BlobUnderConstruction;
 
   BlobStorageContext* context_;

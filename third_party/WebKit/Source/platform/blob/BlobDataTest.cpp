@@ -19,6 +19,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using storage::mojom::blink::Blob;
+using storage::mojom::blink::BlobPtr;
 using storage::mojom::blink::BlobRegistry;
 using storage::mojom::blink::BlobRegistryRequest;
 using storage::mojom::blink::BlobRequest;
@@ -105,6 +106,12 @@ class MockBlobRegistry : public BlobRegistry {
   void GetBlobFromUUID(BlobRequest blob, const String& uuid) override {
     binding_requests.push_back(BindingRequest{uuid});
     mojo::MakeStrongBinding(WTF::MakeUnique<MockBlob>(uuid), std::move(blob));
+  }
+
+  void RegisterURL(BlobPtr blob,
+                   const KURL& url,
+                   RegisterURLCallback callback) override {
+    NOTREACHED();
   }
 
   struct Registration {

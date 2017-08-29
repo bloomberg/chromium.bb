@@ -29,6 +29,11 @@ class BindingDelegate : public storage::BlobRegistryImpl::Delegate {
         ChildProcessSecurityPolicyImpl::GetInstance();
     return security_policy->CanReadFileSystemFile(process_id_, url);
   }
+  bool CanCommitURL(const GURL& url) override {
+    ChildProcessSecurityPolicyImpl* security_policy =
+        ChildProcessSecurityPolicyImpl::GetInstance();
+    return security_policy->CanCommitURL(process_id_, url);
+  }
 
  private:
   const int process_id_;
