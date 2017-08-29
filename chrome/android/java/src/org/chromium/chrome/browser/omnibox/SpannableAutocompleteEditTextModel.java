@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.omnibox;
 
+import android.os.Bundle;
 import android.text.Editable;
 import android.text.Selection;
 import android.text.SpannableString;
@@ -12,10 +13,13 @@ import android.text.style.BackgroundColorSpan;
 import android.view.KeyEvent;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.inputmethod.BaseInputConnection;
+import android.view.inputmethod.CompletionInfo;
+import android.view.inputmethod.CorrectionInfo;
 import android.view.inputmethod.ExtractedText;
 import android.view.inputmethod.ExtractedTextRequest;
 import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputConnectionWrapper;
+import android.view.inputmethod.InputContentInfo;
 
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
@@ -206,8 +210,8 @@ public class SpannableAutocompleteEditTextModel implements AutocompleteEditTextM
         clearAutocompleteText();
         // Take effect and notify if not already in a batch edit.
         if (mInputConnection != null) {
-            mInputConnection.beginBatchEdit();
-            mInputConnection.endBatchEdit();
+            mInputConnection.onBeginImeCommand();
+            mInputConnection.onEndImeCommand();
         } else {
             mSpanCursorController.removeSpan();
             notifyAutocompleteTextStateChanged();
@@ -220,13 +224,13 @@ public class SpannableAutocompleteEditTextModel implements AutocompleteEditTextM
         if (mInputConnection == null) {
             return mDelegate.super_dispatchKeyEvent(event);
         }
-        mInputConnection.beginBatchEdit();
+        mInputConnection.onBeginImeCommand();
         if (event.getKeyCode() == KeyEvent.KEYCODE_ENTER
                 && event.getAction() == KeyEvent.ACTION_DOWN) {
             mInputConnection.commitAutocomplete();
         }
         boolean retVal = mDelegate.super_dispatchKeyEvent(event);
-        mInputConnection.endBatchEdit();
+        mInputConnection.onEndImeCommand();
         return retVal;
     }
 
@@ -310,8 +314,8 @@ public class SpannableAutocompleteEditTextModel implements AutocompleteEditTextM
         // TODO(changwan): avoid any unnecessary removal and addition of autocomplete text when it
         // is not changed or when it is appended to the existing autocomplete text.
         if (mInputConnection != null) {
-            mInputConnection.beginBatchEdit();
-            mInputConnection.endBatchEdit();
+            mInputConnection.onBeginImeCommand();
+            mInputConnection.onEndImeCommand();
         }
     }
 
@@ -478,7 +482,12 @@ public class SpannableAutocompleteEditTextModel implements AutocompleteEditTextM
             return retVal;
         }
 
-        private boolean onBeginImeCommand() {
+        /**
+         * Always call this at the beginning of any IME command. Compare this with beginBatchEdit()
+         * which is by itself an IME command.
+         * @return Whether the call was successful.
+         */
+        public boolean onBeginImeCommand() {
             if (DEBUG) Log.i(TAG, "onBeginImeCommand: " + mBatchEditNestCount);
             boolean retVal = incrementBatchEditCount();
             if (mBatchEditNestCount == 1) {
@@ -531,7 +540,12 @@ public class SpannableAutocompleteEditTextModel implements AutocompleteEditTextM
             return retVal;
         }
 
-        private boolean onEndImeCommand() {
+        /**
+         * Always call this at the end of an IME command. Compare this with endBatchEdit()
+         * which is by itself an IME command.
+         * @return Whether the call was successful.
+         */
+        public boolean onEndImeCommand() {
             if (DEBUG) Log.i(TAG, "onEndImeCommand: " + (mBatchEditNestCount - 1));
             String diff = mCurrentState.getBackwardDeletedTextFrom(mPreBatchEditState);
             if (diff != null) {
@@ -667,6 +681,69 @@ public class SpannableAutocompleteEditTextModel implements AutocompleteEditTextM
             if (DEBUG) Log.i(TAG, "getSelectedText");
             onBeginImeCommand();
             CharSequence retVal = super.getSelectedText(flags);
+            onEndImeCommand();
+            return retVal;
+        }
+
+        @Override
+        public boolean commitCompletion(CompletionInfo text) {
+            if (DEBUG) Log.i(TAG, "commitCompletion");
+            onBeginImeCommand();
+            boolean retVal = super.commitCompletion(text);
+            onEndImeCommand();
+            return retVal;
+        }
+
+        @Override
+        public boolean commitContent(InputContentInfo inputContentInfo, int flags, Bundle opts) {
+            if (DEBUG) Log.i(TAG, "commitContent");
+            onBeginImeCommand();
+            boolean retVal = super.commitContent(inputContentInfo, flags, opts);
+            onEndImeCommand();
+            return retVal;
+        }
+
+        @Override
+        public boolean commitCorrection(CorrectionInfo correctionInfo) {
+            if (DEBUG) Log.i(TAG, "commitCorrection");
+            onBeginImeCommand();
+            boolean retVal = super.commitCorrection(correctionInfo);
+            onEndImeCommand();
+            return retVal;
+        }
+
+        @Override
+        public boolean deleteSurroundingTextInCodePoints(int beforeLength, int afterLength) {
+            if (DEBUG) Log.i(TAG, "deleteSurroundingTextInCodePoints");
+            onBeginImeCommand();
+            boolean retVal = super.deleteSurroundingTextInCodePoints(beforeLength, afterLength);
+            onEndImeCommand();
+            return retVal;
+        }
+
+        @Override
+        public int getCursorCapsMode(int reqModes) {
+            if (DEBUG) Log.i(TAG, "getCursorCapsMode");
+            onBeginImeCommand();
+            int retVal = super.getCursorCapsMode(reqModes);
+            onEndImeCommand();
+            return retVal;
+        }
+
+        @Override
+        public boolean requestCursorUpdates(int cursorUpdateMode) {
+            if (DEBUG) Log.i(TAG, "requestCursorUpdates");
+            onBeginImeCommand();
+            boolean retVal = super.requestCursorUpdates(cursorUpdateMode);
+            onEndImeCommand();
+            return retVal;
+        }
+
+        @Override
+        public boolean clearMetaKeyStates(int states) {
+            if (DEBUG) Log.i(TAG, "clearMetaKeyStates");
+            onBeginImeCommand();
+            boolean retVal = super.clearMetaKeyStates(states);
             onEndImeCommand();
             return retVal;
         }
