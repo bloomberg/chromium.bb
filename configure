@@ -550,7 +550,6 @@ post_process_cmdline() {
     enabled dpcm_intra && enable_feature ext_tx
     enabled chroma_sub8x8 && enable_feature cb4x4
     enabled compound_singleref && enable_feature ext_inter
-    enabled warped_motion && disable_feature ncobmc_adapt_weight
     enabled ncobmc_adapt_weight && enable_feature motion_var
     enabled bgsprite && enable_feature global_motion
     enabled ext_comp_refs && enable_feature ext_refs
