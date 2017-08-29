@@ -189,12 +189,6 @@ void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {
       RecordAction(UserMetricsAction("Desktop_SwitchTask"));
       task_switch_metrics_recorder_.OnTaskSwitch(TaskSwitchSource::DESKTOP);
       break;
-    case UMA_DRAG_MAXIMIZE_LEFT:
-      RecordAction(UserMetricsAction("WindowDrag_MaximizeLeft"));
-      break;
-    case UMA_DRAG_MAXIMIZE_RIGHT:
-      RecordAction(UserMetricsAction("WindowDrag_MaximizeRight"));
-      break;
     case UMA_LAUNCHER_BUTTON_PRESSED_WITH_MOUSE:
       RecordAction(UserMetricsAction("Launcher_ButtonPressed_Mouse"));
       break;
@@ -217,24 +211,6 @@ void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {
     case UMA_LAUNCHER_SWITCH_TASK:
       RecordAction(UserMetricsAction("Launcher_SwitchTask"));
       task_switch_metrics_recorder_.OnTaskSwitch(TaskSwitchSource::SHELF);
-      break;
-    case UMA_MAXIMIZE_MODE_DISABLED:
-      RecordAction(UserMetricsAction("Touchview_Disabled"));
-      break;
-    case UMA_MAXIMIZE_MODE_ENABLED:
-      RecordAction(UserMetricsAction("Touchview_Enabled"));
-      break;
-    case UMA_MAXIMIZE_MODE_INITIALLY_DISABLED:
-      RecordAction(UserMetricsAction("Touchview_Initially_Disabled"));
-      break;
-    case UMA_MOUSE_DOWN:
-      RecordAction(UserMetricsAction("Mouse_Down"));
-      break;
-    case UMA_PANEL_MINIMIZE_CAPTION_CLICK:
-      RecordAction(UserMetricsAction("Panel_Minimize_Caption_Click"));
-      break;
-    case UMA_PANEL_MINIMIZE_CAPTION_GESTURE:
-      RecordAction(UserMetricsAction("Panel_Minimize_Caption_Gesture"));
       break;
     case UMA_SHELF_ALIGNMENT_SET_BOTTOM:
       RecordAction(UserMetricsAction("Shelf_AlignmentSetBottom"));
@@ -405,22 +381,6 @@ void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {
     case UMA_STATUS_AREA_VPN_SETTINGS_OPENED:
       RecordAction(UserMetricsAction("StatusArea_VPN_Settings"));
       break;
-    case UMA_TOGGLE_MAXIMIZE_CAPTION_CLICK:
-      RecordAction(UserMetricsAction("Caption_ClickTogglesMaximize"));
-      break;
-    case UMA_TOGGLE_MAXIMIZE_CAPTION_GESTURE:
-      RecordAction(UserMetricsAction("Caption_GestureTogglesMaximize"));
-      break;
-    case UMA_TOGGLE_SINGLE_AXIS_MAXIMIZE_BORDER_CLICK:
-      RecordAction(
-          UserMetricsAction("WindowBorder_ClickTogglesSingleAxisMaximize"));
-      break;
-    case UMA_TOUCHPAD_GESTURE_OVERVIEW:
-      RecordAction(UserMetricsAction("Touchpad_Gesture_Overview"));
-      break;
-    case UMA_TOUCHSCREEN_TAP_DOWN:
-      RecordAction(UserMetricsAction("Touchscreen_Down"));
-      break;
     case UMA_TRAY_HELP:
       RecordAction(UserMetricsAction("Tray_Help"));
       break;
@@ -450,9 +410,6 @@ void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {
       break;
     case UMA_TRAY_SWIPE_TO_OPEN_UNSUCCESSFUL:
       RecordAction(UserMetricsAction("Tray_SwipeToOpen_Unsuccessful"));
-      break;
-    case UMA_WINDOW_APP_CLOSE_BUTTON_CLICK:
-      RecordAction(UserMetricsAction("AppCloseButton_Clk"));
       break;
   }
 }

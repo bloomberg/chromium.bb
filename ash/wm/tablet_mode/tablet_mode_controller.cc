@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "ash/ash_switches.h"
-#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/wm/tablet_mode/scoped_disable_internal_mouse_and_keyboard.h"
@@ -17,6 +16,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -127,8 +127,7 @@ TabletModeController::TabletModeController()
       scoped_session_observer_(this),
       weak_factory_(this) {
   Shell::Get()->AddShellObserver(this);
-  Shell::Get()->metrics()->RecordUserMetricsAction(
-      UMA_MAXIMIZE_MODE_INITIALLY_DISABLED);
+  base::RecordAction(base::UserMetricsAction("Touchview_Initially_Disabled"));
 
   // TODO(jonross): Do not create TabletModeController if the flag is
   // unavailable. This will require refactoring
@@ -172,7 +171,7 @@ void TabletModeController::EnableTabletModeWindowManager(bool should_enable) {
 
   if (should_enable) {
     tablet_mode_window_manager_.reset(new TabletModeWindowManager());
-    Shell::Get()->metrics()->RecordUserMetricsAction(UMA_MAXIMIZE_MODE_ENABLED);
+    base::RecordAction(base::UserMetricsAction("Touchview_Enabled"));
     RecordTabletModeUsageInterval(TABLET_MODE_INTERVAL_INACTIVE);
     for (auto& observer : tablet_mode_observers_)
       observer.OnTabletModeStarted();
@@ -186,8 +185,7 @@ void TabletModeController::EnableTabletModeWindowManager(bool should_enable) {
     for (auto& observer : tablet_mode_observers_)
       observer.OnTabletModeEnding();
     tablet_mode_window_manager_.reset();
-    Shell::Get()->metrics()->RecordUserMetricsAction(
-        UMA_MAXIMIZE_MODE_DISABLED);
+    base::RecordAction(base::UserMetricsAction("Touchview_Disabled"));
     RecordTabletModeUsageInterval(TABLET_MODE_INTERVAL_ACTIVE);
     for (auto& observer : tablet_mode_observers_)
       observer.OnTabletModeEnded();

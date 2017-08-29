@@ -4,10 +4,10 @@
 
 #include "ash/wm/system_gesture_event_filter.h"
 
-#include "ash/metrics/user_metrics_recorder.h"
-#include "ash/shell.h"
 #include "ash/touch/touch_uma.h"
 #include "ash/wm/gestures/overview_gesture_handler.h"
+#include "base/metrics/user_metrics.h"
+#include "ui/aura/window.h"
 #include "ui/base/touch/touch_device.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
@@ -23,7 +23,7 @@ void SystemGestureEventFilter::OnMouseEvent(ui::MouseEvent* event) {
   if (event->type() == ui::ET_MOUSE_PRESSED &&
       ui::GetTouchScreensAvailability() ==
           ui::TouchScreensAvailability::ENABLED) {
-    Shell::Get()->metrics()->RecordUserMetricsAction(UMA_MOUSE_DOWN);
+    base::RecordAction(base::UserMetricsAction("Mouse_Down"));
   }
 }
 
@@ -36,12 +36,12 @@ void SystemGestureEventFilter::OnScrollEvent(ui::ScrollEvent* event) {
 
 void SystemGestureEventFilter::OnTouchEvent(ui::TouchEvent* event) {
   aura::Window* target = static_cast<aura::Window*>(event->target());
-  ash::TouchUMA::GetInstance()->RecordTouchEvent(target, *event);
+  TouchUMA::GetInstance()->RecordTouchEvent(target, *event);
 }
 
 void SystemGestureEventFilter::OnGestureEvent(ui::GestureEvent* event) {
   aura::Window* target = static_cast<aura::Window*>(event->target());
-  ash::TouchUMA::GetInstance()->RecordGestureEvent(target, *event);
+  TouchUMA::GetInstance()->RecordGestureEvent(target, *event);
 }
 
 }  // namespace ash

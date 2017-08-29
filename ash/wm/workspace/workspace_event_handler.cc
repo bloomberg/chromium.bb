@@ -4,12 +4,11 @@
 
 #include "ash/wm/workspace/workspace_event_handler.h"
 
-#include "ash/metrics/user_metrics_recorder.h"
-#include "ash/shell.h"
 #include "ash/touch/touch_uma.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
+#include "base/metrics/user_metrics.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/hit_test.h"
@@ -51,8 +50,8 @@ void WorkspaceEventHandler::OnMouseEvent(ui::MouseEvent* event,
         if (event->flags() & ui::EF_IS_DOUBLE_CLICK) {
           int component = wm::GetNonClientComponent(target, event->location());
           if (component == HTCAPTION && component == click_component_) {
-            Shell::Get()->metrics()->RecordUserMetricsAction(
-                UMA_TOGGLE_MAXIMIZE_CAPTION_CLICK);
+            base::RecordAction(
+                base::UserMetricsAction("Caption_ClickTogglesMaximize"));
             const wm::WMEvent wm_event(wm::WM_EVENT_TOGGLE_MAXIMIZE_CAPTION);
             target_state->OnWMEvent(&wm_event);
             event->StopPropagation();
@@ -88,8 +87,8 @@ void WorkspaceEventHandler::OnGestureEvent(ui::GestureEvent* event,
   }
 
   if (click_component_ == previous_target_component) {
-    Shell::Get()->metrics()->RecordUserMetricsAction(
-        UMA_TOGGLE_MAXIMIZE_CAPTION_GESTURE);
+    base::RecordAction(
+        base::UserMetricsAction("Caption_GestureTogglesMaximize"));
     TouchUMA::GetInstance()->RecordGestureAction(GESTURE_MAXIMIZE_DOUBLETAP);
     const wm::WMEvent wm_event(wm::WM_EVENT_TOGGLE_MAXIMIZE_CAPTION);
     wm::GetWindowState(target)->OnWMEvent(&wm_event);
@@ -105,14 +104,14 @@ void WorkspaceEventHandler::HandleVerticalResizeDoubleClick(
   if ((event->flags() & ui::EF_IS_DOUBLE_CLICK) != 0 && target->delegate()) {
     const int component = wm::GetNonClientComponent(target, event->location());
     if (component == HTBOTTOM || component == HTTOP) {
-      Shell::Get()->metrics()->RecordUserMetricsAction(
-          UMA_TOGGLE_SINGLE_AXIS_MAXIMIZE_BORDER_CLICK);
+      base::RecordAction(base::UserMetricsAction(
+          "WindowBorder_ClickTogglesSingleAxisMaximize"));
       const wm::WMEvent wm_event(wm::WM_EVENT_TOGGLE_VERTICAL_MAXIMIZE);
       target_state->OnWMEvent(&wm_event);
       event->StopPropagation();
     } else if (component == HTLEFT || component == HTRIGHT) {
-      Shell::Get()->metrics()->RecordUserMetricsAction(
-          UMA_TOGGLE_SINGLE_AXIS_MAXIMIZE_BORDER_CLICK);
+      base::RecordAction(base::UserMetricsAction(
+          "WindowBorder_ClickTogglesSingleAxisMaximize"));
       const wm::WMEvent wm_event(wm::WM_EVENT_TOGGLE_HORIZONTAL_MAXIMIZE);
       target_state->OnWMEvent(&wm_event);
       event->StopPropagation();

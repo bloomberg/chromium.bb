@@ -4,9 +4,9 @@
 
 #include "ash/wm/gestures/overview_gesture_handler.h"
 
-#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/shell.h"
 #include "ash/wm/overview/window_selector_controller.h"
+#include "base/metrics/user_metrics.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 
@@ -66,8 +66,7 @@ bool OverviewGestureHandler::ProcessScrollEvent(const ui::ScrollEvent& event) {
 
   // Reset scroll amount on toggling.
   scroll_x_ = scroll_y_ = 0;
-  Shell::Get()->metrics()->RecordUserMetricsAction(
-      UMA_TOUCHPAD_GESTURE_OVERVIEW);
+  base::RecordAction(base::UserMetricsAction("Touchpad_Gesture_Overview"));
   if (window_selector_controller->IsSelecting() &&
       window_selector_controller->AcceptSelection()) {
     return true;
