@@ -9,10 +9,11 @@
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "ios/chrome/browser/browser_state/browser_state_otr_helper.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/content_settings/host_content_settings_map_factory.h"
 
 namespace ios {
+
+const char kDummyExtensionScheme[] = ":no-extension-scheme:";
 
 // static
 scoped_refptr<content_settings::CookieSettings>

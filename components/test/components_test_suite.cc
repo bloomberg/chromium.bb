@@ -33,6 +33,11 @@
 
 namespace {
 
+// Not using kExtensionScheme and kChromeSearchScheme to avoid the dependency
+// to extensions and chrome/common.
+const char* const kNonWildcardDomainNonPortSchemes[] = {"chrome-extension",
+                                                        "chrome-search"};
+
 class ComponentsTestSuite : public base::TestSuite {
  public:
   ComponentsTestSuite(int argc, char** argv) : base::TestSuite(argc, argv) {}
@@ -82,9 +87,9 @@ class ComponentsTestSuite : public base::TestSuite {
     url::AddStandardScheme("chrome-devtools", url::SCHEME_WITHOUT_PORT);
     url::AddStandardScheme("chrome-search", url::SCHEME_WITHOUT_PORT);
 
-    // Not using kExtensionScheme to avoid the dependency to extensions.
-    ContentSettingsPattern::SetNonWildcardDomainNonPortScheme(
-        "chrome-extension");
+    ContentSettingsPattern::SetNonWildcardDomainNonPortSchemes(
+        kNonWildcardDomainNonPortSchemes,
+        arraysize(kNonWildcardDomainNonPortSchemes));
   }
 
   void Shutdown() override {

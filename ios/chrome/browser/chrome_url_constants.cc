@@ -9,7 +9,6 @@
 #include "base/macros.h"
 
 const char kChromeUIScheme[] = "chrome";
-const char kDummyExtensionScheme[] = ":no-extension-scheme:";
 
 const char kChromeUIBookmarksURL[] = "chrome://bookmarks/";
 const char kChromeUIChromeURLsURL[] = "chrome://chrome-urls/";

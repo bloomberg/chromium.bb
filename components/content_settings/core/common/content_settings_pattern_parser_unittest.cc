@@ -208,6 +208,36 @@ TEST(ContentSettingsPatternParserTest, ParseFilePatterns) {
   ::testing::Mock::VerifyAndClear(&builder);
 }
 
+TEST(ContentSettingsPatternParserTest, ParseChromePatterns) {
+  ::testing::StrictMock<MockBuilder> builder;
+
+  EXPECT_CALL(builder, WithScheme("chrome-extension"))
+      .Times(1)
+      .WillOnce(::testing::Return(&builder));
+  EXPECT_CALL(builder, WithHost("peoadpeiejnhkmpaakpnompolbglelel"))
+      .Times(1)
+      .WillOnce(::testing::Return(&builder));
+  EXPECT_CALL(builder, WithPath("/"))
+      .Times(1)
+      .WillOnce(::testing::Return(&builder));
+  content_settings::PatternParser::Parse(
+      "chrome-extension://peoadpeiejnhkmpaakpnompolbglelel/", &builder);
+  ::testing::Mock::VerifyAndClear(&builder);
+
+  EXPECT_CALL(builder, WithScheme("chrome-search"))
+      .Times(1)
+      .WillOnce(::testing::Return(&builder));
+  EXPECT_CALL(builder, WithHost("local-ntp"))
+      .Times(1)
+      .WillOnce(::testing::Return(&builder));
+  EXPECT_CALL(builder, WithPath("/local-ntp.html"))
+      .Times(1)
+      .WillOnce(::testing::Return(&builder));
+  content_settings::PatternParser::Parse(
+      "chrome-search://local-ntp/local-ntp.html", &builder);
+  ::testing::Mock::VerifyAndClear(&builder);
+}
+
 TEST(ContentSettingsPatternParserTest, SerializePatterns) {
   ContentSettingsPattern::PatternParts parts;
   parts.scheme = "http";
@@ -227,4 +257,16 @@ TEST(ContentSettingsPatternParserTest, SerializePatterns) {
   parts.path = "";
   parts.is_path_wildcard = true;
   EXPECT_EQ("file:///*", content_settings::PatternParser::ToString(parts));
+
+  parts = ContentSettingsPattern::PatternParts();
+  parts.scheme = "chrome-search";
+  parts.host = "local-ntp";
+  EXPECT_EQ("chrome-search://local-ntp/",
+            content_settings::PatternParser::ToString(parts));
+
+  parts = ContentSettingsPattern::PatternParts();
+  parts.scheme = "chrome-extension";
+  parts.host = "peoadpeiejnhkmpaakpnompolbglelel";
+  EXPECT_EQ("chrome-extension://peoadpeiejnhkmpaakpnompolbglelel/",
+            content_settings::PatternParser::ToString(parts));
 }

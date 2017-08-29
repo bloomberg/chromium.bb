@@ -21,6 +21,9 @@ class CommandLine;
 // Chrome implementation of ContentMainDelegate.
 class ChromeMainDelegate : public content::ContentMainDelegate {
  public:
+  static const char* const kNonWildcardDomainNonPortSchemes[];
+  static const size_t kNonWildcardDomainNonPortSchemesSize;
+
   ChromeMainDelegate();
 
   // |exe_entry_point_ticks| is the time at which the main function of the
