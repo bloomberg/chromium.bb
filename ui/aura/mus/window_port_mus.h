@@ -58,8 +58,6 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   Window* window() { return window_; }
   const Window* window() const { return window_; }
 
-  viz::FrameSinkId frame_sink_id() const { return frame_sink_id_; }
-
   ClientSurfaceEmbedder* client_surface_embedder() const {
     return client_surface_embedder_.get();
   }
@@ -67,6 +65,10 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   const viz::SurfaceInfo& PrimarySurfaceInfoForTesting() const {
     return primary_surface_info_;
   }
+
+  // Returns either the FrameSinkId set by window server or its server_id with
+  // the client id part 0.
+  viz::FrameSinkId GetFrameSinkId() const;
 
   void SetTextInputState(mojo::TextInputStatePtr state);
   void SetImeVisibility(bool visible, mojo::TextInputStatePtr state);
@@ -292,7 +294,8 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   ServerChangeIdType next_server_change_id_ = 0;
   ServerChanges server_changes_;
 
-  viz::FrameSinkId frame_sink_id_;
+  // Only set when it is embedding another client inside.
+  viz::FrameSinkId embed_frame_sink_id_;
 
   viz::SurfaceInfo primary_surface_info_;
   viz::SurfaceInfo fallback_surface_info_;

@@ -64,6 +64,12 @@ WindowPortMus* WindowPortMus::Get(Window* window) {
   return static_cast<WindowPortMus*>(WindowPort::Get(window));
 }
 
+viz::FrameSinkId WindowPortMus::GetFrameSinkId() const {
+  if (embed_frame_sink_id_.is_valid())
+    return embed_frame_sink_id_;
+  return viz::FrameSinkId(0, server_id());
+}
+
 void WindowPortMus::SetTextInputState(mojo::TextInputStatePtr state) {
   window_tree_client_->SetWindowTextInputState(this, std::move(state));
 }
@@ -295,7 +301,7 @@ void WindowPortMus::SetFrameSinkIdFromServer(
     const viz::FrameSinkId& frame_sink_id) {
   DCHECK(window_mus_type() == WindowMusType::TOP_LEVEL_IN_WM ||
          window_mus_type() == WindowMusType::EMBED_IN_OWNER);
-  frame_sink_id_ = frame_sink_id;
+  embed_frame_sink_id_ = frame_sink_id;
   UpdatePrimarySurfaceInfo();
 }
 
@@ -313,7 +319,7 @@ const viz::LocalSurfaceId& WindowPortMus::GetOrAllocateLocalSurfaceId(
   // The newly generated frame by the embedder will block in the display
   // compositor until the child submits a corresponding CompositorFrame or a
   // deadline hits.
-  if (frame_sink_id_.is_valid())
+  if (embed_frame_sink_id_.is_valid())
     UpdatePrimarySurfaceInfo();
 
   if (local_layer_tree_frame_sink_)
@@ -324,16 +330,16 @@ const viz::LocalSurfaceId& WindowPortMus::GetOrAllocateLocalSurfaceId(
 
 void WindowPortMus::SetFallbackSurfaceInfo(
     const viz::SurfaceInfo& surface_info) {
-  if (!frame_sink_id_.is_valid()) {
+  if (!embed_frame_sink_id_.is_valid()) {
     // |primary_surface_info_| shold not be valid, since we didn't know the
-    // |frame_sink_id_|.
+    // |embed_frame_sink_id_|.
     DCHECK(!primary_surface_info_.is_valid());
-    frame_sink_id_ = surface_info.id().frame_sink_id();
+    embed_frame_sink_id_ = surface_info.id().frame_sink_id();
     UpdatePrimarySurfaceInfo();
   }
 
   // The frame sink id should never be changed.
-  DCHECK_EQ(surface_info.id().frame_sink_id(), frame_sink_id_);
+  DCHECK_EQ(surface_info.id().frame_sink_id(), embed_frame_sink_id_);
 
   fallback_surface_info_ = surface_info;
   UpdateClientSurfaceEmbedder();
@@ -567,7 +573,7 @@ WindowPortMus::CreateLayerTreeFrameSink() {
 }
 
 viz::SurfaceId WindowPortMus::GetSurfaceId() const {
-  return viz::SurfaceId(frame_sink_id_, local_surface_id_);
+  return viz::SurfaceId(embed_frame_sink_id_, local_surface_id_);
 }
 
 void WindowPortMus::OnWindowAddedToRootWindow() {}
@@ -586,11 +592,11 @@ void WindowPortMus::UpdatePrimarySurfaceInfo() {
     return;
   }
 
-  if (!frame_sink_id_.is_valid() || !local_surface_id_.is_valid())
+  if (!embed_frame_sink_id_.is_valid() || !local_surface_id_.is_valid())
     return;
 
   primary_surface_info_ = viz::SurfaceInfo(
-      viz::SurfaceId(frame_sink_id_, local_surface_id_),
+      viz::SurfaceId(embed_frame_sink_id_, local_surface_id_),
       ScaleFactorForDisplay(window_), last_surface_size_in_pixels_);
   UpdateClientSurfaceEmbedder();
 }

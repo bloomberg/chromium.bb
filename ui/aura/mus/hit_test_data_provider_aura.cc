@@ -19,7 +19,8 @@ viz::mojom::HitTestRegionPtr CreateHitTestRegion(
   DCHECK(layer);
 
   auto hit_test_region = viz::mojom::HitTestRegion::New();
-  hit_test_region->frame_sink_id = window_port->frame_sink_id();
+  DCHECK(window_port->GetFrameSinkId().is_valid());
+  hit_test_region->frame_sink_id = window_port->GetFrameSinkId();
   if (layer->GetPrimarySurfaceInfo())
     hit_test_region->surface_id = layer->GetPrimarySurfaceInfo()->id();
   hit_test_region->flags = flags;
