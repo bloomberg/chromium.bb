@@ -161,6 +161,8 @@ TEST_F(TraySessionLengthLimitTest, RemoveNotification) {
   EXPECT_TRUE(notification);
   EXPECT_TRUE(notification->rich_notification_data()
                   .should_make_spoken_feedback_for_popup_updates);
+
+  RemoveNotification();
 }
 
 class TraySessionLengthLimitLoginTest : public TraySessionLengthLimitTest {
@@ -180,6 +182,8 @@ TEST_F(TraySessionLengthLimitLoginTest, NotificationShownAfterLogin) {
   // Notification is shown after login.
   CreateUserSessions(1);
   EXPECT_TRUE(GetNotification());
+
+  RemoveNotification();
 }
 
 }  // namespace ash
