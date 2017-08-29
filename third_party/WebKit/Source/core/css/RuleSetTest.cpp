@@ -236,7 +236,7 @@ TEST(RuleSetTest, findBestRuleSetAndAdd_PlaceholderPseudo) {
   helper.AddCSSRules("::placeholder { }");
   helper.AddCSSRules("input::placeholder { }");
   RuleSet& rule_set = helper.GetRuleSet();
-  const HeapVector<RuleData>* rules = rule_set.PlaceholderPseudoRules();
+  auto* rules = rule_set.ShadowPseudoElementRules("-webkit-input-placeholder");
   ASSERT_EQ(2u, rules->size());
 }
 

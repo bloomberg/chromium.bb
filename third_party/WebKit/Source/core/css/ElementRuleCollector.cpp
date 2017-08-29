@@ -198,11 +198,6 @@ void ElementRuleCollector::CollectMatchingRules(
     CollectMatchingRulesForList(
         match_request.rule_set->ShadowPseudoElementRules(pseudo_id),
         cascade_order, match_request);
-    if (pseudo_id == "-webkit-input-placeholder") {
-      CollectMatchingRulesForList(
-          match_request.rule_set->PlaceholderPseudoRules(), cascade_order,
-          match_request);
-    }
   }
 
   if (element.IsVTTElement())

@@ -197,7 +197,9 @@ bool RuleSet::FindBestRuleSetAndAdd(const CSSSelector& component,
       focus_pseudo_class_rules_.push_back(rule_data);
       return true;
     case CSSSelector::kPseudoPlaceholder:
-      placeholder_pseudo_rules_.push_back(rule_data);
+      AddToRuleSet(AtomicString("-webkit-input-placeholder"),
+                   EnsurePendingRules()->shadow_pseudo_element_rules,
+                   rule_data);
       return true;
     case CSSSelector::kPseudoHost:
     case CSSSelector::kPseudoHostContext:
@@ -351,7 +353,6 @@ void RuleSet::CompactRules() {
   link_pseudo_class_rules_.ShrinkToFit();
   cue_pseudo_rules_.ShrinkToFit();
   focus_pseudo_class_rules_.ShrinkToFit();
-  placeholder_pseudo_rules_.ShrinkToFit();
   universal_rules_.ShrinkToFit();
   shadow_host_rules_.ShrinkToFit();
   page_rules_.ShrinkToFit();
@@ -385,7 +386,6 @@ DEFINE_TRACE(RuleSet) {
   visitor->Trace(link_pseudo_class_rules_);
   visitor->Trace(cue_pseudo_rules_);
   visitor->Trace(focus_pseudo_class_rules_);
-  visitor->Trace(placeholder_pseudo_rules_);
   visitor->Trace(universal_rules_);
   visitor->Trace(shadow_host_rules_);
   visitor->Trace(page_rules_);
