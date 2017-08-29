@@ -50393,6 +50393,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="OfflinePages.Prefetching.OfflinePageImportResult"
+    enum="OfflinePrefetchPageImportResult">
+  <owner>carlosk@chromium.org</owner>
+  <summary>
+    Final result of an attempt to import a prefetched article into the Offline
+    Pages system.
+  </summary>
+</histogram>
+
 <histogram name="OfflinePages.RedirectResult" enum="OfflinePagesRedirectResult">
   <obsolete>
     Deprecated 8/2016. Use OfflinePages.RequestResult instead.

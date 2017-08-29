@@ -8,6 +8,7 @@
 #include "base/files/file_util.h"
 #include "base/guid.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -23,6 +24,38 @@ namespace offline_pages {
 namespace {
 
 const base::FilePath::CharType kMHTMLExtension[] = FILE_PATH_LITERAL("mhtml");
+
+// Mirror of the OfflinePrefetchPageImportResult histogram enum so existing
+// entries can never be removed and new ones must be appended with new values.
+enum class PageImportResult {
+  SUCCESS = 0,
+  UNKNOWN = 1,
+  FILE_MOVE_ERROR = 2,
+  OFFLINE_STORE_FAILURE = 3,
+  OFFLINE_ITEM_ALREADY_EXISTS = 4,
+  // Always leave this item last. Update if the actual last item changes.
+  MAX = OFFLINE_ITEM_ALREADY_EXISTS
+};
+
+PageImportResult FromAddPageResult(AddPageResult result) {
+  switch (result) {
+    case AddPageResult::SUCCESS:
+      return PageImportResult::SUCCESS;
+    case AddPageResult::STORE_FAILURE:
+      return PageImportResult::OFFLINE_STORE_FAILURE;
+    case AddPageResult::ALREADY_EXISTS:
+      return PageImportResult::OFFLINE_ITEM_ALREADY_EXISTS;
+    case AddPageResult::RESULT_COUNT:
+      NOTREACHED();
+  }
+  NOTREACHED();
+  return PageImportResult::UNKNOWN;
+}
+
+void ReportPageImportResult(PageImportResult result) {
+  UMA_HISTOGRAM_ENUMERATION("OfflinePages.Prefetching.OfflinePageImportResult",
+                            result, PageImportResult::MAX);
+}
 
 void MoveFile(const base::FilePath& src_path,
               const base::FilePath& dest_path,
@@ -89,6 +122,7 @@ void PrefetchImporterImpl::ImportArchive(const PrefetchArchiveInfo& archive) {
 void PrefetchImporterImpl::OnMoveFileDone(const OfflinePageItem& offline_page,
                                           bool success) {
   if (!success) {
+    ReportPageImportResult(PageImportResult::FILE_MOVE_ERROR);
     NotifyImportCompleted(OfflinePageModel::kInvalidOfflineId, false);
     return;
   }
@@ -104,6 +138,7 @@ void PrefetchImporterImpl::OnMoveFileDone(const OfflinePageItem& offline_page,
 
 void PrefetchImporterImpl::OnPageAdded(AddPageResult result,
                                        int64_t offline_id) {
+  ReportPageImportResult(FromAddPageResult(result));
   NotifyImportCompleted(offline_id, result == AddPageResult::SUCCESS);
 }
 

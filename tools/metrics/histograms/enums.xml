@@ -28137,6 +28137,18 @@ from previous Chrome versions.
   </int>
 </enum>
 
+<enum name="OfflinePrefetchPageImportResult">
+  <summary>
+    All possible outcomes of an attempt to import a prefetched page archive into
+    the offline page model.
+  </summary>
+  <int value="0" label="Success"/>
+  <int value="1" label="Unknown error"/>
+  <int value="2" label="File move error"/>
+  <int value="3" label="Offline store failure"/>
+  <int value="4" label="Offline item already exists"/>
+</enum>
+
 <enum name="OfflineStatus">
   <obsolete>
     Deprecated 4/2015.
