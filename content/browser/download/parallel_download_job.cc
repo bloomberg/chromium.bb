@@ -135,7 +135,7 @@ void ParallelDownloadJob::BuildParallelRequests() {
   DCHECK(!requests_sent_);
   DCHECK(!is_paused());
   if (is_canceled_ ||
-      download_item_->GetLastReason() != DOWNLOAD_INTERRUPT_REASON_NONE) {
+      download_item_->GetState() != DownloadItem::DownloadState::IN_PROGRESS) {
     return;
   }
 
@@ -151,7 +151,15 @@ void ParallelDownloadJob::BuildParallelRequests() {
 
   DCHECK(!slices_to_download.empty());
   int64_t first_slice_offset = slices_to_download[0].offset;
-  DCHECK_LE(initial_request_offset_, first_slice_offset);
+
+  // We may build parallel job without slices. The slices can be cleared or
+  // previous session only has one stream writing to disk. In these cases, fall
+  // back to non parallel download.
+  if (initial_request_offset_ > first_slice_offset) {
+    VLOG(kVerboseLevel)
+        << "Received slices data mismatch initial request offset.";
+    return;
+  }
 
   // Create more slices for a new download. The initial request may generate
   // a received slice.

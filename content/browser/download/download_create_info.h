@@ -133,7 +133,9 @@ struct CONTENT_EXPORT DownloadCreateInfo {
   // For continuing a download, the ETag of the file.
   std::string etag;
 
-  // If "Accept-Ranges:bytes" header presents in the response header.
+  // If the download response can be partial content.
+  // Either "Accept-Ranges" or "Content-Range" header presents in the
+  // response header.
   bool accept_range;
 
   // The HTTP connection type.

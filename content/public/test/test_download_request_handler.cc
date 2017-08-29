@@ -406,6 +406,9 @@ void TestDownloadRequestHandler::PartialResponseJob::HandleOnStartDefault() {
                                            "Content-Length: %" PRId64 "\r\n",
                                            parameters_->size));
   response_info_.connection_info = parameters_->connection_type;
+  if (parameters_->support_byte_ranges)
+    response_info_.headers->AddHeader("Accept-Ranges: bytes");
+
   AddCommonEntityHeaders();
   NotifyHeadersCompleteAndPrepareToRead();
   return;
@@ -455,9 +458,6 @@ bool TestDownloadRequestHandler::PartialResponseJob::
 }
 
 void TestDownloadRequestHandler::PartialResponseJob::AddCommonEntityHeaders() {
-  if (parameters_->support_byte_ranges)
-    response_info_.headers->AddHeader("Accept-Ranges: bytes");
-
   if (!parameters_->content_type.empty())
     response_info_.headers->AddHeader(base::StringPrintf(
         "Content-Type: %s", parameters_->content_type.c_str()));

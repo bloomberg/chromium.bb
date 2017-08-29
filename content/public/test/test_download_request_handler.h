@@ -144,7 +144,9 @@ class TestDownloadRequestHandler {
     // response.
     int pattern_generator_seed;
 
-    // If true, the response contains a 'Accept-Ranges: bytes' header.
+    // Whether the server can handle partial request.
+    // If true, contains a 'Accept-Ranges: bytes' header for HTTP 200
+    // response, or contains 'Content-Range' header for HTTP 206 response.
     bool support_byte_ranges;
 
     // The connection type in the response.
