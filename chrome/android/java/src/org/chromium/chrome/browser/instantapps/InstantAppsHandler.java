@@ -214,7 +214,7 @@ public class InstantAppsHandler {
             Context context, Intent intent, boolean isCustomTabsIntent, long startTime,
             boolean isRedirect) {
         if (!isRedirect && !isCustomTabsIntent && BuildInfo.isAtLeastO()) {
-            Log.i(TAG, "Disabled for Android O+");
+            Log.i(TAG, "Package manager handles intents on O+, not handling in Chrome");
             return false;
         }
 
