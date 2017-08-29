@@ -49,6 +49,8 @@ class TetherNotificationPresenter
       const cryptauth::RemoteDevice& remote_device,
       int signal_strength) override;
   void NotifyMultiplePotentialHotspotsNearby() override;
+  NotificationPresenter::PotentialHotspotNotificationState
+  GetPotentialHotspotNotificationState() override;
   void RemovePotentialHotspotNotification() override;
   void NotifySetupRequired(const std::string& device_name) override;
   void RemoveSetupRequiredNotification() override;
@@ -98,7 +100,10 @@ class TetherNotificationPresenter
 
   std::unique_ptr<SettingsUiDelegate> settings_ui_delegate_;
 
-  cryptauth::RemoteDevice hotspot_nearby_device_;
+  // The device ID of the device whose metadata is displayed in the "potential
+  // hotspot nearby" notification. If the notification is not visible or it is
+  // in the "multiple hotspots available" mode, this pointer is null.
+  std::unique_ptr<std::string> hotspot_nearby_device_id_;
   base::WeakPtrFactory<TetherNotificationPresenter> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TetherNotificationPresenter);

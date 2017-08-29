@@ -90,6 +90,8 @@ class HostScanner : public HostScannerOperation::Observer {
   void OnFinalScanResultReceived(
       std::vector<HostScannerOperation::ScannedDeviceInfo>& final_scan_results);
   void RecordHostScanResult(HostScanResultEventType event_type);
+  bool IsPotentialHotspotNotificationShowing();
+  bool CanAvailableHostNotificationBeShown();
 
   NetworkStateHandler* network_state_handler_;
   TetherHostFetcher* tether_host_fetcher_;
@@ -102,7 +104,9 @@ class HostScanner : public HostScannerOperation::Observer {
   base::Clock* clock_;
 
   bool is_fetching_hosts_ = false;
-  bool was_available_hotspot_notification_shown_ = false;
+  bool was_notification_showing_when_current_scan_started_ = false;
+  bool was_notification_shown_in_current_scan_ = false;
+  bool has_notification_been_shown_in_previous_scan_ = false;
   std::unique_ptr<HostScannerOperation> host_scanner_operation_;
   std::unordered_set<std::string> tether_guids_in_cache_before_scan_;
 

@@ -133,6 +133,7 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   // Returns true if |connection_state_| is a connected/connecting state.
   bool IsConnectedState() const;
   bool IsConnectingState() const;
+  bool IsConnectingOrConnected() const;
 
   // Returns true if |last_connection_state_| is connected, and
   // |connection_state_| is connecting.

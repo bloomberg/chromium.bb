@@ -75,15 +75,24 @@ void HostScanner::OnTetherAvailabilityResponse(
     std::vector<HostScannerOperation::ScannedDeviceInfo>&
         scanned_device_list_so_far,
     bool is_final_scan_result) {
+  if (scanned_device_list_so_far.empty() && !is_final_scan_result) {
+    was_notification_showing_when_current_scan_started_ =
+        IsPotentialHotspotNotificationShowing();
+  }
+
   // Ensure all results received so far are in the cache (setting entries which
   // already exist is a no-op).
   for (const auto& scanned_device_info : scanned_device_list_so_far) {
     SetCacheEntry(scanned_device_info);
   }
 
-  if (!network_state_handler_->DefaultNetwork() &&
+  if (CanAvailableHostNotificationBeShown() &&
       !scanned_device_list_so_far.empty()) {
-    if (scanned_device_list_so_far.size() == 1u) {
+    if (scanned_device_list_so_far.size() == 1u &&
+        (notification_presenter_->GetPotentialHotspotNotificationState() !=
+             NotificationPresenter::PotentialHotspotNotificationState::
+                 MULTIPLE_HOTSPOTS_NEARBY_SHOWN ||
+         is_final_scan_result)) {
       const cryptauth::RemoteDevice& remote_device =
           scanned_device_list_so_far.at(0).remote_device;
       int32_t signal_strength;
@@ -99,7 +108,7 @@ void HostScanner::OnTetherAvailabilityResponse(
       notification_presenter_->NotifyMultiplePotentialHotspotsNearby();
     }
 
-    was_available_hotspot_notification_shown_ = true;
+    was_notification_shown_in_current_scan_ = true;
   }
 
   if (is_final_scan_result) {
@@ -169,7 +178,7 @@ void HostScanner::OnFinalScanResultReceived(
 
   if (final_scan_results.empty()) {
     RecordHostScanResult(HostScanResultEventType::NO_HOSTS_FOUND);
-  } else if (!was_available_hotspot_notification_shown_) {
+  } else if (!was_notification_shown_in_current_scan_) {
     RecordHostScanResult(
         HostScanResultEventType::HOSTS_FOUND_BUT_NO_NOTIFICATION_SHOWN);
   } else if (final_scan_results.size() == 1u) {
@@ -179,7 +188,10 @@ void HostScanner::OnFinalScanResultReceived(
     RecordHostScanResult(
         HostScanResultEventType::NOTIFICATION_SHOWN_MULTIPLE_HOSTS);
   }
-  was_available_hotspot_notification_shown_ = false;
+  has_notification_been_shown_in_previous_scan_ |=
+      was_notification_shown_in_current_scan_;
+  was_notification_shown_in_current_scan_ = false;
+  was_notification_showing_when_current_scan_started_ = false;
 
   // If the final scan result has been received, the operation is finished.
   // Delete it.
@@ -193,6 +205,53 @@ void HostScanner::RecordHostScanResult(HostScanResultEventType event_type) {
   DCHECK(event_type != HostScanResultEventType::HOST_SCAN_RESULT_MAX);
   UMA_HISTOGRAM_ENUMERATION("InstantTethering.HostScanResult", event_type,
                             HostScanResultEventType::HOST_SCAN_RESULT_MAX);
+}
+
+bool HostScanner::IsPotentialHotspotNotificationShowing() {
+  return notification_presenter_->GetPotentialHotspotNotificationState() !=
+         NotificationPresenter::PotentialHotspotNotificationState::
+             NO_HOTSPOT_NOTIFICATION_SHOWN;
+}
+
+bool HostScanner::CanAvailableHostNotificationBeShown() {
+  // Note: If a network is active (i.e., connecting or connected), it will be
+  // returned at the front of the list, so using FirstNetworkByType() guarantees
+  // that we will find an active network if there is one.
+  const chromeos::NetworkState* first_network =
+      network_state_handler_->FirstNetworkByType(
+          chromeos::NetworkTypePattern::Default());
+  if (first_network && first_network->IsConnectingOrConnected()) {
+    // If a network is connecting or connected, the notification should not be
+    // shown.
+    return false;
+  }
+
+  if (!IsPotentialHotspotNotificationShowing() &&
+      was_notification_shown_in_current_scan_) {
+    // If a notification was shown in the current scan but it is no longer
+    // showing, it has been removed, either due to NotificationRemover or due to
+    // the user closing it. Since a scan only lasts on the order of seconds to
+    // tens of seconds, we know that the notification was very recently closed,
+    // so we should not re-show it.
+    return false;
+  }
+
+  if (!IsPotentialHotspotNotificationShowing() &&
+      was_notification_showing_when_current_scan_started_) {
+    // If a notification was showing when the scan started but is no longer
+    // showing, it has been removed and should not be re-shown.
+    return false;
+  }
+
+  if (has_notification_been_shown_in_previous_scan_ &&
+      !was_notification_showing_when_current_scan_started_) {
+    // If a notification was shown in a previous scan but was not visible when
+    // the current scan started, it should not be shown because this could be
+    // considered spammy; see crbug.com/759078.
+    return false;
+  }
+
+  return true;
 }
 
 }  // namespace tether
