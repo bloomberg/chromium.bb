@@ -1170,18 +1170,49 @@ TEST_F(ExtensionMessageBubbleTest, TestBubbleOutlivesBrowser) {
 
   ASSERT_TRUE(LoadExtensionWithAction("1", kId1, Manifest::UNPACKED));
 
-  std::unique_ptr<TestExtensionMessageBubbleController> controller(
-      new TestExtensionMessageBubbleController(
-          new DevModeBubbleDelegate(browser()->profile()), browser()));
+  auto controller = std::make_unique<TestExtensionMessageBubbleController>(
+      new DevModeBubbleDelegate(browser()->profile()), browser());
   controller->SetIsActiveBubble();
   EXPECT_TRUE(controller->ShouldShow());
   EXPECT_EQ(1u, model->toolbar_items().size());
   controller->HighlightExtensionsIfNecessary();
-  EXPECT_TRUE(ToolbarActionsModel::Get(profile())->is_highlighting());
+  EXPECT_TRUE(model->is_highlighting());
   set_browser(nullptr);
-  EXPECT_FALSE(ToolbarActionsModel::Get(profile())->is_highlighting());
+  EXPECT_FALSE(model->is_highlighting());
   controller.reset();
 }
+
+// Tests that when an extension -- associated with a bubble controller -- is
+// uninstalling after the browser is destroyed, the controller does not access
+// the associated browser object and therefore, no use-after-free occurs.
+// crbug.com/756316
+TEST_F(ExtensionMessageBubbleTest,
+       TestUninstallExtensionAfterBrowserDestroyed) {
+  FeatureSwitch::ScopedOverride force_dev_mode_highlighting(
+      FeatureSwitch::force_dev_mode_highlighting(), true);
+  Init();
+  ToolbarActionsModel* model = ToolbarActionsModel::Get(profile());
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_TRUE(LoadExtensionWithAction("1", kId1, Manifest::UNPACKED));
+
+  auto controller = std::make_unique<TestExtensionMessageBubbleController>(
+      new DevModeBubbleDelegate(browser()->profile()), browser());
+  controller->SetIsActiveBubble();
+  EXPECT_TRUE(controller->ShouldShow());
+  EXPECT_EQ(1u, model->toolbar_items().size());
+  controller->HighlightExtensionsIfNecessary();
+  EXPECT_TRUE(model->is_highlighting());
+  set_browser(nullptr);
+  service_->UninstallExtension(kId1, extensions::UNINSTALL_REASON_FOR_TESTING,
+                               base::Bind(&base::DoNothing), nullptr);
+  EXPECT_FALSE(model->is_highlighting());
+  controller.reset();
+}
+
+// TODO(catmullings): Test disabling an extenion rather than uninstalling. Also,
+// test a suspicious bubble controller + uninstalling, which has disabled
+// extensions.
 
 // Tests if that ShouldShow() returns false if the bubble's associated extension
 // has been removed.
