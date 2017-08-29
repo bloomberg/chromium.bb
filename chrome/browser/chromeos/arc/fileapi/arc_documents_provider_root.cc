@@ -250,7 +250,8 @@ void ArcDocumentsProviderRoot::ReadDirectoryWithDocumentId(
     const std::string& document_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (document_id.empty()) {
-    std::move(callback).Run(base::File::FILE_ERROR_NOT_FOUND, {});
+    std::move(callback).Run(base::File::FILE_ERROR_NOT_FOUND,
+                            std::vector<ThinFileInfo>());
     return;
   }
   ReadDirectoryInternal(
@@ -266,7 +267,7 @@ void ArcDocumentsProviderRoot::ReadDirectoryWithNameToDocumentMap(
     const NameToDocumentMap& mapping) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (error != base::File::FILE_OK) {
-    std::move(callback).Run(error, {});
+    std::move(callback).Run(error, std::vector<ThinFileInfo>());
     return;
   }
 
