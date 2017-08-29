@@ -133,8 +133,11 @@ if (NOT BUILD_SHARED_LIBS)
         "${AOM_ROOT}/test/av1_txfm_test.h"
         "${AOM_ROOT}/test/intrapred_test.cc"
         "${AOM_ROOT}/test/lpf_8_test.cc"
-        "${AOM_ROOT}/test/motion_vector_test.cc"
         "${AOM_ROOT}/test/simd_cmp_impl.h")
+
+    set(AOM_UNIT_TEST_ENCODER_SOURCES
+        ${AOM_UNIT_TEST_ENCODER_SOURCES}
+        "${AOM_ROOT}/test/motion_vector_test.cc")
 
     if (CONFIG_CDEF)
       if (CONFIG_CDEF_SINGLEPASS)
