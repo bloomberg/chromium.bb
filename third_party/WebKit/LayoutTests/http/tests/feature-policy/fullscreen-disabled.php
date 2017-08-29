@@ -6,7 +6,7 @@
 // This test ensures that fullscreen feature when disabled may not be called by
 // any iframe even when allowfullscreen is set.
 
-Header("Feature-Policy: {\"fullscreen\": []}");
+Header("Feature-Policy: fullscreen 'none'");
 ?>
 
 <!DOCTYPE html>

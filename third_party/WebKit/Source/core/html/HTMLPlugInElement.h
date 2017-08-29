@@ -83,8 +83,8 @@ class CORE_EXPORT HTMLPlugInElement
   void RequestPluginCreationWithoutLayoutObjectIfPossible();
   void CreatePluginWithoutLayoutObject();
 
-  virtual Vector<WebParsedFeaturePolicyDeclaration> ConstructContainerPolicy()
-      const;
+  virtual Vector<WebParsedFeaturePolicyDeclaration> ConstructContainerPolicy(
+      Vector<String>*) const;
 
  protected:
   HTMLPlugInElement(const QualifiedName& tag_name,

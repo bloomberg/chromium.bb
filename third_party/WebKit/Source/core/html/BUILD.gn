@@ -94,8 +94,6 @@ blink_core_sources("html") {
     "HTMLHtmlElement.h",
     "HTMLIFrameElement.cpp",
     "HTMLIFrameElement.h",
-    "HTMLIFrameElementAllow.cpp",
-    "HTMLIFrameElementAllow.h",
     "HTMLIFrameElementSandbox.cpp",
     "HTMLIFrameElementSandbox.h",
     "HTMLImageElement.cpp",

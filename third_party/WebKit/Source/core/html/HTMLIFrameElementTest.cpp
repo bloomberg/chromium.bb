@@ -16,26 +16,6 @@ class HTMLIFrameElementTest : public ::testing::Test {
   }
 };
 
-// Test setting feature policy via the Element attribute (HTML codepath).
-TEST_F(HTMLIFrameElementTest, SetAllowAttribute) {
-  Document* document = Document::CreateForTest();
-  HTMLIFrameElement* iframe = HTMLIFrameElement::Create(*document);
-
-  iframe->setAttribute(HTMLNames::allowAttr, "fullscreen");
-  EXPECT_EQ("fullscreen", iframe->allow()->value());
-  iframe->setAttribute(HTMLNames::allowAttr, "fullscreen vibrate");
-  EXPECT_EQ("fullscreen vibrate", iframe->allow()->value());
-}
-
-// Test setting feature policy via the DOMTokenList (JS codepath).
-TEST_F(HTMLIFrameElementTest, SetAllowAttributeJS) {
-  Document* document = Document::CreateForTest();
-  HTMLIFrameElement* iframe = HTMLIFrameElement::Create(*document);
-
-  iframe->allow()->setValue("fullscreen");
-  EXPECT_EQ("fullscreen", iframe->getAttribute(HTMLNames::allowAttr));
-}
-
 // Test that the correct origin is used when constructing the container policy,
 // and that frames which should inherit their parent document's origin do so.
 TEST_F(HTMLIFrameElementTest, FramesUseCorrectOrigin) {
@@ -213,7 +193,7 @@ TEST_F(HTMLIFrameElementTest, AllowAttributeContainerPolicy) {
   EXPECT_EQ(1UL, container_policy1[0].origins.size());
   EXPECT_EQ("http://example.net", container_policy1[0].origins[0].ToString());
 
-  frame_element->setAttribute(HTMLNames::allowAttr, "payment fullscreen");
+  frame_element->setAttribute(HTMLNames::allowAttr, "payment; fullscreen");
   frame_element->UpdateContainerPolicyForTests();
 
   const WebParsedFeaturePolicy& container_policy2 =
@@ -231,6 +211,26 @@ TEST_F(HTMLIFrameElementTest, AllowAttributeContainerPolicy) {
   EXPECT_FALSE(container_policy2[1].matches_all_origins);
   EXPECT_EQ(1UL, container_policy2[1].origins.size());
   EXPECT_EQ("http://example.net", container_policy2[1].origins[0].ToString());
+
+  // TODO(lunalu): Remove this test when deprecating the old syntax.
+  // Test for supporting old allow syntax.
+  frame_element->setAttribute(HTMLNames::allowAttr, "payment fullscreen");
+
+  const WebParsedFeaturePolicy& container_policy3 =
+      frame_element->ContainerPolicy();
+  EXPECT_EQ(2UL, container_policy3.size());
+  EXPECT_TRUE(
+      container_policy3[0].feature == WebFeaturePolicyFeature::kFullscreen ||
+      container_policy3[1].feature == WebFeaturePolicyFeature::kFullscreen);
+  EXPECT_TRUE(
+      container_policy3[0].feature == WebFeaturePolicyFeature::kPayment ||
+      container_policy3[1].feature == WebFeaturePolicyFeature::kPayment);
+  EXPECT_FALSE(container_policy3[0].matches_all_origins);
+  EXPECT_EQ(1UL, container_policy3[0].origins.size());
+  EXPECT_EQ("http://example.net", container_policy3[0].origins[0].ToString());
+  EXPECT_FALSE(container_policy3[1].matches_all_origins);
+  EXPECT_EQ(1UL, container_policy3[1].origins.size());
+  EXPECT_EQ("http://example.net", container_policy3[1].origins[0].ToString());
 }
 
 // Test that the allow attribute on a sandboxed frame results in a container
@@ -296,7 +296,7 @@ TEST_F(HTMLIFrameElementTest, ConstructEmptyContainerPolicy) {
   HTMLIFrameElement* frame_element = HTMLIFrameElement::Create(*document);
 
   WebParsedFeaturePolicy container_policy =
-      frame_element->ConstructContainerPolicy();
+      frame_element->ConstructContainerPolicy(nullptr);
   EXPECT_EQ(0UL, container_policy.size());
 }
 
@@ -309,9 +309,9 @@ TEST_F(HTMLIFrameElementTest, ConstructContainerPolicy) {
   document->UpdateSecurityOrigin(SecurityOrigin::Create(document_url));
 
   HTMLIFrameElement* frame_element = HTMLIFrameElement::Create(*document);
-  frame_element->setAttribute(HTMLNames::allowAttr, "payment usb");
+  frame_element->setAttribute(HTMLNames::allowAttr, "payment; usb");
   WebParsedFeaturePolicy container_policy =
-      frame_element->ConstructContainerPolicy();
+      frame_element->ConstructContainerPolicy(nullptr);
   EXPECT_EQ(2UL, container_policy.size());
   EXPECT_EQ(WebFeaturePolicyFeature::kPayment, container_policy[0].feature);
   EXPECT_FALSE(container_policy[0].matches_all_origins);
@@ -339,7 +339,7 @@ TEST_F(HTMLIFrameElementTest, ConstructContainerPolicyWithAllowFullscreen) {
   frame_element->SetBooleanAttribute(HTMLNames::allowfullscreenAttr, true);
 
   WebParsedFeaturePolicy container_policy =
-      frame_element->ConstructContainerPolicy();
+      frame_element->ConstructContainerPolicy(nullptr);
   EXPECT_EQ(1UL, container_policy.size());
   EXPECT_EQ(WebFeaturePolicyFeature::kFullscreen, container_policy[0].feature);
   EXPECT_TRUE(container_policy[0].matches_all_origins);
@@ -358,7 +358,7 @@ TEST_F(HTMLIFrameElementTest, ConstructContainerPolicyWithAllowPaymentRequest) {
   frame_element->SetBooleanAttribute(HTMLNames::allowpaymentrequestAttr, true);
 
   WebParsedFeaturePolicy container_policy =
-      frame_element->ConstructContainerPolicy();
+      frame_element->ConstructContainerPolicy(nullptr);
   EXPECT_EQ(2UL, container_policy.size());
   EXPECT_EQ(WebFeaturePolicyFeature::kUsb, container_policy[0].feature);
   EXPECT_FALSE(container_policy[0].matches_all_origins);
@@ -383,12 +383,12 @@ TEST_F(HTMLIFrameElementTest, ConstructContainerPolicyWithAllowAttributes) {
   document->UpdateSecurityOrigin(SecurityOrigin::Create(document_url));
 
   HTMLIFrameElement* frame_element = HTMLIFrameElement::Create(*document);
-  frame_element->setAttribute(HTMLNames::allowAttr, "payment usb");
+  frame_element->setAttribute(HTMLNames::allowAttr, "payment; usb");
   frame_element->SetBooleanAttribute(HTMLNames::allowfullscreenAttr, true);
   frame_element->SetBooleanAttribute(HTMLNames::allowpaymentrequestAttr, true);
 
   WebParsedFeaturePolicy container_policy =
-      frame_element->ConstructContainerPolicy();
+      frame_element->ConstructContainerPolicy(nullptr);
   EXPECT_EQ(3UL, container_policy.size());
   EXPECT_EQ(WebFeaturePolicyFeature::kPayment, container_policy[0].feature);
   EXPECT_FALSE(container_policy[0].matches_all_origins);

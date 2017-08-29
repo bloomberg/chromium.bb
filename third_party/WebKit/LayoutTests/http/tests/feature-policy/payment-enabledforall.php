@@ -7,7 +7,7 @@
 // all origins regardless whether allowpaymentrequest is set. (Feature policy
 // header takes precedence over the absence of allowpaymentrequest.)
 
-Header("Feature-Policy: {\"payment\": [\"*\"]}");
+Header("Feature-Policy: payment *");
 ?>
 
 <!DOCTYPE html>

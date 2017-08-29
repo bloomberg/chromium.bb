@@ -17,22 +17,31 @@ namespace blink {
 namespace {
 
 const char* const kValidPolicies[] = {
-    "{\"vibrate\": []}",
-    "{\"vibrate\": [\"self\"]}",
-    "{\"vibrate\": [\"*\"]}",
-    "{\"vibrate\": [\"" ORIGIN_A "\"]}",
-    "{\"vibrate\": [\"" ORIGIN_B "\"]}",
-    "{\"vibrate\": [\"" ORIGIN_A "\", \"" ORIGIN_B "\"]}",
-    "{\"fullscreen\": [\"" ORIGIN_A "\"], \"payment\": [\"self\"]}",
-    "{\"fullscreen\": [\"" ORIGIN_A "\"]}, {\"payment\": [\"self\"]}"};
+    ";;",  // Empty policies.
+    "vibrate 'none'",
+    "vibrate 'self'",
+    "vibrate 'src'",  // Only valid for iframe allow attribute.
+    "vibrate",        // Only valid for iframe allow attribute.
+    "vibrate *",
+    "vibrate " ORIGIN_A "",
+    "vibrate " ORIGIN_B "",
+    "vibrate  " ORIGIN_A " " ORIGIN_B "",
+    "vibrate 'none' " ORIGIN_A " " ORIGIN_B "",
+    "vibrate " ORIGIN_A " 'none' " ORIGIN_B "",
+    "vibrate 'none' 'none' 'none'",
+    "vibrate " ORIGIN_A " *",
+    "fullscreen  " ORIGIN_A "; payment 'self'",
+    "fullscreen " ORIGIN_A "; payment *, vibrate 'self'"};
 
 const char* const kInvalidPolicies[] = {
-    "Not A JSON literal",
-    "\"Not a JSON object\"",
-    "[\"Also\", \"Not a JSON object\"]",
+    "badfeaturename",
+    "badfeaturename 'self'",
     "1.0",
-    "{\"vibrate\": \"Not a JSON array\"}",
-    "{\"vibrate\": [\"*\"], \"payment\": \"Not a JSON array\"}"};
+    "vibrate data://badorigin",
+    "vibrate https://bad;origin",
+    "vibrate https:/bad,origin",
+    "vibrate https://example.com, https://a.com",
+    "vibrate *, payment data://badorigin"};
 
 }  // namespace
 
@@ -57,8 +66,8 @@ TEST_F(FeaturePolicyTest, ParseValidPolicy) {
   Vector<String> messages;
   for (const char* policy_string : kValidPolicies) {
     messages.clear();
-    ParseFeaturePolicy(policy_string, origin_a_.Get(), &messages,
-                       test_feature_name_map);
+    ParseFeaturePolicy(policy_string, origin_a_.Get(), origin_b_.Get(),
+                       &messages, test_feature_name_map);
     EXPECT_EQ(0UL, messages.size());
   }
 }
@@ -67,8 +76,8 @@ TEST_F(FeaturePolicyTest, ParseInvalidPolicy) {
   Vector<String> messages;
   for (const char* policy_string : kInvalidPolicies) {
     messages.clear();
-    ParseFeaturePolicy(policy_string, origin_a_.Get(), &messages,
-                       test_feature_name_map);
+    ParseFeaturePolicy(policy_string, origin_a_.Get(), origin_b_.Get(),
+                       &messages, test_feature_name_map);
     EXPECT_NE(0UL, messages.size());
   }
 }
@@ -78,12 +87,12 @@ TEST_F(FeaturePolicyTest, PolicyParsedCorrectly) {
 
   // Empty policy.
   WebParsedFeaturePolicy parsed_policy = ParseFeaturePolicy(
-      "{}", origin_a_.Get(), &messages, test_feature_name_map);
+      "", origin_a_.Get(), origin_b_.Get(), &messages, test_feature_name_map);
   EXPECT_EQ(0UL, parsed_policy.size());
 
-  // Simple policy with "self".
+  // Simple policy with 'self'.
   parsed_policy =
-      ParseFeaturePolicy("{\"vibrate\": [\"self\"]}", origin_a_.Get(),
+      ParseFeaturePolicy("vibrate 'self'", origin_a_.Get(), origin_b_.Get(),
                          &messages, test_feature_name_map);
   EXPECT_EQ(1UL, parsed_policy.size());
 
@@ -93,8 +102,9 @@ TEST_F(FeaturePolicyTest, PolicyParsedCorrectly) {
   EXPECT_TRUE(origin_a_->IsSameSchemeHostPortAndSuborigin(
       parsed_policy[0].origins[0].Get()));
   // Simple policy with *.
-  parsed_policy = ParseFeaturePolicy("{\"vibrate\": [\"*\"]}", origin_a_.Get(),
-                                     &messages, test_feature_name_map);
+  parsed_policy =
+      ParseFeaturePolicy("vibrate *", origin_a_.Get(), origin_b_.Get(),
+                         &messages, test_feature_name_map);
   EXPECT_EQ(1UL, parsed_policy.size());
   EXPECT_EQ(WebFeaturePolicyFeature::kVibrate, parsed_policy[0].feature);
   EXPECT_TRUE(parsed_policy[0].matches_all_origins);
@@ -102,10 +112,10 @@ TEST_F(FeaturePolicyTest, PolicyParsedCorrectly) {
 
   // Complicated policy.
   parsed_policy = ParseFeaturePolicy(
-      "{\"vibrate\": [\"*\"], "
-      "\"fullscreen\": [\"https://example.net\", \"https://example.org\"], "
-      "\"payment\": [\"self\"]}",
-      origin_a_.Get(), &messages, test_feature_name_map);
+      "vibrate *; "
+      "fullscreen https://example.net https://example.org; "
+      "payment 'self'",
+      origin_a_.Get(), origin_b_.Get(), &messages, test_feature_name_map);
   EXPECT_EQ(3UL, parsed_policy.size());
   EXPECT_EQ(WebFeaturePolicyFeature::kVibrate, parsed_policy[0].feature);
   EXPECT_TRUE(parsed_policy[0].matches_all_origins);
@@ -117,6 +127,54 @@ TEST_F(FeaturePolicyTest, PolicyParsedCorrectly) {
       parsed_policy[1].origins[0].Get()));
   EXPECT_TRUE(origin_c_->IsSameSchemeHostPortAndSuborigin(
       parsed_policy[1].origins[1].Get()));
+  EXPECT_EQ(WebFeaturePolicyFeature::kPayment, parsed_policy[2].feature);
+  EXPECT_FALSE(parsed_policy[2].matches_all_origins);
+  EXPECT_EQ(1UL, parsed_policy[2].origins.size());
+  EXPECT_TRUE(origin_a_->IsSameSchemeHostPortAndSuborigin(
+      parsed_policy[2].origins[0].Get()));
+
+  // Multiple policies.
+  parsed_policy = ParseFeaturePolicy(
+      "vibrate * https://example.net; "
+      "fullscreen https://example.net none https://example.org,"
+      "payment 'self' badorigin",
+      origin_a_.Get(), origin_b_.Get(), &messages, test_feature_name_map);
+  EXPECT_EQ(3UL, parsed_policy.size());
+  EXPECT_EQ(WebFeaturePolicyFeature::kVibrate, parsed_policy[0].feature);
+  EXPECT_TRUE(parsed_policy[0].matches_all_origins);
+  EXPECT_EQ(0UL, parsed_policy[0].origins.size());
+  EXPECT_EQ(WebFeaturePolicyFeature::kFullscreen, parsed_policy[1].feature);
+  EXPECT_FALSE(parsed_policy[1].matches_all_origins);
+  EXPECT_EQ(2UL, parsed_policy[1].origins.size());
+  EXPECT_TRUE(origin_b_->IsSameSchemeHostPortAndSuborigin(
+      parsed_policy[1].origins[0].Get()));
+  EXPECT_TRUE(origin_c_->IsSameSchemeHostPortAndSuborigin(
+      parsed_policy[1].origins[1].Get()));
+  EXPECT_EQ(WebFeaturePolicyFeature::kPayment, parsed_policy[2].feature);
+  EXPECT_FALSE(parsed_policy[2].matches_all_origins);
+  EXPECT_EQ(1UL, parsed_policy[2].origins.size());
+  EXPECT_TRUE(origin_a_->IsSameSchemeHostPortAndSuborigin(
+      parsed_policy[2].origins[0].Get()));
+
+  // Old (to be deprecated) iframe allow syntax.
+  messages.clear();
+  parsed_policy =
+      ParseFeaturePolicy("vibrate badname fullscreen payment", nullptr,
+                         origin_a_.Get(), &messages, test_feature_name_map);
+  // Expect 2 messages: one about deprecation warning, one about unrecognized
+  // feature name.
+  EXPECT_EQ(2UL, messages.size());
+  EXPECT_EQ(3UL, parsed_policy.size());
+  EXPECT_EQ(WebFeaturePolicyFeature::kVibrate, parsed_policy[0].feature);
+  EXPECT_FALSE(parsed_policy[0].matches_all_origins);
+  EXPECT_EQ(1UL, parsed_policy[0].origins.size());
+  EXPECT_TRUE(origin_a_->IsSameSchemeHostPortAndSuborigin(
+      parsed_policy[0].origins[0].Get()));
+  EXPECT_EQ(WebFeaturePolicyFeature::kFullscreen, parsed_policy[1].feature);
+  EXPECT_FALSE(parsed_policy[1].matches_all_origins);
+  EXPECT_EQ(1UL, parsed_policy[1].origins.size());
+  EXPECT_TRUE(origin_a_->IsSameSchemeHostPortAndSuborigin(
+      parsed_policy[1].origins[0].Get()));
   EXPECT_EQ(WebFeaturePolicyFeature::kPayment, parsed_policy[2].feature);
   EXPECT_FALSE(parsed_policy[2].matches_all_origins);
   EXPECT_EQ(1UL, parsed_policy[2].origins.size());

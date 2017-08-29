@@ -7,7 +7,7 @@
 // origins regardless of whether allowfullscreen is set. (Feature policy header
 // takes precedence over the absence of allowfullscreen.)
 
-Header("Feature-Policy: {\"fullscreen\": [\"*\"]}");
+Header("Feature-Policy: fullscreen: *");
 ?>
 
 <!DOCTYPE html>

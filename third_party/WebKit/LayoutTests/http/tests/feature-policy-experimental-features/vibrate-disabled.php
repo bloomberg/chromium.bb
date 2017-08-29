@@ -6,7 +6,7 @@
 // This test ensures that navigator.vibrate when disabled may not be called by
 // any iframe.
 
-Header("Feature-Policy: {\"vibrate\": []}");
+Header("Feature-Policy: vibrate 'none'");
 ?>
 
 <!DOCTYPE html>

@@ -1,4 +1,4 @@
-CONSOLE ERROR: line 4: Error while parsing the 'allow' attribute: 'vibrate' is an invalid feature name.
+CONSOLE WARNING: line 4: Unrecognized feature: 'vibrate'.
 This is a testharness.js-based test.
 FAIL Iframe navigated itself to a new origin, vibrate is disabled by container policy. assert_false: navigator.vibrate(): expected false got true
 Harness: the test ran to completion.

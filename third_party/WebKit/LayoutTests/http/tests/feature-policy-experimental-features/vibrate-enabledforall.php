@@ -6,7 +6,7 @@
 // This test ensures that navigator.vibrate when enabled for all works across
 // origins.
 
-Header("Feature-Policy: {\"vibrate\": [\"*\"]}");
+Header("Feature-Policy: vibrate *");
 ?>
 
 <!DOCTYPE html>

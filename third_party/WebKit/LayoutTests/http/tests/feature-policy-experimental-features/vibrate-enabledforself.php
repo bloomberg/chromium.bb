@@ -6,7 +6,7 @@
 // This test ensures that navigator.vibrate when enabled for self only works on
 // the same origin.
 
-Header("Feature-Policy: {\"vibrate\": [\"self\"]}");
+Header("Feature-Policy: vibrate 'self'");
 ?>
 
 <!DOCTYPE html>

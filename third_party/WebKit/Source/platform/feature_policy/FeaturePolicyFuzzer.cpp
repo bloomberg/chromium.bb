@@ -20,6 +20,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   // TODO(csharrison): Be smarter about parsing this origin for performance.
   RefPtr<blink::SecurityOrigin> origin =
       blink::SecurityOrigin::CreateFromString("https://example.com/");
-  blink::ParseFeaturePolicy(WTF::String(data, size), origin.Get(), &messages);
+  blink::ParseFeaturePolicyHeader(WTF::String(data, size), origin.Get(),
+                                  &messages);
   return 0;
 }

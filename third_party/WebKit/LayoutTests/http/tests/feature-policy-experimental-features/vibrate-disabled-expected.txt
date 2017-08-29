@@ -1,3 +1,4 @@
+CONSOLE ERROR: Error with Feature-Policy header: Unrecognized feature: 'vibrate'.
 This is a testharness.js-based test.
 FAIL Navigator.vibrate disabled on URL: resources/feature-policy-vibrate.html assert_false: navigator.vibrate(): expected false got true
 FAIL Navigator.vibrate disabled on URL: http://localhost:8000/feature-policy-experimental-features/resources/feature-policy-vibrate.html assert_false: navigator.vibrate(): expected false got true
