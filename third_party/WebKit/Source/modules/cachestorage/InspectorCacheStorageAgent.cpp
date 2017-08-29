@@ -45,6 +45,7 @@ using ProtocolCache = blink::protocol::CacheStorage::Cache;
 using blink::protocol::CacheStorage::Cache;
 using blink::protocol::CacheStorage::CachedResponse;
 using blink::protocol::CacheStorage::DataEntry;
+using blink::protocol::CacheStorage::Header;
 // Renaming Response since there is another blink::Response.
 using ProtocolResponse = blink::protocol::Response;
 
@@ -203,12 +204,9 @@ struct DataRequestParams {
 };
 
 struct RequestResponse {
-  RequestResponse() {}
-  RequestResponse(const String& request, const String& response)
-      : request(request), response(response) {}
-  String request;
-  String response;
+  String request_url;
   double response_time;
+  Vector<std::pair<String, String>> headers;
 };
 
 class ResponsesAccumulator : public RefCounted<ResponsesAccumulator> {
@@ -228,16 +226,20 @@ class ResponsesAccumulator : public RefCounted<ResponsesAccumulator> {
     DCHECK_GT(num_responses_left_, 0);
     RequestResponse& request_response =
         responses_.at(responses_.size() - num_responses_left_);
-    request_response.request = request.Url().GetString();
-    request_response.response = response.StatusText();
+    request_response.request_url = request.Url().GetString();
     request_response.response_time = response.ResponseTime().ToDoubleT();
+    for (const auto& header : response.GetHeaderKeys()) {
+      request_response.headers.push_back(
+          std::make_pair(header, response.GetHeader(header)));
+    }
 
     if (--num_responses_left_ != 0)
       return;
 
     std::sort(responses_.begin(), responses_.end(),
               [](const RequestResponse& a, const RequestResponse& b) {
-                return WTF::CodePointCompareLessThan(a.request, b.request);
+                return WTF::CodePointCompareLessThan(a.request_url,
+                                                     b.request_url);
               });
     if (params_.skip_count > 0)
       responses_.erase(0, params_.skip_count);
@@ -249,11 +251,18 @@ class ResponsesAccumulator : public RefCounted<ResponsesAccumulator> {
     }
     std::unique_ptr<Array<DataEntry>> array = Array<DataEntry>::create();
     for (const auto& request_response : responses_) {
+      std::unique_ptr<Array<Header>> headers = Array<Header>::create();
+      for (const auto& header : request_response.headers) {
+        headers->addItem(Header::create()
+                             .setName(header.first)
+                             .setValue(header.second)
+                             .build());
+      }
       std::unique_ptr<DataEntry> entry =
           DataEntry::create()
-              .setRequest(request_response.request)
-              .setResponse(request_response.response)
+              .setRequestURL(request_response.request_url)
               .setResponseTime(request_response.response_time)
+              .setResponseHeaders(std::move(headers))
               .build();
       array->addItem(std::move(entry));
     }
@@ -458,11 +467,10 @@ class CachedResponseFileReaderLoaderClient final
 
  public:
   static void Load(ExecutionContext* context,
-                   std::unique_ptr<protocol::DictionaryValue> headers,
                    PassRefPtr<BlobDataHandle> blob,
                    std::unique_ptr<RequestCachedResponseCallback> callback) {
-    new CachedResponseFileReaderLoaderClient(
-        context, std::move(headers), std::move(blob), std::move(callback));
+    new CachedResponseFileReaderLoaderClient(context, std::move(blob),
+                                             std::move(callback));
   }
 
   void DidStartLoading() override {}
@@ -470,7 +478,6 @@ class CachedResponseFileReaderLoaderClient final
   void DidFinishLoading() override {
     std::unique_ptr<CachedResponse> response =
         CachedResponse::create()
-            .setHeaders(std::move(headers_))
             .setBody(Base64Encode(data_->Data(), data_->size()))
             .build();
     callback_->sendSuccess(std::move(response));
@@ -491,13 +498,11 @@ class CachedResponseFileReaderLoaderClient final
  private:
   CachedResponseFileReaderLoaderClient(
       ExecutionContext* context,
-      std::unique_ptr<protocol::DictionaryValue>&& headers,
       PassRefPtr<BlobDataHandle>&& blob,
       std::unique_ptr<RequestCachedResponseCallback>&& callback)
       : loader_(
             FileReaderLoader::Create(FileReaderLoader::kReadByClient, this)),
         callback_(std::move(callback)),
-        headers_(std::move(headers)),
         data_(SharedBuffer::Create()) {
     loader_->Start(context, std::move(blob));
   }
@@ -508,7 +513,6 @@ class CachedResponseFileReaderLoaderClient final
 
   std::unique_ptr<FileReaderLoader> loader_;
   std::unique_ptr<RequestCachedResponseCallback> callback_;
-  std::unique_ptr<protocol::DictionaryValue> headers_;
   RefPtr<SharedBuffer> data_;
 };
 
@@ -527,14 +531,12 @@ class CachedResponseMatchCallback
         protocol::DictionaryValue::create();
     if (!response.GetBlobDataHandle()) {
       callback_->sendSuccess(CachedResponse::create()
-                                 .setHeaders(ToHeadersDictionary(response))
                                  .setBody("")
                                  .build());
       return;
     }
     CachedResponseFileReaderLoaderClient::Load(
-        context_, ToHeadersDictionary(response), response.GetBlobDataHandle(),
-        std::move(callback_));
+        context_, response.GetBlobDataHandle(), std::move(callback_));
   }
 
   void OnError(WebServiceWorkerCacheError error) override {
@@ -544,14 +546,6 @@ class CachedResponseMatchCallback
   }
 
  private:
-  static std::unique_ptr<protocol::DictionaryValue> ToHeadersDictionary(
-      const WebServiceWorkerResponse& response) {
-    auto headers = protocol::DictionaryValue::create();
-    for (const auto& header : response.GetHeaderKeys())
-      headers->setString(header, response.GetHeader(header));
-    return headers;
-  }
-
   std::unique_ptr<RequestCachedResponseCallback> callback_;
   Persistent<ExecutionContext> context_;
 };
