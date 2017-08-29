@@ -1,4 +1,4 @@
-table: ["unicode.dis", "sk-g1.ctb"]
+table: ["tables/unicode.dis", "tables/sk-g1.ctb"]
 tests:
   -
     - "Ä Ö Ü Ô Ĺ Ľ ä ö ü ô ĺ ľ"
