@@ -182,11 +182,7 @@ class UiElement : public cc::AnimationTarget {
     inheritable_transform_ = transform;
   }
 
-  // A flag usable during transformation calculates to avoid duplicate work.
-  bool dirty() const { return dirty_; }
-  void set_dirty(bool dirty) { dirty_ = dirty; }
-
-  // A flag usable during transformation calculates to avoid duplicate work.
+  // An optional, but stable and semantic identifier for an element.
   UiElementName name() const { return name_; }
   void set_name(UiElementName name) { name_ = name; }
 
@@ -257,6 +253,8 @@ class UiElement : public cc::AnimationTarget {
   // or right where the head is pointing.
   virtual void AdjustRotationForHeadPose(const gfx::Vector3dF& look_at);
 
+  void UpdateInheritedProperties();
+
   std::vector<std::unique_ptr<UiElement>>& children() { return children_; }
   const std::vector<std::unique_ptr<UiElement>>& children() const {
     return children_;
@@ -264,6 +262,7 @@ class UiElement : public cc::AnimationTarget {
 
  protected:
   virtual void OnSetMode();
+  virtual void OnUpdatedInheritedProperties();
 
   base::TimeTicks last_frame_time() const { return last_frame_time_; }
 
@@ -316,9 +315,6 @@ class UiElement : public cc::AnimationTarget {
 
   // This transform can be used by children to derive position of its parent.
   gfx::Transform inheritable_transform_;
-
-  // A flag usable during transformation calculates to avoid duplicate work.
-  bool dirty_ = false;
 
   // An identifier used for testing and debugging, in lieu of a string.
   UiElementName name_ = UiElementName::kNone;

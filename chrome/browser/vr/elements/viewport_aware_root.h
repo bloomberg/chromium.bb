@@ -24,6 +24,7 @@ class ViewportAwareRoot : public UiElement {
   void AdjustRotationForHeadPose(const gfx::Vector3dF& look_at) override;
 
  private:
+  void OnUpdatedInheritedProperties() override;
   float viewport_aware_total_rotation_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(ViewportAwareRoot);

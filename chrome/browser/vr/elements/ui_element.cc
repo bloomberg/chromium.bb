@@ -174,6 +174,7 @@ void UiElement::SetMode(ColorScheme::Mode mode) {
 }
 
 void UiElement::OnSetMode() {}
+void UiElement::OnUpdatedInheritedProperties() {}
 
 void UiElement::AddChild(std::unique_ptr<UiElement> child) {
   child->parent_ = this;
@@ -294,6 +295,34 @@ void UiElement::LayOutChildren() {
 }
 
 void UiElement::AdjustRotationForHeadPose(const gfx::Vector3dF& look_at) {}
+
+void UiElement::UpdateInheritedProperties() {
+  gfx::Transform transform;
+  transform.Scale(size_.width(), size_.height());
+  set_computed_opacity(opacity_);
+  set_computed_viewport_aware(viewport_aware_);
+
+  // Compute an inheritable transformation that can be applied to this element,
+  // and it's children, if applicable.
+  gfx::Transform inheritable = LocalTransform();
+
+  if (parent_) {
+    inheritable.ConcatTransform(parent_->inheritable_transform());
+    set_computed_opacity(computed_opacity() * parent_->opacity());
+    if (parent_->viewport_aware())
+      set_computed_viewport_aware(true);
+  }
+
+  transform.ConcatTransform(inheritable);
+  set_world_space_transform(transform);
+  set_inheritable_transform(inheritable);
+
+  for (auto& child : children_) {
+    child->UpdateInheritedProperties();
+  }
+
+  OnUpdatedInheritedProperties();
+}
 
 gfx::Transform UiElement::LocalTransform() const {
   return layout_offset_.Apply() * transform_operations_.Apply();

@@ -97,7 +97,6 @@ class UiScene {
 
  private:
   void Animate(const base::TimeTicks& current_time);
-  void ApplyRecursiveTransforms(UiElement* element);
 
   std::unique_ptr<UiElement> root_element_;
   ColorScheme::Mode mode_ = ColorScheme::kModeNormal;
