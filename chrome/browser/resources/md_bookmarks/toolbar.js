@@ -178,7 +178,7 @@ Polymer({
    * @private
    */
   computeCanSortFolder_: function() {
-    return this.canChangeList_ && this.selectedFolderChildren_ > 0;
+    return this.canChangeList_ && this.selectedFolderChildren_ > 1;
   },
 
   /**
