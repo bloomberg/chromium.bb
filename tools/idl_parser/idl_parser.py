@@ -370,7 +370,7 @@ class IDLParser(object):
                             self.BuildAttribute('VALUE', '[]'))
     elif type(p[1]) == str:
       p[0] = ListFromConcat(self.BuildAttribute('TYPE', 'DOMString'),
-                            self.BuildAttribute('NAME', p[1]))
+                            self.BuildAttribute('VALUE', p[1]))
     else:
       p[0] = p[1]
 
@@ -438,7 +438,7 @@ class IDLParser(object):
                   | null"""
     if type(p[1]) == str:
       p[0] = ListFromConcat(self.BuildAttribute('TYPE', 'integer'),
-                            self.BuildAttribute('NAME', p[1]))
+                            self.BuildAttribute('VALUE', p[1]))
     else:
       p[0] = p[1]
 
@@ -446,7 +446,7 @@ class IDLParser(object):
   def p_null(self, p):
     """null : NULL"""
     p[0] = ListFromConcat(self.BuildAttribute('TYPE', 'NULL'),
-                          self.BuildAttribute('NAME', 'NULL'))
+                          self.BuildAttribute('VALUE', 'NULL'))
 
   def p_BooleanLiteral(self, p):
     """BooleanLiteral : TRUE
