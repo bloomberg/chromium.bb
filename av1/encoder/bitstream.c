@@ -511,6 +511,16 @@ static void write_motion_mode(const AV1_COMMON *cm, MACROBLOCKD *xd,
       mi);
   if (last_motion_mode_allowed == SIMPLE_TRANSLATION) return;
 #if CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
+#if CONFIG_NCOBMC_ADAPT_WEIGHT
+  if (last_motion_mode_allowed == NCOBMC_ADAPT_WEIGHT) {
+    aom_write_symbol(w, mbmi->motion_mode,
+                     xd->tile_ctx->ncobmc_cdf[mbmi->sb_type],
+                     OBMC_FAMILY_MODES);
+  } else if (last_motion_mode_allowed == OBMC_CAUSAL) {
+    aom_write_symbol(w, mbmi->motion_mode == OBMC_CAUSAL,
+                     xd->tile_ctx->obmc_cdf[mbmi->sb_type], 2);
+  } else {
+#else
   if (last_motion_mode_allowed == OBMC_CAUSAL) {
 #if CONFIG_NEW_MULTISYMBOL
     aom_write_symbol(w, mbmi->motion_mode == OBMC_CAUSAL,
@@ -520,6 +530,7 @@ static void write_motion_mode(const AV1_COMMON *cm, MACROBLOCKD *xd,
               cm->fc->obmc_prob[mbmi->sb_type]);
 #endif
   } else {
+#endif  // CONFIG_NCOBMC_ADAPT_WEIGHT
 #endif  // CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
     aom_write_symbol(w, mbmi->motion_mode,
                      xd->tile_ctx->motion_mode_cdf[mbmi->sb_type],

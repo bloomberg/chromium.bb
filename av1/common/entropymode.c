@@ -1106,6 +1106,113 @@ static const aom_cdf_prob
     };
 
 #elif CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
+#if CONFIG_NCOBMC_ADAPT_WEIGHT
+const aom_tree_index av1_motion_mode_tree[TREE_SIZE(MOTION_MODES)] = {
+  -SIMPLE_TRANSLATION, 2, -OBMC_CAUSAL, 4, -NCOBMC_ADAPT_WEIGHT, -WARPED_CAUSAL
+};
+
+static const aom_prob default_motion_mode_prob[BLOCK_SIZES_ALL][MOTION_MODES -
+                                                                1] = {
+#if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
+  { 128, 128, 255 }, { 128, 128, 128 }, { 128, 128, 128 },
+#endif
+  { 128, 128, 128 }, { 128, 128, 128 }, { 128, 128, 128 }, { 62, 115, 128 },
+  { 39, 131, 128 },  { 39, 132, 128 },  { 118, 94, 128 },  { 77, 125, 128 },
+  { 100, 121, 128 }, { 190, 66, 128 },  { 207, 102, 128 }, { 197, 100, 128 },
+  { 239, 76, 128 },
+#if CONFIG_EXT_PARTITION
+  { 252, 200, 128 }, { 252, 200, 128 }, { 252, 200, 128 },
+#endif  // CONFIG_EXT_PARTITION
+  { 208, 200, 128 }, { 208, 200, 128 }, { 208, 200, 128 }, { 208, 200, 128 }
+};
+static const aom_cdf_prob
+    default_motion_mode_cdf[BLOCK_SIZES_ALL][CDF_SIZE(MOTION_MODES)] = {
+#if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
+      { AOM_ICDF(16384), AOM_ICDF(24576), AOM_ICDF(32767), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(16384), AOM_ICDF(24576), AOM_ICDF(32767), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(16384), AOM_ICDF(24576), AOM_ICDF(32767), AOM_ICDF(32768), 0 },
+#endif
+      { AOM_ICDF(16384), AOM_ICDF(24576), AOM_ICDF(32767), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(16384), AOM_ICDF(24576), AOM_ICDF(32767), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(16384), AOM_ICDF(24576), AOM_ICDF(32767), AOM_ICDF(32768), 0 },
+      /** Only these nine block sizes allow ncobmc_adapt_weight **/
+      { AOM_ICDF(8192), AOM_ICDF(16384), AOM_ICDF(24576), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(8192), AOM_ICDF(16384), AOM_ICDF(24576), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(8192), AOM_ICDF(16384), AOM_ICDF(24576), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(8192), AOM_ICDF(16384), AOM_ICDF(24576), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(8192), AOM_ICDF(16384), AOM_ICDF(24576), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(8192), AOM_ICDF(16384), AOM_ICDF(24576), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(8192), AOM_ICDF(16384), AOM_ICDF(24576), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(8192), AOM_ICDF(16384), AOM_ICDF(24576), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(8192), AOM_ICDF(16384), AOM_ICDF(24576), AOM_ICDF(32768), 0 },
+      /***********************************************************/
+      { AOM_ICDF(30592), AOM_ICDF(31238), AOM_ICDF(32767), AOM_ICDF(32768), 0 },
+#if CONFIG_EXT_PARTITION
+      { AOM_ICDF(32256), AOM_ICDF(32656), AOM_ICDF(32767), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(32256), AOM_ICDF(32656), AOM_ICDF(32767), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(32256), AOM_ICDF(32656), AOM_ICDF(32767), AOM_ICDF(32768), 0 },
+#endif
+      { AOM_ICDF(32640), AOM_ICDF(32740), AOM_ICDF(32767), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(32640), AOM_ICDF(32740), AOM_ICDF(32767), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(32640), AOM_ICDF(32740), AOM_ICDF(32767), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(32640), AOM_ICDF(32740), AOM_ICDF(32767), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(32640), AOM_ICDF(32740), AOM_ICDF(32767), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(32640), AOM_ICDF(32740), AOM_ICDF(32767), AOM_ICDF(32768), 0 }
+    };
+
+const aom_tree_index av1_ncobmc_tree[TREE_SIZE(MOTION_MODES)] = {
+  -SIMPLE_TRANSLATION, 2, -OBMC_CAUSAL, -NCOBMC_ADAPT_WEIGHT
+};
+
+static const aom_prob
+    default_ncobmc_prob[BLOCK_SIZES_ALL][OBMC_FAMILY_MODES - 1] = {
+#if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
+      { 128, 255 }, { 128, 255 }, { 128, 255 },
+#endif
+      { 128, 255 }, { 128, 255 }, { 128, 255 }, { 45, 255 },  { 79, 255 },
+      { 75, 255 },  { 130, 255 }, { 141, 255 }, { 144, 255 }, { 208, 255 },
+      { 201, 255 }, { 186, 255 }, { 231, 255 },
+#if CONFIG_EXT_PARTITION
+      { 252, 255 }, { 252, 255 }, { 252, 255 },
+#endif  // CONFIG_EXT_PARTITION
+      { 208, 255 }, { 208, 255 }, { 208, 255 }, { 208, 255 }
+    };
+
+static const aom_cdf_prob
+    default_ncobmc_cdf[BLOCK_SIZES_ALL][CDF_SIZE(OBMC_FAMILY_MODES)] = {
+#if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
+      { AOM_ICDF(128 * 128), AOM_ICDF(32767), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(128 * 128), AOM_ICDF(32767), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(128 * 128), AOM_ICDF(32767), AOM_ICDF(32768), 0 },
+#endif
+      { AOM_ICDF(128 * 128), AOM_ICDF(32767), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(128 * 128), AOM_ICDF(32767), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(128 * 128), AOM_ICDF(32767), AOM_ICDF(32768), 0 },
+      /** Only these nine block sizes allow ncobmc_adapt_weight **/
+      { AOM_ICDF(10922), AOM_ICDF(21845), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(10922), AOM_ICDF(21845), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(10922), AOM_ICDF(21845), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(10922), AOM_ICDF(21845), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(10922), AOM_ICDF(21845), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(10922), AOM_ICDF(21845), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(10922), AOM_ICDF(21845), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(10922), AOM_ICDF(21845), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(10922), AOM_ICDF(21845), AOM_ICDF(32768), 0 },
+      /***********************************************************/
+      { AOM_ICDF(231 * 128), AOM_ICDF(32767), AOM_ICDF(32768), 0 },
+#if CONFIG_EXT_PARTITION
+      { AOM_ICDF(252 * 128), AOM_ICDF(32767), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(252 * 128), AOM_ICDF(32767), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(252 * 128), AOM_ICDF(32767), AOM_ICDF(32768), 0 },
+#endif  // CONFIG_EXT_PARTITION
+      { AOM_ICDF(208 * 128), AOM_ICDF(32767), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(208 * 128), AOM_ICDF(32767), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(208 * 128), AOM_ICDF(32767), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(208 * 128), AOM_ICDF(32767), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(208 * 128), AOM_ICDF(32767), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(208 * 128), AOM_ICDF(32767), AOM_ICDF(32768), 0 }
+    };
+#else
 const aom_tree_index av1_motion_mode_tree[TREE_SIZE(MOTION_MODES)] = {
   -SIMPLE_TRANSLATION, 2, -OBMC_CAUSAL, -WARPED_CAUSAL,
 };
@@ -1156,7 +1263,7 @@ static const aom_cdf_prob
       { AOM_ICDF(32640), AOM_ICDF(32740), AOM_ICDF(32768), 0 },
       { AOM_ICDF(32640), AOM_ICDF(32740), AOM_ICDF(32768), 0 },
     };
-
+#endif  // CONFIG_NCOBMC_ADAPT_WEIGHT
 // Probability for the case that only 1 additional motion mode is allowed
 static const aom_prob default_obmc_prob[BLOCK_SIZES_ALL] = {
 #if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
@@ -1169,7 +1276,7 @@ static const aom_prob default_obmc_prob[BLOCK_SIZES_ALL] = {
   208, 208, 208, 208, 208, 208,
 };
 
-#if CONFIG_NEW_MULTISYMBOL
+#if CONFIG_NEW_MULTISYMBOL || CONFIG_NCOBMC_ADAPT_WEIGHT
 static const aom_cdf_prob default_obmc_cdf[BLOCK_SIZES_ALL][CDF_SIZE(2)] = {
 #if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
   { AOM_ICDF(128 * 128), AOM_ICDF(32768), 0 },
@@ -5034,9 +5141,13 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
 #endif
 #if CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
   av1_copy(fc->obmc_prob, default_obmc_prob);
-#if CONFIG_NEW_MULTISYMBOL
+#if CONFIG_NEW_MULTISYMBOL || CONFIG_NCOBMC_ADAPT_WEIGHT
   av1_copy(fc->obmc_cdf, default_obmc_cdf);
 #endif
+#if CONFIG_NCOBMC_ADAPT_WEIGHT
+  av1_copy(fc->ncobmc_prob, default_ncobmc_prob);
+  av1_copy(fc->ncobmc_cdf, default_ncobmc_cdf);
+#endif  // CONFIG_NCOBMC_ADAPT_WEIGHT
 #endif  // CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
 #endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
 #if CONFIG_EXT_INTER
