@@ -73,7 +73,6 @@ class SurfaceAggregatorPerfTest : public testing::Test {
 
         auto* quad = pass->CreateAndAppendDrawQuad<cc::TextureDrawQuad>();
         const gfx::Rect rect(0, 0, 1, 2);
-        const gfx::Rect opaque_rect;
         // Half of rects should be visible with partial damage.
         gfx::Rect visible_rect =
             j % 2 == 0 ? gfx::Rect(0, 0, 1, 2) : gfx::Rect(0, 1, 1, 1);
@@ -85,9 +84,9 @@ class SurfaceAggregatorPerfTest : public testing::Test {
         const float vertex_opacity[4] = {0.f, 0.f, 1.f, 1.f};
         bool flipped = false;
         bool nearest_neighbor = false;
-        quad->SetAll(sqs, rect, opaque_rect, visible_rect, needs_blending, j,
-                     gfx::Size(), premultiplied_alpha, uv_top_left,
-                     uv_bottom_right, background_color, vertex_opacity, flipped,
+        quad->SetAll(sqs, rect, visible_rect, needs_blending, j, gfx::Size(),
+                     premultiplied_alpha, uv_top_left, uv_bottom_right,
+                     background_color, vertex_opacity, flipped,
                      nearest_neighbor, false);
       }
       sqs = pass->CreateAndAppendSharedQuadState();

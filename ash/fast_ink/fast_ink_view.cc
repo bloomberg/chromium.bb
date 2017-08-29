@@ -357,7 +357,6 @@ void FastInkView::UpdateSurface() {
       gfx::Rect(widget_->GetNativeView()->GetBoundsInScreen().size()),
       device_scale_factor));
   gfx::Rect quad_rect(buffer_size);
-  gfx::Rect opaque_rect = gfx::Rect();
   bool needs_blending = true;
 
   const int kRenderPassId = 1;
@@ -387,10 +386,10 @@ void FastInkView::UpdateSurface() {
   float vertex_opacity[4] = {1.0, 1.0, 1.0, 1.0};
   gfx::PointF uv_top_left(0.f, 0.f);
   gfx::PointF uv_bottom_right(1.f, 1.f);
-  texture_quad->SetNew(quad_state, quad_rect, opaque_rect, quad_rect,
-                       needs_blending, transferable_resource.id, true,
-                       uv_top_left, uv_bottom_right, SK_ColorTRANSPARENT,
-                       vertex_opacity, false, false, false);
+  texture_quad->SetNew(quad_state, quad_rect, quad_rect, needs_blending,
+                       transferable_resource.id, true, uv_top_left,
+                       uv_bottom_right, SK_ColorTRANSPARENT, vertex_opacity,
+                       false, false, false);
   texture_quad->set_resource_size_in_pixels(transferable_resource.size);
   frame.resource_list.push_back(transferable_resource);
   frame.render_pass_list.push_back(std::move(render_pass));

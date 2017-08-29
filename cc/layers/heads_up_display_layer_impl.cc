@@ -140,7 +140,6 @@ void HeadsUpDisplayLayerImpl::AppendQuads(
                                 internal_contents_scale_);
 
   gfx::Rect quad_rect(internal_content_bounds_);
-  gfx::Rect opaque_rect(contents_opaque() ? quad_rect : gfx::Rect());
   bool needs_blending = contents_opaque() ? false : true;
   gfx::Rect visible_quad_rect(quad_rect);
   bool premultiplied_alpha = true;
@@ -151,10 +150,10 @@ void HeadsUpDisplayLayerImpl::AppendQuads(
   bool nearest_neighbor = false;
   TextureDrawQuad* quad =
       render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
-  quad->SetNew(shared_quad_state, quad_rect, opaque_rect, visible_quad_rect,
-               needs_blending, resources_.back()->id(), premultiplied_alpha,
-               uv_top_left, uv_bottom_right, SK_ColorTRANSPARENT,
-               vertex_opacity, flipped, nearest_neighbor, false);
+  quad->SetNew(shared_quad_state, quad_rect, visible_quad_rect, needs_blending,
+               resources_.back()->id(), premultiplied_alpha, uv_top_left,
+               uv_bottom_right, SK_ColorTRANSPARENT, vertex_opacity, flipped,
+               nearest_neighbor, false);
   ValidateQuadResources(quad);
 }
 

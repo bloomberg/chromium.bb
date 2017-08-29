@@ -7767,9 +7767,9 @@ class BlendStateCheckLayer : public LayerImpl {
     TileDrawQuad* test_blending_draw_quad =
         render_pass->CreateAndAppendDrawQuad<TileDrawQuad>();
     test_blending_draw_quad->SetNew(
-        shared_quad_state, quad_rect_, opaque_rect, visible_quad_rect,
-        needs_blending, resource_id_, gfx::RectF(0.f, 0.f, 1.f, 1.f),
-        gfx::Size(1, 1), false, false);
+        shared_quad_state, quad_rect_, visible_quad_rect, needs_blending,
+        resource_id_, gfx::RectF(0.f, 0.f, 1.f, 1.f), gfx::Size(1, 1), false,
+        false);
 
     EXPECT_EQ(blend_, test_blending_draw_quad->ShouldDrawWithBlending());
     EXPECT_EQ(has_render_surface_,

@@ -71,7 +71,7 @@ class DrawQuadPerfTest : public testing::Test {
       bool y_flipped = false;
       bool nearest_neighbor = true;
 
-      quad->SetNew(shared_state_, rect, rect, rect, needs_blending, resource_id,
+      quad->SetNew(shared_state_, rect, rect, needs_blending, resource_id,
                    premultiplied_alpha, uv_top_left, uv_bottom_right,
                    background_color, vertex_opacity, y_flipped,
                    nearest_neighbor, false);

@@ -24,21 +24,16 @@ DrawQuad::DrawQuad(const DrawQuad& other) = default;
 void DrawQuad::SetAll(const viz::SharedQuadState* shared_quad_state,
                       Material material,
                       const gfx::Rect& rect,
-                      const gfx::Rect& opaque_rect,
                       const gfx::Rect& visible_rect,
                       bool needs_blending) {
   DCHECK(rect.Contains(visible_rect)) << "rect: " << rect.ToString()
                                       << " visible_rect: "
                                       << visible_rect.ToString();
-  DCHECK(opaque_rect.IsEmpty() || rect.Contains(opaque_rect))
-      << "rect: " << rect.ToString() << "opaque_rect "
-      << opaque_rect.ToString();
 
   this->material = material;
   this->rect = rect;
-  this->opaque_rect = opaque_rect;
   this->visible_rect = visible_rect;
-  this->needs_blending = needs_blending || !opaque_rect.Contains(visible_rect);
+  this->needs_blending = needs_blending;
   this->shared_quad_state = shared_quad_state;
 
   DCHECK(shared_quad_state);
@@ -62,17 +57,6 @@ void DrawQuad::AsValueInto(base::trace_event::TracedValue* value) const {
                              rect_as_target_space_quad, value);
 
   value->SetBoolean("rect_is_clipped", rect_is_clipped);
-
-  MathUtil::AddToTracedValue("content_space_opaque_rect", opaque_rect, value);
-
-  bool opaque_rect_is_clipped;
-  gfx::QuadF opaque_rect_as_target_space_quad = MathUtil::MapQuad(
-      shared_quad_state->quad_to_target_transform,
-      gfx::QuadF(gfx::RectF(opaque_rect)), &opaque_rect_is_clipped);
-  MathUtil::AddToTracedValue("opaque_rect_as_target_space_quad",
-                             opaque_rect_as_target_space_quad, value);
-
-  value->SetBoolean("opaque_rect_is_clipped", opaque_rect_is_clipped);
 
   MathUtil::AddToTracedValue("content_space_visible_rect", visible_rect, value);
 

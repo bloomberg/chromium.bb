@@ -20,7 +20,6 @@ class CC_EXPORT TileDrawQuad : public ContentDrawQuadBase {
 
   void SetNew(const viz::SharedQuadState* shared_quad_state,
               const gfx::Rect& rect,
-              const gfx::Rect& opaque_rect,
               const gfx::Rect& visible_rect,
               bool needs_blending,
               unsigned resource_id,
@@ -34,7 +33,6 @@ class CC_EXPORT TileDrawQuad : public ContentDrawQuadBase {
 
   void SetAll(const viz::SharedQuadState* shared_quad_state,
               const gfx::Rect& rect,
-              const gfx::Rect& opaque_rect,
               const gfx::Rect& visible_rect,
               bool needs_blending,
               unsigned resource_id,

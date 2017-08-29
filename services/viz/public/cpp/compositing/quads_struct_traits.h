@@ -444,11 +444,6 @@ struct StructTraits<viz::mojom::DrawQuadDataView, DrawQuadWithSharedQuadState> {
     return input.quad->rect;
   }
 
-  static const gfx::Rect& opaque_rect(
-      const DrawQuadWithSharedQuadState& input) {
-    return input.quad->opaque_rect;
-  }
-
   static const gfx::Rect& visible_rect(
       const DrawQuadWithSharedQuadState& input) {
     return input.quad->visible_rect;
