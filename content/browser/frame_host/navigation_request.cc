@@ -1098,8 +1098,8 @@ NavigationRequest::CheckCredentialedSubresource() const {
       "Subresource requests whose URLs contain embedded credentials (e.g. "
       "`https://user:pass@host/`) are blocked. See "
       "https://www.chromestatus.com/feature/5669008342777856 for more "
-      "details. ";
-  parent->AddMessageToConsole(CONSOLE_MESSAGE_LEVEL_INFO, console_message);
+      "details.";
+  parent->AddMessageToConsole(CONSOLE_MESSAGE_LEVEL_WARNING, console_message);
 
   if (!base::FeatureList::IsEnabled(features::kBlockCredentialedSubresources))
     return CredentialedSubresourceCheckResult::ALLOW_REQUEST;
