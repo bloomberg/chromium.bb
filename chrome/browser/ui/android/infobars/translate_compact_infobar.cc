@@ -160,7 +160,7 @@ void TranslateCompactInfoBar::ApplyBoolTranslateOption(
 
 bool TranslateCompactInfoBar::ShouldAutoAlwaysTranslate() {
   translate::TranslateInfoBarDelegate* delegate = GetDelegate();
-  return (delegate->GetTranslationAcceptedCount() == AutoAlwaysThreshold() &&
+  return (delegate->GetTranslationAcceptedCount() >= AutoAlwaysThreshold() &&
           delegate->GetTranslationAutoAlwaysCount() < MaxNumberOfAutoAlways());
 }
 
@@ -189,7 +189,7 @@ jboolean TranslateCompactInfoBar::ShouldAutoNeverTranslate(
   // 1.  So there is no off-by-one by then.
   int off_by_one = auto_never_count == 0 ? 1 : 0;
 
-  bool never_translate = (delegate->GetTranslationDeniedCount() + off_by_one ==
+  bool never_translate = (delegate->GetTranslationDeniedCount() + off_by_one >=
                               AutoNeverThreshold() &&
                           auto_never_count < MaxNumberOfAutoNever());
   if (never_translate) {
