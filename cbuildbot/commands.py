@@ -31,6 +31,7 @@ from chromite.lib import gob_util
 from chromite.lib import gs
 from chromite.lib import metrics
 from chromite.lib import osutils
+from chromite.lib import parallel
 from chromite.lib import path_util
 from chromite.lib import portage_util
 from chromite.lib import retry_util
@@ -1633,6 +1634,12 @@ def UprevPackages(buildroot, boards, overlays):
          '--drop_file=%s' % drop_file,
          'commit']
   RunBuildScript(buildroot, cmd, chromite_cmd=True)
+
+
+def RegenPortageCache(overlays):
+  """Regenerate portage cache for the list of overlays."""
+  task_inputs = [[o] for o in overlays if os.path.isdir(o)]
+  parallel.RunTasksInProcessPool(portage_util.RegenCache, task_inputs)
 
 
 def UprevPush(buildroot, overlays, dryrun, staging_branch=None):

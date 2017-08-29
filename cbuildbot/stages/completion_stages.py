@@ -958,7 +958,15 @@ class UpdateChromeosLKGMStage(generic_stages.BuilderStage):
 
 
 class PublishUprevChangesStage(generic_stages.BuilderStage):
-  """Makes uprev changes from pfq live for developers."""
+  """Makes CQ uprev changes live for developers.
+
+  Push local commits for uprevs, binhost, and portage cache. We resync to the
+  latest version of repos as they exist in GoB.  We can't rely on the commits
+  we pulled originally because our CL submit stage might have failed in some way
+  (GoB sometimes flakes), or we don't want to submit all the CLs (we pushed some
+  repos, but rejected others based on CQ repo settings). There might also be
+  commits pushed independently (chumped by sheriffs or the precq submitted).
+  """
 
   def __init__(self, builder_run, sync_stage, success, stage_push=False,
                **kwargs):
@@ -1121,9 +1129,10 @@ class PublishUprevChangesStage(generic_stages.BuilderStage):
         next_manifest = self._run.config.manifest
         repo.Sync(next_manifest)
 
-      # Commit an uprev locally.
+      # Commit uprev and portage cache regeneration locally.
       if self._run.options.uprev and self._run.config.uprev:
         commands.UprevPackages(self._build_root, self._boards, overlays)
+        commands.RegenPortageCache(push_overlays)
 
     # When prebuilts is True, if it's a successful run or staging_branch is
     # not None for a master-chrome-pfq run, update binhost conf
@@ -1132,7 +1141,7 @@ class PublishUprevChangesStage(generic_stages.BuilderStage):
       confwriter = prebuilts.BinhostConfWriter(self._run)
       confwriter.Perform()
 
-    # Push the uprev and binhost commits.
+    # Push the uprev, portage cache, and binhost commits.
     commands.UprevPush(self._build_root, push_overlays,
                        self._run.options.debug,
                        staging_branch=staging_branch)

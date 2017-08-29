@@ -689,5 +689,4 @@ class RegenPortageCacheStage(generic_stages.BuilderStage):
 
   def PerformStage(self):
     _, push_overlays = self._ExtractOverlays()
-    inputs = [[overlay] for overlay in push_overlays if os.path.isdir(overlay)]
-    parallel.RunTasksInProcessPool(portage_util.RegenCache, inputs)
+    commands.RegenPortageCache(push_overlays)
