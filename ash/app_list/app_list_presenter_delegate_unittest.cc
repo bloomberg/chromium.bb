@@ -34,6 +34,8 @@
 namespace ash {
 namespace {
 
+constexpr int kAppListBezelMargin = 50;
+
 int64_t GetPrimaryDisplayId() {
   return display::Screen::GetScreen()->GetPrimaryDisplay().id();
 }
@@ -931,11 +933,16 @@ TEST_P(FullscreenAppListPresenterDelegateTest,
               view->app_list_state());
   }
 
-  // Drag the app list to 50 DIPs from the bottom bezel, relies on the test
-  // display set to 1024x768. Drag slowly in order to not trigger a fling.
+  // Drag the app list to 50 DIPs from the bottom bezel.
   ui::test::EventGenerator& generator = GetEventGenerator();
-  generator.GestureScrollSequence(gfx::Point(0, 700), gfx::Point(0, 750),
-                                  base::TimeDelta::FromMilliseconds(1500), 100);
+  const int bezel_y = display::Screen::GetScreen()
+                          ->GetDisplayNearestView(view->parent_window())
+                          .bounds()
+                          .bottom();
+  generator.GestureScrollSequence(
+      gfx::Point(0, bezel_y - (kAppListBezelMargin + 100)),
+      gfx::Point(0, bezel_y - (kAppListBezelMargin)),
+      base::TimeDelta::FromMilliseconds(1500), 100);
 
   ASSERT_EQ(app_list::AppListView::CLOSED, view->app_list_state());
 }
