@@ -108,7 +108,8 @@ class ChromeSubresourceFilterClient
   void OnReloadRequested();
 
   // SubresourceFilterClient:
-  void ToggleNotificationVisibility(bool visibility) override;
+  void ShowNotification() override;
+  void OnNewNavigationStarted() override;
   bool OnPageActivationComputed(content::NavigationHandle* navigation_handle,
                                 bool activated) override;
   void WhitelistInCurrentWebContents(const GURL& url) override;

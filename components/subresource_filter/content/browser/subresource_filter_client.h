@@ -20,13 +20,12 @@ class SubresourceFilterClient {
  public:
   virtual ~SubresourceFilterClient() = default;
 
-  // Changes the visibility of the prompt that informs the user that potentially
-  // deceptive content has been blocked on the page according to the passed
-  // |visibility| parameter. When |visibility| is set to true, an icon on the
-  // right side of the omnibox is displayed. If the user clicks on the icon then
-  // a bubble is shown that explains the feature and alalows the user to turn it
-  // off.
-  virtual void ToggleNotificationVisibility(bool visibility) = 0;
+  // Informs the embedder to show some UI indicating that resources are being
+  // blocked.
+  virtual void ShowNotification() = 0;
+
+  // Called when the component is starting to observe a new navigation.
+  virtual void OnNewNavigationStarted() = 0;
 
   // Called when the activation decision is otherwise completely computed by the
   // subresource filter. At this point, the embedder still has a chance to
