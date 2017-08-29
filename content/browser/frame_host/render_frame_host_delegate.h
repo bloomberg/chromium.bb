@@ -249,6 +249,9 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // WebContents is not live.
   virtual RenderFrameHost* GetFocusedFrameIncludingInnerWebContents();
 
+  // Called by when |source_rfh| advances focus to a RenderFrameProxyHost.
+  virtual void OnAdvanceFocus(RenderFrameHostImpl* source_rfh) {}
+
   // Creates a WebUI object for a frame navigating to |url|. If no WebUI
   // applies, returns null.
   virtual std::unique_ptr<WebUIImpl> CreateWebUIForRenderFrameHost(

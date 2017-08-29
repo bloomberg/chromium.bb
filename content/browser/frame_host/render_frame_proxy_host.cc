@@ -356,6 +356,8 @@ void RenderFrameProxyHost::OnAdvanceFocus(blink::WebFocusType type,
           : nullptr;
 
   target_rfh->AdvanceFocus(type, source_proxy);
+  frame_tree_node_->current_frame_host()->delegate()->OnAdvanceFocus(
+      source_rfh);
 }
 
 void RenderFrameProxyHost::OnFrameFocused() {

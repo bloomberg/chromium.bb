@@ -448,6 +448,9 @@ std::vector<RenderWidgetHostView*> GetInputEventRouterRenderWidgetHostViews(
 // Returns the focused RenderWidgetHost.
 RenderWidgetHost* GetFocusedRenderWidgetHost(WebContents* web_contents);
 
+// Returns the focused WebContents.
+WebContents* GetFocusedWebContents(WebContents* web_contents);
+
 // Route the |event| through the RenderWidgetHostInputEventRouter. This allows
 // correct targeting of events to out of process iframes.
 void RouteMouseEvent(WebContents* web_contents, blink::WebMouseEvent* event);

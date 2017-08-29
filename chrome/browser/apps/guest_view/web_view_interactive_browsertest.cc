@@ -879,6 +879,64 @@ IN_PROC_BROWSER_TEST_P(WebViewFocusInteractiveTest, Focus_BlurEvent) {
   TestHelper("testBlurEvent", "web_view/focus", NO_TEST_SERVER);
 }
 
+// Tests that a <webview> can't steal focus from the embedder.
+IN_PROC_BROWSER_TEST_P(WebViewFocusInteractiveTest,
+                       FrameInGuestWontStealFocus) {
+  // This test only works with OOPIF-based guests, since BrowserPlugin guests
+  // don't keep the WebContentsTree.
+  if (!base::FeatureList::IsEnabled(::features::kGuestViewCrossProcessFrames))
+    return;
+
+  LoadAndLaunchPlatformApp("web_view/simple", "WebViewTest.LAUNCHED");
+
+  content::WebContents* embedder_web_contents = GetFirstAppWindowWebContents();
+  content::WebContents* guest_web_contents =
+      GetGuestViewManager()->WaitForSingleGuestCreated();
+
+  content::MainThreadFrameObserver embedder_observer(
+      embedder_web_contents->GetMainFrame()->GetView()->GetRenderWidgetHost());
+  content::MainThreadFrameObserver guest_observer(
+      guest_web_contents->GetMainFrame()->GetView()->GetRenderWidgetHost());
+
+  // Embedder should be focused initially.
+  EXPECT_EQ(content::GetFocusedWebContents(guest_web_contents),
+            embedder_web_contents);
+
+  // Try to focus an iframe in the guest.
+  EXPECT_TRUE(content::ExecuteScript(
+      guest_web_contents,
+      "document.body.appendChild(document.createElement('iframe')); "
+      "document.querySelector('iframe').focus()"));
+  embedder_observer.Wait();
+  guest_observer.Wait();
+
+  // Embedder should still be focused.
+  EXPECT_EQ(content::GetFocusedWebContents(guest_web_contents),
+            embedder_web_contents);
+
+  // Try to focus the guest from the embedder.
+  EXPECT_TRUE(content::ExecuteScript(
+      embedder_web_contents, "document.querySelector('webview').focus()"));
+  embedder_observer.Wait();
+  guest_observer.Wait();
+
+  // Guest should be focused.
+  EXPECT_EQ(content::GetFocusedWebContents(guest_web_contents),
+            guest_web_contents);
+
+  // Try to focus an iframe in the embedder.
+  EXPECT_TRUE(content::ExecuteScript(
+      embedder_web_contents,
+      "document.body.appendChild(document.createElement('iframe')); "
+      "document.querySelector('iframe').focus()"));
+  embedder_observer.Wait();
+  guest_observer.Wait();
+
+  // Embedder is allowed to steal focus from guest.
+  EXPECT_EQ(content::GetFocusedWebContents(guest_web_contents),
+            embedder_web_contents);
+}
+
 // Tests that guests receive edit commands and respond appropriately.
 IN_PROC_BROWSER_TEST_P(WebViewInteractiveTest, EditCommands) {
   LoadAndLaunchPlatformApp("web_view/edit_commands", "connected");

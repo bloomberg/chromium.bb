@@ -1377,6 +1377,12 @@ RenderWidgetHost* GetFocusedRenderWidgetHost(WebContents* web_contents) {
       web_contents_impl->GetMainFrame()->GetRenderWidgetHost());
 }
 
+WebContents* GetFocusedWebContents(WebContents* web_contents) {
+  WebContentsImpl* web_contents_impl =
+      static_cast<WebContentsImpl*>(web_contents);
+  return web_contents_impl->GetFocusedWebContents();
+}
+
 void RouteMouseEvent(WebContents* web_contents, blink::WebMouseEvent* event) {
   WebContentsImpl* web_contents_impl =
       static_cast<WebContentsImpl*>(web_contents);
