@@ -53,7 +53,7 @@ class ScopedPortException;
 // (2) Kill Python test server, format is:
 // Path: "/kill".
 // Method: "GET".
-// Data to server: None.
+// Data to server: port=<server_port>.
 // Data from server: String "killed" returned if success.
 //
 // (3) Ping Python test server to see whether it is alive, format is:
@@ -75,7 +75,7 @@ class SpawnerCommunicator : public URLRequest::Delegate {
   // data returned by the spawner.
   bool StartServer(const std::string& arguments,
                    std::string* server_data) WARN_UNUSED_RESULT;
-  bool StopServer() WARN_UNUSED_RESULT;
+  bool StopServer(uint16_t port) WARN_UNUSED_RESULT;
 
  private:
   // Starts the IO thread. Called on the user thread.
