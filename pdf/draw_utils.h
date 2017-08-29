@@ -36,13 +36,9 @@ class ShadowMatrix {
   }
 
   uint32_t depth() const { return depth_; }
-  double factor() const { return factor_; }
-  uint32_t background() const { return background_; }
 
  private:
-  uint32_t depth_;
-  double factor_;
-  uint32_t background_;
+  const uint32_t depth_;
   std::vector<uint32_t> matrix_;
 };
 
