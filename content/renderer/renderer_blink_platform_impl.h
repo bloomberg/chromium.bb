@@ -67,9 +67,8 @@ class WebDatabaseObserverImpl;
 
 class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
  public:
-  RendererBlinkPlatformImpl(
-      blink::scheduler::RendererScheduler* renderer_scheduler,
-      base::WeakPtr<service_manager::Connector> connector);
+  explicit RendererBlinkPlatformImpl(
+      blink::scheduler::RendererScheduler* renderer_scheduler);
   ~RendererBlinkPlatformImpl() override;
 
   // Shutdown must be called just prior to shutting down blink.
