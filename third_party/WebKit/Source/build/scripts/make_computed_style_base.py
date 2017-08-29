@@ -540,7 +540,8 @@ def _evaluate_rare_non_inherited_group(all_properties, properties_ranking_file,
 
     assert number_of_layer == len(partition_rule), "Length of rule and number_of_layer mismatch"
 
-    layers_name = ["rare-non-inherited-layer-" + str(i) for i in range(number_of_layer)]
+    layers_name = ["rare-non-inherited-usage-less-than-" + str(int(round(partition_rule[i] * 100))) + "-percent"
+                   for i in range(number_of_layer)]
     properties_ranking = _get_properties_ranking(properties_ranking_file, partition_rule)
 
     for property_ in all_properties:
@@ -575,7 +576,8 @@ def _evaluate_rare_inherit_group(all_properties, properties_ranking_file,
 
     assert number_of_layer == len(partition_rule), "Length of rule and number_of_layer mismatch"
 
-    layers_name = ["rare-inherited-layer-" + str(i) for i in range(number_of_layer)]
+    layers_name = ["rare-inherited-usage-less-than-" + str(int(round(partition_rule[i] * 100))) + "-percent"
+                   for i in range(number_of_layer)]
     properties_ranking = _get_properties_ranking(properties_ranking_file, partition_rule)
 
     for property_ in all_properties:
