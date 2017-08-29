@@ -445,4 +445,4 @@ class SpawningServer(object):
       for port in self.server.test_servers:
         logging.warning('Stopping test server on port %d' % port)
         self.server.test_servers[port].Stop()
-      self.server.test_servers = []
+      self.server.test_servers = {}
