@@ -336,6 +336,7 @@ _lou_getALine (FileInfo * nested)
       if (pch == '\\' && ch == 10)
 	{
 	  nested->linelen--;
+	  pch = ch;
 	  continue;
 	}
       if (ch == 10 || nested->linelen >= MAXSTRING-1)
