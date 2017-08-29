@@ -1,4 +1,4 @@
-CONSOLE WARNING: line 87: Calling Element.createShadowRoot() for an element which already hosts a shadow root is deprecated. See https://www.chromestatus.com/features/4668884095336448 for more details.
+CONSOLE WARNING: line 87: Calling Element.createShadowRoot() for an element which already hosts a shadow root is deprecated and will be removed in M63, around December 2017. See https://www.chromestatus.com/features/4668884095336448 for more details.
 This tests that pressing Tab key should traverse into shadow DOM subtrees, and pressing Shift-Tab should reverse the order.
 
 Should move from A to host in forward

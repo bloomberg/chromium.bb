@@ -1,4 +1,4 @@
-CONSOLE WARNING: line 62: Calling Element.createShadowRoot() for an element which already hosts a shadow root is deprecated. See https://www.chromestatus.com/features/4668884095336448 for more details.
+CONSOLE WARNING: line 62: Calling Element.createShadowRoot() for an element which already hosts a shadow root is deprecated and will be removed in M63, around December 2017. See https://www.chromestatus.com/features/4668884095336448 for more details.
 Find text in shadow roots.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

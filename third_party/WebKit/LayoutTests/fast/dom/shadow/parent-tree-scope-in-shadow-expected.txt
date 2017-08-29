@@ -1,4 +1,4 @@
-CONSOLE WARNING: line 38: Calling Element.createShadowRoot() for an element which already hosts a shadow root is deprecated. See https://www.chromestatus.com/features/4668884095336448 for more details.
+CONSOLE WARNING: line 38: Calling Element.createShadowRoot() for an element which already hosts a shadow root is deprecated and will be removed in M63, around December 2017. See https://www.chromestatus.com/features/4668884095336448 for more details.
 Creating shadow dom subtrees from top to bottom.
 PASS internals.parentTreeScope(shadow1) is document
 PASS internals.parentTreeScope(shadow2) is shadow1

@@ -436,10 +436,10 @@ String Deprecation::DeprecationMessage(WebFeature feature) {
           "details.");
 
     case WebFeature::kElementCreateShadowRootMultiple:
-      return "Calling Element.createShadowRoot() for an element which already "
-             "hosts a shadow root is deprecated. See "
-             "https://www.chromestatus.com/features/4668884095336448 for more "
-             "details.";
+      return willBeRemoved(
+          "Calling Element.createShadowRoot() for an element "
+          "which already hosts a shadow root",
+          M63, "4668884095336448");
 
     case WebFeature::kCSSDeepCombinator:
       return willBeRemoved("/deep/ combinator in CSS", M63, "4964279606312960");
