@@ -453,8 +453,9 @@ NotificationViewMD::NotificationViewMD(MessageCenterController* controller,
 
   // |left_content_| contains most contents like title, message, etc...
   left_content_ = new views::View();
-  left_content_->SetLayoutManager(new views::BoxLayout(
-      views::BoxLayout::kVertical, kLeftContentPadding, 0));
+  left_content_->SetLayoutManager(
+      new views::BoxLayout(views::BoxLayout::kVertical, gfx::Insets(), 0));
+  left_content_->SetBorder(views::CreateEmptyBorder(kLeftContentPadding));
   content_row_->AddChildView(left_content_);
   content_row_layout->SetFlexForView(left_content_, 1);
 
