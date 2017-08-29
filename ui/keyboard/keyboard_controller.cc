@@ -237,7 +237,7 @@ KeyboardController::KeyboardController(std::unique_ptr<KeyboardUI> ui,
                                        KeyboardLayoutDelegate* delegate)
     : ui_(std::move(ui)),
       layout_delegate_(delegate),
-      show_on_resize_(false),
+      show_on_content_update_(false),
       keyboard_locked_(false),
       state_(KeyboardControllerState::UNKNOWN),
       weak_factory_report_lingering_state_(this),
@@ -318,7 +318,7 @@ void KeyboardController::SetContainerBounds(const gfx::Rect& new_bounds,
   container_->SetBounds(new_bounds);
 
   if (contents_loaded) {
-    bool should_show = show_on_resize();
+    const bool should_show = show_on_content_update_;
     if (state_ == KeyboardControllerState::LOADING_EXTENSION)
       ChangeState(KeyboardControllerState::HIDDEN);
     if (should_show) {
@@ -367,7 +367,7 @@ void KeyboardController::HideKeyboard(HideReason reason) {
     case KeyboardControllerState::HIDDEN:
       return;
     case KeyboardControllerState::LOADING_EXTENSION:
-      show_on_resize_ = false;
+      show_on_content_update_ = false;
       return;
 
     case KeyboardControllerState::WILL_HIDE:
@@ -464,7 +464,7 @@ void KeyboardController::Reload() {
   if (ui_->HasContentsWindow()) {
     // A reload should never try to show virtual keyboard. If keyboard is not
     // visible before reload, it should keep invisible after reload.
-    show_on_resize_ = false;
+    show_on_content_update_ = false;
     ui_->ReloadKeyboardIfNeeded();
   }
 }
@@ -486,7 +486,7 @@ void KeyboardController::OnTextInputStateChanged(
   if (should_hide) {
     switch (state_) {
       case KeyboardControllerState::LOADING_EXTENSION:
-        show_on_resize_ = false;
+        show_on_content_update_ = false;
         return;
       case KeyboardControllerState::SHOWN:
         ChangeState(KeyboardControllerState::WILL_HIDE);
@@ -564,7 +564,7 @@ void KeyboardController::PopulateKeyboardContent(int64_t display_id,
     case KeyboardControllerState::SHOWN:
       return;
     case KeyboardControllerState::LOADING_EXTENSION:
-      show_on_resize_ |= show_keyboard;
+      show_on_content_update_ |= show_keyboard;
       return;
     default:
       break;
@@ -595,7 +595,7 @@ void KeyboardController::PopulateKeyboardContent(int64_t display_id,
   switch (state_) {
     case KeyboardControllerState::INITIAL:
       DCHECK(ui_->GetContentsWindow()->bounds().height() == 0);
-      show_on_resize_ = show_keyboard;
+      show_on_content_update_ = show_keyboard;
       ChangeState(KeyboardControllerState::LOADING_EXTENSION);
       return;
     case KeyboardControllerState::WILL_HIDE:
@@ -700,7 +700,7 @@ void KeyboardController::ChangeState(KeyboardControllerState state) {
   if (state != KeyboardControllerState::WILL_HIDE)
     weak_factory_will_hide_.InvalidateWeakPtrs();
   if (state != KeyboardControllerState::LOADING_EXTENSION)
-    show_on_resize_ = false;
+    show_on_content_update_ = false;
   for (KeyboardControllerObserver& observer : observer_list_)
     observer.OnStateChanged(state);
 
