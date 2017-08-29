@@ -186,8 +186,7 @@ PP_Var GetLinkAtPosition(PP_Instance instance, PP_Point point) {
 void Transform(PP_Instance instance, PP_PrivatePageTransformType type) {
   void* object = pp::Instance::GetPerInstanceObject(instance, kPPPPdfInterface);
   if (object) {
-    OutOfProcessInstance* obj_instance =
-        static_cast<OutOfProcessInstance*>(object);
+    auto* obj_instance = static_cast<OutOfProcessInstance*>(object);
     switch (type) {
       case PP_PRIVATEPAGETRANSFORMTYPE_ROTATE_90_CW:
         obj_instance->RotateClockwise();
@@ -204,8 +203,7 @@ PP_Bool GetPrintPresetOptionsFromDocument(
     PP_PdfPrintPresetOptions_Dev* options) {
   void* object = pp::Instance::GetPerInstanceObject(instance, kPPPPdfInterface);
   if (object) {
-    OutOfProcessInstance* obj_instance =
-        static_cast<OutOfProcessInstance*>(object);
+    auto* obj_instance = static_cast<OutOfProcessInstance*>(object);
     obj_instance->GetPrintPresetOptionsFromDocument(options);
   }
   return PP_TRUE;
@@ -214,18 +212,16 @@ PP_Bool GetPrintPresetOptionsFromDocument(
 void EnableAccessibility(PP_Instance instance) {
   void* object = pp::Instance::GetPerInstanceObject(instance, kPPPPdfInterface);
   if (object) {
-    OutOfProcessInstance* obj_instance =
-        static_cast<OutOfProcessInstance*>(object);
-    return obj_instance->EnableAccessibility();
+    auto* obj_instance = static_cast<OutOfProcessInstance*>(object);
+    obj_instance->EnableAccessibility();
   }
 }
 
 void SetCaretPosition(PP_Instance instance, const PP_FloatPoint* position) {
   void* object = pp::Instance::GetPerInstanceObject(instance, kPPPPdfInterface);
   if (object) {
-    OutOfProcessInstance* obj_instance =
-        static_cast<OutOfProcessInstance*>(object);
-    return obj_instance->SetCaretPosition(pp::FloatPoint(*position));
+    auto* obj_instance = static_cast<OutOfProcessInstance*>(object);
+    obj_instance->SetCaretPosition(*position);
   }
 }
 
@@ -233,9 +229,8 @@ void MoveRangeSelectionExtent(PP_Instance instance,
                               const PP_FloatPoint* extent) {
   void* object = pp::Instance::GetPerInstanceObject(instance, kPPPPdfInterface);
   if (object) {
-    OutOfProcessInstance* obj_instance =
-        static_cast<OutOfProcessInstance*>(object);
-    return obj_instance->MoveRangeSelectionExtent(pp::FloatPoint(*extent));
+    auto* obj_instance = static_cast<OutOfProcessInstance*>(object);
+    obj_instance->MoveRangeSelectionExtent(*extent);
   }
 }
 
@@ -244,10 +239,8 @@ void SetSelectionBounds(PP_Instance instance,
                         const PP_FloatPoint* extent) {
   void* object = pp::Instance::GetPerInstanceObject(instance, kPPPPdfInterface);
   if (object) {
-    OutOfProcessInstance* obj_instance =
-        static_cast<OutOfProcessInstance*>(object);
-    return obj_instance->SetSelectionBounds(pp::FloatPoint(*base),
-                                            pp::FloatPoint(*extent));
+    auto* obj_instance = static_cast<OutOfProcessInstance*>(object);
+    obj_instance->SetSelectionBounds(*base, *extent);
   }
 }
 
@@ -256,19 +249,16 @@ PP_Bool CanEditText(PP_Instance instance) {
   if (!object)
     return PP_FALSE;
 
-  OutOfProcessInstance* obj_instance =
-      static_cast<OutOfProcessInstance*>(object);
+  auto* obj_instance = static_cast<OutOfProcessInstance*>(object);
   return PP_FromBool(obj_instance->CanEditText());
 }
 
 void ReplaceSelection(PP_Instance instance, const char* text) {
   void* object = pp::Instance::GetPerInstanceObject(instance, kPPPPdfInterface);
-  if (!object)
-    return;
-
-  OutOfProcessInstance* obj_instance =
-      static_cast<OutOfProcessInstance*>(object);
-  obj_instance->ReplaceSelection(text);
+  if (object) {
+    auto* obj_instance = static_cast<OutOfProcessInstance*>(object);
+    obj_instance->ReplaceSelection(text);
+  }
 }
 
 const PPP_Pdf ppp_private = {
