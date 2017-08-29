@@ -409,6 +409,31 @@ TEST_F(VideoUtilTest, ComputeLetterboxRegion) {
                                      gfx::Size(0, 0)).IsEmpty());
 }
 
+// Tests the ComputeLetterboxRegionForI420 function.
+TEST_F(VideoUtilTest, ComputeLetterboxRegionForI420) {
+  // Note: These are the same trials as in VideoUtilTest.ComputeLetterboxRegion
+  // above, except that Rect coordinates are nudged into even-numbered values.
+  EXPECT_EQ(gfx::Rect(166, 0, 666, 500),
+            ComputeLetterboxRegionForI420(gfx::Rect(0, 0, 1000, 500),
+                                          gfx::Size(640, 480)));
+  EXPECT_EQ(gfx::Rect(0, 312, 500, 374),
+            ComputeLetterboxRegionForI420(gfx::Rect(0, 0, 500, 1000),
+                                          gfx::Size(640, 480)));
+  EXPECT_EQ(gfx::Rect(54, 0, 890, 500),
+            ComputeLetterboxRegionForI420(gfx::Rect(0, 0, 1000, 500),
+                                          gfx::Size(1920, 1080)));
+  EXPECT_EQ(gfx::Rect(0, 12, 100, 74),
+            ComputeLetterboxRegionForI420(gfx::Rect(0, 0, 100, 100),
+                                          gfx::Size(400, 300)));
+  EXPECT_EQ(
+      gfx::Rect(0, 250000000, 2000000000, 1500000000),
+      ComputeLetterboxRegionForI420(gfx::Rect(0, 0, 2000000000, 2000000000),
+                                    gfx::Size(40000, 30000)));
+  EXPECT_TRUE(ComputeLetterboxRegionForI420(
+                  gfx::Rect(0, 0, 2000000000, 2000000000), gfx::Size(0, 0))
+                  .IsEmpty());
+}
+
 TEST_F(VideoUtilTest, ScaleSizeToEncompassTarget) {
   EXPECT_EQ(gfx::Size(1000, 750),
             ScaleSizeToEncompassTarget(gfx::Size(640, 480),

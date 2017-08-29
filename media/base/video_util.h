@@ -63,6 +63,17 @@ MEDIA_EXPORT void RotatePlaneByPixels(const uint8_t* src,
 MEDIA_EXPORT gfx::Rect ComputeLetterboxRegion(const gfx::Rect& bounds,
                                               const gfx::Size& content);
 
+// Same as ComputeLetterboxRegion(), except ensure the result has even-numbered
+// x, y, width, and height. |bounds| must already have even-numbered
+// coordinates, but the |content| size can be anything.
+//
+// This is useful for ensuring content scaled and converted to I420 does not
+// have color distortions around the edges in a letterboxed video frame. Note
+// that, in cases where ComputeLetterboxRegion() would return a 1x1-sized Rect,
+// this function could return either a 0x0-sized Rect or a 2x2-sized Rect.
+MEDIA_EXPORT gfx::Rect ComputeLetterboxRegionForI420(const gfx::Rect& bounds,
+                                                     const gfx::Size& content);
+
 // Return a scaled |size| whose area is less than or equal to |target|, where
 // one of its dimensions is equal to |target|'s.  The aspect ratio of |size| is
 // preserved as closely as possible.  If |size| is empty, the result will be
