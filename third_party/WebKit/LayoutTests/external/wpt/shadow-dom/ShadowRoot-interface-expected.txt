@@ -9,7 +9,7 @@ PASS ShadowRoot.innerHTML must return the result of the HTML fragment serializat
 PASS ShadowRoot.innerHTML must return the result of the HTML fragment serialization algorithm when shadow root is closed.
 PASS ShadowRoot.innerHTML must replace all with the result of invoking the fragment parsing algorithm when shadow root is open.
 PASS ShadowRoot.innerHTML must replace all with the result of invoking the fragment parsing algorithm when shadow root is closed.
-FAIL ShadowRoot.styleSheets must return a StyleSheetList sequence containing the shadow root style sheets when shadow root is open.assert_equals: shadowRoot.styleSheets must contain two items when the shadow root has two style elements expected 2 but got 0
-FAIL ShadowRoot.styleSheets must return a StyleSheetList sequence containing the shadow root style sheets when shadow root is closed.assert_equals: shadowRoot.styleSheets must contain two items when the shadow root has two style elements expected 2 but got 0
+FAIL ShadowRoot.styleSheets must return a StyleSheetList sequence containing the shadow root style sheets when shadow root is open. assert_equals: shadowRoot.styleSheets must contain two items when the shadow root has two style elements expected 2 but got 0
+FAIL ShadowRoot.styleSheets must return a StyleSheetList sequence containing the shadow root style sheets when shadow root is closed. assert_equals: shadowRoot.styleSheets must contain two items when the shadow root has two style elements expected 2 but got 0
 Harness: the test ran to completion.
 

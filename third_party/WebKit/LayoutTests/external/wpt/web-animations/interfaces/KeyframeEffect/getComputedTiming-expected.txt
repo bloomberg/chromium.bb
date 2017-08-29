@@ -33,7 +33,7 @@ PASS getComputedTiming().endTime for an infinite duration
 PASS getComputedTiming().endTime for an infinite duration and delay
 PASS getComputedTiming().endTime for an infinite duration and negative delay
 PASS getComputedTiming().endTime for an non-zero duration and negative delay
-FAIL getComputedTiming().endTime for an non-zero duration and negative delay greater than active durationassert_equals: expected 0 but got -1000
-FAIL getComputedTiming().endTime for a zero duration and negative delayassert_equals: expected 0 but got -1000
+FAIL getComputedTiming().endTime for an non-zero duration and negative delay greater than active duration assert_equals: expected 0 but got -1000
+FAIL getComputedTiming().endTime for a zero duration and negative delay assert_equals: expected 0 but got -1000
 Harness: the test ran to completion.
 

@@ -5,7 +5,7 @@ PASS createNodeIterator() parameter defaults
 PASS createNodeIterator() with null as arguments
 PASS createNodeIterator() with undefined as arguments
 PASS Propagate exception from filter function
-FAIL Recursive filters need to throwassert_throws: function "function () { iter.nextNode() }" did not throw
+FAIL Recursive filters need to throw assert_throws: function "function () { iter.nextNode() }" did not throw
 PASS document.createNodeIterator(paras[0], 0, null)
 PASS document.createNodeIterator(paras[0], 0, (function(node) { return true }))
 PASS document.createNodeIterator(paras[0], 0, (function(node) { return false }))

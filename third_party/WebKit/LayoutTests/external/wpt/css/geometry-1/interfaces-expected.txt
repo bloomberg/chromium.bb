@@ -25,7 +25,7 @@ PASS DOMPointReadOnly interface: calling matrixTransform(DOMMatrixInit) on new D
 PASS DOMPoint interface: existence and properties of interface object
 PASS DOMPoint interface object length
 PASS DOMPoint interface object name
-FAIL DOMPoint interface: legacy window aliasassert_equals: self.SVGPoint should be the same value as self.DOMPoint expected function "function DOMPoint() { [native code] }" but got function "function SVGPoint() { [native code] }"
+FAIL DOMPoint interface: legacy window alias assert_equals: self.SVGPoint should be the same value as self.DOMPoint expected function "function DOMPoint() { [native code] }" but got function "function SVGPoint() { [native code] }"
 PASS DOMPoint interface: existence and properties of interface prototype object
 PASS DOMPoint interface: existence and properties of interface prototype object's "constructor" property
 PASS DOMPoint interface: operation fromPoint(DOMPointInit)
@@ -78,7 +78,7 @@ PASS DOMRectReadOnly interface: new DOMRectReadOnly() must inherit property "lef
 PASS DOMRect interface: existence and properties of interface object
 PASS DOMRect interface object length
 PASS DOMRect interface object name
-FAIL DOMRect interface: legacy window aliasassert_equals: self.SVGRect should be the same value as self.DOMRect expected function "function DOMRect() { [native code] }" but got function "function SVGRect() { [native code] }"
+FAIL DOMRect interface: legacy window alias assert_equals: self.SVGRect should be the same value as self.DOMRect expected function "function DOMRect() { [native code] }" but got function "function SVGRect() { [native code] }"
 PASS DOMRect interface: existence and properties of interface prototype object
 PASS DOMRect interface: existence and properties of interface prototype object's "constructor" property
 PASS DOMRect interface: operation fromRect(DOMRectInit)
@@ -296,7 +296,7 @@ PASS DOMMatrixReadOnly interface: DOMMatrixReadOnly.fromMatrix({is2D: false}) mu
 PASS DOMMatrix interface: existence and properties of interface object
 PASS DOMMatrix interface object length
 PASS DOMMatrix interface object name
-FAIL DOMMatrix interface: legacy window aliasassert_equals: self.SVGMatrix should be the same value as self.DOMMatrix expected function "function DOMMatrix() { [native code] }" but got function "function SVGMatrix() { [native code] }"
+FAIL DOMMatrix interface: legacy window alias assert_equals: self.SVGMatrix should be the same value as self.DOMMatrix expected function "function DOMMatrix() { [native code] }" but got function "function SVGMatrix() { [native code] }"
 PASS DOMMatrix interface: existence and properties of interface prototype object
 PASS DOMMatrix interface: existence and properties of interface prototype object's "constructor" property
 PASS DOMMatrix interface: operation fromMatrix(DOMMatrixInit)

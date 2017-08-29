@@ -1,4 +1,4 @@
 This is a testharness.js-based test.
-FAIL 'secure' cookie not sent in WSS request when set from WSFailed to construct 'WebSocket': An insecure WebSocket connection may not be initiated from a page loaded over HTTPS.
+FAIL 'secure' cookie not sent in WSS request when set from WS Failed to construct 'WebSocket': An insecure WebSocket connection may not be initiated from a page loaded over HTTPS.
 Harness: the test ran to completion.
 

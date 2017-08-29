@@ -34,17 +34,17 @@ PASS Document interface: operation queryCommandState(DOMString)
 PASS Document interface: operation queryCommandSupported(DOMString)
 PASS Document interface: operation queryCommandValue(DOMString)
 PASS Document interface: attribute onreadystatechange
-FAIL Document interface: attribute fgColorassert_true: The prototype object must have a property "fgColor" expected true got false
-FAIL Document interface: attribute linkColorassert_true: The prototype object must have a property "linkColor" expected true got false
-FAIL Document interface: attribute vlinkColorassert_true: The prototype object must have a property "vlinkColor" expected true got false
-FAIL Document interface: attribute alinkColorassert_true: The prototype object must have a property "alinkColor" expected true got false
-FAIL Document interface: attribute bgColorassert_true: The prototype object must have a property "bgColor" expected true got false
+FAIL Document interface: attribute fgColor assert_true: The prototype object must have a property "fgColor" expected true got false
+FAIL Document interface: attribute linkColor assert_true: The prototype object must have a property "linkColor" expected true got false
+FAIL Document interface: attribute vlinkColor assert_true: The prototype object must have a property "vlinkColor" expected true got false
+FAIL Document interface: attribute alinkColor assert_true: The prototype object must have a property "alinkColor" expected true got false
+FAIL Document interface: attribute bgColor assert_true: The prototype object must have a property "bgColor" expected true got false
 PASS Document interface: attribute anchors
 PASS Document interface: attribute applets
-FAIL Document interface: operation clear()assert_own_property: interface prototype object missing non-static operation expected property "clear" missing
-FAIL Document interface: operation captureEvents()assert_own_property: interface prototype object missing non-static operation expected property "captureEvents" missing
-FAIL Document interface: operation releaseEvents()assert_own_property: interface prototype object missing non-static operation expected property "releaseEvents" missing
-FAIL Document interface: attribute allassert_true: The prototype object must have a property "all" expected true got false
+FAIL Document interface: operation clear() assert_own_property: interface prototype object missing non-static operation expected property "clear" missing
+FAIL Document interface: operation captureEvents() assert_own_property: interface prototype object missing non-static operation expected property "captureEvents" missing
+FAIL Document interface: operation releaseEvents() assert_own_property: interface prototype object missing non-static operation expected property "releaseEvents" missing
+FAIL Document interface: attribute all assert_true: The prototype object must have a property "all" expected true got false
 PASS Document interface: attribute onabort
 PASS Document interface: attribute onauxclick
 PASS Document interface: attribute onblur
@@ -60,7 +60,7 @@ PASS Document interface: attribute ondblclick
 PASS Document interface: attribute ondrag
 PASS Document interface: attribute ondragend
 PASS Document interface: attribute ondragenter
-FAIL Document interface: attribute ondragexitassert_true: The prototype object must have a property "ondragexit" expected true got false
+FAIL Document interface: attribute ondragexit assert_true: The prototype object must have a property "ondragexit" expected true got false
 PASS Document interface: attribute ondragleave
 PASS Document interface: attribute ondragover
 PASS Document interface: attribute ondragstart
@@ -78,7 +78,7 @@ PASS Document interface: attribute onkeyup
 PASS Document interface: attribute onload
 PASS Document interface: attribute onloadeddata
 PASS Document interface: attribute onloadedmetadata
-FAIL Document interface: attribute onloadendassert_true: The prototype object must have a property "onloadend" expected true got false
+FAIL Document interface: attribute onloadend assert_true: The prototype object must have a property "onloadend" expected true got false
 PASS Document interface: attribute onloadstart
 PASS Document interface: attribute onmousedown
 PASS Document interface: attribute onmouseenter
@@ -138,7 +138,7 @@ PASS Document interface: iframe.contentDocument must inherit property "write(DOM
 PASS Document interface: calling write(DOMString) on iframe.contentDocument with too few arguments must throw TypeError
 PASS Document interface: iframe.contentDocument must inherit property "writeln(DOMString)" with the proper type
 PASS Document interface: calling writeln(DOMString) on iframe.contentDocument with too few arguments must throw TypeError
-FAIL Document interface: iframe.contentDocument must inherit property "defaultView" with the proper typeUnrecognized type WindowProxy
+FAIL Document interface: iframe.contentDocument must inherit property "defaultView" with the proper type Unrecognized type WindowProxy
 PASS Document interface: iframe.contentDocument must inherit property "activeElement" with the proper type
 PASS Document interface: iframe.contentDocument must inherit property "hasFocus()" with the proper type
 PASS Document interface: iframe.contentDocument must inherit property "designMode" with the proper type
@@ -165,7 +165,7 @@ PASS Document interface: iframe.contentDocument must inherit property "applets" 
 PASS Document interface: iframe.contentDocument must inherit property "clear()" with the proper type
 PASS Document interface: iframe.contentDocument must inherit property "captureEvents()" with the proper type
 PASS Document interface: iframe.contentDocument must inherit property "releaseEvents()" with the proper type
-FAIL Document interface: iframe.contentDocument must inherit property "all" with the proper typeassert_in_array: wrong type: not object or function value "undefined" not in array ["object", "function"]
+FAIL Document interface: iframe.contentDocument must inherit property "all" with the proper type assert_in_array: wrong type: not object or function value "undefined" not in array ["object", "function"]
 PASS Document interface: iframe.contentDocument must inherit property "onabort" with the proper type
 PASS Document interface: iframe.contentDocument must inherit property "onauxclick" with the proper type
 PASS Document interface: iframe.contentDocument must inherit property "onblur" with the proper type
@@ -181,7 +181,7 @@ PASS Document interface: iframe.contentDocument must inherit property "ondblclic
 PASS Document interface: iframe.contentDocument must inherit property "ondrag" with the proper type
 PASS Document interface: iframe.contentDocument must inherit property "ondragend" with the proper type
 PASS Document interface: iframe.contentDocument must inherit property "ondragenter" with the proper type
-FAIL Document interface: iframe.contentDocument must inherit property "ondragexit" with the proper typeassert_inherits: property "ondragexit" not found in prototype chain
+FAIL Document interface: iframe.contentDocument must inherit property "ondragexit" with the proper type assert_inherits: property "ondragexit" not found in prototype chain
 PASS Document interface: iframe.contentDocument must inherit property "ondragleave" with the proper type
 PASS Document interface: iframe.contentDocument must inherit property "ondragover" with the proper type
 PASS Document interface: iframe.contentDocument must inherit property "ondragstart" with the proper type
@@ -199,7 +199,7 @@ PASS Document interface: iframe.contentDocument must inherit property "onkeyup" 
 PASS Document interface: iframe.contentDocument must inherit property "onload" with the proper type
 PASS Document interface: iframe.contentDocument must inherit property "onloadeddata" with the proper type
 PASS Document interface: iframe.contentDocument must inherit property "onloadedmetadata" with the proper type
-FAIL Document interface: iframe.contentDocument must inherit property "onloadend" with the proper typeassert_inherits: property "onloadend" not found in prototype chain
+FAIL Document interface: iframe.contentDocument must inherit property "onloadend" with the proper type assert_inherits: property "onloadend" not found in prototype chain
 PASS Document interface: iframe.contentDocument must inherit property "onloadstart" with the proper type
 PASS Document interface: iframe.contentDocument must inherit property "onmousedown" with the proper type
 PASS Document interface: iframe.contentDocument must inherit property "onmouseenter" with the proper type
@@ -276,17 +276,17 @@ PASS Document interface: calling queryCommandSupported(DOMString) on new Documen
 PASS Document interface: new Document() must inherit property "queryCommandValue(DOMString)" with the proper type
 PASS Document interface: calling queryCommandValue(DOMString) on new Document() with too few arguments must throw TypeError
 PASS Document interface: new Document() must inherit property "onreadystatechange" with the proper type
-FAIL Document interface: new Document() must inherit property "fgColor" with the proper typeassert_inherits: property "fgColor" not found in prototype chain
-FAIL Document interface: new Document() must inherit property "linkColor" with the proper typeassert_inherits: property "linkColor" not found in prototype chain
-FAIL Document interface: new Document() must inherit property "vlinkColor" with the proper typeassert_inherits: property "vlinkColor" not found in prototype chain
-FAIL Document interface: new Document() must inherit property "alinkColor" with the proper typeassert_inherits: property "alinkColor" not found in prototype chain
-FAIL Document interface: new Document() must inherit property "bgColor" with the proper typeassert_inherits: property "bgColor" not found in prototype chain
+FAIL Document interface: new Document() must inherit property "fgColor" with the proper type assert_inherits: property "fgColor" not found in prototype chain
+FAIL Document interface: new Document() must inherit property "linkColor" with the proper type assert_inherits: property "linkColor" not found in prototype chain
+FAIL Document interface: new Document() must inherit property "vlinkColor" with the proper type assert_inherits: property "vlinkColor" not found in prototype chain
+FAIL Document interface: new Document() must inherit property "alinkColor" with the proper type assert_inherits: property "alinkColor" not found in prototype chain
+FAIL Document interface: new Document() must inherit property "bgColor" with the proper type assert_inherits: property "bgColor" not found in prototype chain
 PASS Document interface: new Document() must inherit property "anchors" with the proper type
 PASS Document interface: new Document() must inherit property "applets" with the proper type
-FAIL Document interface: new Document() must inherit property "clear()" with the proper typeassert_inherits: property "clear" not found in prototype chain
-FAIL Document interface: new Document() must inherit property "captureEvents()" with the proper typeassert_inherits: property "captureEvents" not found in prototype chain
-FAIL Document interface: new Document() must inherit property "releaseEvents()" with the proper typeassert_inherits: property "releaseEvents" not found in prototype chain
-FAIL Document interface: new Document() must inherit property "all" with the proper typeassert_inherits: property "all" not found in prototype chain
+FAIL Document interface: new Document() must inherit property "clear()" with the proper type assert_inherits: property "clear" not found in prototype chain
+FAIL Document interface: new Document() must inherit property "captureEvents()" with the proper type assert_inherits: property "captureEvents" not found in prototype chain
+FAIL Document interface: new Document() must inherit property "releaseEvents()" with the proper type assert_inherits: property "releaseEvents" not found in prototype chain
+FAIL Document interface: new Document() must inherit property "all" with the proper type assert_inherits: property "all" not found in prototype chain
 PASS Document interface: new Document() must inherit property "onabort" with the proper type
 PASS Document interface: new Document() must inherit property "onauxclick" with the proper type
 PASS Document interface: new Document() must inherit property "onblur" with the proper type
@@ -302,7 +302,7 @@ PASS Document interface: new Document() must inherit property "ondblclick" with 
 PASS Document interface: new Document() must inherit property "ondrag" with the proper type
 PASS Document interface: new Document() must inherit property "ondragend" with the proper type
 PASS Document interface: new Document() must inherit property "ondragenter" with the proper type
-FAIL Document interface: new Document() must inherit property "ondragexit" with the proper typeassert_inherits: property "ondragexit" not found in prototype chain
+FAIL Document interface: new Document() must inherit property "ondragexit" with the proper type assert_inherits: property "ondragexit" not found in prototype chain
 PASS Document interface: new Document() must inherit property "ondragleave" with the proper type
 PASS Document interface: new Document() must inherit property "ondragover" with the proper type
 PASS Document interface: new Document() must inherit property "ondragstart" with the proper type
@@ -320,7 +320,7 @@ PASS Document interface: new Document() must inherit property "onkeyup" with the
 PASS Document interface: new Document() must inherit property "onload" with the proper type
 PASS Document interface: new Document() must inherit property "onloadeddata" with the proper type
 PASS Document interface: new Document() must inherit property "onloadedmetadata" with the proper type
-FAIL Document interface: new Document() must inherit property "onloadend" with the proper typeassert_inherits: property "onloadend" not found in prototype chain
+FAIL Document interface: new Document() must inherit property "onloadend" with the proper type assert_inherits: property "onloadend" not found in prototype chain
 PASS Document interface: new Document() must inherit property "onloadstart" with the proper type
 PASS Document interface: new Document() must inherit property "onmousedown" with the proper type
 PASS Document interface: new Document() must inherit property "onmouseenter" with the proper type
@@ -397,17 +397,17 @@ PASS Document interface: calling queryCommandSupported(DOMString) on document.im
 PASS Document interface: document.implementation.createDocument(null, "", null) must inherit property "queryCommandValue(DOMString)" with the proper type
 PASS Document interface: calling queryCommandValue(DOMString) on document.implementation.createDocument(null, "", null) with too few arguments must throw TypeError
 PASS Document interface: document.implementation.createDocument(null, "", null) must inherit property "onreadystatechange" with the proper type
-FAIL Document interface: document.implementation.createDocument(null, "", null) must inherit property "fgColor" with the proper typeassert_inherits: property "fgColor" not found in prototype chain
-FAIL Document interface: document.implementation.createDocument(null, "", null) must inherit property "linkColor" with the proper typeassert_inherits: property "linkColor" not found in prototype chain
-FAIL Document interface: document.implementation.createDocument(null, "", null) must inherit property "vlinkColor" with the proper typeassert_inherits: property "vlinkColor" not found in prototype chain
-FAIL Document interface: document.implementation.createDocument(null, "", null) must inherit property "alinkColor" with the proper typeassert_inherits: property "alinkColor" not found in prototype chain
-FAIL Document interface: document.implementation.createDocument(null, "", null) must inherit property "bgColor" with the proper typeassert_inherits: property "bgColor" not found in prototype chain
+FAIL Document interface: document.implementation.createDocument(null, "", null) must inherit property "fgColor" with the proper type assert_inherits: property "fgColor" not found in prototype chain
+FAIL Document interface: document.implementation.createDocument(null, "", null) must inherit property "linkColor" with the proper type assert_inherits: property "linkColor" not found in prototype chain
+FAIL Document interface: document.implementation.createDocument(null, "", null) must inherit property "vlinkColor" with the proper type assert_inherits: property "vlinkColor" not found in prototype chain
+FAIL Document interface: document.implementation.createDocument(null, "", null) must inherit property "alinkColor" with the proper type assert_inherits: property "alinkColor" not found in prototype chain
+FAIL Document interface: document.implementation.createDocument(null, "", null) must inherit property "bgColor" with the proper type assert_inherits: property "bgColor" not found in prototype chain
 PASS Document interface: document.implementation.createDocument(null, "", null) must inherit property "anchors" with the proper type
 PASS Document interface: document.implementation.createDocument(null, "", null) must inherit property "applets" with the proper type
-FAIL Document interface: document.implementation.createDocument(null, "", null) must inherit property "clear()" with the proper typeassert_inherits: property "clear" not found in prototype chain
-FAIL Document interface: document.implementation.createDocument(null, "", null) must inherit property "captureEvents()" with the proper typeassert_inherits: property "captureEvents" not found in prototype chain
-FAIL Document interface: document.implementation.createDocument(null, "", null) must inherit property "releaseEvents()" with the proper typeassert_inherits: property "releaseEvents" not found in prototype chain
-FAIL Document interface: document.implementation.createDocument(null, "", null) must inherit property "all" with the proper typeassert_inherits: property "all" not found in prototype chain
+FAIL Document interface: document.implementation.createDocument(null, "", null) must inherit property "clear()" with the proper type assert_inherits: property "clear" not found in prototype chain
+FAIL Document interface: document.implementation.createDocument(null, "", null) must inherit property "captureEvents()" with the proper type assert_inherits: property "captureEvents" not found in prototype chain
+FAIL Document interface: document.implementation.createDocument(null, "", null) must inherit property "releaseEvents()" with the proper type assert_inherits: property "releaseEvents" not found in prototype chain
+FAIL Document interface: document.implementation.createDocument(null, "", null) must inherit property "all" with the proper type assert_inherits: property "all" not found in prototype chain
 PASS Document interface: document.implementation.createDocument(null, "", null) must inherit property "onabort" with the proper type
 PASS Document interface: document.implementation.createDocument(null, "", null) must inherit property "onauxclick" with the proper type
 PASS Document interface: document.implementation.createDocument(null, "", null) must inherit property "onblur" with the proper type
@@ -423,7 +423,7 @@ PASS Document interface: document.implementation.createDocument(null, "", null) 
 PASS Document interface: document.implementation.createDocument(null, "", null) must inherit property "ondrag" with the proper type
 PASS Document interface: document.implementation.createDocument(null, "", null) must inherit property "ondragend" with the proper type
 PASS Document interface: document.implementation.createDocument(null, "", null) must inherit property "ondragenter" with the proper type
-FAIL Document interface: document.implementation.createDocument(null, "", null) must inherit property "ondragexit" with the proper typeassert_inherits: property "ondragexit" not found in prototype chain
+FAIL Document interface: document.implementation.createDocument(null, "", null) must inherit property "ondragexit" with the proper type assert_inherits: property "ondragexit" not found in prototype chain
 PASS Document interface: document.implementation.createDocument(null, "", null) must inherit property "ondragleave" with the proper type
 PASS Document interface: document.implementation.createDocument(null, "", null) must inherit property "ondragover" with the proper type
 PASS Document interface: document.implementation.createDocument(null, "", null) must inherit property "ondragstart" with the proper type
@@ -441,7 +441,7 @@ PASS Document interface: document.implementation.createDocument(null, "", null) 
 PASS Document interface: document.implementation.createDocument(null, "", null) must inherit property "onload" with the proper type
 PASS Document interface: document.implementation.createDocument(null, "", null) must inherit property "onloadeddata" with the proper type
 PASS Document interface: document.implementation.createDocument(null, "", null) must inherit property "onloadedmetadata" with the proper type
-FAIL Document interface: document.implementation.createDocument(null, "", null) must inherit property "onloadend" with the proper typeassert_inherits: property "onloadend" not found in prototype chain
+FAIL Document interface: document.implementation.createDocument(null, "", null) must inherit property "onloadend" with the proper type assert_inherits: property "onloadend" not found in prototype chain
 PASS Document interface: document.implementation.createDocument(null, "", null) must inherit property "onloadstart" with the proper type
 PASS Document interface: document.implementation.createDocument(null, "", null) must inherit property "onmousedown" with the proper type
 PASS Document interface: document.implementation.createDocument(null, "", null) must inherit property "onmouseenter" with the proper type
@@ -481,13 +481,13 @@ PASS HTMLAllCollection interface: existence and properties of interface prototyp
 PASS HTMLAllCollection interface: attribute length
 PASS HTMLAllCollection interface: operation namedItem(DOMString)
 PASS HTMLAllCollection interface: operation item(DOMString)
-FAIL HTMLAllCollection must be primary interface of document.allassert_equals: wrong typeof object expected "function" but got "undefined"
-FAIL Stringification of document.allassert_equals: wrong typeof object expected "function" but got "undefined"
-FAIL HTMLAllCollection interface: document.all must inherit property "length" with the proper typeassert_equals: wrong typeof object expected "function" but got "undefined"
-FAIL HTMLAllCollection interface: document.all must inherit property "namedItem(DOMString)" with the proper typeassert_equals: wrong typeof object expected "function" but got "undefined"
-FAIL HTMLAllCollection interface: calling namedItem(DOMString) on document.all with too few arguments must throw TypeErrorassert_equals: wrong typeof object expected "function" but got "undefined"
-FAIL HTMLAllCollection interface: document.all must inherit property "item(DOMString)" with the proper typeassert_equals: wrong typeof object expected "function" but got "undefined"
-FAIL HTMLAllCollection interface: calling item(DOMString) on document.all with too few arguments must throw TypeErrorassert_equals: wrong typeof object expected "function" but got "undefined"
+FAIL HTMLAllCollection must be primary interface of document.all assert_equals: wrong typeof object expected "function" but got "undefined"
+FAIL Stringification of document.all assert_equals: wrong typeof object expected "function" but got "undefined"
+FAIL HTMLAllCollection interface: document.all must inherit property "length" with the proper type assert_equals: wrong typeof object expected "function" but got "undefined"
+FAIL HTMLAllCollection interface: document.all must inherit property "namedItem(DOMString)" with the proper type assert_equals: wrong typeof object expected "function" but got "undefined"
+FAIL HTMLAllCollection interface: calling namedItem(DOMString) on document.all with too few arguments must throw TypeError assert_equals: wrong typeof object expected "function" but got "undefined"
+FAIL HTMLAllCollection interface: document.all must inherit property "item(DOMString)" with the proper type assert_equals: wrong typeof object expected "function" but got "undefined"
+FAIL HTMLAllCollection interface: calling item(DOMString) on document.all with too few arguments must throw TypeError assert_equals: wrong typeof object expected "function" but got "undefined"
 PASS HTMLFormControlsCollection interface: existence and properties of interface object
 PASS HTMLFormControlsCollection interface object length
 PASS HTMLFormControlsCollection interface object name
@@ -545,7 +545,7 @@ PASS HTMLElement interface: attribute tabIndex
 PASS HTMLElement interface: operation focus()
 PASS HTMLElement interface: operation blur()
 PASS HTMLElement interface: attribute accessKey
-FAIL HTMLElement interface: attribute accessKeyLabelassert_true: The prototype object must have a property "accessKeyLabel" expected true got false
+FAIL HTMLElement interface: attribute accessKeyLabel assert_true: The prototype object must have a property "accessKeyLabel" expected true got false
 PASS HTMLElement interface: attribute draggable
 PASS HTMLElement interface: attribute spellcheck
 PASS HTMLElement interface: attribute innerText
@@ -564,7 +564,7 @@ PASS HTMLElement interface: attribute ondblclick
 PASS HTMLElement interface: attribute ondrag
 PASS HTMLElement interface: attribute ondragend
 PASS HTMLElement interface: attribute ondragenter
-FAIL HTMLElement interface: attribute ondragexitassert_true: The prototype object must have a property "ondragexit" expected true got false
+FAIL HTMLElement interface: attribute ondragexit assert_true: The prototype object must have a property "ondragexit" expected true got false
 PASS HTMLElement interface: attribute ondragleave
 PASS HTMLElement interface: attribute ondragover
 PASS HTMLElement interface: attribute ondragstart
@@ -582,7 +582,7 @@ PASS HTMLElement interface: attribute onkeyup
 PASS HTMLElement interface: attribute onload
 PASS HTMLElement interface: attribute onloadeddata
 PASS HTMLElement interface: attribute onloadedmetadata
-FAIL HTMLElement interface: attribute onloadendassert_true: The prototype object must have a property "onloadend" expected true got false
+FAIL HTMLElement interface: attribute onloadend assert_true: The prototype object must have a property "onloadend" expected true got false
 PASS HTMLElement interface: attribute onloadstart
 PASS HTMLElement interface: attribute onmousedown
 PASS HTMLElement interface: attribute onmouseenter
@@ -600,7 +600,7 @@ PASS HTMLElement interface: attribute onratechange
 PASS HTMLElement interface: attribute onreset
 PASS HTMLElement interface: attribute onresize
 PASS HTMLElement interface: attribute onscroll
-FAIL HTMLElement interface: attribute onsecuritypolicyviolationassert_true: The prototype object must have a property "onsecuritypolicyviolation" expected true got false
+FAIL HTMLElement interface: attribute onsecuritypolicyviolation assert_true: The prototype object must have a property "onsecuritypolicyviolation" expected true got false
 PASS HTMLElement interface: attribute onseeked
 PASS HTMLElement interface: attribute onseeking
 PASS HTMLElement interface: attribute onselect
@@ -611,9 +611,9 @@ PASS HTMLElement interface: attribute ontimeupdate
 PASS HTMLElement interface: attribute ontoggle
 PASS HTMLElement interface: attribute onvolumechange
 PASS HTMLElement interface: attribute onwaiting
-FAIL HTMLElement interface: attribute oncopyassert_own_property: expected property "oncopy" missing
-FAIL HTMLElement interface: attribute oncutassert_own_property: expected property "oncut" missing
-FAIL HTMLElement interface: attribute onpasteassert_own_property: expected property "onpaste" missing
+FAIL HTMLElement interface: attribute oncopy assert_own_property: expected property "oncopy" missing
+FAIL HTMLElement interface: attribute oncut assert_own_property: expected property "oncut" missing
+FAIL HTMLElement interface: attribute onpaste assert_own_property: expected property "onpaste" missing
 PASS HTMLElement interface: attribute contentEditable
 PASS HTMLElement interface: attribute isContentEditable
 PASS HTMLElement must be primary interface of document.createElement("noscript")
@@ -629,7 +629,7 @@ PASS HTMLElement interface: document.createElement("noscript") must inherit prop
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "focus()" with the proper type
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "blur()" with the proper type
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "accessKey" with the proper type
-FAIL HTMLElement interface: document.createElement("noscript") must inherit property "accessKeyLabel" with the proper typeassert_inherits: property "accessKeyLabel" not found in prototype chain
+FAIL HTMLElement interface: document.createElement("noscript") must inherit property "accessKeyLabel" with the proper type assert_inherits: property "accessKeyLabel" not found in prototype chain
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "draggable" with the proper type
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "spellcheck" with the proper type
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "innerText" with the proper type
@@ -648,7 +648,7 @@ PASS HTMLElement interface: document.createElement("noscript") must inherit prop
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "ondrag" with the proper type
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "ondragend" with the proper type
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "ondragenter" with the proper type
-FAIL HTMLElement interface: document.createElement("noscript") must inherit property "ondragexit" with the proper typeassert_inherits: property "ondragexit" not found in prototype chain
+FAIL HTMLElement interface: document.createElement("noscript") must inherit property "ondragexit" with the proper type assert_inherits: property "ondragexit" not found in prototype chain
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "ondragleave" with the proper type
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "ondragover" with the proper type
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "ondragstart" with the proper type
@@ -666,7 +666,7 @@ PASS HTMLElement interface: document.createElement("noscript") must inherit prop
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "onload" with the proper type
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "onloadeddata" with the proper type
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "onloadedmetadata" with the proper type
-FAIL HTMLElement interface: document.createElement("noscript") must inherit property "onloadend" with the proper typeassert_inherits: property "onloadend" not found in prototype chain
+FAIL HTMLElement interface: document.createElement("noscript") must inherit property "onloadend" with the proper type assert_inherits: property "onloadend" not found in prototype chain
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "onloadstart" with the proper type
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "onmousedown" with the proper type
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "onmouseenter" with the proper type
@@ -684,7 +684,7 @@ PASS HTMLElement interface: document.createElement("noscript") must inherit prop
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "onreset" with the proper type
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "onresize" with the proper type
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "onscroll" with the proper type
-FAIL HTMLElement interface: document.createElement("noscript") must inherit property "onsecuritypolicyviolation" with the proper typeassert_inherits: property "onsecuritypolicyviolation" not found in prototype chain
+FAIL HTMLElement interface: document.createElement("noscript") must inherit property "onsecuritypolicyviolation" with the proper type assert_inherits: property "onsecuritypolicyviolation" not found in prototype chain
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "onseeked" with the proper type
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "onseeking" with the proper type
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "onselect" with the proper type
@@ -761,15 +761,15 @@ PASS HTMLLinkElement interface: attribute rel
 PASS HTMLLinkElement interface: attribute as
 PASS HTMLLinkElement interface: attribute relList
 PASS HTMLLinkElement interface: attribute media
-FAIL HTMLLinkElement interface: attribute nonceassert_own_property: expected property "nonce" missing
+FAIL HTMLLinkElement interface: attribute nonce assert_own_property: expected property "nonce" missing
 PASS HTMLLinkElement interface: attribute integrity
 PASS HTMLLinkElement interface: attribute hreflang
 PASS HTMLLinkElement interface: attribute type
 PASS HTMLLinkElement interface: attribute sizes
 PASS HTMLLinkElement interface: attribute referrerPolicy
 PASS HTMLLinkElement interface: attribute scope
-FAIL HTMLLinkElement interface: attribute workerTypeassert_true: The prototype object must have a property "workerType" expected true got false
-FAIL HTMLLinkElement interface: attribute updateViaCacheassert_true: The prototype object must have a property "updateViaCache" expected true got false
+FAIL HTMLLinkElement interface: attribute workerType assert_true: The prototype object must have a property "workerType" expected true got false
+FAIL HTMLLinkElement interface: attribute updateViaCache assert_true: The prototype object must have a property "updateViaCache" expected true got false
 PASS HTMLLinkElement interface: attribute charset
 PASS HTMLLinkElement interface: attribute rev
 PASS HTMLLinkElement interface: attribute target
@@ -788,8 +788,8 @@ PASS HTMLLinkElement interface: document.createElement("link") must inherit prop
 PASS HTMLLinkElement interface: document.createElement("link") must inherit property "sizes" with the proper type
 PASS HTMLLinkElement interface: document.createElement("link") must inherit property "referrerPolicy" with the proper type
 PASS HTMLLinkElement interface: document.createElement("link") must inherit property "scope" with the proper type
-FAIL HTMLLinkElement interface: document.createElement("link") must inherit property "workerType" with the proper typeassert_inherits: property "workerType" not found in prototype chain
-FAIL HTMLLinkElement interface: document.createElement("link") must inherit property "updateViaCache" with the proper typeassert_inherits: property "updateViaCache" not found in prototype chain
+FAIL HTMLLinkElement interface: document.createElement("link") must inherit property "workerType" with the proper type assert_inherits: property "workerType" not found in prototype chain
+FAIL HTMLLinkElement interface: document.createElement("link") must inherit property "updateViaCache" with the proper type assert_inherits: property "updateViaCache" not found in prototype chain
 PASS HTMLLinkElement interface: document.createElement("link") must inherit property "charset" with the proper type
 PASS HTMLLinkElement interface: document.createElement("link") must inherit property "rev" with the proper type
 PASS HTMLLinkElement interface: document.createElement("link") must inherit property "target" with the proper type
@@ -814,7 +814,7 @@ PASS HTMLStyleElement interface object name
 PASS HTMLStyleElement interface: existence and properties of interface prototype object
 PASS HTMLStyleElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLStyleElement interface: attribute media
-FAIL HTMLStyleElement interface: attribute nonceassert_own_property: expected property "nonce" missing
+FAIL HTMLStyleElement interface: attribute nonce assert_own_property: expected property "nonce" missing
 PASS HTMLStyleElement interface: attribute type
 PASS HTMLStyleElement must be primary interface of document.createElement("style")
 PASS Stringification of document.createElement("style")
@@ -832,8 +832,8 @@ PASS HTMLBodyElement interface: attribute vLink
 PASS HTMLBodyElement interface: attribute aLink
 PASS HTMLBodyElement interface: attribute bgColor
 PASS HTMLBodyElement interface: attribute background
-FAIL HTMLBodyElement interface: attribute onafterprintassert_true: The prototype object must have a property "onafterprint" expected true got false
-FAIL HTMLBodyElement interface: attribute onbeforeprintassert_true: The prototype object must have a property "onbeforeprint" expected true got false
+FAIL HTMLBodyElement interface: attribute onafterprint assert_true: The prototype object must have a property "onafterprint" expected true got false
+FAIL HTMLBodyElement interface: attribute onbeforeprint assert_true: The prototype object must have a property "onbeforeprint" expected true got false
 PASS HTMLBodyElement interface: attribute onbeforeunload
 PASS HTMLBodyElement interface: attribute onhashchange
 PASS HTMLBodyElement interface: attribute onlanguagechange
@@ -856,8 +856,8 @@ PASS HTMLBodyElement interface: document.createElement("body") must inherit prop
 PASS HTMLBodyElement interface: document.createElement("body") must inherit property "aLink" with the proper type
 PASS HTMLBodyElement interface: document.createElement("body") must inherit property "bgColor" with the proper type
 PASS HTMLBodyElement interface: document.createElement("body") must inherit property "background" with the proper type
-FAIL HTMLBodyElement interface: document.createElement("body") must inherit property "onafterprint" with the proper typeassert_inherits: property "onafterprint" not found in prototype chain
-FAIL HTMLBodyElement interface: document.createElement("body") must inherit property "onbeforeprint" with the proper typeassert_inherits: property "onbeforeprint" not found in prototype chain
+FAIL HTMLBodyElement interface: document.createElement("body") must inherit property "onafterprint" with the proper type assert_inherits: property "onafterprint" not found in prototype chain
+FAIL HTMLBodyElement interface: document.createElement("body") must inherit property "onbeforeprint" with the proper type assert_inherits: property "onbeforeprint" not found in prototype chain
 PASS HTMLBodyElement interface: document.createElement("body") must inherit property "onbeforeunload" with the proper type
 PASS HTMLBodyElement interface: document.createElement("body") must inherit property "onhashchange" with the proper type
 PASS HTMLBodyElement interface: document.createElement("body") must inherit property "onlanguagechange" with the proper type
@@ -994,7 +994,7 @@ PASS HTMLAnchorElement interface: attribute target
 PASS HTMLAnchorElement interface: attribute download
 PASS HTMLAnchorElement interface: attribute ping
 PASS HTMLAnchorElement interface: attribute rel
-FAIL HTMLAnchorElement interface: attribute relListassert_true: The prototype object must have a property "relList" expected true got false
+FAIL HTMLAnchorElement interface: attribute relList assert_true: The prototype object must have a property "relList" expected true got false
 PASS HTMLAnchorElement interface: attribute hreflang
 PASS HTMLAnchorElement interface: attribute type
 PASS HTMLAnchorElement interface: attribute text
@@ -1022,7 +1022,7 @@ PASS HTMLAnchorElement interface: document.createElement("a") must inherit prope
 PASS HTMLAnchorElement interface: document.createElement("a") must inherit property "download" with the proper type
 PASS HTMLAnchorElement interface: document.createElement("a") must inherit property "ping" with the proper type
 PASS HTMLAnchorElement interface: document.createElement("a") must inherit property "rel" with the proper type
-FAIL HTMLAnchorElement interface: document.createElement("a") must inherit property "relList" with the proper typeassert_inherits: property "relList" not found in prototype chain
+FAIL HTMLAnchorElement interface: document.createElement("a") must inherit property "relList" with the proper type assert_inherits: property "relList" not found in prototype chain
 PASS HTMLAnchorElement interface: document.createElement("a") must inherit property "hreflang" with the proper type
 PASS HTMLAnchorElement interface: document.createElement("a") must inherit property "type" with the proper type
 PASS HTMLAnchorElement interface: document.createElement("a") must inherit property "text" with the proper type
@@ -1202,7 +1202,7 @@ PASS HTMLIFrameElement interface: attribute name
 PASS HTMLIFrameElement interface: attribute sandbox
 PASS HTMLIFrameElement interface: attribute allowFullscreen
 PASS HTMLIFrameElement interface: attribute allowPaymentRequest
-FAIL HTMLIFrameElement interface: attribute allowUserMediaassert_true: The prototype object must have a property "allowUserMedia" expected true got false
+FAIL HTMLIFrameElement interface: attribute allowUserMedia assert_true: The prototype object must have a property "allowUserMedia" expected true got false
 PASS HTMLIFrameElement interface: attribute width
 PASS HTMLIFrameElement interface: attribute height
 PASS HTMLIFrameElement interface: attribute referrerPolicy
@@ -1243,7 +1243,7 @@ PASS HTMLObjectElement interface: existence and properties of interface prototyp
 PASS HTMLObjectElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLObjectElement interface: attribute data
 PASS HTMLObjectElement interface: attribute type
-FAIL HTMLObjectElement interface: attribute typeMustMatchassert_true: The prototype object must have a property "typeMustMatch" expected true got false
+FAIL HTMLObjectElement interface: attribute typeMustMatch assert_true: The prototype object must have a property "typeMustMatch" expected true got false
 PASS HTMLObjectElement interface: attribute name
 PASS HTMLObjectElement interface: attribute useMap
 PASS HTMLObjectElement interface: attribute form
@@ -1272,7 +1272,7 @@ PASS HTMLObjectElement must be primary interface of document.createElement("obje
 PASS Stringification of document.createElement("object")
 PASS HTMLObjectElement interface: document.createElement("object") must inherit property "data" with the proper type
 PASS HTMLObjectElement interface: document.createElement("object") must inherit property "type" with the proper type
-FAIL HTMLObjectElement interface: document.createElement("object") must inherit property "typeMustMatch" with the proper typeassert_inherits: property "typeMustMatch" not found in prototype chain
+FAIL HTMLObjectElement interface: document.createElement("object") must inherit property "typeMustMatch" with the proper type assert_inherits: property "typeMustMatch" not found in prototype chain
 PASS HTMLObjectElement interface: document.createElement("object") must inherit property "name" with the proper type
 PASS HTMLObjectElement interface: document.createElement("object") must inherit property "useMap" with the proper type
 PASS HTMLObjectElement interface: document.createElement("object") must inherit property "form" with the proper type
@@ -1323,7 +1323,7 @@ PASS HTMLVideoElement interface: attribute height
 PASS HTMLVideoElement interface: attribute videoWidth
 PASS HTMLVideoElement interface: attribute videoHeight
 PASS HTMLVideoElement interface: attribute poster
-FAIL HTMLVideoElement interface: attribute playsInlineassert_true: The prototype object must have a property "playsInline" expected true got false
+FAIL HTMLVideoElement interface: attribute playsInline assert_true: The prototype object must have a property "playsInline" expected true got false
 PASS HTMLVideoElement must be primary interface of document.createElement("video")
 PASS Stringification of document.createElement("video")
 PASS HTMLVideoElement interface: document.createElement("video") must inherit property "width" with the proper type
@@ -1331,10 +1331,10 @@ PASS HTMLVideoElement interface: document.createElement("video") must inherit pr
 PASS HTMLVideoElement interface: document.createElement("video") must inherit property "videoWidth" with the proper type
 PASS HTMLVideoElement interface: document.createElement("video") must inherit property "videoHeight" with the proper type
 PASS HTMLVideoElement interface: document.createElement("video") must inherit property "poster" with the proper type
-FAIL HTMLVideoElement interface: document.createElement("video") must inherit property "playsInline" with the proper typeassert_inherits: property "playsInline" not found in prototype chain
+FAIL HTMLVideoElement interface: document.createElement("video") must inherit property "playsInline" with the proper type assert_inherits: property "playsInline" not found in prototype chain
 PASS HTMLMediaElement interface: document.createElement("video") must inherit property "error" with the proper type
 PASS HTMLMediaElement interface: document.createElement("video") must inherit property "src" with the proper type
-FAIL HTMLMediaElement interface: document.createElement("video") must inherit property "srcObject" with the proper typeUnrecognized type MediaStream
+FAIL HTMLMediaElement interface: document.createElement("video") must inherit property "srcObject" with the proper type Unrecognized type MediaStream
 PASS HTMLMediaElement interface: document.createElement("video") must inherit property "currentSrc" with the proper type
 PASS HTMLMediaElement interface: document.createElement("video") must inherit property "crossOrigin" with the proper type
 PASS HTMLMediaElement interface: document.createElement("video") must inherit property "NETWORK_EMPTY" with the proper type
@@ -1355,10 +1355,10 @@ PASS HTMLMediaElement interface: document.createElement("video") must inherit pr
 PASS HTMLMediaElement interface: document.createElement("video") must inherit property "readyState" with the proper type
 PASS HTMLMediaElement interface: document.createElement("video") must inherit property "seeking" with the proper type
 PASS HTMLMediaElement interface: document.createElement("video") must inherit property "currentTime" with the proper type
-FAIL HTMLMediaElement interface: document.createElement("video") must inherit property "fastSeek(double)" with the proper typeassert_inherits: property "fastSeek" not found in prototype chain
-FAIL HTMLMediaElement interface: calling fastSeek(double) on document.createElement("video") with too few arguments must throw TypeErrorassert_inherits: property "fastSeek" not found in prototype chain
+FAIL HTMLMediaElement interface: document.createElement("video") must inherit property "fastSeek(double)" with the proper type assert_inherits: property "fastSeek" not found in prototype chain
+FAIL HTMLMediaElement interface: calling fastSeek(double) on document.createElement("video") with too few arguments must throw TypeError assert_inherits: property "fastSeek" not found in prototype chain
 PASS HTMLMediaElement interface: document.createElement("video") must inherit property "duration" with the proper type
-FAIL HTMLMediaElement interface: document.createElement("video") must inherit property "getStartDate()" with the proper typeassert_inherits: property "getStartDate" not found in prototype chain
+FAIL HTMLMediaElement interface: document.createElement("video") must inherit property "getStartDate()" with the proper type assert_inherits: property "getStartDate" not found in prototype chain
 PASS HTMLMediaElement interface: document.createElement("video") must inherit property "paused" with the proper type
 PASS HTMLMediaElement interface: document.createElement("video") must inherit property "defaultPlaybackRate" with the proper type
 PASS HTMLMediaElement interface: document.createElement("video") must inherit property "playbackRate" with the proper type
@@ -1387,7 +1387,7 @@ PASS HTMLAudioElement must be primary interface of document.createElement("audio
 PASS Stringification of document.createElement("audio")
 PASS HTMLMediaElement interface: document.createElement("audio") must inherit property "error" with the proper type
 PASS HTMLMediaElement interface: document.createElement("audio") must inherit property "src" with the proper type
-FAIL HTMLMediaElement interface: document.createElement("audio") must inherit property "srcObject" with the proper typeUnrecognized type MediaStream
+FAIL HTMLMediaElement interface: document.createElement("audio") must inherit property "srcObject" with the proper type Unrecognized type MediaStream
 PASS HTMLMediaElement interface: document.createElement("audio") must inherit property "currentSrc" with the proper type
 PASS HTMLMediaElement interface: document.createElement("audio") must inherit property "crossOrigin" with the proper type
 PASS HTMLMediaElement interface: document.createElement("audio") must inherit property "NETWORK_EMPTY" with the proper type
@@ -1408,10 +1408,10 @@ PASS HTMLMediaElement interface: document.createElement("audio") must inherit pr
 PASS HTMLMediaElement interface: document.createElement("audio") must inherit property "readyState" with the proper type
 PASS HTMLMediaElement interface: document.createElement("audio") must inherit property "seeking" with the proper type
 PASS HTMLMediaElement interface: document.createElement("audio") must inherit property "currentTime" with the proper type
-FAIL HTMLMediaElement interface: document.createElement("audio") must inherit property "fastSeek(double)" with the proper typeassert_inherits: property "fastSeek" not found in prototype chain
-FAIL HTMLMediaElement interface: calling fastSeek(double) on document.createElement("audio") with too few arguments must throw TypeErrorassert_inherits: property "fastSeek" not found in prototype chain
+FAIL HTMLMediaElement interface: document.createElement("audio") must inherit property "fastSeek(double)" with the proper type assert_inherits: property "fastSeek" not found in prototype chain
+FAIL HTMLMediaElement interface: calling fastSeek(double) on document.createElement("audio") with too few arguments must throw TypeError assert_inherits: property "fastSeek" not found in prototype chain
 PASS HTMLMediaElement interface: document.createElement("audio") must inherit property "duration" with the proper type
-FAIL HTMLMediaElement interface: document.createElement("audio") must inherit property "getStartDate()" with the proper typeassert_inherits: property "getStartDate" not found in prototype chain
+FAIL HTMLMediaElement interface: document.createElement("audio") must inherit property "getStartDate()" with the proper type assert_inherits: property "getStartDate" not found in prototype chain
 PASS HTMLMediaElement interface: document.createElement("audio") must inherit property "paused" with the proper type
 PASS HTMLMediaElement interface: document.createElement("audio") must inherit property "defaultPlaybackRate" with the proper type
 PASS HTMLMediaElement interface: document.createElement("audio") must inherit property "playbackRate" with the proper type
@@ -1435,7 +1435,7 @@ PASS HTMLAudioElement must be primary interface of new Audio()
 PASS Stringification of new Audio()
 PASS HTMLMediaElement interface: new Audio() must inherit property "error" with the proper type
 PASS HTMLMediaElement interface: new Audio() must inherit property "src" with the proper type
-FAIL HTMLMediaElement interface: new Audio() must inherit property "srcObject" with the proper typeUnrecognized type MediaStream
+FAIL HTMLMediaElement interface: new Audio() must inherit property "srcObject" with the proper type Unrecognized type MediaStream
 PASS HTMLMediaElement interface: new Audio() must inherit property "currentSrc" with the proper type
 PASS HTMLMediaElement interface: new Audio() must inherit property "crossOrigin" with the proper type
 PASS HTMLMediaElement interface: new Audio() must inherit property "NETWORK_EMPTY" with the proper type
@@ -1456,10 +1456,10 @@ PASS HTMLMediaElement interface: new Audio() must inherit property "HAVE_ENOUGH_
 PASS HTMLMediaElement interface: new Audio() must inherit property "readyState" with the proper type
 PASS HTMLMediaElement interface: new Audio() must inherit property "seeking" with the proper type
 PASS HTMLMediaElement interface: new Audio() must inherit property "currentTime" with the proper type
-FAIL HTMLMediaElement interface: new Audio() must inherit property "fastSeek(double)" with the proper typeassert_inherits: property "fastSeek" not found in prototype chain
-FAIL HTMLMediaElement interface: calling fastSeek(double) on new Audio() with too few arguments must throw TypeErrorassert_inherits: property "fastSeek" not found in prototype chain
+FAIL HTMLMediaElement interface: new Audio() must inherit property "fastSeek(double)" with the proper type assert_inherits: property "fastSeek" not found in prototype chain
+FAIL HTMLMediaElement interface: calling fastSeek(double) on new Audio() with too few arguments must throw TypeError assert_inherits: property "fastSeek" not found in prototype chain
 PASS HTMLMediaElement interface: new Audio() must inherit property "duration" with the proper type
-FAIL HTMLMediaElement interface: new Audio() must inherit property "getStartDate()" with the proper typeassert_inherits: property "getStartDate" not found in prototype chain
+FAIL HTMLMediaElement interface: new Audio() must inherit property "getStartDate()" with the proper type assert_inherits: property "getStartDate" not found in prototype chain
 PASS HTMLMediaElement interface: new Audio() must inherit property "paused" with the proper type
 PASS HTMLMediaElement interface: new Audio() must inherit property "defaultPlaybackRate" with the proper type
 PASS HTMLMediaElement interface: new Audio() must inherit property "playbackRate" with the proper type
@@ -1548,9 +1548,9 @@ PASS HTMLMediaElement interface: constant HAVE_ENOUGH_DATA on interface prototyp
 PASS HTMLMediaElement interface: attribute readyState
 PASS HTMLMediaElement interface: attribute seeking
 PASS HTMLMediaElement interface: attribute currentTime
-FAIL HTMLMediaElement interface: operation fastSeek(double)assert_own_property: interface prototype object missing non-static operation expected property "fastSeek" missing
+FAIL HTMLMediaElement interface: operation fastSeek(double) assert_own_property: interface prototype object missing non-static operation expected property "fastSeek" missing
 PASS HTMLMediaElement interface: attribute duration
-FAIL HTMLMediaElement interface: operation getStartDate()assert_own_property: interface prototype object missing non-static operation expected property "getStartDate" missing
+FAIL HTMLMediaElement interface: operation getStartDate() assert_own_property: interface prototype object missing non-static operation expected property "getStartDate" missing
 PASS HTMLMediaElement interface: attribute paused
 PASS HTMLMediaElement interface: attribute defaultPlaybackRate
 PASS HTMLMediaElement interface: attribute playbackRate
@@ -1660,7 +1660,7 @@ PASS TextTrack interface: attribute kind
 PASS TextTrack interface: attribute label
 PASS TextTrack interface: attribute language
 PASS TextTrack interface: attribute id
-FAIL TextTrack interface: attribute inBandMetadataTrackDispatchTypeassert_true: The prototype object must have a property "inBandMetadataTrackDispatchType" expected true got false
+FAIL TextTrack interface: attribute inBandMetadataTrackDispatchType assert_true: The prototype object must have a property "inBandMetadataTrackDispatchType" expected true got false
 PASS TextTrack interface: attribute mode
 PASS TextTrack interface: attribute cues
 PASS TextTrack interface: attribute activeCues
@@ -1673,7 +1673,7 @@ PASS TextTrack interface: document.createElement("track").track must inherit pro
 PASS TextTrack interface: document.createElement("track").track must inherit property "label" with the proper type
 PASS TextTrack interface: document.createElement("track").track must inherit property "language" with the proper type
 PASS TextTrack interface: document.createElement("track").track must inherit property "id" with the proper type
-FAIL TextTrack interface: document.createElement("track").track must inherit property "inBandMetadataTrackDispatchType" with the proper typeassert_inherits: property "inBandMetadataTrackDispatchType" not found in prototype chain
+FAIL TextTrack interface: document.createElement("track").track must inherit property "inBandMetadataTrackDispatchType" with the proper type assert_inherits: property "inBandMetadataTrackDispatchType" not found in prototype chain
 PASS TextTrack interface: document.createElement("track").track must inherit property "mode" with the proper type
 PASS TextTrack interface: document.createElement("track").track must inherit property "cues" with the proper type
 PASS TextTrack interface: document.createElement("track").track must inherit property "activeCues" with the proper type
@@ -1753,7 +1753,7 @@ PASS HTMLAreaElement interface: attribute target
 PASS HTMLAreaElement interface: attribute download
 PASS HTMLAreaElement interface: attribute ping
 PASS HTMLAreaElement interface: attribute rel
-FAIL HTMLAreaElement interface: attribute relListassert_true: The prototype object must have a property "relList" expected true got false
+FAIL HTMLAreaElement interface: attribute relList assert_true: The prototype object must have a property "relList" expected true got false
 PASS HTMLAreaElement interface: attribute referrerPolicy
 PASS HTMLAreaElement interface: attribute noHref
 PASS HTMLAreaElement interface: attribute href
@@ -1777,7 +1777,7 @@ PASS HTMLAreaElement interface: document.createElement("area") must inherit prop
 PASS HTMLAreaElement interface: document.createElement("area") must inherit property "download" with the proper type
 PASS HTMLAreaElement interface: document.createElement("area") must inherit property "ping" with the proper type
 PASS HTMLAreaElement interface: document.createElement("area") must inherit property "rel" with the proper type
-FAIL HTMLAreaElement interface: document.createElement("area") must inherit property "relList" with the proper typeassert_inherits: property "relList" not found in prototype chain
+FAIL HTMLAreaElement interface: document.createElement("area") must inherit property "relList" with the proper type assert_inherits: property "relList" not found in prototype chain
 PASS HTMLAreaElement interface: document.createElement("area") must inherit property "referrerPolicy" with the proper type
 PASS HTMLAreaElement interface: document.createElement("area") must inherit property "noHref" with the proper type
 PASS HTMLAreaElement interface: document.createElement("area") must inherit property "href" with the proper type
@@ -2082,7 +2082,7 @@ PASS HTMLInputElement interface: attribute formNoValidate
 PASS HTMLInputElement interface: attribute formTarget
 PASS HTMLInputElement interface: attribute height
 PASS HTMLInputElement interface: attribute indeterminate
-FAIL HTMLInputElement interface: attribute inputModeassert_own_property: expected property "inputMode" missing
+FAIL HTMLInputElement interface: attribute inputMode assert_own_property: expected property "inputMode" missing
 PASS HTMLInputElement interface: attribute list
 PASS HTMLInputElement interface: attribute max
 PASS HTMLInputElement interface: attribute maxLength
@@ -3284,7 +3284,7 @@ PASS HTMLInputElement interface: createInput("file") must inherit property "chec
 PASS HTMLInputElement interface: createInput("file") must inherit property "dirName" with the proper type
 PASS HTMLInputElement interface: createInput("file") must inherit property "disabled" with the proper type
 PASS HTMLInputElement interface: createInput("file") must inherit property "form" with the proper type
-FAIL HTMLInputElement interface: createInput("file") must inherit property "files" with the proper typeUnrecognized type FileList
+FAIL HTMLInputElement interface: createInput("file") must inherit property "files" with the proper type Unrecognized type FileList
 PASS HTMLInputElement interface: createInput("file") must inherit property "formAction" with the proper type
 PASS HTMLInputElement interface: createInput("file") must inherit property "formEnctype" with the proper type
 PASS HTMLInputElement interface: createInput("file") must inherit property "formMethod" with the proper type
@@ -3642,7 +3642,7 @@ PASS HTMLSelectElement interface object length
 PASS HTMLSelectElement interface object name
 PASS HTMLSelectElement interface: existence and properties of interface prototype object
 PASS HTMLSelectElement interface: existence and properties of interface prototype object's "constructor" property
-FAIL HTMLSelectElement interface: attribute autocompleteassert_true: The prototype object must have a property "autocomplete" expected true got false
+FAIL HTMLSelectElement interface: attribute autocomplete assert_true: The prototype object must have a property "autocomplete" expected true got false
 PASS HTMLSelectElement interface: attribute autofocus
 PASS HTMLSelectElement interface: attribute disabled
 PASS HTMLSelectElement interface: attribute form
@@ -3670,7 +3670,7 @@ PASS HTMLSelectElement interface: operation setCustomValidity(DOMString)
 PASS HTMLSelectElement interface: attribute labels
 PASS HTMLSelectElement must be primary interface of document.createElement("select")
 PASS Stringification of document.createElement("select")
-FAIL HTMLSelectElement interface: document.createElement("select") must inherit property "autocomplete" with the proper typeassert_inherits: property "autocomplete" not found in prototype chain
+FAIL HTMLSelectElement interface: document.createElement("select") must inherit property "autocomplete" with the proper type assert_inherits: property "autocomplete" not found in prototype chain
 PASS HTMLSelectElement interface: document.createElement("select") must inherit property "autofocus" with the proper type
 PASS HTMLSelectElement interface: document.createElement("select") must inherit property "disabled" with the proper type
 PASS HTMLSelectElement interface: document.createElement("select") must inherit property "form" with the proper type
@@ -3759,13 +3759,13 @@ PASS HTMLTextAreaElement interface object length
 PASS HTMLTextAreaElement interface object name
 PASS HTMLTextAreaElement interface: existence and properties of interface prototype object
 PASS HTMLTextAreaElement interface: existence and properties of interface prototype object's "constructor" property
-FAIL HTMLTextAreaElement interface: attribute autocompleteassert_true: The prototype object must have a property "autocomplete" expected true got false
+FAIL HTMLTextAreaElement interface: attribute autocomplete assert_true: The prototype object must have a property "autocomplete" expected true got false
 PASS HTMLTextAreaElement interface: attribute autofocus
 PASS HTMLTextAreaElement interface: attribute cols
 PASS HTMLTextAreaElement interface: attribute dirName
 PASS HTMLTextAreaElement interface: attribute disabled
 PASS HTMLTextAreaElement interface: attribute form
-FAIL HTMLTextAreaElement interface: attribute inputModeassert_own_property: expected property "inputMode" missing
+FAIL HTMLTextAreaElement interface: attribute inputMode assert_own_property: expected property "inputMode" missing
 PASS HTMLTextAreaElement interface: attribute maxLength
 PASS HTMLTextAreaElement interface: attribute minLength
 PASS HTMLTextAreaElement interface: attribute name
@@ -3794,7 +3794,7 @@ PASS HTMLTextAreaElement interface: operation setRangeText(DOMString, unsigned l
 PASS HTMLTextAreaElement interface: operation setSelectionRange(unsigned long, unsigned long, DOMString)
 PASS HTMLTextAreaElement must be primary interface of document.createElement("textarea")
 PASS Stringification of document.createElement("textarea")
-FAIL HTMLTextAreaElement interface: document.createElement("textarea") must inherit property "autocomplete" with the proper typeassert_inherits: property "autocomplete" not found in prototype chain
+FAIL HTMLTextAreaElement interface: document.createElement("textarea") must inherit property "autocomplete" with the proper type assert_inherits: property "autocomplete" not found in prototype chain
 PASS HTMLTextAreaElement interface: document.createElement("textarea") must inherit property "autofocus" with the proper type
 PASS HTMLTextAreaElement interface: document.createElement("textarea") must inherit property "cols" with the proper type
 PASS HTMLTextAreaElement interface: document.createElement("textarea") must inherit property "dirName" with the proper type
@@ -3989,7 +3989,7 @@ PASS HTMLScriptElement interface: attribute async
 PASS HTMLScriptElement interface: attribute defer
 PASS HTMLScriptElement interface: attribute crossOrigin
 PASS HTMLScriptElement interface: attribute text
-FAIL HTMLScriptElement interface: attribute nonceassert_own_property: expected property "nonce" missing
+FAIL HTMLScriptElement interface: attribute nonce assert_own_property: expected property "nonce" missing
 PASS HTMLScriptElement interface: attribute integrity
 PASS HTMLScriptElement interface: attribute event
 PASS HTMLScriptElement interface: attribute htmlFor
@@ -4062,9 +4062,9 @@ PASS CanvasRenderingContext2D interface: operation scale(unrestricted double, un
 PASS CanvasRenderingContext2D interface: operation rotate(unrestricted double)
 PASS CanvasRenderingContext2D interface: operation translate(unrestricted double, unrestricted double)
 PASS CanvasRenderingContext2D interface: operation transform(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double)
-FAIL CanvasRenderingContext2D interface: operation getTransform()assert_own_property: interface prototype object missing non-static operation expected property "getTransform" missing
-FAIL CanvasRenderingContext2D interface: operation setTransform(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double)assert_equals: property has wrong .length expected 0 but got 6
-FAIL CanvasRenderingContext2D interface: operation setTransform(DOMMatrixInit)assert_equals: property has wrong .length expected 0 but got 6
+FAIL CanvasRenderingContext2D interface: operation getTransform() assert_own_property: interface prototype object missing non-static operation expected property "getTransform" missing
+FAIL CanvasRenderingContext2D interface: operation setTransform(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double) assert_equals: property has wrong .length expected 0 but got 6
+FAIL CanvasRenderingContext2D interface: operation setTransform(DOMMatrixInit) assert_equals: property has wrong .length expected 0 but got 6
 PASS CanvasRenderingContext2D interface: operation resetTransform()
 PASS CanvasRenderingContext2D interface: attribute globalAlpha
 PASS CanvasRenderingContext2D interface: attribute globalCompositeOperation
@@ -4090,7 +4090,7 @@ PASS CanvasRenderingContext2D interface: operation stroke()
 PASS CanvasRenderingContext2D interface: operation stroke(Path2D)
 PASS CanvasRenderingContext2D interface: operation clip(CanvasFillRule)
 PASS CanvasRenderingContext2D interface: operation clip(Path2D, CanvasFillRule)
-FAIL CanvasRenderingContext2D interface: operation resetClip()assert_own_property: interface prototype object missing non-static operation expected property "resetClip" missing
+FAIL CanvasRenderingContext2D interface: operation resetClip() assert_own_property: interface prototype object missing non-static operation expected property "resetClip" missing
 PASS CanvasRenderingContext2D interface: operation isPointInPath(unrestricted double, unrestricted double, CanvasFillRule)
 PASS CanvasRenderingContext2D interface: operation isPointInPath(Path2D, unrestricted double, unrestricted double, CanvasFillRule)
 PASS CanvasRenderingContext2D interface: operation isPointInStroke(unrestricted double, unrestricted double)
@@ -4144,7 +4144,7 @@ PASS CanvasRenderingContext2D interface: document.createElement("canvas").getCon
 PASS CanvasRenderingContext2D interface: calling translate(unrestricted double, unrestricted double) on document.createElement("canvas").getContext("2d") with too few arguments must throw TypeError
 PASS CanvasRenderingContext2D interface: document.createElement("canvas").getContext("2d") must inherit property "transform(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double)" with the proper type
 PASS CanvasRenderingContext2D interface: calling transform(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double) on document.createElement("canvas").getContext("2d") with too few arguments must throw TypeError
-FAIL CanvasRenderingContext2D interface: document.createElement("canvas").getContext("2d") must inherit property "getTransform()" with the proper typeassert_inherits: property "getTransform" not found in prototype chain
+FAIL CanvasRenderingContext2D interface: document.createElement("canvas").getContext("2d") must inherit property "getTransform()" with the proper type assert_inherits: property "getTransform" not found in prototype chain
 PASS CanvasRenderingContext2D interface: document.createElement("canvas").getContext("2d") must inherit property "setTransform(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double)" with the proper type
 PASS CanvasRenderingContext2D interface: calling setTransform(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double) on document.createElement("canvas").getContext("2d") with too few arguments must throw TypeError
 PASS CanvasRenderingContext2D interface: document.createElement("canvas").getContext("2d") must inherit property "setTransform(DOMMatrixInit)" with the proper type
@@ -4185,7 +4185,7 @@ PASS CanvasRenderingContext2D interface: document.createElement("canvas").getCon
 PASS CanvasRenderingContext2D interface: calling clip(CanvasFillRule) on document.createElement("canvas").getContext("2d") with too few arguments must throw TypeError
 PASS CanvasRenderingContext2D interface: document.createElement("canvas").getContext("2d") must inherit property "clip(Path2D, CanvasFillRule)" with the proper type
 PASS CanvasRenderingContext2D interface: calling clip(Path2D, CanvasFillRule) on document.createElement("canvas").getContext("2d") with too few arguments must throw TypeError
-FAIL CanvasRenderingContext2D interface: document.createElement("canvas").getContext("2d") must inherit property "resetClip()" with the proper typeassert_inherits: property "resetClip" not found in prototype chain
+FAIL CanvasRenderingContext2D interface: document.createElement("canvas").getContext("2d") must inherit property "resetClip()" with the proper type assert_inherits: property "resetClip" not found in prototype chain
 PASS CanvasRenderingContext2D interface: document.createElement("canvas").getContext("2d") must inherit property "isPointInPath(unrestricted double, unrestricted double, CanvasFillRule)" with the proper type
 PASS CanvasRenderingContext2D interface: calling isPointInPath(unrestricted double, unrestricted double, CanvasFillRule) on document.createElement("canvas").getContext("2d") with too few arguments must throw TypeError
 PASS CanvasRenderingContext2D interface: document.createElement("canvas").getContext("2d") must inherit property "isPointInPath(Path2D, unrestricted double, unrestricted double, CanvasFillRule)" with the proper type
@@ -4265,7 +4265,7 @@ PASS CanvasPattern interface object length
 PASS CanvasPattern interface object name
 PASS CanvasPattern interface: existence and properties of interface prototype object
 PASS CanvasPattern interface: existence and properties of interface prototype object's "constructor" property
-FAIL CanvasPattern interface: operation setTransform(DOMMatrixInit)assert_equals: property has wrong .length expected 0 but got 1
+FAIL CanvasPattern interface: operation setTransform(DOMMatrixInit) assert_equals: property has wrong .length expected 0 but got 1
 PASS TextMetrics interface: existence and properties of interface object
 PASS TextMetrics interface object length
 PASS TextMetrics interface object name
@@ -4329,7 +4329,7 @@ PASS OffscreenCanvasRenderingContext2D interface object length
 PASS OffscreenCanvasRenderingContext2D interface object name
 PASS OffscreenCanvasRenderingContext2D interface: existence and properties of interface prototype object
 PASS OffscreenCanvasRenderingContext2D interface: existence and properties of interface prototype object's "constructor" property
-FAIL OffscreenCanvasRenderingContext2D interface: operation commit()assert_throws: calling operation with this = null didn't throw TypeError function "function () {
+FAIL OffscreenCanvasRenderingContext2D interface: operation commit() assert_throws: calling operation with this = null didn't throw TypeError function "function () {
             fn.apply(obj, args);
         }" did not throw
 PASS OffscreenCanvasRenderingContext2D interface: attribute canvas
@@ -4339,9 +4339,9 @@ PASS OffscreenCanvasRenderingContext2D interface: operation scale(unrestricted d
 PASS OffscreenCanvasRenderingContext2D interface: operation rotate(unrestricted double)
 PASS OffscreenCanvasRenderingContext2D interface: operation translate(unrestricted double, unrestricted double)
 PASS OffscreenCanvasRenderingContext2D interface: operation transform(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double)
-FAIL OffscreenCanvasRenderingContext2D interface: operation getTransform()assert_own_property: interface prototype object missing non-static operation expected property "getTransform" missing
-FAIL OffscreenCanvasRenderingContext2D interface: operation setTransform(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double)assert_equals: property has wrong .length expected 0 but got 6
-FAIL OffscreenCanvasRenderingContext2D interface: operation setTransform(DOMMatrixInit)assert_equals: property has wrong .length expected 0 but got 6
+FAIL OffscreenCanvasRenderingContext2D interface: operation getTransform() assert_own_property: interface prototype object missing non-static operation expected property "getTransform" missing
+FAIL OffscreenCanvasRenderingContext2D interface: operation setTransform(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double) assert_equals: property has wrong .length expected 0 but got 6
+FAIL OffscreenCanvasRenderingContext2D interface: operation setTransform(DOMMatrixInit) assert_equals: property has wrong .length expected 0 but got 6
 PASS OffscreenCanvasRenderingContext2D interface: operation resetTransform()
 PASS OffscreenCanvasRenderingContext2D interface: attribute globalAlpha
 PASS OffscreenCanvasRenderingContext2D interface: attribute globalCompositeOperation
@@ -4367,7 +4367,7 @@ PASS OffscreenCanvasRenderingContext2D interface: operation stroke()
 PASS OffscreenCanvasRenderingContext2D interface: operation stroke(Path2D)
 PASS OffscreenCanvasRenderingContext2D interface: operation clip(CanvasFillRule)
 PASS OffscreenCanvasRenderingContext2D interface: operation clip(Path2D, CanvasFillRule)
-FAIL OffscreenCanvasRenderingContext2D interface: operation resetClip()assert_own_property: interface prototype object missing non-static operation expected property "resetClip" missing
+FAIL OffscreenCanvasRenderingContext2D interface: operation resetClip() assert_own_property: interface prototype object missing non-static operation expected property "resetClip" missing
 PASS OffscreenCanvasRenderingContext2D interface: operation isPointInPath(unrestricted double, unrestricted double, CanvasFillRule)
 PASS OffscreenCanvasRenderingContext2D interface: operation isPointInPath(Path2D, unrestricted double, unrestricted double, CanvasFillRule)
 PASS OffscreenCanvasRenderingContext2D interface: operation isPointInStroke(unrestricted double, unrestricted double)
@@ -4455,7 +4455,7 @@ PASS Window interface: internal [[SetPrototypeOf]] method of interface prototype
 PASS Window interface: internal [[SetPrototypeOf]] method of interface prototype object - setting to its original value via __proto__ should not throw
 PASS Window interface: internal [[SetPrototypeOf]] method of interface prototype object - setting to its original value via Reflect.setPrototypeOf should return true
 PASS Window interface: existence and properties of interface prototype object's "constructor" property
-FAIL Window interface: attribute selfassert_equals: "self" must have a getter expected "function" but got "undefined"
+FAIL Window interface: attribute self assert_equals: "self" must have a getter expected "function" but got "undefined"
 PASS Window interface: attribute name
 PASS Window interface: attribute history
 PASS Window interface: attribute customElements
@@ -4467,16 +4467,16 @@ PASS Window interface: attribute statusbar
 PASS Window interface: attribute toolbar
 PASS Window interface: attribute status
 PASS Window interface: operation close()
-FAIL Window interface: attribute closedassert_equals: "closed" must have a getter expected "function" but got "undefined"
+FAIL Window interface: attribute closed assert_equals: "closed" must have a getter expected "function" but got "undefined"
 PASS Window interface: operation stop()
 PASS Window interface: operation focus()
 PASS Window interface: operation blur()
-FAIL Window interface: attribute framesassert_equals: "frames" must have a getter expected "function" but got "undefined"
-FAIL Window interface: attribute lengthassert_equals: "length" must have a getter expected "function" but got "undefined"
-FAIL Window interface: attribute openerassert_equals: "opener" must have a getter expected "function" but got "undefined"
-FAIL Window interface: attribute parentassert_equals: "parent" must have a getter expected "function" but got "undefined"
+FAIL Window interface: attribute frames assert_equals: "frames" must have a getter expected "function" but got "undefined"
+FAIL Window interface: attribute length assert_equals: "length" must have a getter expected "function" but got "undefined"
+FAIL Window interface: attribute opener assert_equals: "opener" must have a getter expected "function" but got "undefined"
+FAIL Window interface: attribute parent assert_equals: "parent" must have a getter expected "function" but got "undefined"
 PASS Window interface: attribute frameElement
-FAIL Window interface: operation open(USVString, DOMString, DOMString)assert_equals: property has wrong .length expected 0 but got 2
+FAIL Window interface: operation open(USVString, DOMString, DOMString) assert_equals: property has wrong .length expected 0 but got 2
 PASS Window interface: attribute navigator
 PASS Window interface: attribute applicationCache
 PASS Window interface: operation alert()
@@ -4505,7 +4505,7 @@ PASS Window interface: attribute ondblclick
 PASS Window interface: attribute ondrag
 PASS Window interface: attribute ondragend
 PASS Window interface: attribute ondragenter
-FAIL Window interface: attribute ondragexitassert_own_property: The global object must have a property "ondragexit" expected property "ondragexit" missing
+FAIL Window interface: attribute ondragexit assert_own_property: The global object must have a property "ondragexit" expected property "ondragexit" missing
 PASS Window interface: attribute ondragleave
 PASS Window interface: attribute ondragover
 PASS Window interface: attribute ondragstart
@@ -4523,7 +4523,7 @@ PASS Window interface: attribute onkeyup
 PASS Window interface: attribute onload
 PASS Window interface: attribute onloadeddata
 PASS Window interface: attribute onloadedmetadata
-FAIL Window interface: attribute onloadendassert_own_property: The global object must have a property "onloadend" expected property "onloadend" missing
+FAIL Window interface: attribute onloadend assert_own_property: The global object must have a property "onloadend" expected property "onloadend" missing
 PASS Window interface: attribute onloadstart
 PASS Window interface: attribute onmousedown
 PASS Window interface: attribute onmouseenter
@@ -4541,7 +4541,7 @@ PASS Window interface: attribute onratechange
 PASS Window interface: attribute onreset
 PASS Window interface: attribute onresize
 PASS Window interface: attribute onscroll
-FAIL Window interface: attribute onsecuritypolicyviolationassert_own_property: The global object must have a property "onsecuritypolicyviolation" expected property "onsecuritypolicyviolation" missing
+FAIL Window interface: attribute onsecuritypolicyviolation assert_own_property: The global object must have a property "onsecuritypolicyviolation" expected property "onsecuritypolicyviolation" missing
 PASS Window interface: attribute onseeked
 PASS Window interface: attribute onseeking
 PASS Window interface: attribute onselect
@@ -4552,8 +4552,8 @@ PASS Window interface: attribute ontimeupdate
 PASS Window interface: attribute ontoggle
 PASS Window interface: attribute onvolumechange
 PASS Window interface: attribute onwaiting
-FAIL Window interface: attribute onafterprintassert_own_property: The global object must have a property "onafterprint" expected property "onafterprint" missing
-FAIL Window interface: attribute onbeforeprintassert_own_property: The global object must have a property "onbeforeprint" expected property "onbeforeprint" missing
+FAIL Window interface: attribute onafterprint assert_own_property: The global object must have a property "onafterprint" expected property "onafterprint" missing
+FAIL Window interface: attribute onbeforeprint assert_own_property: The global object must have a property "onbeforeprint" expected property "onbeforeprint" missing
 PASS Window interface: attribute onbeforeunload
 PASS Window interface: attribute onhashchange
 PASS Window interface: attribute onlanguagechange
@@ -4587,11 +4587,11 @@ PASS Window interface: internal [[SetPrototypeOf]] method of global platform obj
 PASS Window interface: internal [[SetPrototypeOf]] method of global platform object - setting to its original value via Reflect.setPrototypeOf should return true
 PASS Window must be primary interface of window
 PASS Stringification of window
-FAIL Window interface: window must have own property "window"assert_false: property descriptor should not have a "value" field expected false got true
-FAIL Window interface: window must inherit property "self" with the proper typeUnrecognized type WindowProxy
+FAIL Window interface: window must have own property "window" assert_false: property descriptor should not have a "value" field expected false got true
+FAIL Window interface: window must inherit property "self" with the proper type Unrecognized type WindowProxy
 PASS Window interface: window must have own property "document"
 PASS Window interface: window must inherit property "name" with the proper type
-FAIL Window interface: window must have own property "location"assert_false: property descriptor should not have a "value" field expected false got true
+FAIL Window interface: window must have own property "location" assert_false: property descriptor should not have a "value" field expected false got true
 PASS Window interface: window must inherit property "history" with the proper type
 PASS Window interface: window must inherit property "customElements" with the proper type
 PASS Window interface: window must inherit property "locationbar" with the proper type
@@ -4606,11 +4606,11 @@ PASS Window interface: window must inherit property "closed" with the proper typ
 PASS Window interface: window must inherit property "stop()" with the proper type
 PASS Window interface: window must inherit property "focus()" with the proper type
 PASS Window interface: window must inherit property "blur()" with the proper type
-FAIL Window interface: window must inherit property "frames" with the proper typeUnrecognized type WindowProxy
+FAIL Window interface: window must inherit property "frames" with the proper type Unrecognized type WindowProxy
 PASS Window interface: window must inherit property "length" with the proper type
-FAIL Window interface: window must have own property "top"assert_false: property descriptor should not have a "value" field expected false got true
+FAIL Window interface: window must have own property "top" assert_false: property descriptor should not have a "value" field expected false got true
 PASS Window interface: window must inherit property "opener" with the proper type
-FAIL Window interface: window must inherit property "parent" with the proper typeUnrecognized type WindowProxy
+FAIL Window interface: window must inherit property "parent" with the proper type Unrecognized type WindowProxy
 PASS Window interface: window must inherit property "frameElement" with the proper type
 PASS Window interface: window must inherit property "open(USVString, DOMString, DOMString)" with the proper type
 PASS Window interface: calling open(USVString, DOMString, DOMString) on window with too few arguments must throw TypeError
@@ -4648,7 +4648,7 @@ PASS Window interface: window must inherit property "ondblclick" with the proper
 PASS Window interface: window must inherit property "ondrag" with the proper type
 PASS Window interface: window must inherit property "ondragend" with the proper type
 PASS Window interface: window must inherit property "ondragenter" with the proper type
-FAIL Window interface: window must inherit property "ondragexit" with the proper typeassert_own_property: expected property "ondragexit" missing
+FAIL Window interface: window must inherit property "ondragexit" with the proper type assert_own_property: expected property "ondragexit" missing
 PASS Window interface: window must inherit property "ondragleave" with the proper type
 PASS Window interface: window must inherit property "ondragover" with the proper type
 PASS Window interface: window must inherit property "ondragstart" with the proper type
@@ -4666,7 +4666,7 @@ PASS Window interface: window must inherit property "onkeyup" with the proper ty
 PASS Window interface: window must inherit property "onload" with the proper type
 PASS Window interface: window must inherit property "onloadeddata" with the proper type
 PASS Window interface: window must inherit property "onloadedmetadata" with the proper type
-FAIL Window interface: window must inherit property "onloadend" with the proper typeassert_own_property: expected property "onloadend" missing
+FAIL Window interface: window must inherit property "onloadend" with the proper type assert_own_property: expected property "onloadend" missing
 PASS Window interface: window must inherit property "onloadstart" with the proper type
 PASS Window interface: window must inherit property "onmousedown" with the proper type
 PASS Window interface: window must inherit property "onmouseenter" with the proper type
@@ -4684,7 +4684,7 @@ PASS Window interface: window must inherit property "onratechange" with the prop
 PASS Window interface: window must inherit property "onreset" with the proper type
 PASS Window interface: window must inherit property "onresize" with the proper type
 PASS Window interface: window must inherit property "onscroll" with the proper type
-FAIL Window interface: window must inherit property "onsecuritypolicyviolation" with the proper typeassert_own_property: expected property "onsecuritypolicyviolation" missing
+FAIL Window interface: window must inherit property "onsecuritypolicyviolation" with the proper type assert_own_property: expected property "onsecuritypolicyviolation" missing
 PASS Window interface: window must inherit property "onseeked" with the proper type
 PASS Window interface: window must inherit property "onseeking" with the proper type
 PASS Window interface: window must inherit property "onselect" with the proper type
@@ -4695,8 +4695,8 @@ PASS Window interface: window must inherit property "ontimeupdate" with the prop
 PASS Window interface: window must inherit property "ontoggle" with the proper type
 PASS Window interface: window must inherit property "onvolumechange" with the proper type
 PASS Window interface: window must inherit property "onwaiting" with the proper type
-FAIL Window interface: window must inherit property "onafterprint" with the proper typeassert_own_property: expected property "onafterprint" missing
-FAIL Window interface: window must inherit property "onbeforeprint" with the proper typeassert_own_property: expected property "onbeforeprint" missing
+FAIL Window interface: window must inherit property "onafterprint" with the proper type assert_own_property: expected property "onafterprint" missing
+FAIL Window interface: window must inherit property "onbeforeprint" with the proper type assert_own_property: expected property "onbeforeprint" missing
 PASS Window interface: window must inherit property "onbeforeunload" with the proper type
 PASS Window interface: window must inherit property "onhashchange" with the proper type
 PASS Window interface: window must inherit property "onlanguagechange" with the proper type
@@ -4767,10 +4767,10 @@ PASS Location interface object length
 PASS Location interface object name
 PASS Location interface: existence and properties of interface prototype object
 PASS Location interface: existence and properties of interface prototype object's "constructor" property
-FAIL Location interface: stringifierassert_own_property: interface prototype object missing non-static operation expected property "toString" missing
+FAIL Location interface: stringifier assert_own_property: interface prototype object missing non-static operation expected property "toString" missing
 PASS Location must be primary interface of window.location
 PASS Stringification of window.location
-FAIL Location interface: window.location must have own property "href"assert_false: property descriptor should not have a "value" field expected false got true
+FAIL Location interface: window.location must have own property "href" assert_false: property descriptor should not have a "value" field expected false got true
 PASS Location interface: window.location must have own property "origin"
 PASS Location interface: window.location must have own property "protocol"
 PASS Location interface: window.location must have own property "host"
@@ -4877,7 +4877,7 @@ PASS PromiseRejectionEvent interface object length
 PASS PromiseRejectionEvent interface object name
 PASS PromiseRejectionEvent interface: existence and properties of interface prototype object
 PASS PromiseRejectionEvent interface: existence and properties of interface prototype object's "constructor" property
-FAIL PromiseRejectionEvent interface: attribute promiseIllegal invocation
+FAIL PromiseRejectionEvent interface: attribute promise Illegal invocation
 PASS PromiseRejectionEvent interface: attribute reason
 PASS Navigator interface: existence and properties of interface object
 PASS Navigator interface object length
@@ -4893,17 +4893,17 @@ PASS Navigator interface: attribute productSub
 PASS Navigator interface: attribute userAgent
 PASS Navigator interface: attribute vendor
 PASS Navigator interface: attribute vendorSub
-FAIL Navigator interface: operation taintEnabled()assert_own_property: interface prototype object missing non-static operation expected property "taintEnabled" missing
-FAIL Navigator interface: attribute oscpuassert_true: The prototype object must have a property "oscpu" expected true got false
+FAIL Navigator interface: operation taintEnabled() assert_own_property: interface prototype object missing non-static operation expected property "taintEnabled" missing
+FAIL Navigator interface: attribute oscpu assert_true: The prototype object must have a property "oscpu" expected true got false
 PASS Navigator interface: attribute language
 PASS Navigator interface: attribute languages
 PASS Navigator interface: attribute onLine
 PASS Navigator interface: operation registerProtocolHandler(DOMString, USVString, DOMString)
-FAIL Navigator interface: operation registerContentHandler(DOMString, USVString, DOMString)assert_own_property: interface prototype object missing non-static operation expected property "registerContentHandler" missing
+FAIL Navigator interface: operation registerContentHandler(DOMString, USVString, DOMString) assert_own_property: interface prototype object missing non-static operation expected property "registerContentHandler" missing
 PASS Navigator interface: operation isProtocolHandlerRegistered(DOMString, USVString)
-FAIL Navigator interface: operation isContentHandlerRegistered(DOMString, USVString)assert_own_property: interface prototype object missing non-static operation expected property "isContentHandlerRegistered" missing
+FAIL Navigator interface: operation isContentHandlerRegistered(DOMString, USVString) assert_own_property: interface prototype object missing non-static operation expected property "isContentHandlerRegistered" missing
 PASS Navigator interface: operation unregisterProtocolHandler(DOMString, USVString)
-FAIL Navigator interface: operation unregisterContentHandler(DOMString, USVString)assert_own_property: interface prototype object missing non-static operation expected property "unregisterContentHandler" missing
+FAIL Navigator interface: operation unregisterContentHandler(DOMString, USVString) assert_own_property: interface prototype object missing non-static operation expected property "unregisterContentHandler" missing
 PASS Navigator interface: attribute cookieEnabled
 PASS Navigator interface: attribute plugins
 PASS Navigator interface: attribute mimeTypes
@@ -4920,23 +4920,23 @@ PASS Navigator interface: window.navigator must inherit property "productSub" wi
 PASS Navigator interface: window.navigator must inherit property "userAgent" with the proper type
 PASS Navigator interface: window.navigator must inherit property "vendor" with the proper type
 PASS Navigator interface: window.navigator must inherit property "vendorSub" with the proper type
-FAIL Navigator interface: window.navigator must inherit property "taintEnabled()" with the proper typeassert_inherits: property "taintEnabled" not found in prototype chain
-FAIL Navigator interface: window.navigator must inherit property "oscpu" with the proper typeassert_inherits: property "oscpu" not found in prototype chain
+FAIL Navigator interface: window.navigator must inherit property "taintEnabled()" with the proper type assert_inherits: property "taintEnabled" not found in prototype chain
+FAIL Navigator interface: window.navigator must inherit property "oscpu" with the proper type assert_inherits: property "oscpu" not found in prototype chain
 PASS Navigator interface: window.navigator must inherit property "language" with the proper type
 PASS Navigator interface: window.navigator must inherit property "languages" with the proper type
 PASS Navigator interface: window.navigator must inherit property "onLine" with the proper type
 PASS Navigator interface: window.navigator must inherit property "registerProtocolHandler(DOMString, USVString, DOMString)" with the proper type
 PASS Navigator interface: calling registerProtocolHandler(DOMString, USVString, DOMString) on window.navigator with too few arguments must throw TypeError
-FAIL Navigator interface: window.navigator must inherit property "registerContentHandler(DOMString, USVString, DOMString)" with the proper typeassert_inherits: property "registerContentHandler" not found in prototype chain
-FAIL Navigator interface: calling registerContentHandler(DOMString, USVString, DOMString) on window.navigator with too few arguments must throw TypeErrorassert_inherits: property "registerContentHandler" not found in prototype chain
+FAIL Navigator interface: window.navigator must inherit property "registerContentHandler(DOMString, USVString, DOMString)" with the proper type assert_inherits: property "registerContentHandler" not found in prototype chain
+FAIL Navigator interface: calling registerContentHandler(DOMString, USVString, DOMString) on window.navigator with too few arguments must throw TypeError assert_inherits: property "registerContentHandler" not found in prototype chain
 PASS Navigator interface: window.navigator must inherit property "isProtocolHandlerRegistered(DOMString, USVString)" with the proper type
 PASS Navigator interface: calling isProtocolHandlerRegistered(DOMString, USVString) on window.navigator with too few arguments must throw TypeError
-FAIL Navigator interface: window.navigator must inherit property "isContentHandlerRegistered(DOMString, USVString)" with the proper typeassert_inherits: property "isContentHandlerRegistered" not found in prototype chain
-FAIL Navigator interface: calling isContentHandlerRegistered(DOMString, USVString) on window.navigator with too few arguments must throw TypeErrorassert_inherits: property "isContentHandlerRegistered" not found in prototype chain
+FAIL Navigator interface: window.navigator must inherit property "isContentHandlerRegistered(DOMString, USVString)" with the proper type assert_inherits: property "isContentHandlerRegistered" not found in prototype chain
+FAIL Navigator interface: calling isContentHandlerRegistered(DOMString, USVString) on window.navigator with too few arguments must throw TypeError assert_inherits: property "isContentHandlerRegistered" not found in prototype chain
 PASS Navigator interface: window.navigator must inherit property "unregisterProtocolHandler(DOMString, USVString)" with the proper type
 PASS Navigator interface: calling unregisterProtocolHandler(DOMString, USVString) on window.navigator with too few arguments must throw TypeError
-FAIL Navigator interface: window.navigator must inherit property "unregisterContentHandler(DOMString, USVString)" with the proper typeassert_inherits: property "unregisterContentHandler" not found in prototype chain
-FAIL Navigator interface: calling unregisterContentHandler(DOMString, USVString) on window.navigator with too few arguments must throw TypeErrorassert_inherits: property "unregisterContentHandler" not found in prototype chain
+FAIL Navigator interface: window.navigator must inherit property "unregisterContentHandler(DOMString, USVString)" with the proper type assert_inherits: property "unregisterContentHandler" not found in prototype chain
+FAIL Navigator interface: calling unregisterContentHandler(DOMString, USVString) on window.navigator with too few arguments must throw TypeError assert_inherits: property "unregisterContentHandler" not found in prototype chain
 PASS Navigator interface: window.navigator must inherit property "cookieEnabled" with the proper type
 PASS Navigator interface: window.navigator must inherit property "plugins" with the proper type
 PASS Navigator interface: window.navigator must inherit property "mimeTypes" with the proper type
@@ -4997,16 +4997,16 @@ PASS MessageEvent interface: attribute origin
 PASS MessageEvent interface: attribute lastEventId
 PASS MessageEvent interface: attribute source
 PASS MessageEvent interface: attribute ports
-FAIL MessageEvent interface: operation initMessageEvent(DOMString, boolean, boolean, any, USVString, DOMString, MessageEventSource, [object Object])assert_equals: property has wrong .length expected 1 but got 0
+FAIL MessageEvent interface: operation initMessageEvent(DOMString, boolean, boolean, any, USVString, DOMString, MessageEventSource, [object Object]) assert_equals: property has wrong .length expected 1 but got 0
 PASS MessageEvent must be primary interface of new MessageEvent("message", { data: 5 })
 PASS Stringification of new MessageEvent("message", { data: 5 })
 PASS MessageEvent interface: new MessageEvent("message", { data: 5 }) must inherit property "data" with the proper type
 PASS MessageEvent interface: new MessageEvent("message", { data: 5 }) must inherit property "origin" with the proper type
 PASS MessageEvent interface: new MessageEvent("message", { data: 5 }) must inherit property "lastEventId" with the proper type
-FAIL MessageEvent interface: new MessageEvent("message", { data: 5 }) must inherit property "source" with the proper typeUnrecognized type WindowProxy
+FAIL MessageEvent interface: new MessageEvent("message", { data: 5 }) must inherit property "source" with the proper type Unrecognized type WindowProxy
 PASS MessageEvent interface: new MessageEvent("message", { data: 5 }) must inherit property "ports" with the proper type
 PASS MessageEvent interface: new MessageEvent("message", { data: 5 }) must inherit property "initMessageEvent(DOMString, boolean, boolean, any, USVString, DOMString, MessageEventSource, [object Object])" with the proper type
-FAIL MessageEvent interface: calling initMessageEvent(DOMString, boolean, boolean, any, USVString, DOMString, MessageEventSource, [object Object]) on new MessageEvent("message", { data: 5 }) with too few arguments must throw TypeErrorassert_throws: Called with 0 arguments function "function () {
+FAIL MessageEvent interface: calling initMessageEvent(DOMString, boolean, boolean, any, USVString, DOMString, MessageEventSource, [object Object]) on new MessageEvent("message", { data: 5 }) with too few arguments must throw TypeError assert_throws: Called with 0 arguments function "function () {
             fn.apply(obj, args);
         }" did not throw
 PASS EventSource interface: existence and properties of interface object
@@ -5132,7 +5132,7 @@ PASS Worker interface: existence and properties of interface prototype object's 
 PASS Worker interface: operation terminate()
 PASS Worker interface: operation postMessage(any, [object Object])
 PASS Worker interface: attribute onmessage
-FAIL Worker interface: attribute onmessageerrorassert_true: The prototype object must have a property "onmessageerror" expected true got false
+FAIL Worker interface: attribute onmessageerror assert_true: The prototype object must have a property "onmessageerror" expected true got false
 PASS Worker interface: attribute onerror
 PASS SharedWorker interface: existence and properties of interface object
 PASS SharedWorker interface object length
@@ -5148,12 +5148,12 @@ PASS Storage interface object length
 PASS Storage interface object name
 PASS Storage interface: existence and properties of interface prototype object
 PASS Storage interface: existence and properties of interface prototype object's "constructor" property
-FAIL Storage interface: attribute lengthassert_true: property should be enumerable expected true got false
-FAIL Storage interface: operation key(unsigned long)assert_true: property should be enumerable expected true got false
-FAIL Storage interface: operation getItem(DOMString)assert_true: property should be enumerable expected true got false
-FAIL Storage interface: operation setItem(DOMString, DOMString)assert_true: property should be enumerable expected true got false
-FAIL Storage interface: operation removeItem(DOMString)assert_true: property should be enumerable expected true got false
-FAIL Storage interface: operation clear()assert_true: property should be enumerable expected true got false
+FAIL Storage interface: attribute length assert_true: property should be enumerable expected true got false
+FAIL Storage interface: operation key(unsigned long) assert_true: property should be enumerable expected true got false
+FAIL Storage interface: operation getItem(DOMString) assert_true: property should be enumerable expected true got false
+FAIL Storage interface: operation setItem(DOMString, DOMString) assert_true: property should be enumerable expected true got false
+FAIL Storage interface: operation removeItem(DOMString) assert_true: property should be enumerable expected true got false
+FAIL Storage interface: operation clear() assert_true: property should be enumerable expected true got false
 PASS StorageEvent interface: existence and properties of interface object
 PASS StorageEvent interface object length
 PASS StorageEvent interface object name
@@ -5164,35 +5164,35 @@ PASS StorageEvent interface: attribute oldValue
 PASS StorageEvent interface: attribute newValue
 PASS StorageEvent interface: attribute url
 PASS StorageEvent interface: attribute storageArea
-FAIL HTMLAppletElement interface: existence and properties of interface objectassert_own_property: self does not have own property "HTMLAppletElement" expected property "HTMLAppletElement" missing
-FAIL HTMLAppletElement interface object lengthassert_own_property: self does not have own property "HTMLAppletElement" expected property "HTMLAppletElement" missing
-FAIL HTMLAppletElement interface object nameassert_own_property: self does not have own property "HTMLAppletElement" expected property "HTMLAppletElement" missing
-FAIL HTMLAppletElement interface: existence and properties of interface prototype objectassert_own_property: self does not have own property "HTMLAppletElement" expected property "HTMLAppletElement" missing
-FAIL HTMLAppletElement interface: existence and properties of interface prototype object's "constructor" propertyassert_own_property: self does not have own property "HTMLAppletElement" expected property "HTMLAppletElement" missing
-FAIL HTMLAppletElement interface: attribute alignassert_own_property: self does not have own property "HTMLAppletElement" expected property "HTMLAppletElement" missing
-FAIL HTMLAppletElement interface: attribute altassert_own_property: self does not have own property "HTMLAppletElement" expected property "HTMLAppletElement" missing
-FAIL HTMLAppletElement interface: attribute archiveassert_own_property: self does not have own property "HTMLAppletElement" expected property "HTMLAppletElement" missing
-FAIL HTMLAppletElement interface: attribute codeassert_own_property: self does not have own property "HTMLAppletElement" expected property "HTMLAppletElement" missing
-FAIL HTMLAppletElement interface: attribute codeBaseassert_own_property: self does not have own property "HTMLAppletElement" expected property "HTMLAppletElement" missing
-FAIL HTMLAppletElement interface: attribute heightassert_own_property: self does not have own property "HTMLAppletElement" expected property "HTMLAppletElement" missing
-FAIL HTMLAppletElement interface: attribute hspaceassert_own_property: self does not have own property "HTMLAppletElement" expected property "HTMLAppletElement" missing
-FAIL HTMLAppletElement interface: attribute nameassert_own_property: self does not have own property "HTMLAppletElement" expected property "HTMLAppletElement" missing
-FAIL HTMLAppletElement interface: attribute objectassert_own_property: self does not have own property "HTMLAppletElement" expected property "HTMLAppletElement" missing
-FAIL HTMLAppletElement interface: attribute vspaceassert_own_property: self does not have own property "HTMLAppletElement" expected property "HTMLAppletElement" missing
-FAIL HTMLAppletElement interface: attribute widthassert_own_property: self does not have own property "HTMLAppletElement" expected property "HTMLAppletElement" missing
-FAIL HTMLAppletElement must be primary interface of document.createElement("applet")assert_own_property: self does not have own property "HTMLAppletElement" expected property "HTMLAppletElement" missing
-FAIL Stringification of document.createElement("applet")assert_equals: class string of document.createElement("applet") expected "[object HTMLAppletElement]" but got "[object HTMLUnknownElement]"
-FAIL HTMLAppletElement interface: document.createElement("applet") must inherit property "align" with the proper typeassert_inherits: property "align" not found in prototype chain
-FAIL HTMLAppletElement interface: document.createElement("applet") must inherit property "alt" with the proper typeassert_inherits: property "alt" not found in prototype chain
-FAIL HTMLAppletElement interface: document.createElement("applet") must inherit property "archive" with the proper typeassert_inherits: property "archive" not found in prototype chain
-FAIL HTMLAppletElement interface: document.createElement("applet") must inherit property "code" with the proper typeassert_inherits: property "code" not found in prototype chain
-FAIL HTMLAppletElement interface: document.createElement("applet") must inherit property "codeBase" with the proper typeassert_inherits: property "codeBase" not found in prototype chain
-FAIL HTMLAppletElement interface: document.createElement("applet") must inherit property "height" with the proper typeassert_inherits: property "height" not found in prototype chain
-FAIL HTMLAppletElement interface: document.createElement("applet") must inherit property "hspace" with the proper typeassert_inherits: property "hspace" not found in prototype chain
-FAIL HTMLAppletElement interface: document.createElement("applet") must inherit property "name" with the proper typeassert_inherits: property "name" not found in prototype chain
-FAIL HTMLAppletElement interface: document.createElement("applet") must inherit property "object" with the proper typeassert_inherits: property "object" not found in prototype chain
-FAIL HTMLAppletElement interface: document.createElement("applet") must inherit property "vspace" with the proper typeassert_inherits: property "vspace" not found in prototype chain
-FAIL HTMLAppletElement interface: document.createElement("applet") must inherit property "width" with the proper typeassert_inherits: property "width" not found in prototype chain
+FAIL HTMLAppletElement interface: existence and properties of interface object assert_own_property: self does not have own property "HTMLAppletElement" expected property "HTMLAppletElement" missing
+FAIL HTMLAppletElement interface object length assert_own_property: self does not have own property "HTMLAppletElement" expected property "HTMLAppletElement" missing
+FAIL HTMLAppletElement interface object name assert_own_property: self does not have own property "HTMLAppletElement" expected property "HTMLAppletElement" missing
+FAIL HTMLAppletElement interface: existence and properties of interface prototype object assert_own_property: self does not have own property "HTMLAppletElement" expected property "HTMLAppletElement" missing
+FAIL HTMLAppletElement interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "HTMLAppletElement" expected property "HTMLAppletElement" missing
+FAIL HTMLAppletElement interface: attribute align assert_own_property: self does not have own property "HTMLAppletElement" expected property "HTMLAppletElement" missing
+FAIL HTMLAppletElement interface: attribute alt assert_own_property: self does not have own property "HTMLAppletElement" expected property "HTMLAppletElement" missing
+FAIL HTMLAppletElement interface: attribute archive assert_own_property: self does not have own property "HTMLAppletElement" expected property "HTMLAppletElement" missing
+FAIL HTMLAppletElement interface: attribute code assert_own_property: self does not have own property "HTMLAppletElement" expected property "HTMLAppletElement" missing
+FAIL HTMLAppletElement interface: attribute codeBase assert_own_property: self does not have own property "HTMLAppletElement" expected property "HTMLAppletElement" missing
+FAIL HTMLAppletElement interface: attribute height assert_own_property: self does not have own property "HTMLAppletElement" expected property "HTMLAppletElement" missing
+FAIL HTMLAppletElement interface: attribute hspace assert_own_property: self does not have own property "HTMLAppletElement" expected property "HTMLAppletElement" missing
+FAIL HTMLAppletElement interface: attribute name assert_own_property: self does not have own property "HTMLAppletElement" expected property "HTMLAppletElement" missing
+FAIL HTMLAppletElement interface: attribute object assert_own_property: self does not have own property "HTMLAppletElement" expected property "HTMLAppletElement" missing
+FAIL HTMLAppletElement interface: attribute vspace assert_own_property: self does not have own property "HTMLAppletElement" expected property "HTMLAppletElement" missing
+FAIL HTMLAppletElement interface: attribute width assert_own_property: self does not have own property "HTMLAppletElement" expected property "HTMLAppletElement" missing
+FAIL HTMLAppletElement must be primary interface of document.createElement("applet") assert_own_property: self does not have own property "HTMLAppletElement" expected property "HTMLAppletElement" missing
+FAIL Stringification of document.createElement("applet") assert_equals: class string of document.createElement("applet") expected "[object HTMLAppletElement]" but got "[object HTMLUnknownElement]"
+FAIL HTMLAppletElement interface: document.createElement("applet") must inherit property "align" with the proper type assert_inherits: property "align" not found in prototype chain
+FAIL HTMLAppletElement interface: document.createElement("applet") must inherit property "alt" with the proper type assert_inherits: property "alt" not found in prototype chain
+FAIL HTMLAppletElement interface: document.createElement("applet") must inherit property "archive" with the proper type assert_inherits: property "archive" not found in prototype chain
+FAIL HTMLAppletElement interface: document.createElement("applet") must inherit property "code" with the proper type assert_inherits: property "code" not found in prototype chain
+FAIL HTMLAppletElement interface: document.createElement("applet") must inherit property "codeBase" with the proper type assert_inherits: property "codeBase" not found in prototype chain
+FAIL HTMLAppletElement interface: document.createElement("applet") must inherit property "height" with the proper type assert_inherits: property "height" not found in prototype chain
+FAIL HTMLAppletElement interface: document.createElement("applet") must inherit property "hspace" with the proper type assert_inherits: property "hspace" not found in prototype chain
+FAIL HTMLAppletElement interface: document.createElement("applet") must inherit property "name" with the proper type assert_inherits: property "name" not found in prototype chain
+FAIL HTMLAppletElement interface: document.createElement("applet") must inherit property "object" with the proper type assert_inherits: property "object" not found in prototype chain
+FAIL HTMLAppletElement interface: document.createElement("applet") must inherit property "vspace" with the proper type assert_inherits: property "vspace" not found in prototype chain
+FAIL HTMLAppletElement interface: document.createElement("applet") must inherit property "width" with the proper type assert_inherits: property "width" not found in prototype chain
 PASS HTMLMarqueeElement interface: existence and properties of interface object
 PASS HTMLMarqueeElement interface object length
 PASS HTMLMarqueeElement interface object name
@@ -5209,9 +5209,9 @@ PASS HTMLMarqueeElement interface: attribute scrollDelay
 PASS HTMLMarqueeElement interface: attribute trueSpeed
 PASS HTMLMarqueeElement interface: attribute vspace
 PASS HTMLMarqueeElement interface: attribute width
-FAIL HTMLMarqueeElement interface: attribute onbounceassert_true: The prototype object must have a property "onbounce" expected true got false
-FAIL HTMLMarqueeElement interface: attribute onfinishassert_true: The prototype object must have a property "onfinish" expected true got false
-FAIL HTMLMarqueeElement interface: attribute onstartassert_true: The prototype object must have a property "onstart" expected true got false
+FAIL HTMLMarqueeElement interface: attribute onbounce assert_true: The prototype object must have a property "onbounce" expected true got false
+FAIL HTMLMarqueeElement interface: attribute onfinish assert_true: The prototype object must have a property "onfinish" expected true got false
+FAIL HTMLMarqueeElement interface: attribute onstart assert_true: The prototype object must have a property "onstart" expected true got false
 PASS HTMLMarqueeElement interface: operation start()
 PASS HTMLMarqueeElement interface: operation stop()
 PASS HTMLMarqueeElement must be primary interface of document.createElement("marquee")
@@ -5227,9 +5227,9 @@ PASS HTMLMarqueeElement interface: document.createElement("marquee") must inheri
 PASS HTMLMarqueeElement interface: document.createElement("marquee") must inherit property "trueSpeed" with the proper type
 PASS HTMLMarqueeElement interface: document.createElement("marquee") must inherit property "vspace" with the proper type
 PASS HTMLMarqueeElement interface: document.createElement("marquee") must inherit property "width" with the proper type
-FAIL HTMLMarqueeElement interface: document.createElement("marquee") must inherit property "onbounce" with the proper typeassert_inherits: property "onbounce" not found in prototype chain
-FAIL HTMLMarqueeElement interface: document.createElement("marquee") must inherit property "onfinish" with the proper typeassert_inherits: property "onfinish" not found in prototype chain
-FAIL HTMLMarqueeElement interface: document.createElement("marquee") must inherit property "onstart" with the proper typeassert_inherits: property "onstart" not found in prototype chain
+FAIL HTMLMarqueeElement interface: document.createElement("marquee") must inherit property "onbounce" with the proper type assert_inherits: property "onbounce" not found in prototype chain
+FAIL HTMLMarqueeElement interface: document.createElement("marquee") must inherit property "onfinish" with the proper type assert_inherits: property "onfinish" not found in prototype chain
+FAIL HTMLMarqueeElement interface: document.createElement("marquee") must inherit property "onstart" with the proper type assert_inherits: property "onstart" not found in prototype chain
 PASS HTMLMarqueeElement interface: document.createElement("marquee") must inherit property "start()" with the proper type
 PASS HTMLMarqueeElement interface: document.createElement("marquee") must inherit property "stop()" with the proper type
 PASS HTMLFrameSetElement interface: existence and properties of interface object
@@ -5239,8 +5239,8 @@ PASS HTMLFrameSetElement interface: existence and properties of interface protot
 PASS HTMLFrameSetElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLFrameSetElement interface: attribute cols
 PASS HTMLFrameSetElement interface: attribute rows
-FAIL HTMLFrameSetElement interface: attribute onafterprintassert_true: The prototype object must have a property "onafterprint" expected true got false
-FAIL HTMLFrameSetElement interface: attribute onbeforeprintassert_true: The prototype object must have a property "onbeforeprint" expected true got false
+FAIL HTMLFrameSetElement interface: attribute onafterprint assert_true: The prototype object must have a property "onafterprint" expected true got false
+FAIL HTMLFrameSetElement interface: attribute onbeforeprint assert_true: The prototype object must have a property "onbeforeprint" expected true got false
 PASS HTMLFrameSetElement interface: attribute onbeforeunload
 PASS HTMLFrameSetElement interface: attribute onhashchange
 PASS HTMLFrameSetElement interface: attribute onlanguagechange
@@ -5259,8 +5259,8 @@ PASS HTMLFrameSetElement must be primary interface of document.createElement("fr
 PASS Stringification of document.createElement("frameset")
 PASS HTMLFrameSetElement interface: document.createElement("frameset") must inherit property "cols" with the proper type
 PASS HTMLFrameSetElement interface: document.createElement("frameset") must inherit property "rows" with the proper type
-FAIL HTMLFrameSetElement interface: document.createElement("frameset") must inherit property "onafterprint" with the proper typeassert_inherits: property "onafterprint" not found in prototype chain
-FAIL HTMLFrameSetElement interface: document.createElement("frameset") must inherit property "onbeforeprint" with the proper typeassert_inherits: property "onbeforeprint" not found in prototype chain
+FAIL HTMLFrameSetElement interface: document.createElement("frameset") must inherit property "onafterprint" with the proper type assert_inherits: property "onafterprint" not found in prototype chain
+FAIL HTMLFrameSetElement interface: document.createElement("frameset") must inherit property "onbeforeprint" with the proper type assert_inherits: property "onbeforeprint" not found in prototype chain
 PASS HTMLFrameSetElement interface: document.createElement("frameset") must inherit property "onbeforeunload" with the proper type
 PASS HTMLFrameSetElement interface: document.createElement("frameset") must inherit property "onhashchange" with the proper type
 PASS HTMLFrameSetElement interface: document.createElement("frameset") must inherit property "onlanguagechange" with the proper type

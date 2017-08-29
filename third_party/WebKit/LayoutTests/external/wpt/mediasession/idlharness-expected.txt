@@ -23,6 +23,6 @@ PASS Stringification of [object MediaMetadata]
 PASS MediaMetadata interface: [object MediaMetadata] must inherit property "title" with the proper type
 PASS MediaMetadata interface: [object MediaMetadata] must inherit property "artist" with the proper type
 PASS MediaMetadata interface: [object MediaMetadata] must inherit property "album" with the proper type
-FAIL MediaMetadata interface: [object MediaMetadata] must inherit property "artwork" with the proper typeUnrecognized type FrozenArray
+FAIL MediaMetadata interface: [object MediaMetadata] must inherit property "artwork" with the proper type Unrecognized type FrozenArray
 Harness: the test ran to completion.
 

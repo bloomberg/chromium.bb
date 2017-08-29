@@ -10,8 +10,8 @@ PASS Web Animations: Interpolate attribute <orient> with underlying [50] from ad
 PASS Web Animations: Interpolate attribute <orient> with underlying [50] from add [130] to add [200grad] at (0.6) is [210]
 PASS Web Animations: Interpolate attribute <orient> with underlying [50] from add [130] to add [200grad] at (1) is [230]
 PASS Web Animations: Interpolate attribute <orient> with underlying [50] from add [130] to add [200grad] at (1.4) is [250]
-FAIL SMIL: Interpolate attribute <orient> with underlying [50] from add [90deg] to add [auto] at (0) is [140]assert_equals: expected "140 " but got "90 "
-FAIL SMIL: Interpolate attribute <orient> with underlying [50] from add [90deg] to add [auto] at (0.2) is [140]assert_equals: expected "140 " but got "90 "
+FAIL SMIL: Interpolate attribute <orient> with underlying [50] from add [90deg] to add [auto] at (0) is [140] assert_equals: expected "140 " but got "90 "
+FAIL SMIL: Interpolate attribute <orient> with underlying [50] from add [90deg] to add [auto] at (0.2) is [140] assert_equals: expected "140 " but got "90 "
 PASS SMIL: Interpolate attribute <orient> with underlying [50] from add [90deg] to add [auto] at (0.6) is [auto]
 PASS SMIL: Interpolate attribute <orient> with underlying [50] from add [90deg] to add [auto] at (1) is [auto]
 PASS Web Animations: Interpolate attribute <orient> with underlying [50] from add [90deg] to add [auto] at (-0.4) is [140]

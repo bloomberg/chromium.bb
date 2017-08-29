@@ -8,6 +8,6 @@ PASS CacheStorage.has with nonexistent cache
 PASS CacheStorage.open with existing cache
 PASS CacheStorage.delete with existing cache
 PASS CacheStorage.delete with nonexistent cache
-FAIL CacheStorage names are DOMStrings not USVStringsassert_true: keys should include cache with bad name expected true got false
+FAIL CacheStorage names are DOMStrings not USVStrings assert_true: keys should include cache with bad name expected true got false
 Harness: the test ran to completion.
 

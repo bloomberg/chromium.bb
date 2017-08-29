@@ -5,9 +5,9 @@ PASS PushMessageData is null by default.
 PASS PushMessageData handling of ArrayBuffer content.
 PASS PushMessageData handling of Blob content.
 PASS PushMessageData handling of valid JSON content.
-FAIL PushMessageData handling of invalid JSON content.Test bug: need to pass exception to assert_throws()
-FAIL PushMessageData should not be constructable.Test bug: need to pass exception to assert_throws()
+FAIL PushMessageData handling of invalid JSON content. Test bug: need to pass exception to assert_throws()
+FAIL PushMessageData should not be constructable. Test bug: need to pass exception to assert_throws()
 PASS PushEventInit data is not normalized
-FAIL PushMessageData throws when passed SharedArrayBuffer view.Test bug: need to pass exception to assert_throws()
+FAIL PushMessageData throws when passed SharedArrayBuffer view. Test bug: need to pass exception to assert_throws()
 Harness: the test ran to completion.
 

@@ -4,7 +4,7 @@ PASS Derived key of type name: AES-CBC length: 128  using short password, short 
 PASS Derived key of type name: AES-CBC length: 128  using short password, short salt, SHA-384, with 1 iterations with bad hash name SHA384
 PASS Derived key of type name: AES-CBC length: 128  using short password, short salt, SHA-384, with 1 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-CBC length: 128  using short password, short salt, SHA-384, with 1 iterations with wrong (ECDH) key
-FAIL Derived key of type name: AES-CBC length: 192  using short password, short salt, SHA-384, with 1 iterationsassert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
+FAIL Derived key of type name: AES-CBC length: 192  using short password, short salt, SHA-384, with 1 iterations assert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
 PASS Derived key of type name: AES-CBC length: 192  using short password, short salt, SHA-384, with 1 iterations with bad hash name SHA384
 PASS Derived key of type name: AES-CBC length: 192  using short password, short salt, SHA-384, with 1 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-CBC length: 192  using short password, short salt, SHA-384, with 1 iterations with wrong (ECDH) key
@@ -16,7 +16,7 @@ PASS Derived key of type name: AES-CTR length: 128  using short password, short 
 PASS Derived key of type name: AES-CTR length: 128  using short password, short salt, SHA-384, with 1 iterations with bad hash name SHA384
 PASS Derived key of type name: AES-CTR length: 128  using short password, short salt, SHA-384, with 1 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-CTR length: 128  using short password, short salt, SHA-384, with 1 iterations with wrong (ECDH) key
-FAIL Derived key of type name: AES-CTR length: 192  using short password, short salt, SHA-384, with 1 iterationsassert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
+FAIL Derived key of type name: AES-CTR length: 192  using short password, short salt, SHA-384, with 1 iterations assert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
 PASS Derived key of type name: AES-CTR length: 192  using short password, short salt, SHA-384, with 1 iterations with bad hash name SHA384
 PASS Derived key of type name: AES-CTR length: 192  using short password, short salt, SHA-384, with 1 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-CTR length: 192  using short password, short salt, SHA-384, with 1 iterations with wrong (ECDH) key
@@ -28,7 +28,7 @@ PASS Derived key of type name: AES-GCM length: 128  using short password, short 
 PASS Derived key of type name: AES-GCM length: 128  using short password, short salt, SHA-384, with 1 iterations with bad hash name SHA384
 PASS Derived key of type name: AES-GCM length: 128  using short password, short salt, SHA-384, with 1 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-GCM length: 128  using short password, short salt, SHA-384, with 1 iterations with wrong (ECDH) key
-FAIL Derived key of type name: AES-GCM length: 192  using short password, short salt, SHA-384, with 1 iterationsassert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
+FAIL Derived key of type name: AES-GCM length: 192  using short password, short salt, SHA-384, with 1 iterations assert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
 PASS Derived key of type name: AES-GCM length: 192  using short password, short salt, SHA-384, with 1 iterations with bad hash name SHA384
 PASS Derived key of type name: AES-GCM length: 192  using short password, short salt, SHA-384, with 1 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-GCM length: 192  using short password, short salt, SHA-384, with 1 iterations with wrong (ECDH) key
@@ -40,7 +40,7 @@ PASS Derived key of type name: AES-KW length: 128  using short password, short s
 PASS Derived key of type name: AES-KW length: 128  using short password, short salt, SHA-384, with 1 iterations with bad hash name SHA384
 PASS Derived key of type name: AES-KW length: 128  using short password, short salt, SHA-384, with 1 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-KW length: 128  using short password, short salt, SHA-384, with 1 iterations with wrong (ECDH) key
-FAIL Derived key of type name: AES-KW length: 192  using short password, short salt, SHA-384, with 1 iterationsassert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
+FAIL Derived key of type name: AES-KW length: 192  using short password, short salt, SHA-384, with 1 iterations assert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
 PASS Derived key of type name: AES-KW length: 192  using short password, short salt, SHA-384, with 1 iterations with bad hash name SHA384
 PASS Derived key of type name: AES-KW length: 192  using short password, short salt, SHA-384, with 1 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-KW length: 192  using short password, short salt, SHA-384, with 1 iterations with wrong (ECDH) key
@@ -75,7 +75,7 @@ PASS Derived key of type name: AES-CBC length: 128  using short password, short 
 PASS Derived key of type name: AES-CBC length: 128  using short password, short salt, SHA-384, with 1000 iterations with bad hash name SHA384
 PASS Derived key of type name: AES-CBC length: 128  using short password, short salt, SHA-384, with 1000 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-CBC length: 128  using short password, short salt, SHA-384, with 1000 iterations with wrong (ECDH) key
-FAIL Derived key of type name: AES-CBC length: 192  using short password, short salt, SHA-384, with 1000 iterationsassert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
+FAIL Derived key of type name: AES-CBC length: 192  using short password, short salt, SHA-384, with 1000 iterations assert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
 PASS Derived key of type name: AES-CBC length: 192  using short password, short salt, SHA-384, with 1000 iterations with bad hash name SHA384
 PASS Derived key of type name: AES-CBC length: 192  using short password, short salt, SHA-384, with 1000 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-CBC length: 192  using short password, short salt, SHA-384, with 1000 iterations with wrong (ECDH) key
@@ -87,7 +87,7 @@ PASS Derived key of type name: AES-CTR length: 128  using short password, short 
 PASS Derived key of type name: AES-CTR length: 128  using short password, short salt, SHA-384, with 1000 iterations with bad hash name SHA384
 PASS Derived key of type name: AES-CTR length: 128  using short password, short salt, SHA-384, with 1000 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-CTR length: 128  using short password, short salt, SHA-384, with 1000 iterations with wrong (ECDH) key
-FAIL Derived key of type name: AES-CTR length: 192  using short password, short salt, SHA-384, with 1000 iterationsassert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
+FAIL Derived key of type name: AES-CTR length: 192  using short password, short salt, SHA-384, with 1000 iterations assert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
 PASS Derived key of type name: AES-CTR length: 192  using short password, short salt, SHA-384, with 1000 iterations with bad hash name SHA384
 PASS Derived key of type name: AES-CTR length: 192  using short password, short salt, SHA-384, with 1000 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-CTR length: 192  using short password, short salt, SHA-384, with 1000 iterations with wrong (ECDH) key
@@ -99,7 +99,7 @@ PASS Derived key of type name: AES-GCM length: 128  using short password, short 
 PASS Derived key of type name: AES-GCM length: 128  using short password, short salt, SHA-384, with 1000 iterations with bad hash name SHA384
 PASS Derived key of type name: AES-GCM length: 128  using short password, short salt, SHA-384, with 1000 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-GCM length: 128  using short password, short salt, SHA-384, with 1000 iterations with wrong (ECDH) key
-FAIL Derived key of type name: AES-GCM length: 192  using short password, short salt, SHA-384, with 1000 iterationsassert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
+FAIL Derived key of type name: AES-GCM length: 192  using short password, short salt, SHA-384, with 1000 iterations assert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
 PASS Derived key of type name: AES-GCM length: 192  using short password, short salt, SHA-384, with 1000 iterations with bad hash name SHA384
 PASS Derived key of type name: AES-GCM length: 192  using short password, short salt, SHA-384, with 1000 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-GCM length: 192  using short password, short salt, SHA-384, with 1000 iterations with wrong (ECDH) key
@@ -111,7 +111,7 @@ PASS Derived key of type name: AES-KW length: 128  using short password, short s
 PASS Derived key of type name: AES-KW length: 128  using short password, short salt, SHA-384, with 1000 iterations with bad hash name SHA384
 PASS Derived key of type name: AES-KW length: 128  using short password, short salt, SHA-384, with 1000 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-KW length: 128  using short password, short salt, SHA-384, with 1000 iterations with wrong (ECDH) key
-FAIL Derived key of type name: AES-KW length: 192  using short password, short salt, SHA-384, with 1000 iterationsassert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
+FAIL Derived key of type name: AES-KW length: 192  using short password, short salt, SHA-384, with 1000 iterations assert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
 PASS Derived key of type name: AES-KW length: 192  using short password, short salt, SHA-384, with 1000 iterations with bad hash name SHA384
 PASS Derived key of type name: AES-KW length: 192  using short password, short salt, SHA-384, with 1000 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-KW length: 192  using short password, short salt, SHA-384, with 1000 iterations with wrong (ECDH) key
@@ -146,7 +146,7 @@ PASS Derived key of type name: AES-CBC length: 128  using short password, short 
 PASS Derived key of type name: AES-CBC length: 128  using short password, short salt, SHA-384, with 100000 iterations with bad hash name SHA384
 PASS Derived key of type name: AES-CBC length: 128  using short password, short salt, SHA-384, with 100000 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-CBC length: 128  using short password, short salt, SHA-384, with 100000 iterations with wrong (ECDH) key
-FAIL Derived key of type name: AES-CBC length: 192  using short password, short salt, SHA-384, with 100000 iterationsassert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
+FAIL Derived key of type name: AES-CBC length: 192  using short password, short salt, SHA-384, with 100000 iterations assert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
 PASS Derived key of type name: AES-CBC length: 192  using short password, short salt, SHA-384, with 100000 iterations with bad hash name SHA384
 PASS Derived key of type name: AES-CBC length: 192  using short password, short salt, SHA-384, with 100000 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-CBC length: 192  using short password, short salt, SHA-384, with 100000 iterations with wrong (ECDH) key
@@ -158,7 +158,7 @@ PASS Derived key of type name: AES-CTR length: 128  using short password, short 
 PASS Derived key of type name: AES-CTR length: 128  using short password, short salt, SHA-384, with 100000 iterations with bad hash name SHA384
 PASS Derived key of type name: AES-CTR length: 128  using short password, short salt, SHA-384, with 100000 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-CTR length: 128  using short password, short salt, SHA-384, with 100000 iterations with wrong (ECDH) key
-FAIL Derived key of type name: AES-CTR length: 192  using short password, short salt, SHA-384, with 100000 iterationsassert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
+FAIL Derived key of type name: AES-CTR length: 192  using short password, short salt, SHA-384, with 100000 iterations assert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
 PASS Derived key of type name: AES-CTR length: 192  using short password, short salt, SHA-384, with 100000 iterations with bad hash name SHA384
 PASS Derived key of type name: AES-CTR length: 192  using short password, short salt, SHA-384, with 100000 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-CTR length: 192  using short password, short salt, SHA-384, with 100000 iterations with wrong (ECDH) key
@@ -170,7 +170,7 @@ PASS Derived key of type name: AES-GCM length: 128  using short password, short 
 PASS Derived key of type name: AES-GCM length: 128  using short password, short salt, SHA-384, with 100000 iterations with bad hash name SHA384
 PASS Derived key of type name: AES-GCM length: 128  using short password, short salt, SHA-384, with 100000 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-GCM length: 128  using short password, short salt, SHA-384, with 100000 iterations with wrong (ECDH) key
-FAIL Derived key of type name: AES-GCM length: 192  using short password, short salt, SHA-384, with 100000 iterationsassert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
+FAIL Derived key of type name: AES-GCM length: 192  using short password, short salt, SHA-384, with 100000 iterations assert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
 PASS Derived key of type name: AES-GCM length: 192  using short password, short salt, SHA-384, with 100000 iterations with bad hash name SHA384
 PASS Derived key of type name: AES-GCM length: 192  using short password, short salt, SHA-384, with 100000 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-GCM length: 192  using short password, short salt, SHA-384, with 100000 iterations with wrong (ECDH) key
@@ -182,7 +182,7 @@ PASS Derived key of type name: AES-KW length: 128  using short password, short s
 PASS Derived key of type name: AES-KW length: 128  using short password, short salt, SHA-384, with 100000 iterations with bad hash name SHA384
 PASS Derived key of type name: AES-KW length: 128  using short password, short salt, SHA-384, with 100000 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-KW length: 128  using short password, short salt, SHA-384, with 100000 iterations with wrong (ECDH) key
-FAIL Derived key of type name: AES-KW length: 192  using short password, short salt, SHA-384, with 100000 iterationsassert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
+FAIL Derived key of type name: AES-KW length: 192  using short password, short salt, SHA-384, with 100000 iterations assert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
 PASS Derived key of type name: AES-KW length: 192  using short password, short salt, SHA-384, with 100000 iterations with bad hash name SHA384
 PASS Derived key of type name: AES-KW length: 192  using short password, short salt, SHA-384, with 100000 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-KW length: 192  using short password, short salt, SHA-384, with 100000 iterations with wrong (ECDH) key
@@ -234,7 +234,7 @@ PASS Derived key of type name: AES-CBC length: 128  using short password, short 
 PASS Derived key of type name: AES-CBC length: 128  using short password, short salt, SHA-512, with 1 iterations with bad hash name SHA512
 PASS Derived key of type name: AES-CBC length: 128  using short password, short salt, SHA-512, with 1 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-CBC length: 128  using short password, short salt, SHA-512, with 1 iterations with wrong (ECDH) key
-FAIL Derived key of type name: AES-CBC length: 192  using short password, short salt, SHA-512, with 1 iterationsassert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
+FAIL Derived key of type name: AES-CBC length: 192  using short password, short salt, SHA-512, with 1 iterations assert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
 PASS Derived key of type name: AES-CBC length: 192  using short password, short salt, SHA-512, with 1 iterations with bad hash name SHA512
 PASS Derived key of type name: AES-CBC length: 192  using short password, short salt, SHA-512, with 1 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-CBC length: 192  using short password, short salt, SHA-512, with 1 iterations with wrong (ECDH) key
@@ -246,7 +246,7 @@ PASS Derived key of type name: AES-CTR length: 128  using short password, short 
 PASS Derived key of type name: AES-CTR length: 128  using short password, short salt, SHA-512, with 1 iterations with bad hash name SHA512
 PASS Derived key of type name: AES-CTR length: 128  using short password, short salt, SHA-512, with 1 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-CTR length: 128  using short password, short salt, SHA-512, with 1 iterations with wrong (ECDH) key
-FAIL Derived key of type name: AES-CTR length: 192  using short password, short salt, SHA-512, with 1 iterationsassert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
+FAIL Derived key of type name: AES-CTR length: 192  using short password, short salt, SHA-512, with 1 iterations assert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
 PASS Derived key of type name: AES-CTR length: 192  using short password, short salt, SHA-512, with 1 iterations with bad hash name SHA512
 PASS Derived key of type name: AES-CTR length: 192  using short password, short salt, SHA-512, with 1 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-CTR length: 192  using short password, short salt, SHA-512, with 1 iterations with wrong (ECDH) key
@@ -258,7 +258,7 @@ PASS Derived key of type name: AES-GCM length: 128  using short password, short 
 PASS Derived key of type name: AES-GCM length: 128  using short password, short salt, SHA-512, with 1 iterations with bad hash name SHA512
 PASS Derived key of type name: AES-GCM length: 128  using short password, short salt, SHA-512, with 1 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-GCM length: 128  using short password, short salt, SHA-512, with 1 iterations with wrong (ECDH) key
-FAIL Derived key of type name: AES-GCM length: 192  using short password, short salt, SHA-512, with 1 iterationsassert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
+FAIL Derived key of type name: AES-GCM length: 192  using short password, short salt, SHA-512, with 1 iterations assert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
 PASS Derived key of type name: AES-GCM length: 192  using short password, short salt, SHA-512, with 1 iterations with bad hash name SHA512
 PASS Derived key of type name: AES-GCM length: 192  using short password, short salt, SHA-512, with 1 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-GCM length: 192  using short password, short salt, SHA-512, with 1 iterations with wrong (ECDH) key
@@ -270,7 +270,7 @@ PASS Derived key of type name: AES-KW length: 128  using short password, short s
 PASS Derived key of type name: AES-KW length: 128  using short password, short salt, SHA-512, with 1 iterations with bad hash name SHA512
 PASS Derived key of type name: AES-KW length: 128  using short password, short salt, SHA-512, with 1 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-KW length: 128  using short password, short salt, SHA-512, with 1 iterations with wrong (ECDH) key
-FAIL Derived key of type name: AES-KW length: 192  using short password, short salt, SHA-512, with 1 iterationsassert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
+FAIL Derived key of type name: AES-KW length: 192  using short password, short salt, SHA-512, with 1 iterations assert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
 PASS Derived key of type name: AES-KW length: 192  using short password, short salt, SHA-512, with 1 iterations with bad hash name SHA512
 PASS Derived key of type name: AES-KW length: 192  using short password, short salt, SHA-512, with 1 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-KW length: 192  using short password, short salt, SHA-512, with 1 iterations with wrong (ECDH) key
@@ -305,7 +305,7 @@ PASS Derived key of type name: AES-CBC length: 128  using short password, short 
 PASS Derived key of type name: AES-CBC length: 128  using short password, short salt, SHA-512, with 1000 iterations with bad hash name SHA512
 PASS Derived key of type name: AES-CBC length: 128  using short password, short salt, SHA-512, with 1000 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-CBC length: 128  using short password, short salt, SHA-512, with 1000 iterations with wrong (ECDH) key
-FAIL Derived key of type name: AES-CBC length: 192  using short password, short salt, SHA-512, with 1000 iterationsassert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
+FAIL Derived key of type name: AES-CBC length: 192  using short password, short salt, SHA-512, with 1000 iterations assert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
 PASS Derived key of type name: AES-CBC length: 192  using short password, short salt, SHA-512, with 1000 iterations with bad hash name SHA512
 PASS Derived key of type name: AES-CBC length: 192  using short password, short salt, SHA-512, with 1000 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-CBC length: 192  using short password, short salt, SHA-512, with 1000 iterations with wrong (ECDH) key
@@ -317,7 +317,7 @@ PASS Derived key of type name: AES-CTR length: 128  using short password, short 
 PASS Derived key of type name: AES-CTR length: 128  using short password, short salt, SHA-512, with 1000 iterations with bad hash name SHA512
 PASS Derived key of type name: AES-CTR length: 128  using short password, short salt, SHA-512, with 1000 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-CTR length: 128  using short password, short salt, SHA-512, with 1000 iterations with wrong (ECDH) key
-FAIL Derived key of type name: AES-CTR length: 192  using short password, short salt, SHA-512, with 1000 iterationsassert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
+FAIL Derived key of type name: AES-CTR length: 192  using short password, short salt, SHA-512, with 1000 iterations assert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
 PASS Derived key of type name: AES-CTR length: 192  using short password, short salt, SHA-512, with 1000 iterations with bad hash name SHA512
 PASS Derived key of type name: AES-CTR length: 192  using short password, short salt, SHA-512, with 1000 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-CTR length: 192  using short password, short salt, SHA-512, with 1000 iterations with wrong (ECDH) key
@@ -329,7 +329,7 @@ PASS Derived key of type name: AES-GCM length: 128  using short password, short 
 PASS Derived key of type name: AES-GCM length: 128  using short password, short salt, SHA-512, with 1000 iterations with bad hash name SHA512
 PASS Derived key of type name: AES-GCM length: 128  using short password, short salt, SHA-512, with 1000 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-GCM length: 128  using short password, short salt, SHA-512, with 1000 iterations with wrong (ECDH) key
-FAIL Derived key of type name: AES-GCM length: 192  using short password, short salt, SHA-512, with 1000 iterationsassert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
+FAIL Derived key of type name: AES-GCM length: 192  using short password, short salt, SHA-512, with 1000 iterations assert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
 PASS Derived key of type name: AES-GCM length: 192  using short password, short salt, SHA-512, with 1000 iterations with bad hash name SHA512
 PASS Derived key of type name: AES-GCM length: 192  using short password, short salt, SHA-512, with 1000 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-GCM length: 192  using short password, short salt, SHA-512, with 1000 iterations with wrong (ECDH) key
@@ -341,7 +341,7 @@ PASS Derived key of type name: AES-KW length: 128  using short password, short s
 PASS Derived key of type name: AES-KW length: 128  using short password, short salt, SHA-512, with 1000 iterations with bad hash name SHA512
 PASS Derived key of type name: AES-KW length: 128  using short password, short salt, SHA-512, with 1000 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-KW length: 128  using short password, short salt, SHA-512, with 1000 iterations with wrong (ECDH) key
-FAIL Derived key of type name: AES-KW length: 192  using short password, short salt, SHA-512, with 1000 iterationsassert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
+FAIL Derived key of type name: AES-KW length: 192  using short password, short salt, SHA-512, with 1000 iterations assert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
 PASS Derived key of type name: AES-KW length: 192  using short password, short salt, SHA-512, with 1000 iterations with bad hash name SHA512
 PASS Derived key of type name: AES-KW length: 192  using short password, short salt, SHA-512, with 1000 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-KW length: 192  using short password, short salt, SHA-512, with 1000 iterations with wrong (ECDH) key
@@ -376,7 +376,7 @@ PASS Derived key of type name: AES-CBC length: 128  using short password, short 
 PASS Derived key of type name: AES-CBC length: 128  using short password, short salt, SHA-512, with 100000 iterations with bad hash name SHA512
 PASS Derived key of type name: AES-CBC length: 128  using short password, short salt, SHA-512, with 100000 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-CBC length: 128  using short password, short salt, SHA-512, with 100000 iterations with wrong (ECDH) key
-FAIL Derived key of type name: AES-CBC length: 192  using short password, short salt, SHA-512, with 100000 iterationsassert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
+FAIL Derived key of type name: AES-CBC length: 192  using short password, short salt, SHA-512, with 100000 iterations assert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
 PASS Derived key of type name: AES-CBC length: 192  using short password, short salt, SHA-512, with 100000 iterations with bad hash name SHA512
 PASS Derived key of type name: AES-CBC length: 192  using short password, short salt, SHA-512, with 100000 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-CBC length: 192  using short password, short salt, SHA-512, with 100000 iterations with wrong (ECDH) key
@@ -388,7 +388,7 @@ PASS Derived key of type name: AES-CTR length: 128  using short password, short 
 PASS Derived key of type name: AES-CTR length: 128  using short password, short salt, SHA-512, with 100000 iterations with bad hash name SHA512
 PASS Derived key of type name: AES-CTR length: 128  using short password, short salt, SHA-512, with 100000 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-CTR length: 128  using short password, short salt, SHA-512, with 100000 iterations with wrong (ECDH) key
-FAIL Derived key of type name: AES-CTR length: 192  using short password, short salt, SHA-512, with 100000 iterationsassert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
+FAIL Derived key of type name: AES-CTR length: 192  using short password, short salt, SHA-512, with 100000 iterations assert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
 PASS Derived key of type name: AES-CTR length: 192  using short password, short salt, SHA-512, with 100000 iterations with bad hash name SHA512
 PASS Derived key of type name: AES-CTR length: 192  using short password, short salt, SHA-512, with 100000 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-CTR length: 192  using short password, short salt, SHA-512, with 100000 iterations with wrong (ECDH) key
@@ -400,7 +400,7 @@ PASS Derived key of type name: AES-GCM length: 128  using short password, short 
 PASS Derived key of type name: AES-GCM length: 128  using short password, short salt, SHA-512, with 100000 iterations with bad hash name SHA512
 PASS Derived key of type name: AES-GCM length: 128  using short password, short salt, SHA-512, with 100000 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-GCM length: 128  using short password, short salt, SHA-512, with 100000 iterations with wrong (ECDH) key
-FAIL Derived key of type name: AES-GCM length: 192  using short password, short salt, SHA-512, with 100000 iterationsassert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
+FAIL Derived key of type name: AES-GCM length: 192  using short password, short salt, SHA-512, with 100000 iterations assert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
 PASS Derived key of type name: AES-GCM length: 192  using short password, short salt, SHA-512, with 100000 iterations with bad hash name SHA512
 PASS Derived key of type name: AES-GCM length: 192  using short password, short salt, SHA-512, with 100000 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-GCM length: 192  using short password, short salt, SHA-512, with 100000 iterations with wrong (ECDH) key
@@ -412,7 +412,7 @@ PASS Derived key of type name: AES-KW length: 128  using short password, short s
 PASS Derived key of type name: AES-KW length: 128  using short password, short salt, SHA-512, with 100000 iterations with bad hash name SHA512
 PASS Derived key of type name: AES-KW length: 128  using short password, short salt, SHA-512, with 100000 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-KW length: 128  using short password, short salt, SHA-512, with 100000 iterations with wrong (ECDH) key
-FAIL Derived key of type name: AES-KW length: 192  using short password, short salt, SHA-512, with 100000 iterationsassert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
+FAIL Derived key of type name: AES-KW length: 192  using short password, short salt, SHA-512, with 100000 iterations assert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
 PASS Derived key of type name: AES-KW length: 192  using short password, short salt, SHA-512, with 100000 iterations with bad hash name SHA512
 PASS Derived key of type name: AES-KW length: 192  using short password, short salt, SHA-512, with 100000 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-KW length: 192  using short password, short salt, SHA-512, with 100000 iterations with wrong (ECDH) key
@@ -464,7 +464,7 @@ PASS Derived key of type name: AES-CBC length: 128  using short password, short 
 PASS Derived key of type name: AES-CBC length: 128  using short password, short salt, SHA-1, with 1 iterations with bad hash name SHA1
 PASS Derived key of type name: AES-CBC length: 128  using short password, short salt, SHA-1, with 1 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-CBC length: 128  using short password, short salt, SHA-1, with 1 iterations with wrong (ECDH) key
-FAIL Derived key of type name: AES-CBC length: 192  using short password, short salt, SHA-1, with 1 iterationsassert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
+FAIL Derived key of type name: AES-CBC length: 192  using short password, short salt, SHA-1, with 1 iterations assert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
 PASS Derived key of type name: AES-CBC length: 192  using short password, short salt, SHA-1, with 1 iterations with bad hash name SHA1
 PASS Derived key of type name: AES-CBC length: 192  using short password, short salt, SHA-1, with 1 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-CBC length: 192  using short password, short salt, SHA-1, with 1 iterations with wrong (ECDH) key
@@ -476,7 +476,7 @@ PASS Derived key of type name: AES-CTR length: 128  using short password, short 
 PASS Derived key of type name: AES-CTR length: 128  using short password, short salt, SHA-1, with 1 iterations with bad hash name SHA1
 PASS Derived key of type name: AES-CTR length: 128  using short password, short salt, SHA-1, with 1 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-CTR length: 128  using short password, short salt, SHA-1, with 1 iterations with wrong (ECDH) key
-FAIL Derived key of type name: AES-CTR length: 192  using short password, short salt, SHA-1, with 1 iterationsassert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
+FAIL Derived key of type name: AES-CTR length: 192  using short password, short salt, SHA-1, with 1 iterations assert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
 PASS Derived key of type name: AES-CTR length: 192  using short password, short salt, SHA-1, with 1 iterations with bad hash name SHA1
 PASS Derived key of type name: AES-CTR length: 192  using short password, short salt, SHA-1, with 1 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-CTR length: 192  using short password, short salt, SHA-1, with 1 iterations with wrong (ECDH) key
@@ -488,7 +488,7 @@ PASS Derived key of type name: AES-GCM length: 128  using short password, short 
 PASS Derived key of type name: AES-GCM length: 128  using short password, short salt, SHA-1, with 1 iterations with bad hash name SHA1
 PASS Derived key of type name: AES-GCM length: 128  using short password, short salt, SHA-1, with 1 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-GCM length: 128  using short password, short salt, SHA-1, with 1 iterations with wrong (ECDH) key
-FAIL Derived key of type name: AES-GCM length: 192  using short password, short salt, SHA-1, with 1 iterationsassert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
+FAIL Derived key of type name: AES-GCM length: 192  using short password, short salt, SHA-1, with 1 iterations assert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
 PASS Derived key of type name: AES-GCM length: 192  using short password, short salt, SHA-1, with 1 iterations with bad hash name SHA1
 PASS Derived key of type name: AES-GCM length: 192  using short password, short salt, SHA-1, with 1 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-GCM length: 192  using short password, short salt, SHA-1, with 1 iterations with wrong (ECDH) key
@@ -500,7 +500,7 @@ PASS Derived key of type name: AES-KW length: 128  using short password, short s
 PASS Derived key of type name: AES-KW length: 128  using short password, short salt, SHA-1, with 1 iterations with bad hash name SHA1
 PASS Derived key of type name: AES-KW length: 128  using short password, short salt, SHA-1, with 1 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-KW length: 128  using short password, short salt, SHA-1, with 1 iterations with wrong (ECDH) key
-FAIL Derived key of type name: AES-KW length: 192  using short password, short salt, SHA-1, with 1 iterationsassert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
+FAIL Derived key of type name: AES-KW length: 192  using short password, short salt, SHA-1, with 1 iterations assert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
 PASS Derived key of type name: AES-KW length: 192  using short password, short salt, SHA-1, with 1 iterations with bad hash name SHA1
 PASS Derived key of type name: AES-KW length: 192  using short password, short salt, SHA-1, with 1 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-KW length: 192  using short password, short salt, SHA-1, with 1 iterations with wrong (ECDH) key
@@ -535,7 +535,7 @@ PASS Derived key of type name: AES-CBC length: 128  using short password, short 
 PASS Derived key of type name: AES-CBC length: 128  using short password, short salt, SHA-1, with 1000 iterations with bad hash name SHA1
 PASS Derived key of type name: AES-CBC length: 128  using short password, short salt, SHA-1, with 1000 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-CBC length: 128  using short password, short salt, SHA-1, with 1000 iterations with wrong (ECDH) key
-FAIL Derived key of type name: AES-CBC length: 192  using short password, short salt, SHA-1, with 1000 iterationsassert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
+FAIL Derived key of type name: AES-CBC length: 192  using short password, short salt, SHA-1, with 1000 iterations assert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
 PASS Derived key of type name: AES-CBC length: 192  using short password, short salt, SHA-1, with 1000 iterations with bad hash name SHA1
 PASS Derived key of type name: AES-CBC length: 192  using short password, short salt, SHA-1, with 1000 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-CBC length: 192  using short password, short salt, SHA-1, with 1000 iterations with wrong (ECDH) key
@@ -547,7 +547,7 @@ PASS Derived key of type name: AES-CTR length: 128  using short password, short 
 PASS Derived key of type name: AES-CTR length: 128  using short password, short salt, SHA-1, with 1000 iterations with bad hash name SHA1
 PASS Derived key of type name: AES-CTR length: 128  using short password, short salt, SHA-1, with 1000 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-CTR length: 128  using short password, short salt, SHA-1, with 1000 iterations with wrong (ECDH) key
-FAIL Derived key of type name: AES-CTR length: 192  using short password, short salt, SHA-1, with 1000 iterationsassert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
+FAIL Derived key of type name: AES-CTR length: 192  using short password, short salt, SHA-1, with 1000 iterations assert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
 PASS Derived key of type name: AES-CTR length: 192  using short password, short salt, SHA-1, with 1000 iterations with bad hash name SHA1
 PASS Derived key of type name: AES-CTR length: 192  using short password, short salt, SHA-1, with 1000 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-CTR length: 192  using short password, short salt, SHA-1, with 1000 iterations with wrong (ECDH) key
@@ -559,7 +559,7 @@ PASS Derived key of type name: AES-GCM length: 128  using short password, short 
 PASS Derived key of type name: AES-GCM length: 128  using short password, short salt, SHA-1, with 1000 iterations with bad hash name SHA1
 PASS Derived key of type name: AES-GCM length: 128  using short password, short salt, SHA-1, with 1000 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-GCM length: 128  using short password, short salt, SHA-1, with 1000 iterations with wrong (ECDH) key
-FAIL Derived key of type name: AES-GCM length: 192  using short password, short salt, SHA-1, with 1000 iterationsassert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
+FAIL Derived key of type name: AES-GCM length: 192  using short password, short salt, SHA-1, with 1000 iterations assert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
 PASS Derived key of type name: AES-GCM length: 192  using short password, short salt, SHA-1, with 1000 iterations with bad hash name SHA1
 PASS Derived key of type name: AES-GCM length: 192  using short password, short salt, SHA-1, with 1000 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-GCM length: 192  using short password, short salt, SHA-1, with 1000 iterations with wrong (ECDH) key
@@ -571,7 +571,7 @@ PASS Derived key of type name: AES-KW length: 128  using short password, short s
 PASS Derived key of type name: AES-KW length: 128  using short password, short salt, SHA-1, with 1000 iterations with bad hash name SHA1
 PASS Derived key of type name: AES-KW length: 128  using short password, short salt, SHA-1, with 1000 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-KW length: 128  using short password, short salt, SHA-1, with 1000 iterations with wrong (ECDH) key
-FAIL Derived key of type name: AES-KW length: 192  using short password, short salt, SHA-1, with 1000 iterationsassert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
+FAIL Derived key of type name: AES-KW length: 192  using short password, short salt, SHA-1, with 1000 iterations assert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
 PASS Derived key of type name: AES-KW length: 192  using short password, short salt, SHA-1, with 1000 iterations with bad hash name SHA1
 PASS Derived key of type name: AES-KW length: 192  using short password, short salt, SHA-1, with 1000 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-KW length: 192  using short password, short salt, SHA-1, with 1000 iterations with wrong (ECDH) key
@@ -606,7 +606,7 @@ PASS Derived key of type name: AES-CBC length: 128  using short password, short 
 PASS Derived key of type name: AES-CBC length: 128  using short password, short salt, SHA-1, with 100000 iterations with bad hash name SHA1
 PASS Derived key of type name: AES-CBC length: 128  using short password, short salt, SHA-1, with 100000 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-CBC length: 128  using short password, short salt, SHA-1, with 100000 iterations with wrong (ECDH) key
-FAIL Derived key of type name: AES-CBC length: 192  using short password, short salt, SHA-1, with 100000 iterationsassert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
+FAIL Derived key of type name: AES-CBC length: 192  using short password, short salt, SHA-1, with 100000 iterations assert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
 PASS Derived key of type name: AES-CBC length: 192  using short password, short salt, SHA-1, with 100000 iterations with bad hash name SHA1
 PASS Derived key of type name: AES-CBC length: 192  using short password, short salt, SHA-1, with 100000 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-CBC length: 192  using short password, short salt, SHA-1, with 100000 iterations with wrong (ECDH) key
@@ -618,7 +618,7 @@ PASS Derived key of type name: AES-CTR length: 128  using short password, short 
 PASS Derived key of type name: AES-CTR length: 128  using short password, short salt, SHA-1, with 100000 iterations with bad hash name SHA1
 PASS Derived key of type name: AES-CTR length: 128  using short password, short salt, SHA-1, with 100000 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-CTR length: 128  using short password, short salt, SHA-1, with 100000 iterations with wrong (ECDH) key
-FAIL Derived key of type name: AES-CTR length: 192  using short password, short salt, SHA-1, with 100000 iterationsassert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
+FAIL Derived key of type name: AES-CTR length: 192  using short password, short salt, SHA-1, with 100000 iterations assert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
 PASS Derived key of type name: AES-CTR length: 192  using short password, short salt, SHA-1, with 100000 iterations with bad hash name SHA1
 PASS Derived key of type name: AES-CTR length: 192  using short password, short salt, SHA-1, with 100000 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-CTR length: 192  using short password, short salt, SHA-1, with 100000 iterations with wrong (ECDH) key
@@ -630,7 +630,7 @@ PASS Derived key of type name: AES-GCM length: 128  using short password, short 
 PASS Derived key of type name: AES-GCM length: 128  using short password, short salt, SHA-1, with 100000 iterations with bad hash name SHA1
 PASS Derived key of type name: AES-GCM length: 128  using short password, short salt, SHA-1, with 100000 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-GCM length: 128  using short password, short salt, SHA-1, with 100000 iterations with wrong (ECDH) key
-FAIL Derived key of type name: AES-GCM length: 192  using short password, short salt, SHA-1, with 100000 iterationsassert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
+FAIL Derived key of type name: AES-GCM length: 192  using short password, short salt, SHA-1, with 100000 iterations assert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
 PASS Derived key of type name: AES-GCM length: 192  using short password, short salt, SHA-1, with 100000 iterations with bad hash name SHA1
 PASS Derived key of type name: AES-GCM length: 192  using short password, short salt, SHA-1, with 100000 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-GCM length: 192  using short password, short salt, SHA-1, with 100000 iterations with wrong (ECDH) key
@@ -642,7 +642,7 @@ PASS Derived key of type name: AES-KW length: 128  using short password, short s
 PASS Derived key of type name: AES-KW length: 128  using short password, short salt, SHA-1, with 100000 iterations with bad hash name SHA1
 PASS Derived key of type name: AES-KW length: 128  using short password, short salt, SHA-1, with 100000 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-KW length: 128  using short password, short salt, SHA-1, with 100000 iterations with wrong (ECDH) key
-FAIL Derived key of type name: AES-KW length: 192  using short password, short salt, SHA-1, with 100000 iterationsassert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
+FAIL Derived key of type name: AES-KW length: 192  using short password, short salt, SHA-1, with 100000 iterations assert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
 PASS Derived key of type name: AES-KW length: 192  using short password, short salt, SHA-1, with 100000 iterations with bad hash name SHA1
 PASS Derived key of type name: AES-KW length: 192  using short password, short salt, SHA-1, with 100000 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-KW length: 192  using short password, short salt, SHA-1, with 100000 iterations with wrong (ECDH) key
@@ -694,7 +694,7 @@ PASS Derived key of type name: AES-CBC length: 128  using short password, short 
 PASS Derived key of type name: AES-CBC length: 128  using short password, short salt, SHA-256, with 1 iterations with bad hash name SHA256
 PASS Derived key of type name: AES-CBC length: 128  using short password, short salt, SHA-256, with 1 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-CBC length: 128  using short password, short salt, SHA-256, with 1 iterations with wrong (ECDH) key
-FAIL Derived key of type name: AES-CBC length: 192  using short password, short salt, SHA-256, with 1 iterationsassert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
+FAIL Derived key of type name: AES-CBC length: 192  using short password, short salt, SHA-256, with 1 iterations assert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
 PASS Derived key of type name: AES-CBC length: 192  using short password, short salt, SHA-256, with 1 iterations with bad hash name SHA256
 PASS Derived key of type name: AES-CBC length: 192  using short password, short salt, SHA-256, with 1 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-CBC length: 192  using short password, short salt, SHA-256, with 1 iterations with wrong (ECDH) key
@@ -706,7 +706,7 @@ PASS Derived key of type name: AES-CTR length: 128  using short password, short 
 PASS Derived key of type name: AES-CTR length: 128  using short password, short salt, SHA-256, with 1 iterations with bad hash name SHA256
 PASS Derived key of type name: AES-CTR length: 128  using short password, short salt, SHA-256, with 1 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-CTR length: 128  using short password, short salt, SHA-256, with 1 iterations with wrong (ECDH) key
-FAIL Derived key of type name: AES-CTR length: 192  using short password, short salt, SHA-256, with 1 iterationsassert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
+FAIL Derived key of type name: AES-CTR length: 192  using short password, short salt, SHA-256, with 1 iterations assert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
 PASS Derived key of type name: AES-CTR length: 192  using short password, short salt, SHA-256, with 1 iterations with bad hash name SHA256
 PASS Derived key of type name: AES-CTR length: 192  using short password, short salt, SHA-256, with 1 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-CTR length: 192  using short password, short salt, SHA-256, with 1 iterations with wrong (ECDH) key
@@ -718,7 +718,7 @@ PASS Derived key of type name: AES-GCM length: 128  using short password, short 
 PASS Derived key of type name: AES-GCM length: 128  using short password, short salt, SHA-256, with 1 iterations with bad hash name SHA256
 PASS Derived key of type name: AES-GCM length: 128  using short password, short salt, SHA-256, with 1 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-GCM length: 128  using short password, short salt, SHA-256, with 1 iterations with wrong (ECDH) key
-FAIL Derived key of type name: AES-GCM length: 192  using short password, short salt, SHA-256, with 1 iterationsassert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
+FAIL Derived key of type name: AES-GCM length: 192  using short password, short salt, SHA-256, with 1 iterations assert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
 PASS Derived key of type name: AES-GCM length: 192  using short password, short salt, SHA-256, with 1 iterations with bad hash name SHA256
 PASS Derived key of type name: AES-GCM length: 192  using short password, short salt, SHA-256, with 1 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-GCM length: 192  using short password, short salt, SHA-256, with 1 iterations with wrong (ECDH) key
@@ -730,7 +730,7 @@ PASS Derived key of type name: AES-KW length: 128  using short password, short s
 PASS Derived key of type name: AES-KW length: 128  using short password, short salt, SHA-256, with 1 iterations with bad hash name SHA256
 PASS Derived key of type name: AES-KW length: 128  using short password, short salt, SHA-256, with 1 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-KW length: 128  using short password, short salt, SHA-256, with 1 iterations with wrong (ECDH) key
-FAIL Derived key of type name: AES-KW length: 192  using short password, short salt, SHA-256, with 1 iterationsassert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
+FAIL Derived key of type name: AES-KW length: 192  using short password, short salt, SHA-256, with 1 iterations assert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
 PASS Derived key of type name: AES-KW length: 192  using short password, short salt, SHA-256, with 1 iterations with bad hash name SHA256
 PASS Derived key of type name: AES-KW length: 192  using short password, short salt, SHA-256, with 1 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-KW length: 192  using short password, short salt, SHA-256, with 1 iterations with wrong (ECDH) key
@@ -765,7 +765,7 @@ PASS Derived key of type name: AES-CBC length: 128  using short password, short 
 PASS Derived key of type name: AES-CBC length: 128  using short password, short salt, SHA-256, with 1000 iterations with bad hash name SHA256
 PASS Derived key of type name: AES-CBC length: 128  using short password, short salt, SHA-256, with 1000 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-CBC length: 128  using short password, short salt, SHA-256, with 1000 iterations with wrong (ECDH) key
-FAIL Derived key of type name: AES-CBC length: 192  using short password, short salt, SHA-256, with 1000 iterationsassert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
+FAIL Derived key of type name: AES-CBC length: 192  using short password, short salt, SHA-256, with 1000 iterations assert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
 PASS Derived key of type name: AES-CBC length: 192  using short password, short salt, SHA-256, with 1000 iterations with bad hash name SHA256
 PASS Derived key of type name: AES-CBC length: 192  using short password, short salt, SHA-256, with 1000 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-CBC length: 192  using short password, short salt, SHA-256, with 1000 iterations with wrong (ECDH) key
@@ -777,7 +777,7 @@ PASS Derived key of type name: AES-CTR length: 128  using short password, short 
 PASS Derived key of type name: AES-CTR length: 128  using short password, short salt, SHA-256, with 1000 iterations with bad hash name SHA256
 PASS Derived key of type name: AES-CTR length: 128  using short password, short salt, SHA-256, with 1000 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-CTR length: 128  using short password, short salt, SHA-256, with 1000 iterations with wrong (ECDH) key
-FAIL Derived key of type name: AES-CTR length: 192  using short password, short salt, SHA-256, with 1000 iterationsassert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
+FAIL Derived key of type name: AES-CTR length: 192  using short password, short salt, SHA-256, with 1000 iterations assert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
 PASS Derived key of type name: AES-CTR length: 192  using short password, short salt, SHA-256, with 1000 iterations with bad hash name SHA256
 PASS Derived key of type name: AES-CTR length: 192  using short password, short salt, SHA-256, with 1000 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-CTR length: 192  using short password, short salt, SHA-256, with 1000 iterations with wrong (ECDH) key
@@ -789,7 +789,7 @@ PASS Derived key of type name: AES-GCM length: 128  using short password, short 
 PASS Derived key of type name: AES-GCM length: 128  using short password, short salt, SHA-256, with 1000 iterations with bad hash name SHA256
 PASS Derived key of type name: AES-GCM length: 128  using short password, short salt, SHA-256, with 1000 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-GCM length: 128  using short password, short salt, SHA-256, with 1000 iterations with wrong (ECDH) key
-FAIL Derived key of type name: AES-GCM length: 192  using short password, short salt, SHA-256, with 1000 iterationsassert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
+FAIL Derived key of type name: AES-GCM length: 192  using short password, short salt, SHA-256, with 1000 iterations assert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
 PASS Derived key of type name: AES-GCM length: 192  using short password, short salt, SHA-256, with 1000 iterations with bad hash name SHA256
 PASS Derived key of type name: AES-GCM length: 192  using short password, short salt, SHA-256, with 1000 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-GCM length: 192  using short password, short salt, SHA-256, with 1000 iterations with wrong (ECDH) key
@@ -801,7 +801,7 @@ PASS Derived key of type name: AES-KW length: 128  using short password, short s
 PASS Derived key of type name: AES-KW length: 128  using short password, short salt, SHA-256, with 1000 iterations with bad hash name SHA256
 PASS Derived key of type name: AES-KW length: 128  using short password, short salt, SHA-256, with 1000 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-KW length: 128  using short password, short salt, SHA-256, with 1000 iterations with wrong (ECDH) key
-FAIL Derived key of type name: AES-KW length: 192  using short password, short salt, SHA-256, with 1000 iterationsassert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
+FAIL Derived key of type name: AES-KW length: 192  using short password, short salt, SHA-256, with 1000 iterations assert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
 PASS Derived key of type name: AES-KW length: 192  using short password, short salt, SHA-256, with 1000 iterations with bad hash name SHA256
 PASS Derived key of type name: AES-KW length: 192  using short password, short salt, SHA-256, with 1000 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-KW length: 192  using short password, short salt, SHA-256, with 1000 iterations with wrong (ECDH) key
@@ -836,7 +836,7 @@ PASS Derived key of type name: AES-CBC length: 128  using short password, short 
 PASS Derived key of type name: AES-CBC length: 128  using short password, short salt, SHA-256, with 100000 iterations with bad hash name SHA256
 PASS Derived key of type name: AES-CBC length: 128  using short password, short salt, SHA-256, with 100000 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-CBC length: 128  using short password, short salt, SHA-256, with 100000 iterations with wrong (ECDH) key
-FAIL Derived key of type name: AES-CBC length: 192  using short password, short salt, SHA-256, with 100000 iterationsassert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
+FAIL Derived key of type name: AES-CBC length: 192  using short password, short salt, SHA-256, with 100000 iterations assert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
 PASS Derived key of type name: AES-CBC length: 192  using short password, short salt, SHA-256, with 100000 iterations with bad hash name SHA256
 PASS Derived key of type name: AES-CBC length: 192  using short password, short salt, SHA-256, with 100000 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-CBC length: 192  using short password, short salt, SHA-256, with 100000 iterations with wrong (ECDH) key
@@ -848,7 +848,7 @@ PASS Derived key of type name: AES-CTR length: 128  using short password, short 
 PASS Derived key of type name: AES-CTR length: 128  using short password, short salt, SHA-256, with 100000 iterations with bad hash name SHA256
 PASS Derived key of type name: AES-CTR length: 128  using short password, short salt, SHA-256, with 100000 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-CTR length: 128  using short password, short salt, SHA-256, with 100000 iterations with wrong (ECDH) key
-FAIL Derived key of type name: AES-CTR length: 192  using short password, short salt, SHA-256, with 100000 iterationsassert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
+FAIL Derived key of type name: AES-CTR length: 192  using short password, short salt, SHA-256, with 100000 iterations assert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
 PASS Derived key of type name: AES-CTR length: 192  using short password, short salt, SHA-256, with 100000 iterations with bad hash name SHA256
 PASS Derived key of type name: AES-CTR length: 192  using short password, short salt, SHA-256, with 100000 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-CTR length: 192  using short password, short salt, SHA-256, with 100000 iterations with wrong (ECDH) key
@@ -860,7 +860,7 @@ PASS Derived key of type name: AES-GCM length: 128  using short password, short 
 PASS Derived key of type name: AES-GCM length: 128  using short password, short salt, SHA-256, with 100000 iterations with bad hash name SHA256
 PASS Derived key of type name: AES-GCM length: 128  using short password, short salt, SHA-256, with 100000 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-GCM length: 128  using short password, short salt, SHA-256, with 100000 iterations with wrong (ECDH) key
-FAIL Derived key of type name: AES-GCM length: 192  using short password, short salt, SHA-256, with 100000 iterationsassert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
+FAIL Derived key of type name: AES-GCM length: 192  using short password, short salt, SHA-256, with 100000 iterations assert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
 PASS Derived key of type name: AES-GCM length: 192  using short password, short salt, SHA-256, with 100000 iterations with bad hash name SHA256
 PASS Derived key of type name: AES-GCM length: 192  using short password, short salt, SHA-256, with 100000 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-GCM length: 192  using short password, short salt, SHA-256, with 100000 iterations with wrong (ECDH) key
@@ -872,7 +872,7 @@ PASS Derived key of type name: AES-KW length: 128  using short password, short s
 PASS Derived key of type name: AES-KW length: 128  using short password, short salt, SHA-256, with 100000 iterations with bad hash name SHA256
 PASS Derived key of type name: AES-KW length: 128  using short password, short salt, SHA-256, with 100000 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-KW length: 128  using short password, short salt, SHA-256, with 100000 iterations with wrong (ECDH) key
-FAIL Derived key of type name: AES-KW length: 192  using short password, short salt, SHA-256, with 100000 iterationsassert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
+FAIL Derived key of type name: AES-KW length: 192  using short password, short salt, SHA-256, with 100000 iterations assert_unreached: deriveKey failed with error OperationError: 192-bit AES keys are not supported Reached unreachable code
 PASS Derived key of type name: AES-KW length: 192  using short password, short salt, SHA-256, with 100000 iterations with bad hash name SHA256
 PASS Derived key of type name: AES-KW length: 192  using short password, short salt, SHA-256, with 100000 iterations with missing deriveKey usage
 PASS Derived key of type name: AES-KW length: 192  using short password, short salt, SHA-256, with 100000 iterations with wrong (ECDH) key

@@ -1,7 +1,7 @@
 This is a testharness.js-based test.
-FAIL Test setting target before constructing the associated animationassert_equals: Value at 50% progress expected "50px" but got "0px"
-FAIL Test setting target from null to a valid targetassert_equals: Value at 50% progress after setting new target expected "50px" but got "10px"
-FAIL Test setting target from a valid target to nullassert_equals: Value after clearing the target expected "10px" but got "50px"
-FAIL Test setting target from a valid target to another targetassert_equals: Value of 1st element (currently not targeted) after changing the effect target expected "10px" but got "50px"
+FAIL Test setting target before constructing the associated animation assert_equals: Value at 50% progress expected "50px" but got "0px"
+FAIL Test setting target from null to a valid target assert_equals: Value at 50% progress after setting new target expected "50px" but got "10px"
+FAIL Test setting target from a valid target to null assert_equals: Value after clearing the target expected "10px" but got "50px"
+FAIL Test setting target from a valid target to another target assert_equals: Value of 1st element (currently not targeted) after changing the effect target expected "10px" but got "50px"
 Harness: the test ran to completion.
 

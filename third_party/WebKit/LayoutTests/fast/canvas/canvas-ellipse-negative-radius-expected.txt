@@ -1,4 +1,4 @@
 This is a testharness.js-based test.
-FAIL Tests CanvasPath ellipse with negative radii.Test bug: need to pass exception to assert_throws()
+FAIL Tests CanvasPath ellipse with negative radii. Test bug: need to pass exception to assert_throws()
 Harness: the test ran to completion.
 

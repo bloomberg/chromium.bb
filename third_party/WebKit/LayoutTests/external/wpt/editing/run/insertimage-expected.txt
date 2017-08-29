@@ -20,16 +20,16 @@ PASS [["insertimage","/img/lion.svg"]] "<span>foo</span>{}<span>bar</span>" quer
 PASS [["insertimage","/img/lion.svg"]] "<span>foo</span>{}<span>bar</span>" queryCommandValue("insertimage") after
 PASS [["insertimage","/img/lion.svg"]] "<span>foo[</span><span>]bar</span>": execCommand("insertimage", false, "/img/lion.svg") return value
 PASS [["insertimage","/img/lion.svg"]] "<span>foo[</span><span>]bar</span>" checks for modifications to non-editable content
-FAIL [["insertimage","/img/lion.svg"]] "<span>foo[</span><span>]bar</span>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<span>foo<img src=\"/img/lion.svg\"></span><span>bar</span>" but got "<span>foo</span><img src=\"/img/lion.svg\"><span>bar</span>"
+FAIL [["insertimage","/img/lion.svg"]] "<span>foo[</span><span>]bar</span>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<span>foo<img src=\"/img/lion.svg\"></span><span>bar</span>" but got "<span>foo</span><img src=\"/img/lion.svg\"><span>bar</span>"
 PASS [["insertimage","/img/lion.svg"]] "<span>foo[</span><span>]bar</span>" queryCommandIndeterm("insertimage") before
 PASS [["insertimage","/img/lion.svg"]] "<span>foo[</span><span>]bar</span>" queryCommandState("insertimage") before
 PASS [["insertimage","/img/lion.svg"]] "<span>foo[</span><span>]bar</span>" queryCommandValue("insertimage") before
 PASS [["insertimage","/img/lion.svg"]] "<span>foo[</span><span>]bar</span>" queryCommandIndeterm("insertimage") after
 PASS [["insertimage","/img/lion.svg"]] "<span>foo[</span><span>]bar</span>" queryCommandState("insertimage") after
 PASS [["insertimage","/img/lion.svg"]] "<span>foo[</span><span>]bar</span>" queryCommandValue("insertimage") after
-FAIL [["insertimage",""]] "foo[bar]baz": execCommand("insertimage", false, "") return valueassert_equals: expected false but got true
+FAIL [["insertimage",""]] "foo[bar]baz": execCommand("insertimage", false, "") return value assert_equals: expected false but got true
 PASS [["insertimage",""]] "foo[bar]baz" checks for modifications to non-editable content
-FAIL [["insertimage",""]] "foo[bar]baz" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "foobarbaz" but got "foo<img>baz"
+FAIL [["insertimage",""]] "foo[bar]baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foobarbaz" but got "foo<img>baz"
 PASS [["insertimage",""]] "foo[bar]baz" queryCommandIndeterm("insertimage") before
 PASS [["insertimage",""]] "foo[bar]baz" queryCommandState("insertimage") before
 PASS [["insertimage",""]] "foo[bar]baz" queryCommandValue("insertimage") before
@@ -47,7 +47,7 @@ PASS [["insertimage","/img/lion.svg"]] "foo[bar]baz" queryCommandState("insertim
 PASS [["insertimage","/img/lion.svg"]] "foo[bar]baz" queryCommandValue("insertimage") after
 PASS [["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>[bar]</span>baz": execCommand("insertimage", false, "/img/lion.svg") return value
 PASS [["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>[bar]</span>baz" checks for modifications to non-editable content
-FAIL [["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>[bar]</span>baz" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<span style=\"color:rgb(171, 205, 239)\"><img src=\"/img/lion.svg\"></span>baz" but got "foo<img src=\"/img/lion.svg\">baz"
+FAIL [["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>[bar]</span>baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<span style=\"color:rgb(171, 205, 239)\"><img src=\"/img/lion.svg\"></span>baz" but got "foo<img src=\"/img/lion.svg\">baz"
 PASS [["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandIndeterm("insertimage") before
 PASS [["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandState("insertimage") before
 PASS [["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandValue("insertimage") before
@@ -56,7 +56,7 @@ PASS [["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>[bar]</span
 PASS [["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>[bar]</span>baz" queryCommandValue("insertimage") after
 PASS [["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>{bar}</span>baz": execCommand("insertimage", false, "/img/lion.svg") return value
 PASS [["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>{bar}</span>baz" checks for modifications to non-editable content
-FAIL [["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>{bar}</span>baz" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<span style=\"color:rgb(171, 205, 239)\"><img src=\"/img/lion.svg\"></span>baz" but got "foo<img src=\"/img/lion.svg\">baz"
+FAIL [["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>{bar}</span>baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<span style=\"color:rgb(171, 205, 239)\"><img src=\"/img/lion.svg\"></span>baz" but got "foo<img src=\"/img/lion.svg\">baz"
 PASS [["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandIndeterm("insertimage") before
 PASS [["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandState("insertimage") before
 PASS [["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandValue("insertimage") before
@@ -65,7 +65,7 @@ PASS [["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>{bar}</span
 PASS [["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>{bar}</span>baz" queryCommandValue("insertimage") after
 PASS [["insertimage","/img/lion.svg"]] "foo{<span style=color:#aBcDeF>bar</span>}baz": execCommand("insertimage", false, "/img/lion.svg") return value
 PASS [["insertimage","/img/lion.svg"]] "foo{<span style=color:#aBcDeF>bar</span>}baz" checks for modifications to non-editable content
-FAIL [["insertimage","/img/lion.svg"]] "foo{<span style=color:#aBcDeF>bar</span>}baz" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<span style=\"color:rgb(171, 205, 239)\"><img src=\"/img/lion.svg\"></span>baz" but got "foo<img src=\"/img/lion.svg\">baz"
+FAIL [["insertimage","/img/lion.svg"]] "foo{<span style=color:#aBcDeF>bar</span>}baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<span style=\"color:rgb(171, 205, 239)\"><img src=\"/img/lion.svg\"></span>baz" but got "foo<img src=\"/img/lion.svg\">baz"
 PASS [["insertimage","/img/lion.svg"]] "foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandIndeterm("insertimage") before
 PASS [["insertimage","/img/lion.svg"]] "foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandState("insertimage") before
 PASS [["insertimage","/img/lion.svg"]] "foo{<span style=color:#aBcDeF>bar</span>}baz" queryCommandValue("insertimage") before
@@ -77,7 +77,7 @@ PASS [["stylewithcss","true"],["insertimage","/img/lion.svg"]] "[foo<span style=
 PASS [["stylewithcss","true"],["insertimage","/img/lion.svg"]] "[foo<span style=color:#aBcDeF>bar]</span>baz" checks for modifications to non-editable content
 PASS [["stylewithcss","true"],["insertimage","/img/lion.svg"]] "[foo<span style=color:#aBcDeF>bar]</span>baz" compare innerHTML
 PASS [["stylewithcss","true"],["insertimage","/img/lion.svg"]] "[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandIndeterm("stylewithcss") before
-FAIL [["stylewithcss","true"],["insertimage","/img/lion.svg"]] "[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandState("stylewithcss") beforeassert_equals: Wrong result returned expected false but got true
+FAIL [["stylewithcss","true"],["insertimage","/img/lion.svg"]] "[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandState("stylewithcss") before assert_equals: Wrong result returned expected false but got true
 PASS [["stylewithcss","true"],["insertimage","/img/lion.svg"]] "[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandValue("stylewithcss") before
 PASS [["stylewithcss","true"],["insertimage","/img/lion.svg"]] "[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandIndeterm("stylewithcss") after
 PASS [["stylewithcss","true"],["insertimage","/img/lion.svg"]] "[foo<span style=color:#aBcDeF>bar]</span>baz" queryCommandState("stylewithcss") after
@@ -138,7 +138,7 @@ PASS [["stylewithcss","false"],["insertimage","/img/lion.svg"]] "{foo<span style
 PASS [["stylewithcss","false"],["insertimage","/img/lion.svg"]] "{foo<span style=color:#aBcDeF>bar}</span>baz" queryCommandValue("insertimage") after
 PASS [["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>[bar</span>baz]": execCommand("insertimage", false, "/img/lion.svg") return value
 PASS [["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>[bar</span>baz]" checks for modifications to non-editable content
-FAIL [["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>[bar</span>baz]" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<span style=\"color:rgb(171, 205, 239)\"><img src=\"/img/lion.svg\"></span>" but got "foo<img src=\"/img/lion.svg\">"
+FAIL [["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>[bar</span>baz]" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<span style=\"color:rgb(171, 205, 239)\"><img src=\"/img/lion.svg\"></span>" but got "foo<img src=\"/img/lion.svg\">"
 PASS [["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandIndeterm("insertimage") before
 PASS [["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandState("insertimage") before
 PASS [["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandValue("insertimage") before
@@ -147,7 +147,7 @@ PASS [["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>[bar</span>
 PASS [["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>[bar</span>baz]" queryCommandValue("insertimage") after
 PASS [["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>{bar</span>baz}": execCommand("insertimage", false, "/img/lion.svg") return value
 PASS [["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>{bar</span>baz}" checks for modifications to non-editable content
-FAIL [["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>{bar</span>baz}" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<span style=\"color:rgb(171, 205, 239)\"><img src=\"/img/lion.svg\"></span>" but got "foo<img src=\"/img/lion.svg\">"
+FAIL [["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>{bar</span>baz}" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<span style=\"color:rgb(171, 205, 239)\"><img src=\"/img/lion.svg\"></span>" but got "foo<img src=\"/img/lion.svg\">"
 PASS [["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandIndeterm("insertimage") before
 PASS [["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandState("insertimage") before
 PASS [["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>{bar</span>baz}" queryCommandValue("insertimage") before
@@ -157,7 +157,7 @@ PASS [["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>{bar</span>
 PASS [["stylewithcss","true"],["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz": execCommand("stylewithcss", false, "true") return value
 PASS [["stylewithcss","true"],["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz": execCommand("insertimage", false, "/img/lion.svg") return value
 PASS [["stylewithcss","true"],["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" checks for modifications to non-editable content
-FAIL [["stylewithcss","true"],["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<span style=\"color:rgb(171, 205, 239)\"><img src=\"/img/lion.svg\"></span>quz" but got "foo<img src=\"/img/lion.svg\">quz"
+FAIL [["stylewithcss","true"],["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<span style=\"color:rgb(171, 205, 239)\"><img src=\"/img/lion.svg\"></span>quz" but got "foo<img src=\"/img/lion.svg\">quz"
 PASS [["stylewithcss","true"],["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","true"],["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","true"],["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandValue("stylewithcss") before
@@ -173,7 +173,7 @@ PASS [["stylewithcss","true"],["insertimage","/img/lion.svg"]] "foo<span style=c
 PASS [["stylewithcss","false"],["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz": execCommand("stylewithcss", false, "false") return value
 PASS [["stylewithcss","false"],["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz": execCommand("insertimage", false, "/img/lion.svg") return value
 PASS [["stylewithcss","false"],["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" checks for modifications to non-editable content
-FAIL [["stylewithcss","false"],["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<span style=\"color:rgb(171, 205, 239)\"><img src=\"/img/lion.svg\"></span>quz" but got "foo<img src=\"/img/lion.svg\">quz"
+FAIL [["stylewithcss","false"],["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<span style=\"color:rgb(171, 205, 239)\"><img src=\"/img/lion.svg\"></span>quz" but got "foo<img src=\"/img/lion.svg\">quz"
 PASS [["stylewithcss","false"],["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","false"],["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","false"],["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandValue("stylewithcss") before
@@ -188,7 +188,7 @@ PASS [["stylewithcss","false"],["insertimage","/img/lion.svg"]] "foo<span style=
 PASS [["stylewithcss","false"],["insertimage","/img/lion.svg"]] "foo<span style=color:#aBcDeF>[bar</span><span style=color:#fEdCbA>baz]</span>quz" queryCommandValue("insertimage") after
 PASS [["insertimage","/img/lion.svg"]] "foo<b>[bar]</b>baz": execCommand("insertimage", false, "/img/lion.svg") return value
 PASS [["insertimage","/img/lion.svg"]] "foo<b>[bar]</b>baz" checks for modifications to non-editable content
-FAIL [["insertimage","/img/lion.svg"]] "foo<b>[bar]</b>baz" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<b><img src=\"/img/lion.svg\"></b>baz" but got "foo<img src=\"/img/lion.svg\">baz"
+FAIL [["insertimage","/img/lion.svg"]] "foo<b>[bar]</b>baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<b><img src=\"/img/lion.svg\"></b>baz" but got "foo<img src=\"/img/lion.svg\">baz"
 PASS [["insertimage","/img/lion.svg"]] "foo<b>[bar]</b>baz" queryCommandIndeterm("insertimage") before
 PASS [["insertimage","/img/lion.svg"]] "foo<b>[bar]</b>baz" queryCommandState("insertimage") before
 PASS [["insertimage","/img/lion.svg"]] "foo<b>[bar]</b>baz" queryCommandValue("insertimage") before
@@ -197,7 +197,7 @@ PASS [["insertimage","/img/lion.svg"]] "foo<b>[bar]</b>baz" queryCommandState("i
 PASS [["insertimage","/img/lion.svg"]] "foo<b>[bar]</b>baz" queryCommandValue("insertimage") after
 PASS [["insertimage","/img/lion.svg"]] "foo<b>{bar}</b>baz": execCommand("insertimage", false, "/img/lion.svg") return value
 PASS [["insertimage","/img/lion.svg"]] "foo<b>{bar}</b>baz" checks for modifications to non-editable content
-FAIL [["insertimage","/img/lion.svg"]] "foo<b>{bar}</b>baz" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<b><img src=\"/img/lion.svg\"></b>baz" but got "foo<img src=\"/img/lion.svg\">baz"
+FAIL [["insertimage","/img/lion.svg"]] "foo<b>{bar}</b>baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<b><img src=\"/img/lion.svg\"></b>baz" but got "foo<img src=\"/img/lion.svg\">baz"
 PASS [["insertimage","/img/lion.svg"]] "foo<b>{bar}</b>baz" queryCommandIndeterm("insertimage") before
 PASS [["insertimage","/img/lion.svg"]] "foo<b>{bar}</b>baz" queryCommandState("insertimage") before
 PASS [["insertimage","/img/lion.svg"]] "foo<b>{bar}</b>baz" queryCommandValue("insertimage") before
@@ -206,7 +206,7 @@ PASS [["insertimage","/img/lion.svg"]] "foo<b>{bar}</b>baz" queryCommandState("i
 PASS [["insertimage","/img/lion.svg"]] "foo<b>{bar}</b>baz" queryCommandValue("insertimage") after
 PASS [["insertimage","/img/lion.svg"]] "foo{<b>bar</b>}baz": execCommand("insertimage", false, "/img/lion.svg") return value
 PASS [["insertimage","/img/lion.svg"]] "foo{<b>bar</b>}baz" checks for modifications to non-editable content
-FAIL [["insertimage","/img/lion.svg"]] "foo{<b>bar</b>}baz" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<b><img src=\"/img/lion.svg\"></b>baz" but got "foo<img src=\"/img/lion.svg\">baz"
+FAIL [["insertimage","/img/lion.svg"]] "foo{<b>bar</b>}baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<b><img src=\"/img/lion.svg\"></b>baz" but got "foo<img src=\"/img/lion.svg\">baz"
 PASS [["insertimage","/img/lion.svg"]] "foo{<b>bar</b>}baz" queryCommandIndeterm("insertimage") before
 PASS [["insertimage","/img/lion.svg"]] "foo{<b>bar</b>}baz" queryCommandState("insertimage") before
 PASS [["insertimage","/img/lion.svg"]] "foo{<b>bar</b>}baz" queryCommandValue("insertimage") before
@@ -215,7 +215,7 @@ PASS [["insertimage","/img/lion.svg"]] "foo{<b>bar</b>}baz" queryCommandState("i
 PASS [["insertimage","/img/lion.svg"]] "foo{<b>bar</b>}baz" queryCommandValue("insertimage") after
 PASS [["insertimage","/img/lion.svg"]] "foo<span>[bar]</span>baz": execCommand("insertimage", false, "/img/lion.svg") return value
 PASS [["insertimage","/img/lion.svg"]] "foo<span>[bar]</span>baz" checks for modifications to non-editable content
-FAIL [["insertimage","/img/lion.svg"]] "foo<span>[bar]</span>baz" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<span><img src=\"/img/lion.svg\"></span>baz" but got "foo<img src=\"/img/lion.svg\">baz"
+FAIL [["insertimage","/img/lion.svg"]] "foo<span>[bar]</span>baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<span><img src=\"/img/lion.svg\"></span>baz" but got "foo<img src=\"/img/lion.svg\">baz"
 PASS [["insertimage","/img/lion.svg"]] "foo<span>[bar]</span>baz" queryCommandIndeterm("insertimage") before
 PASS [["insertimage","/img/lion.svg"]] "foo<span>[bar]</span>baz" queryCommandState("insertimage") before
 PASS [["insertimage","/img/lion.svg"]] "foo<span>[bar]</span>baz" queryCommandValue("insertimage") before
@@ -224,7 +224,7 @@ PASS [["insertimage","/img/lion.svg"]] "foo<span>[bar]</span>baz" queryCommandSt
 PASS [["insertimage","/img/lion.svg"]] "foo<span>[bar]</span>baz" queryCommandValue("insertimage") after
 PASS [["insertimage","/img/lion.svg"]] "foo<span>{bar}</span>baz": execCommand("insertimage", false, "/img/lion.svg") return value
 PASS [["insertimage","/img/lion.svg"]] "foo<span>{bar}</span>baz" checks for modifications to non-editable content
-FAIL [["insertimage","/img/lion.svg"]] "foo<span>{bar}</span>baz" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<span><img src=\"/img/lion.svg\"></span>baz" but got "foo<img src=\"/img/lion.svg\">baz"
+FAIL [["insertimage","/img/lion.svg"]] "foo<span>{bar}</span>baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<span><img src=\"/img/lion.svg\"></span>baz" but got "foo<img src=\"/img/lion.svg\">baz"
 PASS [["insertimage","/img/lion.svg"]] "foo<span>{bar}</span>baz" queryCommandIndeterm("insertimage") before
 PASS [["insertimage","/img/lion.svg"]] "foo<span>{bar}</span>baz" queryCommandState("insertimage") before
 PASS [["insertimage","/img/lion.svg"]] "foo<span>{bar}</span>baz" queryCommandValue("insertimage") before
@@ -233,7 +233,7 @@ PASS [["insertimage","/img/lion.svg"]] "foo<span>{bar}</span>baz" queryCommandSt
 PASS [["insertimage","/img/lion.svg"]] "foo<span>{bar}</span>baz" queryCommandValue("insertimage") after
 PASS [["insertimage","/img/lion.svg"]] "foo{<span>bar</span>}baz": execCommand("insertimage", false, "/img/lion.svg") return value
 PASS [["insertimage","/img/lion.svg"]] "foo{<span>bar</span>}baz" checks for modifications to non-editable content
-FAIL [["insertimage","/img/lion.svg"]] "foo{<span>bar</span>}baz" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<span><img src=\"/img/lion.svg\"></span>baz" but got "foo<img src=\"/img/lion.svg\">baz"
+FAIL [["insertimage","/img/lion.svg"]] "foo{<span>bar</span>}baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo<span><img src=\"/img/lion.svg\"></span>baz" but got "foo<img src=\"/img/lion.svg\">baz"
 PASS [["insertimage","/img/lion.svg"]] "foo{<span>bar</span>}baz" queryCommandIndeterm("insertimage") before
 PASS [["insertimage","/img/lion.svg"]] "foo{<span>bar</span>}baz" queryCommandState("insertimage") before
 PASS [["insertimage","/img/lion.svg"]] "foo{<span>bar</span>}baz" queryCommandValue("insertimage") before
@@ -242,7 +242,7 @@ PASS [["insertimage","/img/lion.svg"]] "foo{<span>bar</span>}baz" queryCommandSt
 PASS [["insertimage","/img/lion.svg"]] "foo{<span>bar</span>}baz" queryCommandValue("insertimage") after
 PASS [["insertimage","/img/lion.svg"]] "<b>foo[bar</b><i>baz]quz</i>": execCommand("insertimage", false, "/img/lion.svg") return value
 PASS [["insertimage","/img/lion.svg"]] "<b>foo[bar</b><i>baz]quz</i>" checks for modifications to non-editable content
-FAIL [["insertimage","/img/lion.svg"]] "<b>foo[bar</b><i>baz]quz</i>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<b>foo<img src=\"/img/lion.svg\"></b><i>quz</i>" but got "<b>foo</b><img src=\"/img/lion.svg\"><i>quz</i>"
+FAIL [["insertimage","/img/lion.svg"]] "<b>foo[bar</b><i>baz]quz</i>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<b>foo<img src=\"/img/lion.svg\"></b><i>quz</i>" but got "<b>foo</b><img src=\"/img/lion.svg\"><i>quz</i>"
 PASS [["insertimage","/img/lion.svg"]] "<b>foo[bar</b><i>baz]quz</i>" queryCommandIndeterm("insertimage") before
 PASS [["insertimage","/img/lion.svg"]] "<b>foo[bar</b><i>baz]quz</i>" queryCommandState("insertimage") before
 PASS [["insertimage","/img/lion.svg"]] "<b>foo[bar</b><i>baz]quz</i>" queryCommandValue("insertimage") before
@@ -251,7 +251,7 @@ PASS [["insertimage","/img/lion.svg"]] "<b>foo[bar</b><i>baz]quz</i>" queryComma
 PASS [["insertimage","/img/lion.svg"]] "<b>foo[bar</b><i>baz]quz</i>" queryCommandValue("insertimage") after
 PASS [["insertimage","/img/lion.svg"]] "<p>foo</p><p>[bar]</p><p>baz</p>": execCommand("insertimage", false, "/img/lion.svg") return value
 PASS [["insertimage","/img/lion.svg"]] "<p>foo</p><p>[bar]</p><p>baz</p>" checks for modifications to non-editable content
-FAIL [["insertimage","/img/lion.svg"]] "<p>foo</p><p>[bar]</p><p>baz</p>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p>foo</p><p><img src=\"/img/lion.svg\"></p><p>baz</p>" but got "<p>foo</p><p><img src=\"/img/lion.svg\"><br></p><p>baz</p>"
+FAIL [["insertimage","/img/lion.svg"]] "<p>foo</p><p>[bar]</p><p>baz</p>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p>foo</p><p><img src=\"/img/lion.svg\"></p><p>baz</p>" but got "<p>foo</p><p><img src=\"/img/lion.svg\"><br></p><p>baz</p>"
 PASS [["insertimage","/img/lion.svg"]] "<p>foo</p><p>[bar]</p><p>baz</p>" queryCommandIndeterm("insertimage") before
 PASS [["insertimage","/img/lion.svg"]] "<p>foo</p><p>[bar]</p><p>baz</p>" queryCommandState("insertimage") before
 PASS [["insertimage","/img/lion.svg"]] "<p>foo</p><p>[bar]</p><p>baz</p>" queryCommandValue("insertimage") before
@@ -260,7 +260,7 @@ PASS [["insertimage","/img/lion.svg"]] "<p>foo</p><p>[bar]</p><p>baz</p>" queryC
 PASS [["insertimage","/img/lion.svg"]] "<p>foo</p><p>[bar]</p><p>baz</p>" queryCommandValue("insertimage") after
 PASS [["insertimage","/img/lion.svg"]] "<p>foo</p><p>{bar}</p><p>baz</p>": execCommand("insertimage", false, "/img/lion.svg") return value
 PASS [["insertimage","/img/lion.svg"]] "<p>foo</p><p>{bar}</p><p>baz</p>" checks for modifications to non-editable content
-FAIL [["insertimage","/img/lion.svg"]] "<p>foo</p><p>{bar}</p><p>baz</p>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p>foo</p><p><img src=\"/img/lion.svg\"></p><p>baz</p>" but got "<p>foo</p><p><img src=\"/img/lion.svg\"><br></p><p>baz</p>"
+FAIL [["insertimage","/img/lion.svg"]] "<p>foo</p><p>{bar}</p><p>baz</p>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p>foo</p><p><img src=\"/img/lion.svg\"></p><p>baz</p>" but got "<p>foo</p><p><img src=\"/img/lion.svg\"><br></p><p>baz</p>"
 PASS [["insertimage","/img/lion.svg"]] "<p>foo</p><p>{bar}</p><p>baz</p>" queryCommandIndeterm("insertimage") before
 PASS [["insertimage","/img/lion.svg"]] "<p>foo</p><p>{bar}</p><p>baz</p>" queryCommandState("insertimage") before
 PASS [["insertimage","/img/lion.svg"]] "<p>foo</p><p>{bar}</p><p>baz</p>" queryCommandValue("insertimage") before
@@ -270,7 +270,7 @@ PASS [["insertimage","/img/lion.svg"]] "<p>foo</p><p>{bar}</p><p>baz</p>" queryC
 PASS [["defaultparagraphseparator","div"],["insertimage","/img/lion.svg"]] "<p>foo</p>{<p>bar</p>}<p>baz</p>": execCommand("defaultparagraphseparator", false, "div") return value
 PASS [["defaultparagraphseparator","div"],["insertimage","/img/lion.svg"]] "<p>foo</p>{<p>bar</p>}<p>baz</p>": execCommand("insertimage", false, "/img/lion.svg") return value
 PASS [["defaultparagraphseparator","div"],["insertimage","/img/lion.svg"]] "<p>foo</p>{<p>bar</p>}<p>baz</p>" checks for modifications to non-editable content
-FAIL [["defaultparagraphseparator","div"],["insertimage","/img/lion.svg"]] "<p>foo</p>{<p>bar</p>}<p>baz</p>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p>foo</p><img src=\"/img/lion.svg\"><p>baz</p>" but got "<p>foo</p><p><img src=\"/img/lion.svg\">baz<br></p>"
+FAIL [["defaultparagraphseparator","div"],["insertimage","/img/lion.svg"]] "<p>foo</p>{<p>bar</p>}<p>baz</p>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p>foo</p><img src=\"/img/lion.svg\"><p>baz</p>" but got "<p>foo</p><p><img src=\"/img/lion.svg\">baz<br></p>"
 PASS [["defaultparagraphseparator","div"],["insertimage","/img/lion.svg"]] "<p>foo</p>{<p>bar</p>}<p>baz</p>" queryCommandIndeterm("defaultparagraphseparator") before
 PASS [["defaultparagraphseparator","div"],["insertimage","/img/lion.svg"]] "<p>foo</p>{<p>bar</p>}<p>baz</p>" queryCommandState("defaultparagraphseparator") before
 PASS [["defaultparagraphseparator","div"],["insertimage","/img/lion.svg"]] "<p>foo</p>{<p>bar</p>}<p>baz</p>" queryCommandValue("defaultparagraphseparator") before
@@ -286,7 +286,7 @@ PASS [["defaultparagraphseparator","div"],["insertimage","/img/lion.svg"]] "<p>f
 PASS [["defaultparagraphseparator","p"],["insertimage","/img/lion.svg"]] "<p>foo</p>{<p>bar</p>}<p>baz</p>": execCommand("defaultparagraphseparator", false, "p") return value
 PASS [["defaultparagraphseparator","p"],["insertimage","/img/lion.svg"]] "<p>foo</p>{<p>bar</p>}<p>baz</p>": execCommand("insertimage", false, "/img/lion.svg") return value
 PASS [["defaultparagraphseparator","p"],["insertimage","/img/lion.svg"]] "<p>foo</p>{<p>bar</p>}<p>baz</p>" checks for modifications to non-editable content
-FAIL [["defaultparagraphseparator","p"],["insertimage","/img/lion.svg"]] "<p>foo</p>{<p>bar</p>}<p>baz</p>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p>foo</p><img src=\"/img/lion.svg\"><p>baz</p>" but got "<p>foo</p><p><img src=\"/img/lion.svg\">baz<br></p>"
+FAIL [["defaultparagraphseparator","p"],["insertimage","/img/lion.svg"]] "<p>foo</p>{<p>bar</p>}<p>baz</p>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p>foo</p><img src=\"/img/lion.svg\"><p>baz</p>" but got "<p>foo</p><p><img src=\"/img/lion.svg\">baz<br></p>"
 PASS [["defaultparagraphseparator","p"],["insertimage","/img/lion.svg"]] "<p>foo</p>{<p>bar</p>}<p>baz</p>" queryCommandIndeterm("defaultparagraphseparator") before
 PASS [["defaultparagraphseparator","p"],["insertimage","/img/lion.svg"]] "<p>foo</p>{<p>bar</p>}<p>baz</p>" queryCommandState("defaultparagraphseparator") before
 PASS [["defaultparagraphseparator","p"],["insertimage","/img/lion.svg"]] "<p>foo</p>{<p>bar</p>}<p>baz</p>" queryCommandValue("defaultparagraphseparator") before
@@ -536,7 +536,7 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertimage
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertimage","/img/lion.svg"]] "<p>foo[bar<p style=color:blue>baz]quz": execCommand("defaultparagraphseparator", false, "div") return value
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertimage","/img/lion.svg"]] "<p>foo[bar<p style=color:blue>baz]quz": execCommand("insertimage", false, "/img/lion.svg") return value
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertimage","/img/lion.svg"]] "<p>foo[bar<p style=color:blue>baz]quz" checks for modifications to non-editable content
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertimage","/img/lion.svg"]] "<p>foo[bar<p style=color:blue>baz]quz" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p>foo<img src=\"/img/lion.svg\"><font color=\"#0000ff\">quz</font></p>" but got "<p>foo<img src=\"/img/lion.svg\"><span style=\"color:rgb(0, 0, 255)\">quz</span></p>"
+FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertimage","/img/lion.svg"]] "<p>foo[bar<p style=color:blue>baz]quz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p>foo<img src=\"/img/lion.svg\"><font color=\"#0000ff\">quz</font></p>" but got "<p>foo<img src=\"/img/lion.svg\"><span style=\"color:rgb(0, 0, 255)\">quz</span></p>"
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertimage","/img/lion.svg"]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertimage","/img/lion.svg"]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["insertimage","/img/lion.svg"]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandValue("stylewithcss") before
@@ -582,7 +582,7 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertimage",
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertimage","/img/lion.svg"]] "<p>foo[bar<p style=color:blue>baz]quz": execCommand("defaultparagraphseparator", false, "p") return value
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertimage","/img/lion.svg"]] "<p>foo[bar<p style=color:blue>baz]quz": execCommand("insertimage", false, "/img/lion.svg") return value
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertimage","/img/lion.svg"]] "<p>foo[bar<p style=color:blue>baz]quz" checks for modifications to non-editable content
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertimage","/img/lion.svg"]] "<p>foo[bar<p style=color:blue>baz]quz" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p>foo<img src=\"/img/lion.svg\"><font color=\"#0000ff\">quz</font></p>" but got "<p>foo<img src=\"/img/lion.svg\"><span style=\"color:rgb(0, 0, 255)\">quz</span></p>"
+FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertimage","/img/lion.svg"]] "<p>foo[bar<p style=color:blue>baz]quz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p>foo<img src=\"/img/lion.svg\"><font color=\"#0000ff\">quz</font></p>" but got "<p>foo<img src=\"/img/lion.svg\"><span style=\"color:rgb(0, 0, 255)\">quz</span></p>"
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertimage","/img/lion.svg"]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertimage","/img/lion.svg"]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["insertimage","/img/lion.svg"]] "<p>foo[bar<p style=color:blue>baz]quz" queryCommandValue("stylewithcss") before
@@ -636,7 +636,7 @@ PASS [["defaultparagraphseparator","p"],["insertimage","/img/lion.svg"]] "<p>foo
 PASS [["defaultparagraphseparator","div"],["insertimage","/img/lion.svg"]] "<div><p>foo<p>[bar<p>baz]</div>": execCommand("defaultparagraphseparator", false, "div") return value
 PASS [["defaultparagraphseparator","div"],["insertimage","/img/lion.svg"]] "<div><p>foo<p>[bar<p>baz]</div>": execCommand("insertimage", false, "/img/lion.svg") return value
 PASS [["defaultparagraphseparator","div"],["insertimage","/img/lion.svg"]] "<div><p>foo<p>[bar<p>baz]</div>" checks for modifications to non-editable content
-FAIL [["defaultparagraphseparator","div"],["insertimage","/img/lion.svg"]] "<div><p>foo<p>[bar<p>baz]</div>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<div><p>foo</p><p><img src=\"/img/lion.svg\"></p></div>" but got "<p>foo</p><p><img src=\"/img/lion.svg\"><br></p>"
+FAIL [["defaultparagraphseparator","div"],["insertimage","/img/lion.svg"]] "<div><p>foo<p>[bar<p>baz]</div>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<div><p>foo</p><p><img src=\"/img/lion.svg\"></p></div>" but got "<p>foo</p><p><img src=\"/img/lion.svg\"><br></p>"
 PASS [["defaultparagraphseparator","div"],["insertimage","/img/lion.svg"]] "<div><p>foo<p>[bar<p>baz]</div>" queryCommandIndeterm("defaultparagraphseparator") before
 PASS [["defaultparagraphseparator","div"],["insertimage","/img/lion.svg"]] "<div><p>foo<p>[bar<p>baz]</div>" queryCommandState("defaultparagraphseparator") before
 PASS [["defaultparagraphseparator","div"],["insertimage","/img/lion.svg"]] "<div><p>foo<p>[bar<p>baz]</div>" queryCommandValue("defaultparagraphseparator") before
@@ -652,7 +652,7 @@ PASS [["defaultparagraphseparator","div"],["insertimage","/img/lion.svg"]] "<div
 PASS [["defaultparagraphseparator","p"],["insertimage","/img/lion.svg"]] "<div><p>foo<p>[bar<p>baz]</div>": execCommand("defaultparagraphseparator", false, "p") return value
 PASS [["defaultparagraphseparator","p"],["insertimage","/img/lion.svg"]] "<div><p>foo<p>[bar<p>baz]</div>": execCommand("insertimage", false, "/img/lion.svg") return value
 PASS [["defaultparagraphseparator","p"],["insertimage","/img/lion.svg"]] "<div><p>foo<p>[bar<p>baz]</div>" checks for modifications to non-editable content
-FAIL [["defaultparagraphseparator","p"],["insertimage","/img/lion.svg"]] "<div><p>foo<p>[bar<p>baz]</div>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<div><p>foo</p><p><img src=\"/img/lion.svg\"></p></div>" but got "<p>foo</p><p><img src=\"/img/lion.svg\"><br></p>"
+FAIL [["defaultparagraphseparator","p"],["insertimage","/img/lion.svg"]] "<div><p>foo<p>[bar<p>baz]</div>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<div><p>foo</p><p><img src=\"/img/lion.svg\"></p></div>" but got "<p>foo</p><p><img src=\"/img/lion.svg\"><br></p>"
 PASS [["defaultparagraphseparator","p"],["insertimage","/img/lion.svg"]] "<div><p>foo<p>[bar<p>baz]</div>" queryCommandIndeterm("defaultparagraphseparator") before
 PASS [["defaultparagraphseparator","p"],["insertimage","/img/lion.svg"]] "<div><p>foo<p>[bar<p>baz]</div>" queryCommandState("defaultparagraphseparator") before
 PASS [["defaultparagraphseparator","p"],["insertimage","/img/lion.svg"]] "<div><p>foo<p>[bar<p>baz]</div>" queryCommandValue("defaultparagraphseparator") before
@@ -709,7 +709,7 @@ PASS [["defaultparagraphseparator","p"],["insertimage","/img/lion.svg"]] "<p>foo
 PASS [["defaultparagraphseparator","div"],["insertimage","/img/lion.svg"]] "<p>foo[</p><p>]bar<br>baz</p>": execCommand("defaultparagraphseparator", false, "div") return value
 PASS [["defaultparagraphseparator","div"],["insertimage","/img/lion.svg"]] "<p>foo[</p><p>]bar<br>baz</p>": execCommand("insertimage", false, "/img/lion.svg") return value
 PASS [["defaultparagraphseparator","div"],["insertimage","/img/lion.svg"]] "<p>foo[</p><p>]bar<br>baz</p>" checks for modifications to non-editable content
-FAIL [["defaultparagraphseparator","div"],["insertimage","/img/lion.svg"]] "<p>foo[</p><p>]bar<br>baz</p>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p>foo<img src=\"/img/lion.svg\">bar<br>baz</p>" but got "<p>foo<img src=\"/img/lion.svg\">bar</p><p>baz</p>"
+FAIL [["defaultparagraphseparator","div"],["insertimage","/img/lion.svg"]] "<p>foo[</p><p>]bar<br>baz</p>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p>foo<img src=\"/img/lion.svg\">bar<br>baz</p>" but got "<p>foo<img src=\"/img/lion.svg\">bar</p><p>baz</p>"
 PASS [["defaultparagraphseparator","div"],["insertimage","/img/lion.svg"]] "<p>foo[</p><p>]bar<br>baz</p>" queryCommandIndeterm("defaultparagraphseparator") before
 PASS [["defaultparagraphseparator","div"],["insertimage","/img/lion.svg"]] "<p>foo[</p><p>]bar<br>baz</p>" queryCommandState("defaultparagraphseparator") before
 PASS [["defaultparagraphseparator","div"],["insertimage","/img/lion.svg"]] "<p>foo[</p><p>]bar<br>baz</p>" queryCommandValue("defaultparagraphseparator") before
@@ -725,7 +725,7 @@ PASS [["defaultparagraphseparator","div"],["insertimage","/img/lion.svg"]] "<p>f
 PASS [["defaultparagraphseparator","p"],["insertimage","/img/lion.svg"]] "<p>foo[</p><p>]bar<br>baz</p>": execCommand("defaultparagraphseparator", false, "p") return value
 PASS [["defaultparagraphseparator","p"],["insertimage","/img/lion.svg"]] "<p>foo[</p><p>]bar<br>baz</p>": execCommand("insertimage", false, "/img/lion.svg") return value
 PASS [["defaultparagraphseparator","p"],["insertimage","/img/lion.svg"]] "<p>foo[</p><p>]bar<br>baz</p>" checks for modifications to non-editable content
-FAIL [["defaultparagraphseparator","p"],["insertimage","/img/lion.svg"]] "<p>foo[</p><p>]bar<br>baz</p>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p>foo<img src=\"/img/lion.svg\">bar<br>baz</p>" but got "<p>foo<img src=\"/img/lion.svg\">bar</p><p>baz</p>"
+FAIL [["defaultparagraphseparator","p"],["insertimage","/img/lion.svg"]] "<p>foo[</p><p>]bar<br>baz</p>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p>foo<img src=\"/img/lion.svg\">bar<br>baz</p>" but got "<p>foo<img src=\"/img/lion.svg\">bar</p><p>baz</p>"
 PASS [["defaultparagraphseparator","p"],["insertimage","/img/lion.svg"]] "<p>foo[</p><p>]bar<br>baz</p>" queryCommandIndeterm("defaultparagraphseparator") before
 PASS [["defaultparagraphseparator","p"],["insertimage","/img/lion.svg"]] "<p>foo[</p><p>]bar<br>baz</p>" queryCommandState("defaultparagraphseparator") before
 PASS [["defaultparagraphseparator","p"],["insertimage","/img/lion.svg"]] "<p>foo[</p><p>]bar<br>baz</p>" queryCommandValue("defaultparagraphseparator") before
@@ -813,7 +813,7 @@ PASS [["defaultparagraphseparator","p"],["insertimage","/img/lion.svg"]] "foo[<p
 PASS [["defaultparagraphseparator","p"],["insertimage","/img/lion.svg"]] "foo[<p>]bar</p>baz" queryCommandValue("insertimage") after
 PASS [["insertimage","/img/lion.svg"]] "<p>foo[</p>]bar": execCommand("insertimage", false, "/img/lion.svg") return value
 PASS [["insertimage","/img/lion.svg"]] "<p>foo[</p>]bar" checks for modifications to non-editable content
-FAIL [["insertimage","/img/lion.svg"]] "<p>foo[</p>]bar" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p>foo<img src=\"/img/lion.svg\">bar</p>" but got "<p>foo<img src=\"/img/lion.svg\"></p>bar"
+FAIL [["insertimage","/img/lion.svg"]] "<p>foo[</p>]bar" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p>foo<img src=\"/img/lion.svg\">bar</p>" but got "<p>foo<img src=\"/img/lion.svg\"></p>bar"
 PASS [["insertimage","/img/lion.svg"]] "<p>foo[</p>]bar" queryCommandIndeterm("insertimage") before
 PASS [["insertimage","/img/lion.svg"]] "<p>foo[</p>]bar" queryCommandState("insertimage") before
 PASS [["insertimage","/img/lion.svg"]] "<p>foo[</p>]bar" queryCommandValue("insertimage") before
@@ -822,7 +822,7 @@ PASS [["insertimage","/img/lion.svg"]] "<p>foo[</p>]bar" queryCommandState("inse
 PASS [["insertimage","/img/lion.svg"]] "<p>foo[</p>]bar" queryCommandValue("insertimage") after
 PASS [["insertimage","/img/lion.svg"]] "<p>foo[</p>]bar<br>baz": execCommand("insertimage", false, "/img/lion.svg") return value
 PASS [["insertimage","/img/lion.svg"]] "<p>foo[</p>]bar<br>baz" checks for modifications to non-editable content
-FAIL [["insertimage","/img/lion.svg"]] "<p>foo[</p>]bar<br>baz" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p>foo<img src=\"/img/lion.svg\">bar</p>baz" but got "<p>foo<img src=\"/img/lion.svg\"></p>bar<br>baz"
+FAIL [["insertimage","/img/lion.svg"]] "<p>foo[</p>]bar<br>baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p>foo<img src=\"/img/lion.svg\">bar</p>baz" but got "<p>foo<img src=\"/img/lion.svg\"></p>bar<br>baz"
 PASS [["insertimage","/img/lion.svg"]] "<p>foo[</p>]bar<br>baz" queryCommandIndeterm("insertimage") before
 PASS [["insertimage","/img/lion.svg"]] "<p>foo[</p>]bar<br>baz" queryCommandState("insertimage") before
 PASS [["insertimage","/img/lion.svg"]] "<p>foo[</p>]bar<br>baz" queryCommandValue("insertimage") before
@@ -831,7 +831,7 @@ PASS [["insertimage","/img/lion.svg"]] "<p>foo[</p>]bar<br>baz" queryCommandStat
 PASS [["insertimage","/img/lion.svg"]] "<p>foo[</p>]bar<br>baz" queryCommandValue("insertimage") after
 PASS [["insertimage","/img/lion.svg"]] "<p>foo[</p>]bar<p>baz</p>": execCommand("insertimage", false, "/img/lion.svg") return value
 PASS [["insertimage","/img/lion.svg"]] "<p>foo[</p>]bar<p>baz</p>" checks for modifications to non-editable content
-FAIL [["insertimage","/img/lion.svg"]] "<p>foo[</p>]bar<p>baz</p>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p>foo<img src=\"/img/lion.svg\">bar</p><p>baz</p>" but got "<p>foo<img src=\"/img/lion.svg\"></p>bar<p>baz</p>"
+FAIL [["insertimage","/img/lion.svg"]] "<p>foo[</p>]bar<p>baz</p>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p>foo<img src=\"/img/lion.svg\">bar</p><p>baz</p>" but got "<p>foo<img src=\"/img/lion.svg\"></p>bar<p>baz</p>"
 PASS [["insertimage","/img/lion.svg"]] "<p>foo[</p>]bar<p>baz</p>" queryCommandIndeterm("insertimage") before
 PASS [["insertimage","/img/lion.svg"]] "<p>foo[</p>]bar<p>baz</p>" queryCommandState("insertimage") before
 PASS [["insertimage","/img/lion.svg"]] "<p>foo[</p>]bar<p>baz</p>" queryCommandValue("insertimage") before
@@ -922,7 +922,7 @@ PASS [["insertimage","/img/lion.svg"]] "foo[<div>]bar<p>baz</p></div>" queryComm
 PASS [["insertimage","/img/lion.svg"]] "foo[<div>]bar<p>baz</p></div>" queryCommandValue("insertimage") after
 PASS [["insertimage","/img/lion.svg"]] "<div><p>foo</p>bar[</div>]baz": execCommand("insertimage", false, "/img/lion.svg") return value
 PASS [["insertimage","/img/lion.svg"]] "<div><p>foo</p>bar[</div>]baz" checks for modifications to non-editable content
-FAIL [["insertimage","/img/lion.svg"]] "<div><p>foo</p>bar[</div>]baz" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<div><p>foo</p>bar<img src=\"/img/lion.svg\">baz</div>" but got "<div><p>foo</p>bar<img src=\"/img/lion.svg\"></div>baz"
+FAIL [["insertimage","/img/lion.svg"]] "<div><p>foo</p>bar[</div>]baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<div><p>foo</p>bar<img src=\"/img/lion.svg\">baz</div>" but got "<div><p>foo</p>bar<img src=\"/img/lion.svg\"></div>baz"
 PASS [["insertimage","/img/lion.svg"]] "<div><p>foo</p>bar[</div>]baz" queryCommandIndeterm("insertimage") before
 PASS [["insertimage","/img/lion.svg"]] "<div><p>foo</p>bar[</div>]baz" queryCommandState("insertimage") before
 PASS [["insertimage","/img/lion.svg"]] "<div><p>foo</p>bar[</div>]baz" queryCommandValue("insertimage") before

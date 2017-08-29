@@ -1,4 +1,4 @@
 This is a testharness.js-based test.
-FAIL XMLHttpRequest: The send() method: event order when synchronous flag is setassert_equals: expected "load(12,12,true)" but got "load(12,0,false)"
+FAIL XMLHttpRequest: The send() method: event order when synchronous flag is set assert_equals: expected "load(12,12,true)" but got "load(12,0,false)"
 Harness: the test ran to completion.
 

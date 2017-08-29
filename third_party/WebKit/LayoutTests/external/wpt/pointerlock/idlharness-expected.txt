@@ -5,8 +5,8 @@ PASS Document interface: attribute onpointerlockchange
 PASS Document interface: attribute onpointerlockerror
 PASS Document interface: attribute pointerLockElement
 PASS Document interface: operation exitPointerLock()
-FAIL Document interface: window.document must inherit property "onpointerlockchange" with the proper typeUnrecognized type EventHandler
-FAIL Document interface: window.document must inherit property "onpointerlockerror" with the proper typeUnrecognized type EventHandler
+FAIL Document interface: window.document must inherit property "onpointerlockchange" with the proper type Unrecognized type EventHandler
+FAIL Document interface: window.document must inherit property "onpointerlockerror" with the proper type Unrecognized type EventHandler
 PASS Document interface: window.document must inherit property "pointerLockElement" with the proper type
 PASS Document interface: window.document must inherit property "exitPointerLock()" with the proper type
 PASS MouseEvent interface: attribute movementX

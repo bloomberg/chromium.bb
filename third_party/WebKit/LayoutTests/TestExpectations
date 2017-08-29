@@ -771,9 +771,6 @@ crbug.com/692560 external/wpt/html/semantics/document-metadata/styling/LinkStyle
 crbug.com/627706 external/wpt/html/semantics/embedded-content/the-img-element/invalid-src.html [ Skip ]
 
 crbug.com/698135 external/wpt/editing/run/delete.html [ Crash Failure Timeout ]
-crbug.com/698165 external/wpt/editing/run/forwarddelete.html [ Pass Timeout ]
-crbug.com/698165 external/wpt/editing/run/justifycenter.html [ Pass Timeout ]
-crbug.com/698165 [ Win7 Debug ] external/wpt/editing/run/multitest.html [ Pass Timeout ]
 
 crbug.com/688613 external/wpt/mediacapture-streams/MediaStreamTrack-MediaElement-disabled-audio-is-silence.https.html [ Skip ]
 
@@ -1750,6 +1747,13 @@ crbug.com/761952 virtual/service-worker-script-streaming/external/wpt/service-wo
 crbug.com/761952 external/wpt/beacon/headers/header-content-type.html [ Failure Pass Timeout ]
 crbug.com/761952 virtual/service-worker-script-streaming/external/wpt/service-workers/service-worker/registration-mime-types.https.html [ Failure Pass ]
 crbug.com/761952 fast/text/international/complex-text-rectangle.html [ Timeout Pass ]
+crbug.com/761952 external/wpt/2dcontext/imagebitmap/createImageBitmap-drawImage.html [ Failure Pass ]
+crbug.com/761952 external/wpt/audio-output/setSinkId.https.html [ Failure Pass ]
+crbug.com/761952 external/wpt/editing/run/forwarddelete.html [ Failure Pass Timeout ]
+crbug.com/761952 external/wpt/html/semantics/embedded-content/media-elements/track/track-element/track-data-url.html [ Failure Pass ]
+crbug.com/761952 external/wpt/payment-request/historical.https.html [ Failure Pass ]
+crbug.com/761952 external/wpt/uievents/auxclick/auxclick_event-manual.html [ Failure Pass ]
+crbug.com/761952 virtual/mojo-loading/http/tests/devtools/console/console-uncaught-promise.html [ Failure Pass ]
 
 # ====== New tests from wpt-importer added here ======
 crbug.com/626703 external/wpt/audio-output/setSinkId-manual.https.html [ Skip ]
@@ -2839,7 +2843,7 @@ crbug.com/715718 [ Win ] external/wpt/css/css-flexbox-1/flex-minimum-width-flex-
 crbug.com/715718 [ Win ] external/wpt/css/css-flexbox-1/flex-minimum-width-flex-items-003.xht [ Failure Pass ]
 crbug.com/715718 [ Win ] external/wpt/css/css-flexbox-1/flexbox_flex-natural-mixed-basis-auto.html [ Failure Pass ]
 
-crbug.com/739367 virtual/service-worker-script-streaming/external/wpt/service-workers/service-worker/fetch-event-redirect.https.html [ Timeout ]
+crbug.com/739367 [ Win ] virtual/service-worker-script-streaming/external/wpt/service-workers/service-worker/fetch-event-redirect.https.html [ Timeout ]
 
 # Feature Policy changes fullscreen behaviour, tests need updating
 crbug.com/718155 fullscreen/full-screen-iframe-not-allowed.html [ Failure ]
@@ -2881,9 +2885,6 @@ crbug.com/725545 [ Debug ] fast/forms/number/number-stepup-stepdown-from-rendere
 
 # Sheriff failures 2017-05-23
 crbug.com/725470 editing/shadow/doubleclick-on-meter-in-shadow-crash.html [ Crash Failure Pass ]
-
-# Sheriff failures 2017-05-29
-crbug.com/727252 [ Win7 ] external/wpt/media-source/mediasource-endofstream.html [ Pass Timeout ]
 
 # Failures when using libc++.  Rebaseline after landing https://codereview.chromium.org/2933573002/
 crbug.com/734873 [ Linux ] fast/backgrounds/size/contain-and-cover.html [ Pass Failure ]

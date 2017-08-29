@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
 PASS failed setting of document.domain
-FAIL same-origin-domain iframeFailed to read the 'contentDocument' property from 'HTMLIFrameElement': Blocked a frame with origin "http://web-platform.test:8001" from accessing a cross-origin frame.
+FAIL same-origin-domain iframe Failed to read the 'contentDocument' property from 'HTMLIFrameElement': Blocked a frame with origin "http://web-platform.test:8001" from accessing a cross-origin frame.
 Harness: the test ran to completion.
 

@@ -5,7 +5,7 @@ PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo[]bar": execComm
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo[]bar" checks for modifications to non-editable content
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo[]bar" compare innerHTML
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo[]bar" queryCommandIndeterm("stylewithcss") before
-FAIL [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo[]bar" queryCommandState("stylewithcss") beforeassert_equals: Wrong result returned expected false but got true
+FAIL [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo[]bar" queryCommandState("stylewithcss") before assert_equals: Wrong result returned expected false but got true
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo[]bar" queryCommandValue("stylewithcss") before
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo[]bar" queryCommandIndeterm("stylewithcss") after
 PASS [["stylewithcss","true"],["inserthtml","ab<b>c</b>d"]] "foo[]bar" queryCommandState("stylewithcss") after
@@ -414,7 +414,7 @@ PASS [["stylewithcss","false"],["inserthtml","<b>abc"]] "foo[bar]baz" queryComma
 PASS [["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<p>foo[bar]baz": execCommand("defaultparagraphseparator", false, "div") return value
 PASS [["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<p>foo[bar]baz": execCommand("inserthtml", false, "<p>abc") return value
 PASS [["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<p>foo[bar]baz" checks for modifications to non-editable content
-FAIL [["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<p>foo[bar]baz" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p>foo</p><p>abc</p><p>baz</p>" but got "<p>fooabcbaz</p>"
+FAIL [["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<p>foo[bar]baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p>foo</p><p>abc</p><p>baz</p>" but got "<p>fooabcbaz</p>"
 PASS [["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<p>foo[bar]baz" queryCommandIndeterm("defaultparagraphseparator") before
 PASS [["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<p>foo[bar]baz" queryCommandState("defaultparagraphseparator") before
 PASS [["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<p>foo[bar]baz" queryCommandValue("defaultparagraphseparator") before
@@ -430,7 +430,7 @@ PASS [["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<p>foo[bar]b
 PASS [["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<p>foo[bar]baz": execCommand("defaultparagraphseparator", false, "p") return value
 PASS [["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<p>foo[bar]baz": execCommand("inserthtml", false, "<p>abc") return value
 PASS [["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<p>foo[bar]baz" checks for modifications to non-editable content
-FAIL [["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<p>foo[bar]baz" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p>foo</p><p>abc</p><p>baz</p>" but got "<p>fooabcbaz</p>"
+FAIL [["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<p>foo[bar]baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p>foo</p><p>abc</p><p>baz</p>" but got "<p>fooabcbaz</p>"
 PASS [["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<p>foo[bar]baz" queryCommandIndeterm("defaultparagraphseparator") before
 PASS [["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<p>foo[bar]baz" queryCommandState("defaultparagraphseparator") before
 PASS [["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<p>foo[bar]baz" queryCommandValue("defaultparagraphseparator") before
@@ -446,7 +446,7 @@ PASS [["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<p>foo[bar]baz
 PASS [["defaultparagraphseparator","div"],["inserthtml","<li>abc"]] "<p>foo[bar]baz": execCommand("defaultparagraphseparator", false, "div") return value
 PASS [["defaultparagraphseparator","div"],["inserthtml","<li>abc"]] "<p>foo[bar]baz": execCommand("inserthtml", false, "<li>abc") return value
 PASS [["defaultparagraphseparator","div"],["inserthtml","<li>abc"]] "<p>foo[bar]baz" checks for modifications to non-editable content
-FAIL [["defaultparagraphseparator","div"],["inserthtml","<li>abc"]] "<p>foo[bar]baz" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p>foo</p><div>abc</div><p>baz</p>" but got "<p>foo</p><li>abc</li><p>baz</p>"
+FAIL [["defaultparagraphseparator","div"],["inserthtml","<li>abc"]] "<p>foo[bar]baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p>foo</p><div>abc</div><p>baz</p>" but got "<p>foo</p><li>abc</li><p>baz</p>"
 PASS [["defaultparagraphseparator","div"],["inserthtml","<li>abc"]] "<p>foo[bar]baz" queryCommandIndeterm("defaultparagraphseparator") before
 PASS [["defaultparagraphseparator","div"],["inserthtml","<li>abc"]] "<p>foo[bar]baz" queryCommandState("defaultparagraphseparator") before
 PASS [["defaultparagraphseparator","div"],["inserthtml","<li>abc"]] "<p>foo[bar]baz" queryCommandValue("defaultparagraphseparator") before
@@ -462,7 +462,7 @@ PASS [["defaultparagraphseparator","div"],["inserthtml","<li>abc"]] "<p>foo[bar]
 PASS [["defaultparagraphseparator","p"],["inserthtml","<li>abc"]] "<p>foo[bar]baz": execCommand("defaultparagraphseparator", false, "p") return value
 PASS [["defaultparagraphseparator","p"],["inserthtml","<li>abc"]] "<p>foo[bar]baz": execCommand("inserthtml", false, "<li>abc") return value
 PASS [["defaultparagraphseparator","p"],["inserthtml","<li>abc"]] "<p>foo[bar]baz" checks for modifications to non-editable content
-FAIL [["defaultparagraphseparator","p"],["inserthtml","<li>abc"]] "<p>foo[bar]baz" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p>foo</p><p>abc</p><p>baz</p>" but got "<p>foo</p><li>abc</li><p>baz</p>"
+FAIL [["defaultparagraphseparator","p"],["inserthtml","<li>abc"]] "<p>foo[bar]baz" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p>foo</p><p>abc</p><p>baz</p>" but got "<p>foo</p><li>abc</li><p>baz</p>"
 PASS [["defaultparagraphseparator","p"],["inserthtml","<li>abc"]] "<p>foo[bar]baz" queryCommandIndeterm("defaultparagraphseparator") before
 PASS [["defaultparagraphseparator","p"],["inserthtml","<li>abc"]] "<p>foo[bar]baz" queryCommandState("defaultparagraphseparator") before
 PASS [["defaultparagraphseparator","p"],["inserthtml","<li>abc"]] "<p>foo[bar]baz" queryCommandValue("defaultparagraphseparator") before
@@ -478,7 +478,7 @@ PASS [["defaultparagraphseparator","p"],["inserthtml","<li>abc"]] "<p>foo[bar]ba
 PASS [["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<ol>{<li>foo</li>}<li>bar</ol>": execCommand("defaultparagraphseparator", false, "div") return value
 PASS [["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<ol>{<li>foo</li>}<li>bar</ol>": execCommand("inserthtml", false, "<p>abc") return value
 PASS [["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<ol>{<li>foo</li>}<li>bar</ol>" checks for modifications to non-editable content
-FAIL [["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<ol>{<li>foo</li>}<li>bar</ol>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p>abc</p><ol><li>bar</li></ol>" but got "<ol><li>abcbar<br></li></ol>"
+FAIL [["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<ol>{<li>foo</li>}<li>bar</ol>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p>abc</p><ol><li>bar</li></ol>" but got "<ol><li>abcbar<br></li></ol>"
 PASS [["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<ol>{<li>foo</li>}<li>bar</ol>" queryCommandIndeterm("defaultparagraphseparator") before
 PASS [["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<ol>{<li>foo</li>}<li>bar</ol>" queryCommandState("defaultparagraphseparator") before
 PASS [["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<ol>{<li>foo</li>}<li>bar</ol>" queryCommandValue("defaultparagraphseparator") before
@@ -494,7 +494,7 @@ PASS [["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<ol>{<li>foo
 PASS [["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<ol>{<li>foo</li>}<li>bar</ol>": execCommand("defaultparagraphseparator", false, "p") return value
 PASS [["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<ol>{<li>foo</li>}<li>bar</ol>": execCommand("inserthtml", false, "<p>abc") return value
 PASS [["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<ol>{<li>foo</li>}<li>bar</ol>" checks for modifications to non-editable content
-FAIL [["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<ol>{<li>foo</li>}<li>bar</ol>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p>abc</p><ol><li>bar</li></ol>" but got "<ol><li>abcbar<br></li></ol>"
+FAIL [["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<ol>{<li>foo</li>}<li>bar</ol>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p>abc</p><ol><li>bar</li></ol>" but got "<ol><li>abcbar<br></li></ol>"
 PASS [["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<ol>{<li>foo</li>}<li>bar</ol>" queryCommandIndeterm("defaultparagraphseparator") before
 PASS [["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<ol>{<li>foo</li>}<li>bar</ol>" queryCommandState("defaultparagraphseparator") before
 PASS [["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<ol>{<li>foo</li>}<li>bar</ol>" queryCommandValue("defaultparagraphseparator") before
@@ -510,7 +510,7 @@ PASS [["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<ol>{<li>foo</
 PASS [["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<ol><li>foo</li>{<li>bar</li>}<li>baz</ol>": execCommand("defaultparagraphseparator", false, "div") return value
 PASS [["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<ol><li>foo</li>{<li>bar</li>}<li>baz</ol>": execCommand("inserthtml", false, "<p>abc") return value
 PASS [["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<ol><li>foo</li>{<li>bar</li>}<li>baz</ol>" checks for modifications to non-editable content
-FAIL [["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<ol><li>foo</li>{<li>bar</li>}<li>baz</ol>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<ol><li>foo</li></ol><p>abc</p><ol><li>baz</li></ol>" but got "<ol><li>foo</li><li>abcbaz<br></li></ol>"
+FAIL [["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<ol><li>foo</li>{<li>bar</li>}<li>baz</ol>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<ol><li>foo</li></ol><p>abc</p><ol><li>baz</li></ol>" but got "<ol><li>foo</li><li>abcbaz<br></li></ol>"
 PASS [["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<ol><li>foo</li>{<li>bar</li>}<li>baz</ol>" queryCommandIndeterm("defaultparagraphseparator") before
 PASS [["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<ol><li>foo</li>{<li>bar</li>}<li>baz</ol>" queryCommandState("defaultparagraphseparator") before
 PASS [["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<ol><li>foo</li>{<li>bar</li>}<li>baz</ol>" queryCommandValue("defaultparagraphseparator") before
@@ -526,7 +526,7 @@ PASS [["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<ol><li>foo<
 PASS [["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<ol><li>foo</li>{<li>bar</li>}<li>baz</ol>": execCommand("defaultparagraphseparator", false, "p") return value
 PASS [["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<ol><li>foo</li>{<li>bar</li>}<li>baz</ol>": execCommand("inserthtml", false, "<p>abc") return value
 PASS [["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<ol><li>foo</li>{<li>bar</li>}<li>baz</ol>" checks for modifications to non-editable content
-FAIL [["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<ol><li>foo</li>{<li>bar</li>}<li>baz</ol>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<ol><li>foo</li></ol><p>abc</p><ol><li>baz</li></ol>" but got "<ol><li>foo</li><li>abcbaz<br></li></ol>"
+FAIL [["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<ol><li>foo</li>{<li>bar</li>}<li>baz</ol>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<ol><li>foo</li></ol><p>abc</p><ol><li>baz</li></ol>" but got "<ol><li>foo</li><li>abcbaz<br></li></ol>"
 PASS [["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<ol><li>foo</li>{<li>bar</li>}<li>baz</ol>" queryCommandIndeterm("defaultparagraphseparator") before
 PASS [["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<ol><li>foo</li>{<li>bar</li>}<li>baz</ol>" queryCommandState("defaultparagraphseparator") before
 PASS [["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<ol><li>foo</li>{<li>bar</li>}<li>baz</ol>" queryCommandValue("defaultparagraphseparator") before
@@ -614,7 +614,7 @@ PASS [["stylewithcss","false"],["inserthtml","<b>abc</b>"]] "<xmp>f[o]o</xmp>" q
 PASS [["stylewithcss","false"],["inserthtml","<b>abc</b>"]] "<xmp>f[o]o</xmp>" queryCommandValue("inserthtml") after
 PASS [["inserthtml","abc"]] "<script>f[o]o</script>bar": execCommand("inserthtml", false, "abc") return value
 PASS [["inserthtml","abc"]] "<script>f[o]o</script>bar" checks for modifications to non-editable content
-FAIL [["inserthtml","abc"]] "<script>f[o]o</script>bar" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<script>fabco</script>bar" but got "<script>foo</script>abcbar"
+FAIL [["inserthtml","abc"]] "<script>f[o]o</script>bar" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<script>fabco</script>bar" but got "<script>foo</script>abcbar"
 PASS [["inserthtml","abc"]] "<script>f[o]o</script>bar" queryCommandIndeterm("inserthtml") before
 PASS [["inserthtml","abc"]] "<script>f[o]o</script>bar" queryCommandState("inserthtml") before
 PASS [["inserthtml","abc"]] "<script>f[o]o</script>bar" queryCommandValue("inserthtml") before
@@ -624,7 +624,7 @@ PASS [["inserthtml","abc"]] "<script>f[o]o</script>bar" queryCommandValue("inser
 PASS [["stylewithcss","true"],["inserthtml","<b>abc</b>"]] "<script>f[o]o</script>bar": execCommand("stylewithcss", false, "true") return value
 PASS [["stylewithcss","true"],["inserthtml","<b>abc</b>"]] "<script>f[o]o</script>bar": execCommand("inserthtml", false, "<b>abc</b>") return value
 PASS [["stylewithcss","true"],["inserthtml","<b>abc</b>"]] "<script>f[o]o</script>bar" checks for modifications to non-editable content
-FAIL [["stylewithcss","true"],["inserthtml","<b>abc</b>"]] "<script>f[o]o</script>bar" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<script>f<b>abc</b>o</script>bar" but got "<script>foo</script><b>abc</b>bar"
+FAIL [["stylewithcss","true"],["inserthtml","<b>abc</b>"]] "<script>f[o]o</script>bar" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<script>f<b>abc</b>o</script>bar" but got "<script>foo</script><b>abc</b>bar"
 PASS [["stylewithcss","true"],["inserthtml","<b>abc</b>"]] "<script>f[o]o</script>bar" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","true"],["inserthtml","<b>abc</b>"]] "<script>f[o]o</script>bar" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","true"],["inserthtml","<b>abc</b>"]] "<script>f[o]o</script>bar" queryCommandValue("stylewithcss") before
@@ -640,7 +640,7 @@ PASS [["stylewithcss","true"],["inserthtml","<b>abc</b>"]] "<script>f[o]o</scrip
 PASS [["stylewithcss","false"],["inserthtml","<b>abc</b>"]] "<script>f[o]o</script>bar": execCommand("stylewithcss", false, "false") return value
 PASS [["stylewithcss","false"],["inserthtml","<b>abc</b>"]] "<script>f[o]o</script>bar": execCommand("inserthtml", false, "<b>abc</b>") return value
 PASS [["stylewithcss","false"],["inserthtml","<b>abc</b>"]] "<script>f[o]o</script>bar" checks for modifications to non-editable content
-FAIL [["stylewithcss","false"],["inserthtml","<b>abc</b>"]] "<script>f[o]o</script>bar" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<script>f<b>abc</b>o</script>bar" but got "<script>foo</script><b>abc</b>bar"
+FAIL [["stylewithcss","false"],["inserthtml","<b>abc</b>"]] "<script>f[o]o</script>bar" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<script>f<b>abc</b>o</script>bar" but got "<script>foo</script><b>abc</b>bar"
 PASS [["stylewithcss","false"],["inserthtml","<b>abc</b>"]] "<script>f[o]o</script>bar" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","false"],["inserthtml","<b>abc</b>"]] "<script>f[o]o</script>bar" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","false"],["inserthtml","<b>abc</b>"]] "<script>f[o]o</script>bar" queryCommandValue("stylewithcss") before
@@ -655,7 +655,7 @@ PASS [["stylewithcss","false"],["inserthtml","<b>abc</b>"]] "<script>f[o]o</scri
 PASS [["stylewithcss","false"],["inserthtml","<b>abc</b>"]] "<script>f[o]o</script>bar" queryCommandValue("inserthtml") after
 PASS [["inserthtml","<a>abc</a>"]] "<a>f[o]o</a>": execCommand("inserthtml", false, "<a>abc</a>") return value
 PASS [["inserthtml","<a>abc</a>"]] "<a>f[o]o</a>" checks for modifications to non-editable content
-FAIL [["inserthtml","<a>abc</a>"]] "<a>f[o]o</a>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<a>f</a><a>abc</a><a>o</a>" but got "<a>f<a>abc</a>o</a>"
+FAIL [["inserthtml","<a>abc</a>"]] "<a>f[o]o</a>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<a>f</a><a>abc</a><a>o</a>" but got "<a>f<a>abc</a>o</a>"
 PASS [["inserthtml","<a>abc</a>"]] "<a>f[o]o</a>" queryCommandIndeterm("inserthtml") before
 PASS [["inserthtml","<a>abc</a>"]] "<a>f[o]o</a>" queryCommandState("inserthtml") before
 PASS [["inserthtml","<a>abc</a>"]] "<a>f[o]o</a>" queryCommandValue("inserthtml") before
@@ -664,7 +664,7 @@ PASS [["inserthtml","<a>abc</a>"]] "<a>f[o]o</a>" queryCommandState("inserthtml"
 PASS [["inserthtml","<a>abc</a>"]] "<a>f[o]o</a>" queryCommandValue("inserthtml") after
 PASS [["inserthtml","<a href=/>abc</a>"]] "<a href=.>f[o]o</a>": execCommand("inserthtml", false, "<a href=/>abc</a>") return value
 PASS [["inserthtml","<a href=/>abc</a>"]] "<a href=.>f[o]o</a>" checks for modifications to non-editable content
-FAIL [["inserthtml","<a href=/>abc</a>"]] "<a href=.>f[o]o</a>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<a href=\".\">f</a><a href=\"/\">abc</a><a href=\".\">o</a>" but got "<a href=\".\">f<a href=\"/\">abc</a>o</a>"
+FAIL [["inserthtml","<a href=/>abc</a>"]] "<a href=.>f[o]o</a>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<a href=\".\">f</a><a href=\"/\">abc</a><a href=\".\">o</a>" but got "<a href=\".\">f<a href=\"/\">abc</a>o</a>"
 PASS [["inserthtml","<a href=/>abc</a>"]] "<a href=.>f[o]o</a>" queryCommandIndeterm("inserthtml") before
 PASS [["inserthtml","<a href=/>abc</a>"]] "<a href=.>f[o]o</a>" queryCommandState("inserthtml") before
 PASS [["inserthtml","<a href=/>abc</a>"]] "<a href=.>f[o]o</a>" queryCommandValue("inserthtml") before
@@ -764,7 +764,7 @@ PASS [["inserthtml","<td>abc</td>"]] "f[o]o" queryCommandState("inserthtml") aft
 PASS [["inserthtml","<td>abc</td>"]] "f[o]o" queryCommandValue("inserthtml") after
 PASS [["inserthtml","<dt>abc</dt>"]] "<dl><dt>f[o]o<dd>bar</dl>": execCommand("inserthtml", false, "<dt>abc</dt>") return value
 PASS [["inserthtml","<dt>abc</dt>"]] "<dl><dt>f[o]o<dd>bar</dl>" checks for modifications to non-editable content
-FAIL [["inserthtml","<dt>abc</dt>"]] "<dl><dt>f[o]o<dd>bar</dl>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<dl><dt>f</dt><dt>abc</dt><dt>o</dt><dd>bar</dd></dl>" but got "<dl><dt>fabco<br></dt><dd>bar</dd></dl>"
+FAIL [["inserthtml","<dt>abc</dt>"]] "<dl><dt>f[o]o<dd>bar</dl>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<dl><dt>f</dt><dt>abc</dt><dt>o</dt><dd>bar</dd></dl>" but got "<dl><dt>fabco<br></dt><dd>bar</dd></dl>"
 PASS [["inserthtml","<dt>abc</dt>"]] "<dl><dt>f[o]o<dd>bar</dl>" queryCommandIndeterm("inserthtml") before
 PASS [["inserthtml","<dt>abc</dt>"]] "<dl><dt>f[o]o<dd>bar</dl>" queryCommandState("inserthtml") before
 PASS [["inserthtml","<dt>abc</dt>"]] "<dl><dt>f[o]o<dd>bar</dl>" queryCommandValue("inserthtml") before
@@ -773,7 +773,7 @@ PASS [["inserthtml","<dt>abc</dt>"]] "<dl><dt>f[o]o<dd>bar</dl>" queryCommandSta
 PASS [["inserthtml","<dt>abc</dt>"]] "<dl><dt>f[o]o<dd>bar</dl>" queryCommandValue("inserthtml") after
 PASS [["inserthtml","<dt>abc</dt>"]] "<dl><dt>foo<dd>b[a]r</dl>": execCommand("inserthtml", false, "<dt>abc</dt>") return value
 PASS [["inserthtml","<dt>abc</dt>"]] "<dl><dt>foo<dd>b[a]r</dl>" checks for modifications to non-editable content
-FAIL [["inserthtml","<dt>abc</dt>"]] "<dl><dt>foo<dd>b[a]r</dl>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<dl><dt>foo</dt><dd>b</dd><dt>abc</dt><dd>r</dd></dl>" but got "<dl><dt>foo</dt><dd>babcr<br></dd></dl>"
+FAIL [["inserthtml","<dt>abc</dt>"]] "<dl><dt>foo<dd>b[a]r</dl>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<dl><dt>foo</dt><dd>b</dd><dt>abc</dt><dd>r</dd></dl>" but got "<dl><dt>foo</dt><dd>babcr<br></dd></dl>"
 PASS [["inserthtml","<dt>abc</dt>"]] "<dl><dt>foo<dd>b[a]r</dl>" queryCommandIndeterm("inserthtml") before
 PASS [["inserthtml","<dt>abc</dt>"]] "<dl><dt>foo<dd>b[a]r</dl>" queryCommandState("inserthtml") before
 PASS [["inserthtml","<dt>abc</dt>"]] "<dl><dt>foo<dd>b[a]r</dl>" queryCommandValue("inserthtml") before
@@ -782,7 +782,7 @@ PASS [["inserthtml","<dt>abc</dt>"]] "<dl><dt>foo<dd>b[a]r</dl>" queryCommandSta
 PASS [["inserthtml","<dt>abc</dt>"]] "<dl><dt>foo<dd>b[a]r</dl>" queryCommandValue("inserthtml") after
 PASS [["inserthtml","<dd>abc</dd>"]] "<dl><dt>f[o]o<dd>bar</dl>": execCommand("inserthtml", false, "<dd>abc</dd>") return value
 PASS [["inserthtml","<dd>abc</dd>"]] "<dl><dt>f[o]o<dd>bar</dl>" checks for modifications to non-editable content
-FAIL [["inserthtml","<dd>abc</dd>"]] "<dl><dt>f[o]o<dd>bar</dl>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<dl><dt>f</dt><dd>abc</dd><dt>o</dt><dd>bar</dd></dl>" but got "<dl><dt>fabco<br></dt><dd>bar</dd></dl>"
+FAIL [["inserthtml","<dd>abc</dd>"]] "<dl><dt>f[o]o<dd>bar</dl>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<dl><dt>f</dt><dd>abc</dd><dt>o</dt><dd>bar</dd></dl>" but got "<dl><dt>fabco<br></dt><dd>bar</dd></dl>"
 PASS [["inserthtml","<dd>abc</dd>"]] "<dl><dt>f[o]o<dd>bar</dl>" queryCommandIndeterm("inserthtml") before
 PASS [["inserthtml","<dd>abc</dd>"]] "<dl><dt>f[o]o<dd>bar</dl>" queryCommandState("inserthtml") before
 PASS [["inserthtml","<dd>abc</dd>"]] "<dl><dt>f[o]o<dd>bar</dl>" queryCommandValue("inserthtml") before
@@ -791,7 +791,7 @@ PASS [["inserthtml","<dd>abc</dd>"]] "<dl><dt>f[o]o<dd>bar</dl>" queryCommandSta
 PASS [["inserthtml","<dd>abc</dd>"]] "<dl><dt>f[o]o<dd>bar</dl>" queryCommandValue("inserthtml") after
 PASS [["inserthtml","<dd>abc</dd>"]] "<dl><dt>foo<dd>b[a]r</dl>": execCommand("inserthtml", false, "<dd>abc</dd>") return value
 PASS [["inserthtml","<dd>abc</dd>"]] "<dl><dt>foo<dd>b[a]r</dl>" checks for modifications to non-editable content
-FAIL [["inserthtml","<dd>abc</dd>"]] "<dl><dt>foo<dd>b[a]r</dl>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<dl><dt>foo</dt><dd>b</dd><dd>abc</dd><dd>r</dd></dl>" but got "<dl><dt>foo</dt><dd>babcr<br></dd></dl>"
+FAIL [["inserthtml","<dd>abc</dd>"]] "<dl><dt>foo<dd>b[a]r</dl>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<dl><dt>foo</dt><dd>b</dd><dd>abc</dd><dd>r</dd></dl>" but got "<dl><dt>foo</dt><dd>babcr<br></dd></dl>"
 PASS [["inserthtml","<dd>abc</dd>"]] "<dl><dt>foo<dd>b[a]r</dl>" queryCommandIndeterm("inserthtml") before
 PASS [["inserthtml","<dd>abc</dd>"]] "<dl><dt>foo<dd>b[a]r</dl>" queryCommandState("inserthtml") before
 PASS [["inserthtml","<dd>abc</dd>"]] "<dl><dt>foo<dd>b[a]r</dl>" queryCommandValue("inserthtml") before
@@ -800,7 +800,7 @@ PASS [["inserthtml","<dd>abc</dd>"]] "<dl><dt>foo<dd>b[a]r</dl>" queryCommandSta
 PASS [["inserthtml","<dd>abc</dd>"]] "<dl><dt>foo<dd>b[a]r</dl>" queryCommandValue("inserthtml") after
 PASS [["inserthtml","<dt>abc</dt>"]] "f[o]o": execCommand("inserthtml", false, "<dt>abc</dt>") return value
 PASS [["inserthtml","<dt>abc</dt>"]] "f[o]o" checks for modifications to non-editable content
-FAIL [["inserthtml","<dt>abc</dt>"]] "f[o]o" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "f<dl><dt>abc</dt></dl>o" but got "fabco<br>"
+FAIL [["inserthtml","<dt>abc</dt>"]] "f[o]o" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "f<dl><dt>abc</dt></dl>o" but got "fabco<br>"
 PASS [["inserthtml","<dt>abc</dt>"]] "f[o]o" queryCommandIndeterm("inserthtml") before
 PASS [["inserthtml","<dt>abc</dt>"]] "f[o]o" queryCommandState("inserthtml") before
 PASS [["inserthtml","<dt>abc</dt>"]] "f[o]o" queryCommandValue("inserthtml") before
@@ -809,7 +809,7 @@ PASS [["inserthtml","<dt>abc</dt>"]] "f[o]o" queryCommandState("inserthtml") aft
 PASS [["inserthtml","<dt>abc</dt>"]] "f[o]o" queryCommandValue("inserthtml") after
 PASS [["inserthtml","<dt>abc</dt>"]] "<ol><li>f[o]o</ol>": execCommand("inserthtml", false, "<dt>abc</dt>") return value
 PASS [["inserthtml","<dt>abc</dt>"]] "<ol><li>f[o]o</ol>" checks for modifications to non-editable content
-FAIL [["inserthtml","<dt>abc</dt>"]] "<ol><li>f[o]o</ol>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<ol><li>f<dl><dt>abc</dt></dl>o</li></ol>" but got "<ol><li>fabco<br></li></ol>"
+FAIL [["inserthtml","<dt>abc</dt>"]] "<ol><li>f[o]o</ol>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<ol><li>f<dl><dt>abc</dt></dl>o</li></ol>" but got "<ol><li>fabco<br></li></ol>"
 PASS [["inserthtml","<dt>abc</dt>"]] "<ol><li>f[o]o</ol>" queryCommandIndeterm("inserthtml") before
 PASS [["inserthtml","<dt>abc</dt>"]] "<ol><li>f[o]o</ol>" queryCommandState("inserthtml") before
 PASS [["inserthtml","<dt>abc</dt>"]] "<ol><li>f[o]o</ol>" queryCommandValue("inserthtml") before
@@ -818,7 +818,7 @@ PASS [["inserthtml","<dt>abc</dt>"]] "<ol><li>f[o]o</ol>" queryCommandState("ins
 PASS [["inserthtml","<dt>abc</dt>"]] "<ol><li>f[o]o</ol>" queryCommandValue("inserthtml") after
 PASS [["inserthtml","<dd>abc</dd>"]] "f[o]o": execCommand("inserthtml", false, "<dd>abc</dd>") return value
 PASS [["inserthtml","<dd>abc</dd>"]] "f[o]o" checks for modifications to non-editable content
-FAIL [["inserthtml","<dd>abc</dd>"]] "f[o]o" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "f<dl><dd>abc</dd></dl>o" but got "fabco<br>"
+FAIL [["inserthtml","<dd>abc</dd>"]] "f[o]o" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "f<dl><dd>abc</dd></dl>o" but got "fabco<br>"
 PASS [["inserthtml","<dd>abc</dd>"]] "f[o]o" queryCommandIndeterm("inserthtml") before
 PASS [["inserthtml","<dd>abc</dd>"]] "f[o]o" queryCommandState("inserthtml") before
 PASS [["inserthtml","<dd>abc</dd>"]] "f[o]o" queryCommandValue("inserthtml") before
@@ -827,7 +827,7 @@ PASS [["inserthtml","<dd>abc</dd>"]] "f[o]o" queryCommandState("inserthtml") aft
 PASS [["inserthtml","<dd>abc</dd>"]] "f[o]o" queryCommandValue("inserthtml") after
 PASS [["inserthtml","<dd>abc</dd>"]] "<ol><li>f[o]o</ol>": execCommand("inserthtml", false, "<dd>abc</dd>") return value
 PASS [["inserthtml","<dd>abc</dd>"]] "<ol><li>f[o]o</ol>" checks for modifications to non-editable content
-FAIL [["inserthtml","<dd>abc</dd>"]] "<ol><li>f[o]o</ol>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<ol><li>f<dl><dd>abc</dd></dl>o</li></ol>" but got "<ol><li>fabco<br></li></ol>"
+FAIL [["inserthtml","<dd>abc</dd>"]] "<ol><li>f[o]o</ol>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<ol><li>f<dl><dd>abc</dd></dl>o</li></ol>" but got "<ol><li>fabco<br></li></ol>"
 PASS [["inserthtml","<dd>abc</dd>"]] "<ol><li>f[o]o</ol>" queryCommandIndeterm("inserthtml") before
 PASS [["inserthtml","<dd>abc</dd>"]] "<ol><li>f[o]o</ol>" queryCommandState("inserthtml") before
 PASS [["inserthtml","<dd>abc</dd>"]] "<ol><li>f[o]o</ol>" queryCommandValue("inserthtml") before
@@ -836,7 +836,7 @@ PASS [["inserthtml","<dd>abc</dd>"]] "<ol><li>f[o]o</ol>" queryCommandState("ins
 PASS [["inserthtml","<dd>abc</dd>"]] "<ol><li>f[o]o</ol>" queryCommandValue("inserthtml") after
 PASS [["inserthtml","<li>abc</li>"]] "<dir><li>f[o]o</dir>": execCommand("inserthtml", false, "<li>abc</li>") return value
 PASS [["inserthtml","<li>abc</li>"]] "<dir><li>f[o]o</dir>" checks for modifications to non-editable content
-FAIL [["inserthtml","<li>abc</li>"]] "<dir><li>f[o]o</dir>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<dir><li>f</li><li>abc</li><li>o</li></dir>" but got "<dir><li>f<li>abc</li>o</li></dir>"
+FAIL [["inserthtml","<li>abc</li>"]] "<dir><li>f[o]o</dir>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<dir><li>f</li><li>abc</li><li>o</li></dir>" but got "<dir><li>f<li>abc</li>o</li></dir>"
 PASS [["inserthtml","<li>abc</li>"]] "<dir><li>f[o]o</dir>" queryCommandIndeterm("inserthtml") before
 PASS [["inserthtml","<li>abc</li>"]] "<dir><li>f[o]o</dir>" queryCommandState("inserthtml") before
 PASS [["inserthtml","<li>abc</li>"]] "<dir><li>f[o]o</dir>" queryCommandValue("inserthtml") before
@@ -845,7 +845,7 @@ PASS [["inserthtml","<li>abc</li>"]] "<dir><li>f[o]o</dir>" queryCommandState("i
 PASS [["inserthtml","<li>abc</li>"]] "<dir><li>f[o]o</dir>" queryCommandValue("inserthtml") after
 PASS [["inserthtml","<li>abc</li>"]] "<ol><li>f[o]o</ol>": execCommand("inserthtml", false, "<li>abc</li>") return value
 PASS [["inserthtml","<li>abc</li>"]] "<ol><li>f[o]o</ol>" checks for modifications to non-editable content
-FAIL [["inserthtml","<li>abc</li>"]] "<ol><li>f[o]o</ol>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<ol><li>f</li><li>abc</li><li>o</li></ol>" but got "<ol><li>f<li>abc</li>o</li></ol>"
+FAIL [["inserthtml","<li>abc</li>"]] "<ol><li>f[o]o</ol>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<ol><li>f</li><li>abc</li><li>o</li></ol>" but got "<ol><li>f<li>abc</li>o</li></ol>"
 PASS [["inserthtml","<li>abc</li>"]] "<ol><li>f[o]o</ol>" queryCommandIndeterm("inserthtml") before
 PASS [["inserthtml","<li>abc</li>"]] "<ol><li>f[o]o</ol>" queryCommandState("inserthtml") before
 PASS [["inserthtml","<li>abc</li>"]] "<ol><li>f[o]o</ol>" queryCommandValue("inserthtml") before
@@ -854,7 +854,7 @@ PASS [["inserthtml","<li>abc</li>"]] "<ol><li>f[o]o</ol>" queryCommandState("ins
 PASS [["inserthtml","<li>abc</li>"]] "<ol><li>f[o]o</ol>" queryCommandValue("inserthtml") after
 PASS [["inserthtml","<li>abc</li>"]] "<ul><li>f[o]o</ul>": execCommand("inserthtml", false, "<li>abc</li>") return value
 PASS [["inserthtml","<li>abc</li>"]] "<ul><li>f[o]o</ul>" checks for modifications to non-editable content
-FAIL [["inserthtml","<li>abc</li>"]] "<ul><li>f[o]o</ul>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<ul><li>f</li><li>abc</li><li>o</li></ul>" but got "<ul><li>f<li>abc</li>o</li></ul>"
+FAIL [["inserthtml","<li>abc</li>"]] "<ul><li>f[o]o</ul>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<ul><li>f</li><li>abc</li><li>o</li></ul>" but got "<ul><li>f<li>abc</li>o</li></ul>"
 PASS [["inserthtml","<li>abc</li>"]] "<ul><li>f[o]o</ul>" queryCommandIndeterm("inserthtml") before
 PASS [["inserthtml","<li>abc</li>"]] "<ul><li>f[o]o</ul>" queryCommandState("inserthtml") before
 PASS [["inserthtml","<li>abc</li>"]] "<ul><li>f[o]o</ul>" queryCommandValue("inserthtml") before
@@ -890,7 +890,7 @@ PASS [["inserthtml","<dir><li>abc</dir>"]] "<ul><li>f[o]o</ul>" queryCommandStat
 PASS [["inserthtml","<dir><li>abc</dir>"]] "<ul><li>f[o]o</ul>" queryCommandValue("inserthtml") after
 PASS [["inserthtml","<ol><li>abc</ol>"]] "<dir><li>f[o]o</dir>": execCommand("inserthtml", false, "<ol><li>abc</ol>") return value
 PASS [["inserthtml","<ol><li>abc</ol>"]] "<dir><li>f[o]o</dir>" checks for modifications to non-editable content
-FAIL [["inserthtml","<ol><li>abc</ol>"]] "<dir><li>f[o]o</dir>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<dir><li>f<ol><li>abc</li></ol>o</li></dir>" but got "<dir><li>f</li><li>abc</li><li>o</li></dir>"
+FAIL [["inserthtml","<ol><li>abc</ol>"]] "<dir><li>f[o]o</dir>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<dir><li>f<ol><li>abc</li></ol>o</li></dir>" but got "<dir><li>f</li><li>abc</li><li>o</li></dir>"
 PASS [["inserthtml","<ol><li>abc</ol>"]] "<dir><li>f[o]o</dir>" queryCommandIndeterm("inserthtml") before
 PASS [["inserthtml","<ol><li>abc</ol>"]] "<dir><li>f[o]o</dir>" queryCommandState("inserthtml") before
 PASS [["inserthtml","<ol><li>abc</ol>"]] "<dir><li>f[o]o</dir>" queryCommandValue("inserthtml") before
@@ -899,7 +899,7 @@ PASS [["inserthtml","<ol><li>abc</ol>"]] "<dir><li>f[o]o</dir>" queryCommandStat
 PASS [["inserthtml","<ol><li>abc</ol>"]] "<dir><li>f[o]o</dir>" queryCommandValue("inserthtml") after
 PASS [["inserthtml","<ol><li>abc</ol>"]] "<ol><li>f[o]o</ol>": execCommand("inserthtml", false, "<ol><li>abc</ol>") return value
 PASS [["inserthtml","<ol><li>abc</ol>"]] "<ol><li>f[o]o</ol>" checks for modifications to non-editable content
-FAIL [["inserthtml","<ol><li>abc</ol>"]] "<ol><li>f[o]o</ol>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<ol><li>f<ol><li>abc</li></ol>o</li></ol>" but got "<ol><li>f</li><li>abc</li><li>o</li></ol>"
+FAIL [["inserthtml","<ol><li>abc</ol>"]] "<ol><li>f[o]o</ol>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<ol><li>f<ol><li>abc</li></ol>o</li></ol>" but got "<ol><li>f</li><li>abc</li><li>o</li></ol>"
 PASS [["inserthtml","<ol><li>abc</ol>"]] "<ol><li>f[o]o</ol>" queryCommandIndeterm("inserthtml") before
 PASS [["inserthtml","<ol><li>abc</ol>"]] "<ol><li>f[o]o</ol>" queryCommandState("inserthtml") before
 PASS [["inserthtml","<ol><li>abc</ol>"]] "<ol><li>f[o]o</ol>" queryCommandValue("inserthtml") before
@@ -908,7 +908,7 @@ PASS [["inserthtml","<ol><li>abc</ol>"]] "<ol><li>f[o]o</ol>" queryCommandState(
 PASS [["inserthtml","<ol><li>abc</ol>"]] "<ol><li>f[o]o</ol>" queryCommandValue("inserthtml") after
 PASS [["inserthtml","<ol><li>abc</ol>"]] "<ul><li>f[o]o</ul>": execCommand("inserthtml", false, "<ol><li>abc</ol>") return value
 PASS [["inserthtml","<ol><li>abc</ol>"]] "<ul><li>f[o]o</ul>" checks for modifications to non-editable content
-FAIL [["inserthtml","<ol><li>abc</ol>"]] "<ul><li>f[o]o</ul>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<ul><li>f<ol><li>abc</li></ol>o</li></ul>" but got "<ul><li>f</li><li>abc</li><li>o</li></ul>"
+FAIL [["inserthtml","<ol><li>abc</ol>"]] "<ul><li>f[o]o</ul>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<ul><li>f<ol><li>abc</li></ol>o</li></ul>" but got "<ul><li>f</li><li>abc</li><li>o</li></ul>"
 PASS [["inserthtml","<ol><li>abc</ol>"]] "<ul><li>f[o]o</ul>" queryCommandIndeterm("inserthtml") before
 PASS [["inserthtml","<ol><li>abc</ol>"]] "<ul><li>f[o]o</ul>" queryCommandState("inserthtml") before
 PASS [["inserthtml","<ol><li>abc</ol>"]] "<ul><li>f[o]o</ul>" queryCommandValue("inserthtml") before
@@ -917,7 +917,7 @@ PASS [["inserthtml","<ol><li>abc</ol>"]] "<ul><li>f[o]o</ul>" queryCommandState(
 PASS [["inserthtml","<ol><li>abc</ol>"]] "<ul><li>f[o]o</ul>" queryCommandValue("inserthtml") after
 PASS [["inserthtml","<ul><li>abc</ul>"]] "<dir><li>f[o]o</dir>": execCommand("inserthtml", false, "<ul><li>abc</ul>") return value
 PASS [["inserthtml","<ul><li>abc</ul>"]] "<dir><li>f[o]o</dir>" checks for modifications to non-editable content
-FAIL [["inserthtml","<ul><li>abc</ul>"]] "<dir><li>f[o]o</dir>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<dir><li>f<ul><li>abc</li></ul>o</li></dir>" but got "<dir><li>f</li><li>abc</li><li>o</li></dir>"
+FAIL [["inserthtml","<ul><li>abc</ul>"]] "<dir><li>f[o]o</dir>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<dir><li>f<ul><li>abc</li></ul>o</li></dir>" but got "<dir><li>f</li><li>abc</li><li>o</li></dir>"
 PASS [["inserthtml","<ul><li>abc</ul>"]] "<dir><li>f[o]o</dir>" queryCommandIndeterm("inserthtml") before
 PASS [["inserthtml","<ul><li>abc</ul>"]] "<dir><li>f[o]o</dir>" queryCommandState("inserthtml") before
 PASS [["inserthtml","<ul><li>abc</ul>"]] "<dir><li>f[o]o</dir>" queryCommandValue("inserthtml") before
@@ -926,7 +926,7 @@ PASS [["inserthtml","<ul><li>abc</ul>"]] "<dir><li>f[o]o</dir>" queryCommandStat
 PASS [["inserthtml","<ul><li>abc</ul>"]] "<dir><li>f[o]o</dir>" queryCommandValue("inserthtml") after
 PASS [["inserthtml","<ul><li>abc</ul>"]] "<ol><li>f[o]o</ol>": execCommand("inserthtml", false, "<ul><li>abc</ul>") return value
 PASS [["inserthtml","<ul><li>abc</ul>"]] "<ol><li>f[o]o</ol>" checks for modifications to non-editable content
-FAIL [["inserthtml","<ul><li>abc</ul>"]] "<ol><li>f[o]o</ol>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<ol><li>f<ul><li>abc</li></ul>o</li></ol>" but got "<ol><li>f</li><li>abc</li><li>o</li></ol>"
+FAIL [["inserthtml","<ul><li>abc</ul>"]] "<ol><li>f[o]o</ol>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<ol><li>f<ul><li>abc</li></ul>o</li></ol>" but got "<ol><li>f</li><li>abc</li><li>o</li></ol>"
 PASS [["inserthtml","<ul><li>abc</ul>"]] "<ol><li>f[o]o</ol>" queryCommandIndeterm("inserthtml") before
 PASS [["inserthtml","<ul><li>abc</ul>"]] "<ol><li>f[o]o</ol>" queryCommandState("inserthtml") before
 PASS [["inserthtml","<ul><li>abc</ul>"]] "<ol><li>f[o]o</ol>" queryCommandValue("inserthtml") before
@@ -935,7 +935,7 @@ PASS [["inserthtml","<ul><li>abc</ul>"]] "<ol><li>f[o]o</ol>" queryCommandState(
 PASS [["inserthtml","<ul><li>abc</ul>"]] "<ol><li>f[o]o</ol>" queryCommandValue("inserthtml") after
 PASS [["inserthtml","<ul><li>abc</ul>"]] "<ul><li>f[o]o</ul>": execCommand("inserthtml", false, "<ul><li>abc</ul>") return value
 PASS [["inserthtml","<ul><li>abc</ul>"]] "<ul><li>f[o]o</ul>" checks for modifications to non-editable content
-FAIL [["inserthtml","<ul><li>abc</ul>"]] "<ul><li>f[o]o</ul>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<ul><li>f<ul><li>abc</li></ul>o</li></ul>" but got "<ul><li>f</li><li>abc</li><li>o</li></ul>"
+FAIL [["inserthtml","<ul><li>abc</ul>"]] "<ul><li>f[o]o</ul>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<ul><li>f<ul><li>abc</li></ul>o</li></ul>" but got "<ul><li>f</li><li>abc</li><li>o</li></ul>"
 PASS [["inserthtml","<ul><li>abc</ul>"]] "<ul><li>f[o]o</ul>" queryCommandIndeterm("inserthtml") before
 PASS [["inserthtml","<ul><li>abc</ul>"]] "<ul><li>f[o]o</ul>" queryCommandState("inserthtml") before
 PASS [["inserthtml","<ul><li>abc</ul>"]] "<ul><li>f[o]o</ul>" queryCommandValue("inserthtml") before
@@ -945,7 +945,7 @@ PASS [["inserthtml","<ul><li>abc</ul>"]] "<ul><li>f[o]o</ul>" queryCommandValue(
 PASS [["defaultparagraphseparator","div"],["inserthtml","<li>abc</li>"]] "f[o]o": execCommand("defaultparagraphseparator", false, "div") return value
 PASS [["defaultparagraphseparator","div"],["inserthtml","<li>abc</li>"]] "f[o]o": execCommand("inserthtml", false, "<li>abc</li>") return value
 PASS [["defaultparagraphseparator","div"],["inserthtml","<li>abc</li>"]] "f[o]o" checks for modifications to non-editable content
-FAIL [["defaultparagraphseparator","div"],["inserthtml","<li>abc</li>"]] "f[o]o" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "f<div>abc</div>o" but got "f<li>abc</li>o"
+FAIL [["defaultparagraphseparator","div"],["inserthtml","<li>abc</li>"]] "f[o]o" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "f<div>abc</div>o" but got "f<li>abc</li>o"
 PASS [["defaultparagraphseparator","div"],["inserthtml","<li>abc</li>"]] "f[o]o" queryCommandIndeterm("defaultparagraphseparator") before
 PASS [["defaultparagraphseparator","div"],["inserthtml","<li>abc</li>"]] "f[o]o" queryCommandState("defaultparagraphseparator") before
 PASS [["defaultparagraphseparator","div"],["inserthtml","<li>abc</li>"]] "f[o]o" queryCommandValue("defaultparagraphseparator") before
@@ -961,7 +961,7 @@ PASS [["defaultparagraphseparator","div"],["inserthtml","<li>abc</li>"]] "f[o]o"
 PASS [["defaultparagraphseparator","p"],["inserthtml","<li>abc</li>"]] "f[o]o": execCommand("defaultparagraphseparator", false, "p") return value
 PASS [["defaultparagraphseparator","p"],["inserthtml","<li>abc</li>"]] "f[o]o": execCommand("inserthtml", false, "<li>abc</li>") return value
 PASS [["defaultparagraphseparator","p"],["inserthtml","<li>abc</li>"]] "f[o]o" checks for modifications to non-editable content
-FAIL [["defaultparagraphseparator","p"],["inserthtml","<li>abc</li>"]] "f[o]o" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "f<p>abc</p>o" but got "f<li>abc</li>o"
+FAIL [["defaultparagraphseparator","p"],["inserthtml","<li>abc</li>"]] "f[o]o" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "f<p>abc</p>o" but got "f<li>abc</li>o"
 PASS [["defaultparagraphseparator","p"],["inserthtml","<li>abc</li>"]] "f[o]o" queryCommandIndeterm("defaultparagraphseparator") before
 PASS [["defaultparagraphseparator","p"],["inserthtml","<li>abc</li>"]] "f[o]o" queryCommandState("defaultparagraphseparator") before
 PASS [["defaultparagraphseparator","p"],["inserthtml","<li>abc</li>"]] "f[o]o" queryCommandValue("defaultparagraphseparator") before
@@ -976,7 +976,7 @@ PASS [["defaultparagraphseparator","p"],["inserthtml","<li>abc</li>"]] "f[o]o" q
 PASS [["defaultparagraphseparator","p"],["inserthtml","<li>abc</li>"]] "f[o]o" queryCommandValue("inserthtml") after
 PASS [["inserthtml","<nobr>abc</nobr>"]] "<nobr>f[o]o</nobr>": execCommand("inserthtml", false, "<nobr>abc</nobr>") return value
 PASS [["inserthtml","<nobr>abc</nobr>"]] "<nobr>f[o]o</nobr>" checks for modifications to non-editable content
-FAIL [["inserthtml","<nobr>abc</nobr>"]] "<nobr>f[o]o</nobr>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<nobr>f</nobr><nobr>abc</nobr><nobr>o</nobr>" but got "<nobr>f<nobr>abc</nobr>o</nobr>"
+FAIL [["inserthtml","<nobr>abc</nobr>"]] "<nobr>f[o]o</nobr>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<nobr>f</nobr><nobr>abc</nobr><nobr>o</nobr>" but got "<nobr>f<nobr>abc</nobr>o</nobr>"
 PASS [["inserthtml","<nobr>abc</nobr>"]] "<nobr>f[o]o</nobr>" queryCommandIndeterm("inserthtml") before
 PASS [["inserthtml","<nobr>abc</nobr>"]] "<nobr>f[o]o</nobr>" queryCommandState("inserthtml") before
 PASS [["inserthtml","<nobr>abc</nobr>"]] "<nobr>f[o]o</nobr>" queryCommandValue("inserthtml") before
@@ -996,7 +996,7 @@ PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthtml",
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>": execCommand("defaultparagraphseparator", false, "div") return value
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>": execCommand("inserthtml", false, "<p>abc") return value
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>" checks for modifications to non-editable content
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<font color=\"blue\">foo</font><p><span style=\"color:rgb(0, 0, 255)\">abc</span></p><font color=\"blue\">bar</font>" but got "<font color=\"blue\">foo</font>abc<span style=\"color:rgb(0, 0, 255)\">bar</span><br>"
+FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<font color=\"blue\">foo</font><p><span style=\"color:rgb(0, 0, 255)\">abc</span></p><font color=\"blue\">bar</font>" but got "<font color=\"blue\">foo</font>abc<span style=\"color:rgb(0, 0, 255)\">bar</span><br>"
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>" queryCommandValue("stylewithcss") before
@@ -1019,7 +1019,7 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthtml"
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>": execCommand("defaultparagraphseparator", false, "div") return value
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>": execCommand("inserthtml", false, "<p>abc") return value
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>" checks for modifications to non-editable content
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<font color=\"blue\">foo</font><p><font color=\"#0000ff\">abc</font></p><font color=\"blue\">bar</font>" but got "<font color=\"blue\">foo</font>abc<span style=\"color:rgb(0, 0, 255)\">bar</span><br>"
+FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<font color=\"blue\">foo</font><p><font color=\"#0000ff\">abc</font></p><font color=\"blue\">bar</font>" but got "<font color=\"blue\">foo</font>abc<span style=\"color:rgb(0, 0, 255)\">bar</span><br>"
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>" queryCommandValue("stylewithcss") before
@@ -1042,7 +1042,7 @@ PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthtml","<
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>": execCommand("defaultparagraphseparator", false, "p") return value
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>": execCommand("inserthtml", false, "<p>abc") return value
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>" checks for modifications to non-editable content
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<font color=\"blue\">foo</font><p><span style=\"color:rgb(0, 0, 255)\">abc</span></p><font color=\"blue\">bar</font>" but got "<font color=\"blue\">foo</font>abc<span style=\"color:rgb(0, 0, 255)\">bar</span><br>"
+FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<font color=\"blue\">foo</font><p><span style=\"color:rgb(0, 0, 255)\">abc</span></p><font color=\"blue\">bar</font>" but got "<font color=\"blue\">foo</font>abc<span style=\"color:rgb(0, 0, 255)\">bar</span><br>"
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>" queryCommandValue("stylewithcss") before
@@ -1065,7 +1065,7 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthtml","
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>": execCommand("defaultparagraphseparator", false, "p") return value
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>": execCommand("inserthtml", false, "<p>abc") return value
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>" checks for modifications to non-editable content
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<font color=\"blue\">foo</font><p><font color=\"#0000ff\">abc</font></p><font color=\"blue\">bar</font>" but got "<font color=\"blue\">foo</font>abc<span style=\"color:rgb(0, 0, 255)\">bar</span><br>"
+FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<font color=\"blue\">foo</font><p><font color=\"#0000ff\">abc</font></p><font color=\"blue\">bar</font>" but got "<font color=\"blue\">foo</font>abc<span style=\"color:rgb(0, 0, 255)\">bar</span><br>"
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<font color=blue>foo[]bar</font>" queryCommandValue("stylewithcss") before
@@ -1088,7 +1088,7 @@ PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthtml",
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>": execCommand("defaultparagraphseparator", false, "div") return value
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>": execCommand("inserthtml", false, "<p>abc") return value
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>" checks for modifications to non-editable content
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<span style=\"color:rgb(0, 0, 255)\">foo</span><p><span style=\"color:rgb(0, 0, 255)\">abc</span></p><span style=\"color:rgb(0, 0, 255)\">bar</span>" but got "<span style=\"color:rgb(0, 0, 255)\">foo</span>abc<span style=\"color:rgb(0, 0, 255)\">bar</span><br>"
+FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<span style=\"color:rgb(0, 0, 255)\">foo</span><p><span style=\"color:rgb(0, 0, 255)\">abc</span></p><span style=\"color:rgb(0, 0, 255)\">bar</span>" but got "<span style=\"color:rgb(0, 0, 255)\">foo</span>abc<span style=\"color:rgb(0, 0, 255)\">bar</span><br>"
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>" queryCommandValue("stylewithcss") before
@@ -1111,7 +1111,7 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthtml"
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>": execCommand("defaultparagraphseparator", false, "div") return value
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>": execCommand("inserthtml", false, "<p>abc") return value
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>" checks for modifications to non-editable content
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<span style=\"color:rgb(0, 0, 255)\">foo</span><p><font color=\"#0000ff\">abc</font></p><span style=\"color:rgb(0, 0, 255)\">bar</span>" but got "<span style=\"color:rgb(0, 0, 255)\">foo</span>abc<span style=\"color:rgb(0, 0, 255)\">bar</span><br>"
+FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<span style=\"color:rgb(0, 0, 255)\">foo</span><p><font color=\"#0000ff\">abc</font></p><span style=\"color:rgb(0, 0, 255)\">bar</span>" but got "<span style=\"color:rgb(0, 0, 255)\">foo</span>abc<span style=\"color:rgb(0, 0, 255)\">bar</span><br>"
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>" queryCommandValue("stylewithcss") before
@@ -1134,7 +1134,7 @@ PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthtml","<
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>": execCommand("defaultparagraphseparator", false, "p") return value
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>": execCommand("inserthtml", false, "<p>abc") return value
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>" checks for modifications to non-editable content
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<span style=\"color:rgb(0, 0, 255)\">foo</span><p><span style=\"color:rgb(0, 0, 255)\">abc</span></p><span style=\"color:rgb(0, 0, 255)\">bar</span>" but got "<span style=\"color:rgb(0, 0, 255)\">foo</span>abc<span style=\"color:rgb(0, 0, 255)\">bar</span><br>"
+FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<span style=\"color:rgb(0, 0, 255)\">foo</span><p><span style=\"color:rgb(0, 0, 255)\">abc</span></p><span style=\"color:rgb(0, 0, 255)\">bar</span>" but got "<span style=\"color:rgb(0, 0, 255)\">foo</span>abc<span style=\"color:rgb(0, 0, 255)\">bar</span><br>"
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>" queryCommandValue("stylewithcss") before
@@ -1157,7 +1157,7 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthtml","
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>": execCommand("defaultparagraphseparator", false, "p") return value
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>": execCommand("inserthtml", false, "<p>abc") return value
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>" checks for modifications to non-editable content
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<span style=\"color:rgb(0, 0, 255)\">foo</span><p><font color=\"#0000ff\">abc</font></p><span style=\"color:rgb(0, 0, 255)\">bar</span>" but got "<span style=\"color:rgb(0, 0, 255)\">foo</span>abc<span style=\"color:rgb(0, 0, 255)\">bar</span><br>"
+FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<span style=\"color:rgb(0, 0, 255)\">foo</span><p><font color=\"#0000ff\">abc</font></p><span style=\"color:rgb(0, 0, 255)\">bar</span>" but got "<span style=\"color:rgb(0, 0, 255)\">foo</span>abc<span style=\"color:rgb(0, 0, 255)\">bar</span><br>"
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=color:blue>foo[]bar</span>" queryCommandValue("stylewithcss") before
@@ -1180,7 +1180,7 @@ PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthtml",
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>": execCommand("defaultparagraphseparator", false, "div") return value
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>": execCommand("inserthtml", false, "<p>abc") return value
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>" checks for modifications to non-editable content
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<span style=\"font-variant:small-caps\">foo</span><p>abc</p><span style=\"font-variant:small-caps\">bar</span>" but got "<span style=\"font-variant:small-caps\">fooabcbar<br></span>"
+FAIL [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<span style=\"font-variant:small-caps\">foo</span><p>abc</p><span style=\"font-variant:small-caps\">bar</span>" but got "<span style=\"font-variant:small-caps\">fooabcbar<br></span>"
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>" queryCommandValue("stylewithcss") before
@@ -1203,7 +1203,7 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthtml"
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>": execCommand("defaultparagraphseparator", false, "div") return value
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>": execCommand("inserthtml", false, "<p>abc") return value
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>" checks for modifications to non-editable content
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<span style=\"font-variant:small-caps\">foo</span><p>abc</p><span style=\"font-variant:small-caps\">bar</span>" but got "<span style=\"font-variant:small-caps\">fooabcbar<br></span>"
+FAIL [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<span style=\"font-variant:small-caps\">foo</span><p>abc</p><span style=\"font-variant:small-caps\">bar</span>" but got "<span style=\"font-variant:small-caps\">fooabcbar<br></span>"
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","false"],["defaultparagraphseparator","div"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>" queryCommandValue("stylewithcss") before
@@ -1226,7 +1226,7 @@ PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthtml","<
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>": execCommand("defaultparagraphseparator", false, "p") return value
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>": execCommand("inserthtml", false, "<p>abc") return value
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>" checks for modifications to non-editable content
-FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<span style=\"font-variant:small-caps\">foo</span><p>abc</p><span style=\"font-variant:small-caps\">bar</span>" but got "<span style=\"font-variant:small-caps\">fooabcbar<br></span>"
+FAIL [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<span style=\"font-variant:small-caps\">foo</span><p>abc</p><span style=\"font-variant:small-caps\">bar</span>" but got "<span style=\"font-variant:small-caps\">fooabcbar<br></span>"
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","true"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>" queryCommandValue("stylewithcss") before
@@ -1249,7 +1249,7 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthtml","
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>": execCommand("defaultparagraphseparator", false, "p") return value
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>": execCommand("inserthtml", false, "<p>abc") return value
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>" checks for modifications to non-editable content
-FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<span style=\"font-variant:small-caps\">foo</span><p>abc</p><span style=\"font-variant:small-caps\">bar</span>" but got "<span style=\"font-variant:small-caps\">fooabcbar<br></span>"
+FAIL [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<span style=\"font-variant:small-caps\">foo</span><p>abc</p><span style=\"font-variant:small-caps\">bar</span>" but got "<span style=\"font-variant:small-caps\">fooabcbar<br></span>"
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>" queryCommandIndeterm("stylewithcss") before
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>" queryCommandState("stylewithcss") before
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>" queryCommandValue("stylewithcss") before
@@ -1270,7 +1270,7 @@ PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthtml","
 PASS [["stylewithcss","false"],["defaultparagraphseparator","p"],["inserthtml","<p>abc"]] "<span style=font-variant:small-caps>foo[]bar</span>" queryCommandValue("inserthtml") after
 PASS [["inserthtml"," "]] "<p>[foo]</p>": execCommand("inserthtml", false, " ") return value
 PASS [["inserthtml"," "]] "<p>[foo]</p>" checks for modifications to non-editable content
-FAIL [["inserthtml"," "]] "<p>[foo]</p>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p> <br></p>" but got "<p> </p>"
+FAIL [["inserthtml"," "]] "<p>[foo]</p>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p> <br></p>" but got "<p> </p>"
 PASS [["inserthtml"," "]] "<p>[foo]</p>" queryCommandIndeterm("inserthtml") before
 PASS [["inserthtml"," "]] "<p>[foo]</p>" queryCommandState("inserthtml") before
 PASS [["inserthtml"," "]] "<p>[foo]</p>" queryCommandValue("inserthtml") before
@@ -1320,7 +1320,7 @@ PASS [["inserthtml","<!--abc-->"]] "<p>[foo]</p>" queryCommandState("inserthtml"
 PASS [["inserthtml","<!--abc-->"]] "<p>[foo]</p>" queryCommandValue("inserthtml") after
 PASS [["inserthtml","abc"]] "<p>{}<br></p>": execCommand("inserthtml", false, "abc") return value
 PASS [["inserthtml","abc"]] "<p>{}<br></p>" checks for modifications to non-editable content
-FAIL [["inserthtml","abc"]] "<p>{}<br></p>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p>abc</p>" but got "<p>abc<br></p>"
+FAIL [["inserthtml","abc"]] "<p>{}<br></p>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p>abc</p>" but got "<p>abc<br></p>"
 PASS [["inserthtml","abc"]] "<p>{}<br></p>" queryCommandIndeterm("inserthtml") before
 PASS [["inserthtml","abc"]] "<p>{}<br></p>" queryCommandState("inserthtml") before
 PASS [["inserthtml","abc"]] "<p>{}<br></p>" queryCommandValue("inserthtml") before
@@ -1338,7 +1338,7 @@ PASS [["inserthtml","<!--abc-->"]] "<p>{}<br></p>" queryCommandState("inserthtml
 PASS [["inserthtml","<!--abc-->"]] "<p>{}<br></p>" queryCommandValue("inserthtml") after
 PASS [["inserthtml","abc"]] "<p><!--foo-->{}<span><br></span><!--bar--></p>": execCommand("inserthtml", false, "abc") return value
 PASS [["inserthtml","abc"]] "<p><!--foo-->{}<span><br></span><!--bar--></p>" checks for modifications to non-editable content
-FAIL [["inserthtml","abc"]] "<p><!--foo-->{}<span><br></span><!--bar--></p>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><!--foo-->abc<!--bar--></p>" but got "<p><!--foo-->abc<span><br></span><!--bar--></p>"
+FAIL [["inserthtml","abc"]] "<p><!--foo-->{}<span><br></span><!--bar--></p>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><!--foo-->abc<!--bar--></p>" but got "<p><!--foo-->abc<span><br></span><!--bar--></p>"
 PASS [["inserthtml","abc"]] "<p><!--foo-->{}<span><br></span><!--bar--></p>" queryCommandIndeterm("inserthtml") before
 PASS [["inserthtml","abc"]] "<p><!--foo-->{}<span><br></span><!--bar--></p>" queryCommandState("inserthtml") before
 PASS [["inserthtml","abc"]] "<p><!--foo-->{}<span><br></span><!--bar--></p>" queryCommandValue("inserthtml") before
@@ -1347,7 +1347,7 @@ PASS [["inserthtml","abc"]] "<p><!--foo-->{}<span><br></span><!--bar--></p>" que
 PASS [["inserthtml","abc"]] "<p><!--foo-->{}<span><br></span><!--bar--></p>" queryCommandValue("inserthtml") after
 PASS [["inserthtml","<!--abc-->"]] "<p><!--foo-->{}<span><br></span><!--bar--></p>": execCommand("inserthtml", false, "<!--abc-->") return value
 PASS [["inserthtml","<!--abc-->"]] "<p><!--foo-->{}<span><br></span><!--bar--></p>" checks for modifications to non-editable content
-FAIL [["inserthtml","<!--abc-->"]] "<p><!--foo-->{}<span><br></span><!--bar--></p>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><!--foo--><!--abc--><!--bar--><br></p>" but got "<p><!--foo--><!--abc--><span><br></span><!--bar--></p>"
+FAIL [["inserthtml","<!--abc-->"]] "<p><!--foo-->{}<span><br></span><!--bar--></p>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><!--foo--><!--abc--><!--bar--><br></p>" but got "<p><!--foo--><!--abc--><span><br></span><!--bar--></p>"
 PASS [["inserthtml","<!--abc-->"]] "<p><!--foo-->{}<span><br></span><!--bar--></p>" queryCommandIndeterm("inserthtml") before
 PASS [["inserthtml","<!--abc-->"]] "<p><!--foo-->{}<span><br></span><!--bar--></p>" queryCommandState("inserthtml") before
 PASS [["inserthtml","<!--abc-->"]] "<p><!--foo-->{}<span><br></span><!--bar--></p>" queryCommandValue("inserthtml") before
@@ -1356,7 +1356,7 @@ PASS [["inserthtml","<!--abc-->"]] "<p><!--foo-->{}<span><br></span><!--bar--></
 PASS [["inserthtml","<!--abc-->"]] "<p><!--foo-->{}<span><br></span><!--bar--></p>" queryCommandValue("inserthtml") after
 PASS [["inserthtml","abc"]] "<p>{}<span><!--foo--><br><!--bar--></span></p>": execCommand("inserthtml", false, "abc") return value
 PASS [["inserthtml","abc"]] "<p>{}<span><!--foo--><br><!--bar--></span></p>" checks for modifications to non-editable content
-FAIL [["inserthtml","abc"]] "<p>{}<span><!--foo--><br><!--bar--></span></p>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p>abc</p>" but got "<p>abc<span><!--foo--><br><!--bar--></span></p>"
+FAIL [["inserthtml","abc"]] "<p>{}<span><!--foo--><br><!--bar--></span></p>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p>abc</p>" but got "<p>abc<span><!--foo--><br><!--bar--></span></p>"
 PASS [["inserthtml","abc"]] "<p>{}<span><!--foo--><br><!--bar--></span></p>" queryCommandIndeterm("inserthtml") before
 PASS [["inserthtml","abc"]] "<p>{}<span><!--foo--><br><!--bar--></span></p>" queryCommandState("inserthtml") before
 PASS [["inserthtml","abc"]] "<p>{}<span><!--foo--><br><!--bar--></span></p>" queryCommandValue("inserthtml") before
@@ -1365,7 +1365,7 @@ PASS [["inserthtml","abc"]] "<p>{}<span><!--foo--><br><!--bar--></span></p>" que
 PASS [["inserthtml","abc"]] "<p>{}<span><!--foo--><br><!--bar--></span></p>" queryCommandValue("inserthtml") after
 PASS [["inserthtml","<!--abc-->"]] "<p>{}<span><!--foo--><br><!--bar--></span></p>": execCommand("inserthtml", false, "<!--abc-->") return value
 PASS [["inserthtml","<!--abc-->"]] "<p>{}<span><!--foo--><br><!--bar--></span></p>" checks for modifications to non-editable content
-FAIL [["inserthtml","<!--abc-->"]] "<p>{}<span><!--foo--><br><!--bar--></span></p>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><!--abc--><br></p>" but got "<p><!--abc--><span><!--foo--><br><!--bar--></span></p>"
+FAIL [["inserthtml","<!--abc-->"]] "<p>{}<span><!--foo--><br><!--bar--></span></p>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><!--abc--><br></p>" but got "<p><!--abc--><span><!--foo--><br><!--bar--></span></p>"
 PASS [["inserthtml","<!--abc-->"]] "<p>{}<span><!--foo--><br><!--bar--></span></p>" queryCommandIndeterm("inserthtml") before
 PASS [["inserthtml","<!--abc-->"]] "<p>{}<span><!--foo--><br><!--bar--></span></p>" queryCommandState("inserthtml") before
 PASS [["inserthtml","<!--abc-->"]] "<p>{}<span><!--foo--><br><!--bar--></span></p>" queryCommandValue("inserthtml") before
@@ -1374,7 +1374,7 @@ PASS [["inserthtml","<!--abc-->"]] "<p>{}<span><!--foo--><br><!--bar--></span></
 PASS [["inserthtml","<!--abc-->"]] "<p>{}<span><!--foo--><br><!--bar--></span></p>" queryCommandValue("inserthtml") after
 PASS [["inserthtml","abc"]] "<p><br>{}</p>": execCommand("inserthtml", false, "abc") return value
 PASS [["inserthtml","abc"]] "<p><br>{}</p>" checks for modifications to non-editable content
-FAIL [["inserthtml","abc"]] "<p><br>{}</p>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><br>abc</p>" but got "<p>abc<br></p>"
+FAIL [["inserthtml","abc"]] "<p><br>{}</p>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><br>abc</p>" but got "<p>abc<br></p>"
 PASS [["inserthtml","abc"]] "<p><br>{}</p>" queryCommandIndeterm("inserthtml") before
 PASS [["inserthtml","abc"]] "<p><br>{}</p>" queryCommandState("inserthtml") before
 PASS [["inserthtml","abc"]] "<p><br>{}</p>" queryCommandValue("inserthtml") before
@@ -1383,7 +1383,7 @@ PASS [["inserthtml","abc"]] "<p><br>{}</p>" queryCommandState("inserthtml") afte
 PASS [["inserthtml","abc"]] "<p><br>{}</p>" queryCommandValue("inserthtml") after
 PASS [["inserthtml","<!--abc-->"]] "<p><br>{}</p>": execCommand("inserthtml", false, "<!--abc-->") return value
 PASS [["inserthtml","<!--abc-->"]] "<p><br>{}</p>" checks for modifications to non-editable content
-FAIL [["inserthtml","<!--abc-->"]] "<p><br>{}</p>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><br><!--abc--></p>" but got "<p><!--abc--><br></p>"
+FAIL [["inserthtml","<!--abc-->"]] "<p><br>{}</p>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><br><!--abc--></p>" but got "<p><!--abc--><br></p>"
 PASS [["inserthtml","<!--abc-->"]] "<p><br>{}</p>" queryCommandIndeterm("inserthtml") before
 PASS [["inserthtml","<!--abc-->"]] "<p><br>{}</p>" queryCommandState("inserthtml") before
 PASS [["inserthtml","<!--abc-->"]] "<p><br>{}</p>" queryCommandValue("inserthtml") before
@@ -1392,7 +1392,7 @@ PASS [["inserthtml","<!--abc-->"]] "<p><br>{}</p>" queryCommandState("inserthtml
 PASS [["inserthtml","<!--abc-->"]] "<p><br>{}</p>" queryCommandValue("inserthtml") after
 PASS [["inserthtml","abc"]] "<p><!--foo--><span><br></span>{}<!--bar--></p>": execCommand("inserthtml", false, "abc") return value
 PASS [["inserthtml","abc"]] "<p><!--foo--><span><br></span>{}<!--bar--></p>" checks for modifications to non-editable content
-FAIL [["inserthtml","abc"]] "<p><!--foo--><span><br></span>{}<!--bar--></p>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><!--foo--><span><br></span>abc<!--bar--></p>" but got "<p><!--foo-->abc<span><br></span><!--bar--></p>"
+FAIL [["inserthtml","abc"]] "<p><!--foo--><span><br></span>{}<!--bar--></p>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><!--foo--><span><br></span>abc<!--bar--></p>" but got "<p><!--foo-->abc<span><br></span><!--bar--></p>"
 PASS [["inserthtml","abc"]] "<p><!--foo--><span><br></span>{}<!--bar--></p>" queryCommandIndeterm("inserthtml") before
 PASS [["inserthtml","abc"]] "<p><!--foo--><span><br></span>{}<!--bar--></p>" queryCommandState("inserthtml") before
 PASS [["inserthtml","abc"]] "<p><!--foo--><span><br></span>{}<!--bar--></p>" queryCommandValue("inserthtml") before
@@ -1401,7 +1401,7 @@ PASS [["inserthtml","abc"]] "<p><!--foo--><span><br></span>{}<!--bar--></p>" que
 PASS [["inserthtml","abc"]] "<p><!--foo--><span><br></span>{}<!--bar--></p>" queryCommandValue("inserthtml") after
 PASS [["inserthtml","<!--abc-->"]] "<p><!--foo--><span><br></span>{}<!--bar--></p>": execCommand("inserthtml", false, "<!--abc-->") return value
 PASS [["inserthtml","<!--abc-->"]] "<p><!--foo--><span><br></span>{}<!--bar--></p>" checks for modifications to non-editable content
-FAIL [["inserthtml","<!--abc-->"]] "<p><!--foo--><span><br></span>{}<!--bar--></p>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><!--foo--><span><br></span><!--abc--><!--bar--></p>" but got "<p><!--foo--><!--abc--><span><br></span><!--bar--></p>"
+FAIL [["inserthtml","<!--abc-->"]] "<p><!--foo--><span><br></span>{}<!--bar--></p>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><!--foo--><span><br></span><!--abc--><!--bar--></p>" but got "<p><!--foo--><!--abc--><span><br></span><!--bar--></p>"
 PASS [["inserthtml","<!--abc-->"]] "<p><!--foo--><span><br></span>{}<!--bar--></p>" queryCommandIndeterm("inserthtml") before
 PASS [["inserthtml","<!--abc-->"]] "<p><!--foo--><span><br></span>{}<!--bar--></p>" queryCommandState("inserthtml") before
 PASS [["inserthtml","<!--abc-->"]] "<p><!--foo--><span><br></span>{}<!--bar--></p>" queryCommandValue("inserthtml") before
@@ -1410,7 +1410,7 @@ PASS [["inserthtml","<!--abc-->"]] "<p><!--foo--><span><br></span>{}<!--bar--></
 PASS [["inserthtml","<!--abc-->"]] "<p><!--foo--><span><br></span>{}<!--bar--></p>" queryCommandValue("inserthtml") after
 PASS [["inserthtml","abc"]] "<p><span><!--foo--><br><!--bar--></span>{}</p>": execCommand("inserthtml", false, "abc") return value
 PASS [["inserthtml","abc"]] "<p><span><!--foo--><br><!--bar--></span>{}</p>" checks for modifications to non-editable content
-FAIL [["inserthtml","abc"]] "<p><span><!--foo--><br><!--bar--></span>{}</p>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><span><!--foo--><br><!--bar--></span>abc</p>" but got "<p>abc<span><!--foo--><br><!--bar--></span></p>"
+FAIL [["inserthtml","abc"]] "<p><span><!--foo--><br><!--bar--></span>{}</p>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><span><!--foo--><br><!--bar--></span>abc</p>" but got "<p>abc<span><!--foo--><br><!--bar--></span></p>"
 PASS [["inserthtml","abc"]] "<p><span><!--foo--><br><!--bar--></span>{}</p>" queryCommandIndeterm("inserthtml") before
 PASS [["inserthtml","abc"]] "<p><span><!--foo--><br><!--bar--></span>{}</p>" queryCommandState("inserthtml") before
 PASS [["inserthtml","abc"]] "<p><span><!--foo--><br><!--bar--></span>{}</p>" queryCommandValue("inserthtml") before
@@ -1419,7 +1419,7 @@ PASS [["inserthtml","abc"]] "<p><span><!--foo--><br><!--bar--></span>{}</p>" que
 PASS [["inserthtml","abc"]] "<p><span><!--foo--><br><!--bar--></span>{}</p>" queryCommandValue("inserthtml") after
 PASS [["inserthtml","<!--abc-->"]] "<p><span><!--foo--><br><!--bar--></span>{}</p>": execCommand("inserthtml", false, "<!--abc-->") return value
 PASS [["inserthtml","<!--abc-->"]] "<p><span><!--foo--><br><!--bar--></span>{}</p>" checks for modifications to non-editable content
-FAIL [["inserthtml","<!--abc-->"]] "<p><span><!--foo--><br><!--bar--></span>{}</p>" compare innerHTMLassert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><span><!--foo--><br><!--bar--></span><!--abc--></p>" but got "<p><!--abc--><span><!--foo--><br><!--bar--></span></p>"
+FAIL [["inserthtml","<!--abc-->"]] "<p><span><!--foo--><br><!--bar--></span>{}</p>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<p><span><!--foo--><br><!--bar--></span><!--abc--></p>" but got "<p><!--abc--><span><!--foo--><br><!--bar--></span></p>"
 PASS [["inserthtml","<!--abc-->"]] "<p><span><!--foo--><br><!--bar--></span>{}</p>" queryCommandIndeterm("inserthtml") before
 PASS [["inserthtml","<!--abc-->"]] "<p><span><!--foo--><br><!--bar--></span>{}</p>" queryCommandState("inserthtml") before
 PASS [["inserthtml","<!--abc-->"]] "<p><span><!--foo--><br><!--bar--></span>{}</p>" queryCommandValue("inserthtml") before

@@ -8,7 +8,7 @@ PASS Performance interface: existence and properties of interface prototype obje
 PASS Performance interface: existence and properties of interface prototype object's "constructor" property
 PASS Performance interface: operation now()
 PASS Performance interface: operation toJSON()
-FAIL Test default toJSON operation of PerformanceIllegal invocation
+FAIL Test default toJSON operation of Performance Illegal invocation
 PASS Performance must be primary interface of window.performance
 PASS Stringification of window.performance
 PASS Performance interface: window.performance must inherit property "now()" with the proper type

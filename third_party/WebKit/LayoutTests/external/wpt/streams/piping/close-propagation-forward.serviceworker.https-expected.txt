@@ -26,6 +26,6 @@ PASS Closing must be propagated forward: becomes closed after one chunk; prevent
 PASS Closing must be propagated forward: becomes closed after one chunk; preventClose omitted; rejected close promise
 PASS Closing must be propagated forward: becomes closed after one chunk; preventClose = true
 PASS Closing must be propagated forward: shutdown must not occur until the final write completes
-FAIL Closing must be propagated forward: shutdown must not occur until the final write completes; preventClose = trueassert_equals: the pipe must not be complete expected false but got true
+FAIL Closing must be propagated forward: shutdown must not occur until the final write completes; preventClose = true assert_equals: the pipe must not be complete expected false but got true
 Harness: the test ran to completion.
 

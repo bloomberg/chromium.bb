@@ -2,7 +2,7 @@ This is a testharness.js-based test.
 PASS document.forms
 PASS document.forms.item with string arg
 PASS document.forms with empty string
-FAIL document.forms iterationassert_array_equals: lengths differ, expected 3 got 5
+FAIL document.forms iteration assert_array_equals: lengths differ, expected 3 got 5
 PASS document.forms getOwnPropertyNames
 Harness: the test ran to completion.
 

@@ -1,6 +1,6 @@
 This is a testharness.js-based test.
-FAIL EventSource: constructor (act as if there is a network error) (http://example.not/)assert_equals: expected 2 but got 0
-FAIL EventSource: constructor (act as if there is a network error) (https://example.not/test)assert_equals: expected 2 but got 0
+FAIL EventSource: constructor (act as if there is a network error) (http://example.not/) assert_equals: expected 2 but got 0
+FAIL EventSource: constructor (act as if there is a network error) (https://example.not/test) assert_equals: expected 2 but got 0
 PASS EventSource: constructor (act as if there is a network error) (ftp://example.not/)
 PASS EventSource: constructor (act as if there is a network error) (about:blank)
 PASS EventSource: constructor (act as if there is a network error) (mailto:whatwg@awesome.example)

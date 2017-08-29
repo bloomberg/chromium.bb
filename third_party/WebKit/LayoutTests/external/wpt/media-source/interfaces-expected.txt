@@ -3,7 +3,7 @@ Found 98 tests; 95 PASS, 3 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS URL interface: operation createObjectURL(MediaSource)
 PASS AudioTrack interface: attribute sourceBuffer
 PASS VideoTrack interface: attribute sourceBuffer
-FAIL TextTrack interface: attribute sourceBufferassert_true: The prototype object must have a property "sourceBuffer" expected true got false
+FAIL TextTrack interface: attribute sourceBuffer assert_true: The prototype object must have a property "sourceBuffer" expected true got false
 PASS MediaSource interface: existence and properties of interface object
 PASS MediaSource interface object length
 PASS MediaSource interface object name
@@ -53,7 +53,7 @@ PASS SourceBuffer interface: attribute buffered
 PASS SourceBuffer interface: attribute timestampOffset
 PASS SourceBuffer interface: attribute audioTracks
 PASS SourceBuffer interface: attribute videoTracks
-FAIL SourceBuffer interface: attribute textTracksassert_true: The prototype object must have a property "textTracks" expected true got false
+FAIL SourceBuffer interface: attribute textTracks assert_true: The prototype object must have a property "textTracks" expected true got false
 PASS SourceBuffer interface: attribute appendWindowStart
 PASS SourceBuffer interface: attribute appendWindowEnd
 PASS SourceBuffer interface: attribute onupdatestart
@@ -72,7 +72,7 @@ PASS SourceBuffer interface: sourceBuffer must inherit property "buffered" with 
 PASS SourceBuffer interface: sourceBuffer must inherit property "timestampOffset" with the proper type
 PASS SourceBuffer interface: sourceBuffer must inherit property "audioTracks" with the proper type
 PASS SourceBuffer interface: sourceBuffer must inherit property "videoTracks" with the proper type
-FAIL SourceBuffer interface: sourceBuffer must inherit property "textTracks" with the proper typeassert_inherits: property "textTracks" not found in prototype chain
+FAIL SourceBuffer interface: sourceBuffer must inherit property "textTracks" with the proper type assert_inherits: property "textTracks" not found in prototype chain
 PASS SourceBuffer interface: sourceBuffer must inherit property "appendWindowStart" with the proper type
 PASS SourceBuffer interface: sourceBuffer must inherit property "appendWindowEnd" with the proper type
 PASS SourceBuffer interface: sourceBuffer must inherit property "onupdatestart" with the proper type

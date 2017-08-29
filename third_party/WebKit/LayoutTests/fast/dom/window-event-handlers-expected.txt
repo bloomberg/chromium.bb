@@ -1,24 +1,24 @@
 This is a testharness.js-based test.
-FAIL Set Window.onafterprintassert_equals: Initially null expected (object) null but got (undefined) undefined
-FAIL Enumerate Window.onafterprintassert_true: expected true got undefined
-FAIL Set HTMLBodyElement.onafterprintassert_equals: Initially null expected (object) null but got (undefined) undefined
-FAIL Enumerate HTMLBodyElement.onafterprintassert_true: expected true got undefined
-FAIL Reflect HTMLBodyElement.onafterprintassert_equals: Convert to function expected "function" but got "undefined"
-FAIL Forward HTMLBodyElement.onafterprint to Windowassert_equals: Convert to function expected "function" but got "object"
-FAIL Set HTMLFrameSetElement.onafterprintassert_equals: Initially null expected (object) null but got (undefined) undefined
-FAIL Enumerate HTMLFrameSetElement.onafterprintassert_true: expected true got undefined
-FAIL Reflect HTMLFrameSetElement.onafterprintassert_equals: Convert to function expected "function" but got "undefined"
-FAIL Forward HTMLFrameSetElement.onafterprint to Windowassert_equals: Convert to function expected "function" but got "object"
-FAIL Set Window.onbeforeprintassert_equals: Initially null expected (object) null but got (undefined) undefined
-FAIL Enumerate Window.onbeforeprintassert_true: expected true got undefined
-FAIL Set HTMLBodyElement.onbeforeprintassert_equals: Initially null expected (object) null but got (undefined) undefined
-FAIL Enumerate HTMLBodyElement.onbeforeprintassert_true: expected true got undefined
-FAIL Reflect HTMLBodyElement.onbeforeprintassert_equals: Convert to function expected "function" but got "undefined"
-FAIL Forward HTMLBodyElement.onbeforeprint to Windowassert_equals: Convert to function expected "function" but got "object"
-FAIL Set HTMLFrameSetElement.onbeforeprintassert_equals: Initially null expected (object) null but got (undefined) undefined
-FAIL Enumerate HTMLFrameSetElement.onbeforeprintassert_true: expected true got undefined
-FAIL Reflect HTMLFrameSetElement.onbeforeprintassert_equals: Convert to function expected "function" but got "undefined"
-FAIL Forward HTMLFrameSetElement.onbeforeprint to Windowassert_equals: Convert to function expected "function" but got "object"
+FAIL Set Window.onafterprint assert_equals: Initially null expected (object) null but got (undefined) undefined
+FAIL Enumerate Window.onafterprint assert_true: expected true got undefined
+FAIL Set HTMLBodyElement.onafterprint assert_equals: Initially null expected (object) null but got (undefined) undefined
+FAIL Enumerate HTMLBodyElement.onafterprint assert_true: expected true got undefined
+FAIL Reflect HTMLBodyElement.onafterprint assert_equals: Convert to function expected "function" but got "undefined"
+FAIL Forward HTMLBodyElement.onafterprint to Window assert_equals: Convert to function expected "function" but got "object"
+FAIL Set HTMLFrameSetElement.onafterprint assert_equals: Initially null expected (object) null but got (undefined) undefined
+FAIL Enumerate HTMLFrameSetElement.onafterprint assert_true: expected true got undefined
+FAIL Reflect HTMLFrameSetElement.onafterprint assert_equals: Convert to function expected "function" but got "undefined"
+FAIL Forward HTMLFrameSetElement.onafterprint to Window assert_equals: Convert to function expected "function" but got "object"
+FAIL Set Window.onbeforeprint assert_equals: Initially null expected (object) null but got (undefined) undefined
+FAIL Enumerate Window.onbeforeprint assert_true: expected true got undefined
+FAIL Set HTMLBodyElement.onbeforeprint assert_equals: Initially null expected (object) null but got (undefined) undefined
+FAIL Enumerate HTMLBodyElement.onbeforeprint assert_true: expected true got undefined
+FAIL Reflect HTMLBodyElement.onbeforeprint assert_equals: Convert to function expected "function" but got "undefined"
+FAIL Forward HTMLBodyElement.onbeforeprint to Window assert_equals: Convert to function expected "function" but got "object"
+FAIL Set HTMLFrameSetElement.onbeforeprint assert_equals: Initially null expected (object) null but got (undefined) undefined
+FAIL Enumerate HTMLFrameSetElement.onbeforeprint assert_true: expected true got undefined
+FAIL Reflect HTMLFrameSetElement.onbeforeprint assert_equals: Convert to function expected "function" but got "undefined"
+FAIL Forward HTMLFrameSetElement.onbeforeprint to Window assert_equals: Convert to function expected "function" but got "object"
 PASS Set Window.onbeforeunload
 PASS Enumerate Window.onbeforeunload
 PASS Set HTMLBodyElement.onbeforeunload

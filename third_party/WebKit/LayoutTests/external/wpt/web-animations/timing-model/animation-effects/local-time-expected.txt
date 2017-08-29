@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-FAIL Local time is current time for animation effects associated with an animationassert_equals: expected (number) -1000 but got (object) null
+FAIL Local time is current time for animation effects associated with an animation assert_equals: expected (number) -1000 but got (object) null
 PASS Local time is unresolved for animation effects not associated with an animation
 Harness: the test ran to completion.
 

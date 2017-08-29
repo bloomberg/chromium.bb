@@ -1,4 +1,4 @@
 This is a testharness.js-based test.
-FAIL regions, linesCannot read property 'lines' of null
+FAIL regions, lines Cannot read property 'lines' of null
 Harness: the test ran to completion.
 

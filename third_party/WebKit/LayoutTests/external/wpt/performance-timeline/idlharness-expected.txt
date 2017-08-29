@@ -17,7 +17,7 @@ PASS PerformanceEntry interface: attribute name
 PASS PerformanceEntry interface: attribute entryType
 PASS PerformanceEntry interface: attribute startTime
 PASS PerformanceEntry interface: attribute duration
-FAIL PerformanceEntry interface: operation toJSON()Type DOMHighResTimeStamp not found
+FAIL PerformanceEntry interface: operation toJSON() Type DOMHighResTimeStamp not found
 PASS PerformanceObserverEntryList interface: existence and properties of interface object
 PASS PerformanceObserverEntryList interface object length
 PASS PerformanceObserverEntryList interface object name

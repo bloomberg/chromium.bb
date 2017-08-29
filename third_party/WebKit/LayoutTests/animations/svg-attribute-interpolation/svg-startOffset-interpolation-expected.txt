@@ -20,16 +20,16 @@ PASS Web Animations: Interpolate attribute <startOffset> from replace [10in] to 
 PASS Web Animations: Interpolate attribute <startOffset> from replace [10in] to replace [770pt] at (0.6) is [750pt]
 PASS Web Animations: Interpolate attribute <startOffset> from replace [10in] to replace [770pt] at (1) is [770pt]
 PASS Web Animations: Interpolate attribute <startOffset> from replace [10in] to replace [770pt] at (1.4) is [790pt]
-FAIL SMIL: Interpolate attribute <startOffset> from replace [25%] to replace [25em] at (0) is [250]assert_equals: expected "250 " but got "35 "
-FAIL SMIL: Interpolate attribute <startOffset> from replace [25%] to replace [25em] at (0.2) is [450]assert_equals: expected "450 " but got "278 "
-FAIL SMIL: Interpolate attribute <startOffset> from replace [25%] to replace [25em] at (0.6) is [850]assert_equals: expected "850 " but got "764 "
+FAIL SMIL: Interpolate attribute <startOffset> from replace [25%] to replace [25em] at (0) is [250] assert_equals: expected "250 " but got "35 "
+FAIL SMIL: Interpolate attribute <startOffset> from replace [25%] to replace [25em] at (0.2) is [450] assert_equals: expected "450 " but got "278 "
+FAIL SMIL: Interpolate attribute <startOffset> from replace [25%] to replace [25em] at (0.6) is [850] assert_equals: expected "850 " but got "764 "
 PASS SMIL: Interpolate attribute <startOffset> from replace [25%] to replace [25em] at (1) is [1250]
-FAIL Web Animations: Interpolate attribute <startOffset> from replace [25%] to replace [25em] at (-0.4) is [-150]assert_equals: expected "- 150 " but got "- 451 "
-FAIL Web Animations: Interpolate attribute <startOffset> from replace [25%] to replace [25em] at (0) is [250]assert_equals: expected "250 " but got "35 "
-FAIL Web Animations: Interpolate attribute <startOffset> from replace [25%] to replace [25em] at (0.2) is [450]assert_equals: expected "450 " but got "278 "
-FAIL Web Animations: Interpolate attribute <startOffset> from replace [25%] to replace [25em] at (0.6) is [850]assert_equals: expected "850 " but got "764 "
+FAIL Web Animations: Interpolate attribute <startOffset> from replace [25%] to replace [25em] at (-0.4) is [-150] assert_equals: expected "- 150 " but got "- 451 "
+FAIL Web Animations: Interpolate attribute <startOffset> from replace [25%] to replace [25em] at (0) is [250] assert_equals: expected "250 " but got "35 "
+FAIL Web Animations: Interpolate attribute <startOffset> from replace [25%] to replace [25em] at (0.2) is [450] assert_equals: expected "450 " but got "278 "
+FAIL Web Animations: Interpolate attribute <startOffset> from replace [25%] to replace [25em] at (0.6) is [850] assert_equals: expected "850 " but got "764 "
 PASS Web Animations: Interpolate attribute <startOffset> from replace [25%] to replace [25em] at (1) is [1250]
-FAIL Web Animations: Interpolate attribute <startOffset> from replace [25%] to replace [25em] at (1.4) is [1650]assert_equals: expected "1650 " but got "1736 "
+FAIL Web Animations: Interpolate attribute <startOffset> from replace [25%] to replace [25em] at (1.4) is [1650] assert_equals: expected "1650 " but got "1736 "
 PASS SMIL: Interpolate attribute <startOffset> from replace [125] to replace [25ex] at (0) is [125]
 PASS SMIL: Interpolate attribute <startOffset> from replace [125] to replace [25ex] at (1) is [25ex]
 PASS Web Animations: Interpolate attribute <startOffset> from replace [125] to replace [25ex] at (0) is [125]

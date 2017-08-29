@@ -264,8 +264,8 @@ PASS SVGAnimatedRect interface: attribute baseVal
 PASS SVGAnimatedRect interface: attribute animVal
 PASS SVGAnimatedRect must be primary interface of svg.viewBox
 PASS Stringification of svg.viewBox
-FAIL SVGAnimatedRect interface: svg.viewBox must inherit property "baseVal" with the proper typeassert_true: instanceof DOMRect expected true got false
-FAIL SVGAnimatedRect interface: svg.viewBox must inherit property "animVal" with the proper typeassert_true: instanceof DOMRectReadOnly expected true got false
+FAIL SVGAnimatedRect interface: svg.viewBox must inherit property "baseVal" with the proper type assert_true: instanceof DOMRect expected true got false
+FAIL SVGAnimatedRect interface: svg.viewBox must inherit property "animVal" with the proper type assert_true: instanceof DOMRectReadOnly expected true got false
 PASS SVGAnimatedNumberList interface: existence and properties of interface object
 PASS SVGAnimatedNumberList interface object length
 PASS SVGAnimatedNumberList interface object name
@@ -374,7 +374,7 @@ PASS SVGSVGElement interface: svg must inherit property "y" with the proper type
 PASS SVGSVGElement interface: svg must inherit property "width" with the proper type
 PASS SVGSVGElement interface: svg must inherit property "height" with the proper type
 PASS SVGSVGElement interface: svg must inherit property "currentScale" with the proper type
-FAIL SVGSVGElement interface: svg must inherit property "currentTranslate" with the proper typeassert_true: instanceof DOMPointReadOnly expected true got false
+FAIL SVGSVGElement interface: svg must inherit property "currentTranslate" with the proper type assert_true: instanceof DOMPointReadOnly expected true got false
 PASS SVGSVGElement interface: svg must inherit property "getIntersectionList(DOMRectReadOnly, SVGElement)" with the proper type
 PASS SVGSVGElement interface: calling getIntersectionList(DOMRectReadOnly, SVGElement) on svg with too few arguments must throw TypeError
 PASS SVGSVGElement interface: svg must inherit property "getEnclosureList(DOMRectReadOnly, SVGElement)" with the proper type
@@ -440,11 +440,11 @@ PASS SVGElement interface: g must inherit property "viewportElement" with the pr
 PASS SVGElement interface: g must inherit property "tabIndex" with the proper type
 PASS SVGElement interface: g must inherit property "focus()" with the proper type
 PASS SVGElement interface: g must inherit property "blur()" with the proper type
-FAIL SVGUnknownElement interface: existence and properties of interface objectassert_own_property: self does not have own property "SVGUnknownElement" expected property "SVGUnknownElement" missing
-FAIL SVGUnknownElement interface object lengthassert_own_property: self does not have own property "SVGUnknownElement" expected property "SVGUnknownElement" missing
-FAIL SVGUnknownElement interface object nameassert_own_property: self does not have own property "SVGUnknownElement" expected property "SVGUnknownElement" missing
-FAIL SVGUnknownElement interface: existence and properties of interface prototype objectassert_own_property: self does not have own property "SVGUnknownElement" expected property "SVGUnknownElement" missing
-FAIL SVGUnknownElement interface: existence and properties of interface prototype object's "constructor" propertyassert_own_property: self does not have own property "SVGUnknownElement" expected property "SVGUnknownElement" missing
+FAIL SVGUnknownElement interface: existence and properties of interface object assert_own_property: self does not have own property "SVGUnknownElement" expected property "SVGUnknownElement" missing
+FAIL SVGUnknownElement interface object length assert_own_property: self does not have own property "SVGUnknownElement" expected property "SVGUnknownElement" missing
+FAIL SVGUnknownElement interface object name assert_own_property: self does not have own property "SVGUnknownElement" expected property "SVGUnknownElement" missing
+FAIL SVGUnknownElement interface: existence and properties of interface prototype object assert_own_property: self does not have own property "SVGUnknownElement" expected property "SVGUnknownElement" missing
+FAIL SVGUnknownElement interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "SVGUnknownElement" expected property "SVGUnknownElement" missing
 PASS SVGDefsElement interface: existence and properties of interface object
 PASS SVGDefsElement interface object length
 PASS SVGDefsElement interface object name
@@ -636,7 +636,7 @@ PASS SVGTransform interface: svg.createSVGTransform() must inherit property "SVG
 PASS SVGTransform interface: svg.createSVGTransform() must inherit property "SVG_TRANSFORM_SKEWX" with the proper type
 PASS SVGTransform interface: svg.createSVGTransform() must inherit property "SVG_TRANSFORM_SKEWY" with the proper type
 PASS SVGTransform interface: svg.createSVGTransform() must inherit property "type" with the proper type
-FAIL SVGTransform interface: svg.createSVGTransform() must inherit property "matrix" with the proper typeassert_true: instanceof DOMMatrix expected true got false
+FAIL SVGTransform interface: svg.createSVGTransform() must inherit property "matrix" with the proper type assert_true: instanceof DOMMatrix expected true got false
 PASS SVGTransform interface: svg.createSVGTransform() must inherit property "angle" with the proper type
 PASS SVGTransform interface: svg.createSVGTransform() must inherit property "setMatrix(DOMMatrixReadOnly)" with the proper type
 PASS SVGTransform interface: calling setMatrix(DOMMatrixReadOnly) on svg.createSVGTransform() with too few arguments must throw TypeError
@@ -1241,7 +1241,7 @@ PASS SVGImageElement interface: attribute y
 PASS SVGImageElement interface: attribute width
 PASS SVGImageElement interface: attribute height
 PASS SVGImageElement interface: attribute preserveAspectRatio
-FAIL SVGImageElement interface: attribute crossOriginassert_true: The prototype object must have a property "crossOrigin" expected true got false
+FAIL SVGImageElement interface: attribute crossOrigin assert_true: The prototype object must have a property "crossOrigin" expected true got false
 PASS SVGImageElement interface: attribute href
 PASS SVGImageElement must be primary interface of image
 PASS Stringification of image
@@ -1250,7 +1250,7 @@ PASS SVGImageElement interface: image must inherit property "y" with the proper 
 PASS SVGImageElement interface: image must inherit property "width" with the proper type
 PASS SVGImageElement interface: image must inherit property "height" with the proper type
 PASS SVGImageElement interface: image must inherit property "preserveAspectRatio" with the proper type
-FAIL SVGImageElement interface: image must inherit property "crossOrigin" with the proper typeassert_inherits: property "crossOrigin" not found in prototype chain
+FAIL SVGImageElement interface: image must inherit property "crossOrigin" with the proper type assert_inherits: property "crossOrigin" not found in prototype chain
 PASS SVGImageElement interface: image must inherit property "href" with the proper type
 PASS SVGGraphicsElement interface: image must inherit property "transform" with the proper type
 PASS SVGGraphicsElement interface: image must inherit property "getBBox(SVGBoundingBoxOptions)" with the proper type
@@ -1319,7 +1319,7 @@ PASS SVGMarkerElement interface: attribute markerWidth
 PASS SVGMarkerElement interface: attribute markerHeight
 PASS SVGMarkerElement interface: attribute orientType
 PASS SVGMarkerElement interface: attribute orientAngle
-FAIL SVGMarkerElement interface: attribute orientassert_true: The prototype object must have a property "orient" expected true got false
+FAIL SVGMarkerElement interface: attribute orient assert_true: The prototype object must have a property "orient" expected true got false
 PASS SVGMarkerElement interface: operation setOrientToAuto()
 PASS SVGMarkerElement interface: operation setOrientToAngle(SVGAngle)
 PASS SVGMarkerElement interface: attribute viewBox
@@ -1339,7 +1339,7 @@ PASS SVGMarkerElement interface: marker must inherit property "markerWidth" with
 PASS SVGMarkerElement interface: marker must inherit property "markerHeight" with the proper type
 PASS SVGMarkerElement interface: marker must inherit property "orientType" with the proper type
 PASS SVGMarkerElement interface: marker must inherit property "orientAngle" with the proper type
-FAIL SVGMarkerElement interface: marker must inherit property "orient" with the proper typeassert_inherits: property "orient" not found in prototype chain
+FAIL SVGMarkerElement interface: marker must inherit property "orient" with the proper type assert_inherits: property "orient" not found in prototype chain
 PASS SVGMarkerElement interface: marker must inherit property "setOrientToAuto()" with the proper type
 PASS SVGMarkerElement interface: marker must inherit property "setOrientToAngle(SVGAngle)" with the proper type
 PASS SVGMarkerElement interface: calling setOrientToAngle(SVGAngle) on marker with too few arguments must throw TypeError
@@ -1352,11 +1352,11 @@ PASS SVGElement interface: marker must inherit property "viewportElement" with t
 PASS SVGElement interface: marker must inherit property "tabIndex" with the proper type
 PASS SVGElement interface: marker must inherit property "focus()" with the proper type
 PASS SVGElement interface: marker must inherit property "blur()" with the proper type
-FAIL SVGSolidcolorElement interface: existence and properties of interface objectassert_own_property: self does not have own property "SVGSolidcolorElement" expected property "SVGSolidcolorElement" missing
-FAIL SVGSolidcolorElement interface object lengthassert_own_property: self does not have own property "SVGSolidcolorElement" expected property "SVGSolidcolorElement" missing
-FAIL SVGSolidcolorElement interface object nameassert_own_property: self does not have own property "SVGSolidcolorElement" expected property "SVGSolidcolorElement" missing
-FAIL SVGSolidcolorElement interface: existence and properties of interface prototype objectassert_own_property: self does not have own property "SVGSolidcolorElement" expected property "SVGSolidcolorElement" missing
-FAIL SVGSolidcolorElement interface: existence and properties of interface prototype object's "constructor" propertyassert_own_property: self does not have own property "SVGSolidcolorElement" expected property "SVGSolidcolorElement" missing
+FAIL SVGSolidcolorElement interface: existence and properties of interface object assert_own_property: self does not have own property "SVGSolidcolorElement" expected property "SVGSolidcolorElement" missing
+FAIL SVGSolidcolorElement interface object length assert_own_property: self does not have own property "SVGSolidcolorElement" expected property "SVGSolidcolorElement" missing
+FAIL SVGSolidcolorElement interface object name assert_own_property: self does not have own property "SVGSolidcolorElement" expected property "SVGSolidcolorElement" missing
+FAIL SVGSolidcolorElement interface: existence and properties of interface prototype object assert_own_property: self does not have own property "SVGSolidcolorElement" expected property "SVGSolidcolorElement" missing
+FAIL SVGSolidcolorElement interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "SVGSolidcolorElement" expected property "SVGSolidcolorElement" missing
 PASS SVGGradientElement interface: existence and properties of interface object
 PASS SVGGradientElement interface object length
 PASS SVGGradientElement interface object name
@@ -1438,21 +1438,21 @@ PASS SVGElement interface: radialGradient must inherit property "viewportElement
 PASS SVGElement interface: radialGradient must inherit property "tabIndex" with the proper type
 PASS SVGElement interface: radialGradient must inherit property "focus()" with the proper type
 PASS SVGElement interface: radialGradient must inherit property "blur()" with the proper type
-FAIL SVGMeshElement interface: existence and properties of interface objectassert_own_property: self does not have own property "SVGMeshElement" expected property "SVGMeshElement" missing
-FAIL SVGMeshElement interface object lengthassert_own_property: self does not have own property "SVGMeshElement" expected property "SVGMeshElement" missing
-FAIL SVGMeshElement interface object nameassert_own_property: self does not have own property "SVGMeshElement" expected property "SVGMeshElement" missing
-FAIL SVGMeshElement interface: existence and properties of interface prototype objectassert_own_property: self does not have own property "SVGMeshElement" expected property "SVGMeshElement" missing
-FAIL SVGMeshElement interface: existence and properties of interface prototype object's "constructor" propertyassert_own_property: self does not have own property "SVGMeshElement" expected property "SVGMeshElement" missing
-FAIL SVGMeshrowElement interface: existence and properties of interface objectassert_own_property: self does not have own property "SVGMeshrowElement" expected property "SVGMeshrowElement" missing
-FAIL SVGMeshrowElement interface object lengthassert_own_property: self does not have own property "SVGMeshrowElement" expected property "SVGMeshrowElement" missing
-FAIL SVGMeshrowElement interface object nameassert_own_property: self does not have own property "SVGMeshrowElement" expected property "SVGMeshrowElement" missing
-FAIL SVGMeshrowElement interface: existence and properties of interface prototype objectassert_own_property: self does not have own property "SVGMeshrowElement" expected property "SVGMeshrowElement" missing
-FAIL SVGMeshrowElement interface: existence and properties of interface prototype object's "constructor" propertyassert_own_property: self does not have own property "SVGMeshrowElement" expected property "SVGMeshrowElement" missing
-FAIL SVGMeshpatchElement interface: existence and properties of interface objectassert_own_property: self does not have own property "SVGMeshpatchElement" expected property "SVGMeshpatchElement" missing
-FAIL SVGMeshpatchElement interface object lengthassert_own_property: self does not have own property "SVGMeshpatchElement" expected property "SVGMeshpatchElement" missing
-FAIL SVGMeshpatchElement interface object nameassert_own_property: self does not have own property "SVGMeshpatchElement" expected property "SVGMeshpatchElement" missing
-FAIL SVGMeshpatchElement interface: existence and properties of interface prototype objectassert_own_property: self does not have own property "SVGMeshpatchElement" expected property "SVGMeshpatchElement" missing
-FAIL SVGMeshpatchElement interface: existence and properties of interface prototype object's "constructor" propertyassert_own_property: self does not have own property "SVGMeshpatchElement" expected property "SVGMeshpatchElement" missing
+FAIL SVGMeshElement interface: existence and properties of interface object assert_own_property: self does not have own property "SVGMeshElement" expected property "SVGMeshElement" missing
+FAIL SVGMeshElement interface object length assert_own_property: self does not have own property "SVGMeshElement" expected property "SVGMeshElement" missing
+FAIL SVGMeshElement interface object name assert_own_property: self does not have own property "SVGMeshElement" expected property "SVGMeshElement" missing
+FAIL SVGMeshElement interface: existence and properties of interface prototype object assert_own_property: self does not have own property "SVGMeshElement" expected property "SVGMeshElement" missing
+FAIL SVGMeshElement interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "SVGMeshElement" expected property "SVGMeshElement" missing
+FAIL SVGMeshrowElement interface: existence and properties of interface object assert_own_property: self does not have own property "SVGMeshrowElement" expected property "SVGMeshrowElement" missing
+FAIL SVGMeshrowElement interface object length assert_own_property: self does not have own property "SVGMeshrowElement" expected property "SVGMeshrowElement" missing
+FAIL SVGMeshrowElement interface object name assert_own_property: self does not have own property "SVGMeshrowElement" expected property "SVGMeshrowElement" missing
+FAIL SVGMeshrowElement interface: existence and properties of interface prototype object assert_own_property: self does not have own property "SVGMeshrowElement" expected property "SVGMeshrowElement" missing
+FAIL SVGMeshrowElement interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "SVGMeshrowElement" expected property "SVGMeshrowElement" missing
+FAIL SVGMeshpatchElement interface: existence and properties of interface object assert_own_property: self does not have own property "SVGMeshpatchElement" expected property "SVGMeshpatchElement" missing
+FAIL SVGMeshpatchElement interface object length assert_own_property: self does not have own property "SVGMeshpatchElement" expected property "SVGMeshpatchElement" missing
+FAIL SVGMeshpatchElement interface object name assert_own_property: self does not have own property "SVGMeshpatchElement" expected property "SVGMeshpatchElement" missing
+FAIL SVGMeshpatchElement interface: existence and properties of interface prototype object assert_own_property: self does not have own property "SVGMeshpatchElement" expected property "SVGMeshpatchElement" missing
+FAIL SVGMeshpatchElement interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "SVGMeshpatchElement" expected property "SVGMeshpatchElement" missing
 PASS SVGStopElement interface: existence and properties of interface object
 PASS SVGStopElement interface object length
 PASS SVGStopElement interface object name
@@ -1503,29 +1503,29 @@ PASS SVGElement interface: pattern must inherit property "viewportElement" with 
 PASS SVGElement interface: pattern must inherit property "tabIndex" with the proper type
 PASS SVGElement interface: pattern must inherit property "focus()" with the proper type
 PASS SVGElement interface: pattern must inherit property "blur()" with the proper type
-FAIL SVGHatchElement interface: existence and properties of interface objectassert_own_property: self does not have own property "SVGHatchElement" expected property "SVGHatchElement" missing
-FAIL SVGHatchElement interface object lengthassert_own_property: self does not have own property "SVGHatchElement" expected property "SVGHatchElement" missing
-FAIL SVGHatchElement interface object nameassert_own_property: self does not have own property "SVGHatchElement" expected property "SVGHatchElement" missing
-FAIL SVGHatchElement interface: existence and properties of interface prototype objectassert_own_property: self does not have own property "SVGHatchElement" expected property "SVGHatchElement" missing
-FAIL SVGHatchElement interface: existence and properties of interface prototype object's "constructor" propertyassert_own_property: self does not have own property "SVGHatchElement" expected property "SVGHatchElement" missing
-FAIL SVGHatchpathElement interface: existence and properties of interface objectassert_own_property: self does not have own property "SVGHatchpathElement" expected property "SVGHatchpathElement" missing
-FAIL SVGHatchpathElement interface object lengthassert_own_property: self does not have own property "SVGHatchpathElement" expected property "SVGHatchpathElement" missing
-FAIL SVGHatchpathElement interface object nameassert_own_property: self does not have own property "SVGHatchpathElement" expected property "SVGHatchpathElement" missing
-FAIL SVGHatchpathElement interface: existence and properties of interface prototype objectassert_own_property: self does not have own property "SVGHatchpathElement" expected property "SVGHatchpathElement" missing
-FAIL SVGHatchpathElement interface: existence and properties of interface prototype object's "constructor" propertyassert_own_property: self does not have own property "SVGHatchpathElement" expected property "SVGHatchpathElement" missing
-FAIL SVGCursorElement interface: existence and properties of interface objectassert_own_property: self does not have own property "SVGCursorElement" expected property "SVGCursorElement" missing
-FAIL SVGCursorElement interface object lengthassert_own_property: self does not have own property "SVGCursorElement" expected property "SVGCursorElement" missing
-FAIL SVGCursorElement interface object nameassert_own_property: self does not have own property "SVGCursorElement" expected property "SVGCursorElement" missing
-FAIL SVGCursorElement interface: existence and properties of interface prototype objectassert_own_property: self does not have own property "SVGCursorElement" expected property "SVGCursorElement" missing
-FAIL SVGCursorElement interface: existence and properties of interface prototype object's "constructor" propertyassert_own_property: self does not have own property "SVGCursorElement" expected property "SVGCursorElement" missing
-FAIL SVGCursorElement interface: attribute xassert_own_property: self does not have own property "SVGCursorElement" expected property "SVGCursorElement" missing
-FAIL SVGCursorElement interface: attribute yassert_own_property: self does not have own property "SVGCursorElement" expected property "SVGCursorElement" missing
-FAIL SVGCursorElement interface: attribute hrefassert_own_property: self does not have own property "SVGCursorElement" expected property "SVGCursorElement" missing
-FAIL SVGCursorElement must be primary interface of cursorassert_own_property: self does not have own property "SVGCursorElement" expected property "SVGCursorElement" missing
-FAIL Stringification of cursorassert_equals: class string of cursor expected "[object SVGCursorElement]" but got "[object SVGElement]"
-FAIL SVGCursorElement interface: cursor must inherit property "x" with the proper typeassert_inherits: property "x" not found in prototype chain
-FAIL SVGCursorElement interface: cursor must inherit property "y" with the proper typeassert_inherits: property "y" not found in prototype chain
-FAIL SVGCursorElement interface: cursor must inherit property "href" with the proper typeassert_inherits: property "href" not found in prototype chain
+FAIL SVGHatchElement interface: existence and properties of interface object assert_own_property: self does not have own property "SVGHatchElement" expected property "SVGHatchElement" missing
+FAIL SVGHatchElement interface object length assert_own_property: self does not have own property "SVGHatchElement" expected property "SVGHatchElement" missing
+FAIL SVGHatchElement interface object name assert_own_property: self does not have own property "SVGHatchElement" expected property "SVGHatchElement" missing
+FAIL SVGHatchElement interface: existence and properties of interface prototype object assert_own_property: self does not have own property "SVGHatchElement" expected property "SVGHatchElement" missing
+FAIL SVGHatchElement interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "SVGHatchElement" expected property "SVGHatchElement" missing
+FAIL SVGHatchpathElement interface: existence and properties of interface object assert_own_property: self does not have own property "SVGHatchpathElement" expected property "SVGHatchpathElement" missing
+FAIL SVGHatchpathElement interface object length assert_own_property: self does not have own property "SVGHatchpathElement" expected property "SVGHatchpathElement" missing
+FAIL SVGHatchpathElement interface object name assert_own_property: self does not have own property "SVGHatchpathElement" expected property "SVGHatchpathElement" missing
+FAIL SVGHatchpathElement interface: existence and properties of interface prototype object assert_own_property: self does not have own property "SVGHatchpathElement" expected property "SVGHatchpathElement" missing
+FAIL SVGHatchpathElement interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "SVGHatchpathElement" expected property "SVGHatchpathElement" missing
+FAIL SVGCursorElement interface: existence and properties of interface object assert_own_property: self does not have own property "SVGCursorElement" expected property "SVGCursorElement" missing
+FAIL SVGCursorElement interface object length assert_own_property: self does not have own property "SVGCursorElement" expected property "SVGCursorElement" missing
+FAIL SVGCursorElement interface object name assert_own_property: self does not have own property "SVGCursorElement" expected property "SVGCursorElement" missing
+FAIL SVGCursorElement interface: existence and properties of interface prototype object assert_own_property: self does not have own property "SVGCursorElement" expected property "SVGCursorElement" missing
+FAIL SVGCursorElement interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "SVGCursorElement" expected property "SVGCursorElement" missing
+FAIL SVGCursorElement interface: attribute x assert_own_property: self does not have own property "SVGCursorElement" expected property "SVGCursorElement" missing
+FAIL SVGCursorElement interface: attribute y assert_own_property: self does not have own property "SVGCursorElement" expected property "SVGCursorElement" missing
+FAIL SVGCursorElement interface: attribute href assert_own_property: self does not have own property "SVGCursorElement" expected property "SVGCursorElement" missing
+FAIL SVGCursorElement must be primary interface of cursor assert_own_property: self does not have own property "SVGCursorElement" expected property "SVGCursorElement" missing
+FAIL Stringification of cursor assert_equals: class string of cursor expected "[object SVGCursorElement]" but got "[object SVGElement]"
+FAIL SVGCursorElement interface: cursor must inherit property "x" with the proper type assert_inherits: property "x" not found in prototype chain
+FAIL SVGCursorElement interface: cursor must inherit property "y" with the proper type assert_inherits: property "y" not found in prototype chain
+FAIL SVGCursorElement interface: cursor must inherit property "href" with the proper type assert_inherits: property "href" not found in prototype chain
 PASS SVGElement interface: cursor must inherit property "className" with the proper type
 PASS SVGElement interface: cursor must inherit property "dataset" with the proper type
 PASS SVGElement interface: cursor must inherit property "ownerSVGElement" with the proper type
@@ -1539,12 +1539,12 @@ PASS SVGScriptElement interface object name
 PASS SVGScriptElement interface: existence and properties of interface prototype object
 PASS SVGScriptElement interface: existence and properties of interface prototype object's "constructor" property
 PASS SVGScriptElement interface: attribute type
-FAIL SVGScriptElement interface: attribute crossOriginassert_true: The prototype object must have a property "crossOrigin" expected true got false
+FAIL SVGScriptElement interface: attribute crossOrigin assert_true: The prototype object must have a property "crossOrigin" expected true got false
 PASS SVGScriptElement interface: attribute href
 PASS SVGScriptElement must be primary interface of script
 PASS Stringification of script
 PASS SVGScriptElement interface: script must inherit property "type" with the proper type
-FAIL SVGScriptElement interface: script must inherit property "crossOrigin" with the proper typeassert_inherits: property "crossOrigin" not found in prototype chain
+FAIL SVGScriptElement interface: script must inherit property "crossOrigin" with the proper type assert_inherits: property "crossOrigin" not found in prototype chain
 PASS SVGScriptElement interface: script must inherit property "href" with the proper type
 PASS SVGElement interface: script must inherit property "className" with the proper type
 PASS SVGElement interface: script must inherit property "dataset" with the proper type
@@ -2209,18 +2209,18 @@ PASS SVGFEGaussianBlurElement interface object length
 PASS SVGFEGaussianBlurElement interface object name
 PASS SVGFEGaussianBlurElement interface: existence and properties of interface prototype object
 PASS SVGFEGaussianBlurElement interface: existence and properties of interface prototype object's "constructor" property
-FAIL SVGFEGaussianBlurElement interface: constant SVG_EDGEMODE_UNKNOWN on interface objectassert_own_property: expected property "SVG_EDGEMODE_UNKNOWN" missing
-FAIL SVGFEGaussianBlurElement interface: constant SVG_EDGEMODE_UNKNOWN on interface prototype objectassert_own_property: expected property "SVG_EDGEMODE_UNKNOWN" missing
-FAIL SVGFEGaussianBlurElement interface: constant SVG_EDGEMODE_DUPLICATE on interface objectassert_own_property: expected property "SVG_EDGEMODE_DUPLICATE" missing
-FAIL SVGFEGaussianBlurElement interface: constant SVG_EDGEMODE_DUPLICATE on interface prototype objectassert_own_property: expected property "SVG_EDGEMODE_DUPLICATE" missing
-FAIL SVGFEGaussianBlurElement interface: constant SVG_EDGEMODE_WRAP on interface objectassert_own_property: expected property "SVG_EDGEMODE_WRAP" missing
-FAIL SVGFEGaussianBlurElement interface: constant SVG_EDGEMODE_WRAP on interface prototype objectassert_own_property: expected property "SVG_EDGEMODE_WRAP" missing
-FAIL SVGFEGaussianBlurElement interface: constant SVG_EDGEMODE_NONE on interface objectassert_own_property: expected property "SVG_EDGEMODE_NONE" missing
-FAIL SVGFEGaussianBlurElement interface: constant SVG_EDGEMODE_NONE on interface prototype objectassert_own_property: expected property "SVG_EDGEMODE_NONE" missing
+FAIL SVGFEGaussianBlurElement interface: constant SVG_EDGEMODE_UNKNOWN on interface object assert_own_property: expected property "SVG_EDGEMODE_UNKNOWN" missing
+FAIL SVGFEGaussianBlurElement interface: constant SVG_EDGEMODE_UNKNOWN on interface prototype object assert_own_property: expected property "SVG_EDGEMODE_UNKNOWN" missing
+FAIL SVGFEGaussianBlurElement interface: constant SVG_EDGEMODE_DUPLICATE on interface object assert_own_property: expected property "SVG_EDGEMODE_DUPLICATE" missing
+FAIL SVGFEGaussianBlurElement interface: constant SVG_EDGEMODE_DUPLICATE on interface prototype object assert_own_property: expected property "SVG_EDGEMODE_DUPLICATE" missing
+FAIL SVGFEGaussianBlurElement interface: constant SVG_EDGEMODE_WRAP on interface object assert_own_property: expected property "SVG_EDGEMODE_WRAP" missing
+FAIL SVGFEGaussianBlurElement interface: constant SVG_EDGEMODE_WRAP on interface prototype object assert_own_property: expected property "SVG_EDGEMODE_WRAP" missing
+FAIL SVGFEGaussianBlurElement interface: constant SVG_EDGEMODE_NONE on interface object assert_own_property: expected property "SVG_EDGEMODE_NONE" missing
+FAIL SVGFEGaussianBlurElement interface: constant SVG_EDGEMODE_NONE on interface prototype object assert_own_property: expected property "SVG_EDGEMODE_NONE" missing
 PASS SVGFEGaussianBlurElement interface: attribute in1
 PASS SVGFEGaussianBlurElement interface: attribute stdDeviationX
 PASS SVGFEGaussianBlurElement interface: attribute stdDeviationY
-FAIL SVGFEGaussianBlurElement interface: attribute edgeModeassert_true: The prototype object must have a property "edgeMode" expected true got false
+FAIL SVGFEGaussianBlurElement interface: attribute edgeMode assert_true: The prototype object must have a property "edgeMode" expected true got false
 PASS SVGFEGaussianBlurElement interface: operation setStdDeviation(float, float)
 PASS SVGFEGaussianBlurElement interface: attribute x
 PASS SVGFEGaussianBlurElement interface: attribute y
@@ -2229,14 +2229,14 @@ PASS SVGFEGaussianBlurElement interface: attribute height
 PASS SVGFEGaussianBlurElement interface: attribute result
 PASS SVGFEGaussianBlurElement must be primary interface of feGaussianBlur
 PASS Stringification of feGaussianBlur
-FAIL SVGFEGaussianBlurElement interface: feGaussianBlur must inherit property "SVG_EDGEMODE_UNKNOWN" with the proper typeassert_inherits: property "SVG_EDGEMODE_UNKNOWN" not found in prototype chain
-FAIL SVGFEGaussianBlurElement interface: feGaussianBlur must inherit property "SVG_EDGEMODE_DUPLICATE" with the proper typeassert_inherits: property "SVG_EDGEMODE_DUPLICATE" not found in prototype chain
-FAIL SVGFEGaussianBlurElement interface: feGaussianBlur must inherit property "SVG_EDGEMODE_WRAP" with the proper typeassert_inherits: property "SVG_EDGEMODE_WRAP" not found in prototype chain
-FAIL SVGFEGaussianBlurElement interface: feGaussianBlur must inherit property "SVG_EDGEMODE_NONE" with the proper typeassert_inherits: property "SVG_EDGEMODE_NONE" not found in prototype chain
+FAIL SVGFEGaussianBlurElement interface: feGaussianBlur must inherit property "SVG_EDGEMODE_UNKNOWN" with the proper type assert_inherits: property "SVG_EDGEMODE_UNKNOWN" not found in prototype chain
+FAIL SVGFEGaussianBlurElement interface: feGaussianBlur must inherit property "SVG_EDGEMODE_DUPLICATE" with the proper type assert_inherits: property "SVG_EDGEMODE_DUPLICATE" not found in prototype chain
+FAIL SVGFEGaussianBlurElement interface: feGaussianBlur must inherit property "SVG_EDGEMODE_WRAP" with the proper type assert_inherits: property "SVG_EDGEMODE_WRAP" not found in prototype chain
+FAIL SVGFEGaussianBlurElement interface: feGaussianBlur must inherit property "SVG_EDGEMODE_NONE" with the proper type assert_inherits: property "SVG_EDGEMODE_NONE" not found in prototype chain
 PASS SVGFEGaussianBlurElement interface: feGaussianBlur must inherit property "in1" with the proper type
 PASS SVGFEGaussianBlurElement interface: feGaussianBlur must inherit property "stdDeviationX" with the proper type
 PASS SVGFEGaussianBlurElement interface: feGaussianBlur must inherit property "stdDeviationY" with the proper type
-FAIL SVGFEGaussianBlurElement interface: feGaussianBlur must inherit property "edgeMode" with the proper typeassert_inherits: property "edgeMode" not found in prototype chain
+FAIL SVGFEGaussianBlurElement interface: feGaussianBlur must inherit property "edgeMode" with the proper type assert_inherits: property "edgeMode" not found in prototype chain
 PASS SVGFEGaussianBlurElement interface: feGaussianBlur must inherit property "setStdDeviation(float, float)" with the proper type
 PASS SVGFEGaussianBlurElement interface: calling setStdDeviation(float, float) on feGaussianBlur with too few arguments must throw TypeError
 PASS SVGFEGaussianBlurElement interface: feGaussianBlur must inherit property "x" with the proper type
@@ -2257,7 +2257,7 @@ PASS SVGFEImageElement interface object name
 PASS SVGFEImageElement interface: existence and properties of interface prototype object
 PASS SVGFEImageElement interface: existence and properties of interface prototype object's "constructor" property
 PASS SVGFEImageElement interface: attribute preserveAspectRatio
-FAIL SVGFEImageElement interface: attribute crossOriginassert_true: The prototype object must have a property "crossOrigin" expected true got false
+FAIL SVGFEImageElement interface: attribute crossOrigin assert_true: The prototype object must have a property "crossOrigin" expected true got false
 PASS SVGFEImageElement interface: attribute x
 PASS SVGFEImageElement interface: attribute y
 PASS SVGFEImageElement interface: attribute width
@@ -2267,7 +2267,7 @@ PASS SVGFEImageElement interface: attribute href
 PASS SVGFEImageElement must be primary interface of feImage
 PASS Stringification of feImage
 PASS SVGFEImageElement interface: feImage must inherit property "preserveAspectRatio" with the proper type
-FAIL SVGFEImageElement interface: feImage must inherit property "crossOrigin" with the proper typeassert_inherits: property "crossOrigin" not found in prototype chain
+FAIL SVGFEImageElement interface: feImage must inherit property "crossOrigin" with the proper type assert_inherits: property "crossOrigin" not found in prototype chain
 PASS SVGFEImageElement interface: feImage must inherit property "x" with the proper type
 PASS SVGFEImageElement interface: feImage must inherit property "y" with the proper type
 PASS SVGFEImageElement interface: feImage must inherit property "width" with the proper type

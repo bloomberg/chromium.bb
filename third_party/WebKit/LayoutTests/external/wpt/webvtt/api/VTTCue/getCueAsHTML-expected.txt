@@ -9,7 +9,7 @@ PASS VTTCue.getCueAsHTML(), <ruby>
 PASS VTTCue.getCueAsHTML(), <rt>
 PASS VTTCue.getCueAsHTML(), <v>
 PASS VTTCue.getCueAsHTML(), <v a b>
-FAIL VTTCue.getCueAsHTML(), <1:00:00.500>assert_equals: data expected "01:00:00.500" but got "1:00:00.500"
-FAIL VTTCue.getCueAsHTML(), x\0assert_equals: data expected "x\0" but got "x"
+FAIL VTTCue.getCueAsHTML(), <1:00:00.500> assert_equals: data expected "01:00:00.500" but got "1:00:00.500"
+FAIL VTTCue.getCueAsHTML(), x\0 assert_equals: data expected "x\0" but got "x"
 Harness: the test ran to completion.
 

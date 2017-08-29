@@ -4,7 +4,7 @@ PASS This tests Get function
 PASS This tests case sensitive scenario
 PASS Tests Undefined
 PASS Tests matchesNothingInDataset
-FAIL Tests SetTest bug: need to pass exception to assert_throws()
+FAIL Tests Set Test bug: need to pass exception to assert_throws()
 PASS Tests Is Null
 PASS Tests Delete
 PASS Tests Native Delete
@@ -14,7 +14,7 @@ PASS This tests Get function
 PASS This tests case sensitive scenario
 PASS Tests Undefined
 PASS Tests matchesNothingInDataset
-FAIL Tests SetTest bug: need to pass exception to assert_throws()
+FAIL Tests Set Test bug: need to pass exception to assert_throws()
 PASS Tests Is Null
 PASS Tests Delete
 PASS Tests Native Delete

@@ -7,7 +7,7 @@ PASS ReadableStream instances should have the correct list of properties
 PASS ReadableStream constructor should throw for non-function start arguments
 PASS ReadableStream constructor can get initial garbage as cancel argument
 PASS ReadableStream constructor can get initial garbage as pull argument
-FAIL ReadableStream start should be called with the proper parametersassert_equals: constructor should have 4 parameter expected 4 but got 5
+FAIL ReadableStream start should be called with the proper parameters assert_equals: constructor should have 4 parameter expected 4 but got 5
 PASS ReadableStream start controller parameter should be extensible
 PASS default ReadableStream getReader() should only accept mode:undefined
 PASS ReadableStream should be able to call start method within prototype chain of its source
@@ -31,8 +31,8 @@ PASS ReadableStream pull should be able to error a stream and throw.
 PASS ReadableStream: enqueue should throw when the stream is readable but draining
 PASS ReadableStream: enqueue should throw when the stream is closed
 PASS ReadableStream: should call underlying source methods as methods
-FAIL ReadableStream: desiredSize when closedassert_equals: after closing, desiredSize must be 0 expected 0 but got 10
-FAIL ReadableStream: desiredSize when erroredassert_equals: after erroring, desiredSize must be null expected (object) null but got (number) 10
+FAIL ReadableStream: desiredSize when closed assert_equals: after closing, desiredSize must be 0 expected 0 but got 10
+FAIL ReadableStream: desiredSize when errored assert_equals: after erroring, desiredSize must be null expected (object) null but got (number) 10
 PASS ReadableStream strategies: the default strategy should give desiredSize of 1 to start, decreasing by 1 per enqueue
 PASS ReadableStream strategies: the default strategy should continue giving desiredSize of 1 if the chunks are read immediately
 PASS ReadableStream integration test: adapting a random push source

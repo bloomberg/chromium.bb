@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-FAIL percent encode charactersassert_equals: expected "%C3%9F" but got "%DF"
-FAIL lone surrogate should return U+FFFDassert_equals: expected "%EF%BF%BD" but got "%26%2355357%3B"
+FAIL percent encode characters assert_equals: expected "%C3%9F" but got "%DF"
+FAIL lone surrogate should return U+FFFD assert_equals: expected "%EF%BF%BD" but got "%26%2355357%3B"
 Harness: the test ran to completion.
 

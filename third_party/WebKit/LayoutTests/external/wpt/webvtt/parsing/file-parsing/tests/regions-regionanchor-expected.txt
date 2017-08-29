@@ -1,4 +1,4 @@
 This is a testharness.js-based test.
-FAIL regions, regionanchorCannot read property 'regionAnchorX' of null
+FAIL regions, regionanchor Cannot read property 'regionAnchorX' of null
 Harness: the test ran to completion.
 

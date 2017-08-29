@@ -1,6 +1,6 @@
 This is a testharness.js-based test.
-FAIL Object.getOwnPropertyNames on NamedNodeMapassert_array_equals: lengths differ, expected 4 got 2
-FAIL Object.getOwnPropertyNames on NamedNodeMap of inputassert_array_equals: lengths differ, expected 8 got 4
-FAIL Object.getOwnPropertyNames on NamedNodeMap after attribute removalassert_array_equals: lengths differ, expected 6 got 3
+FAIL Object.getOwnPropertyNames on NamedNodeMap assert_array_equals: lengths differ, expected 4 got 2
+FAIL Object.getOwnPropertyNames on NamedNodeMap of input assert_array_equals: lengths differ, expected 8 got 4
+FAIL Object.getOwnPropertyNames on NamedNodeMap after attribute removal assert_array_equals: lengths differ, expected 6 got 3
 Harness: the test ran to completion.
 

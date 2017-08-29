@@ -143,7 +143,7 @@ PASS "transform: rotateZ();" should be invalid
 PASS "transform: rotateZ(1deg, 1deg);" should be invalid
 PASS "transform: perspective(2px);" should parse as "perspective(2px)"
 PASS "transform: perspective(2px);" should be computed to "matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, -0.5, 0, 0, 0, 1)"
-FAIL "transform: perspective(0px);" should be invalidassert_false: CSS.supports expected false got true
+FAIL "transform: perspective(0px);" should be invalid assert_false: CSS.supports expected false got true
 PASS "transform: perspective(2);" should be invalid
 PASS "transform: perspective(5%);" should be invalid
 PASS "transform: perspective();" should be invalid

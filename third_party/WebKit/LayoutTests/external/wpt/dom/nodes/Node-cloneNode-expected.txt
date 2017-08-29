@@ -4,7 +4,7 @@ PASS createElement(a)
 PASS createElement(abbr)
 PASS createElement(acronym)
 PASS createElement(address)
-FAIL createElement(applet)assert_true: HTMLAppletElement is not supported expected true got false
+FAIL createElement(applet) assert_true: HTMLAppletElement is not supported expected true got false
 PASS createElement(area)
 PASS createElement(article)
 PASS createElement(aside)
@@ -130,7 +130,7 @@ PASS createElementNS HTML
 PASS createElementNS non-HTML
 PASS createProcessingInstruction
 PASS implementation.createDocumentType
-FAIL implementation.createDocumentassert_equals: origin value expected "null" but got "http://web-platform.test:8001"
+FAIL implementation.createDocument assert_equals: origin value expected "null" but got "http://web-platform.test:8001"
 PASS implementation.createHTMLDocument
 PASS node with children
 Harness: the test ran to completion.

@@ -22,7 +22,7 @@ PASS Throw TypeError if modifier.total.amount.value is not a valid decimal monet
 PASS If amount.value of additionalDisplayItems is not a valid decimal monetary value, then throw a TypeError
 PASS Modifier data must be JSON-serializable object (an Array in this case)
 PASS Modifier data must be JSON-serializable object (an Object in this case)
-FAIL Rethrow any exceptions of JSON-serializing modifier.dataassert_throws: function "() => {
+FAIL Rethrow any exceptions of JSON-serializing modifier.data assert_throws: function "() => {
     const modifiedDetails = Object.assign({}, defaultDetails, {
       modifiers: [
         {

@@ -5,8 +5,8 @@ PASS existence of self
 PASS existence of location
 PASS existence of close
 PASS existence of onerror
-FAIL existence of onofflineassert_true: expected true got false
-FAIL existence of ononlineassert_true: expected true got false
+FAIL existence of onoffline assert_true: expected true got false
+FAIL existence of ononline assert_true: expected true got false
 PASS existence of addEventListener
 PASS existence of removeEventListener
 PASS existence of dispatchEvent

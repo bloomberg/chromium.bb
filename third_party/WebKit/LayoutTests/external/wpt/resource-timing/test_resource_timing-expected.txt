@@ -19,11 +19,11 @@ PASS PerformanceEntry has correct name, initiatorType, startTime, and duration (
 PASS PerformanceEntry has correct order of timing attributes (script)
 PASS PerformanceEntry has correct network transfer attributes (script)
 PASS PerformanceEntry has correct protocol attribute (script)
-FAIL window.performance.getEntriesByName() and window.performance.getEntriesByNameType() return same data (xmlhttprequest)assert_equals: should have a single entry for each resource (without type) expected 1 but got 0
-FAIL PerformanceEntry has correct name, initiatorType, startTime, and duration (xmlhttprequest)Cannot read property 'name' of undefined
-FAIL PerformanceEntry has correct order of timing attributes (xmlhttprequest)Cannot read property 'connectStart' of undefined
-FAIL PerformanceEntry has correct network transfer attributes (xmlhttprequest)Cannot read property 'encodedBodySize' of undefined
-FAIL PerformanceEntry has correct protocol attribute (xmlhttprequest)Cannot read property 'nextHopProtocol' of undefined
+FAIL window.performance.getEntriesByName() and window.performance.getEntriesByNameType() return same data (xmlhttprequest) assert_equals: should have a single entry for each resource (without type) expected 1 but got 0
+FAIL PerformanceEntry has correct name, initiatorType, startTime, and duration (xmlhttprequest) Cannot read property 'name' of undefined
+FAIL PerformanceEntry has correct order of timing attributes (xmlhttprequest) Cannot read property 'connectStart' of undefined
+FAIL PerformanceEntry has correct network transfer attributes (xmlhttprequest) Cannot read property 'encodedBodySize' of undefined
+FAIL PerformanceEntry has correct protocol attribute (xmlhttprequest) Cannot read property 'nextHopProtocol' of undefined
 PASS window.performance Resource Timing Entries exist
 PASS window.performance Resource Timing Entries exist 1
 PASS window.performance Resource Timing Entries exist 2

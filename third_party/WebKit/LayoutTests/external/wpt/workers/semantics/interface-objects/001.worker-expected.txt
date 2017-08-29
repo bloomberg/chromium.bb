@@ -2,8 +2,8 @@ This is a testharness.js-based test.
 Found 61 tests; 57 PASS, 4 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS The WorkerGlobalScope interface object should be exposed.
 PASS The DedicatedWorkerGlobalScope interface object should be exposed.
-FAIL The Worker interface object should be exposed.assert_own_property: expected property "Worker" missing
-FAIL The SharedWorker interface object should be exposed.assert_own_property: expected property "SharedWorker" missing
+FAIL The Worker interface object should be exposed. assert_own_property: expected property "Worker" missing
+FAIL The SharedWorker interface object should be exposed. assert_own_property: expected property "SharedWorker" missing
 PASS The MessagePort interface object should be exposed.
 PASS The MessageEvent interface object should be exposed.
 PASS The WorkerNavigator interface object should be exposed.
@@ -11,7 +11,7 @@ PASS The MessageChannel interface object should be exposed.
 PASS The WorkerLocation interface object should be exposed.
 PASS The ImageData interface object should be exposed.
 PASS The ImageBitmap interface object should be exposed.
-FAIL The CanvasPath interface object should be exposed.assert_own_property: expected property "CanvasPath" missing
+FAIL The CanvasPath interface object should be exposed. assert_own_property: expected property "CanvasPath" missing
 PASS The Path2D interface object should be exposed.
 PASS The PromiseRejectionEvent interface object should be exposed.
 PASS The EventSource interface object should be exposed.
@@ -42,7 +42,7 @@ PASS The FileList interface object should be exposed.
 PASS The FileReader interface object should be exposed.
 PASS The FileReaderSync interface object should be exposed.
 PASS The EventTarget interface object should be exposed.
-FAIL The ErrorEvent interface object should be exposed.assert_own_property: expected property "ErrorEvent" missing
+FAIL The ErrorEvent interface object should be exposed. assert_own_property: expected property "ErrorEvent" missing
 PASS The Event interface object should be exposed.
 PASS The CustomEvent interface object should be exposed.
 PASS The DOMException interface object should be exposed.

@@ -1,4 +1,4 @@
 This is a testharness.js-based test.
-FAIL settings, regionassert_true: Cue 0 has invalid region expected true got false
+FAIL settings, region assert_true: Cue 0 has invalid region expected true got false
 Harness: the test ran to completion.
 

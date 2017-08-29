@@ -1,6 +1,6 @@
 This is a testharness.js-based test.
-FAIL dedicated worker - EventSource: constructor (act as if there is a network error) (http://example.not/)assert_equals: source.readyState expected 2 but got 0
-FAIL dedicated worker - EventSource: constructor (act as if there is a network error) (https://example.not/test)assert_equals: source.readyState expected 2 but got 0
+FAIL dedicated worker - EventSource: constructor (act as if there is a network error) (http://example.not/) assert_equals: source.readyState expected 2 but got 0
+FAIL dedicated worker - EventSource: constructor (act as if there is a network error) (https://example.not/test) assert_equals: source.readyState expected 2 but got 0
 PASS dedicated worker - EventSource: constructor (act as if there is a network error) (ftp://example.not/)
 PASS dedicated worker - EventSource: constructor (act as if there is a network error) (about:blank)
 PASS dedicated worker - EventSource: constructor (act as if there is a network error) (mailto:whatwg@awesome.example)

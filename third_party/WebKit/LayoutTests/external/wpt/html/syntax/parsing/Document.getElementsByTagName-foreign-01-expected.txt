@@ -1,9 +1,9 @@
 This is a testharness.js-based test.
 PASS document.getElementsByTagName and foreign parser-inserted
 elements
-FAIL Testing altGlyphassert_equals: expected 2 but got 0
-FAIL Testing altGlyphDefassert_equals: expected 2 but got 0
-FAIL Testing altGlyphItemassert_equals: expected 2 but got 0
+FAIL Testing altGlyph assert_equals: expected 2 but got 0
+FAIL Testing altGlyphDef assert_equals: expected 2 but got 0
+FAIL Testing altGlyphItem assert_equals: expected 2 but got 0
 PASS Testing animateColor
 PASS Testing animateMotion
 PASS Testing animateTransform
@@ -33,7 +33,7 @@ PASS Testing feSpotLight
 PASS Testing feTile
 PASS Testing feTurbulence
 PASS Testing foreignObject
-FAIL Testing glyphRefassert_equals: expected 2 but got 0
+FAIL Testing glyphRef assert_equals: expected 2 but got 0
 PASS Testing linearGradient
 PASS Testing radialGradient
 PASS Testing textPath

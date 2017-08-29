@@ -3,14 +3,14 @@ PASS border is expected to be border: 1px;
 PASS border is expected to be border: 1px solid red;
 PASS border is expected to be border: 1px red;
 PASS border is expected to be border: red;
-FAIL border is expected to be border: 1px; (#2)assert_equals: expected "border: 1px;" but got "border-width: 1px; border-style: initial; border-color: initial;"
-FAIL border is expected to be border-width: 1px 2px 3px 4px;assert_equals: expected "border-width: 1px 2px 3px 4px;" but got "border-width: 1px 2px 3px 4px; border-style: initial; border-color: initial;"
-FAIL border is expected to be border-width: 2px 1px 1px;assert_equals: expected "border-width: 2px 1px 1px;" but got "border-width: 2px 1px 1px; border-style: initial; border-color: initial; border-image: initial;"
-FAIL border is expected to be border-right-width: 1px; border-bottom-width: 1px; border-left-width: 1px; border-top-width: 1px !important;assert_equals: expected "border-right-width: 1px; border-bottom-width: 1px; border-left-width: 1px; border-top-width: 1px !important;" but got "border-right: 1px; border-bottom: 1px; border-left: 1px; border-image: initial; border-top: 1px !important;"
-FAIL border is expected to be border-width: 1px; border-top-color: red;assert_equals: expected "border-width: 1px; border-top-color: red;" but got "border-width: 1px; border-style: initial; border-right-color: initial; border-bottom-color: initial; border-left-color: initial; border-image: initial; border-top-color: red;"
+FAIL border is expected to be border: 1px; (#2) assert_equals: expected "border: 1px;" but got "border-width: 1px; border-style: initial; border-color: initial;"
+FAIL border is expected to be border-width: 1px 2px 3px 4px; assert_equals: expected "border-width: 1px 2px 3px 4px;" but got "border-width: 1px 2px 3px 4px; border-style: initial; border-color: initial;"
+FAIL border is expected to be border-width: 2px 1px 1px; assert_equals: expected "border-width: 2px 1px 1px;" but got "border-width: 2px 1px 1px; border-style: initial; border-color: initial; border-image: initial;"
+FAIL border is expected to be border-right-width: 1px; border-bottom-width: 1px; border-left-width: 1px; border-top-width: 1px !important; assert_equals: expected "border-right-width: 1px; border-bottom-width: 1px; border-left-width: 1px; border-top-width: 1px !important;" but got "border-right: 1px; border-bottom: 1px; border-left: 1px; border-image: initial; border-top: 1px !important;"
+FAIL border is expected to be border-width: 1px; border-top-color: red; assert_equals: expected "border-width: 1px; border-top-color: red;" but got "border-width: 1px; border-style: initial; border-right-color: initial; border-bottom-color: initial; border-left-color: initial; border-image: initial; border-top-color: red;"
 PASS border is expected to be border: dotted;
 PASS border is expected to be border-width: 1px;
-FAIL overflow is expected to be overflow: scroll hidden;assert_equals: expected "overflow: scroll hidden;" but got "overflow-x: scroll; overflow-y: hidden;"
+FAIL overflow is expected to be overflow: scroll hidden; assert_equals: expected "overflow: scroll hidden;" but got "overflow-x: scroll; overflow-y: hidden;"
 PASS overflow is expected to be overflow: scroll;
 PASS outline is expected to be outline: blue dotted 2px;
 PASS margin is expected to be margin: 1px 2px 3px 4px;

@@ -3,8 +3,8 @@ Found 59 tests; 46 PASS, 13 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS utility code
 PASS application/octet-stream
 PASS video/x-new-fictional-format
-FAIL audio/mp4 (optional)assert_equals: audio/mp4 expected "maybe" but got ""
-FAIL audio/mp4; codecs="mp4a.40.2" (optional)assert_equals: audio/mp4; codecs="mp4a.40.2" expected "probably" but got ""
+FAIL audio/mp4 (optional) assert_equals: audio/mp4 expected "maybe" but got ""
+FAIL audio/mp4; codecs="mp4a.40.2" (optional) assert_equals: audio/mp4; codecs="mp4a.40.2" expected "probably" but got ""
 PASS audio/mp4 with bogus codec
 PASS audio/mp4 with and without codecs
 PASS audio/ogg (optional)
@@ -21,21 +21,21 @@ PASS audio/webm; codecs="opus" (optional)
 PASS audio/webm; codecs="vorbis" (optional)
 PASS audio/webm with bogus codec
 PASS audio/webm with and without codecs
-FAIL video/3gpp (optional)assert_equals: video/3gpp expected "maybe" but got ""
-FAIL video/3gpp; codecs="samr" (optional)assert_equals: video/3gpp; codecs="samr" expected "probably" but got ""
-FAIL video/3gpp; codecs="mp4v.20.8" (optional)assert_equals: video/3gpp; codecs="mp4v.20.8" expected "probably" but got ""
+FAIL video/3gpp (optional) assert_equals: video/3gpp expected "maybe" but got ""
+FAIL video/3gpp; codecs="samr" (optional) assert_equals: video/3gpp; codecs="samr" expected "probably" but got ""
+FAIL video/3gpp; codecs="mp4v.20.8" (optional) assert_equals: video/3gpp; codecs="mp4v.20.8" expected "probably" but got ""
 PASS video/3gpp codecs subset
 PASS video/3gpp codecs order
 PASS video/3gpp with bogus codec
 PASS video/3gpp with and without codecs
-FAIL video/mp4 (optional)assert_equals: video/mp4 expected "maybe" but got ""
-FAIL video/mp4; codecs="mp4a.40.2" (optional)assert_equals: video/mp4; codecs="mp4a.40.2" expected "probably" but got ""
-FAIL video/mp4; codecs="avc1.42E01E" (optional)assert_equals: video/mp4; codecs="avc1.42E01E" expected "probably" but got ""
-FAIL video/mp4; codecs="avc1.4D401E" (optional)assert_equals: video/mp4; codecs="avc1.4D401E" expected "probably" but got ""
-FAIL video/mp4; codecs="avc1.58A01E" (optional)assert_equals: video/mp4; codecs="avc1.58A01E" expected "probably" but got ""
-FAIL video/mp4; codecs="avc1.64001E" (optional)assert_equals: video/mp4; codecs="avc1.64001E" expected "probably" but got ""
-FAIL video/mp4; codecs="mp4v.20.8" (optional)assert_equals: video/mp4; codecs="mp4v.20.8" expected "probably" but got ""
-FAIL video/mp4; codecs="mp4v.20.240" (optional)assert_equals: video/mp4; codecs="mp4v.20.240" expected "probably" but got ""
+FAIL video/mp4 (optional) assert_equals: video/mp4 expected "maybe" but got ""
+FAIL video/mp4; codecs="mp4a.40.2" (optional) assert_equals: video/mp4; codecs="mp4a.40.2" expected "probably" but got ""
+FAIL video/mp4; codecs="avc1.42E01E" (optional) assert_equals: video/mp4; codecs="avc1.42E01E" expected "probably" but got ""
+FAIL video/mp4; codecs="avc1.4D401E" (optional) assert_equals: video/mp4; codecs="avc1.4D401E" expected "probably" but got ""
+FAIL video/mp4; codecs="avc1.58A01E" (optional) assert_equals: video/mp4; codecs="avc1.58A01E" expected "probably" but got ""
+FAIL video/mp4; codecs="avc1.64001E" (optional) assert_equals: video/mp4; codecs="avc1.64001E" expected "probably" but got ""
+FAIL video/mp4; codecs="mp4v.20.8" (optional) assert_equals: video/mp4; codecs="mp4v.20.8" expected "probably" but got ""
+FAIL video/mp4; codecs="mp4v.20.240" (optional) assert_equals: video/mp4; codecs="mp4v.20.240" expected "probably" but got ""
 PASS video/mp4 codecs subset
 PASS video/mp4 codecs order
 PASS video/mp4 with bogus codec

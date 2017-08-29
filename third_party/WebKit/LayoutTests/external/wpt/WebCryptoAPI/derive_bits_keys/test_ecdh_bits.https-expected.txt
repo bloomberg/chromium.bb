@@ -1,7 +1,7 @@
 This is a testharness.js-based test.
 PASS P-521 good parameters
 PASS P-521 mixed case parameters
-FAIL P-521 with null lengthassert_true: Derived correct bits expected true got false
+FAIL P-521 with null length assert_true: Derived correct bits expected true got false
 PASS P-521 short result
 PASS P-521 non-multiple of 8 bits
 PASS P-521 missing public curve
@@ -15,7 +15,7 @@ PASS P-521 public property value is a secret key
 PASS P-521 asking for too many bits
 PASS P-256 good parameters
 PASS P-256 mixed case parameters
-FAIL P-256 with null lengthassert_true: Derived correct bits expected true got false
+FAIL P-256 with null length assert_true: Derived correct bits expected true got false
 PASS P-256 short result
 PASS P-256 non-multiple of 8 bits
 PASS P-256 missing public curve
@@ -29,7 +29,7 @@ PASS P-256 public property value is a secret key
 PASS P-256 asking for too many bits
 PASS P-384 good parameters
 PASS P-384 mixed case parameters
-FAIL P-384 with null lengthassert_true: Derived correct bits expected true got false
+FAIL P-384 with null length assert_true: Derived correct bits expected true got false
 PASS P-384 short result
 PASS P-384 non-multiple of 8 bits
 PASS P-384 missing public curve

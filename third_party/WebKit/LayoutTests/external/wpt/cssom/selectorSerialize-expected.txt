@@ -1,15 +1,15 @@
 This is a testharness.js-based test.
-FAIL :nth-child serialization produces canonical formassert_equals: expected ":nth-child(n)" but got ":nth-child(1n)"
+FAIL :nth-child serialization produces canonical form assert_equals: expected ":nth-child(n)" but got ":nth-child(1n)"
 PASS single universal selector shows '*' when serialized.
 PASS single type (simple) selector in the sequence of simple selectors that is not a universal selector
 PASS single class (simple) selector in the sequence of simple selectors that is not a universal selector
 PASS single id (simple) selector in the sequence of simple selectors that is not a universal selector
 PASS single pseudo (simple) selector which does not accept arguments in the sequence of simple selectors that is not a universal selector
 PASS single pseudo (simple) selector "lang" which accepts arguments in the sequence of simple selectors that is not a universal selector
-FAIL single pseudo (simple) selector "nth-child" which accepts arguments in the sequence of simple selectors that is not a universal selectorassert_equals: expected ":nth-child(n+5)" but got ":nth-child(1n+5)"
-FAIL single pseudo (simple) selector "nth-last-child" which accepts arguments in the sequence of simple selectors that is not a universal selectorassert_equals: expected ":nth-last-child(n+5)" but got ":nth-last-child(1n+5)"
-FAIL single pseudo (simple) selector "nth-of-child" which accepts arguments in the sequence of simple selectors that is not a universal selectorassert_equals: expected ":nth-of-type(n+5)" but got ":nth-of-type(1n+5)"
-FAIL single pseudo (simple) selector ":nth-last-of-type" which accepts arguments in the sequence of simple selectors that is not a universal selectorassert_equals: expected ":nth-last-of-type(n+5)" but got ":nth-last-of-type(1n+5)"
+FAIL single pseudo (simple) selector "nth-child" which accepts arguments in the sequence of simple selectors that is not a universal selector assert_equals: expected ":nth-child(n+5)" but got ":nth-child(1n+5)"
+FAIL single pseudo (simple) selector "nth-last-child" which accepts arguments in the sequence of simple selectors that is not a universal selector assert_equals: expected ":nth-last-child(n+5)" but got ":nth-last-child(1n+5)"
+FAIL single pseudo (simple) selector "nth-of-child" which accepts arguments in the sequence of simple selectors that is not a universal selector assert_equals: expected ":nth-of-type(n+5)" but got ":nth-of-type(1n+5)"
+FAIL single pseudo (simple) selector ":nth-last-of-type" which accepts arguments in the sequence of simple selectors that is not a universal selector assert_equals: expected ":nth-last-of-type(n+5)" but got ":nth-last-of-type(1n+5)"
 PASS single pseudo (simple) selector ":not" which accepts arguments in the sequence of simple selectors that is not a universal selector
 Harness: the test ran to completion.
 

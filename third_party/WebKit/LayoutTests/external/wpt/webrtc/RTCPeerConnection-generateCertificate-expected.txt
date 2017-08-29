@@ -5,7 +5,7 @@ PASS generateCertificate() with invalid string algorithm should reject with NotS
 PASS generateCertificate() with invalid algorithm dict should reject with NotSupportedError
 PASS generateCertificate() with valid expires parameter should succeed
 PASS generateCertificate() with 0 expires parameter should generate expired cert
-FAIL generateCertificate() with invalid range for expires should reject with TypeErrorassert_unreached: Should have rejected: undefined Reached unreachable code
-FAIL generateCertificate() with invalid type for expires should reject with TypeErrorassert_unreached: Should have rejected: undefined Reached unreachable code
+FAIL generateCertificate() with invalid range for expires should reject with TypeError assert_unreached: Should have rejected: undefined Reached unreachable code
+FAIL generateCertificate() with invalid type for expires should reject with TypeError assert_unreached: Should have rejected: undefined Reached unreachable code
 Harness: the test ran to completion.
 

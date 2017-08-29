@@ -1,19 +1,19 @@
 This is a testharness.js-based test.
 PASS Test driver
-FAIL Document interface: attribute fullscreenEnabledassert_equals: setter must be function for PutForwards, Replaceable, or non-readonly attributes expected "function" but got "undefined"
-FAIL Document interface: attribute fullscreenassert_true: The prototype object must have a property "fullscreen" expected true got false
-FAIL Document interface: operation exitFullscreen()assert_unreached: Throws "TypeError: Illegal invocation" instead of rejecting promise Reached unreachable code
+FAIL Document interface: attribute fullscreenEnabled assert_equals: setter must be function for PutForwards, Replaceable, or non-readonly attributes expected "function" but got "undefined"
+FAIL Document interface: attribute fullscreen assert_true: The prototype object must have a property "fullscreen" expected true got false
+FAIL Document interface: operation exitFullscreen() assert_unreached: Throws "TypeError: Illegal invocation" instead of rejecting promise Reached unreachable code
 PASS Document interface: attribute onfullscreenchange
 PASS Document interface: attribute onfullscreenerror
-FAIL Document interface: attribute fullscreenElementassert_equals: setter must be function for PutForwards, Replaceable, or non-readonly attributes expected "function" but got "undefined"
+FAIL Document interface: attribute fullscreenElement assert_equals: setter must be function for PutForwards, Replaceable, or non-readonly attributes expected "function" but got "undefined"
 PASS Document interface: new Document must inherit property "fullscreenEnabled" with the proper type
-FAIL Document interface: new Document must inherit property "fullscreen" with the proper typeassert_inherits: property "fullscreen" not found in prototype chain
+FAIL Document interface: new Document must inherit property "fullscreen" with the proper type assert_inherits: property "fullscreen" not found in prototype chain
 PASS Document interface: new Document must inherit property "exitFullscreen()" with the proper type
 PASS Document interface: new Document must inherit property "onfullscreenchange" with the proper type
 PASS Document interface: new Document must inherit property "onfullscreenerror" with the proper type
 PASS Document interface: new Document must inherit property "fullscreenElement" with the proper type
-FAIL ShadowRoot interface: attribute fullscreenElementassert_equals: setter must be function for PutForwards, Replaceable, or non-readonly attributes expected "function" but got "undefined"
-FAIL Element interface: operation requestFullscreen()assert_unreached: Throws "TypeError: Illegal invocation" instead of rejecting promise Reached unreachable code
+FAIL ShadowRoot interface: attribute fullscreenElement assert_equals: setter must be function for PutForwards, Replaceable, or non-readonly attributes expected "function" but got "undefined"
+FAIL Element interface: operation requestFullscreen() assert_unreached: Throws "TypeError: Illegal invocation" instead of rejecting promise Reached unreachable code
 PASS Element interface: attribute onfullscreenchange
 PASS Element interface: attribute onfullscreenerror
 PASS Element interface: document.createElementNS(null, "test") must inherit property "requestFullscreen()" with the proper type

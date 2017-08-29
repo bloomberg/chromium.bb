@@ -1,16 +1,16 @@
 This is a testharness.js-based test.
 Found 85 tests; 74 PASS, 11 FAIL, 0 TIMEOUT, 0 NOTRUN.
-FAIL Window interface: attribute onvrdisplayconnectassert_own_property: The global object must have a property "onvrdisplayconnect" expected property "onvrdisplayconnect" missing
-FAIL Window interface: attribute onvrdisplaydisconnectassert_own_property: The global object must have a property "onvrdisplaydisconnect" expected property "onvrdisplaydisconnect" missing
-FAIL Window interface: attribute onvrdisplayactivateassert_own_property: The global object must have a property "onvrdisplayactivate" expected property "onvrdisplayactivate" missing
-FAIL Window interface: attribute onvrdisplaydeactivateassert_own_property: The global object must have a property "onvrdisplaydeactivate" expected property "onvrdisplaydeactivate" missing
-FAIL Window interface: attribute onvrdisplayblurassert_own_property: The global object must have a property "onvrdisplayblur" expected property "onvrdisplayblur" missing
-FAIL Window interface: attribute onvrdisplayfocusassert_own_property: The global object must have a property "onvrdisplayfocus" expected property "onvrdisplayfocus" missing
-FAIL Window interface: attribute onvrdisplaypresentchangeassert_own_property: The global object must have a property "onvrdisplaypresentchange" expected property "onvrdisplaypresentchange" missing
+FAIL Window interface: attribute onvrdisplayconnect assert_own_property: The global object must have a property "onvrdisplayconnect" expected property "onvrdisplayconnect" missing
+FAIL Window interface: attribute onvrdisplaydisconnect assert_own_property: The global object must have a property "onvrdisplaydisconnect" expected property "onvrdisplaydisconnect" missing
+FAIL Window interface: attribute onvrdisplayactivate assert_own_property: The global object must have a property "onvrdisplayactivate" expected property "onvrdisplayactivate" missing
+FAIL Window interface: attribute onvrdisplaydeactivate assert_own_property: The global object must have a property "onvrdisplaydeactivate" expected property "onvrdisplaydeactivate" missing
+FAIL Window interface: attribute onvrdisplayblur assert_own_property: The global object must have a property "onvrdisplayblur" expected property "onvrdisplayblur" missing
+FAIL Window interface: attribute onvrdisplayfocus assert_own_property: The global object must have a property "onvrdisplayfocus" expected property "onvrdisplayfocus" missing
+FAIL Window interface: attribute onvrdisplaypresentchange assert_own_property: The global object must have a property "onvrdisplaypresentchange" expected property "onvrdisplaypresentchange" missing
 PASS Navigator interface: operation getVRDisplays()
-FAIL Navigator interface: attribute activeVRDisplaysassert_true: The prototype object must have a property "activeVRDisplays" expected true got false
-FAIL Navigator interface: attribute vrEnabledassert_true: The prototype object must have a property "vrEnabled" expected true got false
-FAIL HTMLIFrameElement interface: attribute allowvrassert_true: The prototype object must have a property "allowvr" expected true got false
+FAIL Navigator interface: attribute activeVRDisplays assert_true: The prototype object must have a property "activeVRDisplays" expected true got false
+FAIL Navigator interface: attribute vrEnabled assert_true: The prototype object must have a property "vrEnabled" expected true got false
+FAIL HTMLIFrameElement interface: attribute allowvr assert_true: The prototype object must have a property "allowvr" expected true got false
 PASS Gamepad interface: attribute displayId
 PASS VRDisplay interface: existence and properties of interface object
 PASS VRDisplay interface object length
@@ -79,7 +79,7 @@ PASS VRStageParameters interface: attribute sittingToStandingTransform
 PASS VRStageParameters interface: attribute sizeX
 PASS VRStageParameters interface: attribute sizeZ
 PASS VRDisplayEvent interface: existence and properties of interface object
-FAIL VRDisplayEvent interface object lengthassert_equals: wrong value for VRDisplayEvent.length expected 2 but got 1
+FAIL VRDisplayEvent interface object length assert_equals: wrong value for VRDisplayEvent.length expected 2 but got 1
 PASS VRDisplayEvent interface object name
 PASS VRDisplayEvent interface: existence and properties of interface prototype object
 PASS VRDisplayEvent interface: existence and properties of interface prototype object's "constructor" property

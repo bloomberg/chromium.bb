@@ -23,6 +23,6 @@ PASS PerformanceResourceTiming interface: attribute secureConnectionStart
 PASS PerformanceResourceTiming interface: attribute requestStart
 PASS PerformanceResourceTiming interface: attribute responseStart
 PASS PerformanceResourceTiming interface: attribute responseEnd
-FAIL PerformanceResourceTiming interface: operation toJSON()assert_own_property: interface prototype object missing non-static operation expected property "toJSON" missing
+FAIL PerformanceResourceTiming interface: operation toJSON() assert_own_property: interface prototype object missing non-static operation expected property "toJSON" missing
 Harness: the test ran to completion.
 

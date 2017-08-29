@@ -4,7 +4,7 @@ PASS new RTCPeerConnection()
 PASS new RTCPeerConnection(null)
 PASS new RTCPeerConnection(undefined)
 PASS new RTCPeerConnection({})
-FAIL new RTCPeerConnection({ peerIdentity: toStringThrows })assert_throws: function "function () {
+FAIL new RTCPeerConnection({ peerIdentity: toStringThrows }) assert_throws: function "function () {
         eval(expr);
       }" did not throw
 PASS new RTCPeerConnection({ certificates: null })
@@ -14,15 +14,15 @@ PASS new RTCPeerConnection({ certificates: [null] })
 PASS new RTCPeerConnection({ certificates: [undefined] })
 PASS new RTCPeerConnection({ iceCandidatePoolSize: toNumberThrows })
 PASS localDescription initial value
-FAIL currentLocalDescription initial valueassert_equals: expected (object) null but got (undefined) undefined
-FAIL pendingLocalDescription initial valueassert_equals: expected (object) null but got (undefined) undefined
+FAIL currentLocalDescription initial value assert_equals: expected (object) null but got (undefined) undefined
+FAIL pendingLocalDescription initial value assert_equals: expected (object) null but got (undefined) undefined
 PASS remoteDescription initial value
-FAIL currentRemoteDescription initial valueassert_equals: expected (object) null but got (undefined) undefined
-FAIL pendingRemoteDescription initial valueassert_equals: expected (object) null but got (undefined) undefined
+FAIL currentRemoteDescription initial value assert_equals: expected (object) null but got (undefined) undefined
+FAIL pendingRemoteDescription initial value assert_equals: expected (object) null but got (undefined) undefined
 PASS signalingState initial value
 PASS iceGatheringState initial value
 PASS iceConnectionState initial value
-FAIL connectionState initial valueassert_equals: expected (string) "new" but got (undefined) undefined
-FAIL canTrickleIceCandidates initial valueassert_equals: expected (object) null but got (undefined) undefined
+FAIL connectionState initial value assert_equals: expected (string) "new" but got (undefined) undefined
+FAIL canTrickleIceCandidates initial value assert_equals: expected (object) null but got (undefined) undefined
 Harness: the test ran to completion.
 

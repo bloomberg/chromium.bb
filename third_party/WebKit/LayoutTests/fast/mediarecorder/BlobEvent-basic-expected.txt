@@ -1,8 +1,8 @@
 This is a testharness.js-based test.
 PASS BlobEvent creation and content management
 PASS BlobEvent creation with timecode
-FAIL BlobEvent needs two constructor parameters, type and BlobEventInitTest bug: need to pass exception to assert_throws()
-FAIL BlobEvent needs the second constructor parameter to be a BlobEventInitTest bug: need to pass exception to assert_throws()
-FAIL BlobEventInit needs a data parameterTest bug: need to pass exception to assert_throws()
+FAIL BlobEvent needs two constructor parameters, type and BlobEventInit Test bug: need to pass exception to assert_throws()
+FAIL BlobEvent needs the second constructor parameter to be a BlobEventInit Test bug: need to pass exception to assert_throws()
+FAIL BlobEventInit needs a data parameter Test bug: need to pass exception to assert_throws()
 Harness: the test ran to completion.
 

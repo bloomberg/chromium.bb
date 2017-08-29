@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-FAIL window.onerror - compile error in setIntervalassert_equals: second arg expected "http://web-platform.test:8001/html/webappapis/scripting/processing-model-2/compile-error-in-setInterval.html" but got ""
+FAIL window.onerror - compile error in setInterval assert_equals: second arg expected "http://web-platform.test:8001/html/webappapis/scripting/processing-model-2/compile-error-in-setInterval.html" but got ""
 PASS window.onerror - compile error in setInterval (column)
 Harness: the test ran to completion.
 

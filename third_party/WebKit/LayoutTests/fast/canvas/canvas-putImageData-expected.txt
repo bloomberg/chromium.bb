@@ -58,9 +58,9 @@ PASS PixelTestDirtyRegionIntersectBottomEdge 5
 PASS PixelTestDirtyRegionIntersectBottomEdge 6
 PASS Test clamping of dx/dy.
 PASS Test clamping of dirtyX/Y/Width/Height.
-FAIL TestInvalidParam 1Test bug: need to pass exception to assert_throws()
-FAIL TestInvalidParam 2Test bug: need to pass exception to assert_throws()
-FAIL TestInvalidParam 3Test bug: need to pass exception to assert_throws()
+FAIL TestInvalidParam 1 Test bug: need to pass exception to assert_throws()
+FAIL TestInvalidParam 2 Test bug: need to pass exception to assert_throws()
+FAIL TestInvalidParam 3 Test bug: need to pass exception to assert_throws()
 PASS Ensure we don't mess up bounds clipping checks.
 Harness: the test ran to completion.
 
