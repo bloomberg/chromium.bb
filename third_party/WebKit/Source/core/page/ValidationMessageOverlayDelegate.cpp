@@ -248,14 +248,6 @@ void ValidationMessageOverlayDelegate::AdjustBubblePosition(
                                    CSSPrimitiveValue::UnitType::kPixels);
   container.SetInlineStyleProperty(CSSPropertyTop, bubble_y / zoom_factor,
                                    CSSPrimitiveValue::UnitType::kPixels);
-  if (show_bottom_arrow) {
-    container.setAttribute(HTMLNames::classAttr, "shown-fully bottom-arrow");
-    container.SetInlineStyleProperty(CSSPropertyTransformOrigin,
-                                     "center bottom");
-  } else {
-    container.setAttribute(HTMLNames::classAttr, "shown-fully");
-    container.SetInlineStyleProperty(CSSPropertyTransformOrigin, "center top");
-  }
 
   // Should match to --arrow-size in validation_bubble.css.
   const int kArrowSize = 8;
@@ -292,6 +284,7 @@ void ValidationMessageOverlayDelegate::AdjustBubblePosition(
     }
   }
   double arrow_x = arrow_anchor_x / zoom_factor - kArrowSize;
+  double arrow_anchor_percent = arrow_anchor_x * 100 / bubble_size_.Width();
   if (show_bottom_arrow) {
     GetElementById("outer-arrow-bottom")
         .SetInlineStyleProperty(CSSPropertyLeft, arrow_x,
@@ -299,6 +292,10 @@ void ValidationMessageOverlayDelegate::AdjustBubblePosition(
     GetElementById("inner-arrow-bottom")
         .SetInlineStyleProperty(CSSPropertyLeft, arrow_x,
                                 CSSPrimitiveValue::UnitType::kPixels);
+    container.setAttribute(HTMLNames::classAttr, "shown-fully bottom-arrow");
+    container.SetInlineStyleProperty(
+        CSSPropertyTransformOrigin,
+        String::Format("%.2f%% bottom", arrow_anchor_percent));
   } else {
     GetElementById("outer-arrow-top")
         .SetInlineStyleProperty(CSSPropertyLeft, arrow_x,
@@ -306,6 +303,10 @@ void ValidationMessageOverlayDelegate::AdjustBubblePosition(
     GetElementById("inner-arrow-top")
         .SetInlineStyleProperty(CSSPropertyLeft, arrow_x,
                                 CSSPrimitiveValue::UnitType::kPixels);
+    container.setAttribute(HTMLNames::classAttr, "shown-fully");
+    container.SetInlineStyleProperty(
+        CSSPropertyTransformOrigin,
+        String::Format("%.2f%% top", arrow_anchor_percent));
   }
 }
 
