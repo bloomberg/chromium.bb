@@ -138,7 +138,16 @@ void* ArrayBufferContents::ReserveMemory(size_t size) {
   // Linux by default has a small address space limit, which we chew up pretty
   // quickly with large memory reservations. To mitigate this, we bump up the
   // limit for array buffer reservations. See https://crbug.com/750378
-  CHECK(sandbox::ResourceLimits::AdjustCurrent(RLIMIT_AS, size));
+  //
+  // In general, returning nullptr is dangerous, as unsuspecting code may do an
+  // offset-from-null and end up with an accessible but incorrect address.  This
+  // function (ReserveMemory) is only used in contexts that expect allocation
+  // may fail and explicitly handle the nullptr return case. This code is also
+  // only used on 64-bit to create guard regions, which provides further
+  // protection.
+  if (!sandbox::ResourceLimits::AdjustCurrent(RLIMIT_AS, size)) {
+    return nullptr;
+  }
 #endif
 
   // TODO(crbug.com/735209): On Windows this commits all the memory, rather than
