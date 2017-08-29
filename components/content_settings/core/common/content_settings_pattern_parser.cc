@@ -131,9 +131,19 @@ void PatternParser::Parse(const std::string& pattern_spec,
     std::string host = pattern_spec.substr(host_component.start,
                                            host_component.len);
     if (host == kHostWildcard) {
+      if (ContentSettingsPattern::IsNonWildcardDomainNonPortScheme(scheme)) {
+        builder->Invalid();
+        return;
+      }
+
       builder->WithDomainWildcard();
     } else if (base::StartsWith(host, kDomainWildcard,
                                 base::CompareCase::SENSITIVE)) {
+      if (ContentSettingsPattern::IsNonWildcardDomainNonPortScheme(scheme)) {
+        builder->Invalid();
+        return;
+      }
+
       host = host.substr(kDomainWildcardLength);
       builder->WithDomainWildcard();
       builder->WithHost(host);
@@ -148,6 +158,11 @@ void PatternParser::Parse(const std::string& pattern_spec,
   }
 
   if (port_component.IsNonEmpty()) {
+    if (ContentSettingsPattern::IsNonWildcardDomainNonPortScheme(scheme)) {
+      builder->Invalid();
+      return;
+    }
+
     const std::string port = pattern_spec.substr(port_component.start,
                                                  port_component.len);
     if (port == kPortWildcard) {
