@@ -30,7 +30,7 @@
 
 #include "core/html/forms/PickerIndicatorElement.h"
 
-#include "core/events/Event.h"
+#include "core/dom/events/Event.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/frame/Settings.h"
 #include "core/html/shadow/ShadowElementNames.h"

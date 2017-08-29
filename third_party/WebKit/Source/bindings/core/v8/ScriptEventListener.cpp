@@ -39,7 +39,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/DocumentParser.h"
 #include "core/dom/QualifiedName.h"
-#include "core/events/EventListener.h"
+#include "core/dom/events/EventListener.h"
 #include "core/frame/LocalFrame.h"
 #include "platform/bindings/ScriptState.h"
 #include "v8/include/v8.h"

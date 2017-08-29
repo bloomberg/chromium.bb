@@ -32,7 +32,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/events/Event.h"
+#include "core/dom/events/Event.h"
 #include "core/frame/Deprecation.h"
 #include "modules/imagecapture/ImageCapture.h"
 #include "modules/mediastream/MediaConstraintsImpl.h"

@@ -20,7 +20,7 @@
 
 #include "core/svg/SVGImageLoader.h"
 
-#include "core/events/Event.h"
+#include "core/dom/events/Event.h"
 #include "core/svg/SVGImageElement.h"
 
 namespace blink {

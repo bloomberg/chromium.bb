@@ -5,7 +5,7 @@
 #ifndef VisualViewportResizeEvent_h
 #define VisualViewportResizeEvent_h
 
-#include "core/events/Event.h"
+#include "core/dom/events/Event.h"
 
 namespace blink {
 

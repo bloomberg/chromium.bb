@@ -6,7 +6,7 @@
 
 #include "core/HTMLNames.h"
 #include "core/InputTypeNames.h"
-#include "core/events/Event.h"
+#include "core/dom/events/Event.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/layout/LayoutObject.h"
 #include "modules/media_controls/MediaControlsImpl.h"

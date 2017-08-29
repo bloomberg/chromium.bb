@@ -30,9 +30,9 @@
  *
  */
 
-#include "core/events/EventListenerMap.h"
+#include "core/dom/events/EventListenerMap.h"
 
-#include "core/events/EventTarget.h"
+#include "core/dom/events/EventTarget.h"
 #include "platform/wtf/StdLibExtras.h"
 #include "platform/wtf/Vector.h"
 

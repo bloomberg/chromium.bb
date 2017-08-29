@@ -30,7 +30,7 @@
 #include "core/CoreExport.h"
 #include "core/dom/Node.h"
 #include "core/dom/TreeScope.h"
-#include "core/events/EventTarget.h"
+#include "core/dom/events/EventTarget.h"
 #include "platform/wtf/Vector.h"
 
 namespace blink {

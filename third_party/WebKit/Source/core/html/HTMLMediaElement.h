@@ -33,7 +33,7 @@
 #include "core/CoreExport.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/SuspendableObject.h"
-#include "core/events/GenericEventQueue.h"
+#include "core/dom/events/GenericEventQueue.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/media/MediaControls.h"
 #include "core/html/track/TextTrack.h"

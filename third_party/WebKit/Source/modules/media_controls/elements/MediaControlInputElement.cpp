@@ -4,7 +4,7 @@
 
 #include "modules/media_controls/elements/MediaControlInputElement.h"
 
-#include "core/events/Event.h"
+#include "core/dom/events/Event.h"
 #include "core/html/HTMLLabelElement.h"
 #include "core/html/HTMLMediaElement.h"
 #include "modules/media_controls/MediaControlsImpl.h"

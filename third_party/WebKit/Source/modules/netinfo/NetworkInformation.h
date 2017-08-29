@@ -6,7 +6,7 @@
 #define NetworkInformation_h
 
 #include "core/dom/ContextLifecycleObserver.h"
-#include "core/events/EventTarget.h"
+#include "core/dom/events/EventTarget.h"
 #include "platform/bindings/ActiveScriptWrappable.h"
 #include "platform/network/NetworkStateNotifier.h"
 #include "platform/wtf/Optional.h"

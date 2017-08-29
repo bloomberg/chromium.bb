@@ -23,7 +23,7 @@
 #include "core/events/MouseEvent.h"
 
 #include "core/dom/Element.h"
-#include "core/events/EventDispatcher.h"
+#include "core/dom/events/EventDispatcher.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"

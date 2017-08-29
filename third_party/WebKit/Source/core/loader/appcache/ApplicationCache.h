@@ -27,7 +27,7 @@
 #define ApplicationCache_h
 
 #include "core/dom/ContextLifecycleObserver.h"
-#include "core/events/EventTarget.h"
+#include "core/dom/events/EventTarget.h"
 #include "core/loader/appcache/ApplicationCacheHost.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Forward.h"

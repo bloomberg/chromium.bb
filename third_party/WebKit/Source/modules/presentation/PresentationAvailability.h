@@ -6,7 +6,7 @@
 #define PresentationAvailability_h
 
 #include "core/dom/SuspendableObject.h"
-#include "core/events/EventTarget.h"
+#include "core/dom/events/EventTarget.h"
 #include "core/page/PageVisibilityObserver.h"
 #include "modules/ModulesExport.h"
 #include "modules/presentation/PresentationPromiseProperty.h"

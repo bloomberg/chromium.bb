@@ -26,7 +26,7 @@
 #ifndef PageTransitionEvent_h
 #define PageTransitionEvent_h
 
-#include "core/events/Event.h"
+#include "core/dom/events/Event.h"
 #include "core/events/PageTransitionEventInit.h"
 
 namespace blink {

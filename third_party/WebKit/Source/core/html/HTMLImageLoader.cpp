@@ -23,7 +23,7 @@
 
 #include "core/HTMLNames.h"
 #include "core/dom/Element.h"
-#include "core/events/Event.h"
+#include "core/dom/events/Event.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLObjectElement.h"

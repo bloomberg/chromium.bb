@@ -25,8 +25,8 @@
 
 #include "core/events/FocusEvent.h"
 
-#include "core/events/Event.h"
-#include "core/events/EventDispatcher.h"
+#include "core/dom/events/Event.h"
+#include "core/dom/events/EventDispatcher.h"
 
 namespace blink {
 

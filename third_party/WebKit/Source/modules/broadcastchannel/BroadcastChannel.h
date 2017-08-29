@@ -6,7 +6,7 @@
 #define BroadcastChannel_h
 
 #include "core/dom/ContextLifecycleObserver.h"
-#include "core/events/EventTarget.h"
+#include "core/dom/events/EventTarget.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "platform/bindings/ActiveScriptWrappable.h"
 #include "platform/weborigin/SecurityOrigin.h"

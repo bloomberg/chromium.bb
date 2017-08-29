@@ -5,7 +5,7 @@
 #include "bindings/core/v8/ToV8ForCore.h"
 
 #include "bindings/core/v8/WindowProxy.h"
-#include "core/events/EventTarget.h"
+#include "core/dom/events/EventTarget.h"
 #include "core/frame/DOMWindow.h"
 #include "core/frame/Frame.h"
 #include "platform/bindings/RuntimeCallStats.h"

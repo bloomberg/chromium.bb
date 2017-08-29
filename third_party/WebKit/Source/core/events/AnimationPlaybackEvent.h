@@ -5,8 +5,8 @@
 #ifndef AnimationPlaybackEvent_h
 #define AnimationPlaybackEvent_h
 
+#include "core/dom/events/Event.h"
 #include "core/events/AnimationPlaybackEventInit.h"
-#include "core/events/Event.h"
 
 namespace blink {
 

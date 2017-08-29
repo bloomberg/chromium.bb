@@ -5,7 +5,7 @@
 #ifndef MediaControlsOrientationLockDelegate_h
 #define MediaControlsOrientationLockDelegate_h
 
-#include "core/events/EventListener.h"
+#include "core/dom/events/EventListener.h"
 #include "device/screen_orientation/public/interfaces/screen_orientation.mojom-blink.h"
 #include "modules/ModulesExport.h"
 #include "platform/WebTaskRunner.h"

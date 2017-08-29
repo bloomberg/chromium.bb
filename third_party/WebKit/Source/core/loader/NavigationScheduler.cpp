@@ -35,7 +35,7 @@
 #include <memory>
 #include "bindings/core/v8/ScriptController.h"
 #include "core/dom/UserGestureIndicator.h"
-#include "core/events/Event.h"
+#include "core/dom/events/Event.h"
 #include "core/frame/Deprecation.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameClient.h"

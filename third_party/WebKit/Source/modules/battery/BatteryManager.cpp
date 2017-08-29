@@ -7,7 +7,7 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/events/Event.h"
+#include "core/dom/events/Event.h"
 #include "modules/battery/BatteryDispatcher.h"
 #include "platform/wtf/Assertions.h"
 

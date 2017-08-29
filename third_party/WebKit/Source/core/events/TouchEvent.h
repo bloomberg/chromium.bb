@@ -29,7 +29,7 @@
 
 #include "core/CoreExport.h"
 #include "core/dom/TouchList.h"
-#include "core/events/EventDispatchMediator.h"
+#include "core/dom/events/EventDispatchMediator.h"
 #include "core/events/TouchEventInit.h"
 #include "core/events/UIEventWithKeyState.h"
 #include "platform/graphics/TouchAction.h"

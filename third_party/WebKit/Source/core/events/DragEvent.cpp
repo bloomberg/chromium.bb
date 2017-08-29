@@ -6,7 +6,7 @@
 
 #include "core/clipboard/DataTransfer.h"
 #include "core/dom/Element.h"
-#include "core/events/EventDispatcher.h"
+#include "core/dom/events/EventDispatcher.h"
 
 namespace blink {
 

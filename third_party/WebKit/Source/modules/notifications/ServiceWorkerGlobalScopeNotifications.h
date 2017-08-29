@@ -5,7 +5,7 @@
 #ifndef ServiceWorkerGlobalScopeNotifications_h
 #define ServiceWorkerGlobalScopeNotifications_h
 
-#include "core/events/EventTarget.h"
+#include "core/dom/events/EventTarget.h"
 #include "platform/wtf/Allocator.h"
 
 namespace blink {

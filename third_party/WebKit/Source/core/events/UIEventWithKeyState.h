@@ -25,7 +25,7 @@
 #define UIEventWithKeyState_h
 
 #include "core/CoreExport.h"
-#include "core/events/EventModifierInit.h"
+#include "core/dom/events/EventModifierInit.h"
 #include "core/events/UIEvent.h"
 #include "public/platform/WebInputEvent.h"
 

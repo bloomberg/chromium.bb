@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <limits>
 #include "bindings/core/v8/Dictionary.h"
-#include "core/events/Event.h"
+#include "core/dom/events/Event.h"
 #include "core/fileapi/Blob.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "modules/EventTargetModules.h"

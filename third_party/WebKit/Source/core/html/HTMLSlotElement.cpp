@@ -39,7 +39,7 @@
 #include "core/dom/StyleEngine.h"
 #include "core/dom/V0InsertionPoint.h"
 #include "core/dom/WhitespaceAttacher.h"
-#include "core/events/Event.h"
+#include "core/dom/events/Event.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/AssignedNodesOptions.h"
 #include "core/probe/CoreProbes.h"

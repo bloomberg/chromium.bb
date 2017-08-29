@@ -6,8 +6,8 @@
 #define MojoInterfaceInterceptor_h
 
 #include "core/dom/ContextLifecycleObserver.h"
-#include "core/events/EventListener.h"
-#include "core/events/EventTarget.h"
+#include "core/dom/events/EventListener.h"
+#include "core/dom/events/EventTarget.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "platform/bindings/ActiveScriptWrappable.h"
 #include "platform/bindings/ScriptWrappable.h"

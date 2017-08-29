@@ -8,7 +8,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/FrameRequestCallback.h"
 #include "core/dom/SuspendableObject.h"
-#include "core/events/EventTarget.h"
+#include "core/dom/events/EventTarget.h"
 #include "device/vr/vr_service.mojom-blink.h"
 #include "modules/vr/VRDisplayCapabilities.h"
 #include "modules/vr/VRLayer.h"

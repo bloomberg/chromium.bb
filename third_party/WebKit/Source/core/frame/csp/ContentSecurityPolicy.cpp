@@ -32,7 +32,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/SandboxFlags.h"
 #include "core/dom/TaskRunnerHelper.h"
-#include "core/events/EventQueue.h"
+#include "core/dom/events/EventQueue.h"
 #include "core/events/SecurityPolicyViolationEvent.h"
 #include "core/frame/FrameClient.h"
 #include "core/frame/LocalDOMWindow.h"

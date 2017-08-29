@@ -24,10 +24,10 @@
  *
  */
 
-#include "core/events/DOMWindowEventQueue.h"
+#include "core/dom/events/DOMWindowEventQueue.h"
 
 #include "core/dom/TaskRunnerHelper.h"
-#include "core/events/Event.h"
+#include "core/dom/events/Event.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/SuspendableTimer.h"
 #include "core/probe/CoreProbes.h"

@@ -29,8 +29,8 @@
 
 #include "core/dom/Document.h"
 
+#include "core/dom/events/ScopedEventQueue.h"
 #include "core/editing/Editor.h"
-#include "core/events/ScopedEventQueue.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/TextControlElement.h"
 #include "core/inspector/ConsoleMessage.h"

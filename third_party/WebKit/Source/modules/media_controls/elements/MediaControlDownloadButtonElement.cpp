@@ -5,7 +5,7 @@
 #include "modules/media_controls/elements/MediaControlDownloadButtonElement.h"
 
 #include "core/InputTypeNames.h"
-#include "core/events/Event.h"
+#include "core/dom/events/Event.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLAnchorElement.h"
 #include "core/html/HTMLMediaElement.h"

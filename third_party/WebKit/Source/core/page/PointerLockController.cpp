@@ -26,7 +26,7 @@
 #include "core/page/PointerLockController.h"
 
 #include "core/dom/Element.h"
-#include "core/events/Event.h"
+#include "core/dom/events/Event.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/page/ChromeClient.h"

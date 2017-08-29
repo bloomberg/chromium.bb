@@ -28,7 +28,7 @@
 #include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/StyleChangeReason.h"
-#include "core/events/Event.h"
+#include "core/dom/events/Event.h"
 #include "core/events/MouseEvent.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameClient.h"

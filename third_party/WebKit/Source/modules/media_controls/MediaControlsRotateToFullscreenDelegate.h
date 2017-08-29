@@ -5,7 +5,7 @@
 #ifndef MediaControlsRotateToFullscreenDelegate_h
 #define MediaControlsRotateToFullscreenDelegate_h
 
-#include "core/events/EventListener.h"
+#include "core/dom/events/EventListener.h"
 #include "modules/ModulesExport.h"
 
 namespace blink {

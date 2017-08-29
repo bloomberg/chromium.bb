@@ -13,7 +13,7 @@
 #define TestInterfaceEventInit_h
 
 #include "core/CoreExport.h"
-#include "core/events/EventInit.h"
+#include "core/dom/events/EventInit.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/text/WTFString.h"
 

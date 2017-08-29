@@ -32,7 +32,7 @@
 #include "core/html/forms/SliderThumbElement.h"
 
 #include "core/dom/ShadowRoot.h"
-#include "core/events/Event.h"
+#include "core/dom/events/Event.h"
 #include "core/events/MouseEvent.h"
 #include "core/events/TouchEvent.h"
 #include "core/frame/EventHandlerRegistry.h"

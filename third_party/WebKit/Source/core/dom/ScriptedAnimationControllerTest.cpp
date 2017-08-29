@@ -7,9 +7,9 @@
 #include <memory>
 #include "core/dom/Document.h"
 #include "core/dom/FrameRequestCallback.h"
-#include "core/events/Event.h"
-#include "core/events/EventListener.h"
-#include "core/events/EventTarget.h"
+#include "core/dom/events/Event.h"
+#include "core/dom/events/EventListener.h"
+#include "core/dom/events/EventTarget.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Functional.h"

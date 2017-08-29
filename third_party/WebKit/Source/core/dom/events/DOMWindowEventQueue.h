@@ -24,42 +24,43 @@
  *
  */
 
-#include "core/events/WindowEventContext.h"
+#ifndef DOMWindowEventQueue_h
+#define DOMWindowEventQueue_h
 
-#include "core/dom/Document.h"
-#include "core/dom/Node.h"
-#include "core/events/Event.h"
-#include "core/events/NodeEventContext.h"
-#include "core/frame/LocalDOMWindow.h"
+#include "core/dom/events/EventQueue.h"
+#include "platform/wtf/HashSet.h"
+#include "platform/wtf/ListHashSet.h"
 
 namespace blink {
 
-WindowEventContext::WindowEventContext(
-    Event& event,
-    const NodeEventContext& top_node_event_context) {
-  // We don't dispatch load events to the window. This quirk was originally
-  // added because Mozilla doesn't propagate load events to the window object.
-  if (event.type() == EventTypeNames::load)
-    return;
-  if (!top_node_event_context.GetNode()->IsDocumentNode())
-    return;
-  window_ = ToDocument(top_node_event_context.GetNode())->domWindow();
-  target_ = top_node_event_context.Target();
-}
+class Event;
+class DOMWindowEventQueueTimer;
+class ExecutionContext;
 
-bool WindowEventContext::HandleLocalEvents(Event& event) {
-  if (!window_)
-    return false;
+class DOMWindowEventQueue final : public EventQueue {
+ public:
+  static DOMWindowEventQueue* Create(ExecutionContext*);
+  ~DOMWindowEventQueue() override;
 
-  event.SetTarget(Target());
-  event.SetCurrentTarget(Window());
-  window_->FireEventListeners(&event);
-  return true;
-}
+  // EventQueue
+  DECLARE_VIRTUAL_TRACE();
+  bool EnqueueEvent(const WebTraceLocation&, Event*) override;
+  bool CancelEvent(Event*) override;
+  void Close() override;
 
-DEFINE_TRACE(WindowEventContext) {
-  visitor->Trace(window_);
-  visitor->Trace(target_);
-}
+ private:
+  explicit DOMWindowEventQueue(ExecutionContext*);
+
+  void PendingEventTimerFired();
+  void DispatchEvent(Event*);
+
+  Member<DOMWindowEventQueueTimer> pending_event_timer_;
+  HeapListHashSet<Member<Event>, 16> queued_events_;
+  bool is_closed_;
+
+  friend class DOMWindowEventQueueTimer;
+};
 
 }  // namespace blink
+
+#endif  // DOMWindowEventQueue_h

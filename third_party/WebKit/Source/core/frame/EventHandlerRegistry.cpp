@@ -4,7 +4,7 @@
 
 #include "core/frame/EventHandlerRegistry.h"
 
-#include "core/events/EventListenerOptions.h"
+#include "core/dom/events/EventListenerOptions.h"
 #include "core/events/EventUtil.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"

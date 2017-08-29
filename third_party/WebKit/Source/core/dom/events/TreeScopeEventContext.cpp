@@ -24,11 +24,11 @@
  *
  */
 
-#include "core/events/TreeScopeEventContext.h"
+#include "core/dom/events/TreeScopeEventContext.h"
 
 #include "core/dom/ShadowRoot.h"
 #include "core/dom/StaticNodeList.h"
-#include "core/events/EventPath.h"
+#include "core/dom/events/EventPath.h"
 #include "core/events/TouchEventContext.h"
 
 namespace blink {

@@ -32,7 +32,7 @@
 #define CloseEvent_h
 
 #include "core/EventTypeNames.h"
-#include "core/events/Event.h"
+#include "core/dom/events/Event.h"
 #include "modules/EventModules.h"
 #include "modules/websockets/CloseEventInit.h"
 #include "platform/bindings/ScriptWrappable.h"

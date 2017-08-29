@@ -20,12 +20,12 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/events/Event.h"
+#include "core/dom/events/Event.h"
 
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/StaticNodeList.h"
-#include "core/events/EventDispatchMediator.h"
-#include "core/events/EventTarget.h"
+#include "core/dom/events/EventDispatchMediator.h"
+#include "core/dom/events/EventTarget.h"
 #include "core/frame/HostsUsingFeatures.h"
 #include "core/frame/UseCounter.h"
 #include "core/svg/SVGElement.h"

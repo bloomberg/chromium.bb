@@ -28,9 +28,9 @@
 #define SelectionEditor_h
 
 #include "core/dom/SynchronousMutationObserver.h"
+#include "core/dom/events/EventDispatchResult.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/SelectionTemplate.h"
-#include "core/events/EventDispatchResult.h"
 
 namespace blink {
 

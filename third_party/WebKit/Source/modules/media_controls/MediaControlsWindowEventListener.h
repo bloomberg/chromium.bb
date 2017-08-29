@@ -5,7 +5,7 @@
 #ifndef MediaControlsWindowEventListener_h
 #define MediaControlsWindowEventListener_h
 
-#include "core/events/EventListener.h"
+#include "core/dom/events/EventListener.h"
 #include "platform/wtf/Functional.h"
 
 namespace blink {

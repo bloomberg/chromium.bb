@@ -7,7 +7,7 @@
 
 #include <memory>
 #include "core/dom/ContextLifecycleObserver.h"
-#include "core/events/EventTarget.h"
+#include "core/dom/events/EventTarget.h"
 #include "core/fileapi/Blob.h"
 #include "core/fileapi/FileError.h"
 #include "core/typed_arrays/ArrayBufferViewHelpers.h"

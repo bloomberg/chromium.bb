@@ -5,7 +5,7 @@
 #ifndef AddEventListenerOptionsResolved_h
 #define AddEventListenerOptionsResolved_h
 
-#include "core/events/AddEventListenerOptions.h"
+#include "core/dom/events/AddEventListenerOptions.h"
 
 namespace blink {
 

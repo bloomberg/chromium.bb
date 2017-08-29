@@ -26,7 +26,7 @@
 #ifndef FocusEvent_h
 #define FocusEvent_h
 
-#include "core/events/EventTarget.h"
+#include "core/dom/events/EventTarget.h"
 #include "core/events/FocusEventInit.h"
 #include "core/events/UIEvent.h"
 
