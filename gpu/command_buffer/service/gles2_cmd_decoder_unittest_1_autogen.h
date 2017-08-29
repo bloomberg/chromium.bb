@@ -536,15 +536,6 @@ TEST_P(GLES2DecoderTest1, DisableInvalidArgs0_1) {
   EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
 }
 
-TEST_P(GLES2DecoderTest1, DisableVertexAttribArrayValidArgs) {
-  EXPECT_CALL(*gl_, DisableVertexAttribArray(1));
-  SpecializedSetup<cmds::DisableVertexAttribArray, 0>(true);
-  cmds::DisableVertexAttribArray cmd;
-  cmd.Init(1);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-}
-
 TEST_P(GLES2DecoderTest1, EnableValidArgs) {
   SetupExpectationsForEnableDisable(GL_BLEND, true);
   SpecializedSetup<cmds::Enable, 0>(true);
@@ -570,15 +561,6 @@ TEST_P(GLES2DecoderTest1, EnableInvalidArgs0_1) {
   cmd.Init(GL_POINT_SPRITE);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
-}
-
-TEST_P(GLES2DecoderTest1, EnableVertexAttribArrayValidArgs) {
-  EXPECT_CALL(*gl_, EnableVertexAttribArray(1));
-  SpecializedSetup<cmds::EnableVertexAttribArray, 0>(true);
-  cmds::EnableVertexAttribArray cmd;
-  cmd.Init(1);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
 TEST_P(GLES3DecoderTest1, FenceSyncValidArgs) {

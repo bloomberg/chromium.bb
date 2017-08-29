@@ -78,6 +78,8 @@ class GPU_EXPORT VertexAttrib {
     return enabled_;
   }
 
+  bool enabled_in_driver() const { return enabled_in_driver_; }
+
   // Find the maximum vertex accessed, accounting for instancing.
   GLuint MaxVertexAccessed(GLsizei primcount,
                            GLuint max_vertex_accessed) const {
@@ -135,6 +137,9 @@ class GPU_EXPORT VertexAttrib {
 
   // Whether or not this attribute is enabled.
   bool enabled_;
+
+  // Whether or not this attribute is actually enabled in the driver.
+  bool enabled_in_driver_;
 
   // number of components (1, 2, 3, 4)
   GLint size_;
@@ -207,6 +212,20 @@ class GPU_EXPORT VertexAttribManager :
     attrib_enabled_mask_[loc / 16] |= (0x3 << shift_bits);
     attrib_base_type_mask_[loc / 16] &= ~(0x3 << shift_bits);
     attrib_base_type_mask_[loc / 16] |= base_type << shift_bits;
+  }
+
+  void SetDriverVertexAttribEnabled(GLuint index, bool enable) {
+    DCHECK_LT(index, vertex_attribs_.size());
+    VertexAttrib& attrib = vertex_attribs_[index];
+
+    if (enable != attrib.enabled_in_driver_) {
+      attrib.enabled_in_driver_ = enable;
+      if (enable) {
+        glEnableVertexAttribArray(index);
+      } else {
+        glDisableVertexAttribArray(index);
+      }
+    }
   }
 
   const std::vector<uint32_t>& attrib_base_type_mask() const {

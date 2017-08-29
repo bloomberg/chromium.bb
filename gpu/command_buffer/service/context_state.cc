@@ -467,16 +467,10 @@ void ContextState::RestoreVertexAttribArrays(
     if (feature_info_->feature_flags().angle_instanced_arrays)
       glVertexAttribDivisorANGLE(attrib_index, attrib->divisor());
 
-    // Never touch vertex attribute 0's state (in particular, never
-    // disable it) when running on desktop GL with compatibility profile
-    // because it will never be re-enabled.
-    if (attrib_index != 0 ||
-        feature_info_->gl_version_info().BehavesLikeGLES()) {
-      if (attrib->enabled()) {
-        glEnableVertexAttribArray(attrib_index);
-      } else {
-        glDisableVertexAttribArray(attrib_index);
-      }
+    if (attrib->enabled_in_driver()) {
+      glEnableVertexAttribArray(attrib_index);
+    } else {
+      glDisableVertexAttribArray(attrib_index);
     }
   }
 }

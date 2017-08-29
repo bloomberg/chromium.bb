@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <array>
 #include <memory>
 
 #include "base/message_loop/message_loop.h"
@@ -383,6 +384,7 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool>,
 
   void DoEnableDisable(GLenum cap, bool enable);
 
+  void SetDriverVertexAttribEnabled(GLint index, bool enable);
   void DoEnableVertexAttribArray(GLint index);
 
   void DoBufferData(GLenum target, GLsizei size);
@@ -722,6 +724,8 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool>,
   EnableFlags enable_flags_;
 
   int shader_language_version_;
+
+  std::array<bool, kNumVertexAttribs> attribs_enabled_ = {};
 
  private:
   // MockGLStates is used to track GL states and emulate driver
