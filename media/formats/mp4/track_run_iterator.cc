@@ -328,13 +328,13 @@ bool TrackRunIterator::Init(const MovieFragment& moof) {
       tri.is_audio = (stsd.type == kAudio);
       if (tri.is_audio) {
         RCHECK(!stsd.audio_entries.empty());
-        if (desc_idx > stsd.audio_entries.size())
+        if (desc_idx >= stsd.audio_entries.size())
           desc_idx = 0;
         tri.audio_description = &stsd.audio_entries[desc_idx];
         track_encryption = &tri.audio_description->sinf.info.track_encryption;
       } else {
         RCHECK(!stsd.video_entries.empty());
-        if (desc_idx > stsd.video_entries.size())
+        if (desc_idx >= stsd.video_entries.size())
           desc_idx = 0;
         tri.video_description = &stsd.video_entries[desc_idx];
         track_encryption = &tri.video_description->sinf.info.track_encryption;
