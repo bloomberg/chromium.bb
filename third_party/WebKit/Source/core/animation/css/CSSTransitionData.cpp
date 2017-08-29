@@ -17,7 +17,8 @@ CSSTransitionData::CSSTransitionData(const CSSTransitionData& other)
 
 bool CSSTransitionData::TransitionsMatchForStyleRecalc(
     const CSSTransitionData& other) const {
-  return property_list_ == other.property_list_;
+  return property_list_ == other.property_list_ &&
+         TimingMatchForStyleRecalc(other);
 }
 
 Timing CSSTransitionData::ConvertToTiming(size_t index) const {

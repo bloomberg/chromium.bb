@@ -49,6 +49,7 @@ class CSSTimingData {
   explicit CSSTimingData(const CSSTimingData&);
 
   Timing ConvertToTiming(size_t index) const;
+  bool TimingMatchForStyleRecalc(const CSSTimingData&) const;
 
  private:
   Vector<double> delay_list_;
