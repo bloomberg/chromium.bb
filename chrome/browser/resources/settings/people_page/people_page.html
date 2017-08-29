@@ -86,10 +86,16 @@
       }
 
       .delete-profile-warning {
+        -webkit-padding-end: var(--cr-section-padding);
         /* In order to line up with the checkbox text. */
-        -webkit-padding-start: 36px;
+        -webkit-padding-start: var(--cr-section-indent-padding);
         padding-bottom: 10px;
         padding-top: 10px;
+      }
+
+      #wideFooter {
+        /* Override the cr-dialog footer padding. */
+        padding: 16px 0;
       }
     </style>
     <settings-animated-pages id="pages" section="people"
@@ -317,7 +323,7 @@
         </div>
 <if expr="(not chromeos and is_posix) or is_win or is_macosx">
         <template is="dom-if" if="[[!syncStatus.domain]]">
-          <div slot="footer">
+          <div id="wideFooter" slot="footer">
             <div class="settings-box first">
               <paper-checkbox id="deleteProfile" class="start"
                   checked="{{deleteProfile_}}">
