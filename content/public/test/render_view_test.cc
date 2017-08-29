@@ -381,20 +381,26 @@ void RenderViewTest::SendNativeKeyEvent(
   SendWebKeyboardEvent(key_event);
 }
 
-void RenderViewTest::SendWebKeyboardEvent(
-    const blink::WebKeyboardEvent& key_event) {
+void RenderViewTest::SendInputEvent(const blink::WebInputEvent& input_event) {
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
   impl->OnMessageReceived(InputMsg_HandleInputEvent(
-      0, &key_event, std::vector<const WebInputEvent*>(), ui::LatencyInfo(),
+      0, &input_event, std::vector<const WebInputEvent*>(), ui::LatencyInfo(),
       InputEventDispatchType::DISPATCH_TYPE_BLOCKING));
+}
+
+void RenderViewTest::SendWebKeyboardEvent(
+    const blink::WebKeyboardEvent& key_event) {
+  SendInputEvent(key_event);
 }
 
 void RenderViewTest::SendWebMouseEvent(
     const blink::WebMouseEvent& mouse_event) {
-  RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
-  impl->OnMessageReceived(InputMsg_HandleInputEvent(
-      0, &mouse_event, std::vector<const WebInputEvent*>(), ui::LatencyInfo(),
-      InputEventDispatchType::DISPATCH_TYPE_BLOCKING));
+  SendInputEvent(mouse_event);
+}
+
+void RenderViewTest::SendWebGestureEvent(
+    const blink::WebGestureEvent& gesture_event) {
+  SendInputEvent(gesture_event);
 }
 
 const char* const kGetCoordinatesScript =

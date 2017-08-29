@@ -33,6 +33,7 @@ namespace blink {
 namespace scheduler {
 class RendererScheduler;
 }
+class WebGestureEvent;
 class WebInputElement;
 class WebMouseEvent;
 class WebWidget;
@@ -118,6 +119,9 @@ class RenderViewTest : public testing::Test, blink::WebLeakDetectorClient {
 
   // Send a raw mouse event to the renderer.
   void SendWebMouseEvent(const blink::WebMouseEvent& mouse_event);
+
+  // Send a raw gesture event to the renderer.
+  void SendWebGestureEvent(const blink::WebGestureEvent& gesture_event);
 
   // Returns the bounds (coordinates and size) of the element with id
   // |element_id|.  Returns an empty rect if such an element was not found.
@@ -216,6 +220,7 @@ class RenderViewTest : public testing::Test, blink::WebLeakDetectorClient {
 
  private:
   void GoToOffset(int offset, const GURL& url, const PageState& state);
+  void SendInputEvent(const blink::WebInputEvent& input_event);
 };
 
 }  // namespace content
