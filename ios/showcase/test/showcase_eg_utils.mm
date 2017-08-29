@@ -22,7 +22,7 @@ id<GREYMatcher> BackButton() {
   if (base::ios::IsRunningOnIOS11OrLater()) {
     return grey_allOf(grey_accessibilityLabel(@"SC"),
                       grey_accessibilityTrait(UIAccessibilityTraitButton),
-                      grey_interactable(), nil);
+                      grey_userInteractionEnabled(), nil);
   }
 
   return grey_kindOfClass(
