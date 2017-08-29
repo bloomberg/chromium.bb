@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/arc/bluetooth/arc_bluetooth_bridge.h"
+#include "chrome/browser/chromeos/arc/bluetooth/arc_bluetooth_bridge.h"
 
 #include <string>
 #include <utility>
@@ -28,7 +28,7 @@
 namespace {
 constexpr int16_t kTestRssi = -50;
 constexpr int16_t kTestRssi2 = -70;
-}
+}  // namespace
 
 namespace arc {
 
