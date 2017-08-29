@@ -109,7 +109,7 @@ void BrowserControlsOffsetManager::UpdateBrowserControlsState(
     SetupAnimation(final_shown_ratio ? SHOWING_CONTROLS : HIDING_CONTROLS);
   } else {
     ResetAnimations();
-    client_->SetCurrentBrowserControlsShownRatio(final_shown_ratio);
+    // We depend on the main thread to push the new ratio.  crbug.com/754346 .
   }
 }
 

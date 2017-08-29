@@ -2574,8 +2574,9 @@ public class Tab
     public void updateFullscreenEnabledState() {
         if (isFrozen()) return;
 
+        int constraints = getBrowserControlsStateConstraints();
         updateBrowserControlsState(
-                getBrowserControlsStateConstraints(), BrowserControlsState.BOTH, true);
+                constraints, BrowserControlsState.BOTH, constraints != BrowserControlsState.HIDDEN);
 
         if (getContentViewCore() != null && mFullscreenManager != null) {
             getContentViewCore().updateMultiTouchZoomSupport(

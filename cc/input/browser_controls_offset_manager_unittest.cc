@@ -486,26 +486,6 @@ TEST(BrowserControlsOffsetManagerTest,
 }
 
 TEST(BrowserControlsOffsetManagerTest,
-     GrowingHeightKeepsBrowserControlsHidden) {
-  MockBrowserControlsOffsetManagerClient client(0.f, 0.5f, 0.5f);
-  BrowserControlsOffsetManager* manager = client.manager();
-  client.SetBrowserControlsHeight(1.f);
-  manager->UpdateBrowserControlsState(HIDDEN, HIDDEN, false);
-  EXPECT_EQ(-1.f, manager->ControlsTopOffset());
-  EXPECT_EQ(0.f, manager->ContentTopOffset());
-
-  client.SetBrowserControlsHeight(50.f);
-  EXPECT_FALSE(manager->has_animation());
-  EXPECT_EQ(-50.f, manager->ControlsTopOffset());
-  EXPECT_EQ(0.f, manager->ContentTopOffset());
-
-  client.SetBrowserControlsHeight(100.f);
-  EXPECT_FALSE(manager->has_animation());
-  EXPECT_EQ(-100.f, manager->ControlsTopOffset());
-  EXPECT_EQ(0.f, manager->ContentTopOffset());
-}
-
-TEST(BrowserControlsOffsetManagerTest,
      ShrinkingHeightKeepsBrowserControlsHidden) {
   MockBrowserControlsOffsetManagerClient client(100.f, 0.5f, 0.5f);
   BrowserControlsOffsetManager* manager = client.manager();
