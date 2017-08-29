@@ -147,7 +147,7 @@ public class WebappActivityTestRule extends ChromeActivityTestRule<WebappActivit
             public boolean isSatisfied() {
                 return !isSplashScreenVisible();
             }
-        });
+        }, STARTUP_TIMEOUT, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
     }
 
     public ViewGroup waitUntilSplashScreenAppears() {
