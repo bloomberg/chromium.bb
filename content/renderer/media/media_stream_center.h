@@ -55,15 +55,6 @@ class CONTENT_EXPORT MediaStreamCenter : public blink::WebMediaStreamCenter {
   blink::WebAudioSourceProvider* CreateWebAudioSourceFromMediaStreamTrack(
       const blink::WebMediaStreamTrack& track) override;
 
-  void DidCreateMediaStream(blink::WebMediaStream& stream) override;
-
-  bool DidAddMediaStreamTrack(const blink::WebMediaStream& stream,
-                              const blink::WebMediaStreamTrack& track) override;
-
-  bool DidRemoveMediaStreamTrack(
-      const blink::WebMediaStream& stream,
-      const blink::WebMediaStreamTrack& track) override;
-
   DISALLOW_COPY_AND_ASSIGN(MediaStreamCenter);
 };
 

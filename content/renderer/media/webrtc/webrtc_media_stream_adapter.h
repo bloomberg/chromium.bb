@@ -15,7 +15,6 @@
 #include "base/sequenced_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
-#include "content/renderer/media/media_stream.h"
 #include "content/renderer/media/webrtc/webrtc_media_stream_track_adapter_map.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
 #include "third_party/webrtc/api/mediastreaminterface.h"
@@ -57,7 +56,8 @@ class CONTENT_EXPORT WebRtcMediaStreamAdapter {
       const = 0;
   virtual const blink::WebMediaStream& web_stream() const = 0;
   bool IsEqual(const blink::WebMediaStream& stream) const {
-    return web_stream().GetExtraData() == stream.GetExtraData();
+    return (web_stream_.IsNull() && stream.IsNull()) ||
+           (web_stream_.Id() == stream.Id());
   }
 
  protected:
@@ -101,7 +101,7 @@ class CONTENT_EXPORT WebRtcMediaStreamAdapter {
 // Adapter implementation for a local |blink::WebMediaStream|. Created and
 // destroyed on the main thread.
 class LocalWebRtcMediaStreamAdapter : public WebRtcMediaStreamAdapter,
-                                      public MediaStreamObserver {
+                                      blink::WebMediaStreamObserver {
  public:
   LocalWebRtcMediaStreamAdapter(
       PeerConnectionDependencyFactory* factory,

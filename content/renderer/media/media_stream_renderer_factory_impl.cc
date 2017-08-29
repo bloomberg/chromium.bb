@@ -5,7 +5,6 @@
 #include "content/renderer/media/media_stream_renderer_factory_impl.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "content/renderer/media/media_stream.h"
 #include "content/renderer/media/media_stream_audio_track.h"
 #include "content/renderer/media/media_stream_video_renderer_sink.h"
 #include "content/renderer/media/media_stream_video_track.h"

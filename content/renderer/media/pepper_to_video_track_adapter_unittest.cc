@@ -7,7 +7,6 @@
 #include "base/run_loop.h"
 #include "content/child/child_process.h"
 #include "content/public/test/mock_render_thread.h"
-#include "content/renderer/media/media_stream.h"
 #include "content/renderer/media/media_stream_video_track.h"
 #include "content/renderer/media/mock_media_stream_registry.h"
 #include "content/renderer/media/mock_media_stream_video_sink.h"

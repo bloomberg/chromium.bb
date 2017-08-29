@@ -14,12 +14,12 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
-#include "content/renderer/media/media_stream.h"
 #include "media/blink/webmediaplayer_delegate.h"
 #include "media/blink/webmediaplayer_util.h"
 #include "media/renderers/skcanvas_video_renderer.h"
 #include "media/video/gpu_video_accelerator_factories.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayer.h"
+#include "third_party/WebKit/public/platform/WebMediaStream.h"
 #include "url/origin.h"
 
 namespace blink {
@@ -63,7 +63,7 @@ class WebMediaPlayerMSCompositor;
 // blink::WebMediaPlayerClient
 //   WebKit client of this media player object.
 class CONTENT_EXPORT WebMediaPlayerMS
-    : public MediaStreamObserver,
+    : public blink::WebMediaStreamObserver,
       public blink::WebMediaPlayer,
       public media::WebMediaPlayerDelegate::Observer,
       public base::SupportsWeakPtr<WebMediaPlayerMS> {
@@ -181,7 +181,7 @@ class CONTENT_EXPORT WebMediaPlayerMS
                     bool flip_y,
                     bool premultiply_alpha) override;
 
-  // MediaStreamObserver implementation
+  // blink::WebMediaStreamObserver implementation
   void TrackAdded(const blink::WebMediaStreamTrack& track) override;
   void TrackRemoved(const blink::WebMediaStreamTrack& track) override;
 

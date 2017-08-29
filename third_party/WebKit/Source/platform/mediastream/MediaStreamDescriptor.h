@@ -41,6 +41,8 @@
 
 namespace blink {
 
+class WebMediaStreamObserver;
+
 class PLATFORM_EXPORT MediaStreamDescriptorClient
     : public GarbageCollectedMixin {
  public:
@@ -55,13 +57,6 @@ class PLATFORM_EXPORT MediaStreamDescriptorClient
 class PLATFORM_EXPORT MediaStreamDescriptor final
     : public GarbageCollectedFinalized<MediaStreamDescriptor> {
  public:
-  class ExtraData {
-    USING_FAST_MALLOC(ExtraData);
-
-   public:
-    virtual ~ExtraData() {}
-  };
-
   // Only used for AudioDestinationNode.
   static MediaStreamDescriptor* Create(
       const MediaStreamSourceVector& audio_sources,
@@ -100,10 +95,8 @@ class PLATFORM_EXPORT MediaStreamDescriptor final
   bool Active() const { return active_; }
   void SetActive(bool active) { active_ = active; }
 
-  ExtraData* GetExtraData() const { return extra_data_.get(); }
-  void SetExtraData(std::unique_ptr<ExtraData> extra_data) {
-    extra_data_ = std::move(extra_data);
-  }
+  void AddObserver(WebMediaStreamObserver*);
+  void RemoveObserver(WebMediaStreamObserver*);
 
   // |m_extraData| may hold pointers to GC objects, and it may touch them in
   // destruction.  So this class is eagerly finalized to finalize |m_extraData|
@@ -123,9 +116,8 @@ class PLATFORM_EXPORT MediaStreamDescriptor final
   String id_;
   HeapVector<Member<MediaStreamComponent>> audio_components_;
   HeapVector<Member<MediaStreamComponent>> video_components_;
+  Vector<WebMediaStreamObserver*> observers_;
   bool active_;
-
-  std::unique_ptr<ExtraData> extra_data_;
 };
 
 typedef HeapVector<Member<MediaStreamDescriptor>> MediaStreamDescriptorVector;

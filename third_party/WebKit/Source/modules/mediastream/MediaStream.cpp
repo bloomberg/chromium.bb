@@ -154,7 +154,6 @@ MediaStream::MediaStream(ExecutionContext* context,
   descriptor_ =
       MediaStreamDescriptor::Create(audio_components, video_components);
   descriptor_->SetClient(this);
-  MediaStreamCenter::Instance().DidCreateMediaStream(descriptor_);
 
   audio_tracks_ = audio_tracks;
   video_tracks_ = video_tracks;
@@ -220,8 +219,6 @@ void MediaStream::addTrack(MediaStreamTrack* track,
     ScheduleDispatchEvent(Event::Create(EventTypeNames::active));
   }
 
-  MediaStreamCenter::Instance().DidAddMediaStreamTrack(descriptor_,
-                                                       track->Component());
   for (auto& observer : observers_)
     observer->OnStreamAddTrack(this, track);
 }
@@ -258,8 +255,6 @@ void MediaStream::removeTrack(MediaStreamTrack* track,
     ScheduleDispatchEvent(Event::Create(EventTypeNames::inactive));
   }
 
-  MediaStreamCenter::Instance().DidRemoveMediaStreamTrack(descriptor_,
-                                                          track->Component());
   for (auto& observer : observers_)
     observer->OnStreamRemoveTrack(this, track);
 }

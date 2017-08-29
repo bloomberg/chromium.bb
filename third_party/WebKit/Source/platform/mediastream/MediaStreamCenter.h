@@ -66,10 +66,7 @@ class PLATFORM_EXPORT MediaStreamCenter final
   std::unique_ptr<AudioSourceProvider> CreateWebAudioSourceFromMediaStreamTrack(
       MediaStreamComponent*);
 
-  void DidCreateMediaStream(MediaStreamDescriptor*);
   void DidCreateMediaStreamAndTracks(MediaStreamDescriptor*);
-  bool DidAddMediaStreamTrack(MediaStreamDescriptor*, MediaStreamComponent*);
-  bool DidRemoveMediaStreamTrack(MediaStreamDescriptor*, MediaStreamComponent*);
   void DidStopLocalMediaStream(MediaStreamDescriptor*);
 
   // blink::WebMediaStreamCenterClient

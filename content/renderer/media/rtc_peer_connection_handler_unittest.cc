@@ -21,7 +21,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "content/child/child_process.h"
-#include "content/renderer/media/media_stream.h"
 #include "content/renderer/media/media_stream_audio_source.h"
 #include "content/renderer/media/media_stream_audio_track.h"
 #include "content/renderer/media/media_stream_source.h"
@@ -344,7 +343,6 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
     blink::WebMediaStream local_stream;
     local_stream.Initialize(blink::WebString::FromUTF8(stream_label),
                             audio_tracks, video_tracks);
-    local_stream.SetExtraData(new MediaStream());
     return local_stream;
   }
 

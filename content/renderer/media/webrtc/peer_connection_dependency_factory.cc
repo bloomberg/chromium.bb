@@ -33,7 +33,6 @@
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/media/gpu/rtc_video_decoder_factory.h"
 #include "content/renderer/media/gpu/rtc_video_encoder_factory.h"
-#include "content/renderer/media/media_stream.h"
 #include "content/renderer/media/media_stream_video_source.h"
 #include "content/renderer/media/media_stream_video_track.h"
 #include "content/renderer/media/rtc_peer_connection_handler.h"

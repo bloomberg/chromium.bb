@@ -32,6 +32,7 @@
 #include "platform/mediastream/MediaStreamDescriptor.h"
 
 #include "platform/UUID.h"
+#include "public/platform/WebMediaStream.h"
 
 namespace blink {
 
@@ -67,6 +68,10 @@ void MediaStreamDescriptor::AddComponent(MediaStreamComponent* component) {
         video_components_.push_back(component);
       break;
   }
+
+  for (auto& observer : observers_) {
+    observer->TrackAdded(component);
+  }
 }
 
 void MediaStreamDescriptor::RemoveComponent(MediaStreamComponent* component) {
@@ -83,6 +88,10 @@ void MediaStreamDescriptor::RemoveComponent(MediaStreamComponent* component) {
         video_components_.erase(pos);
       break;
   }
+
+  for (auto& observer : observers_) {
+    observer->TrackRemoved(component);
+  }
 }
 
 void MediaStreamDescriptor::AddRemoteTrack(MediaStreamComponent* component) {
@@ -97,6 +106,17 @@ void MediaStreamDescriptor::RemoveRemoteTrack(MediaStreamComponent* component) {
     client_->RemoveTrackByComponent(component);
   else
     RemoveComponent(component);
+}
+
+void MediaStreamDescriptor::AddObserver(WebMediaStreamObserver* observer) {
+  DCHECK_EQ(observers_.Find(observer), kNotFound);
+  observers_.push_back(observer);
+}
+
+void MediaStreamDescriptor::RemoveObserver(WebMediaStreamObserver* observer) {
+  size_t index = observers_.Find(observer);
+  DCHECK(index != kNotFound);
+  observers_.erase(index);
 }
 
 MediaStreamDescriptor::MediaStreamDescriptor(
