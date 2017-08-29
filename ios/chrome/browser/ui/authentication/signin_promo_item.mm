@@ -21,6 +21,9 @@
 - (instancetype)initWithType:(NSInteger)type {
   self = [super initWithType:type];
   if (self) {
+    // |accessibilityIdentifier| is passed to the cell in -[CollectionViewItem
+    // configureCell:].
+    self.accessibilityIdentifier = @"SigninPromoCell";
     self.cellClass = [SigninPromoCell class];
   }
   return self;
