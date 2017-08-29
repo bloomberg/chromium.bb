@@ -137,6 +137,47 @@ bool IsBacktraceInList(const base::Value* backtraces, int id, int parent) {
 
 }  // namespace
 
+TEST(ProfilingJsonExporterTest, DumpsHeader) {
+  BacktraceStorage backtrace_storage;
+  AllocationEventSet events;
+  std::ostringstream stream;
+  ExportAllocationEventSetToJSON(1234, events, MemoryMap(), stream, nullptr,
+                                 kNoSizeThreshold, kNoCountThreshold);
+  std::string json = stream.str();
+
+  // JSON should parse.
+  base::JSONReader reader(base::JSON_PARSE_RFC);
+  std::unique_ptr<base::Value> root = reader.ReadToValue(stream.str());
+  ASSERT_EQ(base::JSONReader::JSON_NO_ERROR, reader.error_code())
+      << reader.GetErrorMessage();
+  ASSERT_TRUE(root);
+
+  // Find the periodic_interval event.
+  const base::Value* periodic_interval = FindFirstPeriodicInterval(*root);
+  ASSERT_TRUE(periodic_interval) << "Array contains no periodic_interval";
+
+  // The following fields are mandatory to make a trace viewable in
+  // chrome://tracing UI.
+  const base::Value* pid =
+      periodic_interval->FindKeyOfType("pid", base::Value::Type::INTEGER);
+  ASSERT_TRUE(pid);
+  EXPECT_NE(0, pid->GetInt());
+
+  const base::Value* ts =
+      periodic_interval->FindKeyOfType("ts", base::Value::Type::INTEGER);
+  ASSERT_TRUE(ts);
+  EXPECT_NE(0, ts->GetInt());
+
+  const base::Value* id =
+      periodic_interval->FindKeyOfType("id", base::Value::Type::STRING);
+  ASSERT_TRUE(id);
+  EXPECT_NE("", id->GetString());
+
+  const base::Value* args =
+      periodic_interval->FindKeyOfType("args", base::Value::Type::DICTIONARY);
+  ASSERT_TRUE(args);
+}
+
 TEST(ProfilingJsonExporterTest, Simple) {
   BacktraceStorage backtrace_storage;
 

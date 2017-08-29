@@ -73,6 +73,8 @@ void WriteDumpsHeader(int pid, std::ostream& out) {
   out << "{ \"pid\":" << pid << ",";
   out << "\"ph\":\"v\",";
   out << "\"name\":\"periodic_interval\",";
+  out << "\"ts\": 1,";
+  out << "\"id\": \"1\",";
   out << "\"args\":{";
   out << "\"dumps\":";
 }
