@@ -32,6 +32,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_features.h"
+#include "ui/app_list/presenter/app_list.h"
 #include "ui/app_list/views/app_list_view.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/compositor/layer.h"
@@ -74,11 +75,6 @@ constexpr int kNotificationBubbleGapHeight = 6;
 // auto hidden shelf. The region is used to make it easier to trigger showing
 // the auto hidden shelf when the shelf is on the boundary between displays.
 constexpr int kMaxAutoHideShowShelfRegionSize = 10;
-
-// TODO(minch): Add unit tests for this value. http://crbug.com/755185.
-// The velocity the app list must be dragged in order to change the state of the
-// app list for fling event, measured in DIPs/event.
-constexpr int kAppListDragVelocityThreshold = 100;
 
 ui::Layer* GetLayer(views::Widget* widget) {
   return widget->GetNativeView()->layer();
@@ -1118,10 +1114,9 @@ void ShelfLayoutManager::StartGestureDrag(
           gesture_in_screen.details().scroll_y_hint())) {
     gesture_drag_status_ = GESTURE_DRAG_APPLIST_IN_PROGRESS;
     Shell::Get()->ShowAppList(app_list::kSwipeFromShelf);
-    Shell::Get()->UpdateAppListYPositionAndOpacity(
+    Shell::Get()->app_list()->UpdateYPositionAndOpacity(
         gesture_in_screen.location().y(),
-        GetAppListBackgroundOpacityOnShelfOpacity(),
-        false /* is_end_gesture */);
+        GetAppListBackgroundOpacityOnShelfOpacity());
   } else {
     // Disable the shelf dragging if the fullscreen app list is opened.
     if (app_list::features::IsFullscreenAppListEnabled() &&
@@ -1140,20 +1135,17 @@ void ShelfLayoutManager::StartGestureDrag(
 void ShelfLayoutManager::UpdateGestureDrag(
     const ui::GestureEvent& gesture_in_screen) {
   if (gesture_drag_status_ == GESTURE_DRAG_APPLIST_IN_PROGRESS) {
-    // Dismiss the app list if the shelf changed to vertical alignment or mode
-    // changed to non-tablet mode during dragging.
-    if (!Shell::Get()
-             ->tablet_mode_controller()
-             ->IsTabletModeWindowManagerEnabled() ||
-        !shelf_->IsHorizontalAlignment()) {
+    // Dismiss the app list if the shelf changed to vertical alignment during
+    // dragging.
+    if (!shelf_->IsHorizontalAlignment()) {
       Shell::Get()->DismissAppList();
+      gesture_drag_amount_ = 0.f;
       gesture_drag_status_ = GESTURE_DRAG_NONE;
       return;
     }
-    Shell::Get()->UpdateAppListYPositionAndOpacity(
+    Shell::Get()->app_list()->UpdateYPositionAndOpacity(
         gesture_in_screen.location().y(),
-        GetAppListBackgroundOpacityOnShelfOpacity(),
-        false /* is_end_gesture */);
+        GetAppListBackgroundOpacityOnShelfOpacity());
     gesture_drag_amount_ += gesture_in_screen.details().scroll_y();
   } else {
     gesture_drag_amount_ +=
@@ -1218,34 +1210,46 @@ void ShelfLayoutManager::CompleteGestureDrag(
 
 void ShelfLayoutManager::CompleteAppListDrag(
     const ui::GestureEvent& gesture_in_screen) {
-  bool should_show_app_list = false;
+  // Change the shelf alignment to vertical during drag will reset
+  // |gesture_drag_status_| to |GESTURE_DRAG_NONE|.
+  if (gesture_drag_status_ == GESTURE_DRAG_NONE)
+    return;
+
+  using app_list::mojom::AppListState;
+  AppListState app_list_state = AppListState::PEEKING;
   if (gesture_in_screen.type() == ui::ET_SCROLL_FLING_START &&
       fabs(gesture_in_screen.details().velocity_y()) >
           kAppListDragVelocityThreshold) {
-    // If the scroll sequence terminates with a fling, show the app list if
-    // the fling was fast enough and in the correct direction, otherwise close
-    // it.
-    should_show_app_list = gesture_in_screen.details().velocity_y() < 0;
+    // If the scroll sequence terminates with a fling, show the fullscreen app
+    // list if the fling was fast enough and in the correct direction, otherwise
+    // close it.
+    app_list_state = gesture_in_screen.details().velocity_y() < 0
+                         ? AppListState::FULLSCREEN_ALL_APPS
+                         : AppListState::CLOSED;
   } else {
-    // Show the app list if the drag amount exceeds a constant threshold.
-    should_show_app_list =
-        -gesture_drag_amount_ > kAppListDragDistanceThreshold;
+    // Snap the app list to corresponding state according to the snapping
+    // thresholds.
+    if (Shell::Get()
+            ->tablet_mode_controller()
+            ->IsTabletModeWindowManagerEnabled()) {
+      app_list_state =
+          -gesture_drag_amount_ > kAppListDragSnapToFullscreenThreshold
+              ? AppListState::FULLSCREEN_ALL_APPS
+              : AppListState::CLOSED;
+    } else {
+      if (-gesture_drag_amount_ <= kAppListDragSnapToClosedThreshold)
+        app_list_state = AppListState::CLOSED;
+      else if (-gesture_drag_amount_ <= kAppListDragSnapToPeekingThreshold)
+        app_list_state = AppListState::PEEKING;
+      else
+        app_list_state = AppListState::FULLSCREEN_ALL_APPS;
+    }
   }
 
-  if (should_show_app_list) {
-    Shell::Get()->UpdateAppListYPositionAndOpacity(
-        display::Screen::GetScreen()
-            ->GetDisplayNearestWindow(shelf_widget_->GetNativeWindow())
-            .work_area()
-            .y(),
-        GetAppListBackgroundOpacityOnShelfOpacity(), true /* is_end_gesture */);
-    UMA_HISTOGRAM_ENUMERATION(app_list::kAppListToggleMethodHistogram,
-                              app_list::kSwipeFromShelf,
-                              app_list::kMaxAppListToggleMethod);
-
-  } else {
-    Shell::Get()->DismissAppList();
-  }
+  Shell::Get()->app_list()->EndDragFromShelf(app_list_state);
+  UMA_HISTOGRAM_ENUMERATION(app_list::kAppListToggleMethodHistogram,
+                            app_list::kSwipeFromShelf,
+                            app_list::kMaxAppListToggleMethod);
 
   gesture_drag_status_ = GESTURE_DRAG_NONE;
 }
@@ -1266,14 +1270,9 @@ bool ShelfLayoutManager::CanStartFullscreenAppListDrag(
   if (!app_list::features::IsFullscreenAppListEnabled())
     return false;
 
-  // Fullscreen app list can only be dragged from bottom alignment shelf in the
-  // tablet mode.
-  if (!Shell::Get()
-           ->tablet_mode_controller()
-           ->IsTabletModeWindowManagerEnabled() ||
-      !shelf_->IsHorizontalAlignment()) {
+  // Fullscreen app list can only be dragged from bottom alignment shelf.
+  if (!shelf_->IsHorizontalAlignment())
     return false;
-  }
 
   // If the shelf is not visible, swiping up should show the shelf.
   if (!IsVisible())

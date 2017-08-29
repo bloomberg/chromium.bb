@@ -28,12 +28,16 @@ void AppList::Show(int64_t display_id) {
 }
 
 void AppList::UpdateYPositionAndOpacity(int y_position_in_screen,
-                                        float background_opacity,
-                                        bool is_end_gesture) {
+                                        float background_opacity) {
   if (presenter_) {
     presenter_->UpdateYPositionAndOpacity(y_position_in_screen,
-                                          background_opacity, is_end_gesture);
+                                          background_opacity);
   }
+}
+
+void AppList::EndDragFromShelf(mojom::AppListState app_list_state) {
+  if (presenter_)
+    presenter_->EndDragFromShelf(app_list_state);
 }
 
 void AppList::Dismiss() {
