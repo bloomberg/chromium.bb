@@ -520,7 +520,7 @@ bool IsURLAllowedInIncognito(const GURL& url) {
   id<AppRatingPrompt> _rateThisAppDialog;
 
   // Native controller vended to tab before Tab is added to the tab model.
-  id _temporaryNativeController;
+  __weak id _temporaryNativeController;
 
   // Notifies the toolbar menu of reading list changes.
   ReadingListMenuNotifier* _readingListMenuNotifier;
