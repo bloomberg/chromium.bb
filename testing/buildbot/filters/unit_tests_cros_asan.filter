@@ -1,2 +1,0 @@
-# TODO(crbug.com/756844): Fix memory leaks.
--SafeBrowsingBlockingQuietPageTests.*
