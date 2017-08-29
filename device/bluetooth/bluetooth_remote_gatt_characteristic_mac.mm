@@ -9,6 +9,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "device/bluetooth/bluetooth_adapter_mac.h"
+#include "device/bluetooth/bluetooth_adapter_mac_metrics.h"
 #include "device/bluetooth/bluetooth_device_mac.h"
 #include "device/bluetooth/bluetooth_gatt_notify_session.h"
 #include "device/bluetooth/bluetooth_remote_gatt_descriptor_mac.h"
@@ -251,6 +252,7 @@ void BluetoothRemoteGattCharacteristicMac::DidUpdateValue(NSError* error) {
   CHECK_EQ(GetCBPeripheral().state, CBPeripheralStateConnected);
   // This method is called when the characteristic is read and when a
   // notification is received.
+  RecordDidUpdateValueResult(error);
   if (HasPendingRead()) {
     std::pair<ValueCallback, ErrorCallback> callbacks;
     callbacks.swap(read_characteristic_value_callbacks_);
@@ -289,6 +291,7 @@ void BluetoothRemoteGattCharacteristicMac::UpdateValue() {
 }
 
 void BluetoothRemoteGattCharacteristicMac::DidWriteValue(NSError* error) {
+  RecordDidWriteValueResult(error);
   // We could have called cancelPeripheralConnection, which causes
   // [CBPeripheral state] to be CBPeripheralStateDisconnected, before or during
   // a write without response callback so we flush all pending writes.
@@ -340,6 +343,7 @@ void BluetoothRemoteGattCharacteristicMac::DidUpdateNotificationState(
     VLOG(1) << *this << ": No pending notification update for characteristic.";
     return;
   }
+  RecordDidUpdateNotificationStateResult(error);
   if (error) {
     BluetoothGattService::GattErrorCode error_code =
         BluetoothDeviceMac::GetGattErrorCodeFromNSError(error);
