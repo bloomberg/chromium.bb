@@ -284,10 +284,6 @@ std::string GetManagedLoginScreenLocale() {
   return login_screen_locale;
 }
 
-void EnableSystemSoundsForAccessibility() {
-  chromeos::AccessibilityManager::Get()->EnableSystemSounds(true);
-}
-
 // Disables virtual keyboard overscroll. Login UI will scroll user pods
 // into view on JS side when virtual keyboard is shown.
 void DisableKeyboardOverscroll() {
@@ -608,7 +604,6 @@ void LoginDisplayHostImpl::SetStatusAreaVisible(bool visible) {
 void LoginDisplayHostImpl::StartWizard(OobeScreen first_screen) {
   DisableKeyboardOverscroll();
 
-  startup_sound_honors_spoken_feedback_ = false;
   TryToPlayStartupSound();
 
   // Keep parameters to restore if renderer crashes.
@@ -710,9 +705,6 @@ void LoginDisplayHostImpl::CancelUserAdding() {
 void LoginDisplayHostImpl::StartSignInScreen(
     const LoginScreenContext& context) {
   DisableKeyboardOverscroll();
-
-  startup_sound_honors_spoken_feedback_ = true;
-  TryToPlayStartupSound();
 
   restore_path_ = RESTORE_SIGN_IN;
   is_showing_login_ = true;
@@ -1264,27 +1256,11 @@ void LoginDisplayHostImpl::TryToPlayStartupSound() {
   // for a long time or can't be played.
   if (base::TimeTicks::Now() - login_prompt_visible_time_ >
       base::TimeDelta::FromMilliseconds(kStartupSoundMaxDelayMs)) {
-    EnableSystemSoundsForAccessibility();
     return;
   }
 
-  if (!startup_sound_honors_spoken_feedback_ &&
-      !AccessibilityManager::Get()->PlayEarcon(SOUND_STARTUP,
-                                               PlaySoundOption::ALWAYS)) {
-    EnableSystemSoundsForAccessibility();
-    return;
-  }
-
-  if (startup_sound_honors_spoken_feedback_ &&
-      !AccessibilityManager::Get()->PlayEarcon(
-          SOUND_STARTUP, PlaySoundOption::SPOKEN_FEEDBACK_ENABLED)) {
-    EnableSystemSoundsForAccessibility();
-    return;
-  }
-
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::BindOnce(&EnableSystemSoundsForAccessibility),
-      media::SoundsManager::Get()->GetDuration(SOUND_STARTUP));
+  AccessibilityManager::Get()->PlayEarcon(SOUND_STARTUP,
+                                          PlaySoundOption::ALWAYS);
 }
 
 void LoginDisplayHostImpl::OnLoginPromptVisible() {

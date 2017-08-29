@@ -105,10 +105,6 @@ namespace {
 // When this flag is set, system sounds will not be played.
 const char kAshDisableSystemSounds[] = "ash-disable-system-sounds";
 
-// When this flag is set, system sounds will be played whether the
-// ChromeVox is enabled or not.
-const char kAshEnableSystemSounds[] = "ash-enable-system-sounds";
-
 static chromeos::AccessibilityManager* g_accessibility_manager = NULL;
 
 static BrailleController* g_braille_controller_for_test = NULL;
@@ -275,7 +271,6 @@ AccessibilityManager::AccessibilityManager()
       select_to_speak_enabled_(false),
       switch_access_enabled_(false),
       spoken_feedback_notification_(ash::A11Y_NOTIFICATION_NONE),
-      system_sounds_enabled_(false),
       braille_display_connected_(false),
       scoped_braille_observer_(this),
       braille_ime_current_(false),
@@ -631,7 +626,7 @@ bool AccessibilityManager::PlayEarcon(int sound_key, PlaySoundOption option) {
   if (cl->HasSwitch(kAshDisableSystemSounds))
     return false;
   if (option == PlaySoundOption::SPOKEN_FEEDBACK_ENABLED &&
-      !IsSpokenFeedbackEnabled() && !cl->HasSwitch(kAshEnableSystemSounds)) {
+      !IsSpokenFeedbackEnabled()) {
     return false;
   }
   return media::SoundsManager::Get()->Play(sound_key);
@@ -1353,14 +1348,7 @@ void AccessibilityManager::SetBrailleControllerForTest(
   g_braille_controller_for_test = controller;
 }
 
-void AccessibilityManager::EnableSystemSounds(bool system_sounds_enabled) {
-  system_sounds_enabled_ = system_sounds_enabled;
-}
-
 base::TimeDelta AccessibilityManager::PlayShutdownSound() {
-  if (!system_sounds_enabled_)
-    return base::TimeDelta();
-  system_sounds_enabled_ = false;
   if (!PlayEarcon(SOUND_SHUTDOWN, PlaySoundOption::SPOKEN_FEEDBACK_ENABLED))
     return base::TimeDelta();
   return media::SoundsManager::Get()->GetDuration(SOUND_SHUTDOWN);
