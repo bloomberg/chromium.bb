@@ -109,6 +109,7 @@ source_set("fuzzer_support") {
     "//base",
     "//crypto",
     "//crypto:platform",
+    "//mojo/edk/system",
     "//third_party/WebKit/public:blink",
   ]
 }
