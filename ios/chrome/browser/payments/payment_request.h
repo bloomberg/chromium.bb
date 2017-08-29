@@ -323,6 +323,10 @@ class PaymentRequest : public PaymentOptionsProvider,
   // Sets the selected shipping option, if any.
   void SetSelectedShippingOption();
 
+  // Records the number of suggestions shown for contact, shipping and payment
+  // instrument in the JourneyLogger.
+  void RecordNumberOfSuggestionsShown();
+
   // The current state of the payment request.
   State state_;
 

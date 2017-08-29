@@ -10,16 +10,20 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/payments/core/features.h"
+#include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #include "ios/chrome/browser/payments/ios_payment_request_cache_factory.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
+#import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/testing/wait_util.h"
+#import "ios/web/public/test/http_server/http_server.h"
 #import "ios/web/public/test/web_view_interaction_test_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -121,6 +125,27 @@ std::vector<autofill::CreditCard> _cards;
 - (autofill::PersonalDataManager*)personalDataManager {
   return autofill::PersonalDataManagerFactory::GetForBrowserState(
       chrome_test_util::GetOriginalBrowserState());
+}
+
+- (void)loadTestPage:(const std::string&)page {
+  std::string fullPath = base::StringPrintf(
+      "https://components/test/data/payments/%s", page.c_str());
+  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(fullPath)];
+}
+
+- (void)payWithCreditCardUsingCVC:(NSString*)cvc {
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
+                                   IDS_PAYMENTS_PAY_BUTTON)]
+      performAction:grey_tap()];
+
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"CVC_textField")]
+      performAction:grey_replaceText(cvc)];
+
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
+                                   IDS_AUTOFILL_CARD_UNMASK_CONFIRM_BUTTON)]
+      performAction:grey_tap()];
 }
 
 @end

@@ -43,6 +43,14 @@ class WebState;
 // Returns the instance of PersonalDataManager for current ChromeBrowserState.
 - (autofill::PersonalDataManager*)personalDataManager;
 
+// Loads the specified |page|, which should be the name of a file in the
+// //components/test/data/payments directory.
+- (void)loadTestPage:(const std::string&)page;
+
+// Taps the 'PAY' button in the UI, enters the specified |cvc| and confirms
+// payment.
+- (void)payWithCreditCardUsingCVC:(NSString*)cvc;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_PAYMENTS_PAYMENT_REQUEST_EGTEST_BASE_H_
