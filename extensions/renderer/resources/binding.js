@@ -113,9 +113,9 @@ function createCustomType(type) {
   // This whitelist serves as an extra line of defence to avoid exposing
   // arbitrary extension modules when the |type| definition is poisoned.
   var whitelistedModules = [
-    'ChromeDirectSetting',
     'ChromeSetting',
     'ContentSetting',
+    'EasyUnlockProximityRequired',
     'StorageArea',
   ];
   logging.CHECK($Array.indexOf(whitelistedModules, jsModuleName) !== -1,

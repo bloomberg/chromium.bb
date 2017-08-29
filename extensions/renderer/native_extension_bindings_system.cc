@@ -25,6 +25,7 @@
 #include "extensions/renderer/console.h"
 #include "extensions/renderer/content_setting.h"
 #include "extensions/renderer/declarative_content_hooks_delegate.h"
+#include "extensions/renderer/easy_unlock_proximity_required_stub.h"
 #include "extensions/renderer/extension_frame_helper.h"
 #include "extensions/renderer/ipc_message_sender.h"
 #include "extensions/renderer/module_system.h"
@@ -403,6 +404,9 @@ NativeExtensionBindingsSystem::NativeExtensionBindingsSystem(
       weak_factory_(this) {
   api_system_.RegisterCustomType("storage.StorageArea",
                                  base::Bind(&StorageArea::CreateStorageArea));
+  api_system_.RegisterCustomType(
+      "preferencesPrivate.EasyUnlockProximityRequired",
+      base::Bind(&EasyUnlockProximityRequiredStub::Create));
   api_system_.RegisterCustomType("types.ChromeSetting",
                                  base::Bind(&ChromeSetting::Create));
   api_system_.RegisterCustomType(
