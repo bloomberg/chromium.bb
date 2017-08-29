@@ -8,6 +8,7 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
@@ -94,6 +95,10 @@ class MIDI_EXPORT TaskService final {
 
   // Protects all members other than |tasks_in_flight_|.
   base::Lock lock_;
+
+  // Verifies all UnbindInstance() calls occur on the same sequence as
+  // BindSequence().
+  SEQUENCE_CHECKER(instance_binding_sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(TaskService);
 };
