@@ -359,7 +359,7 @@ TEST_F(SessionControllerClientTest,
   const AccountId account_id(AccountId::FromUserEmail(kUser));
   user_manager()->LoginUser(account_id);
   while (user_manager()->GetLoggedInUsers().size() <
-         session_manager::kMaxmiumNumberOfUserSessions) {
+         session_manager::kMaximumNumberOfUserSessions) {
     UserAddedToSession("bb@b.b");
   }
   EXPECT_EQ(ash::AddUserSessionPolicy::ERROR_MAXIMUM_USERS_REACHED,
