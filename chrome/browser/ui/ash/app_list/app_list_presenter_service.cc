@@ -69,10 +69,14 @@ void AppListPresenterService::ToggleVoiceInteractionSession() {
 
 void AppListPresenterService::UpdateYPositionAndOpacity(
     int y_position_in_screen,
-    float background_opacity,
-    bool is_end_gesture) {
+    float background_opacity) {
   GetPresenter()->UpdateYPositionAndOpacity(y_position_in_screen,
-                                            background_opacity, is_end_gesture);
+                                            background_opacity);
+}
+
+void AppListPresenterService::EndDragFromShelf(
+    app_list::mojom::AppListState app_list_state) {
+  GetPresenter()->EndDragFromShelf(app_list_state);
 }
 
 app_list::AppListPresenterImpl* AppListPresenterService::GetPresenter() {

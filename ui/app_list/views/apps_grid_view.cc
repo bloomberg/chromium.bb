@@ -1871,8 +1871,11 @@ void AppsGridView::OnFolderItemRemoved() {
 void AppsGridView::UpdateOpacity() {
   int app_list_y_position_in_screen =
       contents_view_->app_list_view()->app_list_y_position_in_screen();
-  int work_area_bottom = contents_view_->app_list_view()->GetWorkAreaBottom();
-  bool is_in_drag = contents_view_->app_list_view()->is_in_drag();
+  AppListView* app_list_view = contents_view_->app_list_view();
+  int work_area_bottom = app_list_view->GetWorkAreaBottom();
+  bool should_restore_opacity =
+      !app_list_view->is_in_drag() &&
+      (app_list_view->app_list_state() != AppListView::AppListState::CLOSED);
 
   // The opacity of suggested apps is a function of the fractional displacement
   // of the app list from collapsed(0) to peeking(1) state. When the fraction
@@ -1888,7 +1891,8 @@ void AppsGridView::UpdateOpacity() {
                              kSuggestedAppsOpacityStartFraction),
                         0.f),
                1.0f);
-  suggestions_container_->layer()->SetOpacity(is_in_drag ? opacity : 1.0f);
+  suggestions_container_->layer()->SetOpacity(should_restore_opacity ? 1.0f
+                                                                     : opacity);
 
   // The opacity of expand arrow during dragging from collapsed(0) to peeking(1)
   // state. When the dragging amount fraction changes from
@@ -1918,7 +1922,8 @@ void AppsGridView::UpdateOpacity() {
                                    kAllAppsIndicatorOpacityStartFraction),
                               0.f),
                      1.0f);
-  all_apps_indicator_->layer()->SetOpacity(is_in_drag ? opacity : 1.0f);
+  all_apps_indicator_->layer()->SetOpacity(should_restore_opacity ? 1.0f
+                                                                  : opacity);
 
   // The opacity of expand arrow during dragging from peeking(0) to
   // fullscreen(1) state. When the dragging amount fraction changes from
@@ -1934,10 +1939,10 @@ void AppsGridView::UpdateOpacity() {
   if (app_list_y_position_in_screen <
       (work_area_bottom + kShelfSize - kPeekingAppListHeight)) {
     expand_arrow_view_->layer()->SetOpacity(
-        is_in_drag ? arrow_fullscreen_opacity : 1.0f);
+        should_restore_opacity ? 1.0f : arrow_fullscreen_opacity);
   } else {
-    expand_arrow_view_->layer()->SetOpacity(is_in_drag ? arrow_peeking_opacity
-                                                       : 1.0f);
+    expand_arrow_view_->layer()->SetOpacity(
+        should_restore_opacity ? 1.0f : arrow_peeking_opacity);
   }
 
   // Updates the opacity of all apps. The opacity of the app starting at 0.f
@@ -1977,7 +1982,7 @@ void AppsGridView::UpdateOpacity() {
       opacity = std::max(opacity * opacity_factor, 0.f);
     }
 
-    item_view->layer()->SetOpacity(is_in_drag ? opacity : 1.0f);
+    item_view->layer()->SetOpacity(should_restore_opacity ? 1.0f : opacity);
   }
 
   // Updates the opacity of page switcher buttons. The same rule as all apps.
@@ -1990,7 +1995,8 @@ void AppsGridView::UpdateOpacity() {
                      (kAllAppsOpacityEndPx - kAllAppsOpacityStartPx),
                  0.f),
         1.0f);
-    page_switcher_view_->layer()->SetOpacity(is_in_drag ? opacity : 1.0f);
+    page_switcher_view_->layer()->SetOpacity(should_restore_opacity ? 1.0f
+                                                                    : opacity);
   }
 }
 

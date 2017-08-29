@@ -608,8 +608,7 @@ void AppListView::UpdateDrag(const gfx::Point& location) {
                        initial_drag_point_.y() + initial_window_bounds_.y();
 
   UpdateYPositionAndOpacity(new_y_position,
-                            GetAppListBackgroundOpacityDuringDragging(),
-                            false /* is_end_gesture */);
+                            GetAppListBackgroundOpacityDuringDragging());
 }
 
 void AppListView::EndDrag(const gfx::Point& location) {
@@ -1231,21 +1230,16 @@ void AppListView::SetStateFromSearchBoxView(bool search_box_is_empty) {
 }
 
 void AppListView::UpdateYPositionAndOpacity(int y_position_in_screen,
-                                            float background_opacity,
-                                            bool is_end_gesture) {
-  SetIsInDrag(!is_end_gesture);
+                                            float background_opacity) {
+  SetIsInDrag(true);
   background_opacity_ = background_opacity;
-  if (is_end_gesture) {
-    SetState(FULLSCREEN_ALL_APPS);
-  } else {
-    gfx::Rect new_widget_bounds = fullscreen_widget_->GetWindowBoundsInScreen();
-    app_list_y_position_in_screen_ =
-        std::max(y_position_in_screen, GetDisplayNearestView().bounds().y());
-    new_widget_bounds.set_y(app_list_y_position_in_screen_);
-    gfx::NativeView native_view = fullscreen_widget_->GetNativeView();
-    ::wm::ConvertRectFromScreen(native_view->parent(), &new_widget_bounds);
-    native_view->SetBounds(new_widget_bounds);
-  }
+  gfx::Rect new_widget_bounds = fullscreen_widget_->GetWindowBoundsInScreen();
+  app_list_y_position_in_screen_ =
+      std::max(y_position_in_screen, GetDisplayNearestView().bounds().y());
+  new_widget_bounds.set_y(app_list_y_position_in_screen_);
+  gfx::NativeView native_view = fullscreen_widget_->GetNativeView();
+  ::wm::ConvertRectFromScreen(native_view->parent(), &new_widget_bounds);
+  native_view->SetBounds(new_widget_bounds);
 
   DraggingLayout();
 }
@@ -1276,6 +1270,19 @@ void AppListView::SetIsInDrag(bool is_in_drag) {
 
 int AppListView::GetWorkAreaBottom() {
   return fullscreen_widget_->GetWorkAreaBoundsInScreen().bottom();
+}
+
+void AppListView::DraggingLayout() {
+  float shield_opacity =
+      is_background_blur_enabled_ ? kAppListOpacityWithBlur : kAppListOpacity;
+  app_list_background_shield_->layer()->SetOpacity(
+      is_in_drag_ ? background_opacity_ : shield_opacity);
+
+  // Updates the opacity of the items in the app list.
+  search_box_view_->UpdateOpacity();
+  GetAppsGridView()->UpdateOpacity();
+
+  Layout();
 }
 
 void AppListView::OnSpeechRecognitionStateChanged(
@@ -1359,19 +1366,6 @@ void AppListView::OnDisplayMetricsChanged(const display::Display& display,
   // Update the |fullscreen_widget_| bounds to accomodate the new work
   // area.
   SetState(app_list_state_);
-}
-
-void AppListView::DraggingLayout() {
-  float shield_opacity =
-      is_background_blur_enabled_ ? kAppListOpacityWithBlur : kAppListOpacity;
-  app_list_background_shield_->layer()->SetOpacity(
-      is_in_drag_ ? background_opacity_ : shield_opacity);
-
-  // Updates the opacity of the items in the app list.
-  search_box_view_->UpdateOpacity();
-  GetAppsGridView()->UpdateOpacity();
-
-  Layout();
 }
 
 float AppListView::GetAppListBackgroundOpacityDuringDragging() {

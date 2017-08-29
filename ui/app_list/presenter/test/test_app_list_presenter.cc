@@ -11,9 +11,8 @@ TestAppListPresenter::TestAppListPresenter() : binding_(this) {}
 
 TestAppListPresenter::~TestAppListPresenter() {}
 
-app_list::mojom::AppListPresenterPtr
-TestAppListPresenter::CreateInterfacePtrAndBind() {
-  app_list::mojom::AppListPresenterPtr ptr;
+mojom::AppListPresenterPtr TestAppListPresenter::CreateInterfacePtrAndBind() {
+  mojom::AppListPresenterPtr ptr;
   binding_.Bind(mojo::MakeRequest(&ptr));
   return ptr;
 }
@@ -39,9 +38,13 @@ void TestAppListPresenter::ToggleVoiceInteractionSession() {
 }
 
 void TestAppListPresenter::UpdateYPositionAndOpacity(int y_position_in_screen,
-                                                     float background_opacity,
-                                                     bool is_end_gesture) {
+                                                     float background_opacity) {
   set_y_position_count_++;
+}
+
+void TestAppListPresenter::EndDragFromShelf(
+    mojom::AppListState app_list_state) {
+  app_list_state_ = app_list_state;
 }
 
 }  // namespace test
