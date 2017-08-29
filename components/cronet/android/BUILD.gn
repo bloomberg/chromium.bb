@@ -1256,6 +1256,13 @@ template("copy_java8_jars") {
     _source_jar = get_label_info(dep, "target_gen_dir") + "/" + _dep_name +
                   "__compile_java.javac.jar"
     _output_jar = "$_package_dir/" + _dep_name + ".jar"
+
+    # cronet_api.jar is a special case. Its file name is
+    # different from the target name that builds it.
+    if (_output_jar == "$_package_dir/" + "cronet_api_java.jar") {
+      _output_jar = "$_package_dir/" + "cronet_api.jar"
+    }
+
     _copy_dep = ":" + _dep_name + "__compile_java__javac"
     _copy_target_name = "${target_name}_${dep}"
 
