@@ -151,11 +151,8 @@ source_set("browser") {
       "android/cast_content_window_android.cc",
       "android/cast_content_window_android.h",
       "android/cast_metrics_helper_android.cc",
-      "android/cast_metrics_helper_android.h",
       "android/cast_web_contents_activity.cc",
       "android/cast_web_contents_activity.h",
-      "android/jni_registrar.cc",
-      "android/jni_registrar.h",
     ]
 
     deps += [

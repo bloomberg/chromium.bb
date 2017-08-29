@@ -35,11 +35,6 @@ void SetContentVideoViewEmbedder(JNIEnv* env,
 }
 
 // static
-bool CastWebContentsActivity::RegisterJni(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
-// static
 CastWebContentsActivity* CastWebContentsActivity::Get(
     content::WebContents* web_contents) {
   DCHECK(web_contents);
