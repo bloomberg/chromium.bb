@@ -67,6 +67,8 @@ TrackRunInfo::TrackRunInfo()
 TrackRunInfo::~TrackRunInfo() {}
 
 base::TimeDelta TimeDeltaFromRational(int64_t numer, int64_t denom) {
+  DCHECK_NE(denom, 0);
+
   // To avoid overflow, split the following calculation:
   // (numer * base::Time::kMicrosecondsPerSecond) / denom
   // into:
