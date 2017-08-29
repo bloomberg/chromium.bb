@@ -306,6 +306,11 @@ id<GREYMatcher> UIAlertViewMessageForDelegateCallWithArgument(
 // get focus except for the last textfield in which case causes the focus to go
 // away from the textfield.
 - (void)testNavigationByTappingReturn {
+  // TODO(crbug.com/759904): Reenable on iOS11 iPad when working on iPad iOS 11
+  // devices.
+  if (base::ios::IsRunningOnIOS11OrLater() && IsIPadIdiom()) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iOS 11.");
+  }
   // Tap the name textfield.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Name_textField")]
       performAction:grey_tap()];
