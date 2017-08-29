@@ -33,3 +33,7 @@ std::string UIThreadSearchTermsData::GetSearchClient() const {
 std::string UIThreadSearchTermsData::GetYandexReferralID() const {
   return LocaleManager::GetYandexReferralID();
 }
+
+std::string UIThreadSearchTermsData::GetMailRUReferralID() const {
+  return LocaleManager::GetMailRUReferralID();
+}

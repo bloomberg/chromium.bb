@@ -659,6 +659,8 @@ bool TemplateURLRef::ParseParameter(size_t start,
     replacements->push_back(Replacement(GOOGLE_UNESCAPED_SEARCH_TERMS, start));
   } else if (parameter == "yandex:referralID") {
     replacements->push_back(Replacement(YANDEX_REFERRAL_ID, start));
+  } else if (parameter == "mailru:referralID") {
+    replacements->push_back(Replacement(MAIL_RU_REFERRAL_ID, start));
   } else if (parameter == "yandex:searchPath") {
     switch (ui::GetDeviceFormFactor()) {
       case ui::DEVICE_FORM_FACTOR_DESKTOP:
@@ -1138,6 +1140,13 @@ std::string TemplateURLRef::HandleReplacements(
         std::string referral_id = search_terms_data.GetYandexReferralID();
         if (!referral_id.empty())
           HandleReplacement("clid", referral_id, *i, &url);
+        break;
+      }
+
+      case MAIL_RU_REFERRAL_ID: {
+        std::string referral_id = search_terms_data.GetMailRUReferralID();
+        if (!referral_id.empty())
+          HandleReplacement("gp", referral_id, *i, &url);
         break;
       }
 

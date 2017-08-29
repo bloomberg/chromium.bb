@@ -33,6 +33,7 @@ class UIThreadSearchTermsData : public SearchTermsData {
 
 #if defined(OS_ANDROID)
   std::string GetYandexReferralID() const override;
+  std::string GetMailRUReferralID() const override;
 #endif
 
   // Used by tests to override the value for the Google base URL.  Passing the

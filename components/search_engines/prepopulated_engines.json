@@ -146,7 +146,7 @@
       "name": "@MAIL.RU",
       "keyword": "mail.ru",
       "favicon_url": "https://go.imgsmail.ru/favicon.ico",
-      "search_url": "https://go.mail.ru/search?q={searchTerms}",
+      "search_url": "https://go.mail.ru/search?q={searchTerms}&{mailru:referralID}",
       "encoding": "windows-1251",
       "suggest_url": "https://suggests.go.mail.ru/chrome?q={searchTerms}",
       "type": "SEARCH_ENGINE_MAILRU",
