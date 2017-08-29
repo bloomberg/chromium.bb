@@ -450,10 +450,6 @@ void DelegatedFrameHost::SubmitCompositorFrame(
                                        skipped_latency_info_list_.end());
     skipped_latency_info_list_.clear();
 
-    bool result =
-        support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
-    DCHECK(result);
-
     if (local_surface_id != local_surface_id_ || !has_frame_) {
       // manager must outlive compositors using it.
       viz::SurfaceId surface_id(frame_sink_id_, local_surface_id);
@@ -461,12 +457,19 @@ void DelegatedFrameHost::SubmitCompositorFrame(
                                     frame_size);
       client_->DelegatedFrameHostGetLayer()->SetShowPrimarySurface(
           surface_info, manager->surface_manager()->reference_factory());
-      client_->DelegatedFrameHostGetLayer()->SetFallbackSurface(surface_info);
       current_surface_size_ = frame_size;
       current_scale_factor_ = frame_device_scale_factor;
     }
 
     has_frame_ = true;
+
+    // If surface synchronization is off, then OnFirstSurfaceActivation will be
+    // called in the same call stack and so to ensure that the fallback surface
+    // is set, then primary surface must be set prior to calling
+    // CompositorFrameSinkSupport::SubmitCompositorFrame.
+    bool result =
+        support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
+    DCHECK(result);
   }
   local_surface_id_ = local_surface_id;
 
@@ -520,8 +523,8 @@ void DelegatedFrameHost::OnBeginFramePausedChanged(bool paused) {
 
 void DelegatedFrameHost::OnFirstSurfaceActivation(
     const viz::SurfaceInfo& surface_info) {
-  // TODO(fsamuel): Once surface synchronization is turned on, the fallback
-  // surface should be set here.
+  if (has_frame_)
+    client_->DelegatedFrameHostGetLayer()->SetFallbackSurface(surface_info);
 }
 
 void DelegatedFrameHost::OnBeginFrame(const viz::BeginFrameArgs& args) {

@@ -872,7 +872,7 @@ IPC_MESSAGE_ROUTED2(FrameMsg_DidUpdateOrigin,
 
 // Notifies RenderFrameProxy that its associated RenderWidgetHostView has
 // changed.
-IPC_MESSAGE_ROUTED0(FrameMsg_ViewChanged)
+IPC_MESSAGE_ROUTED1(FrameMsg_ViewChanged, viz::FrameSinkId /* frame_sink_id */)
 
 // Notifies this frame or proxy that it is now focused.  This is used to
 // support cross-process focused frame changes.

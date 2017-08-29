@@ -169,7 +169,7 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   void OnSetChildFrameSurface(const viz::SurfaceInfo& surface_info,
                               const viz::SurfaceSequence& sequence);
   void OnUpdateOpener(int opener_routing_id);
-  void OnViewChanged();
+  void OnViewChanged(const viz::FrameSinkId& frame_sink_id);
   void OnDidStopLoading();
   void OnDidUpdateFramePolicy(
       blink::WebSandboxFlags flags,
@@ -205,8 +205,11 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   RenderWidget* render_widget_;
 
   gfx::Rect frame_rect_;
+  viz::FrameSinkId frame_sink_id_;
   viz::LocalSurfaceId local_surface_id_;
   viz::LocalSurfaceIdAllocator local_surface_id_allocator_;
+
+  bool enable_surface_synchronization_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(RenderFrameProxy);
 };

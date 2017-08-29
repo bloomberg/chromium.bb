@@ -87,6 +87,8 @@ class CONTENT_EXPORT ChildFrameCompositingHelper
   viz::SurfaceId last_primary_surface_id_;
   gfx::Size last_surface_size_in_pixels_;
 
+  viz::SurfaceInfo fallback_surface_info_;
+
   // The lifetime of this weak pointer should be greater than the lifetime of
   // other member objects, as they may access this pointer during their
   // destruction.

@@ -90,7 +90,8 @@ void CrossProcessFrameConnector::SetView(RenderWidgetHostViewChildFrame* view) {
     if (is_hidden_)
       OnVisibilityChanged(false);
     frame_proxy_in_parent_renderer_->Send(new FrameMsg_ViewChanged(
-        frame_proxy_in_parent_renderer_->GetRoutingID()));
+        frame_proxy_in_parent_renderer_->GetRoutingID(),
+        view_->GetFrameSinkId()));
   }
 }
 
