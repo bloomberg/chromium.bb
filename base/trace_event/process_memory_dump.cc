@@ -352,7 +352,7 @@ void ProcessMemoryDump::AsValueInto(TracedValue* value) const {
     value->SetString("source", edge.source.ToString());
     value->SetString("target", edge.target.ToString());
     value->SetInteger("importance", edge.importance);
-    value->SetString("type", edge.type);
+    value->SetString("type", kEdgeTypeOwnership);
     value->EndDictionary();
   }
   value->EndArray();
@@ -367,8 +367,8 @@ void ProcessMemoryDump::AddOwnershipEdge(const MemoryAllocatorDumpGuid& source,
     DCHECK_EQ(target.ToUint64(),
               allocator_dumps_edges_[source].target.ToUint64());
   }
-  allocator_dumps_edges_[source] = {
-      source, target, importance, kEdgeTypeOwnership, false /* overridable */};
+  allocator_dumps_edges_[source] = {source, target, importance,
+                                    false /* overridable */};
 }
 
 void ProcessMemoryDump::AddOwnershipEdge(
@@ -382,8 +382,8 @@ void ProcessMemoryDump::AddOverridableOwnershipEdge(
     const MemoryAllocatorDumpGuid& target,
     int importance) {
   if (allocator_dumps_edges_.count(source) == 0) {
-    allocator_dumps_edges_[source] = {
-        source, target, importance, kEdgeTypeOwnership, true /* overridable */};
+    allocator_dumps_edges_[source] = {source, target, importance,
+                                      true /* overridable */};
   } else {
     // An edge between the source and target already exits. So, do nothing here
     // since the new overridable edge is implicitly overridden by a strong edge
