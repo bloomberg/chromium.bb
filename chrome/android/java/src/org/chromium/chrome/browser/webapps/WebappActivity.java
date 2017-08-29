@@ -66,6 +66,7 @@ public class WebappActivity extends SingleTabActivity {
     public static final String WEBAPP_SCHEME = "webapp";
 
     private static final String TAG = "WebappActivity";
+    private static final String HISTOGRAM_NAVIGATION_STATUS = "Webapp.NavigationStatus";
     private static final long MS_BEFORE_NAVIGATING_BACK_FROM_INTERSTITIAL = 1000;
 
     private static final int ENTER_IMMERSIVE_MODE_DELAY_MILLIS = 300;
@@ -517,6 +518,8 @@ public class WebappActivity extends SingleTabActivity {
                 if (hasCommitted && isInMainFrame) {
                     // Updates the URL.
                     mNotificationManager.maybeShowNotification();
+                    RecordHistogram.recordBooleanHistogram(
+                            HISTOGRAM_NAVIGATION_STATUS, !isErrorPage);
                 }
             }
 
