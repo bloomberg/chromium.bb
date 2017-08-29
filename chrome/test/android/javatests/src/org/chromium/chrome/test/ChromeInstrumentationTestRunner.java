@@ -22,6 +22,8 @@ import org.chromium.chrome.browser.vr_shell.VrDaydreamApi;
 import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.content.browser.test.ChildProcessAllocatorSettingsHook;
 import org.chromium.policy.test.annotations.Policies;
+import org.chromium.ui.test.util.UiDisableIfSkipCheck;
+import org.chromium.ui.test.util.UiRestrictionSkipCheck;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -44,6 +46,8 @@ public class ChromeInstrumentationTestRunner extends BaseChromiumInstrumentation
     protected void addTestHooks(BaseTestResult result) {
         super.addTestHooks(result);
         result.addSkipCheck(new ChromeRestrictionSkipCheck(getTargetContext()));
+        result.addSkipCheck(new UiDisableIfSkipCheck(getTargetContext()));
+        result.addSkipCheck(new UiRestrictionSkipCheck(getTargetContext()));
 
         result.addPreTestHook(Policies.getRegistrationHook());
         result.addPreTestHook(new ChildProcessAllocatorSettingsHook());
