@@ -743,9 +743,12 @@ TEST_F(ServiceWorkerDispatcherHostTest, CleanupOnRendererCrash) {
   // Simulate the render process crashing.
   dispatcher_host_->OnFilterRemoved();
 
-  // The dispatcher host should clean up the state from the process.
+  // The dispatcher host should have removed the provider host.
   EXPECT_FALSE(context()->GetProviderHost(process_id, provider_id));
-  EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, version_->running_status());
+
+  // The EmbeddedWorkerInstance should still think it is running, since it will
+  // clean itself up when its Mojo connection to the renderer breaks.
+  EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, version_->running_status());
 
   // We should be able to hook up a new dispatcher host although the old object
   // is not yet destroyed. This is what the browser does when reusing a crashed

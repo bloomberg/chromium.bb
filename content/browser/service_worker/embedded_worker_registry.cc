@@ -94,29 +94,6 @@ void EmbeddedWorkerRegistry::OnDevToolsAttached(int embedded_worker_id) {
   lifetime_tracker_.AbortTiming(embedded_worker_id);
 }
 
-void EmbeddedWorkerRegistry::RemoveProcess(int process_id) {
-  std::map<int, std::set<int> >::iterator found =
-      worker_process_map_.find(process_id);
-  if (found != worker_process_map_.end()) {
-    const std::set<int>& worker_set = worker_process_map_[process_id];
-    for (std::set<int>::const_iterator it = worker_set.begin();
-         it != worker_set.end();
-         ++it) {
-      int embedded_worker_id = *it;
-      DCHECK(base::ContainsKey(worker_map_, embedded_worker_id));
-      // RemoveProcess is typically called after the running workers on the
-      // process have been stopped, so if there is a running worker at this
-      // point somehow the worker thread has lost contact with the browser
-      // process.
-      // Set the worker's status to STOPPED so a new thread can be created for
-      // this version. Use OnDetached rather than OnStopped so UMA doesn't
-      // record it as a normal stoppage.
-      worker_map_[embedded_worker_id]->OnDetached();
-    }
-    worker_process_map_.erase(found);
-  }
-}
-
 EmbeddedWorkerInstance* EmbeddedWorkerRegistry::GetWorker(
     int embedded_worker_id) {
   WorkerInstanceMap::iterator found = worker_map_.find(embedded_worker_id);
