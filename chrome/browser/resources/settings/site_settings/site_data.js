@@ -20,14 +20,17 @@ DomRepeatEvent.prototype.model;
 Polymer({
   is: 'site-data',
 
-  behaviors: [CookieTreeBehavior, I18nBehavior, settings.RouteObserverBehavior],
+  behaviors: [
+    CookieTreeBehavior,
+  ],
 
   properties: {
     /**
      * The current filter applied to the cookie data list.
-     * @private
      */
-    filterString_: {
+    filter: {
+      observer: 'onSearchChanged_',
+      notify: true,
       type: String,
       value: '',
     },
@@ -40,6 +43,11 @@ Polymer({
       type: Object,
       observer: 'focusConfigChanged_',
     },
+  },
+
+  /** @override */
+  ready: function() {
+    this.loadCookies();
   },
 
   /**
@@ -63,33 +71,19 @@ Polymer({
   },
 
   /**
-   * Reload cookies when the cookie page is visited.
-   *
-   * settings.RouteObserverBehavior
-   * @param {!settings.Route} currentRoute
-   * @protected
-   */
-  currentRouteChanged: function(currentRoute) {
-    if (currentRoute == settings.routes.SITE_SETTINGS_COOKIES) {
-      this.loadCookies();
-    }
-  },
-
-  /**
    * A filter function for the list.
    * @param {!CookieDataSummaryItem} item The item to possibly filter out.
    * @return {boolean} Whether to show the item.
    * @private
    */
   showItem_: function(item) {
-    if (this.filterString_.length == 0)
+    if (this.filter.length == 0)
       return true;
-    return item.site.indexOf(this.filterString_) > -1;
+    return item.site.indexOf(this.filter) > -1;
   },
 
   /** @private */
-  onSearchChanged_: function(e) {
-    this.filterString_ = e.detail;
+  onSearchChanged_: function() {
     this.$.list.render();
   },
 
@@ -103,11 +97,11 @@ Polymer({
 
   /**
    * Returns the string to use for the Remove label.
-   * @return {string} filterString The current filter string.
+   * @return {string} filter The current filter string.
    * @private
    */
-  computeRemoveLabel_: function(filterString) {
-    if (filterString.length == 0)
+  computeRemoveLabel_: function(filter) {
+    if (filter.length == 0)
       return loadTimeData.getString('siteSettingsCookieRemoveAll');
     return loadTimeData.getString('siteSettingsCookieRemoveAllShown');
   },
@@ -141,7 +135,7 @@ Polymer({
   onConfirmDelete_: function() {
     this.$.confirmDeleteDialog.close();
 
-    if (this.filterString_.length == 0) {
+    if (this.filter.length == 0) {
       this.removeAllCookies();
     } else {
       var items = this.$.list.items;

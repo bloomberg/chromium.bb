@@ -262,10 +262,26 @@
               label="$i18n{thirdPartyCookie}"
               sub-label="$i18n{thirdPartyCookieSublabel}">
           </settings-toggle-button>
+          <div class="settings-box" actionable on-tap="onSiteDataTap_">
+             <div class="start" id="cookiesLink">
+               $i18n{siteSettingsCookieLink}
+             </div>
+             <button class="subpage-arrow" is="paper-icon-button-light"
+                 aria-labelledby="cookiesLink">
+             </button>
+          </div>
           <category-setting-exceptions
               category="{{ContentSettingsTypes.COOKIES}}">
           </category-setting-exceptions>
-          <site-data focus-config="[[focusConfig_]]"></site-data>
+        </settings-subpage>
+      </template>
+      <template is="dom-if" route-path="/siteData" no-search>
+        <settings-subpage page-title="$i18n{siteSettingsCookieHeader}"
+            search-label="$i18n{siteSettingsCookieSearch}"
+            search-term="{{siteDataFilter_}}">
+          <site-data filter="[[siteDataFilter_]]"
+              focus-config="[[focusConfig_]]">
+          </site-data>
         </settings-subpage>
       </template>
       <template is="dom-if" route-path="/content/images" no-search>

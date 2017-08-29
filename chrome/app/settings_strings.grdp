@@ -2400,8 +2400,11 @@
   <message name="IDS_SETTINGS_SITE_SETTINGS_DELETE" desc="Label for the trashcan icon used to delete storage on the Site Details page.">
     Delete
   </message>
-  <message name="IDS_SETTINGS_SITE_SETTINGS_COOKIE_HEADER" desc="A header for the list of showing all sites and their data.">
+  <message name="IDS_SETTINGS_SITE_SETTINGS_COOKIE_HEADER" desc="A header for the list of showing all cookies and site data.">
     All cookies and site data
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_COOKIE_LINK" desc="Label for link showing all cookies and site data.">
+    See all cookies and site data
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_COOKIE_REMOVE" desc="Label for the button to delete a single site cookie.">
     Remove
