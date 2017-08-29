@@ -4,9 +4,9 @@
 
 #include "core/editing/markers/SuggestionMarkerListImpl.h"
 
-#include "core/editing/markers/SortedDocumentMarkerListEditor.h"
 #include "core/editing/markers/SuggestionMarker.h"
 #include "core/editing/markers/SuggestionMarkerReplacementScope.h"
+#include "core/editing/markers/UnsortedDocumentMarkerListEditor.h"
 
 namespace blink {
 
@@ -78,16 +78,25 @@ const HeapVector<Member<DocumentMarker>>& SuggestionMarkerListImpl::GetMarkers()
 DocumentMarker* SuggestionMarkerListImpl::FirstMarkerIntersectingRange(
     unsigned start_offset,
     unsigned end_offset) const {
+  return UnsortedDocumentMarkerListEditor::FirstMarkerIntersectingRange(
+      markers_, start_offset, end_offset);
+}
+
+// TODO(rlanday): move to UnsortedDocumentMarkerListEditor.cpp.
+DocumentMarker* UnsortedDocumentMarkerListEditor::FirstMarkerIntersectingRange(
+    const MarkerList& list,
+    unsigned start_offset,
+    unsigned end_offset) {
   DCHECK_LE(start_offset, end_offset);
 
   const auto it =
-      std::find_if(markers_.begin(), markers_.end(),
+      std::find_if(list.begin(), list.end(),
                    [start_offset, end_offset](const DocumentMarker* marker) {
                      return marker->StartOffset() < end_offset &&
                             marker->EndOffset() > start_offset;
                    });
 
-  if (it == markers_.end())
+  if (it == list.end())
     return nullptr;
   return *it;
 }
@@ -95,10 +104,20 @@ DocumentMarker* SuggestionMarkerListImpl::FirstMarkerIntersectingRange(
 HeapVector<Member<DocumentMarker>>
 SuggestionMarkerListImpl::MarkersIntersectingRange(unsigned start_offset,
                                                    unsigned end_offset) const {
+  return UnsortedDocumentMarkerListEditor::MarkersIntersectingRange(
+      markers_, start_offset, end_offset);
+}
+
+// TODO(rlanday): move to UnsortedDocumentMarkerListEditor.cpp.
+HeapVector<Member<DocumentMarker>>
+UnsortedDocumentMarkerListEditor::MarkersIntersectingRange(
+    const MarkerList& list,
+    unsigned start_offset,
+    unsigned end_offset) {
   DCHECK_LE(start_offset, end_offset);
 
   HeapVector<Member<DocumentMarker>> results;
-  std::copy_if(markers_.begin(), markers_.end(), std::back_inserter(results),
+  std::copy_if(list.begin(), list.end(), std::back_inserter(results),
                [start_offset, end_offset](const DocumentMarker* marker) {
                  return marker->StartOffset() < end_offset &&
                         marker->EndOffset() > start_offset;
@@ -108,20 +127,29 @@ SuggestionMarkerListImpl::MarkersIntersectingRange(unsigned start_offset,
 
 bool SuggestionMarkerListImpl::MoveMarkers(int length,
                                            DocumentMarkerList* dst_list) {
+  return UnsortedDocumentMarkerListEditor::MoveMarkers(&markers_, length,
+                                                       dst_list);
+}
+
+// TODO(rlanday): move to UnsortedDocumentMarkerListEditor.cpp.
+bool UnsortedDocumentMarkerListEditor::MoveMarkers(
+    MarkerList* src_list,
+    int length,
+    DocumentMarkerList* dst_list) {
   DCHECK_GT(length, 0);
   bool did_move_marker = false;
   unsigned end_offset = length - 1;
 
   HeapVector<Member<DocumentMarker>> unmoved_markers;
-  for (auto it = markers_.begin(); it != markers_.end(); ++it) {
+  for (auto it = src_list->begin(); it != src_list->end(); ++it) {
     DocumentMarker& marker = **it;
     if (marker.StartOffset() > end_offset) {
       unmoved_markers.push_back(marker);
       continue;
     }
 
-    // If we're splitting a text node in the middle of a suggestion marker,
-    // remove the marker
+    // If we're splitting a text node in the middle of a marker, remove the
+    // marker.
     if (marker.EndOffset() > end_offset)
       continue;
 
@@ -129,18 +157,25 @@ bool SuggestionMarkerListImpl::MoveMarkers(int length,
     did_move_marker = true;
   }
 
-  markers_ = std::move(unmoved_markers);
+  *src_list = std::move(unmoved_markers);
   return did_move_marker;
 }
 
 bool SuggestionMarkerListImpl::RemoveMarkers(unsigned start_offset,
                                              int length) {
-  // Since suggestion markers are stored unsorted, the quickest way to perform
-  // this operation is to build a new list with the markers that aren't being
-  // removed.
+  return UnsortedDocumentMarkerListEditor::RemoveMarkers(&markers_,
+                                                         start_offset, length);
+}
+
+// TODO(rlanday): move to UnsortedDocumentMarkerListEditor.cpp.
+bool UnsortedDocumentMarkerListEditor::RemoveMarkers(MarkerList* list,
+                                                     unsigned start_offset,
+                                                     int length) {
+  // For an unsorted marker list, the quickest way to perform this operation is
+  // to build a new list with the markers that aren't being removed.
   const unsigned end_offset = start_offset + length;
   HeapVector<Member<DocumentMarker>> unremoved_markers;
-  for (const Member<DocumentMarker>& marker : markers_) {
+  for (const Member<DocumentMarker>& marker : *list) {
     if (marker->EndOffset() <= start_offset ||
         marker->StartOffset() >= end_offset) {
       unremoved_markers.push_back(marker);
@@ -148,8 +183,8 @@ bool SuggestionMarkerListImpl::RemoveMarkers(unsigned start_offset,
     }
   }
 
-  const bool did_remove_marker = (unremoved_markers.size() != markers_.size());
-  markers_ = std::move(unremoved_markers);
+  const bool did_remove_marker = (unremoved_markers.size() != list->size());
+  *list = std::move(unremoved_markers);
   return did_remove_marker;
 }
 
