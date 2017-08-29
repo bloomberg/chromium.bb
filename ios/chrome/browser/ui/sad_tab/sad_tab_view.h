@@ -10,6 +10,8 @@
 #include "base/ios/block_types.h"
 #include "ios/web/public/navigation_manager.h"
 
+@protocol ApplicationCommands;
+
 // Describes the mode of the Sad Tab, whether it should offer an attempt to
 // reload content, or whether it should offer a way to provide feedback.
 enum class SadTabViewMode {
@@ -33,6 +35,9 @@ enum class SadTabViewMode {
 
 // Determines the type of Sad Tab information that will be displayed.
 @property(nonatomic, readonly) SadTabViewMode mode;
+
+// The dispatcher for this view.
+@property(nonatomic, weak) id<ApplicationCommands> dispatcher;
 
 @end
 

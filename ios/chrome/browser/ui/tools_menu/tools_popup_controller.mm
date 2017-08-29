@@ -211,7 +211,7 @@ NS_INLINE UIEdgeInsets TabHistoryPopupMenuInsets() {
     case TOOLS_STOP_ITEM:
       base::RecordAction(UserMetricsAction("MobileMenuStop"));
       break;
-    case IDC_REPORT_AN_ISSUE:
+    case TOOLS_REPORT_AN_ISSUE:
       self.containerView.hidden = YES;
       base::RecordAction(UserMetricsAction("MobileMenuReportAnIssue"));
       break;

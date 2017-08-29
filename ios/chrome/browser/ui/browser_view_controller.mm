@@ -5099,9 +5099,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
 - (void)userTappedSendFeedback:(UIView*)view {
   base::RecordAction(base::UserMetricsAction("IOSRateThisAppFeedbackChosen"));
   _rateThisAppDialog = nil;
-  GenericChromeCommand* command =
-      [[GenericChromeCommand alloc] initWithTag:IDC_REPORT_AN_ISSUE];
-  [self chromeExecuteCommand:command];
+  [self.dispatcher showReportAnIssue];
 }
 
 - (void)userTappedDismiss:(UIView*)view {
