@@ -142,10 +142,6 @@ void SurfacelessGlRenderer::OverlayChecker(int z_order,
   // Show the entire buffer by setting the crop to a unity square.
   overlay_candidate.crop_rect = gfx::RectF(0, 0, 1, 1);
 
-  // The quad rect is the rectangular bounds of the overlay demonstration
-  // rectangle.
-  overlay_candidate.quad_rect_in_target_space = bounds_rect;
-
   // The clip region is the entire screen.
   overlay_candidate.clip_rect = gfx::Rect(size_);
 

@@ -102,8 +102,6 @@ void CompositorOverlayCandidateValidatorOzone::CheckOverlaySupport(
     ozone_surface_list.at(i).format = surfaces->at(i).format;
     ozone_surface_list.at(i).display_rect = surfaces->at(i).display_rect;
     ozone_surface_list.at(i).crop_rect = surfaces->at(i).uv_rect;
-    ozone_surface_list.at(i).quad_rect_in_target_space =
-        surfaces->at(i).quad_rect_in_target_space;
     ozone_surface_list.at(i).clip_rect = surfaces->at(i).clip_rect;
     ozone_surface_list.at(i).is_clipped = surfaces->at(i).is_clipped;
     ozone_surface_list.at(i).plane_z_order = surfaces->at(i).plane_z_order;

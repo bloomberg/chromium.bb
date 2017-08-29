@@ -168,7 +168,6 @@ TEST_F(DrmUtilTest, OverlaySurfaceCandidate) {
   input_osc.buffer_size = gfx::Size(100, 50);
   input_osc.display_rect = gfx::RectF(1., 2., 3., 4.);
   input_osc.crop_rect = gfx::RectF(10., 20., 30., 40.);
-  input_osc.quad_rect_in_target_space = gfx::Rect(1, 2, 3, 4);
   input_osc.clip_rect = gfx::Rect(10, 20, 30, 40);
   input_osc.is_clipped = true;
   input_osc.plane_z_order = 42;

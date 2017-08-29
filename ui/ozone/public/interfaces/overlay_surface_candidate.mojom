@@ -28,8 +28,6 @@ struct OverlaySurfaceCandidate {
   gfx.mojom.RectF display_rect;
   // Crop within the buffer to be placed inside |display_rect|.
   gfx.mojom.RectF crop_rect;
-  // Quad geometry rect after applying the quad_transform().
-  gfx.mojom.Rect quad_rect_in_target_space;
   // Clip rect in the target content space after composition.
   gfx.mojom.Rect clip_rect;
   // If the quad is clipped after composition.

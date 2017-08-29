@@ -72,11 +72,6 @@ struct StructTraits<ui::ozone::mojom::OverlaySurfaceCandidateDataView,
     return osc.crop_rect;
   }
 
-  static const gfx::Rect& quad_rect_in_target_space(
-      const ui::OverlaySurfaceCandidate& osc) {
-    return osc.quad_rect_in_target_space;
-  }
-
   static const gfx::Rect& clip_rect(const ui::OverlaySurfaceCandidate& osc) {
     return osc.clip_rect;
   }
@@ -103,7 +98,6 @@ struct StructTraits<ui::ozone::mojom::OverlaySurfaceCandidateDataView,
            data.ReadBufferSize(&out->buffer_size) &&
            data.ReadDisplayRect(&out->display_rect) &&
            data.ReadCropRect(&out->crop_rect) &&
-           data.ReadQuadRectInTargetSpace(&out->quad_rect_in_target_space) &&
            data.ReadClipRect(&out->clip_rect);
   }
 };
