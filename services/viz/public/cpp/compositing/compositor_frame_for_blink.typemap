@@ -5,8 +5,6 @@
 mojom = "//services/viz/public/interfaces/compositing/compositor_frame.mojom"
 public_headers = [ "//cc/output/compositor_frame.h" ]
 traits_headers = [
-  "//cc/ipc/filter_operation_struct_traits.h",
-  "//cc/ipc/filter_operations_struct_traits.h",
   "//gpu/ipc/common/mailbox_holder_struct_traits.h",
   "//gpu/ipc/common/mailbox_struct_traits.h",
   "//gpu/ipc/common/sync_token_struct_traits.h",
@@ -14,6 +12,8 @@ traits_headers = [
   "//mojo/common/common_custom_types_struct_traits.h",
   "//services/viz/public/cpp/compositing/compositor_frame_struct_traits.h",
   "//services/viz/public/cpp/compositing/compositor_frame_metadata_struct_traits.h",
+  "//services/viz/public/cpp/compositing/filter_operation_struct_traits.h",
+  "//services/viz/public/cpp/compositing/filter_operations_struct_traits.h",
   "//services/viz/public/cpp/compositing/quads_struct_traits.h",
   "//services/viz/public/cpp/compositing/render_pass_struct_traits.h",
   "//services/viz/public/cpp/compositing/selection_struct_traits.h",
