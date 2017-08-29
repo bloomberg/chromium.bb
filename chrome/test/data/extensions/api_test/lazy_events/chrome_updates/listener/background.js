@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-chrome.runtime.onInstalled.addListener(function(info) {
-  if (info.reason == 'chrome_update')
-    chrome.test.sendMessage('update event');
-});
+chrome.runtime.onInstalled.addListener(function(info) {});
+
 chrome.test.notifyPass();
