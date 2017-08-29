@@ -301,6 +301,7 @@ void ExtensionMessageBubbleController::OnShutdown(ExtensionRegistry* registry) {
 }
 
 void ExtensionMessageBubbleController::OnBrowserRemoved(Browser* browser) {
+  extension_registry_observer_.RemoveAll();
   if (browser == browser_) {
     if (is_highlighting_) {
       model_->StopHighlighting();
