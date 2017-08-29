@@ -5,21 +5,29 @@
 .outer {
   height: 400px;
   width: 1000px;
-  overflow: scroll;
 }
-#content {
+.content {
   height: 1000px;
   width: 1200px;
 }
+#container {
+  overflow: scroll;
+}
+#non_scrollable {
+  overflow: none;
+}
 </style>
 
-<div id='space' class='outer'></div>
+<div id='non_scrollable' class='outer'>
+  <div class='content'></div>
+</div>
 <div id='container' class='outer'>
-  <div id='content'></div>
+  <div class='content'></div>
 </div>
 
 <script>
 const container = document.getElementById('container');
+const non_scrollable = document.getElementById('non_scrollable');
 
 function setUpForWindow() {
   window.scrollTo(100, 100);
@@ -116,6 +124,22 @@ function test_boundary_allows_inner(source_type) {
   });
 }
 
+function test_boundary_on_nonscrollable_allows_propagation(source_type) {
+  non_scrollable.style.scrollBoundaryBehaviorX = 'none';
+  non_scrollable.style.scrollBoundaryBehaviorY = 'none';
+  window.scrollTo(0, 0);
+  return smoothScroll(200, 200, 300, source_type, 'right', 4000)
+  .then(waitForAnimationEnd)
+  .then(() => {
+    assert_greater_than(window.scrollX, 100);})
+  .then(
+    smoothScroll.bind(this, 200, 200, 300, source_type, 'down', 4000))
+  .then(waitForAnimationEnd)
+  .then(() => {
+    assert_greater_than(window.scrollY, 100);
+  });
+}
+
 const TOUCH_SOURCE_TYPE = 1; // TOUCH_INPUT from synthetic_gesture_params.h
 const WHEEL_SOURCE_TYPE = 2; // TOUCH_INPUT from synthetic_gesture_params.h
 promise_test(t => {
@@ -127,6 +151,9 @@ promise_test(t => {
 promise_test(t => {
     return test_boundary_allows_inner(WHEEL_SOURCE_TYPE);
   }, 'scroll-boundary-behavior should not affect scrolling inside the applied container with: wheel.');
+promise_test(t => {
+    return test_boundary_on_nonscrollable_allows_propagation(WHEEL_SOURCE_TYPE);
+  }, 'scroll-boundary-behavior on non-scrollable area should not affect scroll propagation with: wheel.');
 
 const IS_MAC = navigator.platform.indexOf('Mac') == 0;
 if (!IS_MAC) {
@@ -137,7 +164,7 @@ if (!IS_MAC) {
       return test_boundary_prevents_x(TOUCH_SOURCE_TYPE);
     }, 'scroll-boundary-behavior-x: none should only prevent scroll propagation on x axis with: touch.');
   promise_test(t => {
-      return test_boundary_allows_inner(TOUCH_SOURCE_TYPE);
-    }, 'scroll-boundary-behavior should not affect scrolling inside the applied container with: touch.');
+      return test_boundary_on_nonscrollable_allows_propagation(TOUCH_SOURCE_TYPE);
+    }, 'scroll-boundary-behavior on non-scrollable area should not affect scroll propagation with: touch.');
 }
 </script>
