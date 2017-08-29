@@ -36,6 +36,8 @@ namespace payments {
 class AddressNormalizer;
 class AutofillPaymentInstrument;
 class CurrencyFormatter;
+class PaymentDetails;
+class PaymentShippingOption;
 }  // namespace payments
 
 namespace ios {
@@ -136,7 +138,7 @@ class PaymentRequest : public PaymentOptionsProvider,
   }
 
   // Returns the payment details from |web_payment_request_|.
-  const web::PaymentDetails& payment_details() const {
+  const PaymentDetails& payment_details() const {
     return web_payment_request_.details;
   }
 
@@ -146,7 +148,7 @@ class PaymentRequest : public PaymentOptionsProvider,
   // Updates the payment details of the |web_payment_request_|. It also updates
   // the cached references to the shipping options in |web_payment_request_| as
   // well as the reference to the selected shipping option.
-  void UpdatePaymentDetails(const web::PaymentDetails& details);
+  void UpdatePaymentDetails(const PaymentDetails& details);
 
   // PaymentOptionsProvider:
   bool request_shipping() const override;
@@ -254,13 +256,13 @@ class PaymentRequest : public PaymentOptionsProvider,
   }
 
   // Returns the available shipping options from |web_payment_request_|.
-  const std::vector<web::PaymentShippingOption*>& shipping_options() const {
+  const std::vector<PaymentShippingOption*>& shipping_options() const {
     return shipping_options_;
   }
 
   // Returns the selected shipping option from |web_payment_request_| if there
   // is one. Returns nullptr otherwise.
-  web::PaymentShippingOption* selected_shipping_option() const {
+  PaymentShippingOption* selected_shipping_option() const {
     return selected_shipping_option_;
   }
 
@@ -396,8 +398,8 @@ class PaymentRequest : public PaymentOptionsProvider,
   std::set<autofill::CreditCard::CardType> supported_card_types_set_;
 
   // A vector of pointers to the shipping options in |web_payment_request_|.
-  std::vector<web::PaymentShippingOption*> shipping_options_;
-  web::PaymentShippingOption* selected_shipping_option_;
+  std::vector<PaymentShippingOption*> shipping_options_;
+  PaymentShippingOption* selected_shipping_option_;
 
   PaymentsProfileComparator profile_comparator_;
 

@@ -10,6 +10,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
 #include "components/payments/core/payment_address.h"
+#include "components/payments/core/payment_shipping_option.h"
 #include "ios/web/public/payments/payment_request.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -137,7 +138,8 @@ NSString* JSONEscape(NSString* JSON) {
   [self executeScript:script completionHandler:completionHanlder];
 }
 
-- (void)updateShippingOption:(const web::PaymentShippingOption&)shippingOption
+- (void)updateShippingOption:
+            (const payments::PaymentShippingOption&)shippingOption
            completionHandler:(ProceduralBlockWithBool)completionHanlder {
   NSString* script =
       [NSString stringWithFormat:

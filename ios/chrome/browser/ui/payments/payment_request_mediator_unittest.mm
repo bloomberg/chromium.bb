@@ -13,6 +13,7 @@
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/payments/core/payment_instrument.h"
 #include "components/payments/core/payment_prefs.h"
+#include "components/payments/core/payment_shipping_option.h"
 #include "components/payments/core/strings_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_manager.h"
@@ -103,7 +104,7 @@ TEST_F(PaymentRequestMediatorTest, TestCanPay) {
 
   // Payment cannot be completed if there is no selected shipping option,
   // unless no shipping information is requested.
-  web::PaymentShippingOption* selected_shipping_option =
+  payments::PaymentShippingOption* selected_shipping_option =
       payment_request()->selected_shipping_option();
   payment_request()->set_selected_shipping_option(nullptr);
   EXPECT_FALSE([mediator() canPay]);

@@ -30,10 +30,12 @@
 #include "components/payments/core/features.h"
 #include "components/payments/core/journey_logger.h"
 #include "components/payments/core/payment_address.h"
+#include "components/payments/core/payment_details.h"
 #include "components/payments/core/payment_instrument.h"
 #include "components/payments/core/payment_prefs.h"
 #include "components/payments/core/payment_request_base_delegate.h"
 #include "components/payments/core/payment_request_data_util.h"
+#include "components/payments/core/payment_shipping_option.h"
 #include "components/prefs/pref_service.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #include "ios/chrome/browser/autofill/validation_rules_storage_factory.h"
@@ -760,7 +762,7 @@ struct PendingPaymentResponse {
   [_updateEventTimeoutTimer invalidate];
 
   const base::DictionaryValue* paymentDetailsData = nullptr;
-  web::PaymentDetails paymentDetails;
+  payments::PaymentDetails paymentDetails;
   if (!message.GetDictionary("payment_details", &paymentDetailsData)) {
     DLOG(ERROR) << "JS message parameter 'payment_details' is missing";
     return NO;
@@ -951,7 +953,7 @@ requestFullCreditCard:(const autofill::CreditCard&)creditCard
 
 - (void)paymentRequestCoordinator:(PaymentRequestCoordinator*)coordinator
           didSelectShippingOption:
-              (const web::PaymentShippingOption&)shippingOption {
+              (const payments::PaymentShippingOption&)shippingOption {
   if (coordinator.paymentRequest->state() !=
           payments::PaymentRequest::State::INTERACTIVE ||
       coordinator.paymentRequest->updating()) {

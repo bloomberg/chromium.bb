@@ -10,8 +10,10 @@
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/payments/core/autofill_payment_instrument.h"
 #include "components/payments/core/payment_address.h"
+#include "components/payments/core/payment_details.h"
 #include "components/payments/core/payment_instrument.h"
 #include "components/payments/core/payment_request_data_util.h"
+#include "components/payments/core/payment_shipping_option.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/payments/payment_request.h"
@@ -152,7 +154,7 @@ requestFullCreditCard:(const autofill::CreditCard&)card
   _fullCardRequester->GetFullCard(card, _autofillManager, resultDelegate);
 }
 
-- (void)updatePaymentDetails:(web::PaymentDetails)paymentDetails {
+- (void)updatePaymentDetails:(payments::PaymentDetails)paymentDetails {
   [_updatePaymentSummaryItemTimer invalidate];
 
   BOOL totalValueChanged =
@@ -424,7 +426,7 @@ contactInfoSelectionCoordinator:(ContactInfoSelectionCoordinator*)coordinator
 - (void)shippingOptionSelectionCoordinator:
             (ShippingOptionSelectionCoordinator*)coordinator
                    didSelectShippingOption:
-                       (web::PaymentShippingOption*)shippingOption {
+                       (payments::PaymentShippingOption*)shippingOption {
   DCHECK(shippingOption);
   [_delegate paymentRequestCoordinator:self
                didSelectShippingOption:*shippingOption];

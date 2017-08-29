@@ -13,11 +13,8 @@
 
 namespace payments {
 class PaymentRequest;
-}  // namespace payments
-
-namespace web {
 class PaymentShippingOption;
-}  // namespace web
+}  // namespace payments
 
 @class ShippingOptionSelectionCoordinator;
 
@@ -28,7 +25,7 @@ class PaymentShippingOption;
 - (void)shippingOptionSelectionCoordinator:
             (ShippingOptionSelectionCoordinator*)coordinator
                    didSelectShippingOption:
-                       (web::PaymentShippingOption*)shippingOption;
+                       (payments::PaymentShippingOption*)shippingOption;
 
 // Notifies the delegate that the user has chosen to return to the previous
 // screen without making a selection.

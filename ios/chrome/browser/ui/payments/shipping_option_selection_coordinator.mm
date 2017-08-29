@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
+#include "components/payments/core/payment_shipping_option.h"
 #include "ios/chrome/browser/payments/payment_request.h"
 #import "ios/chrome/browser/payments/payment_request_util.h"
 #include "ios/chrome/browser/ui/payments/shipping_option_selection_mediator.h"
@@ -34,7 +35,7 @@ const int64_t kDelegateNotificationDelayInNanoSeconds = 0.2 * NSEC_PER_SEC;
 // notified. The delay is here to let the user get a visual feedback of the
 // selection before this view disappears.
 - (void)delayedNotifyDelegateOfSelection:
-    (web::PaymentShippingOption*)shippingOption;
+    (payments::PaymentShippingOption*)shippingOption;
 
 @end
 
@@ -101,7 +102,7 @@ const int64_t kDelegateNotificationDelayInNanoSeconds = 0.2 * NSEC_PER_SEC;
 #pragma mark - Helper methods
 
 - (void)delayedNotifyDelegateOfSelection:
-    (web::PaymentShippingOption*)shippingOption {
+    (payments::PaymentShippingOption*)shippingOption {
   self.viewController.view.userInteractionEnabled = NO;
   __weak ShippingOptionSelectionCoordinator* weakSelf = self;
   dispatch_after(

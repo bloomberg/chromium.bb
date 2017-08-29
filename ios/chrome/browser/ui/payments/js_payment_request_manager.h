@@ -10,12 +10,12 @@
 #import "ios/web/public/web_state/js/crw_js_injection_manager.h"
 
 namespace payments {
+class PaymentShippingOption;
 struct PaymentAddress;
 }  // namespace payments
 
 namespace web {
 class PaymentResponse;
-class PaymentShippingOption;
 }  // namespace web
 
 // Injects the JavaScript that implements the Payment Request API and provides
@@ -88,7 +88,8 @@ class PaymentShippingOption;
 
 // Updates the shippingOption property on the PaymentRequest object and
 // dispatches a shippingoptionchange event.
-- (void)updateShippingOption:(const web::PaymentShippingOption&)shippingOption
+- (void)updateShippingOption:
+            (const payments::PaymentShippingOption&)shippingOption
            completionHandler:(ProceduralBlockWithBool)completionHanlder;
 
 @end

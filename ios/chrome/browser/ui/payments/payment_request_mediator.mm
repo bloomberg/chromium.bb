@@ -15,6 +15,7 @@
 #include "components/payments/core/autofill_payment_instrument.h"
 #include "components/payments/core/currency_formatter.h"
 #include "components/payments/core/payment_prefs.h"
+#include "components/payments/core/payment_shipping_option.h"
 #include "components/payments/core/strings_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
@@ -156,7 +157,7 @@ using ::payment_request_util::GetShippingSectionTitle;
 }
 
 - (CollectionViewItem*)shippingOptionItem {
-  const web::PaymentShippingOption* option =
+  const payments::PaymentShippingOption* option =
       self.paymentRequest->selected_shipping_option();
   if (option) {
     PaymentsTextItem* item = [[PaymentsTextItem alloc] init];

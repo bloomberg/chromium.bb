@@ -18,6 +18,8 @@ class NavigationItem;
 
 namespace payments {
 
+class PaymentDetails;
+
 // Launches a native iOS third party payment app and handles the response
 // returned from that payment app. Only one instance of this object can exist
 // per browser state. This launcher can only handle one request at a time,
@@ -87,12 +89,11 @@ class IOSPaymentInstrumentLauncher : public KeyedService {
   std::unique_ptr<base::ListValue> SerializeCertificateChain(
       web::NavigationItem* item);
 
-  // Returns the JSON-serialized array of web::PaymentDetailsModifier objects.
+  // Returns the JSON-serialized array of PaymentDetailsModifier objects.
   // |details| is the object that represents the details of a PaymentRequest
-  // object and contains the vector of web::PaymentDetailsModifier objects to
+  // object and contains the vector of PaymentDetailsModifier objects to
   // serialize.
-  std::unique_ptr<base::ListValue> SerializeModifiers(
-      web::PaymentDetails details);
+  std::unique_ptr<base::ListValue> SerializeModifiers(PaymentDetails details);
 
   // Invokes the payment instrument delegate with the appropriate function.
   // If |method_name| or |details| are empty then |delegate_| calls

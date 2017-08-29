@@ -20,12 +20,12 @@ class ChromeBrowserState;
 }  // namespace ios
 
 namespace payments {
+class PaymentShippingOption;
 class PaymentsProfileComparator;
 }  // namespace payments
 
 namespace web {
 class PaymentRequest;
-class PaymentShippingOption;
 class WebState;
 }  // namespace web
 
@@ -96,7 +96,7 @@ class TestPaymentRequest : public PaymentRequest {
   void ResetParsedPaymentMethodData();
 
   // Sets the currently selected shipping option for this PaymentRequest flow.
-  void set_selected_shipping_option(web::PaymentShippingOption* option) {
+  void set_selected_shipping_option(payments::PaymentShippingOption* option) {
     selected_shipping_option_ = option;
   }
 

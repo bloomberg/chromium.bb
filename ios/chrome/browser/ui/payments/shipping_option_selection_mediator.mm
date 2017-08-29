@@ -9,6 +9,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/payments/core/currency_formatter.h"
+#include "components/payments/core/payment_shipping_option.h"
 #include "components/payments/core/strings_util.h"
 #include "ios/chrome/browser/payments/payment_request.h"
 #import "ios/chrome/browser/ui/payments/cells/payments_text_item.h"
@@ -91,11 +92,11 @@ using payments::GetShippingOptionSectionString;
 #pragma mark - Helper methods
 
 - (void)loadItems {
-  const std::vector<web::PaymentShippingOption*>& shippingOptions =
+  const std::vector<payments::PaymentShippingOption*>& shippingOptions =
       _paymentRequest->shipping_options();
   _items = [NSMutableArray arrayWithCapacity:shippingOptions.size()];
   for (size_t index = 0; index < shippingOptions.size(); ++index) {
-    web::PaymentShippingOption* shippingOption = shippingOptions[index];
+    payments::PaymentShippingOption* shippingOption = shippingOptions[index];
     DCHECK(shippingOption);
     PaymentsTextItem* item = [[PaymentsTextItem alloc] init];
     item.text = base::SysUTF16ToNSString(shippingOption->label);
