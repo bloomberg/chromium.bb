@@ -105,6 +105,9 @@ class ArcVoiceInteractionFrameworkService
   // Start the voice interaction setup wizard in container.
   void StartVoiceInteractionSetupWizard();
 
+  // Show the voice interaction settings in container.
+  void ShowVoiceInteractionSettings();
+
   // Updates voice interaction flags. These flags are set only once when ARC
   // container is enabled.
   void UpdateVoiceInteractionPrefs();
