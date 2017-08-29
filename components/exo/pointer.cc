@@ -123,8 +123,10 @@ void Pointer::SetCursor(Surface* surface, const gfx::Point& hotspot) {
     cursor_changed = true;
   }
 
-  if (hotspot != hotspot_)
+  if (hotspot != cursor_hotspot_) {
+    hotspot_ = hotspot;
     cursor_changed = true;
+  }
 
   // Early out if cursor did not change.
   if (!cursor_changed) {
@@ -378,7 +380,7 @@ void Pointer::OnCursorCaptured(const gfx::Point& hotspot,
   } else {
     DCHECK(result->HasBitmap());
     cursor_bitmap_ = *result->TakeBitmap();
-    hotspot_ = hotspot;
+    cursor_hotspot_ = hotspot;
   }
 
   UpdateCursor();
@@ -391,7 +393,8 @@ void Pointer::UpdateCursor() {
     cursor_ = ui::CursorType::kNone;
   } else {
     SkBitmap bitmap = cursor_bitmap_;
-    gfx::Point hotspot = gfx::ScaleToFlooredPoint(hotspot_, capture_ratio_);
+    gfx::Point hotspot =
+        gfx::ScaleToFlooredPoint(cursor_hotspot_, capture_ratio_);
 
     auto* helper = WMHelper::GetInstance();
     const display::Display& display = helper->GetCursorDisplay();
