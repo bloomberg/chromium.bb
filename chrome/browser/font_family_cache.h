@@ -25,6 +25,10 @@ FORWARD_DECLARE_TEST(FontFamilyCacheTest, Caching);
 // relies on the assumption that each concatenation of map_name + '.' + script
 // is a unique string. It also relies on the assumption that the (const char*)
 // keys used in both inner and outer maps are compile time constants.
+// This class caches the strings necessary to update
+// "content::ScriptFontFamilyMap". This is necessary since Chrome attempts to
+// update content::ScriptFontFamilyMap 20000 times at startup. See
+// https://crbug.com/308095.
 class FontFamilyCache : public base::SupportsUserData::Data,
                         public content::NotificationObserver {
  public:
