@@ -355,21 +355,6 @@ void AudioManagerBase::ShutdownOnAudioThread() {
 
   // Close all output streams.
   output_dispatchers_.clear();
-
-#if defined(OS_MACOSX)
-  // On mac, AudioManager runs on the main thread, loop for which stops
-  // processing task queue at this point. So even if tasks to close the
-  // streams are enqueued, they would not run leading to CHECKs getting hit
-  // in the destructor about open streams. Close them explicitly here.
-  // crbug.com/608049.
-  for (auto iter = input_streams_.begin(); iter != input_streams_.end();) {
-    // Note: Closing the stream will invalidate the iterator.
-    // Increment the iterator before closing the stream.
-    AudioInputStream* stream = *iter++;
-    stream->Close();
-  }
-  CHECK(input_streams_.empty());
-#endif  // OS_MACOSX
 }
 
 void AudioManagerBase::AddOutputDeviceChangeListener(

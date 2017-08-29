@@ -22,13 +22,8 @@
 #include "media/audio/fake_audio_log_factory.h"
 #include "media/base/media_switches.h"
 
-#if defined(OS_MACOSX)
-#include "media/audio/mac/audio_manager_mac.h"
-#endif
-
 #if defined(OS_WIN)
 #include "base/win/scoped_com_initializer.h"
-#include "media/audio/win/core_audio_util_win.h"
 #endif
 
 namespace media {
