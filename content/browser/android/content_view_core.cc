@@ -234,21 +234,16 @@ void ContentViewCore::UpdateWindowAndroid(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,
     jlong window_android) {
-  ui::ViewAndroid* view = GetViewAndroid();
-  ui::WindowAndroid* window =
-      reinterpret_cast<ui::WindowAndroid*>(window_android);
-  if (window == GetWindowAndroid())
+  auto* window = reinterpret_cast<ui::WindowAndroid*>(window_android);
+  auto* old_window = GetWindowAndroid();
+  if (window == old_window)
     return;
-  if (GetWindowAndroid()) {
-    for (auto& observer : observer_list_)
-      observer.OnDetachedFromWindow();
+
+  auto* view = GetViewAndroid();
+  if (old_window)
     view->RemoveFromParent();
-  }
-  if (window) {
+  if (window)
     window->AddChild(view);
-    for (auto& observer : observer_list_)
-      observer.OnAttachedToWindow();
-  }
 }
 
 base::android::ScopedJavaLocalRef<jobject>

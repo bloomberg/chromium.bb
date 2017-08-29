@@ -87,6 +87,7 @@ ViewAndroid::ViewAndroid(ViewClient* view_client)
 ViewAndroid::ViewAndroid() : ViewAndroid(nullptr) {}
 
 ViewAndroid::~ViewAndroid() {
+  observer_list_.Clear();
   RemoveFromParent();
 
   for (std::list<ViewAndroid*>::iterator it = children_.begin();
@@ -139,6 +140,8 @@ void ViewAndroid::AddChild(ViewAndroid* child) {
   // accidentally overwrite the valid ones in the children.
   if (!physical_size_.IsEmpty())
     child->OnPhysicalBackingSizeChanged(physical_size_);
+  if (GetWindowAndroid())
+    child->OnAttachedToWindow();
 }
 
 // static
@@ -232,11 +235,35 @@ void ViewAndroid::RemoveChild(ViewAndroid* child) {
   DCHECK(child);
   DCHECK_EQ(child->parent_, this);
 
+  if (GetWindowAndroid())
+    child->OnDetachedFromWindow();
   std::list<ViewAndroid*>::iterator it =
       std::find(children_.begin(), children_.end(), child);
   DCHECK(it != children_.end());
   children_.erase(it);
   child->parent_ = nullptr;
+}
+
+void ViewAndroid::AddObserver(ViewAndroidObserver* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void ViewAndroid::RemoveObserver(ViewAndroidObserver* observer) {
+  observer_list_.RemoveObserver(observer);
+}
+
+void ViewAndroid::OnAttachedToWindow() {
+  for (auto& observer : observer_list_)
+    observer.OnAttachedToWindow();
+  for (auto* child : children_)
+    child->OnAttachedToWindow();
+}
+
+void ViewAndroid::OnDetachedFromWindow() {
+  for (auto& observer : observer_list_)
+    observer.OnDetachedFromWindow();
+  for (auto* child : children_)
+    child->OnDetachedFromWindow();
 }
 
 WindowAndroid* ViewAndroid::GetWindowAndroid() const {
