@@ -104,6 +104,13 @@ public class CustomTabActivity extends ChromeActivity {
     private static final int WEBCONTENTS_STATE_TRANSFERRED_WEBCONTENTS = 3;
     private static final int WEBCONTENTS_STATE_MAX = 4;
 
+    // For CustomTabs.ConnectionStatusOnReturn, see histograms.xml. Append only.
+    private static final int CONNECTION_STATUS_DISCONNECTED = 0;
+    private static final int CONNECTION_STATUS_DISCONNECTED_KEEP_ALIVE = 1;
+    private static final int CONNECTION_STATUS_CONNECTED = 2;
+    private static final int CONNECTION_STATUS_CONNECTED_KEEP_ALIVE = 3;
+    private static final int CONNECTION_STATUS_MAX = 4;
+
     private static CustomTabContentHandler sActiveContentHandler;
 
     private CustomTabIntentDataProvider mIntentDataProvider;
@@ -131,6 +138,7 @@ public class CustomTabActivity extends ChromeActivity {
     private boolean mUsingHiddenTab;
 
     private boolean mIsClosing;
+    private boolean mIsKeepAlive;
 
     // This boolean is used to do a hack in navigation history for
     // prerender and hidden tab loads with unmatching fragments.
@@ -353,7 +361,7 @@ public class CustomTabActivity extends ChromeActivity {
     public void onStart() {
         super.onStart();
         mIsClosing = false;
-        mConnection.keepAliveForSession(
+        mIsKeepAlive = mConnection.keepAliveForSession(
                 mIntentDataProvider.getSession(), mIntentDataProvider.getKeepAliveServiceIntent());
     }
 
@@ -361,6 +369,7 @@ public class CustomTabActivity extends ChromeActivity {
     public void onStop() {
         super.onStop();
         mConnection.dontKeepAliveForSession(mIntentDataProvider.getSession());
+        mIsKeepAlive = false;
     }
 
     @Override
@@ -505,6 +514,7 @@ public class CustomTabActivity extends ChromeActivity {
                         if (mIntentDataProvider.shouldEnableEmbeddedMediaExperience()) {
                             RecordUserAction.record("CustomTabs.CloseButtonClicked.DownloadsUI");
                         }
+                        recordClientConnectionStatus();
                         finishAndClose(false);
                     }
                 });
@@ -927,7 +937,6 @@ public class CustomTabActivity extends ChromeActivity {
     @Override
     protected boolean handleBackPressed() {
         RecordUserAction.record("CustomTabs.SystemBack");
-
         if (getActivityTab() == null) return false;
 
         if (exitFullscreenIfShowing()) return true;
@@ -936,10 +945,42 @@ public class CustomTabActivity extends ChromeActivity {
             if (getCurrentTabModel().getCount() > 1) {
                 getCurrentTabModel().closeTab(getActivityTab(), false, false, false);
             } else {
+                recordClientConnectionStatus();
                 finishAndClose(false);
             }
         }
         return true;
+    }
+
+    private void recordClientConnectionStatus() {
+        String packageName = getActivityTab().getAppAssociatedWith();
+        if (packageName == null) return; // No associated package
+
+        boolean isConnected = packageName.equals(
+                CustomTabsConnection.getInstance().getClientPackageNameForSession(mSession));
+        int status = -1;
+        if (isConnected) {
+            if (mIsKeepAlive) {
+                status = CONNECTION_STATUS_CONNECTED_KEEP_ALIVE;
+            } else {
+                status = CONNECTION_STATUS_CONNECTED;
+            }
+        } else {
+            if (mIsKeepAlive) {
+                status = CONNECTION_STATUS_DISCONNECTED_KEEP_ALIVE;
+            } else {
+                status = CONNECTION_STATUS_DISCONNECTED;
+            }
+        }
+        assert status >= 0;
+
+        if (GSAState.isGsaPackageName(packageName)) {
+            RecordHistogram.recordEnumeratedHistogram(
+                    "CustomTabs.ConnectionStatusOnReturn.GSA", status, CONNECTION_STATUS_MAX);
+        } else {
+            RecordHistogram.recordEnumeratedHistogram(
+                    "CustomTabs.ConnectionStatusOnReturn.NonGSA", status, CONNECTION_STATUS_MAX);
+        }
     }
 
     /**

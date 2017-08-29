@@ -8430,9 +8430,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </obsolete>
   <owner>lizeb@chromium.org</owner>
   <summary>
-    Time between the intent arrival in a Chrome generated CCT and the first
-    navigation commit, if the navigation is successful. Similar in principle to
-    Startup.FirstCommitNavigationTime.
+    Time between the intent arrival in a Chrome generated custom tab and the
+    first navigation commit, if the navigation is successful. Similar in
+    principle to Startup.FirstCommitNavigationTime.
   </summary>
 </histogram>
 
@@ -8441,7 +8441,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>lizeb@chromium.org</owner>
   <summary>
     In &quot;Herb&quot; mode shows the time between the intent arrival in a
-    Chrome generated CCT and the first navigation start (note: not the
+    Chrome generated custom tab and the first navigation start (note: not the
     navigation commit, as the name suggests). Recorded when the page has
     finished loading.
   </summary>
@@ -8451,8 +8451,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>lizeb@chromium.org</owner>
   <summary>
     In &quot;Herb&quot; mode shows time between the intent arrival in a Chrome
-    generated CCT and the first &quot;page loaded&quot; event, if the navigation
-    is successful.
+    generated custom tab and the first &quot;page loaded&quot; event, if the
+    navigation is successful.
   </summary>
 </histogram>
 
@@ -11177,6 +11177,28 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="CustomTabs.ConnectionStatusOnReturn.GSA"
+    enum="CustomTabsConnection">
+  <owner>mariakhomenko@chromium.org</owner>
+  <summary>
+    Android: Recorded whenever user closes the custom tab by hitting the close
+    button or back to return to the caller app. Keeps track of the connection
+    status and whether the app was using a KeepAlive connection. Recorded only
+    for AGSA.
+  </summary>
+</histogram>
+
+<histogram name="CustomTabs.ConnectionStatusOnReturn.NonGSA"
+    enum="CustomTabsConnection">
+  <owner>mariakhomenko@chromium.org</owner>
+  <summary>
+    Android: Recorded whenever user closes the custom tab by hitting the close
+    button or back to return to the caller app. Keeps track of the connection
+    status and whether the app was using a KeepAlive connection. Recorded for
+    all apps other than AGSA.
+  </summary>
+</histogram>
+
 <histogram name="CustomTabs.IntentToFirstCommitNavigationTime" units="ms">
   <obsolete>
     Deprecated 10/2016 in favor of .IntentToFirstCommitNavigationTime2.*.
@@ -11202,7 +11224,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>lizeb@chromium.org</owner>
   <summary>
     Time between the intent arrival to a Custom Tab and the first navigation
-    commit. Recorded for every CCT intent when the page has finished loading.
+    commit. Recorded for every custom tabs intent when the page has finished
+    loading.
   </summary>
 </histogram>
 
