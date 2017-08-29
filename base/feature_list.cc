@@ -282,9 +282,7 @@ void FeatureList::SetInstance(std::unique_ptr<FeatureList> instance) {
   // DCHECK is also forced to be FATAL if we are running a death-test.
   // TODO(asvitkine): If we find other use-cases that need integrating here
   // then define a proper API/hook for the purpose.
-  constexpr base::Feature kDCheckIsFatalFeature{
-      "DcheckIsFatal", base::FEATURE_DISABLED_BY_DEFAULT};
-  if (base::FeatureList::IsEnabled(kDCheckIsFatalFeature) ||
+  if (base::FeatureList::IsEnabled(kSyzyAsanDCheckIsFatalFeature) ||
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           "gtest_internal_run_death_test")) {
     logging::LOG_DCHECK = logging::LOG_FATAL;
