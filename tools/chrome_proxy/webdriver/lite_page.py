@@ -59,6 +59,8 @@ class LitePage(IntegrationTest):
 
   # Checks that a Lite Page is served and the force_lite_page experiment
   # directive is provided when always-on.
+  # Note: this test is only on M-60+ which supports exp=force_lite_page
+  @ChromeVersionEqualOrAfterM(60)
   def testLitePageForcedExperiment(self):
     # If it was attempted to run with another experiment, skip this test.
     if common.ParseFlags().browser_args and ('--data-reduction-proxy-experiment'
