@@ -162,7 +162,7 @@ void ProximityMonitorImpl::OnConnectionInfo(
   if (connection_info.rssi != BluetoothDevice::kUnknownPower) {
     AddSample(connection_info);
   } else {
-    PA_LOG(WARNING) << "[Proximity] Unkown values received from API: "
+    PA_LOG(WARNING) << "[Proximity] Unknown values received from API: "
                     << connection_info.rssi;
     rssi_rolling_average_.reset();
     CheckForProximityStateChange();

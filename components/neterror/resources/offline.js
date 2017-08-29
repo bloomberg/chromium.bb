@@ -778,7 +778,7 @@ Runner.prototype = {
 
     this.stop();
     this.crashed = true;
-    this.distanceMeter.acheivement = false;
+    this.distanceMeter.achievement = false;
 
     this.tRex.update(100, Trex.status.CRASHED);
 
@@ -1905,7 +1905,7 @@ function DistanceMeter(canvas, spritePos, canvasWidth) {
   this.container = null;
 
   this.digits = [];
-  this.acheivement = false;
+  this.achievement = false;
   this.defaultString = '';
   this.flashTimer = 0;
   this.flashIterations = 0;
@@ -2051,7 +2051,7 @@ DistanceMeter.prototype = {
     var paint = true;
     var playSound = false;
 
-    if (!this.acheivement) {
+    if (!this.achievement) {
       distance = this.getActualDistance(distance);
       // Score has gone beyond the initial digit count.
       if (distance > this.maxScore && this.maxScoreUnits ==
@@ -2066,7 +2066,7 @@ DistanceMeter.prototype = {
         // Acheivement unlocked
         if (distance % this.config.ACHIEVEMENT_DISTANCE == 0) {
           // Flash score and play sound.
-          this.acheivement = true;
+          this.achievement = true;
           this.flashTimer = 0;
           playSound = true;
         }
@@ -2091,7 +2091,7 @@ DistanceMeter.prototype = {
           this.flashIterations++;
         }
       } else {
-        this.acheivement = false;
+        this.achievement = false;
         this.flashIterations = 0;
         this.flashTimer = 0;
       }
@@ -2138,7 +2138,7 @@ DistanceMeter.prototype = {
    */
   reset: function() {
     this.update(0);
-    this.acheivement = false;
+    this.achievement = false;
   }
 };
 
