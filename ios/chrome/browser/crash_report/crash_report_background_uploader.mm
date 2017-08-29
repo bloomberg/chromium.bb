@@ -143,18 +143,6 @@ NSString* CreateSessionIdentifierFromTask(NSURLSessionTask* task) {
   [[NSUserDefaults standardUserDefaults] removeObjectForKey:identifier];
   _tasks++;
 
-  if (experimental_flags::IsAlertOnBackgroundUploadEnabled()) {
-    base::scoped_nsobject<UILocalNotification> localNotification(
-        [[UILocalNotification alloc] init]);
-    localNotification.get().fireDate = [NSDate date];
-    base::scoped_nsobject<NSString> reportId(
-        [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
-    localNotification.get().alertBody = [NSString
-        stringWithFormat:@"Crash report uploaded: %@", reportId.get()];
-    [[UIApplication sharedApplication]
-        scheduleLocalNotification:localNotification];
-  }
-
   [[BreakpadController sharedInstance] withBreakpadRef:^(BreakpadRef ref) {
     BreakpadHandleNetworkResponse(ref, configuration, data, nil);
     dispatch_async(dispatch_get_main_queue(), ^{
