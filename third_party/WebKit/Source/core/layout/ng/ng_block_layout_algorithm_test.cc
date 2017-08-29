@@ -1495,7 +1495,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, EmptyBlock) {
   EXPECT_FALSE(iterator.NextChild());
 }
 
-TEST_F(NGBlockLayoutAlgorithmTest, DISABLED_BlockInOneColumn) {
+TEST_F(NGBlockLayoutAlgorithmTest, BlockInOneColumn) {
   SetBodyInnerHTML(R"HTML(
     <style>
       #parent {
