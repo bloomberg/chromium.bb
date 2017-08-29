@@ -8,11 +8,16 @@
 # to speedup creating a V8 context and setting up around it.
 
 import("//build/config/c++/c++.gni")
+import("//build/config/chromecast_build.gni")
 import("//build/config/compiler/compiler.gni")
 import("//v8/snapshot_toolchain.gni")
 
 if (is_android) {
   import("//build/config/android/rules.gni")
+}
+
+declare_args() {
+  use_v8_context_snapshot = !is_chromeos && !is_android && !is_chromecast
 }
 
 if (is_android) {
@@ -28,14 +33,14 @@ if (is_android) {
 }
 
 group("v8_context_snapshot") {
-  if (!is_chromeos && !is_android) {
+  if (use_v8_context_snapshot) {
     public_deps = [
       ":generate_v8_context_snapshot",
     ]
   }
 }
 
-if (!is_chromeos && !is_android) {
+if (use_v8_context_snapshot) {
   action("generate_v8_context_snapshot") {
     script = "run.py"
     output_file = "$root_out_dir/v8_context_snapshot.bin"
