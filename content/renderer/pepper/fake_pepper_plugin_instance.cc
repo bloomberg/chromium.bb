@@ -85,4 +85,10 @@ void FakePepperPluginInstance::MoveRangeSelectionExtent(
 void FakePepperPluginInstance::SetSelectionBounds(const gfx::PointF& base,
                                                   const gfx::PointF& extent) {}
 
+bool FakePepperPluginInstance::CanEditText() {
+  return false;
+}
+
+void FakePepperPluginInstance::ReplaceSelection(const std::string& text) {}
+
 }  // namespace content
