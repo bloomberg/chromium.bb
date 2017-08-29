@@ -110,6 +110,9 @@ class Pointer : public SurfaceTreeHost,
   // The current cursor.
   ui::Cursor cursor_;
 
+  // Hotspot to use with latest cursor snapshot.
+  gfx::Point cursor_hotspot_;
+
   // Scale at which cursor snapshot is captured.
   float capture_scale_;
 
