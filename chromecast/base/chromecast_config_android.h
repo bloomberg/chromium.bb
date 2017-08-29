@@ -17,7 +17,6 @@ namespace android {
 class ChromecastConfigAndroid {
  public:
   static ChromecastConfigAndroid* GetInstance();
-  static bool RegisterJni(JNIEnv* env);
 
   // Returns whether or not the user has allowed sending usage stats and
   // crash reports.

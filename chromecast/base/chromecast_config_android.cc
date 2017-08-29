@@ -25,11 +25,6 @@ ChromecastConfigAndroid* ChromecastConfigAndroid::GetInstance() {
   return g_instance.Pointer();
 }
 
-// static
-bool ChromecastConfigAndroid::RegisterJni(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 ChromecastConfigAndroid::ChromecastConfigAndroid() {
 }
 

@@ -108,11 +108,6 @@ VolumeControlAndroid::VolumeControlAndroid()
 
 VolumeControlAndroid::~VolumeControlAndroid() {}
 
-// static
-bool VolumeControlAndroid::RegisterJni(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 void VolumeControlAndroid::AddVolumeObserver(VolumeObserver* observer) {
   base::AutoLock lock(observer_lock_);
   volume_observers_.push_back(observer);

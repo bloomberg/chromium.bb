@@ -10,11 +10,6 @@ using base::android::JavaParamRef;
 
 namespace chromecast {
 
-// static
-bool SystemTimeChangeNotifierAndroid::RegisterJni(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 SystemTimeChangeNotifierAndroid::SystemTimeChangeNotifierAndroid() {
 }
 
