@@ -34,6 +34,7 @@ namespace blink {
 
 class CSSVariableData;
 class ExceptionState;
+class LayoutObject;
 class MutableStylePropertySet;
 class Node;
 class ComputedStyle;
@@ -83,6 +84,10 @@ class CORE_EXPORT CSSComputedStyleDeclaration final
   // on Elements, but right now editing creates these for text nodes. We should
   // fix that.
   Node* StyledNode() const;
+
+  // The styled layout object is the layout object corresponding to the node
+  // being queried, if any.
+  LayoutObject* StyledLayoutObject() const;
 
   // CSSOM functions.
   CSSRule* parentRule() const override;
