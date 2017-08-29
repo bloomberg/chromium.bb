@@ -48,7 +48,6 @@ class BattOrConnectionImpl
                  size_t bytes_to_send) override;
   void ReadMessage(BattOrMessageType type) override;
   void CancelReadMessage() override;
-  void Flush() override;
 
  protected:
   // Overridden by the test to use a fake serial connection.
@@ -74,6 +73,12 @@ class BattOrConnectionImpl
   void EndReadBytesForMessage(bool success,
                               BattOrMessageType type,
                               std::unique_ptr<std::vector<char>> data);
+
+  // Flushes the serial connection to the BattOr, reading and throwing away
+  // bytes from the serial connection until the connection is quiet for a
+  // sufficiently long time. This also discards any trailing bytes from past
+  // successful reads.
+  void Flush();
 
   void BeginReadBytesForFlush();
   void OnBytesReadForFlush(int bytes_read,

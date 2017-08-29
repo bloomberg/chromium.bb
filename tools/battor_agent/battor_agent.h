@@ -69,7 +69,6 @@ class BattOrAgent : public BattOrConnection::Listener,
   void OnMessageRead(bool success,
                      BattOrMessageType type,
                      std::unique_ptr<std::vector<char>> bytes) override;
-  void OnFlushComplete(bool success) override;
 
  protected:
   // The connection that knows how to communicate with the BattOr in terms of
