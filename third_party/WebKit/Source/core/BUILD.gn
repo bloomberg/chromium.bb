@@ -1542,6 +1542,7 @@ jumbo_source_set("unit_tests") {
     "layout/ng/ng_block_child_iterator_test.cc",
     "layout/ng/ng_block_layout_algorithm_test.cc",
     "layout/ng/ng_block_node_test.cc",
+    "layout/ng/ng_column_layout_algorithm_test.cc",
     "layout/ng/ng_constraint_space_builder_test.cc",
     "layout/ng/ng_constraint_space_test.cc",
     "layout/ng/ng_length_utils_test.cc",
