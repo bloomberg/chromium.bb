@@ -34,8 +34,8 @@ class WebIDLParser(unittest.TestCase):
       if check == 'TREE':
         quick = '\n'.join(node.Tree())
         lineno = node.GetProperty('LINENO')
-        msg = 'Mismatched tree at line %d:\n%sVS\n%s' % (
-            lineno, value, quick)
+        msg = 'Mismatched tree at line %d:' % lineno
+        msg += '\n\n[EXPECTED]\n%s\n\n[ACTUAL]\n%s\n' % (value, quick)
         self.assertEqual(value, quick, msg)
 
   def testExpectedNodes(self):
