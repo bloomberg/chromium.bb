@@ -110,6 +110,7 @@
 #include "public/web/WebPrintParams.h"
 #include "public/web/WebScriptSource.h"
 #include "public/web/WebSettings.h"
+#include "public/web/WebTappedInfo.h"
 #include "public/web/WebTreeScopeType.h"
 #include "public/web/WebViewClient.h"
 #include "public/web/WebWidget.h"
@@ -4182,13 +4183,11 @@ TEST_P(WebViewTest, PreferredSizeDirtyLayout) {
 
 class UnhandledTapWebViewClient : public FrameTestHelpers::TestWebViewClient {
  public:
-  void ShowUnhandledTapUIIfNeeded(const WebPoint& tapped_position,
-                                  const WebNode& tapped_node,
-                                  bool page_changed) override {
+  void ShowUnhandledTapUIIfNeeded(const WebTappedInfo& tapped_info) override {
     was_called_ = true;
-    tapped_position_ = tapped_position;
-    tapped_node_ = tapped_node;
-    page_changed_ = page_changed;
+    tapped_position_ = tapped_info.Position();
+    tapped_node_ = tapped_info.GetNode();
+    page_changed_ = tapped_info.PageChanged();
   }
   bool GetWasCalled() const { return was_called_; }
   int GetTappedXPos() const { return tapped_position_.X(); }

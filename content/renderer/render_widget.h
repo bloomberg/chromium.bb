@@ -84,7 +84,7 @@ class WebImage;
 class WebInputMethodController;
 class WebLocalFrame;
 class WebMouseEvent;
-class WebNode;
+class WebTappedInfo;
 struct WebPoint;
 }  // namespace blink
 
@@ -324,11 +324,10 @@ class CONTENT_EXPORT RenderWidget
 #if defined(OS_ANDROID)
   // Notifies that a tap was not consumed, so showing a UI for the unhandled
   // tap may be needed.
-  // Performs various checks on the given WebNode to apply heuristics to
+  // Performs various checks on the given WebTappedInfo to apply heuristics to
   // determine if triggering is appropriate.
-  void ShowUnhandledTapUIIfNeeded(const blink::WebPoint& tapped_position,
-                                  const blink::WebNode& tapped_node,
-                                  bool page_changed) override;
+  void ShowUnhandledTapUIIfNeeded(
+      const blink::WebTappedInfo& tapped_info) override;
 #endif
 
   // Begins the compositor's scheduler to start producing frames.

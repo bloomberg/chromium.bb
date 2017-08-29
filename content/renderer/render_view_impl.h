@@ -74,12 +74,12 @@ class WebGestureEvent;
 class WebMouseEvent;
 class WebSpeechRecognizer;
 class WebStorageNamespace;
+class WebTappedInfo;
 class WebURLRequest;
 struct WebActiveWheelFlingParameters;
 struct WebDateTimeChooserParams;
 struct WebMediaPlayerAction;
 struct WebPluginAction;
-struct WebPoint;
 struct WebWindowFeatures;
 }  // namespace blink
 
@@ -271,9 +271,8 @@ class CONTENT_EXPORT RenderViewImpl : public RenderWidget,
   void SetToolTipText(const blink::WebString&,
                       blink::WebTextDirection hint) override;
   void SetTouchAction(cc::TouchAction touchAction) override;
-  void ShowUnhandledTapUIIfNeeded(const blink::WebPoint& tappedPosition,
-                                  const blink::WebNode& tappedNode,
-                                  bool pageChanged) override;
+  void ShowUnhandledTapUIIfNeeded(
+      const blink::WebTappedInfo& tappedInfo) override;
   blink::WebWidgetClient* WidgetClient() override;
 
   // blink::WebViewClient implementation --------------------------------------

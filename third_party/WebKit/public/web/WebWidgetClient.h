@@ -48,8 +48,8 @@ namespace blink {
 class WebDragData;
 class WebGestureEvent;
 class WebImage;
-class WebNode;
 class WebString;
+class WebTappedInfo;
 class WebWidget;
 struct WebCursorInfo;
 struct WebFloatPoint;
@@ -154,18 +154,9 @@ class WebWidgetClient {
   // Request that the browser show a UI for an unhandled tap, if needed.
   // Invoked during the handling of a GestureTap input event whenever the
   // event is not consumed.
-  // |tappedPosition| is the point where the mouseDown occurred in client
-  // coordinates.
-  // |tappedNode| is the node that the mouseDown event hit, provided so the
-  // UI can be shown only on certain kinds of nodes in specific locations.
-  // |pageChanged| is true if and only if the DOM tree or style was
-  // modified during the dispatch of the mouse*, or click events associated
-  // with the tap.
-  // This provides a heuristic to help identify when a page is doing
-  // something as a result of a tap without explicitly consuming the event.
-  virtual void ShowUnhandledTapUIIfNeeded(const WebPoint& tapped_position,
-                                          const WebNode& tapped_node,
-                                          bool page_changed) {}
+  // |tappedInfo| has all the details about what was tapped and where the tap
+  // occurred.
+  virtual void ShowUnhandledTapUIIfNeeded(const WebTappedInfo& tappedInfo) {}
 
   // Converts the |rect| from Blink's Viewport coordinates to the
   // coordinates in the native window used to display the content, in
