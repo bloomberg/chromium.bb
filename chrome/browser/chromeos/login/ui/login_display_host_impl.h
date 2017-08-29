@@ -300,11 +300,6 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
   // SoundsManager.
   bool startup_sound_played_ = false;
 
-  // When true, startup sound should be played only when spoken
-  // feedback is enabled.  Otherwise, startup sound should be played
-  // in any case.
-  bool startup_sound_honors_spoken_feedback_ = false;
-
   // Keeps a copy of the old Drag'n'Drop client, so that it would be disabled
   // during a login session and restored afterwards.
   std::unique_ptr<wm::ScopedDragDropDisabler> scoped_drag_drop_disabler_;
