@@ -68219,7 +68219,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     malicious or clean by the improved SafeBrowsing binary download protection.
     Note that UNSUPPORTED_URL_SCHEME was split out of the INVALID_URL bucket in
     M41. The NOT_BINARY_FILE check was moved before the UNSUPPORTED_URL_SCHEME
-    check in M42.
+    check in M42. The WHITELISTED_URL check was moved to before NOT_BINARY_FILE
+    in M62.
   </summary>
 </histogram>
 
