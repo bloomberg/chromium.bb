@@ -139,12 +139,13 @@ class AppCacheResponseTest : public testing::Test {
     test_finished_event_->Signal();
   }
 
-  void PushNextTask(const base::Closure& task) {
-    task_stack_.push(std::pair<base::Closure, bool>(task, false));
+  void PushNextTask(base::Closure task) {
+    task_stack_.push(
+        std::pair<base::OnceClosure, bool>(std::move(task), false));
   }
 
   void PushNextTaskAsImmediate(const base::Closure& task) {
-    task_stack_.push(std::pair<base::Closure, bool>(task, true));
+    task_stack_.push(std::pair<base::OnceClosure, bool>(std::move(task), true));
   }
 
   void ScheduleNextTask() {
@@ -153,13 +154,13 @@ class AppCacheResponseTest : public testing::Test {
       TestFinished();
       return;
     }
-    base::Closure task = task_stack_.top().first;
+    base::OnceClosure task = std::move(task_stack_.top().first);
     bool immediate = task_stack_.top().second;
     task_stack_.pop();
     if (immediate)
-      task.Run();
+      std::move(task).Run();
     else
-      base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, task);
+      base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(task));
   }
 
   // Wrappers to call AppCacheResponseReader/Writer Read and Write methods
@@ -767,7 +768,7 @@ class AppCacheResponseTest : public testing::Test {
   std::unique_ptr<base::WaitableEvent> test_finished_event_;
   std::unique_ptr<MockStorageDelegate> storage_delegate_;
   std::unique_ptr<MockAppCacheService> service_;
-  std::stack<std::pair<base::Closure, bool> > task_stack_;
+  std::stack<std::pair<base::OnceClosure, bool>> task_stack_;
 
   std::unique_ptr<AppCacheResponseReader> reader_;
   scoped_refptr<HttpResponseInfoIOBuffer> read_info_buffer_;
