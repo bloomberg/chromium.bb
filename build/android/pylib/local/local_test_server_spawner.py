@@ -13,11 +13,6 @@ from pylib.constants import host_paths
 with host_paths.SysPath(host_paths.BUILD_COMMON_PATH):
   import chrome_test_server_spawner
 
-
-# The tests should not need more than one test server instance.
-MAX_TEST_SERVER_INSTANCES = 1
-
-
 def _WaitUntil(predicate, max_attempts=5):
   """Blocks until the provided predicate (function) is true.
 
@@ -63,7 +58,7 @@ class LocalTestServerSpawner(test_server.TestServer):
     super(LocalTestServerSpawner, self).__init__()
     self._device = device
     self._spawning_server = chrome_test_server_spawner.SpawningServer(
-        port, PortForwarderAndroid(device, tool), MAX_TEST_SERVER_INSTANCES)
+        port, PortForwarderAndroid(device, tool))
     self._tool = tool
 
   @property
