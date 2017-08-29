@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/media/service_video_capture_provider.h"
 
 #include "content/browser/renderer_host/media/service_video_capture_device_launcher.h"
+#include "content/browser/renderer_host/media/video_capture_factory_delegate.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/service_manager_connection.h"
 #include "media/base/scoped_callback_runner.h"
@@ -46,7 +47,7 @@ ServiceVideoCaptureProvider::ServiceVideoCaptureProvider(
     std::unique_ptr<ServiceConnector> service_connector)
     : service_connector_(std::move(service_connector)),
       usage_count_(0),
-      has_created_device_launcher_(false),
+      launcher_has_connected_to_device_factory_(false),
       weak_ptr_factory_(this) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
@@ -73,10 +74,18 @@ void ServiceVideoCaptureProvider::GetDeviceInfosAsync(
 std::unique_ptr<VideoCaptureDeviceLauncher>
 ServiceVideoCaptureProvider::CreateDeviceLauncher() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return base::MakeUnique<ServiceVideoCaptureDeviceLauncher>(
+      base::BindRepeating(&ServiceVideoCaptureProvider::ConnectToDeviceFactory,
+                          weak_ptr_factory_.GetWeakPtr()));
+}
+
+void ServiceVideoCaptureProvider::ConnectToDeviceFactory(
+    std::unique_ptr<VideoCaptureFactoryDelegate>* out_factory) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   IncreaseUsageCount();
   LazyConnectToService();
-  has_created_device_launcher_ = true;
-  return base::MakeUnique<ServiceVideoCaptureDeviceLauncher>(
+  launcher_has_connected_to_device_factory_ = true;
+  *out_factory = base::MakeUnique<VideoCaptureFactoryDelegate>(
       &device_factory_,
       base::BindOnce(&ServiceVideoCaptureProvider::DecreaseUsageCount,
                      weak_ptr_factory_.GetWeakPtr()));
@@ -89,7 +98,7 @@ void ServiceVideoCaptureProvider::LazyConnectToService() {
   video_capture::uma::LogVideoCaptureServiceEvent(
       video_capture::uma::BROWSER_CONNECTING_TO_SERVICE);
   if (time_of_last_uninitialize_ != base::TimeTicks()) {
-    if (has_created_device_launcher_) {
+    if (launcher_has_connected_to_device_factory_) {
       video_capture::uma::LogDurationUntilReconnectAfterCapture(
           base::TimeTicks::Now() - time_of_last_uninitialize_);
     } else {
@@ -98,7 +107,7 @@ void ServiceVideoCaptureProvider::LazyConnectToService() {
     }
   }
 
-  has_created_device_launcher_ = false;
+  launcher_has_connected_to_device_factory_ = false;
   time_of_last_connect_ = base::TimeTicks::Now();
 
   service_connector_->BindFactoryProvider(&device_factory_provider_);
@@ -150,7 +159,7 @@ void ServiceVideoCaptureProvider::UninitializeInternal(
   switch (reason) {
     case ReasonForUninitialize::kShutdown:
     case ReasonForUninitialize::kUnused:
-      if (has_created_device_launcher_) {
+      if (launcher_has_connected_to_device_factory_) {
         video_capture::uma::LogVideoCaptureServiceEvent(
             video_capture::uma::
                 BROWSER_CLOSING_CONNECTION_TO_SERVICE_AFTER_CAPTURE);
