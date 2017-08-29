@@ -58,9 +58,6 @@ std::unique_ptr<DataUse> CreateDataUse(int32_t tab_id, int render_process_id) {
   auto data_use = std::unique_ptr<DataUse>(new DataUse(
       GURL("http://foo.com"), base::TimeTicks(), GURL(), tab_id,
       net::NetworkChangeNotifier::CONNECTION_UNKNOWN, std::string(), 100, 100));
-  if (render_process_id != -1)
-    data_use->main_frame_global_request_id =
-        std::make_pair(render_process_id, 0);
   return data_use;
 }
 

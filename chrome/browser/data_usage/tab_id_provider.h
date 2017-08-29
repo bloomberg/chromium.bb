@@ -54,13 +54,13 @@ class TabIdProvider : public base::SupportsUserData::Data {
   // |task_runner|.
   TabIdProvider(base::TaskRunner* task_runner,
                 const tracked_objects::Location& from_here,
-                const base::Callback<URLRequestTabInfo(void)>& tab_id_getter);
+                const base::Callback<int32_t(void)>& tab_id_getter);
 
   ~TabIdProvider() override;
 
   // Calls |callback| with the tab ID, either immediately if it's already
   // available, or later once it becomes available.
-  void ProvideTabId(const base::Callback<void(URLRequestTabInfo)>& callback);
+  void ProvideTabId(const base::Callback<void(int32_t)>& callback);
 
   base::WeakPtr<TabIdProvider> GetWeakPtr();
 
@@ -70,11 +70,11 @@ class TabIdProvider : public base::SupportsUserData::Data {
   class CallbackRunner;
 
   // Called when the |tab_info| is ready.
-  void OnTabIdReady(URLRequestTabInfo tab_info);
+  void OnTabIdReady(int32_t tab_info);
 
   base::ThreadChecker thread_checker_;
   bool is_tab_info_ready_;
-  URLRequestTabInfo tab_info_;
+  int32_t tab_info_;
   base::WeakPtr<CallbackRunner> weak_callback_runner_;
   base::WeakPtrFactory<TabIdProvider> weak_ptr_factory_;
 

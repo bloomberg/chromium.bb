@@ -34,7 +34,7 @@ class TabIdProviderTest : public testing::Test {
 
   ~TabIdProviderTest() override {}
 
-  base::Callback<TabIdProvider::URLRequestTabInfo(void)> TabIdGetterCallback() {
+  base::Callback<int32_t(void)> TabIdGetterCallback() {
     return base::Bind(&TabIdProviderTest::GetTabInfo, base::Unretained(this));
   }
 
@@ -43,9 +43,9 @@ class TabIdProviderTest : public testing::Test {
   int tab_id_getter_call_count() const { return tab_id_getter_call_count_; }
 
  private:
-  TabIdProvider::URLRequestTabInfo GetTabInfo() {
+  int32_t GetTabInfo() {
     ++tab_id_getter_call_count_;
-    return TabIdProvider::URLRequestTabInfo(kTabId, content::GlobalRequestID());
+    return kTabId;
   }
 
   base::MessageLoop message_loop_;
@@ -57,8 +57,8 @@ class TabIdProviderTest : public testing::Test {
 };
 
 // Copies |tab_id| into |capture|.
-void CaptureTabId(int32_t* capture, TabIdProvider::URLRequestTabInfo tab_info) {
-  *capture = tab_info.tab_id;
+void CaptureTabId(int32_t* capture, int32_t tab_info) {
+  *capture = tab_info;
 }
 
 TEST_F(TabIdProviderTest, ProvideTabId) {

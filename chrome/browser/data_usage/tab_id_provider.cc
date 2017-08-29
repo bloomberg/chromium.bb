@@ -21,8 +21,8 @@ namespace chrome_browser_data_usage {
 namespace {
 
 // Convenience typedefs for clarity.
-typedef base::Callback<TabIdProvider::URLRequestTabInfo(void)> TabIdGetter;
-typedef base::Callback<void(TabIdProvider::URLRequestTabInfo)> TabIdCallback;
+typedef base::Callback<int32_t(void)> TabIdGetter;
+typedef base::Callback<void(int32_t)> TabIdCallback;
 
 }  // namespace
 
@@ -36,7 +36,7 @@ class TabIdProvider::CallbackRunner {
   ~CallbackRunner() {
     // Ensure that no callbacks are abandoned without being run.
     if (!is_done_)
-      RunAll(URLRequestTabInfo(-1, content::GlobalRequestID()));
+      RunAll(-1);
   }
 
   // Adds a new callback to be run later. New callbacks must not be added after
@@ -49,7 +49,7 @@ class TabIdProvider::CallbackRunner {
 
   // Runs all the callbacks in the order that they were added. This method must
   // not be called more than once.
-  void RunAll(TabIdProvider::URLRequestTabInfo tab_info) {
+  void RunAll(int32_t tab_info) {
     DCHECK(thread_checker_.CalledOnValidThread());
     DCHECK(!is_done_);
     is_done_ = true;
@@ -78,9 +78,7 @@ class TabIdProvider::CallbackRunner {
 TabIdProvider::TabIdProvider(base::TaskRunner* task_runner,
                              const tracked_objects::Location& from_here,
                              const TabIdGetter& tab_id_getter)
-    : is_tab_info_ready_(false),
-      tab_info_(-1, content::GlobalRequestID()),
-      weak_ptr_factory_(this) {
+    : is_tab_info_ready_(false), tab_info_(-1), weak_ptr_factory_(this) {
   std::unique_ptr<CallbackRunner> callback_runner(new CallbackRunner());
   weak_callback_runner_ = callback_runner->GetWeakPtr();
   callback_runner->AddCallback(
@@ -111,7 +109,7 @@ void TabIdProvider::ProvideTabId(const TabIdCallback& callback) {
   // If no cached tab ID is available and |weak_callback_runner_| has been
   // destroyed, pass a tab ID of -1 to the callback indicating that no tab was
   // found.
-  callback.Run(URLRequestTabInfo(-1, content::GlobalRequestID()));
+  callback.Run(-1);
 }
 
 base::WeakPtr<TabIdProvider> TabIdProvider::GetWeakPtr() {
@@ -123,7 +121,7 @@ base::WeakPtr<TabIdProvider> TabIdProvider::GetWeakPtr() {
 const void* const TabIdProvider::kTabIdProviderUserDataKey =
     "TabIdProviderUserDataKey";
 
-void TabIdProvider::OnTabIdReady(URLRequestTabInfo tab_info) {
+void TabIdProvider::OnTabIdReady(int32_t tab_info) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!is_tab_info_ready_);
   tab_info_ = tab_info;

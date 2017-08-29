@@ -32,18 +32,15 @@ namespace {
 // Attempts to get the associated tab info for render frame identified by
 // |render_process_id| and |render_frame_id|. |global_request_id| is also
 // populated in the tab info.
-TabIdProvider::URLRequestTabInfo GetTabInfoForRequest(
-    int render_process_id,
-    int render_frame_id,
-    content::GlobalRequestID global_request_id) {
+int32_t GetTabInfoForRequest(int render_process_id,
+                             int render_frame_id,
+                             content::GlobalRequestID global_request_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // TODO(sclittle): For prerendering tabs, investigate if it's possible to find
   // the original tab that initiated the prerender.
-  return TabIdProvider::URLRequestTabInfo(
-      SessionTabHelper::IdForTab(content::WebContents::FromRenderFrameHost(
-          content::RenderFrameHost::FromID(render_process_id,
-                                           render_frame_id))),
-      global_request_id);
+
+  return SessionTabHelper::IdForTab(content::WebContents::FromRenderFrameHost(
+      content::RenderFrameHost::FromID(render_process_id, render_frame_id)));
 }
 
 // Annotates |data_use| with the given |tab_id|, then passes it to |callback|.
@@ -54,13 +51,11 @@ TabIdProvider::URLRequestTabInfo GetTabInfoForRequest(
 void AnnotateDataUse(
     std::unique_ptr<DataUse> data_use,
     const data_usage::DataUseAnnotator::DataUseConsumerCallback& callback,
-    TabIdProvider::URLRequestTabInfo tab_info) {
+    int32_t tab_info) {
   DCHECK(data_use);
-  data_use->tab_id = tab_info.tab_id;
-  data_use->main_frame_global_request_id.first =
-      tab_info.main_frame_global_request_id.child_id;
-  data_use->main_frame_global_request_id.second =
-      tab_info.main_frame_global_request_id.request_id;
+  data_use->tab_id = tab_info;
+  data_use->main_frame_global_request_id =
+      data_usage::DataUse::kInvalidMainFrameGlobalRequestID;
   callback.Run(std::move(data_use));
 }
 
@@ -90,9 +85,7 @@ void TabIdAnnotator::Annotate(net::URLRequest* request,
           request, &render_process_id, &render_frame_id)) {
     // Run the callback immediately with a tab ID of -1 if the request has no
     // render frame.
-    AnnotateDataUse(std::move(data_use), callback,
-                    TabIdProvider::URLRequestTabInfo(
-                        -1 /* tab_id */, content::GlobalRequestID()));
+    AnnotateDataUse(std::move(data_use), callback, -1 /* tab_id */);
     return;
   }
 
