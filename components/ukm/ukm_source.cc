@@ -4,6 +4,7 @@
 
 #include "components/ukm/ukm_source.h"
 
+#include "base/atomicops.h"
 #include "base/hash.h"
 #include "components/metrics/proto/ukm/source.pb.h"
 
@@ -17,6 +18,12 @@ constexpr int kMaxURLLength = 2 * 1024;
 // The string sent in place of a URL if the real URL was too long.
 constexpr char kMaxUrlLengthMessage[] = "URLTooLong";
 
+// Using a simple global assumes that all access to it will be done on the same
+// thread, namely the UI thread. If this becomes not the case then it can be
+// changed to an Atomic32 (make CustomTabState derive from int32_t) and accessed
+// with no-barrier loads and stores.
+UkmSource::CustomTabState g_custom_tab_state = UkmSource::kCustomTabUnset;
+
 // Returns a URL that is under the length limit, by returning a constant
 // string when the URl is too long.
 std::string GetShortenedURL(const GURL& url) {
@@ -27,7 +34,12 @@ std::string GetShortenedURL(const GURL& url) {
 
 }  // namespace
 
-UkmSource::UkmSource() = default;
+// static
+void UkmSource::SetCustomTabVisible(bool visible) {
+  g_custom_tab_state = visible ? kCustomTabTrue : kCustomTabFalse;
+}
+
+UkmSource::UkmSource() : custom_tab_state_(g_custom_tab_state) {}
 
 UkmSource::~UkmSource() = default;
 
@@ -49,6 +61,9 @@ void UkmSource::PopulateProto(Source* proto_source) const {
   proto_source->set_url(GetShortenedURL(url_));
   if (!initial_url_.is_empty())
     proto_source->set_initial_url(GetShortenedURL(initial_url_));
+
+  if (custom_tab_state_ != kCustomTabUnset)
+    proto_source->set_is_custom_tab(custom_tab_state_ == kCustomTabTrue);
 }
 
 }  // namespace ukm
