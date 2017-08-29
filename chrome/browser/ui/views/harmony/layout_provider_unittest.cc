@@ -22,6 +22,7 @@
 #endif
 
 #if defined(OS_WIN)
+#include "base/win/windows_version.h"
 #include "ui/gfx/win/direct_write.h"
 #endif
 
@@ -327,6 +328,11 @@ TEST_F(LayoutProviderTest, TypographyLineHeight) {
 // Harmony spec. This test will only run if it detects that the current machine
 // has the default OS configuration.
 TEST_F(LayoutProviderTest, ExplicitTypographyLineHeight) {
+#if defined(OS_WIN)
+  // Flaky on Windows 7. See http://crbug.com/759870.
+  if (base::win::GetVersion() == base::win::VERSION_WIN7)
+    return;
+#endif
   ui::test::MaterialDesignControllerTestAPI md_test_api(
       ui::MaterialDesignController::MATERIAL_NORMAL);
   md_test_api.SetSecondaryUiMaterial(true);
