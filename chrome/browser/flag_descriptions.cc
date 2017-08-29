@@ -1890,6 +1890,11 @@ const char kPullToRefreshEffectName[] = "The pull-to-refresh effect";
 const char kPullToRefreshEffectDescription[] =
     "Page reloads triggered by vertically overscrolling content.";
 
+const char kPwaImprovedSplashScreenName[] =
+    "Improved Splash Screen for standalone PWAs";
+const char kPwaImprovedSplashScreenDescription[] =
+    "Enables the Improved Splash Screen UX for standalone PWAs based on new "
+    "Web App Manifest attributes";
 const char kPwaPersistentNotificationName[] =
     "Persistent notification in standalone PWA";
 const char kPwaPersistentNotificationDescription[] =

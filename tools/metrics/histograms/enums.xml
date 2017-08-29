@@ -23182,6 +23182,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="-1241747717" label="enable-android-password-link"/>
   <int value="-1235586511" label="enable-datasaver-prompt"/>
   <int value="-1225198073" label="ReaderModeInCCT:disabled"/>
+  <int value="-1224962996" label="PwaImprovedSplashScreen:disabled"/>
   <int value="-1218608640" label="disable-offline-load-stale-cache"/>
   <int value="-1216837777" label="clear-data-reduction-proxy-data-savings"/>
   <int value="-1212855900" label="enable-all-bookmarks-view"/>
@@ -23497,6 +23498,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="-275164173" label="QuickUnlockPinSignin:enabled"/>
   <int value="-268357961" label="enable-feature-policy"/>
   <int value="-254887599" label="google-profile-info"/>
+  <int value="-250822813" label="PwaImprovedSplashScreen:enabled"/>
   <int value="-250721831" label="AndroidAutofillAccessibility:disabled"/>
   <int value="-248223420" label="AutofillKeyboardAccessory:disabled"/>
   <int value="-241353344" label="MidiManagerWinrt:disabled"/>
