@@ -42,6 +42,8 @@ class DragTargetConnection;
 class EventDispatcherDelegate;
 class ServerWindow;
 
+struct DisplayLocation;
+
 namespace test {
 class EventDispatcherTestApi;
 }
@@ -199,8 +201,7 @@ class EventDispatcher : public ServerWindowObserver,
   // EventTargeter returns the deepest window based on hit-test data. If the
   // target is blocked by a modal window this returns a different target,
   // otherwise the supplied target is returned.
-  LocationTarget AdjustLocationTargetForModal(
-      const LocationTarget& location_target) const;
+  DeepestWindow AdjustTargetForModal(const DeepestWindow& target) const;
 
   void SetMouseCursorSourceWindow(ServerWindow* window);
 
@@ -235,21 +236,31 @@ class EventDispatcher : public ServerWindowObserver,
   //   when no buttons on the mouse are down.
   // This also generates exit events as appropriate. For example, if the mouse
   // moves between one window to another an exit is generated on the first.
-  void ProcessPointerEventOnFoundTarget(
-      const ui::PointerEvent& event,
-      const LocationTarget& found_location_target);
+  void ProcessPointerEventOnFoundTarget(const ui::PointerEvent& event,
+                                        const DisplayLocation& display_location,
+                                        const DeepestWindow& found_target);
+
+  // Called when processing a pointer event to updated cursor related
+  // properties.
+  void UpdateCursorRelatedProperties(const ui::PointerEvent& event,
+                                     const DisplayLocation& display_location);
 
   void UpdateNonClientAreaForCurrentWindowOnFoundWindow(
-      const LocationTarget& found_location_target);
+      const DisplayLocation& display_location,
+      const DeepestWindow& target);
 
   // This callback is triggered by UpdateCursorProviderByLastKnownLocation().
   // It calls UpdateCursorProvider() as appropriate.
   void UpdateCursorProviderByLastKnownLocationOnFoundWindow(
-      const LocationTarget& location_target);
+      const DisplayLocation& display_location,
+      const DeepestWindow& target);
 
   // Immediatley updates the cursor provider (|mouse_cursor_source_window_|)
   // as appropriate.
-  void UpdateCursorProvider(const LocationTarget& location_target);
+  void UpdateCursorProvider(const DeepestWindow& target);
+
+  // Called during a click to nodify if the click was blocked by a modal.
+  void HandleClickOnBlockedWindow(const DeepestWindow& target);
 
   // Adds |pointer_target| to |pointer_targets_|.
   void StartTrackingPointer(int32_t pointer_id,
