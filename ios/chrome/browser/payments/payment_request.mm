@@ -126,6 +126,8 @@ PaymentRequest::PaymentRequest(
       address_normalizer_.LoadRulesForRegion(countryCode);
     }
   }
+
+  RecordNumberOfSuggestionsShown();
 }
 
 PaymentRequest::~PaymentRequest() {}
@@ -480,6 +482,27 @@ void PaymentRequest::SetSelectedShippingOption() {
       break;
     }
   }
+}
+
+void PaymentRequest::RecordNumberOfSuggestionsShown() {
+  if (request_payer_name() || request_payer_phone() || request_payer_email()) {
+    const bool has_complete_contact = (selected_contact_profile_ != nullptr);
+    journey_logger().SetNumberOfSuggestionsShown(
+        payments::JourneyLogger::Section::SECTION_CONTACT_INFO,
+        contact_profiles().size(), has_complete_contact);
+  }
+
+  if (request_shipping()) {
+    const bool has_complete_shipping = (selected_shipping_profile_ != nullptr);
+    journey_logger().SetNumberOfSuggestionsShown(
+        payments::JourneyLogger::Section::SECTION_SHIPPING_ADDRESS,
+        shipping_profiles().size(), has_complete_shipping);
+  }
+
+  const bool has_complete_instrument = (selected_payment_method_ != nullptr);
+  journey_logger().SetNumberOfSuggestionsShown(
+      payments::JourneyLogger::Section::SECTION_PAYMENT_METHOD,
+      payment_methods().size(), has_complete_instrument);
 }
 
 }  // namespace payments
