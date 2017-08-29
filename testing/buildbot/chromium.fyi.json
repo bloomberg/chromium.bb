@@ -2431,12 +2431,7 @@
       },
       {
         "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "integrity": "high"
-            }
-          ]
+          "can_use_on_swarming_builders": true
         },
         "test": "install_static_unittests"
       },
@@ -5252,12 +5247,7 @@
       },
       {
         "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "integrity": "high"
-            }
-          ]
+          "can_use_on_swarming_builders": true
         },
         "test": "install_static_unittests"
       },
