@@ -2934,33 +2934,22 @@ if (enable_java_templates) {
   # resources. For libraries without resources, it will not generate
   # corresponding android_resources targets.
   #
-  # To avoid slowing down "gn gen", an associated .info file must be committed
-  # along with the .aar file. In order to create this file, define the target
-  # and then run once with the gn arg "update_android_aar_prebuilts = true".
-  #
   # Variables
   #   aar_path: Path to the AAR.
-  #   info_path: Path to the .aar.info file (generated via
-  #       update_android_aar_prebuilts GN arg).
   #   proguard_configs: List of proguard configs to use in final apk step for
-  #       any apk that depends on this library.
+  #     any apk that depends on this library.
   #   ignore_aidl: Whether to ignore .aidl files found with the .aar.
   #   ignore_assets: Whether to ignore assets found in the .aar.
   #   ignore_native_libraries: Whether to ignore .so files found in the .aar.
   #   create_srcjar: If false, does not create an R.java file.
   #   TODO(jbudorick@): remove this arguments after crbug.com/522043 is fixed.
-  #   requires_android: Whether this target can only be used for compiling
-  #       Android related targets.
+  #   requires_android: Whether this target can only be used for compiling Android related targets.
   #
   # Example
   #   android_aar_prebuilt("foo_java") {
   #     aar_path = "foo.aar"
   #   }
   template("android_aar_prebuilt") {
-    _info_path = "$target_name.info"
-    if (defined(invoker.info_path)) {
-      _info_path = invoker.info_path
-    }
     _output_path = "${target_gen_dir}/${target_name}"
     _unpack_target_name = "${target_name}__unpack_aar"
     _ignore_aidl = defined(invoker.ignore_aidl) && invoker.ignore_aidl
@@ -2970,17 +2959,14 @@ if (enable_java_templates) {
 
     # Scan the AAR file and determine the resources and jar files.
     # Some libraries might not have resources; others might have two jars.
-    if (update_android_aar_prebuilts) {
-      print("Writing " + rebase_path(_info_path, "//"))
-      exec_script("//build/android/gyp/aar.py",
-                  [
-                    "list",
-                    rebase_path(invoker.aar_path, root_build_dir),
-                    "--output",
-                    rebase_path(_info_path, root_build_dir),
-                  ])
-    }
-    _scanned_files = read_file(_info_path, "scope")
+    _scanned_files =
+        exec_script("//build/android/gyp/aar.py",
+                    [
+                      "--input-file",
+                      rebase_path(invoker.aar_path, root_build_dir),
+                      "--list",
+                    ],
+                    "scope")
 
     assert(_ignore_aidl || _scanned_files.aidl == [],
            "android_aar_prebuilt() aidl not yet supported." +
@@ -2998,12 +2984,11 @@ if (enable_java_templates) {
     action(_unpack_target_name) {
       script = "//build/android/gyp/aar.py"  # Unzips the AAR
       args = [
-        "extract",
+        "--input-file",
         rebase_path(invoker.aar_path, root_build_dir),
         "--output-dir",
         rebase_path(_output_path, root_build_dir),
-        "--assert-info-file",
-        rebase_path(_info_path, root_build_dir),
+        "--extract",
       ]
       inputs = [
         invoker.aar_path,
