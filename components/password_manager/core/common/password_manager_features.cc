@@ -44,6 +44,10 @@ extern const base::Feature kEnableManualPasswordGeneration = {
 extern const base::Feature kEnableUsernameCorrection{
     "EnableUsernameCorrection", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables password selection while saving username and password details.
+extern const base::Feature kEnablePasswordSelection{
+    "EnablePasswordSelection", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Disallow autofilling of the sync credential.
 const base::Feature kProtectSyncCredential = {
     "protect-sync-credential", base::FEATURE_DISABLED_BY_DEFAULT};
