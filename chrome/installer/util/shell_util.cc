@@ -866,16 +866,16 @@ bool QuickIsChromeRegisteredForMode(
   return false;
 }
 
-// Returns the installation suffix for |mode| at the current install level
-// (system or user).
-base::string16 GetInstallationSuffixForMode(
-    const install_static::InstallConstants& mode) {
+// Returns the installation suffix for |mode| at the system or user level based
+// on |system_install|.
+base::string16 GetInstallationSuffixForModeAtLevel(
+    const install_static::InstallConstants& mode,
+    bool system_install) {
   // Search based on the default install location for the mode. If we ever
   // support customizing the install location (https://crbug.com/113987,
   // https://crbug.com/302491) this will have to change to something else, such
   // as probing the Omaha keys in the registry to see where the mode is
   // installed.
-  const bool system_install = !InstallUtil::IsPerUserInstall();
   const base::FilePath chrome_exe =
       installer::GetChromeInstallPath(system_install)
           .Append(installer::kChromeExe);
@@ -900,14 +900,15 @@ base::string16 GetInstallationSuffixForMode(
   return tested_suffix;
 }
 
-// Returns |mode|'s application name. This application name will be suffixed as
-// is appropriate for the install. This is the name that is registered with
-// Default Programs on Windows and that should thus be used to "make chrome
-// default" and such.
-base::string16 GetApplicationNameForMode(
-    const install_static::InstallConstants& mode) {
+// Returns |mode|'s application name at the system or user level based on
+// |system_install|. This application name will be suffixed as is appropriate
+// for the install. This is the name that is registered with Default Programs on
+// Windows and that should thus be used to "make chrome default" and such.
+base::string16 GetApplicationNameForModeAtLevel(
+    const install_static::InstallConstants& mode,
+    bool system_install) {
   return base::string16(mode.base_app_name)
-      .append(GetInstallationSuffixForMode(mode));
+      .append(GetInstallationSuffixForModeAtLevel(mode, system_install));
 }
 
 // Returns true if the current install's |chrome_exe| has been registered with
@@ -1186,16 +1187,19 @@ ShellUtil::DefaultState ProbeAppIsDefaultHandlers(
 
   base::string16 app_name(GetApplicationName(chrome_exe));
 
-  // Generate the app names for this brand's other install modes.
+  // Generate the app names for this brand's other install modes at both user
+  // and system levels.
   const int current_install_mode_index =
       install_static::InstallDetails::Get().install_mode_index();
-  base::string16 other_app_names[install_static::NUM_INSTALL_MODES];
+  base::string16 other_app_names[install_static::NUM_INSTALL_MODES * 2];
   for (int mode_index = 0; mode_index < install_static::NUM_INSTALL_MODES;
        ++mode_index) {
     if (mode_index == current_install_mode_index)
       continue;  // Leave the entry for the current mode empty.
-    other_app_names[mode_index] =
-        GetApplicationNameForMode(install_static::kInstallModes[mode_index]);
+    other_app_names[mode_index * 2] = GetApplicationNameForModeAtLevel(
+        install_static::kInstallModes[mode_index], false);
+    other_app_names[mode_index * 2 + 1] = GetApplicationNameForModeAtLevel(
+        install_static::kInstallModes[mode_index], true);
   }
 
   // Now check each protocol to see if this brand is default for all. This loop
@@ -1204,12 +1208,11 @@ ShellUtil::DefaultState ProbeAppIsDefaultHandlers(
   for (size_t i = 0; i < num_protocols; ++i) {
     const wchar_t* protocol = protocols[i];
     BOOL result = TRUE;
-    // Check the current app name.
+    // Check the current app name. This will fail (e.g., ERROR_FILE_NOT_FOUND)
+    // if |app_name| isn't registered.
     hr = registration->QueryAppIsDefault(protocol, AT_URLPROTOCOL, AL_EFFECTIVE,
                                          app_name.c_str(), &result);
-    if (FAILED(hr))
-      return ShellUtil::NOT_DEFAULT;
-    if (result)
+    if (SUCCEEDED(hr) && result)
       continue;
 
     // Search for a different install mode that is the default handler.
