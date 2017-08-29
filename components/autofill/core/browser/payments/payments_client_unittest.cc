@@ -8,12 +8,12 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
 #include "components/autofill/core/common/autofill_switches.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/gaia/fake_identity_provider.h"
 #include "google_apis/gaia/fake_oauth2_token_service.h"
 #include "net/url_request/test_url_fetcher_factory.h"
@@ -138,7 +138,7 @@ class PaymentsClientTest : public testing::Test, public PaymentsClientDelegate {
   std::string real_pan_;
   std::unique_ptr<base::DictionaryValue> legal_message_;
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   net::TestURLFetcherFactory factory_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_;
   std::unique_ptr<FakeOAuth2TokenService> token_service_;
@@ -377,5 +377,5 @@ TEST_F(PaymentsClientTest, OtherError) {
   EXPECT_EQ("", real_pan_);
 }
 
-}  // namespace autofill
 }  // namespace payments
+}  // namespace autofill
