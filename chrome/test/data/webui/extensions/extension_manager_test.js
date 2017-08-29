@@ -117,28 +117,31 @@ cr.define('extension_manager_tests', function() {
 
       // Toggle between extensions and apps and back again.
       expectEquals(manager.extensions, manager.$['items-list'].items);
-      manager.listHelper_.showType(extensions.ShowingType.APPS);
+      extensions.navigation.navigateTo(
+          {page: Page.LIST, type: extensions.ShowingType.APPS});
       expectEquals(manager.apps, manager.$['items-list'].items);
-      manager.listHelper_.showType(extensions.ShowingType.EXTENSIONS);
+      extensions.navigation.navigateTo(
+          {page: Page.LIST, type: extensions.ShowingType.EXTENSIONS});
       expectEquals(manager.extensions, manager.$['items-list'].items);
       // Repeating a selection should have no change.
-      manager.listHelper_.showType(extensions.ShowingType.EXTENSIONS);
+      extensions.navigation.navigateTo(
+          {page: Page.LIST, type: extensions.ShowingType.EXTENSIONS});
       expectEquals(manager.extensions, manager.$['items-list'].items);
     });
 
     test(assert(TestNames.ChangePages), function() {
       // We start on the item list.
-      MockInteractions.tap(manager.sidebar.$['sections-extensions']);
+      MockInteractions.tap(manager.$.sidebar.$['sections-extensions']);
       Polymer.dom.flush();
       isActiveView(Page.LIST);
 
       // Switch: item list -> keyboard shortcuts.
-      MockInteractions.tap(manager.sidebar.$['sections-shortcuts']);
+      MockInteractions.tap(manager.$.sidebar.$['sections-shortcuts']);
       Polymer.dom.flush();
       isActiveView(Page.SHORTCUTS);
 
       // Switch: keyboard shortcuts -> item list.
-      MockInteractions.tap(manager.sidebar.$['sections-apps']);
+      MockInteractions.tap(manager.$.sidebar.$['sections-apps']);
       Polymer.dom.flush();
       isActiveView(Page.LIST);
 
@@ -150,7 +153,7 @@ cr.define('extension_manager_tests', function() {
       isActiveView(Page.DETAILS);
 
       // Switch: detail view -> keyboard shortcuts.
-      MockInteractions.tap(manager.sidebar.$['sections-shortcuts']);
+      MockInteractions.tap(manager.$.sidebar.$['sections-shortcuts']);
       Polymer.dom.flush();
       isActiveView(Page.SHORTCUTS);
     });
