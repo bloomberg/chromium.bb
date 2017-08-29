@@ -13,6 +13,7 @@
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/subresource_filter/core/common/memory_mapped_ruleset.h"
+#include "components/subresource_filter/core/common/scoped_timers.h"
 #include "components/subresource_filter/core/common/time_measurements.h"
 #include "components/url_pattern_index/proto/rules.pb.h"
 
@@ -24,16 +25,22 @@ ActivationState ComputeActivationState(
     const ActivationState& parent_activation_state,
     const MemoryMappedRuleset* ruleset) {
   DCHECK(ruleset);
+
   SCOPED_UMA_HISTOGRAM_MICRO_TIMER(
       "SubresourceFilter.DocumentLoad.Activation.WallDuration");
   SCOPED_UMA_HISTOGRAM_MICRO_THREAD_TIMER(
       "SubresourceFilter.DocumentLoad.Activation.CPUDuration");
-  if (parent_document_origin.unique()) {
-    SCOPED_UMA_HISTOGRAM_MICRO_TIMER(
-        "SubresourceFilter.PageLoad.Activation.WallDuration");
-    SCOPED_UMA_HISTOGRAM_MICRO_THREAD_TIMER(
-        "SubresourceFilter.PageLoad.Activation.CPUDuration");
-  }
+
+  auto page_wall_duration_timer = ScopedTimers::StartIf(
+      parent_document_origin.unique(), [](base::TimeDelta delta) {
+        UMA_HISTOGRAM_MICRO_TIMES(
+            "SubresourceFilter.PageLoad.Activation.WallDuration", delta);
+      });
+  auto page_cpu_duration_timer = ScopedThreadTimers::StartIf(
+      parent_document_origin.unique(), [](base::TimeDelta delta) {
+        UMA_HISTOGRAM_MICRO_TIMES(
+            "SubresourceFilter.PageLoad.Activation.CPUDuration", delta);
+      });
 
   IndexedRulesetMatcher matcher(ruleset->data(), ruleset->length());
   ActivationState activation_state = parent_activation_state;

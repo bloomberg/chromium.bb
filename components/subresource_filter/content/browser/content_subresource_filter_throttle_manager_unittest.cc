@@ -16,6 +16,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/test_simple_task_runner.h"
+#include "base/time/time.h"
 #include "components/subresource_filter/content/browser/async_document_subresource_filter.h"
 #include "components/subresource_filter/content/browser/subresource_filter_observer_manager.h"
 #include "components/subresource_filter/content/common/subresource_filter_messages.h"
@@ -716,8 +717,10 @@ TEST_F(ContentSubresourceFilterThrottleManagerTest, LogActivation) {
   // Only those with page level activation do ruleset lookups.
   tester.ExpectTotalCount("SubresourceFilter.PageLoad.Activation.WallDuration",
                           2);
+  // The *.CPUDuration histograms are recorded only if base::ThreadTicks is
+  // supported.
   tester.ExpectTotalCount("SubresourceFilter.PageLoad.Activation.CPUDuration",
-                          2);
+                          base::ThreadTicks::IsSupported() ? 2 : 0);
 }
 
 // If ruleset rules are disabled, should never map the ruleset into memory.

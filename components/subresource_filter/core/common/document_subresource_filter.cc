@@ -45,9 +45,7 @@ LoadPolicy DocumentSubresourceFilter::GetLoadPolicy(
     return LoadPolicy::ALLOW;
 
   auto wall_duration_timer = ScopedTimers::StartIf(
-      activation_state_.measure_performance &&
-          ScopedThreadTimers::IsSupported(),
-      [this](base::TimeDelta delta) {
+      activation_state_.measure_performance, [this](base::TimeDelta delta) {
         statistics_.evaluation_total_wall_duration += delta;
         UMA_HISTOGRAM_MICRO_TIMES(
             "SubresourceFilter.SubresourceLoad.Evaluation.WallDuration", delta);
