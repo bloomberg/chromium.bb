@@ -63,6 +63,18 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
                 modifiers.toArray(new PaymentDetailsModifier[0]), callback);
     }
 
+    /**
+     * Abort invocation of the payment app.
+     *
+     * @param webContents      The web contents that invoked PaymentRequest.
+     * @param registrationId   The service worker registration ID of the Payment App.
+     * @param callback         Called after abort invoke payment app is finished running.
+     */
+    public static void abortPaymentApp(WebContents webContents, long registrationId,
+            PaymentInstrument.AbortCallback callback) {
+        nativeAbortPaymentApp(webContents, registrationId, callback);
+    }
+
     @CalledByNative
     private static String[] getSupportedMethodsFromMethodData(PaymentMethodData data) {
         return data.supportedMethods;
@@ -140,6 +152,12 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
         }
     }
 
+    @CalledByNative
+    private static void onPaymentAppAborted(Object callback, boolean result) {
+        assert callback instanceof PaymentInstrument.AbortCallback;
+        ((PaymentInstrument.AbortCallback) callback).onInstrumentAbortResult(result);
+    }
+
     /*
      * TODO(tommyt): crbug.com/505554. Change the |callback| parameter below to
      * be of type PaymentInstrument.InstrumentDetailsCallback, once this JNI bug
@@ -156,4 +174,12 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
             String topLevelOrigin, String paymentRequestOrigin, String paymentRequestId,
             PaymentMethodData[] methodData, PaymentItem total, PaymentDetailsModifier[] modifiers,
             Object callback);
+
+    /*
+     * TODO(tommyt): crbug.com/505554. Change the |callback| parameter below to
+     * be of type PaymentInstrument.InstrumentDetailsCallback, once this JNI bug
+     * has been resolved.
+     */
+    private static native void nativeAbortPaymentApp(
+            WebContents webContents, long registrationId, Object callback);
 }
