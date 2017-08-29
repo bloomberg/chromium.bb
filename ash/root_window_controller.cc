@@ -276,13 +276,13 @@ std::vector<RootWindowController*>*
 
 RootWindowController::~RootWindowController() {
   Shutdown();
+  DCHECK(!animating_wallpaper_widget_controller_.get());
+  DCHECK(!wallpaper_widget_controller_.get());
   ash_host_.reset();
   mus_window_tree_host_.reset();
   // The CaptureClient needs to be around for as long as the RootWindow is
   // valid.
   capture_client_.reset();
-  if (animating_wallpaper_widget_controller_.get())
-    animating_wallpaper_widget_controller_->StopAnimating();
   root_window_controllers_->erase(std::find(root_window_controllers_->begin(),
                                             root_window_controllers_->end(),
                                             this));
@@ -483,6 +483,9 @@ void RootWindowController::Shutdown() {
   touch_exploration_manager_.reset();
 
   ResetRootForNewWindowsIfNecessary();
+
+  SetAnimatingWallpaperWidgetController(nullptr);
+  wallpaper_widget_controller_.reset();
 
   CloseChildWindows();
   aura::Window* root_window = GetRootWindow();
