@@ -99,7 +99,7 @@ namespace {
 // same time (so users don't have to deal with things changing twice).
 // Since this was never really intended to be toggled by users, this
 // is fine for now.
-const bool kUseGtkNavButtonLayoutManager = false;
+const bool kUseGtkNavButtonLayoutManager = true;
 
 const double kDefaultDPI = 96;
 
@@ -282,7 +282,7 @@ const char* kUnknownContentType = "application/octet-stream";
 std::unique_ptr<NavButtonLayoutManager> CreateNavButtonLayoutManager(
     GtkUi* gtk_ui) {
 #if GTK_MAJOR_VERSION == 3
-  if (GtkVersionCheck(3, 10) && kUseGtkNavButtonLayoutManager)
+  if (GtkVersionCheck(3, 14) && kUseGtkNavButtonLayoutManager)
     return std::make_unique<NavButtonLayoutManagerGtk3>(gtk_ui);
 #endif
 #if defined(USE_GCONF)
@@ -803,10 +803,10 @@ void GtkUi::RemoveDeviceScaleFactorObserver(
 
 std::unique_ptr<views::NavButtonProvider> GtkUi::CreateNavButtonProvider() {
 #if GTK_MAJOR_VERSION >= 3
-  return base::MakeUnique<libgtkui::NavButtonProviderGtk3>();
-#else
-  return nullptr;
+  if (GtkVersionCheck(3, 14))
+    return base::MakeUnique<libgtkui::NavButtonProviderGtk3>();
 #endif
+  return nullptr;
 }
 
 bool GtkUi::MatchEvent(const ui::Event& event,
