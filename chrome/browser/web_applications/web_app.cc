@@ -48,11 +48,6 @@
 #include "ui/gfx/icon_util.h"
 #endif
 
-#if defined(TOOLKIT_VIEWS)
-#include "chrome/browser/extensions/tab_helper.h"
-#include "components/favicon/content/content_favicon_driver.h"
-#endif
-
 using content::BrowserThread;
 
 namespace {
@@ -71,14 +66,6 @@ const size_t kNumDesiredSizes = IconUtil::kNumIconDimensions;
 #else
 const int kDesiredSizes[] = {32};
 const size_t kNumDesiredSizes = arraysize(kDesiredSizes);
-#endif
-
-#if defined(TOOLKIT_VIEWS)
-// Predicator for sorting images from largest to smallest.
-bool IconPrecedes(const WebApplicationInfo::IconInfo& left,
-                  const WebApplicationInfo::IconInfo& right) {
-  return left.width < right.width;
-}
 #endif
 
 base::FilePath GetShortcutDataDir(const web_app::ShortcutInfo& shortcut_info) {
@@ -218,41 +205,6 @@ ShortcutLocations::ShortcutLocations()
       applications_menu_location(APP_MENU_LOCATION_NONE),
       in_quick_launch_bar(false) {
 }
-
-#if defined(TOOLKIT_VIEWS)
-std::unique_ptr<ShortcutInfo> GetShortcutInfoForTab(
-    content::WebContents* web_contents) {
-  const favicon::FaviconDriver* favicon_driver =
-      favicon::ContentFaviconDriver::FromWebContents(web_contents);
-  const extensions::TabHelper* extensions_tab_helper =
-      extensions::TabHelper::FromWebContents(web_contents);
-  const WebApplicationInfo& app_info = extensions_tab_helper->web_app_info();
-
-  std::unique_ptr<ShortcutInfo> info(new ShortcutInfo);
-  info->url = app_info.app_url.is_empty() ? web_contents->GetURL() :
-                                            app_info.app_url;
-  info->title = app_info.title.empty() ?
-      (web_contents->GetTitle().empty() ? base::UTF8ToUTF16(info->url.spec()) :
-                                          web_contents->GetTitle()) :
-      app_info.title;
-  info->description = app_info.description;
-  // Even though GetFavicon returns a gfx::Image, we *deliberately* call
-  // AsImageSkia to get the internal ImageSkia, then construct a new gfx::Image.
-  // This ensures the ShortcutInfo's favicon does not share a backing store with
-  // |web_contents|, which would not be thread safe. https://crbug.com/596348.
-  info->favicon.Add(favicon_driver->GetFavicon().AsImageSkia());
-
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  info->profile_path = profile->GetPath();
-
-  return info;
-}
-#endif
-
-#if !defined(OS_WIN)
-void UpdateShortcutForTabContents(content::WebContents* web_contents) {}
-#endif
 
 std::unique_ptr<ShortcutInfo> ShortcutInfoForExtensionAndProfile(
     const extensions::Extension* app,
@@ -514,23 +466,6 @@ bool IsValidUrl(const GURL& url) {
 
   return false;
 }
-
-#if defined(TOOLKIT_VIEWS)
-void GetIconsInfo(const WebApplicationInfo& app_info,
-                  IconInfoList* icons) {
-  DCHECK(icons);
-
-  icons->clear();
-  for (size_t i = 0; i < app_info.icons.size(); ++i) {
-    // We only take square shaped icons (i.e. width == height).
-    if (app_info.icons[i].width == app_info.icons[i].height) {
-      icons->push_back(app_info.icons[i]);
-    }
-  }
-
-  std::sort(icons->begin(), icons->end(), &IconPrecedes);
-}
-#endif
 
 #if defined(OS_LINUX)
 std::string GetWMClassFromAppName(std::string app_name) {

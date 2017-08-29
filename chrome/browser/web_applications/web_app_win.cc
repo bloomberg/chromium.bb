@@ -24,7 +24,6 @@
 #include "base/win/shortcut.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/shell_integration_win.h"
-#include "chrome/browser/web_applications/update_shortcut_worker_win.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/shell_util.h"
@@ -605,11 +604,5 @@ base::FilePath GetIconFilePath(const base::FilePath& web_app_path,
 }
 
 }  // namespace internals
-
-void UpdateShortcutForTabContents(content::WebContents* web_contents) {
-  // UpdateShortcutWorker will delete itself when it's done.
-  UpdateShortcutWorker* worker = new UpdateShortcutWorker(web_contents);
-  worker->Run();
-}
 
 }  // namespace web_app

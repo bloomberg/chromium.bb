@@ -22,8 +22,6 @@ static_library("extensions") {
     "../ui/toolbar/toolbar_actions_model.h",
     "../ui/toolbar/toolbar_actions_model_factory.cc",
     "../ui/toolbar/toolbar_actions_model_factory.h",
-    "../web_applications/update_shortcut_worker_win.cc",
-    "../web_applications/update_shortcut_worker_win.h",
     "../web_applications/web_app.cc",
     "../web_applications/web_app.h",
     "../web_applications/web_app_chromeos.cc",
