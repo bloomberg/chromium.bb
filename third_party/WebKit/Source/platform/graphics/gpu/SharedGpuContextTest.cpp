@@ -153,8 +153,8 @@ TEST_F(MailboxSharedGpuContextTest, MailboxCaching) {
 
   EXPECT_CALL(gl_, GenMailboxCHROMIUM(mailbox.name))
       .Times(1)
-      .WillOnce(testing::Invoke(&mailboxGenerator,
-                                &FakeMailboxGenerator::GenMailbox));
+      .WillOnce(::testing::Invoke(&mailboxGenerator,
+                                  &FakeMailboxGenerator::GenMailbox));
 
   SharedGpuContext::ContextProviderWrapper()->Utils()->GetMailboxForSkImage(
       mailbox, image->PaintImageForCurrentFrame().GetSkImage());
@@ -189,8 +189,8 @@ TEST_F(MailboxSharedGpuContextTest, MailboxCacheSurvivesSkiaRecycling) {
 
   EXPECT_CALL(gl_, GenMailboxCHROMIUM(mailbox.name))
       .Times(1)
-      .WillOnce(testing::Invoke(&mailboxGenerator,
-                                &FakeMailboxGenerator::GenMailbox));
+      .WillOnce(::testing::Invoke(&mailboxGenerator,
+                                  &FakeMailboxGenerator::GenMailbox));
 
   SharedGpuContext::ContextProviderWrapper()->Utils()->GetMailboxForSkImage(
       mailbox, image->PaintImageForCurrentFrame().GetSkImage());
