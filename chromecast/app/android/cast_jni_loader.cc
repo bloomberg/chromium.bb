@@ -6,7 +6,6 @@
 #include "base/android/library_loader/library_loader_hooks.h"
 #include "base/bind.h"
 #include "chromecast/android/cast_shell_jni_registration.h"
-#include "chromecast/android/platform_jni_loader.h"
 #include "chromecast/app/cast_main_delegate.h"
 #include "content/public/app/content_jni_onload.h"
 #include "content/public/app/content_main.h"

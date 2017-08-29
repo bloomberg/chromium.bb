@@ -26,11 +26,6 @@ base::android::ScopedJavaLocalRef<jobject> CreateJavaWindow(
 }  // namespace
 
 // static
-bool CastContentWindowAndroid::RegisterJni(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
-// static
 std::unique_ptr<CastContentWindow> CastContentWindow::Create(
     CastContentWindow::Delegate* delegate) {
   return base::WrapUnique(new CastContentWindowAndroid(delegate));
