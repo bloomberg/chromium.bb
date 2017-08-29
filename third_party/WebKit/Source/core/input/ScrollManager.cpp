@@ -87,6 +87,9 @@ AutoscrollController* ScrollManager::GetAutoscrollController() const {
 
 static bool CanPropagate(const ScrollState& scroll_state,
                          const Element& element) {
+  if (!element.GetLayoutBox()->GetScrollableArea())
+    return true;
+
   return (scroll_state.deltaXHint() == 0 ||
           element.GetComputedStyle()->ScrollBoundaryBehaviorX() ==
               EScrollBoundaryBehavior::kAuto) &&

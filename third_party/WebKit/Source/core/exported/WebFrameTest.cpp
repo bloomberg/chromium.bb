@@ -10348,6 +10348,30 @@ TEST_P(WebFrameOverscrollTest, NoOverscrollForSmallvalues) {
   Mock::VerifyAndClearExpectations(&client);
 }
 
+TEST_P(WebFrameOverscrollTest,
+       ScrollBoundaryBehaviorOnBodyDoesNotPreventOverscroll) {
+  OverscrollWebViewClient client;
+  RegisterMockedHttpURLLoad("overscroll/overscroll.html");
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "overscroll/overscroll.html",
+                                    nullptr, &client, nullptr,
+                                    ConfigureAndroid);
+  web_view_helper.Resize(WebSize(200, 200));
+
+  WebLocalFrame* mainFrame =
+      web_view_helper.WebView()->MainFrame()->ToWebLocalFrame();
+  mainFrame->ExecuteScript(
+      WebScriptSource(WebString("document.body.style="
+                                "'scroll-boundary-behavior: contain;'")));
+
+  ScrollBegin(&web_view_helper, 100, 100);
+  EXPECT_CALL(client,
+              DidOverscroll(WebFloatSize(-100, -100), WebFloatSize(-100, -100),
+                            WebFloatPoint(100, 100), WebFloatSize()));
+  ScrollUpdate(&web_view_helper, 100, 100);
+  Mock::VerifyAndClearExpectations(&client);
+}
+
 TEST_P(ParameterizedWebFrameTest, OrientationFrameDetach) {
   RuntimeEnabledFeatures::SetOrientationEventEnabled(true);
   RegisterMockedHttpURLLoad("orientation-frame-detach.html");
