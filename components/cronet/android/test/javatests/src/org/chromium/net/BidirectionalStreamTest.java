@@ -33,6 +33,7 @@ import org.chromium.net.CronetTestRule.OnlyRunNativeCronet;
 import org.chromium.net.MetricsTestUtil.TestRequestFinishedListener;
 import org.chromium.net.TestBidirectionalStreamCallback.FailureType;
 import org.chromium.net.TestBidirectionalStreamCallback.ResponseStep;
+import org.chromium.net.impl.BidirectionalStreamNetworkException;
 import org.chromium.net.impl.CronetBidirectionalStream;
 import org.chromium.net.impl.UrlResponseInfoImpl;
 
@@ -1526,6 +1527,38 @@ public class BidirectionalStreamTest {
         assertNull(mCronetEngine);
     }
 
+    /*
+     * Verifies NetworkException constructed from specific error codes are retryable.
+     */
+    @SmallTest
+    @Feature({"Cronet"})
+    @Test
+    @OnlyRunNativeCronet
+    public void testErrorCodes() throws Exception {
+        // Non-BidirectionalStream specific error codes.
+        checkSpecificErrorCode(NetError.ERR_NAME_NOT_RESOLVED,
+                NetworkException.ERROR_HOSTNAME_NOT_RESOLVED, false);
+        checkSpecificErrorCode(NetError.ERR_INTERNET_DISCONNECTED,
+                NetworkException.ERROR_INTERNET_DISCONNECTED, false);
+        checkSpecificErrorCode(
+                NetError.ERR_NETWORK_CHANGED, NetworkException.ERROR_NETWORK_CHANGED, true);
+        checkSpecificErrorCode(
+                NetError.ERR_CONNECTION_CLOSED, NetworkException.ERROR_CONNECTION_CLOSED, true);
+        checkSpecificErrorCode(
+                NetError.ERR_CONNECTION_REFUSED, NetworkException.ERROR_CONNECTION_REFUSED, false);
+        checkSpecificErrorCode(
+                NetError.ERR_CONNECTION_RESET, NetworkException.ERROR_CONNECTION_RESET, true);
+        checkSpecificErrorCode(NetError.ERR_CONNECTION_TIMED_OUT,
+                NetworkException.ERROR_CONNECTION_TIMED_OUT, true);
+        checkSpecificErrorCode(NetError.ERR_TIMED_OUT, NetworkException.ERROR_TIMED_OUT, true);
+        checkSpecificErrorCode(NetError.ERR_ADDRESS_UNREACHABLE,
+                NetworkException.ERROR_ADDRESS_UNREACHABLE, false);
+        // BidirectionalStream specific retryable error codes.
+        checkSpecificErrorCode(NetError.ERR_SPDY_PING_FAILED, NetworkException.ERROR_OTHER, true);
+        checkSpecificErrorCode(
+                NetError.ERR_QUIC_HANDSHAKE_FAILED, NetworkException.ERROR_OTHER, true);
+    }
+
     // Returns the contents of byteBuffer, from its position() to its limit(),
     // as a String. Does not modify byteBuffer's position().
     private static String bufferContentsToString(ByteBuffer byteBuffer, int start, int end) {
@@ -1536,5 +1569,14 @@ public class BidirectionalStreamTest {
         byte[] contents = new byte[duplicate.remaining()];
         duplicate.get(contents);
         return new String(contents);
+    }
+
+    private static void checkSpecificErrorCode(
+            int netError, int errorCode, boolean immediatelyRetryable) throws Exception {
+        NetworkException exception =
+                new BidirectionalStreamNetworkException("", errorCode, netError);
+        assertEquals(immediatelyRetryable, exception.immediatelyRetryable());
+        assertEquals(netError, exception.getCronetInternalErrorCode());
+        assertEquals(errorCode, exception.getErrorCode());
     }
 }
