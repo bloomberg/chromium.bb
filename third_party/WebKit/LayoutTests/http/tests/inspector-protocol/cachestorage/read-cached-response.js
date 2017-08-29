@@ -3,15 +3,15 @@
       'resources/service-worker.html',
       `Tests reading cached response from the protocol.`);
 
-  async function dumpResponse(cacheId, path) {
-    var {error, result} = await dp.CacheStorage.requestCachedResponse({cacheId, requestURL: path});
+  async function dumpResponse(cacheId, entry) {
+    var {error, result} = await dp.CacheStorage.requestCachedResponse({cacheId, requestURL: entry ? entry.requestURL : null});
     if (error) {
       testRunner.log(`Error: ${error.message} ${error.data || ""}`);
       return;
     }
-    var response = result.response;
-    testRunner.log(response.headers["Content-Type"]);
-    testRunner.log("Type of body: " + (typeof response.body));
+    var header = entry.responseHeaders.find(header => header.name.toLowerCase() === 'content-type');
+    testRunner.log(header ? header.value : '');
+    testRunner.log("Type of body: " + (typeof result.response.body));
   }
 
   async function waitForServiceWorkerActivation() {
@@ -30,10 +30,11 @@
   var {result} = await dp.CacheStorage.requestCacheNames({securityOrigin: "http://127.0.0.1:8000"});
   var cacheId = result.caches[0].cacheId;
   result = await dp.CacheStorage.requestEntries({cacheId, skipCount: 0, pageSize: 5});
-  var requests = result.result.cacheDataEntries.map(entry => entry.request).sort();
+  var entries = result.result.cacheDataEntries;
+  entries.sort((a, b) => a.requestURL.localeCompare(b.requestURL));
   testRunner.log("Cached requests:");
 
-  for (var entry of requests)
+  for (var entry of entries)
     await dumpResponse(cacheId, entry);
 
   testRunner.log('Trying without specifying all the arguments:')
@@ -41,9 +42,9 @@
   testRunner.log('Trying without specifying the request path:')
   await dumpResponse(cacheId, null);
   testRunner.log('Trying with non existant cache:')
-  await dumpResponse("bogus", requests[0]);
+  await dumpResponse("bogus", entries[0]);
   testRunner.log('Trying with non existant request path:')
-  await dumpResponse(cacheId, "http://localhost:8080/bogus");
+  await dumpResponse(cacheId, {requestURL: "http://localhost:8080/bogus"});
 
   testRunner.completeTest()
 });
