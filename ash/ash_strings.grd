@@ -1068,6 +1068,10 @@ This file contains the strings for ash.
       </message>
 
       <!-- Notification that an accelerator was pressed, so the user knows how to toggle it back -->
+      <message name="IDS_HIGH_CONTRAST_ACCEL_TITLE"
+               desc="Notification title to tell users that they just pressed the Search+Shift+H shortcut to toggle High Contrast Mode, and that pressing it again will toggle it off.">
+        High Contrast Mode
+      </message>
       <message name="IDS_HIGH_CONTRAST_ACCEL_MSG"
                desc="Notification message to tell users that they just pressed the Search+Shift+H shortcut to toggle High Contrast Mode, and that pressing it again will toggle it off.">
         High Contrast Mode enabled. Press Ctrl+Search+H again to toggle it off.

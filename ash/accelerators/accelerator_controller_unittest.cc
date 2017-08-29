@@ -1326,6 +1326,8 @@ TEST_F(DeprecatedAcceleratorTester, TestNewAccelerators) {
     // screen before we proceed testing the rest of accelerators.
     ResetStateIfNeeded();
   }
+
+  RemoveAllNotifications();
 }
 
 }  // namespace ash
