@@ -48,8 +48,7 @@ QuadList::QuadList(size_t default_size_to_reserve)
 
 void QuadList::ReplaceExistingQuadWithOpaqueTransparentSolidColor(Iterator at) {
   // In order to fill the backbuffer with transparent black, the replacement
-  // solid color quad needs to set |needs_blending| to false, and set both
-  // |visible_rect| and |opaque_rect| to its quad rect so it is drawn and
+  // solid color quad needs to set |needs_blending| to false, and
   // ShouldDrawWithBlending() returns false so it is drawn without blending.
   const gfx::Rect rect = at->rect;
   bool needs_blending = false;
@@ -57,9 +56,8 @@ void QuadList::ReplaceExistingQuadWithOpaqueTransparentSolidColor(Iterator at) {
 
   SolidColorDrawQuad* replacement =
       QuadList::ReplaceExistingElement<SolidColorDrawQuad>(at);
-  replacement->SetAll(shared_quad_state, rect, rect /* opaque_rect */,
-                      rect /* visible_rect */, needs_blending,
-                      SK_ColorTRANSPARENT, true);
+  replacement->SetAll(shared_quad_state, rect, rect /* visible_rect */,
+                      needs_blending, SK_ColorTRANSPARENT, true);
 }
 
 std::unique_ptr<RenderPass> RenderPass::Create() {

@@ -2170,7 +2170,6 @@ void SubmitCompositorFrameWithResources(ResourceId* resource_ids,
     frame.resource_list.push_back(resource);
     auto* quad = pass->CreateAndAppendDrawQuad<cc::TextureDrawQuad>();
     const gfx::Rect rect;
-    const gfx::Rect opaque_rect;
     const gfx::Rect visible_rect;
     bool needs_blending = false;
     bool premultiplied_alpha = false;
@@ -2181,10 +2180,10 @@ void SubmitCompositorFrameWithResources(ResourceId* resource_ids,
     bool flipped = false;
     bool nearest_neighbor = false;
     bool secure_output_only = true;
-    quad->SetAll(sqs, rect, opaque_rect, visible_rect, needs_blending,
-                 resource_ids[i], gfx::Size(), premultiplied_alpha, uv_top_left,
-                 uv_bottom_right, background_color, vertex_opacity, flipped,
-                 nearest_neighbor, secure_output_only);
+    quad->SetAll(sqs, rect, visible_rect, needs_blending, resource_ids[i],
+                 gfx::Size(), premultiplied_alpha, uv_top_left, uv_bottom_right,
+                 background_color, vertex_opacity, flipped, nearest_neighbor,
+                 secure_output_only);
   }
   frame.render_pass_list.push_back(std::move(pass));
   support->SubmitCompositorFrame(surface_id.local_surface_id(),

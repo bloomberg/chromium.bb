@@ -40,7 +40,6 @@ class CC_EXPORT RenderPassDrawQuad : public DrawQuad {
 
   void SetAll(const viz::SharedQuadState* shared_quad_state,
               const gfx::Rect& rect,
-              const gfx::Rect& opaque_rect,
               const gfx::Rect& visible_rect,
               bool needs_blending,
               RenderPassId render_pass_id,

@@ -20,7 +20,6 @@ YUVVideoDrawQuad::~YUVVideoDrawQuad() {}
 
 void YUVVideoDrawQuad::SetNew(const viz::SharedQuadState* shared_quad_state,
                               const gfx::Rect& rect,
-                              const gfx::Rect& opaque_rect,
                               const gfx::Rect& visible_rect,
                               bool needs_blending,
                               const gfx::RectF& ya_tex_coord_rect,
@@ -37,7 +36,7 @@ void YUVVideoDrawQuad::SetNew(const viz::SharedQuadState* shared_quad_state,
                               float multiplier,
                               uint32_t bits_per_channel) {
   DrawQuad::SetAll(shared_quad_state, DrawQuad::YUV_VIDEO_CONTENT, rect,
-                   opaque_rect, visible_rect, needs_blending);
+                   visible_rect, needs_blending);
   this->ya_tex_coord_rect = ya_tex_coord_rect;
   this->uv_tex_coord_rect = uv_tex_coord_rect;
   this->ya_tex_size = ya_tex_size;
@@ -56,7 +55,6 @@ void YUVVideoDrawQuad::SetNew(const viz::SharedQuadState* shared_quad_state,
 
 void YUVVideoDrawQuad::SetAll(const viz::SharedQuadState* shared_quad_state,
                               const gfx::Rect& rect,
-                              const gfx::Rect& opaque_rect,
                               const gfx::Rect& visible_rect,
                               bool needs_blending,
                               const gfx::RectF& ya_tex_coord_rect,
@@ -74,7 +72,7 @@ void YUVVideoDrawQuad::SetAll(const viz::SharedQuadState* shared_quad_state,
                               uint32_t bits_per_channel,
                               bool require_overlay) {
   DrawQuad::SetAll(shared_quad_state, DrawQuad::YUV_VIDEO_CONTENT, rect,
-                   opaque_rect, visible_rect, needs_blending);
+                   visible_rect, needs_blending);
   this->ya_tex_coord_rect = ya_tex_coord_rect;
   this->uv_tex_coord_rect = uv_tex_coord_rect;
   this->ya_tex_size = ya_tex_size;

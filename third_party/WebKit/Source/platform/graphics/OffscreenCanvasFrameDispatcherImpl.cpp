@@ -196,7 +196,6 @@ void OffscreenCanvasFrameDispatcherImpl::DispatchFrame(
 
   // TODO(crbug.com/705019): optimize for contexts that have {alpha: false}
   const bool kNeedsBlending = true;
-  gfx::Rect opaque_rect(0, 0);
 
   // TODO(crbug.com/645993): this should be inherited from WebGL context's
   // creation settings.
@@ -209,8 +208,8 @@ void OffscreenCanvasFrameDispatcherImpl::DispatchFrame(
   // TODO(crbug.com/645590): filter should respect the image-rendering CSS
   // property of associated canvas element.
   const bool kNearestNeighbor = false;
-  quad->SetAll(sqs, bounds, opaque_rect, bounds, kNeedsBlending, resource.id,
-               gfx::Size(), kPremultipliedAlpha, uv_top_left, uv_bottom_right,
+  quad->SetAll(sqs, bounds, bounds, kNeedsBlending, resource.id, gfx::Size(),
+               kPremultipliedAlpha, uv_top_left, uv_bottom_right,
                SK_ColorTRANSPARENT, vertex_opacity, yflipped, kNearestNeighbor,
                false);
 

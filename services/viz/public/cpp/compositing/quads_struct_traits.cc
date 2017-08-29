@@ -264,8 +264,7 @@ bool StructTraits<viz::mojom::YUVVideoQuadStateDataView, cc::DrawQuad>::Read(
 bool StructTraits<viz::mojom::DrawQuadDataView, cc::DrawQuad>::Read(
     viz::mojom::DrawQuadDataView data,
     cc::DrawQuad* out) {
-  if (!data.ReadRect(&out->rect) || !data.ReadOpaqueRect(&out->opaque_rect) ||
-      !data.ReadVisibleRect(&out->visible_rect)) {
+  if (!data.ReadRect(&out->rect) || !data.ReadVisibleRect(&out->visible_rect)) {
     return false;
   }
   out->needs_blending = data.needs_blending();

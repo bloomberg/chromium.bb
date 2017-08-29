@@ -122,10 +122,6 @@ struct DrawQuad {
   // this quad should draw to. This rect lives in content space.
   gfx.mojom.Rect rect;
 
-  // This specifies the region of the quad that is opaque. This rect lives in
-  // content space.
-  gfx.mojom.Rect opaque_rect;
-
   // Allows changing the rect that gets drawn to make it smaller. This value
   // should be clipped to |rect|. This rect lives in content space.
   gfx.mojom.Rect visible_rect;

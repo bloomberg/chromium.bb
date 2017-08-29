@@ -91,8 +91,6 @@ TEST(PaintedScrollbarLayerImplTest, Occlusion) {
     gfx::Rect scaled_thumb_rect = gfx::ScaleToEnclosingRect(thumb_rect, scale);
     EXPECT_EQ(track_quad->rect.ToString(),
               gfx::Rect(scaled_layer_size).ToString());
-    EXPECT_EQ(track_quad->opaque_rect.ToString(),
-              gfx::Rect(scaled_layer_size).ToString());
     EXPECT_EQ(track_quad->visible_rect.ToString(),
               gfx::Rect(scaled_layer_size).ToString());
     EXPECT_FALSE(track_quad->needs_blending);

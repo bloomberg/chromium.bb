@@ -393,10 +393,6 @@ void ParamTraits<cc::RenderPass>::Write(base::Pickle* m, const param_type& p) {
     DCHECK(quad->rect.Contains(quad->visible_rect))
         << quad->material << " rect: " << quad->rect.ToString()
         << " visible_rect: " << quad->visible_rect.ToString();
-    DCHECK(quad->opaque_rect.IsEmpty() ||
-           quad->rect.Contains(quad->opaque_rect))
-        << quad->material << " rect: " << quad->rect.ToString()
-        << " opaque_rect: " << quad->opaque_rect.ToString();
 
     switch (quad->material) {
       case cc::DrawQuad::DEBUG_BORDER:
@@ -564,13 +560,6 @@ bool ParamTraits<cc::RenderPass>::Read(const base::Pickle* m,
       LOG(ERROR) << "Quad with invalid visible rect " << draw_quad->material
                  << " rect: " << draw_quad->rect.ToString()
                  << " visible_rect: " << draw_quad->visible_rect.ToString();
-      return false;
-    }
-    if (!draw_quad->opaque_rect.IsEmpty() &&
-        !draw_quad->rect.Contains(draw_quad->opaque_rect)) {
-      LOG(ERROR) << "Quad with invalid opaque rect " << draw_quad->material
-                 << " rect: " << draw_quad->rect.ToString()
-                 << " opaque_rect: " << draw_quad->opaque_rect.ToString();
       return false;
     }
 

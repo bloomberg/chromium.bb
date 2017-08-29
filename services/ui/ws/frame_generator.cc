@@ -178,7 +178,7 @@ void FrameGenerator::DrawWindow(cc::RenderPass* pass) {
       bounds_at_origin /* clip_rect */, false /* is_clipped */,
       1.0f /* opacity */, SkBlendMode::kSrcOver, 0 /* sorting-context_id */);
   auto* quad = pass->CreateAndAppendDrawQuad<cc::SurfaceDrawQuad>();
-  quad->SetAll(sqs, bounds_at_origin /* rect */, gfx::Rect() /* opaque_rect */,
+  quad->SetAll(sqs, bounds_at_origin /* rect */,
                bounds_at_origin /* visible_rect */, true /* needs_blending*/,
                window_manager_surface_info_.id(),
                cc::SurfaceDrawQuadType::PRIMARY, nullptr);

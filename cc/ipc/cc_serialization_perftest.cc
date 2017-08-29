@@ -318,39 +318,39 @@ class CCSerializationPerfTest : public testing::Test {
 
       TextureDrawQuad* texture_in =
           pass_in->CreateAndAppendDrawQuad<TextureDrawQuad>();
-      texture_in->SetAll(
-          shared_state1_in, arbitrary_rect2, arbitrary_rect2_inside_rect2,
-          arbitrary_rect1_inside_rect2, arbitrary_bool1, arbitrary_resourceid1,
-          arbitrary_size1, arbitrary_bool1, arbitrary_pointf1,
-          arbitrary_pointf2, arbitrary_color, arbitrary_float_array,
-          arbitrary_bool4, arbitrary_bool5, arbitrary_bool6);
+      texture_in->SetAll(shared_state1_in, arbitrary_rect2,
+                         arbitrary_rect1_inside_rect2, arbitrary_bool1,
+                         arbitrary_resourceid1, arbitrary_size1,
+                         arbitrary_bool1, arbitrary_pointf1, arbitrary_pointf2,
+                         arbitrary_color, arbitrary_float_array,
+                         arbitrary_bool4, arbitrary_bool5, arbitrary_bool6);
 
       TextureDrawQuad* texture_in2 =
           pass_in->CreateAndAppendDrawQuad<TextureDrawQuad>();
-      texture_in2->SetAll(
-          shared_state1_in, arbitrary_rect2, arbitrary_rect2_inside_rect2,
-          arbitrary_rect1_inside_rect2, arbitrary_bool1, arbitrary_resourceid2,
-          arbitrary_size1, arbitrary_bool3, arbitrary_pointf1,
-          arbitrary_pointf2, arbitrary_color, arbitrary_float_array,
-          arbitrary_bool4, arbitrary_bool5, arbitrary_bool6);
+      texture_in2->SetAll(shared_state1_in, arbitrary_rect2,
+                          arbitrary_rect1_inside_rect2, arbitrary_bool1,
+                          arbitrary_resourceid2, arbitrary_size1,
+                          arbitrary_bool3, arbitrary_pointf1, arbitrary_pointf2,
+                          arbitrary_color, arbitrary_float_array,
+                          arbitrary_bool4, arbitrary_bool5, arbitrary_bool6);
 
       TextureDrawQuad* texture_in3 =
           pass_in->CreateAndAppendDrawQuad<TextureDrawQuad>();
-      texture_in3->SetAll(
-          shared_state1_in, arbitrary_rect2, arbitrary_rect2_inside_rect2,
-          arbitrary_rect1_inside_rect2, arbitrary_bool1, arbitrary_resourceid3,
-          arbitrary_size1, arbitrary_bool2, arbitrary_pointf1,
-          arbitrary_pointf2, arbitrary_color, arbitrary_float_array,
-          arbitrary_bool4, arbitrary_bool6, arbitrary_bool6);
+      texture_in3->SetAll(shared_state1_in, arbitrary_rect2,
+                          arbitrary_rect1_inside_rect2, arbitrary_bool1,
+                          arbitrary_resourceid3, arbitrary_size1,
+                          arbitrary_bool2, arbitrary_pointf1, arbitrary_pointf2,
+                          arbitrary_color, arbitrary_float_array,
+                          arbitrary_bool4, arbitrary_bool6, arbitrary_bool6);
 
       TextureDrawQuad* texture_in4 =
           pass_in->CreateAndAppendDrawQuad<TextureDrawQuad>();
-      texture_in4->SetAll(
-          shared_state1_in, arbitrary_rect2, arbitrary_rect2_inside_rect2,
-          arbitrary_rect1_inside_rect2, arbitrary_bool1, arbitrary_resourceid4,
-          arbitrary_size2, arbitrary_bool4, arbitrary_pointf1,
-          arbitrary_pointf2, arbitrary_color, arbitrary_float_array,
-          arbitrary_bool4, arbitrary_bool5, arbitrary_bool6);
+      texture_in4->SetAll(shared_state1_in, arbitrary_rect2,
+                          arbitrary_rect1_inside_rect2, arbitrary_bool1,
+                          arbitrary_resourceid4, arbitrary_size2,
+                          arbitrary_bool4, arbitrary_pointf1, arbitrary_pointf2,
+                          arbitrary_color, arbitrary_float_array,
+                          arbitrary_bool4, arbitrary_bool5, arbitrary_bool6);
     }
 
     // Tiled quads
@@ -365,7 +365,6 @@ class CCSerializationPerfTest : public testing::Test {
         TileDrawQuad* tile_in =
             pass_in->CreateAndAppendDrawQuad<TileDrawQuad>();
         tile_in->SetAll(shared_state2_in, arbitrary_rect2,
-                        arbitrary_rect2_inside_rect2,
                         arbitrary_rect1_inside_rect2, arbitrary_bool1,
                         arbitrary_resourceid3, arbitrary_rectf1,
                         arbitrary_size1, arbitrary_bool2, arbitrary_bool3);
@@ -384,7 +383,6 @@ class CCSerializationPerfTest : public testing::Test {
         SolidColorDrawQuad* solidcolor_in =
             pass_in->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
         solidcolor_in->SetAll(shared_state3_in, arbitrary_rect3,
-                              arbitrary_rect1_inside_rect3,
                               arbitrary_rect2_inside_rect3, arbitrary_bool1,
                               arbitrary_color, arbitrary_bool2);
       }

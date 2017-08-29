@@ -33,16 +33,14 @@ void RenderPassDrawQuad::SetNew(const viz::SharedQuadState* shared_quad_state,
                                 const gfx::RectF& tex_coord_rect) {
   DCHECK(render_pass_id);
 
-  gfx::Rect opaque_rect;
-  bool needs_blending = false;
-  SetAll(shared_quad_state, rect, opaque_rect, visible_rect, needs_blending,
-         render_pass_id, mask_resource_id, mask_uv_rect, mask_texture_size,
-         filters_scale, filters_origin, tex_coord_rect);
+  bool needs_blending = true;
+  SetAll(shared_quad_state, rect, visible_rect, needs_blending, render_pass_id,
+         mask_resource_id, mask_uv_rect, mask_texture_size, filters_scale,
+         filters_origin, tex_coord_rect);
 }
 
 void RenderPassDrawQuad::SetAll(const viz::SharedQuadState* shared_quad_state,
                                 const gfx::Rect& rect,
-                                const gfx::Rect& opaque_rect,
                                 const gfx::Rect& visible_rect,
                                 bool needs_blending,
                                 RenderPassId render_pass_id,
@@ -54,8 +52,8 @@ void RenderPassDrawQuad::SetAll(const viz::SharedQuadState* shared_quad_state,
                                 const gfx::RectF& tex_coord_rect) {
   DCHECK(render_pass_id);
 
-  DrawQuad::SetAll(shared_quad_state, DrawQuad::RENDER_PASS, rect, opaque_rect,
-                   visible_rect, needs_blending);
+  DrawQuad::SetAll(shared_quad_state, DrawQuad::RENDER_PASS, rect, visible_rect,
+                   needs_blending);
   this->render_pass_id = render_pass_id;
   resources.ids[kMaskResourceIdIndex] = mask_resource_id;
   resources.count = mask_resource_id ? 1 : 0;

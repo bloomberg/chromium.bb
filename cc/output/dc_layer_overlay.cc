@@ -203,8 +203,7 @@ QuadList::Iterator DCLayerOverlayProcessor::ProcessRenderPassDrawQuad(
                                   new_opacity, SkBlendMode::kDstOut, 0);
     SolidColorDrawQuad* solid_quad = static_cast<SolidColorDrawQuad*>(*it);
     solid_quad->SetAll(new_shared_quad_state, punch_through.rect,
-                       punch_through.rect, punch_through.rect, false,
-                       0xff000000, true);
+                       punch_through.rect, false, 0xff000000, true);
     damage_rect->Union(gfx::ToEnclosingRect(ClippedQuadRectangle(solid_quad)));
 
     // Add transformed info to list in case this renderpass is included in
@@ -371,8 +370,7 @@ bool DCLayerOverlayProcessor::ProcessForUnderlay(
     new_shared_quad_state->blend_mode = SkBlendMode::kDstOut;
     SolidColorDrawQuad* replacement =
         render_pass->quad_list.ReplaceExistingElement<SolidColorDrawQuad>(it);
-    replacement->SetAll(shared_quad_state, rect, rect, rect, false, 0xff000000,
-                        true);
+    replacement->SetAll(shared_quad_state, rect, rect, false, 0xff000000, true);
   } else {
     // When the opacity == 1.0, drawing with transparent will be done without
     // blending and will have the proper effect of completely clearing the

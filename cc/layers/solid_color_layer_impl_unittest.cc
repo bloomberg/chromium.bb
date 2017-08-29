@@ -108,6 +108,7 @@ TEST(SolidColorLayerImplTest, VerifyCorrectOpacityInQuad) {
   EXPECT_EQ(opacity,
             SolidColorDrawQuad::MaterialCast(render_pass->quad_list.front())
                 ->shared_quad_state->opacity);
+  EXPECT_TRUE(render_pass->quad_list.front()->ShouldDrawWithBlending());
 }
 
 TEST(SolidColorLayerImplTest, VerifyEliminateTransparentAlpha) {
@@ -164,9 +165,8 @@ TEST(SolidColorLayerImplTest, VerifyEliminateTransparentOpacity) {
   EXPECT_EQ(render_pass->quad_list.size(), 0U);
 }
 
-TEST(SolidColorLayerImplTest, VerifyOpaqueRect) {
+TEST(SolidColorLayerImplTest, VerifyNeedsBlending) {
   gfx::Size layer_size = gfx::Size(100, 100);
-  gfx::Rect visible_layer_rect = gfx::Rect(layer_size);
 
   scoped_refptr<SolidColorLayer> layer = SolidColorLayer::Create();
   layer->SetBounds(layer_size);
@@ -198,8 +198,8 @@ TEST(SolidColorLayerImplTest, VerifyOpaqueRect) {
     // The impl layer should call itself opaque as well.
     EXPECT_TRUE(layer_impl->contents_opaque());
 
-    // Impl layer has 1 opacity, and the color is opaque, so the opaque_rect
-    // should be the full tile.
+    // Impl layer has 1 opacity, and the color is opaque, so the needs_blending
+    // should be the false.
     layer_impl->draw_properties().opacity = 1;
 
     std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
@@ -208,8 +208,6 @@ TEST(SolidColorLayerImplTest, VerifyOpaqueRect) {
     layer_impl->AppendQuads(render_pass.get(), &data);
 
     ASSERT_EQ(render_pass->quad_list.size(), 1U);
-    EXPECT_EQ(visible_layer_rect.ToString(),
-              render_pass->quad_list.front()->opaque_rect.ToString());
     EXPECT_FALSE(render_pass->quad_list.front()->needs_blending);
   }
 
@@ -225,8 +223,8 @@ TEST(SolidColorLayerImplTest, VerifyOpaqueRect) {
     // The impl layer should not call itself opaque anymore.
     EXPECT_FALSE(layer_impl->contents_opaque());
 
-    // Impl layer has 1 opacity, but the color is not opaque, so the opaque_rect
-    // should be empty.
+    // Impl layer has 1 opacity, but the color is not opaque, so the
+    // needs_blending should be true.
     layer_impl->draw_properties().opacity = 1;
 
     std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
@@ -235,8 +233,6 @@ TEST(SolidColorLayerImplTest, VerifyOpaqueRect) {
     layer_impl->AppendQuads(render_pass.get(), &data);
 
     ASSERT_EQ(render_pass->quad_list.size(), 1U);
-    EXPECT_EQ(gfx::Rect().ToString(),
-              render_pass->quad_list.front()->opaque_rect.ToString());
     EXPECT_TRUE(render_pass->quad_list.front()->needs_blending);
   }
 }
