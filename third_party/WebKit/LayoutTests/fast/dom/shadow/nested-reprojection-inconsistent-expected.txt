@@ -1,4 +1,4 @@
-CONSOLE WARNING: line 20: Calling Element.createShadowRoot() for an element which already hosts a shadow root is deprecated. See https://www.chromestatus.com/features/4668884095336448 for more details.
+CONSOLE WARNING: line 20: Calling Element.createShadowRoot() for an element which already hosts a shadow root is deprecated and will be removed in M63, around December 2017. See https://www.chromestatus.com/features/4668884095336448 for more details.
 When we modify host children and get distributed nodes in nested ShadowDOM, distribution should occur from the host.
 
 Adds a div to ShadowRoot.
