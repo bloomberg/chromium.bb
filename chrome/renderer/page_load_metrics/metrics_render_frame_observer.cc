@@ -12,7 +12,6 @@
 #include "base/timer/timer.h"
 #include "chrome/renderer/page_load_metrics/page_timing_metrics_sender.h"
 #include "chrome/renderer/page_load_metrics/page_timing_sender.h"
-#include "chrome/renderer/page_load_metrics/renderer_page_track_decider.h"
 #include "chrome/renderer/searchbox/search_bouncer.h"
 #include "content/public/common/associated_interface_provider.h"
 #include "content/public/renderer/render_frame.h"
@@ -96,14 +95,11 @@ void MetricsRenderFrameObserver::DidCommitProvisionalLoad(
   // Make sure to release the sender for a previous navigation, if we have one.
   page_timing_metrics_sender_.reset();
 
-  // We only create a PageTimingMetricsSender if the page meets the criteria for
-  // sending and recording metrics. Once page_timing_metrics_sender_ is
-  // non-null, we will send metrics for the current page at some later time, as
-  // those metrics become available.
-  if (ShouldSendMetrics()) {
-    page_timing_metrics_sender_ = base::MakeUnique<PageTimingMetricsSender>(
-        CreatePageTimingSender(), CreateTimer(), GetTiming());
-  }
+  if (HasNoRenderFrame())
+    return;
+
+  page_timing_metrics_sender_ = base::MakeUnique<PageTimingMetricsSender>(
+      CreatePageTimingSender(), CreateTimer(), GetTiming());
 }
 
 void MetricsRenderFrameObserver::SendMetrics() {
@@ -112,15 +108,6 @@ void MetricsRenderFrameObserver::SendMetrics() {
   if (HasNoRenderFrame())
     return;
   page_timing_metrics_sender_->Send(GetTiming());
-}
-
-bool MetricsRenderFrameObserver::ShouldSendMetrics() const {
-  if (HasNoRenderFrame())
-    return false;
-  const blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
-  const blink::WebDocument& document = frame->GetDocument();
-  return RendererPageTrackDecider(&document, frame->GetDocumentLoader())
-      .ShouldTrack();
 }
 
 mojom::PageLoadTimingPtr MetricsRenderFrameObserver::GetTiming() const {
