@@ -227,8 +227,6 @@ component("skia") {
     "ext/event_tracer_impl.h",
     "ext/fontmgr_default_android.cc",
     "ext/fontmgr_default_android.h",
-    "ext/fontmgr_default_fuchsia.cc",
-    "ext/fontmgr_default_fuchsia.h",
     "ext/fontmgr_default_linux.cc",
     "ext/fontmgr_default_linux.h",
     "ext/fontmgr_default_win.cc",
@@ -271,13 +269,6 @@ component("skia") {
     sources += [
       "ext/convolver_mips_dspr2.cc",
       "ext/convolver_mips_dspr2.h",
-    ]
-  }
-
-  if (!is_fuchsia) {
-    sources -= [
-      "ext/fontmgr_default_fuchsia.cc",
-      "ext/fontmgr_default_fuchsia.h",
     ]
   }
 
@@ -436,6 +427,14 @@ component("skia") {
       # Add the FreeType custom font manager as a fallback backend for variable fonts.
       "//third_party/skia/src/ports/SkFontMgr_custom.cpp",
       "//third_party/skia/src/ports/SkFontMgr_custom_empty.cpp",
+    ]
+  }
+
+  if (is_fuchsia) {
+    sources += [
+      "//third_party/skia/src/ports/SkFontMgr_custom.cpp",
+      "//third_party/skia/src/ports/SkFontMgr_custom_empty.cpp",
+      "//third_party/skia/src/ports/SkFontMgr_custom_empty_factory.cpp",
     ]
   }
 
