@@ -47,6 +47,71 @@ base::LazyInstance<VolumeControlAndroid>::Leaky g_volume_control =
 VolumeMap::VolumeMap() {
   // TODO(ckuiper): Load active volume table from Android.
   volume_map_.insert(volume_map_.end(), kDefaultVolumeMap,
+                     kDefaultVolumeMap + arraysize(kDefaultVolumeMap));
+}
+
+VolumeMap::~VolumeMap() {}
+
+float VolumeMap::VolumeToDbFS(float volume) {
+  if (volume <= volume_map_[0].level) {
+    return volume_map_[0].db;
+  }
+  for (size_t i = 1; i < volume_map_.size(); ++i) {
+    if (volume < volume_map_[i].level) {
+      const float x_range = volume_map_[i].level - volume_map_[i - 1].level;
+      const float y_range = volume_map_[i].db - volume_map_[i - 1].db;
+      const float x_pos = volume - volume_map_[i - 1].level;
+
+      return volume_map_[i - 1].db + x_pos * y_range / x_range;
+    }
+  }
+  return volume_map_[volume_map_.size() - 1].db;
+}
+
+float VolumeMap::DbFSToVolume(float db) {
+  if (db <= volume_map_[0].db) {
+    return volume_map_[0].level;
+  }
+  for (size_t i = 1; i < volume_map_.size(); ++i) {
+    if (db < volume_map_[i].db) {
+      const float x_range = volume_map_[i].db - volume_map_[i - 1].db;
+      const float y_range = volume_map_[i].level - volume_map_[i - 1].level;
+      const float x_pos = db - volume_map_[i - 1].db;
+
+      return volume_map_[i - 1].level + x_pos * y_range / x_range;
+    }
+  }
+  return volume_map_[volume_map_.size() - 1].level;
+}
+
+VolumeControlAndroid::VolumeControlAndroid()
+    : thread_("VolumeControl"),
+      initialize_complete_event_(
+          base::WaitableEvent::ResetPolicy::MANUAL,
+          base::WaitableEvent::InitialState::NOT_SIGNALED) {
+  DCHECK(j_volume_control_.is_null());
+  j_volume_control_.Reset(Java_VolumeControl_createVolumeControl(
+      base::android::AttachCurrentThread(), reinterpret_cast<intptr_t>(this)));
+
+  // Load volume map to check that the config file is correct.
+  g_volume_map.Get();
+
+  base::Thread::Options options;
+  options.message_loop_type = base::MessageLoop::TYPE_IO;
+  thread_.StartWithOptions(options);
+
+  thread_.task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&VolumeControlAndroid::InitializeOnThread,
+                                base::Unretained(this)));
+  initialize_complete_event_.Wait();
+}
+
+VolumeControlAndroid::~VolumeControlAndroid() {}
+
+// static
+bool VolumeControlAndroid::RegisterJni(JNIEnv* env) {
+  return RegisterNativesImpl(env);
+}
 
 void VolumeControlAndroid::AddVolumeObserver(VolumeObserver* observer) {
   base::AutoLock lock(observer_lock_);

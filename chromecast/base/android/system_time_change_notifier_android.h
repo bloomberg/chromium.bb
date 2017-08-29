@@ -13,6 +13,8 @@ namespace chromecast {
 
 class SystemTimeChangeNotifierAndroid : public SystemTimeChangeNotifier {
  public:
+  static bool RegisterJni(JNIEnv* env);
+
   SystemTimeChangeNotifierAndroid();
   ~SystemTimeChangeNotifierAndroid() override;
 
