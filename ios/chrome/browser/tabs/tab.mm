@@ -1729,6 +1729,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
            initWithMode:repeatedFailure ? SadTabViewMode::FEEDBACK
                                         : SadTabViewMode::RELOAD
       navigationManager:tabHelper->web_state()->GetNavigationManager()];
+  sadTabview.dispatcher = self.dispatcher;
   CRWContentView* contentView =
       [[CRWGenericContentView alloc] initWithView:sadTabview];
   tabHelper->web_state()->ShowTransientContentView(contentView);

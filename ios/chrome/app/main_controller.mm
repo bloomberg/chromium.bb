@@ -1446,6 +1446,19 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
                  completion:nil];
 }
 
+- (void)showReportAnIssue {
+  if (_settingsNavigationController)
+    return;
+  _settingsNavigationController =
+      [SettingsNavigationController newUserFeedbackController:_mainBrowserState
+                                                     delegate:self
+                                           feedbackDataSource:self];
+  [[self topPresentedViewController]
+      presentViewController:_settingsNavigationController
+                   animated:YES
+                 completion:nil];
+}
+
 #pragma mark - chromeExecuteCommand
 
 - (IBAction)chromeExecuteCommand:(id)sender {
@@ -1455,11 +1468,6 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
     case IDC_OPEN_URL:
       [self openUrl:base::mac::ObjCCast<OpenUrlCommand>(sender)];
       break;
-    case IDC_REPORT_AN_ISSUE: {
-      dispatch_async(dispatch_get_main_queue(), ^{
-        [self showReportAnIssue];
-      });
-    } break;
     case IDC_SHOW_SIGNIN_IOS: {
       ShowSigninCommand* command =
           base::mac::ObjCCastStrict<ShowSigninCommand>(sender);
@@ -1974,19 +1982,6 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
       [SettingsNavigationController newSyncController:_mainBrowserState
                                allowSwitchSyncAccount:YES
                                              delegate:self];
-  [[self topPresentedViewController]
-      presentViewController:_settingsNavigationController
-                   animated:YES
-                 completion:nil];
-}
-
-- (void)showReportAnIssue {
-  if (_settingsNavigationController)
-    return;
-  _settingsNavigationController =
-      [SettingsNavigationController newUserFeedbackController:_mainBrowserState
-                                                     delegate:self
-                                           feedbackDataSource:self];
   [[self topPresentedViewController]
       presentViewController:_settingsNavigationController
                    animated:YES

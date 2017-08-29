@@ -67,6 +67,9 @@
 // Shows the Save Passwords settings UI.
 - (void)showSavePasswordsSettings;
 
+// Shows the Report an Issue UI.
+- (void)showReportAnIssue;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_COMMANDS_APPLICATION_COMMANDS_H_
