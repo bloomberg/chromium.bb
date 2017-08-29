@@ -39,7 +39,8 @@ using chrome_test_util::SettingsMenuPrivacyButton;
 }
 
 // Test that opening the clear browsing data dialog does not cause a crash.
-- (void)testOpeningClearBrowsingData {
+// TODO(crbug.com/760084): Disabled as the user default do not longer exists
+- (void)DISABLED_testOpeningClearBrowsingData {
   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
   NSString* oldSetting =
       [defaults stringForKey:@"EnableNewClearBrowsingDataUI"];

@@ -31,7 +31,6 @@
 
 namespace {
 
-NSString* const kEnableNewClearBrowsingDataUI = @"EnableNewClearBrowsingDataUI";
 NSString* const kEnableStartupCrash = @"EnableStartupCrash";
 NSString* const kEnableViewCopyPasswords = @"EnableViewCopyPasswords";
 NSString* const kFirstRunForceEnabled = @"FirstRunForceEnabled";
@@ -106,11 +105,9 @@ bool IsMemoryDebuggingEnabled() {
 #endif  // CHROMIUM_BUILD
 }
 
+// TODO(crbug.com/760084): Remove this method and replace with base::Feature or
+// remove it all.
 bool IsNewClearBrowsingDataUIEnabled() {
-  NSString* countersFlag = [[NSUserDefaults standardUserDefaults]
-      objectForKey:kEnableNewClearBrowsingDataUI];
-  if ([countersFlag isEqualToString:@"Enabled"])
-    return true;
   return false;
 }
 
