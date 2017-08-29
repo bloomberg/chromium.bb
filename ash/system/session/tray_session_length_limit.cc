@@ -149,8 +149,8 @@ void TraySessionLengthLimit::UpdateNotification() {
   message_center::RichNotificationData data;
   data.should_make_spoken_feedback_for_popup_updates =
       (limit_state_ != last_limit_state_);
-  std::unique_ptr<message_center::Notification> notification(
-      new message_center::Notification(
+  std::unique_ptr<message_center::Notification> notification =
+      system_notifier::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId,
           base::string16() /* title */,
           ComposeNotificationMessage() /* message */,
@@ -160,7 +160,8 @@ void TraySessionLengthLimit::UpdateNotification() {
           message_center::NotifierId(
               message_center::NotifierId::SYSTEM_COMPONENT,
               system_notifier::kNotifierSessionLengthTimeout),
-          data, nullptr /* delegate */));
+          data, nullptr /* delegate */, kNotificationTimerIcon,
+          message_center::SystemNotificationWarningLevel::NORMAL);
   notification->SetSystemPriority();
   if (message_center->FindVisibleNotificationById(kNotificationId)) {
     message_center->UpdateNotification(kNotificationId,
