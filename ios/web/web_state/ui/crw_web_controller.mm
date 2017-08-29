@@ -39,10 +39,12 @@
 #import "ios/net/nsurlrequest_util.h"
 #include "ios/web/history_state_util.h"
 #import "ios/web/interstitials/web_interstitial_impl.h"
+#import "ios/web/navigation/crw_placeholder_navigation_info.h"
 #import "ios/web/navigation/crw_session_controller.h"
 #import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
 #include "ios/web/navigation/navigation_manager_util.h"
+#include "ios/web/navigation/placeholder_navigation_util.h"
 #include "ios/web/net/cert_host_pair.h"
 #import "ios/web/net/crw_cert_verification_controller.h"
 #import "ios/web/net/crw_ssl_status_updater.h"
@@ -117,6 +119,10 @@ using web::WebState;
 using web::WebStateImpl;
 
 namespace {
+
+using web::placeholder_navigation_util::IsPlaceholderUrl;
+using web::placeholder_navigation_util::CreatePlaceholderUrlForUrl;
+using web::placeholder_navigation_util::ExtractUrlFromPlaceholderUrl;
 
 // Struct to capture data about a user interaction. Records the time of the
 // interaction and the main document URL at that time.
@@ -567,6 +573,13 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 // Updates the WKBackForwardListItemHolder navigation item.
 - (void)updateCurrentBackForwardListItemHolder;
 
+// Loads a blank page directly into WKWebView as a placeholder for a Native View
+// or WebUI URL. This page has the URL about:blank?for=<encoded original URL>.
+// The completion handler is called in the |webView:didFinishNavigation|
+// callback of the placeholder navigation. See "Handling App-specific URLs"
+// section of go/bling-navigation-experiment for details.
+- (void)loadPlaceholderInWebViewForURL:(const GURL&)originalURL
+                     completionHandler:(ProceduralBlock)completionHandler;
 // Loads the current nativeController in a native view. If a web view is
 // present, removes it and swaps in the native view in its place. |context| can
 // not be null.
@@ -1022,10 +1035,19 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   [result addEntriesFromDictionary:@{
     @"estimatedProgress" : @"webViewEstimatedProgressDidChange",
     @"hasOnlySecureContent" : @"webViewSecurityFeaturesDidChange",
-    @"loading" : @"webViewLoadingStateDidChange",
-    @"title" : @"webViewTitleDidChange",
-    @"URL" : @"webViewURLDidChange",
+    @"title" : @"webViewTitleDidChange"
   }];
+
+  // WKBasedNavigationManagerImpl does not need (and is incompatible with) the
+  // state maintenance carried out in URL and Loading state KVO handlers.
+  // TODO(crbug.com/738020): Refactor navigaton related KVO functionality into
+  // NavigationManager subclasses to avoid ad-hoc switches like this.
+  if (!web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+    [result addEntriesFromDictionary:@{
+      @"loading" : @"webViewLoadingStateDidChange",
+      @"URL" : @"webViewURLDidChange",
+    }];
+  }
 
   return result;
 }
@@ -1185,7 +1207,14 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 - (GURL)currentURLWithTrustLevel:(web::URLVerificationTrustLevel*)trustLevel {
   DCHECK(trustLevel) << "Verification of the trustLevel state is mandatory";
-  if (_webView) {
+
+  // The web view URL is the current URL only if it is not a placeholder URL.
+  // In case of a placeholder navigation, the visible URL is the app-specific
+  // one in the native controller.
+  // TODO(crbug.com/738020): Investigate if this method is still needed and if
+  // it can be implemented using NavigationManager API after removal of legacy
+  // navigation stack.
+  if (_webView && !IsPlaceholderUrl(net::GURLWithNSURL(_webView.URL))) {
     return [self webURLWithTrustLevel:trustLevel];
   }
   // Any non-web URL source is trusted.
@@ -1353,9 +1382,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 }
 
 - (id<CRWWebViewNavigationProxy>)webViewNavigationProxy {
-  DCHECK(
-      !self.webView ||
-      [self.webView conformsToProtocol:@protocol(CRWWebViewNavigationProxy)]);
   return static_cast<id<CRWWebViewNavigationProxy>>(self.webView);
 }
 
@@ -1728,31 +1754,59 @@ registerLoadRequestForURL:(const GURL&)requestURL
   [self loadNativeViewWithSuccess:NO navigationContext:context];
 }
 
-// Loads the current URL in a native controller, retrieved from the native
-// provider.
+// Loads the current URL in a native controller if using the legacy navigation
+// stack. If the new navigation stack is used, start loading a placeholder
+// into the web view, upon the completion of which the native controller will
+// be triggered.
 - (void)loadCurrentURLInNativeView {
-  // Free the web view.
-  [self removeWebView];
+  ProceduralBlock finishLoadCurrentURLInNativeView = ^{
+    web::NavigationItem* item = self.currentNavItem;
+    const GURL targetURL = item ? item->GetURL() : GURL::EmptyGURL();
+    const web::Referrer referrer;
+    id<CRWNativeContent> nativeContent =
+        [_nativeProvider controllerForURL:targetURL webState:self.webState];
+    // Unlike the WebView case, always create a new controller and view.
+    // TODO(crbug.com/759178): What to do if this does return nil?
+    [self setNativeController:nativeContent];
+    if ([nativeContent respondsToSelector:@selector(virtualURL)]) {
+      item->SetVirtualURL([nativeContent virtualURL]);
+    }
 
-  web::NavigationItem* item = self.currentNavItem;
-  const GURL targetURL = item ? item->GetURL() : GURL::EmptyGURL();
-  const web::Referrer referrer;
-  id<CRWNativeContent> nativeContent =
-      [_nativeProvider controllerForURL:targetURL webState:self.webState];
-  // Unlike the WebView case, always create a new controller and view.
-  // TODO(pinkerton): What to do if this does return nil?
-  [self setNativeController:nativeContent];
-  if ([nativeContent respondsToSelector:@selector(virtualURL)]) {
-    item->SetVirtualURL([nativeContent virtualURL]);
+    std::unique_ptr<web::NavigationContextImpl> navigationContext =
+        [self registerLoadRequestForURL:targetURL
+                               referrer:referrer
+                             transition:self.currentTransition
+                 sameDocumentNavigation:NO];
+    [self loadNativeViewWithSuccess:YES
+                  navigationContext:navigationContext.get()];
+  };
+
+  if (!web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+    // Free the web view.
+    [self removeWebView];
+    finishLoadCurrentURLInNativeView();
+  } else {
+    web::NavigationItem* item = self.currentNavItem;
+    DCHECK(item);
+    [self loadPlaceholderInWebViewForURL:item->GetVirtualURL()
+                       completionHandler:finishLoadCurrentURLInNativeView];
   }
+}
 
-  std::unique_ptr<web::NavigationContextImpl> navigationContext =
-      [self registerLoadRequestForURL:targetURL
-                             referrer:referrer
-                           transition:self.currentTransition
-               sameDocumentNavigation:NO];
-  [self loadNativeViewWithSuccess:YES
-                navigationContext:navigationContext.get()];
+- (void)loadPlaceholderInWebViewForURL:(const GURL&)originalURL
+                     completionHandler:(ProceduralBlock)completionHandler {
+  web::WebClient* webClient = web::GetWebClient();
+  DCHECK(webClient->IsSlimNavigationManagerEnabled() &&
+         webClient->IsAppSpecificURL(originalURL));
+
+  GURL placeholderURL = CreatePlaceholderUrlForUrl(originalURL);
+  [self ensureWebViewCreated];
+
+  NSURLRequest* request =
+      [NSURLRequest requestWithURL:net::NSURLWithGURL(placeholderURL)];
+  WKNavigation* navigation = [_webView loadRequest:request];
+  [CRWPlaceholderNavigationInfo createForNavigation:navigation
+                              withCompletionHandler:completionHandler];
 }
 
 - (void)willLoadCurrentItemWithURL:(const GURL&)URL {
@@ -3976,7 +4030,20 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
 - (void)loadHTML:(NSString*)HTML forAppSpecificURL:(const GURL&)URL {
   CHECK(web::GetWebClient()->IsAppSpecificURL(URL));
-  [self loadHTML:HTML forURL:URL];
+
+  ProceduralBlock finishLoadHTMLForAppSpecificURL = ^{
+    [self loadHTML:HTML forURL:URL];
+  };
+
+  // When using WKBasedNavigationManagerImpl, a placeholder must be loaded into
+  // the web view for each WebUI page so that the WKBackForwardList has an entry
+  // for each user-visible navigation.
+  if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+    [self loadPlaceholderInWebViewForURL:URL
+                       completionHandler:finishLoadHTMLForAppSpecificURL];
+  } else {
+    finishLoadHTMLForAppSpecificURL();
+  }
 }
 
 - (void)stopLoading {
@@ -4113,12 +4180,20 @@ registerLoadRequestForURL:(const GURL&)requestURL
     return;
   }
 
+  GURL requestURL = net::GURLWithNSURL(action.request.URL);
+
+  // If this is a placeholder navigation, pass through.
+  if (web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
+      IsPlaceholderUrl(requestURL)) {
+    decisionHandler(WKNavigationActionPolicyAllow);
+    return;
+  }
+
   // The page will not be changed until this navigation is committed, so the
   // retrieved state will be pending until |didCommitNavigation| callback.
   [self updatePendingNavigationInfoFromNavigationAction:action];
 
   // Invalid URLs should not be loaded.
-  GURL requestURL = net::GURLWithNSURL(action.request.URL);
   if (!requestURL.is_valid()) {
     decisionHandler(WKNavigationActionPolicyCancel);
     // The HTML5 spec indicates that window.open with an invalid URL should open
@@ -4156,6 +4231,15 @@ registerLoadRequestForURL:(const GURL&)requestURL
     decidePolicyForNavigationResponse:(WKNavigationResponse*)navigationResponse
                       decisionHandler:
                           (void (^)(WKNavigationResponsePolicy))handler {
+  GURL responseURL = net::GURLWithNSURL(navigationResponse.response.URL);
+
+  // If this is a placeholder navigation, pass through.
+  if (web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
+      IsPlaceholderUrl(responseURL)) {
+    handler(WKNavigationResponsePolicyAllow);
+    return;
+  }
+
   if ([navigationResponse.response isKindOfClass:[NSHTTPURLResponse class]]) {
     // Create HTTP headers from the response.
     // TODO(crbug.com/546157): Due to the limited interface of
@@ -4184,8 +4268,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
   }
   if ([self.passKitDownloader
           isMIMETypePassKitType:[_pendingNavigationInfo MIMEType]]) {
-    GURL URL = net::GURLWithNSURL(navigationResponse.response.URL);
-    [self.passKitDownloader downloadPassKitFileWithURL:URL];
+    [self.passKitDownloader downloadPassKitFileWithURL:responseURL];
     allowNavigation = NO;
 
     // Discard the pending PassKit entry to ensure that the current URL is not
@@ -4209,10 +4292,42 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
 - (void)webView:(WKWebView*)webView
     didStartProvisionalNavigation:(WKNavigation*)navigation {
+  GURL webViewURL = net::GURLWithNSURL(webView.URL);
+
+  // If this is a placeholder URL, there are only two possibilities:
+  // 1. This navigation is initiated by |loadPlaceholderInWebViewForURL| in
+  //    preparation for loading a native controller or WebUI.
+  // In this case, do not update the page navigation states as they will be
+  // updated by the completion handler of the placeholder navigation.
+  //
+  // 2. This is a back-forward navigation to an app-specific URL.
+  // In this case, restart the app-specific URL load to properly capture state.
+  if (web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
+      IsPlaceholderUrl(webViewURL)) {
+    GURL originalURL = ExtractUrlFromPlaceholderUrl(webViewURL);
+    if (!originalURL.is_valid() ||
+        !web::GetWebClient()->IsAppSpecificURL(originalURL)) {
+      // Encoded URL is not a recognized app-specific URL. Abort to be safe.
+      [self abortLoad];
+      return;
+    }
+
+    // Back-forward navigation to placeholder URL.
+    // TODO(crbug.com/760113): This implementation destroys forward history.
+    // Investigate if we can rely on WKWebView's back/forward navigation and
+    // only reload the native controller / WebUI portion to preserve forward
+    // history.
+    if (![CRWPlaceholderNavigationInfo infoForNavigation:navigation]) {
+      [self abortLoad];
+      NavigationManager::WebLoadParams params(originalURL);
+      self.navigationManagerImpl->LoadURLWithParams(params);
+    }
+    return;
+  }
+
   [_navigationStates setState:web::WKNavigationState::STARTED
                 forNavigation:navigation];
 
-  GURL webViewURL = net::GURLWithNSURL(webView.URL);
   if (webViewURL.is_empty()) {
     // May happen on iOS9, however in didCommitNavigation: callback the URL
     // will be "about:blank".
@@ -4255,6 +4370,15 @@ registerLoadRequestForURL:(const GURL&)requestURL
     // dangerous.
     if (web::GetWebClient()->IsAppSpecificURL(_documentURL)) {
       [self abortLoad];
+
+      // Do some additional book keeping for WKBasedNavigationManagerImpl, which
+      // doesn't use KVO to manage navigation states. Sometimes
+      // WKNavigationDelegate callbacks may arrive after calling |stopLoading|.
+      // Remove this navigation from |_navigationStates| allows those delinquent
+      // callbacks to be ignored.
+      if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+        [_navigationStates removeNavigation:navigation];
+      }
       NavigationManager::WebLoadParams params(webViewURL);
       self.webState->GetNavigationManager()->LoadURLWithParams(params);
     }
@@ -4270,13 +4394,19 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
 - (void)webView:(WKWebView*)webView
     didReceiveServerRedirectForProvisionalNavigation:(WKNavigation*)navigation {
+  GURL webViewURL = net::GURLWithNSURL(webView.URL);
+
+  // This callback should never be triggered for placeholder navigations.
+  DCHECK(!(web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
+           IsPlaceholderUrl(webViewURL)));
+
   [_navigationStates setState:web::WKNavigationState::REDIRECTED
                 forNavigation:navigation];
 
   // It is fine to ignore returned NavigationContext. Context does not change
   // for redirect and old context stored _navigationStates is valid and it
   // should not be replaced.
-  [self registerLoadRequestForURL:net::GURLWithNSURL(webView.URL)
+  [self registerLoadRequestForURL:webViewURL
                          referrer:[self currentReferrer]
                        transition:ui::PAGE_TRANSITION_SERVER_REDIRECT
            sameDocumentNavigation:NO];
@@ -4334,6 +4464,19 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
 - (void)webView:(WKWebView*)webView
     didCommitNavigation:(WKNavigation*)navigation {
+  GURL webViewURL = net::GURLWithNSURL(webView.URL);
+
+  // If this is a placeholder navigation or if |navigation| has been previous
+  // aborted, return without modifying the navigation states. The latter case
+  // seems to happen due to asychronous nature of WKWebView; sometimes
+  // |didCommitNavigation| callback arrives after |stopLoading| has been called.
+  if (web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
+      (IsPlaceholderUrl(webViewURL) ||
+       [_navigationStates stateForNavigation:navigation] ==
+           web::WKNavigationState::NONE)) {
+    return;
+  }
+
   [self displayWebView];
 
   bool navigationFinished = [_navigationStates stateForNavigation:navigation] ==
@@ -4348,7 +4491,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
   // This is the point where the document's URL has actually changed, and
   // pending navigation information should be applied to state information.
-  [self setDocumentURL:net::GURLWithNSURL([_webView URL])];
+  [self setDocumentURL:webViewURL];
 
   if (!_lastRegisteredRequestURL.is_valid() &&
       _documentURL != _lastRegisteredRequestURL) {
@@ -4442,6 +4585,27 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
 - (void)webView:(WKWebView*)webView
     didFinishNavigation:(WKNavigation*)navigation {
+  GURL webViewURL = net::GURLWithNSURL(webView.URL);
+
+  // If this is a placeholder navigation for an app-specific URL, finish
+  // loading by running the completion handler.
+  if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+    if (IsPlaceholderUrl(webViewURL)) {
+      CRWPlaceholderNavigationInfo* placeholderNavigationInfo =
+          [CRWPlaceholderNavigationInfo infoForNavigation:navigation];
+      if (placeholderNavigationInfo) {
+        [placeholderNavigationInfo runCompletionHandler];
+      }
+      return;
+    }
+    // Sometimes |didFinishNavigation| callback arrives after |stopLoading| has
+    // been called. Abort in this case.
+    if ([_navigationStates stateForNavigation:navigation] ==
+        web::WKNavigationState::NONE) {
+      return;
+    }
+  }
+
   bool navigationCommitted =
       [_navigationStates stateForNavigation:navigation] ==
       web::WKNavigationState::COMMITTED;
@@ -4466,6 +4630,17 @@ registerLoadRequestForURL:(const GURL&)requestURL
 - (void)webView:(WKWebView*)webView
     didFailNavigation:(WKNavigation*)navigation
             withError:(NSError*)error {
+  // This callback should never be triggered for placeholder navigations.
+  if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+    DCHECK(!IsPlaceholderUrl(net::GURLWithNSURL(webView.URL)));
+    // Sometimes |didFailNavigation| callback arrives after |stopLoading| has
+    // been called. Abort in this case.
+    if ([_navigationStates stateForNavigation:navigation] ==
+        web::WKNavigationState::NONE) {
+      return;
+    }
+  }
+
   [_navigationStates setState:web::WKNavigationState::FAILED
                 forNavigation:navigation];
 
@@ -4481,6 +4656,10 @@ registerLoadRequestForURL:(const GURL&)requestURL
                     completionHandler:
                         (void (^)(NSURLSessionAuthChallengeDisposition,
                                   NSURLCredential*))completionHandler {
+  // This callback should never be triggered for placeholder navigations.
+  DCHECK(!(web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
+           IsPlaceholderUrl(net::GURLWithNSURL(webView.URL))));
+
   NSString* authMethod = challenge.protectionSpace.authenticationMethod;
   if ([authMethod isEqual:NSURLAuthenticationMethodHTTPBasic] ||
       [authMethod isEqual:NSURLAuthenticationMethodNTLM] ||

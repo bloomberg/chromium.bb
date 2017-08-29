@@ -1022,5 +1022,4 @@ TEST_F(LoadIfNecessaryTest, DisableAndReenableWebUsage) {
   [web_state_->GetWebController() loadCurrentURLIfNecessary];
   EXPECT_TRUE(test::WaitForWebViewContainingText(web_state_.get(), "pony"));
 };
-
 }  // namespace web
