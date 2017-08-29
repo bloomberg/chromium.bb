@@ -214,7 +214,6 @@ static const CencSampleEncryptionInfoEntry* GetSampleEncryptionInfoEntry(
   }
 
   // |group_description_index| is 1-based.
-  DCHECK_LE(group_description_index, entries->size());
   return (group_description_index > entries->size())
              ? nullptr
              : &(*entries)[group_description_index - 1];
