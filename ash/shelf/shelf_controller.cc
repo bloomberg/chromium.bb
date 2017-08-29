@@ -14,6 +14,7 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/auto_reset.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -95,11 +96,14 @@ ShelfController::ShelfController() {
 
   model_.AddObserver(this);
   Shell::Get()->session_controller()->AddObserver(this);
+  Shell::Get()->tablet_mode_controller()->AddObserver(this);
   Shell::Get()->window_tree_host_manager()->AddObserver(this);
 }
 
 ShelfController::~ShelfController() {
   Shell::Get()->window_tree_host_manager()->RemoveObserver(this);
+  if (Shell::Get()->tablet_mode_controller())
+    Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
   Shell::Get()->session_controller()->RemoveObserver(this);
   model_.RemoveObserver(this);
 }
@@ -289,6 +293,19 @@ void ShelfController::OnActiveUserPrefServiceChanged(
                               base::Bind(&SetShelfAutoHideFromPrefs));
   pref_change_registrar_->Add(prefs::kShelfPreferences,
                               base::Bind(&SetShelfBehaviorsFromPrefs));
+}
+
+void ShelfController::OnTabletModeStarted() {
+  // Force the shelf to be visible in tablet mode; the pref is restored on exit.
+  for (const auto& display : display::Screen::GetScreen()->GetAllDisplays()) {
+    Shelf* shelf = GetShelfForDisplay(display.id());
+    if (shelf)
+      shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
+  }
+}
+
+void ShelfController::OnTabletModeEnded() {
+  SetShelfAutoHideFromPrefs();
 }
 
 void ShelfController::OnDisplayConfigurationChanged() {
