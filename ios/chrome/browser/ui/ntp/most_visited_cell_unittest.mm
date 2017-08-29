@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/ntp/most_visited_cell.h"
+#include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -33,5 +34,5 @@ TEST_F(MostVisitedCellTest, ValidateTitle) {
   CGRect rect = CGRectMake(0, 0, 100, 100);
   cell_ = [[MostVisitedCell alloc] initWithFrame:rect];
   [cell_ setText:title];
-  EXPECT_EQ(title, [cell_ accessibilityLabel]);
+  EXPECT_NSEQ(title, [cell_ accessibilityLabel]);
 }

@@ -6,6 +6,7 @@
 
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/gtest_mac.h"
 
 namespace {
 
@@ -16,7 +17,7 @@ TEST(VersionItemTest, TextLabelGetsText) {
 
   item.text = @"Foo";
   [item configureCell:cell];
-  EXPECT_EQ(@"Foo", cell.textLabel.text);
+  EXPECT_NSEQ(@"Foo", cell.textLabel.text);
 }
 
 }  // namespace

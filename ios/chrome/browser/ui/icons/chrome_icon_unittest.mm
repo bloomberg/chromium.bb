@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/icons/chrome_icon.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/gtest_mac.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #import "third_party/ocmock/ocmock_extensions.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -57,8 +58,8 @@ TEST(ChromeIconTest, TemplateBarButtonItem) {
                                           target:mockTarget
                                           action:@selector(doSomething)];
 
-  EXPECT_EQ(@"identifier", barButtonItem.accessibilityIdentifier);
-  EXPECT_EQ(@"label", barButtonItem.accessibilityLabel);
+  EXPECT_NSEQ(@"identifier", barButtonItem.accessibilityIdentifier);
+  EXPECT_NSEQ(@"label", barButtonItem.accessibilityLabel);
   EXPECT_EQ(image.size.width, barButtonItem.image.size.width);
   EXPECT_EQ(image.size.height, barButtonItem.image.size.height);
   EXPECT_EQ(image.scale, barButtonItem.image.scale);

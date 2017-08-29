@@ -20,6 +20,7 @@
 #import "ios/chrome/test/base/scoped_block_swizzler.h"
 #import "ios/testing/ocmock_complex_type_helper.h"
 #import "net/base/mac/url_conversions.h"
+#include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
@@ -369,8 +370,8 @@ TEST_F(URLOpenerTest, VerifyLaunchOptions) {
       id<TabOpening> tabOpener, id<StartupInformation> startupInformation) {
     hasBeenCalled = YES;
     EXPECT_EQ([url absoluteString], [urlArg absoluteString]);
-    EXPECT_EQ(@"com.apple.mobilesafari",
-              options[UIApplicationOpenURLOptionsSourceApplicationKey]);
+    EXPECT_NSEQ(@"com.apple.mobilesafari",
+                options[UIApplicationOpenURLOptionsSourceApplicationKey]);
     EXPECT_EQ(startupInformationMock, startupInformation);
     EXPECT_EQ(tabOpenerMock, tabOpener);
     return YES;
@@ -481,8 +482,8 @@ TEST_F(URLOpenerTest, VerifyLaunchOptionsWithBadURL) {
       id<TabOpening> tabOpener, id<StartupInformation> startupInformation) {
     hasBeenCalled = YES;
     EXPECT_EQ([url absoluteString], [urlArg absoluteString]);
-    EXPECT_EQ(@"com.apple.mobilesafari",
-              options[UIApplicationOpenURLOptionsSourceApplicationKey]);
+    EXPECT_NSEQ(@"com.apple.mobilesafari",
+                options[UIApplicationOpenURLOptionsSourceApplicationKey]);
     EXPECT_EQ(startupInformationMock, startupInformation);
     EXPECT_EQ(tabOpenerMock, tabOpener);
     return YES;
