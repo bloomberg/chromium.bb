@@ -15,6 +15,7 @@
 #include "chrome/browser/safe_browsing/test_safe_browsing_blocking_page_quiet.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/browser/ssl/bad_clock_blocking_page.h"
+#include "chrome/browser/ssl/mitm_software_blocking_page.h"
 #include "chrome/browser/ssl/ssl_blocking_page.h"
 #include "chrome/browser/supervised_user/supervised_user_interstitial.h"
 #include "chrome/common/features.h"
@@ -171,6 +172,27 @@ SSLBlockingPage* CreateSSLBlockingPage(content::WebContents* web_contents,
   return SSLBlockingPage::Create(
       web_contents, cert_error, ssl_info, request_url, options_mask,
       time_triggered_, nullptr, is_superfish,
+      base::Callback<void(content::CertificateRequestResultType)>());
+}
+
+MITMSoftwareBlockingPage* CreateMITMSoftwareBlockingPage(
+    content::WebContents* web_contents) {
+  const int cert_error = net::ERR_CERT_AUTHORITY_INVALID;
+  const GURL request_url("https://example.com");
+  const std::string mitm_software_name = "Misconfigured Antivirus";
+  bool is_enterprise_managed = false;
+
+  std::string is_enterprise_managed_param;
+  if (net::GetValueForKeyInQuery(web_contents->GetURL(), "enterprise",
+                                 &is_enterprise_managed_param)) {
+    is_enterprise_managed = is_enterprise_managed_param == "1";
+  }
+
+  net::SSLInfo ssl_info;
+  ssl_info.cert = ssl_info.unverified_cert = CreateFakeCert();
+  return new MITMSoftwareBlockingPage(
+      web_contents, cert_error, request_url, nullptr, ssl_info,
+      mitm_software_name, is_enterprise_managed,
       base::Callback<void(content::CertificateRequestResultType)>());
 }
 
@@ -420,6 +442,9 @@ void InterstitialHTMLSource::StartDataRequest(
                               base::CompareCase::SENSITIVE)) {
     interstitial_delegate.reset(
         CreateSSLBlockingPage(web_contents, true /* is superfish */));
+  } else if (base::StartsWith(path, "mitm-software-ssl",
+                              base::CompareCase::SENSITIVE)) {
+    interstitial_delegate.reset(CreateMITMSoftwareBlockingPage(web_contents));
   } else if (base::StartsWith(path, "safebrowsing",
                               base::CompareCase::SENSITIVE)) {
     interstitial_delegate.reset(CreateSafeBrowsingBlockingPage(web_contents));

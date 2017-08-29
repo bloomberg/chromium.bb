@@ -57,6 +57,11 @@ IN_PROC_BROWSER_TEST_F(InterstitialUITest, SuperfishInterstitial) {
                    "Privacy error");
 }
 
+IN_PROC_BROWSER_TEST_F(InterstitialUITest, MITMSoftwareInterstitial) {
+  TestInterstitial(GURL("chrome://interstitials/mitm-software-ssl"),
+                   "Privacy error");
+}
+
 IN_PROC_BROWSER_TEST_F(InterstitialUITest, PinnedCertInterstitial) {
   TestInterstitial(GURL("chrome://interstitials/ssl?type=hpkp_failure"),
                    "Privacy error");
