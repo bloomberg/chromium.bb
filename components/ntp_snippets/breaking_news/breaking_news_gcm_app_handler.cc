@@ -37,10 +37,15 @@ const char kGCMScope[] = "GCM";
 const char kPushedNewsKey[] = "payload";
 
 // Lower bound time between two token validations when listening.
-const int kTokenValidationPeriodHours = 24;
+const int kTokenValidationPeriodMinutesDefault = 60 * 24;
+const char kTokenValidationPeriodMinutesParamName[] =
+    "token_validation_period_minutes";
 
 base::TimeDelta GetTokenValidationPeriod() {
-  return base::TimeDelta::FromHours(kTokenValidationPeriodHours);
+  return base::TimeDelta::FromMinutes(
+      variations::GetVariationParamByFeatureAsInt(
+          kBreakingNewsPushFeature, kTokenValidationPeriodMinutesParamName,
+          kTokenValidationPeriodMinutesDefault));
 }
 
 const bool kEnableTokenValidationDefault = true;
@@ -55,10 +60,15 @@ bool IsTokenValidationEnabled() {
 // Lower bound time between two forced subscriptions when listening. A
 // forced subscription is a normal subscription to the content
 // suggestions server, which cannot be omitted.
-const int kForcedSubscriptionPeriodHours = 7 * 24;
+const int kForcedSubscriptionPeriodMinutesDefault = 60 * 24 * 7;
+const char kForcedSubscriptionPeriodMinutesParamName[] =
+    "forced_subscription_period_minutes";
 
 base::TimeDelta GetForcedSubscriptionPeriod() {
-  return base::TimeDelta::FromHours(kForcedSubscriptionPeriodHours);
+  return base::TimeDelta::FromMinutes(
+      variations::GetVariationParamByFeatureAsInt(
+          kBreakingNewsPushFeature, kForcedSubscriptionPeriodMinutesParamName,
+          kForcedSubscriptionPeriodMinutesDefault));
 }
 
 const bool kEnableForcedSubscriptionDefault = true;
