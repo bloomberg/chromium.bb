@@ -6,6 +6,8 @@
 
 #include "core/dom/ModuleScript.h"
 #include "core/dom/TaskRunnerHelper.h"
+#include "core/workers/WorkerReportingProxy.h"
+#include "core/workers/WorkletGlobalScope.h"
 #include "platform/CrossThreadFunctional.h"
 
 namespace blink {
@@ -38,8 +40,10 @@ void WorkletModuleTreeClient::NotifyModuleTreeLoadFinished(
   // something like that (e.g., WillEvaluateModuleScript()).
   // Step 4: "Run a module script given script."
   modulator_->ExecuteModule(module_script);
-  // TODO(nhiroki): Call WorkerReportingProxy::DidEvaluateWorkerScript() or
-  // something like that (e.g., DidEvaluateModuleScript()).
+  WorkletGlobalScope* global_scope = ToWorkletGlobalScope(
+      ExecutionContext::From(modulator_->GetScriptState()));
+  global_scope->ReportingProxy().DidEvaluateModuleScript(
+      !module_script->IsErrored());
 
   // Step 5: "Queue a task on outsideSettings's responsible event loop to run
   // these steps:"

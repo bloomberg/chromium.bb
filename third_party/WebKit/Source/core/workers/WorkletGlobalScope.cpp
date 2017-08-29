@@ -13,6 +13,7 @@
 #include "core/inspector/MainThreadDebugger.h"
 #include "core/loader/modulescript/ModuleScriptFetchRequest.h"
 #include "core/probe/CoreProbes.h"
+#include "core/workers/WorkerReportingProxy.h"
 #include "core/workers/WorkletModuleResponsesMap.h"
 #include "core/workers/WorkletModuleTreeClient.h"
 #include "core/workers/WorkletPendingTasks.h"
@@ -34,6 +35,8 @@ WorkletGlobalScope::WorkletGlobalScope(const KURL& url,
 
 WorkletGlobalScope::~WorkletGlobalScope() = default;
 
+// TODO(nhiroki): Remove this function after module loading for threaded
+// worklets is enabled.
 void WorkletGlobalScope::EvaluateClassicScript(
     const KURL& script_url,
     String source_code,
@@ -42,18 +45,15 @@ void WorkletGlobalScope::EvaluateClassicScript(
   if (source_code.IsNull()) {
     // |source_code| is null when this is called during worker thread startup.
     // Worklet will evaluate the script later via Worklet.addModule().
-    // TODO(nhiroki): Add NOTREACHED() once threaded worklet supports module
-    // loading.
     return;
   }
   DCHECK(!cached_meta_data);
   // TODO(nhiroki): Call WorkerReportingProxy::WillEvaluateWorkerScript() or
   // something like that (e.g., WillEvaluateModuleScript()).
-  ScriptController()->Evaluate(ScriptSourceCode(source_code, script_url),
-                               nullptr /* error_event */,
-                               nullptr /* cache_handler */, v8_cache_options);
-  // TODO(nhiroki): Call WorkerReportingProxy::DidEvaluateWorkerScript() or
-  // something like that (e.g., DidEvaluateModuleScript()).
+  bool success = ScriptController()->Evaluate(
+      ScriptSourceCode(source_code, script_url), nullptr /* error_event */,
+      nullptr /* cache_handler */, v8_cache_options);
+  ReportingProxy().DidEvaluateModuleScript(success);
 }
 
 v8::Local<v8::Object> WorkletGlobalScope::Wrap(

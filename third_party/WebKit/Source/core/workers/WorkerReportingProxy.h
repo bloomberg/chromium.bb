@@ -44,7 +44,10 @@ namespace blink {
 
 class WorkerOrWorkletGlobalScope;
 
-// APIs used by workers to report console and worker activity.
+// APIs used by workers to report console and worker activity. Some functions
+// are called only for classic scripts and some of others are called only for
+// module scripts. They're annotated with [classic script only] or [module
+// script only].
 class CORE_EXPORT WorkerReportingProxy {
  public:
   virtual ~WorkerReportingProxy() {}
@@ -81,19 +84,27 @@ class CORE_EXPORT WorkerReportingProxy {
       const ContentSecurityPolicyResponseHeaders&,
       const String& referrer_policy_on_worker_thread) {}
 
+  // [classic script only]
   // Invoked when the worker script is about to be evaluated on
   // WorkerThread::InitializeOnWorkerThread.
   virtual void WillEvaluateWorkerScript(size_t script_size,
                                         size_t cached_metadata_size) {}
 
+  // [classic script only]
   // Invoked when an imported script is about to be evaluated.
   virtual void WillEvaluateImportedScript(size_t script_size,
                                           size_t cached_metadata_size) {}
 
+  // [classic script only]
   // Invoked when the worker script is evaluated on
   // WorkerThread::InitializeOnWorkerThread. |success| is true if the evaluation
   // completed with no uncaught exception.
   virtual void DidEvaluateWorkerScript(bool success) {}
+
+  // [module script only]
+  // Invoked when the module script is evaluated. |success| is true if the
+  // evaluation completed with no uncaught exception.
+  virtual void DidEvaluateModuleScript(bool success) {}
 
   // Invoked when close() is invoked on the worker context.
   virtual void DidCloseWorkerGlobalScope() {}
