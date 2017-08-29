@@ -5804,8 +5804,8 @@ void Document::SetFeaturePolicy(const String& feature_policy_header) {
   WebFeaturePolicy* parent_feature_policy = nullptr;
   WebParsedFeaturePolicy container_policy;
   Vector<String> messages;
-  const WebParsedFeaturePolicy& parsed_header =
-      ParseFeaturePolicy(feature_policy_header, GetSecurityOrigin(), &messages);
+  const WebParsedFeaturePolicy& parsed_header = ParseFeaturePolicyHeader(
+      feature_policy_header, GetSecurityOrigin(), &messages);
 
   // If this frame is not the main frame, then get the appropriate parent policy
   // and container policy to construct the policy for this frame.

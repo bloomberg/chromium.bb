@@ -77,7 +77,7 @@ void HTMLFrameElement::ParseAttribute(
 }
 
 Vector<WebParsedFeaturePolicyDeclaration>
-HTMLFrameElement::ConstructContainerPolicy() const {
+HTMLFrameElement::ConstructContainerPolicy(Vector<String>*) const {
   // Frame elements are not allowed to enable the fullscreen feature. Add an
   // empty whitelist for the fullscreen feature so that the framed content is
   // unable to use the API, regardless of origin.

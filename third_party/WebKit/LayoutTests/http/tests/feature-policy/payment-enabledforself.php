@@ -7,7 +7,7 @@
 // the same origin or when allowpaymentrequest is set. No cross-origin iframe
 // may call it when allowpaymentrequest is not set.
 
-Header("Feature-Policy: {\"payment\": [\"self\"]}");
+Header("Feature-Policy: payment 'self'");
 ?>
 
 <!DOCTYPE html>

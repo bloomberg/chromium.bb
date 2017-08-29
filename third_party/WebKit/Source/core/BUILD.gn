@@ -1429,7 +1429,6 @@ jumbo_source_set("unit_tests") {
     "html/HTMLEmbedElementTest.cpp",
     "html/HTMLFormControlElementTest.cpp",
     "html/HTMLFrameElementTest.cpp",
-    "html/HTMLIFrameElementAllowTest.cpp",
     "html/HTMLIFrameElementTest.cpp",
     "html/HTMLImageElementTest.cpp",
     "html/HTMLInputElementTest.cpp",

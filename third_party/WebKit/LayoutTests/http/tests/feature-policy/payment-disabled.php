@@ -6,7 +6,7 @@
 // This test ensures that payment feature when disabled may not be called by
 // any iframe even when allowpaymentrequest is set.
 
-Header("Feature-Policy: {\"payment\": []}");
+Header("Feature-Policy: payment 'none'");
 ?>
 
 <!DOCTYPE html>

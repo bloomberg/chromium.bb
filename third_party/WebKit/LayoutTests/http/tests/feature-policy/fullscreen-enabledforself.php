@@ -7,7 +7,7 @@
 // in the same orgin but not cross origins when allowfullscreen is set. No
 // iframe may call it when allowfullscreen is not set.
 
-Header("Feature-Policy: {\"fullscreen\": [\"self\"]}");
+Header("Feature-Policy: fullscreen 'self'");
 ?>
 
 <!DOCTYPE html>
