@@ -85,6 +85,11 @@ RenderWidgetHostViewGuest::RenderWidgetHostViewGuest(
       guest_(guest ? guest->AsWeakPtr() : base::WeakPtr<BrowserPluginGuest>()),
       platform_view_(platform_view),
       should_forward_text_selection_(false) {
+  // In tests |guest_| and therefore |owner| can be null.
+  auto* owner = GetOwnerRenderWidgetHostView();
+  if (owner)
+    SetParentFrameSinkId(owner->GetFrameSinkId());
+
   gfx::NativeView view = GetNativeView();
   if (view)
     UpdateScreenInfo(view);
@@ -259,10 +264,9 @@ base::string16 RenderWidgetHostViewGuest::GetSelectedText() {
   return platform_view_->GetSelectedText();
 }
 
-void RenderWidgetHostViewGuest::SetNeedsBeginFrames(
-    bool needs_begin_frames) {
- if (platform_view_)
-   platform_view_->SetNeedsBeginFrames(needs_begin_frames);
+void RenderWidgetHostViewGuest::SetNeedsBeginFrames(bool needs_begin_frames) {
+  if (platform_view_)
+    platform_view_->SetNeedsBeginFrames(needs_begin_frames);
 }
 
 TouchSelectionControllerClientManager*
