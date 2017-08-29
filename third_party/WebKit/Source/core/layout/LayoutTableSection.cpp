@@ -1299,7 +1299,7 @@ void LayoutTableSection::UpdateLogicalWidthForCollapsedCells(
         // width needs to be adjusted accordingly
         int collapsed_width = 0;
         cell->SetIsSpanningCollapsedColumn(false);
-        unsigned end_col = cell->ColSpan() + c;
+        unsigned end_col = std::min(cell->ColSpan() + c, n_cols);
         for (unsigned spanning = c; spanning < end_col; spanning++)
           collapsed_width += col_collapsed_width[spanning];
         cell->SetLogicalWidth(cell->LogicalWidth() - collapsed_width);
