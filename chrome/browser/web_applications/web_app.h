@@ -23,10 +23,6 @@ namespace base {
 class TaskRunner;
 }
 
-namespace content {
-class WebContents;
-}
-
 namespace extensions {
 class Extension;
 }
@@ -130,21 +126,6 @@ enum ShortcutCreationReason {
 typedef base::Callback<void(std::unique_ptr<ShortcutInfo>)>
     ShortcutInfoCallback;
 
-#if defined(TOOLKIT_VIEWS)
-// Extracts shortcut info of the given WebContents. The result's |favicon|
-// member does *not* share a backing store with |web_contents| (so it is
-// safe to use it on another thread).
-std::unique_ptr<ShortcutInfo> GetShortcutInfoForTab(
-    content::WebContents* web_contents);
-#endif
-
-// Updates web app shortcut of the WebContents. This function checks and
-// updates web app icon and shortcuts if needed. For icon, the check is based
-// on MD5 hash of icon image. For shortcuts, it checks the desktop, start menu
-// and quick launch (as well as pinned shortcut) for shortcut and only
-// updates (recreates) them if they exits.
-void UpdateShortcutForTabContents(content::WebContents* web_contents);
-
 std::unique_ptr<ShortcutInfo> ShortcutInfoForExtensionAndProfile(
     const extensions::Extension* app,
     Profile* profile);
@@ -222,13 +203,6 @@ void UpdateShortcutsForAllApps(Profile* profile,
 
 // Returns true if given url is a valid web app url.
 bool IsValidUrl(const GURL& url);
-
-#if defined(TOOLKIT_VIEWS)
-// Extracts icons info from web app data. Take only square shaped icons and
-// sort them from smallest to largest.
-typedef std::vector<WebApplicationInfo::IconInfo> IconInfoList;
-void GetIconsInfo(const WebApplicationInfo& app_info, IconInfoList* icons);
-#endif
 
 #if defined(OS_LINUX)
 // Windows that correspond to web apps need to have a deterministic (and

@@ -32,29 +32,6 @@ class WebApplicationTest : public ChromeRenderViewHostTestHarness {
   }
 };
 
-#if defined(TOOLKIT_VIEWS)
-TEST_F(WebApplicationTest, GetShortcutInfoForTab) {
-  const base::string16 title = base::ASCIIToUTF16("TEST_TITLE");
-  const base::string16 description = base::ASCIIToUTF16("TEST_DESCRIPTION");
-  const GURL url("http://www.foo.com/bar");
-  WebApplicationInfo web_app_info;
-  web_app_info.title = title;
-  web_app_info.description = description;
-  web_app_info.app_url = url;
-
-  content::RenderFrameHostTester::For(main_rfh())
-      ->InitializeRenderFrameIfNeeded();
-  content::RenderFrameHostTester::TestOnMessageReceived(
-      main_rfh(), ChromeFrameHostMsg_DidGetWebApplicationInfo(0, web_app_info));
-  std::unique_ptr<web_app::ShortcutInfo> info =
-      web_app::GetShortcutInfoForTab(web_contents());
-
-  EXPECT_EQ(title, info->title);
-  EXPECT_EQ(description, info->description);
-  EXPECT_EQ(url, info->url);
-}
-#endif
-
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 TEST_F(WebApplicationTest, AppDirWithId) {
   base::FilePath profile_path(FILE_PATH_LITERAL("profile"));
