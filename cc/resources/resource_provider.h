@@ -210,31 +210,6 @@ class CC_EXPORT ResourceProvider
     DISALLOW_COPY_AND_ASSIGN(ScopedReadLockGL);
   };
 
-  class CC_EXPORT ScopedSamplerGL {
-   public:
-    ScopedSamplerGL(ResourceProvider* resource_provider,
-                    viz::ResourceId resource_id,
-                    GLenum filter);
-    ScopedSamplerGL(ResourceProvider* resource_provider,
-                    viz::ResourceId resource_id,
-                    GLenum unit,
-                    GLenum filter);
-    ~ScopedSamplerGL();
-
-    GLuint texture_id() const { return resource_lock_.texture_id(); }
-    GLenum target() const { return target_; }
-    const gfx::ColorSpace& color_space() const {
-      return resource_lock_.color_space();
-    }
-
-   private:
-    const ScopedReadLockGL resource_lock_;
-    const GLenum unit_;
-    const GLenum target_;
-
-    DISALLOW_COPY_AND_ASSIGN(ScopedSamplerGL);
-  };
-
   class CC_EXPORT ScopedWriteLockGL {
    public:
     ScopedWriteLockGL(ResourceProvider* resource_provider,
@@ -615,6 +590,13 @@ class CC_EXPORT ResourceProvider
 
   void CreateAndBindImage(Resource* resource);
 
+  // Binds the given GL resource to a texture target for sampling using the
+  // specified filter for both minification and magnification. Returns the
+  // texture target used. The resource must be locked for reading.
+  GLenum BindForSampling(viz::ResourceId resource_id,
+                         GLenum unit,
+                         GLenum filter);
+
   // Will return the invalid color space unless
   // |enable_color_correct_rasterization| is true.
   gfx::ColorSpace GetResourceColorSpaceForRaster(
@@ -695,13 +677,6 @@ class CC_EXPORT ResourceProvider
                                        const gfx::ColorSpace& color_space);
 
   void CreateTexture(Resource* resource);
-
-  // Binds the given GL resource to a texture target for sampling using the
-  // specified filter for both minification and magnification. Returns the
-  // texture target used. The resource must be locked for reading.
-  GLenum BindForSampling(viz::ResourceId resource_id,
-                         GLenum unit,
-                         GLenum filter);
 
   bool IsGLContextLost() const;
 

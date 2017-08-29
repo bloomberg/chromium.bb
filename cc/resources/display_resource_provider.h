@@ -39,6 +39,31 @@ class CC_EXPORT DisplayResourceProvider : public ResourceProvider {
       const OverlayCandidateList::PromotionHintInfoMap& promotion_hints);
 #endif
 
+  class CC_EXPORT ScopedSamplerGL {
+   public:
+    ScopedSamplerGL(DisplayResourceProvider* resource_provider,
+                    viz::ResourceId resource_id,
+                    GLenum filter);
+    ScopedSamplerGL(DisplayResourceProvider* resource_provider,
+                    viz::ResourceId resource_id,
+                    GLenum unit,
+                    GLenum filter);
+    ~ScopedSamplerGL();
+
+    GLuint texture_id() const { return resource_lock_.texture_id(); }
+    GLenum target() const { return target_; }
+    const gfx::ColorSpace& color_space() const {
+      return resource_lock_.color_space();
+    }
+
+   private:
+    const ScopedReadLockGL resource_lock_;
+    const GLenum unit_;
+    const GLenum target_;
+
+    DISALLOW_COPY_AND_ASSIGN(ScopedSamplerGL);
+  };
+
   class CC_EXPORT ScopedReadLockSkImage {
    public:
     ScopedReadLockSkImage(DisplayResourceProvider* resource_provider,
