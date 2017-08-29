@@ -129,7 +129,7 @@ std::unique_ptr<base::Value> NetLogHttpStreamJobCallback(
     bool using_quic,
     RequestPriority priority,
     NetLogCaptureMode /* capture_mode */) {
-  auto dict = base::MakeUnique<base::DictionaryValue>();
+  auto dict = std::make_unique<base::DictionaryValue>();
   if (source.IsValid())
     source.AddToEventParameters(dict.get());
   dict->SetString("original_url", original_url->GetOrigin().spec());
@@ -145,7 +145,7 @@ std::unique_ptr<base::Value> NetLogHttpStreamJobCallback(
 std::unique_ptr<base::Value> NetLogHttpStreamProtoCallback(
     NextProto negotiated_protocol,
     NetLogCaptureMode /* capture_mode */) {
-  auto dict = base::MakeUnique<base::DictionaryValue>();
+  auto dict = std::make_unique<base::DictionaryValue>();
 
   dict->SetString("proto", NextProtoToString(negotiated_protocol));
   return std::move(dict);
@@ -1139,7 +1139,7 @@ int HttpStreamFactoryImpl::Job::SetSpdyHttpStreamOrBidirectionalStreamImpl(
   if (delegate_->for_websockets())
     return ERR_NOT_IMPLEMENTED;
   if (stream_type_ == HttpStreamRequest::BIDIRECTIONAL_STREAM) {
-    bidirectional_stream_impl_ = base::MakeUnique<BidirectionalStreamSpdyImpl>(
+    bidirectional_stream_impl_ = std::make_unique<BidirectionalStreamSpdyImpl>(
         session, net_log_.source());
     return OK;
   }
@@ -1150,7 +1150,7 @@ int HttpStreamFactoryImpl::Job::SetSpdyHttpStreamOrBidirectionalStreamImpl(
 
   bool use_relative_url =
       direct || request_info_.url.SchemeIs(url::kHttpsScheme);
-  stream_ = base::MakeUnique<SpdyHttpStream>(session, use_relative_url,
+  stream_ = std::make_unique<SpdyHttpStream>(session, use_relative_url,
                                              net_log_.source());
   return OK;
 }
@@ -1191,7 +1191,7 @@ int HttpStreamFactoryImpl::Job::DoCreateStream() {
           delegate_->websocket_handshake_stream_create_helper()
               ->CreateBasicStream(std::move(connection_), using_proxy);
     } else {
-      stream_ = base::MakeUnique<HttpBasicStream>(
+      stream_ = std::make_unique<HttpBasicStream>(
           std::move(connection_), using_proxy,
           session_->params().http_09_on_non_default_ports_enabled);
     }
@@ -1471,7 +1471,7 @@ HttpStreamFactoryImpl::JobFactory::CreateMainJob(
     GURL origin_url,
     bool enable_ip_based_pooling,
     NetLog* net_log) {
-  return base::MakeUnique<HttpStreamFactoryImpl::Job>(
+  return std::make_unique<HttpStreamFactoryImpl::Job>(
       delegate, job_type, session, request_info, priority, proxy_info,
       server_ssl_config, proxy_ssl_config, destination, origin_url,
       kProtoUnknown, QUIC_VERSION_UNSUPPORTED, ProxyServer(),
@@ -1494,7 +1494,7 @@ HttpStreamFactoryImpl::JobFactory::CreateAltSvcJob(
     QuicVersion quic_version,
     bool enable_ip_based_pooling,
     NetLog* net_log) {
-  return base::MakeUnique<HttpStreamFactoryImpl::Job>(
+  return std::make_unique<HttpStreamFactoryImpl::Job>(
       delegate, job_type, session, request_info, priority, proxy_info,
       server_ssl_config, proxy_ssl_config, destination, origin_url,
       alternative_protocol, quic_version, ProxyServer(),
@@ -1516,7 +1516,7 @@ HttpStreamFactoryImpl::JobFactory::CreateAltProxyJob(
     const ProxyServer& alternative_proxy_server,
     bool enable_ip_based_pooling,
     NetLog* net_log) {
-  return base::MakeUnique<HttpStreamFactoryImpl::Job>(
+  return std::make_unique<HttpStreamFactoryImpl::Job>(
       delegate, job_type, session, request_info, priority, proxy_info,
       server_ssl_config, proxy_ssl_config, destination, origin_url,
       kProtoUnknown, QUIC_VERSION_UNSUPPORTED, alternative_proxy_server,

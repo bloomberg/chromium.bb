@@ -495,7 +495,7 @@ TYPED_TEST_P(CookieStoreTest, SetCanonicalCookieTest) {
 
   EXPECT_TRUE(this->SetCanonicalCookie(
       cs,
-      base::MakeUnique<CanonicalCookie>(
+      std::make_unique<CanonicalCookie>(
           "A", "B", foo_foo_host, "/foo", one_hour_ago, one_hour_from_now,
           base::Time(), false /* secure */, false /* httponly */,
           CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT),
@@ -504,7 +504,7 @@ TYPED_TEST_P(CookieStoreTest, SetCanonicalCookieTest) {
   // it must be different from the one set by the line above.
   EXPECT_TRUE(this->SetCanonicalCookie(
       cs,
-      base::MakeUnique<CanonicalCookie>(
+      std::make_unique<CanonicalCookie>(
           "C", "D", "." + foo_bar_domain, "/bar", two_hours_ago, base::Time(),
           one_hour_ago, false, true, CookieSameSite::DEFAULT_MODE,
           COOKIE_PRIORITY_DEFAULT),
@@ -513,7 +513,7 @@ TYPED_TEST_P(CookieStoreTest, SetCanonicalCookieTest) {
   // A secure source is required for creating secure cookies.
   EXPECT_FALSE(this->SetCanonicalCookie(
       cs,
-      base::MakeUnique<CanonicalCookie>(
+      std::make_unique<CanonicalCookie>(
           "E", "F", http_foo_host, "/", base::Time(), base::Time(),
           base::Time(), true, false, CookieSameSite::DEFAULT_MODE,
           COOKIE_PRIORITY_DEFAULT),
@@ -523,7 +523,7 @@ TYPED_TEST_P(CookieStoreTest, SetCanonicalCookieTest) {
   // a secure cookie then overwriting it from a non-secure source should fail.
   EXPECT_TRUE(this->SetCanonicalCookie(
       cs,
-      base::MakeUnique<CanonicalCookie>(
+      std::make_unique<CanonicalCookie>(
           "E", "F", http_foo_host, "/", base::Time(), base::Time(),
           base::Time(), true /* secure */, false /* httponly */,
           CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT),
@@ -531,7 +531,7 @@ TYPED_TEST_P(CookieStoreTest, SetCanonicalCookieTest) {
 
   EXPECT_FALSE(this->SetCanonicalCookie(
       cs,
-      base::MakeUnique<CanonicalCookie>(
+      std::make_unique<CanonicalCookie>(
           "E", "F", http_foo_host, "/", base::Time(), base::Time(),
           base::Time(), true /* secure */, false /* httponly */,
           CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT),
@@ -542,7 +542,7 @@ TYPED_TEST_P(CookieStoreTest, SetCanonicalCookieTest) {
     // httponly cookie.
     EXPECT_FALSE(this->SetCanonicalCookie(
         cs,
-        base::MakeUnique<CanonicalCookie>(
+        std::make_unique<CanonicalCookie>(
             "G", "H", http_foo_host, "/unique", base::Time(), base::Time(),
             base::Time(), false /* secure */, true /* httponly */,
             CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT),
@@ -552,7 +552,7 @@ TYPED_TEST_P(CookieStoreTest, SetCanonicalCookieTest) {
     // an httponly cookie.
     EXPECT_TRUE(this->SetCanonicalCookie(
         cs,
-        base::MakeUnique<CanonicalCookie>(
+        std::make_unique<CanonicalCookie>(
             "G", "H", http_foo_host, "/unique", base::Time(), base::Time(),
             base::Time(), false /* secure */, true /* httponly */,
             CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT),
@@ -560,7 +560,7 @@ TYPED_TEST_P(CookieStoreTest, SetCanonicalCookieTest) {
 
     EXPECT_FALSE(this->SetCanonicalCookie(
         cs,
-        base::MakeUnique<CanonicalCookie>(
+        std::make_unique<CanonicalCookie>(
             "G", "H", http_foo_host, "/unique", base::Time(), base::Time(),
             base::Time(), false /* secure */, true /* httponly */,
             CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT),
@@ -569,7 +569,7 @@ TYPED_TEST_P(CookieStoreTest, SetCanonicalCookieTest) {
     // Leave store in same state as if the above tests had been run.
     EXPECT_TRUE(this->SetCanonicalCookie(
         cs,
-        base::MakeUnique<CanonicalCookie>(
+        std::make_unique<CanonicalCookie>(
             "G", "H", http_foo_host, "/unique", base::Time(), base::Time(),
             base::Time(), false /* secure */, true /* httponly */,
             CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT),

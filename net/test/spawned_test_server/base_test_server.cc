@@ -88,14 +88,14 @@ std::unique_ptr<base::Value> GetTLSIntoleranceType(
     BaseTestServer::SSLOptions::TLSIntoleranceType type) {
   switch (type) {
     case BaseTestServer::SSLOptions::TLS_INTOLERANCE_ALERT:
-      return base::MakeUnique<base::Value>("alert");
+      return std::make_unique<base::Value>("alert");
     case BaseTestServer::SSLOptions::TLS_INTOLERANCE_CLOSE:
-      return base::MakeUnique<base::Value>("close");
+      return std::make_unique<base::Value>("close");
     case BaseTestServer::SSLOptions::TLS_INTOLERANCE_RESET:
-      return base::MakeUnique<base::Value>("reset");
+      return std::make_unique<base::Value>("reset");
     default:
       NOTREACHED();
-      return base::MakeUnique<base::Value>("");
+      return std::make_unique<base::Value>("");
   }
 }
 
@@ -494,16 +494,16 @@ bool BaseTestServer::GenerateArguments(base::DictionaryValue* arguments) const {
   arguments->SetString("data-dir", document_root_.value());
 
   if (VLOG_IS_ON(1) || log_to_console_)
-    arguments->Set("log-to-console", base::MakeUnique<base::Value>());
+    arguments->Set("log-to-console", std::make_unique<base::Value>());
 
   if (ws_basic_auth_) {
     DCHECK(type_ == TYPE_WS || type_ == TYPE_WSS);
-    arguments->Set("ws-basic-auth", base::MakeUnique<base::Value>());
+    arguments->Set("ws-basic-auth", std::make_unique<base::Value>());
   }
 
   if (no_anonymous_ftp_user_) {
     DCHECK_EQ(TYPE_FTP, type_);
-    arguments->Set("no-anonymous-ftp-user", base::MakeUnique<base::Value>());
+    arguments->Set("no-anonymous-ftp-user", std::make_unique<base::Value>());
   }
 
   if (UsingSSL(type_)) {
@@ -523,7 +523,7 @@ bool BaseTestServer::GenerateArguments(base::DictionaryValue* arguments) const {
 
     // Check the client certificate related arguments.
     if (ssl_options_.request_client_certificate)
-      arguments->Set("ssl-client-auth", base::MakeUnique<base::Value>());
+      arguments->Set("ssl-client-auth", std::make_unique<base::Value>());
     std::unique_ptr<base::ListValue> ssl_client_certs(new base::ListValue());
 
     std::vector<base::FilePath>::const_iterator it;
@@ -550,11 +550,11 @@ bool BaseTestServer::GenerateArguments(base::DictionaryValue* arguments) const {
   }
 
   if (type_ == TYPE_HTTPS) {
-    arguments->Set("https", base::MakeUnique<base::Value>());
+    arguments->Set("https", std::make_unique<base::Value>());
 
     if (ssl_options_.server_certificate ==
         SSLOptions::CERT_AUTO_AIA_INTERMEDIATE)
-      arguments->Set("aia-intermediate", base::MakeUnique<base::Value>());
+      arguments->Set("aia-intermediate", std::make_unique<base::Value>());
 
     std::string ocsp_arg = ssl_options_.GetOCSPArgument();
     if (!ocsp_arg.empty())
@@ -583,14 +583,14 @@ bool BaseTestServer::GenerateArguments(base::DictionaryValue* arguments) const {
     if (bulk_cipher_values->GetSize())
       arguments->Set("ssl-bulk-cipher", std::move(bulk_cipher_values));
     if (ssl_options_.record_resume)
-      arguments->Set("https-record-resume", base::MakeUnique<base::Value>());
+      arguments->Set("https-record-resume", std::make_unique<base::Value>());
     if (ssl_options_.tls_intolerant != SSLOptions::TLS_INTOLERANT_NONE) {
       arguments->SetInteger("tls-intolerant", ssl_options_.tls_intolerant);
       arguments->Set("tls-intolerance-type", GetTLSIntoleranceType(
           ssl_options_.tls_intolerance_type));
     }
     if (ssl_options_.fallback_scsv_enabled)
-      arguments->Set("fallback-scsv", base::MakeUnique<base::Value>());
+      arguments->Set("fallback-scsv", std::make_unique<base::Value>());
     if (!ssl_options_.signed_cert_timestamps_tls_ext.empty()) {
       std::string b64_scts_tls_ext;
       base::Base64Encode(ssl_options_.signed_cert_timestamps_tls_ext,
@@ -598,10 +598,10 @@ bool BaseTestServer::GenerateArguments(base::DictionaryValue* arguments) const {
       arguments->SetString("signed-cert-timestamps-tls-ext", b64_scts_tls_ext);
     }
     if (ssl_options_.staple_ocsp_response)
-      arguments->Set("staple-ocsp-response", base::MakeUnique<base::Value>());
+      arguments->Set("staple-ocsp-response", std::make_unique<base::Value>());
     if (ssl_options_.ocsp_server_unavailable) {
       arguments->Set("ocsp-server-unavailable",
-                     base::MakeUnique<base::Value>());
+                     std::make_unique<base::Value>());
     }
     if (!ssl_options_.alpn_protocols.empty()) {
       std::unique_ptr<base::ListValue> alpn_protocols(new base::ListValue());
@@ -618,13 +618,13 @@ bool BaseTestServer::GenerateArguments(base::DictionaryValue* arguments) const {
       arguments->Set("npn-protocols", std::move(npn_protocols));
     }
     if (ssl_options_.alert_after_handshake)
-      arguments->Set("alert-after-handshake", base::MakeUnique<base::Value>());
+      arguments->Set("alert-after-handshake", std::make_unique<base::Value>());
 
     if (ssl_options_.disable_channel_id)
-      arguments->Set("disable-channel-id", base::MakeUnique<base::Value>());
+      arguments->Set("disable-channel-id", std::make_unique<base::Value>());
     if (ssl_options_.disable_extended_master_secret) {
       arguments->Set("disable-extended-master-secret",
-                     base::MakeUnique<base::Value>());
+                     std::make_unique<base::Value>());
     }
     if (!ssl_options_.supported_token_binding_params.empty()) {
       std::unique_ptr<base::ListValue> token_binding_params(

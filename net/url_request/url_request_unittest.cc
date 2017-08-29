@@ -813,7 +813,7 @@ class URLRequestTest : public PlatformTest {
         "data", base::WrapUnique(new DataProtocolHandler));
 #if !BUILDFLAG(DISABLE_FILE_SUPPORT)
     job_factory_impl_->SetProtocolHandler(
-        "file", base::MakeUnique<FileProtocolHandler>(
+        "file", std::make_unique<FileProtocolHandler>(
                     base::ThreadTaskRunnerHandle::Get()));
 #endif
   }
@@ -6093,7 +6093,7 @@ TEST_F(URLRequestTestHTTP, PostFileTest) {
     PathService::Get(base::DIR_SOURCE_ROOT, &path);
     path = path.Append(kTestFilePath);
     path = path.Append(FILE_PATH_LITERAL("with-headers.html"));
-    element_readers.push_back(base::MakeUnique<UploadFileElementReader>(
+    element_readers.push_back(std::make_unique<UploadFileElementReader>(
         base::ThreadTaskRunnerHandle::Get().get(), path, 0,
         std::numeric_limits<uint64_t>::max(), base::Time()));
     r->set_upload(base::WrapUnique<UploadDataStream>(
@@ -6134,7 +6134,7 @@ TEST_F(URLRequestTestHTTP, PostUnreadableFileTest) {
 
     std::vector<std::unique_ptr<UploadElementReader>> element_readers;
 
-    element_readers.push_back(base::MakeUnique<UploadFileElementReader>(
+    element_readers.push_back(std::make_unique<UploadFileElementReader>(
         base::ThreadTaskRunnerHandle::Get().get(),
         base::FilePath(FILE_PATH_LITERAL(
             "c:\\path\\to\\non\\existant\\file.randomness.12345")),
@@ -10243,7 +10243,7 @@ class HTTPSOCSPTest : public HTTPSRequestTest {
 
   void SetUp() override {
     context_.SetCTPolicyEnforcer(
-        base::MakeUnique<AllowAnyCertCTPolicyEnforcer>());
+        std::make_unique<AllowAnyCertCTPolicyEnforcer>());
     SetupContext();
     context_.Init();
 

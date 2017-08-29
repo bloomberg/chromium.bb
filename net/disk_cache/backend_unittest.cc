@@ -67,7 +67,7 @@ std::unique_ptr<disk_cache::BackendImpl> CreateExistingEntryCache(
   net::TestCompletionCallback cb;
 
   std::unique_ptr<disk_cache::BackendImpl> cache(
-      base::MakeUnique<disk_cache::BackendImpl>(cache_path,
+      std::make_unique<disk_cache::BackendImpl>(cache_path,
                                                 /* cleanup_tracker = */ nullptr,
                                                 /* cache_thread = */ nullptr,
                                                 /* net_log = */ nullptr));
@@ -654,7 +654,7 @@ TEST_F(DiskCacheBackendTest, CreateBackend_MissingFile) {
 
   bool prev = base::ThreadRestrictions::SetIOAllowed(false);
   std::unique_ptr<disk_cache::BackendImpl> cache(
-      base::MakeUnique<disk_cache::BackendImpl>(cache_path_, nullptr, nullptr,
+      std::make_unique<disk_cache::BackendImpl>(cache_path_, nullptr, nullptr,
                                                 nullptr));
   int rv = cache->Init(cb.callback());
   EXPECT_THAT(cb.GetResult(rv), IsError(net::ERR_FAILED));
@@ -2299,7 +2299,7 @@ TEST_F(DiskCacheTest, WrongVersion) {
   net::TestCompletionCallback cb;
 
   std::unique_ptr<disk_cache::BackendImpl> cache(
-      base::MakeUnique<disk_cache::BackendImpl>(cache_path_, nullptr, nullptr,
+      std::make_unique<disk_cache::BackendImpl>(cache_path_, nullptr, nullptr,
                                                 nullptr));
   int rv = cache->Init(cb.callback());
   ASSERT_THAT(cb.GetResult(rv), IsError(net::ERR_FAILED));
@@ -2319,7 +2319,7 @@ TEST_F(DiskCacheTest, SimpleCacheControlJoin) {
   // Instantiate the SimpleCacheTrial, forcing this run into the
   // ExperimentControl group.
   base::FieldTrialList field_trial_list(
-      base::MakeUnique<base::MockEntropyProvider>());
+      std::make_unique<base::MockEntropyProvider>());
   base::FieldTrialList::CreateFieldTrial("SimpleCacheTrial",
                                          "ExperimentControl");
   net::TestCompletionCallback cb;
@@ -2343,7 +2343,7 @@ TEST_F(DiskCacheTest, SimpleCacheControlRestart) {
   // Instantiate the SimpleCacheTrial, forcing this run into the
   // ExperimentControl group.
   base::FieldTrialList field_trial_list(
-      base::MakeUnique<base::MockEntropyProvider>());
+      std::make_unique<base::MockEntropyProvider>());
   base::FieldTrialList::CreateFieldTrial("SimpleCacheTrial",
                                          "ExperimentControl");
 
@@ -2376,7 +2376,7 @@ TEST_F(DiskCacheTest, SimpleCacheControlLeave) {
     // Instantiate the SimpleCacheTrial, forcing this run into the
     // ExperimentControl group.
     base::FieldTrialList field_trial_list(
-        base::MakeUnique<base::MockEntropyProvider>());
+        std::make_unique<base::MockEntropyProvider>());
     base::FieldTrialList::CreateFieldTrial("SimpleCacheTrial",
                                            "ExperimentControl");
 
@@ -2388,14 +2388,14 @@ TEST_F(DiskCacheTest, SimpleCacheControlLeave) {
   // Instantiate the SimpleCacheTrial, forcing this run into the
   // ExperimentNo group.
   base::FieldTrialList field_trial_list(
-      base::MakeUnique<base::MockEntropyProvider>());
+      std::make_unique<base::MockEntropyProvider>());
   base::FieldTrialList::CreateFieldTrial("SimpleCacheTrial", "ExperimentNo");
   net::TestCompletionCallback cb;
 
   const int kRestartCount = 5;
   for (int i = 0; i < kRestartCount; ++i) {
     std::unique_ptr<disk_cache::BackendImpl> cache(
-        base::MakeUnique<disk_cache::BackendImpl>(cache_path_, nullptr, nullptr,
+        std::make_unique<disk_cache::BackendImpl>(cache_path_, nullptr, nullptr,
                                                   nullptr));
     int rv = cache->Init(cb.callback());
     ASSERT_THAT(cb.GetResult(rv), IsOk());
@@ -3349,7 +3349,7 @@ TEST_F(DiskCacheTest, Backend_UsageStatsTimer) {
   ASSERT_TRUE(CleanupCacheDir());
   // Want to use our thread since we call SyncInit ourselves.
   std::unique_ptr<disk_cache::BackendImpl> cache(
-      base::MakeUnique<disk_cache::BackendImpl>(
+      std::make_unique<disk_cache::BackendImpl>(
           cache_path_, nullptr, base::ThreadTaskRunnerHandle::Get(), nullptr));
   ASSERT_TRUE(NULL != cache.get());
   cache->SetUnitTestMode();
@@ -3365,7 +3365,7 @@ TEST_F(DiskCacheBackendTest, TimerNotCreated) {
 
   // Want to use our thread since we call SyncInit ourselves.
   std::unique_ptr<disk_cache::BackendImpl> cache(
-      base::MakeUnique<disk_cache::BackendImpl>(
+      std::make_unique<disk_cache::BackendImpl>(
           cache_path_, nullptr, base::ThreadTaskRunnerHandle::Get(), nullptr));
   ASSERT_TRUE(NULL != cache.get());
   cache->SetUnitTestMode();

@@ -357,7 +357,7 @@ int MultiThreadedCertVerifier::Verify(const RequestParams& params,
   } else {
     // Need to make a new job.
     std::unique_ptr<CertVerifierJob> new_job =
-        base::MakeUnique<CertVerifierJob>(params, net_log.net_log(), this);
+        std::make_unique<CertVerifierJob>(params, net_log.net_log(), this);
 
     if (!new_job->Start(verify_proc_, crl_set)) {
       // TODO(wtc): log to the NetLog.

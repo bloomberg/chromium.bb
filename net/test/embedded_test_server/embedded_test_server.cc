@@ -392,7 +392,7 @@ void EmbeddedTestServer::HandleAcceptResult(
     socket = DoSSLUpgrade(std::move(socket));
 
   std::unique_ptr<HttpConnection> http_connection_ptr =
-      base::MakeUnique<HttpConnection>(
+      std::make_unique<HttpConnection>(
           std::move(socket), base::Bind(&EmbeddedTestServer::HandleRequest,
                                         base::Unretained(this)));
   HttpConnection* http_connection = http_connection_ptr.get();

@@ -100,7 +100,7 @@ class DnsSocketData {
   // Adds pre-built response from |data| buffer.
   void AddResponseData(const uint8_t* data, size_t length, IoMode mode) {
     CHECK(!provider_.get());
-    AddResponse(base::MakeUnique<DnsResponse>(
+    AddResponse(std::make_unique<DnsResponse>(
                     reinterpret_cast<const char*>(data), length, 0),
                 mode);
   }
@@ -911,7 +911,7 @@ TEST_F(DnsTransactionTest, TCPMalformed) {
   // examine the answer section until asked to parse it, so truncating it in
   // the answer section would result in the DnsTransaction itself succeeding.
   data->AddResponseWithLength(
-      base::MakeUnique<DnsResponse>(
+      std::make_unique<DnsResponse>(
           reinterpret_cast<const char*>(kT0ResponseDatagram),
           arraysize(kT0ResponseDatagram), 0),
       ASYNC, static_cast<uint16_t>(kT0QuerySize - 1));
@@ -926,7 +926,7 @@ TEST_F(DnsTransactionTest, TCPTimeout) {
   ConfigureFactory();
   AddAsyncQueryAndRcode(kT0HostName, kT0Qtype,
                         dns_protocol::kRcodeNOERROR | dns_protocol::kFlagTC);
-  AddSocketData(base::MakeUnique<DnsSocketData>(1 /* id */, kT0HostName,
+  AddSocketData(std::make_unique<DnsSocketData>(1 /* id */, kT0HostName,
                                                 kT0Qtype, ASYNC, true));
 
   TransactionHelper helper0(kT0HostName, kT0Qtype, ERR_DNS_TIMED_OUT);
@@ -940,7 +940,7 @@ TEST_F(DnsTransactionTest, TCPReadReturnsZeroAsync) {
       new DnsSocketData(0 /* id */, kT0HostName, kT0Qtype, ASYNC, true));
   // Return all but the last byte of the response.
   data->AddResponseWithLength(
-      base::MakeUnique<DnsResponse>(
+      std::make_unique<DnsResponse>(
           reinterpret_cast<const char*>(kT0ResponseDatagram),
           arraysize(kT0ResponseDatagram) - 1, 0),
       ASYNC, static_cast<uint16_t>(arraysize(kT0ResponseDatagram)));
@@ -959,7 +959,7 @@ TEST_F(DnsTransactionTest, TCPReadReturnsZeroSynchronous) {
       new DnsSocketData(0 /* id */, kT0HostName, kT0Qtype, ASYNC, true));
   // Return all but the last byte of the response.
   data->AddResponseWithLength(
-      base::MakeUnique<DnsResponse>(
+      std::make_unique<DnsResponse>(
           reinterpret_cast<const char*>(kT0ResponseDatagram),
           arraysize(kT0ResponseDatagram) - 1, 0),
       SYNCHRONOUS, static_cast<uint16_t>(arraysize(kT0ResponseDatagram)));

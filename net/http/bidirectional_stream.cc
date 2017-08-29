@@ -39,7 +39,7 @@ namespace {
 std::unique_ptr<base::Value> NetLogHeadersCallback(
     const SpdyHeaderBlock* headers,
     NetLogCaptureMode capture_mode) {
-  auto dict = base::MakeUnique<base::DictionaryValue>();
+  auto dict = std::make_unique<base::DictionaryValue>();
   dict->Set("headers", ElideSpdyHeaderBlockForNetLog(*headers, capture_mode));
   return std::move(dict);
 }
@@ -48,7 +48,7 @@ std::unique_ptr<base::Value> NetLogCallback(const GURL* url,
                                             const std::string* method,
                                             const HttpRequestHeaders* headers,
                                             NetLogCaptureMode capture_mode) {
-  auto dict = base::MakeUnique<base::DictionaryValue>();
+  auto dict = std::make_unique<base::DictionaryValue>();
   dict->SetString("url", url->possibly_invalid_spec());
   dict->SetString("method", *method);
   std::string empty;
@@ -73,7 +73,7 @@ BidirectionalStream::BidirectionalStream(
                           session,
                           send_request_headers_automatically,
                           delegate,
-                          base::MakeUnique<base::Timer>(false, false)) {}
+                          std::make_unique<base::Timer>(false, false)) {}
 
 BidirectionalStream::BidirectionalStream(
     std::unique_ptr<BidirectionalStreamRequestInfo> request_info,

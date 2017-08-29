@@ -295,7 +295,7 @@ QuicChromiumClientSession::Handle::CreatePacketBundler(
   if (!session_)
     return nullptr;
 
-  return base::MakeUnique<QuicConnection::ScopedPacketBundler>(
+  return std::make_unique<QuicConnection::ScopedPacketBundler>(
       session_->connection(), bundling_mode);
 }
 
@@ -334,7 +334,7 @@ int QuicChromiumClientSession::Handle::RequestStream(
   if (!session_)
     return ERR_CONNECTION_CLOSED;
 
-  // base::MakeUnique does not work because the StreamRequest constructor
+  // std::make_unique does not work because the StreamRequest constructor
   // is private.
   stream_request_ = std::unique_ptr<StreamRequest>(
       new StreamRequest(this, requires_confirmation));
@@ -638,13 +638,14 @@ QuicChromiumClientSession::QuicChromiumClientSession(
       migration_pending_(false),
       weak_factory_(this) {
   sockets_.push_back(std::move(socket));
-  packet_readers_.push_back(base::MakeUnique<QuicChromiumPacketReader>(
+  packet_readers_.push_back(std::make_unique<QuicChromiumPacketReader>(
       sockets_.back().get(), clock, this, yield_after_packets,
       yield_after_duration, net_log_));
   crypto_stream_.reset(
       crypto_client_stream_factory->CreateQuicCryptoClientStream(
-          server_id, this, base::MakeUnique<ProofVerifyContextChromium>(
-                               cert_verify_flags, net_log_),
+          server_id, this,
+          std::make_unique<ProofVerifyContextChromium>(cert_verify_flags,
+                                                       net_log_),
           crypto_config));
   connection->set_debug_visitor(logger_.get());
   connection->set_creator_debug_delegate(logger_.get());
@@ -775,10 +776,8 @@ QuicChromiumClientSession::~QuicChromiumClientSession() {
 
 void QuicChromiumClientSession::Initialize() {
   QuicSpdyClientSessionBase::Initialize();
-  SetHpackEncoderDebugVisitor(
-      base::MakeUnique<HpackEncoderDebugVisitor>());
-  SetHpackDecoderDebugVisitor(
-      base::MakeUnique<HpackDecoderDebugVisitor>());
+  SetHpackEncoderDebugVisitor(std::make_unique<HpackEncoderDebugVisitor>());
+  SetHpackDecoderDebugVisitor(std::make_unique<HpackDecoderDebugVisitor>());
   set_max_uncompressed_header_bytes(kMaxUncompressedHeaderSize);
 }
 
@@ -1671,7 +1670,7 @@ std::unique_ptr<base::Value> QuicChromiumClientSession::GetInfoAsValue(
 
 std::unique_ptr<QuicChromiumClientSession::Handle>
 QuicChromiumClientSession::CreateHandle() {
-  return base::MakeUnique<QuicChromiumClientSession::Handle>(
+  return std::make_unique<QuicChromiumClientSession::Handle>(
       weak_factory_.GetWeakPtr());
 }
 
@@ -1806,7 +1805,7 @@ bool QuicChromiumClientSession::HandlePromised(QuicStreamId id,
     // promise has been received.
     GURL pushed_url = GetUrlFromHeaderBlock(headers);
     if (push_delegate_) {
-      push_delegate_->OnPush(base::MakeUnique<QuicServerPushHelper>(
+      push_delegate_->OnPush(std::make_unique<QuicServerPushHelper>(
                                  weak_factory_.GetWeakPtr(), pushed_url),
                              net_log_);
     }

@@ -95,7 +95,7 @@ NextProto SpdyProxyClientSocket::GetProxyNegotiatedProtocol() const {
 
 std::unique_ptr<HttpStream>
 SpdyProxyClientSocket::CreateConnectResponseStream() {
-  return base::MakeUnique<ProxyConnectRedirectHttpStream>(
+  return std::make_unique<ProxyConnectRedirectHttpStream>(
       redirect_has_load_timing_info_ ? &redirect_load_timing_info_ : nullptr);
 }
 

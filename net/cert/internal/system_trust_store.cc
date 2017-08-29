@@ -97,7 +97,7 @@ class SystemTrustStoreNSS : public BaseSystemTrustStore {
 }  // namespace
 
 std::unique_ptr<SystemTrustStore> CreateSslSystemTrustStore() {
-  return base::MakeUnique<SystemTrustStoreNSS>();
+  return std::make_unique<SystemTrustStoreNSS>();
 }
 
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
@@ -130,7 +130,7 @@ class SystemTrustStoreMac : public BaseSystemTrustStore {
 };
 
 std::unique_ptr<SystemTrustStore> CreateSslSystemTrustStore() {
-  return base::MakeUnique<SystemTrustStoreMac>();
+  return std::make_unique<SystemTrustStoreMac>();
 }
 #else
 
@@ -144,7 +144,7 @@ class DummySystemTrustStore : public BaseSystemTrustStore {
 };
 
 std::unique_ptr<SystemTrustStore> CreateSslSystemTrustStore() {
-  return base::MakeUnique<DummySystemTrustStore>();
+  return std::make_unique<DummySystemTrustStore>();
 }
 #endif
 

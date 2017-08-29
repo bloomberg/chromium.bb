@@ -52,7 +52,7 @@ std::unique_ptr<base::Value> NetLogJobControllerCallback(
     const GURL* url,
     bool is_preconnect,
     NetLogCaptureMode /* capture_mode */) {
-  auto dict = base::MakeUnique<base::DictionaryValue>();
+  auto dict = std::make_unique<base::DictionaryValue>();
   dict->SetString("url", url->possibly_invalid_spec());
   dict->SetBoolean("is_preconnect", is_preconnect);
   return std::move(dict);
@@ -131,7 +131,7 @@ HttpStreamFactoryImpl::JobController::Start(
   stream_type_ = stream_type;
   priority_ = priority;
 
-  auto request = base::MakeUnique<Request>(
+  auto request = std::make_unique<Request>(
       request_info_.url, this, delegate,
       websocket_handshake_stream_create_helper, source_net_log, stream_type);
   // Keep a raw pointer but release ownership of Request instance.

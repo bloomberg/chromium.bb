@@ -634,7 +634,7 @@ CookieMonster::AddCallbackForCookie(const GURL& gurl,
 
   std::pair<GURL, std::string> key(gurl, name);
   if (hook_map_.count(key) == 0)
-    hook_map_[key] = base::MakeUnique<CookieChangedCallbackList>();
+    hook_map_[key] = std::make_unique<CookieChangedCallbackList>();
   return hook_map_[key]->Add(
       base::Bind(&RunAsync, base::ThreadTaskRunnerHandle::Get(), callback));
 }
@@ -711,7 +711,7 @@ void CookieMonster::SetCookieWithDetails(const GURL& url,
   cookie_path = std::string(canon_path.data() + canon_path_component.begin,
                             canon_path_component.len);
 
-  std::unique_ptr<CanonicalCookie> cc(base::MakeUnique<CanonicalCookie>(
+  std::unique_ptr<CanonicalCookie> cc(std::make_unique<CanonicalCookie>(
       name, value, cookie_domain, cookie_path, creation_time, expiration_time,
       last_access_time, secure, http_only, same_site, priority));
 
@@ -1505,7 +1505,7 @@ void CookieMonster::SetAllCookies(CookieList list,
           (cookie.ExpiryDate() - creation_time).InMinutes());
     }
 
-    InternalInsertCookie(key, base::MakeUnique<CanonicalCookie>(cookie), true);
+    InternalInsertCookie(key, std::make_unique<CanonicalCookie>(cookie), true);
     GarbageCollect(creation_time, key);
   }
 

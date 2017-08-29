@@ -105,7 +105,7 @@ bool CookieValuePredicate(const std::string& true_value,
 
 struct CookieMonsterTestTraits {
   static std::unique_ptr<CookieStore> Create() {
-    return base::MakeUnique<CookieMonster>(nullptr, nullptr);
+    return std::make_unique<CookieMonster>(nullptr, nullptr);
   }
 
   static const bool supports_http_only = true;
@@ -2774,7 +2774,7 @@ TEST_F(CookieMonsterTest, ControlCharacterPurge) {
 
   // We have to manually build this cookie because it contains a control
   // character, and our cookie line parser rejects control characters.
-  std::unique_ptr<CanonicalCookie> cc = base::MakeUnique<CanonicalCookie>(
+  std::unique_ptr<CanonicalCookie> cc = std::make_unique<CanonicalCookie>(
       "baz",
       "\x05"
       "boo",

@@ -510,7 +510,7 @@ class QuicStreamFactoryTestBase {
     QuicServerId quic_server_id(kDefaultServerHostName, 443,
                                 PRIVACY_MODE_DISABLED);
     std::unique_ptr<QuicServerInfo> quic_server_info =
-        base::MakeUnique<PropertiesBasedQuicServerInfo>(
+        std::make_unique<PropertiesBasedQuicServerInfo>(
             quic_server_id, &http_server_properties_);
 
     // Update quic_server_info's server_config and persist it.
@@ -549,7 +549,7 @@ class QuicStreamFactoryTestBase {
 
     QuicServerId quic_server_id2(kServer2HostName, 443, PRIVACY_MODE_DISABLED);
     std::unique_ptr<QuicServerInfo> quic_server_info2 =
-        base::MakeUnique<PropertiesBasedQuicServerInfo>(
+        std::make_unique<PropertiesBasedQuicServerInfo>(
             quic_server_id2, &http_server_properties_);
     // Update quic_server_info2's server_config and persist it.
     QuicServerInfo::State* state2 = quic_server_info2->mutable_state();

@@ -101,7 +101,7 @@ base::WeakPtr<SpdySession> SpdySessionPool::CreateAvailableSessionFromSocket(
   UMA_HISTOGRAM_ENUMERATION(
       "Net.SpdySessionGet", IMPORTED_FROM_SOCKET, SPDY_SESSION_GET_MAX);
 
-  auto new_session = base::MakeUnique<SpdySession>(
+  auto new_session = std::make_unique<SpdySession>(
       key, http_server_properties_, transport_security_state_,
       quic_supported_versions_, enable_sending_initial_data_,
       enable_ping_based_connection_checking_, session_max_recv_window_size_,
@@ -354,7 +354,7 @@ void SpdySessionPool::UnregisterUnclaimedPushedStream(
 
 std::unique_ptr<base::Value> SpdySessionPool::SpdySessionPoolInfoToValue()
     const {
-  auto list = base::MakeUnique<base::ListValue>();
+  auto list = std::make_unique<base::ListValue>();
 
   for (AvailableSessionMap::const_iterator it = available_sessions_.begin();
        it != available_sessions_.end(); ++it) {
@@ -427,14 +427,14 @@ void SpdySessionPool::OnNewSpdySessionReady(
     if (request->stream_type() == HttpStreamRequest::BIDIRECTIONAL_STREAM) {
       request->OnBidirectionalStreamImplReadyOnPooledConnection(
           used_ssl_config, used_proxy_info,
-          base::MakeUnique<BidirectionalStreamSpdyImpl>(spdy_session,
+          std::make_unique<BidirectionalStreamSpdyImpl>(spdy_session,
                                                         source_dependency));
     } else {
       bool use_relative_url =
           direct || request->url().SchemeIs(url::kHttpsScheme);
       request->OnStreamReadyOnPooledConnection(
           used_ssl_config, used_proxy_info,
-          base::MakeUnique<SpdyHttpStream>(spdy_session, use_relative_url,
+          std::make_unique<SpdyHttpStream>(spdy_session, use_relative_url,
                                            source_dependency));
     }
   }

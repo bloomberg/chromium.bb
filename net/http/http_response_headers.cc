@@ -1266,8 +1266,8 @@ bool HttpResponseHeaders::GetContentRangeFor206(
 
 std::unique_ptr<base::Value> HttpResponseHeaders::NetLogCallback(
     NetLogCaptureMode capture_mode) const {
-  auto dict = base::MakeUnique<base::DictionaryValue>();
-  auto headers = base::MakeUnique<base::ListValue>();
+  auto dict = std::make_unique<base::DictionaryValue>();
+  auto headers = std::make_unique<base::ListValue>();
   headers->AppendString(EscapeNonASCII(GetStatusLine()));
   size_t iterator = 0;
   std::string name;

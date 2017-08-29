@@ -154,7 +154,7 @@ NetworkThrottleManagerImpl::NetworkThrottleManagerImpl()
     : lifetime_median_estimate_(PercentileEstimator::kMedianPercentile,
                                 kInitialMedianInMs),
       outstanding_recomputation_timer_(
-          base::MakeUnique<base::Timer>(false /* retain_user_task */,
+          std::make_unique<base::Timer>(false /* retain_user_task */,
                                         false /* is_repeating */)),
       tick_clock_(new base::DefaultTickClock()),
       weak_ptr_factory_(this) {}
@@ -191,7 +191,7 @@ void NetworkThrottleManagerImpl::SetTickClockForTesting(
     std::unique_ptr<base::TickClock> tick_clock) {
   tick_clock_ = std::move(tick_clock);
   DCHECK(!outstanding_recomputation_timer_->IsRunning());
-  outstanding_recomputation_timer_ = base::MakeUnique<base::Timer>(
+  outstanding_recomputation_timer_ = std::make_unique<base::Timer>(
       false /* retain_user_task */, false /* is_repeating */,
       tick_clock_.get());
 }

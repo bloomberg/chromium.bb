@@ -198,7 +198,7 @@ ClientCertIdentityList GetClientCertsImpl(HCERTSTORE cert_store,
         x509_util::CreateX509CertificateFromCertContexts(cert_context2,
                                                          intermediates);
     if (cert) {
-      selected_identities.push_back(base::MakeUnique<ClientCertIdentityWin>(
+      selected_identities.push_back(std::make_unique<ClientCertIdentityWin>(
           std::move(cert),
           cert_context2,     // Takes ownership of |cert_context2|.
           current_thread));  // The key must be acquired on the same thread, as

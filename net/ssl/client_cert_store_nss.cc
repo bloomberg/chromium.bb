@@ -193,7 +193,7 @@ void ClientCertStoreNSS::GetPlatformCertsOnWorkerThread(
       DVLOG(2) << "x509_util::CreateX509CertificateFromCERTCertificate failed";
       continue;
     }
-    identities->push_back(base::MakeUnique<ClientCertIdentityNSS>(
+    identities->push_back(std::make_unique<ClientCertIdentityNSS>(
         cert, x509_util::DupCERTCertificate(node->cert), password_delegate));
   }
   CERT_DestroyCertList(found_certs);
