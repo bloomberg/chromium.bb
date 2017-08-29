@@ -44,7 +44,6 @@ alertCoordinatorForSuggestionItem:(ContentSuggestionsItem*)item
                               action:^{
                                 ContentSuggestionsItem* strongItem = weakItem;
                                 if (strongItem) {
-                                  // TODO(crbug.com/691979): Add metrics.
                                   [weakCommandHandler
                                       openNewTabWithSuggestionsItem:strongItem
                                                           incognito:NO];
@@ -58,7 +57,6 @@ alertCoordinatorForSuggestionItem:(ContentSuggestionsItem*)item
                               action:^{
                                 ContentSuggestionsItem* strongItem = weakItem;
                                 if (strongItem) {
-                                  // TODO(crbug.com/691979): Add metrics.
                                   [weakCommandHandler
                                       openNewTabWithSuggestionsItem:strongItem
                                                           incognito:YES];
@@ -74,7 +72,6 @@ alertCoordinatorForSuggestionItem:(ContentSuggestionsItem*)item
                   action:^{
                     ContentSuggestionsItem* strongItem = weakItem;
                     if (strongItem) {
-                      // TODO(crbug.com/691979): Add metrics.
                       [weakCommandHandler addItemToReadingList:strongItem];
                     }
                   }
@@ -87,7 +84,6 @@ alertCoordinatorForSuggestionItem:(ContentSuggestionsItem*)item
                               action:^{
                                 ContentSuggestionsItem* strongItem = weakItem;
                                 if (strongItem) {
-                                  // TODO(crbug.com/691979): Add metrics.
                                   [weakCommandHandler
                                       dismissSuggestion:strongItem
                                             atIndexPath:indexPath];
@@ -97,7 +93,6 @@ alertCoordinatorForSuggestionItem:(ContentSuggestionsItem*)item
 
   [alertCoordinator addItemWithTitle:l10n_util::GetNSString(IDS_APP_CANCEL)
                               action:^{
-                                // TODO(crbug.com/691979): Add metrics.
                               }
                                style:UIAlertActionStyleCancel];
   return alertCoordinator;

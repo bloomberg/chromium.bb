@@ -88,11 +88,7 @@ NSString* ReadingListEmptySection() {
       performAction:grey_tap()];
 
   [[EarlGrey
-      selectElementWithMatcher:
-          grey_allOf(grey_text([@"openPageForItem:"
-                         stringByAppendingString:[SCContentSuggestionsDataSource
-                                                     titleFirstSuggestion]]),
-                     grey_sufficientlyVisible(), nil)]
+      selectElementWithMatcher:TextBeginsWith(@"openPageForItemAtIndexPath:")]
       assertWithMatcher:grey_sufficientlyVisible()];
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(
                                           @"protocol_alerter_done")]

@@ -128,6 +128,7 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
         base::MakeUnique<ContentSuggestionsServiceBridge>(self, contentService);
     _contentService = contentService;
     _sectionInformationByCategory = [[NSMutableDictionary alloc] init];
+
     _faviconMediator = [[ContentSuggestionsFaviconMediator alloc]
         initWithContentService:contentService
               largeIconService:largeIconService
@@ -464,6 +465,14 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
   }
 }
 
+#pragma mark - ContentSuggestionsMetricsRecorderDelegate
+
+- (ContentSuggestionsCategoryWrapper*)categoryWrapperForSectionInfo:
+    (ContentSuggestionsSectionInformation*)sectionInfo {
+  return [[self.sectionInformationByCategory allKeysForObject:sectionInfo]
+      firstObject];
+}
+
 #pragma mark - Private
 
 // Converts the |suggestions| from |category| to CSCollectionViewItem and adds
@@ -507,13 +516,6 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
 
   self.sectionInformationByCategory[[ContentSuggestionsCategoryWrapper
       wrapperWithCategory:category]] = sectionInfo;
-}
-
-// Returns a CategoryWrapper acting as a key for this section info.
-- (ContentSuggestionsCategoryWrapper*)categoryWrapperForSectionInfo:
-    (ContentSuggestionsSectionInformation*)sectionInfo {
-  return [[self.sectionInformationByCategory allKeysForObject:sectionInfo]
-      firstObject];
 }
 
 // If the |statusCode| is a success and |suggestions| is not empty, runs the
