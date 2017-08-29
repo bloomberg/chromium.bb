@@ -1039,8 +1039,10 @@ class ReportStage(generic_stages.BuilderStage,
                          "the alert when a sanity build fails."),
             field_spec=[ts_mon.StringField('status'),
                         ts_mon.StringField('build_config'),
+                        ts_mon.StringField('builder_name'),
                         ts_mon.BooleanField('important')]
-        ).set(build_id, fields=mon_fields)
+        ).set(build_id,
+              fields=dict(mon_fields, builder_name=self._run.GetBuilderName()))
 
       if config_lib.IsMasterCQ(self._run.config):
         self_destructed = self._run.attrs.metadata.GetValueWithDefault(
