@@ -30,7 +30,6 @@ base::ScopedFD OpenStatm(base::ProcessId pid) {
       (pid == base::kNullProcessId ? "self" : base::IntToString(pid)) +
       "/statm";
   base::ScopedFD fd = base::ScopedFD(open(name.c_str(), O_RDONLY));
-  DCHECK(fd.is_valid());
   return fd;
 }
 
