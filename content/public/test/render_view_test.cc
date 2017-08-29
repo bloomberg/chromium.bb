@@ -119,9 +119,8 @@ class RendererBlinkPlatformImplTestOverrideImpl
     : public RendererBlinkPlatformImpl {
  public:
   RendererBlinkPlatformImplTestOverrideImpl(
-      blink::scheduler::RendererScheduler* scheduler,
-      base::WeakPtr<service_manager::Connector> connector)
-      : RendererBlinkPlatformImpl(scheduler, std::move(connector)) {}
+      blink::scheduler::RendererScheduler* scheduler)
+      : RendererBlinkPlatformImpl(scheduler) {}
 
   // Get rid of the dependency to the sandbox, which is not available in
   // RenderViewTest.
@@ -142,11 +141,10 @@ RenderViewTest::RendererBlinkPlatformImplTestOverride::Get() const {
   return blink_platform_impl_.get();
 }
 
-void RenderViewTest::RendererBlinkPlatformImplTestOverride::Initialize(
-    base::WeakPtr<service_manager::Connector> connector) {
+void RenderViewTest::RendererBlinkPlatformImplTestOverride::Initialize() {
   renderer_scheduler_ = blink::scheduler::RendererScheduler::Create();
-  blink_platform_impl_.reset(new RendererBlinkPlatformImplTestOverrideImpl(
-      renderer_scheduler_.get(), std::move(connector)));
+  blink_platform_impl_.reset(
+      new RendererBlinkPlatformImplTestOverrideImpl(renderer_scheduler_.get()));
 }
 
 void RenderViewTest::RendererBlinkPlatformImplTestOverride::Shutdown() {
@@ -247,7 +245,7 @@ void RenderViewTest::SetUp() {
 
   // Blink needs to be initialized before calling CreateContentRendererClient()
   // because it uses blink internally.
-  blink_platform_impl_.Initialize(render_thread_->GetConnector()->GetWeakPtr());
+  blink_platform_impl_.Initialize();
   blink::Initialize(blink_platform_impl_.Get());
 
   content_client_.reset(CreateContentClient());

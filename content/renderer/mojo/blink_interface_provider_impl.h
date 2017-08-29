@@ -25,8 +25,7 @@ namespace content {
 // service_manager::InterfaceProvider.
 class BlinkInterfaceProviderImpl : public blink::InterfaceProvider {
  public:
-  explicit BlinkInterfaceProviderImpl(
-      base::WeakPtr<service_manager::Connector> connector);
+  explicit BlinkInterfaceProviderImpl(service_manager::Connector* connector);
   ~BlinkInterfaceProviderImpl();
 
   // blink::InterfaceProvider override.
@@ -34,17 +33,8 @@ class BlinkInterfaceProviderImpl : public blink::InterfaceProvider {
                     mojo::ScopedMessagePipeHandle handle) override;
 
  private:
-  void GetInterfaceInternal(const std::string& name,
-                            mojo::ScopedMessagePipeHandle handle);
-
   const base::WeakPtr<service_manager::Connector> connector_;
-
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
-
-  // Should only be accessed by Web Worker threads that are using the
-  // blink::Platform-level interface provider.
-  base::WeakPtr<BlinkInterfaceProviderImpl> weak_ptr_;
-  base::WeakPtrFactory<BlinkInterfaceProviderImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BlinkInterfaceProviderImpl);
 };

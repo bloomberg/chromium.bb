@@ -15,36 +15,42 @@
 
 namespace content {
 
-BlinkInterfaceProviderImpl::BlinkInterfaceProviderImpl(
-    base::WeakPtr<service_manager::Connector> connector)
-    : connector_(connector),
-      main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      weak_ptr_factory_(this) {
-  weak_ptr_ = weak_ptr_factory_.GetWeakPtr();
+namespace {
+
+void BindInterface(base::WeakPtr<service_manager::Connector> connector,
+                   const std::string& name,
+                   mojo::ScopedMessagePipeHandle handle) {
+  if (!connector)
+    return;
+
+  connector->BindInterface(
+      service_manager::Identity(mojom::kBrowserServiceName,
+                                service_manager::mojom::kInheritUserID),
+      name, std::move(handle));
 }
+
+}  // namespace
+
+BlinkInterfaceProviderImpl::BlinkInterfaceProviderImpl(
+    service_manager::Connector* connector)
+    : connector_(connector->GetWeakPtr()),
+      main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
 
 BlinkInterfaceProviderImpl::~BlinkInterfaceProviderImpl() = default;
 
 void BlinkInterfaceProviderImpl::GetInterface(
     const char* name,
     mojo::ScopedMessagePipeHandle handle) {
-  GetInterfaceInternal(name, std::move(handle));
-}
+  // Construct a closure that can safely be passed across threads if necessary.
+  base::OnceClosure closure = base::BindOnce(
+      &BindInterface, connector_, std::string(name), std::move(handle));
 
-void BlinkInterfaceProviderImpl::GetInterfaceInternal(
-    const std::string& name,
-    mojo::ScopedMessagePipeHandle handle) {
-  if (!main_thread_task_runner_->BelongsToCurrentThread()) {
-    main_thread_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&BlinkInterfaceProviderImpl::GetInterfaceInternal,
-                              weak_ptr_, name, base::Passed(&handle)));
+  if (main_thread_task_runner_->BelongsToCurrentThread()) {
+    std::move(closure).Run();
     return;
   }
 
-  connector_->BindInterface(
-      service_manager::Identity(mojom::kBrowserServiceName,
-                                service_manager::mojom::kInheritUserID),
-      name, std::move(handle));
+  main_thread_task_runner_->PostTask(FROM_HERE, std::move(closure));
 }
 
 }  // namespace content
