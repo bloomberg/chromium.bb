@@ -499,6 +499,16 @@ public class AccountManagerFacade {
         mDelegate.updateCredentials(account, activity, callback);
     }
 
+    /**
+     * Gets profile data source.
+     * @return {@link ProfileDataSource} if it is supported by implementation, null otherwise.
+     */
+    @MainThread
+    @Nullable
+    public ProfileDataSource getProfileDataSource() {
+        return mDelegate.getProfileDataSource();
+    }
+
     private interface AuthTask<T> {
         T run() throws AuthException;
         void onSuccess(T result);
