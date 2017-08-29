@@ -228,11 +228,13 @@ Object.defineProperties(
     },
     'password': {
       get: /** @this {PasswordCredential} */ function() {
+        if (!(this instanceof PasswordCredential)) {
+          throw new TypeError('attempting to get a property on prototype');
+        }
         return this._password;
-      }
-      // TODO(crbug.com/435046): IDL tests require that getting property
-      // |provider| on PasswordCredential.prototype throws TypeError. Implement
-      // getter conforming to those tests.
+      },
+      configurable: true,
+      enumerable: true
     },
     'iconURL' : {
       get: /** @this {PasswordCredential} */ function() {
@@ -309,19 +311,23 @@ Object.defineProperties(
     },
     'provider': {
       get: /** @this {FederatedCredential} */ function() {
+        if (!(this instanceof FederatedCredential)) {
+          throw new TypeError('attempting to get a property on prototype');
+        }
         return this._provider;
-      }
-      // TODO(crbug.com/435046): IDL tests require that getting property
-      // |provider| on PasswordCredential.prototype throws TypeError. Implement
-      // getter conforming to those tests.
+      },
+      configurable: true,
+      enumerable: true
     },
     'protocol': {
       get: /** @this {FederatedCredential} */ function() {
+        if (!(this instanceof FederatedCredential)) {
+          throw new TypeError('attempting to get a property on prototype');
+        }
         return this._protocol;
-      }
-      // TODO(crbug.com/435046): IDL tests require that getting property
-      // |provider| on PasswordCredential.prototype throws TypeError. Implement
-      // getter conforming to those tests.
+      },
+      configurable: true,
+      enumerable: true
     },
     'iconURL' : {
       get: /** @this {FederatedCredential} */ function() {
