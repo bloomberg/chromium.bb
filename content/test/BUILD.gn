@@ -1536,7 +1536,7 @@ test("content_unittests") {
     sources += [ "../renderer/sandbox_mac_v2_unittest.mm" ]
   }
 
-  if (is_android || is_linux || is_mac || is_win) {
+  if (is_android || is_linux || is_mac || is_win || is_fuchsia) {
     data = [
       "$root_out_dir/content_shell.pak",
       "data/",
