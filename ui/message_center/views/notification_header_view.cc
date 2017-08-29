@@ -32,13 +32,34 @@ namespace message_center {
 namespace {
 
 constexpr int kHeaderHeight = 32;
-constexpr int kExpandIconSize = 12;
-constexpr gfx::Insets kHeaderPadding(0, 16, 0, 2);
 constexpr int kHeaderHorizontalSpacing = 2;
-constexpr gfx::Insets kAppNameViewPadding(0, 4, 0, 0);
-constexpr int kAppInfoContainerTopPadding = 10;
-constexpr int kAppInfoContainerBottomPadding = 4;
-constexpr int kExpandIconTopPadding = 5;
+
+// The padding outer the header and the control buttons.
+constexpr gfx::Insets kHeaderOuterPadding(2, 2, 0, 2);
+
+// Paddings of the views of texts.
+// Top: 9px = 11px (from the mock) - 2px (outer padding)
+// Buttom: 6px from the mock
+constexpr gfx::Insets kTextViewPadding(9, 0, 6, 0);
+
+// Paddings of the entire header.
+// Left: 14px = 16px (from the mock) - 2px (outer padding)
+// Right: 2px = minimum padding between the control buttons and the header
+constexpr gfx::Insets kHeaderPadding(0, 14, 0, 2);
+
+// Paddings of the app icon (small image).
+// Top: 8px = 10px (from the mock) - 2px (outer padding)
+// Bottom: 4px from the mock
+// Right: 4px = 6px (from the mock) - kHeaderHorizontalSpacing
+constexpr gfx::Insets kAppIconPadding(8, 0, 4, 4);
+
+// Size of the expand icon. 8px = 32px - 15px - 9px (values from the mock).
+constexpr int kExpandIconSize = 8;
+// Paddings of the expand buttons.
+// Top: 13px = 15px (from the mock) - 2px (outer padding)
+// Bottom: 9px from the mock
+constexpr gfx::Insets kExpandIconViewPadding(13, 0, 9, 0);
+
 // Bullet character. The divider symbol between different parts of the header.
 constexpr wchar_t kNotificationHeaderDivider[] = L" \u2022 ";
 
@@ -55,6 +76,9 @@ constexpr int64_t kHourInMillis = 60LL * kMinuteInMillis;
 constexpr int64_t kDayInMillis = 24LL * kHourInMillis;
 // In Android, DateUtils.YEAR_IN_MILLIS is 364 days.
 constexpr int64_t kYearInMillis = 364LL * kDayInMillis;
+
+// "Roboto-Regular, 12sp" is specified in the mock.
+constexpr int kHeaderTextFontSize = 12;
 
 // ExpandButtton forwards all mouse and key events to NotificationHeaderView,
 // but takes tab focus for accessibility purpose.
@@ -130,12 +154,23 @@ base::string16 FormatToRelativeTime(base::Time past) {
   }
 }
 
+gfx::FontList GetHeaderTextFontList() {
+  gfx::Font default_font;
+  int font_size_delta = kHeaderTextFontSize - default_font.GetFontSize();
+  gfx::Font font = default_font.Derive(font_size_delta, gfx::Font::NORMAL,
+                                       gfx::Font::Weight::NORMAL);
+  DCHECK_EQ(kHeaderTextFontSize, font.GetFontSize());
+  return gfx::FontList(font);
+}
+
 }  // namespace
 
 NotificationHeaderView::NotificationHeaderView(
     NotificationControlButtonsView* control_buttons_view,
     views::ButtonListener* listener)
     : views::Button(listener) {
+  const int kInnerHeaderHeight = kHeaderHeight - kHeaderOuterPadding.height();
+
   SetInkDropMode(InkDropMode::ON);
   set_has_ink_drop_action_on_click(true);
   set_animate_on_state_change(true);
@@ -143,10 +178,11 @@ NotificationHeaderView::NotificationHeaderView(
   set_ink_drop_base_color(kInkDropBaseColor);
   set_ink_drop_visible_opacity(kInkDropRippleVisibleOpacity);
 
-  views::BoxLayout* layout = new views::BoxLayout(
-      views::BoxLayout::kHorizontal, kHeaderPadding, kHeaderHorizontalSpacing);
+  views::BoxLayout* layout =
+      new views::BoxLayout(views::BoxLayout::kHorizontal, kHeaderOuterPadding,
+                           kHeaderHorizontalSpacing);
   layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
+      views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
   SetLayoutManager(layout);
 
   ink_drop_container_ = new views::InkDropContainerView();
@@ -156,31 +192,34 @@ NotificationHeaderView::NotificationHeaderView(
   AddChildView(ink_drop_container_);
 
   views::View* app_info_container = new views::View();
-  views::BoxLayout* app_info_layout =
-      new views::BoxLayout(views::BoxLayout::kHorizontal,
-                           gfx::Insets(kAppInfoContainerTopPadding, 0,
-                                       kAppInfoContainerBottomPadding, 0),
-                           kHeaderHorizontalSpacing);
+  views::BoxLayout* app_info_layout = new views::BoxLayout(
+      views::BoxLayout::kHorizontal, kHeaderPadding, kHeaderHorizontalSpacing);
   app_info_layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
+      views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
   app_info_container->SetLayoutManager(app_info_layout);
   AddChildView(app_info_container);
 
   // App icon view
   app_icon_view_ = new views::ImageView();
   app_icon_view_->SetImageSize(gfx::Size(kSmallImageSizeMD, kSmallImageSizeMD));
+  app_icon_view_->SetBorder(views::CreateEmptyBorder(kAppIconPadding));
+  app_icon_view_->SetVerticalAlignment(views::ImageView::LEADING);
+  app_icon_view_->SetHorizontalAlignment(views::ImageView::LEADING);
+  DCHECK_EQ(kInnerHeaderHeight, app_icon_view_->GetPreferredSize().height());
   app_info_container->AddChildView(app_icon_view_);
 
+  // Font list for text views.
+  const gfx::FontList& font_list = GetHeaderTextFontList();
+  // The height must be 15px to match with the mock.
+  DCHECK_EQ(15, font_list.GetHeight());
+
   // App name view
-  const gfx::FontList& font_list =
-      views::style::GetFont(views::style::CONTEXT_LABEL,
-                            views::style::STYLE_PRIMARY)
-          .Derive(0, gfx::Font::NORMAL, gfx::Font::Weight::NORMAL);
   app_name_view_ = new views::Label(base::string16());
   app_name_view_->SetFontList(font_list);
   app_name_view_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   app_name_view_->SetEnabledColor(accent_color_);
-  app_name_view_->SetBorder(views::CreateEmptyBorder(kAppNameViewPadding));
+  app_name_view_->SetBorder(views::CreateEmptyBorder(kTextViewPadding));
+  DCHECK_EQ(kInnerHeaderHeight, app_name_view_->GetPreferredSize().height());
   app_info_container->AddChildView(app_name_view_);
 
   // Summary text divider
@@ -188,14 +227,20 @@ NotificationHeaderView::NotificationHeaderView(
       new views::Label(base::WideToUTF16(kNotificationHeaderDivider));
   summary_text_divider_->SetFontList(font_list);
   summary_text_divider_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  summary_text_divider_->SetBorder(views::CreateEmptyBorder(kTextViewPadding));
   summary_text_divider_->SetVisible(false);
+  DCHECK_EQ(kInnerHeaderHeight,
+            summary_text_divider_->GetPreferredSize().height());
   app_info_container->AddChildView(summary_text_divider_);
 
   // Summary text view
   summary_text_view_ = new views::Label(base::string16());
   summary_text_view_->SetFontList(font_list);
   summary_text_view_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  summary_text_view_->SetBorder(views::CreateEmptyBorder(kTextViewPadding));
   summary_text_view_->SetVisible(false);
+  DCHECK_EQ(kInnerHeaderHeight,
+            summary_text_view_->GetPreferredSize().height());
   app_info_container->AddChildView(summary_text_view_);
 
   // Timestamp divider
@@ -203,31 +248,41 @@ NotificationHeaderView::NotificationHeaderView(
       new views::Label(base::WideToUTF16(kNotificationHeaderDivider));
   timestamp_divider_->SetFontList(font_list);
   timestamp_divider_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  timestamp_divider_->SetBorder(views::CreateEmptyBorder(kTextViewPadding));
   timestamp_divider_->SetVisible(false);
+  DCHECK_EQ(kInnerHeaderHeight,
+            timestamp_divider_->GetPreferredSize().height());
   app_info_container->AddChildView(timestamp_divider_);
 
   // Timestamp view
   timestamp_view_ = new views::Label(base::string16());
   timestamp_view_->SetFontList(font_list);
   timestamp_view_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  timestamp_view_->SetBorder(views::CreateEmptyBorder(kTextViewPadding));
   timestamp_view_->SetVisible(false);
+  DCHECK_EQ(kInnerHeaderHeight, timestamp_view_->GetPreferredSize().height());
   app_info_container->AddChildView(timestamp_view_);
 
   // Expand button view
   expand_button_ = new ExpandButton();
   SetExpanded(is_expanded_);
-  expand_button_->SetBorder(
-      views::CreateEmptyBorder(kExpandIconTopPadding, 0, 0, 0));
+  expand_button_->SetBorder(views::CreateEmptyBorder(kExpandIconViewPadding));
+  expand_button_->SetVerticalAlignment(views::ImageView::LEADING);
+  expand_button_->SetHorizontalAlignment(views::ImageView::LEADING);
+  expand_button_->SetImageSize(gfx::Size(kExpandIconSize, kExpandIconSize));
+  DCHECK_EQ(kInnerHeaderHeight, expand_button_->GetPreferredSize().height());
   app_info_container->AddChildView(expand_button_);
 
   // Spacer between left-aligned views and right-aligned views
   views::View* spacer = new views::View;
-  spacer->SetPreferredSize(gfx::Size(1, kHeaderHeight));
+  spacer->SetPreferredSize(gfx::Size(1, kInnerHeaderHeight));
   AddChildView(spacer);
   layout->SetFlexForView(spacer, 1);
 
   // Settings and close buttons view
   AddChildView(control_buttons_view);
+
+  SetPreferredSize(gfx::Size(kNotificationWidth, kHeaderHeight));
 }
 
 void NotificationHeaderView::SetAppIcon(const gfx::ImageSkia& img) {
