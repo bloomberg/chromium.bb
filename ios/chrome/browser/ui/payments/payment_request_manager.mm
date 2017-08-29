@@ -275,6 +275,7 @@ struct PendingPaymentResponse {
   _paymentRequestJsManager = nil;
   _activeWebStateObserver.reset();
   _activeWebState = webState;
+  [self enableActiveWebState];
 
   if (_activeWebState) {
     _paymentRequestJsManager =
@@ -301,7 +302,7 @@ struct PendingPaymentResponse {
   if (!enabled) {
     [self cancelRequest];
     [self disableActiveWebState];
-  } else {
+  } else if (!_activeWebStateEnabled) {
     [self enableActiveWebState];
   }
 }
@@ -347,24 +348,28 @@ struct PendingPaymentResponse {
 }
 
 - (void)enableActiveWebState {
-  if (_activeWebState && !_activeWebStateEnabled) {
-    __weak PaymentRequestManager* weakSelf = self;
-    auto callback = base::BindBlockArc(^bool(const base::DictionaryValue& JSON,
-                                             const GURL& originURL,
-                                             bool userIsInteracting) {
-      // |originURL| and |userIsInteracting| aren't used.
-      return [weakSelf handleScriptCommand:JSON];
-    });
-    _activeWebState->AddScriptCommandCallback(callback, kCommandPrefix);
-    _activeWebStateEnabled = YES;
-  }
+  if (!_activeWebState)
+    return;
+
+  DCHECK(!_activeWebStateEnabled);
+  __weak PaymentRequestManager* weakSelf = self;
+  auto callback =
+      base::BindBlockArc(^bool(const base::DictionaryValue& JSON,
+                               const GURL& originURL, bool userIsInteracting) {
+        // |originURL| and |userIsInteracting| aren't used.
+        return [weakSelf handleScriptCommand:JSON];
+      });
+  _activeWebState->AddScriptCommandCallback(callback, kCommandPrefix);
+  _activeWebStateEnabled = YES;
 }
 
 - (void)disableActiveWebState {
-  if (_activeWebState && _activeWebStateEnabled) {
-    _activeWebState->RemoveScriptCommandCallback(kCommandPrefix);
-    _activeWebStateEnabled = NO;
-  }
+  if (!_activeWebState)
+    return;
+
+  DCHECK(_activeWebStateEnabled);
+  _activeWebState->RemoveScriptCommandCallback(kCommandPrefix);
+  _activeWebStateEnabled = NO;
 }
 
 - (BOOL)handleScriptCommand:(const base::DictionaryValue&)JSONCommand {
@@ -1002,7 +1007,6 @@ requestFullCreditCard:(const autofill::CreditCard&)creditCard
   }
 
   [self dismissUIWithCallback:nil];
-  [self enableActiveWebState];
 
   // The lifetime of a PaymentRequest is tied to the WebState it is associated
   // with and the current URL. Therefore, PaymentRequest instances should get
