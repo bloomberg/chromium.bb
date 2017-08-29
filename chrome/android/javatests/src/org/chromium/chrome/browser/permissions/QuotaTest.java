@@ -36,7 +36,7 @@ public class QuotaTest extends PermissionTestCaseBase {
      */
     @MediumTest
     @Feature({"QuotaPermissions"})
-    @CommandLineFlags.Add({"enable-features=" + PERMISSION_REQUEST_MANAGER_FLAG})
+    @CommandLineFlags.Add("disable-features=" + MODAL_FLAG)
     public void testQuotaShowsInfobar() throws Exception {
         testQuotaPermissionsPlumbing("initiate_requestQuota(1024)", 1, false, false, false, false);
     }

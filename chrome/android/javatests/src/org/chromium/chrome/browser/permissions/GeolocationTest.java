@@ -83,27 +83,15 @@ public class GeolocationTest extends PermissionTestCaseBase {
     }
 
     /**
-     * Verify Geolocation creates a dialog and receives a mock location when dialogs are explicitly
-     * enabled and permitted to trigger without a gesture.
-     * @throws Exception
-     */
-    @MediumTest
-    @CommandLineFlags.Add({NO_GESTURE_FEATURE, FORCE_FIELDTRIAL, FORCE_FIELDTRIAL_PARAMS})
-    @Feature({"Location", "Main"})
-    public void testGeolocationPlumbingAllowedDialogNoGesture() throws Exception {
-        runTest("initiate_getCurrentPosition()", 1, false, true, false, false);
-    }
-
-    /**
-     * Verify Geolocation shows an infobar and receives a mock location if the modal flag is on but
-     * no user gesture is specified.
+     * Verify Geolocation creates a dialog and receives a mock location when dialogs are
+     * enabled and there is no user gesture.
      * @throws Exception
      */
     @MediumTest
     @CommandLineFlags.Add("enable-features=" + MODAL_FLAG)
     @Feature({"Location", "Main"})
-    public void testGeolocationPlumbingAllowedNoGestureShowsInfoBar() throws Exception {
-        runTest("initiate_getCurrentPosition()", 1, false, false, false, false);
+    public void testGeolocationPlumbingAllowedDialogNoGesture() throws Exception {
+        runTest("initiate_getCurrentPosition()", 1, false, true, false, false);
     }
 
     /**
