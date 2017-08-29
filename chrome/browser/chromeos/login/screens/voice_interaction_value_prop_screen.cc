@@ -9,8 +9,6 @@
 #include "chrome/browser/chromeos/login/screens/voice_interaction_value_prop_screen_view.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/common/pref_names.h"
-#include "components/prefs/pref_service.h"
 
 namespace chromeos {
 namespace {
@@ -72,8 +70,6 @@ void VoiceInteractionValuePropScreen::OnSkipPressed() {
 
 void VoiceInteractionValuePropScreen::OnNextPressed() {
   GetVoiceInteractionHomeService()->OnAssistantAppRequested();
-  ProfileManager::GetActiveUserProfile()->GetPrefs()->SetBoolean(
-      prefs::kArcVoiceInteractionValuePropAccepted, true);
   Finish(ScreenExitCode::VOICE_INTERACTION_VALUE_PROP_ACCEPTED);
 }
 

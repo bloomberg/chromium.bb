@@ -360,6 +360,10 @@ void ArcVoiceInteractionFrameworkService::OnSessionStateChanged() {
       prefs::kVoiceInteractionContextEnabled);
   ash::Shell::Get()->NotifyVoiceInteractionContextEnabled(context);
 
+  if (Profile::FromBrowserContext(context_)->GetPrefs()->GetBoolean(
+          prefs::kArcVoiceInteractionValuePropAccepted))
+    ash::Shell::Get()->NotifyVoiceInteractionSetupCompleted();
+
   // We only want notify the status change on first user signed in.
   session_manager::SessionManager::Get()->RemoveObserver(this);
 }
@@ -443,6 +447,14 @@ void ArcVoiceInteractionFrameworkService::UpdateVoiceInteractionPrefs() {
     return;
   framework_instance->GetVoiceInteractionSettings(
       base::Bind(&SetVoiceInteractionPrefs, context_));
+}
+
+void ArcVoiceInteractionFrameworkService::SetVoiceInteractionSetupCompleted() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  ProfileManager::GetActiveUserProfile()->GetPrefs()->SetBoolean(
+      prefs::kArcVoiceInteractionValuePropAccepted, true);
+
+  ash::Shell::Get()->NotifyVoiceInteractionSetupCompleted();
 }
 
 void ArcVoiceInteractionFrameworkService::StartSessionFromUserInteraction(

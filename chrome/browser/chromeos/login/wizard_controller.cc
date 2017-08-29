@@ -651,6 +651,15 @@ void WizardController::ShowVoiceInteractionValuePropScreen() {
 }
 
 void WizardController::ShowWaitForContainerReadyScreen() {
+  DCHECK(is_in_session_oobe_);
+  // At this point we could make sure the value prop flow has been accepted.
+  // Set the value prop pref as accepted in framework service.
+  auto* service =
+      arc::ArcVoiceInteractionFrameworkService::GetForBrowserContext(
+          ProfileManager::GetActiveUserProfile());
+  if (service)
+    service->SetVoiceInteractionSetupCompleted();
+
   UpdateStatusAreaVisibilityForScreen(
       OobeScreen::SCREEN_WAIT_FOR_CONTAINER_READY);
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_WAIT_FOR_CONTAINER_READY));
@@ -846,8 +855,6 @@ void WizardController::OnTermsOfServiceAccepted() {
 
 void WizardController::OnArcTermsOfServiceSkipped() {
   if (is_in_session_oobe_) {
-    PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
-    prefs->SetBoolean(prefs::kArcVoiceInteractionValuePropAccepted, false);
     OnOobeFlowFinished();
     return;
   }

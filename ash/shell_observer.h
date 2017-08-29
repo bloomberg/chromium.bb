@@ -82,6 +82,9 @@ class ASH_EXPORT ShellObserver {
   // the "context" (text and graphic content that is currently on screen).
   virtual void OnVoiceInteractionContextEnabled(bool enabled) {}
 
+  // Called when voice interaction setup flow completed.
+  virtual void OnVoiceInteractionSetupCompleted() {}
+
   // Called at the end of Shell::Init.
   virtual void OnShellInitialized() {}
 
