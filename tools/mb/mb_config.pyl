@@ -466,6 +466,13 @@
       'Windows Dev': 'debug_bot_minimal_symbols',
     },
 
+    # Manually triggered internal builders running on LUCI.
+    'luci.infra-internal.triggered': {
+      'gn-builder-linux': 'gn_linux_upload',
+      'gn-builder-mac': 'release_bot',
+      'gn-builder-win': 'release_bot_x86_minimal_symbols',
+    },
+
     'tryserver.blink': {
       # Most tryservers should have '_trybot' in their config names, but
       # 'release_trybot' includes 'dcheck_always_on', and the blink
