@@ -487,7 +487,7 @@ void CertPathIter::DoGetNextIssuerComplete() {
         break;
       }
 
-      cur_path_.Append(base::MakeUnique<CertIssuersIter>(
+      cur_path_.Append(std::make_unique<CertIssuersIter>(
           std::move(next_issuer_.cert), &cert_issuer_sources_, trust_store_));
       next_issuer_ = IssuerEntry();
       DVLOG(1) << "CertPathIter cur_path_ = " << cur_path_.PathDebugString();
@@ -613,7 +613,7 @@ void CertPathBuilder::DoGetNextPathComplete() {
   }
 
   // Verify the entire certificate chain.
-  auto result_path = base::MakeUnique<ResultPath>();
+  auto result_path = std::make_unique<ResultPath>();
   result_path->path = next_path_;
   VerifyCertificateChain(
       result_path->path.certs, result_path->path.last_cert_trust, delegate_,

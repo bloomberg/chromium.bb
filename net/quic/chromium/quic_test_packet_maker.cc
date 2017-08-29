@@ -309,7 +309,7 @@ QuicTestPacketMaker::MakeMultipleDataFramesPacket(
   std::vector<std::unique_ptr<QuicStreamFrame>> stream_frames;
   for (size_t i = 0; i < data_writes.size(); ++i) {
     bool is_fin = fin && (i == data_writes.size() - 1);
-    stream_frames.push_back(base::MakeUnique<QuicStreamFrame>(
+    stream_frames.push_back(std::make_unique<QuicStreamFrame>(
         stream_id, is_fin, offset, QuicStringPiece(data_writes[i])));
     offset += data_writes[i].length();
   }
@@ -392,7 +392,7 @@ QuicTestPacketMaker::MakeRequestHeadersAndMultipleDataFramesPacket(
   std::vector<std::unique_ptr<QuicStreamFrame>> stream_frames;
   for (size_t i = 0; i < data_writes.size(); ++i) {
     bool is_fin = fin && (i == data_writes.size() - 1);
-    stream_frames.push_back(base::MakeUnique<QuicStreamFrame>(
+    stream_frames.push_back(std::make_unique<QuicStreamFrame>(
         stream_id, is_fin, offset, QuicStringPiece(data_writes[i])));
     offset += data_writes[i].length();
   }

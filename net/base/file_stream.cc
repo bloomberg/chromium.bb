@@ -13,11 +13,11 @@
 namespace net {
 
 FileStream::FileStream(const scoped_refptr<base::TaskRunner>& task_runner)
-    : context_(base::MakeUnique<Context>(task_runner)) {}
+    : context_(std::make_unique<Context>(task_runner)) {}
 
 FileStream::FileStream(base::File file,
                        const scoped_refptr<base::TaskRunner>& task_runner)
-    : context_(base::MakeUnique<Context>(std::move(file), task_runner)) {}
+    : context_(std::make_unique<Context>(std::move(file), task_runner)) {}
 
 FileStream::~FileStream() {
   context_.release()->Orphan();

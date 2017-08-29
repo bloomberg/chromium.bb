@@ -332,7 +332,7 @@ void HostCache::GetAsListValue(base::ListValue* entry_list,
     } else {
       const AddressList& addresses = entry.addresses();
       // Append all of the resolved addresses.
-      auto addresses_value = base::MakeUnique<base::ListValue>();
+      auto addresses_value = std::make_unique<base::ListValue>();
       for (size_t i = 0; i < addresses.size(); ++i)
         addresses_value->AppendString(addresses[i].ToStringWithoutPort());
       entry_dict->SetList(kAddressesKey, std::move(addresses_value));

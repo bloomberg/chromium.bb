@@ -1917,7 +1917,7 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmed) {
   scoped_refptr<TestTaskRunner> quic_task_runner_(new TestTaskRunner(&clock_));
   QuicStreamFactoryPeer::SetAlarmFactory(
       session_->quic_stream_factory(),
-      base::MakeUnique<QuicChromiumAlarmFactory>(quic_task_runner_.get(),
+      std::make_unique<QuicChromiumAlarmFactory>(quic_task_runner_.get(),
                                                  &clock_));
 
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
@@ -2015,7 +2015,7 @@ TEST_P(QuicNetworkTransactionTest, TooManyRtosAfterHandshakeConfirmed) {
   scoped_refptr<TestTaskRunner> quic_task_runner_(new TestTaskRunner(&clock_));
   QuicStreamFactoryPeer::SetAlarmFactory(
       session_->quic_stream_factory(),
-      base::MakeUnique<QuicChromiumAlarmFactory>(quic_task_runner_.get(),
+      std::make_unique<QuicChromiumAlarmFactory>(quic_task_runner_.get(),
                                                  &clock_));
 
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
@@ -2117,12 +2117,12 @@ TEST_P(QuicNetworkTransactionTest,
   scoped_refptr<TestTaskRunner> quic_task_runner_(new TestTaskRunner(&clock_));
   QuicStreamFactoryPeer::SetAlarmFactory(
       session_->quic_stream_factory(),
-      base::MakeUnique<QuicChromiumAlarmFactory>(quic_task_runner_.get(),
+      std::make_unique<QuicChromiumAlarmFactory>(quic_task_runner_.get(),
                                                  &clock_));
 
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
 
-  auto trans = base::MakeUnique<HttpNetworkTransaction>(DEFAULT_PRIORITY,
+  auto trans = std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY,
                                                         session_.get());
   TestCompletionCallback callback;
   int rv = trans->Start(&request_, callback.callback(), net_log_.bound());
@@ -2289,7 +2289,7 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmedThenBroken) {
   scoped_refptr<TestTaskRunner> quic_task_runner_(new TestTaskRunner(&clock_));
   QuicStreamFactoryPeer::SetAlarmFactory(
       session_->quic_stream_factory(),
-      base::MakeUnique<QuicChromiumAlarmFactory>(quic_task_runner_.get(),
+      std::make_unique<QuicChromiumAlarmFactory>(quic_task_runner_.get(),
                                                  &clock_));
 
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
@@ -2406,7 +2406,7 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmedThenBroken2) {
   scoped_refptr<TestTaskRunner> quic_task_runner_(new TestTaskRunner(&clock_));
   QuicStreamFactoryPeer::SetAlarmFactory(
       session_->quic_stream_factory(),
-      base::MakeUnique<QuicChromiumAlarmFactory>(quic_task_runner_.get(),
+      std::make_unique<QuicChromiumAlarmFactory>(quic_task_runner_.get(),
                                                  &clock_));
 
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
@@ -2519,7 +2519,7 @@ TEST_P(QuicNetworkTransactionTest,
   scoped_refptr<TestTaskRunner> quic_task_runner_(new TestTaskRunner(&clock_));
   QuicStreamFactoryPeer::SetAlarmFactory(
       session_->quic_stream_factory(),
-      base::MakeUnique<QuicChromiumAlarmFactory>(quic_task_runner_.get(),
+      std::make_unique<QuicChromiumAlarmFactory>(quic_task_runner_.get(),
                                                  &clock_));
 
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
@@ -2646,7 +2646,7 @@ TEST_P(QuicNetworkTransactionTest,
   scoped_refptr<TestTaskRunner> quic_task_runner_(new TestTaskRunner(&clock_));
   QuicStreamFactoryPeer::SetAlarmFactory(
       session_->quic_stream_factory(),
-      base::MakeUnique<QuicChromiumAlarmFactory>(quic_task_runner_.get(),
+      std::make_unique<QuicChromiumAlarmFactory>(quic_task_runner_.get(),
                                                  &clock_));
 
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
@@ -2759,12 +2759,12 @@ TEST_P(QuicNetworkTransactionTest,
   scoped_refptr<TestTaskRunner> quic_task_runner_(new TestTaskRunner(&clock_));
   QuicStreamFactoryPeer::SetAlarmFactory(
       session_->quic_stream_factory(),
-      base::MakeUnique<QuicChromiumAlarmFactory>(quic_task_runner_.get(),
+      std::make_unique<QuicChromiumAlarmFactory>(quic_task_runner_.get(),
                                                  &clock_));
 
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
 
-  auto trans = base::MakeUnique<HttpNetworkTransaction>(DEFAULT_PRIORITY,
+  auto trans = std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY,
                                                         session_.get());
   TestCompletionCallback callback;
   int rv = trans->Start(&request_, callback.callback(), net_log_.bound());
@@ -4800,7 +4800,7 @@ TEST_P(QuicNetworkTransactionTest, CancelServerPushAfterConnectionClose) {
   // Start a push transaction that will be cancelled after the connection
   // is closed, but before the callback is executed.
   request_.url = GURL("https://mail.example.org/pushed.jpg");
-  auto trans2 = base::MakeUnique<HttpNetworkTransaction>(DEFAULT_PRIORITY,
+  auto trans2 = std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY,
                                                          session_.get());
   TestCompletionCallback callback2;
   int rv = trans2->Start(&request_, callback2.callback(), net_log_.bound());

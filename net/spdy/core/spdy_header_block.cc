@@ -331,8 +331,8 @@ SpdyHeaderBlock::Storage* SpdyHeaderBlock::GetStorage() {
 std::unique_ptr<base::Value> SpdyHeaderBlockNetLogCallback(
     const SpdyHeaderBlock* headers,
     NetLogCaptureMode capture_mode) {
-  auto dict = base::MakeUnique<base::DictionaryValue>();
-  auto headers_dict = base::MakeUnique<base::DictionaryValue>();
+  auto dict = std::make_unique<base::DictionaryValue>();
+  auto headers_dict = std::make_unique<base::DictionaryValue>();
   for (SpdyHeaderBlock::const_iterator it = headers->begin();
        it != headers->end(); ++it) {
     headers_dict->SetKey(

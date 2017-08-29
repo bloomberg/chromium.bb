@@ -191,9 +191,9 @@ std::string HttpRequestHeaders::ToString() const {
 std::unique_ptr<base::Value> HttpRequestHeaders::NetLogCallback(
     const std::string* request_line,
     NetLogCaptureMode capture_mode) const {
-  auto dict = base::MakeUnique<base::DictionaryValue>();
+  auto dict = std::make_unique<base::DictionaryValue>();
   dict->SetString("line", EscapeNonASCII(*request_line));
-  auto headers = base::MakeUnique<base::ListValue>();
+  auto headers = std::make_unique<base::ListValue>();
   for (HeaderVector::const_iterator it = headers_.begin(); it != headers_.end();
        ++it) {
     std::string log_value =

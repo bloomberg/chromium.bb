@@ -823,7 +823,7 @@ void SQLitePersistentCookieStore::Backend::MakeCookiesFromSQLStatement(
     } else {
       value = smt.ColumnString(3);
     }
-    std::unique_ptr<CanonicalCookie> cc(base::MakeUnique<CanonicalCookie>(
+    std::unique_ptr<CanonicalCookie> cc(std::make_unique<CanonicalCookie>(
         smt.ColumnString(2),                           // name
         value,                                         // value
         smt.ColumnString(1),                           // domain

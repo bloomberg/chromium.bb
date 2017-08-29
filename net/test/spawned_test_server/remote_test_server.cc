@@ -82,7 +82,7 @@ bool RemoteTestServer::Start() {
   if (!GenerateArguments(&arguments_dict))
     return false;
 
-  arguments_dict.Set("on-remote-server", base::MakeUnique<base::Value>());
+  arguments_dict.Set("on-remote-server", std::make_unique<base::Value>());
 
   // Append the 'server-type' argument which is used by spawner server to
   // pass right server type to Python test server.

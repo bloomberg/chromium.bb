@@ -125,8 +125,8 @@ class SimpleIndexTest  : public testing::Test, public SimpleIndexDelegate {
     const std::string kTrialName = "EvictWithSizeTrial";
     const std::string kGroupName = "GroupFoo";  // Value not used
 
-    field_trial_list_ = base::MakeUnique<base::FieldTrialList>(
-        base::MakeUnique<base::MockEntropyProvider>());
+    field_trial_list_ = std::make_unique<base::FieldTrialList>(
+        std::make_unique<base::MockEntropyProvider>());
 
     scoped_refptr<base::FieldTrial> trial =
         base::FieldTrialList::CreateFieldTrial(kTrialName, kGroupName);

@@ -112,7 +112,7 @@ std::unique_ptr<HttpStreamRequest> HttpStreamFactoryImpl::RequestStreamInternal(
     const NetLogWithSource& net_log) {
   AddJobControllerCountToHistograms();
 
-  auto job_controller = base::MakeUnique<JobController>(
+  auto job_controller = std::make_unique<JobController>(
       this, delegate, session_, job_factory_.get(), request_info,
       /* is_preconnect = */ false, enable_ip_based_pooling,
       enable_alternative_services, server_ssl_config, proxy_ssl_config);
@@ -139,7 +139,7 @@ void HttpStreamFactoryImpl::PreconnectStreams(
 
   DCHECK(!for_websockets_);
 
-  auto job_controller = base::MakeUnique<JobController>(
+  auto job_controller = std::make_unique<JobController>(
       this, nullptr, session_, job_factory_.get(), request_info,
       /* is_preconnect = */ true,
       /* enable_ip_based_pooling = */ true,

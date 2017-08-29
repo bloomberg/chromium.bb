@@ -100,7 +100,7 @@ const HttpResponseInfo* HttpProxyClientSocket::GetConnectResponseInfo() const {
 
 std::unique_ptr<HttpStream>
 HttpProxyClientSocket::CreateConnectResponseStream() {
-  return base::MakeUnique<ProxyConnectRedirectHttpStream>(
+  return std::make_unique<ProxyConnectRedirectHttpStream>(
       redirect_has_load_timing_info_ ? &redirect_load_timing_info_ : nullptr);
 }
 

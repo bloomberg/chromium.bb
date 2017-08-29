@@ -91,7 +91,7 @@ void AddAlternativeServiceFieldsToDictionaryValue(
 std::unique_ptr<base::Value> NetLogCallback(
     const base::Value& http_server_properties_dict,
     NetLogCaptureMode capture_mode) {
-  return base::MakeUnique<base::Value>(http_server_properties_dict.Clone());
+  return std::make_unique<base::Value>(http_server_properties_dict.Clone());
 }
 
 }  // namespace
@@ -540,7 +540,7 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnPrefSequence() {
     }
   }
 
-  std::unique_ptr<IPAddress> addr = base::MakeUnique<IPAddress>();
+  std::unique_ptr<IPAddress> addr = std::make_unique<IPAddress>();
   ReadSupportsQuic(http_server_properties_dict, addr.get());
 
   // String is "scheme://host:port" tuple of spdy server.
@@ -593,9 +593,9 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnPrefSequence() {
   if (http_server_properties_dict.GetListWithoutPathExpansion(
           kBrokenAlternativeServicesKey, &broken_alt_svc_list)) {
     broken_alternative_service_list =
-        base::MakeUnique<BrokenAlternativeServiceList>();
+        std::make_unique<BrokenAlternativeServiceList>();
     recently_broken_alternative_services =
-        base::MakeUnique<RecentlyBrokenAlternativeServices>(
+        std::make_unique<RecentlyBrokenAlternativeServices>(
             RecentlyBrokenAlternativeServices::NO_AUTO_EVICT);
 
     // Iterate list in reverse-MRU order
@@ -1066,12 +1066,12 @@ void HttpServerPropertiesManager::UpdatePrefsFromCacheOnNetworkSequence(
 
   // It is in MRU order.
   std::unique_ptr<std::vector<std::string>> spdy_servers =
-      base::MakeUnique<std::vector<std::string>>();
+      std::make_unique<std::vector<std::string>>();
   http_server_properties_impl_->GetSpdyServerList(
       spdy_servers.get(), kMaxSupportsSpdyServerHostsToPersist);
 
   std::unique_ptr<AlternativeServiceMap> alternative_service_map =
-      base::MakeUnique<AlternativeServiceMap>(
+      std::make_unique<AlternativeServiceMap>(
           kMaxAlternateProtocolHostsToPersist);
   const AlternativeServiceMap& map =
       http_server_properties_impl_->alternative_service_map();
@@ -1117,7 +1117,7 @@ void HttpServerPropertiesManager::UpdatePrefsFromCacheOnNetworkSequence(
   }
 
   std::unique_ptr<ServerNetworkStatsMap> server_network_stats_map =
-      base::MakeUnique<ServerNetworkStatsMap>(
+      std::make_unique<ServerNetworkStatsMap>(
           kMaxServerNetworkStatsHostsToPersist);
   const ServerNetworkStatsMap& network_stats_map =
       http_server_properties_impl_->server_network_stats_map();
@@ -1134,7 +1134,7 @@ void HttpServerPropertiesManager::UpdatePrefsFromCacheOnNetworkSequence(
   const QuicServerInfoMap& main_quic_server_info_map =
       http_server_properties_impl_->quic_server_info_map();
   if (main_quic_server_info_map.size() > 0) {
-    quic_server_info_map = base::MakeUnique<QuicServerInfoMap>(
+    quic_server_info_map = std::make_unique<QuicServerInfoMap>(
         max_server_configs_stored_in_properties());
     for (QuicServerInfoMap::const_reverse_iterator it =
              main_quic_server_info_map.rbegin();
@@ -1147,7 +1147,7 @@ void HttpServerPropertiesManager::UpdatePrefsFromCacheOnNetworkSequence(
   const BrokenAlternativeServiceList& broken_alternative_service_list =
       http_server_properties_impl_->broken_alternative_service_list();
   if (broken_alternative_service_list.size() > 0) {
-    broken_alt_svc_list = base::MakeUnique<BrokenAlternativeServiceList>();
+    broken_alt_svc_list = std::make_unique<BrokenAlternativeServiceList>();
     size_t count = 0;
     for (auto it = broken_alternative_service_list.begin();
          it != broken_alternative_service_list.end() &&
@@ -1163,7 +1163,7 @@ void HttpServerPropertiesManager::UpdatePrefsFromCacheOnNetworkSequence(
       http_server_properties_impl_->recently_broken_alternative_services();
   if (recently_broken_alt_services.size() > 0) {
     recently_broken_alt_svcs =
-        base::MakeUnique<RecentlyBrokenAlternativeServices>(
+        std::make_unique<RecentlyBrokenAlternativeServices>(
             kMaxRecentlyBrokenAlternativeServicesToPersist);
     size_t count = 0;
     for (auto it = recently_broken_alt_services.rbegin();
@@ -1175,7 +1175,7 @@ void HttpServerPropertiesManager::UpdatePrefsFromCacheOnNetworkSequence(
     }
   }
 
-  std::unique_ptr<IPAddress> last_quic_addr = base::MakeUnique<IPAddress>();
+  std::unique_ptr<IPAddress> last_quic_addr = std::make_unique<IPAddress>();
   http_server_properties_impl_->GetSupportsQuic(last_quic_addr.get());
   // Update the preferences on the pref thread.
   pref_task_runner_->PostTask(
@@ -1264,14 +1264,14 @@ void HttpServerPropertiesManager::UpdatePrefsOnPrefThread(
 
   // Persist properties to the prefs in the MRU order.
   base::DictionaryValue http_server_properties_dict;
-  auto servers_list = base::MakeUnique<base::ListValue>();
+  auto servers_list = std::make_unique<base::ListValue>();
   for (ServerPrefMap::const_reverse_iterator map_it = server_pref_map.rbegin();
        map_it != server_pref_map.rend(); ++map_it) {
     const url::SchemeHostPort server = map_it->first;
     const ServerPref& server_pref = map_it->second;
 
-    auto servers_dict = base::MakeUnique<base::DictionaryValue>();
-    auto server_pref_dict = base::MakeUnique<base::DictionaryValue>();
+    auto servers_dict = std::make_unique<base::DictionaryValue>();
+    auto server_pref_dict = std::make_unique<base::DictionaryValue>();
 
     // Save supports_spdy.
     if (server_pref.supports_spdy) {
@@ -1346,7 +1346,7 @@ void HttpServerPropertiesManager::SaveAlternativeServiceToServerPrefs(
         base::Int64ToString(
             alternative_service_info.expiration().ToInternalValue()));
     std::unique_ptr<base::ListValue> advertised_versions_list =
-        base::MakeUnique<base::ListValue>();
+        std::make_unique<base::ListValue>();
     for (const auto& version : alternative_service_info.advertised_versions()) {
       advertised_versions_list->AppendInteger(version);
     }
@@ -1366,7 +1366,7 @@ void HttpServerPropertiesManager::SaveSupportsQuicToPrefs(
   if (!last_quic_address.IsValid())
     return;
 
-  auto supports_quic_dict = base::MakeUnique<base::DictionaryValue>();
+  auto supports_quic_dict = std::make_unique<base::DictionaryValue>();
   supports_quic_dict->SetBoolean(kUsedQuicKey, true);
   supports_quic_dict->SetString(kAddressKey, last_quic_address.ToString());
   http_server_properties_dict->SetWithoutPathExpansion(
@@ -1376,7 +1376,7 @@ void HttpServerPropertiesManager::SaveSupportsQuicToPrefs(
 void HttpServerPropertiesManager::SaveNetworkStatsToServerPrefs(
     const ServerNetworkStats& server_network_stats,
     base::DictionaryValue* server_pref_dict) {
-  auto server_network_stats_dict = base::MakeUnique<base::DictionaryValue>();
+  auto server_network_stats_dict = std::make_unique<base::DictionaryValue>();
   // Becasue JSON doesn't support int64_t, persist int64_t as a string.
   server_network_stats_dict->SetInteger(
       kSrttKey, static_cast<int>(server_network_stats.srtt.InMicroseconds()));
@@ -1389,12 +1389,12 @@ void HttpServerPropertiesManager::SaveNetworkStatsToServerPrefs(
 void HttpServerPropertiesManager::SaveQuicServerInfoMapToServerPrefs(
     const QuicServerInfoMap& quic_server_info_map,
     base::DictionaryValue* http_server_properties_dict) {
-  auto quic_servers_dict = base::MakeUnique<base::DictionaryValue>();
+  auto quic_servers_dict = std::make_unique<base::DictionaryValue>();
   for (QuicServerInfoMap::const_reverse_iterator it =
            quic_server_info_map.rbegin();
        it != quic_server_info_map.rend(); ++it) {
     const QuicServerId& server_id = it->first;
-    auto quic_server_pref_dict = base::MakeUnique<base::DictionaryValue>();
+    auto quic_server_pref_dict = std::make_unique<base::DictionaryValue>();
     quic_server_pref_dict->SetKey(kServerInfoKey, base::Value(it->second));
     quic_servers_dict->SetWithoutPathExpansion(
         server_id.ToString(), std::move(quic_server_pref_dict));
@@ -1411,7 +1411,7 @@ void HttpServerPropertiesManager::SaveBrokenAlternativeServicesToPrefs(
   // JSON list will be in MRU order according to
   // |recently_broken_alternative_services|.
   std::unique_ptr<base::ListValue> json_list =
-      base::MakeUnique<base::ListValue>();
+      std::make_unique<base::ListValue>();
 
   // Maps recently-broken alternative services to the index where it's stored
   // in |json_list|.

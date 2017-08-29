@@ -270,7 +270,7 @@ class DnsConfigServicePosixTest : public testing::Test {
 
   void ExpectChange() {
     EXPECT_FALSE(seen_config_);
-    run_loop_ = base::MakeUnique<base::RunLoop>();
+    run_loop_ = std::make_unique<base::RunLoop>();
     run_loop_->Run();
     EXPECT_TRUE(seen_config_);
     seen_config_ = false;

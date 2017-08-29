@@ -1986,7 +1986,7 @@ int HostResolverImpl::Resolve(const RequestInfo& info,
   }
 
   // Can't complete synchronously. Create and attach request.
-  auto req = base::MakeUnique<RequestImpl>(source_net_log, info, priority,
+  auto req = std::make_unique<RequestImpl>(source_net_log, info, priority,
                                            callback, addresses, job);
   job->AddRequest(req.get());
   *out_req = std::move(req);
@@ -2159,7 +2159,7 @@ std::unique_ptr<base::Value> HostResolverImpl::GetDnsConfigAsValue() const {
   // for it.
   const DnsConfig* dns_config = dns_client_->GetConfig();
   if (!dns_config)
-    return base::MakeUnique<base::DictionaryValue>();
+    return std::make_unique<base::DictionaryValue>();
 
   return dns_config->ToValue();
 }

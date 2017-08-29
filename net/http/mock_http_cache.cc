@@ -606,12 +606,12 @@ MockHttpCache::MockHttpCache(
     : MockHttpCache(std::move(disk_cache_factory), false) {}
 
 MockHttpCache::MockHttpCache(bool is_main_cache)
-    : MockHttpCache(base::MakeUnique<MockBackendFactory>(), is_main_cache) {}
+    : MockHttpCache(std::make_unique<MockBackendFactory>(), is_main_cache) {}
 
 MockHttpCache::MockHttpCache(
     std::unique_ptr<HttpCache::BackendFactory> disk_cache_factory,
     bool is_main_cache)
-    : http_cache_(base::MakeUnique<MockNetworkLayer>(),
+    : http_cache_(std::make_unique<MockNetworkLayer>(),
                   std::move(disk_cache_factory),
                   is_main_cache) {}
 

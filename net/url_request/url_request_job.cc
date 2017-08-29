@@ -689,7 +689,7 @@ void URLRequestJob::DoneReadingRedirectResponse() {
 }
 
 std::unique_ptr<SourceStream> URLRequestJob::SetUpSourceStream() {
-  return base::MakeUnique<URLRequestJobSourceStream>(this);
+  return std::make_unique<URLRequestJobSourceStream>(this);
 }
 
 void URLRequestJob::DestroySourceStream() {

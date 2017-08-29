@@ -280,10 +280,10 @@ SimpleBackendImpl::~SimpleBackendImpl() {
 int SimpleBackendImpl::Init(const CompletionCallback& completion_callback) {
   worker_pool_ = g_sequenced_worker_pool.Get().GetTaskRunner();
 
-  index_ = base::MakeUnique<SimpleIndex>(
+  index_ = std::make_unique<SimpleIndex>(
       base::ThreadTaskRunnerHandle::Get(), cleanup_tracker_.get(), this,
       cache_type_,
-      base::MakeUnique<SimpleIndexFile>(cache_runner_, worker_pool_.get(),
+      std::make_unique<SimpleIndexFile>(cache_runner_, worker_pool_.get(),
                                         cache_type_, path_));
   index_->ExecuteWhenReady(
       base::Bind(&RecordIndexLoad, cache_type_, base::TimeTicks::Now()));

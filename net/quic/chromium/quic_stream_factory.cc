@@ -663,7 +663,7 @@ std::unique_ptr<HttpStream> QuicStreamRequest::CreateStream() {
   if (!session_ || !session_->IsConnected())
     return nullptr;
 
-  return base::MakeUnique<QuicHttpStream>(std::move(session_));
+  return std::make_unique<QuicHttpStream>(std::move(session_));
 }
 
 std::unique_ptr<BidirectionalStreamImpl>
@@ -671,7 +671,7 @@ QuicStreamRequest::CreateBidirectionalStreamImpl() {
   if (!session_ || !session_->IsConnected())
     return nullptr;
 
-  return base::MakeUnique<BidirectionalStreamQuicImpl>(std::move(session_));
+  return std::make_unique<BidirectionalStreamQuicImpl>(std::move(session_));
 }
 
 QuicStreamFactory::QuicStreamFactory(
@@ -967,7 +967,7 @@ int QuicStreamFactory::Create(const QuicServerId& server_id,
   ignore_result(StartCertVerifyJob(server_id, cert_verify_flags, net_log));
 
   QuicSessionKey key(destination, server_id);
-  std::unique_ptr<Job> job = base::MakeUnique<Job>(
+  std::unique_ptr<Job> job = std::make_unique<Job>(
       this, quic_version, host_resolver_, key, WasQuicRecentlyBroken(server_id),
       cert_verify_flags, net_log);
   int rv = job->Run(base::Bind(&QuicStreamFactory::OnJobComplete,
@@ -1532,7 +1532,7 @@ int QuicStreamFactory::CreateSession(const QuicSessionKey& key,
   QuicConnectionId connection_id = random_generator_->RandUint64();
   std::unique_ptr<QuicServerInfo> server_info;
   if (store_server_configs_in_properties_) {
-    server_info = base::MakeUnique<PropertiesBasedQuicServerInfo>(
+    server_info = std::make_unique<PropertiesBasedQuicServerInfo>(
         server_id, http_server_properties_);
   }
   InitializeCachedStateInCryptoConfig(server_id, server_info, &connection_id);

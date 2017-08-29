@@ -693,7 +693,7 @@ LoadState ClientSocketPoolBaseHelper::GetLoadState(
 std::unique_ptr<base::DictionaryValue>
 ClientSocketPoolBaseHelper::GetInfoAsValue(const std::string& name,
                                            const std::string& type) const {
-  auto dict = base::MakeUnique<base::DictionaryValue>();
+  auto dict = std::make_unique<base::DictionaryValue>();
   dict->SetString("name", name);
   dict->SetString("type", type);
   dict->SetInteger("handed_out_socket_count", handed_out_socket_count_);
@@ -706,11 +706,11 @@ ClientSocketPoolBaseHelper::GetInfoAsValue(const std::string& name,
   if (group_map_.empty())
     return dict;
 
-  auto all_groups_dict = base::MakeUnique<base::DictionaryValue>();
+  auto all_groups_dict = std::make_unique<base::DictionaryValue>();
   for (GroupMap::const_iterator it = group_map_.begin();
        it != group_map_.end(); it++) {
     const Group* group = it->second;
-    auto group_dict = base::MakeUnique<base::DictionaryValue>();
+    auto group_dict = std::make_unique<base::DictionaryValue>();
 
     group_dict->SetInteger("pending_request_count",
                            group->pending_request_count());
@@ -722,7 +722,7 @@ ClientSocketPoolBaseHelper::GetInfoAsValue(const std::string& name,
 
     group_dict->SetInteger("active_socket_count", group->active_socket_count());
 
-    auto idle_socket_list = base::MakeUnique<base::ListValue>();
+    auto idle_socket_list = std::make_unique<base::ListValue>();
     std::list<IdleSocket>::const_iterator idle_socket;
     for (idle_socket = group->idle_sockets().begin();
          idle_socket != group->idle_sockets().end();
@@ -732,7 +732,7 @@ ClientSocketPoolBaseHelper::GetInfoAsValue(const std::string& name,
     }
     group_dict->Set("idle_sockets", std::move(idle_socket_list));
 
-    auto connect_jobs_list = base::MakeUnique<base::ListValue>();
+    auto connect_jobs_list = std::make_unique<base::ListValue>();
     for (auto job = group->jobs().begin(); job != group->jobs().end(); job++) {
       int source_id = (*job)->net_log().source().id;
       connect_jobs_list->AppendInteger(source_id);

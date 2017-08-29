@@ -482,7 +482,7 @@ void SimpleIndexFile::SyncLoadFromDisk(const base::FilePath& index_filename,
 
   // Make sure to preallocate in one chunk, so we don't induce fragmentation
   // reallocating a growing buffer.
-  auto buffer = base::MakeUnique<char[]>(file_length);
+  auto buffer = std::make_unique<char[]>(file_length);
 
   int read = file.Read(0, buffer.get(), file_length);
   if (read < file_length) {

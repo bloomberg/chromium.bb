@@ -660,7 +660,7 @@ TEST(NetworkQualityEstimatorTest, DefaultObservations) {
   TestNetworkQualityEstimator estimator(
       nullptr, variation_params, false, false,
       true /* add_default_platform_observations */,
-      base::MakeUnique<BoundTestNetLog>());
+      std::make_unique<BoundTestNetLog>());
 
   estimator.SimulateNetworkChange(
       NetworkChangeNotifier::ConnectionType::CONNECTION_UNKNOWN, "unknown-1");
@@ -776,7 +776,7 @@ TEST(NetworkQualityEstimatorTest, DefaultObservationsOverridden) {
   TestNetworkQualityEstimator estimator(
       nullptr, variation_params, false, false,
       true /* add_default_platform_observations */,
-      base::MakeUnique<BoundTestNetLog>());
+      std::make_unique<BoundTestNetLog>());
   estimator.SimulateNetworkChange(
       NetworkChangeNotifier::ConnectionType::CONNECTION_UNKNOWN, "unknown-1");
 
@@ -1624,7 +1624,7 @@ TEST(NetworkQualityEstimatorTest, TestThroughputNoRequestOverlap) {
         std::unique_ptr<net::ExternalEstimateProvider>(), variation_params,
         test.allow_small_localhost_requests,
         test.allow_small_localhost_requests, false,
-        base::MakeUnique<BoundTestNetLog>());
+        std::make_unique<BoundTestNetLog>());
 
     base::TimeDelta rtt;
     EXPECT_FALSE(estimator.GetRecentHttpRTT(base::TimeTicks(), &rtt));
@@ -2225,7 +2225,7 @@ TEST(NetworkQualityEstimatorTest, MAYBE_TestTCPSocketRTT) {
   TestNetworkQualityEstimator estimator(
       nullptr, variation_params, true, true,
       true /* add_default_platform_observations */,
-      base::MakeUnique<BoundTestNetLog>());
+      std::make_unique<BoundTestNetLog>());
   estimator.SimulateNetworkChange(
       NetworkChangeNotifier::ConnectionType::CONNECTION_2G, "test");
 
@@ -2994,7 +2994,7 @@ TEST(NetworkQualityEstimatorTest, OnPrefsRead) {
   TestNetworkQualityEstimator estimator(
       std::unique_ptr<net::ExternalEstimateProvider>(), variation_params, true,
       true, false /* use_default_platform_values */,
-      base::MakeUnique<BoundTestNetLog>());
+      std::make_unique<BoundTestNetLog>());
 
   // Add observers.
   TestRTTObserver rtt_observer;
@@ -3106,7 +3106,7 @@ TEST(NetworkQualityEstimatorTest, OnPrefsReadWithReadingDisabled) {
   TestNetworkQualityEstimator estimator(
       std::unique_ptr<net::ExternalEstimateProvider>(), variation_params, true,
       true, false /* use_default_platform_values */,
-      base::MakeUnique<BoundTestNetLog>());
+      std::make_unique<BoundTestNetLog>());
 
   // Add observers.
   TestRTTObserver rtt_observer;

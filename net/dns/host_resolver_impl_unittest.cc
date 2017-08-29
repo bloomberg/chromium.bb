@@ -565,7 +565,7 @@ class HostResolverImplTest : public testing::Test {
   // not start until released by |proc_->SignalXXX|.
   Request* CreateRequest(const HostResolver::RequestInfo& info,
                          RequestPriority priority) {
-    requests_.push_back(base::MakeUnique<Request>(
+    requests_.push_back(std::make_unique<Request>(
         info, priority, requests_.size(), resolver_.get(), handler_.get()));
     return requests_.back().get();
   }

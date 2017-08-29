@@ -109,13 +109,13 @@ std::unique_ptr<base::Value> NetLogQuicStreamFrameCallback(
 std::unique_ptr<base::Value> NetLogQuicAckFrameCallback(
     const QuicAckFrame* frame,
     NetLogCaptureMode /* capture_mode */) {
-  auto dict = base::MakeUnique<base::DictionaryValue>();
+  auto dict = std::make_unique<base::DictionaryValue>();
   dict->SetString("largest_observed",
                   base::Uint64ToString(frame->largest_observed));
   dict->SetString("delta_time_largest_observed_us",
                   base::Int64ToString(frame->ack_delay_time.ToMicroseconds()));
 
-  auto missing = base::MakeUnique<base::ListValue>();
+  auto missing = std::make_unique<base::ListValue>();
   if (!frame->packets.Empty()) {
     // V34 and above express acked packets, but only print
     // missing packets, because it's typically a shorter list.
@@ -128,11 +128,11 @@ std::unique_ptr<base::Value> NetLogQuicAckFrameCallback(
   }
   dict->Set("missing_packets", std::move(missing));
 
-  auto received = base::MakeUnique<base::ListValue>();
+  auto received = std::make_unique<base::ListValue>();
   const PacketTimeVector& received_times = frame->received_packet_times;
   for (PacketTimeVector::const_iterator it = received_times.begin();
        it != received_times.end(); ++it) {
-    auto info = base::MakeUnique<base::DictionaryValue>();
+    auto info = std::make_unique<base::DictionaryValue>();
     info->SetInteger("packet_number", static_cast<int>(it->first));
     info->SetString("received",
                     base::Int64ToString(it->second.ToDebuggingValue()));
@@ -191,8 +191,8 @@ std::unique_ptr<base::Value> NetLogQuicGoAwayFrameCallback(
 std::unique_ptr<base::Value> NetLogQuicStopWaitingFrameCallback(
     const QuicStopWaitingFrame* frame,
     NetLogCaptureMode /* capture_mode */) {
-  auto dict = base::MakeUnique<base::DictionaryValue>();
-  auto sent_info = base::MakeUnique<base::DictionaryValue>();
+  auto dict = std::make_unique<base::DictionaryValue>();
+  auto sent_info = std::make_unique<base::DictionaryValue>();
   sent_info->SetString("least_unacked",
                        base::Uint64ToString(frame->least_unacked));
   dict->Set("sent_info", std::move(sent_info));
@@ -202,8 +202,8 @@ std::unique_ptr<base::Value> NetLogQuicStopWaitingFrameCallback(
 std::unique_ptr<base::Value> NetLogQuicVersionNegotiationPacketCallback(
     const QuicVersionNegotiationPacket* packet,
     NetLogCaptureMode /* capture_mode */) {
-  auto dict = base::MakeUnique<base::DictionaryValue>();
-  auto versions = base::MakeUnique<base::ListValue>();
+  auto dict = std::make_unique<base::DictionaryValue>();
+  auto versions = std::make_unique<base::ListValue>();
   for (QuicVersionVector::const_iterator it = packet->versions.begin();
        it != packet->versions.end(); ++it) {
     versions->AppendString(QuicVersionToString(*it));
@@ -249,8 +249,8 @@ std::unique_ptr<base::Value> NetLogQuicCertificateVerifiedCallback(
   // More fields could be logged in the future.
   std::vector<std::string> dns_names;
   cert->GetDNSNames(&dns_names);
-  auto dict = base::MakeUnique<base::DictionaryValue>();
-  auto subjects = base::MakeUnique<base::ListValue>();
+  auto dict = std::make_unique<base::DictionaryValue>();
+  auto subjects = std::make_unique<base::ListValue>();
   for (auto& dns_name : dns_names) {
     subjects->GetList().emplace_back(std::move(dns_name));
   }

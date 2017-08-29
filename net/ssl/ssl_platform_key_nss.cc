@@ -169,7 +169,7 @@ scoped_refptr<SSLPrivateKey> FetchClientCertPrivateKey(
     return nullptr;
 
   return make_scoped_refptr(new ThreadedSSLPrivateKey(
-      base::MakeUnique<SSLPlatformKeyNSS>(type, std::move(key)),
+      std::make_unique<SSLPlatformKeyNSS>(type, std::move(key)),
       GetSSLPlatformKeyTaskRunner()));
 }
 
