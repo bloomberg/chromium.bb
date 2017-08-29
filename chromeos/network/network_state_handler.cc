@@ -395,13 +395,7 @@ const NetworkState* NetworkStateHandler::FirstNetworkByType(
   if (!network_list_sorted_)
     SortNetworkList();  // Sort to ensure visible networks are listed first.
 
-  // If |type| matches Tether networks and at least one Tether network is
-  // present, return the first network (since it has been sorted already).
-  if (type.MatchesPattern(NetworkTypePattern::Tether()) &&
-      !tether_network_list_.empty()) {
-    return tether_network_list_[0]->AsNetworkState();
-  }
-
+  const NetworkState* first_network = nullptr;
   for (auto iter = network_list_.begin(); iter != network_list_.end(); ++iter) {
     const NetworkState* network = (*iter)->AsNetworkState();
     DCHECK(network);
@@ -409,10 +403,36 @@ const NetworkState* NetworkStateHandler::FirstNetworkByType(
       continue;
     if (!network->visible())
       break;
-    if (network->Matches(type))
-      return network;
+    if (network->Matches(type)) {
+      first_network = network;
+      break;
+    }
   }
-  return nullptr;
+
+  // Active Ethernet networks are the highest priority.
+  if (first_network && first_network->type() == shill::kTypeEthernet)
+    return first_network;
+
+  const NetworkState* first_tether_network =
+      type.MatchesPattern(NetworkTypePattern::Tether()) &&
+              !tether_network_list_.empty()
+          ? tether_network_list_[0]->AsNetworkState()
+          : nullptr;
+
+  // Active Tether networks are next.
+  if (first_tether_network && first_tether_network->IsConnectingOrConnected())
+    return first_tether_network;
+
+  // Other active networks are next.
+  if (first_network && first_network->IsConnectingOrConnected())
+    return first_network;
+
+  // Non-active Tether networks are next.
+  if (first_tether_network)
+    return first_tether_network;
+
+  // Other networks are last.
+  return first_network;
 }
 
 std::string NetworkStateHandler::FormattedHardwareAddressForType(

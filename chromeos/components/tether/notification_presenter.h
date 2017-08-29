@@ -16,6 +16,12 @@ namespace tether {
 
 class NotificationPresenter {
  public:
+  enum class PotentialHotspotNotificationState {
+    SINGLE_HOTSPOT_NEARBY_SHOWN,
+    MULTIPLE_HOTSPOTS_NEARBY_SHOWN,
+    NO_HOTSPOT_NOTIFICATION_SHOWN
+  };
+
   NotificationPresenter() {}
   virtual ~NotificationPresenter() {}
 
@@ -28,6 +34,10 @@ class NotificationPresenter {
   // Notifies the user that multiple nearby devices can potentially provide
   // tether hotspots.
   virtual void NotifyMultiplePotentialHotspotsNearby() = 0;
+
+  // Returns the state of the "potential hotspot(s)" notification.
+  virtual PotentialHotspotNotificationState
+  GetPotentialHotspotNotificationState() = 0;
 
   // Removes the notification created by either NotifyPotentialHotspotNearby()
   // or NotifyMultiplePotentialHotspotsNearby(), or does nothing if that

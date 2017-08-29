@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef CHROMEOS_COMPONENTS_TETHER_NOTIFICATION_REMOVER_H_
+#define CHROMEOS_COMPONENTS_TETHER_NOTIFICATION_REMOVER_H_
+
 #include "chromeos/components/tether/active_host.h"
 #include "chromeos/components/tether/host_scan_cache.h"
 #include "chromeos/network/network_state_handler_observer.h"
@@ -34,7 +37,7 @@ class NotificationRemover : public HostScanCache::Observer,
   void OnCacheBecameEmpty() override;
 
   // NetworkStateHandlerObserver:
-  void DefaultNetworkChanged(const NetworkState* network) override;
+  void NetworkConnectionStateChanged(const NetworkState* network) override;
 
   // ActiveHost::Observer:
   void OnActiveHostChanged(
@@ -52,3 +55,5 @@ class NotificationRemover : public HostScanCache::Observer,
 }  // namespace tether
 
 }  // namespace chromeos
+
+#endif  // CHROMEOS_COMPONENTS_TETHER_NOTIFICATION_REMOVER_H_

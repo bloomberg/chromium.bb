@@ -158,7 +158,8 @@ void TetherNotificationPresenter::NotifyPotentialHotspotNearby(
                << "device with name \"" << remote_device.name << "\". "
                << "Notification ID = " << kPotentialHotspotNotificationId;
 
-  hotspot_nearby_device_ = remote_device;
+  hotspot_nearby_device_id_ =
+      base::MakeUnique<std::string>(remote_device.GetDeviceId());
 
   message_center::RichNotificationData rich_notification_data;
   rich_notification_data.buttons.push_back(
@@ -170,7 +171,7 @@ void TetherNotificationPresenter::NotifyPotentialHotspotNearby(
           IDS_TETHER_NOTIFICATION_WIFI_AVAILABLE_ONE_DEVICE_TITLE),
       l10n_util::GetStringFUTF16(
           IDS_TETHER_NOTIFICATION_WIFI_AVAILABLE_ONE_DEVICE_MESSAGE,
-          base::ASCIIToUTF16(hotspot_nearby_device_.name)),
+          base::ASCIIToUTF16(remote_device.name)),
       rich_notification_data, signal_strength));
 }
 
@@ -179,12 +180,29 @@ void TetherNotificationPresenter::NotifyMultiplePotentialHotspotsNearby() {
                << "multiple devices. Notification ID = "
                << kPotentialHotspotNotificationId;
 
+  hotspot_nearby_device_id_.reset();
+
   ShowNotification(CreateNotificationWithMediumSignalStrengthIcon(
       kPotentialHotspotNotificationId,
       l10n_util::GetStringUTF16(
           IDS_TETHER_NOTIFICATION_WIFI_AVAILABLE_MULTIPLE_DEVICES_TITLE),
       l10n_util::GetStringUTF16(
           IDS_TETHER_NOTIFICATION_WIFI_AVAILABLE_MULTIPLE_DEVICES_MESSAGE)));
+}
+
+NotificationPresenter::PotentialHotspotNotificationState
+TetherNotificationPresenter::GetPotentialHotspotNotificationState() {
+  if (!message_center_->FindVisibleNotificationById(
+          kPotentialHotspotNotificationId)) {
+    return NotificationPresenter::PotentialHotspotNotificationState::
+        NO_HOTSPOT_NOTIFICATION_SHOWN;
+  }
+
+  return hotspot_nearby_device_id_
+             ? NotificationPresenter::PotentialHotspotNotificationState::
+                   SINGLE_HOTSPOT_NEARBY_SHOWN
+             : NotificationPresenter::PotentialHotspotNotificationState::
+                   MULTIPLE_HOTSPOTS_NEARBY_SHOWN;
 }
 
 void TetherNotificationPresenter::RemovePotentialHotspotNotification() {
@@ -267,14 +285,15 @@ void TetherNotificationPresenter::OnNotificationClicked(
 void TetherNotificationPresenter::OnNotificationButtonClicked(
     const std::string& notification_id,
     int button_index) {
-  PA_LOG(INFO) << "Button at index " << button_index
-               << " of notification with ID " << notification_id
-               << " was clicked.";
+  if (notification_id != kPotentialHotspotNotificationId)
+    return;
 
-  if (notification_id == kPotentialHotspotNotificationId && button_index == 0) {
-    network_connect_->ConnectToNetworkId(hotspot_nearby_device_.GetDeviceId());
-  }
-  message_center_->RemoveNotification(notification_id, true /* by_user */);
+  DCHECK(button_index == 0);
+  DCHECK(hotspot_nearby_device_id_);
+  PA_LOG(INFO) << "\"Potential hotspot nearby\" notification button was "
+               << "clicked.";
+  network_connect_->ConnectToNetworkId(*hotspot_nearby_device_id_);
+  RemoveNotificationIfVisible(kPotentialHotspotNotificationId);
 }
 
 void TetherNotificationPresenter::SetSettingsUiDelegateForTesting(
@@ -301,11 +320,14 @@ void TetherNotificationPresenter::OpenSettingsAndRemoveNotification(
 
   settings_ui_delegate_->ShowSettingsSubPageForProfile(profile_,
                                                        settings_subpage);
-  message_center_->RemoveNotification(notification_id, true /* by_user */);
+  RemoveNotificationIfVisible(notification_id);
 }
 
 void TetherNotificationPresenter::RemoveNotificationIfVisible(
     const std::string& notification_id) {
+  if (notification_id == kPotentialHotspotNotificationId)
+    hotspot_nearby_device_id_.reset();
+
   if (!message_center_->FindVisibleNotificationById(notification_id))
     return;
 

@@ -15,7 +15,8 @@ namespace tether {
 FakeNotificationPresenter::FakeNotificationPresenter()
     : NotificationPresenter(),
       potential_hotspot_state_(
-          PotentialHotspotNotificationState::NO_HOTSPOT_NOTIFICATION_SHOWN),
+          NotificationPresenter::PotentialHotspotNotificationState::
+              NO_HOTSPOT_NOTIFICATION_SHOWN),
       is_setup_required_notification_shown_(false),
       is_connection_failed_notification_shown_(false) {}
 
@@ -23,26 +24,32 @@ FakeNotificationPresenter::~FakeNotificationPresenter() {}
 
 cryptauth::RemoteDevice&
 FakeNotificationPresenter::GetPotentialHotspotRemoteDevice() {
-  EXPECT_EQ(PotentialHotspotNotificationState::SINGLE_HOTSPOT_NEARBY_SHOWN,
-            potential_hotspot_state_);
+  EXPECT_EQ(potential_hotspot_state_,
+            NotificationPresenter::PotentialHotspotNotificationState::
+                SINGLE_HOTSPOT_NEARBY_SHOWN);
   return potential_hotspot_remote_device_;
 }
 
 void FakeNotificationPresenter::NotifyPotentialHotspotNearby(
     const cryptauth::RemoteDevice& remote_device,
     int signal_strength) {
-  potential_hotspot_state_ =
+  potential_hotspot_state_ = NotificationPresenter::
       PotentialHotspotNotificationState::SINGLE_HOTSPOT_NEARBY_SHOWN;
   potential_hotspot_remote_device_ = remote_device;
 }
 
 void FakeNotificationPresenter::NotifyMultiplePotentialHotspotsNearby() {
-  potential_hotspot_state_ =
+  potential_hotspot_state_ = NotificationPresenter::
       PotentialHotspotNotificationState::MULTIPLE_HOTSPOTS_NEARBY_SHOWN;
 }
 
+NotificationPresenter::PotentialHotspotNotificationState
+FakeNotificationPresenter::GetPotentialHotspotNotificationState() {
+  return potential_hotspot_state_;
+}
+
 void FakeNotificationPresenter::RemovePotentialHotspotNotification() {
-  potential_hotspot_state_ =
+  potential_hotspot_state_ = NotificationPresenter::
       PotentialHotspotNotificationState::NO_HOTSPOT_NOTIFICATION_SHOWN;
 }
 

@@ -60,12 +60,12 @@ class NotificationRemoverTest : public NetworkStateTest {
     EXPECT_TRUE(host_scan_cache_->empty());
   }
 
-  void ConnectToWifiNetwork() {
+  void StartConnectingToWifiNetwork() {
     std::stringstream ss;
     ss << "{"
        << "  \"GUID\": \"wifiNetworkGuid\","
        << "  \"Type\": \"" << shill::kTypeWifi << "\","
-       << "  \"State\": \"" << shill::kStateOnline << "\""
+       << "  \"State\": \"" << shill::kStateConfiguration << "\""
        << "}";
 
     ConfigureService(ss.str());
@@ -87,24 +87,24 @@ class NotificationRemoverTest : public NetworkStateTest {
 TEST_F(NotificationRemoverTest, TestCacheBecameEmpty) {
   NotifyPotentialHotspotNearby();
   SetAndRemoveHostScanResult();
-  EXPECT_EQ(FakeNotificationPresenter::PotentialHotspotNotificationState::
+  EXPECT_EQ(NotificationPresenter::PotentialHotspotNotificationState::
                 NO_HOTSPOT_NOTIFICATION_SHOWN,
-            notification_presenter_->potential_hotspot_state());
+            notification_presenter_->GetPotentialHotspotNotificationState());
 
   notification_presenter_->NotifyMultiplePotentialHotspotsNearby();
   SetAndRemoveHostScanResult();
-  EXPECT_EQ(FakeNotificationPresenter::PotentialHotspotNotificationState::
+  EXPECT_EQ(NotificationPresenter::PotentialHotspotNotificationState::
                 NO_HOTSPOT_NOTIFICATION_SHOWN,
-            notification_presenter_->potential_hotspot_state());
+            notification_presenter_->GetPotentialHotspotNotificationState());
 }
 
-TEST_F(NotificationRemoverTest, TestConnectToWifiNetwork) {
+TEST_F(NotificationRemoverTest, TestStartConnectingToWifiNetwork) {
   NotifyPotentialHotspotNearby();
 
-  ConnectToWifiNetwork();
-  EXPECT_EQ(FakeNotificationPresenter::PotentialHotspotNotificationState::
+  StartConnectingToWifiNetwork();
+  EXPECT_EQ(NotificationPresenter::PotentialHotspotNotificationState::
                 NO_HOTSPOT_NOTIFICATION_SHOWN,
-            notification_presenter_->potential_hotspot_state());
+            notification_presenter_->GetPotentialHotspotNotificationState());
 }
 
 TEST_F(NotificationRemoverTest, TestTetherDisabled) {
@@ -113,9 +113,9 @@ TEST_F(NotificationRemoverTest, TestTetherDisabled) {
   notification_presenter_->NotifyConnectionToHostFailed();
 
   notification_remover_.reset();
-  EXPECT_EQ(FakeNotificationPresenter::PotentialHotspotNotificationState::
+  EXPECT_EQ(NotificationPresenter::PotentialHotspotNotificationState::
                 NO_HOTSPOT_NOTIFICATION_SHOWN,
-            notification_presenter_->potential_hotspot_state());
+            notification_presenter_->GetPotentialHotspotNotificationState());
   EXPECT_FALSE(notification_presenter_->is_setup_required_notification_shown());
   EXPECT_FALSE(
       notification_presenter_->is_connection_failed_notification_shown());
@@ -125,15 +125,15 @@ TEST_F(NotificationRemoverTest, TestActiveHostConnecting) {
   NotifyPotentialHotspotNearby();
 
   active_host_->SetActiveHostDisconnected();
-  EXPECT_EQ(FakeNotificationPresenter::PotentialHotspotNotificationState::
+  EXPECT_EQ(NotificationPresenter::PotentialHotspotNotificationState::
                 SINGLE_HOTSPOT_NEARBY_SHOWN,
-            notification_presenter_->potential_hotspot_state());
+            notification_presenter_->GetPotentialHotspotNotificationState());
 
   active_host_->SetActiveHostConnecting("testDeviceId",
                                         host_scan_test_util::kTetherGuid0);
-  EXPECT_EQ(FakeNotificationPresenter::PotentialHotspotNotificationState::
+  EXPECT_EQ(NotificationPresenter::PotentialHotspotNotificationState::
                 NO_HOTSPOT_NOTIFICATION_SHOWN,
-            notification_presenter_->potential_hotspot_state());
+            notification_presenter_->GetPotentialHotspotNotificationState());
 }
 
 }  // namespace tether

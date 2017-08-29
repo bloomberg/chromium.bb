@@ -486,6 +486,80 @@ TEST_F(TetherNotificationPresenterTest,
   VerifySettingsNotOpened();
 }
 
+TEST_F(TetherNotificationPresenterTest,
+       TestGetPotentialHotspotNotificationState) {
+  EXPECT_EQ(notification_presenter_->GetPotentialHotspotNotificationState(),
+            NotificationPresenter::PotentialHotspotNotificationState::
+                NO_HOTSPOT_NOTIFICATION_SHOWN);
+
+  // Notify single host available and remove.
+  notification_presenter_->NotifyPotentialHotspotNearby(
+      test_device_, kTestNetworkSignalStrength);
+  EXPECT_EQ(notification_presenter_->GetPotentialHotspotNotificationState(),
+            NotificationPresenter::PotentialHotspotNotificationState::
+                SINGLE_HOTSPOT_NEARBY_SHOWN);
+  notification_presenter_->RemovePotentialHotspotNotification();
+  EXPECT_EQ(notification_presenter_->GetPotentialHotspotNotificationState(),
+            NotificationPresenter::PotentialHotspotNotificationState::
+                NO_HOTSPOT_NOTIFICATION_SHOWN);
+
+  // Notify single host available and remove by tapping notification.
+  notification_presenter_->NotifyPotentialHotspotNearby(
+      test_device_, kTestNetworkSignalStrength);
+  EXPECT_EQ(notification_presenter_->GetPotentialHotspotNotificationState(),
+            NotificationPresenter::PotentialHotspotNotificationState::
+                SINGLE_HOTSPOT_NEARBY_SHOWN);
+  test_message_center_->NotifyNotificationTapped(
+      GetPotentialHotspotNotificationId());
+  EXPECT_EQ(notification_presenter_->GetPotentialHotspotNotificationState(),
+            NotificationPresenter::PotentialHotspotNotificationState::
+                NO_HOTSPOT_NOTIFICATION_SHOWN);
+
+  // Notify single host available and remove by tapping notification button.
+  notification_presenter_->NotifyPotentialHotspotNearby(
+      test_device_, kTestNetworkSignalStrength);
+  EXPECT_EQ(notification_presenter_->GetPotentialHotspotNotificationState(),
+            NotificationPresenter::PotentialHotspotNotificationState::
+                SINGLE_HOTSPOT_NEARBY_SHOWN);
+  test_message_center_->NotifyNotificationButtonTapped(
+      GetPotentialHotspotNotificationId(), 0 /* button_index */);
+  EXPECT_EQ(notification_presenter_->GetPotentialHotspotNotificationState(),
+            NotificationPresenter::PotentialHotspotNotificationState::
+                NO_HOTSPOT_NOTIFICATION_SHOWN);
+
+  // Notify single, then multiple hosts available and remove.
+  notification_presenter_->NotifyPotentialHotspotNearby(
+      test_device_, kTestNetworkSignalStrength);
+  EXPECT_EQ(notification_presenter_->GetPotentialHotspotNotificationState(),
+            NotificationPresenter::PotentialHotspotNotificationState::
+                SINGLE_HOTSPOT_NEARBY_SHOWN);
+  notification_presenter_->NotifyMultiplePotentialHotspotsNearby();
+  EXPECT_EQ(notification_presenter_->GetPotentialHotspotNotificationState(),
+            NotificationPresenter::PotentialHotspotNotificationState::
+                MULTIPLE_HOTSPOTS_NEARBY_SHOWN);
+  notification_presenter_->RemovePotentialHotspotNotification();
+  EXPECT_EQ(notification_presenter_->GetPotentialHotspotNotificationState(),
+            NotificationPresenter::PotentialHotspotNotificationState::
+                NO_HOTSPOT_NOTIFICATION_SHOWN);
+
+  // Notify single, then multiple hosts available and remove by tapping
+  // notification.
+  notification_presenter_->NotifyPotentialHotspotNearby(
+      test_device_, kTestNetworkSignalStrength);
+  EXPECT_EQ(notification_presenter_->GetPotentialHotspotNotificationState(),
+            NotificationPresenter::PotentialHotspotNotificationState::
+                SINGLE_HOTSPOT_NEARBY_SHOWN);
+  notification_presenter_->NotifyMultiplePotentialHotspotsNearby();
+  EXPECT_EQ(notification_presenter_->GetPotentialHotspotNotificationState(),
+            NotificationPresenter::PotentialHotspotNotificationState::
+                MULTIPLE_HOTSPOTS_NEARBY_SHOWN);
+  test_message_center_->NotifyNotificationTapped(
+      GetPotentialHotspotNotificationId());
+  EXPECT_EQ(notification_presenter_->GetPotentialHotspotNotificationState(),
+            NotificationPresenter::PotentialHotspotNotificationState::
+                NO_HOTSPOT_NOTIFICATION_SHOWN);
+}
+
 }  // namespace tether
 
 }  // namespace chromeos

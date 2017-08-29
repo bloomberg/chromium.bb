@@ -17,18 +17,8 @@ namespace tether {
 
 class FakeNotificationPresenter : public NotificationPresenter {
  public:
-  enum class PotentialHotspotNotificationState {
-    SINGLE_HOTSPOT_NEARBY_SHOWN,
-    MULTIPLE_HOTSPOTS_NEARBY_SHOWN,
-    NO_HOTSPOT_NOTIFICATION_SHOWN
-  };
-
   FakeNotificationPresenter();
   ~FakeNotificationPresenter() override;
-
-  PotentialHotspotNotificationState potential_hotspot_state() {
-    return potential_hotspot_state_;
-  }
 
   // Note: This function fails a test if potential_hotspot_state() is not
   // SINGLE_HOTSPOT_NEARBY_SHOWN when called.
@@ -51,6 +41,8 @@ class FakeNotificationPresenter : public NotificationPresenter {
       const cryptauth::RemoteDevice& remote_device,
       int signal_strength) override;
   void NotifyMultiplePotentialHotspotsNearby() override;
+  PotentialHotspotNotificationState GetPotentialHotspotNotificationState()
+      override;
   void RemovePotentialHotspotNotification() override;
   void NotifySetupRequired(const std::string& device_name) override;
   void RemoveSetupRequiredNotification() override;
