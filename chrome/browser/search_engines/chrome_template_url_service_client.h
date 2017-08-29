@@ -31,7 +31,6 @@ class ChromeTemplateURLServiceClient : public TemplateURLServiceClient,
                                    TemplateURLID id,
                                    const base::string16& term) override;
   void AddKeywordGeneratedVisit(const GURL& url) override;
-  bool IsOmniboxExtensionURL(const std::string& url) override;
 
   // history::HistoryServiceObserver:
   void OnURLVisited(history::HistoryService* history_service,

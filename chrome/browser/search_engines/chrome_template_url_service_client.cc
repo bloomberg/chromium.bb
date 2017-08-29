@@ -7,7 +7,6 @@
 #include "base/memory/ptr_util.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/search_engines/template_url_service.h"
-#include "extensions/common/constants.h"
 
 ChromeTemplateURLServiceClient::ChromeTemplateURLServiceClient(
     history::HistoryService* history_service)
@@ -61,11 +60,6 @@ void ChromeTemplateURLServiceClient::AddKeywordGeneratedVisit(const GURL& url) {
                               history::RedirectList(),
                               ui::PAGE_TRANSITION_KEYWORD_GENERATED,
                               history::SOURCE_BROWSED, false);
-}
-
-bool ChromeTemplateURLServiceClient::IsOmniboxExtensionURL(
-    const std::string& url) {
-  return GURL(url).SchemeIs(extensions::kExtensionScheme);
 }
 
 void ChromeTemplateURLServiceClient::OnURLVisited(

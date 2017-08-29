@@ -163,7 +163,6 @@ class TestTemplateURLServiceClient : public TemplateURLServiceClient {
        TemplateURLID id,
        const base::string16& term) override {}
    void AddKeywordGeneratedVisit(const GURL& url) override {}
-   bool IsOmniboxExtensionURL(const std::string& url) override { return false; }
 };
 
 }  // namespace
