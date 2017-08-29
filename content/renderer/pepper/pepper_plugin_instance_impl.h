@@ -420,8 +420,8 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   void MoveRangeSelectionExtent(const gfx::PointF& extent) override;
   void SetSelectionBounds(const gfx::PointF& base,
                           const gfx::PointF& extent) override;
-  bool CanEditText();
-  void ReplaceSelection(const std::string& text);
+  bool CanEditText() override;
+  void ReplaceSelection(const std::string& text) override;
 
   // PPB_Instance_API implementation.
   PP_Bool BindGraphics(PP_Instance instance, PP_Resource device) override;

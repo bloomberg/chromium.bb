@@ -1496,15 +1496,14 @@ void PepperPluginInstanceImpl::SetSelectionBounds(const gfx::PointF& base,
 }
 
 bool PepperPluginInstanceImpl::CanEditText() {
-  return LoadPdfInterface()
-             ? PP_ToBool(plugin_pdf_interface_->CanEditText(pp_instance()))
-             : false;
+  if (!LoadPdfInterface())
+    return false;
+  return PP_ToBool(plugin_pdf_interface_->CanEditText(pp_instance()));
 }
 
 void PepperPluginInstanceImpl::ReplaceSelection(const std::string& text) {
   if (!LoadPdfInterface())
     return;
-
   plugin_pdf_interface_->ReplaceSelection(pp_instance(), text.c_str());
 }
 

@@ -47,6 +47,8 @@ class FakePepperPluginInstance : public PepperPluginInstance {
   void MoveRangeSelectionExtent(const gfx::PointF& extent) override;
   void SetSelectionBounds(const gfx::PointF& base,
                           const gfx::PointF& extent) override;
+  bool CanEditText() override;
+  void ReplaceSelection(const std::string& text) override;
 
  private:
   GURL gurl_;
