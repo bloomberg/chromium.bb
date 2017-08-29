@@ -186,7 +186,10 @@ class WebVrLatencyTest(object):
 
   def _SaveResultsToFile(self):
     outpath = None
-    if (hasattr(self._args, 'isolated_script_test_chartjson_output') and
+    if (hasattr(self._args, 'isolated_script_test_perf_output') and
+        self._args.isolated_script_test_perf_output):
+      outpath = self._args.isolated_script_test_perf_output
+    elif (hasattr(self._args, 'isolated_script_test_chartjson_output') and
         self._args.isolated_script_test_chartjson_output):
       outpath = self._args.isolated_script_test_chartjson_output
     else:

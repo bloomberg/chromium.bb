@@ -105,10 +105,17 @@ def main():
     if rc == 0:
       rc = 1  # Signal an abnormal exit.
 
-  if chartjson_results_present and args.isolated_script_test_chartjson_output:
-    chartjson_output_file = \
-      open(args.isolated_script_test_chartjson_output, 'w')
-    json.dump(chartresults, chartjson_output_file)
+  if chartjson_results_present:
+    if args.isolated_script_test_perf_output:
+      filename = args.isolated_script_test_perf_output
+    elif args.isolated_script_test_chartjson_output:
+      filename = args.isolated_script_test_chartjson_output
+    else:
+      filename = None
+
+    if filename is not None:
+      with open(filename, 'w') as chartjson_output_file:
+        json.dump(chartresults, chartjson_output_file)
 
   json.dump(json_test_results, args.isolated_script_test_output)
   return rc
