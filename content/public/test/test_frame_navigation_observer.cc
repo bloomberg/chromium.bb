@@ -69,6 +69,8 @@ void TestFrameNavigationObserver::DidFinishNavigation(
     return;
   }
 
+  transition_type_ = navigation_handle->GetPageTransition();
+
   has_committed_ = true;
   if (wait_for_commit_)
     run_loop_.Quit();
