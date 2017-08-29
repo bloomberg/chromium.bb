@@ -237,6 +237,9 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // Called by an already added widget when its importance changes.
   virtual void UpdateWidgetImportance(ChildProcessImportance old_value,
                                       ChildProcessImportance new_value) = 0;
+
+  // Return the highest importance of all widgets in this process.
+  virtual ChildProcessImportance ComputeEffectiveImportance() = 0;
 #endif
 
   // Sets a flag indicating that the process can be abnormally terminated.

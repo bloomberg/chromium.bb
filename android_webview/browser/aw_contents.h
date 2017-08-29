@@ -12,7 +12,6 @@
 
 #include "android_webview/browser/aw_browser_permission_request_delegate.h"
 #include "android_webview/browser/aw_render_process_gone_delegate.h"
-#include "android_webview/browser/aw_renderer_priority_manager.h"
 #include "android_webview/browser/aw_safe_browsing_ui_manager.h"
 #include "android_webview/browser/browser_view_renderer.h"
 #include "android_webview/browser/browser_view_renderer_client.h"
@@ -27,7 +26,6 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/web_contents_observer.h"
 
 class SkBitmap;
@@ -71,7 +69,6 @@ class AwContents : public FindHelper::Listener,
                    public AwBrowserPermissionRequestDelegate,
                    public AwRenderProcessGoneDelegate,
                    public content::WebContentsObserver,
-                   public content::RenderProcessHostObserver,
                    public AwSafeBrowsingUIManager::UIManagerClient {
  public:
   // Returns the AwContents instance associated with |web_contents|, or NULL.
@@ -219,21 +216,8 @@ class AwContents : public FindHelper::Listener,
       jboolean value,
       const base::android::JavaParamRef<jstring>& origin);
 
-  AwRendererPriorityManager::RendererPriority GetCurrentRendererPriority();
-  jint GetRendererCurrentPriority(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj);
-  jint GetRendererRequestedPriority(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj);
-  jboolean GetRendererPriorityWaivedWhenNotVisible(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj);
-  void SetRendererPriorityPolicy(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
-      jint rendererRequestedPriority,
-      jboolean waivedhenNotVisible);
+  jint GetEffectivePriority(JNIEnv* env,
+                            const base::android::JavaParamRef<jobject>& obj);
 
   // PermissionRequestHandlerClient implementation.
   void OnPermissionRequest(base::android::ScopedJavaLocalRef<jobject> j_request,
@@ -359,9 +343,6 @@ class AwContents : public FindHelper::Listener,
   void DidAttachInterstitialPage() override;
   void DidDetachInterstitialPage() override;
 
-  // content::RenderProcessHostObserver overrides
-  void RenderProcessReady(content::RenderProcessHost* host) override;
-
   // AwSafeBrowsingUIManager::UIManagerClient implementation
   bool CanShowInterstitial() override;
   int GetErrorUiType() override;
@@ -387,12 +368,6 @@ class AwContents : public FindHelper::Listener,
 
   void SetAwGLFunctor(AwGLFunctor* functor);
 
-  AwRendererPriorityManager* GetAwRendererPriorityManager();
-  AwRendererPriorityManager::RendererPriority GetComputedRendererPriority();
-  void UpdateRendererPriority(
-      AwRendererPriorityManager::RendererPriority base_priority);
-  void UpdateRendererPriority();
-
   JavaObjectWeakGlobalRef java_ref_;
   AwGLFunctor* functor_;
   BrowserViewRenderer browser_view_renderer_;  // Must outlive |web_contents_|.
@@ -415,9 +390,6 @@ class AwContents : public FindHelper::Listener,
   std::list<OriginCallback> pending_geolocation_prompts_;
 
   GLViewRendererManager::Key renderer_manager_key_;
-
-  AwRendererPriorityManager::RendererPriority renderer_requested_priority_;
-  bool renderer_priority_waived_when_not_visible_;
 
   DISALLOW_COPY_AND_ASSIGN(AwContents);
 };

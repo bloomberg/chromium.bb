@@ -344,8 +344,10 @@ public class WebApkActivity extends WebappActivity {
         if (isForWebApk) {
             boolean isExternalService = false;
             boolean bindToCaller = false;
+            boolean ignoreVisibilityForImportance = false;
             params = new ChildProcessCreationParams(getWebappInfo().webApkPackageName(),
-                    isExternalService, LibraryProcessType.PROCESS_CHILD, bindToCaller);
+                    isExternalService, LibraryProcessType.PROCESS_CHILD, bindToCaller,
+                    ignoreVisibilityForImportance);
         }
         ChildProcessCreationParams.registerDefault(params);
     }

@@ -11120,34 +11120,28 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, TestChildProcessImportance) {
   FrameTreeNode* child = root->child_at(0);
 
   // Importance should survive initial navigation.
-  EXPECT_EQ(ChildProcessImportance::MODERATE,
-            static_cast<RenderProcessHostImpl*>(
-                root->current_frame_host()->GetProcess())
-                ->GetWidgetImportanceForTesting());
-  EXPECT_EQ(ChildProcessImportance::MODERATE,
-            static_cast<RenderProcessHostImpl*>(
-                child->current_frame_host()->GetProcess())
-                ->GetWidgetImportanceForTesting());
+  EXPECT_EQ(
+      ChildProcessImportance::MODERATE,
+      root->current_frame_host()->GetProcess()->ComputeEffectiveImportance());
+  EXPECT_EQ(
+      ChildProcessImportance::MODERATE,
+      child->current_frame_host()->GetProcess()->ComputeEffectiveImportance());
 
   // Check setting importance.
   web_contents()->SetImportance(ChildProcessImportance::NORMAL);
-  EXPECT_EQ(ChildProcessImportance::NORMAL,
-            static_cast<RenderProcessHostImpl*>(
-                root->current_frame_host()->GetProcess())
-                ->GetWidgetImportanceForTesting());
-  EXPECT_EQ(ChildProcessImportance::NORMAL,
-            static_cast<RenderProcessHostImpl*>(
-                child->current_frame_host()->GetProcess())
-                ->GetWidgetImportanceForTesting());
+  EXPECT_EQ(
+      ChildProcessImportance::NORMAL,
+      root->current_frame_host()->GetProcess()->ComputeEffectiveImportance());
+  EXPECT_EQ(
+      ChildProcessImportance::NORMAL,
+      child->current_frame_host()->GetProcess()->ComputeEffectiveImportance());
   web_contents()->SetImportance(ChildProcessImportance::IMPORTANT);
-  EXPECT_EQ(ChildProcessImportance::IMPORTANT,
-            static_cast<RenderProcessHostImpl*>(
-                root->current_frame_host()->GetProcess())
-                ->GetWidgetImportanceForTesting());
-  EXPECT_EQ(ChildProcessImportance::IMPORTANT,
-            static_cast<RenderProcessHostImpl*>(
-                child->current_frame_host()->GetProcess())
-                ->GetWidgetImportanceForTesting());
+  EXPECT_EQ(
+      ChildProcessImportance::IMPORTANT,
+      root->current_frame_host()->GetProcess()->ComputeEffectiveImportance());
+  EXPECT_EQ(
+      ChildProcessImportance::IMPORTANT,
+      child->current_frame_host()->GetProcess()->ComputeEffectiveImportance());
 
   // Check importance is maintained if child navigates to new domain.
   int old_child_process_id = child->current_frame_host()->GetProcess()->GetID();
@@ -11159,10 +11153,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, TestChildProcessImportance) {
   }
   int new_child_process_id = child->current_frame_host()->GetProcess()->GetID();
   EXPECT_NE(old_child_process_id, new_child_process_id);
-  EXPECT_EQ(ChildProcessImportance::IMPORTANT,
-            static_cast<RenderProcessHostImpl*>(
-                child->current_frame_host()->GetProcess())
-                ->GetWidgetImportanceForTesting());
+  EXPECT_EQ(
+      ChildProcessImportance::IMPORTANT,
+      child->current_frame_host()->GetProcess()->ComputeEffectiveImportance());
 
   // Check importance is maintained if root navigates to new domain.
   int old_root_process_id = root->current_frame_host()->GetProcess()->GetID();
@@ -11175,10 +11168,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, TestChildProcessImportance) {
   EXPECT_EQ(0u, root->child_count());
   int new_root_process_id = root->current_frame_host()->GetProcess()->GetID();
   EXPECT_NE(old_root_process_id, new_root_process_id);
-  EXPECT_EQ(ChildProcessImportance::IMPORTANT,
-            static_cast<RenderProcessHostImpl*>(
-                root->current_frame_host()->GetProcess())
-                ->GetWidgetImportanceForTesting());
+  EXPECT_EQ(
+      ChildProcessImportance::IMPORTANT,
+      root->current_frame_host()->GetProcess()->ComputeEffectiveImportance());
 
   // Check interstitial maintains importance.
   TestInterstitialDelegate* delegate = new TestInterstitialDelegate;
@@ -11189,15 +11181,14 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, TestChildProcessImportance) {
       contents_impl, contents_impl, true, interstitial_url, delegate);
   interstitial->Show();
   WaitForInterstitialAttach(contents_impl);
-  RenderProcessHostImpl* interstitial_process =
-      static_cast<RenderProcessHostImpl*>(
-          interstitial->GetMainFrame()->GetProcess());
+  RenderProcessHost* interstitial_process =
+      interstitial->GetMainFrame()->GetProcess();
   EXPECT_EQ(ChildProcessImportance::IMPORTANT,
-            interstitial_process->GetWidgetImportanceForTesting());
+            interstitial_process->ComputeEffectiveImportance());
 
   web_contents()->SetImportance(ChildProcessImportance::MODERATE);
   EXPECT_EQ(ChildProcessImportance::MODERATE,
-            interstitial_process->GetWidgetImportanceForTesting());
+            interstitial_process->ComputeEffectiveImportance());
 }
 
 // Tests for Android TouchSelectionEditing.

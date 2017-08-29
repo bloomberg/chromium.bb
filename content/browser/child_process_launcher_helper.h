@@ -12,7 +12,6 @@
 #include "base/process/kill.h"
 #include "base/process/process.h"
 #include "build/build_config.h"
-#include "content/public/browser/android/child_process_importance.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/result_codes.h"
 #include "mojo/edk/embedder/embedder.h"

@@ -89,6 +89,7 @@ class MockRenderProcessHost : public RenderProcessHost {
 #if defined(OS_ANDROID)
   void UpdateWidgetImportance(ChildProcessImportance old_value,
                               ChildProcessImportance new_value) override;
+  ChildProcessImportance ComputeEffectiveImportance() override;
 #endif
   void SetSuddenTerminationAllowed(bool allowed) override;
   bool SuddenTerminationAllowed() const override;

@@ -167,9 +167,10 @@ public class ChildProcessLauncherHelperTest {
 
         // Launch a service from this process. Since slot 0 is already bound by the Helper, it
         // will fail to start and the ChildProcessLauncher will retry and use the slot 1.
-        ChildProcessCreationParams creationParams = new ChildProcessCreationParams(
-                context.getPackageName(), false /* isExternalService */,
-                LibraryProcessType.PROCESS_CHILD, true /* bindToCallerCheck */);
+        ChildProcessCreationParams creationParams =
+                new ChildProcessCreationParams(context.getPackageName(),
+                        false /* isExternalService */, LibraryProcessType.PROCESS_CHILD,
+                        true /* bindToCallerCheck */, false /* ignoreVisibilityForImportance */);
         ChildProcessLauncherHelper launcher = startSandboxedChildProcessWithCreationParams(
                 creationParams, BLOCK_UNTIL_SETUP, true /* doSetupConnection */);
 
@@ -281,9 +282,10 @@ public class ChildProcessLauncherHelperTest {
     @Feature({"ProcessManagement"})
     public void testWarmUpWithBindToCaller() {
         Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
-        ChildProcessCreationParams creationParams = new ChildProcessCreationParams(
-                context.getPackageName(), false /* isExternalService */,
-                LibraryProcessType.PROCESS_CHILD, true /* bindToCallerCheck */);
+        ChildProcessCreationParams creationParams =
+                new ChildProcessCreationParams(context.getPackageName(),
+                        false /* isExternalService */, LibraryProcessType.PROCESS_CHILD,
+                        true /* bindToCallerCheck */, false /* ignoreVisibilityForImportance */);
         testWarmUpWithCreationParams(creationParams);
     }
 
@@ -555,7 +557,8 @@ public class ChildProcessLauncherHelperTest {
         return packageName == null
                 ? null
                 : new ChildProcessCreationParams(packageName, false /* isExternalService */,
-                          LibraryProcessType.PROCESS_CHILD, false /* bindToCallerCheck */);
+                          LibraryProcessType.PROCESS_CHILD, false /* bindToCallerCheck */,
+                          false /* ignoreVisibilityForImportance */);
     }
 
     private static boolean hasSandboxedConnectionAllocatorForPackage(final String packageName) {
