@@ -42,6 +42,7 @@ InspectorTest.timelinePropertyFormatters = {
     allottedMilliseconds: "formatAsTypeName",
     timedOut: "formatAsTypeName",
     networkTime: "formatAsTypeName",
+    timing: "formatAsTypeName",
 };
 
 InspectorTest.InvalidationFormatters = {

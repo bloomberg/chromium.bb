@@ -1,0 +1,83 @@
+<html>
+<head>
+  <script src="../../inspector/inspector-test.js"></script>
+  <script src="../resources/heap-snapshot-test.js"></script>
+<script>
+
+function test() {
+  ProfilerTestRunner.runHeapSnapshotTestSuite([function testWeakReferencesDoNotAffectRetainedSize(next) {
+    function createHeapSnapshot() {
+      // Mocking results of running the following code:
+      // root = [new Uint8Array(1000), new Uint8Array(1000), new Uint8Array(1000)]
+      var builder = new ProfilerTestRunner.HeapSnapshotBuilder();
+      var rootNode = builder.rootNode;
+
+      var gcRootsNode = new ProfilerTestRunner.HeapNode('(GC roots)');
+      rootNode.linkNode(gcRootsNode, ProfilerTestRunner.HeapEdge.Type.element);
+
+      var windowNode = new ProfilerTestRunner.HeapNode('Window', 20);
+      rootNode.linkNode(windowNode, ProfilerTestRunner.HeapEdge.Type.shortcut);
+      gcRootsNode.linkNode(windowNode, ProfilerTestRunner.HeapEdge.Type.element);
+
+      var arrayNode = new ProfilerTestRunner.HeapNode('Array', 10);
+      windowNode.linkNode(arrayNode, ProfilerTestRunner.HeapEdge.Type.property, 'root');
+      var prevBufferNode = null;
+      for (var i = 0; i < 3; i++) {
+        var typedArrayNode = new ProfilerTestRunner.HeapNode('Uint8Array', 100);
+        arrayNode.linkNode(typedArrayNode, ProfilerTestRunner.HeapEdge.Type.element);
+
+        var bufferNode = new ProfilerTestRunner.HeapNode('ArrayBuffer', 1000);
+        typedArrayNode.linkNode(bufferNode, ProfilerTestRunner.HeapEdge.Type.internal);
+        if (prevBufferNode)
+          prevBufferNode.linkNode(bufferNode, ProfilerTestRunner.HeapEdge.Type.weak, 'weak_next');
+        prevBufferNode = bufferNode;
+      }
+
+      return builder.generateSnapshot();
+    }
+
+    ProfilerTestRunner.takeAndOpenSnapshot(createHeapSnapshot, step1);
+
+    function step1() {
+      ProfilerTestRunner.switchToView('Summary', step2);
+    }
+
+    function step2() {
+      var row = ProfilerTestRunner.findRow('Array');
+      TestRunner.assertEquals(true, !!row, '"Array" row');
+      ProfilerTestRunner.expandRow(row, step3);
+    }
+
+    function step3(row) {
+      TestRunner.assertEquals(1, row._count);
+      TestRunner.assertEquals(3310, row._retainedSize);
+      TestRunner.assertEquals(10, row._shallowSize);
+      ProfilerTestRunner.expandRow(row.children[0], step4);
+    }
+
+    function step4(arrayInstanceRow) {
+      TestRunner.assertEquals(2, arrayInstanceRow._distance);
+      TestRunner.assertEquals(3310, arrayInstanceRow._retainedSize);
+      TestRunner.assertEquals(10, arrayInstanceRow._shallowSize);
+
+      var children = arrayInstanceRow.children;
+      TestRunner.assertEquals(3, children.length);
+
+      for (var i = 0; i < children.length; i++) {
+        TestRunner.assertEquals('Uint8Array', children[i]._name);
+        TestRunner.assertEquals(100, children[i]._shallowSize);
+        TestRunner.assertEquals(1100, children[i]._retainedSize);
+      }
+      setTimeout(next, 0);
+    }
+  }]);
+}
+
+</script>
+</head>
+<body onload="runTest()">
+<pre>
+Tests that weak references are ignored when dominators are calculated and that weak references won't affect object's retained size.
+</pre>
+</body>
+</html>

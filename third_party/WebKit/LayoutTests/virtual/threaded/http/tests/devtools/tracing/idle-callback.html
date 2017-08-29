@@ -1,0 +1,52 @@
+<html>
+<head>
+<script src="../../../../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../../../../http/tests/inspector/timeline-test.js"></script>
+<script>
+function performActions(idleWarningAddOn)
+{
+    var callback;
+    var promise = new Promise((fulfill) => callback = fulfill);
+    var requestId = window.requestIdleCallback(idleCallback);
+    window.cancelIdleCallback(requestId);
+    window.requestIdleCallback(idleCallback);
+    function idleCallback()
+    {
+        window.requestIdleCallback(slowIdleCallback);
+    }
+    function slowIdleCallback(deadline)
+    {
+        while (deadline.timeRemaining()) {};
+        var addOnDeadline = performance.now() + idleWarningAddOn;
+        while (performance.now() < addOnDeadline) {};
+        if (callback)
+            callback();
+    }
+    return promise;
+}
+
+function test()
+{
+    InspectorTest.invokeAsyncWithTimeline(`(() => performActions(${TimelineModel.TimelineModel.Thresholds.IdleCallbackAddon}))`, finish);
+
+    function finish()
+    {
+        InspectorTest.printTimelineRecordsWithDetails("RequestIdleCallback");
+        InspectorTest.printTimelineRecordsWithDetails("CancelIdleCallback");
+        InspectorTest.printTimelineRecordsWithDetails("FireIdleCallback");
+        InspectorTest.completeTest();
+    }
+}
+
+if (!window.testRunner)
+    setTimeout(performActions, 2000);
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests Timeline events emitted when idle callback is scheduled and fired.
+</p>
+
+</body>
+</html>

@@ -1,0 +1,99 @@
+<html>
+<head>
+<script src="../../inspector/inspector-test.js"></script>
+<script src="../../inspector/timeline-test.js"></script>
+<script>
+
+// Save references to the worker objects to make sure they are not GC'ed.
+var worker1;
+var worker2;
+
+// The function ensures call stack for the current frame is captured.
+function makeDOMEvent()
+{
+    var e = document.createElement("div");
+    e.innerHTML = "<p>test</p>";
+    return e.lastChild.textContents;
+}
+
+function startWorkerAndRunTest()
+{
+    worker1 = new Worker("resources/worker.js");
+    worker1.postMessage("");
+
+    if (window.testRunner) {
+        testRunner.dumpAsText();
+        testRunner.waitUntilDone();
+    }
+
+    worker1.onmessage = function(event)
+    {
+        worker1.onmessage = null;
+        runTest();
+    }
+}
+
+function startSecondWorker()
+{
+    var callback;
+    var promise = new Promise((fulfill) => callback = fulfill);
+    // Make sure there is at least one trace event recorded for the first worker.
+    worker1.onmessage = gotResponseFromFirstWorker;
+    worker1.postMessage("");
+    makeDOMEvent();
+
+    function gotResponseFromFirstWorker()
+    {
+        worker1.onmessage = null;
+
+        worker2 = new Worker("resources/worker.js");
+        worker2.postMessage("");
+        worker2.onmessage = function(event)
+        {
+            worker2.onmessage = null;
+            makeDOMEvent();
+            callback();
+        }
+    }
+    return promise;
+}
+
+function test() {
+  PerformanceTestRunner.invokeWithTracing(
+      'startSecondWorker', processTracingEvents, 'disabled-by-default-devtools.timeline.stack', true);
+
+  function processTracingEvents() {
+    var mainThread = {name: 'Main Thread', events: PerformanceTestRunner.timelineModel()._mainThreadEvents};
+    processThread(new Set(['startSecondWorker', 'worker2.onmessage']), mainThread);
+    for (var thread of PerformanceTestRunner.timelineModel()._virtualThreads) {
+      if (!thread.isWorker())
+        continue;
+      processThread(new Set(['Function Call']), thread);
+    }
+    TestRunner.completeTest();
+  }
+
+  function processThread(expectedEvents, thread) {
+    TestRunner.addResult(thread.name);
+    var missingEvents = thread.events.reduce(processEvent, expectedEvents);
+    if (missingEvents.size) {
+      TestRunner.addResult('FAIL: missing events:');
+      missingEvents.forEach(TestRunner.addResult);
+    }
+  }
+
+  function processEvent(expectedEvents, event) {
+    expectedEvents.delete(Timeline.TimelineUIUtils.eventTitle(event));
+    return expectedEvents;
+  }
+}
+
+</script>
+</head>
+
+<body onload="startWorkerAndRunTest()">
+<p>
+Tests js cpu profile in timeline.
+</p>
+</body>
+</html>

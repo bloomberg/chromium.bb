@@ -1,0 +1,60 @@
+<html>
+<head>
+<script src="../../../inspector/inspector-test.js"></script>
+<script src="../../../inspector/timeline-test.js"></script>
+<script>
+
+function addImage(url, width, height)
+{
+    var img = document.createElement('img');
+    img.style.position = "absolute";
+    img.style.top = "100px";
+    img.style.left = "0px";
+    img.style.width = width;
+    img.style.height = height;
+    img.src = url;
+    document.body.appendChild(img);
+}
+
+function addCSSImage(url, width, height)
+{
+    var img = document.createElement('div');
+    img.style.position = "absolute";
+    img.style.top = "100px";
+    img.style.left = "100px";
+    img.style.width = width;
+    img.style.height = height;
+    img.style.background = `url(${JSON.stringify(url)})`;
+    document.body.appendChild(img);
+}
+
+function display()
+{
+    addImage("../resources/test.png", "40px", "30px");
+    addCSSImage("../resources/test.png", "30px", "20px");
+    return waitForFrame();
+}
+
+function test()
+{
+    InspectorTest.invokeAsyncWithTimeline("display", step1);
+
+    function step1()
+    {
+        var events = InspectorTest.timelineModel().mainThreadEvents()
+            .filter(e => e.name === TimelineModel.TimelineModel.RecordType.PaintImage);
+        InspectorTest.assertEquals(events.length, 2, "PaintImage records not found");
+        events.forEach(e => InspectorTest.printTraceEventProperties(e));
+        InspectorTest.completeTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests the Timeline API instrumentation of a paint image event
+</p>
+</body>
+</html>

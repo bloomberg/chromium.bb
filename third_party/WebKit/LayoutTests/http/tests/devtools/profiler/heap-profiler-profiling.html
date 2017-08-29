@@ -1,0 +1,61 @@
+<html>
+<head>
+  <script src="../../inspector/inspector-test.js"></script>
+  <script src="../resources/profiler-test.js"></script>
+<script>
+
+function pageFunction() {
+    (function () {
+        window.holder = [];
+        // Allocate few MBs of data.
+        for (var i = 0; i < 1000; ++i) {
+            var z = new Array(1000);
+            for (var j = 0; j < z.length; ++j)
+                z[j] = j;
+            window.holder.push(z);
+        }
+    })();
+}
+
+function test() {
+  function checkFunction(tree, name, url) {
+    var node = tree.children[0];
+    if (!node)
+      TestRunner.addResult('no node');
+    while (node) {
+      var nodeURL = node.element().children[2].lastChild.textContent;
+      if (node.functionName === name && (!url || url === nodeURL)) {
+        TestRunner.addResult(`found ${name} ${url || ''}`);
+        return;
+      }
+      node = node.traverseNextNode(true, null, true);
+    }
+    TestRunner.addResult(name + ' not found');
+  }
+
+  ProfilerTestRunner.runProfilerTestSuite([function testProfiling(next) {
+    function findPageFunctionInProfileView(view) {
+      var tree = view.profileDataGridTree;
+      if (!tree)
+        TestRunner.addResult('no tree');
+      checkFunction(tree, 'pageFunction', 'heap-profiler-profiling.html:7');
+      checkFunction(tree, '(anonymous)', 'heap-profiler-profiling.html:8');
+      next();
+    }
+    ProfilerTestRunner.showProfileWhenAdded('Profile 1');
+    ProfilerTestRunner.waitUntilProfileViewIsShown('Profile 1', findPageFunctionInProfileView);
+    ProfilerTestRunner.startSamplingHeapProfiler();
+    TestRunner.evaluateInPage('pageFunction()', ProfilerTestRunner.stopSamplingHeapProfiler);
+  }]);
+}
+
+</script>
+</head>
+<body onload="runTest()">
+<p>
+Tests that sampling heap profiling works.
+
+<a href="https://bugs.webkit.org/show_bug.cgi?id=52634">Bug 52634.</a>
+</p>
+</body>
+</html>

@@ -1,0 +1,57 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<script src="../../../inspector/inspector-test.js"></script>
+<script src="../../../inspector/timeline-test.js"></script>
+<script>
+function display()
+{
+    document.getElementById("testElement").style.width = "100px";
+    var forceLayout1 = document.body.offsetTop;
+    document.getElementById("testElement").style.width = "110px";
+    var forceLayout2 = document.body.offsetTop;
+    return waitForFrame();
+}
+
+function updateSubframeAndDisplay()
+{
+    frames[0].document.body.children[0].style.width = "10px";
+    var forceLayout1 = frames[0].document.body.offsetTop;
+    frames[0].document.body.children[0].style.width = "20px";
+    var forceLayout2 = frames[0].document.body.offsetTop;
+    return waitForFrame();
+}
+
+function test() {
+  Runtime.experiments.enableForTest('timelineInvalidationTracking');
+
+  TestRunner.runTestSuite([
+    function testLocalFrame(next) {
+      PerformanceTestRunner.invokeAsyncWithTimeline('display', function() {
+        PerformanceTestRunner.dumpInvalidations(
+            TimelineModel.TimelineModel.RecordType.Layout, 0, 'first layout invalidations');
+        PerformanceTestRunner.dumpInvalidations(
+            TimelineModel.TimelineModel.RecordType.Layout, 1, 'second layout invalidations');
+        next();
+      });
+    },
+
+    function testSubframe(next) {
+      PerformanceTestRunner.invokeAsyncWithTimeline('updateSubframeAndDisplay', function() {
+        PerformanceTestRunner.dumpInvalidations(
+            TimelineModel.TimelineModel.RecordType.Layout, 0, 'first layout invalidations');
+        PerformanceTestRunner.dumpInvalidations(
+            TimelineModel.TimelineModel.RecordType.Layout, 1, 'second layout invalidations');
+        next();
+      });
+    }
+  ]);
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests the Timeline API instrumentation of layout events with invalidations.</p>
+<div id="outerTestElement" style="display: inline-block;"><div id="testElement">PASS</div></div>
+<iframe src="../resources/timeline-iframe-paint.html" style="position: absolute; left: 40px; top: 40px; width: 100px; height: 100px; border: none"></iframe>
+</body>
+</html>
