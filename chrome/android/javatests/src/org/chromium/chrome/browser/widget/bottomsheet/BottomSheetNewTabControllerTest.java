@@ -8,8 +8,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_PHONE;
-
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 
@@ -39,6 +37,7 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.MenuUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.ui.test.util.UiRestriction;
 
 import java.util.concurrent.TimeoutException;
 
@@ -49,7 +48,7 @@ import java.util.concurrent.TimeoutException;
 @CommandLineFlags.Add({BottomSheetTestRule.ENABLE_CHROME_HOME,
         ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
         BottomSheetTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
-@Restriction(RESTRICTION_TYPE_PHONE) // ChromeHome is only enabled on phones
+@Restriction(UiRestriction.RESTRICTION_TYPE_PHONE) // ChromeHome is only enabled on phones
 public class BottomSheetNewTabControllerTest {
     private FadingBackgroundView mFadingBackgroundView;
     private BottomSheet mBottomSheet;

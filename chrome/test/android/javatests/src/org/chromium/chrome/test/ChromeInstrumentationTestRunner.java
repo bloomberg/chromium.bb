@@ -15,16 +15,13 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseChromiumInstrumentationTestRunner;
 import org.chromium.base.test.BaseTestResult;
-import org.chromium.base.test.util.DisableIfSkipCheck;
 import org.chromium.base.test.util.RestrictionSkipCheck;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.vr_shell.VrClassesWrapper;
 import org.chromium.chrome.browser.vr_shell.VrDaydreamApi;
-import org.chromium.chrome.test.util.ChromeDisableIf;
 import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.content.browser.test.ChildProcessAllocatorSettingsHook;
 import org.chromium.policy.test.annotations.Policies;
-import org.chromium.ui.base.DeviceFormFactor;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -47,7 +44,6 @@ public class ChromeInstrumentationTestRunner extends BaseChromiumInstrumentation
     protected void addTestHooks(BaseTestResult result) {
         super.addTestHooks(result);
         result.addSkipCheck(new ChromeRestrictionSkipCheck(getTargetContext()));
-        result.addSkipCheck(new ChromeDisableIfSkipCheck(getTargetContext()));
 
         result.addPreTestHook(Policies.getRegistrationHook());
         result.addPreTestHook(new ChildProcessAllocatorSettingsHook());
@@ -118,14 +114,6 @@ public class ChromeInstrumentationTestRunner extends BaseChromiumInstrumentation
 
         @Override
         protected boolean restrictionApplies(String restriction) {
-            if (TextUtils.equals(restriction, ChromeRestriction.RESTRICTION_TYPE_PHONE)
-                    && DeviceFormFactor.isTablet()) {
-                return true;
-            }
-            if (TextUtils.equals(restriction, ChromeRestriction.RESTRICTION_TYPE_TABLET)
-                    && !DeviceFormFactor.isTablet()) {
-                return true;
-            }
             if (TextUtils.equals(
                         restriction, ChromeRestriction.RESTRICTION_TYPE_GOOGLE_PLAY_SERVICES)
                     && (ConnectionResult.SUCCESS
@@ -168,29 +156,6 @@ public class ChromeInstrumentationTestRunner extends BaseChromiumInstrumentation
             }
             if (TextUtils.equals(restriction, ChromeRestriction.RESTRICTION_TYPE_DON_ENABLED)) {
                 return !isDonEnabled();
-            }
-            return false;
-        }
-    }
-
-    static class ChromeDisableIfSkipCheck extends DisableIfSkipCheck {
-        private final Context mTargetContext;
-
-        public ChromeDisableIfSkipCheck(Context targetContext) {
-            mTargetContext = targetContext;
-        }
-
-        @Override
-        protected boolean deviceTypeApplies(String type) {
-            if (TextUtils.equals(type, ChromeDisableIf.PHONE) && !DeviceFormFactor.isTablet()) {
-                return true;
-            }
-            if (TextUtils.equals(type, ChromeDisableIf.TABLET) && DeviceFormFactor.isTablet()) {
-                return true;
-            }
-            if (TextUtils.equals(type, ChromeDisableIf.LARGETABLET)
-                    && DeviceFormFactor.isLargeTablet(mTargetContext)) {
-                return true;
             }
             return false;
         }

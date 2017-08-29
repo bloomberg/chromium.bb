@@ -17,6 +17,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.Restriction;
 import org.chromium.content.browser.test.ContentJUnit4ClassRunner;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -25,7 +26,7 @@ import org.chromium.content.browser.test.util.JavaScriptUtils;
 import org.chromium.content.browser.test.util.UiUtils;
 import org.chromium.content_shell_apk.ContentShellActivityTestRule;
 import org.chromium.media.MediaSwitches;
-import org.chromium.ui.base.DeviceFormFactor;
+import org.chromium.ui.test.util.UiRestriction;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeoutException;
@@ -133,12 +134,8 @@ public class VideoFullscreenOrientationLockTest {
     @Test
     @MediumTest
     @Feature({"VideoFullscreenOrientationLock"})
+    @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
     public void testEnterExitFullscreenWithControlsButton() throws Exception {
-        // TODO(johnme): Use RESTRICTION_TYPE_PHONE once crbug.com/673917 moves it out of chrome/.
-        if (DeviceFormFactor.isTablet()) {
-            return;
-        }
-
         // Start playback to guarantee it's properly loaded.
         Assert.assertTrue(DOMUtils.isMediaPaused(mActivityTestRule.getWebContents(), VIDEO_ID));
         DOMUtils.playMedia(mActivityTestRule.getWebContents(), VIDEO_ID);
@@ -164,12 +161,8 @@ public class VideoFullscreenOrientationLockTest {
     @Test
     @MediumTest
     @Feature({"VideoFullscreenOrientationLock"})
+    @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
     public void testEnterExitFullscreenWithAPI() throws Exception {
-        // TODO(johnme): Use RESTRICTION_TYPE_PHONE once crbug.com/673917 moves it out of chrome/.
-        if (DeviceFormFactor.isTablet()) {
-            return;
-        }
-
         // Start playback to guarantee it's properly loaded.
         Assert.assertTrue(DOMUtils.isMediaPaused(mActivityTestRule.getWebContents(), VIDEO_ID));
         DOMUtils.playMedia(mActivityTestRule.getWebContents(), VIDEO_ID);
@@ -191,12 +184,8 @@ public class VideoFullscreenOrientationLockTest {
     @Test
     @MediumTest
     @Feature({"VideoFullscreenOrientationLock"})
+    @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
     public void testExitFullscreenByRemovingVideo() throws Exception {
-        // TODO(johnme): Use RESTRICTION_TYPE_PHONE once crbug.com/673917 moves it out of chrome/.
-        if (DeviceFormFactor.isTablet()) {
-            return;
-        }
-
         // Start playback to guarantee it's properly loaded.
         Assert.assertTrue(DOMUtils.isMediaPaused(mActivityTestRule.getWebContents(), VIDEO_ID));
         DOMUtils.playMedia(mActivityTestRule.getWebContents(), VIDEO_ID);
@@ -219,12 +208,8 @@ public class VideoFullscreenOrientationLockTest {
     @Test
     @MediumTest
     @Feature({"VideoFullscreenOrientationLock"})
+    @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
     public void testExitFullscreenWithNavigation() throws Exception {
-        // TODO(johnme): Use RESTRICTION_TYPE_PHONE once crbug.com/673917 moves it out of chrome/.
-        if (DeviceFormFactor.isTablet()) {
-            return;
-        }
-
         // Start playback to guarantee it's properly loaded.
         Assert.assertTrue(DOMUtils.isMediaPaused(mActivityTestRule.getWebContents(), VIDEO_ID));
         DOMUtils.playMedia(mActivityTestRule.getWebContents(), VIDEO_ID);

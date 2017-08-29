@@ -37,13 +37,13 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.TouchCommon;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.base.PageTransition;
+import org.chromium.ui.test.util.UiRestriction;
 
 import java.io.UnsupportedEncodingException;
 import java.util.concurrent.Callable;
@@ -360,7 +360,7 @@ public class UrlOverridingTest {
 
     @Test
     @SmallTest
-    @Restriction(ChromeRestriction.RESTRICTION_TYPE_TABLET)
+    @Restriction(UiRestriction.RESTRICTION_TYPE_TABLET)
     @RetryOnFailure
     public void testOpenWindowFromUserGesture() throws InterruptedException {
         loadUrlAndWaitForIntentUrl(mTestServer.getURL(OPEN_WINDOW_FROM_USER_GESTURE_PAGE),

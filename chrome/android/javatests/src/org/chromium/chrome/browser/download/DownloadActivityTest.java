@@ -35,16 +35,16 @@ import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadIte
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate.SelectionObserver;
-import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.ui.test.util.UiRestriction;
 
 import java.util.List;
 
 /**
  * Tests the DownloadActivity and the DownloadManagerUi.
  */
-@Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
+@Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
 public class DownloadActivityTest extends BaseActivityInstrumentationTestCase<DownloadActivity> {
 
     private static class TestObserver extends RecyclerView.AdapterDataObserver

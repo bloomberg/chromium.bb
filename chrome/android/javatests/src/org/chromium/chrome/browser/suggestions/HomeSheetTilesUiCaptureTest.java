@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.suggestions;
 
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 import static org.chromium.chrome.test.BottomSheetTestRule.ENABLE_CHROME_HOME;
-import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_PHONE;
 
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
@@ -30,12 +29,13 @@ import org.chromium.chrome.test.BottomSheetTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.suggestions.FakeSuggestionsSource;
 import org.chromium.chrome.test.util.browser.suggestions.SuggestionsDependenciesRule;
+import org.chromium.ui.test.util.UiRestriction;
 
 /**
  * Tests for the appearance of the tiles in the home sheet.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@Restriction(RESTRICTION_TYPE_PHONE) // ChromeHome is only enabled on phones
+@Restriction(UiRestriction.RESTRICTION_TYPE_PHONE) // ChromeHome is only enabled on phones
 // TODO(https://crbug.com/754778) improve annotation processor. We need to remove the currently
 // registered Feature flags to be able to change them later.
 @CommandLineFlags.Remove(ENABLE_CHROME_HOME)

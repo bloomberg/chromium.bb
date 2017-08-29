@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser;
 
-import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_PHONE;
-
 import android.support.test.espresso.Espresso;
 import android.support.test.espresso.action.ViewActions;
 import android.support.test.espresso.matcher.ViewMatchers;
@@ -23,6 +21,7 @@ import org.chromium.base.test.util.ScreenShooter;
 import org.chromium.chrome.R;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.ui.test.util.UiRestriction;
 
 import java.io.IOException;
 
@@ -31,7 +30,7 @@ import java.io.IOException;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-@Restriction(RESTRICTION_TYPE_PHONE) // Tab switcher button only exists on phones.
+@Restriction(UiRestriction.RESTRICTION_TYPE_PHONE) // Tab switcher button only exists on phones.
 @ScreenShooter.Directory("Example")
 public class ExampleUiCaptureTest {
     @Rule

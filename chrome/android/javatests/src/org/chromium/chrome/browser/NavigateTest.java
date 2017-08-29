@@ -37,7 +37,6 @@ import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
-import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.OmniboxTestUtils;
 import org.chromium.chrome.test.util.browser.TabLoadObserver;
@@ -50,6 +49,7 @@ import org.chromium.content.browser.test.util.TouchCommon;
 import org.chromium.content.browser.test.util.UiUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.net.test.util.TestWebServer;
+import org.chromium.ui.test.util.UiRestriction;
 
 import java.util.Locale;
 import java.util.concurrent.ExecutionException;
@@ -169,7 +169,7 @@ public class NavigateTest {
 
     @Test
     @DisabledTest(message = "crbug.com/516018")
-    @Restriction(ChromeRestriction.RESTRICTION_TYPE_TABLET)
+    @Restriction(UiRestriction.RESTRICTION_TYPE_TABLET)
     @MediumTest
     @Feature({"Navigation"})
     public void testNavigateMany() throws Exception {
@@ -374,7 +374,7 @@ public class NavigateTest {
      * Test back and forward buttons.
      */
     @Test
-    @Restriction(ChromeRestriction.RESTRICTION_TYPE_TABLET)
+    @Restriction(UiRestriction.RESTRICTION_TYPE_TABLET)
     @MediumTest
     @Feature({"Navigation"})
     public void testNavigateBackAndForwardButtons() throws Exception {

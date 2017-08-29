@@ -40,7 +40,6 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
-import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.NewTabPageTestUtils;
 import org.chromium.chrome.test.util.browser.RecyclerViewTestUtils;
@@ -50,6 +49,7 @@ import org.chromium.chrome.test.util.browser.suggestions.SuggestionsDependencies
 import org.chromium.content.browser.test.util.TestTouchUtils;
 import org.chromium.content.browser.test.util.TouchCommon;
 import org.chromium.net.test.EmbeddedTestServer;
+import org.chromium.ui.test.util.UiRestriction;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -241,7 +241,7 @@ public class NewTabPageRecyclerViewTest {
     @Test
     @MediumTest
     @Feature({"NewTabPage"})
-    @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE})
+    @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
     @CommandLineFlags.Add({"disable-features=" + ChromeFeatureList.NTP_CONDENSED_LAYOUT})
     public void testSnapScroll_noCondensedLayout() {
         setSuggestionsAndWaitForUpdate(0);
@@ -278,7 +278,7 @@ public class NewTabPageRecyclerViewTest {
     @Test
     @MediumTest
     @Feature({"NewTabPage"})
-    @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE})
+    @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
     @CommandLineFlags.Add({"enable-features=" + ChromeFeatureList.NTP_CONDENSED_LAYOUT})
     public void testSnapScroll_condensedLayout() {
         setSuggestionsAndWaitForUpdate(0);
@@ -307,7 +307,7 @@ public class NewTabPageRecyclerViewTest {
     @Test
     @MediumTest
     @Feature({"NewTabPage"})
-    @Restriction({ChromeRestriction.RESTRICTION_TYPE_TABLET})
+    @Restriction({UiRestriction.RESTRICTION_TYPE_TABLET})
     public void testSnapScroll_tablet() {
         setSuggestionsAndWaitForUpdate(0);
 

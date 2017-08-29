@@ -16,6 +16,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
+import org.chromium.base.test.util.Restriction;
 import org.chromium.content.browser.test.ContentJUnit4ClassRunner;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -23,7 +24,7 @@ import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content.browser.test.util.JavaScriptUtils;
 import org.chromium.content_shell_apk.ContentShellActivityTestRule;
 import org.chromium.media.MediaSwitches;
-import org.chromium.ui.base.DeviceFormFactor;
+import org.chromium.ui.test.util.UiRestriction;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeoutException;
@@ -91,12 +92,8 @@ public class VideoRotateToFullscreenTest {
     // @MediumTest
     // @Feature({"VideoRotateToFullscreen"})
     @DisabledTest(message = "crbug.com/726977")
+    @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
     public void testPortraitToLandscapeAndBack() throws Exception {
-        // TODO(johnme): Use RESTRICTION_TYPE_PHONE once crbug.com/673917 moves it out of chrome/.
-        if (DeviceFormFactor.isTablet()) {
-            return;
-        }
-
         // Start off in portrait screen orientation.
         mRule.getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         waitForScreenOrientation("\"portrait\"");

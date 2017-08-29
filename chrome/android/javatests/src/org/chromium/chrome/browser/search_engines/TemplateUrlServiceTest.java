@@ -22,9 +22,9 @@ import org.chromium.chrome.browser.search_engines.TemplateUrlService.LoadListene
 import org.chromium.chrome.browser.search_engines.TemplateUrlService.TemplateUrl;
 import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
 import org.chromium.chrome.browser.test.ClearAppDataTestRule;
-import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.ui.test.util.UiRestriction;
 
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -100,7 +100,7 @@ public class TemplateUrlServiceTest {
     @SmallTest
     @Feature({"SearchEngines"})
     @RetryOnFailure
-    @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE) // see crbug.com/581268
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE) // see crbug.com/581268
     public void testLoadUrlService() {
         waitForTemplateUrlServiceToLoad();
 

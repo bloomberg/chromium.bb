@@ -8,8 +8,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_PHONE;
-
 import android.content.Intent;
 import android.net.Uri;
 import android.provider.Browser;
@@ -35,6 +33,7 @@ import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.net.test.EmbeddedTestServer;
+import org.chromium.ui.test.util.UiRestriction;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -47,7 +46,7 @@ import java.util.concurrent.TimeoutException;
 @CommandLineFlags.Add({BottomSheetTestRule.ENABLE_CHROME_HOME,
         ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
         BottomSheetTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
-@Restriction(RESTRICTION_TYPE_PHONE) // ChromeHome is only enabled on phones
+@Restriction(UiRestriction.RESTRICTION_TYPE_PHONE) // ChromeHome is only enabled on phones
 public class BottomSheetBackBehaviorTest {
     private static final String TEST_PAGE = "/chrome/test/data/android/simple.html";
 

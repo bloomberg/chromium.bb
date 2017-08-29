@@ -35,7 +35,6 @@ import org.chromium.chrome.browser.widget.accessibility.AccessibilityTabModelLis
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
-import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.MenuUtils;
 import org.chromium.chrome.test.util.TabStripUtils;
@@ -44,6 +43,7 @@ import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.TestTouchUtils;
 import org.chromium.content.browser.test.util.TouchCommon;
+import org.chromium.ui.test.util.UiRestriction;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeoutException;
@@ -171,7 +171,7 @@ public class OverviewListLayoutTest {
     }
 
     @Test
-    @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @MediumTest
     @Feature({"Accessibility"})
     public void testCanEnterSwitcher() {
@@ -183,7 +183,7 @@ public class OverviewListLayoutTest {
     }
 
     @Test
-    @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @MediumTest
     @Feature({"Accessibility"})
     public void testCanLeaveSwitcher() {
@@ -199,7 +199,7 @@ public class OverviewListLayoutTest {
     }
 
     @Test
-    @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @MediumTest
     @Feature({"Accessibility"})
     @RetryOnFailure
@@ -231,7 +231,7 @@ public class OverviewListLayoutTest {
     }
 
     @Test
-    @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @MediumTest
     @Feature({"Accessibility"})
     @RetryOnFailure
@@ -269,7 +269,7 @@ public class OverviewListLayoutTest {
     }
 
     @Test
-    @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @MediumTest
     @Feature({"Accessibility"})
     public void testResetSwipe() throws InterruptedException {
@@ -292,7 +292,7 @@ public class OverviewListLayoutTest {
     }
 
     @Test
-    @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @MediumTest
     @Feature({"Accessibility"})
     public void testCloseAndUndo() throws InterruptedException, TimeoutException {
@@ -328,7 +328,7 @@ public class OverviewListLayoutTest {
     }
 
     @Test
-    @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @MediumTest
     @Feature({"Accessibility"})
     public void testCloseAll() throws InterruptedException {
@@ -344,7 +344,7 @@ public class OverviewListLayoutTest {
     }
 
     @Test
-    @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @MediumTest
     @Feature({"Accessibility"})
     @RetryOnFailure
@@ -373,7 +373,7 @@ public class OverviewListLayoutTest {
     }
 
     @Test
-    @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @MediumTest
     @Feature({"Accessibility"})
     public void testModelSwitcherVisibility() throws InterruptedException {
@@ -394,7 +394,7 @@ public class OverviewListLayoutTest {
     }
 
     @Test
-    @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @MediumTest
     @Feature({"Accessibility"})
     public void testModelSwitcherFunctionality() throws InterruptedException {
@@ -456,7 +456,7 @@ public class OverviewListLayoutTest {
     }
 
     @Test
-    @Restriction(ChromeRestriction.RESTRICTION_TYPE_TABLET)
+    @Restriction(UiRestriction.RESTRICTION_TYPE_TABLET)
     @MediumTest
     @Feature({"Accessibility"})
     public void testCloseTabThroughTabStrip() throws InterruptedException, TimeoutException {

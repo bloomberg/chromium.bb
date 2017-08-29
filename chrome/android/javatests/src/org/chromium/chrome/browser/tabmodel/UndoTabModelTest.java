@@ -34,11 +34,11 @@ import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
-import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.ui.test.util.UiRestriction;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeoutException;
@@ -492,7 +492,7 @@ public class UndoTabModelTest {
     @MediumTest
     // TODO(jbudorick): Replace with DisableIf when it supports filtering by device type.
     // Flaky on tablets, crbug.com/620014.
-    @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @RetryOnFailure
     public void testTwoTabs() throws InterruptedException {
         TabModel model = mActivityTestRule.getActivity().getTabModelSelector().getModel(false);
@@ -803,7 +803,7 @@ public class UndoTabModelTest {
      */
     @Test
     @MediumTest
-    @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE) // See crbug.com/633607
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE) // See crbug.com/633607
     public void testReverseOrderRestore() throws InterruptedException {
         TabModel model = mActivityTestRule.getActivity().getTabModelSelector().getModel(false);
         ChromeTabCreator tabCreator = mActivityTestRule.getActivity().getTabCreator(false);
@@ -1344,7 +1344,7 @@ public class UndoTabModelTest {
      * @throws InterruptedException
      */
     //@MediumTest
-    //@Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE) // See crbug.com/633607
+    //@Restriction(UiRestriction.RESTRICTION_TYPE_PHONE) // See crbug.com/633607
     // Disabled due to flakiness on linux_android_rel_ng (crbug.com/661429)
     @Test
     @DisabledTest
@@ -1468,7 +1468,7 @@ public class UndoTabModelTest {
      */
     @Test
     @MediumTest
-    @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE) // See crbug.com/633607
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE) // See crbug.com/633607
     public void testSaveStateCommitsUndos() throws InterruptedException {
         TabModelSelector selector = mActivityTestRule.getActivity().getTabModelSelector();
         TabModel model = selector.getModel(false);

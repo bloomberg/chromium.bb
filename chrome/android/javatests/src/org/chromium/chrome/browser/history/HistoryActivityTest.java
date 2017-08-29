@@ -40,13 +40,13 @@ import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.chrome.browser.widget.selection.SelectableItemView;
 import org.chromium.chrome.browser.widget.selection.SelectableItemViewHolder;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate.SelectionObserver;
-import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.ui.test.util.UiRestriction;
 
 import java.util.Date;
 import java.util.List;
@@ -56,7 +56,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Tests the {@link HistoryActivity}.
  */
-@Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
+@Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
 @RetryOnFailure(message = "crbug.com/752520")
 public class HistoryActivityTest extends BaseActivityInstrumentationTestCase<HistoryActivity> {
     private static class TestObserver extends RecyclerView.AdapterDataObserver

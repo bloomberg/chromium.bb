@@ -533,6 +533,7 @@ android_library("chrome_test_java") {
     "//third_party/junit",
     "//third_party/ub-uiautomator:ub_uiautomator_java",
     "//ui/android:ui_java",
+    "//ui/android:ui_java_test_support",
     "//ui/base/mojo:mojo_bindings_java",
     "//url/mojo:url_mojom_gurl_java",
   ]
