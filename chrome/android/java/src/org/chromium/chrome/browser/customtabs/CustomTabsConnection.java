@@ -26,6 +26,9 @@ import android.text.TextUtils;
 import android.util.Pair;
 import android.widget.RemoteViews;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import org.chromium.base.BaseChromiumApplication;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
@@ -187,7 +190,7 @@ public class CustomTabsConnection {
     SpeculationParams mSpeculation;
     protected final Context mContext;
     protected final ClientManager mClientManager;
-    private final boolean mLogRequests;
+    protected final boolean mLogRequests;
     private final AtomicBoolean mWarmupHasBeenCalled = new AtomicBoolean();
     private final AtomicBoolean mWarmupHasBeenFinished = new AtomicBoolean();
     private ExternalPrerenderHandler mExternalPrerenderHandler;
@@ -248,6 +251,35 @@ public class CustomTabsConnection {
     void logCallback(String name, Object args) {
         if (!mLogRequests) return;
         Log.w(TAG, "%s args = %s", name, args);
+    }
+
+    /**
+     * Converts a Bundle to JSON.
+     *
+     * The conversion is limited to Bundles not containing any array, and some elements are
+     * converted into strings.
+     *
+     * @param Bundle a Bundle to convert.
+     * @return A JSON object, empty object if the parameter is null.
+     */
+    protected static JSONObject bundleToJson(Bundle bundle) {
+        JSONObject json = new JSONObject();
+        if (bundle == null) return json;
+        for (String key : bundle.keySet()) {
+            Object o = bundle.get(key);
+            try {
+                if (o instanceof Bundle) {
+                    json.put(key, bundleToJson((Bundle) o));
+                } else if (o instanceof Integer || o instanceof Long || o instanceof Boolean) {
+                    json.put(key, o);
+                } else {
+                    json.put(key, o.toString());
+                }
+            } catch (JSONException e) {
+                // Ok, only used for logging.
+            }
+        }
+        return json;
     }
 
     public boolean newSession(CustomTabsSessionToken session) {
@@ -804,6 +836,16 @@ public class CustomTabsConnection {
      * @param intent incoming intent.
      */
     void onHandledIntent(CustomTabsSessionToken session, String url, Intent intent) {
+        if (mLogRequests) {
+            Log.w(TAG, "onHandledIntent, URL = " + url);
+            Bundle extras = intent.getExtras();
+            if (extras != null) {
+                for (String key : extras.keySet()) {
+                    Log.w(TAG, "  extra: " + key + " = " + extras.get(key));
+                }
+            }
+        }
+
         // If we still have pending warmup tasks, don't continue as they would only delay intent
         // processing from now on.
         if (mWarmupTasks != null) mWarmupTasks.cancel();
@@ -1025,14 +1067,8 @@ public class CustomTabsConnection {
         }
         if (mLogRequests) { // Don't always build the args.
             // Pseudo-JSON (trailing comma).
-            StringBuilder argsStringBuilder = new StringBuilder("{");
-            for (String key : args.keySet()) {
-                argsStringBuilder.append("\"").append(key).append("\": \"").append(args.get(key));
-                argsStringBuilder.append("\", ");
-            }
-            argsStringBuilder.append("}");
             logCallback("extraCallback(" + PAGE_LOAD_METRICS_CALLBACK + ")",
-                    argsStringBuilder.toString());
+                    bundleToJson(args).toString());
         }
         return true;
     }
