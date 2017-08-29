@@ -25434,6 +25434,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="GPU.Sandbox.InitializedSuccessfully" enum="BooleanSuccess">
+  <owner>piman@chromium.org</owner>
+  <summary>
+    Whether or not the GPU sandbox properly initialized. Failures are typically
+    platform- and driver-specific (e.g. driver creating threads on Linux).
+  </summary>
+</histogram>
+
 <histogram name="GPU.setIsAcceleratedCompositingActive"
     enum="GPUsetIsAcceleratedCompositingActive">
   <owner>vmiura@chromium.org</owner>
