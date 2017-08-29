@@ -5,6 +5,7 @@
 
 #import "ios/clean/chrome/browser/ui/ntp/ntp_mediator.h"
 
+#import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_bar_item.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_controller.h"
 #include "ios/chrome/browser/ui/ui_util.h"
@@ -43,11 +44,11 @@
 
   NewTabPageBarItem* mostVisitedItem = [NewTabPageBarItem
       newTabPageBarItemWithTitle:mostVisited
-                      identifier:NewTabPage::kHomePanel
+                      identifier:ntp_home::HOME_PANEL
                            image:[UIImage imageNamed:@"ntp_mv_search"]];
   NewTabPageBarItem* bookmarksItem = [NewTabPageBarItem
       newTabPageBarItemWithTitle:bookmarks
-                      identifier:NewTabPage::kBookmarksPanel
+                      identifier:ntp_home::BOOKMARKS_PANEL
                            image:[UIImage imageNamed:@"ntp_bookmarks"]];
   [tabBarItems addObject:bookmarksItem];
   if (IsIPadIdiom()) {
@@ -56,7 +57,7 @@
 
   NewTabPageBarItem* recentTabsItem = [NewTabPageBarItem
       newTabPageBarItemWithTitle:recentTabs
-                      identifier:NewTabPage::kOpenTabsPanel
+                      identifier:ntp_home::RECENT_TABS_PANEL
                            image:[UIImage imageNamed:@"ntp_opentabs"]];
   [tabBarItems addObject:recentTabsItem];
 

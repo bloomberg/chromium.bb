@@ -28,6 +28,7 @@
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
 #import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
+#import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/ntp/google_landing_mediator.h"
 #import "ios/chrome/browser/ui/ntp/google_landing_view_controller.h"
 #import "ios/chrome/browser/ui/ntp/incognito_panel_controller.h"
@@ -59,36 +60,36 @@ const CGFloat kToolbarHeight = 56;
 namespace NewTabPage {
 
 // Converts from a URL #fragment string to an identifier.
-// Defaults to NewTabPage::kNone if the fragment is nil or not recognized.
+// Defaults to ntp_home::NONE if the fragment is nil or not recognized.
 // The strings checked by this function matches the set of fragments
 // supported by chrome://newtab/# on Android.
 // See chrome/browser/resources/mobile_ntp/mobile_ntp.js
-PanelIdentifier IdentifierFromFragment(const std::string& fragment) {
+ntp_home::PanelIdentifier IdentifierFromFragment(const std::string& fragment) {
   if (fragment == kMostVisitedFragment)
-    return NewTabPage::kHomePanel;
+    return ntp_home::HOME_PANEL;
   else if (fragment == kBookmarksFragment)
-    return NewTabPage::kBookmarksPanel;
+    return ntp_home::BOOKMARKS_PANEL;
   else if (fragment == kOpenTabsFragment)
-    return NewTabPage::kOpenTabsPanel;
+    return ntp_home::RECENT_TABS_PANEL;
   else if (fragment == kIncognitoFragment)
-    return NewTabPage::kIncognitoPanel;
+    return ntp_home::INCOGNITO_PANEL;
   else
-    return NewTabPage::kNone;
+    return ntp_home::NONE;
 }
 
-// Converts from a NewTabPage::PanelIdentifier to a URL #fragment string.
-// Defaults to nil if the fragment is kNone or not recognized.
-std::string FragmentFromIdentifier(PanelIdentifier panel) {
+// Converts from a ntp_home::PanelIdentifier to a URL #fragment string.
+// Defaults to nil if the fragment is NONE or not recognized.
+std::string FragmentFromIdentifier(ntp_home::PanelIdentifier panel) {
   switch (panel) {
-    case NewTabPage::kNone:
+    case ntp_home::NONE:
       return "";
-    case NewTabPage::kHomePanel:
+    case ntp_home::HOME_PANEL:
       return kMostVisitedFragment;
-    case NewTabPage::kBookmarksPanel:
+    case ntp_home::BOOKMARKS_PANEL:
       return kBookmarksFragment;
-    case NewTabPage::kOpenTabsPanel:
+    case ntp_home::RECENT_TABS_PANEL:
       return kOpenTabsFragment;
-    case NewTabPage::kIncognitoPanel:
+    case ntp_home::INCOGNITO_PANEL:
       return kIncognitoFragment;
     default:
       NOTREACHED();
@@ -165,7 +166,7 @@ enum {
 // Enable the horizontal scroll view.
 - (void)enableScroll;
 // Returns the ID for the currently selected panel.
-- (NewTabPage::PanelIdentifier)selectedPanelID;
+- (ntp_home::PanelIdentifier)selectedPanelID;
 
 @property(nonatomic, strong) NewTabPageView* ntpView;
 
@@ -258,13 +259,13 @@ enum {
     if (isIncognito) {
       NewTabPageBarItem* incognitoItem = [NewTabPageBarItem
           newTabPageBarItemWithTitle:incognito
-                          identifier:NewTabPage::kIncognitoPanel
+                          identifier:ntp_home::INCOGNITO_PANEL
                                image:[UIImage imageNamed:@"ntp_incognito"]];
       if (IsIPadIdiom()) {
         // Only add the bookmarks tab item for Incognito.
         NewTabPageBarItem* bookmarksItem = [NewTabPageBarItem
             newTabPageBarItemWithTitle:bookmarks
-                            identifier:NewTabPage::kBookmarksPanel
+                            identifier:ntp_home::BOOKMARKS_PANEL
                                  image:[UIImage imageNamed:@"ntp_bookmarks"]];
         [tabBarItems addObject:bookmarksItem];
         [tabBarItems addObject:incognitoItem];
@@ -274,11 +275,11 @@ enum {
     } else {
       NewTabPageBarItem* homeItem = [NewTabPageBarItem
           newTabPageBarItemWithTitle:home
-                          identifier:NewTabPage::kHomePanel
+                          identifier:ntp_home::HOME_PANEL
                                image:[UIImage imageNamed:@"ntp_mv_search"]];
       NewTabPageBarItem* bookmarksItem = [NewTabPageBarItem
           newTabPageBarItemWithTitle:bookmarks
-                          identifier:NewTabPage::kBookmarksPanel
+                          identifier:ntp_home::BOOKMARKS_PANEL
                                image:[UIImage imageNamed:@"ntp_bookmarks"]];
       [tabBarItems addObject:bookmarksItem];
       if (IsIPadIdiom()) {
@@ -287,7 +288,7 @@ enum {
 
       NewTabPageBarItem* openTabsItem = [NewTabPageBarItem
           newTabPageBarItemWithTitle:openTabs
-                          identifier:NewTabPage::kOpenTabsPanel
+                          identifier:ntp_home::RECENT_TABS_PANEL
                                image:[UIImage imageNamed:@"ntp_opentabs"]];
       [tabBarItems addObject:openTabsItem];
       self.ntpView.tabBar.items = tabBarItems;
@@ -374,7 +375,7 @@ enum {
 }
 
 - (BOOL)wantsKeyboardShield {
-  return [self selectedPanelID] != NewTabPage::kHomePanel;
+  return [self selectedPanelID] != ntp_home::HOME_PANEL;
 }
 
 - (BOOL)wantsLocationBarHintText {
@@ -397,7 +398,7 @@ enum {
   if (_browserState->IsOffTheRecord())
     return YES;
 
-  return [self selectedPanelID] != NewTabPage::kHomePanel;
+  return [self selectedPanelID] != ntp_home::HOME_PANEL;
 }
 
 - (void)dismissKeyboard {
@@ -526,7 +527,7 @@ enum {
   [_newTabPageObserver selectedPanelDidChange];
 }
 
-- (void)selectPanel:(NewTabPage::PanelIdentifier)panelType {
+- (void)selectPanel:(ntp_home::PanelIdentifier)panelType {
   for (NewTabPageBarItem* item in self.ntpView.tabBar.items) {
     if (item.identifier == panelType) {
       [self showPanel:item];
@@ -538,11 +539,11 @@ enum {
 - (void)showPanel:(NewTabPageBarItem*)item {
   if ([self loadPanel:item]) {
     // Intentionally omitting a metric for the Incognito panel.
-    if (item.identifier == NewTabPage::kBookmarksPanel)
+    if (item.identifier == ntp_home::BOOKMARKS_PANEL)
       base::RecordAction(UserMetricsAction("MobileNTPShowBookmarks"));
-    else if (item.identifier == NewTabPage::kHomePanel)
+    else if (item.identifier == ntp_home::HOME_PANEL)
       base::RecordAction(UserMetricsAction("MobileNTPShowMostVisited"));
-    else if (item.identifier == NewTabPage::kOpenTabsPanel)
+    else if (item.identifier == ntp_home::RECENT_TABS_PANEL)
       base::RecordAction(UserMetricsAction("MobileNTPShowOpenTabs"));
   }
   [self scrollToPanel:item animate:NO];
@@ -562,7 +563,7 @@ enum {
   UIViewController* panelController = nil;
   BOOL created = NO;
   // Only load the controllers once.
-  if (item.identifier == NewTabPage::kBookmarksPanel) {
+  if (item.identifier == ntp_home::BOOKMARKS_PANEL) {
     if (!_bookmarkController) {
       BookmarkControllerFactory* factory =
           [[BookmarkControllerFactory alloc] init];
@@ -573,7 +574,7 @@ enum {
     panelController = _bookmarkController;
     view = [_bookmarkController view];
     [_bookmarkController setDelegate:self];
-  } else if (item.identifier == NewTabPage::kHomePanel) {
+  } else if (item.identifier == ntp_home::HOME_PANEL) {
     if (experimental_flags::IsSuggestionsUIEnabled()) {
       if (!self.contentSuggestionsCoordinator) {
         self.contentSuggestionsCoordinator =
@@ -608,7 +609,7 @@ enum {
     view = panelController.view;
     [self.homePanel setDelegate:self];
     [self.ntpView.tabBar setShadowAlpha:[self.homePanel alphaForBottomShadow]];
-  } else if (item.identifier == NewTabPage::kOpenTabsPanel) {
+  } else if (item.identifier == ntp_home::RECENT_TABS_PANEL) {
     if (!_openTabsController)
       _openTabsController =
           [[RecentTabsPanelController alloc] initWithLoader:_loader
@@ -617,7 +618,7 @@ enum {
     // TODO(crbug.com/708319): Also set panelController for opentabs here.
     view = [_openTabsController view];
     [_openTabsController setDelegate:self];
-  } else if (item.identifier == NewTabPage::kIncognitoPanel) {
+  } else if (item.identifier == ntp_home::INCOGNITO_PANEL) {
     if (!_incognitoController)
       _incognitoController =
           [[IncognitoPanelController alloc] initWithLoader:_loader
@@ -662,11 +663,11 @@ enum {
     CGPoint point = CGPointMake(CGRectGetMinX(itemFrame), 0);
     [self.ntpView.scrollView setContentOffset:point animated:animate];
   } else {
-    if (item.identifier == NewTabPage::kBookmarksPanel) {
+    if (item.identifier == ntp_home::BOOKMARKS_PANEL) {
       GenericChromeCommand* command =
           [[GenericChromeCommand alloc] initWithTag:IDC_SHOW_BOOKMARK_MANAGER];
       [self.ntpView chromeExecuteCommand:command];
-    } else if (item.identifier == NewTabPage::kOpenTabsPanel) {
+    } else if (item.identifier == ntp_home::RECENT_TABS_PANEL) {
       GenericChromeCommand* command =
           [[GenericChromeCommand alloc] initWithTag:IDC_SHOW_OTHER_DEVICES];
       [self.ntpView chromeExecuteCommand:command];
@@ -690,21 +691,21 @@ enum {
   return index;
 }
 
-- (NewTabPage::PanelIdentifier)selectedPanelID {
+- (ntp_home::PanelIdentifier)selectedPanelID {
   if (IsIPadIdiom()) {
     // |selectedIndex| isn't meaningful here with modal buttons on iPhone.
     NSUInteger index = self.ntpView.tabBar.selectedIndex;
     DCHECK(index != NSNotFound);
     NewTabPageBarItem* item = self.ntpView.tabBar.items[index];
-    return static_cast<NewTabPage::PanelIdentifier>(item.identifier);
+    return static_cast<ntp_home::PanelIdentifier>(item.identifier);
   }
-  return NewTabPage::kHomePanel;
+  return ntp_home::HOME_PANEL;
 }
 
 - (void)updateCurrentController:(NewTabPageBarItem*)item
                           index:(NSUInteger)index {
-  if (!IsIPadIdiom() && (item.identifier == NewTabPage::kBookmarksPanel ||
-                         item.identifier == NewTabPage::kOpenTabsPanel)) {
+  if (!IsIPadIdiom() && (item.identifier == ntp_home::BOOKMARKS_PANEL ||
+                         item.identifier == ntp_home::RECENT_TABS_PANEL)) {
     // Don't update |_currentController| for iPhone since Bookmarks and Recent
     // Tabs are presented in a modal view controller.
     return;
@@ -712,13 +713,13 @@ enum {
 
   id<NewTabPagePanelProtocol> oldController = _currentController;
   self.ntpView.tabBar.selectedIndex = index;
-  if (item.identifier == NewTabPage::kBookmarksPanel)
+  if (item.identifier == ntp_home::BOOKMARKS_PANEL)
     _currentController = _bookmarkController;
-  else if (item.identifier == NewTabPage::kHomePanel)
+  else if (item.identifier == ntp_home::HOME_PANEL)
     _currentController = self.homePanel;
-  else if (item.identifier == NewTabPage::kOpenTabsPanel)
+  else if (item.identifier == ntp_home::RECENT_TABS_PANEL)
     _currentController = _openTabsController;
-  else if (item.identifier == NewTabPage::kIncognitoPanel)
+  else if (item.identifier == ntp_home::INCOGNITO_PANEL)
     _currentController = _incognitoController;
 
   [_bookmarkController
@@ -744,13 +745,13 @@ enum {
   // Save state and update metrics. Intentionally omitting a metric for the
   // Incognito panel.
   PrefService* prefs = _browserState->GetPrefs();
-  if (item.identifier == NewTabPage::kBookmarksPanel) {
+  if (item.identifier == ntp_home::BOOKMARKS_PANEL) {
     base::RecordAction(UserMetricsAction("MobileNTPSwitchToBookmarks"));
     prefs->SetInteger(prefs::kNtpShownPage, BOOKMARKS_PAGE_ID);
-  } else if (item.identifier == NewTabPage::kHomePanel) {
+  } else if (item.identifier == ntp_home::HOME_PANEL) {
     base::RecordAction(UserMetricsAction("MobileNTPSwitchToMostVisited"));
     prefs->SetInteger(prefs::kNtpShownPage, MOST_VISITED_PAGE_ID);
-  } else if (item.identifier == NewTabPage::kOpenTabsPanel) {
+  } else if (item.identifier == ntp_home::RECENT_TABS_PANEL) {
     base::RecordAction(UserMetricsAction("MobileNTPSwitchToOpenTabs"));
     prefs->SetInteger(prefs::kNtpShownPage, OPEN_TABS_PAGE_ID);
   }

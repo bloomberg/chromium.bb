@@ -146,7 +146,7 @@ TEST_F(NewTabPageControllerTest, SelectBookmarkPanel) {
             (id<NewTabPagePanelProtocol>)[controller_ bookmarkController]);
 
   // Switching to the Bookmarks panel.
-  [controller_ selectPanel:NewTabPage::kBookmarksPanel];
+  [controller_ selectPanel:ntp_home::BOOKMARKS_PANEL];
 
   // Expecting bookmarks panel to be loaded now and to be the current controller
   // on iPad but not iPhone.
@@ -167,7 +167,7 @@ TEST_F(NewTabPageControllerTest, SelectIncognitoPanel) {
       [incognitoController_ currentController]);
 
   // Switch to the Bookmarks panel.
-  [incognitoController_ selectPanel:NewTabPage::kBookmarksPanel];
+  [incognitoController_ selectPanel:ntp_home::BOOKMARKS_PANEL];
 
   // Expecting bookmarks panel to be loaded now and to be the current controller
   // on iPad but not iPhone.
@@ -197,12 +197,12 @@ TEST_F(NewTabPageControllerTest, TestWantsLocationBarHintText) {
 
 TEST_F(NewTabPageControllerTest, NewTabPageIdentifierConversion) {
   EXPECT_EQ("open_tabs",
-            NewTabPage::FragmentFromIdentifier(NewTabPage::kOpenTabsPanel));
-  EXPECT_EQ("", NewTabPage::FragmentFromIdentifier(NewTabPage::kNone));
-  EXPECT_EQ(NewTabPage::kBookmarksPanel,
+            NewTabPage::FragmentFromIdentifier(ntp_home::RECENT_TABS_PANEL));
+  EXPECT_EQ("", NewTabPage::FragmentFromIdentifier(ntp_home::NONE));
+  EXPECT_EQ(ntp_home::BOOKMARKS_PANEL,
             NewTabPage::IdentifierFromFragment("bookmarks"));
-  EXPECT_EQ(NewTabPage::kNone, NewTabPage::IdentifierFromFragment("garbage"));
-  EXPECT_EQ(NewTabPage::kNone, NewTabPage::IdentifierFromFragment(""));
+  EXPECT_EQ(ntp_home::NONE, NewTabPage::IdentifierFromFragment("garbage"));
+  EXPECT_EQ(ntp_home::NONE, NewTabPage::IdentifierFromFragment(""));
 }
 
 }  // anonymous namespace

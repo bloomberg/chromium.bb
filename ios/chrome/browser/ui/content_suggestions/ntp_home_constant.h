@@ -9,6 +9,15 @@
 
 namespace ntp_home {
 
+// Enum identifying the different panels displayed on the NTP.
+enum PanelIdentifier {
+  NONE,
+  HOME_PANEL,
+  BOOKMARKS_PANEL,
+  RECENT_TABS_PANEL,
+  INCOGNITO_PANEL,
+};
+
 // Type of content displayed when a NTP is opened, for UMA report. It should be
 // treated as append-only.
 // These match tools/metrics/histograms/enums.xml.

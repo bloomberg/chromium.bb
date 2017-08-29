@@ -13,6 +13,7 @@
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view.h"
 #import "ios/chrome/browser/ui/commands/open_url_command.h"
+#import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_controller.h"
 #include "ios/chrome/browser/ui/tools_menu/tools_menu_constants.h"
 #include "ios/chrome/browser/ui/ui_util.h"
@@ -568,7 +569,7 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
     // has an infinite spinner, from appearing in the coming tests and causing
     // timeouts.
     [chrome_test_util::GetCurrentNewTabPageController()
-        selectPanel:NewTabPage::kHomePanel];
+        selectPanel:ntp_home::HOME_PANEL];
     [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
   } else {
     [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]

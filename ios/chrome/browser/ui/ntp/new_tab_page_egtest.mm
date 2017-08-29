@@ -10,6 +10,7 @@
 #include "ios/chrome/browser/bookmarks/bookmark_new_generation_features.h"
 #import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
+#import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_controller.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -59,16 +60,16 @@ void WaitForHistoryToDisappear() {
 
 // Displays the |panel_type| new tab page.  An a phone this will send a command
 // to display a dialog, on tablet this calls -selectPanel to slide the NTP.
-void SelectNewTabPagePanel(NewTabPage::PanelIdentifier panel_type) {
+void SelectNewTabPagePanel(ntp_home::PanelIdentifier panel_type) {
   NewTabPageController* ntp_controller =
       chrome_test_util::GetCurrentNewTabPageController();
   if (IsIPadIdiom()) {
     [ntp_controller selectPanel:panel_type];
   } else {
     NSUInteger tag = 0;
-    if (panel_type == NewTabPage::PanelIdentifier::kBookmarksPanel) {
+    if (panel_type == ntp_home::BOOKMARKS_PANEL) {
       tag = IDC_SHOW_BOOKMARK_MANAGER;
-    } else if (panel_type == NewTabPage::PanelIdentifier::kOpenTabsPanel) {
+    } else if (panel_type == ntp_home::RECENT_TABS_PANEL) {
       tag = IDC_SHOW_OTHER_DEVICES;
     }
     if (tag) {
@@ -109,13 +110,13 @@ void AssertNTPScrolledToTop(bool scrolledToTop) {
 
 // Tests that all items are accessible on the most visited page.
 - (void)testAccessibilityOnMostVisited {
-  SelectNewTabPagePanel(NewTabPage::kHomePanel);
+  SelectNewTabPagePanel(ntp_home::HOME_PANEL);
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
 }
 
 // Tests that all items are accessible on the open tabs page.
 - (void)testAccessibilityOnOpenTabs {
-  SelectNewTabPagePanel(NewTabPage::kOpenTabsPanel);
+  SelectNewTabPagePanel(ntp_home::RECENT_TABS_PANEL);
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
   DismissNewTabPagePanel();
 }
@@ -126,7 +127,7 @@ void AssertNTPScrolledToTop(bool scrolledToTop) {
           bookmark_new_generation::features::kBookmarkNewGeneration)) {
     EARL_GREY_TEST_SKIPPED(@"Only enabled with old Bookmarks UI.");
   }
-  SelectNewTabPagePanel(NewTabPage::kBookmarksPanel);
+  SelectNewTabPagePanel(ntp_home::BOOKMARKS_PANEL);
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
   DismissNewTabPagePanel();
 }
@@ -134,7 +135,7 @@ void AssertNTPScrolledToTop(bool scrolledToTop) {
 // Tests that all items are accessible on the incognito page.
 - (void)testAccessibilityOnIncognitoTab {
   chrome_test_util::OpenNewIncognitoTab();
-  SelectNewTabPagePanel(NewTabPage::kIncognitoPanel);
+  SelectNewTabPagePanel(ntp_home::INCOGNITO_PANEL);
   WaitForHistoryToDisappear();
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
   chrome_test_util::CloseAllIncognitoTabs();
@@ -151,7 +152,7 @@ void AssertNTPScrolledToTop(bool scrolledToTop) {
 
   NSString* ntpOmniboxLabel = l10n_util::GetNSString(IDS_OMNIBOX_EMPTY_HINT);
   NSString* focusedOmniboxLabel = l10n_util::GetNSString(IDS_ACCNAME_LOCATION);
-  SelectNewTabPagePanel(NewTabPage::kHomePanel);
+  SelectNewTabPagePanel(ntp_home::HOME_PANEL);
   AssertNTPScrolledToTop(NO);
 
   if (IsIPadIdiom()) {
@@ -227,7 +228,7 @@ void AssertNTPScrolledToTop(bool scrolledToTop) {
   NSString* omniboxLabel = l10n_util::GetNSString(IDS_OMNIBOX_EMPTY_HINT);
   NSString* cancelLabel = l10n_util::GetNSString(IDS_CANCEL);
   if (IsIPadIdiom()) {
-    SelectNewTabPagePanel(NewTabPage::kHomePanel);
+    SelectNewTabPagePanel(ntp_home::HOME_PANEL);
   }
 
   // Check that the NTP is in its normal state.
