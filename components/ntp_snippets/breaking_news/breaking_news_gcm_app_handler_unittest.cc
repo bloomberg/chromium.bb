@@ -185,7 +185,7 @@ base::TimeDelta GetTokenValidationPeriod() {
 }
 
 base::TimeDelta GetForcedSubscriptionPeriod() {
-  return base::TimeDelta::FromHours(7 * 24);
+  return base::TimeDelta::FromDays(7);
 }
 
 const char kBreakingNewsGCMAppID[] = "com.google.breakingnews.gcm";
