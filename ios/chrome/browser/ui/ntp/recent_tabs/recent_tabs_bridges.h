@@ -11,15 +11,15 @@
 #include "base/macros.h"
 #include "components/sessions/core/tab_restore_service_observer.h"
 
-@class RecentTabsPanelController;
+@class RecentTabsTableCoordinator;
 
 namespace recent_tabs {
 
 // Bridge class to forward events from the sessions::TabRestoreService to
-// Objective-C class RecentTabsPanelController.
+// Objective-C class RecentTabsTableCoordinator.
 class ClosedTabsObserverBridge : public sessions::TabRestoreServiceObserver {
  public:
-  explicit ClosedTabsObserverBridge(RecentTabsPanelController* owner);
+  explicit ClosedTabsObserverBridge(RecentTabsTableCoordinator* owner);
   ~ClosedTabsObserverBridge() override;
 
   // sessions::TabRestoreServiceObserver implementation.
@@ -28,7 +28,7 @@ class ClosedTabsObserverBridge : public sessions::TabRestoreServiceObserver {
       sessions::TabRestoreService* service) override;
 
  private:
-  base::WeakNSObject<RecentTabsPanelController> owner_;
+  base::WeakNSObject<RecentTabsTableCoordinator> owner_;
 
   DISALLOW_COPY_AND_ASSIGN(ClosedTabsObserverBridge);
 };

@@ -68,10 +68,10 @@ id<GREYMatcher> RecentlyClosedLabelMatcher() {
 }  // namespace
 
 // Earl grey integration tests for Recent Tabs Panel Controller.
-@interface RecentTabsPanelControllerTestCase : ChromeTestCase
+@interface RecentTabsTableTestCase : ChromeTestCase
 @end
 
-@implementation RecentTabsPanelControllerTestCase
+@implementation RecentTabsTableTestCase
 
 - (void)setUp {
   [ChromeEarlGrey clearBrowsingHistory];

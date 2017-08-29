@@ -15,7 +15,7 @@ namespace recent_tabs {
 #pragma mark - ClosedTabsObserverBridge
 
 ClosedTabsObserverBridge::ClosedTabsObserverBridge(
-    RecentTabsPanelController* owner)
+    RecentTabsTableCoordinator* owner)
     : owner_(owner) {}
 
 ClosedTabsObserverBridge::~ClosedTabsObserverBridge() {}

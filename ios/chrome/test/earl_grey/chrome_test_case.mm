@@ -62,18 +62,17 @@ NSArray* whiteListedMultitaskingTests = @[
   @"testKeyboardCommands_RecentTabsPresented",  // KeyboardCommandsTestCase
   @"testAccessibilityOnMostVisited",            // NewTabPageTestCase
   @"testPrintNormalPage",                       // PrintControllerTestCase
-  @"testQRScannerUIIsShown",    // QRScannerViewControllerTestCase
-  @"testMarkMixedEntriesRead",  // ReadingListTestCase
-  @"testClosedTabAppearsInRecentTabsPanel",
-  // RecentTabsPanelControllerTestCase
-  @"testSafeModeSendingCrashReport",  // SafeModeTestCase
-  @"testSignInOneUser",               // SigninInteractionControllerTestCase
-  @"testSwitchTabs",                  // StackViewTestCase
-  @"testTabStripSwitchTabs",          // TabStripTestCase
-  @"testTabHistoryMenu",              // TabHistoryPopupControllerTestCase
-  @"testEnteringTabSwitcher",         // TabSwitcherControllerTestCase
-  @"testEnterURL",                    // ToolbarTestCase
-  @"testOpenAndCloseToolsMenu",       // ToolsPopupMenuTestCase
+  @"testQRScannerUIIsShown",                 // QRScannerViewControllerTestCase
+  @"testMarkMixedEntriesRead",               // ReadingListTestCase
+  @"testClosedTabAppearsInRecentTabsPanel",  // RecentTabsTableTestCase
+  @"testSafeModeSendingCrashReport",         // SafeModeTestCase
+  @"testSignInOneUser",          // SigninInteractionControllerTestCase
+  @"testSwitchTabs",             // StackViewTestCase
+  @"testTabStripSwitchTabs",     // TabStripTestCase
+  @"testTabHistoryMenu",         // TabHistoryPopupControllerTestCase
+  @"testEnteringTabSwitcher",    // TabSwitcherControllerTestCase
+  @"testEnterURL",               // ToolbarTestCase
+  @"testOpenAndCloseToolsMenu",  // ToolsPopupMenuTestCase
   @"testUserFeedbackPageOpenPrivacyPolicy",  // UserFeedbackTestCase
   @"testVersion",                            // WebUITestCase
 ];

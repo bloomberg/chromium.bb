@@ -15,7 +15,7 @@
 
 @end
 
-// UIViewController wrapper for RecentTabsPanelController for modal display.
+// UIViewController wrapper for RecentTabTableViewController for modal display.
 @interface RecentTabsHandsetViewController : UIViewController
 
 - (instancetype)initWithViewController:(UIViewController*)panelViewController
