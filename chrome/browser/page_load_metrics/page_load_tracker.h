@@ -131,6 +131,11 @@ enum InternalErrorLoadEvent {
   // navigation start of the main frame.
   ERR_SUBFRAME_NAVIGATION_START_BEFORE_MAIN_FRAME,
 
+  // We received an IPC from a subframe when we weren't tracking a committed
+  // load. We expect this error to happen, and track it so we can understand how
+  // frequently this case is encountered.
+  ERR_SUBFRAME_IPC_WITH_NO_RELEVANT_LOAD,
+
   // Add values before this final count.
   ERR_LAST_ENTRY,
 };

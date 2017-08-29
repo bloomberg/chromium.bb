@@ -21085,6 +21085,8 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="14" label="Invalid timing IPC (invalid timing)"/>
   <int value="15"
       label="Subframe navigation start before main frame navigation start"/>
+  <int value="16"
+      label="IPC received from subframe while not tracking a committed load"/>
 </enum>
 
 <enum name="InterruptReason">

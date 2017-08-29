@@ -46,7 +46,6 @@ class MetricsRenderFrameObserver : public content::RenderFrameObserver {
 
  private:
   void SendMetrics();
-  virtual bool ShouldSendMetrics() const;
   virtual mojom::PageLoadTimingPtr GetTiming() const;
   virtual std::unique_ptr<base::Timer> CreateTimer();
   virtual std::unique_ptr<PageTimingSender> CreatePageTimingSender();

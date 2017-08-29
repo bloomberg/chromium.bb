@@ -17,9 +17,9 @@
 
 namespace page_load_metrics {
 
-// Implementation of the MetricsRenderFrameObserver class we're testing,
-// with the GetTiming() and ShouldSendMetrics() methods stubbed out to make
-// the rest of the class more testable.
+// Implementation of the MetricsRenderFrameObserver class we're testing, with
+// the GetTiming() method stubbed out to make the rest of the class more
+// testable.
 class TestMetricsRenderFrameObserver : public MetricsRenderFrameObserver,
                                        public test::WeakMockTimerProvider {
  public:
@@ -56,7 +56,6 @@ class TestMetricsRenderFrameObserver : public MetricsRenderFrameObserver,
     validator_.VerifyExpectedTimings();
   }
 
-  bool ShouldSendMetrics() const override { return true; }
   bool HasNoRenderFrame() const override { return false; }
 
  private:

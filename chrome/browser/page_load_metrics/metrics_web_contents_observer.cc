@@ -618,6 +618,8 @@ void MetricsWebContentsObserver::OnTimingUpdated(
 
     if (error)
       return;
+  } else if (!committed_load_) {
+    RecordInternalError(ERR_SUBFRAME_IPC_WITH_NO_RELEVANT_LOAD);
   }
 
   if (committed_load_) {
