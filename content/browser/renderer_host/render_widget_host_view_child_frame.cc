@@ -155,9 +155,8 @@ void RenderWidgetHostViewChildFrame::SetFrameConnectorDelegate(
 
       auto* manager = root_view->GetTouchSelectionControllerClientManager();
       if (manager) {
-        // We will only have a manager on Aura (and eventually Android).
-        // TODO(wjmaclean): update this comment when TSE OOPIF support becomes
-        // available on Android.
+        // We have managers in Aura and Android, as well as outside of content/.
+        // There is no manager for Mac OS.
         selection_controller_client_ =
             base::MakeUnique<TouchSelectionControllerClientChildFrame>(this,
                                                                        manager);
