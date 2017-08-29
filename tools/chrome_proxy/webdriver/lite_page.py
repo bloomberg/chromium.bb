@@ -5,6 +5,7 @@
 import common
 from common import TestDriver
 from common import IntegrationTest
+from decorators import ChromeVersionBeforeM
 from decorators import ChromeVersionEqualOrAfterM
 
 import time
@@ -177,6 +178,7 @@ class LitePage(IntegrationTest):
   # Lo-Fi fallback is not supported without the
   # DataReductionProxyDecidesTransform feature. Check that no Lo-Fi response
   # is received if a Lite Page is not served.
+  @ChromeVersionBeforeM(62)
   def testLitePageNoFallback(self):
     with TestDriver() as test_driver:
       test_driver.AddChromeArg('--enable-spdy-proxy-auth')
