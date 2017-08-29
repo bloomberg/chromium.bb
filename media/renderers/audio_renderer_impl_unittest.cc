@@ -1246,6 +1246,10 @@ TEST_F(AudioRendererImplTest, BitstreamEndOfStream) {
   EXPECT_FALSE(ConsumeBitstreamBufferedData(OutputFrames(1)));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(ended());
+
+  // Clear the use of |media_client_|, which was set in
+  // InitializeBitstreamFormat().
+  SetMediaClient(nullptr);
 }
 
 }  // namespace media
