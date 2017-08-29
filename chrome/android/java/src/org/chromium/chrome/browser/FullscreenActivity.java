@@ -84,7 +84,7 @@ public class FullscreenActivity extends SingleTabActivity {
     @Override
     protected int getControlContainerLayoutId() {
         // TODO(peconn): Determine if there's something more suitable to use here.
-        return R.layout.webapp_control_container;
+        return R.layout.fullscreen_control_container;
     }
 
     @Override

@@ -46,7 +46,6 @@ import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 import org.chromium.chrome.browser.toolbar.ToolbarControlContainer;
 import org.chromium.chrome.browser.util.ColorUtils;
-import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.ScreenOrientationProvider;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -482,11 +481,6 @@ public class WebappActivity extends SingleTabActivity {
     protected void onUpdatedLastUsedTime(
             WebappDataStorage storage, boolean previouslyLaunched, long previousUsageTimestamp) {}
 
-    private boolean isWebappDomain() {
-        return UrlUtilities.sameDomainOrHost(
-                getActivityTab().getUrl(), getWebappInfo().uri().toString(), true);
-    }
-
     @Override
     protected ChromeFullscreenManager createFullscreenManager() {
         // Disable HTML5 fullscreen in PWA fullscreen mode.
@@ -528,20 +522,17 @@ public class WebappActivity extends SingleTabActivity {
 
             @Override
             public void onDidChangeThemeColor(Tab tab, int color) {
-                if (!isWebappDomain()) return;
                 mBrandColor = color;
                 updateTaskDescription();
             }
 
             @Override
             public void onTitleUpdated(Tab tab) {
-                if (!isWebappDomain()) return;
                 updateTaskDescription();
             }
 
             @Override
             public void onFaviconUpdated(Tab tab, Bitmap icon) {
-                if (!isWebappDomain()) return;
                 // No need to cache the favicon if there is an icon declared in app manifest.
                 if (mWebappInfo.icon() != null) return;
                 if (icon == null) return;
