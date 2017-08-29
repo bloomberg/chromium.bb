@@ -591,7 +591,8 @@ static INLINE int is_global_mv_block(const MODE_INFO *mi, int block,
   const int block_size_allowed = 1;
 #else
   const BLOCK_SIZE bsize = mi->mbmi.sb_type;
-  const int block_size_allowed = (bsize >= BLOCK_8X8);
+  const int block_size_allowed =
+      AOMMIN(block_size_wide[bsize], block_size_high[bsize]) >= 8;
 #endif  // GLOBAL_SUB8X8_USED
 #if CONFIG_EXT_INTER
   return (mode == ZEROMV || mode == ZERO_ZEROMV) && type > TRANSLATION &&
@@ -1516,7 +1517,7 @@ static INLINE int get_vartx_max_txsize(const MB_MODE_INFO *const mbmi,
 
 #if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
 static INLINE int is_motion_variation_allowed_bsize(BLOCK_SIZE bsize) {
-  return (bsize >= BLOCK_8X8);
+  return AOMMIN(block_size_wide[bsize], block_size_high[bsize]) >= 8;
 }
 
 static INLINE int is_motion_variation_allowed_compound(

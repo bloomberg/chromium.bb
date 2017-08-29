@@ -270,7 +270,8 @@ static INLINE int is_interinter_compound_used(COMPOUND_TYPE type,
     case COMPOUND_WEDGE: return wedge_params_lookup[sb_type].bits > 0;
 #endif  // CONFIG_WEDGE
 #if CONFIG_COMPOUND_SEGMENT
-    case COMPOUND_SEG: return sb_type >= BLOCK_8X8;
+    case COMPOUND_SEG:
+      return AOMMIN(block_size_wide[sb_type], block_size_high[sb_type]) >= 8;
 #endif  // CONFIG_COMPOUND_SEGMENT
     default: assert(0); return 0;
   }
