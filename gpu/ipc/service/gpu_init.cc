@@ -303,6 +303,8 @@ bool GpuInit::InitializeAndStartSandbox(const base::CommandLine& command_line,
     gpu_info_.sandboxed =
         sandbox_helper_->EnsureSandboxInitialized(watchdog_thread_.get());
   }
+  UMA_HISTOGRAM_BOOLEAN("GPU.Sandbox.InitializedSuccessfully",
+                        gpu_info_.sandboxed);
 
   return true;
 }
