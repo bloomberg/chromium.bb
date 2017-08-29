@@ -831,9 +831,13 @@ void ExpectHistogramsAreRecordedForTestFrameSet(
   tester.ExpectTotalCount(kEvaluationCPUDuration,
                           time_recorded ? num_subresource_checks : 0);
 
-  // Activation timing histograms are always recorded.
+  // Activation WallDuration histogram is always recorded.
   tester.ExpectTotalCount(kActivationWallDuration, 6);
-  tester.ExpectTotalCount(kActivationCPUDuration, 6);
+
+  // Activation CPUDuration histogram is recorded only if base::ThreadTicks is
+  // supported.
+  tester.ExpectTotalCount(kActivationCPUDuration,
+                          ScopedThreadTimers::IsSupported() ? 6 : 0);
 
   tester.ExpectUniqueSample(
       kDocumentLoadActivationLevel,
