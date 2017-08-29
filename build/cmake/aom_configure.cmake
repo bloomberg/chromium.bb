@@ -376,26 +376,6 @@ foreach(NUM RANGE ${AOM_RTCD_CUSTOM_COMMAND_COUNT})
     OUTPUT_FILE ${AOM_RTCD_HEADER_FILE})
 endforeach()
 
-# TODO(tomfinegan): Move this to aom_optimization.cmake.
-function (add_rtcd_build_step config output source symbol)
-  add_custom_command(
-    OUTPUT ${output}
-    COMMAND ${PERL_EXECUTABLE}
-    ARGS "${AOM_ROOT}/build/make/rtcd.pl"
-      --arch=${AOM_TARGET_CPU}
-      --sym=${symbol}
-      ${AOM_RTCD_FLAGS}
-      --config=${AOM_CONFIG_DIR}/${AOM_TARGET_CPU}_rtcd_config.rtcd
-      ${config}
-      > ${output}
-    DEPENDS ${config}
-    COMMENT "Generating ${output}"
-    WORKING_DIRECTORY ${AOM_CONFIG_DIR}
-    VERBATIM)
-  set_property(SOURCE ${source} PROPERTY OBJECT_DEPENDS ${output})
-  set_property(SOURCE ${output} PROPERTY GENERATED)
-endfunction ()
-
 # Generate aom_version.h.
 execute_process(
   COMMAND ${CMAKE_COMMAND}

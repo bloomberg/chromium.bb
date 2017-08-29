@@ -11,8 +11,8 @@
 cmake_minimum_required(VERSION 3.5)
 
 set(REQUIRED_ARGS
-  "AOM_ROOT" "AOM_CONFIG_DIR" "CMAKE_INSTALL_PREFIX" "CMAKE_PROJECT_NAME"
-  "CONFIG_MULTITHREAD" "HAVE_PTHREAD_H")
+    "AOM_ROOT" "AOM_CONFIG_DIR" "CMAKE_INSTALL_PREFIX" "CMAKE_PROJECT_NAME"
+    "CONFIG_MULTITHREAD" "HAVE_PTHREAD_H")
 
 foreach (arg ${REQUIRED_ARGS})
   if ("${${arg}}" STREQUAL "")
@@ -55,4 +55,3 @@ else ()
   file(APPEND "${pkgconfig_file}" "Libs.private: -lm\n")
 endif ()
 file(APPEND "${pkgconfig_file}" "Cflags: -I${prefix}/include\n")
-
