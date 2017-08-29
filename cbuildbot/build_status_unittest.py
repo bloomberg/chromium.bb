@@ -188,7 +188,7 @@ class CIDBStatusInfos(object):
 
 
 class SlaveStatusTest(cros_test_lib.MockTestCase):
-  """Test methods testing methods in SlaveStatus class."""
+  """Test methods testing methods in SalveStatus class."""
 
   def setUp(self):
     self.time_now = datetime.datetime.now()
@@ -265,10 +265,6 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
       builds = set()
     self.PatchObject(build_status.SlaveStatus, '_RetryBuilds',
                      return_value=builds)
-
-  def _MockCancelBuilds(self, side_effect=None):
-    self.PatchObject(builder_status_lib, "CancelBuilds",
-                     side_effect=side_effect)
 
   def _GetFullBuildConfigs(self, exclude_builds=None):
     build_config_list = ['scheduled', 'started', 'completed_success',
@@ -873,7 +869,6 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
         'build1': CIDBStatusInfos.GetFailedBuild()
     }
     self._Mock_GetSlaveStatusesFromCIDB(cidb_status)
-    self._MockCancelBuilds()
 
     slave_status = self._GetSlaveStatus(
         start_time=datetime.datetime.now() - datetime.timedelta(hours=1),
@@ -886,7 +881,6 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
     cidb_status = {
         'failure': CIDBStatusInfos.GetFailedBuild()
     }
-    self._MockCancelBuilds()
     self._Mock_GetSlaveStatusesFromCIDB(cidb_status)
 
     buildbucket_info_dict = {
@@ -905,7 +899,6 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
     cidb_status = {
         'failure': CIDBStatusInfos.GetFailedBuild()
     }
-    self._MockCancelBuilds()
     self._Mock_GetSlaveStatusesFromCIDB(cidb_status)
 
     buildbucket_info_dict = {
@@ -1179,7 +1172,6 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
 
   def testShouldWaitWithTriageRelevantChangesShouldWaitFalse(self):
     """Test ShouldWait with TriageRelevantChanges.ShouldWait is False."""
-    self._MockCancelBuilds()
     self._Mock_GetSlaveStatusesFromCIDB(CIDBStatusInfos.GetFullCIDBStatusInfo())
     self._MockGetAllSlaveCIDBStatusInfo(CIDBStatusInfos.GetFullCIDBStatusInfo())
     self._Mock_GetSlaveStatusesFromBuildbucket(
