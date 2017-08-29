@@ -17,6 +17,7 @@ source_set("tests") {
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp:service_test_support",
     "//services/viz/public/interfaces",
+    "//skia/public/interfaces",
     "//testing/gtest",
     "//ui/gfx:test_support",
   ]

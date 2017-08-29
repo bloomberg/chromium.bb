@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module cc.mojom;
+module viz.mojom;
 
 import "skia/public/interfaces/image_filter.mojom";
 import "skia/public/interfaces/blur_image_filter_tile_mode.mojom";

@@ -7,8 +7,6 @@
 #include "base/message_loop/message_loop.h"
 #include "cc/ipc/copy_output_request_struct_traits.h"
 #include "cc/ipc/copy_output_result_struct_traits.h"
-#include "cc/ipc/filter_operation_struct_traits.h"
-#include "cc/ipc/filter_operations_struct_traits.h"
 #include "cc/ipc/frame_sink_id_struct_traits.h"
 #include "cc/ipc/local_surface_id_struct_traits.h"
 #include "cc/ipc/texture_mailbox_struct_traits.h"
@@ -32,6 +30,8 @@
 #include "services/viz/public/cpp/compositing/begin_frame_args_struct_traits.h"
 #include "services/viz/public/cpp/compositing/compositor_frame_metadata_struct_traits.h"
 #include "services/viz/public/cpp/compositing/compositor_frame_struct_traits.h"
+#include "services/viz/public/cpp/compositing/filter_operation_struct_traits.h"
+#include "services/viz/public/cpp/compositing/filter_operations_struct_traits.h"
 #include "services/viz/public/cpp/compositing/render_pass_struct_traits.h"
 #include "services/viz/public/cpp/compositing/resource_settings_struct_traits.h"
 #include "services/viz/public/cpp/compositing/returned_resource_struct_traits.h"
@@ -43,6 +43,8 @@
 #include "services/viz/public/cpp/compositing/transferable_resource_struct_traits.h"
 #include "services/viz/public/interfaces/compositing/begin_frame_args.mojom.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame.mojom.h"
+#include "services/viz/public/interfaces/compositing/filter_operation.mojom.h"
+#include "services/viz/public/interfaces/compositing/filter_operations.mojom.h"
 #include "services/viz/public/interfaces/compositing/returned_resource.mojom.h"
 #include "services/viz/public/interfaces/compositing/surface_info.mojom.h"
 #include "services/viz/public/interfaces/compositing/surface_sequence.mojom.h"
@@ -51,6 +53,8 @@
 #include "skia/public/interfaces/blur_image_filter_tile_mode_struct_traits.h"
 #include "skia/public/interfaces/image_filter_struct_traits.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkString.h"
+#include "third_party/skia/include/effects/SkDropShadowImageFilter.h"
 #include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
 #include "ui/gfx/ipc/color/gfx_param_traits.h"
 #include "ui/gfx/mojo/buffer_types_struct_traits.h"
@@ -125,6 +129,97 @@ TEST_F(StructTraitsTest, BeginFrameAck) {
   EXPECT_EQ(sequence_number, output.sequence_number);
   // |has_damage| is not transmitted.
   EXPECT_FALSE(output.has_damage);
+}
+
+namespace {
+
+void ExpectEqual(const cc::FilterOperation& input,
+                 const cc::FilterOperation& output) {
+  EXPECT_EQ(input.type(), output.type());
+  switch (input.type()) {
+    case cc::FilterOperation::GRAYSCALE:
+    case cc::FilterOperation::SEPIA:
+    case cc::FilterOperation::SATURATE:
+    case cc::FilterOperation::HUE_ROTATE:
+    case cc::FilterOperation::INVERT:
+    case cc::FilterOperation::BRIGHTNESS:
+    case cc::FilterOperation::SATURATING_BRIGHTNESS:
+    case cc::FilterOperation::CONTRAST:
+    case cc::FilterOperation::OPACITY:
+    case cc::FilterOperation::BLUR:
+      EXPECT_EQ(input.amount(), output.amount());
+      break;
+    case cc::FilterOperation::DROP_SHADOW:
+      EXPECT_EQ(input.amount(), output.amount());
+      EXPECT_EQ(input.drop_shadow_offset(), output.drop_shadow_offset());
+      EXPECT_EQ(input.drop_shadow_color(), output.drop_shadow_color());
+      break;
+    case cc::FilterOperation::COLOR_MATRIX:
+      EXPECT_EQ(0, memcmp(input.matrix(), output.matrix(), 20));
+      break;
+    case cc::FilterOperation::ZOOM:
+      EXPECT_EQ(input.amount(), output.amount());
+      EXPECT_EQ(input.zoom_inset(), output.zoom_inset());
+      break;
+    case cc::FilterOperation::REFERENCE: {
+      SkString input_str;
+      input.image_filter()->toString(&input_str);
+      SkString output_str;
+      output.image_filter()->toString(&output_str);
+      EXPECT_EQ(input_str, output_str);
+      break;
+    }
+    case cc::FilterOperation::ALPHA_THRESHOLD:
+      NOTREACHED();
+      break;
+  }
+}
+
+}  // namespace
+
+TEST_F(StructTraitsTest, FilterOperationBlur) {
+  cc::FilterOperation input = cc::FilterOperation::CreateBlurFilter(20);
+
+  cc::FilterOperation output;
+  SerializeAndDeserialize<mojom::FilterOperation>(input, &output);
+  ExpectEqual(input, output);
+}
+
+TEST_F(StructTraitsTest, FilterOperationDropShadow) {
+  cc::FilterOperation input = cc::FilterOperation::CreateDropShadowFilter(
+      gfx::Point(4, 4), 4.0f, SkColorSetARGB(255, 40, 0, 0));
+
+  cc::FilterOperation output;
+  SerializeAndDeserialize<mojom::FilterOperation>(input, &output);
+  ExpectEqual(input, output);
+}
+
+TEST_F(StructTraitsTest, FilterOperationReferenceFilter) {
+  cc::FilterOperation input =
+      cc::FilterOperation::CreateReferenceFilter(SkDropShadowImageFilter::Make(
+          SkIntToScalar(3), SkIntToScalar(8), SkIntToScalar(4),
+          SkIntToScalar(9), SK_ColorBLACK,
+          SkDropShadowImageFilter::kDrawShadowAndForeground_ShadowMode,
+          nullptr));
+
+  cc::FilterOperation output;
+  SerializeAndDeserialize<mojom::FilterOperation>(input, &output);
+  ExpectEqual(input, output);
+}
+
+TEST_F(StructTraitsTest, FilterOperations) {
+  cc::FilterOperations input;
+  input.Append(cc::FilterOperation::CreateBlurFilter(0.f));
+  input.Append(cc::FilterOperation::CreateSaturateFilter(4.f));
+  input.Append(cc::FilterOperation::CreateZoomFilter(2.0f, 1));
+
+  cc::FilterOperations output;
+  SerializeAndDeserialize<mojom::FilterOperations>(input, &output);
+
+  EXPECT_EQ(input.size(), output.size());
+  for (size_t i = 0; i < input.size(); ++i) {
+    ExpectEqual(input.at(i), output.at(i));
+  }
 }
 
 TEST_F(StructTraitsTest, ResourceSettings) {

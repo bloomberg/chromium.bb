@@ -5,8 +5,6 @@
 typemaps = [
   "//cc/ipc/copy_output_request.typemap",
   "//cc/ipc/copy_output_result.typemap",
-  "//cc/ipc/filter_operation.typemap",
-  "//cc/ipc/filter_operations.typemap",
   "//cc/ipc/frame_sink_id.typemap",
   "//cc/ipc/local_surface_id.typemap",
   "//cc/ipc/texture_mailbox.typemap",

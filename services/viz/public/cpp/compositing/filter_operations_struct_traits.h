@@ -2,22 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_IPC_FILTER_OPERATIONS_STRUCT_TRAITS_H_
-#define CC_IPC_FILTER_OPERATIONS_STRUCT_TRAITS_H_
+#ifndef SERVICES_VIZ_PUBLIC_CPP_COMPOSITING_FILTER_OPERATIONS_STRUCT_TRAITS_H_
+#define SERVICES_VIZ_PUBLIC_CPP_COMPOSITING_FILTER_OPERATIONS_STRUCT_TRAITS_H_
 
 #include "cc/base/filter_operations.h"
-#include "cc/ipc/filter_operations.mojom-shared.h"
+#include "services/viz/public/interfaces/compositing/filter_operations.mojom-shared.h"
 
 namespace mojo {
 
 template <>
-struct StructTraits<cc::mojom::FilterOperationsDataView, cc::FilterOperations> {
+struct StructTraits<viz::mojom::FilterOperationsDataView,
+                    cc::FilterOperations> {
   static const std::vector<cc::FilterOperation>& operations(
       const cc::FilterOperations& operations) {
     return operations.operations();
   }
 
-  static bool Read(cc::mojom::FilterOperationsDataView data,
+  static bool Read(viz::mojom::FilterOperationsDataView data,
                    cc::FilterOperations* out) {
     std::vector<cc::FilterOperation> operations;
     if (!data.ReadOperations(&operations))
@@ -29,4 +30,4 @@ struct StructTraits<cc::mojom::FilterOperationsDataView, cc::FilterOperations> {
 
 }  // namespace mojo
 
-#endif  // CC_IPC_FILTER_OPERATIONS_STRUCT_TRAITS_H_
+#endif  // SERVICES_VIZ_PUBLIC_CPP_COMPOSITING_FILTER_OPERATIONS_STRUCT_TRAITS_H_

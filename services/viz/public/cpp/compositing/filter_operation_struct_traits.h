@@ -2,88 +2,88 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_IPC_FILTER_OPERATION_STRUCT_TRAITS_H_
-#define CC_IPC_FILTER_OPERATION_STRUCT_TRAITS_H_
+#ifndef SERVICES_VIZ_PUBLIC_CPP_COMPOSITING_FILTER_OPERATION_STRUCT_TRAITS_H_
+#define SERVICES_VIZ_PUBLIC_CPP_COMPOSITING_FILTER_OPERATION_STRUCT_TRAITS_H_
 
 #include "base/containers/span.h"
 #include "cc/base/filter_operation.h"
-#include "cc/ipc/filter_operation.mojom-shared.h"
+#include "services/viz/public/interfaces/compositing/filter_operation.mojom-shared.h"
 #include "skia/public/interfaces/blur_image_filter_tile_mode_struct_traits.h"
 #include "skia/public/interfaces/image_filter_struct_traits.h"
 
 namespace mojo {
 
 namespace {
-cc::mojom::FilterType CCFilterTypeToMojo(
+viz::mojom::FilterType CCFilterTypeToMojo(
     const cc::FilterOperation::FilterType& type) {
   switch (type) {
     case cc::FilterOperation::GRAYSCALE:
-      return cc::mojom::FilterType::GRAYSCALE;
+      return viz::mojom::FilterType::GRAYSCALE;
     case cc::FilterOperation::SEPIA:
-      return cc::mojom::FilterType::SEPIA;
+      return viz::mojom::FilterType::SEPIA;
     case cc::FilterOperation::SATURATE:
-      return cc::mojom::FilterType::SATURATE;
+      return viz::mojom::FilterType::SATURATE;
     case cc::FilterOperation::HUE_ROTATE:
-      return cc::mojom::FilterType::HUE_ROTATE;
+      return viz::mojom::FilterType::HUE_ROTATE;
     case cc::FilterOperation::INVERT:
-      return cc::mojom::FilterType::INVERT;
+      return viz::mojom::FilterType::INVERT;
     case cc::FilterOperation::BRIGHTNESS:
-      return cc::mojom::FilterType::BRIGHTNESS;
+      return viz::mojom::FilterType::BRIGHTNESS;
     case cc::FilterOperation::CONTRAST:
-      return cc::mojom::FilterType::CONTRAST;
+      return viz::mojom::FilterType::CONTRAST;
     case cc::FilterOperation::OPACITY:
-      return cc::mojom::FilterType::OPACITY;
+      return viz::mojom::FilterType::OPACITY;
     case cc::FilterOperation::BLUR:
-      return cc::mojom::FilterType::BLUR;
+      return viz::mojom::FilterType::BLUR;
     case cc::FilterOperation::DROP_SHADOW:
-      return cc::mojom::FilterType::DROP_SHADOW;
+      return viz::mojom::FilterType::DROP_SHADOW;
     case cc::FilterOperation::COLOR_MATRIX:
-      return cc::mojom::FilterType::COLOR_MATRIX;
+      return viz::mojom::FilterType::COLOR_MATRIX;
     case cc::FilterOperation::ZOOM:
-      return cc::mojom::FilterType::ZOOM;
+      return viz::mojom::FilterType::ZOOM;
     case cc::FilterOperation::REFERENCE:
-      return cc::mojom::FilterType::REFERENCE;
+      return viz::mojom::FilterType::REFERENCE;
     case cc::FilterOperation::SATURATING_BRIGHTNESS:
-      return cc::mojom::FilterType::SATURATING_BRIGHTNESS;
+      return viz::mojom::FilterType::SATURATING_BRIGHTNESS;
     case cc::FilterOperation::ALPHA_THRESHOLD:
-      return cc::mojom::FilterType::ALPHA_THRESHOLD;
+      return viz::mojom::FilterType::ALPHA_THRESHOLD;
   }
   NOTREACHED();
-  return cc::mojom::FilterType::FILTER_TYPE_LAST;
+  return viz::mojom::FilterType::FILTER_TYPE_LAST;
 }
 
 cc::FilterOperation::FilterType MojoFilterTypeToCC(
-    const cc::mojom::FilterType& type) {
+    const viz::mojom::FilterType& type) {
   switch (type) {
-    case cc::mojom::FilterType::GRAYSCALE:
+    case viz::mojom::FilterType::GRAYSCALE:
       return cc::FilterOperation::GRAYSCALE;
-    case cc::mojom::FilterType::SEPIA:
+    case viz::mojom::FilterType::SEPIA:
       return cc::FilterOperation::SEPIA;
-    case cc::mojom::FilterType::SATURATE:
+    case viz::mojom::FilterType::SATURATE:
       return cc::FilterOperation::SATURATE;
-    case cc::mojom::FilterType::HUE_ROTATE:
+    case viz::mojom::FilterType::HUE_ROTATE:
       return cc::FilterOperation::HUE_ROTATE;
-    case cc::mojom::FilterType::INVERT:
+    case viz::mojom::FilterType::INVERT:
       return cc::FilterOperation::INVERT;
-    case cc::mojom::FilterType::BRIGHTNESS:
+    case viz::mojom::FilterType::BRIGHTNESS:
       return cc::FilterOperation::BRIGHTNESS;
-    case cc::mojom::FilterType::CONTRAST:
+    case viz::mojom::FilterType::CONTRAST:
       return cc::FilterOperation::CONTRAST;
-    case cc::mojom::FilterType::OPACITY:
+    case viz::mojom::FilterType::OPACITY:
       return cc::FilterOperation::OPACITY;
-    case cc::mojom::FilterType::BLUR:
+    case viz::mojom::FilterType::BLUR:
       return cc::FilterOperation::BLUR;
-    case cc::mojom::FilterType::DROP_SHADOW:
+    case viz::mojom::FilterType::DROP_SHADOW:
       return cc::FilterOperation::DROP_SHADOW;
-    case cc::mojom::FilterType::COLOR_MATRIX:
+    case viz::mojom::FilterType::COLOR_MATRIX:
       return cc::FilterOperation::COLOR_MATRIX;
-    case cc::mojom::FilterType::ZOOM:
+    case viz::mojom::FilterType::ZOOM:
       return cc::FilterOperation::ZOOM;
-    case cc::mojom::FilterType::REFERENCE:
+    case viz::mojom::FilterType::REFERENCE:
       return cc::FilterOperation::REFERENCE;
-    case cc::mojom::FilterType::SATURATING_BRIGHTNESS:
+    case viz::mojom::FilterType::SATURATING_BRIGHTNESS:
       return cc::FilterOperation::SATURATING_BRIGHTNESS;
-    case cc::mojom::FilterType::ALPHA_THRESHOLD:
+    case viz::mojom::FilterType::ALPHA_THRESHOLD:
       return cc::FilterOperation::ALPHA_THRESHOLD;
   }
   NOTREACHED();
@@ -93,8 +93,8 @@ cc::FilterOperation::FilterType MojoFilterTypeToCC(
 }  // namespace
 
 template <>
-struct StructTraits<cc::mojom::FilterOperationDataView, cc::FilterOperation> {
-  static cc::mojom::FilterType type(const cc::FilterOperation& op) {
+struct StructTraits<viz::mojom::FilterOperationDataView, cc::FilterOperation> {
+  static viz::mojom::FilterType type(const cc::FilterOperation& op) {
     return CCFilterTypeToMojo(op.type());
   }
 
@@ -158,7 +158,7 @@ struct StructTraits<cc::mojom::FilterOperationDataView, cc::FilterOperation> {
         ToMojom(operation.blur_tile_mode());
   }
 
-  static bool Read(cc::mojom::FilterOperationDataView data,
+  static bool Read(viz::mojom::FilterOperationDataView data,
                    cc::FilterOperation* out) {
     out->set_type(MojoFilterTypeToCC(data.type()));
     switch (out->type()) {
@@ -228,4 +228,4 @@ struct StructTraits<cc::mojom::FilterOperationDataView, cc::FilterOperation> {
 
 }  // namespace mojo
 
-#endif  // CC_IPC_FILTER_OPERATION_STRUCT_TRAITS_H_
+#endif  // SERVICES_VIZ_PUBLIC_CPP_COMPOSITING_FILTER_OPERATION_STRUCT_TRAITS_H_
