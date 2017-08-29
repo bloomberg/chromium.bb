@@ -309,7 +309,7 @@ const base::Feature kNativeNotifications{"NativeNotifications",
 
 #if BUILDFLAG(ENABLE_NATIVE_WINDOW_NAV_BUTTONS)
 const base::Feature kNativeWindowNavButtons{"NativeWindowNavButtons",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // BUILDFLAG(ENABLE_NATIVE_WINDOW_NAV_BUTTONS)
 
 const base::Feature kNetworkPrediction{"NetworkPrediction",
