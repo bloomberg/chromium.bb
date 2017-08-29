@@ -157,13 +157,11 @@ class TestServerThread(threading.Thread):
       return False
     logging.info('Got port json data: %s', port_json)
     port_json = json.loads(port_json)
-
-    if not port_json.has_key('port') or not isinstance(port_json['port'], int):
-      logging.error('Failed to get port information from the server data.')
-      return False
-
-    self.host_port = port_json['port']
-    return self.port_forwarder.WaitPortNotAvailable(self.host_port)
+    if port_json.has_key('port') and isinstance(port_json['port'], int):
+      self.host_port = port_json['port']
+      return self.port_forwarder.WaitPortNotAvailable(self.host_port)
+    logging.error('Failed to get port information from the server data.')
+    return False
 
   def _GenerateCommandLineArguments(self):
     """Generates the command line to run the test server.
@@ -317,54 +315,43 @@ class SpawningServerRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     logging.info(content_length)
     test_server_argument_json = self.rfile.read(content_length)
     logging.info(test_server_argument_json)
-
-    if len(self.server.test_servers) >= self.server.max_instances:
-      self._SendResponse(400, 'Invalid request', {},
-                         'Too many test servers running')
-      return
-
+    # There should only be one test server instance at a time. However it may
+    # be possible that a previous instance was not cleaned up properly
+    # (crbug.com/665686)
+    if self.server.test_server_instance:
+      port = self.server.test_server_instance.host_port
+      logging.info('Killing lingering test server instance on port: %d', port)
+      self.server.test_server_instance.Stop()
+      self.server.test_server_instance = None
     ready_event = threading.Event()
-    new_server = TestServerThread(ready_event,
-                                  json.loads(test_server_argument_json),
-                                  self.server.port_forwarder)
-    new_server.setDaemon(True)
-    new_server.start()
+    self.server.test_server_instance = TestServerThread(
+        ready_event,
+        json.loads(test_server_argument_json),
+        self.server.port_forwarder)
+    self.server.test_server_instance.setDaemon(True)
+    self.server.test_server_instance.start()
     ready_event.wait()
-    if new_server.is_ready:
+    if self.server.test_server_instance.is_ready:
       self._SendResponse(200, 'OK', {}, json.dumps(
-          {'port': new_server.forwarder_device_port,
+          {'port': self.server.test_server_instance.forwarder_device_port,
            'message': 'started'}))
-      port = new_server.host_port
-      logging.info('Test server is running on port: %d.' % port)
-      assert not self.server.test_servers.has_key(port)
-      self.server.test_servers[port] = new_server
+      logging.info('Test server is running on port: %d.',
+                   self.server.test_server_instance.host_port)
     else:
-      new_server.Stop()
+      self.server.test_server_instance.Stop()
+      self.server.test_server_instance = None
       self._SendResponse(500, 'Test Server Error.', {}, '')
       logging.info('Encounter problem during starting a test server.')
 
-  def _KillTestServer(self, params):
+  def _KillTestServer(self):
     """Stops the test server instance."""
     # There should only ever be one test server at a time. This may do the
     # wrong thing if we try and start multiple test servers.
-    try:
-      port = int(params['port'][0])
-    except ValueError, KeyError:
-      port = None
-    if port == None or port <= 0:
-      self._SendResponse(400, 'Invalid request.', {}, 'port must be specified')
+    if not self.server.test_server_instance:
       return
-
-    if not self.server.test_servers.has_key(port):
-      self._SendResponse(400, 'Invalid request.', {},
-                         "testserver isn't running on port %d" % port)
-      return
-
-    server = self.server.test_servers.pop(port)
-
+    port = self.server.test_server_instance.host_port
     logging.info('Handling request to kill a test server on port: %d.', port)
-    server.Stop()
-
+    self.server.test_server_instance.Stop()
     # Make sure the status of test server is correct before sending response.
     if self.server.port_forwarder.WaitHostPortAvailable(port):
       self._SendResponse(200, 'OK', {}, 'killed')
@@ -372,6 +359,7 @@ class SpawningServerRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     else:
       self._SendResponse(500, 'Test Server Error.', {}, '')
       logging.info('Encounter problem during killing a test server.')
+    self.server.test_server_instance = None
 
   def do_POST(self):
     parsed_path = urlparse.urlparse(self.path)
@@ -391,7 +379,7 @@ class SpawningServerRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     for param in params:
       logging.info('%s=%s', param, params[param][0])
     if action == '/kill':
-      self._KillTestServer(params)
+      self._KillTestServer()
     elif action == '/ping':
       # The ping handler is used to check whether the spawner server is ready
       # to serve the requests. We don't need to test the status of the test
@@ -406,18 +394,17 @@ class SpawningServerRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 class SpawningServer(object):
   """The class used to start/stop a http server."""
 
-  def __init__(self, test_server_spawner_port, port_forwarder, max_instances):
+  def __init__(self, test_server_spawner_port, port_forwarder):
     self.server = BaseHTTPServer.HTTPServer(('', test_server_spawner_port),
                                             SpawningServerRequestHandler)
     self.server_port = self.server.server_port
     logging.info('Started test server spawner on port: %d.', self.server_port)
 
     self.server.port_forwarder = port_forwarder
-    self.server.test_servers = {}
-    self.server.max_instances = max_instances
+    self.server.test_server_instance = None
 
   def _Listen(self):
-    logging.info('Starting test server spawner.')
+    logging.info('Starting test server spawner')
     self.server.serve_forever()
 
   def Start(self):
@@ -440,9 +427,6 @@ class SpawningServer(object):
     This should be called if the test server spawner is reused,
     to avoid sharing the test server instance.
     """
-    if self.server.test_servers:
-      logging.warning('Not all test servers were stopped.')
-      for port in self.server.test_servers:
-        logging.warning('Stopping test server on port %d' % port)
-        self.server.test_servers[port].Stop()
-      self.server.test_servers = []
+    if self.server.test_server_instance:
+      self.server.test_server_instance.Stop()
+      self.server.test_server_instance = None
