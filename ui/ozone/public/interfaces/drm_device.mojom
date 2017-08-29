@@ -15,13 +15,11 @@ import "ui/gfx/mojo/accelerated_widget.mojom";
 import "ui/ozone/public/interfaces/overlay_surface_candidate.mojom";
 
 
-// Mus is split into two processes. The GpuAdapter is the interface between
-// Mus-WS and Mus-GPU. Mus-WS is a higher-privilege process while Mus-GPU
-// operates with lower privileges (mirroring the Chrome browser to GPU process
-// relationship.)
-// All functions in GpuAdapter are implemented by the lower privilege GPU
+// The viz process on CrOS implements the DrmDevice
+// service to let the viz host and clients manage DRM displays.
+// All functions in DrmDevice are implemented by the lower privilege viz
 // process.
-interface GpuAdapter {
+interface DrmDevice {
   // Creates scanout capable DRM buffers to back |widget|.
   CreateWindow(gfx.mojom.AcceleratedWidget widget);
 

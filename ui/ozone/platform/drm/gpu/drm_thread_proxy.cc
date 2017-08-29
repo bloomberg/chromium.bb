@@ -63,18 +63,20 @@ void DrmThreadProxy::GetScanoutFormats(
                  widget, scanout_formats));
 }
 
-void DrmThreadProxy::AddBinding(ozone::mojom::DeviceCursorRequest request) {
+void DrmThreadProxy::AddBindingCursorDevice(
+    ozone::mojom::DeviceCursorRequest request) {
   drm_thread_.task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&DrmThread::AddBinding, base::Unretained(&drm_thread_),
-                 base::Passed(&request)));
+      base::Bind(&DrmThread::AddBindingCursorDevice,
+                 base::Unretained(&drm_thread_), base::Passed(&request)));
 }
 
-void DrmThreadProxy::AddBindingGpu(ozone::mojom::GpuAdapterRequest request) {
+void DrmThreadProxy::AddBindingDrmDevice(
+    ozone::mojom::DrmDeviceRequest request) {
   drm_thread_.task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&DrmThread::AddBindingGpu, base::Unretained(&drm_thread_),
-                 base::Passed(&request)));
+      base::Bind(&DrmThread::AddBindingDrmDevice,
+                 base::Unretained(&drm_thread_), base::Passed(&request)));
 }
 
 }  // namespace ui

@@ -21,7 +21,7 @@
 #include "ui/ozone/common/gpu/ozone_gpu_message_params.h"
 #include "ui/ozone/platform/drm/common/display_types.h"
 #include "ui/ozone/public/interfaces/device_cursor.mojom.h"
-#include "ui/ozone/public/interfaces/gpu_adapter.mojom.h"
+#include "ui/ozone/public/interfaces/drm_device.mojom.h"
 #include "ui/ozone/public/swap_completion_callback.h"
 
 namespace base {
@@ -57,7 +57,7 @@ struct OverlayPlane;
 // thread (such as modesetting) no longer block the GPU main thread.
 class DrmThread : public base::Thread,
                   public ozone::mojom::DeviceCursor,
-                  public ozone::mojom::GpuAdapter {
+                  public ozone::mojom::DrmDevice {
  public:
   DrmThread();
   ~DrmThread() override;
@@ -133,10 +133,10 @@ class DrmThread : public base::Thread,
   void Init() override;
 
   // Mojo support for DeviceCursorRequest.
-  void AddBinding(ozone::mojom::DeviceCursorRequest request);
+  void AddBindingCursorDevice(ozone::mojom::DeviceCursorRequest request);
 
-  // Mojo support for GpuAdapter requests.
-  void AddBindingGpu(ozone::mojom::GpuAdapterRequest request);
+  // Mojo support for DrmDevice requests.
+  void AddBindingDrmDevice(ozone::mojom::DrmDeviceRequest request);
 
  private:
   std::unique_ptr<DrmDeviceManager> device_manager_;
@@ -148,8 +148,8 @@ class DrmThread : public base::Thread,
   // requests from two different client threads.
   mojo::BindingSet<ozone::mojom::DeviceCursor> bindings_;
 
-  // The mojo implementation of GpuAdapter can use a simple binding.
-  mojo::Binding<ozone::mojom::GpuAdapter> binding_;
+  // The mojo implementation of DrmDevice can use a simple binding.
+  mojo::Binding<ozone::mojom::DrmDevice> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(DrmThread);
 };

@@ -45,8 +45,8 @@ class DrmThreadProxy {
   void GetScanoutFormats(gfx::AcceleratedWidget widget,
                          std::vector<gfx::BufferFormat>* scanout_formats);
 
-  void AddBinding(ozone::mojom::DeviceCursorRequest request);
-  void AddBindingGpu(ozone::mojom::GpuAdapterRequest request);
+  void AddBindingCursorDevice(ozone::mojom::DeviceCursorRequest request);
+  void AddBindingDrmDevice(ozone::mojom::DrmDeviceRequest request);
 
  private:
   DrmThread drm_thread_;

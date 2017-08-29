@@ -16,7 +16,7 @@
 #include "ui/ozone/platform/drm/host/drm_cursor.h"
 #include "ui/ozone/platform/drm/host/gpu_thread_adapter.h"
 #include "ui/ozone/public/interfaces/device_cursor.mojom.h"
-#include "ui/ozone/public/interfaces/gpu_adapter.mojom.h"
+#include "ui/ozone/public/interfaces/drm_device.mojom.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -123,8 +123,8 @@ class MusThreadProxy : public GpuThreadAdapter,
 
   scoped_refptr<base::SingleThreadTaskRunner> ws_task_runner_;
 
-  // Mojo implementation of the GpuAdapter.
-  ui::ozone::mojom::GpuAdapterPtr gpu_adapter_;
+  // Mojo implementation of the DrmDevice.
+  ui::ozone::mojom::DrmDevicePtr gpu_adapter_;
 
   // TODO(rjkroege): Remove this in a subsequent CL (http://crbug.com/620927)
   DrmThread* drm_thread_;  // Not owned.

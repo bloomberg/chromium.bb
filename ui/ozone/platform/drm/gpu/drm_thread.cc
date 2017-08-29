@@ -318,12 +318,13 @@ void DrmThread::SetColorCorrection(
 
 // DrmThread requires a BindingSet instead of a simple Binding because it will
 // be used from multiple threads in multiple processes.
-void DrmThread::AddBinding(ozone::mojom::DeviceCursorRequest request) {
+void DrmThread::AddBindingCursorDevice(
+    ozone::mojom::DeviceCursorRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 
-void DrmThread::AddBindingGpu(ozone::mojom::GpuAdapterRequest request) {
-  TRACE_EVENT0("drm", "DrmThread::AddBindingGpu");
+void DrmThread::AddBindingDrmDevice(ozone::mojom::DrmDeviceRequest request) {
+  TRACE_EVENT0("drm", "DrmThread::AddBindingDrmDevice");
   binding_.Bind(std::move(request));
 }
 
