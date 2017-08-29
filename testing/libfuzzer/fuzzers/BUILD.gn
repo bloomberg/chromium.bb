@@ -154,7 +154,7 @@ fuzzer_test("libsrtp_fuzzer") {
   deps = [
     "//third_party/libsrtp",
   ]
-  libfuzzer_options = [ "max_len=1000" ]
+  libfuzzer_options = [ "max_len=1500" ]
 }
 
 fuzzer_test("base_json_reader_fuzzer") {
