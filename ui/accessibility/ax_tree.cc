@@ -189,18 +189,30 @@ gfx::RectF AXTree::RelativeToTreeBounds(const AXNode* node,
   while (node != nullptr) {
     if (node->data().transform)
       node->data().transform->TransformRect(&bounds);
-    auto* container = GetFromId(node->data().offset_container_id);
-    if (!container) {
-      if (node == root())
-        container = node->parent();
-      else
-        container = root();
-    }
+    const AXNode* container;
+
+    // Normally we apply any transforms and offsets for each node and
+    // then walk up to its offset container - however, if the node has
+    // no width or height, walk up to its nearest ancestor until we find
+    // one that has bounds.
+    if (bounds.width() == 0 && bounds.height() == 0)
+      container = node->parent();
+    else
+      container = GetFromId(node->data().offset_container_id);
+    if (!container && container != root())
+      container = root();
     if (!container || container == node)
       break;
 
     gfx::RectF container_bounds = container->data().location;
     bounds.Offset(container_bounds.x(), container_bounds.y());
+
+    // If we don't have any size yet, take the size from this ancestor.
+    // The rationale is that it's not useful to the user for an object to
+    // have no width or height and it's probably a bug; it's better to
+    // reflect the bounds of the nearest ancestor rather than a 0x0 box.
+    if (bounds.width() == 0 && bounds.height() == 0)
+      bounds.set_size(container_bounds.size());
 
     int scroll_x = 0;
     int scroll_y = 0;

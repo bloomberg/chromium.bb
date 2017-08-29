@@ -901,4 +901,23 @@ TEST(AXTreeTest, GetBoundsWithScrolling) {
   EXPECT_EQ("(115, 70) size (50 x 5)", GetBoundsAsString(tree, 3));
 }
 
+TEST(AXTreeTest, GetBoundsEmptyBoundsInheritsFromParent) {
+  AXTreeUpdate tree_update;
+  tree_update.root_id = 1;
+  tree_update.nodes.resize(3);
+  tree_update.nodes[0].id = 1;
+  tree_update.nodes[0].location = gfx::RectF(0, 0, 800, 600);
+  tree_update.nodes[0].child_ids.push_back(2);
+  tree_update.nodes[1].id = 2;
+  tree_update.nodes[1].location = gfx::RectF(300, 200, 100, 100);
+  tree_update.nodes[1].child_ids.push_back(3);
+  tree_update.nodes[2].id = 3;
+  tree_update.nodes[2].location = gfx::RectF();
+
+  AXTree tree(tree_update);
+  EXPECT_EQ("(0, 0) size (800 x 600)", GetBoundsAsString(tree, 1));
+  EXPECT_EQ("(300, 200) size (100 x 100)", GetBoundsAsString(tree, 2));
+  EXPECT_EQ("(300, 200) size (100 x 100)", GetBoundsAsString(tree, 3));
+}
+
 }  // namespace ui
