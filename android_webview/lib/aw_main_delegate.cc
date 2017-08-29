@@ -137,7 +137,6 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   if (cl->HasSwitch(switches::kWebViewSandboxedRenderer)) {
     content::RenderProcessHost::SetMaxRendererProcessCount(1u);
     cl->AppendSwitch(switches::kInProcessGPU);
-    cl->AppendSwitch(switches::kDisableRendererPriorityManagement);
   }
 
   CommandLineHelper::AddEnabledFeature(

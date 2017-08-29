@@ -6,7 +6,6 @@ package org.chromium.android_webview.test;
 
 import static org.chromium.android_webview.test.AwTestCommon.WAIT_TIMEOUT_MS;
 
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -32,15 +31,12 @@ import org.chromium.android_webview.AwSwitches;
 import org.chromium.android_webview.renderer_priority.RendererPriority;
 import org.chromium.android_webview.test.TestAwContentsClient.OnDownloadStartHelper;
 import org.chromium.android_webview.test.util.CommonResources;
-import org.chromium.android_webview.test.util.JSUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
-import org.chromium.base.process_launcher.ChildProcessConnection;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.parameter.SkipCommandLineParameterization;
-import org.chromium.content.browser.BindingManager;
-import org.chromium.content.browser.ChildProcessLauncherHelper;
+import org.chromium.content.common.ContentSwitches;
 import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.net.test.util.TestWebServer;
@@ -588,177 +584,119 @@ public class AwContentsTest {
                         awContents, mContentsClient, script));
     }
 
-    private static class MockBindingManager implements BindingManager {
-        private boolean mIsChildProcessCreated;
-
-        private Object mForegroundStateLock;
-        private ArrayList<Boolean> mForegroundState;
-
-        public MockBindingManager() {
-            super();
-            mForegroundStateLock = new Object();
-            mForegroundState = new ArrayList<Boolean>();
-        }
-
-        boolean isChildProcessCreated() {
-            return mIsChildProcessCreated;
-        }
-
-        void assertSetInForegroundCall(boolean inForeground) {
-            synchronized (mForegroundStateLock) {
-                if (mForegroundState.size() == 0) {
-                    try {
-                        mForegroundStateLock.wait(WAIT_TIMEOUT_MS);
-                    } catch (InterruptedException e) {
-                    }
-                }
-                Assert.assertNotEquals(mForegroundState.size(), 0);
-                Assert.assertEquals(inForeground, mForegroundState.get(0));
-                mForegroundState.remove(0);
-                return;
-            }
-        }
-
-        @Override
-        public void addNewConnection(int pid, ChildProcessConnection connection) {
-            mIsChildProcessCreated = true;
-        }
-
-        @Override
-        public void setPriority(int pid, boolean foreground, boolean boostForPendingView) {
-            synchronized (mForegroundStateLock) {
-                mForegroundState.add(foreground);
-                mForegroundStateLock.notifyAll();
-            }
-        }
-
-        @Override
-        public void onSentToBackground() {}
-
-        @Override
-        public void onBroughtToForeground() {}
-
-        @Override
-        public void removeConnection(int pid) {}
-
-        @Override
-        public void startModerateBindingManagement(Context context, int maxSize) {}
-
-        @Override
-        public void releaseAllModerateBindings() {}
+    private @RendererPriority int getRendererPriorityOnUiThread(final AwContents awContents)
+            throws Exception {
+        return mActivityTestRule.runTestOnUiThreadAndGetResult(
+                () -> awContents.getEffectivePriorityForTesting());
     }
 
-    /**
-     * Verifies that a child process is actually gets created with WEBVIEW_SANDBOXED_RENDERER flag.
-     */
+    private void setRendererPriorityOnUiThread(final AwContents awContents,
+            final @RendererPriority int priority, final boolean waivedWhenNotVisible)
+            throws Throwable {
+        mActivityTestRule.runOnUiThread(
+                () -> awContents.setRendererPriorityPolicy(priority, waivedWhenNotVisible));
+    }
+
     @Test
     @Feature({"AndroidWebView"})
     @SmallTest
-    @CommandLineFlags.Add(AwSwitches.WEBVIEW_SANDBOXED_RENDERER)
     @SkipCommandLineParameterization
-    public void testSandboxedRendererWorks() throws Throwable {
-        MockBindingManager bindingManager = new MockBindingManager();
-        ChildProcessLauncherHelper.setBindingManagerForTesting(bindingManager);
-        Assert.assertFalse(bindingManager.isChildProcessCreated());
-
-        AwTestContainerView testView =
+    @CommandLineFlags.Add({
+            AwSwitches.WEBVIEW_SANDBOXED_RENDERER, ContentSwitches.RENDER_PROCESS_LIMIT + "=1"})
+    public void testForegroundPriorityOneProcess() throws Throwable {
+        final AwTestContainerView view1 =
                 mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
-        AwContents awContents = testView.getAwContents();
-        final String pageTitle = "I am sandboxed";
-        mActivityTestRule.loadDataSync(awContents, mContentsClient.getOnPageFinishedHelper(),
-                "<html><head><title>" + pageTitle + "</title></head></html>", "text/html", false);
-        Assert.assertEquals(pageTitle, mActivityTestRule.getTitleOnUiThread(awContents));
+        final AwContents contents1 = view1.getAwContents();
+        final AwTestContainerView view2 =
+                mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
+        final AwContents contents2 = view2.getAwContents();
 
-        Assert.assertTrue(bindingManager.isChildProcessCreated());
+        mActivityTestRule.loadUrlSync(contents1, mContentsClient.getOnPageFinishedHelper(),
+                ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
+        mActivityTestRule.loadUrlSync(contents2, mContentsClient.getOnPageFinishedHelper(),
+                ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
 
-        // Test end-to-end interaction with the renderer.
-        AwSettings awSettings = mActivityTestRule.getAwSettingsOnUiThread(awContents);
-        awSettings.setJavaScriptEnabled(true);
-        Assert.assertEquals("42",
-                JSUtils.executeJavaScriptAndWaitForResult(
-                        InstrumentationRegistry.getInstrumentation(), awContents,
-                        mContentsClient.getOnEvaluateJavaScriptResultHelper(), "21 + 21"));
+        // Process should start out high.
+        Assert.assertEquals(RendererPriority.HIGH, getRendererPriorityOnUiThread(contents1));
+        Assert.assertEquals(RendererPriority.HIGH, getRendererPriorityOnUiThread(contents2));
+
+        // Set one to low. Process should take max priority of contents, so still high.
+        setRendererPriorityOnUiThread(contents1, RendererPriority.LOW, false);
+        Assert.assertEquals(RendererPriority.HIGH, getRendererPriorityOnUiThread(contents1));
+        Assert.assertEquals(RendererPriority.HIGH, getRendererPriorityOnUiThread(contents2));
+
+        // Set both to low and check.
+        setRendererPriorityOnUiThread(contents2, RendererPriority.LOW, false);
+        Assert.assertEquals(RendererPriority.LOW, getRendererPriorityOnUiThread(contents1));
+        Assert.assertEquals(RendererPriority.LOW, getRendererPriorityOnUiThread(contents2));
+
+        // Set both to waive and check.
+        setRendererPriorityOnUiThread(contents1, RendererPriority.WAIVED, false);
+        setRendererPriorityOnUiThread(contents2, RendererPriority.WAIVED, false);
+        Assert.assertEquals(RendererPriority.WAIVED, getRendererPriorityOnUiThread(contents1));
+        Assert.assertEquals(RendererPriority.WAIVED, getRendererPriorityOnUiThread(contents2));
+
+        // Set one to high and check.
+        setRendererPriorityOnUiThread(contents1, RendererPriority.HIGH, false);
+        Assert.assertEquals(RendererPriority.HIGH, getRendererPriorityOnUiThread(contents1));
+        Assert.assertEquals(RendererPriority.HIGH, getRendererPriorityOnUiThread(contents2));
+
+        // Destroy contents with high priority, and process should fall back to low.
+        // Destroy posts on UI, but getRendererPriorityOnUiThread posts after, so there should
+        // be no flakiness and no need for polling.
+        mActivityTestRule.destroyAwContentsOnMainSync(contents1);
+        Assert.assertEquals(RendererPriority.WAIVED, getRendererPriorityOnUiThread(contents2));
     }
 
-    /**
-     * By default the renderer should be considererd to be in the
-     * foreground.
-     */
     @Test
     @Feature({"AndroidWebView"})
     @SmallTest
-    @CommandLineFlags.Add(AwSwitches.WEBVIEW_SANDBOXED_RENDERER)
     @SkipCommandLineParameterization
-    public void testRendererPriorityStartsHigh() throws Throwable {
-        MockBindingManager bindingManager = new MockBindingManager();
-        ChildProcessLauncherHelper.setBindingManagerForTesting(bindingManager);
-        Assert.assertFalse(bindingManager.isChildProcessCreated());
-
-        AwTestContainerView testView =
+    @CommandLineFlags.Add({
+            AwSwitches.WEBVIEW_SANDBOXED_RENDERER, ContentSwitches.RENDER_PROCESS_LIMIT + "=2"})
+    public void testForegroundPriorityTwoProcesses() throws Throwable {
+        final AwTestContainerView view1 =
                 mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
-        AwContents awContents = testView.getAwContents();
-        mActivityTestRule.loadDataSync(awContents, mContentsClient.getOnPageFinishedHelper(),
-                "<html></html>", "text/html", false);
+        final AwContents contents1 = view1.getAwContents();
+        final AwTestContainerView view2 =
+                mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
+        final AwContents contents2 = view2.getAwContents();
 
-        Assert.assertTrue(bindingManager.isChildProcessCreated());
-        bindingManager.assertSetInForegroundCall(true);
+        mActivityTestRule.loadUrlSync(contents1, mContentsClient.getOnPageFinishedHelper(),
+                ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
+        mActivityTestRule.loadUrlSync(contents2, mContentsClient.getOnPageFinishedHelper(),
+                ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
+
+        // Process should start out high.
+        Assert.assertEquals(RendererPriority.HIGH, getRendererPriorityOnUiThread(contents1));
+        Assert.assertEquals(RendererPriority.HIGH, getRendererPriorityOnUiThread(contents2));
+
+        // Set one to low. Other should not be affected.
+        setRendererPriorityOnUiThread(contents1, RendererPriority.LOW, false);
+        Assert.assertEquals(RendererPriority.LOW, getRendererPriorityOnUiThread(contents1));
+        Assert.assertEquals(RendererPriority.HIGH, getRendererPriorityOnUiThread(contents2));
     }
 
-    /**
-     * If we specify that the priority is WAIVED, then the renderer
-     * should not be in the foreground.
-     */
     @Test
     @Feature({"AndroidWebView"})
     @SmallTest
-    @CommandLineFlags.Add(AwSwitches.WEBVIEW_SANDBOXED_RENDERER)
     @SkipCommandLineParameterization
-    public void testRendererPriorityLow() throws Throwable {
-        MockBindingManager bindingManager = new MockBindingManager();
-        ChildProcessLauncherHelper.setBindingManagerForTesting(bindingManager);
-        Assert.assertFalse(bindingManager.isChildProcessCreated());
-
-        final AwTestContainerView testView =
-                mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
-        final AwContents awContents = testView.getAwContents();
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(
-                () -> awContents.setRendererPriorityPolicy(RendererPriority.WAIVED, false));
-        mActivityTestRule.loadDataSync(awContents, mContentsClient.getOnPageFinishedHelper(),
-                "<html></html>", "text/html", false);
-
-        Assert.assertTrue(awContents.isPageVisible());
-        Assert.assertTrue(bindingManager.isChildProcessCreated());
-        bindingManager.assertSetInForegroundCall(false);
-    }
-
-    /**
-     * If we specify that the priority is HIGH, but WAIVED when in the
-     * background, then pausing the view should send the renderer to
-     * the background.
-     */
-    @Test
-    @Feature({"AndroidWebView"})
-    @SmallTest
     @CommandLineFlags.Add(AwSwitches.WEBVIEW_SANDBOXED_RENDERER)
-    @SkipCommandLineParameterization
-    public void testRendererPriorityManaged() throws Throwable {
-        MockBindingManager bindingManager = new MockBindingManager();
-        ChildProcessLauncherHelper.setBindingManagerForTesting(bindingManager);
-        Assert.assertFalse(bindingManager.isChildProcessCreated());
+    public void testBackgroundPriority() throws Throwable {
+        final AwContents awContents =
+                mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient)
+                        .getAwContents();
+        Assert.assertEquals(RendererPriority.HIGH, getRendererPriorityOnUiThread(awContents));
 
-        final AwTestContainerView testView =
-                mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
-        final AwContents awContents = testView.getAwContents();
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(
-                () -> awContents.setRendererPriorityPolicy(RendererPriority.HIGH, true));
-        mActivityTestRule.loadDataSync(awContents, mContentsClient.getOnPageFinishedHelper(),
-                "<html></html>", "text/html", false);
+        mActivityTestRule.runOnUiThread(() -> awContents.onPause());
+        Assert.assertEquals(RendererPriority.HIGH, getRendererPriorityOnUiThread(awContents));
 
-        Assert.assertTrue(awContents.isPageVisible());
-        Assert.assertTrue(bindingManager.isChildProcessCreated());
-        bindingManager.assertSetInForegroundCall(true);
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> awContents.onPause());
-        bindingManager.assertSetInForegroundCall(false);
+        setRendererPriorityOnUiThread(
+                awContents, RendererPriority.HIGH, true /* waivedWhenNotVisible */);
+        Assert.assertEquals(RendererPriority.WAIVED, getRendererPriorityOnUiThread(awContents));
+
+        mActivityTestRule.runOnUiThread(() -> awContents.onResume());
+        Assert.assertEquals(RendererPriority.HIGH, getRendererPriorityOnUiThread(awContents));
     }
 
     @Test

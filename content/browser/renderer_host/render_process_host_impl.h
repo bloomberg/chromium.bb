@@ -177,6 +177,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
 #if defined(OS_ANDROID)
   void UpdateWidgetImportance(ChildProcessImportance old_value,
                               ChildProcessImportance new_value) override;
+  ChildProcessImportance ComputeEffectiveImportance() override;
 #endif
   void SetSuddenTerminationAllowed(bool enabled) override;
   bool SuddenTerminationAllowed() const override;
@@ -386,11 +387,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // globally-used spare RenderProcessHost at any time.
   static RenderProcessHost* GetSpareRenderProcessHostForTesting();
 
-#if defined(OS_ANDROID)
-  // Test-only method to get the importance of this process.
-  ChildProcessImportance GetWidgetImportanceForTesting();
-#endif
-
  protected:
   // A proxy for our IPC::Channel that lives on the IO thread.
   std::unique_ptr<IPC::ChannelProxy> channel_;
@@ -485,11 +481,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // appropriate. Should be called after any of the involved data members
   // change.
   void UpdateProcessPriority();
-
-#if defined(OS_ANDROID)
-  // Helper method to compute importance from |widget_importance_counts_|.
-  ChildProcessImportance ComputeEffectiveImportance();
-#endif
 
   // Creates a PersistentMemoryAllocator and shares it with the renderer
   // process for it to store histograms from that process. The allocator is

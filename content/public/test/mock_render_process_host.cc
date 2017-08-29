@@ -257,6 +257,11 @@ void MockRenderProcessHost::RemoveWidget(RenderWidgetHost* widget) {
 void MockRenderProcessHost::UpdateWidgetImportance(
     ChildProcessImportance old_value,
     ChildProcessImportance new_value) {}
+
+ChildProcessImportance MockRenderProcessHost::ComputeEffectiveImportance() {
+  NOTIMPLEMENTED();
+  return ChildProcessImportance::NORMAL;
+}
 #endif
 
 void MockRenderProcessHost::SetSuddenTerminationAllowed(bool allowed) {

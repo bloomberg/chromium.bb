@@ -467,42 +467,51 @@ public class ChildProcessLauncherHelper {
             @ChildProcessImportance int importance) {
         assert LauncherThread.runningOnLauncherThread();
         assert mLauncher.getPid() == pid;
+
+        // Add first and remove second.
+        ChildProcessConnection connection = mLauncher.getConnection();
+        if (mImportance != importance) {
+            switch (importance) {
+                case ChildProcessImportance.NORMAL:
+                    // Nothing to add.
+                    break;
+                case ChildProcessImportance.MODERATE:
+                    connection.addModerateBinding();
+                    break;
+                case ChildProcessImportance.IMPORTANT:
+                    connection.addStrongBinding();
+                    break;
+                case ChildProcessImportance.COUNT:
+                    assert false;
+                    break;
+                default:
+                    assert false;
+            }
+        }
+
+        if (mCreationParams != null && mCreationParams.getIgnoreVisibilityForImportance()) {
+            foreground = false;
+            boostForPendingViews = false;
+        }
         getBindingManager().setPriority(pid, foreground, boostForPendingViews);
 
-        if (mImportance == importance) return;
-        ChildProcessConnection connection = mLauncher.getConnection();
-        // Add first and remove second.
-        switch (importance) {
-            case ChildProcessImportance.NORMAL:
-                // Nothing to add.
-                break;
-            case ChildProcessImportance.MODERATE:
-                connection.addModerateBinding();
-                break;
-            case ChildProcessImportance.IMPORTANT:
-                connection.addStrongBinding();
-                break;
-            case ChildProcessImportance.COUNT:
-                assert false;
-                break;
-            default:
-                assert false;
-        }
-        switch (mImportance) {
-            case ChildProcessImportance.NORMAL:
-                // Nothing to remove.
-                break;
-            case ChildProcessImportance.MODERATE:
-                connection.removeModerateBinding();
-                break;
-            case ChildProcessImportance.IMPORTANT:
-                connection.removeStrongBinding();
-                break;
-            case ChildProcessImportance.COUNT:
-                assert false;
-                break;
-            default:
-                assert false;
+        if (mImportance != importance) {
+            switch (mImportance) {
+                case ChildProcessImportance.NORMAL:
+                    // Nothing to remove.
+                    break;
+                case ChildProcessImportance.MODERATE:
+                    connection.removeModerateBinding();
+                    break;
+                case ChildProcessImportance.IMPORTANT:
+                    connection.removeStrongBinding();
+                    break;
+                case ChildProcessImportance.COUNT:
+                    assert false;
+                    break;
+                default:
+                    assert false;
+            }
         }
         mImportance = importance;
     }
