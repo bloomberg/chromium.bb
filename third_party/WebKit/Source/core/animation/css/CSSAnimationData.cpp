@@ -36,8 +36,7 @@ bool CSSAnimationData::AnimationsMatchForStyleRecalc(
          iteration_count_list_ == other.iteration_count_list_ &&
          direction_list_ == other.direction_list_ &&
          fill_mode_list_ == other.fill_mode_list_ &&
-         DelayList() == other.DelayList() &&
-         DurationList() == other.DurationList();
+         TimingMatchForStyleRecalc(other);
 }
 
 Timing CSSAnimationData::ConvertToTiming(size_t index) const {

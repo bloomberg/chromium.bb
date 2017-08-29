@@ -1284,6 +1284,7 @@ jumbo_source_set("unit_tests") {
     "animation/PropertyHandleTest.cpp",
     "animation/TimingCalculationsTest.cpp",
     "animation/TimingInputTest.cpp",
+    "animation/css/CSSTransitionDataTest.cpp",
     "clipboard/DataObjectTest.cpp",
     "clipboard/DataTransferTest.cpp",
     "css/ActiveStyleSheetsTest.cpp",
