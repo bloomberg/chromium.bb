@@ -6,6 +6,7 @@
 
 #import "base/ios/crb_protocol_observers.h"
 #include "components/strings/grit/components_strings.h"
+#import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_bar.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_bar_item.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_controller.h"
@@ -150,13 +151,12 @@
     return;
 
   NewTabPageBarItem* item = self.NTPView.tabBar.items[index];
-  if (item.identifier == NewTabPage::kBookmarksPanel &&
+  if (item.identifier == ntp_home::BOOKMARKS_PANEL &&
       !self.bookmarksViewController)
     [self.dispatcher showNTPBookmarksPanel];
-  else if (item.identifier == NewTabPage::kHomePanel &&
-           !self.homeViewController)
+  else if (item.identifier == ntp_home::HOME_PANEL && !self.homeViewController)
     [self.dispatcher showNTPHomePanel];
-  else if (item.identifier == NewTabPage::kOpenTabsPanel &&
+  else if (item.identifier == ntp_home::RECENT_TABS_PANEL &&
            !self.recentTabsViewController)
     [self.dispatcher showNTPRecentTabsPanel];
 
@@ -183,9 +183,9 @@
     CGPoint point = CGPointMake(CGRectGetMinX(itemFrame), 0);
     [self.NTPView.scrollView setContentOffset:point animated:YES];
   } else {
-    if (selectedItem.identifier == NewTabPage::kBookmarksPanel) {
+    if (selectedItem.identifier == ntp_home::BOOKMARKS_PANEL) {
       [self.dispatcher showNTPBookmarksPanel];
-    } else if (selectedItem.identifier == NewTabPage::kOpenTabsPanel) {
+    } else if (selectedItem.identifier == ntp_home::RECENT_TABS_PANEL) {
       [self.dispatcher showNTPRecentTabsPanel];
     }
   }

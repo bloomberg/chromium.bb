@@ -8,6 +8,7 @@
 #import <UIKit/UIKit.h>
 #include <string>
 
+#import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/native_content_controller.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_bar.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_panel_protocol.h"
@@ -20,18 +21,10 @@ class ChromeBrowserState;
 
 namespace NewTabPage {
 
-enum PanelIdentifier {
-  kNone,
-  kHomePanel,
-  kBookmarksPanel,
-  kOpenTabsPanel,
-  kIncognitoPanel,
-};
-
 // Converts from a NewTabPage::PanelIdentifier to a URL #fragment
 // and vice versa.
-PanelIdentifier IdentifierFromFragment(const std::string& fragment);
-std::string FragmentFromIdentifier(PanelIdentifier panel);
+ntp_home::PanelIdentifier IdentifierFromFragment(const std::string& fragment);
+std::string FragmentFromIdentifier(ntp_home::PanelIdentifier panel);
 
 }  // namespace NewTabPage
 
@@ -94,7 +87,7 @@ std::string FragmentFromIdentifier(PanelIdentifier panel);
               dispatcher:(id)dispatcher;
 
 // Select a panel based on the given |panelType|.
-- (void)selectPanel:(NewTabPage::PanelIdentifier)panelType;
+- (void)selectPanel:(ntp_home::PanelIdentifier)panelType;
 
 // Returns |YES| if the current visible controller should show the keyboard
 // shield.
