@@ -615,8 +615,8 @@ enum {
           [[RecentTabsPanelController alloc] initWithLoader:_loader
                                                browserState:_browserState
                                                  dispatcher:self.dispatcher];
-    // TODO(crbug.com/708319): Also set panelController for opentabs here.
-    view = [_openTabsController view];
+    panelController = [_openTabsController viewController];
+    view = panelController.view;
     [_openTabsController setDelegate:self];
   } else if (item.identifier == ntp_home::INCOGNITO_PANEL) {
     if (!_incognitoController)
