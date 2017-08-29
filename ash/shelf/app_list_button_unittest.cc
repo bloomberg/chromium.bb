@@ -64,6 +64,9 @@ TEST_F(AppListButtonTest, LongPressGestureWithoutVoiceInteractionFlag) {
   // Simulate two user with primary user as active.
   CreateUserSessions(2);
 
+  // Enable voice interaction in system settings.
+  Shell::Get()->NotifyVoiceInteractionEnabled(true);
+
   ui::GestureEvent long_press =
       CreateGestureEvent(ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS));
   SendGestureEvent(&long_press);
@@ -91,6 +94,9 @@ TEST_F(VoiceInteractionAppListButtonTest,
   // Simulate two user with primary user as active.
   CreateUserSessions(2);
 
+  // Enable voice interaction in system settings.
+  Shell::Get()->NotifyVoiceInteractionEnabled(true);
+
   ui::GestureEvent long_press =
       CreateGestureEvent(ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS));
   SendGestureEvent(&long_press);
@@ -105,6 +111,9 @@ TEST_F(VoiceInteractionAppListButtonTest, LongPressGestureWithSecondaryUser) {
   // Simulate two user with secondary user as active.
   SimulateUserLogin("user1@test.com");
   SimulateUserLogin("user2@test.com");
+
+  // Enable voice interaction in system settings.
+  Shell::Get()->NotifyVoiceInteractionEnabled(true);
 
   ui::GestureEvent long_press =
       CreateGestureEvent(ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS));
@@ -127,15 +136,42 @@ TEST_F(VoiceInteractionAppListButtonTest,
   // Simulate two user with primary user as active.
   CreateUserSessions(2);
 
-  // Notify voice interaction settings disabled.
+  // Simulate a user who has already completed setup flow, but disabled voice
+  // interaction in settings.
+  Shell::Get()->NotifyVoiceInteractionEnabled(false);
+  Shell::Get()->NotifyVoiceInteractionSetupCompleted();
+
+  ui::GestureEvent long_press =
+      CreateGestureEvent(ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS));
+  SendGestureEvent(&long_press);
+  RunAllPendingInMessageLoop();
+  // After value prop has been accepted, if voice interaction is disalbed in
+  // settings we should not handle long press action in app list button.
+  EXPECT_EQ(0u, test_app_list_presenter.voice_session_count());
+}
+
+TEST_F(VoiceInteractionAppListButtonTest,
+       LongPressGestureBeforeSetupCompleted) {
+  app_list::test::TestAppListPresenter test_app_list_presenter;
+  Shell::Get()->app_list()->SetAppListPresenter(
+      test_app_list_presenter.CreateInterfacePtrAndBind());
+
+  EXPECT_TRUE(base::CommandLine::ForCurrentProcess()->HasSwitch(
+      chromeos::switches::kEnableVoiceInteraction));
+
+  // Simulate two user with primary user as active.
+  CreateUserSessions(2);
+
+  // Disable voice interaction in system settings.
   Shell::Get()->NotifyVoiceInteractionEnabled(false);
 
   ui::GestureEvent long_press =
       CreateGestureEvent(ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS));
   SendGestureEvent(&long_press);
   RunAllPendingInMessageLoop();
-  // Voice interaction is disabled in settings, so the count here should be 0.
-  EXPECT_EQ(0u, test_app_list_presenter.voice_session_count());
+  // Before setup flow completed we should show the animation even if the
+  // settings are disabled.
+  EXPECT_EQ(1u, test_app_list_presenter.voice_session_count());
 }
 
 namespace {
