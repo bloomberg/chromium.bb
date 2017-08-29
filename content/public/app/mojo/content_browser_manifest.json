@@ -145,6 +145,7 @@
           "media::mojom::InterfaceFactory",
           "media::mojom::RemoterFactory",
           "media::mojom::Renderer",
+          "media::mojom::VideoDecodeStatsRecorder",
           "media::mojom::WatchTimeRecorderProvider",
           "mojom::MediaDevicesDispatcherHost",
           "payments::mojom::PaymentManager",

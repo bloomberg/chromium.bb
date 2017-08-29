@@ -25,6 +25,7 @@
 #include "media/base/test_helpers.h"
 #include "media/blink/webmediaplayer_delegate.h"
 #include "media/blink/webmediaplayer_params.h"
+#include "media/mojo/services/video_decode_stats_recorder.h"
 #include "media/mojo/services/watch_time_recorder.h"
 #include "media/renderers/default_renderer_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -54,6 +55,12 @@ const base::TimeDelta kMaxKeyframeDistanceToDisableBackgroundVideoMSE =
 
 int64_t OnAdjustAllocatedMemory(int64_t delta) {
   return 0;
+}
+
+mojom::VideoDecodeStatsRecorderPtr CreateCapabilitiesRecorder() {
+  mojom::VideoDecodeStatsRecorderPtr recorder;
+  VideoDecodeStatsRecorder::Create(mojo::MakeRequest(&recorder));
+  return recorder;
 }
 
 class DummyWebMediaPlayerClient : public blink::WebMediaPlayerClient {
@@ -254,7 +261,7 @@ class WebMediaPlayerImplTest : public testing::Test {
             RequestRoutingTokenCallback(), nullptr,
             kMaxKeyframeDistanceToDisableBackgroundVideo,
             kMaxKeyframeDistanceToDisableBackgroundVideoMSE, false, false,
-            provider_.get()));
+            provider_.get(), base::Bind(&CreateCapabilitiesRecorder)));
   }
 
   ~WebMediaPlayerImplTest() override {
@@ -301,6 +308,14 @@ class WebMediaPlayerImplTest : public testing::Test {
     wmpi_->SetReadyState(blink::WebMediaPlayer::kReadyStateHaveMetadata);
     wmpi_->pipeline_metadata_.has_audio = has_audio;
     wmpi_->pipeline_metadata_.has_video = has_video;
+
+    if (has_video)
+      wmpi_->pipeline_metadata_.video_decoder_config =
+          TestVideoConfig::Normal();
+
+    if (has_audio)
+      wmpi_->pipeline_metadata_.audio_decoder_config =
+          TestAudioConfig::Normal();
   }
 
   void OnMetadata(PipelineMetadata metadata) { wmpi_->OnMetadata(metadata); }
@@ -774,6 +789,7 @@ TEST_F(WebMediaPlayerImplTest, NaturalSizeChange) {
   InitializeWebMediaPlayerImpl();
   PipelineMetadata metadata;
   metadata.has_video = true;
+  metadata.video_decoder_config = TestVideoConfig::Normal();
   metadata.natural_size = gfx::Size(320, 240);
 
   OnMetadata(metadata);
@@ -788,6 +804,7 @@ TEST_F(WebMediaPlayerImplTest, NaturalSizeChange_Rotated) {
   InitializeWebMediaPlayerImpl();
   PipelineMetadata metadata;
   metadata.has_video = true;
+  metadata.video_decoder_config = TestVideoConfig::Normal();
   metadata.natural_size = gfx::Size(320, 240);
   metadata.video_rotation = VIDEO_ROTATION_90;
 
@@ -805,6 +822,7 @@ TEST_F(WebMediaPlayerImplTest, VideoLockedWhenPausedWhenHidden) {
   // Setting metadata initializes |watch_time_reporter_| used in play().
   PipelineMetadata metadata;
   metadata.has_video = true;
+  metadata.video_decoder_config = TestVideoConfig::Normal();
   OnMetadata(metadata);
 
   EXPECT_FALSE(IsVideoLockedWhenPausedWhenHidden());
@@ -865,7 +883,9 @@ TEST_F(WebMediaPlayerImplTest, InfiniteDuration) {
   // Send metadata so we have a watch time reporter created.
   PipelineMetadata metadata;
   metadata.has_video = true;
+  metadata.video_decoder_config = TestVideoConfig::Normal();
   metadata.has_audio = true;
+  metadata.audio_decoder_config = TestAudioConfig::Normal();
   metadata.natural_size = gfx::Size(400, 400);
   OnMetadata(metadata);
 
