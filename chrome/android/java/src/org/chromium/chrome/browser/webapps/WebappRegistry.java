@@ -178,6 +178,16 @@ public class WebappRegistry {
                 KEY_WEBAPP_SET, Collections.<String>emptySet()));
     }
 
+    @VisibleForTesting
+    void clearForTesting() {
+        Iterator<HashMap.Entry<String, WebappDataStorage>> it = mStorages.entrySet().iterator();
+        while (it.hasNext()) {
+            it.next().getValue().delete();
+            it.remove();
+        }
+        mPreferences.edit().putStringSet(KEY_WEBAPP_SET, mStorages.keySet()).apply();
+    }
+
     /**
      * Deletes the data for all "old" web apps, as well as all WebAPKs that have been uninstalled in
      * the last month. "Old" web apps have not been opened by the user in the last 3 months, or have
