@@ -383,6 +383,14 @@ public class LocaleManager {
     }
 
     /**
+     * @return The referral ID to be passed when searching with Mail.RU as the DSE.
+     */
+    @CalledByNative
+    protected String getMailRUReferralId() {
+        return "";
+    }
+
+    /**
      * @return The search engine type for the given url if applicable.
      *         See template_url_prepopulate_data.cc for all values.
      */

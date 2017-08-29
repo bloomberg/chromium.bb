@@ -70,3 +70,7 @@ std::string SearchTermsData::GoogleImageSearchSource() const {
 std::string SearchTermsData::GetYandexReferralID() const {
   return std::string();
 }
+
+std::string SearchTermsData::GetMailRUReferralID() const {
+  return std::string();
+}
