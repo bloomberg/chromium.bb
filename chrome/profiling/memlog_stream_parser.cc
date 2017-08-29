@@ -16,11 +16,7 @@ namespace profiling {
 
 namespace {
 
-// Maximum number of items we'll parse from a stack before declaring the
-// message is corrupt.
-constexpr size_t kMaxStackCount = 128;
-
-using AddressVector = base::StackVector<Address, kMaxStackCount>;
+using AddressVector = base::StackVector<Address, kMaxStackEntries>;
 
 }  // namespace
 
@@ -164,7 +160,7 @@ MemlogStreamParser::ReadStatus MemlogStreamParser::ParseAlloc() {
     return READ_NO_DATA;
 
   std::vector<Address> stack;
-  if (alloc_packet.stack_len > kMaxStackCount)
+  if (alloc_packet.stack_len > kMaxStackEntries)
     return READ_ERROR;  // Prevent overflow on corrupted or malicious data.
   stack.resize(alloc_packet.stack_len);
   size_t stack_byte_size = sizeof(Address) * alloc_packet.stack_len;
