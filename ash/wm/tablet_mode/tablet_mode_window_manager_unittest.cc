@@ -8,8 +8,10 @@
 
 #include "ash/ash_switches.h"
 #include "ash/public/cpp/config.h"
+#include "ash/public/cpp/shelf_prefs.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
+#include "ash/session/session_controller.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
@@ -39,6 +41,17 @@
 #include "ui/views/widget/widget.h"
 
 namespace ash {
+
+// A helper function to set the shelf auto-hide preference. This has the same
+// effect as the user toggling the shelf context menu option.
+void SetShelfAutoHideBehaviorPref(int64_t display_id,
+                                  ShelfAutoHideBehavior behavior) {
+  PrefService* prefs =
+      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+  if (!prefs)
+    return;
+  SetShelfAutoHideBehaviorPref(prefs, display_id, behavior);
+}
 
 class TabletModeWindowManagerTest : public AshTestBase {
  public:
@@ -884,8 +897,9 @@ TEST_F(TabletModeWindowManagerTest, KeepFullScreenModeOn) {
 
   Shelf* shelf = GetPrimaryShelf();
 
-  // Allow the shelf to hide.
-  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  // Allow the shelf to hide and set the pref.
+  SetShelfAutoHideBehaviorPref(GetPrimaryDisplay().id(),
+                               SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
 
   wm::WMEvent event(wm::WM_EVENT_TOGGLE_FULLSCREEN);
@@ -902,16 +916,14 @@ TEST_F(TabletModeWindowManagerTest, KeepFullScreenModeOn) {
   EXPECT_FALSE(window_state->IsMaximized());
   EXPECT_EQ(SHELF_HIDDEN, shelf->GetVisibilityState());
 
-  // With leaving the fullscreen mode, the tablet mode should return and the
-  // shelf should maintain its state from before tablet mode.
+  // When exiting fullscreen, tablet mode should still be enabled, and the shelf
+  // should be forced to visible for tablet mode.
   window_state->OnWMEvent(&event);
   EXPECT_FALSE(window_state->IsFullscreen());
   EXPECT_TRUE(window_state->IsMaximized());
-  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
+  EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
 
-  // We left fullscreen mode while in tablet mode, so the window should
-  // remain maximized and the shelf should not change state upon exiting
-  // tablet mode.
+  // The shelf auto-hide preference should be restored when exiting tablet mode.
   DestroyTabletModeWindowManager();
   EXPECT_FALSE(window_state->IsFullscreen());
   EXPECT_TRUE(window_state->IsMaximized());
@@ -1087,6 +1099,19 @@ TEST_F(TabletModeWindowManagerTest, MinimizePreservedAfterLeavingFullscreen) {
   EXPECT_TRUE(window_state->IsMinimized());
 }
 
+// Tests that the auto-hide behavior is set to never auto-hide on tablet mode
+// and gets reset based on pref after exiting tablet mode.
+TEST_F(TabletModeWindowManagerTest, DisableAutoHideBehaviorOnTabletMode) {
+  Shelf* shelf = GetPrimaryShelf();
+  SetShelfAutoHideBehaviorPref(GetPrimaryDisplay().id(),
+                               SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS, shelf->auto_hide_behavior());
+  CreateTabletModeWindowManager();
+  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_NEVER, shelf->auto_hide_behavior());
+  DestroyTabletModeWindowManager();
+  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS, shelf->auto_hide_behavior());
+}
+
 // Check that full screen mode can be turned on in tablet mode and remains
 // upon coming back.
 TEST_F(TabletModeWindowManagerTest, AllowFullScreenMode) {
@@ -1097,8 +1122,9 @@ TEST_F(TabletModeWindowManagerTest, AllowFullScreenMode) {
 
   Shelf* shelf = GetPrimaryShelf();
 
-  // Allow the shelf to hide.
-  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  // Allow the shelf to hide and set the pref.
+  SetShelfAutoHideBehaviorPref(GetPrimaryDisplay().id(),
+                               SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
 
   EXPECT_FALSE(window_state->IsFullscreen());
   EXPECT_FALSE(window_state->IsMaximized());
@@ -1106,11 +1132,10 @@ TEST_F(TabletModeWindowManagerTest, AllowFullScreenMode) {
 
   CreateTabletModeWindowManager();
 
-  // Fullscreen mode should still be off and the shelf should maintain its
-  // state.
+  // Fullscreen should stay off, but the shelf is made visible in tablet mode.
   EXPECT_FALSE(window_state->IsFullscreen());
   EXPECT_TRUE(window_state->IsMaximized());
-  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
+  EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
 
   // After going into fullscreen mode, the shelf should be hidden.
   wm::WMEvent event(wm::WM_EVENT_TOGGLE_FULLSCREEN);

@@ -95,7 +95,10 @@ void AddLocalMenuItems(MenuItemList* menu, int64_t display_id) {
     auto_hide->label = GetStringUTF16(IDS_ASH_SHELF_CONTEXT_MENU_AUTO_HIDE);
     auto_hide->checked = GetShelfAutoHideBehaviorPref(prefs, display_id) ==
                          SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS;
-    auto_hide->enabled = true;
+    const bool is_tablet_mode = Shell::Get()
+                                    ->tablet_mode_controller()
+                                    ->IsTabletModeWindowManagerEnabled();
+    auto_hide->enabled = !is_tablet_mode;
     menu->push_back(std::move(auto_hide));
   }
 

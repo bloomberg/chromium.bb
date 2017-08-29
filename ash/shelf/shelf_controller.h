@@ -12,6 +12,7 @@
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/interfaces/shelf.mojom.h"
 #include "ash/session/session_observer.h"
+#include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 
@@ -25,6 +26,7 @@ namespace ash {
 class ShelfController : public mojom::ShelfController,
                         public ShelfModelObserver,
                         public SessionObserver,
+                        public TabletModeObserver,
                         public WindowTreeHostManager::Observer {
  public:
   ShelfController();
@@ -57,6 +59,10 @@ class ShelfController : public mojom::ShelfController,
  private:
   // SessionObserver:
   void OnActiveUserPrefServiceChanged(PrefService* pref_service) override;
+
+  // TabletModeObserver:
+  void OnTabletModeStarted() override;
+  void OnTabletModeEnded() override;
 
   // WindowTreeHostManager::Observer:
   void OnDisplayConfigurationChanged() override;

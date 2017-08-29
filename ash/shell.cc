@@ -886,8 +886,6 @@ Shell::~Shell() {
 void Shell::Init(const ShellInitParams& init_params) {
   const Config config = shell_port_->GetAshConfig();
 
-  shelf_controller_ = base::MakeUnique<ShelfController>();
-
   if (NightLightController::IsFeatureEnabled())
     night_light_controller_ = base::MakeUnique<NightLightController>();
 
@@ -1027,6 +1025,7 @@ void Shell::Init(const ShellInitParams& init_params) {
 
   accelerator_controller_ = shell_port_->CreateAcceleratorController();
   tablet_mode_controller_ = base::MakeUnique<TabletModeController>();
+  shelf_controller_ = base::MakeUnique<ShelfController>();
 
   magnifier_key_scroll_handler_ = MagnifierKeyScroller::CreateHandler();
   AddPreTargetHandler(magnifier_key_scroll_handler_.get());

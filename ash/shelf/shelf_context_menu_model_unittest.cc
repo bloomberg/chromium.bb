@@ -12,6 +12,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test_shell_delegate.h"
 #include "ash/wallpaper/wallpaper_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/login/scoped_test_public_session_login_state.h"
 #include "ui/display/display.h"
@@ -253,6 +254,26 @@ TEST_F(ShelfContextMenuModelTest, AutohideShelfOptionOnExternalDisplay) {
   ShelfContextMenuModel secondary_menu(MenuItemList(), nullptr, secondary_id);
   EXPECT_EQ(-1, primary_menu.GetIndexOfCommandId(CommandId::MENU_AUTO_HIDE));
   EXPECT_NE(-1, secondary_menu.GetIndexOfCommandId(CommandId::MENU_AUTO_HIDE));
+}
+
+TEST_F(ShelfContextMenuModelTest, DisableAutoHideOptionOnTabletMode) {
+  TabletModeController* tablet_mode_controller =
+      Shell::Get()->tablet_mode_controller();
+  int64_t primary_id = GetPrimaryDisplay().id();
+
+  // Tests that in tablet mode, shelf auto-hide option is disabled.
+  tablet_mode_controller->EnableTabletModeWindowManager(true);
+  ShelfContextMenuModel menu1(MenuItemList(), nullptr, primary_id);
+  ASSERT_EQ(CommandId::MENU_AUTO_HIDE, menu1.GetCommandIdAt(0));
+  EXPECT_FALSE(menu1.IsEnabledAt(0));
+  EXPECT_TRUE(menu1.IsVisibleAt(0));
+
+  // Tests that exiting tablet mode reenables the auto-hide context menu item.
+  tablet_mode_controller->EnableTabletModeWindowManager(false);
+  ShelfContextMenuModel menu2(MenuItemList(), nullptr, primary_id);
+  ASSERT_EQ(CommandId::MENU_AUTO_HIDE, menu2.GetCommandIdAt(0));
+  EXPECT_TRUE(menu2.IsEnabledAt(0));
+  EXPECT_TRUE(menu2.IsVisibleAt(0));
 }
 
 }  // namespace
