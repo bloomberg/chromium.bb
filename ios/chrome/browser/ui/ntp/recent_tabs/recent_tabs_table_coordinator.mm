@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_panel_controller.h"
+#import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_table_coordinator.h"
 
 #include <memory>
 
@@ -23,8 +23,9 @@
 #error "This file requires ARC support."
 #endif
 
-@interface RecentTabsPanelController ()<SyncedSessionsObserver,
-                                        RecentTabsTableViewControllerDelegate> {
+@interface RecentTabsTableCoordinator ()<
+    SyncedSessionsObserver,
+    RecentTabsTableViewControllerDelegate> {
   std::unique_ptr<synced_sessions::SyncedSessionsObserverBridge>
       _syncedSessionsObserver;
   std::unique_ptr<recent_tabs::ClosedTabsObserverBridge> _closedTabsObserver;
@@ -51,7 +52,7 @@
 // The controller for RecentTabs panel that is added to the NewTabPage
 // Instantiate a UITableView and a UITableViewController, and notifies the
 // UITableViewController of any signed in state change.
-@implementation RecentTabsPanelController
+@implementation RecentTabsTableCoordinator
 
 // Property declared in NewTabPagePanelProtocol.
 @synthesize delegate = _delegate;
@@ -68,50 +69,25 @@
 
 - (instancetype)initWithController:(RecentTabsTableViewController*)controller
                       browserState:(ios::ChromeBrowserState*)browserState {
-  self = [super init];
+  self = [super initWithBaseViewController:nil];
   if (self) {
     DCHECK(controller);
     DCHECK(browserState);
     _browserState = browserState;
     _tableViewController = controller;
     [_tableViewController setDelegate:self];
-    [self initObservers];
-    [self reloadSessions];
   }
   return self;
 }
 
-- (void)dealloc {
+- (void)start {
+  [self initObservers];
+  [self reloadSessions];
+}
+
+- (void)stop {
   [_tableViewController setDelegate:nil];
   [self deallocObservers];
-}
-
-- (void)initObservers {
-  if (!_syncedSessionsObserver) {
-    _syncedSessionsObserver.reset(
-        new synced_sessions::SyncedSessionsObserverBridge(self, _browserState));
-  }
-  if (!_closedTabsObserver) {
-    _closedTabsObserver.reset(new recent_tabs::ClosedTabsObserverBridge(self));
-    sessions::TabRestoreService* restoreService =
-        IOSChromeTabRestoreServiceFactory::GetForBrowserState(_browserState);
-    if (restoreService)
-      restoreService->AddObserver(_closedTabsObserver.get());
-    [_tableViewController setTabRestoreService:restoreService];
-  }
-}
-
-- (void)deallocObservers {
-  _syncedSessionsObserver.reset();
-
-  if (_closedTabsObserver) {
-    sessions::TabRestoreService* restoreService =
-        IOSChromeTabRestoreServiceFactory::GetForBrowserState(_browserState);
-    if (restoreService) {
-      restoreService->RemoveObserver(_closedTabsObserver.get());
-    }
-    _closedTabsObserver.reset();
-  }
 }
 
 #pragma mark - Exposed to the SyncedSessionsObserver
@@ -185,6 +161,36 @@
 }
 
 #pragma mark - Private
+
+- (void)initObservers {
+  if (!_syncedSessionsObserver) {
+    _syncedSessionsObserver =
+        base::MakeUnique<synced_sessions::SyncedSessionsObserverBridge>(
+            self, _browserState);
+  }
+  if (!_closedTabsObserver) {
+    _closedTabsObserver =
+        base::MakeUnique<recent_tabs::ClosedTabsObserverBridge>(self);
+    sessions::TabRestoreService* restoreService =
+        IOSChromeTabRestoreServiceFactory::GetForBrowserState(_browserState);
+    if (restoreService)
+      restoreService->AddObserver(_closedTabsObserver.get());
+    [_tableViewController setTabRestoreService:restoreService];
+  }
+}
+
+- (void)deallocObservers {
+  _syncedSessionsObserver.reset();
+
+  if (_closedTabsObserver) {
+    sessions::TabRestoreService* restoreService =
+        IOSChromeTabRestoreServiceFactory::GetForBrowserState(_browserState);
+    if (restoreService) {
+      restoreService->RemoveObserver(_closedTabsObserver.get());
+    }
+    _closedTabsObserver.reset();
+  }
+}
 
 - (BOOL)isSignedIn {
   return _syncedSessionsObserver->IsSignedIn();

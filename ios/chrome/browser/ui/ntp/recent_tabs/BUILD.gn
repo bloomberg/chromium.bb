@@ -11,8 +11,8 @@ source_set("recent_tabs") {
     "recent_tabs_handset_coordinator.mm",
     "recent_tabs_handset_view_controller.h",
     "recent_tabs_handset_view_controller.mm",
-    "recent_tabs_panel_controller.h",
-    "recent_tabs_panel_controller.mm",
+    "recent_tabs_table_coordinator.h",
+    "recent_tabs_table_coordinator.mm",
     "recent_tabs_table_view_controller.h",
     "recent_tabs_table_view_controller.mm",
     "sessions_sync_user_state.h",
@@ -55,7 +55,7 @@ source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
-    "recent_tabs_panel_controller_unittest.mm",
+    "recent_tabs_table_coordinator_unittest.mm",
   ]
   deps = [
     ":recent_tabs",
@@ -80,7 +80,7 @@ source_set("eg_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
-    "recent_tabs_panel_controller_egtest.mm",
+    "recent_tabs_table_egtest.mm",
   ]
   deps = [
     "//components/strings",

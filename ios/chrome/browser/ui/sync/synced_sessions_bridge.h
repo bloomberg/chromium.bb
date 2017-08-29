@@ -18,8 +18,6 @@ class ChromeBrowserState;
 }
 class SigninManager;
 
-@class RecentTabsPanelController;
-
 @protocol SyncedSessionsObserver<SyncObserverModelBridge>
 - (void)reloadSessions;
 @end

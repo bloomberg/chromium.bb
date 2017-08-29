@@ -34,7 +34,7 @@
 #import "ios/chrome/browser/ui/ntp/incognito_panel_controller.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_bar_item.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_view.h"
-#import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_panel_controller.h"
+#import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_table_coordinator.h"
 #import "ios/chrome/browser/ui/rtl_geometry.h"
 #include "ios/chrome/browser/ui/toolbar/toolbar_model_ios.h"
 #include "ios/chrome/browser/ui/ui_util.h"
@@ -126,7 +126,7 @@ enum {
 
   GoogleLandingMediator* _googleLandingMediator;
 
-  RecentTabsPanelController* _openTabsController;
+  RecentTabsTableCoordinator* _openTabsCoordinator;
   // Has the scrollView been initialized.
   BOOL _scrollInitialized;
 
@@ -333,12 +333,14 @@ enum {
   [_bookmarkController removeFromParentViewController];
   [[self.contentSuggestionsCoordinator viewController]
       removeFromParentViewController];
+  [[_openTabsCoordinator viewController] removeFromParentViewController];
 
   [self.contentSuggestionsCoordinator stop];
+  [_openTabsCoordinator stop];
 
   [self.homePanel setDelegate:nil];
   [_bookmarkController setDelegate:nil];
-  [_openTabsController setDelegate:nil];
+  [_openTabsCoordinator setDelegate:nil];
   [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
@@ -610,14 +612,16 @@ enum {
     [self.homePanel setDelegate:self];
     [self.ntpView.tabBar setShadowAlpha:[self.homePanel alphaForBottomShadow]];
   } else if (item.identifier == ntp_home::RECENT_TABS_PANEL) {
-    if (!_openTabsController)
-      _openTabsController =
-          [[RecentTabsPanelController alloc] initWithLoader:_loader
-                                               browserState:_browserState
-                                                 dispatcher:self.dispatcher];
-    panelController = [_openTabsController viewController];
+    if (!_openTabsCoordinator) {
+      _openTabsCoordinator =
+          [[RecentTabsTableCoordinator alloc] initWithLoader:_loader
+                                                browserState:_browserState
+                                                  dispatcher:self.dispatcher];
+      [_openTabsCoordinator start];
+    }
+    panelController = [_openTabsCoordinator viewController];
     view = panelController.view;
-    [_openTabsController setDelegate:self];
+    [_openTabsCoordinator setDelegate:self];
   } else if (item.identifier == ntp_home::INCOGNITO_PANEL) {
     if (!_incognitoController)
       _incognitoController =
@@ -718,15 +722,15 @@ enum {
   else if (item.identifier == ntp_home::HOME_PANEL)
     _currentController = self.homePanel;
   else if (item.identifier == ntp_home::RECENT_TABS_PANEL)
-    _currentController = _openTabsController;
+    _currentController = _openTabsCoordinator;
   else if (item.identifier == ntp_home::INCOGNITO_PANEL)
     _currentController = _incognitoController;
 
   [_bookmarkController
       setScrollsToTop:(_currentController == _bookmarkController)];
   [self.homePanel setScrollsToTop:(_currentController == self.homePanel)];
-  [_openTabsController
-      setScrollsToTop:(_currentController == _openTabsController)];
+  [_openTabsCoordinator
+      setScrollsToTop:(_currentController == _openTabsCoordinator)];
   if (oldController) {
     [self.ntpView.tabBar
         setShadowAlpha:[_currentController alphaForBottomShadow]];

@@ -7,7 +7,7 @@
 #import "ios/chrome/browser/ui/browser_list/browser.h"
 #import "ios/chrome/browser/ui/coordinators/browser_coordinator+internal.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_handset_view_controller.h"
-#import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_panel_controller.h"
+#import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_table_coordinator.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -16,28 +16,36 @@
 
 @interface RecentTabsCoordinator ()
 @property(nonatomic, strong) UIViewController* viewController;
-@property(nonatomic, strong) RecentTabsPanelController* wrapperController;
+@property(nonatomic, strong) RecentTabsTableCoordinator* wrapperCoordinator;
 @end
 
 @implementation RecentTabsCoordinator
 @synthesize viewController = _viewController;
-@synthesize wrapperController = _wrapperController;
+@synthesize wrapperCoordinator = _wrapperCoordinator;
 
 - (void)start {
   // HACK: Re-using old view controllers for now.
-  self.wrapperController = [[RecentTabsPanelController alloc]
+  self.wrapperCoordinator = [[RecentTabsTableCoordinator alloc]
       initWithLoader:nil
         browserState:self.browser->browser_state()
           dispatcher:nil];
+  [self.wrapperCoordinator start];
   if (!IsIPadIdiom()) {
     self.viewController = [[RecentTabsHandsetViewController alloc]
-        initWithViewController:[self.wrapperController viewController]];
+        initWithViewController:[self.wrapperCoordinator viewController]];
     self.viewController.modalPresentationStyle = UIModalPresentationFormSheet;
     self.viewController.modalPresentationCapturesStatusBarAppearance = YES;
   } else {
-    self.viewController = [self.wrapperController viewController];
+    self.viewController = [self.wrapperCoordinator viewController];
   }
   [super start];
+}
+
+- (void)stop {
+  [super stop];
+  [self.wrapperCoordinator stop];
+  self.wrapperCoordinator = nil;
+  self.viewController = nil;
 }
 
 @end
