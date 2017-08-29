@@ -389,7 +389,7 @@ void DataTypeManagerImpl::ProcessReconfigure() {
   // the most recent set of desired types, so we just call configure.
   // Note: we do this whether or not GetControllersNeedingStart is true,
   // because we may need to stop datatypes.
-  DVLOG(1) << "Reconfiguring due to previous configure attempt occuring while"
+  DVLOG(1) << "Reconfiguring due to previous configure attempt occurring while"
            << " busy.";
 
   // Note: ConfigureImpl is called directly, rather than posted, in order to

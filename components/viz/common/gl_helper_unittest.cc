@@ -960,7 +960,7 @@ class GLHelperTest : public testing::Test {
       for (int x = 0; x < bmp1.width(); ++x) {
         if (!ColorsClose(bmp1.getColor(x, y), bmp2.getColor(x, y),
                          bmp1.colorType())) {
-          LOG(ERROR) << "Bitmap color comparision failure";
+          LOG(ERROR) << "Bitmap color comparison failure";
           return false;
         }
       }
@@ -1038,7 +1038,7 @@ class GLHelperTest : public testing::Test {
     ReadBackTexture(src_texture, src_size, pixels, color_type, async);
     bool result = IsEqual(input_pixels, output_pixels);
     if (!result) {
-      LOG(ERROR) << "Bitmap comparision failure Pattern-1";
+      LOG(ERROR) << "Bitmap comparison failure Pattern-1";
       return false;
     }
     const int rect_w = 10, rect_h = 4, src_grid_pitch = 10, src_grid_width = 4;
@@ -1051,7 +1051,7 @@ class GLHelperTest : public testing::Test {
     ReadBackTexture(src_texture, src_size, pixels, color_type, async);
     result = IsEqual(input_pixels, output_pixels);
     if (!result) {
-      LOG(ERROR) << "Bitmap comparision failure Pattern-2";
+      LOG(ERROR) << "Bitmap comparison failure Pattern-2";
       return false;
     }
     // Test Pattern-3, Fill with CheckerBoard Pattern.
@@ -1062,7 +1062,7 @@ class GLHelperTest : public testing::Test {
     ReadBackTexture(src_texture, src_size, pixels, color_type, async);
     result = IsEqual(input_pixels, output_pixels);
     if (!result) {
-      LOG(ERROR) << "Bitmap comparision failure Pattern-3";
+      LOG(ERROR) << "Bitmap comparison failure Pattern-3";
       return false;
     }
     gl_->DeleteTextures(1, &src_texture);

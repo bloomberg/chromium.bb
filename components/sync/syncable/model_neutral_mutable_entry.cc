@@ -176,7 +176,7 @@ bool ModelNeutralMutableEntry::PutIsUnsynced(bool value) {
       }
     } else {
       if (!SyncAssert(1U == index->erase(kernel_->ref(META_HANDLE)), FROM_HERE,
-                      "Entry Not succesfully erased",
+                      "Entry Not successfully erased",
                       base_write_transaction())) {
         return false;
       }
@@ -208,7 +208,7 @@ bool ModelNeutralMutableEntry::PutIsUnappliedUpdate(bool value) {
       }
     } else {
       if (!SyncAssert(1U == index->erase(kernel_->ref(META_HANDLE)), FROM_HERE,
-                      "Entry Not succesfully erased",
+                      "Entry Not successfully erased",
                       base_write_transaction())) {
         return false;
       }

@@ -395,7 +395,7 @@ sync_pb::CommitResponse::ResponseType ProcessSingleCommitResponse(
     return sync_pb::CommitResponse::TRANSIENT_ERROR;
   }
   if (sync_pb::CommitResponse::INVALID_MESSAGE == response) {
-    LOG(ERROR) << "Error Commiting: " << local_entry;
+    LOG(ERROR) << "Error Committing: " << local_entry;
     LogServerError(server_entry);
     return response;
   }
@@ -425,7 +425,7 @@ sync_pb::CommitResponse::ResponseType ProcessSingleCommitResponse(
   if (local_entry.GetId() != server_entry_id) {
     Entry e(trans, syncable::GET_BY_ID, server_entry_id);
     if (e.good()) {
-      LOG(ERROR) << "Got duplicate id when commiting id: "
+      LOG(ERROR) << "Got duplicate id when committing id: "
                  << local_entry.GetId() << ". Treating as an error return";
       return sync_pb::CommitResponse::INVALID_MESSAGE;
     }

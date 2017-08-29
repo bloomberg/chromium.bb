@@ -1759,7 +1759,7 @@
 
       When the 'Block all downloads' option is chosen, all downloads are blocked.
 
-      When this policy is not set, (or the 'No special restrictions' option is chosen), the dowloads will go through the usual security restrictions based on SafeBrowsing analysis results.
+      When this policy is not set, (or the 'No special restrictions' option is chosen), the downloads will go through the usual security restrictions based on SafeBrowsing analysis results.
 
       Note that these restrictions apply to downloads triggered from web page content, as well as the 'download link...' context menu option. These restrictions do not apply to the save / download of the currently displayed page, nor does it apply to saving as PDF from the printing options.
 
@@ -1853,7 +1853,7 @@
 
       This policy only takes effect if a proxy is configured (for example through policy, by the user in chrome://settings, or by extensions).
 
-      If you enable this setting, any captive portal authentication pages (i.e. all web pages starting from captive portal signin page until <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> detects succesful internet connection) will be displayed in a separate window ignoring all policy settings and restrictions for the current user.
+      If you enable this setting, any captive portal authentication pages (i.e. all web pages starting from captive portal signin page until <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> detects successful internet connection) will be displayed in a separate window ignoring all policy settings and restrictions for the current user.
 
       If you disable this setting or leave it unset, any captive portal authentication pages will be shown in a (regular) new browser tab, using the current user's proxy settings.''',
     },
