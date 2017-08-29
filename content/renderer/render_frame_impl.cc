@@ -4287,6 +4287,20 @@ void RenderFrameImpl::ShowContextMenu(const blink::WebContextMenuData& data) {
   blink::WebRect selection_in_window(data.selection_rect);
   GetRenderWidget()->ConvertViewportToWindow(&selection_in_window);
   params.selection_rect = selection_in_window;
+
+#if defined(OS_ANDROID)
+  // The Samsung Email app relies on the context menu being shown after the
+  // javascript onselectionchanged is triggered.
+  // See crbug.com/729488
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&RenderFrameImpl::ShowDeferredContextMenu,
+                            weak_factory_.GetWeakPtr(), params));
+#else
+  ShowDeferredContextMenu(params);
+#endif
+}
+
+void RenderFrameImpl::ShowDeferredContextMenu(const ContextMenuParams& params) {
   Send(new FrameHostMsg_ContextMenu(routing_id_, params));
 }
 

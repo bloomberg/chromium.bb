@@ -1173,6 +1173,8 @@ class CONTENT_EXPORT RenderFrameImpl
   void ReportPeakMemoryStats();
   void BindWidget(mojom::WidgetRequest request);
 
+  void ShowDeferredContextMenu(const ContextMenuParams& params);
+
   // Stores the WebLocalFrame we are associated with.  This is null from the
   // constructor until BindToFrame() is called, and it is null after
   // FrameDetached() is called until destruction (which is asynchronous in the
