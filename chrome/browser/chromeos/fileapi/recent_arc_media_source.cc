@@ -193,7 +193,8 @@ void RecentArcMediaSource::MediaRoot::ScanDirectory(
     // We already checked ARC is allowed for this profile (indirectly), so
     // this should never happen.
     LOG(ERROR) << "ArcDocumentsProviderRootMap is not available";
-    OnReadDirectory(path, base::File::FILE_ERROR_FAILED, {});
+    OnReadDirectory(path, base::File::FILE_ERROR_FAILED,
+                    std::vector<arc::ArcDocumentsProviderRoot::ThinFileInfo>());
     return;
   }
 
@@ -202,7 +203,8 @@ void RecentArcMediaSource::MediaRoot::ScanDirectory(
   if (!root) {
     // Media roots should always exist.
     LOG(ERROR) << "ArcDocumentsProviderRoot is missing";
-    OnReadDirectory(path, base::File::FILE_ERROR_NOT_FOUND, {});
+    OnReadDirectory(path, base::File::FILE_ERROR_NOT_FOUND,
+                    std::vector<arc::ArcDocumentsProviderRoot::ThinFileInfo>());
     return;
   }
 
@@ -305,7 +307,7 @@ void RecentArcMediaSource::GetRecentFiles(Params params) {
   // ArcFileSystemOperationRunner's deferring state switches from disabled to
   // enabled (one such case is when ARC container crashes).
   if (!WillArcFileSystemOperationsRunImmediately()) {
-    std::move(params.callback()).Run({});
+    std::move(params.callback()).Run(std::vector<RecentFile>());
     return;
   }
 
