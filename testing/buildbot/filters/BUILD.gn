@@ -16,6 +16,15 @@
 # $ for i in $(ls -1 testing/buildbot/filters/*.browser_tests.*filter ); \
 #   do echo "    \"//$i\","; done | sort
 
+source_set("ash_unittests_filters") {
+  testonly = true
+
+  data = [
+    "//testing/buildbot/filters/ash_unittests_mash.filter",
+    "//testing/buildbot/filters/ash_unittests_mus.filter",
+  ]
+}
+
 source_set("browser_tests_filters") {
   testonly = true
 
@@ -28,6 +37,7 @@ source_set("browser_tests_filters") {
     "//testing/buildbot/filters/mojo.fyi.network_browser_tests.filter",
     "//testing/buildbot/filters/mus.browser_tests.filter",
     "//testing/buildbot/filters/single.mash.browser_tests.filter",
+    "//testing/buildbot/filters/browser_tests_cros_asan.filter",
     "//testing/buildbot/filters/site-per-process.browser_tests.filter",
   ]
 }
@@ -51,11 +61,10 @@ source_set("interactive_ui_tests_filters") {
   ]
 }
 
-source_set("ash_unittests_filters") {
+source_set("unit_tests_filters") {
   testonly = true
 
   data = [
-    "//testing/buildbot/filters/ash_unittests_mash.filter",
-    "//testing/buildbot/filters/ash_unittests_mus.filter",
+    "//testing/buildbot/filters/unit_tests_cros_asan.filter",
   ]
 }

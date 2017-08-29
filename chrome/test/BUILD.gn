@@ -3459,7 +3459,9 @@ test("unit_tests") {
 
   configs += [ "//build/config:precompiled_headers" ]
 
-  data_deps = []
+  data_deps = [
+    "//testing/buildbot/filters:unit_tests_filters",
+  ]
 
   data = [
     "data/",
