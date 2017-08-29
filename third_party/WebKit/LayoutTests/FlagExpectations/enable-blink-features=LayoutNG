@@ -9655,7 +9655,6 @@ crbug.com/591099 fast/multicol/paged-becomes-multicol-with-spanner.html [ Failur
 crbug.com/591099 fast/multicol/paged-in-multicol-crash.html [ Failure ]
 crbug.com/591099 fast/multicol/paginate-block-replaced.html [ Failure ]
 crbug.com/591099 fast/multicol/paginated-layer-crash.html [ Failure ]
-crbug.com/591099 fast/multicol/percent-height.html [ Failure Pass ]
 crbug.com/591099 fast/multicol/positioned-outside-of-columns.html [ Failure ]
 crbug.com/591099 fast/multicol/positioned-split.html [ Failure ]
 crbug.com/757767 fast/multicol/positioned-with-constrained-height.html [ Crash ]

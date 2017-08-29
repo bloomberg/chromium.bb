@@ -221,7 +221,13 @@ RefPtr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
       CalculateContentBoxSize(size, border_scrollbar_padding_);
 
   child_available_size_ = adjusted_size;
-  child_percentage_size_ = adjusted_size;
+
+  // Anonymous constraint spaces are auto-sized. Don't let that affect
+  // block-axis percentage resolution.
+  if (ConstraintSpace().IsAnonymous())
+    child_percentage_size_ = ConstraintSpace().PercentageResolutionSize();
+  else
+    child_percentage_size_ = adjusted_size;
 
   container_builder_.SetSize(size);
 
