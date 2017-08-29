@@ -9,6 +9,8 @@
 
 #import "ios/chrome/browser/ui/bookmarks/bars/bookmark_top_bar.h"
 
+// TODO(crbug.com/753599) : Delete this file after new bookmarks ui is launched.
+
 // The top bar that shows up when a user is editing bookmarks.
 @interface BookmarkEditingBar : BookmarkTopBar
 // Set the target/action of the respective buttons.
