@@ -301,6 +301,43 @@ gfx::Rect ComputeLetterboxRegion(const gfx::Rect& bounds,
   return result;
 }
 
+gfx::Rect ComputeLetterboxRegionForI420(const gfx::Rect& bounds,
+                                        const gfx::Size& content) {
+  DCHECK_EQ(bounds.x() % 2, 0);
+  DCHECK_EQ(bounds.y() % 2, 0);
+  DCHECK_EQ(bounds.width() % 2, 0);
+  DCHECK_EQ(bounds.height() % 2, 0);
+
+  gfx::Rect result = ComputeLetterboxRegion(bounds, content);
+
+  if (result.x() & 1) {
+    // This is always legal since bounds.x() was even and result.x() must always
+    // be greater or equal to bounds.x().
+    result.set_x(result.x() - 1);
+
+    // The result.x() was nudged to the left, so if the width is odd, it should
+    // be perfectly legal to nudge it up by one to make it even.
+    if (result.width() & 1)
+      result.set_width(result.width() + 1);
+  } else /* if (result.x() is even) */ {
+    if (result.width() & 1)
+      result.set_width(result.width() - 1);
+  }
+
+  if (result.y() & 1) {
+    // These operations are legal for the same reasons mentioned above for
+    // result.x().
+    result.set_y(result.y() - 1);
+    if (result.height() & 1)
+      result.set_height(result.height() + 1);
+  } else /* if (result.y() is even) */ {
+    if (result.height() & 1)
+      result.set_height(result.height() - 1);
+  }
+
+  return result;
+}
+
 gfx::Size ScaleSizeToFitWithinTarget(const gfx::Size& size,
                                      const gfx::Size& target) {
   return ScaleSizeToTarget(size, target, true);
