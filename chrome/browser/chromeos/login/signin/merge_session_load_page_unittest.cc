@@ -17,9 +17,11 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/navigation_simulator.h"
 #include "content/public/test/web_contents_tester.h"
 
 using content::InterstitialPage;
+using content::NavigationSimulator;
 using content::WebContents;
 using content::WebContentsTester;
 
@@ -53,15 +55,6 @@ class MergeSessionLoadPageTest : public ChromeRenderViewHostTestHarness {
  protected:
   void TearDown() override {
     ChromeRenderViewHostTestHarness::TearDown();
-  }
-
-  void Navigate(const char* url,
-                int nav_entry_id,
-                bool did_create_new_entry) {
-    WebContentsTester::For(web_contents())
-        ->TestDidNavigate(web_contents()->GetMainFrame(), nav_entry_id,
-                          did_create_new_entry, GURL(url),
-                          ui::PAGE_TRANSITION_TYPED);
   }
 
   void ShowInterstitial(const char* url) {
@@ -110,10 +103,12 @@ class MergeSessionLoadPageTest : public ChromeRenderViewHostTestHarness {
 TEST_F(MergeSessionLoadPageTest, MergeSessionPageNotShown) {
   SetMergeSessionState(OAuth2LoginManager::SESSION_RESTORE_DONE);
   // Start a load.
-  Navigate(kURL1, 0, true);
+  NavigationSimulator::NavigateAndCommitFromBrowser(web_contents(),
+                                                    GURL(kURL1));
   // Load next page.
-  controller().LoadURL(GURL(kURL2), content::Referrer(),
-                       ui::PAGE_TRANSITION_TYPED, std::string());
+  auto navigation =
+      NavigationSimulator::CreateBrowserInitiated(GURL(kURL2), web_contents());
+  navigation->Start();
 
   // Simulate the load causing an merge session interstitial page
   // to be shown.
@@ -128,10 +123,12 @@ TEST_F(MergeSessionLoadPageTest, MergeSessionPageNotShownOnTimeout) {
       base::TimeDelta::FromSeconds(kSessionMergeTimeout + 1));
 
   // Start a load.
-  Navigate(kURL1, 0, true);
+  NavigationSimulator::NavigateAndCommitFromBrowser(web_contents(),
+                                                    GURL(kURL1));
   // Load next page.
-  controller().LoadURL(GURL(kURL2), content::Referrer(),
-                       ui::PAGE_TRANSITION_TYPED, std::string());
+  auto navigation =
+      NavigationSimulator::CreateBrowserInitiated(GURL(kURL2), web_contents());
+  navigation->Start();
 
   // Simulate the load causing an merge session interstitial page
   // to be shown.
@@ -143,11 +140,13 @@ TEST_F(MergeSessionLoadPageTest, MergeSessionPageShown) {
   SetMergeSessionState(OAuth2LoginManager::SESSION_RESTORE_IN_PROGRESS);
 
   // Start a load.
-  Navigate(kURL1, 0, true);
+  NavigationSimulator::NavigateAndCommitFromBrowser(web_contents(),
+                                                    GURL(kURL1));
+
   // Load next page.
-  controller().LoadURL(GURL(kURL2), content::Referrer(),
-                       ui::PAGE_TRANSITION_TYPED, std::string());
-  int pending_id = controller().GetPendingEntry()->GetUniqueID();
+  auto navigation =
+      NavigationSimulator::CreateBrowserInitiated(GURL(kURL2), web_contents());
+  navigation->Start();
 
   // Simulate the load causing an merge session interstitial page
   // to be shown.
@@ -164,7 +163,7 @@ TEST_F(MergeSessionLoadPageTest, MergeSessionPageShown) {
   EXPECT_EQ(kURL2, web_contents()->GetVisibleURL().spec());
 
   // Commit navigation and the interstitial page is gone.
-  Navigate(kURL2, pending_id, true);
+  navigation->Commit();
   EXPECT_FALSE(GetMergeSessionLoadPage());
 }
 
