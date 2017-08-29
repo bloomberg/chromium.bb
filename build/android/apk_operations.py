@@ -575,23 +575,30 @@ class _Command(object):
         if args.apk_path and args.incremental_json:
           self._parser.error('Both incremental and non-incremental apks exist. '
                              'Select using --incremental or --non-incremental')
-        elif not args.apk_path and not args.incremental_json:
-          self._parser.error(
-              'Neither incremental nor non-incremental apk is built.')
 
-      if self.needs_apk_path or args.apk_path:
+      if self.needs_apk_path or args.apk_path or args.incremental_json:
         if args.incremental_json:
           with open(args.incremental_json) as f:
-            self.install_dict = json.load(f)
-          self.apk_helper = apk_helper.ToHelper(
-              os.path.join(args.output_directory,
-                           self.install_dict['apk_path']))
-        else:
+            install_dict = json.load(f)
+          apk_path = os.path.join(args.output_directory,
+                                  install_dict['apk_path'])
+          if os.path.exists(apk_path):
+            self.install_dict = install_dict
+            self.apk_helper = apk_helper.ToHelper(
+                os.path.join(args.output_directory,
+                             self.install_dict['apk_path']))
+        if not self.apk_helper and args.apk_path:
           self.apk_helper = apk_helper.ToHelper(args.apk_path)
+        else:
+          self._parser.error(
+              'Neither incremental nor non-incremental apk is built.')
 
       if self.needs_package_name and not args.package_name:
         if self.apk_helper:
           args.package_name = self.apk_helper.GetPackageName()
+        elif self._from_wrapper_script:
+          self._parser.error(
+              'Neither incremental nor non-incremental apk is built.')
         else:
           self._parser.error('One of --package-name or --apk-path is required.')
 
@@ -836,12 +843,12 @@ def Run(output_directory, apk_path, incremental_json, command_line_flags_file,
   constants.SetOutputDirectory(output_directory)
   devil_chromium.Initialize(output_directory=output_directory)
   parser = argparse.ArgumentParser()
-  exists_or_None = lambda p: p if p and os.path.exists(p) else None
+  exists_or_none = lambda p: p if p and os.path.exists(p) else None
   parser.set_defaults(
       command_line_flags_file=command_line_flags_file,
       target_cpu=target_cpu,
-      apk_path=exists_or_None(apk_path),
-      incremental_json=exists_or_None(incremental_json))
+      apk_path=exists_or_none(apk_path),
+      incremental_json=exists_or_none(incremental_json))
   _RunInternal(parser, output_directory=output_directory)
 
 
