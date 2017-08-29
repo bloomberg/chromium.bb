@@ -432,6 +432,39 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTestWithManagementPolicy,
   ASSERT_TRUE(RunExtensionTest("content_scripts/policy")) << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(ExtensionApiTestWithManagementPolicy,
+                       ContentScriptPolicyByExtensionId) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  base::FilePath extension_path =
+      test_data_dir_.AppendASCII("content_scripts/policy");
+  // Pack extension because by-extension policies aren't applied to unpacked
+  // "transient" extensions.
+  base::FilePath crx_path = PackExtension(extension_path);
+  EXPECT_FALSE(crx_path.empty());
+
+  // Load first time to get extension id.
+  const Extension* extension = LoadExtensionWithFlags(
+      crx_path, ExtensionBrowserTest::kFlagEnableFileAccess);
+  ASSERT_TRUE(extension);
+  auto extension_id = extension->id();
+  UnloadExtension(extension_id);
+
+  // Set enterprise policy to block injection of specified extension to policy
+  // specified host.
+  {
+    ExtensionManagementPolicyUpdater pref(&policy_provider_);
+    pref.AddRuntimeBlockedHost(extension_id, "*://example.com");
+  }
+  // Some policy updating operations are performed asynchronuosly. Wait for them
+  // to complete before installing extension.
+  base::RunLoop().RunUntilIdle();
+
+  extensions::ResultCatcher catcher;
+  EXPECT_TRUE(LoadExtensionWithFlags(
+      crx_path, ExtensionBrowserTest::kFlagEnableFileAccess));
+  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+}
+
 IN_PROC_BROWSER_TEST_P(ContentScriptApiTest, ContentScriptBypassPageCSP) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("content_scripts/bypass_page_csp")) << message_;
