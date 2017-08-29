@@ -46,7 +46,10 @@ def get_bot_list(swarming_server, dimensions):
   healthy = []
   quarantined = []
   dead = []
-  for b in json.loads(subprocess.check_output(cmd, cwd=ROOT_DIR))['items']:
+  results = json.loads(subprocess.check_output(cmd, cwd=ROOT_DIR))
+  if not results.get('items'):
+    return (), (), ()
+  for b in results['items']:
     if b['is_dead']:
       dead.append(b['bot_id'])
     elif b['quarantined']:
