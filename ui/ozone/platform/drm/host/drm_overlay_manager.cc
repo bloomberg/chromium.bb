@@ -170,9 +170,10 @@ bool DrmOverlayManager::CanHandleCandidate(
     }
   }
 
-  if (candidate.is_clipped &&
-      !candidate.clip_rect.Contains(candidate.quad_rect_in_target_space))
+  if (candidate.is_clipped && !candidate.clip_rect.Contains(
+                                  gfx::ToNearestRect(candidate.display_rect))) {
     return false;
+  }
 
   return true;
 }

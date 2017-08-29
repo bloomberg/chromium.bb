@@ -29,7 +29,6 @@ TEST_F(OverlaySurfaceCandidateStructTraitsTest, FieldsEqual) {
   input.buffer_size = gfx::Size(6, 7);
   input.display_rect = gfx::RectF(1., 2., 3., 4.);
   input.crop_rect = gfx::RectF(10., 20., 30., 40.);
-  input.quad_rect_in_target_space = gfx::Rect(101, 201, 301, 401);
   input.clip_rect = gfx::Rect(11, 21, 31, 41);
   input.is_clipped = true;
   input.plane_z_order = 42;
@@ -47,7 +46,6 @@ TEST_F(OverlaySurfaceCandidateStructTraitsTest, FieldsEqual) {
   EXPECT_EQ(input.buffer_size, output.buffer_size);
   EXPECT_EQ(input.display_rect, output.display_rect);
   EXPECT_EQ(input.crop_rect, output.crop_rect);
-  EXPECT_EQ(input.quad_rect_in_target_space, output.quad_rect_in_target_space);
   EXPECT_EQ(input.clip_rect, output.clip_rect);
   EXPECT_EQ(input.is_clipped, output.is_clipped);
   EXPECT_EQ(input.plane_z_order, output.plane_z_order);
