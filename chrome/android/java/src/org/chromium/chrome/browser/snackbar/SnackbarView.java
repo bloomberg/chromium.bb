@@ -49,6 +49,7 @@ class SnackbarView {
     private ViewGroup mParent;
     private Snackbar mSnackbar;
     private boolean mAnimateOverWebContent;
+    private View mRootContentView;
 
     // Variables used to calculate the virtual keyboard's height.
     private Rect mCurrentVisibleRect = new Rect();
@@ -84,6 +85,7 @@ class SnackbarView {
             mOriginalParent = parentView;
         }
 
+        mRootContentView = activity.findViewById(android.R.id.content);
         mParent = mOriginalParent;
         mView = (ViewGroup) LayoutInflater.from(activity).inflate(
                 R.layout.snackbar, mParent, false);
@@ -121,7 +123,7 @@ class SnackbarView {
         animatorSet.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
-                mParent.removeOnLayoutChangeListener(mLayoutListener);
+                mRootContentView.removeOnLayoutChangeListener(mLayoutListener);
                 mParent.removeView(mView);
             }
         });
@@ -175,7 +177,7 @@ class SnackbarView {
      * @see SnackbarManager#overrideParent(ViewGroup)
      */
     void overrideParent(ViewGroup overridingParent) {
-        mParent.removeOnLayoutChangeListener(mLayoutListener);
+        mRootContentView.removeOnLayoutChangeListener(mLayoutListener);
         mParent = overridingParent == null ? mOriginalParent : overridingParent;
         if (isShowing()) {
             ((ViewGroup) mView.getParent()).removeView(mView);
@@ -217,7 +219,7 @@ class SnackbarView {
         // change listener of the view itself, the force layout flag will be reset to 0 when
         // layout() returns. Therefore we have to do request layout on one level above the requested
         // view.
-        mParent.addOnLayoutChangeListener(mLayoutListener);
+        mRootContentView.addOnLayoutChangeListener(mLayoutListener);
     }
 
     private boolean updateInternal(Snackbar snackbar, boolean animate) {
