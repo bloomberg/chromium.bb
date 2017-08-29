@@ -184,7 +184,7 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   // is aborted, it won't be called.
   void ShowAnimationFinished();
 
-  void NotifyKeyboardBoundsChangingAndEnsrueCaretInWorkArea();
+  void NotifyKeyboardBoundsChangingAndEnsureCaretInWorkArea();
 
   // Called when the keyboard mode is set or the keyboard is moved to another
   // display.
