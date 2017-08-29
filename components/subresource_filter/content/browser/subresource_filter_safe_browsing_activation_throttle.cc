@@ -84,6 +84,24 @@ SubresourceFilterSafeBrowsingActivationThrottle::
           "SubresourceFilterOnly",
           chain_size);
       break;
+    case ActivationList::BETTER_ADS:
+      UMA_HISTOGRAM_COUNTS(
+          "SubresourceFilter.PageLoad.RedirectChainLength."
+          "BetterAds",
+          chain_size);
+      break;
+    case ActivationList::ABUSIVE_ADS:
+      UMA_HISTOGRAM_COUNTS(
+          "SubresourceFilter.PageLoad.RedirectChainLength."
+          "AbusiveAds",
+          chain_size);
+      break;
+    case ActivationList::ALL_ADS:
+      UMA_HISTOGRAM_COUNTS(
+          "SubresourceFilter.PageLoad.RedirectChainLength."
+          "AllAds",
+          chain_size);
+      break;
     default:
       break;
   }

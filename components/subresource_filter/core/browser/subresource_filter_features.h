@@ -201,6 +201,9 @@ extern const char kActivationListsParameterName[];
 extern const char kActivationListSocialEngineeringAdsInterstitial[];
 extern const char kActivationListPhishingInterstitial[];
 extern const char kActivationListSubresourceFilter[];
+extern const char kActivationListBetterAds[];
+extern const char kActivationListAbusiveAds[];
+extern const char kActivationListAllAds[];
 
 extern const char kActivationPriorityParameterName[];
 
