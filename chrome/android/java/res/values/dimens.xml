@@ -198,7 +198,6 @@
     <dimen name="control_container_height">56dp</dimen>
     <dimen name="bottom_control_container_height">56dp</dimen>
     <dimen name="custom_tabs_control_container_height">56dp</dimen>
-    <dimen name="webapp_control_container_height">22dp</dimen>
 
     <!-- The combined height of the tab strip and toolbar. -->
     <dimen name="tab_strip_and_toolbar_height">56dp</dimen>

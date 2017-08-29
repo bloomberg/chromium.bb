@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.webapps;
+package org.chromium.chrome.browser.widget;
 
 import android.content.Context;
 import android.graphics.Color;
@@ -13,20 +13,18 @@ import android.view.View;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EdgeSwipeHandler;
 import org.chromium.chrome.browser.compositor.resources.ResourceFactory;
 import org.chromium.chrome.browser.widget.ClipDrawableProgressBar.DrawingInfo;
-import org.chromium.chrome.browser.widget.ControlContainer;
-import org.chromium.chrome.browser.widget.ViewResourceFrameLayout;
 import org.chromium.ui.resources.dynamics.ViewResourceAdapter;
 
 /**
- * The control container used by WebApps.
+ * The control container used by the FullscreenActivity.
  */
-public class WebappControlContainer extends ViewResourceFrameLayout
-        implements ControlContainer {
-    private class WebAppViewResourceAdapter extends ViewResourceAdapter {
+public class FullscreenControlContainer
+        extends ViewResourceFrameLayout implements ControlContainer {
+    private class FullscreenViewResourceAdapter extends ViewResourceAdapter {
         private final Rect mToolbarRect = new Rect();
         private final Rect mLocationBarContentRect = new Rect();
 
-        public WebAppViewResourceAdapter(View view) {
+        public FullscreenViewResourceAdapter(View view) {
             super(view);
         }
 
@@ -40,17 +38,16 @@ public class WebappControlContainer extends ViewResourceFrameLayout
     }
 
     /** Constructor for inflating from XML. */
-    public WebappControlContainer(Context context, AttributeSet attrs) {
+    public FullscreenControlContainer(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
 
     @Override
-    public void initWithToolbar(int toolbarLayoutId) {
-    }
+    public void initWithToolbar(int toolbarLayoutId) {}
 
     @Override
     protected final ViewResourceAdapter createResourceAdapter() {
-        return new WebAppViewResourceAdapter(this);
+        return new FullscreenViewResourceAdapter(this);
     }
 
     @Override
@@ -59,12 +56,10 @@ public class WebappControlContainer extends ViewResourceFrameLayout
     }
 
     @Override
-    public void getProgressBarDrawingInfo(DrawingInfo drawingInfoOut) {
-    }
+    public void getProgressBarDrawingInfo(DrawingInfo drawingInfoOut) {}
 
     @Override
-    public void setSwipeHandler(EdgeSwipeHandler handler) {
-    }
+    public void setSwipeHandler(EdgeSwipeHandler handler) {}
 
     @Override
     public int getToolbarBackgroundColor() {

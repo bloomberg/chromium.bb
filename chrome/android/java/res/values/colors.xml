@@ -180,8 +180,6 @@
     <!-- WebappActivity colors -->
     <color name="webapp_default_bg">#fafafa</color>
     <color name="webapp_splash_title_light">#ffffff</color>
-    <color name="webapp_url_bar_bg">#fafafa</color>
-    <color name="webapp_url_bar_separator">#e1e1e1</color>
 
     <!-- Bookmark UI colors -->
     <color name="bookmark_detail_section">#7C7B79</color>
