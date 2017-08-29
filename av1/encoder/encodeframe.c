@@ -1536,13 +1536,8 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
                          int supertx_enabled
 #endif
                          ) {
-#if CONFIG_DELTA_Q
   MACROBLOCK *x = &td->mb;
   MACROBLOCKD *const xd = &x->e_mbd;
-#else
-  MACROBLOCK *x = &td->mb;
-  MACROBLOCKD *const xd = &x->e_mbd;
-#endif
   const MODE_INFO *const mi = xd->mi[0];
   const MB_MODE_INFO *const mbmi = &mi->mbmi;
   const MB_MODE_INFO_EXT *const mbmi_ext = x->mbmi_ext;
