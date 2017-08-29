@@ -192,6 +192,11 @@ base::LazyInstance<ChromeCrashReporterClient>::Leaky g_chrome_crash_client =
 extern int NaClMain(const content::MainFunctionParams&);
 extern int CloudPrintServiceProcessMain(const content::MainFunctionParams&);
 
+const char* const ChromeMainDelegate::kNonWildcardDomainNonPortSchemes[] = {
+    extensions::kExtensionScheme, chrome::kChromeSearchScheme};
+const size_t ChromeMainDelegate::kNonWildcardDomainNonPortSchemesSize =
+    arraysize(kNonWildcardDomainNonPortSchemes);
+
 namespace {
 
 base::LazyInstance<ChromeMainDelegate::ServiceCatalogFactory>::Leaky
@@ -598,8 +603,8 @@ bool ChromeMainDelegate::BasicStartupComplete(int* exit_code) {
   nacl::RegisterPathProvider();
 #endif
 
-  ContentSettingsPattern::SetNonWildcardDomainNonPortScheme(
-      extensions::kExtensionScheme);
+  ContentSettingsPattern::SetNonWildcardDomainNonPortSchemes(
+      kNonWildcardDomainNonPortSchemes, kNonWildcardDomainNonPortSchemesSize);
 
 // No support for ANDROID yet as DiagnosticsController needs wchar support.
 // TODO(gspencer): That's not true anymore, or at least there are no w-string

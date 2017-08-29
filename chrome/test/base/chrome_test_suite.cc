@@ -14,6 +14,7 @@
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/app/chrome_main_delegate.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -81,8 +82,9 @@ void ChromeTestSuite::Initialize() {
   // values for DIR_EXE and DIR_MODULE.
   content::ContentTestSuiteBase::Initialize();
 
-  ContentSettingsPattern::SetNonWildcardDomainNonPortScheme(
-      extensions::kExtensionScheme);
+  ContentSettingsPattern::SetNonWildcardDomainNonPortSchemes(
+      ChromeMainDelegate::kNonWildcardDomainNonPortSchemes,
+      ChromeMainDelegate::kNonWildcardDomainNonPortSchemesSize);
 
 #if defined(OS_MACOSX)
   // Look in the framework bundle for resources.

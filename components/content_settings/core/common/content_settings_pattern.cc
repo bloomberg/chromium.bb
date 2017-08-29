@@ -19,18 +19,17 @@
 
 namespace {
 
-// The component supports only one scheme for simplicity.
-const char* non_port_non_domain_wildcard_scheme = NULL;
+// Array of non domain wildcard and non-port scheme names, and their count.
+const char* const* g_non_domain_wildcard_non_port_schemes = nullptr;
+size_t g_non_domain_wildcard_non_port_schemes_count = 0;
 
 // Keep it consistent with enum SchemeType in content_settings_pattern.h.
-const char* const kSchemeNames[] = {
-  "wildcard",
-  "other",
-  url::kHttpScheme,
-  url::kHttpsScheme,
-  url::kFileScheme,
-  "chrome-extension",
-};
+// TODO(msramek): Layering violation: assemble this array from hardcoded
+// schemes and those injected via |SetNonWildcardDomainNonPortSchemes()|.
+const char* const kSchemeNames[] = {"wildcard",       "other",
+                                    url::kHttpScheme, url::kHttpsScheme,
+                                    url::kFileScheme, "chrome-extension",
+                                    "chrome-search"};
 
 static_assert(arraysize(kSchemeNames) == ContentSettingsPattern::SCHEME_MAX,
               "kSchemeNames should have SCHEME_MAX elements");
@@ -264,7 +263,8 @@ bool ContentSettingsPattern::Builder::Validate(const PatternParts& parts) {
             parts.path.find("*") == std::string::npos);
   }
 
-  // If the pattern is for an extension URL test if it is valid.
+  // If the pattern is for a URL with a non-wildcard domain without a port,
+  // test if it is valid.
   if (IsNonWildcardDomainNonPortScheme(parts.scheme) &&
       parts.port.empty() &&
       !parts.is_port_wildcard) {
@@ -454,19 +454,32 @@ bool ContentSettingsPattern::MigrateFromDomainToOrigin(
 }
 
 // static
-void ContentSettingsPattern::SetNonWildcardDomainNonPortScheme(
-    const char* scheme) {
-  DCHECK(scheme);
-  DCHECK(!non_port_non_domain_wildcard_scheme ||
-         non_port_non_domain_wildcard_scheme == scheme);
-  non_port_non_domain_wildcard_scheme = scheme;
+void ContentSettingsPattern::SetNonWildcardDomainNonPortSchemes(
+    const char* const* schemes,
+    size_t count) {
+  DCHECK(schemes || count == 0);
+  if (g_non_domain_wildcard_non_port_schemes) {
+    DCHECK_EQ(g_non_domain_wildcard_non_port_schemes_count, count);
+    for (size_t i = 0; i < count; ++i) {
+      DCHECK_EQ(g_non_domain_wildcard_non_port_schemes[i], schemes[i]);
+    }
+  }
+
+  g_non_domain_wildcard_non_port_schemes = schemes;
+  g_non_domain_wildcard_non_port_schemes_count = count;
 }
 
 // static
 bool ContentSettingsPattern::IsNonWildcardDomainNonPortScheme(
     const std::string& scheme) {
-  DCHECK(non_port_non_domain_wildcard_scheme);
-  return scheme == non_port_non_domain_wildcard_scheme;
+  DCHECK(g_non_domain_wildcard_non_port_schemes ||
+         g_non_domain_wildcard_non_port_schemes_count == 0);
+  for (size_t i = 0; i < g_non_domain_wildcard_non_port_schemes_count; ++i) {
+    if (g_non_domain_wildcard_non_port_schemes[i] == scheme) {
+      return true;
+    }
+  }
+  return false;
 }
 
 ContentSettingsPattern::ContentSettingsPattern()
