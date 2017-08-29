@@ -24,6 +24,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "device/bluetooth/bluetooth_adapter_mac_metrics.h"
 #include "device/bluetooth/bluetooth_classic_device_mac.h"
 #include "device/bluetooth/bluetooth_common.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
@@ -714,6 +715,7 @@ void BluetoothAdapterMac::DidFailToConnectPeripheral(CBPeripheral* peripheral,
     [low_energy_central_manager_ cancelPeripheralConnection:peripheral];
     return;
   }
+  RecordDidFailToConnectPeripheralResult(error);
   BluetoothDevice::ConnectErrorCode error_code =
       BluetoothDevice::ConnectErrorCode::ERROR_UNKNOWN;
   if (error) {
