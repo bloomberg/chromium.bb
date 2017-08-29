@@ -49,8 +49,12 @@ void OpaqueBrowserFrameViewLinux::OnWindowButtonOrderingChange(
   // to a Widget. We need a Widget because layout crashes due to dependencies
   // on a ui::ThemeProvider().
   if (view_->GetWidget()) {
-    view_->Layout();
-    view_->SchedulePaint();
+    // A relayout on |view_| is insufficient because it would neglect
+    // a relayout of the tabstrip.  Do a full relayout to handle the
+    // frame buttons as well as open tabs.
+    views::View* root_view = view_->GetWidget()->GetRootView();
+    root_view->Layout();
+    root_view->SchedulePaint();
   }
 }
 
