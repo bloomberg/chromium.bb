@@ -96,6 +96,16 @@ TEST(TextEliderTest, TestTrailingEllipsisSlashEllipsisHack) {
   ASSERT_GT(expected.length(), std::string("battersbox.com/d").length());
   EXPECT_EQ(expected, url_formatter::ElideUrl(url, font_list, available_width));
 
+  // Regression test for https://crbug.com/756717. An empty path, eliding to a
+  // width in between the full domain ("www.angelfire.lycos.com") and a bit
+  // longer than the ETLD+1 ("…lycos.com…/…UV"). This previously crashed due to
+  // the path being empty.
+  url = GURL("http://www.angelfire.lycos.com/");
+  available_width = gfx::GetStringWidthF(
+      base::UTF8ToUTF16(kEllipsisStr + "angelfire.lycos.com"), font_list);
+  EXPECT_EQ(base::UTF8ToUTF16(kEllipsisStr + "lycos.com"),
+            url_formatter::ElideUrl(url, font_list, available_width));
+
   // More space available - elide directories, partially elide filename.
   Testcase testcases[] = {
       {"http://battersbox.com/directory/foo/peter_paul_and_mary.html",
@@ -113,7 +123,7 @@ TEST(TextEliderTest, TestMoreEliding) {
   const std::string kEllipsisStr(gfx::kEllipsis);
   Testcase testcases[] = {
       // Eliding the same URL to various lengths.
-      {"http://www.google.com/foo?bar", "www.google.com/foo?bar"},
+      {"http://xyz.google.com/foo?bar", "xyz.google.com/foo?bar"},
       {"http://xyz.google.com/foo?bar", "xyz.google.com/foo?" + kEllipsisStr},
       {"http://xyz.google.com/foo?bar", "xyz.google.com/foo" + kEllipsisStr},
       {"http://xyz.google.com/foo?bar", "xyz.google.com/fo" + kEllipsisStr},
@@ -135,11 +145,13 @@ TEST(TextEliderTest, TestMoreEliding) {
       {"http://xyz.google.com/foo?bar", kEllipsisStr + "googl" + kEllipsisStr},
       {"http://xyz.google.com/foo?bar", kEllipsisStr + "g" + kEllipsisStr},
 
+      // URL with "www" subdomain (gets removed specially).
+      {"http://www.google.com/foo?bar", "www.google.com/foo?bar"},
+      {"http://www.google.com/foo?bar", "google.com/foo?bar"},
+
       // URL with no path.
-      // TODO(mgiuca): These should elide the start of the URL, not the end.
-      // https://crbug.com/739636.
-      {"http://xyz.google.com", "xyz.google" + kEllipsisStr},
-      {"https://xyz.google.com", "xyz.google" + kEllipsisStr},
+      {"http://xyz.google.com", kEllipsisStr + "google.com"},
+      {"https://xyz.google.com", kEllipsisStr + "google.com"},
 
       {"http://a.b.com/pathname/c?d", "a.b.com/" + kEllipsisStr + "/c?d"},
       {"", ""},
