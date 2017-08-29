@@ -9,8 +9,6 @@
 #include <utility>
 #include <vector>
 
-#include "ash/metrics/user_metrics_action.h"
-#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
@@ -25,6 +23,7 @@
 #include "ash/wm/workspace/two_step_edge_cycler.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
+#include "base/metrics/user_metrics.h"
 #include "ui/aura/client/window_types.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
@@ -409,9 +408,10 @@ void WorkspaceWindowResizer::CompleteDrag() {
     const wm::WMEvent event(snap_type_ == SNAP_LEFT ? wm::WM_EVENT_SNAP_LEFT
                                                     : wm::WM_EVENT_SNAP_RIGHT);
     window_state()->OnWMEvent(&event);
-    Shell::Get()->metrics()->RecordUserMetricsAction(
-        snap_type_ == SNAP_LEFT ? UMA_DRAG_MAXIMIZE_LEFT
-                                : UMA_DRAG_MAXIMIZE_RIGHT);
+    if (snap_type_ == SNAP_LEFT)
+      base::RecordAction(base::UserMetricsAction("WindowDrag_MaximizeLeft"));
+    else
+      base::RecordAction(base::UserMetricsAction("WindowDrag_MaximizeRight"));
     snapped = true;
   }
 
