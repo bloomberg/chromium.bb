@@ -1115,6 +1115,9 @@ void AppListView::SetState(AppListState new_state) {
     case HALF:
       break;
     case FULLSCREEN_ALL_APPS: {
+      // Set timer to ignore further scroll events for this transition.
+      GetAppsGridView()->StartTimerToIgnoreScrollEvents();
+
       AppsContainerView* apps_container_view =
           app_list_main_view_->contents_view()->apps_container_view();
 
