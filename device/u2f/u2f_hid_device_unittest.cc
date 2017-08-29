@@ -80,7 +80,7 @@ class U2fDeviceEnumerate {
     filter_.SetUsagePage(0xf1d0);
     for (auto device_info : devices) {
       if (filter_.Matches(device_info))
-        u2f_devices.push_front(base::MakeUnique<U2fHidDevice>(device_info));
+        u2f_devices.push_front(std::make_unique<U2fHidDevice>(device_info));
     }
     devices_ = std::move(u2f_devices);
     closure_.Run();
@@ -215,7 +215,7 @@ TEST_F(U2fHidDeviceTest, TestMultipleRequests) {
 
 TEST_F(U2fHidDeviceTest, TestConnectionFailure) {
   // Setup and enumerate mock device
-  auto client = base::MakeUnique<MockDeviceClient>();
+  auto client = std::make_unique<MockDeviceClient>();
   U2fDeviceEnumerate callback;
   MockHidService* hid_service = client->hid_service();
   HidCollectionInfo c_info;
@@ -260,7 +260,7 @@ TEST_F(U2fHidDeviceTest, TestConnectionFailure) {
 
 TEST_F(U2fHidDeviceTest, TestDeviceError) {
   // Setup and enumerate mock device
-  auto client = base::MakeUnique<MockDeviceClient>();
+  auto client = std::make_unique<MockDeviceClient>();
   U2fDeviceEnumerate callback;
   MockHidService* hid_service = client->hid_service();
   HidCollectionInfo c_info;

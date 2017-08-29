@@ -18,7 +18,7 @@ void GvrDeviceProvider::GetDevices(std::vector<VRDevice*>* devices) {
 }
 
 void GvrDeviceProvider::Initialize() {
-  vr_device_ = base::MakeUnique<GvrDevice>();
+  vr_device_ = std::make_unique<GvrDevice>();
 }
 
 }  // namespace device

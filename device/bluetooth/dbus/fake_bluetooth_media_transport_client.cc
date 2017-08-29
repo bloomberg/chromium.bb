@@ -178,7 +178,7 @@ void FakeBluetoothMediaTransportClient::SetValid(
     properties->volume.ReplaceValue(kTransportVolume);
 
     endpoint_to_transport_map_[endpoint_path] =
-        base::MakeUnique<Transport>(transport_path, std::move(properties));
+        std::make_unique<Transport>(transport_path, std::move(properties));
     transport_to_endpoint_map_[transport_path] = endpoint_path;
     return;
   }

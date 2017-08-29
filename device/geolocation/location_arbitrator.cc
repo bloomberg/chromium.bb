@@ -175,7 +175,7 @@ LocationArbitrator::NewNetworkLocationProvider(
   // Android uses its own SystemLocationProvider.
   return nullptr;
 #else
-  return base::MakeUnique<NetworkLocationProvider>(access_token_store, context,
+  return std::make_unique<NetworkLocationProvider>(access_token_store, context,
                                                    url, access_token);
 #endif
 }

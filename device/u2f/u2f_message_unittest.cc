@@ -18,11 +18,11 @@ TEST_F(U2fMessageTest, TestPacketSize) {
   std::vector<uint8_t> data;
 
   auto init_packet =
-      base::MakeUnique<U2fInitPacket>(channel_id, 0, data, data.size());
+      std::make_unique<U2fInitPacket>(channel_id, 0, data, data.size());
   EXPECT_EQ(65, init_packet->GetSerializedData()->size());
 
   auto continuation_packet =
-      base::MakeUnique<U2fContinuationPacket>(channel_id, 0, data);
+      std::make_unique<U2fContinuationPacket>(channel_id, 0, data);
   EXPECT_EQ(65, continuation_packet->GetSerializedData()->size());
 }
 
@@ -41,7 +41,7 @@ TEST_F(U2fMessageTest, TestPacketData) {
   std::vector<uint8_t> data{10, 11};
   uint8_t cmd = static_cast<uint8_t>(U2fMessage::Type::CMD_WINK);
   auto init_packet =
-      base::MakeUnique<U2fInitPacket>(channel_id, cmd, data, data.size());
+      std::make_unique<U2fInitPacket>(channel_id, cmd, data, data.size());
   int index = 0;
 
   scoped_refptr<net::IOBufferWithSize> serialized =
@@ -72,7 +72,7 @@ TEST_F(U2fMessageTest, TestPacketConstructors) {
   std::vector<uint8_t> data{10, 11};
   uint8_t cmd = static_cast<uint8_t>(U2fMessage::Type::CMD_WINK);
   auto orig_packet =
-      base::MakeUnique<U2fInitPacket>(channel_id, cmd, data, data.size());
+      std::make_unique<U2fInitPacket>(channel_id, cmd, data, data.size());
 
   size_t payload_length = static_cast<size_t>(orig_packet->payload_length());
   scoped_refptr<net::IOBufferWithSize> buffer =

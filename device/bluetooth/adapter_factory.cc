@@ -17,7 +17,7 @@ AdapterFactory::~AdapterFactory() {}
 
 // static
 void AdapterFactory::Create(mojom::AdapterFactoryRequest request) {
-  mojo::MakeStrongBinding(base::MakeUnique<AdapterFactory>(),
+  mojo::MakeStrongBinding(std::make_unique<AdapterFactory>(),
                           std::move(request));
 }
 
@@ -35,7 +35,7 @@ void AdapterFactory::OnGetAdapter(
     GetAdapterCallback callback,
     scoped_refptr<device::BluetoothAdapter> adapter) {
   mojom::AdapterPtr adapter_ptr;
-  mojo::MakeStrongBinding(base::MakeUnique<Adapter>(adapter),
+  mojo::MakeStrongBinding(std::make_unique<Adapter>(adapter),
                           mojo::MakeRequest(&adapter_ptr));
   std::move(callback).Run(std::move(adapter_ptr));
 }

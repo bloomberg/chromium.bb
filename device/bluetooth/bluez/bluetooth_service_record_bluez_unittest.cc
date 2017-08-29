@@ -130,7 +130,7 @@ class BluetoothServiceRecordBlueZTest : public device::BluetoothTestBlueZ {
     record.AddRecordEntry(kServiceUuidAttributeId,
                           BluetoothServiceAttributeValueBlueZ(
                               BluetoothServiceAttributeValueBlueZ::UUID, 16,
-                              base::MakeUnique<base::Value>(uuid)));
+                              std::make_unique<base::Value>(uuid)));
     return record;
   }
 

@@ -22,7 +22,7 @@ FakeBluetooth::~FakeBluetooth() {}
 
 // static
 void FakeBluetooth::Create(mojom::FakeBluetoothRequest request) {
-  mojo::MakeStrongBinding(base::MakeUnique<FakeBluetooth>(),
+  mojo::MakeStrongBinding(std::make_unique<FakeBluetooth>(),
                           std::move(request));
 }
 

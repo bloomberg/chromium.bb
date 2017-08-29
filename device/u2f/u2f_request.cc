@@ -60,7 +60,7 @@ void U2fRequest::OnEnumerate(
     const std::vector<scoped_refptr<HidDeviceInfo>>& devices) {
   for (auto device_info : devices) {
     if (filter_.Matches(device_info))
-      devices_.push_back(base::MakeUnique<U2fHidDevice>(device_info));
+      devices_.push_back(std::make_unique<U2fHidDevice>(device_info));
   }
 
   hid_service_observer_.Add(hid_service);
@@ -74,7 +74,7 @@ void U2fRequest::OnDeviceAdded(scoped_refptr<HidDeviceInfo> device_info) {
   if (!filter_.Matches(device_info))
     return;
 
-  auto device = base::MakeUnique<U2fHidDevice>(device_info);
+  auto device = std::make_unique<U2fHidDevice>(device_info);
   AddDevice(std::move(device));
 }
 
@@ -83,7 +83,7 @@ void U2fRequest::OnDeviceRemoved(scoped_refptr<HidDeviceInfo> device_info) {
   if (!filter_.Matches(device_info))
     return;
 
-  auto device = base::MakeUnique<U2fHidDevice>(device_info);
+  auto device = std::make_unique<U2fHidDevice>(device_info);
 
   // Check if the active device was removed
   if (current_device_ && current_device_->GetId() == device->GetId()) {

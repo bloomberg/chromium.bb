@@ -27,7 +27,7 @@ std::unique_ptr<U2fRequest> U2fSign::TrySign(
     const std::vector<uint8_t>& app_param,
     const ResponseCallback& cb) {
   std::unique_ptr<U2fRequest> request =
-      base::MakeUnique<U2fSign>(registered_keys, challenge_hash, app_param, cb);
+      std::make_unique<U2fSign>(registered_keys, challenge_hash, app_param, cb);
   request->Start();
   return request;
 }

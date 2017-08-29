@@ -12,7 +12,7 @@
 namespace bluez {
 
 BluetoothServiceAttributeValueBlueZ::BluetoothServiceAttributeValueBlueZ()
-    : type_(NULLTYPE), size_(0), value_(base::MakeUnique<base::Value>()) {}
+    : type_(NULLTYPE), size_(0), value_(std::make_unique<base::Value>()) {}
 
 BluetoothServiceAttributeValueBlueZ::BluetoothServiceAttributeValueBlueZ(
     Type type,
@@ -40,7 +40,7 @@ operator=(const BluetoothServiceAttributeValueBlueZ& attribute) {
     size_ = attribute.size_;
     if (attribute.type_ == SEQUENCE) {
       value_ = nullptr;
-      sequence_ = base::MakeUnique<Sequence>(*attribute.sequence_);
+      sequence_ = std::make_unique<Sequence>(*attribute.sequence_);
     } else {
       value_ = attribute.value_->CreateDeepCopy();
       sequence_ = nullptr;

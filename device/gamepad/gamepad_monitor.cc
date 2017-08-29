@@ -23,7 +23,7 @@ GamepadMonitor::~GamepadMonitor() {
 
 // static
 void GamepadMonitor::Create(mojom::GamepadMonitorRequest request) {
-  mojo::MakeStrongBinding(base::MakeUnique<GamepadMonitor>(),
+  mojo::MakeStrongBinding(std::make_unique<GamepadMonitor>(),
                           std::move(request));
 }
 

@@ -54,19 +54,19 @@ std::unique_ptr<BluetoothServiceAttributeValueBlueZ> ReadAttributeValue(
           uint8_t byte;
           if (!struct_reader->PopVariantOfByte(&byte))
             return nullptr;
-          value = base::MakeUnique<base::Value>(byte);
+          value = std::make_unique<base::Value>(byte);
           break;
         case 2:
           uint16_t short_val;
           if (!struct_reader->PopVariantOfUint16(&short_val))
             return nullptr;
-          value = base::MakeUnique<base::Value>(short_val);
+          value = std::make_unique<base::Value>(short_val);
           break;
         case 4:
           uint32_t val;
           if (!struct_reader->PopVariantOfUint32(&val))
             return nullptr;
-          value = base::MakeUnique<base::Value>(static_cast<int32_t>(val));
+          value = std::make_unique<base::Value>(static_cast<int32_t>(val));
           break;
         case 8:
         // Fall through.
@@ -87,14 +87,14 @@ std::unique_ptr<BluetoothServiceAttributeValueBlueZ> ReadAttributeValue(
       std::string str;
       if (!struct_reader->PopVariantOfString(&str))
         return nullptr;
-      value = base::MakeUnique<base::Value>(str);
+      value = std::make_unique<base::Value>(str);
       break;
     }
     case bluez::BluetoothServiceAttributeValueBlueZ::BOOL: {
       bool b;
       if (!struct_reader->PopVariantOfBool(&b))
         return nullptr;
-      value = base::MakeUnique<base::Value>(b);
+      value = std::make_unique<base::Value>(b);
       break;
     }
     case bluez::BluetoothServiceAttributeValueBlueZ::SEQUENCE: {
@@ -105,7 +105,7 @@ std::unique_ptr<BluetoothServiceAttributeValueBlueZ> ReadAttributeValue(
       if (!variant_reader.PopArray(&array_reader))
         return nullptr;
       std::unique_ptr<BluetoothServiceAttributeValueBlueZ::Sequence> sequence =
-          base::MakeUnique<BluetoothServiceAttributeValueBlueZ::Sequence>();
+          std::make_unique<BluetoothServiceAttributeValueBlueZ::Sequence>();
       while (array_reader.HasMoreData()) {
         dbus::MessageReader sequence_element_struct_reader(nullptr);
         if (!array_reader.PopStruct(&sequence_element_struct_reader))
@@ -116,18 +116,18 @@ std::unique_ptr<BluetoothServiceAttributeValueBlueZ> ReadAttributeValue(
           return nullptr;
         sequence->emplace_back(*attribute_value);
       }
-      return base::MakeUnique<BluetoothServiceAttributeValueBlueZ>(
+      return std::make_unique<BluetoothServiceAttributeValueBlueZ>(
           std::move(sequence));
     }
   }
-  return base::MakeUnique<BluetoothServiceAttributeValueBlueZ>(
+  return std::make_unique<BluetoothServiceAttributeValueBlueZ>(
       type, size, std::move(value));
 }
 
 std::unique_ptr<BluetoothServiceRecordBlueZ> ReadRecord(
     dbus::MessageReader* array_reader) {
   std::unique_ptr<BluetoothServiceRecordBlueZ> record =
-      base::MakeUnique<BluetoothServiceRecordBlueZ>();
+      std::make_unique<BluetoothServiceRecordBlueZ>();
   while (array_reader->HasMoreData()) {
     dbus::MessageReader dict_entry_reader(nullptr);
     if (!array_reader->PopDictEntry(&dict_entry_reader))

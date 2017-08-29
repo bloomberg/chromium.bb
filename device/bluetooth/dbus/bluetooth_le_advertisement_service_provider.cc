@@ -422,12 +422,12 @@ BluetoothLEAdvertisementServiceProvider::Create(
     std::unique_ptr<UUIDList> solicit_uuids,
     std::unique_ptr<ServiceData> service_data) {
   if (!bluez::BluezDBusManager::Get()->IsUsingFakes()) {
-    return base::MakeUnique<BluetoothAdvertisementServiceProviderImpl>(
+    return std::make_unique<BluetoothAdvertisementServiceProviderImpl>(
         bus, object_path, delegate, type, std::move(service_uuids),
         std::move(manufacturer_data), std::move(solicit_uuids),
         std::move(service_data));
   }
-  return base::MakeUnique<FakeBluetoothLEAdvertisementServiceProvider>(
+  return std::make_unique<FakeBluetoothLEAdvertisementServiceProvider>(
       object_path, delegate);
 }
 

@@ -243,7 +243,7 @@ bool BluetoothDeviceWin::IsEqual(
       new_service_records;
   for (auto iter = device_state.service_record_states.begin();
        iter != device_state.service_record_states.end(); ++iter) {
-    auto service_record = base::MakeUnique<BluetoothServiceRecordWin>(
+    auto service_record = std::make_unique<BluetoothServiceRecordWin>(
         address_, (*iter)->name, (*iter)->sdp_bytes, (*iter)->gatt_uuid);
     new_services.insert(service_record->uuid());
     new_service_records[service_record->uuid().canonical_value()] =
@@ -299,7 +299,7 @@ void BluetoothDeviceWin::UpdateServices(
   service_record_list_.clear();
 
   for (const auto& record_state : device_state.service_record_states) {
-    auto service_record = base::MakeUnique<BluetoothServiceRecordWin>(
+    auto service_record = std::make_unique<BluetoothServiceRecordWin>(
         device_state.address, record_state->name, record_state->sdp_bytes,
         record_state->gatt_uuid);
     uuids_.insert(service_record->uuid());

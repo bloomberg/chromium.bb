@@ -24,7 +24,7 @@ std::unique_ptr<U2fRequest> U2fRegister::TryRegistration(
     const std::vector<uint8_t>& app_param,
     const ResponseCallback& cb) {
   std::unique_ptr<U2fRequest> request =
-      base::MakeUnique<U2fRegister>(challenge_hash, app_param, cb);
+      std::make_unique<U2fRegister>(challenge_hash, app_param, cb);
   request->Start();
   return request;
 }

@@ -129,11 +129,11 @@ TEST_F(U2fRequestTest, TestIterateDevice) {
   scoped_refptr<HidDeviceInfo> device0 = make_scoped_refptr(
       new HidDeviceInfo(kTestDeviceId0, 0, 0, "Test Fido Device", "123FIDO",
                         kHIDBusTypeUSB, c_info, 64, 64, 0));
-  request.devices_.push_back(base::MakeUnique<U2fHidDevice>(device0));
+  request.devices_.push_back(std::make_unique<U2fHidDevice>(device0));
   scoped_refptr<HidDeviceInfo> device1 = make_scoped_refptr(
       new HidDeviceInfo(kTestDeviceId1, 0, 0, "Test Fido Device", "123FIDO",
                         kHIDBusTypeUSB, c_info, 64, 64, 0));
-  request.devices_.push_back(base::MakeUnique<U2fHidDevice>(device1));
+  request.devices_.push_back(std::make_unique<U2fHidDevice>(device1));
 
   // Move first device to current
   request.IterateDevice();

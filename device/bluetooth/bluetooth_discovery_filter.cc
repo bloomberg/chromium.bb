@@ -76,7 +76,7 @@ void BluetoothDiscoveryFilter::AddUUID(const device::BluetoothUUID& uuid) {
       return;
   }
 
-  uuids_.push_back(base::MakeUnique<device::BluetoothUUID>(uuid));
+  uuids_.push_back(std::make_unique<device::BluetoothUUID>(uuid));
 }
 
 void BluetoothDiscoveryFilter::CopyFrom(

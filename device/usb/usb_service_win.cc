@@ -285,7 +285,7 @@ UsbServiceWin::UsbServiceWin()
   if (device_monitor)
     device_observer_.Add(device_monitor);
 
-  helper_ = base::MakeUnique<BlockingTaskHelper>(weak_factory_.GetWeakPtr());
+  helper_ = std::make_unique<BlockingTaskHelper>(weak_factory_.GetWeakPtr());
   blocking_task_runner()->PostTask(
       FROM_HERE, base::Bind(&BlockingTaskHelper::EnumerateDevices,
                             base::Unretained(helper_.get())));

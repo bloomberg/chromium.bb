@@ -18,7 +18,7 @@ void MockU2fDevice::DeviceTransact(std::unique_ptr<U2fApduCommand> command,
 // static
 void MockU2fDevice::NotSatisfied(U2fApduCommand* cmd,
                                  const DeviceCallback& cb) {
-  cb.Run(true, base::MakeUnique<U2fApduResponse>(
+  cb.Run(true, std::make_unique<U2fApduResponse>(
                    std::vector<uint8_t>(),
                    U2fApduResponse::Status::SW_CONDITIONS_NOT_SATISFIED));
 }
@@ -26,13 +26,13 @@ void MockU2fDevice::NotSatisfied(U2fApduCommand* cmd,
 // static
 void MockU2fDevice::WrongData(U2fApduCommand* cmd, const DeviceCallback& cb) {
   cb.Run(true,
-         base::MakeUnique<U2fApduResponse>(
+         std::make_unique<U2fApduResponse>(
              std::vector<uint8_t>(), U2fApduResponse::Status::SW_WRONG_DATA));
 }
 
 // static
 void MockU2fDevice::NoErrorSign(U2fApduCommand* cmd, const DeviceCallback& cb) {
-  cb.Run(true, base::MakeUnique<U2fApduResponse>(
+  cb.Run(true, std::make_unique<U2fApduResponse>(
                    std::vector<uint8_t>({kSign}),
                    U2fApduResponse::Status::SW_NO_ERROR));
 }
@@ -40,7 +40,7 @@ void MockU2fDevice::NoErrorSign(U2fApduCommand* cmd, const DeviceCallback& cb) {
 // static
 void MockU2fDevice::NoErrorRegister(U2fApduCommand* cmd,
                                     const DeviceCallback& cb) {
-  cb.Run(true, base::MakeUnique<U2fApduResponse>(
+  cb.Run(true, std::make_unique<U2fApduResponse>(
                    std::vector<uint8_t>({kRegister}),
                    U2fApduResponse::Status::SW_NO_ERROR));
 }
