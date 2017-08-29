@@ -14,7 +14,7 @@ class ReadingListModel;
 // Header view for the Material Design NTP. The header view contains all views
 // that are displayed above the list of most visited sites, which includes the
 // toolbar buttons, Google doodle, and fake omnibox.
-@interface NewTabPageHeaderView : UICollectionReusableView<ToolbarOwner>
+@interface NewTabPageHeaderView : UIView<ToolbarOwner>
 
 // Return the toolbar view;
 @property(nonatomic, readonly) UIView* toolBarView;
