@@ -2817,6 +2817,7 @@ _FUNCTION_INFO = {
   'DisableVertexAttribArray': {
     'decoder_func': 'DoDisableVertexAttribArray',
     'impl_func': False,
+    'unit_test': False,
   },
   'DrawArrays': {
     'type': 'Custom',
@@ -2846,6 +2847,7 @@ _FUNCTION_INFO = {
   'EnableVertexAttribArray': {
     'decoder_func': 'DoEnableVertexAttribArray',
     'impl_func': False,
+    'unit_test': False,
   },
   'FenceSync': {
     'type': 'Create',

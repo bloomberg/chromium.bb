@@ -3339,7 +3339,7 @@ bool GLES2DecoderImpl::Initialize(
     // We have to enable vertex array 0 on GL with compatibility profile or it
     // won't render. Note that ES or GL with core profile does not have this
     // issue.
-    glEnableVertexAttribArray(0);
+    state_.vertex_attrib_manager->SetDriverVertexAttribEnabled(0, true);
   }
   glGenBuffersARB(1, &attrib_0_buffer_id_);
   glBindBuffer(GL_ARRAY_BUFFER, attrib_0_buffer_id_);
@@ -5760,7 +5760,7 @@ void GLES2DecoderImpl::ClearAllAttributes() const {
 
   for (uint32_t i = 0; i < group_->max_vertex_attribs(); ++i) {
     if (i != 0)  // Never disable attribute 0
-      glDisableVertexAttribArray(i);
+      state_.vertex_attrib_manager->SetDriverVertexAttribEnabled(i, false);
     if (features().angle_instanced_arrays)
       glVertexAttribDivisorANGLE(i, 0);
   }
@@ -6111,7 +6111,7 @@ void GLES2DecoderImpl::DoResumeTransformFeedback() {
 void GLES2DecoderImpl::DoDisableVertexAttribArray(GLuint index) {
   if (state_.vertex_attrib_manager->Enable(index, false)) {
     if (index != 0 || gl_version_info().BehavesLikeGLES()) {
-      glDisableVertexAttribArray(index);
+      state_.vertex_attrib_manager->SetDriverVertexAttribEnabled(index, false);
     }
   } else {
     LOCAL_SET_GL_ERROR(
@@ -6320,7 +6320,7 @@ void GLES2DecoderImpl::DoInvalidateSubFramebuffer(
 
 void GLES2DecoderImpl::DoEnableVertexAttribArray(GLuint index) {
   if (state_.vertex_attrib_manager->Enable(index, true)) {
-    glEnableVertexAttribArray(index);
+    state_.vertex_attrib_manager->SetDriverVertexAttribEnabled(index, true);
   } else {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_VALUE, "glEnableVertexAttribArray", "index out of range");
@@ -10118,11 +10118,8 @@ void GLES2DecoderImpl::RestoreStateForAttrib(
   // when running on desktop GL with compatibility profile because it will
   // never be re-enabled.
   if (attrib_index != 0 || gl_version_info().BehavesLikeGLES()) {
-    if (attrib->enabled()) {
-      glEnableVertexAttribArray(attrib_index);
-    } else {
-      glDisableVertexAttribArray(attrib_index);
-    }
+    state_.vertex_attrib_manager->SetDriverVertexAttribEnabled(
+        attrib_index, attrib->enabled());
   }
 }
 

@@ -29,6 +29,7 @@ namespace gles2 {
 VertexAttrib::VertexAttrib()
     : index_(0),
       enabled_(false),
+      enabled_in_driver_(false),
       size_(4),
       type_(GL_FLOAT),
       offset_(0),
@@ -38,8 +39,7 @@ VertexAttrib::VertexAttrib()
       divisor_(0),
       integer_(GL_FALSE),
       is_client_side_array_(false),
-      list_(NULL) {
-}
+      list_(NULL) {}
 
 VertexAttrib::VertexAttrib(const VertexAttrib& other) = default;
 
@@ -210,6 +210,16 @@ bool VertexAttribManager::ValidateBindings(
     }
     const Program::VertexAttrib* attrib_info =
         current_program->GetAttribInfoByLocation(attrib->index());
+
+    // Make sure that every attrib in enabled_vertex_attribs_ is really enabled
+    // in the driver, if AND ONLY IF it is consumed by the current shader
+    // program. (Note that since the containing loop is over
+    // enable_vertex_attribs_, not all vertex attribs, it doesn't erroneously
+    // enable any attribs that should be disabled.)
+    // This is for http://crbug.com/756293 but also subsumes some workaround
+    // code for use_client_side_arrays_for_stream_buffers.
+    SetDriverVertexAttribEnabled(attrib->index(), attrib_info != nullptr);
+
     if (attrib_info) {
       divisor0 |= (attrib->divisor() == 0);
       have_enabled_active_attribs = true;
@@ -224,7 +234,6 @@ bool VertexAttribManager::ValidateBindings(
         return false;
       }
       if (use_client_side_arrays_for_stream_buffers) {
-        glEnableVertexAttribArray(attrib->index());
         if (buffer->IsClientSideArray()) {
           if (current_buffer_id != 0) {
             current_buffer_id = 0;
@@ -255,18 +264,6 @@ bool VertexAttribManager::ValidateBindings(
               attrib->normalized(),
               attrib->gl_stride(),
               ptr);
-        }
-      }
-    } else {
-      // This attrib is not used in the current program.
-      if (use_client_side_arrays_for_stream_buffers) {
-        // Disable client side arrays for unused attributes else we'll
-        // read bad memory
-        if (buffer->IsClientSideArray()) {
-          // Don't disable attrib 0 since it's special.
-          if (attrib->index() > 0) {
-            glDisableVertexAttribArray(attrib->index());
-          }
         }
       }
     }
