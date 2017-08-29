@@ -75,10 +75,15 @@ TEST_F(VideoFrameStructTraitsTest, MojoSharedBufferVideoFrame) {
   scoped_refptr<VideoFrame> frame =
       MojoSharedBufferVideoFrame::CreateDefaultI420(
           gfx::Size(100, 100), base::TimeDelta::FromSeconds(100));
+  frame->metadata()->SetDouble(VideoFrameMetadata::FRAME_RATE, 42.0);
 
   ASSERT_TRUE(RoundTrip(&frame));
   ASSERT_TRUE(frame);
   EXPECT_FALSE(frame->metadata()->IsTrue(VideoFrameMetadata::END_OF_STREAM));
+  double frame_rate = 0.0;
+  EXPECT_TRUE(frame->metadata()->GetDouble(VideoFrameMetadata::FRAME_RATE,
+                                           &frame_rate));
+  EXPECT_EQ(frame_rate, 42.0);
   EXPECT_EQ(frame->coded_size(), gfx::Size(100, 100));
   EXPECT_EQ(frame->timestamp(), base::TimeDelta::FromSeconds(100));
 

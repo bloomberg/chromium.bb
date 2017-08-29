@@ -11,6 +11,7 @@
 #include "media/base/video_frame.h"
 #include "media/mojo/interfaces/media_types.mojom.h"
 #include "mojo/common/common_custom_types_struct_traits.h"
+#include "mojo/common/values_struct_traits.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
 #include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
 
@@ -54,6 +55,11 @@ struct StructTraits<media::mojom::VideoFrameDataView,
 
   static media::mojom::VideoFrameDataPtr data(
       const scoped_refptr<media::VideoFrame>& input);
+
+  static std::unique_ptr<base::DictionaryValue> metadata(
+      const scoped_refptr<media::VideoFrame>& input) {
+    return input->metadata()->CopyInternalValues();
+  }
 
   static bool Read(media::mojom::VideoFrameDataView input,
                    scoped_refptr<media::VideoFrame>* output);
