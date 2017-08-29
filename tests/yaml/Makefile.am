@@ -86,6 +86,7 @@ EXTRA_DIST =					\
 	nocross_harness.yaml			\
 	noletsignafter.yaml			\
 	pl-pl-comp8_harness.yaml		\
+	sk-g1_harness.yaml			\
 	sr-g1_harness.yaml			\
 	syllable.yaml				\
 	ta-ta-g1_harness.yaml			\
