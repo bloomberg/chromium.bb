@@ -3,7 +3,7 @@
 <script src="../inspector-test.js"></script>
 <script src="../extensions-test.js"></script>
 <script src="../debugger-test.js"></script>
-<script src="../../../inspector/sources/debugger/resources/edit-me.js"></script>
+<script src="resources/test-script.js"></script>
 <script type="text/javascript">
 
 function initialize_extensionsSidebarTest()
@@ -28,7 +28,7 @@ function extension_expandSidebar(callback)
     evaluateOnFrontend("InspectorTest.expandSidebar(reply);", callback);
 }
 
-function extension_testOnSelectionChanged(nextTest)
+function extension_testElementsOnSelectionChanged(nextTest)
 {
     function onSelectionChanged()
     {
@@ -38,6 +38,36 @@ function extension_testOnSelectionChanged(nextTest)
     }
     webInspector.panels.elements.onSelectionChanged.addListener(onSelectionChanged);
     webInspector.inspectedWindow.eval("inspect(document.body.children[0]), 0");
+}
+
+function extension_testSourcesOnSelectionChangedShowFile(nextTest)
+{
+    function onSelectionChanged(selectionInfo)
+    {
+        webInspector.panels.sources.onSelectionChanged.removeListener(onSelectionChanged);
+        output("sources onSelectionChanged fired, selectionInfo:");
+        dumpObject(selectionInfo, {url: "url"});
+        nextTest();
+    }
+    webInspector.panels.sources.onSelectionChanged.addListener(onSelectionChanged);
+    evaluateOnFrontend("InspectorTest.showScriptSource(\"test-script.js\")");
+}
+
+function extension_testSourcesOnSelectionChangedShowFileAndLine(nextTest)
+{
+    webInspector.inspectedWindow.eval("location.href", function(inspectedPageURL) {
+        function onSelectionChanged(selectionInfo)
+        {
+            webInspector.panels.sources.onSelectionChanged.removeListener(onSelectionChanged);
+            output("sources onSelectionChanged fired, selectionInfo:");
+            dumpObject(selectionInfo, {url: "url"});
+            nextTest();
+        }
+        webInspector.panels.sources.onSelectionChanged.addListener(onSelectionChanged);
+
+        var basePath = inspectedPageURL.replace(/\/[^/]*$/, "/");
+        webInspector.panels.openResource(basePath + "resources/test-script.js", 2);
+    });
 }
 
 function extension_testOnRequestFinished(nextTest)
