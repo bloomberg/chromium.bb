@@ -68,7 +68,9 @@ class TabCoordinatorTest : public BrowserCoordinatorTest {
 
 }  // namespace
 
-TEST_F(TabCoordinatorTest, DefaultToolbar) {
+// TODO(crbug.com/759761): Reenable this test when threading issues are fixed
+// for this test fixture.
+TEST_F(TabCoordinatorTest, DISABLED_DefaultToolbar) {
   [[NSUserDefaults standardUserDefaults] setObject:@""
                                             forKey:@"EnableBottomToolbar"];
   [coordinator_ start];
@@ -76,7 +78,9 @@ TEST_F(TabCoordinatorTest, DefaultToolbar) {
             [coordinator_.viewController class]);
 }
 
-TEST_F(TabCoordinatorTest, TopToolbar) {
+// TODO(crbug.com/759761): Reenable this test when threading issues are fixed
+// for this test fixture.
+TEST_F(TabCoordinatorTest, DISABLED_TopToolbar) {
   [[NSUserDefaults standardUserDefaults] setObject:@"Disabled"
                                             forKey:@"EnableBottomToolbar"];
   [coordinator_ start];
@@ -84,7 +88,9 @@ TEST_F(TabCoordinatorTest, TopToolbar) {
             [coordinator_.viewController class]);
 }
 
-TEST_F(TabCoordinatorTest, BottomToolbar) {
+// TODO(crbug.com/759761): Reenable this test when threading issues are fixed
+// for this test fixture.
+TEST_F(TabCoordinatorTest, DISABLED_BottomToolbar) {
   [[NSUserDefaults standardUserDefaults] setObject:@"Enabled"
                                             forKey:@"EnableBottomToolbar"];
   [coordinator_ start];
