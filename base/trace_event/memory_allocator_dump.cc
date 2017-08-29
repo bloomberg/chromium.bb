@@ -74,16 +74,6 @@ void MemoryAllocatorDump::AddScalar(const char* name,
   attributes_->EndDictionary();
 }
 
-void MemoryAllocatorDump::AddScalarF(const char* name,
-                                     const char* units,
-                                     double value) {
-  attributes_->BeginDictionary(name);
-  attributes_->SetString("type", kTypeScalar);
-  attributes_->SetString("units", units);
-  attributes_->SetDouble("value", value);
-  attributes_->EndDictionary();
-}
-
 void MemoryAllocatorDump::AddString(const char* name,
                                     const char* units,
                                     const std::string& value) {

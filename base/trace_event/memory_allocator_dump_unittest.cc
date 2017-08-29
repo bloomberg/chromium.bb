@@ -35,7 +35,6 @@ class FakeMemoryAllocatorDumpProvider : public MemoryDumpProvider {
                          MemoryAllocatorDump::kUnitsObjects, 42);
     root_heap->AddScalar("attr1", "units1", 1234);
     root_heap->AddString("attr2", "units2", "string_value");
-    root_heap->AddScalarF("attr3", "units3", 42.5f);
 
     MemoryAllocatorDump* sub_heap =
         pmd->CreateAllocatorDump("foobar_allocator/sub_heap");
@@ -91,17 +90,6 @@ void CheckScalar(const MemoryAllocatorDump* dump,
               StringPrintf("%" PRIx64, expected_value));
 }
 
-void CheckScalarF(const MemoryAllocatorDump* dump,
-                  const std::string& name,
-                  const char* expected_units,
-                  double expected_value) {
-  auto attr_value = CheckAttribute(dump, name, MemoryAllocatorDump::kTypeScalar,
-                                   expected_units);
-  double attr_double_value;
-  EXPECT_TRUE(attr_value->GetAsDouble(&attr_double_value));
-  EXPECT_EQ(expected_value, attr_double_value);
-}
-
 }  // namespace
 
 TEST(MemoryAllocatorDumpTest, GuidGeneration) {
@@ -148,7 +136,6 @@ TEST(MemoryAllocatorDumpTest, DumpIntoProcessMemoryDump) {
   CheckScalar(root_heap, "attr1", "units1", 1234);
   CheckString(root_heap, "attr2", MemoryAllocatorDump::kTypeString, "units2",
               "string_value");
-  CheckScalarF(root_heap, "attr3", "units3", 42.5f);
 
   const MemoryAllocatorDump* sub_heap =
       pmd.GetAllocatorDump("foobar_allocator/sub_heap");

@@ -63,10 +63,9 @@ class BASE_EXPORT MemoryAllocatorDump {
   //     AddScalar(kNameSize, kUnitsBytes, 1234);
   // - Some extra-column reporting internal details of the subsystem:
   //    AddScalar("number_of_freelist_entires", kUnitsObjects, 42)
-  // - Other informational column (will not be auto-added in the UI)
-  //    AddScalarF("kittens_ratio", "ratio", 42.0f)
+  // - Other informational column:
+  //    AddString("kitten", "name", "shadow");
   void AddScalar(const char* name, const char* units, uint64_t value);
-  void AddScalarF(const char* name, const char* units, double value);
   void AddString(const char* name, const char* units, const std::string& value);
 
   // Absolute name, unique within the scope of an entire ProcessMemoryDump.
