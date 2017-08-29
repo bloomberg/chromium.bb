@@ -456,17 +456,15 @@ class AppCacheStorageImplTest : public testing::Test {
     test_finished_event_->Signal();
   }
 
-  void PushNextTask(const base::Closure& task) {
-    task_stack_.push(task);
-  }
+  void PushNextTask(base::Closure task) { task_stack_.push(std::move(task)); }
 
   void ScheduleNextTask() {
     DCHECK(io_thread->task_runner()->BelongsToCurrentThread());
     if (task_stack_.empty()) {
       return;
     }
-    base::SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                     task_stack_.top());
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, std::move(task_stack_.top()));
     task_stack_.pop();
   }
 
@@ -1901,7 +1899,7 @@ class AppCacheStorageImplTest : public testing::Test {
   // Data members --------------------------------------------------
 
   std::unique_ptr<base::WaitableEvent> test_finished_event_;
-  std::stack<base::Closure> task_stack_;
+  std::stack<base::OnceClosure> task_stack_;
   std::unique_ptr<AppCacheServiceImpl> service_;
   std::unique_ptr<MockStorageDelegate> delegate_;
   scoped_refptr<MockQuotaManagerProxy> mock_quota_manager_proxy_;
