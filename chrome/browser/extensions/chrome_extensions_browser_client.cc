@@ -16,7 +16,6 @@
 #include "chrome/browser/extensions/api/chrome_extensions_api_client.h"
 #include "chrome/browser/extensions/api/content_settings/content_settings_service.h"
 #include "chrome/browser/extensions/api/generated_api_registration.h"
-#include "chrome/browser/extensions/api/preference/chrome_direct_setting.h"
 #include "chrome/browser/extensions/api/preference/preference_api.h"
 #include "chrome/browser/extensions/api/runtime/chrome_runtime_api_delegate.h"
 #include "chrome/browser/extensions/chrome_component_extension_resource_manager.h"
@@ -272,11 +271,6 @@ void ChromeExtensionsBrowserClient::RegisterExtensionFunctions(
   registry->RegisterFunction<GetPreferenceFunction>();
   registry->RegisterFunction<SetPreferenceFunction>();
   registry->RegisterFunction<ClearPreferenceFunction>();
-
-  // Direct Preference Access for Component Extensions.
-  registry->RegisterFunction<chromedirectsetting::GetDirectSettingFunction>();
-  registry->RegisterFunction<chromedirectsetting::SetDirectSettingFunction>();
-  registry->RegisterFunction<chromedirectsetting::ClearDirectSettingFunction>();
 
   // Generated APIs from lower-level modules.
   api::GeneratedFunctionRegistry::RegisterAll(registry);

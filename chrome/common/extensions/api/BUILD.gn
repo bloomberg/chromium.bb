@@ -177,7 +177,6 @@ json_schema_api("api") {
     "proxy.json",
     "tts_engine.json",
     "tts.json",
-    "types_private.json",
     "webstore.json",
   ]
   if (is_chromeos) {

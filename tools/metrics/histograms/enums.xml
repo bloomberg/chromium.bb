@@ -12044,7 +12044,8 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="340" label="SCREENLOCK_PRIVATE_ON_CHANGED"/>
   <int value="341" label="SCREENLOCK_PRIVATE_ON_AUTH_ATTEMPTED"/>
   <int value="342" label="TYPES_CHROME_SETTING_ON_CHANGE"/>
-  <int value="343" label="TYPES_PRIVATE_CHROME_DIRECT_SETTING_ON_CHANGE"/>
+  <int value="343"
+      label="DELETED_TYPES_PRIVATE_CHROME_DIRECT_SETTING_ON_CHANGE"/>
   <int value="344" label="WEB_VIEW_INTERNAL_ON_MESSAGE"/>
   <int value="345" label="EXTENSION_VIEW_INTERNAL_ON_LOAD_COMMIT"/>
   <int value="346" label="RUNTIME_ON_REQUEST"/>

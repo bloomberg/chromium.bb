@@ -289,8 +289,8 @@ void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(
     // Custom types sources.
     source_map->RegisterSource("ChromeSetting", IDR_CHROME_SETTING_JS);
     source_map->RegisterSource("ContentSetting", IDR_CONTENT_SETTING_JS);
-    source_map->RegisterSource("ChromeDirectSetting",
-                               IDR_CHROME_DIRECT_SETTING_JS);
+    source_map->RegisterSource("EasyUnlockProximityRequired",
+                               IDR_EASY_UNLOCK_PROXIMITY_REQUIRED_JS);
   }
 }
 
