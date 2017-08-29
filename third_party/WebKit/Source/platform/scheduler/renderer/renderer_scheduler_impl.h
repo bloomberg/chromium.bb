@@ -49,7 +49,6 @@ class PLATFORM_EXPORT RendererSchedulerImpl
       public IdleHelper::Delegate,
       public MainThreadSchedulerHelper::Observer,
       public RenderWidgetSignals::Observer,
-      public TaskTimeObserver,
       public QueueingTimeEstimator::Client,
       public base::trace_event::TraceLog::AsyncEnabledStateObserver {
  public:
@@ -136,10 +135,6 @@ class PLATFORM_EXPORT RendererSchedulerImpl
 
   // SchedulerHelper::Observer implementation:
   void OnTriedToExecuteBlockedTask() override;
-
-  // TaskTimeObserver implementation:
-  void WillProcessTask(double start_time) override;
-  void DidProcessTask(double start_time, double end_time) override;
   void OnBeginNestedRunLoop() override;
 
   // QueueingTimeEstimator::Client implementation:
@@ -234,6 +229,10 @@ class PLATFORM_EXPORT RendererSchedulerImpl
   void OnFirstMeaningfulPaint();
 
   void OnUnregisterTaskQueue(const scoped_refptr<MainThreadTaskQueue>& queue);
+
+  void OnTaskStarted(MainThreadTaskQueue* queue,
+                     const TaskQueue::Task& task,
+                     base::TimeTicks start);
 
   void OnTaskCompleted(MainThreadTaskQueue* queue,
                        const TaskQueue::Task& task,

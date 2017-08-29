@@ -139,5 +139,10 @@ void SchedulerHelper::OnTriedToExecuteBlockedTask() {
     observer_->OnTriedToExecuteBlockedTask();
 }
 
+void SchedulerHelper::OnBeginNestedRunLoop() {
+  if (observer_)
+    observer_->OnBeginNestedRunLoop();
+}
+
 }  // namespace scheduler
 }  // namespace blink

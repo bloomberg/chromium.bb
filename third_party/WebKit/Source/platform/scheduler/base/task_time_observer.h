@@ -26,9 +26,6 @@ class PLATFORM_EXPORT TaskTimeObserver {
   // |end_time| - time in seconds when task was completed.
   virtual void DidProcessTask(double start_time, double end_time) = 0;
 
-  // Callback to be called when we enter a nested run loop.
-  virtual void OnBeginNestedRunLoop() = 0;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(TaskTimeObserver);
 };

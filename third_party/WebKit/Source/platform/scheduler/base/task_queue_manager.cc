@@ -181,11 +181,8 @@ void TaskQueueManager::OnBeginNestedRunLoop() {
     any_thread().immediate_do_work_posted_count++;
     any_thread().is_nested = true;
   }
-
-  // When a nested run loop starts, task time observers may want to ignore
-  // the current task.
-  for (auto& observer : task_time_observers_)
-    observer.OnBeginNestedRunLoop();
+  if (observer_)
+    observer_->OnBeginNestedRunLoop();
 
   delegate_->PostTask(FROM_HERE, immediate_do_work_closure_);
 }
@@ -504,7 +501,8 @@ TaskQueueManager::ProcessTaskResult TaskQueueManager::ProcessTaskFromWorkQueue(
   if (record_task_delay_histograms_)
     MaybeRecordTaskDelayHistograms(pending_task, queue);
 
-  double task_start_time = 0;
+  double task_start_time_sec = 0;
+  base::TimeTicks task_start_time;
   TRACE_TASK_EXECUTION("TaskQueueManager::ProcessTaskFromWorkQueue",
                        pending_task);
   if (queue->GetShouldNotifyObservers()) {
@@ -512,12 +510,15 @@ TaskQueueManager::ProcessTaskResult TaskQueueManager::ProcessTaskFromWorkQueue(
       observer.WillProcessTask(pending_task);
     queue->NotifyWillProcessTask(pending_task);
 
-    bool notify_time_observers =
-        !delegate_->IsNested() && task_time_observers_.might_have_observers();
+    bool notify_time_observers = !delegate_->IsNested() &&
+                                 (task_time_observers_.might_have_observers() ||
+                                  queue->RequiresTaskTiming());
     if (notify_time_observers) {
-      task_start_time = MonotonicTimeInSeconds(time_before_task.Now());
+      task_start_time = time_before_task.Now();
+      task_start_time_sec = MonotonicTimeInSeconds(task_start_time);
       for (auto& observer : task_time_observers_)
-        observer.WillProcessTask(task_start_time);
+        observer.WillProcessTask(task_start_time_sec);
+      queue->OnTaskStarted(pending_task, task_start_time);
     }
   }
 
@@ -537,14 +538,14 @@ TaskQueueManager::ProcessTaskResult TaskQueueManager::ProcessTaskFromWorkQueue(
 
   currently_executing_task_queue_ = prev_executing_task_queue;
 
-  double task_end_time = 0;
+  double task_end_time_sec = 0;
   if (queue->GetShouldNotifyObservers()) {
-    if (task_start_time) {
+    if (task_start_time_sec) {
       *time_after_task = real_time_domain()->Now();
-      task_end_time = MonotonicTimeInSeconds(*time_after_task);
+      task_end_time_sec = MonotonicTimeInSeconds(*time_after_task);
 
       for (auto& observer : task_time_observers_)
-        observer.DidProcessTask(task_start_time, task_end_time);
+        observer.DidProcessTask(task_start_time_sec, task_end_time_sec);
     }
 
     for (auto& observer : task_observers_)
@@ -552,17 +553,13 @@ TaskQueueManager::ProcessTaskResult TaskQueueManager::ProcessTaskFromWorkQueue(
     queue->NotifyDidProcessTask(pending_task);
   }
 
-  if (task_start_time && task_end_time) {
-    queue->OnTaskCompleted(
-        pending_task,
-        base::TimeTicks() + base::TimeDelta::FromSecondsD(task_start_time),
-        base::TimeTicks() + base::TimeDelta::FromSecondsD(task_end_time));
-  }
+  if (task_start_time_sec && task_end_time_sec)
+    queue->OnTaskCompleted(pending_task, task_start_time, *time_after_task);
 
-  if (task_start_time && task_end_time &&
-      task_end_time - task_start_time > kLongTaskTraceEventThreshold) {
+  if (task_start_time_sec && task_end_time_sec &&
+      task_end_time_sec - task_start_time_sec > kLongTaskTraceEventThreshold) {
     TRACE_EVENT_INSTANT1("blink", "LongTask", TRACE_EVENT_SCOPE_THREAD,
-                         "duration", task_end_time - task_start_time);
+                         "duration", task_end_time_sec - task_start_time_sec);
   }
 
   return ProcessTaskResult::EXECUTED;

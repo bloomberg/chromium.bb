@@ -111,7 +111,6 @@ RendererSchedulerImpl::RendererSchedulerImpl(
       this);
 
   helper_.SetObserver(this);
-  helper_.AddTaskTimeObserver(this);
 
   // Register a tracing state observer unless we're running in a test without a
   // task runner. Note that it's safe to remove a non-existent observer.
@@ -145,8 +144,6 @@ RendererSchedulerImpl::~RendererSchedulerImpl() {
 
   if (virtual_time_domain_)
     UnregisterTimeDomain(virtual_time_domain_.get());
-
-  helper_.RemoveTaskTimeObserver(this);
 
   base::trace_event::TraceLog::GetInstance()->RemoveAsyncEnabledStateObserver(
       this);
@@ -1879,24 +1876,12 @@ void RendererSchedulerImpl::OnTriedToExecuteBlockedTask() {
   }
 }
 
-void RendererSchedulerImpl::WillProcessTask(double start_time) {
-  base::TimeTicks start_time_ticks =
-      MonotonicTimeInSecondsToTimeTicks(start_time);
-  main_thread_only().current_task_start_time = start_time_ticks;
-
+void RendererSchedulerImpl::OnTaskStarted(MainThreadTaskQueue* queue,
+                                          const TaskQueue::Task& task,
+                                          base::TimeTicks start) {
+  main_thread_only().current_task_start_time = start;
   seqlock_queueing_time_estimator_.seqlock.WriteBegin();
-  seqlock_queueing_time_estimator_.data.OnTopLevelTaskStarted(start_time_ticks);
-  seqlock_queueing_time_estimator_.seqlock.WriteEnd();
-}
-
-void RendererSchedulerImpl::DidProcessTask(double start_time, double end_time) {
-  DCHECK_LE(start_time, end_time);
-  // TODO(scheduler-dev): Remove conversions when Blink starts using
-  // base::TimeTicks instead of doubles for time.
-  base::TimeTicks end_time_ticks = MonotonicTimeInSecondsToTimeTicks(end_time);
-
-  seqlock_queueing_time_estimator_.seqlock.WriteBegin();
-  seqlock_queueing_time_estimator_.data.OnTopLevelTaskCompleted(end_time_ticks);
+  seqlock_queueing_time_estimator_.data.OnTopLevelTaskStarted(start);
   seqlock_queueing_time_estimator_.seqlock.WriteEnd();
 }
 
@@ -1904,6 +1889,11 @@ void RendererSchedulerImpl::OnTaskCompleted(MainThreadTaskQueue* queue,
                                             const TaskQueue::Task& task,
                                             base::TimeTicks start,
                                             base::TimeTicks end) {
+  DCHECK_LE(start, end);
+  seqlock_queueing_time_estimator_.seqlock.WriteBegin();
+  seqlock_queueing_time_estimator_.data.OnTopLevelTaskCompleted(end);
+  seqlock_queueing_time_estimator_.seqlock.WriteEnd();
+
   task_queue_throttler()->OnTaskRunTimeReported(queue, start, end);
 
   // TODO(altimin): Per-page metrics should also be considered.
