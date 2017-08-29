@@ -8,10 +8,6 @@
   line-height: 18px;
 }
 
-:host .subtitle {
-  line-height: 18px;
-}
-
 #estimated-time-left,
 #progress-message {
   padding-top: 31px; /* = 44 - font size */
