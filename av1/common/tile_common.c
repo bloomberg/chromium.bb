@@ -134,6 +134,10 @@ void av1_setup_across_tile_boundary_info(const AV1_COMMON *const cm,
     }
 
     mi = mi_start + (row_diff - 1) * cm->mi_stride;
+
+    // explicit bounds checking
+    assert(mi + col_diff <= cm->mip + cm->mi_alloc_size);
+
     for (col = 0; col < col_diff; ++col) {
       mi->mbmi.boundary_info |= TILE_BOTTOM_BOUNDARY;
       mi += 1;
