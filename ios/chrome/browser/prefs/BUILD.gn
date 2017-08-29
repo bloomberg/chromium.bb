@@ -60,6 +60,7 @@ source_set("browser_prefs") {
     "//components/variations/service",
     "//components/web_resource",
     "//ios/chrome/browser",
+    "//ios/chrome/browser/bookmarks:features",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/desktop_promotion",
     "//ios/chrome/browser/first_run",

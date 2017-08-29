@@ -7,6 +7,8 @@
 
 #import <UIKit/UIKit.h>
 
+// TODO(crbug.com/753599) : Delete this file after new bookmarks ui is launched.
+
 namespace bookmark_cell {
 // The types get cached, which means that their values must not change.
 typedef enum {
