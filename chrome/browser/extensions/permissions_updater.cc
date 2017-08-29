@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/permissions/permissions_api_helpers.h"
+#include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/extensions/scripting_permissions_modifier.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/permissions.h"
@@ -241,6 +242,17 @@ void PermissionsUpdater::InitializePermissions(const Extension* extension) {
 
   if (g_delegate)
     g_delegate->InitializePermissions(extension, &granted_permissions);
+
+  if ((init_flag_ & INIT_FLAG_TRANSIENT) == 0) {
+    // Apply per-extension policy if set.
+    ExtensionManagement* management =
+        ExtensionManagementFactory::GetForBrowserContext(browser_context_);
+    if (!management->UsesDefaultRuntimeHostRestrictions(extension)) {
+      SetPolicyHostRestrictions(extension,
+                                management->GetRuntimeBlockedHosts(extension),
+                                management->GetRuntimeAllowedHosts(extension));
+    }
+  }
 
   SetPermissions(extension, std::move(granted_permissions),
                  std::move(withheld_permissions));
