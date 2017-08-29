@@ -591,8 +591,6 @@ target(link_target_type, "renderer") {
       "media/media_devices_event_dispatcher.h",
       "media/media_devices_listener_impl.cc",
       "media/media_devices_listener_impl.h",
-      "media/media_stream.cc",
-      "media/media_stream.h",
       "media/media_stream_audio_deliverer.h",
       "media/media_stream_audio_level_calculator.cc",
       "media/media_stream_audio_level_calculator.h",

@@ -44,11 +44,6 @@ class WebMediaStreamCenter {
   virtual ~WebMediaStreamCenter() {}
 
   // Stream functionality.
-  virtual void DidCreateMediaStream(WebMediaStream&) = 0;
-  virtual bool DidAddMediaStreamTrack(const WebMediaStream&,
-                                      const WebMediaStreamTrack&) = 0;
-  virtual bool DidRemoveMediaStreamTrack(const WebMediaStream&,
-                                         const WebMediaStreamTrack&) = 0;
   virtual void DidStopLocalMediaStream(const WebMediaStream&) = 0;
 
   // Track functionality.

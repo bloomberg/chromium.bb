@@ -14,7 +14,6 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/child/child_process.h"
-#include "content/renderer/media/media_stream.h"
 #include "content/renderer/media/media_stream_video_source.h"
 #include "content/renderer/media/media_stream_video_track.h"
 #include "content/renderer/media/mock_audio_device_factory.h"
@@ -102,7 +101,6 @@ class LocalWebRtcMediaStreamAdapterTest : public WebRtcMediaStreamAdapterTest {
 
     blink::WebMediaStream stream_desc;
     stream_desc.Initialize("media stream", audio_tracks, video_tracks);
-    stream_desc.SetExtraData(new MediaStream());
     return stream_desc;
   }
 
@@ -234,7 +232,6 @@ TEST_F(LocalWebRtcMediaStreamAdapterTest,
 
   blink::WebMediaStream web_stream;
   web_stream.Initialize("new stream", audio_tracks, video_tracks);
-  web_stream.SetExtraData(new content::MediaStream());
 
   std::unique_ptr<WebRtcMediaStreamAdapter> adapter =
       WebRtcMediaStreamAdapter::CreateLocalStreamAdapter(
@@ -255,25 +252,23 @@ TEST_F(LocalWebRtcMediaStreamAdapterTest, RemoveAndAddTrack) {
   EXPECT_EQ(1u, adapter->webrtc_stream()->GetVideoTracks().size());
   EXPECT_EQ(web_stream.Id().Utf8(), adapter->webrtc_stream()->label());
 
-  MediaStream* native_stream = MediaStream::GetMediaStream(web_stream);
-
   // Modify the web layer stream, make sure the webrtc layer stream is updated.
   blink::WebVector<blink::WebMediaStreamTrack> audio_tracks;
   web_stream.AudioTracks(audio_tracks);
 
-  native_stream->RemoveTrack(audio_tracks[0]);
+  web_stream.RemoveTrack(audio_tracks[0]);
   EXPECT_TRUE(adapter->webrtc_stream()->GetAudioTracks().empty());
 
   blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
   web_stream.VideoTracks(video_tracks);
 
-  native_stream->RemoveTrack(video_tracks[0]);
+  web_stream.RemoveTrack(video_tracks[0]);
   EXPECT_TRUE(adapter->webrtc_stream()->GetVideoTracks().empty());
 
-  native_stream->AddTrack(audio_tracks[0]);
+  web_stream.AddTrack(audio_tracks[0]);
   EXPECT_EQ(1u, adapter->webrtc_stream()->GetAudioTracks().size());
 
-  native_stream->AddTrack(video_tracks[0]);
+  web_stream.AddTrack(video_tracks[0]);
   EXPECT_EQ(1u, adapter->webrtc_stream()->GetVideoTracks().size());
 }
 

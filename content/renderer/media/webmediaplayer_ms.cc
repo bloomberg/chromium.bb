@@ -201,11 +201,8 @@ WebMediaPlayerMS::~WebMediaPlayerMS() {
   DVLOG(1) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (!web_stream_.IsNull()) {
-    MediaStream* native_stream = MediaStream::GetMediaStream(web_stream_);
-    if (native_stream)
-      native_stream->RemoveObserver(this);
-  }
+  if (!web_stream_.IsNull())
+    web_stream_.RemoveObserver(this);
 
   // Destruct compositor resources in the proper order.
   get_client()->SetWebLayer(nullptr);
@@ -241,11 +238,8 @@ void WebMediaPlayerMS::Load(LoadType load_type,
   // once Blink-side changes land.
   DCHECK_NE(load_type, kLoadTypeMediaSource);
   web_stream_ = GetWebMediaStreamFromWebMediaPlayerSource(source);
-  if (!web_stream_.IsNull()) {
-    MediaStream* native_stream = MediaStream::GetMediaStream(web_stream_);
-    if (native_stream)
-      native_stream->AddObserver(this);
-  }
+  if (!web_stream_.IsNull())
+    web_stream_.AddObserver(this);
 
   compositor_ = new WebMediaPlayerMSCompositor(
       compositor_task_runner_, io_task_runner_, web_stream_, AsWeakPtr());
@@ -451,13 +445,19 @@ void WebMediaPlayerMS::Play() {
 
   if (HasVideo())
     delegate_->DidPlayerSizeChange(delegate_id_, NaturalSize());
-  // TODO(perkj, magjed): We use OneShot focus type here so that it takes
-  // audio focus once it starts, and then will not respond to further audio
-  // focus changes. See http://crbug.com/596516 for more details.
-  delegate_->DidPlay(delegate_id_, HasVideo(), HasAudio(),
-                     media::MediaContentType::OneShot);
-  delegate_->SetIdle(delegate_id_, false);
 
+  // |delegate_| expects the notification only if there is at least one track
+  // actually playing. A media stream might have none since tracks can be
+  // removed from the stream.
+  if (HasAudio() || HasVideo()) {
+    // TODO(perkj, magjed): We use OneShot focus type here so that it takes
+    // audio focus once it starts, and then will not respond to further audio
+    // focus changes. See http://crbug.com/596516 for more details.
+    delegate_->DidPlay(delegate_id_, HasVideo(), HasAudio(),
+                       media::MediaContentType::OneShot);
+  }
+
+  delegate_->SetIdle(delegate_id_, false);
   paused_ = false;
 }
 

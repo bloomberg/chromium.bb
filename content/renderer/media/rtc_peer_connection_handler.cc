@@ -1102,7 +1102,6 @@ class RTCPeerConnectionHandler::Observer
   }
 
   void OnAddStreamImpl(std::unique_ptr<RemoteMediaStreamImpl> stream) {
-    DCHECK(stream->webkit_stream().GetExtraData()) << "Initialization not done";
     if (handler_)
       handler_->OnAddStream(std::move(stream));
   }
@@ -1988,7 +1987,6 @@ void RTCPeerConnectionHandler::OnAddStream(
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(remote_streams_.find(stream->webrtc_stream().get()) ==
          remote_streams_.end());
-  DCHECK(stream->webkit_stream().GetExtraData()) << "Initialization not done";
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::OnAddStreamImpl");
 
   RemoteMediaStreamImpl* stream_ptr = stream.get();

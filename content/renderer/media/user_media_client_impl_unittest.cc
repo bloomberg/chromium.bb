@@ -17,7 +17,6 @@
 #include "content/child/child_process.h"
 #include "content/common/media/media_devices.h"
 #include "content/public/common/content_features.h"
-#include "content/renderer/media/media_stream.h"
 #include "content/renderer/media/media_stream_audio_processor_options.h"
 #include "content/renderer/media/media_stream_audio_source.h"
 #include "content/renderer/media/media_stream_constraints_util.h"
@@ -427,13 +426,6 @@ class UserMediaClientImplTest : public ::testing::TestWithParam<bool> {
 
     blink::WebMediaStream desc =
         user_media_client_impl_->last_generated_stream();
-    content::MediaStream* native_stream =
-        content::MediaStream::GetMediaStream(desc);
-    if (!native_stream) {
-      ADD_FAILURE();
-      return desc;
-    }
-
     blink::WebVector<blink::WebMediaStreamTrack> audio_tracks;
     desc.AudioTracks(audio_tracks);
     blink::WebVector<blink::WebMediaStreamTrack> video_tracks;

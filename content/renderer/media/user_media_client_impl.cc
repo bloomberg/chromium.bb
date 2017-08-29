@@ -19,7 +19,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/renderer/media/local_media_stream_audio_source.h"
-#include "content/renderer/media/media_stream.h"
 #include "content/renderer/media/media_stream_constraints_util.h"
 #include "content/renderer/media/media_stream_constraints_util_audio.h"
 #include "content/renderer/media/media_stream_constraints_util_video_content.h"
@@ -814,7 +813,6 @@ void UserMediaClientImpl::OnStreamGenerated(
   blink::WebString blink_id = blink::WebString::FromUTF8(label);
   current_request_info_->web_stream()->Initialize(blink_id, audio_track_vector,
                                                   video_track_vector);
-  current_request_info_->web_stream()->SetExtraData(new MediaStream());
 
   // Wait for the tracks to be started successfully or to fail.
   current_request_info_->CallbackOnTracksStarted(

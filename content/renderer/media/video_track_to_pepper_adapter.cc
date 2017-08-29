@@ -12,7 +12,6 @@
 #include "base/synchronization/lock.h"
 #include "base/trace_event/trace_event.h"
 #include "content/public/renderer/media_stream_video_sink.h"
-#include "content/renderer/media/media_stream.h"
 #include "content/renderer/media/media_stream_registry_interface.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/capture/video_capture_types.h"

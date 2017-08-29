@@ -13,7 +13,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "content/child/child_process.h"
-#include "content/renderer/media/media_stream.h"
 #include "content/renderer/media/media_stream_video_source.h"
 #include "content/renderer/media/media_stream_video_track.h"
 #include "content/renderer/media/mock_audio_device_factory.h"
@@ -60,7 +59,6 @@ class WebRtcMediaStreamAdapterMapTest : public ::testing::Test {
     web_stream.Initialize(blink::WebString::FromUTF8(id),
                           blink::WebVector<blink::WebMediaStreamTrack>(),
                           web_video_tracks);
-    web_stream.SetExtraData(new MediaStream());
     return web_stream;
   }
 

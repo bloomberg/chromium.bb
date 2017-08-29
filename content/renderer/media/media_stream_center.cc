@@ -13,7 +13,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/media_stream_audio_sink.h"
 #include "content/public/renderer/render_thread.h"
-#include "content/renderer/media/media_stream.h"
 #include "content/renderer/media/media_stream_audio_track.h"
 #include "content/renderer/media/media_stream_source.h"
 #include "content/renderer/media/media_stream_video_source.h"
@@ -186,11 +185,6 @@ MediaStreamCenter::CreateWebAudioSourceFromMediaStreamTrack(
 void MediaStreamCenter::DidStopLocalMediaStream(
     const blink::WebMediaStream& stream) {
   DVLOG(1) << "MediaStreamCenter::didStopLocalMediaStream";
-  MediaStream* native_stream = MediaStream::GetMediaStream(stream);
-  if (!native_stream) {
-    NOTREACHED();
-    return;
-  }
 
   // TODO(perkj): MediaStream::Stop is being deprecated. But for the moment we
   // need to support both MediaStream::Stop and MediaStreamTrack::Stop.
@@ -203,29 +197,6 @@ void MediaStreamCenter::DidStopLocalMediaStream(
   stream.VideoTracks(video_tracks);
   for (size_t i = 0; i < video_tracks.size(); ++i)
     DidStopMediaStreamTrack(video_tracks[i]);
-}
-
-void MediaStreamCenter::DidCreateMediaStream(blink::WebMediaStream& stream) {
-  DVLOG(1) << "MediaStreamCenter::didCreateMediaStream";
-  blink::WebMediaStream writable_stream(stream);
-  MediaStream* native_stream(new MediaStream());
-  writable_stream.SetExtraData(native_stream);
-}
-
-bool MediaStreamCenter::DidAddMediaStreamTrack(
-    const blink::WebMediaStream& stream,
-    const blink::WebMediaStreamTrack& track) {
-  DVLOG(1) << "MediaStreamCenter::didAddMediaStreamTrack";
-  MediaStream* native_stream = MediaStream::GetMediaStream(stream);
-  return native_stream->AddTrack(track);
-}
-
-bool MediaStreamCenter::DidRemoveMediaStreamTrack(
-    const blink::WebMediaStream& stream,
-    const blink::WebMediaStreamTrack& track) {
-  DVLOG(1) << "MediaStreamCenter::didRemoveMediaStreamTrack";
-  MediaStream* native_stream = MediaStream::GetMediaStream(stream);
-  return native_stream->RemoveTrack(track);
 }
 
 }  // namespace content

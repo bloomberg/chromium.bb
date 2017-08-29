@@ -6,7 +6,6 @@
 
 #include "base/message_loop/message_loop.h"
 #include "content/child/child_process.h"
-#include "content/renderer/media/media_stream.h"
 #include "content/renderer/media/mock_media_stream_registry.h"
 #include "content/renderer/media/video_track_to_pepper_adapter.h"
 #include "testing/gmock/include/gmock/gmock.h"
