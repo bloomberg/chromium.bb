@@ -4,6 +4,8 @@
 
 #include "content/browser/android/dialog_overlay_impl.h"
 
+#include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "gpu/ipc/common/gpu_surface_tracker.h"
@@ -28,6 +30,13 @@ static jlong Init(JNIEnv* env,
           base::UnguessableToken::Deserialize(high, low));
 
   if (!rfhi)
+    return 0;
+
+  // TODO(http://crbug.com/673886): Support overlay surfaces in VR using GVR
+  // reprojection video surface.
+  RenderWidgetHostViewBase* rwhvb =
+      static_cast<RenderWidgetHostViewBase*>(rfhi->GetView());
+  if (rwhvb->IsInVR())
     return 0;
 
   WebContentsImpl* web_contents_impl = static_cast<WebContentsImpl*>(
