@@ -22,12 +22,6 @@ void WebMemoryAllocatorDump::AddScalar(const char* name,
   memory_allocator_dump_->AddScalar(name, units, value);
 }
 
-void WebMemoryAllocatorDump::AddScalarF(const char* name,
-                                        const char* units,
-                                        double value) {
-  memory_allocator_dump_->AddScalarF(name, units, value);
-}
-
 void WebMemoryAllocatorDump::AddString(const char* name,
                                        const char* units,
                                        const String& value) {
