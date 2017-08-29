@@ -163,7 +163,7 @@ BluetoothAdapterFactory::GlobalValuesForTesting::GetWeakPtr() {
 
 std::unique_ptr<BluetoothAdapterFactory::GlobalValuesForTesting>
 BluetoothAdapterFactory::InitGlobalValuesForTesting() {
-  auto v = base::MakeUnique<BluetoothAdapterFactory::GlobalValuesForTesting>();
+  auto v = std::make_unique<BluetoothAdapterFactory::GlobalValuesForTesting>();
   values_for_testing_ = v->GetWeakPtr();
   return v;
 }

@@ -282,7 +282,7 @@ UsbDeviceHandleWin::UsbDeviceHandleWin(
 UsbDeviceHandleWin::~UsbDeviceHandleWin() {}
 
 UsbDeviceHandleWin::Request* UsbDeviceHandleWin::MakeRequest(HANDLE handle) {
-  auto request = base::MakeUnique<Request>(hub_handle_.Get());
+  auto request = std::make_unique<Request>(hub_handle_.Get());
   Request* request_ptr = request.get();
   requests_[request_ptr] = std::move(request);
   return request_ptr;

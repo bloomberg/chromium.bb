@@ -55,13 +55,13 @@ class BluetoothDeviceWinTest : public testing::Test {
     device_state_->address = kDeviceAddress;
 
     auto audio_state =
-        base::MakeUnique<BluetoothTaskManagerWin::ServiceRecordState>();
+        std::make_unique<BluetoothTaskManagerWin::ServiceRecordState>();
     audio_state->name = kTestAudioSdpName;
     base::HexStringToBytes(kTestAudioSdpBytes, &audio_state->sdp_bytes);
     device_state_->service_record_states.push_back(std::move(audio_state));
 
     auto video_state =
-        base::MakeUnique<BluetoothTaskManagerWin::ServiceRecordState>();
+        std::make_unique<BluetoothTaskManagerWin::ServiceRecordState>();
     video_state->name = kTestVideoSdpName;
     base::HexStringToBytes(kTestVideoSdpBytes, &video_state->sdp_bytes);
     device_state_->service_record_states.push_back(std::move(video_state));

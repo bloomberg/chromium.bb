@@ -37,7 +37,7 @@ CardboardGamepadDataFetcher::Factory::~Factory() {
 
 std::unique_ptr<GamepadDataFetcher>
 CardboardGamepadDataFetcher::Factory::CreateDataFetcher() {
-  return base::MakeUnique<CardboardGamepadDataFetcher>(data_provider_,
+  return std::make_unique<CardboardGamepadDataFetcher>(data_provider_,
                                                        display_id_);
 }
 

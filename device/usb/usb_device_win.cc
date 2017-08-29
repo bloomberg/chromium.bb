@@ -69,7 +69,7 @@ void UsbDeviceWin::OnReadDescriptors(
 
   descriptor_ = *descriptor;
 
-  auto string_map = base::MakeUnique<std::map<uint8_t, base::string16>>();
+  auto string_map = std::make_unique<std::map<uint8_t, base::string16>>();
   if (descriptor_.i_manufacturer)
     (*string_map)[descriptor_.i_manufacturer] = base::string16();
   if (descriptor_.i_product)

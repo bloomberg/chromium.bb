@@ -293,7 +293,7 @@ class BluetoothGattApplicationServiceProviderTest : public testing::Test {
     const std::string& full_service_path =
         std::string(kAppObjectPath) + "/" + service_path;
     app_provider->service_providers_.push_back(
-        base::MakeUnique<BluetoothGattServiceServiceProviderImpl>(
+        std::make_unique<BluetoothGattServiceServiceProviderImpl>(
             nullptr, dbus::ObjectPath(full_service_path), kFakeServiceUuid,
             true, std::vector<dbus::ObjectPath>()));
     return full_service_path;
@@ -350,7 +350,7 @@ class BluetoothGattApplicationServiceProviderTest : public testing::Test {
 
 TEST_F(BluetoothGattApplicationServiceProviderTest, GetManagedObjects) {
   std::unique_ptr<BluetoothGattApplicationServiceProviderImpl> app_provider =
-      base::MakeUnique<BluetoothGattApplicationServiceProviderImpl>(
+      std::make_unique<BluetoothGattApplicationServiceProviderImpl>(
           nullptr, dbus::ObjectPath(kAppObjectPath),
           std::map<dbus::ObjectPath, BluetoothLocalGattServiceBlueZ*>());
   CreateFakeAttributes(app_provider.get());
@@ -364,7 +364,7 @@ TEST_F(BluetoothGattApplicationServiceProviderTest, GetManagedObjects) {
 
 TEST_F(BluetoothGattApplicationServiceProviderTest, SendValueChanged) {
   std::unique_ptr<BluetoothGattApplicationServiceProviderImpl> app_provider =
-      base::MakeUnique<BluetoothGattApplicationServiceProviderImpl>(
+      std::make_unique<BluetoothGattApplicationServiceProviderImpl>(
           nullptr, dbus::ObjectPath(kAppObjectPath),
           std::map<dbus::ObjectPath, BluetoothLocalGattServiceBlueZ*>());
   const std::string& kServicePath =

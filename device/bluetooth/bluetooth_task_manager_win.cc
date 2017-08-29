@@ -529,7 +529,7 @@ bool BluetoothTaskManagerWin::SearchClassicDevices(
   }
 
   while (true) {
-    auto device_state = base::MakeUnique<DeviceState>();
+    auto device_state = std::make_unique<DeviceState>();
     GetDeviceState(device_info, device_state.get());
     device_list->push_back(std::move(device_state));
 
@@ -574,7 +574,7 @@ bool BluetoothTaskManagerWin::SearchLowEnergyDevices(
   }
 
   for (const auto& device_info : btle_devices) {
-    auto device_state = base::MakeUnique<DeviceState>();
+    auto device_state = std::make_unique<DeviceState>();
     device_state->name = device_info->friendly_name;
     device_state->address =
         BluetoothAddressToCanonicalString(device_info->address);
@@ -694,7 +694,7 @@ int BluetoothTaskManagerWin::DiscoverClassicDeviceServicesWorker(
       WSALookupServiceEnd(sdp_handle);
       return last_error;
     }
-    auto service_record_state = base::MakeUnique<ServiceRecordState>();
+    auto service_record_state = std::make_unique<ServiceRecordState>();
     service_record_state->name =
         base::SysWideToUTF8(sdp_result_data->lpszServiceInstanceName);
     for (uint64_t i = 0; i < sdp_result_data->lpBlob->cbSize; i++) {
@@ -731,7 +731,7 @@ bool BluetoothTaskManagerWin::DiscoverLowEnergyDeviceServices(
   }
 
   for (const auto& service : services) {
-    auto service_state = base::MakeUnique<ServiceRecordState>();
+    auto service_state = std::make_unique<ServiceRecordState>();
     service_state->gatt_uuid =
         BluetoothLowEnergyUuidToBluetoothUuid(service->uuid);
     service_state->attribute_handle = service->attribute_handle;

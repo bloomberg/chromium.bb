@@ -354,7 +354,7 @@ WifiDataProviderLinux::CreateWlanApi() {
 
 std::unique_ptr<WifiPollingPolicy>
 WifiDataProviderLinux::CreatePollingPolicy() {
-  return base::MakeUnique<GenericWifiPollingPolicy<
+  return std::make_unique<GenericWifiPollingPolicy<
       kDefaultPollingIntervalMilliseconds, kNoChangePollingIntervalMilliseconds,
       kTwoNoChangePollingIntervalMilliseconds,
       kNoWifiPollingIntervalMilliseconds>>();

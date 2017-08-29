@@ -438,9 +438,9 @@ TEST_F(BluetoothAdapterWinTest, StopDiscoveryBeforeDiscoveryStartedAndFailed) {
 
 TEST_F(BluetoothAdapterWinTest, DevicesPolled) {
   std::vector<std::unique_ptr<BluetoothTaskManagerWin::DeviceState>> devices;
-  devices.push_back(base::MakeUnique<BluetoothTaskManagerWin::DeviceState>());
-  devices.push_back(base::MakeUnique<BluetoothTaskManagerWin::DeviceState>());
-  devices.push_back(base::MakeUnique<BluetoothTaskManagerWin::DeviceState>());
+  devices.push_back(std::make_unique<BluetoothTaskManagerWin::DeviceState>());
+  devices.push_back(std::make_unique<BluetoothTaskManagerWin::DeviceState>());
+  devices.push_back(std::make_unique<BluetoothTaskManagerWin::DeviceState>());
 
   BluetoothTaskManagerWin::DeviceState* android_phone_state = devices[0].get();
   BluetoothTaskManagerWin::DeviceState* laptop_state = devices[1].get();
@@ -482,7 +482,7 @@ TEST_F(BluetoothAdapterWinTest, DevicesPolled) {
 
   // Add a service
   laptop_state->service_record_states.push_back(
-      base::MakeUnique<BluetoothTaskManagerWin::ServiceRecordState>());
+      std::make_unique<BluetoothTaskManagerWin::ServiceRecordState>());
   BluetoothTaskManagerWin::ServiceRecordState* audio_state =
       laptop_state->service_record_states.back().get();
   audio_state->name = kTestAudioSdpName;

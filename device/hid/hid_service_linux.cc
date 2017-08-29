@@ -190,7 +190,7 @@ HidServiceLinux::HidServiceLinux()
     : blocking_task_runner_(
           base::CreateSequencedTaskRunnerWithTraits(kBlockingTaskTraits)),
       weak_factory_(this) {
-  helper_ = base::MakeUnique<BlockingTaskHelper>(weak_factory_.GetWeakPtr());
+  helper_ = std::make_unique<BlockingTaskHelper>(weak_factory_.GetWeakPtr());
   blocking_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&BlockingTaskHelper::Start, base::Unretained(helper_.get())));
@@ -217,7 +217,7 @@ void HidServiceLinux::Connect(const std::string& device_guid,
   scoped_refptr<HidDeviceInfoLinux> device_info =
       static_cast<HidDeviceInfoLinux*>(map_entry->second.get());
 
-  auto params = base::MakeUnique<ConnectParams>(device_info, callback);
+  auto params = std::make_unique<ConnectParams>(device_info, callback);
 
 #if defined(OS_CHROMEOS)
   chromeos::PermissionBrokerClient* client =

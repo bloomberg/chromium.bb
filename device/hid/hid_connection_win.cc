@@ -104,7 +104,7 @@ void HidConnectionWin::PlatformRead(HidConnection::ReadCallback callback) {
   // are not in use) in the buffer.
   scoped_refptr<net::IOBufferWithSize> buffer = new net::IOBufferWithSize(
       base::checked_cast<int>(device_info()->max_input_report_size() + 1));
-  transfers_.push_back(base::MakeUnique<PendingHidTransfer>(
+  transfers_.push_back(std::make_unique<PendingHidTransfer>(
       buffer, base::BindOnce(&HidConnectionWin::OnReadComplete, this, buffer,
                              std::move(callback))));
   transfers_.back()->TakeResultFromWindowsAPI(
@@ -128,7 +128,7 @@ void HidConnectionWin::PlatformWrite(scoped_refptr<net::IOBuffer> buffer,
     buffer = tmp_buffer;
     size = expected_size;
   }
-  transfers_.push_back(base::MakeUnique<PendingHidTransfer>(
+  transfers_.push_back(std::make_unique<PendingHidTransfer>(
       buffer, base::BindOnce(&HidConnectionWin::OnWriteComplete, this,
                              std::move(callback))));
   transfers_.back()->TakeResultFromWindowsAPI(
@@ -143,7 +143,7 @@ void HidConnectionWin::PlatformGetFeatureReport(uint8_t report_id,
       base::checked_cast<int>(device_info()->max_feature_report_size() + 1));
   buffer->data()[0] = report_id;
 
-  transfers_.push_back(base::MakeUnique<PendingHidTransfer>(
+  transfers_.push_back(std::make_unique<PendingHidTransfer>(
       buffer, base::BindOnce(&HidConnectionWin::OnReadFeatureComplete, this,
                              buffer, std::move(callback))));
   transfers_.back()->TakeResultFromWindowsAPI(
@@ -158,7 +158,7 @@ void HidConnectionWin::PlatformSendFeatureReport(
     WriteCallback callback) {
   // The Windows API always wants either a report ID (if supported) or
   // zero at the front of every output report.
-  transfers_.push_back(base::MakeUnique<PendingHidTransfer>(
+  transfers_.push_back(std::make_unique<PendingHidTransfer>(
       buffer, base::BindOnce(&HidConnectionWin::OnWriteComplete, this,
                              std::move(callback))));
   transfers_.back()->TakeResultFromWindowsAPI(

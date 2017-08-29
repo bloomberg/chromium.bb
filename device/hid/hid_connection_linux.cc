@@ -174,7 +174,7 @@ HidConnectionLinux::HidConnectionLinux(
     : HidConnection(device_info),
       blocking_task_runner_(std::move(blocking_task_runner)),
       weak_factory_(this) {
-  helper_ = base::MakeUnique<BlockingTaskHelper>(std::move(fd), device_info,
+  helper_ = std::make_unique<BlockingTaskHelper>(std::move(fd), device_info,
                                                  weak_factory_.GetWeakPtr());
   blocking_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&BlockingTaskHelper::Start,

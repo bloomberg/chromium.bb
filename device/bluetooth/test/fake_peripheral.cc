@@ -60,7 +60,7 @@ std::string FakePeripheral::AddFakeService(
 
   std::tie(it, inserted) = gatt_services_.emplace(
       new_service_id,
-      base::MakeUnique<FakeRemoteGattService>(new_service_id, service_uuid,
+      std::make_unique<FakeRemoteGattService>(new_service_id, service_uuid,
                                               true /* is_primary */, this));
 
   DCHECK(inserted);

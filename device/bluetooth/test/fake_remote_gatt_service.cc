@@ -42,7 +42,7 @@ std::string FakeRemoteGattService::AddFakeCharacteristic(
       "%s_%zu", GetIdentifier().c_str(), ++last_characteristic_id_);
 
   std::tie(it, inserted) = fake_characteristics_.emplace(
-      new_characteristic_id, base::MakeUnique<FakeRemoteGattCharacteristic>(
+      new_characteristic_id, std::make_unique<FakeRemoteGattCharacteristic>(
                                  new_characteristic_id, characteristic_uuid,
                                  std::move(properties), this));
 

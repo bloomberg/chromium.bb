@@ -408,7 +408,7 @@ bool CollectBluetoothLowEnergyDeviceServices(
 
   for (USHORT i = 0; i < actual_length; ++i) {
     BTH_LE_GATT_SERVICE& gatt_service(gatt_services.get()[i]);
-    auto service_info = base::MakeUnique<BluetoothLowEnergyServiceInfo>();
+    auto service_info = std::make_unique<BluetoothLowEnergyServiceInfo>();
     service_info->uuid = gatt_service.ServiceUuid;
     service_info->attribute_handle = gatt_service.AttributeHandle;
     services->push_back(std::move(service_info));

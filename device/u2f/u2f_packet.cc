@@ -64,7 +64,7 @@ std::unique_ptr<U2fInitPacket> U2fInitPacket::CreateFromSerializedData(
   if (remaining_size == nullptr || serialized.size() != kPacketSize)
     return nullptr;
 
-  return base::MakeUnique<U2fInitPacket>(serialized, remaining_size);
+  return std::make_unique<U2fInitPacket>(serialized, remaining_size);
 }
 
 U2fInitPacket::U2fInitPacket(const std::vector<uint8_t>& serialized,
@@ -131,7 +131,7 @@ U2fContinuationPacket::CreateFromSerializedData(
   if (remaining_size == nullptr || serialized.size() != kPacketSize)
     return nullptr;
 
-  return base::MakeUnique<U2fContinuationPacket>(serialized, remaining_size);
+  return std::make_unique<U2fContinuationPacket>(serialized, remaining_size);
 }
 
 U2fContinuationPacket::U2fContinuationPacket(

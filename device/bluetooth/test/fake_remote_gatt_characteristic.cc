@@ -55,7 +55,7 @@ std::string FakeRemoteGattCharacteristic::AddFakeDescriptor(
       "%s_%zu", GetIdentifier().c_str(), ++last_descriptor_id_);
 
   std::tie(it, inserted) = fake_descriptors_.emplace(
-      new_descriptor_id, base::MakeUnique<FakeRemoteGattDescriptor>(
+      new_descriptor_id, std::make_unique<FakeRemoteGattDescriptor>(
                              new_descriptor_id, descriptor_uuid, this));
 
   DCHECK(inserted);

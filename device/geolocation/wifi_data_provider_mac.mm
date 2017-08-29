@@ -125,11 +125,11 @@ WifiDataProviderMac::~WifiDataProviderMac() {}
 
 std::unique_ptr<WifiDataProviderMac::WlanApiInterface>
 WifiDataProviderMac::CreateWlanApi() {
-  return base::MakeUnique<CoreWlanApi>();
+  return std::make_unique<CoreWlanApi>();
 }
 
 std::unique_ptr<WifiPollingPolicy> WifiDataProviderMac::CreatePollingPolicy() {
-  return base::MakeUnique<GenericWifiPollingPolicy<
+  return std::make_unique<GenericWifiPollingPolicy<
       kDefaultPollingInterval, kNoChangePollingInterval,
       kTwoNoChangePollingInterval, kNoWifiPollingIntervalMilliseconds>>();
 }

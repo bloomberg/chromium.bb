@@ -34,7 +34,7 @@ TEST(BluetoothAdvertisementTest, DataMembersAreAssignedCorrectly) {
   ASSERT_FALSE(data.service_uuids().get());
   // Assign Service UUID.
   data.set_service_uuids(
-      base::MakeUnique<BluetoothAdvertisement::UUIDList>(uuids));
+      std::make_unique<BluetoothAdvertisement::UUIDList>(uuids));
   // Retrieve Service UUID.
   ASSERT_EQ(*data.service_uuids(), uuids);
   // Retrieve again.
@@ -44,7 +44,7 @@ TEST(BluetoothAdvertisementTest, DataMembersAreAssignedCorrectly) {
   ASSERT_FALSE(data.manufacturer_data().get());
   // Assign Manufacturer Data.
   data.set_manufacturer_data(
-      base::MakeUnique<BluetoothAdvertisement::ManufacturerData>(
+      std::make_unique<BluetoothAdvertisement::ManufacturerData>(
           manufacturer_data));
   // Retrieve Manufacturer Data.
   ASSERT_EQ(*data.manufacturer_data(), manufacturer_data);
@@ -55,7 +55,7 @@ TEST(BluetoothAdvertisementTest, DataMembersAreAssignedCorrectly) {
   ASSERT_FALSE(data.solicit_uuids().get());
   // Assign Solicit UUIDs.
   data.set_solicit_uuids(
-      base::MakeUnique<BluetoothAdvertisement::UUIDList>(uuids));
+      std::make_unique<BluetoothAdvertisement::UUIDList>(uuids));
   // Retrieve Solicit UUIDs.
   ASSERT_EQ(*data.solicit_uuids(), uuids);
   // Retieve again.
@@ -65,7 +65,7 @@ TEST(BluetoothAdvertisementTest, DataMembersAreAssignedCorrectly) {
   ASSERT_FALSE(data.service_data().get());
   // Assign Service Data.
   data.set_service_data(
-      base::MakeUnique<BluetoothAdvertisement::ServiceData>(service_data));
+      std::make_unique<BluetoothAdvertisement::ServiceData>(service_data));
   // Retrieve Service Data.
   ASSERT_EQ(*data.service_data(), service_data);
   // Retrieve again.

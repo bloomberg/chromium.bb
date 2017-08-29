@@ -36,7 +36,7 @@ VRServiceImpl::~VRServiceImpl() {
 void VRServiceImpl::Create(int render_frame_process_id,
                            int render_frame_routing_id,
                            mojom::VRServiceRequest request) {
-  mojo::MakeStrongBinding(base::MakeUnique<VRServiceImpl>(
+  mojo::MakeStrongBinding(std::make_unique<VRServiceImpl>(
                               render_frame_process_id, render_frame_routing_id),
                           std::move(request));
 }
@@ -102,7 +102,7 @@ void VRServiceImpl::OnVRDisplayInfoCreated(
     // we do mark that we have handled it and verify we haven't changed stacks.
     DCHECK(in_set_client_);
   } else {
-    displays_[device] = base::MakeUnique<VRDisplayImpl>(
+    displays_[device] = std::make_unique<VRDisplayImpl>(
         device, render_frame_process_id_, render_frame_routing_id_,
         client_.get(), std::move(display_info));
     connected_devices_++;

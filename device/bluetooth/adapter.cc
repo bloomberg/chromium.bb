@@ -149,7 +149,7 @@ void Adapter::OnStartDiscoverySession(
     std::unique_ptr<device::BluetoothDiscoverySession> session) {
   mojom::DiscoverySessionPtr session_ptr;
   mojo::MakeStrongBinding(
-      base::MakeUnique<DiscoverySession>(std::move(session)),
+      std::make_unique<DiscoverySession>(std::move(session)),
       mojo::MakeRequest(&session_ptr));
   std::move(callback).Run(std::move(session_ptr));
 }

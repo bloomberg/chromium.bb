@@ -30,7 +30,7 @@ void FakeCentral::SimulatePreconnectedPeripheral(
     SimulatePreconnectedPeripheralCallback callback) {
   FakePeripheral* fake_peripheral = GetFakePeripheral(address);
   if (fake_peripheral == nullptr) {
-    auto fake_peripheral_ptr = base::MakeUnique<FakePeripheral>(this, address);
+    auto fake_peripheral_ptr = std::make_unique<FakePeripheral>(this, address);
     fake_peripheral = fake_peripheral_ptr.get();
     auto pair = devices_.emplace(address, std::move(fake_peripheral_ptr));
     DCHECK(pair.second);

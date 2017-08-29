@@ -52,7 +52,7 @@ bool BluetoothLowEnergyWrapperFake::EnumerateKnownBluetoothLowEnergyDevices(
   for (auto& device : simulated_devices_) {
     if (device.second->marked_as_deleted)
       continue;
-    auto device_info = base::MakeUnique<BluetoothLowEnergyDeviceInfo>();
+    auto device_info = std::make_unique<BluetoothLowEnergyDeviceInfo>();
     *device_info = *(device.second->device_info);
     devices->push_back(std::move(device_info));
   }
@@ -70,7 +70,7 @@ bool BluetoothLowEnergyWrapperFake::
 
   for (auto& device : simulated_devices_) {
     for (auto& service : device.second->primary_services) {
-      auto device_info = base::MakeUnique<BluetoothLowEnergyDeviceInfo>();
+      auto device_info = std::make_unique<BluetoothLowEnergyDeviceInfo>();
       *device_info = *(device.second->device_info);
       base::string16 path = GenerateGattServiceDevicePath(
           device.second->device_info->path.value(),
@@ -105,7 +105,7 @@ bool BluetoothLowEnergyWrapperFake::EnumerateKnownBluetoothLowEnergyServices(
   if (service_attribute_handles.empty()) {
     // Return all primary services for BLE device.
     for (auto& primary_service : it_d->second->primary_services) {
-      auto service_info = base::MakeUnique<BluetoothLowEnergyServiceInfo>();
+      auto service_info = std::make_unique<BluetoothLowEnergyServiceInfo>();
       service_info->uuid = primary_service.second->service_info->ServiceUuid;
       service_info->attribute_handle =
           primary_service.second->service_info->AttributeHandle;
@@ -115,7 +115,7 @@ bool BluetoothLowEnergyWrapperFake::EnumerateKnownBluetoothLowEnergyServices(
     // Return corresponding GATT service for BLE GATT service device.
     GattService* target_service =
         GetSimulatedGattService(it_d->second.get(), service_attribute_handles);
-    auto service_info = base::MakeUnique<BluetoothLowEnergyServiceInfo>();
+    auto service_info = std::make_unique<BluetoothLowEnergyServiceInfo>();
     service_info->uuid = target_service->service_info->ServiceUuid;
     service_info->attribute_handle =
         target_service->service_info->AttributeHandle;

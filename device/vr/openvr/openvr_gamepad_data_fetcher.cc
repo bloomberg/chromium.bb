@@ -46,7 +46,7 @@ OpenVRGamepadDataFetcher::Factory::~Factory() {
 
 std::unique_ptr<GamepadDataFetcher>
 OpenVRGamepadDataFetcher::Factory::CreateDataFetcher() {
-  return base::MakeUnique<OpenVRGamepadDataFetcher>(display_id_, vr_system_);
+  return std::make_unique<OpenVRGamepadDataFetcher>(display_id_, vr_system_);
 }
 
 GamepadSource OpenVRGamepadDataFetcher::Factory::source() {

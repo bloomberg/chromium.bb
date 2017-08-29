@@ -71,7 +71,7 @@ void FakeBluetoothInputClient::AddInputDevice(
   if (properties_map_.find(object_path) != properties_map_.end())
     return;
 
-  std::unique_ptr<Properties> properties = base::MakeUnique<Properties>(
+  std::unique_ptr<Properties> properties = std::make_unique<Properties>(
       base::Bind(&FakeBluetoothInputClient::OnPropertyChanged,
                  base::Unretained(this), object_path));
 

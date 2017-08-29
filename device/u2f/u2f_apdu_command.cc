@@ -73,7 +73,7 @@ std::unique_ptr<U2fApduCommand> U2fApduCommand::CreateFromMessage(
       break;
   }
 
-  return base::MakeUnique<U2fApduCommand>(cla, ins, p1, p2, response_length,
+  return std::make_unique<U2fApduCommand>(cla, ins, p1, p2, response_length,
                                           std::move(data), std::move(suffix));
 }
 
@@ -135,7 +135,7 @@ std::unique_ptr<U2fApduCommand> U2fApduCommand::CreateRegister(
     return nullptr;
   }
 
-  auto command = base::MakeUnique<U2fApduCommand>();
+  auto command = std::make_unique<U2fApduCommand>();
   std::vector<uint8_t> data(challenge_digest.begin(), challenge_digest.end());
   data.insert(data.end(), appid_digest.begin(), appid_digest.end());
   command->set_ins(kInsU2fEnroll);
@@ -146,7 +146,7 @@ std::unique_ptr<U2fApduCommand> U2fApduCommand::CreateRegister(
 
 // static
 std::unique_ptr<U2fApduCommand> U2fApduCommand::CreateVersion() {
-  auto command = base::MakeUnique<U2fApduCommand>();
+  auto command = std::make_unique<U2fApduCommand>();
   command->set_ins(kInsU2fVersion);
   command->set_response_length(kApduMaxResponseLength);
   return command;
@@ -154,7 +154,7 @@ std::unique_ptr<U2fApduCommand> U2fApduCommand::CreateVersion() {
 
 // static
 std::unique_ptr<U2fApduCommand> U2fApduCommand::CreateLegacyVersion() {
-  auto command = base::MakeUnique<U2fApduCommand>();
+  auto command = std::make_unique<U2fApduCommand>();
   command->set_ins(kInsU2fVersion);
   command->set_response_length(kApduMaxResponseLength);
   // Early U2F drafts defined the U2F version command in extended
@@ -175,7 +175,7 @@ std::unique_ptr<U2fApduCommand> U2fApduCommand::CreateSign(
     return nullptr;
   }
 
-  auto command = base::MakeUnique<U2fApduCommand>();
+  auto command = std::make_unique<U2fApduCommand>();
   std::vector<uint8_t> data(challenge_digest.begin(), challenge_digest.end());
   data.insert(data.end(), appid_digest.begin(), appid_digest.end());
   data.push_back(static_cast<uint8_t>(key_handle.size()));

@@ -116,7 +116,7 @@ void BluetoothGattApplicationServiceProvider::CreateAttributeServiceProviders(
       characteristic_providers_.push_back(
           base::WrapUnique(BluetoothGattCharacteristicServiceProvider::Create(
               bus, characteristic.second->object_path(),
-              base::MakeUnique<BluetoothGattCharacteristicDelegateWrapper>(
+              std::make_unique<BluetoothGattCharacteristicDelegateWrapper>(
                   service.second, characteristic.second.get()),
               characteristic.second->GetUUID().value(),
               FlagsFromProperties(characteristic.second->GetProperties()),
@@ -125,7 +125,7 @@ void BluetoothGattApplicationServiceProvider::CreateAttributeServiceProviders(
         descriptor_providers_.push_back(
             base::WrapUnique(BluetoothGattDescriptorServiceProvider::Create(
                 bus, descriptor->object_path(),
-                base::MakeUnique<BluetoothGattDescriptorDelegateWrapper>(
+                std::make_unique<BluetoothGattDescriptorDelegateWrapper>(
                     service.second, descriptor.get()),
                 descriptor->GetUUID().value(),
                 FlagsFromPermissions(descriptor->GetPermissions()),
@@ -161,7 +161,7 @@ BluetoothGattApplicationServiceProvider::Create(
     return base::WrapUnique(new BluetoothGattApplicationServiceProviderImpl(
         bus, object_path, services));
   }
-  return base::MakeUnique<FakeBluetoothGattApplicationServiceProvider>(
+  return std::make_unique<FakeBluetoothGattApplicationServiceProvider>(
       object_path, services);
 }
 

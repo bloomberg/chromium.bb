@@ -117,7 +117,7 @@ std::unique_ptr<WindowsWlanApi> WindowsWlanApi::Create() {
   HINSTANCE library = LoadLibraryEx(path, NULL, LOAD_WITH_ALTERED_SEARCH_PATH);
   if (!library)
     return nullptr;
-  return base::MakeUnique<WindowsWlanApi>(library);
+  return std::make_unique<WindowsWlanApi>(library);
 }
 
 WindowsWlanApi::WindowsWlanApi(HINSTANCE library) : library_(library) {
@@ -248,7 +248,7 @@ WifiDataProviderWin::CreateWlanApi() {
 }
 
 std::unique_ptr<WifiPollingPolicy> WifiDataProviderWin::CreatePollingPolicy() {
-  return base::MakeUnique<GenericWifiPollingPolicy<
+  return std::make_unique<GenericWifiPollingPolicy<
       kDefaultPollingIntervalMs, kNoChangePollingIntervalMs,
       kTwoNoChangePollingIntervalMs, kNoWifiPollingIntervalMs>>();
 }

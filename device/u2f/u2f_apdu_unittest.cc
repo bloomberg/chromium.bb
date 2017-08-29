@@ -112,7 +112,7 @@ TEST_F(U2fApduTest, TestDeserializeResponse) {
 }
 
 TEST_F(U2fApduTest, TestSerializeCommand) {
-  auto cmd = base::MakeUnique<U2fApduCommand>();
+  auto cmd = std::make_unique<U2fApduCommand>();
 
   cmd->set_cla(0xA);
   cmd->set_ins(0xB);
@@ -158,7 +158,7 @@ TEST_F(U2fApduTest, TestSerializeCommand) {
 }
 
 TEST_F(U2fApduTest, TestSerializeEdgeCases) {
-  auto cmd = base::MakeUnique<U2fApduCommand>();
+  auto cmd = std::make_unique<U2fApduCommand>();
 
   cmd->set_cla(0xA);
   cmd->set_ins(0xB);
