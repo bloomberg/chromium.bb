@@ -106,32 +106,28 @@ void ChromeSubresourceFilterClient::OnReloadRequested() {
   web_contents_->GetController().Reload(content::ReloadType::NORMAL, true);
 }
 
-void ChromeSubresourceFilterClient::ToggleNotificationVisibility(
-    bool visibility) {
+void ChromeSubresourceFilterClient::ShowNotification() {
   // Do not show the UI if we're forcing activation due to a devtools toggle.
   // This complicates the meaning of our persistent storage (e.g. our metadata
   // that assumes showing UI implies site is blacklisted).
   if (activated_via_devtools_) {
-    if (visibility)
-      LogAction(kActionForcedActivationNoUIResourceBlocked);
+    LogAction(kActionForcedActivationNoUIResourceBlocked);
     return;
   }
-
-  if (did_show_ui_for_navigation_ && visibility)
+  if (did_show_ui_for_navigation_)
     return;
-  did_show_ui_for_navigation_ = false;
 
-  // |visibility| is false when a new navigation starts.
-  if (visibility) {
-    const GURL& top_level_url = web_contents_->GetLastCommittedURL();
-    if (settings_manager_->ShouldShowUIForSite(top_level_url)) {
-      ShowUI(top_level_url);
-    } else {
-      LogAction(kActionUISuppressed);
-    }
+  const GURL& top_level_url = web_contents_->GetLastCommittedURL();
+  if (settings_manager_->ShouldShowUIForSite(top_level_url)) {
+    ShowUI(top_level_url);
   } else {
-    LogAction(kActionNavigationStarted);
+    LogAction(kActionUISuppressed);
   }
+}
+
+void ChromeSubresourceFilterClient::OnNewNavigationStarted() {
+  did_show_ui_for_navigation_ = false;
+  LogAction(kActionNavigationStarted);
 }
 
 bool ChromeSubresourceFilterClient::OnPageActivationComputed(

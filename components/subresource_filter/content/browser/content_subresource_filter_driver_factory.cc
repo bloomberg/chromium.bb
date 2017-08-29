@@ -133,11 +133,11 @@ void ContentSubresourceFilterDriverFactory::OnFirstSubresourceLoadDisallowed() {
     return;
   // This shouldn't happen normally, but in the rare case that an IPC from a
   // previous page arrives late we should guard against it.
-  if (activation_options().should_disable_ruleset_rules)
+  if (activation_options().should_disable_ruleset_rules ||
+      activation_options().activation_level != ActivationLevel::ENABLED) {
     return;
-  DCHECK_EQ(activation_options().activation_level, ActivationLevel::ENABLED);
-  client_->ToggleNotificationVisibility(activation_options().activation_level ==
-                                        ActivationLevel::ENABLED);
+  }
+  client_->ShowNotification();
 }
 
 bool ContentSubresourceFilterDriverFactory::AllowRulesetRules() {
@@ -149,7 +149,7 @@ void ContentSubresourceFilterDriverFactory::DidStartNavigation(
   if (navigation_handle->IsInMainFrame() &&
       !navigation_handle->IsSameDocument()) {
     activation_decision_ = ActivationDecision::UNKNOWN;
-    client_->ToggleNotificationVisibility(false);
+    client_->OnNewNavigationStarted();
   }
 }
 
