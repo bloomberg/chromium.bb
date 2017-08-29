@@ -198,10 +198,6 @@ class CORE_EXPORT RuleSet : public GarbageCollectedFinalized<RuleSet> {
     DCHECK(!pending_rules_);
     return &focus_pseudo_class_rules_;
   }
-  const HeapVector<RuleData>* PlaceholderPseudoRules() const {
-    DCHECK(!pending_rules_);
-    return &placeholder_pseudo_rules_;
-  }
   const HeapVector<RuleData>* UniversalRules() const {
     DCHECK(!pending_rules_);
     return &universal_rules_;
@@ -308,7 +304,6 @@ class CORE_EXPORT RuleSet : public GarbageCollectedFinalized<RuleSet> {
   HeapVector<RuleData> link_pseudo_class_rules_;
   HeapVector<RuleData> cue_pseudo_rules_;
   HeapVector<RuleData> focus_pseudo_class_rules_;
-  HeapVector<RuleData> placeholder_pseudo_rules_;
   HeapVector<RuleData> universal_rules_;
   HeapVector<RuleData> shadow_host_rules_;
   RuleFeatureSet features_;
