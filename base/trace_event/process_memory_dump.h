@@ -44,7 +44,6 @@ class BASE_EXPORT ProcessMemoryDump {
     MemoryAllocatorDumpGuid source;
     MemoryAllocatorDumpGuid target;
     int importance;
-    const char* type;
     bool overridable;
   };
 
