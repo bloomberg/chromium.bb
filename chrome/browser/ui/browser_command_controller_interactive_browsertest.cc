@@ -552,9 +552,8 @@ IN_PROC_BROWSER_TEST_F(BrowserCommandControllerInteractiveTest,
 // the page to exit fullscreen mode. So we need to maintain a list of exiting /
 // non-exiting commands, which is not the goal of this test.
 
-#if defined(OS_CHROMEOS) || defined(OS_LINUX)
-// This test is flaky on ChromeOS and Linux, see bugs http://crbug.com/754878
-// and http://crbug.com/759704.
+#if defined(OS_CHROMEOS)
+// This test is flaky on ChromeOS, see http://crbug.com/754878.
 #define MAYBE_ShortcutsShouldTakeEffectInJsFullscreen \
         DISABLED_ShortcutsShouldTakeEffectInJsFullscreen
 #else
@@ -563,6 +562,13 @@ IN_PROC_BROWSER_TEST_F(BrowserCommandControllerInteractiveTest,
 #endif
 IN_PROC_BROWSER_TEST_F(BrowserCommandControllerInteractiveTest,
                        MAYBE_ShortcutsShouldTakeEffectInJsFullscreen) {
+  // This test is flaky when browser side navigation is enabled on Linux. See
+  // http://crbug.com/759704.
+  // TODO(zijiehe): Find out the root cause.
+#if defined(OS_LINUX)
+  if (content::IsBrowserSideNavigationEnabled())
+    return;
+#endif
   ASSERT_NO_FATAL_FAILURE(SendShortcutsAndExpectNotPrevented(true));
 }
 
