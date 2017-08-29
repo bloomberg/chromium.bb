@@ -86,6 +86,9 @@ class FakeDownloadItem : public DownloadItem {
   void SetLastAccessTime(base::Time time) override;
   base::Time GetLastAccessTime() const override;
 
+  void SetIsTransient(bool is_transient);
+  bool IsTransient() const override;
+
   // The methods below are not supported and are not expected to be called.
   void ValidateDangerousDownload() override;
   void StealDangerousDownload(bool delete_file_afterward,
@@ -133,7 +136,6 @@ class FakeDownloadItem : public DownloadItem {
   bool GetOpenWhenComplete() const override;
   bool GetAutoOpened() override;
   bool GetOpened() const override;
-  bool IsTransient() const override;
   BrowserContext* GetBrowserContext() const override;
   WebContents* GetWebContents() const override;
   void OnContentCheckCompleted(DownloadDangerType danger_type,
@@ -164,6 +166,7 @@ class FakeDownloadItem : public DownloadItem {
       DownloadInterruptReason::DOWNLOAD_INTERRUPT_REASON_NONE;
   int64_t received_bytes_ = 0;
   int64_t total_bytes_ = 0;
+  bool is_transient_ = false;
 
   // The members below are to be returned by methods, which return by reference.
   std::string dummy_string;

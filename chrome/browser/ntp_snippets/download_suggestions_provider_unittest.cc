@@ -1146,3 +1146,19 @@ TEST_F(DownloadSuggestionsProviderTest,
   CreateLoadedProvider(/*show_assets=*/true, /*show_offline_pages=*/false,
                        std::move(test_clock));
 }
+
+TEST_F(DownloadSuggestionsProviderTest, ShouldIgnoreTransientDownloads) {
+  IgnoreOnCategoryStatusChangedToAvailable();
+
+  *(downloads_manager()->mutable_items()) = CreateDummyAssetDownloads({1});
+  downloads_manager()->mutable_items()->at(0)->SetIsTransient(true);
+  EXPECT_CALL(*observer(),
+              OnNewSuggestions(_, downloads_category(), IsEmpty()));
+  CreateLoadedProvider(/*show_assets=*/true, /*show_offline_pages=*/true,
+                       base::MakeUnique<base::DefaultClock>());
+
+  EXPECT_CALL(*observer(), OnNewSuggestions(_, _, _)).Times(0);
+  EXPECT_CALL(*observer(), OnSuggestionInvalidated(_, _)).Times(0);
+  // |OnDownloadItemDestroyed| is called from items's destructor.
+  downloads_manager()->mutable_items()->clear();
+}

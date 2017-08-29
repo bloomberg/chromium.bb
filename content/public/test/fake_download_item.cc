@@ -173,6 +173,14 @@ base::Time FakeDownloadItem::GetLastAccessTime() const {
   return last_access_time_;
 }
 
+void FakeDownloadItem::SetIsTransient(bool is_transient) {
+  is_transient_ = is_transient;
+}
+
+bool FakeDownloadItem::IsTransient() const {
+  return is_transient_;
+}
+
 // The methods below are not supported and are not expected to be called.
 void FakeDownloadItem::ValidateDangerousDownload() {
   NOTREACHED();
@@ -389,11 +397,6 @@ bool FakeDownloadItem::GetAutoOpened() {
 }
 
 bool FakeDownloadItem::GetOpened() const {
-  NOTREACHED();
-  return false;
-}
-
-bool FakeDownloadItem::IsTransient() const {
   NOTREACHED();
   return false;
 }
