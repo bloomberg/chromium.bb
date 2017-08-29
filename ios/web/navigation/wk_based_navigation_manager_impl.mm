@@ -300,6 +300,7 @@ bool WKBasedNavigationManagerImpl::CanGoToOffset(int offset) const {
 void WKBasedNavigationManagerImpl::GoBack() {
   if (transient_item_) {
     transient_item_.reset();
+    delegate_->ClearTransientContent();
     return;
   }
   [delegate_->GetWebViewNavigationProxy() goBack];
