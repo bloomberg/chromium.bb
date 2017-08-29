@@ -235,6 +235,21 @@ _OS_NEGATIVE_FILTER['android:chrome'] = [
     'BasicMouseInterfaceTest.testDoubleClick',
     'BasicMouseInterfaceTest.testContextClick',
     'CorrectEventFiringTest.testShouldFireMouseUpEventWhenClicking',
+
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1960
+    'CorrectEventFiringTest.testShouldNotThrowIfEventHandlerThrows',
+    'CorrectEventFiringTest.testShouldFireMouseOverEventWhenClicking',
+    'CorrectEventFiringTest.testShouldFireTwoClickEventsWhenClickingOnALabel',
+    'CorrectEventFiringTest.testShouldIssueClickEvents',
+    'CorrectEventFiringTest.testShouldFireMouseMoveEventWhenClicking',
+    'CombinedInputActionsTest.testChordControlCutAndPaste',
+    'BasicKeyboardInterfaceTest.testSendingKeysWithShiftPressed',
+    'BasicKeyboardInterfaceTest.testBasicKeyboardInputOnActiveElement',
+    'BasicKeyboardInterfaceTest.testSendingKeyUp',
+    'BasicKeyboardInterfaceTest.testSendingKeyDownOnly',
+    'BasicMouseInterfaceTest.testMoveAndClick',
+    'BasicMouseInterfaceTest.testShouldClickElementInIFrame',
+    'CombinedInputActionsTest.testCanClickOnLinks',
 ]
 _OS_NEGATIVE_FILTER['android:chrome_stable'] = (
     _OS_NEGATIVE_FILTER['android:chrome'] + [
