@@ -19,18 +19,14 @@ namespace ui {
 namespace ws {
 class EventTargeterDelegate;
 
-// The target |deepest_window| for a given location, locations and |display_id|
-// are associated with the display |deepest_window| is on. |location_in_root|
-// is the location in root window's coord-space while |location_in_target| is
-// the transformed location in the |deepest_window|'s coord-space.
-struct LocationTarget {
-  DeepestWindow deepest_window;
-  gfx::Point location_in_root;
-  gfx::Point location_in_target;
-  int64_t display_id = display::kInvalidDisplayId;
+// Contains a location relative to a particular display.
+struct DisplayLocation {
+  gfx::Point location;
+  int64_t display_id;
 };
 
-using HitTestCallback = base::OnceCallback<void(const LocationTarget&)>;
+using HitTestCallback =
+    base::OnceCallback<void(const DisplayLocation&, const DeepestWindow&)>;
 
 // Finds the target window for a location.
 class EventTargeter {
@@ -38,11 +34,10 @@ class EventTargeter {
   explicit EventTargeter(EventTargeterDelegate* event_targeter_delegate);
   ~EventTargeter();
 
-  // Calls WindowFinder to find the target for |location|.
-  // |callback| is called with the LocationTarget found.
+  // Calls WindowFinder to find the target for |display_location|. |callback| is
+  // called with the found target.
   void FindTargetForLocation(EventSource event_source,
-                             const gfx::Point& location,
-                             int64_t display_id,
+                             const DisplayLocation& display_location,
                              HitTestCallback callback);
 
   bool IsHitTestInFlight() const;
@@ -50,25 +45,21 @@ class EventTargeter {
  private:
   struct HitTestRequest {
     HitTestRequest(EventSource event_source,
-                   const gfx::Point& location,
-                   int64_t display_id,
+                   const DisplayLocation& display_location,
                    HitTestCallback hittest_callback);
     ~HitTestRequest();
 
     EventSource event_source;
-    gfx::Point location;
-    int64_t display_id;
+    DisplayLocation display_location;
     HitTestCallback callback;
   };
 
   void ProcessFindTarget(EventSource event_source,
-                         const gfx::Point& location,
-                         int64_t display_id,
+                         const DisplayLocation& display_location,
                          HitTestCallback callback);
 
   void FindTargetForLocationNow(EventSource event_source,
-                                const gfx::Point& location,
-                                int64_t display_id,
+                                const DisplayLocation& display_location,
                                 HitTestCallback callback);
 
   void ProcessNextHitTestRequestFromQueue();
