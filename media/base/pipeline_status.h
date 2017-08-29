@@ -64,6 +64,7 @@ struct PipelineStatistics {
   int64_t audio_memory_usage = 0;
   int64_t video_memory_usage = 0;
   base::TimeDelta video_keyframe_distance_average = kNoTimestamp;
+  // NOTE: frame duration should reflect changes to playback rate.
   base::TimeDelta video_frame_duration_average = kNoTimestamp;
 };
 

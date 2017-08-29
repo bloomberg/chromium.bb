@@ -57,6 +57,8 @@ component("services") {
     "mojo_video_encode_accelerator_service.h",
     "test_mojo_media_client.cc",
     "test_mojo_media_client.h",
+    "video_decode_stats_recorder.cc",
+    "video_decode_stats_recorder.h",
     "watch_time_recorder.cc",
     "watch_time_recorder.h",
   ]

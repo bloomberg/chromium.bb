@@ -17,6 +17,7 @@
 #include "media/base/routing_token_callback.h"
 #include "media/blink/media_blink_export.h"
 #include "media/filters/context_3d.h"
+#include "media/mojo/interfaces/video_decode_stats_recorder.mojom.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -42,6 +43,8 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
  public:
   typedef base::Callback<void(const base::Closure&)> DeferLoadCB;
   typedef base::Callback<Context3D()> Context3DCB;
+  typedef base::Callback<mojom::VideoDecodeStatsRecorderPtr()>
+      CreateCapabilitiesRecorderCB;
 
   // Callback to tell V8 about the amount of memory used by the WebMediaPlayer
   // instance.  The input parameter is the delta in bytes since the last call to
@@ -69,7 +72,8 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
       base::TimeDelta max_keyframe_distance_to_disable_background_video_mse,
       bool enable_instant_source_buffer_gc,
       bool embedded_media_experience_enabled,
-      mojom::WatchTimeRecorderProvider* provider);
+      mojom::WatchTimeRecorderProvider* provider,
+      CreateCapabilitiesRecorderCB create_capabilities_recorder_cb);
 
   ~WebMediaPlayerParams();
 
@@ -136,6 +140,10 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
     return watch_time_recorder_provider_;
   }
 
+  CreateCapabilitiesRecorderCB create_capabilities_recorder_cb() const {
+    return create_capabilities_recorder_cb_;
+  }
+
  private:
   DeferLoadCB defer_load_cb_;
   scoped_refptr<SwitchableAudioRendererSink> audio_renderer_sink_;
@@ -155,6 +163,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
   bool enable_instant_source_buffer_gc_;
   const bool embedded_media_experience_enabled_;
   mojom::WatchTimeRecorderProvider* watch_time_recorder_provider_;
+  CreateCapabilitiesRecorderCB create_capabilities_recorder_cb_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(WebMediaPlayerParams);
 };

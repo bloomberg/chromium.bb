@@ -19,6 +19,7 @@ mojom("interfaces") {
     "output_protection.mojom",
     "provision_fetcher.mojom",
     "renderer.mojom",
+    "video_decode_stats_recorder.mojom",
     "video_decoder.mojom",
     "video_encode_accelerator.mojom",
     "watch_time_recorder.mojom",

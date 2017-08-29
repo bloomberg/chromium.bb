@@ -39,6 +39,7 @@
 #include "media/blink/webmediaplayer_params.h"
 #include "media/blink/webmediaplayer_util.h"
 #include "media/filters/pipeline_controller.h"
+#include "media/mojo/interfaces/video_decode_stats_recorder.mojom.h"
 #include "media/renderers/skcanvas_video_renderer.h"
 #include "third_party/WebKit/public/platform/WebAudioSourceProvider.h"
 #include "third_party/WebKit/public/platform/WebContentDecryptionModuleResult.h"
@@ -75,6 +76,7 @@ class GLES2Interface;
 namespace media {
 class ChunkDemuxer;
 class ContentDecryptionModule;
+class VideoDecodeStatsReporter;
 class MediaLog;
 class UrlIndex;
 class VideoFrameCompositor;
@@ -407,6 +409,8 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
 
   void CreateWatchTimeReporter();
 
+  void CreateVideoDecodeStatsReporter();
+
   // Returns true if the player is hidden.
   bool IsHidden() const;
 
@@ -719,6 +723,9 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   std::unique_ptr<WatchTimeReporter> watch_time_reporter_;
   bool is_encrypted_;
 
+  // Records pipeline statistics for describing media capabilities.
+  std::unique_ptr<VideoDecodeStatsReporter> video_decode_stats_reporter_;
+
   // Elapsed time since we've last reached BUFFERING_HAVE_NOTHING.
   std::unique_ptr<base::ElapsedTimer> underflow_timer_;
 
@@ -811,6 +818,9 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   base::CancelableClosure update_background_status_cb_;
 
   mojom::WatchTimeRecorderProvider* watch_time_recorder_provider_;
+
+  base::Callback<mojom::VideoDecodeStatsRecorderPtr()>
+      create_decode_stats_recorder_cb_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerImpl);
 };
