@@ -174,9 +174,12 @@ requestFullCreditCard:(const autofill::CreditCard&)card
                                repeats:NO];
   }
 
-  // If a shipping address has been selected and there are available shipping
-  // options, set it as the selected shipping address.
-  if (_pendingShippingAddress && !_paymentRequest->shipping_options().empty()) {
+  // If there are no available shipping options, reset the previously selected
+  // shipping address. Otherwise, if a shipping address had been selected, set
+  // it as the selected shipping address.
+  if (_paymentRequest->shipping_options().empty())
+    _paymentRequest->set_selected_shipping_profile(nullptr);
+  else if (_pendingShippingAddress) {
     _paymentRequest->set_selected_shipping_profile(_pendingShippingAddress);
   }
   _pendingShippingAddress = nil;
