@@ -42,6 +42,7 @@ component("android") {
     "ui_android_export.h",
     "view_android.cc",
     "view_android.h",
+    "view_android_observer.h",
     "view_client.cc",
     "view_client.h",
     "window_android.cc",

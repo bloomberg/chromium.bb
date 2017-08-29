@@ -86,6 +86,7 @@
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "ui/android/view_android_observer.h"
 #include "ui/android/window_android.h"
 #include "ui/android/window_android_compositor.h"
 #include "ui/base/layout.h"
@@ -2102,11 +2103,13 @@ void RenderWidgetHostViewAndroid::SetContentViewCore(
       resize = true;
     if (content_view_core_) {
       content_view_core_->RemoveObserver(this);
+      view_.RemoveObserver(this);
       view_.RemoveFromParent();
       view_.GetLayer()->RemoveFromParent();
     }
     if (content_view_core) {
       content_view_core->AddObserver(this);
+      view_.AddObserver(this);
       ui::ViewAndroid* parent_view = content_view_core->GetViewAndroid();
       parent_view->AddChild(&view_);
       parent_view->GetLayer()->AddChild(view_.GetLayer());
@@ -2217,6 +2220,9 @@ void RenderWidgetHostViewAndroid::OnRootWindowVisibilityChanged(bool visible) {
 }
 
 void RenderWidgetHostViewAndroid::OnAttachedToWindow() {
+  if (!content_view_core_)
+    return;
+
   if (is_showing_)
     StartObservingRootWindow();
   DCHECK(view_.GetWindowAndroid());

@@ -70,6 +70,7 @@ struct ContextMenuParams;
 class CONTENT_EXPORT RenderWidgetHostViewAndroid
     : public RenderWidgetHostViewBase,
       public ui::GestureProviderClient,
+      public ui::ViewAndroidObserver,
       public ui::ViewClient,
       public ui::WindowAndroidObserver,
       public viz::FrameEvictorClient,
@@ -199,6 +200,10 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   bool OnMouseWheelEvent(const ui::MotionEventAndroid& event) override;
   void OnPhysicalBackingSizeChanged() override;
 
+  // ui::ViewAndroidObserver implementation:
+  void OnAttachedToWindow() override;
+  void OnDetachedFromWindow() override;
+
   // ui::GestureProviderClient implementation.
   void OnGestureEvent(const ui::GestureEventData& gesture) override;
 
@@ -213,8 +218,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
 
   // content::ContentViewCoreObserver implementation.
   void OnContentViewCoreDestroyed() override;
-  void OnAttachedToWindow() override;
-  void OnDetachedFromWindow() override;
 
   // viz::FrameEvictor implementation
   void EvictDelegatedFrame() override;
