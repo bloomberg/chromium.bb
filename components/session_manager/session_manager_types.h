@@ -48,8 +48,10 @@ struct Session {
   AccountId user_account_id;
 };
 
-// Limits the number of logged in users to 10 due to memory constraints.
-constexpr int kMaxmiumNumberOfUserSessions = 10;
+// Limits the number of logged in users to 5. User-switcher UI was not designed
+// around a large number of users. This also helps on memory-constrained
+// devices. See b/64593342 for some additional context.
+constexpr int kMaximumNumberOfUserSessions = 5;
 
 }  // namespace session_manager
 
