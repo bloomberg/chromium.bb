@@ -180,6 +180,10 @@ class LocationBarView : public LocationBar,
 
   LocationIconView* location_icon_view() { return location_icon_view_; }
 
+  SelectedKeywordView* selected_keyword_view() {
+    return selected_keyword_view_;
+  }
+
   // Where InfoBar arrows should point. The point will be returned in the
   // coordinates of the LocationBarView.
   gfx::Point GetInfoBarAnchorPoint() const;
