@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.firstrun;
 
-import android.app.Activity;
-import android.content.Intent;
 import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -92,9 +90,7 @@ public class LightweightFirstRunActivity extends FirstRunActivity {
     @Override
     public void completeFirstRunExperience() {
         FirstRunStatus.setLightweightFirstRunFlowComplete(true);
-        Intent intent = new Intent();
-        intent.putExtras(mFreProperties);
-        finishAllTheActivities(getLocalClassName(), Activity.RESULT_OK, intent);
+        finishAllTheActivities(getLocalClassName());
 
         sendPendingIntentIfNecessary(true);
     }
