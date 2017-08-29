@@ -984,14 +984,12 @@ void ChromeClientImpl::ShowVirtualKeyboardOnElementFocus(LocalFrame& frame) {
       ->ShowVirtualKeyboardOnElementFocus();
 }
 
-void ChromeClientImpl::ShowUnhandledTapUIIfNeeded(
-    IntPoint tapped_position_in_viewport,
-    Node* tapped_node,
-    bool page_changed) {
+void ChromeClientImpl::ShowUnhandledTapUIIfNeeded(WebTappedInfo& tapped_info) {
+  //  Node* node = tapped_info.RawNode();
+  //  web_node(WebNode(node));
+  //  tapped_info.SetNode(web_node);
   if (web_view_->Client()) {
-    web_view_->Client()->ShowUnhandledTapUIIfNeeded(
-        WebPoint(tapped_position_in_viewport), WebNode(tapped_node),
-        page_changed);
+    web_view_->Client()->ShowUnhandledTapUIIfNeeded(tapped_info);
   }
 }
 
