@@ -408,9 +408,7 @@ public class FirstRunActivity extends AsyncInitializationActivity implements Fir
 
     @Override
     public void abortFirstRunExperience() {
-        Intent intent = new Intent();
-        if (mFreProperties != null) intent.putExtras(mFreProperties);
-        finishAllTheActivities(getLocalClassName(), Activity.RESULT_CANCELED, intent);
+        finishAllTheActivities(getLocalClassName());
 
         sendPendingIntentIfNecessary(false);
         if (sObserver != null) sObserver.onAbortFirstRunExperience();
@@ -458,17 +456,13 @@ public class FirstRunActivity extends AsyncInitializationActivity implements Fir
         if (sObserver != null) sObserver.onUpdateCachedEngineName();
 
         if (!sendPendingIntentIfNecessary(true)) {
-            Intent resultData = new Intent();
-            resultData.putExtras(mFreProperties);
-            finishAllTheActivities(getLocalClassName(), Activity.RESULT_OK, resultData);
+            finishAllTheActivities(getLocalClassName());
         } else {
             ApplicationStatus.registerStateListenerForActivity(new ActivityStateListener() {
                 @Override
                 public void onActivityStateChange(Activity activity, int newState) {
                     if (newState == ActivityState.STOPPED || newState == ActivityState.DESTROYED) {
-                        Intent resultData = new Intent();
-                        resultData.putExtras(mFreProperties);
-                        finishAllTheActivities(getLocalClassName(), Activity.RESULT_OK, resultData);
+                        finishAllTheActivities(getLocalClassName());
                         ApplicationStatus.unregisterActivityStateListener(this);
                     }
                 }
@@ -526,15 +520,12 @@ public class FirstRunActivity extends AsyncInitializationActivity implements Fir
     /**
     * Finish all the instances of the given Activity.
     * @param targetActivity The class name of the target Activity.
-    * @param result The result code to propagate back to the originating activity.
-    * @param data The data to propagate back to the originating activity.
     */
-    protected static void finishAllTheActivities(String targetActivity, int result, Intent data) {
+    protected static void finishAllTheActivities(String targetActivity) {
         List<WeakReference<Activity>> activities = ApplicationStatus.getRunningActivities();
         for (WeakReference<Activity> weakActivity : activities) {
             Activity activity = weakActivity.get();
             if (activity != null && activity.getLocalClassName().equals(targetActivity)) {
-                activity.setResult(result, data);
                 activity.finish();
             }
         }
