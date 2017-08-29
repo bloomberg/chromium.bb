@@ -638,7 +638,7 @@ void KeyboardController::PopulateKeyboardContent(int64_t display_id,
   container_->layer()->SetOpacity(1.0);
 
   ChangeState(KeyboardControllerState::SHOWN);
-  NotifyKeyboardBoundsChangingAndEnsrueCaretInWorkArea();
+  NotifyKeyboardBoundsChangingAndEnsureCaretInWorkArea();
 }
 
 bool KeyboardController::WillHideKeyboard() const {
@@ -652,7 +652,7 @@ void KeyboardController::ShowAnimationFinished() {
 }
 
 void KeyboardController::
-    NotifyKeyboardBoundsChangingAndEnsrueCaretInWorkArea() {
+    NotifyKeyboardBoundsChangingAndEnsureCaretInWorkArea() {
   // Notify observers after animation finished to prevent reveal desktop
   // background during animation.
   NotifyContentsBoundsChanging(container_->bounds());
