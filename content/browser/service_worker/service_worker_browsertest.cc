@@ -2383,6 +2383,41 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, ImportsBustMemcache) {
   EXPECT_EQ(kExpectedNumResources, num_resources);
 }
 
+// A listener that waits for the version to stop.
+class StopObserver : public ServiceWorkerVersion::Listener {
+ public:
+  explicit StopObserver(const base::Closure& quit_closure)
+      : quit_closure_(quit_closure) {}
+
+  void OnRunningStateChanged(ServiceWorkerVersion* version) override {
+    if (version->running_status() == EmbeddedWorkerStatus::STOPPED)
+      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, quit_closure_);
+  }
+
+ private:
+  base::Closure quit_closure_;
+};
+
+IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, RendererCrash) {
+  // Start a worker.
+  StartServerAndNavigateToSetup();
+  RunOnIOThread(base::Bind(&self::SetUpRegistrationOnIOThread,
+                           base::Unretained(this),
+                           "/service_worker/worker.js"));
+  StartWorker(SERVICE_WORKER_OK);
+
+  // Crash the renderer process. The version should stop.
+  base::RunLoop run_loop;
+  StopObserver observer(run_loop.QuitClosure());
+  RunOnIOThread(base::Bind(&ServiceWorkerVersion::AddListener,
+                           base::Unretained(version_.get()), &observer));
+  shell()->web_contents()->GetRenderProcessHost()->Shutdown(
+      content::RESULT_CODE_KILLED, false /* wait */);
+  run_loop.Run();
+
+  EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, version_->running_status());
+}
+
 class ServiceWorkerBlackBoxBrowserTest : public ServiceWorkerBrowserTest {
  public:
   using self = ServiceWorkerBlackBoxBrowserTest;

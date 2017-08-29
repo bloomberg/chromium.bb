@@ -198,6 +198,10 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   static std::string StatusToString(EmbeddedWorkerStatus status);
   static std::string StartingPhaseToString(StartingPhase phase);
 
+  // Detaches the running worker from the EmbeddedWorkerRegistry and calls
+  // OnDetached(). Use this instead of OnDetached() when the
+  // EmbeddedWorkerRegistry possibly knows about the running worker.
+  // TODO(falken): Remove OnDetached() once the callsite in Stop() is removed.
   void Detach();
 
   base::WeakPtr<EmbeddedWorkerInstance> AsWeakPtr();
@@ -259,8 +263,8 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
                               int line_number,
                               const GURL& source_url) override;
 
-  // Called when ServiceWorkerDispatcherHost for the worker died while it was
-  // running.
+  // Called when connection with the renderer died or the start attempt was
+  // aborted before the connection was attempted.
   void OnDetached();
 
   // Called back from Registry when the worker instance sends message

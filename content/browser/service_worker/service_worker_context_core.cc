@@ -315,8 +315,9 @@ void ServiceWorkerContextCore::RemoveDispatcherHost(int process_id) {
   // Temporary CHECKs for debugging https://crbug.com/750267.
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   CHECK(dispatcher_hosts_.find(process_id) != dispatcher_hosts_.end());
+  // TODO(falken): Is RemoveAllProviderHostsForProcess() needed? The provider
+  // hosts should remove themselves when their Mojo connections break.
   RemoveAllProviderHostsForProcess(process_id);
-  embedded_worker_registry_->RemoveProcess(process_id);
   dispatcher_hosts_.erase(process_id);
 }
 

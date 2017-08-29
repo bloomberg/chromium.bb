@@ -1107,9 +1107,9 @@ TEST_F(ServiceWorkerFailToStartTest, RendererCrash) {
   EXPECT_EQ(SERVICE_WORKER_ERROR_NETWORK, status);
   EXPECT_EQ(EmbeddedWorkerStatus::STARTING, version_->running_status());
 
-  // Simulate renderer crash: remove DispatcherHost like what
-  // ServiceWorkerDispatcherHost::OnFilterRemoved does.
-  helper_->RegisterDispatcherHost(helper_->mock_render_process_id(), nullptr);
+  // Simulate renderer crash: break EmbeddedWorkerInstance's Mojo connection to
+  // the renderer-side client.
+  helper_->mock_instance_clients()->clear();
   base::RunLoop().RunUntilIdle();
 
   // Callback completed.
@@ -1311,9 +1311,9 @@ TEST_F(ServiceWorkerVersionTest, RendererCrashDuringEvent) {
   // Callback has not completed yet.
   EXPECT_EQ(SERVICE_WORKER_OK, status);
 
-  // Simulate renderer crash: remove DispatcherHost like what
-  // ServiceWorkerDispatcherHost::OnFilterRemoved does.
-  helper_->RegisterDispatcherHost(helper_->mock_render_process_id(), nullptr);
+  // Simulate renderer crash: break EmbeddedWorkerInstance's Mojo connection to
+  // the renderer-side client.
+  helper_->mock_instance_clients()->clear();
   base::RunLoop().RunUntilIdle();
 
   // Callback completed.
