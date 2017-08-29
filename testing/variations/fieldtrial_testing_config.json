@@ -975,6 +975,24 @@
             ]
         }
     ],
+    "EnableNewMediaRouterRouteController": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "MediaRouterUIRouteController"
+                    ]
+                }
+            ]
+        }
+    ],
     "ExpectCTReporting": [
         {
             "platforms": [
