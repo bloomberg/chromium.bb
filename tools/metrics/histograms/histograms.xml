@@ -49189,6 +49189,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NQE.FastestRTT" units="ms">
+  <obsolete>
+    Obsoleted in August 2017
+  </obsolete>
   <owner>bengr@chromium.org</owner>
   <owner>tbansal@chromium.org</owner>
   <summary>
@@ -49276,6 +49279,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NQE.PeakKbps" units="Kbps">
+  <obsolete>
+    Obsoleted in August 2017
+  </obsolete>
   <owner>bengr@chromium.org</owner>
   <owner>tbansal@chromium.org</owner>
   <summary>
@@ -97920,10 +97926,26 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="None" label="With no detected network"/>
   <suffix name="Bluetooth" label="On Bluetooth network"/>
   <affected-histogram name="NQE.FastestRTT"/>
-  <affected-histogram name="NQE.MainFrame.EffectiveConnectionType"/>
-  <affected-histogram name="NQE.MainFrame.Kbps.Percentile50"/>
-  <affected-histogram name="NQE.MainFrame.RTT.Percentile50"/>
-  <affected-histogram name="NQE.MainFrame.TransportRTT.Percentile50"/>
+  <affected-histogram name="NQE.MainFrame.EffectiveConnectionType">
+    <obsolete>
+      Deprecated 08/2017.
+    </obsolete>
+  </affected-histogram>
+  <affected-histogram name="NQE.MainFrame.Kbps.Percentile50">
+    <obsolete>
+      Deprecated 08/2017.
+    </obsolete>
+  </affected-histogram>
+  <affected-histogram name="NQE.MainFrame.RTT.Percentile50">
+    <obsolete>
+      Deprecated 08/2017.
+    </obsolete>
+  </affected-histogram>
+  <affected-histogram name="NQE.MainFrame.TransportRTT.Percentile50">
+    <obsolete>
+      Deprecated 08/2017.
+    </obsolete>
+  </affected-histogram>
   <affected-histogram name="NQE.PeakKbps"/>
   <affected-histogram name="NQE.RTT.Percentile0"/>
   <affected-histogram name="NQE.RTT.Percentile10"/>
