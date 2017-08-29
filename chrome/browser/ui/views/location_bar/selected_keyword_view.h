@@ -41,6 +41,8 @@ class SelectedKeywordView : public IconLabelBubbleView {
   void SetKeyword(const base::string16& keyword);
   const base::string16& keyword() const { return keyword_; }
 
+  using IconLabelBubbleView::label;
+
  private:
   // IconLabelBubbleView:
   const char* GetClassName() const override;
