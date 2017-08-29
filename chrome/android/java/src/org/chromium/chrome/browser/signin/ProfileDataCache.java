@@ -27,9 +27,12 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileDownloader;
+import org.chromium.components.signin.AccountManagerFacade;
+import org.chromium.components.signin.ProfileDataSource;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Fetches and caches Google Account profile images and full names for the accounts on the device.
@@ -37,7 +40,7 @@ import java.util.List;
  * should be provided by calling {@link #update(List)}
  */
 @MainThread
-public class ProfileDataCache implements ProfileDownloader.Observer {
+public class ProfileDataCache implements ProfileDownloader.Observer, ProfileDataSource.Observer {
     /**
      * Observer to get notifications about changes in profile data.
      */
@@ -107,6 +110,8 @@ public class ProfileDataCache implements ProfileDownloader.Observer {
     private final Drawable mPlaceholderImage;
     private final ObserverList<Observer> mObservers = new ObserverList<>();
     private final HashMap<String, CacheEntry> mCacheEntries = new HashMap<>();
+    @Nullable
+    private final ProfileDataSource mProfileDataSource;
 
     public ProfileDataCache(Context context, Profile profile, int imageSize) {
         this(context, profile, imageSize, null);
@@ -121,6 +126,8 @@ public class ProfileDataCache implements ProfileDownloader.Observer {
 
         mPlaceholderImage =
                 AppCompatResources.getDrawable(context, R.drawable.logo_avatar_anonymous);
+
+        mProfileDataSource = AccountManagerFacade.get().getProfileDataSource();
     }
 
     /**
@@ -131,6 +138,9 @@ public class ProfileDataCache implements ProfileDownloader.Observer {
     public void update(List<String> accounts) {
         ThreadUtils.assertOnUiThread();
         assert !mObservers.isEmpty();
+
+        // ProfileDataSource is updated automatically.
+        if (mProfileDataSource != null) return;
 
         for (int i = 0; i < accounts.size(); i++) {
             if (mCacheEntries.get(accounts.get(i)) == null) {
@@ -179,7 +189,12 @@ public class ProfileDataCache implements ProfileDownloader.Observer {
     public void addObserver(Observer observer) {
         ThreadUtils.assertOnUiThread();
         if (mObservers.isEmpty()) {
-            ProfileDownloader.addObserver(this);
+            if (mProfileDataSource != null) {
+                mProfileDataSource.addObserver(this);
+                populateCacheFromProfileDataSource();
+            } else {
+                ProfileDownloader.addObserver(this);
+            }
         }
         mObservers.addObserver(observer);
     }
@@ -191,8 +206,24 @@ public class ProfileDataCache implements ProfileDownloader.Observer {
         ThreadUtils.assertOnUiThread();
         mObservers.removeObserver(observer);
         if (mObservers.isEmpty()) {
-            ProfileDownloader.removeObserver(this);
+            if (mProfileDataSource != null) {
+                mProfileDataSource.removeObserver(this);
+            } else {
+                ProfileDownloader.removeObserver(this);
+            }
         }
+    }
+
+    private void populateCacheFromProfileDataSource() {
+        for (Map.Entry<String, ProfileDataSource.ProfileData> entry :
+                mProfileDataSource.getProfileDataMap().entrySet()) {
+            mCacheEntries.put(entry.getKey(), createCacheEntryFromProfileData(entry.getValue()));
+        }
+    }
+
+    private CacheEntry createCacheEntryFromProfileData(ProfileDataSource.ProfileData profileData) {
+        return new CacheEntry(prepareAvatar(profileData.getAvatar()), profileData.getFullName(),
+                profileData.getGivenName());
     }
 
     @Override
@@ -200,6 +231,22 @@ public class ProfileDataCache implements ProfileDownloader.Observer {
             Bitmap bitmap) {
         ThreadUtils.assertOnUiThread();
         mCacheEntries.put(accountId, new CacheEntry(prepareAvatar(bitmap), fullName, givenName));
+        for (Observer observer : mObservers) {
+            observer.onProfileDataUpdated(accountId);
+        }
+    }
+
+    @Override
+    public void onProfileDataUpdated(String accountId) {
+        assert mProfileDataSource != null;
+        ProfileDataSource.ProfileData profileData =
+                mProfileDataSource.getProfileDataForAccount(accountId);
+        if (profileData == null) {
+            mCacheEntries.remove(accountId);
+        } else {
+            mCacheEntries.put(accountId, createCacheEntryFromProfileData(profileData));
+        }
+
         for (Observer observer : mObservers) {
             observer.onProfileDataUpdated(accountId);
         }

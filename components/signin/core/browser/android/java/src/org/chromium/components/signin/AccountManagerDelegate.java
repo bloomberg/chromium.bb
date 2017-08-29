@@ -90,4 +90,14 @@ public interface AccountManagerDelegate {
     @AnyThread
     void updateCredentials(
             Account account, Activity activity, @Nullable Callback<Boolean> callback);
+
+    /**
+     * Gets profile data source.
+     * @return {@link ProfileDataSource} if this delegate provides it, null otherwise.
+     */
+    @MainThread
+    @Nullable
+    default ProfileDataSource getProfileDataSource() {
+        return null;
+    }
 }
