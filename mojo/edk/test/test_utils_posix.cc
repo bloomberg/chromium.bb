@@ -76,7 +76,7 @@ bool NonBlockingRead(const PlatformHandle& handle,
 
 ScopedPlatformHandle PlatformHandleFromFILE(base::ScopedFILE fp) {
   CHECK(fp);
-  int rv = dup(fileno(fp.get()));
+  int rv = HANDLE_EINTR(dup(fileno(fp.get())));
   PCHECK(rv != -1) << "dup";
   return ScopedPlatformHandle(PlatformHandle(rv));
 }

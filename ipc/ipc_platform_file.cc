@@ -7,6 +7,8 @@
 
 #if defined(OS_POSIX)
 #include <unistd.h>
+
+#include "base/posix/eintr_wrapper.h"
 #endif
 
 namespace IPC {
@@ -60,7 +62,7 @@ PlatformFileForTransit GetPlatformFileForTransit(base::PlatformFile handle,
   // the other process from the I/O thread. Without the dup, calling code might
   // close the source handle before the message is sent, creating a race
   // condition.
-  int fd = close_source_handle ? handle : ::dup(handle);
+  int fd = close_source_handle ? handle : HANDLE_EINTR(::dup(handle));
   return base::FileDescriptor(fd, true);
 #else
   #error Not implemented.

@@ -698,7 +698,7 @@ TEST_F(ProcessUtilTest, FDRemappingIncludesStdio) {
   int pipe_fds[2];
   int result = pipe(pipe_fds);
   ASSERT_EQ(0, result);
-  int backup_stdio = dup(STDOUT_FILENO);
+  int backup_stdio = HANDLE_EINTR(dup(STDOUT_FILENO));
   ASSERT_LE(0, backup_stdio);
   result = dup2(pipe_fds[1], STDOUT_FILENO);
   ASSERT_EQ(STDOUT_FILENO, result);
