@@ -48,7 +48,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
-  'swarming_revision': '42721e128da760b345ab60d7cf34e300269112d7',
+  'swarming_revision': '72b6a2dc604673b84794937cb3da3fd755ccc4cd',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
@@ -172,7 +172,7 @@ deps = {
     Var('chromium_git') + '/external/gyp.git' + '@' + 'd61a9397e668fa9843c4aa7da9e79460fe590bfb',
 
   'src/tools/swarming_client':
-    Var('chromium_git') + '/external/swarming.client.git' + '@' +  Var('swarming_revision'),
+    Var('chromium_git') + '/infra/luci/client-py.git' + '@' +  Var('swarming_revision'),
 
   'src/v8':
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
