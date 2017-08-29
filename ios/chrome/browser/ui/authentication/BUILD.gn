@@ -179,17 +179,3 @@ source_set("eg_tests") {
   ]
   libs = [ "XCTest.framework" ]
 }
-
-source_set("eg_test_support") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-  testonly = true
-  sources = [
-    "signin_promo_view_earlgrey_utils.h",
-    "signin_promo_view_earlgrey_utils.mm",
-  ]
-  deps = [
-    ":authentication_ui",
-    "//ios/chrome/test/earl_grey:test_support",
-    "//ios/third_party/earl_grey",
-  ]
-}

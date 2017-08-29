@@ -193,7 +193,6 @@ const CGFloat kMenuWidth = 264;
                                          style:UIBarButtonItemStyleDone
                                         target:self
                                         action:@selector(navigationBarCancel:)];
-    doneButton.accessibilityIdentifier = @"DONE";
     self.navigationItem.rightBarButtonItem = doneButton;
     self.navigationItem.backBarButtonItem =
         [[UIBarButtonItem alloc] initWithTitle:@""
