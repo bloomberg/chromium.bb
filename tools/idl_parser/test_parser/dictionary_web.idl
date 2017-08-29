@@ -46,11 +46,11 @@ partial dictionary MyDictInherit : Foo {};
  *  Key(setString)
  *    Type()
  *      StringType(DOMString)
- *    Default(Foo)
+ *    Default() = "Foo"
  *  Key(setLong)
  *    Type()
  *      PrimitiveType(unsigned long long)
- *    Default(123)
+ *    Default() = "123"
  *  Key(unsetLong)
  *    Type()
  *      PrimitiveType(long)
@@ -98,7 +98,7 @@ dictionary ForParent NoColon {
  *  Key(setString)
  *    Type()
  *      StringType(DOMString)
- *    Default(NULL)
+ *    Default() = "NULL"
  */
 dictionary MyDictNull {
   DOMString? setString = null;

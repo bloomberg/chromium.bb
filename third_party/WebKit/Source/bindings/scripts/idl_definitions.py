@@ -470,13 +470,7 @@ class IdlConstant(TypedObject):
         # ConstType is more limited than Type, so subtree is smaller and
         # we don't use the full type_node_to_type function.
         self.idl_type = type_node_inner_to_type(type_node)
-        # FIXME: This code is unnecessarily complicated due to the rather
-        # inconsistent way the upstream IDL parser outputs default values.
-        # http://crbug.com/374178
-        if value_node.GetProperty('TYPE') == 'float':
-            self.value = value_node.GetProperty('VALUE')
-        else:
-            self.value = value_node.GetName()
+        self.value = value_node.GetProperty('VALUE')
 
         if num_children == 3:
             ext_attributes_node = children[2]
@@ -524,21 +518,18 @@ class IdlLiteralNull(IdlLiteral):
 
 
 def default_node_to_idl_literal(node):
-    # FIXME: This code is unnecessarily complicated due to the rather
-    # inconsistent way the upstream IDL parser outputs default values.
-    # http://crbug.com/374178
     idl_type = node.GetProperty('TYPE')
+    value = node.GetProperty('VALUE')
     if idl_type == 'DOMString':
-        value = node.GetProperty('NAME')
         if '"' in value or '\\' in value:
             raise ValueError('Unsupported string value: %r' % value)
         return IdlLiteral(idl_type, value)
     if idl_type == 'integer':
-        return IdlLiteral(idl_type, int(node.GetProperty('NAME'), base=0))
+        return IdlLiteral(idl_type, int(value, base=0))
     if idl_type == 'float':
-        return IdlLiteral(idl_type, float(node.GetProperty('VALUE')))
+        return IdlLiteral(idl_type, float(value))
     if idl_type in ['boolean', 'sequence']:
-        return IdlLiteral(idl_type, node.GetProperty('VALUE'))
+        return IdlLiteral(idl_type, value)
     if idl_type == 'NULL':
         return IdlLiteralNull()
     raise ValueError('Unrecognized default value type: %s' % idl_type)

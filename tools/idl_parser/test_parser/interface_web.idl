@@ -98,7 +98,7 @@ interface MyIFaceWrongRecordKeyType {
  *Interface(MyIFaceBig)
  *  Const(setString)
  *    StringType(DOMString)
- *    Value(NULL)
+ *    Value() = "NULL"
  */
 interface MyIFaceBig {
   const DOMString? setString = null;
@@ -156,13 +156,13 @@ interface MyIfaceWithRecords {
  *Interface(MyIFaceBig2)
  *  Const(nullValue)
  *    StringType(DOMString)
- *    Value(NULL)
+ *    Value() = "NULL"
  *  Const(longValue)
  *    PrimitiveType(long)
- *    Value(123)
+ *    Value() = "123"
  *  Const(longValue2)
  *    PrimitiveType(long long)
- *    Value(123)
+ *    Value() = "123"
  *  Attribute(myString)
  *    Type()
  *      StringType(DOMString)

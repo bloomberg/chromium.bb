@@ -304,5 +304,97 @@ class TestExtendedAttribute(unittest.TestCase):
     self.assertEqual('ExtAttribute', attribute.GetClass())
     self.assertEqual('Attribute1', attribute.GetName())
 
+
+class TestDefaultValue(unittest.TestCase):
+  def setUp(self):
+    self.parser = IDLParser(IDLLexer(), mute_error=True)
+
+  def _ParseDefaultValue(self, default_value_text):
+    idl_text = 'interface I { void hello(' + default_value_text + '); };'
+    filenode = self.parser.ParseText(filename='', data=idl_text)
+    self.assertEqual(1, len(filenode.GetChildren()))
+    node = filenode.GetChildren()[0]
+    self.assertEqual('Interface', node.GetClass())
+    self.assertEqual('I', node.GetName())
+    children = node.GetChildren()
+    self.assertEqual(1, len(children))
+    operation = children[0]
+    self.assertEqual('Operation', operation.GetClass())
+    self.assertEqual('hello', operation.GetName())
+    self.assertEqual(2, len(operation.GetChildren()))
+    arguments = operation.GetChildren()[0]
+    self.assertEqual('Arguments', arguments.GetClass())
+    self.assertEqual(1, len(arguments.GetChildren()))
+    argument = arguments.GetChildren()[0]
+    return_type = operation.GetChildren()[1]
+    self._CheckTypeNode(return_type, 'PrimitiveType', 'void')
+    return argument
+
+  def _CheckTypeNode(self, type_node, expected_class, expected_name):
+    self.assertEqual('Type', type_node.GetClass())
+    self.assertEqual(1, len(type_node.GetChildren()))
+    type_detail = type_node.GetChildren()[0]
+    class_name = type_detail.GetClass()
+    name = type_detail.GetName()
+    self.assertEqual(expected_class, class_name)
+    self.assertEqual(expected_name, name)
+
+  def _CheckArgumentNode(self, argument, expected_class, expected_name):
+    class_name = argument.GetClass()
+    name = argument.GetName()
+    self.assertEqual(expected_class, class_name)
+    self.assertEqual(expected_name, name)
+
+  def _CheckDefaultValue(self, default_value, expected_type, expected_value):
+    self.assertEqual('Default', default_value.GetClass())
+    self.assertEqual(expected_type, default_value.GetProperty('TYPE'))
+    self.assertEqual(expected_value, default_value.GetProperty('VALUE'))
+
+  def testDefaultValueDOMString(self):
+    default_value_text = 'optional DOMString arg = "foo"'
+    argument = self._ParseDefaultValue(default_value_text)
+    self._CheckArgumentNode(argument, 'Argument', 'arg')
+    argument_type = argument.GetChildren()[0]
+    self._CheckTypeNode(argument_type, 'StringType', 'DOMString')
+    default_value = argument.GetChildren()[1]
+    self._CheckDefaultValue(default_value, 'DOMString', 'foo')
+
+  def testDefaultValueInteger(self):
+    default_value_text = 'optional long arg = 10'
+    argument = self._ParseDefaultValue(default_value_text)
+    self._CheckArgumentNode(argument, 'Argument', 'arg')
+    argument_type = argument.GetChildren()[0]
+    self._CheckTypeNode(argument_type, 'PrimitiveType', 'long')
+    default_value = argument.GetChildren()[1]
+    self._CheckDefaultValue(default_value, 'integer', '10')
+
+  def testDefaultValueFloat(self):
+    default_value_text = 'optional float arg = 1.5'
+    argument = self._ParseDefaultValue(default_value_text)
+    self._CheckArgumentNode(argument, 'Argument', 'arg')
+    argument_type = argument.GetChildren()[0]
+    self._CheckTypeNode(argument_type, 'PrimitiveType', 'float')
+    default_value = argument.GetChildren()[1]
+    self._CheckDefaultValue(default_value, 'float', '1.5')
+
+  def testDefaultValueBoolean(self):
+    default_value_text = 'optional boolean arg = true'
+    argument = self._ParseDefaultValue(default_value_text)
+    self._CheckArgumentNode(argument, 'Argument', 'arg')
+    argument_type = argument.GetChildren()[0]
+    self._CheckTypeNode(argument_type, 'PrimitiveType', 'boolean')
+    default_value = argument.GetChildren()[1]
+    self._CheckDefaultValue(default_value, 'boolean', True)
+
+  def testDefaultValueNull(self):
+    # Node is a nullable type
+    default_value_text = 'optional Node arg = null'
+    argument = self._ParseDefaultValue(default_value_text)
+    self._CheckArgumentNode(argument, 'Argument', 'arg')
+    argument_type = argument.GetChildren()[0]
+    self._CheckTypeNode(argument_type, 'Typeref', 'Node')
+    default_value = argument.GetChildren()[1]
+    self._CheckDefaultValue(default_value, 'NULL', 'NULL')
+
 if __name__ == '__main__':
   unittest.main(verbosity=2)
