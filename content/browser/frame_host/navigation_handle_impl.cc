@@ -370,8 +370,7 @@ net::HostPortPair NavigationHandleImpl::GetSocketAddress() {
 
 void NavigationHandleImpl::Resume(NavigationThrottle* resuming_throttle) {
   DCHECK(resuming_throttle);
-  // TODO(csharrison): Convert to DCHECK when crbug.com/736249 is resolved.
-  CHECK_EQ(resuming_throttle, GetDeferringThrottle());
+  DCHECK_EQ(resuming_throttle, GetDeferringThrottle());
   ResumeInternal();
 }
 
@@ -379,8 +378,7 @@ void NavigationHandleImpl::CancelDeferredNavigation(
     NavigationThrottle* cancelling_throttle,
     NavigationThrottle::ThrottleCheckResult result) {
   DCHECK(cancelling_throttle);
-  // TODO(csharrison): Convert to DCHECK when crbug.com/736249 is resolved.
-  CHECK_EQ(cancelling_throttle, GetDeferringThrottle());
+  DCHECK_EQ(cancelling_throttle, GetDeferringThrottle());
   CancelDeferredNavigationInternal(result);
 }
 
