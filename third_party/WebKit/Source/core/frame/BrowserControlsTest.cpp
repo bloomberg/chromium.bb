@@ -1168,4 +1168,26 @@ TEST_F(BrowserControlsTest, MAYBE(BottomControlsSizeAdjustment)) {
                   web_view->GetBrowserControls().UnreportedSizeAdjustment());
 }
 
+TEST_F(BrowserControlsTest, MAYBE(GrowingHeightKeepsTopControlsHidden)) {
+  WebViewImpl* web_view = Initialize();
+  float bottom_height = web_view->GetBrowserControls().BottomHeight();
+  web_view->ResizeWithBrowserControls(web_view->Size(), 1.f, bottom_height,
+                                      false);
+
+  web_view->GetBrowserControls().UpdateConstraintsAndState(
+      kWebBrowserControlsHidden, kWebBrowserControlsHidden, false);
+
+  // As we expand the top controls height while hidden, the content offset
+  // shouln't change.
+  EXPECT_EQ(0.f, web_view->GetBrowserControls().ContentOffset());
+
+  web_view->ResizeWithBrowserControls(web_view->Size(), 50.f, bottom_height,
+                                      false);
+  EXPECT_EQ(0.f, web_view->GetBrowserControls().ContentOffset());
+
+  web_view->ResizeWithBrowserControls(web_view->Size(), 100.f, bottom_height,
+                                      false);
+  EXPECT_EQ(0.f, web_view->GetBrowserControls().ContentOffset());
+}
+
 }  // namespace blink
