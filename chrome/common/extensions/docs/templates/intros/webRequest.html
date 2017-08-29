@@ -61,12 +61,13 @@ event definitions:<br/>
   response headers, such as incoming Set-Cookie headers. The caching directives
   are processed before this event is triggered, so modifying headers such as
   Cache-Control has no influence on the browser's cache.
-  It also allows you to redirect the request.</dd>
+  It also allows you to cancel or redirect the request.</dd>
   <dt><code>onAuthRequired</code> (optionally synchronous)</dt>
   <dd>Fires when a request requires authentication of the user. This event can
   be handled synchronously to provide authentication credentials. Note that
   extensions may provide invalid credentials. Take care not to enter an infinite
-  loop by repeatedly providing invalid credentials.</dd>
+  loop by repeatedly providing invalid credentials. This can also be used to
+  cancel the request.</dd>
   <dt><code>onBeforeRedirect</code></dt>
   <dd>Fires when a redirect is about to be executed. A redirection can be
   triggered by an HTTP response code or by an extension. This event is
@@ -207,8 +208,8 @@ the callback function returns. In this case, the callback can return a
 life cycle of the request. Depending on the context, this response allows
 cancelling or redirecting a request (<code>onBeforeRequest</code>), cancelling a
 request or modifying headers (<code>onBeforeSendHeaders</code>,
-<code>onHeadersReceived</code>), or providing authentication credentials
-(<code>onAuthRequired</code>).</p>
+<code>onHeadersReceived</code>), and cancelling a request or providing
+authentication credentials (<code>onAuthRequired</code>).</p>
 
 <p>If the optional <code>opt_extraInfoSpec</code> array contains the string
 <code>'asyncBlocking'</code> instead (only allowed for
