@@ -518,6 +518,7 @@ void FormatStringForOS(base::string16* text) {
 #endif
 }
 
+// Returns true if |cur| is a character to break on.
 // For double clicks, look for work breaks.
 // For triple clicks, look for line breaks.
 // The actual algorithm used in Blink is much more complicated, so do a simple
@@ -526,10 +527,18 @@ bool FindMultipleClickBoundary(bool is_double_click, base::char16 cur) {
   if (!is_double_click)
     return cur == '\n';
 
+  // Deal with ASCII characters.
   if (base::IsAsciiAlpha(cur) || base::IsAsciiDigit(cur) || cur == '_')
     return false;
-  return cur < 128;
-};
+  if (cur < 128)
+    return true;
+
+  static constexpr base::char16 kZeroWidthSpace = 0x200B;
+  if (cur == kZeroWidthSpace)
+    return true;
+
+  return false;
+}
 
 // Returns a VarDictionary (representing a bookmark), which in turn contains
 // child VarDictionaries (representing the child bookmarks).
