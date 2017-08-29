@@ -22945,6 +22945,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="-1948540128" label="disable-webrtc-hw-encoding (deprecated)"/>
   <int value="-1946595906" label="enable-push-api-background-mode"/>
   <int value="-1946522787" label="VrCustomTabBrowsing:disabled"/>
+  <int value="-1945524394" label="EnableBackgroundBlur:disabled"/>
   <int value="-1943507605" label="enable-new-video-renderer"/>
   <int value="-1941852572" label="floating-virtual-keyboard"/>
   <int value="-1940806558" label="enable-syncfs-directory-operation"/>
@@ -23023,6 +23024,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="-1749176684" label="PauseBackgroundTabs:disabled"/>
   <int value="-1746767834" label="ssl-interstitial-v2-gray"/>
   <int value="-1740519217" label="disable-software-rasterizer"/>
+  <int value="-1736075054" label="EnableFullscreenAppList:enabled"/>
   <int value="-1735643253" label="enable-display-list-2d-canvas"/>
   <int value="-1734254845" label="ash-enable-night-light"/>
   <int value="-1732561795" label="ConsistentOmniboxGeolocation:enabled"/>
@@ -23406,6 +23408,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="-531651776" label="NewRemotePlaybackPipeline:enabled"/>
   <int value="-528927088" label="AutofillCreditCardPopupLayout:disabled"/>
   <int value="-528149352" label="WebRtcUseEchoCanceller3:enabled"/>
+  <int value="-523030434" label="EnableBackgroundBlur:enabled"/>
   <int value="-519960638" label="enable-site-engagement-service"/>
   <int value="-518104091" label="NewAudioRenderingMixingStrategy:enabled"/>
   <int value="-516845951" label="enable-embedded-extension-options"/>
@@ -23903,6 +23906,7 @@ from previous Chrome versions.
   <int value="1081546525" label="ash-enable-docked-windows"/>
   <int value="1087235172" label="file-manager-enable-new-audio-player"/>
   <int value="1090377940" label="enable-quic-https"/>
+  <int value="1092896354" label="EnableFullscreenAppList:disabled"/>
   <int value="1094506652" label="UseGoogleLocalNtp:enabled"/>
   <int value="1095061640" label="enable-prominent-url-app-flow"/>
   <int value="1098823967" label="ash-enable-window-cycle-ui"/>
