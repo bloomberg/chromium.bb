@@ -506,18 +506,10 @@ void DocumentThreadableLoader::MakeCrossOriginAccessRequestBlinkCORS(
   // issuing a CORS preflight or based on an entry in the CORS preflight cache.
 
   bool should_ignore_preflight_cache = false;
-  if (!IsMainThread()) {
-    // TODO(horo): Currently we don't support the CORS preflight cache on worker
-    // thread when off-main-thread-fetch is enabled. See
-    // https://crbug.com/443374.
-    should_ignore_preflight_cache = true;
-  } else {
-    // Prevent use of the CORS preflight cache when instructed by the DevTools
-    // not to use caches.
-    probe::shouldForceCORSPreflight(GetExecutionContext(),
-                                    &should_ignore_preflight_cache);
-  }
-
+  // Prevent use of the CORS preflight cache when instructed by the DevTools
+  // not to use caches.
+  probe::shouldForceCORSPreflight(GetExecutionContext(),
+                                  &should_ignore_preflight_cache);
   if (should_ignore_preflight_cache ||
       !WebCORSPreflightResultCache::Shared().CanSkipPreflight(
           GetSecurityOrigin()->ToString(), cross_origin_request.Url(),
@@ -898,13 +890,9 @@ void DocumentThreadableLoader::HandlePreflightResponse(
     return;
   }
 
-  if (IsMainThread()) {
-    // TODO(horo): Currently we don't support the CORS preflight cache on worker
-    // thread when off-main-thread-fetch is enabled. https://crbug.com/443374
-    WebCORSPreflightResultCache::Shared().AppendEntry(
-        GetSecurityOrigin()->ToString(), actual_request_.Url(),
-        std::move(preflight_result));
-  }
+  WebCORSPreflightResultCache::Shared().AppendEntry(
+      GetSecurityOrigin()->ToString(), actual_request_.Url(),
+      std::move(preflight_result));
 }
 
 void DocumentThreadableLoader::ReportResponseReceived(
