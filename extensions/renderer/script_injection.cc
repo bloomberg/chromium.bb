@@ -103,7 +103,7 @@ class TimedScriptInjectionCallback : public ScriptInjectionCallback {
       if (!start_time_.is_null()) {
         elapsed = timestamp - start_time_;
         if (async_run_info_)
-          async_run_info_->OnCompleted(timestamp);
+          async_run_info_->OnCompleted(timestamp, elapsed);
       }
       injection_->OnJsInjectionCompleted(result, elapsed);
     }

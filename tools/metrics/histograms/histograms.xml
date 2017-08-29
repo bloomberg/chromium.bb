@@ -22021,6 +22021,23 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram base="true" name="Extensions.LongInjectionTaskTime" units="ms">
+  <owner>ksakamoto@chromium.org</owner>
+  <summary>
+    The amount of time taken to inject content scripts. If multiple scripts are
+    injected within a single task, this records the time taken to execute all
+    the scripts.
+
+    This metric only logs tasks longer than 50 milliseconds. This threshold
+    aligns with the definition of &quot;long task&quot; in Long Tasks API
+    (https://w3c.github.io/longtasks/).
+
+    Note that this histogram itself doesn't tell you what percentage of content
+    scripts are greater than 50 ms. See Extensions.Inject{Start,End,Idle}_Time
+    and Extensions.InjectedScriptExecutionTime.* for the overall distribution.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.ManifestFetchFailureRetryCountGoogleUrl">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
@@ -101810,6 +101827,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="DocumentEnd" label="Scripts with run_at: document_end."/>
   <suffix name="DocumentIdle" label="Scripts with run_at: document_idle."/>
   <affected-histogram name="Extensions.InjectedScriptExecutionTime"/>
+  <affected-histogram name="Extensions.LongInjectionTaskTime"/>
   <affected-histogram name="Extensions.TimeYieldedBetweenContentScriptRuns"/>
 </histogram_suffixes>
 
