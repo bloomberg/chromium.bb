@@ -299,6 +299,9 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
         // Do nothing if there are already suggestions in the carousel for the current context.
         if (TextUtils.equals(url, mSuggestionsCarousel.getCurrentCarouselContextUrl())) return;
 
+        // Context has changed, so we want to remove any old suggestions from the carousel.
+        mSuggestionsCarousel.clearSuggestions();
+
         String text = String.format(Locale.US, "Fetching contextual suggestions...");
         Toast.makeText(mRecyclerView.getContext(), text, Toast.LENGTH_SHORT).show();
         mSuggestionsUiDelegate.getSuggestionsSource().fetchContextualSuggestions(
