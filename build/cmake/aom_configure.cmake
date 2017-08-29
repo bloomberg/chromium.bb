@@ -36,6 +36,7 @@ include("${AOM_ROOT}/build/cmake/aom_config_defaults.cmake")
 include("${AOM_ROOT}/build/cmake/aom_optimization.cmake")
 include("${AOM_ROOT}/build/cmake/compiler_flags.cmake")
 include("${AOM_ROOT}/build/cmake/compiler_tests.cmake")
+include("${AOM_ROOT}/build/cmake/util.cmake")
 
 # Build a list of all configurable variables.
 get_cmake_property(cmake_cache_vars CACHE_VARIABLES)
@@ -330,19 +331,8 @@ configure_file("${aom_config_h_template}" "${AOM_CONFIG_DIR}/aom_config.h")
 
 # Read the current git hash.
 find_package(Git)
-set(AOM_GIT_DESCRIPTION)
-set(AOM_GIT_HASH)
-if (GIT_FOUND)
-  # TODO(tomfinegan): Add build rule so users don't have to re-run cmake to
-  # create accurately versioned cmake builds.
-  execute_process(COMMAND ${GIT_EXECUTABLE}
-                  --git-dir=${AOM_ROOT}/.git rev-parse HEAD
-                  OUTPUT_VARIABLE AOM_GIT_HASH)
-  execute_process(COMMAND ${GIT_EXECUTABLE} --git-dir=${AOM_ROOT}/.git describe
-                  OUTPUT_VARIABLE AOM_GIT_DESCRIPTION ERROR_QUIET)
-  # Consume the newline at the end of the git output.
-  string(STRIP "${AOM_GIT_HASH}" AOM_GIT_HASH)
-  string(STRIP "${AOM_GIT_DESCRIPTION}" AOM_GIT_DESCRIPTION)
+if (NOT GIT_FOUND)
+  message("--- Git missing, version will be read from CHANGELOG.")
 endif ()
 
 configure_file("${AOM_ROOT}/build/cmake/aom_config.c.cmake"
@@ -386,6 +376,7 @@ foreach(NUM RANGE ${AOM_RTCD_CUSTOM_COMMAND_COUNT})
     OUTPUT_FILE ${AOM_RTCD_HEADER_FILE})
 endforeach()
 
+# TODO(tomfinegan): Move this to aom_optimization.cmake.
 function (add_rtcd_build_step config output source symbol)
   add_custom_command(
     OUTPUT ${output}
@@ -406,44 +397,25 @@ function (add_rtcd_build_step config output source symbol)
 endfunction ()
 
 # Generate aom_version.h.
-if ("${AOM_GIT_DESCRIPTION}" STREQUAL "")
-  set(AOM_GIT_DESCRIPTION "${AOM_ROOT}/CHANGELOG")
-endif ()
 execute_process(
-  COMMAND ${PERL_EXECUTABLE} "${AOM_ROOT}/build/cmake/aom_version.pl"
-  --version_data=${AOM_GIT_DESCRIPTION}
-  --version_filename=${AOM_CONFIG_DIR}/aom_version.h)
+  COMMAND ${CMAKE_COMMAND}
+  -DAOM_CONFIG_DIR=${AOM_CONFIG_DIR}
+  -DAOM_ROOT=${AOM_ROOT}
+  -DGIT_EXECUTABLE=${GIT_EXECUTABLE}
+  -DPERL_EXECUTABLE=${PERL_EXECUTABLE}
+  -P "${AOM_ROOT}/build/cmake/version.cmake")
 
-# Generate aom.pc (pkg-config file).
 if (NOT MSVC)
-  # Extract the version string from aom_version.h
-  file(STRINGS "${AOM_CONFIG_DIR}/aom_version.h" aom_version
-       REGEX "VERSION_STRING_NOSP")
-  string(REPLACE "#define VERSION_STRING_NOSP \"v" "" aom_version
-         "${aom_version}")
-  string(REPLACE "\"" "" aom_version "${aom_version}")
-
-  # Write pkg-config info.
-  set(prefix "${CMAKE_INSTALL_PREFIX}")
-  set(pkgconfig_file "${AOM_CONFIG_DIR}/aom.pc")
-  string(TOLOWER ${CMAKE_PROJECT_NAME} pkg_name)
-  file(WRITE "${pkgconfig_file}" "# libaom pkg-config.\n")
-  file(APPEND "${pkgconfig_file}" "prefix=${prefix}\n")
-  file(APPEND "${pkgconfig_file}" "exec_prefix=${prefix}/bin\n")
-  file(APPEND "${pkgconfig_file}" "libdir=${prefix}/lib\n")
-  file(APPEND "${pkgconfig_file}" "includedir=${prefix}/include\n\n")
-  file(APPEND "${pkgconfig_file}" "Name: ${pkg_name}\n")
-  file(APPEND "${pkgconfig_file}" "Description: AV1 codec library.\n")
-  file(APPEND "${pkgconfig_file}" "Version: ${aom_version}\n")
-  file(APPEND "${pkgconfig_file}" "Requires:\n")
-  file(APPEND "${pkgconfig_file}" "Conflicts:\n")
-  file(APPEND "${pkgconfig_file}" "Libs: -L${prefix}/lib -l${pkg_name} -lm\n")
-  if (CONFIG_MULTITHREAD AND HAVE_PTHREAD_H)
-    file(APPEND "${pkgconfig_file}" "Libs.private: -lm -lpthread\n")
-  else ()
-    file(APPEND "${pkgconfig_file}" "Libs.private: -lm\n")
-  endif ()
-  file(APPEND "${pkgconfig_file}" "Cflags: -I${prefix}/include\n")
+  # Generate aom.pc (pkg-config file).
+  execute_process(
+    COMMAND ${CMAKE_COMMAND}
+    -DAOM_CONFIG_DIR=${AOM_CONFIG_DIR}
+    -DAOM_ROOT=${AOM_ROOT}
+    -DCMAKE_INSTALL_PREFIX=${GIT_EXECUTABLE}
+    -DCMAKE_PROJECT_NAME=${CMAKE_PROJECT_NAME}
+    -DCONFIG_MULTITHREAD=${CONFIG_MULTITHREAD}
+    -DHAVE_PTHREAD_H=${HAVE_PTHREAD_H}
+    -P "${AOM_ROOT}/build/cmake/pkg_config.cmake")
 endif ()
 
 endif ()  # AOM_BUILD_CMAKE_AOM_CONFIGURE_CMAKE_

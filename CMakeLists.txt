@@ -162,6 +162,10 @@ set(AOM_ENCODER_STATS_SOURCES
     "${AOM_ROOT}/rate_hist.c"
     "${AOM_ROOT}/rate_hist.h")
 
+set(AOM_PKG_CONFIG_SOURCES "${AOM_CONFIG_DIR}/aom.pc")
+
+set(AOM_VERSION_SOURCES "${AOM_CONFIG_DIR}/aom_version.h")
+
 set(AOM_WEBM_DECODER_SOURCES
     "${AOM_ROOT}/webmdec.cc"
     "${AOM_ROOT}/webmdec.h")
@@ -173,6 +177,48 @@ set(AOM_WEBM_ENCODER_SOURCES
 include_directories(${AOM_ROOT} ${AOM_CONFIG_DIR})
 
 # Targets
+add_library(aom_version ${AOM_VERSION_SOURCES})
+add_dummy_source_file_to_target(aom_version c)
+add_custom_command(
+  OUTPUT "${AOM_CONFIG_DIR}/aom_version.h"
+  COMMAND ${CMAKE_COMMAND}
+  ARGS -DAOM_CONFIG_DIR=${AOM_CONFIG_DIR}
+    -DAOM_ROOT=${AOM_ROOT}
+    -DGIT_EXECUTABLE=${GIT_EXECUTABLE}
+    -DPERL_EXECUTABLE=${PERL_EXECUTABLE}
+    -P "${AOM_ROOT}/build/cmake/version.cmake"
+  COMMENT "Writing aom_version.h"
+  VERBATIM)
+
+add_custom_target(aom_version_check
+  COMMAND ${CMAKE_COMMAND}
+    -DAOM_CONFIG_DIR=${AOM_CONFIG_DIR}
+    -DAOM_ROOT=${AOM_ROOT}
+    -DGIT_EXECUTABLE=${GIT_EXECUTABLE}
+    -DPERL_EXECUTABLE=${PERL_EXECUTABLE}
+    -P "${AOM_ROOT}/build/cmake/version.cmake"
+  COMMENT "Updating version info if necessary."
+  VERBATIM)
+add_dependencies(aom_version aom_version_check)
+
+if (NOT MSVC)
+  add_library(aom_pc ${AOM_PKG_CONFIG_SOURCES})
+  add_dummy_source_file_to_target(aom_pc c)
+  add_custom_command(
+    OUTPUT "${AOM_CONFIG_DIR}/aom.pc"
+    COMMAND ${CMAKE_COMMAND}
+    ARGS -DAOM_CONFIG_DIR=${AOM_CONFIG_DIR}
+      -DAOM_ROOT=${AOM_ROOT}
+      -DCMAKE_INSTALL_PREFIX=${GIT_EXECUTABLE}
+      -DCMAKE_PROJECT_NAME=${CMAKE_PROJECT_NAME}
+      -DCONFIG_MULTITHREAD=${CONFIG_MULTITHREAD}
+      -DHAVE_PTHREAD_H=${HAVE_PTHREAD_H}
+      -P "${AOM_ROOT}/build/cmake/pkg_config.cmake"
+      COMMENT "Writing aom.pc"
+      VERBATIM)
+endif ()
+add_dependencies(aom_pc aom_version)
+
 # TODO(tomfinegan): Move rtcd target setup where it belongs for each rtcd
 # source.
 add_rtcd_build_step("${AOM_ROOT}/aom_dsp/aom_dsp_rtcd_defs.pl"
@@ -189,6 +235,8 @@ add_rtcd_build_step("${AOM_ROOT}/av1/common/av1_rtcd_defs.pl"
                     "av1_rtcd")
 
 add_library(aom_rtcd OBJECT ${AOM_RTCD_SOURCES})
+add_dependencies(aom_rtcd aom_version)
+
 add_library(aom_encoder_stats OBJECT ${AOM_ENCODER_STATS_SOURCES})
 add_library(aom ${AOM_SOURCES} $<TARGET_OBJECTS:aom_rtcd>)
 

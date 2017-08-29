@@ -47,6 +47,24 @@ function (change_config_and_warn feature value cause)
   message(WARNING "--- ${warning_message}")
 endfunction ()
 
+# Extracts the version string from $version_file and returns it to the user via
+# $version_string_out_var. To achieve this VERSION_STRING_NOSP is located in
+# $version_file and then everything but the string literal assigned to the
+# variable is removed. Quotes and the leading 'v' are stripped from the
+# returned string.
+function (extract_version_string version_file version_string_out_var)
+  file(STRINGS "${version_file}" aom_version REGEX "VERSION_STRING_NOSP")
+  string(REPLACE "#define VERSION_STRING_NOSP " "" aom_version
+         "${aom_version}")
+  string(REPLACE "\"" "" aom_version "${aom_version}")
+  string(REPLACE " " "" aom_version "${aom_version}")
+  string(FIND "${aom_version}" "v" v_pos)
+  if (${v_pos} EQUAL 0)
+    string(SUBSTRING "${aom_version}" 1 -1 aom_version)
+  endif ()
+  set("${version_string_out_var}" "${aom_version}" PARENT_SCOPE)
+endfunction ()
+
 # Sets CMake compiler launcher to $launcher_name when $launcher_name is found in
 # $PATH. Warns user about ignoring build flag $launcher_flag when $launcher_name
 # is not found in $PATH.
