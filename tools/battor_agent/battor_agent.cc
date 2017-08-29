@@ -30,7 +30,7 @@ const uint16_t kCommandRetryDelaySeconds = 2;
 const uint8_t kBattOrControlMessageTimeoutSeconds = 2;
 
 // The number of seconds allowed for connection to open before timing out.
-const uint8_t kBattOrConnectionTimeoutSeconds = 4;
+const uint8_t kBattOrConnectionTimeoutSeconds = 10;
 
 // Returns true if the specified vector of bytes decodes to a message that is an
 // ack for the specified control message type.
@@ -384,11 +384,6 @@ void BattOrAgent::OnMessageRead(bool success,
       NOTREACHED();
       return;
   }
-}
-
-void BattOrAgent::OnFlushComplete(bool success) {
-  // TODO(charliea): Wire up the BattOrAgent so that it calls Flush() when a
-  // read fails and before retrying the command.
 }
 
 void BattOrAgent::PerformAction(Action action) {

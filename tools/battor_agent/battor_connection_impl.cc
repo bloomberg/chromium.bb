@@ -111,12 +111,15 @@ void BattOrConnectionImpl::OnOpened(bool success) {
   LogSerial(StringPrintf("Serial connection open finished with success: %d.",
                          success));
 
-  if (!success)
+  if (!success) {
     Close();
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&Listener::OnConnectionOpened,
+                              base::Unretained(listener_), false));
+    return;
+  }
 
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&Listener::OnConnectionOpened,
-                            base::Unretained(listener_), success));
+  Flush();
 }
 
 void BattOrConnectionImpl::Close() {
@@ -192,12 +195,6 @@ void BattOrConnectionImpl::ReadMessage(BattOrMessageType type) {
 void BattOrConnectionImpl::CancelReadMessage() {
   LogSerial("Canceling read due to timeout.");
   io_handler_->CancelRead(device::mojom::SerialReceiveError::TIMEOUT);
-}
-
-void BattOrConnectionImpl::Flush() {
-  already_read_buffer_.clear();
-  flush_quiet_period_start_ = tick_clock_->NowTicks();
-  BeginReadBytesForFlush();
 }
 
 scoped_refptr<device::SerialIoHandler> BattOrConnectionImpl::CreateIoHandler() {
@@ -299,6 +296,12 @@ void BattOrConnectionImpl::EndReadBytesForMessage(
                  type, base::Passed(std::move(bytes))));
 }
 
+void BattOrConnectionImpl::Flush() {
+  already_read_buffer_.clear();
+  flush_quiet_period_start_ = tick_clock_->NowTicks();
+  BeginReadBytesForFlush();
+}
+
 void BattOrConnectionImpl::BeginReadBytesForFlush() {
   base::TimeDelta quiet_period_duration =
       tick_clock_->NowTicks() - flush_quiet_period_start_;
@@ -336,7 +339,7 @@ void BattOrConnectionImpl::OnBytesReadForFlush(
         static_cast<int>(error)));
     pending_read_buffer_ = nullptr;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&Listener::OnFlushComplete,
+        FROM_HERE, base::Bind(&Listener::OnConnectionOpened,
                               base::Unretained(listener_), false));
     return;
   }
@@ -352,7 +355,7 @@ void BattOrConnectionImpl::OnBytesReadForFlush(
       LogSerial("(flush) Quiet period has finished.");
       pending_read_buffer_ = nullptr;
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(&Listener::OnFlushComplete,
+          FROM_HERE, base::Bind(&Listener::OnConnectionOpened,
                                 base::Unretained(listener_), true));
       return;
     }
