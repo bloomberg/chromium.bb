@@ -5,6 +5,8 @@
 #ifndef MOJO_EDK_SYSTEM_WATCHER_DISPATCHER_H_
 #define MOJO_EDK_SYSTEM_WATCHER_DISPATCHER_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <set>
 
@@ -92,6 +94,9 @@ class WatcherDispatcher : public Dispatcher {
   // NOTE: This pointer is only used to index |ready_watches_| and may point to
   // an invalid object. It must therefore never be dereferenced.
   const Watch* last_watch_to_block_arming_ = nullptr;
+
+  // TODO(crbug.com/740044): Remove this.
+  uint32_t sentinel_value_for_debugging_ = 0x12345678;
 
   DISALLOW_COPY_AND_ASSIGN(WatcherDispatcher);
 };
