@@ -801,11 +801,6 @@ bool VisibleSelectionTemplate<Strategy>::IsContentEditable() const {
 }
 
 template <typename Strategy>
-bool VisibleSelectionTemplate<Strategy>::IsContentRichlyEditable() const {
-  return IsRichlyEditablePosition(ToPositionInDOMTree(Start()));
-}
-
-template <typename Strategy>
 Element* VisibleSelectionTemplate<Strategy>::RootEditableElement() const {
   return RootEditableElementOf(Start());
 }
