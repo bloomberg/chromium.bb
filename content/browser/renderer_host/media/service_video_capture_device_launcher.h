@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_MEDIA_SERVICE_VIDEO_CAPTURE_DEVICE_LAUNCHER_H_
 #define CONTENT_BROWSER_RENDERER_HOST_MEDIA_SERVICE_VIDEO_CAPTURE_DEVICE_LAUNCHER_H_
 
+#include "content/browser/renderer_host/media/video_capture_factory_delegate.h"
 #include "content/browser/renderer_host/media/video_capture_provider.h"
 #include "content/public/common/media_stream_request.h"
 #include "services/video_capture/public/interfaces/device_factory.mojom.h"
@@ -16,9 +17,12 @@ namespace content {
 class CONTENT_EXPORT ServiceVideoCaptureDeviceLauncher
     : public VideoCaptureDeviceLauncher {
  public:
+  // Receives an instance via output parameter |factory|.
+  using ConnectToDeviceFactoryCB = base::RepeatingCallback<void(
+      std::unique_ptr<VideoCaptureFactoryDelegate>* factory)>;
+
   explicit ServiceVideoCaptureDeviceLauncher(
-      video_capture::mojom::DeviceFactoryPtr* device_factory,
-      base::OnceClosure destruction_cb);
+      ConnectToDeviceFactoryCB connect_to_device_factory_cb);
   ~ServiceVideoCaptureDeviceLauncher() override;
 
   // VideoCaptureDeviceLauncher implementation.
@@ -49,8 +53,8 @@ class CONTENT_EXPORT ServiceVideoCaptureDeviceLauncher
 
   void OnConnectionLostWhileWaitingForCallback();
 
-  video_capture::mojom::DeviceFactoryPtr* const device_factory_;
-  base::OnceClosure destruction_cb_;
+  ConnectToDeviceFactoryCB connect_to_device_factory_cb_;
+  std::unique_ptr<VideoCaptureFactoryDelegate> device_factory_;
   State state_;
   base::SequenceChecker sequence_checker_;
   base::OnceClosure done_cb_;

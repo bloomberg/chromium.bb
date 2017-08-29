@@ -9,6 +9,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
 #include "content/browser/renderer_host/media/service_launched_video_capture_device.h"
+#include "content/browser/renderer_host/media/video_capture_factory_delegate.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/video_capture/public/interfaces/device_factory.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -68,7 +69,23 @@ class ServiceVideoCaptureDeviceLauncherTest : public testing::Test {
         base::MakeUnique<mojo::Binding<video_capture::mojom::DeviceFactory>>(
             &mock_device_factory_, mojo::MakeRequest(&device_factory_));
     launcher_ = base::MakeUnique<ServiceVideoCaptureDeviceLauncher>(
-        &device_factory_, base::BindOnce(&base::DoNothing));
+        connect_to_device_factory_cb_.Get());
+    launcher_has_connected_to_device_factory_ = false;
+    launcher_has_released_device_factory_ = false;
+
+    ON_CALL(connect_to_device_factory_cb_, Run(_))
+        .WillByDefault(Invoke(
+            [this](std::unique_ptr<VideoCaptureFactoryDelegate>* out_factory) {
+              launcher_has_connected_to_device_factory_ = true;
+              *out_factory = base::MakeUnique<VideoCaptureFactoryDelegate>(
+                  &device_factory_, release_connection_cb_.Get());
+            }));
+
+    ON_CALL(release_connection_cb_, Run())
+        .WillByDefault(InvokeWithoutArgs([this]() {
+          launcher_has_released_device_factory_ = true;
+          wait_for_release_connection_cb_.Quit();
+        }));
   }
 
   void TearDown() override {}
@@ -85,14 +102,19 @@ class ServiceVideoCaptureDeviceLauncherTest : public testing::Test {
   std::unique_ptr<ServiceVideoCaptureDeviceLauncher> launcher_;
   base::MockCallback<base::OnceClosure> connection_lost_cb_;
   base::MockCallback<base::OnceClosure> done_cb_;
+  base::MockCallback<
+      ServiceVideoCaptureDeviceLauncher::ConnectToDeviceFactoryCB>
+      connect_to_device_factory_cb_;
+  base::MockCallback<base::OnceClosure> release_connection_cb_;
+  bool launcher_has_connected_to_device_factory_;
+  bool launcher_has_released_device_factory_;
+  base::RunLoop wait_for_release_connection_cb_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ServiceVideoCaptureDeviceLauncherTest);
 };
 
 TEST_F(ServiceVideoCaptureDeviceLauncherTest, LaunchingDeviceSucceeds) {
-  base::RunLoop run_loop;
-
   EXPECT_CALL(mock_device_factory_, DoCreateDevice(kStubDeviceId, _, _))
       .WillOnce(Invoke([](const std::string& device_id,
                           video_capture::mojom::DeviceRequest* device_request,
@@ -112,21 +134,27 @@ TEST_F(ServiceVideoCaptureDeviceLauncherTest, LaunchingDeviceSucceeds) {
                 },
                 std::move(*device_request), std::move(callback)));
       }));
+
   EXPECT_CALL(mock_callbacks_, DoOnDeviceLaunched(_)).Times(1);
   EXPECT_CALL(mock_callbacks_, OnDeviceLaunchAborted()).Times(0);
   EXPECT_CALL(mock_callbacks_, OnDeviceLaunchFailed()).Times(0);
   EXPECT_CALL(connection_lost_cb_, Run()).Times(0);
-  EXPECT_CALL(done_cb_, Run()).WillOnce(InvokeWithoutArgs([&run_loop]() {
-    run_loop.Quit();
-  }));
+  base::RunLoop wait_for_done_cb;
+  EXPECT_CALL(done_cb_, Run())
+      .WillOnce(InvokeWithoutArgs(
+          [&wait_for_done_cb]() { wait_for_done_cb.Quit(); }));
 
   // Exercise
   launcher_->LaunchDeviceAsync(
       kStubDeviceId, content::MEDIA_DEVICE_VIDEO_CAPTURE, kArbitraryParams,
       kNullReceiver, connection_lost_cb_.Get(), &mock_callbacks_,
       done_cb_.Get());
+  wait_for_done_cb.Run();
 
-  run_loop.Run();
+  launcher_.reset();
+  wait_for_release_connection_cb_.Run();
+  EXPECT_TRUE(launcher_has_connected_to_device_factory_);
+  EXPECT_TRUE(launcher_has_released_device_factory_);
 }
 
 TEST_F(ServiceVideoCaptureDeviceLauncherTest,
@@ -192,6 +220,9 @@ void ServiceVideoCaptureDeviceLauncherTest::RunLaunchingDeviceIsAbortedTest(
 
   std::move(create_device_success_answer_cb).Run();
   step_2_run_loop.Run();
+
+  EXPECT_TRUE(launcher_has_connected_to_device_factory_);
+  EXPECT_TRUE(launcher_has_released_device_factory_);
 }
 
 TEST_F(ServiceVideoCaptureDeviceLauncherTest,
@@ -232,7 +263,6 @@ TEST_F(ServiceVideoCaptureDeviceLauncherTest,
       kStubDeviceId, content::MEDIA_DEVICE_VIDEO_CAPTURE, kArbitraryParams,
       kNullReceiver, connection_lost_cb_.Get(), &mock_callbacks_,
       done_cb_.Get());
-
   run_loop.Run();
 }
 
@@ -350,6 +380,11 @@ TEST_F(ServiceVideoCaptureDeviceLauncherTest,
   // Exercise step 2: The service cuts/loses the connection
   device_request_owned_by_service = nullptr;
   step_2_run_loop.Run();
+
+  launcher_.reset();
+  wait_for_release_connection_cb_.Run();
+  EXPECT_TRUE(launcher_has_connected_to_device_factory_);
+  EXPECT_TRUE(launcher_has_released_device_factory_);
 }
 
 }  // namespace content

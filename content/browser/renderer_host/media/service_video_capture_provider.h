@@ -12,6 +12,8 @@
 
 namespace content {
 
+class VideoCaptureFactoryDelegate;
+
 // Implementation of VideoCaptureProvider that uses the "video_capture" service.
 // Connects to the service lazily on demand and disconnects from the service as
 // soon as all previously handed out VideoCaptureDeviceLauncher instances have
@@ -41,6 +43,8 @@ class CONTENT_EXPORT ServiceVideoCaptureProvider : public VideoCaptureProvider {
  private:
   enum class ReasonForUninitialize { kShutdown, kUnused, kConnectionLost };
 
+  void ConnectToDeviceFactory(
+      std::unique_ptr<VideoCaptureFactoryDelegate>* out_factory);
   void LazyConnectToService();
   void OnDeviceInfosReceived(GetDeviceInfosCallback result_callback,
                              const std::vector<media::VideoCaptureDeviceInfo>&);
@@ -58,7 +62,7 @@ class CONTENT_EXPORT ServiceVideoCaptureProvider : public VideoCaptureProvider {
   int usage_count_;
   SEQUENCE_CHECKER(sequence_checker_);
 
-  bool has_created_device_launcher_;
+  bool launcher_has_connected_to_device_factory_;
   base::TimeTicks time_of_last_connect_;
   base::TimeTicks time_of_last_uninitialize_;
 
