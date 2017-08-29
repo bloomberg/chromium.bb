@@ -49,7 +49,7 @@ std::unique_ptr<ChannelFactory> ChannelFactory::Create(
     const ChannelHandle& handle,
     Channel::Mode mode,
     const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner) {
-  return base::MakeUnique<PlatformChannelFactory>(handle, mode,
+  return std::make_unique<PlatformChannelFactory>(handle, mode,
                                                   ipc_task_runner);
 }
 

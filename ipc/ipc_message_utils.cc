@@ -266,34 +266,34 @@ bool ReadValue(const base::Pickle* m,
 
   switch (static_cast<base::Value::Type>(type)) {
     case base::Value::Type::NONE:
-      *value = base::MakeUnique<base::Value>();
+      *value = std::make_unique<base::Value>();
       break;
     case base::Value::Type::BOOLEAN: {
       bool val;
       if (!ReadParam(m, iter, &val))
         return false;
-      *value = base::MakeUnique<base::Value>(val);
+      *value = std::make_unique<base::Value>(val);
       break;
     }
     case base::Value::Type::INTEGER: {
       int val;
       if (!ReadParam(m, iter, &val))
         return false;
-      *value = base::MakeUnique<base::Value>(val);
+      *value = std::make_unique<base::Value>(val);
       break;
     }
     case base::Value::Type::DOUBLE: {
       double val;
       if (!ReadParam(m, iter, &val))
         return false;
-      *value = base::MakeUnique<base::Value>(val);
+      *value = std::make_unique<base::Value>(val);
       break;
     }
     case base::Value::Type::STRING: {
       std::string val;
       if (!ReadParam(m, iter, &val))
         return false;
-      *value = base::MakeUnique<base::Value>(std::move(val));
+      *value = std::make_unique<base::Value>(std::move(val));
       break;
     }
     case base::Value::Type::BINARY: {
@@ -308,14 +308,14 @@ bool ReadValue(const base::Pickle* m,
       base::DictionaryValue val;
       if (!ReadDictionaryValue(m, iter, &val, recursion))
         return false;
-      *value = base::MakeUnique<base::Value>(std::move(val));
+      *value = std::make_unique<base::Value>(std::move(val));
       break;
     }
     case base::Value::Type::LIST: {
       base::ListValue val;
       if (!ReadListValue(m, iter, &val, recursion))
         return false;
-      *value = base::MakeUnique<base::Value>(std::move(val));
+      *value = std::make_unique<base::Value>(std::move(val));
       break;
     }
     default:

@@ -303,7 +303,7 @@ to binder function:
 
 ``` cpp
 void BindFrobinator(mojom::FrobinatorRequest request) {
-  mojo::MakeStrongBinding(base::MakeUnique<FrobinatorImpl>, std::move(request));
+  mojo::MakeStrongBinding(std::make_unique<FrobinatorImpl>, std::move(request));
 }
 
 // |registry| will hereby handle all incoming requests for "mojom::Frobinator"

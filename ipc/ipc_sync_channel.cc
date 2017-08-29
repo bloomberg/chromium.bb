@@ -280,7 +280,7 @@ class SyncChannel::ReceivedSyncMsgQueue :
         dispatch_event_(base::WaitableEvent::ResetPolicy::MANUAL,
                         base::WaitableEvent::InitialState::NOT_SIGNALED),
         listener_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-        sync_dispatch_watcher_(base::MakeUnique<mojo::SyncEventWatcher>(
+        sync_dispatch_watcher_(std::make_unique<mojo::SyncEventWatcher>(
             &dispatch_event_,
             base::Bind(&ReceivedSyncMsgQueue::OnDispatchEventReady,
                        base::Unretained(this)))) {
@@ -635,7 +635,7 @@ void SyncChannel::WaitForReply(mojo::SyncHandleRegistry* registry,
   base::WaitableEvent* pump_messages_event = nullptr;
   if (pump_messages) {
     if (!g_pump_messages_event.Get()) {
-      g_pump_messages_event.Get() = base::MakeUnique<base::WaitableEvent>(
+      g_pump_messages_event.Get() = std::make_unique<base::WaitableEvent>(
           base::WaitableEvent::ResetPolicy::MANUAL,
           base::WaitableEvent::InitialState::SIGNALED);
     }
