@@ -7,7 +7,7 @@
 
 #include "bindings/core/v8/serialization/Transferables.h"
 #include "core/CoreExport.h"
-#include "core/events/EventTarget.h"
+#include "core/dom/events/EventTarget.h"
 #include "core/frame/DOMWindowBase64.h"
 #include "core/frame/Frame.h"
 #include "platform/bindings/TraceWrapperMember.h"

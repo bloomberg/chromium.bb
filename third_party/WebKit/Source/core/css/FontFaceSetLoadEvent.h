@@ -33,7 +33,7 @@
 
 #include "core/css/FontFace.h"
 #include "core/css/FontFaceSetLoadEventInit.h"
-#include "core/events/Event.h"
+#include "core/dom/events/Event.h"
 #include "platform/wtf/RefPtr.h"
 
 namespace blink {

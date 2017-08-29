@@ -5,7 +5,7 @@
 #ifndef BoundaryEventDispatcher_h
 #define BoundaryEventDispatcher_h
 
-#include "core/events/EventTarget.h"
+#include "core/dom/events/EventTarget.h"
 
 namespace blink {
 

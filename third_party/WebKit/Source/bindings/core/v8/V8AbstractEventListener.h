@@ -32,7 +32,7 @@
 #define V8AbstractEventListener_h
 
 #include "core/CoreExport.h"
-#include "core/events/EventListener.h"
+#include "core/dom/events/EventListener.h"
 #include "platform/bindings/DOMWrapperWorld.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/bindings/TraceWrapperV8Reference.h"

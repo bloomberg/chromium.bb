@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/events/ScopedEventQueue.h"
+#include "core/dom/events/ScopedEventQueue.h"
 
 #include <memory>
-#include "core/events/Event.h"
-#include "core/events/EventDispatchMediator.h"
-#include "core/events/EventDispatcher.h"
-#include "core/events/EventTarget.h"
+#include "core/dom/events/Event.h"
+#include "core/dom/events/EventDispatchMediator.h"
+#include "core/dom/events/EventDispatcher.h"
+#include "core/dom/events/EventTarget.h"
 #include "platform/wtf/PtrUtil.h"
 
 namespace blink {

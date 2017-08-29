@@ -39,7 +39,7 @@
 #include "core/dom/ScopedWindowFocusAllowedIndicator.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/dom/UserGestureIndicator.h"
-#include "core/events/Event.h"
+#include "core/dom/events/Event.h"
 #include "core/frame/Deprecation.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/PerformanceMonitor.h"

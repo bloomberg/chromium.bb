@@ -29,7 +29,7 @@
  *
  */
 
-#include "core/events/EventTarget.h"
+#include "core/dom/events/EventTarget.h"
 
 #include <memory>
 #include "bindings/core/v8/AddEventListenerOptionsOrBoolean.h"
@@ -39,8 +39,8 @@
 #include "bindings/core/v8/SourceLocation.h"
 #include "bindings/core/v8/V8DOMActivityLogger.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/events/Event.h"
 #include "core/editing/Editor.h"
-#include "core/events/Event.h"
 #include "core/events/EventUtil.h"
 #include "core/events/PointerEvent.h"
 #include "core/frame/FrameConsole.h"

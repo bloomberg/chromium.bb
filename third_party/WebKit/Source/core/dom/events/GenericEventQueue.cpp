@@ -23,9 +23,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/events/GenericEventQueue.h"
+#include "core/dom/events/GenericEventQueue.h"
 
-#include "core/events/Event.h"
+#include "core/dom/events/Event.h"
 #include "core/probe/CoreProbes.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 

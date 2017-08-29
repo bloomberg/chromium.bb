@@ -21,7 +21,7 @@
 #ifndef HashChangeEvent_h
 #define HashChangeEvent_h
 
-#include "core/events/Event.h"
+#include "core/dom/events/Event.h"
 #include "core/events/HashChangeEventInit.h"
 
 namespace blink {

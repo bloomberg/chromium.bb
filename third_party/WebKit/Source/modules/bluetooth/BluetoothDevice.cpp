@@ -11,7 +11,7 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/DOMException.h"
-#include "core/events/Event.h"
+#include "core/dom/events/Event.h"
 #include "core/frame/UseCounter.h"
 #include "modules/bluetooth/Bluetooth.h"
 #include "modules/bluetooth/BluetoothAttributeInstanceMap.h"

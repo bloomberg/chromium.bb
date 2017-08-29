@@ -6,7 +6,7 @@
 
 #include "core/dom/ElementVisibilityObserver.h"
 #include "core/dom/UserGestureIndicator.h"
-#include "core/events/Event.h"
+#include "core/dom/events/Event.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/fullscreen/Fullscreen.h"
 #include "core/html/HTMLVideoElement.h"

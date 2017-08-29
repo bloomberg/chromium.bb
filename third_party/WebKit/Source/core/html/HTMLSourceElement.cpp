@@ -31,7 +31,7 @@
 #include "core/css/MediaQueryMatcher.h"
 #include "core/dom/Document.h"
 #include "core/dom/TaskRunnerHelper.h"
-#include "core/events/Event.h"
+#include "core/dom/events/Event.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/HTMLPictureElement.h"
 

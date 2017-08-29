@@ -5,7 +5,7 @@
 #include "modules/media_controls/elements/MediaControlPlayButtonElement.h"
 
 #include "core/InputTypeNames.h"
-#include "core/events/Event.h"
+#include "core/dom/events/Event.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/media/HTMLMediaSource.h"
 #include "modules/media_controls/MediaControlsImpl.h"

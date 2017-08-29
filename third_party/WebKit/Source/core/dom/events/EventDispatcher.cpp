@@ -25,15 +25,15 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/events/EventDispatcher.h"
+#include "core/dom/events/EventDispatcher.h"
 
 #include "core/dom/ContainerNode.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
-#include "core/events/EventDispatchMediator.h"
+#include "core/dom/events/EventDispatchMediator.h"
+#include "core/dom/events/ScopedEventQueue.h"
+#include "core/dom/events/WindowEventContext.h"
 #include "core/events/MouseEvent.h"
-#include "core/events/ScopedEventQueue.h"
-#include "core/events/WindowEventContext.h"
 #include "core/frame/Deprecation.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrameView.h"

@@ -5,7 +5,7 @@
 #ifndef EventTargetModules_h
 #define EventTargetModules_h
 
-#include "core/events/EventTarget.h"
+#include "core/dom/events/EventTarget.h"
 #include "modules/EventModulesNames.h"
 #include "modules/EventTargetModulesNames.h"
 

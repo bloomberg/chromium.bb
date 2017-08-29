@@ -24,8 +24,8 @@
 #ifndef MutationEvent_h
 #define MutationEvent_h
 
-#include "core/events/Event.h"
 #include "core/dom/Node.h"
+#include "core/dom/events/Event.h"
 
 namespace blink {
 

@@ -32,7 +32,7 @@
 #include "core/html/forms/ResetInputType.h"
 
 #include "core/InputTypeNames.h"
-#include "core/events/Event.h"
+#include "core/dom/events/Event.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "platform/text/PlatformLocale.h"

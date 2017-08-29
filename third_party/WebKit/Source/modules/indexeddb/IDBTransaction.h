@@ -30,7 +30,7 @@
 
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/DOMStringList.h"
-#include "core/events/EventListener.h"
+#include "core/dom/events/EventListener.h"
 #include "modules/EventModules.h"
 #include "modules/EventTargetModules.h"
 #include "modules/ModulesExport.h"

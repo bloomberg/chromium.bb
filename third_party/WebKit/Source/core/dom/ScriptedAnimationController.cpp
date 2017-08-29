@@ -28,7 +28,7 @@
 #include "core/css/MediaQueryListListener.h"
 #include "core/dom/Document.h"
 #include "core/dom/FrameRequestCallback.h"
-#include "core/events/Event.h"
+#include "core/dom/events/Event.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/inspector/InspectorTraceEvents.h"

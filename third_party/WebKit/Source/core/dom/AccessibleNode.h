@@ -7,7 +7,7 @@
 
 #include "core/CoreExport.h"
 #include "core/dom/QualifiedName.h"
-#include "core/events/EventTarget.h"
+#include "core/dom/events/EventTarget.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/HashSet.h"

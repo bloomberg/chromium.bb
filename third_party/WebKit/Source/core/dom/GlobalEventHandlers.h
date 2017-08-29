@@ -30,7 +30,7 @@
 #ifndef GlobalEventHandlers_h
 #define GlobalEventHandlers_h
 
-#include "core/events/EventTarget.h"
+#include "core/dom/events/EventTarget.h"
 
 namespace blink {
 

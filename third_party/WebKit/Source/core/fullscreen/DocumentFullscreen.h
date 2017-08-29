@@ -26,7 +26,7 @@
 #ifndef DocumentFullscreen_h
 #define DocumentFullscreen_h
 
-#include "core/events/EventTarget.h"
+#include "core/dom/events/EventTarget.h"
 #include "platform/wtf/Allocator.h"
 
 namespace blink {

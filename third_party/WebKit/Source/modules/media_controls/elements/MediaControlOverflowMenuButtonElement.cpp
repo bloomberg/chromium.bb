@@ -5,7 +5,7 @@
 #include "modules/media_controls/elements/MediaControlOverflowMenuButtonElement.h"
 
 #include "core/InputTypeNames.h"
-#include "core/events/Event.h"
+#include "core/dom/events/Event.h"
 #include "modules/media_controls/MediaControlsImpl.h"
 #include "public/platform/Platform.h"
 

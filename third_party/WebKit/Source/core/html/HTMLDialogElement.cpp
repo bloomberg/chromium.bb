@@ -29,7 +29,7 @@
 #include "core/dom/AXObjectCache.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/FlatTreeTraversal.h"
-#include "core/events/Event.h"
+#include "core/dom/events/Event.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/UseCounter.h"
 #include "core/fullscreen/Fullscreen.h"

@@ -26,7 +26,7 @@
 #ifndef SecurityPolicyViolationEvent_h
 #define SecurityPolicyViolationEvent_h
 
-#include "core/events/Event.h"
+#include "core/dom/events/Event.h"
 #include "core/events/SecurityPolicyViolationEventInit.h"
 #include "platform/network/ContentSecurityPolicyParsers.h"
 

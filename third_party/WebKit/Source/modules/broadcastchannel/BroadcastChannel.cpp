@@ -6,7 +6,7 @@
 
 #include "bindings/core/v8/serialization/SerializedScriptValue.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/events/EventQueue.h"
+#include "core/dom/events/EventQueue.h"
 #include "core/events/MessageEvent.h"
 #include "platform/mojo/MojoHelper.h"
 #include "platform/wtf/Functional.h"

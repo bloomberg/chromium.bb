@@ -5,7 +5,7 @@
 #ifndef PaymentAppServiceWorkerGlobalScope_h
 #define PaymentAppServiceWorkerGlobalScope_h
 
-#include "core/events/EventTarget.h"
+#include "core/dom/events/EventTarget.h"
 #include "platform/wtf/Allocator.h"
 
 namespace blink {

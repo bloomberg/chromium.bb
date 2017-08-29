@@ -26,8 +26,8 @@
 #ifndef TextTrackList_h
 #define TextTrackList_h
 
-#include "core/events/EventListener.h"
-#include "core/events/EventTarget.h"
+#include "core/dom/events/EventListener.h"
+#include "core/dom/events/EventTarget.h"
 #include "core/html/HTMLMediaElement.h"
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"

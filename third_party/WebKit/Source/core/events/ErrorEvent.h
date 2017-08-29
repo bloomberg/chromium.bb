@@ -33,8 +33,8 @@
 
 #include <memory>
 #include "bindings/core/v8/SourceLocation.h"
+#include "core/dom/events/Event.h"
 #include "core/events/ErrorEventInit.h"
-#include "core/events/Event.h"
 #include "platform/bindings/DOMWrapperWorld.h"
 #include "platform/bindings/TraceWrapperV8Reference.h"
 #include "platform/wtf/RefPtr.h"

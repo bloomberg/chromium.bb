@@ -7,7 +7,7 @@
 
 #include "core/CoreExport.h"
 #include "core/dom/ContextLifecycleObserver.h"
-#include "core/events/EventListener.h"
+#include "core/dom/events/EventListener.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebMediaPlayerClient.h"
 

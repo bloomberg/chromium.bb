@@ -4,7 +4,7 @@
 
 #include "modules/media_controls/MediaControlsWindowEventListener.h"
 
-#include "core/events/Event.h"
+#include "core/dom/events/Event.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "modules/media_controls/MediaControlsImpl.h"
 #include "modules/media_controls/elements/MediaControlCastButtonElement.h"

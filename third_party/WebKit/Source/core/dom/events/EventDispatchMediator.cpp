@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/events/EventDispatchMediator.h"
+#include "core/dom/events/EventDispatchMediator.h"
 
-#include "core/events/Event.h"
-#include "core/events/EventDispatcher.h"
+#include "core/dom/events/Event.h"
+#include "core/dom/events/EventDispatcher.h"
 
 namespace blink {
 

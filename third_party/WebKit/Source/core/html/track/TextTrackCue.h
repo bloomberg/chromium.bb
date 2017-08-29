@@ -32,7 +32,7 @@
 #ifndef TextTrackCue_h
 #define TextTrackCue_h
 
-#include "core/events/EventTarget.h"
+#include "core/dom/events/EventTarget.h"
 #include "core/html/HTMLDivElement.h"
 #include "platform/heap/Handle.h"
 

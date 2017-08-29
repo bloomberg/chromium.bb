@@ -4,7 +4,7 @@
 
 #include "modules/media_controls/elements/MediaControlOverflowMenuListElement.h"
 
-#include "core/events/Event.h"
+#include "core/dom/events/Event.h"
 #include "modules/media_controls/MediaControlsImpl.h"
 
 namespace blink {

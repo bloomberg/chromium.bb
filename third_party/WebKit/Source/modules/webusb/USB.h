@@ -7,7 +7,7 @@
 
 #include "bindings/core/v8/ScriptPromise.h"
 #include "core/dom/ContextLifecycleObserver.h"
-#include "core/events/EventTarget.h"
+#include "core/dom/events/EventTarget.h"
 #include "device/usb/public/interfaces/chooser_service.mojom-blink.h"
 #include "device/usb/public/interfaces/device_manager.mojom-blink.h"
 #include "mojo/public/cpp/bindings/binding.h"

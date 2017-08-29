@@ -27,7 +27,7 @@
 #ifndef TransitionEvent_h
 #define TransitionEvent_h
 
-#include "core/events/Event.h"
+#include "core/dom/events/Event.h"
 #include "core/events/TransitionEventInit.h"
 
 namespace blink {

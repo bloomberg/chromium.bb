@@ -25,7 +25,7 @@
 #include "core/MediaTypeNames.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/dom/TaskRunnerHelper.h"
-#include "core/events/Event.h"
+#include "core/dom/events/Event.h"
 #include "platform/wtf/StdLibExtras.h"
 
 namespace blink {

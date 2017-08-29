@@ -35,8 +35,8 @@
 #include <stdint.h>
 #include <memory>
 #include "core/dom/SuspendableObject.h"
-#include "core/events/EventListener.h"
-#include "core/events/EventTarget.h"
+#include "core/dom/events/EventListener.h"
+#include "core/dom/events/EventTarget.h"
 #include "core/typed_arrays/ArrayBufferViewHelpers.h"
 #include "modules/EventTargetModules.h"
 #include "modules/ModulesExport.h"

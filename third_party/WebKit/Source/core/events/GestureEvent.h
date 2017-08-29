@@ -27,7 +27,7 @@
 #define GestureEvent_h
 
 #include "core/CoreExport.h"
-#include "core/events/EventDispatcher.h"
+#include "core/dom/events/EventDispatcher.h"
 #include "core/events/UIEventWithKeyState.h"
 #include "public/platform/WebGestureEvent.h"
 

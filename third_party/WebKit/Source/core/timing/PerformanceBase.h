@@ -34,7 +34,7 @@
 
 #include "core/CoreExport.h"
 #include "core/dom/DOMHighResTimeStamp.h"
-#include "core/events/EventTarget.h"
+#include "core/dom/events/EventTarget.h"
 #include "core/loader/FrameLoaderTypes.h"
 #include "core/timing/PerformanceEntry.h"
 #include "core/timing/PerformanceNavigationTiming.h"

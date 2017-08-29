@@ -28,7 +28,7 @@
 #include "core/dom/ShadowRoot.h"
 #include "core/dom/StyleChangeReason.h"
 #include "core/dom/UserGestureIndicator.h"
-#include "core/events/Event.h"
+#include "core/dom/events/Event.h"
 #include "core/fileapi/File.h"
 #include "core/fileapi/FileList.h"
 #include "core/frame/UseCounter.h"

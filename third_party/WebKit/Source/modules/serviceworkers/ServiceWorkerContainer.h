@@ -35,7 +35,7 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseProperty.h"
 #include "core/dom/ContextLifecycleObserver.h"
-#include "core/events/EventTarget.h"
+#include "core/dom/events/EventTarget.h"
 #include "modules/ModulesExport.h"
 #include "modules/serviceworkers/RegistrationOptions.h"
 #include "modules/serviceworkers/ServiceWorker.h"

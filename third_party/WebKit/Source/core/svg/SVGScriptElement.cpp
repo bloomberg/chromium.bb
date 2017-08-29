@@ -27,7 +27,7 @@
 #include "core/dom/Attribute.h"
 #include "core/dom/ScriptLoader.h"
 #include "core/dom/ScriptRunner.h"
-#include "core/events/Event.h"
+#include "core/dom/events/Event.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 
 namespace blink {

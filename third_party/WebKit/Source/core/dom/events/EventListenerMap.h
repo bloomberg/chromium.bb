@@ -34,8 +34,8 @@
 #define EventListenerMap_h
 
 #include "core/CoreExport.h"
-#include "core/events/AddEventListenerOptionsResolved.h"
-#include "core/events/EventListenerOptions.h"
+#include "core/dom/events/AddEventListenerOptionsResolved.h"
+#include "core/dom/events/EventListenerOptions.h"
 #include "core/events/RegisteredEventListener.h"
 #include "platform/bindings/ScriptWrappableVisitor.h"
 #include "platform/wtf/Noncopyable.h"

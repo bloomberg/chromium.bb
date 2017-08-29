@@ -6,7 +6,7 @@
 #define PaymentRequestUpdateEvent_h
 
 #include "bindings/core/v8/ScriptPromise.h"
-#include "core/events/Event.h"
+#include "core/dom/events/Event.h"
 #include "modules/ModulesExport.h"
 #include "modules/payments/PaymentRequestUpdateEventInit.h"
 #include "modules/payments/PaymentUpdater.h"

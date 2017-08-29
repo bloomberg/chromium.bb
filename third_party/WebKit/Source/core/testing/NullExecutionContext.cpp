@@ -4,7 +4,7 @@
 
 #include "core/testing/NullExecutionContext.h"
 
-#include "core/events/Event.h"
+#include "core/dom/events/Event.h"
 #include "core/frame/DOMTimer.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 

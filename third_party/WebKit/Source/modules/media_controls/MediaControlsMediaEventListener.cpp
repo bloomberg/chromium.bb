@@ -4,7 +4,7 @@
 
 #include "modules/media_controls/MediaControlsMediaEventListener.h"
 
-#include "core/events/Event.h"
+#include "core/dom/events/Event.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/track/TextTrackList.h"
 #include "modules/media_controls/MediaControlsImpl.h"

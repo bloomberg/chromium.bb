@@ -26,7 +26,7 @@
 #ifndef StorageEvent_h
 #define StorageEvent_h
 
-#include "core/events/Event.h"
+#include "core/dom/events/Event.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/text/WTFString.h"
 

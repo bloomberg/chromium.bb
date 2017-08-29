@@ -8,7 +8,7 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "core/CoreExport.h"
-#include "core/events/Event.h"
+#include "core/dom/events/Event.h"
 #include "core/events/PromiseRejectionEventInit.h"
 #include "platform/bindings/DOMWrapperWorld.h"
 #include "platform/bindings/ScriptState.h"

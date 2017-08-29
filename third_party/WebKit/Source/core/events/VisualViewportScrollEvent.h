@@ -5,7 +5,7 @@
 #ifndef VisualViewportScrollEvent_h
 #define VisualViewportScrollEvent_h
 
-#include "core/events/Event.h"
+#include "core/dom/events/Event.h"
 
 namespace blink {
 

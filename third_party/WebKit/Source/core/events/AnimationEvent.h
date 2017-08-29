@@ -26,8 +26,8 @@
 #ifndef AnimationEvent_h
 #define AnimationEvent_h
 
+#include "core/dom/events/Event.h"
 #include "core/events/AnimationEventInit.h"
-#include "core/events/Event.h"
 
 namespace blink {
 

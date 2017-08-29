@@ -6,7 +6,7 @@
 #define PresentationConnectionList_h
 
 #include "core/dom/ExecutionContext.h"
-#include "core/events/EventTarget.h"
+#include "core/dom/events/EventTarget.h"
 #include "modules/ModulesExport.h"
 #include "modules/presentation/PresentationConnection.h"
 #include "platform/heap/Handle.h"

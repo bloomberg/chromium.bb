@@ -26,8 +26,8 @@
 #define ClipboardEvent_h
 
 #include "core/clipboard/DataTransfer.h"
+#include "core/dom/events/Event.h"
 #include "core/events/ClipboardEventInit.h"
-#include "core/events/Event.h"
 
 namespace blink {
 

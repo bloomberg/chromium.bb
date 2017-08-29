@@ -33,8 +33,8 @@
 #include <memory>
 
 #include "build/build_config.h"
+#include "core/dom/events/EventTarget.h"
 #include "core/editing/Editor.h"
-#include "core/events/EventTarget.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/frame/Settings.h"
 #include "platform/KeyboardCodes.h"

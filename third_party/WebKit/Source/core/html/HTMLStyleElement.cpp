@@ -29,7 +29,7 @@
 #include "core/dom/ShadowRoot.h"
 #include "core/dom/StyleEngine.h"
 #include "core/dom/TaskRunnerHelper.h"
-#include "core/events/Event.h"
+#include "core/dom/events/Event.h"
 
 namespace blink {
 

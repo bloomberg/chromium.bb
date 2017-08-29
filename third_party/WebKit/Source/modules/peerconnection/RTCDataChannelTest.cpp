@@ -7,7 +7,7 @@
 #include <string>
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/DOMException.h"
-#include "core/events/Event.h"
+#include "core/dom/events/Event.h"
 #include "core/typed_arrays/DOMArrayBuffer.h"
 #include "platform/heap/Heap.h"
 #include "platform/wtf/PtrUtil.h"

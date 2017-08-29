@@ -25,8 +25,8 @@
 #ifndef RegisteredEventListener_h
 #define RegisteredEventListener_h
 
-#include "core/events/AddEventListenerOptionsResolved.h"
-#include "core/events/EventListener.h"
+#include "core/dom/events/AddEventListenerOptionsResolved.h"
+#include "core/dom/events/EventListener.h"
 #include "platform/bindings/TraceWrapperMember.h"
 #include "platform/wtf/RefPtr.h"
 

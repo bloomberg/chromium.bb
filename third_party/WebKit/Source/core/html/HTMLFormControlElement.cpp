@@ -26,7 +26,7 @@
 
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/TaskRunnerHelper.h"
-#include "core/events/Event.h"
+#include "core/dom/events/Event.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLDataListElement.h"
 #include "core/html/HTMLFieldSetElement.h"

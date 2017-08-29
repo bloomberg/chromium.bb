@@ -25,7 +25,7 @@
 #define MouseEvent_h
 
 #include "core/CoreExport.h"
-#include "core/events/EventDispatchMediator.h"
+#include "core/dom/events/EventDispatchMediator.h"
 #include "core/events/MouseEventInit.h"
 #include "core/events/UIEventWithKeyState.h"
 #include "public/platform/WebMenuSourceType.h"

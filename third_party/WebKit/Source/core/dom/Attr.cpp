@@ -28,7 +28,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/Text.h"
-#include "core/events/ScopedEventQueue.h"
+#include "core/dom/events/ScopedEventQueue.h"
 #include "platform/wtf/text/AtomicString.h"
 #include "platform/wtf/text/StringBuilder.h"
 

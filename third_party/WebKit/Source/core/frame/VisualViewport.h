@@ -33,7 +33,7 @@
 
 #include <memory>
 #include "core/CoreExport.h"
-#include "core/events/Event.h"
+#include "core/dom/events/Event.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/FloatSize.h"
 #include "platform/geometry/IntSize.h"

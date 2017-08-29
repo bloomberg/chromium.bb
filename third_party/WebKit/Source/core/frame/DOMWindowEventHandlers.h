@@ -30,7 +30,7 @@
 #ifndef DOMWindowEventHandlers_h
 #define DOMWindowEventHandlers_h
 
-#include "core/events/EventTarget.h"
+#include "core/dom/events/EventTarget.h"
 
 namespace blink {
 

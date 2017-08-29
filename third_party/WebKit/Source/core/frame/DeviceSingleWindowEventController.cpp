@@ -5,7 +5,7 @@
 #include "core/frame/DeviceSingleWindowEventController.h"
 
 #include "core/dom/Document.h"
-#include "core/events/Event.h"
+#include "core/dom/events/Event.h"
 #include "core/page/Page.h"
 
 namespace blink {

@@ -34,7 +34,7 @@
 #include <algorithm>
 #include "core/dom/Document.h"
 #include "core/dom/DocumentTiming.h"
-#include "core/events/Event.h"
+#include "core/dom/events/Event.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"
 #include "core/loader/DocumentLoadTiming.h"

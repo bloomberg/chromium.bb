@@ -6,7 +6,7 @@
 
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/Document.h"
-#include "core/events/Event.h"
+#include "core/dom/events/Event.h"
 #include "core/frame/UseCounter.h"
 #include "modules/EventTargetModulesNames.h"
 #include "modules/presentation/PresentationController.h"

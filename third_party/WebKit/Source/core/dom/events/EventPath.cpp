@@ -24,7 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/events/EventPath.h"
+#include "core/dom/events/EventPath.h"
 
 #include "core/EventNames.h"
 #include "core/dom/Document.h"

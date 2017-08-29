@@ -35,10 +35,10 @@
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/Range.h"
 #include "core/dom/ShadowRoot.h"
+#include "core/dom/events/Event.h"
 #include "core/editing/EditingUtilities.h"  // For firstPositionInOrBeforeNode
 #include "core/editing/FrameSelection.h"
 #include "core/editing/InputMethodController.h"
-#include "core/events/Event.h"
 #include "core/frame/FrameClient.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"

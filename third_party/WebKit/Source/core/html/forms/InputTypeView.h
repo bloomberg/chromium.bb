@@ -34,7 +34,7 @@
 #define InputTypeView_h
 
 #include "core/CoreExport.h"
-#include "core/events/EventDispatcher.h"
+#include "core/dom/events/EventDispatcher.h"
 #include "platform/heap/Handle.h"
 #include "platform/text/TextDirection.h"
 #include "platform/wtf/Allocator.h"

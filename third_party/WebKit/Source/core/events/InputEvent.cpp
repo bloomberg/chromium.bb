@@ -5,7 +5,7 @@
 #include "core/events/InputEvent.h"
 
 #include "core/dom/Range.h"
-#include "core/events/EventDispatcher.h"
+#include "core/dom/events/EventDispatcher.h"
 #include "public/platform/WebEditingCommandType.h"
 
 namespace blink {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies)
+ * Copyright (C) 2012 Victor Carbune (victor@rosedu.org)
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -23,55 +23,44 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CustomEvent_h
-#define CustomEvent_h
+#ifndef GenericEventQueue_h
+#define GenericEventQueue_h
 
 #include "core/CoreExport.h"
-#include "core/events/CustomEventInit.h"
-#include "core/events/Event.h"
-#include "platform/bindings/DOMWrapperWorld.h"
-#include "platform/bindings/TraceWrapperV8Reference.h"
+#include "core/dom/events/EventQueue.h"
+#include "core/dom/events/EventTarget.h"
+#include "platform/Timer.h"
+#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/Vector.h"
+#include "public/platform/WebTraceLocation.h"
 
 namespace blink {
 
-class CORE_EXPORT CustomEvent final : public Event {
-  DEFINE_WRAPPERTYPEINFO();
-
+class CORE_EXPORT GenericEventQueue final : public EventQueue {
  public:
-  ~CustomEvent() override;
+  static GenericEventQueue* Create(EventTarget*);
+  ~GenericEventQueue() override;
 
-  static CustomEvent* Create() { return new CustomEvent; }
-
-  static CustomEvent* Create(ScriptState* script_state,
-                             const AtomicString& type,
-                             const CustomEventInit& initializer) {
-    return new CustomEvent(script_state, type, initializer);
-  }
-
-  void initCustomEvent(ScriptState*,
-                       const AtomicString& type,
-                       bool can_bubble,
-                       bool cancelable,
-                       const ScriptValue& detail);
-
-  const AtomicString& InterfaceName() const override;
-
-  ScriptValue detail(ScriptState*) const;
-
+  // EventQueue
   DECLARE_VIRTUAL_TRACE();
+  bool EnqueueEvent(const WebTraceLocation&, Event*) override;
+  bool CancelEvent(Event*) override;
+  void Close() override;
 
-  DECLARE_VIRTUAL_TRACE_WRAPPERS();
+  void CancelAllEvents();
+  bool HasPendingEvents() const;
 
  private:
-  CustomEvent();
-  CustomEvent(ScriptState*,
-              const AtomicString& type,
-              const CustomEventInit& initializer);
+  explicit GenericEventQueue(EventTarget*);
+  void TimerFired(TimerBase*);
 
-  RefPtr<DOMWrapperWorld> world_;
-  TraceWrapperV8Reference<v8::Value> detail_;
+  Member<EventTarget> owner_;
+  HeapVector<Member<Event>> pending_events_;
+  Timer<GenericEventQueue> timer_;
+
+  bool is_closed_;
 };
 
 }  // namespace blink
 
-#endif  // CustomEvent_h
+#endif

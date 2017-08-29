@@ -6,7 +6,7 @@
 #define MediaCustomControlsFullscreenDetector_h
 
 #include "core/CoreExport.h"
-#include "core/events/EventListener.h"
+#include "core/dom/events/EventListener.h"
 #include "platform/Timer.h"
 
 namespace blink {

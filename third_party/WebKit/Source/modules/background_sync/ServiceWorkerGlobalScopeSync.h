@@ -5,7 +5,7 @@
 #ifndef ServiceWorkerGlobalScopeSync_h
 #define ServiceWorkerGlobalScopeSync_h
 
-#include "core/events/EventTarget.h"
+#include "core/dom/events/EventTarget.h"
 
 namespace blink {
 

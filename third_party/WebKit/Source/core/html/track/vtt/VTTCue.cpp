@@ -36,7 +36,7 @@
 #include "core/CSSValueKeywords.h"
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/NodeTraversal.h"
-#include "core/events/Event.h"
+#include "core/dom/events/Event.h"
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLDivElement.h"

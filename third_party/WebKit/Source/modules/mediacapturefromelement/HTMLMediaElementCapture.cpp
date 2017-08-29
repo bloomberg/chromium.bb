@@ -5,7 +5,7 @@
 #include "modules/mediacapturefromelement/HTMLMediaElementCapture.h"
 
 #include "core/dom/ExceptionCode.h"
-#include "core/events/EventListener.h"
+#include "core/dom/events/EventListener.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/track/AudioTrackList.h"
 #include "core/html/track/VideoTrackList.h"

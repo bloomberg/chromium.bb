@@ -32,7 +32,7 @@
 
 #include <memory>
 #include "core/CoreExport.h"
-#include "core/events/EventListenerMap.h"
+#include "core/dom/events/EventListenerMap.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/protocol/DOM.h"
 #include "core/style/ComputedStyleConstants.h"

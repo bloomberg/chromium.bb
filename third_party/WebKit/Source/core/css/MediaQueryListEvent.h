@@ -7,7 +7,7 @@
 
 #include "core/css/MediaQueryList.h"
 #include "core/css/MediaQueryListEventInit.h"
-#include "core/events/Event.h"
+#include "core/dom/events/Event.h"
 
 namespace blink {
 

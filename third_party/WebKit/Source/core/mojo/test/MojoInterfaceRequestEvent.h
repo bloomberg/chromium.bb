@@ -5,7 +5,7 @@
 #ifndef MojoInterfaceRequestEvent_h
 #define MojoInterfaceRequestEvent_h
 
-#include "core/events/Event.h"
+#include "core/dom/events/Event.h"
 
 namespace blink {
 

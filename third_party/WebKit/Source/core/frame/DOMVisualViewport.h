@@ -32,7 +32,7 @@
 #define DOMVisualViewport_h
 
 #include "core/dom/ExecutionContext.h"
-#include "core/events/EventTarget.h"
+#include "core/dom/events/EventTarget.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "platform/scroll/ScrollTypes.h"
