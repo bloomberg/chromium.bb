@@ -357,6 +357,17 @@ Node* CSSComputedStyleDeclaration::StyledNode() const {
   return node_.Get();
 }
 
+LayoutObject* CSSComputedStyleDeclaration::StyledLayoutObject() const {
+  auto* node = StyledNode();
+  if (!node)
+    return nullptr;
+
+  if (pseudo_element_specifier_ != kPseudoIdNone && node == node_.Get())
+    return nullptr;
+
+  return node->GetLayoutObject();
+}
+
 const CSSValue* CSSComputedStyleDeclaration::GetPropertyCSSValue(
     AtomicString custom_property_name) const {
   Node* styled_node = StyledNode();
@@ -395,7 +406,7 @@ const CSSValue* CSSComputedStyleDeclaration::GetPropertyCSSValue(
   // The style recalc could have caused the styled node to be discarded or
   // replaced if it was a PseudoElement so we need to update it.
   styled_node = StyledNode();
-  LayoutObject* layout_object = styled_node->GetLayoutObject();
+  LayoutObject* layout_object = StyledLayoutObject();
 
   const ComputedStyle* style = ComputeComputedStyle();
 
@@ -409,7 +420,7 @@ const CSSValue* CSSComputedStyleDeclaration::GetPropertyCSSValue(
     document.UpdateStyleAndLayoutIgnorePendingStylesheetsForNode(styled_node);
     styled_node = StyledNode();
     style = ComputeComputedStyle();
-    layout_object = styled_node->GetLayoutObject();
+    layout_object = StyledLayoutObject();
   }
 
   if (!style)
