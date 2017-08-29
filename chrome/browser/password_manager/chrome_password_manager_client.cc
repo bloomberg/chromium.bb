@@ -215,7 +215,10 @@ bool ChromePasswordManagerClient::IsPasswordManagementEnabledForCurrentPage()
   // The password manager is disabled while VR (virtual reality) is being used,
   // as the use of conventional UI elements might harm the user experience in
   // VR.
-  is_enabled = is_enabled && !vr::VrTabHelper::IsInVr(web_contents());
+  if (vr::VrTabHelper::IsInVr(web_contents())) {
+    is_enabled = false;
+    vr::VrTabHelper::UISuppressed(vr::UiSuppressedElement::kPasswordManager);
+  }
 
   if (log_manager_->IsLoggingActive()) {
     password_manager::BrowserSavePasswordProgressLogger logger(
