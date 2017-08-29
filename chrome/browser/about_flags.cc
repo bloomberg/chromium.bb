@@ -3343,6 +3343,13 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // OS_ANDROID
 
 #if defined(OS_ANDROID)
+    {"pwa-improved-splash-screen",
+     flag_descriptions::kPwaImprovedSplashScreenName,
+     flag_descriptions::kPwaImprovedSplashScreenDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kPwaImprovedSplashScreen)},
+#endif  // OS_ANDROID
+
+#if defined(OS_ANDROID)
     {"pwa-persistent-notification",
      flag_descriptions::kPwaPersistentNotificationName,
      flag_descriptions::kPwaPersistentNotificationDescription, kOsAndroid,

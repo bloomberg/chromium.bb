@@ -1145,6 +1145,8 @@ extern const char
 extern const char kPullToRefreshEffectName[];
 extern const char kPullToRefreshEffectDescription[];
 
+extern const char kPwaImprovedSplashScreenName[];
+extern const char kPwaImprovedSplashScreenDescription[];
 extern const char kPwaPersistentNotificationName[];
 extern const char kPwaPersistentNotificationDescription[];
 
