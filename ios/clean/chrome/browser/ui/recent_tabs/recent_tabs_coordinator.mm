@@ -6,8 +6,8 @@
 
 #import "ios/chrome/browser/ui/browser_list/browser.h"
 #import "ios/chrome/browser/ui/coordinators/browser_coordinator+internal.h"
+#import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_handset_view_controller.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_panel_controller.h"
-#import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_panel_view_controller.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -25,18 +25,16 @@
 
 - (void)start {
   // HACK: Re-using old view controllers for now.
+  self.wrapperController = [[RecentTabsPanelController alloc]
+      initWithLoader:nil
+        browserState:self.browser->browser_state()
+          dispatcher:nil];
   if (!IsIPadIdiom()) {
-    self.viewController = [RecentTabsPanelViewController
-        controllerToPresentForBrowserState:self.browser->browser_state()
-                                    loader:nil
-                                dispatcher:nil];
+    self.viewController = [[RecentTabsHandsetViewController alloc]
+        initWithViewController:[self.wrapperController viewController]];
     self.viewController.modalPresentationStyle = UIModalPresentationFormSheet;
     self.viewController.modalPresentationCapturesStatusBarAppearance = YES;
   } else {
-    self.wrapperController = [[RecentTabsPanelController alloc]
-        initWithLoader:nil
-          browserState:self.browser->browser_state()
-            dispatcher:nil];
     self.viewController = [self.wrapperController viewController];
   }
   [super start];
