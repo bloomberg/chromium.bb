@@ -327,15 +327,14 @@ void MediaRouterDialogControllerImpl::PopulateDialog(
       media_router_dialog->GetWebUI()->GetController());
   DCHECK(media_router_ui);
 
-  std::unique_ptr<CreatePresentationConnectionRequest>
-      create_connection_request(TakeCreateConnectionRequest());
+  auto start_presentation_context = std::move(start_presentation_context_);
   PresentationServiceDelegateImpl* delegate =
       PresentationServiceDelegateImpl::FromWebContents(initiator());
-  if (!create_connection_request.get()) {
+  if (!start_presentation_context) {
     media_router_ui->InitWithDefaultMediaSource(initiator(), delegate);
   } else {
-    media_router_ui->InitWithPresentationSessionRequest(
-        initiator(), delegate, std::move(create_connection_request));
+    media_router_ui->InitWithStartPresentationContext(
+        initiator(), delegate, std::move(start_presentation_context));
   }
 }
 

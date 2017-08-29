@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/media/router/media_router_dialog_controller.h"
 #include "chrome/browser/media/router/mojo/media_route_controller.h"
 #include "chrome/browser/media/router/presentation_service_delegate_impl.h"
 #include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
@@ -44,7 +45,6 @@ class Browser;
 
 namespace media_router {
 
-class CreatePresentationConnectionRequest;
 class EventPageRequestManager;
 class IssuesObserver;
 class MediaRoute;
@@ -83,7 +83,7 @@ class MediaRouterUI
                                   PresentationServiceDelegateImpl* delegate);
 
   // Initializes internal state targeting the presentation specified in
-  // |request|. Also sets up mirroring sources based on |initiator|.
+  // |context|. Also sets up mirroring sources based on |initiator|.
   // This is different from |InitWithDefaultMediaSource| in that it does not
   // listen for default media source changes, as the UI is fixed to the source
   // in |request|.
@@ -92,13 +92,13 @@ class MediaRouterUI
   //              Must not be null.
   // |delegate|: PresentationServiceDelegateImpl of the initiator tab.
   //             Must not be null.
-  // |presentation_request|: The presentation request. This instance will take
+  // |context|: Context object for the PresentationRequest. This instance will
+  // take
   //                         ownership of it. Must not be null.
-  void InitWithPresentationSessionRequest(
+  void InitWithStartPresentationContext(
       content::WebContents* initiator,
       PresentationServiceDelegateImpl* delegate,
-      std::unique_ptr<CreatePresentationConnectionRequest>
-          presentation_request);
+      std::unique_ptr<StartPresentationContext> context);
 
   // Closes the media router UI.
   void Close();
@@ -190,8 +190,7 @@ class MediaRouterUI
   void InitForTest(MediaRouter* router,
                    content::WebContents* initiator,
                    MediaRouterWebUIMessageHandler* handler,
-                   std::unique_ptr<CreatePresentationConnectionRequest>
-                       create_session_request,
+                   std::unique_ptr<StartPresentationContext> context,
                    std::unique_ptr<MediaRouterFileDialog> file_dialog);
 
   void InitForTest(std::unique_ptr<MediaRouterFileDialog> file_dialog);
@@ -305,8 +304,8 @@ class MediaRouterUI
   void MaybeReportFileInformation(const RouteRequestResult& result);
 
   // Closes the dialog after receiving a route response when using
-  // |create_session_request_|. This prevents the dialog from trying to use the
-  // same presentation request again.
+  // |start_presentation_context_|. This prevents the dialog from trying to use
+  // the same presentation request again.
   void HandleCreateSessionRequestRouteResponse(const RouteRequestResult&);
 
   // Callback passed to MediaRouter to receive the sink ID of the sink found by
@@ -407,7 +406,7 @@ class MediaRouterUI
 
   // If set, then the result of the next presentation route request will
   // be handled by this object.
-  std::unique_ptr<CreatePresentationConnectionRequest> create_session_request_;
+  std::unique_ptr<StartPresentationContext> start_presentation_context_;
 
   // Set to the presentation request corresponding to the presentation cast
   // mode, if supported. Otherwise set to nullptr.

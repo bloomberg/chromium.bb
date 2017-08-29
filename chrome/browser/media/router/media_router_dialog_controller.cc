@@ -7,9 +7,12 @@
 #include <utility>
 
 #include "chrome/browser/media/router/media_router_metrics.h"
+#include "chrome/common/media_router/media_route.h"
+#include "chrome/common/media_router/route_request_result.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/common/presentation_info.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/media/android/router/media_router_dialog_controller_android.h"
@@ -62,6 +65,57 @@ class MediaRouterDialogController::InitiatorWebContentsObserver
   MediaRouterDialogController* const dialog_controller_;
 };
 
+StartPresentationContext::StartPresentationContext(
+    const content::PresentationRequest& presentation_request,
+    PresentationConnectionCallback success_cb,
+    PresentationConnectionErrorCallback error_cb)
+    : presentation_request_(presentation_request),
+      success_cb_(std::move(success_cb)),
+      error_cb_(std::move(error_cb)) {
+  DCHECK(success_cb_);
+  DCHECK(error_cb_);
+}
+
+StartPresentationContext::~StartPresentationContext() {
+  if (!cb_invoked_) {
+    std::move(error_cb_).Run(content::PresentationError(
+        content::PRESENTATION_ERROR_UNKNOWN, "Unknown error."));
+  }
+}
+
+void StartPresentationContext::InvokeSuccessCallback(
+    const std::string& presentation_id,
+    const GURL& presentation_url,
+    const MediaRoute& route) {
+  if (!cb_invoked_) {
+    std::move(success_cb_)
+        .Run(content::PresentationInfo(presentation_url, presentation_id),
+             route);
+    cb_invoked_ = true;
+  }
+}
+
+void StartPresentationContext::InvokeErrorCallback(
+    const content::PresentationError& error) {
+  if (!cb_invoked_) {
+    std::move(error_cb_).Run(error);
+    cb_invoked_ = true;
+  }
+}
+
+// static
+void StartPresentationContext::HandleRouteResponse(
+    std::unique_ptr<StartPresentationContext> context,
+    const RouteRequestResult& result) {
+  if (!result.route()) {
+    context->InvokeErrorCallback(content::PresentationError(
+        content::PRESENTATION_ERROR_UNKNOWN, result.error()));
+  } else {
+    context->InvokeSuccessCallback(result.presentation_id(),
+                                   result.presentation_url(), *result.route());
+  }
+}
+
 MediaRouterDialogController::MediaRouterDialogController(
     content::WebContents* initiator)
     : initiator_(initiator) {
@@ -74,17 +128,24 @@ MediaRouterDialogController::~MediaRouterDialogController() {
 }
 
 bool MediaRouterDialogController::ShowMediaRouterDialogForPresentation(
-    std::unique_ptr<CreatePresentationConnectionRequest> request) {
+    const content::PresentationRequest& presentation_request,
+    StartPresentationContext::PresentationConnectionCallback success_cb,
+    StartPresentationContext::PresentationConnectionErrorCallback error_cb) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  bool dialog_needs_creation = !IsShowingMediaRouterDialog();
-  if (dialog_needs_creation) {
-    create_connection_request_ = std::move(request);
-    MediaRouterMetrics::RecordMediaRouterDialogOrigin(
-        MediaRouterDialogOpenOrigin::PAGE);
+  if (IsShowingMediaRouterDialog()) {
+    std::move(error_cb).Run(content::PresentationError(
+        content::PRESENTATION_ERROR_UNKNOWN,
+        "Unable to create dialog: dialog already shown"));
+    return false;
   }
-  FocusOnMediaRouterDialog(dialog_needs_creation);
-  return dialog_needs_creation;
+
+  start_presentation_context_ = base::MakeUnique<StartPresentationContext>(
+      presentation_request, std::move(success_cb), std::move(error_cb));
+  MediaRouterMetrics::RecordMediaRouterDialogOrigin(
+      MediaRouterDialogOpenOrigin::PAGE);
+  FocusOnMediaRouterDialog(true);
+  return true;
 }
 
 bool MediaRouterDialogController::ShowMediaRouterDialog() {
@@ -111,14 +172,9 @@ void MediaRouterDialogController::FocusOnMediaRouterDialog(
   initiator_->GetDelegate()->ActivateContents(initiator_);
 }
 
-std::unique_ptr<CreatePresentationConnectionRequest>
-MediaRouterDialogController::TakeCreateConnectionRequest() {
-  return std::move(create_connection_request_);
-}
-
 void MediaRouterDialogController::Reset() {
   initiator_observer_.reset();
-  create_connection_request_.reset();
+  start_presentation_context_.reset();
 }
 
 }  // namespace media_router

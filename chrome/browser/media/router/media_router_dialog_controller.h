@@ -9,14 +9,59 @@
 #include <string>
 
 #include "base/macros.h"
-#include "chrome/browser/media/router/create_presentation_connection_request.h"
+#include "content/public/browser/presentation_request.h"
+#include "content/public/browser/presentation_service_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 
 namespace content {
 class WebContents;
+struct PresentationInfo;
 }  // namespace content
 
 namespace media_router {
+
+class MediaRoute;
+class RouteRequestResult;
+
+// Helper data structure to hold information for a dialog initiated via the
+// Presentation API. Contains information on the PresentationRequest, and
+// success / error callbacks. Depending on the route creation outcome,
+// only one of the callbacks will be invoked exactly once.
+class StartPresentationContext {
+ public:
+  using PresentationConnectionCallback =
+      base::OnceCallback<void(const content::PresentationInfo&,
+                              const MediaRoute&)>;
+  using PresentationConnectionErrorCallback =
+      content::PresentationConnectionErrorCallback;
+
+  // Handle route creation/joining response by invoking the right callback.
+  static void HandleRouteResponse(
+      std::unique_ptr<StartPresentationContext> presentation_request,
+      const RouteRequestResult& result);
+
+  StartPresentationContext(
+      const content::PresentationRequest& presentation_request,
+      PresentationConnectionCallback success_cb,
+      PresentationConnectionErrorCallback error_cb);
+  ~StartPresentationContext();
+
+  const content::PresentationRequest& presentation_request() const {
+    return presentation_request_;
+  }
+
+  // Invokes |success_cb_| or |error_cb_| with the given arguments.
+  void InvokeSuccessCallback(const std::string& presentation_id,
+                             const GURL& presentation_url,
+                             const MediaRoute& route);
+  void InvokeErrorCallback(const content::PresentationError& error);
+
+ private:
+  content::PresentationRequest presentation_request_;
+  PresentationConnectionCallback success_cb_;
+  PresentationConnectionErrorCallback error_cb_;
+  bool cb_invoked_ = false;
+};
 
 // An abstract base class for Media Router dialog controllers. Tied to a
 // WebContents known as the |initiator|, and is lazily created when a Media
@@ -33,13 +78,16 @@ class MediaRouterDialogController {
   static MediaRouterDialogController* GetOrCreateForWebContents(
       content::WebContents* web_contents);
 
-  // Shows the media router dialog modal to |initiator_| and the parameters
-  // specified in |request|.
-  // Creates the dialog if it did not exist prior to this call, returns true.
-  // If the dialog already exists, brings it to the front but doesn't change the
-  // dialog with |request|, returns false and |request| is deleted.
+  // Shows the media router dialog modal to |initiator_|, with additional
+  // context for a PresentationRequest coming from the page given by the input
+  // parameters.
+  // Returns true if the dialog is created as a result of this call.
+  // If the dialog already exists, or dialog cannot be created, then false is
+  // returned, and |error_cb| will be invoked.
   bool ShowMediaRouterDialogForPresentation(
-      std::unique_ptr<CreatePresentationConnectionRequest> request);
+      const content::PresentationRequest& presentation_request,
+      StartPresentationContext::PresentationConnectionCallback success_cb,
+      StartPresentationContext::PresentationConnectionErrorCallback error_cb);
 
   // Shows the media router dialog modal to |initiator_|.
   // Creates the dialog if it did not exist prior to this call, returns true.
@@ -62,17 +110,6 @@ class MediaRouterDialogController {
   // that initiated the dialog, e.g. focuses the tab.
   void FocusOnMediaRouterDialog(bool dialog_needs_creation);
 
-  // Passes the ownership of the CreatePresentationConnectionRequest to the
-  // caller.
-  std::unique_ptr<CreatePresentationConnectionRequest>
-  TakeCreateConnectionRequest();
-
-  // Returns the CreatePresentationConnectionRequest to the caller but keeps the
-  // ownership with the MediaRouterDialogController.
-  const CreatePresentationConnectionRequest* create_connection_request() const {
-    return create_connection_request_.get();
-  }
-
   // Returns the WebContents that initiated showing the dialog.
   content::WebContents* initiator() const { return initiator_; }
 
@@ -83,6 +120,10 @@ class MediaRouterDialogController {
   // Closes the media router dialog if it exists.
   virtual void CloseMediaRouterDialog() = 0;
 
+  // Data for dialogs created at the request of the Presentation API.
+  // Created from arguments passed in via ShowMediaRouterDialogForPresentation.
+  std::unique_ptr<StartPresentationContext> start_presentation_context_;
+
  private:
   class InitiatorWebContentsObserver;
 
@@ -90,12 +131,6 @@ class MediaRouterDialogController {
   // is destroyed or navigated.
   std::unique_ptr<InitiatorWebContentsObserver> initiator_observer_;
   content::WebContents* const initiator_;
-
-  // Data for dialogs created at the request of the Presentation API.
-  // Passed from the caller via ShowMediaRouterDialogForPresentation to the
-  // dialog when it is initialized.
-  std::unique_ptr<CreatePresentationConnectionRequest>
-      create_connection_request_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaRouterDialogController);
 };

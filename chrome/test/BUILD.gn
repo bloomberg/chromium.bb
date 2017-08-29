@@ -3173,7 +3173,6 @@ test("unit_tests") {
     "../browser/media/midi_permission_context_unittest.cc",
     "../browser/media/midi_sysex_permission_context_unittest.cc",
     "../browser/media/router/browser_presentation_connection_proxy_unittest.cc",
-    "../browser/media/router/create_presentation_connection_request_unittest.cc",
     "../browser/media/router/issue_manager_unittest.cc",
     "../browser/media/router/media_router_base_unittest.cc",
     "../browser/media/router/media_router_dialog_controller_unittest.cc",
