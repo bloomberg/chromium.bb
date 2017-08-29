@@ -2833,6 +2833,16 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBeginImpl(
         MainThreadScrollingReason::kNoScrollingLayer;
     return scroll_status;
   }
+
+  if (touchpad_and_wheel_scroll_latching_enabled_) {
+    // TODO(chaopeng) ScrollBegin and ScrollEnd will apply to same layer after
+    // TouchpadAndWheelScrollLatching land.
+    ScrollbarAnimationController* animation_controller =
+        ScrollbarAnimationControllerForElementId(scrolling_node->element_id);
+    if (animation_controller)
+      animation_controller->DidScrollBegin();
+  }
+
   scroll_status.thread = SCROLL_ON_IMPL_THREAD;
   mutator_host_->ScrollAnimationAbort();
 
@@ -2948,10 +2958,22 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
     RecordCompositorSlowScrollMetric(type, MAIN_THREAD);
 
     scroll_status.thread = SCROLL_ON_MAIN_THREAD;
+
+    // TODO(chaopeng) ScrollBegin and ScrollEnd will apply to same layer after
+    // TouchpadAndWheelScrollLatching land. impl scroll will call scroll begin
+    // in ScrollBeginImpl.
+    if (touchpad_and_wheel_scroll_latching_enabled_ && scrolling_node) {
+      ScrollbarAnimationController* animation_controller =
+          ScrollbarAnimationControllerForElementId(scrolling_node->element_id);
+      if (animation_controller)
+        animation_controller->DidScrollBegin();
+    }
+
     return scroll_status;
-  } else if (scrolling_node) {
-    scroll_affects_scroll_handler_ = active_tree_->have_scroll_event_handlers();
   }
+
+  if (scrolling_node)
+    scroll_affects_scroll_handler_ = active_tree_->have_scroll_event_handlers();
 
   return ScrollBeginImpl(scroll_state, scrolling_node, type);
 }
@@ -3624,6 +3646,18 @@ void LayerTreeHostImpl::ScrollEnd(ScrollState* scroll_state) {
 
   DistributeScrollDelta(scroll_state);
   browser_controls_offset_manager_->ScrollEnd();
+
+  // TODO(chaopeng) ScrollBegin and ScrollEnd will apply to same layer after
+  // TouchpadAndWheelScrollLatching land.
+  if (touchpad_and_wheel_scroll_latching_enabled_) {
+    if (ScrollNode* scrolling_node = CurrentlyScrollingNode()) {
+      ScrollbarAnimationController* scrollbar_animation_controller =
+          ScrollbarAnimationControllerForElementId(scrolling_node->element_id);
+      if (scrollbar_animation_controller)
+        scrollbar_animation_controller->DidScrollEnd();
+    }
+  }
+
   ClearCurrentlyScrollingNode();
 }
 
