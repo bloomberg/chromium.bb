@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/extensions/extension_installed_notification.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/notifications/notification.h"
@@ -20,6 +21,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_style.h"
 
 namespace {
@@ -54,8 +56,15 @@ ExtensionInstalledNotification::ExtensionInstalledNotification(
       l10n_util::GetStringUTF16(IDS_EXTENSION_NOTIFICATION_DISPLAY_SOURCE),
       GURL(extension_urls::kChromeWebstoreBaseURL) /* origin_url */,
       extension_id_, optional_field, this));
-  notification->set_accent_color(
-      message_center::kSystemNotificationColorNormal);
+  if (message_center::MessageCenter::IsNewStyleNotificationEnabled()) {
+    notification->set_icon(gfx::Image());
+    notification->set_accent_color(
+        message_center::kSystemNotificationColorNormal);
+    notification->set_small_image(gfx::Image(
+        gfx::CreateVectorIcon(kNotificationInstalledIcon,
+                              message_center::kSystemNotificationColorNormal)));
+    notification->set_vector_small_image(kNotificationInstalledIcon);
+  }
   g_browser_process->notification_ui_manager()->Add(*notification, profile_);
 }
 
