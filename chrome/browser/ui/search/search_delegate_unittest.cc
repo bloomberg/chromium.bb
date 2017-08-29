@@ -14,29 +14,31 @@ typedef BrowserWithTestWindowTest SearchDelegateTest;
 // the browser's search model.
 TEST_F(SearchDelegateTest, SearchModel) {
   // Initial state.
-  EXPECT_TRUE(browser()->search_model()->mode().is_default());
+  EXPECT_TRUE(browser()->search_model()->mode().is_origin_default());
 
   // Propagate change from tab's search model to browser's search model.
   AddTab(browser(), GURL("http://foo/0"));
-  content::WebContents* web_contents =
+  content::WebContents* first_tab =
       browser()->tab_strip_model()->GetWebContentsAt(0);
-  SearchTabHelper::FromWebContents(web_contents)->model()->
-      SetMode(SearchMode(SearchMode::MODE_NTP, SearchMode::ORIGIN_NTP));
-  EXPECT_TRUE(browser()->search_model()->mode().is_ntp());
+  SearchTabHelper::FromWebContents(first_tab)->model()->SetMode(
+      SearchMode(SearchMode::ORIGIN_NTP));
+  EXPECT_TRUE(browser()->search_model()->mode().is_origin_ntp());
 
-  // Add second tab, make it active, and make sure its mode changes
-  // propagate to the browser's search model.
+  // Add second tab (it gets inserted at index 0), make it active, and make sure
+  // its mode changes propagate to the browser's search model.
   AddTab(browser(), GURL("http://foo/1"));
-  browser()->tab_strip_model()->ActivateTabAt(1, true);
-  web_contents = browser()->tab_strip_model()->GetWebContentsAt(1);
-  SearchTabHelper::FromWebContents(web_contents)->model()->
-      SetMode(SearchMode(SearchMode::MODE_SEARCH_SUGGESTIONS,
-                         SearchMode::ORIGIN_DEFAULT));
-  EXPECT_TRUE(browser()->search_model()->mode().is_search_suggestions());
+  content::WebContents* second_tab =
+      browser()->tab_strip_model()->GetWebContentsAt(0);
+  ASSERT_NE(first_tab, second_tab);
+  browser()->tab_strip_model()->ActivateTabAt(0, true);
+  EXPECT_TRUE(browser()->search_model()->mode().is_origin_default());
+  SearchTabHelper::FromWebContents(second_tab)
+      ->model()
+      ->SetMode(SearchMode(SearchMode::ORIGIN_NTP));
+  EXPECT_TRUE(browser()->search_model()->mode().is_origin_ntp());
 
   // The first tab is not active so changes should not propagate.
-  web_contents = browser()->tab_strip_model()->GetWebContentsAt(0);
-  SearchTabHelper::FromWebContents(web_contents)->model()->
-      SetMode(SearchMode(SearchMode::MODE_NTP, SearchMode::ORIGIN_NTP));
-  EXPECT_TRUE(browser()->search_model()->mode().is_search_suggestions());
+  SearchTabHelper::FromWebContents(first_tab)->model()->SetMode(
+      SearchMode(SearchMode::ORIGIN_DEFAULT));
+  EXPECT_TRUE(browser()->search_model()->mode().is_origin_ntp());
 }

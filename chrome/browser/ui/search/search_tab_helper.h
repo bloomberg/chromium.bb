@@ -60,12 +60,6 @@ class SearchTabHelper : public content::WebContentsObserver,
   void OmniboxFocusChanged(OmniboxFocusState state,
                            OmniboxFocusChangeReason reason);
 
-  // Invoked when the active navigation entry is updated in some way that might
-  // affect the search mode. This is used by Instant when it "fixes up" the
-  // virtual URL of the active entry. Regular navigations are captured through
-  // the notification system and shouldn't call this method.
-  void NavigationEntryUpdated();
-
   // Sends the current SearchProvider suggestion to the Instant page if any.
   void SetSuggestionToPrefetch(const InstantSuggestion& suggestion);
 
@@ -136,9 +130,7 @@ class SearchTabHelper : public content::WebContentsObserver,
       const std::vector<InstantMostVisitedItem>& items) override;
 
   // Sets the mode of the model based on the current URL of web_contents().
-  // Only updates the origin part of the mode if |update_origin| is true,
-  // otherwise keeps the current origin.
-  void UpdateMode(bool update_origin);
+  void UpdateMode();
 
   OmniboxView* GetOmniboxView();
   const OmniboxView* GetOmniboxView() const;

@@ -23,9 +23,8 @@ InstantController::~InstantController() = default;
 
 void InstantController::SearchModeChanged(const SearchMode& old_mode,
                                           const SearchMode& new_mode) {
-  LogDebugEvent(base::StringPrintf(
-      "SearchModeChanged: [origin:mode] %d:%d to %d:%d", old_mode.origin,
-      old_mode.mode, new_mode.origin, new_mode.mode));
+  LogDebugEvent(base::StringPrintf("SearchModeChanged: %d to %d",
+                                   old_mode.origin, new_mode.origin));
 
   search_mode_ = new_mode;
   ResetInstantTab();
