@@ -42,6 +42,7 @@ class InputDeviceSettingsImplOzone : public InputDeviceSettings {
   void UpdateMouseSettings(const MouseSettings& settings) override;
   void SetMouseSensitivity(int value) override;
   void SetPrimaryButtonRight(bool right) override;
+  void SetMouseReverseScroll(bool enabled) override;
   void ReapplyTouchpadSettings() override;
   void ReapplyMouseSettings() override;
   InputDeviceSettings::FakeInterface* GetFakeInterface() override;
@@ -124,6 +125,11 @@ void InputDeviceSettingsImplOzone::SetMouseSensitivity(int value) {
 void InputDeviceSettingsImplOzone::SetPrimaryButtonRight(bool right) {
   current_mouse_settings_.SetPrimaryButtonRight(right);
   input_device_controller_client_->SetPrimaryButtonRight(right);
+}
+
+void InputDeviceSettingsImplOzone::SetMouseReverseScroll(bool enabled) {
+  current_mouse_settings_.SetReverseScroll(enabled);
+  input_device_controller_client_->SetMouseReverseScroll(enabled);
 }
 
 void InputDeviceSettingsImplOzone::ReapplyTouchpadSettings() {

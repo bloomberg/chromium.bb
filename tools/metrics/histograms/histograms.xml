@@ -35316,6 +35316,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Mouse.ReverseScroll.Changed" enum="BooleanEnabled">
+  <owner>lannm@chromium.org</owner>
+  <summary>Tracks mouse reverse scroll setting changes by the user.</summary>
+</histogram>
+
+<histogram name="Mouse.ReverseScroll.Started" enum="BooleanEnabled">
+  <owner>lannm@chromium.org</owner>
+  <summary>Tracks mouse reverse scroll setting on startup.</summary>
+</histogram>
+
 <histogram name="Mouse.Sensitivity.Changed" enum="PointerSensitivity">
   <obsolete>
     Deprecated as of 6/2013, replaced by Mouse.PointerSensitivity.Changed.

@@ -45,6 +45,7 @@ interface InputDeviceController {
   // Mouse settings.
   SetMouseSensitivity(int32 value);
   SetPrimaryButtonRight(bool right);
+  SetMouseReverseScroll(bool enabled);
 
   // Touchscreen log settings.
   GetTouchDeviceStatus() => (string status);

@@ -338,6 +338,22 @@ AutotestPrivateSetPrimaryButtonRightFunction::Run() {
   return RespondNow(NoArguments());
 }
 
+ExtensionFunction::ResponseAction
+AutotestPrivateSetMouseReverseScrollFunction::Run() {
+  std::unique_ptr<api::autotest_private::SetMouseReverseScroll::Params> params(
+      api::autotest_private::SetMouseReverseScroll::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  DVLOG(1) << "AutotestPrivateSetMouseReverseScrollFunction "
+           << params->enabled;
+
+#if defined(OS_CHROMEOS)
+  chromeos::system::InputDeviceSettings::Get()->SetMouseReverseScroll(
+      params->enabled);
+#endif
+  return RespondNow(NoArguments());
+}
+
 // static
 std::string AutotestPrivateGetVisibleNotificationsFunction::ConvertToString(
     message_center::NotificationType type) {

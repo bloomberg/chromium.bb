@@ -280,6 +280,11 @@ cr.define('device_page_tests', function() {
             type: chrome.settingsPrivate.PrefType.BOOLEAN,
             value: false,
           },
+          reverse_scroll: {
+            key: 'settings.mouse.reverse_scroll',
+            type: chrome.settingsPrivate.PrefType.BOOLEAN,
+            value: false,
+          },
           sensitivity2: {
             key: 'settings.mouse.sensitivity2',
             type: chrome.settingsPrivate.PrefType.NUMBER,

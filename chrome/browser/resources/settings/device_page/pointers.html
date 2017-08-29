@@ -38,6 +38,10 @@
             on-down="onMouseSwapButtonsDown_" on-up="onMouseSwapButtonsUp_"
             no-set-pref>
         </settings-toggle-button>
+        <settings-toggle-button id="mouseReverseScroll"
+            pref="{{prefs.settings.mouse.reverse_scroll}}"
+            label="$i18n{mouseReverseScroll}">
+        </settings-toggle-button>
         <div class="settings-box">
           <div class="start" id="mouseSpeedLabel">$i18n{mouseSpeed}</div>
           <settings-slider pref="{{prefs.settings.mouse.sensitivity2}}"

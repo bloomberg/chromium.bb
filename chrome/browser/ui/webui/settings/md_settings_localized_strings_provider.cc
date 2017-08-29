@@ -502,6 +502,7 @@ void AddDeviceStrings(content::WebUIDataSource* html_source) {
       {"pointerFast", IDS_SETTINGS_POINTER_SPEED_FAST_LABEL},
       {"mouseSpeed", IDS_SETTINGS_MOUSE_SPEED_LABEL},
       {"mouseSwapButtons", IDS_SETTINGS_MOUSE_SWAP_BUTTONS_LABEL},
+      {"mouseReverseScroll", IDS_SETTINGS_MOUSE_REVERSE_SCROLL_LABEL},
   };
   AddLocalizedStringsBulk(html_source, pointers_strings,
                           arraysize(pointers_strings));

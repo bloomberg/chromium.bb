@@ -96,6 +96,10 @@ void InputDeviceController::SetPrimaryButtonRight(bool right) {
   GetInputController()->SetPrimaryButtonRight(right);
 }
 
+void InputDeviceController::SetMouseReverseScroll(bool enabled) {
+  GetInputController()->SetMouseReverseScroll(enabled);
+}
+
 void InputDeviceController::GetTouchDeviceStatus(
     GetTouchDeviceStatusCallback callback) {
   GetInputController()->GetTouchDeviceStatus(std::move(callback));

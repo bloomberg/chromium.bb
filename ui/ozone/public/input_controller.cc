@@ -40,6 +40,7 @@ class StubInputController : public InputController {
   void SetNaturalScroll(bool enabled) override;
   void SetMouseSensitivity(int value) override;
   void SetPrimaryButtonRight(bool right) override;
+  void SetMouseReverseScroll(bool enabled) override;
   void SetTapToClickPaused(bool state) override;
   void GetTouchDeviceStatus(GetTouchDeviceStatusReply reply) override;
   void GetTouchEventLog(const base::FilePath& out_dir,
@@ -119,6 +120,9 @@ void StubInputController::SetMouseSensitivity(int value) {
 }
 
 void StubInputController::SetPrimaryButtonRight(bool right) {
+}
+
+void StubInputController::SetMouseReverseScroll(bool enabled) {
 }
 
 void StubInputController::SetTapToClickPaused(bool state) {

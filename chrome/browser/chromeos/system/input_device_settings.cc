@@ -167,6 +167,7 @@ MouseSettings& MouseSettings::operator=(const MouseSettings& other) {
   if (&other != this) {
     sensitivity_ = other.sensitivity_;
     primary_button_right_ = other.primary_button_right_;
+    reverse_scroll_ = other.reverse_scroll_;
   }
   return *this;
 }
@@ -195,12 +196,27 @@ bool MouseSettings::IsPrimaryButtonRightSet() const {
   return primary_button_right_.has_value();
 }
 
+void MouseSettings::SetReverseScroll(bool enabled) {
+  reverse_scroll_ = enabled;
+}
+
+bool MouseSettings::GetReverseScroll() const {
+  return *reverse_scroll_;
+}
+
+bool MouseSettings::IsReverseScrollSet() const {
+  return reverse_scroll_.has_value();
+}
+
 bool MouseSettings::Update(const MouseSettings& settings) {
   bool updated = false;
   if (UpdateIfHasValue(settings.sensitivity_, &sensitivity_))
     updated = true;
   if (UpdateIfHasValue(settings.primary_button_right_,
                        &primary_button_right_)) {
+    updated = true;
+  }
+  if (UpdateIfHasValue(settings.reverse_scroll_, &reverse_scroll_)) {
     updated = true;
   }
   return updated;
@@ -218,6 +234,10 @@ void MouseSettings::Apply(const MouseSettings& mouse_settings,
   if (mouse_settings.primary_button_right_.has_value()) {
     input_device_settings->SetPrimaryButtonRight(
         mouse_settings.primary_button_right_.value());
+  }
+  if (mouse_settings.reverse_scroll_.has_value()) {
+    input_device_settings->SetMouseReverseScroll(
+        mouse_settings.reverse_scroll_.value());
   }
 }
 

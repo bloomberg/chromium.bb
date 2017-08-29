@@ -65,6 +65,7 @@ class OZONE_BASE_EXPORT InputController {
   // Mouse settings.
   virtual void SetMouseSensitivity(int value) = 0;
   virtual void SetPrimaryButtonRight(bool right) = 0;
+  virtual void SetMouseReverseScroll(bool enabled) = 0;
 
   // Touch log collection.
   virtual void GetTouchDeviceStatus(GetTouchDeviceStatusReply reply) = 0;
