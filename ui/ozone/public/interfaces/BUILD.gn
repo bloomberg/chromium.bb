@@ -7,7 +7,7 @@ import("//mojo/public/tools/bindings/mojom.gni")
 mojom("interfaces") {
   sources = [
     "device_cursor.mojom",
-    "gpu_adapter.mojom",
+    "drm_device.mojom",
     "overlay_surface_candidate.mojom",
   ]
 
