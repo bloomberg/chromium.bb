@@ -121,11 +121,7 @@ void RenderWidgetHostViewChildFrame::SetFrameConnectorDelegate(
     return;
 
   if (frame_connector_) {
-    if (parent_frame_sink_id_.is_valid() && !IsUsingMus()) {
-      GetHostFrameSinkManager()->UnregisterFrameSinkHierarchy(
-          parent_frame_sink_id_, frame_sink_id_);
-    }
-    parent_frame_sink_id_ = viz::FrameSinkId();
+    SetParentFrameSinkId(viz::FrameSinkId());
     last_received_local_surface_id_ = viz::LocalSurfaceId();
 
     // Unlocks the mouse if this RenderWidgetHostView holds the lock.
@@ -137,12 +133,8 @@ void RenderWidgetHostViewChildFrame::SetFrameConnectorDelegate(
     RenderWidgetHostViewBase* parent_view =
         frame_connector_->GetParentRenderWidgetHostView();
     if (parent_view) {
-      parent_frame_sink_id_ = parent_view->GetFrameSinkId();
-      DCHECK(parent_frame_sink_id_.is_valid());
-      if (!IsUsingMus()) {
-        GetHostFrameSinkManager()->RegisterFrameSinkHierarchy(
-            parent_frame_sink_id_, frame_sink_id_);
-      }
+      DCHECK(parent_view->GetFrameSinkId().is_valid());
+      SetParentFrameSinkId(parent_view->GetFrameSinkId());
     }
 
     auto* root_view = frame_connector_->GetRootRenderWidgetHostView();
@@ -462,7 +454,8 @@ void RenderWidgetHostViewChildFrame::GestureEventAck(
 
 void RenderWidgetHostViewChildFrame::DidReceiveCompositorFrameAck(
     const std::vector<viz::ReturnedResource>& resources) {
-  renderer_compositor_frame_sink_->DidReceiveCompositorFrameAck(resources);
+  if (renderer_compositor_frame_sink_)
+    renderer_compositor_frame_sink_->DidReceiveCompositorFrameAck(resources);
 }
 
 void RenderWidgetHostViewChildFrame::DidCreateNewRendererCompositorFrameSink(
@@ -471,6 +464,28 @@ void RenderWidgetHostViewChildFrame::DidCreateNewRendererCompositorFrameSink(
   renderer_compositor_frame_sink_ = renderer_compositor_frame_sink;
   CreateCompositorFrameSinkSupport();
   has_frame_ = false;
+}
+
+void RenderWidgetHostViewChildFrame::SetParentFrameSinkId(
+    const viz::FrameSinkId& parent_frame_sink_id) {
+  if (parent_frame_sink_id_ == parent_frame_sink_id || IsUsingMus())
+    return;
+
+  auto* host_frame_sink_manager = GetHostFrameSinkManager();
+
+  // Unregister hierarchy for the current parent, only if set.
+  if (parent_frame_sink_id_.is_valid()) {
+    host_frame_sink_manager->UnregisterFrameSinkHierarchy(parent_frame_sink_id_,
+                                                          frame_sink_id_);
+  }
+
+  parent_frame_sink_id_ = parent_frame_sink_id;
+
+  // Register hierarchy for the new parent, only if set.
+  if (parent_frame_sink_id_.is_valid()) {
+    host_frame_sink_manager->RegisterFrameSinkHierarchy(parent_frame_sink_id_,
+                                                        frame_sink_id_);
+  }
 }
 
 void RenderWidgetHostViewChildFrame::ProcessCompositorFrame(
@@ -774,16 +789,19 @@ bool RenderWidgetHostViewChildFrame::HasAcceleratedSurface(
 
 void RenderWidgetHostViewChildFrame::ReclaimResources(
     const std::vector<viz::ReturnedResource>& resources) {
-  renderer_compositor_frame_sink_->ReclaimResources(resources);
+  if (renderer_compositor_frame_sink_)
+    renderer_compositor_frame_sink_->ReclaimResources(resources);
 }
 
 void RenderWidgetHostViewChildFrame::OnBeginFrame(
     const viz::BeginFrameArgs& args) {
-  renderer_compositor_frame_sink_->OnBeginFrame(args);
+  if (renderer_compositor_frame_sink_)
+    renderer_compositor_frame_sink_->OnBeginFrame(args);
 }
 
 void RenderWidgetHostViewChildFrame::OnBeginFramePausedChanged(bool paused) {
-  renderer_compositor_frame_sink_->OnBeginFramePausedChanged(paused);
+  if (renderer_compositor_frame_sink_)
+    renderer_compositor_frame_sink_->OnBeginFramePausedChanged(paused);
 }
 
 void RenderWidgetHostViewChildFrame::OnFirstSurfaceActivation(

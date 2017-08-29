@@ -226,6 +226,10 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   explicit RenderWidgetHostViewChildFrame(RenderWidgetHost* widget);
   void Init();
 
+  // Sets |parent_frame_sink_id_| and registers frame sink hierarchy. If the
+  // parent was already set then it also unregisters hierarchy.
+  void SetParentFrameSinkId(const viz::FrameSinkId& parent_frame_sink_id);
+
   void ProcessCompositorFrame(const viz::LocalSurfaceId& local_surface_id,
                               cc::CompositorFrame frame);
 
@@ -313,4 +317,4 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_FRAME_HOST_RENDER_WIDGET_HOST_VIEW_CHILD_FRAME_H_
+#endif  // CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_VIEW_CHILD_FRAME_H_
