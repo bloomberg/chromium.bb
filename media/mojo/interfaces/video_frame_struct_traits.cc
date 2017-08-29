@@ -99,6 +99,7 @@ bool StructTraits<media::mojom::VideoFrameDataView,
   if (!input.ReadTimestamp(&timestamp))
     return false;
 
+  scoped_refptr<media::VideoFrame> frame;
   if (data.is_shared_buffer_data()) {
     media::mojom::SharedBufferVideoFrameDataDataView shared_buffer_data;
     data.GetSharedBufferDataDataView(&shared_buffer_data);
@@ -106,17 +107,14 @@ bool StructTraits<media::mojom::VideoFrameDataView,
     // TODO(sandersd): Conversion from uint64_t to size_t could cause
     // corruption. Platform-dependent types should be removed from the
     // implementation (limiting to 32-bit offsets is fine).
-    *output = media::MojoSharedBufferVideoFrame::Create(
+    frame = media::MojoSharedBufferVideoFrame::Create(
         format, coded_size, visible_rect, natural_size,
         shared_buffer_data.TakeFrameData(),
         shared_buffer_data.frame_data_size(), shared_buffer_data.y_offset(),
         shared_buffer_data.u_offset(), shared_buffer_data.v_offset(),
         shared_buffer_data.y_stride(), shared_buffer_data.u_stride(),
         shared_buffer_data.v_stride(), timestamp);
-    return !!*output;
-  }
-
-  if (data.is_mailbox_data()) {
+  } else if (data.is_mailbox_data()) {
     media::mojom::MailboxVideoFrameDataDataView mailbox_data;
     data.GetMailboxDataDataView(&mailbox_data);
 
@@ -128,15 +126,22 @@ bool StructTraits<media::mojom::VideoFrameDataView,
     for (size_t i = 0; i < media::VideoFrame::kMaxPlanes; i++)
       mailbox_holder_array[i] = mailbox_holder[i];
 
-    *output = media::VideoFrame::WrapNativeTextures(
+    frame = media::VideoFrame::WrapNativeTextures(
         format, mailbox_holder_array, media::VideoFrame::ReleaseMailboxCB(),
         coded_size, visible_rect, natural_size, timestamp);
-    return !!*output;
+  } else {
+    // TODO(sandersd): Switch on the union tag to avoid this ugliness?
+    NOTREACHED();
+    return false;
   }
 
-  // TODO(sandersd): Switch on the union tag to avoid this ugliness?
-  NOTREACHED();
-  return false;
+  std::unique_ptr<base::DictionaryValue> metadata;
+  if (!input.ReadMetadata(&metadata))
+    return false;
+  frame->metadata()->MergeInternalValuesFrom(*metadata);
+
+  *output = std::move(frame);
+  return true;
 }
 
 }  // namespace mojo
