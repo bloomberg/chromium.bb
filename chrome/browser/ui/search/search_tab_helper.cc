@@ -146,7 +146,7 @@ void SearchTabHelper::OmniboxInputStateChanged() {
   if (!is_search_enabled_)
     return;
 
-  UpdateMode(/*update_origin=*/false);
+  ipc_router_.SetInputInProgress(IsInputInProgress());
 }
 
 void SearchTabHelper::OmniboxFocusChanged(OmniboxFocusState state,
@@ -163,13 +163,6 @@ void SearchTabHelper::OmniboxFocusChanged(OmniboxFocusState state,
   // a spurious oninputend when the user accepts a match in the omnibox.
   if (web_contents_->GetController().GetPendingEntry() == nullptr)
     ipc_router_.SetInputInProgress(IsInputInProgress());
-}
-
-void SearchTabHelper::NavigationEntryUpdated() {
-  if (!is_search_enabled_)
-    return;
-
-  UpdateMode(/*update_origin=*/false);
 }
 
 void SearchTabHelper::SetSuggestionToPrefetch(
@@ -294,7 +287,7 @@ void SearchTabHelper::NavigationEntryCommitted(
   if (!load_details.is_main_frame)
     return;
 
-  UpdateMode(/*update_origin=*/true);
+  UpdateMode();
 
   if (InInstantProcess(profile(), web_contents_))
     ipc_router_.OnNavigationEntryCommitted();
@@ -441,25 +434,13 @@ void SearchTabHelper::OnHistorySyncCheck() {
   ipc_router_.SendHistorySyncCheckResult(IsHistorySyncEnabled(profile()));
 }
 
-void SearchTabHelper::UpdateMode(bool update_origin) {
-  SearchMode::Type type = SearchMode::MODE_DEFAULT;
-  SearchMode::Origin origin = SearchMode::ORIGIN_DEFAULT;
-  if (IsNTP(web_contents_)) {
-    type = SearchMode::MODE_NTP;
-    origin = SearchMode::ORIGIN_NTP;
-  }
-  if (!update_origin)
-    origin = model_.mode().origin;
+void SearchTabHelper::UpdateMode() {
+  SearchMode::Origin origin = IsNTP(web_contents_) ? SearchMode::ORIGIN_NTP
+                                                   : SearchMode::ORIGIN_DEFAULT;
+  model_.SetMode(SearchMode(origin));
 
-  OmniboxView* omnibox_view = GetOmniboxView();
-  if (omnibox_view && omnibox_view->model()->user_input_in_progress())
-    type = SearchMode::MODE_SEARCH_SUGGESTIONS;
-
-  SearchMode old_mode(model_.mode());
-  model_.SetMode(SearchMode(type, origin));
-  if (old_mode.is_ntp() != model_.mode().is_ntp()) {
+  if (model_.mode().is_origin_ntp())
     ipc_router_.SetInputInProgress(IsInputInProgress());
-  }
 }
 
 const OmniboxView* SearchTabHelper::GetOmniboxView() const {
@@ -484,9 +465,7 @@ Profile* SearchTabHelper::profile() const {
 }
 
 bool SearchTabHelper::IsInputInProgress() const {
-  if (model_.mode().is_ntp())
-    return false;
   const OmniboxView* omnibox_view = GetOmniboxView();
-  return omnibox_view &&
+  return omnibox_view && omnibox_view->model()->user_input_in_progress() &&
          omnibox_view->model()->focus_state() == OMNIBOX_FOCUS_VISIBLE;
 }

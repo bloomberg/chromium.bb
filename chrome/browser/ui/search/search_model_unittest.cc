@@ -88,16 +88,16 @@ void SearchModelTest::TearDown() {
   ChromeRenderViewHostTestHarness::TearDown();
 }
 
-TEST_F(SearchModelTest, UpdateSearchModelMode) {
+TEST_F(SearchModelTest, UpdateSearchModelOrigin) {
   mock_observer.VerifyNotificationCount(0);
-  SearchMode search_mode(SearchMode::MODE_NTP, SearchMode::ORIGIN_NTP);
+  SearchMode search_mode(SearchMode::ORIGIN_NTP);
   SearchMode expected_old_mode = model->mode();
   SearchMode expected_new_mode = search_mode;
   model->SetMode(search_mode);
   mock_observer.VerifySearchModelStates(expected_old_mode, expected_new_mode);
   mock_observer.VerifyNotificationCount(1);
 
-  search_mode.mode = SearchMode::MODE_SEARCH_SUGGESTIONS;
+  search_mode.origin = SearchMode::ORIGIN_DEFAULT;
   expected_old_mode = expected_new_mode;
   expected_new_mode = search_mode;
   model->SetMode(search_mode);

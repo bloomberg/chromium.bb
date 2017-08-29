@@ -7,22 +7,8 @@
 
 // The Mode structure encodes the visual states encountered when interacting
 // with the NTP and the Omnibox.
+// TODO(treib): Replace this struct by just the enum Origin. crbug.com/627747
 struct SearchMode {
-  // The visual state that applies to the current interaction.
-  enum Type {
-    // The default state means anything but the following states.
-    MODE_DEFAULT,
-
-    // On the NTP, and the user has *not* typed anything into the Omnibox.
-    MODE_NTP,
-
-    // The Omnibox is modified in some way, either on the NTP or not.
-    // TODO(treib): Get rid of this. It's only used to detect the "input in
-    // progress" state for the NTP, which should be done in a less roundabout
-    // way. crbug.com/627747
-    MODE_SEARCH_SUGGESTIONS,
-  };
-
   // The kind of page from which the user initiated the current search.
   enum Origin {
     // The user is searching from some random page.
@@ -32,32 +18,14 @@ struct SearchMode {
     ORIGIN_NTP,
   };
 
-  SearchMode() : mode(MODE_DEFAULT), origin(ORIGIN_DEFAULT) {
-  }
+  SearchMode() : origin(ORIGIN_DEFAULT) {}
 
-  SearchMode(Type in_mode, Origin in_origin)
-      : mode(in_mode),
-        origin(in_origin) {
-  }
+  explicit SearchMode(Origin in_origin) : origin(in_origin) {}
 
-  bool operator==(const SearchMode& rhs) const {
-    return mode == rhs.mode && origin == rhs.origin;
-  }
+  bool operator==(const SearchMode& rhs) const { return origin == rhs.origin; }
 
   bool operator!=(const SearchMode& rhs) const {
     return !(*this == rhs);
-  }
-
-  bool is_default() const {
-    return mode == MODE_DEFAULT;
-  }
-
-  bool is_ntp() const {
-    return mode == MODE_NTP;
-  }
-
-  bool is_search_suggestions() const {
-    return mode == MODE_SEARCH_SUGGESTIONS;
   }
 
   bool is_origin_default() const {
@@ -68,7 +36,6 @@ struct SearchMode {
     return origin == ORIGIN_NTP;
   }
 
-  Type mode;
   Origin origin;
 };
 
