@@ -275,6 +275,7 @@ void ChildFrameCompositingHelper::SetPrimarySurfaceInfo(
   viz::SurfaceInfo modified_surface_info(surface_info.id(), scale_factor,
                                          surface_info.size_in_pixels());
   surface_layer_->SetPrimarySurfaceInfo(modified_surface_info);
+  surface_layer_->SetFallbackSurfaceInfo(fallback_surface_info_);
 
   std::unique_ptr<cc_blink::WebLayerImpl> layer(
       new cc_blink::WebLayerImpl(surface_layer_));
@@ -294,6 +295,7 @@ void ChildFrameCompositingHelper::SetPrimarySurfaceInfo(
 void ChildFrameCompositingHelper::SetFallbackSurfaceInfo(
     const viz::SurfaceInfo& surface_info,
     const viz::SurfaceSequence& sequence) {
+  fallback_surface_info_ = surface_info;
   float scale_factor = surface_info.device_scale_factor();
   // TODO(oshima): This is a stopgap fix so that the compositor does not
   // scaledown the content when 2x frame data is added to 1x parent frame data.
