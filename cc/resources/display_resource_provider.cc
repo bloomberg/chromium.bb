@@ -135,7 +135,8 @@ void DisplayResourceProvider::ReceiveFromChild(
 
     if ((!it->is_software && !gl) ||
         (it->is_software && !shared_bitmap_manager_)) {
-      TRACE_EVENT0("cc", "ResourceProvider::ReceiveFromChild dropping invalid");
+      TRACE_EVENT0(
+          "cc", "DisplayResourceProvider::ReceiveFromChild dropping invalid");
       std::vector<viz::ReturnedResource> to_return;
       to_return.push_back(it->ToReturnedResource());
       child_info.return_callback.Run(to_return,
