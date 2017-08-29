@@ -101,6 +101,7 @@
 #include "ppapi/features/features.h"
 #include "printing/features/features.h"
 #include "services/device/public/cpp/device_features.h"
+#include "ui/app_list/app_list_features.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/display/display_switches.h"
@@ -1532,12 +1533,12 @@ const FeatureEntry kFeatureEntries[] = {
         "enable-fullscreen-app-list",
         flag_descriptions::kEnableFullscreenAppListName,
         flag_descriptions::kEnableFullscreenAppListDescription, kOsCrOS,
-        SINGLE_VALUE_TYPE(app_list::switches::kEnableFullscreenAppList),
+        FEATURE_VALUE_TYPE(app_list::features::kEnableFullscreenAppList),
     },
     {
         "enable-background-blur", flag_descriptions::kEnableBackgroundBlurName,
         flag_descriptions::kEnableBackgroundBlurDescription, kOsCrOS,
-        SINGLE_VALUE_TYPE(app_list::switches::kEnableBackgroundBlur),
+        FEATURE_VALUE_TYPE(app_list::features::kEnableBackgroundBlur),
     },
     {"instant-tethering", flag_descriptions::kTetherName,
      flag_descriptions::kTetherDescription, kOsCrOS,
