@@ -117,7 +117,7 @@ public class ArticleSnippetsTest {
 
     private FrameLayout mContentView;
     private SnippetArticleViewHolder mSuggestion;
-    private SignInPromo.ViewHolder mSigninPromo;
+    private SignInPromo.GenericPromoViewHolder mSigninPromo;
 
     private UiConfig mUiConfig;
 
@@ -282,7 +282,8 @@ public class ArticleSnippetsTest {
             mRecyclerView.init(mUiConfig, contextMenuManager);
             mRecyclerView.setAdapter(mAdapter);
 
-            mSigninPromo = new SignInPromo.ViewHolder(mRecyclerView, contextMenuManager, mUiConfig);
+            mSigninPromo = new SignInPromo.GenericPromoViewHolder(
+                    mRecyclerView, contextMenuManager, mUiConfig);
             mSigninPromo.onBindViewHolder(new SignInPromo(mUiDelegate));
             mContentView.addView(mSigninPromo.itemView);
         });
@@ -352,7 +353,7 @@ public class ArticleSnippetsTest {
     @Before
     public void setUp() throws Exception {
         mActivityTestRule.startMainActivityOnBlankPage();
-        ChromePreferenceManager.getInstance().setNewTabPageSigninPromoDismissed(true);
+        ChromePreferenceManager.getInstance().setNewTabPageGenericSigninPromoDismissed(true);
         mThumbnailProvider = new MockThumbnailProvider();
         mSnippetsSource = new FakeSuggestionsSource();
         mSuggestionsDeps.getFactory().thumbnailProvider = mThumbnailProvider;
