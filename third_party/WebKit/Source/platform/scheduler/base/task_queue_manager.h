@@ -115,6 +115,8 @@ class PLATFORM_EXPORT TaskQueueManager
     virtual ~Observer() {}
 
     virtual void OnTriedToExecuteBlockedTask() = 0;
+
+    virtual void OnBeginNestedRunLoop() = 0;
   };
 
   // Called once to set the Observer. This function is called on the main

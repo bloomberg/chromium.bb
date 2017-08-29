@@ -42,7 +42,6 @@ class PLATFORM_EXPORT WorkerSchedulerImpl : public WorkerScheduler,
   // TaskTimeObserver implementation:
   void WillProcessTask(double start_time) override;
   void DidProcessTask(double start_time, double end_time) override;
-  void OnBeginNestedRunLoop() override;
 
   SchedulerHelper* GetSchedulerHelperForTesting();
   base::TimeTicks CurrentIdleTaskDeadlineForTesting() const;

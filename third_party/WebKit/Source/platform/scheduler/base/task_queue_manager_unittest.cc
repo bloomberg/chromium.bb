@@ -1417,6 +1417,7 @@ namespace {
 class MockObserver : public TaskQueueManager::Observer {
  public:
   MOCK_METHOD0(OnTriedToExecuteBlockedTask, void());
+  MOCK_METHOD0(OnBeginNestedRunLoop, void());
 };
 
 }  // namespace
@@ -2913,6 +2914,100 @@ TEST_F(TaskQueueManagerTest, SetTimeDomainForDisabledQueue) {
   // Tidy up.
   runners_[0]->UnregisterTaskQueue();
   manager_->UnregisterTimeDomain(domain.get());
+}
+
+namespace {
+void SetOnTaskHandlers(scoped_refptr<TestTaskQueue> task_queue,
+                       int* start_counter,
+                       int* complete_counter) {
+  task_queue->GetTaskQueueImpl()->SetOnTaskStartedHandler(
+      base::Bind([](int* counter, const TaskQueue::Task& task,
+                    base::TimeTicks start) { ++(*counter); },
+                 start_counter));
+  task_queue->GetTaskQueueImpl()->SetOnTaskCompletedHandler(base::Bind(
+      [](int* counter, const TaskQueue::Task& task, base::TimeTicks start,
+         base::TimeTicks end) { ++(*counter); },
+      complete_counter));
+}
+
+void UnsetOnTaskHandlers(scoped_refptr<TestTaskQueue> task_queue) {
+  task_queue->GetTaskQueueImpl()->SetOnTaskStartedHandler(
+      base::Callback<void(const TaskQueue::Task& task,
+                          base::TimeTicks start)>());
+  task_queue->GetTaskQueueImpl()->SetOnTaskCompletedHandler(
+      base::Callback<void(const TaskQueue::Task& task, base::TimeTicks start,
+                          base::TimeTicks end)>());
+}
+}  // namespace
+
+TEST_F(TaskQueueManagerTest, ProcessTasksWithoutTaskTimeObservers) {
+  Initialize(1u);
+  int start_counter = 0;
+  int complete_counter = 0;
+  std::vector<EnqueueOrder> run_order;
+  SetOnTaskHandlers(runners_[0], &start_counter, &complete_counter);
+  EXPECT_TRUE(runners_[0]->GetTaskQueueImpl()->RequiresTaskTiming());
+  runners_[0]->PostTask(FROM_HERE, base::Bind(&TestTask, 1, &run_order));
+  runners_[0]->PostTask(FROM_HERE, base::Bind(&TestTask, 2, &run_order));
+  runners_[0]->PostTask(FROM_HERE, base::Bind(&TestTask, 3, &run_order));
+  test_task_runner_->RunUntilIdle();
+  EXPECT_EQ(start_counter, 3);
+  EXPECT_EQ(complete_counter, 3);
+  EXPECT_THAT(run_order, ElementsAre(1, 2, 3));
+
+  UnsetOnTaskHandlers(runners_[0]);
+  EXPECT_FALSE(runners_[0]->GetTaskQueueImpl()->RequiresTaskTiming());
+  runners_[0]->PostTask(FROM_HERE, base::Bind(&TestTask, 4, &run_order));
+  runners_[0]->PostTask(FROM_HERE, base::Bind(&TestTask, 5, &run_order));
+  runners_[0]->PostTask(FROM_HERE, base::Bind(&TestTask, 6, &run_order));
+  test_task_runner_->RunUntilIdle();
+  EXPECT_EQ(start_counter, 3);
+  EXPECT_EQ(complete_counter, 3);
+  EXPECT_THAT(run_order, ElementsAre(1, 2, 3, 4, 5, 6));
+}
+
+TEST_F(TaskQueueManagerTest, ProcessTasksWithTaskTimeObservers) {
+  Initialize(1u);
+  int start_counter = 0;
+  int complete_counter = 0;
+
+  manager_->AddTaskTimeObserver(&test_task_time_observer_);
+  SetOnTaskHandlers(runners_[0], &start_counter, &complete_counter);
+  EXPECT_TRUE(runners_[0]->GetTaskQueueImpl()->RequiresTaskTiming());
+  std::vector<EnqueueOrder> run_order;
+  runners_[0]->PostTask(FROM_HERE, base::Bind(&TestTask, 1, &run_order));
+  runners_[0]->PostTask(FROM_HERE, base::Bind(&TestTask, 2, &run_order));
+  test_task_runner_->RunUntilIdle();
+  EXPECT_EQ(start_counter, 2);
+  EXPECT_EQ(complete_counter, 2);
+  EXPECT_THAT(run_order, ElementsAre(1, 2));
+
+  UnsetOnTaskHandlers(runners_[0]);
+  EXPECT_FALSE(runners_[0]->GetTaskQueueImpl()->RequiresTaskTiming());
+  runners_[0]->PostTask(FROM_HERE, base::Bind(&TestTask, 3, &run_order));
+  runners_[0]->PostTask(FROM_HERE, base::Bind(&TestTask, 4, &run_order));
+  test_task_runner_->RunUntilIdle();
+  EXPECT_EQ(start_counter, 2);
+  EXPECT_EQ(complete_counter, 2);
+  EXPECT_THAT(run_order, ElementsAre(1, 2, 3, 4));
+
+  manager_->RemoveTaskTimeObserver(&test_task_time_observer_);
+  runners_[0]->PostTask(FROM_HERE, base::Bind(&TestTask, 5, &run_order));
+  runners_[0]->PostTask(FROM_HERE, base::Bind(&TestTask, 6, &run_order));
+  test_task_runner_->RunUntilIdle();
+  EXPECT_EQ(start_counter, 2);
+  EXPECT_EQ(complete_counter, 2);
+  EXPECT_FALSE(runners_[0]->GetTaskQueueImpl()->RequiresTaskTiming());
+  EXPECT_THAT(run_order, ElementsAre(1, 2, 3, 4, 5, 6));
+
+  SetOnTaskHandlers(runners_[0], &start_counter, &complete_counter);
+  runners_[0]->PostTask(FROM_HERE, base::Bind(&TestTask, 7, &run_order));
+  runners_[0]->PostTask(FROM_HERE, base::Bind(&TestTask, 8, &run_order));
+  test_task_runner_->RunUntilIdle();
+  EXPECT_EQ(start_counter, 4);
+  EXPECT_EQ(complete_counter, 4);
+  EXPECT_TRUE(runners_[0]->GetTaskQueueImpl()->RequiresTaskTiming());
+  EXPECT_THAT(run_order, ElementsAre(1, 2, 3, 4, 5, 6, 7, 8));
 }
 
 }  // namespace scheduler

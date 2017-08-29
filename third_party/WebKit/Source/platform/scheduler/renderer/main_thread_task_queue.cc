@@ -88,16 +88,25 @@ MainThreadTaskQueue::MainThreadTaskQueue(
       can_be_stopped_(params.can_be_stopped),
       used_for_control_tasks_(params.used_for_control_tasks),
       renderer_scheduler_(renderer_scheduler) {
+  GetTaskQueueImpl()->SetOnTaskStartedHandler(
+      base::Bind(&MainThreadTaskQueue::OnTaskStarted, base::Unretained(this)));
   GetTaskQueueImpl()->SetOnTaskCompletedHandler(base::Bind(
       &MainThreadTaskQueue::OnTaskCompleted, base::Unretained(this)));
 }
 
 MainThreadTaskQueue::~MainThreadTaskQueue() {}
 
+void MainThreadTaskQueue::OnTaskStarted(const TaskQueue::Task& task,
+                                        base::TimeTicks start) {
+  if (renderer_scheduler_)
+    renderer_scheduler_->OnTaskStarted(this, task, start);
+}
+
 void MainThreadTaskQueue::OnTaskCompleted(const TaskQueue::Task& task,
                                           base::TimeTicks start,
                                           base::TimeTicks end) {
-  renderer_scheduler_->OnTaskCompleted(this, task, start, end);
+  if (renderer_scheduler_)
+    renderer_scheduler_->OnTaskCompleted(this, task, start, end);
 }
 
 void MainThreadTaskQueue::UnregisterTaskQueue() {
@@ -106,6 +115,14 @@ void MainThreadTaskQueue::UnregisterTaskQueue() {
     renderer_scheduler_->OnUnregisterTaskQueue(this);
   }
   TaskQueue::UnregisterTaskQueue();
+}
+
+WebFrameScheduler* MainThreadTaskQueue::GetFrameScheduler() const {
+  return web_frame_scheduler_;
+}
+
+void MainThreadTaskQueue::SetFrameScheduler(WebFrameScheduler* frame) {
+  web_frame_scheduler_ = frame;
 }
 
 }  // namespace scheduler

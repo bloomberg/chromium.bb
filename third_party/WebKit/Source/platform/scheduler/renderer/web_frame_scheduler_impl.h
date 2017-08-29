@@ -27,6 +27,7 @@ namespace blink {
 namespace scheduler {
 
 class RendererSchedulerImpl;
+class MainThreadTaskQueue;
 class TaskQueue;
 class WebTaskRunnerImpl;
 class WebViewSchedulerImpl;
@@ -93,12 +94,12 @@ class WebFrameSchedulerImpl : public WebFrameScheduler {
 
   base::WeakPtr<WebFrameSchedulerImpl> AsWeakPtr();
 
-  scoped_refptr<TaskQueue> loading_task_queue_;
-  scoped_refptr<TaskQueue> loading_control_task_queue_;
-  scoped_refptr<TaskQueue> timer_task_queue_;
-  scoped_refptr<TaskQueue> unthrottled_task_queue_;
-  scoped_refptr<TaskQueue> suspendable_task_queue_;
-  scoped_refptr<TaskQueue> unthrottled_but_blockable_task_queue_;
+  scoped_refptr<MainThreadTaskQueue> loading_task_queue_;
+  scoped_refptr<MainThreadTaskQueue> loading_control_task_queue_;
+  scoped_refptr<MainThreadTaskQueue> timer_task_queue_;
+  scoped_refptr<MainThreadTaskQueue> unthrottled_task_queue_;
+  scoped_refptr<MainThreadTaskQueue> suspendable_task_queue_;
+  scoped_refptr<MainThreadTaskQueue> unthrottled_but_blockable_task_queue_;
   std::unique_ptr<TaskQueue::QueueEnabledVoter> loading_queue_enabled_voter_;
   std::unique_ptr<TaskQueue::QueueEnabledVoter>
       loading_control_queue_enabled_voter_;

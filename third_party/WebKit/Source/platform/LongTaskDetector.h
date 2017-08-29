@@ -46,7 +46,6 @@ class PLATFORM_EXPORT LongTaskDetector final
   // scheduler::TaskTimeObserver implementation
   void WillProcessTask(double start_time) override {}
   void DidProcessTask(double start_time, double end_time) override;
-  void OnBeginNestedRunLoop() override {}
 
   HeapHashSet<WeakMember<LongTaskObserver>> observers_;
 };

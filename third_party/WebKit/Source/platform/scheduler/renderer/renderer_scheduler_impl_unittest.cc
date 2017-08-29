@@ -260,12 +260,16 @@ class RendererSchedulerImplTest : public ::testing::Test {
  public:
   using UseCase = RendererSchedulerImpl::UseCase;
 
-  RendererSchedulerImplTest() : clock_(new base::SimpleTestTickClock()) {
+  RendererSchedulerImplTest()
+      : clock_(new base::SimpleTestTickClock()),
+        fake_task_(FROM_HERE, base::Bind([] {}), base::TimeTicks(), true) {
     clock_->Advance(base::TimeDelta::FromMicroseconds(5000));
   }
 
   RendererSchedulerImplTest(base::MessageLoop* message_loop)
-      : clock_(new base::SimpleTestTickClock()), message_loop_(message_loop) {
+      : clock_(new base::SimpleTestTickClock()),
+        fake_task_(FROM_HERE, base::Bind([] {}), base::TimeTicks(), true),
+        message_loop_(message_loop) {
     clock_->Advance(base::TimeDelta::FromMicroseconds(5000));
   }
 
@@ -294,6 +298,8 @@ class RendererSchedulerImplTest : public ::testing::Test {
         MainThreadTaskQueue::QueueType::FRAME_LOADING_CONTROL);
     idle_task_runner_ = scheduler_->IdleTaskRunner();
     timer_task_runner_ = scheduler_->TimerTaskQueue();
+    fake_queue_ = scheduler_->NewLoadingTaskQueue(
+        MainThreadTaskQueue::QueueType::FRAME_LOADING);
   }
 
   void TearDown() override {
@@ -562,11 +568,11 @@ class RendererSchedulerImplTest : public ::testing::Test {
   }
 
   void AdvanceTimeWithTask(double duration) {
-    double start = (clock_->NowTicks() - base::TimeTicks()).InSecondsF();
+    base::TimeTicks start = clock_->NowTicks();
+    scheduler_->OnTaskStarted(fake_queue_.get(), fake_task_, start);
     clock_->Advance(base::TimeDelta::FromSecondsD(duration));
-    double end = (clock_->NowTicks() - base::TimeTicks()).InSecondsF();
-    scheduler_->WillProcessTask(start);
-    scheduler_->DidProcessTask(start, end);
+    base::TimeTicks end = clock_->NowTicks();
+    scheduler_->OnTaskCompleted(fake_queue_.get(), fake_task_, start, end);
   }
 
   void GetQueueingTimeEstimatorLock() {
@@ -688,6 +694,8 @@ class RendererSchedulerImplTest : public ::testing::Test {
   }
 
   std::unique_ptr<base::SimpleTestTickClock> clock_;
+  TaskQueue::Task fake_task_;
+  scoped_refptr<MainThreadTaskQueue> fake_queue_;
   // Only one of mock_task_runner_ or message_loop_ will be set.
   scoped_refptr<cc::OrderedSimpleTaskRunner> mock_task_runner_;
   std::unique_ptr<base::MessageLoop> message_loop_;
@@ -3957,8 +3965,7 @@ TEST_F(RendererSchedulerImplTest, ResponsiveMainThreadDuringTask) {
   EXPECT_FALSE(
       scheduler_->MainThreadSeemsUnresponsive(responsiveness_threshold()));
   clock_->Advance(base::TimeDelta::FromSecondsD(2));
-  scheduler_->WillProcessTask(
-      (clock_->NowTicks() - base::TimeTicks()).InSecondsF());
+  scheduler_->OnTaskStarted(fake_queue_.get(), fake_task_, clock_->NowTicks());
   EXPECT_FALSE(
       scheduler_->MainThreadSeemsUnresponsive(responsiveness_threshold()));
 }

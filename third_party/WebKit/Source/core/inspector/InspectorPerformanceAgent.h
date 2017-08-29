@@ -57,7 +57,6 @@ class CORE_EXPORT InspectorPerformanceAgent final
   // scheduler::TaskTimeObserver
   void WillProcessTask(double start_time) override;
   void DidProcessTask(double start_time, double end_time) override;
-  void OnBeginNestedRunLoop() override {}
 
  private:
   InspectorPerformanceAgent(InspectedFrames*);
