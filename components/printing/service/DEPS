@@ -1,6 +1,5 @@
 include_rules = [
   "+components/discardable_memory/client",
-  "+content/public/common",
   "+content/public/utility",
   "+mojo/public/cpp",
   "+printing/common",
