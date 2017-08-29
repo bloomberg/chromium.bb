@@ -49,7 +49,11 @@ public class ChromePreferenceManager {
 
     private static final String CONTENT_SUGGESTIONS_SHOWN_KEY = "content_suggestions_shown";
 
-    private static final String NTP_SIGNIN_PROMO_DISMISSED = "ntp.signin_promo_dismissed";
+    // TODO(crbug.com/757892): Remove this preference key once the personalized signin promos
+    // launch completely.
+    private static final String NTP_GENERIC_SIGNIN_PROMO_DISMISSED = "ntp.signin_promo_dismissed";
+    private static final String NTP_PERSONALIZED_SIGNIN_PROMO_DISMISSED =
+            "ntp.personalized_signin_promo_dismissed";
     private static final String NTP_ANIMATION_RUN_COUNT = "ntp_recycler_view_animation_run_count";
 
     private static final String SUCCESS_UPLOAD_SUFFIX = "_crash_success_upload";
@@ -351,14 +355,24 @@ public class ChromePreferenceManager {
         writeBoolean(CHROME_DEFAULT_BROWSER, isDefault);
     }
 
-    /** Checks if the user dismissed the sign in promo from the new tab page. */
-    public boolean getNewTabPageSigninPromoDismissed() {
-        return mSharedPreferences.getBoolean(NTP_SIGNIN_PROMO_DISMISSED, false);
+    /** Checks if the user dismissed the generic sign in promo from the new tab page. */
+    public boolean getNewTabPageGenericSigninPromoDismissed() {
+        return mSharedPreferences.getBoolean(NTP_GENERIC_SIGNIN_PROMO_DISMISSED, false);
     }
 
-    /** Set whether the user dismissed the sign in promo from the new tab page. */
-    public void setNewTabPageSigninPromoDismissed(boolean isPromoDismissed) {
-        writeBoolean(NTP_SIGNIN_PROMO_DISMISSED, isPromoDismissed);
+    /** Set whether the user dismissed the generic sign in promo from the new tab page. */
+    public void setNewTabPageGenericSigninPromoDismissed(boolean isPromoDismissed) {
+        writeBoolean(NTP_GENERIC_SIGNIN_PROMO_DISMISSED, isPromoDismissed);
+    }
+
+    /** Checks if the user dismissed the personalized sign in promo from the new tab page. */
+    public boolean getNewTabPagePersonalizedSigninPromoDismissed() {
+        return mSharedPreferences.getBoolean(NTP_PERSONALIZED_SIGNIN_PROMO_DISMISSED, false);
+    }
+
+    /** Set whether the user dismissed the personalized sign in promo from the new tab page. */
+    public void setNewTabPagePersonalizedSigninPromoDismissed(boolean isPromoDismissed) {
+        writeBoolean(NTP_PERSONALIZED_SIGNIN_PROMO_DISMISSED, isPromoDismissed);
     }
 
     /** Gets the number of times the New Tab Page first card animation has been run. */

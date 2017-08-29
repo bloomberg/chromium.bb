@@ -178,7 +178,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
                         mRecyclerView, mContextMenuManager, mUiDelegate, mUiConfig);
 
             case ItemViewType.PROMO:
-                return new SignInPromo.ViewHolder(mRecyclerView, mContextMenuManager, mUiConfig);
+                return mSigninPromo.createViewHolder(mRecyclerView, mContextMenuManager, mUiConfig);
 
             case ItemViewType.FOOTER:
                 return new Footer.ViewHolder(mRecyclerView, mUiDelegate.getNavigationDelegate());

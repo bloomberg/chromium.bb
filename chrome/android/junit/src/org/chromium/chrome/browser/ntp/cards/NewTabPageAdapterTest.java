@@ -94,7 +94,8 @@ import java.util.List;
         @Features.Register(value = ChromeFeatureList.CHROME_HOME, enabled = false),
         @Features.Register(value = ChromeFeatureList.CHROME_HOME_MODERN_LAYOUT, enabled = false),
         @Features.Register(value = ChromeFeatureList.CONTENT_SUGGESTIONS_SCROLL_TO_LOAD,
-                enabled = false)})
+                enabled = false),
+        @Features.Register(value = ChromeFeatureList.ANDROID_SIGNIN_PROMOS, enabled = false)})
 public class NewTabPageAdapterTest {
     @Rule
     public DisableHistogramsRule mDisableHistogramsRule = new DisableHistogramsRule();
@@ -272,7 +273,8 @@ public class NewTabPageAdapterTest {
         CardsVariationParameters.setTestVariationParams(new HashMap<String, String>());
 
         // Initialise the sign in state. We will be signed in by default in the tests.
-        assertFalse(ChromePreferenceManager.getInstance().getNewTabPageSigninPromoDismissed());
+        assertFalse(
+                ChromePreferenceManager.getInstance().getNewTabPageGenericSigninPromoDismissed());
         SigninManager.setInstanceForTesting(mMockSigninManager);
         when(mMockSigninManager.isSignedInOnNative()).thenReturn(true);
         when(mMockSigninManager.isSignInAllowed()).thenReturn(true);
@@ -290,7 +292,7 @@ public class NewTabPageAdapterTest {
     public void tearDown() {
         CardsVariationParameters.setTestVariationParams(null);
         SigninManager.setInstanceForTesting(null);
-        ChromePreferenceManager.getInstance().setNewTabPageSigninPromoDismissed(false);
+        ChromePreferenceManager.getInstance().setNewTabPageGenericSigninPromoDismissed(false);
     }
 
     /**
@@ -965,7 +967,8 @@ public class NewTabPageAdapterTest {
             @Features.Register(value = ChromeFeatureList.CHROME_HOME),
             @Features.Register(value = ChromeFeatureList.CHROME_HOME_MODERN_LAYOUT),
             @Features.Register(value = ChromeFeatureList.CONTENT_SUGGESTIONS_SCROLL_TO_LOAD,
-                    enabled = false)})
+                enabled = false),
+            @Features.Register(value = ChromeFeatureList.ANDROID_SIGNIN_PROMOS, enabled = false)})
     public void testSigninPromoModern() {
         when(mMockSigninManager.isSignInAllowed()).thenReturn(true);
         when(mMockSigninManager.isSignedInOnNative()).thenReturn(false);
@@ -986,7 +989,7 @@ public class NewTabPageAdapterTest {
 
         when(mMockSigninManager.isSignInAllowed()).thenReturn(true);
         when(mMockSigninManager.isSignedInOnNative()).thenReturn(false);
-        ChromePreferenceManager.getInstance().setNewTabPageSigninPromoDismissed(false);
+        ChromePreferenceManager.getInstance().setNewTabPageGenericSigninPromoDismissed(false);
         reloadNtp();
 
         final int signInPromoPosition = mAdapter.getFirstPositionForType(ItemViewType.PROMO);
@@ -997,7 +1000,8 @@ public class NewTabPageAdapterTest {
 
         verify(itemDismissedCallback).onResult(anyString());
         assertFalse(isSignInPromoVisible());
-        assertTrue(ChromePreferenceManager.getInstance().getNewTabPageSigninPromoDismissed());
+        assertTrue(
+                ChromePreferenceManager.getInstance().getNewTabPageGenericSigninPromoDismissed());
 
         reloadNtp();
         assertFalse(isSignInPromoVisible());
@@ -1136,7 +1140,8 @@ public class NewTabPageAdapterTest {
             @Features.Register(value = ChromeFeatureList.CHROME_HOME),
             @Features.Register(value = ChromeFeatureList.CHROME_HOME_MODERN_LAYOUT),
             @Features.Register(value = ChromeFeatureList.CONTENT_SUGGESTIONS_SCROLL_TO_LOAD,
-                    enabled = false)})
+                enabled = false),
+            @Features.Register(value = ChromeFeatureList.ANDROID_SIGNIN_PROMOS, enabled = false)})
     public void testAllDismissedModern() {
         when(mUiDelegate.isVisible()).thenReturn(true);
 

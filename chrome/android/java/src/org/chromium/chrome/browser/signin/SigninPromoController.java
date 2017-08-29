@@ -46,8 +46,8 @@ public class SigninPromoController {
     private final @AccountSigninActivity.AccessPoint int mAccessPoint;
     private final @Nullable String mImpressionCountName;
     private final String mImpressionUserActionName;
-    private final @Nullable String mImpressionWithAccountUserActionName;
-    private final @Nullable String mImpressionWithNoAccountUserActionName;
+    private final String mImpressionWithAccountUserActionName;
+    private final String mImpressionWithNoAccountUserActionName;
     private final @StringRes int mDescriptionStringId;
 
     /**
@@ -104,10 +104,10 @@ public class SigninPromoController {
                 // There is no impression limit for NTP content suggestions.
                 mImpressionCountName = null;
                 mImpressionUserActionName = "Signin_Impression_FromNTPContentSuggestions";
-                // TODO(iuliah): create Signin_ImpressionWithAccount_FromNTPContentSuggestions.
-                mImpressionWithAccountUserActionName = null;
-                // TODO(iuliah): create Signin_ImpressionWithNoAccount_FromNTPContentSuggestions.
-                mImpressionWithNoAccountUserActionName = null;
+                mImpressionWithAccountUserActionName =
+                        "Signin_ImpressionWithAccount_FromNTPContentSuggestions";
+                mImpressionWithNoAccountUserActionName =
+                        "Signin_ImpressionWithNoAccount_FromNTPContentSuggestions";
                 mDescriptionStringId = R.string.signin_promo_description_ntp_content_suggestions;
                 break;
             case SigninAccessPoint.RECENT_TABS:
@@ -140,9 +140,9 @@ public class SigninPromoController {
     public void recordSigninPromoImpression() {
         RecordUserAction.record(mImpressionUserActionName);
         if (mAccountName == null) {
-            recordSigninImpressionWithNoAccountUserAction();
+            RecordUserAction.record(mImpressionWithNoAccountUserActionName);
         } else {
-            recordSigninImpressionWithAccountUserAction();
+            RecordUserAction.record(mImpressionWithAccountUserActionName);
         }
 
         // If mImpressionCountName is not null then we should record impressions.
@@ -190,18 +190,6 @@ public class SigninPromoController {
      */
     public void setAccountName(@Nullable String accountName) {
         mAccountName = accountName;
-    }
-
-    private void recordSigninImpressionWithAccountUserAction() {
-        if (mImpressionWithAccountUserActionName != null) {
-            RecordUserAction.record(mImpressionWithAccountUserActionName);
-        }
-    }
-
-    private void recordSigninImpressionWithNoAccountUserAction() {
-        if (mImpressionWithNoAccountUserActionName != null) {
-            RecordUserAction.record(mImpressionWithNoAccountUserActionName);
-        }
     }
 
     private void setupColdState(final Context context, SigninPromoView view) {
