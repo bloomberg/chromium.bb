@@ -5,6 +5,7 @@
 module viz.mojom;
 
 import "cc/ipc/frame_sink_id.mojom";
+import "cc/ipc/local_surface_id.mojom";
 import "services/viz/public/interfaces/compositing/surface_id.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "ui/gfx/mojo/transform.mojom";
@@ -33,11 +34,11 @@ struct HitTestRegion {
   // Flags to indicate the type of HitTestRegion.
   uint32 flags;
 
-  // FrameSinkId is required when flags = kHitTestMine.
+  // FrameSinkId of this region.
   cc.mojom.FrameSinkId frame_sink_id;
 
-  // SurfaceId is required when flags = kHitTestChildSurface.
-  SurfaceId surface_id;
+  // LocalSurfaceId is required when flags include kHitTestChildSurface.
+  cc.mojom.LocalSurfaceId? local_surface_id;
 
   // The rect of the region in the coordinate space of the embedder.
   gfx.mojom.Rect rect;
