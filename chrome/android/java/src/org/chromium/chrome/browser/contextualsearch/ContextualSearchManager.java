@@ -670,6 +670,7 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
         boolean receivedCaptionOrThumbnail = !TextUtils.isEmpty(caption)
                 || !TextUtils.isEmpty(thumbnailUrl);
 
+        assert mSearchPanel != null;
         mSearchPanel.onSearchTermResolved(message, thumbnailUrl, quickActionUri,
                 quickActionCategory);
         if (!TextUtils.isEmpty(caption)) {
