@@ -21,13 +21,13 @@ namespace proxy {
 
 class PPP_VideoDecoder_Proxy : public InterfaceProxy {
  public:
-  PPP_VideoDecoder_Proxy(Dispatcher* dispatcher);
-  virtual ~PPP_VideoDecoder_Proxy();
+  explicit PPP_VideoDecoder_Proxy(Dispatcher* dispatcher);
+  ~PPP_VideoDecoder_Proxy() override;
 
   static const PPP_VideoDecoder_Dev* GetProxyInterface();
 
   // InterfaceProxy implementation.
-  virtual bool OnMessageReceived(const IPC::Message& msg);
+  bool OnMessageReceived(const IPC::Message& msg) override;
 
  private:
   // Message handlers.

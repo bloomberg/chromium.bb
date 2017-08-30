@@ -52,7 +52,7 @@ class Buffer : public thunk::PPB_Buffer_API, public Resource {
 class PPB_Buffer_Proxy : public InterfaceProxy {
  public:
   explicit PPB_Buffer_Proxy(Dispatcher* dispatcher);
-  virtual ~PPB_Buffer_Proxy();
+  ~PPB_Buffer_Proxy() override;
 
   static PP_Resource CreateProxyResource(PP_Instance instance,
                                          uint32_t size);
@@ -61,7 +61,7 @@ class PPB_Buffer_Proxy : public InterfaceProxy {
                                       uint32_t size);
 
   // InterfaceProxy implementation.
-  virtual bool OnMessageReceived(const IPC::Message& msg);
+  bool OnMessageReceived(const IPC::Message& msg) override;
 
   static const ApiID kApiID = API_ID_PPB_BUFFER;
 

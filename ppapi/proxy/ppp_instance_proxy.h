@@ -26,7 +26,7 @@ namespace proxy {
 class PPP_Instance_Proxy : public InterfaceProxy {
  public:
   explicit PPP_Instance_Proxy(Dispatcher* dispatcher);
-  virtual ~PPP_Instance_Proxy();
+  ~PPP_Instance_Proxy() override;
 
   static const PPP_Instance* GetInstanceInterface();
 
@@ -35,7 +35,7 @@ class PPP_Instance_Proxy : public InterfaceProxy {
   }
 
   // InterfaceProxy implementation.
-  virtual bool OnMessageReceived(const IPC::Message& msg);
+  bool OnMessageReceived(const IPC::Message& msg) override;
 
  private:
   // Message handlers.

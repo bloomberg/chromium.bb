@@ -18,12 +18,12 @@ namespace proxy {
 class PPP_Find_Proxy : public InterfaceProxy {
  public:
   explicit PPP_Find_Proxy(Dispatcher* dispatcher);
-  virtual ~PPP_Find_Proxy();
+  ~PPP_Find_Proxy() override;
 
   static const PPP_Find_Private* GetProxyInterface();
 
   // InterfaceProxy implementation.
-  virtual bool OnMessageReceived(const IPC::Message& msg);
+  bool OnMessageReceived(const IPC::Message& msg) override;
 
  private:
   // Message handlers.

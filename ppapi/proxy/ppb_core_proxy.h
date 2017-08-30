@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PPAPI_PPB_CORE_PROXY_H_
-#define PPAPI_PPB_CORE_PROXY_H_
+#ifndef PPAPI_PROXY_PPB_CORE_PROXY_H_
+#define PPAPI_PROXY_PPB_CORE_PROXY_H_
 
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_resource.h"
@@ -17,13 +17,13 @@ namespace proxy {
 
 class PPB_Core_Proxy : public InterfaceProxy {
  public:
-  PPB_Core_Proxy(Dispatcher* dispatcher);
-  virtual ~PPB_Core_Proxy();
+  explicit PPB_Core_Proxy(Dispatcher* dispatcher);
+  ~PPB_Core_Proxy() override;
 
   static const PPB_Core* GetPPB_Core_Interface();
 
   // InterfaceProxy implementation.
-  virtual bool OnMessageReceived(const IPC::Message& msg);
+  bool OnMessageReceived(const IPC::Message& msg) override;
 
   static const ApiID kApiID = API_ID_PPB_CORE;
 
@@ -41,4 +41,4 @@ class PPB_Core_Proxy : public InterfaceProxy {
 }  // namespace proxy
 }  // namespace ppapi
 
-#endif  // PPAPI_PPB_CORE_PROXY_H_
+#endif  // PPAPI_PROXY_PPB_CORE_PROXY_H_

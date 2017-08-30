@@ -32,8 +32,8 @@ class SerializedHandle;
 
 class PPB_Audio_Proxy : public InterfaceProxy {
  public:
-  PPB_Audio_Proxy(Dispatcher* dispatcher);
-  virtual ~PPB_Audio_Proxy();
+  explicit PPB_Audio_Proxy(Dispatcher* dispatcher);
+  ~PPB_Audio_Proxy() override;
 
   // Creates an Audio object in the plugin process.
   static PP_Resource CreateProxyResource(
@@ -43,7 +43,7 @@ class PPB_Audio_Proxy : public InterfaceProxy {
       void* user_data);
 
   // InterfaceProxy implementation.
-  virtual bool OnMessageReceived(const IPC::Message& msg);
+  bool OnMessageReceived(const IPC::Message& msg) override;
 
   static const ApiID kApiID = API_ID_PPB_AUDIO;
 

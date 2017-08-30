@@ -30,7 +30,7 @@ class PPP_Class_Proxy : public InterfaceProxy {
   // PPP_Class isn't a normal interface that you can query for, so this
   // constructor doesn't take an interface pointer.
   explicit PPP_Class_Proxy(Dispatcher* dispatcher);
-  virtual ~PPP_Class_Proxy();
+  ~PPP_Class_Proxy() override;
 
   // Factory function used for registration (normal code can just use the
   // constructor).
@@ -50,7 +50,7 @@ class PPP_Class_Proxy : public InterfaceProxy {
                               int64_t* ppp_class_data);
 
   // InterfaceProxy implementation.
-  virtual bool OnMessageReceived(const IPC::Message& msg);
+  bool OnMessageReceived(const IPC::Message& msg) override;
 
  private:
   // IPC message handlers.

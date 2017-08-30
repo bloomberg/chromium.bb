@@ -23,12 +23,12 @@ namespace proxy {
 class PPB_Broker_Proxy : public InterfaceProxy {
  public:
   explicit PPB_Broker_Proxy(Dispatcher* dispatcher);
-  virtual ~PPB_Broker_Proxy();
+  ~PPB_Broker_Proxy() override;
 
   static PP_Resource CreateProxyResource(PP_Instance instance);
 
   // InterfaceProxy implementation.
-  virtual bool OnMessageReceived(const IPC::Message& msg);
+  bool OnMessageReceived(const IPC::Message& msg) override;
 
   static const ApiID kApiID = API_ID_PPB_BROKER;
 
