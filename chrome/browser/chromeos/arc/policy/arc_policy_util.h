@@ -24,10 +24,17 @@ enum class EcryptfsMigrationAction : int32_t {
   // Wipe the user home and start again.
   kWipe = 2,
   // Ask the user if migration should be performed.
-  kAskUser = 3
+  kAskUser = 3,
+  // Minimal migration - similar to kWipe, but runs migration code with a small
+  // whitelist of files to preserve authentication data.
+  kMinimalMigrate = 4,
+  // Special case for EDU default: Behaves like kAskUser if the device model
+  // supported ARC on ecryptfs and ARC is enabled. Otherwise, behaves like
+  // kDisallowMigration.
+  kAskForEcryptfsArcUsers = 5,
 };
-constexpr size_t kEcryptfsMigrationActionCount =
-    static_cast<size_t>(EcryptfsMigrationAction::kAskUser);
+constexpr size_t kEcryptfsMigrationActionMaxValue =
+    static_cast<size_t>(EcryptfsMigrationAction::kAskForEcryptfsArcUsers);
 
 // Returns true if the account is managed. Otherwise false.
 bool IsAccountManaged(Profile* profile);

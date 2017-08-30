@@ -234,8 +234,8 @@ bool DecodeMigrationActionFromPolicy(
     return false;
 
   if (policy_proto.value() < 0 ||
-      policy_proto.value() >=
-          static_cast<int64_t>(apu::kEcryptfsMigrationActionCount)) {
+      policy_proto.value() >
+          static_cast<int64_t>(apu::kEcryptfsMigrationActionMaxValue)) {
     return false;
   }
 
@@ -1020,12 +1020,7 @@ void ExistingUserController::OnPolicyFetchResult(
     if (!DecodeMigrationActionFromPolicy(policy_payload.get(), &action)) {
       // User policy was present, but the EcryptfsMigrationStrategy policy value
       // was not there. Stay on the safe side and don't start migration.
-
-      // TODO(pmarko): bug747930: Temporarily, we default to ASK_USER for
-      // managed users who don't have the policy value, so testing migration is
-      // possible before the policy is supported server-side. This must be
-      // reverted before M61 goes stable.
-      action = apu::EcryptfsMigrationAction::kAskUser;
+      action = apu::EcryptfsMigrationAction::kDisallowMigration;
     }
   } else {
     // We don't know if the user has policy or not. Stay on the safe side and
@@ -1047,6 +1042,9 @@ void ExistingUserController::OnPolicyFetchResult(
                                     EncryptionMigrationMode::ASK_USER);
       break;
 
+    case apu::EcryptfsMigrationAction::kMinimalMigrate:
+    // Fall-through intended. Minimal migration behaves as Wipe for Chrome OS
+    // versions which don't support it yet.
     case apu::EcryptfsMigrationAction::kWipe:
       cryptohome::AsyncMethodCaller::GetInstance()->AsyncRemove(
           cryptohome::Identification(user_context.GetAccountId()),
@@ -1054,6 +1052,9 @@ void ExistingUserController::OnPolicyFetchResult(
                      weak_factory_.GetWeakPtr(), user_context));
       break;
 
+    case apu::EcryptfsMigrationAction::kAskForEcryptfsArcUsers:
+    // TODO(igorcov): Fall-through intended. This behaves as Disallow Migration
+    // until it's implemented.
     case apu::EcryptfsMigrationAction::kDisallowMigration:
       ContinuePerformLoginWithoutMigration(login_performer_->auth_mode(),
                                            user_context);
