@@ -15,6 +15,7 @@ import android.provider.Browser;
 import android.text.TextUtils;
 
 import org.chromium.base.ActivityState;
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ApplicationStatus.ActivityStateListener;
 import org.chromium.base.VisibleForTesting;
@@ -26,8 +27,6 @@ import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.util.IntentUtils;
 
 import java.lang.ref.WeakReference;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -39,13 +38,7 @@ import javax.annotation.Nullable;
  * Thread-safe: This class may be accessed from any thread.
  */
 public class MultiWindowUtils implements ActivityStateListener {
-
-    // TODO(twellington): replace this with Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT once we're building
-    //                    against N.
-    public static final int FLAG_ACTIVITY_LAUNCH_ADJACENT = 0x00001000;
-
-    private static AtomicReference<MultiWindowUtils> sInstance =
-            new AtomicReference<MultiWindowUtils>();
+    private static AtomicReference<MultiWindowUtils> sInstance = new AtomicReference<>();
 
     // Used to keep track of whether ChromeTabbedActivity2 is running. A tri-state Boolean is
     // used in case both activities die in the background and MultiWindowUtils is recreated.
@@ -71,23 +64,7 @@ public class MultiWindowUtils implements ActivityStateListener {
         if (mIsInMultiWindowModeForTesting) return true;
         if (activity == null) return false;
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            try {
-                Method isInMultiWindowModeMethod = Activity.class.getMethod("isInMultiWindowMode");
-                boolean isInMultiWindowMode = (boolean) isInMultiWindowModeMethod.invoke(activity);
-                return isInMultiWindowMode;
-            } catch (NoSuchMethodException e) {
-                // Ignore.
-            } catch (IllegalAccessException e) {
-                // Ignore.
-            } catch (IllegalArgumentException e) {
-                // Ignore.
-            } catch (InvocationTargetException e) {
-                // Ignore.
-            }
-        }
-
-        return false;
+        return ApiCompatibilityUtils.isInMultiWindowMode(activity);
     }
 
     @VisibleForTesting
@@ -133,10 +110,11 @@ public class MultiWindowUtils implements ActivityStateListener {
      * @param activity The activity firing the intent.
      * @param targetActivity The class of the activity receiving the intent.
      */
+    @TargetApi(Build.VERSION_CODES.N)
     public static void setOpenInOtherWindowIntentExtras(
             Intent intent, Activity activity, Class<? extends Activity> targetActivity) {
         intent.setClass(activity, targetActivity);
-        intent.addFlags(MultiWindowUtils.FLAG_ACTIVITY_LAUNCH_ADJACENT);
+        intent.addFlags(Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT);
 
         // Let Chrome know that this intent is from Chrome, so that it does not close the app when
         // the user presses 'back' button.
@@ -147,8 +125,7 @@ public class MultiWindowUtils implements ActivityStateListener {
     @Override
     public void onActivityStateChange(Activity activity, int newState) {
         if (newState == ActivityState.RESUMED && activity instanceof ChromeTabbedActivity) {
-            mLastResumedTabbedActivity =
-                    new WeakReference<ChromeTabbedActivity>((ChromeTabbedActivity) activity);
+            mLastResumedTabbedActivity = new WeakReference<>((ChromeTabbedActivity) activity);
         }
     }
 
