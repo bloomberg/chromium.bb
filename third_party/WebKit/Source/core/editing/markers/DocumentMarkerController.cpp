@@ -264,8 +264,6 @@ void DocumentMarkerController::AddMarkerInternal(
   }
 }
 
-// Markers are stored in order sorted by their start offset.
-// Markers of the same type do not overlap each other.
 void DocumentMarkerController::AddMarkerToNode(Node* node,
                                                DocumentMarker* new_marker) {
   possibly_existing_marker_types_.Add(new_marker->GetType());
