@@ -189,6 +189,7 @@ bool IsSupportedInFeaturePolicy(WebFeaturePolicyFeature feature) {
     case WebFeaturePolicyFeature::kFullscreen:
     case WebFeaturePolicyFeature::kPayment:
     case WebFeaturePolicyFeature::kUsb:
+    case WebFeaturePolicyFeature::kWebVr:
       return true;
     case WebFeaturePolicyFeature::kVibrate:
       return RuntimeEnabledFeatures::FeaturePolicyExperimentalFeaturesEnabled();
@@ -213,6 +214,7 @@ const FeatureNameMap& GetDefaultFeatureNameMap() {
     default_feature_name_map.Set("geolocation",
                                  WebFeaturePolicyFeature::kGeolocation);
     default_feature_name_map.Set("midi", WebFeaturePolicyFeature::kMidiFeature);
+    default_feature_name_map.Set("vr", WebFeaturePolicyFeature::kWebVr);
     if (RuntimeEnabledFeatures::FeaturePolicyExperimentalFeaturesEnabled()) {
       default_feature_name_map.Set("vibrate",
                                    WebFeaturePolicyFeature::kVibrate);
