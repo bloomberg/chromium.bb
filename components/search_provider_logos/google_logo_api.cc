@@ -31,10 +31,16 @@ GURL GetGoogleDoodleURL(const GURL& google_base_url) {
   if (!override_url.empty()) {
     return GURL(override_url);
   }
+  bool use_ddljson_api = base::FeatureList::IsEnabled(features::kUseDdljsonApi);
   GURL::Replacements replacements;
-  replacements.SetPathStr(base::FeatureList::IsEnabled(features::kUseDdljsonApi)
-                              ? "async/ddljson"
-                              : "async/newtab_mobile");
+  replacements.SetPathStr(use_ddljson_api ? "async/ddljson"
+                                          : "async/newtab_mobile");
+  // Make sure we use https rather than http (except for .cn).
+  if (use_ddljson_api && google_base_url.SchemeIs(url::kHttpScheme) &&
+      !base::EndsWith(google_base_url.host_piece(), ".cn",
+                      base::CompareCase::INSENSITIVE_ASCII)) {
+    replacements.SetSchemeStr(url::kHttpsScheme);
+  }
   return google_base_url.ReplaceComponents(replacements);
 }
 
