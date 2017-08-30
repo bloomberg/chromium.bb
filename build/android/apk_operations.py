@@ -590,7 +590,7 @@ class _Command(object):
                              self.install_dict['apk_path']))
         if not self.apk_helper and args.apk_path:
           self.apk_helper = apk_helper.ToHelper(args.apk_path)
-        else:
+        if not self.apk_helper:
           self._parser.error(
               'Neither incremental nor non-incremental apk is built.')
 
