@@ -6,6 +6,7 @@
 #define CONTENT_COMMON_POSSIBLY_ASSOCIATED_INTERFACE_PTR_H_
 
 #include "base/macros.h"
+#include "content/common/possibly_associated_interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 
@@ -25,17 +26,35 @@ class PossiblyAssociatedInterfacePtr final {
   PossiblyAssociatedInterfacePtr(mojo::AssociatedInterfacePtr<T> associated_ptr)
       : associated_ptr_(std::move(associated_ptr)) {}
 
-  PossiblyAssociatedInterfacePtr(PossiblyAssociatedInterfacePtr&& other) {
-    independent_ptr_ = std::move(other.independent_ptr_);
-    associated_ptr_ = std::move(other.associated_ptr_);
-  }
+  PossiblyAssociatedInterfacePtr(PossiblyAssociatedInterfacePtr&& other) =
+      default;
   ~PossiblyAssociatedInterfacePtr() {}
 
   PossiblyAssociatedInterfacePtr& operator=(
-      PossiblyAssociatedInterfacePtr&& other) {
-    independent_ptr_ = std::move(other.independent_ptr_);
-    associated_ptr_ = std::move(other.associated_ptr_);
-    return *this;
+      PossiblyAssociatedInterfacePtr&& other) = default;
+
+  void Bind(PossiblyAssociatedInterfacePtrInfo<T> info,
+            scoped_refptr<base::SingleThreadTaskRunner> runner = nullptr) {
+    independent_ptr_.reset();
+    associated_ptr_.reset();
+
+    // A PossiblyAssociatedInterfacePtrInfo is guaranteed to only have either a
+    // valid InterfacePtrInfo or valid AssociatedInterfacePtrInfo, never both.
+    auto independent_ptr_info = info.TakeIndependentPtrInfo();
+    if (independent_ptr_info.is_valid())
+      independent_ptr_.Bind(std::move(independent_ptr_info), std::move(runner));
+
+    auto associated_ptr_info = info.TakeAssociatedPtrInfo();
+    if (associated_ptr_info.is_valid())
+      associated_ptr_.Bind(std::move(associated_ptr_info), std::move(runner));
+  }
+
+  PossiblyAssociatedInterfacePtrInfo<T> PassInterface() {
+    if (independent_ptr_)
+      return independent_ptr_.PassInterface();
+    if (associated_ptr_)
+      return associated_ptr_.PassInterface();
+    return nullptr;
   }
 
   T* get() const {

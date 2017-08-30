@@ -267,6 +267,7 @@ source_set("common") {
     "plugin_list.cc",
     "plugin_list.h",
     "possibly_associated_interface_ptr.h",
+    "possibly_associated_interface_ptr_info.h",
     "presentation/presentation_struct_traits.cc",
     "presentation/presentation_struct_traits.h",
     "process_type.cc",
