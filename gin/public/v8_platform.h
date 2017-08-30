@@ -19,6 +19,7 @@ class GIN_EXPORT V8Platform : public v8::Platform {
   static V8Platform* Get();
 
   // v8::Platform implementation.
+  void OnCriticalMemoryPressure() override;
   size_t NumberOfAvailableBackgroundThreads() override;
   void CallOnBackgroundThread(
       v8::Task* task,
