@@ -24,10 +24,6 @@
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
@@ -392,14 +388,6 @@ void WebViewGuest::DidInitialize(const base::DictionaryValue& create_params) {
   script_executor_ =
       std::make_unique<ScriptExecutor>(web_contents(), &script_observers_);
 
-  notification_registrar_.Add(this,
-                              content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
-                              content::Source<WebContents>(web_contents()));
-
-  notification_registrar_.Add(this,
-                              content::NOTIFICATION_RESOURCE_RECEIVED_REDIRECT,
-                              content::Source<WebContents>(web_contents()));
-
   ExtensionsAPIClient::Get()->AttachWebContentsHelpers(web_contents());
   web_view_permission_helper_ = std::make_unique<WebViewPermissionHelper>(this);
 
@@ -692,33 +680,6 @@ void WebViewGuest::RendererUnresponsive(
       webview::kEventUnresponsive, std::move(args)));
 }
 
-void WebViewGuest::Observe(int type,
-                           const content::NotificationSource& source,
-                           const content::NotificationDetails& details) {
-  switch (type) {
-    case content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME: {
-      DCHECK_EQ(content::Source<WebContents>(source).ptr(), web_contents());
-      if (content::Source<WebContents>(source).ptr() == web_contents())
-        LoadHandlerCalled();
-      break;
-    }
-    case content::NOTIFICATION_RESOURCE_RECEIVED_REDIRECT: {
-      DCHECK_EQ(content::Source<WebContents>(source).ptr(), web_contents());
-      content::ResourceRedirectDetails* resource_redirect_details =
-          content::Details<content::ResourceRedirectDetails>(details).ptr();
-      bool is_top_level = resource_redirect_details->resource_type ==
-                          content::RESOURCE_TYPE_MAIN_FRAME;
-      LoadRedirect(resource_redirect_details->url,
-                   resource_redirect_details->new_url,
-                   is_top_level);
-      break;
-    }
-    default:
-      NOTREACHED() << "Unexpected notification sent.";
-      break;
-  }
-}
-
 void WebViewGuest::StartFind(
     const base::string16& search_text,
     const blink::WebFindOptions& options,
@@ -876,6 +837,12 @@ void WebViewGuest::DidFinishNavigation(
   find_helper_.CancelAllFindSessions();
 }
 
+void WebViewGuest::DocumentOnLoadCompletedInMainFrame() {
+  auto args = std::make_unique<base::DictionaryValue>();
+  DispatchEventToView(std::make_unique<GuestViewEvent>(
+      webview::kEventContentLoad, std::move(args)));
+}
+
 void WebViewGuest::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
   // loadStart shouldn't be sent for same document navigations.
@@ -899,6 +866,18 @@ void WebViewGuest::RenderProcessGone(base::TerminationStatus status) {
   args->SetString(webview::kReason, TerminationStatusToString(status));
   DispatchEventToView(
       std::make_unique<GuestViewEvent>(webview::kEventExit, std::move(args)));
+}
+
+void WebViewGuest::DidGetRedirectForResourceRequest(
+    const content::ResourceRedirectDetails& details) {
+  const bool is_top_level =
+      details.resource_type == content::RESOURCE_TYPE_MAIN_FRAME;
+  auto args = std::make_unique<base::DictionaryValue>();
+  args->SetBoolean(guest_view::kIsTopLevel, is_top_level);
+  args->SetString(webview::kNewURL, details.new_url.spec());
+  args->SetString(webview::kOldURL, details.url.spec());
+  DispatchEventToView(std::make_unique<GuestViewEvent>(
+      webview::kEventLoadRedirect, std::move(args)));
 }
 
 void WebViewGuest::UserAgentOverrideSet(const std::string& user_agent) {
@@ -927,23 +906,6 @@ void WebViewGuest::ReportFrameNameChange(const std::string& name) {
   args->SetString(webview::kName, name);
   DispatchEventToView(std::make_unique<GuestViewEvent>(
       webview::kEventFrameNameChanged, std::move(args)));
-}
-
-void WebViewGuest::LoadHandlerCalled() {
-  auto args = std::make_unique<base::DictionaryValue>();
-  DispatchEventToView(std::make_unique<GuestViewEvent>(
-      webview::kEventContentLoad, std::move(args)));
-}
-
-void WebViewGuest::LoadRedirect(const GURL& old_url,
-                                const GURL& new_url,
-                                bool is_top_level) {
-  auto args = std::make_unique<base::DictionaryValue>();
-  args->SetBoolean(guest_view::kIsTopLevel, is_top_level);
-  args->SetString(webview::kNewURL, new_url.spec());
-  args->SetString(webview::kOldURL, old_url.spec());
-  DispatchEventToView(std::make_unique<GuestViewEvent>(
-      webview::kEventLoadRedirect, std::move(args)));
 }
 
 void WebViewGuest::PushWebViewStateToIOThread() {
