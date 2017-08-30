@@ -293,7 +293,8 @@ void DeferredImageDecoder::ActivateLazyDecoding() {
       SkISize::Make(metadata_decoder_->DecodedSize().Width(),
                     metadata_decoder_->DecodedSize().Height());
   frame_generator_ = ImageFrameGenerator::Create(
-      decoded_size, !is_single_frame, metadata_decoder_->GetColorBehavior());
+      decoded_size, !is_single_frame, metadata_decoder_->GetColorBehavior(),
+      metadata_decoder_->GetSupportedDecodeSizes());
 }
 
 void DeferredImageDecoder::PrepareLazyDecodedFrames() {

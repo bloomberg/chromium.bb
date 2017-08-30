@@ -139,6 +139,7 @@ class PLATFORM_EXPORT ImageDecoder {
   bool IsDecodedSizeAvailable() const { return !failed_ && size_available_; }
 
   virtual IntSize Size() const { return size_; }
+  virtual std::vector<SkISize> GetSupportedDecodeSizes() { return {}; };
 
   // Decoders which downsample images should override this method to
   // return the actual decoded size.

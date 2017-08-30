@@ -112,13 +112,25 @@ static bool UpdateYUVComponentSizes(ImageDecoder* decoder,
 
 ImageFrameGenerator::ImageFrameGenerator(const SkISize& full_size,
                                          bool is_multi_frame,
-                                         const ColorBehavior& color_behavior)
+                                         const ColorBehavior& color_behavior,
+                                         std::vector<SkISize> supported_sizes)
     : full_size_(full_size),
       decoder_color_behavior_(color_behavior),
       is_multi_frame_(is_multi_frame),
       decode_failed_(false),
       yuv_decoding_failed_(false),
-      frame_count_(0) {}
+      frame_count_(0),
+      supported_sizes_(std::move(supported_sizes)) {
+#if DCHECK_IS_ON()
+  // Verify that sizes are in an increasing order, since
+  // GetSupportedDecodeSize() depends on it.
+  SkISize last_size = SkISize::MakeEmpty();
+  for (auto& size : supported_sizes_) {
+    DCHECK_GE(size.width(), last_size.width());
+    DCHECK_GE(size.height(), last_size.height());
+  }
+#endif
+}
 
 ImageFrameGenerator::~ImageFrameGenerator() {
   ImageDecodingStore::Instance().RemoveCacheIndexedByGenerator(this);
@@ -405,6 +417,17 @@ bool ImageFrameGenerator::GetYUVComponentSizes(SegmentReader* data,
 
   return UpdateYUVComponentSizes(decoder.get(), size_info->fSizes,
                                  size_info->fWidthBytes);
+}
+
+SkISize ImageFrameGenerator::GetSupportedDecodeSize(
+    const SkISize& requested_size) const {
+  for (auto& size : supported_sizes_) {
+    if (size.width() >= requested_size.width() &&
+        size.height() >= requested_size.height()) {
+      return size;
+    }
+  }
+  return full_size_;
 }
 
 }  // namespace blink

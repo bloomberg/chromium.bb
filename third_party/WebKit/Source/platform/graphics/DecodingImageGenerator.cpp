@@ -55,9 +55,9 @@ DecodingImageGenerator::CreateAsSkImageGenerator(sk_sp<SkData> data) {
       SkImageInfo::MakeN32(size.Width(), size.Height(), kPremul_SkAlphaType,
                            decoder->ColorSpaceForSkImages());
 
-  RefPtr<ImageFrameGenerator> frame =
-      ImageFrameGenerator::Create(SkISize::Make(size.Width(), size.Height()),
-                                  false, decoder->GetColorBehavior());
+  RefPtr<ImageFrameGenerator> frame = ImageFrameGenerator::Create(
+      SkISize::Make(size.Width(), size.Height()), false,
+      decoder->GetColorBehavior(), decoder->GetSupportedDecodeSizes());
   if (!frame)
     return nullptr;
 
@@ -112,6 +112,7 @@ bool DecodingImageGenerator::GetPixels(const SkImageInfo& dst_info,
 
   // Implementation doesn't support scaling yet, so make sure we're not given a
   // different size.
+  // TODO(vmpstr): Implement support for supported sizes.
   if (dst_info.dimensions() != GetSkImageInfo().dimensions()) {
     return false;
   }
@@ -196,4 +197,8 @@ bool DecodingImageGenerator::GetYUV8Planes(const SkYUVSizeInfo& size_info,
   return decoded;
 }
 
+SkISize DecodingImageGenerator::GetSupportedDecodeSize(
+    const SkISize& requested_size) const {
+  return frame_generator_->GetSupportedDecodeSize(requested_size);
+}
 }  // namespace blink

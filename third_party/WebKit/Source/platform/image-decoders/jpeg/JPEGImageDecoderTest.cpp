@@ -312,4 +312,72 @@ TEST(JPEGImageDecoderTest, manyProgressiveScans) {
   EXPECT_TRUE(test_decoder->Failed());
 }
 
+TEST(JPEGImageDecoderTest, SupportedSizesSquare) {
+  const char* jpeg_file = "/LayoutTests/images/resources/lenna.jpg";  // 256x256
+  RefPtr<SharedBuffer> data = ReadFile(jpeg_file);
+  ASSERT_TRUE(data);
+
+  std::unique_ptr<ImageDecoder> decoder =
+      CreateJPEGDecoder(std::numeric_limits<int>::max());
+  decoder->SetData(data.Get(), true);
+  std::vector<SkISize> expected_sizes = {
+      SkISize::Make(32, 32),   SkISize::Make(64, 64),   SkISize::Make(96, 96),
+      SkISize::Make(128, 128), SkISize::Make(160, 160), SkISize::Make(192, 192),
+      SkISize::Make(224, 224), SkISize::Make(256, 256)};
+  auto sizes = decoder->GetSupportedDecodeSizes();
+  ASSERT_EQ(expected_sizes.size(), sizes.size());
+  for (size_t i = 0; i < sizes.size(); ++i) {
+    EXPECT_TRUE(expected_sizes[i] == sizes[i])
+        << "Expected " << expected_sizes[i].width() << "x"
+        << expected_sizes[i].height() << ". Got " << sizes[i].width() << "x"
+        << sizes[i].height();
+  }
+}
+
+TEST(JPEGImageDecoderTest, SupportedSizesRectangle) {
+  const char* jpeg_file =
+      "/LayoutTests/images/resources/icc-v2-gbr.jpg";  // 275x207
+
+  RefPtr<SharedBuffer> data = ReadFile(jpeg_file);
+  ASSERT_TRUE(data);
+
+  std::unique_ptr<ImageDecoder> decoder =
+      CreateJPEGDecoder(std::numeric_limits<int>::max());
+  decoder->SetData(data.Get(), true);
+  std::vector<SkISize> expected_sizes = {
+      SkISize::Make(35, 26),   SkISize::Make(69, 52),   SkISize::Make(104, 78),
+      SkISize::Make(138, 104), SkISize::Make(172, 130), SkISize::Make(207, 156),
+      SkISize::Make(241, 182), SkISize::Make(275, 207)};
+
+  auto sizes = decoder->GetSupportedDecodeSizes();
+  ASSERT_EQ(expected_sizes.size(), sizes.size());
+  for (size_t i = 0; i < sizes.size(); ++i) {
+    EXPECT_TRUE(expected_sizes[i] == sizes[i])
+        << "Expected " << expected_sizes[i].width() << "x"
+        << expected_sizes[i].height() << ". Got " << sizes[i].width() << "x"
+        << sizes[i].height();
+  }
+}
+
+TEST(JPEGImageDecoderTest, SupportedSizesTruncatedIfMemoryBound) {
+  const char* jpeg_file = "/LayoutTests/images/resources/lenna.jpg";  // 256x256
+  RefPtr<SharedBuffer> data = ReadFile(jpeg_file);
+  ASSERT_TRUE(data);
+
+  // Limit the memory so that 128 would be the largest size possible.
+  std::unique_ptr<ImageDecoder> decoder = CreateJPEGDecoder(130 * 130 * 4);
+  decoder->SetData(data.Get(), true);
+  std::vector<SkISize> expected_sizes = {
+      SkISize::Make(32, 32), SkISize::Make(64, 64), SkISize::Make(96, 96),
+      SkISize::Make(128, 128)};
+  auto sizes = decoder->GetSupportedDecodeSizes();
+  ASSERT_EQ(expected_sizes.size(), sizes.size());
+  for (size_t i = 0; i < sizes.size(); ++i) {
+    EXPECT_TRUE(expected_sizes[i] == sizes[i])
+        << "Expected " << expected_sizes[i].width() << "x"
+        << expected_sizes[i].height() << ". Got " << sizes[i].width() << "x"
+        << sizes[i].height();
+  }
+}
+
 }  // namespace blink
