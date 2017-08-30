@@ -476,11 +476,10 @@ Status MakeIOError(Slice filename,
   char buf[512];
   base::snprintf(buf, sizeof(buf), "%s (ChromeMethodBFE: %d::%s::%d)",
            message.c_str(), method, MethodIDToString(method), -error);
-  if (error == base::File::FILE_ERROR_NOT_FOUND) {
-    return Status::NotFound(filename, buf);
-  } else {
-    return Status::IOError(filename, buf);
-  }
+  // TOOD(crbug.com/760362): Map base::File::FILE_ERROR_NOT_FOUND to
+  //                         Status::NotFound, after fixing LevelDB to handle
+  //                         the NotFound correctly.
+  return Status::IOError(filename, buf);
 }
 
 Status MakeIOError(Slice filename,

@@ -46,11 +46,9 @@ Status FilesystemErrorToStatus(FileError error,
   snprintf(buf, sizeof(buf), "%s (MojoFSError: %d::%s)", err_str.c_str(),
            method, MethodIDToString(method));
 
-  if (error == FileError::NOT_FOUND) {
-    return Status::NotFound(filename, buf);
-  } else {
-    return Status::IOError(filename, buf);
-  }
+  // TOOD(crbug.com/760362): Map FileError::NOT_FOUND to Status::NotFound, after
+  //                         fixing LevelDB to handle the NotFound correctly.
+  return Status::IOError(filename, buf);
 }
 
 class MojoFileLock : public FileLock {
