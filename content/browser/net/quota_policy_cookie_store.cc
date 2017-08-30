@@ -124,12 +124,10 @@ CookieStoreConfig::CookieStoreConfig()
 CookieStoreConfig::CookieStoreConfig(
     const base::FilePath& path,
     SessionCookieMode session_cookie_mode,
-    storage::SpecialStoragePolicy* storage_policy,
-    net::CookieMonsterDelegate* cookie_delegate)
+    storage::SpecialStoragePolicy* storage_policy)
     : path(path),
       session_cookie_mode(session_cookie_mode),
       storage_policy(storage_policy),
-      cookie_delegate(cookie_delegate),
       crypto_delegate(nullptr),
       channel_id_service(nullptr) {
   CHECK(!path.empty() || session_cookie_mode == EPHEMERAL_SESSION_COOKIES);
@@ -148,8 +146,7 @@ std::unique_ptr<net::CookieStore> CreateCookieStore(
 
   if (config.path.empty()) {
     // Empty path means in-memory store.
-    cookie_monster.reset(
-        new net::CookieMonster(nullptr, config.cookie_delegate.get()));
+    cookie_monster.reset(new net::CookieMonster(nullptr));
   } else {
     scoped_refptr<base::SequencedTaskRunner> client_task_runner =
         config.client_task_runner;
@@ -182,7 +179,6 @@ std::unique_ptr<net::CookieStore> CreateCookieStore(
             config.storage_policy.get());
 
     cookie_monster.reset(new net::CookieMonster(persistent_store,
-                                                config.cookie_delegate.get(),
                                                 config.channel_id_service));
     if ((config.session_cookie_mode ==
          CookieStoreConfig::PERSISTANT_SESSION_COOKIES) ||

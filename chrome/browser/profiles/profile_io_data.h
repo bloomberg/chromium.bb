@@ -32,7 +32,7 @@
 #include "content/public/browser/resource_context.h"
 #include "content/public/common/network_service.mojom.h"
 #include "extensions/features/features.h"
-#include "net/cookies/cookie_monster.h"
+#include "net/cookies/cookie_store.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_network_session.h"
 #include "net/url_request/url_request_context.h"
@@ -43,6 +43,7 @@ class ChromeHttpUserAgentSettings;
 class ChromeNetworkDelegate;
 class ChromeURLRequestContextGetter;
 class ChromeExpectCTReporter;
+class ExtensionCookieNotifier;
 class HostContentSettingsMap;
 class ProtocolHandlerRegistry;
 
@@ -315,9 +316,9 @@ class ProfileIOData {
     scoped_refptr<content_settings::CookieSettings> cookie_settings;
     scoped_refptr<HostContentSettingsMap> host_content_settings_map;
     scoped_refptr<net::SSLConfigService> ssl_config_service;
-    scoped_refptr<net::CookieMonsterDelegate> cookie_monster_delegate;
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     scoped_refptr<extensions::InfoMap> extension_info_map;
+    std::unique_ptr<ExtensionCookieNotifier> extension_cookie_notifier;
 #endif
     std::unique_ptr<chrome_browser_net::LoadingPredictorObserver>
         loading_predictor_observer_;
@@ -617,6 +618,7 @@ class ProfileIOData {
   // Is NULL if switches::kDisableExtensionsHttpThrottling is on.
   mutable std::unique_ptr<extensions::ExtensionThrottleManager>
       extension_throttle_manager_;
+  mutable std::unique_ptr<ExtensionCookieNotifier> extension_cookie_notifier_;
 #endif
 
   mutable DevToolsNetworkControllerHandle network_controller_handle_;

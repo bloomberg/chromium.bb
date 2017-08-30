@@ -605,7 +605,7 @@ void CookieStoreIOS::FlushStore(base::OnceClosure closure) {
 CookieStoreIOS::CookieStoreIOS(
     net::CookieMonster::PersistentCookieStore* persistent_store,
     NSHTTPCookieStorage* system_store)
-    : cookie_monster_(new net::CookieMonster(persistent_store, nullptr)),
+    : cookie_monster_(new net::CookieMonster(persistent_store)),
       system_store_(system_store),
       creation_time_manager_(new CookieCreationTimeManager),
       metrics_enabled_(false),

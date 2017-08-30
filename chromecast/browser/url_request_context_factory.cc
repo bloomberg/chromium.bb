@@ -408,7 +408,7 @@ net::URLRequestContext* URLRequestContextFactory::CreateMainRequestContext(
 
   content::CookieStoreConfig cookie_config(
       cookie_path, content::CookieStoreConfig::PERSISTANT_SESSION_COOKIES,
-      nullptr, nullptr);
+      nullptr);
   main_cookie_store_ = content::CreateCookieStore(cookie_config);
 
   net::URLRequestContext* main_context = new net::URLRequestContext();

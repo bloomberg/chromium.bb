@@ -353,30 +353,24 @@ size_t CountCookiesForPossibleDeletion(
 
 }  // namespace
 
-CookieMonster::CookieMonster(PersistentCookieStore* store,
-                             CookieMonsterDelegate* delegate)
+CookieMonster::CookieMonster(PersistentCookieStore* store)
     : CookieMonster(
           store,
-          delegate,
           nullptr,
           base::TimeDelta::FromSeconds(kDefaultAccessUpdateThresholdSeconds)) {}
 
 CookieMonster::CookieMonster(PersistentCookieStore* store,
-                             CookieMonsterDelegate* delegate,
                              ChannelIDService* channel_id_service)
     : CookieMonster(
           store,
-          delegate,
           channel_id_service,
           base::TimeDelta::FromSeconds(kDefaultAccessUpdateThresholdSeconds)) {}
 
 CookieMonster::CookieMonster(PersistentCookieStore* store,
-                             CookieMonsterDelegate* delegate,
                              base::TimeDelta last_access_threshold)
-    : CookieMonster(store, delegate, nullptr, last_access_threshold) {}
+    : CookieMonster(store, nullptr, last_access_threshold) {}
 
 CookieMonster::CookieMonster(PersistentCookieStore* store,
-                             CookieMonsterDelegate* delegate,
                              ChannelIDService* channel_id_service,
                              base::TimeDelta last_access_threshold)
     : initialized_(false),
@@ -386,7 +380,6 @@ CookieMonster::CookieMonster(PersistentCookieStore* store,
       seen_global_task_(false),
       store_(store),
       last_access_threshold_(last_access_threshold),
-      delegate_(delegate),
       channel_id_service_(channel_id_service),
       last_statistic_record_time_(base::Time::Now()),
       persist_session_cookies_(false),
@@ -659,7 +652,7 @@ CookieMonster::~CookieMonster() {
     store_->SetBeforeFlushCallback(base::Closure());
   }
 
-  // TODO(mmenke): Does it really make sense to run |delegate_| and
+  // TODO(mmenke): Does it really make sense to run
   // CookieChanged callbacks when the CookieStore is destroyed?
   for (CookieMap::iterator cookie_it = cookies_.begin();
        cookie_it != cookies_.end();) {
@@ -1366,10 +1359,6 @@ CookieMonster::CookieMap::iterator CookieMonster::InternalInsertCookie(
     store_->AddCookie(*cc_ptr);
   CookieMap::iterator inserted =
       cookies_.insert(CookieMap::value_type(key, std::move(cc)));
-  if (delegate_.get()) {
-    delegate_->OnCookieChanged(*cc_ptr, false,
-                               CookieStore::ChangeCause::INSERTED);
-  }
 
   // See InitializeHistograms() for details.
   int32_t type_sample = cc_ptr->SameSite() != CookieSameSite::NO_RESTRICTION
@@ -1563,8 +1552,6 @@ void CookieMonster::InternalDeleteCookie(CookieMap::iterator it,
       sync_to_store)
     store_->DeleteCookie(*cc);
   ChangeCausePair mapping = kChangeCauseMapping[deletion_cause];
-  if (delegate_.get() && mapping.notify)
-    delegate_->OnCookieChanged(*cc, true, mapping.cause);
   RunCookieChangedCallbacks(*cc, mapping.notify, mapping.cause);
   cookies_.erase(it);
 }

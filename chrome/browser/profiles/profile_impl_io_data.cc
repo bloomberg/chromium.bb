@@ -483,8 +483,7 @@ void ProfileImplIOData::InitializeInternal(
 
   content::CookieStoreConfig cookie_config(
       lazy_params_->cookie_path, lazy_params_->session_cookie_mode,
-      lazy_params_->special_storage_policy.get(),
-      profile_params->cookie_monster_delegate.get());
+      lazy_params_->special_storage_policy.get());
   cookie_config.crypto_delegate = cookie_config::GetCookieCryptoDelegate();
   cookie_config.channel_id_service = channel_id_service.get();
   cookie_config.background_task_runner = cookie_background_task_runner;
@@ -541,10 +540,9 @@ void ProfileImplIOData::
   // store.
   net::URLRequestContext* extensions_context = extensions_request_context();
 
-  content::CookieStoreConfig cookie_config(
-      lazy_params_->extensions_cookie_path,
-      lazy_params_->session_cookie_mode,
-      NULL, NULL);
+  content::CookieStoreConfig cookie_config(lazy_params_->extensions_cookie_path,
+                                           lazy_params_->session_cookie_mode,
+                                           NULL);
   cookie_config.crypto_delegate = cookie_config::GetCookieCryptoDelegate();
   // Enable cookies for chrome-extension URLs.
   cookie_config.cookieable_schemes.push_back(extensions::kExtensionScheme);
@@ -594,7 +592,7 @@ net::URLRequestContext* ProfileImplIOData::InitializeAppRequestContext(
   }
   content::CookieStoreConfig cookie_config(
       cookie_path, content::CookieStoreConfig::EPHEMERAL_SESSION_COOKIES,
-      nullptr, nullptr);
+      nullptr);
   if (!partition_descriptor.in_memory) {
     // Use an app-specific cookie store.
     DCHECK(!cookie_path.empty());

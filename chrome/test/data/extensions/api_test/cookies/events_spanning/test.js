@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This test verifies that the cookieshave the correct store Id in spanning
+// This test verifies that the cookies have the correct store Id in spanning
 // split mode.
 var SET_REMOVE_COOKIE = {
   name: 'testSetRemove',
