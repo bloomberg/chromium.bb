@@ -7,13 +7,13 @@
 
 #include <stdint.h>
 
-#include <deque>
 #include <memory>
 #include <set>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/offline_pages/core/background/cleanup_task_factory.h"
@@ -100,7 +100,7 @@ class RequestQueue : public TaskQueue::Delegate {
       PickRequestTask::RequestCountCallback request_count_callback,
       DeviceConditions& conditions,
       std::set<int64_t>& disabled_requests,
-      std::deque<int64_t>& prioritized_requests);
+      base::circular_deque<int64_t>& prioritized_requests);
 
   // Reconcile any requests that were active the last time chrome exited.
   void ReconcileRequests(const UpdateCallback& callback);

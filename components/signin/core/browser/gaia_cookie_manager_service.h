@@ -5,13 +5,13 @@
 #ifndef COMPONENTS_SIGNIN_CORE_BROWSER_GAIA_COOKIE_MANAGER_SERVICE_H_
 #define COMPONENTS_SIGNIN_CORE_BROWSER_GAIA_COOKIE_MANAGER_SERVICE_H_
 
-#include <deque>
 #include <map>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
@@ -308,9 +308,7 @@ class GaiaCookieManagerService : public KeyedService,
   // A worklist for this class. Stores any pending requests that couldn't be
   // executed right away, since this class only permits one request to be
   // executed at a time.
-  // TODO(http://crbug.com/757231) use a base::circular_deque when it supports
-  // erase().
-  std::deque<GaiaCookieRequest> requests_;
+  base::circular_deque<GaiaCookieRequest> requests_;
 
   // List of observers to notify when merge session completes.
   // Makes sure list is empty on destruction.

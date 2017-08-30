@@ -5,12 +5,12 @@
 #include "components/sync/base/immutable.h"
 
 #include <cstddef>
-#include <deque>
 #include <list>
 #include <set>
 #include <string>
 #include <vector>
 
+#include "base/containers/circular_deque.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
@@ -218,8 +218,8 @@ TEST_F(ImmutableTest, VectorSwapMemFnByRef) {
 }
 
 TEST_F(ImmutableTest, Deque) {
-  RunTokenContainerTest<std::deque<Token>, Immutable<std::deque<Token>>>(
-      "Deque");
+  RunTokenContainerTest<base::circular_deque<Token>,
+                        Immutable<base::circular_deque<Token>>>("Deque");
 }
 
 TEST_F(ImmutableTest, List) {

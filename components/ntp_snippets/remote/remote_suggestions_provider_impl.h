@@ -6,7 +6,6 @@
 #define COMPONENTS_NTP_SNIPPETS_REMOTE_REMOTE_SUGGESTIONS_PROVIDER_IMPL_H_
 
 #include <cstddef>
-#include <deque>
 #include <map>
 #include <memory>
 #include <set>
@@ -15,6 +14,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/containers/circular_deque.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/optional.h"
@@ -226,9 +226,7 @@ class RemoteSuggestionsProviderImpl final : public RemoteSuggestionsProvider {
     // be on some open NTP. We do not persist this list so that on a new start
     // of Chrome, this is empty.
     // |archived| is a FIFO buffer with a maximum length.
-    // TODO(http://crbug.com/757231) use a base::circular_deque when it
-    // supports insert().
-    std::deque<std::unique_ptr<RemoteSuggestion>> archived;
+    base::circular_deque<std::unique_ptr<RemoteSuggestion>> archived;
 
     // Suggestions that the user dismissed. We keep these around until they
     // expire so we won't re-add them to |suggestions| on the next fetch.

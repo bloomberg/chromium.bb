@@ -4,11 +4,11 @@
 
 #include "components/offline_pages/core/background/pick_request_task.h"
 
-#include <deque>
 #include <memory>
 #include <set>
 
 #include "base/bind.h"
+#include "base/containers/circular_deque.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -128,7 +128,7 @@ class PickRequestTaskTest : public testing::Test {
   std::unique_ptr<OfflinerPolicy> policy_;
   RequestCoordinatorEventLogger event_logger_;
   std::set<int64_t> disabled_requests_;
-  std::deque<int64_t> prioritized_requests_;
+  base::circular_deque<int64_t> prioritized_requests_;
   std::unique_ptr<PickRequestTask> task_;
   bool request_queue_not_picked_called_;
   bool cleanup_needed_;

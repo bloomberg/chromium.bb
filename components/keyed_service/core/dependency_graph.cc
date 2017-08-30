@@ -7,9 +7,9 @@
 #include <stddef.h>
 
 #include <algorithm>
-#include <deque>
 #include <iterator>
 
+#include "base/containers/circular_deque.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 
@@ -91,9 +91,8 @@ bool DependencyGraph::GetDestructionOrder(std::vector<DependencyNode*>* order) {
 
 bool DependencyGraph::BuildConstructionOrder() {
   // Step 1: Build a set of nodes with no incoming edges.
-  // TODO(http://crbug.com/757231) use a base::circular_deque when it supports
-  // erase().
-  std::deque<DependencyNode*> queue(all_nodes_.begin(), all_nodes_.end());
+  base::circular_deque<DependencyNode*> queue(all_nodes_.begin(),
+                                              all_nodes_.end());
   for (const auto& pair : edges_)
     base::Erase(queue, pair.second);
 
@@ -144,9 +143,8 @@ std::string DependencyGraph::DumpAsGraphviz(
   std::string escaped_toplevel_name = Escape(toplevel_name);
 
   // Make a copy of all nodes.
-  // TODO(http://crbug.com/757231) use a base::circular_deque when it supports
-  // erase().
-  std::deque<DependencyNode*> nodes(all_nodes_.begin(), all_nodes_.end());
+  base::circular_deque<DependencyNode*> nodes(all_nodes_.begin(),
+                                              all_nodes_.end());
 
   // State all dependencies and remove |second| so we don't generate an
   // implicit dependency on the top level node.

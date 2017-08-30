@@ -5,8 +5,7 @@
 #ifndef COMPONENTS_PAIRING_MESSAGE_BUFFER_H_
 #define COMPONENTS_PAIRING_MESSAGE_BUFFER_H_
 
-#include <deque>
-
+#include "base/containers/circular_deque.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -42,7 +41,8 @@ class MessageBuffer {
   // Total number of bytes in IOBuffers in |pending_data_|, including bytes that
   // have already been read.
   int total_buffer_size_;
-  std::deque<std::pair<scoped_refptr<net::IOBuffer>, int> > pending_data_;
+  base::circular_deque<std::pair<scoped_refptr<net::IOBuffer>, int>>
+      pending_data_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageBuffer);
 };

@@ -5,11 +5,11 @@
 #ifndef COMPONENTS_SYNC_ENGINE_IMPL_DEBUG_INFO_EVENT_LISTENER_H_
 #define COMPONENTS_SYNC_ENGINE_IMPL_DEBUG_INFO_EVENT_LISTENER_H_
 
-#include <deque>
 #include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/containers/circular_deque.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "components/sync/base/model_type.h"
@@ -94,7 +94,7 @@ class DebugInfoEventListener : public SyncManager::Observer,
   void AddEventToQueue(const sync_pb::DebugEventInfo& event_info);
   void CreateAndAddEvent(sync_pb::SyncEnums::SingletonDebugEventType type);
 
-  using DebugEventInfoQueue = std::deque<sync_pb::DebugEventInfo>;
+  using DebugEventInfoQueue = base::circular_deque<sync_pb::DebugEventInfo>;
   DebugEventInfoQueue events_;
 
   // True indicates we had to drop one or more events to keep our limit of

@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/containers/circular_deque.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/synchronization/waitable_event.h"
@@ -313,7 +314,7 @@ class RequestCoordinatorTest : public testing::Test {
     return coordinator()->disabled_requests_;
   }
 
-  const std::deque<int64_t>& prioritized_requests() {
+  const base::circular_deque<int64_t>& prioritized_requests() {
     return coordinator()->prioritized_requests_;
   }
 

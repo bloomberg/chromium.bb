@@ -6,11 +6,11 @@
 
 #include <stddef.h>
 
-#include <deque>
 #include <string>
 #include <vector>
 
 #include "base/bind.h"
+#include "base/containers/circular_deque.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -271,12 +271,12 @@ void GLHelperScaling::ConvertScalerOpsToScalerStages(
     const gfx::Size& dst_size,
     bool vertically_flip_texture,
     bool swizzle,
-    std::deque<GLHelperScaling::ScaleOp>* x_ops,
-    std::deque<GLHelperScaling::ScaleOp>* y_ops,
+    base::circular_deque<GLHelperScaling::ScaleOp>* x_ops,
+    base::circular_deque<GLHelperScaling::ScaleOp>* y_ops,
     std::vector<ScalerStage>* scaler_stages) {
   while (!x_ops->empty() || !y_ops->empty()) {
     gfx::Size intermediate_size = src_subrect.size();
-    std::deque<ScaleOp>* current_queue = NULL;
+    base::circular_deque<ScaleOp>* current_queue = NULL;
 
     if (!y_ops->empty()) {
       current_queue = y_ops;
@@ -397,7 +397,7 @@ void GLHelperScaling::ComputeScalerStages(
     return;
   }
 
-  std::deque<GLHelperScaling::ScaleOp> x_ops, y_ops;
+  base::circular_deque<GLHelperScaling::ScaleOp> x_ops, y_ops;
   GLHelperScaling::ScaleOp::AddOps(src_subrect.width(), dst_size.width(), true,
                                    quality == GLHelper::SCALER_QUALITY_GOOD,
                                    &x_ops);

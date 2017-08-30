@@ -8,10 +8,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <deque>
 #include <set>
 #include <vector>
 
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "components/drive/job_list.h"
 
@@ -79,9 +79,7 @@ class JobQueue {
   };
 
   const size_t num_max_concurrent_jobs_;
-  // TODO(http://crbug.com/757231) use a base::circular_deque when it supports
-  // erase().
-  std::vector<std::deque<Item>> queue_;
+  std::vector<base::circular_deque<Item>> queue_;
   const size_t num_max_batch_jobs_;
   const size_t max_batch_size_;
   std::set<JobID> running_;

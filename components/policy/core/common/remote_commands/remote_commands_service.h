@@ -5,10 +5,10 @@
 #ifndef COMPONENTS_POLICY_CORE_COMMON_REMOTE_COMMANDS_REMOTE_COMMANDS_SERVICE_H_
 #define COMPONENTS_POLICY_CORE_COMMON_REMOTE_COMMANDS_REMOTE_COMMANDS_SERVICE_H_
 
-#include <deque>
 #include <memory>
 #include <vector>
 
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
@@ -90,7 +90,7 @@ class POLICY_EXPORT RemoteCommandsService
   // IDs will be stored in the order that they are fetched from the server,
   // and acknowledging a command will discard its ID from
   // |fetched_command_ids_|, as well as the IDs of every command before it.
-  std::deque<RemoteCommandJob::UniqueIDType> fetched_command_ids_;
+  base::circular_deque<RemoteCommandJob::UniqueIDType> fetched_command_ids_;
 
   RemoteCommandsQueue queue_;
   std::unique_ptr<RemoteCommandsFactory> factory_;

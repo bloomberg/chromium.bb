@@ -7,13 +7,13 @@
 
 #include <stddef.h>
 
-#include <deque>
 #include <memory>
 #include <set>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
@@ -151,7 +151,7 @@ class TaskQueue {
   std::unique_ptr<net::BackoffEntry> backoff_entry_;
   // The number of tasks currently being handled.
   int num_in_progress_;
-  std::deque<T> queue_;
+  base::circular_deque<T> queue_;
   // The set of tasks in queue_ or currently being handled.
   std::set<T> tasks_;
   base::Closure dispatch_closure_;
