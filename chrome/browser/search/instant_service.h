@@ -69,14 +69,12 @@ class InstantService : public KeyedService,
   // items.
   void OnNewTabPageOpened();
 
-  // Most visited item API.
-
+  // Most visited item APIs.
+  //
   // Invoked when the Instant page wants to delete a Most Visited item.
   void DeleteMostVisitedItem(const GURL& url);
-
   // Invoked when the Instant page wants to undo the deletion.
   void UndoMostVisitedDeletion(const GURL& url);
-
   // Invoked when the Instant page wants to undo all Most Visited deletions.
   void UndoAllMostVisitedDeletions();
 
