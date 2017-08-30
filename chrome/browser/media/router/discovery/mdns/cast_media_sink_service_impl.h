@@ -92,11 +92,8 @@ class CastMediaSinkServiceImpl
 
   using MediaSinkInternalMap = std::map<net::IPAddress, MediaSinkInternal>;
 
-  // Map of sinks from current round of mDNS discovery keyed by IP address.
-  MediaSinkInternalMap current_sinks_by_mdns_;
-
-  // Map of sinks from current round of DIAL discovery keyed by IP address.
-  MediaSinkInternalMap current_sinks_by_dial_;
+  // Map of sinks with opened cast channels keyed by IP address.
+  MediaSinkInternalMap current_sinks_map_;
 
   // Raw pointer of leaky singleton CastSocketService, which manages adding and
   // removing Cast channels.

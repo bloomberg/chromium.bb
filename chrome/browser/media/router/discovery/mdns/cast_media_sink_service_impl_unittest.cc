@@ -264,12 +264,12 @@ TEST_F(CastMediaSinkServiceImplTest, TestOnChannelError) {
   media_sink_service_impl_.current_service_ip_endpoints_.insert(ip_endpoint1);
   media_sink_service_impl_.OnChannelOpened(cast_sink, &socket);
 
-  EXPECT_EQ(1u, media_sink_service_impl_.current_sinks_by_mdns_.size());
+  EXPECT_EQ(1u, media_sink_service_impl_.current_sinks_map_.size());
 
   socket.SetIPEndpoint(ip_endpoint1);
   media_sink_service_impl_.OnError(
       socket, cast_channel::ChannelError::CHANNEL_NOT_OPEN);
-  EXPECT_TRUE(media_sink_service_impl_.current_sinks_by_mdns_.empty());
+  EXPECT_TRUE(media_sink_service_impl_.current_sinks_map_.empty());
 }
 
 TEST_F(CastMediaSinkServiceImplTest, TestOnDialSinkAdded) {
@@ -309,7 +309,7 @@ TEST_F(CastMediaSinkServiceImplTest, TestOnDialSinkAdded) {
   media_sink_service_impl_.OnDialSinkAdded(dial_sink2);
   base::RunLoop().RunUntilIdle();
   // Verify sink content.
-  EXPECT_EQ(2u, media_sink_service_impl_.current_sinks_by_dial_.size());
+  EXPECT_EQ(2u, media_sink_service_impl_.current_sinks_map_.size());
 }
 
 TEST_F(CastMediaSinkServiceImplTest, TestOnFetchCompleted) {
@@ -323,15 +323,12 @@ TEST_F(CastMediaSinkServiceImplTest, TestOnFetchCompleted) {
   net::IPEndPoint ip_endpoint2 = CreateIPEndPoint(2);
   net::IPEndPoint ip_endpoint3 = CreateIPEndPoint(3);
 
-  // Cast sink 1, 2 from mDNS discovery
-  media_sink_service_impl_.current_sinks_by_mdns_[ip_endpoint1.address()] =
+  // Find Cast sink 1, 2, 3
+  media_sink_service_impl_.current_sinks_map_[ip_endpoint1.address()] =
       cast_sink1;
-  media_sink_service_impl_.current_sinks_by_mdns_[ip_endpoint2.address()] =
+  media_sink_service_impl_.current_sinks_map_[ip_endpoint2.address()] =
       cast_sink2;
-  // Cast sink 2, 3 from dial discovery
-  media_sink_service_impl_.current_sinks_by_dial_[ip_endpoint2.address()] =
-      cast_sink2;
-  media_sink_service_impl_.current_sinks_by_dial_[ip_endpoint3.address()] =
+  media_sink_service_impl_.current_sinks_map_[ip_endpoint3.address()] =
       cast_sink3;
 
   // Callback returns Cast sink 1, 2, 3

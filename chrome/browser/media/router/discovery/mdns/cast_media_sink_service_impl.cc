@@ -83,21 +83,15 @@ void CastMediaSinkServiceImpl::OnFetchCompleted() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   current_sinks_.clear();
 
-  // Copy cast sink from mDNS service to |current_sinks_|.
-  for (const auto& sink_it : current_sinks_by_mdns_) {
-    DVLOG(2) << "Discovered by mdns [name]: " << sink_it.second.sink().name()
+  // Copy cast sink from |current_sinks_map_| to |current_sinks_|.
+  for (const auto& sink_it : current_sinks_map_) {
+    DVLOG(2) << "Discovered by "
+             << (sink_it.second.cast_data().discovered_by_dial ? "DIAL"
+                                                               : "mDNS")
+             << " [name]: " << sink_it.second.sink().name()
              << " [ip_endpoint]: "
              << sink_it.second.cast_data().ip_endpoint.ToString();
     current_sinks_.insert(sink_it.second);
-  }
-
-  // Copy cast sink from DIAL discovery to |current_sinks_|.
-  for (const auto& sink_it : current_sinks_by_dial_) {
-    DVLOG(2) << "Discovered by dial [name]: " << sink_it.second.sink().name()
-             << " [ip_endpoint]: "
-             << sink_it.second.cast_data().ip_endpoint.ToString();
-    if (!base::ContainsKey(current_sinks_by_mdns_, sink_it.first))
-      current_sinks_.insert(sink_it.second);
   }
 
   MediaSinkServiceBase::OnFetchCompleted();
@@ -129,8 +123,7 @@ void CastMediaSinkServiceImpl::OnError(const cast_channel::CastSocket& socket,
            << " [error_state]: "
            << cast_channel::ChannelErrorToString(error_state);
   auto& ip_address = socket.ip_endpoint().address();
-  current_sinks_by_dial_.erase(ip_address);
-  current_sinks_by_mdns_.erase(ip_address);
+  current_sinks_map_.erase(ip_address);
   MediaSinkServiceBase::RestartTimer();
 }
 
@@ -160,12 +153,8 @@ void CastMediaSinkServiceImpl::OnNetworksChanged(
       // Collect current sinks even if OnFetchCompleted hasn't collected the
       // latest sinks.
       std::vector<MediaSinkInternal> current_sinks;
-      for (const auto& sink_it : current_sinks_by_mdns_) {
+      for (const auto& sink_it : current_sinks_map_) {
         current_sinks.push_back(sink_it.second);
-      }
-      for (const auto& sink_it : current_sinks_by_dial_) {
-        if (!base::ContainsKey(current_sinks_by_mdns_, sink_it.first))
-          current_sinks.push_back(sink_it.second);
       }
       sink_cache_[last_network_id] = std::move(current_sinks);
     }
@@ -203,12 +192,8 @@ void CastMediaSinkServiceImpl::OnChannelOpened(
            << updated_sink.sink().name();
 
   auto& ip_address = cast_sink.cast_data().ip_endpoint.address();
-  // Add or update existing cast sink.
-  if (updated_sink.cast_data().discovered_by_dial) {
-    current_sinks_by_dial_[ip_address] = updated_sink;
-  } else {
-    current_sinks_by_mdns_[ip_address] = updated_sink;
-  }
+  current_sinks_map_[ip_address] = updated_sink;
+
   MediaSinkServiceBase::RestartTimer();
 }
 
