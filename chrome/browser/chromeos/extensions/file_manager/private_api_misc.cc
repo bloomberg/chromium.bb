@@ -24,6 +24,7 @@
 #include "chrome/browser/chromeos/file_manager/zip_file_creator.h"
 #include "chrome/browser/chromeos/file_system_provider/mount_path_util.h"
 #include "chrome/browser/chromeos/file_system_provider/service.h"
+#include "chrome/browser/chromeos/fileapi/recent_file.h"
 #include "chrome/browser/chromeos/fileapi/recent_model.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -748,7 +749,7 @@ FileManagerPrivateInternalGetRecentFilesFunction::Run() {
 
 void FileManagerPrivateInternalGetRecentFilesFunction::OnGetRecentFiles(
     api::file_manager_private::SourceRestriction restriction,
-    const std::vector<storage::FileSystemURL>& urls) {
+    const std::vector<chromeos::RecentFile>& files) {
   scoped_refptr<storage::FileSystemContext> file_system_context =
       file_manager::util::GetFileSystemContextForRenderFrameHost(
           chrome_details_.GetProfile(), render_frame_host());
@@ -759,21 +760,21 @@ void FileManagerPrivateInternalGetRecentFilesFunction::OnGetRecentFiles(
   DCHECK(external_backend);
 
   file_manager::util::FileDefinitionList file_definition_list;
-  for (const storage::FileSystemURL& url : urls) {
-    DCHECK(external_backend->CanHandleType(url.type()));
+  for (const auto& file : files) {
+    DCHECK(external_backend->CanHandleType(file.url().type()));
 
     // Filter out files from non-allowed sources.
     // We do this filtering here rather than in RecentModel so that the set of
     // files returned with some restriction is a subset of what would be
     // returned without restriction. Anyway, the maximum number of files
     // returned from RecentModel is large enough.
-    if (!IsAllowedSource(url.type(), restriction))
+    if (!IsAllowedSource(file.url().type(), restriction))
       continue;
 
     file_manager::util::FileDefinition file_definition;
     const bool result =
         file_manager::util::ConvertAbsoluteFilePathToRelativeFileSystemPath(
-            chrome_details_.GetProfile(), extension_id(), url.path(),
+            chrome_details_.GetProfile(), extension_id(), file.url().path(),
             &file_definition.virtual_path);
     if (!result)
       continue;

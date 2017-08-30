@@ -54,7 +54,7 @@ class RecentModelTest : public testing::Test {
     return sources;
   }
 
-  std::vector<storage::FileSystemURL> BuildModelAndGetRecentFiles(
+  std::vector<RecentFile> BuildModelAndGetRecentFiles(
       std::vector<std::unique_ptr<RecentSource>> sources,
       size_t max_files,
       const base::Time& cutoff_time) {
@@ -64,24 +64,23 @@ class RecentModelTest : public testing::Test {
     model->SetMaxFilesForTest(max_files);
     model->SetForcedCutoffTimeForTest(cutoff_time);
 
-    std::vector<storage::FileSystemURL> urls;
+    std::vector<RecentFile> files;
 
     base::RunLoop run_loop;
 
     model->GetRecentFiles(
         nullptr /* file_system_context */, GURL() /* origin */,
         base::BindOnce(
-            [](base::RunLoop* run_loop,
-               std::vector<storage::FileSystemURL>* urls_out,
-               const std::vector<storage::FileSystemURL>& urls) {
-              *urls_out = urls;
+            [](base::RunLoop* run_loop, std::vector<RecentFile>* files_out,
+               const std::vector<RecentFile>& files) {
+              *files_out = files;
               run_loop->Quit();
             },
-            &run_loop, &urls));
+            &run_loop, &files));
 
     run_loop.Run();
 
-    return urls;
+    return files;
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
@@ -89,33 +88,42 @@ class RecentModelTest : public testing::Test {
 };
 
 TEST_F(RecentModelTest, GetRecentFiles) {
-  std::vector<storage::FileSystemURL> urls =
+  std::vector<RecentFile> files =
       BuildModelAndGetRecentFiles(BuildDefaultSources(), 10, base::Time());
 
-  ASSERT_EQ(4u, urls.size());
-  EXPECT_EQ("ddd.jpg", urls[0].path().value());
-  EXPECT_EQ("ccc.jpg", urls[1].path().value());
-  EXPECT_EQ("bbb.jpg", urls[2].path().value());
-  EXPECT_EQ("aaa.jpg", urls[3].path().value());
+  ASSERT_EQ(4u, files.size());
+  EXPECT_EQ("ddd.jpg", files[0].url().path().value());
+  EXPECT_EQ(base::Time::FromJavaTime(4000), files[0].last_modified());
+  EXPECT_EQ("ccc.jpg", files[1].url().path().value());
+  EXPECT_EQ(base::Time::FromJavaTime(3000), files[1].last_modified());
+  EXPECT_EQ("bbb.jpg", files[2].url().path().value());
+  EXPECT_EQ(base::Time::FromJavaTime(2000), files[2].last_modified());
+  EXPECT_EQ("aaa.jpg", files[3].url().path().value());
+  EXPECT_EQ(base::Time::FromJavaTime(1000), files[3].last_modified());
 }
 
 TEST_F(RecentModelTest, GetRecentFiles_MaxFiles) {
-  std::vector<storage::FileSystemURL> urls =
+  std::vector<RecentFile> files =
       BuildModelAndGetRecentFiles(BuildDefaultSources(), 3, base::Time());
 
-  ASSERT_EQ(3u, urls.size());
-  EXPECT_EQ("ddd.jpg", urls[0].path().value());
-  EXPECT_EQ("ccc.jpg", urls[1].path().value());
-  EXPECT_EQ("bbb.jpg", urls[2].path().value());
+  ASSERT_EQ(3u, files.size());
+  EXPECT_EQ("ddd.jpg", files[0].url().path().value());
+  EXPECT_EQ(base::Time::FromJavaTime(4000), files[0].last_modified());
+  EXPECT_EQ("ccc.jpg", files[1].url().path().value());
+  EXPECT_EQ(base::Time::FromJavaTime(3000), files[1].last_modified());
+  EXPECT_EQ("bbb.jpg", files[2].url().path().value());
+  EXPECT_EQ(base::Time::FromJavaTime(2000), files[2].last_modified());
 }
 
 TEST_F(RecentModelTest, GetRecentFiles_CutoffTime) {
-  std::vector<storage::FileSystemURL> urls = BuildModelAndGetRecentFiles(
+  std::vector<RecentFile> files = BuildModelAndGetRecentFiles(
       BuildDefaultSources(), 10, base::Time::FromJavaTime(2500));
 
-  ASSERT_EQ(2u, urls.size());
-  EXPECT_EQ("ddd.jpg", urls[0].path().value());
-  EXPECT_EQ("ccc.jpg", urls[1].path().value());
+  ASSERT_EQ(2u, files.size());
+  EXPECT_EQ("ddd.jpg", files[0].url().path().value());
+  EXPECT_EQ(base::Time::FromJavaTime(4000), files[0].last_modified());
+  EXPECT_EQ("ccc.jpg", files[1].url().path().value());
+  EXPECT_EQ(base::Time::FromJavaTime(3000), files[1].last_modified());
 }
 
 TEST_F(RecentModelTest, GetRecentFiles_UmaStats) {
