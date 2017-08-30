@@ -100,6 +100,11 @@ class BoxPaintInvalidatorTest : public ::testing::WithParamInterface<bool>,
         "    border-style: solid;"
         "    border-color: red;"
         "  }"
+        "  .solid-composited-scroller {"
+        "    overflow: scroll;"
+        "    will-change: transform;"
+        "    background: #ccc;"
+        "  }"
         "  .local-background {"
         "    background-attachment: local;"
         "    overflow: scroll;"
@@ -781,6 +786,35 @@ TEST_P(BoxPaintInvalidatorTest, NonCompositedBackgroundAttachmentLocalResize) {
             raster_invalidations[0].client);
   EXPECT_EQ(PaintInvalidationReason::kIncremental,
             raster_invalidations[0].reason);
+  GetDocument().View()->SetTracksPaintInvalidations(false);
+}
+
+TEST_P(BoxPaintInvalidatorTest, CompositedSolidBackgroundResize) {
+  EnableCompositing();
+  Element* target = GetDocument().getElementById("target");
+  target->setAttribute(HTMLNames::classAttr, "solid-composited-scroller");
+  target->setInnerHTML("<div style='height: 500px'></div>",
+                       ASSERT_NO_EXCEPTION);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  // Resize the scroller.
+  GetDocument().View()->SetTracksPaintInvalidations(true);
+  target->setAttribute(HTMLNames::styleAttr, "width: 100px");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  LayoutBoxModelObject* target_object =
+      ToLayoutBoxModelObject(target->GetLayoutObject());
+  GraphicsLayer* scrolling_contents_layer =
+      target_object->Layer()->GraphicsLayerBacking();
+  const auto& invalidations =
+      scrolling_contents_layer->GetRasterInvalidationTracking()->invalidations;
+
+  ASSERT_EQ(1u, invalidations.size());
+  EXPECT_EQ(IntRect(50, 0, 50, 500), invalidations[0].rect);
+  EXPECT_EQ(static_cast<const DisplayItemClient*>(target_object),
+            invalidations[0].client);
+  EXPECT_EQ(PaintInvalidationReason::kBackgroundOnScrollingContentsLayer,
+            invalidations[0].reason);
   GetDocument().View()->SetTracksPaintInvalidations(false);
 }
 
