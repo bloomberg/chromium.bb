@@ -11,11 +11,39 @@
 #include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
+#include "base/test/scoped_feature_list.h"
+#include "components/search_provider_logos/features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
 namespace search_provider_logos {
+
+TEST(GoogleNewLogoApiTest, UsesHttps) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kUseDdljsonApi);
+
+  // "https://" remains in place, even for .cn.
+  EXPECT_EQ(GURL("https://www.google.com/async/ddljson"),
+            GetGoogleDoodleURL(GURL("https://www.google.com")));
+  EXPECT_EQ(GURL("https://www.google.de/async/ddljson"),
+            GetGoogleDoodleURL(GURL("https://www.google.de")));
+  EXPECT_EQ(GURL("https://www.google.cn/async/ddljson"),
+            GetGoogleDoodleURL(GURL("https://www.google.cn")));
+  EXPECT_EQ(GURL("https://www.google.com.cn/async/ddljson"),
+            GetGoogleDoodleURL(GURL("https://www.google.com.cn")));
+
+  // But "http://" gets replaced by "https://".
+  EXPECT_EQ(GURL("https://www.google.com/async/ddljson"),
+            GetGoogleDoodleURL(GURL("http://www.google.com")));
+  EXPECT_EQ(GURL("https://www.google.de/async/ddljson"),
+            GetGoogleDoodleURL(GURL("http://www.google.de")));
+  // ...except for .cn, which is allowed to keep "http://".
+  EXPECT_EQ(GURL("http://www.google.cn/async/ddljson"),
+            GetGoogleDoodleURL(GURL("http://www.google.cn")));
+  EXPECT_EQ(GURL("http://www.google.com.cn/async/ddljson"),
+            GetGoogleDoodleURL(GURL("http://www.google.com.cn")));
+}
 
 TEST(GoogleNewLogoApiTest, AppendsQueryParams) {
   const GURL logo_url("https://base.doo/target");
