@@ -14,16 +14,25 @@
 <dom-module id="settings-change-picture">
   <template>
     <style>
+      :host {
+        /* 56px cr_toolbar + 72px #headerLine */
+        --cr-settings-change-picture-top: 128px;
+        --title-height: 30px;
+        --title-padding: 16px;
+        display: block;
+        min-height: 328px;
+      }
+
       #title {
         -webkit-margin-start: 20px;
-        padding-top: 16px;
+        height: var(--title-height);
+        padding-top: var(--title-padding);
       }
 
       #container {
         -webkit-margin-start: 20px;
         align-items: flex-start;
         display: flex;
-        padding-top: 16px;
         position: absolute;
       }
 
@@ -32,6 +41,7 @@
         -webkit-margin-end: 24px;
         flex-shrink: 0;
         height: 288px;
+        margin-top: 6px;
         position: relative;
         width: 288px;
       }
@@ -44,14 +54,18 @@
       }
 
       #pictureList {
-        /* 162px is the size of header above the picture list.
-           TODO(reveman): Find a way to have height align to viewport
-           without having to make assumptions about header height. */
-        height: calc(100vh - 162px);
+        -webkit-margin-end: 16px;
+        /* TODO(reveman): Find a way to have height align to viewport
+           without using fixed position. */
+        height: calc(100vh -
+            var(--cr-settings-change-picture-top) -
+            var(--title-padding) -
+            var(--title-height));
+        margin-top: 0;
+        min-height: 332px;
         overflow-x: hidden;
         overflow-y: auto;
         position: relative;
-        width: 320px;
       }
 
     </style>
