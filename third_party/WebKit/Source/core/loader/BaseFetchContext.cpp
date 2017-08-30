@@ -252,10 +252,7 @@ ResourceRequestBlockedReason BaseFetchContext::CanRequestInternal(
             embedding_origin->Protocol())) {
       CountDeprecation(WebFeature::kLegacyProtocolEmbeddedAsSubresource);
 
-      // TODO(mkwst): Enabled by default in M59. Drop the runtime-enabled check
-      // in M60: https://www.chromestatus.com/feature/5709390967472128
-      if (RuntimeEnabledFeatures::BlockLegacySubresourcesEnabled())
-        return ResourceRequestBlockedReason::kOrigin;
+      return ResourceRequestBlockedReason::kOrigin;
     }
 
     if (ShouldBlockFetchAsCredentialedSubresource(resource_request, url))

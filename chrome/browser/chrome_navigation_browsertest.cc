@@ -804,3 +804,115 @@ IN_PROC_BROWSER_TEST_F(ForceDisabledSignInIsolationBrowserTest,
   EXPECT_TRUE(NavigateIframeToURL(web_contents, "test", signin_url));
   EXPECT_TRUE(IsInSyntheticTrialGroup(kSyntheticTrialName, "ForceDisabled"));
 }
+
+// Helper class. Track one navigation and tell whether a response from the
+// server has been received or not. It is useful for discerning navigations
+// blocked after or before the request has been sent.
+class WillProcessResponseObserver : public content::WebContentsObserver {
+ public:
+  explicit WillProcessResponseObserver(content::WebContents* web_contents,
+                                       const GURL& url)
+      : content::WebContentsObserver(web_contents), url_(url) {}
+  ~WillProcessResponseObserver() override {}
+
+  bool WillProcessResponseCalled() { return will_process_response_called_; }
+
+ private:
+  GURL url_;
+  bool will_process_response_called_ = false;
+
+  // Is used to set |will_process_response_called_| to true when
+  // NavigationThrottle::WillProcessResponse() is called.
+  class WillProcessResponseObserverThrottle
+      : public content::NavigationThrottle {
+   public:
+    WillProcessResponseObserverThrottle(content::NavigationHandle* handle,
+                                        bool* will_process_response_called)
+        : NavigationThrottle(handle),
+          will_process_response_called_(will_process_response_called) {}
+
+    const char* GetNameForLogging() override {
+      return "WillProcessResponseObserverThrottle";
+    }
+
+   private:
+    bool* will_process_response_called_;
+    NavigationThrottle::ThrottleCheckResult WillProcessResponse() override {
+      *will_process_response_called_ = true;
+      return NavigationThrottle::PROCEED;
+    }
+  };
+
+  // WebContentsObserver
+  void DidStartNavigation(content::NavigationHandle* handle) override {
+    if (handle->GetURL() == url_) {
+      handle->RegisterThrottleForTesting(
+          std::make_unique<WillProcessResponseObserverThrottle>(
+              handle, &will_process_response_called_));
+    }
+  }
+};
+
+// In HTTP/HTTPS documents, check that no request with the "ftp:" scheme are
+// submitted to load an iframe.
+// See https://crbug.com/757809.
+// Note: This test couldn't be a content_browsertests, since there would be
+// not handler defined for the "ftp" protocol in
+// URLRequestJobFactoryImpl::protocol_handler_map_.
+IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest, BlockLegacySubresources) {
+  net::SpawnedTestServer ftp_server(
+      net::SpawnedTestServer::TYPE_FTP,
+      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ASSERT_TRUE(ftp_server.Start());
+
+  GURL main_url_http(embedded_test_server()->GetURL("/iframe.html"));
+  GURL main_url_ftp(ftp_server.GetURL("iframe.html"));
+  GURL iframe_url_http(embedded_test_server()->GetURL("/simple.html"));
+  GURL iframe_url_ftp(ftp_server.GetURL("simple.html"));
+  GURL redirect_url(embedded_test_server()->GetURL("/server-redirect?"));
+
+  struct {
+    GURL main_url;
+    GURL iframe_url;
+    bool allowed;
+  } kTestCases[] = {
+      {main_url_http, iframe_url_http, true},
+      {main_url_http, iframe_url_ftp, false},
+      {main_url_ftp, iframe_url_http, true},
+      {main_url_ftp, iframe_url_ftp, true},
+  };
+  for (const auto test_case : kTestCases) {
+    // Blocking the request should work, even after a redirect.
+    for (bool redirect : {false, true}) {
+      GURL iframe_url =
+          redirect ? GURL(redirect_url.spec() + test_case.iframe_url.spec())
+                   : test_case.iframe_url;
+      SCOPED_TRACE(::testing::Message()
+                   << std::endl
+                   << "- main_url = " << test_case.main_url << std::endl
+                   << "- iframe_url = " << iframe_url << std::endl);
+
+      ui_test_utils::NavigateToURL(browser(), test_case.main_url);
+      content::WebContents* web_contents =
+          browser()->tab_strip_model()->GetActiveWebContents();
+      content::NavigationHandleObserver navigation_handle_observer(web_contents,
+                                                                   iframe_url);
+      WillProcessResponseObserver will_process_response_observer(web_contents,
+                                                                 iframe_url);
+      EXPECT_TRUE(NavigateIframeToURL(web_contents, "test", iframe_url));
+
+      if (test_case.allowed) {
+        EXPECT_TRUE(will_process_response_observer.WillProcessResponseCalled());
+        EXPECT_FALSE(navigation_handle_observer.is_error());
+        EXPECT_EQ(test_case.iframe_url,
+                  navigation_handle_observer.last_committed_url());
+      } else {
+        EXPECT_FALSE(
+            will_process_response_observer.WillProcessResponseCalled());
+        EXPECT_TRUE(navigation_handle_observer.is_error());
+        EXPECT_EQ(net::ERR_ABORTED,
+                  navigation_handle_observer.net_error_code());
+      }
+    }
+  }
+}

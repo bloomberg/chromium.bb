@@ -244,6 +244,18 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   // request should be allowed to continue or should be blocked.
   CredentialedSubresourceCheckResult CheckCredentialedSubresource() const;
 
+  // This enum describes the result of the legacy protocol check for
+  // the request.
+  enum class LegacyProtocolInSubresourceCheckResult {
+    ALLOW_REQUEST,
+    BLOCK_REQUEST,
+  };
+
+  // Block subresources requests that target "legacy" protocol (like "ftp") when
+  // the main document is not served from a "legacy" protocol.
+  LegacyProtocolInSubresourceCheckResult CheckLegacyProtocolInSubresource()
+      const;
+
   FrameTreeNode* frame_tree_node_;
 
   // Initialized on creation of the NavigationRequest. Sent to the renderer when
