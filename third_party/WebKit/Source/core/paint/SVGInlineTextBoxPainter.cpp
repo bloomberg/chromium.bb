@@ -124,16 +124,18 @@ void SVGInlineTextBoxPainter::Paint(const PaintInfo& paint_info,
         BoundsForDrawingRecorder(paint_info, style, paint_offset,
                                  include_selection_rect));
     InlineTextBoxPainter text_painter(svg_inline_text_box_);
-    text_painter.PaintDocumentMarkers(paint_info, paint_offset, style,
-                                      text_layout_object.ScaledFont(),
-                                      DocumentMarkerPaintPhase::kBackground);
+    const DocumentMarkerVector& markers_to_paint =
+        text_painter.ComputeMarkersToPaint();
+    text_painter.PaintDocumentMarkers(
+        markers_to_paint, paint_info, paint_offset, style,
+        text_layout_object.ScaledFont(), DocumentMarkerPaintPhase::kBackground);
 
     if (!svg_inline_text_box_.TextFragments().IsEmpty())
       PaintTextFragments(paint_info, parent_layout_object);
 
-    text_painter.PaintDocumentMarkers(paint_info, paint_offset, style,
-                                      text_layout_object.ScaledFont(),
-                                      DocumentMarkerPaintPhase::kForeground);
+    text_painter.PaintDocumentMarkers(
+        markers_to_paint, paint_info, paint_offset, style,
+        text_layout_object.ScaledFont(), DocumentMarkerPaintPhase::kForeground);
   }
 }
 
