@@ -106,7 +106,8 @@ void RemoteDeviceLoader::OnPSKDerived(
 
   cryptauth::RemoteDevice remote_device(
       user_id_, device.friendly_device_name(), device.public_key(),
-      device.bluetooth_address(), psk, std::string());
+      device.bluetooth_address(), psk, device.unlock_key(),
+      device.mobile_hotspot_supported());
 
   if (should_load_beacon_seeds_) {
     std::vector<BeaconSeed> beacon_seeds;

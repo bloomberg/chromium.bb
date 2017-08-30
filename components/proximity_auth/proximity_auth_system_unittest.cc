@@ -55,7 +55,8 @@ void CompareRemoteDeviceLists(const RemoteDeviceList& list1,
 RemoteDevice CreateRemoteDevice(const std::string& user_id,
                                 const std::string& name) {
   return RemoteDevice(user_id, name + "_pk", name, name + "_btaddr",
-                      name + "_psk", name + "_challenge");
+                      name + "_psk", true /* unlock_key */,
+                      true /* supports_mobile_hotspot */);
 }
 
 // Mock implementation of UnlockManager.
