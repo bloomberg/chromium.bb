@@ -35,20 +35,47 @@ struct IsOnceCallback : std::false_type {};
 template <typename Signature>
 struct IsOnceCallback<OnceCallback<Signature>> : std::true_type {};
 
-// Asserts |Param| is constructible from |Unwrapped|. |Arg| is here just to
-// show it in the compile error message as a hint to fix the error.
-template <size_t i, typename Arg, typename Unwrapped, typename Param>
+// Helper to assert that parameter |i| of type |Arg| can be bound, which means:
+// - |Arg| can be retained internally as |Storage|.
+// - |Arg| can be forwarded as |Unwrapped| to |Param|.
+template <size_t i,
+          typename Arg,
+          typename Storage,
+          typename Unwrapped,
+          typename Param>
 struct AssertConstructible {
-  static_assert(std::is_constructible<Param, Unwrapped>::value,
-                "|Param| needs to be constructible from |Unwrapped| type. "
-                "The failing argument is passed as the |i|th parameter, whose "
-                "type is |Arg|, and delivered as |Unwrapped| into |Param|.");
+ private:
+  static constexpr bool param_is_forwardable =
+      std::is_constructible<Param, Unwrapped>::value;
+  // Unlike the check for binding into storage below, the check for
+  // forwardability drops the const qualifier for repeating callbacks. This is
+  // to try to catch instances where std::move()--which forwards as a const
+  // reference with repeating callbacks--is used instead of base::Passed().
+  static_assert(
+      param_is_forwardable ||
+          !std::is_constructible<Param, std::decay_t<Unwrapped>&&>::value,
+      "Bound argument |i| is move-only but will be forwarded by copy. "
+      "Ensure |Arg| is bound using base::Passed(), not std::move().");
+  static_assert(
+      param_is_forwardable,
+      "Bound argument |i| of type |Arg| cannot be forwarded as "
+      "|Unwrapped| to the bound functor, which declares it as |Param|.");
+
+  static constexpr bool arg_is_storable =
+      std::is_constructible<Storage, Arg>::value;
+  static_assert(arg_is_storable ||
+                    !std::is_constructible<Storage, std::decay_t<Arg>&&>::value,
+                "Bound argument |i| is move-only but will be bound by copy. "
+                "Ensure |Arg| is mutable and bound using std::move().");
+  static_assert(arg_is_storable,
+                "Bound argument |i| of type |Arg| cannot be converted and "
+                "bound as |Storage|.");
 };
 
 // Takes three same-length TypeLists, and applies AssertConstructible for each
 // triples.
 template <typename Index,
-          typename ArgsList,
+          typename Args,
           typename UnwrappedTypeList,
           typename ParamsList>
 struct AssertBindArgsValidity;
@@ -61,7 +88,7 @@ struct AssertBindArgsValidity<std::index_sequence<Ns...>,
                               TypeList<Args...>,
                               TypeList<Unwrapped...>,
                               TypeList<Params...>>
-    : AssertConstructible<Ns, Args, Unwrapped, Params>... {
+    : AssertConstructible<Ns, Args, std::decay_t<Args>, Unwrapped, Params>... {
   static constexpr bool ok = true;
 };
 

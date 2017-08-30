@@ -70,7 +70,10 @@ template <typename T>
 void VoidPolymorphic1(T t) {
 }
 
-#if defined(NCTEST_METHOD_ON_CONST_OBJECT)  // [r"fatal error: static_assert failed \"\|Param\| needs to be constructible from \|Unwrapped\| type\."]
+void TakesMoveOnly(std::unique_ptr<int>) {
+}
+
+#if defined(NCTEST_METHOD_ON_CONST_OBJECT)  // [r"fatal error: static_assert failed \"Bound argument \|i\| of type \|Arg\| cannot be forwarded as \|Unwrapped\| to the bound functor, which declares it as \|Param\|\.\""]
 
 // Method bound to const-object.
 //
@@ -107,7 +110,7 @@ void WontCompile() {
   no_ref_const_cb.Run();
 }
 
-#elif defined(NCTEST_CONST_POINTER)  // [r"fatal error: static_assert failed \"\|Param\| needs to be constructible from \|Unwrapped\| type\."]
+#elif defined(NCTEST_CONST_POINTER)  // [r"fatal error: static_assert failed \"Bound argument \|i\| of type \|Arg\| cannot be forwarded as \|Unwrapped\| to the bound functor, which declares it as \|Param\|\.\""]
 
 // Const argument used with non-const pointer parameter of same type.
 //
@@ -119,7 +122,7 @@ void WontCompile() {
   pointer_same_cb.Run();
 }
 
-#elif defined(NCTEST_CONST_POINTER_SUBTYPE)  // [r"fatal error: static_assert failed \"\|Param\| needs to be constructible from \|Unwrapped\| type\."]
+#elif defined(NCTEST_CONST_POINTER_SUBTYPE)  // [r"fatal error: static_assert failed \"Bound argument \|i\| of type \|Arg\| cannot be forwarded as \|Unwrapped\| to the bound functor, which declares it as \|Param\|\.\""]
 
 // Const argument used with non-const pointer parameter of super type.
 //
@@ -148,7 +151,7 @@ void WontCompile() {
   ref_arg_cb.Run(p);
 }
 
-#elif defined(NCTEST_DISALLOW_BIND_TO_NON_CONST_REF_PARAM)  // [r"fatal error: static_assert failed \"\|Param\| needs to be constructible from \|Unwrapped\| type\."]
+#elif defined(NCTEST_DISALLOW_BIND_TO_NON_CONST_REF_PARAM)  // [r"fatal error: static_assert failed \"Bound argument \|i\| of type \|Arg\| cannot be forwarded as \|Unwrapped\| to the bound functor, which declares it as \|Param\|\.\""]
 
 // Binding functions with reference parameters, unsupported.
 //
@@ -276,6 +279,28 @@ void WontCompile() {
   const auto cb = BindOnce([](int) {});
   BindOnce(std::move(cb), 42);
 }
+
+#elif defined(NCTEST_BINDONCE_MOVEONLY_TYPE_BY_VALUE)  // [r"fatal error: static_assert failed \"Bound argument \|i\| is move-only but will be bound by copy\. Ensure \|Arg\| is mutable and bound using std::move\(\)\.\""]
+
+void WontCompile() {
+  std::unique_ptr<int> x;
+  BindOnce(&TakesMoveOnly, x);
+}
+
+#elif defined(NCTEST_BIND_MOVEONLY_TYPE_BY_VALUE)  // [r"Bound argument \|i\| is move-only but will be forwarded by copy\. Ensure \|Arg\| is bound using base::Passed\(\), not std::move\(\)."]
+
+void WontCompile() {
+  std::unique_ptr<int> x;
+  Bind(&TakesMoveOnly, x);
+}
+
+#elif defined(NCTEST_BIND_MOVEONLY_TYPE_WITH_STDMOVE)  // [r"Bound argument \|i\| is move-only but will be forwarded by copy\. Ensure \|Arg\| is bound using base::Passed\(\), not std::move\(\)."]
+
+void WontCompile() {
+  std::unique_ptr<int> x;
+  Bind(&TakesMoveOnly, std::move(x));
+}
+
 
 #endif
 
