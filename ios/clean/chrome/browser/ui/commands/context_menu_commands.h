@@ -5,27 +5,34 @@
 #ifndef IOS_CLEAN_CHROME_BROWSER_UI_COMMANDS_CONTEXT_MENU_COMMANDS_H_
 #define IOS_CLEAN_CHROME_BROWSER_UI_COMMANDS_CONTEXT_MENU_COMMANDS_H_
 
-@class ContextMenuContext;
+@class ContextMenuDialogRequest;
 
 // Commands relating to the context menu.
 @protocol ContextMenuCommands<NSObject>
 @optional
-// Executes |context|'s script.
-- (void)executeContextMenuScript:(ContextMenuContext*)context;
-// Opens |context|'s link in a new tab.
-- (void)openContextMenuLinkInNewTab:(ContextMenuContext*)context;
-// Opens |context|'s link in a new Incognito tab.
-- (void)openContextMenuLinkInNewIncognitoTab:(ContextMenuContext*)context;
-// Copies |context|'s link to the paste board.
-- (void)copyContextMenuLink:(ContextMenuContext*)context;
-// Saves's the image at |context|'s image URL to the camera roll.
-- (void)saveContextMenuImage:(ContextMenuContext*)context;
-// Opens the image at |context|'s image URL .
-- (void)openContextMenuImage:(ContextMenuContext*)context;
-// Opens the image at |context|'s image URL  in a new tab.
-- (void)openContextMenuImageInNewTab:(ContextMenuContext*)context;
-// Hides the context menu UI.
-- (void)hideContextMenu:(ContextMenuContext*)context;
+// Executes |request|'s script.
+- (void)executeContextMenuScript:(ContextMenuDialogRequest*)request;
+// Opens |request|'s link in a new tab.
+- (void)openContextMenuLinkInNewTab:(ContextMenuDialogRequest*)request;
+// Opens |request|'s link in a new Incognito tab.
+- (void)openContextMenuLinkInNewIncognitoTab:(ContextMenuDialogRequest*)request;
+// Copies |request|'s link to the paste board.
+- (void)copyContextMenuLink:(ContextMenuDialogRequest*)request;
+// Saves's the image at |request|'s image URL to the camera roll.
+- (void)saveContextMenuImage:(ContextMenuDialogRequest*)request;
+// Opens the image at |request|'s image URL .
+- (void)openContextMenuImage:(ContextMenuDialogRequest*)request;
+// Opens the image at |request|'s image URL  in a new tab.
+- (void)openContextMenuImageInNewTab:(ContextMenuDialogRequest*)request;
+@end
+
+// Command protocol for dismissing context menus.
+@protocol ContextMenuDismissalCommands<NSObject>
+
+// Called after the user interaction with the context menu has been handled
+// and the UI can be dismissed.
+- (void)dismissContextMenu;
+
 @end
 
 #endif  // IOS_CLEAN_CHROME_BROWSER_UI_COMMANDS_CONTEXT_MENU_COMMANDS_H_

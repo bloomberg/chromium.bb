@@ -21,7 +21,7 @@
 #import "ios/clean/chrome/browser/ui/commands/settings_commands.h"
 #import "ios/clean/chrome/browser/ui/commands/tab_grid_commands.h"
 #import "ios/clean/chrome/browser/ui/commands/tools_menu_commands.h"
-#import "ios/clean/chrome/browser/ui/context_menu/context_menu_context_impl.h"
+#import "ios/clean/chrome/browser/ui/dialogs/context_menu/context_menu_dialog_request.h"
 #import "ios/clean/chrome/browser/ui/overlays/overlay_service.h"
 #import "ios/clean/chrome/browser/ui/overlays/overlay_service_factory.h"
 #import "ios/clean/chrome/browser/ui/overlays/overlay_service_observer_bridge.h"
@@ -144,18 +144,14 @@
 
 #pragma mark - ContextMenuCommands
 
-- (void)openContextMenuLinkInNewTab:(ContextMenuContext*)context {
+- (void)openContextMenuLinkInNewTab:(ContextMenuDialogRequest*)request {
   [self createAndShowNewTabInTabGrid];
-  ContextMenuContextImpl* contextImpl =
-      base::mac::ObjCCastStrict<ContextMenuContextImpl>(context);
-  [self openURL:net::NSURLWithGURL(contextImpl.linkURL)];
+  [self openURL:net::NSURLWithGURL(request.linkURL)];
 }
 
-- (void)openContextMenuImageInNewTab:(ContextMenuContext*)context {
+- (void)openContextMenuImageInNewTab:(ContextMenuDialogRequest*)request {
   [self createAndShowNewTabInTabGrid];
-  ContextMenuContextImpl* contextImpl =
-      base::mac::ObjCCastStrict<ContextMenuContextImpl>(context);
-  [self openURL:net::NSURLWithGURL(contextImpl.imageURL)];
+  [self openURL:net::NSURLWithGURL(request.imageURL)];
 }
 
 #pragma mark - OverlayServiceObserving

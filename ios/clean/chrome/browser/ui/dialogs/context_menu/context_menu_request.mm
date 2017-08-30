@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/clean/chrome/browser/ui/context_menu/context_menu_context_impl.h"
+#import "ios/clean/chrome/browser/ui/dialogs/context_menu/context_menu_dialog_request.h"
 
 #include "base/strings/utf_string_conversions.h"
 #import "ios/web/public/web_state/context_menu_params.h"
@@ -13,19 +13,23 @@
 #error "This file requires ARC support."
 #endif
 
-@interface ContextMenuContextImpl () {
-  // The parameters passed on initialization.
+@interface ContextMenuDialogRequest () {
+  // The ContextMenuParams passed on initialization.
   web::ContextMenuParams _params;
   // The context menu link's script, if of the javascript: scheme.
   base::string16 _script;
 }
 
+// Designated initializer.
+- (instancetype)initWithParams:(const web::ContextMenuParams&)params
+    NS_DESIGNATED_INITIALIZER;
+
 @end
 
-@implementation ContextMenuContextImpl
+@implementation ContextMenuDialogRequest
 
 - (instancetype)initWithParams:(const web::ContextMenuParams&)params {
-  if ((self = [super init])) {
+  if (self = [super init]) {
     _params = params;
     const GURL& linkURL = _params.link_url;
     if (linkURL.is_valid() && linkURL.SchemeIs(url::kJavaScriptScheme))
@@ -50,6 +54,12 @@
 
 - (const base::string16&)script {
   return _script;
+}
+
+#pragma mark - Public
+
++ (instancetype)requestWithParams:(const web::ContextMenuParams&)params {
+  return [[ContextMenuDialogRequest alloc] initWithParams:params];
 }
 
 @end

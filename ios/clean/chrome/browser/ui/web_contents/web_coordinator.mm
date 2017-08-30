@@ -10,8 +10,8 @@
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/coordinators/browser_coordinator+internal.h"
 #import "ios/clean/chrome/browser/ui/commands/context_menu_commands.h"
-#import "ios/clean/chrome/browser/ui/context_menu/context_menu_context_impl.h"
-#import "ios/clean/chrome/browser/ui/context_menu/web_context_menu_coordinator.h"
+#import "ios/clean/chrome/browser/ui/dialogs/context_menu/context_menu_dialog_coordinator.h"
+#import "ios/clean/chrome/browser/ui/dialogs/context_menu/context_menu_dialog_request.h"
 #import "ios/clean/chrome/browser/ui/dialogs/java_script_dialogs/java_script_dialog_overlay_presenter.h"
 #import "ios/clean/chrome/browser/ui/overlays/overlay_service.h"
 #import "ios/clean/chrome/browser/ui/overlays/overlay_service_factory.h"
@@ -76,7 +76,7 @@
 
 - (void)childCoordinatorDidStart:(BrowserCoordinator*)childCoordinator {
   // Register to receive relevant ContextMenuCommands.
-  if ([childCoordinator isKindOfClass:[WebContextMenuCoordinator class]]) {
+  if ([childCoordinator isKindOfClass:[ContextMenuDialogCoordinator class]]) {
     [self.browser->dispatcher()
         startDispatchingToTarget:self
                      forSelector:@selector(executeContextMenuScript:)];
@@ -91,7 +91,7 @@
 
 - (void)childCoordinatorWillStop:(BrowserCoordinator*)childCoordinator {
   // Unregister ContextMenuCommands once the UI has been dismissed.
-  if ([childCoordinator isKindOfClass:[WebContextMenuCoordinator class]]) {
+  if ([childCoordinator isKindOfClass:[ContextMenuDialogCoordinator class]]) {
     [self.browser->dispatcher()
         stopDispatchingForSelector:@selector(executeContextMenuScript:)];
     [self.browser->dispatcher()
@@ -101,16 +101,12 @@
 
 #pragma mark - ContextMenuCommand
 
-- (void)executeContextMenuScript:(ContextMenuContext*)context {
-  ContextMenuContextImpl* contextImpl =
-      base::mac::ObjCCastStrict<ContextMenuContextImpl>(context);
-  self.webState->ExecuteJavaScript(contextImpl.script);
+- (void)executeContextMenuScript:(ContextMenuDialogRequest*)request {
+  self.webState->ExecuteJavaScript(request.script);
 }
 
-- (void)openContextMenuImage:(ContextMenuContext*)context {
-  ContextMenuContextImpl* contextImpl =
-      base::mac::ObjCCastStrict<ContextMenuContextImpl>(context);
-  web::NavigationManager::WebLoadParams loadParams(contextImpl.imageURL);
+- (void)openContextMenuImage:(ContextMenuDialogRequest*)request {
+  web::NavigationManager::WebLoadParams loadParams(request.imageURL);
   self.webState->GetNavigationManager()->LoadURLWithParams(loadParams);
 }
 
@@ -129,12 +125,14 @@
 
 - (void)webState:(web::WebState*)webState
     handleContextMenu:(const web::ContextMenuParams&)params {
-  ContextMenuContextImpl* context =
-      [[ContextMenuContextImpl alloc] initWithParams:params];
-  WebContextMenuCoordinator* contextMenu =
-      [[WebContextMenuCoordinator alloc] initWithContext:context];
-  [self addChildCoordinator:contextMenu];
-  [contextMenu start];
+  DCHECK_EQ(self.webState, webState);
+  ContextMenuDialogRequest* request =
+      [ContextMenuDialogRequest requestWithParams:params];
+  ContextMenuDialogCoordinator* contextMenu =
+      [[ContextMenuDialogCoordinator alloc] initWithRequest:request];
+  OverlayServiceFactory::GetInstance()
+      ->GetForBrowserState(self.browser->browser_state())
+      ->ShowOverlayForWebState(contextMenu, self.webState);
 }
 
 #pragma mark -
