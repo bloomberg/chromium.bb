@@ -113,9 +113,7 @@ class ChromeLGTMCommitter(object):
       logging.info('Dry run; rebase succeeded, exiting.')
       return
     else:
-      git.RunGit(
-          self._checkout_dir,
-          ['cl', 'land', '-f', '--bypass-hooks', '-m', self._commit_msg])
+      git.RunGit(self._checkout_dir, ['cl', 'land', '-f', '--bypass-hooks'])
 
   def LandNewLKGM(self, max_retry=10):
     """Lands the change after fetching and rebasing."""
