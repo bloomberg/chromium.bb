@@ -1267,7 +1267,7 @@ TEST_F(CRWSessionControllerTest, NewPendingItemIsHiddenFromHistory) {
 }
 
 // Tests that |-backwardItems| returns all committed items if there is a
-// transient item. This can happen if an intersitial was loaded for SSL error.
+// transient item. This can happen if an interstitial was loaded for SSL error.
 // See crbug.com/691311.
 TEST_F(CRWSessionControllerTest,
        BackwardItemsShouldContainAllCommittedIfCurrentIsTransient) {

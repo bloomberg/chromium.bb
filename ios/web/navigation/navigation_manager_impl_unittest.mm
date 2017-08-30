@@ -1964,7 +1964,7 @@ TEST_P(NavigationManagerTest, NewPendingItemIsHiddenFromHistory) {
 }
 
 // Tests that all committed items are considered history if there is a transient
-// item. This can happen if an intersitial was loaded for SSL error.
+// item. This can happen if an interstitial was loaded for SSL error.
 // See crbug.com/691311.
 TEST_P(NavigationManagerTest,
        BackwardItemsShouldContainAllCommittedIfCurrentIsTransient) {

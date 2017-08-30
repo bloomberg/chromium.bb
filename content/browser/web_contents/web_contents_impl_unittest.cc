@@ -2495,7 +2495,7 @@ TEST_F(WebContentsImplTest, InterstitialCrasher) {
   RunAllPendingInMessageLoop();
   EXPECT_TRUE(deleted);
 
-  // Now try again but this time crash the intersitial after it was shown.
+  // Now try again but this time crash the interstitial after it was shown.
   interstitial =
       new TestInterstitialPage(contents(), true, url, &state, &deleted);
   interstitial->Show();

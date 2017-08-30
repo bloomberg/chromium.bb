@@ -4028,7 +4028,7 @@ IN_PROC_BROWSER_TEST_F(SSLNetworkTimeBrowserTest, OnDemandFetchClockWrong) {
 }
 
 // Tests that if the timeout expires before the network time fetch
-// returns, then a normal SSL intersitial is shown.
+// returns, then a normal SSL interstitial is shown.
 IN_PROC_BROWSER_TEST_F(SSLNetworkTimeBrowserTest,
                        TimeoutExpiresBeforeFetchCompletes) {
   ASSERT_TRUE(https_server_expired_.Start());
