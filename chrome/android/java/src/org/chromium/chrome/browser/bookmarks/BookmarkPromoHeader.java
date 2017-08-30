@@ -14,7 +14,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
@@ -28,7 +27,6 @@ import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
 import org.chromium.chrome.browser.signin.SigninPromoController;
 import org.chromium.chrome.browser.signin.SigninPromoView;
-import org.chromium.chrome.browser.widget.displaystyle.MarginResizer;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountsChangeObserver;
 import org.chromium.components.signin.ChromeSigninController;
@@ -164,15 +162,6 @@ class BookmarkPromoHeader implements AndroidSyncSettingsObserver, SignInStateObs
 
         SigninAndSyncView view =
                 SigninAndSyncView.create(parent, listener, SigninAccessPoint.BOOKMARK_MANAGER);
-
-        // A MarginResizer is used to apply margins in regular and wide display modes. Remove
-        // the view's lateral padding so that margins can be used instead.
-        ApiCompatibilityUtils.setPaddingRelative(
-                view, 0, view.getPaddingTop(), 0, view.getPaddingBottom());
-        MarginResizer.createAndAttach(view,
-                mBookmarkDelegate.getSelectableListLayout().getUiConfig(),
-                parent.getResources().getDimensionPixelSize(R.dimen.signin_and_sync_view_padding),
-                0);
 
         // ViewHolder is abstract and it cannot be instantiated directly.
         return new ViewHolder(view) {};
