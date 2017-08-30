@@ -323,7 +323,7 @@ class _Session(object):
         'canned_queries: %s' % ', '.join(canned_queries_keys),
         '',
         'Functions: %s' % ', '.join('%s()' % f for f in functions),
-        'Variables: ',
+        'Variables:',
         '  printed: List of objects passed to Print().',
     ]
     for key, value in self._variables.iteritems():
