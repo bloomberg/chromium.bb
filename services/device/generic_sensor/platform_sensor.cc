@@ -26,7 +26,7 @@ PlatformSensor::PlatformSensor(mojom::SensorType type,
 
 PlatformSensor::~PlatformSensor() {
   if (provider_)
-    provider_->RemoveSensor(GetType());
+    provider_->RemoveSensor(GetType(), this);
 }
 
 mojom::SensorType PlatformSensor::GetType() const {
