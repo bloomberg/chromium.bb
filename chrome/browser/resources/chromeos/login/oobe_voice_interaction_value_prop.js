@@ -201,6 +201,9 @@ Polymer({
         this.onValueViewErrorOccurred();
       }
     }
+    if (details.statusCode != '200') {
+      this.onValueViewErrorOccurred();
+    }
   },
 
   /**
