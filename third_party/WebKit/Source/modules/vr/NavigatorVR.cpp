@@ -18,6 +18,7 @@
 #include "modules/vr/VRDisplay.h"
 #include "modules/vr/VRGetDevicesCallback.h"
 #include "modules/vr/VRPose.h"
+#include "platform/feature_policy/FeaturePolicy.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 
@@ -68,6 +69,23 @@ ScriptPromise NavigatorVR::getVRDisplays(ScriptState* script_state) {
   ScriptPromise promise = resolver->Promise();
 
   if (!GetDocument()) {
+    RejectNavigatorDetached(resolver);
+    return promise;
+  }
+
+  LocalFrame* frame = GetDocument()->GetFrame();
+  // TODO(bshe): Add different error string for cases when promise is rejected.
+  if (!frame) {
+    RejectNavigatorDetached(resolver);
+    return promise;
+  }
+  if (IsSupportedInFeaturePolicy(WebFeaturePolicyFeature::kWebVr)) {
+    if (!frame->IsFeatureEnabled(WebFeaturePolicyFeature::kWebVr)) {
+      RejectNavigatorDetached(resolver);
+      return promise;
+    }
+  } else if (!frame->HasReceivedUserGesture() &&
+             frame->IsCrossOriginSubframe()) {
     RejectNavigatorDetached(resolver);
     return promise;
   }

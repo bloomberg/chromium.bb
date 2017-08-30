@@ -47,7 +47,9 @@ enum class WebFeaturePolicyFeature {
   kUsb,
   // Controls access to AOM event listeners.
   kAccessibilityEvents,
-  LAST_FEATURE = kAccessibilityEvents
+  // Controls use of WebVR API.
+  kWebVr,
+  LAST_FEATURE = kWebVr
 };
 
 }  // namespace blink
