@@ -9,12 +9,10 @@
 
 namespace blink {
 
-// Implementation of DocumentMarkerList for Composition markers.
-// Composition markers are always inserted in order, aside from some potential
-// oddball cases (e.g. splitting the marker list into two nodes, then undoing
-// the split). This means we can keep the list in sorted order to do some
-// operations more efficiently, while still being able to do inserts in O(1)
-// time at the end of the list.
+// Implementation of DocumentMarkerList for Composition markers. Composition
+// markers can overlap (e.g. an IME might pass two markers on the same region of
+// text, one to underline it and one to add a background color), so we store
+// them unsorted.
 class CORE_EXPORT CompositionMarkerListImpl final : public DocumentMarkerList {
  public:
   CompositionMarkerListImpl() = default;
