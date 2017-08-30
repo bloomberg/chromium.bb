@@ -44,20 +44,9 @@ namespace {
         std::string("first_" #member "_value"), \
         std::string("second_" #member "_value"));
 
-#define TEST_BOOL_ACCESSORS(entry_type, entry, member) \
-    TestAccessors(&entry, \
-                  &entry_type::member, \
-                  &entry_type::Set ## member, \
-                  false, \
-                  true);
-
-#define TEST_STAT_ACCESSORS(entry_type, entry, member) \
-    TestStatAccessors(&entry, \
-                      &entry_type::Has ## member, \
-                      &entry_type::Get ## member, \
-                      &entry_type::Set ## member, \
-                      10, \
-                      20);
+#define TEST_BOOL_ACCESSORS(entry_type, entry, member)                       \
+  TestAccessors(&entry, &entry_type::member, &entry_type::Set##member, true, \
+                false);
 
 template<typename TValue, typename TGetter, typename TSetter>
 void TestAccessors(ProfileAttributesEntry** entry,
@@ -71,21 +60,31 @@ void TestAccessors(ProfileAttributesEntry** entry,
   EXPECT_EQ(second_value, (*entry->*getter_func)());
 }
 
-template<typename TValue, typename TExist, typename TGetter, typename TSetter>
-void TestStatAccessors(ProfileAttributesEntry** entry,
-    TExist exist_func,
-    TGetter getter_func,
-    TSetter setter_func,
-    TValue first_value,
-    TValue second_value) {
-  EXPECT_FALSE((*entry->*exist_func)());
-  (*entry->*setter_func)(first_value);
-  EXPECT_TRUE((*entry->*exist_func)());
-  EXPECT_EQ(first_value, (*entry->*getter_func)());
-  (*entry->*setter_func)(second_value);
-  EXPECT_TRUE((*entry->*exist_func)());
-  EXPECT_EQ(second_value, (*entry->*getter_func)());
-}
+class ProfileAttributesTestObserver
+    : public ProfileAttributesStorage::Observer {
+ public:
+  MOCK_METHOD1(OnProfileAdded, void(const base::FilePath& profile_path));
+  MOCK_METHOD1(OnProfileWillBeRemoved,
+               void(const base::FilePath& profile_path));
+  MOCK_METHOD2(OnProfileWasRemoved,
+               void(const base::FilePath& profile_path,
+                    const base::string16& profile_name));
+  MOCK_METHOD2(OnProfileNameChanged,
+               void(const base::FilePath& profile_path,
+                    const base::string16& old_profile_name));
+  MOCK_METHOD1(OnProfileAuthInfoChanged,
+               void(const base::FilePath& profile_path));
+  MOCK_METHOD1(OnProfileAvatarChanged,
+               void(const base::FilePath& profile_path));
+  MOCK_METHOD1(OnProfileHighResAvatarLoaded,
+               void(const base::FilePath& profile_path));
+  MOCK_METHOD1(OnProfileSigninRequiredChanged,
+               void(const base::FilePath& profile_path));
+  MOCK_METHOD1(OnProfileSupervisedUserIdChanged,
+               void(const base::FilePath& profile_path));
+  MOCK_METHOD1(OnProfileIsOmittedChanged,
+               void(const base::FilePath& profile_path));
+};
 }  // namespace
 
 class ProfileAttributesStorageTest : public testing::Test {
@@ -97,6 +96,8 @@ class ProfileAttributesStorageTest : public testing::Test {
  protected:
   void SetUp() override {
     ASSERT_TRUE(testing_profile_manager_.SetUp());
+    VerifyAndResetCallExpectations();
+    EnableObserver();
   }
 
   void TearDown() override {
@@ -107,6 +108,35 @@ class ProfileAttributesStorageTest : public testing::Test {
         AppendASCII(base_name);
   }
 
+  void VerifyAndResetCallExpectations() {
+    Mock::VerifyAndClear(&observer_);
+    EXPECT_CALL(observer_, OnProfileAdded(_)).Times(0);
+    EXPECT_CALL(observer_, OnProfileWillBeRemoved(_)).Times(0);
+    EXPECT_CALL(observer_, OnProfileWasRemoved(_, _)).Times(0);
+    EXPECT_CALL(observer_, OnProfileNameChanged(_, _)).Times(0);
+    EXPECT_CALL(observer_, OnProfileAuthInfoChanged(_)).Times(0);
+    EXPECT_CALL(observer_, OnProfileAvatarChanged(_)).Times(0);
+    EXPECT_CALL(observer_, OnProfileHighResAvatarLoaded(_)).Times(0);
+    EXPECT_CALL(observer_, OnProfileSigninRequiredChanged(_)).Times(0);
+    EXPECT_CALL(observer_, OnProfileSupervisedUserIdChanged(_)).Times(0);
+    EXPECT_CALL(observer_, OnProfileIsOmittedChanged(_)).Times(0);
+  }
+
+  void EnableObserver() { storage()->AddObserver(&observer_); }
+  void DisableObserver() { storage()->RemoveObserver(&observer_); }
+
+  void AddCallExpectationsForRemoveProfile(size_t profile_number) {
+    base::FilePath profile_path = GetProfilePath(
+        base::StringPrintf("testing_profile_path%" PRIuS, profile_number));
+    base::string16 profile_name = base::ASCIIToUTF16(
+        base::StringPrintf("testing_profile_name%" PRIuS, profile_number));
+
+    ::testing::InSequence dummy;
+    EXPECT_CALL(observer(), OnProfileWillBeRemoved(profile_path)).Times(1);
+    EXPECT_CALL(observer(), OnProfileWasRemoved(profile_path, profile_name))
+        .Times(1);
+  }
+
   ProfileAttributesStorage* storage() {
     return profile_info_cache();
   }
@@ -115,19 +145,26 @@ class ProfileAttributesStorageTest : public testing::Test {
     return testing_profile_manager_.profile_info_cache();
   }
 
+  ProfileAttributesTestObserver& observer() { return observer_; }
+
   void AddTestingProfile() {
     size_t number_of_profiles = storage()->GetNumberOfProfiles();
 
+    base::FilePath profile_path = GetProfilePath(
+        base::StringPrintf("testing_profile_path%" PRIuS, number_of_profiles));
+
+    EXPECT_CALL(observer(), OnProfileAdded(profile_path))
+        .Times(1)
+        .RetiresOnSaturation();
+
     storage()->AddProfile(
-        GetProfilePath(base::StringPrintf("testing_profile_path%" PRIuS,
-                                          number_of_profiles)),
+        profile_path,
         base::ASCIIToUTF16(base::StringPrintf("testing_profile_name%" PRIuS,
                                               number_of_profiles)),
         base::StringPrintf("testing_profile_gaia%" PRIuS, number_of_profiles),
         base::ASCIIToUTF16(base::StringPrintf("testing_profile_user%" PRIuS,
                                               number_of_profiles)),
-        number_of_profiles,
-        std::string(""));
+        number_of_profiles, std::string(""));
 
     EXPECT_EQ(number_of_profiles + 1, storage()->GetNumberOfProfiles());
   }
@@ -135,13 +172,7 @@ class ProfileAttributesStorageTest : public testing::Test {
  private:
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfileManager testing_profile_manager_;
-};
-
-class ProfileAttributesTestObserver
-    : public ProfileAttributesStorage::Observer {
- public:
-  MOCK_METHOD1(OnProfileSigninRequiredChanged,
-               void(const base::FilePath& profile_path));
+  ProfileAttributesTestObserver observer_;
 };
 
 TEST_F(ProfileAttributesStorageTest, ProfileNotFound) {
@@ -163,6 +194,9 @@ TEST_F(ProfileAttributesStorageTest, ProfileNotFound) {
 TEST_F(ProfileAttributesStorageTest, AddProfile) {
   EXPECT_EQ(0U, storage()->GetNumberOfProfiles());
 
+  EXPECT_CALL(observer(), OnProfileAdded(GetProfilePath("new_profile_path_1")))
+      .Times(1);
+
   storage()->AddProfile(GetProfilePath("new_profile_path_1"),
                         base::ASCIIToUTF16("new_profile_name_1"),
                         std::string("new_profile_gaia_1"),
@@ -170,6 +204,7 @@ TEST_F(ProfileAttributesStorageTest, AddProfile) {
                         1,
                         std::string(""));
 
+  VerifyAndResetCallExpectations();
   EXPECT_EQ(1U, storage()->GetNumberOfProfiles());
 
   ProfileAttributesEntry* entry;
@@ -187,15 +222,18 @@ TEST_F(ProfileAttributesStorageTest, RemoveProfile) {
 
   AddTestingProfile();
   EXPECT_EQ(1U, storage()->GetNumberOfProfiles());
+  ASSERT_TRUE(storage()->GetProfileAttributesWithPath(
+      GetProfilePath("testing_profile_path0"), &entry));
+  EXPECT_EQ(base::ASCIIToUTF16("testing_profile_name0"), entry->GetName());
 
-  // Deleting an existing profile should make it un-retrievable.
+  // Deleting an existing profile. This should call observers and make the entry
+  // un-retrievable.
+  AddCallExpectationsForRemoveProfile(0);
   storage()->RemoveProfile(GetProfilePath("testing_profile_path0"));
+  VerifyAndResetCallExpectations();
   EXPECT_EQ(0U, storage()->GetNumberOfProfiles());
-
-  ASSERT_FALSE(storage()->GetProfileAttributesWithPath(
-      GetProfilePath("testing_profile_path1"), &entry));
-  ASSERT_FALSE(storage()->GetProfileAttributesWithPath(
-      GetProfilePath("testing_profile_path1"), &entry));
+  EXPECT_FALSE(storage()->GetProfileAttributesWithPath(
+      GetProfilePath("testing_profile_path0"), &entry));
 }
 
 TEST_F(ProfileAttributesStorageTest, MultipleProfiles) {
@@ -204,9 +242,8 @@ TEST_F(ProfileAttributesStorageTest, MultipleProfiles) {
   for (size_t i = 0; i < 5; ++i) {
     AddTestingProfile();
     EXPECT_EQ(i + 1, storage()->GetNumberOfProfiles());
-    std::vector<ProfileAttributesEntry*> entries =
-        storage()->GetAllProfilesAttributes();
-    EXPECT_EQ(i + 1, entries.size());
+    EXPECT_EQ(i + 1, storage()->GetAllProfilesAttributes().size());
+    EXPECT_EQ(i + 1, storage()->GetAllProfilesAttributesSortedByName().size());
   }
 
   EXPECT_EQ(5U, storage()->GetNumberOfProfiles());
@@ -216,7 +253,9 @@ TEST_F(ProfileAttributesStorageTest, MultipleProfiles) {
       GetProfilePath("testing_profile_path0"), &entry));
   EXPECT_EQ(base::ASCIIToUTF16("testing_profile_name0"), entry->GetName());
 
+  AddCallExpectationsForRemoveProfile(0);
   storage()->RemoveProfile(GetProfilePath("testing_profile_path0"));
+  VerifyAndResetCallExpectations();
   ASSERT_FALSE(storage()->GetProfileAttributesWithPath(
       GetProfilePath("testing_profile_path0"), &entry));
   EXPECT_EQ(4U, storage()->GetNumberOfProfiles());
@@ -245,26 +284,39 @@ TEST_F(ProfileAttributesStorageTest, InitialValues) {
 TEST_F(ProfileAttributesStorageTest, EntryAccessors) {
   AddTestingProfile();
 
+  base::FilePath path = GetProfilePath("testing_profile_path0");
+
   ProfileAttributesEntry* entry;
-  ASSERT_TRUE(storage()->GetProfileAttributesWithPath(
-      GetProfilePath("testing_profile_path0"), &entry));
+  ASSERT_TRUE(storage()->GetProfileAttributesWithPath(path, &entry));
+  EXPECT_EQ(path, entry->GetPath());
 
-  EXPECT_EQ(GetProfilePath("testing_profile_path0"), entry->GetPath());
-
+  EXPECT_CALL(observer(), OnProfileNameChanged(path, _)).Times(2);
   TEST_STRING16_ACCESSORS(ProfileAttributesEntry, entry, Name);
+  VerifyAndResetCallExpectations();
+
   TEST_STRING16_ACCESSORS(ProfileAttributesEntry, entry, ShortcutName);
   TEST_STRING_ACCESSORS(ProfileAttributesEntry, entry, LocalAuthCredentials);
   TEST_STRING_ACCESSORS(
       ProfileAttributesEntry, entry, PasswordChangeDetectionToken);
-  TEST_ACCESSORS(ProfileAttributesEntry, entry, BackgroundStatus, false, true);
+  TEST_ACCESSORS(ProfileAttributesEntry, entry, BackgroundStatus, true, false);
+
   TEST_STRING16_ACCESSORS(ProfileAttributesEntry, entry, GAIAName);
   TEST_STRING16_ACCESSORS(ProfileAttributesEntry, entry, GAIAGivenName);
+
+  EXPECT_CALL(observer(), OnProfileAvatarChanged(path)).Times(2);
   TEST_BOOL_ACCESSORS(ProfileAttributesEntry, entry, IsUsingGAIAPicture);
+  VerifyAndResetCallExpectations();
+
+  EXPECT_CALL(observer(), OnProfileIsOmittedChanged(path)).Times(2);
   TEST_BOOL_ACCESSORS(ProfileAttributesEntry, entry, IsOmitted);
-  TEST_BOOL_ACCESSORS(ProfileAttributesEntry, entry, IsSigninRequired);
-  TEST_STRING_ACCESSORS(ProfileAttributesEntry, entry, SupervisedUserId);
+  VerifyAndResetCallExpectations();
+
   TEST_BOOL_ACCESSORS(ProfileAttributesEntry, entry, IsEphemeral);
+
+  EXPECT_CALL(observer(), OnProfileNameChanged(path, _)).Times(2);
   TEST_BOOL_ACCESSORS(ProfileAttributesEntry, entry, IsUsingDefaultName);
+  VerifyAndResetCallExpectations();
+
   TEST_BOOL_ACCESSORS(ProfileAttributesEntry, entry, IsUsingDefaultAvatar);
   TEST_BOOL_ACCESSORS(ProfileAttributesEntry, entry, IsAuthError);
 }
@@ -393,16 +445,21 @@ TEST_F(ProfileAttributesStorageTest, ProfileActiveTime) {
 TEST_F(ProfileAttributesStorageTest, AuthInfo) {
   AddTestingProfile();
 
-  ProfileAttributesEntry* entry;
-  ASSERT_TRUE(storage()->GetProfileAttributesWithPath(
-      GetProfilePath("testing_profile_path0"), &entry));
+  base::FilePath path = GetProfilePath("testing_profile_path0");
 
+  ProfileAttributesEntry* entry;
+  ASSERT_TRUE(storage()->GetProfileAttributesWithPath(path, &entry));
+
+  EXPECT_CALL(observer(), OnProfileAuthInfoChanged(path)).Times(1);
   entry->SetAuthInfo("", base::string16());
+  VerifyAndResetCallExpectations();
   ASSERT_FALSE(entry->IsAuthenticated());
   EXPECT_EQ(base::string16(), entry->GetUserName());
   EXPECT_EQ("", entry->GetGAIAId());
 
+  EXPECT_CALL(observer(), OnProfileAuthInfoChanged(path)).Times(1);
   entry->SetAuthInfo("foo", base::ASCIIToUTF16("bar"));
+  VerifyAndResetCallExpectations();
   ASSERT_TRUE(entry->IsAuthenticated());
   EXPECT_EQ(base::ASCIIToUTF16("bar"), entry->GetUserName());
   EXPECT_EQ("foo", entry->GetGAIAId());
@@ -410,6 +467,8 @@ TEST_F(ProfileAttributesStorageTest, AuthInfo) {
 
 TEST_F(ProfileAttributesStorageTest, SupervisedUsersAccessors) {
   AddTestingProfile();
+
+  base::FilePath path = GetProfilePath("testing_profile_path0");
 
   ProfileAttributesEntry* entry;
   ASSERT_TRUE(storage()->GetProfileAttributesWithPath(
@@ -420,18 +479,24 @@ TEST_F(ProfileAttributesStorageTest, SupervisedUsersAccessors) {
   ASSERT_FALSE(entry->IsChild());
   ASSERT_FALSE(entry->IsLegacySupervised());
 
+  EXPECT_CALL(observer(), OnProfileSupervisedUserIdChanged(path)).Times(1);
   entry->SetSupervisedUserId("some_supervised_user_id");
+  VerifyAndResetCallExpectations();
   ASSERT_TRUE(entry->IsSupervised());
   ASSERT_FALSE(entry->IsChild());
   ASSERT_TRUE(entry->IsLegacySupervised());
 
+  EXPECT_CALL(observer(), OnProfileSupervisedUserIdChanged(path)).Times(1);
   entry->SetSupervisedUserId(supervised_users::kChildAccountSUID);
+  VerifyAndResetCallExpectations();
   ASSERT_TRUE(entry->IsSupervised());
   ASSERT_TRUE(entry->IsChild());
   ASSERT_FALSE(entry->IsLegacySupervised());
 }
 
 TEST_F(ProfileAttributesStorageTest, ReSortTriggered) {
+  DisableObserver();  // No need to test observers in this test.
+
   storage()->AddProfile(GetProfilePath("alpha_path"),
                         base::ASCIIToUTF16("alpha"),
                         std::string("alpha_gaia"),
@@ -473,7 +538,9 @@ TEST_F(ProfileAttributesStorageTest, RemoveOtherProfile) {
   EXPECT_EQ(
       base::ASCIIToUTF16("testing_profile_name0"), first_entry->GetName());
 
+  AddCallExpectationsForRemoveProfile(1);
   storage()->RemoveProfile(GetProfilePath("testing_profile_path1"));
+  VerifyAndResetCallExpectations();
   ASSERT_FALSE(storage()->GetProfileAttributesWithPath(
       GetProfilePath("testing_profile_path1"), &second_entry));
 
@@ -483,14 +550,18 @@ TEST_F(ProfileAttributesStorageTest, RemoveOtherProfile) {
 
   // Deleting through the ProfileInfoCache should be reflected in the
   // ProfileAttributesStorage as well.
+  AddCallExpectationsForRemoveProfile(2);
   profile_info_cache()->RemoveProfile(
       GetProfilePath("testing_profile_path2"));
+  VerifyAndResetCallExpectations();
   ASSERT_FALSE(storage()->GetProfileAttributesWithPath(
       GetProfilePath("testing_profile_path2"), &second_entry));
 }
 
 TEST_F(ProfileAttributesStorageTest, AccessFromElsewhere) {
   AddTestingProfile();
+
+  DisableObserver();  // No need to test observers in this test.
 
   ProfileAttributesEntry* first_entry;
   ASSERT_TRUE(storage()->GetProfileAttributesWithPath(
@@ -549,13 +620,12 @@ TEST_F(ProfileAttributesStorageTest, ChooseAvatarIconIndexForNewProfile) {
 
     used_icon_indices.insert(icon_index);
 
-    storage()->AddProfile(
-        GetProfilePath(base::StringPrintf("testing_profile_path%" PRIuS, i)),
-                       base::string16(),
-                       std::string(),
-                       base::string16(),
-                       icon_index,
-                       std::string());
+    base::FilePath profile_path =
+        GetProfilePath(base::StringPrintf("testing_profile_path%" PRIuS, i));
+    EXPECT_CALL(observer(), OnProfileAdded(profile_path)).Times(1);
+    storage()->AddProfile(profile_path, base::string16(), std::string(),
+                          base::string16(), icon_index, std::string());
+    VerifyAndResetCallExpectations();
   }
 
   for (int iter = 0; iter < num_iterations; ++iter) {
@@ -567,27 +637,25 @@ TEST_F(ProfileAttributesStorageTest, ChooseAvatarIconIndexForNewProfile) {
 
 TEST_F(ProfileAttributesStorageTest, ProfileForceSigninLock) {
   signin_util::SetForceSigninForTesting(true);
-  ProfileAttributesTestObserver observer;
   ProfileAttributesEntry* entry;
 
   AddTestingProfile();
-  ASSERT_TRUE(storage()->GetProfileAttributesWithPath(
-      GetProfilePath("testing_profile_path0"), &entry));
-  storage()->AddObserver(&observer);
+
+  base::FilePath path = GetProfilePath("testing_profile_path0");
+
+  ASSERT_TRUE(storage()->GetProfileAttributesWithPath(path, &entry));
   ASSERT_FALSE(entry->IsSigninRequired());
 
-  EXPECT_CALL(observer, OnProfileSigninRequiredChanged(_)).Times(0);
   entry->LockForceSigninProfile(false);
   ASSERT_FALSE(entry->IsSigninRequired());
-  Mock::VerifyAndClear(&observer);
 
-  EXPECT_CALL(observer, OnProfileSigninRequiredChanged(_)).Times(1);
+  EXPECT_CALL(observer(), OnProfileSigninRequiredChanged(path)).Times(1);
   entry->LockForceSigninProfile(true);
+  VerifyAndResetCallExpectations();
   ASSERT_TRUE(entry->IsSigninRequired());
-  Mock::VerifyAndClear(&observer);
 
-  EXPECT_CALL(observer, OnProfileSigninRequiredChanged(_)).Times(1);
+  EXPECT_CALL(observer(), OnProfileSigninRequiredChanged(path)).Times(1);
   entry->SetIsSigninRequired(false);
+  VerifyAndResetCallExpectations();
   ASSERT_FALSE(entry->IsSigninRequired());
-  Mock::VerifyAndClear(&observer);
 }
