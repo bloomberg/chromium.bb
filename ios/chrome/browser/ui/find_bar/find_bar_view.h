@@ -7,6 +7,8 @@
 
 #import <UIKit/UIKit.h>
 
+@protocol BrowserCommands;
+
 // The a11y ID of the text input field in the find-in-page bar.
 extern NSString* const kFindInPageInputFieldId;
 
@@ -45,6 +47,8 @@ extern NSString* const kFindInPageCloseButtonId;
 @property(nonatomic, weak) UIButton* nextButton;
 // Button to dismiss Find in Page.
 @property(nonatomic, weak) UIButton* closeButton;
+// Dispatcher for sending browser commands.
+@property(nonatomic, weak) id<BrowserCommands> dispatcher;
 
 @end
 

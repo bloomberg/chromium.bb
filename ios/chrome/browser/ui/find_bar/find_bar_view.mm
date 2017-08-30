@@ -5,8 +5,7 @@
 #import "ios/chrome/browser/ui/find_bar/find_bar_view.h"
 
 #include "components/strings/grit/components_strings.h"
-#import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
-#import "ios/chrome/browser/ui/commands/ios_command_ids.h"
+#import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/find_bar/find_bar_touch_forwarding_view.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -45,6 +44,7 @@ NSString* const kFindInPageCloseButtonId = @"kFindInPageCloseButtonId";
 @synthesize nextButton = _nextButton;
 @synthesize closeButton = _closeButton;
 @synthesize separator = _separator;
+@synthesize dispatcher = _dispatcher;
 
 - (instancetype)initWithDarkAppearance:(BOOL)darkAppearance {
   self = [super initWithFrame:CGRectZero];
@@ -72,7 +72,6 @@ NSString* const kFindInPageCloseButtonId = @"kFindInPageCloseButtonId";
       [[UITextField alloc] initWithFrame:CGRectZero];
   self.inputField = inputFieldScoped;
   self.inputField.backgroundColor = [UIColor clearColor];
-  self.inputField.tag = IDC_FIND_UPDATE;
   self.inputField.translatesAutoresizingMaskIntoConstraints = NO;
   self.inputField.placeholder =
       l10n_util::GetNSString(IDS_IOS_PLACEHOLDER_FIND_IN_PAGE);
@@ -154,7 +153,6 @@ NSString* const kFindInPageCloseButtonId = @"kFindInPageCloseButtonId";
   ]];
   self.previousButton.isAccessibilityElement = YES;
   self.previousButton.accessibilityTraits = UIAccessibilityTraitButton;
-  self.previousButton.tag = IDC_FIND_PREVIOUS;
   self.previousButton.translatesAutoresizingMaskIntoConstraints = NO;
 
   // Next button with an arrow.
@@ -168,7 +166,6 @@ NSString* const kFindInPageCloseButtonId = @"kFindInPageCloseButtonId";
     [self.nextButton.leadingAnchor
         constraintEqualToAnchor:self.previousButton.trailingAnchor],
   ]];
-  self.nextButton.tag = IDC_FIND_NEXT;
   self.nextButton.translatesAutoresizingMaskIntoConstraints = NO;
 
   // Close button with a cross.
@@ -184,18 +181,17 @@ NSString* const kFindInPageCloseButtonId = @"kFindInPageCloseButtonId";
     [self.closeButton.leadingAnchor
         constraintEqualToAnchor:self.nextButton.trailingAnchor],
   ]];
-  self.closeButton.tag = IDC_FIND_CLOSE;
   self.closeButton.translatesAutoresizingMaskIntoConstraints = NO;
 
-  // Connect outlets.
-  [self.nextButton addTarget:self
-                      action:@selector(chromeExecuteCommand:)
+  // Connect dispatcher.
+  [self.nextButton addTarget:self.dispatcher
+                      action:@selector(findNextStringInPage)
             forControlEvents:UIControlEventTouchUpInside];
-  [self.previousButton addTarget:self
-                          action:@selector(chromeExecuteCommand:)
+  [self.previousButton addTarget:self.dispatcher
+                          action:@selector(findPreviousStringInPage)
                 forControlEvents:UIControlEventTouchUpInside];
-  [self.closeButton addTarget:self
-                       action:@selector(chromeExecuteCommand:)
+  [self.closeButton addTarget:self.dispatcher
+                       action:@selector(closeFindInPage)
              forControlEvents:UIControlEventTouchUpInside];
 
   // A11y labels.

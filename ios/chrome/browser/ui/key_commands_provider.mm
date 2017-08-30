@@ -140,20 +140,20 @@
                                      title:l10n_util::GetNSStringWithFixup(
                                                IDS_IOS_TOOLS_MENU_FIND_IN_PAGE)
                                     action:^{
-                                      execute(IDC_FIND);
+                                      [weakDispatcher showFindInPage];
                                     }],
       [UIKeyCommand cr_keyCommandWithInput:@"g"
                              modifierFlags:UIKeyModifierCommand
                                      title:nil
                                     action:^{
-                                      execute(IDC_FIND_NEXT);
+                                      [weakDispatcher findNextStringInPage];
                                     }],
       [UIKeyCommand
           cr_keyCommandWithInput:@"g"
                    modifierFlags:UIKeyModifierCommand | UIKeyModifierShift
                            title:nil
                           action:^{
-                            execute(IDC_FIND_PREVIOUS);
+                            [weakDispatcher findPreviousStringInPage];
                           }],
       [UIKeyCommand cr_keyCommandWithInput:@"r"
                              modifierFlags:UIKeyModifierCommand
