@@ -369,7 +369,7 @@ TEST_F(URLOpenerTest, VerifyLaunchOptions) {
       id self, NSURL* urlArg, BOOL applicationActive, NSDictionary* options,
       id<TabOpening> tabOpener, id<StartupInformation> startupInformation) {
     hasBeenCalled = YES;
-    EXPECT_EQ([url absoluteString], [urlArg absoluteString]);
+    EXPECT_NSEQ([url absoluteString], [urlArg absoluteString]);
     EXPECT_NSEQ(@"com.apple.mobilesafari",
                 options[UIApplicationOpenURLOptionsSourceApplicationKey]);
     EXPECT_EQ(startupInformationMock, startupInformation);
@@ -481,7 +481,7 @@ TEST_F(URLOpenerTest, VerifyLaunchOptionsWithBadURL) {
       id self, NSURL* urlArg, BOOL applicationActive, NSDictionary* options,
       id<TabOpening> tabOpener, id<StartupInformation> startupInformation) {
     hasBeenCalled = YES;
-    EXPECT_EQ([url absoluteString], [urlArg absoluteString]);
+    EXPECT_NSEQ([url absoluteString], [urlArg absoluteString]);
     EXPECT_NSEQ(@"com.apple.mobilesafari",
                 options[UIApplicationOpenURLOptionsSourceApplicationKey]);
     EXPECT_EQ(startupInformationMock, startupInformation);
