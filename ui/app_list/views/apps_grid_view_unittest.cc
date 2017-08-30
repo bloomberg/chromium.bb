@@ -932,15 +932,22 @@ TEST_P(AppsGridViewTest, SelectionInStateApps) {
   // Moves selection to the first app in the suggestions container.
   SimulateKeyPress(ui::VKEY_DOWN);
 
-  // Tests moving to previous page and moving up.
+  // Tests moving to previous page.
   SimulateKeyPress(ui::VKEY_PRIOR);
   CheckSelectionAtSuggestionsContainer(0);
+
+  // Tests moving up.
   SimulateKeyPress(ui::VKEY_UP);
+  CheckNoSelection();
+  SimulateKeyPress(ui::VKEY_DOWN);
+
+  // Tests moving left and right.
+  SimulateKeyPress(ui::VKEY_LEFT);
+  CheckNoSelection();
+  SimulateKeyPress(ui::VKEY_RIGHT);
   CheckSelectionAtSuggestionsContainer(0);
 
-  // Tests moving left, moving right and moving right out of suggestions.
-  SimulateKeyPress(ui::VKEY_LEFT);
-  CheckSelectionAtSuggestionsContainer(0);
+  // Tests moving right out of suggestions.
   SimulateKeyPress(ui::VKEY_RIGHT);
   SimulateKeyPress(ui::VKEY_RIGHT);
   CheckSelectionAtSuggestionsContainer(kNumOfSuggestedApps - 1);
@@ -1042,10 +1049,10 @@ TEST_P(AppsGridViewTest, ExpandArrowSelectionInStateStart) {
 }
 
 // Tests that in state start when selection is on app in suggestions container,
-// hitting up key does nothing. Hitting left/right key moves the selection to
-// app on the left/right if index is valid. Hitting right key when selection is
-// on the last app in suggestions container or hitting down key move the
-// selection to the expand arrow.
+// hitting up key moves clear selection. Hitting left/right key moves the
+// selection to app on the left/right if index is valid. Hitting right key when
+// selection is on the last app in suggestions container or hitting down key
+// move the selection to the expand arrow.
 TEST_P(AppsGridViewTest, SuggestionsContainerSelectionInStateStart) {
   if (!test_with_fullscreen_)
     return;
@@ -1055,15 +1062,20 @@ TEST_P(AppsGridViewTest, SuggestionsContainerSelectionInStateStart) {
   model_->PopulateApps(GetTilesPerPage(0));
   SimulateKeyPress(ui::VKEY_DOWN);
 
+  // Tests moving up.
   SimulateKeyPress(ui::VKEY_UP);
-  CheckSelectionAtSuggestionsContainer(0);
+  CheckNoSelection();
+  SimulateKeyPress(ui::VKEY_DOWN);
 
+  // Tests moving right.
   SimulateKeyPress(ui::VKEY_RIGHT);
   CheckSelectionAtSuggestionsContainer(1);
 
+  // Tests moving left.
   SimulateKeyPress(ui::VKEY_LEFT);
   CheckSelectionAtSuggestionsContainer(0);
 
+  // Tests moving down.
   SimulateKeyPress(ui::VKEY_DOWN);
   CheckSelectionAtExpandArrow();
 

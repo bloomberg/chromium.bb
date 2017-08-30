@@ -352,7 +352,9 @@ bool SearchBoxView::MoveArrowFocus(const ui::KeyEvent& event) {
   DCHECK(IsArrowKey(event));
   DCHECK(is_fullscreen_app_list_enabled_);
 
-  // Left and right arrow should work in the same way as shift+tab and tab.
+  // Special case when focus is on |search_box_| and query exists has already
+  // been handled before. Here, left and right arrow should work in the same way
+  // as shift+tab and tab.
   if (event.key_code() == ui::VKEY_LEFT)
     return MoveTabFocus(true);
   if (event.key_code() == ui::VKEY_RIGHT)
@@ -379,8 +381,7 @@ bool SearchBoxView::MoveArrowFocus(const ui::KeyEvent& event) {
       NOTREACHED();
   }
 
-  SetSelected(IsSearchBoxTrimmedQueryEmpty() &&
-              focused_view_ == FOCUS_SEARCH_BOX);
+  SetSelected(focused_view_ == FOCUS_SEARCH_BOX);
   return (focused_view_ < FOCUS_CONTENTS_VIEW);
 }
 
@@ -394,7 +395,6 @@ bool SearchBoxView::MoveTabFocus(bool move_backwards) {
     speech_button_->SetSelected(false);
   if (close_button_)
     close_button_->SetSelected(false);
-  bool search_box_selected = false;
 
   if (is_fullscreen_app_list_enabled_) {
     switch (focused_view_) {
@@ -470,13 +470,6 @@ bool SearchBoxView::MoveTabFocus(bool move_backwards) {
       if (back_button_)
         back_button_->SetSelected(true);
       break;
-    case FOCUS_SEARCH_BOX:
-      if (!IsSearchBoxTrimmedQueryEmpty())
-        break;
-      // The search box should only be selected in PEEKING or
-      // FULLSCREEN_ALL_APPS state.
-      search_box_selected = true;
-      break;
     case FOCUS_MIC_BUTTON:
       if (speech_button_)
         speech_button_->SetSelected(true);
@@ -489,9 +482,9 @@ bool SearchBoxView::MoveTabFocus(bool move_backwards) {
       break;
   }
 
-  SetSelected(search_box_selected);
+  SetSelected(focused_view_ == FOCUS_SEARCH_BOX);
 
-  if (focused_view_ < FOCUS_CONTENTS_VIEW)
+  if (!is_fullscreen_app_list_enabled_ && focused_view_ < FOCUS_CONTENTS_VIEW)
     delegate_->SetSearchResultSelection(focused_view_ == FOCUS_SEARCH_BOX);
 
   return (focused_view_ < FOCUS_CONTENTS_VIEW);
@@ -765,11 +758,10 @@ void SearchBoxView::ContentsChanged(views::Textfield* sender,
   const bool is_trimmed_query_empty = IsSearchBoxTrimmedQueryEmpty();
   // If the query is only whitespace, don't transition the AppListView state.
   app_list_view_->SetStateFromSearchBoxView(is_trimmed_query_empty);
-  if (is_trimmed_query_empty)
-    return;
-  // Unselect the search box when the state is transiting to HALF or
-  // FULLSCREEN_SEARCH.
-  SetSelected(false);
+  // Opened search box is shown when |is_trimmed_query_empty| is false and vice
+  // versa. Set the focus to the search results page when opened search box is
+  // shown. Otherwise, set the focus to search box.
+  ResetTabFocus(!is_trimmed_query_empty);
 }
 
 bool SearchBoxView::HandleKeyEvent(views::Textfield* sender,
@@ -779,6 +771,16 @@ bool SearchBoxView::HandleKeyEvent(views::Textfield* sender,
         focused_view_ != FOCUS_CONTENTS_VIEW &&
         MoveTabFocus(key_event.IsShiftDown()))
       return true;
+
+    if (is_fullscreen_app_list_enabled_ &&
+        (key_event.key_code() == ui::VKEY_LEFT ||
+         key_event.key_code() == ui::VKEY_RIGHT) &&
+        focused_view_ == FOCUS_SEARCH_BOX && !search_box_->text().empty()) {
+      // When focus is on |search_box_| and query is not empty, then left and
+      // arrow key should move cursor in |search_box_|. In this situation only
+      // tab key could move the focus outside |search_box_|.
+      return false;
+    }
 
     if (is_fullscreen_app_list_enabled_ && IsArrowKey(key_event) &&
         focused_view_ != FOCUS_CONTENTS_VIEW && MoveArrowFocus(key_event))
@@ -1022,15 +1024,21 @@ void SearchBoxView::SetSelected(bool selected) {
     return;
   selected_ = selected;
   if (selected) {
-    SetBorder(views::CreateRoundedRectBorder(kSearchBoxBorderWidth,
-                                             kSearchBoxFocusBorderCornerRadius,
-                                             kSearchBoxBorderColor));
-    // Set the ChromeVox focus to the search box. However, DO NOT do this if
-    // we are in the search results state (i.e., if the search box has text in
-    // it), because the focus is about to be shifted to the first search
-    // result and we do not want to read out the name of the search box as
-    // well.
+    // Set the ChromeVox focus to the search box.
     search_box_->NotifyAccessibilityEvent(ui::AX_EVENT_SELECTION, true);
+    if (IsSearchBoxTrimmedQueryEmpty()) {
+      // This includes two situations: query is empty or query is a string of
+      // spaces. In both situations, opened search box is hidden and we need to
+      // show a ring around search box to indicate that it is selected.
+      SetBorder(views::CreateRoundedRectBorder(
+          kSearchBoxBorderWidth, kSearchBoxFocusBorderCornerRadius,
+          kSearchBoxBorderColor));
+    }
+    if (!search_box_->text().empty()) {
+      // If query is not empty (including a string of spaces), we need to select
+      // the entire text range.
+      search_box_->SelectAll(false);
+    }
   } else {
     SetDefaultBorder();
   }

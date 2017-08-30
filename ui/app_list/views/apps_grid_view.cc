@@ -955,12 +955,26 @@ bool AppsGridView::OnKeyPressed(const ui::KeyEvent& event) {
     const int forward_dir = base::i18n::IsRTL() ? -1 : 1;
     switch (event.key_code()) {
       case ui::VKEY_LEFT:
+        if (is_fullscreen_app_list_enabled_ && suggestions_container_ &&
+            suggestions_container_->selected_index() == 0) {
+          // Left arrow key moves focus back to search box when
+          // |suggestions_container|'s first app is selected.
+          ClearAnySelectedView();
+          return false;
+        }
         MoveSelected(0, -forward_dir, 0);
         return true;
       case ui::VKEY_RIGHT:
         MoveSelected(0, forward_dir, 0);
         return true;
       case ui::VKEY_UP:
+        if (is_fullscreen_app_list_enabled_ && suggestions_container_ &&
+            suggestions_container_->selected_index() != -1) {
+          // Up arrow key moves focus back to search box when
+          // |suggestions_container| is selected.
+          ClearAnySelectedView();
+          return false;
+        }
         if (is_fullscreen_app_list_enabled_ || selected_view_) {
           // Don't initiate selection with UP in non-fullscreen app list. In
           // fullscreen app list, UP is already handled by SearchBoxView.
