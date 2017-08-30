@@ -113,7 +113,7 @@
 #include "ui/gfx/gdi_util.h"
 #endif
 
-#if defined(USE_X11) && !defined(OS_CHROMEOS)
+#if defined(USE_X11)
 #include "content/browser/accessibility/browser_accessibility_auralinux.h"
 #endif
 
@@ -632,7 +632,7 @@ gfx::NativeViewAccessible RenderWidgetHostViewAura::GetNativeViewAccessible() {
       host_->GetOrCreateRootBrowserAccessibilityManager();
   if (manager)
     return ToBrowserAccessibilityWin(manager->GetRoot())->GetCOM();
-#elif defined(USE_X11) && !defined(OS_CHROMEOS)
+#elif defined(USE_X11)
   BrowserAccessibilityManager* manager =
       host_->GetOrCreateRootBrowserAccessibilityManager();
   if (manager)
@@ -2389,7 +2389,7 @@ void RenderWidgetHostViewAura::OnTextSelectionChanged(
   if (!focused_view)
     return;
 
-#if defined(USE_X11) && !defined(OS_CHROMEOS)
+#if defined(USE_X11)
   const TextInputManager::TextSelection* selection =
       GetTextInputManager()->GetTextSelection(focused_view);
   if (selection->selected_text().length()) {

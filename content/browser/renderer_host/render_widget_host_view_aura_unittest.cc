@@ -6264,7 +6264,7 @@ TEST_F(InputMethodStateAuraTest, GetSelectionRange) {
   }
 }
 
-#if defined(USE_X11) && !defined(OS_CHROMEOS)
+#if defined(USE_X11)
 // This test will verify that after selection, the selected text is written to
 // the clipboard from the focused widget.
 TEST_F(InputMethodStateAuraTest, SelectedTextCopiedToClipboard) {
