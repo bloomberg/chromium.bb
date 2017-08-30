@@ -54,6 +54,11 @@ class ASH_EXPORT AppListButton : public views::ImageButton,
   // gfx::Point if the back arrow is not shown.
   gfx::Point GetBackButtonCenterPoint() const;
 
+  // Called by ShelfView to notify the app list button that it has started or
+  // finished a bounds animation.
+  void OnBoundsAnimationStarted();
+  void OnBoundsAnimationFinished();
+
  protected:
   // views::ImageButton:
   bool OnMousePressed(const ui::MouseEvent& event) override;

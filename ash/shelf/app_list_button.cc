@@ -416,7 +416,8 @@ gfx::Point AppListButton::GetAppListButtonCenterPoint() const {
   // back button arrow in addition to the app list button circle.
   const int x_mid = width() / 2.f;
   const int y_mid = height() / 2.f;
-  const bool is_tablet_mode = Shell::Get()
+  const bool is_tablet_mode = Shell::Get()->tablet_mode_controller() &&
+                              Shell::Get()
                                   ->tablet_mode_controller()
                                   ->IsTabletModeWindowManagerEnabled();
   const bool is_animating = shelf_view_->is_tablet_mode_animation_running();
@@ -456,6 +457,21 @@ gfx::Point AppListButton::GetBackButtonCenterPoint() const {
   // coordinate will be the same in LTR or RTL.
   return gfx::Point(View::GetMirroredXInView(kShelfButtonSize / 2.f),
                     kShelfButtonSize / 2.f);
+}
+
+void AppListButton::OnBoundsAnimationStarted() {
+  // TODO(crbug.com/758402): Update ink drop bounds with app list button bounds.
+  // Hides the app list button ink drop during a bounds animation.
+  if (is_showing_app_list_)
+    AnimateInkDrop(views::InkDropState::DEACTIVATED, nullptr);
+}
+
+void AppListButton::OnBoundsAnimationFinished() {
+  // TODO(crbug.com/758402): Update ink drop bounds with app list button bounds.
+  // Reactivate the app list button ink drop after a bounds animation is
+  // finished.
+  if (is_showing_app_list_)
+    AnimateInkDrop(views::InkDropState::ACTIVATED, nullptr);
 }
 
 void AppListButton::OnAppListVisibilityChanged(bool shown,
