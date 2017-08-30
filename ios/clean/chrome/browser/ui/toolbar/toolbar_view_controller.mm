@@ -5,6 +5,8 @@
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_view_controller.h"
 
 #import "base/mac/foundation_util.h"
+#import "ios/chrome/browser/ui/commands/history_popup_commands.h"
+#include "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/clean/chrome/browser/ui/commands/navigation_commands.h"
 #import "ios/clean/chrome/browser/ui/commands/tab_grid_commands.h"
@@ -60,6 +62,7 @@
 
 - (instancetype)initWithDispatcher:(id<NavigationCommands,
                                        TabGridCommands,
+                                       TabHistoryPopupCommands,
                                        TabStripCommands,
                                        ToolsMenuCommands>)dispatcher {
   _dispatcher = dispatcher;
@@ -146,6 +149,11 @@
   [self.backButton addTarget:self.dispatcher
                       action:@selector(goBack)
             forControlEvents:UIControlEventTouchUpInside];
+  UILongPressGestureRecognizer* backHistoryLongPress =
+      [[UILongPressGestureRecognizer alloc]
+          initWithTarget:self
+                  action:@selector(handleLongPress:)];
+  [self.backButton addGestureRecognizer:backHistoryLongPress];
 
   // Forward button.
   self.forwardButton = [ToolbarButton forwardToolbarButton];
@@ -158,6 +166,11 @@
   [self.forwardButton addTarget:self.dispatcher
                          action:@selector(goForward)
                forControlEvents:UIControlEventTouchUpInside];
+  UILongPressGestureRecognizer* forwardHistoryLongPress =
+      [[UILongPressGestureRecognizer alloc]
+          initWithTarget:self
+                  action:@selector(handleLongPress:)];
+  [self.forwardButton addGestureRecognizer:forwardHistoryLongPress];
 
   // Tab switcher Strip button.
   self.tabSwitchStripButton = [ToolbarButton tabSwitcherStripToolbarButton];
@@ -261,6 +274,19 @@
   progressBar.translatesAutoresizingMaskIntoConstraints = NO;
   progressBar.hidden = YES;
   self.progressBar = progressBar;
+}
+
+#pragma mark - Button Actions
+
+- (void)handleLongPress:(UILongPressGestureRecognizer*)gesture {
+  if (gesture.state != UIGestureRecognizerStateBegan)
+    return;
+
+  if (gesture.view == self.backButton) {
+    [self.dispatcher showTabHistoryPopupForBackwardHistory];
+  } else if (gesture.view == self.forwardButton) {
+    [self.dispatcher showTabHistoryPopupForForwardHistory];
+  }
 }
 
 #pragma mark - View Controller Containment
@@ -383,6 +409,40 @@
 - (CGRect)rectForZoomWithKey:(NSObject*)key inView:(UIView*)view {
   return [view convertRect:self.toolsMenuButton.bounds
                   fromView:self.toolsMenuButton];
+}
+
+#pragma mark - TabHistoryPositioner
+
+- (CGPoint)originPointForToolbarButton:(ToolbarButtonType)toolbarButton {
+  UIButton* historyButton =
+      (toolbarButton == ToolbarButtonTypeBack) ? _backButton : _forwardButton;
+
+  // Set the origin for the tools popup to the leading side of the bottom of the
+  // pressed buttons.
+  CGRect buttonBounds = [historyButton.imageView bounds];
+  CGPoint leadingBottomCorner = CGPointMake(CGRectGetLeadingEdge(buttonBounds),
+                                            CGRectGetMaxY(buttonBounds));
+  CGPoint origin = [historyButton.imageView convertPoint:leadingBottomCorner
+                                                  toView:historyButton.window];
+  return origin;
+}
+
+#pragma mark - TabHistoryUIUpdater
+
+- (void)updateUIForTabHistoryPresentationFrom:(ToolbarButtonType)button {
+  ToolbarButton* historyButton = button ? self.backButton : self.forwardButton;
+  historyButton.selected = YES;
+}
+
+- (void)updateUIForTabHistoryWasDismissed {
+  self.backButton.selected = NO;
+  self.forwardButton.selected = NO;
+}
+
+#pragma mark - TabHistoryPresentation
+
+- (UIView*)viewForTabHistoryPresentation {
+  return self.parentViewController.view;
 }
 
 #pragma mark - Helper Methods

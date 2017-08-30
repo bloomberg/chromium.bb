@@ -7,11 +7,15 @@
 
 #import <UIKit/UIKit.h>
 
+#import "ios/chrome/browser/ui/history_popup/requirements/tab_history_positioner.h"
+#import "ios/chrome/browser/ui/history_popup/requirements/tab_history_presentation.h"
+#import "ios/chrome/browser/ui/history_popup/requirements/tab_history_ui_updater.h"
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_consumer.h"
 #import "ios/clean/chrome/browser/ui/transitions/animators/zoom_transition_delegate.h"
 
 @protocol NavigationCommands;
 @protocol TabGridCommands;
+@protocol TabHistoryPopupCommands;
 @protocol TabStripCommands;
 @protocol ToolsMenuCommands;
 
@@ -20,18 +24,25 @@
 // This view controller will fill its container; it is up to the containing
 // view controller or presentation controller to configure an appropriate
 // height for it.
-@interface ToolbarViewController
-    : UIViewController<ZoomTransitionDelegate, ToolbarConsumer>
+@interface ToolbarViewController : UIViewController<TabHistoryPositioner,
+                                                    TabHistoryPresentation,
+                                                    TabHistoryUIUpdater,
+                                                    ToolbarConsumer,
+                                                    ZoomTransitionDelegate>
 
 - (instancetype)initWithDispatcher:(id<NavigationCommands,
                                        TabGridCommands,
+                                       TabHistoryPopupCommands,
                                        TabStripCommands,
                                        ToolsMenuCommands>)dispatcher;
 
 // The dispatcher for this view controller
-@property(nonatomic, weak)
-    id<NavigationCommands, TabGridCommands, TabStripCommands, ToolsMenuCommands>
-        dispatcher;
+@property(nonatomic, weak) id<NavigationCommands,
+                              TabGridCommands,
+                              TabHistoryPopupCommands,
+                              TabStripCommands,
+                              ToolsMenuCommands>
+    dispatcher;
 
 @property(nonatomic, strong) UIViewController* locationBarViewController;
 
