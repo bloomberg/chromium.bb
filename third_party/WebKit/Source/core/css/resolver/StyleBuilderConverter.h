@@ -177,6 +177,9 @@ class StyleBuilderConverter {
   static StyleAutoColor ConvertStyleAutoColor(StyleResolverState&,
                                               const CSSValue&,
                                               bool for_visited_link = false);
+  static TextEmphasisPosition ConvertTextTextEmphasisPosition(
+      StyleResolverState&,
+      const CSSValue&);
   static float ConvertTextStrokeWidth(StyleResolverState&, const CSSValue&);
   static TextSizeAdjust ConvertTextSizeAdjust(StyleResolverState&,
                                               const CSSValue&);

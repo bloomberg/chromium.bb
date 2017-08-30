@@ -820,8 +820,6 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
       return value_id == CSSValueBefore || value_id == CSSValueAfter;
     case CSSPropertyWebkitTextCombine:
       return value_id == CSSValueNone || value_id == CSSValueHorizontal;
-    case CSSPropertyWebkitTextEmphasisPosition:
-      return value_id == CSSValueOver || value_id == CSSValueUnder;
     case CSSPropertyWebkitTextSecurity:
       return value_id == CSSValueDisc || value_id == CSSValueCircle ||
              value_id == CSSValueSquare || value_id == CSSValueNone;
@@ -964,7 +962,6 @@ bool CSSParserFastPaths::IsKeywordPropertyID(CSSPropertyID property_id) {
     case CSSPropertyWebkitRtlOrdering:
     case CSSPropertyWebkitRubyPosition:
     case CSSPropertyWebkitTextCombine:
-    case CSSPropertyWebkitTextEmphasisPosition:
     case CSSPropertyWebkitTextSecurity:
     case CSSPropertyTransformBox:
     case CSSPropertyTransformStyle:

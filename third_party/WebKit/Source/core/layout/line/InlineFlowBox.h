@@ -433,6 +433,9 @@ class InlineFlowBox : public InlineBox {
   void AddReplacedChildOverflow(const InlineBox*,
                                 LayoutRect& logical_layout_overflow,
                                 LayoutRect& logical_visual_overflow);
+  bool HasEmphasisMarkBefore(const InlineTextBox*) const;
+  bool HasEmphasisMarkOver(const InlineTextBox*) const;
+  bool HasEmphasisMarkUnder(const InlineTextBox*) const;
 
   void SetLayoutOverflow(const LayoutRect&, const LayoutRect&);
   void SetVisualOverflow(const LayoutRect&, const LayoutRect&);

@@ -2938,8 +2938,28 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
       return CurrentColorOrValidColor(style, style.TextFillColor());
     case CSSPropertyWebkitTextEmphasisColor:
       return CurrentColorOrValidColor(style, style.TextEmphasisColor());
-    case CSSPropertyWebkitTextEmphasisPosition:
-      return CSSIdentifierValue::Create(style.GetTextEmphasisPosition());
+    case CSSPropertyWebkitTextEmphasisPosition: {
+      CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+      switch (style.GetTextEmphasisPosition()) {
+        case TextEmphasisPosition::kOverRight:
+          list->Append(*CSSIdentifierValue::Create(CSSValueOver));
+          list->Append(*CSSIdentifierValue::Create(CSSValueRight));
+          break;
+        case TextEmphasisPosition::kOverLeft:
+          list->Append(*CSSIdentifierValue::Create(CSSValueOver));
+          list->Append(*CSSIdentifierValue::Create(CSSValueLeft));
+          break;
+        case TextEmphasisPosition::kUnderRight:
+          list->Append(*CSSIdentifierValue::Create(CSSValueUnder));
+          list->Append(*CSSIdentifierValue::Create(CSSValueRight));
+          break;
+        case TextEmphasisPosition::kUnderLeft:
+          list->Append(*CSSIdentifierValue::Create(CSSValueUnder));
+          list->Append(*CSSIdentifierValue::Create(CSSValueLeft));
+          break;
+      }
+      return list;
+    }
     case CSSPropertyWebkitTextEmphasisStyle:
       switch (style.GetTextEmphasisMark()) {
         case TextEmphasisMark::kNone:
