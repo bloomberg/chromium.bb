@@ -66,7 +66,8 @@
         <id value="14"  vendor="Google" tool="spiregg" comment="Contact Lei Zhang, antiagainst@google.com"/>
         <id value="15"  vendor="Google" tool="rspirv" comment="Contact Lei Zhang, antiagainst@gmail.com"/>
         <id value="16"  vendor="X-LEGEND"   tool="Mesa-IR/SPIR-V Translator" comment="Contact Metora Wang, github:metora/MesaGLSLCompiler"/>
-        <unused start="17" end="0xFFFF" comment="Tool ID range reservable for future use by vendors"/>
+        <id value="17"  vendor="Khronos" tool="SPIR-V Tools Linker" comment="Contact David Neto, dneto@google.com"/>
+        <unused start="18" end="0xFFFF" comment="Tool ID range reservable for future use by vendors"/>
     </ids>
 
     <!-- SECTION: SPIR-V Opcodes and Enumerants -->
