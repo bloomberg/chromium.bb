@@ -499,17 +499,3 @@ crbug.com/626703 [ Debug ] external/wpt/html/nemantics/tabular-data/processing-m
 
 # This test continues to fail as timeout on Win7(dbg)
 crbug.com/757292 [ Win Debug ] external/wpt/encoding/legacy-mb-korean/euc-kr/euckr-encode-form-errors-han.html [ Slow ]
-
-# These tests create and destroys too many workers, and on debug build, V8 snapshot serializer takes long time to make an index book for external reference
-crbug.com/v8/6448 [ Debug ] external/wpt/service-workers/service-worker/link-element-register-mime-types.https.html [ Slow ]
-crbug.com/v8/6448 [ Debug ] external/wpt/service-workers/service-worker/registration-updateviacache.https.html [ Slow ]
-crbug.com/v8/6448 [ Debug ] external/wpt/service-workers/service-worker/registration-mime-types.https.html [ Slow ]
-crbug.com/v8/6448 [ Debug ] fast/workers/worker-exception-during-navigation.html [ Slow ]
-crbug.com/v8/6448 [ Debug ] virtual/mojo-blobs/external/wpt/service-workers/service-worker/link-element-register-mime-types.https.html [ Slow ]
-crbug.com/v8/6448 [ Debug ] virtual/mojo-blobs/external/wpt/service-workers/service-worker/registration-updateviacache.https.html [ Slow ]
-crbug.com/v8/6448 [ Debug ] virtual/mojo-blobs/external/wpt/service-workers/service-worker/registration-mime-types.https.html [ Slow ]
-crbug.com/v8/6448 [ Debug ] virtual/service-worker-script-streaming/external/wpt/service-workers/service-worker/foreign-fetch-cors.https.html [ Slow ]
-crbug.com/v8/6448 [ Debug ] virtual/service-worker-script-streaming/external/wpt/service-workers/service-worker/link-element-register-mime-types.https.html [ Slow ]
-crbug.com/v8/6448 [ Debug ] virtual/service-worker-script-streaming/external/wpt/service-workers/service-worker/registration-updateviacache.https.html [ Slow ]
-crbug.com/v8/6448 [ Debug ] virtual/service-worker-script-streaming/external/wpt/service-workers/service-worker/registration-mime-types.https.html [ Slow ]
-crbug.com/v8/6448 [ Debug ] virtual/service-worker-script-streaming/http/tests/serviceworker/chromium/register-different-script-many-times.html [ Slow ]
