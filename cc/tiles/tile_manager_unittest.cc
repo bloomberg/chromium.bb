@@ -2384,7 +2384,7 @@ TEST_F(CheckerImagingTileManagerTest,
       recording_source->CreateRasterSource();
 
   std::unique_ptr<PictureLayerImpl> layer_impl = PictureLayerImpl::Create(
-      host_impl()->active_tree(), 1, Layer::LayerMaskType::NOT_MASK);
+      host_impl()->pending_tree(), 1, Layer::LayerMaskType::NOT_MASK);
   layer_impl->set_contributes_to_drawn_render_surface(true);
   PictureLayerTilingSet* tiling_set = layer_impl->picture_layer_tiling_set();
 
@@ -2397,6 +2397,7 @@ TEST_F(CheckerImagingTileManagerTest,
       gfx::Rect(layer_bounds),   // Skewport rect.
       gfx::Rect(layer_bounds),   // Soon rect.
       gfx::Rect(layer_bounds));  // Eventually rect.
+  tiling->set_can_require_tiles_for_activation(true);
 
   // PrepareTiles and synchronously run all tasks added to the TaskGraph. Since
   // we are using a strict mock for the SkImageGenerator, if the decode runs as

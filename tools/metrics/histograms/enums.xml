@@ -4245,6 +4245,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="9"
       label="Vetoed because checkering of images is force disabled (used with
              software raster)."/>
+  <int value="10" label="Image was not required for activation."/>
 </enum>
 
 <enum name="ChromeChannelForHistogram">

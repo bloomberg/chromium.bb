@@ -126,8 +126,9 @@ class LayerTreeHostCheckerImagingTestMergeWithMainFrame
   bool invalidation_requested_ = false;
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(
-    LayerTreeHostCheckerImagingTestMergeWithMainFrame);
+// Checkering of content is only done on the pending tree which does not exist
+// in single-threaded mode.
+MULTI_THREAD_TEST_F(LayerTreeHostCheckerImagingTestMergeWithMainFrame);
 
 class LayerTreeHostCheckerImagingTestImplSideTree
     : public LayerTreeHostCheckerImagingTest {
@@ -187,7 +188,9 @@ class LayerTreeHostCheckerImagingTestImplSideTree
   int num_of_impl_side_invalidations_ = 0;
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostCheckerImagingTestImplSideTree);
+// Checkering of content is only done on the pending tree which does not exist
+// in single-threaded mode.
+MULTI_THREAD_TEST_F(LayerTreeHostCheckerImagingTestImplSideTree);
 
 }  // namespace
 }  // namespace cc

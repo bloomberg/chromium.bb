@@ -125,12 +125,18 @@ class CheckerImageTrackerTest : public testing::Test,
                      kNone_SkFilterQuality, SkMatrix::I(), gfx::ColorSpace());
   }
 
+  bool ShouldCheckerImage(const DrawImage& draw_image, WhichTree tree) {
+    bool required_for_activation = true;
+    return checker_image_tracker_->ShouldCheckerImage(draw_image, tree,
+                                                      required_for_activation);
+  }
+
   CheckerImageTracker::ImageDecodeQueue BuildImageDecodeQueue(
       std::vector<DrawImage> images,
       WhichTree tree) {
     CheckerImageTracker::ImageDecodeQueue decode_queue;
     for (const auto& image : images) {
-      if (checker_image_tracker_->ShouldCheckerImage(image, tree))
+      if (ShouldCheckerImage(image, tree))
         decode_queue.push_back(CheckerImageTracker::ImageDecodeRequest(
             image.paint_image(), CheckerImageTracker::DecodeType::kRaster));
     }
@@ -156,8 +162,7 @@ TEST_F(CheckerImageTrackerTest, CheckerImagesDisabled) {
 
   PaintImageIdFlatSet checkered_images;
   DrawImage draw_image = CreateImage(ImageType::CHECKERABLE);
-  EXPECT_FALSE(checker_image_tracker_->ShouldCheckerImage(
-      draw_image, WhichTree::PENDING_TREE));
+  EXPECT_FALSE(ShouldCheckerImage(draw_image, WhichTree::PENDING_TREE));
   EXPECT_EQ(image_controller_.num_of_locked_images(), 0);
 }
 
@@ -196,8 +201,7 @@ TEST_F(CheckerImageTrackerTest, UpdatesImagesAtomically) {
 
   // Continue checkering the image until the set of images to invalidate is
   // pulled.
-  EXPECT_TRUE(checker_image_tracker_->ShouldCheckerImage(
-      checkerable_image, WhichTree::PENDING_TREE));
+  EXPECT_TRUE(ShouldCheckerImage(checkerable_image, WhichTree::PENDING_TREE));
 
   PaintImageIdFlatSet invalidated_images =
       checker_image_tracker_->TakeImagesToInvalidateOnSyncTree();
@@ -208,21 +212,19 @@ TEST_F(CheckerImageTrackerTest, UpdatesImagesAtomically) {
 
   // Use the same set of draw images to ensure that they are not checkered on
   // the pending tree now.
-  EXPECT_FALSE(checker_image_tracker_->ShouldCheckerImage(
-      checkerable_image, WhichTree::PENDING_TREE));
-  EXPECT_FALSE(checker_image_tracker_->ShouldCheckerImage(
-      small_non_checkerable_image, WhichTree::PENDING_TREE));
-  EXPECT_FALSE(checker_image_tracker_->ShouldCheckerImage(
-      large_non_checkerable_image, WhichTree::PENDING_TREE));
+  EXPECT_FALSE(ShouldCheckerImage(checkerable_image, WhichTree::PENDING_TREE));
+  EXPECT_FALSE(
+      ShouldCheckerImage(small_non_checkerable_image, WhichTree::PENDING_TREE));
+  EXPECT_FALSE(
+      ShouldCheckerImage(large_non_checkerable_image, WhichTree::PENDING_TREE));
 
   // Use this set to make the same request from the active tree, we should
   // continue checkering this image on the active tree until activation.
-  EXPECT_TRUE(checker_image_tracker_->ShouldCheckerImage(
-      checkerable_image, WhichTree::ACTIVE_TREE));
-  EXPECT_FALSE(checker_image_tracker_->ShouldCheckerImage(
-      small_non_checkerable_image, WhichTree::ACTIVE_TREE));
-  EXPECT_FALSE(checker_image_tracker_->ShouldCheckerImage(
-      large_non_checkerable_image, WhichTree::ACTIVE_TREE));
+  EXPECT_TRUE(ShouldCheckerImage(checkerable_image, WhichTree::ACTIVE_TREE));
+  EXPECT_FALSE(
+      ShouldCheckerImage(small_non_checkerable_image, WhichTree::ACTIVE_TREE));
+  EXPECT_FALSE(
+      ShouldCheckerImage(large_non_checkerable_image, WhichTree::ACTIVE_TREE));
 
   // Activate the sync tree. The images should be unlocked upon activation.
   EXPECT_EQ(image_controller_.num_of_locked_images(), 1);
@@ -249,8 +251,7 @@ TEST_F(CheckerImageTrackerTest, NoConsecutiveCheckeringForImage) {
   checker_image_tracker_->DidActivateSyncTree();
 
   // Subsequent requests for this image should not be checkered.
-  EXPECT_FALSE(checker_image_tracker_->ShouldCheckerImage(
-      checkerable_image, WhichTree::PENDING_TREE));
+  EXPECT_FALSE(ShouldCheckerImage(checkerable_image, WhichTree::PENDING_TREE));
 }
 
 TEST_F(CheckerImageTrackerTest,
@@ -272,8 +273,7 @@ TEST_F(CheckerImageTrackerTest,
 
   // The image is also checkered on the active tree while a decode request is
   // pending.
-  EXPECT_TRUE(checker_image_tracker_->ShouldCheckerImage(
-      checkerable_image1, WhichTree::ACTIVE_TREE));
+  EXPECT_TRUE(ShouldCheckerImage(checkerable_image1, WhichTree::ACTIVE_TREE));
 
   // Trigger decode completion and take images to invalidate on the sync tree.
   base::RunLoop().RunUntilIdle();
@@ -287,21 +287,17 @@ TEST_F(CheckerImageTrackerTest,
 
   // Second request to filter the same image on the pending and active tree. It
   // should be checkered on the active tree, but not the pending tree.
-  EXPECT_TRUE(checker_image_tracker_->ShouldCheckerImage(
-      checkerable_image1, WhichTree::ACTIVE_TREE));
-  EXPECT_FALSE(checker_image_tracker_->ShouldCheckerImage(
-      checkerable_image1, WhichTree::PENDING_TREE));
+  EXPECT_TRUE(ShouldCheckerImage(checkerable_image1, WhichTree::ACTIVE_TREE));
+  EXPECT_FALSE(ShouldCheckerImage(checkerable_image1, WhichTree::PENDING_TREE));
 
   // New checkerable image on the pending tree.
   DrawImage checkerable_image2 = CreateImage(ImageType::CHECKERABLE);
-  EXPECT_TRUE(checker_image_tracker_->ShouldCheckerImage(
-      checkerable_image2, WhichTree::PENDING_TREE));
+  EXPECT_TRUE(ShouldCheckerImage(checkerable_image2, WhichTree::PENDING_TREE));
 
   // Activate the sync tree. The initial image should no longer be checkered on
   // the active tree.
   checker_image_tracker_->DidActivateSyncTree();
-  EXPECT_FALSE(checker_image_tracker_->ShouldCheckerImage(
-      checkerable_image1, WhichTree::ACTIVE_TREE));
+  EXPECT_FALSE(ShouldCheckerImage(checkerable_image1, WhichTree::ACTIVE_TREE));
 }
 
 TEST_F(CheckerImageTrackerTest, CancelsScheduledDecodes) {
@@ -442,29 +438,26 @@ TEST_F(CheckerImageTrackerTest, CheckersOnlyStaticCompletedImages) {
           .TakePaintImage(),
       SkIRect::MakeWH(image_size.width(), image_size.height()),
       kNone_SkFilterQuality, SkMatrix::I(), gfx::ColorSpace());
-  EXPECT_FALSE(checker_image_tracker_->ShouldCheckerImage(
-      completed_paint_image, WhichTree::PENDING_TREE));
+  EXPECT_FALSE(
+      ShouldCheckerImage(completed_paint_image, WhichTree::PENDING_TREE));
 }
 
 TEST_F(CheckerImageTrackerTest, DontCheckerDisallowedImages) {
   SetUpTracker(true);
 
   DrawImage image = CreateImage(ImageType::CHECKERABLE);
-  EXPECT_TRUE(checker_image_tracker_->ShouldCheckerImage(
-      image, WhichTree::PENDING_TREE));
+  EXPECT_TRUE(ShouldCheckerImage(image, WhichTree::PENDING_TREE));
   checker_image_tracker_->DisallowCheckeringForImage(image.paint_image());
   // Since the tracker already saw the image, even disallowing it would still
   // ensure that we checker it until it's completed.
-  EXPECT_TRUE(checker_image_tracker_->ShouldCheckerImage(
-      image, WhichTree::PENDING_TREE));
+  EXPECT_TRUE(ShouldCheckerImage(image, WhichTree::PENDING_TREE));
 
   // Reset the tracker.
   checker_image_tracker_->ClearTracker(true);
   // If we haven't seen the image and disallow it first, then it's not
   // checkerable anymore.
   checker_image_tracker_->DisallowCheckeringForImage(image.paint_image());
-  EXPECT_FALSE(checker_image_tracker_->ShouldCheckerImage(
-      image, WhichTree::PENDING_TREE));
+  EXPECT_FALSE(ShouldCheckerImage(image, WhichTree::PENDING_TREE));
 }
 
 TEST_F(CheckerImageTrackerTest, ChoosesMaxScaleAndQuality) {
@@ -497,10 +490,8 @@ TEST_F(CheckerImageTrackerTest, DontCheckerMultiPartImages) {
                   PaintImage::CompletionState::DONE, true);
   EXPECT_TRUE(multi_part_image.paint_image().is_multipart());
 
-  EXPECT_TRUE(checker_image_tracker_->ShouldCheckerImage(
-      image, WhichTree::PENDING_TREE));
-  EXPECT_FALSE(checker_image_tracker_->ShouldCheckerImage(
-      multi_part_image, WhichTree::PENDING_TREE));
+  EXPECT_TRUE(ShouldCheckerImage(image, WhichTree::PENDING_TREE));
+  EXPECT_FALSE(ShouldCheckerImage(multi_part_image, WhichTree::PENDING_TREE));
 }
 
 TEST_F(CheckerImageTrackerTest, RespectsDecodePriority) {
@@ -552,8 +543,7 @@ TEST_F(CheckerImageTrackerTest, UseSrcRectForSize) {
   image = DrawImage(image.paint_image(), SkIRect::MakeWH(200, 200),
                     image.filter_quality(), SkMatrix::I(),
                     image.target_color_space());
-  EXPECT_FALSE(checker_image_tracker_->ShouldCheckerImage(
-      image, WhichTree::PENDING_TREE));
+  EXPECT_FALSE(ShouldCheckerImage(image, WhichTree::PENDING_TREE));
 }
 
 TEST_F(CheckerImageTrackerTest, DisableForSoftwareRaster) {
@@ -562,19 +552,37 @@ TEST_F(CheckerImageTrackerTest, DisableForSoftwareRaster) {
   // Should checker when not disabled.
   checker_image_tracker_->set_force_disabled(false);
   DrawImage image1 = CreateImage(ImageType::CHECKERABLE);
-  EXPECT_TRUE(checker_image_tracker_->ShouldCheckerImage(
-      image1, WhichTree::PENDING_TREE));
+  EXPECT_TRUE(ShouldCheckerImage(image1, WhichTree::PENDING_TREE));
 
   // Toggle disable. If we were already checkering this image, we need to
   // continue it.
   checker_image_tracker_->set_force_disabled(true);
-  EXPECT_TRUE(checker_image_tracker_->ShouldCheckerImage(
-      image1, WhichTree::PENDING_TREE));
+  EXPECT_TRUE(ShouldCheckerImage(image1, WhichTree::PENDING_TREE));
 
   // New image should not be checkered while disabled.
   DrawImage image2 = CreateImage(ImageType::CHECKERABLE);
+  EXPECT_FALSE(ShouldCheckerImage(image2, WhichTree::PENDING_TREE));
+}
+
+TEST_F(CheckerImageTrackerTest, OnlyCheckerRequiredForActivation) {
+  SetUpTracker(true);
+
+  // Should checker when required for activation.
+  DrawImage image1 = CreateImage(ImageType::CHECKERABLE);
+  bool required_for_activation = true;
+  EXPECT_TRUE(checker_image_tracker_->ShouldCheckerImage(
+      image1, WhichTree::PENDING_TREE, required_for_activation));
+
+  // Now the same image is not required for activation. We should still continue
+  // checkering it.
+  required_for_activation = false;
+  EXPECT_TRUE(checker_image_tracker_->ShouldCheckerImage(
+      image1, WhichTree::PENDING_TREE, required_for_activation));
+
+  // New image should not be checkered if it is not required for activation.
+  DrawImage image2 = CreateImage(ImageType::CHECKERABLE);
   EXPECT_FALSE(checker_image_tracker_->ShouldCheckerImage(
-      image2, WhichTree::PENDING_TREE));
+      image2, WhichTree::PENDING_TREE, required_for_activation));
 }
 
 }  // namespace
