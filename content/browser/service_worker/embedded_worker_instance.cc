@@ -515,7 +515,7 @@ void EmbeddedWorkerInstance::Start(
   inflight_start_task_->Start(std::move(params), callback);
 }
 
-bool EmbeddedWorkerInstance::Stop() {
+void EmbeddedWorkerInstance::Stop() {
   DCHECK(status_ == EmbeddedWorkerStatus::STARTING ||
          status_ == EmbeddedWorkerStatus::RUNNING)
       << static_cast<int>(status_);
@@ -523,21 +523,20 @@ bool EmbeddedWorkerInstance::Stop() {
   // Abort an inflight start task.
   inflight_start_task_.reset();
 
+  // Don't send the StopWorker message if the StartWorker message hasn't
+  // been sent.
   if (status_ == EmbeddedWorkerStatus::STARTING &&
       !HasSentStartWorker(starting_phase())) {
-    // Don't send the StopWorker message when the StartWorker message hasn't
-    // been sent.
-    // TODO(shimazu): Invoke OnStopping/OnStopped after the legacy IPC path is
-    // removed.
-    OnDetached();
-    return false;
+    ReleaseProcess();
+    for (auto& observer : listener_list_)
+      observer.OnStopped(EmbeddedWorkerStatus::STARTING /* old_status */);
+    return;
   }
-  client_->StopWorker();
 
+  client_->StopWorker();
   status_ = EmbeddedWorkerStatus::STOPPING;
   for (auto& observer : listener_list_)
     observer.OnStopping();
-  return true;
 }
 
 void EmbeddedWorkerInstance::StopIfIdle() {
@@ -817,20 +816,17 @@ void EmbeddedWorkerInstance::OnStopped() {
     observer.OnStopped(old_status);
 }
 
-void EmbeddedWorkerInstance::OnDetached() {
-  EmbeddedWorkerStatus old_status = status_;
-  ReleaseProcess();
-  for (auto& observer : listener_list_)
-    observer.OnDetached(old_status);
-}
-
 void EmbeddedWorkerInstance::Detach() {
   // Temporary CHECK for debugging https://crbug.com/750267.
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (status() == EmbeddedWorkerStatus::STOPPED)
     return;
   registry_->DetachWorker(process_id(), embedded_worker_id());
-  OnDetached();
+
+  EmbeddedWorkerStatus old_status = status_;
+  ReleaseProcess();
+  for (auto& observer : listener_list_)
+    observer.OnDetached(old_status);
 }
 
 base::WeakPtr<EmbeddedWorkerInstance> EmbeddedWorkerInstance::AsWeakPtr() {

@@ -290,7 +290,7 @@ TEST_F(EmbeddedWorkerInstanceTest, StartAndStop) {
   EXPECT_EQ(helper_->mock_render_process_id(), worker->process_id());
 
   // Stop the worker.
-  EXPECT_TRUE(worker->Stop());
+  worker->Stop();
   EXPECT_EQ(EmbeddedWorkerStatus::STOPPING, worker->status());
   base::RunLoop().RunUntilIdle();
 
@@ -344,7 +344,7 @@ TEST_F(EmbeddedWorkerInstanceTest, ForceNewProcess) {
     // The worker should be using the default render process.
     EXPECT_EQ(helper_->mock_render_process_id(), worker->process_id());
 
-    EXPECT_TRUE(worker->Stop());
+    worker->Stop();
     base::RunLoop().RunUntilIdle();
   }
 
@@ -371,7 +371,7 @@ TEST_F(EmbeddedWorkerInstanceTest, ForceNewProcess) {
     EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, worker->status());
     // The worker should be using the new render process.
     EXPECT_EQ(helper_->new_render_process_id(), worker->process_id());
-    EXPECT_TRUE(worker->Stop());
+    worker->Stop();
     base::RunLoop().RunUntilIdle();
   }
 }
@@ -416,7 +416,7 @@ TEST_F(EmbeddedWorkerInstanceTest, StopWhenDevToolsAttached) {
 
   // Calling Stop() actually stops the worker regardless of whether devtools
   // is attached or not.
-  EXPECT_TRUE(worker->Stop());
+  worker->Stop();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, worker->status());
 }
@@ -586,7 +586,7 @@ TEST_F(EmbeddedWorkerInstanceTest, StopDuringProcessAllocation) {
 
   // "PROCESS_ALLOCATED" event should not be recorded.
   ASSERT_EQ(1u, events_.size());
-  EXPECT_EQ(DETACHED, events_[0].type);
+  EXPECT_EQ(STOPPED, events_[0].type);
   EXPECT_EQ(EmbeddedWorkerStatus::STARTING, events_[0].status);
   events_.clear();
 
