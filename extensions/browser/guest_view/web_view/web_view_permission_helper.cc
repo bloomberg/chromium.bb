@@ -190,10 +190,6 @@ bool WebViewPermissionHelper::OnMessageReceived(
   return web_view_permission_helper_delegate_->OnMessageReceived(
       message, render_frame_host);
 }
-
-bool WebViewPermissionHelper::OnMessageReceived(const IPC::Message& message) {
-  return web_view_permission_helper_delegate_->OnMessageReceived(message);
-}
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 
 void WebViewPermissionHelper::RequestMediaAccessPermission(

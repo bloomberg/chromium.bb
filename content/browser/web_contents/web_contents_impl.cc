@@ -779,8 +779,9 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHostImpl* render_view_host,
   }
 
   for (auto& observer : observers_) {
-    // TODO(nick, creis): Replace all uses of this variant of OnMessageReceived
-    // with the version that takes a RenderFrameHost, and delete it.
+    // TODO(nick, creis): https://crbug.com/758026: Replace all uses of this
+    // variant of OnMessageReceived with the version that takes a
+    // RenderFrameHost, and then delete it.
     if (observer.OnMessageReceived(message))
       return true;
   }
