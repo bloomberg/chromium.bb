@@ -64,6 +64,7 @@ class UiSceneManager {
   void OnAppButtonClicked();
   void OnAppButtonGesturePerformed(UiInterface::Direction direction);
   void OnWebVrFrameAvailable();
+  void OnWebVrTimedOut();
   void OnProjMatrixChanged(const gfx::Transform& proj_matrix);
 
   void SetExitVrPromptEnabled(bool enabled, UiUnsupportedMode reason);
