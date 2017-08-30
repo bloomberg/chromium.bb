@@ -5669,7 +5669,8 @@ IN_PROC_BROWSER_TEST_F(SSLUIMITMSoftwareTest,
 
 // Tests that the correct strings are displayed on the interstitial in the
 // enterprise managed case.
-IN_PROC_BROWSER_TEST_F(SSLUIMITMSoftwareTest, EnterpriseManaged) {
+// Disabled the test per crbug.com/760438
+IN_PROC_BROWSER_TEST_F(SSLUIMITMSoftwareTest, DISABLED_EnterpriseManaged) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitFromCommandLine(
       "MITMSoftwareInterstitial" /* enabled */, std::string() /* disabled */);
@@ -5701,7 +5702,8 @@ IN_PROC_BROWSER_TEST_F(SSLUIMITMSoftwareTest, EnterpriseManaged) {
 
 // Tests that the correct strings are displayed on the interstitial in the
 // non-enterprise managed case.
-IN_PROC_BROWSER_TEST_F(SSLUIMITMSoftwareTest, NotEnterpriseManaged) {
+// Disabled the test per crbug.com/760438
+IN_PROC_BROWSER_TEST_F(SSLUIMITMSoftwareTest, DISABLED_NotEnterpriseManaged) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitFromCommandLine(
       "MITMSoftwareInterstitial" /* enabled */, std::string() /* disabled */);
