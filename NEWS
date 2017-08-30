@@ -14,6 +14,7 @@ issues]].
     thanks to James Teh.
 ** Other changes
 ** Braille table improvements
+- New table for Croatian grade 1 Braille thanks to Zlatko Sobočan.
 - Fixes and tests for Slovak Braille thanks to Simon Aittamaa
 - Numerous fixes in the character definitions of the Spanish tables
   thanks to Simon Aittamaa
@@ -27,7 +28,11 @@ issues]].
 ** Backwards incompatible changes
 ** New, renamed or removed tables
 *** New
+- hr-g1.ctb
+- hr-g1.tbl
 *** Renamed
+- hr.ctb -> hr-comp8.utb
+- hr.tbl -> hr-comp8.tbl
 *** Removed
 * Noteworthy changes in release 3.2.0 (2017-06-06)
 Aside from the usual improvements to Braille tables this release
