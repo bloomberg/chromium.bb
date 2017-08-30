@@ -120,7 +120,7 @@ punctuation \x2043        36                  ⁃                   HYPHEN BULLE
 # Unicode 0000..007F  C0 Controls and Basic Latin
 # ----------------------------------------------------------------------------------------------
 
-sign        \x0024        345-234             $                   DOLLAR SIGN
+sign        \x0024        456-234             $                   DOLLAR SIGN
 math        \x0025        456-356             %                   PERCENT SIGN
 sign        \x0026        6-12346             &                   AMPERSAND
 math        \x002F        6-2                 /                   SOLIDUS
