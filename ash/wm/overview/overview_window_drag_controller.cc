@@ -60,7 +60,10 @@ void OverviewWindowDragController::Drag(const gfx::Point& location_in_screen) {
   item_->SetBounds(bounds, OverviewAnimationType::OVERVIEW_ANIMATION_NONE);
   previous_event_location_ = location_in_screen;
 
-  UpdatePhantomWindowAndWindowGrid(location_in_screen);
+  // Attempt to show phantom window and move window grid only if the window is
+  // snappable.
+  if (wm::GetWindowState(item_->GetWindow())->CanSnap())
+    UpdatePhantomWindowAndWindowGrid(location_in_screen);
 }
 
 void OverviewWindowDragController::CompleteDrag() {
