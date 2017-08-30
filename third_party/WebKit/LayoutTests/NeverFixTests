@@ -139,6 +139,26 @@ external/wpt/html/obsolete/requirements-for-implementations/the-marquee-element-
 # We don't allow to access external hosts in layout tests.
 external/wpt/html/the-xhtml-syntax/parsing-xhtml-documents/xhtml-mathml-dtd-entity-support.htm [ WontFix ]
 
+# CSS3 attribute / attr references have not been implemented (except for content)
+crbug.com/246571 external/wpt/css/css-values-3/attr-color-invalid-cast.html [ WontFix ]
+crbug.com/246571 external/wpt/css/css-values-3/attr-color-valid.html [ WontFix ]
+crbug.com/246571 external/wpt/css/css-values-3/attr-length-invalid-cast.html [ WontFix ]
+crbug.com/246571 external/wpt/css/css-values-3/attr-length-valid.html [ WontFix ]
+crbug.com/246571 external/wpt/css/css-values-3/attr-length-valid-zero.html [ WontFix ]
+crbug.com/246571 external/wpt/css/css-values-3/attr-length-valid-zero-nofallback.html [ WontFix ]
+crbug.com/246571 external/wpt/css/css-values-3/attr-px-invalid-cast.html [ WontFix ]
+crbug.com/246571 external/wpt/css/css-values-3/attr-px-valid.html [ WontFix ]
+
+# Failing WPT using ch unit in vertical orientation
+crbug.com/759914 external/wpt/css/css-values-3/ch-unit-002.html [ WontFix ]
+
+# Failing CSS values WPT needs waitUntilDone
+crbug.com/759921 external/wpt/css/css-values-3/vh_not_refreshing_on_chrome.html [ WontFix ]
+
+# Media queries do not support calc() for internal CSS length values
+crbug.com/421909 external/wpt/css/css-values-3/calc-in-media-queries-001.html [ WontFix ]
+crbug.com/421909 external/wpt/css/css-values-3/calc-in-media-queries-002.html [ WontFix ]
+
 # CSS2 tests that rely on undefined behaviors (height of line-height: normal).
 external/wpt/css/CSS2/linebox/inline-formatting-context-002.xht [ WontFix ]
 [ Linux Win ] external/wpt/css/CSS2/linebox/inline-formatting-context-003.xht [ WontFix ]
@@ -272,7 +292,6 @@ webaudio/codec-tests/aac [ WontFix ]
 # WPT subdirectories without owners.
 external/wpt/accelerometer [ WontFix ]
 external/wpt/assumptions [ WontFix ]
-external/wpt/css/css-values-3 [ WontFix ]
 external/wpt/gyroscope [ WontFix ]
 external/wpt/magnetometer [ WontFix ]
 external/wpt/upgrade-insecure-requests [ WontFix ]
