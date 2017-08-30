@@ -143,6 +143,16 @@ TEST_F(UnsortedDocumentMarkerListEditorTest,
 }
 
 TEST_F(UnsortedDocumentMarkerListEditorTest,
+       FirstMarkerIntersectingRange_RangeContainingNoMarkers) {
+  UnsortedDocumentMarkerListEditor::MarkerList markers;
+  markers.push_back(CreateMarker(0, 5));
+  DocumentMarker* marker =
+      UnsortedDocumentMarkerListEditor::FirstMarkerIntersectingRange(markers, 5,
+                                                                     15);
+  EXPECT_EQ(nullptr, marker);
+}
+
+TEST_F(UnsortedDocumentMarkerListEditorTest,
        FirstMarkerIntersectingRange_TouchingStart) {
   marker_list_.push_back(CreateMarker(1, 10));
   marker_list_.push_back(CreateMarker(0, 10));
@@ -168,6 +178,30 @@ TEST_F(UnsortedDocumentMarkerListEditorTest,
   EXPECT_NE(nullptr, marker);
   EXPECT_EQ(0u, marker->StartOffset());
   EXPECT_EQ(10u, marker->EndOffset());
+}
+
+TEST_F(UnsortedDocumentMarkerListEditorTest,
+       FirstMarkerIntersectingRange_CollapsedRange) {
+  marker_list_.push_back(CreateMarker(5, 10));
+
+  DocumentMarker* marker =
+      UnsortedDocumentMarkerListEditor::FirstMarkerIntersectingRange(
+          marker_list_, 7, 7);
+
+  EXPECT_NE(nullptr, marker);
+  EXPECT_EQ(5u, marker->StartOffset());
+  EXPECT_EQ(10u, marker->EndOffset());
+}
+
+TEST_F(UnsortedDocumentMarkerListEditorTest,
+       MarkersIntersectingRange_RangeContainingNoMarkers) {
+  UnsortedDocumentMarkerListEditor::MarkerList markers;
+  markers.push_back(CreateMarker(0, 10));
+
+  UnsortedDocumentMarkerListEditor::MarkerList markers_intersecting_range =
+      UnsortedDocumentMarkerListEditor::MarkersIntersectingRange(markers, 10,
+                                                                 15);
+  EXPECT_EQ(0u, markers_intersecting_range.size());
 }
 
 TEST_F(UnsortedDocumentMarkerListEditorTest,
@@ -208,6 +242,19 @@ TEST_F(UnsortedDocumentMarkerListEditorTest,
 
   EXPECT_EQ(1u, markers_intersecting_range[1]->StartOffset());
   EXPECT_EQ(10u, markers_intersecting_range[1]->EndOffset());
+}
+
+TEST_F(UnsortedDocumentMarkerListEditorTest,
+       MarkersIntersectingRange_CollapsedRange) {
+  UnsortedDocumentMarkerListEditor::MarkerList markers;
+  markers.push_back(CreateMarker(5, 10));
+
+  UnsortedDocumentMarkerListEditor::MarkerList markers_intersecting_range =
+      UnsortedDocumentMarkerListEditor::MarkersIntersectingRange(markers, 7, 7);
+  EXPECT_EQ(1u, markers_intersecting_range.size());
+
+  EXPECT_EQ(5u, markers_intersecting_range[0]->StartOffset());
+  EXPECT_EQ(10u, markers_intersecting_range[0]->EndOffset());
 }
 
 }  // namespace blink
