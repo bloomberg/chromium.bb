@@ -409,7 +409,9 @@ class PDFiumEngine : public PDFEngine,
   // visible, an empty rectangle is returned.
   pp::Rect GetScreenRect(const pp::Rect& rect) const;
 
-  // Highlights the given rectangle.
+  // Given an image |buffer| with |stride|, highlights |rect|.
+  // |highlighted_rects| contains the already highlighted rectangles and will be
+  // updated to include |rect| if |rect| has not already been highlighted.
   void Highlight(void* buffer,
                  int stride,
                  const pp::Rect& rect,
