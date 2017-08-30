@@ -64,7 +64,8 @@ ASH_EXPORT bool IsAshSystemNotifier(
 // will be ignored.
 // TODO(tetsui): Remove this function when new style notification becomes
 // default.
-std::unique_ptr<message_center::Notification> CreateSystemNotification(
+ASH_EXPORT std::unique_ptr<message_center::Notification>
+CreateSystemNotification(
     message_center::NotificationType type,
     const std::string& id,
     const base::string16& title,
