@@ -26,5 +26,10 @@ std::vector<ui::LayerAnimator*> InkDropHighlightTestApi::GetLayerAnimators() {
   return animators;
 }
 
+gfx::Transform InkDropHighlightTestApi::CalculateTransform(
+    const gfx::SizeF& size) {
+  return ink_drop_highlight()->CalculateTransform(size);
+}
+
 }  // namespace test
 }  // namespace views

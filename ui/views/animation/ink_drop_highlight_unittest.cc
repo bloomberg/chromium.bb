@@ -10,10 +10,12 @@
 #include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/gfx/animation/animation.h"
 #include "ui/gfx/animation/animation_test_api.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/transform.h"
 #include "ui/views/animation/test/ink_drop_highlight_test_api.h"
 #include "ui/views/animation/test/test_ink_drop_highlight_observer.h"
 
@@ -204,6 +206,36 @@ TEST_F(InkDropHighlightTest, AnimatingAZeroSizeHighlight) {
       gfx::Size(0, 0), 3, gfx::PointF(), SK_ColorBLACK));
   ink_drop_highlight()->FadeOut(base::TimeDelta::FromMilliseconds(0),
                                 false /* explode */);
+}
+
+TEST_F(InkDropHighlightTest, TransformIsPixelAligned) {
+  const float kEpsilon = 0.001f;
+  gfx::Size highlight_size(10, 10);
+  InitHighlight(base::MakeUnique<InkDropHighlight>(
+      highlight_size, 3, gfx::PointF(3.5f, 3.5f), SK_ColorYELLOW));
+  const gfx::PointF layer_origin(
+      ink_drop_highlight()->layer()->bounds().origin());
+  for (auto dsf : {1.25, 1.33, 1.5, 1.6, 1.75, 1.8, 2.25}) {
+    SCOPED_TRACE(testing::Message()
+                 << std::endl
+                 << "Device Scale Factor: " << dsf << std::endl);
+    ink_drop_highlight()->layer()->OnDeviceScaleFactorChanged(dsf);
+
+    const gfx::SizeF size(highlight_size);
+    gfx::Transform transform = test_api()->CalculateTransform(size);
+    gfx::Point3F transformed_layer_origin(layer_origin.x(), layer_origin.y(),
+                                          0);
+    transform.TransformPoint(&transformed_layer_origin);
+
+    // Apply device scale factor to get the final offset.
+    gfx::Transform dsf_transform;
+    dsf_transform.Scale(dsf, dsf);
+    dsf_transform.TransformPoint(&transformed_layer_origin);
+    EXPECT_NEAR(transformed_layer_origin.x(),
+                gfx::ToRoundedInt(transformed_layer_origin.x()), kEpsilon);
+    EXPECT_NEAR(transformed_layer_origin.y(),
+                gfx::ToRoundedInt(transformed_layer_origin.y()), kEpsilon);
+  }
 }
 
 }  // namespace test

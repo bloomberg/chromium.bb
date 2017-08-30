@@ -7,6 +7,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/animation/test/flood_fill_ink_drop_ripple_test_api.h"
@@ -29,10 +30,11 @@ TEST(FloodFillInkDropRippleTest, TransformedCenterPointForIrregularClipBounds) {
                                 SK_ColorWHITE, 0.175f);
   FloodFillInkDropRippleTestApi test_api(&ripple);
 
-  gfx::Point actual_center = test_api.GetDrawnCenterPoint();
+  gfx::Point3F actual_center(gfx::PointF(test_api.GetDrawnCenterPoint()));
   test_api.TransformPoint(10, &actual_center);
 
-  EXPECT_EQ(expected_center_point, actual_center);
+  EXPECT_EQ(expected_center_point,
+            gfx::ToRoundedPoint(actual_center.AsPointF()));
 }
 
 TEST(FloodFillInkDropRippleTest, MaxDistanceToCorners) {
@@ -105,6 +107,41 @@ TEST(FloodFillInkDropRippleTest, ActivatedFinalState) {
   EXPECT_NEAR(activated_opacity, pending_activated_opacity, kAbsError);
   EXPECT_TRUE(
       activated_transform.ApproximatelyEqual(pending_activated_transform));
+}
+
+TEST(FloodFillInkDropRippleTest, TransformIsPixelAligned) {
+  const float kEpsilon = 0.001f;
+
+  const gfx::Size host_size(11, 11);
+  // Keep the draw center different from the the host center to have a non zero
+  // offset in the transformation.
+  const gfx::Point center_point(host_size.width() / 3, host_size.height() / 3);
+  const SkColor color = SK_ColorYELLOW;
+  const float visible_opacity = 0.3f;
+
+  FloodFillInkDropRipple ripple(host_size, center_point, color,
+                                visible_opacity);
+  FloodFillInkDropRippleTestApi test_api(&ripple);
+
+  for (auto dsf : {1.25, 1.33, 1.5, 1.6, 1.75, 1.8, 2.25}) {
+    SCOPED_TRACE(testing::Message()
+                 << std::endl
+                 << "Device Scale Factor: " << dsf << std::endl);
+    ripple.GetRootLayer()->OnDeviceScaleFactorChanged(dsf);
+    gfx::Point3F ripple_origin;
+
+    test_api.TransformPoint(host_size.width() / 2, &ripple_origin);
+
+    // Apply device scale factor to get the final offset.
+    gfx::Transform dsf_transform;
+    dsf_transform.Scale(dsf, dsf);
+    dsf_transform.TransformPoint(&ripple_origin);
+
+    EXPECT_NEAR(ripple_origin.x(), gfx::ToRoundedInt(ripple_origin.x()),
+                kEpsilon);
+    EXPECT_NEAR(ripple_origin.y(), gfx::ToRoundedInt(ripple_origin.y()),
+                kEpsilon);
+  }
 }
 
 }  // namespace test

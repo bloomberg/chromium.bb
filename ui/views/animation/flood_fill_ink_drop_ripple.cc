@@ -14,6 +14,7 @@
 #include "ui/gfx/animation/animation.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/vector2d_f.h"
+#include "ui/views/animation/ink_drop_util.h"
 
 namespace {
 
@@ -425,6 +426,10 @@ gfx::Transform FloodFillInkDropRipple::CalculateTransform(
   const gfx::Vector2dF drawn_center_offset =
       circle_layer_delegate_.GetCenteringOffset();
   transform.Translate(-drawn_center_offset.x(), -drawn_center_offset.y());
+
+  // Add subpixel correction to the transform.
+  transform.ConcatTransform(GetTransformSubpixelCorrection(
+      transform, painted_layer_.device_scale_factor()));
 
   return transform;
 }

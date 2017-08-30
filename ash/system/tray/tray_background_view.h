@@ -126,6 +126,10 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   // |close_bubble| is set.
   void AnimateToTargetBounds(const gfx::Rect& target_bounds, bool close_bubble);
 
+  // Helper function that calculates background bounds relative to local bounds
+  // based on background insets returned from GetBackgroundInsets().
+  gfx::Rect GetBackgroundBounds() const;
+
  protected:
   // ActionableView:
   std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
@@ -133,6 +137,7 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   bool PerformAction(const ui::Event& event) override;
   void HandlePerformActionResult(bool action_performed,
                                  const ui::Event& event) override;
+  views::PaintInfo::ScaleType GetPaintScaleType() const override;
 
   TrayDragController* drag_controller() { return drag_controller_.get(); }
   void set_drag_controller(
@@ -154,9 +159,6 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   // Helper function that calculates background insets relative to local bounds.
   gfx::Insets GetBackgroundInsets() const;
 
-  // Helper function that calculates background bounds relative to local bounds
-  // based on background insets returned from GetBackgroundInsets().
-  gfx::Rect GetBackgroundBounds() const;
 
   // The shelf containing the system tray for this view.
   Shelf* shelf_;

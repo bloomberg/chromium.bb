@@ -116,11 +116,11 @@ class TrayBackground : public views::Background {
     cc::PaintFlags background_flags;
     background_flags.setAntiAlias(true);
     background_flags.setColor(color_);
-    gfx::Insets insets = GetMirroredBackgroundInsets(
-        tray_background_view_->shelf()->IsHorizontalAlignment());
-    gfx::Rect bounds = view->GetLocalBounds();
-    bounds.Inset(insets);
-    canvas->DrawRoundRect(bounds, kTrayRoundedBorderRadius, background_flags);
+
+    gfx::Rect bounds = tray_background_view_->GetBackgroundBounds();
+    const float dsf = canvas->UndoDeviceScaleFactor();
+    canvas->DrawRoundRect(gfx::ScaleToRoundedRect(bounds, dsf),
+                          kTrayRoundedBorderRadius * dsf, background_flags);
   }
 
   // Reference to the TrayBackgroundView for which this is a background.
@@ -169,9 +169,8 @@ TrayBackgroundView::TrayBackgroundView(Shelf* shelf)
   set_ink_drop_visible_opacity(kShelfInkDropVisibleOpacity);
 
   SetLayoutManager(new views::FillLayout);
+  SetBackground(std::unique_ptr<views::Background>(background_));
 
-  tray_container_->SetBackground(
-      std::unique_ptr<views::Background>(background_));
   AddChildView(tray_container_);
 
   tray_event_filter_.reset(new TrayEventFilter);
@@ -486,6 +485,13 @@ void TrayBackgroundView::AnimateToTargetBounds(const gfx::Rect& target_bounds,
   GetBubbleView()->GetWidget()->SetBounds(target_bounds);
 }
 
+gfx::Rect TrayBackgroundView::GetBackgroundBounds() const {
+  gfx::Insets insets = GetBackgroundInsets();
+  gfx::Rect bounds = GetLocalBounds();
+  bounds.Inset(insets);
+  return bounds;
+}
+
 std::unique_ptr<views::InkDropMask> TrayBackgroundView::CreateInkDropMask()
     const {
   return base::MakeUnique<views::RoundRectInkDropMask>(
@@ -511,6 +517,10 @@ void TrayBackgroundView::HandlePerformActionResult(bool action_performed,
   ActionableView::HandlePerformActionResult(action_performed, event);
 }
 
+views::PaintInfo::ScaleType TrayBackgroundView::GetPaintScaleType() const {
+  return views::PaintInfo::ScaleType::kUniformScaling;
+}
+
 gfx::Insets TrayBackgroundView::GetBackgroundInsets() const {
   gfx::Insets insets =
       GetMirroredBackgroundInsets(shelf_->IsHorizontalAlignment());
@@ -525,11 +535,5 @@ gfx::Insets TrayBackgroundView::GetBackgroundInsets() const {
   return insets;
 }
 
-gfx::Rect TrayBackgroundView::GetBackgroundBounds() const {
-  gfx::Insets insets = GetBackgroundInsets();
-  gfx::Rect bounds = GetLocalBounds();
-  bounds.Inset(insets);
-  return bounds;
-}
 
 }  // namespace ash
