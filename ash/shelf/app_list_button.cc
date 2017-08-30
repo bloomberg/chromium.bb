@@ -472,6 +472,9 @@ void AppListButton::OnBoundsAnimationFinished() {
   // finished.
   if (is_showing_app_list_)
     AnimateInkDrop(views::InkDropState::ACTIVATED, nullptr);
+
+  // Redraw to ensure the app list button is drawn at its expected final state.
+  SchedulePaint();
 }
 
 void AppListButton::OnAppListVisibilityChanged(bool shown,
