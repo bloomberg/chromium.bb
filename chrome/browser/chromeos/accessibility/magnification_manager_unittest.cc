@@ -25,20 +25,12 @@ bool IsMagnifierEnabled() {
   return MagnificationManager::Get()->IsMagnifierEnabled();
 }
 
-ash::MagnifierType GetMagnifierType() {
-  return MagnificationManager::Get()->GetMagnifierType();
-}
-
-void SetMagnifierType(ash::MagnifierType type) {
-  return MagnificationManager::Get()->SetMagnifierType(type);
-}
-
 }  // namespace
 
 class MagnificationManagerTest : public ash::AshTestBase {
  public:
-  MagnificationManagerTest() {
-  }
+  MagnificationManagerTest() = default;
+  ~MagnificationManagerTest() override = default;
 
   void SetUp() override {
     ash::AshTestBase::SetUp();
@@ -55,22 +47,14 @@ class MagnificationManagerTest : public ash::AshTestBase {
   TestingProfile profile_;
 };
 
-TEST_F(MagnificationManagerTest, ChangeType) {
+TEST_F(MagnificationManagerTest, EnableDisable) {
   // Set full screen magnifier, and confirm the status is set successfully.
   EnableMagnifier();
-  SetMagnifierType(ash::MAGNIFIER_FULL);
   EXPECT_TRUE(IsMagnifierEnabled());
-  EXPECT_EQ(GetMagnifierType(), ash::MAGNIFIER_FULL);
-
-  // Set partial screen magnifier, and confirm the change is ignored.
-  SetMagnifierType(ash::MAGNIFIER_PARTIAL);
-  EXPECT_TRUE(IsMagnifierEnabled());
-  EXPECT_EQ(GetMagnifierType(), ash::MAGNIFIER_FULL);
 
   // Disables magnifier, and confirm the status is set successfully.
   DisableMagnifier();
   EXPECT_FALSE(IsMagnifierEnabled());
-  EXPECT_EQ(GetMagnifierType(), ash::MAGNIFIER_FULL);
 }
 
 }  // namespace chromeos

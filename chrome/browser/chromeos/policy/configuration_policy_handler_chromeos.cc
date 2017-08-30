@@ -339,7 +339,7 @@ void PinnedLauncherAppsPolicyHandler::ApplyList(
 
 ScreenMagnifierPolicyHandler::ScreenMagnifierPolicyHandler()
     : IntRangePolicyHandlerBase(key::kScreenMagnifierType,
-                                0,
+                                ash::MAGNIFIER_DISABLED,
                                 ash::MAGNIFIER_FULL,
                                 false) {}
 
@@ -353,7 +353,7 @@ void ScreenMagnifierPolicyHandler::ApplyPolicySettings(
   int value_in_range;
   if (value && EnsureInRange(value, &value_in_range, NULL)) {
     prefs->SetBoolean(ash::prefs::kAccessibilityScreenMagnifierEnabled,
-                      value_in_range != 0);
+                      value_in_range != ash::MAGNIFIER_DISABLED);
     prefs->SetInteger(ash::prefs::kAccessibilityScreenMagnifierType,
                       value_in_range);
   }

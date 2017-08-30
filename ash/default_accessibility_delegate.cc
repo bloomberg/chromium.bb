@@ -28,16 +28,8 @@ void DefaultAccessibilityDelegate::SetMagnifierEnabled(bool enabled) {
   screen_magnifier_enabled_ = enabled;
 }
 
-void DefaultAccessibilityDelegate::SetMagnifierType(MagnifierType type) {
-  screen_magnifier_type_ = type;
-}
-
 bool DefaultAccessibilityDelegate::IsMagnifierEnabled() const {
   return screen_magnifier_enabled_;
-}
-
-MagnifierType DefaultAccessibilityDelegate::GetMagnifierType() const {
-  return screen_magnifier_type_;
 }
 
 void DefaultAccessibilityDelegate::SetLargeCursorEnabled(bool enabled) {

@@ -24,13 +24,11 @@ enum AccessibilityAlert {
 
 // Note: Do not change these values; UMA and prefs depend on them.
 enum MagnifierType {
+  MAGNIFIER_DISABLED = 0,  // Used by enterprise policy.
   MAGNIFIER_FULL = 1,
-  MAGNIFIER_PARTIAL = 2,
+  // Never shipped. Deprioritized in 2013. http://crbug.com/170850
+  // MAGNIFIER_PARTIAL = 2,
 };
-
-const int kMaxMagnifierType = 2;
-
-const MagnifierType kDefaultMagnifierType = MAGNIFIER_FULL;
 
 // Factor of magnification scale. For example, when this value is 1.189, scale
 // value will be changed x1.000, x1.189, x1.414, x1.681, x2.000, ...

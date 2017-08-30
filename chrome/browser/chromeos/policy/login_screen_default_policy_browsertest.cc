@@ -333,7 +333,6 @@ IN_PROC_BROWSER_TEST_F(LoginScreenDefaultPolicyLoginScreenBrowsertest,
       chromeos::MagnificationManager::Get();
   ASSERT_TRUE(magnification_manager);
   EXPECT_TRUE(magnification_manager->IsMagnifierEnabled());
-  EXPECT_EQ(ash::MAGNIFIER_FULL, magnification_manager->GetMagnifierType());
 }
 
 IN_PROC_BROWSER_TEST_F(LoginScreenDefaultPolicyInSessionBrowsertest,
@@ -434,8 +433,6 @@ IN_PROC_BROWSER_TEST_F(LoginScreenDefaultPolicyInSessionBrowsertest,
       chromeos::MagnificationManager::Get();
   ASSERT_TRUE(magnification_manager);
   EXPECT_FALSE(magnification_manager->IsMagnifierEnabled());
-  EXPECT_EQ(ash::kDefaultMagnifierType,
-            magnification_manager->GetMagnifierType());
 }
 
 IN_PROC_BROWSER_TEST_F(LoginScreenDefaultPolicyLoginScreenBrowsertest,

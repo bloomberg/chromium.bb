@@ -62,15 +62,8 @@ struct AccessibilityStatusEventDetails {
       bool enabled,
       ash::AccessibilityNotificationVisibility notify);
 
-  AccessibilityStatusEventDetails(
-      AccessibilityNotificationType notification_type,
-      bool enabled,
-      ash::MagnifierType magnifier_type,
-      ash::AccessibilityNotificationVisibility notify);
-
   AccessibilityNotificationType notification_type;
   bool enabled;
-  ash::MagnifierType magnifier_type;
   ash::AccessibilityNotificationVisibility notify;
 };
 

@@ -9,7 +9,6 @@
 #include "ash/accessibility_types.h"
 #include "ash/high_contrast/high_contrast_controller.h"
 #include "ash/magnifier/magnification_controller.h"
-#include "ash/magnifier/partial_magnification_controller.h"
 #include "ash/mus/bridge/shell_port_mash.h"
 #include "ash/mus/window_manager.h"
 #include "ash/public/cpp/config.h"
@@ -123,14 +122,8 @@ AshInit::AshInit() {
       chromeos::AccessibilityManager::Get()->IsHighContrastEnabled());
 
   DCHECK(chromeos::MagnificationManager::Get());
-  bool magnifier_enabled =
-      chromeos::MagnificationManager::Get()->IsMagnifierEnabled();
-  ash::MagnifierType magnifier_type =
-      chromeos::MagnificationManager::Get()->GetMagnifierType();
   shell->magnification_controller()->SetEnabled(
-      magnifier_enabled && magnifier_type == ash::MAGNIFIER_FULL);
-  shell->partial_magnification_controller()->SetEnabled(
-      magnifier_enabled && magnifier_type == ash::MAGNIFIER_PARTIAL);
+      chromeos::MagnificationManager::Get()->IsMagnifierEnabled());
 
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableZeroBrowsersOpenForTests)) {
