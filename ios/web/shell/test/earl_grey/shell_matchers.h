@@ -11,9 +11,6 @@
 
 namespace web {
 
-// Matcher for WKWebView containing an html element which matches |selector|.
-id<GREYMatcher> WebViewCssSelector(const std::string& selector);
-
 // Matcher for the WKWebView.
 id<GREYMatcher> WebView();
 

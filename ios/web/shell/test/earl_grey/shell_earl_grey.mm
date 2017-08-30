@@ -9,6 +9,7 @@
 #import "ios/testing/wait_util.h"
 #import "ios/web/public/test/earl_grey/js_test_util.h"
 #import "ios/web/public/test/web_view_content_test_util.h"
+#import "ios/web/public/test/web_view_interaction_test_util.h"
 #include "ios/web/shell/test/app/navigation_test_util.h"
 #import "ios/web/shell/test/app/web_shell_test_util.h"
 
@@ -47,6 +48,30 @@
                   }];
   GREYAssert([condition waitWithTimeout:testing::kWaitForUIElementTimeout],
              @"Failed waiting for web view containing %s", text.c_str());
+}
+
++ (void)waitForWebViewContainingCSSSelector:(std::string)selector {
+  GREYCondition* condition = [GREYCondition
+      conditionWithName:@"Wait for web view containing text"
+                  block:^BOOL {
+                    return web::test::IsWebViewContainingCssSelector(
+                        web::shell_test_util::GetCurrentWebState(), selector);
+                  }];
+  GREYAssert([condition waitWithTimeout:testing::kWaitForUIElementTimeout],
+             @"Failed waiting for web view containing css selector: %s",
+             selector.c_str());
+}
+
++ (void)waitForWebViewNotContainingCSSSelector:(std::string)selector {
+  GREYCondition* condition = [GREYCondition
+      conditionWithName:@"Wait for web view not containing text"
+                  block:^BOOL {
+                    return !web::test::IsWebViewContainingCssSelector(
+                        web::shell_test_util::GetCurrentWebState(), selector);
+                  }];
+  GREYAssert([condition waitWithTimeout:testing::kWaitForUIElementTimeout],
+             @"Failed waiting for web view not containing css selector: %s",
+             selector.c_str());
 }
 
 @end
