@@ -1226,6 +1226,8 @@ if (enable_java_templates) {
            invoker.alternative_android_sdk_ijar != "")
     assert(!defined(invoker.alternative_android_sdk_ijar_dep) ||
            invoker.alternative_android_sdk_ijar_dep != "")
+    assert(!defined(invoker.alternative_android_sdk_jar) ||
+           invoker.alternative_android_sdk_jar != "")
     if (_desugar) {
       _desugar_target = "${target_name}__desugar"
       _desugar_input_jar = _previous_output_jar
@@ -2352,6 +2354,7 @@ if (enable_java_templates) {
                              [
                                "alternative_android_sdk_ijar",
                                "alternative_android_sdk_ijar_dep",
+                               "alternative_android_sdk_jar",
                                "jar_excluded_patterns",
                              ])
       supports_android = _supports_android
@@ -2605,6 +2608,7 @@ if (enable_java_templates) {
                                "additional_jar_files",
                                "alternative_android_sdk_ijar",
                                "alternative_android_sdk_ijar_dep",
+                               "alternative_android_sdk_jar",
                                "dist_jar_path",
                                "enable_errorprone",
                                "enable_incremental_javac_override",
