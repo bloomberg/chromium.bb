@@ -465,12 +465,14 @@ void WindowPortMus::OnPreInit(Window* window) {
 }
 
 void WindowPortMus::OnDeviceScaleFactorChanged(float device_scale_factor) {
+  // TODO(fsamuel): If we don't have a LayerTreeFrameSinkLocal then we should
+  // let the window server know about the device scale factor change and
+  // the new LocalSurfaceId allocated.
   if (last_device_scale_factor_ != device_scale_factor &&
-      local_surface_id_.is_valid()) {
+      local_surface_id_.is_valid() && local_layer_tree_frame_sink_) {
     last_device_scale_factor_ = device_scale_factor;
     local_surface_id_ = local_surface_id_allocator_.GenerateId();
-    if (local_layer_tree_frame_sink_)
-      local_layer_tree_frame_sink_->SetLocalSurfaceId(local_surface_id_);
+    local_layer_tree_frame_sink_->SetLocalSurfaceId(local_surface_id_);
   }
 
   if (window_->delegate())
