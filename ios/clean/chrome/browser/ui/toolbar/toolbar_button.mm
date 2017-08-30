@@ -22,6 +22,7 @@
   [button setImage:normalImage forState:UIControlStateNormal];
   [button setImage:highlightedImage forState:UIControlStateHighlighted];
   [button setImage:disabledImage forState:UIControlStateDisabled];
+  [button setImage:highlightedImage forState:UIControlStateSelected];
   button.titleLabel.textAlignment = NSTextAlignmentCenter;
   button.translatesAutoresizingMaskIntoConstraints = NO;
   return button;
