@@ -38,6 +38,7 @@ struct CookieStoreIOSTestTraits {
   static const bool filters_schemes = false;
   static const bool has_path_prefix_bug = true;
   static const bool forbids_setting_empty_name = true;
+  static const bool supports_global_cookie_tracking = false;
   static const int creation_time_granularity_in_ms = 1000;
 
   base::MessageLoop loop_;

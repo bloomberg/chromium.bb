@@ -37,6 +37,7 @@ struct AwCookieStoreWrapperTestTraits {
   static const bool filters_schemes = true;
   static const bool has_path_prefix_bug = false;
   static const bool forbids_setting_empty_name = false;
+  static const bool supports_global_cookie_tracking = false;
   static const int creation_time_granularity_in_ms = 0;
 };
 

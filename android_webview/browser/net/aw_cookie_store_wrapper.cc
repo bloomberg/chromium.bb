@@ -356,6 +356,14 @@ AwCookieStoreWrapper::AddCallbackForCookie(
   return subscription->Subscribe(url, name, callback);
 }
 
+std::unique_ptr<net::CookieStore::CookieChangedSubscription>
+AwCookieStoreWrapper::AddCallbackForAllChanges(
+    const CookieChangedCallback& callback) {
+  // TODO(rdsmith): Implement when needed by Android Webview consumer.
+  CHECK(false);
+  return nullptr;
+}
+
 bool AwCookieStoreWrapper::IsEphemeral() {
   return GetCookieStore()->IsEphemeral();
 }

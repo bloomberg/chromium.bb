@@ -109,6 +109,9 @@ class HEADLESS_EXPORT MockCookieStore : public net::CookieStore {
       const std::string& name,
       const CookieChangedCallback& callback) override;
 
+  std::unique_ptr<CookieChangedSubscription> AddCallbackForAllChanges(
+      const CookieChangedCallback& callback) override;
+
   bool IsEphemeral() override;
 
   net::CookieList* cookies() { return &cookies_; }

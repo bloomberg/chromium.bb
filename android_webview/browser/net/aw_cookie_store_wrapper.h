@@ -89,6 +89,8 @@ class AwCookieStoreWrapper : public net::CookieStore {
       const GURL& url,
       const std::string& name,
       const CookieChangedCallback& callback) override;
+  std::unique_ptr<CookieChangedSubscription> AddCallbackForAllChanges(
+      const CookieChangedCallback& callback) override;
   bool IsEphemeral() override;
 
  private:

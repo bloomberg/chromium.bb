@@ -114,6 +114,7 @@ struct CookieMonsterTestTraits {
   static const bool filters_schemes = true;
   static const bool has_path_prefix_bug = false;
   static const bool forbids_setting_empty_name = false;
+  static const bool supports_global_cookie_tracking = true;
   static const int creation_time_granularity_in_ms = 0;
 };
 
@@ -3326,7 +3327,56 @@ TEST_F(CookieMonsterNotificationTest, MultipleSameNotifies) {
   SetCookie(monster(), test_url_, "abc=def");
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1U, cookies0.size());
-  EXPECT_EQ(1U, cookies0.size());
+  EXPECT_EQ(1U, cookies1.size());
+}
+
+TEST_F(CookieMonsterNotificationTest, GlobalNotBroadcast) {
+  // Create a persistent store that will not synchronously satisfy the
+  // loading requirement.
+  scoped_refptr<MockPersistentCookieStore> store(new MockPersistentCookieStore);
+  store->set_store_load_commands(true);
+
+  // Bind it to a CookieMonster
+  std::unique_ptr<CookieMonster> monster(
+      base::MakeUnique<CookieMonster>(store.get(), nullptr));
+
+  // Trigger load dispatch and confirm it.
+  monster->GetAllCookiesAsync(CookieStore::GetCookieListCallback());
+  EXPECT_EQ(1u, store->commands().size());
+  EXPECT_EQ(CookieStoreCommand::LOAD, store->commands()[0].type);
+
+  // Attach a change subscription.
+  std::vector<CanonicalCookie> cookies;
+  std::vector<CookieStore::ChangeCause> causes;
+  std::unique_ptr<CookieStore::CookieChangedSubscription> sub(
+      monster->AddCallbackForAllChanges(
+          base::Bind(&RecordCookieChanges, &cookies, &causes)));
+
+  // Set up a set of cookies with a duplicate.
+  std::vector<std::unique_ptr<CanonicalCookie>> initial_cookies;
+  AddCookieToList(GURL("http://www.foo.com"),
+                  "X=1; path=/; expires=Mon, 18-Apr-22 22:50:14 GMT",
+                  base::Time::Now() + base::TimeDelta::FromDays(3),
+                  &initial_cookies);
+
+  AddCookieToList(GURL("http://www.foo.com"),
+                  "X=2; path=/; expires=Mon, 18-Apr-22 22:50:14 GMT",
+                  base::Time::Now() + base::TimeDelta::FromDays(1),
+                  &initial_cookies);
+
+  // Execute the load
+  store->commands()[0].loaded_callback.Run(std::move(initial_cookies));
+  base::RunLoop().RunUntilIdle();
+
+  // We should see two insertions, no deletions, and only one cookie in the
+  // monster.
+  // TODO(rdsmith): Why yes, this is an internally inconsistent interface.
+  EXPECT_EQ(2U, cookies.size());
+  EXPECT_EQ("X", cookies[0].Name());
+  EXPECT_EQ(CookieStore::ChangeCause::INSERTED, causes[0]);
+  EXPECT_EQ("X", cookies[1].Name());
+  EXPECT_EQ(CookieStore::ChangeCause::INSERTED, causes[1]);
+  EXPECT_EQ(1u, this->GetAllCookies(monster.get()).size());
 }
 
 }  // namespace net
