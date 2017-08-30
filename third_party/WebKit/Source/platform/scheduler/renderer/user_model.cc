@@ -4,28 +4,8 @@
 
 #include "platform/scheduler/renderer/user_model.h"
 
-#include "base/metrics/histogram_macros.h"
-
 namespace blink {
 namespace scheduler {
-
-namespace {
-// This enum is used to back a histogram, and should therefore be treated as
-// append-only.
-enum GesturePredictionResult {
-  GESTURE_OCCURED_WAS_PREDICTED = 0,
-  GESTURE_OCCURED_BUT_NOT_PREDICTED = 1,
-  GESTURE_PREDICTED_BUT_DID_NOT_OCCUR = 2,
-  GESTURE_PREDICTION_RESULT_COUNT = 3
-};
-
-void RecordGesturePrediction(GesturePredictionResult result) {
-  UMA_HISTOGRAM_ENUMERATION(
-      "RendererScheduler.UserModel.GesturePredictedCorrectly", result,
-      GESTURE_PREDICTION_RESULT_COUNT);
-}
-
-}  // namespace
 
 UserModel::UserModel()
     : pending_input_event_count_(0),
@@ -40,30 +20,8 @@ void UserModel::DidStartProcessingInputEvent(blink::WebInputEvent::Type type,
       type == blink::WebInputEvent::kGestureScrollBegin ||
       type == blink::WebInputEvent::kGesturePinchBegin) {
     // Only update stats once per gesture.
-    if (!is_gesture_active_) {
+    if (!is_gesture_active_)
       last_gesture_start_time_ = now;
-
-      RecordGesturePrediction(is_gesture_expected_
-                                  ? GESTURE_OCCURED_WAS_PREDICTED
-                                  : GESTURE_OCCURED_BUT_NOT_PREDICTED);
-
-      if (!last_reset_time_.is_null()) {
-        base::TimeDelta time_since_reset = now - last_reset_time_;
-        UMA_HISTOGRAM_MEDIUM_TIMES(
-            "RendererScheduler.UserModel.GestureStartTimeSinceModelReset",
-            time_since_reset);
-      }
-
-      // If there has been a previous gesture, record a UMA metric for the time
-      // interval between then and now.
-      if (!last_continuous_gesture_time_.is_null()) {
-        base::TimeDelta time_since_last_gesture =
-            now - last_continuous_gesture_time_;
-        UMA_HISTOGRAM_MEDIUM_TIMES(
-            "RendererScheduler.UserModel.TimeBetweenGestures",
-            time_since_last_gesture);
-      }
-    }
 
     is_gesture_active_ = true;
   }
@@ -87,12 +45,6 @@ void UserModel::DidStartProcessingInputEvent(blink::WebInputEvent::Type type,
       type == blink::WebInputEvent::kGesturePinchEnd ||
       type == blink::WebInputEvent::kGestureFlingStart ||
       type == blink::WebInputEvent::kTouchEnd) {
-    // Only update stats once per gesture.
-    if (is_gesture_active_) {
-      base::TimeDelta duration = now - last_gesture_start_time_;
-      UMA_HISTOGRAM_TIMES("RendererScheduler.UserModel.GestureDuration",
-                          duration);
-    }
     is_gesture_active_ = false;
   }
 
@@ -134,11 +86,6 @@ bool UserModel::IsGestureExpectedSoon(
   // gesture actually happened.
   if (!was_gesture_expected && is_gesture_expected_)
     last_gesture_expected_start_time_ = now;
-
-  if (was_gesture_expected && !is_gesture_expected_ &&
-      last_gesture_expected_start_time_ > last_gesture_start_time_) {
-    RecordGesturePrediction(GESTURE_PREDICTED_BUT_DID_NOT_OCCUR);
-  }
   return is_gesture_expected_;
 }
 

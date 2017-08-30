@@ -8,7 +8,6 @@
 #include <set>
 
 #include "base/bind.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
 #include "platform/scheduler/base/real_time_domain.h"
 #include "platform/scheduler/base/task_queue_impl.h"
@@ -25,19 +24,6 @@ namespace blink {
 namespace scheduler {
 
 namespace {
-const size_t kRecordRecordTaskDelayHistogramsEveryNTasks = 10;
-
-void RecordDelayedTaskLateness(base::TimeDelta lateness) {
-  UMA_HISTOGRAM_TIMES("RendererScheduler.TaskQueueManager.DelayedTaskLateness",
-                      lateness);
-}
-
-void RecordImmediateTaskQueueingDuration(base::TimeDelta duration) {
-  UMA_HISTOGRAM_TIMES(
-      "RendererScheduler.TaskQueueManager.ImmediateTaskQueueingDuration",
-      duration);
-}
-
 double MonotonicTimeInSeconds(base::TimeTicks time_ticks) {
   return (time_ticks - base::TimeTicks()).InSecondsF();
 }
@@ -51,14 +37,13 @@ base::RepeatingClosure UnsafeConvertOnceClosureToRepeating(
   return base::BindRepeating([](base::OnceClosure cb) { std::move(cb).Run(); },
                              base::Passed(&cb));
 }
-}
+}  // namespace
 
 TaskQueueManager::TaskQueueManager(
     scoped_refptr<TaskQueueManagerDelegate> delegate)
     : real_time_domain_(new RealTimeDomain()),
       delegate_(delegate),
       task_was_run_on_quiescence_monitored_queue_(false),
-      record_task_delay_histograms_(true),
       work_batch_size_(1),
       task_count_(0),
       currently_executing_task_queue_(nullptr),
@@ -498,9 +483,6 @@ TaskQueueManager::ProcessTaskResult TaskQueueManager::ProcessTaskFromWorkQueue(
     return ProcessTaskResult::DEFERRED;
   }
 
-  if (record_task_delay_histograms_)
-    MaybeRecordTaskDelayHistograms(pending_task, queue);
-
   double task_start_time_sec = 0;
   base::TimeTicks task_start_time;
   TRACE_TASK_EXECUTION("TaskQueueManager::ProcessTaskFromWorkQueue",
@@ -563,22 +545,6 @@ TaskQueueManager::ProcessTaskResult TaskQueueManager::ProcessTaskFromWorkQueue(
   }
 
   return ProcessTaskResult::EXECUTED;
-}
-
-void TaskQueueManager::MaybeRecordTaskDelayHistograms(
-    const internal::TaskQueueImpl::Task& pending_task,
-    const internal::TaskQueueImpl* queue) {
-  if ((task_count_++ % kRecordRecordTaskDelayHistogramsEveryNTasks) != 0)
-    return;
-
-  // Record delayed task lateness and immediate task queuing durations.
-  if (!pending_task.delayed_run_time.is_null()) {
-    RecordDelayedTaskLateness(delegate_->NowTicks() -
-                              pending_task.delayed_run_time);
-  } else if (!pending_task.time_posted.is_null()) {
-    RecordImmediateTaskQueueingDuration(base::TimeTicks::Now() -
-                                        pending_task.time_posted);
-  }
 }
 
 bool TaskQueueManager::RunsTasksInCurrentSequence() const {
@@ -701,12 +667,6 @@ void TaskQueueManager::OnTriedToSelectBlockedWorkQueue(
 
 bool TaskQueueManager::HasImmediateWorkForTesting() const {
   return !selector_.EnabledWorkQueuesEmpty();
-}
-
-void TaskQueueManager::SetRecordTaskDelayHistograms(
-    bool record_task_delay_histograms) {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
-  record_task_delay_histograms_ = record_task_delay_histograms;
 }
 
 void TaskQueueManager::SweepCanceledDelayedTasks() {
