@@ -28,4 +28,5 @@ amdgpu_test_SOURCES = \
 	vce_ib.h \
 	frame.h \
 	uvd_enc_tests.c \
-	vcn_tests.c
+	vcn_tests.c \
+	uve_ib.h
