@@ -1669,6 +1669,8 @@ x11_backend_create(struct weston_compositor *compositor,
 	b->fullscreen = config->fullscreen;
 	b->no_input = config->no_input;
 
+	compositor->backend = &b->base;
+
 	if (weston_compositor_set_presentation_clock_software(compositor) < 0)
 		goto err_free;
 
@@ -1727,8 +1729,6 @@ x11_backend_create(struct weston_compositor *compositor,
 			weston_log("Error: initializing dmabuf "
 				   "support failed.\n");
 	}
-
-	compositor->backend = &b->base;
 
 	ret = weston_plugin_api_register(compositor, WESTON_WINDOWED_OUTPUT_API_NAME,
 					 &api, sizeof(api));

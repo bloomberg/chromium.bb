@@ -1299,6 +1299,8 @@ rdp_backend_create(struct weston_compositor *compositor,
 	b->rdp_key = config->rdp_key ? strdup(config->rdp_key) : NULL;
 	b->no_clients_resize = config->no_clients_resize;
 
+	compositor->backend = &b->base;
+
 	/* activate TLS only if certificate/key are available */
 	if (config->server_cert && config->server_key) {
 		weston_log("TLS support activated\n");
@@ -1344,8 +1346,6 @@ rdp_backend_create(struct weston_compositor *compositor,
 		    || rdp_peer_init(freerdp_peer_new(fd), b))
 			goto err_output;
 	}
-
-	compositor->backend = &b->base;
 
 	ret = weston_plugin_api_register(compositor, WESTON_RDP_OUTPUT_API_NAME,
 					 &api, sizeof(api));

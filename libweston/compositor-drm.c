@@ -4025,6 +4025,8 @@ drm_backend_create(struct weston_compositor *compositor,
 	b->use_pixman = config->use_pixman;
 	b->pageflip_timeout = config->pageflip_timeout;
 
+	compositor->backend = &b->base;
+
 	if (parse_gbm_format(config->gbm_format, GBM_FORMAT_XRGB8888, &b->gbm_format) < 0)
 		goto err_compositor;
 
@@ -4140,8 +4142,6 @@ drm_backend_create(struct weston_compositor *compositor,
 			weston_log("Error: initializing dmabuf "
 				   "support failed.\n");
 	}
-
-	compositor->backend = &b->base;
 
 	ret = weston_plugin_api_register(compositor, WESTON_DRM_OUTPUT_API_NAME,
 					 &api, sizeof(api));

@@ -2487,6 +2487,8 @@ wayland_backend_create(struct weston_compositor *compositor,
 		return NULL;
 
 	b->compositor = compositor;
+	compositor->backend = &b->base;
+
 	if (weston_compositor_set_presentation_clock_software(compositor) < 0)
 		goto err_compositor;
 
@@ -2559,7 +2561,6 @@ wayland_backend_create(struct weston_compositor *compositor,
 			           "support failed.\n");
 	}
 
-	compositor->backend = &b->base;
 	return b;
 err_display:
 	wl_display_disconnect(b->parent.wl_display);

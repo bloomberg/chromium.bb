@@ -731,6 +731,7 @@ fbdev_backend_create(struct weston_compositor *compositor,
 		return NULL;
 
 	backend->compositor = compositor;
+	compositor->backend = &backend->base;
 	if (weston_compositor_set_presentation_clock_software(
 							compositor) < 0)
 		goto out_compositor;
@@ -769,7 +770,6 @@ fbdev_backend_create(struct weston_compositor *compositor,
 	udev_input_init(&backend->input, compositor, backend->udev,
 			seat_id, param->configure_device);
 
-	compositor->backend = &backend->base;
 	return backend;
 
 out_launcher:

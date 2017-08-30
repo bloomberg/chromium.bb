@@ -277,6 +277,8 @@ headless_backend_create(struct weston_compositor *compositor,
 		return NULL;
 
 	b->compositor = compositor;
+	compositor->backend = &b->base;
+
 	if (weston_compositor_set_presentation_clock_software(compositor) < 0)
 		goto err_free;
 
@@ -290,8 +292,6 @@ headless_backend_create(struct weston_compositor *compositor,
 
 	if (!b->use_pixman && noop_renderer_init(compositor) < 0)
 		goto err_input;
-
-	compositor->backend = &b->base;
 
 	ret = weston_plugin_api_register(compositor, WESTON_WINDOWED_OUTPUT_API_NAME,
 					 &api, sizeof(api));
