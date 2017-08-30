@@ -390,6 +390,7 @@ CookieMonster::CookieMonster(PersistentCookieStore* store,
       channel_id_service_(channel_id_service),
       last_statistic_record_time_(base::Time::Now()),
       persist_session_cookies_(false),
+      global_hook_map_(base::MakeUnique<CookieChangedCallbackList>()),
       weak_ptr_factory_(this) {
   InitializeHistograms();
   cookieable_schemes_.insert(
@@ -636,6 +637,14 @@ CookieMonster::AddCallbackForCookie(const GURL& gurl,
   if (hook_map_.count(key) == 0)
     hook_map_[key] = std::make_unique<CookieChangedCallbackList>();
   return hook_map_[key]->Add(
+      base::Bind(&RunAsync, base::ThreadTaskRunnerHandle::Get(), callback));
+}
+
+std::unique_ptr<CookieStore::CookieChangedSubscription>
+CookieMonster::AddCallbackForAllChanges(const CookieChangedCallback& callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  return global_hook_map_->Add(
       base::Bind(&RunAsync, base::ThreadTaskRunnerHandle::Get(), callback));
 }
 
@@ -1370,7 +1379,7 @@ CookieMonster::CookieMap::iterator CookieMonster::InternalInsertCookie(
   type_sample |= cc_ptr->IsSecure() ? 1 << COOKIE_TYPE_SECURE : 0;
   histogram_cookie_type_->Add(type_sample);
 
-  RunCookieChangedCallbacks(*cc_ptr, CookieStore::ChangeCause::INSERTED);
+  RunCookieChangedCallbacks(*cc_ptr, true, CookieStore::ChangeCause::INSERTED);
 
   return inserted;
 }
@@ -1556,7 +1565,7 @@ void CookieMonster::InternalDeleteCookie(CookieMap::iterator it,
   ChangeCausePair mapping = kChangeCauseMapping[deletion_cause];
   if (delegate_.get() && mapping.notify)
     delegate_->OnCookieChanged(*cc, true, mapping.cause);
-  RunCookieChangedCallbacks(*cc, mapping.cause);
+  RunCookieChangedCallbacks(*cc, mapping.notify, mapping.cause);
   cookies_.erase(it);
 }
 
@@ -2031,6 +2040,7 @@ void CookieMonster::DoCookieCallbackForURL(base::OnceClosure callback,
 }
 
 void CookieMonster::RunCookieChangedCallbacks(const CanonicalCookie& cookie,
+                                              bool notify_global_hooks,
                                               ChangeCause cause) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -2050,6 +2060,9 @@ void CookieMonster::RunCookieChangedCallbacks(const CanonicalCookie& cookie,
       it->second->Notify(cookie, cause);
     }
   }
+
+  if (notify_global_hooks)
+    global_hook_map_->Notify(cookie, cause);
 }
 
 }  // namespace net

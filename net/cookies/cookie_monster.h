@@ -226,6 +226,9 @@ class NET_EXPORT CookieMonster : public CookieStore {
       const std::string& name,
       const CookieChangedCallback& callback) override;
 
+  std::unique_ptr<CookieChangedSubscription> AddCallbackForAllChanges(
+      const CookieChangedCallback& callback) override;
+
   bool IsEphemeral() override;
 
   void SetCookieWithCreationTimeForTesting(const GURL& url,
@@ -654,8 +657,10 @@ class NET_EXPORT CookieMonster : public CookieStore {
   void DoCookieCallbackForURL(base::OnceClosure callback, const GURL& url);
 
   // Run all cookie changed callbacks that are monitoring |cookie|.
-  // |removed| is true if the cookie was deleted.
+  // |notify_global_hooks| is true if the function should run the
+  // global hooks in addition to the per-cookie hooks.
   void RunCookieChangedCallbacks(const CanonicalCookie& cookie,
+                                 bool notify_global_hooks,
                                  CookieStore::ChangeCause cause);
 
   // Histogram variables; see CookieMonster::InitializeHistograms() in
@@ -736,6 +741,7 @@ class NET_EXPORT CookieMonster : public CookieStore {
       std::map<std::pair<GURL, std::string>,
                std::unique_ptr<CookieChangedCallbackList>>;
   CookieChangedHookMap hook_map_;
+  std::unique_ptr<CookieChangedCallbackList> global_hook_map_;
 
   base::ThreadChecker thread_checker_;
 

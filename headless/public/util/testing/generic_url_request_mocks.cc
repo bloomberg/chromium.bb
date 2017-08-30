@@ -137,6 +137,13 @@ MockCookieStore::AddCallbackForCookie(const GURL& url,
   return nullptr;
 }
 
+std::unique_ptr<net::CookieStore::CookieChangedSubscription>
+MockCookieStore::AddCallbackForAllChanges(
+    const CookieChangedCallback& callback) {
+  CHECK(false);
+  return nullptr;
+}
+
 bool MockCookieStore::IsEphemeral() {
   CHECK(false);
   return true;
