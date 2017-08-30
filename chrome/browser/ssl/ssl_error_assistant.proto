@@ -18,16 +18,21 @@ message CaptivePortalCert {
   optional string sha256_hash = 1;
 }
 
+// The MITMSoftware list is used to match potential MITM software certificates.
+// The certificate issuer common name and organization names are matched against
+// the |issuer_common_name_pattern| and |issuer_organization_pattern| fields.
 message MITMSoftware {
-  // Regex that SSLErrorHandler matches against the |issuer.common_name|
-  // of a certificate to determine whether or not it's a MITM software
-  // certificate.
-  optional string regex = 1;
-  // Name of the MITM software to display on the interstitial.
-  optional string name = 2;
-  // Link to a help center URL with information about how to uninstall or
-  // reconfigure the offending MITM software.
-  optional string help_url = 3;
+  // Human readable name of the MITM software to display on the interstitial.
+  optional string name = 1;
+
+  // Regex pattern that matches the  issuer common name on this MITM software's
+  // certificates. Chrome doesn't use common name field for certificate
+  // validation anymore, but it's still useful for identifying MITM software.
+  optional string issuer_common_name_regex = 2;
+
+  // Regex pattern that matches the issuer organization on this MITM software's
+  // certificates.
+  optional string issuer_organization_regex = 3;
 }
 
 message SSLErrorAssistantConfig {
