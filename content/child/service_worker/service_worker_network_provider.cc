@@ -268,9 +268,9 @@ ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(
 
   ServiceWorkerProviderHostInfo host_info(
       browser_provider_id, route_id, provider_type, is_parent_frame_secure);
-  mojom::ServiceWorkerProviderAssociatedRequest client_request =
+  mojom::ServiceWorkerContainerAssociatedRequest client_request =
       mojo::MakeRequest(&host_info.client_ptr_info);
-  mojom::ServiceWorkerProviderHostAssociatedPtrInfo host_ptr_info;
+  mojom::ServiceWorkerContainerHostAssociatedPtrInfo host_ptr_info;
   host_info.host_request = mojo::MakeRequest(&host_ptr_info);
   DCHECK(host_info.host_request.is_pending());
   DCHECK(host_info.host_request.handle().is_valid());

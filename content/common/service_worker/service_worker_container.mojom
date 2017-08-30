@@ -1,0 +1,37 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module content.mojom;
+
+// mojom::ServiceWorkerContainerHost is a browser-side interface. The renderer
+// process uses this interface to request the browser process to do operations
+// involving service worker registrations.
+interface ServiceWorkerContainerHost {
+  // TODO(leon.han): implement them.
+  // Register();
+  // GetRegistation();
+  // GetRegistrations();
+  // GetRegistrationForReady();
+  // GetControllerServiceWorker();
+};
+
+// mojom::ServiceWorkerContainer is a renderer-side interface.
+// The browser process uses this interface to send messages to documents or
+// the service worker's context.
+//
+// Roughly corresponds to the web-exposed ServiceWorkerContainer interface,
+// i.e., navigator.serviceWorker. Actually, the plan is for this interface to be
+// used for anything that could access a ServiceWorkerRegistration or
+// ServiceWorker object. For example, ServiceWorkerGlobalScope needs to be
+// connected to this, since it has self.registration, even though we don’t
+// implement navigator.serviceWorker for Worker yet. But eventually anything
+// that can touch these objects should be a ServiceWorkerContainer, so it’s OK
+// to use this name.
+interface ServiceWorkerContainer {
+  // TODO(xiaofeng.zhang): implement them.
+  // SetController();
+  // ServiceWorkerStateChanged();
+  // ServiceWorkerRegistrationUpdateFound();
+  // PostMessage();
+};

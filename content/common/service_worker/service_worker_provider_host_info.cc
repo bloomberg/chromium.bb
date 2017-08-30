@@ -38,8 +38,8 @@ ServiceWorkerProviderHostInfo::ServiceWorkerProviderHostInfo(
 
 ServiceWorkerProviderHostInfo::ServiceWorkerProviderHostInfo(
     ServiceWorkerProviderHostInfo&& other,
-    mojom::ServiceWorkerProviderHostAssociatedRequest host_request,
-    mojom::ServiceWorkerProviderAssociatedPtrInfo client_ptr_info)
+    mojom::ServiceWorkerContainerHostAssociatedRequest host_request,
+    mojom::ServiceWorkerContainerAssociatedPtrInfo client_ptr_info)
     : provider_id(other.provider_id),
       route_id(other.route_id),
       type(other.type),

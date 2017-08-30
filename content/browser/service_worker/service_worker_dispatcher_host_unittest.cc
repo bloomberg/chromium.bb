@@ -53,14 +53,14 @@ void SetUpDummyMessagePort(std::vector<MessagePort>* ports) {
 }
 
 struct RemoteProviderInfo {
-  mojom::ServiceWorkerProviderHostAssociatedPtr host_ptr;
-  mojom::ServiceWorkerProviderAssociatedRequest client_request;
+  mojom::ServiceWorkerContainerHostAssociatedPtr host_ptr;
+  mojom::ServiceWorkerContainerAssociatedRequest client_request;
 };
 
 RemoteProviderInfo SetupProviderHostInfoPtrs(
     ServiceWorkerProviderHostInfo* host_info) {
   RemoteProviderInfo remote_info;
-  mojom::ServiceWorkerProviderAssociatedPtr browser_side_client_ptr;
+  mojom::ServiceWorkerContainerAssociatedPtr browser_side_client_ptr;
   remote_info.client_request =
       mojo::MakeIsolatedRequest(&browser_side_client_ptr);
   host_info->host_request = mojo::MakeIsolatedRequest(&remote_info.host_ptr);
