@@ -1,4 +1,0 @@
-CONSOLE WARNING: line 17: Synchronous XMLHttpRequest on the main thread is deprecated because of its detrimental effects to the end user's experience. For more help, check https://xhr.spec.whatwg.org/.
-CONSOLE ERROR: line 42: Failed to load http://localhost:8000/xmlhttprequest/resources/access-control-basic-non-get-allow.cgi: Request header field Content-Type is not allowed by Access-Control-Allow-Headers in preflight response.
-PASS: Exception thrown. Cross-domain access is not allowed in 'send'. [Failed to execute 'send' on 'XMLHttpRequest': Failed to load 'http://localhost:8000/xmlhttprequest/resources/access-control-basic-non-get-allow.cgi'.].
-
