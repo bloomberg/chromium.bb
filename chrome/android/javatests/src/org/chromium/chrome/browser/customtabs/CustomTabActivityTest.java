@@ -61,6 +61,7 @@ import org.chromium.base.PathUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
@@ -112,6 +113,8 @@ import org.chromium.ui.test.util.UiRestriction;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -128,6 +131,7 @@ public class CustomTabActivityTest {
     @Rule
     public CustomTabActivityTestRule mCustomTabActivityTestRule = new CustomTabActivityTestRule();
 
+    private static final int TIMEOUT_PAGE_LOAD_SECONDS = 10;
     private static final int MAX_MENU_CUSTOM_ITEMS = 5;
     private static final int NUM_CHROME_MENU_ITEMS = 5;
     private static final String TEST_PAGE = "/chrome/test/data/android/google.html";
@@ -1124,13 +1128,19 @@ public class CustomTabActivityTest {
      */
     @Test
     @SmallTest
-    @RetryOnFailure
     public void testCallbacksAreSent() {
-        final ArrayList<Integer> navigationEvents = new ArrayList<>();
+        final Semaphore navigationStartSemaphore = new Semaphore(0);
+        final Semaphore navigationFinishedSemaphore = new Semaphore(0);
         CustomTabsSession session = bindWithCallback(new CustomTabsCallback() {
             @Override
             public void onNavigationEvent(int navigationEvent, Bundle extras) {
-                navigationEvents.add(navigationEvent);
+                Assert.assertNotEquals(CustomTabsCallback.NAVIGATION_FAILED, navigationEvent);
+                Assert.assertNotEquals(CustomTabsCallback.NAVIGATION_ABORTED, navigationEvent);
+                if (navigationEvent == CustomTabsCallback.NAVIGATION_STARTED) {
+                    navigationStartSemaphore.release();
+                } else if (navigationEvent == CustomTabsCallback.NAVIGATION_FINISHED) {
+                    navigationFinishedSemaphore.release();
+                }
             }
         });
         Intent intent = new CustomTabsIntent.Builder(session).build().intent;
@@ -1142,23 +1152,13 @@ public class CustomTabActivityTest {
 
         try {
             mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
-            CriteriaHelper.pollInstrumentationThread(new Criteria() {
-                @Override
-                public boolean isSatisfied() {
-                    return navigationEvents.contains(CustomTabsCallback.NAVIGATION_STARTED);
-                }
-            });
-            CriteriaHelper.pollInstrumentationThread(new Criteria() {
-                @Override
-                public boolean isSatisfied() {
-                    return navigationEvents.contains(CustomTabsCallback.NAVIGATION_FINISHED);
-                }
-            });
+            Assert.assertTrue(navigationStartSemaphore.tryAcquire(
+                    TIMEOUT_PAGE_LOAD_SECONDS, TimeUnit.SECONDS));
+            Assert.assertTrue(navigationFinishedSemaphore.tryAcquire(
+                    TIMEOUT_PAGE_LOAD_SECONDS, TimeUnit.SECONDS));
         } catch (InterruptedException e) {
             Assert.fail();
         }
-        Assert.assertFalse(navigationEvents.contains(CustomTabsCallback.NAVIGATION_FAILED));
-        Assert.assertFalse(navigationEvents.contains(CustomTabsCallback.NAVIGATION_ABORTED));
     }
 
     /**
@@ -1223,6 +1223,45 @@ public class CustomTabActivityTest {
         } catch (InterruptedException e) {
             Assert.fail();
         }
+    }
+
+    /**
+     * Tests that one navigation in a custom tab records the histograms reflecting time from
+     * intent to first navigation commit.
+     */
+    @Test
+    @SmallTest
+    public void testNavigationCommitUmaRecorded() {
+        String zoomedOutHistogramName = "CustomTabs.IntentToFirstCommitNavigationTime3.ZoomedOut";
+        String zoomedInHistogramName = "CustomTabs.IntentToFirstCommitNavigationTime3.ZoomedIn";
+        Assert.assertEquals(
+                0, RecordHistogram.getHistogramTotalCountForTesting(zoomedOutHistogramName));
+        Assert.assertEquals(
+                0, RecordHistogram.getHistogramTotalCountForTesting(zoomedInHistogramName));
+        final Semaphore semaphore = new Semaphore(0);
+        CustomTabsSession session = bindWithCallback(new CustomTabsCallback() {
+            @Override
+            public void onNavigationEvent(int navigationEvent, Bundle extras) {
+                if (navigationEvent == CustomTabsCallback.NAVIGATION_FINISHED) semaphore.release();
+            }
+        });
+        Intent intent = new CustomTabsIntent.Builder(session).build().intent;
+        intent.setData(Uri.parse(mTestPage));
+        intent.setComponent(
+                new ComponentName(InstrumentationRegistry.getInstrumentation().getTargetContext(),
+                        ChromeLauncherActivity.class));
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+        try {
+            mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
+            Assert.assertTrue(semaphore.tryAcquire(TIMEOUT_PAGE_LOAD_SECONDS, TimeUnit.SECONDS));
+        } catch (InterruptedException e) {
+            Assert.fail();
+        }
+        Assert.assertEquals(
+                1, RecordHistogram.getHistogramTotalCountForTesting(zoomedOutHistogramName));
+        Assert.assertEquals(
+                1, RecordHistogram.getHistogramTotalCountForTesting(zoomedInHistogramName));
     }
 
     /**
