@@ -1171,7 +1171,7 @@ void ThreadState::EnterSafePoint(BlinkGC::StackState stack_state,
     scope_marker = AdjustScopeMarkerForAdressSanitizer(scope_marker);
 #endif
   DCHECK(stack_state == BlinkGC::kNoHeapPointersOnStack || scope_marker);
-  RunScheduledGC(stack_state);
+  DCHECK(IsGCForbidden());
   stack_state_ = stack_state;
   safe_point_scope_marker_ = scope_marker;
   PushAllRegisters(nullptr, this, EnterSafePointAfterPushRegisters);
