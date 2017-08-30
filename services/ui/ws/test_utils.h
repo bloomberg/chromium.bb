@@ -23,6 +23,7 @@
 #include "services/ui/ws/display_binding.h"
 #include "services/ui/ws/drag_controller.h"
 #include "services/ui/ws/event_dispatcher.h"
+#include "services/ui/ws/event_targeter.h"
 #include "services/ui/ws/gpu_host.h"
 #include "services/ui/ws/platform_display.h"
 #include "services/ui/ws/platform_display_factory.h"
@@ -181,11 +182,30 @@ class EventDispatcherTestApi {
     return &ed_->modal_window_controller_;
   }
   ServerWindow* capture_window() { return ed_->capture_window_; }
+  EventTargeter* event_targeter() { return ed_->event_targeter_.get(); }
 
  private:
   EventDispatcher* ed_;
 
   DISALLOW_COPY_AND_ASSIGN(EventDispatcherTestApi);
+};
+
+// -----------------------------------------------------------------------------
+
+class EventTargeterTestApi {
+ public:
+  explicit EventTargeterTestApi(EventTargeter* event_targeter)
+      : event_targeter_(event_targeter) {}
+  ~EventTargeterTestApi() {}
+
+  bool HasPendingQueries() const {
+    return event_targeter_->weak_ptr_factory_.HasWeakPtrs();
+  }
+
+ private:
+  EventTargeter* event_targeter_;
+
+  DISALLOW_COPY_AND_ASSIGN(EventTargeterTestApi);
 };
 
 // -----------------------------------------------------------------------------

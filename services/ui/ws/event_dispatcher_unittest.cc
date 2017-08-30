@@ -306,6 +306,8 @@ class EventDispatcherTest : public testing::TestWithParam<bool>,
   const ServerWindow* GetActiveSystemModalWindow() const;
 
  protected:
+  bool is_event_processing_async() const { return GetParam(); }
+
   // testing::TestWithParam<bool>:
   void SetUp() override;
 
@@ -340,8 +342,10 @@ void EventDispatcherTest::SetMousePointerDisplayLocation(
     EventDispatcher* dispatcher,
     const gfx::Point& display_location,
     int64_t display_id) {
-  dispatcher->SetMousePointerDisplayLocation(display_location, display_id);
-  RunTasks();
+  std::unique_ptr<ui::Event> event =
+      dispatcher->GenerateMouseMoveFor(display_location);
+  DispatchEvent(dispatcher, *event, display_id,
+                EventDispatcher::AcceleratorMatchPhase::ANY);
 }
 
 void EventDispatcherTest::RunMouseEventTests(
@@ -422,8 +426,7 @@ const ServerWindow* EventDispatcherTest::GetActiveSystemModalWindow() const {
 }
 
 void EventDispatcherTest::RunTasks() {
-  bool enable_async_event_targeting = GetParam();
-  if (!enable_async_event_targeting)
+  if (!is_event_processing_async())
     return;
 
   base::RunLoop runloop;
@@ -431,8 +434,7 @@ void EventDispatcherTest::RunTasks() {
 }
 
 void EventDispatcherTest::SetUp() {
-  bool enable_async_event_targeting = GetParam();
-  if (enable_async_event_targeting) {
+  if (is_event_processing_async()) {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kUseAsyncEventTargeting);
   }
@@ -474,8 +476,7 @@ class EventDispatcherVizTargeterTest
                      EventDispatcher::AcceleratorMatchPhase match_phase) {
     dispatcher->ProcessEvent(event, display_id, match_phase);
 
-    bool enable_async_event_targeting = GetParam();
-    if (!enable_async_event_targeting)
+    if (!is_event_processing_async())
       return;
 
     base::RunLoop runloop;
@@ -491,6 +492,8 @@ class EventDispatcherVizTargeterTest
   }
 
  protected:
+  bool is_event_processing_async() const { return GetParam(); }
+
   // testing::TestWithParam<bool>:
   void SetUp() override;
 
@@ -514,8 +517,7 @@ class EventDispatcherVizTargeterTest
 void EventDispatcherVizTargeterTest::SetUp() {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kUseVizHitTest);
-  bool enable_async_event_targeting = GetParam();
-  if (enable_async_event_targeting) {
+  if (is_event_processing_async()) {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kUseAsyncEventTargeting);
   }
@@ -2425,6 +2427,31 @@ TEST_P(EventDispatcherTest, MouseCursorSourceWindowChangesWithSystemModal) {
   RunTasks();
   // EventDispatcher fallsback to the root incase of invalid window.
   EXPECT_EQ(root_window(), event_dispatcher()->mouse_cursor_source_window());
+}
+
+TEST_P(EventDispatcherTest, DontQueryWhileMouseIsDown) {
+  // This test is easier to write with async event processing.
+  if (!is_event_processing_async())
+    return;
+
+  std::unique_ptr<ServerWindow> child = CreateChildWindow(WindowId(1, 3));
+
+  root_window()->SetBounds(gfx::Rect(0, 0, 100, 100));
+  child->SetBounds(gfx::Rect(10, 10, 20, 20));
+
+  const ui::PointerEvent press_event(ui::MouseEvent(
+      ui::ET_MOUSE_PRESSED, gfx::Point(20, 25), gfx::Point(20, 25),
+      base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+  DispatchEvent(event_dispatcher(), press_event, 0,
+                EventDispatcher::AcceleratorMatchPhase::ANY);
+  ASSERT_FALSE(event_dispatcher()->IsProcessingEvent());
+
+  const ui::PointerEvent move_event(ui::MouseEvent(
+      ui::ET_MOUSE_MOVED, gfx::Point(20, 25), gfx::Point(20, 25),
+      base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+  event_dispatcher()->ProcessEvent(move_event, 0,
+                                   EventDispatcher::AcceleratorMatchPhase::ANY);
+  EXPECT_FALSE(event_dispatcher()->IsProcessingEvent());
 }
 
 TEST_P(EventDispatcherVizTargeterTest, ProcessEvent) {

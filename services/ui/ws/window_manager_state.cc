@@ -199,10 +199,11 @@ void WindowManagerState::SetCursorLocation(const gfx::Point& display_pixels,
     return;
   }
 
-  event_dispatcher()->SetMousePointerDisplayLocation(display_pixels,
-                                                     display_id);
-  UpdateNativeCursorFromDispatcher();
   display->platform_display()->MoveCursorTo(display_pixels);
+
+  std::unique_ptr<ui::Event> event =
+      event_dispatcher_.GenerateMouseMoveFor(display_pixels);
+  ProcessEvent(*event, display_id);
 }
 
 void WindowManagerState::SetKeyEventsThatDontHideCursor(
@@ -309,8 +310,9 @@ void WindowManagerState::Activate(const gfx::Point& mouse_location_on_display,
                                   int64_t display_id) {
   SetAllRootWindowsVisible(true);
   event_dispatcher_.Reset();
-  event_dispatcher_.SetMousePointerDisplayLocation(mouse_location_on_display,
-                                                   display_id);
+  std::unique_ptr<ui::Event> event =
+      event_dispatcher_.GenerateMouseMoveFor(mouse_location_on_display);
+  ProcessEvent(*event, display_id);
 }
 
 void WindowManagerState::Deactivate() {

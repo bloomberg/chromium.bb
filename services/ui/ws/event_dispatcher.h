@@ -73,8 +73,11 @@ class EventDispatcher : public ServerWindowObserver,
   // any events to the delegate.
   void Reset();
 
-  void SetMousePointerDisplayLocation(const gfx::Point& display_location,
-                                      int64_t display_id);
+  // Generates a mouse move event corresponding to the mouse moving to a
+  // particular location.
+  std::unique_ptr<ui::Event> GenerateMouseMoveFor(
+      const gfx::Point& display_location) const;
+
   const gfx::Point& mouse_pointer_last_location() const {
     return mouse_pointer_last_location_;
   }
@@ -198,6 +201,14 @@ class EventDispatcher : public ServerWindowObserver,
     bool is_pointer_down;
   };
 
+  struct DeepestWindowAndTarget {
+    PointerTarget pointer_target;
+    DeepestWindow deepest_window;
+  };
+
+  DisplayLocation GetDisplayLocationFromEvent(const ui::PointerEvent& event,
+                                              int64_t display_id) const;
+
   // EventTargeter returns the deepest window based on hit-test data. If the
   // target is blocked by a modal window this returns a different target,
   // otherwise the supplied target is returned.
@@ -227,6 +238,15 @@ class EventDispatcher : public ServerWindowObserver,
     return pointer_targets_.count(pointer_id) > 0;
   }
 
+  // Returns true if EventTargeter needs to queried for the specified event.
+  bool ShouldUseEventTargeter(const PointerEvent& event) const;
+
+  // Callback from EventTargeter once the target has been found. Calls
+  // ProcessPointerEventOnFoundTargetImpl().
+  void ProcessPointerEventOnFoundTarget(const ui::PointerEvent& event,
+                                        const DisplayLocation& display_location,
+                                        const DeepestWindow& target);
+
   // EventDispatcher provides the following logic for pointer events:
   // . wheel events go to the current target of the associated pointer. If
   //   there is no target, they go to the deepest window.
@@ -236,9 +256,15 @@ class EventDispatcher : public ServerWindowObserver,
   //   when no buttons on the mouse are down.
   // This also generates exit events as appropriate. For example, if the mouse
   // moves between one window to another an exit is generated on the first.
-  void ProcessPointerEventOnFoundTarget(const ui::PointerEvent& event,
-                                        const DisplayLocation& display_location,
-                                        const DeepestWindow& found_target);
+  //
+  // NOTE: |found_target| is null if ShouldUseEventTargeter() returned false.
+  // If ShouldUseEventTargeter() returned false it means this function should
+  // not need |found_target| and has enough information to process the event
+  // without a DeepestWindow.
+  void ProcessPointerEventOnFoundTargetImpl(
+      const ui::PointerEvent& event,
+      const DisplayLocation& display_location,
+      const DeepestWindow* found_target);
 
   // Called when processing a pointer event to updated cursor related
   // properties.
@@ -368,6 +394,9 @@ class EventDispatcher : public ServerWindowObserver,
 
   // Keeps track of number of observe requests for each observed window.
   std::map<const ServerWindow*, uint8_t> observed_windows_;
+
+  // Set to true when querying EventTargeter for the target.
+  bool waiting_on_event_targeter_ = false;
 
 #if !defined(NDEBUG)
   std::unique_ptr<ui::Event> previous_event_;
