@@ -3217,6 +3217,23 @@ TEST_F(TextfieldTest, CursorViewHeight) {
             GetCursorBounds().height());
 }
 
+// Verify that cursor view height is independent of its parent view height.
+TEST_F(TextfieldTest, CursorViewHeightAtDiffDSF) {
+  InitTextfield();
+  textfield_->SetBounds(0, 0, 100, 100);
+  textfield_->SetCursorEnabled(true);
+  SendKeyEvent('a');
+  EXPECT_TRUE(test_api_->IsCursorVisible());
+  int height = test_api_->GetCursorViewRect().height();
+
+  // update the size of its parent view size and verify that the height of the
+  // cursor view stays the same.
+  View* parent = textfield_->parent();
+  parent->SetBounds(0, 0, 50, height - 2);
+  SendKeyEvent('b');
+  EXPECT_EQ(height, test_api_->GetCursorViewRect().height());
+}
+
 // Check if the text cursor is always at the end of the textfield after the
 // text overflows from the textfield. If the textfield size changes, check if
 // the text cursor's location is updated accordingly.
