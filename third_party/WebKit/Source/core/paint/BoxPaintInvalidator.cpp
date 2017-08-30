@@ -202,7 +202,11 @@ BoxPaintInvalidator::ComputeBackgroundInvalidation() {
   if (box_.BackgroundChangedSinceLastPaintInvalidation())
     return BackgroundInvalidationType::kFull;
 
-  if (!BackgroundGeometryDependsOnLayoutOverflowRect())
+  bool layout_overflow_change_causes_invalidation =
+      (BackgroundGeometryDependsOnLayoutOverflowRect() ||
+       BackgroundPaintsOntoScrollingContentsLayer());
+
+  if (!layout_overflow_change_causes_invalidation)
     return BackgroundInvalidationType::kNone;
 
   const LayoutRect& old_layout_overflow = box_.PreviousLayoutOverflowRect();
