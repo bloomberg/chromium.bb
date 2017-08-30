@@ -1150,9 +1150,26 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
   def get_vars(self):
     """Returns a dictionary of effective variable values
     (DEPS file contents with applied custom_vars overrides)."""
-    result = dict(self._vars)
+    # Provide some built-in variables.
+    result = {
+        'host_os': repr(_detect_host_os()),
+    }
+    # Variables defined in DEPS file override built-in ones.
+    result.update(self._vars)
     result.update(self.custom_vars or {})
     return result
+
+
+_PLATFORM_MAPPING = {
+  'cygwin': 'win',
+  'darwin': 'mac',
+  'linux2': 'linux',
+  'win32': 'win',
+}
+
+
+def _detect_host_os():
+  return _PLATFORM_MAPPING[sys.platform]
 
 
 class GClient(Dependency):
@@ -1841,7 +1858,8 @@ class Flattener(object):
 
     self._allowed_hosts.update(dep.allowed_hosts)
 
-    for key, value in dep.get_vars().iteritems():
+    # Only include vars listed in the DEPS files, not possible local overrides.
+    for key, value in dep._vars.iteritems():
       # Make sure there are no conflicting variables. It is fine however
       # to use same variable name, as long as the value is consistent.
       assert key not in self._vars or self._vars[key][1] == value
