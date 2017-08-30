@@ -277,12 +277,15 @@ int MPEGAudioStreamParserBase::ParseIcecastHeader(const uint8_t* data,
 int MPEGAudioStreamParserBase::ParseID3v1(const uint8_t* data, int size) {
   DVLOG(1) << __func__ << "(" << size << ")";
 
-  if (size < kID3v1Size)
-    return 0;
-
   // TODO(acolwell): Add code to actually validate ID3v1 data and
   // expose it as a metadata text track.
-  return !memcmp(data, "TAG+", 4) ? kID3v1ExtendedSize : kID3v1Size;
+
+  if (size < 4)
+    return 0;
+
+  int needed_size = !memcmp(data, "TAG+", 4) ? kID3v1ExtendedSize : kID3v1Size;
+
+  return (size < needed_size) ? 0 : needed_size;
 }
 
 int MPEGAudioStreamParserBase::ParseID3v2(const uint8_t* data, int size) {
