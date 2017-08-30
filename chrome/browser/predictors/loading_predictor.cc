@@ -314,12 +314,14 @@ void LoadingPredictor::MaybeRemovePreconnect(const GURL& url) {
                      base::Unretained(preconnect_manager_.get()), url));
 }
 
-void LoadingPredictor::PreconnectFinished(const GURL& url) {
+void LoadingPredictor::PreconnectFinished(
+    std::unique_ptr<PreconnectStats> stats) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (shutdown_)
     return;
 
-  NOTIMPLEMENTED();
+  DCHECK(stats);
+  stats_collector_->RecordPreconnectStats(std::move(stats));
 }
 
 TestLoadingObserver::~TestLoadingObserver() {
