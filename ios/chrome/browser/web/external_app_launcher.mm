@@ -14,7 +14,9 @@
 #import "ios/chrome/browser/open_url_util.h"
 #include "ios/chrome/browser/web/features.h"
 #import "ios/chrome/browser/web/legacy_mailto_url_rewriter.h"
+#import "ios/chrome/browser/web/mailto_handler.h"
 #import "ios/chrome/browser/web/mailto_url_rewriter.h"
+#import "ios/chrome/browser/web/nullable_mailto_url_rewriter.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "net/base/mac/url_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -71,11 +73,24 @@ NSString* PromptActionString(NSString* scheme) {
   return @"";
 }
 
+// Launches the mail client app chosen by |rewriter| and records metrics.
+void LaunchMailClientApp(const GURL& URL, MailtoURLRewriter* rewriter) {
+  NSString* launchURL = [rewriter rewriteMailtoURL:URL];
+  UMA_HISTOGRAM_BOOLEAN("IOS.MailtoURLRewritten", launchURL != nil);
+  NSURL* URLToOpen = [launchURL length] ? [NSURL URLWithString:launchURL]
+                                        : net::NSURLWithGURL(URL);
+  [[UIApplication sharedApplication] openURL:URLToOpen];
+}
+
 }  // namespace
 
 @interface ExternalAppLauncher ()
 // Returns the Phone/FaceTime call argument from |URL|.
 + (NSString*)formatCallArgument:(NSURL*)URL;
+// Shows a prompt for the user to choose which mail client app to use to
+// handle a mailto:// URL.
+- (void)promptForMailClientWithURL:(const GURL)URL
+                       URLRewriter:(MailtoURLRewriter*)rewriter;
 // Presents an alert controller with |prompt| and |openLabel| as button label
 // on the root view controller before launching an external app identified by
 // |URL|.
@@ -100,6 +115,35 @@ NSString* PromptActionString(NSString* scheme) {
   if (![prompt length])
     return URLString;
   return prompt;
+}
+
+- (void)promptForMailClientWithURL:(const GURL)URL
+                       URLRewriter:(MailtoURLRewriter*)rewriter {
+  // No user chosen default. Prompt user now.
+  NSString* prompt = l10n_util::GetNSString(IDS_IOS_CHOOSE_EMAIL_CLIENT_APP);
+  UIAlertController* alertController = [UIAlertController
+      alertControllerWithTitle:nil
+                       message:prompt
+                preferredStyle:UIAlertControllerStyleActionSheet];
+  // There must be more than one available handlers to present a prompt to user.
+  DCHECK([[rewriter defaultHandlers] count] > 1U);
+  for (MailtoHandler* handler in [rewriter defaultHandlers]) {
+    if (![handler isAvailable])
+      continue;
+    UIAlertAction* action = [UIAlertAction
+        actionWithTitle:[handler appName]
+                  style:UIAlertActionStyleDefault
+                handler:^(UIAlertAction* _Nonnull action) {
+                  DCHECK(handler);
+                  [rewriter setDefaultHandlerID:[handler appStoreID]];
+                  LaunchMailClientApp(URL, rewriter);
+                }];
+    [alertController addAction:action];
+  }
+  [[[[UIApplication sharedApplication] keyWindow] rootViewController]
+      presentViewController:alertController
+                   animated:YES
+                 completion:nil];
 }
 
 - (void)openExternalAppWithURL:(NSURL*)URL
@@ -176,11 +220,15 @@ NSString* PromptActionString(NSString* scheme) {
   if (base::FeatureList::IsEnabled(kMailtoUrlRewriting) &&
       gURL.SchemeIs(url::kMailToScheme)) {
     MailtoURLRewriter* rewriter =
-        [LegacyMailtoURLRewriter mailtoURLRewriterWithStandardHandlers];
-    NSString* launchURL = [rewriter rewriteMailtoURL:gURL];
-    if (launchURL)
-      URL = [NSURL URLWithString:launchURL];
-    UMA_HISTOGRAM_BOOLEAN("IOS.MailtoURLRewritten", launchURL != nil);
+        base::FeatureList::IsEnabled(kMailtoPromptForUserChoice)
+            ? [NullableMailtoURLRewriter mailtoURLRewriterWithStandardHandlers]
+            : [LegacyMailtoURLRewriter mailtoURLRewriterWithStandardHandlers];
+    if (![rewriter defaultHandlerID]) {
+      [self promptForMailClientWithURL:gURL URLRewriter:rewriter];
+      return YES;
+    }
+    LaunchMailClientApp(gURL, rewriter);
+    return YES;
   }
 
   // If the following call returns YES, an external application is about to be

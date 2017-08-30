@@ -11,4 +11,9 @@
 // of user's choice.
 extern const base::Feature kMailtoUrlRewriting;
 
+// Feature flag to prompt user to choose a mail client app. User is prompted
+// at the first time that the user taps on a mailto: URL. This feature can be
+// enabled only when kMailtoUrlRewriting is also enabled.
+extern const base::Feature kMailtoPromptForUserChoice;
+
 #endif  // IOS_CHROME_BROWSER_WEB_FEATURES_H_
