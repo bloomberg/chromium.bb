@@ -109,6 +109,7 @@ static_library("metrics") {
     "//components/prefs",
     "//components/variations",
     "//components/version_info:version_info",
+    "//extensions/features:features",
     "//third_party/zlib/google:compression_utils",
   ]
 
@@ -409,6 +410,7 @@ source_set("unit_tests") {
     "//components/metrics/public/cpp:call_stack_unit_tests",
     "//components/prefs:test_support",
     "//components/variations",
+    "//extensions/features:features",
     "//mojo/public/cpp/bindings",
     "//net:test_support",
     "//services/service_manager/public/cpp",

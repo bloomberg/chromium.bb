@@ -419,7 +419,8 @@ int CastBrowserMainParts::PreCreateThreads() {
   breakpad::CrashDumpObserver::Create();
   breakpad::CrashDumpObserver::GetInstance()->RegisterClient(
       base::MakeUnique<breakpad::ChildProcessCrashObserver>(
-          crash_dumps_dir, kAndroidMinidumpDescriptor));
+          crash_dumps_dir, kAndroidMinidumpDescriptor,
+          base::Bind(&base::DoNothing)));
 #else
   base::FilePath home_dir;
   CHECK(PathService::Get(DIR_CAST_HOME, &home_dir));

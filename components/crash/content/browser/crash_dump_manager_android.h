@@ -31,7 +31,8 @@ class CrashDumpManager {
  public:
   static CrashDumpManager* GetInstance();
 
-  void ProcessMinidumpFileFromChild(base::FilePath crash_dump_dir,
+  // Returns the condition whether we should write the crash to stability proto.
+  bool ProcessMinidumpFileFromChild(base::FilePath crash_dump_dir,
                                     base::ProcessHandle pid,
                                     content::ProcessType process_type,
                                     base::TerminationStatus termination_status,
