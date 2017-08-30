@@ -957,6 +957,10 @@ const char kCastReceiverEnabled[] = "cast_receiver.enabled";
 // String pref indicating what name should be advertised for casting to.
 // If the string is empty or blank the system name will be used.
 const char kCastReceiverName[] = "cast_receiver.name";
+
+// Integer pref indicating the ecryptfs to ext4 migration strategy. One of
+// options: forbidden = 0, migrate = 1, wipe = 2 or ask the user = 3.
+const char kEcryptfsMigrationStrategy[] = "ecryptfs_migration_strategy";
 #endif  // defined(OS_CHROMEOS)
 
 // A boolean pref set to true if a Home button to open the Home pages should be

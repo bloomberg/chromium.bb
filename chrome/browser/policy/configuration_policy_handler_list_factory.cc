@@ -586,6 +586,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kNativePrinters,
     prefs::kRecommendedNativePrinters,
     base::Value::Type::LIST },
+  { key::kEcryptfsMigrationStrategy,
+    prefs::kEcryptfsMigrationStrategy,
+    base::Value::Type::INTEGER },
 #endif  // defined(OS_CHROMEOS)
 
 // Metrics reporting is controlled by a platform specific policy for ChromeOS
