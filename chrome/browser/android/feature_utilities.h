@@ -20,6 +20,8 @@ CustomTabsVisibilityHistogram GetCustomTabsVisibleValue();
 
 bool GetIsInMultiWindowModeValue();
 
+bool GetIsChromeHomeEnabled();
+
 } // namespace android
 } // namespace chrome
 
