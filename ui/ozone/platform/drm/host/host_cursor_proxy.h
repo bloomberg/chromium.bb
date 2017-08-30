@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_OZONE_PLATFORM_DRM_CURSOR_PROXY_MOJO_H_
-#define UI_OZONE_PLATFORM_DRM_CURSOR_PROXY_MOJO_H_
+#ifndef UI_OZONE_PLATFORM_DRM_HOST_HOST_CURSOR_PROXY_H_
+#define UI_OZONE_PLATFORM_DRM_HOST_HOST_CURSOR_PROXY_H_
 
 #include "ui/gfx/native_widget_types.h"
-#include "ui/ozone/platform/drm/gpu/inter_thread_messaging_proxy.h"
 #include "ui/ozone/platform/drm/host/drm_cursor.h"
 #include "ui/ozone/public/interfaces/device_cursor.mojom.h"
 
@@ -21,10 +20,10 @@ namespace ui {
 // pointer control via Mojo-style IPC. This code runs only in the mus-ws (i.e.
 // it's the client) and sends mouse pointer control messages to a less
 // priviledged process.
-class CursorProxyMojo : public DrmCursorProxy {
+class HostCursorProxy : public DrmCursorProxy {
  public:
-  explicit CursorProxyMojo(service_manager::Connector* connector);
-  ~CursorProxyMojo() override;
+  explicit HostCursorProxy(service_manager::Connector* connector);
+  ~HostCursorProxy() override;
 
  private:
   // DrmCursorProxy.
@@ -42,9 +41,9 @@ class CursorProxyMojo : public DrmCursorProxy {
   ui::ozone::mojom::DeviceCursorPtr evdev_cursor_ptr_;
 
   base::PlatformThreadRef ui_thread_ref_;
-  DISALLOW_COPY_AND_ASSIGN(CursorProxyMojo);
+  DISALLOW_COPY_AND_ASSIGN(HostCursorProxy);
 };
 
 }  // namespace ui
 
-#endif  // UI_OZONE_PLATFORM_DRM_CURSOR_PROXY_MOJO_H_
+#endif  // UI_OZONE_PLATFORM_DRM_HOST_HOST_CURSOR_PROXY_H_

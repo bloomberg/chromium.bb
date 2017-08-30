@@ -22,6 +22,10 @@ void DrmThreadProxy::BindThreadIntoMessagingProxy(
   messaging_proxy->SetDrmThread(&drm_thread_);
 }
 
+void DrmThreadProxy::StartDrmThread() {
+  drm_thread_.Start();
+}
+
 std::unique_ptr<DrmWindowProxy> DrmThreadProxy::CreateDrmWindowProxy(
     gfx::AcceleratedWidget widget) {
   return base::MakeUnique<DrmWindowProxy>(widget, &drm_thread_);
