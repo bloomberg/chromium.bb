@@ -1475,12 +1475,35 @@ public class ChromeTabbedActivity
 
             @Override
             public int getFooterResourceId() {
-                if (getBottomSheet() != null) {
-                    boolean isPageMenu = !isTablet() && !isInOverviewMode();
-                    return isPageMenu ? R.layout.icon_row_menu_footer : 0;
+                if (getBottomSheet() != null
+                        && getAppMenuPropertiesDelegate().shouldShowPageMenu()) {
+                    return R.layout.icon_row_menu_footer;
                 }
 
                 return showDataSaverFooter() ? R.layout.data_reduction_main_menu_footer : 0;
+            }
+
+            @Override
+            public int getHeaderResourceId() {
+                if (getBottomSheet() != null
+                        && getAppMenuPropertiesDelegate().shouldShowPageMenu()) {
+                    return R.layout.chrome_home_iph_header;
+                }
+
+                return 0;
+            }
+
+            @Override
+            public OnClickListener getHeaderOnClickListener() {
+                return new OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        getBottomSheet()
+                                .getBottomSheetMetrics()
+                                .recordInProductHelpMenuItemClicked();
+                        getBottomSheet().showHelpBubble(true);
+                    }
+                };
             }
 
             @Override

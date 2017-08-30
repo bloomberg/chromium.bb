@@ -1207,6 +1207,15 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Android.ChromeHome.IPHMenuItemClicked">
+  <owner>mdjones@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <description>
+    User tapped the app menu item that triggers the Chrome Home in-product help
+    bubble.
+  </description>
+</action>
+
 <action name="Android.ChromeHome.NativeNTPShown">
   <owner>mdjones@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
