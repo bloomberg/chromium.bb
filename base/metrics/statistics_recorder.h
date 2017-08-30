@@ -137,7 +137,7 @@ class BASE_EXPORT StatisticsRecorder {
                             HistogramSnapshotManager* snapshot_manager);
 
   // TODO(asvitkine): Remove this after crbug/736675.
-  static void ValidateAllHistograms();
+  static void ValidateAllHistograms(int identifier = 0);
 
   // GetSnapshot copies some of the pointers to registered histograms into the
   // caller supplied vector (Histograms). Only histograms which have |query| as
