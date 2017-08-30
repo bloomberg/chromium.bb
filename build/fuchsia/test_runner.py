@@ -24,6 +24,10 @@ DIR_SOURCE_ROOT = os.path.abspath(
 sys.path.append(os.path.join(DIR_SOURCE_ROOT, 'build', 'util', 'lib', 'common'))
 import chrome_test_server_spawner
 
+# RunFuchsia() may run qemu with 1 or 4 CPUs. In both cases keep test
+# concurrency set to 4.
+DEFAULT_TEST_CONCURRENCY = 4
+
 
 def IsLocalPortAvailable(port):
   s = socket.socket()
@@ -137,9 +141,11 @@ def main():
   if args.test_launcher_batch_limit:
     child_args.append('--test-launcher-batch-limit=%d' %
                        args.test_launcher_batch_limit)
-  if args.test_launcher_jobs:
-    child_args.append('--test-launcher-jobs=%d' %
-                       args.test_launcher_jobs)
+
+  test_concurrency = args.test_launcher_jobs \
+      if args.test_launcher_jobs else DEFAULT_TEST_CONCURRENCY
+  child_args.append('--test-launcher-jobs=%d' % test_concurrency)
+
   if args.gtest_filter:
     child_args.append('--gtest_filter=' + args.gtest_filter)
   if args.gtest_repeat:
@@ -154,7 +160,7 @@ def main():
   # Start test server spawner for tests that need it.
   if args.enable_test_server:
     spawning_server = chrome_test_server_spawner.SpawningServer(
-        0, PortForwarderNoop())
+        0, PortForwarderNoop(), test_concurrency)
     spawning_server.Start()
 
     # Generate test server config.
