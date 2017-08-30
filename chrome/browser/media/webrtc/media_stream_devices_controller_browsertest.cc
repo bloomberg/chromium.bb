@@ -865,6 +865,31 @@ IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerTest,
   ASSERT_FALSE(CheckDevicesListContains(content::MEDIA_DEVICE_VIDEO_CAPTURE));
 }
 
+IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerTest, WebContentsDestroyed) {
+  InitWithUrl(GURL("http://www.example.com"));
+
+  SetPromptResponseType(PermissionRequestManager::ACCEPT_ALL);
+
+  ResetPromptCounters();
+
+  content::MediaStreamRequest request =
+      CreateRequest(example_audio_id(), example_video_id());
+  // Simulate a destroyed RenderFrameHost.
+  request.render_frame_id = 0;
+  request.render_process_id = 0;
+
+  RequestPermissions(
+      nullptr, request,
+      base::Bind(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
+                 base::Unretained(this)));
+  ASSERT_EQ(0u, TotalPromptRequestCount());
+
+  ASSERT_EQ(content::MEDIA_DEVICE_FAILED_DUE_TO_SHUTDOWN,
+            media_stream_result());
+  ASSERT_FALSE(CheckDevicesListContains(content::MEDIA_DEVICE_AUDIO_CAPTURE));
+  ASSERT_FALSE(CheckDevicesListContains(content::MEDIA_DEVICE_VIDEO_CAPTURE));
+}
+
 // Request and block microphone and camera access with kill switch.
 IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerTest,
                        RequestAndKillSwitchMicCam) {
