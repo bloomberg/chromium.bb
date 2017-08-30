@@ -19,6 +19,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/StyleChangeReason.h"
+#include "core/dom/StyleEngine.h"
 
 namespace blink {
 
@@ -147,10 +148,7 @@ void PropertyRegistration::registerProperty(
                                              descriptor.inherits(), initial,
                                              std::move(initial_variable_data)));
 
-  // TODO(timloh): Invalidate only elements with this custom property set
-  document->SetNeedsStyleRecalc(kSubtreeStyleChange,
-                                StyleChangeReasonForTracing::Create(
-                                    StyleChangeReason::kPropertyRegistration));
+  document->GetStyleEngine().CustomPropertyRegistered();
 }
 
 }  // namespace blink

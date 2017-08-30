@@ -273,6 +273,8 @@ class CORE_EXPORT StyleEngine final
                            const ActiveStyleSheetVector& old_style_sheets,
                            const ActiveStyleSheetVector& new_style_sheets);
 
+  void CustomPropertyRegistered();
+
   DECLARE_VIRTUAL_TRACE();
   DECLARE_TRACE_WRAPPERS();
 
