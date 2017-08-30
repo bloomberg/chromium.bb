@@ -9,13 +9,12 @@ import android.database.DataSetObserver;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewPager;
 import android.util.AttributeSet;
-import android.util.DisplayMetrics;
-import android.util.TypedValue;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.util.ViewUtils;
 
 /**
  * Page indicator view for a {@link ViewPager}. It has to be inserted as a child of the
@@ -87,7 +86,7 @@ public class SiteExplorePageIndicatorView
 
         removeAllViews();
 
-        int indicatorSideMarginPx = dpToPx(SPACE_BETWEEN_INDICATORS_DP / 2);
+        int indicatorSideMarginPx = ViewUtils.dpToPx(getContext(), SPACE_BETWEEN_INDICATORS_DP / 2);
         for (int i = 0; i < numberOfPages; i++) {
             ImageView singlePageIndicatorView = new ImageView(getContext());
 
@@ -106,11 +105,6 @@ public class SiteExplorePageIndicatorView
 
             addView(singlePageIndicatorView);
         }
-    }
-
-    private int dpToPx(int dp) {
-        DisplayMetrics metrics = getResources().getDisplayMetrics();
-        return Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, metrics));
     }
 
 }
