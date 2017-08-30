@@ -657,21 +657,6 @@ void WindowTreeClient::OnEmbedImpl(
   delegate_->OnEmbed(std::move(window_tree_host));
 }
 
-void WindowTreeClient::OnSetDisplayRootDone(
-    Id window_id,
-    const base::Optional<viz::LocalSurfaceId>& local_surface_id) {
-  // The only way SetDisplayRoot() should fail is if we've done something wrong.
-  CHECK(local_surface_id.has_value());
-  WindowMus* window = GetWindowByServerId(window_id);
-  if (!window)
-    return;  // Display was already deleted.
-
-  // TODO(sky): figure out why this has to be here rather than in
-  // WindowTreeHostMus's constructor.
-  ui::Compositor* compositor = window->GetWindow()->GetHost()->compositor();
-  compositor->SetLocalSurfaceId(*local_surface_id);
-}
-
 WindowTreeHostMus* WindowTreeClient::WmNewDisplayAddedImpl(
     const display::Display& display,
     ui::mojom::WindowDataPtr root_data,
@@ -827,8 +812,7 @@ void WindowTreeClient::OnWindowMusCreated(WindowMus* window) {
       window_manager_client_->SetDisplayRoot(
           display, display_init_params->viewport_metrics.Clone(),
           display_init_params->is_primary_display, window->server_id(),
-          base::Bind(&WindowTreeClient::OnSetDisplayRootDone,
-                     base::Unretained(this), window->server_id()));
+          base::Bind(&OnAckMustSucceed));
     }
   }
 }
@@ -2083,9 +2067,10 @@ void WindowTreeClient::AddDisplayReusingWindowTreeHost(
     WindowMus* display_root_window = WindowMus::Get(window_tree_host->window());
     window_manager_client_->SetDisplayRoot(
         display, std::move(viewport_metrics), is_primary_display,
-        display_root_window->server_id(),
-        base::Bind(&WindowTreeClient::OnSetDisplayRootDone,
-                   base::Unretained(this), display_root_window->server_id()));
+        display_root_window->server_id(), base::Bind(&OnAckMustSucceed));
+    window_tree_host->compositor()->SetLocalSurfaceId(
+        display_root_window->GetOrAllocateLocalSurfaceId(
+            window_tree_host->GetBoundsInPixels().size()));
   }
 }
 
