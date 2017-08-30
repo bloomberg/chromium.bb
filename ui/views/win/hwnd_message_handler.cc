@@ -2713,6 +2713,15 @@ LRESULT HWNDMessageHandler::HandlePointerEventTypeTouch(UINT message,
     SetMsgHandled(FALSE);
     return -1;
   }
+
+  // Ignore enter/leave events, otherwise they will be converted in
+  // |GetTouchEventType| to ET_TOUCH_PRESSED/ET_TOUCH_RELEASED events, which
+  // is not correct.
+  if (message == WM_POINTERENTER || message == WM_POINTERLEAVE) {
+    SetMsgHandled(TRUE);
+    return 0;
+  }
+
   unsigned int mapped_pointer_id = id_generator_.GetGeneratedID(pointer_id);
   POINTER_INFO pointer_info = pointer_touch_info.pointerInfo;
   POINT client_point = pointer_info.ptPixelLocationRaw;
