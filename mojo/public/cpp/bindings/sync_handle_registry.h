@@ -6,9 +6,9 @@
 #define MOJO_PUBLIC_CPP_BINDINGS_SYNC_HANDLE_REGISTRY_H_
 
 #include <map>
+#include <unordered_map>
 
 #include "base/callback.h"
-#include "base/containers/stack_container.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
@@ -30,10 +30,6 @@ class MOJO_CPP_BINDINGS_EXPORT SyncHandleRegistry
   static scoped_refptr<SyncHandleRegistry> current();
 
   using HandleCallback = base::Callback<void(MojoResult)>;
-
-  // Registers a |Handle| to be watched for |handle_signals|. If any such
-  // signals are satisfied during a Wait(), the Wait() is woken up and
-  // |callback| is run.
   bool RegisterHandle(const Handle& handle,
                       MojoHandleSignals handle_signals,
                       const HandleCallback& callback);
@@ -42,16 +38,11 @@ class MOJO_CPP_BINDINGS_EXPORT SyncHandleRegistry
 
   // Registers a |base::WaitableEvent| which can be used to wake up
   // Wait() before any handle signals. |event| is not owned, and if it signals
-  // during Wait(), |callback| is invoked.  Note that |event| may be registered
-  // multiple times with different callbacks.
-  //
-  // NOTE: It is NOT safe for |callback| to register or unregister events on
-  // this registry, and doing so will lead to undefined behavior.
-  void RegisterEvent(base::WaitableEvent* event, const base::Closure& callback);
+  // during Wait(), |callback| is invoked. Returns |true| if registered
+  // successfully or |false| if |event| was already registered.
+  bool RegisterEvent(base::WaitableEvent* event, const base::Closure& callback);
 
-  // Unregisters a specific |event|+|callback| pair.
-  void UnregisterEvent(base::WaitableEvent* event,
-                       const base::Closure& callback);
+  void UnregisterEvent(base::WaitableEvent* event);
 
   // Waits on all the registered handles and events and runs callbacks
   // synchronously for any that become ready.
@@ -68,7 +59,7 @@ class MOJO_CPP_BINDINGS_EXPORT SyncHandleRegistry
 
   WaitSet wait_set_;
   std::map<Handle, HandleCallback> handles_;
-  std::map<base::WaitableEvent*, base::StackVector<base::Closure, 1>> events_;
+  std::map<base::WaitableEvent*, base::Closure> events_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

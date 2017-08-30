@@ -73,10 +73,9 @@ bool SyncMessageFilter::Send(Message* message) {
   bool shutdown = false;
   scoped_refptr<mojo::SyncHandleRegistry> registry =
       mojo::SyncHandleRegistry::current();
-  auto on_shutdown_callback = base::Bind(&OnEventReady, &shutdown);
-  auto on_done_callback = base::Bind(&OnEventReady, &done);
-  registry->RegisterEvent(shutdown_event_, on_shutdown_callback);
-  registry->RegisterEvent(&done_event, on_done_callback);
+  registry->RegisterEvent(shutdown_event_,
+                          base::Bind(&OnEventReady, &shutdown));
+  registry->RegisterEvent(&done_event, base::Bind(&OnEventReady, &done));
 
   const bool* stop_flags[] = { &done, &shutdown };
   registry->Wait(stop_flags, 2);
@@ -85,8 +84,8 @@ bool SyncMessageFilter::Send(Message* message) {
                           "SyncMessageFilter::Send", &done_event);
   }
 
-  registry->UnregisterEvent(shutdown_event_, on_shutdown_callback);
-  registry->UnregisterEvent(&done_event, on_done_callback);
+  registry->UnregisterEvent(shutdown_event_);
+  registry->UnregisterEvent(&done_event);
 
   {
     base::AutoLock auto_lock(lock_);

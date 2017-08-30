@@ -18,7 +18,7 @@ SyncEventWatcher::SyncEventWatcher(base::WaitableEvent* event,
 SyncEventWatcher::~SyncEventWatcher() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (registered_)
-    registry_->UnregisterEvent(event_, callback_);
+    registry_->UnregisterEvent(event_);
   destroyed_->data = true;
 }
 
@@ -51,17 +51,15 @@ bool SyncEventWatcher::SyncWatch(const bool* should_stop) {
 
 void SyncEventWatcher::IncrementRegisterCount() {
   register_request_count_++;
-  if (!registered_) {
-    registry_->RegisterEvent(event_, callback_);
-    registered_ = true;
-  }
+  if (!registered_)
+    registered_ = registry_->RegisterEvent(event_, callback_);
 }
 
 void SyncEventWatcher::DecrementRegisterCount() {
   DCHECK_GT(register_request_count_, 0u);
   register_request_count_--;
   if (register_request_count_ == 0 && registered_) {
-    registry_->UnregisterEvent(event_, callback_);
+    registry_->UnregisterEvent(event_);
     registered_ = false;
   }
 }
