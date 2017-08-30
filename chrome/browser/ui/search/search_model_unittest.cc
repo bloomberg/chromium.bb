@@ -8,6 +8,8 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/search/search_model_observer.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
+#include "chrome/common/chrome_switches.h"
+#include "chrome/common/search/search_types.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 
 namespace {
@@ -17,11 +19,11 @@ class MockSearchModelObserver : public SearchModelObserver {
   MockSearchModelObserver();
   ~MockSearchModelObserver() override;
 
-  void ModelChanged(SearchModel::Origin old_origin,
-                    SearchModel::Origin new_origin) override;
+  void ModelChanged(const SearchMode& old_mode,
+                    const SearchMode& new_mode) override;
 
-  void VerifySearchModelStates(SearchModel::Origin expected_old_origin,
-                               SearchModel::Origin expected_new_origin);
+  void VerifySearchModelStates(const SearchMode& expected_old_mode,
+                               const SearchMode& expected_new_mode);
 
   void VerifyNotificationCount(int expected_count);
 
@@ -29,8 +31,8 @@ class MockSearchModelObserver : public SearchModelObserver {
   // How many times we've seen search model changed notifications.
   int modelchanged_notification_count_;
 
-  SearchModel::Origin actual_old_origin_;
-  SearchModel::Origin actual_new_origin_;
+  SearchMode actual_old_mode_;
+  SearchMode actual_new_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(MockSearchModelObserver);
 };
@@ -42,18 +44,18 @@ MockSearchModelObserver::MockSearchModelObserver()
 MockSearchModelObserver::~MockSearchModelObserver() {
 }
 
-void MockSearchModelObserver::ModelChanged(SearchModel::Origin old_origin,
-                                           SearchModel::Origin new_origin) {
-  actual_old_origin_ = old_origin;
-  actual_new_origin_ = new_origin;
+void MockSearchModelObserver::ModelChanged(const SearchMode& old_mode,
+                                           const SearchMode& new_mode) {
+  actual_old_mode_ = old_mode;
+  actual_new_mode_ = new_mode;
   modelchanged_notification_count_++;
 }
 
 void MockSearchModelObserver::VerifySearchModelStates(
-    SearchModel::Origin expected_old_origin,
-    SearchModel::Origin expected_new_origin) {
-  EXPECT_TRUE(actual_old_origin_ == expected_old_origin);
-  EXPECT_TRUE(actual_new_origin_ == expected_new_origin);
+    const SearchMode& expected_old_mode,
+    const SearchMode& expected_new_mode) {
+  EXPECT_TRUE(actual_old_mode_ == expected_old_mode);
+  EXPECT_TRUE(actual_new_mode_ == expected_new_mode);
 }
 
 void MockSearchModelObserver::VerifyNotificationCount(int expected_count) {
@@ -88,20 +90,18 @@ void SearchModelTest::TearDown() {
 
 TEST_F(SearchModelTest, UpdateSearchModelOrigin) {
   mock_observer.VerifyNotificationCount(0);
-  SearchModel::Origin origin = SearchModel::Origin::NTP;
-  SearchModel::Origin expected_old_origin = model->origin();
-  SearchModel::Origin expected_new_origin = origin;
-  model->SetOrigin(origin);
-  mock_observer.VerifySearchModelStates(expected_old_origin,
-                                        expected_new_origin);
+  SearchMode search_mode(SearchMode::ORIGIN_NTP);
+  SearchMode expected_old_mode = model->mode();
+  SearchMode expected_new_mode = search_mode;
+  model->SetMode(search_mode);
+  mock_observer.VerifySearchModelStates(expected_old_mode, expected_new_mode);
   mock_observer.VerifyNotificationCount(1);
 
-  origin = SearchModel::Origin::DEFAULT;
-  expected_old_origin = expected_new_origin;
-  expected_new_origin = origin;
-  model->SetOrigin(origin);
-  mock_observer.VerifySearchModelStates(expected_old_origin,
-                                        expected_new_origin);
+  search_mode.origin = SearchMode::ORIGIN_DEFAULT;
+  expected_old_mode = expected_new_mode;
+  expected_new_mode = search_mode;
+  model->SetMode(search_mode);
+  mock_observer.VerifySearchModelStates(expected_old_mode, expected_new_mode);
   mock_observer.VerifyNotificationCount(2);
-  EXPECT_EQ(expected_new_origin, model->origin());
+  EXPECT_TRUE(model->mode() == expected_new_mode);
 }

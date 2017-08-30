@@ -21,12 +21,12 @@ InstantController::InstantController(BrowserInstantController* browser)
 
 InstantController::~InstantController() = default;
 
-void InstantController::SearchModeChanged(SearchModel::Origin old_origin,
-                                          SearchModel::Origin new_origin) {
-  LogDebugEvent(base::StringPrintf("SearchModeChanged: %d to %d", old_origin,
-                                   new_origin));
+void InstantController::SearchModeChanged(const SearchMode& old_mode,
+                                          const SearchMode& new_mode) {
+  LogDebugEvent(base::StringPrintf("SearchModeChanged: %d to %d",
+                                   old_mode.origin, new_mode.origin));
 
-  search_origin_ = new_origin;
+  search_mode_ = new_mode;
   ResetInstantTab();
 }
 
@@ -65,7 +65,7 @@ void InstantController::InstantTabAboutToNavigateMainFrame(
 }
 
 void InstantController::ResetInstantTab() {
-  if (search_origin_ == SearchModel::Origin::NTP) {
+  if (search_mode_.is_origin_ntp()) {
     content::WebContents* active_tab = browser_->GetActiveWebContents();
     if (!instant_tab_ || active_tab != instant_tab_->web_contents()) {
       instant_tab_ = base::MakeUnique<InstantTab>(this, active_tab);
