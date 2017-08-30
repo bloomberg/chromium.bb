@@ -101,6 +101,10 @@ std::string AudioDecoderConfig::AsHumanReadableString() const {
 void AudioDecoderConfig::SetChannelsForDiscrete(int channels) {
   DCHECK(channel_layout_ == CHANNEL_LAYOUT_DISCRETE ||
          channels == ChannelLayoutToChannelCount(channel_layout_));
+  if (channels <= 0 || channels >= limits::kMaxChannels) {
+    DVLOG(1) << __func__ << ": Unsupported number of channels: " << channels;
+    return;
+  }
   channels_ = channels;
   bytes_per_frame_ = channels_ * bytes_per_channel_;
 }
