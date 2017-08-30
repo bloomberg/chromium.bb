@@ -86,7 +86,7 @@ class AutotestTestsBuilder(generic_builders.PreCqBuilder):
   """Builder that runs autotest unit tests."""
   def RunTestStages(self):
     """Run after sync/reexec."""
-    self._RunStage(test_stages.AutotesTestStage)
+    self._RunStage(test_stages.AutotestTestStage)
 
 
 class ChromiteTestsBuilder(generic_builders.PreCqBuilder):
