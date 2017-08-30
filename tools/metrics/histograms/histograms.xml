@@ -6084,6 +6084,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Blink.Fonts.VariableFontsRatio"
+    enum="WebFontInstantiationResult">
+  <owner>drott@chromium.org</owner>
+  <summary>
+    Tracks adoption ratio of variable fonts compared to conventional (in the
+    sense of non-variable) web fonts.  Recorded at the time of instantiating a
+    Skia SkTypeface from the successfully decoded web font blob.
+  </summary>
+</histogram>
+
 <histogram name="Blink.Gesture.Merged" enum="GestureMergeState">
   <owner>jyasskin@chromium.org</owner>
   <owner>domenic@google.com</owner>
