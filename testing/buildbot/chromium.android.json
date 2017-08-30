@@ -877,7 +877,7 @@
               "device_type": "bullhead"
             }
           ],
-          "hard_timeout": 960,
+          "hard_timeout": 1200,
           "output_links": [
             {
               "link": [
@@ -6762,12 +6762,12 @@
           ],
           "dimension_sets": [
             {
-              "android_devices": "6",
+              "android_devices": "1",
               "device_os": "MMB29Q",
               "device_type": "bullhead"
             }
           ],
-          "hard_timeout": 1800,
+          "hard_timeout": 1200,
           "output_links": [
             {
               "link": [
@@ -6777,7 +6777,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "shards": 14
         },
         "test": "chrome_public_test_apk"
       },
@@ -6851,12 +6852,12 @@
           ],
           "dimension_sets": [
             {
-              "android_devices": "6",
+              "android_devices": "1",
               "device_os": "MMB29Q",
               "device_type": "bullhead"
             }
           ],
-          "hard_timeout": 1800,
+          "hard_timeout": 1200,
           "output_links": [
             {
               "link": [
@@ -6866,7 +6867,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "shards": 14
         },
         "test": "chrome_public_test_apk"
       },
