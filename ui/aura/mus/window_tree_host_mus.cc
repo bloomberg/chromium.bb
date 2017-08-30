@@ -87,6 +87,12 @@ WindowTreeHostMus::WindowTreeHostMus(WindowTreeHostMusInitParams init_params)
 
   // Mus windows are assumed hidden.
   compositor()->SetVisible(false);
+
+  if (window_mus->window_mus_type() ==
+      WindowMusType::DISPLAY_MANUALLY_CREATED) {
+    compositor()->SetLocalSurfaceId(
+        window_mus->GetOrAllocateLocalSurfaceId(bounds_in_pixels.size()));
+  }
 }
 
 WindowTreeHostMus::~WindowTreeHostMus() {
