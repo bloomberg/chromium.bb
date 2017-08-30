@@ -1401,6 +1401,8 @@ void TileManager::CheckIfMoreTilesNeedToBePrepared() {
   resource_pool_->ReduceResourceUsage();
   image_controller_.ReduceMemoryUsage();
 
+  raster_buffer_provider_->Flush();
+
   // TODO(vmpstr): Temporary check to debug crbug.com/642927.
   CHECK(tile_task_manager_);
 
