@@ -19,6 +19,7 @@
 #include "media/gpu/android_video_surface_chooser.h"
 #include "media/gpu/avda_codec_allocator.h"
 #include "media/gpu/media_gpu_export.h"
+#include "services/service_manager/public/cpp/service_context_ref.h"
 
 namespace media {
 
@@ -61,8 +62,8 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder : public VideoDecoder {
       DeviceInfo* device_info,
       AVDACodecAllocator* codec_allocator,
       std::unique_ptr<AndroidVideoSurfaceChooser> surface_chooser,
-      std::unique_ptr<VideoFrameFactory> video_frame_factory);
-  ~MediaCodecVideoDecoder() override;
+      std::unique_ptr<VideoFrameFactory> video_frame_factory,
+      std::unique_ptr<service_manager::ServiceContextRef> connection_ref);
 
   // VideoDecoder implementation:
   std::string GetDisplayName() const override;
@@ -105,6 +106,10 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder : public VideoDecoder {
     kForReset,
     kForDestroy,
   };
+
+  // Starts teardown.
+  void Destroy() override;
+  ~MediaCodecVideoDecoder() override;
 
   // Finishes initialization.
   void StartLazyInit();
@@ -222,12 +227,21 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder : public VideoDecoder {
   AndroidOverlayMojoFactoryCB overlay_factory_cb_;
 
   DeviceInfo* device_info_;
-
+  std::unique_ptr<service_manager::ServiceContextRef> connection_ref_;
   base::WeakPtrFactory<MediaCodecVideoDecoder> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaCodecVideoDecoder);
 };
 
 }  // namespace media
+
+namespace std {
+
+// Specialize std::default_delete to call Destroy().
+template <>
+struct MEDIA_GPU_EXPORT default_delete<media::MediaCodecVideoDecoder>
+    : public default_delete<media::VideoDecoder> {};
+
+}  // namespace std
 
 #endif  // MEDIA_GPU_ANDROID_MEDIA_CODEC_VIDEO_DECODER_H_

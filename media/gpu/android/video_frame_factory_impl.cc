@@ -20,7 +20,6 @@
 #include "media/base/video_frame.h"
 #include "media/gpu//android/codec_image.h"
 #include "media/gpu/android/codec_wrapper.h"
-#include "media/gpu/ipc/service/media_gpu_channel_manager.h"
 #include "ui/gl/android/surface_texture.h"
 #include "ui/gl/gl_bindings.h"
 

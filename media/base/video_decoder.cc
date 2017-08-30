@@ -10,6 +10,10 @@ namespace media {
 
 VideoDecoder::VideoDecoder() {}
 
+void VideoDecoder::Destroy() {
+  delete this;
+}
+
 VideoDecoder::~VideoDecoder() {}
 
 bool VideoDecoder::NeedsBitstreamConversion() const {
@@ -25,3 +29,12 @@ int VideoDecoder::GetMaxDecodeRequests() const {
 }
 
 }  // namespace media
+
+namespace std {
+
+void default_delete<media::VideoDecoder>::operator()(
+    media::VideoDecoder* ptr) const {
+  ptr->Destroy();
+}
+
+}  // namespace std

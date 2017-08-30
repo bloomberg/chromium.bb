@@ -82,6 +82,13 @@ GpuMojoMediaClient::GpuMojoMediaClient(
 
 GpuMojoMediaClient::~GpuMojoMediaClient() {}
 
+void GpuMojoMediaClient::Initialize(
+    service_manager::Connector* connector,
+    service_manager::ServiceContextRefFactory* context_ref_factory) {
+  DCHECK(context_ref_factory);
+  context_ref_factory_ = context_ref_factory;
+}
+
 std::unique_ptr<AudioDecoder> GpuMojoMediaClient::CreateAudioDecoder(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
 #if defined(OS_ANDROID)
@@ -105,7 +112,8 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
       AVDACodecAllocator::GetInstance(),
       base::MakeUnique<AndroidVideoSurfaceChooserImpl>(
           DeviceInfo::GetInstance()->IsSetOutputSurfaceSupported()),
-      base::MakeUnique<VideoFrameFactoryImpl>());
+      base::MakeUnique<VideoFrameFactoryImpl>(),
+      context_ref_factory_->CreateRef());
 #else
   return nullptr;
 #endif  // BUILDFLAG(ENABLE_MEDIA_CODEC_VIDEO_DECODER)

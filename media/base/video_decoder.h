@@ -25,24 +25,18 @@ class VideoFrame;
 class MEDIA_EXPORT VideoDecoder {
  public:
   // Callback for VideoDecoder initialization.
-  typedef base::Callback<void(bool success)> InitCB;
+  using InitCB = base::Callback<void(bool success)>;
 
   // Callback for VideoDecoder to return a decoded frame whenever it becomes
   // available. Only non-EOS frames should be returned via this callback.
-  typedef base::Callback<void(const scoped_refptr<VideoFrame>&)> OutputCB;
+  using OutputCB = base::Callback<void(const scoped_refptr<VideoFrame>&)>;
 
   // Callback type for Decode(). Called after the decoder has completed decoding
   // corresponding DecoderBuffer, indicating that it's ready to accept another
   // buffer to decode.
-  typedef base::Callback<void(DecodeStatus)> DecodeCB;
+  using DecodeCB = base::Callback<void(DecodeStatus)>;
 
   VideoDecoder();
-
-  // Fires any pending callbacks, stops and destroys the decoder.
-  // Note: Since this is a destructor, |this| will be destroyed after this call.
-  // Make sure the callbacks fired from this call doesn't post any task that
-  // depends on |this|.
-  virtual ~VideoDecoder();
 
   // Returns the name of the decoder for logging and decoder selection purposes.
   // This name should be available immediately after construction (e.g. before
@@ -116,10 +110,36 @@ class MEDIA_EXPORT VideoDecoder {
   // Returns maximum number of parallel decode requests.
   virtual int GetMaxDecodeRequests() const;
 
+ protected:
+  // Deletion is only allowed via Destroy().
+  virtual ~VideoDecoder();
+
  private:
+  friend struct std::default_delete<VideoDecoder>;
+
+  // Fires any pending callbacks, stops and destroys the decoder.
+  virtual void Destroy();
+
   DISALLOW_COPY_AND_ASSIGN(VideoDecoder);
 };
 
 }  // namespace media
+
+namespace std {
+
+// Specialize std::default_delete to call Destroy().
+template <>
+struct MEDIA_EXPORT default_delete<media::VideoDecoder> {
+  constexpr default_delete() = default;
+
+  template <typename U,
+            typename = typename std::enable_if<
+                std::is_convertible<U*, media::VideoDecoder*>::value>::type>
+  default_delete(const default_delete<U>& d) {}
+
+  void operator()(media::VideoDecoder* ptr) const;
+};
+
+}  // namespace std
 
 #endif  // MEDIA_BASE_VIDEO_DECODER_H_
