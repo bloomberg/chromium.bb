@@ -23,20 +23,66 @@ class CompositionMarkerListImplTest : public EditingTestBase {
   Persistent<CompositionMarkerListImpl> marker_list_;
 };
 
-// CompositionMarkerListImpl shouldn't merge markers with touching endpoints
-TEST_F(CompositionMarkerListImplTest, Add) {
-  EXPECT_EQ(0u, marker_list_->GetMarkers().size());
+namespace {
 
-  marker_list_->Add(CreateMarker(0, 1));
-  marker_list_->Add(CreateMarker(1, 2));
+bool compare_markers(const Member<DocumentMarker>& marker1,
+                     const Member<DocumentMarker>& marker2) {
+  if (marker1->StartOffset() != marker2->StartOffset())
+    return marker1->StartOffset() < marker2->StartOffset();
 
-  EXPECT_EQ(2u, marker_list_->GetMarkers().size());
+  return marker1->EndOffset() < marker2->EndOffset();
+}
 
-  EXPECT_EQ(0u, marker_list_->GetMarkers()[0]->StartOffset());
-  EXPECT_EQ(1u, marker_list_->GetMarkers()[0]->EndOffset());
+}  // namespace
 
-  EXPECT_EQ(1u, marker_list_->GetMarkers()[1]->StartOffset());
-  EXPECT_EQ(2u, marker_list_->GetMarkers()[1]->EndOffset());
+TEST_F(CompositionMarkerListImplTest, AddOverlapping) {
+  // Add some overlapping markers in an arbitrary order and verify that the
+  // list stores them properly
+  marker_list_->Add(CreateMarker(40, 50));
+  marker_list_->Add(CreateMarker(10, 40));
+  marker_list_->Add(CreateMarker(20, 50));
+  marker_list_->Add(CreateMarker(10, 30));
+  marker_list_->Add(CreateMarker(10, 50));
+  marker_list_->Add(CreateMarker(30, 50));
+  marker_list_->Add(CreateMarker(30, 40));
+  marker_list_->Add(CreateMarker(10, 20));
+  marker_list_->Add(CreateMarker(20, 40));
+  marker_list_->Add(CreateMarker(20, 30));
+
+  DocumentMarkerVector markers = marker_list_->GetMarkers();
+  std::sort(markers.begin(), markers.end(), compare_markers);
+
+  EXPECT_EQ(10u, markers.size());
+
+  EXPECT_EQ(10u, markers[0]->StartOffset());
+  EXPECT_EQ(20u, markers[0]->EndOffset());
+
+  EXPECT_EQ(10u, markers[1]->StartOffset());
+  EXPECT_EQ(30u, markers[1]->EndOffset());
+
+  EXPECT_EQ(10u, markers[2]->StartOffset());
+  EXPECT_EQ(40u, markers[2]->EndOffset());
+
+  EXPECT_EQ(10u, markers[3]->StartOffset());
+  EXPECT_EQ(50u, markers[3]->EndOffset());
+
+  EXPECT_EQ(20u, markers[4]->StartOffset());
+  EXPECT_EQ(30u, markers[4]->EndOffset());
+
+  EXPECT_EQ(20u, markers[5]->StartOffset());
+  EXPECT_EQ(40u, markers[5]->EndOffset());
+
+  EXPECT_EQ(20u, markers[6]->StartOffset());
+  EXPECT_EQ(50u, markers[6]->EndOffset());
+
+  EXPECT_EQ(30u, markers[7]->StartOffset());
+  EXPECT_EQ(40u, markers[7]->EndOffset());
+
+  EXPECT_EQ(30u, markers[8]->StartOffset());
+  EXPECT_EQ(50u, markers[8]->EndOffset());
+
+  EXPECT_EQ(40u, markers[9]->StartOffset());
+  EXPECT_EQ(50u, markers[9]->EndOffset());
 }
 
 }  // namespace blink
