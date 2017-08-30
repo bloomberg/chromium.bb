@@ -148,8 +148,10 @@ public class ChromeLauncherActivity extends Activity
                 MultiWindowUtils.getInstance().shouldRunInLegacyMultiInstanceMode(this);
         mIntentHandler = new IntentHandler(this, getPackageName());
         mIsCustomTabIntent = isCustomTabIntent(getIntent());
+        boolean isVrIntent = VrIntentUtils.isVrIntent(getIntent());
         // If the intent was created by Reader Mode, ignore herb and custom tab information.
-        if (!mIsCustomTabIntent && !ReaderModeManager.isReaderModeCreatedIntent(getIntent())) {
+        if (!mIsCustomTabIntent && !ReaderModeManager.isReaderModeCreatedIntent(getIntent())
+                && !isVrIntent) {
             mIsHerbIntent = isHerbIntent();
             mIsCustomTabIntent = mIsHerbIntent;
         }
@@ -203,9 +205,7 @@ public class ChromeLauncherActivity extends Activity
         // Check if we should launch the ChromeTabbedActivity.
         if (!mIsCustomTabIntent && !FeatureUtilities.isDocumentMode(this)) {
             Bundle options = null;
-            if (VrIntentUtils.isVrIntent(getIntent())) {
-                options = VrIntentUtils.getVrIntentOptions(this);
-            }
+            if (isVrIntent) options = VrIntentUtils.getVrIntentOptions(this);
             launchTabbedMode(options);
             finish();
             return;
@@ -317,9 +317,10 @@ public class ChromeLauncherActivity extends Activity
      * @return Whether the intent is for launching a Custom Tab.
      */
     public static boolean isCustomTabIntent(Intent intent) {
-        if (intent == null || CustomTabsIntent.shouldAlwaysUseBrowserUI(intent)
-                || (!intent.hasExtra(CustomTabsIntent.EXTRA_SESSION)
-                           && !VrIntentUtils.isCustomTabVrIntent(intent))) {
+        if (intent == null) return false;
+        if ((CustomTabsIntent.shouldAlwaysUseBrowserUI(intent)
+                    || !intent.hasExtra(CustomTabsIntent.EXTRA_SESSION))
+                && !VrIntentUtils.isCustomTabVrIntent(intent)) {
             return false;
         }
         return IntentHandler.getUrlFromIntent(intent) != null;
