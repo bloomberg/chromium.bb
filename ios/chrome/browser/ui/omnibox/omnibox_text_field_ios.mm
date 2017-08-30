@@ -250,8 +250,16 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
   _preEditStaticLabel.textColor = _displayedTextColor;
   _preEditStaticLabel.lineBreakMode = NSLineBreakByTruncatingHead;
 
-  NSDictionary* attributes =
-      @{NSBackgroundColorAttributeName : [self selectedTextBackgroundColor]};
+  NSMutableParagraphStyle* style = [[NSMutableParagraphStyle alloc] init];
+  // URLs have their text direction set to to LTR (avoids RTL characters
+  // making the URL render from right to left, as per the URL rendering standard
+  // described here: https://url.spec.whatwg.org/#url-rendering
+  [style setBaseWritingDirection:NSWritingDirectionLeftToRight];
+  NSDictionary* attributes = @{
+    NSBackgroundColorAttributeName : [self selectedTextBackgroundColor],
+    NSParagraphStyleAttributeName : style
+  };
+
   NSAttributedString* preEditString =
       [[NSAttributedString alloc] initWithString:self.text
                                       attributes:attributes];
@@ -526,7 +534,8 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
   } else {
     NSMutableParagraphStyle* style = [[NSMutableParagraphStyle alloc] init];
     // URLs have their text direction set to to LTR (avoids RTL characters
-    // making the URL render from right to left, as per RFC 3987 Section 4.1).
+    // making the URL render from right to left, as per the URL rendering
+    // standard described here: https://url.spec.whatwg.org/#url-rendering
     [style setBaseWritingDirection:NSWritingDirectionLeftToRight];
 
     // Set linebreak mode to 'clipping' to ensure the text is never elided.
