@@ -229,6 +229,7 @@ class TryjobTestCbuildbotArgs(TryjobTest):
     ])
     self.assertEqual(result, [
         '--remote-trybot',
+        '--debug',
         '-g', '123', '-g', '*123', '-g', '123..456',
         '--latest-toolchain', '--nochromesdk',
         '--hwtest', '--notests', '--novmtests', '--noimagetests',

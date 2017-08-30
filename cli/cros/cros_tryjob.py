@@ -63,6 +63,10 @@ def CbuildbotArgs(options):
     # TODO: Remove from remote_try.py after cbuildbot --remote removed.
     args.append('--remote-trybot')
 
+  if not options.remote:
+    # Explicitly force debug behavior if not on a builder.
+    args.append('--debug')
+
   if options.branch:
     args.extend(('-b', options.branch))
 
