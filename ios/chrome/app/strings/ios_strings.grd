@@ -883,7 +883,7 @@ Handoff must also be enabled in the General section of Settings, and your device
         Report an Issue
       </message>
       <message name="IDS_IOS_OPTIONS_SEARCH_URL_SUGGESTIONS" desc="Title for the option to turn on/off search and URL suggestions. [Length: 18em] [iOS only]">
-        Search and site suggestions
+        Search and Site Suggestions
       </message>
       <message name="IDS_IOS_OPTIONS_SEND_USAGE_DATA" desc="Title for opening the setting for if/when to send usage data and crash reports. [Length: 20em] [iOS only]">
         Send Usage Data
