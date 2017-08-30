@@ -65,6 +65,7 @@ class CONTENT_EXPORT MediaStreamDispatcherHost
 
   mojom::MediaStreamDispatcher* GetMediaStreamDispatcherForFrame(
       int render_frame_id);
+  void OnMediaStreamDispatcherConnectionError(int render_frame_id);
   void CancelAllRequests();
   void DeviceOpenFailed(int render_frame_id, int page_request_id);
 

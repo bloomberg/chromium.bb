@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/media/media_stream_dispatcher_host.h"
 
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
@@ -115,12 +116,24 @@ MediaStreamDispatcherHost::GetMediaStreamDispatcherForFrame(
     return it->second.get();
 
   mojom::MediaStreamDispatcherPtr dispatcher;
+  auto dispatcher_request = mojo::MakeRequest(&dispatcher);
+  dispatcher.set_connection_error_handler(base::BindOnce(
+      &MediaStreamDispatcherHost::OnMediaStreamDispatcherConnectionError,
+      base::Unretained(this), render_frame_id));
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&BindMediaStreamDispatcherRequest, render_process_id_,
-                     render_frame_id, mojo::MakeRequest(&dispatcher)));
+                     render_frame_id, std::move(dispatcher_request)));
   dispatchers_[render_frame_id] = std::move(dispatcher);
+
   return dispatchers_[render_frame_id].get();
+}
+
+void MediaStreamDispatcherHost::OnMediaStreamDispatcherConnectionError(
+    int render_frame_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  dispatchers_.erase(render_frame_id);
 }
 
 void MediaStreamDispatcherHost::CancelAllRequests() {
