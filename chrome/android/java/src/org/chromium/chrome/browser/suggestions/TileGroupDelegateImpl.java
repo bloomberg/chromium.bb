@@ -16,8 +16,6 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
-import org.chromium.content_public.browser.LoadUrlParams;
-import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 
 import java.util.List;
@@ -64,8 +62,7 @@ public class TileGroupDelegateImpl implements TileGroup.Delegate {
             recordOpenedTile(item);
         }
 
-        mNavigationDelegate.openUrl(
-                windowDisposition, new LoadUrlParams(url, PageTransition.AUTO_BOOKMARK));
+        mNavigationDelegate.navigateToSuggestionUrl(windowDisposition, url);
     }
 
     @Override

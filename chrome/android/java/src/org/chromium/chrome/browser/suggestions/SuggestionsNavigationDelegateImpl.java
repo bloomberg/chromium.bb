@@ -96,6 +96,12 @@ public class SuggestionsNavigationDelegateImpl implements SuggestionsNavigationD
     }
 
     @Override
+    public void navigateToSuggestionUrl(int windowOpenDisposition, String url) {
+        LoadUrlParams loadUrlParams = new LoadUrlParams(url, PageTransition.AUTO_BOOKMARK);
+        openUrl(windowOpenDisposition, loadUrlParams);
+    }
+
+    @Override
     public void openSnippet(int windowOpenDisposition, SnippetArticle article) {
         NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_SNIPPET);
 
