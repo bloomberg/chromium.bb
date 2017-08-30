@@ -52,8 +52,6 @@ class PopupZoomer : public RenderWidgetHostConnector {
   JavaObjectWeakGlobalRef java_obj_;
 };
 
-bool RegisterPopupZoomer(JNIEnv* env);
-
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_ANDROID_POPUP_ZOOMER_H_

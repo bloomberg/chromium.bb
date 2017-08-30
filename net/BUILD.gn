@@ -388,7 +388,6 @@ component("net") {
       "android/cert_verify_result_android.cc",
       "android/cert_verify_result_android.h",
       "android/gurl_utils.cc",
-      "android/gurl_utils.h",
       "android/http_auth_negotiate_android.cc",
       "android/http_auth_negotiate_android.h",
       "android/keystore.cc",
