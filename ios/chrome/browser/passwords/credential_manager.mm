@@ -7,6 +7,10 @@
 #import "base/mac/bind_objc_block.h"
 #include "ios/chrome/browser/passwords/credential_manager_util.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 using password_manager::CredentialManagerError;
 using password_manager::CredentialInfo;
 using password_manager::CredentialType;

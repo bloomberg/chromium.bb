@@ -55,6 +55,7 @@ source_set("passwords") {
     "//components/password_manager/core/common",
     "//components/password_manager/sync/browser",
     "//components/prefs",
+    "//components/security_state/core",
     "//components/signin/core/browser",
     "//components/strings",
     "//components/sync",
@@ -66,7 +67,12 @@ source_set("passwords") {
     "//ios/chrome/browser/autofill",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/infobars",
+
+    # TODO(crbug.com/435048): Remove payments dependency after landing
+    # https://chromium-review.googlesource.com/c/chromium/src/+/631881.
+    "//ios/chrome/browser/payments",
     "//ios/chrome/browser/signin",
+    "//ios/chrome/browser/ssl",
     "//ios/chrome/browser/sync/glue",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/commands",
@@ -102,6 +108,7 @@ source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
+    "credential_manager_unittest.mm",
     "credential_manager_util_unittest.cc",
     "password_controller_js_unittest.mm",
     "password_controller_off_the_record_unittest.mm",
@@ -122,11 +129,13 @@ source_set("unit_tests") {
     "//google_apis",
     "//ios/chrome/browser/autofill",
     "//ios/chrome/browser/browser_state:test_support",
+    "//ios/chrome/browser/ssl",
     "//ios/chrome/browser/ui/commands",
     "//ios/testing:ocmock_support",
     "//ios/web",
     "//ios/web/public/test",
     "//ios/web/public/test/fakes",
+    "//net:test_support",
     "//testing/gtest",
     "//third_party/ocmock",
     "//url",
