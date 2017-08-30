@@ -42,13 +42,12 @@ target(link_target_type, "service") {
   deps = [
     "//gpu/ipc/service",
     "//media:media_features",
+    "//media/gpu:features",
     "//media/gpu/ipc/common",
     "//media/gpu/mojo:jpeg_decoder",
     "//third_party/mesa:mesa_headers",
     "//ui/gfx/ipc/color",
   ]
-
-  configs += [ "//media/gpu:gpu_config" ]
 
   if (is_win) {
     configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]

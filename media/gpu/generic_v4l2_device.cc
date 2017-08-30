@@ -24,6 +24,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "media/gpu/features.h"
 #include "media/gpu/generic_v4l2_device.h"
 #include "ui/gfx/native_pixmap.h"
 #include "ui/gl/egl_util.h"
@@ -32,7 +33,7 @@
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
 
-#if defined(USE_LIBV4L2)
+#if BUILDFLAG(USE_LIBV4L2)
 // Auto-generated for dlopen libv4l2 libraries
 #include "media/gpu/v4l2/v4l2_stubs.h"
 #include "third_party/v4l-utils/lib/include/libv4l2.h"
@@ -48,7 +49,7 @@ static const base::FilePath::CharType kV4l2Lib[] =
 namespace media {
 
 GenericV4L2Device::GenericV4L2Device() {
-#if defined(USE_LIBV4L2)
+#if BUILDFLAG(USE_LIBV4L2)
   use_libv4l2_ = false;
 #endif
 }
@@ -59,7 +60,7 @@ GenericV4L2Device::~GenericV4L2Device() {
 
 int GenericV4L2Device::Ioctl(int request, void* arg) {
   DCHECK(device_fd_.is_valid());
-#if defined(USE_LIBV4L2)
+#if BUILDFLAG(USE_LIBV4L2)
   if (use_libv4l2_)
     return HANDLE_EINTR(v4l2_ioctl(device_fd_.get(), request, arg));
 #endif
@@ -463,7 +464,7 @@ bool GenericV4L2Device::OpenDevicePath(const std::string& path, Type type) {
   if (!device_fd_.is_valid())
     return false;
 
-#if defined(USE_LIBV4L2)
+#if BUILDFLAG(USE_LIBV4L2)
   if (type == Type::kEncoder &&
       HANDLE_EINTR(v4l2_fd_open(device_fd_.get(), V4L2_DISABLE_CONVERSION)) !=
           -1) {
@@ -475,7 +476,7 @@ bool GenericV4L2Device::OpenDevicePath(const std::string& path, Type type) {
 }
 
 void GenericV4L2Device::CloseDevice() {
-#if defined(USE_LIBV4L2)
+#if BUILDFLAG(USE_LIBV4L2)
   if (use_libv4l2_ && device_fd_.is_valid())
     v4l2_close(device_fd_.release());
 #endif
@@ -484,7 +485,7 @@ void GenericV4L2Device::CloseDevice() {
 
 // static
 bool GenericV4L2Device::PostSandboxInitialization() {
-#if defined(USE_LIBV4L2)
+#if BUILDFLAG(USE_LIBV4L2)
   StubPathMap paths;
   paths[kModuleV4l2].push_back(kV4l2Lib);
 

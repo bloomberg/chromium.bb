@@ -12,8 +12,7 @@
 #include "media/gpu/fake_jpeg_decode_accelerator.h"
 #include "media/gpu/features.h"
 
-#if defined(OS_CHROMEOS) && defined(USE_V4L2_CODEC) && \
-    defined(ARCH_CPU_ARM_FAMILY)
+#if BUILDFLAG(USE_V4L2_CODEC) && defined(ARCH_CPU_ARM_FAMILY)
 #define USE_V4L2_JDA
 #endif
 

@@ -16,16 +16,17 @@
 #include "base/win/windows_version.h"
 #include "media/gpu/d3d11_video_decode_accelerator_win.h"
 #include "media/gpu/dxva_video_decode_accelerator_win.h"
-#elif defined(OS_MACOSX)
+#endif
+#if defined(OS_MACOSX)
 #include "media/gpu/vt_video_decode_accelerator_mac.h"
-#elif defined(OS_CHROMEOS)
-#if defined(USE_V4L2_CODEC)
+#endif
+#if BUILDFLAG(USE_V4L2_CODEC)
 #include "media/gpu/v4l2_device.h"
 #include "media/gpu/v4l2_slice_video_decode_accelerator.h"
 #include "media/gpu/v4l2_video_decode_accelerator.h"
 #include "ui/gl/gl_surface_egl.h"
 #endif
-#elif defined(OS_ANDROID)
+#if defined(OS_ANDROID)
 #include "media/gpu/android/device_info.h"
 #include "media/gpu/android_video_decode_accelerator.h"
 #include "media/gpu/android_video_surface_chooser_impl.h"
@@ -89,9 +90,9 @@ GpuVideoDecodeAcceleratorFactory::GetDecoderCapabilities(
   capabilities.supported_profiles =
       DXVAVideoDecodeAccelerator::GetSupportedProfiles(gpu_preferences,
                                                        workarounds);
-#elif defined(OS_CHROMEOS) || BUILDFLAG(USE_VAAPI)
+#elif BUILDFLAG(USE_V4L2_CODEC) || BUILDFLAG(USE_VAAPI)
   VideoDecodeAccelerator::SupportedProfiles vda_profiles;
-#if defined(OS_CHROMEOS) && defined(USE_V4L2_CODEC)
+#if BUILDFLAG(USE_V4L2_CODEC)
   vda_profiles = V4L2VideoDecodeAccelerator::GetSupportedProfiles();
   GpuVideoAcceleratorUtil::InsertUniqueDecodeProfiles(
       vda_profiles, &capabilities.supported_profiles);
@@ -138,7 +139,7 @@ GpuVideoDecodeAcceleratorFactory::CreateVDA(
     &GpuVideoDecodeAcceleratorFactory::CreateD3D11VDA,
     &GpuVideoDecodeAcceleratorFactory::CreateDXVAVDA,
 #endif
-#if defined(OS_CHROMEOS) && defined(USE_V4L2_CODEC)
+#if BUILDFLAG(USE_V4L2_CODEC)
     &GpuVideoDecodeAcceleratorFactory::CreateV4L2VDA,
     &GpuVideoDecodeAcceleratorFactory::CreateV4L2SVDA,
 #endif
@@ -193,7 +194,7 @@ GpuVideoDecodeAcceleratorFactory::CreateDXVAVDA(
 }
 #endif
 
-#if defined(OS_CHROMEOS) && defined(USE_V4L2_CODEC)
+#if BUILDFLAG(USE_V4L2_CODEC)
 std::unique_ptr<VideoDecodeAccelerator>
 GpuVideoDecodeAcceleratorFactory::CreateV4L2VDA(
     const gpu::GpuDriverBugWorkarounds& workarounds,

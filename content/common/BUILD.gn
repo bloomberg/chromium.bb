@@ -357,7 +357,6 @@ source_set("common") {
     "//content:content_implementation",
     "//build/config:precompiled_headers",
     "//build/config/compiler:no_size_t_to_int_warning",
-    "//media/gpu:gpu_config",
   ]
 
   public_deps = [
@@ -399,6 +398,7 @@ source_set("common") {
     "//media/base/ipc",
     "//media/capture",
     "//media/capture/ipc",
+    "//media/gpu:features",
     "//media/gpu/ipc/client",
     "//media/gpu/ipc/common",
     "//media/midi",
