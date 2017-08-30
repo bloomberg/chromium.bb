@@ -222,9 +222,10 @@ component("gpu") {
       "surface_texture_gl_owner.cc",
       "surface_texture_gl_owner.h",
     ]
-
-    deps += [ "//media/mojo:features" ]
-
+    deps += [
+      "//media/mojo:features",
+      "//services/service_manager/public/cpp:cpp",
+    ]
     if (enable_webrtc) {
       deps += [ "//third_party/libyuv" ]
       sources += [
@@ -232,7 +233,6 @@ component("gpu") {
         "android_video_encode_accelerator.h",
       ]
     }
-
     if (enable_media_codec_video_decoder) {
       assert(mojo_media_host == "gpu", "MCVD requires the CDM")
       sources += [
@@ -493,7 +493,7 @@ source_set("android_video_decode_accelerator_unittests") {
       "//base/test:test_support",
       "//gpu:test_support",
       "//media",
-      "//media/base/android:test_support",
+      "//media:test_support",
       "//testing/gmock",
       "//testing/gtest",
     ]

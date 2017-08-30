@@ -94,7 +94,7 @@ class MediaCodecVideoDecoderTest : public testing::Test {
         base::ThreadTaskRunnerHandle::Get(), base::Bind(&GetStubCb),
         base::Bind(&OutputWithReleaseMailboxCb), device_info_.get(),
         codec_allocator_.get(), std::move(surface_chooser),
-        std::move(video_frame_factory));
+        std::move(video_frame_factory), nullptr);
   }
 
   // Just call Initialize(). MCVD will be waiting for a call to Decode() before

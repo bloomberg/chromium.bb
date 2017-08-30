@@ -35,7 +35,8 @@ TestMojoMediaClient::~TestMojoMediaClient() {
 }
 
 void TestMojoMediaClient::Initialize(
-    service_manager::Connector* /* connector */) {
+    service_manager::Connector* /* connector */,
+    service_manager::ServiceContextRefFactory* /* context_ref_factory */) {
   InitializeMediaLibrary();
   // TODO(dalecurtis): We should find a single owner per process for the audio
   // manager or make it a lazy instance.  It's not safe to call Get()/Create()

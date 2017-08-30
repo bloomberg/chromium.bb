@@ -14,7 +14,6 @@
 #include "media/gpu/android/codec_wrapper.h"
 #include "media/gpu/android/video_frame_factory.h"
 #include "media/gpu/gles2_decoder_helper.h"
-#include "media/gpu/ipc/service/media_gpu_channel_manager.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/gpu/surface_texture_gl_owner.h"
 #include "ui/gl/gl_bindings.h"

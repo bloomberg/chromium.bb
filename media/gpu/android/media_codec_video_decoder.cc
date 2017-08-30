@@ -109,7 +109,8 @@ MediaCodecVideoDecoder::MediaCodecVideoDecoder(
     DeviceInfo* device_info,
     AVDACodecAllocator* codec_allocator,
     std::unique_ptr<AndroidVideoSurfaceChooser> surface_chooser,
-    std::unique_ptr<VideoFrameFactory> video_frame_factory)
+    std::unique_ptr<VideoFrameFactory> video_frame_factory,
+    std::unique_ptr<service_manager::ServiceContextRef> connection_ref)
     : state_(State::kBeforeSurfaceInit),
       lazy_init_pending_(true),
       reset_generation_(0),
@@ -120,16 +121,23 @@ MediaCodecVideoDecoder::MediaCodecVideoDecoder(
       surface_chooser_(std::move(surface_chooser)),
       video_frame_factory_(std::move(video_frame_factory)),
       device_info_(device_info),
+      connection_ref_(std::move(connection_ref)),
       weak_factory_(this) {
   DVLOG(2) << __func__;
 }
 
 MediaCodecVideoDecoder::~MediaCodecVideoDecoder() {
+  DVLOG(2) << __func__;
   ReleaseCodec();
   // Mojo callbacks require that they're run before destruction.
   if (reset_cb_)
     reset_cb_.Run();
   codec_allocator_->StopThread(&codec_allocator_adapter_);
+}
+
+void MediaCodecVideoDecoder::Destroy() {
+  DVLOG(2) << __func__;
+  delete this;
 }
 
 void MediaCodecVideoDecoder::Initialize(const VideoDecoderConfig& config,

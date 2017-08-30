@@ -23,10 +23,11 @@ struct SyncToken;
 
 namespace service_manager {
 class Connector;
+class ServiceContextRefFactory;
 namespace mojom {
 class InterfaceProvider;
 }
-}
+}  // namespace service_manager
 
 namespace media {
 
@@ -54,7 +55,9 @@ class MEDIA_MOJO_EXPORT MojoMediaClient {
 
   // Called exactly once before any other method. |connector| can be used by
   // |this| to connect to other services. It is guaranteed to outlive |this|.
-  virtual void Initialize(service_manager::Connector* connector);
+  virtual void Initialize(
+      service_manager::Connector* connector,
+      service_manager::ServiceContextRefFactory* context_ref_factory);
 
   virtual std::unique_ptr<AudioDecoder> CreateAudioDecoder(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);

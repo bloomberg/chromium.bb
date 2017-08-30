@@ -27,6 +27,9 @@ class GpuMojoMediaClient : public MojoMediaClient {
   ~GpuMojoMediaClient() final;
 
   // MojoMediaClient implementation.
+  void Initialize(
+      service_manager::Connector* connector,
+      service_manager::ServiceContextRefFactory* context_ref_factory) final;
   std::unique_ptr<AudioDecoder> CreateAudioDecoder(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) final;
   std::unique_ptr<VideoDecoder> CreateVideoDecoder(
@@ -40,6 +43,7 @@ class GpuMojoMediaClient : public MojoMediaClient {
  private:
   scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner_;
   base::WeakPtr<MediaGpuChannelManager> media_gpu_channel_manager_;
+  service_manager::ServiceContextRefFactory* context_ref_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuMojoMediaClient);
 };
