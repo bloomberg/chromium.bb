@@ -68,7 +68,7 @@ class HostComponentTransform : public AppendComponentTransform {
     std::string domain_and_registry =
         net::registry_controlled_domains::GetDomainAndRegistry(
             component_text,
-            net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+            net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
 
     base::OffsetAdjuster::Adjustments trivial_subdomains_adjustments;
     base::StringTokenizer tokenizer(
