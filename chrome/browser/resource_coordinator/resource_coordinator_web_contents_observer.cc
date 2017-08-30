@@ -28,10 +28,6 @@
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(ResourceCoordinatorWebContentsObserver);
 
-// We delay the sending of favicon/title update signal to GRC for 5 minutes
-// after the main frame navigation is committed.
-const base::TimeDelta kFaviconAndTitleUpdateIgnoredTimeout =
-    base::TimeDelta::FromMinutes(5);
 bool ResourceCoordinatorWebContentsObserver::ukm_recorder_initialized = false;
 
 ResourceCoordinatorWebContentsObserver::ResourceCoordinatorWebContentsObserver(
@@ -149,7 +145,8 @@ void ResourceCoordinatorWebContentsObserver::DidFinishNavigation(
   if (navigation_handle->IsInMainFrame()) {
     UpdateUkmRecorder(navigation_handle->GetNavigationId());
     ResetFlag();
-    navigation_finished_time_ = base::TimeTicks::Now();
+    tab_resource_coordinator_->SendEvent(
+        resource_coordinator::mojom::Event::kNavigationCommitted);
   }
 
   content::RenderFrameHost* render_frame_host =
@@ -171,13 +168,6 @@ void ResourceCoordinatorWebContentsObserver::TitleWasSet(
     first_time_title_set_ = true;
     return;
   }
-  // Ignore update when the tab is in foreground or the update happens within 5
-  // minutes after the main frame is committed.
-  if (web_contents()->IsVisible() ||
-      base::TimeTicks::Now() - navigation_finished_time_ <
-          kFaviconAndTitleUpdateIgnoredTimeout) {
-    return;
-  }
   tab_resource_coordinator_->SendEvent(
       resource_coordinator::mojom::Event::kTitleUpdated);
 }
@@ -186,13 +176,6 @@ void ResourceCoordinatorWebContentsObserver::DidUpdateFaviconURL(
     const std::vector<content::FaviconURL>& candidates) {
   if (!first_time_favicon_set_) {
     first_time_favicon_set_ = true;
-    return;
-  }
-  // Ignore update when the tab is in foreground or the update happens within 5
-  // minutes after the main frame is committed.
-  if (web_contents()->IsVisible() ||
-      base::TimeTicks::Now() - navigation_finished_time_ <
-          kFaviconAndTitleUpdateIgnoredTimeout) {
     return;
   }
   tab_resource_coordinator_->SendEvent(

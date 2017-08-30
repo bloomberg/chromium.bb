@@ -44,6 +44,14 @@ CoordinationUnitImpl::ToWebContentsCoordinationUnit(
 }
 
 // static
+const WebContentsCoordinationUnitImpl*
+CoordinationUnitImpl::ToWebContentsCoordinationUnit(
+    const CoordinationUnitImpl* cu) {
+  DCHECK(cu->id().type == CoordinationUnitType::kWebContents);
+  return static_cast<const WebContentsCoordinationUnitImpl*>(cu);
+}
+
+// static
 std::vector<CoordinationUnitImpl*>
 CoordinationUnitImpl::GetCoordinationUnitsOfType(CoordinationUnitType type) {
   std::vector<CoordinationUnitImpl*> results;
