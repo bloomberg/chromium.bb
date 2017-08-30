@@ -13,8 +13,6 @@
 #include "base/observer_list.h"
 #include "components/guest_view/browser/guest_view.h"
 #include "content/public/browser/javascript_dialog_manager.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/guest_view/web_view/javascript_dialog_helper.h"
 #include "extensions/browser/guest_view/web_view/web_view_find_helper.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest_delegate.h"
@@ -36,8 +34,7 @@ class WebViewInternalFindFunction;
 // a particular embedder WebContents. This happens on either initial navigation
 // or through the use of the New Window API, when a new window is attached to
 // a particular <webview>.
-class WebViewGuest : public guest_view::GuestView<WebViewGuest>,
-                     public content::NotificationObserver {
+class WebViewGuest : public guest_view::GuestView<WebViewGuest> {
  public:
   // Clean up state when this GuestView is being destroyed. See
   // GuestViewBase::CleanUp().
@@ -193,11 +190,6 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest>,
   void WillAttachToEmbedder() final;
   void WillDestroy() final;
 
-  // NotificationObserver implementation.
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) final;
-
   // WebContentsDelegate implementation.
   bool DidAddMessageToConsole(content::WebContents* source,
                               int32_t level,
@@ -259,21 +251,16 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest>,
   // WebContentsObserver implementation.
   void DidStartNavigation(content::NavigationHandle* navigation_handle) final;
   void DidFinishNavigation(content::NavigationHandle* navigation_handle) final;
+  void DocumentOnLoadCompletedInMainFrame() final;
   void RenderProcessGone(base::TerminationStatus status) final;
+  void DidGetRedirectForResourceRequest(
+      const content::ResourceRedirectDetails& details) final;
   void UserAgentOverrideSet(const std::string& user_agent) final;
   void FrameNameChanged(content::RenderFrameHost* render_frame_host,
                         const std::string& name) final;
 
   // Informs the embedder of a frame name change.
   void ReportFrameNameChange(const std::string& name);
-
-  // Called after the load handler is called in the guest's main frame.
-  void LoadHandlerCalled();
-
-  // Called when a redirect notification occurs.
-  void LoadRedirect(const GURL& old_url,
-                    const GURL& new_url,
-                    bool is_top_level);
 
   void PushWebViewStateToIOThread();
   static void RemoveWebViewStateFromIOThread(
@@ -320,8 +307,6 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest>,
 
   base::ObserverList<ScriptExecutionObserver> script_observers_;
   std::unique_ptr<ScriptExecutor> script_executor_;
-
-  content::NotificationRegistrar notification_registrar_;
 
   // True if the user agent is overridden.
   bool is_overriding_user_agent_;
