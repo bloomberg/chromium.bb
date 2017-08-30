@@ -158,17 +158,6 @@ AccessibilityStatusEventDetails::AccessibilityStatusEventDetails(
     ash::AccessibilityNotificationVisibility notify)
     : notification_type(notification_type),
       enabled(enabled),
-      magnifier_type(ash::kDefaultMagnifierType),
-      notify(notify) {}
-
-AccessibilityStatusEventDetails::AccessibilityStatusEventDetails(
-    AccessibilityNotificationType notification_type,
-    bool enabled,
-    ash::MagnifierType magnifier_type,
-    ash::AccessibilityNotificationVisibility notify)
-    : notification_type(notification_type),
-      enabled(enabled),
-      magnifier_type(magnifier_type),
       notify(notify) {}
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1383,12 +1372,8 @@ void AccessibilityManager::UpdateChromeOSAccessibilityHistograms() {
                         IsVirtualKeyboardEnabled());
   UMA_HISTOGRAM_BOOLEAN("Accessibility.CrosStickyKeys", IsStickyKeysEnabled());
   if (MagnificationManager::Get()) {
-    uint32_t type = MagnificationManager::Get()->IsMagnifierEnabled()
-                        ? MagnificationManager::Get()->GetMagnifierType()
-                        : 0;
-    // '0' means magnifier is disabled.
-    UMA_HISTOGRAM_ENUMERATION("Accessibility.CrosScreenMagnifier", type,
-                              ash::kMaxMagnifierType + 1);
+    UMA_HISTOGRAM_BOOLEAN("Accessibility.CrosScreenMagnifier",
+                          MagnificationManager::Get()->IsMagnifierEnabled());
   }
   if (profile_) {
     const PrefService* const prefs = profile_->GetPrefs();

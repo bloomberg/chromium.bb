@@ -140,19 +140,9 @@ class AccessibilityDelegateImpl : public ash::AccessibilityDelegate {
     return chromeos::MagnificationManager::Get()->SetMagnifierEnabled(enabled);
   }
 
-  void SetMagnifierType(ash::MagnifierType type) override {
-    DCHECK(chromeos::MagnificationManager::Get());
-    return chromeos::MagnificationManager::Get()->SetMagnifierType(type);
-  }
-
   bool IsMagnifierEnabled() const override {
     DCHECK(chromeos::MagnificationManager::Get());
     return chromeos::MagnificationManager::Get()->IsMagnifierEnabled();
-  }
-
-  ash::MagnifierType GetMagnifierType() const override {
-    DCHECK(chromeos::MagnificationManager::Get());
-    return chromeos::MagnificationManager::Get()->GetMagnifierType();
   }
 
   void SetLargeCursorEnabled(bool enabled) override {

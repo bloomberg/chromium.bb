@@ -33,14 +33,8 @@ class ASH_EXPORT AccessibilityDelegate {
   // Invoked to enable the screen magnifier.
   virtual void SetMagnifierEnabled(bool enabled) = 0;
 
-  // Invoked to change the type of the screen magnifier.
-  virtual void SetMagnifierType(MagnifierType type) = 0;
-
   // Returns true if the screen magnifier is enabled.
   virtual bool IsMagnifierEnabled() const = 0;
-
-  // Returns the current screen magnifier mode.
-  virtual MagnifierType GetMagnifierType() const = 0;
 
   // Invoked to enable Large Cursor.
   virtual void SetLargeCursorEnabled(bool enabled) = 0;

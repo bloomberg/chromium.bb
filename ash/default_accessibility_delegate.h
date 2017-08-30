@@ -21,9 +21,7 @@ class ASH_EXPORT DefaultAccessibilityDelegate : public AccessibilityDelegate {
   void ToggleHighContrast() override;
   bool IsHighContrastEnabled() const override;
   void SetMagnifierEnabled(bool enabled) override;
-  void SetMagnifierType(MagnifierType type) override;
   bool IsMagnifierEnabled() const override;
-  MagnifierType GetMagnifierType() const override;
   void SetLargeCursorEnabled(bool enabled) override;
   bool IsLargeCursorEnabled() const override;
   void SetAutoclickEnabled(bool enabled) override;
@@ -66,7 +64,6 @@ class ASH_EXPORT DefaultAccessibilityDelegate : public AccessibilityDelegate {
   bool spoken_feedback_enabled_ = false;
   bool high_contrast_enabled_ = false;
   bool screen_magnifier_enabled_ = false;
-  MagnifierType screen_magnifier_type_ = kDefaultMagnifierType;
   bool large_cursor_enabled_ = false;
   bool autoclick_enabled_ = false;
   bool virtual_keyboard_enabled_ = false;
@@ -79,6 +76,7 @@ class ASH_EXPORT DefaultAccessibilityDelegate : public AccessibilityDelegate {
   bool select_to_speak_enabled_ = false;
   bool switch_access_enabled_ = false;
   AccessibilityAlert accessibility_alert_ = A11Y_ALERT_NONE;
+
   DISALLOW_COPY_AND_ASSIGN(DefaultAccessibilityDelegate);
 };
 
