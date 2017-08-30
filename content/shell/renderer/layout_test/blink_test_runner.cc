@@ -949,12 +949,13 @@ void BlinkTestRunner::OnSetupSecondaryRenderer() {
   test_runner::WebTestInterfaces* interfaces =
       LayoutTestRenderThreadObserver::GetInstance()->test_interfaces();
   interfaces->SetTestIsRunning(true);
-  interfaces->ConfigureForTestWithURL(GURL(), false);
+  interfaces->ConfigureForTestWithURL(GURL(), false, false);
   ForceResizeRenderView(render_view(), WebSize(800, 600));
 }
 
-void BlinkTestRunner::OnReplicateTestConfiguration(
-    mojom::ShellTestConfigurationPtr params) {
+void BlinkTestRunner::ApplyTestConfiguration(
+    mojom::ShellTestConfigurationPtr params,
+    bool initial_application) {
   test_runner::WebTestInterfaces* interfaces =
       LayoutTestRenderThreadObserver::GetInstance()->test_interfaces();
 
@@ -964,14 +965,19 @@ void BlinkTestRunner::OnReplicateTestConfiguration(
   interfaces->SetMainView(render_view()->GetWebView());
 
   interfaces->SetTestIsRunning(true);
-  interfaces->ConfigureForTestWithURL(params->test_url,
-                                      params->enable_pixel_dumping);
+  interfaces->ConfigureForTestWithURL(
+      params->test_url, params->enable_pixel_dumping, initial_application);
+}
+
+void BlinkTestRunner::OnReplicateTestConfiguration(
+    mojom::ShellTestConfigurationPtr params) {
+  ApplyTestConfiguration(std::move(params), false /* initial_configuration */);
 }
 
 void BlinkTestRunner::OnSetTestConfiguration(
     mojom::ShellTestConfigurationPtr params) {
   mojom::ShellTestConfigurationPtr local_params = params.Clone();
-  OnReplicateTestConfiguration(std::move(params));
+  ApplyTestConfiguration(std::move(params), true /* initial_configuration */);
 
   ForceResizeRenderView(render_view(),
                         WebSize(local_params->initial_size.width(),
