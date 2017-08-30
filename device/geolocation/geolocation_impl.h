@@ -20,9 +20,7 @@ class GeolocationContext;
 // Implements the Geolocation Mojo interface.
 class GeolocationImpl : public mojom::Geolocation {
  public:
-  // |context| must outlive this object. |update_callback| will be called when
-  // location updates are sent, allowing the client to know when the service
-  // is being used.
+  // |context| must outlive this object.
   GeolocationImpl(mojo::InterfaceRequest<mojom::Geolocation> request,
                   GeolocationContext* context);
   ~GeolocationImpl() override;
@@ -53,6 +51,8 @@ class GeolocationImpl : public mojom::Geolocation {
 
   // Owns this object.
   GeolocationContext* context_;
+
+  // Token that unsubscribes from GeolocationProvider updates when destroyed.
   std::unique_ptr<GeolocationProvider::Subscription> geolocation_subscription_;
 
   // The callback passed to QueryNextPosition.
