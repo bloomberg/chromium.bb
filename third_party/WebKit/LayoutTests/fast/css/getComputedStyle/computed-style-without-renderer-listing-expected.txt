@@ -48,7 +48,7 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 -webkit-text-combine: none
 -webkit-text-decorations-in-effect: none
 -webkit-text-emphasis-color: rgb(0, 0, 0)
--webkit-text-emphasis-position: over
+-webkit-text-emphasis-position: over right
 -webkit-text-emphasis-style: none
 -webkit-text-fill-color: rgb(0, 0, 0)
 -webkit-text-orientation: vertical-right

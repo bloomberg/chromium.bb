@@ -91,6 +91,58 @@ static inline bool HasIdenticalLineHeightProperties(
          child_style.VerticalAlign() == EVerticalAlign::kBaseline;
 }
 
+inline bool InlineFlowBox::HasEmphasisMarkBefore(
+    const InlineTextBox* text_box) const {
+  TextEmphasisPosition emphasis_mark_position;
+  const auto& style =
+      text_box->GetLineLayoutItem().StyleRef(IsFirstLineStyle());
+  if (!text_box->GetEmphasisMarkPosition(style, emphasis_mark_position))
+    return false;
+  if (IsHorizontal()) {
+    return emphasis_mark_position == TextEmphasisPosition::kOverRight ||
+           emphasis_mark_position == TextEmphasisPosition::kOverLeft;
+  }
+  if (style.IsFlippedLinesWritingMode()) {
+    return emphasis_mark_position == TextEmphasisPosition::kOverLeft ||
+           emphasis_mark_position == TextEmphasisPosition::kUnderLeft;
+  }
+  if (style.IsFlippedBlocksWritingMode()) {
+    return emphasis_mark_position == TextEmphasisPosition::kOverRight ||
+           emphasis_mark_position == TextEmphasisPosition::kUnderRight;
+  }
+  return false;
+}
+
+inline bool InlineFlowBox::HasEmphasisMarkOver(
+    const InlineTextBox* text_box) const {
+  TextEmphasisPosition emphasis_mark_position;
+  if (!text_box->GetEmphasisMarkPosition(
+          text_box->GetLineLayoutItem().StyleRef(IsFirstLineStyle()),
+          emphasis_mark_position))
+    return false;
+
+  return IsHorizontal()
+             ? emphasis_mark_position == TextEmphasisPosition::kOverRight ||
+                   emphasis_mark_position == TextEmphasisPosition::kOverLeft
+             : emphasis_mark_position == TextEmphasisPosition::kOverRight ||
+                   emphasis_mark_position == TextEmphasisPosition::kUnderRight;
+}
+
+inline bool InlineFlowBox::HasEmphasisMarkUnder(
+    const InlineTextBox* text_box) const {
+  TextEmphasisPosition emphasis_mark_position;
+  if (!text_box->GetEmphasisMarkPosition(
+          text_box->GetLineLayoutItem().StyleRef(IsFirstLineStyle()),
+          emphasis_mark_position))
+    return false;
+
+  return IsHorizontal()
+             ? emphasis_mark_position == TextEmphasisPosition::kUnderRight ||
+                   emphasis_mark_position == TextEmphasisPosition::kUnderLeft
+             : emphasis_mark_position == TextEmphasisPosition::kOverLeft ||
+                   emphasis_mark_position == TextEmphasisPosition::kUnderLeft;
+}
+
 void InlineFlowBox::AddToLine(InlineBox* child) {
   DCHECK(!child->Parent());
   DCHECK(!child->NextOnLine());
@@ -823,11 +875,7 @@ void InlineFlowBox::PlaceBoxesInBlockDirection(
         if (ToInlineTextBox(curr)->GetEmphasisMarkPosition(
                 curr->GetLineLayoutItem().StyleRef(IsFirstLineStyle()),
                 emphasis_mark_position)) {
-          bool emphasis_mark_is_over =
-              emphasis_mark_position == TextEmphasisPosition::kOver;
-          if (emphasis_mark_is_over != curr->GetLineLayoutItem()
-                                           .Style(IsFirstLineStyle())
-                                           ->IsFlippedLinesWritingMode())
+          if (HasEmphasisMarkBefore(ToInlineTextBox(curr)))
             has_annotations_before = true;
           else
             has_annotations_after = true;
@@ -1051,8 +1099,7 @@ inline void InlineFlowBox::AddTextBoxVisualOverflow(
       text_box->GetEmphasisMarkPosition(style, emphasis_mark_position)) {
     float emphasis_mark_height =
         style.GetFont().EmphasisMarkHeight(style.TextEmphasisMarkString());
-    if ((emphasis_mark_position == TextEmphasisPosition::kOver) ==
-        (!style.IsFlippedLinesWritingMode()))
+    if (HasEmphasisMarkBefore(text_box))
       top_glyph_overflow = std::min(top_glyph_overflow, -emphasis_mark_height);
     else
       bottom_glyph_overflow =
@@ -1553,7 +1600,7 @@ LayoutUnit InlineFlowBox::ComputeOverAnnotationAdjustment(
       if (style.GetTextEmphasisMark() != TextEmphasisMark::kNone &&
           ToInlineTextBox(curr)->GetEmphasisMarkPosition(
               style, emphasis_mark_position) &&
-          emphasis_mark_position == TextEmphasisPosition::kOver) {
+          HasEmphasisMarkOver(ToInlineTextBox(curr))) {
         if (!style.IsFlippedLinesWritingMode()) {
           int top_of_emphasis_mark =
               (curr->LogicalTop() - style.GetFont().EmphasisMarkHeight(
@@ -1621,7 +1668,7 @@ LayoutUnit InlineFlowBox::ComputeUnderAnnotationAdjustment(
       const ComputedStyle& style =
           curr->GetLineLayoutItem().StyleRef(IsFirstLineStyle());
       if (style.GetTextEmphasisMark() != TextEmphasisMark::kNone &&
-          style.GetTextEmphasisPosition() == TextEmphasisPosition::kUnder) {
+          HasEmphasisMarkUnder(ToInlineTextBox(curr))) {
         if (!style.IsFlippedLinesWritingMode()) {
           LayoutUnit bottom_of_emphasis_mark =
               curr->LogicalBottom() + style.GetFont().EmphasisMarkHeight(

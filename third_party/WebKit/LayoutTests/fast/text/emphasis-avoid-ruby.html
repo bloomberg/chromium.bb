@@ -20,15 +20,15 @@
 
     <!-- emphasis under, should not be suppressed by ruby -->
     <div class="flipped">
-        1 <ruby><rb>23 <span style="-webkit-text-emphasis-position: under;">45</span></rb><rt>678</rt></ruby>
+        1 <ruby><rb>23 <span style="-webkit-text-emphasis-position: under left;">45</span></rb><rt>678</rt></ruby>
     </div>
     <!-- emphasis over, but no lines in ruby text, should not inhibit emphasis -->
     <div class="flipped">
-        1 <ruby><rb>23 <span style="-webkit-text-emphasis-position: over;">45</span></rb><rt> </rt></ruby>
+        1 <ruby><rb>23 <span style="-webkit-text-emphasis-position: over right;">45</span></rb><rt> </rt></ruby>
     </div>
     <!-- emphasis over should be suppressed by ruby -->
     <div class="flipped">
-        1 <ruby><rb>23 <span style="-webkit-text-emphasis-position: over; -webkit-text-emphasis-color: red;">45</span></rb><rt>678</rt></ruby>
+        1 <ruby><rb>23 <span style="-webkit-text-emphasis-position: over right; -webkit-text-emphasis-color: red;">45</span></rb><rt>678</rt></ruby>
     </div>
 
 </body>

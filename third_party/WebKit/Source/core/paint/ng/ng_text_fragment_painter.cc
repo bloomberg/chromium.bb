@@ -128,7 +128,7 @@ void NGTextFragmentPainter::Paint(const Document& document,
                              fragment_.IsHorizontal());
   TextEmphasisPosition emphasis_mark_position;
   bool has_text_emphasis = false;  // TODO(layout-dev): Implement.
-  emphasis_mark_position = TextEmphasisPosition::kOver;
+  emphasis_mark_position = TextEmphasisPosition::kOverRight;
   if (has_text_emphasis) {
     text_painter.SetEmphasisMark(style_to_use.TextEmphasisMarkString(),
                                  emphasis_mark_position);

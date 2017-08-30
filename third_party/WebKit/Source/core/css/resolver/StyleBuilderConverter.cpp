@@ -1355,6 +1355,24 @@ StyleAutoColor StyleBuilderConverter::ConvertStyleAutoColor(
       value, Color(), for_visited_link);
 }
 
+TextEmphasisPosition StyleBuilderConverter::ConvertTextTextEmphasisPosition(
+    StyleResolverState& state,
+    const CSSValue& value) {
+  const CSSValueList& list = ToCSSValueList(value);
+  DCHECK(list.Item(0).IsIdentifierValue());
+  DCHECK(list.Item(1).IsIdentifierValue());
+  CSSValueID first = ToCSSIdentifierValue(list.Item(0)).GetValueID();
+  CSSValueID second = ToCSSIdentifierValue(list.Item(1)).GetValueID();
+  if (first == CSSValueOver && second == CSSValueRight)
+    return TextEmphasisPosition::kOverRight;
+  if (first == CSSValueOver && second == CSSValueLeft)
+    return TextEmphasisPosition::kOverLeft;
+  if (first == CSSValueUnder && second == CSSValueRight)
+    return TextEmphasisPosition::kUnderRight;
+  if (first == CSSValueUnder && second == CSSValueLeft)
+    return TextEmphasisPosition::kUnderLeft;
+  return TextEmphasisPosition::kOverRight;
+}
 float StyleBuilderConverter::ConvertTextStrokeWidth(StyleResolverState& state,
                                                     const CSSValue& value) {
   if (value.IsIdentifierValue() && ToCSSIdentifierValue(value).GetValueID()) {

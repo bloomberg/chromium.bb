@@ -294,6 +294,13 @@ enum SnapAlignment {
   kSnapAlignmentCenter
 };
 
+enum TextEmphasisPosition {
+  kOverRight,
+  kOverLeft,
+  kUnderRight,
+  kUnderLeft,
+};
+
 }  // namespace blink
 
 #endif  // ComputedStyleConstants_h
