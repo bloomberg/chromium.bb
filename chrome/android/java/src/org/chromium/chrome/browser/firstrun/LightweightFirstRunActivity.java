@@ -103,7 +103,7 @@ public class LightweightFirstRunActivity extends FirstRunActivity {
             mOkButton.setEnabled(false);
             return;
         }
-        sGlue.acceptTermsOfService(false);
+        FirstRunUtils.acceptTermsOfService(false);
         completeFirstRunExperience();
     }
 }
