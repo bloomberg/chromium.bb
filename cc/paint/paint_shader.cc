@@ -220,7 +220,11 @@ sk_sp<SkShader> PaintShader::GetSkShader() const {
 void PaintShader::SetColorsAndPositions(const SkColor* colors,
                                         const SkScalar* positions,
                                         int count) {
+#if DCHECK_IS_ON()
+  static const int kMaxShaderColorsSupported = 10000;
   DCHECK_GE(count, 2);
+  DCHECK_LE(count, kMaxShaderColorsSupported);
+#endif
   colors_.assign(colors, colors + count);
   if (positions)
     positions_.assign(positions, positions + count);

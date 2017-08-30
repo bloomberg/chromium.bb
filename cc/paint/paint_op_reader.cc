@@ -16,6 +16,9 @@
 namespace cc {
 namespace {
 
+// If we have more than this many colors, abort deserialization.
+const size_t kMaxShaderColorsSupported = 10000;
+
 bool IsValidPaintShaderType(PaintShader::Type type) {
   return static_cast<uint8_t>(type) <
          static_cast<uint8_t>(PaintShader::Type::kShaderCount);
@@ -247,8 +250,8 @@ void PaintOpReader::Read(sk_sp<PaintShader>* shader) {
   decltype(ref.colors_)::size_type colors_size = 0;
   ReadSimple(&colors_size);
 
-  // If colors_bytes would overflow, then definitely too many.
-  if (colors_size > std::numeric_limits<size_t>::max() / sizeof(SkColor)) {
+  // If there are too many colors, abort.
+  if (colors_size > kMaxShaderColorsSupported) {
     valid_ = false;
     return;
   }
@@ -257,8 +260,6 @@ void PaintOpReader::Read(sk_sp<PaintShader>* shader) {
     valid_ = false;
     return;
   }
-  // TODO(enne): maybe we should cap the number of colors or positions to
-  // something much more reasonable, e.g. 1k?
   ref.colors_.resize(colors_size);
   ReadData(colors_bytes, ref.colors_.data());
 
