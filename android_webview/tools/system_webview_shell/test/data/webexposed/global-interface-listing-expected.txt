@@ -3009,6 +3009,7 @@ interface Navigator
     getter bluetooth
     getter connection
     getter cookieEnabled
+    getter deviceMemory
     getter doNotTrack
     getter geolocation
     getter hardwareConcurrency
