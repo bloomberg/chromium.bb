@@ -13,7 +13,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/json/json_writer.h"
-#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
@@ -29,31 +28,6 @@
 namespace net {
 
 namespace {
-
-// Based on how the Android runner sets things up, it is only valid for one
-// RemoteTestServer to be active on the device at a time.
-class RemoteTestServerTracker {
- public:
-  void StartingServer() {
-    base::AutoLock lock(lock_);
-    CHECK_EQ(count_, 0);
-    count_++;
-  }
-
-  void StoppingServer() {
-    base::AutoLock lock(lock_);
-    CHECK_EQ(count_, 1);
-    count_--;
-  }
-
- private:
-  // |lock_| protects access to |count_|.
-  base::Lock lock_;
-  int count_ = 0;
-};
-
-base::LazyInstance<RemoteTestServerTracker>::Leaky tracker =
-    LAZY_INSTANCE_INITIALIZER;
 
 // Please keep it sync with dictionary SERVER_TYPES in testserver.py
 std::string GetServerTypeString(BaseTestServer::Type type) {
@@ -101,8 +75,6 @@ bool RemoteTestServer::Start() {
   if (spawner_communicator_.get())
     return true;
 
-  tracker.Get().StartingServer();
-
   spawner_communicator_ =
       std::make_unique<SpawnerCommunicator>(RemoteTestServerConfig::Load());
 
@@ -147,19 +119,18 @@ bool RemoteTestServer::BlockUntilStarted() {
 }
 
 bool RemoteTestServer::Stop() {
-  if (!spawner_communicator_.get())
+  if (!spawner_communicator_)
     return true;
 
-  tracker.Get().StoppingServer();
-
+  uint16_t port = GetPort();
   CleanUpWhenStoppingServer();
-  bool stopped = spawner_communicator_->StopServer();
+  bool stopped = spawner_communicator_->StopServer(port);
 
   if (!stopped)
     LOG(ERROR) << "Failed stopping RemoteTestServer";
 
   // Explicitly reset |spawner_communicator_| to avoid reusing the stopped one.
-  spawner_communicator_.reset(NULL);
+  spawner_communicator_.reset();
   return stopped;
 }
 

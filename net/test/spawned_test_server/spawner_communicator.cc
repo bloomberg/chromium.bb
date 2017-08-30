@@ -4,6 +4,8 @@
 
 #include "net/test/spawned_test_server/spawner_communicator.h"
 
+#include <inttypes.h>
+
 #include <limits>
 #include <utility>
 
@@ -322,7 +324,7 @@ bool SpawnerCommunicator::StartServer(const std::string& arguments,
   return result == OK;
 }
 
-bool SpawnerCommunicator::StopServer() {
+bool SpawnerCommunicator::StopServer(uint16_t port) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // It's OK to stop the SpawnerCommunicator without starting it. Some tests
   // have test server on their test fixture but do not actually use it.
@@ -332,7 +334,9 @@ bool SpawnerCommunicator::StopServer() {
   // When the test is done, ask the test server spawner to kill the test server
   // on the remote machine.
   std::string server_return_data;
-  int result = SendCommandAndWaitForResult("kill", "", &server_return_data);
+  std::string command = base::StringPrintf("kill?port=%" PRIu16, port);
+  int result =
+      SendCommandAndWaitForResult(command, std::string(), &server_return_data);
   Shutdown();
   if (result != OK || server_return_data != "killed")
     return false;
