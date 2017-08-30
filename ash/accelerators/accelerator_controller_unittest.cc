@@ -795,8 +795,8 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
       ui::Accelerator(ui::VKEY_T, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN)));
 
   // Show task manager
-  EXPECT_TRUE(
-      ProcessInController(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_SHIFT_DOWN)));
+  EXPECT_TRUE(ProcessInController(
+      ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_COMMAND_DOWN)));
 
   // Open file manager
   EXPECT_TRUE(ProcessInController(
@@ -808,6 +808,9 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
   // effect of locking the screen.
   EXPECT_TRUE(
       ProcessInController(ui::Accelerator(ui::VKEY_L, ui::EF_COMMAND_DOWN)));
+
+  message_center::MessageCenter::Get()->RemoveAllNotifications(
+      false /* by_user */, message_center::MessageCenter::RemoveType::ALL);
 }
 
 TEST_F(AcceleratorControllerTest, GlobalAcceleratorsToggleAppList) {
