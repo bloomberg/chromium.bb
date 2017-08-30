@@ -31,6 +31,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/upload_data_stream.h"
 #include "net/base/url_util.h"
+#include "net/cert/cert_status_flags.h"
 #include "net/filter/filter_source_stream.h"
 #include "net/http/bidirectional_stream_impl.h"
 #include "net/http/http_auth.h"
@@ -63,6 +64,7 @@
 #include "net/spdy/chromium/spdy_session_pool.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_connection_status_flags.h"
+#include "net/ssl/ssl_info.h"
 #include "net/ssl/ssl_private_key.h"
 #include "net/ssl/token_binding.h"
 #include "url/gurl.h"
@@ -1313,12 +1315,14 @@ int HttpNetworkTransaction::DoReadHeadersComplete(int result) {
   }
 
   if (IsSecureRequest()) {
-    session_->http_stream_factory()->ProcessAlternativeServices(
-        session_, response_.headers.get(), url::SchemeHostPort(request_->url));
-  }
-
-  if (IsSecureRequest())
     stream_->GetSSLInfo(&response_.ssl_info);
+    if (response_.ssl_info.is_valid() &&
+        !IsCertStatusError(response_.ssl_info.cert_status)) {
+      session_->http_stream_factory()->ProcessAlternativeServices(
+          session_, response_.headers.get(),
+          url::SchemeHostPort(request_->url));
+    }
+  }
 
   int rv = HandleAuthChallenge();
   if (rv != OK)
