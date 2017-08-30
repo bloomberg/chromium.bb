@@ -161,7 +161,7 @@ class URL_EXPORT Origin {
   GURL GetURL() const;
 
   // Same as GURL::DomainIs. If |this| origin is unique, then returns false.
-  bool DomainIs(base::StringPiece lower_ascii_domain) const;
+  bool DomainIs(base::StringPiece canonical_domain) const;
 
   // Allows Origin to be used as a key in STL (for example, a std::set or
   // std::map).
