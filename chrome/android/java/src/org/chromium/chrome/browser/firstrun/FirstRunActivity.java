@@ -33,7 +33,6 @@ import org.chromium.chrome.browser.searchwidget.SearchWidgetProvider;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.ui.base.LocalizationUtils;
 
-import java.lang.ref.WeakReference;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -405,7 +404,7 @@ public class FirstRunActivity extends AsyncInitializationActivity implements Fir
 
     @Override
     public void abortFirstRunExperience() {
-        finishAllTheActivities(getLocalClassName());
+        finish();
 
         sendPendingIntentIfNecessary(false);
         if (sObserver != null) sObserver.onAbortFirstRunExperience();
@@ -453,13 +452,13 @@ public class FirstRunActivity extends AsyncInitializationActivity implements Fir
         if (sObserver != null) sObserver.onUpdateCachedEngineName();
 
         if (!sendPendingIntentIfNecessary(true)) {
-            finishAllTheActivities(getLocalClassName());
+            finish();
         } else {
             ApplicationStatus.registerStateListenerForActivity(new ActivityStateListener() {
                 @Override
                 public void onActivityStateChange(Activity activity, int newState) {
                     if (newState == ActivityState.STOPPED || newState == ActivityState.DESTROYED) {
-                        finishAllTheActivities(getLocalClassName());
+                        finish();
                         ApplicationStatus.unregisterActivityStateListener(this);
                     }
                 }
@@ -506,20 +505,6 @@ public class FirstRunActivity extends AsyncInitializationActivity implements Fir
     protected void flushPersistentData() {
         if (mNativeSideIsInitialized) {
             ProfileManagerUtils.flushPersistentDataForAllProfiles();
-        }
-    }
-
-    /**
-    * Finish all the instances of the given Activity.
-    * @param targetActivity The class name of the target Activity.
-    */
-    protected static void finishAllTheActivities(String targetActivity) {
-        List<WeakReference<Activity>> activities = ApplicationStatus.getRunningActivities();
-        for (WeakReference<Activity> weakActivity : activities) {
-            Activity activity = weakActivity.get();
-            if (activity != null && activity.getLocalClassName().equals(targetActivity)) {
-                activity.finish();
-            }
         }
     }
 
