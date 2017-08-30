@@ -13,6 +13,9 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
+class BrowserContextKeyedServiceFactory;
+class TtsController;
+
 namespace content {
 class BrowserContext;
 }  // namespace content
@@ -27,6 +30,9 @@ class ArcTtsService : public KeyedService,
                       public InstanceHolder<mojom::TtsInstance>::Observer,
                       public mojom::TtsHost {
  public:
+  // Returns the factory instance for this class.
+  static BrowserContextKeyedServiceFactory* GetFactory();
+
   // Returns singleton instance for the given BrowserContext,
   // or nullptr if the browser |context| is not allowed to use ARC.
   static ArcTtsService* GetForBrowserContext(content::BrowserContext* context);
@@ -44,10 +50,15 @@ class ArcTtsService : public KeyedService,
                   uint32_t char_index,
                   const std::string& error_msg) override;
 
+  void set_tts_controller_for_testing(TtsController* tts_controller) {
+    tts_controller_ = tts_controller;
+  }
+
  private:
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
 
   mojo::Binding<mojom::TtsHost> binding_;
+  TtsController* tts_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcTtsService);
 };
