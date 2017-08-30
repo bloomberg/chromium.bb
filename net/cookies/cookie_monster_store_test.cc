@@ -102,20 +102,6 @@ void MockPersistentCookieStore::SetForceKeepSessionState() {
 MockPersistentCookieStore::~MockPersistentCookieStore() {
 }
 
-MockCookieMonsterDelegate::MockCookieMonsterDelegate() {
-}
-
-void MockCookieMonsterDelegate::OnCookieChanged(
-    const CanonicalCookie& cookie,
-    bool removed,
-    CookieStore::ChangeCause cause) {
-  CookieNotification notification(cookie, removed);
-  changes_.push_back(notification);
-}
-
-MockCookieMonsterDelegate::~MockCookieMonsterDelegate() {
-}
-
 std::unique_ptr<CanonicalCookie> BuildCanonicalCookie(
     const GURL& url,
     const std::string& cookie_line,
@@ -254,7 +240,7 @@ std::unique_ptr<CookieMonster> CreateMonsterFromStoreForGC(
     store->AddCookie(*cc);
   }
 
-  return std::make_unique<CookieMonster>(store.get(), nullptr);
+  return std::make_unique<CookieMonster>(store.get());
 }
 
 MockSimplePersistentCookieStore::~MockSimplePersistentCookieStore() {

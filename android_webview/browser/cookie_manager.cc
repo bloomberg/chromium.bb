@@ -320,7 +320,7 @@ net::CookieStore* CookieManager::GetCookieStore() {
 
     content::CookieStoreConfig cookie_config(
         cookie_store_path, content::CookieStoreConfig::RESTORED_SESSION_COOKIES,
-        nullptr, nullptr);
+        nullptr);
     cookie_config.client_task_runner = cookie_store_task_runner_;
     cookie_config.background_task_runner =
         cookie_store_backend_thread_.task_runner();

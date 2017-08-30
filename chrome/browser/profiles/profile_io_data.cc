@@ -116,7 +116,7 @@
 #include "third_party/WebKit/public/public_features.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-#include "chrome/browser/extensions/extension_cookie_monster_delegate.h"
+#include "chrome/browser/extensions/extension_cookie_notifier.h"
 #include "extensions/browser/extension_protocols.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_throttle_manager.h"
@@ -410,7 +410,8 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   params->extension_info_map =
       extensions::ExtensionSystem::Get(profile)->info_map();
-  params->cookie_monster_delegate = new ExtensionCookieMonsterDelegate(profile);
+  params->extension_cookie_notifier =
+      base::MakeUnique<ExtensionCookieNotifier>(profile);
 #endif
 
   if (auto* loading_predictor =
@@ -1159,6 +1160,14 @@ void ProfileIOData::Init(
           std::move(profile_params_->main_network_context_request),
           std::move(profile_params_->main_network_context_params),
           std::move(builder), &main_request_context_);
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  extension_cookie_notifier_ =
+      std::move(profile_params_->extension_cookie_notifier);
+  // Cookie store will outlive notifier by order of declaration in
+  // profile_io_data.h.
+  extension_cookie_notifier_->AddStore(main_request_context_->cookie_store());
+#endif
 
   // Attach some things to the URLRequestContextBuilder's
   // TransportSecurityState.  Since no requests have been made yet, safe to do

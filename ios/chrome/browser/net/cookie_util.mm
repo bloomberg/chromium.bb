@@ -55,7 +55,7 @@ std::unique_ptr<net::CookieMonster> CreateCookieMonster(
     const CookieStoreConfig& config) {
   if (config.path.empty()) {
     // Empty path means in-memory store.
-    return base::MakeUnique<net::CookieMonster>(nullptr, nullptr);
+    return base::MakeUnique<net::CookieMonster>(nullptr);
   }
 
   const bool restore_old_session_cookies =
@@ -64,7 +64,7 @@ std::unique_ptr<net::CookieMonster> CreateCookieMonster(
       CreatePersistentCookieStore(config.path, restore_old_session_cookies,
                                   config.crypto_delegate);
   std::unique_ptr<net::CookieMonster> cookie_monster(
-      new net::CookieMonster(persistent_store.get(), nullptr));
+      new net::CookieMonster(persistent_store.get()));
   if (restore_old_session_cookies)
     cookie_monster->SetPersistSessionCookies(true);
   return cookie_monster;
