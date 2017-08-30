@@ -2070,6 +2070,48 @@ TEST_F(WindowSelectorTest, WindowGridSizeWhileDraggingWithSplitView) {
   ToggleOverview();
 }
 
+// Tests dragging a unsnappable window.
+TEST_F(WindowSelectorTest, DraggingNonSnapableAppWithSplitView) {
+  // Enable split view, enter maximize mode, add a unsnappable window and enter
+  // overview mode.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kAshEnableTabletSplitView);
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+
+  const gfx::Rect bounds(0, 0, 400, 400);
+  std::unique_ptr<aura::Window> unsnappable_window(CreateWindow(bounds));
+  unsnappable_window->SetProperty(aura::client::kResizeBehaviorKey,
+                                  ui::mojom::kResizeBehaviorNone);
+
+  // The grid bounds should be the size of the root window minus the shelf.
+  const gfx::Rect root_window_bounds =
+      Shell::Get()->GetPrimaryRootWindow()->GetBoundsInScreen();
+  const gfx::Rect shelf_bounds =
+      Shelf::ForWindow(Shell::Get()->GetPrimaryRootWindow())->GetIdealBounds();
+  const gfx::Rect expected_grid_bounds =
+      SubtractRects(root_window_bounds, shelf_bounds);
+
+  ToggleOverview();
+  ASSERT_TRUE(window_selector_controller()->IsSelecting());
+
+  // Verify that after dragging the unsnappable window to the left and right,
+  // the window grid bounds do not change.
+  WindowSelectorItem* selector_item =
+      GetWindowItemForWindow(0, unsnappable_window.get());
+  window_selector()->InitiateDrag(selector_item,
+                                  selector_item->target_bounds().CenterPoint());
+  window_selector()->Drag(selector_item, gfx::Point(0, 0));
+  EXPECT_EQ(expected_grid_bounds, GetGridBounds());
+  window_selector()->Drag(selector_item,
+                          gfx::Point(root_window_bounds.right(), 0));
+  EXPECT_EQ(expected_grid_bounds, GetGridBounds());
+  window_selector()->Drag(selector_item,
+                          gfx::Point(root_window_bounds.right() / 2, 0));
+  EXPECT_EQ(expected_grid_bounds, GetGridBounds());
+
+  ToggleOverview();
+}
+
 // Tests that if there is only one window in the MRU window list in the overview
 // mode, snapping the window to one side of the screen will end the overview
 // mode since there is no more window left in the overview window grid.
