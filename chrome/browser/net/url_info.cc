@@ -159,7 +159,7 @@ void UrlInfo::SetPendingDeleteState() {
 }
 
 void UrlInfo::SetFoundState() {
-  DCHECK(ASSIGNED == state_ || ASSIGNED_BUT_MARKED == state_);
+  DCHECK(ASSIGNED == state_);
   state_ = FOUND;
   resolve_duration_ = GetDuration();
   const TimeDelta max_duration = MaxNonNetworkDnsLookupDuration();
@@ -172,7 +172,7 @@ void UrlInfo::SetFoundState() {
 }
 
 void UrlInfo::SetNoSuchNameState() {
-  DCHECK(ASSIGNED == state_ || ASSIGNED_BUT_MARKED == state_);
+  DCHECK(ASSIGNED == state_);
   state_ = NO_SUCH_NAME;
   resolve_duration_ = GetDuration();
 #ifndef NDEBUG
