@@ -345,7 +345,7 @@ AutomationPredicate.shouldIgnoreNode = function(node) {
   // Ignore some roles.
   return AutomationPredicate.leaf(node) && (AutomationPredicate.roles([
            Role.CLIENT, Role.COLUMN, Role.GENERIC_CONTAINER, Role.GROUP,
-           Role.IMAGE, Role.STATIC_TEXT, Role.SVG_ROOT,
+           Role.IMAGE, Role.PARAGRAPH, Role.STATIC_TEXT, Role.SVG_ROOT,
            Role.TABLE_HEADER_CONTAINER, Role.UNKNOWN
          ])(node));
 };
