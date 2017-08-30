@@ -1629,16 +1629,19 @@ viz::FrameSinkId RenderWidgetHostViewAura::FrameSinkIdAtPoint(
     gfx::Point* transformed_point) {
   DCHECK(device_scale_factor_ != 0.0f);
 
+  // TODO: this shouldn't be used with aura-mus, so that the null check so
+  // go away and become a DCHECK.
+  if (!delegated_frame_host_) {
+    *transformed_point = point;
+    return GetFrameSinkId();
+  }
+
   // The surface hittest happens in device pixels, so we need to convert the
   // |point| from DIPs to pixels before hittesting.
   gfx::Point point_in_pixels =
       gfx::ConvertPointToPixel(device_scale_factor_, point);
-  // TODO: this shouldn't be used with aura-mus, so that the null check so
-  // go away and become a DCHECK.
-  viz::SurfaceId id = delegated_frame_host_
-                          ? delegated_frame_host_->SurfaceIdAtPoint(
-                                delegate, point_in_pixels, transformed_point)
-                          : viz::SurfaceId();
+  viz::SurfaceId id = delegated_frame_host_->SurfaceIdAtPoint(
+      delegate, point_in_pixels, transformed_point);
   *transformed_point =
       gfx::ConvertPointToDIP(device_scale_factor_, *transformed_point);
 
