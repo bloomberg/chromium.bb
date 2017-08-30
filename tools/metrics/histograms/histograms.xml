@@ -30316,6 +30316,19 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.Audio.Render.OutputDeviceAuthorizationTime" units="ms">
+  <owner>maxmorin@chromium.org</owner>
+  <summary>
+    Similar to Media.Audio.OutputDeviceAuthorizationTime, this histogram
+    measures the time required for device authorization, but it is measured on
+    the renderer side when AudioOutputDevice calls RequestDeviceAuthorization on
+    the IO thread until it receives OnDeviceAuthorized, also on the IO thread.
+    Note that an authorization timeout will cause OnDeviceAuthorized to be
+    called, so for platforms that use a timeout, very few times will be above
+    the timeout value.
+  </summary>
+</histogram>
+
 <histogram name="Media.Audio.Render.OutputDeviceAuthorizationTimedOut"
     enum="BooleanTimedOut">
   <owner>olka@chromium.org</owner>
