@@ -86,9 +86,15 @@ constexpr int kCompactTitleMessageViewSpacing = 12;
 
 constexpr int kProgressBarHeight = 4;
 
-constexpr int kMessageViewWidth =
+constexpr int kMessageViewWidthWithIcon =
     message_center::kNotificationWidth - kIconViewSize.width() -
+    kLeftContentPaddingWithIcon.left() - kLeftContentPaddingWithIcon.right() -
     kContentRowPadding.left() - kContentRowPadding.right();
+
+constexpr int kMessageViewWidth =
+    message_center::kNotificationWidth - kLeftContentPadding.left() -
+    kLeftContentPadding.right() - kContentRowPadding.left() -
+    kContentRowPadding.right();
 
 // "Roboto-Regular, 13sp" is specified in the mock.
 constexpr int kTextFontSize = 13;
@@ -650,14 +656,6 @@ void NotificationViewMD::CreateOrUpdateMessageView(
     message_view_->SetLineLimit(kMaxLinesForMessageView);
     message_view_->SetColors(kDimTextColorMD, kContextTextBackgroundColor);
 
-    // TODO(tetsui): Workaround https://crbug.com/682266 by explicitly setting
-    // the width.
-    // Ideally, we should fix the original bug, but it seems there's no obvious
-    // solution for the bug according to https://crbug.com/678337#c7, we should
-    // ensure that the change won't break any of the users of BoxLayout class.
-    DCHECK(right_content_);
-    message_view_->SizeToFit(kMessageViewWidth);
-
     left_content_->AddChildView(message_view_);
   } else {
     message_view_->SetText(text);
@@ -917,8 +915,18 @@ void NotificationViewMD::UpdateViewForExpandedState(bool expanded) {
   if (icon_view_ && icon_view_->visible()) {
     left_content_->SetBorder(
         views::CreateEmptyBorder(kLeftContentPaddingWithIcon));
+
+    // TODO(tetsui): Workaround https://crbug.com/682266 by explicitly setting
+    // the width.
+    // Ideally, we should fix the original bug, but it seems there's no obvious
+    // solution for the bug according to https://crbug.com/678337#c7, we should
+    // ensure that the change won't break any of the users of BoxLayout class.
+    if (message_view_)
+      message_view_->SizeToFit(kMessageViewWidthWithIcon);
   } else {
     left_content_->SetBorder(views::CreateEmptyBorder(kLeftContentPadding));
+    if (message_view_)
+      message_view_->SizeToFit(kMessageViewWidth);
   }
 }
 
