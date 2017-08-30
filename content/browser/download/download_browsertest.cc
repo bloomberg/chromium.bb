@@ -2751,7 +2751,8 @@ IN_PROC_BROWSER_TEST_F(ParallelDownloadTest, ParallelDownloadComplete) {
 }
 
 // Verify parallel download resumption.
-IN_PROC_BROWSER_TEST_F(ParallelDownloadTest, ParallelDownloadResumption) {
+IN_PROC_BROWSER_TEST_F(ParallelDownloadTest,
+                       DISABLED_ParallelDownloadResumption) {
   EXPECT_TRUE(base::FeatureList::IsEnabled(features::kParallelDownloading));
 
   TestDownloadRequestHandler request_handler;
