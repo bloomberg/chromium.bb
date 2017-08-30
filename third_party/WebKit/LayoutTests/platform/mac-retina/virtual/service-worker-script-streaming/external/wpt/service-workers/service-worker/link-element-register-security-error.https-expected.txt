@@ -1,0 +1,11 @@
+This is a testharness.js-based test.
+FAIL Registering same scope as the script directory without the last slash Test bug: need to pass exception to assert_throws()
+FAIL Registration scope outside the script directory Test bug: need to pass exception to assert_throws()
+FAIL Registering scope outside domain Test bug: need to pass exception to assert_throws()
+FAIL Registering script outside domain Test bug: need to pass exception to assert_throws()
+FAIL Registering redirected script Test bug: need to pass exception to assert_throws()
+FAIL Scope including parent-reference and not under the script directory Test bug: need to pass exception to assert_throws()
+FAIL Script URL including consecutive slashes Test bug: need to pass exception to assert_throws()
+FAIL Script URL is same-origin filesystem: URL Test bug: need to pass exception to assert_throws()
+Harness: the test ran to completion.
+

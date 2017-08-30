@@ -74,6 +74,7 @@ timeout @ console-uncaught-promise.html:16
 setTimeout (async)
 runNextPromiseTest @ console-uncaught-promise.html:15
 (anonymous) @ VM:1
+A bad HTTP response code (404) was received when fetching the script.
 console-uncaught-promise.html:1 Uncaught (in promise) TypeError: Failed to register a ServiceWorker: A bad HTTP response code (404) was received when fetching the script.
 Promise (async)
 promiseTest9 @ console-uncaught-promise.html:93

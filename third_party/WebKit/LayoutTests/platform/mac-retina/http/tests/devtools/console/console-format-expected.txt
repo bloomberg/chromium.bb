@@ -263,10 +263,10 @@ console-format.html:7 Number {[[PrimitiveValue]]: 42}
 console-format.html:8 [Number]
 globals[32]
 Number {[[PrimitiveValue]]: 42}
-console-format.html:7 String {0: "a", 1: "b", 2: "c", length: 3, [[PrimitiveValue]]: "abc"}
+console-format.html:7 String {[[PrimitiveValue]]: "abc"}
 console-format.html:8 [String]
 globals[33]
-String {0: "a", 1: "b", 2: "c", length: 3, [[PrimitiveValue]]: "abc"}
+String {[[PrimitiveValue]]: "abc"}
 console-format.html:7 Uint16Array(3) [1, 2, 3]
 console-format.html:8 [Uint16Array(3)]
 globals[34]
@@ -661,7 +661,7 @@ globals[32]
 Number {[[PrimitiveValue]]: 42}
     __proto__: Number
     [[PrimitiveValue]]: 42
-console-format.html:7 String {0: "a", 1: "b", 2: "c", length: 3, [[PrimitiveValue]]: "abc"}
+console-format.html:7 String {[[PrimitiveValue]]: "abc"}
     0: "a"
     1: "b"
     2: "c"
@@ -669,11 +669,11 @@ console-format.html:7 String {0: "a", 1: "b", 2: "c", length: 3, [[PrimitiveValu
     __proto__: String
     [[PrimitiveValue]]: "abc"
 console-format.html:8 [String]
-    0: String {0: "a", 1: "b", 2: "c", length: 3, [[PrimitiveValue]]: "abc"}
+    0: String {[[PrimitiveValue]]: "abc"}
     length: 1
     __proto__: Array(0)
 globals[33]
-String {0: "a", 1: "b", 2: "c", length: 3, [[PrimitiveValue]]: "abc"}
+String {[[PrimitiveValue]]: "abc"}
     0: "a"
     1: "b"
     2: "c"
