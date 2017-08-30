@@ -28,7 +28,6 @@ class Profile;
 namespace storage {
 
 class FileSystemContext;
-class FileSystemURL;
 
 }  // namespace storage
 
@@ -42,7 +41,7 @@ class RecentModelFactory;
 class RecentModel : public KeyedService {
  public:
   using GetRecentFilesCallback =
-      base::OnceCallback<void(const std::vector<storage::FileSystemURL>& urls)>;
+      base::OnceCallback<void(const std::vector<RecentFile>& files)>;
 
   ~RecentModel() override;
 
@@ -93,8 +92,7 @@ class RecentModel : public KeyedService {
   base::Optional<base::Time> forced_cutoff_time_;
 
   // Cached GetRecentFiles() response.
-  base::Optional<std::vector<storage::FileSystemURL>> cached_urls_ =
-      base::nullopt;
+  base::Optional<std::vector<RecentFile>> cached_files_ = base::nullopt;
 
   // Timer to clear the cache.
   base::OneShotTimer cache_clear_timer_;

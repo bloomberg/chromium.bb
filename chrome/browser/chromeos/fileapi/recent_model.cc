@@ -80,8 +80,8 @@ void RecentModel::GetRecentFiles(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Use cache if available.
-  if (cached_urls_.has_value()) {
-    std::move(callback).Run(cached_urls_.value());
+  if (cached_files_.has_value()) {
+    std::move(callback).Run(cached_files_.value());
     return;
   }
 
@@ -150,18 +150,18 @@ void RecentModel::OnGetRecentFilesCompleted() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   DCHECK_EQ(0, num_inflight_sources_);
-  DCHECK(!cached_urls_.has_value());
+  DCHECK(!cached_files_.has_value());
   DCHECK(!build_start_time_.is_null());
 
-  std::vector<storage::FileSystemURL> urls;
+  std::vector<RecentFile> files;
   while (!intermediate_files_.empty()) {
-    urls.emplace_back(intermediate_files_.top().url());
+    files.emplace_back(intermediate_files_.top());
     intermediate_files_.pop();
   }
-  std::reverse(urls.begin(), urls.end());
-  cached_urls_ = std::move(urls);
+  std::reverse(files.begin(), files.end());
+  cached_files_ = std::move(files);
 
-  DCHECK(cached_urls_.has_value());
+  DCHECK(cached_files_.has_value());
   DCHECK(intermediate_files_.empty());
 
   UMA_HISTOGRAM_TIMES(kLoadHistogramName,
@@ -179,13 +179,13 @@ void RecentModel::OnGetRecentFilesCompleted() {
   DCHECK(pending_callbacks_.empty());
   DCHECK(!callbacks_to_call.empty());
   for (auto& callback : callbacks_to_call)
-    std::move(callback).Run(cached_urls_.value());
+    std::move(callback).Run(cached_files_.value());
 }
 
 void RecentModel::ClearCache() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  cached_urls_.reset();
+  cached_files_.reset();
 }
 
 void RecentModel::SetMaxFilesForTest(size_t max_files) {
