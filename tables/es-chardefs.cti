@@ -85,8 +85,7 @@ punctuation \x0096        36                  –                   <control> ST
 space       \x00A0        a                                       NO-BREAK SPACE
 punctuation \x00A1        235                 ¡                   INVERTED EXCLAMATION MARK
 punctuation \x00AB        236                 «                   LEFT-POINTING DOUBLE ANGLE QUOTATION MARK
-punctuation \x00AD        36                  ­                   SOFT HYPHEN
-sign        \x00B8        2                   ¸                   CEDILLA
+punctuation \x00AD        36                  ­                    SOFT HYPHEN
 punctuation \x00BB        236                 »                   RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK
 punctuation \x00BF        26                  ¿                   INVERTED QUESTION MARK
 math        \x00D7        236                 ×                   MULTIPLICATION SIGN
