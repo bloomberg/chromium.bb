@@ -562,7 +562,8 @@ def PushImage(src_path, board, versionrev=None, profile=None, priority=50,
   return instruction_urls
 
 
-def main(argv):
+def GetParser():
+  """Creates the argparse parser."""
   parser = commandline.ArgumentParser(description=__doc__)
 
   # The type of image_dir will strip off trailing slashes (makes later
@@ -590,6 +591,11 @@ def main(argv):
   parser.add_argument('--yes', action='store_true', default=False,
                       help='answer yes to all prompts')
 
+  return parser
+
+
+def main(argv):
+  parser = GetParser()
   opts = parser.parse_args(argv)
   opts.Freeze()
 
