@@ -15,13 +15,13 @@ namespace proxy {
 
 class PPP_Pdf_Proxy : public InterfaceProxy {
  public:
-  PPP_Pdf_Proxy(Dispatcher* dispatcher);
-  virtual ~PPP_Pdf_Proxy();
+  explicit PPP_Pdf_Proxy(Dispatcher* dispatcher);
+  ~PPP_Pdf_Proxy() override;
 
   static const PPP_Pdf* GetProxyInterface();
 
   // InterfaceProxy implementation.
-  virtual bool OnMessageReceived(const IPC::Message& msg);
+  bool OnMessageReceived(const IPC::Message& msg) override;
 
  private:
   // Message handlers.

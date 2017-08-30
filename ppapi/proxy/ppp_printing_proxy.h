@@ -24,13 +24,13 @@ namespace proxy {
 
 class PPP_Printing_Proxy : public InterfaceProxy {
  public:
-  PPP_Printing_Proxy(Dispatcher* dispatcher);
-  virtual ~PPP_Printing_Proxy();
+  explicit PPP_Printing_Proxy(Dispatcher* dispatcher);
+  ~PPP_Printing_Proxy() override;
 
   static const PPP_Printing_Dev* GetProxyInterface();
 
   // InterfaceProxy implementation.
-  virtual bool OnMessageReceived(const IPC::Message& msg);
+  bool OnMessageReceived(const IPC::Message& msg) override;
 
  private:
   // Message handlers.

@@ -20,14 +20,14 @@ class SerializedVarReturnValue;
 
 class PPP_Instance_Private_Proxy : public InterfaceProxy {
  public:
-  PPP_Instance_Private_Proxy(Dispatcher* dispatcher);
-  virtual ~PPP_Instance_Private_Proxy();
+  explicit PPP_Instance_Private_Proxy(Dispatcher* dispatcher);
+  ~PPP_Instance_Private_Proxy() override;
 
   static const PPP_Instance_Private* GetProxyInterface();
 
  private:
   // InterfaceProxy implementation.
-  virtual bool OnMessageReceived(const IPC::Message& msg);
+  bool OnMessageReceived(const IPC::Message& msg) override;
 
   // Message handlers.
   void OnMsgGetInstanceObject(PP_Instance instance,

@@ -24,13 +24,13 @@ namespace proxy {
 
 class PPB_Testing_Proxy : public InterfaceProxy {
  public:
-  PPB_Testing_Proxy(Dispatcher* dispatcher);
-  virtual ~PPB_Testing_Proxy();
+  explicit PPB_Testing_Proxy(Dispatcher* dispatcher);
+  ~PPB_Testing_Proxy() override;
 
   static const PPB_Testing_Private* GetProxyInterface();
 
   // InterfaceProxy implementation.
-  virtual bool OnMessageReceived(const IPC::Message& msg);
+  bool OnMessageReceived(const IPC::Message& msg) override;
 
  private:
   // Message handlers.

@@ -20,8 +20,8 @@ namespace proxy {
 
 class PPB_VideoDecoder_Proxy : public InterfaceProxy {
  public:
-  PPB_VideoDecoder_Proxy(Dispatcher* dispatcher);
-  virtual ~PPB_VideoDecoder_Proxy();
+  explicit PPB_VideoDecoder_Proxy(Dispatcher* dispatcher);
+  ~PPB_VideoDecoder_Proxy() override;
 
   // Creates a VideoDecoder object in the plugin process.
   static PP_Resource CreateProxyResource(
@@ -30,7 +30,7 @@ class PPB_VideoDecoder_Proxy : public InterfaceProxy {
       PP_VideoDecoder_Profile profile);
 
   // InterfaceProxy implementation.
-  virtual bool OnMessageReceived(const IPC::Message& msg);
+  bool OnMessageReceived(const IPC::Message& msg) override;
 
   static const ApiID kApiID = API_ID_PPB_VIDEO_DECODER_DEV;
 

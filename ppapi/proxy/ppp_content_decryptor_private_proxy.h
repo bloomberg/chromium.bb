@@ -25,13 +25,13 @@ class SerializedVarReceiveInput;
 class PPP_ContentDecryptor_Private_Proxy : public InterfaceProxy {
  public:
   explicit PPP_ContentDecryptor_Private_Proxy(Dispatcher* dispatcher);
-  virtual ~PPP_ContentDecryptor_Private_Proxy();
+  ~PPP_ContentDecryptor_Private_Proxy() override;
 
   static const PPP_ContentDecryptor_Private* GetProxyInterface();
 
  private:
   // InterfaceProxy implementation.
-  virtual bool OnMessageReceived(const IPC::Message& msg);
+  bool OnMessageReceived(const IPC::Message& msg) override;
 
   // Message handlers.
   void OnMsgInitialize(PP_Instance instance,

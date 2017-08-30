@@ -16,13 +16,13 @@ namespace proxy {
 
 class PPP_Graphics3D_Proxy : public InterfaceProxy {
  public:
-  PPP_Graphics3D_Proxy(Dispatcher* dispatcher);
-  virtual ~PPP_Graphics3D_Proxy();
+  explicit PPP_Graphics3D_Proxy(Dispatcher* dispatcher);
+  ~PPP_Graphics3D_Proxy() override;
 
   static const PPP_Graphics3D* GetProxyInterface();
 
   // InterfaceProxy implementation.
-  virtual bool OnMessageReceived(const IPC::Message& msg);
+  bool OnMessageReceived(const IPC::Message& msg) override;
 
  private:
   // Message handlers.

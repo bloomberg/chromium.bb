@@ -121,7 +121,7 @@ class PPAPI_PROXY_EXPORT MessageLoopResource : public MessageLoopShared {
 class PPB_MessageLoop_Proxy : public InterfaceProxy {
  public:
   explicit PPB_MessageLoop_Proxy(Dispatcher* dispatcher);
-  virtual ~PPB_MessageLoop_Proxy();
+  ~PPB_MessageLoop_Proxy() override;
 
   static const PPB_MessageLoop_1_0* GetInterface();
 
