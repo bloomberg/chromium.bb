@@ -39898,6 +39898,12 @@ Called by update_traffic_annotation_histograms.py.-->
   <int value="2" label="Previously in the cache"/>
 </enum>
 
+<enum name="WebFontInstantiationResult">
+  <int value="0" label="Error instantiating variable font, falling back"/>
+  <int value="1" label="Success conventional web font"/>
+  <int value="2" label="Success variable web font"/>
+</enum>
+
 <enum name="WebFontInterventionResult">
   <int value="0" label="Wasn't triggered, and does not time out"/>
   <int value="1" label="Wasn't triggered, but time out"/>
