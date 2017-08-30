@@ -698,11 +698,6 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
        content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB)) {
     base::RecordAction(UserMetricsAction("ClearBrowsingData_Cookies"));
 
-    HostContentSettingsMapFactory::GetForProfile(profile_)
-        ->ClearSettingsForOneTypeWithPredicate(
-            CONTENT_SETTINGS_TYPE_CLIENT_HINTS, base::Time(),
-            base::Bind(&WebsiteSettingsFilterAdapter, filter));
-
     // Clear the safebrowsing cookies only if time period is for "all time".  It
     // doesn't make sense to apply the time period of deleting in the last X
     // hours/days to the safebrowsing cookies since they aren't the result of
