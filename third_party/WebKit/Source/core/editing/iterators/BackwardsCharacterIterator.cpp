@@ -31,13 +31,13 @@ namespace blink {
 
 template <typename Strategy>
 BackwardsCharacterIteratorAlgorithm<Strategy>::
-    BackwardsCharacterIteratorAlgorithm(const PositionTemplate<Strategy>& start,
-                                        const PositionTemplate<Strategy>& end,
-                                        const TextIteratorBehavior& behavior)
+    BackwardsCharacterIteratorAlgorithm(
+        const EphemeralRangeTemplate<Strategy>& range,
+        const TextIteratorBehavior& behavior)
     : offset_(0),
       run_offset_(0),
       at_break_(true),
-      text_iterator_(start, end, behavior) {
+      text_iterator_(range.StartPosition(), range.EndPosition(), behavior) {
   while (!AtEnd() && !text_iterator_.length())
     text_iterator_.Advance();
 }

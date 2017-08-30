@@ -392,7 +392,8 @@ static PositionTemplate<Strategy> PreviousBoundaryAlgorithm(
 
   // Use the character iterator to translate the next value into a DOM
   // position.
-  BackwardsCharacterIteratorAlgorithm<Strategy> char_it(start, end);
+  BackwardsCharacterIteratorAlgorithm<Strategy> char_it(
+      EphemeralRangeTemplate<Strategy>(start, end));
   char_it.Advance(string.Size() - suffix_length - next);
   // TODO(yosin) charIt can get out of shadow host.
   return char_it.EndPosition();

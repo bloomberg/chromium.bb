@@ -26,6 +26,7 @@
 #ifndef BackwardsCharacterIterator_h
 #define BackwardsCharacterIterator_h
 
+#include "core/editing/EphemeralRange.h"
 #include "core/editing/iterators/SimplifiedBackwardsTextIterator.h"
 #include "platform/heap/Heap.h"
 
@@ -37,8 +38,7 @@ class BackwardsCharacterIteratorAlgorithm {
 
  public:
   BackwardsCharacterIteratorAlgorithm(
-      const PositionTemplate<Strategy>&,
-      const PositionTemplate<Strategy>&,
+      const EphemeralRangeTemplate<Strategy>&,
       const TextIteratorBehavior& = TextIteratorBehavior());
 
   void Advance(int);

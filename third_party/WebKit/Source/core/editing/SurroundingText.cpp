@@ -88,8 +88,9 @@ void SurroundingText::Initialize(const Position& start_position,
   // starts at the document's or input element's start and ends at the selection
   // start and will be updated.
   BackwardsCharacterIterator backwards_iterator(
-      Position::FirstPositionInNode(*root_element).ParentAnchoredEquivalent(),
-      start_position,
+      EphemeralRange(Position::FirstPositionInNode(*root_element)
+                         .ParentAnchoredEquivalent(),
+                     start_position),
       TextIteratorBehavior::Builder().SetStopsOnFormControls(true).Build());
   if (!backwards_iterator.AtEnd())
     backwards_iterator.Advance(half_max_length);
