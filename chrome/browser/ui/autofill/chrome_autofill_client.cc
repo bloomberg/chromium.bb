@@ -423,8 +423,10 @@ void ChromeAutofillClient::ShowHttpNotSecureExplanation() {
 
 bool ChromeAutofillClient::IsAutofillSupported() {
   // VR browsing does not support popups at the moment.
-  if (vr::VrTabHelper::IsInVr(web_contents()))
+  if (vr::VrTabHelper::IsInVr(web_contents())) {
+    vr::VrTabHelper::UISuppressed(vr::UiSuppressedElement::kAutofill);
     return false;
+  }
 
   return true;
 }
