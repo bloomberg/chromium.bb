@@ -126,9 +126,12 @@ public abstract class SuggestionsSheetVisibilityChangeObserver
      * @see #onContentStateChanged(int)
      */
     private void onStateChange() {
-        boolean newVisibility = mBottomSheet.isSheetOpen()
-                && mBottomSheet.getCurrentSheetContent() == mContentObserved
-                && ApplicationStatus.getStateForActivity(mActivity) == ActivityState.RESUMED;
+        @ActivityState
+        int activityState = ApplicationStatus.getStateForActivity(mActivity);
+        boolean isActivityVisible =
+                activityState == ActivityState.RESUMED || activityState == ActivityState.PAUSED;
+        boolean newVisibility = isActivityVisible && mBottomSheet.isSheetOpen()
+                && mBottomSheet.getCurrentSheetContent() == mContentObserved;
 
         // As the visibility we track is the one for a specific sheet content rather than the
         // whole BottomSheet, we also need to reflect that in the state, marking it "peeking" here
