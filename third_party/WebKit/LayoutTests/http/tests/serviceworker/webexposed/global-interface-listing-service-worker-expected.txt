@@ -956,6 +956,13 @@ interface PerformanceObserverEntryList
     method getEntries
     method getEntriesByName
     method getEntriesByType
+interface PerformanceServerTiming
+    attribute @@toStringTag
+    getter description
+    getter duration
+    getter name
+    method constructor
+    method toJSON
 interface PermissionStatus : EventTarget
     attribute @@toStringTag
     getter onchange

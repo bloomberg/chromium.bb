@@ -869,6 +869,13 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method getEntries
 [Worker]     method getEntriesByName
 [Worker]     method getEntriesByType
+[Worker] interface PerformanceServerTiming
+[Worker]     attribute @@toStringTag
+[Worker]     getter description
+[Worker]     getter duration
+[Worker]     getter name
+[Worker]     method constructor
+[Worker]     method toJSON
 [Worker] interface PermissionStatus : EventTarget
 [Worker]     attribute @@toStringTag
 [Worker]     getter onchange
