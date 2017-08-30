@@ -4,6 +4,9 @@
 
 #include "ios/chrome/browser/passwords/credential_manager_util.h"
 
+#include "components/security_state/core/security_state.h"
+#include "ios/chrome/browser/payments/origin_security_checker.h"
+#include "ios/chrome/browser/ssl/ios_security_state_tab_helper.h"
 #import "ios/web/public/origin_util.h"
 #include "url/origin.h"
 
@@ -12,7 +15,30 @@ using password_manager::CredentialInfo;
 using password_manager::CredentialType;
 using password_manager::CredentialMediationRequirement;
 
+// TODO(crbug.com/435048): This file should not depend on payments. As soon as
+// https://chromium-review.googlesource.com/c/chromium/src/+/631881 is landed
+// make sure there are no payments dependencies.
+using payments::OriginSecurityChecker;
+
 namespace credential_manager {
+
+namespace {
+
+security_state::SecurityLevel GetSecurityLevelForWebState(
+    const web::WebState* web_state) {
+  if (!web_state) {
+    return security_state::NONE;
+  }
+  auto* client = IOSSecurityStateTabHelper::FromWebState(web_state);
+  if (!client) {
+    return security_state::NONE;
+  }
+  security_state::SecurityInfo result;
+  client->GetSecurityInfo(&result);
+  return result.security_level;
+}
+
+}  // namespace
 
 const char kCredentialIdKey[] = "id";
 const char kCredentialTypeKey[] = "type";
@@ -152,6 +178,33 @@ bool ParseCredentialDictionary(const base::DictionaryValue& json,
     credential->federation = url::Origin(GURL(federation));
   }
   return true;
+}
+
+bool WebStateContentIsSecureHtml(const web::WebState* web_state) {
+  if (!web_state) {
+    return false;
+  }
+
+  if (!web_state->ContentIsHTML()) {
+    return false;
+  }
+
+  const GURL last_committed_url = web_state->GetLastCommittedURL();
+
+  if (!OriginSecurityChecker::IsContextSecure(last_committed_url)) {
+    return false;
+  }
+
+  // If scheme is not cryptographic, the origin must be either localhost or a
+  // file.
+  if (!OriginSecurityChecker::IsSchemeCryptographic(last_committed_url)) {
+    return OriginSecurityChecker::IsOriginLocalhostOrFile(last_committed_url);
+  }
+
+  // If scheme is cryptographic, valid SSL certificate is required.
+  security_state::SecurityLevel security_level =
+      GetSecurityLevelForWebState(web_state);
+  return OriginSecurityChecker::IsSSLCertificateValid(security_level);
 }
 
 }  // namespace credential_manager
