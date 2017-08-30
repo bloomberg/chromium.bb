@@ -49,6 +49,9 @@ android_aar_prebuilt("gvr_common_java") {
 
 android_aar_prebuilt("gvr_controller_java") {
   aar_path = "src/libraries/sdk-controller-1.80.0.aar"
+  deps = [
+    ":gvr_common_java",
+  ]
 }
 
 config("libgvr_config") {
