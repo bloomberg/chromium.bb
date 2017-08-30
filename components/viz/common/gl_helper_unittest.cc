@@ -1073,7 +1073,7 @@ class GLHelperTest : public testing::Test {
   }
 
   void TestAddOps(int src, int dst, bool scale_x, bool allow3) {
-    std::deque<GLHelperScaling::ScaleOp> ops;
+    base::circular_deque<GLHelperScaling::ScaleOp> ops;
     GLHelperScaling::ScaleOp::AddOps(src, dst, scale_x, allow3, &ops);
     // Scale factor 3 is a special case.
     // It is currently only allowed by itself.
@@ -1249,7 +1249,7 @@ class GLHelperTest : public testing::Test {
   gpu::gles2::GLES2Interface* gl_;
   std::unique_ptr<GLHelper> helper_;
   std::unique_ptr<GLHelperScaling> helper_scaling_;
-  std::deque<GLHelperScaling::ScaleOp> x_ops_, y_ops_;
+  base::circular_deque<GLHelperScaling::ScaleOp> x_ops_, y_ops_;
 };
 
 class GLHelperPixelTest : public GLHelperTest {

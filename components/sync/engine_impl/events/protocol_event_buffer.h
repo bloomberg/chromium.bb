@@ -7,10 +7,10 @@
 
 #include <stddef.h>
 
-#include <deque>
 #include <memory>
 #include <vector>
 
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 
 namespace syncer {
@@ -34,7 +34,7 @@ class ProtocolEventBuffer {
   std::vector<std::unique_ptr<ProtocolEvent>> GetBufferedProtocolEvents() const;
 
  private:
-  std::deque<std::unique_ptr<ProtocolEvent>> buffer_;
+  base::circular_deque<std::unique_ptr<ProtocolEvent>> buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(ProtocolEventBuffer);
 };

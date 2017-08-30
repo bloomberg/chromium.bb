@@ -7,8 +7,7 @@
 
 #include <stddef.h>
 
-#include <deque>
-
+#include "base/containers/circular_deque.h"
 #include "components/history/core/browser/url_row.h"
 
 namespace history {
@@ -50,9 +49,7 @@ struct HistoryMatch {
   bool innermost_match;
 };
 
-// TODO(http://crbug.com/757231) use a base::circular_deque when it supports
-// erase().
-typedef std::deque<HistoryMatch> HistoryMatches;
+typedef base::circular_deque<HistoryMatch> HistoryMatches;
 
 }  // namespace history
 

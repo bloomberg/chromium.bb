@@ -120,7 +120,7 @@ class GLHelperBenchmark : public testing::Test {
   gpu::gles2::GLES2Interface* gl_;
   std::unique_ptr<GLHelper> helper_;
   std::unique_ptr<GLHelperScaling> helper_scaling_;
-  std::deque<GLHelperScaling::ScaleOp> x_ops_, y_ops_;
+  base::circular_deque<GLHelperScaling::ScaleOp> x_ops_, y_ops_;
 };
 
 TEST_F(GLHelperBenchmark, ScaleBenchmark) {

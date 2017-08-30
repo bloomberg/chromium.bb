@@ -5,11 +5,11 @@
 #ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_GL_RENDERER_H_
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_GL_RENDERER_H_
 
-#include <deque>
 #include <unordered_map>
 #include <vector>
 
 #include "base/cancelable_callback.h"
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "cc/output/direct_renderer.h"
 #include "cc/quads/debug_border_draw_quad.h"
@@ -287,7 +287,7 @@ class VIZ_SERVICE_EXPORT GLRenderer : public cc::DirectRenderer {
   OverlayResourceLockList pending_overlay_resources_;
 
   // Resources that should be shortly swapped by the GPU process.
-  std::deque<OverlayResourceLockList> swapping_overlay_resources_;
+  base::circular_deque<OverlayResourceLockList> swapping_overlay_resources_;
 
   // Resources that the GPU process has finished swapping. The key is the
   // texture id of the resource.
@@ -338,8 +338,8 @@ class VIZ_SERVICE_EXPORT GLRenderer : public cc::DirectRenderer {
   ResourceFormat current_framebuffer_format_;
 
   class SyncQuery;
-  std::deque<std::unique_ptr<SyncQuery>> pending_sync_queries_;
-  std::deque<std::unique_ptr<SyncQuery>> available_sync_queries_;
+  base::circular_deque<std::unique_ptr<SyncQuery>> pending_sync_queries_;
+  base::circular_deque<std::unique_ptr<SyncQuery>> available_sync_queries_;
   std::unique_ptr<SyncQuery> current_sync_query_;
   bool use_discard_framebuffer_ = false;
   bool use_sync_query_ = false;

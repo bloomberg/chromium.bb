@@ -1064,11 +1064,24 @@ class circular_deque {
   size_type end_ = 0;
 
 #if DCHECK_IS_ON()
-  // Incremented every time a modification that could affect iterator
+  // Incremented every time a modification is made that could affect iterator
   // invalidations.
   uint64_t generation_ = 0;
 #endif
 };
+
+// Implementations of base::Erase[If] (see base/stl_util.h).
+template <class T, class Value>
+void Erase(circular_deque<T>& container, const Value& value) {
+  container.erase(std::remove(container.begin(), container.end(), value),
+                  container.end());
+}
+
+template <class T, class Predicate>
+void EraseIf(circular_deque<T>& container, Predicate pred) {
+  container.erase(std::remove_if(container.begin(), container.end(), pred),
+                  container.end());
+}
 
 }  // namespace base
 

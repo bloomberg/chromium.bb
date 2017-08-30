@@ -139,7 +139,7 @@ class BufferQueueTest : public ::testing::Test {
   available_surfaces() {
     return output_surface_->available_surfaces_;
   }
-  std::deque<std::unique_ptr<BufferQueue::AllocatedSurface>>&
+  base::circular_deque<std::unique_ptr<BufferQueue::AllocatedSurface>>&
   in_flight_surfaces() {
     return output_surface_->in_flight_surfaces_;
   }

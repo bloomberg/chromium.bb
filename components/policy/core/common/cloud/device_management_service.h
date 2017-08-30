@@ -7,7 +7,6 @@
 
 #include <stdint.h>
 
-#include <deque>
 #include <map>
 #include <memory>
 #include <string>
@@ -15,6 +14,7 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -178,7 +178,7 @@ class POLICY_EXPORT DeviceManagementService : public net::URLFetcherDelegate {
  private:
   typedef std::map<const net::URLFetcher*,
                    DeviceManagementRequestJobImpl*> JobFetcherMap;
-  typedef std::deque<DeviceManagementRequestJobImpl*> JobQueue;
+  typedef base::circular_deque<DeviceManagementRequestJobImpl*> JobQueue;
 
   friend class DeviceManagementRequestJobImpl;
 

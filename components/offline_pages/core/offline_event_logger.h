@@ -5,10 +5,10 @@
 #ifndef COMPONENTS_OFFLINE_PAGES_CORE_OFFLINE_EVENT_LOGGER_H_
 #define COMPONENTS_OFFLINE_PAGES_CORE_OFFLINE_EVENT_LOGGER_H_
 
-#include <deque>
 #include <string>
 #include <vector>
 
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 
 namespace offline_pages {
@@ -62,7 +62,7 @@ class OfflineEventLogger {
 
  private:
   // Recorded offline page activities.
-  std::deque<std::string> activities_;
+  base::circular_deque<std::string> activities_;
 
   // Whether we are currently recording logs or not.
   bool is_logging_;

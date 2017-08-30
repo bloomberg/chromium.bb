@@ -31,14 +31,15 @@ bool kNonUserRequestsFound = true;
 
 namespace offline_pages {
 
-PickRequestTask::PickRequestTask(RequestQueueStore* store,
-                                 OfflinerPolicy* policy,
-                                 RequestPickedCallback picked_callback,
-                                 RequestNotPickedCallback not_picked_callback,
-                                 RequestCountCallback request_count_callback,
-                                 DeviceConditions& device_conditions,
-                                 const std::set<int64_t>& disabled_requests,
-                                 std::deque<int64_t>& prioritized_requests)
+PickRequestTask::PickRequestTask(
+    RequestQueueStore* store,
+    OfflinerPolicy* policy,
+    RequestPickedCallback picked_callback,
+    RequestNotPickedCallback not_picked_callback,
+    RequestCountCallback request_count_callback,
+    DeviceConditions& device_conditions,
+    const std::set<int64_t>& disabled_requests,
+    base::circular_deque<int64_t>& prioritized_requests)
     : store_(store),
       policy_(policy),
       picked_callback_(picked_callback),

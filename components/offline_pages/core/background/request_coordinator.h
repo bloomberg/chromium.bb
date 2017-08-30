@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -483,7 +484,7 @@ class RequestCoordinator : public KeyedService,
   //   it was completed or cancelled), the task will remove it.
   // Currently it's used as LIFO.
   // TODO(romax): see if LIFO is a good idea or change to FIFO. crbug.com/705106
-  std::deque<int64_t> prioritized_requests_;
+  base::circular_deque<int64_t> prioritized_requests_;
   // Allows us to pass a weak pointer to callbacks.
   base::WeakPtrFactory<RequestCoordinator> weak_ptr_factory_;
 

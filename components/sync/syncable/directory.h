@@ -8,7 +8,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <deque>
 #include <memory>
 #include <set>
 #include <string>
@@ -16,6 +15,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/circular_deque.h"
 #include "base/containers/hash_tables.h"
 #include "base/files/file_util.h"
 #include "base/gtest_prod_util.h"
@@ -617,7 +617,7 @@ class Directory {
   void GetChildSetForKernel(
       BaseTransaction*,
       EntryKernel* kernel_,
-      std::deque<const OrderedChildSet*>* child_sets) const;
+      base::circular_deque<const OrderedChildSet*>* child_sets) const;
 
   // Append the handles of the children of |parent_id| to |result|.
   void AppendChildHandles(const ScopedKernelLock& lock,

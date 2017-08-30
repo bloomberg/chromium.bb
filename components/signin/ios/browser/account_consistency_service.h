@@ -5,12 +5,12 @@
 #ifndef COMPONENTS_SIGNIN_IOS_BROWSER_ACCOUNT_CONSISTENCY_SERVICE_H_
 #define COMPONENTS_SIGNIN_IOS_BROWSER_ACCOUNT_CONSISTENCY_SERVICE_H_
 
-#include <deque>
 #include <map>
 #include <memory>
 #include <set>
 #include <string>
 
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
@@ -170,7 +170,7 @@ class AccountConsistencyService : public KeyedService,
   // Whether a CHROME_CONNECTED cookie request is currently being applied.
   bool applying_cookie_requests_;
   // The queue of CHROME_CONNECTED cookie requests to be applied.
-  std::deque<CookieRequest> cookie_requests_;
+  base::circular_deque<CookieRequest> cookie_requests_;
   // The map between domains where a CHROME_CONNECTED cookie is present and
   // the time when the cookie was last updated.
   std::map<std::string, base::Time> last_cookie_update_map_;

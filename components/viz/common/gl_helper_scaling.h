@@ -5,10 +5,10 @@
 #ifndef COMPONENTS_VIZ_COMMON_GL_HELPER_SCALING_H_
 #define COMPONENTS_VIZ_COMMON_GL_HELPER_SCALING_H_
 
-#include <deque>
 #include <map>
 #include <vector>
 
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "components/viz/common/gl_helper.h"
 #include "components/viz/common/viz_common_export.h"
@@ -97,7 +97,7 @@ class VIZ_COMMON_EXPORT GLHelperScaling {
                        int dst,
                        bool scale_x,
                        bool allow3,
-                       std::deque<ScaleOp>* ops) {
+                       base::circular_deque<ScaleOp>* ops) {
       int num_downscales = 0;
       if (allow3 && dst * 3 >= src && dst * 2 < src) {
         // Technically, this should be a scale up and then a
@@ -177,8 +177,8 @@ class VIZ_COMMON_EXPORT GLHelperScaling {
       const gfx::Size& dst_size,
       bool vertically_flip_texture,
       bool swizzle,
-      std::deque<GLHelperScaling::ScaleOp>* x_ops,
-      std::deque<GLHelperScaling::ScaleOp>* y_ops,
+      base::circular_deque<GLHelperScaling::ScaleOp>* x_ops,
+      base::circular_deque<GLHelperScaling::ScaleOp>* y_ops,
       std::vector<ScalerStage>* scaler_stages);
 
   scoped_refptr<ShaderProgram> GetShaderProgram(ShaderType type, bool swizzle);

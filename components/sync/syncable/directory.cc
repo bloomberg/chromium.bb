@@ -309,7 +309,7 @@ int Directory::GetTotalNodeCount(BaseTransaction* trans,
     return false;
 
   int count = 1;
-  std::deque<const OrderedChildSet*> child_sets;
+  base::circular_deque<const OrderedChildSet*> child_sets;
 
   GetChildSetForKernel(trans, kernel, &child_sets);
   while (!child_sets.empty()) {
@@ -328,7 +328,7 @@ int Directory::GetTotalNodeCount(BaseTransaction* trans,
 void Directory::GetChildSetForKernel(
     BaseTransaction* trans,
     EntryKernel* kernel,
-    std::deque<const OrderedChildSet*>* child_sets) const {
+    base::circular_deque<const OrderedChildSet*>* child_sets) const {
   if (!kernel->ref(IS_DIR))
     return;  // Not a directory => no children.
 
