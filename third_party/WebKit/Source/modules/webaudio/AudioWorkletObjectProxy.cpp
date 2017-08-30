@@ -6,6 +6,7 @@
 
 #include "core/workers/ThreadedWorkletMessagingProxy.h"
 #include "core/workers/WorkerThread.h"
+#include "modules/webaudio/CrossThreadAudioWorkletProcessorInfo.h"
 #include "modules/webaudio/AudioWorkletGlobalScope.h"
 #include "modules/webaudio/AudioWorkletMessagingProxy.h"
 #include "platform/CrossThreadFunctional.h"
@@ -26,15 +27,23 @@ void AudioWorkletObjectProxy::DidCreateWorkerGlobalScope(
 
 void AudioWorkletObjectProxy::DidEvaluateModuleScript(bool success) {
   DCHECK(global_scope_);
-  // TODO(crbug.com/755566): Extract/build the information for synchronization
-  // and send it to the associated AudioWorkletMessagingProxy. Currently this
-  // is an empty cross-thread call for the future implementation.
-  GetParentFrameTaskRunners()->Get(TaskType::kUnthrottled)
-       ->PostTask(
-           BLINK_FROM_HERE,
-           CrossThreadBind(
-                &AudioWorkletMessagingProxy::SynchronizeWorkletData,
-                GetAudioWorkletMessagingProxyWeakPtr()));
+
+  if (!success || global_scope_->NumberOfRegisteredDefinitions() == 0)
+    return;
+
+  std::unique_ptr<Vector<CrossThreadAudioWorkletProcessorInfo>>
+      processor_info_list =
+          global_scope_->WorkletProcessorInfoListForSynchronization();
+
+  if (processor_info_list->size() == 0)
+    return;
+
+  GetParentFrameTaskRunners()->Get(TaskType::kUnthrottled)->PostTask(
+      BLINK_FROM_HERE,
+      CrossThreadBind(
+          &AudioWorkletMessagingProxy::SynchronizeWorkletProcessorInfoList,
+          GetAudioWorkletMessagingProxyWeakPtr(),
+          WTF::Passed(std::move(processor_info_list))));
 }
 
 void AudioWorkletObjectProxy::WillDestroyWorkerGlobalScope() {

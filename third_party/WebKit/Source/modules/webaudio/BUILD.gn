@@ -72,6 +72,7 @@ blink_modules_sources("webaudio") {
     "ConstantSourceNode.h",
     "ConvolverNode.cpp",
     "ConvolverNode.h",
+    "CrossThreadAudioWorkletProcessorInfo.h",
     "DefaultAudioDestinationNode.cpp",
     "DefaultAudioDestinationNode.h",
     "DeferredTaskHandler.cpp",
