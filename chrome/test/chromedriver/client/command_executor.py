@@ -193,7 +193,7 @@ class CommandExecutor(object):
       self._http_client.request(_Method.GET, response.getheader('location'))
       response = self._http_client.getresponse()
     result = json.loads(response.read())
-    if response.status != 200 and 'error' not in result:
+    if response.status != 200 and 'value' not in result:
       raise RuntimeError('Server returned error: ' + response.reason)
 
     return result
