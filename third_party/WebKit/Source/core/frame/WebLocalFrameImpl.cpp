@@ -1583,7 +1583,13 @@ WebLocalFrameImpl* WebLocalFrameImpl::CreateProvisional(
         ->SetSandboxFlags(static_cast<SandboxFlags>(flags));
     ToRemoteFrameOwner(new_frame->Owner())
         ->SetContainerPolicy(container_policy);
+  } else if (!new_frame->Owner()) {
+    // Provisional main frames need to force sandbox flags.  This is necessary
+    // to inherit sandbox flags when a sandboxed frame does a window.open()
+    // which triggers a cross-process navigation.
+    new_frame->Loader().ForceSandboxFlags(static_cast<SandboxFlags>(flags));
   }
+
   return web_frame;
 }
 
