@@ -88,6 +88,7 @@ found in the LICENSE file.
       var cubeCount = WGLUUrl.getInt('cubeCount', heavyGpu ? 12 : 10);
       var cubeScale = WGLUUrl.getFloat('cubeScale', 1.0);
       var simulatedWorkTimeMs = WGLUUrl.getFloat('workTime', 0);
+      var standardSize = WGLUUrl.getBool('standardSize', false);
       var renderScale = WGLUUrl.getFloat('renderScale', 1.0);
       var latencyPatch = WGLUUrl.getBool('latencyPatch', false);
 
@@ -207,8 +208,14 @@ found in the LICENSE file.
           var leftEye = vrDisplay.getEyeParameters("left");
           var rightEye = vrDisplay.getEyeParameters("right");
 
-          webglCanvas.width = Math.max(leftEye.renderWidth, rightEye.renderWidth) * 2 * renderScale;
-          webglCanvas.height = Math.max(leftEye.renderHeight, rightEye.renderHeight) * renderScale;
+          // If user has specified renderWidth/Height in URL, use that instead of the
+          // recommended resolution. Useful for testing to get cross-device comparable
+          // results. This still gets multiplied by renderScale if that is set.
+          var renderWidth = standardSize ? 1024 : Math.max(leftEye.renderWidth, rightEye.renderWidth);
+          var renderHeight = standardSize ? 1024 : Math.max(leftEye.renderHeight, rightEye.renderHeight);
+
+          webglCanvas.width = renderWidth * 2 * renderScale;
+          webglCanvas.height = renderHeight * renderScale;
         } else {
           webglCanvas.width = webglCanvas.offsetWidth * window.devicePixelRatio;
           webglCanvas.height = webglCanvas.offsetHeight * window.devicePixelRatio;
