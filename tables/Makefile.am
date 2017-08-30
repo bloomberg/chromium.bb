@@ -172,6 +172,7 @@ table_files = \
 	hr-comp8.utb \
 	hr-digits.uti \
 	hr-g1.ctb \
+	hr-g1.tbl \
 	hr-translation.cti \
 	hu-backtranslate-correction.dis \
 	hu-chardefs.cti \
