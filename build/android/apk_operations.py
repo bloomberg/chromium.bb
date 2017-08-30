@@ -9,8 +9,10 @@ import logging
 import os
 import pipes
 import posixpath
+import random
 import re
 import shlex
+import subprocess
 import sys
 
 import devil_chromium
@@ -350,6 +352,57 @@ def _RunDiskUsage(devices, package_name, verbose):
       logging.warning('For a more realistic odex size, run:')
       logging.warning('    %s compile-dex [speed|speed-profile]', sys.argv[0])
     print 'Total: %skb (%.1fmb)' % (total, total / 1024.0)
+
+
+def _RunLogcat(device, package_name, verbose):
+  def get_my_pids():
+    my_pids = []
+    for pids in device.GetPids(package_name).values():
+      my_pids.extend(pids)
+    return [int(pid) for pid in my_pids]
+
+  def process_line(line, fast=False):
+    if verbose:
+      if not fast:
+        sys.stdout.write(line)
+    else:
+      if line.startswith('------'):
+        return
+      tokens = line.split(None, 4)
+      pid = int(tokens[2])
+      priority = tokens[4]
+      if pid in my_pids or (not fast and priority == 'F'):
+        sys.stdout.write(line)
+      elif pid in not_my_pids:
+        return
+      elif fast:
+        # Skip checking whether our package spawned new processes.
+        not_my_pids.add(pid)
+      else:
+        # Check and add the pid if it is a new one from our package.
+        my_pids.update(get_my_pids())
+        if pid in my_pids:
+          sys.stdout.write(line)
+        else:
+          not_my_pids.add(pid)
+
+  adb_path = adb_wrapper.AdbWrapper.GetAdbPath()
+  cmd = [adb_path, '-s', device.serial, 'logcat', '-v', 'threadtime']
+  process = subprocess.Popen(cmd, stdout=subprocess.PIPE, bufsize=1)
+  my_pids = set(get_my_pids())
+  not_my_pids = set()
+
+  nonce = 'apk_wrappers.py nonce={}'.format(random.random())
+  device.RunShellCommand(['log', nonce])
+  fast = True
+  try:
+    while True:
+      line = process.stdout.readline()
+      process_line(line, fast)
+      if fast and nonce in line:
+        fast = False
+  except KeyboardInterrupt:
+    process.terminate()
 
 
 def _RunPs(devices, package_name):
@@ -713,13 +766,13 @@ class _GdbCommand(_Command):
 
 class _LogcatCommand(_Command):
   name = 'logcat'
-  description = 'Runs "adb logcat"'
+  description = 'Runs "adb logcat" filtering to just the current APK processes'
+  needs_package_name = True
   calls_exec = True
 
   def Run(self):
-    adb_path = adb_wrapper.AdbWrapper.GetAdbPath()
-    cmd = [adb_path, '-s', self.devices[0].serial, 'logcat']
-    os.execv(adb_path, cmd)
+    _RunLogcat(self.devices[0], self.args.package_name,
+               bool(self.args.verbose_count))
 
 
 class _PsCommand(_Command):
