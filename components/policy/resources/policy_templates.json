@@ -9751,7 +9751,7 @@
       'type': 'int-enum',
       'schema': {
         'type': 'integer',
-        'enum': [ 0, 1, 2, 3],
+        'enum': [ 0, 1, 2, 3, 4, 5],
       },
       'items': [
         {
@@ -9774,6 +9774,16 @@
           'value': 3,
           'caption': '''Ask the user if they would like to migrate or skip migration and disallow ARC.''',
         },
+        {
+          'name': 'MinimalMigrate',
+          'value': 4,
+          'caption': '''Similar to Wipe (value 2), but tries to preserve login tokens so the user does not have to sign in again.''',
+        },
+        {
+          'name': 'AskForEcryptfsArcUsers',
+          'value': 5,
+          'caption': '''If the client device model already supported ARC before migration to ext4 was necessary to run ARC and if the ArcEnabled policy is set to true, this option will behave as AskUser (value 3). In all other cases (if the device model did not support ARC before, or if ArcEnabled policy is set to false), this value is equivalent to DisallowArc (value 0).''',
+        }
       ],
       'supported_on': ['chrome_os:61-'],
       'device_only': False,
