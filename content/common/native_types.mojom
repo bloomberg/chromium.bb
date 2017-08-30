@@ -94,3 +94,6 @@ struct SyntheticTap;
 
 [Native]
 struct SyntheticPointerAction;
+
+[Native]
+enum TouchAction;

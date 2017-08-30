@@ -846,7 +846,8 @@ class CONTENT_EXPORT RenderWidget
                          uint32_t touch_event_id,
                          InputEventAckState ack_state,
                          const ui::LatencyInfo& latency_info,
-                         std::unique_ptr<ui::DidOverscrollParams>);
+                         std::unique_ptr<ui::DidOverscrollParams>,
+                         base::Optional<cc::TouchAction>);
 
 #if BUILDFLAG(ENABLE_PLUGINS)
   // Returns the focused pepper plugin, if any, inside the WebWidget. That is

@@ -4,6 +4,7 @@
 
 mojom = "//content/common/native_types.mojom"
 public_headers = [
+  "//cc/input/touch_action.h",
   "//content/common/edit_command.h",
   "//content/common/frame_owner_properties.h",
   "//content/common/frame_replication_state.h",
@@ -35,6 +36,7 @@ traits_headers = [
   "//content/common/frame_messages.h",
   "//content/common/input_messages.h",
   "//content/common/input/input_event_struct_traits.h",
+  "//content/common/input/touch_action_optional_struct_traits.h",
   "//content/common/view_messages.h",
   "//content/public/common/common_param_traits.h",
 ]
@@ -83,6 +85,7 @@ type_mappings = [
   "content.mojom.SyntheticPinch=content::SyntheticPinchGestureParams",
   "content.mojom.SyntheticTap=content::SyntheticTapGestureParams",
   "content.mojom.SyntheticPointerAction=content::SyntheticPointerActionListParams",
+  "content.mojom.TouchActionOptional=cc::TouchAction",
   "content.mojom.TouchState=blink::WebTouchPoint::State",
   "content.mojom.WebPopupType=blink::WebPopupType",
   "content.mojom.WebPreferences=content::WebPreferences",

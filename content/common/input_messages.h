@@ -149,6 +149,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::InputEventAck)
   IPC_STRUCT_TRAITS_MEMBER(latency)
   IPC_STRUCT_TRAITS_MEMBER(overscroll)
   IPC_STRUCT_TRAITS_MEMBER(unique_touch_event_id)
+  IPC_STRUCT_TRAITS_MEMBER(touch_action)
 IPC_STRUCT_TRAITS_END()
 
 // Sends an input event to the render widget. The input event in general

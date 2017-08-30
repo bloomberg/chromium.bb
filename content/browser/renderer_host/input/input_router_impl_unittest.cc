@@ -97,7 +97,17 @@ WebInputEvent& GetEventWithType(WebInputEvent::Type type) {
 void CallCallback(mojom::WidgetInputHandler::DispatchEventCallback callback,
                   InputEventAckState state) {
   std::move(callback).Run(InputEventAckSource::COMPOSITOR_THREAD,
-                          ui::LatencyInfo(), state, base::nullopt);
+                          ui::LatencyInfo(), state, base::nullopt,
+                          base::nullopt);
+}
+
+void CallCallbackWithTouchAction(
+    mojom::WidgetInputHandler::DispatchEventCallback callback,
+    InputEventAckState state,
+    cc::TouchAction touch_action) {
+  std::move(callback).Run(InputEventAckSource::COMPOSITOR_THREAD,
+                          ui::LatencyInfo(), state, base::nullopt,
+                          touch_action);
 }
 
 enum WheelScrollingMode {
@@ -1831,7 +1841,7 @@ void InputRouterImplTest::OverscrollDispatch() {
   std::move(dispatched_events.at(0).callback_)
       .Run(InputEventAckSource::COMPOSITOR_THREAD, ui::LatencyInfo(),
            INPUT_EVENT_ACK_STATE_NOT_CONSUMED,
-           DidOverscrollParams(wheel_overscroll));
+           DidOverscrollParams(wheel_overscroll), base::nullopt);
 
   client_overscroll = client_->GetAndResetOverscroll();
   EXPECT_EQ(wheel_overscroll.accumulated_overscroll,
@@ -1896,6 +1906,22 @@ TEST_F(InputRouterImplTest, TouchValidationPassesWithFilteredInputEvents) {
   EXPECT_EQ(1U, dispatched_events.size());
   CallCallback(std::move(dispatched_events.at(0).callback_),
                INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+}
+
+TEST_F(InputRouterImplTest, TouchActionInCallback) {
+  OnHasTouchEventHandlers(true);
+
+  // Send a touchstart
+  PressTouchPoint(1, 1);
+  SendTouchEvent();
+  DispatchedEvents dispatched_events = GetAndResetDispatchedEvents();
+  EXPECT_EQ(1U, dispatched_events.size());
+  CallCallbackWithTouchAction(std::move(dispatched_events.at(0).callback_),
+                              INPUT_EVENT_ACK_STATE_CONSUMED,
+                              cc::TouchAction::kTouchActionNone);
+  ASSERT_EQ(1U, disposition_handler_->GetAndResetAckCount());
+  EXPECT_EQ(cc::TouchAction::kTouchActionNone,
+            input_router_->AllowedTouchAction());
 }
 
 namespace {

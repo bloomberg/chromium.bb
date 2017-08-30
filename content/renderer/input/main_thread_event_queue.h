@@ -9,6 +9,7 @@
 #include "base/feature_list.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
+#include "cc/input/touch_action.h"
 #include "content/common/content_export.h"
 #include "content/common/input/input_event_ack_state.h"
 #include "content/common/input/input_event_dispatch_type.h"
@@ -26,7 +27,8 @@ namespace content {
 using HandledEventCallback =
     base::OnceCallback<void(InputEventAckState ack_state,
                             const ui::LatencyInfo& latency_info,
-                            std::unique_ptr<ui::DidOverscrollParams>)>;
+                            std::unique_ptr<ui::DidOverscrollParams>,
+                            base::Optional<cc::TouchAction>)>;
 
 // All interaction with the MainThreadEventQueueClient will occur
 // on the main thread.

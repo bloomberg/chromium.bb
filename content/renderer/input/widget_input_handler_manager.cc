@@ -45,12 +45,14 @@ InputEventAckState InputEventDispositionToAck(
 void CallCallback(mojom::WidgetInputHandler::DispatchEventCallback callback,
                   InputEventAckState ack_state,
                   const ui::LatencyInfo& latency_info,
-                  std::unique_ptr<ui::DidOverscrollParams> overscroll_params) {
+                  std::unique_ptr<ui::DidOverscrollParams> overscroll_params,
+                  base::Optional<cc::TouchAction> touch_action) {
   std::move(callback).Run(
       InputEventAckSource::MAIN_THREAD, latency_info, ack_state,
       overscroll_params
           ? base::Optional<ui::DidOverscrollParams>(*overscroll_params)
-          : base::nullopt);
+          : base::nullopt,
+      touch_action);
 }
 
 }  // namespace
@@ -267,7 +269,8 @@ void WidgetInputHandlerManager::HandleInputEvent(
     mojom::WidgetInputHandler::DispatchEventCallback callback) {
   if (!render_widget_) {
     std::move(callback).Run(InputEventAckSource::MAIN_THREAD, latency,
-                            INPUT_EVENT_ACK_STATE_NOT_CONSUMED, base::nullopt);
+                            INPUT_EVENT_ACK_STATE_NOT_CONSUMED, base::nullopt,
+                            base::nullopt);
     return;
   }
   auto send_callback = base::BindOnce(
@@ -321,7 +324,8 @@ void WidgetInputHandlerManager::DidHandleInputEventAndOverscroll(
         InputEventAckSource::COMPOSITOR_THREAD, latency_info, ack_state,
         overscroll_params
             ? base::Optional<ui::DidOverscrollParams>(*overscroll_params)
-            : base::nullopt);
+            : base::nullopt,
+        base::nullopt);
   }
 }
 
@@ -329,19 +333,22 @@ void WidgetInputHandlerManager::HandledInputEvent(
     mojom::WidgetInputHandler::DispatchEventCallback callback,
     InputEventAckState ack_state,
     const ui::LatencyInfo& latency_info,
-    std::unique_ptr<ui::DidOverscrollParams> overscroll_params) {
+    std::unique_ptr<ui::DidOverscrollParams> overscroll_params,
+    base::Optional<cc::TouchAction> touch_action) {
   if (!callback)
     return;
   if (compositor_task_runner_) {
     compositor_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(CallCallback, std::move(callback), ack_state,
-                                  latency_info, std::move(overscroll_params)));
+                                  latency_info, std::move(overscroll_params),
+                                  touch_action));
   } else {
     std::move(callback).Run(
         InputEventAckSource::COMPOSITOR_THREAD, latency_info, ack_state,
         overscroll_params
             ? base::Optional<ui::DidOverscrollParams>(*overscroll_params)
-            : base::nullopt);
+            : base::nullopt,
+        touch_action);
   }
 }
 

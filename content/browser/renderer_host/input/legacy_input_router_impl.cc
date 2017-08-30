@@ -450,6 +450,11 @@ void LegacyInputRouterImpl::OnInputEventAck(const InputEventAck& ack) {
     OnDidOverscroll(*ack.overscroll);
   }
 
+  // Since input messages over mojo require the touch action in the
+  // ACK we mirror that behavior in Chrome IPC for simplicity.
+  if (ack.touch_action.has_value())
+    OnSetTouchAction(ack.touch_action.value());
+
   ProcessInputEventAck(ack.type, ack.state, ack.latency,
                        ack.unique_touch_event_id, RENDERER);
 }

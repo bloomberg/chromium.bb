@@ -100,7 +100,8 @@ class WidgetInputHandlerManager
       mojom::WidgetInputHandler::DispatchEventCallback callback,
       InputEventAckState ack_state,
       const ui::LatencyInfo& latency_info,
-      std::unique_ptr<ui::DidOverscrollParams> overscroll_params);
+      std::unique_ptr<ui::DidOverscrollParams> overscroll_params,
+      base::Optional<cc::TouchAction> touch_action);
   void ObserveGestureEventOnCompositorThread(
       const blink::WebGestureEvent& gesture_event,
       const cc::InputHandlerScrollResult& scroll_result);
