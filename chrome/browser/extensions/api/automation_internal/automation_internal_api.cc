@@ -442,8 +442,10 @@ AutomationInternalPerformActionFunction::Run() {
   if (delegate) {
 #if defined(USE_AURA)
     ui::AXActionData data;
-    ConvertToAXActionData(params.get(), &data);
+    ExtensionFunction::ResponseAction result =
+        ConvertToAXActionData(params.get(), &data);
     delegate->PerformAction(data);
+    return result;
 #else
     NOTREACHED();
     return RespondNow(Error("Unexpected action on desktop automation tree;"
