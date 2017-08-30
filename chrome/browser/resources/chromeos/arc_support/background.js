@@ -418,8 +418,8 @@ class ActiveDirectoryAuthPage {
     var requestFilter = {urls: ['<all_urls>'], types: ['main_frame']};
 
     this.authView_ = container.querySelector('#active-directory-auth-view');
-    this.authView_.request.onResponseStarted.addListener(
-        (details) => this.onAuthViewResponseStarted_(details), requestFilter);
+    this.authView_.request.onCompleted.addListener(
+        (details) => this.onAuthViewCompleted_(details), requestFilter);
     this.authView_.request.onErrorOccurred.addListener(
         (details) => this.onAuthViewErrorOccurred_(details), requestFilter);
 
@@ -442,11 +442,11 @@ class ActiveDirectoryAuthPage {
   }
 
   /**
-   *  Auth view onResponseStarted event handler. Checks whether the SAML flow
-   *  reached its endpoint, the device management server.
+   * Auth view onCompleted event handler. Checks whether the SAML flow
+   * reached its endpoint, the device management server.
    * @param {!Object} details Event parameters.
    */
-  onAuthViewResponseStarted_(details) {
+  onAuthViewCompleted_(details) {
     // See if we hit the device management server. This should happen at the
     // end of the SAML flow. Before that, we're on the Active Directory
     // Federation Services server.
