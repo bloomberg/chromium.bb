@@ -107,6 +107,8 @@ class SystemHealthMobileMemoryExpectations(expectations.StoryExpectations):
                       [expectations.ALL_ANDROID], 'crbug.com/726301')
     self.DisableStory('browse:news:toi', [expectations.ALL_ANDROID],
                       'crbug.com/728081')
+    self.DisableStory('browse:social:facebook_infinite_scroll',
+                      [expectations.ALL_ANDROID], 'crbug.com/760319')
     self.DisableStory(
         'load:tools:drive',
         [expectations.ANDROID_NEXUS5X, expectations.ANDROID_WEBVIEW],
