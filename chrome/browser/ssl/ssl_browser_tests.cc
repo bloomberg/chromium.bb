@@ -5771,8 +5771,7 @@ IN_PROC_BROWSER_TEST_F(SSLUIMITMSoftwareTest,
 
 // Tests that the correct strings are displayed on the interstitial in the
 // enterprise managed case.
-// Disabled the test per crbug.com/760438
-IN_PROC_BROWSER_TEST_F(SSLUIMITMSoftwareTest, DISABLED_EnterpriseManaged) {
+IN_PROC_BROWSER_TEST_F(SSLUIMITMSoftwareTest, EnterpriseManaged) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitFromCommandLine(
       "MITMSoftwareInterstitial" /* enabled */, std::string() /* disabled */);
@@ -5794,7 +5793,8 @@ IN_PROC_BROWSER_TEST_F(SSLUIMITMSoftwareTest, DISABLED_EnterpriseManaged) {
       net::EscapeForHTML(base::UTF8ToUTF16(kTestMITMSoftwareName)));
   const std::string expected_explanation = l10n_util::GetStringFUTF8(
       IDS_MITM_SOFTWARE_EXPLANATION_ENTERPRISE,
-      net::EscapeForHTML(base::UTF8ToUTF16(kTestMITMSoftwareName)));
+      net::EscapeForHTML(base::UTF8ToUTF16(kTestMITMSoftwareName)),
+      l10n_util::GetStringUTF16(IDS_MITM_SOFTWARE_EXPLANATION));
 
   EXPECT_TRUE(chrome_browser_interstitials::IsInterstitialDisplayingText(
       interstitial_page, expected_primary_paragraph));
@@ -5804,8 +5804,7 @@ IN_PROC_BROWSER_TEST_F(SSLUIMITMSoftwareTest, DISABLED_EnterpriseManaged) {
 
 // Tests that the correct strings are displayed on the interstitial in the
 // non-enterprise managed case.
-// Disabled the test per crbug.com/760438
-IN_PROC_BROWSER_TEST_F(SSLUIMITMSoftwareTest, DISABLED_NotEnterpriseManaged) {
+IN_PROC_BROWSER_TEST_F(SSLUIMITMSoftwareTest, NotEnterpriseManaged) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitFromCommandLine(
       "MITMSoftwareInterstitial" /* enabled */, std::string() /* disabled */);
@@ -5822,11 +5821,12 @@ IN_PROC_BROWSER_TEST_F(SSLUIMITMSoftwareTest, DISABLED_NotEnterpriseManaged) {
   ASSERT_TRUE(interstitial_page);
   EXPECT_TRUE(WaitForRenderFrameReady(interstitial_page->GetMainFrame()));
 
-  // Don't check the primary paragraph in the nonenterprise case, because it
+  // Don't check the primary paragraph in the non-enterprise case, because it
   // has escaped HTML characters which throw an error.
   const std::string expected_explanation = l10n_util::GetStringFUTF8(
       IDS_MITM_SOFTWARE_EXPLANATION_NONENTERPRISE,
-      net::EscapeForHTML(base::UTF8ToUTF16(kTestMITMSoftwareName)));
+      net::EscapeForHTML(base::UTF8ToUTF16(kTestMITMSoftwareName)),
+      l10n_util::GetStringUTF16(IDS_MITM_SOFTWARE_EXPLANATION));
 
   EXPECT_TRUE(chrome_browser_interstitials::IsInterstitialDisplayingText(
       interstitial_page, expected_explanation));
