@@ -47,7 +47,6 @@ public class ActionItem extends OptionalLeaf {
 
     @Override
     protected void onBindViewHolder(NewTabPageViewHolder holder) {
-        assert holder instanceof ViewHolder;
         mSuggestionsRanker.rankActionItem(this, mParentSection);
         ((ViewHolder) holder).onBindViewHolder(this);
     }

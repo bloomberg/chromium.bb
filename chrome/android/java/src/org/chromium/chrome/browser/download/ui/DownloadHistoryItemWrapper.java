@@ -229,7 +229,6 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
 
         @Override
         public boolean replaceItem(Object item) {
-            assert item instanceof DownloadItem;
             DownloadItem downloadItem = (DownloadItem) item;
             assert TextUtils.equals(mItem.getId(), downloadItem.getId());
 
@@ -430,7 +429,6 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
 
         @Override
         public boolean replaceItem(Object item) {
-            assert item instanceof OfflinePageDownloadItem;
             OfflinePageDownloadItem newItem = (OfflinePageDownloadItem) item;
             assert TextUtils.equals(newItem.getGuid(), mItem.getGuid());
 

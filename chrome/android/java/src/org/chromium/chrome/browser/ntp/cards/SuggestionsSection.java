@@ -148,7 +148,6 @@ public class SuggestionsSection extends InnerNode {
         @Override
         public void onBindViewHolder(NewTabPageViewHolder holder, int position) {
             checkIndex(position);
-            assert holder instanceof SnippetArticleViewHolder;
             SnippetArticle suggestion = getSuggestionAt(position);
             mSuggestionsRanker.rankSuggestion(suggestion);
             ((SnippetArticleViewHolder) holder).onBindViewHolder(suggestion, mCategoryInfo);

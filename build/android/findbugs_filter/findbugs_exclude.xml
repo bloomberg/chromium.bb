@@ -26,6 +26,11 @@ In particular, ~ at the start of a string means it's a regex.
   https://developer.android.com/reference/java/security/AccessController.html
   -->
   <Bug pattern="DP_CREATE_CLASSLOADER_INSIDE_DO_PRIVILEGED" />
+  <!--
+  Ignore unchecked casts.
+  See https://groups.google.com/a/chromium.org/forum/#!topic/java/xfXmNLI4SqM for details.
+  -->
+  <Bug pattern="BC_UNCONFIRMED_CAST" />
 
   <!-- Ignore unused public Rule and RuleChain in instrumentation tests -->
   <Match>

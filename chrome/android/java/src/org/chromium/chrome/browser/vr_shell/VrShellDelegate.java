@@ -1262,15 +1262,15 @@ public class VrShellDelegate
 
     /* package */ void exitCct() {
         if (mShowingDaydreamDoff) return;
-        assert mActivity instanceof CustomTabActivity;
+        CustomTabActivity customTabActivity = (CustomTabActivity) mActivity;
         if (mAutopresentWebVr || (mInVrAtChromeLaunch != null && mInVrAtChromeLaunch)) {
-            ((CustomTabActivity) mActivity).finishAndClose(false);
+            customTabActivity.finishAndClose(false);
             return;
         }
         if (showDoff(true /* optional */)) {
             mExitingCct = true;
         } else {
-            ((CustomTabActivity) mActivity).finishAndClose(false);
+            customTabActivity.finishAndClose(false);
         }
     }
 

@@ -79,8 +79,6 @@ public class SiteSection extends OptionalLeaf implements TileGroup.Observer {
 
     @Override
     protected void onBindViewHolder(NewTabPageViewHolder holder) {
-        assert holder instanceof SiteSectionViewHolder;
-
         SiteSectionViewHolder siteSectionView = (SiteSectionViewHolder) holder;
         siteSectionView.bindDataSource(mTileGroup, mTileRenderer);
         siteSectionView.refreshData();

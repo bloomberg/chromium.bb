@@ -1126,7 +1126,6 @@ public class PaymentRequestImpl
     public int onSectionOptionSelected(@PaymentRequestUI.DataType int optionType,
             PaymentOption option, Callback<PaymentInformation> callback) {
         if (optionType == PaymentRequestUI.TYPE_SHIPPING_ADDRESSES) {
-            assert option instanceof AutofillAddress;
             // Log the change of shipping address.
             mJourneyLogger.incrementSelectionChanges(Section.SHIPPING_ADDRESS);
             AutofillAddress address = (AutofillAddress) option;
@@ -1145,11 +1144,9 @@ public class PaymentRequestImpl
             mPaymentInformationCallback = callback;
             return PaymentRequestUI.SELECTION_RESULT_ASYNCHRONOUS_VALIDATION;
         } else if (optionType == PaymentRequestUI.TYPE_CONTACT_DETAILS) {
-            assert option instanceof AutofillContact;
             // Log the change of contact info.
             mJourneyLogger.incrementSelectionChanges(Section.CONTACT_INFO);
             AutofillContact contact = (AutofillContact) option;
-
             if (contact.isComplete()) {
                 mContactSection.setSelectedItem(option);
             } else {
@@ -1157,9 +1154,9 @@ public class PaymentRequestImpl
                 return PaymentRequestUI.SELECTION_RESULT_EDITOR_LAUNCH;
             }
         } else if (optionType == PaymentRequestUI.TYPE_PAYMENT_METHODS) {
-            assert option instanceof PaymentInstrument;
-            if (option instanceof AutofillPaymentInstrument) {
-                AutofillPaymentInstrument card = (AutofillPaymentInstrument) option;
+            PaymentInstrument paymentInstrument = (PaymentInstrument) option;
+            if (paymentInstrument instanceof AutofillPaymentInstrument) {
+                AutofillPaymentInstrument card = (AutofillPaymentInstrument) paymentInstrument;
 
                 if (!card.isComplete()) {
                     editCard(card);
@@ -1169,7 +1166,7 @@ public class PaymentRequestImpl
             // Log the change of payment method.
             mJourneyLogger.incrementSelectionChanges(Section.PAYMENT_METHOD);
 
-            updateOrderSummary((PaymentInstrument) option);
+            updateOrderSummary(paymentInstrument);
             mPaymentMethodsSection.setSelectedItem(option);
         }
 
@@ -1181,20 +1178,17 @@ public class PaymentRequestImpl
     public int onSectionEditOption(@PaymentRequestUI.DataType int optionType, PaymentOption option,
             Callback<PaymentInformation> callback) {
         if (optionType == PaymentRequestUI.TYPE_SHIPPING_ADDRESSES) {
-            assert option instanceof AutofillAddress;
             editAddress((AutofillAddress) option);
             mPaymentInformationCallback = callback;
             return PaymentRequestUI.SELECTION_RESULT_ASYNCHRONOUS_VALIDATION;
         }
 
         if (optionType == PaymentRequestUI.TYPE_CONTACT_DETAILS) {
-            assert option instanceof AutofillContact;
             editContact((AutofillContact) option);
             return PaymentRequestUI.SELECTION_RESULT_EDITOR_LAUNCH;
         }
 
         if (optionType == PaymentRequestUI.TYPE_PAYMENT_METHODS) {
-            assert option instanceof AutofillPaymentInstrument;
             editCard((AutofillPaymentInstrument) option);
             return PaymentRequestUI.SELECTION_RESULT_EDITOR_LAUNCH;
         }
@@ -1356,7 +1350,6 @@ public class PaymentRequestImpl
     @Override
     public boolean onPayClicked(PaymentOption selectedShippingAddress,
             PaymentOption selectedShippingOption, PaymentOption selectedPaymentMethod) {
-        assert selectedPaymentMethod instanceof PaymentInstrument;
         PaymentInstrument instrument = (PaymentInstrument) selectedPaymentMethod;
         mPaymentAppRunning = true;
 
@@ -1778,7 +1771,6 @@ public class PaymentRequestImpl
 
         if (mShippingAddressesSection.getSelectedItem() == null) return;
 
-        assert mShippingAddressesSection.getSelectedItem() instanceof AutofillAddress;
         AutofillAddress selectedAddress =
                 (AutofillAddress) mShippingAddressesSection.getSelectedItem();
 
@@ -1851,7 +1843,6 @@ public class PaymentRequestImpl
         if (mPaymentMethodsSection != null) {
             for (int i = 0; i < mPaymentMethodsSection.getSize(); i++) {
                 PaymentOption option = mPaymentMethodsSection.getItem(i);
-                assert option instanceof PaymentInstrument;
                 ((PaymentInstrument) option).dismissInstrument();
             }
             mPaymentMethodsSection = null;

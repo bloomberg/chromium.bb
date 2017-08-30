@@ -385,8 +385,6 @@ public class SuggestionsRecyclerView extends RecyclerView {
 
         @Override
         public int getMovementFlags(RecyclerView recyclerView, ViewHolder viewHolder) {
-            assert viewHolder instanceof NewTabPageViewHolder;
-
             int swipeFlags = 0;
             if (((NewTabPageViewHolder) viewHolder).isDismissable()) {
                 swipeFlags = ItemTouchHelper.START | ItemTouchHelper.END;
@@ -431,7 +429,6 @@ public class SuggestionsRecyclerView extends RecyclerView {
     private static class ResetForDismissCallback extends NewTabPageViewHolder.PartialBindCallback {
         @Override
         public void onResult(NewTabPageViewHolder holder) {
-            assert holder instanceof CardViewHolder;
             ((CardViewHolder) holder).getRecyclerView().updateViewStateForDismiss(0, holder);
         }
     }

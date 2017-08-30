@@ -42,8 +42,6 @@ public class SuggestionsCarousel extends OptionalLeaf {
 
     @Override
     protected void onBindViewHolder(NewTabPageViewHolder holder) {
-        assert holder.itemView instanceof RecyclerView;
-
         ((RecyclerView) holder.itemView).setAdapter(mAdapter);
     }
 

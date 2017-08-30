@@ -30,7 +30,6 @@ public class AllDismissedItem extends OptionalLeaf {
 
     @Override
     public void onBindViewHolder(NewTabPageViewHolder holder) {
-        assert holder instanceof ViewHolder;
         ((ViewHolder) holder).onBindViewHolder();
     }
 

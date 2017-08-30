@@ -24,7 +24,6 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ApplicationStatus.ActivityStateListener;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -154,7 +153,6 @@ final class ChromeActivityTestCommon<T extends ChromeActivity> {
         final CallbackHelper activityCallback = new CallbackHelper();
         final AtomicReference<T> activityRef = new AtomicReference<>();
         ActivityStateListener stateListener = new ActivityStateListener() {
-            @SuppressFBWarnings("BC_UNCONFIRMED_CAST")
             @SuppressWarnings("unchecked")
             @Override
             public void onActivityStateChange(Activity activity, int newState) {

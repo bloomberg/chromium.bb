@@ -13,7 +13,6 @@ import android.support.annotation.StringRes;
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -155,7 +154,6 @@ public class SignInPromo extends OptionalLeaf
         return new GenericPromoViewHolder(parent, contextMenuManager, config);
     }
 
-    @SuppressFBWarnings("BC_UNCONFIRMED_CAST")
     @Override
     protected void onBindViewHolder(NewTabPageViewHolder holder) {
         assert !mWasDismissed;
@@ -404,7 +402,6 @@ public class SignInPromo extends OptionalLeaf
      */
     private static class UpdatePersonalizedSigninPromoCallback
             extends NewTabPageViewHolder.PartialBindCallback {
-        @SuppressFBWarnings("BC_UNCONFIRMED_CAST")
         @Override
         public void onResult(NewTabPageViewHolder result) {
             ((PersonalizedPromoViewHolder) result).updatePersonalizedSigninPromo();
