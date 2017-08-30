@@ -130,6 +130,9 @@ class ArcVoiceInteractionFrameworkService
   // Whether there is a pending request to start voice interaction.
   bool is_request_pending_ = false;
 
+  // Whether we should launch runtime setup flow for voice interaction.
+  bool should_start_runtime_flow_ = false;
+
   // The current state voice interaction service is. There is usually a long
   // delay after boot before the service is ready. We wait for the container
   // to tell us if it is ready to quickly serve voice interaction requests.
