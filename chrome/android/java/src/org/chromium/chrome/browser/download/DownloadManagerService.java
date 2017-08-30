@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.download;
 
-import static org.chromium.chrome.browser.download.DownloadNotificationFactory.buildActionIntent;
-
 import android.app.DownloadManager;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
@@ -358,7 +356,10 @@ public class DownloadManagerService
      * Called when browser activity is launched. For background resumption and cancellation, this
      * will not be called.
      */
-    public void onActivityLaunched() {}
+    public void onActivityLaunched() {
+        // TODO(jming): Remove this after M-62.
+        DownloadNotificationService.clearResumptionAttemptLeft();
+    }
 
     /**
      * Broadcast that a download was successful.
@@ -1368,7 +1369,7 @@ public class DownloadManagerService
      */
     @Override
     public void broadcastDownloadAction(DownloadItem downloadItem, String action) {
-        Intent intent = buildActionIntent(mContext, action,
+        Intent intent = DownloadNotificationService.buildActionIntent(mContext, action,
                 LegacyHelpers.buildLegacyContentId(false, downloadItem.getId()),
                 downloadItem.getDownloadInfo().isOffTheRecord());
         mContext.startService(intent);
