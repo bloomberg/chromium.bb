@@ -249,11 +249,8 @@ test jobs. Sharded test runs can be achieved in a couple of ways.
    # Set the environment variable GTEST_TOTAL_SHARDS to 9 to run 10 test shards
    # (GTEST shard indexing is 0 based).
    $ export GTEST_TOTAL_SHARDS=9
-   $ for shard in $(seq 0 ${GTEST_TOTAL_SHARDS}); do \
-       [ ${shard} -lt ${GTEST_TOTAL_SHARDS} ] \
-         && GTEST_SHARD_INDEX=${shard} ./test_libaom & \
-     done
-
+   $ seq 0 $(( $GTEST_TOTAL_SHARDS - 1 )) \
+       | xargs -n 1 -P 0 -I{} env GTEST_SHARD_INDEX={} ./test_libaom
 ~~~
 
 To create a test shard for each CPU core available on the current system set
