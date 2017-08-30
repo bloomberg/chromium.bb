@@ -17,6 +17,7 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/animation/ink_drop_highlight_observer.h"
 #include "ui/views/animation/ink_drop_painted_layer_delegates.h"
+#include "ui/views/animation/ink_drop_util.h"
 
 namespace views {
 
@@ -161,6 +162,11 @@ gfx::Transform InkDropHighlight::CalculateTransform(
                   size_.height() == 0 ? 0 : size.height() / size_.height());
   gfx::Vector2dF layer_offset = layer_delegate_->GetCenteringOffset();
   transform.Translate(-layer_offset.x(), -layer_offset.y());
+
+  // Add subpixel correction to the transform.
+  transform.ConcatTransform(
+      GetTransformSubpixelCorrection(transform, layer_->device_scale_factor()));
+
   return transform;
 }
 

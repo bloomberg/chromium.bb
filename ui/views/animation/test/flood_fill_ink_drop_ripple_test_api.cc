@@ -23,7 +23,7 @@ FloodFillInkDropRippleTestApi::FloodFillInkDropRippleTestApi(
 FloodFillInkDropRippleTestApi::~FloodFillInkDropRippleTestApi() {}
 
 void FloodFillInkDropRippleTestApi::TransformPoint(float radius,
-                                                   gfx::Point* point) {
+                                                   gfx::Point3F* point) {
   ink_drop_ripple()->CalculateTransform(radius).TransformPoint(point);
 }
 

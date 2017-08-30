@@ -48,9 +48,15 @@ void RoundRectInkDropMask::OnPaintLayer(const ui::PaintContext& context) {
   flags.setAntiAlias(true);
 
   ui::PaintRecorder recorder(context, layer()->size());
-  gfx::RectF bounds(layer()->bounds());
-  bounds.Inset(mask_insets_);
-  recorder.canvas()->DrawRoundRect(bounds, corner_radius_, flags);
+  const float dsf = recorder.canvas()->UndoDeviceScaleFactor();
+
+  gfx::RectF masking_bound(layer()->bounds());
+  masking_bound.Inset(mask_insets_);
+
+  const gfx::Rect masking_bound_scaled =
+      gfx::ScaleToRoundedRect(gfx::ToNearestRect(masking_bound), dsf);
+  recorder.canvas()->DrawRoundRect(masking_bound_scaled, corner_radius_ * dsf,
+                                   flags);
 }
 
 // CircleInkDropMask
