@@ -255,6 +255,11 @@ void VrGLThread::OnWebVrFrameAvailable() {
   scene_manager_->OnWebVrFrameAvailable();
 }
 
+void VrGLThread::OnWebVrTimedOut() {
+  DCHECK(task_runner()->BelongsToCurrentThread());
+  scene_manager_->OnWebVrTimedOut();
+}
+
 void VrGLThread::OnProjMatrixChanged(const gfx::Transform& proj_matrix) {
   DCHECK(task_runner()->BelongsToCurrentThread());
   scene_manager_->OnProjMatrixChanged(proj_matrix);

@@ -43,6 +43,7 @@ class GlBrowserInterface {
   virtual void ToggleCardboardGamepad(bool enabled) = 0;
   virtual void OnGlInitialized(unsigned int content_texture_id) = 0;
   virtual void OnWebVrFrameAvailable() = 0;
+  virtual void OnWebVrTimedOut() = 0;
   virtual void OnProjMatrixChanged(const gfx::Transform& proj_matrix) = 0;
 };
 

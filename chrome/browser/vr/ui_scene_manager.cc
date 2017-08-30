@@ -682,6 +682,10 @@ void UiSceneManager::OnWebVrFrameAvailable() {
   ConfigureScene();
 }
 
+void UiSceneManager::OnWebVrTimedOut() {
+  browser_->ExitPresent();
+}
+
 void UiSceneManager::OnProjMatrixChanged(const gfx::Transform& proj_matrix) {
   // Determine if the projected size of the content quad changed more than a
   // given threshold. If so, propagate this info so that the content's

@@ -60,6 +60,7 @@ class VrGLThread : public base::android::JavaHandlerThread,
   void ToggleCardboardGamepad(bool enabled) override;
   void OnGlInitialized(unsigned int content_texture_id) override;
   void OnWebVrFrameAvailable() override;
+  void OnWebVrTimedOut() override;
   void OnProjMatrixChanged(const gfx::Transform& proj_matrix) override;
 
   // vr::UiBrowserInterface implementation (UI calling to VrShell).
