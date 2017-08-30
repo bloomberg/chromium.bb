@@ -43,6 +43,7 @@
 #include "modules/indexeddb/IndexedDB.h"
 #include "platform/bindings/ActiveScriptWrappable.h"
 #include "platform/bindings/ScriptState.h"
+#include "platform/bindings/TraceWrapperMember.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/RefPtr.h"
 #include "public/platform/modules/indexeddb/WebIDBDatabase.h"
@@ -69,6 +70,7 @@ class MODULES_EXPORT IDBDatabase final
                              v8::Isolate*);
   ~IDBDatabase() override;
   DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
   // Overwrites the database metadata, including object store and index
   // metadata. Used to pass metadata to the database when it is opened.
@@ -191,7 +193,7 @@ class MODULES_EXPORT IDBDatabase final
   std::unique_ptr<WebIDBDatabase> backend_;
   Member<IDBTransaction> version_change_transaction_;
   HeapHashMap<int64_t, Member<IDBTransaction>> transactions_;
-  HeapHashMap<int32_t, Member<IDBObserver>> observers_;
+  HeapHashMap<int32_t, TraceWrapperMember<IDBObserver>> observers_;
 
   bool close_pending_ = false;
 
