@@ -1,0 +1,21 @@
+<!doctype html>
+<title>Blob Build All Then Read in Parallel</title>
+<script src="../resources/runner.js"></script>
+<script src="resources/shared.js"></script>
+<script>
+let runnerParams = { size: 2, numBlobs: 200 };
+let test = {
+  description:
+    'Benchmark for creating blobs and then reading them in parallel.',
+  unit: 'ms',
+  iterationCount: 10,
+  tracingCategories: 'Blob',
+  traceEventsToMeasure: [
+    'BlobReader::ReadBytesItem', 'Registry::RegisterBlob',
+    'BlobRequest::ReadRawData', 'BlobRequest'
+  ],
+  path: 'resources/blob-build-all-then-read-parallel-runner.html',
+  params: runnerParams
+}
+PerfTestRunner.measurePageLoadTimeAfterDoneMessage(test);
+</script>

@@ -1,0 +1,28 @@
+<!doctype html>
+<title>Blob Build All Then Read Serially Runner</title>
+<script src="resources/blob-shared.js"></script>
+<script src="resources/shared.js"></script>
+<body></body>
+<script>
+  async function start(testParams) {
+    logToDocumentBody(`Starting benchmark: ${testParams.numBlobs} blobs of ` +
+                      `size ${testParams.size}`);
+    let start = Date.now();
+    await blobCreateAllThenReadSerially(testParams.numBlobs, testParams.size);
+    logToDocumentBody('Time: ' + (Date.now() - start));
+    reportDone();
+  }
+
+  function getParams() {
+    let testParams = {
+      size: Number(document.getElementById('blob_size').value),
+      numBlobs: Number(document.getElementById('num_blobs').value)
+    };
+    start(testParams);
+  }
+
+  if (typeof params !== 'undefined')
+    start(params);
+  else
+    showManualInput();
+</script>
