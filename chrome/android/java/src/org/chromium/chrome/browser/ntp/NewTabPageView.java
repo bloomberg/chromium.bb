@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.ntp;
 
+import static org.chromium.chrome.browser.util.ViewUtils.dpToPx;
+
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
@@ -17,7 +19,6 @@ import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.AttributeSet;
-import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -269,7 +270,7 @@ public class NewTabPageView extends FrameLayout implements TileGroup.Observer {
                 ChromeFeatureList.NTP_CONDENSED_LAYOUT, PARAM_CONDENSED_LAYOUT_LOGO_HEIGHT, 0);
         if (experimentalLogoHeightDp > 0) {
             ViewGroup.LayoutParams logoParams = mSearchProviderLogoView.getLayoutParams();
-            logoParams.height = dpToPx(experimentalLogoHeightDp);
+            logoParams.height = dpToPx(getContext(), experimentalLogoHeightDp);
             mSearchProviderLogoView.setLayoutParams(logoParams);
         }
         mLogoDelegate = new LogoDelegateImpl(
@@ -982,11 +983,4 @@ public class NewTabPageView extends FrameLayout implements TileGroup.Observer {
         }
     }
 
-    /**
-     * Converts a dp value to a px value.
-     */
-    private int dpToPx(int value) {
-        return Math.round(TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP, value, getResources().getDisplayMetrics()));
-    }
 }
