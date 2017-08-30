@@ -1072,11 +1072,19 @@ HTMLElement* CompositeEditCommand::MoveParagraphContentsToNewBlockIfNecessary(
   // Inserting default paragraph element can change visible position. We
   // should update visible positions before use them.
   GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  const VisiblePosition& destination =
+      VisiblePosition::FirstPositionInNode(*new_block);
+  if (destination.IsNull()) {
+    // Reached by CompositeEditingCommandTest
+    //    .MoveParagraphContentsToNewBlockWithNonEditableStyle.
+    editing_state->Abort();
+    return nullptr;
+  }
+
   visible_pos = CreateVisiblePosition(pos, VP_DEFAULT_AFFINITY);
   visible_paragraph_start = StartOfParagraph(visible_pos);
   visible_paragraph_end = EndOfParagraph(visible_pos);
-  MoveParagraphs(visible_paragraph_start, visible_paragraph_end,
-                 VisiblePosition::FirstPositionInNode(*new_block),
+  MoveParagraphs(visible_paragraph_start, visible_paragraph_end, destination,
                  editing_state);
   if (editing_state->IsAborted())
     return nullptr;
@@ -1364,6 +1372,10 @@ void CompositeEditCommand::MoveParagraphs(
     ShouldPreserveStyle should_preserve_style,
     Node* constraining_ancestor) {
   DCHECK(!GetDocument().NeedsLayoutTreeUpdate());
+  DCHECK(start_of_paragraph_to_move.IsNotNull());
+  DCHECK(end_of_paragraph_to_move.IsNotNull());
+  DCHECK(destination.IsNotNull());
+
   if (start_of_paragraph_to_move.DeepEquivalent() ==
           destination.DeepEquivalent() ||
       start_of_paragraph_to_move.IsNull())

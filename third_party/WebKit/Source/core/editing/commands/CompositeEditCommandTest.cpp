@@ -24,6 +24,9 @@ class SampleCommand final : public CompositeEditCommand {
                         ShouldAssumeContentIsAlwaysEditable =
                             kDoNotAssumeContentIsAlwaysEditable);
 
+  void MoveParagraphContentsToNewBlockIfNecessary(const Position&,
+                                                  EditingState*);
+
   // CompositeEditCommand member implementations
   void DoApply(EditingState*) final {}
   InputEvent::InputType GetInputType() const final {
@@ -43,6 +46,13 @@ void SampleCommand::InsertNodeBefore(
   CompositeEditCommand::InsertNodeBefore(
       insert_child, ref_child, editing_state,
       should_assume_content_is_always_editable);
+}
+
+void SampleCommand::MoveParagraphContentsToNewBlockIfNecessary(
+    const Position& position,
+    EditingState* editing_state) {
+  CompositeEditCommand::MoveParagraphContentsToNewBlockIfNecessary(
+      position, editing_state);
 }
 
 }  // namespace
@@ -100,6 +110,28 @@ TEST_F(CompositeEditCommandTest, insertNodeBeforeWithDirtyLayoutTree) {
   sample.InsertNodeBefore(insert_child, ref_child, &editing_state);
   EXPECT_FALSE(editing_state.IsAborted());
   EXPECT_EQ("foo<b></b>", div->innerHTML());
+}
+
+TEST_F(CompositeEditCommandTest,
+       MoveParagraphContentsToNewBlockWithNonEditableStyle) {
+  SetBodyContent(
+      "<style>div{-webkit-user-modify:read-only;user-select:none;}</style>"
+      "foo");
+  SampleCommand& sample = *new SampleCommand(GetDocument());
+  Element* body = GetDocument().body();
+  Node* text = body->lastChild();
+  body->setAttribute(HTMLNames::contenteditableAttr, "true");
+  GetDocument().UpdateStyleAndLayout();
+
+  EditingState editing_state;
+  sample.MoveParagraphContentsToNewBlockIfNecessary(Position(text, 0),
+                                                    &editing_state);
+  EXPECT_TRUE(editing_state.IsAborted());
+  EXPECT_EQ(
+      "<div><br></div>"
+      "<style>div{-webkit-user-modify:read-only;user-select:none;}</style>"
+      "foo",
+      body->innerHTML());
 }
 
 }  // namespace blink
