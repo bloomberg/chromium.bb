@@ -92,17 +92,17 @@ function performance_entrylist_checker(type)
 {
     var entryType = type;
 
-    function entry_check(entry, expectedNames)
+    function entry_check(entry, expectedNames, testDescription='')
     {
-        var msg = 'Entry \"' + entry.name + '\" should be one that we have set.';
+        var msg = testDescription + 'Entry \"' + entry.name + '\" should be one that we have set.';
         wp_test(function() { assert_in_array(entry.name, expectedNames, msg); }, msg);
-        test_equals(entry.entryType, entryType, 'entryType should be \"' + entryType + '\".');
+        test_equals(entry.entryType, entryType, testDescription + 'entryType should be \"' + entryType + '\".');
         if (type === "measure") {
-            test_true(isFinite(entry.startTime), 'startTime should be a number.');
-            test_true(isFinite(entry.duration), 'duration should be a number.');
+            test_true(isFinite(entry.startTime), testDescription + 'startTime should be a number.');
+            test_true(isFinite(entry.duration), testDescription + 'duration should be a number.');
         } else if (type === "mark") {
-            test_greater_than(entry.startTime, 0, 'startTime should greater than 0.');
-            test_equals(entry.duration, 0, 'duration of mark should be 0.');
+            test_greater_than(entry.startTime, 0, testDescription + 'startTime should greater than 0.');
+            test_equals(entry.duration, 0, testDescription + 'duration of mark should be 0.');
         }
     }
 
@@ -119,13 +119,16 @@ function performance_entrylist_checker(type)
         return inOrder;
     }
 
-    function entrylist_check(entryList, expectedLength, expectedNames)
+    function entrylist_check(entryList, expectedLength, expectedNames, testDescription='')
     {
-        test_equals(entryList.length, expectedLength, 'There should be ' + expectedLength + ' entries.');
-        test_true(entrylist_order_check(entryList), 'Entries in entrylist should be in order.');
+        test_equals(entryList.length, expectedLength, testDescription + 'There should be ' + expectedLength + ' entries.');
+        test_true(entrylist_order_check(entryList), testDescription + 'Entries in entrylist should be in order.');
         for (var i = 0; i < entryList.length; ++i)
         {
-            entry_check(entryList[i], expectedNames);
+            if (testDescription != '')
+                entry_check(entryList[i], expectedNames, testDescription + 'Entry_list ' + i + '. ');
+            else
+                entry_check(entryList[i], expectedNames);
         }
     }
 

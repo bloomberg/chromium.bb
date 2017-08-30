@@ -24,8 +24,10 @@
                 context.clearMarks(mark_names[i]);
                 var retained_entries = context.getEntriesByType('mark');
                 var non_retained_entries = context.getEntriesByName(mark_names[i], 'mark');
-                entrylist_checker.entrylist_check(retained_entries, mark_names.length - i - 1, string_mark_names);
-                test_equals(non_retained_entries.length, 0, 'Marks that we cleared should not exist anymore.');
+                entrylist_checker.entrylist_check(retained_entries, mark_names.length - i - 1, string_mark_names,
+                    'First loop: checking entries after removing "' + mark_names[i] + '". ');
+                test_equals(non_retained_entries.length, 0,
+                    'First loop: marks that we cleared for "' + mark_names[i] + '" should not exist anymore.');
             }
 
             mark_names.forEach(context.mark, context);
@@ -41,8 +43,10 @@
                 context.clearMarks(mark_names[i]);
                 var retained_entries = context.getEntriesByType('mark');
                 var non_retained_entries = context.getEntriesByName(mark_names[i], 'mark');
-                entrylist_checker.entrylist_check(retained_entries, (mark_names.length - i - 1) * 2, string_mark_names);
-                test_equals(non_retained_entries.length, 0, 'Marks that we cleared should not exist anymore.');
+                entrylist_checker.entrylist_check(retained_entries, (mark_names.length - i - 1) * 2, string_mark_names,
+                    'Second loop: checking entries after removing "' + mark_names[i] + '". ');
+                test_equals(non_retained_entries.length, 0,
+                    'Second loop: marks that we cleared for "' + mark_names[i] + '" should not exist anymore.');
             }
 
             // Following cases test clear functionality when mark names are tied for two times. 

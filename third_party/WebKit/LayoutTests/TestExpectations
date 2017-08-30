@@ -1595,8 +1595,6 @@ crbug.com/667560 virtual/mojo-loading/http/tests/devtools/editor/text-editor-sea
 crbug.com/705125 fast/mediacapturefromelement/CanvasCaptureMediaStream-capture-out-of-DOM-element.html [ Failure ]
 crbug.com/705125 http/tests/security/cors-rfc1918/addressspace-document-appcache.html [ Failure ]
 crbug.com/705125 http/tests/security/cors-rfc1918/addressspace-document-csp-appcache.html [ Failure ]
-crbug.com/705125 http/tests/w3c/webperf/submission/Intel/user-timing/test_user_timing_clearMarks.html [ Failure ]
-crbug.com/705125 virtual/mojo-loading/http/tests/w3c/webperf/submission/Intel/user-timing/test_user_timing_clearMarks.html [ Failure ]
 crbug.com/705125 virtual/mojo-loading/http/tests/security/cors-rfc1918/addressspace-document-appcache.html [ Failure ]
 crbug.com/705125 virtual/mojo-loading/http/tests/security/cors-rfc1918/addressspace-document-csp-appcache.html [ Failure ]
 crbug.com/705125 virtual/mojo-loading/http/tests/security/suborigins/crossorigin/suborigin-cors-xhr-failure-output.php [ Failure Pass ]
