@@ -23,7 +23,7 @@ class PrinterCapabilitiesTest : public testing::Test {
 
  protected:
   void SetUp() override {
-    test_backend_ = new TestPrintBackend();
+    test_backend_ = base::MakeRefCounted<TestPrintBackend>();
     PrintBackend::SetPrintBackendForTesting(test_backend_.get());
   }
 

@@ -10,6 +10,7 @@
 #include <memory>
 #include <queue>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
@@ -457,18 +458,19 @@ std::unique_ptr<KeyedService> BuildTestingPrinterProviderAPI(
 
 class ExtensionPrinterHandlerTest : public testing::Test {
  public:
-  ExtensionPrinterHandlerTest() : pwg_raster_converter_(NULL) {}
+  ExtensionPrinterHandlerTest() = default;
   ~ExtensionPrinterHandlerTest() override = default;
 
   void SetUp() override {
     extensions::PrinterProviderAPIFactory::GetInstance()->SetTestingFactory(
         env_.profile(), &BuildTestingPrinterProviderAPI);
-    extension_printer_handler_.reset(
-        new ExtensionPrinterHandler(env_.profile()));
+    extension_printer_handler_ =
+        base::MakeUnique<ExtensionPrinterHandler>(env_.profile());
 
-    pwg_raster_converter_ = new FakePWGRasterConverter();
+    auto pwg_raster_converter = base::MakeUnique<FakePWGRasterConverter>();
+    pwg_raster_converter_ = pwg_raster_converter.get();
     extension_printer_handler_->SetPWGRasterConverterForTesting(
-        std::unique_ptr<PWGRasterConverter>(pwg_raster_converter_));
+        std::move(pwg_raster_converter));
   }
 
  protected:
@@ -486,7 +488,8 @@ class ExtensionPrinterHandlerTest : public testing::Test {
   TestExtensionEnvironment env_;
   std::unique_ptr<ExtensionPrinterHandler> extension_printer_handler_;
 
-  FakePWGRasterConverter* pwg_raster_converter_;
+  // Owned by |extension_printer_handler_|.
+  FakePWGRasterConverter* pwg_raster_converter_ = nullptr;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ExtensionPrinterHandlerTest);
@@ -545,11 +548,11 @@ TEST_F(ExtensionPrinterHandlerTest, GetPrinters_Reset) {
 }
 
 TEST_F(ExtensionPrinterHandlerTest, GetUsbPrinters) {
-  scoped_refptr<MockUsbDevice> device0 =
-      new MockUsbDevice(0, 0, "Google", "USB Printer", "");
+  auto device0 =
+      base::MakeRefCounted<MockUsbDevice>(0, 0, "Google", "USB Printer", "");
   usb_service().AddDevice(device0);
-  scoped_refptr<MockUsbDevice> device1 =
-      new MockUsbDevice(0, 1, "Google", "USB Printer", "");
+  auto device1 =
+      base::MakeRefCounted<MockUsbDevice>(0, 1, "Google", "USB Printer", "");
   usb_service().AddDevice(device1);
 
   const Extension* extension_1 = env_.MakeExtension(
@@ -666,8 +669,8 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pdf) {
   bool success = false;
   std::string status;
 
-  scoped_refptr<base::RefCountedBytes> print_data(
-      new base::RefCountedBytes(kPrintData, kPrintDataLength));
+  auto print_data =
+      base::MakeRefCounted<base::RefCountedBytes>(kPrintData, kPrintDataLength);
   base::string16 title = base::ASCIIToUTF16("Title");
 
   extension_printer_handler_->StartPrint(
@@ -704,8 +707,8 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pdf_Reset) {
   bool success = false;
   std::string status;
 
-  scoped_refptr<base::RefCountedBytes> print_data(
-      new base::RefCountedBytes(kPrintData, kPrintDataLength));
+  auto print_data =
+      base::MakeRefCounted<base::RefCountedBytes>(kPrintData, kPrintDataLength);
   base::string16 title = base::ASCIIToUTF16("Title");
 
   extension_printer_handler_->StartPrint(
@@ -730,8 +733,8 @@ TEST_F(ExtensionPrinterHandlerTest, Print_All) {
   bool success = false;
   std::string status;
 
-  scoped_refptr<base::RefCountedBytes> print_data(
-      new base::RefCountedBytes(kPrintData, kPrintDataLength));
+  auto print_data =
+      base::MakeRefCounted<base::RefCountedBytes>(kPrintData, kPrintDataLength);
   base::string16 title = base::ASCIIToUTF16("Title");
 
   extension_printer_handler_->StartPrint(
@@ -769,8 +772,8 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pwg) {
   bool success = false;
   std::string status;
 
-  scoped_refptr<base::RefCountedBytes> print_data(
-      new base::RefCountedBytes(kPrintData, kPrintDataLength));
+  auto print_data =
+      base::MakeRefCounted<base::RefCountedBytes>(kPrintData, kPrintDataLength);
   base::string16 title = base::ASCIIToUTF16("Title");
 
   extension_printer_handler_->StartPrint(
@@ -822,8 +825,8 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pwg_NonDefaultSettings) {
   bool success = false;
   std::string status;
 
-  scoped_refptr<base::RefCountedBytes> print_data(
-      new base::RefCountedBytes(kPrintData, kPrintDataLength));
+  auto print_data =
+      base::MakeRefCounted<base::RefCountedBytes>(kPrintData, kPrintDataLength);
   base::string16 title = base::ASCIIToUTF16("Title");
 
   extension_printer_handler_->StartPrint(
@@ -875,8 +878,8 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pwg_Reset) {
   bool success = false;
   std::string status;
 
-  scoped_refptr<base::RefCountedBytes> print_data(
-      new base::RefCountedBytes(kPrintData, kPrintDataLength));
+  auto print_data =
+      base::MakeRefCounted<base::RefCountedBytes>(kPrintData, kPrintDataLength);
   base::string16 title = base::ASCIIToUTF16("Title");
 
   extension_printer_handler_->StartPrint(
@@ -904,8 +907,8 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pwg_InvalidTicket) {
   bool success = false;
   std::string status;
 
-  scoped_refptr<base::RefCountedBytes> print_data(
-      new base::RefCountedBytes(kPrintData, kPrintDataLength));
+  auto print_data =
+      base::MakeRefCounted<base::RefCountedBytes>(kPrintData, kPrintDataLength);
   base::string16 title = base::ASCIIToUTF16("Title");
 
   extension_printer_handler_->StartPrint(
@@ -926,8 +929,8 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pwg_FailedConversion) {
 
   pwg_raster_converter_->FailConversion();
 
-  scoped_refptr<base::RefCountedBytes> print_data(
-      new base::RefCountedBytes(kPrintData, kPrintDataLength));
+  auto print_data =
+      base::MakeRefCounted<base::RefCountedBytes>(kPrintData, kPrintDataLength);
   base::string16 title = base::ASCIIToUTF16("Title");
 
   extension_printer_handler_->StartPrint(
@@ -942,8 +945,8 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pwg_FailedConversion) {
 }
 
 TEST_F(ExtensionPrinterHandlerTest, GrantUsbPrinterAccess) {
-  scoped_refptr<MockUsbDevice> device =
-      new MockUsbDevice(0, 0, "Google", "USB Printer", "");
+  auto device =
+      base::MakeRefCounted<MockUsbDevice>(0, 0, "Google", "USB Printer", "");
   usb_service().AddDevice(device);
 
   size_t call_count = 0;
@@ -974,8 +977,8 @@ TEST_F(ExtensionPrinterHandlerTest, GrantUsbPrinterAccess) {
 }
 
 TEST_F(ExtensionPrinterHandlerTest, GrantUsbPrinterAccess_Reset) {
-  scoped_refptr<MockUsbDevice> device =
-      new MockUsbDevice(0, 0, "Google", "USB Printer", "");
+  auto device =
+      base::MakeRefCounted<MockUsbDevice>(0, 0, "Google", "USB Printer", "");
   usb_service().AddDevice(device);
 
   size_t call_count = 0;
