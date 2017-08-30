@@ -10998,7 +10998,8 @@
         "args": [
           "--browser=exact",
           "--browser-executable=./test_chrome",
-          "--xvfb"
+          "--xvfb",
+          "--skip=scripts_smoke_unittest.ScriptsSmokeTest.testRunTelemetryBenchmarkAsGoogletest"
         ],
         "isolate_name": "telemetry_perf_unittests",
         "name": "telemetry_perf_unittests",
@@ -11012,7 +11013,8 @@
         "args": [
           "--browser=exact",
           "--browser-executable=./test_chrome",
-          "--jobs=1"
+          "--jobs=1",
+          "--skip=telemetry.page.page_run_end_to_end_unittest.ActualPageRunEndToEndTests.testTrafficSettings"
         ],
         "isolate_name": "telemetry_unittests",
         "name": "telemetry_unittests",
