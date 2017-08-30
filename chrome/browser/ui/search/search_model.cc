@@ -7,23 +7,23 @@
 #include "chrome/browser/ui/search/search_model_observer.h"
 #include "components/search/search.h"
 
-SearchModel::SearchModel() = default;
+SearchModel::SearchModel() : origin_(Origin::DEFAULT) {}
 
 SearchModel::~SearchModel() = default;
 
-void SearchModel::SetMode(const SearchMode& new_mode) {
+void SearchModel::SetOrigin(Origin origin) {
   DCHECK(search::IsInstantExtendedAPIEnabled())
       << "Please do not try to set the SearchModel mode without first "
       << "checking if Search is enabled.";
 
-  if (mode_ == new_mode)
+  if (origin_ == origin)
     return;
 
-  const SearchMode old_mode = mode_;
-  mode_ = new_mode;
+  const Origin old_origin = origin_;
+  origin_ = origin;
 
   for (SearchModelObserver& observer : observers_)
-    observer.ModelChanged(old_mode, mode_);
+    observer.ModelChanged(old_origin, origin_);
 }
 
 void SearchModel::AddObserver(SearchModelObserver* observer) {

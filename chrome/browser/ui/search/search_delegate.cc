@@ -14,16 +14,16 @@ SearchDelegate::~SearchDelegate() {
   DCHECK(!tab_model_) << "All tabs should have been deactivated or closed.";
 }
 
-void SearchDelegate::ModelChanged(const SearchMode& old_mode,
-                                  const SearchMode& new_mode) {
-  browser_model_->SetMode(new_mode);
+void SearchDelegate::ModelChanged(SearchModel::Origin old_origin,
+                                  SearchModel::Origin new_origin) {
+  browser_model_->SetOrigin(new_origin);
 }
 
 void SearchDelegate::OnTabActivated(content::WebContents* web_contents) {
   if (tab_model_)
     tab_model_->RemoveObserver(this);
   tab_model_ = SearchTabHelper::FromWebContents(web_contents)->model();
-  browser_model_->SetMode(tab_model_->mode());
+  browser_model_->SetOrigin(tab_model_->origin());
   tab_model_->AddObserver(this);
 }
 

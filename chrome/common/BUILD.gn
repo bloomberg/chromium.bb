@@ -168,7 +168,6 @@ static_library("common") {
     "search/instant_types.cc",
     "search/instant_types.h",
     "search/ntp_logging_events.h",
-    "search/search_types.h",
     "search/search_urls.cc",
     "search/search_urls.h",
     "secure_origin_whitelist.cc",
