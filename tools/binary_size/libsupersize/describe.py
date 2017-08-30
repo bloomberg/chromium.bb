@@ -30,17 +30,17 @@ def _PrettySize(size):
   return '%.1fmb' % size
 
 
-def _FormatPss(pss):
+def _FormatPss(pss, force_sign=False):
   # Shows a decimal for small numbers to make it clear that a shared symbol has
   # a non-zero pss.
   if abs(pss) > 10:
     return str(int(pss))
-  ret = str(round(pss, 1))
-  if ret.endswith('.0'):
-    ret = ret[:-2]
-    if ret == '0' and pss:
-      ret = '~0'
-  return ret
+  near_int = abs(pss) % 1 < 0.05
+  if near_int and abs(pss) < 1 and pss:
+    return '~0'
+  if force_sign:
+    return ('%+.0f' if near_int else '%+.1f') % pss
+  return ('%.0f' if near_int else '%.1f') % pss
 
 
 def _Divide(a, b):
@@ -99,42 +99,26 @@ class Describer(object):
             not_included_part)
 
   def _DescribeSymbol(self, sym, single_line=False):
-    if sym.IsGroup():
-      address = 'Group'
-    else:
-      address = hex(sym.address)
+    address = 'Group' if sym.IsGroup() else hex(sym.address)
+
     last_field = ''
     if sym.IsGroup():
       last_field = 'count=%d' % len(sym)
-    elif sym.IsDelta():
-      if sym.before_symbol is None:
-        num_aliases = sym.after_symbol.num_aliases
-      elif sym.after_symbol is None:
-        num_aliases = sym.before_symbol.num_aliases
-      elif sym.before_symbol.num_aliases == sym.after_symbol.num_aliases:
-        num_aliases = sym.before_symbol.num_aliases
-      else:
-        last_field = 'num_aliases=%d->%d' % (
-            sym.before_symbol.num_aliases, sym.after_symbol.num_aliases)
-      if not last_field and (num_aliases > 1 or self.verbose):
-        last_field = 'num_aliases=%d' % num_aliases
-    elif sym.num_aliases > 1 or self.verbose:
-      last_field = 'num_aliases=%d' % sym.num_aliases
+    else:
+      syms = [sym.before_symbol, sym.after_symbol] if sym.IsDelta() else [sym]
+      num_aliases = [s.num_aliases for s in syms if not s is None]
+      if num_aliases[0] != num_aliases[-1]:  # If 2 distinct values.
+        last_field = 'num_aliases=%d->%d' % tuple(num_aliases)
+      elif num_aliases[0] > 1 or self.verbose:
+        last_field = 'num_aliases=%d' % num_aliases[0]
 
     if sym.IsDelta():
-      if sym.IsGroup():
-        b = sum(s.before_symbol.pss_without_padding if s.before_symbol else 0
-                for s in sym.IterLeafSymbols())
-        a = sum(s.after_symbol.pss_without_padding if s.after_symbol else 0
-                for s in sym.IterLeafSymbols())
-      else:
-        b = sym.before_symbol.pss_without_padding if sym.before_symbol else 0
-        a = sym.after_symbol.pss_without_padding if sym.after_symbol else 0
-      pss_with_sign = _FormatPss(sym.pss)
-      if pss_with_sign[0] not in '~-':
-        pss_with_sign = '+' + pss_with_sign
+      b = sum(s.before_symbol.pss_without_padding if s.before_symbol else 0
+              for s in sym.IterLeafSymbols())
+      a = sum(s.after_symbol.pss_without_padding if s.after_symbol else 0
+              for s in sym.IterLeafSymbols())
       pss_field = '{} ({}->{})'.format(
-          pss_with_sign, _FormatPss(b), _FormatPss(a))
+          _FormatPss(sym.pss, True), _FormatPss(b), _FormatPss(a))
     elif sym.num_aliases > 1:
       pss_field = '{} (size={})'.format(_FormatPss(sym.pss), sym.size)
     else:
