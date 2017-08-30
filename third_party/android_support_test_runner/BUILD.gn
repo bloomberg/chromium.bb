@@ -19,5 +19,6 @@ android_java_prebuilt("exposed_instrumentation_api_publish_java") {
 }
 
 android_aar_prebuilt("rules_java") {
+  testonly = true
   aar_path = "lib/rules-0.5.aar"
 }
