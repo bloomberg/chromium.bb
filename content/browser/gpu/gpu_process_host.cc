@@ -136,7 +136,6 @@ static const char* const kSwitchNames[] = {
 #if defined(OS_CHROMEOS)
     switches::kDisableVaapiAcceleratedVideoEncode,
 #endif
-    switches::kGpuDriverBugWorkarounds,
     switches::kGpuStartupDialog,
     switches::kGpuSandboxAllowSysVShm,
     switches::kGpuSandboxFailuresFatal,

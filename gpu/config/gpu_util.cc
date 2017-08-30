@@ -30,18 +30,6 @@ namespace gpu {
 
 namespace {
 
-void StringToIntSet(const std::string& str, std::set<int>* list) {
-  DCHECK(list);
-  for (const base::StringPiece& piece :
-       base::SplitStringPiece(str, ",", base::TRIM_WHITESPACE,
-                              base::SPLIT_WANT_ALL)) {
-    int number = 0;
-    bool succeed = base::StringToInt(piece, &number);
-    DCHECK(succeed);
-    list->insert(number);
-  }
-}
-
 // |str| is in the format of "0x040a;0x10de;...;hex32_N".
 void StringToIds(const std::string& str, std::vector<uint32_t>* list) {
   DCHECK(list);
@@ -81,21 +69,6 @@ GpuFeatureStatus GetGpuRasterizationFeatureStatus(
 }
 
 }  // namespace anonymous
-
-std::string IntSetToString(const std::set<int>& list, char divider) {
-  std::string rt;
-  for (auto number : list) {
-    if (!rt.empty())
-      rt += divider;
-    rt += base::IntToString(number);
-  }
-  return rt;
-}
-
-void StringToFeatureSet(
-    const std::string& str, std::set<int>* feature_set) {
-  StringToIntSet(str, feature_set);
-}
 
 void ParseSecondaryGpuDevicesFromCommandLine(
     const base::CommandLine& command_line,

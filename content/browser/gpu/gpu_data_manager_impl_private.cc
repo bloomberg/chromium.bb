@@ -770,11 +770,6 @@ void GpuDataManagerImplPrivate::AppendGpuCommandLine(
     command_line->AppendSwitchASCII(switches::kUseGL, use_gl);
   }
 
-  if (!gpu_driver_bugs_.empty()) {
-    command_line->AppendSwitchASCII(switches::kGpuDriverBugWorkarounds,
-                                    gpu::IntSetToString(gpu_driver_bugs_, ','));
-  }
-
   if (ShouldDisableAcceleratedVideoDecode(command_line)) {
     command_line->AppendSwitch(switches::kDisableAcceleratedVideoDecode);
   }

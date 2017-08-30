@@ -649,33 +649,6 @@ TEST_F(GpuDataManagerImplPrivateTest, SetGLStringsDefered) {
 }
 #endif  // OS_LINUX
 
-TEST_F(GpuDataManagerImplPrivateTest, GpuDriverBugListSingle) {
-  ScopedGpuDataManagerImplPrivate manager;
-  manager->gpu_driver_bugs_.insert(5);
-
-  base::CommandLine command_line(0, NULL);
-  manager->AppendGpuCommandLine(&command_line);
-
-  EXPECT_TRUE(command_line.HasSwitch(switches::kGpuDriverBugWorkarounds));
-  std::string args = command_line.GetSwitchValueASCII(
-      switches::kGpuDriverBugWorkarounds);
-  EXPECT_STREQ("5", args.c_str());
-}
-
-TEST_F(GpuDataManagerImplPrivateTest, GpuDriverBugListMultiple) {
-  ScopedGpuDataManagerImplPrivate manager;
-  manager->gpu_driver_bugs_.insert(5);
-  manager->gpu_driver_bugs_.insert(7);
-
-  base::CommandLine command_line(0, NULL);
-  manager->AppendGpuCommandLine(&command_line);
-
-  EXPECT_TRUE(command_line.HasSwitch(switches::kGpuDriverBugWorkarounds));
-  std::string args = command_line.GetSwitchValueASCII(
-      switches::kGpuDriverBugWorkarounds);
-  EXPECT_STREQ("5,7", args.c_str());
-}
-
 TEST_F(GpuDataManagerImplPrivateTest, BlacklistAllFeatures) {
   ScopedGpuDataManagerImplPrivate manager;
   EXPECT_EQ(0u, manager->GetBlacklistedFeatureCount());

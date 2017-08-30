@@ -265,7 +265,6 @@ void GLManager::InitializeWithWorkaroundsImpl(
   const SharedMemoryLimits limits;
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
-  DCHECK(!command_line.HasSwitch(switches::kGpuDriverBugWorkarounds));
   DCHECK(!command_line.HasSwitch(switches::kDisableGLExtensions));
   InitializeGpuPreferencesForTestingFromCommandLine(command_line,
                                                     &gpu_preferences_);
