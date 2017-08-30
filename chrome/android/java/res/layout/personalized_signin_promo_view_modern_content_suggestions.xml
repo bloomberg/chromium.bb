@@ -6,6 +6,7 @@
 <org.chromium.chrome.browser.signin.SigninPromoView
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/signin_promo_view_container"
+    style="@style/SuggestionCardModern"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:gravity="center_horizontal"
