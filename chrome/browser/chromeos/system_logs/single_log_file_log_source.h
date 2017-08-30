@@ -32,6 +32,9 @@ class SingleLogFileLogSource : public SystemLogsSource {
 
     // For /var/log/atrus.log.
     kAtrusLog,
+
+    // For /var/log/net.log.
+    kNetLog,
   };
 
   explicit SingleLogFileLogSource(SupportedSource source);
