@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
+#include "base/task_runner_util.h"
 #include "base/task_scheduler/post_task.h"
 #include "components/crash/content/app/breakpad_linux.h"
 #include "components/crash/content/browser/crash_dump_manager_android.h"
@@ -14,8 +15,18 @@ namespace breakpad {
 
 ChildProcessCrashObserver::ChildProcessCrashObserver(
     const base::FilePath crash_dump_dir,
-    int descriptor_id)
-    : crash_dump_dir_(crash_dump_dir), descriptor_id_(descriptor_id) {}
+    int descriptor_id,
+    const base::Closure& increase_crash_cb)
+    : crash_dump_dir_(crash_dump_dir),
+      descriptor_id_(descriptor_id),
+      increase_crash_cb_(base::Bind(
+          [](base::Closure cb, bool run_cb) {
+            if (run_cb)
+              cb.Run();
+          },
+          increase_crash_cb)),
+      background_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::BACKGROUND})) {}
 
 ChildProcessCrashObserver::~ChildProcessCrashObserver() {}
 
@@ -41,12 +52,14 @@ void ChildProcessCrashObserver::OnChildExit(
   // This might be called twice for a given child process, with a
   // NOTIFICATION_RENDERER_PROCESS_TERMINATED and then with
   // NOTIFICATION_RENDERER_PROCESS_CLOSED.
-  base::PostTaskWithTraits(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+
+  base::PostTaskAndReplyWithResult(
+      background_task_runner_.get(), FROM_HERE,
       base::Bind(&CrashDumpManager::ProcessMinidumpFileFromChild,
                  base::Unretained(CrashDumpManager::GetInstance()),
                  crash_dump_dir_, child_process_id, process_type,
-                 termination_status, app_state));
+                 termination_status, app_state),
+      increase_crash_cb_);
 }
 
 }  // namespace breakpad
