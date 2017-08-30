@@ -61,6 +61,11 @@ class HostContentSettingsMap : public content_settings::Observer,
     NOTIFICATION_ANDROID_PROVIDER,
     PREF_PROVIDER,
     DEFAULT_PROVIDER,
+
+    // The following providers are for tests only.
+    PROVIDER_FOR_TESTS,
+    OTHER_PROVIDER_FOR_TESTS,
+
     NUM_PROVIDER_TYPES
   };
 

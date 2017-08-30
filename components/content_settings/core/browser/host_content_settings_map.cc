@@ -62,6 +62,8 @@ const ProviderNamesSourceMapEntry kProviderNamesSourceMap[] = {
     {"notification_android", content_settings::SETTING_SOURCE_USER},
     {"preference", content_settings::SETTING_SOURCE_USER},
     {"default", content_settings::SETTING_SOURCE_USER},
+    {"tests", content_settings::SETTING_SOURCE_USER},
+    {"tests_other", content_settings::SETTING_SOURCE_USER},
 };
 
 // Enum describing the status of domain to origin migration of content settings.
