@@ -60,8 +60,8 @@ class ImageFrameGeneratorTest : public ::testing::Test,
  public:
   void SetUp() override {
     ImageDecodingStore::Instance().SetCacheLimitInBytes(1024 * 1024);
-    generator_ =
-        ImageFrameGenerator::Create(FullSize(), false, ColorBehavior::Ignore());
+    generator_ = ImageFrameGenerator::Create(FullSize(), false,
+                                             ColorBehavior::Ignore(), {});
     data_ = SharedBuffer::Create();
     segment_reader_ = SegmentReader::CreateFromSharedBuffer(data_);
     UseMockImageDecoderFactory();
@@ -116,9 +116,15 @@ class ImageFrameGeneratorTest : public ::testing::Test,
     if (count > 1) {
       generator_.Clear();
       generator_ = ImageFrameGenerator::Create(FullSize(), true,
-                                               ColorBehavior::Ignore());
+                                               ColorBehavior::Ignore(), {});
       UseMockImageDecoderFactory();
     }
+  }
+  void SetSupportedSizes(std::vector<SkISize> sizes) {
+    generator_.Clear();
+    generator_ = ImageFrameGenerator::Create(
+        FullSize(), true, ColorBehavior::Ignore(), std::move(sizes));
+    UseMockImageDecoderFactory();
   }
 
   RefPtr<SharedBuffer> data_;
@@ -132,6 +138,27 @@ class ImageFrameGeneratorTest : public ::testing::Test,
   size_t frame_count_;
   size_t requested_clear_except_frame_;
 };
+
+TEST_F(ImageFrameGeneratorTest, GetSupportedSizes) {
+  ASSERT_TRUE(FullSize() == SkISize::Make(100, 100));
+
+  std::vector<SkISize> supported_sizes = {SkISize::Make(2, 2),
+                                          SkISize::Make(50, 50),
+                                          SkISize::Make(75, 75), FullSize()};
+  SetSupportedSizes(supported_sizes);
+
+  struct Test {
+    SkISize query_size;
+    size_t supported_size_index;
+  } tests[] = {{SkISize::Make(1, 1), 0},     {SkISize::Make(2, 2), 0},
+               {SkISize::Make(25, 10), 1},   {SkISize::Make(1, 25), 1},
+               {SkISize::Make(50, 51), 2},   {SkISize::Make(80, 80), 3},
+               {SkISize::Make(100, 100), 3}, {SkISize::Make(1000, 1000), 3}};
+  for (auto& test : tests) {
+    EXPECT_TRUE(generator_->GetSupportedDecodeSize(test.query_size) ==
+                supported_sizes[test.supported_size_index]);
+  }
+}
 
 TEST_F(ImageFrameGeneratorTest, incompleteDecode) {
   SetFrameStatus(ImageFrame::kFramePartial);

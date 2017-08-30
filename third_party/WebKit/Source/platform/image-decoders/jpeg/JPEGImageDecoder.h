@@ -50,6 +50,7 @@ class PLATFORM_EXPORT JPEGImageDecoder final : public ImageDecoder {
   bool CanDecodeToYUV() override;
   bool DecodeToYUV() override;
   void SetImagePlanes(std::unique_ptr<ImagePlanes>) override;
+  std::vector<SkISize> GetSupportedDecodeSizes() override;
   bool HasImagePlanes() const { return image_planes_.get(); }
 
   bool OutputScanlines();
@@ -61,6 +62,8 @@ class PLATFORM_EXPORT JPEGImageDecoder final : public ImageDecoder {
   }
   void SetDecodedSize(unsigned width, unsigned height);
 
+  void AddSupportedDecodeSize(unsigned width, unsigned height);
+
  private:
   // ImageDecoder:
   void DecodeSize() override { Decode(true); }
@@ -69,11 +72,15 @@ class PLATFORM_EXPORT JPEGImageDecoder final : public ImageDecoder {
   // Decodes the image.  If |only_size| is true, stops decoding after
   // calculating the image size.  If decoding fails but there is no more
   // data coming, sets the "decode failure" flag.
-  void Decode(bool only_size);
+  void Decode(bool only_size, bool generate_all_sizes = false);
 
   std::unique_ptr<JPEGImageReader> reader_;
   std::unique_ptr<ImagePlanes> image_planes_;
   IntSize decoded_size_;
+  std::vector<SkISize> supported_decode_sizes_;
+#if DCHECK_IS_ON()
+  bool decoding_all_sizes_ = false;
+#endif
 };
 
 }  // namespace blink

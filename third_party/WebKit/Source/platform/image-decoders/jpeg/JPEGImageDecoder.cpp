@@ -78,7 +78,7 @@ namespace {
 const int exifMarker = JPEG_APP0 + 1;
 
 // JPEG only supports a denominator of 8.
-const unsigned scaleDenominator = 8;
+const unsigned g_scale_denomiator = 8;
 
 }  // namespace
 
@@ -393,14 +393,22 @@ class JPEGImageReader final {
     ClearBuffer();
   }
 
-  bool Decode(bool only_size) {
+  // Decode the JPEG data. If |only_size| is specified, then only the size
+  // information will be decoded. If |generate_all_sizes| is specified, this
+  // will generate the sizes for all possible numerators up to the desired
+  // numerator as dictated by the decoder class. Note that |generate_all_sizes|
+  // is only valid if |only_size| is set.
+  bool Decode(bool only_size, bool generate_all_sizes) {
     // We need to do the setjmp here. Otherwise bad things will happen
     if (setjmp(err_.setjmp_buffer))
       return decoder_->SetFailed();
 
+    // Generate all sizes implies we only want the size.
+    DCHECK(!generate_all_sizes || only_size);
+
     J_COLOR_SPACE override_color_space = JCS_UNKNOWN;
     switch (state_) {
-      case JPEG_HEADER:
+      case JPEG_HEADER: {
         // Read file parameters with jpeg_read_header().
         if (jpeg_read_header(&info_, true) == JPEG_SUSPENDED)
           return false;  // I/O suspension.
@@ -435,8 +443,9 @@ class JPEGImageReader final {
           return false;
 
         // Calculate and set decoded size.
-        info_.scale_num = decoder_->DesiredScaleNumerator();
-        info_.scale_denom = scaleDenominator;
+        int max_numerator = decoder_->DesiredScaleNumerator();
+        info_.scale_num = max_numerator;
+        info_.scale_denom = g_scale_denomiator;
         // Scaling caused by running low on memory isn't supported by YUV
         // decoding since YUV decoding is performed on full sized images. At
         // this point, buffers and various image info structs have already been
@@ -446,6 +455,16 @@ class JPEGImageReader final {
           override_color_space = JCS_UNKNOWN;
         jpeg_calc_output_dimensions(&info_);
         decoder_->SetDecodedSize(info_.output_width, info_.output_height);
+
+        if (generate_all_sizes) {
+          info_.scale_denom = g_scale_denomiator;
+          for (int numerator = 1; numerator <= max_numerator; ++numerator) {
+            info_.scale_num = numerator;
+            jpeg_calc_output_dimensions(&info_);
+            decoder_->AddSupportedDecodeSize(info_.output_width,
+                                             info_.output_height);
+          }
+        }
 
         decoder_->SetOrientation(ReadImageOrientation(Info()));
 
@@ -492,8 +511,8 @@ class JPEGImageReader final {
           ClearBuffer();
           return true;
         }
+      }
       // FALL THROUGH
-
       case JPEG_START_DECOMPRESS:
         // Set parameters for decompression.
         // FIXME -- Should reset dct_method and dither mode for final pass
@@ -762,13 +781,13 @@ unsigned JPEGImageDecoder::DesiredScaleNumerator() const {
   size_t original_bytes = Size().Width() * Size().Height() * 4;
 
   if (original_bytes <= max_decoded_bytes_)
-    return scaleDenominator;
+    return g_scale_denomiator;
 
   // Downsample according to the maximum decoded size.
   unsigned scale_numerator = static_cast<unsigned>(floor(sqrt(
       // MSVC needs explicit parameter type for sqrt().
-      static_cast<float>(max_decoded_bytes_ * scaleDenominator *
-                         scaleDenominator / original_bytes))));
+      static_cast<float>(max_decoded_bytes_ * g_scale_denomiator *
+                         g_scale_denomiator / original_bytes))));
 
   return scale_numerator;
 }
@@ -792,6 +811,26 @@ bool JPEGImageDecoder::DecodeToYUV() {
 void JPEGImageDecoder::SetImagePlanes(
     std::unique_ptr<ImagePlanes> image_planes) {
   image_planes_ = std::move(image_planes);
+}
+
+void JPEGImageDecoder::AddSupportedDecodeSize(unsigned width, unsigned height) {
+#if DCHECK_IS_ON()
+  DCHECK(decoding_all_sizes_);
+#endif
+  supported_decode_sizes_.push_back(SkISize::Make(width, height));
+}
+
+std::vector<SkISize> JPEGImageDecoder::GetSupportedDecodeSizes() {
+  if (supported_decode_sizes_.empty()) {
+#if DCHECK_IS_ON()
+    decoding_all_sizes_ = true;
+#endif
+    Decode(true, true);
+#if DCHECK_IS_ON()
+    decoding_all_sizes_ = false;
+#endif
+  }
+  return supported_decode_sizes_;
 }
 
 // At the moment we support only JCS_RGB and JCS_CMYK values of the
@@ -996,7 +1035,7 @@ inline bool IsComplete(const JPEGImageDecoder* decoder, bool only_size) {
   return decoder->FrameIsDecodedAtIndex(0);
 }
 
-void JPEGImageDecoder::Decode(bool only_size) {
+void JPEGImageDecoder::Decode(bool only_size, bool generate_all_sizes) {
   if (Failed())
     return;
 
@@ -1007,7 +1046,7 @@ void JPEGImageDecoder::Decode(bool only_size) {
 
   // If we couldn't decode the image but have received all the data, decoding
   // has failed.
-  if (!reader_->Decode(only_size) && IsAllDataReceived())
+  if (!reader_->Decode(only_size, generate_all_sizes) && IsAllDataReceived())
     SetFailed();
 
   // If decoding is done or failed, we don't need the JPEGImageReader anymore.
