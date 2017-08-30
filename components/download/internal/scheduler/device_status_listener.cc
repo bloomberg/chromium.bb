@@ -75,7 +75,7 @@ void DeviceStatusListener::Start(DeviceStatusListener::Observer* observer) {
   status_.battery_status =
       ToBatteryStatus(base::PowerMonitor::Get()->IsOnBatteryPower());
   status_.network_status =
-      ToNetworkStatus(net::NetworkChangeNotifier::GetConnectionType());
+      ToNetworkStatus(network_listener_->GetConnectionType());
   listening_ = true;
 }
 
