@@ -65,7 +65,6 @@ public abstract class SiteSectionViewHolder extends NewTabPageViewHolder {
     public static class UpdateTilesCallback extends PartialBindCallback {
         @Override
         public void onResult(NewTabPageViewHolder holder) {
-            assert holder instanceof SiteSectionViewHolder;
             ((SiteSectionViewHolder) holder).refreshData();
         }
     }
@@ -82,7 +81,6 @@ public abstract class SiteSectionViewHolder extends NewTabPageViewHolder {
 
         @Override
         public void onResult(NewTabPageViewHolder holder) {
-            assert holder instanceof SiteSectionViewHolder;
             ((SiteSectionViewHolder) holder).updateIconView(mTile);
         }
     }
@@ -99,7 +97,6 @@ public abstract class SiteSectionViewHolder extends NewTabPageViewHolder {
 
         @Override
         public void onResult(NewTabPageViewHolder holder) {
-            assert holder instanceof SiteSectionViewHolder;
             ((SiteSectionViewHolder) holder).updateOfflineBadge(mTile);
         }
     }

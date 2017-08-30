@@ -119,7 +119,6 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
     private static void onPaymentAppCreated(long registrationId, String scope, String label,
             @Nullable String sublabel, @Nullable Bitmap icon, String[] methodNameArray,
             String[] preferredRelatedApplications, WebContents webContents, Object callback) {
-        assert callback instanceof PaymentAppFactory.PaymentAppCreatedCallback;
         Context context = ChromeActivity.fromWebContents(webContents);
         if (context == null) return;
         URI scopeUri = UriUtils.parseUriFromString(scope);
@@ -136,14 +135,12 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
 
     @CalledByNative
     private static void onAllPaymentAppsCreated(Object callback) {
-        assert callback instanceof PaymentAppFactory.PaymentAppCreatedCallback;
         ((PaymentAppFactory.PaymentAppCreatedCallback) callback).onAllPaymentAppsCreated();
     }
 
     @CalledByNative
     private static void onPaymentAppInvoked(
             Object callback, String methodName, String stringifiedDetails) {
-        assert callback instanceof PaymentInstrument.InstrumentDetailsCallback;
         if (TextUtils.isEmpty(methodName)) {
             ((PaymentInstrument.InstrumentDetailsCallback) callback).onInstrumentDetailsError();
         } else {
@@ -154,7 +151,6 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
 
     @CalledByNative
     private static void onPaymentAppAborted(Object callback, boolean result) {
-        assert callback instanceof PaymentInstrument.AbortCallback;
         ((PaymentInstrument.AbortCallback) callback).onInstrumentAbortResult(result);
     }
 

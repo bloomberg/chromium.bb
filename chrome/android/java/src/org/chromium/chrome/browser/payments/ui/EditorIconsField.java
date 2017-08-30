@@ -13,7 +13,6 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.chrome.R;
 
 import java.util.List;
@@ -84,7 +83,6 @@ class EditorIconsField {
             return position;
         }
 
-        @SuppressFBWarnings("BC_UNCONFIRMED_CAST")
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
             ImageView iconView = (ImageView) convertView;

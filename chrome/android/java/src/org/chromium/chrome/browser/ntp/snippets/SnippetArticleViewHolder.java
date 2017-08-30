@@ -225,7 +225,6 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
     public static class RefreshOfflineBadgeVisibilityCallback extends PartialBindCallback {
         @Override
         public void onResult(NewTabPageViewHolder holder) {
-            assert holder instanceof SnippetArticleViewHolder;
             ((SnippetArticleViewHolder) holder).refreshOfflineBadgeVisibility();
         }
     }

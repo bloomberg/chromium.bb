@@ -12,7 +12,6 @@ import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.view.View;
-import android.view.ViewParent;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
@@ -63,11 +62,7 @@ public class SiteExplorePageIndicatorView
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
 
-        final ViewParent parent = getParent();
-        assert parent instanceof ViewPager :
-                "PageIndicatorView must be a direct child of a ViewPager.";
-
-        mViewPager = (ViewPager) parent;
+        mViewPager = (ViewPager) getParent();
 
         mViewPager.addOnPageChangeListener(this);
         mViewPager.getAdapter().registerDataSetObserver(mDataSetObserver);

@@ -202,7 +202,6 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
         }
 
         for (Object payload : payloads) {
-            assert payload instanceof PartialBindCallback;
             ((PartialBindCallback) payload).onResult(holder);
         }
     }
@@ -312,9 +311,6 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
         // We are assuming for now that the adapter is used with a single RecyclerView.
         // Getting the reference as we are doing here is going to be broken if that changes.
         assert mRecyclerView == null;
-
-        // FindBugs chokes on the cast below when not checked, raising BC_UNCONFIRMED_CAST
-        assert recyclerView instanceof SuggestionsRecyclerView;
 
         mRecyclerView = (SuggestionsRecyclerView) recyclerView;
 

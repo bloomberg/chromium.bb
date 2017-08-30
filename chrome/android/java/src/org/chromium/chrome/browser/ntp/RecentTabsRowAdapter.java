@@ -150,7 +150,6 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
          * @return The view corresponding to the group.
          */
         public View getGroupView(boolean isExpanded, View convertView, ViewGroup parent) {
-            assert convertView == null || convertView instanceof RecentTabsGroupView;
             RecentTabsGroupView groupView = (RecentTabsGroupView) convertView;
             if (groupView == null) {
                 groupView = (RecentTabsGroupView) LayoutInflater.from(mActivity).inflate(
