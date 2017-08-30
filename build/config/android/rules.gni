@@ -3054,6 +3054,7 @@ if (enable_java_templates) {
                                [
                                  "create_srcjar",
                                  "deps",
+                                 "testonly",
                                ])
         if (!defined(deps)) {
           deps = []
@@ -3110,6 +3111,7 @@ if (enable_java_templates) {
                                  "jar_excluded_patterns",
                                  "proguard_configs",
                                  "requires_android",
+                                 "testonly",
                                ])
         if (!defined(deps)) {
           deps = []

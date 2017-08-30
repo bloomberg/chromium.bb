@@ -478,7 +478,12 @@ def main(argv):
           options.incremental_install_json_path)
       deps_info['enable_relocation_packing'] = options.enable_relocation_packing
 
-  if options.type in ('java_binary', 'java_library', 'android_apk', 'dist_jar'):
+  requires_javac_classpath = options.type in (
+      'java_binary', 'java_library', 'android_apk', 'dist_jar')
+  requires_full_classpath = (
+      options.type == 'java_prebuilt' or requires_javac_classpath)
+
+  if requires_javac_classpath:
     # Classpath values filled in below (after applying tested_apk_config).
     config['javac'] = {}
 
@@ -574,8 +579,9 @@ def main(argv):
   if options.type in ['android_apk', 'deps_dex']:
     deps_dex_files = [c['dex_path'] for c in all_library_deps]
 
-  if options.type in ('java_binary', 'java_library', 'android_apk', 'dist_jar'):
+  if requires_javac_classpath:
     javac_classpath = [c['jar_path'] for c in direct_library_deps]
+  if requires_full_classpath:
     java_full_classpath = [c['jar_path'] for c in all_library_deps]
 
     if options.extra_classpath_jars:
@@ -653,7 +659,7 @@ def main(argv):
     dex_config = config['final_dex']
     dex_config['dependency_dex_files'] = deps_dex_files
 
-  if options.type in ('java_binary', 'java_library', 'android_apk', 'dist_jar'):
+  if requires_javac_classpath:
     config['javac']['classpath'] = javac_classpath
     javac_interface_classpath = [
         _AsInterfaceJar(p) for p in javac_classpath
@@ -661,6 +667,7 @@ def main(argv):
     javac_interface_classpath += deps_info.get('extra_classpath_jars', [])
     config['javac']['interface_classpath'] = javac_interface_classpath
 
+  if requires_full_classpath:
     deps_info['java'] = {
       'full_classpath': java_full_classpath,
     }
