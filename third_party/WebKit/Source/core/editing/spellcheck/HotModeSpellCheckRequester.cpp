@@ -87,8 +87,8 @@ EphemeralRange CalculateHotModeCheckingRange(const Element& editable,
   TextIteratorBehavior behavior = TextIteratorBehavior::Builder()
                                       .SetEmitsObjectReplacementCharacter(true)
                                       .Build();
-  BackwardsCharacterIterator backward_iterator(full_range.StartPosition(),
-                                               position, behavior);
+  BackwardsCharacterIterator backward_iterator(
+      EphemeralRange(full_range.StartPosition(), position), behavior);
   if (!backward_iterator.AtEnd())
     backward_iterator.Advance(kHotModeChunkSize / 2);
   const Position& chunk_start = backward_iterator.EndPosition();
