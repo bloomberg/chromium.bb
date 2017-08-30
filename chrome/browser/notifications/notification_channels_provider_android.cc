@@ -126,7 +126,8 @@ class ChannelsRuleIterator : public content_settings::RuleIterator {
     DCHECK(HasNext());
     DCHECK_NE(channels_[index_].status, NotificationChannelStatus::UNAVAILABLE);
     content_settings::Rule rule = content_settings::Rule(
-        ContentSettingsPattern::FromString(channels_[index_].origin),
+        ContentSettingsPattern::FromURLNoWildcard(
+            GURL(channels_[index_].origin)),
         ContentSettingsPattern::Wildcard(),
         new base::Value(
             ChannelStatusToContentSetting(channels_[index_].status)));
