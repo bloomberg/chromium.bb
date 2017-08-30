@@ -467,6 +467,12 @@ void ServiceWorkerContainer::CountFeature(uint32_t feature) {
   if (!GetExecutionContext())
     return;
   WebFeature use_counter_feature = static_cast<WebFeature>(feature);
+  // The given feature number can be bigger than the max number of WebFeature
+  // because the feature may have been removed in a merge, or side-by-side
+  // versions of the browser are being used and this version does not yet have
+  // the feature.
+  if (use_counter_feature >= WebFeature::kNumberOfFeatures)
+    return;
   if (Deprecation::DeprecationMessage(use_counter_feature).IsEmpty())
     UseCounter::Count(GetExecutionContext(), use_counter_feature);
   else
