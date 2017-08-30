@@ -14446,6 +14446,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="DNS.StaleHostResolver.RestoreSizeOnCacheMiss">
+  <owner>mgersh@chromium.org</owner>
+  <summary>
+    When a DNS request made through StaleHostResolver has no stale cached result
+    available, the number of host cache entries that were restored from prefs.
+  </summary>
+</histogram>
+
+<histogram name="DNS.StaleHostResolver.SizeOnCacheMiss">
+  <owner>mgersh@chromium.org</owner>
+  <summary>
+    When a DNS request made through StaleHostResolver has no stale cached result
+    available, the number of entries in the host cache.
+  </summary>
+</histogram>
+
 <histogram name="DNS.StaleHostResolver.StaleAddressListDelta"
     enum="DNS.AddressListDeltaType">
   <owner>mgersh@chromium.org</owner>
