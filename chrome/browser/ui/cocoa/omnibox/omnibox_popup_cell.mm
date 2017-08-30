@@ -378,7 +378,6 @@ NSAttributedString* CreateClassifiedAttributedString(
 @synthesize description = description_;
 @synthesize prefix = prefix_;
 @synthesize image = image_;
-@synthesize incognitoImage = incognitoImage_;
 @synthesize answerImage = answerImage_;
 @synthesize isContentsRTL = isContentsRTL_;
 @synthesize isAnswer = isAnswer_;
@@ -497,20 +496,18 @@ NSAttributedString* CreateClassifiedAttributedString(
   NSWindow* parentWindow = [[controlView window] parentWindow];
   BOOL isDarkTheme = [parentWindow hasDarkTheme];
   NSRect imageRect = cellFrame;
-  NSImage* theImage =
-      isDarkTheme ? [cellData incognitoImage] : [cellData image];
-  imageRect.size = [theImage size];
+  imageRect.size = [[cellData image] size];
   imageRect.origin.x += kMaterialImageXOffset + [tableView contentLeftPadding];
   imageRect.origin.y +=
       GetVerticalMargin() + kMaterialExtraVerticalImagePadding;
   if (isVerticalLayout)
     imageRect.origin.y += halfLineHeight;
-  [theImage drawInRect:FlipIfRTL(imageRect, cellFrame)
-              fromRect:NSZeroRect
-             operation:NSCompositeSourceOver
-              fraction:1.0
-        respectFlipped:YES
-                 hints:nil];
+  [[cellData image] drawInRect:FlipIfRTL(imageRect, cellFrame)
+                      fromRect:NSZeroRect
+                     operation:NSCompositeSourceOver
+                      fraction:1.0
+                respectFlipped:YES
+                         hints:nil];
 
   CGFloat left = kMaterialTextStartOffset + [tableView contentLeftPadding];
   NSPoint origin = NSMakePoint(left, GetVerticalMargin());

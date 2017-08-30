@@ -28,7 +28,6 @@ class OmniboxPopupViewMac;
 
 // Common icon that shows next to most rows in the list.
 @property(readonly, retain, nonatomic) NSImage* image;
-@property(retain, nonatomic) NSImage* incognitoImage;
 
 // Uncommon icon that only shows on answer rows (e.g. weather).
 @property(readonly, retain, nonatomic) NSImage* answerImage;

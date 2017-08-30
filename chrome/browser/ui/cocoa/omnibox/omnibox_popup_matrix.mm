@@ -42,8 +42,6 @@ const NSInteger kMiddleButtonNumber = 2;
                      image:popupView.ImageForMatch(match)
                answerImage:(match.answer ? answerImage : nil)
               forDarkTheme:isDarkTheme]);
-    if (isDarkTheme)
-      [cellData setIncognitoImage:popupView.ImageForMatch(match)];
     [array addObject:cellData];
   }
 
