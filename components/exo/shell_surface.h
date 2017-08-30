@@ -354,6 +354,10 @@ class ShellSurface : public SurfaceTreeHost,
   // Applies |system_modal_| to |widget_|.
   void UpdateSystemModal();
 
+  // Updates the backdrop state of the shell surface based on the
+  // bounds mode and window state.
+  void UpdateBackdrop();
+
   // In the coordinate system of the parent root window.
   gfx::Point GetMouseLocation() const;
 
