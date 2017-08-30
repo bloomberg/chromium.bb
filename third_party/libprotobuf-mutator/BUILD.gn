@@ -9,9 +9,11 @@ source_set("libprotobuf-mutator") {
   public_configs = [ ":include_config" ]
   sources = [
     "src/src/binary_format.cc",
+    "src/src/libfuzzer/libfuzzer_macro.cc",
     "src/src/libfuzzer/libfuzzer_mutator.cc",
     "src/src/mutator.cc",
     "src/src/text_format.cc",
+    "src/src/utf8_fix.cc",
   ]
   deps = [
     "//third_party/protobuf:protobuf_full",
