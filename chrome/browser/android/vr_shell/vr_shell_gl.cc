@@ -814,7 +814,7 @@ void VrShellGl::DrawFrame(int16_t frame_index) {
   TRACE_EVENT_BEGIN0("gpu", "VrShellGl::AcquireFrame");
   gvr::Frame frame = swap_chain_->AcquireFrame();
   TRACE_EVENT_END0("gpu", "VrShellGl::AcquireFrame");
-  if (!frame.is_valid()) {
+  if (!frame) {
     return;
   }
   frame.BindBuffer(kFramePrimaryBuffer);

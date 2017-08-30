@@ -1,9 +1,9 @@
 Name: Google VR SDK
 Short Name: gvr
 URL: https://github.com/googlevr/gvr-android-sdk
-Version: 1.60.1
-Date: 06 June 2017
-Revision: a27f768b13682189c23eed69656319db5ef7cbfc
+Version: 1.80.0
+Date: 29 August 2017
+Revision: ee5cb1c6138d0be57e82ddafc1b54d7d3e3e5560
 License: Apache 2.0
 License File: LICENSE
 Security Critical: yes
@@ -14,13 +14,9 @@ simple API used for creating apps inserted into Cardboard viewers, and the more
 complex API for supporting Daydream-ready phones and the Daydream controller.
 
 Local Modifications:
-Only header files in NDK are used. Due to binary size concern, we have decided
-to use a static shim library instead of the shared library that comes with
-this checkout. The static libraries are downloaded from a public storage through
-gclient sync. Currently, the static libraries needs a newer version of
-common_library.aar than the one provided by this checkout. So we also download
-it from the same public storage. Once the version on github catches up, we will
-remove common_library.aar.
+Due to binary size concern, we have decided to use a static shim library instead
+of the shared library that comes with this checkout. The static libraries are
+downloaded from a public storage through gclient sync.
 For Version 1.10.0, we have two date: 6 Dec 2016 and 10 Feb 2017. The latter
 version cherrypick a CL that fix a crash on K and L.
 All JNI calls in the static library also needs to be manually registered. So

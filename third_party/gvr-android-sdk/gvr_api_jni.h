@@ -522,7 +522,15 @@ Java_com_google_vr_ndk_base_GvrApi_nativeGetHeadSpaceFromStartSpaceRotation(
     JNIEnv* env,
     jobject jcaller,
     jlong nativeGvrContext,
-    jfloatArray outPose,
+    jfloatArray outRotation,
+    jlong timeNs);
+
+JNI_GENERATOR_EXPORT void
+Java_com_google_vr_ndk_base_GvrApi_nativeGetHeadSpaceFromStartSpaceTransform(
+    JNIEnv* env,
+    jobject jcaller,
+    jlong nativeGvrContext,
+    jfloatArray outTransform,
     jlong timeNs);
 
 JNI_GENERATOR_EXPORT void
@@ -679,7 +687,8 @@ Java_com_google_vr_ndk_base_GvrApi_nativeSetLensOffset(JNIEnv* env,
                                                        jobject jcaller,
                                                        jlong nativeGvrContext,
                                                        jfloat x,
-                                                       jfloat y);
+                                                       jfloat y,
+                                                       jfloat rotation);
 
 JNI_GENERATOR_EXPORT void
 Java_com_google_vr_ndk_base_GvrApi_nativeDumpDebugData(JNIEnv* env,
@@ -1266,6 +1275,15 @@ static const JNINativeMethod kMethodsGvrApi[] = {
      "V",
      reinterpret_cast<void*>(
          Java_com_google_vr_ndk_base_GvrApi_nativeGetHeadSpaceFromStartSpaceRotation)},
+    {"nativeGetHeadSpaceFromStartSpaceTransform",
+     "("
+     "J"
+     "[F"
+     "J"
+     ")"
+     "V",
+     reinterpret_cast<void*>(
+         Java_com_google_vr_ndk_base_GvrApi_nativeGetHeadSpaceFromStartSpaceTransform)},
     {"nativeSetIgnoreManualPauseResumeTracker",
      "("
      "J"
@@ -1447,6 +1465,7 @@ static const JNINativeMethod kMethodsGvrApi[] = {
     {"nativeSetLensOffset",
      "("
      "J"
+     "F"
      "F"
      "F"
      ")"

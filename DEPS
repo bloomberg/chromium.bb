@@ -516,7 +516,7 @@ deps_os = {
       Var('chromium_git') + '/external/github.com/GoogleChrome/custom-tabs-client.git' + '@' + 'cff061038b852d647f7044d828a9df78aa135f38',
 
     'src/third_party/gvr-android-sdk/src':
-      Var('chromium_git') + '/external/github.com/googlevr/gvr-android-sdk.git' + '@' + 'a27f768b13682189c23eed69656319db5ef7cbfc',
+      Var('chromium_git') + '/external/github.com/googlevr/gvr-android-sdk.git' + '@' + 'ee5cb1c6138d0be57e82ddafc1b54d7d3e3e5560',
   },
 }
 
@@ -1187,18 +1187,6 @@ hooks_os = {
                   '--no_auth',
                   '--bucket', 'chromium-gvr-static-shim',
                   '-s', 'src/third_party/gvr-android-sdk/libgvr_shim_static_arm64.a.sha1',
-      ],
-    },
-    {
-      'name': 'gvr_common_aar',
-      'pattern': '\\.sha1',
-    'action': [   'python',
-                  'src/third_party/depot_tools/download_from_google_storage.py',
-                  '--no_resume',
-                  '--platform=linux*',
-                  '--no_auth',
-                  '--bucket', 'chromium-gvr-static-shim',
-                  '-s', 'src/third_party/gvr-android-sdk/common_library.aar.sha1',
       ],
     },
     {
