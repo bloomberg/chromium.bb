@@ -158,7 +158,7 @@ bool HandleRequestCallback(
     return true;
   }
   // Invalid request.
-  scoped_refptr<base::RefCountedBytes> empty_bytes(new base::RefCountedBytes);
+  auto empty_bytes = base::MakeRefCounted<base::RefCountedBytes>();
   callback.Run(empty_bytes.get());
   return true;
 }
