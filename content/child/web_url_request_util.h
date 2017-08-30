@@ -14,13 +14,16 @@
 #include "content/public/common/resource_type.h"
 #include "content/public/common/service_worker_modes.h"
 #include "third_party/WebKit/public/platform/WebMixedContentContextType.h"
+#include "third_party/WebKit/public/platform/WebURLRequest.h"
 
 namespace blink {
 class WebHTTPBody;
-class WebURLRequest;
 }
 
 namespace content {
+
+ResourceType WebURLRequestContextToResourceType(
+    blink::WebURLRequest::RequestContext request_context);
 
 CONTENT_EXPORT ResourceType WebURLRequestToResourceType(
     const blink::WebURLRequest& request);
