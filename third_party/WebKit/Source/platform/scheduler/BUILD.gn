@@ -114,6 +114,7 @@ source_set("scheduler") {
     "renderer/web_view_scheduler_impl.h",
     "renderer/webthread_impl_for_renderer_scheduler.cc",
     "renderer/webthread_impl_for_renderer_scheduler.h",
+    "util/state_tracer.h",
     "utility/webthread_impl_for_utility_thread.cc",
     "utility/webthread_impl_for_utility_thread.h",
   ]
