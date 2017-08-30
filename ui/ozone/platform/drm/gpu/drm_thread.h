@@ -64,7 +64,8 @@ class DrmThread : public base::Thread,
 
   void Start();
 
-  // Must be called on the DRM thread.
+  // Must be called on the DRM thread. All methods for use from the GPU thread.
+  // DrmThreadProxy (on GPU)thread) is the client for these methods.
   void CreateBuffer(gfx::AcceleratedWidget widget,
                     const gfx::Size& size,
                     gfx::BufferFormat format,
@@ -76,9 +77,12 @@ class DrmThread : public base::Thread,
                            std::vector<base::ScopedFD>&& fds,
                            const std::vector<gfx::NativePixmapPlane>& planes,
                            scoped_refptr<GbmBuffer>* buffer);
-
   void GetScanoutFormats(gfx::AcceleratedWidget widget,
                          std::vector<gfx::BufferFormat>* scanout_formats);
+  void AddBindingCursorDevice(ozone::mojom::DeviceCursorRequest request);
+  void AddBindingDrmDevice(ozone::mojom::DrmDeviceRequest request);
+
+  // DrmWindowProxy (on GPU thread) is the client for these methods.
   void SchedulePageFlip(gfx::AcceleratedWidget widget,
                         const std::vector<OverlayPlane>& planes,
                         SwapCompletionOnceCallback callback);
@@ -86,37 +90,27 @@ class DrmThread : public base::Thread,
       gfx::AcceleratedWidget widget,
       const gfx::VSyncProvider::UpdateVSyncCallback& callback);
 
+  // ozone::mojom::DrmDevice
+  void StartDrmDevice(StartDrmDeviceCallback callback) override;
   void CreateWindow(const gfx::AcceleratedWidget& widget) override;
   void DestroyWindow(const gfx::AcceleratedWidget& widget) override;
   void SetWindowBounds(const gfx::AcceleratedWidget& widget,
                        const gfx::Rect& bounds) override;
-  void SetCursor(const gfx::AcceleratedWidget& widget,
-                 const std::vector<SkBitmap>& bitmaps,
-                 const gfx::Point& location,
-                 int32_t frame_delay_ms) override;
-  void MoveCursor(const gfx::AcceleratedWidget& widget,
-                  const gfx::Point& location) override;
-  void CheckOverlayCapabilities(
-      const gfx::AcceleratedWidget& widget,
-      const OverlaySurfaceCandidateList& overlays,
-      base::OnceCallback<void(const gfx::AcceleratedWidget&,
-                              const OverlaySurfaceCandidateList&,
-                              const OverlayStatusList&)> callback) override;
+  void TakeDisplayControl(base::OnceCallback<void(bool)> callback) override;
+  void RelinquishDisplayControl(
+      base::OnceCallback<void(bool)> callback) override;
   void RefreshNativeDisplays(
       base::OnceCallback<void(MovableDisplaySnapshots)> callback) override;
+  void AddGraphicsDevice(const base::FilePath& path, base::File file) override;
+  void RemoveGraphicsDevice(const base::FilePath& path) override;
+  void DisableNativeDisplay(
+      int64_t id,
+      base::OnceCallback<void(int64_t, bool)> callback) override;
   void ConfigureNativeDisplay(
       int64_t id,
       std::unique_ptr<display::DisplayMode> mode,
       const gfx::Point& origin,
       base::OnceCallback<void(int64_t, bool)> callback) override;
-  void DisableNativeDisplay(
-      int64_t id,
-      base::OnceCallback<void(int64_t, bool)> callback) override;
-  void TakeDisplayControl(base::OnceCallback<void(bool)> callback) override;
-  void RelinquishDisplayControl(
-      base::OnceCallback<void(bool)> callback) override;
-  void AddGraphicsDevice(const base::FilePath& path, base::File file) override;
-  void RemoveGraphicsDevice(const base::FilePath& path) override;
   void GetHDCPState(int64_t display_id,
                     base::OnceCallback<void(int64_t, bool, display::HDCPState)>
                         callback) override;
@@ -128,15 +122,23 @@ class DrmThread : public base::Thread,
       const std::vector<display::GammaRampRGBEntry>& degamma_lut,
       const std::vector<display::GammaRampRGBEntry>& gamma_lut,
       const std::vector<float>& correction_matrix) override;
+  void CheckOverlayCapabilities(
+      const gfx::AcceleratedWidget& widget,
+      const OverlaySurfaceCandidateList& overlays,
+      base::OnceCallback<void(const gfx::AcceleratedWidget&,
+                              const OverlaySurfaceCandidateList&,
+                              const OverlayStatusList&)> callback) override;
+
+  // ozone::mojom::DeviceCursor
+  void SetCursor(const gfx::AcceleratedWidget& widget,
+                 const std::vector<SkBitmap>& bitmaps,
+                 const gfx::Point& location,
+                 int32_t frame_delay_ms) override;
+  void MoveCursor(const gfx::AcceleratedWidget& widget,
+                  const gfx::Point& location) override;
 
   // base::Thread:
   void Init() override;
-
-  // Mojo support for DeviceCursorRequest.
-  void AddBindingCursorDevice(ozone::mojom::DeviceCursorRequest request);
-
-  // Mojo support for DrmDevice requests.
-  void AddBindingDrmDevice(ozone::mojom::DrmDeviceRequest request);
 
  private:
   std::unique_ptr<DrmDeviceManager> device_manager_;

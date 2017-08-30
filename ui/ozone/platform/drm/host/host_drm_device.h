@@ -2,24 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_OZONE_PLATFORM_DRM_MUS_THREAD_PROXY_H_
-#define UI_OZONE_PLATFORM_DRM_MUS_THREAD_PROXY_H_
+#ifndef UI_OZONE_PLATFORM_DRM_HOST_HOST_DRM_DEVICE_H_
+#define UI_OZONE_PLATFORM_DRM_HOST_HOST_DRM_DEVICE_H_
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/synchronization/lock.h"
+#include "base/threading/thread_checker.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/ozone/platform/drm/common/display_types.h"
-#include "ui/ozone/platform/drm/gpu/inter_thread_messaging_proxy.h"
 #include "ui/ozone/platform/drm/host/drm_cursor.h"
 #include "ui/ozone/platform/drm/host/gpu_thread_adapter.h"
 #include "ui/ozone/public/interfaces/device_cursor.mojom.h"
 #include "ui/ozone/public/interfaces/drm_device.mojom.h"
 
-namespace base {
-class SingleThreadTaskRunner;
+namespace display {
+class DisplaySnapshot;
 }
 
 namespace service_manager {
@@ -27,37 +26,30 @@ class Connector;
 }
 
 namespace ui {
-
 class DrmDisplayHostManager;
 class DrmOverlayManager;
-class DrmThread;
 class GpuThreadObserver;
-class MusThreadProxy;
 
-// TODO(rjkroege): Originally we had planned on running the window server, gpu,
-// compositor and drm threads together in the same process. However, system
-// security requires separating event handling and embedding decisions (the
-// window server) into a process separate from the viz server
-// (//services/viz/README.md). The separated implementation remains incomplete
-// and will be completed in subsequent CLs. At that point, this class will
-// become the viz host for ozone services and a separate class will contain the
-// viz service (DRM interface.)
-class MusThreadProxy : public GpuThreadAdapter,
-                       public InterThreadMessagingProxy {
+// This is the Viz host-side library for the DRM device service provided by the
+// viz process.
+class HostDrmDevice : public GpuThreadAdapter {
  public:
-  MusThreadProxy(DrmCursor* cursor, service_manager::Connector* connector);
-  ~MusThreadProxy() override;
+  HostDrmDevice(DrmCursor* cursor, service_manager::Connector* connector);
+  ~HostDrmDevice() override;
 
-  void StartDrmThread();
+  // Start the DRM service. Runs the |OnDrmServiceStartedCallback| when the
+  // service has launched and initiates the remaining startup.
+  void AsyncStartDrmDevice();
+
+  // Blocks until the DRM service has come up. Use this entry point only when
+  // supporting launch of the service where the ozone UI and GPU
+  // reponsibilities are performed by the same underlying thread.
+  void BlockingStartDrmDevice();
+
   void ProvideManagers(DrmDisplayHostManager* display_manager,
                        DrmOverlayManager* overlay_manager);
 
-  // InterThreadMessagingProxy.
-  // TODO(rjkroege): Remove when mojo everywhere.
-  void SetDrmThread(DrmThread* thread) override;
-
-  // This is the core functionality. They are invoked when we have a main
-  // thread, a gpu thread and we have called initialize on both.
+  // GpuThreadAdapter
   void AddGpuThreadObserver(GpuThreadObserver* observer) override;
   void RemoveGpuThreadObserver(GpuThreadObserver* observer) override;
   bool IsConnected() override;
@@ -101,8 +93,9 @@ class MusThreadProxy : public GpuThreadAdapter,
                               const gfx::Rect& bounds) override;
 
  private:
+  void OnDrmServiceStartedCallback(bool success);
+  void PollForSingleThreadReady(int previous_delay);
   void RunObservers();
-  void DispatchObserversFromDrmThread();
 
   void GpuCheckOverlayCapabilitiesCallback(
       const gfx::AcceleratedWidget& widget,
@@ -112,7 +105,8 @@ class MusThreadProxy : public GpuThreadAdapter,
   void GpuConfigureNativeDisplayCallback(int64_t display_id,
                                          bool success) const;
 
-  void GpuRefreshNativeDisplaysCallback(MovableDisplaySnapshots displays) const;
+  void GpuRefreshNativeDisplaysCallback(
+      std::vector<std::unique_ptr<display::DisplaySnapshot>> displays) const;
   void GpuDisableNativeDisplayCallback(int64_t display_id, bool success) const;
   void GpuTakeDisplayControlCallback(bool success) const;
   void GpuRelinquishDisplayControlCallback(bool success) const;
@@ -121,32 +115,24 @@ class MusThreadProxy : public GpuThreadAdapter,
                                display::HDCPState state) const;
   void GpuSetHDCPStateCallback(int64_t display_id, bool success) const;
 
-  scoped_refptr<base::SingleThreadTaskRunner> ws_task_runner_;
-
   // Mojo implementation of the DrmDevice.
-  ui::ozone::mojom::DrmDevicePtr gpu_adapter_;
-
-  // TODO(rjkroege): Remove this in a subsequent CL (http://crbug.com/620927)
-  DrmThread* drm_thread_;  // Not owned.
-
-  // Guards  for multi-theaded access to drm_thread_.
-  base::Lock lock_;
+  ui::ozone::mojom::DrmDevicePtr drm_device_ptr_;
 
   DrmDisplayHostManager* display_manager_;  // Not owned.
   DrmOverlayManager* overlay_manager_;      // Not owned.
   DrmCursor* cursor_;                       // Not owned.
 
   service_manager::Connector* connector_;
+  THREAD_CHECKER(on_window_server_thread_);
 
+  bool connected_ = false;
   base::ObserverList<GpuThreadObserver> gpu_thread_observers_;
 
-  base::ThreadChecker on_window_server_thread_;
+  base::WeakPtrFactory<HostDrmDevice> weak_ptr_factory_;
 
-  base::WeakPtrFactory<MusThreadProxy> weak_ptr_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(MusThreadProxy);
+  DISALLOW_COPY_AND_ASSIGN(HostDrmDevice);
 };
 
 }  // namespace ui
 
-#endif  // UI_OZONE_PLATFORM_DRM_MUS_THREAD_PROXY_H_
+#endif  // UI_OZONE_PLATFORM_DRM_HOST_HOST_DRM_DEVICE_H_
