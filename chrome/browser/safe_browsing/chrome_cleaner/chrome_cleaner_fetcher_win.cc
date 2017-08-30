@@ -60,6 +60,7 @@ enum CleanerDownloadStatusHistogramValue {
   CLEANER_DOWNLOAD_STATUS_OTHER_FAILURE = 1,
   CLEANER_DOWNLOAD_STATUS_NOT_FOUND_ON_SERVER = 2,
   CLEANER_DOWNLOAD_STATUS_FAILED_TO_CREATE_TEMP_DIR = 3,
+  CLEANER_DOWNLOAD_STATUS_FAILED_TO_SAVE_TO_FILE = 4,
 
   CLEANER_DOWNLOAD_STATUS_MAX,
 };
@@ -88,6 +89,12 @@ class ChromeCleanerFetcher : public net::URLFetcherDelegate {
   void OnTemporaryDirectoryCreated(bool success);
   void PostCallbackAndDeleteSelf(base::FilePath path,
                                  ChromeCleanerFetchStatus fetch_status);
+
+  // Sends a histogram indicating an error and invokes the fetch callback if
+  // the cleaner binary can't be downloaded or saved to the disk.
+  void RecordDownloadStatusAndPostCallback(
+      CleanerDownloadStatusHistogramValue histogram_value,
+      ChromeCleanerFetchStatus fetch_status);
 
   // net::URLFetcherDelegate overrides.
   void OnURLFetchComplete(const net::URLFetcher* source) override;
@@ -185,21 +192,29 @@ void ChromeCleanerFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
   DCHECK(!source->GetStatus().is_io_pending());
   DCHECK(fetched_callback_);
 
-  if (source->GetResponseCode() == net::HTTP_NOT_FOUND) {
-    RecordCleanerDownloadStatusHistogram(
-        CLEANER_DOWNLOAD_STATUS_NOT_FOUND_ON_SERVER);
-    PostCallbackAndDeleteSelf(base::FilePath(),
-                              ChromeCleanerFetchStatus::kNotFoundOnServer);
+  const int response_code = source->GetResponseCode();
+  UMA_HISTOGRAM_SPARSE_SLOWLY(
+      "SoftwareReporter.Cleaner.DownloadHttpResponseCode", response_code);
+
+  if (response_code == net::HTTP_NOT_FOUND) {
+    RecordDownloadStatusAndPostCallback(
+        CLEANER_DOWNLOAD_STATUS_NOT_FOUND_ON_SERVER,
+        ChromeCleanerFetchStatus::kNotFoundOnServer);
+    return;
+  }
+
+  if (!source->GetStatus().is_success() || response_code != net::HTTP_OK) {
+    RecordDownloadStatusAndPostCallback(
+        CLEANER_DOWNLOAD_STATUS_OTHER_FAILURE,
+        ChromeCleanerFetchStatus::kOtherFailure);
     return;
   }
 
   base::FilePath download_path;
-  if (!source->GetStatus().is_success() ||
-      source->GetResponseCode() != net::HTTP_OK ||
-      !source->GetResponseAsFilePath(/*take_ownership=*/true, &download_path)) {
-    RecordCleanerDownloadStatusHistogram(CLEANER_DOWNLOAD_STATUS_OTHER_FAILURE);
-    PostCallbackAndDeleteSelf(base::FilePath(),
-                              ChromeCleanerFetchStatus::kOtherFailure);
+  if (!source->GetResponseAsFilePath(/*take_ownership=*/true, &download_path)) {
+    RecordDownloadStatusAndPostCallback(
+        CLEANER_DOWNLOAD_STATUS_FAILED_TO_SAVE_TO_FILE,
+        ChromeCleanerFetchStatus::kOtherFailure);
     return;
   }
 
@@ -212,6 +227,13 @@ void ChromeCleanerFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
   RecordCleanerDownloadStatusHistogram(CLEANER_DOWNLOAD_STATUS_SUCCEEDED);
   PostCallbackAndDeleteSelf(std::move(download_path),
                             ChromeCleanerFetchStatus::kSuccess);
+}
+
+void ChromeCleanerFetcher::RecordDownloadStatusAndPostCallback(
+    CleanerDownloadStatusHistogramValue histogram_value,
+    ChromeCleanerFetchStatus fetch_status) {
+  RecordCleanerDownloadStatusHistogram(histogram_value);
+  PostCallbackAndDeleteSelf(base::FilePath(), fetch_status);
 }
 
 }  // namespace
