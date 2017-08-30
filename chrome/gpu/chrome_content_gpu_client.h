@@ -24,7 +24,7 @@ class ChromeContentGpuClient : public content::ContentGpuClient {
   ~ChromeContentGpuClient() override;
 
   // content::ContentGpuClient:
-  void Initialize(service_manager::BinderRegistry* registry) override;
+  void InitializeRegistry(service_manager::BinderRegistry* registry) override;
   void GpuServiceInitialized(
       const gpu::GpuPreferences& gpu_preferences) override;
 

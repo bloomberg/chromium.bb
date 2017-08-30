@@ -15,7 +15,8 @@ GpuInProcessThreadService::GpuInProcessThreadService(
     gpu::gles2::MailboxManager* mailbox_manager,
     scoped_refptr<gl::GLShareGroup> share_group,
     const GpuFeatureInfo& gpu_feature_info)
-    : gpu::InProcessCommandBuffer::Service(mailbox_manager,
+    : gpu::InProcessCommandBuffer::Service(GpuPreferences(),
+                                           mailbox_manager,
                                            share_group,
                                            gpu_feature_info),
       task_runner_(task_runner),

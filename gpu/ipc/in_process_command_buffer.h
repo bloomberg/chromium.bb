@@ -196,8 +196,8 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   // The serializer interface to the GPU service (i.e. thread).
   class Service {
    public:
-    explicit Service(const gpu::GpuPreferences& gpu_preferences);
-    Service(gles2::MailboxManager* mailbox_manager,
+    Service(const GpuPreferences& gpu_preferences,
+            gles2::MailboxManager* mailbox_manager,
             scoped_refptr<gl::GLShareGroup> share_group,
             const GpuFeatureInfo& gpu_feature_info);
 
@@ -235,14 +235,6 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
     }
 
    protected:
-    Service(const gpu::GpuPreferences& gpu_preferences,
-            gles2::MailboxManager* mailbox_manager,
-            scoped_refptr<gl::GLShareGroup> share_group,
-            const GpuFeatureInfo& gpu_feature_info);
-    Service(const gpu::GpuPreferences& gpu_preferences,
-            gles2::MailboxManager* mailbox_manager,
-            scoped_refptr<gl::GLShareGroup> share_group);
-
     const GpuPreferences gpu_preferences_;
     const GpuFeatureInfo gpu_feature_info_;
     const GpuDriverBugWorkarounds gpu_driver_bug_workarounds_;

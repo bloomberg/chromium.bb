@@ -135,37 +135,6 @@ scoped_refptr<InProcessCommandBuffer::Service> GetInitialService(
 
 }  // anonyous namespace
 
-// TODO(zmo): This constructor is used only by DeferredGpuCommandService for
-// Android WebView. We will need to wire up the computed GpuFeatureInfo to
-// here instead of computing from commandline switch..
-InProcessCommandBuffer::Service::Service(const GpuPreferences& gpu_preferences)
-    : Service(gpu_preferences, nullptr, nullptr) {}
-
-InProcessCommandBuffer::Service::Service(
-    gpu::gles2::MailboxManager* mailbox_manager,
-    scoped_refptr<gl::GLShareGroup> share_group,
-    const GpuFeatureInfo& gpu_feature_info)
-    : Service(GpuPreferences(),
-              mailbox_manager,
-              share_group,
-              gpu_feature_info) {}
-
-InProcessCommandBuffer::Service::Service(
-    const GpuPreferences& gpu_preferences,
-    gpu::gles2::MailboxManager* mailbox_manager,
-    scoped_refptr<gl::GLShareGroup> share_group)
-    : gpu_preferences_(gpu_preferences),
-      gpu_driver_bug_workarounds_(base::CommandLine::ForCurrentProcess()),
-      mailbox_manager_(mailbox_manager),
-      share_group_(share_group),
-      shader_translator_cache_(gpu_preferences_) {
-  if (!mailbox_manager_) {
-    // TODO(piman): have embedders own the mailbox manager.
-    owned_mailbox_manager_ = gles2::MailboxManager::Create(gpu_preferences_);
-    mailbox_manager_ = owned_mailbox_manager_.get();
-  }
-}
-
 InProcessCommandBuffer::Service::Service(
     const GpuPreferences& gpu_preferences,
     gpu::gles2::MailboxManager* mailbox_manager,

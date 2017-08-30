@@ -11,12 +11,16 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/trace_event/trace_event.h"
+#include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/gpu_utils.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
+#include "gpu/config/gpu_info.h"
 #include "gpu/config/gpu_switches.h"
+#include "gpu/config/gpu_util.h"
+#include "ui/gl/gl_share_group.h"
 #include "ui/gl/gl_switches.h"
 
 namespace android_webview {
@@ -57,8 +61,15 @@ ScopedAllowGL::~ScopedAllowGL() {
 
 // static
 void DeferredGpuCommandService::SetInstance() {
-  if (!g_service.Get().get())
-    g_service.Get() = new DeferredGpuCommandService;
+  if (!g_service.Get().get()) {
+    // TODO(zmo): Collect GPU info here instead.
+    gpu::GPUInfo gpu_info =
+        content::GpuDataManager::GetInstance()->GetGPUInfo();
+    DCHECK(base::CommandLine::InitializedForCurrentProcess());
+    gpu::GpuFeatureInfo gpu_feature_info = gpu::GetGpuFeatureInfo(
+        gpu_info, *base::CommandLine::ForCurrentProcess());
+    g_service.Get() = new DeferredGpuCommandService(gpu_info, gpu_feature_info);
+  }
 }
 
 // static
@@ -67,10 +78,16 @@ DeferredGpuCommandService* DeferredGpuCommandService::GetInstance() {
   return g_service.Get().get();
 }
 
-DeferredGpuCommandService::DeferredGpuCommandService()
+DeferredGpuCommandService::DeferredGpuCommandService(
+    const gpu::GPUInfo& gpu_info,
+    const gpu::GpuFeatureInfo& gpu_feature_info)
     : gpu::InProcessCommandBuffer::Service(
-          content::GetGpuPreferencesFromCommandLine()),
-      sync_point_manager_(new gpu::SyncPointManager()) {}
+          content::GetGpuPreferencesFromCommandLine(),
+          nullptr,
+          nullptr,
+          gpu_feature_info),
+      sync_point_manager_(new gpu::SyncPointManager()),
+      gpu_info_(gpu_info) {}
 
 DeferredGpuCommandService::~DeferredGpuCommandService() {
   base::AutoLock lock(tasks_lock_);

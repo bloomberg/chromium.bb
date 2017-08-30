@@ -50,7 +50,7 @@ ChromeContentGpuClient::ChromeContentGpuClient()
 
 ChromeContentGpuClient::~ChromeContentGpuClient() {}
 
-void ChromeContentGpuClient::Initialize(
+void ChromeContentGpuClient::InitializeRegistry(
     service_manager::BinderRegistry* registry) {
 #if defined(OS_CHROMEOS)
   registry->AddInterface(
