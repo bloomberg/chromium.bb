@@ -19,10 +19,33 @@
 
 namespace predictors {
 
+struct PreconnectedRequestStats {
+  PreconnectedRequestStats(const GURL& origin,
+                           bool was_preresolve_cached,
+                           bool was_preconnected);
+  PreconnectedRequestStats(const PreconnectedRequestStats& other);
+  ~PreconnectedRequestStats();
+
+  GURL origin;
+  bool was_preresolve_cached;
+  bool was_preconnected;
+};
+
+struct PreconnectStats {
+  explicit PreconnectStats(const GURL& url);
+  ~PreconnectStats();
+
+  GURL url;
+  base::TimeTicks start_time;
+  std::vector<PreconnectedRequestStats> requests_stats;
+
+  // Stats must be moved only.
+  DISALLOW_COPY_AND_ASSIGN(PreconnectStats);
+};
+
 // Stores the status of all preconnects associated with a given |url|.
 struct PreresolveInfo {
   PreresolveInfo(const GURL& url, size_t count);
-  PreresolveInfo(const PreresolveInfo& other);
   ~PreresolveInfo();
 
   bool is_done() const { return queued_count == 0 && inflight_count == 0; }
@@ -31,6 +54,9 @@ struct PreresolveInfo {
   size_t queued_count;
   size_t inflight_count = 0;
   bool was_canceled = false;
+  std::unique_ptr<PreconnectStats> stats;
+
+  DISALLOW_COPY_AND_ASSIGN(PreresolveInfo);
 };
 
 // Stores all data need for running a preresolve and a subsequent optional
@@ -70,11 +96,11 @@ class PreconnectManager {
    public:
     virtual ~Delegate() {}
 
-    // Called when all preresolve jobs for the |url| are finished. Note that
-    // some preconnect jobs can be still in progress, because they are
+    // Called when all preresolve jobs for the |stats->url| are finished. Note
+    // that some preconnect jobs can be still in progress, because they are
     // fire-and-forget.
     // Is called on the UI thread.
-    virtual void PreconnectFinished(const GURL& url) = 0;
+    virtual void PreconnectFinished(std::unique_ptr<PreconnectStats> stats) = 0;
   };
 
   static const size_t kMaxInflightPreresolves = 3;
@@ -106,7 +132,7 @@ class PreconnectManager {
  private:
   void TryToLaunchPreresolveJobs();
   void OnPreresolveFinished(const PreresolveJob& job, int result);
-  void FinishPreresolve(const PreresolveJob& job, bool found);
+  void FinishPreresolve(const PreresolveJob& job, bool found, bool cached);
   void AllPreresolvesForUrlFinished(PreresolveInfo* info);
 
   base::WeakPtr<Delegate> delegate_;

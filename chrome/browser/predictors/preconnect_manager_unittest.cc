@@ -28,7 +28,12 @@ class MockPreconnectManagerDelegate
     : public PreconnectManager::Delegate,
       public base::SupportsWeakPtr<MockPreconnectManagerDelegate> {
  public:
-  MOCK_METHOD1(PreconnectFinished, void(const GURL&));
+  // Gmock doesn't support mocking methods with move-only argument types.
+  virtual void PreconnectFinished(std::unique_ptr<PreconnectStats> stats) {
+    PreconnectFinishedProxy(stats->url);
+  }
+
+  MOCK_METHOD1(PreconnectFinishedProxy, void(const GURL& url));
 };
 
 class MockPreconnectManager : public PreconnectManager {
@@ -83,7 +88,7 @@ TEST_F(PreconnectManagerTest, TestStartOneUrlPreresolve) {
 
   EXPECT_CALL(*preconnect_manager_, PreresolveUrl(url_to_preresolve, _))
       .WillOnce(Return(net::OK));
-  EXPECT_CALL(*mock_delegate_, PreconnectFinished(main_frame_url));
+  EXPECT_CALL(*mock_delegate_, PreconnectFinishedProxy(main_frame_url));
   preconnect_manager_->Start(main_frame_url, std::vector<GURL>(),
                              {url_to_preresolve});
   // Wait for PreconnectFinished task posted to the UI thread.
@@ -98,7 +103,7 @@ TEST_F(PreconnectManagerTest, TestStartOneUrlPreconnect) {
       .WillOnce(Return(net::OK));
   EXPECT_CALL(*preconnect_manager_,
               PreconnectUrl(url_to_preconnect, main_frame_url, true));
-  EXPECT_CALL(*mock_delegate_, PreconnectFinished(main_frame_url));
+  EXPECT_CALL(*mock_delegate_, PreconnectFinishedProxy(main_frame_url));
   preconnect_manager_->Start(main_frame_url, {url_to_preconnect},
                              std::vector<GURL>());
   base::RunLoop().RunUntilIdle();
@@ -117,7 +122,7 @@ TEST_F(PreconnectManagerTest, TestStopOneUrlBeforePreconnect) {
 
   // Stop all jobs for |main_frame_url| before we get the callback.
   preconnect_manager_->Stop(main_frame_url);
-  EXPECT_CALL(*mock_delegate_, PreconnectFinished(main_frame_url));
+  EXPECT_CALL(*mock_delegate_, PreconnectFinishedProxy(main_frame_url));
   callback.Run(net::OK);
   base::RunLoop().RunUntilIdle();
 }
@@ -158,7 +163,7 @@ TEST_F(PreconnectManagerTest, TestUnqueuedPreresolvesCanceled) {
                              std::vector<GURL>());
 
   preconnect_manager_->Stop(main_frame_url);
-  EXPECT_CALL(*mock_delegate_, PreconnectFinished(main_frame_url));
+  EXPECT_CALL(*mock_delegate_, PreconnectFinishedProxy(main_frame_url));
   for (auto& callback : callbacks)
     callback.Run(net::OK);
   base::RunLoop().RunUntilIdle();
@@ -187,10 +192,10 @@ TEST_F(PreconnectManagerTest, TestTwoConcurrentMainFrameUrls) {
   // Stopping the second url shouldn't stop the first one.
   EXPECT_CALL(*preconnect_manager_,
               PreconnectUrl(url_to_preconnect1, main_frame_url1, true));
-  EXPECT_CALL(*mock_delegate_, PreconnectFinished(main_frame_url1));
+  EXPECT_CALL(*mock_delegate_, PreconnectFinishedProxy(main_frame_url1));
   callback1.Run(net::OK);
   // No preconnect for the second url.
-  EXPECT_CALL(*mock_delegate_, PreconnectFinished(main_frame_url2));
+  EXPECT_CALL(*mock_delegate_, PreconnectFinishedProxy(main_frame_url2));
   callback2.Run(net::OK);
   base::RunLoop().RunUntilIdle();
 }
@@ -253,7 +258,7 @@ TEST_F(PreconnectManagerTest, TestDetachedRequestHasHigherPriority) {
       .WillOnce(Return(net::OK));
   detached_callback.Run(net::OK);
 
-  EXPECT_CALL(*mock_delegate_, PreconnectFinished(main_frame_url));
+  EXPECT_CALL(*mock_delegate_, PreconnectFinishedProxy(main_frame_url));
   for (size_t i = 1; i < count; ++i)
     callbacks[i].Run(net::OK);
   base::RunLoop().RunUntilIdle();

@@ -9,6 +9,7 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/predictors/loading_data_collector.h"
+#include "chrome/browser/predictors/preconnect_manager.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor.h"
 
 namespace predictors {
@@ -119,6 +120,44 @@ void ReportPrefetchAccuracy(const ResourcePrefetcher::PrefetcherStats& stats,
       misses_bytes / 1024);
 }
 
+void ReportPreconnectAccuracy(
+    const PreconnectStats& stats,
+    const std::map<GURL, OriginRequestSummary>& requests) {
+  if (stats.requests_stats.empty())
+    return;
+
+  int preresolve_hits_count = 0;
+  int preresolve_misses_count = 0;
+  int preconnect_hits_count = 0;
+  int preconnect_misses_count = 0;
+
+  for (const auto& request_stats : stats.requests_stats) {
+    bool hit = requests.find(request_stats.origin) != requests.end();
+    bool preconnect = request_stats.was_preconnected;
+
+    preresolve_hits_count += hit;
+    preresolve_misses_count += !hit;
+    preconnect_hits_count += preconnect && hit;
+    preconnect_misses_count += preconnect && !hit;
+  }
+
+  size_t preresolve_hits_percentage =
+      (100 * preresolve_hits_count) /
+      (preresolve_hits_count + preresolve_misses_count);
+  size_t preconnect_hits_percentage =
+      (100 * preconnect_hits_count) /
+      (preconnect_hits_count + preconnect_misses_count);
+
+  UMA_HISTOGRAM_PERCENTAGE(internal::kLoadingPredictorPreresolveHitsPercentage,
+                           preresolve_hits_percentage);
+  UMA_HISTOGRAM_PERCENTAGE(internal::kLoadingPredictorPreconnectHitsPercentage,
+                           preconnect_hits_percentage);
+  UMA_HISTOGRAM_COUNTS_100(internal::kLoadingPredictorPreresolveCount,
+                           preresolve_hits_count + preresolve_misses_count);
+  UMA_HISTOGRAM_COUNTS_100(internal::kLoadingPredictorPreconnectCount,
+                           preconnect_hits_count + preconnect_hits_count);
+}
+
 }  // namespace
 
 LoadingStatsCollector::LoadingStatsCollector(
@@ -132,7 +171,7 @@ LoadingStatsCollector::~LoadingStatsCollector() = default;
 
 void LoadingStatsCollector::RecordPrefetcherStats(
     std::unique_ptr<ResourcePrefetcher::PrefetcherStats> stats) {
-  const GURL main_frame_url = stats->url;
+  const GURL& main_frame_url = stats->url;
   auto it = prefetcher_stats_.find(main_frame_url);
   if (it != prefetcher_stats_.end()) {
     // No requests -> everything is a miss.
@@ -141,6 +180,19 @@ void LoadingStatsCollector::RecordPrefetcherStats(
   }
 
   prefetcher_stats_.emplace(main_frame_url, std::move(stats));
+}
+
+void LoadingStatsCollector::RecordPreconnectStats(
+    std::unique_ptr<PreconnectStats> stats) {
+  const GURL& main_frame_url = stats->url;
+  auto it = preconnect_stats_.find(main_frame_url);
+  if (it != preconnect_stats_.end()) {
+    ReportPreconnectAccuracy(*it->second,
+                             std::map<GURL, OriginRequestSummary>());
+    preconnect_stats_.erase(it);
+  }
+
+  preconnect_stats_.emplace(main_frame_url, std::move(stats));
 }
 
 void LoadingStatsCollector::RecordPageRequestSummary(
@@ -156,6 +208,12 @@ void LoadingStatsCollector::RecordPageRequestSummary(
     ReportPrefetchAccuracy(*it->second, summary.subresource_requests);
     prefetcher_stats_.erase(it);
   }
+
+  auto it2 = preconnect_stats_.find(initial_url);
+  if (it2 != preconnect_stats_.end()) {
+    ReportPreconnectAccuracy(*it2->second, summary.origins);
+    preconnect_stats_.erase(it2);
+  }
 }
 
 void LoadingStatsCollector::CleanupAbandonedStats() {
@@ -165,6 +223,15 @@ void LoadingStatsCollector::CleanupAbandonedStats() {
       // No requests -> everything is a miss.
       ReportPrefetchAccuracy(*it->second, std::vector<URLRequestSummary>());
       it = prefetcher_stats_.erase(it);
+    } else {
+      ++it;
+    }
+  }
+  for (auto it = preconnect_stats_.begin(); it != preconnect_stats_.end();) {
+    if (time_now - it->second->start_time > max_stats_age_) {
+      ReportPreconnectAccuracy(*it->second,
+                               std::map<GURL, OriginRequestSummary>());
+      it = preconnect_stats_.erase(it);
     } else {
       ++it;
     }

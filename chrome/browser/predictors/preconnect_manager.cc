@@ -15,23 +15,38 @@ namespace predictors {
 
 const bool kAllowCredentialsOnPreconnectByDefault = true;
 
-PreresolveInfo::PreresolveInfo(const GURL& in_url, size_t count)
-    : url(in_url),
+PreconnectedRequestStats::PreconnectedRequestStats(const GURL& origin,
+                                                   bool was_preresolve_cached,
+                                                   bool was_preconnected)
+    : origin(origin),
+      was_preresolve_cached(was_preresolve_cached),
+      was_preconnected(was_preconnected) {}
+
+PreconnectedRequestStats::PreconnectedRequestStats(
+    const PreconnectedRequestStats& other) = default;
+PreconnectedRequestStats::~PreconnectedRequestStats() = default;
+
+PreconnectStats::PreconnectStats(const GURL& url)
+    : url(url), start_time(base::TimeTicks::Now()) {}
+PreconnectStats::~PreconnectStats() = default;
+
+PreresolveInfo::PreresolveInfo(const GURL& url, size_t count)
+    : url(url),
       queued_count(count),
       inflight_count(0),
-      was_canceled(false) {}
+      was_canceled(false),
+      stats(std::make_unique<PreconnectStats>(url)) {}
 
-PreresolveInfo::PreresolveInfo(const PreresolveInfo& other) = default;
 PreresolveInfo::~PreresolveInfo() = default;
 
-PreresolveJob::PreresolveJob(const GURL& in_url,
-                             bool in_need_preconnect,
-                             bool in_allow_credentials,
-                             PreresolveInfo* in_info)
-    : url(in_url),
-      need_preconnect(in_need_preconnect),
-      allow_credentials(in_allow_credentials),
-      info(in_info) {}
+PreresolveJob::PreresolveJob(const GURL& url,
+                             bool need_preconnect,
+                             bool allow_credentials,
+                             PreresolveInfo* info)
+    : url(url),
+      need_preconnect(need_preconnect),
+      allow_credentials(allow_credentials),
+      info(info) {}
 
 PreresolveJob::PreresolveJob(const PreresolveJob& other) = default;
 PreresolveJob::~PreresolveJob() = default;
@@ -147,7 +162,7 @@ void PreconnectManager::TryToLaunchPreresolveJobs() {
         // Completed synchronously (was already cached by HostResolver), or else
         // there was (equivalently) some network error that prevents us from
         // finding the name. Status net::OK means it was "found."
-        FinishPreresolve(job, status == net::OK);
+        FinishPreresolve(job, status == net::OK, true);
       }
     }
 
@@ -162,22 +177,27 @@ void PreconnectManager::TryToLaunchPreresolveJobs() {
 void PreconnectManager::OnPreresolveFinished(const PreresolveJob& job,
                                              int result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  FinishPreresolve(job, result == net::OK);
+  FinishPreresolve(job, result == net::OK, false);
   PreresolveInfo* info = job.info;
   --inflight_preresolves_count_;
   if (info)
     --info->inflight_count;
-  if (info && job.info->is_done())
+  if (info && info->is_done())
     AllPreresolvesForUrlFinished(info);
   TryToLaunchPreresolveJobs();
 }
 
-void PreconnectManager::FinishPreresolve(const PreresolveJob& job, bool found) {
+void PreconnectManager::FinishPreresolve(const PreresolveJob& job,
+                                         bool found,
+                                         bool cached) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  if (found && job.need_preconnect && (!job.info || !job.info->was_canceled)) {
-    PreconnectUrl(job.url, job.info ? job.info->url : GURL(),
-                  job.allow_credentials);
-  }
+  PreresolveInfo* info = job.info;
+  bool need_preconnect =
+      found && job.need_preconnect && (!info || !info->was_canceled);
+  if (need_preconnect)
+    PreconnectUrl(job.url, info ? info->url : GURL(), job.allow_credentials);
+  if (info && found)
+    info->stats->requests_stats.emplace_back(job.url, cached, need_preconnect);
 }
 
 void PreconnectManager::AllPreresolvesForUrlFinished(PreresolveInfo* info) {
@@ -188,7 +208,8 @@ void PreconnectManager::AllPreresolvesForUrlFinished(PreresolveInfo* info) {
   DCHECK(info == it->second.get());
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&Delegate::PreconnectFinished, delegate_, info->url));
+      base::BindOnce(&Delegate::PreconnectFinished, delegate_,
+                     std::move(info->stats)));
   preresolve_info_.erase(it);
 }
 

@@ -29250,6 +29250,43 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="LoadingPredictor.PreconnectCount" units="origins">
+  <owner>alexilin@chromium.org</owner>
+  <summary>
+    The number of origins that were preconnected for a page load. It includes
+    preconnect attempts that don't result in new opened connection. Logged after
+    the preconnect manager completes all jobs attached to the page load.
+  </summary>
+</histogram>
+
+<histogram name="LoadingPredictor.PreconnectHitsPercentage" units="%">
+  <owner>alexilin@chromium.org</owner>
+  <summary>
+    The percentage of origins that were preconnected and requested by a page
+    load to the total number of origins that were preconnected for a page load.
+    Logged after the preconnect manager completes all jobs attached to the page
+    load.
+  </summary>
+</histogram>
+
+<histogram name="LoadingPredictor.PreresolveCount" units="hosts">
+  <owner>alexilin@chromium.org</owner>
+  <summary>
+    The number of hosts that were preresolved for a page load. It includes only
+    successful DNS lookups. Logged after the preconnect manager completes all
+    jobs attached to the page load.
+  </summary>
+</histogram>
+
+<histogram name="LoadingPredictor.PreresolveHitsPercentage" units="%">
+  <owner>alexilin@chromium.org</owner>
+  <summary>
+    The percentage of hosts that were preresolved and requested by a page load
+    to the total number of hosts that were preresolved for a page load. Logged
+    after the preconnect manager completes all jobs attached to the page load.
+  </summary>
+</histogram>
+
 <histogram name="LocalDiscovery.ClientRestartAttempts">
   <owner>noamsml@chromium.org</owner>
   <owner>vitalybuka@chromium.org</owner>
