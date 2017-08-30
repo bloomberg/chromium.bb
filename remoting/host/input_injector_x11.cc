@@ -371,17 +371,14 @@ bool InputInjectorX11::Core::IsLockKey(KeyCode keycode) {
 }
 
 void InputInjectorX11::Core::SetLockStates(uint32_t states) {
+  // TODO(jamiewalch): Reinstate NumLock synchronization when the protocol
+  //     supports the client reporting it as "unknown".
   unsigned int caps_lock_mask = XkbKeysymToModifiers(display_, XK_Caps_Lock);
-  unsigned int num_lock_mask = XkbKeysymToModifiers(display_, XK_Num_Lock);
   unsigned int lock_values = 0;
   if (states & protocol::KeyEvent::LOCK_STATES_CAPSLOCK) {
     lock_values |= caps_lock_mask;
   }
-  if (states & protocol::KeyEvent::LOCK_STATES_NUMLOCK) {
-    lock_values |= num_lock_mask;
-  }
-  XkbLockModifiers(display_, XkbUseCoreKbd, caps_lock_mask | num_lock_mask,
-                   lock_values);
+  XkbLockModifiers(display_, XkbUseCoreKbd, caps_lock_mask, lock_values);
 }
 
 void InputInjectorX11::Core::InjectScrollWheelClicks(int button, int count) {
