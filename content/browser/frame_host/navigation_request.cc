@@ -185,6 +185,12 @@ void AddAdditionalRequestHeaders(net::HttpRequestHeaders* headers,
   headers->SetHeader(net::HttpRequestHeaders::kOrigin, origin.Serialize());
 }
 
+// Should match the definition of
+// blink::SchemeRegistry::ShouldTreatURLSchemeAsLegacy.
+bool ShouldTreatURLSchemeAsLegacy(const GURL& url) {
+  return url.SchemeIs(url::kFtpScheme) || url.SchemeIs(url::kGopherScheme);
+}
+
 }  // namespace
 
 // static
@@ -426,7 +432,9 @@ void NavigationRequest::BeginNavigation() {
   }
 
   if (CheckCredentialedSubresource() ==
-      CredentialedSubresourceCheckResult::BLOCK_REQUEST) {
+          CredentialedSubresourceCheckResult::BLOCK_REQUEST ||
+      CheckLegacyProtocolInSubresource() ==
+          LegacyProtocolInSubresourceCheckResult::BLOCK_REQUEST) {
     // Create a navigation handle so that the correct error code can be set on
     // it by OnRequestFailed().
     CreateNavigationHandle();
@@ -597,10 +605,9 @@ void NavigationRequest::OnRequestRedirected(
   }
 
   if (CheckCredentialedSubresource() ==
-      CredentialedSubresourceCheckResult::BLOCK_REQUEST) {
-    // Create a navigation handle so that the correct error code can be set on
-    // it by OnRequestFailed().
-    CreateNavigationHandle();
+          CredentialedSubresourceCheckResult::BLOCK_REQUEST ||
+      CheckLegacyProtocolInSubresource() ==
+          LegacyProtocolInSubresourceCheckResult::BLOCK_REQUEST) {
     OnRequestFailed(false, net::ERR_ABORTED);
 
     // DO NOT ADD CODE after this. The previous call to OnRequestFailed has
@@ -1105,6 +1112,34 @@ NavigationRequest::CheckCredentialedSubresource() const {
     return CredentialedSubresourceCheckResult::ALLOW_REQUEST;
 
   return CredentialedSubresourceCheckResult::BLOCK_REQUEST;
+}
+
+NavigationRequest::LegacyProtocolInSubresourceCheckResult
+NavigationRequest::CheckLegacyProtocolInSubresource() const {
+  // It only applies to subframes.
+  if (frame_tree_node_->IsMainFrame())
+    return LegacyProtocolInSubresourceCheckResult::ALLOW_REQUEST;
+
+  if (!ShouldTreatURLSchemeAsLegacy(common_params_.url))
+    return LegacyProtocolInSubresourceCheckResult::ALLOW_REQUEST;
+
+  FrameTreeNode* parent_ftn = frame_tree_node_->parent();
+  DCHECK(parent_ftn);
+  const GURL& parent_url = parent_ftn->current_url();
+  if (ShouldTreatURLSchemeAsLegacy(parent_url))
+    return LegacyProtocolInSubresourceCheckResult::ALLOW_REQUEST;
+
+  // Warn the user about the request being blocked.
+  RenderFrameHostImpl* parent = parent_ftn->current_frame_host();
+  DCHECK(parent);
+  const char* console_message =
+      "Subresource requests using legacy protocols (like `ftp:`) are blocked. "
+      "Please deliver web-accessible resources over modern protocols like "
+      "HTTPS. See https://www.chromestatus.com/feature/5709390967472128 for "
+      "details.";
+  parent->AddMessageToConsole(CONSOLE_MESSAGE_LEVEL_WARNING, console_message);
+
+  return LegacyProtocolInSubresourceCheckResult::BLOCK_REQUEST;
 }
 
 }  // namespace content

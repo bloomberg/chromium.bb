@@ -125,23 +125,6 @@ static bool NeedsHistoryItemRestore(FrameLoadType type) {
   return type == kFrameLoadTypeBackForward || IsReloadLoadType(type);
 }
 
-static void CheckForLegacyProtocolInSubresource(
-    const ResourceRequest& resource_request,
-    Document* document) {
-  if (resource_request.GetFrameType() == WebURLRequest::kFrameTypeTopLevel)
-    return;
-  if (!SchemeRegistry::ShouldTreatURLSchemeAsLegacy(
-          resource_request.Url().Protocol())) {
-    return;
-  }
-  if (SchemeRegistry::ShouldTreatURLSchemeAsLegacy(
-          document->GetSecurityOrigin()->Protocol())) {
-    return;
-  }
-  Deprecation::CountDeprecation(
-      document, WebFeature::kLegacyProtocolEmbeddedAsSubresource);
-}
-
 static NavigationPolicy MaybeCheckCSP(
     const ResourceRequest& request,
     NavigationType type,
@@ -1535,13 +1518,6 @@ void FrameLoader::StartLoad(FrameLoadRequest& frame_load_request,
     // is available while sending the request.
     probe::frameClearedScheduledClientNavigation(frame_);
   } else {
-    // PlzNavigate
-    // Check for usage of legacy schemes now. Unsupported schemes will be
-    // rewritten by the client, so the FrameFetchContext will not be able to
-    // check for those when the navigation commits.
-    if (navigation_policy == kNavigationPolicyHandledByClient)
-      CheckForLegacyProtocolInSubresource(resource_request,
-                                          frame_->GetDocument());
     probe::frameScheduledClientNavigation(frame_);
   }
 
