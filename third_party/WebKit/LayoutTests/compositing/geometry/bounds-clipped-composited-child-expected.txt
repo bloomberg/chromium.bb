@@ -9,9 +9,14 @@
     {
       "name": "LayoutBlockFlow DIV class='container'",
       "position": [58, 8],
-      "transformOrigin": [50, 50],
       "bounds": [200, 100],
       "drawsContent": true,
+      "transform": 1
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],

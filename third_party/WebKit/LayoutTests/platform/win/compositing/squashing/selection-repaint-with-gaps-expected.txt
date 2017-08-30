@@ -8,8 +8,7 @@ lorem ipsumlorem ipsumlorem ipsum
       "drawsContent": true
     },
     {
-      "name": "Squashing Containment Layer",
-      "shouldFlattenTransform": false
+      "name": "Squashing Containment Layer"
     },
     {
       "name": "LayoutBlockFlow DIV class='overlap'",
@@ -62,8 +61,7 @@ lorem ipsumlorem ipsumlorem ipsum
       "drawsContent": true
     },
     {
-      "name": "Squashing Containment Layer",
-      "shouldFlattenTransform": false
+      "name": "Squashing Containment Layer"
     },
     {
       "name": "LayoutBlockFlow DIV class='overlap'",

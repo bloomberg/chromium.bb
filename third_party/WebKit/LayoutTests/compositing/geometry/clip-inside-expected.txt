@@ -11,11 +11,29 @@ Test CSS clip with composited layers. Left and right sides should look the same.
     {
       "name": "LayoutBlockFlow (positioned) DIV class='composited box'",
       "position": [25, 35],
-      "transformOrigin": [45, 35],
       "bounds": [90, 80],
       "contentsOpaque": true,
       "drawsContent": true,
       "backgroundColor": "#808080",
+      "transform": 1
+    },
+    {
+      "name": "Ancestor Clipping Layer",
+      "position": [225, 35],
+      "bounds": [90, 80]
+    },
+    {
+      "name": "LayoutBlockFlow (relative positioned) DIV class='composited inner'",
+      "position": [-15, -25],
+      "bounds": [120, 120],
+      "drawsContent": true,
+      "backgroundColor": "#00000033",
+      "transform": 2
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],
@@ -24,17 +42,7 @@ Test CSS clip with composited layers. Left and right sides should look the same.
       ]
     },
     {
-      "name": "Ancestor Clipping Layer",
-      "position": [225, 35],
-      "bounds": [90, 80],
-      "shouldFlattenTransform": false
-    },
-    {
-      "name": "LayoutBlockFlow (relative positioned) DIV class='composited inner'",
-      "position": [-15, -25],
-      "bounds": [120, 120],
-      "drawsContent": true,
-      "backgroundColor": "#00000033",
+      "id": 2,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],

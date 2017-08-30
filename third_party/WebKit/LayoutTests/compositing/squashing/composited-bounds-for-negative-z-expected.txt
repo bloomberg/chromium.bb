@@ -27,30 +27,30 @@
       "name": "LayoutBlockFlow DIV",
       "position": [108, 100],
       "bounds": [300, 300],
-      "shouldFlattenTransform": false,
       "drawsContent": true
     },
     {
       "name": "Scrolling Layer",
-      "bounds": [285, 300],
-      "shouldFlattenTransform": false
+      "position": [108, 100],
+      "bounds": [285, 300]
     },
     {
       "name": "Scrolling Contents Layer",
+      "position": [108, 100],
       "bounds": [285, 1000]
     },
     {
       "name": "Overflow Controls Host Layer",
+      "position": [108, 100],
       "bounds": [300, 300]
     },
     {
       "name": "Vertical Scrollbar Layer",
-      "position": [285, 0],
+      "position": [393, 100],
       "bounds": [15, 300]
     },
     {
-      "name": "Squashing Containment Layer",
-      "shouldFlattenTransform": false
+      "name": "Squashing Containment Layer"
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV",

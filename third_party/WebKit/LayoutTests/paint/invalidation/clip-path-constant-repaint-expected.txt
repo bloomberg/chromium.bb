@@ -13,6 +13,12 @@
       "drawsContent": true,
       "backfaceVisibility": "hidden",
       "backgroundColor": "#FF0000E6",
+      "transform": 1
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],

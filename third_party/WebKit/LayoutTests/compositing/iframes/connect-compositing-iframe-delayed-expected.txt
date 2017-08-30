@@ -17,29 +17,33 @@ When the parent document becomes composited, the layer trees should get connecte
     },
     {
       "name": "Frame Overflow Controls Host Layer",
-      "position": [34, 34],
+      "position": [43, 143],
       "bounds": [300, 150]
     },
     {
       "name": "Frame Clipping Layer",
+      "position": [43, 143],
       "bounds": [285, 150]
     },
     {
-      "name": "Frame Scrolling Layer"
+      "name": "Frame Scrolling Layer",
+      "position": [43, 143]
     },
     {
       "name": "Content Root Layer",
+      "position": [43, 143],
       "bounds": [285, 230]
     },
     {
       "name": "LayoutView #document",
+      "position": [43, 143],
       "bounds": [285, 230],
       "drawsContent": true,
       "backgroundColor": "#C0C0C0"
     },
     {
       "name": "LayoutBlockFlow DIV id='iframe-content' class='box'",
-      "position": [18, 10],
+      "position": [61, 153],
       "bounds": [210, 210],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -47,7 +51,7 @@ When the parent document becomes composited, the layer trees should get connecte
     },
     {
       "name": "Frame Vertical Scrollbar Layer",
-      "position": [285, 0],
+      "position": [328, 143],
       "bounds": [15, 150]
     },
     {

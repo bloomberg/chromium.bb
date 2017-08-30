@@ -15,7 +15,7 @@
     },
     {
       "name": "LayoutBlockFlow DIV class='composited box'",
-      "position": [5, 5],
+      "position": [19, 169],
       "bounds": [50, 50],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -30,7 +30,7 @@
     },
     {
       "name": "LayoutBlockFlow DIV class='composited box'",
-      "position": [5, 5],
+      "position": [277, 94],
       "bounds": [50, 50],
       "contentsOpaque": true,
       "drawsContent": true,

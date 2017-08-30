@@ -16,12 +16,11 @@
     {
       "name": "Ancestor Clipping Layer",
       "position": [8, 8],
-      "bounds": [285, 285],
-      "shouldFlattenTransform": false
+      "bounds": [285, 285]
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV id='container'",
-      "position": [-315, 0],
+      "position": [-307, 8],
       "bounds": [600, 600],
       "contentsOpaque": true,
       "drawsContent": true,

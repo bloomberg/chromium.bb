@@ -11,6 +11,12 @@
       "position": [8, 8],
       "bounds": [202, 202],
       "drawsContent": true,
+      "transform": 1
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],

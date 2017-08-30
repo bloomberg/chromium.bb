@@ -39,17 +39,16 @@
     {
       "name": "Ancestor Clipping Layer",
       "position": [23, 65],
-      "bounds": [285, 175],
-      "shouldFlattenTransform": false
+      "bounds": [285, 175]
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV class='list'",
-      "position": [20, -30],
+      "position": [43, 35],
       "bounds": [180, 250]
     },
     {
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (relative positioned) DIV class='commit')",
-      "position": [20, -30],
+      "position": [43, 35],
       "bounds": [180, 250],
       "drawsContent": true
     }

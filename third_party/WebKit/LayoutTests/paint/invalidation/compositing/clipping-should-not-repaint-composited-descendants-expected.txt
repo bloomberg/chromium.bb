@@ -13,11 +13,12 @@
     },
     {
       "name": "Child Containment Layer",
+      "position": [108, 108],
       "bounds": [100, 100]
     },
     {
       "name": "LayoutBlockFlow DIV class='clipped-composited-child'",
-      "position": [-100, -100],
+      "position": [8, 8],
       "bounds": [252, 252],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -30,11 +31,12 @@
     },
     {
       "name": "Child Containment Layer",
+      "position": [108, 408],
       "bounds": [100, 100]
     },
     {
       "name": "LayoutBlockFlow DIV class='clipped-composited-child'",
-      "position": [-100, -100],
+      "position": [8, 308],
       "bounds": [252, 252],
       "contentsOpaque": true,
       "drawsContent": true,

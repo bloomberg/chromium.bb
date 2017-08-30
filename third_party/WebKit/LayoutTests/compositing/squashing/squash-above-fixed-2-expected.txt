@@ -55,6 +55,7 @@ CASE 2, scrolling y to 80, the "container" element should remain positioned with
     },
     {
       "name": "LayoutBlockFlow DIV id='compositedInsideFixed'",
+      "position": [0, 80],
       "bounds": [50, 50],
       "contentsOpaque": true,
       "drawsContent": true,

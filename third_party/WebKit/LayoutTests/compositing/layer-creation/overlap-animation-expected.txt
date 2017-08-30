@@ -14,7 +14,7 @@
     },
     {
       "name": "Child Containment Layer",
-      "position": [1, 1],
+      "position": [9, 9],
       "bounds": [120, 240]
     },
     {
@@ -24,20 +24,27 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "backgroundColor": "#0000FF",
+      "transform": 1
+    },
+    {
+      "name": "LayoutBlockFlow (relative positioned) DIV class='box'",
+      "position": [19, 129],
+      "bounds": [100, 100],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "backgroundColor": "#0000FF"
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
       "transform": [
         [...],
         [...],
         [...],
         [...]
-      ]
-    },
-    {
-      "name": "LayoutBlockFlow (relative positioned) DIV class='box'",
-      "position": [10, 120],
-      "bounds": [100, 100],
-      "contentsOpaque": true,
-      "drawsContent": true,
-      "backgroundColor": "#0000FF"
+      ],
+      "origin": [50, 50]
     }
   ]
 }

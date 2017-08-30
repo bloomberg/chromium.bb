@@ -18,29 +18,16 @@ transform: translateZ(-100px) rotateY(45deg);
     {
       "name": "Child Transform Layer",
       "bounds": [304, 304],
-      "shouldFlattenTransform": false,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, -0.002],
-        [0, 0, 0, 1]
-      ]
+      "transform": 1
     },
     {
       "name": "LayoutBlockFlow DIV id='parent'",
       "position": [12, 12],
       "bounds": [280, 280],
       "contentsOpaque": true,
-      "shouldFlattenTransform": false,
-      "3dRenderingContext": 1,
       "drawsContent": true,
       "backgroundColor": "#FFFF00",
-      "transform": [
-        [0.766044443118978, -0.556670399226419, -0.32139380484327, 0],
-        [0, 0.5, -0.866025403784439, 0],
-        [0.642787609686539, 0.663413948168938, 0.383022221559489, 0],
-        [0, 0, 0, 1]
-      ]
+      "transform": 2
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV",
@@ -48,15 +35,47 @@ transform: translateZ(-100px) rotateY(45deg);
       "bounds": [200, 200],
       "opacity": 0.699999988079071,
       "contentsOpaque": true,
-      "3dRenderingContext": 1,
       "drawsContent": true,
       "backgroundColor": "#008000",
+      "transform": 3
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, -0.002],
+        [0, 0, 0, 1]
+      ],
+      "origin": [152, 152],
+      "flattenInheritedTransform": false
+    },
+    {
+      "id": 2,
+      "parent": 1,
+      "transform": [
+        [0.766044443118978, -0.556670399226419, -0.32139380484327, 0],
+        [0, 0.5, -0.866025403784439, 0],
+        [0.642787609686539, 0.663413948168938, 0.383022221559489, 0],
+        [0, 0, 0, 1]
+      ],
+      "origin": [140, 140],
+      "flattenInheritedTransform": false,
+      "renderingContext": 1
+    },
+    {
+      "id": 3,
+      "parent": 2,
       "transform": [
         [0.766044443118978, 0, 0.642787609686539, 0],
         [0, 1, 0, 0],
         [-0.642787609686539, 0, 0.766044443118978, 0],
         [0, 0, 50, 1]
-      ]
+      ],
+      "origin": [100, 100],
+      "renderingContext": 1
     }
   ]
 }

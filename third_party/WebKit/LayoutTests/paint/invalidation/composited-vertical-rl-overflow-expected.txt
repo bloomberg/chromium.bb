@@ -9,7 +9,6 @@
     {
       "name": "LayoutBlockFlow (positioned) DIV id='div'",
       "position": [50, 100],
-      "transformOrigin": [100, 50],
       "bounds": [150, 100],
       "drawsContent": true,
       "backgroundColor": "#0000FF",

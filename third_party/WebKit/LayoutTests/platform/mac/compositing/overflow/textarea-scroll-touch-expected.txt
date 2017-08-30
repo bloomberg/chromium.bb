@@ -11,34 +11,34 @@
       "name": "LayoutTextControl TEXTAREA",
       "position": [18, 18],
       "bounds": [206, 126],
-      "shouldFlattenTransform": false,
       "drawsContent": true,
       "backgroundColor": "#CCCCCC"
     },
     {
       "name": "Scrolling Layer",
-      "position": [1, 1],
-      "bounds": [189, 124],
-      "shouldFlattenTransform": false
+      "position": [19, 19],
+      "bounds": [189, 124]
     },
     {
       "name": "Scrolling Contents Layer",
+      "position": [19, 19],
       "bounds": [189, 270],
       "contentsOpaque": true,
       "drawsContent": true
     },
     {
       "name": "Overflow Controls Host Layer",
+      "position": [18, 18],
       "bounds": [206, 126]
     },
     {
       "name": "Vertical Scrollbar Layer",
-      "position": [190, 1],
+      "position": [208, 19],
       "bounds": [15, 109]
     },
     {
       "name": "Scroll Corner Layer",
-      "position": [190, 110],
+      "position": [208, 128],
       "bounds": [15, 15],
       "drawsContent": true
     },
@@ -46,34 +46,34 @@
       "name": "LayoutTextControl TEXTAREA",
       "position": [248, 18],
       "bounds": [206, 126],
-      "shouldFlattenTransform": false,
       "drawsContent": true,
       "backgroundColor": "#CCCCCC"
     },
     {
       "name": "Scrolling Layer",
-      "position": [1, 1],
-      "bounds": [189, 124],
-      "shouldFlattenTransform": false
+      "position": [249, 19],
+      "bounds": [189, 124]
     },
     {
       "name": "Scrolling Contents Layer",
+      "position": [249, 19],
       "bounds": [189, 270],
       "contentsOpaque": true,
       "drawsContent": true
     },
     {
       "name": "Overflow Controls Host Layer",
+      "position": [248, 18],
       "bounds": [206, 126]
     },
     {
       "name": "Vertical Scrollbar Layer",
-      "position": [190, 1],
+      "position": [438, 19],
       "bounds": [15, 109]
     },
     {
       "name": "Scroll Corner Layer",
-      "position": [190, 110],
+      "position": [438, 128],
       "bounds": [15, 15],
       "drawsContent": true
     }

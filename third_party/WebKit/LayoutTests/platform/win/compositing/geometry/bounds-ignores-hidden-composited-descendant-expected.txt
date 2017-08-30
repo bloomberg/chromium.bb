@@ -11,20 +11,18 @@
     {
       "name": "LayoutBlockFlow (positioned) DIV class='composited'",
       "position": [10, 10],
-      "transformOrigin": [-10, -10],
       "bounds": [590, 210],
       "drawsContent": true
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='composited'",
       "position": [10, 260],
-      "transformOrigin": [-10, -10],
       "bounds": [590, 210],
       "drawsContent": true
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV class='composited inner box'",
-      "position": [490, 110],
+      "position": [500, 370],
       "bounds": [100, 100],
       "contentsOpaque": true,
       "drawsContent": true,

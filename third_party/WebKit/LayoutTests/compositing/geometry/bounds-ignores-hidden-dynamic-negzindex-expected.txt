@@ -10,18 +10,15 @@
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='composited'",
-      "transformOrigin": [50, 50],
       "bounds": [500, 250],
       "drawsContent": true
     },
     {
-      "name": "Squashing Containment Layer",
-      "shouldFlattenTransform": false
+      "name": "Squashing Containment Layer"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='composited'",
       "position": [0, 250],
-      "transformOrigin": [50, 50],
       "bounds": [150, 150],
       "drawsContent": true
     },

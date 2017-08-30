@@ -17,18 +17,18 @@
     },
     {
       "name": "LayoutBlockFlow DIV id='scroller'",
+      "position": [98, 90],
       "bounds": [102, 102],
-      "shouldFlattenTransform": false,
       "drawsContent": true
     },
     {
       "name": "Scrolling Layer",
-      "position": [1, 1],
-      "bounds": [100, 100],
-      "shouldFlattenTransform": false
+      "position": [99, 91],
+      "bounds": [100, 100]
     },
     {
       "name": "Scrolling Contents Layer",
+      "position": [99, 91],
       "bounds": [100, 180]
     },
     {
@@ -40,8 +40,7 @@
       "backgroundColor": "#008000"
     },
     {
-      "name": "Squashing Containment Layer",
-      "shouldFlattenTransform": false
+      "name": "Squashing Containment Layer"
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV class='scrolled'",
@@ -64,7 +63,7 @@
     },
     {
       "name": "Vertical Scrollbar Layer",
-      "position": [94, 1],
+      "position": [192, 91],
       "bounds": [7, 100]
     }
   ]

@@ -16,10 +16,12 @@
     },
     {
       "name": "Child Containment Layer",
+      "position": [8, 8],
       "bounds": [100, 100]
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV",
+      "position": [8, 8],
       "bounds": [50, 50],
       "contentsOpaque": true,
       "drawsContent": true,

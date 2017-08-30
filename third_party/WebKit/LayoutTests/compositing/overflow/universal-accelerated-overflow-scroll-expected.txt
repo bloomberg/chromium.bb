@@ -7,44 +7,43 @@
       "drawsContent": true
     },
     {
-      "name": "Squashing Containment Layer",
-      "shouldFlattenTransform": false
+      "name": "Squashing Containment Layer"
     },
     {
       "name": "LayoutBlockFlow DIV id='container-absolute-grandchildren-not-contained' class='overflow'",
       "position": [10, 10],
       "bounds": [104, 104],
-      "shouldFlattenTransform": false,
       "drawsContent": true
     },
     {
       "name": "Scrolling Layer",
-      "position": [2, 2],
-      "bounds": [85, 85],
-      "shouldFlattenTransform": false
+      "position": [12, 12],
+      "bounds": [85, 85]
     },
     {
       "name": "Scrolling Contents Layer",
+      "position": [12, 12],
       "bounds": [85, 144],
       "drawsContent": true
     },
     {
       "name": "Overflow Controls Host Layer",
+      "position": [10, 10],
       "bounds": [104, 104]
     },
     {
       "name": "Horizontal Scrollbar Layer",
-      "position": [2, 87],
+      "position": [12, 97],
       "bounds": [85, 15]
     },
     {
       "name": "Vertical Scrollbar Layer",
-      "position": [87, 2],
+      "position": [97, 12],
       "bounds": [15, 85]
     },
     {
       "name": "Scroll Corner Layer",
-      "position": [87, 87],
+      "position": [97, 97],
       "bounds": [15, 15],
       "drawsContent": true
     },
@@ -55,8 +54,7 @@
       "drawsContent": true
     },
     {
-      "name": "Squashing Containment Layer",
-      "shouldFlattenTransform": false
+      "name": "Squashing Containment Layer"
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV id='scrolled-absolute-grandchildren-not-contained' class='scrolled'",
@@ -76,43 +74,42 @@
       "name": "LayoutBlockFlow (positioned) DIV id='container-absolute-grandchildren' class='positionAbsolute overflow'",
       "position": [130, 10],
       "bounds": [104, 104],
-      "shouldFlattenTransform": false,
       "drawsContent": true
     },
     {
       "name": "Scrolling Layer",
-      "position": [2, 2],
-      "bounds": [85, 85],
-      "shouldFlattenTransform": false
+      "position": [132, 12],
+      "bounds": [85, 85]
     },
     {
       "name": "Scrolling Contents Layer",
+      "position": [132, 12],
       "bounds": [105, 144],
       "drawsContent": true
     },
     {
       "name": "Overflow Controls Host Layer",
+      "position": [130, 10],
       "bounds": [104, 104]
     },
     {
       "name": "Horizontal Scrollbar Layer",
-      "position": [2, 87],
+      "position": [132, 97],
       "bounds": [85, 15]
     },
     {
       "name": "Vertical Scrollbar Layer",
-      "position": [87, 2],
+      "position": [217, 12],
       "bounds": [15, 85]
     },
     {
       "name": "Scroll Corner Layer",
-      "position": [87, 87],
+      "position": [217, 97],
       "bounds": [15, 15],
       "drawsContent": true
     },
     {
-      "name": "Squashing Containment Layer",
-      "shouldFlattenTransform": false
+      "name": "Squashing Containment Layer"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV id='positioned-absolute-grandchildren' class='positionAbsolute positioned'",
@@ -129,43 +126,42 @@
       "drawsContent": true
     },
     {
-      "name": "Squashing Containment Layer",
-      "shouldFlattenTransform": false
+      "name": "Squashing Containment Layer"
     },
     {
       "name": "LayoutBlockFlow DIV id='container-absolute-not-contained' class='overflow'",
       "position": [250, 10],
       "bounds": [104, 104],
-      "shouldFlattenTransform": false,
       "drawsContent": true
     },
     {
       "name": "Scrolling Layer",
-      "position": [2, 2],
-      "bounds": [85, 85],
-      "shouldFlattenTransform": false
+      "position": [252, 12],
+      "bounds": [85, 85]
     },
     {
       "name": "Scrolling Contents Layer",
+      "position": [252, 12],
       "bounds": [85, 144]
     },
     {
       "name": "Overflow Controls Host Layer",
+      "position": [250, 10],
       "bounds": [104, 104]
     },
     {
       "name": "Horizontal Scrollbar Layer",
-      "position": [2, 87],
+      "position": [252, 97],
       "bounds": [85, 15]
     },
     {
       "name": "Vertical Scrollbar Layer",
-      "position": [87, 2],
+      "position": [337, 12],
       "bounds": [15, 85]
     },
     {
       "name": "Scroll Corner Layer",
-      "position": [87, 87],
+      "position": [337, 97],
       "bounds": [15, 15],
       "drawsContent": true
     },
@@ -176,8 +172,7 @@
       "drawsContent": true
     },
     {
-      "name": "Squashing Containment Layer",
-      "shouldFlattenTransform": false
+      "name": "Squashing Containment Layer"
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV id='scrolled-absolute-not-contained' class='scrolled'",
@@ -194,44 +189,43 @@
       "drawsContent": true
     },
     {
-      "name": "Squashing Containment Layer",
-      "shouldFlattenTransform": false
+      "name": "Squashing Containment Layer"
     },
     {
       "name": "LayoutBlockFlow DIV id='container-absolute-sibling-grandchildren-not-contained' class='overflow'",
       "position": [370, 10],
       "bounds": [104, 104],
-      "shouldFlattenTransform": false,
       "drawsContent": true
     },
     {
       "name": "Scrolling Layer",
-      "position": [2, 2],
-      "bounds": [85, 85],
-      "shouldFlattenTransform": false
+      "position": [372, 12],
+      "bounds": [85, 85]
     },
     {
       "name": "Scrolling Contents Layer",
+      "position": [372, 12],
       "bounds": [85, 144],
       "drawsContent": true
     },
     {
       "name": "Overflow Controls Host Layer",
+      "position": [370, 10],
       "bounds": [104, 104]
     },
     {
       "name": "Horizontal Scrollbar Layer",
-      "position": [2, 87],
+      "position": [372, 97],
       "bounds": [85, 15]
     },
     {
       "name": "Vertical Scrollbar Layer",
-      "position": [87, 2],
+      "position": [457, 12],
       "bounds": [15, 85]
     },
     {
       "name": "Scroll Corner Layer",
-      "position": [87, 87],
+      "position": [457, 97],
       "bounds": [15, 15],
       "drawsContent": true
     },
@@ -242,8 +236,7 @@
       "drawsContent": true
     },
     {
-      "name": "Squashing Containment Layer",
-      "shouldFlattenTransform": false
+      "name": "Squashing Containment Layer"
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV id='scrolled-absolute-sibling-grandchildren-not-contained' class='scrolled'",
@@ -263,43 +256,42 @@
       "name": "LayoutBlockFlow (positioned) DIV id='container-absolute-sibling-grandchildren' class='positionAbsolute overflow'",
       "position": [10, 130],
       "bounds": [104, 104],
-      "shouldFlattenTransform": false,
       "drawsContent": true
     },
     {
       "name": "Scrolling Layer",
-      "position": [2, 2],
-      "bounds": [85, 85],
-      "shouldFlattenTransform": false
+      "position": [12, 132],
+      "bounds": [85, 85]
     },
     {
       "name": "Scrolling Contents Layer",
+      "position": [12, 132],
       "bounds": [105, 144],
       "drawsContent": true
     },
     {
       "name": "Overflow Controls Host Layer",
+      "position": [10, 130],
       "bounds": [104, 104]
     },
     {
       "name": "Horizontal Scrollbar Layer",
-      "position": [2, 87],
+      "position": [12, 217],
       "bounds": [85, 15]
     },
     {
       "name": "Vertical Scrollbar Layer",
-      "position": [87, 2],
+      "position": [97, 132],
       "bounds": [15, 85]
     },
     {
       "name": "Scroll Corner Layer",
-      "position": [87, 87],
+      "position": [97, 217],
       "bounds": [15, 15],
       "drawsContent": true
     },
     {
-      "name": "Squashing Containment Layer",
-      "shouldFlattenTransform": false
+      "name": "Squashing Containment Layer"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV id='positioned-absolute-sibling-grandchildren' class='positionAbsolute positioned'",
@@ -316,43 +308,42 @@
       "drawsContent": true
     },
     {
-      "name": "Squashing Containment Layer",
-      "shouldFlattenTransform": false
+      "name": "Squashing Containment Layer"
     },
     {
       "name": "LayoutBlockFlow DIV id='container-absolute-sibling-not-contained' class='overflow'",
       "position": [130, 130],
       "bounds": [104, 104],
-      "shouldFlattenTransform": false,
       "drawsContent": true
     },
     {
       "name": "Scrolling Layer",
-      "position": [2, 2],
-      "bounds": [85, 85],
-      "shouldFlattenTransform": false
+      "position": [132, 132],
+      "bounds": [85, 85]
     },
     {
       "name": "Scrolling Contents Layer",
+      "position": [132, 132],
       "bounds": [85, 144]
     },
     {
       "name": "Overflow Controls Host Layer",
+      "position": [130, 130],
       "bounds": [104, 104]
     },
     {
       "name": "Horizontal Scrollbar Layer",
-      "position": [2, 87],
+      "position": [132, 217],
       "bounds": [85, 15]
     },
     {
       "name": "Vertical Scrollbar Layer",
-      "position": [87, 2],
+      "position": [217, 132],
       "bounds": [15, 85]
     },
     {
       "name": "Scroll Corner Layer",
-      "position": [87, 87],
+      "position": [217, 217],
       "bounds": [15, 15],
       "drawsContent": true
     },
@@ -363,8 +354,7 @@
       "drawsContent": true
     },
     {
-      "name": "Squashing Containment Layer",
-      "shouldFlattenTransform": false
+      "name": "Squashing Containment Layer"
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV id='scrolled-absolute-sibling-not-contained' class='scrolled'",
@@ -384,42 +374,41 @@
       "name": "LayoutBlockFlow (positioned) DIV id='container-absolute-sibling' class='positionAbsolute overflow'",
       "position": [250, 130],
       "bounds": [104, 104],
-      "shouldFlattenTransform": false,
       "drawsContent": true
     },
     {
       "name": "Scrolling Layer",
-      "position": [2, 2],
-      "bounds": [85, 85],
-      "shouldFlattenTransform": false
+      "position": [252, 132],
+      "bounds": [85, 85]
     },
     {
       "name": "Scrolling Contents Layer",
+      "position": [252, 132],
       "bounds": [105, 144]
     },
     {
       "name": "Overflow Controls Host Layer",
+      "position": [250, 130],
       "bounds": [104, 104]
     },
     {
       "name": "Horizontal Scrollbar Layer",
-      "position": [2, 87],
+      "position": [252, 217],
       "bounds": [85, 15]
     },
     {
       "name": "Vertical Scrollbar Layer",
-      "position": [87, 2],
+      "position": [337, 132],
       "bounds": [15, 85]
     },
     {
       "name": "Scroll Corner Layer",
-      "position": [87, 87],
+      "position": [337, 217],
       "bounds": [15, 15],
       "drawsContent": true
     },
     {
-      "name": "Squashing Containment Layer",
-      "shouldFlattenTransform": false
+      "name": "Squashing Containment Layer"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV id='positioned-absolute-sibling' class='positionAbsolute positioned'",
@@ -439,42 +428,41 @@
       "name": "LayoutBlockFlow (positioned) DIV id='container-absolute' class='positionAbsolute overflow'",
       "position": [370, 130],
       "bounds": [104, 104],
-      "shouldFlattenTransform": false,
       "drawsContent": true
     },
     {
       "name": "Scrolling Layer",
-      "position": [2, 2],
-      "bounds": [85, 85],
-      "shouldFlattenTransform": false
+      "position": [372, 132],
+      "bounds": [85, 85]
     },
     {
       "name": "Scrolling Contents Layer",
+      "position": [372, 132],
       "bounds": [105, 144]
     },
     {
       "name": "Overflow Controls Host Layer",
+      "position": [370, 130],
       "bounds": [104, 104]
     },
     {
       "name": "Horizontal Scrollbar Layer",
-      "position": [2, 87],
+      "position": [372, 217],
       "bounds": [85, 15]
     },
     {
       "name": "Vertical Scrollbar Layer",
-      "position": [87, 2],
+      "position": [457, 132],
       "bounds": [15, 85]
     },
     {
       "name": "Scroll Corner Layer",
-      "position": [87, 87],
+      "position": [457, 217],
       "bounds": [15, 15],
       "drawsContent": true
     },
     {
-      "name": "Squashing Containment Layer",
-      "shouldFlattenTransform": false
+      "name": "Squashing Containment Layer"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV id='positioned-absolute' class='positionAbsolute positioned'",
@@ -494,37 +482,37 @@
       "name": "LayoutBlockFlow (positioned) DIV id='container-fixed-sibling-grandchildren' class='positionAbsolute overflow'",
       "position": [10, 250],
       "bounds": [104, 104],
-      "shouldFlattenTransform": false,
       "drawsContent": true
     },
     {
       "name": "Scrolling Layer",
-      "position": [2, 2],
-      "bounds": [85, 85],
-      "shouldFlattenTransform": false
+      "position": [12, 252],
+      "bounds": [85, 85]
     },
     {
       "name": "Scrolling Contents Layer",
+      "position": [12, 252],
       "bounds": [85, 144],
       "drawsContent": true
     },
     {
       "name": "Overflow Controls Host Layer",
+      "position": [10, 250],
       "bounds": [104, 104]
     },
     {
       "name": "Horizontal Scrollbar Layer",
-      "position": [2, 87],
+      "position": [12, 337],
       "bounds": [85, 15]
     },
     {
       "name": "Vertical Scrollbar Layer",
-      "position": [87, 2],
+      "position": [97, 252],
       "bounds": [15, 85]
     },
     {
       "name": "Scroll Corner Layer",
-      "position": [87, 87],
+      "position": [97, 337],
       "bounds": [15, 15],
       "drawsContent": true
     },
@@ -537,8 +525,7 @@
       "backgroundColor": "#800080"
     },
     {
-      "name": "Squashing Containment Layer",
-      "shouldFlattenTransform": false
+      "name": "Squashing Containment Layer"
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV id='scrolled-fixed-sibling-grandchildren' class='scrolled'",
@@ -558,36 +545,36 @@
       "name": "LayoutBlockFlow (positioned) DIV id='container-fixed-sibling' class='positionAbsolute overflow'",
       "position": [130, 250],
       "bounds": [104, 104],
-      "shouldFlattenTransform": false,
       "drawsContent": true
     },
     {
       "name": "Scrolling Layer",
-      "position": [2, 2],
-      "bounds": [85, 85],
-      "shouldFlattenTransform": false
+      "position": [132, 252],
+      "bounds": [85, 85]
     },
     {
       "name": "Scrolling Contents Layer",
+      "position": [132, 252],
       "bounds": [85, 144]
     },
     {
       "name": "Overflow Controls Host Layer",
+      "position": [130, 250],
       "bounds": [104, 104]
     },
     {
       "name": "Horizontal Scrollbar Layer",
-      "position": [2, 87],
+      "position": [132, 337],
       "bounds": [85, 15]
     },
     {
       "name": "Vertical Scrollbar Layer",
-      "position": [87, 2],
+      "position": [217, 252],
       "bounds": [15, 85]
     },
     {
       "name": "Scroll Corner Layer",
-      "position": [87, 87],
+      "position": [217, 337],
       "bounds": [15, 15],
       "drawsContent": true
     },
@@ -600,8 +587,7 @@
       "backgroundColor": "#800080"
     },
     {
-      "name": "Squashing Containment Layer",
-      "shouldFlattenTransform": false
+      "name": "Squashing Containment Layer"
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV id='scrolled-fixed-sibling' class='scrolled'",
@@ -621,37 +607,37 @@
       "name": "LayoutBlockFlow (positioned) DIV id='container-fixed-grandchildren' class='positionAbsolute overflow'",
       "position": [250, 250],
       "bounds": [104, 104],
-      "shouldFlattenTransform": false,
       "drawsContent": true
     },
     {
       "name": "Scrolling Layer",
-      "position": [2, 2],
-      "bounds": [85, 85],
-      "shouldFlattenTransform": false
+      "position": [252, 252],
+      "bounds": [85, 85]
     },
     {
       "name": "Scrolling Contents Layer",
+      "position": [252, 252],
       "bounds": [85, 144],
       "drawsContent": true
     },
     {
       "name": "Overflow Controls Host Layer",
+      "position": [250, 250],
       "bounds": [104, 104]
     },
     {
       "name": "Horizontal Scrollbar Layer",
-      "position": [2, 87],
+      "position": [252, 337],
       "bounds": [85, 15]
     },
     {
       "name": "Vertical Scrollbar Layer",
-      "position": [87, 2],
+      "position": [337, 252],
       "bounds": [15, 85]
     },
     {
       "name": "Scroll Corner Layer",
-      "position": [87, 87],
+      "position": [337, 337],
       "bounds": [15, 15],
       "drawsContent": true
     },
@@ -664,8 +650,7 @@
       "backgroundColor": "#800080"
     },
     {
-      "name": "Squashing Containment Layer",
-      "shouldFlattenTransform": false
+      "name": "Squashing Containment Layer"
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV id='scrolled-fixed-grandchildren' class='scrolled'",
@@ -685,36 +670,36 @@
       "name": "LayoutBlockFlow (positioned) DIV id='container-fixed' class='positionAbsolute overflow'",
       "position": [370, 250],
       "bounds": [104, 104],
-      "shouldFlattenTransform": false,
       "drawsContent": true
     },
     {
       "name": "Scrolling Layer",
-      "position": [2, 2],
-      "bounds": [85, 85],
-      "shouldFlattenTransform": false
+      "position": [372, 252],
+      "bounds": [85, 85]
     },
     {
       "name": "Scrolling Contents Layer",
+      "position": [372, 252],
       "bounds": [85, 144]
     },
     {
       "name": "Overflow Controls Host Layer",
+      "position": [370, 250],
       "bounds": [104, 104]
     },
     {
       "name": "Horizontal Scrollbar Layer",
-      "position": [2, 87],
+      "position": [372, 337],
       "bounds": [85, 15]
     },
     {
       "name": "Vertical Scrollbar Layer",
-      "position": [87, 2],
+      "position": [457, 252],
       "bounds": [15, 85]
     },
     {
       "name": "Scroll Corner Layer",
-      "position": [87, 87],
+      "position": [457, 337],
       "bounds": [15, 15],
       "drawsContent": true
     },
@@ -727,8 +712,7 @@
       "backgroundColor": "#800080"
     },
     {
-      "name": "Squashing Containment Layer",
-      "shouldFlattenTransform": false
+      "name": "Squashing Containment Layer"
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV id='scrolled-fixed' class='scrolled'",
@@ -793,8 +777,7 @@
       "backgroundColor": "#008000"
     },
     {
-      "name": "Squashing Containment Layer",
-      "shouldFlattenTransform": false
+      "name": "Squashing Containment Layer"
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV id='scrolled-absolute-grandchildren-not-contained' class='scrolled onTop'",
@@ -811,8 +794,7 @@
       "drawsContent": true
     },
     {
-      "name": "Squashing Containment Layer",
-      "shouldFlattenTransform": false
+      "name": "Squashing Containment Layer"
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV id='scrolled-absolute-grandchildren' class='scrolled onTop'",
@@ -829,8 +811,7 @@
       "drawsContent": true
     },
     {
-      "name": "Squashing Containment Layer",
-      "shouldFlattenTransform": false
+      "name": "Squashing Containment Layer"
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV id='scrolled-absolute-not-contained' class='scrolled onTop'",
@@ -847,8 +828,7 @@
       "drawsContent": true
     },
     {
-      "name": "Squashing Containment Layer",
-      "shouldFlattenTransform": false
+      "name": "Squashing Containment Layer"
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV id='scrolled-absolute-sibling-grandchildren-not-contained' class='scrolled onTop'",
@@ -865,8 +845,7 @@
       "drawsContent": true
     },
     {
-      "name": "Squashing Containment Layer",
-      "shouldFlattenTransform": false
+      "name": "Squashing Containment Layer"
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV id='scrolled-absolute-sibling-grandchildren' class='scrolled onTop'",
@@ -883,8 +862,7 @@
       "drawsContent": true
     },
     {
-      "name": "Squashing Containment Layer",
-      "shouldFlattenTransform": false
+      "name": "Squashing Containment Layer"
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV id='scrolled-absolute-sibling-not-contained' class='scrolled onTop'",
@@ -901,8 +879,7 @@
       "drawsContent": true
     },
     {
-      "name": "Squashing Containment Layer",
-      "shouldFlattenTransform": false
+      "name": "Squashing Containment Layer"
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV id='scrolled-absolute-sibling' class='scrolled onTop'",
@@ -919,8 +896,7 @@
       "drawsContent": true
     },
     {
-      "name": "Squashing Containment Layer",
-      "shouldFlattenTransform": false
+      "name": "Squashing Containment Layer"
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV id='scrolled-absolute' class='scrolled onTop'",
@@ -937,8 +913,7 @@
       "drawsContent": true
     },
     {
-      "name": "Squashing Containment Layer",
-      "shouldFlattenTransform": false
+      "name": "Squashing Containment Layer"
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV id='scrolled-fixed-sibling-grandchildren' class='scrolled onTop'",
@@ -955,8 +930,7 @@
       "drawsContent": true
     },
     {
-      "name": "Squashing Containment Layer",
-      "shouldFlattenTransform": false
+      "name": "Squashing Containment Layer"
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV id='scrolled-fixed-sibling' class='scrolled onTop'",
@@ -973,8 +947,7 @@
       "drawsContent": true
     },
     {
-      "name": "Squashing Containment Layer",
-      "shouldFlattenTransform": false
+      "name": "Squashing Containment Layer"
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV id='scrolled-fixed-grandchildren' class='scrolled onTop'",
@@ -991,8 +964,7 @@
       "drawsContent": true
     },
     {
-      "name": "Squashing Containment Layer",
-      "shouldFlattenTransform": false
+      "name": "Squashing Containment Layer"
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV id='scrolled-fixed' class='scrolled onTop'",

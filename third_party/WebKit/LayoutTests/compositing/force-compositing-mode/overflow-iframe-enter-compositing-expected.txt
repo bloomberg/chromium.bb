@@ -15,38 +15,42 @@
     },
     {
       "name": "Frame Overflow Controls Host Layer",
-      "position": [2, 2],
+      "position": [10, 10],
       "bounds": [150, 150]
     },
     {
       "name": "Frame Clipping Layer",
+      "position": [10, 10],
       "bounds": [135, 135]
     },
     {
-      "name": "Frame Scrolling Layer"
+      "name": "Frame Scrolling Layer",
+      "position": [10, 10]
     },
     {
       "name": "Content Root Layer",
+      "position": [10, 10],
       "bounds": [508, 516]
     },
     {
       "name": "LayoutView #document",
+      "position": [10, 10],
       "bounds": [508, 516],
       "drawsContent": true
     },
     {
       "name": "Frame Horizontal Scrollbar Layer",
-      "position": [0, 135],
+      "position": [10, 145],
       "bounds": [135, 15]
     },
     {
       "name": "Frame Vertical Scrollbar Layer",
-      "position": [135, 0],
+      "position": [145, 10],
       "bounds": [15, 135]
     },
     {
       "name": "Frame Scroll Corner Layer",
-      "position": [135, 135],
+      "position": [145, 145],
       "bounds": [15, 15],
       "drawsContent": true
     }

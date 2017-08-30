@@ -27,7 +27,6 @@
     },
     {
       "name": "LayoutView #document (background) Layer",
-      "transformOrigin": [0, 0],
       "bounds": [785, 600],
       "contentsOpaque": true,
       "drawsContent": true

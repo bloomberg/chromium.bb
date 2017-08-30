@@ -10,33 +10,33 @@
       "name": "LayoutBlockFlow DIV class='container'",
       "position": [8, 8],
       "bounds": [308, 208],
-      "shouldFlattenTransform": false,
       "drawsContent": true,
       "backgroundColor": "#00FF0080"
     },
     {
       "name": "Scrolling Layer",
-      "position": [4, 4],
-      "bounds": [285, 200],
-      "shouldFlattenTransform": false
+      "position": [12, 12],
+      "bounds": [285, 200]
     },
     {
       "name": "Scrolling Contents Layer",
+      "position": [12, 12],
       "bounds": [285, 530],
       "drawsContent": true
     },
     {
       "name": "Overflow Controls Host Layer",
+      "position": [8, 8],
       "bounds": [308, 208]
     },
     {
       "name": "Vertical Scrollbar Layer",
-      "position": [289, 4],
+      "position": [297, 12],
       "bounds": [15, 185]
     },
     {
       "name": "Scroll Corner Layer",
-      "position": [289, 189],
+      "position": [297, 197],
       "bounds": [15, 15],
       "drawsContent": true
     },
@@ -52,19 +52,17 @@
       "name": "Ancestor Clipping Layer",
       "position": [12, 12],
       "bounds": [80, 80],
-      "shouldFlattenTransform": false,
       "hasScrollParent": true
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV class='box red'",
-      "position": [10, 10],
+      "position": [22, 22],
       "bounds": [100, 100],
       "drawsContent": true,
       "backgroundColor": "#FF000080"
     },
     {
       "name": "Squashing Containment Layer",
-      "shouldFlattenTransform": false,
       "hasScrollParent": true
     },
     {

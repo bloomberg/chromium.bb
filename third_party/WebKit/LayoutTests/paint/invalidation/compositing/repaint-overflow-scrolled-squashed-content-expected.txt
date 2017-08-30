@@ -9,11 +9,11 @@
     {
       "name": "Ancestor Clipping Layer",
       "position": [8, 8],
-      "bounds": [185, 185],
-      "shouldFlattenTransform": false
+      "bounds": [185, 185]
     },
     {
       "name": "LayoutBlockFlow DIV id='foo2'",
+      "position": [8, 8],
       "bounds": [150, 1000],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -21,6 +21,7 @@
     },
     {
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV id='foo')",
+      "position": [8, 8],
       "bounds": [100, 1000],
       "drawsContent": true,
       "paintInvalidations": [

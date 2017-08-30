@@ -16,10 +16,12 @@
     },
     {
       "name": "Child Containment Layer",
+      "position": [8, 8],
       "bounds": [784, 10]
     },
     {
       "name": "LayoutBlockFlow DIV id='inner'",
+      "position": [8, 8],
       "bounds": [784, 10],
       "contentsOpaque": true,
       "drawsContent": true,

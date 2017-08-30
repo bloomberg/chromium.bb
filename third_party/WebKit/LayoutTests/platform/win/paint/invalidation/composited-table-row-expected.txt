@@ -9,7 +9,6 @@
     {
       "name": "LayoutTableRow TR",
       "position": [8, 8],
-      "transformOrigin": [34.5, 11.5],
       "bounds": [70, 24],
       "drawsContent": true,
       "backgroundColor": "#FF0000",

@@ -21,6 +21,7 @@
     },
     {
       "name": "LayoutBlockFlow DIV",
+      "position": [8, 18],
       "bounds": [10, 10],
       "contentsOpaque": true,
       "drawsContent": true,

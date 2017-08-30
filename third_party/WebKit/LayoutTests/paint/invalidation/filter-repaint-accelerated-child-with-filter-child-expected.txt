@@ -14,8 +14,7 @@
     },
     {
       "name": "LayoutBlockFlow DIV class='accelerated'",
-      "position": [-12, -12],
-      "transformOrigin": [112, 112],
+      "position": [-4, -4],
       "bounds": [212, 257],
       "drawsContent": true,
       "paintInvalidations": [

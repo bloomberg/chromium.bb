@@ -16,7 +16,6 @@
       "name": "LayoutBlockFlow DIV class='scroller'",
       "position": [8, 8],
       "bounds": [102, 102],
-      "shouldFlattenTransform": false,
       "drawsContent": true,
       "paintingPhases": [
         "GraphicsLayerPaintBackground",
@@ -27,9 +26,8 @@
     },
     {
       "name": "Scrolling Layer",
-      "position": [1, 1],
+      "position": [9, 9],
       "bounds": [85, 85],
-      "shouldFlattenTransform": false,
       "paintingPhases": [
         "GraphicsLayerPaintBackground",
         "GraphicsLayerPaintForeground",
@@ -39,6 +37,7 @@
     },
     {
       "name": "Scrolling Contents Layer",
+      "position": [9, 9],
       "bounds": [85, 120],
       "drawsContent": true,
       "paintingPhases": [
@@ -49,6 +48,7 @@
     },
     {
       "name": "Overflow Controls Host Layer",
+      "position": [8, 8],
       "bounds": [102, 102],
       "paintingPhases": [
         "GraphicsLayerPaintBackground",
@@ -59,7 +59,7 @@
     },
     {
       "name": "Horizontal Scrollbar Layer",
-      "position": [1, 86],
+      "position": [9, 94],
       "bounds": [85, 15],
       "paintingPhases": [
         "GraphicsLayerPaintBackground",
@@ -70,7 +70,7 @@
     },
     {
       "name": "Vertical Scrollbar Layer",
-      "position": [86, 1],
+      "position": [94, 9],
       "bounds": [15, 85],
       "paintingPhases": [
         "GraphicsLayerPaintBackground",
@@ -81,7 +81,7 @@
     },
     {
       "name": "Scroll Corner Layer",
-      "position": [86, 86],
+      "position": [94, 94],
       "bounds": [15, 15],
       "drawsContent": true,
       "paintingPhases": [

@@ -7,23 +7,21 @@
       "drawsContent": true
     },
     {
-      "name": "Squashing Containment Layer",
-      "shouldFlattenTransform": false
+      "name": "Squashing Containment Layer"
     },
     {
       "name": "LayoutBlockFlow DIV",
       "position": [8, 8],
       "bounds": [100, 100],
       "contentsOpaque": true,
-      "3dRenderingContext": 1,
       "drawsContent": true,
-      "backgroundColor": "#D3D3D3"
+      "backgroundColor": "#D3D3D3",
+      "transform": 1
     },
     {
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV id='target')",
       "position": [28, 28],
       "bounds": [100, 100],
-      "3dRenderingContext": 1,
       "drawsContent": true,
       "paintInvalidations": [
         {
@@ -31,7 +29,18 @@
           "rect": [0, 0, 100, 100],
           "reason": "style change"
         }
-      ]
+      ],
+      "transform": 2
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
+      "renderingContext": 1
+    },
+    {
+      "id": 2,
+      "renderingContext": 1
     }
   ],
   "objectPaintInvalidations": [
