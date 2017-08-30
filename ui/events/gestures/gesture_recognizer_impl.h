@@ -59,16 +59,16 @@ class EVENTS_EXPORT GestureRecognizerImpl : public GestureRecognizer,
   virtual GestureProviderAura* GetGestureProviderForConsumer(
       GestureConsumer* c);
 
+  // Overridden from GestureRecognizer
+  bool ProcessTouchEventPreDispatch(TouchEvent* event,
+                                    GestureConsumer* consumer) override;
+
  private:
   // Sets up the target consumer for gestures based on the touch-event.
   void SetupTargets(const TouchEvent& event, GestureConsumer* consumer);
 
   void DispatchGestureEvent(GestureConsumer* raw_input_consumer,
                             GestureEvent* event);
-
-  // Overridden from GestureRecognizer
-  bool ProcessTouchEventPreDispatch(TouchEvent* event,
-                                    GestureConsumer* consumer) override;
 
   Gestures AckTouchEvent(uint32_t unique_event_id,
                          ui::EventResult result,

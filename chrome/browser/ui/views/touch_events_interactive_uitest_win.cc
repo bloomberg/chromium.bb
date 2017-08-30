@@ -11,6 +11,7 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/test/ui_controls.h"
+#include "ui/events/gestures/gesture_recognizer_impl.h"
 #include "ui/views/controls/menu/menu_runner.h"
 
 namespace {
@@ -94,6 +95,39 @@ class TouchEventHandler : public ui::EventHandler {
   DISALLOW_COPY_AND_ASSIGN(TouchEventHandler);
 };
 
+class TestingGestureRecognizer : public ui::GestureRecognizerImpl {
+ public:
+  TestingGestureRecognizer() = default;
+  ~TestingGestureRecognizer() override = default;
+
+  int num_touch_press_events() const { return num_touch_press_events_; }
+  int num_touch_release_events() const { return num_touch_release_events_; }
+
+ protected:
+  // Overriden from GestureRecognizerImpl:
+  bool ProcessTouchEventPreDispatch(ui::TouchEvent* event,
+                                    ui::GestureConsumer* consumer) override {
+    switch (event->type()) {
+      case ui::ET_TOUCH_PRESSED:
+        num_touch_press_events_++;
+        break;
+      case ui::ET_TOUCH_RELEASED:
+        num_touch_release_events_++;
+        break;
+      default:
+        break;
+    }
+
+    return ui::GestureRecognizerImpl::ProcessTouchEventPreDispatch(event,
+                                                                   consumer);
+  }
+
+ private:
+  int num_touch_press_events_ = 0;
+  int num_touch_release_events_ = 0;
+  DISALLOW_COPY_AND_ASSIGN(TestingGestureRecognizer);
+};
+
 }  // namespace
 
 class TouchEventsViewTest : public ViewEventTestBase {
@@ -103,11 +137,15 @@ class TouchEventsViewTest : public ViewEventTestBase {
   // ViewEventTestBase:
   void SetUp() override {
     touch_view_ = new views::View();
+    initial_gr_ = ui::GestureRecognizer::Get();
+    gesture_recognizer_ = std::make_unique<TestingGestureRecognizer>();
+    ui::SetGestureRecognizerForTesting(gesture_recognizer_.get());
     ViewEventTestBase::SetUp();
   }
 
   void TearDown() override {
     touch_view_ = nullptr;
+    ui::SetGestureRecognizerForTesting(initial_gr_);
     ViewEventTestBase::TearDown();
   }
 
@@ -140,6 +178,11 @@ class TouchEventsViewTest : public ViewEventTestBase {
     EXPECT_EQ(touch_pointer_count, touch_event_handler.num_touch_presses());
     EXPECT_EQ(0, touch_event_handler.num_pointers_down());
 
+    EXPECT_EQ(touch_pointer_count,
+              gesture_recognizer_->num_touch_press_events());
+    EXPECT_EQ(touch_pointer_count,
+              gesture_recognizer_->num_touch_release_events());
+
     GetWidget()->GetNativeWindow()->GetHost()->window()->RemovePreTargetHandler(
         &touch_event_handler);
     Done();
@@ -147,6 +190,8 @@ class TouchEventsViewTest : public ViewEventTestBase {
 
  protected:
   views::View* touch_view_ = nullptr;
+  std::unique_ptr<TestingGestureRecognizer> gesture_recognizer_;
+  ui::GestureRecognizer* initial_gr_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(TouchEventsViewTest);
 };
