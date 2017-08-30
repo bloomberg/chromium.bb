@@ -4980,7 +4980,7 @@ resolveSubtable (const char *table, const char *base, const char *searchPath)
 
   if (table == NULL || table[0] == '\0')
     return NULL;
-  tableFile = (char *) malloc (MAXSTRING * sizeof(char));
+  tableFile = (char *) malloc (MAXSTRING * sizeof(char) * 2);
   
   //
   // First try to resolve against base
