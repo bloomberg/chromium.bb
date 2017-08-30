@@ -76,10 +76,10 @@ class EmptyFrameScheduler : public WebFrameScheduler {
   void SetFrameVisible(bool) override {}
   RefPtr<WebTaskRunner> LoadingTaskRunner() override;
   RefPtr<WebTaskRunner> LoadingControlTaskRunner() override;
-  RefPtr<WebTaskRunner> ThrottleableTaskRunner() override;
-  RefPtr<WebTaskRunner> DeferrableTaskRunner() override;
-  RefPtr<WebTaskRunner> PausableTaskRunner() override;
-  RefPtr<WebTaskRunner> UnpausableTaskRunner() override;
+  RefPtr<WebTaskRunner> TimerTaskRunner() override;
+  RefPtr<WebTaskRunner> UnthrottledTaskRunner() override;
+  RefPtr<WebTaskRunner> SuspendableTaskRunner() override;
+  RefPtr<WebTaskRunner> UnthrottledButBlockableTaskRunner() override;
 };
 
 RefPtr<WebTaskRunner> EmptyFrameScheduler::LoadingTaskRunner() {
@@ -90,19 +90,19 @@ RefPtr<WebTaskRunner> EmptyFrameScheduler::LoadingControlTaskRunner() {
   return Platform::Current()->MainThread()->GetWebTaskRunner();
 }
 
-RefPtr<WebTaskRunner> EmptyFrameScheduler::ThrottleableTaskRunner() {
+RefPtr<WebTaskRunner> EmptyFrameScheduler::TimerTaskRunner() {
   return Platform::Current()->MainThread()->GetWebTaskRunner();
 }
 
-RefPtr<WebTaskRunner> EmptyFrameScheduler::DeferrableTaskRunner() {
+RefPtr<WebTaskRunner> EmptyFrameScheduler::UnthrottledTaskRunner() {
   return Platform::Current()->MainThread()->GetWebTaskRunner();
 }
 
-RefPtr<WebTaskRunner> EmptyFrameScheduler::PausableTaskRunner() {
+RefPtr<WebTaskRunner> EmptyFrameScheduler::SuspendableTaskRunner() {
   return Platform::Current()->MainThread()->GetWebTaskRunner();
 }
 
-RefPtr<WebTaskRunner> EmptyFrameScheduler::UnpausableTaskRunner() {
+RefPtr<WebTaskRunner> EmptyFrameScheduler::UnthrottledButBlockableTaskRunner() {
   return Platform::Current()->MainThread()->GetWebTaskRunner();
 }
 

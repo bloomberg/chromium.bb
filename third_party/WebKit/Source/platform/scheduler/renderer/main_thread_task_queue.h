@@ -20,28 +20,20 @@ class PLATFORM_EXPORT MainThreadTaskQueue : public TaskQueue {
   enum class QueueType {
     // Keep MainThreadTaskQueue::NameForQueueType in sync.
     // This enum is used for a histogram and it should not be re-numbered.
-    // TODO(altimin): Clean up obsolete names and use a new histogram when
-    // the situation settles.
     CONTROL = 0,
     DEFAULT = 1,
     DEFAULT_LOADING = 2,
-    // DEFAULT_TIMER is deprecated and should be replaced with appropriate
-    // per-frame task queues.
     DEFAULT_TIMER = 3,
     UNTHROTTLED = 4,
     FRAME_LOADING = 5,
-    // 6 : FRAME_THROTTLEABLE, replaced with FRAME_THROTTLEABLE.
-    // 7 : FRAME_PAUSABLE, replaced with FRAME_PAUSABLE
+    FRAME_TIMER = 6,
+    FRAME_UNTHROTTLED = 7,
     COMPOSITOR = 8,
     IDLE = 9,
     TEST = 10,
     FRAME_LOADING_CONTROL = 11,
-    FRAME_THROTTLEABLE = 12,
-    FRAME_DEFERRABLE = 13,
-    FRAME_PAUSABLE = 14,
-    FRAME_UNPAUSABLE = 15,
 
-    COUNT = 16
+    COUNT = 12
   };
 
   // Returns name of the given queue type. Returned string has application
@@ -70,7 +62,7 @@ class PLATFORM_EXPORT MainThreadTaskQueue : public TaskQueue {
           can_be_stopped(false),
           used_for_control_tasks(false) {}
 
-    QueueCreationParams SetCanBeDeferred(bool value) {
+    QueueCreationParams SetCanBeBlocked(bool value) {
       can_be_blocked = value;
       return *this;
     }
@@ -134,7 +126,7 @@ class PLATFORM_EXPORT MainThreadTaskQueue : public TaskQueue {
 
   QueueClass queue_class() const { return queue_class_; }
 
-  bool CanBeDeferred() const { return can_be_blocked_; }
+  bool CanBeBlocked() const { return can_be_blocked_; }
 
   bool CanBeThrottled() const { return can_be_throttled_; }
 

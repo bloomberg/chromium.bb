@@ -90,7 +90,7 @@ class TaskQueueThrottlerTest : public ::testing::Test {
     scheduler_.reset(new RendererSchedulerImpl(delegate_));
     task_queue_throttler_ = scheduler_->task_queue_throttler();
     timer_queue_ = scheduler_->NewTimerTaskQueue(
-        MainThreadTaskQueue::QueueType::FRAME_THROTTLEABLE);
+        MainThreadTaskQueue::QueueType::FRAME_TIMER);
   }
 
   void TearDown() override {
@@ -745,7 +745,7 @@ TEST_P(TaskQueueThrottlerWithAutoAdvancingTimeTest,
   std::vector<base::TimeTicks> run_times;
 
   scoped_refptr<TaskQueue> second_queue = scheduler_->NewTimerTaskQueue(
-      MainThreadTaskQueue::QueueType::FRAME_THROTTLEABLE);
+      MainThreadTaskQueue::QueueType::FRAME_TIMER);
 
   CPUTimeBudgetPool* pool =
       task_queue_throttler_->CreateCPUTimeBudgetPool("test");
@@ -1071,7 +1071,7 @@ TEST_P(TaskQueueThrottlerWithAutoAdvancingTimeTest,
 
   scoped_refptr<MainThreadTaskQueue> second_queue =
       scheduler_->NewTimerTaskQueue(
-          MainThreadTaskQueue::QueueType::FRAME_THROTTLEABLE);
+          MainThreadTaskQueue::QueueType::FRAME_TIMER);
 
   task_queue_throttler_->IncreaseThrottleRefCount(timer_queue_.get());
   task_queue_throttler_->IncreaseThrottleRefCount(second_queue.get());
@@ -1107,7 +1107,7 @@ TEST_P(TaskQueueThrottlerWithAutoAdvancingTimeTest, TwoBudgetPools) {
   std::vector<base::TimeTicks> run_times;
 
   scoped_refptr<TaskQueue> second_queue = scheduler_->NewTimerTaskQueue(
-      MainThreadTaskQueue::QueueType::FRAME_THROTTLEABLE);
+      MainThreadTaskQueue::QueueType::FRAME_TIMER);
 
   CPUTimeBudgetPool* pool1 =
       task_queue_throttler_->CreateCPUTimeBudgetPool("test");

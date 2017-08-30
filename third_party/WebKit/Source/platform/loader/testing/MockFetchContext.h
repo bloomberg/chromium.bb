@@ -96,14 +96,16 @@ class MockFetchContext : public FetchContext {
         : runner_(std::move(runner)) {}
     void AddThrottlingObserver(ObserverType, Observer*) override {}
     void RemoveThrottlingObserver(ObserverType, Observer*) override {}
+    RefPtr<WebTaskRunner> TimerTaskRunner() override { return runner_; }
     RefPtr<WebTaskRunner> LoadingTaskRunner() override { return runner_; }
     RefPtr<WebTaskRunner> LoadingControlTaskRunner() override {
       return runner_;
     }
-    RefPtr<WebTaskRunner> ThrottleableTaskRunner() override { return runner_; }
-    RefPtr<WebTaskRunner> DeferrableTaskRunner() override { return runner_; }
-    RefPtr<WebTaskRunner> PausableTaskRunner() override { return runner_; }
-    RefPtr<WebTaskRunner> UnpausableTaskRunner() override { return runner_; }
+    RefPtr<WebTaskRunner> SuspendableTaskRunner() override { return runner_; }
+    RefPtr<WebTaskRunner> UnthrottledTaskRunner() override { return runner_; }
+    RefPtr<WebTaskRunner> UnthrottledButBlockableTaskRunner() override {
+      return runner_;
+    }
 
    private:
     RefPtr<WebTaskRunner> runner_;
