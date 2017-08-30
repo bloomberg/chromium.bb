@@ -44,6 +44,93 @@ struct ModuleIndex {
   size_t index;
 };
 
+// Module identifiers ---------------------------------------------------------
+
+// Returns the unique build ID for a module loaded at |module_addr|. Returns the
+// empty string if the function fails to get the build ID.
+//
+// Build IDs are created by the concatenation of the module's GUID (Windows) /
+// UUID (Mac) and an "age" field that indicates how many times that GUID/UUID
+// has been reused. In Windows binaries, the "age" field is present in the
+// module header, but on the Mac, UUIDs are never reused and so the "age" value
+// appended to the UUID is always 0.
+std::string GetUniqueId(const void* module_addr) {
+  const mach_header_64* mach_header =
+      reinterpret_cast<const mach_header_64*>(module_addr);
+  DCHECK_EQ(MH_MAGIC_64, mach_header->magic);
+
+  size_t offset = sizeof(mach_header_64);
+  size_t offset_limit = sizeof(mach_header_64) + mach_header->sizeofcmds;
+  for (uint32_t i = 0; (i < mach_header->ncmds) &&
+                       (offset + sizeof(load_command) < offset_limit);
+       ++i) {
+    const load_command* current_cmd = reinterpret_cast<const load_command*>(
+        reinterpret_cast<const uint8_t*>(mach_header) + offset);
+
+    if (offset + current_cmd->cmdsize > offset_limit) {
+      // This command runs off the end of the command list. This is malformed.
+      return std::string();
+    }
+
+    if (current_cmd->cmd == LC_UUID) {
+      if (current_cmd->cmdsize < sizeof(uuid_command)) {
+        // This "UUID command" is too small. This is malformed.
+        return std::string();
+      }
+
+      const uuid_command* uuid_cmd =
+          reinterpret_cast<const uuid_command*>(current_cmd);
+      static_assert(sizeof(uuid_cmd->uuid) == sizeof(uuid_t),
+                    "UUID field of UUID command should be 16 bytes.");
+      // The ID is comprised of the UUID concatenated with the Mac's "age" value
+      // which is always 0.
+      return HexEncode(&uuid_cmd->uuid, sizeof(uuid_cmd->uuid)) + "0";
+    }
+    offset += current_cmd->cmdsize;
+  }
+  return std::string();
+}
+
+// Gets the index for the Module containing |instruction_pointer| in
+// |modules|, adding it if it's not already present. Returns
+// StackSamplingProfiler::Frame::kUnknownModuleIndex if no Module can be
+// determined for |module|.
+size_t GetModuleIndex(const uintptr_t instruction_pointer,
+                      std::vector<StackSamplingProfiler::Module>* modules,
+                      std::vector<ModuleIndex>* profile_module_index) {
+  // Check if |instruction_pointer| is in the address range of a module we've
+  // already seen.
+  auto module_index =
+      std::find_if(profile_module_index->begin(), profile_module_index->end(),
+                   [instruction_pointer](const ModuleIndex& index) {
+                     return instruction_pointer >= index.base_address &&
+                            instruction_pointer < index.end_address;
+                   });
+  if (module_index != profile_module_index->end()) {
+    return module_index->index;
+  }
+  Dl_info inf;
+  if (!dladdr(reinterpret_cast<const void*>(instruction_pointer), &inf))
+    return StackSamplingProfiler::Frame::kUnknownModuleIndex;
+
+  StackSamplingProfiler::Module module(
+      reinterpret_cast<uintptr_t>(inf.dli_fbase), GetUniqueId(inf.dli_fbase),
+      base::FilePath(inf.dli_fname));
+  modules->push_back(module);
+
+  const mach_header_64* mach_header =
+      reinterpret_cast<const mach_header_64*>(inf.dli_fbase);
+  DCHECK_EQ(MH_MAGIC_64, mach_header->magic);
+
+  unsigned long module_size;
+  getsegmentdata(mach_header, SEG_TEXT, &module_size);
+  uintptr_t base_module_address = reinterpret_cast<uintptr_t>(mach_header);
+  size_t index = modules->size() - 1;
+  profile_module_index->emplace_back(base_module_address,
+                                     base_module_address + module_size, index);
+  return index;
+}
+
 // Stack walking --------------------------------------------------------------
 
 // Fills |state| with |target_thread|'s context.
@@ -141,10 +228,13 @@ uint32_t GetFrameOffset(int compact_unwind_info) {
 // lambda for each frame. Returns false if an error occurred, otherwise returns
 // true.
 template <typename StackFrameCallback>
-bool WalkStackFromContext(unw_context_t* unwind_context,
-                          uintptr_t stack_top,
-                          size_t* frame_count,
-                          const StackFrameCallback& callback) {
+bool WalkStackFromContext(
+    unw_context_t* unwind_context,
+    uintptr_t stack_top,
+    size_t* frame_count,
+    std::vector<StackSamplingProfiler::Module>* current_modules,
+    std::vector<ModuleIndex>* profile_module_index,
+    const StackFrameCallback& callback) {
   unw_cursor_t unwind_cursor;
   unw_init_local(&unwind_cursor, unwind_context);
 
@@ -154,7 +244,25 @@ bool WalkStackFromContext(unw_context_t* unwind_context,
     ++(*frame_count);
     unw_get_reg(&unwind_cursor, UNW_REG_IP, &ip);
 
-    callback(static_cast<uintptr_t>(ip));
+    // Ensure IP is in a module.
+    //
+    // Frameless unwinding (non-DWARF) works by fetching the function's
+    // stack size from the unwind encoding or stack, and adding it to the
+    // stack pointer to determine the function's return address.
+    //
+    // If we're in a function prologue or epilogue, the actual stack size
+    // may be smaller than it will be during the normal course of execution.
+    // When libunwind adds the expected stack size, it will look for the
+    // return address in the wrong place. This check should ensure that we
+    // bail before trying to deref a bad IP obtained this way in the previous
+    // frame.
+    size_t module_index =
+        GetModuleIndex(ip, current_modules, profile_module_index);
+    if (module_index == StackSamplingProfiler::Frame::kUnknownModuleIndex) {
+      return false;
+    }
+
+    callback(static_cast<uintptr_t>(ip), module_index);
 
     // If this stack frame has a frame pointer, stepping the cursor will involve
     // indexing memory access off of that pointer. In that case, sanity-check
@@ -213,6 +321,8 @@ const char* LibSystemKernelName() {
 template <typename StackFrameCallback>
 void WalkStack(const x86_thread_state64_t& thread_state,
                uintptr_t stack_top,
+               std::vector<StackSamplingProfiler::Module>* current_modules,
+               std::vector<ModuleIndex>* profile_module_index,
                const StackFrameCallback& callback) {
   size_t frame_count = 0;
   // This uses libunwind to walk the stack. libunwind is designed to be used for
@@ -228,7 +338,8 @@ void WalkStack(const x86_thread_state64_t& thread_state,
   unw_context_t unwind_context;
   memcpy(&unwind_context, &thread_state, sizeof(uintptr_t) * 17);
   bool result =
-      WalkStackFromContext(&unwind_context, stack_top, &frame_count, callback);
+      WalkStackFromContext(&unwind_context, stack_top, &frame_count,
+                           current_modules, profile_module_index, callback);
 
   if (!result)
     return;
@@ -250,96 +361,10 @@ void WalkStack(const x86_thread_state64_t& thread_state,
       strcmp(info.dli_fname, LibSystemKernelName()) == 0) {
       rip = *reinterpret_cast<uint64_t*>(rsp);
       rsp += 8;
-      WalkStackFromContext(&unwind_context, stack_top, &frame_count, callback);
+      WalkStackFromContext(&unwind_context, stack_top, &frame_count,
+                           current_modules, profile_module_index, callback);
     }
   }
-}
-
-// Module identifiers ---------------------------------------------------------
-
-// Returns the unique build ID for a module loaded at |module_addr|. Returns the
-// empty string if the function fails to get the build ID.
-//
-// Build IDs are created by the concatenation of the module's GUID (Windows) /
-// UUID (Mac) and an "age" field that indicates how many times that GUID/UUID
-// has been reused. In Windows binaries, the "age" field is present in the
-// module header, but on the Mac, UUIDs are never reused and so the "age" value
-// appended to the UUID is always 0.
-std::string GetUniqueId(const void* module_addr) {
-  const mach_header_64* mach_header =
-      reinterpret_cast<const mach_header_64*>(module_addr);
-  DCHECK_EQ(MH_MAGIC_64, mach_header->magic);
-
-  size_t offset = sizeof(mach_header_64);
-  size_t offset_limit = sizeof(mach_header_64) + mach_header->sizeofcmds;
-  for (uint32_t i = 0; (i < mach_header->ncmds) &&
-                       (offset + sizeof(load_command) < offset_limit);
-       ++i) {
-    const load_command* current_cmd = reinterpret_cast<const load_command*>(
-        reinterpret_cast<const uint8_t*>(mach_header) + offset);
-
-    if (offset + current_cmd->cmdsize > offset_limit) {
-      // This command runs off the end of the command list. This is malformed.
-      return std::string();
-    }
-
-    if (current_cmd->cmd == LC_UUID) {
-      if (current_cmd->cmdsize < sizeof(uuid_command)) {
-        // This "UUID command" is too small. This is malformed.
-        return std::string();
-      }
-
-      const uuid_command* uuid_cmd =
-          reinterpret_cast<const uuid_command*>(current_cmd);
-      static_assert(sizeof(uuid_cmd->uuid) == sizeof(uuid_t),
-                    "UUID field of UUID command should be 16 bytes.");
-      // The ID is comprised of the UUID concatenated with the Mac's "age" value
-      // which is always 0.
-      return HexEncode(&uuid_cmd->uuid, sizeof(uuid_cmd->uuid)) + "0";
-    }
-    offset += current_cmd->cmdsize;
-  }
-  return std::string();
-}
-
-// Gets the index for the Module containing |instruction_pointer| in
-// |modules|, adding it if it's not already present. Returns
-// StackSamplingProfiler::Frame::kUnknownModuleIndex if no Module can be
-// determined for |module|.
-size_t GetModuleIndex(const uintptr_t instruction_pointer,
-                      std::vector<StackSamplingProfiler::Module>* modules,
-                      std::vector<ModuleIndex>* profile_module_index) {
-  // Check if |instruction_pointer| is in the address range of a module we've
-  // already seen.
-  auto module_index =
-      std::find_if(profile_module_index->begin(), profile_module_index->end(),
-                   [instruction_pointer](const ModuleIndex& index) {
-                     return instruction_pointer >= index.base_address &&
-                            instruction_pointer < index.end_address;
-                   });
-  if (module_index != profile_module_index->end()) {
-    return module_index->index;
-  }
-  Dl_info inf;
-  if (!dladdr(reinterpret_cast<const void*>(instruction_pointer), &inf))
-    return StackSamplingProfiler::Frame::kUnknownModuleIndex;
-
-  StackSamplingProfiler::Module module(
-      reinterpret_cast<uintptr_t>(inf.dli_fbase), GetUniqueId(inf.dli_fbase),
-      base::FilePath(inf.dli_fname));
-  modules->push_back(module);
-
-  const mach_header_64* mach_header =
-      reinterpret_cast<const mach_header_64*>(inf.dli_fbase);
-  DCHECK_EQ(MH_MAGIC_64, mach_header->magic);
-
-  unsigned long module_size;
-  getsegmentdata(mach_header, SEG_TEXT, &module_size);
-  uintptr_t base_module_address = reinterpret_cast<uintptr_t>(mach_header);
-  size_t index = modules->size() - 1;
-  profile_module_index->emplace_back(base_module_address,
-                                     base_module_address + module_size, index);
-  return index;
 }
 
 // ScopedSuspendThread --------------------------------------------------------
@@ -501,13 +526,12 @@ void NativeStackSamplerMac::SuspendThreadAndRecordStack(
 
   auto* current_modules = current_modules_;
   auto* profile_module_index = &profile_module_index_;
-  WalkStack(
-      thread_state, new_stack_top,
-      [sample, current_modules, profile_module_index](uintptr_t frame_ip) {
-        sample->frames.push_back(StackSamplingProfiler::Frame(
-            frame_ip,
-            GetModuleIndex(frame_ip, current_modules, profile_module_index)));
-      });
+  WalkStack(thread_state, new_stack_top, current_modules, profile_module_index,
+            [sample, current_modules, profile_module_index](
+                uintptr_t frame_ip, size_t module_index) {
+              sample->frames.push_back(
+                  StackSamplingProfiler::Frame(frame_ip, module_index));
+            });
 }
 
 }  // namespace
