@@ -27,33 +27,22 @@
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
+#include "ui/gl/gl_surface_egl.h"
 #include "ui/gl/init/gl_factory.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
 #endif
 
-#if defined(USE_X11)
-#include "ui/gfx/x/x11_types.h"  // nogncheck
-#endif
-
-#if defined(ARCH_CPU_X86_FAMILY) && defined(USE_X11)
-#include "ui/gl/gl_surface_glx.h"
-#define GL_VARIANT_GLX 1
-#else
-#include "ui/gl/gl_surface_egl.h"
-#define GL_VARIANT_EGL 1
-#endif
-
-#if defined(USE_OZONE)
 #if defined(OS_CHROMEOS)
 #include "ui/display/manager/chromeos/display_configurator.h"
+#include "ui/display/types/display_mode.h"
+#include "ui/display/types/display_snapshot.h"
 #include "ui/display/types/native_display_delegate.h"
-#endif  // defined(OS_CHROMEOS)
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/platform_window/platform_window.h"
 #include "ui/platform_window/platform_window_delegate.h"
-#endif  // defined(USE_OZONE)
+#endif  // defined(OS_CHROMEOS)
 
 // Helper for Shader creation.
 static void CreateShader(GLuint program,
@@ -84,7 +73,7 @@ void WaitForSwapAck(const base::Closure& callback, gfx::SwapResult result) {
 
 }  // namespace
 
-#if defined(USE_OZONE)
+#if defined(OS_CHROMEOS)
 
 class DisplayConfiguratorObserver
     : public display::DisplayConfigurator::Observer {
@@ -157,7 +146,7 @@ class RenderingHelper::StubOzoneDelegate : public ui::PlatformWindowDelegate {
   DISALLOW_COPY_AND_ASSIGN(StubOzoneDelegate);
 };
 
-#endif  // defined(USE_OZONE)
+#endif  // defined(OS_CHROMEOS)
 
 RenderingHelperParams::RenderingHelperParams()
     : rendering_fps(0), warm_up_iterations(0), render_as_thumbnails(false) {}
@@ -191,14 +180,9 @@ RenderingHelper::RenderedVideo::~RenderedVideo() {}
 // static
 void RenderingHelper::InitializeOneOff(base::WaitableEvent* done) {
   base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
-#if GL_VARIANT_GLX
-  cmd_line->AppendSwitchASCII(switches::kUseGL,
-                              gl::kGLImplementationDesktopName);
-#else
   cmd_line->AppendSwitchASCII(switches::kUseGL, gl::kGLImplementationEGLName);
-#endif
 
-#if defined(USE_OZONE)
+#if defined(OS_CHROMEOS)
   ui::OzonePlatform::InitParams params;
   params.single_process = true;
   ui::OzonePlatform::InitializeForGPU(params);
@@ -220,34 +204,7 @@ RenderingHelper::~RenderingHelper() {
 }
 
 void RenderingHelper::Setup() {
-#if defined(USE_X11)
-  Display* display = gfx::GetXDisplay();
-  Screen* screen = DefaultScreenOfDisplay(display);
-
-  CHECK(display);
-
-  XSetWindowAttributes window_attributes;
-  memset(&window_attributes, 0, sizeof(window_attributes));
-  window_attributes.background_pixel =
-      BlackPixel(display, DefaultScreen(display));
-  window_attributes.override_redirect = true;
-  int depth = DefaultDepth(display, DefaultScreen(display));
-
-  window_ = XCreateWindow(display,
-                          DefaultRootWindow(display),
-                          0, 0,
-                          XWidthOfScreen(screen),
-                          XHeightOfScreen(screen),
-                          0 /* border width */,
-                          depth,
-                          CopyFromParent /* class */,
-                          CopyFromParent /* visual */,
-                          (CWBackPixel | CWOverrideRedirect),
-                          &window_attributes);
-  XStoreName(display, window_, "VideoDecodeAcceleratorTest");
-  XSelectInput(display, window_, ExposureMask);
-  XMapWindow(display, window_);
-#elif defined(USE_OZONE)
+#if defined(OS_CHROMEOS)
   base::MessageLoop::ScopedNestableTaskAllower nest_loop(
       base::MessageLoop::current());
   base::RunLoop wait_window_resize;
@@ -258,13 +215,13 @@ void RenderingHelper::Setup() {
   // Ignore the vsync provider by default. On ChromeOS this will be set
   // accordingly based on the display configuration.
   ignore_vsync_ = true;
-#if defined(OS_CHROMEOS)
+
   // We hold onto the main loop here to wait for the DisplayController
   // to give us the size of the display so we can create a window of
   // the same size.
   base::RunLoop wait_display_setup;
   DisplayConfiguratorObserver display_setup_observer(&wait_display_setup);
-  display_configurator_.reset(new display::DisplayConfigurator());
+  display_configurator_ = std::make_unique<display::DisplayConfigurator>();
   display_configurator_->SetDelegateForTesting(0);
   display_configurator_->AddObserver(&display_setup_observer);
   display_configurator_->Init(
@@ -274,12 +231,13 @@ void RenderingHelper::Setup() {
   wait_display_setup.Run();
   display_configurator_->RemoveObserver(&display_setup_observer);
 
-  gfx::Size framebuffer_size = display_configurator_->framebuffer_size();
-  if (!framebuffer_size.IsEmpty()) {
-    window_size = framebuffer_size;
+  auto& cached_displays = display_configurator_->cached_displays();
+  if (!cached_displays.empty()) {
+    DCHECK(cached_displays[0]->current_mode());
+    window_size = cached_displays[0]->current_mode()->size();
     ignore_vsync_ = false;
   }
-#endif
+
   if (ignore_vsync_)
     DVLOG(1) << "Ignoring vsync provider";
 
@@ -300,18 +258,10 @@ void RenderingHelper::Setup() {
 }
 
 void RenderingHelper::TearDown() {
-#if defined(USE_X11)
-  // Destroy resources acquired in Initialize, in reverse-acquisition order.
-  if (window_) {
-    CHECK(XUnmapWindow(gfx::GetXDisplay(), window_));
-    CHECK(XDestroyWindow(gfx::GetXDisplay(), window_));
-  }
-#elif defined(USE_OZONE)
-  platform_window_delegate_.reset();
 #if defined(OS_CHROMEOS)
+  platform_window_delegate_.reset();
   display_configurator_->PrepareForExit();
   display_configurator_.reset();
-#endif
 #endif
   window_ = gfx::kNullAcceleratedWidget;
 }
@@ -345,10 +295,10 @@ void RenderingHelper::Initialize(const RenderingHelperParams& params,
   task_runner_ = base::ThreadTaskRunnerHandle::Get();
 
   gl_surface_ = gl::init::CreateViewGLSurface(window_);
-#if defined(USE_OZONE)
+#if defined(OS_CHROMEOS)
   gl_surface_->Resize(platform_window_delegate_->GetSize(), 1.f,
                       gl::GLSurface::ColorSpace::UNSPECIFIED, true);
-#endif  // defined(USE_OZONE)
+#endif  // defined(OS_CHROMEOS)
   screen_size_ = gl_surface_->GetSize();
 
   gl_context_ = gl::init::CreateGLContext(nullptr, gl_surface_.get(),
@@ -431,7 +381,7 @@ void RenderingHelper::Initialize(const RenderingHelperParams& params,
                   gl_Position = in_pos;
                 });
 
-#if GL_VARIANT_EGL && !defined(OS_WIN)
+#if !defined(OS_WIN)
   static const char kFragmentShader[] =
       "#extension GL_OES_EGL_image_external : enable\n"
       "precision mediump float;\n"
@@ -494,7 +444,7 @@ void RenderingHelper::Initialize(const RenderingHelperParams& params,
 
   if (!frame_duration_.is_zero()) {
     int warm_up_iterations = params.warm_up_iterations;
-#if defined(USE_OZONE)
+#if defined(OS_CHROMEOS)
     // On Ozone the VSyncProvider can't provide a vsync interval until
     // we render at least a frame, so we warm up with at least one
     // frame.
@@ -749,11 +699,11 @@ void RenderingHelper::RenderContent() {
   }
 
   int tex_flip = !gl_surface_->FlipsVertically();
-#if defined(USE_OZONE)
+#if defined(OS_CHROMEOS)
   // Ozone surfaceless renders flipped from normal GL, so there's no need to
   // do an extra flip.
   tex_flip = 0;
-#endif  // defined(USE_OZONE)
+#endif  // defined(OS_CHROMEOS)
   glUniform1i(glGetUniformLocation(program_, "tex_flip"), tex_flip);
 
   // Frames that will be returned to the client (via the no_longer_needed_cb)
