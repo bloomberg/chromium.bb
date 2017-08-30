@@ -216,9 +216,6 @@ class BASE_EXPORT MemoryDumpManager {
     // Callback passed to the initial call to CreateProcessDump().
     ProcessMemoryDumpCallback callback;
 
-    // The |success| field that will be passed as argument to the |callback|.
-    bool dump_successful;
-
     // The thread on which FinalizeDumpAndAddToTrace() (and hence |callback|)
     // should be invoked. This is the thread on which the initial
     // CreateProcessDump() request was called.
