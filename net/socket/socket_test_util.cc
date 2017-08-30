@@ -299,6 +299,7 @@ SSLSocketDataProvider::SSLSocketDataProvider(IoMode mode, int result)
       next_proto(kProtoUnknown),
       client_cert_sent(false),
       cert_request_info(NULL),
+      cert_status(0),
       channel_id_sent(false),
       connection_status(0),
       token_binding_negotiated(false) {
@@ -1250,6 +1251,7 @@ NextProto MockSSLClientSocket::GetNegotiatedProtocol() const {
 bool MockSSLClientSocket::GetSSLInfo(SSLInfo* ssl_info) {
   ssl_info->Reset();
   ssl_info->cert = data_->cert;
+  ssl_info->cert_status = data_->cert_status;
   ssl_info->client_cert_sent = data_->client_cert_sent;
   ssl_info->channel_id_sent = data_->channel_id_sent;
   ssl_info->connection_status = data_->connection_status;
