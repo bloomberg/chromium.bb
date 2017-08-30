@@ -429,7 +429,7 @@
     Show in folder
   </message>
   <message name="IDS_MD_BOOKMARK_MANAGER_MENU_SORT" desc="Title of the bookmark toolbar dropdown menu item that sorts bookmarks by title.">
-    Sort by title
+    Sort by name
   </message>
   <message name="IDS_MD_BOOKMARK_MANAGER_MORE_ACTIONS" desc="Tooltip of the button in the bookmark manager which shows an action menu for a bookmark, with actions like 'Edit' or 'Delete'">
     More actions...
@@ -456,7 +456,7 @@
     Folder sorted
   </message>
   <message name="IDS_MD_BOOKMARK_MANAGER_TOAST_ITEM_DELETED" desc="Label displayed in toast popup message when a single item is deleted.">
-    '<ph name="DELETED_ITEM_NAME">$1<ex>Bookmark X</ex></ph>' has been deleted
+    '<ph name="DELETED_ITEM_NAME">$1<ex>Bookmark X</ex></ph>' deleted
   </message>
   <message name="IDS_MD_BOOKMARK_MANAGER_TOAST_ITEMS_DELETED" desc="Label displayed in toast popup message when two or more items are deleted.">
     {COUNT, plural,
