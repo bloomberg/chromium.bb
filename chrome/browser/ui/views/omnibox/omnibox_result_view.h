@@ -83,6 +83,9 @@ class OmniboxResultView : public views::View,
   // Returns the display width required for the match contents.
   int GetMatchContentsWidth() const;
 
+  // Stores a custom icon as a local data member and schedules a repaint.
+  void SetCustomIcon(const gfx::ImageSkia& icon);
+
   // Stores the image in a local data member and schedules a repaint.
   void SetAnswerImage(const gfx::ImageSkia& image);
 
@@ -210,6 +213,8 @@ class OmniboxResultView : public views::View,
   std::unique_ptr<views::ImageView> keyword_icon_;
 
   std::unique_ptr<gfx::SlideAnimation> animation_;
+
+  gfx::ImageSkia custom_icon_;
 
   // If the answer has an icon, cache the image.
   gfx::ImageSkia answer_image_;

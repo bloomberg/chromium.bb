@@ -132,6 +132,11 @@ void OmniboxPopupViewMac::UpdatePopupAppearance() {
   PositionPopup(NSHeight([matrix_ frame]));
 }
 
+void OmniboxPopupViewMac::SetMatchIcon(size_t match_index,
+                                       const gfx::Image& icon) {
+  // TODO(tommycli): Implement favicons for Cocoa.
+}
+
 gfx::Rect OmniboxPopupViewMac::GetTargetBounds() {
   // Flip the coordinate system before returning.
   NSScreen* screen = [[NSScreen screens] firstObject];

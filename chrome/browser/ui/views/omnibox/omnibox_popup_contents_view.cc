@@ -318,6 +318,12 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
   Layout();
 }
 
+void OmniboxPopupContentsView::SetMatchIcon(size_t match_index,
+                                            const gfx::Image& icon) {
+  OmniboxResultView* view = result_view_at(match_index);
+  view->SetCustomIcon(icon.AsImageSkia());
+}
+
 gfx::Rect OmniboxPopupContentsView::GetTargetBounds() {
   return target_bounds_;
 }

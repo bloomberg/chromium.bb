@@ -38,6 +38,7 @@ class OmniboxPopupViewIOS : public OmniboxPopupView {
   void InvalidateLine(size_t line) override {}
   void OnLineSelected(size_t line) override {}
   void UpdatePopupAppearance() override;
+  void SetMatchIcon(size_t match_index, const gfx::Image& icon) override {}
   gfx::Rect GetTargetBounds() override;
   void PaintUpdatesNow() override {}
   void OnDragCanceled() override {}

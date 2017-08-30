@@ -6,13 +6,17 @@
 #define COMPONENTS_OMNIBOX_BROWSER_OMNIBOX_POPUP_MODEL_H_
 
 #include <stddef.h>
+#include <vector>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "components/omnibox/browser/autocomplete_controller.h"
 #include "components/omnibox/browser/autocomplete_result.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/image/image.h"
 
 class OmniboxPopupModelObserver;
 class OmniboxPopupView;
@@ -139,7 +143,16 @@ class OmniboxPopupModel {
   static const size_t kNoMatch;
 
  private:
+  void OnPageFaviconFetched(size_t match_index,
+                            const GURL& page_url,
+                            const gfx::Image& icon);
+
   SkBitmap answer_bitmap_;
+
+  // The GURLs track which pages' favicon is displayed for each match view.
+  // An empty GURL means no favicon is displayed for that match view.
+  std::vector<GURL> displayed_page_favicons_;
+  base::CancelableTaskTracker favicon_task_tracker_;
 
   OmniboxPopupView* view_;
 
@@ -159,6 +172,8 @@ class OmniboxPopupModel {
 
   // Observers.
   base::ObserverList<OmniboxPopupModelObserver> observers_;
+
+  base::WeakPtrFactory<OmniboxPopupModel> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxPopupModel);
 };
