@@ -13,10 +13,8 @@ import org.chromium.chrome.browser.metrics.UmaSessionStats;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.signin.AccountAdder;
 
-/**
- * Provides preferences glue for FirstRunActivity.
- */
-public class FirstRunGlueImpl implements FirstRunGlue {
+/** Provides first run related utility functions. */
+public class FirstRunUtils {
     public static final String CACHED_TOS_ACCEPTED_PREF = "first_run_tos_accepted";
 
     /**
@@ -46,16 +44,22 @@ public class FirstRunGlueImpl implements FirstRunGlue {
         }
     }
 
-    @Override
-    public boolean didAcceptTermsOfService(Context appContext) {
+    /**
+     * @return Whether the user has accepted Chrome Terms of Service.
+     * @param appContext An application context.
+     */
+    public static boolean didAcceptTermsOfService(Context appContext) {
         // Note: Does not check PrefServiceBridge.getInstance().isFirstRunEulaAccepted()
         // because this may be called before native is initialized.
         return ContextUtils.getAppSharedPreferences().getBoolean(CACHED_TOS_ACCEPTED_PREF, false)
                 || ToSAckedReceiver.checkAnyUserHasSeenToS(appContext);
     }
 
-    @Override
-    public void acceptTermsOfService(boolean allowCrashUpload) {
+    /**
+     * Sets the EULA/Terms of Services state as "ACCEPTED".
+     * @param allowCrashUpload True if the user allows to upload crash dumps and collect stats.
+     */
+    public static void acceptTermsOfService(boolean allowCrashUpload) {
         UmaSessionStats.changeMetricsReportingConsent(allowCrashUpload);
         ContextUtils.getAppSharedPreferences()
                 .edit()
@@ -64,8 +68,11 @@ public class FirstRunGlueImpl implements FirstRunGlue {
         PrefServiceBridge.getInstance().setEulaAccepted();
     }
 
-    @Override
-    public void openAccountAdder(Fragment fragment) {
+    /**
+     * Opens the Android account adder UI.
+     * @param fragment A fragment that requested the service.
+     */
+    public static void openAccountAdder(Fragment fragment) {
         AccountAdder.getInstance().addAccount(fragment, AccountAdder.ADD_ACCOUNT_RESULT);
     }
 }

@@ -114,9 +114,6 @@ public class FirstRunActivity extends AsyncInitializationActivity implements Fir
     private static final EnumeratedHistogramSample sMobileFreProgressViewIntentHistogram =
             new EnumeratedHistogramSample("MobileFre.Progress.ViewIntent", FRE_PROGRESS_MAX);
 
-    @VisibleForTesting
-    static FirstRunGlue sGlue = new FirstRunGlueImpl();
-
     private static FirstRunActivityObserver sObserver;
 
     private boolean mShowWelcomePage = true;
@@ -490,7 +487,7 @@ public class FirstRunActivity extends AsyncInitializationActivity implements Fir
 
     @Override
     public boolean didAcceptTermsOfService() {
-        boolean result = sGlue.didAcceptTermsOfService(getApplicationContext());
+        boolean result = FirstRunUtils.didAcceptTermsOfService(getApplicationContext());
         if (sObserver != null) sObserver.onAcceptTermsOfService();
         return result;
     }
@@ -499,16 +496,11 @@ public class FirstRunActivity extends AsyncInitializationActivity implements Fir
     public void acceptTermsOfService(boolean allowCrashUpload) {
         // If default is true then it corresponds to opt-out and false corresponds to opt-in.
         UmaUtils.recordMetricsReportingDefaultOptIn(!DEFAULT_METRICS_AND_CRASH_REPORTING);
-        sGlue.acceptTermsOfService(allowCrashUpload);
+        FirstRunUtils.acceptTermsOfService(allowCrashUpload);
         FirstRunStatus.setSkipWelcomePage(true);
         flushPersistentData();
         stopProgressionIfNotAcceptedTermsOfService();
         jumpToPage(mPager.getCurrentItem() + 1);
-    }
-
-    @Override
-    public void openAccountAdder(Fragment fragment) {
-        sGlue.openAccountAdder(fragment);
     }
 
     protected void flushPersistentData() {

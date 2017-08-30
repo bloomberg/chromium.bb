@@ -26,7 +26,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.firstrun.FirstRunGlueImpl;
+import org.chromium.chrome.browser.firstrun.FirstRunUtils;
 import org.chromium.chrome.browser.omnibox.OmniboxPlaceholderFieldTrial;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.tabmodel.DocumentModeAssassin;
@@ -187,7 +187,7 @@ public class FeatureUtilities {
     public static void cacheNativeFlags() {
         cacheHerbFlavor();
         cacheChromeHomeEnabled();
-        FirstRunGlueImpl.cacheFirstRunPrefs();
+        FirstRunUtils.cacheFirstRunPrefs();
         OmniboxPlaceholderFieldTrial.cacheOmniboxPlaceholderGroup();
 
         // Propagate DONT_PREFETCH_LIBRARIES feature value to LibraryLoader. This can't

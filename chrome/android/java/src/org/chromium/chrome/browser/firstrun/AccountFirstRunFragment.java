@@ -55,7 +55,7 @@ public class AccountFirstRunFragment extends FirstRunPage implements AccountSign
 
             @Override
             public void onNewAccount() {
-                getPageDelegate().openAccountAdder(AccountFirstRunFragment.this);
+                FirstRunUtils.openAccountAdder(AccountFirstRunFragment.this);
             }
 
             @Override
