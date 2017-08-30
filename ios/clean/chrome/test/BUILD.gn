@@ -23,8 +23,8 @@ test("ios_clean_chrome_unittests") {
     # Add unit_tests target here.
     "//ios/clean/chrome/app/steps:unit_tests",
     "//ios/clean/chrome/browser/ui/bookmarks:unit_tests",
-    "//ios/clean/chrome/browser/ui/context_menu:unit_tests",
     "//ios/clean/chrome/browser/ui/dialogs:unit_tests",
+    "//ios/clean/chrome/browser/ui/dialogs/context_menu:unit_tests",
     "//ios/clean/chrome/browser/ui/dialogs/java_script_dialogs:unit_tests",
     "//ios/clean/chrome/browser/ui/find_in_page:unit_tests",
     "//ios/clean/chrome/browser/ui/ntp:unit_tests",

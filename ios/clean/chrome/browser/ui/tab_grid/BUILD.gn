@@ -24,7 +24,7 @@ source_set("tab_grid") {
     "//ios/chrome/browser/web_state_list",
     "//ios/clean/chrome/browser",
     "//ios/clean/chrome/browser/ui/commands",
-    "//ios/clean/chrome/browser/ui/context_menu",
+    "//ios/clean/chrome/browser/ui/dialogs/context_menu",
     "//ios/clean/chrome/browser/ui/overlays",
     "//ios/clean/chrome/browser/ui/settings",
     "//ios/clean/chrome/browser/ui/tab",

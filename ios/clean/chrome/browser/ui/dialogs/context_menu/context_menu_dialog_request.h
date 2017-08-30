@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CLEAN_CHROME_BROWSER_UI_CONTEXT_MENU_CONTEXT_MENU_CONTEXT_IMPL_H_
-#define IOS_CLEAN_CHROME_BROWSER_UI_CONTEXT_MENU_CONTEXT_MENU_CONTEXT_IMPL_H_
+#ifndef IOS_CLEAN_CHROME_BROWSER_UI_DIALOGS_CONTEXT_MENU_CONTEXT_MENU_DIALOG_REQUEST_H_
+#define IOS_CLEAN_CHROME_BROWSER_UI_DIALOGS_CONTEXT_MENU_CONTEXT_MENU_DIALOG_REQUEST_H_
+
+#import <Foundation/Foundation.h>
 
 #include "base/strings/string16.h"
-#import "ios/clean/chrome/browser/ui/context_menu/context_menu_context.h"
 
 namespace web {
 struct ContextMenuParams;
@@ -14,13 +15,12 @@ struct ContextMenuParams;
 
 class GURL;
 
-// Context object used to populate the context menu UI and to handle commands
-// from that UI.
-@interface ContextMenuContextImpl : ContextMenuContext
+// A container object encapsulating all the state necessary to support a
+// ContextMenuCoordinator.
+@interface ContextMenuDialogRequest : NSObject
 
 // ContextMenuContextImpls must be initialized with |params|.
-- (instancetype)initWithParams:(const web::ContextMenuParams&)params
-    NS_DESIGNATED_INITIALIZER;
++ (instancetype)requestWithParams:(const web::ContextMenuParams&)params;
 - (instancetype)init NS_UNAVAILABLE;
 
 // The title to use for the menu.
@@ -40,4 +40,4 @@ class GURL;
 
 @end
 
-#endif  // IOS_CLEAN_CHROME_BROWSER_UI_CONTEXT_MENU_CONTEXT_MENU_CONTEXT_IMPL_H_
+#endif  // IOS_CLEAN_CHROME_BROWSER_UI_DIALOGS_CONTEXT_MENU_CONTEXT_MENU_DIALOG_REQUEST_H_
