@@ -230,6 +230,45 @@ const DeviceCapabilities kLinkTouchscreen = {
     arraysize(kLinkTouchscreenAbsAxes),
 };
 
+// Fake Atmel touchscreen based on real device from Chromebook Pixel,
+// with the addition of ABS_MT_TOOL_TYPE capability.
+const DeviceAbsoluteAxis kLinkWithToolTypeTouchscreenAbsAxes[] = {
+    {ABS_X, {0, 0, 2559, 0, 0, 20}},
+    {ABS_Y, {0, 0, 1699, 0, 0, 20}},
+    {ABS_PRESSURE, {0, 0, 255, 0, 0, 0}},
+    {ABS_MT_SLOT, {0, 0, 15, 0, 0, 0}},
+    {ABS_MT_TOUCH_MAJOR, {0, 0, 938, 0, 0, 0}},
+    {ABS_MT_ORIENTATION, {0, -3, 4, 0, 0, 0}},
+    {ABS_MT_POSITION_X, {0, 0, 2559, 0, 0, 20}},
+    {ABS_MT_POSITION_Y, {0, 0, 1699, 0, 0, 20}},
+    {ABS_MT_TOOL_TYPE, {0, 0, 0, 0, 0, 0}},
+    {ABS_MT_TRACKING_ID, {0, 0, 65535, 0, 0, 0}},
+    {ABS_MT_PRESSURE, {0, 0, 255, 0, 0, 0}},
+};
+const DeviceCapabilities kLinkWithToolTypeTouchscreen = {
+    /* path */
+    "/sys/devices/pci0000:00/0000:00:02.0/i2c-2/2-004a/"
+    "input/input7/event7",
+    /* name */ "Atmel maXTouch Touchscreen",
+    /* phys */ "i2c-2-004a/input0",
+    /* uniq */ "",
+    /* bustype */ "0018",
+    /* vendor */ "0000",
+    /* product */ "0000",
+    /* version */ "0000",
+    /* prop */ "0",
+    /* ev */ "b",
+    /* key */ "400 0 0 0 0 0",
+    /* rel */ "0",
+    /* abs */ "673800001000003",
+    /* msc */ "0",
+    /* sw */ "0",
+    /* led */ "0",
+    /* ff */ "0",
+    kLinkWithToolTypeTouchscreenAbsAxes,
+    arraysize(kLinkWithToolTypeTouchscreenAbsAxes),
+};
+
 // Captured from Chromebook Pixel.
 const DeviceAbsoluteAxis kLinkTouchpadAbsAxes[] = {
     {ABS_X, {0, 0, 2040, 0, 0, 20}},

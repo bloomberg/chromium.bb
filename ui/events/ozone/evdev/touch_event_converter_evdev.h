@@ -11,6 +11,13 @@
 #include <bitset>
 #include <memory>
 
+#include <linux/input.h>
+// See if we compile against new enough headers and add missing definition
+// if the headers are too old.
+#ifndef MT_TOOL_PALM
+#define MT_TOOL_PALM 2
+#endif
+
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"

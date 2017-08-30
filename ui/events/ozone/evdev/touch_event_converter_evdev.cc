@@ -196,7 +196,10 @@ void TouchEventConverterEvdev::Initialize(const EventDeviceInfo& info) {
           info.GetAbsMtSlotValueWithDefault(ABS_MT_TOUCH_MINOR, i, 0) / 2.0f;
       events_[i].pressure = ScalePressure(
           info.GetAbsMtSlotValueWithDefault(ABS_MT_PRESSURE, i, 0));
-      events_[i].cancelled = major_max_ > 0 && touch_major == major_max_;
+      int tool_type = info.GetAbsMtSlotValueWithDefault(ABS_MT_TOOL_TYPE, i,
+                                                        MT_TOOL_FINGER);
+      events_[i].cancelled = (tool_type == MT_TOOL_PALM) ||
+                             (major_max_ > 0 && touch_major == major_max_);
       if (events_[i].cancelled)
         cancelled_state = true;
     }
@@ -391,8 +394,9 @@ void TouchEventConverterEvdev::ProcessAbs(const input_event& input) {
       // neither minor nor orientation, so this is all we can do.
       events_[current_slot_].radius_x = input.value / 2.0f;
 
-      // The MT protocol cannot communicate cancelled touches, so some kernel
-      // drivers will identify palms by setting touch major to max.
+      // The MT protocol communicates that there is palm on the surface
+      // by either sending ABS_MT_TOOL_TYPE/MT_TOOL_PALM, or by setting
+      // touch major to max.
       if (major_max_ > 0 && input.value == major_max_)
         events_[current_slot_].cancelled = true;
       break;
@@ -404,6 +408,10 @@ void TouchEventConverterEvdev::ProcessAbs(const input_event& input) {
       break;
     case ABS_MT_POSITION_Y:
       events_[current_slot_].y = input.value;
+      break;
+    case ABS_MT_TOOL_TYPE:
+      if (input.value == MT_TOOL_PALM)
+        events_[current_slot_].cancelled = true;
       break;
     case ABS_MT_TRACKING_ID:
       UpdateTrackingId(current_slot_, input.value);
