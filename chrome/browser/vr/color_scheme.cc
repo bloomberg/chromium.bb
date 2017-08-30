@@ -10,14 +10,14 @@ namespace vr {
 
 namespace {
 
-static ColorScheme kColorSchemes[ColorScheme::kNumModes];
+ColorScheme gColorSchemes[ColorScheme::kNumModes];
 
 void InitializeColorSchemes() {
   static bool initialized = false;
   if (initialized)
     return;
 
-  ColorScheme& normal_scheme = kColorSchemes[ColorScheme::kModeNormal];
+  ColorScheme& normal_scheme = gColorSchemes[ColorScheme::kModeNormal];
   normal_scheme.world_background = 0xFF999999;
   normal_scheme.world_background_text = 0xFF363636;
   normal_scheme.floor = 0xFF8C8C8C;
@@ -69,9 +69,9 @@ void InitializeColorSchemes() {
   normal_scheme.splash_screen_background = SK_ColorBLACK;
   normal_scheme.splash_screen_text_color = SK_ColorWHITE;
 
-  kColorSchemes[ColorScheme::kModeFullscreen] =
-      kColorSchemes[ColorScheme::kModeNormal];
-  ColorScheme& fullscreen_scheme = kColorSchemes[ColorScheme::kModeFullscreen];
+  gColorSchemes[ColorScheme::kModeFullscreen] =
+      gColorSchemes[ColorScheme::kModeNormal];
+  ColorScheme& fullscreen_scheme = gColorSchemes[ColorScheme::kModeFullscreen];
   fullscreen_scheme.world_background = 0xFF000714;
   fullscreen_scheme.floor = 0xFF070F1C;
   fullscreen_scheme.ceiling = 0xFF04080F;
@@ -89,9 +89,9 @@ void InitializeColorSchemes() {
   fullscreen_scheme.close_button_background_down =
       fullscreen_scheme.element_background_down;
 
-  kColorSchemes[ColorScheme::kModeIncognito] =
-      kColorSchemes[ColorScheme::kModeNormal];
-  ColorScheme& incognito_scheme = kColorSchemes[ColorScheme::kModeIncognito];
+  gColorSchemes[ColorScheme::kModeIncognito] =
+      gColorSchemes[ColorScheme::kModeNormal];
+  ColorScheme& incognito_scheme = gColorSchemes[ColorScheme::kModeIncognito];
   incognito_scheme.world_background = 0xFF2E2E2E;
   incognito_scheme.world_background_text = 0xFF878787;
   incognito_scheme.floor = 0xFF282828;
@@ -131,7 +131,7 @@ void InitializeColorSchemes() {
 
 const ColorScheme& ColorScheme::GetColorScheme(ColorScheme::Mode mode) {
   InitializeColorSchemes();
-  return kColorSchemes[static_cast<int>(mode)];
+  return gColorSchemes[static_cast<int>(mode)];
 }
 
 }  // namespace vr

@@ -22,8 +22,8 @@
 
 using content::BrowserThread;
 
-static int kFirstThrottleTimeout = 10;
-static int kDefaultThrottleTimeout = 200;
+static constexpr int kFirstThrottleTimeout = 10;
+static constexpr int kDefaultThrottleTimeout = 200;
 
 // DevToolsFileWatcher::SharedFileWatcher --------------------------------------
 
