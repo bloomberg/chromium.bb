@@ -428,16 +428,6 @@ void TestingProfile::Init() {
              content::BrowserThread::UI) ||
          content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-#if defined(OS_CHROMEOS)
-  if (!chromeos::CrosSettings::IsInitialized()) {
-    scoped_cros_settings_test_helper_.reset(
-        new chromeos::ScopedCrosSettingsTestHelper);
-  }
-  arc::ArcServiceLauncher* launcher = arc::ArcServiceLauncher::Get();
-  if (launcher)
-    launcher->MaybeSetProfile(this);
-#endif
-
   set_is_guest_profile(guest_session_);
 
   BrowserContext::Initialize(this, profile_path_);
@@ -480,6 +470,16 @@ void TestingProfile::Init() {
 
   if (!base::PathExists(profile_path_))
     base::CreateDirectory(profile_path_);
+
+#if defined(OS_CHROMEOS)
+  if (!chromeos::CrosSettings::IsInitialized()) {
+    scoped_cros_settings_test_helper_.reset(
+        new chromeos::ScopedCrosSettingsTestHelper);
+  }
+  arc::ArcServiceLauncher* launcher = arc::ArcServiceLauncher::Get();
+  if (launcher)
+    launcher->MaybeSetProfile(this);
+#endif
 
   // TODO(joaodasilva): remove this once this PKS isn't created in ProfileImpl
   // anymore, after converting the PrefService to a PKS. Until then it must

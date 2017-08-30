@@ -186,6 +186,8 @@ void ArcSessionManager::RegisterProfilePrefs(
   // Active Directory managed device.
   registry->RegisterStringPref(prefs::kArcActiveDirectoryPlayUserId,
                                std::string());
+  // This is used to decide whether migration from ecryptfs to ext4 is allowed.
+  registry->RegisterIntegerPref(prefs::kEcryptfsMigrationStrategy, 0);
 }
 
 // static
@@ -697,13 +699,6 @@ void ArcSessionManager::RequestDisable() {
 void ArcSessionManager::RequestArcDataRemoval() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(profile_);
-
-  // The check if migration is allowed is done to make sure the data is not
-  // removed if the device had ARC enabled and became disabled as result of
-  // migration to ext4 policy.
-  // TODO(igorcov): Remove this check after migration. crbug.com/725493
-  if (!arc::IsArcMigrationAllowed())
-    return;
 
   // TODO(hidehiko): DCHECK the previous state. This is called for four cases;
   // 1) Supporting managed user initial disabled case (Please see also
