@@ -23,6 +23,10 @@
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/skia_util.h"
 
+namespace {
+static constexpr int kMaxScrollbarDimension = 8192;
+};
+
 namespace cc {
 
 std::unique_ptr<LayerImpl> PaintedScrollbarLayer::CreateLayerImpl(
@@ -246,13 +250,23 @@ bool PaintedScrollbarLayer::Update() {
 
 UIResourceBitmap PaintedScrollbarLayer::RasterizeScrollbarPart(
     const gfx::Rect& layer_rect,
-    const gfx::Rect& content_rect,
+    const gfx::Rect& requested_content_rect,
     ScrollbarPart part) {
-  DCHECK(!content_rect.size().IsEmpty());
+  DCHECK(!requested_content_rect.size().IsEmpty());
   DCHECK(!layer_rect.size().IsEmpty());
 
+  gfx::Rect content_rect = requested_content_rect;
+
+  // Pages can end up requesting arbitrarily large scrollbars.  Prevent this
+  // from crashing due to OOM and try something smaller.
   SkBitmap skbitmap;
-  skbitmap.allocN32Pixels(content_rect.width(), content_rect.height());
+  if (!skbitmap.tryAllocN32Pixels(content_rect.width(),
+                                  content_rect.height())) {
+    content_rect.Intersect(
+        gfx::Rect(requested_content_rect.x(), requested_content_rect.y(),
+                  kMaxScrollbarDimension, kMaxScrollbarDimension));
+    skbitmap.allocN32Pixels(content_rect.width(), content_rect.height());
+  }
   SkiaPaintCanvas canvas(skbitmap);
 
   float scale_x =
