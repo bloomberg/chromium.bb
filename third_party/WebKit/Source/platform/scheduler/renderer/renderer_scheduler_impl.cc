@@ -319,6 +319,11 @@ scoped_refptr<MainThreadTaskQueue> RendererSchedulerImpl::NewTaskQueue(
   if (task_queue->CanBeThrottled())
     AddQueueToWakeUpBudgetPool(task_queue.get());
 
+  if (queue_class == MainThreadTaskQueue::QueueClass::TIMER) {
+    if (main_thread_only().virtual_time_stopped)
+      task_queue->InsertFence(TaskQueue::InsertFencePosition::NOW);
+  }
+
   return task_queue;
 }
 
@@ -329,7 +334,7 @@ scoped_refptr<MainThreadTaskQueue> RendererSchedulerImpl::NewLoadingTaskQueue(
   return NewTaskQueue(
       MainThreadTaskQueue::QueueCreationParams(queue_type)
           .SetCanBePaused(true)
-          .SetCanBeBlocked(true)
+          .SetCanBeDeferred(true)
           .SetUsedForControlTasks(
               queue_type ==
               MainThreadTaskQueue::QueueType::FRAME_LOADING_CONTROL));
@@ -339,16 +344,12 @@ scoped_refptr<MainThreadTaskQueue> RendererSchedulerImpl::NewTimerTaskQueue(
     MainThreadTaskQueue::QueueType queue_type) {
   DCHECK_EQ(MainThreadTaskQueue::QueueClassForQueueType(queue_type),
             MainThreadTaskQueue::QueueClass::TIMER);
-  auto timer_task_queue =
-      NewTaskQueue(MainThreadTaskQueue::QueueCreationParams(queue_type)
-                       .SetShouldReportWhenExecutionBlocked(true)
-                       .SetCanBePaused(true)
-                       .SetCanBeStopped(true)
-                       .SetCanBeBlocked(true)
-                       .SetCanBeThrottled(true));
-  if (main_thread_only().virtual_time_stopped)
-    timer_task_queue->InsertFence(TaskQueue::InsertFencePosition::NOW);
-  return timer_task_queue;
+  return NewTaskQueue(MainThreadTaskQueue::QueueCreationParams(queue_type)
+                          .SetShouldReportWhenExecutionBlocked(true)
+                          .SetCanBePaused(true)
+                          .SetCanBeStopped(true)
+                          .SetCanBeDeferred(true)
+                          .SetCanBeThrottled(true));
 }
 
 std::unique_ptr<RenderWidgetSchedulingState>
@@ -1573,7 +1574,7 @@ bool RendererSchedulerImpl::TaskQueuePolicy::IsQueueEnabled(
     return false;
   if (is_paused && task_queue->CanBePaused())
     return false;
-  if (is_blocked && task_queue->CanBeBlocked())
+  if (is_blocked && task_queue->CanBeDeferred())
     return false;
   if (is_stopped && task_queue->CanBeStopped())
     return false;
