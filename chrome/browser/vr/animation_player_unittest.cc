@@ -33,7 +33,6 @@ class TestAnimationTarget : public cc::AnimationTarget {
   }
   float opacity() const { return opacity_; }
   SkColor background_color() const { return background_color_; }
-  bool visible() const { return visible_; }
 
   void NotifyClientSizeAnimated(const gfx::SizeF& size,
                                 int target_property_id,
@@ -64,19 +63,12 @@ class TestAnimationTarget : public cc::AnimationTarget {
     background_color_ = color;
   }
 
-  void NotifyClientBooleanAnimated(bool visible,
-                                   int target_property_id,
-                                   cc::Animation* animation) override {
-    visible_ = visible;
-  }
-
  private:
   cc::TransformOperations layout_offset_;
   cc::TransformOperations operations_;
   gfx::SizeF size_ = {10.0f, 10.0f};
   float opacity_ = 1.0f;
   SkColor background_color_ = SK_ColorRED;
-  bool visible_ = true;
 };
 
 TEST(AnimationPlayerTest, AddRemoveAnimations) {
@@ -538,68 +530,6 @@ TEST(AnimationPlayerTest, ReversedBackgroundColorTransitions) {
 
   player.Tick(start_time + MicrosecondsToDelta(2000));
   EXPECT_EQ(from, target.background_color());
-}
-
-TEST(AnimationPlayerTest, VisibilityTransitions) {
-  TestAnimationTarget target;
-  AnimationPlayer player;
-  player.set_target(&target);
-  Transition transition;
-  transition.target_properties = {TargetProperty::VISIBILITY};
-  transition.duration = MicrosecondsToDelta(10000);
-  player.set_transition(transition);
-  base::TimeTicks start_time = MicrosecondsToTicks(1000000);
-  player.Tick(start_time);
-
-  bool from = true;
-  bool to = false;
-
-  player.TransitionBooleanTo(start_time, TargetProperty::VISIBILITY, from, to);
-
-  EXPECT_EQ(from, target.visible());
-  player.Tick(start_time);
-
-  player.Tick(start_time + MicrosecondsToDelta(5000));
-  EXPECT_EQ(from, target.visible());
-
-  player.Tick(start_time + MicrosecondsToDelta(10000));
-  EXPECT_EQ(to, target.visible());
-}
-
-TEST(AnimationPlayerTest, ReversedVisibilityTransitions) {
-  TestAnimationTarget target;
-  AnimationPlayer player;
-  player.set_target(&target);
-  Transition transition;
-  transition.target_properties = {TargetProperty::VISIBILITY};
-  transition.duration = MicrosecondsToDelta(10000);
-  player.set_transition(transition);
-  base::TimeTicks start_time = MicrosecondsToTicks(1000000);
-  player.Tick(start_time);
-
-  bool from = true;
-  bool to = false;
-
-  player.TransitionBooleanTo(start_time, TargetProperty::VISIBILITY, from, to);
-
-  EXPECT_EQ(from, target.visible());
-  player.Tick(start_time);
-
-  EXPECT_EQ(from, target.visible());
-  player.Tick(start_time);
-
-  player.Tick(start_time + MicrosecondsToDelta(1000));
-  bool value_before_reversing = target.visible();
-  EXPECT_EQ(from, value_before_reversing);
-
-  player.TransitionBooleanTo(start_time + MicrosecondsToDelta(1000),
-                             TargetProperty::VISIBILITY, target.visible(),
-                             from);
-  player.Tick(start_time + MicrosecondsToDelta(1000));
-  EXPECT_EQ(value_before_reversing, target.visible());
-
-  player.Tick(start_time + MicrosecondsToDelta(2000));
-  EXPECT_EQ(from, target.visible());
 }
 
 TEST(AnimationPlayerTest, DoubleReversedTransitions) {

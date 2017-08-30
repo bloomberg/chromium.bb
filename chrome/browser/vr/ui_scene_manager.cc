@@ -242,30 +242,40 @@ void UiSceneManager::Create2dBrowsingSubtreeRoots() {
   auto element = base::MakeUnique<UiElement>();
   element->set_name(k2dBrowsingRoot);
   element->set_draw_phase(kPhaseNone);
-  element->SetVisible(false);
+  element->SetVisible(true);
   element->set_hit_testable(false);
   scene_->AddUiElement(kRoot, std::move(element));
 
   element = base::MakeUnique<UiElement>();
   element->set_name(k2dBrowsingBackground);
   element->set_draw_phase(kPhaseNone);
-  element->SetVisible(false);
+  element->SetVisible(true);
   element->set_hit_testable(false);
   scene_->AddUiElement(k2dBrowsingRoot, std::move(element));
 
   element = base::MakeUnique<UiElement>();
   element->set_name(k2dBrowsingForeground);
   element->set_draw_phase(kPhaseNone);
-  element->SetVisible(false);
+  element->SetVisible(true);
   element->set_hit_testable(false);
   scene_->AddUiElement(k2dBrowsingRoot, std::move(element));
+
+  element = base::MakeUnique<UiElement>();
+  element->set_name(k2dBrowsingContentGroup);
+  element->set_draw_phase(kPhaseNone);
+  element->SetTranslate(0, kContentVerticalOffset, -kContentDistance);
+  element->SetSize(kContentWidth, kContentHeight);
+  element->SetVisible(true);
+  element->set_hit_testable(false);
+  element->SetTransitionedProperties({TRANSFORM});
+  scene_->AddUiElement(k2dBrowsingForeground, std::move(element));
 }
 
 void UiSceneManager::CreateWebVrRoot() {
   auto element = base::MakeUnique<UiElement>();
   element->set_name(kWebVrRoot);
   element->set_draw_phase(kPhaseNone);
-  element->SetVisible(false);
+  element->SetVisible(true);
   element->set_hit_testable(false);
   scene_->AddUiElement(kRoot, std::move(element));
 }
@@ -358,7 +368,7 @@ void UiSceneManager::CreateSystemIndicators() {
   indicator_layout->SetTranslate(0, kIndicatorVerticalOffset,
                                  kIndicatorDistanceOffset);
   indicator_layout->set_margin(kIndicatorGap);
-  scene_->AddUiElement(kContentQuad, std::move(indicator_layout));
+  scene_->AddUiElement(k2dBrowsingContentGroup, std::move(indicator_layout));
 
   for (const auto& indicator : indicators) {
     element = base::MakeUnique<SystemIndicator>(
@@ -375,20 +385,6 @@ void UiSceneManager::CreateSystemIndicators() {
 }
 
 void UiSceneManager::CreateContentQuad(ContentInputDelegate* delegate) {
-  std::unique_ptr<ContentElement> main_content =
-      base::MakeUnique<ContentElement>(delegate);
-  main_content->set_name(kContentQuad);
-  main_content->set_draw_phase(kPhaseForeground);
-  main_content->SetSize(kContentWidth, kContentHeight);
-  main_content->SetTranslate(0, kContentVerticalOffset, -kContentDistance);
-  main_content->SetVisible(false);
-  main_content->set_corner_radius(kContentCornerRadius);
-  main_content->animation_player().SetTransitionedProperties(
-      {TRANSFORM, BOUNDS});
-  main_content_ = main_content.get();
-  content_elements_.push_back(main_content.get());
-  scene_->AddUiElement(k2dBrowsingForeground, std::move(main_content));
-
   // Place an invisible but hittable plane behind the content quad, to keep the
   // reticle roughly planar with the content if near content.
   std::unique_ptr<UiElement> hit_plane = base::MakeUnique<UiElement>();
@@ -397,12 +393,23 @@ void UiSceneManager::CreateContentQuad(ContentInputDelegate* delegate) {
   hit_plane->SetSize(kBackplaneSize, kBackplaneSize);
   hit_plane->SetTranslate(0, 0, -kTextureOffset);
   content_elements_.push_back(hit_plane.get());
-  scene_->AddUiElement(kContentQuad, std::move(hit_plane));
+  scene_->AddUiElement(k2dBrowsingContentGroup, std::move(hit_plane));
+
+  std::unique_ptr<ContentElement> main_content =
+      base::MakeUnique<ContentElement>(delegate);
+  main_content->set_name(kContentQuad);
+  main_content->set_draw_phase(kPhaseForeground);
+  main_content->SetSize(kContentWidth, kContentHeight);
+  main_content->SetVisible(false);
+  main_content->set_corner_radius(kContentCornerRadius);
+  main_content->SetTransitionedProperties({BOUNDS});
+  main_content_ = main_content.get();
+  content_elements_.push_back(main_content.get());
+  scene_->AddUiElement(k2dBrowsingContentGroup, std::move(main_content));
 
   // Limit reticle distance to a sphere based on content distance.
-  scene_->set_background_distance(
-      main_content_->LocalTransform().matrix().get(2, 3) *
-      -kBackgroundDistanceMultiplier);
+  scene_->set_background_distance(kContentDistance *
+                                  kBackgroundDistanceMultiplier);
 }
 
 void UiSceneManager::CreateSplashScreen() {
@@ -436,7 +443,7 @@ void UiSceneManager::CreateUnderDevelopmentNotice() {
   text->SetSize(kUnderDevelopmentNoticeWidthM, kUnderDevelopmentNoticeHeightM);
   text->SetTranslate(0, -kUnderDevelopmentNoticeVerticalOffsetM, 0);
   text->SetRotate(1, 0, 0, kUnderDevelopmentNoticeRotationRad);
-  text->SetEnabled(true);
+  text->SetVisible(true);
   text->set_y_anchoring(YAnchoring::YBOTTOM);
   control_elements_.push_back(text.get());
   scene_->AddUiElement(kUrlBar, std::move(text));
@@ -505,11 +512,15 @@ void UiSceneManager::CreateViewportAwareRoot() {
   auto element = base::MakeUnique<ViewportAwareRoot>();
   element->set_name(kWebVrViewportAwareRoot);
   element->set_draw_phase(kPhaseForeground);
+  element->SetVisible(true);
+  element->set_hit_testable(false);
   scene_->AddUiElement(kWebVrRoot, std::move(element));
 
   element = base::MakeUnique<ViewportAwareRoot>();
   element->set_name(k2dBrowsingViewportAwareRoot);
   element->set_draw_phase(kPhaseForeground);
+  element->SetVisible(true);
+  element->set_hit_testable(false);
   scene_->AddUiElement(k2dBrowsingRoot, std::move(element));
 }
 
@@ -588,7 +599,7 @@ void UiSceneManager::CreateExitPrompt() {
   element->SetSize(kExitPromptWidth, kExitPromptHeight);
   element->SetTranslate(0.0, kExitPromptVerticalOffset, kTextureOffset);
   element->SetVisible(false);
-  scene_->AddUiElement(kContentQuad, std::move(element));
+  scene_->AddUiElement(k2dBrowsingContentGroup, std::move(element));
 
   // Place an invisible but hittable plane behind the exit prompt, to keep the
   // reticle roughly planar with the content if near content.
@@ -658,10 +669,9 @@ void UiSceneManager::SetWebVrMode(bool web_vr, bool show_toast) {
   // Because we may be transitioning from and to fullscreen, where the toast is
   // also shown, explicitly kick or end visibility here.
   if (web_vr) {
-    exclusive_screen_toast_viewport_aware_->transience()
-        ->KickVisibilityIfEnabled();
+    exclusive_screen_toast_viewport_aware_->transience()->KickVisibility();
   } else {
-    exclusive_screen_toast_->transience()->EndVisibilityIfEnabled();
+    exclusive_screen_toast_->transience()->EndVisibility();
   }
 }
 
@@ -725,46 +735,48 @@ void UiSceneManager::ConfigureScene() {
   bool showing_web_vr_content = web_vr_mode_ && !showing_web_vr_splash_screen_;
   scene_->set_web_vr_rendering_enabled(showing_web_vr_content);
   // Splash screen.
-  splash_screen_text_->SetEnabled(showing_web_vr_splash_screen_);
+  splash_screen_text_->SetVisible(showing_web_vr_splash_screen_);
 
   // Exit warning.
-  exit_warning_->SetEnabled(exiting_);
-  screen_dimmer_->SetEnabled(exiting_);
+  exit_warning_->SetVisible(exiting_);
+  screen_dimmer_->SetVisible(exiting_);
 
   bool browsing_mode = !web_vr_mode_ && !showing_web_vr_splash_screen_;
+  scene_->GetUiElementByName(k2dBrowsingRoot)->SetVisible(browsing_mode);
+  scene_->GetUiElementByName(kWebVrRoot)->SetVisible(!browsing_mode);
 
   // Controls (URL bar, loading progress, etc).
   bool controls_visible = browsing_mode && !fullscreen_ && !prompting_to_exit_;
   for (UiElement* element : control_elements_) {
-    element->SetEnabled(controls_visible);
+    element->SetVisible(controls_visible);
   }
 
   // Close button is a special control element that needs to be hidden when in
   // WebVR, but it needs to be visible when in cct or fullscreen.
-  close_button_->SetEnabled(browsing_mode && (fullscreen_ || in_cct_));
+  close_button_->SetVisible(browsing_mode && (fullscreen_ || in_cct_));
 
   // Content elements.
   for (UiElement* element : content_elements_) {
-    element->SetEnabled(browsing_mode && !prompting_to_exit_);
+    element->SetVisible(browsing_mode && !prompting_to_exit_);
   }
 
   // Background elements.
   for (UiElement* element : background_panels_) {
-    element->SetEnabled(!showing_web_vr_content);
+    element->SetVisible(!showing_web_vr_content);
   }
-  floor_->SetEnabled(browsing_mode);
-  ceiling_->SetEnabled(browsing_mode);
+  floor_->SetVisible(browsing_mode);
+  ceiling_->SetVisible(browsing_mode);
 
   // Exit prompt.
   bool showExitPrompt = browsing_mode && prompting_to_exit_;
-  exit_prompt_->SetEnabled(showExitPrompt);
-  exit_prompt_backplane_->SetEnabled(showExitPrompt);
+  exit_prompt_->SetVisible(showExitPrompt);
+  exit_prompt_backplane_->SetVisible(showExitPrompt);
 
   // Update content quad parameters depending on fullscreen.
   // TODO(http://crbug.com/642937): Animate fullscreen transitions.
   if (fullscreen_) {
-    main_content_->SetTranslate(0, kFullscreenVerticalOffset,
-                                -kFullscreenDistance);
+    scene_->GetUiElementByName(k2dBrowsingContentGroup)
+        ->SetTranslate(0, kFullscreenVerticalOffset, -kFullscreenDistance);
     main_content_->SetSize(kFullscreenWidth, kFullscreenHeight);
     close_button_->SetTranslate(
         0, kFullscreenVerticalOffset - (kFullscreenHeight / 2) - 0.35,
@@ -773,20 +785,20 @@ void UiSceneManager::ConfigureScene() {
                            kCloseButtonFullscreenHeight);
   } else {
     // Note that main_content_ is already visible in this case.
-    main_content_->SetTranslate(0, kContentVerticalOffset, -kContentDistance);
+    scene_->GetUiElementByName(k2dBrowsingContentGroup)
+        ->SetTranslate(0, kContentVerticalOffset, -kContentDistance);
     main_content_->SetSize(kContentWidth, kContentHeight);
     close_button_->SetTranslate(
         0, kContentVerticalOffset - (kContentHeight / 2) - 0.3,
         -kCloseButtonDistance);
     close_button_->SetSize(kCloseButtonWidth, kCloseButtonHeight);
   }
-  scene_->set_background_distance(
-      main_content_->LocalTransform().matrix().get(2, 3) *
-      -kBackgroundDistanceMultiplier);
+  scene_->set_background_distance(kContentDistance *
+                                  kBackgroundDistanceMultiplier);
 
   scene_->root_element().SetMode(mode());
 
-  webvr_url_toast_->SetEnabled(started_for_autopresentation_ &&
+  webvr_url_toast_->SetVisible(started_for_autopresentation_ &&
                                !showing_web_vr_splash_screen_);
 
   scene_->set_reticle_rendering_enabled(
@@ -902,8 +914,8 @@ void UiSceneManager::SetExitVrPromptEnabled(bool enabled,
 void UiSceneManager::ConfigureSecurityWarnings() {
   bool enabled =
       web_vr_mode_ && !secure_origin_ && !showing_web_vr_splash_screen_;
-  permanent_security_warning_->SetEnabled(enabled);
-  transient_security_warning_->SetEnabled(enabled);
+  permanent_security_warning_->SetVisible(enabled);
+  transient_security_warning_->SetVisible(enabled);
 }
 
 void UiSceneManager::ConfigureIndicators() {
@@ -916,8 +928,8 @@ void UiSceneManager::ConfigureIndicators() {
 }
 
 void UiSceneManager::ConfigureExclusiveScreenToast() {
-  exclusive_screen_toast_->SetEnabled(fullscreen_ && !web_vr_mode_);
-  exclusive_screen_toast_viewport_aware_->SetEnabled(web_vr_mode_ &&
+  exclusive_screen_toast_->SetVisible(fullscreen_ && !web_vr_mode_);
+  exclusive_screen_toast_viewport_aware_->SetVisible(web_vr_mode_ &&
                                                      web_vr_show_toast_);
 }
 

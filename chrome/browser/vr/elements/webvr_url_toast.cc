@@ -10,16 +10,15 @@
 
 namespace vr {
 
-using TargetProperty::OPACITY;
-using TargetProperty::VISIBILITY;
-
 WebVrUrlToast::WebVrUrlToast(
     int preferred_width,
     const base::TimeDelta& timeout,
     const base::Callback<void(UiUnsupportedMode)>& failure_callback)
     : TexturedElement(preferred_width),
       texture_(base::MakeUnique<WebVrUrlToastTexture>(failure_callback)),
-      transience_(this, 1.0f, timeout) {}
+      transience_(this, timeout) {
+  SetTransitionedProperties({OPACITY});
+}
 
 WebVrUrlToast::~WebVrUrlToast() = default;
 
@@ -27,12 +26,8 @@ UiTexture* WebVrUrlToast::GetTexture() const {
   return texture_.get();
 }
 
-void WebVrUrlToast::SetEnabled(bool enabled) {
-  transience_.SetEnabled(enabled);
-  if (enabled)
-    animation_player().SetTransitionedProperties({OPACITY, VISIBILITY});
-  else
-    animation_player().SetTransitionedProperties({});
+void WebVrUrlToast::SetVisible(bool visible) {
+  transience_.SetVisible(visible);
 }
 
 void WebVrUrlToast::SetToolbarState(const ToolbarState& state) {

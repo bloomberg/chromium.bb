@@ -18,10 +18,9 @@ enum Type {
   SCROLL_OFFSET,
   BACKGROUND_COLOR,
   BOUNDS,
-  VISIBILITY,
   // These sentinels must be last
   FIRST_TARGET_PROPERTY = TRANSFORM,
-  LAST_TARGET_PROPERTY = VISIBILITY,
+  LAST_TARGET_PROPERTY = BOUNDS
 };
 
 }  // namespace TargetProperty

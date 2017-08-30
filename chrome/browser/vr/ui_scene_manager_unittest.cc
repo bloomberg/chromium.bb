@@ -24,7 +24,6 @@ namespace vr {
 
 using TargetProperty::BOUNDS;
 using TargetProperty::TRANSFORM;
-using TargetProperty::VISIBILITY;
 using TargetProperty::OPACITY;
 
 namespace {
@@ -242,6 +241,8 @@ TEST_F(UiSceneManagerTest, WebVrAutopresentedInsecureOrigin) {
   VerifyElementsVisible("Initial", initial_elements);
 
   manager_->OnWebVrFrameAvailable();
+  // Start the transition, but don't finish it.
+  AnimateBy(MsToDelta(50));
   VerifyElementsVisible(
       "Autopresented", std::set<UiElementName>{
                            kWebVrPermanentHttpSecurityWarning,
@@ -250,10 +251,10 @@ TEST_F(UiSceneManagerTest, WebVrAutopresentedInsecureOrigin) {
   // Make sure the transient elements go away.
   task_runner_->FastForwardUntilNoTasksRemain();
   UiElement* transient_url_bar = scene_->GetUiElementByName(kWebVrUrlToast);
-  EXPECT_TRUE(IsAnimating(transient_url_bar, {OPACITY, VISIBILITY}));
+  EXPECT_TRUE(IsAnimating(transient_url_bar, {OPACITY}));
   // Finish the transition.
   AnimateBy(MsToDelta(1000));
-  EXPECT_FALSE(IsAnimating(transient_url_bar, {OPACITY, VISIBILITY}));
+  EXPECT_FALSE(IsAnimating(transient_url_bar, {OPACITY}));
   VerifyElementsVisible(
       "End state", std::set<UiElementName>{kWebVrPermanentHttpSecurityWarning});
 }
@@ -275,16 +276,18 @@ TEST_F(UiSceneManagerTest, WebVrAutopresented) {
   // Enter WebVR with autopresentation.
   manager_->SetWebVrMode(true, false);
   manager_->OnWebVrFrameAvailable();
+  // Start the transition, but don't finish it.
+  AnimateBy(MsToDelta(50));
   VerifyElementsVisible("Autopresented",
                         std::set<UiElementName>{kWebVrUrlToast});
 
   // Make sure the transient URL bar times out.
   task_runner_->FastForwardUntilNoTasksRemain();
   UiElement* transient_url_bar = scene_->GetUiElementByName(kWebVrUrlToast);
-  EXPECT_TRUE(IsAnimating(transient_url_bar, {OPACITY, VISIBILITY}));
-  // Finish the transition.
+  EXPECT_TRUE(
+      IsAnimating(transient_url_bar, {OPACITY}));  // Finish the transition.
   AnimateBy(MsToDelta(1000));
-  EXPECT_FALSE(IsAnimating(transient_url_bar, {OPACITY, VISIBILITY}));
+  EXPECT_FALSE(IsAnimating(transient_url_bar, {OPACITY}));
   EXPECT_FALSE(IsVisible(kWebVrUrlToast));
 }
 
@@ -310,8 +313,10 @@ TEST_F(UiSceneManagerTest, UiUpdatesForFullscreenChanges) {
   SkColor initial_background = GetBackgroundColor();
   VerifyElementsVisible("Initial", kElementsVisibleInBrowsing);
   UiElement* content_quad = scene_->GetUiElementByName(kContentQuad);
+  UiElement* content_group =
+      scene_->GetUiElementByName(k2dBrowsingContentGroup);
   gfx::SizeF initial_content_size = content_quad->size();
-  gfx::Transform initial_position = content_quad->LocalTransform();
+  gfx::Transform initial_position = content_group->LocalTransform();
 
   // In fullscreen mode, content elements should be visible, control elements
   // should be hidden.
@@ -320,24 +325,28 @@ TEST_F(UiSceneManagerTest, UiUpdatesForFullscreenChanges) {
   // Make sure background has changed for fullscreen.
   EXPECT_NE(initial_background, GetBackgroundColor());
   // Should have started transition.
-  EXPECT_TRUE(IsAnimating(content_quad, {TRANSFORM, BOUNDS}));
+  EXPECT_TRUE(IsAnimating(content_quad, {BOUNDS}));
+  EXPECT_TRUE(IsAnimating(content_group, {TRANSFORM}));
   // Finish the transition.
   AnimateBy(MsToDelta(1000));
-  EXPECT_FALSE(IsAnimating(content_quad, {TRANSFORM, BOUNDS}));
+  EXPECT_FALSE(IsAnimating(content_quad, {BOUNDS}));
+  EXPECT_FALSE(IsAnimating(content_group, {TRANSFORM}));
   EXPECT_NE(initial_content_size, content_quad->size());
-  EXPECT_NE(initial_position, content_quad->LocalTransform());
+  EXPECT_NE(initial_position, content_group->LocalTransform());
 
   // Everything should return to original state after leaving fullscreen.
   manager_->SetFullscreen(false);
   VerifyElementsVisible("Restore initial", kElementsVisibleInBrowsing);
   EXPECT_EQ(initial_background, GetBackgroundColor());
   // Should have started transition.
-  EXPECT_TRUE(IsAnimating(content_quad, {TRANSFORM, BOUNDS}));
+  EXPECT_TRUE(IsAnimating(content_quad, {BOUNDS}));
+  EXPECT_TRUE(IsAnimating(content_group, {TRANSFORM}));
   // Finish the transition.
   AnimateBy(MsToDelta(1000));
-  EXPECT_FALSE(IsAnimating(content_quad, {TRANSFORM, BOUNDS}));
+  EXPECT_FALSE(IsAnimating(content_quad, {BOUNDS}));
+  EXPECT_FALSE(IsAnimating(content_group, {TRANSFORM}));
   EXPECT_EQ(initial_content_size, content_quad->size());
-  EXPECT_EQ(initial_position, content_quad->LocalTransform());
+  EXPECT_EQ(initial_position, content_group->LocalTransform());
 }
 
 TEST_F(UiSceneManagerTest, SecurityIconClickTriggersUnsupportedMode) {

@@ -363,50 +363,6 @@ void AnimationPlayer::TransitionColorTo(base::TimeTicks monotonic_time,
                                      GetNextGroupId(), target_property));
 }
 
-void AnimationPlayer::TransitionBooleanTo(base::TimeTicks monotonic_time,
-                                          int target_property,
-                                          bool current,
-                                          bool target) {
-  DCHECK(target_);
-
-  if (transition_.target_properties.find(target_property) ==
-      transition_.target_properties.end()) {
-    target_->NotifyClientBooleanAnimated(target, target_property, nullptr);
-    return;
-  }
-
-  cc::Animation* running_animation =
-      GetRunningAnimationForProperty(target_property);
-
-  if (running_animation) {
-    const cc::BooleanAnimationCurve* curve =
-        running_animation->curve()->ToBooleanAnimationCurve();
-    if (target == curve->GetValue(GetEndTime(running_animation))) {
-      return;
-    }
-    if (target == curve->GetValue(GetStartTime(running_animation))) {
-      ReverseAnimation(monotonic_time, running_animation);
-      return;
-    }
-  } else if (target == current) {
-    return;
-  }
-
-  RemoveAnimations(target_property);
-
-  std::unique_ptr<cc::KeyframedBooleanAnimationCurve> curve(
-      cc::KeyframedBooleanAnimationCurve::Create());
-
-  curve->AddKeyframe(cc::BooleanKeyframe::Create(
-      base::TimeDelta(), current, CreateTransitionTimingFunction()));
-
-  curve->AddKeyframe(cc::BooleanKeyframe::Create(
-      transition_.duration, target, CreateTransitionTimingFunction()));
-
-  AddAnimation(cc::Animation::Create(std::move(curve), GetNextAnimationId(),
-                                     GetNextGroupId(), target_property));
-}
-
 cc::Animation* AnimationPlayer::GetRunningAnimationForProperty(
     int target_property) const {
   for (auto& animation : animations_) {
