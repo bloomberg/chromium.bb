@@ -20,6 +20,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.net.CronetTestRule.OnlyRunNativeCronet;
 import org.chromium.net.impl.CronetUrlRequestContext;
@@ -65,6 +66,7 @@ public class SdchTest {
     @SmallTest
     @Feature({"Cronet"})
     @OnlyRunNativeCronet
+    @DisabledTest(message = "Disabled due to flakiness. See https://crbug.com/760655.")
     public void testSdchEnabled() throws Exception {
         CronetEngine.Builder cronetEngineBuilder = createCronetEngineBuilder(Sdch.ENABLED);
         CronetEngine cronetEngine = cronetEngineBuilder.build();
