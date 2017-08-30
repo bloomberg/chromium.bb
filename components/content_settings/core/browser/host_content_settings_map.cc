@@ -755,22 +755,9 @@ void HostContentSettingsMap::AddSettingsForOneType(
 
   while (rule_iterator->HasNext()) {
     const content_settings::Rule& rule = rule_iterator->Next();
-    std::unique_ptr<base::Value> setting_value;
-    // TODO(bauerb): Return rules as a list of values, not content settings.
-    // Handle the case using base::Values for its exceptions and default
-    // setting. Here we assume all the exceptions are granted as
-    // |CONTENT_SETTING_ALLOW|.
-    if (!content_settings::ContentSettingsRegistry::GetInstance()->Get(
-            content_type) &&
-        rule.value.get() &&
-        rule.primary_pattern != ContentSettingsPattern::Wildcard()) {
-      setting_value =
-          content_settings::ContentSettingToValue(CONTENT_SETTING_ALLOW);
-    } else {
-      setting_value = base::MakeUnique<base::Value>(rule.value->Clone());
-    }
     settings->push_back(ContentSettingPatternSource(
-        rule.primary_pattern, rule.secondary_pattern, std::move(setting_value),
+        rule.primary_pattern, rule.secondary_pattern,
+        base::MakeUnique<base::Value>(rule.value->Clone()),
         kProviderNamesSourceMap[provider_type].provider_name, incognito));
   }
 }
