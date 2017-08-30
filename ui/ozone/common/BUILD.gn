@@ -8,8 +8,6 @@ assert(use_ozone)
 
 source_set("common") {
   sources = [
-    "display_snapshot_proxy.cc",
-    "display_snapshot_proxy.h",
     "egl_util.cc",
     "egl_util.h",
     "gl_ozone_egl.cc",
