@@ -54,7 +54,8 @@ AXObjectCache* AXObjectCache::Create(Document& document) {
   return create_function_(document);
 }
 
-AXObjectCache::AXObjectCache() {}
+AXObjectCache::AXObjectCache(Document& document)
+    : ContextLifecycleObserver(document.GetExecutionContext()) {}
 
 AXObjectCache::~AXObjectCache() {}
 
@@ -163,6 +164,10 @@ bool AXObjectCache::IsInsideFocusableElementOrARIAWidget(const Node& node) {
     cur_node = cur_node->parentNode();
   } while (cur_node && !isHTMLBodyElement(node));
   return false;
+}
+
+DEFINE_TRACE(AXObjectCache) {
+  ContextLifecycleObserver::Trace(visitor);
 }
 
 STATIC_ASSERT_ENUM(kWebAXEventActiveDescendantChanged,

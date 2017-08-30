@@ -833,6 +833,20 @@ bool AXObject::DispatchEventToAOMEventListeners(Event& event,
   if (!event_path.size())
     return false;
 
+  // Check if the user has granted permission for this domain to use
+  // AOM event listeners yet. This may trigger an infobar, but we shouldn't
+  // block, so whatever decision the user makes will apply to the next
+  // event received after that.
+  //
+  // Note that we only ask the user about this permission the first
+  // time an event is received that actually would have triggered an
+  // event listener. However, if the user grants this permission, it
+  // persists for this origin from then on.
+  if (!AxObjectCache().CanCallAOMEventListeners()) {
+    AxObjectCache().RequestAOMEventListenerPermission();
+    return false;
+  }
+
   // Since we now know the AOM is being used in this document, get the
   // AccessibleNode for the target element and create it if necessary -
   // otherwise we wouldn't be able to set the event target. However note
