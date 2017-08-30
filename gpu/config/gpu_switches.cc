@@ -32,9 +32,6 @@ const char kGpuActiveDeviceID[] = "gpu-active-device-id";
 // Passes gpu device_id from browser process to GPU process.
 const char kGpuDeviceID[] = "gpu-device-id";
 
-// Pass a set of GpuDriverBugWorkaroundType ids, seperated by ','.
-const char kGpuDriverBugWorkarounds[] = "gpu-driver-bug-workarounds";
-
 // Passes gpu driver_vendor from browser process to GPU process.
 const char kGpuDriverVendor[] = "gpu-driver-vendor";
 

@@ -59,8 +59,8 @@ void InProcessGpuThread::Init() {
   gpu::GPUInfo gpu_info;
   gpu::GpuFeatureInfo gpu_feature_info;
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (!gl::init::InitializeGLOneOff()) {
-    VLOG(1) << "gl::init::InitializeGLOneOff failed";
+  if (!gl::init::InitializeGLNoExtensionsOneOff()) {
+    VLOG(1) << "gl::init::InitializeGLNoExtensionsOneOff failed";
   } else if (GetContentClient()->gpu() &&
              GetContentClient()->gpu()->GetGPUInfo() &&
              GetContentClient()->gpu()->GetGpuFeatureInfo()) {
@@ -71,6 +71,13 @@ void InProcessGpuThread::Init() {
     // CollectContextGraphicsInfo().
     gpu::CollectContextGraphicsInfo(&gpu_info);
     gpu_feature_info = gpu::GetGpuFeatureInfo(gpu_info, *command_line);
+  }
+  if (!gpu_feature_info.disabled_extensions.empty()) {
+    gl::init::SetDisabledExtensionsPlatform(
+        gpu_feature_info.disabled_extensions);
+  }
+  if (!gl::init::InitializeExtensionSettingsOneOffPlatform()) {
+    VLOG(1) << "gl::init::InitializeExtensionSettingsOneOffPlatform failed";
   }
   GetContentClient()->SetGpuInfo(gpu_info);
 

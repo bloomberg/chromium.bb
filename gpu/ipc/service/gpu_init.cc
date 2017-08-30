@@ -264,16 +264,6 @@ bool GpuInit::InitializeAndStartSandbox(const base::CommandLine& command_line,
   UMA_HISTOGRAM_TIMES("GPU.CollectContextGraphicsInfo", collect_context_time);
 
   gpu_feature_info_ = gpu::GetGpuFeatureInfo(gpu_info_, command_line);
-  if (!gpu_feature_info_.enabled_gpu_driver_bug_workarounds.empty()) {
-    // TODO(zmo): Remove this block of code. They are only for existing tests.
-    std::set<int> workarounds;
-    workarounds.insert(
-        gpu_feature_info_.enabled_gpu_driver_bug_workarounds.begin(),
-        gpu_feature_info_.enabled_gpu_driver_bug_workarounds.end());
-    base::CommandLine* cmd_line = const_cast<base::CommandLine*>(&command_line);
-    cmd_line->AppendSwitchASCII(switches::kGpuDriverBugWorkarounds,
-                                gpu::IntSetToString(workarounds, ','));
-  }
   if (!gpu_feature_info_.disabled_extensions.empty()) {
     gl::init::SetDisabledExtensionsPlatform(
         gpu_feature_info_.disabled_extensions);

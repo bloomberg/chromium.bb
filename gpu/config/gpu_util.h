@@ -5,9 +5,6 @@
 #ifndef GPU_CONFIG_GPU_UTIL_H_
 #define GPU_CONFIG_GPU_UTIL_H_
 
-#include <set>
-#include <string>
-
 #include "build/build_config.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "gpu/gpu_export.h"
@@ -19,10 +16,6 @@ class CommandLine;
 namespace gpu {
 
 struct GPUInfo;
-
-// |str| is in the format of "feature1,feature2,...,featureN".
-GPU_EXPORT void StringToFeatureSet(
-    const std::string& str, std::set<int>* feature_set);
 
 // With provided command line, fill gpu_info->secondary_gpus with parsed
 // secondary vendor and device ids.
@@ -38,9 +31,6 @@ GetGpuFeatureInfo(const GPUInfo& gpu_info,
                   const base::CommandLine& command_line);
 
 GPU_EXPORT void SetKeysForCrashLogging(const GPUInfo& gpu_info);
-
-// Combine the integers into a string, separated by divider.
-GPU_EXPORT std::string IntSetToString(const std::set<int>& list, char divider);
 }  // namespace gpu
 
 #endif  // GPU_CONFIG_GPU_UTIL_H_
