@@ -64,6 +64,35 @@ class TextBreakIteratorTest : public ::testing::Test {
   String test_string_;
 };
 
+static const LineBreakType all_break_types[] = {
+    LineBreakType::kNormal, LineBreakType::kBreakAll,
+    LineBreakType::kBreakCharacter, LineBreakType::kKeepAll};
+
+class BreakTypeTest : public TextBreakIteratorTest,
+                      public ::testing::WithParamInterface<LineBreakType> {};
+
+INSTANTIATE_TEST_CASE_P(TextBreakIteratorTest,
+                        BreakTypeTest,
+                        ::testing::ValuesIn(all_break_types));
+
+TEST_P(BreakTypeTest, EmptyString) {
+  LazyLineBreakIterator iterator(g_empty_string);
+  iterator.SetBreakType(GetParam());
+  EXPECT_TRUE(iterator.IsBreakable(0));
+}
+
+TEST_P(BreakTypeTest, EmptyNullString) {
+  LazyLineBreakIterator iterator(String{});
+  iterator.SetBreakType(GetParam());
+  EXPECT_TRUE(iterator.IsBreakable(0));
+}
+
+TEST_P(BreakTypeTest, EmptyDefaultConstructor) {
+  LazyLineBreakIterator iterator;
+  iterator.SetBreakType(GetParam());
+  EXPECT_TRUE(iterator.IsBreakable(0));
+}
+
 // Initializing Vector from an initializer list still not possible, C++ feature
 // banned in Blink.
 #define DECLARE_BREAKSVECTOR(...)                    \
