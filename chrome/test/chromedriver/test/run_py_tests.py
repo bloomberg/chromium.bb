@@ -71,8 +71,6 @@ _NEGATIVE_FILTER = [
     'ChromeDriverTest.testAlertOnNewWindow',
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1882
     'PerfTest.testColdExecuteScript',
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1954
-    'MobileEmulationCapabilityTest.testW3cCompliantResponses',
 ]
 
 _VERSION_SPECIFIC_FILTER = {}
