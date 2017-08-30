@@ -721,15 +721,9 @@ bubblePresenterForFeature:(const base::Feature&)feature
 // promotion.
 - (void)presentNewIncognitoTabTipBubble;
 
-// Create and show the find bar.
-- (void)initFindBarForTab;
-// Search for find bar query string.
-- (void)searchFindInPage;
 // Update find bar with model data. If |shouldFocus| is set to YES, the text
 // field will become first responder.
 - (void)updateFindBar:(BOOL)initialUpdate shouldFocus:(BOOL)shouldFocus;
-// Close and disable find in page bar.
-- (void)closeFindInPage;
 // Hide find bar.
 - (void)hideFindBarWithAnimation:(BOOL)animate;
 // Shows find bar. If |selectText| is YES, all text inside the Find Bar
@@ -4348,6 +4342,71 @@ bubblePresenterForFeature:(const base::Feature&)feature
   [_rateThisAppDialog show];
 }
 
+- (void)showFindInPage {
+  if (!self.canShowFindBar)
+    return;
+
+  if (!_findBarController) {
+    _findBarController =
+        [[FindBarControllerIOS alloc] initWithIncognito:_isOffTheRecord];
+    _findBarController.dispatcher = self.dispatcher;
+  }
+
+  Tab* tab = [_model currentTab];
+  DCHECK(tab);
+  auto* helper = FindTabHelper::FromWebState(tab.webState);
+  DCHECK(!helper->IsFindUIActive());
+  helper->SetFindUIActive(true);
+  [self showFindBarWithAnimation:YES selectText:YES shouldFocus:YES];
+}
+
+- (void)closeFindInPage {
+  __weak BrowserViewController* weakSelf = self;
+  Tab* currentTab = [_model currentTab];
+  if (currentTab) {
+    FindTabHelper::FromWebState(currentTab.webState)->StopFinding(^{
+      [weakSelf updateFindBar:NO shouldFocus:NO];
+    });
+  }
+}
+
+- (void)searchFindInPage {
+  DCHECK([_model currentTab]);
+  auto* helper = FindTabHelper::FromWebState([_model currentTab].webState);
+  __weak BrowserViewController* weakSelf = self;
+  helper->StartFinding(
+      [_findBarController searchTerm], ^(FindInPageModel* model) {
+        BrowserViewController* strongSelf = weakSelf;
+        if (!strongSelf) {
+          return;
+        }
+        [strongSelf->_findBarController updateResultsCount:model];
+      });
+
+  if (!_isOffTheRecord)
+    helper->PersistSearchTerm();
+}
+
+- (void)findNextStringInPage {
+  Tab* currentTab = [_model currentTab];
+  DCHECK(currentTab);
+  // TODO(crbug.com/603524): Reshow find bar if necessary.
+  FindTabHelper::FromWebState(currentTab.webState)
+      ->ContinueFinding(FindTabHelper::FORWARD, ^(FindInPageModel* model) {
+        [_findBarController updateResultsCount:model];
+      });
+}
+
+- (void)findPreviousStringInPage {
+  Tab* currentTab = [_model currentTab];
+  DCHECK(currentTab);
+  // TODO(crbug.com/603524): Reshow find bar if necessary.
+  FindTabHelper::FromWebState(currentTab.webState)
+      ->ContinueFinding(FindTabHelper::REVERSE, ^(FindInPageModel* model) {
+        [_findBarController updateResultsCount:model];
+      });
+}
+
 #pragma mark - Command Handling
 
 - (IBAction)chromeExecuteCommand:(id)sender {
@@ -4355,36 +4414,8 @@ bubblePresenterForFeature:(const base::Feature&)feature
 
   if (!_model || !_browserState)
     return;
-  Tab* currentTab = [_model currentTab];
 
   switch (command) {
-    case IDC_FIND:
-      [self initFindBarForTab];
-      break;
-    case IDC_FIND_NEXT: {
-      DCHECK(currentTab);
-      // TODO(crbug.com/603524): Reshow find bar if necessary.
-      FindTabHelper::FromWebState(currentTab.webState)
-          ->ContinueFinding(FindTabHelper::FORWARD, ^(FindInPageModel* model) {
-            [_findBarController updateResultsCount:model];
-          });
-      break;
-    }
-    case IDC_FIND_PREVIOUS: {
-      DCHECK(currentTab);
-      // TODO(crbug.com/603524): Reshow find bar if necessary.
-      FindTabHelper::FromWebState(currentTab.webState)
-          ->ContinueFinding(FindTabHelper::REVERSE, ^(FindInPageModel* model) {
-            [_findBarController updateResultsCount:model];
-          });
-      break;
-    }
-    case IDC_FIND_CLOSE:
-      [self closeFindInPage];
-      break;
-    case IDC_FIND_UPDATE:
-      [self searchFindInPage];
-      break;
     case IDC_HELP_PAGE_VIA_MENU:
       [self showHelpPage];
       break;
@@ -4561,50 +4592,6 @@ bubblePresenterForFeature:(const base::Feature&)feature
                       alignWithFrame:omniboxFrame
                           selectText:selectText];
   [self updateFindBar:YES shouldFocus:shouldFocus];
-}
-
-// Create find bar controller and pass it to the web controller.
-- (void)initFindBarForTab {
-  if (!self.canShowFindBar)
-    return;
-
-  if (!_findBarController)
-    _findBarController =
-        [[FindBarControllerIOS alloc] initWithIncognito:_isOffTheRecord];
-
-  Tab* tab = [_model currentTab];
-  DCHECK(tab);
-  auto* helper = FindTabHelper::FromWebState(tab.webState);
-  DCHECK(!helper->IsFindUIActive());
-  helper->SetFindUIActive(true);
-  [self showFindBarWithAnimation:YES selectText:YES shouldFocus:YES];
-}
-
-- (void)searchFindInPage {
-  DCHECK([_model currentTab]);
-  auto* helper = FindTabHelper::FromWebState([_model currentTab].webState);
-  __weak BrowserViewController* weakSelf = self;
-  helper->StartFinding(
-      [_findBarController searchTerm], ^(FindInPageModel* model) {
-        BrowserViewController* strongSelf = weakSelf;
-        if (!strongSelf) {
-          return;
-        }
-        [strongSelf->_findBarController updateResultsCount:model];
-      });
-
-  if (!_isOffTheRecord)
-    helper->PersistSearchTerm();
-}
-
-- (void)closeFindInPage {
-  __weak BrowserViewController* weakSelf = self;
-  Tab* currentTab = [_model currentTab];
-  if (currentTab) {
-    FindTabHelper::FromWebState(currentTab.webState)->StopFinding(^{
-      [weakSelf updateFindBar:NO shouldFocus:NO];
-    });
-  }
 }
 
 - (void)updateFindBar:(BOOL)initialUpdate shouldFocus:(BOOL)shouldFocus {

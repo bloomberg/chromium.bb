@@ -202,7 +202,7 @@ NS_INLINE void AnimateInViews(NSArray* views,
 }
 
 - (void)setCanShowFindBar:(BOOL)enabled {
-  [self setItemEnabled:enabled withTag:IDC_FIND];
+  [self setItemEnabled:enabled withTag:TOOLS_SHOW_FIND_IN_PAGE];
 }
 
 - (void)setCanShowShareMenu:(BOOL)enabled {

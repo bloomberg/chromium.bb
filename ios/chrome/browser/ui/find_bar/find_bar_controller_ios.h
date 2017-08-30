@@ -7,6 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
+@protocol BrowserCommands;
 @class FindInPageModel;
 
 // The a11y ID of the find-in-page bar.
@@ -16,6 +17,9 @@ extern NSString* const kFindInPageContainerViewId;
 
 // The main view, for both iPhone or iPad.
 @property(nonatomic, readonly, strong) IBOutlet UIView* view;
+
+// The dispatcher for sending browser commands.
+@property(nonatomic, weak) id<BrowserCommands> dispatcher;
 
 // Init with incognito style.
 - (instancetype)initWithIncognito:(BOOL)isIncognito;

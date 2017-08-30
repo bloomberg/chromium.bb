@@ -14,7 +14,7 @@
 #import "ios/chrome/browser/find_in_page/find_in_page_controller.h"
 #import "ios/chrome/browser/find_in_page/find_in_page_model.h"
 #import "ios/chrome/browser/ui/UIView+SizeClassSupport.h"
-#import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
+#import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/find_bar/find_bar_view.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -67,10 +67,9 @@ const NSTimeInterval kSearchShortDelay = 0.100;
 // Returns the appropriate variant of the image for |image_name| based on
 // |_isIncognito| and device idiom.
 - (UIImage*)imageWithName:(NSString*)image_name;
-// Delay searching for the first |kSearchDelayChars| characters of a search term
-// to give time for a user to type out a longer word.  Short words are currently
-// very inefficient and lock up the UIWebView.
-- (void)editingChanged:(id)sender;
+// Responds to touches that make editing changes on the text field, triggering
+// find-in-page searches for the field's current value.
+- (void)editingChanged;
 // Return the expected find bar height. This will include the status bar height
 // when running iOS7 on an iPhone.
 - (CGFloat)findBarHeight;
@@ -97,6 +96,7 @@ const NSTimeInterval kSearchShortDelay = 0.100;
 @synthesize findBarView = _findBarView;
 @synthesize delayTimer = _delayTimer;
 @synthesize isIncognito = _isIncognito;
+@synthesize dispatcher = _dispatcher;
 
 #pragma mark - Lifecycle
 
@@ -128,6 +128,7 @@ const NSTimeInterval kSearchShortDelay = 0.100;
 
   self.findBarView = [[FindBarView alloc]
       initWithDarkAppearance:self.isIncognito && !IsIPadIdiom()];
+  self.findBarView.dispatcher = self.dispatcher;
   [findBarBackground addSubview:self.findBarView];
   self.findBarView.translatesAutoresizingMaskIntoConstraints = NO;
   NSMutableArray* constraints = [[NSMutableArray alloc] init];
@@ -154,7 +155,7 @@ const NSTimeInterval kSearchShortDelay = 0.100;
 
   self.findBarView.inputField.delegate = self;
   [self.findBarView.inputField addTarget:self
-                                  action:@selector(editingChanged:)
+                                  action:@selector(editingChanged)
                         forControlEvents:UIControlEventEditingChanged];
   [self.findBarView.nextButton addTarget:self
                                   action:@selector(hideKeyboard:)
@@ -231,7 +232,7 @@ const NSTimeInterval kSearchShortDelay = 0.100;
   if (initialUpdate) {
     // Set initial text and first search.
     [self.findBarView.inputField setText:model.text];
-    [self editingChanged:self.findBarView.inputField];
+    [self editingChanged];
   }
 
   // Focus input field if necessary.
@@ -423,24 +424,23 @@ const NSTimeInterval kSearchShortDelay = 0.100;
       }];
 }
 
-- (void)textChanged {
-  [self.view chromeExecuteCommand:self.findBarView.inputField];
-}
-
-- (void)editingChanged:(id)sender {
+- (void)editingChanged {
   [self.delayTimer invalidate];
   NSUInteger length = [[self searchTerm] length];
-  if (length == 0)
-    return [self textChanged];
+  if (length == 0) {
+    [self.dispatcher searchFindInPage];
+    return;
+  }
 
-  // Delay delivery of text change event.  Use a longer delay when the input
-  // length is short.
+  // Delay delivery of the search text event to give time for a user to type out
+  // a longer word.  Use a longer delay when the input length is short, as short
+  // words are currently very inefficient and lock up the web view.
   NSTimeInterval delay =
       (length > kSearchDelayChars) ? kSearchShortDelay : kSearchLongDelay;
   self.delayTimer =
       [NSTimer scheduledTimerWithTimeInterval:delay
-                                       target:self
-                                     selector:@selector(textChanged)
+                                       target:self.dispatcher
+                                     selector:@selector(searchFindInPage)
                                      userInfo:nil
                                       repeats:NO];
 }
