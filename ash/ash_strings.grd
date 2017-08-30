@@ -1066,6 +1066,9 @@ This file contains the strings for ash.
       <message name="IDS_DEPRECATED_TOGGLE_HIGH_CONTRAST_MSG" desc="Notification message to tell users about the deprecation of Search+Shift+H shortcut to toggle the high contrast display mode.">
         The shortcut to toggle High Contrast Mode has changed. Please use <ph name="NEW_SHORTCUT">$1<ex>Ctrl+Search+H</ex></ph> instead of <ph name="OLD_SHORTCUT">$2<ex>Search+Shift+H</ex></ph>.
       </message>
+      <message name="IDS_DEPRECATED_SHORTCUT_TITLE" desc="Notification title to tell users that the keyboard accelerator is deprecated.">
+        Shortcut change
+      </message>
 
       <!-- Notification that an accelerator was pressed, so the user knows how to toggle it back -->
       <message name="IDS_HIGH_CONTRAST_ACCEL_TITLE"

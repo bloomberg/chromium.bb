@@ -154,16 +154,18 @@ void ShowDeprecatedAcceleratorNotification(const char* const notification_id,
                                            int new_shortcut_id) {
   const base::string16 message =
       GetNotificationText(message_id, old_shortcut_id, new_shortcut_id);
-  std::unique_ptr<Notification> notification(new Notification(
-      message_center::NOTIFICATION_TYPE_SIMPLE, notification_id,
-      base::string16(), message,
-      Shell::Get()->shell_delegate()->GetDeprecatedAcceleratorImage(),
-      base::string16(), GURL(),
-      message_center::NotifierId(
-          message_center::NotifierId::SYSTEM_COMPONENT,
-          system_notifier::kNotifierDeprecatedAccelerator),
-      message_center::RichNotificationData(),
-      new DeprecatedAcceleratorNotificationDelegate));
+  std::unique_ptr<Notification> notification =
+      system_notifier::CreateSystemNotification(
+          message_center::NOTIFICATION_TYPE_SIMPLE, notification_id,
+          l10n_util::GetStringUTF16(IDS_DEPRECATED_SHORTCUT_TITLE), message,
+          Shell::Get()->shell_delegate()->GetDeprecatedAcceleratorImage(),
+          base::string16(), GURL(),
+          message_center::NotifierId(
+              message_center::NotifierId::SYSTEM_COMPONENT,
+              system_notifier::kNotifierDeprecatedAccelerator),
+          message_center::RichNotificationData(),
+          new DeprecatedAcceleratorNotificationDelegate,
+          kNotificationSettingsIcon, SystemNotificationWarningLevel::NORMAL);
   message_center::MessageCenter::Get()->AddNotification(
       std::move(notification));
 }
