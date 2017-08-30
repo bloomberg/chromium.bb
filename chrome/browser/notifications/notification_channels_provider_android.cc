@@ -184,6 +184,7 @@ void NotificationChannelsProviderAndroid::MigrateToChannelsIfNecessary(
       prefs->GetBoolean(prefs::kMigratedToSiteNotificationChannels)) {
     return;
   }
+  InitCachedChannels();
   std::unique_ptr<content_settings::RuleIterator> it(
       pref_provider->GetRuleIterator(CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
                                      std::string(), false /* incognito */));
@@ -212,6 +213,7 @@ void NotificationChannelsProviderAndroid::UnmigrateChannelsIfNecessary(
   }
   for (auto& channel : bridge_->GetChannels())
     bridge_->DeleteChannel(channel.id);
+  cached_channels_.clear();
 
   prefs->SetBoolean(prefs::kMigratedToSiteNotificationChannels, false);
 }
@@ -372,6 +374,7 @@ void NotificationChannelsProviderAndroid::CreateChannelIfRequired(
   }
 }
 
+// InitCachedChannels() must be called prior to calling this method.
 void NotificationChannelsProviderAndroid::CreateChannelForRule(
     const content_settings::Rule& rule) {
   url::Origin origin = url::Origin(GURL(rule.primary_pattern.ToString()));
