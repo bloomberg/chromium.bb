@@ -35390,6 +35390,7 @@ from previous Chrome versions.
   <int value="1" label="Other failure"/>
   <int value="2" label="Not found on server"/>
   <int value="3" label="Failed to create temporary directory"/>
+  <int value="4" label="Failed to save to file"/>
 </enum>
 
 <enum name="SoftwareReporterCleanupResult">
