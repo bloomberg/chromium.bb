@@ -226,11 +226,6 @@ class TabManager : public TabStripModelObserver,
   // foreground.
   bool IsTabRestoredInForeground(content::WebContents* web_contents) const;
 
-  // Returns whether the tab manager is currently loading background tabs. This
-  // always returns false during an ongoing session restore, even if background
-  // tabs are being loaded, in order to separate the two activities.
-  bool IsLoadingBackgroundTabs() const;
-
  private:
   friend class TabManagerStatsCollectorTest;
 
@@ -264,9 +259,14 @@ class TabManager : public TabStripModelObserver,
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, BackgroundTabLoadingMode);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, BackgroundTabLoadingSlots);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, BackgroundTabsLoadingOrdering);
-  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, IsLoadingBackgroundTabs);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, PauseAndResumeBackgroundTabOpening);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, IsInBackgroundTabOpeningSession);
   FRIEND_TEST_ALL_PREFIXES(TabManagerWithExperimentDisabledTest,
-                           IsLoadingBackgroundTabs);
+                           IsInBackgroundTabOpeningSession);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerTest,
+                           SessionRestoreBeforeBackgroundTabOpeningSession);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerTest,
+                           SessionRestoreAfterBackgroundTabOpeningSession);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest,
                            ProactiveFastShutdownSingleTabProcess);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, UrgentFastShutdownSingleTabProcess);
@@ -371,6 +371,11 @@ class TabManager : public TabStripModelObserver,
                                              TabStripModel* model,
                                              DiscardTabCondition condition);
 
+  // Pause or resume background tab opening according to memory pressure change
+  // if there are pending background tabs.
+  void PauseBackgroundTabOpeningIfNeeded();
+  void ResumeBackgroundTabOpeningIfNeeded();
+
   // Called by the memory pressure listener when the memory pressure rises.
   void OnMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
@@ -423,6 +428,14 @@ class TabManager : public TabStripModelObserver,
   void OnSessionRestoreStartedLoadingTabs();
   void OnSessionRestoreFinishedLoadingTabs();
   void OnWillRestoreTab(content::WebContents* web_contents);
+
+  // Returns true if it is in BackgroundTabOpening session, which is defined as
+  // the duration from the time when the browser starts to load background tabs
+  // until the time when browser has finished loading those tabs. During the
+  // session, the session can end when background tabs' loading are paused due
+  // to memory pressure. A new session starts when background tabs' loading
+  // resume when memory pressure returns to normal.
+  bool IsInBackgroundTabOpeningSession() const;
 
   // Returns true if TabManager can start loading next tab.
   bool CanLoadNextTab() const;

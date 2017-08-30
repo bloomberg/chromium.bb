@@ -20,7 +20,7 @@ namespace resource_coordinator {
 std::unique_ptr<BackgroundTabNavigationThrottle>
 BackgroundTabNavigationThrottle::MaybeCreateThrottleFor(
     content::NavigationHandle* navigation_handle) {
-  if (!base::FeatureList::IsEnabled(features::kStaggeredBackgroundTabOpen))
+  if (!base::FeatureList::IsEnabled(features::kStaggeredBackgroundTabOpening))
     return nullptr;
 
   // Only consider main frames because this is to delay tabs.

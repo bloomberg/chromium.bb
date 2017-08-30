@@ -61,6 +61,10 @@ class TabManagerStatsCollectorTest
   }
 
  protected:
+  bool IsTestingOverlappedSession() {
+    return should_test_session_restore_ && should_test_background_tab_opening_;
+  }
+
   base::HistogramTester histogram_tester_;
   bool should_test_session_restore_;
   bool should_test_background_tab_opening_;
@@ -146,7 +150,7 @@ TEST_P(TabManagerStatsCollectorTabSwitchTest, HistogramsSwitchToTab) {
   SwitchToBackgroundTab();
   SwitchToBackgroundTab();
   for (const auto& param : histogram_parameters) {
-    if (param.enabled) {
+    if (param.enabled && !IsTestingOverlappedSession()) {
       histogram_tester_.ExpectTotalCount(param.histogram_name, 2);
       histogram_tester_.ExpectBucketCount(param.histogram_name,
                                           TAB_IS_NOT_LOADING, 2);
@@ -161,7 +165,7 @@ TEST_P(TabManagerStatsCollectorTabSwitchTest, HistogramsSwitchToTab) {
   SwitchToBackgroundTab();
   SwitchToBackgroundTab();
   for (const auto& param : histogram_parameters) {
-    if (param.enabled) {
+    if (param.enabled && !IsTestingOverlappedSession()) {
       histogram_tester_.ExpectTotalCount(param.histogram_name, 5);
       histogram_tester_.ExpectBucketCount(param.histogram_name,
                                           TAB_IS_NOT_LOADING, 2);
@@ -179,7 +183,7 @@ TEST_P(TabManagerStatsCollectorTabSwitchTest, HistogramsSwitchToTab) {
   SwitchToBackgroundTab();
   SwitchToBackgroundTab();
   for (const auto& param : histogram_parameters) {
-    if (param.enabled) {
+    if (param.enabled && !IsTestingOverlappedSession()) {
       histogram_tester_.ExpectTotalCount(param.histogram_name, 9);
       histogram_tester_.ExpectBucketCount(param.histogram_name,
                                           TAB_IS_NOT_LOADING, 2);
@@ -209,20 +213,22 @@ TEST_P(TabManagerStatsCollectorTabSwitchTest, HistogramsTabSwitchLoadTime) {
   FinishLoadingForegroundTab();
   histogram_tester_.ExpectTotalCount(
       TabManagerStatsCollector::kHistogramSessionRestoreTabSwitchLoadTime,
-      should_test_session_restore_ ? 1 : 0);
+      should_test_session_restore_ && !IsTestingOverlappedSession() ? 1 : 0);
   histogram_tester_.ExpectTotalCount(
       TabManagerStatsCollector::kHistogramBackgroundTabOpeningTabSwitchLoadTime,
-      should_test_background_tab_opening_ ? 1 : 0);
+      should_test_background_tab_opening_ && !IsTestingOverlappedSession() ? 1
+                                                                           : 0);
 
   SetBackgroundTabLoadingState(TAB_IS_LOADING);
   SwitchToBackgroundTab();
   FinishLoadingForegroundTab();
   histogram_tester_.ExpectTotalCount(
       TabManagerStatsCollector::kHistogramSessionRestoreTabSwitchLoadTime,
-      should_test_session_restore_ ? 2 : 0);
+      should_test_session_restore_ && !IsTestingOverlappedSession() ? 2 : 0);
   histogram_tester_.ExpectTotalCount(
       TabManagerStatsCollector::kHistogramBackgroundTabOpeningTabSwitchLoadTime,
-      should_test_background_tab_opening_ ? 2 : 0);
+      should_test_background_tab_opening_ && !IsTestingOverlappedSession() ? 2
+                                                                           : 0);
 
   // Metrics aren't recorded when the foreground tab has not finished loading
   // and the user switches to a different tab.
@@ -236,10 +242,11 @@ TEST_P(TabManagerStatsCollectorTabSwitchTest, HistogramsTabSwitchLoadTime) {
   SwitchToBackgroundTab();
   histogram_tester_.ExpectTotalCount(
       TabManagerStatsCollector::kHistogramSessionRestoreTabSwitchLoadTime,
-      should_test_session_restore_ ? 2 : 0);
+      should_test_session_restore_ && !IsTestingOverlappedSession() ? 2 : 0);
   histogram_tester_.ExpectTotalCount(
       TabManagerStatsCollector::kHistogramBackgroundTabOpeningTabSwitchLoadTime,
-      should_test_background_tab_opening_ ? 2 : 0);
+      should_test_background_tab_opening_ && !IsTestingOverlappedSession() ? 2
+                                                                           : 0);
 
   // The count shouldn't change when we're no longer in a session restore or
   // background tab opening.
@@ -247,16 +254,18 @@ TEST_P(TabManagerStatsCollectorTabSwitchTest, HistogramsTabSwitchLoadTime) {
     FinishSessionRestore();
   if (should_test_background_tab_opening_)
     FinishBackgroundTabOpeningSession();
+
   SetBackgroundTabLoadingState(TAB_IS_NOT_LOADING);
   SetForegroundTabLoadingState(TAB_IS_LOADED);
   SwitchToBackgroundTab();
   FinishLoadingForegroundTab();
   histogram_tester_.ExpectTotalCount(
       TabManagerStatsCollector::kHistogramSessionRestoreTabSwitchLoadTime,
-      should_test_session_restore_ ? 2 : 0);
+      should_test_session_restore_ && !IsTestingOverlappedSession() ? 2 : 0);
   histogram_tester_.ExpectTotalCount(
       TabManagerStatsCollector::kHistogramBackgroundTabOpeningTabSwitchLoadTime,
-      should_test_background_tab_opening_ ? 2 : 0);
+      should_test_background_tab_opening_ && !IsTestingOverlappedSession() ? 2
+                                                                           : 0);
 }
 
 TEST_P(TabManagerStatsCollectorTest, HistogramsExpectedTaskQueueingDuration) {
@@ -299,11 +308,12 @@ TEST_P(TabManagerStatsCollectorTest, HistogramsExpectedTaskQueueingDuration) {
   histogram_tester_.ExpectTotalCount(
       TabManagerStatsCollector::
           kHistogramSessionRestoreForegroundTabExpectedTaskQueueingDuration,
-      should_test_session_restore_ ? 1 : 0);
+      should_test_session_restore_ && !IsTestingOverlappedSession() ? 1 : 0);
   histogram_tester_.ExpectTotalCount(
       TabManagerStatsCollector::
           kHistogramBackgroundTabOpeningForegroundTabExpectedTaskQueueingDuration,
-      should_test_background_tab_opening_ ? 1 : 0);
+      should_test_background_tab_opening_ && !IsTestingOverlappedSession() ? 1
+                                                                           : 0);
 
   if (should_test_session_restore_)
     FinishSessionRestore();
@@ -316,11 +326,12 @@ TEST_P(TabManagerStatsCollectorTest, HistogramsExpectedTaskQueueingDuration) {
   histogram_tester_.ExpectTotalCount(
       TabManagerStatsCollector::
           kHistogramSessionRestoreForegroundTabExpectedTaskQueueingDuration,
-      should_test_session_restore_ ? 1 : 0);
+      should_test_session_restore_ && !IsTestingOverlappedSession() ? 1 : 0);
   histogram_tester_.ExpectTotalCount(
       TabManagerStatsCollector::
           kHistogramBackgroundTabOpeningForegroundTabExpectedTaskQueueingDuration,
-      should_test_background_tab_opening_ ? 1 : 0);
+      should_test_background_tab_opening_ && !IsTestingOverlappedSession() ? 1
+                                                                           : 0);
 }
 
 INSTANTIATE_TEST_CASE_P(

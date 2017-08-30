@@ -7,6 +7,7 @@
 
 #include <cstdint>
 #include <memory>
+#include <string>
 #include <unordered_map>
 
 #include "base/gtest_prod_util.h"
@@ -25,9 +26,37 @@ class WebContents;
 namespace resource_coordinator {
 
 // TabManagerStatsCollector records UMAs on behalf of TabManager for tab and
-// system-related events and properties during session restore.
+// system-related events and properties during session restore or background tab
+// opening session.
 class TabManagerStatsCollector : public SessionRestoreObserver {
  public:
+  enum SessionType {
+    // SessionRestore is the duration from the time when the browser starts to
+    // restore tabs until the time when the browser has finished loading those
+    // tabs or when the browser stops loading tabs due to memory pressure.
+    // During SessionRestore, some other tabs could be open due to user action,
+    // but that would not affect the session end time point. For example, a
+    // browser starts to restore tab1 and tab2. Tab3 is open due to user
+    // clicking a link in tab1. SessionRestore ends after tab1 and tab2 finishes
+    // loading, even if tab3 is still loading.
+    kSessionRestore,
+
+    // BackgroundTabOpening session is the duration from the time when the
+    // browser starts to open background tabs until the time when browser has
+    // finished loading those tabs or paused loading due to memory pressure.
+    // A new session starts when the browser resumes loading background tabs
+    // when memory pressure returns to normal. During the BackgroundTabOpening
+    // session, some background tabs could become foreground due to user action,
+    // but that would not affect the session end time point. For example, a
+    // browser has tab1 in foreground, and starts to open tab2 and tab3 in
+    // background. The session will end after tab2 and tab3 finishes loading,
+    // even if tab2 and tab3 are brought to foreground before they are loaded.
+    // BackgroundTabOpening session excludes the background tabs being
+    // controlled by SessionRestore, so that those two activities are clearly
+    // separated.
+    kBackgroundTabOpening
+  };
+
   TabManagerStatsCollector();
   ~TabManagerStatsCollector();
 
@@ -45,20 +74,19 @@ class TabManagerStatsCollector : public SessionRestoreObserver {
   void OnSessionRestoreStartedLoadingTabs() override;
   void OnSessionRestoreFinishedLoadingTabs() override;
 
-  // The following two functions define the start and end of a background tab
+  // The following two functions defines the start and end of a background tab
   // opening session.
   void OnBackgroundTabOpeningSessionStarted();
   void OnBackgroundTabOpeningSessionEnded();
 
-  // The following record UMA histograms for system swap metrics during session
-  // restore.
-  void OnSessionRestoreSwapInCount(uint64_t count, base::TimeDelta interval);
-  void OnSessionRestoreSwapOutCount(uint64_t count, base::TimeDelta interval);
-  void OnSessionRestoreDecompressedPageCount(uint64_t count,
-                                             base::TimeDelta interval);
-  void OnSessionRestoreCompressedPageCount(uint64_t count,
-                                           base::TimeDelta interval);
-  void OnSessionRestoreUpdateMetricsFailed();
+  // Record UMA histograms for system swap metrics.
+  void RecordSwapMetrics(SessionType type,
+                         const std::string& metric_name,
+                         uint64_t count,
+                         const base::TimeDelta& interval);
+
+  // Handles the situation when failing to update swap metrics.
+  void OnUpdateSwapMetricsFailed();
 
   // Called by WebContentsData when a tab starts loading. Used to clean up
   // |foreground_contents_switched_to_times_| if we were tracking this tab and
@@ -75,14 +103,33 @@ class TabManagerStatsCollector : public SessionRestoreObserver {
   // OnDidStopLoading has not yet been called for it.
   void OnWebContentsDestroyed(content::WebContents* contents);
 
+  bool is_in_background_tab_opening_session() const {
+    return is_in_background_tab_opening_session_;
+  }
+
  private:
-  class SessionRestoreSwapMetricsDelegate;
+  class SwapMetricsDelegate;
   FRIEND_TEST_ALL_PREFIXES(TabManagerStatsCollectorTest,
                            HistogramsExpectedTaskQueueingDuration);
   FRIEND_TEST_ALL_PREFIXES(TabManagerStatsCollectorTabSwitchTest,
                            HistogramsSwitchToTab);
   FRIEND_TEST_ALL_PREFIXES(TabManagerStatsCollectorTabSwitchTest,
                            HistogramsTabSwitchLoadTime);
+
+  // Returns true if the browser is currently in more than one session with
+  // different types. We do not want to report metrics in this situation to have
+  // meaningful results. For example, SessionRestore and BackgroundTabOpening
+  // session could overlap.
+  bool IsInOverlappedSession();
+
+  // This is called when we enter overlapped session. We need to clear all stats
+  // in such situation to avoid reporting mixed metric results.
+  void ClearStatsWhenInOverlappedSession();
+
+  // Create and initialize the swap metrics driver if needed. This will set the
+  // driver to null when it is in overlapped session situation, so that we do
+  // not report swap metrics.
+  void CreateAndInitSwapMetricsDriverIfNeeded(SessionType type);
 
   static const char
       kHistogramSessionRestoreForegroundTabExpectedTaskQueueingDuration[];
@@ -96,8 +143,10 @@ class TabManagerStatsCollector : public SessionRestoreObserver {
   bool is_session_restore_loading_tabs_;
   bool is_in_background_tab_opening_session_;
 
-  std::unique_ptr<content::SwapMetricsDriver>
-      session_restore_swap_metrics_driver_;
+  // This is shared between SessionRestore and BackgroundTabOpening because we
+  // do not report metrics when those two overlap.
+  std::unique_ptr<content::SwapMetricsDriver> swap_metrics_driver_;
+
   // The set of foreground tabs during session restore or background tab opening
   // sessions that were switched to have not yet finished loading, mapped to the
   // time that they were switched to. It's possible to have multiple background

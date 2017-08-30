@@ -50,7 +50,7 @@ class BackgroundTabNavigationThrottleTest
 
     if (enable_feature_) {
       scoped_feature_list_.InitAndEnableFeature(
-          features::kStaggeredBackgroundTabOpen);
+          features::kStaggeredBackgroundTabOpening);
     }
 
     ChromeRenderViewHostTestHarness::SetUp();
