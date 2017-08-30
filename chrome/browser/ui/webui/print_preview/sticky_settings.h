@@ -5,9 +5,9 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_PRINT_PREVIEW_STICKY_SETTINGS_H_
 #define CHROME_BROWSER_UI_WEBUI_PRINT_PREVIEW_STICKY_SETTINGS_H_
 
-#include <memory>
 #include <string>
 
+#include "base/optional.h"
 #include "printing/print_job_constants.h"
 
 class PrefService;
@@ -26,17 +26,18 @@ class StickySettings {
   StickySettings();
   ~StickySettings();
 
-  std::string* printer_app_state();
+  const std::string* printer_app_state() const;
 
   // Stores app state for the last used printer.
   void StoreAppState(const std::string& app_state);
 
-  void SaveInPrefs(PrefService* profile);
+  void SaveInPrefs(PrefService* profile) const;
   void RestoreFromPrefs(PrefService* profile);
+
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
  private:
-  std::unique_ptr<std::string> printer_app_state_;
+  base::Optional<std::string> printer_app_state_;
 };
 
 }  // namespace printing

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/print_preview/sticky_settings.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
@@ -22,14 +23,18 @@ StickySettings::StickySettings() {}
 
 StickySettings::~StickySettings() {}
 
-void StickySettings::StoreAppState(const std::string& data) {
-  printer_app_state_.reset(new std::string(data));
+const std::string* StickySettings::printer_app_state() const {
+  return printer_app_state_ ? &printer_app_state_.value() : nullptr;
 }
 
-void StickySettings::SaveInPrefs(PrefService* prefs) {
-  std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue);
+void StickySettings::StoreAppState(const std::string& data) {
+  printer_app_state_ = base::make_optional(data);
+}
+
+void StickySettings::SaveInPrefs(PrefService* prefs) const {
+  auto value = base::MakeUnique<base::DictionaryValue>();
   if (printer_app_state_)
-    value->SetString(kSettingAppState, *printer_app_state_);
+    value->SetString(kSettingAppState, printer_app_state_.value());
   prefs->Set(prefs::kPrintPreviewStickySettings, *value);
 }
 
@@ -41,13 +46,10 @@ void StickySettings::RestoreFromPrefs(PrefService* prefs) {
     StoreAppState(buffer);
 }
 
+// static
 void StickySettings::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterDictionaryPref(prefs::kPrintPreviewStickySettings);
-}
-
-std::string* StickySettings::printer_app_state() {
-  return printer_app_state_.get();
 }
 
 }  // namespace printing
