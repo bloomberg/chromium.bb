@@ -573,10 +573,10 @@ void RenderViewHostImpl::ClosePage() {
 
     // TODO(creis): Should this be moved to Shutdown?  It may not be called for
     // RenderViewHosts that have been swapped out.
-    NotificationService::current()->Notify(
-        NOTIFICATION_RENDER_VIEW_HOST_WILL_CLOSE_RENDER_VIEW,
-        Source<RenderViewHost>(this),
-        NotificationService::NoDetails());
+#if !defined(OS_ANDROID)
+    static_cast<HostZoomMapImpl*>(HostZoomMap::Get(GetSiteInstance()))
+        ->WillCloseRenderView(GetProcess()->GetID(), GetRoutingID());
+#endif
 
     Send(new ViewMsg_ClosePage(GetRoutingID()));
   } else {

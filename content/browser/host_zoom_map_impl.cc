@@ -17,8 +17,6 @@
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
@@ -117,9 +115,6 @@ void HostZoomMap::SendErrorPageZoomLevelRefresh(
 
 HostZoomMapImpl::HostZoomMapImpl()
     : default_zoom_level_(0.0) {
-  registrar_.Add(
-      this, NOTIFICATION_RENDER_VIEW_HOST_WILL_CLOSE_RENDER_VIEW,
-      NotificationService::AllSources());
 }
 
 void HostZoomMapImpl::CopyFrom(HostZoomMap* copy_interface) {
@@ -490,23 +485,6 @@ double HostZoomMapImpl::GetZoomLevelForView(const GURL& url,
                                               net::GetHostOrSpecFromURL(url));
 }
 
-void HostZoomMapImpl::Observe(int type,
-                              const NotificationSource& source,
-                              const NotificationDetails& details) {
-  switch (type) {
-    case NOTIFICATION_RENDER_VIEW_HOST_WILL_CLOSE_RENDER_VIEW: {
-      int render_view_id = Source<RenderViewHost>(source)->GetRoutingID();
-      int render_process_id =
-          Source<RenderViewHost>(source)->GetProcess()->GetID();
-      ClearTemporaryZoomLevel(render_process_id, render_view_id);
-      ClearPageScaleFactorIsOneForView(render_process_id, render_view_id);
-      break;
-    }
-    default:
-      NOTREACHED() << "Unexpected preference observed.";
-  }
-}
-
 void HostZoomMapImpl::ClearTemporaryZoomLevel(int render_process_id,
                                               int render_view_id) {
   {
@@ -551,6 +529,12 @@ void HostZoomMapImpl::SendErrorPageZoomLevelRefresh() {
   double error_page_zoom_level = GetZoomLevelForHost(host);
 
   SendZoomLevelChange(std::string(), host, error_page_zoom_level);
+}
+
+void HostZoomMapImpl::WillCloseRenderView(int render_process_id,
+                                          int render_view_id) {
+  ClearTemporaryZoomLevel(render_process_id, render_view_id);
+  ClearPageScaleFactorIsOneForView(render_process_id, render_view_id);
 }
 
 HostZoomMapImpl::~HostZoomMapImpl() {

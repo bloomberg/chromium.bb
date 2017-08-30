@@ -15,17 +15,14 @@
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/synchronization/lock.h"
 #include "content/public/browser/host_zoom_map.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 
 namespace content {
 
 class WebContentsImpl;
 
 // HostZoomMap needs to be deleted on the UI thread because it listens
-// to notifications on there (and holds a NotificationRegistrar).
-class CONTENT_EXPORT HostZoomMapImpl : public HostZoomMap,
-                                       public NotificationObserver {
+// to notifications on there.
+class CONTENT_EXPORT HostZoomMapImpl : public HostZoomMap {
  public:
   HostZoomMapImpl();
   ~HostZoomMapImpl() override;
@@ -96,12 +93,9 @@ class CONTENT_EXPORT HostZoomMapImpl : public HostZoomMap,
                              int render_process_id,
                              int render_view_id) const;
 
-  // NotificationObserver implementation.
-  void Observe(int type,
-               const NotificationSource& source,
-               const NotificationDetails& details) override;
-
   void SendErrorPageZoomLevelRefresh();
+
+  void WillCloseRenderView(int render_process_id, int render_view_id);
 
  private:
   typedef std::map<std::string, double> HostZoomLevels;
@@ -155,8 +149,6 @@ class CONTENT_EXPORT HostZoomMapImpl : public HostZoomMap,
   // |temporary_zoom_levels_|, and |view_page_scale_factors_are_one_| to
   // guarantee thread safety.
   mutable base::Lock lock_;
-
-  NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(HostZoomMapImpl);
 };

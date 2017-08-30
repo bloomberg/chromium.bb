@@ -130,14 +130,6 @@ enum NotificationType {
   // painted. The source is the RenderWidgetHost, the details are not used.
   NOTIFICATION_RENDER_WIDGET_HOST_DID_UPDATE_BACKING_STORE,
 
-  // Sent from RenderViewHost::ClosePage.  The hosted RenderView has
-  // processed the onbeforeunload handler and is about to be sent a
-  // ViewMsg_ClosePage message to complete the tear-down process.  The source
-  // is the RenderViewHost sending the message, and no details are provided.
-  // Note:  This message is not sent in response to RenderView closure
-  // initiated by window.close().
-  NOTIFICATION_RENDER_VIEW_HOST_WILL_CLOSE_RENDER_VIEW,
-
   // Indicates a RenderWidgetHost has been hidden or restored. The source is
   // the RWH whose visibility changed, the details is a bool set to true if
   // the new state is "visible."
