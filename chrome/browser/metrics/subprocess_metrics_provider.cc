@@ -89,7 +89,7 @@ void SubprocessMetricsProvider::MergeHistogramDeltasFromAllocator(
   DCHECK(allocator);
 
   // TODO(asvitkine): Remove this after crbug/736675.
-  base::StatisticsRecorder::ValidateAllHistograms();
+  base::StatisticsRecorder::ValidateAllHistograms(1);
 
   int histogram_count = 0;
   base::PersistentHistogramAllocator::Iterator hist_iter(allocator);
@@ -102,7 +102,7 @@ void SubprocessMetricsProvider::MergeHistogramDeltasFromAllocator(
   }
 
   // TODO(asvitkine): Remove this after crbug/736675.
-  base::StatisticsRecorder::ValidateAllHistograms();
+  base::StatisticsRecorder::ValidateAllHistograms(2);
 
   DVLOG(1) << "Reported " << histogram_count << " histograms from subprocess #"
            << id;

@@ -299,22 +299,13 @@ void StatisticsRecorder::PrepareDeltas(
 }
 
 // static
-void StatisticsRecorder::ValidateAllHistograms() {
+void StatisticsRecorder::ValidateAllHistograms(int identifier) {
   ImportGlobalPersistentHistograms();
 
   auto known = GetKnownHistograms(/*include_persistent=*/true);
 
-  HistogramBase* last_invalid_histogram = nullptr;
-  int invalid_count = 0;
-  for (HistogramBase* h : known) {
-    const bool is_valid = h->ValidateHistogramContents(false, 0);
-    if (!is_valid) {
-      ++invalid_count;
-      last_invalid_histogram = h;
-    }
-  }
-  if (last_invalid_histogram)
-    last_invalid_histogram->ValidateHistogramContents(true, invalid_count);
+  for (HistogramBase* h : known)
+    h->ValidateHistogramContents(true, identifier);
 }
 
 // static
