@@ -140,6 +140,8 @@ FileTapHandler.prototype.handleTouchEvents = function(event, index, callback) {
       this.activeTouchId_ = touch.identifier;
       this.startTouchX_ = this.lastTouchX_ = touch.clientX;
       this.startTouchY_ = this.lastTouchY_ = touch.clientY;
+      this.totalMoveX_ = 0;
+      this.totalMoveY_ = 0;
 
       this.tapStarted_ = true;
       this.activeItemIndex_ = index;
@@ -186,14 +188,17 @@ FileTapHandler.prototype.handleTouchEvents = function(event, index, callback) {
       break;
 
     case 'touchend':
-      // Mark as no longer being touched
+      if (!this.tapStarted_)
+        break;
+      // Mark as no longer being touched.
+      // Two-finger tap event is issued when either of the 2 touch points is
+      // released. Stop tracking the tap to avoid issuing duplicate events.
+      this.tapStarted_ = false;
       this.activeTouchId_ = undefined;
       if (this.longTapDetectorTimerId_ != -1) {
         clearTimeout(this.longTapDetectorTimerId_);
         this.longTapDetectorTimerId_ = -1;
       }
-      if (!this.tapStarted_)
-        break;
       if (this.isLongTap_) {
         // The item at the touch start position is treated as the target item,
         // rather than the one at the touch end position. Note that |index| is
