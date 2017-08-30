@@ -321,7 +321,6 @@ void SafeBrowsingService::RegisterAllDelayedAnalysis() {
 #if defined(FULL_SAFE_BROWSING)
   RegisterBinaryIntegrityAnalysis();
   RegisterBlacklistLoadAnalysis();
-  RegisterModuleLoadAnalysis(database_manager());
   RegisterVariationsSeedSignatureAnalysis();
 #endif
 }
