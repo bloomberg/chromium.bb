@@ -6,8 +6,7 @@
 #define COMPONENTS_PAYMENTS_CORE_PAYMENT_CURRENCY_AMOUNT_H_
 
 #include <memory>
-
-#include "base/strings/string16.h"
+#include <string>
 
 // C++ bindings for the PaymentRequest API PaymentCurrencyAmount. Conforms to
 // the following spec:
@@ -39,14 +38,14 @@ class PaymentCurrencyAmount {
   // A currency identifier. The most common identifiers are three-letter
   // alphabetic codes as defined by ISO 4217 (for example, "USD" for US Dollars)
   // however any string is considered valid.
-  base::string16 currency;
+  std::string currency;
 
   // A string containing the decimal monetary value.
-  base::string16 value;
+  std::string value;
 
   // A URL that indicates the currency system that the currency identifier
   // belongs to.
-  base::string16 currency_system;
+  std::string currency_system;
 };
 
 }  // namespace payments

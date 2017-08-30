@@ -59,13 +59,11 @@ TEST(PaymentRequestTest, PopulatedDetailsModifierDictionary) {
   expected_value.SetDictionary("total", std::move(item_dict));
 
   PaymentDetailsModifier payment_detials_modififer;
-  payment_detials_modififer.supported_methods.push_back(
-      base::ASCIIToUTF16("visa"));
-  payment_detials_modififer.supported_methods.push_back(
-      base::ASCIIToUTF16("amex"));
-  payment_detials_modififer.total.label = base::ASCIIToUTF16("Gratuity");
-  payment_detials_modififer.total.amount.currency = base::ASCIIToUTF16("USD");
-  payment_detials_modififer.total.amount.value = base::ASCIIToUTF16("139.99");
+  payment_detials_modififer.supported_methods.push_back("visa");
+  payment_detials_modififer.supported_methods.push_back("amex");
+  payment_detials_modififer.total.label = "Gratuity";
+  payment_detials_modififer.total.amount.currency = "USD";
+  payment_detials_modififer.total.amount.value = "139.99";
 
   EXPECT_TRUE(expected_value.Equals(
       payment_detials_modififer.ToDictionaryValue().get()));
@@ -80,27 +78,27 @@ TEST(PaymentRequestTest, PaymentDetailsModifierEquality) {
   PaymentDetailsModifier details_modifier2;
   EXPECT_EQ(details_modifier1, details_modifier2);
 
-  std::vector<base::string16> supported_methods1;
-  supported_methods1.push_back(base::ASCIIToUTF16("China UnionPay"));
-  supported_methods1.push_back(base::ASCIIToUTF16("BobPay"));
+  std::vector<std::string> supported_methods1;
+  supported_methods1.push_back("China UnionPay");
+  supported_methods1.push_back("BobPay");
   details_modifier1.supported_methods = supported_methods1;
   EXPECT_NE(details_modifier1, details_modifier2);
-  std::vector<base::string16> supported_methods2;
-  supported_methods2.push_back(base::ASCIIToUTF16("BobPay"));
+  std::vector<std::string> supported_methods2;
+  supported_methods2.push_back("BobPay");
   details_modifier2.supported_methods = supported_methods2;
   EXPECT_NE(details_modifier1, details_modifier2);
   details_modifier2.supported_methods = supported_methods1;
   EXPECT_EQ(details_modifier1, details_modifier2);
 
-  details_modifier1.total.label = base::ASCIIToUTF16("Total");
+  details_modifier1.total.label = "Total";
   EXPECT_NE(details_modifier1, details_modifier2);
-  details_modifier2.total.label = base::ASCIIToUTF16("Gratuity");
+  details_modifier2.total.label = "Gratuity";
   EXPECT_NE(details_modifier1, details_modifier2);
-  details_modifier2.total.label = base::ASCIIToUTF16("Total");
+  details_modifier2.total.label = "Total";
   EXPECT_EQ(details_modifier1, details_modifier2);
 
   PaymentItem payment_item;
-  payment_item.label = base::ASCIIToUTF16("Tax");
+  payment_item.label = "Tax";
   std::vector<PaymentItem> display_items1;
   display_items1.push_back(payment_item);
   details_modifier1.additional_display_items = display_items1;

@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "base/strings/string16.h"
 #include "components/payments/core/payment_details_modifier.h"
 #include "components/payments/core/payment_item.h"
 #include "components/payments/core/payment_shipping_option.h"
@@ -60,7 +59,7 @@ class PaymentDetails {
 
   // If non-empty, this is the error message the user agent should display to
   // the user when the payment request is updated using updateWith.
-  base::string16 error;
+  std::string error;
 };
 
 }  // namespace payments

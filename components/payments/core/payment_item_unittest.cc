@@ -14,9 +14,9 @@ namespace payments {
 // Tests the success case when populating a PaymentItem from a dictionary.
 TEST(PaymentRequestTest, PaymentItemFromDictionaryValueSuccess) {
   PaymentItem expected;
-  expected.label = base::ASCIIToUTF16("Payment Total");
-  expected.amount.currency = base::ASCIIToUTF16("NZD");
-  expected.amount.value = base::ASCIIToUTF16("2,242,093.00");
+  expected.label = "Payment Total";
+  expected.amount.currency = "NZD";
+  expected.amount.value = "2,242,093.00";
 
   base::DictionaryValue item_dict;
   item_dict.SetString("label", "Payment Total");
@@ -59,18 +59,18 @@ TEST(PaymentRequestTest, PaymentItemEquality) {
   PaymentItem item2;
   EXPECT_EQ(item1, item2);
 
-  item1.label = base::ASCIIToUTF16("Subtotal");
+  item1.label = "Subtotal";
   EXPECT_NE(item1, item2);
-  item2.label = base::ASCIIToUTF16("Total");
+  item2.label = "Total";
   EXPECT_NE(item1, item2);
-  item2.label = base::ASCIIToUTF16("Subtotal");
+  item2.label = "Subtotal";
   EXPECT_EQ(item1, item2);
 
-  item1.amount.value = base::ASCIIToUTF16("104.34");
+  item1.amount.value = "104.34";
   EXPECT_NE(item1, item2);
-  item2.amount.value = base::ASCIIToUTF16("104");
+  item2.amount.value = "104";
   EXPECT_NE(item1, item2);
-  item2.amount.value = base::ASCIIToUTF16("104.34");
+  item2.amount.value = "104.34";
   EXPECT_EQ(item1, item2);
 
   item1.pending = true;
@@ -110,9 +110,9 @@ TEST(PaymentRequestTest, PopulatedPaymentItemDictionary) {
   expected_value.SetBoolean("pending", true);
 
   PaymentItem payment_item;
-  payment_item.label = base::ASCIIToUTF16("Payment Total");
-  payment_item.amount.currency = base::ASCIIToUTF16("NZD");
-  payment_item.amount.value = base::ASCIIToUTF16("2,242,093.00");
+  payment_item.label = "Payment Total";
+  payment_item.amount.currency = "NZD";
+  payment_item.amount.value = "2,242,093.00";
   payment_item.pending = true;
 
   EXPECT_TRUE(expected_value.Equals(payment_item.ToDictionaryValue().get()));

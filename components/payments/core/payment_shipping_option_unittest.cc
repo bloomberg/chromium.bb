@@ -16,10 +16,10 @@ namespace payments {
 // dictionary.
 TEST(PaymentRequestTest, PaymentShippingOptionFromDictionaryValueSuccess) {
   PaymentShippingOption expected;
-  expected.id = base::ASCIIToUTF16("123");
-  expected.label = base::ASCIIToUTF16("Ground Shipping");
-  expected.amount.currency = base::ASCIIToUTF16("BRL");
-  expected.amount.value = base::ASCIIToUTF16("4,000.32");
+  expected.id = "123";
+  expected.label = "Ground Shipping";
+  expected.amount.currency = "BRL";
+  expected.amount.value = "4,000.32";
   expected.selected = true;
 
   base::DictionaryValue shipping_option_dict;
@@ -41,10 +41,10 @@ TEST(PaymentRequestTest, PaymentShippingOptionFromDictionaryValueSuccess) {
 // dictionary.
 TEST(PaymentRequestTest, PaymentShippingOptionFromDictionaryValueFailure) {
   PaymentShippingOption expected;
-  expected.id = base::ASCIIToUTF16("123");
-  expected.label = base::ASCIIToUTF16("Ground Shipping");
-  expected.amount.currency = base::ASCIIToUTF16("BRL");
-  expected.amount.value = base::ASCIIToUTF16("4,000.32");
+  expected.id = "123";
+  expected.label = "Ground Shipping";
+  expected.amount.currency = "BRL";
+  expected.amount.value = "4,000.32";
   expected.selected = true;
 
   PaymentShippingOption actual;
@@ -80,25 +80,25 @@ TEST(PaymentRequestTest, PaymentShippingOptionEquality) {
   PaymentShippingOption shipping_option2;
   EXPECT_EQ(shipping_option1, shipping_option2);
 
-  shipping_option1.id = base::ASCIIToUTF16("a8df2");
+  shipping_option1.id = "a8df2";
   EXPECT_NE(shipping_option1, shipping_option2);
-  shipping_option2.id = base::ASCIIToUTF16("k42jk");
+  shipping_option2.id = "k42jk";
   EXPECT_NE(shipping_option1, shipping_option2);
-  shipping_option2.id = base::ASCIIToUTF16("a8df2");
+  shipping_option2.id = "a8df2";
   EXPECT_EQ(shipping_option1, shipping_option2);
 
-  shipping_option1.label = base::ASCIIToUTF16("Overnight");
+  shipping_option1.label = "Overnight";
   EXPECT_NE(shipping_option1, shipping_option2);
-  shipping_option2.label = base::ASCIIToUTF16("Ground");
+  shipping_option2.label = "Ground";
   EXPECT_NE(shipping_option1, shipping_option2);
-  shipping_option2.label = base::ASCIIToUTF16("Overnight");
+  shipping_option2.label = "Overnight";
   EXPECT_EQ(shipping_option1, shipping_option2);
 
-  shipping_option1.amount.currency = base::ASCIIToUTF16("AUD");
+  shipping_option1.amount.currency = "AUD";
   EXPECT_NE(shipping_option1, shipping_option2);
-  shipping_option2.amount.currency = base::ASCIIToUTF16("HKD");
+  shipping_option2.amount.currency = "HKD";
   EXPECT_NE(shipping_option1, shipping_option2);
-  shipping_option2.amount.currency = base::ASCIIToUTF16("AUD");
+  shipping_option2.amount.currency = "AUD";
   EXPECT_EQ(shipping_option1, shipping_option2);
 
   shipping_option1.selected = true;

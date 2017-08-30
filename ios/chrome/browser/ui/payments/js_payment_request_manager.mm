@@ -145,7 +145,7 @@ NSString* JSONEscape(NSString* JSON) {
       [NSString stringWithFormat:
                     @"__gCrWeb['paymentRequestManager']."
                     @"updateShippingOptionAndDispatchEvent(%@)",
-                    JSONEscape(base::SysUTF16ToNSString(shippingOption.id))];
+                    JSONEscape(base::SysUTF8ToNSString(shippingOption.id))];
   [self executeScript:script completionHandler:completionHanlder];
 }
 
