@@ -415,15 +415,8 @@ void InputInjectorWin::Core::SetLockStates(uint32_t states) {
     input[1].ki.wVk = VK_CAPITAL;
     SendInput(arraysize(input), input, sizeof(INPUT));
   }
-
-  bool client_numlock_state =
-      (states & protocol::KeyEvent::LOCK_STATES_NUMLOCK) != 0;
-  bool host_numlock_state = (GetKeyState(VK_NUMLOCK) & 1) != 0;
-  if (client_numlock_state != host_numlock_state) {
-    input[0].ki.wVk = VK_NUMLOCK;
-    input[1].ki.wVk = VK_NUMLOCK;
-    SendInput(arraysize(input), input, sizeof(INPUT));
-  }
+  // TODO(jamiewalch): Reinstate NumLock synchronization when the protocol
+  //     supports the client reporting it as "unknown".
 }
 
 }  // namespace
