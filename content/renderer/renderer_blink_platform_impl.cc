@@ -360,11 +360,15 @@ RendererBlinkPlatformImpl::CreateNetworkURLLoaderFactory() {
     url_loader_factory = std::move(factory_ptr);
   }
 
-  // Attach the CORS-enabled URLLoader for the network URLLoaderFactory.
+  // Attach the CORS-enabled URLLoader for the network URLLoaderFactory. To
+  // avoid thread hops and prevent jank on the main thread from affecting
+  // requests from other threads this object should live on the IO thread.
   if (base::FeatureList::IsEnabled(features::kOutOfBlinkCORS)) {
     mojom::URLLoaderFactoryPtr factory_ptr;
-    CORSURLLoaderFactory::CreateAndBind(std::move(url_loader_factory),
-                                        mojo::MakeRequest(&factory_ptr));
+    RenderThreadImpl::current()->GetIOTaskRunner()->PostTask(
+        FROM_HERE, base::BindOnce(&CORSURLLoaderFactory::CreateAndBind,
+                                  url_loader_factory.PassInterface(),
+                                  mojo::MakeRequest(&factory_ptr)));
     url_loader_factory = std::move(factory_ptr);
   }
   return url_loader_factory;
