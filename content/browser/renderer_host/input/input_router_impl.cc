@@ -161,7 +161,8 @@ void InputRouterImpl::KeyboardEventHandled(
     InputEventAckSource source,
     const ui::LatencyInfo& latency,
     InputEventAckState state,
-    const base::Optional<ui::DidOverscrollParams>& overscroll) {
+    const base::Optional<ui::DidOverscrollParams>& overscroll,
+    const base::Optional<cc::TouchAction>& touch_action) {
   TRACE_EVENT2("input", "InputRouterImpl::KeboardEventHandled", "type",
                WebInputEvent::GetName(event.event.GetType()), "ack",
                GetEventAckName(state));
@@ -232,7 +233,8 @@ void InputRouterImpl::MouseEventHandled(
     InputEventAckSource source,
     const ui::LatencyInfo& latency,
     InputEventAckState state,
-    const base::Optional<ui::DidOverscrollParams>& overscroll) {
+    const base::Optional<ui::DidOverscrollParams>& overscroll,
+    const base::Optional<cc::TouchAction>& touch_action) {
   TRACE_EVENT2("input", "InputRouterImpl::MouseEventHandled", "type",
                WebInputEvent::GetName(event.event.GetType()), "ack",
                GetEventAckName(state));
@@ -256,13 +258,20 @@ void InputRouterImpl::TouchEventHandled(
     InputEventAckSource source,
     const ui::LatencyInfo& latency,
     InputEventAckState state,
-    const base::Optional<ui::DidOverscrollParams>& overscroll) {
+    const base::Optional<ui::DidOverscrollParams>& overscroll,
+    const base::Optional<cc::TouchAction>& touch_action) {
   TRACE_EVENT2("input", "InputRouterImpl::TouchEventHandled", "type",
                WebInputEvent::GetName(touch_event.event.GetType()), "ack",
                GetEventAckName(state));
   if (source != InputEventAckSource::BROWSER)
     client_->DecrementInFlightEventCount(source);
   touch_event.latency.AddNewLatencyFrom(latency);
+
+  // The SetTouchAction IPC occurs on a different channel so always
+  // send it in the input event ack to ensure it is available at the
+  // time the ACK is handled.
+  if (touch_action.has_value())
+    OnSetTouchAction(touch_action.value());
 
   // |touch_event_queue_| will forward to OnTouchEventAck when appropriate.
   touch_event_queue_->ProcessTouchAck(state, latency,
@@ -300,7 +309,8 @@ void InputRouterImpl::GestureEventHandled(
     InputEventAckSource source,
     const ui::LatencyInfo& latency,
     InputEventAckState state,
-    const base::Optional<ui::DidOverscrollParams>& overscroll) {
+    const base::Optional<ui::DidOverscrollParams>& overscroll,
+    const base::Optional<cc::TouchAction>& touch_action) {
   TRACE_EVENT2("input", "InputRouterImpl::GestureEventHandled", "type",
                WebInputEvent::GetName(gesture_event.event.GetType()), "ack",
                GetEventAckName(state));
@@ -390,7 +400,8 @@ void InputRouterImpl::MouseWheelEventHandled(
     InputEventAckSource source,
     const ui::LatencyInfo& latency,
     InputEventAckState state,
-    const base::Optional<ui::DidOverscrollParams>& overscroll) {
+    const base::Optional<ui::DidOverscrollParams>& overscroll,
+    const base::Optional<cc::TouchAction>& touch_action) {
   TRACE_EVENT2("input", "InputRouterImpl::MouseWheelEventHandled", "type",
                WebInputEvent::GetName(event.event.GetType()), "ack",
                GetEventAckName(state));
@@ -428,7 +439,7 @@ void InputRouterImpl::FilterAndSendWebInputEvent(
   if (WasHandled(filtered_state)) {
     if (filtered_state != INPUT_EVENT_ACK_STATE_UNKNOWN) {
       std::move(callback).Run(InputEventAckSource::BROWSER, latency_info,
-                              filtered_state, base::nullopt);
+                              filtered_state, base::nullopt, base::nullopt);
     }
     return;
   }
@@ -445,7 +456,8 @@ void InputRouterImpl::FilterAndSendWebInputEvent(
     client_->GetWidgetInputHandler()->DispatchNonBlockingEvent(
         std::move(event));
     std::move(callback).Run(InputEventAckSource::BROWSER, latency_info,
-                            INPUT_EVENT_ACK_STATE_IGNORED, base::nullopt);
+                            INPUT_EVENT_ACK_STATE_IGNORED, base::nullopt,
+                            base::nullopt);
   }
 }
 

@@ -858,9 +858,11 @@ void RenderWidget::SendInputEventAck(
     uint32_t touch_event_id,
     InputEventAckState ack_state,
     const ui::LatencyInfo& latency_info,
-    std::unique_ptr<ui::DidOverscrollParams> overscroll_params) {
+    std::unique_ptr<ui::DidOverscrollParams> overscroll_params,
+    base::Optional<cc::TouchAction> touch_action) {
   InputEventAck ack(InputEventAckSource::MAIN_THREAD, type, ack_state,
-                    latency_info, std::move(overscroll_params), touch_event_id);
+                    latency_info, std::move(overscroll_params), touch_event_id,
+                    touch_action);
   Send(new InputHostMsg_HandleInputEvent_ACK(routing_id_, ack));
 }
 
@@ -2321,9 +2323,7 @@ void RenderWidget::SetNeedsLowLatencyInput(bool needs_low_latency) {
 }
 
 void RenderWidget::SetTouchAction(cc::TouchAction touch_action) {
-  // Ignore setTouchAction calls that result from synthetic touch events (eg.
-  // when blink is emulating touch with mouse).
-  if (input_handler_->handling_event_type() != WebInputEvent::kTouchStart)
+  if (!input_handler_->ProcessTouchAction(touch_action))
     return;
 
   Send(new InputHostMsg_SetTouchAction(routing_id_, touch_action));
