@@ -526,61 +526,12 @@ RenderWidgetHost* RenderWidgetHostViewAura::GetRenderWidgetHost() const {
 
 void RenderWidgetHostViewAura::Show() {
   window_->Show();
-
-  if (!host_->is_hidden())
-    return;
-
-  bool has_saved_frame =
-      delegated_frame_host_ ? delegated_frame_host_->HasSavedFrame() : false;
-  ui::LatencyInfo renderer_latency_info, browser_latency_info;
-  if (has_saved_frame) {
-    browser_latency_info.AddLatencyNumber(
-        ui::TAB_SHOW_COMPONENT, host_->GetLatencyComponentId(), 0);
-  } else {
-    renderer_latency_info.AddLatencyNumber(
-        ui::TAB_SHOW_COMPONENT, host_->GetLatencyComponentId(), 0);
-  }
-  host_->WasShown(renderer_latency_info);
-
-  aura::Window* root = window_->GetRootWindow();
-  if (root) {
-    aura::client::CursorClient* cursor_client =
-        aura::client::GetCursorClient(root);
-    if (cursor_client)
-      NotifyRendererOfCursorVisibilityState(cursor_client->IsCursorVisible());
-  }
-
-  if (delegated_frame_host_)
-    delegated_frame_host_->WasShown(browser_latency_info);
-
-#if defined(OS_WIN)
-  UpdateLegacyWin();
-#endif
+  WasUnOccluded();
 }
 
 void RenderWidgetHostViewAura::Hide() {
   window_->Hide();
-
-  if (!host_->is_hidden()) {
-    host_->WasHidden();
-    if (delegated_frame_host_)
-      delegated_frame_host_->WasHidden();
-
-#if defined(OS_WIN)
-    aura::WindowTreeHost* host = window_->GetHost();
-    if (host) {
-      // We reparent the legacy Chrome_RenderWidgetHostHWND window to the global
-      // hidden window on the same lines as Windowed plugin windows.
-      if (legacy_render_widget_host_HWND_)
-        legacy_render_widget_host_HWND_->UpdateParent(ui::GetHiddenWindow());
-    }
-#endif
-  }
-
-#if defined(OS_WIN)
-  if (legacy_render_widget_host_HWND_)
-    legacy_render_widget_host_HWND_->Hide();
-#endif
+  WasOccluded();
 }
 
 void RenderWidgetHostViewAura::SetSize(const gfx::Size& size) {
@@ -713,6 +664,61 @@ bool RenderWidgetHostViewAura::IsSurfaceAvailableForCopy() const {
 
 bool RenderWidgetHostViewAura::IsShowing() {
   return window_->IsVisible();
+}
+
+void RenderWidgetHostViewAura::WasUnOccluded() {
+  if (!host_->is_hidden())
+    return;
+
+  bool has_saved_frame =
+      delegated_frame_host_ ? delegated_frame_host_->HasSavedFrame() : false;
+  ui::LatencyInfo renderer_latency_info, browser_latency_info;
+  if (has_saved_frame) {
+    browser_latency_info.AddLatencyNumber(ui::TAB_SHOW_COMPONENT,
+                                          host_->GetLatencyComponentId(), 0);
+  } else {
+    renderer_latency_info.AddLatencyNumber(ui::TAB_SHOW_COMPONENT,
+                                           host_->GetLatencyComponentId(), 0);
+  }
+  host_->WasShown(renderer_latency_info);
+
+  aura::Window* root = window_->GetRootWindow();
+  if (root) {
+    aura::client::CursorClient* cursor_client =
+        aura::client::GetCursorClient(root);
+    if (cursor_client)
+      NotifyRendererOfCursorVisibilityState(cursor_client->IsCursorVisible());
+  }
+
+  if (delegated_frame_host_)
+    delegated_frame_host_->WasShown(browser_latency_info);
+
+#if defined(OS_WIN)
+  UpdateLegacyWin();
+#endif
+}
+
+void RenderWidgetHostViewAura::WasOccluded() {
+  if (!host_->is_hidden()) {
+    host_->WasHidden();
+    if (delegated_frame_host_)
+      delegated_frame_host_->WasHidden();
+
+#if defined(OS_WIN)
+    aura::WindowTreeHost* host = window_->GetHost();
+    if (host) {
+      // We reparent the legacy Chrome_RenderWidgetHostHWND window to the global
+      // hidden window on the same lines as Windowed plugin windows.
+      if (legacy_render_widget_host_HWND_)
+        legacy_render_widget_host_HWND_->UpdateParent(ui::GetHiddenWindow());
+    }
+#endif
+  }
+
+#if defined(OS_WIN)
+  if (legacy_render_widget_host_HWND_)
+    legacy_render_widget_host_HWND_->Hide();
+#endif
 }
 
 gfx::Rect RenderWidgetHostViewAura::GetViewBounds() const {

@@ -109,6 +109,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void Show() override;
   void Hide() override;
   bool IsShowing() override;
+  void WasUnOccluded() override;
+  void WasOccluded() override;
   gfx::Rect GetViewBounds() const override;
   void SetBackgroundColor(SkColor color) override;
   SkColor background_color() const override;
