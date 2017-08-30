@@ -16,7 +16,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/task_scheduler/lazy_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -61,10 +61,11 @@ namespace {
 
 const char kMediaGalleryMountPrefix[] = "media_galleries-";
 
-#if DCHECK_IS_ON()
-base::LazyInstance<base::SequenceChecker>::Leaky g_media_sequence_checker =
-    LAZY_INSTANCE_INITIALIZER;
-#endif
+base::LazySequencedTaskRunner g_media_task_runner =
+    LAZY_SEQUENCED_TASK_RUNNER_INITIALIZER(
+        base::TaskTraits(base::MayBlock(),
+                         base::TaskPriority::USER_VISIBLE,
+                         base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN));
 
 void OnPreferencesInit(
     const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
@@ -129,14 +130,9 @@ void AttemptAutoMountOnUIThread(
 
 }  // namespace
 
-const char MediaFileSystemBackend::kMediaTaskRunnerName[] =
-    "media-task-runner";
-
 MediaFileSystemBackend::MediaFileSystemBackend(
-    const base::FilePath& profile_path,
-    base::SequencedTaskRunner* media_task_runner)
+    const base::FilePath& profile_path)
     : profile_path_(profile_path),
-      media_task_runner_(media_task_runner),
       media_path_filter_(new MediaPathFilter),
       media_copy_or_move_file_validator_factory_(new MediaFileValidatorFactory),
       native_media_file_util_(new NativeMediaFileUtil(media_path_filter_.get()))
@@ -162,17 +158,14 @@ MediaFileSystemBackend::~MediaFileSystemBackend() {
 // static
 void MediaFileSystemBackend::AssertCurrentlyOnMediaSequence() {
 #if DCHECK_IS_ON()
-  DCHECK(g_media_sequence_checker.Get().CalledOnValidSequence());
+  DCHECK(g_media_task_runner.Get()->RunsTasksInCurrentSequence());
 #endif
 }
 
 // static
 scoped_refptr<base::SequencedTaskRunner>
 MediaFileSystemBackend::MediaTaskRunner() {
-  base::SequencedWorkerPool* pool = content::BrowserThread::GetBlockingPool();
-  base::SequencedWorkerPool::SequenceToken media_sequence_token =
-      pool->GetNamedSequenceToken(kMediaTaskRunnerName);
-  return pool->GetSequencedTaskRunner(media_sequence_token);
+  return g_media_task_runner.Get();
 }
 
 // static
@@ -317,7 +310,7 @@ storage::FileSystemOperation* MediaFileSystemBackend::CreateFileSystemOperation(
     base::File::Error* error_code) const {
   std::unique_ptr<storage::FileSystemOperationContext> operation_context(
       new storage::FileSystemOperationContext(context,
-                                              media_task_runner_.get()));
+                                              MediaTaskRunner().get()));
   return storage::FileSystemOperation::Create(url, context,
                                               std::move(operation_context));
 }

@@ -30,12 +30,9 @@ IAppsDataProvider::IAppsDataProvider(const base::FilePath& library_path)
   MediaFileSystemBackend::AssertCurrentlyOnMediaSequence();
   DCHECK(!library_path_.empty());
 
-  StartFilePathWatchOnMediaTaskRunner(
-      library_path_,
-      base::Bind(&IAppsDataProvider::OnLibraryWatchStarted,
-                 weak_factory_.GetWeakPtr()),
-      base::Bind(&IAppsDataProvider::OnLibraryChanged,
-                 weak_factory_.GetWeakPtr()));
+  library_watcher_.Watch(library_path_, false /* recursive */,
+                         base::Bind(&IAppsDataProvider::OnLibraryChanged,
+                                    weak_factory_.GetWeakPtr()));
 }
 
 IAppsDataProvider::~IAppsDataProvider() {}
@@ -62,12 +59,6 @@ void IAppsDataProvider::RefreshData(const ReadyCallback& ready_callback) {
 
 const base::FilePath& IAppsDataProvider::library_path() const {
   return library_path_;
-}
-
-void IAppsDataProvider::OnLibraryWatchStarted(
-    MediaFilePathWatcherUniquePtr library_watcher) {
-  MediaFileSystemBackend::AssertCurrentlyOnMediaSequence();
-  library_watcher_ = std::move(library_watcher);
 }
 
 void IAppsDataProvider::OnLibraryChanged(const base::FilePath& path,

@@ -36,11 +36,7 @@ class MediaPathFilter;
 
 class MediaFileSystemBackend : public storage::FileSystemBackend {
  public:
-  static const char kMediaTaskRunnerName[];
-
-  MediaFileSystemBackend(
-      const base::FilePath& profile_path,
-      base::SequencedTaskRunner* media_task_runner);
+  explicit MediaFileSystemBackend(const base::FilePath& profile_path);
   ~MediaFileSystemBackend() override;
 
   // Asserts that the current task is sequenced with any other task that calls
@@ -102,8 +98,6 @@ class MediaFileSystemBackend : public storage::FileSystemBackend {
  private:
   // Store the profile path. We need this to create temporary snapshot files.
   const base::FilePath profile_path_;
-
-  scoped_refptr<base::SequencedTaskRunner> media_task_runner_;
 
   std::unique_ptr<MediaPathFilter> media_path_filter_;
   std::unique_ptr<storage::CopyOrMoveFileValidatorFactory>

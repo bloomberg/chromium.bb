@@ -861,12 +861,8 @@ void ChromeContentBrowserClientExtensionsPart::GetAdditionalFileSystemBackends(
     const base::FilePath& storage_partition_path,
     std::vector<std::unique_ptr<storage::FileSystemBackend>>*
         additional_backends) {
-  base::SequencedWorkerPool* pool = content::BrowserThread::GetBlockingPool();
-  auto sequence_token =
-      pool->GetNamedSequenceToken(MediaFileSystemBackend::kMediaTaskRunnerName);
-  additional_backends->push_back(base::MakeUnique<MediaFileSystemBackend>(
-      storage_partition_path,
-      pool->GetSequencedTaskRunner(sequence_token).get()));
+  additional_backends->push_back(
+      base::MakeUnique<MediaFileSystemBackend>(storage_partition_path));
 
   additional_backends->push_back(
       base::MakeUnique<sync_file_system::SyncFileSystemBackend>(

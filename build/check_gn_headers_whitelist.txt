@@ -57,7 +57,6 @@ chrome/browser/media/router/mojo/media_route_provider_util_win.h
 chrome/browser/media/webrtc/desktop_media_list_ash.h
 chrome/browser/media/webrtc/desktop_media_list_observer.h
 chrome/browser/media/webrtc/rtp_dump_type.h
-chrome/browser/media_galleries/fileapi/file_path_watcher_util.h
 chrome/browser/media_galleries/fileapi/iapps_data_provider.h
 chrome/browser/media_galleries/fileapi/itunes_data_provider.h
 chrome/browser/media_galleries/fileapi/picasa_data_provider.h
