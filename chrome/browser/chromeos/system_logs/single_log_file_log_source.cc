@@ -44,6 +44,8 @@ base::FilePath GetLogFileSourceRelativeFilePath(
       return base::FilePath("ui/ui.LATEST");
     case SupportedSource::kAtrusLog:
       return base::FilePath("atrus.log");
+    case SupportedSource::kNetLog:
+      return base::FilePath("net.log");
   }
   NOTREACHED();
   return base::FilePath();
@@ -85,6 +87,7 @@ bool ShouldReadFromTimestampBasedOffset(SupportedSource source_type) {
   switch (source_type) {
     case SupportedSource::kMessages:
     case SupportedSource::kAtrusLog:
+    case SupportedSource::kNetLog:
       return true;
     case SupportedSource::kUiLatest:
       return false;
