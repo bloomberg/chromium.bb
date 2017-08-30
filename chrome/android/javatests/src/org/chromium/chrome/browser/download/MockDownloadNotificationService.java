@@ -4,19 +4,18 @@
 
 package org.chromium.chrome.browser.download;
 
-import static org.chromium.chrome.browser.notifications.NotificationConstants.DEFAULT_NOTIFICATION_ID;
-
 import android.app.Notification;
-import android.content.Intent;
+import android.content.Context;
 import android.graphics.Bitmap;
+import android.util.Pair;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.OfflineItem.Progress;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 /**
  * Mock class to DownloadNotificationService for testing purpose.
@@ -24,9 +23,46 @@ import java.util.List;
 public class MockDownloadNotificationService extends DownloadNotificationService {
     private final List<Integer> mNotificationIds = new ArrayList<Integer>();
     private boolean mPaused = false;
-    private int mLastNotificationId = DEFAULT_NOTIFICATION_ID;
+    private Context mContext;
+    private int mLastNotificationId;
 
-    List<String> mResumedDownloads = new ArrayList<>();
+    void setContext(Context context) {
+        mContext = context;
+    }
+
+    @Override
+    public void stopForegroundInternal(boolean killNotification) {
+        if (!useForegroundService()) return;
+        if (killNotification) mNotificationIds.clear();
+    }
+
+    @Override
+    public void startForegroundInternal() {}
+
+    @Override
+    public void cancelOffTheRecordDownloads() {
+        super.cancelOffTheRecordDownloads();
+        mPaused = true;
+    }
+
+    @Override
+    boolean hasDownloadNotificationsInternal(int notificationIdToIgnore) {
+        if (!useForegroundService()) return false;
+        // Cancelling notifications here is synchronous, so we don't really have to worry about
+        // {@code notificationIdToIgnore}, but address it properly anyway.
+        if (mNotificationIds.size() == 1 && notificationIdToIgnore != -1) {
+            return !mNotificationIds.contains(notificationIdToIgnore);
+        }
+
+        return !mNotificationIds.isEmpty();
+    }
+
+    @Override
+    void updateSummaryIconInternal(
+            int removedNotificationId, Pair<Integer, Notification> addedNotification) {}
+
+    @Override
+    void cancelSummaryNotification() {}
 
     @Override
     void updateNotification(int id, Notification notification) {
@@ -44,14 +80,19 @@ public class MockDownloadNotificationService extends DownloadNotificationService
         return mNotificationIds;
     }
 
-    public int getLastNotificationId() {
-        return mLastNotificationId;
-    }
-
     @Override
     public void cancelNotification(int notificationId, ContentId id) {
         super.cancelNotification(notificationId, id);
         mNotificationIds.remove(Integer.valueOf(notificationId));
+    }
+
+    public int getLastAddedNotificationId() {
+        return mLastNotificationId;
+    }
+
+    @Override
+    public Context getApplicationContext() {
+        return mContext == null ? super.getApplicationContext() : mContext;
     }
 
     @Override
@@ -59,10 +100,14 @@ public class MockDownloadNotificationService extends DownloadNotificationService
             final String fileName, final long systemDownloadId, final boolean isOffTheRecord,
             final boolean isSupportedMimeType, final boolean isOpenable, final Bitmap icon,
             final String originalUrl, final String referrer) {
-        return ThreadUtils.runOnUiThreadBlockingNoException(
-                () -> MockDownloadNotificationService.super.notifyDownloadSuccessful(id, filePath,
+        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Integer>() {
+            @Override
+            public Integer call() throws Exception {
+                return MockDownloadNotificationService.super.notifyDownloadSuccessful(id, filePath,
                         fileName, systemDownloadId, isOffTheRecord, isSupportedMimeType, isOpenable,
-                        icon, originalUrl, referrer));
+                        icon, originalUrl, referrer);
+            }
+        });
     }
 
     @Override
@@ -70,42 +115,34 @@ public class MockDownloadNotificationService extends DownloadNotificationService
             final Progress progress, final long bytesReceived, final long timeRemainingInMillis,
             final long startTime, final boolean isOffTheRecord,
             final boolean canDownloadWhileMetered, final boolean isTransient, final Bitmap icon) {
-        ThreadUtils.runOnUiThreadBlocking(
-                () -> MockDownloadNotificationService.super.notifyDownloadProgress(id, fileName,
-                        progress,
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                MockDownloadNotificationService.super.notifyDownloadProgress(id, fileName, progress,
                         bytesReceived, timeRemainingInMillis, startTime, isOffTheRecord,
-                        canDownloadWhileMetered, isTransient, icon));
-    }
-
-    @Override
-    void notifyDownloadPaused(ContentId id, String fileName, boolean isResumable,
-            boolean isAutoResumable, boolean isOffTheRecord, boolean isTransient, Bitmap icon,
-            boolean hasUserGesture) {
-        ThreadUtils.runOnUiThreadBlocking(
-                ()
-                        -> MockDownloadNotificationService.super.notifyDownloadPaused(id, fileName,
-                                isResumable, isAutoResumable, isOffTheRecord, isTransient, icon,
-                                hasUserGesture));
+                        canDownloadWhileMetered, isTransient, icon);
+            }
+        });
     }
 
     @Override
     public void notifyDownloadFailed(final ContentId id, final String fileName, final Bitmap icon) {
-        ThreadUtils.runOnUiThreadBlocking(
-                () -> MockDownloadNotificationService.super.notifyDownloadFailed(id, fileName,
-                        icon));
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                MockDownloadNotificationService.super.notifyDownloadFailed(id, fileName, icon);
+            }
+        });
     }
 
     @Override
-    public void notifyDownloadCanceled(final ContentId id, boolean hasUserGesture) {
-        ThreadUtils.runOnUiThreadBlocking(
-                ()
-                        -> MockDownloadNotificationService.super.notifyDownloadCanceled(
-                                id, hasUserGesture));
-    }
-
-    @Override
-    void resumeDownload(Intent intent) {
-        mResumedDownloads.add(IntentUtils.safeGetStringExtra(intent, EXTRA_DOWNLOAD_CONTENTID_ID));
+    public void notifyDownloadCanceled(final ContentId id) {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                MockDownloadNotificationService.super.notifyDownloadCanceled(id);
+            }
+        });
     }
 }
 
