@@ -73,6 +73,12 @@ class NotificationChannelsProviderAndroid
       PrefService* prefs,
       content_settings::ProviderInterface* pref_provider);
 
+  // Undoes the migration done by |MigrateToChannelsIfNecessary|, if we
+  // previously migrated to channels and did not already un-migrate.
+  void UnmigrateChannelsIfNecessary(
+      PrefService* prefs,
+      content_settings::ProviderInterface* pref_provider);
+
   // UserModifiableProvider methods.
   std::unique_ptr<content_settings::RuleIterator> GetRuleIterator(
       ContentSettingsType content_type,

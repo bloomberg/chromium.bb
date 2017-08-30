@@ -14,6 +14,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/time/default_clock.h"
+#include "base/values.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
@@ -146,10 +147,8 @@ class ChannelsRuleIterator : public content_settings::RuleIterator {
 // static
 void NotificationChannelsProviderAndroid::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  if (base::FeatureList::IsEnabled(features::kSiteNotificationChannels)) {
-    registry->RegisterBooleanPref(prefs::kMigratedToSiteNotificationChannels,
-                                  false);
-  }
+  registry->RegisterBooleanPref(prefs::kMigratedToSiteNotificationChannels,
+                                false);
 }
 
 NotificationChannel::NotificationChannel(const std::string& id,
@@ -191,6 +190,30 @@ void NotificationChannelsProviderAndroid::MigrateToChannelsIfNecessary(
   while (it && it->HasNext())
     CreateChannelForRule(it->Next());
   prefs->SetBoolean(prefs::kMigratedToSiteNotificationChannels, true);
+}
+
+void NotificationChannelsProviderAndroid::UnmigrateChannelsIfNecessary(
+    PrefService* prefs,
+    content_settings::ProviderInterface* pref_provider) {
+  if (!should_use_channels_ ||
+      !prefs->GetBoolean(prefs::kMigratedToSiteNotificationChannels)) {
+    return;
+  }
+  std::unique_ptr<content_settings::RuleIterator> it(
+      GetRuleIterator(CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string(),
+                      false /* incognito */));
+  while (it && it->HasNext()) {
+    const content_settings::Rule& rule = it->Next();
+    pref_provider->SetWebsiteSetting(rule.primary_pattern,
+                                     rule.secondary_pattern,
+                                     CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                                     content_settings::ResourceIdentifier(),
+                                     new base::Value(rule.value->Clone()));
+  }
+  for (auto& channel : bridge_->GetChannels())
+    bridge_->DeleteChannel(channel.id);
+
+  prefs->SetBoolean(prefs::kMigratedToSiteNotificationChannels, false);
 }
 
 std::unique_ptr<content_settings::RuleIterator>
