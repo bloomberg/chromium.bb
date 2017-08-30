@@ -325,14 +325,9 @@ typedef enum {
   AOM_LAST3_FLAG = 1 << 2,
   AOM_GOLD_FLAG = 1 << 3,
   AOM_BWD_FLAG = 1 << 4,
-#if CONFIG_ALTREF2
   AOM_ALT2_FLAG = 1 << 5,
   AOM_ALT_FLAG = 1 << 6,
   AOM_REFFRAME_ALL = (1 << 7) - 1
-#else  // !CONFIG_ALTREF2
-  AOM_ALT_FLAG = 1 << 5,
-  AOM_REFFRAME_ALL = (1 << 6) - 1
-#endif  // CONFIG_ALTREF2
 #else   // !CONFIG_EXT_REFS
   AOM_GOLD_FLAG = 1 << 1,
   AOM_ALT_FLAG = 1 << 2,
@@ -631,14 +626,8 @@ typedef uint8_t TXFM_CONTEXT;
 #define LAST3_FRAME 3
 #define GOLDEN_FRAME 4
 #define BWDREF_FRAME 5
-
-#if CONFIG_ALTREF2
 #define ALTREF2_FRAME 6
 #define ALTREF_FRAME 7
-#else  // !CONFIG_ALTREF2
-#define ALTREF_FRAME 6
-#endif  // CONFIG_ALTREF2
-
 #define LAST_REF_FRAMES (LAST3_FRAME - LAST_FRAME + 1)
 #else  // !CONFIG_EXT_REFS
 #define GOLDEN_FRAME 2

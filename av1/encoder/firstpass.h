@@ -99,12 +99,8 @@ typedef enum {
   LAST_BIPRED_UPDATE = 6,    // Last Bi-predictive Frame
   BIPRED_UPDATE = 7,         // Bi-predictive Frame, but not the last one
   INTNL_OVERLAY_UPDATE = 8,  // Internal Overlay Frame
-#if CONFIG_ALTREF2
-  INTNL_ARF_UPDATE = 9,  // Internal Altref Frame (candidate for ALTREF2)
+  INTNL_ARF_UPDATE = 9,      // Internal Altref Frame (candidate for ALTREF2)
   FRAME_UPDATE_TYPES = 10
-#else   // !CONFIG_ALTREF2
-  FRAME_UPDATE_TYPES = 9
-#endif  // CONFIG_ALTREF2
 #else   // !CONFIG_EXT_REFS
   FRAME_UPDATE_TYPES = 5
 #endif  // CONFIG_EXT_REFS

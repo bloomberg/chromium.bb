@@ -269,7 +269,6 @@ EXPERIMENT_LIST="
     wedge
     compound_segment
     ext_refs
-    altref2
     speed_refs
     gf_groups
     global_motion
@@ -558,7 +557,6 @@ post_process_cmdline() {
     enabled bgsprite && enable_feature global_motion
     enabled ext_comp_refs && enable_feature ext_refs
     enabled ext_comp_refs && enable_feature one_sided_compound
-    enabled altref2 && enable_feature ext_refs
     enabled rect_tx_ext && enable_feature rect_tx
     enabled cfl && enable_feature smooth_hv
     enabled cdef_singlepass && enable_feature cdef

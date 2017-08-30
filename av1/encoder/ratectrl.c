@@ -581,9 +581,9 @@ static int calc_active_worst_quality_one_pass_vbr(const AV1_COMP *cpi) {
         curr_frame == 0 ? rc->worst_quality : rc->last_q[KEY_FRAME] * 2;
   } else {
     if (!rc->is_src_frame_alt_ref && (cpi->refresh_golden_frame ||
-#if CONFIG_ALTREF2
+#if CONFIG_EXT_REFS
                                       cpi->refresh_alt2_ref_frame ||
-#endif  // CONFIG_ALTREF2
+#endif  // CONFIG_EXT_REFS
                                       cpi->refresh_alt_ref_frame)) {
       active_worst_quality = curr_frame == 1 ? rc->last_q[KEY_FRAME] * 5 / 4
                                              : rc->last_q[INTER_FRAME];
@@ -1010,9 +1010,9 @@ static int rc_pick_q_and_bounds_two_pass(const AV1_COMP *cpi, int *bottom_index,
           av1_compute_qdelta(rc, q_val, q_val * q_adj_factor, cm->bit_depth);
     }
   } else if (!rc->is_src_frame_alt_ref && (cpi->refresh_golden_frame ||
-#if CONFIG_ALTREF2
+#if CONFIG_EXT_REFS
                                            cpi->refresh_alt2_ref_frame ||
-#endif  // CONFIG_ALTREF2
+#endif  // CONFIG_EXT_REFS
                                            cpi->refresh_alt_ref_frame)) {
     // Use the lower of active_worst_quality and recent
     // average Q as basis for GF/ARF best Q limit unless last frame was
@@ -1033,11 +1033,11 @@ static int rc_pick_q_and_bounds_two_pass(const AV1_COMP *cpi, int *bottom_index,
       active_best_quality = active_best_quality * 15 / 16;
 
     } else if (oxcf->rc_mode == AOM_Q) {
-#if CONFIG_ALTREF2
+#if CONFIG_EXT_REFS
       if (!cpi->refresh_alt_ref_frame && !cpi->refresh_alt2_ref_frame) {
 #else
       if (!cpi->refresh_alt_ref_frame) {
-#endif  // CONFIG_ALTREF2
+#endif  // CONFIG_EXT_REFS
         active_best_quality = cq_level;
       } else {
         active_best_quality = get_gf_active_quality(rc, q, cm->bit_depth);
@@ -1070,9 +1070,9 @@ static int rc_pick_q_and_bounds_two_pass(const AV1_COMP *cpi, int *bottom_index,
       (cpi->twopass.gf_zeromotion_pct < VLOW_MOTION_THRESHOLD)) {
     if (frame_is_intra_only(cm) ||
         (!rc->is_src_frame_alt_ref && (cpi->refresh_golden_frame ||
-#if CONFIG_ALTREF2
+#if CONFIG_EXT_REFS
                                        cpi->refresh_alt2_ref_frame ||
-#endif  // CONFIG_ALTREF2
+#endif  // CONFIG_EXT_REFS
                                        cpi->refresh_alt_ref_frame))) {
       active_best_quality -=
           (cpi->twopass.extend_minq + cpi->twopass.extend_minq_fast);
@@ -1233,11 +1233,11 @@ static void update_golden_frame_stats(AV1_COMP *cpi) {
     // Decrement count down till next gf
     if (rc->frames_till_gf_update_due > 0) rc->frames_till_gf_update_due--;
 
-#if CONFIG_ALTREF2
+#if CONFIG_EXT_REFS
   } else if (!cpi->refresh_alt_ref_frame && !cpi->refresh_alt2_ref_frame) {
 #else
   } else if (!cpi->refresh_alt_ref_frame) {
-#endif  // CONFIG_ALTREF2
+#endif  // CONFIG_EXT_REFS
     // Decrement count down till next gf
     if (rc->frames_till_gf_update_due > 0) rc->frames_till_gf_update_due--;
 
@@ -1268,9 +1268,9 @@ void av1_rc_postencode_update(AV1_COMP *cpi, uint64_t bytes_used) {
   } else {
     if (!rc->is_src_frame_alt_ref &&
         !(cpi->refresh_golden_frame ||
-#if CONFIG_ALTREF2
+#if CONFIG_EXT_REFS
           cpi->refresh_alt2_ref_frame ||
-#endif  // CONFIG_ALTREF2
+#endif  // CONFIG_EXT_REFS
           cpi->refresh_alt_ref_frame)) {
       rc->last_q[INTER_FRAME] = qindex;
       rc->avg_frame_qindex[INTER_FRAME] =
@@ -1293,9 +1293,9 @@ void av1_rc_postencode_update(AV1_COMP *cpi, uint64_t bytes_used) {
   if ((qindex < rc->last_boosted_qindex) || (cm->frame_type == KEY_FRAME) ||
       (!rc->constrained_gf_group &&
        (cpi->refresh_alt_ref_frame ||
-#if CONFIG_ALTREF2
+#if CONFIG_EXT_REFS
         cpi->refresh_alt2_ref_frame ||
-#endif  // CONFIG_ALTREF2
+#endif  // CONFIG_EXT_REFS
         (cpi->refresh_golden_frame && !rc->is_src_frame_alt_ref)))) {
     rc->last_boosted_qindex = qindex;
   }

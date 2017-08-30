@@ -885,8 +885,6 @@ int av1_get_pred_context_comp_ref_p2(const AV1_COMMON *cm,
   return pred_context;
 }
 
-#if CONFIG_ALTREF2
-
 // Obtain contexts to signal a reference frame be either BWDREF/ALTREF2, or
 // ALTREF.
 int av1_get_pred_context_brfarf2_or_arf(const MACROBLOCKD *xd) {
@@ -986,132 +984,6 @@ int av1_get_pred_context_comp_bwdref_p1(const AV1_COMMON *cm,
   (void)cm;
   return av1_get_pred_context_brf_or_arf2(xd);
 }
-
-#else                          // !CONFIG_ALTREF2
-
-// Returns a context number for the given MB prediction signal
-int av1_get_pred_context_comp_bwdref_p(const AV1_COMMON *cm,
-                                       const MACROBLOCKD *xd) {
-  int pred_context;
-  const MB_MODE_INFO *const above_mbmi = xd->above_mbmi;
-  const MB_MODE_INFO *const left_mbmi = xd->left_mbmi;
-  const int above_in_image = xd->up_available;
-  const int left_in_image = xd->left_available;
-
-// Note:
-// The mode info data structure has a one element border above and to the
-// left of the entries corresponding to real macroblocks.
-// The prediction flags in these dummy entries are initialized to 0.
-#if CONFIG_ONE_SIDED_COMPOUND  // No change to bitstream
-  // Code seems to assume that signbias of cm->comp_bwd_ref[0] is always 1
-  const int bwd_ref_sign_idx = 1;
-#else
-  const int bwd_ref_sign_idx = cm->ref_frame_sign_bias[cm->comp_bwd_ref[0]];
-#endif  // CONFIG_ONE_SIDED_COMPOUND
-  const int fwd_ref_sign_idx = !bwd_ref_sign_idx;
-
-  (void)cm;
-
-  if (above_in_image && left_in_image) {  // both edges available
-    const int above_intra = !is_inter_block(above_mbmi);
-    const int left_intra = !is_inter_block(left_mbmi);
-
-    if (above_intra && left_intra) {  // intra/intra (2)
-      pred_context = 2;
-    } else if (above_intra || left_intra) {  // intra/inter
-      const MB_MODE_INFO *edge_mbmi = above_intra ? left_mbmi : above_mbmi;
-
-      if (!has_second_ref(edge_mbmi))  // single pred (1/3)
-        pred_context = 1 + 2 * (edge_mbmi->ref_frame[0] != cm->comp_bwd_ref[1]);
-      else  // comp pred (1/3)
-        pred_context =
-            1 +
-            2 * (edge_mbmi->ref_frame[bwd_ref_sign_idx] != cm->comp_bwd_ref[1]);
-    } else {  // inter/inter
-      const int l_comp = has_second_ref(left_mbmi);
-      const int a_comp = has_second_ref(above_mbmi);
-
-      const MV_REFERENCE_FRAME l_brf =
-          l_comp ? left_mbmi->ref_frame[bwd_ref_sign_idx] : NONE_FRAME;
-      const MV_REFERENCE_FRAME a_brf =
-          a_comp ? above_mbmi->ref_frame[bwd_ref_sign_idx] : NONE_FRAME;
-
-      const MV_REFERENCE_FRAME l_frf =
-          !l_comp ? left_mbmi->ref_frame[0]
-                  : left_mbmi->ref_frame[fwd_ref_sign_idx];
-      const MV_REFERENCE_FRAME a_frf =
-          !a_comp ? above_mbmi->ref_frame[0]
-                  : above_mbmi->ref_frame[fwd_ref_sign_idx];
-
-      if (l_comp && a_comp) {  // comp/comp
-        if (l_brf == a_brf && l_brf == cm->comp_bwd_ref[1]) {
-          pred_context = 0;
-        } else if (l_brf == cm->comp_bwd_ref[1] ||
-                   a_brf == cm->comp_bwd_ref[1]) {
-          pred_context = 1;
-        } else {
-// NOTE: Backward ref should be either BWDREF or ALTREF.
-#if !USE_UNI_COMP_REFS
-          // TODO(zoeliu): To further study the UNIDIR scenario
-          assert(l_brf == a_brf && l_brf != cm->comp_bwd_ref[1]);
-#endif  // !USE_UNI_COMP_REFS
-          pred_context = 3;
-        }
-      } else if (!l_comp && !a_comp) {  // single/single
-        if (l_frf == a_frf && l_frf == cm->comp_bwd_ref[1]) {
-          pred_context = 0;
-        } else if (l_frf == cm->comp_bwd_ref[1] ||
-                   a_frf == cm->comp_bwd_ref[1]) {
-          pred_context = 1;
-        } else if (l_frf == a_frf) {
-          pred_context = 3;
-        } else {
-#if !USE_UNI_COMP_REFS
-          // TODO(zoeliu): To further study the UNIDIR scenario
-          assert(l_frf != a_frf && l_frf != cm->comp_bwd_ref[1] &&
-                 a_frf != cm->comp_bwd_ref[1]);
-#endif  // !USE_UNI_COMP_REFS
-          pred_context = 4;
-        }
-      } else {  // comp/single
-        assert((l_comp && !a_comp) || (!l_comp && a_comp));
-
-        if ((l_comp && l_brf == cm->comp_bwd_ref[1] &&
-             a_frf == cm->comp_bwd_ref[1]) ||
-            (a_comp && a_brf == cm->comp_bwd_ref[1] &&
-             l_frf == cm->comp_bwd_ref[1])) {
-          pred_context = 1;
-        } else if ((l_comp && l_brf == cm->comp_bwd_ref[1]) ||
-                   (a_comp && a_brf == cm->comp_bwd_ref[1]) ||
-                   (!l_comp && l_frf == cm->comp_bwd_ref[1]) ||
-                   (!a_comp && a_frf == cm->comp_bwd_ref[1])) {
-          pred_context = 2;
-        } else {
-          pred_context = 4;
-        }
-      }
-    }
-  } else if (above_in_image || left_in_image) {  // one edge available
-    const MB_MODE_INFO *edge_mbmi = above_in_image ? above_mbmi : left_mbmi;
-
-    if (!is_inter_block(edge_mbmi)) {
-      pred_context = 2;
-    } else {
-      if (has_second_ref(edge_mbmi)) {
-        pred_context =
-            4 * (edge_mbmi->ref_frame[bwd_ref_sign_idx] != cm->comp_bwd_ref[1]);
-      } else {
-        pred_context = 3 * (edge_mbmi->ref_frame[0] != cm->comp_bwd_ref[1]);
-      }
-    }
-  } else {  // no edges available (2)
-    pred_context = 2;
-  }
-  assert(pred_context >= 0 && pred_context < REF_CONTEXTS);
-
-  return pred_context;
-}
-#endif  // CONFIG_ALTREF2
 
 #else  // !CONFIG_EXT_REFS
 
@@ -1268,96 +1140,7 @@ int av1_get_pred_context_single_ref_p1(const MACROBLOCKD *xd) {
 // non-ALTREF backward reference frame, knowing that it shall be either of
 // these 2 choices.
 int av1_get_pred_context_single_ref_p2(const MACROBLOCKD *xd) {
-#if CONFIG_ALTREF2
   return av1_get_pred_context_brfarf2_or_arf(xd);
-#else   // !CONFIG_ALTREF2
-  int pred_context;
-  const MB_MODE_INFO *const above_mbmi = xd->above_mbmi;
-  const MB_MODE_INFO *const left_mbmi = xd->left_mbmi;
-  const int has_above = xd->up_available;
-  const int has_left = xd->left_available;
-
-  // Note:
-  // The mode info data structure has a one element border above and to the
-  // left of the entries correpsonding to real macroblocks.
-  // The prediction flags in these dummy entries are initialised to 0.
-  if (has_above && has_left) {  // both edges available
-    const int above_intra = !is_inter_block(above_mbmi);
-    const int left_intra = !is_inter_block(left_mbmi);
-
-    if (above_intra && left_intra) {  // intra/intra
-      pred_context = 2;
-    } else if (above_intra || left_intra) {  // intra/inter or inter/intra
-      const MB_MODE_INFO *edge_mbmi = above_intra ? left_mbmi : above_mbmi;
-      if (!has_second_ref(edge_mbmi)) {  // single
-        if (!CHECK_BACKWARD_REFS(edge_mbmi->ref_frame[0]))
-          pred_context = 3;
-        else
-          pred_context = 4 * (edge_mbmi->ref_frame[0] == BWDREF_FRAME);
-      } else {  // comp
-        pred_context = 1 +
-                       2 * (edge_mbmi->ref_frame[0] == BWDREF_FRAME ||
-                            edge_mbmi->ref_frame[1] == BWDREF_FRAME);
-      }
-    } else {  // inter/inter
-      const int above_has_second = has_second_ref(above_mbmi);
-      const int left_has_second = has_second_ref(left_mbmi);
-      const MV_REFERENCE_FRAME above0 = above_mbmi->ref_frame[0];
-      const MV_REFERENCE_FRAME above1 = above_mbmi->ref_frame[1];
-      const MV_REFERENCE_FRAME left0 = left_mbmi->ref_frame[0];
-      const MV_REFERENCE_FRAME left1 = left_mbmi->ref_frame[1];
-
-      if (above_has_second && left_has_second) {  // comp/comp
-        if (above0 == left0 && above1 == left1)
-          pred_context =
-              3 * (above0 == BWDREF_FRAME || above1 == BWDREF_FRAME ||
-                   left0 == BWDREF_FRAME || left1 == BWDREF_FRAME);
-        else
-          pred_context = 2;
-      } else if (above_has_second || left_has_second) {  // single/comp
-        const MV_REFERENCE_FRAME rfs = !above_has_second ? above0 : left0;
-        const MV_REFERENCE_FRAME crf1 = above_has_second ? above0 : left0;
-        const MV_REFERENCE_FRAME crf2 = above_has_second ? above1 : left1;
-
-        if (rfs == BWDREF_FRAME)
-          pred_context = 3 + (crf1 == BWDREF_FRAME || crf2 == BWDREF_FRAME);
-        else if (rfs == ALTREF_FRAME)
-          pred_context = (crf1 == BWDREF_FRAME || crf2 == BWDREF_FRAME);
-        else
-          pred_context = 1 + 2 * (crf1 == BWDREF_FRAME || crf2 == BWDREF_FRAME);
-      } else {  // single/single
-        if (!CHECK_BACKWARD_REFS(above0) && !CHECK_BACKWARD_REFS(left0)) {
-          pred_context = 2 + (above0 == left0);
-        } else if (!CHECK_BACKWARD_REFS(above0) ||
-                   !CHECK_BACKWARD_REFS(left0)) {
-          const MV_REFERENCE_FRAME edge0 =
-              !CHECK_BACKWARD_REFS(above0) ? left0 : above0;
-          pred_context = 4 * (edge0 == BWDREF_FRAME);
-        } else {
-          pred_context =
-              2 * (above0 == BWDREF_FRAME) + 2 * (left0 == BWDREF_FRAME);
-        }
-      }
-    }
-  } else if (has_above || has_left) {  // one edge available
-    const MB_MODE_INFO *edge_mbmi = has_above ? above_mbmi : left_mbmi;
-
-    if (!is_inter_block(edge_mbmi) ||
-        (!CHECK_BACKWARD_REFS(edge_mbmi->ref_frame[0]) &&
-         !has_second_ref(edge_mbmi)))
-      pred_context = 2;
-    else if (!has_second_ref(edge_mbmi))  // single
-      pred_context = 4 * (edge_mbmi->ref_frame[0] == BWDREF_FRAME);
-    else  // comp
-      pred_context = 3 * (edge_mbmi->ref_frame[0] == BWDREF_FRAME ||
-                          edge_mbmi->ref_frame[1] == BWDREF_FRAME);
-  } else {  // no edges available (2)
-    pred_context = 2;
-  }
-
-  assert(pred_context >= 0 && pred_context < REF_CONTEXTS);
-  return pred_context;
-#endif  // CONFIG_ALTREF2
 }
 
 // For the bit to signal whether the single reference is LAST3/GOLDEN or
@@ -1638,13 +1421,11 @@ int av1_get_pred_context_single_ref_p5(const MACROBLOCKD *xd) {
   return pred_context;
 }
 
-#if CONFIG_ALTREF2
 // For the bit to signal whether the single reference is ALTREF2_FRAME or
 // BWDREF_FRAME, knowing that it shall be either of these 2 choices.
 int av1_get_pred_context_single_ref_p6(const MACROBLOCKD *xd) {
   return av1_get_pred_context_brf_or_arf2(xd);
 }
-#endif  // CONFIG_ALTREF2
 
 #else  // !CONFIG_EXT_REFS
 

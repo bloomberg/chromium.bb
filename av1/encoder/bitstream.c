@@ -1136,8 +1136,6 @@ static void write_ref_frames(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 #endif  // CONFIG_VAR_REFS
       }
 
-#if CONFIG_ALTREF2
-
 #if CONFIG_VAR_REFS
       // Test need to explicitly code (BWD,ALT2) vs (ALT) branch node in tree
       if (BWD_OR_ALT2(cm) && ALTREF_IS_VALID(cm)) {
@@ -1157,20 +1155,6 @@ static void write_ref_frames(const AV1_COMMON *cm, const MACROBLOCKD *xd,
       }
 #endif  // CONFIG_VAR_REFS
 
-#else  // !CONFIG_ALTREF2
-
-#if CONFIG_VAR_REFS
-      // Test need to explicitly code (BWD) vs (ALT) branch node in tree
-      if (BWD_AND_ALT(cm)) {
-#endif  // CONFIG_VAR_REFS
-        const int bit_bwd = mbmi->ref_frame[1] == ALTREF_FRAME;
-        WRITE_REF_BIT(bit_bwd, comp_bwdref_p);
-#if CONFIG_VAR_REFS
-      }
-#endif  // CONFIG_VAR_REFS
-
-#endif  // CONFIG_ALTREF2
-
 #else   // !CONFIG_EXT_REFS
       const int bit = mbmi->ref_frame[0] == GOLDEN_FRAME;
       WRITE_REF_BIT(bit, comp_ref_p);
@@ -1180,21 +1164,14 @@ static void write_ref_frames(const AV1_COMMON *cm, const MACROBLOCKD *xd,
       const int bit0 = (mbmi->ref_frame[0] <= ALTREF_FRAME &&
                         mbmi->ref_frame[0] >= BWDREF_FRAME);
 #if CONFIG_VAR_REFS
-#if CONFIG_ALTREF2
       // Test need to explicitly code (L,L2,L3,G) vs (BWD,ALT2,ALT) branch node
       // in tree
       if ((L_OR_L2(cm) || L3_OR_G(cm)) &&
           (BWD_OR_ALT2(cm) || ALTREF_IS_VALID(cm)))
-#else   // !CONFIG_ALTREF2
-      // Test need to explicitly code (L,L2,L3,G) vs (BWD,ALT) branch node in
-      // tree
-      if ((L_OR_L2(cm) || L3_OR_G(cm)) && BWD_OR_ALT(cm))
-#endif  // CONFIG_ALTREF2
 #endif  // CONFIG_VAR_REFS
         WRITE_REF_BIT(bit0, single_ref_p1);
 
       if (bit0) {
-#if CONFIG_ALTREF2
 #if CONFIG_VAR_REFS
         // Test need to explicitly code (BWD,ALT2) vs (ALT) branch node in tree
         if (BWD_OR_ALT2(cm) && ALTREF_IS_VALID(cm)) {
@@ -1212,17 +1189,6 @@ static void write_ref_frames(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 #if CONFIG_VAR_REFS
         }
 #endif  // CONFIG_VAR_REFS
-#else   // !CONFIG_ALTREF2
-#if CONFIG_VAR_REFS
-        // Test need to explicitly code (BWD) vs (ALT) branch node in tree
-        if (BWD_AND_ALT(cm)) {
-#endif  // CONFIG_VAR_REFS
-          const int bit1 = mbmi->ref_frame[0] == ALTREF_FRAME;
-          WRITE_REF_BIT(bit1, single_ref_p2);
-#if CONFIG_VAR_REFS
-        }
-#endif  // CONFIG_VAR_REFS
-#endif  // CONFIG_ALTREF2
       } else {
         const int bit2 = (mbmi->ref_frame[0] == LAST3_FRAME ||
                           mbmi->ref_frame[0] == GOLDEN_FRAME);
@@ -3707,17 +3673,8 @@ static int get_refresh_mask(AV1_COMP *cpi) {
   refresh_mask |=
       (cpi->refresh_last_frame << cpi->lst_fb_idxes[LAST_REF_FRAMES - 1]);
 
-#if CONFIG_ALTREF2
   refresh_mask |= (cpi->refresh_bwd_ref_frame << cpi->bwd_fb_idx);
   refresh_mask |= (cpi->refresh_alt2_ref_frame << cpi->alt2_fb_idx);
-#else   // !CONFIG_ALTREF2
-  if (cpi->rc.is_bwd_ref_frame && cpi->num_extra_arfs) {
-    // We have swapped the virtual indices
-    refresh_mask |= (cpi->refresh_bwd_ref_frame << cpi->arf_map[0]);
-  } else {
-    refresh_mask |= (cpi->refresh_bwd_ref_frame << cpi->bwd_fb_idx);
-  }
-#endif  // CONFIG_ALTREF2
 #else   // !CONFIG_EXT_REFS
   refresh_mask |= (cpi->refresh_last_frame << cpi->lst_fb_idx);
 #endif  // CONFIG_EXT_REFS
@@ -3736,12 +3693,7 @@ static int get_refresh_mask(AV1_COMP *cpi) {
     return refresh_mask | (cpi->refresh_golden_frame << cpi->alt_fb_idx);
   } else {
 #if CONFIG_EXT_REFS
-#if CONFIG_ALTREF2
     const int arf_idx = cpi->alt_fb_idx;
-#else   // !CONFIG_ALTREF2
-    const GF_GROUP *const gf_group = &cpi->twopass.gf_group;
-    const int arf_idx = cpi->arf_map[gf_group->arf_update_idx[gf_group->index]];
-#endif  // CONFIG_ALTREF2
 #else   // !CONFIG_EXT_REFS
     int arf_idx = cpi->alt_fb_idx;
     if ((cpi->oxcf.pass == 2) && cpi->multi_arf_allowed) {

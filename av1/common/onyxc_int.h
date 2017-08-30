@@ -611,9 +611,7 @@ static INLINE void ensure_mv_buffer(RefCntBuffer *buf, AV1_COMMON *cm) {
 #define LAST3_IS_VALID(cm) ((cm)->frame_refs[LAST3_FRAME - 1].is_valid)
 #define GOLDEN_IS_VALID(cm) ((cm)->frame_refs[GOLDEN_FRAME - 1].is_valid)
 #define BWDREF_IS_VALID(cm) ((cm)->frame_refs[BWDREF_FRAME - 1].is_valid)
-#if CONFIG_ALTREF2
 #define ALTREF2_IS_VALID(cm) ((cm)->frame_refs[ALTREF2_FRAME - 1].is_valid)
-#endif  // CONFIG_ALTREF2
 #define ALTREF_IS_VALID(cm) ((cm)->frame_refs[ALTREF_FRAME - 1].is_valid)
 
 #define L_OR_L2(cm) (LAST_IS_VALID(cm) || LAST2_IS_VALID(cm))
@@ -624,10 +622,8 @@ static INLINE void ensure_mv_buffer(RefCntBuffer *buf, AV1_COMMON *cm) {
 #define L3_OR_G(cm) (LAST3_IS_VALID(cm) || GOLDEN_IS_VALID(cm))
 #define L3_AND_G(cm) (LAST3_IS_VALID(cm) && GOLDEN_IS_VALID(cm))
 
-#if CONFIG_ALTREF2
 #define BWD_OR_ALT2(cm) (BWDREF_IS_VALID(cm) || ALTREF2_IS_VALID(cm))
 #define BWD_AND_ALT2(cm) (BWDREF_IS_VALID(cm) && ALTREF2_IS_VALID(cm))
-#endif  // CONFIG_ALTREF2
 #define BWD_OR_ALT(cm) (BWDREF_IS_VALID(cm) || ALTREF_IS_VALID(cm))
 #define BWD_AND_ALT(cm) (BWDREF_IS_VALID(cm) && ALTREF_IS_VALID(cm))
 #endif  // CONFIG_VAR_REFS

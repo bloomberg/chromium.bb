@@ -115,12 +115,8 @@ static void setup_compound_reference_mode(AV1_COMMON *cm) {
   cm->comp_fwd_ref[3] = GOLDEN_FRAME;
 
   cm->comp_bwd_ref[0] = BWDREF_FRAME;
-#if CONFIG_ALTREF2
   cm->comp_bwd_ref[1] = ALTREF2_FRAME;
   cm->comp_bwd_ref[2] = ALTREF_FRAME;
-#else   // !CONFIG_ALTREF2
-  cm->comp_bwd_ref[1] = ALTREF_FRAME;
-#endif  // CONFIG_ALTREF2
 #else   // !CONFIG_EXT_REFS
   if (cm->ref_frame_sign_bias[LAST_FRAME] ==
       cm->ref_frame_sign_bias[GOLDEN_FRAME]) {
