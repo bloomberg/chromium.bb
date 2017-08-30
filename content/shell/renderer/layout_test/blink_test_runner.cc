@@ -820,7 +820,8 @@ void BlinkTestRunner::Reset(bool for_new_test) {
   render_view()->ClearEditCommands();
   if (for_new_test) {
     if (render_view()->GetWebView()->MainFrame()->IsWebLocalFrame())
-      render_view()->GetWebView()->MainFrame()->SetName(WebString());
+      render_view()->GetWebView()->MainFrame()->ToWebLocalFrame()->SetName(
+          WebString());
     render_view()->GetWebView()->MainFrame()->ClearOpener();
   }
 

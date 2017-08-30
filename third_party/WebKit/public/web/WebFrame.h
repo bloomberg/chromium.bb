@@ -51,7 +51,6 @@ class WebElement;
 class WebLocalFrame;
 class WebRemoteFrame;
 class WebSecurityOrigin;
-class WebString;
 class WebView;
 enum class WebSandboxFlags;
 struct WebFrameOwnerProperties;
@@ -97,14 +96,6 @@ class BLINK_EXPORT WebFrame {
   void Detach();
 
   // Basic properties ---------------------------------------------------
-
-  // The name of this frame. If no name is given, empty string is returned.
-  virtual WebString AssignedName() const = 0;
-
-  // Sets the name of this frame. For child frames (frames that are not a
-  // top-most frame) the actual name may have a suffix appended to make the
-  // frame name unique within the hierarchy.
-  virtual void SetName(const WebString&) = 0;
 
   // The security origin of this frame.
   WebSecurityOrigin GetSecurityOrigin() const;

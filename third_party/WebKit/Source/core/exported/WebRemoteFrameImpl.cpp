@@ -102,15 +102,6 @@ void WebRemoteFrameImpl::Close() {
   self_keep_alive_.Clear();
 }
 
-WebString WebRemoteFrameImpl::AssignedName() const {
-  NOTREACHED();
-  return WebString();
-}
-
-void WebRemoteFrameImpl::SetName(const WebString&) {
-  NOTREACHED();
-}
-
 WebRect WebRemoteFrameImpl::VisibleContentRect() const {
   NOTREACHED();
   return WebRect();

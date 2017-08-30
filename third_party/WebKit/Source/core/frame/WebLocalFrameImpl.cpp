@@ -543,7 +543,7 @@ WebString WebLocalFrameImpl::AssignedName() const {
 }
 
 void WebLocalFrameImpl::SetName(const WebString& name) {
-  GetFrame()->Tree().SetName(name);
+  GetFrame()->Tree().SetName(name, FrameTree::kReplicate);
 }
 
 WebVector<WebIconURL> WebLocalFrameImpl::IconURLs(int icon_types_mask) const {

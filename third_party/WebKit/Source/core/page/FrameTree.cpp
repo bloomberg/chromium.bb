@@ -23,6 +23,7 @@
 #include "core/dom/Document.h"
 #include "core/frame/FrameClient.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameClient.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/RemoteFrame.h"
 #include "core/frame/RemoteFrameView.h"
@@ -72,7 +73,24 @@ void FrameTree::ExperimentalSetNulledName() {
   experimental_set_nulled_name_ = true;
 }
 
-void FrameTree::SetName(const AtomicString& name) {
+void FrameTree::SetName(const AtomicString& name,
+                        ReplicationPolicy replication) {
+  if (replication == kReplicate) {
+    // Avoid calling out to notify the embedder if the browsing context name
+    // didn't change. This is important to avoid violating the browser
+    // assumption that the unique name doesn't change if the browsing context
+    // name doesn't change.
+    // TODO(dcheng): This comment is indicative of a problematic layering
+    // violation. The browser should not be relying on the renderer to get this
+    // correct; unique name calculation should be moved up into the browser.
+    if (name != name_) {
+      // TODO(lukasza): https://crbug.com/660485: Eventually we need to also
+      // support replication of name changes that originate in a *remote* frame.
+      DCHECK(this_frame_->IsLocalFrame());
+      ToLocalFrame(this_frame_)->Client()->DidChangeName(name);
+    }
+  }
+
   // TODO(andypaicu): remove this once we have gathered the data
   experimental_set_nulled_name_ = false;
   name_ = name;
