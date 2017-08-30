@@ -1,5 +1,6 @@
 Test that console.timeStamp generates Performance.metrics event
 title: test1
+	Timestamp
 	AudioHandlerCount
 	DocumentCount
 	FrameCount
@@ -21,7 +22,9 @@ title: test1
 	TaskDuration
 	FirstMeaningfulPaint
 	DomContentLoaded
+	NavigationStart
 title: test1
+	Timestamp
 	AudioHandlerCount
 	DocumentCount
 	FrameCount
@@ -43,7 +46,9 @@ title: test1
 	TaskDuration
 	FirstMeaningfulPaint
 	DomContentLoaded
+	NavigationStart
 title: 
+	Timestamp
 	AudioHandlerCount
 	DocumentCount
 	FrameCount
@@ -65,4 +70,5 @@ title:
 	TaskDuration
 	FirstMeaningfulPaint
 	DomContentLoaded
+	NavigationStart
 

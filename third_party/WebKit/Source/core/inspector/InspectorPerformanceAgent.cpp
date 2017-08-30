@@ -6,6 +6,7 @@
 
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/InspectedFrames.h"
+#include "core/loader/DocumentLoader.h"
 #include "core/paint/PaintTiming.h"
 #include "core/probe/CoreProbes.h"
 #include "platform/InstanceCounters.h"
@@ -82,6 +83,9 @@ Response InspectorPerformanceAgent::getMetrics(
   std::unique_ptr<protocol::Array<protocol::Performance::Metric>> result =
       protocol::Array<protocol::Performance::Metric>::create();
 
+  AppendMetric(result.get(), "Timestamp",
+               (TimeTicks::Now() - TimeTicks()).InSecondsF());
+
   // Renderer instance counters.
   for (size_t i = 0; i < ARRAY_SIZE(kInstanceCounterNames); ++i) {
     AppendMetric(result.get(), kInstanceCounterNames[i],
@@ -101,12 +105,12 @@ Response InspectorPerformanceAgent::getMetrics(
   // Performance timings.
   Document* document = inspected_frames_->Root()->GetDocument();
   if (document) {
-    const PaintTiming& paint_timing = PaintTiming::From(*document);
     AppendMetric(result.get(), "FirstMeaningfulPaint",
-                 paint_timing.FirstMeaningfulPaint());
-    const DocumentTiming& document_timing = document->GetTiming();
+                 PaintTiming::From(*document).FirstMeaningfulPaint());
     AppendMetric(result.get(), "DomContentLoaded",
-                 document_timing.DomContentLoadedEventStart());
+                 document->GetTiming().DomContentLoadedEventStart());
+    AppendMetric(result.get(), "NavigationStart",
+                 document->Loader()->GetTiming().NavigationStart());
   }
 
   *out_result = std::move(result);
