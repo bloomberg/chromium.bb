@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python2
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -11,6 +11,12 @@
 
 from __future__ import print_function
 
+import sys
+if sys.version_info[0] != 2 or sys.version_info[1] < 7:
+  print("This script requires Python version 2.7")
+  sys.exit(1)
+
+import argparse
 import atexit
 import errno
 import fcntl
@@ -19,7 +25,6 @@ import grp
 import hashlib
 import json
 import logging
-import optparse
 import os
 import pipes
 import platform
@@ -30,7 +35,6 @@ import re
 import signal
 import socket
 import subprocess
-import sys
 import tempfile
 import threading
 import time
@@ -791,9 +795,40 @@ class Desktop:
       self.host_proc.stdin.close()
 
 
-def get_daemon_proc():
-  """Checks if there is already an instance of this script running, and returns
-  a psutil.Process instance for it.
+def parse_config_arg(args):
+  """Parses only the --config option from a given command-line.
+
+  Returns:
+    A two-tuple. The first element is the value of the --config option (or None
+    if it is not specified), and the second is a list containing the remaining
+    arguments
+  """
+
+  # By default, argparse will exit the program on error. We would like it not to
+  # do that.
+  class ArgumentParserError(Exception):
+    pass
+  class ThrowingArgumentParser(argparse.ArgumentParser):
+    def error(self, message):
+      raise ArgumentParserError(message)
+
+  parser = ThrowingArgumentParser()
+  parser.add_argument("--config", nargs='?', action="store")
+
+  try:
+    result = parser.parse_known_args(args)
+    return (result[0].config, result[1])
+  except ArgumentParserError:
+    return (None, list(args))
+
+
+def get_daemon_proc(config_file):
+  """Checks if there is already an instance of this script running against
+  |config_file|, and returns a psutil.Process instance for it.
+
+  If a process is found without --config in the command line, get_daemon_proc
+  will fall back to the old behavior of checking whether the script path matches
+  the current script. This is to facilitate upgrades from previous versions.
 
   Returns:
     A Process instance for the existing daemon process, or None if the daemon
@@ -826,8 +861,18 @@ def get_daemon_proc():
       cmdline = psget(process.cmdline)
       if len(cmdline) < 2:
         continue
-      if cmdline[0] == sys.executable and cmdline[1] == sys.argv[0]:
-        return process
+      if (os.path.basename(cmdline[0]).startswith('python')
+          and os.path.basename(cmdline[1]) == os.path.basename(sys.argv[0])):
+        process_config = parse_config_arg(cmdline[2:])[0]
+        if process_config is None:
+          # Fall back to old behavior if there is no --config argument
+          # TODO(rkjnsn): Consider removing this fallback once sufficient time
+          # has passed.
+          if cmdline[1] == sys.argv[0]:
+            return process
+        elif process_config == config_file:
+          return process
+
     except (psutil.NoSuchProcess, psutil.AccessDenied):
       continue
 
@@ -1323,57 +1368,63 @@ def main():
   EPILOG = """This script is not intended for use by end-users.  To configure
 Chrome Remote Desktop, please install the app from the Chrome
 Web Store: https://chrome.google.com/remotedesktop"""
-  parser = optparse.OptionParser(
-      usage="Usage: %prog [options] [ -- [ X server options ] ]",
+  parser = argparse.ArgumentParser(
+      usage="Usage: %(prog)s [options] [ -- [ X server options ] ]",
       epilog=EPILOG)
-  parser.add_option("-s", "--size", dest="size", action="append",
-                    help="Dimensions of virtual desktop. This can be specified "
-                    "multiple times to make multiple screen resolutions "
-                    "available (if the X server supports this).")
-  parser.add_option("-f", "--foreground", dest="foreground", default=False,
-                    action="store_true",
-                    help="Don't run as a background daemon.")
-  parser.add_option("", "--start", dest="start", default=False,
-                    action="store_true",
-                    help="Start the host.")
-  parser.add_option("-k", "--stop", dest="stop", default=False,
-                    action="store_true",
-                    help="Stop the daemon currently running.")
-  parser.add_option("", "--get-status", dest="get_status", default=False,
-                    action="store_true",
-                    help="Prints host status")
-  parser.add_option("", "--check-running", dest="check_running", default=False,
-                    action="store_true",
-                    help="Return 0 if the daemon is running, or 1 otherwise.")
-  parser.add_option("", "--config", dest="config", action="store",
-                    help="Use the specified configuration file.")
-  parser.add_option("", "--reload", dest="reload", default=False,
-                    action="store_true",
-                    help="Signal currently running host to reload the config.")
-  parser.add_option("", "--add-user", dest="add_user", default=False,
-                    action="store_true",
-                    help="Add current user to the chrome-remote-desktop group.")
-  parser.add_option("", "--add-user-as-root", dest="add_user_as_root",
-                    action="store", metavar="USER",
-                    help="Adds the specified user to the chrome-remote-desktop "
-                    "group (must be run as root).")
+  parser.add_argument("-s", "--size", dest="size", action="append",
+                      help="Dimensions of virtual desktop. This can be "
+                      "specified multiple times to make multiple screen "
+                      "resolutions available (if the X server supports this).")
+  parser.add_argument("-f", "--foreground", dest="foreground", default=False,
+                      action="store_true",
+                      help="Don't run as a background daemon.")
+  parser.add_argument("--start", dest="start", default=False,
+                      action="store_true",
+                      help="Start the host.")
+  parser.add_argument("-k", "--stop", dest="stop", default=False,
+                      action="store_true",
+                      help="Stop the daemon currently running.")
+  parser.add_argument("--get-status", dest="get_status", default=False,
+                      action="store_true",
+                      help="Prints host status")
+  parser.add_argument("--check-running", dest="check_running",
+                      default=False, action="store_true",
+                      help="Return 0 if the daemon is running, or 1 otherwise.")
+  parser.add_argument("--config", dest="config", action="store",
+                      help="Use the specified configuration file.")
+  parser.add_argument("--reload", dest="reload", default=False,
+                      action="store_true",
+                      help="Signal currently running host to reload the "
+                      "config.")
+  parser.add_argument("--add-user", dest="add_user", default=False,
+                      action="store_true",
+                      help="Add current user to the chrome-remote-desktop "
+                      "group.")
+  parser.add_argument("--add-user-as-root", dest="add_user_as_root",
+                      action="store", metavar="USER",
+                      help="Adds the specified user to the "
+                      "chrome-remote-desktop group (must be run as root).")
   # The script is being run as a child process under the user-session binary.
   # Don't daemonize and use the inherited environment.
-  parser.add_option("", "--child-process", dest="child_process", default=False,
-                    action="store_true",
-                    help=optparse.SUPPRESS_HELP)
-  parser.add_option("", "--watch-resolution", dest="watch_resolution",
-                    type="int", nargs=2, default=False, action="store",
-                    help=optparse.SUPPRESS_HELP)
-  (options, args) = parser.parse_args()
+  parser.add_argument("--child-process", dest="child_process", default=False,
+                      action="store_true",
+                      help=argparse.SUPPRESS)
+  parser.add_argument("--watch-resolution", dest="watch_resolution",
+                      type=int, nargs=2, default=False, action="store",
+                      help=argparse.SUPPRESS)
+  parser.add_argument(dest="args", nargs="*", help=argparse.SUPPRESS)
+  options = parser.parse_args()
 
-  # Determine the filename of the host configuration and PID files.
-  if not options.config:
-    options.config = os.path.join(CONFIG_DIR, "host#%s.json" % g_host_hash)
+  # Determine the filename of the host configuration.
+  if options.config:
+    config_file = options.config
+  else:
+    config_file = os.path.join(CONFIG_DIR, "host#%s.json" % g_host_hash)
+  config_file = os.path.realpath(config_file)
 
   # Check for a modal command-line option (start, stop, etc.)
   if options.get_status:
-    proc = get_daemon_proc()
+    proc = get_daemon_proc(config_file)
     if proc is not None:
       print("STARTED")
     elif is_supported_platform():
@@ -1385,11 +1436,11 @@ Web Store: https://chrome.google.com/remotedesktop"""
   # TODO(sergeyu): Remove --check-running once NPAPI plugin and NM host are
   # updated to always use get-status flag instead.
   if options.check_running:
-    proc = get_daemon_proc()
+    proc = get_daemon_proc(config_file)
     return 1 if proc is None else 0
 
   if options.stop:
-    proc = get_daemon_proc()
+    proc = get_daemon_proc(config_file)
     if proc is None:
       print("The daemon is not currently running")
     else:
@@ -1403,7 +1454,7 @@ Web Store: https://chrome.google.com/remotedesktop"""
     return 0
 
   if options.reload:
-    proc = get_daemon_proc()
+    proc = get_daemon_proc(config_file)
     if proc is None:
       return 1
     proc.send_signal(signal.SIGHUP)
@@ -1466,6 +1517,21 @@ Web Store: https://chrome.google.com/remotedesktop"""
     print(EPILOG, file=sys.stderr)
     return 1
 
+  # Determine whether a desktop is already active for the specified host
+  # configuration.
+  proc = get_daemon_proc(config_file)
+  if proc is not None:
+    # Debian policy requires that services should "start" cleanly and return 0
+    # if they are already running.
+    print("Service already running.")
+    return 0
+
+  if config_file != options.config:
+    # Canonicalize config flag so get_daemon_proc can find us.
+    exec_args = [sys.argv[0], "--config=" + config_file]
+    exec_args += parse_config_arg(sys.argv[1:])[1]
+    os.execvp(SCRIPT_PATH, exec_args)
+
   # If a RANDR-supporting Xvfb is not available, limit the default size to
   # something more sensible.
   if USE_XORG_ENV_VAR not in os.environ and locate_xvfb_randr():
@@ -1502,7 +1568,7 @@ Web Store: https://chrome.google.com/remotedesktop"""
   atexit.register(cleanup)
 
   # Load the initial host configuration.
-  host_config = Config(options.config)
+  host_config = Config(config_file)
   try:
     host_config.load()
   except (IOError, ValueError) as e:
@@ -1521,15 +1587,6 @@ Web Store: https://chrome.google.com/remotedesktop"""
   if not host_config_valid or not auth_config_valid:
     logging.error("Failed to load host configuration.")
     return 1
-
-  # Determine whether a desktop is already active for the specified host
-  # host configuration.
-  proc = get_daemon_proc()
-  if proc is not None:
-    # Debian policy requires that services should "start" cleanly and return 0
-    # if they are already running.
-    print("Service already running.")
-    return 0
 
   # If we're running under user-session, try to open the messaging pipe.
   if options.child_process:
@@ -1605,7 +1662,7 @@ Web Store: https://chrome.google.com/remotedesktop"""
           relaunch_times.append(x_server_inhibitor.earliest_relaunch_time)
         else:
           logging.info("Launching X server and X session.")
-          desktop.launch_session(options.child_process, args)
+          desktop.launch_session(options.child_process, options.args)
           x_server_inhibitor.record_started(MINIMUM_PROCESS_LIFETIME,
                                             backoff_time)
           allow_relaunch_self = True
