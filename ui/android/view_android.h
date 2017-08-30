@@ -189,7 +189,7 @@ class UI_ANDROID_EXPORT ViewAndroid {
   friend class ViewAndroidBoundsTest;
 
   bool OnDragEvent(const DragEventAndroid& event);
-  bool OnTouchEvent(const MotionEventAndroid& event, bool for_touch_handle);
+  bool OnTouchEvent(const MotionEventAndroid& event);
   bool OnMouseEvent(const MotionEventAndroid& event);
   bool OnMouseWheelEvent(const MotionEventAndroid& event);
 
@@ -210,8 +210,7 @@ class UI_ANDROID_EXPORT ViewAndroid {
   static bool SendDragEventToClient(ViewClient* client,
                                     const DragEventAndroid& event,
                                     const gfx::PointF& point);
-  static bool SendTouchEventToClient(bool for_touch_handle,
-                                     ViewClient* client,
+  static bool SendTouchEventToClient(ViewClient* client,
                                      const MotionEventAndroid& event,
                                      const gfx::PointF& point);
   static bool SendMouseEventToClient(ViewClient* client,

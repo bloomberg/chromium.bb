@@ -462,8 +462,7 @@ void WebContentsViewAndroid::TakeFocus(bool reverse) {
   web_contents_->GetRenderWidgetHostView()->Focus();
 }
 
-bool WebContentsViewAndroid::OnTouchEvent(const ui::MotionEventAndroid& event,
-                                          bool for_touch_handle) {
+bool WebContentsViewAndroid::OnTouchEvent(const ui::MotionEventAndroid& event) {
   if (event.GetAction() == ui::MotionEventAndroid::ACTION_DOWN)
     content_view_core_->OnTouchDown(event.GetJavaObject());
   return false;  // let the children handle the actual event.

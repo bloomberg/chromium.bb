@@ -963,7 +963,12 @@ RenderWidgetHostViewAndroid::GetWeakPtrAndroid() {
 }
 
 bool RenderWidgetHostViewAndroid::OnTouchEvent(
-    const ui::MotionEvent& event) {
+    const ui::MotionEventAndroid& event) {
+  RecordToolTypeForActionDown(event);
+
+  if (event.for_touch_handle())
+    return OnTouchHandleEvent(event);
+
   if (!host_ || !host_->delegate())
     return false;
 
@@ -977,8 +982,7 @@ bool RenderWidgetHostViewAndroid::OnTouchEvent(
   // If a browser-based widget consumes the touch event, it's critical that
   // touch event interception be disabled. This avoids issues with
   // double-handling for embedder-detected gestures like side swipe.
-  if (touch_selection_controller_ &&
-      touch_selection_controller_->WillHandleTouchEvent(event)) {
+  if (OnTouchHandleEvent(event)) {
     RequestDisallowInterceptTouchEvent();
     return true;
   }
@@ -2152,15 +2156,6 @@ void RenderWidgetHostViewAndroid::RunAckCallbacks() {
 TouchSelectionControllerClientManager*
 RenderWidgetHostViewAndroid::GetTouchSelectionControllerClientManager() {
   return touch_selection_controller_client_manager_.get();
-}
-
-bool RenderWidgetHostViewAndroid::OnTouchEvent(
-    const ui::MotionEventAndroid& event,
-    bool for_touch_handle) {
-  RecordToolTypeForActionDown(event);
-
-  // TODO(jinsukkim): Remove this distinction.
-  return for_touch_handle ? OnTouchHandleEvent(event) : OnTouchEvent(event);
 }
 
 bool RenderWidgetHostViewAndroid::OnMouseEvent(

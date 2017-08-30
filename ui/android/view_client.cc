@@ -6,8 +6,7 @@
 
 namespace ui {
 
-bool ViewClient::OnTouchEvent(const MotionEventAndroid& event,
-                              bool for_touch_handle) {
+bool ViewClient::OnTouchEvent(const MotionEventAndroid& event) {
   return false;
 }
 

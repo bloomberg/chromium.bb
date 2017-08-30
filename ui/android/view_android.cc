@@ -403,20 +403,17 @@ bool ViewAndroid::SendDragEventToClient(ViewClient* client,
   return client->OnDragEvent(*e);
 }
 
-bool ViewAndroid::OnTouchEvent(const MotionEventAndroid& event,
-                               bool for_touch_handle) {
-  return HitTest(
-      base::Bind(&ViewAndroid::SendTouchEventToClient, for_touch_handle), event,
-      event.GetPoint());
+bool ViewAndroid::OnTouchEvent(const MotionEventAndroid& event) {
+  return HitTest(base::Bind(&ViewAndroid::SendTouchEventToClient), event,
+                 event.GetPoint());
 }
 
 // static
-bool ViewAndroid::SendTouchEventToClient(bool for_touch_handle,
-                                         ViewClient* client,
+bool ViewAndroid::SendTouchEventToClient(ViewClient* client,
                                          const MotionEventAndroid& event,
                                          const gfx::PointF& point) {
   std::unique_ptr<MotionEventAndroid> e(event.CreateFor(point));
-  return client->OnTouchEvent(*e, for_touch_handle);
+  return client->OnTouchEvent(*e);
 }
 
 bool ViewAndroid::OnMouseEvent(const MotionEventAndroid& event) {
