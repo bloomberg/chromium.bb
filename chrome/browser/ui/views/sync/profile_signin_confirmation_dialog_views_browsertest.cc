@@ -23,7 +23,6 @@ namespace {
 class TestSigninDialogDelegate : public ui::ProfileSigninConfirmationDelegate {
  public:
   TestSigninDialogDelegate() {}
-  virtual ~TestSigninDialogDelegate() {}
 
   void OnCancelSignin() override {}
   void OnContinueSignin() override {}

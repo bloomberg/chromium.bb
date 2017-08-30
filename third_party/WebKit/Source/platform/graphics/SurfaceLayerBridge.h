@@ -41,7 +41,7 @@ class PLATFORM_EXPORT SurfaceLayerBridge
       public WebSurfaceLayerBridge {
  public:
   SurfaceLayerBridge(SurfaceLayerBridgeObserver*, WebLayerTreeView*);
-  virtual ~SurfaceLayerBridge();
+  ~SurfaceLayerBridge() override;
 
   void CreateSolidColorLayer();
 

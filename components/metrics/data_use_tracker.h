@@ -26,7 +26,7 @@ typedef base::Callback<void(const std::string&, int, bool)>
 class DataUseTracker {
  public:
   explicit DataUseTracker(PrefService* local_state);
-  ~DataUseTracker();
+  virtual ~DataUseTracker();
 
   // Returns an instance of |DataUseTracker| with provided |local_state| if
   // users data use should be tracked and null pointer otherwise.

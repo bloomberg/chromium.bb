@@ -17,10 +17,8 @@ class PlatformSensorConfiguration {
 
   bool operator==(const PlatformSensorConfiguration& other) const;
 
-  // Platform dependent implementations can override this operator if different
-  // optimal configuration comparison is required. By default, only frequency is
-  // used to compare two configurations.
-  virtual bool operator>(const PlatformSensorConfiguration& other) const;
+  // Only frequency is used to compare two configurations.
+  bool operator>(const PlatformSensorConfiguration& other) const;
 
   void set_frequency(double frequency);
   double frequency() const { return frequency_; }

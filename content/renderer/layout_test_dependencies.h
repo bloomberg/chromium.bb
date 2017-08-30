@@ -9,6 +9,8 @@
 #include <memory>
 
 #include "base/memory/ref_counted.h"
+#include "components/viz/common/quads/copy_output_request.h"
+#include "content/common/content_export.h"
 
 namespace cc {
 class CopyOutputRequest;
@@ -30,8 +32,10 @@ class CompositorDependencies;
 
 // This class allows injection of LayoutTest-specific behaviour to the
 // RenderThreadImpl.
-class LayoutTestDependencies {
+class CONTENT_EXPORT LayoutTestDependencies {
  public:
+  virtual ~LayoutTestDependencies();
+
   virtual std::unique_ptr<cc::LayerTreeFrameSink> CreateLayerTreeFrameSink(
       int32_t routing_id,
       scoped_refptr<gpu::GpuChannelHost> gpu_channel,

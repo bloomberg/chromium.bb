@@ -19,3 +19,5 @@ PushMessagingServiceObserver::Create() {
 #endif
   return nullptr;
 }
+
+PushMessagingServiceObserver::~PushMessagingServiceObserver() {}

@@ -109,7 +109,7 @@ class BluetoothLowEnergyWeavePacketReceiver {
   };
 
   explicit BluetoothLowEnergyWeavePacketReceiver(ReceiverType receiver_type);
-  ~BluetoothLowEnergyWeavePacketReceiver();
+  virtual ~BluetoothLowEnergyWeavePacketReceiver();
 
   typedef std::vector<uint8_t> Packet;
 

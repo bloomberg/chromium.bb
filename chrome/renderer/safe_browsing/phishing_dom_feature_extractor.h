@@ -38,7 +38,7 @@ class PhishingDOMFeatureExtractor {
   // |clock| is used for timing feature extractor operations, and may be
   // mocked for testing.  The caller maintains ownership of the clock.
   explicit PhishingDOMFeatureExtractor(FeatureExtractorClock* clock);
-  ~PhishingDOMFeatureExtractor();
+  virtual ~PhishingDOMFeatureExtractor();
 
   // Begins extracting features into the given FeatureMap for the page.
   // To avoid blocking the render thread for too long, the feature extractor

@@ -86,29 +86,31 @@ TEST(PropertyTest, Property) {
 }
 
 TEST(PropertyTest, OwnedProperty) {
-  std::unique_ptr<PropertyHandler> h = base::MakeUnique<PropertyHandler>();
+  TestProperty* p3;
+  {
+    PropertyHandler h;
 
-  EXPECT_EQ(NULL, h->GetProperty(kOwnedKey));
-  void* last_deleted = TestProperty::last_deleted();
-  TestProperty* p1 = new TestProperty();
-  h->SetProperty(kOwnedKey, p1);
-  EXPECT_EQ(p1, h->GetProperty(kOwnedKey));
-  EXPECT_EQ(last_deleted, TestProperty::last_deleted());
+    EXPECT_EQ(NULL, h.GetProperty(kOwnedKey));
+    void* last_deleted = TestProperty::last_deleted();
+    TestProperty* p1 = new TestProperty();
+    h.SetProperty(kOwnedKey, p1);
+    EXPECT_EQ(p1, h.GetProperty(kOwnedKey));
+    EXPECT_EQ(last_deleted, TestProperty::last_deleted());
 
-  TestProperty* p2 = new TestProperty();
-  h->SetProperty(kOwnedKey, p2);
-  EXPECT_EQ(p2, h->GetProperty(kOwnedKey));
-  EXPECT_EQ(p1, TestProperty::last_deleted());
+    TestProperty* p2 = new TestProperty();
+    h.SetProperty(kOwnedKey, p2);
+    EXPECT_EQ(p2, h.GetProperty(kOwnedKey));
+    EXPECT_EQ(p1, TestProperty::last_deleted());
 
-  h->ClearProperty(kOwnedKey);
-  EXPECT_EQ(NULL, h->GetProperty(kOwnedKey));
-  EXPECT_EQ(p2, TestProperty::last_deleted());
+    h.ClearProperty(kOwnedKey);
+    EXPECT_EQ(NULL, h.GetProperty(kOwnedKey));
+    EXPECT_EQ(p2, TestProperty::last_deleted());
 
-  TestProperty* p3 = new TestProperty();
-  h->SetProperty(kOwnedKey, p3);
-  EXPECT_EQ(p3, h->GetProperty(kOwnedKey));
-  EXPECT_EQ(p2, TestProperty::last_deleted());
-  h.reset();
+    p3 = new TestProperty();
+    h.SetProperty(kOwnedKey, p3);
+    EXPECT_EQ(p3, h.GetProperty(kOwnedKey));
+    EXPECT_EQ(p2, TestProperty::last_deleted());
+  }
   EXPECT_EQ(p3, TestProperty::last_deleted());
 }
 

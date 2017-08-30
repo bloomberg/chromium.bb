@@ -39,7 +39,7 @@ class CONTENT_EXPORT UploadProgressTracker {
                         net::URLRequest* request,
                         scoped_refptr<base::SequencedTaskRunner> task_runner =
                             base::SequencedTaskRunnerHandle::Get());
-  ~UploadProgressTracker();
+  virtual ~UploadProgressTracker();
 
   void OnAckReceived();
   void OnUploadCompleted();

@@ -118,7 +118,7 @@ class SimpleSingleThreadTaskRunner : public SingleThreadTaskRunner {
 
 // A simple test RunLoop::Delegate to exercise Runloop logic independent of any
 // other base constructs.
-class TestDelegate : public RunLoop::Delegate {
+class TestDelegate final : public RunLoop::Delegate {
  public:
   TestDelegate() = default;
 

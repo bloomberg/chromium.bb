@@ -15,7 +15,7 @@
 
 namespace ntp_snippets {
 
-class FakeContentSuggestionsProviderObserver
+class FakeContentSuggestionsProviderObserver final
     : public ContentSuggestionsProvider::Observer {
  public:
   FakeContentSuggestionsProviderObserver();

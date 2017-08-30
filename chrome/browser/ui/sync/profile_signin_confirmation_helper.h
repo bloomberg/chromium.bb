@@ -40,6 +40,7 @@ void CheckShouldPromptForNewProfile(
 // Handles user input from confirmation dialog.
 class ProfileSigninConfirmationDelegate {
  public:
+  virtual ~ProfileSigninConfirmationDelegate();
   virtual void OnCancelSignin() = 0;
   virtual void OnContinueSignin() = 0;
   virtual void OnSigninWithNewProfile() = 0;

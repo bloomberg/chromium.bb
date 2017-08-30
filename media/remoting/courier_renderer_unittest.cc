@@ -54,7 +54,7 @@ bool IsDefaultStats(const PipelineStatistics& stats) {
   return memcmp(&stats, &default_stats, sizeof(PipelineStatistics)) == 0;
 }
 
-class RendererClientImpl : public RendererClient {
+class RendererClientImpl final : public RendererClient {
  public:
   RendererClientImpl() {
     ON_CALL(*this, OnStatisticsUpdate(_))

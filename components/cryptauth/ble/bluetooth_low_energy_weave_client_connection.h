@@ -76,10 +76,11 @@ class BluetoothLowEnergyWeaveClientConnection
     static Factory* factory_instance_;
   };
 
+  // TODO(thakis): It looks like this could be stack-allocated and passed by
+  // pointer instead of by unique_ptr, removing the need for a virtual dtor.
   class TimerFactory {
    public:
-    TimerFactory() {}
-    virtual ~TimerFactory() {}
+    virtual ~TimerFactory();
 
     virtual std::unique_ptr<base::Timer> CreateTimer();
   };

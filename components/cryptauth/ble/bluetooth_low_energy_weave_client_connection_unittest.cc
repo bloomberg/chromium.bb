@@ -206,7 +206,7 @@ class MockBluetoothLowEnergyWeavePacketReceiver
   ReasonForClose reason_to_close_;
 };
 
-class TestTimerFactory
+class TestTimerFactory final
     : public BluetoothLowEnergyWeaveClientConnection::TimerFactory {
  public:
   std::unique_ptr<base::Timer> CreateTimer() override {

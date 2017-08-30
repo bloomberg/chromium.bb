@@ -53,6 +53,7 @@ class GlowplugKeyValueTable {
  public:
   explicit GlowplugKeyValueTable(const std::string& table_name);
   // Virtual for testing.
+  virtual ~GlowplugKeyValueTable() {}
   virtual void GetAllData(std::map<std::string, T>* data_map,
                           sql::Connection* db) const;
   virtual void UpdateData(const std::string& key,

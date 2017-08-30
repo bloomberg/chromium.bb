@@ -89,7 +89,7 @@ class OffscreenTab::PresentationNavigationPolicy
     : public OffscreenTab::NavigationPolicy {
  public:
   PresentationNavigationPolicy() : first_navigation_started_(false) {}
-  ~PresentationNavigationPolicy() = default;
+  ~PresentationNavigationPolicy() override = default;
 
  private:
   // OffscreenTab::NavigationPolicy overrides

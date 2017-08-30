@@ -159,7 +159,7 @@ void RecordCachePurgedHistogram(CachePurgeReason reason,
 
 }  // namespace
 
-class LocalStorageContextMojo::LevelDBWrapperHolder
+class LocalStorageContextMojo::LevelDBWrapperHolder final
     : public LevelDBWrapperImpl::Delegate {
  public:
   LevelDBWrapperHolder(LocalStorageContextMojo* context,

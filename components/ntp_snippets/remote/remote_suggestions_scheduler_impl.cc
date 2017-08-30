@@ -343,7 +343,7 @@ void ReportTimeUntilPersistentFetch(
 
 }  // namespace
 
-class EulaState : public web_resource::EulaAcceptedNotifier::Observer {
+class EulaState final : public web_resource::EulaAcceptedNotifier::Observer {
  public:
   EulaState(PrefService* local_state_prefs, base::Closure eula_accepted)
       : eula_notifier_(

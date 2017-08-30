@@ -85,6 +85,8 @@ BluetoothLowEnergyWeaveClientConnection::Factory::BuildInstance(
       bluetooth_throttler);
 }
 
+BluetoothLowEnergyWeaveClientConnection::TimerFactory::~TimerFactory() {}
+
 std::unique_ptr<base::Timer>
 BluetoothLowEnergyWeaveClientConnection::TimerFactory::CreateTimer() {
   return base::MakeUnique<base::OneShotTimer>();
