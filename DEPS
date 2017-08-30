@@ -108,7 +108,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
-  'libprotobuf-mutator': 'b2c4fb59135711122b800376d8dc46af2fc9d060',
+  'libprotobuf-mutator': 'b3323e24eca853345cff45c4b3ab89e09d17b9f0',
 }
 
 # Only these hosts are allowed for dependencies in this DEPS file.

@@ -11,10 +11,7 @@
 
 #include "content/test/fuzzer/fuzzer_support.h"
 #include "content/test/fuzzer/html_tree.pb.h"
-#include "third_party/libprotobuf-mutator/src/src/binary_format.h"
-#include "third_party/libprotobuf-mutator/src/src/libfuzzer/libfuzzer_mutator.h"
-
-protobuf_mutator::protobuf::LogSilencer log_silincer;
+#include "third_party/libprotobuf-mutator/src/src/libfuzzer/libfuzzer_macro.h"
 
 namespace content {
 
@@ -84,61 +81,20 @@ static void operator<<(HtmlTreeWriter& w, const Document& document) {
   w << document.root();
 }
 
-static std::string str(const uint8_t* data, size_t size) {
-  Document document;
-  protobuf_mutator::ParseBinaryMessage(data, size, &document);
-
+static std::string str(const Document& document) {
   HtmlTreeWriter writer;
   writer << document;
   return writer.str();
-  //  return document.ShortDebugString();
-}
-
-extern "C" void LLVMPrintInput(const uint8_t* data, size_t size) {
-  //  fprintf(stderr, "NEW %s\n", str(data, size).c_str());
-}
-
-extern "C" size_t LLVMFuzzerCustomMutator(uint8_t* data,
-                                          size_t size,
-                                          size_t max_size,
-                                          unsigned int seed) {
-  fprintf(stderr, "BEFORE    %s\n", str(data, size).c_str());
-  size_t new_size = protobuf_mutator::libfuzzer::MutateBinaryMessage<Document>(
-      data, size, max_size, seed);
-  fprintf(stderr, "AFTER     %s\n", str(data, new_size).c_str());
-  return new_size;
-}
-
-extern "C" size_t LLVMFuzzerCustomCrossOver(const uint8_t* data1,
-                                            size_t size1,
-                                            const uint8_t* data2,
-                                            size_t size2,
-                                            uint8_t* out,
-                                            size_t max_out_size,
-                                            unsigned int seed) {
-  fprintf(stderr, "BEFOR1    %s\n", str(data1, size1).c_str());
-  fprintf(stderr, "BEFOR2    %s\n", str(data2, size2).c_str());
-  size_t new_size =
-      protobuf_mutator::libfuzzer::CrossOverBinaryMessages<Document>(
-          data1, size1, data2, size2, out, max_out_size, seed);
-  fprintf(stderr, "AFTER     %s\n", str(out, new_size).c_str());
-  return new_size;
 }
 
 static Env* env = nullptr;
 
-extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
+DEFINE_BINARY_PROTO_FUZZER(const Document& document) {
   // Environment has to be initialized in the same thread.
   if (env == nullptr)
     env = new Env();
 
-  //  str(data, size);
-
-  env->adapter->LoadHTML(str(data, size), "http://www.example.org");
-
-  //  fprintf(stderr, "%s\n", writer.str().c_str());
-
-  return 0;
+  env->adapter->LoadHTML(str(document), "http://www.example.org");
 }
 
 }  // namespace content
