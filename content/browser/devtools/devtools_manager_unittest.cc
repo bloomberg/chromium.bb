@@ -25,6 +25,7 @@
 #include "content/public/browser/devtools_external_agent_proxy_delegate.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/browser_side_navigation_policy.h"
+#include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_utils.h"
 #include "content/test/test_content_browser_client.h"
 #include "content/test/test_render_view_host.h"
@@ -179,13 +180,7 @@ TEST_F(DevToolsManagerTest, ReattachOnCancelPendingNavigation) {
     return;
   // Navigate to URL.  First URL should use first RenderViewHost.
   const GURL url("http://www.google.com");
-  controller().LoadURL(
-      url, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
-  int pending_id = controller().GetPendingEntry()->GetUniqueID();
-  contents()->GetMainFrame()->PrepareForCommit();
-  contents()->TestDidNavigate(contents()->GetMainFrame(), pending_id, true,
-                              url, ui::PAGE_TRANSITION_TYPED);
-  contents()->GetMainFrame()->SimulateNavigationStop();
+  NavigationSimulator::NavigateAndCommitFromBrowser(web_contents(), url);
   EXPECT_FALSE(contents()->CrossProcessNavigationPending());
 
   TestDevToolsClientHost client_host;
@@ -194,20 +189,15 @@ TEST_F(DevToolsManagerTest, ReattachOnCancelPendingNavigation) {
 
   // Navigate to new site which should get a new RenderViewHost.
   const GURL url2("http://www.yahoo.com");
-  controller().LoadURL(
-      url2, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
-  contents()->GetMainFrame()->PrepareForCommit();
+  auto navigation =
+      NavigationSimulator::CreateBrowserInitiated(url2, web_contents());
+  navigation->ReadyToCommit();
   EXPECT_TRUE(contents()->CrossProcessNavigationPending());
   EXPECT_EQ(client_host.agent_host(),
             DevToolsAgentHost::GetOrCreateFor(web_contents()).get());
 
   // Interrupt pending navigation and navigate back to the original site.
-  controller().LoadURL(
-      url, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
-  pending_id = controller().GetPendingEntry()->GetUniqueID();
-  contents()->GetMainFrame()->PrepareForCommit();
-  contents()->TestDidNavigate(contents()->GetMainFrame(), pending_id, false,
-                              url, ui::PAGE_TRANSITION_TYPED);
+  NavigationSimulator::NavigateAndCommitFromBrowser(web_contents(), url);
   EXPECT_FALSE(contents()->CrossProcessNavigationPending());
   EXPECT_EQ(client_host.agent_host(),
             DevToolsAgentHost::GetOrCreateFor(web_contents()).get());
