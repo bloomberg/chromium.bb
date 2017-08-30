@@ -736,7 +736,7 @@ if (is_fuchsia) {
   # TODO(https://crbug.com/731217): This can't practically be in //v8 without
   # duplicating all the Fuchsia running infrastructure there.
   fuchsia_executable_runner("d8_fuchsia") {
-    exe_name = "d8"
+    exe_target = "//v8:d8"
   }
 }
 
