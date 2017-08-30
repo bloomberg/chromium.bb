@@ -313,7 +313,7 @@ input:disabled:-webkit-any([type='password'],
  *
  *   <div class="checkbox">
  *     <label>
- *       <input type="checkbox"></input>
+ *       <input type="checkbox">
  *       <span>
  *     </label>
  *   </div>

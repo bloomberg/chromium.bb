@@ -346,7 +346,7 @@ function createBweCompoundLegend(peerConnectionElement, reportId) {
   for (var prop in bweCompoundGraphConfig) {
     var div = document.createElement('div');
     legend.appendChild(div);
-    div.innerHTML = '<input type=checkbox checked></input>' + prop;
+    div.innerHTML = '<input type=checkbox checked>' + prop;
     div.style.color = bweCompoundGraphConfig[prop].color;
     div.dataSeriesId = reportId + '-' + prop;
     div.graphViewId =
