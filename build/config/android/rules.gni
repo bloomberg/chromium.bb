@@ -2980,6 +2980,11 @@ if (enable_java_templates) {
                     rebase_path(_info_path, root_build_dir),
                   ])
     }
+
+    # If "gn gen" is failing on the following line, you need to generate an
+    # .info file for your new target by running:
+    #   gn gen --args='target_os="android" update_android_aar_prebuilts=true' out/tmp
+    #   rm -r out/tmp
     _scanned_files = read_file(_info_path, "scope")
 
     assert(_ignore_aidl || _scanned_files.aidl == [],
