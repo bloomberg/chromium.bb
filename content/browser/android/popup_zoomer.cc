@@ -40,10 +40,6 @@ jlong Init(JNIEnv* env,
   return reinterpret_cast<intptr_t>(popup_zoomer);
 }
 
-bool RegisterPopupZoomer(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 PopupZoomer::PopupZoomer(JNIEnv* env,
                          const JavaParamRef<jobject>& obj,
                          WebContents* web_contents)
