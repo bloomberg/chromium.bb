@@ -10,13 +10,13 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner_helpers.h"
-#include "content/child/child_url_loader_factory_getter.h"
 #include "content/child/service_worker/service_worker_dispatcher.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_container.mojom.h"
 #include "content/common/service_worker/service_worker_event_dispatcher.mojom.h"
 #include "content/common/service_worker/service_worker_provider.mojom.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "content/public/child/child_url_loader_factory_getter.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 
 namespace base {

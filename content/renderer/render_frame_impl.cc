@@ -40,7 +40,6 @@
 #include "build/build_config.h"
 #include "cc/base/switches.h"
 #include "content/child/appcache/appcache_dispatcher.h"
-#include "content/child/child_url_loader_factory_getter.h"
 #include "content/child/feature_policy/feature_policy_platform.h"
 #include "content/child/quota_dispatcher.h"
 #include "content/child/request_extra_data.h"
@@ -75,6 +74,7 @@
 #include "content/common/site_isolation_policy.h"
 #include "content/common/swapped_out_messages.h"
 #include "content/common/view_messages.h"
+#include "content/public/child/child_url_loader_factory_getter.h"
 #include "content/public/common/appcache_info.h"
 #include "content/public/common/associated_interface_provider.h"
 #include "content/public/common/bindings_policy.h"
@@ -6845,17 +6845,6 @@ void RenderFrameImpl::DraggableRegionsChanged() {
     observer.DraggableRegionsChanged();
 }
 
-ChildURLLoaderFactoryGetter*
-RenderFrameImpl::GetDefaultURLLoaderFactoryGetter() {
-  RenderThreadImpl* render_thread = RenderThreadImpl::current();
-  DCHECK(render_thread);
-  if (!url_loader_factory_getter_) {
-    url_loader_factory_getter_ = render_thread->blink_platform_impl()
-                                     ->CreateDefaultURLLoaderFactoryGetter();
-  }
-  return url_loader_factory_getter_.get();
-}
-
 blink::WebPageVisibilityState RenderFrameImpl::GetVisibilityState() const {
   return VisibilityState();
 }
@@ -6878,6 +6867,17 @@ base::SingleThreadTaskRunner* RenderFrameImpl::GetUnthrottledTaskRunner() {
 
 int RenderFrameImpl::GetEnabledBindings() const {
   return enabled_bindings_;
+}
+
+ChildURLLoaderFactoryGetter*
+RenderFrameImpl::GetDefaultURLLoaderFactoryGetter() {
+  RenderThreadImpl* render_thread = RenderThreadImpl::current();
+  DCHECK(render_thread);
+  if (!url_loader_factory_getter_) {
+    url_loader_factory_getter_ = render_thread->blink_platform_impl()
+                                     ->CreateDefaultURLLoaderFactoryGetter();
+  }
+  return url_loader_factory_getter_.get();
 }
 
 blink::WebPlugin* RenderFrameImpl::GetWebPluginForFind() {

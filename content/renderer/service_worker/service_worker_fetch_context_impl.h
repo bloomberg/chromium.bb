@@ -5,7 +5,7 @@
 #ifndef CONTENT_RENDERER_SERVICE_WORKER_SERVICE_WORKER_FETCH_CONTEXT_IMPL_H_
 #define CONTENT_RENDERER_SERVICE_WORKER_SERVICE_WORKER_FETCH_CONTEXT_IMPL_H_
 
-#include "content/child/child_url_loader_factory_getter.h"
+#include "content/public/child/child_url_loader_factory_getter.h"
 #include "content/public/common/url_loader_factory.mojom.h"
 #include "third_party/WebKit/public/platform/WebWorkerFetchContext.h"
 #include "url/gurl.h"

@@ -469,6 +469,10 @@ class CONTENT_EXPORT RenderFrameImpl
   base::SingleThreadTaskRunner* GetLoadingTaskRunner() override;
   base::SingleThreadTaskRunner* GetUnthrottledTaskRunner() override;
   int GetEnabledBindings() const override;
+  // Returns non-null.
+  // It is invalid to call this in an incomplete env where
+  // RenderThreadImpl::current() returns nullptr (e.g. in some tests).
+  ChildURLLoaderFactoryGetter* GetDefaultURLLoaderFactoryGetter() override;
 
   // blink::mojom::EngagementClient implementation:
   void SetEngagementLevel(const url::Origin& origin,
@@ -681,11 +685,6 @@ class CONTENT_EXPORT RenderFrameImpl
       const blink::WebURLRequest& request,
       base::SingleThreadTaskRunner* task_runner) override;
   void DraggableRegionsChanged() override;
-
-  // Returns non-null.
-  // It is invalid to call this in an incomplete env where
-  // RenderThreadImpl::current() returns nullptr (e.g. in some tests).
-  ChildURLLoaderFactoryGetter* GetDefaultURLLoaderFactoryGetter();
 
   // WebFrameSerializerClient implementation:
   void DidSerializeDataForFrame(

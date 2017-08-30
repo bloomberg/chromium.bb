@@ -6,7 +6,6 @@
 
 #include "base/atomic_sequence_num.h"
 #include "content/child/child_thread_impl.h"
-#include "content/child/child_url_loader_factory_getter.h"
 #include "content/child/request_extra_data.h"
 #include "content/child/service_worker/service_worker_dispatcher.h"
 #include "content/child/service_worker/service_worker_handle_reference.h"
@@ -17,6 +16,7 @@
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/common/service_worker/service_worker_provider_host_info.h"
 #include "content/common/service_worker/service_worker_utils.h"
+#include "content/public/child/child_url_loader_factory_getter.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "ipc/ipc_sync_channel.h"
 #include "mojo/public/cpp/bindings/associated_group.h"

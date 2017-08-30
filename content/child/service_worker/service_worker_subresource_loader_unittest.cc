@@ -5,7 +5,7 @@
 #include "content/child/service_worker/service_worker_subresource_loader.h"
 
 #include "base/run_loop.h"
-#include "content/child/child_url_loader_factory_getter.h"
+#include "content/child/child_url_loader_factory_getter_impl.h"
 #include "content/child/service_worker/service_worker_event_dispatcher_holder.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_url_loader_client.h"
@@ -136,7 +136,7 @@ class ServiceWorkerSubresourceLoaderTest : public ::testing::Test {
     request.method = method;
 
     auto loader_factory_getter =
-        base::MakeRefCounted<ChildURLLoaderFactoryGetter>();
+        base::MakeRefCounted<ChildURLLoaderFactoryGetterImpl>();
 
     mojom::URLLoaderPtr url_loader;
     TestURLLoaderClient url_loader_client;
