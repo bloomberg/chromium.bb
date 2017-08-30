@@ -17,6 +17,7 @@
 #include "platform/SharedBuffer.h"
 #include "platform/blob/BlobData.h"
 #include "platform/heap/Handle.h"
+#include "platform/network/HTTPHeaderMap.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/Functional.h"
@@ -205,8 +206,12 @@ struct DataRequestParams {
 
 struct RequestResponse {
   String request_url;
+  String request_method;
+  HTTPHeaderMap request_headers;
+  int response_status;
+  String response_status_text;
   double response_time;
-  Vector<std::pair<String, String>> headers;
+  HTTPHeaderMap response_headers;
 };
 
 class ResponsesAccumulator : public RefCounted<ResponsesAccumulator> {
@@ -226,12 +231,14 @@ class ResponsesAccumulator : public RefCounted<ResponsesAccumulator> {
     DCHECK_GT(num_responses_left_, 0);
     RequestResponse& request_response =
         responses_.at(responses_.size() - num_responses_left_);
+
     request_response.request_url = request.Url().GetString();
+    request_response.request_method = request.Method();
+    request_response.request_headers = request.Headers();
+    request_response.response_status = response.Status();
+    request_response.response_status_text = response.StatusText();
     request_response.response_time = response.ResponseTime().ToDoubleT();
-    for (const auto& header : response.GetHeaderKeys()) {
-      request_response.headers.push_back(
-          std::make_pair(header, response.GetHeader(header)));
-    }
+    request_response.response_headers = response.Headers();
 
     if (--num_responses_left_ != 0)
       return;
@@ -251,18 +258,17 @@ class ResponsesAccumulator : public RefCounted<ResponsesAccumulator> {
     }
     std::unique_ptr<Array<DataEntry>> array = Array<DataEntry>::create();
     for (const auto& request_response : responses_) {
-      std::unique_ptr<Array<Header>> headers = Array<Header>::create();
-      for (const auto& header : request_response.headers) {
-        headers->addItem(Header::create()
-                             .setName(header.first)
-                             .setValue(header.second)
-                             .build());
-      }
       std::unique_ptr<DataEntry> entry =
           DataEntry::create()
               .setRequestURL(request_response.request_url)
+              .setRequestMethod(request_response.request_method)
+              .setRequestHeaders(
+                  SerializeHeaders(request_response.request_headers))
+              .setResponseStatus(request_response.response_status)
+              .setResponseStatusText(request_response.response_status_text)
               .setResponseTime(request_response.response_time)
-              .setResponseHeaders(std::move(headers))
+              .setResponseHeaders(
+                  SerializeHeaders(request_response.response_headers))
               .build();
       array->addItem(std::move(entry));
     }
@@ -271,6 +277,18 @@ class ResponsesAccumulator : public RefCounted<ResponsesAccumulator> {
 
   void SendFailure(const ProtocolResponse& error) {
     callback_->sendFailure(error);
+  }
+
+  std::unique_ptr<Array<Header>> SerializeHeaders(
+      const HTTPHeaderMap& headers) {
+    std::unique_ptr<Array<Header>> result = Array<Header>::create();
+    for (HTTPHeaderMap::const_iterator it = headers.begin(),
+                                       end = headers.end();
+         it != end; ++it) {
+      result->addItem(
+          Header::create().setName(it->key).setValue(it->value).build());
+    }
+    return result;
   }
 
  private:
