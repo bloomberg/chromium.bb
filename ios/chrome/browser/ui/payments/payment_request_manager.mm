@@ -37,6 +37,7 @@
 #include "components/payments/core/payment_request_data_util.h"
 #include "components/payments/core/payment_shipping_option.h"
 #include "components/prefs/pref_service.h"
+#include "components/url_formatter/elide_url.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #include "ios/chrome/browser/autofill/validation_rules_storage_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -68,7 +69,6 @@
 #include "third_party/libaddressinput/chromium/chrome_metadata_source.h"
 #include "third_party/libaddressinput/chromium/chrome_storage_impl.h"
 #include "url/gurl.h"
-#include "url/origin.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -557,7 +557,8 @@ struct PendingPaymentResponse {
     pageFavicon = navigationItem->GetFavicon().image.ToUIImage();
   NSString* pageTitle = base::SysUTF16ToNSString(_activeWebState->GetTitle());
   NSString* pageHost =
-      base::SysUTF8ToNSString(_activeWebState->GetLastCommittedURL().host());
+      base::SysUTF16ToNSString(url_formatter::FormatUrlForSecurityDisplay(
+          _activeWebState->GetLastCommittedURL()));
   BOOL connectionSecure =
       _activeWebState->GetLastCommittedURL().SchemeIs(url::kHttpsScheme);
   autofill::AutofillManager* autofillManager =
@@ -650,8 +651,10 @@ struct PendingPaymentResponse {
   DCHECK(canMakePaymentQuery);
   // iOS PaymentRequest does not support iframes.
   if (canMakePaymentQuery->CanQuery(
-          url::Origin(_activeWebState->GetLastCommittedURL().GetOrigin()),
-          url::Origin(_activeWebState->GetLastCommittedURL().GetOrigin()),
+          GURL(url_formatter::FormatUrlForSecurityDisplay(
+              _activeWebState->GetLastCommittedURL())),
+          GURL(url_formatter::FormatUrlForSecurityDisplay(
+              _activeWebState->GetLastCommittedURL())),
           paymentRequest->stringified_method_data())) {
     [_paymentRequestJsManager
         resolveCanMakePaymentPromiseWithValue:canMakePayment

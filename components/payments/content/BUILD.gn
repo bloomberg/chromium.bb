@@ -26,6 +26,7 @@ static_library("content") {
     "//components/payments/core",
     "//components/prefs",
     "//components/strings:components_strings_grit",
+    "//components/url_formatter",
     "//content/public/browser",
     "//mojo/public/cpp/bindings",
     "//third_party/WebKit/public:blink_headers",

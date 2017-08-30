@@ -9,6 +9,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace payments {
+namespace {
 
 struct TestCase {
   TestCase(const char* amount,
@@ -182,4 +183,5 @@ INSTANTIATE_TEST_CASE_P(
                  "USD",
                  "http://currsystem.com")));
 
+}  // namespace
 }  // namespace payments

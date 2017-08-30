@@ -71,10 +71,10 @@ const CGFloat kLockIndicatorVerticalPadding = 4;
   [super configureCell:cell];
   cell.pageFaviconView.image = self.pageFavicon;
   cell.pageTitleLabel.text = self.pageTitle;
+  cell.pageHostLabel.text = self.pageHost;
+  cell.pageLockIndicatorView.image = nil;
 
   if (self.connectionSecure) {
-    cell.pageHostLabel.text = [NSString
-        stringWithFormat:@"%s://%@", url::kHttpsScheme, self.pageHost];
     NSMutableAttributedString* text = [[NSMutableAttributedString alloc]
         initWithString:cell.pageHostLabel.text];
     [text addAttribute:NSForegroundColorAttributeName
@@ -88,9 +88,6 @@ const CGFloat kLockIndicatorVerticalPadding = 4;
         CGSizeMake(kLockIndicatorDimension, kLockIndicatorDimension),
         ProjectionMode::kAspectFillNoClipping)
         imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-  } else {
-    cell.pageHostLabel.text = self.pageHost;
-    cell.pageLockIndicatorView.image = nil;
   }
 
   // Invalidate the constraints so that layout can account for whether or not a

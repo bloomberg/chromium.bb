@@ -107,6 +107,7 @@ source_set("unit_tests") {
     "address_normalizer_impl_unittest.cc",
     "autofill_payment_instrument_unittest.cc",
     "basic_card_response_unittest.cc",
+    "can_make_payment_query_unittest.cc",
     "currency_formatter_unittest.cc",
     "journey_logger_unittest.cc",
     "payment_address_unittest.cc",

@@ -68,6 +68,7 @@ source_set("payments") {
     "//components/payments/core",
     "//components/signin/core/browser",
     "//components/strings",
+    "//components/url_formatter",
     "//ios/chrome/app/strings",
     "//ios/chrome/app/theme",
     "//ios/chrome/browser",

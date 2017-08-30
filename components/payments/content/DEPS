@@ -5,6 +5,7 @@ include_rules = [
   "+components/keyed_service/content",
   "+components/prefs",
   "+components/strings",
+  "+components/url_formatter",
   "+content/public",
   "+mojo/public/cpp",
   "+net",
