@@ -172,7 +172,7 @@ void BrowsingHistoryService::QueryHistory(const base::string16& search_text,
     local_history_->QueryHistory(
         search_text, options,
         base::Bind(&BrowsingHistoryService::QueryComplete,
-                   base::Unretained(this), search_text, options),
+                   weak_factory_.GetWeakPtr(), search_text, options),
         &query_task_tracker_);
   }
 
@@ -219,7 +219,8 @@ void BrowsingHistoryService::QueryHistory(const base::string16& search_text,
     web_history_request_ = web_history->QueryHistory(
         search_text, options,
         base::Bind(&BrowsingHistoryService::WebHistoryQueryComplete,
-                   base::Unretained(this), search_text, options, clock_->Now()),
+                   weak_factory_.GetWeakPtr(), search_text, options,
+                   clock_->Now()),
         partial_traffic_annotation);
 
     // Test the existence of other forms of browsing history.
@@ -294,7 +295,7 @@ void BrowsingHistoryService::RemoveVisits(
     local_history_->ExpireHistory(
         expire_list,
         base::Bind(&BrowsingHistoryService::RemoveComplete,
-                   base::Unretained(this)),
+                   weak_factory_.GetWeakPtr()),
         &delete_task_tracker_);
   }
 
