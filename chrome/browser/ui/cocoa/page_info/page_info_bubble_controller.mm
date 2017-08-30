@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/cocoa/bubble_anchor_helper.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
+#include "chrome/browser/ui/cocoa/key_equivalent_constants.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #import "chrome/browser/ui/cocoa/page_info/permission_selector_button.h"
@@ -42,6 +43,7 @@
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #import "ui/base/cocoa/a11y_util.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
+#import "ui/base/cocoa/controls/button_utils.h"
 #import "ui/base/cocoa/controls/hyperlink_button_cell.h"
 #import "ui/base/cocoa/flipped_view.h"
 #import "ui/base/cocoa/hover_image_button.h"
@@ -397,6 +399,8 @@ bool IsInternalURL(const GURL& url) {
   // These will be created only if necessary.
   resetDecisionsField_ = nil;
   resetDecisionsButton_ = nil;
+  changePasswordButton_ = nil;
+  whitelistPasswordReuseButton_ = nil;
 
   NSString* connectionHelpButtonText = l10n_util::GetNSString(IDS_LEARN_MORE);
   connectionHelpButton_ = [self addLinkButtonWithText:connectionHelpButtonText
@@ -569,6 +573,20 @@ bool IsInternalURL(const GURL& url) {
   [self close];
 }
 
+// Handler for the button to change password decisions.
+- (void)changePasswordDecisions:(id)sender {
+  DCHECK(changePasswordButton_);
+  presenter_->OnChangePasswordButtonPressed(webContents_);
+  [self close];
+}
+
+// Handler for the button to whitelist password reuse decisions.
+- (void)whitelistPasswordReuseDecisions:(id)sender {
+  DCHECK(whitelistPasswordReuseButton_);
+  presenter_->OnWhitelistPasswordReuseButtonPressed(webContents_);
+  [self close];
+}
+
 - (CGFloat)layoutViewAtRTLStart:(NSView*)view withYPosition:(CGFloat)yPos {
   CGFloat xPos;
   if (base::i18n::IsRTL()) {
@@ -656,6 +674,41 @@ bool IsInternalURL(const GURL& url) {
                                        kLinkButtonXAdjustment,
                                    yPos)];
     yPos = NSMaxY([resetDecisionsButton_ frame]);
+  }
+
+  if (changePasswordButton_) {
+    NSPoint changePasswordButtonOrigin;
+    NSPoint whitelistReuseButtonOrigin;
+    bool canFitInOneLine = NSWidth([changePasswordButton_ frame]) +
+                               NSWidth([whitelistPasswordReuseButton_ frame]) +
+                               kNSButtonBuiltinMargin <=
+                           NSWidth([contentView_ frame]);
+    bool isRTL = base::i18n::IsRTL();
+    CGFloat horizontalPadding =
+        kSectionHorizontalPadding - kNSButtonBuiltinMargin;
+    changePasswordButtonOrigin.x =
+        isRTL ? NSWidth([contentView_ frame]) -
+                    NSWidth([changePasswordButton_ frame]) - horizontalPadding
+              : horizontalPadding;
+    changePasswordButtonOrigin.y = yPos + kSecurityParagraphSpacing;
+    whitelistReuseButtonOrigin.x =
+        isRTL ? (canFitInOneLine
+                     ? changePasswordButtonOrigin.x - kNSButtonBuiltinMargin -
+                           NSWidth([whitelistPasswordReuseButton_ frame])
+                     : NSWidth([contentView_ frame]) -
+                           NSWidth([whitelistPasswordReuseButton_ frame]) -
+                           horizontalPadding)
+              : (canFitInOneLine ? changePasswordButtonOrigin.x +
+                                       NSWidth([changePasswordButton_ frame]) +
+                                       kNSButtonBuiltinMargin
+                                 : changePasswordButtonOrigin.x);
+    whitelistReuseButtonOrigin.y =
+        canFitInOneLine ? changePasswordButtonOrigin.y
+                        : yPos + NSHeight([changePasswordButton_ frame]);
+    [changePasswordButton_ setFrameOrigin:changePasswordButtonOrigin];
+    [whitelistPasswordReuseButton_ setFrameOrigin:whitelistReuseButtonOrigin];
+    yPos =
+        NSMaxY([whitelistPasswordReuseButton_ frame]) - kNSButtonBuiltinMargin;
   }
 
   // Resize the height based on contents.
@@ -825,7 +878,7 @@ bool IsInternalURL(const GURL& url) {
 }
 
 // Set the content of the identity and identity status fields, and add the
-// Certificate view if applicable.
+// Certificate view or password reuse buttons if applicable.
 - (void)setIdentityInfo:(const PageInfoUI::IdentityInfo&)identityInfo {
   std::unique_ptr<PageInfoUI::SecurityDescription> security_description =
       identityInfo.GetSecurityDescription();
@@ -884,6 +937,23 @@ bool IsInternalURL(const GURL& url) {
       [certificateView_ setLinkTarget:self
                            withAction:@selector(showCertificateInfo:)];
     }
+  }
+  if (identityInfo.show_change_password_buttons) {
+    changePasswordButton_ =
+        [ButtonUtils buttonWithTitle:l10n_util::GetNSString(
+                                         IDS_PAGE_INFO_CHANGE_PASSWORD_BUTTON)
+                              action:@selector(changePasswordDecisions:)
+                              target:securitySectionView_];
+    [changePasswordButton_ sizeToFit];
+    [changePasswordButton_ setKeyEquivalent:kKeyEquivalentReturn];
+    [securitySectionView_ addSubview:changePasswordButton_];
+    whitelistPasswordReuseButton_ = [ButtonUtils
+        buttonWithTitle:l10n_util::GetNSString(
+                            IDS_PAGE_INFO_WHITELIST_PASSWORD_REUSE_BUTTON)
+                 action:@selector(whitelistPasswordReuseDecisions:)
+                 target:securitySectionView_];
+    [whitelistPasswordReuseButton_ sizeToFit];
+    [securitySectionView_ addSubview:whitelistPasswordReuseButton_];
   }
 
   [self performLayout];

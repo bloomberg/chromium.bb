@@ -241,7 +241,7 @@ void GetSiteIdentityByMaliciousContentStatus(
           l10n_util::GetStringUTF16(IDS_PAGE_INFO_UNWANTED_SOFTWARE_DETAILS);
       break;
     case security_state::MALICIOUS_CONTENT_STATUS_PASSWORD_REUSE:
-#if defined(SAFE_BROWSING_DB_LOCAL) && !defined(OS_MACOSX)
+#if defined(SAFE_BROWSING_DB_LOCAL)
       *status = PageInfo::SITE_IDENTITY_STATUS_PASSWORD_REUSE;
       *details =
           l10n_util::GetStringUTF16(IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS);
@@ -291,11 +291,11 @@ PageInfo::PageInfo(PageInfoUI* ui,
       did_revoke_user_ssl_decisions_(false),
       profile_(profile),
       security_level_(security_state::NONE),
-#if defined(SAFE_BROWSING_DB_LOCAL) && !defined(OS_MACOSX)
+#if defined(SAFE_BROWSING_DB_LOCAL)
       password_protection_service_(nullptr),
 #endif
       show_change_password_buttons_(false) {
-#if defined(SAFE_BROWSING_DB_LOCAL) && !defined(OS_MACOSX)
+#if defined(SAFE_BROWSING_DB_LOCAL)
   safe_browsing::SafeBrowsingService* sb_service =
       g_browser_process->safe_browsing_service();
   if (sb_service && sb_service->enabled_by_prefs()) {
@@ -469,7 +469,7 @@ void PageInfo::OpenSiteSettingsView() {
 
 void PageInfo::OnChangePasswordButtonPressed(
     content::WebContents* web_contents) {
-#if defined(SAFE_BROWSING_DB_LOCAL) && !defined(OS_MACOSX)
+#if defined(SAFE_BROWSING_DB_LOCAL)
   DCHECK(password_protection_service_);
   password_protection_service_->OnWarningDone(
       web_contents, safe_browsing::PasswordProtectionService::PAGE_INFO,
@@ -479,7 +479,7 @@ void PageInfo::OnChangePasswordButtonPressed(
 
 void PageInfo::OnWhitelistPasswordReuseButtonPressed(
     content::WebContents* web_contents) {
-#if defined(SAFE_BROWSING_DB_LOCAL) && !defined(OS_MACOSX)
+#if defined(SAFE_BROWSING_DB_LOCAL)
   DCHECK(password_protection_service_);
   password_protection_service_->OnWarningDone(
       web_contents, safe_browsing::PasswordProtectionService::PAGE_INFO,
@@ -859,7 +859,7 @@ void PageInfo::PresentSiteIdentity() {
   info.show_ssl_decision_revoke_button = show_ssl_decision_revoke_button_;
   info.show_change_password_buttons = show_change_password_buttons_;
   ui_->SetIdentityInfo(info);
-#if defined(SAFE_BROWSING_DB_LOCAL) && !defined(OS_MACOSX)
+#if defined(SAFE_BROWSING_DB_LOCAL)
   if (password_protection_service_ && show_change_password_buttons_) {
     password_protection_service_->OnWarningShown(
         web_contents(), safe_browsing::PasswordProtectionService::PAGE_INFO);

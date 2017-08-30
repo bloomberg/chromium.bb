@@ -34,6 +34,12 @@
 - (NSButton*)connectionHelpButton {
   return connectionHelpButton_;
 }
+- (NSButton*)changePasswordButton {
+  return changePasswordButton_;
+}
+- (NSButton*)whitelistPasswordReuseButton {
+  return whitelistPasswordReuseButton_;
+}
 @end
 
 @interface PageInfoBubbleControllerForTesting : PageInfoBubbleController {
@@ -332,6 +338,32 @@ TEST_F(PageInfoBubbleControllerTest, PageIconDecorationActiveState) {
 
   [controller_ close];
   EXPECT_FALSE(decoration->active());
+}
+
+TEST_F(PageInfoBubbleControllerTest, PasswordReuseButtons) {
+  PageInfoUI::IdentityInfo info;
+  info.site_identity = std::string("example.com");
+  info.identity_status = PageInfo::SITE_IDENTITY_STATUS_UNKNOWN;
+
+  CreateBubble();
+
+  // Set identity info, specifying that buttons should not be shown.
+  info.show_change_password_buttons = false;
+  bridge_->SetIdentityInfo(const_cast<PageInfoUI::IdentityInfo&>(info));
+  EXPECT_EQ([controller_ changePasswordButton], nil);
+  EXPECT_EQ([controller_ whitelistPasswordReuseButton], nil);
+
+  // Set identity info, specifying that buttons should be shown.
+  info.show_change_password_buttons = true;
+  bridge_->SetIdentityInfo(const_cast<PageInfoUI::IdentityInfo&>(info));
+  EXPECT_NE([controller_ changePasswordButton], nil);
+  EXPECT_NE([controller_ whitelistPasswordReuseButton], nil);
+
+  // Check that clicking the button calls the right selector.
+  EXPECT_EQ([[controller_ changePasswordButton] action],
+            @selector(changePasswordDecisions:));
+  EXPECT_EQ([[controller_ whitelistPasswordReuseButton] action],
+            @selector(whitelistPasswordReuseDecisions:));
 }
 
 }  // namespace

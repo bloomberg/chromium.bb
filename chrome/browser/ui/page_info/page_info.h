@@ -254,7 +254,7 @@ class PageInfo : public TabSpecificContentSettings::SiteDataObserver,
 
   security_state::SecurityLevel security_level_;
 
-#if defined(SAFE_BROWSING_DB_LOCAL) && !defined(OS_MACOSX)
+#if defined(SAFE_BROWSING_DB_LOCAL)
   // Used to handle changing password, and whitelisting site.
   safe_browsing::PasswordProtectionService* password_protection_service_;
 #endif
