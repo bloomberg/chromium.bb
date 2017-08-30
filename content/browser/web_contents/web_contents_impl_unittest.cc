@@ -542,13 +542,7 @@ TEST_F(WebContentsImplTest, CrossSiteBoundaries) {
 
   // Navigate to URL.  First URL should use first RenderViewHost.
   const GURL url("http://www.google.com");
-  controller().LoadURL(
-      url, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
-  int entry_id = controller().GetPendingEntry()->GetUniqueID();
-  orig_rfh->PrepareForCommit();
-  contents()->TestDidNavigateWithSequenceNumber(
-      orig_rfh, entry_id, true, url, Referrer(), ui::PAGE_TRANSITION_TYPED,
-      false, 0, 0);
+  NavigationSimulator::NavigateAndCommitFromBrowser(contents(), url);
 
   // Keep the number of active frames in orig_rfh's SiteInstance non-zero so
   // that orig_rfh doesn't get deleted when it gets swapped out.
@@ -563,7 +557,7 @@ TEST_F(WebContentsImplTest, CrossSiteBoundaries) {
   const GURL url2("http://www.yahoo.com");
   controller().LoadURL(
       url2, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
-  entry_id = controller().GetPendingEntry()->GetUniqueID();
+  int entry_id = controller().GetPendingEntry()->GetUniqueID();
   if (IsBrowserSideNavigationEnabled())
     orig_rfh->PrepareForCommit();
   EXPECT_TRUE(contents()->CrossProcessNavigationPending());
@@ -582,7 +576,7 @@ TEST_F(WebContentsImplTest, CrossSiteBoundaries) {
     EXPECT_FALSE(pending_rfh->are_navigations_suspended());
   }
 
-  // DidNavigate from the pending page
+  // DidNavigate from the pending page.
   contents()->TestDidNavigateWithSequenceNumber(
       pending_rfh, entry_id, true, url2, Referrer(), ui::PAGE_TRANSITION_TYPED,
       false, 1, 1);
@@ -621,7 +615,7 @@ TEST_F(WebContentsImplTest, CrossSiteBoundaries) {
     EXPECT_FALSE(goback_rfh->are_navigations_suspended());
   }
 
-  // DidNavigate from the back action
+  // DidNavigate from the back action.
   contents()->TestDidNavigateWithSequenceNumber(
       goback_rfh, entry_id, false, url2, Referrer(), ui::PAGE_TRANSITION_TYPED,
       false, 2, 0);
@@ -1159,19 +1153,12 @@ TEST_F(WebContentsImplTest, CrossSiteNavigationBackPreempted) {
   // Start with a web ui page, which gets a new RVH with WebUI bindings.
   GURL url1(std::string(kChromeUIScheme) + "://" +
             std::string(kChromeUIGpuHost));
-  controller().LoadURL(
-      url1, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
-  int entry_id = controller().GetPendingEntry()->GetUniqueID();
+  NavigationSimulator::NavigateAndCommitFromBrowser(contents(), url1);
   TestRenderFrameHost* webui_rfh = main_test_rfh();
-  webui_rfh->PrepareForCommit();
-  contents()->TestDidNavigateWithSequenceNumber(
-      webui_rfh, entry_id, true, url1, Referrer(), ui::PAGE_TRANSITION_TYPED,
-      false, 0, 0);
   NavigationEntry* entry1 = controller().GetLastCommittedEntry();
   SiteInstance* instance1 = contents()->GetSiteInstance();
 
   EXPECT_FALSE(contents()->CrossProcessNavigationPending());
-  EXPECT_EQ(webui_rfh, main_test_rfh());
   EXPECT_EQ(url1, entry1->GetURL());
   EXPECT_EQ(instance1,
             NavigationEntryImpl::FromNavigationEntry(entry1)->site_instance());
@@ -1179,25 +1166,12 @@ TEST_F(WebContentsImplTest, CrossSiteNavigationBackPreempted) {
 
   // Navigate to new site.
   const GURL url2("http://www.google.com");
-  controller().LoadURL(
-      url2, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
-  entry_id = controller().GetPendingEntry()->GetUniqueID();
-  EXPECT_TRUE(contents()->CrossProcessNavigationPending());
-  TestRenderFrameHost* google_rfh = contents()->GetPendingMainFrame();
-
-  // Simulate beforeunload approval.
-  EXPECT_TRUE(webui_rfh->is_waiting_for_beforeunload_ack());
-  webui_rfh->PrepareForCommit();
-
-  // DidNavigate from the pending page.
-  contents()->TestDidNavigateWithSequenceNumber(
-      google_rfh, entry_id, true, url2, Referrer(), ui::PAGE_TRANSITION_TYPED,
-      false, 1, 1);
+  NavigationSimulator::NavigateAndCommitFromBrowser(contents(), url2);
+  TestRenderFrameHost* google_rfh = main_test_rfh();
   NavigationEntry* entry2 = controller().GetLastCommittedEntry();
   SiteInstance* instance2 = contents()->GetSiteInstance();
 
   EXPECT_FALSE(contents()->CrossProcessNavigationPending());
-  EXPECT_EQ(google_rfh, main_test_rfh());
   EXPECT_NE(instance1, instance2);
   EXPECT_FALSE(contents()->GetPendingMainFrame());
   EXPECT_EQ(url2, entry2->GetURL());
@@ -1207,14 +1181,7 @@ TEST_F(WebContentsImplTest, CrossSiteNavigationBackPreempted) {
 
   // Navigate to third page on same site.
   const GURL url3("http://news.google.com");
-  controller().LoadURL(
-      url3, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
-  entry_id = controller().GetPendingEntry()->GetUniqueID();
-  EXPECT_FALSE(contents()->CrossProcessNavigationPending());
-  main_test_rfh()->PrepareForCommit();
-  contents()->TestDidNavigateWithSequenceNumber(
-      google_rfh, entry_id, true, url3, Referrer(), ui::PAGE_TRANSITION_TYPED,
-      false, 2, 2);
+  NavigationSimulator::NavigateAndCommitFromBrowser(contents(), url3);
   NavigationEntry* entry3 = controller().GetLastCommittedEntry();
   SiteInstance* instance3 = contents()->GetSiteInstance();
 
