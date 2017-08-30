@@ -241,13 +241,7 @@ TEST_P(SearchBoxViewTest, Basic) {
 
   KeyPress(ui::VKEY_DOWN);
   EXPECT_EQ(0, GetQueryChangedCountAndReset());
-  if (test_with_fullscreen()) {
-    // The initial down arrow key is handled by search box in fullscreen
-    // app list.
-    EXPECT_EQ(0, GetContentsViewKeyPressCountAndReset());
-  } else {
-    EXPECT_EQ(1, GetContentsViewKeyPressCountAndReset());
-  }
+  EXPECT_EQ(1, GetContentsViewKeyPressCountAndReset());
 
   view()->ClearSearch();
   EXPECT_EQ(1, GetQueryChangedCountAndReset());

@@ -42,13 +42,13 @@ SearchResultListView::SearchResultListView(
     : delegate_(delegate),
       view_delegate_(view_delegate),
       results_container_(new views::View),
-      auto_launch_indicator_(new views::View) {
+      auto_launch_indicator_(new views::View),
+      is_fullscreen_app_list_enabled_(features::IsFullscreenAppListEnabled()) {
   results_container_->SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kVertical));
 
-  const int max_results = features::IsFullscreenAppListEnabled()
-                              ? kMaxResultsFullscreen
-                              : kMaxResults;
+  const int max_results =
+      is_fullscreen_app_list_enabled_ ? kMaxResultsFullscreen : kMaxResults;
   for (int i = 0; i < max_results; ++i)
     results_container_->AddChildView(new SearchResultView(this));
   AddChildView(results_container_);
@@ -82,6 +82,7 @@ bool SearchResultListView::OnKeyPressed(const ui::KeyEvent& event) {
   }
 
   int selection_index = -1;
+  const int forward_dir = base::i18n::IsRTL() ? -1 : 1;
   switch (event.key_code()) {
     case ui::VKEY_TAB:
       if (event.IsShiftDown())
@@ -94,6 +95,14 @@ bool SearchResultListView::OnKeyPressed(const ui::KeyEvent& event) {
       break;
     case ui::VKEY_DOWN:
       selection_index = selected_index() + 1;
+      break;
+    case ui::VKEY_LEFT:
+      if (is_fullscreen_app_list_enabled_)
+        selection_index = selected_index() - forward_dir;
+      break;
+    case ui::VKEY_RIGHT:
+      if (is_fullscreen_app_list_enabled_)
+        selection_index = selected_index() + forward_dir;
       break;
     default:
       break;

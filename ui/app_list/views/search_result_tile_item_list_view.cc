@@ -205,14 +205,16 @@ bool SearchResultTileItemListView::OnKeyPressed(const ui::KeyEvent& event) {
       // the beginning of the list. This means that the text cursor in the
       // search box will be allowed to handle the keypress. This will also
       // ignore the keypress if the user has clicked somewhere in the middle of
-      // the searchbox.
-      if (cursor_at_end_of_searchbox)
+      // the searchbox. In fullscreen app list, the cursor will be moved only
+      // when search box is selected.
+      if (is_fullscreen_app_list_enabled_ || cursor_at_end_of_searchbox)
         dir = -forward_dir;
       break;
     case ui::VKEY_RIGHT:
       // Only move right if the search box text cursor is at the end of the
-      // text.
-      if (cursor_at_end_of_searchbox)
+      // text. In fullscreen app list, the cursor will be moved only when search
+      // box is selected.
+      if (is_fullscreen_app_list_enabled_ || cursor_at_end_of_searchbox)
         dir = forward_dir;
       break;
     default:

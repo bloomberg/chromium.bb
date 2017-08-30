@@ -220,6 +220,7 @@ bool SearchResultPageView::OnKeyPressed(const ui::KeyEvent& event) {
 
   int dir = 0;
   bool directional_movement = false;
+  const int forward_dir = base::i18n::IsRTL() ? -1 : 1;
   switch (event.key_code()) {
     case ui::VKEY_TAB:
       dir = event.IsShiftDown() ? -1 : 1;
@@ -231,6 +232,16 @@ bool SearchResultPageView::OnKeyPressed(const ui::KeyEvent& event) {
     case ui::VKEY_DOWN:
       dir = 1;
       directional_movement = true;
+      break;
+    case ui::VKEY_LEFT:
+      if (!is_fullscreen_app_list_enabled_)
+        return false;
+      dir = -forward_dir;
+      break;
+    case ui::VKEY_RIGHT:
+      if (!is_fullscreen_app_list_enabled_)
+        return false;
+      dir = forward_dir;
       break;
     default:
       return false;
@@ -248,6 +259,13 @@ bool SearchResultPageView::OnKeyPressed(const ui::KeyEvent& event) {
     return true;
   }
 
+  if (!is_fullscreen_app_list_enabled_)
+    return false;
+
+  if (dir == -1) {
+    // Shift+tab/up/left key could move focus back to search box.
+    ClearSelectedIndex();
+  }
   return false;
 }
 

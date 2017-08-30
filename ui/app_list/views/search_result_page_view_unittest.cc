@@ -10,6 +10,8 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/test/scoped_feature_list.h"
+#include "ui/app_list/app_list_features.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/test/app_list_test_view_delegate.h"
@@ -27,8 +29,8 @@ namespace test {
 class SearchResultPageViewTest : public views::ViewsTestBase,
                                  public SearchResultListViewDelegate {
  public:
-  SearchResultPageViewTest() {}
-  ~SearchResultPageViewTest() override {}
+  SearchResultPageViewTest() = default;
+  ~SearchResultPageViewTest() override = default;
 
   // Overridden from testing::Test:
   void SetUp() override {
@@ -97,6 +99,43 @@ class SearchResultPageViewTest : public views::ViewsTestBase,
   std::unique_ptr<views::Textfield> textfield_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchResultPageViewTest);
+};
+
+class SearchResultPageViewFullscreenTest
+    : public SearchResultPageViewTest,
+      public testing::WithParamInterface<bool> {
+ public:
+  SearchResultPageViewFullscreenTest() = default;
+  ~SearchResultPageViewFullscreenTest() override = default;
+
+  // Overridden from testing::Test:
+  void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kEnableFullscreenAppList);
+    SearchResultPageViewTest::SetUp();
+  }
+
+ protected:
+  // Add search results for test on focus movement.
+  void SetUpFocusTestEnv() {
+    std::vector<std::pair<SearchResult::DisplayType, int>> result_types;
+    // 3 tile results, followed by 2 list results.
+    const int kTileResults = 3;
+    const int kListResults = 2;
+    const int kNoneResults = 3;
+    result_types.push_back(
+        std::make_pair(SearchResult::DISPLAY_TILE, kTileResults));
+    result_types.push_back(
+        std::make_pair(SearchResult::DISPLAY_LIST, kListResults));
+    result_types.push_back(
+        std::make_pair(SearchResult::DISPLAY_NONE, kNoneResults));
+    SetUpSearchResults(result_types);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(SearchResultPageViewFullscreenTest);
 };
 
 TEST_F(SearchResultPageViewTest, DirectionalMovement) {
@@ -329,6 +368,138 @@ TEST_F(SearchResultPageViewTest, UpdateWithSelection) {
   EXPECT_EQ(0, GetSelectedIndex());
   EXPECT_EQ(-1, tile_list_view()->selected_index());
   EXPECT_EQ(0, list_view()->selected_index());
+}
+
+TEST_F(SearchResultPageViewFullscreenTest, LeftRightMovement) {
+  SetUpFocusTestEnv();
+  EXPECT_EQ(0, GetSelectedIndex());
+  EXPECT_EQ(0, tile_list_view()->selected_index());
+  EXPECT_EQ(-1, list_view()->selected_index());
+
+  // Navigate to the second tile in the tile group.
+  EXPECT_TRUE(KeyPress(ui::VKEY_RIGHT));
+  EXPECT_EQ(0, GetSelectedIndex());
+  EXPECT_EQ(1, tile_list_view()->selected_index());
+  EXPECT_EQ(-1, list_view()->selected_index());
+
+  // Navigate to the list group.
+  EXPECT_TRUE(KeyPress(ui::VKEY_RIGHT));
+  EXPECT_TRUE(KeyPress(ui::VKEY_RIGHT));
+  EXPECT_EQ(1, GetSelectedIndex());
+  EXPECT_EQ(-1, tile_list_view()->selected_index());
+  EXPECT_EQ(0, list_view()->selected_index());
+
+  // Navigate to the second result in the list view.
+  EXPECT_TRUE(KeyPress(ui::VKEY_RIGHT));
+  EXPECT_EQ(1, GetSelectedIndex());
+  EXPECT_EQ(1, list_view()->selected_index());
+
+  // Attempt to navigate off bottom of list items.
+  EXPECT_FALSE(KeyPress(ui::VKEY_RIGHT));
+  EXPECT_EQ(1, GetSelectedIndex());
+  EXPECT_EQ(1, list_view()->selected_index());
+
+  // Navigate back to the tile group (should select the last tile result).
+  EXPECT_TRUE(KeyPress(ui::VKEY_LEFT));
+  EXPECT_EQ(1, GetSelectedIndex());
+  EXPECT_EQ(0, list_view()->selected_index());
+  EXPECT_TRUE(KeyPress(ui::VKEY_LEFT));
+  EXPECT_EQ(0, GetSelectedIndex());
+  EXPECT_EQ(2, tile_list_view()->selected_index());
+  EXPECT_EQ(-1, list_view()->selected_index());
+
+  // Navigate off top of list.
+  EXPECT_TRUE(KeyPress(ui::VKEY_LEFT));
+  EXPECT_TRUE(KeyPress(ui::VKEY_LEFT));
+  EXPECT_FALSE(KeyPress(ui::VKEY_LEFT));
+  EXPECT_EQ(-1, GetSelectedIndex());
+  EXPECT_EQ(-1, tile_list_view()->selected_index());
+  EXPECT_EQ(-1, list_view()->selected_index());
+}
+
+TEST_F(SearchResultPageViewFullscreenTest, UpDownMovement) {
+  SetUpFocusTestEnv();
+  EXPECT_EQ(0, GetSelectedIndex());
+  EXPECT_EQ(0, tile_list_view()->selected_index());
+  EXPECT_EQ(-1, list_view()->selected_index());
+
+  // Navigate to the first result in the list view.
+  EXPECT_TRUE(KeyPress(ui::VKEY_DOWN));
+  EXPECT_EQ(1, GetSelectedIndex());
+  EXPECT_EQ(-1, tile_list_view()->selected_index());
+  EXPECT_EQ(0, list_view()->selected_index());
+
+  // Navigate to the second result in the list view.
+  EXPECT_TRUE(KeyPress(ui::VKEY_DOWN));
+  EXPECT_EQ(1, GetSelectedIndex());
+  EXPECT_EQ(1, list_view()->selected_index());
+
+  // Attempt to navigate off bottom of list items.
+  EXPECT_FALSE(KeyPress(ui::VKEY_DOWN));
+  EXPECT_EQ(1, GetSelectedIndex());
+  EXPECT_EQ(1, list_view()->selected_index());
+
+  // Navigate back to the tile group (should select the first tile result).
+  EXPECT_TRUE(KeyPress(ui::VKEY_UP));
+  EXPECT_EQ(1, GetSelectedIndex());
+  EXPECT_EQ(0, list_view()->selected_index());
+  EXPECT_TRUE(KeyPress(ui::VKEY_UP));
+  EXPECT_EQ(0, GetSelectedIndex());
+  EXPECT_EQ(0, tile_list_view()->selected_index());
+  EXPECT_EQ(-1, list_view()->selected_index());
+
+  // Navigate off top of list.
+  EXPECT_FALSE(KeyPress(ui::VKEY_UP));
+  EXPECT_EQ(-1, GetSelectedIndex());
+  EXPECT_EQ(-1, tile_list_view()->selected_index());
+  EXPECT_EQ(-1, list_view()->selected_index());
+}
+
+TEST_F(SearchResultPageViewFullscreenTest, TabMovement) {
+  SetUpFocusTestEnv();
+  EXPECT_EQ(0, GetSelectedIndex());
+  EXPECT_EQ(0, tile_list_view()->selected_index());
+  EXPECT_EQ(-1, list_view()->selected_index());
+
+  // Navigate to the second tile in the tile group.
+  EXPECT_TRUE(KeyPress(ui::VKEY_TAB));
+  EXPECT_EQ(0, GetSelectedIndex());
+  EXPECT_EQ(1, tile_list_view()->selected_index());
+  EXPECT_EQ(-1, list_view()->selected_index());
+
+  // Navigate to the list group.
+  EXPECT_TRUE(KeyPress(ui::VKEY_TAB));
+  EXPECT_TRUE(KeyPress(ui::VKEY_TAB));
+  EXPECT_EQ(1, GetSelectedIndex());
+  EXPECT_EQ(-1, tile_list_view()->selected_index());
+  EXPECT_EQ(0, list_view()->selected_index());
+
+  // Navigate to the second result in the list view.
+  EXPECT_TRUE(KeyPress(ui::VKEY_TAB));
+  EXPECT_EQ(1, GetSelectedIndex());
+  EXPECT_EQ(1, list_view()->selected_index());
+
+  // Attempt to navigate off bottom of list items.
+  EXPECT_FALSE(KeyPress(ui::VKEY_TAB));
+  EXPECT_EQ(1, GetSelectedIndex());
+  EXPECT_EQ(1, list_view()->selected_index());
+
+  // Navigate back to the tile group (should select the last tile result).
+  EXPECT_TRUE(KeyPress(ui::VKEY_TAB, true));
+  EXPECT_EQ(1, GetSelectedIndex());
+  EXPECT_EQ(0, list_view()->selected_index());
+  EXPECT_TRUE(KeyPress(ui::VKEY_TAB, true));
+  EXPECT_EQ(0, GetSelectedIndex());
+  EXPECT_EQ(2, tile_list_view()->selected_index());
+  EXPECT_EQ(-1, list_view()->selected_index());
+
+  // Navigate off top of list.
+  EXPECT_TRUE(KeyPress(ui::VKEY_TAB, true));
+  EXPECT_TRUE(KeyPress(ui::VKEY_TAB, true));
+  EXPECT_FALSE(KeyPress(ui::VKEY_TAB, true));
+  EXPECT_EQ(-1, GetSelectedIndex());
+  EXPECT_EQ(-1, tile_list_view()->selected_index());
+  EXPECT_EQ(-1, list_view()->selected_index());
 }
 
 }  // namespace test
