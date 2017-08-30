@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "content/browser/loader/navigation_url_loader_delegate.h"
 #include "mojo/public/cpp/system/data_pipe.h"
@@ -38,6 +39,10 @@ class TestNavigationURLLoaderDelegate : public NavigationURLLoaderDelegate {
   ResourceResponse* response() const { return response_.get(); }
   StreamHandle* body() const { return body_.get(); }
   int net_error() const { return net_error_; }
+  base::Optional<net::SSLInfo> ssl_info() const { return ssl_info_; }
+  bool should_ssl_errors_be_fatal() const {
+    return should_ssl_errors_be_fatal_;
+  }
   int on_request_handled_counter() const { return on_request_handled_counter_; }
 
   // Waits for various navigation events.
@@ -65,7 +70,10 @@ class TestNavigationURLLoaderDelegate : public NavigationURLLoaderDelegate {
       bool is_download,
       bool is_stream,
       mojom::URLLoaderFactoryPtrInfo loader_factory_ptr_info) override;
-  void OnRequestFailed(bool in_cache, int net_error) override;
+  void OnRequestFailed(bool in_cache,
+                       int net_error,
+                       const base::Optional<net::SSLInfo>& ssl_info,
+                       bool should_ssl_errors_be_fatal) override;
   void OnRequestStarted(base::TimeTicks timestamp) override;
 
  private:
@@ -75,6 +83,8 @@ class TestNavigationURLLoaderDelegate : public NavigationURLLoaderDelegate {
   std::unique_ptr<StreamHandle> body_;
   mojo::ScopedDataPipeConsumerHandle handle_;
   int net_error_;
+  base::Optional<net::SSLInfo> ssl_info_;
+  bool should_ssl_errors_be_fatal_;
   int on_request_handled_counter_;
 
   std::unique_ptr<base::RunLoop> request_redirected_;
