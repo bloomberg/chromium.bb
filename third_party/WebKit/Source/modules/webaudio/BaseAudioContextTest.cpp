@@ -96,7 +96,7 @@ class BaseAudioContextTestPlatform : public TestingPlatformSupport {
 }  // anonymous namespace
 
 #if defined(OS_ANDROID)
-// Often times out with Android ASAN: https://crbug.com/758934.
+// Often times out on Android: https://crbug.com/752511.
 #define MAYBE_TEST_P(test_case_name, test_name) \
   TEST_P(test_case_name, DISABLED_##test_name)
 #else
