@@ -1460,14 +1460,8 @@ void RenderWidget::QueueMessage(IPC::Message* msg,
                        RenderThreadImpl::current()->sync_message_filter(),
                        compositor_->GetSourceFrameNumber());
 
-  if (swap_promise) {
+  if (swap_promise)
     compositor_->QueueSwapPromise(std::move(swap_promise));
-    // Request a main frame. This might either A) request a commit ahead of time
-    // or B) request a commit which is not needed because there are not pending
-    // updates. If B) then the frame will be aborted early and the swap promises
-    // will be broken (see EarlyOut_NoUpdates).
-    compositor_->SetNeedsBeginFrame();
-  }
 }
 
 void RenderWidget::DidChangeCursor(const WebCursorInfo& cursor_info) {

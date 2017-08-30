@@ -5358,6 +5358,63 @@ class SimpleSwapPromiseMonitor : public SwapPromiseMonitor {
   int* set_needs_commit_count_;
 };
 
+class LayerTreeHostTestSwapPromiseDuringCommit : public LayerTreeHostTest {
+ protected:
+  LayerTreeHostTestSwapPromiseDuringCommit() {}
+
+  void WillBeginMainFrame() override {
+    if (TestEnded())
+      return;
+
+    std::unique_ptr<SwapPromise> swap_promise(
+        new TestSwapPromise(&swap_promise_result_[0]));
+    int set_needs_commit_count = 0;
+    int set_needs_redraw_count = 0;
+
+    {
+      std::unique_ptr<SimpleSwapPromiseMonitor> swap_promise_monitor(
+          new SimpleSwapPromiseMonitor(layer_tree_host(), NULL,
+                                       &set_needs_commit_count,
+                                       &set_needs_redraw_count));
+      layer_tree_host()->QueueSwapPromise(std::move(swap_promise));
+      // Queueing a swap promise from WillBeginMainFrame should not cause
+      // another commit to be scheduled.
+      EXPECT_EQ(0, set_needs_commit_count);
+    }
+  }
+
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void DidBeginMainFrame() override {
+    if (TestEnded())
+      return;
+
+    std::unique_ptr<SwapPromise> swap_promise(
+        new TestSwapPromise(&swap_promise_result_[1]));
+    int set_needs_commit_count = 0;
+    int set_needs_redraw_count = 0;
+
+    {
+      std::unique_ptr<SimpleSwapPromiseMonitor> swap_promise_monitor(
+          new SimpleSwapPromiseMonitor(layer_tree_host(), NULL,
+                                       &set_needs_commit_count,
+                                       &set_needs_redraw_count));
+      layer_tree_host()->QueueSwapPromise(std::move(swap_promise));
+      // Queueing a swap promise from DidBeginMainFrame should cause a
+      // subsequent main frame to be scheduled.
+      EXPECT_EQ(1, set_needs_commit_count);
+    }
+
+    EndTest();
+  }
+
+  void AfterTest() override {}
+
+  TestSwapPromiseResult swap_promise_result_[2];
+};
+
+MULTI_THREAD_TEST_F(LayerTreeHostTestSwapPromiseDuringCommit);
+
 class LayerTreeHostTestSimpleSwapPromiseMonitor : public LayerTreeHostTest {
  public:
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
