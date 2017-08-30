@@ -8,13 +8,12 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "content/child/child_url_loader_factory_getter.h"
 #include "content/child/resource_dispatcher.h"
 #include "content/child/web_url_request_util.h"
 #include "content/common/possibly_associated_interface_ptr.h"
+#include "content/public/child/child_url_loader_factory_getter.h"
 #include "content/public/common/resource_request_body.h"
-#include "content/renderer/render_frame_impl.h"
-#include "content/renderer/renderer_blink_platform_impl.h"
+#include "content/public/renderer/render_frame.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_request_headers.h"
@@ -334,7 +333,7 @@ void ResourceFetcherImpl::Start(
 
   // TODO(toyoshim): mojom::URLLoaderFactory should be given by each caller.
   mojom::URLLoaderFactory* url_loader_factory =
-      RenderFrameImpl::FromWebFrame(frame)
+      RenderFrame::FromWebFrame(frame)
           ->GetDefaultURLLoaderFactoryGetter()
           ->GetNetworkLoaderFactory();
   DCHECK(url_loader_factory);

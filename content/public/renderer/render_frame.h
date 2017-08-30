@@ -55,6 +55,7 @@ class Isolate;
 namespace content {
 class AssociatedInterfaceProvider;
 class AssociatedInterfaceRegistry;
+class ChildURLLoaderFactoryGetter;
 class ContextMenuClient;
 class PluginInstanceThrottler;
 class RenderAccessibility;
@@ -269,6 +270,10 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
   // Bitwise-ORed set of extra bindings that have been enabled.  See
   // BindingsPolicy for details.
   virtual int GetEnabledBindings() const = 0;
+
+  // Returns a default ChildURLLoaderFactoryGetter for the RenderFrame.
+  // Used to obtain a right mojom::URLLoaderFactory.
+  virtual ChildURLLoaderFactoryGetter* GetDefaultURLLoaderFactoryGetter() = 0;
 
  protected:
   ~RenderFrame() override {}

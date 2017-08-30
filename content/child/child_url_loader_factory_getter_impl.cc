@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/child/child_url_loader_factory_getter.h"
+#include "content/child/child_url_loader_factory_getter_impl.h"
 
 namespace content {
 
@@ -26,25 +26,26 @@ ChildURLLoaderFactoryGetter::Info::Bind() {
   mojom::URLLoaderFactoryPtr blob_loader_factory;
   network_loader_factory.Bind(std::move(network_loader_factory_info_));
   blob_loader_factory.Bind(std::move(blob_loader_factory_info_));
-  return base::MakeRefCounted<ChildURLLoaderFactoryGetter>(
+  return base::MakeRefCounted<ChildURLLoaderFactoryGetterImpl>(
       std::move(network_loader_factory), std::move(blob_loader_factory));
 }
 
-ChildURLLoaderFactoryGetter::ChildURLLoaderFactoryGetter() = default;
+ChildURLLoaderFactoryGetterImpl::ChildURLLoaderFactoryGetterImpl() = default;
 
-ChildURLLoaderFactoryGetter::ChildURLLoaderFactoryGetter(
+ChildURLLoaderFactoryGetterImpl::ChildURLLoaderFactoryGetterImpl(
     PossiblyAssociatedURLLoaderFactory network_loader_factory,
     URLLoaderFactoryGetterCallback blob_loader_factory_getter)
     : network_loader_factory_(std::move(network_loader_factory)),
       blob_loader_factory_getter_(std::move(blob_loader_factory_getter)) {}
 
-ChildURLLoaderFactoryGetter::ChildURLLoaderFactoryGetter(
+ChildURLLoaderFactoryGetterImpl::ChildURLLoaderFactoryGetterImpl(
     PossiblyAssociatedURLLoaderFactory network_loader_factory,
     PossiblyAssociatedURLLoaderFactory blob_loader_factory)
     : network_loader_factory_(std::move(network_loader_factory)),
       blob_loader_factory_(std::move(blob_loader_factory)) {}
 
-ChildURLLoaderFactoryGetter::Info ChildURLLoaderFactoryGetter::GetClonedInfo() {
+ChildURLLoaderFactoryGetterImpl::Info
+ChildURLLoaderFactoryGetterImpl::GetClonedInfo() {
   mojom::URLLoaderFactoryPtrInfo network_loader_factory_info;
   GetNetworkLoaderFactory()->Clone(
       mojo::MakeRequest(&network_loader_factory_info));
@@ -57,11 +58,12 @@ ChildURLLoaderFactoryGetter::Info ChildURLLoaderFactoryGetter::GetClonedInfo() {
 }
 
 mojom::URLLoaderFactory*
-ChildURLLoaderFactoryGetter::GetNetworkLoaderFactory() {
+ChildURLLoaderFactoryGetterImpl::GetNetworkLoaderFactory() {
   return network_loader_factory_.get();
 }
 
-mojom::URLLoaderFactory* ChildURLLoaderFactoryGetter::GetBlobLoaderFactory() {
+mojom::URLLoaderFactory*
+ChildURLLoaderFactoryGetterImpl::GetBlobLoaderFactory() {
   if (!blob_loader_factory_) {
     if (blob_loader_factory_getter_.is_null()) {
       return GetNetworkLoaderFactory();
@@ -71,6 +73,6 @@ mojom::URLLoaderFactory* ChildURLLoaderFactoryGetter::GetBlobLoaderFactory() {
   return blob_loader_factory_.get();
 }
 
-ChildURLLoaderFactoryGetter::~ChildURLLoaderFactoryGetter() = default;
+ChildURLLoaderFactoryGetterImpl::~ChildURLLoaderFactoryGetterImpl() = default;
 
 }  // namespace content
