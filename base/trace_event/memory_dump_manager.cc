@@ -471,14 +471,6 @@ MemoryDumpManager::GetOrCreateBgTaskRunnerLocked() {
 void MemoryDumpManager::CreateProcessDump(
     const MemoryDumpRequestArgs& args,
     const ProcessMemoryDumpCallback& callback) {
-  if (!is_initialized()) {
-    VLOG(1) << "CreateProcessDump() FAIL: MemoryDumpManager is not initialized";
-    if (!callback.is_null()) {
-      callback.Run(false /* success */, args.dump_guid, nullptr);
-    }
-    return;
-  }
-
   char guid_str[20];
   sprintf(guid_str, "0x%" PRIx64, args.dump_guid);
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN1(kTraceCategory, "ProcessMemoryDump",
@@ -695,7 +687,7 @@ void MemoryDumpManager::FinalizeDumpAndAddToTrace(
 
   if (!pmd_async_state->callback.is_null()) {
     pmd_async_state->callback.Run(
-        pmd_async_state->dump_successful, dump_guid,
+        true /* success */, dump_guid,
         std::move(pmd_async_state->process_memory_dump));
     pmd_async_state->callback.Reset();
   }
@@ -813,7 +805,6 @@ MemoryDumpManager::ProcessMemoryDumpAsyncState::ProcessMemoryDumpAsyncState(
       heap_profiler_serialization_state(
           std::move(heap_profiler_serialization_state_in)),
       callback(callback),
-      dump_successful(true),
       callback_task_runner(ThreadTaskRunnerHandle::Get()),
       dump_thread_task_runner(std::move(dump_thread_task_runner)) {
   pending_dump_providers.reserve(dump_providers.size());

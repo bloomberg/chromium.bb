@@ -15,6 +15,7 @@
 #include "base/trace_event/memory_dump_request_args.h"
 #include "base/trace_event/trace_config_memory_test_util.h"
 #include "base/trace_event/trace_log.h"
+#include "build/build_config.h"
 #include "content/public/browser/tracing_controller.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
@@ -305,8 +306,7 @@ IN_PROC_BROWSER_TEST_F(SingleProcessMemoryTracingTest, DISABLED_QueuedDumps) {
 #endif  // !defined(GOOGLE_CHROME_BUILD)
 
 // Non-deterministic races under TSan. crbug.com/529678
-// Flaky on Linux. crbug.com/709524
-#if defined(THREAD_SANITIZER) || defined(OS_LINUX)
+#if defined(THREAD_SANITIZER)
 #define MAYBE_BrowserInitiatedDump DISABLED_BrowserInitiatedDump
 #else
 #define MAYBE_BrowserInitiatedDump BrowserInitiatedDump
@@ -317,7 +317,14 @@ IN_PROC_BROWSER_TEST_F(MemoryTracingTest, MAYBE_BrowserInitiatedDump) {
   Navigate(shell());
 
   EXPECT_CALL(*mock_dump_provider_, OnMemoryDump(_,_)).WillOnce(Return(true));
+#if defined(OS_LINUX)
+  // TODO(ssid): Test for dump success once the on start tracing done callback
+  // is fixed to be called after enable tracing is acked by all processes,
+  // crbug.com/709524. The test still tests if dumping does not crash.
+  EXPECT_CALL(*this, OnMemoryDumpDone(_, _));
+#else
   EXPECT_CALL(*this, OnMemoryDumpDone(_, true /* success */));
+#endif
 
   EnableMemoryTracing();
   RequestGlobalDumpAndWait(false /* from_renderer_thread */,
