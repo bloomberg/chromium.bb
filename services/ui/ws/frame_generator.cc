@@ -107,8 +107,10 @@ void FrameGenerator::OnBeginFrame(const viz::BeginFrameArgs& begin_frame_args) {
     last_submitted_frame_size_ = frame.size_in_pixels();
     local_surface_id_ = id_allocator_.GenerateId();
   }
-  compositor_frame_sink_->SubmitCompositorFrame(local_surface_id_,
-                                                std::move(frame), nullptr, 0);
+
+  compositor_frame_sink_->SubmitCompositorFrame(
+      local_surface_id_, std::move(frame), GenerateHitTestRegionList(), 0);
+
   SetNeedsBeginFrame(false);
 }
 
@@ -151,6 +153,24 @@ cc::CompositorFrame FrameGenerator::GenerateCompositorFrame() {
   }
 
   return frame;
+}
+
+viz::mojom::HitTestRegionListPtr FrameGenerator::GenerateHitTestRegionList()
+    const {
+  auto hit_test_region_list = viz::mojom::HitTestRegionList::New();
+  hit_test_region_list->flags = viz::mojom::kHitTestMine;
+  hit_test_region_list->bounds.set_size(pixel_size_);
+
+  auto hit_test_region = viz::mojom::HitTestRegion::New();
+  viz::SurfaceId surface_id = window_manager_surface_info_.id();
+  hit_test_region->frame_sink_id = surface_id.frame_sink_id();
+  hit_test_region->local_surface_id = surface_id.local_surface_id();
+  hit_test_region->flags = viz::mojom::kHitTestChildSurface;
+  hit_test_region->rect = gfx::Rect(pixel_size_);
+
+  hit_test_region_list->regions.push_back(std::move(hit_test_region));
+
+  return hit_test_region_list;
 }
 
 void FrameGenerator::DrawWindow(cc::RenderPass* pass) {

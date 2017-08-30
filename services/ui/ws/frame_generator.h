@@ -53,8 +53,9 @@ class FrameGenerator : public viz::mojom::CompositorFrameSinkClient {
   void ReclaimResources(
       const std::vector<viz::ReturnedResource>& resources) override;
 
-  // Generates the CompositorFrame.
   cc::CompositorFrame GenerateCompositorFrame();
+
+  viz::mojom::HitTestRegionListPtr GenerateHitTestRegionList() const;
 
   // DrawWindow creates SurfaceDrawQuad for the window manager and appends it to
   // the provided cc::RenderPass.

@@ -83,9 +83,7 @@ void RootCompositorFrameSinkImpl::SubmitCompositorFrame(
     cc::CompositorFrame frame,
     mojom::HitTestRegionListPtr hit_test_region_list,
     uint64_t submit_time) {
-  // This call to SubmitCompositorFrame is only used for CompositorFrames
-  // created by FrameGenerator that do not require hit test information.
-  DCHECK(!hit_test_region_list);
+  // TODO(gklassen): send |hit_test_region_list| to |support_|.
   if (!support_->SubmitCompositorFrame(local_surface_id, std::move(frame))) {
     compositor_frame_sink_binding_.Close();
     OnClientConnectionLost();
