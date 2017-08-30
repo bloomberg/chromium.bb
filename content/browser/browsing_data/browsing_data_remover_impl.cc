@@ -188,6 +188,9 @@ BrowsingDataRemoverImpl::~BrowsingDataRemoverImpl() {
             << " pending tasks";
   }
 
+  UMA_HISTOGRAM_EXACT_LINEAR("History.ClearBrowsingData.TaskQueueAtShutdown",
+                             task_queue_.size(), 10);
+
   // If we are still removing data, notify observers that their task has been
   // (albeit unsucessfuly) processed, so they can unregister themselves.
   // TODO(bauerb): If it becomes a problem that browsing data might not actually
