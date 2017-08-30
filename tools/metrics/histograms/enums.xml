@@ -39521,6 +39521,7 @@ Called by update_traffic_annotation_histograms.py.-->
   <int value="7" label="Download permission was suppressed in VR"/>
   <int value="8" label="File access permission was suppressed in VR"/>
   <int value="9" label="Password manager was disabled in VR"/>
+  <int value="10" label="Autofill was disabled in VR"/>
 </enum>
 
 <enum name="VRUnsupportedMode">
