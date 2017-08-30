@@ -124,6 +124,9 @@ if (window.PerfTestRunner) {
         PerfTestRunner.addRunTestStartMarker();
         startTime = PerfTestRunner.now();
 
+        if (test.params)
+          iframe.contentWindow.params = test.params;
+
         iframe.contentDocument.write(file);
         PerfTestRunner.forceLayout(iframe.contentDocument);
 
