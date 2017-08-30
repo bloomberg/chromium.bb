@@ -435,6 +435,15 @@ _BANNED_CPP_FUNCTIONS = (
       ),
       True,
       (),
+    ),
+    (
+      r'std::regex',
+      (
+        'Using std::regex adds unnecessary binary size to Chrome. Please use',
+        're2::RE2 instead (crbug/755321)',
+      ),
+      True,
+      (),
     )
 )
 
