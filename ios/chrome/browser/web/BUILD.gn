@@ -9,8 +9,6 @@ source_set("web") {
   sources = [
     "dom_altering_lock.h",
     "dom_altering_lock.mm",
-    "features.h",
-    "features.mm",
     "legacy_mailto_url_rewriter.h",
     "legacy_mailto_url_rewriter.mm",
     "mailto_handler.h",
@@ -37,6 +35,7 @@ source_set("web") {
     "tab_id_tab_helper.mm",
   ]
   deps = [
+    ":features",
     ":tab_helper_delegates",
     "//base",
     "//components/strings",
@@ -52,6 +51,16 @@ source_set("web") {
   ]
 }
 
+source_set("features") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "features.h",
+    "features.mm",
+  ]
+  deps = [
+    "//base",
+  ]
+}
 source_set("tab_helper_delegates") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
@@ -143,6 +152,7 @@ source_set("web_internal") {
   ]
   deps = [
     ":chrome_bundle",
+    ":features",
     "//base",
     "//components/content_settings/core/browser",
     "//components/dom_distiller/core",

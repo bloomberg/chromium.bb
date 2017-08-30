@@ -38,6 +38,11 @@ extern const char kMarkHttpAsNonSecureAfterEditing[];
 extern const char kMarkHttpAsNonSecureWhileIncognito[];
 extern const char kMarkHttpAsNonSecureWhileIncognitoOrEditing[];
 
+// Title and descript for the flag to enable a prompt asking user to choose
+// which mail client app to use to handle mailto:// URLs.
+extern const char kMailtoPromptForUserChoiceName[];
+extern const char kMailtoPromptForUserChoiceDescription[];
+
 // Title and description for the flag to enable elision of the URL path, query,
 // and ref in omnibox URL suggestions.
 extern const char kOmniboxUIElideSuggestionUrlAfterHostName[];

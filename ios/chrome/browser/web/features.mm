@@ -8,3 +8,8 @@
 // Change the default value here to enable or disable this feature.
 const base::Feature kMailtoUrlRewriting{"MailtoUrlRewriting",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Feature flag to prompt user to choose a mail client app. Change the default
+// value here to enable or disable this feature.
+const base::Feature kMailtoPromptForUserChoice{
+    "MailtoPromptForUserChoice", base::FEATURE_DISABLED_BY_DEFAULT};

@@ -46,6 +46,12 @@ const char kMarkHttpAsNonSecureWhileIncognito[] =
 const char kMarkHttpAsNonSecureWhileIncognitoOrEditing[] =
     "Warn on HTTP while in Incognito mode or after editing forms";
 
+const char kMailtoPromptForUserChoiceName[] =
+    "Mailto Handler Prompt for User Choice";
+const char kMailtoPromptForUserChoiceDescription[] =
+    "Enable prompt for user to choose a mail client app when user taps on a "
+    "mailto:// URL link.";
+
 const char kOmniboxUIElideSuggestionUrlAfterHostName[] =
     "Hide the path, query, and ref of omnibox suggestions";
 const char kOmniboxUIElideSuggestionUrlAfterHostDescription[] =

@@ -25,6 +25,7 @@
 #import "ios/chrome/browser/ui/settings/utils/content_setting_backed_boolean.h"
 #include "ios/chrome/browser/web/features.h"
 #import "ios/chrome/browser/web/legacy_mailto_url_rewriter.h"
+#import "ios/chrome/browser/web/nullable_mailto_url_rewriter.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
@@ -108,7 +109,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
     [_disablePopupsSetting setObserver:self];
 
     _mailtoURLRewriter =
-        [LegacyMailtoURLRewriter mailtoURLRewriterWithStandardHandlers];
+        base::FeatureList::IsEnabled(kMailtoPromptForUserChoice)
+            ? [NullableMailtoURLRewriter mailtoURLRewriterWithStandardHandlers]
+            : [LegacyMailtoURLRewriter mailtoURLRewriterWithStandardHandlers];
     [_mailtoURLRewriter setObserver:self];
 
     [self loadModel];

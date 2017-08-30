@@ -39,6 +39,7 @@
 #include "ios/chrome/browser/drag_and_drop/drag_and_drop_flag.h"
 #include "ios/chrome/browser/ios_chrome_flag_descriptions.h"
 #include "ios/chrome/browser/ssl/captive_portal_features.h"
+#include "ios/chrome/browser/web/features.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/web/public/user_agent.h"
@@ -179,6 +180,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kBookmarkNewGenerationDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(
          bookmark_new_generation::features::kBookmarkNewGeneration)},
+    {"mailto-prompt-for-user-choice",
+     flag_descriptions::kMailtoPromptForUserChoiceName,
+     flag_descriptions::kMailtoPromptForUserChoiceDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kMailtoPromptForUserChoice)},
 #if defined(__IPHONE_11_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_11_0)
     {"drag_and_drop", flag_descriptions::kDragAndDropName,
      flag_descriptions::kDragAndDropDescription, flags_ui::kOsIos,
