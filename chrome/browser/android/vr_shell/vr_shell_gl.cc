@@ -485,15 +485,15 @@ void VrShellGl::InitializeRenderer() {
 
 void VrShellGl::UpdateController(const gfx::Transform& head_pose) {
   TRACE_EVENT0("gpu", "VrShellGl::UpdateController");
-  gfx::Vector3dF head_direction = GetForwardVector(head_pose);
-
-  controller_->UpdateState(head_direction);
+  gvr::Mat4f gvr_head_pose;
+  TransformToGvrMat(head_pose, &gvr_head_pose);
+  controller_->UpdateState(gvr_head_pose);
   controller_info_.laser_origin = controller_->GetPointerStart();
 
   device::GvrGamepadData controller_data = controller_->GetGamepadData();
   browser_->UpdateGamepadData(controller_data);
 
-  HandleControllerInput(head_direction);
+  HandleControllerInput(GetForwardVector(head_pose));
 }
 
 void VrShellGl::HandleControllerInput(const gfx::Vector3dF& head_direction) {
