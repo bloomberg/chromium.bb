@@ -125,7 +125,7 @@ void DialogOverlayImpl::GetCompositorOffset(
     const base::android::JavaParamRef<jobject>& obj,
     const base::android::JavaParamRef<jobject>& rect) {
   gfx::Point point =
-      web_contents()->GetNativeView()->GetLocationOfContainerViewOnScreen();
+      web_contents()->GetNativeView()->GetLocationOfContainerViewInWindow();
 
   Java_DialogOverlayImpl_receiveCompositorOffset(env, rect, point.x(),
                                                  point.y());

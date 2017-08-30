@@ -216,16 +216,16 @@ ScopedJavaLocalRef<jobject> ViewAndroid::GetContainerView() {
   return Java_ViewAndroidDelegate_getContainerView(env, delegate);
 }
 
-gfx::Point ViewAndroid::GetLocationOfContainerViewOnScreen() {
+gfx::Point ViewAndroid::GetLocationOfContainerViewInWindow() {
   ScopedJavaLocalRef<jobject> delegate(GetViewAndroidDelegate());
   if (delegate.is_null())
     return gfx::Point();
 
   JNIEnv* env = base::android::AttachCurrentThread();
   gfx::Point result(
-      Java_ViewAndroidDelegate_getXLocationOfContainerViewOnScreen(env,
+      Java_ViewAndroidDelegate_getXLocationOfContainerViewInWindow(env,
                                                                    delegate),
-      Java_ViewAndroidDelegate_getYLocationOfContainerViewOnScreen(env,
+      Java_ViewAndroidDelegate_getYLocationOfContainerViewInWindow(env,
                                                                    delegate));
 
   return result;
