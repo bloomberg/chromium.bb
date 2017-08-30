@@ -144,7 +144,7 @@ std::unique_ptr<ServiceWorkerProviderHost> ServiceWorkerProviderHost::Create(
     int process_id,
     ServiceWorkerProviderHostInfo info,
     base::WeakPtr<ServiceWorkerContextCore> context,
-    ServiceWorkerDispatcherHost* dispatcher_host) {
+    base::WeakPtr<ServiceWorkerDispatcherHost> dispatcher_host) {
   return base::WrapUnique(new ServiceWorkerProviderHost(
       process_id, std::move(info), context, dispatcher_host));
 }
@@ -153,7 +153,7 @@ ServiceWorkerProviderHost::ServiceWorkerProviderHost(
     int render_process_id,
     ServiceWorkerProviderHostInfo info,
     base::WeakPtr<ServiceWorkerContextCore> context,
-    ServiceWorkerDispatcherHost* dispatcher_host)
+    base::WeakPtr<ServiceWorkerDispatcherHost> dispatcher_host)
     : client_uuid_(base::GenerateGUID()),
       create_time_(base::TimeTicks::Now()),
       render_process_id_(render_process_id),
@@ -491,7 +491,7 @@ void ServiceWorkerProviderHost::PostMessageToClient(
     const base::string16& message,
     const std::vector<MessagePort>& sent_message_ports) {
   if (!dispatcher_host_)
-    return;  // Could be NULL in some tests.
+    return;
 
   ServiceWorkerMsg_MessageToDocument_Params params;
   params.thread_id = kDocumentMainThreadId;
@@ -504,7 +504,7 @@ void ServiceWorkerProviderHost::PostMessageToClient(
 
 void ServiceWorkerProviderHost::CountFeature(uint32_t feature) {
   if (!dispatcher_host_)
-    return;  // Could be nullptr in some tests.
+    return;
 
   // CountFeature message should be sent only for controllees.
   DCHECK(IsProviderForClient());
@@ -553,7 +553,7 @@ ServiceWorkerProviderHost::PrepareForCrossSiteTransfer() {
           process_id(),
           ServiceWorkerProviderHostInfo(std::move(info_), binding_.Unbind(),
                                         container_.PassInterface()),
-          context_, dispatcher_host()));
+          context_, dispatcher_host_));
 
   for (const GURL& pattern : associated_patterns_)
     DecreaseProcessReference(pattern);
@@ -583,7 +583,9 @@ void ServiceWorkerProviderHost::CompleteCrossSiteTransfer(
 
   render_process_id_ = provisional_host->process_id();
   render_thread_id_ = kDocumentMainThreadId;
-  dispatcher_host_ = provisional_host->dispatcher_host();
+  dispatcher_host_ = provisional_host->dispatcher_host()
+                         ? provisional_host->dispatcher_host()->AsWeakPtr()
+                         : nullptr;
   info_ = std::move(provisional_host->info_);
 
   // Take the connection over from the provisional host.
@@ -611,7 +613,7 @@ void ServiceWorkerProviderHost::CompleteCrossSiteTransfer(
 void ServiceWorkerProviderHost::CompleteNavigationInitialized(
     int process_id,
     ServiceWorkerProviderHostInfo info,
-    ServiceWorkerDispatcherHost* dispatcher_host) {
+    base::WeakPtr<ServiceWorkerDispatcherHost> dispatcher_host) {
   CHECK(IsBrowserSideNavigationEnabled());
   DCHECK_EQ(ChildProcessHost::kInvalidUniqueID, render_process_id_);
   DCHECK_EQ(SERVICE_WORKER_PROVIDER_FOR_WINDOW, info_.type);
@@ -665,7 +667,7 @@ ServiceWorkerProviderHost::CompleteStartWorkerPreparation(
       context_->GetDispatcherHost(process_id);
   DCHECK(dispatcher_host);
   render_process_id_ = process_id;
-  dispatcher_host_ = dispatcher_host;
+  dispatcher_host_ = dispatcher_host->AsWeakPtr();
 
   // Retrieve the registration associated with |version|. The registration
   // must be alive because the version keeps it during starting worker.
@@ -710,7 +712,7 @@ ServiceWorkerProviderHost::CompleteStartWorkerPreparation(
 void ServiceWorkerProviderHost::SendUpdateFoundMessage(
     int registration_handle_id) {
   if (!dispatcher_host_)
-    return;  // Could be nullptr in some tests.
+    return;
 
   if (!IsReadyToSendMessages()) {
     queued_events_.push_back(
@@ -730,7 +732,7 @@ void ServiceWorkerProviderHost::SendSetVersionAttributesMessage(
     ServiceWorkerVersion* waiting_version,
     ServiceWorkerVersion* active_version) {
   if (!dispatcher_host_)
-    return;  // Could be nullptr in some tests.
+    return;
   if (!changed_mask.changed())
     return;
 
@@ -852,8 +854,6 @@ void ServiceWorkerProviderHost::Send(IPC::Message* message) const {
 void ServiceWorkerProviderHost::SendSetControllerServiceWorker(
     ServiceWorkerVersion* version,
     bool notify_controllerchange) {
-  // Could be nullptr in: 1) PlzNavigate case, where the renderer (and
-  // dispatcher_host) is not created yet, and 2) in some tests.
   if (!dispatcher_host_)
     return;
 

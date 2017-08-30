@@ -111,7 +111,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
       int process_id,
       ServiceWorkerProviderHostInfo info,
       base::WeakPtr<ServiceWorkerContextCore> context,
-      ServiceWorkerDispatcherHost* dispatcher_host);
+      base::WeakPtr<ServiceWorkerDispatcherHost> dispatcher_host);
 
   ~ServiceWorkerProviderHost() override;
 
@@ -274,7 +274,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   std::unique_ptr<ServiceWorkerProviderHost> PrepareForCrossSiteTransfer();
   void CompleteCrossSiteTransfer(ServiceWorkerProviderHost* provisional_host);
   ServiceWorkerDispatcherHost* dispatcher_host() const {
-    return dispatcher_host_;
+    return dispatcher_host_.get();
   }
 
   // PlzNavigate
@@ -282,7 +282,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   void CompleteNavigationInitialized(
       int process_id,
       ServiceWorkerProviderHostInfo info,
-      ServiceWorkerDispatcherHost* dispatcher_host);
+      base::WeakPtr<ServiceWorkerDispatcherHost> dispatcher_host);
 
   // Completes initialization of provider hosts for controllers and returns the
   // value to create ServiceWorkerNetworkProvider on the renderer which will be
@@ -353,10 +353,11 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
     ~OneShotGetReadyCallback();
   };
 
-  ServiceWorkerProviderHost(int process_id,
-                            ServiceWorkerProviderHostInfo info,
-                            base::WeakPtr<ServiceWorkerContextCore> context,
-                            ServiceWorkerDispatcherHost* dispatcher_host);
+  ServiceWorkerProviderHost(
+      int process_id,
+      ServiceWorkerProviderHostInfo info,
+      base::WeakPtr<ServiceWorkerContextCore> context,
+      base::WeakPtr<ServiceWorkerDispatcherHost> dispatcher_host);
 
   // ServiceWorkerRegistration::Listener overrides.
   void OnVersionAttributesChanged(
@@ -440,7 +441,17 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
 
   scoped_refptr<ServiceWorkerVersion> running_hosted_version_;
   base::WeakPtr<ServiceWorkerContextCore> context_;
-  ServiceWorkerDispatcherHost* dispatcher_host_;
+
+  // |dispatcher_host_| can be null in several cases:
+  // 1) In some tests.
+  // 2) PlzNavigate and service worker startup pre-create a
+  // ServiceWorkerProviderHost instance before there is a renderer assigned to
+  // it. The dispatcher host is set once the instance starts hosting a
+  // renderer.
+  // 3) During cross-site transfer.
+  // 4) The dispatcher host can be destructed/removed before the provider host.
+  base::WeakPtr<ServiceWorkerDispatcherHost> dispatcher_host_;
+
   bool allow_association_;
 
   // |container_| is the Mojo endpoint to the renderer-side

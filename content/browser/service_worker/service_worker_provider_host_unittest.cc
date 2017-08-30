@@ -392,7 +392,8 @@ TEST_F(ServiceWorkerProviderHostTest, Controller) {
   // Finish the navigation.
   host->CompleteNavigationInitialized(
       helper_->mock_render_process_id(), std::move(info),
-      helper_->GetDispatcherHostForProcess(helper_->mock_render_process_id()));
+      helper_->GetDispatcherHostForProcess(helper_->mock_render_process_id())
+          ->AsWeakPtr());
 
   // The page should be controlled since there was an active version at the
   // time navigation started. The SetController IPC should have been sent.
@@ -430,7 +431,8 @@ TEST_F(ServiceWorkerProviderHostTest, ActiveIsNotController) {
   // Finish the navigation.
   host->CompleteNavigationInitialized(
       helper_->mock_render_process_id(), std::move(info),
-      helper_->GetDispatcherHostForProcess(helper_->mock_render_process_id()));
+      helper_->GetDispatcherHostForProcess(helper_->mock_render_process_id())
+          ->AsWeakPtr());
 
   // The page should not be controlled since there was no active version at the
   // time navigation started. Furthermore, no SetController IPC should have been
