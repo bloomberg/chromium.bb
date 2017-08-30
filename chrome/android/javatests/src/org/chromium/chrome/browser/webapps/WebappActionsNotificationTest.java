@@ -32,7 +32,6 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
-import org.chromium.net.test.EmbeddedTestServerRule;
 
 /**
  * Tests for a standalone Web App notification governed by {@link WebappActionsNotificationManager}.
@@ -45,13 +44,10 @@ public class WebappActionsNotificationTest {
     @Rule
     public final WebappActivityTestRule mActivityTestRule = new WebappActivityTestRule();
 
-    @Rule
-    public EmbeddedTestServerRule mTestServerRule = new EmbeddedTestServerRule();
-
     @Before
     public void startWebapp() throws Exception {
         mActivityTestRule.startWebappActivity(mActivityTestRule.createIntent().putExtra(
-                ShortcutHelper.EXTRA_URL, mTestServerRule.getServer().getURL(WEB_APP_PATH)));
+                ShortcutHelper.EXTRA_URL, mActivityTestRule.getUrlFromTestServer(WEB_APP_PATH)));
         mActivityTestRule.waitUntilSplashscreenHides();
     }
 
@@ -67,8 +63,8 @@ public class WebappActionsNotificationTest {
         Assert.assertNotNull(notification);
         Assert.assertEquals("webapp short name runs in Chrome",
                 notification.extras.getString(Notification.EXTRA_TITLE));
-        Assert.assertEquals(
-                UrlFormatter.formatUrlForDisplay(mTestServerRule.getServer().getURL(WEB_APP_PATH)),
+        Assert.assertEquals(UrlFormatter.formatUrlForDisplay(
+                                    mActivityTestRule.getUrlFromTestServer(WEB_APP_PATH)),
                 notification.extras.getString(Notification.EXTRA_TEXT));
         Assert.assertEquals("Share", notification.actions[0].title);
         Assert.assertEquals("Open in Chrome", notification.actions[1].title);
