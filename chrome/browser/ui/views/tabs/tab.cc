@@ -44,7 +44,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/animation/animation_container.h"
-#include "ui/gfx/animation/throb_animation.h"
+#include "ui/gfx/animation/tween.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_analysis.h"
 #include "ui/gfx/favicon_size.h"
@@ -433,13 +433,14 @@ Tab::Tab(TabController* controller, gfx::AnimationContainer* container)
       detached_(false),
       favicon_hiding_offset_(0),
       should_display_crashed_favicon_(false),
-      pulse_animation_(new gfx::ThrobAnimation(this)),
-      crash_icon_animation_(new FaviconCrashAnimation(this)),
+      pulse_animation_(this),
+      crash_icon_animation_(this),
       animation_container_(container),
       throbber_(nullptr),
       alert_indicator_button_(nullptr),
       close_button_(nullptr),
       title_(new views::Label()),
+      title_animation_(this),
       tab_activated_with_last_tap_down_(false),
       hover_controller_(this),
       showing_icon_(false),
@@ -494,8 +495,11 @@ Tab::Tab(TabController* controller, gfx::AnimationContainer* container)
   set_context_menu_controller(this);
 
   const int kPulseDurationMs = 200;
-  pulse_animation_->SetSlideDuration(kPulseDurationMs);
-  pulse_animation_->SetContainer(animation_container_.get());
+  pulse_animation_.SetSlideDuration(kPulseDurationMs);
+  pulse_animation_.SetContainer(animation_container_.get());
+
+  title_animation_.SetDuration(base::TimeDelta::FromMilliseconds(100));
+  title_animation_.SetContainer(animation_container_.get());
 
   hover_controller_.SetAnimationContainer(animation_container_.get());
 }
@@ -545,13 +549,13 @@ void Tab::SetData(const TabRendererData& data) {
   title_->SetText(title);
 
   if (!data_.IsCrashed()) {
-    crash_icon_animation_->Stop();
+    crash_icon_animation_.Stop();
     SetShouldDisplayCrashedFavicon(false);
     favicon_hiding_offset_ = 0;
   } else if (!should_display_crashed_favicon_ &&
-             !crash_icon_animation_->is_animating()) {
+             !crash_icon_animation_.is_animating()) {
     data_.alert_state = TabAlertState::NONE;
-    crash_icon_animation_->Start();
+    crash_icon_animation_.Start();
   }
 
   if (data_.alert_state != old.alert_state)
@@ -574,11 +578,11 @@ void Tab::StepLoadingAnimation() {
 }
 
 void Tab::StartPulse() {
-  pulse_animation_->StartThrobbing(std::numeric_limits<int>::max());
+  pulse_animation_.StartThrobbing(std::numeric_limits<int>::max());
 }
 
 void Tab::StopPulse() {
-  pulse_animation_->Stop();
+  pulse_animation_.Stop();
 }
 
 void Tab::SetTabNeedsAttention(bool value) {
@@ -656,10 +660,20 @@ int Tab::GetOverlap() {
 // Tab, AnimationDelegate overrides:
 
 void Tab::AnimationProgressed(const gfx::Animation* animation) {
+  if (animation == &title_animation_) {
+    title_->SetBoundsRect(gfx::Tween::RectValueBetween(
+        gfx::Tween::CalculateValue(gfx::Tween::FAST_OUT_SLOW_IN,
+                                   animation->GetCurrentValue()),
+        start_title_bounds_, target_title_bounds_));
+    return;
+  }
+
   // Ignore if the pulse animation is being performed on active tab because
   // it repaints the same image. See PaintTab().
-  if ((animation != pulse_animation_.get()) || !IsActive())
-    SchedulePaint();
+  if (animation == &pulse_animation_ && IsActive())
+    return;
+
+  SchedulePaint();
 }
 
 void Tab::AnimationCanceled(const gfx::Animation* animation) {
@@ -667,7 +681,10 @@ void Tab::AnimationCanceled(const gfx::Animation* animation) {
 }
 
 void Tab::AnimationEnded(const gfx::Animation* animation) {
-  SchedulePaint();
+  if (animation == &title_animation_)
+    title_->SetBoundsRect(target_title_bounds_);
+  else
+    SchedulePaint();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -748,6 +765,7 @@ void Tab::OnPaint(gfx::Canvas* canvas) {
 
 void Tab::Layout() {
   const gfx::Rect lb = GetContentsBounds();
+  const bool was_showing_icon = showing_icon_;
   showing_icon_ = ShouldShowIcon();
   // See comments in IconCapacity().
   const int extra_padding =
@@ -822,8 +840,19 @@ void Tab::Layout() {
     // The Label will automatically center the font's cap height within the
     // provided vertical space.
     const gfx::Rect title_bounds(title_left, lb.y(), title_width, lb.height());
-    title_->SetBoundsRect(title_bounds);
     show_title = title_width > 0;
+
+    if (title_bounds != target_title_bounds_) {
+      target_title_bounds_ = title_bounds;
+      if (was_showing_icon == showing_icon_ || title_->bounds().IsEmpty() ||
+          title_bounds.IsEmpty()) {
+        title_animation_.Stop();
+        title_->SetBoundsRect(title_bounds);
+      } else if (!title_animation_.is_animating()) {
+        start_title_bounds_ = title_->bounds();
+        title_animation_.Start();
+      }
+    }
   }
   title_->SetVisible(show_title);
 }
@@ -1385,8 +1414,8 @@ double Tab::GetThrobValue() {
   const double offset =
       is_selected ? (kSelectedTabThrobScale * kHoverOpacity) : kHoverOpacity;
 
-  if (pulse_animation_->is_animating())
-    val += pulse_animation_->GetCurrentValue() * offset;
+  if (pulse_animation_.is_animating())
+    val += pulse_animation_.GetCurrentValue() * offset;
   else if (hover_controller_.ShouldDraw())
     val += hover_controller_.GetAnimationValue() * offset;
   return val;
@@ -1433,7 +1462,7 @@ void Tab::ScheduleIconPaint() {
     return;
 
   // Extends the area to the bottom when the crash animation is in progress.
-  if (crash_icon_animation_->is_animating())
+  if (crash_icon_animation_.is_animating())
     bounds.set_height(height() - bounds.y());
   SchedulePaintInRect(GetMirroredRect(bounds));
 }
