@@ -73,7 +73,8 @@ class SubresourceFilterSafeBrowsingActivationThrottle
       const GURL& url,
       bool scheme_is_http_or_https,
       const Configuration::ActivationConditions& conditions,
-      ActivationList matched_list) const;
+      ActivationList matched_list,
+      bool experimental_list) const;
 
   std::vector<SubresourceFilterSafeBrowsingClient::CheckResult> check_results_;
 

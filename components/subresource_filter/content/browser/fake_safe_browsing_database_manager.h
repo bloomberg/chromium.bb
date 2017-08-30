@@ -23,6 +23,9 @@ class FakeSafeBrowsingDatabaseManager
 
   void AddBlacklistedUrl(const GURL& url,
                          safe_browsing::SBThreatType threat_type,
+                         const safe_browsing::ThreatMetadata& metadata);
+  void AddBlacklistedUrl(const GURL& url,
+                         safe_browsing::SBThreatType threat_type,
                          safe_browsing::ThreatPatternType pattern_type =
                              safe_browsing::ThreatPatternType::NONE);
   void RemoveBlacklistedUrl(const GURL& url);
@@ -56,7 +59,7 @@ class FakeSafeBrowsingDatabaseManager
   std::set<Client*> checks_;
   std::map<
       GURL,
-      std::pair<safe_browsing::SBThreatType, safe_browsing::ThreatPatternType>>
+      std::pair<safe_browsing::SBThreatType, safe_browsing::ThreatMetadata>>
       url_to_threat_type_;
   bool simulate_timeout_ = false;
   bool synchronous_failure_ = false;
