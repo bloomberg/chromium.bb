@@ -11,7 +11,7 @@
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/time/time.h"
-#include "url/origin.h"
+#include "url/gurl.h"
 
 namespace payments {
 
@@ -20,11 +20,10 @@ CanMakePaymentQuery::CanMakePaymentQuery() {}
 CanMakePaymentQuery::~CanMakePaymentQuery() {}
 
 bool CanMakePaymentQuery::CanQuery(
-    const url::Origin& top_level_origin,
-    const url::Origin& frame_origin,
+    const GURL& top_level_origin,
+    const GURL& frame_origin,
     const std::map<std::string, std::set<std::string>>& query) {
-  const std::string id =
-      frame_origin.Serialize() + ":" + top_level_origin.Serialize();
+  const std::string id = frame_origin.spec() + ":" + top_level_origin.spec();
 
   const auto& it = queries_.find(id);
   if (it == queries_.end()) {

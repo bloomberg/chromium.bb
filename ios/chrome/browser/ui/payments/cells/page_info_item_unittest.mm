@@ -21,7 +21,7 @@ TEST(PaymentRequestPageInfoItemTest, TextLabels) {
 
   UIImage* pageFavicon = ios_internal::CollectionViewTestImage();
   NSString* pageTitle = @"The Greatest Website Ever";
-  NSString* pageHost = @"www.greatest.example.com";
+  NSString* pageHost = @"http://localhost";
   NSString* pageHostSecure = @"https://www.greatest.example.com";
 
   item.pageFavicon = pageFavicon;
@@ -44,6 +44,7 @@ TEST(PaymentRequestPageInfoItemTest, TextLabels) {
   EXPECT_NSEQ(pageFavicon, pageInfoCell.pageFaviconView.image);
   EXPECT_FALSE(pageInfoCell.pageLockIndicatorView.image);
 
+  item.pageHost = pageHostSecure;
   item.connectionSecure = true;
 
   id cell2 = [[[item cellClass] alloc] init];
