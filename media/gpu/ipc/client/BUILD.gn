@@ -12,10 +12,7 @@ source_set("client") {
     "gpu_video_encode_accelerator_host.h",
   ]
 
-  configs += [
-    "//build/config/compiler:no_size_t_to_int_warning",
-    "//media/gpu:gpu_config",
-  ]
+  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
   deps = [
     "//base",

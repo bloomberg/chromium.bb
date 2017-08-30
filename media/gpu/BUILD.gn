@@ -14,6 +14,8 @@ buildflag_header("features") {
 
   flags = [
     "USE_VAAPI=$use_vaapi",
+    "USE_V4L2_CODEC=$use_v4l2_codec",
+    "USE_LIBV4L2=$use_v4lplugin",
     "ENABLE_MEDIA_CODEC_VIDEO_DECODER=$enable_media_codec_video_decoder",
   ]
 }
@@ -100,16 +102,6 @@ if (is_chromeos && use_v4lplugin) {
   }
 }
 
-config("gpu_config") {
-  defines = []
-  if (is_chromeos && use_v4lplugin) {
-    defines += [ "USE_LIBV4L2" ]
-  }
-  if (is_chromeos && use_v4l2_codec) {
-    defines += [ "USE_V4L2_CODEC" ]
-  }
-}
-
 component("gpu") {
   output_name = "media_gpu"
 
@@ -171,8 +163,6 @@ component("gpu") {
   ]
   libs = []
   ldflags = []
-
-  configs += [ ":gpu_config" ]
 
   if (is_mac) {
     sources += [
@@ -256,7 +246,7 @@ component("gpu") {
     }
   }
 
-  if (is_chromeos) {
+  if (use_v4l2_codec || use_vaapi) {
     sources += [
       "vp8_decoder.cc",
       "vp8_decoder.h",
@@ -267,41 +257,43 @@ component("gpu") {
       "vp9_picture.cc",
       "vp9_picture.h",
     ]
-    if (use_v4lplugin) {
-      sources += get_target_outputs(":libv4l2_generate_stubs")
-      deps += [ ":libv4l2_generate_stubs" ]
-    }
-    if (use_v4l2_codec) {
-      deps += [
-        "//third_party/libyuv",
-        "//ui/ozone",
-      ]
+  }
+
+  if (use_v4lplugin) {
+    sources += get_target_outputs(":libv4l2_generate_stubs")
+    deps += [ ":libv4l2_generate_stubs" ]
+  }
+
+  if (use_v4l2_codec) {
+    deps += [
+      "//third_party/libyuv",
+      "//ui/ozone",
+    ]
+    sources += [
+      "generic_v4l2_device.cc",
+      "generic_v4l2_device.h",
+      "v4l2_device.cc",
+      "v4l2_device.h",
+      "v4l2_image_processor.cc",
+      "v4l2_image_processor.h",
+      "v4l2_jpeg_decode_accelerator.cc",
+      "v4l2_jpeg_decode_accelerator.h",
+      "v4l2_slice_video_decode_accelerator.cc",
+      "v4l2_slice_video_decode_accelerator.h",
+      "v4l2_video_decode_accelerator.cc",
+      "v4l2_video_decode_accelerator.h",
+      "v4l2_video_encode_accelerator.cc",
+      "v4l2_video_encode_accelerator.h",
+    ]
+    libs = [
+      "EGL",
+      "GLESv2",
+    ]
+    if (current_cpu == "arm") {
       sources += [
-        "generic_v4l2_device.cc",
-        "generic_v4l2_device.h",
-        "v4l2_device.cc",
-        "v4l2_device.h",
-        "v4l2_image_processor.cc",
-        "v4l2_image_processor.h",
-        "v4l2_jpeg_decode_accelerator.cc",
-        "v4l2_jpeg_decode_accelerator.h",
-        "v4l2_slice_video_decode_accelerator.cc",
-        "v4l2_slice_video_decode_accelerator.h",
-        "v4l2_video_decode_accelerator.cc",
-        "v4l2_video_decode_accelerator.h",
-        "v4l2_video_encode_accelerator.cc",
-        "v4l2_video_encode_accelerator.h",
+        "tegra_v4l2_device.cc",
+        "tegra_v4l2_device.h",
       ]
-      libs = [
-        "EGL",
-        "GLESv2",
-      ]
-      if (current_cpu == "arm") {
-        sources += [
-          "tegra_v4l2_device.cc",
-          "tegra_v4l2_device.h",
-        ]
-      }
     }
   }
 
@@ -414,10 +406,7 @@ if (is_win || is_android || use_v4l2_codec || use_vaapi) {
       "//ui/gl/init",
     ]
 
-    configs += [
-      "//third_party/khronos:khronos_headers",
-      ":gpu_config",
-    ]
+    configs += [ "//third_party/khronos:khronos_headers" ]
 
     if (is_win || is_chromeos) {
       sources += [
@@ -514,10 +503,7 @@ if (use_v4l2_codec || use_vaapi || is_mac || is_win) {
       "//ui/gl",
       "//ui/gl:test_support",
     ]
-    configs += [
-      "//third_party/libyuv:libyuv_config",
-      ":gpu_config",
-    ]
+    configs += [ "//third_party/libyuv:libyuv_config" ]
     sources = [
       "video_accelerator_unittest_helpers.h",
       "video_encode_accelerator_unittest.cc",
@@ -547,10 +533,7 @@ if (use_v4l2_codec || use_vaapi) {
       "//ui/gl",
       "//ui/gl:test_support",
     ]
-    configs += [
-      "//third_party/libyuv:libyuv_config",
-      ":gpu_config",
-    ]
+    configs += [ "//third_party/libyuv:libyuv_config" ]
     sources = [
       "jpeg_decode_accelerator_unittest.cc",
       "video_accelerator_unittest_helpers.h",

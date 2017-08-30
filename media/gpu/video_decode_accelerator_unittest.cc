@@ -73,17 +73,10 @@
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #include "media/gpu/dxva_video_decode_accelerator_win.h"
-#else
-#if defined(OS_CHROMEOS) && defined(USE_V4L2_CODEC)
-#include "media/gpu/v4l2_device.h"
-#include "media/gpu/v4l2_slice_video_decode_accelerator.h"
-#include "media/gpu/v4l2_video_decode_accelerator.h"
-#endif
+#endif  // defined(OS_WIN)
 #if BUILDFLAG(USE_VAAPI)
-#include "media/gpu/vaapi_video_decode_accelerator.h"
 #include "media/gpu/vaapi_wrapper.h"
 #endif  // BUILDFLAG(USE_VAAPI)
-#endif  // defined(OS_WIN)
 
 #if defined(USE_OZONE)
 #include "ui/gfx/native_pixmap.h"

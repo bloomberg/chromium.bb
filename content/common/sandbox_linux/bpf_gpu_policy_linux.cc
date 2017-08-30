@@ -28,6 +28,7 @@
 #include "content/common/sandbox_linux/sandbox_bpf_base_policy_linux.h"
 #include "content/common/sandbox_linux/sandbox_seccomp_bpf_linux.h"
 #include "content/public/common/content_switches.h"
+#include "media/gpu/features.h"
 #include "sandbox/linux/bpf_dsl/bpf_dsl.h"
 #include "sandbox/linux/seccomp-bpf-helpers/syscall_parameters_restrictions.h"
 #include "sandbox/linux/seccomp-bpf-helpers/syscall_sets.h"
@@ -81,7 +82,7 @@ inline bool IsArchitectureArm() {
 }
 
 inline bool UseV4L2Codec() {
-#if defined(USE_V4L2_CODEC)
+#if BUILDFLAG(USE_V4L2_CODEC)
   return true;
 #else
   return false;
@@ -89,7 +90,7 @@ inline bool UseV4L2Codec() {
 }
 
 inline bool UseLibV4L2() {
-#if defined(USE_LIBV4L2)
+#if BUILDFLAG(USE_LIBV4L2)
   return true;
 #else
   return false;
