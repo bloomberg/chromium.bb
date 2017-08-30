@@ -394,6 +394,7 @@ void MediaStreamDevicesController::RequestPermissionsWithDelegate(
     callback.Run(content::MediaStreamDevices(),
                  content::MEDIA_DEVICE_FAILED_DUE_TO_SHUTDOWN,
                  std::unique_ptr<content::MediaStreamUI>());
+    return;
   }
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(rfh);
