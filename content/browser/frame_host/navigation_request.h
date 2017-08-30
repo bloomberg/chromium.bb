@@ -209,7 +209,10 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
                          bool is_stream,
                          mojom::URLLoaderFactoryPtrInfo
                              subresource_url_loader_factory_info) override;
-  void OnRequestFailed(bool has_stale_copy_in_cache, int net_error) override;
+  void OnRequestFailed(bool has_stale_copy_in_cache,
+                       int net_error,
+                       const base::Optional<net::SSLInfo>& ssl_info,
+                       bool should_ssl_errors_be_fatal) override;
   void OnRequestStarted(base::TimeTicks timestamp) override;
 
   // Called when the NavigationThrottles have been checked by the

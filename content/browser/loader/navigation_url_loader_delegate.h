@@ -15,6 +15,7 @@
 
 namespace net {
 struct RedirectInfo;
+class SSLInfo;
 }
 
 namespace content {
@@ -55,8 +56,18 @@ class CONTENT_EXPORT NavigationURLLoaderDelegate {
 
   // Called if the request fails before receving a response. |net_error| is a
   // network error code for the failure. |has_stale_copy_in_cache| is true if
-  // there is a stale copy of the unreachable page in cache.
-  virtual void OnRequestFailed(bool has_stale_copy_in_cache, int net_error) = 0;
+  // there is a stale copy of the unreachable page in cache. |ssl_info| is the
+  // SSL info for the request. |should_ssl_errors_be_fatal| indicates
+  // whether SSL errors for the request should be fatal.
+  // If |net_error| is a certificate error, the caller should pass a value for
+  // |ssl_info|. If |net_error| is not a certificate error, |ssl_info| and
+  // |fatal_cert_error| are ignored.
+  // TODO(https://crbug.com/757633): Change "should pass a value for |ssl_info|"
+  // to "must pass..."
+  virtual void OnRequestFailed(bool has_stale_copy_in_cache,
+                               int net_error,
+                               const base::Optional<net::SSLInfo>& ssl_info,
+                               bool should_ssl_errors_be_fatal) = 0;
 
   // Called after the network request has begun on the IO thread at time
   // |timestamp|. This is just a thread hop but is used to compare timing
