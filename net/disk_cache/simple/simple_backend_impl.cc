@@ -594,6 +594,17 @@ size_t SimpleBackendImpl::DumpMemoryStats(
   return size;
 }
 
+uint8_t SimpleBackendImpl::GetEntryInMemoryData(const std::string& key) {
+  const uint64_t entry_hash = simple_util::GetEntryHashKey(key);
+  return index_->GetEntryInMemoryData(entry_hash);
+}
+
+void SimpleBackendImpl::SetEntryInMemoryData(const std::string& key,
+                                             uint8_t data) {
+  const uint64_t entry_hash = simple_util::GetEntryHashKey(key);
+  index_->SetEntryInMemoryData(entry_hash, data);
+}
+
 void SimpleBackendImpl::InitializeIndex(const CompletionCallback& callback,
                                         const DiskStatResult& result) {
   if (result.net_error == net::OK) {
