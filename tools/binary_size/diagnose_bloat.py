@@ -429,6 +429,12 @@ class _DiffArchiveManager(object):
         for s, before, after in stats:
           _PrintAndWriteToFile(f, '{:>+10} {} {} for range: {}..{}',
                                s.value, s.units, s.name, before, after)
+    elif self.build_archives:
+      supersize_path = os.path.join(_BINARY_SIZE_DIR, 'supersize')
+      size_path = os.path.join(self.build_archives[0].dir, self.build.size_name)
+      logging.info('Enter supersize console via: %s console %s',
+                   os.path.relpath(supersize_path), os.path.relpath(size_path))
+
 
   def _AddDiffSummaryStat(self, before, after):
     stat = None
@@ -572,7 +578,7 @@ def _GenerateRevList(rev, reference_rev, all_in_range, subrepo):
   rev_seq = '%s^..%s' % (reference_rev, rev)
   stdout = _GitCmd(['rev-list', rev_seq], subrepo)
   all_revs = stdout.splitlines()[::-1]
-  if all_in_range:
+  if all_in_range or len(all_revs) < 2:
     revs = all_revs
   else:
     revs = [all_revs[0], all_revs[-1]]
@@ -590,8 +596,6 @@ def _ValidateRevs(rev, reference_rev, subrepo):
     if retcode:
       _Die(message)
 
-  if rev == reference_rev:
-    _Die('rev and reference-rev cannot be equal')
   no_obj_message = ('%s either doesn\'t exist or your local repo is out of '
                     'date, try "git fetch origin master"')
   git_fatal(['cat-file', '-e', rev], no_obj_message % rev)
@@ -744,6 +748,9 @@ def main():
                       action='store_true',
                       help='Download build artifacts from perf builders '
                       '(Googlers only).')
+  parser.add_argument('--single',
+                      action='store_true',
+                      help='Sets --reference-rev=rev')
   parser.add_argument('--depot-tools-path',
                       help='Custom path to depot tools. Needed for --cloud if '
                            'depot tools isn\'t in your PATH.')
@@ -809,8 +816,10 @@ def main():
   if build.IsLinux():
     _VerifyUserAccepts('Linux diffs have known deficiencies (crbug/717550).')
 
-  rev, reference_rev = _ValidateRevs(
-      args.rev, args.reference_rev or args.rev + '^', subrepo)
+  reference_rev = args.reference_rev or args.rev + '^'
+  if args.single:
+    reference_rev = args.rev
+  rev, reference_rev = _ValidateRevs(args.rev, reference_rev, subrepo)
   revs = _GenerateRevList(rev, reference_rev, args.all, subrepo)
   with _TmpCopyBinarySizeDir() as supersize_path:
     diffs = [NativeDiff(build.size_name, supersize_path)]
