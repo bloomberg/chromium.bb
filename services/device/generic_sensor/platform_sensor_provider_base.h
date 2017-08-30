@@ -66,7 +66,7 @@ class PlatformSensorProviderBase {
   friend class PlatformSensor;  // To call RemoveSensor();
 
   bool CreateSharedBufferIfNeeded();
-  void RemoveSensor(mojom::SensorType type);
+  void RemoveSensor(mojom::SensorType type, PlatformSensor* sensor);
 
  private:
   using CallbackQueue = std::vector<CreateSensorCallback>;
