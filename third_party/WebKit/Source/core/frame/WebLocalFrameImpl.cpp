@@ -2431,7 +2431,7 @@ WebFrameScheduler* WebLocalFrameImpl::Scheduler() const {
 SingleThreadTaskRunner* WebLocalFrameImpl::TimerTaskRunner() {
   return GetFrame()
       ->FrameScheduler()
-      ->ThrottleableTaskRunner()
+      ->TimerTaskRunner()
       ->ToSingleThreadTaskRunner();
 }
 
@@ -2445,7 +2445,7 @@ SingleThreadTaskRunner* WebLocalFrameImpl::LoadingTaskRunner() {
 SingleThreadTaskRunner* WebLocalFrameImpl::UnthrottledTaskRunner() {
   return GetFrame()
       ->FrameScheduler()
-      ->PausableTaskRunner()
+      ->UnthrottledTaskRunner()
       ->ToSingleThreadTaskRunner();
 }
 
