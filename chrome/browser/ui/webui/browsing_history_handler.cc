@@ -14,7 +14,6 @@
 #include "base/i18n/time_formatting.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/default_clock.h"
@@ -68,23 +67,6 @@ namespace {
 static const char kDeviceTypeLaptop[] = "laptop";
 static const char kDeviceTypePhone[] = "phone";
 static const char kDeviceTypeTablet[] = "tablet";
-
-// Returns a localized version of |visit_time| including a relative
-// indicator (e.g. today, yesterday).
-base::string16 GetRelativeDateLocalized(base::Clock* clock,
-                                        const base::Time& visit_time) {
-  base::Time midnight = clock->Now().LocalMidnight();
-  base::string16 date_str = ui::TimeFormat::RelativeDate(visit_time, &midnight);
-  if (date_str.empty()) {
-    date_str = base::TimeFormatFriendlyDate(visit_time);
-  } else {
-    date_str = l10n_util::GetStringFUTF16(
-        IDS_HISTORY_DATE_WITH_RELATIVE_TIME,
-        date_str,
-        base::TimeFormatFriendlyDate(visit_time));
-  }
-  return date_str;
-}
 
 // Gets the name and type of a device for the given sync client ID.
 // |name| and |type| are out parameters.
@@ -395,15 +377,6 @@ void BrowsingHistoryHandler::OnQueryComplete(
                           query_results_info.reached_beginning_of_local);
   results_info.SetBoolean("hasSyncedResults",
                           query_results_info.has_synced_results);
-
-  // Add the specific dates that were searched to display them.
-  // TODO(sergiu): Put today if the start is in the future.
-  results_info.SetString(
-      "queryStartTime",
-      GetRelativeDateLocalized(clock_.get(), query_results_info.start_time));
-  results_info.SetString(
-      "queryEndTime",
-      GetRelativeDateLocalized(clock_.get(), query_results_info.end_time));
 
   web_ui()->CallJavascriptFunctionUnsafe("historyResult", results_info,
                                          results_value);

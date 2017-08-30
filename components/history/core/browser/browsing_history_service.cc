@@ -398,15 +398,6 @@ void BrowsingHistoryService::QueryComplete(const base::string16& search_text,
 
   query_results_info_.search_text = search_text;
   query_results_info_.reached_beginning_of_local = results->reached_beginning();
-  query_results_info_.start_time = options.begin_time;
-  // TODO(skym): |end_time| doesn't seem to be used anymore, and this logic's
-  // intention is very confusing. Consider removing.
-  if (!options.end_time.is_null()) {
-    query_results_info_.end_time =
-        options.end_time - base::TimeDelta::FromDays(1);
-  } else {
-    query_results_info_.end_time = clock_->Now();
-  }
 
   if (!web_history_timer_.IsRunning())
     ReturnResultsToDriver();

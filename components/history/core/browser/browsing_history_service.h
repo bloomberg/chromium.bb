@@ -124,12 +124,6 @@ class BrowsingHistoryService : public HistoryServiceObserver,
 
     // Whether the query reached the beginning of the synced history results.
     bool reached_beginning_of_sync = false;
-
-    // The localized query start time.
-    base::Time start_time;
-
-    // The localized query end time.
-    base::Time end_time;
   };
 
   BrowsingHistoryService(BrowsingHistoryDriver* driver,
