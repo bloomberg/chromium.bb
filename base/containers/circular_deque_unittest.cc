@@ -479,6 +479,25 @@ TEST(CircularDeque, IteratorIntegerOps) {
   }
 }
 
+TEST(CircularDeque, ReverseIterator) {
+  circular_deque<int> q;
+  q.push_back(4);
+  q.push_back(3);
+  q.push_back(2);
+  q.push_back(1);
+
+  circular_deque<int>::reverse_iterator iter = q.rbegin();
+  EXPECT_EQ(1, *iter);
+  iter++;
+  EXPECT_EQ(2, *iter);
+  ++iter;
+  EXPECT_EQ(3, *iter);
+  iter++;
+  EXPECT_EQ(4, *iter);
+  ++iter;
+  EXPECT_EQ(q.rend(), iter);
+}
+
 TEST(CircularDeque, CapacityReserveShrink) {
   circular_deque<int> q;
 
@@ -625,6 +644,157 @@ TEST(CircularDeque, ResizeDelete) {
   q.resize(6, DestructorCounter(&counter));
   // 2 deleted ones + the one temporary in the resize() call.
   EXPECT_EQ(3, counter);
+}
+
+TEST(CircularDeque, InsertEraseSingle) {
+  circular_deque<int> q;
+  q.push_back(1);
+  q.push_back(2);
+
+  // Insert at the beginning.
+  auto result = q.insert(q.begin(), 0);
+  EXPECT_EQ(q.begin(), result);
+  EXPECT_EQ(3u, q.size());
+  EXPECT_EQ(0, q[0]);
+  EXPECT_EQ(1, q[1]);
+  EXPECT_EQ(2, q[2]);
+
+  // Erase at the beginning.
+  result = q.erase(q.begin());
+  EXPECT_EQ(q.begin(), result);
+  EXPECT_EQ(2u, q.size());
+  EXPECT_EQ(1, q[0]);
+  EXPECT_EQ(2, q[1]);
+
+  // Insert at the end.
+  result = q.insert(q.end(), 3);
+  EXPECT_EQ(q.end() - 1, result);
+  EXPECT_EQ(1, q[0]);
+  EXPECT_EQ(2, q[1]);
+  EXPECT_EQ(3, q[2]);
+
+  // Erase at the end.
+  result = q.erase(q.end() - 1);
+  EXPECT_EQ(q.end(), result);
+  EXPECT_EQ(1, q[0]);
+  EXPECT_EQ(2, q[1]);
+
+  // Insert in the middle.
+  result = q.insert(q.begin() + 1, 10);
+  EXPECT_EQ(q.begin() + 1, result);
+  EXPECT_EQ(1, q[0]);
+  EXPECT_EQ(10, q[1]);
+  EXPECT_EQ(2, q[2]);
+
+  // Erase in the middle.
+  result = q.erase(q.begin() + 1);
+  EXPECT_EQ(q.begin() + 1, result);
+  EXPECT_EQ(1, q[0]);
+  EXPECT_EQ(2, q[1]);
+}
+
+TEST(CircularDeque, InsertFill) {
+  circular_deque<int> q;
+
+  // Fill when empty.
+  q.insert(q.begin(), 2, 1);
+
+  // 0's at the beginning.
+  q.insert(q.begin(), 2, 0);
+
+  // 50's in the middle (now at offset 3).
+  q.insert(q.begin() + 3, 2, 50);
+
+  // 200's at the end.
+  q.insert(q.end(), 2, 200);
+
+  ASSERT_EQ(8u, q.size());
+  EXPECT_EQ(0, q[0]);
+  EXPECT_EQ(0, q[1]);
+  EXPECT_EQ(1, q[2]);
+  EXPECT_EQ(50, q[3]);
+  EXPECT_EQ(50, q[4]);
+  EXPECT_EQ(1, q[5]);
+  EXPECT_EQ(200, q[6]);
+  EXPECT_EQ(200, q[7]);
+}
+
+TEST(CircularDeque, InsertEraseRange) {
+  circular_deque<int> q;
+
+  // Loop index used below to shift the used items in the buffer.
+  for (int i = 0; i < 10; i++) {
+    circular_deque<int> source;
+
+    // Fill empty range.
+    q.insert(q.begin(), source.begin(), source.end());
+
+    // Have some stuff to insert.
+    source.push_back(1);
+    source.push_back(2);
+
+    q.insert(q.begin(), source.begin(), source.end());
+
+    // Shift the used items in the buffer by i which will place the two used
+    // elements in different places in the buffer each time through this loop.
+    for (int shift_i = 0; shift_i < i; shift_i++) {
+      q.push_back(0);
+      q.pop_front();
+    }
+
+    // Set the two items to notable values so we can check for them later.
+    ASSERT_EQ(2u, q.size());
+    q[0] = 100;
+    q[1] = 101;
+
+    // Insert at the beginning, middle (now at offset 3), and end.
+    q.insert(q.begin(), source.begin(), source.end());
+    q.insert(q.begin() + 3, source.begin(), source.end());
+    q.insert(q.end(), source.begin(), source.end());
+
+    ASSERT_EQ(8u, q.size());
+    EXPECT_EQ(1, q[0]);
+    EXPECT_EQ(2, q[1]);
+    EXPECT_EQ(100, q[2]);  // First inserted one.
+    EXPECT_EQ(1, q[3]);
+    EXPECT_EQ(2, q[4]);
+    EXPECT_EQ(101, q[5]);  // First inserted second one.
+    EXPECT_EQ(1, q[6]);
+    EXPECT_EQ(2, q[7]);
+
+    // Now erase the inserted ranges.
+    auto result = q.erase(q.begin(), q.begin() + 2);
+    EXPECT_EQ(q.begin(), result);
+    result = q.erase(q.begin() + 1, q.begin() + 3);
+    EXPECT_EQ(q.begin() + 1, result);
+    result = q.erase(q.end() - 2, q.end());
+    EXPECT_EQ(q.end(), result);
+
+    ASSERT_EQ(2u, q.size());
+    EXPECT_EQ(100, q[0]);
+    EXPECT_EQ(101, q[1]);
+
+    // Erase everything.
+    result = q.erase(q.begin(), q.end());
+    EXPECT_EQ(q.end(), result);
+    EXPECT_TRUE(q.empty());
+  }
+}
+
+TEST(CircularDeque, EmplaceMoveOnly) {
+  int values[] = {1, 3};
+  circular_deque<MoveOnlyInt> q(std::begin(values), std::end(values));
+
+  q.emplace(q.begin(), MoveOnlyInt(0));
+  q.emplace(q.begin() + 2, MoveOnlyInt(2));
+  q.emplace(q.end(), MoveOnlyInt(4));
+
+  ASSERT_EQ(5u, q.size());
+  EXPECT_EQ(0, q[0].data());
+  EXPECT_EQ(1, q[1].data());
+  EXPECT_EQ(2, q[2].data());
+  EXPECT_EQ(3, q[3].data());
+  EXPECT_EQ(4, q[4].data());
 }
 
 /*
