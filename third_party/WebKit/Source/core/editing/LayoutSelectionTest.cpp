@@ -61,22 +61,39 @@ static bool TestLayoutObjectState(LayoutObject* object,
   return true;
 }
 
-using IsTypeOf = bool (LayoutObject::*)(void) const;
-static IsTypeOf IsLayoutBlock = &LayoutObject::IsLayoutBlock;
-static IsTypeOf IsLayoutBlockFlow = &LayoutObject::IsLayoutBlockFlow;
-static IsTypeOf IsLayoutInline = &LayoutObject::IsLayoutInline;
-static IsTypeOf IsBR = &LayoutObject::IsBR;
-static IsTypeOf IsListItem = &LayoutObject::IsListItem;
-static IsTypeOf IsListMarker = &LayoutObject::IsListMarker;
+using IsTypeOf = Function<bool(const LayoutObject& layout_object)>;
+#define USING_LAYOUTOBJECT_FUNC(member_func)                               \
+  IsTypeOf member_func = WTF::Bind([](const LayoutObject& layout_object) { \
+    return layout_object.member_func();                                    \
+  })
+
+USING_LAYOUTOBJECT_FUNC(IsLayoutBlock);
+USING_LAYOUTOBJECT_FUNC(IsLayoutBlockFlow);
+USING_LAYOUTOBJECT_FUNC(IsLayoutInline);
+USING_LAYOUTOBJECT_FUNC(IsBR);
+USING_LAYOUTOBJECT_FUNC(IsListItem);
+USING_LAYOUTOBJECT_FUNC(IsListMarker);
+
+static IsTypeOf IsLayoutTextFragmentOf(const String& text) {
+  return WTF::Bind(
+      [](const String& text, const LayoutObject& object) {
+        if (!object.IsText())
+          return false;
+        if (text != ToLayoutText(object).GetText())
+          return false;
+        return ToLayoutText(object).IsTextFragment();
+      },
+      text);
+}
 
 static bool TestLayoutObject(LayoutObject* object,
-                             IsTypeOf predicate,
+                             const IsTypeOf& predicate,
                              SelectionState state,
                              InvalidateOption invalidate) {
   if (!TestLayoutObjectState(object, state, invalidate))
     return false;
 
-  if (!(object->*predicate)())
+  if (!predicate(*object))
     return false;
   return true;
 }
@@ -260,6 +277,99 @@ TEST_F(LayoutSelectionTest, TraverseLayoutObjectLineWrap) {
   TEST_NO_NEXT_LAYOUT_OBJECT();
   EXPECT_EQ(Selection().LayoutSelectionStart(), 0);
   EXPECT_EQ(Selection().LayoutSelectionEnd(), 4);
+}
+
+TEST_F(LayoutSelectionTest, FirstLetter) {
+  SetBodyContent(
+      "<style>::first-letter { color: red; }</style>"
+      "<span>foo</span>");
+  Selection().SetSelection(SelectionInDOMTree::Builder()
+                               .SelectAllChildren(*GetDocument().body())
+                               .Build());
+  Selection().CommitAppearanceIfNeeded();
+  TEST_NEXT(IsLayoutBlock, kStartAndEnd, ShouldInvalidate);
+  TEST_NEXT(IsLayoutInline, kNone, NotInvalidate);
+  TEST_NEXT(IsLayoutInline, kNone, NotInvalidate);
+  TEST_NEXT(IsLayoutTextFragmentOf("f"), kStart, ShouldInvalidate);
+  TEST_NEXT(IsLayoutTextFragmentOf("oo"), kEnd, ShouldInvalidate);
+  TEST_NO_NEXT_LAYOUT_OBJECT();
+}
+
+TEST_F(LayoutSelectionTest, FirstLetterClearSeletion) {
+  SetBodyContent(
+      "<style>div::first-letter { color: red; }</style>"
+      "foo<div>bar</div>baz");
+  Node* foo = GetDocument().body()->firstChild()->nextSibling();
+  // <div>fo^o</div><div>bar</div>b|az
+  Selection().SetSelection(
+      SelectionInDOMTree::Builder()
+          .SetBaseAndExtent({foo, 2}, {foo->nextSibling()->nextSibling(), 1})
+          .Build());
+  Selection().CommitAppearanceIfNeeded();
+  TEST_NEXT(IsLayoutBlock, kStartAndEnd, ShouldInvalidate);
+  TEST_NEXT(IsLayoutBlock, kStart, ShouldInvalidate);
+  TEST_NEXT("foo", kStart, ShouldInvalidate);
+  TEST_NEXT(IsLayoutBlock, kInside, ShouldInvalidate);
+  TEST_NEXT(IsLayoutInline, kNone, NotInvalidate);
+  TEST_NEXT(IsLayoutTextFragmentOf("b"), kInside, ShouldInvalidate);
+  TEST_NEXT(IsLayoutTextFragmentOf("ar"), kInside, ShouldInvalidate);
+  TEST_NEXT(IsLayoutBlock, kEnd, ShouldInvalidate);
+  TEST_NEXT("baz", kEnd, ShouldInvalidate);
+  TEST_NO_NEXT_LAYOUT_OBJECT();
+  Selection().ClearLayoutSelection();
+  TEST_NEXT(IsLayoutBlock, kNone, ShouldInvalidate);
+  TEST_NEXT(IsLayoutBlock, kNone, ShouldInvalidate);
+  TEST_NEXT("foo", kNone, ShouldInvalidate);
+  TEST_NEXT(IsLayoutBlock, kNone, ShouldInvalidate);
+  TEST_NEXT(IsLayoutInline, kNone, NotInvalidate);
+  TEST_NEXT(IsLayoutTextFragmentOf("b"), kNone, ShouldInvalidate);
+  TEST_NEXT(IsLayoutTextFragmentOf("ar"), kNone, ShouldInvalidate);
+  TEST_NEXT(IsLayoutBlock, kNone, ShouldInvalidate);
+  TEST_NEXT("baz", kNone, ShouldInvalidate);
+  TEST_NO_NEXT_LAYOUT_OBJECT();
+}
+
+TEST_F(LayoutSelectionTest, FirstLetterUpdateSeletion) {
+  SetBodyContent(
+      "<style>div::first-letter { color: red; }</style>"
+      "foo<div>bar</div>baz");
+  Node* const foo = GetDocument().body()->firstChild()->nextSibling();
+  Node* const baz = GetDocument()
+                        .body()
+                        ->firstChild()
+                        ->nextSibling()
+                        ->nextSibling()
+                        ->nextSibling();
+  // <div>fo^o</div><div>bar</div>b|az
+  Selection().SetSelection(SelectionInDOMTree::Builder()
+                               .SetBaseAndExtent({foo, 2}, {baz, 1})
+                               .Build());
+  Selection().CommitAppearanceIfNeeded();
+  TEST_NEXT(IsLayoutBlock, kStartAndEnd, ShouldInvalidate);
+  TEST_NEXT(IsLayoutBlock, kStart, ShouldInvalidate);
+  TEST_NEXT("foo", kStart, ShouldInvalidate);
+  TEST_NEXT(IsLayoutBlock, kInside, ShouldInvalidate);
+  TEST_NEXT(IsLayoutInline, kNone, NotInvalidate);
+  TEST_NEXT(IsLayoutTextFragmentOf("b"), kInside, ShouldInvalidate);
+  TEST_NEXT(IsLayoutTextFragmentOf("ar"), kInside, ShouldInvalidate);
+  TEST_NEXT(IsLayoutBlock, kEnd, ShouldInvalidate);
+  TEST_NEXT("baz", kEnd, ShouldInvalidate);
+  TEST_NO_NEXT_LAYOUT_OBJECT();
+  // <div>foo</div><div>bar</div>ba^z|
+  Selection().SetSelection(SelectionInDOMTree::Builder()
+                               .SetBaseAndExtent({baz, 2}, {baz, 3})
+                               .Build());
+  Selection().CommitAppearanceIfNeeded();
+  TEST_NEXT(IsLayoutBlock, kNone, ShouldInvalidate);
+  TEST_NEXT(IsLayoutBlock, kNone, ShouldInvalidate);
+  TEST_NEXT("foo", kNone, ShouldInvalidate);
+  TEST_NEXT(IsLayoutBlock, kNone, ShouldInvalidate);
+  TEST_NEXT(IsLayoutInline, kNone, NotInvalidate);
+  TEST_NEXT(IsLayoutTextFragmentOf("b"), kNone, ShouldInvalidate);
+  TEST_NEXT(IsLayoutTextFragmentOf("ar"), kNone, ShouldInvalidate);
+  TEST_NEXT(IsLayoutBlock, kNone, ShouldInvalidate);
+  TEST_NEXT("baz", kStartAndEnd, ShouldInvalidate);
+  TEST_NO_NEXT_LAYOUT_OBJECT();
 }
 
 }  // namespace blink
