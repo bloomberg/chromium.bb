@@ -28248,30 +28248,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="InterProcessTimeTicks.BrowserAhead" units="ms">
-  <owner>ppi@chromium.org</owner>
-  <summary>
-    Estimated additive skew between processes, recorded if the browser process
-    is ahead (higher TimeTicks value) than the renderer process.
-  </summary>
-</histogram>
-
-<histogram name="InterProcessTimeTicks.BrowserBehind" units="ms">
-  <owner>ppi@chromium.org</owner>
-  <summary>
-    Estimated additive skew between processes, recorded if the browser process
-    is behind (lower TimeTicks value) than the renderer process.
-  </summary>
-</histogram>
-
-<histogram name="InterProcessTimeTicks.IsSkewAdditive" enum="Boolean">
-  <owner>ppi@chromium.org</owner>
-  <summary>
-    True iff the conversion from the browser process TimeTicks to renderer
-    process TimeTicks is done by adding a constant, without scaling.
-  </summary>
-</histogram>
-
 <histogram name="interstitial.authority_invalid_time" units="ms">
   <obsolete>
     Removed on 8/1/13.
@@ -95443,15 +95419,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <affected-histogram name="CustomTabs.IntentToFirstCommitNavigationTime3"/>
   <affected-histogram name="Startup.FirstCommitNavigationTime2"/>
   <affected-histogram name="Startup.FirstCommitNavigationTime3"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="InterProcessTimeTicksConversionType" separator="_">
-  <owner>ppi@chromium.org</owner>
-  <suffix name="BrowserToRenderer"/>
-  <suffix name="RendererToBrowser"/>
-  <affected-histogram name="InterProcessTimeTicks.BrowserAhead"/>
-  <affected-histogram name="InterProcessTimeTicks.BrowserBehind"/>
-  <affected-histogram name="InterProcessTimeTicks.IsSkewAdditive"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="Interval" separator="_">
