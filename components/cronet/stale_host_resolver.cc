@@ -46,6 +46,12 @@ void RecordRequestOutcome(RequestOutcome outcome) {
                             MAX_REQUEST_OUTCOME);
 }
 
+void RecordCacheSizes(size_t restored, size_t current) {
+  UMA_HISTOGRAM_COUNTS_1000("DNS.StaleHostResolver.RestoreSizeOnCacheMiss",
+                            restored);
+  UMA_HISTOGRAM_COUNTS_1000("DNS.StaleHostResolver.SizeOnCacheMiss", current);
+}
+
 void RecordAddressListDelta(net::AddressListDeltaType delta) {
   UMA_HISTOGRAM_ENUMERATION("DNS.StaleHostResolver.StaleAddressListDelta",
                             delta, net::MAX_DELTA_TYPE);
@@ -175,6 +181,13 @@ class StaleHostResolver::RequestImpl {
   // The underlying network request, so the priority can be changed.
   std::unique_ptr<net::HostResolver::Request> network_request_;
 
+  // Statistics used in histograms:
+  // Number of HostCache entries that were restored from prefs, recorded at the
+  // time the cache was checked.
+  size_t restore_size_;
+  // Current HostCache size at the time the cache was checked.
+  size_t current_size_;
+
   // Handle that caller can use to cancel the request before it returns.
   // Owned by the caller; cleared via |OnHandleDestroyed()| when destroyed.
   Handle* handle_;
@@ -184,6 +197,8 @@ StaleHostResolver::RequestImpl::RequestImpl()
     : result_addresses_(nullptr),
       returning_result_(false),
       stale_error_(net::ERR_DNS_CACHE_MISS),
+      restore_size_(0),
+      current_size_(0),
       handle_(nullptr) {}
 
 StaleHostResolver::RequestImpl::~RequestImpl() {}
@@ -205,6 +220,8 @@ int StaleHostResolver::RequestImpl::Start(
   DCHECK(!usable_callback.is_null());
 
   result_addresses_ = addresses;
+  restore_size_ = resolver->LastRestoredCacheSize();
+  current_size_ = resolver->CacheSize();
 
   net::AddressList cache_addresses;
   net::HostCache::EntryStaleness stale_info;
@@ -329,12 +346,14 @@ void StaleHostResolver::RequestImpl::RecordNetworkRequest(
         FindAddressListDeltaType(stale_addresses_, network_addresses_));
   }
 
-  if (returned_stale_data)
+  if (returned_stale_data) {
     RecordRequestOutcome(STALE_BEFORE_NETWORK);
-  else if (have_stale_data())
+  } else if (have_stale_data()) {
     RecordRequestOutcome(NETWORK_WITH_STALE);
-  else
+    RecordCacheSizes(restore_size_, current_size_);
+  } else {
     RecordRequestOutcome(NETWORK_WITHOUT_STALE);
+  }
 }
 
 void StaleHostResolver::RequestImpl::RecordCanceledRequest() {
