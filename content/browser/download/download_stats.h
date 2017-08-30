@@ -269,6 +269,9 @@ void RecordFileBandwidth(size_t length,
                          base::TimeDelta disk_write_time,
                          base::TimeDelta elapsed_time);
 
+// Records the size of the download from content-length header.
+void RecordParallelizableContentLength(int64_t content_length);
+
 // Increment one of the count for parallelizable download.
 void RecordParallelizableDownloadCount(DownloadCountTypes type,
                                        bool is_parallel_download_enabled);

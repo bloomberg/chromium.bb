@@ -60,6 +60,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/referrer.h"
 #include "net/http/http_response_headers.h"
+#include "net/http/http_status_code.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_parameters_callback.h"
@@ -1699,6 +1700,17 @@ void DownloadItemImpl::Completed() {
   if (job_ && job_->IsParallelizable()) {
     RecordParallelizableDownloadCount(COMPLETED_COUNT,
                                       IsParallelDownloadEnabled());
+    int64_t content_length = -1;
+    if (response_headers_->response_code() != net::HTTP_PARTIAL_CONTENT) {
+      content_length = response_headers_->GetContentLength();
+    } else {
+      int64_t first_byte = -1;
+      int64_t last_byte = -1;
+      response_headers_->GetContentRangeFor206(&first_byte, &last_byte,
+                                               &content_length);
+    }
+    if (content_length > 0)
+      RecordParallelizableContentLength(content_length);
   }
 
   if (auto_opened_) {

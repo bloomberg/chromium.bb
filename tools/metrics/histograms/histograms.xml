@@ -15405,6 +15405,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Types of images that are downloaded.</summary>
 </histogram>
 
+<histogram name="Download.ContentLength.Parallelizable" units="KB">
+  <owner>qinmin@chromium.org</owner>
+  <summary>
+    File size calculated from the content-length header of successfully
+    completed Parallelizable downloads.
+  </summary>
+</histogram>
+
 <histogram name="Download.ContentType" enum="DownloadContentType">
   <obsolete>
     Deprecated 03/2017, and replaced by Download.Start.ContentType.
