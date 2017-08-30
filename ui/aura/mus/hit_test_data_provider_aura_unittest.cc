@@ -138,6 +138,9 @@ class HitTestDataProviderAuraTest : public test::AuraTestBaseMus {
 // Tests that the order of reported hit-test regions matches windows Z-order.
 TEST_F(HitTestDataProviderAuraTest, Stacking) {
   const auto hit_test_data_1 = hit_test_data_provider()->GetHitTestData();
+  ASSERT_TRUE(hit_test_data_1);
+  EXPECT_EQ(hit_test_data_1->flags, viz::mojom::kHitTestMine);
+  EXPECT_EQ(hit_test_data_1->bounds, root()->bounds());
   Window* expected_order_1[] = {window3(), window4(), window2()};
   EXPECT_EQ(hit_test_data_1->regions.size(), arraysize(expected_order_1));
   int i = 0;
@@ -154,6 +157,9 @@ TEST_F(HitTestDataProviderAuraTest, Stacking) {
 
   root()->StackChildAbove(window2(), window3());
   const auto hit_test_data_2 = hit_test_data_provider()->GetHitTestData();
+  ASSERT_TRUE(hit_test_data_2);
+  EXPECT_EQ(hit_test_data_2->flags, viz::mojom::kHitTestMine);
+  EXPECT_EQ(hit_test_data_2->bounds, root()->bounds());
 
   Window* expected_order_2[] = {window2(), window3(), window4()};
   EXPECT_EQ(hit_test_data_2->regions.size(), arraysize(expected_order_2));
@@ -174,6 +180,9 @@ TEST_F(HitTestDataProviderAuraTest, Stacking) {
 TEST_F(HitTestDataProviderAuraTest, CustomTargeter) {
   window3()->SetEventTargeter(base::MakeUnique<TestWindowTargeter>());
   const auto hit_test_data = hit_test_data_provider()->GetHitTestData();
+  ASSERT_TRUE(hit_test_data);
+  EXPECT_EQ(hit_test_data->flags, viz::mojom::kHitTestMine);
+  EXPECT_EQ(hit_test_data->bounds, root()->bounds());
 
   // Children of a container that has the custom targeter installed will get
   // reported twice, once with hit-test bounds optimized for mouse events and
@@ -206,6 +215,9 @@ TEST_F(HitTestDataProviderAuraTest, CustomTargeter) {
 TEST_F(HitTestDataProviderAuraTest, HoleTargeter) {
   window3()->SetEventTargeter(base::MakeUnique<TestHoleWindowTargeter>());
   const auto hit_test_data = hit_test_data_provider()->GetHitTestData();
+  ASSERT_TRUE(hit_test_data);
+  EXPECT_EQ(hit_test_data->flags, viz::mojom::kHitTestMine);
+  EXPECT_EQ(hit_test_data->bounds, root()->bounds());
 
   // Children of a container that has the custom targeter installed will get
   // reported 4 times for each of the hit test regions defined by the custom
@@ -236,6 +248,46 @@ TEST_F(HitTestDataProviderAuraTest, HoleTargeter) {
     EXPECT_EQ(region->rect.ToString(), expected_bounds[i].ToString());
     i++;
   }
+}
+
+TEST_F(HitTestDataProviderAuraTest, TargetingPolicies) {
+  root()->SetEventTargetingPolicy(ui::mojom::EventTargetingPolicy::NONE);
+  auto hit_test_data = hit_test_data_provider()->GetHitTestData();
+  ASSERT_FALSE(hit_test_data);
+
+  root()->SetEventTargetingPolicy(ui::mojom::EventTargetingPolicy::TARGET_ONLY);
+  window3()->SetEventTargetingPolicy(
+      ui::mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS);
+  hit_test_data = hit_test_data_provider()->GetHitTestData();
+  ASSERT_TRUE(hit_test_data);
+  EXPECT_EQ(hit_test_data->flags, viz::mojom::kHitTestMine);
+  EXPECT_EQ(hit_test_data->regions.size(), 3U);
+
+  root()->SetEventTargetingPolicy(ui::mojom::EventTargetingPolicy::TARGET_ONLY);
+  window3()->SetEventTargetingPolicy(
+      ui::mojom::EventTargetingPolicy::TARGET_ONLY);
+  hit_test_data = hit_test_data_provider()->GetHitTestData();
+  ASSERT_TRUE(hit_test_data);
+  EXPECT_EQ(hit_test_data->flags, viz::mojom::kHitTestMine);
+  EXPECT_EQ(hit_test_data->regions.size(), 2U);
+
+  root()->SetEventTargetingPolicy(
+      ui::mojom::EventTargetingPolicy::DESCENDANTS_ONLY);
+  window3()->SetEventTargetingPolicy(
+      ui::mojom::EventTargetingPolicy::DESCENDANTS_ONLY);
+  hit_test_data = hit_test_data_provider()->GetHitTestData();
+  ASSERT_TRUE(hit_test_data);
+  EXPECT_EQ(hit_test_data->flags, viz::mojom::kHitTestIgnore);
+  EXPECT_EQ(hit_test_data->regions.size(), 2U);
+
+  root()->SetEventTargetingPolicy(
+      ui::mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS);
+  window3()->SetEventTargetingPolicy(
+      ui::mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS);
+  hit_test_data = hit_test_data_provider()->GetHitTestData();
+  ASSERT_TRUE(hit_test_data);
+  EXPECT_EQ(hit_test_data->flags, viz::mojom::kHitTestMine);
+  EXPECT_EQ(hit_test_data->regions.size(), 3U);
 }
 
 }  // namespace aura

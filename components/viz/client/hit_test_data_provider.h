@@ -18,7 +18,8 @@ class HitTestDataProvider {
   HitTestDataProvider() = default;
   virtual ~HitTestDataProvider() = default;
 
-  // Returns an array of hit-test regions.
+  // Returns an array of hit-test regions. May return nullptr to disable
+  // hit-testing.
   virtual mojom::HitTestRegionListPtr GetHitTestData() const = 0;
 
  private:
