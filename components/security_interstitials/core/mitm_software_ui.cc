@@ -37,7 +37,6 @@ MITMSoftwareUI::~MITMSoftwareUI() {
   controller_->metrics_helper()->RecordShutdownMetrics();
 }
 
-// TODO(sperigo): Fill in placeholder strings.
 void MITMSoftwareUI::PopulateStringsForHTML(
     base::DictionaryValue* load_time_data) {
   CHECK(load_time_data);
@@ -116,7 +115,8 @@ void MITMSoftwareUI::PopulateEnterpriseUserStringsForHTML(
       "explanationParagraph",
       l10n_util::GetStringFUTF16(
           IDS_MITM_SOFTWARE_EXPLANATION_ENTERPRISE,
-          net::EscapeForHTML(base::UTF8ToUTF16(mitm_software_name_))));
+          net::EscapeForHTML(base::UTF8ToUTF16(mitm_software_name_)),
+          l10n_util::GetStringUTF16(IDS_MITM_SOFTWARE_EXPLANATION)));
 }
 
 void MITMSoftwareUI::PopulateAtHomeUserStringsForHTML(
@@ -130,7 +130,8 @@ void MITMSoftwareUI::PopulateAtHomeUserStringsForHTML(
       "explanationParagraph",
       l10n_util::GetStringFUTF16(
           IDS_MITM_SOFTWARE_EXPLANATION_NONENTERPRISE,
-          net::EscapeForHTML(base::UTF8ToUTF16(mitm_software_name_))));
+          net::EscapeForHTML(base::UTF8ToUTF16(mitm_software_name_)),
+          l10n_util::GetStringUTF16(IDS_MITM_SOFTWARE_EXPLANATION)));
 }
 
 }  // namespace security_interstitials

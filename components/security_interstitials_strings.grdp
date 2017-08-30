@@ -41,24 +41,27 @@
   </message>
 
   <!-- MITM software interstitial -->
-  <message name="IDS_MITM_SOFTWARE_HEADING" desc="Heading of the error page for SSL errors triggered by misconfigured MITM software">
+  <message name="IDS_MITM_SOFTWARE_HEADING" desc="Header of an error page. A user visits a website, antivirus or firewall software interferes with their connection, and they are shown this error.">
     An application is stopping Chrome from safely connecting to this site
   </message>
-  <message name="IDS_MITM_SOFTWARE_PRIMARY_PARAGRAPH_ENTERPRISE" desc="Primary explanatory paragraph for the MITM software error page shown to enterprise users">
-    &quot;<ph name="SOFTWARE_NAME">$1<ex>Misconfigured Antivirus</ex></ph>&quot; wasn’t installed properly on your computer or network. Ask your administrator to resolve this issue.
+  <message name="IDS_MITM_SOFTWARE_PRIMARY_PARAGRAPH_ENTERPRISE" desc="Main body of an error page. A user visits a website, antivirus or firewall software interferes with their connection, and they are shown this error. There is a title above and a button below that exposes more information. ‘IT administrator’ here refers to the information technology expert at the user’s school or company. Placeholder text is the name of a computer program.">
+    &quot;<ph name="SOFTWARE_NAME">$1<ex>Misconfigured Antivirus</ex></ph>&quot; wasn’t installed properly on your computer or network. Ask your IT administrator to resolve this issue.
   </message>
-  <message name="IDS_MITM_SOFTWARE_PRIMARY_PARAGRAPH_NONENTERPRISE" desc="Primary explanatory paragraph for the MITM software error page shown to non-enterprise users">
+  <message name="IDS_MITM_SOFTWARE_PRIMARY_PARAGRAPH_NONENTERPRISE" desc="Main body of an error page. A user visits a website, antivirus or firewall software interferes with their connection, and they are shown this error. There is a title above and a button below that exposes more information. Placeholder text is the name of a computer program.">
     &quot;<ph name="SOFTWARE_NAME">$1<ex>Misconfigured Antivirus</ex></ph>&quot; wasn’t installed properly on your computer or the network:
     &lt;ul&gt;
-    &lt;li&gt;Try uninstalling &quot;<ph name="SOFTWARE_NAME">$1<ex>Misconfigured Antivirus</ex></ph>&quot;&lt;/li&gt;
-    &lt;li&gt;Try connecting to another Wi-Fi network&lt;/li&gt;
+    &lt;li&gt;Try uninstalling or disabling &quot;<ph name="SOFTWARE_NAME">$1<ex>Misconfigured Antivirus</ex></ph>&quot;&lt;/li&gt;
+    &lt;li&gt;Try connecting to another network&lt;/li&gt;
     &lt;/ul&gt;
   </message>
-  <message name="IDS_MITM_SOFTWARE_EXPLANATION_ENTERPRISE" desc="Body text under the 'Advanced' button for the MITM software error page shown to enterprise users. Provides more context about the error and offers solutions aimed at the network administrator.">
-    A root certificate for &quot;<ph name="SOFTWARE_NAME">$1<ex>Misconfigured Antivirus</ex></ph>&quot; is required but isn’t installed. Your network administrator should look at configuration instructions for &quot;<ph name="SOFTWARE_NAME">$1<ex>Misconfigured Antivirus</ex></ph>&quot; to fix this problem. Applications that can cause this error includes antivirus, firewall, and web-filtering or proxy software.
+  <message name="IDS_MITM_SOFTWARE_EXPLANATION_ENTERPRISE" desc="Extended description for an error page hidden behind an 'Advanced' button. A user visits a website, antivirus or firewall software interferes with their connection, and they are shown this error. Page title reads 'An application is stopping Chrome from safely connection to this site' and there is a shorter description of the error shown above. First placeholder text is the name of a computer program. Second placeholder text is some further explanation.">
+    A root certificate for &quot;<ph name="SOFTWARE_NAME">$1<ex>Misconfigured Antivirus</ex></ph>&quot; is required but isn’t installed. Your IT administrator should look at configuration instructions for &quot;<ph name="SOFTWARE_NAME">$1<ex>Misconfigured Antivirus</ex></ph>&quot; to fix this problem. <ph name="FURTHER_EXPLANATION">$2<ex>Futher explanation goes here.</ex></ph>
   </message>
-  <message name="IDS_MITM_SOFTWARE_EXPLANATION_NONENTERPRISE" desc="Body text under the 'Advanced' button for the MITM software error page shown to enterprise users. Provides more context about the error.">
-    &quot;<ph name="SOFTWARE_NAME">$1<ex>Misconfigured Antivirus</ex></ph>&quot; isn’t configured correctly. Uninstalling &quot;<ph name="SOFTWARE_NAME">$1<ex>Misconfigured Antivirus</ex></ph>&quot; usually fixes the problem. Applications that can cause this error includes antivirus, firewall, and web-filtering or proxy software.
+  <message name="IDS_MITM_SOFTWARE_EXPLANATION_NONENTERPRISE" desc="Extended description for an error page hidden behind an 'Advanced' button. A user visits a website, antivirus or firewall software interferes with their connection, and they are shown this error. Page title reads 'An application is stopping Chrome from safely connection to this site' and there is a shorter description of the error shown above. First placeholder text is the name of a computer program. Second placeholder text is some further explanation.">
+    &quot;<ph name="SOFTWARE_NAME">$1<ex>Misconfigured Antivirus</ex></ph>&quot; isn’t configured correctly. Uninstalling &quot;<ph name="SOFTWARE_NAME">$1<ex>Misconfigured Antivirus</ex></ph>&quot; usually fixes the problem. <ph name="FURTHER_EXPLANATION">$2<ex>Futher explanation goes here.</ex></ph>
+  </message>
+  <message name="IDS_MITM_SOFTWARE_EXPLANATION" desc="Part of an extended description hidden behind an 'Advanced' button on an error page. A user visits a website, antivirus or firewall software interferes with their connection, and they are shown this error. Page title and additional description of the error are shown above. 'Antivirus software' is software that finds and deletes viruses on a user's computer. 'Firewall software' is software typically used on a company network that keeps unwanted people from accessing the network. 'Proxy software' is software on a network that blocks the user from viewing certain websites. Proxies may be used to keep school children from viewing inappropriate websites for example. 'Web-filtering software' is a synonym for proxy software, so it can be excluded in translation.">
+    Applications that can cause this error includes antivirus, firewall, and web-filtering or proxy software.
   </message>
 
   <!-- Clock errors -->
