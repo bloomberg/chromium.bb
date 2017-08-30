@@ -153,5 +153,5 @@ captive_portal_cert {
 
 mitm_software {
   name: "Kaspersky Internet Security",
-  regex: "Kaspersky Anti-Virus Personal Root Certificate"
+  issuer_common_name_regex: "Kaspersky Anti-Virus Personal Root Certificate"
 }

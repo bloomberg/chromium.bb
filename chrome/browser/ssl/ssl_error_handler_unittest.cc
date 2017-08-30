@@ -54,59 +54,60 @@ const char kOkayCertName[] = "ok_cert.pem";
 // names generated using the following openssl command:
 //  openssl req -new -x509 -keyout server.pem -out server.pem -days 365 -nodes
 
-// Common name: "Outdated Antivirus"
-const char kOutdatedAntivirusCert[] =
-    "-----BEGIN CERTIFICATE-----\n"
-    "MIID/zCCAuegAwIBAgIJANADVqnC0vPYMA0GCSqGSIb3DQEBCwUAMIGVMQswCQYD\n"
-    "VQQGEwJVUzETMBEGA1UECAwKQ2FsaWZvcm5pYTEWMBQGA1UEBwwNU2FuIEZyYW5j\n"
-    "aXNjbzEbMBkGA1UECgwST3V0ZGF0ZWQgQW50aXZpcnVzMRswGQYDVQQDDBJPdXRk\n"
-    "YXRlZCBBbnRpdmlydXMxHzAdBgkqhkiG9w0BCQEWEHRlc3RAZXhhbXBsZS5jb20w\n"
-    "HhcNMTcwODE3MDYxNjIzWhcNMTgwODE3MDYxNjIzWjCBlTELMAkGA1UEBhMCVVMx\n"
-    "EzARBgNVBAgMCkNhbGlmb3JuaWExFjAUBgNVBAcMDVNhbiBGcmFuY2lzY28xGzAZ\n"
-    "BgNVBAoMEk91dGRhdGVkIEFudGl2aXJ1czEbMBkGA1UEAwwST3V0ZGF0ZWQgQW50\n"
-    "aXZpcnVzMR8wHQYJKoZIhvcNAQkBFhB0ZXN0QGV4YW1wbGUuY29tMIIBIjANBgkq\n"
-    "hkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEApE60ozR0GRvhC8pLgvQiJGnZ+QNVq2+v\n"
-    "r0u8U4Gc9Rrau19owmik9N6SfViwgD8F335Ayo2Q9lF/M39fwH3fL/Ac2zHCD2Cs\n"
-    "u1YOD1DEFYFzV2mkWOUHFDpVSjJVVB0Bk9b2TscOrzn5Yn+uTMuFepwwRA14ljWS\n"
-    "l2spCM0LNwXBmPv3c1KI8WOTsPuLCSCgcPejQVPHhzALg9ymODPkX/zyYQKK4PzY\n"
-    "dCpg1WzgScERHLTQhKrq26bWeVcJwmQ42Ea4JQ6qnOHy/yzXm786rDFDlJLpLygo\n"
-    "nqERSwSpu8Up9tOp72Zo9OB05OjsneEp4W8xlVdH8cQsmBj4uztL6QIDAQABo1Aw\n"
-    "TjAdBgNVHQ4EFgQUeta5n0X4vG8ph9U+6/irRxgVocEwHwYDVR0jBBgwFoAUeta5\n"
-    "n0X4vG8ph9U+6/irRxgVocEwDAYDVR0TBAUwAwEB/zANBgkqhkiG9w0BAQsFAAOC\n"
-    "AQEAowqui84tdVS9yDigrfKAFqqD5fZKpKbpRxi5aRKoaX6hOUNHSFA+pC9Xd4Sg\n"
-    "W1Q1sd7rSKLG9jh3aKwhDvRFvVvKePxIPjB9f9mamt5DXH1tYuz1SylOH8DtYs50\n"
-    "/9IDkaFQ8XryqSVDVZj1rpnj6pPPV00AfhVgqG1tgHzYqB7jtXoHqn/bKQX8eYZT\n"
-    "VtlyGhJIKpFAiv20Pfx3Af1aOVvfyg9cM117BjZ54GyA5Md8D7CXv6G/g4p10Q+a\n"
-    "LezwUjncyY0gLGm39RtPvUKHQi2i9NCfukrtKioixjvHsxQ6G2+o1np5PlO8/Xmg\n"
-    "b6PrWTR/FHT44s5H8bCUHDfrCQ==\n"
-    "-----END CERTIFICATE-----";
-
 // Common name: "Misconfigured Firewall_4GHPOS5412EF"
+// Organization name: "Misconfigured Firewall"
 const char kMisconfiguredFirewallCert[] =
     "-----BEGIN CERTIFICATE-----\n"
-    "MIIEJTCCAw2gAwIBAgIJAO0EVfP6VLU9MA0GCSqGSIb3DQEBCwUAMIGoMQswCQYD\n"
+    "MIIEKTCCAxGgAwIBAgIJAOxA1g2otzdHMA0GCSqGSIb3DQEBCwUAMIGqMQswCQYD\n"
     "VQQGEwJVUzETMBEGA1UECAwKQ2FsaWZvcm5pYTEWMBQGA1UEBwwNU2FuIEZyYW5j\n"
-    "aXNjbzEfMB0GA1UECgwWTWlzY29uZmlndXJlZCBGaXJld2FsbDEqMCgGA1UEAwwh\n"
-    "TWlzY29uZmlndXJlZCBGaXJld2FsbF8xR0gzNUZJTzMyMR8wHQYJKoZIhvcNAQkB\n"
-    "FhB0ZXN0QGV4YW1wbGUuY29tMB4XDTE3MDgwOTE3NDgxNloXDTE4MDgwOTE3NDgx\n"
-    "NlowgagxCzAJBgNVBAYTAlVTMRMwEQYDVQQIDApDYWxpZm9ybmlhMRYwFAYDVQQH\n"
-    "DA1TYW4gRnJhbmNpc2NvMR8wHQYDVQQKDBZNaXNjb25maWd1cmVkIEZpcmV3YWxs\n"
-    "MSowKAYDVQQDDCFNaXNjb25maWd1cmVkIEZpcmV3YWxsXzFHSDM1RklPMzIxHzAd\n"
-    "BgkqhkiG9w0BCQEWEHRlc3RAZXhhbXBsZS5jb20wggEiMA0GCSqGSIb3DQEBAQUA\n"
-    "A4IBDwAwggEKAoIBAQDXazq1NGo2TOr7OIFi14KnBBBA9rJ3HXH78/gDUj7B+/ji\n"
-    "EB2+j1tNtdPHf7uaz0O6X3PKDeed5GV+C37khr7J+12NkIQqH2TdpXZ1rHvbjV8D\n"
-    "L/NUERwoGR0+xKS9cQdMYHGyUzPkOeTg+/UKQGpeUGfFbWJVPyxjIGZ1GFKkzstX\n"
-    "CLMv9lKFgU9Q0b6WNRyfvMt7ofTxkUuyTgzoN/M2WRzj8PPczYGhopsMIpQie8c5\n"
-    "ziX3VQTKTPyEVwAat7uNVaKi8nza02hEahGFvv5oUiyi1dVfsSCDvzL9IeNtvO1w\n"
-    "G/ooZrfqBsH45oa7kigzntwnsf0fb7Op0S1RDPnDAgMBAAGjUDBOMB0GA1UdDgQW\n"
-    "BBTkWcrjWP6EivGW0GdJbZikRh/AZTAfBgNVHSMEGDAWgBTkWcrjWP6EivGW0GdJ\n"
-    "bZikRh/AZTAMBgNVHRMEBTADAQH/MA0GCSqGSIb3DQEBCwUAA4IBAQA1ZSnE+ntm\n"
-    "2KTfmT3Xj9cWezTPWD2kc+tVSfuFCNqFBlZE586wmmlPXzkiI3UTOs0BJvoIEZYb\n"
-    "yiuJW3xPe9ZVsL8y8d8z1miUIcYt1EVpoF3CxPWI0iilXoF/6GbDtmdzFk990fSO\n"
-    "oGjq1Zadc4E/wxkHcYChlkIUG94WemkFRBcYmabxDJOgEGK+KDI/2cy5OlqZReBM\n"
-    "o82wrUg88gNy2IdgT7LAh8nLoEwxDEE0nmawV7FXpJdEZzKlXrAidRtbrsC2hyDa\n"
-    "N/rrXaEJK0iLuDxeBH6d4cu+MSho5z2paevIJSIyX8SQfVFCwjTEqf06OE02a94T\n"
-    "D+5GEBRIUV20\n"
+    "aXNjbzEfMB0GA1UECgwWTWlzY29uZmlndXJlZCBGaXJld2FsbDEsMCoGA1UEAwwj\n"
+    "TWlzY29uZmlndXJlZCBGaXJld2FsbF80R0hQT1M1NDEyRUYxHzAdBgkqhkiG9w0B\n"
+    "CQEWEHRlc3RAZXhhbXBsZS5jb20wHhcNMTcwODE4MjM1MjI4WhcNMTgwODE4MjM1\n"
+    "MjI4WjCBqjELMAkGA1UEBhMCVVMxEzARBgNVBAgMCkNhbGlmb3JuaWExFjAUBgNV\n"
+    "BAcMDVNhbiBGcmFuY2lzY28xHzAdBgNVBAoMFk1pc2NvbmZpZ3VyZWQgRmlyZXdh\n"
+    "bGwxLDAqBgNVBAMMI01pc2NvbmZpZ3VyZWQgRmlyZXdhbGxfNEdIUE9TNTQxMkVG\n"
+    "MR8wHQYJKoZIhvcNAQkBFhB0ZXN0QGV4YW1wbGUuY29tMIIBIjANBgkqhkiG9w0B\n"
+    "AQEFAAOCAQ8AMIIBCgKCAQEAtxh4PZ9dbqeXubutRBFSL4FschunDX/vRFzhlQdz\n"
+    "3fqzIfmN2PjvwBsoX1oDaWdTTefCLad7pX08UVyX2pS0UeqYwUJL+ihXuupW0pBV\n"
+    "M2VZ/soDgze7Vl9dUU43NLoODOzwvKt92QdyfS7toPEEmwFLrI4/UnzxX+QlS8qq\n"
+    "naWD5ny2XZOZdNizBX1UQlvkvfYJM0wUmBZ/VUj/QQxxNHZaEBcl64t3h5jHiq1c\n"
+    "gWDgp0zeYy+PbJk/LMSvF64qqMFDtujUQcniYC6HwWJ9YT7PFX2b7X9Mq4b3gtpV\n"
+    "6jGXXUJqg+SfLW7XisZcWVMfHZDaVfdd35vNm61XY4sg1wIDAQABo1AwTjAdBgNV\n"
+    "HQ4EFgQUmUhF2RL+A4QAEel9JiEYNbPyU+AwHwYDVR0jBBgwFoAUmUhF2RL+A4QA\n"
+    "Eel9JiEYNbPyU+AwDAYDVR0TBAUwAwEB/zANBgkqhkiG9w0BAQsFAAOCAQEAO+kk\n"
+    "Uin9uKD2iTkUtuoAckt+kcctmvHcP3zLe+J0m25f9HOyrjhutgIYZDwt2LiAnOTA\n"
+    "CQHg3t5YyDQHove39M6I1vWhoAy9jOi0Qn+lTKkVu5H4g5ZiauO3coneqFw/dPe+\n"
+    "kYye/bPKV4jNlhEYXF5+Pa7PYde0sxf7AmlDJb9NZh01xRKNFt6ScDpirhJIFdzg\n"
+    "ZKram+yJyIbcZI+yd7mjzu9dSCS0NbnsZDL7xqThFFZsbhZyO98kzdDS+crip6y5\n"
+    "rz3+AJpJvlGcf898Y4ibAPmeX62j6pug55TGfAdsqSVUiaQX1HcwwbmlSOYrhYTm\n"
+    "lMEx5QP9TqgGU0nGwQ==\n"
+    "-----END CERTIFICATE-----";
+
+// Common name: None
+// Organization name: None
+const char kCertWithoutOrganizationOrCommonName[] =
+    "-----BEGIN CERTIFICATE-----\n"
+    "MIIDzzCCAregAwIBAgIJAJfHNOMLXbc4MA0GCSqGSIb3DQEBCwUAMH4xCzAJBgNV\n"
+    "BAYTAlVTMRMwEQYDVQQIDApDYWxpZm9ybmlhMRYwFAYDVQQHDA1TYW4gRnJhbmNp\n"
+    "c2NvMSEwHwYDVQQKDBhJbnRlcm5ldCBXaWRnaXRzIFB0eSBMdGQxHzAdBgkqhkiG\n"
+    "9w0BCQEWEHRlc3RAZXhhbXBsZS5jb20wHhcNMTcwODE5MDAwNTMyWhcNMTgwODE5\n"
+    "MDAwNTMyWjB+MQswCQYDVQQGEwJVUzETMBEGA1UECAwKQ2FsaWZvcm5pYTEWMBQG\n"
+    "A1UEBwwNU2FuIEZyYW5jaXNjbzEhMB8GA1UECgwYSW50ZXJuZXQgV2lkZ2l0cyBQ\n"
+    "dHkgTHRkMR8wHQYJKoZIhvcNAQkBFhB0ZXN0QGV4YW1wbGUuY29tMIIBIjANBgkq\n"
+    "hkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA28iX7cIS5XS+hU/0OreJXfVmEWDPVRX1\n"
+    "n05AlX+ETRunnYevZOAhbSFuUeJi2cGgW4cpD6fGKrf05PpNM9GQ4yswIPlVsemR\n"
+    "ickSmg8vVemPs/Hz3y0dYnRoTwzzVESh4OIVGe+rrhCUdWVHE+/HOdmHAXoBI6m1\n"
+    "OhN2GgtvnEEMYzTaMRGNqb5VhRKYHwLNp8zqLtrHIbo61mi8Wl7E4NZdaVk4cTNK\n"
+    "w93Y8RqlwzzpbWT9RH74JPCM+wSg0rCK+h59sa86W4yPvhXyYIGXM8WhWkMW68Ej\n"
+    "jqfE0lQlEuxKPeCYZn6oC+AVRLxHCwncVxZaUtGUovMzBdV3WzsLPwIDAQABo1Aw\n"
+    "TjAdBgNVHQ4EFgQUlkC11ZD66sKrb25g4mH4sob4e3MwHwYDVR0jBBgwFoAUlkC1\n"
+    "1ZD66sKrb25g4mH4sob4e3MwDAYDVR0TBAUwAwEB/zANBgkqhkiG9w0BAQsFAAOC\n"
+    "AQEAUHQZmeZdAV86TIWviPNWNqhPD+/OEGnOwgjUrBmSrQkc5hPZUhQ8the7ewNE\n"
+    "V/eGjDNF72tiQqPQP7Zrhdf7i1p1Q3ufcDHpOOFbEdKd6m2DeCLg83jOLqLr/jTB\n"
+    "CC7GyyWOyt+CFVRGC0yovSl3+Vxaso6DZjelO3IP5K7bT5U1f3cUZnYTpYfslh1t\n"
+    "dUmxh9/MaKxnRaHkr0HDVGpWS4ZMoZUyyC6D9ZfCQ5aGJJubQEPxADc2tXHXOL73\n"
+    "dspwZ8CTOlcXnfdeRIjvgxnMZLax+OFEMJdY8sgyrI9c+rk2EfOUj5JVqFDvcsYy\n"
+    "ejdBhjdieIv5dTbSjIXz+ljOOA==\n"
     "-----END CERTIFICATE-----";
 
 // Runs |quit_closure| on the UI thread once a URL request has been
@@ -462,26 +463,20 @@ class SSLErrorAssistantTest : public ChromeRenderViewHostTestHarness {
   void InitMITMSoftwareList() {
     auto config_proto =
         base::MakeUnique<chrome_browser_ssl::SSLErrorAssistantConfig>();
-    chrome_browser_ssl::MITMSoftware* filter1 =
-        config_proto->add_mitm_software();
-    filter1->set_name("Outdated Antivirus");
-    filter1->set_regex("Outdated Antivirus");
 
-    chrome_browser_ssl::MITMSoftware* filter2 =
+    chrome_browser_ssl::MITMSoftware* filter =
         config_proto->add_mitm_software();
-    filter2->set_name("Misconfigured Firewall");
-    filter2->set_regex("Misconfigured Firewall_[A-Z0-9]+");
+    filter->set_name("Misconfigured Firewall");
+    filter->set_issuer_common_name_regex("Misconfigured Firewall_[A-Z0-9]+");
+    filter->set_issuer_organization_regex("Misconfigured Firewall");
+
     SSLErrorHandler::SetErrorAssistantProto(std::move(config_proto));
   }
 
-  // Calls RunMITMSoftwareTest() to set up an error assistant proto with mock
-  // MITM software strings and start handling the SSL error. Check that the
-  // generic interstitial was not shown, and the MITM software interstitial
-  // was. Check the UMA histograms.
   void TestMITMSoftwareInterstitial() {
     base::HistogramTester histograms;
 
-    InitMITMSoftwareList();
+    delegate()->set_non_overridable_error();
     error_handler()->StartHandlingError();
     base::RunLoop().RunUntilIdle();
 
@@ -504,14 +499,10 @@ class SSLErrorAssistantTest : public ChromeRenderViewHostTestHarness {
         SSLErrorHandler::SHOW_MITM_SOFTWARE_INTERSTITIAL, 1);
   }
 
-  // Calls RunMITMSoftwareTest() to set up an error assistant proto with mock
-  // MITM software strings and start handling the SSL error. Check that the
-  // MITM software interstitial is not shown, and a nonoverridable generic SSL
-  // interstitial is shown in its place. Check UMA histograms.
   void TestNoMITMSoftwareInterstitial() {
     base::HistogramTester histograms;
 
-    InitMITMSoftwareList();
+    delegate()->set_non_overridable_error();
     error_handler()->StartHandlingError();
     base::RunLoop().RunUntilIdle();
 
@@ -1166,104 +1157,210 @@ TEST_F(SSLErrorAssistantTest, CaptivePortal_DisabledByBuild) {
 
 #if !defined(OS_IOS)
 
-TEST_F(SSLErrorAssistantTest, MITMSoftware_OutdatedAntivirusCertificate) {
-  SetMITMSoftwareFeatureEnabled(true);
-
-  ResetErrorHandlerFromString(kOutdatedAntivirusCert,
-                              net::CERT_STATUS_AUTHORITY_INVALID);
-  delegate()->set_non_overridable_error();
-
-  TestMITMSoftwareInterstitial();
-}
-
-TEST_F(SSLErrorAssistantTest, MITMSoftware_MisconfiguredFirewallCertificate) {
+// Tests that if a certificate matches the issuer common name regex of a MITM
+// software entry but not the issuer organization name a MITM software
+// interstitial will not be displayed.
+TEST_F(SSLErrorAssistantTest,
+       MITMSoftware_CertificateDoesNotMatchOrganizationName_NoInterstitial) {
   SetMITMSoftwareFeatureEnabled(true);
 
   ResetErrorHandlerFromString(kMisconfiguredFirewallCert,
                               net::CERT_STATUS_AUTHORITY_INVALID);
-  delegate()->set_non_overridable_error();
 
-  TestMITMSoftwareInterstitial();
-}
-
-TEST_F(SSLErrorAssistantTest, MITMSoftware_EnterpriseManaged) {
-  SetMITMSoftwareFeatureEnabled(true);
-
-  ResetErrorHandlerFromString(kOutdatedAntivirusCert,
-                              net::CERT_STATUS_AUTHORITY_INVALID);
-  SSLErrorHandler::SetEnterpriseManagedForTesting(true);
-  ASSERT_TRUE(SSLErrorHandler::IsEnterpriseManagedFlagSetForTesting());
-  delegate()->set_non_overridable_error();
-
-  TestMITMSoftwareInterstitial();
-
-  EXPECT_TRUE(delegate()->is_mitm_software_interstitial_enterprise());
-}
-
-TEST_F(SSLErrorAssistantTest, MITMSoftware_NotEnterpriseManaged) {
-  SetMITMSoftwareFeatureEnabled(true);
-
-  ResetErrorHandlerFromString(kOutdatedAntivirusCert,
-                              net::CERT_STATUS_AUTHORITY_INVALID);
-  SSLErrorHandler::SetEnterpriseManagedForTesting(false);
-  ASSERT_TRUE(SSLErrorHandler::IsEnterpriseManagedFlagSetForTesting());
-  delegate()->set_non_overridable_error();
-
-  TestMITMSoftwareInterstitial();
-
-  EXPECT_FALSE(delegate()->is_mitm_software_interstitial_enterprise());
-}
-
-TEST_F(SSLErrorAssistantTest, MITMSoftware_FeatureDisabled) {
-  SetMITMSoftwareFeatureEnabled(false);
-
-  ResetErrorHandlerFromString(kOutdatedAntivirusCert,
-                              net::CERT_STATUS_AUTHORITY_INVALID);
-  delegate()->set_non_overridable_error();
-
+  auto config_proto =
+      base::MakeUnique<chrome_browser_ssl::SSLErrorAssistantConfig>();
+  chrome_browser_ssl::MITMSoftware* filter = config_proto->add_mitm_software();
+  filter->set_name("Misconfigured Firewall");
+  filter->set_issuer_common_name_regex("Misconfigured Firewall_[A-Z0-9]+");
+  filter->set_issuer_organization_regex("Non-Matching Organization Name");
+  SSLErrorHandler::SetErrorAssistantProto(std::move(config_proto));
   TestNoMITMSoftwareInterstitial();
 }
 
+// Tests that if a certificate matches the issuer organization name regex of a
+// MITM software entry but not the issuer common name a MITM software
+// interstitial will not be displayed.
+TEST_F(SSLErrorAssistantTest,
+       MITMSoftware_CertificateDoesNotMatchCommonName_NoInterstitial) {
+  SetMITMSoftwareFeatureEnabled(true);
+
+  ResetErrorHandlerFromString(kMisconfiguredFirewallCert,
+                              net::CERT_STATUS_AUTHORITY_INVALID);
+
+  auto config_proto =
+      base::MakeUnique<chrome_browser_ssl::SSLErrorAssistantConfig>();
+  chrome_browser_ssl::MITMSoftware* filter = config_proto->add_mitm_software();
+  filter->set_name("Misconfigured Firewall");
+  filter->set_issuer_common_name_regex("Non-Matching Issuer Common Name");
+  filter->set_issuer_organization_regex("Misconfigured Firewall");
+  SSLErrorHandler::SetErrorAssistantProto(std::move(config_proto));
+  TestNoMITMSoftwareInterstitial();
+}
+
+// Tests that a certificate with no organization name or common name will not
+// trigger a MITM software interstitial.
+TEST_F(SSLErrorAssistantTest,
+       MITMSoftware_CertificateWithNoOrganizationOrCommonName_NoInterstitial) {
+  SetMITMSoftwareFeatureEnabled(true);
+
+  ResetErrorHandlerFromString(kCertWithoutOrganizationOrCommonName,
+                              net::CERT_STATUS_AUTHORITY_INVALID);
+  InitMITMSoftwareList();
+  TestNoMITMSoftwareInterstitial();
+}
+
+// Tests that when everything else is in order, a matching MITM software
+// certificate will trigger the MITM software interstitial.
+TEST_F(SSLErrorAssistantTest,
+       MITMSoftware_CertificateMatchesCommonNameAndOrganizationName) {
+  SetMITMSoftwareFeatureEnabled(true);
+
+  ResetErrorHandlerFromString(kMisconfiguredFirewallCert,
+                              net::CERT_STATUS_AUTHORITY_INVALID);
+  InitMITMSoftwareList();
+  TestMITMSoftwareInterstitial();
+}
+
+// Tests that a known MITM software entry in the SSL error assistant proto that
+// has a common name regex but not an organization name regex can still trigger
+// a MITM software interstitial.
+TEST_F(SSLErrorAssistantTest, MITMSoftware_CertificateMatchesCommonName) {
+  SetMITMSoftwareFeatureEnabled(true);
+  ResetErrorHandlerFromString(kMisconfiguredFirewallCert,
+                              net::CERT_STATUS_AUTHORITY_INVALID);
+  // Register a MITM Software entry in the SSL error assistant proto that has a
+  // common name regex but not an organization name regex.
+  auto config_proto =
+      base::MakeUnique<chrome_browser_ssl::SSLErrorAssistantConfig>();
+  chrome_browser_ssl::MITMSoftware* filter = config_proto->add_mitm_software();
+  filter->set_name("Misconfigured Firewall");
+  filter->set_issuer_common_name_regex("Misconfigured Firewall_[A-Z0-9]+");
+  SSLErrorHandler::SetErrorAssistantProto(std::move(config_proto));
+  TestMITMSoftwareInterstitial();
+}
+
+// Tests that a known MITM software entry in the SSL error assistant proto that
+// has an organization name regex but not a common name name regex can still
+// trigger a MITM software interstitial.
+TEST_F(SSLErrorAssistantTest, MITMSoftware_CertificateMatchesOrganizationName) {
+  SetMITMSoftwareFeatureEnabled(true);
+  ResetErrorHandlerFromString(kMisconfiguredFirewallCert,
+                              net::CERT_STATUS_AUTHORITY_INVALID);
+  // Register a MITM Software entry in the SSL error assistant proto that has an
+  // organization name regex, but not a common name regex.
+  auto config_proto =
+      base::MakeUnique<chrome_browser_ssl::SSLErrorAssistantConfig>();
+  chrome_browser_ssl::MITMSoftware* filter = config_proto->add_mitm_software();
+  filter->set_name("Misconfigured Firewall");
+  filter->set_issuer_organization_regex("Misconfigured Firewall");
+  SSLErrorHandler::SetErrorAssistantProto(std::move(config_proto));
+  TestMITMSoftwareInterstitial();
+}
+
+// Tests that only a full regex match will trigger the MITM software
+// interstitial. For example, a common name regex "Match" should not trigger the
+// MITM software interstitial on a certificate that's common name is
+// "Full Match".
+TEST_F(SSLErrorAssistantTest, MITMSoftware_PartialRegexMatch_NoInterstitial) {
+  SetMITMSoftwareFeatureEnabled(true);
+  ResetErrorHandlerFromString(kMisconfiguredFirewallCert,
+                              net::CERT_STATUS_AUTHORITY_INVALID);
+  // Register a MITM software entry with common name and organization name
+  // regexes that will match part of each the certificate's common name and
+  // organization name fields but not the entire field.
+  auto config_proto =
+      base::MakeUnique<chrome_browser_ssl::SSLErrorAssistantConfig>();
+  chrome_browser_ssl::MITMSoftware* filter = config_proto->add_mitm_software();
+  filter->set_name("Misconfigured Firewall");
+  filter->set_issuer_common_name_regex("Misconfigured");
+  filter->set_issuer_organization_regex("Misconfigured");
+  SSLErrorHandler::SetErrorAssistantProto(std::move(config_proto));
+  TestNoMITMSoftwareInterstitial();
+}
+
+// Tests that a MITM software interstitial is not triggered when neither the
+// common name or the organization name match.
 TEST_F(SSLErrorAssistantTest,
        MITMSoftware_NonMatchingCertificate_NoInterstitial) {
   SetMITMSoftwareFeatureEnabled(true);
 
   ResetErrorHandlerFromFile(kOkayCertName, net::CERT_STATUS_AUTHORITY_INVALID);
-  delegate()->set_non_overridable_error();
-
+  InitMITMSoftwareList();
   TestNoMITMSoftwareInterstitial();
 }
 
+// Tests that when a user's machine is enterprise managed the correct MITM
+// software interstitial is triggered.
+TEST_F(SSLErrorAssistantTest, MITMSoftware_EnterpriseManaged) {
+  SetMITMSoftwareFeatureEnabled(true);
+
+  ResetErrorHandlerFromString(kMisconfiguredFirewallCert,
+                              net::CERT_STATUS_AUTHORITY_INVALID);
+  SSLErrorHandler::SetEnterpriseManagedForTesting(true);
+  ASSERT_TRUE(SSLErrorHandler::IsEnterpriseManagedFlagSetForTesting());
+  InitMITMSoftwareList();
+  TestMITMSoftwareInterstitial();
+
+  EXPECT_TRUE(delegate()->is_mitm_software_interstitial_enterprise());
+}
+
+// Tests that when a user's machine is not enterprise managed the correct MITM
+// software interstitial is triggered.
+TEST_F(SSLErrorAssistantTest, MITMSoftware_NotEnterpriseManaged) {
+  SetMITMSoftwareFeatureEnabled(true);
+
+  ResetErrorHandlerFromString(kMisconfiguredFirewallCert,
+                              net::CERT_STATUS_AUTHORITY_INVALID);
+  SSLErrorHandler::SetEnterpriseManagedForTesting(false);
+  ASSERT_TRUE(SSLErrorHandler::IsEnterpriseManagedFlagSetForTesting());
+  InitMITMSoftwareList();
+  TestMITMSoftwareInterstitial();
+
+  EXPECT_FALSE(delegate()->is_mitm_software_interstitial_enterprise());
+}
+
+// Tests that the MITM software interstitial is not triggered when the feature
+// is disabled by Finch.
+TEST_F(SSLErrorAssistantTest, MITMSoftware_FeatureDisabled) {
+  SetMITMSoftwareFeatureEnabled(false);
+
+  ResetErrorHandlerFromString(kMisconfiguredFirewallCert,
+                              net::CERT_STATUS_AUTHORITY_INVALID);
+  InitMITMSoftwareList();
+  TestNoMITMSoftwareInterstitial();
+}
+
+// Tests that the MITM software interstitial is not triggered when an error
+// other than net::CERT_STATUS_AUTHORITY_INVALID is thrown.
 TEST_F(SSLErrorAssistantTest, MITMSoftware_WrongError_NoInterstitial) {
   SetMITMSoftwareFeatureEnabled(true);
 
-  ResetErrorHandlerFromString(kOutdatedAntivirusCert,
+  ResetErrorHandlerFromString(kMisconfiguredFirewallCert,
                               net::CERT_STATUS_COMMON_NAME_INVALID);
-  delegate()->set_non_overridable_error();
-
+  InitMITMSoftwareList();
   TestNoMITMSoftwareInterstitial();
 }
 
+// Tests that the MITM software interstitial is not triggered when more than one
+// error is thrown.
 TEST_F(SSLErrorAssistantTest, MITMSoftware_TwoErrors_NoInterstitial) {
   SetMITMSoftwareFeatureEnabled(true);
 
-  ResetErrorHandlerFromString(kOutdatedAntivirusCert,
+  ResetErrorHandlerFromString(kMisconfiguredFirewallCert,
                               net::CERT_STATUS_AUTHORITY_INVALID |
                                   net::CERT_STATUS_COMMON_NAME_INVALID);
-  delegate()->set_non_overridable_error();
-
+  InitMITMSoftwareList();
   TestNoMITMSoftwareInterstitial();
 }
 
+// Tests that the MITM software interstitial is not triggered if the error
+// thrown is overridable.
 TEST_F(SSLErrorAssistantTest, MITMSoftware_Overridable_NoInterstitial) {
   base::HistogramTester histograms;
 
   SetMITMSoftwareFeatureEnabled(true);
-  ResetErrorHandlerFromString(kOutdatedAntivirusCert,
+  ResetErrorHandlerFromString(kMisconfiguredFirewallCert,
                               net::CERT_STATUS_AUTHORITY_INVALID);
-
-  // Don't use the TestNoMITMSoftwareInterstitial helper here because it
-  // checks the histograms for a nonoverridable SSL error.
   InitMITMSoftwareList();
   error_handler()->StartHandlingError();
   base::RunLoop().RunUntilIdle();
@@ -1288,13 +1385,14 @@ TEST_F(SSLErrorAssistantTest, MITMSoftware_Overridable_NoInterstitial) {
 
 #else
 
+// Tests that the MITM software interstitial is not triggered on iOS, where it
+// is disabled by build.
 TEST_F(SSLErrorAssistantTest, MITMSoftware_DisabledByBuild_NoInterstitial) {
   SetMITMSoftwareFeatureEnabled(true);
 
-  ResetErrorHandlerFromString(kOutdatedAntivirusCert,
+  ResetErrorHandlerFromString(kMisconfiguredFirewallCert,
                               net::CERT_STATUS_AUTHORITY_INVALID);
-  delegate()->set_non_overridable_error();
-
+  InitMITMSoftwareList();
   TestNoMITMSoftwareInterstitial();
 }
 

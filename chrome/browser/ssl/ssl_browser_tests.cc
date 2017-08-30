@@ -5436,14 +5436,15 @@ class SSLUIMITMSoftwareTest : public CertVerifierBrowserTest {
   // Sets up an SSLErrorAssistantProto that lists |https_server_|'s default
   // certificate as a MITM software certificate.
   void SetUpMITMSoftwareCertList() {
-    const std::string cert_issuer =
-        https_server()->GetCertificate().get()->issuer().common_name;
     auto config_proto =
         base::MakeUnique<chrome_browser_ssl::SSLErrorAssistantConfig>();
     chrome_browser_ssl::MITMSoftware* mitm_software =
         config_proto->add_mitm_software();
     mitm_software->set_name(kTestMITMSoftwareName);
-    mitm_software->set_regex(cert_issuer);
+    mitm_software->set_issuer_common_name_regex(
+        https_server()->GetCertificate().get()->issuer().common_name);
+    mitm_software->set_issuer_organization_regex(
+        https_server()->GetCertificate().get()->issuer().organization_names[0]);
     SSLErrorHandler::SetErrorAssistantProto(std::move(config_proto));
   }
 
@@ -5493,8 +5494,7 @@ class SSLUIMITMSoftwareTest : public CertVerifierBrowserTest {
     SetUpMITMSoftwareCertList();
 
     // Navigate to an unsafe page on the server. Mock out the URL host name to
-    // equal the one set for HSTS. A normal SSL interstitial should be
-    // displayed since the MITMSoftwareInterstitial feature is disabled.
+    // equal the one set for HSTS.
     WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
     SSLInterstitialTimerObserver interstitial_timer_observer(tab);
     ui_test_utils::NavigateToURL(browser(), GetHSTSTestURL());
@@ -5504,8 +5504,7 @@ class SSLUIMITMSoftwareTest : public CertVerifierBrowserTest {
               interstitial_page->GetDelegateForTesting()->GetTypeForTesting());
     EXPECT_TRUE(interstitial_timer_observer.timer_started());
 
-    // Check that the histogram for a non-overridable SSL interstitial was
-    // recorded.
+    // Check that a MITM software interstitial was not recorded in histogram.
     histograms.ExpectTotalCount(SSLErrorHandler::GetHistogramNameForTesting(),
                                 2);
     histograms.ExpectBucketCount(SSLErrorHandler::GetHistogramNameForTesting(),
@@ -5555,11 +5554,12 @@ IN_PROC_BROWSER_TEST_F(SSLUIMITMSoftwareTest, EnabledWithFinch) {
   TestMITMSoftwareInterstitial();
 }
 
-// Tests that if a certificate issuer's common name does not match any of the
-// MITM software regexes served by the SSLErrorAssistantProto the MITM software
+// Tests that if a certificates matches the common name of a known MITM software
+// cert on the list but not the organization name, the MITM software
 // interstitial will not be displayed.
-IN_PROC_BROWSER_TEST_F(SSLUIMITMSoftwareTest,
-                       NonMatchingCertificate_NoMITMSoftwareInterstitial) {
+IN_PROC_BROWSER_TEST_F(
+    SSLUIMITMSoftwareTest,
+    CertificateCommonNameMatchOnly_NoMITMSoftwareInterstitial) {
   base::HistogramTester histograms;
 
   base::test::ScopedFeatureList scoped_feature_list;
@@ -5575,8 +5575,11 @@ IN_PROC_BROWSER_TEST_F(SSLUIMITMSoftwareTest,
       base::MakeUnique<chrome_browser_ssl::SSLErrorAssistantConfig>();
   chrome_browser_ssl::MITMSoftware* mitm_software =
       config_proto->add_mitm_software();
-  mitm_software->set_name("Non-Matching MITM Software");
-  mitm_software->set_regex("pattern-that-does-not-match-anything");
+  mitm_software->set_name(kTestMITMSoftwareName);
+  mitm_software->set_issuer_common_name_regex(
+      https_server()->GetCertificate().get()->issuer().common_name);
+  mitm_software->set_issuer_organization_regex(
+      "pattern-that-does-not-match-anything");
   SSLErrorHandler::SetErrorAssistantProto(std::move(config_proto));
 
   // Navigate to an unsafe page on the server. Mock out the URL host name to
@@ -5590,8 +5593,107 @@ IN_PROC_BROWSER_TEST_F(SSLUIMITMSoftwareTest,
             interstitial_page->GetDelegateForTesting()->GetTypeForTesting());
   EXPECT_TRUE(interstitial_timer_observer.timer_started());
 
-  // Check that the histograms for the MITM software interstitial were
-  // recorded.
+  // Check that a MITM software interstitial was not recorded in histogram.
+  histograms.ExpectTotalCount(SSLErrorHandler::GetHistogramNameForTesting(), 2);
+  histograms.ExpectBucketCount(SSLErrorHandler::GetHistogramNameForTesting(),
+                               SSLErrorHandler::HANDLE_ALL, 1);
+  histograms.ExpectBucketCount(
+      SSLErrorHandler::GetHistogramNameForTesting(),
+      SSLErrorHandler::SHOW_SSL_INTERSTITIAL_NONOVERRIDABLE, 1);
+  histograms.ExpectBucketCount(SSLErrorHandler::GetHistogramNameForTesting(),
+                               SSLErrorHandler::SHOW_MITM_SOFTWARE_INTERSTITIAL,
+                               0);
+}
+
+// Tests that if a certificates matches the organization name of a known MITM
+// software cert on the list but not the common name, the MITM software
+// interstitial will not be displayed.
+IN_PROC_BROWSER_TEST_F(
+    SSLUIMITMSoftwareTest,
+    CertificateOrganizationMatchOnly_NoMITMSoftwareInterstitial) {
+  base::HistogramTester histograms;
+
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitFromCommandLine(
+      "MITMSoftwareInterstitial" /* enabled */, std::string() /* disabled */);
+
+  SetUpCertVerifier(net::CERT_STATUS_AUTHORITY_INVALID);
+  ASSERT_TRUE(https_server()->Start());
+
+  // Set up an error assistant proto with a list of MITM software regexed that
+  // the certificate issued by our server won't match.
+  auto config_proto =
+      base::MakeUnique<chrome_browser_ssl::SSLErrorAssistantConfig>();
+  chrome_browser_ssl::MITMSoftware* mitm_software =
+      config_proto->add_mitm_software();
+  mitm_software->set_name(kTestMITMSoftwareName);
+  mitm_software->set_issuer_common_name_regex(
+      "pattern-that-does-not-match-anything");
+  mitm_software->set_issuer_organization_regex(
+      https_server()->GetCertificate().get()->issuer().organization_names[0]);
+  SSLErrorHandler::SetErrorAssistantProto(std::move(config_proto));
+
+  // Navigate to an unsafe page on the server. Mock out the URL host name to
+  // equal the one set for HSTS.
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  SSLInterstitialTimerObserver interstitial_timer_observer(tab);
+  ui_test_utils::NavigateToURL(browser(), GetHSTSTestURL());
+  content::WaitForInterstitialAttach(tab);
+  InterstitialPage* interstitial_page = tab->GetInterstitialPage();
+  ASSERT_EQ(SSLBlockingPage::kTypeForTesting,
+            interstitial_page->GetDelegateForTesting()->GetTypeForTesting());
+  EXPECT_TRUE(interstitial_timer_observer.timer_started());
+
+  // Check that a MITM software interstitial was not recorded in histogram.
+  histograms.ExpectTotalCount(SSLErrorHandler::GetHistogramNameForTesting(), 2);
+  histograms.ExpectBucketCount(SSLErrorHandler::GetHistogramNameForTesting(),
+                               SSLErrorHandler::HANDLE_ALL, 1);
+  histograms.ExpectBucketCount(
+      SSLErrorHandler::GetHistogramNameForTesting(),
+      SSLErrorHandler::SHOW_SSL_INTERSTITIAL_NONOVERRIDABLE, 1);
+  histograms.ExpectBucketCount(SSLErrorHandler::GetHistogramNameForTesting(),
+                               SSLErrorHandler::SHOW_MITM_SOFTWARE_INTERSTITIAL,
+                               0);
+}
+
+// Tests that if the certificate does not match any entry on the list of known
+// MITM software, the MITM software interstitial will not be displayed.
+IN_PROC_BROWSER_TEST_F(SSLUIMITMSoftwareTest,
+                       NonMatchingCertificate_NoMITMSoftwareInterstitial) {
+  base::HistogramTester histograms;
+
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitFromCommandLine(
+      "MITMSoftwareInterstitial" /* enabled */, std::string() /* disabled */);
+
+  SetUpCertVerifier(net::CERT_STATUS_AUTHORITY_INVALID);
+  ASSERT_TRUE(https_server()->Start());
+
+  // Set up an error assistant proto with a list of MITM software regexes that
+  // the certificate issued by our server won't match.
+  auto config_proto =
+      base::MakeUnique<chrome_browser_ssl::SSLErrorAssistantConfig>();
+  chrome_browser_ssl::MITMSoftware* mitm_software =
+      config_proto->add_mitm_software();
+  mitm_software->set_name("Non-Matching MITM Software");
+  mitm_software->set_issuer_common_name_regex(
+      "pattern-that-does-not-match-anything");
+  mitm_software->set_issuer_organization_regex(
+      "pattern-that-does-not-match-anything");
+  SSLErrorHandler::SetErrorAssistantProto(std::move(config_proto));
+
+  // Navigate to an unsafe page on the server. Mock out the URL host name to
+  // equal the one set for HSTS.
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  SSLInterstitialTimerObserver interstitial_timer_observer(tab);
+  ui_test_utils::NavigateToURL(browser(), GetHSTSTestURL());
+  content::WaitForInterstitialAttach(tab);
+  InterstitialPage* interstitial_page = tab->GetInterstitialPage();
+  ASSERT_EQ(SSLBlockingPage::kTypeForTesting,
+            interstitial_page->GetDelegateForTesting()->GetTypeForTesting());
+  EXPECT_TRUE(interstitial_timer_observer.timer_started());
+
+  // Check that a MITM software interstitial was not recorded in histogram.
   histograms.ExpectTotalCount(SSLErrorHandler::GetHistogramNameForTesting(), 2);
   histograms.ExpectBucketCount(SSLErrorHandler::GetHistogramNameForTesting(),
                                SSLErrorHandler::HANDLE_ALL, 1);
