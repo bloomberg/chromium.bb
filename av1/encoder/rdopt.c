@@ -1702,9 +1702,9 @@ static unsigned pixel_dist(const AV1_COMP *const cpi, const MACROBLOCK *x,
 
 #if CONFIG_DIST_8X8
   if (x->using_dist_8x8 && plane == 0 && txb_cols >= 8 && txb_rows >= 8)
-    return av1_dist_8x8(cpi, x, src, src_stride, dst, dst_stride, tx_bsize,
-                        txb_cols, txb_rows, visible_cols, visible_rows,
-                        x->qindex);
+    return (unsigned)av1_dist_8x8(cpi, x, src, src_stride, dst, dst_stride,
+                                  tx_bsize, txb_cols, txb_rows, visible_cols,
+                                  visible_rows, x->qindex);
 #endif  // CONFIG_DIST_8X8
 
 #if CONFIG_RECT_TX_EXT && (CONFIG_EXT_TX || CONFIG_VAR_TX)
@@ -2165,10 +2165,10 @@ static void dist_8x8_sub8x8_txfm_rd(const AV1_COMP *const cpi, MACROBLOCK *x,
   }
 #endif  // CONFIG_HIGHBITDEPTH
 
-  tmp1 = av1_dist_8x8(cpi, x, src, src_stride, pred8, bw, bsize, bw, bh, bw, bh,
-                      qindex);
-  tmp2 = av1_dist_8x8(cpi, x, src, src_stride, dst, dst_stride, bsize, bw, bh,
-                      bw, bh, qindex);
+  tmp1 = (unsigned)av1_dist_8x8(cpi, x, src, src_stride, pred8, bw, bsize, bw,
+                                bh, bw, bh, qindex);
+  tmp2 = (unsigned)av1_dist_8x8(cpi, x, src, src_stride, dst, dst_stride, bsize,
+                                bw, bh, bw, bh, qindex);
 
   if (!is_inter_block(mbmi)) {
     args->rd_stats.sse = (int64_t)tmp1 * 16;
