@@ -8191,7 +8191,7 @@
       'name': 'ForceBrowserSignin',
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.win:61-', 'chrome.linux:61-', 'android:63-'],
+      'supported_on': ['chrome.win:62-', 'chrome.linux:62-', 'android:63-'],
       'features': {
         'dynamic_refresh': False,
         'per_profile': False,
