@@ -31,6 +31,7 @@
 #include "components/offline_pages/core/background/scheduler.h"
 #include "components/offline_pages/core/downloads/download_notifying_observer.h"
 #include "components/offline_pages/core/offline_page_feature.h"
+#include "components/offline_pages/core/offline_pages_ukm_reporter.h"
 #include "net/nqe/network_quality_estimator.h"
 
 namespace offline_pages {
@@ -86,9 +87,11 @@ KeyedService* RequestCoordinatorFactory::BuildServiceInstanceFor(
   net::NetworkQualityEstimator::NetworkQualityProvider*
       network_quality_estimator =
           UINetworkQualityEstimatorServiceFactory::GetForProfile(profile);
+  std::unique_ptr<OfflinePagesUkmReporter> ukm_reporter(
+      new OfflinePagesUkmReporter());
   RequestCoordinator* request_coordinator = new RequestCoordinator(
       std::move(policy), std::move(offliner), std::move(queue),
-      std::move(scheduler), network_quality_estimator);
+      std::move(scheduler), network_quality_estimator, std::move(ukm_reporter));
 
   DownloadNotifyingObserver::CreateAndStartObserving(
       request_coordinator,

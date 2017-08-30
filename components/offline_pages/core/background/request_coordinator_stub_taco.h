@@ -40,6 +40,8 @@ class RequestCoordinatorStubTaco {
   void SetNetworkQualityProvider(
       std::unique_ptr<net::NetworkQualityEstimator::NetworkQualityProvider>
       network_quality_provider);
+  void SetOfflinePagesUkmReporter(
+      std::unique_ptr<OfflinePagesUkmReporter> ukm_reporter);
 
   // Creates and caches an instance of RequestCoordinator, using default or
   // overridden stub dependencies.
@@ -61,6 +63,7 @@ class RequestCoordinatorStubTaco {
   std::unique_ptr<Scheduler> scheduler_;
   std::unique_ptr<net::NetworkQualityEstimator::NetworkQualityProvider>
       network_quality_provider_;
+  std::unique_ptr<OfflinePagesUkmReporter> ukm_reporter_;
 
   std::unique_ptr<RequestCoordinator> request_coordinator_;
 };

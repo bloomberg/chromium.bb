@@ -21,6 +21,7 @@
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/offline_pages/core/offline_page_item.h"
 #include "components/offline_pages/core/offline_page_model.h"
+#include "components/offline_pages/core/offline_pages_ukm_reporter.h"
 
 namespace offline_pages {
 
@@ -216,7 +217,8 @@ RequestCoordinator::RequestCoordinator(
     std::unique_ptr<RequestQueue> queue,
     std::unique_ptr<Scheduler> scheduler,
     net::NetworkQualityEstimator::NetworkQualityProvider*
-        network_quality_estimator)
+        network_quality_estimator,
+    std::unique_ptr<OfflinePagesUkmReporter> ukm_reporter)
     : is_low_end_device_(base::SysInfo::IsLowEndDevice()),
       state_(RequestCoordinatorState::IDLE),
       processing_state_(ProcessingWindowState::STOPPED),
@@ -227,6 +229,7 @@ RequestCoordinator::RequestCoordinator(
       scheduler_(std::move(scheduler)),
       policy_controller_(new ClientPolicyController()),
       network_quality_estimator_(network_quality_estimator),
+      ukm_reporter_(std::move(ukm_reporter)),
       network_quality_at_request_start_(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
       active_request_id_(0),
       last_offlining_status_(Offliner::RequestStatus::UNKNOWN),
@@ -286,6 +289,14 @@ int64_t RequestCoordinator::SavePageLater(
     RecordSavePageLaterNetworkQuality(
         save_page_later_params.client_id,
         network_quality_estimator_->GetEffectiveConnectionType());
+  }
+
+  // Record UKM for this page offlining attempt.
+  if (ukm_reporter_) {
+    ukm_reporter_->ReportUrlOfflineRequest(
+        save_page_later_params.url,
+        save_page_later_params.availability ==
+            RequestAvailability::DISABLED_FOR_OFFLINER);
   }
 
   return id;
