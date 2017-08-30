@@ -1,6 +1,7 @@
 Test that page performance metrics are retrieved.
 Received metrics:
 Received metrics:
+	Timestamp
 	AudioHandlerCount
 	DocumentCount
 	FrameCount
@@ -22,7 +23,9 @@ Received metrics:
 	TaskDuration
 	FirstMeaningfulPaint
 	DomContentLoaded
+	NavigationStart
 Received metrics:
+	Timestamp
 	AudioHandlerCount
 	DocumentCount
 	FrameCount
@@ -44,5 +47,6 @@ Received metrics:
 	TaskDuration
 	FirstMeaningfulPaint
 	DomContentLoaded
+	NavigationStart
 Received metrics:
 
