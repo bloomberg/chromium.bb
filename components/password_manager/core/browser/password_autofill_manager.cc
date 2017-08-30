@@ -34,6 +34,10 @@
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/build_info.h"
+#endif
+
 namespace password_manager {
 
 namespace {
@@ -129,6 +133,15 @@ void GetSuggestions(const autofill::PasswordFormFillData& fill_data,
                 return a.match < b.match;
               });
   }
+}
+
+bool IsPreLollipopAndroid() {
+#if defined(OS_ANDROID)
+  return (base::android::BuildInfo::GetInstance()->sdk_int() <
+          base::android::SDK_VERSION_LOLLIPOP);
+#else
+  return false;
+#endif
 }
 
 }  // namespace
@@ -273,16 +286,18 @@ void PasswordAutofillManager::OnShowPasswordSuggestions(
     suggestions.back().frontend_id = autofill::POPUP_ITEM_ID_SEPARATOR;
 #endif
 
-    autofill::Suggestion all_saved_passwords(
-        l10n_util::GetStringUTF8(IDS_AUTOFILL_SHOW_ALL_SAVED_FALLBACK),
-        std::string(), std::string(),
-        autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY);
-    suggestions.push_back(all_saved_passwords);
+    if (!IsPreLollipopAndroid()) {
+      autofill::Suggestion all_saved_passwords(
+          l10n_util::GetStringUTF8(IDS_AUTOFILL_SHOW_ALL_SAVED_FALLBACK),
+          std::string(), std::string(),
+          autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY);
+      suggestions.push_back(all_saved_passwords);
 
-    show_all_saved_passwords_shown_context_ =
-        metrics_util::SHOW_ALL_SAVED_PASSWORDS_CONTEXT_PASSWORD;
-    metrics_util::LogContextOfShowAllSavedPasswordsShown(
-        show_all_saved_passwords_shown_context_);
+      show_all_saved_passwords_shown_context_ =
+          metrics_util::SHOW_ALL_SAVED_PASSWORDS_CONTEXT_PASSWORD;
+      metrics_util::LogContextOfShowAllSavedPasswordsShown(
+          show_all_saved_passwords_shown_context_);
+    }
   }
 
   autofill_client_->ShowAutofillPopup(bounds,
@@ -320,7 +335,7 @@ void PasswordAutofillManager::OnShowManualFallbackSuggestion(
   // CroS SimpleWebviewDialog used for the captive portal dialog is a special
   // case because it doesn't instantiate many helper classes. |autofill_client_|
   // is NULL too.
-  if (!autofill_client_)
+  if (!autofill_client_ || IsPreLollipopAndroid())
     return;
   if (!password_client_ ||
       !password_client_->IsFillingFallbackEnabledForCurrentPage())
