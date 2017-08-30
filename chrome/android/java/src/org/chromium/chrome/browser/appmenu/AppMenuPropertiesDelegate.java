@@ -15,6 +15,7 @@ import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnClickListener;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CommandLine;
@@ -66,6 +67,22 @@ public class AppMenuPropertiesDelegate {
     }
 
     /**
+     * @return Whether the app menu for a web page should be shown.
+     */
+    public boolean shouldShowPageMenu() {
+        boolean isOverview = mActivity.isInOverviewMode();
+
+        if (mActivity.isTablet()) {
+            boolean hasTabs = mActivity.getCurrentTabModel().getCount() != 0;
+            return hasTabs && !isOverview;
+        } else {
+            boolean isBottomSheetNtpMenu = mActivity.getBottomSheet() != null
+                    && mActivity.getBottomSheet().isShowingNewTab();
+            return !isBottomSheetNtpMenu && !isOverview;
+        }
+    }
+
+    /**
      * Allows the delegate to show and hide items before the App Menu is shown. It is called every
      * time the menu is shown. This assumes that the provided menu contains all the items expected
      * in the application menu (i.e. that the main menu has been inflated into it).
@@ -73,7 +90,7 @@ public class AppMenuPropertiesDelegate {
      */
     public void prepareMenu(Menu menu) {
         // Exactly one of these will be true, depending on the type of menu showing.
-        boolean isPageMenu;
+        boolean isPageMenu = shouldShowPageMenu();
         boolean isOverviewMenu;
         boolean isTabletEmptyModeMenu;
         boolean isBottomSheetNtpMenu =
@@ -86,11 +103,9 @@ public class AppMenuPropertiesDelegate {
         // Determine which menu to show.
         if (mActivity.isTablet()) {
             boolean hasTabs = mActivity.getCurrentTabModel().getCount() != 0;
-            isPageMenu = hasTabs && !isOverview;
             isOverviewMenu = hasTabs && isOverview;
             isTabletEmptyModeMenu = !hasTabs;
         } else {
-            isPageMenu = !isBottomSheetNtpMenu && !isOverview;
             isOverviewMenu = !isBottomSheetNtpMenu && isOverview;
             isTabletEmptyModeMenu = false;
         }
@@ -334,10 +349,30 @@ public class AppMenuPropertiesDelegate {
     }
 
     /**
-     * @return Resource layout id for the footer if there should be one. O otherwise.
+     * @return Resource layout id for the footer if there should be one. O otherwise. The footer
+     *         is shown at a fixed position at the bottom the app menu. It is always visible and
+     *         overlays other app menu items if necessary.
      */
     public int getFooterResourceId() {
         return 0;
+    }
+
+    /**
+     * @return Resource layout id for the header if there should be one. O otherwise. The header
+     *         will be displayed as the first item in the app menu. It will be scrolled off as the
+     *         menu scrolls.
+     */
+    public int getHeaderResourceId() {
+        return 0;
+    }
+
+    /**
+     * @return The {@link OnClickListener} to notify when the header view is clicked. May be null if
+     *         nothing should happen when the header is clicked.
+     */
+    @Nullable
+    public OnClickListener getHeaderOnClickListener() {
+        return null;
     }
 
     /**

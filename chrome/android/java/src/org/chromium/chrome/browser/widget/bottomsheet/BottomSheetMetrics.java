@@ -204,4 +204,11 @@ public class BottomSheetMetrics extends EmptyBottomSheetObserver {
     public void recordNativeNewTabPageShown() {
         RecordUserAction.record("Android.ChromeHome.NativeNTPShown");
     }
+
+    /**
+     * Records that the user tapped the app menu item that triggers the in-product help bubble.
+     */
+    public void recordInProductHelpMenuItemClicked() {
+        RecordUserAction.record("Android.ChromeHome.IPHMenuItemClicked");
+    }
 }
