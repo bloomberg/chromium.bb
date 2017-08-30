@@ -102,6 +102,7 @@ class ASH_EXPORT WallpaperController
 
   // ShellObserver:
   void OnRootWindowAdded(aura::Window* root_window) override;
+  void OnLocalStatePrefServiceInitialized(PrefService* pref_service) override;
 
   // SessionObserver:
   void OnSessionStateChanged(session_manager::SessionState state) override;

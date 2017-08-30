@@ -600,9 +600,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   // Used to provide better error messages for Shell::Get() under mash.
   static void SetIsBrowserProcessWithMash();
 
-  // Used when Chrome owns the pref service (not mash).
-  void SetLocalStatePrefService(PrefService* local_state);
-
   void NotifyAppListVisibilityChanged(bool visible, aura::Window* root_window);
 
   // TODO(kaznacheev) Move voice interaction related methods to a separate
@@ -620,6 +617,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   FRIEND_TEST_ALL_PREFIXES(WindowManagerTest, MouseEventCursors);
   FRIEND_TEST_ALL_PREFIXES(WindowManagerTest, TransformActivate);
   friend class AcceleratorControllerTest;
+  friend class AshTestHelper;
   friend class RootWindowController;
   friend class ScopedRootWindowForNewWindows;
   friend class ShellTestApi;
@@ -722,13 +720,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<::wm::VisibilityController> visibility_controller_;
   std::unique_ptr<::wm::WindowModalityController> window_modality_controller_;
   std::unique_ptr<app_list::AppList> app_list_;
-
-  // Used in non-mash. Owned by chrome.
-  PrefService* local_state_non_mash_ = nullptr;
-
-  // Used in mash.
-  std::unique_ptr<PrefService> local_state_mash_;
-
+  std::unique_ptr<PrefService> local_state_;
   std::unique_ptr<views::corewm::TooltipController> tooltip_controller_;
   LinkHandlerModelFactory* link_handler_model_factory_;
   std::unique_ptr<PowerButtonController> power_button_controller_;

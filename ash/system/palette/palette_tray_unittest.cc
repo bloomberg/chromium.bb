@@ -23,7 +23,7 @@
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "chromeos/chromeos_switches.h"
-#include "components/prefs/testing_pref_service.h"
+#include "components/prefs/pref_service.h"
 #include "components/session_manager/session_manager_types.h"
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/touchscreen_device.h"
@@ -42,11 +42,9 @@ class PaletteTrayTest : public AshTestBase {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kAshEnablePaletteOnAllDisplays);
 
-    AshTestBase::SetUp();
-
     palette_utils::SetHasStylusInputForTesting();
 
-    Shell::RegisterLocalStatePrefs(pref_service_.registry());
+    AshTestBase::SetUp();
 
     palette_tray_ =
         StatusAreaWidgetTestHelper::GetStatusAreaWidget()->palette_tray();
@@ -59,7 +57,6 @@ class PaletteTrayTest : public AshTestBase {
     // from the palette delegate. (It was initialized without the delegate in
     // AshTestBase::SetUp()).
     palette_tray_->Initialize();
-    palette_tray_->OnLocalStatePrefServiceInitialized(&pref_service_);
   }
 
   // Performs a tap on the palette tray button.
@@ -74,8 +71,11 @@ class PaletteTrayTest : public AshTestBase {
     return static_cast<TestPaletteDelegate*>(Shell::Get()->palette_delegate());
   }
 
+  PrefService* pref_service() {
+    return Shell::Get()->GetLocalStatePrefService();
+  }
+
   PaletteTray* palette_tray_ = nullptr;  // not owned
-  TestingPrefServiceSimple pref_service_;
 
   std::unique_ptr<PaletteTray::TestApi> test_api_;
 
@@ -101,7 +101,7 @@ TEST_F(PaletteTrayTest, PaletteTrayStylusWatcherAlive) {
 // should become visible after seeing a stylus event.
 TEST_F(PaletteTrayTest, PaletteTrayVisibleAfterStylusSeen) {
   ASSERT_FALSE(palette_tray_->visible());
-  ASSERT_FALSE(pref_service_.GetBoolean(prefs::kHasSeenStylus));
+  ASSERT_FALSE(pref_service()->GetBoolean(prefs::kHasSeenStylus));
   ASSERT_TRUE(test_api_->IsStylusWatcherActive());
 
   // Send a stylus event.
@@ -120,7 +120,7 @@ TEST_F(PaletteTrayTest, PaletteTrayVisibleAfterStylusSeen) {
 // visible.
 TEST_F(PaletteTrayTest, StylusSeenPrefInitiallySet) {
   ASSERT_FALSE(palette_tray_->visible());
-  pref_service_.SetBoolean(prefs::kHasSeenStylus, true);
+  pref_service()->SetBoolean(prefs::kHasSeenStylus, true);
 
   EXPECT_TRUE(palette_tray_->visible());
   EXPECT_FALSE(test_api_->IsStylusWatcherActive());

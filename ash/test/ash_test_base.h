@@ -167,6 +167,7 @@ class AshTestBase : public testing::Test,
   static display::Display::Rotation GetCurrentInternalDisplayRotation();
 
   void set_start_session(bool start_session) { start_session_ = start_session; }
+  void disable_provide_local_state() { provide_local_state_ = false; }
 
   AshTestHelper* ash_test_helper() { return ash_test_helper_.get(); }
 
@@ -221,6 +222,9 @@ class AshTestBase : public testing::Test,
   bool teardown_called_;
   // |SetUp()| doesn't activate session if this is set to false.
   bool start_session_;
+  // |SetUp()| doesn't inject local-state PrefService into Shell if this is
+  // set to false.
+  bool provide_local_state_ = true;
   std::unique_ptr<AshTestEnvironment> ash_test_environment_;
   std::unique_ptr<AshTestHelper> ash_test_helper_;
   std::unique_ptr<ui::test::EventGenerator> event_generator_;

@@ -70,7 +70,9 @@ class AshTestHelper {
 
   // Creates the ash::Shell and performs associated initialization.  Set
   // |start_session| to true if the user should log in before the test is run.
-  void SetUp(bool start_session);
+  // Set |provide_local_state| to true to inject local-state PrefService into
+  // the Shell before the test is run.
+  void SetUp(bool start_session, bool provide_local_state = true);
 
   // Destroys the ash::Shell and performs associated cleanup.
   void TearDown();
