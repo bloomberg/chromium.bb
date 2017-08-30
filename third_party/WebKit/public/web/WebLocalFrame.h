@@ -48,6 +48,7 @@ class WebSecurityOrigin;
 class WebScriptExecutionCallback;
 class WebSharedWorkerRepositoryClient;
 class WebSpellCheckPanelHostClient;
+class WebString;
 class WebTextCheckClient;
 class WebURL;
 class WebURLLoader;
@@ -150,6 +151,12 @@ class WebLocalFrame : public WebFrame {
   virtual WebVector<WebIconURL> IconURLs(int icon_types_mask) const = 0;
 
   virtual WebDocument GetDocument() const = 0;
+
+  // The name of this frame. If no name is given, empty string is returned.
+  virtual WebString AssignedName() const = 0;
+
+  // Sets the name of this frame.
+  virtual void SetName(const WebString&) = 0;
 
   // Hierarchy ----------------------------------------------------------
 

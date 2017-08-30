@@ -37,7 +37,15 @@ class CORE_EXPORT FrameTree final {
   ~FrameTree();
 
   const AtomicString& GetName() const;
-  void SetName(const AtomicString&);
+
+  enum ReplicationPolicy {
+    // Does not propagate name changes beyond this FrameTree object.
+    kDoNotReplicate,
+
+    // Kicks-off propagation of name changes to other renderers.
+    kReplicate,
+  };
+  void SetName(const AtomicString&, ReplicationPolicy = kDoNotReplicate);
 
   // TODO(andypaicu): remove this once we have gathered the data
   void ExperimentalSetNulledName();
