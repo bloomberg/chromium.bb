@@ -128,7 +128,7 @@ const int Predictor::kMaxSpeculativeResolveQueueDelayMs =
     Predictor::kMaxSpeculativeParallelResolves;
 
 // The default value of the credentials flag when preconnecting.
-static bool kAllowCredentialsOnPreconnectByDefault = true;
+static constexpr bool kAllowCredentialsOnPreconnectByDefault = true;
 
 static int g_max_queueing_delay_ms =
     Predictor::kMaxSpeculativeResolveQueueDelayMs;
