@@ -31,6 +31,8 @@ import java.util.concurrent.TimeoutException;
 @RunWith(BaseJUnit4ClassRunner.class)
 @RetryOnFailure
 public class ContentViewPopupZoomerTest {
+    private static final String TARGET_NODE_ID = "target";
+
     @Rule
     public ContentShellActivityTestRule mActivityTestRule = new ContentShellActivityTestRule();
 
@@ -73,19 +75,17 @@ public class ContentViewPopupZoomerTest {
         }
     }
 
-    private String generateTestUrl(int totalUrls, int targetIdAt, String targetId) {
-        StringBuilder testUrl = new StringBuilder();
+    /**
+     * Creates a webpage that has a couple links next to one another with a zero-width node between
+     * them. Clicking on the zero-width node should trigger the popup zoomer to appear.
+     */
+    private String generateTestUrl() {
+        final StringBuilder testUrl = new StringBuilder();
         testUrl.append("<html><body>");
-        for (int i = 0; i < totalUrls; i++) {
-            boolean isTargeted = i == targetIdAt;
-            testUrl.append("<a href=\"data:text/html;utf-8,<html><head><script>"
-                    + "function doesItWork() { return 'yes'; }</script></head></html>\""
-                    + (isTargeted ? (" id=\"" + targetId + "\"") : "") + ">"
-                    + "<small><sup>"
-                    + (isTargeted ? "<b>" : "") + i + (isTargeted ? "</b>" : "")
-                    + "</sup></small></a>");
-        }
-        testUrl.append("</small></div></body></html>");
+        testUrl.append("<a href=\"javascript:void(0);\">A</a>");
+        testUrl.append("<a id=\"" + TARGET_NODE_ID + "\"></a>");
+        testUrl.append("<a href=\"javascript:void(0);\">Z</a>");
+        testUrl.append("</body></html>");
         return UrlUtils.encodeHtmlDataUri(testUrl.toString());
     }
 
@@ -99,7 +99,7 @@ public class ContentViewPopupZoomerTest {
     @MediumTest
     @Feature({"Browser"})
     public void testPopupZoomerShowsUp() throws InterruptedException, TimeoutException {
-        mActivityTestRule.launchContentShellWithUrl(generateTestUrl(100, 15, "clickme"));
+        mActivityTestRule.launchContentShellWithUrl(generateTestUrl());
         mActivityTestRule.waitForActiveShellToBeDoneLoading();
 
         final ContentViewCore viewCore = mActivityTestRule.getContentViewCore();
@@ -109,7 +109,7 @@ public class ContentViewPopupZoomerTest {
         CriteriaHelper.pollInstrumentationThread(new PopupShowingCriteria(view, false));
 
         // Once clicked, the popup should show up.
-        DOMUtils.clickNode(viewCore, "clickme");
+        DOMUtils.clickNode(viewCore, TARGET_NODE_ID);
         CriteriaHelper.pollInstrumentationThread(new PopupShowingCriteria(view, true));
 
         // The shown popup should have valid dimensions eventually.
@@ -124,14 +124,14 @@ public class ContentViewPopupZoomerTest {
     @Feature({"Browser"})
     @RetryOnFailure
     public void testBackKeyDismissesPopupZoomer() throws InterruptedException, TimeoutException {
-        mActivityTestRule.launchContentShellWithUrl(generateTestUrl(100, 15, "clickme"));
+        mActivityTestRule.launchContentShellWithUrl(generateTestUrl());
         mActivityTestRule.waitForActiveShellToBeDoneLoading();
 
         final ContentViewCore viewCore = mActivityTestRule.getContentViewCore();
         final ViewGroup view = viewCore.getContainerView();
 
         CriteriaHelper.pollInstrumentationThread(new PopupShowingCriteria(view, false));
-        DOMUtils.clickNode(viewCore, "clickme");
+        DOMUtils.clickNode(viewCore, TARGET_NODE_ID);
         CriteriaHelper.pollInstrumentationThread(new PopupShowingCriteria(view, true));
         InstrumentationRegistry.getInstrumentation().sendKeyDownUpSync(KeyEvent.KEYCODE_BACK);
         // When device key is pressed, popup zoomer should hide if already showing.
