@@ -13,7 +13,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
-#include "base/json/json_writer.h"
 #include "base/mac/bind_objc_block.h"
 #include "base/mac/foundation_util.h"
 #include "base/macros.h"
@@ -23,9 +22,9 @@
 #include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
+#include "components/cronet/cronet_prefs_manager.h"
 #include "components/cronet/histogram_manager.h"
 #include "components/cronet/ios/version.h"
-#include "components/prefs/json_pref_store.h"
 #include "components/prefs/pref_filter.h"
 #include "ios/net/cookies/cookie_store_ios.h"
 #include "ios/web/public/global_state/ios_global_state.h"
@@ -111,12 +110,6 @@ void CronetEnvironment::PostToNetworkThread(
     const tracked_objects::Location& from_here,
     const base::Closure& task) {
   GetNetworkThreadTaskRunner()->PostTask(from_here, task);
-}
-
-void CronetEnvironment::PostToFileUserBlockingThread(
-    const tracked_objects::Location& from_here,
-    const base::Closure& task) {
-  file_user_blocking_thread_->task_runner()->PostTask(from_here, task);
 }
 
 net::URLRequestContext* CronetEnvironment::GetURLRequestContext() const {
@@ -233,8 +226,8 @@ CronetEnvironment::CronetEnvironment(const std::string& user_agent,
 
 void CronetEnvironment::Start() {
   // Threads setup.
-  network_cache_thread_.reset(new base::Thread("Chrome Network Cache Thread"));
-  network_cache_thread_->StartWithOptions(
+  file_thread_.reset(new base::Thread("Chrome File Thread"));
+  file_thread_->StartWithOptions(
       base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
   // Fetching the task_runner will create the shared thread if necessary.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
@@ -244,10 +237,6 @@ void CronetEnvironment::Start() {
     network_io_thread_->StartWithOptions(
         base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
   }
-  file_user_blocking_thread_.reset(
-      new base::Thread("Chrome File User Blocking Thread"));
-  file_user_blocking_thread_->StartWithOptions(
-      base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
 
   main_context_getter_ = new CronetURLRequestContextGetter(
       this, CronetEnvironment::GetNetworkThreadTaskRunner());
@@ -257,7 +246,7 @@ void CronetEnvironment::Start() {
                                  base::Unretained(this)));
 }
 
-CronetEnvironment::~CronetEnvironment() {
+void CronetEnvironment::PrepareForDestroyOnNetworkThread() {
   // TODO(lilyhoughton) make unregistering of this work.
   // net::HTTPProtocolHandlerDelegate::SetInstance(nullptr);
 
@@ -267,12 +256,29 @@ CronetEnvironment::~CronetEnvironment() {
   // if (ts)
   //  ts->Shutdown();
 
+  if (cronet_prefs_manager_) {
+    cronet_prefs_manager_->PrepareForShutdown();
+  }
+
+  // cronet_prefs_manager_ should be deleted on the network thread.
+  cronet_prefs_manager_.reset(nullptr);
+
+  file_thread_.reset(nullptr);
+
   // TODO(lilyhoughton) this should be smarter about making sure there are no
   // pending requests, etc.
+  main_context_.reset(nullptr);
+}
 
+CronetEnvironment::~CronetEnvironment() {
+  PostToNetworkThread(
+      FROM_HERE,
+      base::Bind(&CronetEnvironment::PrepareForDestroyOnNetworkThread,
+                 base::Unretained(this)));
   if (network_io_thread_) {
-    network_io_thread_->task_runner().get()->DeleteSoon(
-        FROM_HERE, main_context_.release());
+    // Deleting a thread blocks the current thread and waits until all pending
+    // tasks are completed.
+    network_io_thread_.reset(nullptr);
   }
 }
 
@@ -290,17 +296,17 @@ void CronetEnvironment::InitializeOnNetworkThread() {
     user_agent_ = web::BuildUserAgentFromProduct(user_agent_);
 
   // Cache
-  base::FilePath cache_path;
-  if (!PathService::Get(base::DIR_CACHE, &cache_path))
+  base::FilePath storage_path;
+  if (!PathService::Get(base::DIR_CACHE, &storage_path))
     return;
-  cache_path = cache_path.Append(FILE_PATH_LITERAL("cronet"));
+  storage_path = storage_path.Append(FILE_PATH_LITERAL("cronet"));
 
   URLRequestContextConfigBuilder context_config_builder;
   context_config_builder.enable_quic = quic_enabled_;   // Enable QUIC.
   context_config_builder.enable_spdy = http2_enabled_;  // Enable HTTP/2.
   context_config_builder.http_cache = http_cache_;      // Set HTTP cache
   context_config_builder.storage_path =
-      cache_path.value();  // Storage path for http cache and cookie storage.
+      storage_path.value();  // Storage path for http cache and prefs storage.
   context_config_builder.user_agent =
       user_agent_;  // User-Agent request header field.
   context_config_builder.experimental_options =
@@ -328,6 +334,13 @@ void CronetEnvironment::InitializeOnNetworkThread() {
       new net::MappedHostResolver(
           net::HostResolver::CreateDefaultResolver(nullptr)));
 
+  if (!config->storage_path.empty()) {
+    cronet_prefs_manager_ = std::make_unique<CronetPrefsManager>(
+        config->storage_path, GetNetworkThreadTaskRunner(),
+        file_thread_->task_runner(), false /* nqe */, false /* host_cache */,
+        net_log_.get(), &context_builder);
+  }
+
   context_builder.set_host_resolver(std::move(mapped_host_resolver));
 
   // TODO(690969): This behavior matches previous behavior of CookieStoreIOS in
@@ -340,8 +353,8 @@ void CronetEnvironment::InitializeOnNetworkThread() {
           [NSHTTPCookieStorage sharedHTTPCookieStorage]);
   context_builder.SetCookieAndChannelIdStores(std::move(cookie_store), nullptr);
 
-  std::unique_ptr<net::HttpServerProperties> http_server_properties(
-      new net::HttpServerPropertiesImpl());
+  context_builder.set_enable_brotli(brotli_enabled_);
+  main_context_ = context_builder.Build();
 
   for (const auto& quic_hint : quic_hints_) {
     url::CanonHostInfo host_info;
@@ -357,15 +370,10 @@ void CronetEnvironment::InitializeOnNetworkThread() {
 
     url::SchemeHostPort quic_hint_server("https", quic_hint.host(),
                                          quic_hint.port());
-    http_server_properties->SetQuicAlternativeService(
+    main_context_->http_server_properties()->SetQuicAlternativeService(
         quic_hint_server, alternative_service, base::Time::Max(),
         net::QuicVersionVector());
   }
-
-  context_builder.SetHttpServerProperties(std::move(http_server_properties));
-
-  context_builder.set_enable_brotli(brotli_enabled_);
-  main_context_ = context_builder.Build();
 
   main_context_->transport_security_state()
       ->SetEnablePublicKeyPinningBypassForLocalTrustAnchors(
@@ -420,6 +428,11 @@ std::string CronetEnvironment::getDefaultQuicUserAgentId() const {
   return base::SysNSStringToUTF8([[NSBundle mainBundle]
              objectForInfoDictionaryKey:@"CFBundleDisplayName"]) +
          " Cronet/" + CRONET_VERSION;
+}
+
+base::SingleThreadTaskRunner* CronetEnvironment::GetFileThreadRunnerForTesting()
+    const {
+  return file_thread_->task_runner().get();
 }
 
 }  // namespace cronet
