@@ -1539,7 +1539,8 @@ bool SimpleSynchronousEntry::ScanSparseFile(int32_t* out_sparse_data_size) {
     return false;
   }
 
-  if (header.version != kSimpleVersion) {
+  if (header.version < kLastCompatSparseVersion ||
+      header.version > kSimpleVersion) {
     DLOG(WARNING) << "Sparse file unreadable version.";
     return false;
   }
