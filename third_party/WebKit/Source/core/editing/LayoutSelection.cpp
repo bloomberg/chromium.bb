@@ -641,6 +641,11 @@ void LayoutSelection::Commit() {
     return;
   has_pending_selection_ = false;
 
+  DCHECK(!frame_selection_->GetDocument().NeedsLayoutTreeUpdate());
+  DCHECK_GE(frame_selection_->GetDocument().Lifecycle().GetState(),
+            DocumentLifecycle::kLayoutClean);
+  DocumentLifecycle::DisallowTransitionScope disallow_transition(
+      frame_selection_->GetDocument().Lifecycle());
   const SelectionMarkingRange& new_range =
       CalcSelectionRangeAndSetSelectionState(*frame_selection_);
   if (new_range.IsNull()) {
@@ -648,7 +653,6 @@ void LayoutSelection::Commit() {
     return;
   }
   DCHECK(frame_selection_->GetDocument().GetLayoutView()->GetFrameView());
-  DCHECK(!frame_selection_->GetDocument().NeedsLayoutTreeUpdate());
   SetShouldInvalidateSelection(new_range, paint_range_);
   paint_range_ = new_range.ToPaintRange();
   // TODO(yoichio): Remove this if state.
