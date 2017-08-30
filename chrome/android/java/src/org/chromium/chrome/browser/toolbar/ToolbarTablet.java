@@ -301,11 +301,9 @@ public class ToolbarTablet
         } else if (mBackButton == v) {
             if (!back()) return;
             RecordUserAction.record("MobileToolbarBack");
-            RecordUserAction.record("MobileTabClobbered");
         } else if (mForwardButton == v) {
             forward();
             RecordUserAction.record("MobileToolbarForward");
-            RecordUserAction.record("MobileTabClobbered");
         } else if (mReloadButton == v) {
             stopOrReloadCurrentTab();
         } else if (mBookmarkButton == v) {

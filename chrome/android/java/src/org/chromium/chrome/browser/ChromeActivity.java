@@ -1912,7 +1912,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             if (currentTab.canGoForward()) {
                 currentTab.goForward();
                 RecordUserAction.record("MobileMenuForward");
-                RecordUserAction.record("MobileTabClobbered");
             }
         } else if (id == R.id.bookmark_this_page_id) {
             addOrEditBookmark(currentTab);
