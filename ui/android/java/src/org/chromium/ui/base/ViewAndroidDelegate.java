@@ -289,11 +289,11 @@ public abstract class ViewAndroidDelegate {
      * Return the X location of our container view.
      */
     @CalledByNative
-    private int getXLocationOfContainerViewOnScreen() {
+    private int getXLocationOfContainerViewInWindow() {
         ViewGroup container = getContainerView();
         if (container == null) return 0;
 
-        container.getLocationOnScreen(mTemporaryContainerLocation);
+        container.getLocationInWindow(mTemporaryContainerLocation);
         return mTemporaryContainerLocation[0];
     }
 
@@ -301,11 +301,11 @@ public abstract class ViewAndroidDelegate {
      * Return the Y location of our container view.
      */
     @CalledByNative
-    private int getYLocationOfContainerViewOnScreen() {
+    private int getYLocationOfContainerViewInWindow() {
         ViewGroup container = getContainerView();
         if (container == null) return 0;
 
-        container.getLocationOnScreen(mTemporaryContainerLocation);
+        container.getLocationInWindow(mTemporaryContainerLocation);
         return mTemporaryContainerLocation[1];
     }
 

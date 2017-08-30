@@ -173,7 +173,7 @@ class UI_ANDROID_EXPORT ViewAndroid {
   base::android::ScopedJavaLocalRef<jobject> GetContainerView();
 
   // Return the location of the container view in physical pixels.
-  gfx::Point GetLocationOfContainerViewOnScreen();
+  gfx::Point GetLocationOfContainerViewInWindow();
 
   // ViewAndroid does not own |observer|s.
   void AddObserver(ViewAndroidObserver* observer);
