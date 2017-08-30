@@ -2111,19 +2111,10 @@ StyleRecalcChange Element::RecalcOwnStyle(StyleRecalcChange change) {
   if (local_change != kNoChange)
     UpdateCallbackSelectors(old_style.Get(), new_style.Get());
 
-  if (LayoutObject* layout_object = this->GetLayoutObject()) {
-    if (local_change != kNoChange) {
+  if (local_change != kNoChange) {
+    if (LayoutObject* layout_object = this->GetLayoutObject()) {
       layout_object->SetStyle(new_style.Get());
     } else {
-      // Although no change occurred, we use the new style so that the cousin
-      // style sharing code won't get fooled into believing this style is the
-      // same.
-      // FIXME: We may be able to remove this hack, see discussion in
-      // https://codereview.chromium.org/30453002/
-      layout_object->SetStyleInternal(new_style.Get());
-    }
-  } else {
-    if (local_change != kNoChange) {
       if (ShouldStoreNonLayoutObjectComputedStyle(*new_style))
         StoreNonLayoutObjectComputedStyle(new_style);
       else if (HasRareData())

@@ -105,7 +105,7 @@ typedef Vector<RefPtr<ComputedStyle>, 4> PseudoStyleCache;
 // In addition to storing the computed value of every CSS property,
 // ComputedStyle also contains various internal style information. Examples
 // include cached_pseudo_styles_ (for storing pseudo element styles), unique_
-// (for style sharing) and has_simple_underline_ (cached indicator flag of
+// (for style caching) and has_simple_underline_ (cached indicator flag of
 // text-decoration). These are stored on ComputedStyle for two reasons:
 //
 //  1) They share the same lifetime as ComputedStyle, so it is convenient to
