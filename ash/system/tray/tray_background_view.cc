@@ -361,7 +361,10 @@ void TrayBackgroundView::UpdateAfterShelfAlignmentChange() {
       GetLocalBounds().InsetsFrom(paint_bounds)));
 }
 
-void TrayBackgroundView::AnchorUpdated() {}
+void TrayBackgroundView::AnchorUpdated() {
+  if (GetBubbleView())
+    UpdateClippingWindowBounds();
+}
 
 void TrayBackgroundView::BubbleResized(
     const views::TrayBubbleView* bubble_view) {}
@@ -437,6 +440,11 @@ gfx::Insets TrayBackgroundView::GetBubbleAnchorInsets() const {
     return gfx::Insets(anchor_insets.top(), -tray_bg_insets.left(),
                        anchor_insets.bottom(), -tray_bg_insets.right());
   }
+}
+
+void TrayBackgroundView::UpdateClippingWindowBounds() {
+  if (clipping_window_.get())
+    clipping_window_->SetBounds(shelf_->GetUserWorkAreaBounds());
 }
 
 aura::Window* TrayBackgroundView::GetBubbleWindowContainer() {
