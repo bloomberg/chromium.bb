@@ -101,7 +101,13 @@ public class PhotoPickerDialog extends AlertDialog {
             ApplicationStatus.registerStateListenerForActivity(new ActivityStateListener() {
                 @Override
                 public void onActivityStateChange(Activity activity, int newState) {
-                    if (newState == ActivityState.STOPPED || newState == ActivityState.DESTROYED) {
+                    // When an external intent, such as the Camera intent, is launched, this
+                    // listener will first receive the PAUSED event. Normally, STOPPED is the next
+                    // event, as the Camera intent appears. But if the user presses Back quickly
+                    // after the PAUSED event, the STOPPED event will not arrive, and this listener
+                    // gets RESUMED instead. However, we are already in teardown mode, so the
+                    // safe thing to do is to close the dialog.
+                    if (newState == ActivityState.STOPPED || newState == ActivityState.RESUMED) {
                         mDoneWaitingForExternalIntent = true;
                         ApplicationStatus.unregisterActivityStateListener(this);
                         dismiss();
