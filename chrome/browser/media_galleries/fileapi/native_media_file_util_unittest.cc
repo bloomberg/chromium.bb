@@ -15,13 +15,13 @@
 #include "base/format_macros.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
-#include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_utils.h"
 #include "storage/browser/blob/shareable_file_reference.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 #include "storage/browser/fileapi/file_system_backend.h"
@@ -118,9 +118,7 @@ void PopulateDirectoryWithTestCases(const base::FilePath& dir,
 
 class NativeMediaFileUtilTest : public testing::Test {
  public:
-  NativeMediaFileUtilTest()
-      : io_thread_(content::BrowserThread::IO, &message_loop_) {
-  }
+  NativeMediaFileUtilTest() {}
 
   void SetUp() override {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
@@ -131,12 +129,14 @@ class NativeMediaFileUtilTest : public testing::Test {
 
     std::vector<std::unique_ptr<storage::FileSystemBackend>>
         additional_providers;
-    additional_providers.push_back(base::MakeUnique<MediaFileSystemBackend>(
-        data_dir_.GetPath(), base::ThreadTaskRunnerHandle::Get().get()));
+    additional_providers.push_back(
+        base::MakeUnique<MediaFileSystemBackend>(data_dir_.GetPath()));
 
     file_system_context_ = new storage::FileSystemContext(
-        base::ThreadTaskRunnerHandle::Get().get(),
-        base::ThreadTaskRunnerHandle::Get().get(),
+        content::BrowserThread::GetTaskRunnerForThread(
+            content::BrowserThread::IO)
+            .get(),
+        base::SequencedTaskRunnerHandle::Get().get(),
         storage::ExternalMountPoints::CreateRefCounted().get(),
         storage_policy.get(), NULL, std::move(additional_providers),
         std::vector<storage::URLRequestAutoMountHandler>(), data_dir_.GetPath(),
@@ -190,10 +190,9 @@ class NativeMediaFileUtilTest : public testing::Test {
     return file_system_context_->operation_runner();
   }
 
- private:
-  base::MessageLoop message_loop_;
-  content::TestBrowserThread io_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
 
+ private:
   base::ScopedTempDir data_dir_;
   scoped_refptr<storage::FileSystemContext> file_system_context_;
 
@@ -224,7 +223,7 @@ TEST_F(NativeMediaFileUtilTest, DirectoryExistsAndFileExistsFiltering) {
       operation_runner()->FileExists(
           url, base::Bind(&ExpectEqHelper, test_name, expectation));
     }
-    base::RunLoop().RunUntilIdle();
+    content::RunAllBlockingPoolTasksUntilIdle();
   }
 }
 
@@ -238,7 +237,7 @@ TEST_F(NativeMediaFileUtilTest, ReadDirectoryFiltering) {
   bool completed = false;
   operation_runner()->ReadDirectory(
       url, base::BindRepeating(&DidReadDirectory, &content, &completed));
-  base::RunLoop().RunUntilIdle();
+  content::RunAllBlockingPoolTasksUntilIdle();
   EXPECT_TRUE(completed);
   EXPECT_EQ(6u, content.size());
 
@@ -271,7 +270,7 @@ TEST_F(NativeMediaFileUtilTest, CreateDirectoryFiltering) {
             url, false, false,
             base::Bind(&ExpectEqHelper, test_name, expectation));
       }
-      base::RunLoop().RunUntilIdle();
+      content::RunAllBlockingPoolTasksUntilIdle();
     }
   }
 }
@@ -311,7 +310,7 @@ TEST_F(NativeMediaFileUtilTest, CopySourceFiltering) {
           storage::FileSystemOperation::ERROR_BEHAVIOR_ABORT,
           storage::FileSystemOperationRunner::CopyProgressCallback(),
           base::Bind(&ExpectEqHelper, test_name, expectation));
-      base::RunLoop().RunUntilIdle();
+      content::RunAllBlockingPoolTasksUntilIdle();
     }
   }
 }
@@ -377,7 +376,7 @@ TEST_F(NativeMediaFileUtilTest, CopyDestFiltering) {
           storage::FileSystemOperation::ERROR_BEHAVIOR_ABORT,
           storage::FileSystemOperationRunner::CopyProgressCallback(),
           base::Bind(&ExpectEqHelper, test_name, expectation));
-      base::RunLoop().RunUntilIdle();
+      content::RunAllBlockingPoolTasksUntilIdle();
     }
   }
 }
@@ -417,7 +416,7 @@ TEST_F(NativeMediaFileUtilTest, MoveSourceFiltering) {
           dest_url,
           storage::FileSystemOperation::OPTION_NONE,
           base::Bind(&ExpectEqHelper, test_name, expectation));
-      base::RunLoop().RunUntilIdle();
+      content::RunAllBlockingPoolTasksUntilIdle();
     }
   }
 }
@@ -484,7 +483,7 @@ TEST_F(NativeMediaFileUtilTest, MoveDestFiltering) {
           url,
           storage::FileSystemOperation::OPTION_NONE,
           base::Bind(&ExpectEqHelper, test_name, expectation));
-      base::RunLoop().RunUntilIdle();
+      content::RunAllBlockingPoolTasksUntilIdle();
     }
   }
 }
@@ -512,7 +511,7 @@ TEST_F(NativeMediaFileUtilTest, GetMetadataFiltering) {
           url, storage::FileSystemOperation::GET_METADATA_FIELD_IS_DIRECTORY,
           base::Bind(&ExpectMetadataEqHelper, test_name, expectation,
                      kFilteringTestCases[i].is_directory));
-      base::RunLoop().RunUntilIdle();
+      content::RunAllBlockingPoolTasksUntilIdle();
     }
   }
 }
@@ -540,7 +539,7 @@ TEST_F(NativeMediaFileUtilTest, RemoveFileFiltering) {
       }
       operation_runner()->RemoveFile(
           url, base::Bind(&ExpectEqHelper, test_name, expectation));
-      base::RunLoop().RunUntilIdle();
+      content::RunAllBlockingPoolTasksUntilIdle();
     }
   }
 }
@@ -572,7 +571,7 @@ TEST_F(NativeMediaFileUtilTest, CreateSnapshot) {
     error = base::File::FILE_ERROR_FAILED;
     operation_runner()->CreateSnapshotFile(url,
         base::Bind(CreateSnapshotCallback, &error));
-    base::RunLoop().RunUntilIdle();
+    content::RunAllBlockingPoolTasksUntilIdle();
     ASSERT_EQ(expected_error, error);
   }
 }

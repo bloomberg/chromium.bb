@@ -1796,8 +1796,6 @@ split_static_library("browser") {
     sources += [
       "crash_upload_list/crash_upload_list_crashpad.cc",
       "crash_upload_list/crash_upload_list_crashpad.h",
-      "media_galleries/fileapi/file_path_watcher_util.cc",
-      "media_galleries/fileapi/file_path_watcher_util.h",
       "media_galleries/fileapi/iapps_data_provider.cc",
       "media_galleries/fileapi/iapps_data_provider.h",
       "media_galleries/fileapi/itunes_data_provider.cc",

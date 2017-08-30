@@ -17,7 +17,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
-#include "chrome/browser/media_galleries/fileapi/file_path_watcher_util.h"
 #include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
 #include "chrome/browser/media_galleries/imported_media_gallery_registry.h"
 #include "chrome/common/media_galleries/itunes_library.h"

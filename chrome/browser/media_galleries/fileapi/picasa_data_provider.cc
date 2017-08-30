@@ -42,10 +42,9 @@ PicasaDataProvider::PicasaDataProvider(const base::FilePath& database_path)
       weak_factory_(this) {
   MediaFileSystemBackend::AssertCurrentlyOnMediaSequence();
 
-  StartFilePathWatchOnMediaTaskRunner(
+  temp_dir_watcher_.Watch(
       database_path_.DirName().AppendASCII(kPicasaTempDirName),
-      base::Bind(&PicasaDataProvider::OnTempDirWatchStarted,
-                 weak_factory_.GetWeakPtr()),
+      false /* recursive */,
       base::Bind(&PicasaDataProvider::OnTempDirChanged,
                  weak_factory_.GetWeakPtr()));
 }
@@ -123,12 +122,6 @@ void PicasaDataProvider::InvalidateData() {
   albums_indexer_ = NULL;
 
   DoRefreshIfNecessary();
-}
-
-void PicasaDataProvider::OnTempDirWatchStarted(
-    MediaFilePathWatcherUniquePtr temp_dir_watcher) {
-  MediaFileSystemBackend::AssertCurrentlyOnMediaSequence();
-  temp_dir_watcher_ = std::move(temp_dir_watcher);
 }
 
 void PicasaDataProvider::OnTempDirChanged(const base::FilePath& temp_dir_path,
