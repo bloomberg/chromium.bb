@@ -651,7 +651,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
         int id = item.getItemId();
         int groupId = item.getGroupId();
 
-        if (BuildInfo.isAtLeastO()) {
+        if (BuildInfo.isAtLeastO() && id == android.R.id.textAssist) {
             doAssistAction();
             mode.finish();
         } else if (id == R.id.select_action_menu_select_all) {
