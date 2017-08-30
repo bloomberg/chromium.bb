@@ -2416,6 +2416,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, RendererCrash) {
   run_loop.Run();
 
   EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, version_->running_status());
+  RunOnIOThread(base::Bind(&ServiceWorkerVersion::RemoveListener,
+                           base::Unretained(version_.get()), &observer));
 }
 
 class ServiceWorkerBlackBoxBrowserTest : public ServiceWorkerBrowserTest {
