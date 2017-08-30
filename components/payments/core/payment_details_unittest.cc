@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -15,7 +14,7 @@ namespace payments {
 // Tests the success case when populating a PaymentDetails from a dictionary.
 TEST(PaymentRequestTest, PaymentDetailsFromDictionaryValueSuccess) {
   PaymentDetails expected;
-  expected.error = base::ASCIIToUTF16("Error in details");
+  expected.error = "Error in details";
 
   base::DictionaryValue details_dict;
   details_dict.SetString("error", "Error in details");
@@ -24,9 +23,9 @@ TEST(PaymentRequestTest, PaymentDetailsFromDictionaryValueSuccess) {
       actual.FromDictionaryValue(details_dict, /*requires_total=*/false));
   EXPECT_EQ(expected, actual);
 
-  expected.total.label = base::ASCIIToUTF16("TOTAL");
-  expected.total.amount.currency = base::ASCIIToUTF16("GBP");
-  expected.total.amount.value = base::ASCIIToUTF16("6.66");
+  expected.total.label = "TOTAL";
+  expected.total.amount.currency = "GBP";
+  expected.total.amount.value = "6.66";
 
   std::unique_ptr<base::DictionaryValue> total_dict(new base::DictionaryValue);
   total_dict->SetString("label", "TOTAL");
@@ -48,10 +47,10 @@ TEST(PaymentRequestTest, PaymentDetailsFromDictionaryValueSuccess) {
 // Tests the failure case when populating a PaymentDetails from a dictionary.
 TEST(PaymentRequestTest, PaymentDetailsFromDictionaryValueFailure) {
   PaymentDetails expected;
-  expected.total.label = base::ASCIIToUTF16("TOTAL");
-  expected.total.amount.currency = base::ASCIIToUTF16("GBP");
-  expected.total.amount.value = base::ASCIIToUTF16("6.66");
-  expected.error = base::ASCIIToUTF16("Error in details");
+  expected.total.label = "TOTAL";
+  expected.total.amount.currency = "GBP";
+  expected.total.amount.value = "6.66";
+  expected.error = "Error in details";
 
   base::DictionaryValue details_dict;
   details_dict.SetString("error", "Error in details");
@@ -77,22 +76,22 @@ TEST(PaymentRequestTest, PaymentDetailsEquality) {
   details2.id = details1.id;
   EXPECT_EQ(details1, details2);
 
-  details1.total.label = base::ASCIIToUTF16("Total");
+  details1.total.label = "Total";
   EXPECT_NE(details1, details2);
-  details2.total.label = base::ASCIIToUTF16("Shipping");
+  details2.total.label = "Shipping";
   EXPECT_NE(details1, details2);
-  details2.total.label = base::ASCIIToUTF16("Total");
+  details2.total.label = "Total";
   EXPECT_EQ(details1, details2);
 
-  details1.error = base::ASCIIToUTF16("Foo");
+  details1.error = "Foo";
   EXPECT_NE(details1, details2);
-  details2.error = base::ASCIIToUTF16("Bar");
+  details2.error = "Bar";
   EXPECT_NE(details1, details2);
-  details2.error = base::ASCIIToUTF16("Foo");
+  details2.error = "Foo";
   EXPECT_EQ(details1, details2);
 
   PaymentItem payment_item;
-  payment_item.label = base::ASCIIToUTF16("Tax");
+  payment_item.label = "Tax";
   std::vector<PaymentItem> display_items1;
   display_items1.push_back(payment_item);
   details1.display_items = display_items1;
@@ -106,7 +105,7 @@ TEST(PaymentRequestTest, PaymentDetailsEquality) {
   EXPECT_EQ(details1, details2);
 
   PaymentShippingOption shipping_option;
-  shipping_option.label = base::ASCIIToUTF16("Overnight");
+  shipping_option.label = "Overnight";
   std::vector<PaymentShippingOption> shipping_options1;
   shipping_options1.push_back(shipping_option);
   details1.shipping_options = shipping_options1;
@@ -120,15 +119,10 @@ TEST(PaymentRequestTest, PaymentDetailsEquality) {
   EXPECT_EQ(details1, details2);
 
   PaymentDetailsModifier details_modifier;
-  details_modifier.total.label = base::ASCIIToUTF16("Total");
-  std::vector<PaymentDetailsModifier> details_modifiers1;
-  details_modifiers1.push_back(details_modifier);
-  details1.modifiers = details_modifiers1;
+  details_modifier.total.label = "Total";
+  details1.modifiers.push_back(details_modifier);
   EXPECT_NE(details1, details2);
-  std::vector<PaymentDetailsModifier> details_modifiers2;
-  details2.modifiers = details_modifiers2;
-  EXPECT_NE(details1, details2);
-  details2.modifiers = details_modifiers1;
+  details2.modifiers.push_back(details_modifier);
   EXPECT_EQ(details1, details2);
 }
 

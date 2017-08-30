@@ -6,7 +6,6 @@
 
 #include "base/json/json_reader.h"
 #include "base/memory/ptr_util.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 
 namespace {
@@ -72,13 +71,11 @@ bool PaymentOptions::FromDictionaryValue(const base::DictionaryValue& value) {
 
   value.GetBoolean(kPaymentOptionsRequestShipping, &this->request_shipping);
 
-  base::string16 shipping_type;
+  std::string shipping_type;
   value.GetString(kPaymentOptionsShippingType, &shipping_type);
-  if (shipping_type ==
-      base::ASCIIToUTF16(kPaymentOptionsShippingTypeDelivery)) {
+  if (shipping_type == kPaymentOptionsShippingTypeDelivery) {
     this->shipping_type = payments::PaymentShippingType::DELIVERY;
-  } else if (shipping_type ==
-             base::ASCIIToUTF16(kPaymentOptionsShippingTypePickup)) {
+  } else if (shipping_type == kPaymentOptionsShippingTypePickup) {
     this->shipping_type = payments::PaymentShippingType::PICKUP;
   } else {
     this->shipping_type = payments::PaymentShippingType::SHIPPING;

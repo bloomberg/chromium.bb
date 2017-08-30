@@ -4,7 +4,6 @@
 
 #include "components/payments/core/payment_currency_amount.h"
 
-#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -14,8 +13,8 @@ namespace payments {
 // dictionary.
 TEST(PaymentRequestTest, PaymentCurrencyAmountFromDictionaryValueSuccess) {
   PaymentCurrencyAmount expected;
-  expected.currency = base::ASCIIToUTF16("AUD");
-  expected.value = base::ASCIIToUTF16("-438.23");
+  expected.currency = "AUD";
+  expected.value = "-438.23";
 
   base::DictionaryValue amount_dict;
   amount_dict.SetString("currency", "AUD");
@@ -26,7 +25,7 @@ TEST(PaymentRequestTest, PaymentCurrencyAmountFromDictionaryValueSuccess) {
 
   EXPECT_EQ(expected, actual);
 
-  expected.currency_system = base::ASCIIToUTF16("urn:iso:std:iso:123456789");
+  expected.currency_system = "urn:iso:std:iso:123456789";
   amount_dict.SetString("currencySystem", "urn:iso:std:iso:123456789");
   EXPECT_TRUE(actual.FromDictionaryValue(amount_dict));
   EXPECT_EQ(expected, actual);
@@ -57,18 +56,18 @@ TEST(PaymentRequestTest, PaymentCurrencyAmountEquality) {
   PaymentCurrencyAmount currency_amount2;
   EXPECT_EQ(currency_amount1, currency_amount2);
 
-  currency_amount1.currency = base::ASCIIToUTF16("HKD");
+  currency_amount1.currency = "HKD";
   EXPECT_NE(currency_amount1, currency_amount2);
-  currency_amount2.currency = base::ASCIIToUTF16("USD");
+  currency_amount2.currency = "USD";
   EXPECT_NE(currency_amount1, currency_amount2);
-  currency_amount2.currency = base::ASCIIToUTF16("HKD");
+  currency_amount2.currency = "HKD";
   EXPECT_EQ(currency_amount1, currency_amount2);
 
-  currency_amount1.value = base::ASCIIToUTF16("49.89");
+  currency_amount1.value = "49.89";
   EXPECT_NE(currency_amount1, currency_amount2);
-  currency_amount2.value = base::ASCIIToUTF16("49.99");
+  currency_amount2.value = "49.99";
   EXPECT_NE(currency_amount1, currency_amount2);
-  currency_amount2.value = base::ASCIIToUTF16("49.89");
+  currency_amount2.value = "49.89";
   EXPECT_EQ(currency_amount1, currency_amount2);
 }
 
@@ -96,10 +95,9 @@ TEST(PaymentRequestTest, PopulatedCurrencyAmountDictionary) {
   expected_value.SetString("currencySystem", "urn:iso:std:iso:123456789");
 
   PaymentCurrencyAmount payment_currency_amount;
-  payment_currency_amount.currency = base::ASCIIToUTF16("AUD");
-  payment_currency_amount.value = base::ASCIIToUTF16("-438.23");
-  payment_currency_amount.currency_system =
-      base::ASCIIToUTF16("urn:iso:std:iso:123456789");
+  payment_currency_amount.currency = "AUD";
+  payment_currency_amount.value = "-438.23";
+  payment_currency_amount.currency_system = "urn:iso:std:iso:123456789";
 
   EXPECT_TRUE(
       expected_value.Equals(payment_currency_amount.ToDictionaryValue().get()));

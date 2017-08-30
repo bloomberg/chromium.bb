@@ -185,10 +185,10 @@ TEST_F(PaymentRequestCoordinatorTest, DidSelectShippingOption) {
   [coordinator setPaymentRequest:payment_request()];
 
   payments::PaymentShippingOption shipping_option;
-  shipping_option.id = base::ASCIIToUTF16("123456");
-  shipping_option.label = base::ASCIIToUTF16("1-Day");
-  shipping_option.amount.value = base::ASCIIToUTF16("0.99");
-  shipping_option.amount.currency = base::ASCIIToUTF16("USD");
+  shipping_option.id = "123456";
+  shipping_option.label = "1-Day";
+  shipping_option.amount.value = "0.99";
+  shipping_option.amount.currency = "USD";
 
   // Mock the coordinator delegate.
   id delegate = [OCMockObject

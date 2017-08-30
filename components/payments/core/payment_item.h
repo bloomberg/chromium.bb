@@ -6,8 +6,8 @@
 #define COMPONENTS_PAYMENTS_CORE_PAYMENT_ITEM_H_
 
 #include <memory>
+#include <string>
 
-#include "base/strings/string16.h"
 #include "components/payments/core/payment_currency_amount.h"
 
 // C++ bindings for the PaymentRequest API PaymentItem. Conforms to the
@@ -39,7 +39,7 @@ class PaymentItem {
   std::unique_ptr<base::DictionaryValue> ToDictionaryValue() const;
 
   // A human-readable description of the item.
-  base::string16 label;
+  std::string label;
 
   // The monetary amount for the item.
   PaymentCurrencyAmount amount;

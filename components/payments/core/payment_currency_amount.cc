@@ -5,7 +5,6 @@
 #include "components/payments/core/payment_currency_amount.h"
 
 #include "base/memory/ptr_util.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 
 namespace payments {
@@ -25,8 +24,7 @@ static const char kPaymentCurrencyAmountValue[] = "value";
 PaymentCurrencyAmount::PaymentCurrencyAmount()
     // By default, the currency is defined by [ISO4217]. For example, USD for
     // US Dollars.
-    : currency_system(
-          base::ASCIIToUTF16(kPaymentCurrencyAmountCurrencySystemISO4217)) {}
+    : currency_system(kPaymentCurrencyAmountCurrencySystemISO4217) {}
 
 PaymentCurrencyAmount::~PaymentCurrencyAmount() = default;
 

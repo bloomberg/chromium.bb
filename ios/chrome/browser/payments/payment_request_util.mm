@@ -98,7 +98,7 @@ NSString* GetShippingSectionTitle(payments::PaymentShippingType shipping_type) {
 NSString* GetShippingAddressSelectorErrorMessage(
     const payments::PaymentRequest& payment_request) {
   if (!payment_request.payment_details().error.empty())
-    return base::SysUTF16ToNSString(payment_request.payment_details().error);
+    return base::SysUTF8ToNSString(payment_request.payment_details().error);
 
   switch (payment_request.shipping_type()) {
     case payments::PaymentShippingType::SHIPPING:
@@ -116,7 +116,7 @@ NSString* GetShippingAddressSelectorErrorMessage(
 NSString* GetShippingOptionSelectorErrorMessage(
     const payments::PaymentRequest& payment_request) {
   if (!payment_request.payment_details().error.empty())
-    return base::SysUTF16ToNSString(payment_request.payment_details().error);
+    return base::SysUTF8ToNSString(payment_request.payment_details().error);
 
   switch (payment_request.shipping_type()) {
     case payments::PaymentShippingType::SHIPPING:

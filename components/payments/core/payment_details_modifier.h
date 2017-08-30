@@ -6,9 +6,9 @@
 #define COMPONENTS_PAYMENTS_CORE_PAYMENT_DETAILS_MODIFIER_H_
 
 #include <memory>
+#include <string>
 #include <vector>
 
-#include "base/strings/string16.h"
 #include "components/payments/core/payment_item.h"
 
 // C++ bindings for the PaymentRequest API PaymentDetailsModifier. Conforms to
@@ -39,7 +39,7 @@ class PaymentDetailsModifier {
   // A sequence of payment method identifiers. The remaining fields in the
   // PaymentDetailsModifier apply only if the user selects a payment method
   // included in this sequence.
-  std::vector<base::string16> supported_methods;
+  std::vector<std::string> supported_methods;
 
   // This value overrides the total field in the PaymentDetails dictionary for
   // the payment method identifiers in the supportedMethods field.

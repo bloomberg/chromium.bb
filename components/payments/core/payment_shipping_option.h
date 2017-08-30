@@ -34,11 +34,11 @@ class PaymentShippingOption {
 
   // An identifier used to reference this PaymentShippingOption. It is unique
   // for a given PaymentRequest.
-  base::string16 id;
+  std::string id;
 
   // A human-readable description of the item. The user agent should use this
   // string to display the shipping option to the user.
-  base::string16 label;
+  std::string label;
 
   // A PaymentCurrencyAmount containing the monetary amount for the option.
   PaymentCurrencyAmount amount;

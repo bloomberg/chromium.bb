@@ -227,9 +227,8 @@ PaymentShippingType PaymentRequest::shipping_type() const {
 CurrencyFormatter* PaymentRequest::GetOrCreateCurrencyFormatter() {
   if (!currency_formatter_) {
     currency_formatter_.reset(new CurrencyFormatter(
-        base::UTF16ToASCII(web_payment_request_.details.total.amount.currency),
-        base::UTF16ToASCII(
-            web_payment_request_.details.total.amount.currency_system),
+        web_payment_request_.details.total.amount.currency,
+        web_payment_request_.details.total.amount.currency_system,
         GetApplicationLocale()));
   }
   return currency_formatter_.get();

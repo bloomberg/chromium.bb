@@ -99,11 +99,11 @@ using payments::GetShippingOptionSectionString;
     payments::PaymentShippingOption* shippingOption = shippingOptions[index];
     DCHECK(shippingOption);
     PaymentsTextItem* item = [[PaymentsTextItem alloc] init];
-    item.text = base::SysUTF16ToNSString(shippingOption->label);
+    item.text = base::SysUTF8ToNSString(shippingOption->label);
     payments::CurrencyFormatter* currencyFormatter =
         _paymentRequest->GetOrCreateCurrencyFormatter();
-    item.detailText = base::SysUTF16ToNSString(currencyFormatter->Format(
-        base::UTF16ToASCII(shippingOption->amount.value)));
+    item.detailText = base::SysUTF16ToNSString(
+        currencyFormatter->Format(shippingOption->amount.value));
     if (_paymentRequest->selected_shipping_option() == shippingOption)
       _selectedItemIndex = index;
 

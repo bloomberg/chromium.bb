@@ -96,7 +96,7 @@ class PaymentRequest {
 
   // Properties set in order to communicate user choices back to the page.
   payments::PaymentAddress shipping_address;
-  base::string16 shipping_option;
+  std::string shipping_option;
 
   // Properties set via the constructor for communicating from the page to the
   // browser UI.
@@ -137,7 +137,7 @@ class PaymentResponse {
   // If the request_shipping flag was set to true in the PaymentOptions passed
   // to the PaymentRequest constructor, this will be the id attribute of the
   // selected shipping option.
-  base::string16 shipping_option;
+  std::string shipping_option;
 
   // If the request_payer_name flag was set to true in the PaymentOptions passed
   // to the PaymentRequest constructor, this will be the name provided by the

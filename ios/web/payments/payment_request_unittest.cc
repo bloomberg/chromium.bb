@@ -66,10 +66,10 @@ TEST(PaymentRequestTest, ParsingFullyPopulatedRequestDictionarySucceeds) {
   // Add the expected values to expected_request.
   expected_request.payment_request_id = "123456789";
   expected_request.details.id = "12345";
-  expected_request.details.total.label = base::ASCIIToUTF16("TOTAL");
-  expected_request.details.total.amount.currency = base::ASCIIToUTF16("GBP");
-  expected_request.details.total.amount.value = base::ASCIIToUTF16("6.66");
-  expected_request.details.error = base::ASCIIToUTF16("Error in details");
+  expected_request.details.total.label = "TOTAL";
+  expected_request.details.total.amount.currency = "GBP";
+  expected_request.details.total.amount.value = "6.66";
+  expected_request.details.error = "Error in details";
 
   payments::PaymentMethodData method_data;
   std::vector<std::string> supported_methods;
@@ -213,7 +213,7 @@ TEST(PaymentRequestTest, PopulatedResponseDictionary) {
   payment_response.shipping_address =
       base::MakeUnique<payments::PaymentAddress>();
   payment_response.shipping_address->postal_code = base::ASCIIToUTF16("94115");
-  payment_response.shipping_option = base::ASCIIToUTF16("666");
+  payment_response.shipping_option = "666";
   payment_response.payer_name = base::ASCIIToUTF16("Jane Doe");
   payment_response.payer_email = base::ASCIIToUTF16("jane@example.com");
   payment_response.payer_phone = base::ASCIIToUTF16("1234-567-890");
@@ -287,11 +287,11 @@ TEST(PaymentRequestTest, PaymentRequestEquality) {
   request2.shipping_address = address1;
   EXPECT_EQ(request1, request2);
 
-  request1.shipping_option = base::ASCIIToUTF16("2-Day");
+  request1.shipping_option = "2-Day";
   EXPECT_NE(request1, request2);
-  request2.shipping_option = base::ASCIIToUTF16("3-Day");
+  request2.shipping_option = "3-Day";
   EXPECT_NE(request1, request2);
-  request2.shipping_option = base::ASCIIToUTF16("2-Day");
+  request2.shipping_option = "2-Day";
   EXPECT_EQ(request1, request2);
 
   payments::PaymentMethodData method_datum;
@@ -307,11 +307,11 @@ TEST(PaymentRequestTest, PaymentRequestEquality) {
   EXPECT_EQ(request1, request2);
 
   payments::PaymentDetails details1;
-  details1.total.label = base::ASCIIToUTF16("Total");
+  details1.total.label = "Total";
   request1.details = details1;
   EXPECT_NE(request1, request2);
   payments::PaymentDetails details2;
-  details2.total.amount.value = base::ASCIIToUTF16("0.01");
+  details2.total.amount.value = "0.01";
   request2.details = details2;
   EXPECT_NE(request1, request2);
   request2.details = details1;

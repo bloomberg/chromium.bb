@@ -57,14 +57,14 @@
 - (CollectionViewItem*)totalItem {
   PriceItem* totalItem = [[PriceItem alloc] init];
   totalItem.item =
-      base::SysUTF16ToNSString(_paymentRequest->payment_details().total.label);
+      base::SysUTF8ToNSString(_paymentRequest->payment_details().total.label);
   payments::CurrencyFormatter* currencyFormatter =
       _paymentRequest->GetOrCreateCurrencyFormatter();
   totalItem.price = base::SysUTF16ToNSString(l10n_util::GetStringFUTF16(
       IDS_PAYMENT_REQUEST_ORDER_SUMMARY_SHEET_TOTAL_FORMAT,
       base::UTF8ToUTF16(currencyFormatter->formatted_currency_code()),
-      currencyFormatter->Format(base::UTF16ToASCII(
-          _paymentRequest->payment_details().total.amount.value))));
+      currencyFormatter->Format(
+          _paymentRequest->payment_details().total.amount.value)));
   return totalItem;
 }
 
@@ -76,11 +76,11 @@
 
   for (const auto& paymentItem : paymentItems) {
     PriceItem* item = [[PriceItem alloc] init];
-    item.item = base::SysUTF16ToNSString(paymentItem.label);
+    item.item = base::SysUTF8ToNSString(paymentItem.label);
     payments::CurrencyFormatter* currencyFormatter =
         _paymentRequest->GetOrCreateCurrencyFormatter();
-    item.price = base::SysUTF16ToNSString(currencyFormatter->Format(
-        base::UTF16ToASCII(paymentItem.amount.value)));
+    item.price = base::SysUTF16ToNSString(
+        currencyFormatter->Format(paymentItem.amount.value));
 
     [lineItems addObject:item];
   }
