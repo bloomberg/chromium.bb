@@ -334,8 +334,7 @@ class WallpaperManager::PendingWallpaper :
     started_load_at_ = base::Time::Now();
 
     if (default_) {
-      manager->DoSetDefaultWallpaper(account_id_, true /* update_wallpaper */,
-                                     std::move(on_finish_));
+      manager->DoSetDefaultWallpaper(account_id_, std::move(on_finish_));
     } else if (!user_wallpaper_.isNull()) {
       SetWallpaper(user_wallpaper_, info_);
     } else if (!wallpaper_path_.empty()) {
@@ -348,8 +347,7 @@ class WallpaperManager::PendingWallpaper :
                          base::Passed(std::move(on_finish_)),
                          manager->weak_factory_.GetWeakPtr()));
     } else if (!info_.location.empty()) {
-      manager->LoadWallpaper(account_id_, info_, true /* update_wallpaper */,
-                             std::move(on_finish_));
+      manager->LoadWallpaper(account_id_, info_, true, std::move(on_finish_));
     } else {
       // PendingWallpaper was created and never initialized?
       NOTREACHED();
@@ -698,7 +696,6 @@ void WallpaperManager::SetDefaultWallpaperDelayed(const AccountId& account_id) {
 
 void WallpaperManager::DoSetDefaultWallpaper(
     const AccountId& account_id,
-    bool update_wallpaper,
     MovableOnDestroyCallbackHolder on_finish) {
   // There is no visible wallpaper in kiosk mode.
   if (user_manager::UserManager::Get()->IsLoggedInAsKioskApp())
@@ -732,26 +729,21 @@ void WallpaperManager::DoSetDefaultWallpaper(
     default_wallpaper_image_.reset();
     if (!file->empty()) {
       loaded_wallpapers_for_test_++;
-      StartLoadAndSetDefaultWallpaper(*file, layout, update_wallpaper,
-                                      std::move(on_finish),
+      StartLoadAndSetDefaultWallpaper(*file, layout, std::move(on_finish),
                                       &default_wallpaper_image_);
       return;
     }
 
     CreateSolidDefaultWallpaper();
   }
+  // 1x1 wallpaper is actually solid color, so it should be stretched.
+  if (default_wallpaper_image_->image().width() == 1 &&
+      default_wallpaper_image_->image().height() == 1)
+    layout = wallpaper::WALLPAPER_LAYOUT_STRETCH;
 
-  if (update_wallpaper) {
-    // 1x1 wallpaper is actually solid color, so it should be stretched.
-    if (default_wallpaper_image_->image().width() == 1 &&
-        default_wallpaper_image_->image().height() == 1) {
-      layout = wallpaper::WALLPAPER_LAYOUT_STRETCH;
-    }
-
-    WallpaperInfo info(default_wallpaper_image_->file_path().value(), layout,
-                       wallpaper::DEFAULT, base::Time::Now().LocalMidnight());
-    SetWallpaper(default_wallpaper_image_->image(), info);
-  }
+  WallpaperInfo info(default_wallpaper_image_->file_path().value(), layout,
+                     wallpaper::DEFAULT, base::Time::Now().LocalMidnight());
+  SetWallpaper(default_wallpaper_image_->image(), info);
 }
 
 void WallpaperManager::SetUserWallpaperInfo(const AccountId& account_id,
@@ -1271,7 +1263,9 @@ void WallpaperManager::OnWallpaperDecoded(
         "", wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED, wallpaper::DEFAULT,
         base::Time::Now().LocalMidnight());
     SetUserWallpaperInfo(account_id, default_info, true);
-    DoSetDefaultWallpaper(account_id, update_wallpaper, std::move(on_finish));
+
+    if (update_wallpaper)
+      DoSetDefaultWallpaper(account_id, std::move(on_finish));
     return;
   }
 
@@ -1410,7 +1404,6 @@ void WallpaperManager::SetDefaultWallpaperPathsFromCommandLine(
 void WallpaperManager::OnDefaultWallpaperDecoded(
     const base::FilePath& path,
     const wallpaper::WallpaperLayout layout,
-    bool update_wallpaper,
     std::unique_ptr<user_manager::UserImage>* result_out,
     MovableOnDestroyCallbackHolder on_finish,
     std::unique_ptr<user_manager::UserImage> user_image) {
@@ -1420,24 +1413,21 @@ void WallpaperManager::OnDefaultWallpaperDecoded(
   }
 
   *result_out = std::move(user_image);
-  if (update_wallpaper) {
-    WallpaperInfo info(path.value(), layout, wallpaper::DEFAULT,
-                       base::Time::Now().LocalMidnight());
-    SetWallpaper((*result_out)->image(), info);
-  }
+  WallpaperInfo info(path.value(), layout, wallpaper::DEFAULT,
+                     base::Time::Now().LocalMidnight());
+  SetWallpaper((*result_out)->image(), info);
 }
 
 void WallpaperManager::StartLoadAndSetDefaultWallpaper(
     const base::FilePath& path,
     const wallpaper::WallpaperLayout layout,
-    bool update_wallpaper,
     MovableOnDestroyCallbackHolder on_finish,
     std::unique_ptr<user_manager::UserImage>* result_out) {
   user_image_loader::StartWithFilePath(
       task_runner_, path, ImageDecoder::ROBUST_JPEG_CODEC,
       0,  // Do not crop.
       base::Bind(&WallpaperManager::OnDefaultWallpaperDecoded,
-                 weak_factory_.GetWeakPtr(), path, layout, update_wallpaper,
+                 weak_factory_.GetWeakPtr(), path, layout,
                  base::Unretained(result_out),
                  base::Passed(std::move(on_finish))));
 }
@@ -1479,8 +1469,8 @@ void WallpaperManager::SetDefaultWallpaperPath(
     }
   }
 
-  DoSetDefaultWallpaper(EmptyAccountId(), need_update_screen,
-                        MovableOnDestroyCallbackHolder());
+  if (need_update_screen)
+    DoSetDefaultWallpaper(EmptyAccountId(), MovableOnDestroyCallbackHolder());
 }
 
 void WallpaperManager::RecordWallpaperAppType() {
