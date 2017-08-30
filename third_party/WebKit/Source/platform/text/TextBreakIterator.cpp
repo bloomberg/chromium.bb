@@ -348,6 +348,8 @@ inline int LazyLineBreakIterator::NextBreakablePosition(
 
 template <LineBreakType lineBreakType>
 inline int LazyLineBreakIterator::NextBreakablePosition(int pos) const {
+  if (UNLIKELY(string_.IsNull()))
+    return 0;
   if (string_.Is8Bit()) {
     return NextBreakablePosition<LChar, lineBreakType>(pos,
                                                        string_.Characters8());
