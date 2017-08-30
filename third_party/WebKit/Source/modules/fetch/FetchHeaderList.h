@@ -14,8 +14,6 @@
 
 namespace blink {
 
-class Header;
-
 // http://fetch.spec.whatwg.org/#terminology-headers
 class MODULES_EXPORT FetchHeaderList final
     : public GarbageCollectedFinalized<FetchHeaderList> {
