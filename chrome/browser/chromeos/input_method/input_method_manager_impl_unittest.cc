@@ -89,6 +89,7 @@ class TestImeController : ash::mojom::ImeController {
   }
   void SetImesManagedByPolicy(bool managed) override {}
   void ShowImeMenuOnShelf(bool show) override {}
+  void SetCapsLockState(bool enabled) override {}
 
   std::string current_ime_id_;
   std::vector<ash::mojom::ImeInfoPtr> available_imes_;

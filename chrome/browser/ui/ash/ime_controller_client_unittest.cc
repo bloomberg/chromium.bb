@@ -169,6 +169,9 @@ class TestImeController : ash::mojom::ImeController {
   void ShowImeMenuOnShelf(bool show) override {
     show_ime_menu_on_shelf_ = show;
   }
+  void SetCapsLockState(bool enabled) override {
+    is_caps_lock_enabled_ = enabled;
+  }
 
   // The most recent values received via mojo.
   std::string current_ime_id_;
@@ -176,6 +179,7 @@ class TestImeController : ash::mojom::ImeController {
   std::vector<ash::mojom::ImeMenuItemPtr> menu_items_;
   bool managed_by_policy_ = false;
   bool show_ime_menu_on_shelf_ = false;
+  bool is_caps_lock_enabled_ = false;
 
  private:
   mojo::Binding<ash::mojom::ImeController> binding_;
@@ -222,6 +226,19 @@ TEST_F(ImeControllerClientTest, SetImesManagedByPolicy) {
   client.SetImesManagedByPolicy(true);
   client.FlushMojoForTesting();
   EXPECT_TRUE(ime_controller_.managed_by_policy_);
+}
+
+TEST_F(ImeControllerClientTest, CapsLock) {
+  ImeControllerClient client(&input_method_manager_);
+  client.InitForTesting(ime_controller_.CreateInterfacePtr());
+
+  client.OnCapsLockChanged(true);
+  client.FlushMojoForTesting();
+  EXPECT_TRUE(ime_controller_.is_caps_lock_enabled_);
+
+  client.OnCapsLockChanged(false);
+  client.FlushMojoForTesting();
+  EXPECT_FALSE(ime_controller_.is_caps_lock_enabled_);
 }
 
 TEST_F(ImeControllerClientTest, ShowImeMenuOnShelf) {

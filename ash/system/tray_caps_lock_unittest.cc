@@ -11,6 +11,7 @@
 #include "ash/test/ash_test_base.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "ui/base/ime/chromeos/ime_keyboard.h"
 #include "ui/chromeos/events/pref_names.h"
 
 namespace ash {

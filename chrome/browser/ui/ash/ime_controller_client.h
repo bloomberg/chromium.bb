@@ -9,6 +9,7 @@
 #include "ash/public/interfaces/ime_info.mojom.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "ui/base/ime/chromeos/ime_keyboard.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/chromeos/ime/input_method_menu_manager.h"
 
@@ -17,6 +18,7 @@ class ImeControllerClient
     : public ash::mojom::ImeControllerClient,
       public chromeos::input_method::InputMethodManager::Observer,
       public chromeos::input_method::InputMethodManager::ImeMenuObserver,
+      public chromeos::input_method::ImeKeyboard::Observer,
       public ui::ime::InputMethodMenuManager::Observer {
  public:
   explicit ImeControllerClient(
@@ -39,6 +41,7 @@ class ImeControllerClient
   void SwitchToPreviousIme() override;
   void SwitchImeById(const std::string& id, bool show_message) override;
   void ActivateImeMenuItem(const std::string& key) override;
+  void SetCapsLockFromTray(bool caps_enabled) override;
 
   // chromeos::input_method::InputMethodManager::Observer:
   void InputMethodChanged(chromeos::input_method::InputMethodManager* manager,
@@ -56,6 +59,10 @@ class ImeControllerClient
   // ui::ime::InputMethodMenuManager::Observer:
   void InputMethodMenuItemChanged(
       ui::ime::InputMethodMenuManager* manager) override;
+
+  // chromeos::input_method::ImeKeyboard::Observer:
+  void OnCapsLockChanged(bool enabled) override;
+  void OnLayoutChanging(const std::string& layout_name) override;
 
   void FlushMojoForTesting();
 
