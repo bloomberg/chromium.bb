@@ -31,6 +31,7 @@
 #include "third_party/skia/include/core/SkShader.h"
 #include "third_party/skia/include/effects/SkLayerRasterizer.h"
 #include "third_party/skia/include/effects/SkOverdrawColorFilter.h"
+#include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "ui/gfx/geometry/axis_transform2d.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -179,14 +180,12 @@ void SkiaRenderer::BindFramebufferToOutputSurface() {
           current_frame()->device_viewport_size) {
     // Either no SkSurface setup yet, or new GrContext, need to create new
     // surface.
-    GrBackendRenderTargetDesc desc;
-    desc.fWidth = current_frame()->device_viewport_size.width();
-    desc.fHeight = current_frame()->device_viewport_size.height();
-    desc.fConfig = kRGBA_8888_GrPixelConfig;
-    desc.fOrigin = kBottomLeft_GrSurfaceOrigin;
-    desc.fSampleCnt = 1;
-    desc.fStencilBits = 8;
-    desc.fRenderTargetHandle = 0;
+    GrGLFramebufferInfo framebuffer_info;
+    framebuffer_info.fFBOID = 0;
+    GrBackendRenderTarget render_target(
+        current_frame()->device_viewport_size.width(),
+        current_frame()->device_viewport_size.height(), 0, 8,
+        kRGBA_8888_GrPixelConfig, framebuffer_info);
 
     // This is for use_distance_field_text false, and can_use_lcd_text true.
     // LegacyFontHost will get LCD text and skia figures out what type to use.
@@ -194,7 +193,8 @@ void SkiaRenderer::BindFramebufferToOutputSurface() {
         SkSurfaceProps(0, SkSurfaceProps::kLegacyFontHost_InitType);
 
     root_surface_ = SkSurface::MakeFromBackendRenderTarget(
-        gr_context, desc, nullptr, &surface_props);
+        gr_context, render_target, kBottomLeft_GrSurfaceOrigin, nullptr,
+        &surface_props);
   }
 
   root_canvas_ = root_surface_->getCanvas();
