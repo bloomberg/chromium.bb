@@ -23,8 +23,8 @@ namespace IPC {
 // This function is for all the async IPCs that don't pass an extra parameter
 // using IPC_BEGIN_MESSAGE_MAP_WITH_PARAM.
 template <typename ObjT, typename Method, typename P, typename Tuple>
-void DispatchToMethod(ObjT* obj, Method method, P*, const Tuple& tuple) {
-  base::DispatchToMethod(obj, method, tuple);
+void DispatchToMethod(ObjT* obj, Method method, P*, Tuple&& tuple) {
+  base::DispatchToMethod(obj, method, std::forward<Tuple>(tuple));
 }
 
 template <typename ObjT,
@@ -35,22 +35,22 @@ template <typename ObjT,
 void DispatchToMethodImpl(ObjT* obj,
                           Method method,
                           P* parameter,
-                          const Tuple& tuple,
+                          Tuple&& tuple,
                           std::index_sequence<Ns...>) {
-  // TODO(mdempsky): Apply UnwrapTraits like base::DispatchToMethod?
-  (obj->*method)(parameter, std::get<Ns>(tuple)...);
+  (obj->*method)(parameter, std::get<Ns>(std::forward<Tuple>(tuple))...);
 }
 
 // The following function is for async IPCs which have a dispatcher with an
 // extra parameter specified using IPC_BEGIN_MESSAGE_MAP_WITH_PARAM.
-template <typename ObjT, typename P, typename... Args, typename... Ts>
-typename std::enable_if<sizeof...(Args) == sizeof...(Ts)>::type
+template <typename ObjT, typename P, typename... Args, typename Tuple>
+std::enable_if_t<sizeof...(Args) == std::tuple_size<std::decay_t<Tuple>>::value>
 DispatchToMethod(ObjT* obj,
                  void (ObjT::*method)(P*, Args...),
                  P* parameter,
-                 const std::tuple<Ts...>& tuple) {
-  DispatchToMethodImpl(obj, method, parameter, tuple,
-                       std::make_index_sequence<sizeof...(Ts)>());
+                 Tuple&& tuple) {
+  constexpr size_t size = std::tuple_size<std::decay_t<Tuple>>::value;
+  DispatchToMethodImpl(obj, method, parameter, std::forward<Tuple>(tuple),
+                       std::make_index_sequence<size>());
 }
 
 enum class MessageKind {
@@ -119,7 +119,7 @@ class MessageT<Meta, std::tuple<Ins...>, void> : public Message {
     TRACE_EVENT0("ipc", Meta::kName);
     Param p;
     if (Read(msg, &p)) {
-      DispatchToMethod(obj, func, parameter, p);
+      DispatchToMethod(obj, func, parameter, std::move(p));
       return true;
     }
     return false;
@@ -171,7 +171,7 @@ class MessageT<Meta, std::tuple<Ins...>, std::tuple<Outs...>>
     Message* reply = SyncMessage::GenerateReply(msg);
     if (ok) {
       ReplyParam reply_params;
-      base::DispatchToMethod(obj, func, send_params, &reply_params);
+      base::DispatchToMethod(obj, func, std::move(send_params), &reply_params);
       WriteParam(reply, reply_params);
       LogReplyParamsToMessage(reply_params, msg);
     } else {
@@ -194,7 +194,7 @@ class MessageT<Meta, std::tuple<Ins...>, std::tuple<Outs...>>
     if (ok) {
       std::tuple<Message&> t = std::tie(*reply);
       ConnectMessageAndReply(msg, reply);
-      base::DispatchToMethod(obj, func, send_params, &t);
+      base::DispatchToMethod(obj, func, std::move(send_params), &t);
     } else {
       NOTREACHED() << "Error deserializing message " << msg->type();
       reply->set_reply_error();
@@ -216,8 +216,9 @@ class MessageT<Meta, std::tuple<Ins...>, std::tuple<Outs...>>
       std::tuple<Message&> t = std::tie(*reply);
       ConnectMessageAndReply(msg, reply);
       std::tuple<P*> parameter_tuple(parameter);
-      auto concat_params = std::tuple_cat(parameter_tuple, send_params);
-      base::DispatchToMethod(obj, func, concat_params, &t);
+      auto concat_params =
+          std::tuple_cat(std::move(parameter_tuple), std::move(send_params));
+      base::DispatchToMethod(obj, func, std::move(concat_params), &t);
     } else {
       NOTREACHED() << "Error deserializing message " << msg->type();
       reply->set_reply_error();
