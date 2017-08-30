@@ -798,6 +798,11 @@ void RecordParallelDownloadAddStreamSuccess(bool success) {
   UMA_HISTOGRAM_BOOLEAN("Download.ParallelDownloadAddStreamSuccess", success);
 }
 
+void RecordParallelizableContentLength(int64_t content_length) {
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Download.ContentLength.Parallelizable",
+                              content_length / 1024, 1, kMaxFileSizeKb, 50);
+}
+
 void RecordParallelizableDownloadStats(
     size_t bytes_downloaded_with_parallel_streams,
     base::TimeDelta time_with_parallel_streams,
