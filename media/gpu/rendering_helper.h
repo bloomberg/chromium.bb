@@ -190,13 +190,10 @@ class RenderingHelper {
   scoped_refptr<gl::GLContext> gl_context_;
   scoped_refptr<gl::GLSurface> gl_surface_;
 
-#if defined(USE_OZONE)
+#if defined(OS_CHROMEOS)
   class StubOzoneDelegate;
   std::unique_ptr<StubOzoneDelegate> platform_window_delegate_;
-
-#if defined(OS_CHROMEOS)
   std::unique_ptr<display::DisplayConfigurator> display_configurator_;
-#endif
 #endif
 
   bool ignore_vsync_;
