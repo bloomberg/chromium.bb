@@ -68,6 +68,7 @@ struct MockDiskEntry::CallbackInfo {
 
 MockDiskEntry::MockDiskEntry(const std::string& key)
     : key_(key),
+      in_memory_data_(0),
       doomed_(false),
       sparse_(false),
       fail_requests_(false),
@@ -394,6 +395,7 @@ MockDiskCache::MockDiskCache()
       soft_failures_(false),
       double_create_check_(true),
       fail_sparse_requests_(false),
+      support_in_memory_entry_data_(true),
       defer_op_(MockDiskEntry::DEFER_NONE),
       resume_return_code_(0) {}
 
@@ -550,6 +552,22 @@ size_t MockDiskCache::DumpMemoryStats(
     base::trace_event::ProcessMemoryDump* pmd,
     const std::string& parent_absolute_name) const {
   return 0u;
+}
+
+uint8_t MockDiskCache::GetEntryInMemoryData(const std::string& key) {
+  if (!support_in_memory_entry_data_)
+    return 0;
+
+  EntryMap::iterator it = entries_.find(key);
+  if (it != entries_.end())
+    return it->second->in_memory_data();
+  return 0;
+}
+
+void MockDiskCache::SetEntryInMemoryData(const std::string& key, uint8_t data) {
+  EntryMap::iterator it = entries_.find(key);
+  if (it != entries_.end())
+    it->second->set_in_memory_data(data);
 }
 
 void MockDiskCache::ReleaseAll() {

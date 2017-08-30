@@ -292,4 +292,10 @@ int Backend::CalculateSizeOfEntriesBetween(base::Time initial_time,
   return net::ERR_NOT_IMPLEMENTED;
 }
 
+uint8_t Backend::GetEntryInMemoryData(const std::string& key) {
+  return 0;
+}
+
+void Backend::SetEntryInMemoryData(const std::string& key, uint8_t data) {}
+
 }  // namespace disk_cache

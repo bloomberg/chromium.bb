@@ -223,6 +223,21 @@ class NET_EXPORT Backend {
   virtual size_t DumpMemoryStats(
       base::trace_event::ProcessMemoryDump* pmd,
       const std::string& parent_absolute_name) const = 0;
+
+  // Backends can optionally permit one to store, probabilistically, up to a
+  // byte associated with a key of an existing entry in memory.
+
+  // GetEntryInMemoryData has the following behavior:
+  // - If the data is not available at this time for any reason, returns 0.
+  // - Otherwise, returns a value that was with very high probability
+  //   given to SetEntryInMemoryData(|key|) (and with a very low probability
+  //   to a different key that collides in the in-memory index).
+  //
+  // Due to the probability of collisions, including those that can be induced
+  // by hostile 3rd parties, this interface should not be used to make decisions
+  // that affect correctness (especially security).
+  virtual uint8_t GetEntryInMemoryData(const std::string& key);
+  virtual void SetEntryInMemoryData(const std::string& key, uint8_t data);
 };
 
 // This interface represents an entry in the disk cache.
