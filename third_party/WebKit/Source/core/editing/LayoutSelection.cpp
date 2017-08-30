@@ -86,11 +86,9 @@ LayoutObject* SelectionPaintRange::Iterator::operator*() const {
 
 SelectionPaintRange::Iterator& SelectionPaintRange::Iterator::operator++() {
   DCHECK(current_);
-  for (current_ = current_->NextInPreOrder(); current_ && current_ != stop_;
-       current_ = current_->NextInPreOrder()) {
-    if (current_->CanBeSelectionLeaf())
-      return *this;
-  }
+  current_ = current_->NextInPreOrder();
+  if (current_ && current_ != stop_)
+    return *this;
 
   current_ = nullptr;
   return *this;
@@ -302,7 +300,10 @@ static void SetShouldInvalidateSelection(const SelectionMarkingRange& new_range,
   // Invalidate previous selected LayoutObjects except already invalidated
   // above.
   for (LayoutObject* layout_object : old_invalidation_set.layout_objects) {
+    const SelectionState old_state = layout_object->GetSelectionState();
     layout_object->SetSelectionStateIfNeeded(SelectionState::kNone);
+    if (layout_object->GetSelectionState() == old_state)
+      continue;
     layout_object->SetShouldInvalidateSelection();
   }
   for (LayoutBlock* layout_block : old_invalidation_set.layout_blocks)
