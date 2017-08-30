@@ -2278,4 +2278,49 @@ TEST_P(CompositedLayerMappingTest, CompositedStickyConstraintRemovedAndAdded) {
                   .is_sticky);
 }
 
+TEST_P(CompositedLayerMappingTest, ScrollingContainerBoundsChange) {
+  GetDocument().GetFrame()->GetSettings()->SetPreferCompositingToLCDTextEnabled(
+      true);
+  SetBodyInnerHTML(
+      "<style>"
+      "  ::-webkit-scrollbar { width: 0; height: 0; }"
+      "  body { margin: 0; }"
+      "  #scroller { overflow-y: scroll; }"
+      "  #content {"
+      "    width: 100px;"
+      "    height: 100px;"
+      "    margin-top: 50px;"
+      "    margin-bottom: -50px;"
+      "  }"
+      "</style>"
+      "<div id='scroller'>"
+      "  <div id='content'></div>"
+      "</div");
+
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  Element* scrollerElement = GetDocument().getElementById("scroller");
+  LayoutBoxModelObject* scroller =
+      ToLayoutBoxModelObject(GetLayoutObjectByElementId("scroller"));
+  PaintLayerScrollableArea* scrollable_area = scroller->GetScrollableArea();
+
+  WebLayer* scrolling_layer =
+      scrollable_area->LayerForScrolling()->PlatformLayer();
+  EXPECT_EQ(0, scrolling_layer->ScrollPosition().y);
+  EXPECT_EQ(150, scrolling_layer->Bounds().height);
+  EXPECT_EQ(100, scrolling_layer->ScrollContainerBoundsForTesting().height);
+
+  scrollerElement->setScrollTop(300);
+  scrollerElement->setAttribute(HTMLNames::styleAttr, "max-height: 25px;");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  EXPECT_EQ(50, scrolling_layer->ScrollPosition().y);
+  EXPECT_EQ(150, scrolling_layer->Bounds().height);
+  EXPECT_EQ(25, scrolling_layer->ScrollContainerBoundsForTesting().height);
+
+  scrollerElement->setAttribute(HTMLNames::styleAttr, "max-height: 300px;");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  EXPECT_EQ(50, scrolling_layer->ScrollPosition().y);
+  EXPECT_EQ(150, scrolling_layer->Bounds().height);
+  EXPECT_EQ(100, scrolling_layer->ScrollContainerBoundsForTesting().height);
+}
+
 }  // namespace blink

@@ -245,6 +245,10 @@ bool WebLayerImpl::Scrollable() const {
   return layer_->scrollable();
 }
 
+blink::WebSize WebLayerImpl::ScrollContainerBoundsForTesting() const {
+  return layer_->scroll_container_bounds();
+}
+
 void WebLayerImpl::SetUserScrollable(bool horizontal, bool vertical) {
   layer_->SetUserScrollable(horizontal, vertical);
 }

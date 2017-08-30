@@ -122,7 +122,13 @@ class CORE_EXPORT ScrollingCoordinator final
       bool is_left_side_vertical_scrollbar);
 
   void WillDestroyScrollableArea(ScrollableArea*);
-  // Returns true if the coordinator handled this change.
+  // Updates the compositor layers and returns true if the scrolling coordinator
+  // handled this change.
+  // TODO(pdr): Factor the container bounds change out of this function. The
+  // compositor tracks scroll container bounds on the scroll layer whereas
+  // blink uses a separate layer. To ensure the compositor scroll layer has the
+  // updated scroll container bounds, this needs to be called when the scrolling
+  // contents layer is resized.
   bool ScrollableAreaScrollLayerDidChange(ScrollableArea*);
   void ScrollableAreaScrollbarLayerDidChange(ScrollableArea*,
                                              ScrollbarOrientation);

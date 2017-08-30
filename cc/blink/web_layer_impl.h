@@ -92,6 +92,7 @@ class CC_BLINK_EXPORT WebLayerImpl : public blink::WebLayer {
   void SetBackgroundFilters(const cc::FilterOperations& filters) override;
   bool HasTickingAnimationForTesting() override;
   void SetScrollable(const blink::WebSize&) override;
+  blink::WebSize ScrollContainerBoundsForTesting() const override;
   void SetScrollPosition(blink::WebFloatPoint position) override;
   blink::WebFloatPoint ScrollPosition() const override;
   bool Scrollable() const override;

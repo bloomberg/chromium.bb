@@ -172,6 +172,8 @@ class WebLayer {
   // bounds.
   virtual void SetScrollable(const WebSize& scroll_container_bounds) = 0;
   virtual bool Scrollable() const = 0;
+  virtual WebSize ScrollContainerBoundsForTesting() const = 0;
+
   virtual void SetUserScrollable(bool horizontal, bool vertical) = 0;
   virtual bool UserScrollableHorizontal() const = 0;
   virtual bool UserScrollableVertical() const = 0;
