@@ -17,20 +17,20 @@ namespace em = enterprise_management;
 namespace policy {
 namespace {
 
-// WeeklyTime class contains weekday and time in milliseconds.
+// WeeklyTime class contains day of week and time in milliseconds.
 struct WeeklyTime {
-  WeeklyTime(int weekday, int milliseconds)
-      : weekday(weekday), milliseconds(milliseconds) {}
+  WeeklyTime(int day_of_week, int milliseconds)
+      : day_of_week(day_of_week), milliseconds(milliseconds) {}
 
   std::unique_ptr<base::DictionaryValue> ToValue() const {
     auto weekly_time = base::MakeUnique<base::DictionaryValue>();
-    weekly_time->SetInteger("weekday", weekday);
+    weekly_time->SetInteger("day_of_week", day_of_week);
     weekly_time->SetInteger("time", milliseconds);
     return weekly_time;
   }
 
   // Number of weekday (1 = Monday, 2 = Tuesday, etc.)
-  int weekday;
+  int day_of_week;
   // Time of day in milliseconds from the beginning of the day.
   int milliseconds;
 };
@@ -55,8 +55,8 @@ struct Interval {
 // Return nullptr if WeeklyTime structure isn't correct
 std::unique_ptr<WeeklyTime> GetWeeklyTime(
     const em::WeeklyTimeProto& container) {
-  if (!container.has_weekday() ||
-      container.weekday() == em::WeeklyTimeProto::DAY_OF_WEEK_UNSPECIFIED) {
+  if (!container.has_day_of_week() ||
+      container.day_of_week() == em::WeeklyTimeProto::DAY_OF_WEEK_UNSPECIFIED) {
     LOG(ERROR) << "Day of week in interval is absent or unspecified.";
     return nullptr;
   }
@@ -71,13 +71,13 @@ std::unique_ptr<WeeklyTime> GetWeeklyTime(
                << ", the value should be in [0; " << kMillisecondsInDay << ").";
     return nullptr;
   }
-  return base::MakeUnique<WeeklyTime>(container.weekday(), time_of_day);
+  return base::MakeUnique<WeeklyTime>(container.day_of_week(), time_of_day);
 }
 
 // Get and return list of time intervals from DeviceOffHoursProto structure
 std::vector<Interval> GetIntervals(const em::DeviceOffHoursProto& container) {
   std::vector<Interval> intervals;
-  for (const auto& entry : container.interval()) {
+  for (const auto& entry : container.intervals()) {
     if (!entry.has_start() || !entry.has_end()) {
       LOG(WARNING) << "Skipping interval without start or/and end.";
       continue;
@@ -94,8 +94,8 @@ std::vector<Interval> GetIntervals(const em::DeviceOffHoursProto& container) {
 std::vector<std::string> GetIgnoredPolicies(
     const em::DeviceOffHoursProto& container) {
   std::vector<std::string> ignored_policies;
-  return std::vector<std::string>(container.ignored_policy().begin(),
-                                  container.ignored_policy().end());
+  return std::vector<std::string>(container.ignored_policies().begin(),
+                                  container.ignored_policies().end());
 }
 
 }  // namespace

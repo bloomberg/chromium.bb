@@ -21,7 +21,7 @@ namespace off_hours {
 // { "start" : WeeklyTime,
 //   "end" : WeeklyTime }
 // WeeklyTime dictionary format:
-// { "weekday" : int # value is from 1 to 7 (1 = Monday, 2 = Tuesday, etc.)
+// { "day_of_week" : int # value is from 1 to 7 (1 = Monday, 2 = Tuesday, etc.)
 //   "time" : int # in milliseconds from the beginning of the day.
 // }
 std::unique_ptr<base::DictionaryValue> ConvertPolicyProtoToValue(

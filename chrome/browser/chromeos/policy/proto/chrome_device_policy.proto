@@ -822,7 +822,7 @@ message CastReceiverNameProto {
 
 // Day of the week and time settings for DeviceOffHoursIntervalProto.
 message WeeklyTimeProto {
-  enum Weekday {
+  enum DayOfWeek {
     DAY_OF_WEEK_UNSPECIFIED = 0;
     MONDAY = 1;
     TUESDAY = 2;
@@ -833,7 +833,7 @@ message WeeklyTimeProto {
     SUNDAY = 7;
   }
   // Day of week.
-  optional Weekday weekday = 1;
+  optional DayOfWeek day_of_week = 1;
   // Time of day in milliseconds from beginning of the day
   // in timezone that is defined in DeviceOffHoursProto.
   optional int32 time = 2;
@@ -849,7 +849,7 @@ message DeviceOffHoursIntervalProto {
 // while the device is not at school ("OffHours").
 message DeviceOffHoursProto {
   // List of intervals when ignored policies are not applied.
-  repeated DeviceOffHoursIntervalProto interval = 1;
+  repeated DeviceOffHoursIntervalProto intervals = 1;
   // Timezone in the same format as SystemTimezoneProto.timezone.
   // If timezone isn't set then "GMT" will be used
   optional string timezone = 2;
@@ -857,7 +857,7 @@ message DeviceOffHoursProto {
   // List contains policy names from ChromeDeviceSettingsProto
   // (i.e. "device_policy_refresh_rate")
   // During OffHoursMode default settings of ignored policies are used.
-  repeated string ignored_policy = 3;
+  repeated string ignored_policies = 3;
 }
 
 message ChromeDeviceSettingsProto {
