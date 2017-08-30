@@ -25,6 +25,7 @@ enum class PermissionType {
   BACKGROUND_SYNC = 10,
   FLASH = 11,
   SENSORS = 12,
+  ACCESSIBILITY_EVENTS = 13,
 
   // Always keep this at the end.
   NUM,

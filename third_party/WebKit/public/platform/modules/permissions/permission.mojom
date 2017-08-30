@@ -18,6 +18,7 @@ enum PermissionName {
   VIDEO_CAPTURE,
   BACKGROUND_SYNC,
   SENSORS,
+  ACCESSIBILITY_EVENTS,
 };
 
 struct MidiPermissionDescriptor {

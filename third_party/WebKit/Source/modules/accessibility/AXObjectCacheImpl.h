@@ -31,11 +31,15 @@
 
 #include <memory>
 #include "core/dom/AXObjectCacheBase.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "modules/ModulesExport.h"
 #include "modules/accessibility/AXObject.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/HashSet.h"
+#include "public/platform/modules/permissions/permission.mojom-blink.h"
+#include "public/platform/modules/permissions/permission_status.mojom-blink.h"
 
 namespace blink {
 
@@ -44,7 +48,9 @@ class HTMLAreaElement;
 class LocalFrameView;
 
 // This class should only be used from inside the accessibility directory.
-class MODULES_EXPORT AXObjectCacheImpl : public AXObjectCacheBase {
+class MODULES_EXPORT AXObjectCacheImpl
+    : public AXObjectCacheBase,
+      public mojom::blink::PermissionObserver {
   WTF_MAKE_NONCOPYABLE(AXObjectCacheImpl);
 
  public:
@@ -190,6 +196,16 @@ class MODULES_EXPORT AXObjectCacheImpl : public AXObjectCacheBase {
   // potential owner, possibly reparenting this element.
   void UpdateTreeIfElementIdIsAriaOwned(Element*);
 
+  // Synchronously returns whether or not we currently have permission to
+  // call AOM event listeners.
+  bool CanCallAOMEventListeners() const;
+
+  // This is called when an accessibility event is triggered and there are
+  // AOM event listeners registered that would have been called.
+  // Asynchronously requests permission from the user. If permission is
+  // granted, it only applies to the next event received.
+  void RequestAOMEventListenerPermission();
+
  protected:
   void PostPlatformNotification(AXObject*, AXNotification);
   void LabelChanged(Element*);
@@ -249,6 +265,9 @@ class MODULES_EXPORT AXObjectCacheImpl : public AXObjectCacheBase {
       notifications_to_post_;
   void NotificationPostTimerFired(TimerBase*);
 
+  // ContextLifecycleObserver overrides.
+  void ContextDestroyed(ExecutionContext*) override;
+
   AXObject* FocusedImageMapUIElement(HTMLAreaElement*);
 
   AXID GetOrCreateAXID(AXObject*);
@@ -258,6 +277,22 @@ class MODULES_EXPORT AXObjectCacheImpl : public AXObjectCacheBase {
   AXObject* NearestExistingAncestor(Node*);
 
   Settings* GetSettings();
+
+  // Start listenening for updates to the AOM accessibility event permission.
+  void AddPermissionStatusListener();
+
+  // mojom::blink::PermissionObserver implementation.
+  // Called when we get an updated AOM event listener permission value from
+  // the browser.
+  void OnPermissionStatusChange(mojom::PermissionStatus);
+
+  // Whether the user has granted permission for the user to install event
+  // listeners for accessibility events using the AOM.
+  mojom::PermissionStatus accessibility_event_permission_;
+  // The permission service, enabling us to check for event listener
+  // permission.
+  mojom::blink::PermissionServicePtr permission_service_;
+  mojo::Binding<mojom::blink::PermissionObserver> permission_observer_binding_;
 };
 
 // This is the only subclass of AXObjectCache.
