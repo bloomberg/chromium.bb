@@ -56,6 +56,37 @@ bool UnsortedDocumentMarkerListEditor::RemoveMarkers(MarkerList* list,
   return did_remove_marker;
 }
 
+bool UnsortedDocumentMarkerListEditor::ShiftMarkersContentIndependent(
+    MarkerList* list,
+    unsigned offset,
+    unsigned old_length,
+    unsigned new_length) {
+  // For an unsorted marker list, the quickest way to perform this operation is
+  // to build a new list with the markers not removed by the shift.
+  bool did_shift_marker = false;
+  HeapVector<Member<DocumentMarker>> unremoved_markers;
+  for (const Member<DocumentMarker>& marker : *list) {
+    Optional<DocumentMarker::MarkerOffsets> result =
+        marker->ComputeOffsetsAfterShift(offset, old_length, new_length);
+    if (!result) {
+      did_shift_marker = true;
+      continue;
+    }
+
+    if (marker->StartOffset() != result.value().start_offset ||
+        marker->EndOffset() != result.value().end_offset) {
+      marker->SetStartOffset(result.value().start_offset);
+      marker->SetEndOffset(result.value().end_offset);
+      did_shift_marker = true;
+    }
+
+    unremoved_markers.push_back(marker);
+  }
+
+  *list = std::move(unremoved_markers);
+  return did_shift_marker;
+}
+
 DocumentMarker* UnsortedDocumentMarkerListEditor::FirstMarkerIntersectingRange(
     const MarkerList& list,
     unsigned start_offset,
