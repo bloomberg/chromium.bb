@@ -355,7 +355,7 @@ bool SchedulerStateMachine::ShouldDraw() const {
   return needs_redraw_;
 }
 
-bool SchedulerStateMachine::ShouldActivatePendingTree() const {
+bool SchedulerStateMachine::ShouldActivateSyncTree() const {
   // There is nothing to activate.
   if (!has_pending_tree_)
     return false;
@@ -559,7 +559,7 @@ bool SchedulerStateMachine::ShouldInvalidateLayerTreeFrameSink() const {
 }
 
 SchedulerStateMachine::Action SchedulerStateMachine::NextAction() const {
-  if (ShouldActivatePendingTree())
+  if (ShouldActivateSyncTree())
     return ACTION_ACTIVATE_SYNC_TREE;
   if (ShouldCommit())
     return ACTION_COMMIT;
