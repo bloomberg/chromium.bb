@@ -30,13 +30,14 @@
 
 #include "public/platform/WebImageGenerator.h"
 
+#include <utility>
 #include "platform/graphics/DecodingImageGenerator.h"
 
 namespace blink {
 
-std::unique_ptr<SkImageGenerator> WebImageGenerator::Create(
+std::unique_ptr<SkImageGenerator> WebImageGenerator::CreateAsSkImageGenerator(
     sk_sp<SkData> data) {
-  return DecodingImageGenerator::Create(data.get());
+  return DecodingImageGenerator::CreateAsSkImageGenerator(std::move(data));
 }
 
 }  // namespace blink

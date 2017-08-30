@@ -36,6 +36,48 @@
 
 namespace blink {
 
+// static
+std::unique_ptr<SkImageGenerator>
+DecodingImageGenerator::CreateAsSkImageGenerator(sk_sp<SkData> data) {
+  RefPtr<SegmentReader> segment_reader =
+      SegmentReader::CreateFromSkData(std::move(data));
+  // We just need the size of the image, so we have to temporarily create an
+  // ImageDecoder. Since we only need the size, the premul and gamma settings
+  // don't really matter.
+  std::unique_ptr<ImageDecoder> decoder = ImageDecoder::Create(
+      segment_reader, true, ImageDecoder::kAlphaPremultiplied,
+      ColorBehavior::TransformToGlobalTarget());
+  if (!decoder || !decoder->IsSizeAvailable())
+    return nullptr;
+
+  const IntSize size = decoder->Size();
+  const SkImageInfo info =
+      SkImageInfo::MakeN32(size.Width(), size.Height(), kPremul_SkAlphaType,
+                           decoder->ColorSpaceForSkImages());
+
+  RefPtr<ImageFrameGenerator> frame =
+      ImageFrameGenerator::Create(SkISize::Make(size.Width(), size.Height()),
+                                  false, decoder->GetColorBehavior());
+  if (!frame)
+    return nullptr;
+
+  auto generator = DecodingImageGenerator::Create(
+      std::move(frame), info, std::move(segment_reader), true, 0);
+  return WTF::WrapUnique(new SkiaPaintImageGenerator(std::move(generator)));
+}
+
+// static
+sk_sp<DecodingImageGenerator> DecodingImageGenerator::Create(
+    PassRefPtr<ImageFrameGenerator> frame_generator,
+    const SkImageInfo& info,
+    PassRefPtr<SegmentReader> data,
+    bool all_data_received,
+    size_t index) {
+  return sk_sp<DecodingImageGenerator>(
+      new DecodingImageGenerator(std::move(frame_generator), info,
+                                 std::move(data), all_data_received, index));
+}
+
 DecodingImageGenerator::DecodingImageGenerator(
     PassRefPtr<ImageFrameGenerator> frame_generator,
     const SkImageInfo& info,
@@ -152,34 +194,6 @@ bool DecodingImageGenerator::GetYUV8Planes(const SkYUVSizeInfo& size_info,
   PlatformInstrumentation::DidDecodeLazyPixelRef();
 
   return decoded;
-}
-
-std::unique_ptr<SkImageGenerator> DecodingImageGenerator::Create(SkData* data) {
-  RefPtr<SegmentReader> segment_reader =
-      SegmentReader::CreateFromSkData(sk_ref_sp(data));
-  // We just need the size of the image, so we have to temporarily create an
-  // ImageDecoder. Since we only need the size, the premul and gamma settings
-  // don't really matter.
-  std::unique_ptr<ImageDecoder> decoder = ImageDecoder::Create(
-      segment_reader, true, ImageDecoder::kAlphaPremultiplied,
-      ColorBehavior::TransformToGlobalTarget());
-  if (!decoder || !decoder->IsSizeAvailable())
-    return nullptr;
-
-  const IntSize size = decoder->Size();
-  const SkImageInfo info =
-      SkImageInfo::MakeN32(size.Width(), size.Height(), kPremul_SkAlphaType,
-                           decoder->ColorSpaceForSkImages());
-
-  RefPtr<ImageFrameGenerator> frame =
-      ImageFrameGenerator::Create(SkISize::Make(size.Width(), size.Height()),
-                                  false, decoder->GetColorBehavior());
-  if (!frame)
-    return nullptr;
-
-  sk_sp<DecodingImageGenerator> generator = sk_make_sp<DecodingImageGenerator>(
-      frame, info, std::move(segment_reader), true, 0);
-  return WTF::WrapUnique(new SkiaPaintImageGenerator(std::move(generator)));
 }
 
 }  // namespace blink

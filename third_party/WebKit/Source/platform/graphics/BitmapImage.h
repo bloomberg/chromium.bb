@@ -32,11 +32,11 @@
 #include "platform/Timer.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/Color.h"
+#include "platform/graphics/DeferredImageDecoder.h"
 #include "platform/graphics/FrameData.h"
 #include "platform/graphics/Image.h"
 #include "platform/graphics/ImageAnimationPolicy.h"
 #include "platform/graphics/ImageOrientation.h"
-#include "platform/graphics/ImageSource.h"
 #include "platform/image-decoders/ImageAnimation.h"
 #include "platform/wtf/Forward.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
@@ -174,7 +174,7 @@ class PLATFORM_EXPORT BitmapImage final : public Image {
 
   void NotifyObserversOfAnimationAdvance(TimerBase*);
 
-  ImageSource source_;
+  std::unique_ptr<DeferredImageDecoder> decoder_;
   mutable IntSize size_;  // The size to use for the overall image (will just
                           // be the size of the first image).
   mutable IntSize size_respecting_orientation_;
@@ -201,7 +201,7 @@ class PLATFORM_EXPORT BitmapImage final : public Image {
                                 // final overall image size yet.
   bool size_available_ : 1;     // Whether we can obtain the size of the first
                                 // image frame from ImageIO yet.
-  mutable bool have_frame_count_ : 1;
+  bool have_frame_count_ : 1;
 
   RepetitionCountStatus repetition_count_status_;
   int repetition_count_;  // How many total animation loops we should do.  This

@@ -74,13 +74,15 @@ class PLATFORM_EXPORT DeferredImageDecoder final {
   size_t ClearCacheExceptFrame(size_t index);
   bool FrameHasAlphaAtIndex(size_t index) const;
   bool FrameIsReceivedAtIndex(size_t index) const;
+  // Duration is reported in seconds.
+  // TODO(vmpstr): Use something like TimeDelta here.
   float FrameDurationAtIndex(size_t index) const;
   size_t FrameBytesAtIndex(size_t index) const;
   ImageOrientation OrientationAtIndex(size_t index) const;
   bool HotSpot(IntPoint&) const;
 
  private:
-  explicit DeferredImageDecoder(std::unique_ptr<ImageDecoder> actual_decoder);
+  explicit DeferredImageDecoder(std::unique_ptr<ImageDecoder> metadata_decoder);
 
   friend class DeferredImageDecoderTest;
   ImageFrameGenerator* FrameGenerator() { return frame_generator_.Get(); }
@@ -95,7 +97,7 @@ class PLATFORM_EXPORT DeferredImageDecoder final {
   // Copy of the data that is passed in, used by deferred decoding.
   // Allows creating readonly snapshots that may be read in another thread.
   std::unique_ptr<SkRWBuffer> rw_buffer_;
-  std::unique_ptr<ImageDecoder> actual_decoder_;
+  std::unique_ptr<ImageDecoder> metadata_decoder_;
 
   String filename_extension_;
   IntSize size_;
