@@ -115,17 +115,20 @@ scoped_refptr<RefcountedKeyedService>
 #endif // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
 #if defined(OS_ANDROID)
-  if (base::FeatureList::IsEnabled(features::kSiteNotificationChannels)) {
     auto channels_provider =
         base::MakeUnique<NotificationChannelsProviderAndroid>();
-    channels_provider->MigrateToChannelsIfNecessary(
-        profile->GetPrefs(), settings_map->GetPrefProvider());
-    settings_map->RegisterUserModifiableProvider(
-        HostContentSettingsMap::NOTIFICATION_ANDROID_PROVIDER,
-        std::move(channels_provider));
+    if (base::FeatureList::IsEnabled(features::kSiteNotificationChannels)) {
+      channels_provider->MigrateToChannelsIfNecessary(
+          profile->GetPrefs(), settings_map->GetPrefProvider());
+      settings_map->RegisterUserModifiableProvider(
+          HostContentSettingsMap::NOTIFICATION_ANDROID_PROVIDER,
+          std::move(channels_provider));
+    } else {
+      // TODO(crbug.com/758553): Remove this unmigration code and the feature
+      // flag once we're confident a kill-switch is no longer necessary (M63?).
+      channels_provider->UnmigrateChannelsIfNecessary(
+          profile->GetPrefs(), settings_map->GetPrefProvider());
   }
-// TODO(crbug.com/700377): Should delete site channels if feature becomes
-// disabled.
 #endif  // defined (OS_ANDROID)
   return settings_map;
 }
