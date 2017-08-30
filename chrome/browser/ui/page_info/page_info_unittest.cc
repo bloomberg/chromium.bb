@@ -344,7 +344,7 @@ TEST_F(PageInfoTest, UnwantedSoftware) {
             page_info()->site_identity_status());
 }
 
-#if defined(SAFE_BROWSING_DB_LOCAL) && !defined(OS_MACOSX)
+#if defined(SAFE_BROWSING_DB_LOCAL)
 TEST_F(PageInfoTest, PasswordReuse) {
   security_info_.security_level = security_state::DANGEROUS;
   security_info_.malicious_content_status =

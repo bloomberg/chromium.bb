@@ -285,7 +285,7 @@ BubbleHeaderView::BubbleHeaderView(
   layout->StartRow(0, label_column_status);
   password_reuse_button_container_ = new views::View();
   password_reuse_button_container_->SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kHorizontal));
+      new views::BoxLayout(views::BoxLayout::kHorizontal, gfx::Insets(), 8));
   layout->AddView(password_reuse_button_container_, 1, 1,
                   views::GridLayout::FILL, views::GridLayout::LEADING);
 

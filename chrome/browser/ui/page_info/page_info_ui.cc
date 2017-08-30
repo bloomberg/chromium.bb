@@ -35,7 +35,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 #endif
 
-#if defined(SAFE_BROWSING_DB_LOCAL) && !defined(OS_MACOSX)
+#if defined(SAFE_BROWSING_DB_LOCAL)
 #include "components/safe_browsing/password_protection/password_protection_service.h"
 #endif
 
@@ -248,7 +248,7 @@ PageInfoUI::IdentityInfo::GetSecurityDescription() const {
       return CreateSecurityDescription(IDS_PAGE_INFO_UNWANTED_SOFTWARE_SUMMARY,
                                        IDS_PAGE_INFO_UNWANTED_SOFTWARE_DETAILS);
     case PageInfo::SITE_IDENTITY_STATUS_PASSWORD_REUSE:
-#if defined(SAFE_BROWSING_DB_LOCAL) && !defined(OS_MACOSX)
+#if defined(SAFE_BROWSING_DB_LOCAL)
       return safe_browsing::PasswordProtectionService::ShouldShowSofterWarning()
                  ? CreateSecurityDescription(
                        IDS_PAGE_INFO_CHANGE_PASSWORD_SUMMARY_SOFTER,

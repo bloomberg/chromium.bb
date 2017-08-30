@@ -102,6 +102,14 @@ class X509Certificate;
   // info icon has a race condition where it might switch between
   // LocationIconDecoration and SecurityStateBubbleDecoration.
   LocationBarDecoration* decoration_;  // Weak.
+
+  // The button for changing password decisions.
+  // This button only shows when there is an password reuse event.
+  NSButton* changePasswordButton_;
+
+  // The button for whitelisting password reuse decisions.
+  // This button only shows when there is an password reuse event.
+  NSButton* whitelistPasswordReuseButton_;
 }
 
 // Designated initializer. The controller will release itself when the bubble
