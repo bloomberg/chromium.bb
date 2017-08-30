@@ -641,6 +641,17 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="OfflinePages.SavePageRequested">
+  <owner>petewil@chromium.org</owner>
+  <metric name="RequestedFromForeground">
+    <summary>
+      Metrics that measure which URLs the user is requesting offline page copies
+      of, and whether they were requested from the foreground or background UI.
+      The value is 1 if requested from the foreground, 0 from background.
+    </summary>
+  </metric>
+</event>
+
 <event name="PageDomainInfo">
   <owner>uthakore@chromium.org</owner>
   <owner>invernizzi@chromium.org</owner>

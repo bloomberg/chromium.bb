@@ -13,6 +13,7 @@
 #include "components/offline_pages/core/background/request_queue.h"
 #include "components/offline_pages/core/background/request_queue_in_memory_store.h"
 #include "components/offline_pages/core/background/scheduler_stub.h"
+#include "components/offline_pages/core/offline_pages_ukm_reporter_stub.h"
 #include "content/public/browser/browser_context.h"
 
 namespace offline_pages {
@@ -36,9 +37,13 @@ std::unique_ptr<KeyedService> BuildTestRequestCoordinator(
   NetworkQualityProviderStub* network_quality_provider =
       NetworkQualityProviderStub::GetUserData(context);
 
+  std::unique_ptr<OfflinePagesUkmReporter> ukm_reporter_stub(
+      new OfflinePagesUkmReporterStub());
+
   return std::unique_ptr<RequestCoordinator>(new RequestCoordinator(
       std::move(policy), std::move(offliner), std::move(queue),
-      std::move(scheduler_stub), network_quality_provider));
+      std::move(scheduler_stub), network_quality_provider,
+      std::move(ukm_reporter_stub)));
 }
 
 }  // namespace offline_pages

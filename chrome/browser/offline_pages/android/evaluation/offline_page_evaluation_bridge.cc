@@ -35,6 +35,7 @@
 #include "components/offline_pages/core/downloads/download_notifying_observer.h"
 #include "components/offline_pages/core/offline_page_item.h"
 #include "components/offline_pages/core/offline_page_model.h"
+#include "components/offline_pages/core/offline_pages_ukm_reporter.h"
 #include "content/public/browser/browser_context.h"
 #include "jni/OfflinePageEvaluationBridge_jni.h"
 
@@ -149,10 +150,13 @@ std::unique_ptr<KeyedService> GetTestingRequestCoordinator(
   net::NetworkQualityEstimator::NetworkQualityProvider*
       network_quality_estimator =
           UINetworkQualityEstimatorServiceFactory::GetForProfile(profile);
+  std::unique_ptr<OfflinePagesUkmReporter> ukm_reporter(
+      new OfflinePagesUkmReporter());
   std::unique_ptr<RequestCoordinator> request_coordinator =
       base::MakeUnique<RequestCoordinator>(
           std::move(policy), std::move(offliner), std::move(queue),
-          std::move(scheduler), network_quality_estimator);
+          std::move(scheduler), network_quality_estimator,
+          std::move(ukm_reporter));
   request_coordinator->SetInternalStartProcessingCallbackForTest(
       base::Bind(&android::EvaluationTestScheduler::ImmediateScheduleCallback,
                  base::Unretained(scheduler.get())));

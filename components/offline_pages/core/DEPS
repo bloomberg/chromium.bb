@@ -1,4 +1,6 @@
 include_rules = [
   "+components/keyed_service",
+  "+components/ukm",
+  "+services/metrics/public/cpp",
   "+sql",
 ]
