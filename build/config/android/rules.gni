@@ -1409,6 +1409,10 @@ if (enable_java_templates) {
   #      alternative_android_sdk_ijar, must be set if alternative_android_sdk_ijar
   #      is used.
   #
+  #   alternative_android_sdk_jar: actual jar corresponding to
+  #      alternative_android_sdk_ijar, must be set if alternative_android_sdk_ijar
+  #      is used.
+  #
   #   emma_never_instrument: Disables EMMA Java code coverage for this target.
   #
   # Example
@@ -1435,6 +1439,7 @@ if (enable_java_templates) {
 
     if (defined(invoker.alternative_android_sdk_ijar)) {
       assert(defined(invoker.alternative_android_sdk_ijar_dep))
+      assert(defined(invoker.alternative_android_sdk_jar))
     }
 
     java_library_impl(target_name) {
