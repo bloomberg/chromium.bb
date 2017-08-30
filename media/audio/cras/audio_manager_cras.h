@@ -78,14 +78,6 @@ class MEDIA_EXPORT AudioManagerCras : public AudioManagerBase {
 
   void GetAudioDeviceNamesImpl(bool is_input, AudioDeviceNames* device_names);
 
-  void AddBeamformingDevices(AudioDeviceNames* device_names);
-
-  // Stores the mic positions field from the device.
-  std::vector<Point> mic_positions_;
-
-  const char* beamforming_on_device_id_;
-  const char* beamforming_off_device_id_;
-
   DISALLOW_COPY_AND_ASSIGN(AudioManagerCras);
 };
 
