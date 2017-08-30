@@ -749,6 +749,24 @@ void RemoteSuggestionsProviderImpl::OnFetchFinished(
     return;
   }
 
+  if (!status.IsSuccess()) {
+    if (callback) {
+      std::move(callback).Run(status);
+    }
+    return;
+  }
+
+  if (IsKeepingPrefetchedSuggestionsEnabled() && prefetched_pages_tracker_ &&
+      !prefetched_pages_tracker_->IsInitialized()) {
+    // Wait until the tracker is initialized.
+    prefetched_pages_tracker_->AddInitializationCompletedCallback(
+        base::BindOnce(&RemoteSuggestionsProviderImpl::OnFetchFinished,
+                       base::Unretained(this), std::move(callback),
+                       interactive_request, status,
+                       std::move(fetched_categories)));
+    return;
+  }
+
   if (fetched_categories) {
     for (FetchedCategory& fetched_category : *fetched_categories) {
       for (std::unique_ptr<RemoteSuggestion>& suggestion :
@@ -766,19 +784,8 @@ void RemoteSuggestionsProviderImpl::OnFetchFinished(
     }
   }
 
-  if (IsKeepingPrefetchedSuggestionsEnabled() && prefetched_pages_tracker_ &&
-      !prefetched_pages_tracker_->IsInitialized()) {
-    // Wait until the tracker is initialized.
-    prefetched_pages_tracker_->AddInitializationCompletedCallback(
-        base::BindOnce(&RemoteSuggestionsProviderImpl::OnFetchFinished,
-                       base::Unretained(this), std::move(callback),
-                       interactive_request, status,
-                       std::move(fetched_categories)));
-    return;
-  }
-
   // Record the fetch time of a successfull background fetch.
-  if (!interactive_request && status.IsSuccess()) {
+  if (!interactive_request) {
     pref_service_->SetInt64(prefs::kLastSuccessfulBackgroundFetchTime,
                             clock_->Now().ToInternalValue());
   }
@@ -916,15 +923,6 @@ void RemoteSuggestionsProviderImpl::IntegrateSuggestions(
     CategoryContent* content,
     RemoteSuggestion::PtrVector new_suggestions) {
   DCHECK(ready());
-
-  // Do not touch the current set of suggestions if the newly fetched one is
-  // empty.
-  // TODO(tschumann): This should go. If we get empty results we should update
-  // accordingly and remove the old one (only of course if this was not received
-  // through a fetch-more).
-  if (new_suggestions.empty()) {
-    return;
-  }
 
   // It's entirely possible that the newly fetched suggestions contain articles
   // that have been present before.
