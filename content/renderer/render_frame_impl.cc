@@ -768,6 +768,7 @@ NOINLINE void MaybeTriggerAsanError(const GURL& url) {
 #if defined(SYZYASAN)
   const char kCorruptHeapBlock[] = "/corrupt-heap-block";
   const char kCorruptHeap[] = "/corrupt-heap";
+  const char kDcheck[] = "/dcheck";
 #endif
 
   if (!url.DomainIs(kCrashDomain))
@@ -798,6 +799,11 @@ NOINLINE void MaybeTriggerAsanError(const GURL& url) {
     LOG(ERROR) << "Intentionally causing ASAN corrupt heap"
                << " because user navigated to " << url.spec();
     base::debug::AsanCorruptHeap();
+  } else if (crash_type == kDcheck) {
+    LOG(ERROR) << "Intentionally DCHECKING because user navigated to "
+               << url.spec();
+
+    DCHECK(false) << "Intentional DCHECK.";
 #endif
   }
 }
