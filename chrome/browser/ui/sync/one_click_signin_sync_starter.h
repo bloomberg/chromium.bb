@@ -171,7 +171,7 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
    public:
     SigninDialogDelegate(
         base::WeakPtr<OneClickSigninSyncStarter> sync_starter);
-    virtual ~SigninDialogDelegate();
+    ~SigninDialogDelegate() override;
     void OnCancelSignin() override;
     void OnContinueSignin() override;
     void OnSigninWithNewProfile() override;

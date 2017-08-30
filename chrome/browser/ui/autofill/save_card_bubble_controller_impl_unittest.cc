@@ -124,7 +124,7 @@ class SaveCardBubbleControllerImplTest : public BrowserWithTestWindowTest {
   }
 
  private:
-  class TestSaveCardBubbleView : public SaveCardBubbleView {
+  class TestSaveCardBubbleView final : public SaveCardBubbleView {
     void Hide() override {}
   };
 

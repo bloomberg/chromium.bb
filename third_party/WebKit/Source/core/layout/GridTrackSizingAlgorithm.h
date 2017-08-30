@@ -228,6 +228,8 @@ class GridTrackSizingAlgorithmStrategy {
   USING_FAST_MALLOC(GridTrackSizingAlgorithmStrategy);
 
  public:
+  virtual ~GridTrackSizingAlgorithmStrategy();
+
   LayoutUnit MinContentForChild(LayoutBox&) const;
   LayoutUnit MaxContentForChild(LayoutBox&) const;
   LayoutUnit MinSizeForChild(LayoutBox&) const;

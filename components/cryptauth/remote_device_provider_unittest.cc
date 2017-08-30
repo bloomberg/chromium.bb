@@ -90,9 +90,10 @@ class TestObserver : public RemoteDeviceProvider::Observer {
 
 }  // namespace
 
-class FakeDeviceLoader : public cryptauth::RemoteDeviceLoader {
+class FakeDeviceLoader final : public cryptauth::RemoteDeviceLoader {
  public:
-  class TestRemoteDeviceLoaderFactory : public RemoteDeviceLoader::Factory {
+  class TestRemoteDeviceLoaderFactory final
+      : public RemoteDeviceLoader::Factory {
    public:
     explicit TestRemoteDeviceLoaderFactory()
         : test_devices_(cryptauth::GenerateTestRemoteDevices(5)),

@@ -230,6 +230,7 @@ TEST(FunctionalTest, MultiPartBind) {
 class A {
  public:
   explicit A(int i) : i_(i) {}
+  virtual ~A() {}
 
   int F() { return i_; }
   int AddF(int j) { return i_ + j; }

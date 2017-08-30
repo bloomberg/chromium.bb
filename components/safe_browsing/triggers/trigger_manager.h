@@ -64,7 +64,7 @@ using SBErrorOptions =
 class TriggerManager {
  public:
   TriggerManager(BaseUIManager* ui_manager);
-  ~TriggerManager();
+  virtual ~TriggerManager();
 
   // Returns a SBErrorDisplayOptions struct containing user state that is
   // relevant for TriggerManager to decide whether to start/finish data

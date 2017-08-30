@@ -23,7 +23,7 @@ namespace content {
 
 // An implementation of blink::InterfaceProvider that forwards to a
 // service_manager::InterfaceProvider.
-class BlinkInterfaceProviderImpl : public blink::InterfaceProvider {
+class BlinkInterfaceProviderImpl final : public blink::InterfaceProvider {
  public:
   explicit BlinkInterfaceProviderImpl(service_manager::Connector* connector);
   ~BlinkInterfaceProviderImpl();

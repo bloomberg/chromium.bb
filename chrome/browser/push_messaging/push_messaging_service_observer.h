@@ -13,6 +13,8 @@ class PushMessagingServiceObserver {
   // Creates a new PushMessagingServiceObserver.
   static std::unique_ptr<PushMessagingServiceObserver> Create();
 
+  virtual ~PushMessagingServiceObserver();
+
   // Called when a push message has been fully handled.
   virtual void OnMessageHandled() = 0;
 };

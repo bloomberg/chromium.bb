@@ -180,7 +180,7 @@ base::flat_set<const BrowserInfo*> GetOccludedBrowsers(
 ////////////////////////////////////////////////////////////////////////////////
 // TabManager
 
-class TabManager::TabManagerSessionRestoreObserver
+class TabManager::TabManagerSessionRestoreObserver final
     : public SessionRestoreObserver {
  public:
   explicit TabManagerSessionRestoreObserver(TabManager* tab_manager)

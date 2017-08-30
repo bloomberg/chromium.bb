@@ -136,6 +136,8 @@ bool GridTrackSizingAlgorithmStrategy::
              : child.HasOverrideContainingBlockLogicalHeight();
 }
 
+GridTrackSizingAlgorithmStrategy::~GridTrackSizingAlgorithmStrategy() {}
+
 LayoutUnit
 GridTrackSizingAlgorithmStrategy::OverrideContainingBlockContentSizeForChild(
     const LayoutBox& child,

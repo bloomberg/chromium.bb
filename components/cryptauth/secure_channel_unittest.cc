@@ -42,7 +42,7 @@ struct ReceivedMessage {
   std::string payload;
 };
 
-class TestObserver : public SecureChannel::Observer {
+class TestObserver final : public SecureChannel::Observer {
  public:
   TestObserver(SecureChannel* secure_channel)
       : secure_channel_(secure_channel) {}
@@ -91,7 +91,7 @@ class TestObserver : public SecureChannel::Observer {
 
 // Observer used in the ObserverDeletesChannel test. This Observer deletes the
 // SecureChannel when it receives an OnMessageSent() call.
-class DeletingObserver : public SecureChannel::Observer {
+class DeletingObserver final : public SecureChannel::Observer {
  public:
   DeletingObserver(std::unique_ptr<SecureChannel>* secure_channel)
       : secure_channel_(secure_channel) {}
@@ -117,7 +117,8 @@ class DeletingObserver : public SecureChannel::Observer {
   std::unique_ptr<SecureChannel>* secure_channel_;
 };
 
-class TestAuthenticatorFactory : public DeviceToDeviceAuthenticator::Factory {
+class TestAuthenticatorFactory final
+    : public DeviceToDeviceAuthenticator::Factory {
  public:
   TestAuthenticatorFactory() : last_instance_(nullptr) {}
 

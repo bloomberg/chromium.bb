@@ -14,6 +14,7 @@ namespace blink {
 class BLINK_PLATFORM_EXPORT WebSurfaceLayerBridge {
  public:
   static WebSurfaceLayerBridge* Create();
+  virtual ~WebSurfaceLayerBridge();
   virtual WebLayer* GetWebLayer() const = 0;
 };
 

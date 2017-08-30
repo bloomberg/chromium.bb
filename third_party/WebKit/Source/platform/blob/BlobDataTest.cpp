@@ -128,7 +128,7 @@ class MockBlobRegistry : public BlobRegistry {
   Vector<BindingRequest> binding_requests;
 };
 
-class MojoBlobInterfaceProvider : public InterfaceProvider {
+class MojoBlobInterfaceProvider final : public InterfaceProvider {
  public:
   explicit MojoBlobInterfaceProvider(BlobRegistry* mock_registry)
       : mock_registry_(mock_registry) {}

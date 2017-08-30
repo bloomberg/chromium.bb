@@ -15,6 +15,8 @@ namespace media {
 
 class MEDIA_EXPORT HalfFloatMaker {
  public:
+  virtual ~HalfFloatMaker();
+
   // Convert an array of short integers into an array of half-floats.
   // |src| is an array of integers in range 0 .. 2^{bits_per_channel} - 1
   // |num| is number of entries in input and output array.

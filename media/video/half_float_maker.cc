@@ -7,6 +7,8 @@
 
 namespace media {
 
+HalfFloatMaker::~HalfFloatMaker() {}
+
 // By OR-ing with 0x3800, 10-bit numbers become half-floats in the
 // range [0.5..1) and 9-bit numbers get the range [0.5..0.75).
 //

@@ -187,7 +187,7 @@ class OffscreenTab : protected content::WebContentsDelegate,
   class NavigationPolicy {
    public:
     NavigationPolicy();
-    ~NavigationPolicy();
+    virtual ~NavigationPolicy();
     virtual bool DidStartNavigation(
         content::NavigationHandle* navigation_handle);
   };

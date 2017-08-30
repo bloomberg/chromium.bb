@@ -26,7 +26,7 @@ SurfaceId MakeSurfaceId(const FrameSinkId& frame_sink_id, uint32_t local_id) {
       LocalSurfaceId(local_id, base::UnguessableToken::Deserialize(0, 1u)));
 }
 
-class TestHitTestAggregator : public HitTestAggregator {
+class TestHitTestAggregator final : public HitTestAggregator {
  public:
   explicit TestHitTestAggregator(HitTestAggregatorDelegate* delegate)
       : HitTestAggregator(delegate) {}

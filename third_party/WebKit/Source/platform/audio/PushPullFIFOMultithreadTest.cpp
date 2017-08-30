@@ -96,7 +96,7 @@ class FIFOClient {
 
 // FIFO-pulling client (consumer). This mimics the audio device thread.
 // |frames_to_pull| is variable.
-class PullClient : public FIFOClient {
+class PullClient final : public FIFOClient {
  public:
   PullClient(PushPullFIFO* fifo, size_t frames_to_pull, double jitter_range_ms)
       : FIFOClient(fifo, frames_to_pull, jitter_range_ms),
@@ -117,7 +117,7 @@ class PullClient : public FIFOClient {
 
 // FIFO-pushing client (producer). This mimics the WebAudio rendering thread.
 // The frames to push are static as 128 frames.
-class PushClient : public FIFOClient {
+class PushClient final : public FIFOClient {
  public:
   PushClient(PushPullFIFO* fifo, size_t frames_to_push, double jitter_range_ms)
       : FIFOClient(fifo, frames_to_push, jitter_range_ms) {}

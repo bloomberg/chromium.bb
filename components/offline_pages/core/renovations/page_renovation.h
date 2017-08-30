@@ -15,6 +15,8 @@ namespace offline_pages {
 // that can be run in a page pre-snapshot.
 class PageRenovation {
  public:
+  virtual ~PageRenovation() {}
+
   // Returns |true| if this renovation should run in the page from |url|.
   virtual bool ShouldRun(const GURL& url) const = 0;
   // Returns an ID that identifies this renovation's script. This ID

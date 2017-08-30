@@ -12,7 +12,7 @@
 
 namespace content {
 
-class BlinkInterfaceRegistryImpl : public blink::InterfaceRegistry {
+class BlinkInterfaceRegistryImpl final : public blink::InterfaceRegistry {
  public:
   explicit BlinkInterfaceRegistryImpl(
       base::WeakPtr<service_manager::BinderRegistry> interface_registry);

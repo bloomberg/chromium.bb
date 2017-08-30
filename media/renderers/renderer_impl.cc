@@ -33,7 +33,7 @@ static const int kDefaultVideoUnderflowThresholdMs = 3000;
 
 static const int kAudioRestartUnderflowThresholdMs = 2000;
 
-class RendererImpl::RendererClientInternal : public RendererClient {
+class RendererImpl::RendererClientInternal final : public RendererClient {
  public:
   RendererClientInternal(DemuxerStream::Type type, RendererImpl* renderer)
       : type_(type), renderer_(renderer) {

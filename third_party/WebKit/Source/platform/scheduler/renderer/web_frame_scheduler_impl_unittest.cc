@@ -58,7 +58,7 @@ class WebFrameSchedulerImplTest : public ::testing::Test {
 
 namespace {
 
-class MockThrottlingObserver : public WebFrameScheduler::Observer {
+class MockThrottlingObserver final : public WebFrameScheduler::Observer {
  public:
   MockThrottlingObserver() : throttled_count_(0u), not_throttled_count_(0u) {}
 
