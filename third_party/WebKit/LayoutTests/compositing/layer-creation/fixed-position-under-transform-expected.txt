@@ -9,16 +9,10 @@
     {
       "name": "LayoutBlockFlow DIV id='transform'",
       "position": [108, 113],
-      "transformOrigin": [284.5, -100],
       "bounds": [256, 256],
       "contentsOpaque": true,
       "drawsContent": true,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [0, 1000, 0, 1]
-      ]
+      "transform": 1
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV id='overlap'",
@@ -27,6 +21,17 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "backgroundColor": "#008000"
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [0, 1000, 0, 1]
+      ]
     }
   ]
 }

@@ -23,7 +23,7 @@
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV id='child'",
-      "position": [50, 50],
+      "position": [58, 58],
       "bounds": [75, 75],
       "contentsOpaque": true,
       "drawsContent": true,

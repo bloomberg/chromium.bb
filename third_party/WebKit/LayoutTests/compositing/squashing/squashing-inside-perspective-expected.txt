@@ -13,17 +13,11 @@
     },
     {
       "name": "Child Transform Layer",
-      "shouldFlattenTransform": false,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, -0.001],
-        [0, 0, 0, 1]
-      ]
+      "transform": 1
     },
     {
       "name": "Squashing Containment Layer",
-      "shouldFlattenTransform": false
+      "transform": 1
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV",
@@ -31,16 +25,35 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "backgroundColor": "#00008B",
+      "transform": 2
+    },
+    {
+      "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV)",
+      "drawsContent": true,
+      "transform": 1
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, -0.001],
+        [0, 0, 0, 1]
+      ],
+      "origin": [0, 0],
+      "flattenInheritedTransform": false
+    },
+    {
+      "id": 2,
+      "parent": 1,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
         [0, 74, 200, 1]
       ]
-    },
-    {
-      "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV)",
-      "drawsContent": true
     }
   ]
 }

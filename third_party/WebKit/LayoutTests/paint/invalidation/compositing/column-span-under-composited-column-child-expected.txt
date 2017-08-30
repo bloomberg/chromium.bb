@@ -16,7 +16,6 @@
     {
       "name": "LayoutBlockFlow DIV",
       "position": [8, 8],
-      "transformOrigin": [392, 0],
       "contentsOpaque": true
     },
     {

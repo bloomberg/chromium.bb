@@ -16,11 +16,11 @@ Should be composited
     },
     {
       "name": "Squashing Containment Layer",
-      "shouldFlattenTransform": false
+      "position": [8, 8]
     },
     {
       "name": "LayoutBlockFlow DIV class='composited banner'",
-      "position": [6, 6],
+      "position": [14, 14],
       "bounds": [250, 50],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -28,7 +28,7 @@ Should be composited
     },
     {
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='test1 box')",
-      "position": [11, 21],
+      "position": [19, 29],
       "bounds": [100, 100],
       "drawsContent": true
     },

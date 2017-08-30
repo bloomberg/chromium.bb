@@ -13,10 +13,12 @@
     },
     {
       "name": "Child Containment Layer",
+      "position": [8, 13],
       "bounds": [100, 100]
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV id='vertical' class='content'",
+      "position": [8, 13],
       "bounds": [10, 10]
     },
     {
@@ -26,10 +28,12 @@
     },
     {
       "name": "Child Containment Layer",
+      "position": [8, 13],
       "bounds": [100, 100]
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV id='horizontal' class='content'",
+      "position": [8, 13],
       "bounds": [10, 10]
     },
     {
@@ -39,10 +43,12 @@
     },
     {
       "name": "Child Containment Layer",
+      "position": [8, 13],
       "bounds": [100, 100]
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV id='both' class='content'",
+      "position": [8, 13],
       "bounds": [10, 10]
     },
     {
@@ -52,10 +58,12 @@
     },
     {
       "name": "Child Containment Layer",
+      "position": [8, 13],
       "bounds": [100, 100]
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='content'",
+      "position": [8, 13],
       "bounds": [10, 10]
     }
   ]

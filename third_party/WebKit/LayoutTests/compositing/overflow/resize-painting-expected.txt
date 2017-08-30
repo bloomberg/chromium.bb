@@ -14,11 +14,12 @@
     },
     {
       "name": "Overflow Controls Host Layer",
+      "position": [18, 10],
       "bounds": [100, 100]
     },
     {
       "name": "Scroll Corner Layer",
-      "position": [85, 85],
+      "position": [103, 95],
       "bounds": [15, 15],
       "drawsContent": true
     }

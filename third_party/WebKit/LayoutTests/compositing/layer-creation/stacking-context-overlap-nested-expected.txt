@@ -15,7 +15,7 @@
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='composited box'",
-      "position": [50, 50],
+      "position": [60, 60],
       "bounds": [220, 120],
       "drawsContent": true,
       "backgroundColor": "#FF000099"

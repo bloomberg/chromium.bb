@@ -9,19 +9,18 @@
     {
       "name": "Ancestor Clipping Layer",
       "position": [50, 50],
-      "bounds": [100, 100],
-      "shouldFlattenTransform": false
+      "bounds": [100, 100]
     },
     {
       "name": "LayoutBlockFlow DIV id='child'",
+      "position": [50, 50],
       "bounds": [500, 100],
       "contentsOpaque": true,
       "drawsContent": true,
       "backgroundColor": "#008000"
     },
     {
-      "name": "Squashing Containment Layer",
-      "shouldFlattenTransform": false
+      "name": "Squashing Containment Layer"
     },
     {
       "name": "LayoutBlockFlow DIV id='child'",

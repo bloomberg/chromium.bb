@@ -9,11 +9,11 @@
     {
       "name": "Ancestor Clipping Layer",
       "position": [8, 8],
-      "bounds": [200, 10],
-      "shouldFlattenTransform": false
+      "bounds": [200, 10]
     },
     {
       "name": "LayoutBlockFlow DIV id='inner'",
+      "position": [8, 8],
       "bounds": [200, 10],
       "contentsOpaque": true,
       "drawsContent": true,

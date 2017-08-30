@@ -10,16 +10,16 @@
       "name": "LayoutBlockFlow DIV id='scroller'",
       "position": [8, 44],
       "bounds": [100, 100],
-      "shouldFlattenTransform": false,
       "drawsContent": true
     },
     {
       "name": "Scrolling Layer",
-      "bounds": [100, 100],
-      "shouldFlattenTransform": false
+      "position": [8, 44],
+      "bounds": [100, 100]
     },
     {
       "name": "Scrolling Contents Layer",
+      "position": [8, 44],
       "bounds": [205, 1019],
       "drawsContent": true,
       "paintInvalidations": [
@@ -37,17 +37,18 @@
     },
     {
       "name": "Overflow Controls Host Layer",
+      "position": [8, 44],
       "bounds": [100, 100]
     },
     {
       "name": "Horizontal Scrollbar Layer",
-      "position": [0, 100],
+      "position": [8, 144],
       "bounds": [100, 0],
       "drawsContent": true
     },
     {
       "name": "Vertical Scrollbar Layer",
-      "position": [100, 0],
+      "position": [108, 44],
       "bounds": [0, 100],
       "drawsContent": true
     }

@@ -327,12 +327,12 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   std::unique_ptr<JSONObject> LayerTreeAsJSONInternal(
       LayerTreeFlags,
       RenderingContextMap&) const;
-  // Outputs the layer tree rooted at |this| as a JSON array, in paint order.
-  void LayersAsJSONArray(LayerTreeFlags,
-                         RenderingContextMap&,
-                         JSONArray*) const;
-  std::unique_ptr<JSONObject> LayerAsJSONInternal(LayerTreeFlags,
-                                                  RenderingContextMap&) const;
+  std::unique_ptr<JSONObject> LayerAsJSONInternal(
+      LayerTreeFlags,
+      RenderingContextMap&,
+      const FloatPoint& = FloatPoint()) const;
+  void AddTransformJSONProperties(JSONObject&, RenderingContextMap&) const;
+  class LayersAsJSONArray;
 
   sk_sp<PaintRecord> CaptureRecord();
 

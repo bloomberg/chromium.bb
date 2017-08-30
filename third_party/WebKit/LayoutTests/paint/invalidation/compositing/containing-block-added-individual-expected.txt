@@ -16,7 +16,6 @@
     {
       "name": "LayoutBlockFlow (positioned) DIV id='container'",
       "position": [200, 100],
-      "transformOrigin": [50, 50],
       "bounds": [125, 125],
       "drawsContent": true,
       "backgroundColor": "#0000FF",

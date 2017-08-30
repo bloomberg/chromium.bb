@@ -29,16 +29,22 @@
     {
       "name": "LayoutBlockFlow (positioned) DIV",
       "position": [108, 158],
-      "transformOrigin": [150, 150],
       "bounds": [440, 300],
       "drawsContent": true,
       "backgroundColor": "#0000FF",
+      "transform": 1
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
       "transform": [
         [0, 1, 0, 0],
         [-1, 0, 0, 0],
         [0, 0, 1, 0],
         [0, 0, 0, 1]
-      ]
+      ],
+      "origin": [150, 150]
     }
   ],
   "objectPaintInvalidations": [

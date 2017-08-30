@@ -10,7 +10,6 @@
     {
       "name": "LayoutImage (positioned) IMG class='composited'",
       "position": [210, 23],
-      "transformOrigin": [90, 90],
       "bounds": [140, 140],
       "drawsContent": true
     }

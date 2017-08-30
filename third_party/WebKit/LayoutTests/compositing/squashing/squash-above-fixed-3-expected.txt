@@ -28,7 +28,7 @@ CASE 1, original layer tree:
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV id='innerFixed'",
-      "position": [0, 50],
+      "position": [100, 150],
       "bounds": [200, 100],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -36,7 +36,7 @@ CASE 1, original layer tree:
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV id='innerScrolling'",
-      "position": [100, 0],
+      "position": [200, 100],
       "bounds": [100, 100],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -71,7 +71,7 @@ CASE 2, scrolling y by 10 pixels, both the "container" and "inner" should scroll
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV id='innerFixed'",
-      "position": [0, 60],
+      "position": [100, 160],
       "bounds": [200, 100],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -79,7 +79,7 @@ CASE 2, scrolling y by 10 pixels, both the "container" and "inner" should scroll
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV id='innerScrolling'",
-      "position": [100, 0],
+      "position": [200, 100],
       "bounds": [100, 100],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -120,7 +120,7 @@ CASE 3, scrolling y further so that "inner" no longer overlaps the fixed-pos lay
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV id='innerFixed'",
-      "position": [0, 160],
+      "position": [100, 260],
       "bounds": [200, 100],
       "contentsOpaque": true,
       "drawsContent": true,

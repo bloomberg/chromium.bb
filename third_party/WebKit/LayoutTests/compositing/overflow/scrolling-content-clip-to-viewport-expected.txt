@@ -9,13 +9,11 @@
     {
       "name": "LayoutBlockFlow DIV class='scroller'",
       "bounds": [320, 340],
-      "shouldFlattenTransform": false,
       "drawsContent": true
     },
     {
       "name": "Scrolling Layer",
-      "bounds": [305, 325],
-      "shouldFlattenTransform": false
+      "bounds": [305, 325]
     },
     {
       "name": "Scrolling Contents Layer",

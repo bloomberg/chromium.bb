@@ -7,12 +7,10 @@
       "drawsContent": true
     },
     {
-      "name": "Squashing Containment Layer",
-      "shouldFlattenTransform": false
+      "name": "Squashing Containment Layer"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV id='container'",
-      "transformOrigin": [400, 0],
       "bounds": [256, 256],
       "contentsOpaque": true,
       "drawsContent": true

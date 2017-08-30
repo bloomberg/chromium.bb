@@ -25,7 +25,6 @@
     },
     {
       "name": "Content Root Layer",
-      "position": [-615, 0],
       "bounds": [1000, 1000]
     },
     {

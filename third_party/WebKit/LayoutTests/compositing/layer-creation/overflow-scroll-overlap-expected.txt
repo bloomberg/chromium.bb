@@ -7,8 +7,7 @@
       "drawsContent": true
     },
     {
-      "name": "Squashing Containment Layer",
-      "shouldFlattenTransform": false
+      "name": "Squashing Containment Layer"
     },
     {
       "name": "LayoutBlockFlow DIV class='composited'",
@@ -24,12 +23,11 @@
     {
       "name": "Ancestor Clipping Layer",
       "position": [23, 23],
-      "bounds": [285, 200],
-      "shouldFlattenTransform": false
+      "bounds": [285, 200]
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV class='box'",
-      "position": [20, 6],
+      "position": [43, 29],
       "bounds": [200, 100],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -37,7 +35,7 @@
     },
     {
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (relative positioned) DIV class='box')",
-      "position": [20, 161],
+      "position": [43, 184],
       "bounds": [210, 100],
       "drawsContent": true
     }

@@ -9,7 +9,6 @@
     {
       "name": "LayoutBlockFlow DIV id='parent'",
       "position": [27, 19],
-      "transformOrigin": [373, 51],
       "bounds": [745, 102],
       "drawsContent": true,
       "paintInvalidations": [

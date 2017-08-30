@@ -22,7 +22,7 @@
     },
     {
       "name": "LayoutTableCell TD",
-      "position": [64, 68],
+      "position": [72, 96],
       "bounds": [59, 64],
       "drawsContent": true
     }

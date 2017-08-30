@@ -9,7 +9,6 @@
     {
       "name": "LayoutBlockFlow (positioned) DIV id='composited-parent'",
       "position": [230, 230],
-      "transformOrigin": [150, 150],
       "bounds": [200, 200],
       "drawsContent": true,
       "backgroundColor": "#000000"

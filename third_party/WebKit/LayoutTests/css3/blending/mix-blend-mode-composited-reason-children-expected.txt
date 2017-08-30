@@ -19,6 +19,7 @@
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='stacking-context'",
+      "position": [8, 8],
       "bounds": [160, 90],
       "isolate": true,
       "contentsOpaque": true,
@@ -27,6 +28,7 @@
     },
     {
       "name": "LayoutBlockFlow DIV class='blended'",
+      "position": [8, 8],
       "bounds": [160, 90],
       "blendMode": "multiply",
       "drawsContent": true,
@@ -34,10 +36,12 @@
     },
     {
       "name": "LayoutImage IMG class='accelerated'",
+      "position": [8, 8],
       "bounds": [160, 90]
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='stacking-context' (foreground) Layer",
+      "position": [8, 8],
       "drawsContent": true
     },
     {

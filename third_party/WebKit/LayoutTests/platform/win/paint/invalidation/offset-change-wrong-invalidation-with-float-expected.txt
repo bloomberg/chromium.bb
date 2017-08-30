@@ -31,13 +31,12 @@
     {
       "name": "LayoutListItem (floating) LI id='watches'",
       "position": [30, 44],
-      "transformOrigin": [18, 10],
       "bounds": [25, 19],
       "drawsContent": true
     },
     {
       "name": "LayoutInline (relative positioned) SPAN id='placeholder'",
-      "position": [18, 0],
+      "position": [48, 44],
       "backfaceVisibility": "hidden"
     },
     {

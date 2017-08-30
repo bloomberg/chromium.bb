@@ -17,6 +17,7 @@
     },
     {
       "name": "LayoutBlockFlow DIV id='intermediary' class='accelerated-no-stacking-context'",
+      "position": [8, 8],
       "bounds": [784, 90],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -25,6 +26,7 @@
     },
     {
       "name": "LayoutImage IMG class='accelerated blended'",
+      "position": [8, 8],
       "bounds": [160, 90],
       "blendMode": "multiply"
     }

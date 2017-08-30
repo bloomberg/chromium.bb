@@ -16,8 +16,7 @@
       "backgroundColor": "#0000FF"
     },
     {
-      "name": "Squashing Containment Layer",
-      "shouldFlattenTransform": false
+      "name": "Squashing Containment Layer"
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV class='composited box rotate15'",
@@ -25,12 +24,7 @@
       "bounds": [110, 110],
       "drawsContent": true,
       "backgroundColor": "#0000FF",
-      "transform": [
-        [0.965925826289068, 0.258819045102521, 0, 0],
-        [-0.258819045102521, 0.965925826289068, 0, 0],
-        [0, 0, 1, 0],
-        [0, 0, 0, 1]
-      ]
+      "transform": 1
     },
     {
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (relative positioned) DIV class='box')",
@@ -39,8 +33,7 @@
       "drawsContent": true
     },
     {
-      "name": "Squashing Containment Layer",
-      "shouldFlattenTransform": false
+      "name": "Squashing Containment Layer"
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV class='composited box rotate45'",
@@ -48,18 +41,35 @@
       "bounds": [110, 110],
       "drawsContent": true,
       "backgroundColor": "#0000FF",
-      "transform": [
-        [0.707106781186548, 0.707106781186548, 0, 0],
-        [-0.707106781186548, 0.707106781186548, 0, 0],
-        [0, 0, 1, 0],
-        [0, 0, 0, 1]
-      ]
+      "transform": 2
     },
     {
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (relative positioned) DIV class='box')",
       "position": [311, 143],
       "bounds": [110, 110],
       "drawsContent": true
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
+      "transform": [
+        [0.965925826289068, 0.258819045102521, 0, 0],
+        [-0.258819045102521, 0.965925826289068, 0, 0],
+        [0, 0, 1, 0],
+        [0, 0, 0, 1]
+      ],
+      "origin": [55, 55]
+    },
+    {
+      "id": 2,
+      "transform": [
+        [0.707106781186548, 0.707106781186548, 0, 0],
+        [-0.707106781186548, 0.707106781186548, 0, 0],
+        [0, 0, 1, 0],
+        [0, 0, 0, 1]
+      ],
+      "origin": [55, 55]
     }
   ]
 }

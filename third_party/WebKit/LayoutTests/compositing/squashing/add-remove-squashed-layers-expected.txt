@@ -10,8 +10,7 @@ CASE 1, original layer tree with overlap1 and overlap2:
       "drawsContent": true
     },
     {
-      "name": "Squashing Containment Layer",
-      "shouldFlattenTransform": false
+      "name": "Squashing Containment Layer"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='composited'",
@@ -39,8 +38,7 @@ CASE 2, overlap3 gets added:
       "drawsContent": true
     },
     {
-      "name": "Squashing Containment Layer",
-      "shouldFlattenTransform": false
+      "name": "Squashing Containment Layer"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='composited'",
@@ -85,8 +83,7 @@ CASE 3, overlap2 gets removed. Since this does not resize the layer, there shoul
       "drawsContent": true
     },
     {
-      "name": "Squashing Containment Layer",
-      "shouldFlattenTransform": false
+      "name": "Squashing Containment Layer"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='composited'",
@@ -127,8 +124,7 @@ CASE 4, overlap1 gets removed:
       "drawsContent": true
     },
     {
-      "name": "Squashing Containment Layer",
-      "shouldFlattenTransform": false
+      "name": "Squashing Containment Layer"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='composited'",
@@ -187,8 +183,7 @@ CASE 5, overlap2 gets added back:
       "drawsContent": true
     },
     {
-      "name": "Squashing Containment Layer",
-      "shouldFlattenTransform": false
+      "name": "Squashing Containment Layer"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='composited'",
@@ -255,8 +250,7 @@ CASE 6, overlap1 gets added back, and overlap3 gets removed:
       "drawsContent": true
     },
     {
-      "name": "Squashing Containment Layer",
-      "shouldFlattenTransform": false
+      "name": "Squashing Containment Layer"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='composited'",

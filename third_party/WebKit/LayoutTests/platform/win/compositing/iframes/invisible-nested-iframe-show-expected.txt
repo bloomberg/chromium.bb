@@ -15,56 +15,64 @@
     },
     {
       "name": "Frame Overflow Controls Host Layer",
-      "position": [34, 34],
+      "position": [23, 23],
       "bounds": [300, 150]
     },
     {
       "name": "Frame Clipping Layer",
+      "position": [23, 23],
       "bounds": [285, 150]
     },
     {
-      "name": "Frame Scrolling Layer"
+      "name": "Frame Scrolling Layer",
+      "position": [23, 23]
     },
     {
       "name": "Content Root Layer",
+      "position": [23, 23],
       "bounds": [285, 193]
     },
     {
       "name": "LayoutView #document",
+      "position": [23, 23],
       "bounds": [285, 193],
       "drawsContent": true
     },
     {
       "name": "LayoutIFrame IFRAME",
-      "position": [8, 8],
+      "position": [31, 31],
       "bounds": [252, 172],
       "drawsContent": true
     },
     {
       "name": "Frame Overflow Controls Host Layer",
-      "position": [1, 1],
+      "position": [32, 32],
       "bounds": [250, 170]
     },
     {
       "name": "Frame Clipping Layer",
+      "position": [32, 32],
       "bounds": [250, 170]
     },
     {
-      "name": "Frame Scrolling Layer"
+      "name": "Frame Scrolling Layer",
+      "position": [32, 32]
     },
     {
       "name": "Content Root Layer",
+      "position": [32, 32],
       "bounds": [250, 230]
     },
     {
       "name": "LayoutView #document",
+      "position": [32, 32],
       "bounds": [250, 230],
       "drawsContent": true,
       "backgroundColor": "#C0C0C0"
     },
     {
       "name": "LayoutBlockFlow DIV id='iframe-content' class='box'",
-      "position": [18, 10],
+      "position": [50, 42],
       "bounds": [210, 210],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -72,7 +80,7 @@
     },
     {
       "name": "Frame Vertical Scrollbar Layer",
-      "position": [285, 0],
+      "position": [308, 23],
       "bounds": [15, 150]
     },
     {
@@ -82,6 +90,12 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "backgroundColor": "#0000FF",
+      "transform": 1
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],

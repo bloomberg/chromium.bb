@@ -14,6 +14,7 @@
     },
     {
       "name": "Child Containment Layer",
+      "position": [50, 50],
       "bounds": [300, 300],
       "maskLayer": [
         {
@@ -25,11 +26,12 @@
     },
     {
       "name": "Ancestor Clipping Layer",
-      "bounds": [285, 300],
-      "shouldFlattenTransform": false
+      "position": [50, 50],
+      "bounds": [285, 300]
     },
     {
       "name": "LayoutBlockFlow DIV id='content'",
+      "position": [50, 50],
       "bounds": [285, 1000],
       "contentsOpaque": true,
       "drawsContent": true

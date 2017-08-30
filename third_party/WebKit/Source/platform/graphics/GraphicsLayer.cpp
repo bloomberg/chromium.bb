@@ -597,21 +597,76 @@ static String PointerAsString(const void* ptr) {
   return ts.Release();
 }
 
+class GraphicsLayer::LayersAsJSONArray {
+ public:
+  LayersAsJSONArray(LayerTreeFlags flags)
+      : flags_(flags),
+        next_transform_id_(1),
+        layers_json_(JSONArray::Create()),
+        transforms_json_(JSONArray::Create()) {}
+
+  // Outputs the layer tree rooted at |layer| as a JSON array, in paint order,
+  // and the transform tree also as a JSON array.
+  std::unique_ptr<JSONObject> operator()(const GraphicsLayer& layer) {
+    auto json = JSONObject::Create();
+    Walk(layer, 0, FloatPoint());
+    json->SetArray("layers", std::move(layers_json_));
+    if (transforms_json_->size())
+      json->SetArray("transforms", std::move(transforms_json_));
+    return json;
+  }
+
+  void Walk(const GraphicsLayer& layer,
+            int parent_transform_id,
+            const FloatPoint& parent_offset) {
+    FloatPoint offset = parent_offset;
+    int transform_id = parent_transform_id;
+    std::unique_ptr<JSONObject> transform_json;
+    if (!layer.transform_.IsIdentity() || layer.rendering_context3d_) {
+      transform_json = JSONObject::Create();
+      transform_id = next_transform_id_++;
+      transform_json->SetInteger("id", transform_id);
+      if (parent_transform_id)
+        transform_json->SetInteger("parent", parent_transform_id);
+      layer.AddTransformJSONProperties(*transform_json, rendering_context_map_);
+      transforms_json_->PushObject(std::move(transform_json));
+
+      offset = FloatPoint();
+    }
+
+    auto json =
+        layer.LayerAsJSONInternal(flags_, rendering_context_map_, offset);
+    if (transform_id)
+      json->SetInteger("transform", transform_id);
+    layers_json_->PushObject(std::move(json));
+
+    offset += layer.position_;
+    for (auto& child : layer.children_)
+      Walk(*child, transform_id, offset);
+  }
+
+ private:
+  LayerTreeFlags flags_;
+  int next_transform_id_;
+  RenderingContextMap rendering_context_map_;
+  std::unique_ptr<JSONArray> layers_json_;
+  std::unique_ptr<JSONArray> transforms_json_;
+};
+
 std::unique_ptr<JSONObject> GraphicsLayer::LayerTreeAsJSON(
     LayerTreeFlags flags) const {
-  RenderingContextMap rendering_context_map;
-  if (flags & kOutputAsLayerTree)
+  if (flags & kOutputAsLayerTree) {
+    RenderingContextMap rendering_context_map;
     return LayerTreeAsJSONInternal(flags, rendering_context_map);
-  std::unique_ptr<JSONObject> json = JSONObject::Create();
-  std::unique_ptr<JSONArray> layers_array = JSONArray::Create();
-  LayersAsJSONArray(flags, rendering_context_map, layers_array.get());
-  json->SetArray("layers", std::move(layers_array));
-  return json;
+  }
+
+  return LayersAsJSONArray(flags)(*this);
 }
 
 std::unique_ptr<JSONObject> GraphicsLayer::LayerAsJSONInternal(
     LayerTreeFlags flags,
-    RenderingContextMap& rendering_context_map) const {
+    RenderingContextMap& rendering_context_map,
+    const FloatPoint& offset) const {
   std::unique_ptr<JSONObject> json = JSONObject::Create();
 
   if (flags & kLayerTreeIncludesDebugInfo)
@@ -619,19 +674,15 @@ std::unique_ptr<JSONObject> GraphicsLayer::LayerAsJSONInternal(
 
   json->SetString("name", DebugName());
 
-  if (position_ != FloatPoint())
-    json->SetArray("position", PointAsJSONArray(position_));
+  FloatPoint position = offset + position_;
+  if (position != FloatPoint())
+    json->SetArray("position", PointAsJSONArray(position));
 
   if (flags & kLayerTreeIncludesDebugInfo &&
       offset_from_layout_object_ != DoubleSize()) {
     json->SetArray("offsetFromLayoutObject",
                    SizeAsJSONArray(offset_from_layout_object_));
   }
-
-  if (has_transform_origin_ &&
-      transform_origin_ !=
-          FloatPoint3D(size_.Width() * 0.5f, size_.Height() * 0.5f, 0))
-    json->SetArray("transformOrigin", PointAsJSONArray(transform_origin_));
 
   if (size_ != IntSize())
     json->SetArray("bounds", SizeAsJSONArray(size_));
@@ -649,21 +700,6 @@ std::unique_ptr<JSONObject> GraphicsLayer::LayerAsJSONInternal(
 
   if (contents_opaque_)
     json->SetBoolean("contentsOpaque", contents_opaque_);
-
-  if (!should_flatten_transform_)
-    json->SetBoolean("shouldFlattenTransform", should_flatten_transform_);
-
-  if (rendering_context3d_) {
-    RenderingContextMap::const_iterator it =
-        rendering_context_map.find(rendering_context3d_);
-    int context_id = rendering_context_map.size() + 1;
-    if (it == rendering_context_map.end())
-      rendering_context_map.Set(rendering_context3d_, context_id);
-    else
-      context_id = it->value;
-
-    json->SetInteger("3dRenderingContext", context_id);
-  }
 
   if (draws_content_)
     json->SetBoolean("drawsContent", draws_content_);
@@ -684,8 +720,8 @@ std::unique_ptr<JSONObject> GraphicsLayer::LayerAsJSONInternal(
                     background_color_.NameForLayoutTreeAsText());
   }
 
-  if (!transform_.IsIdentity())
-    json->SetArray("transform", TransformAsJSONArray(transform_));
+  if (flags & kOutputAsLayerTree)
+    AddTransformJSONProperties(*json, rendering_context_map);
 
   if (flags & kLayerTreeIncludesPaintInvalidations)
     GetRasterInvalidationTrackingMap().AsJSON(this, json.get());
@@ -785,15 +821,27 @@ std::unique_ptr<JSONObject> GraphicsLayer::LayerTreeAsJSONInternal(
   return json;
 }
 
-void GraphicsLayer::LayersAsJSONArray(
-    LayerTreeFlags flags,
-    RenderingContextMap& rendering_context_map,
-    JSONArray* json_array) const {
-  json_array->PushObject(LayerAsJSONInternal(flags, rendering_context_map));
+void GraphicsLayer::AddTransformJSONProperties(
+    JSONObject& json,
+    RenderingContextMap& rendering_context_map) const {
+  if (!transform_.IsIdentity())
+    json.SetArray("transform", TransformAsJSONArray(transform_));
 
-  if (children_.size()) {
-    for (auto& child : children_)
-      child->LayersAsJSONArray(flags, rendering_context_map, json_array);
+  if (!transform_.IsIdentityOrTranslation())
+    json.SetArray("origin", PointAsJSONArray(transform_origin_));
+
+  if (!should_flatten_transform_)
+    json.SetBoolean("flattenInheritedTransform", false);
+
+  if (rendering_context3d_) {
+    auto it = rendering_context_map.find(rendering_context3d_);
+    int context_id = rendering_context_map.size() + 1;
+    if (it == rendering_context_map.end())
+      rendering_context_map.Set(rendering_context3d_, context_id);
+    else
+      context_id = it->value;
+
+    json.SetInteger("renderingContext", context_id);
   }
 }
 

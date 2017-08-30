@@ -15,29 +15,33 @@
     },
     {
       "name": "Frame Overflow Controls Host Layer",
-      "position": [15, 15],
+      "position": [73, 73],
       "bounds": [320, 170]
     },
     {
       "name": "Frame Clipping Layer",
+      "position": [73, 73],
       "bounds": [305, 170]
     },
     {
-      "name": "Frame Scrolling Layer"
+      "name": "Frame Scrolling Layer",
+      "position": [73, 73]
     },
     {
       "name": "Content Root Layer",
+      "position": [73, 73],
       "bounds": [305, 230]
     },
     {
       "name": "LayoutView #document",
+      "position": [73, 73],
       "bounds": [305, 230],
       "drawsContent": true,
       "backgroundColor": "#C0C0C0"
     },
     {
       "name": "LayoutBlockFlow DIV id='iframe-content' class='box'",
-      "position": [18, 10],
+      "position": [91, 83],
       "bounds": [210, 210],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -45,7 +49,7 @@
     },
     {
       "name": "Frame Vertical Scrollbar Layer",
-      "position": [305, 0],
+      "position": [378, 73],
       "bounds": [15, 170]
     },
     {

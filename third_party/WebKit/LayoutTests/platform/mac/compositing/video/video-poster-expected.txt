@@ -42,8 +42,7 @@ Case: Displaying movie
       "bounds": [352, 288]
     },
     {
-      "name": "Squashing Containment Layer",
-      "shouldFlattenTransform": false
+      "name": "Squashing Containment Layer"
     },
     {
       "name": "LayoutFlexibleBox (relative positioned) DIV",

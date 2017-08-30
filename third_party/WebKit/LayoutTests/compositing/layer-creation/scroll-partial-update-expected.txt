@@ -8,8 +8,7 @@ scroll me
       "drawsContent": true
     },
     {
-      "name": "Squashing Containment Layer",
-      "shouldFlattenTransform": false
+      "name": "Squashing Containment Layer"
     },
     {
       "name": "LayoutBlockFlow DIV id='composited'",

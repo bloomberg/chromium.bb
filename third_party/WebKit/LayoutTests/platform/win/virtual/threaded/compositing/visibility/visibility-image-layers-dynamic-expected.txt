@@ -24,7 +24,7 @@ Initial
     },
     {
       "name": "LayoutImage IMG class='visible composited box'",
-      "position": [24, 24],
+      "position": [38, 340],
       "bounds": [100, 100]
     }
   ]
@@ -46,7 +46,7 @@ After step 1
     },
     {
       "name": "LayoutImage IMG class='hidden composited box'",
-      "position": [20, 20],
+      "position": [38, 30],
       "bounds": [100, 100]
     },
     {
@@ -57,7 +57,7 @@ After step 1
     },
     {
       "name": "LayoutImage IMG class='visible composited box'",
-      "position": [24, 24],
+      "position": [38, 340],
       "bounds": [100, 100]
     }
   ]
@@ -79,7 +79,7 @@ After step 2
     },
     {
       "name": "LayoutImage IMG class='hidden composited box'",
-      "position": [20, 20],
+      "position": [38, 30],
       "bounds": [100, 100]
     },
     {
@@ -90,7 +90,7 @@ After step 2
     },
     {
       "name": "LayoutImage IMG class='composited box'",
-      "position": [24, 24],
+      "position": [38, 185],
       "bounds": [100, 100]
     },
     {
@@ -101,7 +101,7 @@ After step 2
     },
     {
       "name": "LayoutImage IMG class='visible composited box'",
-      "position": [24, 24],
+      "position": [38, 340],
       "bounds": [100, 100]
     }
   ]

@@ -13,12 +13,7 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "backgroundColor": "#0000FF",
-      "transform": [
-        [...],
-        [...],
-        [...],
-        [...]
-      ]
+      "transform": 1
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV class='container'",
@@ -30,7 +25,7 @@
     },
     {
       "name": "Child Containment Layer",
-      "position": [1, 1],
+      "position": [59, 231],
       "bounds": [120, 460]
     },
     {
@@ -40,12 +35,7 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "backgroundColor": "#808080",
-      "transform": [
-        [...],
-        [...],
-        [...],
-        [...]
-      ]
+      "transform": 2
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV id='to-animate2' class='box animating2'",
@@ -54,16 +44,11 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "backgroundColor": "#0000FF",
-      "transform": [
-        [...],
-        [...],
-        [...],
-        [...]
-      ]
+      "transform": 3
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV class='box yellow'",
-      "position": [10, 340],
+      "position": [69, 571],
       "bounds": [100, 100],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -76,6 +61,35 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "backgroundColor": "#FFFF00"
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
+      "transform": [
+        [...],
+        [...],
+        [...],
+        [...]
+      ]
+    },
+    {
+      "id": 2,
+      "transform": [
+        [...],
+        [...],
+        [...],
+        [...]
+      ]
+    },
+    {
+      "id": 3,
+      "transform": [
+        [...],
+        [...],
+        [...],
+        [...]
+      ]
     }
   ]
 }

@@ -19,8 +19,7 @@
       "bounds": [700, 525]
     },
     {
-      "name": "Squashing Containment Layer",
-      "shouldFlattenTransform": false
+      "name": "Squashing Containment Layer"
     },
     {
       "name": "LayoutFlexibleBox (relative positioned) DIV",

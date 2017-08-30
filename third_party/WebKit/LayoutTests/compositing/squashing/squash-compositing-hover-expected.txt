@@ -12,12 +12,10 @@ Case 1, original layer tree:
     {
       "name": "LayoutBlockFlow DIV class='composited'",
       "position": [8, 8],
-      "transformOrigin": [392, 0],
       "contentsOpaque": true
     },
     {
-      "name": "Squashing Containment Layer",
-      "shouldFlattenTransform": false
+      "name": "Squashing Containment Layer"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='composited box behind'",
@@ -47,7 +45,6 @@ Case 2: hovering over the "middle" element (causes that div to become its own co
     {
       "name": "LayoutBlockFlow DIV class='composited'",
       "position": [8, 8],
-      "transformOrigin": [392, 0],
       "contentsOpaque": true
     },
     {
@@ -59,8 +56,7 @@ Case 2: hovering over the "middle" element (causes that div to become its own co
       "backgroundColor": "#0000FF"
     },
     {
-      "name": "Squashing Containment Layer",
-      "shouldFlattenTransform": false
+      "name": "Squashing Containment Layer"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='box middle'",
@@ -90,12 +86,10 @@ Case 3: hovering over the "middle2" element (causes that div to become its own c
     {
       "name": "LayoutBlockFlow DIV class='composited'",
       "position": [8, 8],
-      "transformOrigin": [392, 0],
       "contentsOpaque": true
     },
     {
-      "name": "Squashing Containment Layer",
-      "shouldFlattenTransform": false
+      "name": "Squashing Containment Layer"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='composited box behind'",
@@ -112,8 +106,7 @@ Case 3: hovering over the "middle2" element (causes that div to become its own c
       "drawsContent": true
     },
     {
-      "name": "Squashing Containment Layer",
-      "shouldFlattenTransform": false
+      "name": "Squashing Containment Layer"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='box middle2'",
@@ -143,12 +136,10 @@ Case 4: hovering over the "top" element (causes that div to become its own compo
     {
       "name": "LayoutBlockFlow DIV class='composited'",
       "position": [8, 8],
-      "transformOrigin": [392, 0],
       "contentsOpaque": true
     },
     {
-      "name": "Squashing Containment Layer",
-      "shouldFlattenTransform": false
+      "name": "Squashing Containment Layer"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='composited box behind'",
@@ -186,12 +177,10 @@ Case 5: back to situation in case 1
     {
       "name": "LayoutBlockFlow DIV class='composited'",
       "position": [8, 8],
-      "transformOrigin": [392, 0],
       "contentsOpaque": true
     },
     {
-      "name": "Squashing Containment Layer",
-      "shouldFlattenTransform": false
+      "name": "Squashing Containment Layer"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='composited box behind'",

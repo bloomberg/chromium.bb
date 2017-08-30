@@ -13,7 +13,7 @@
     },
     {
       "name": "LayoutBlockFlow (relative positioned) (floating) DIV id='float'",
-      "position": [-50, -50],
+      "position": [58, 58],
       "bounds": [100, 100],
       "contentsOpaque": true,
       "drawsContent": true,

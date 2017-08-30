@@ -18,15 +18,11 @@
       "name": "LayoutBlockFlow (positioned) DIV class='negative child'",
       "position": [59, 59],
       "bounds": [50, 50],
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [0, 0, 1, 1]
-      ]
+      "transform": 1
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV class='main box' (foreground) Layer",
+      "position": [19, 89],
       "bounds": [318, 318],
       "drawsContent": true
     },
@@ -39,12 +35,24 @@
     },
     {
       "name": "Child Containment Layer",
-      "position": [59, 59],
+      "position": [422, 78],
       "bounds": [200, 200]
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='negative child'",
       "bounds": [50, 50],
+      "transform": 2
+    },
+    {
+      "name": "LayoutBlockFlow (relative positioned) DIV class='main box' (foreground) Layer",
+      "position": [422, 78],
+      "bounds": [200, 200],
+      "drawsContent": true
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],
@@ -53,9 +61,13 @@
       ]
     },
     {
-      "name": "LayoutBlockFlow (relative positioned) DIV class='main box' (foreground) Layer",
-      "bounds": [200, 200],
-      "drawsContent": true
+      "id": 2,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [0, 0, 1, 1]
+      ]
     }
   ]
 }

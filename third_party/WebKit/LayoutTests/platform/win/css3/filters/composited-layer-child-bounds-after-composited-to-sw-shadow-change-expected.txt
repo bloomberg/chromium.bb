@@ -16,6 +16,7 @@
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV id='absolutely-positioned-composited-child'",
+      "position": [100, 100],
       "bounds": [100, 100],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -41,6 +42,7 @@
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV id='absolutely-positioned-composited-child'",
+      "position": [100, 100],
       "bounds": [100, 100],
       "contentsOpaque": true,
       "drawsContent": true,

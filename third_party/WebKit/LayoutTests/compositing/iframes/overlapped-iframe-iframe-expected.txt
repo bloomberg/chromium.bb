@@ -18,24 +18,28 @@
     },
     {
       "name": "Frame Clipping Layer",
+      "position": [2, 2],
       "bounds": [300, 300]
     },
     {
-      "name": "Frame Scrolling Layer"
+      "name": "Frame Scrolling Layer",
+      "position": [2, 2]
     },
     {
       "name": "Content Root Layer",
+      "position": [2, 2],
       "bounds": [300, 300]
     },
     {
       "name": "LayoutView #document",
+      "position": [2, 2],
       "bounds": [300, 300],
       "drawsContent": true,
       "backgroundColor": "#C0C0C0"
     },
     {
       "name": "LayoutBlockFlow DIV id='iframe-content' class='box'",
-      "position": [18, 10],
+      "position": [20, 12],
       "bounds": [210, 210],
       "contentsOpaque": true,
       "drawsContent": true,

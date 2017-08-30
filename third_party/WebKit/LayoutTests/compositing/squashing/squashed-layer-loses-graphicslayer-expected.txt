@@ -10,8 +10,7 @@ CASE 1, original layer tree:
       "drawsContent": true
     },
     {
-      "name": "Squashing Containment Layer",
-      "shouldFlattenTransform": false
+      "name": "Squashing Containment Layer"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV id='forceComposited' class='composited underneath'",

@@ -11,27 +11,43 @@
       "position": [8, 8],
       "bounds": [100, 100],
       "contentsOpaque": true,
-      "shouldFlattenTransform": false,
-      "3dRenderingContext": 1,
       "drawsContent": true,
-      "backgroundColor": "#008000"
+      "backgroundColor": "#008000",
+      "transform": 1
     },
     {
       "name": "LayoutBlockFlow DIV id='parent' class='composited'",
       "bounds": [100, 100],
       "contentsOpaque": true,
-      "3dRenderingContext": 1,
       "drawsContent": true,
-      "backgroundColor": "#008000"
+      "backgroundColor": "#008000",
+      "transform": 2
     },
     {
       "name": "LayoutBlockFlow DIV id='child' class='composited'",
       "bounds": [100, 100],
       "contentsOpaque": true,
-      "shouldFlattenTransform": false,
-      "3dRenderingContext": 2,
       "drawsContent": true,
-      "backgroundColor": "#008000"
+      "backgroundColor": "#008000",
+      "transform": 3
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
+      "flattenInheritedTransform": false,
+      "renderingContext": 1
+    },
+    {
+      "id": 2,
+      "parent": 1,
+      "renderingContext": 1
+    },
+    {
+      "id": 3,
+      "parent": 2,
+      "flattenInheritedTransform": false,
+      "renderingContext": 2
     }
   ]
 }

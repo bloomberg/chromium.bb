@@ -13,7 +13,6 @@
     {
       "name": "LayoutBlockFlow (positioned) DIV class='accelerated stacking-context'",
       "position": [8, 8],
-      "transformOrigin": [0, 0],
       "bounds": [160, 90],
       "contentsOpaque": true,
       "drawsContent": true,

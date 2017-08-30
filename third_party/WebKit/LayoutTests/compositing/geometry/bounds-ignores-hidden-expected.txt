@@ -10,7 +10,6 @@
     {
       "name": "LayoutBlockFlow (positioned) DIV class='composited'",
       "position": [10, 10],
-      "transformOrigin": [-10, -10],
       "bounds": [50, 50],
       "contentsOpaque": true,
       "drawsContent": true

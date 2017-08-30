@@ -8,8 +8,7 @@ CASE 1, original layer tree
       "drawsContent": true
     },
     {
-      "name": "Squashing Containment Layer",
-      "shouldFlattenTransform": false
+      "name": "Squashing Containment Layer"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='composited box behind'",
@@ -37,8 +36,7 @@ CASE 2, change color of "inner" to red
       "drawsContent": true
     },
     {
-      "name": "Squashing Containment Layer",
-      "shouldFlattenTransform": false
+      "name": "Squashing Containment Layer"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='composited box behind'",

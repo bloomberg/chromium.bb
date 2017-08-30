@@ -17,8 +17,7 @@ This tests that squashed layers' offset from renderer is updated properly. If no
       "backgroundColor": "#FFFF00"
     },
     {
-      "name": "Squashing Containment Layer",
-      "shouldFlattenTransform": false
+      "name": "Squashing Containment Layer"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV id='host'",
