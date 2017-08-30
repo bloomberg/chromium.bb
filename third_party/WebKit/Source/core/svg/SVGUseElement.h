@@ -126,8 +126,8 @@ class SVGUseElement final : public SVGGraphicsElement,
   Member<SVGAnimatedLength> width_;
   Member<SVGAnimatedLength> height_;
 
-  AtomicString element_identifier_;
-  bool element_identifier_is_local_;
+  KURL element_url_;
+  bool element_url_is_local_;
   bool have_fired_load_event_;
   bool needs_shadow_tree_recreation_;
   Member<SVGElement> target_element_instance_;
