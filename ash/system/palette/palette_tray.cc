@@ -401,8 +401,10 @@ aura::Window* PaletteTray::GetWindow() {
 }
 
 void PaletteTray::AnchorUpdated() {
-  if (bubble_)
+  if (bubble_) {
+    UpdateClippingWindowBounds();
     bubble_->bubble_view()->UpdateBubble();
+  }
 }
 
 void PaletteTray::Initialize() {

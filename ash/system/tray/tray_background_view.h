@@ -116,6 +116,9 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   // tray_container().
   gfx::Insets GetBubbleAnchorInsets() const;
 
+  // Updates the |clipping_window_| bounds if the anchor moved or changed.
+  void UpdateClippingWindowBounds();
+
   // Returns the container window for the bubble (on the proper display).
   aura::Window* GetBubbleWindowContainer();
 
