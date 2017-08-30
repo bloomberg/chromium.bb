@@ -212,6 +212,9 @@ class Proxy(object):
       logging.warning('\n\nFailure in %s/%s: exception %s', self.name, name, e)
       self._dump_proxy_info()
       raise e
+    finally:
+      if self._verbose:
+        logging.info('%s/%s - finished gRPC operation', self.name, name)
 
   def _dump_proxy_info(self):
     logging.warning('DETAILED PROXY INFO')
