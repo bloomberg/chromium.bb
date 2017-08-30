@@ -695,8 +695,8 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // On Android an overlay surface means using
   // SurfaceView instead of SurfaceTexture.
 
-  // Use overlays for all video.
-  bool force_video_overlays_;
+  // Allow overlays for all video on android.
+  bool always_enable_overlays_;
 
   // Suppresses calls to OnPipelineError() after destruction / shutdown has been
   // started; prevents us from spuriously logging errors that are transient or

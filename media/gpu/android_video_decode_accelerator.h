@@ -406,6 +406,9 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
 
   std::unique_ptr<PromotionHintAggregator> promotion_hint_aggregator_;
 
+  // Are overlays required by command-line options?
+  bool is_overlay_required_ = false;
+
   // WeakPtrFactory for posting tasks back to |this|.
   base::WeakPtrFactory<AndroidVideoDecodeAccelerator> weak_this_factory_;
 
