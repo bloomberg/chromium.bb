@@ -15,7 +15,6 @@
 #include "core/events/ErrorEvent.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/custom/CustomElement.h"
-#include "core/html/imports/HTMLImportsController.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/bindings/V8BindingMacros.h"
 #include "platform/bindings/V8PrivateProperty.h"
@@ -172,10 +171,7 @@ HTMLElement* ScriptCustomElementDefinition::CreateElementSync(
   {
     v8::TryCatch try_catch(script_state_->GetIsolate());
 
-    bool is_import_document =
-        document.ImportsController() &&
-        document.ImportsController()->Master() != document;
-    if (is_import_document) {
+    if (document.IsHTMLImport()) {
       // V8HTMLElement::constructorCustom() can only refer to
       // window.document() which is not the import document. Create
       // elements in import documents ahead of time so they end up in

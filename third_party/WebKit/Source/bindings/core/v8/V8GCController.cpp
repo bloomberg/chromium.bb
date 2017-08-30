@@ -58,12 +58,8 @@ namespace blink {
 
 Node* V8GCController::OpaqueRootForGC(v8::Isolate*, Node* node) {
   DCHECK(node);
-  if (node->isConnected()) {
-    Document& document = node->GetDocument();
-    if (HTMLImportsController* controller = document.ImportsController())
-      return controller->Master();
-    return &document;
-  }
+  if (node->isConnected())
+    return &node->GetDocument().MasterDocument();
 
   if (node->IsAttributeNode()) {
     Node* owner_element = ToAttr(node)->ownerElement();

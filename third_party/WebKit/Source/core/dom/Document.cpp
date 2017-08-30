@@ -1111,6 +1111,19 @@ HTMLImportLoader* Document::ImportLoader() const {
   return imports_controller_->LoaderFor(*this);
 }
 
+bool Document::IsHTMLImport() const {
+  return imports_controller_ && imports_controller_->Master() != this;
+}
+
+Document& Document::MasterDocument() const {
+  if (!imports_controller_)
+    return *const_cast<Document*>(this);
+
+  Document* master = imports_controller_->Master();
+  DCHECK(master);
+  return *master;
+}
+
 bool Document::HaveImportsLoaded() const {
   if (!imports_controller_)
     return true;
@@ -1791,6 +1804,14 @@ LocalFrameView* Document::View() const {
 
 Page* Document::GetPage() const {
   return frame_ ? frame_->GetPage() : nullptr;
+}
+
+LocalFrame* Document::GetFrameOfMasterDocument() const {
+  if (frame_)
+    return frame_;
+  if (imports_controller_)
+    return imports_controller_->Master()->GetFrame();
+  return nullptr;
 }
 
 Settings* Document::GetSettings() const {
@@ -5103,8 +5124,7 @@ const KURL Document::SiteForCookies() const {
   // TODO(mkwst): This doesn't properly handle HTML Import documents.
 
   // If this is an imported document, grab its master document's first-party:
-  if (ImportsController() && ImportsController()->Master() &&
-      ImportsController()->Master() != this)
+  if (IsHTMLImport())
     return ImportsController()->Master()->SiteForCookies();
 
   if (!GetFrame())

@@ -486,6 +486,10 @@ class CORE_EXPORT Document : public ContainerNode,
 
   LocalFrameView* View() const;                    // can be null
   LocalFrame* GetFrame() const { return frame_; }  // can be null
+  // Returns frame_ for current document, or if this is an HTML import, master
+  // document's frame_, if any.  Can be null.
+  // TODO(kochi): Audit usage of this interface (crbug.com/746150).
+  LocalFrame* GetFrameOfMasterDocument() const;
   Page* GetPage() const;                           // can be null
   Settings* GetSettings() const;                   // can be null
 
@@ -1186,6 +1190,10 @@ class CORE_EXPORT Document : public ContainerNode,
     return imports_controller_;
   }
   HTMLImportLoader* ImportLoader() const;
+
+  bool IsHTMLImport() const;
+  // TODO(kochi): Audit usage of this interface (crbug.com/746150).
+  Document& MasterDocument() const;
 
   void DidLoadAllImports();
 

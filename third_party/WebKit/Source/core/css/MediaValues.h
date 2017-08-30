@@ -95,7 +95,6 @@ class CORE_EXPORT MediaValues : public GarbageCollectedFinalized<MediaValues> {
   static int CalculateAvailableHoverTypes(LocalFrame*);
   static DisplayShape CalculateDisplayShape(LocalFrame*);
   static ColorSpaceGamut CalculateColorGamut(LocalFrame*);
-  static LocalFrame* FrameFrom(Document&);
 };
 
 }  // namespace blink

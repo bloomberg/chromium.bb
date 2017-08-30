@@ -36,7 +36,7 @@ MediaValuesCached::MediaValuesCachedData::MediaValuesCachedData(
     Document& document)
     : MediaValuesCached::MediaValuesCachedData() {
   DCHECK(IsMainThread());
-  LocalFrame* frame = MediaValues::FrameFrom(document);
+  LocalFrame* frame = document.GetFrameOfMasterDocument();
   // TODO(hiroshige): Clean up |frame->view()| conditions.
   DCHECK(!frame || frame->View());
   if (frame && frame->View()) {
