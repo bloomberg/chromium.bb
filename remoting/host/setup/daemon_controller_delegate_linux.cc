@@ -220,8 +220,8 @@ void DaemonControllerDelegateLinux::UpdateConfig(
     return;
   }
 
-  std::vector<std::string> args;
-  args.push_back("--reload");
+  std::vector<std::string> args = {"--reload",
+                                   "--config=" + GetConfigPath().value()};
   DaemonController::AsyncResult result = DaemonController::RESULT_FAILED;
   if (RunHostScript(args))
     result = DaemonController::RESULT_OK;
@@ -231,8 +231,8 @@ void DaemonControllerDelegateLinux::UpdateConfig(
 
 void DaemonControllerDelegateLinux::Stop(
     const DaemonController::CompletionCallback& done) {
-  std::vector<std::string> args;
-  args.push_back("--stop");
+  std::vector<std::string> args = {"--stop",
+                                   "--config=" + GetConfigPath().value()};
   DaemonController::AsyncResult result = DaemonController::RESULT_FAILED;
   if (RunHostScript(args))
     result = DaemonController::RESULT_OK;
