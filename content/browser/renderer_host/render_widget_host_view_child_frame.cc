@@ -87,6 +87,12 @@ RenderWidgetHostViewChildFrame::RenderWidgetHostViewChildFrame(
 }
 
 RenderWidgetHostViewChildFrame::~RenderWidgetHostViewChildFrame() {
+  // TODO(wjmaclean): The next two lines are a speculative fix for
+  // https://crbug.com/760074, based on the theory that perhaps something is
+  // destructing the class without calling Destroy() first.
+  if (frame_connector_)
+    DetachFromTouchSelectionClientManagerIfNecessary();
+
   if (!IsUsingMus()) {
     ResetCompositorFrameSinkSupport();
     if (GetHostFrameSinkManager())
