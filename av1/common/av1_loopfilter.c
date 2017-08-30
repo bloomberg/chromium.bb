@@ -13,13 +13,12 @@
 
 #include "./aom_config.h"
 #include "./aom_dsp_rtcd.h"
-#include "av1/common/av1_loopfilter.h"
-#include "av1/common/onyxc_int.h"
-#include "av1/common/reconinter.h"
 #include "aom_dsp/aom_dsp_common.h"
 #include "aom_mem/aom_mem.h"
 #include "aom_ports/mem.h"
-
+#include "av1/common/av1_loopfilter.h"
+#include "av1/common/onyxc_int.h"
+#include "av1/common/reconinter.h"
 #include "av1/common/seg_common.h"
 
 #if CONFIG_LPF_DIRECT
@@ -3002,8 +3001,8 @@ static void av1_filter_block_plane_vert(
                                         params.hev_thr, cm->bit_depth);
             else
 #endif  // CONFIG_HIGHBITDEPTH
-              aom_lpf_vertical_4_c(filt_start, line_length, params.mblim,
-                                   params.lim, params.hev_thr);
+              aom_lpf_vertical_4(filt_start, line_length, params.mblim,
+                                 params.lim, params.hev_thr);
             break;
           // apply 8-tap filtering
           case 8:
@@ -3014,8 +3013,8 @@ static void av1_filter_block_plane_vert(
                                         params.hev_thr, cm->bit_depth);
             else
 #endif  // CONFIG_HIGHBITDEPTH
-              aom_lpf_vertical_8_c(filt_start, line_length, params.mblim,
-                                   params.lim, params.hev_thr);
+              aom_lpf_vertical_8(filt_start, line_length, params.mblim,
+                                 params.lim, params.hev_thr);
             break;
           // apply 16-tap filtering
           case 16:
@@ -3026,8 +3025,8 @@ static void av1_filter_block_plane_vert(
                                          params.hev_thr, cm->bit_depth);
             else
 #endif  // CONFIG_HIGHBITDEPTH
-              aom_lpf_vertical_16_c(filt_start, line_length, params.mblim,
-                                    params.lim, params.hev_thr);
+              aom_lpf_vertical_16(filt_start, line_length, params.mblim,
+                                  params.lim, params.hev_thr);
             break;
           // no filtering
           default: break;
@@ -3060,8 +3059,8 @@ static void av1_filter_block_plane_vert(
                                     params.hev_thr, cm->bit_depth);
         else
 #endif  // CONFIG_HIGHBITDEPTH
-          aom_lpf_vertical_4_c(filt_start, line_length, params.mblim,
-                               params.lim, params.hev_thr);
+          aom_lpf_vertical_4(filt_start, line_length, params.mblim, params.lim,
+                             params.hev_thr);
 
         for (i = 0; i < 128; ++i) {
           if (orig_pos[i] >= 0) src[orig_pos[i]] = block[i];
@@ -3078,8 +3077,8 @@ static void av1_filter_block_plane_vert(
                                       cm->bit_depth);
           else
 #endif  // CONFIG_HIGHBITDEPTH
-            aom_lpf_vertical_4_c(p, dst_stride, params.mblim, params.lim,
-                                 params.hev_thr);
+            aom_lpf_vertical_4(p, dst_stride, params.mblim, params.lim,
+                               params.hev_thr);
           break;
         // apply 8-tap filtering
         case 8:
@@ -3090,8 +3089,8 @@ static void av1_filter_block_plane_vert(
                                       cm->bit_depth);
           else
 #endif  // CONFIG_HIGHBITDEPTH
-            aom_lpf_vertical_8_c(p, dst_stride, params.mblim, params.lim,
-                                 params.hev_thr);
+            aom_lpf_vertical_8(p, dst_stride, params.mblim, params.lim,
+                               params.hev_thr);
           break;
         // apply 16-tap filtering
         case 16:
@@ -3102,8 +3101,8 @@ static void av1_filter_block_plane_vert(
                                        cm->bit_depth);
           else
 #endif  // CONFIG_HIGHBITDEPTH
-            aom_lpf_vertical_16_c(p, dst_stride, params.mblim, params.lim,
-                                  params.hev_thr);
+            aom_lpf_vertical_16(p, dst_stride, params.mblim, params.lim,
+                                params.hev_thr);
           break;
         // no filtering
         default: break;
@@ -3117,8 +3116,8 @@ static void av1_filter_block_plane_vert(
                                     cm->bit_depth);
         else
 #endif  // CONFIG_HIGHBITDEPTH
-          aom_lpf_vertical_4_c(p + 4, dst_stride, params.mblim, params.lim,
-                               params.hev_thr);
+          aom_lpf_vertical_4(p + 4, dst_stride, params.mblim, params.lim,
+                             params.hev_thr);
       }
 #endif  // CONFIG_LPF_DIRECT
       // advance the destination pointer
@@ -3188,8 +3187,8 @@ static void av1_filter_block_plane_horz(
                                           params.hev_thr, cm->bit_depth);
             else
 #endif  // CONFIG_HIGHBITDEPTH
-              aom_lpf_horizontal_4_c(filt_start, line_length, params.mblim,
-                                     params.lim, params.hev_thr);
+              aom_lpf_horizontal_4(filt_start, line_length, params.mblim,
+                                   params.lim, params.hev_thr);
             break;
           // apply 8-tap filtering
           case 8:
@@ -3200,8 +3199,8 @@ static void av1_filter_block_plane_horz(
                                           params.hev_thr, cm->bit_depth);
             else
 #endif  // CONFIG_HIGHBITDEPTH
-              aom_lpf_horizontal_8_c(filt_start, line_length, params.mblim,
-                                     params.lim, params.hev_thr);
+              aom_lpf_horizontal_8(filt_start, line_length, params.mblim,
+                                   params.lim, params.hev_thr);
             break;
           // apply 16-tap filtering
           case 16:
@@ -3212,9 +3211,8 @@ static void av1_filter_block_plane_horz(
                   params.lim, params.hev_thr, cm->bit_depth);
             else
 #endif  // CONFIG_HIGHBITDEPTH
-              aom_lpf_horizontal_edge_16_c(filt_start, line_length,
-                                           params.mblim, params.lim,
-                                           params.hev_thr);
+              aom_lpf_horizontal_edge_16(filt_start, line_length, params.mblim,
+                                         params.lim, params.hev_thr);
             break;
           // no filtering
           default: break;
@@ -3246,8 +3244,8 @@ static void av1_filter_block_plane_horz(
                                       params.hev_thr, cm->bit_depth);
         else
 #endif  // CONFIG_HIGHBITDEPTH
-          aom_lpf_horizontal_4_c(filt_start, line_length, params.mblim,
-                                 params.lim, params.hev_thr);
+          aom_lpf_horizontal_4(filt_start, line_length, params.mblim,
+                               params.lim, params.hev_thr);
 
         for (i = 0; i < 256; ++i) {
           if (orig_pos[i] >= 0) src[orig_pos[i]] = block[i];
@@ -3264,8 +3262,8 @@ static void av1_filter_block_plane_horz(
                                         params.hev_thr, cm->bit_depth);
           else
 #endif  // CONFIG_HIGHBITDEPTH
-            aom_lpf_horizontal_4_c(p, dst_stride, params.mblim, params.lim,
-                                   params.hev_thr);
+            aom_lpf_horizontal_4(p, dst_stride, params.mblim, params.lim,
+                                 params.hev_thr);
           break;
         // apply 8-tap filtering
         case 8:
@@ -3276,8 +3274,8 @@ static void av1_filter_block_plane_horz(
                                         params.hev_thr, cm->bit_depth);
           else
 #endif  // CONFIG_HIGHBITDEPTH
-            aom_lpf_horizontal_8_c(p, dst_stride, params.mblim, params.lim,
-                                   params.hev_thr);
+            aom_lpf_horizontal_8(p, dst_stride, params.mblim, params.lim,
+                                 params.hev_thr);
           break;
         // apply 16-tap filtering
         case 16:
@@ -3288,8 +3286,8 @@ static void av1_filter_block_plane_horz(
                 params.hev_thr, cm->bit_depth);
           else
 #endif  // CONFIG_HIGHBITDEPTH
-            aom_lpf_horizontal_edge_16_c(p, dst_stride, params.mblim,
-                                         params.lim, params.hev_thr);
+            aom_lpf_horizontal_edge_16(p, dst_stride, params.mblim, params.lim,
+                                       params.hev_thr);
           break;
         // no filtering
         default: break;
@@ -3303,8 +3301,8 @@ static void av1_filter_block_plane_horz(
                                       params.hev_thr, cm->bit_depth);
         else
 #endif  // CONFIG_HIGHBITDEPTH
-          aom_lpf_horizontal_4_c(p + 4 * dst_stride, dst_stride, params.mblim,
-                                 params.lim, params.hev_thr);
+          aom_lpf_horizontal_4(p + 4 * dst_stride, dst_stride, params.mblim,
+                               params.lim, params.hev_thr);
       }
 #endif  // CONFIG_LPF_DIRECT
       // advance the destination pointer

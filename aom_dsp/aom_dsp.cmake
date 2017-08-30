@@ -65,11 +65,16 @@ set(AOM_DSP_COMMON_INTRIN_SSE4_1
 
 set(AOM_DSP_COMMON_INTRIN_AVX2
     "${AOM_ROOT}/aom_dsp/x86/aom_subpixel_8t_intrin_avx2.c"
-    "${AOM_ROOT}/aom_dsp/x86/loopfilter_avx2.c"
     "${AOM_ROOT}/aom_dsp/x86/inv_txfm_avx2.c"
     "${AOM_ROOT}/aom_dsp/x86/common_avx2.h"
     "${AOM_ROOT}/aom_dsp/x86/inv_txfm_common_avx2.h"
     "${AOM_ROOT}/aom_dsp/x86/txfm_common_avx2.h")
+
+if (NOT CONFIG_PARALLEL_DEBLOCKING)
+  set(AOM_DSP_COMMON_INTRIN_AVX2
+      ${AOM_DSP_COMMON_INTRIN_AVX2}
+      "${AOM_ROOT}/aom_dsp/x86/loopfilter_avx2.c")
+endif ()
 
 set(AOM_DSP_COMMON_ASM_NEON
     "${AOM_ROOT}/aom_dsp/arm/aom_convolve8_avg_neon_asm.asm"
@@ -85,11 +90,16 @@ set(AOM_DSP_COMMON_ASM_NEON
     "${AOM_ROOT}/aom_dsp/arm/idct8x8_1_add_neon.asm"
     "${AOM_ROOT}/aom_dsp/arm/idct8x8_add_neon.asm"
     "${AOM_ROOT}/aom_dsp/arm/intrapred_neon_asm.asm"
-    "${AOM_ROOT}/aom_dsp/arm/loopfilter_16_neon.asm"
-    "${AOM_ROOT}/aom_dsp/arm/loopfilter_4_neon.asm"
-    "${AOM_ROOT}/aom_dsp/arm/loopfilter_8_neon.asm"
-    "${AOM_ROOT}/aom_dsp/arm/loopfilter_mb_neon.asm"
     "${AOM_ROOT}/aom_dsp/arm/save_reg_neon.asm")
+
+if (NOT CONFIG_PARALLEL_DEBLOCKING)
+  set(AOM_DSP_COMMON_ASM_NEON
+      ${AOM_DSP_COMMON_ASM_NEON}
+      "${AOM_ROOT}/aom_dsp/arm/loopfilter_16_neon.asm"
+      "${AOM_ROOT}/aom_dsp/arm/loopfilter_4_neon.asm"
+      "${AOM_ROOT}/aom_dsp/arm/loopfilter_8_neon.asm"
+      "${AOM_ROOT}/aom_dsp/arm/loopfilter_mb_neon.asm")
+endif ()
 
 set(AOM_DSP_COMMON_INTRIN_NEON
     "${AOM_ROOT}/aom_dsp/arm/aom_convolve_neon.c"
@@ -98,12 +108,17 @@ set(AOM_DSP_COMMON_INTRIN_NEON
     "${AOM_ROOT}/aom_dsp/arm/hadamard_neon.c"
     "${AOM_ROOT}/aom_dsp/arm/idct16x16_neon.c"
     "${AOM_ROOT}/aom_dsp/arm/intrapred_neon.c"
-    "${AOM_ROOT}/aom_dsp/arm/loopfilter_neon.c"
     "${AOM_ROOT}/aom_dsp/arm/sad4d_neon.c"
     "${AOM_ROOT}/aom_dsp/arm/sad_neon.c"
     "${AOM_ROOT}/aom_dsp/arm/subpel_variance_neon.c"
     "${AOM_ROOT}/aom_dsp/arm/subtract_neon.c"
     "${AOM_ROOT}/aom_dsp/arm/variance_neon.c")
+
+if (NOT CONFIG_PARALLEL_DEBLOCKING)
+  set(AOM_DSP_COMMON_INTRIN_NEON
+      ${AOM_DSP_COMMON_INTRIN_NEON}
+      "${AOM_ROOT}/aom_dsp/arm/loopfilter_neon.c")
+endif ()
 
 if ("${AOM_TARGET_CPU}" STREQUAL "arm64")
   set(AOM_DSP_COMMON_INTRIN_NEON
@@ -120,10 +135,15 @@ if ("${AOM_TARGET_CPU}" STREQUAL "arm64")
       "${AOM_ROOT}/aom_dsp/arm/idct4x4_add_neon.c"
       "${AOM_ROOT}/aom_dsp/arm/idct8x8_1_add_neon.c"
       "${AOM_ROOT}/aom_dsp/arm/idct8x8_add_neon.c"
-      "${AOM_ROOT}/aom_dsp/arm/intrapred_neon.c"
-      "${AOM_ROOT}/aom_dsp/arm/loopfilter_16_neon.c"
-      "${AOM_ROOT}/aom_dsp/arm/loopfilter_4_neon.c"
-      "${AOM_ROOT}/aom_dsp/arm/loopfilter_8_neon.c")
+      "${AOM_ROOT}/aom_dsp/arm/intrapred_neon.c")
+
+  if (NOT CONFIG_PARALLEL_DEBLOCKING)
+    set(AOM_DSP_COMMON_INTRIN_NEON
+        ${AOM_DSP_COMMON_INTRIN_NEON}
+        "${AOM_ROOT}/aom_dsp/arm/loopfilter_16_neon.c"
+        "${AOM_ROOT}/aom_dsp/arm/loopfilter_4_neon.c"
+        "${AOM_ROOT}/aom_dsp/arm/loopfilter_8_neon.c")
+  endif ()
 endif ()
 
 set(AOM_DSP_COMMON_INTRIN_DSPR2
@@ -143,14 +163,19 @@ set(AOM_DSP_COMMON_INTRIN_DSPR2
     "${AOM_ROOT}/aom_dsp/mips/intrapred16_dspr2.c"
     "${AOM_ROOT}/aom_dsp/mips/intrapred4_dspr2.c"
     "${AOM_ROOT}/aom_dsp/mips/intrapred8_dspr2.c"
-    "${AOM_ROOT}/aom_dsp/mips/inv_txfm_dspr2.h"
-    "${AOM_ROOT}/aom_dsp/mips/loopfilter_filters_dspr2.c"
-    "${AOM_ROOT}/aom_dsp/mips/loopfilter_filters_dspr2.h"
-    "${AOM_ROOT}/aom_dsp/mips/loopfilter_macros_dspr2.h"
-    "${AOM_ROOT}/aom_dsp/mips/loopfilter_masks_dspr2.h"
-    "${AOM_ROOT}/aom_dsp/mips/loopfilter_mb_dspr2.c"
-    "${AOM_ROOT}/aom_dsp/mips/loopfilter_mb_horiz_dspr2.c"
-    "${AOM_ROOT}/aom_dsp/mips/loopfilter_mb_vert_dspr2.c")
+    "${AOM_ROOT}/aom_dsp/mips/inv_txfm_dspr2.h")
+
+if (NOT CONFIG_PARALLEL_DEBLOCKING)
+  set(AOM_DSP_COMMON_INTRIN_DSPR2
+      ${AOM_DSP_COMMON_INTRIN_DSPR2}
+      "${AOM_ROOT}/aom_dsp/mips/loopfilter_filters_dspr2.c"
+      "${AOM_ROOT}/aom_dsp/mips/loopfilter_filters_dspr2.h"
+      "${AOM_ROOT}/aom_dsp/mips/loopfilter_macros_dspr2.h"
+      "${AOM_ROOT}/aom_dsp/mips/loopfilter_masks_dspr2.h"
+      "${AOM_ROOT}/aom_dsp/mips/loopfilter_mb_dspr2.c"
+      "${AOM_ROOT}/aom_dsp/mips/loopfilter_mb_horiz_dspr2.c"
+      "${AOM_ROOT}/aom_dsp/mips/loopfilter_mb_vert_dspr2.c")
+endif ()
 
 set(AOM_DSP_COMMON_INTRIN_MSA
     "${AOM_ROOT}/aom_dsp/mips/aom_convolve8_avg_horiz_msa.c"
@@ -171,12 +196,17 @@ set(AOM_DSP_COMMON_INTRIN_MSA
     "${AOM_ROOT}/aom_dsp/mips/idct8x8_msa.c"
     "${AOM_ROOT}/aom_dsp/mips/intrapred_msa.c"
     "${AOM_ROOT}/aom_dsp/mips/inv_txfm_msa.h"
-    "${AOM_ROOT}/aom_dsp/mips/loopfilter_16_msa.c"
-    "${AOM_ROOT}/aom_dsp/mips/loopfilter_4_msa.c"
-    "${AOM_ROOT}/aom_dsp/mips/loopfilter_8_msa.c"
-    "${AOM_ROOT}/aom_dsp/mips/loopfilter_msa.h"
     "${AOM_ROOT}/aom_dsp/mips/macros_msa.h"
     "${AOM_ROOT}/aom_dsp/mips/txfm_macros_msa.h")
+
+if (NOT CONFIG_PARALLEL_DEBLOCKING)
+  set(AOM_DSP_COMMON_INTRIN_MSA
+      ${AOM_DSP_COMMON_INTRIN_MSA}
+      "${AOM_ROOT}/aom_dsp/mips/loopfilter_16_msa.c"
+      "${AOM_ROOT}/aom_dsp/mips/loopfilter_4_msa.c"
+      "${AOM_ROOT}/aom_dsp/mips/loopfilter_8_msa.c"
+      "${AOM_ROOT}/aom_dsp/mips/loopfilter_msa.h")
+endif ()
 
 if (CONFIG_HIGHBITDEPTH)
   set(AOM_DSP_COMMON_ASM_SSE2
