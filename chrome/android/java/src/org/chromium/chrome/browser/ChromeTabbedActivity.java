@@ -1154,7 +1154,6 @@ public class ChromeTabbedActivity
                     if (tabToBeClobbered != null) {
                         TabModelUtils.setIndex(tabModel, tabToBeClobberedIndex);
                         tabToBeClobbered.reload();
-                        RecordUserAction.record("MobileTabClobbered");
                     } else {
                         launchIntent(url, referer, headers, externalAppId, true, intent);
                     }
@@ -1206,7 +1205,6 @@ public class ChromeTabbedActivity
                                     referer, IntentHandler.getReferrerPolicyFromIntent(intent)));
                         }
                         currentTab.loadUrl(loadUrlParams);
-                        RecordUserAction.record("MobileTabClobbered");
                     } else {
                         launchIntent(url, referer, headers, externalAppId, true, intent);
                     }
@@ -1706,7 +1704,6 @@ public class ChromeTabbedActivity
 
         if (getToolbarManager().back()) {
             recordBackPressedUma("Navigating backward", BACK_PRESSED_NAVIGATED_BACK);
-            RecordUserAction.record("MobileTabClobbered");
             return true;
         }
 

@@ -2242,7 +2242,6 @@ public class LocationBarLayout extends FrameLayout
 
             setUrlToPageUrl();
             RecordUserAction.record("MobileOmniboxUse");
-            RecordUserAction.record("MobileTabClobbered");
         } else {
             setUrlToPageUrl();
         }
