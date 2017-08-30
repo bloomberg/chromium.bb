@@ -91,11 +91,22 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
     virtual void OnThreadStarted() {}
     virtual void OnStarted() {}
 
+    // Called when status changed to STOPPING. The renderer has been sent a Stop
+    // IPC message and OnStopped() will be called upon successful completion.
     virtual void OnStopping() {}
-    // Received ACK from renderer that the worker context terminated.
+
+    // Called when status changed to STOPPED. Usually, this is called upon
+    // receiving an ACK from renderer that the worker context terminated.
+    // OnStopped() is also called if Stop() aborted an ongoing start attempt
+    // even before the Start IPC message was sent to the renderer.  In this
+    // case, OnStopping() is not called; the worker is "stopped" immediately
+    // (the Start IPC is never sent).
     virtual void OnStopped(EmbeddedWorkerStatus old_status) {}
-    // The browser-side IPC endpoint for communication with the worker died.
+
+    // Called when the browser-side IPC endpoint for communication with the
+    // worker died. When this is called, status is STOPPED.
     virtual void OnDetached(EmbeddedWorkerStatus old_status) {}
+
     virtual void OnScriptLoaded() {}
     virtual void OnScriptLoadFailed() {}
     virtual void OnReportException(const base::string16& error_message,
@@ -128,10 +139,15 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
              mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info,
              const StatusCallback& callback);
 
-  // Stops the worker. It is invalid to call this when the worker is
-  // not in STARTING or RUNNING status.
-  // This returns false when StopWorker IPC couldn't be sent to the worker.
-  bool Stop();
+  // Stops the worker. It is invalid to call this when the worker is not in
+  // STARTING or RUNNING status.
+  //
+  // Stop() typically sends a Stop IPC to the renderer, and this instance enters
+  // STOPPING status, with Listener::OnStopped() called upon completion. It can
+  // synchronously complete if this instance is STARTING but the Start IPC
+  // message has not yet been sent. In that case, the start procedure is
+  // aborted, and this instance enters STOPPED status.
+  void Stop();
 
   // Stops the worker if the worker is not being debugged (i.e. devtools is
   // not attached). This method is called by a stop-worker timer to kill
@@ -198,10 +214,11 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   static std::string StatusToString(EmbeddedWorkerStatus status);
   static std::string StartingPhaseToString(StartingPhase phase);
 
-  // Detaches the running worker from the EmbeddedWorkerRegistry and calls
-  // OnDetached(). Use this instead of OnDetached() when the
-  // EmbeddedWorkerRegistry possibly knows about the running worker.
-  // TODO(falken): Remove OnDetached() once the callsite in Stop() is removed.
+  // Forces this instance into STOPPED status and releases any state about the
+  // running worker. Called when connection with the renderer died or the
+  // renderer is unresponsive.  Essentially, it throws away any information
+  // about the renderer-side worker, and frees this instance up to start a new
+  // worker.
   void Detach();
 
   base::WeakPtr<EmbeddedWorkerInstance> AsWeakPtr();
@@ -262,10 +279,6 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
                               const base::string16& message,
                               int line_number,
                               const GURL& source_url) override;
-
-  // Called when connection with the renderer died or the start attempt was
-  // aborted before the connection was attempted.
-  void OnDetached();
 
   // Called back from Registry when the worker instance sends message
   // to the browser (i.e. EmbeddedWorker observers).
