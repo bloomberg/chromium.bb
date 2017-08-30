@@ -88,7 +88,8 @@ void TestInterfaces::SetTestIsRunning(bool running) {
 }
 
 void TestInterfaces::ConfigureForTestWithURL(const blink::WebURL& test_url,
-                                             bool generate_pixels) {
+                                             bool generate_pixels,
+                                             bool initial_configuration) {
   std::string spec = GURL(test_url).spec();
   size_t path_start = spec.rfind("LayoutTests/");
   if (path_start != std::string::npos)
@@ -103,11 +104,32 @@ void TestInterfaces::ConfigureForTestWithURL(const blink::WebURL& test_url,
   if (spec.find("/devtools/") != std::string::npos ||
       spec.find("/inspector/") != std::string::npos ||
       spec.find("/inspector-enabled/") != std::string::npos) {
-    test_runner_->ClearDevToolsLocalStorage();
     test_runner_->SetV8CacheDisabled(true);
   } else {
     test_runner_->SetV8CacheDisabled(false);
   }
+
+  if (spec.find("/viewsource/") != std::string::npos) {
+    test_runner_->setShouldEnableViewSource(true);
+    test_runner_->setShouldGeneratePixelResults(false);
+    test_runner_->setShouldDumpAsMarkup(true);
+  }
+  if (spec.find("/external/wpt/") != std::string::npos ||
+      spec.find("/external/csswg-test/") != std::string::npos ||
+      spec.find("://web-platform.test") != std::string::npos ||
+      spec.find("/harness-tests/wpt/") != std::string::npos)
+    test_runner_->set_is_web_platform_tests_mode();
+
+  // The actions below should only be done *once* per test.
+  if (!initial_configuration)
+    return;
+
+  if (spec.find("/devtools/") != std::string::npos ||
+      spec.find("/inspector/") != std::string::npos ||
+      spec.find("/inspector-enabled/") != std::string::npos) {
+    test_runner_->ClearDevToolsLocalStorage();
+  }
+
   if ((spec.find("/devtools/") != std::string::npos ||
        spec.find("/inspector/") != std::string::npos) &&
       spec.find("integration_test_runner.html") == std::string::npos &&
@@ -123,16 +145,6 @@ void TestInterfaces::ConfigureForTestWithURL(const blink::WebURL& test_url,
     base::JSONWriter::Write(settings, &settings_string);
     test_runner_->ShowDevTools(settings_string, std::string());
   }
-  if (spec.find("/viewsource/") != std::string::npos) {
-    test_runner_->setShouldEnableViewSource(true);
-    test_runner_->setShouldGeneratePixelResults(false);
-    test_runner_->setShouldDumpAsMarkup(true);
-  }
-  if (spec.find("/external/wpt/") != std::string::npos ||
-      spec.find("/external/csswg-test/") != std::string::npos ||
-      spec.find("://web-platform.test") != std::string::npos ||
-      spec.find("/harness-tests/wpt/") != std::string::npos)
-    test_runner_->set_is_web_platform_tests_mode();
 }
 
 void TestInterfaces::WindowOpened(WebViewTestProxyBase* proxy) {

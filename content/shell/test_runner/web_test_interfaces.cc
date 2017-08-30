@@ -49,8 +49,10 @@ void WebTestInterfaces::SetTestIsRunning(bool running) {
 }
 
 void WebTestInterfaces::ConfigureForTestWithURL(const WebURL& test_url,
-                                                bool generate_pixels) {
-  interfaces_->ConfigureForTestWithURL(test_url, generate_pixels);
+                                                bool generate_pixels,
+                                                bool initial_configuration) {
+  interfaces_->ConfigureForTestWithURL(test_url, generate_pixels,
+                                       initial_configuration);
 }
 
 WebTestRunner* WebTestInterfaces::TestRunner() {
