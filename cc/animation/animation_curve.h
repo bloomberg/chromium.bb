@@ -19,7 +19,6 @@ class BoxF;
 
 namespace cc {
 
-class BooleanAnimationCurve;
 class ColorAnimationCurve;
 class FilterAnimationCurve;
 class FloatAnimationCurve;
@@ -38,9 +37,8 @@ class CC_ANIMATION_EXPORT AnimationCurve {
     FILTER,
     SCROLL_OFFSET,
     SIZE,
-    BOOLEAN,
     // This must be last
-    LAST_CURVE_TYPE = BOOLEAN,
+    LAST_CURVE_TYPE = SIZE,
   };
 
   virtual ~AnimationCurve() {}
@@ -55,7 +53,6 @@ class CC_ANIMATION_EXPORT AnimationCurve {
   const FilterAnimationCurve* ToFilterAnimationCurve() const;
   const ScrollOffsetAnimationCurve* ToScrollOffsetAnimationCurve() const;
   const SizeAnimationCurve* ToSizeAnimationCurve() const;
-  const BooleanAnimationCurve* ToBooleanAnimationCurve() const;
 
   ScrollOffsetAnimationCurve* ToScrollOffsetAnimationCurve();
 };
@@ -66,7 +63,6 @@ class CC_ANIMATION_EXPORT ColorAnimationCurve : public AnimationCurve {
 
   virtual SkColor GetValue(base::TimeDelta t) const = 0;
 
-  // Partial AnimationCurve implementation.
   CurveType Type() const override;
 };
 
@@ -76,7 +72,6 @@ class CC_ANIMATION_EXPORT FloatAnimationCurve : public AnimationCurve {
 
   virtual float GetValue(base::TimeDelta t) const = 0;
 
-  // Partial AnimationCurve implementation.
   CurveType Type() const override;
 };
 
@@ -110,7 +105,6 @@ class CC_ANIMATION_EXPORT TransformAnimationCurve : public AnimationCurve {
   virtual bool MaximumTargetScale(bool forward_direction,
                                   float* max_scale) const = 0;
 
-  // Partial AnimationCurve implementation.
   CurveType Type() const override;
 };
 
@@ -121,7 +115,6 @@ class CC_ANIMATION_EXPORT FilterAnimationCurve : public AnimationCurve {
   virtual FilterOperations GetValue(base::TimeDelta t) const = 0;
   virtual bool HasFilterThatMovesPixels() const = 0;
 
-  // Partial Animation implementation.
   CurveType Type() const override;
 };
 
@@ -131,17 +124,6 @@ class CC_ANIMATION_EXPORT SizeAnimationCurve : public AnimationCurve {
 
   virtual gfx::SizeF GetValue(base::TimeDelta t) const = 0;
 
-  // Partial AnimationCurve implementation.
-  CurveType Type() const override;
-};
-
-class CC_ANIMATION_EXPORT BooleanAnimationCurve : public AnimationCurve {
- public:
-  ~BooleanAnimationCurve() override {}
-
-  virtual bool GetValue(base::TimeDelta t) const = 0;
-
-  // Partial Animation implementation.
   CurveType Type() const override;
 };
 

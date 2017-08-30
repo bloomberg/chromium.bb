@@ -44,12 +44,11 @@ class TransientSimpleTexturedElement : public SimpleTexturedElement<T> {
  public:
   TransientSimpleTexturedElement(int maximum_width,
                                  const base::TimeDelta& timeout)
-      : SimpleTexturedElement<T>(maximum_width),
-        transience_(this, 1.0f, timeout) {}
+      : SimpleTexturedElement<T>(maximum_width), transience_(this, timeout) {}
 
   ~TransientSimpleTexturedElement() override {}
 
-  void SetEnabled(bool enabled) override { transience_.SetEnabled(enabled); }
+  void SetVisible(bool visible) override { transience_.SetVisible(visible); }
 
   TransienceManager* transience() { return &transience_; }
 

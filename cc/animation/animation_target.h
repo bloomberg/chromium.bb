@@ -37,9 +37,6 @@ class CC_ANIMATION_EXPORT AnimationTarget {
   virtual void NotifyClientColorAnimated(SkColor color,
                                          int target_property_id,
                                          Animation* animation) {}
-  virtual void NotifyClientBooleanAnimated(bool visibility,
-                                           int target_property_id,
-                                           Animation* animation) {}
   virtual void NotifyClientTransformOperationsAnimated(
       const TransformOperations& operations,
       int target_property_id,

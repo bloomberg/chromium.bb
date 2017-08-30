@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/vr/elements/ui_element_name.h"
+#include "chrome/browser/vr/target_property.h"
 #include "chrome/browser/vr/test/mock_browser_interface.h"
 #include "chrome/browser/vr/test/mock_content_input_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -64,7 +65,7 @@ class UiSceneManagerTest : public testing::Test {
 
   // Returns true if the given properties are being animated by the element.
   bool IsAnimating(UiElement* element,
-                   const std::vector<int>& properties) const;
+                   const std::vector<TargetProperty>& properties) const;
 
   SkColor GetBackgroundColor() const;
 

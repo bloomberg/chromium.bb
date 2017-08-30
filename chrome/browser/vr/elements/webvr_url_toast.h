@@ -31,7 +31,7 @@ class WebVrUrlToast : public TexturedElement {
       const base::Callback<void(UiUnsupportedMode)>& failure_callback);
   ~WebVrUrlToast() override;
 
-  void SetEnabled(bool enabled) override;
+  void SetVisible(bool visible) override;
 
   void SetToolbarState(const ToolbarState& state);
 

@@ -30,8 +30,7 @@ static_assert(static_cast<int>(cc::Animation::LAST_RUN_STATE) + 1 ==
               "s_runStateNames");
 
 static const char* const s_curveTypeNames[] = {
-    "COLOR",         "FLOAT", "TRANSFORM", "FILTER",
-    "SCROLL_OFFSET", "SIZE",  "BOOLEAN"};
+    "COLOR", "FLOAT", "TRANSFORM", "FILTER", "SCROLL_OFFSET", "SIZE"};
 
 static_assert(static_cast<int>(cc::AnimationCurve::LAST_CURVE_TYPE) + 1 ==
                   arraysize(s_curveTypeNames),

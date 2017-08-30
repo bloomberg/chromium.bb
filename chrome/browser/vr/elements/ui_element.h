@@ -16,6 +16,7 @@
 #include "chrome/browser/vr/color_scheme.h"
 #include "chrome/browser/vr/elements/draw_phase.h"
 #include "chrome/browser/vr/elements/ui_element_name.h"
+#include "chrome/browser/vr/target_property.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/quaternion.h"
@@ -64,9 +65,6 @@ class UiElement : public cc::AnimationTarget {
 
   void Animate(const base::TimeTicks& time);
 
-  // Indicates whether the element should be visually rendered.
-  bool IsVisible() const;
-
   // Indicates whether the element should be tested for cursor input.
   bool IsHitTestable() const;
 
@@ -103,30 +101,39 @@ class UiElement : public cc::AnimationTarget {
 
   int id() const { return id_; }
 
-  // If true, this object will be visible.
-  bool visible() const { return visible_; }
-  void SetVisible(bool visible);
+  // If true, the object has a non-zero opacity.
+  bool IsVisible() const;
+  // For convenience, sets opacity to |opacity_when_visible_|.
+  virtual void SetVisible(bool visible);
 
-  // If false, the reticle will not hit the element, even if visible.
+  void set_opacity_when_visible(float opacity) {
+    opacity_when_visible_ = opacity;
+  }
+  float opacity_when_visible() const { return opacity_when_visible_; }
+
+  bool requires_layout() const { return requires_layout_; }
+  void set_requires_layout(bool requires_layout) {
+    requires_layout_ = requires_layout;
+  }
+
   bool hit_testable() const { return hit_testable_; }
   void set_hit_testable(bool hit_testable) { hit_testable_ = hit_testable; }
 
-  // TODO(bshe): We might be able to remove this state.
   bool viewport_aware() const { return viewport_aware_; }
-  void set_viewport_aware(bool enable) { viewport_aware_ = enable; }
+  void set_viewport_aware(bool viewport_aware) {
+    viewport_aware_ = viewport_aware;
+  }
   bool computed_viewport_aware() const { return computed_viewport_aware_; }
   void set_computed_viewport_aware(bool computed_lock) {
     computed_viewport_aware_ = computed_lock;
   }
 
-  // If true should be drawn in the world viewport, but over all other elements.
   bool is_overlay() const { return is_overlay_; }
   void set_is_overlay(bool is_overlay) { is_overlay_ = is_overlay; }
 
   bool scrollable() const { return scrollable_; }
   void set_scrollable(bool scrollable) { scrollable_ = scrollable; }
 
-  // The size of the object.  This does not affect children.
   gfx::SizeF size() const { return size_; }
   void SetSize(float width, float hight);
 
@@ -145,26 +152,19 @@ class UiElement : public cc::AnimationTarget {
 
   AnimationPlayer& animation_player() { return animation_player_; }
 
-  // The opacity of the object (between 0.0 and 1.0).
   float opacity() const { return opacity_; }
-  void SetOpacity(float opacity);
+  virtual void SetOpacity(float opacity);
 
-  // The corner radius of the object. Analogous to CSS's border-radius. This is
-  // in meters (same units as |size|).
   float corner_radius() const { return corner_radius_; }
   void set_corner_radius(float corner_radius) {
     corner_radius_ = corner_radius;
   }
 
-  // The computed opacity, incorporating opacity of parent objects.
   float computed_opacity() const { return computed_opacity_; }
   void set_computed_opacity(float computed_opacity) {
     computed_opacity_ = computed_opacity;
   }
 
-  // If anchoring is specified, the translation will be relative to the
-  // specified edge(s) of the parent, rather than the center.  A parent object
-  // must be specified when using anchoring.
   XAnchoring x_anchoring() const { return x_anchoring_; }
   void set_x_anchoring(XAnchoring x_anchoring) { x_anchoring_ = x_anchoring; }
 
@@ -174,7 +174,6 @@ class UiElement : public cc::AnimationTarget {
   int draw_phase() const { return draw_phase_; }
   void set_draw_phase(int draw_phase) { draw_phase_ = draw_phase; }
 
-  // This transform can be used by children to derive position of its parent.
   const gfx::Transform& inheritable_transform() const {
     return inheritable_transform_;
   }
@@ -182,13 +181,8 @@ class UiElement : public cc::AnimationTarget {
     inheritable_transform_ = transform;
   }
 
-  // An optional, but stable and semantic identifier for an element.
   UiElementName name() const { return name_; }
   void set_name(UiElementName name) { name_ = name; }
-
-  // By default, sets an element to be visible or not. This may be overridden to
-  // allow finer control of element visibility.
-  virtual void SetEnabled(bool enabled);
 
   void SetMode(ColorScheme::Mode mode);
   ColorScheme::Mode mode() const { return mode_; }
@@ -235,9 +229,12 @@ class UiElement : public cc::AnimationTarget {
   void NotifyClientSizeAnimated(const gfx::SizeF& size,
                                 int transform_property_id,
                                 cc::Animation* animation) override;
-  void NotifyClientBooleanAnimated(bool visible,
-                                   int transform_property_id,
-                                   cc::Animation* animation) override;
+
+  void SetTransitionedProperties(const std::set<TargetProperty>& properties);
+
+  void AddAnimation(std::unique_ptr<cc::Animation> animation);
+  void RemoveAnimation(int animation_id);
+  bool IsAnimatingProperty(TargetProperty property) const;
 
   // Handles positioning adjustments for children. This will be overridden by
   // UiElements providing custom layout modes. See the documentation of the
@@ -270,13 +267,11 @@ class UiElement : public cc::AnimationTarget {
   // Valid IDs are non-negative.
   int id_ = -1;
 
-  // If true, this object will be visible.
-  bool visible_ = false;
-
   // If false, the reticle will not hit the element, even if visible.
   bool hit_testable_ = true;
 
   // If true, the element will reposition itself to viewport if neccessary.
+  // TODO(bshe): We might be able to remove this state.
   bool viewport_aware_ = false;
 
   // The computed viewport aware, incorporating from parent objects.
@@ -286,6 +281,7 @@ class UiElement : public cc::AnimationTarget {
   // all other elements.
   bool is_overlay_ = false;
 
+  // A signal to the input routing machinery that this element accepts scrolls.
   bool scrollable_ = false;
 
   // The size of the object.  This does not affect children.
@@ -294,6 +290,14 @@ class UiElement : public cc::AnimationTarget {
   // The opacity of the object (between 0.0 and 1.0).
   float opacity_ = 1.0f;
 
+  // SetVisible(true) is an alias for SetOpacity(opacity_when_visible_).
+  float opacity_when_visible_ = 1.0f;
+
+  // A signal that this element is to be considered in |LayOutChildren|.
+  bool requires_layout_ = true;
+
+  // The corner radius of the object. Analogous to the CSS property,
+  // border-radius. This is in meters (same units as |size|).
   float corner_radius_ = 0.0f;
 
   // The computed opacity, incorporating opacity of parent objects.
@@ -316,7 +320,8 @@ class UiElement : public cc::AnimationTarget {
   // This transform can be used by children to derive position of its parent.
   gfx::Transform inheritable_transform_;
 
-  // An identifier used for testing and debugging, in lieu of a string.
+  // An optional, but stable and semantic identifier for an element used in lieu
+  // of a string.
   UiElementName name_ = UiElementName::kNone;
 
   // This local transform operations. They are inherited by descendants and are

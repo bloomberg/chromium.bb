@@ -66,13 +66,4 @@ AnimationCurve::CurveType SizeAnimationCurve::Type() const {
   return SIZE;
 }
 
-const BooleanAnimationCurve* AnimationCurve::ToBooleanAnimationCurve() const {
-  DCHECK(Type() == AnimationCurve::BOOLEAN);
-  return static_cast<const BooleanAnimationCurve*>(this);
-}
-
-AnimationCurve::CurveType BooleanAnimationCurve::Type() const {
-  return BOOLEAN;
-}
-
 }  // namespace cc

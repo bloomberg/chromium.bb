@@ -81,10 +81,6 @@ class AnimationPlayer final {
                          int target_property,
                          SkColor current,
                          SkColor target);
-  void TransitionBooleanTo(base::TimeTicks monotonic_time,
-                           int target_property,
-                           bool current,
-                           bool target);
 
   bool IsAnimatingProperty(int property) const;
 

@@ -136,26 +136,6 @@ class CC_ANIMATION_EXPORT SizeKeyframe : public Keyframe {
   gfx::SizeF value_;
 };
 
-class CC_ANIMATION_EXPORT BooleanKeyframe : public Keyframe {
- public:
-  static std::unique_ptr<BooleanKeyframe> Create(
-      base::TimeDelta time,
-      bool value,
-      std::unique_ptr<TimingFunction> timing_function);
-  ~BooleanKeyframe() override;
-
-  bool Value() const;
-
-  std::unique_ptr<BooleanKeyframe> Clone() const;
-
- private:
-  BooleanKeyframe(base::TimeDelta time,
-                  bool value,
-                  std::unique_ptr<TimingFunction> timing_function);
-
-  bool value_;
-};
-
 class CC_ANIMATION_EXPORT KeyframedColorAnimationCurve
     : public ColorAnimationCurve {
  public:
@@ -350,42 +330,6 @@ class CC_ANIMATION_EXPORT KeyframedSizeAnimationCurve
   double scaled_duration_;
 
   DISALLOW_COPY_AND_ASSIGN(KeyframedSizeAnimationCurve);
-};
-
-class CC_ANIMATION_EXPORT KeyframedBooleanAnimationCurve
-    : public BooleanAnimationCurve {
- public:
-  // It is required that the keyframes be sorted by time.
-  static std::unique_ptr<KeyframedBooleanAnimationCurve> Create();
-
-  ~KeyframedBooleanAnimationCurve() override;
-
-  void AddKeyframe(std::unique_ptr<BooleanKeyframe> keyframe);
-  void SetTimingFunction(std::unique_ptr<TimingFunction> timing_function) {
-    timing_function_ = std::move(timing_function);
-  }
-  double scaled_duration() const { return scaled_duration_; }
-  void set_scaled_duration(double scaled_duration) {
-    scaled_duration_ = scaled_duration;
-  }
-
-  // AnimationCurve implementation
-  base::TimeDelta Duration() const override;
-  std::unique_ptr<AnimationCurve> Clone() const override;
-
-  // BooleanAnimationCurve implementation
-  bool GetValue(base::TimeDelta t) const override;
-
- private:
-  KeyframedBooleanAnimationCurve();
-
-  // Always sorted in order of increasing time. No two keyframes have the
-  // same time.
-  std::vector<std::unique_ptr<BooleanKeyframe>> keyframes_;
-  std::unique_ptr<TimingFunction> timing_function_;
-  double scaled_duration_;
-
-  DISALLOW_COPY_AND_ASSIGN(KeyframedBooleanAnimationCurve);
 };
 
 }  // namespace cc

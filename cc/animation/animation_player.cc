@@ -769,11 +769,6 @@ void AnimationPlayer::TickAnimation(base::TimeTicks monotonic_time,
           curve->ToSizeAnimationCurve()->GetValue(trimmed),
           animation->target_property_id(), animation);
       break;
-    case AnimationCurve::BOOLEAN:
-      target->NotifyClientBooleanAnimated(
-          curve->ToBooleanAnimationCurve()->GetValue(trimmed),
-          animation->target_property_id(), animation);
-      break;
   }
 }
 

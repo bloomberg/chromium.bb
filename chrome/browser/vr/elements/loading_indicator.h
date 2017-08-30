@@ -19,7 +19,7 @@ class LoadingIndicator : public TexturedElement {
   explicit LoadingIndicator(int preferred_width);
   ~LoadingIndicator() override;
 
-  void SetEnabled(bool enabled) override;
+  void SetVisible(bool visible) override;
   void SetLoading(bool loading);
   void SetLoadProgress(float progress);
 
@@ -27,9 +27,9 @@ class LoadingIndicator : public TexturedElement {
   UiTexture* GetTexture() const override;
   std::unique_ptr<LoadingIndicatorTexture> texture_;
 
-  void SetVisibility();
+  void UpdateOpacity();
 
-  bool enabled_ = false;
+  bool visible_ = false;
   bool loading_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(LoadingIndicator);

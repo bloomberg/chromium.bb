@@ -21,11 +21,11 @@ UiTexture* LoadingIndicator::GetTexture() const {
   return texture_.get();
 }
 
-void LoadingIndicator::SetEnabled(bool enabled) {
-  if (enabled_ == enabled)
+void LoadingIndicator::SetVisible(bool visible) {
+  if (visible_ == visible)
     return;
-  enabled_ = enabled;
-  SetVisibility();
+  visible_ = visible;
+  UpdateOpacity();
 }
 
 void LoadingIndicator::SetLoading(bool loading) {
@@ -34,15 +34,15 @@ void LoadingIndicator::SetLoading(bool loading) {
   loading_ = loading;
   texture_->SetLoading(loading);
   texture_->SetLoadProgress(0);
-  SetVisibility();
+  UpdateOpacity();
 }
 
 void LoadingIndicator::SetLoadProgress(float progress) {
   texture_->SetLoadProgress(progress);
 }
 
-void LoadingIndicator::SetVisibility() {
-  SetVisible(enabled_ && loading_);
+void LoadingIndicator::UpdateOpacity() {
+  SetOpacity((visible_ && loading_) ? opacity_when_visible() : 0);
 }
 
 }  // namespace vr
