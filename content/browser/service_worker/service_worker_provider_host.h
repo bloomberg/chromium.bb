@@ -21,9 +21,9 @@
 #include "base/time/time.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/common/content_export.h"
+#include "content/common/service_worker/service_worker_container.mojom.h"
 #include "content/common/service_worker/service_worker_event_dispatcher.mojom.h"
 #include "content/common/service_worker/service_worker_provider_host_info.h"
-#include "content/common/service_worker/service_worker_provider_interfaces.mojom.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/request_context_frame_type.h"
 #include "content/public/common/request_context_type.h"
@@ -79,7 +79,7 @@ class WebContents;
 class CONTENT_EXPORT ServiceWorkerProviderHost
     : public ServiceWorkerRegistration::Listener,
       public base::SupportsWeakPtr<ServiceWorkerProviderHost>,
-      public mojom::ServiceWorkerProviderHost {
+      public mojom::ServiceWorkerContainerHost {
  public:
   using GetRegistrationForReadyCallback =
       base::Callback<void(ServiceWorkerRegistration* reigstration)>;
@@ -443,15 +443,16 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   ServiceWorkerDispatcherHost* dispatcher_host_;
   bool allow_association_;
 
-  // |provider_| is the renderer-side Mojo endpoint for provider.
-  mojom::ServiceWorkerProviderAssociatedPtr provider_;
+  // |container_| is the Mojo endpoint to the renderer-side
+  // ServiceWorkerContainer that |this| is a ServiceWorkerContainerHost for.
+  mojom::ServiceWorkerContainerAssociatedPtr container_;
   // |binding_| is the Mojo binding that keeps the connection to the
   // renderer-side counterpart (content::ServiceWorkerNetworkProvider). When the
   // connection bound on |binding_| gets killed from the renderer side, or the
   // bound |ServiceWorkerProviderInfoForStartWorker::host_ptr_info| is otherwise
   // destroyed before being passed to the renderer, this
   // content::ServiceWorkerProviderHost will be destroyed.
-  mojo::AssociatedBinding<mojom::ServiceWorkerProviderHost> binding_;
+  mojo::AssociatedBinding<mojom::ServiceWorkerContainerHost> binding_;
 
   std::vector<base::Closure> queued_events_;
 

@@ -44,7 +44,7 @@ void SaveStatusAndCall(ServiceWorkerStatusCode* out,
 
 }  // namespace
 
-class ProviderHostEndpoints : public mojom::ServiceWorkerProviderHost {
+class ProviderHostEndpoints : public mojom::ServiceWorkerContainerHost {
  public:
   ProviderHostEndpoints() : binding_(this) {}
 
@@ -62,8 +62,8 @@ class ProviderHostEndpoints : public mojom::ServiceWorkerProviderHost {
   }
 
  private:
-  mojom::ServiceWorkerProviderAssociatedPtr client_;
-  mojo::AssociatedBinding<mojom::ServiceWorkerProviderHost> binding_;
+  mojom::ServiceWorkerContainerAssociatedPtr client_;
+  mojo::AssociatedBinding<mojom::ServiceWorkerContainerHost> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(ProviderHostEndpoints);
 };

@@ -17,9 +17,9 @@ bool StructTraits<content::mojom::ServiceWorkerProviderHostInfoDataView,
   out->route_id = in.route_id();
   out->is_parent_frame_secure = in.is_parent_frame_secure();
   out->host_request = in.TakeHostRequest<
-      content::mojom::ServiceWorkerProviderHostAssociatedRequest>();
+      content::mojom::ServiceWorkerContainerHostAssociatedRequest>();
   out->client_ptr_info = in.TakeClientPtrInfo<
-      content::mojom::ServiceWorkerProviderAssociatedPtrInfo>();
+      content::mojom::ServiceWorkerContainerAssociatedPtrInfo>();
   return true;
 }
 

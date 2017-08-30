@@ -31,12 +31,12 @@ struct StructTraits<content::mojom::ServiceWorkerProviderHostInfoDataView,
     return info.is_parent_frame_secure;
   }
 
-  static content::mojom::ServiceWorkerProviderHostAssociatedRequest&
+  static content::mojom::ServiceWorkerContainerHostAssociatedRequest&
   host_request(content::ServiceWorkerProviderHostInfo& info) {
     return info.host_request;
   }
 
-  static content::mojom::ServiceWorkerProviderAssociatedPtrInfo&
+  static content::mojom::ServiceWorkerContainerAssociatedPtrInfo&
   client_ptr_info(content::ServiceWorkerProviderHostInfo& info) {
     return info.client_ptr_info;
   }

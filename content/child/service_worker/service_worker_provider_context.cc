@@ -72,14 +72,14 @@ struct ServiceWorkerProviderContext::ControllerState {
 ServiceWorkerProviderContext::ServiceWorkerProviderContext(
     int provider_id,
     ServiceWorkerProviderType provider_type,
-    mojom::ServiceWorkerProviderAssociatedRequest request,
-    mojom::ServiceWorkerProviderHostAssociatedPtrInfo host_ptr_info,
+    mojom::ServiceWorkerContainerAssociatedRequest request,
+    mojom::ServiceWorkerContainerHostAssociatedPtrInfo host_ptr_info,
     ServiceWorkerDispatcher* dispatcher,
     scoped_refptr<ChildURLLoaderFactoryGetter> default_loader_factory_getter)
     : provider_id_(provider_id),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       binding_(this, std::move(request)) {
-  provider_host_.Bind(std::move(host_ptr_info));
+  container_host_.Bind(std::move(host_ptr_info));
   if (provider_type == SERVICE_WORKER_PROVIDER_FOR_CONTROLLER) {
     controller_state_ = base::MakeUnique<ControllerState>();
   } else {
@@ -215,7 +215,7 @@ void ServiceWorkerProviderContext::UnregisterWorkerFetchContext(
 }
 
 void ServiceWorkerProviderContext::OnNetworkProviderDestroyed() {
-  provider_host_.reset();
+  container_host_.reset();
 }
 
 void ServiceWorkerProviderContext::DestructOnMainThread() const {

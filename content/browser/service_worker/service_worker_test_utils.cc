@@ -22,7 +22,7 @@ ServiceWorkerRemoteProviderEndpoint::~ServiceWorkerRemoteProviderEndpoint() {}
 
 void ServiceWorkerRemoteProviderEndpoint::BindWithProviderHostInfo(
     content::ServiceWorkerProviderHostInfo* info) {
-  mojom::ServiceWorkerProviderAssociatedPtr client_ptr;
+  mojom::ServiceWorkerContainerAssociatedPtr client_ptr;
   client_request_ = mojo::MakeIsolatedRequest(&client_ptr);
   info->client_ptr_info = client_ptr.PassInterface();
   info->host_request = mojo::MakeIsolatedRequest(&host_ptr_);

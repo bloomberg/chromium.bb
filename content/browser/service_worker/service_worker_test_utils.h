@@ -62,21 +62,21 @@ class ServiceWorkerRemoteProviderEndpoint {
   void BindWithProviderInfo(
       mojom::ServiceWorkerProviderInfoForStartWorkerPtr info);
 
-  mojom::ServiceWorkerProviderHostAssociatedPtr* host_ptr() {
+  mojom::ServiceWorkerContainerHostAssociatedPtr* host_ptr() {
     return &host_ptr_;
   }
 
-  mojom::ServiceWorkerProviderAssociatedRequest* client_request() {
+  mojom::ServiceWorkerContainerAssociatedRequest* client_request() {
     return &client_request_;
   }
 
  private:
   // Bound with content::ServiceWorkerProviderHost. The provider host will be
   // removed asynchronously when this pointer is closed.
-  mojom::ServiceWorkerProviderHostAssociatedPtr host_ptr_;
-  // This is the other end of ServiceWorkerProviderAssociatedPtr owned by
+  mojom::ServiceWorkerContainerHostAssociatedPtr host_ptr_;
+  // This is the other end of ServiceWorkerContainerAssociatedPtr owned by
   // content::ServiceWorkerProviderHost.
-  mojom::ServiceWorkerProviderAssociatedRequest client_request_;
+  mojom::ServiceWorkerContainerAssociatedRequest client_request_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerRemoteProviderEndpoint);
 };
