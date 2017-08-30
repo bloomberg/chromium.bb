@@ -317,8 +317,6 @@ EXPERIMENT_LIST="
     masked_tx
     dependent_horztiles
     dist_8x8
-    daala_dist
-    cdef_dist
     tripred
     palette_throughput
     ref_adapt
@@ -538,8 +536,6 @@ post_process_cmdline() {
     soft_enable tempmv_signaling
 
     # Fix up experiment dependencies
-    enabled daala_dist && enable_feature dist_8x8
-    enabled cdef_dist && enable_feature dist_8x8
     enabled pvq && disable_feature chroma_2x2
     enabled pvq && disable_feature rect_tx
     enabled pvq && disable_feature ext_tx
