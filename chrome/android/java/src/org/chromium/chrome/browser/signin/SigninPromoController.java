@@ -192,6 +192,11 @@ public class SigninPromoController {
         mAccountName = accountName;
     }
 
+    /** @return the resource used for the text displayed as promo description. */
+    public @StringRes int getDescriptionStringId() {
+        return mDescriptionStringId;
+    }
+
     private void setupColdState(final Context context, SigninPromoView view) {
         view.getImage().setImageResource(R.drawable.chrome_sync_logo);
         setImageSize(context, view, R.dimen.signin_promo_cold_state_image_size);
