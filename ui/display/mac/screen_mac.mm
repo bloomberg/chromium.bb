@@ -90,8 +90,10 @@ Display BuildDisplayForScreen(NSScreen* screen) {
         base::FeatureList::IsEnabled(features::kColorCorrectRendering);
     if (base::mac::IsAtLeastOS10_12() && !color_correct_rendering_enabled)
       color_space = base::mac::GetSystemColorSpace();
-    display.set_color_space(
-        gfx::ICCProfile::FromCGColorSpace(color_space).GetColorSpace());
+    gfx::ICCProfile icc_profile =
+        gfx::ICCProfile::FromCGColorSpace(color_space);
+    icc_profile.HistogramDisplay(display.id());
+    display.set_color_space(icc_profile.GetColorSpace());
   }
   display.set_color_depth(NSBitsPerPixelFromDepth([screen depth]));
   display.set_depth_per_component(NSBitsPerSampleFromDepth([screen depth]));

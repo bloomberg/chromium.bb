@@ -19932,6 +19932,14 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="3" label="Failed to extract transfer function"/>
   <int value="4" label="Failed to extract primary matrix"/>
   <int value="5" label="Failed to parse"/>
+  <int value="6" label="Parsed, but failed to extract SkColorSpace"/>
+  <int value="7"
+      label="Parsed and extracteed SkColorSpace, but failed to create
+             SkColorSpaceXform to this space"/>
+  <int value="8"
+      label="Converged to an insufficiently accurate approximation of
+             transfer function"/>
+  <int value="9" label="Extracted an sRGB profile directly"/>
 </enum>
 
 <enum name="IceCandidatePairTypes">
