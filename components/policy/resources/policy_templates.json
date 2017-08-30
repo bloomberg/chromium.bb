@@ -9878,7 +9878,7 @@
       'schema': {
         'type': 'object',
         'properties': {
-          'interval': {
+          'intervals': {
             'type': 'array',
             'items': {
               'type': 'object',
@@ -9888,7 +9888,7 @@
                   'type': 'object',
                   'id': 'WeeklyTime',
                   'properties': {
-                    'weekday': {
+                    'day_of_week': {
                       'type': 'string',
                       'enum': [
                         'MONDAY',
@@ -9910,7 +9910,7 @@
             }
           },
           'timezone': { 'type': 'string' },
-          'ignored_policy': {
+          'ignored_policies': {
             'type': 'array',
             'items': { 'type':'string' }
           }
@@ -9922,34 +9922,34 @@
         'dynamic_refresh': True
       },
       'example_value': {
-        'interval':
+        'intervals':
         [
           {
             'start': {
-              'weekday': 'MONDAY',
+              'day_of_week': 'MONDAY',
               'time': 12840000
             },
             'end': {
-              'weekday': 'MONDAY',
+              'day_of_week': 'MONDAY',
               'time': 21720000
             }
           },
           {
             'start': {
-              'weekday': 'FRIDAY',
+              'day_of_week': 'FRIDAY',
               'time': 38640000
             },
             'end': {
-              'weekday': 'FRIDAY',
+              'day_of_week': 'FRIDAY',
               'time': 57600000
             }
           }
         ],
         'timezone': 'GMT',
-        'ignored_policy': ['allow_new_users', 'guest_mode_enabled']
+        'ignored_policies': ['allow_new_users', 'guest_mode_enabled']
       },
       'id': 380,
-      'caption': '''Off hours intervals when device OffHours |ignored_policy| are released''',
+      'caption': '''Off hours intervals when device OffHours |ignored_policies| are released''',
       'tags': [],
       'desc': '''If "OffHours" policy is set, then the specified device policies are ignored (use the default settings of these policies) during the defined time intervals. Device policies are re-applied by Chrome on every event when "OffHours" period starts or ends. User will be notified and forced to sign out when "OffHours" time end and device policy settings are changed (i.e. when user is logged in not with an allowed account).''',
     },
