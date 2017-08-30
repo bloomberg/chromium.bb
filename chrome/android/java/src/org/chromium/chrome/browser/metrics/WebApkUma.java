@@ -156,30 +156,30 @@ public class WebApkUma {
      */
     @SuppressWarnings("deprecation")
     public static void logAvailableSpaceAboveLowSpaceLimitInUMA(boolean installSucceeded) {
-        StatFs partitionStats = new StatFs(Environment.getDataDirectory().getAbsolutePath());
-        long partitionAvailableBytes;
-        long partitionTotalBytes;
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-            partitionAvailableBytes = partitionStats.getAvailableBytes();
-            partitionTotalBytes = partitionStats.getTotalBytes();
-        } else {
-            long blockSize = partitionStats.getBlockSize(); // deprecated in API level 18.
-            partitionAvailableBytes = blockSize
-                    * (long) partitionStats.getAvailableBlocks(); // deprecated in API level 18.
-            partitionTotalBytes = blockSize * (long) partitionStats.getBlockCount();
-        }
-
         // ContentResolver APIs are usually heavy, do it in AsyncTask.
         new AsyncTask<Void, Void, Long>() {
+            long mPartitionAvailableBytes;
             @Override
             protected Long doInBackground(Void... params) {
+                StatFs partitionStats =
+                        new StatFs(Environment.getDataDirectory().getAbsolutePath());
+                long partitionTotalBytes;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+                    mPartitionAvailableBytes = partitionStats.getAvailableBytes();
+                    partitionTotalBytes = partitionStats.getTotalBytes();
+                } else {
+                    // these APIs were deprecated in API level 18.
+                    long blockSize = partitionStats.getBlockSize();
+                    mPartitionAvailableBytes = blockSize
+                            * (long) partitionStats.getAvailableBlocks();
+                    partitionTotalBytes = blockSize * (long) partitionStats.getBlockCount();
+                }
                 return getLowSpaceLimitBytes(partitionTotalBytes);
             }
 
             @Override
             protected void onPostExecute(Long minimumFreeBytes) {
-                long availableBytesForInstallation = partitionAvailableBytes - minimumFreeBytes;
+                long availableBytesForInstallation = mPartitionAvailableBytes - minimumFreeBytes;
                 int availableSpaceMb = (int) (availableBytesForInstallation / 1024L / 1024L);
                 // Bound the number to [-1000, 500] and round down to the nearest multiple of 10MB
                 // to avoid exploding the histogram.
