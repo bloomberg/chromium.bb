@@ -110,10 +110,9 @@ void ColorProfileReader::ReadProfilesCompleted(
     if (profile_data.empty()) {
       display_id_to_color_space_map_[display_id] = default_color_space_;
     } else {
-      gfx::ICCProfile icc_profile =
-          gfx::ICCProfile::FromData(profile_data.data(), profile_data.size());
-      icc_profile.HistogramDisplay(display_id);
-      display_id_to_color_space_map_[display_id] = icc_profile.GetColorSpace();
+      display_id_to_color_space_map_[display_id] =
+          gfx::ICCProfile::FromData(profile_data.data(), profile_data.size())
+              .GetColorSpace();
     }
   }
 
