@@ -135,6 +135,230 @@ TEST_F(UnsortedDocumentMarkerListEditorTest,
 }
 
 TEST_F(UnsortedDocumentMarkerListEditorTest,
+       ContentIndependentMarker_ReplaceStartOfMarker) {
+  UnsortedDocumentMarkerListEditor::MarkerList markers;
+  markers.push_back(CreateMarker(0, 10));
+
+  // Replace with shorter text
+  UnsortedDocumentMarkerListEditor::ShiftMarkersContentIndependent(&markers, 0,
+                                                                   5, 4);
+
+  EXPECT_EQ(1u, markers.size());
+  EXPECT_EQ(0u, markers[0]->StartOffset());
+  EXPECT_EQ(9u, markers[0]->EndOffset());
+
+  // Replace with longer text
+  UnsortedDocumentMarkerListEditor::ShiftMarkersContentIndependent(&markers, 0,
+                                                                   4, 5);
+
+  EXPECT_EQ(1u, markers.size());
+  EXPECT_EQ(0u, markers[0]->StartOffset());
+  EXPECT_EQ(10u, markers[0]->EndOffset());
+
+  // Replace with text of same length
+  UnsortedDocumentMarkerListEditor::ShiftMarkersContentIndependent(&markers, 0,
+                                                                   5, 5);
+
+  EXPECT_EQ(1u, markers.size());
+  EXPECT_EQ(0u, markers[0]->StartOffset());
+  EXPECT_EQ(10u, markers[0]->EndOffset());
+}
+
+TEST_F(UnsortedDocumentMarkerListEditorTest,
+       ContentIndependentMarker_ReplaceContainsStartOfMarker) {
+  UnsortedDocumentMarkerListEditor::MarkerList markers;
+  markers.push_back(CreateMarker(5, 15));
+
+  UnsortedDocumentMarkerListEditor::ShiftMarkersContentIndependent(&markers, 0,
+                                                                   10, 10);
+
+  EXPECT_EQ(1u, markers.size());
+  EXPECT_EQ(10u, markers[0]->StartOffset());
+  EXPECT_EQ(15u, markers[0]->EndOffset());
+}
+
+TEST_F(UnsortedDocumentMarkerListEditorTest,
+       ContentIndependentMarker_ReplaceEndOfMarker) {
+  UnsortedDocumentMarkerListEditor::MarkerList markers;
+  markers.push_back(CreateMarker(0, 10));
+
+  // Replace with shorter text
+  UnsortedDocumentMarkerListEditor::ShiftMarkersContentIndependent(&markers, 5,
+                                                                   5, 4);
+
+  EXPECT_EQ(1u, markers.size());
+  EXPECT_EQ(0u, markers[0]->StartOffset());
+  EXPECT_EQ(9u, markers[0]->EndOffset());
+
+  // Replace with longer text
+  UnsortedDocumentMarkerListEditor::ShiftMarkersContentIndependent(&markers, 5,
+                                                                   4, 5);
+
+  EXPECT_EQ(1u, markers.size());
+  EXPECT_EQ(0u, markers[0]->StartOffset());
+  EXPECT_EQ(10u, markers[0]->EndOffset());
+
+  // Replace with text of same length
+  UnsortedDocumentMarkerListEditor::ShiftMarkersContentIndependent(&markers, 5,
+                                                                   5, 5);
+
+  EXPECT_EQ(1u, markers.size());
+  EXPECT_EQ(0u, markers[0]->StartOffset());
+  EXPECT_EQ(10u, markers[0]->EndOffset());
+}
+
+TEST_F(UnsortedDocumentMarkerListEditorTest,
+       ContentIndependentMarker_ReplaceContainsEndOfMarker) {
+  UnsortedDocumentMarkerListEditor::MarkerList markers;
+  markers.push_back(CreateMarker(0, 10));
+
+  UnsortedDocumentMarkerListEditor::ShiftMarkersContentIndependent(&markers, 5,
+                                                                   10, 10);
+
+  EXPECT_EQ(1u, markers.size());
+  EXPECT_EQ(0u, markers[0]->StartOffset());
+  EXPECT_EQ(5u, markers[0]->EndOffset());
+}
+
+TEST_F(UnsortedDocumentMarkerListEditorTest,
+       ContentIndependentMarker_ReplaceEntireMarker) {
+  UnsortedDocumentMarkerListEditor::MarkerList markers;
+  markers.push_back(CreateMarker(0, 10));
+
+  // Replace with shorter text
+  UnsortedDocumentMarkerListEditor::ShiftMarkersContentIndependent(&markers, 0,
+                                                                   10, 9);
+
+  EXPECT_EQ(1u, markers.size());
+  EXPECT_EQ(0u, markers[0]->StartOffset());
+  EXPECT_EQ(9u, markers[0]->EndOffset());
+
+  // Replace with longer text
+  UnsortedDocumentMarkerListEditor::ShiftMarkersContentIndependent(&markers, 0,
+                                                                   9, 10);
+
+  EXPECT_EQ(1u, markers.size());
+  EXPECT_EQ(0u, markers[0]->StartOffset());
+  EXPECT_EQ(10u, markers[0]->EndOffset());
+
+  // Replace with text of same length
+  UnsortedDocumentMarkerListEditor::ShiftMarkersContentIndependent(&markers, 0,
+                                                                   10, 10);
+
+  EXPECT_EQ(1u, markers.size());
+  EXPECT_EQ(0u, markers[0]->StartOffset());
+  EXPECT_EQ(10u, markers[0]->EndOffset());
+}
+
+TEST_F(UnsortedDocumentMarkerListEditorTest,
+       ContentIndependentMarker_ReplaceTextWithMarkerAtBeginning) {
+  UnsortedDocumentMarkerListEditor::MarkerList markers;
+  markers.push_back(CreateMarker(0, 10));
+
+  UnsortedDocumentMarkerListEditor::ShiftMarkersContentIndependent(&markers, 0,
+                                                                   15, 15);
+
+  EXPECT_EQ(0u, markers.size());
+}
+
+TEST_F(UnsortedDocumentMarkerListEditorTest,
+       ContentIndependentMarker_ReplaceTextWithMarkerAtEnd) {
+  UnsortedDocumentMarkerListEditor::MarkerList markers;
+  markers.push_back(CreateMarker(5, 15));
+
+  UnsortedDocumentMarkerListEditor::ShiftMarkersContentIndependent(&markers, 0,
+                                                                   15, 15);
+
+  EXPECT_EQ(0u, markers.size());
+}
+
+TEST_F(UnsortedDocumentMarkerListEditorTest,
+       ContentIndependentMarker_Deletions) {
+  UnsortedDocumentMarkerListEditor::MarkerList markers;
+  markers.push_back(CreateMarker(0, 5));
+  markers.push_back(CreateMarker(5, 10));
+  markers.push_back(CreateMarker(10, 15));
+  markers.push_back(CreateMarker(15, 20));
+  markers.push_back(CreateMarker(20, 25));
+
+  // Delete range containing the end of the second marker, the entire third
+  // marker, and the start of the fourth marker
+  UnsortedDocumentMarkerListEditor::ShiftMarkersContentIndependent(&markers, 8,
+                                                                   9, 0);
+
+  EXPECT_EQ(4u, markers.size());
+
+  EXPECT_EQ(0u, markers[0]->StartOffset());
+  EXPECT_EQ(5u, markers[0]->EndOffset());
+
+  EXPECT_EQ(5u, markers[1]->StartOffset());
+  EXPECT_EQ(8u, markers[1]->EndOffset());
+
+  EXPECT_EQ(8u, markers[2]->StartOffset());
+  EXPECT_EQ(11u, markers[2]->EndOffset());
+
+  EXPECT_EQ(11u, markers[3]->StartOffset());
+  EXPECT_EQ(16u, markers[3]->EndOffset());
+}
+
+TEST_F(UnsortedDocumentMarkerListEditorTest,
+       ContentIndependentMarker_DeleteExactlyOnMarker) {
+  UnsortedDocumentMarkerListEditor::MarkerList markers;
+  markers.push_back(CreateMarker(0, 10));
+
+  UnsortedDocumentMarkerListEditor::ShiftMarkersContentIndependent(&markers, 0,
+                                                                   10, 0);
+
+  EXPECT_EQ(0u, markers.size());
+}
+
+TEST_F(UnsortedDocumentMarkerListEditorTest,
+       ContentIndependentMarker_InsertInMarkerInterior) {
+  UnsortedDocumentMarkerListEditor::MarkerList markers;
+  markers.push_back(CreateMarker(0, 5));
+  markers.push_back(CreateMarker(5, 10));
+  markers.push_back(CreateMarker(10, 15));
+
+  // insert in middle of second marker
+  UnsortedDocumentMarkerListEditor::ShiftMarkersContentIndependent(&markers, 7,
+                                                                   0, 5);
+
+  EXPECT_EQ(3u, markers.size());
+
+  EXPECT_EQ(0u, markers[0]->StartOffset());
+  EXPECT_EQ(5u, markers[0]->EndOffset());
+
+  EXPECT_EQ(5u, markers[1]->StartOffset());
+  EXPECT_EQ(15u, markers[1]->EndOffset());
+
+  EXPECT_EQ(15u, markers[2]->StartOffset());
+  EXPECT_EQ(20u, markers[2]->EndOffset());
+}
+
+TEST_F(UnsortedDocumentMarkerListEditorTest,
+       ContentIndependentMarker_InsertBetweenMarkers) {
+  UnsortedDocumentMarkerListEditor::MarkerList markers;
+  markers.push_back(CreateMarker(0, 5));
+  markers.push_back(CreateMarker(5, 10));
+  markers.push_back(CreateMarker(10, 15));
+
+  // insert before second marker
+  UnsortedDocumentMarkerListEditor::ShiftMarkersContentIndependent(&markers, 5,
+                                                                   0, 5);
+
+  EXPECT_EQ(3u, markers.size());
+
+  EXPECT_EQ(0u, markers[0]->StartOffset());
+  EXPECT_EQ(5u, markers[0]->EndOffset());
+
+  EXPECT_EQ(10u, markers[1]->StartOffset());
+  EXPECT_EQ(15u, markers[1]->EndOffset());
+
+  EXPECT_EQ(15u, markers[2]->StartOffset());
+  EXPECT_EQ(20u, markers[2]->EndOffset());
+}
+
+TEST_F(UnsortedDocumentMarkerListEditorTest,
        FirstMarkerIntersectingRange_Empty) {
   DocumentMarker* marker =
       UnsortedDocumentMarkerListEditor::FirstMarkerIntersectingRange(
