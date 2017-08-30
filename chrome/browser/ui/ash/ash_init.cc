@@ -98,12 +98,6 @@ AshInit::AshInit() {
   else
     CreateClassicShell();
 
-  ash::Shell* shell = ash::Shell::Get();
-
-  // Under mash the local state pref service isn't available until after shell
-  // initialization. Make classic ash behave the same way.
-  shell->SetLocalStatePrefService(g_browser_process->local_state());
-
   ash::AcceleratorControllerDelegateClassic* accelerator_controller_delegate =
       nullptr;
   if (chromeos::GetAshConfig() == ash::Config::CLASSIC) {
@@ -124,6 +118,7 @@ AshInit::AshInit() {
       base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::BACKGROUND,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
+  ash::Shell* shell = ash::Shell::Get();
   shell->high_contrast_controller()->SetEnabled(
       chromeos::AccessibilityManager::Get()->IsHighContrastEnabled());
 

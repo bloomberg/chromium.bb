@@ -242,10 +242,6 @@ void PaletteTray::OnLocalStatePrefServiceInitialized(
     PrefService* pref_service) {
   local_state_pref_service_ = pref_service;
 
-  // May be null in mash_unittests where there is no mojo pref service.
-  if (!local_state_pref_service_)
-    return;
-
   // If a device has an internal stylus or the flag to force stylus is set, mark
   // the has seen stylus flag as true since we know the user has a stylus.
   if (palette_utils::HasInternalStylus() ||

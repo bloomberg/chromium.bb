@@ -131,9 +131,8 @@ void Preferences::RegisterPrefs(PrefRegistrySimple* registry) {
 
   registry->RegisterStringPref(prefs::kCastReceiverName, "");
 
-  // Register ash prefs.
-  if (!ash_util::IsRunningInMash())
-    ash::Shell::RegisterLocalStatePrefs(registry);
+  registry->RegisterDictionaryPref(ash::prefs::kWallpaperColors,
+                                   PrefRegistry::PUBLIC);
 }
 
 // static

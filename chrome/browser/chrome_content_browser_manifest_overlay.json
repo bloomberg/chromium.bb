@@ -40,6 +40,8 @@
         "content_browser": [ "memlog_client" ],
         "device": [ "device:fingerprint" ],
         "identity": [ "identity_manager" ],
+        // Only used in classic ash case.
+        "local_state": [ "pref_client" ],
         "nacl_broker": [ "browser" ],
         "nacl_loader": [ "browser" ],
         "profiling": [ "memlog" ],
