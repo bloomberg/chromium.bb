@@ -147,6 +147,7 @@ void PrefetchDispatcherImpl::QueueReconcileTasks() {
 
 void PrefetchDispatcherImpl::QueueActionTasks() {
   service_->GetLogger()->RecordActivity("Dispatcher: Adding action tasks.");
+
   std::unique_ptr<Task> download_archives_task =
       base::MakeUnique<DownloadArchivesTask>(service_->GetPrefetchStore(),
                                              service_->GetPrefetchDownloader());

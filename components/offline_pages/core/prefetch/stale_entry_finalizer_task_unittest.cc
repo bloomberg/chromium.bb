@@ -42,7 +42,7 @@ class StaleEntryFinalizerTaskTest : public TaskTestBase {
   void TearDown() override;
 
   PrefetchItem CreateAndInsertItem(PrefetchItemState state,
-                                   int hours_in_the_past);
+                                   int time_delta_in_hours);
 
   TestPrefetchDispatcher* dispatcher() { return &dispatcher_; }
 
@@ -68,10 +68,10 @@ void StaleEntryFinalizerTaskTest::TearDown() {
 
 PrefetchItem StaleEntryFinalizerTaskTest::CreateAndInsertItem(
     PrefetchItemState state,
-    int hours_in_the_past) {
+    int time_delta_in_hours) {
   PrefetchItem item(item_generator()->CreateItem(state));
   item.freshness_time =
-      fake_now_ - base::TimeDelta::FromHours(hours_in_the_past);
+      fake_now_ + base::TimeDelta::FromHours(time_delta_in_hours);
   EXPECT_TRUE(store_util()->InsertPrefetchItem(item))
       << "Failed inserting item with state " << static_cast<int>(state);
   return item;
@@ -95,27 +95,27 @@ TEST_F(StaleEntryFinalizerTaskTest, EmptyRun) {
 TEST_F(StaleEntryFinalizerTaskTest, HandlesFreshnessTimesCorrectly) {
   // Insert fresh and stale items for all expirable states from all buckets.
   PrefetchItem b1_item1_fresh =
-      CreateAndInsertItem(PrefetchItemState::NEW_REQUEST, 23);
+      CreateAndInsertItem(PrefetchItemState::NEW_REQUEST, -23);
   PrefetchItem b1_item2_stale =
-      CreateAndInsertItem(PrefetchItemState::NEW_REQUEST, 25);
+      CreateAndInsertItem(PrefetchItemState::NEW_REQUEST, -25);
 
   PrefetchItem b2_item1_fresh =
-      CreateAndInsertItem(PrefetchItemState::AWAITING_GCM, 23);
+      CreateAndInsertItem(PrefetchItemState::AWAITING_GCM, -23);
   PrefetchItem b2_item2_stale =
-      CreateAndInsertItem(PrefetchItemState::AWAITING_GCM, 25);
+      CreateAndInsertItem(PrefetchItemState::AWAITING_GCM, -25);
   PrefetchItem b2_item3_fresh =
-      CreateAndInsertItem(PrefetchItemState::RECEIVED_GCM, 23);
+      CreateAndInsertItem(PrefetchItemState::RECEIVED_GCM, -23);
   PrefetchItem b2_item4_stale =
-      CreateAndInsertItem(PrefetchItemState::RECEIVED_GCM, 25);
+      CreateAndInsertItem(PrefetchItemState::RECEIVED_GCM, -25);
   PrefetchItem b2_item5_fresh =
-      CreateAndInsertItem(PrefetchItemState::RECEIVED_BUNDLE, 23);
+      CreateAndInsertItem(PrefetchItemState::RECEIVED_BUNDLE, -23);
   PrefetchItem b2_item6_stale =
-      CreateAndInsertItem(PrefetchItemState::RECEIVED_BUNDLE, 25);
+      CreateAndInsertItem(PrefetchItemState::RECEIVED_BUNDLE, -25);
 
   PrefetchItem b3_item1_fresh =
-      CreateAndInsertItem(PrefetchItemState::DOWNLOADING, 47);
+      CreateAndInsertItem(PrefetchItemState::DOWNLOADING, -47);
   PrefetchItem b3_item2_stale =
-      CreateAndInsertItem(PrefetchItemState::DOWNLOADING, 49);
+      CreateAndInsertItem(PrefetchItemState::DOWNLOADING, -49);
 
   // Check inserted initial items.
   std::set<PrefetchItem> initial_items = {
@@ -165,7 +165,7 @@ TEST_F(StaleEntryFinalizerTaskTest, HandlesFreshnessTimesCorrectly) {
 // their freshness dates are really old.
 TEST_F(StaleEntryFinalizerTaskTest, HandlesStalesInAllStatesCorrectly) {
   // Insert "stale" items for every state.
-  const int many_hours = 7 * 24;
+  const int many_hours = -7 * 24;
   CreateAndInsertItem(PrefetchItemState::NEW_REQUEST, many_hours);
   CreateAndInsertItem(PrefetchItemState::SENT_GENERATE_PAGE_BUNDLE, many_hours);
   CreateAndInsertItem(PrefetchItemState::AWAITING_GCM, many_hours);
@@ -239,6 +239,127 @@ TEST_F(StaleEntryFinalizerTaskTest, WorkInQueue) {
 
     EXPECT_EQ(1, dispatcher()->task_schedule_count);
   }
+}
+
+// Verifies that expired and non-expired items from all expirable states are
+// properly handled.
+TEST_F(StaleEntryFinalizerTaskTest, HandlesClockSetBackwardsCorrectly) {
+  // Insert fresh and stale items for all expirable states from all buckets.
+  PrefetchItem b1_item1_recent =
+      CreateAndInsertItem(PrefetchItemState::NEW_REQUEST, 23);
+  PrefetchItem b1_item2_future =
+      CreateAndInsertItem(PrefetchItemState::NEW_REQUEST, 25);
+
+  PrefetchItem b2_item1_recent =
+      CreateAndInsertItem(PrefetchItemState::AWAITING_GCM, 23);
+  PrefetchItem b2_item2_future =
+      CreateAndInsertItem(PrefetchItemState::AWAITING_GCM, 25);
+  PrefetchItem b2_item3_recent =
+      CreateAndInsertItem(PrefetchItemState::RECEIVED_GCM, 23);
+  PrefetchItem b2_item4_future =
+      CreateAndInsertItem(PrefetchItemState::RECEIVED_GCM, 25);
+  PrefetchItem b2_item5_recent =
+      CreateAndInsertItem(PrefetchItemState::RECEIVED_BUNDLE, 23);
+  PrefetchItem b2_item6_future =
+      CreateAndInsertItem(PrefetchItemState::RECEIVED_BUNDLE, 25);
+
+  PrefetchItem b3_item1_recent =
+      CreateAndInsertItem(PrefetchItemState::DOWNLOADING, 23);
+  PrefetchItem b3_item2_future =
+      CreateAndInsertItem(PrefetchItemState::DOWNLOADING, 25);
+
+  PrefetchItem b4_item1_future =
+      CreateAndInsertItem(PrefetchItemState::SENT_GENERATE_PAGE_BUNDLE, 25);
+
+  // Check inserted initial items.
+  std::set<PrefetchItem> initial_items = {
+      b1_item1_recent, b1_item2_future, b2_item1_recent, b2_item2_future,
+      b2_item3_recent, b2_item4_future, b2_item5_recent, b2_item6_future,
+      b3_item1_recent, b3_item2_future, b4_item1_future};
+  std::set<PrefetchItem> all_inserted_items;
+  EXPECT_EQ(11U, store_util()->GetAllItems(&all_inserted_items));
+  EXPECT_EQ(initial_items, all_inserted_items);
+
+  // Execute the expiration task.
+  ExpectTaskCompletes(stale_finalizer_task_.get());
+  stale_finalizer_task_->Run();
+  RunUntilIdle();
+  EXPECT_EQ(Result::MORE_WORK_NEEDED, stale_finalizer_task_->final_status());
+
+  // Create the expected finished version of each stale item.
+  PrefetchItem b1_item2_finished(b1_item2_future);
+  b1_item2_finished.state = PrefetchItemState::FINISHED;
+  b1_item2_finished.error_code =
+      PrefetchItemErrorCode::MAXIMUM_CLOCK_BACKWARD_SKEW_EXCEEDED;
+  PrefetchItem b2_item2_finished(b2_item2_future);
+  b2_item2_finished.state = PrefetchItemState::FINISHED;
+  b2_item2_finished.error_code =
+      PrefetchItemErrorCode::MAXIMUM_CLOCK_BACKWARD_SKEW_EXCEEDED;
+  PrefetchItem b2_item4_finished(b2_item4_future);
+  b2_item4_finished.state = PrefetchItemState::FINISHED;
+  b2_item4_finished.error_code =
+      PrefetchItemErrorCode::MAXIMUM_CLOCK_BACKWARD_SKEW_EXCEEDED;
+  PrefetchItem b2_item6_finished(b2_item6_future);
+  b2_item6_finished.state = PrefetchItemState::FINISHED;
+  b2_item6_finished.error_code =
+      PrefetchItemErrorCode::MAXIMUM_CLOCK_BACKWARD_SKEW_EXCEEDED;
+  PrefetchItem b3_item2_finished(b3_item2_future);
+  b3_item2_finished.state = PrefetchItemState::FINISHED;
+  b3_item2_finished.error_code =
+      PrefetchItemErrorCode::MAXIMUM_CLOCK_BACKWARD_SKEW_EXCEEDED;
+  PrefetchItem b4_item_finished(b4_item1_future);
+  b4_item1_future.state = PrefetchItemState::SENT_GENERATE_PAGE_BUNDLE;
+  b4_item1_future.error_code = PrefetchItemErrorCode::SUCCESS;
+
+  // Creates the expected set of final items and compares with what's in
+  // store.
+  std::set<PrefetchItem> expected_final_items = {
+      b1_item1_recent, b1_item2_finished, b2_item1_recent, b2_item2_finished,
+      b2_item3_recent, b2_item4_finished, b2_item5_recent, b2_item6_finished,
+      b3_item1_recent, b3_item2_finished, b4_item1_future};
+  EXPECT_EQ(11U, expected_final_items.size());
+  std::set<PrefetchItem> all_items_post_expiration;
+  EXPECT_EQ(11U, store_util()->GetAllItems(&all_items_post_expiration));
+  EXPECT_EQ(expected_final_items, all_items_post_expiration);
+}
+
+// Checks that items from all states are handled properly by the task when all
+// their freshness dates are really old.
+TEST_F(StaleEntryFinalizerTaskTest,
+       HandleClockChangeBackwardsInAllStatesCorrectly) {
+  // Insert "future" items for every state.
+  const int many_hours = 7 * 24;
+  CreateAndInsertItem(PrefetchItemState::NEW_REQUEST, many_hours);
+  CreateAndInsertItem(PrefetchItemState::SENT_GENERATE_PAGE_BUNDLE, many_hours);
+  CreateAndInsertItem(PrefetchItemState::AWAITING_GCM, many_hours);
+  CreateAndInsertItem(PrefetchItemState::RECEIVED_GCM, many_hours);
+  CreateAndInsertItem(PrefetchItemState::SENT_GET_OPERATION, many_hours);
+  CreateAndInsertItem(PrefetchItemState::RECEIVED_BUNDLE, many_hours);
+  CreateAndInsertItem(PrefetchItemState::DOWNLOADING, many_hours);
+  CreateAndInsertItem(PrefetchItemState::DOWNLOADED, many_hours);
+  CreateAndInsertItem(PrefetchItemState::IMPORTING, many_hours);
+  CreateAndInsertItem(PrefetchItemState::FINISHED, many_hours);
+  CreateAndInsertItem(PrefetchItemState::ZOMBIE, many_hours);
+  EXPECT_EQ(11, store_util()->CountPrefetchItems());
+
+  // Execute the expiration task.
+  ExpectTaskCompletes(stale_finalizer_task_.get());
+  stale_finalizer_task_->Run();
+  RunUntilIdle();
+  EXPECT_EQ(Result::MORE_WORK_NEEDED, stale_finalizer_task_->final_status());
+
+  // Checks item counts for states expected to still exist.
+  std::set<PrefetchItem> post_items;
+  EXPECT_EQ(11U, store_util()->GetAllItems(&post_items));
+  EXPECT_EQ(
+      1U,
+      Filter(post_items, PrefetchItemState::SENT_GENERATE_PAGE_BUNDLE).size());
+  EXPECT_EQ(1U,
+            Filter(post_items, PrefetchItemState::SENT_GET_OPERATION).size());
+  EXPECT_EQ(1U, Filter(post_items, PrefetchItemState::DOWNLOADED).size());
+  EXPECT_EQ(1U, Filter(post_items, PrefetchItemState::IMPORTING).size());
+  EXPECT_EQ(6U, Filter(post_items, PrefetchItemState::FINISHED).size());
+  EXPECT_EQ(1U, Filter(post_items, PrefetchItemState::ZOMBIE).size());
 }
 
 }  // namespace offline_pages

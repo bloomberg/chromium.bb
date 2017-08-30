@@ -90,6 +90,28 @@ bool MoreWorkInQueue(sql::Connection* db) {
   return statement.ColumnInt(0) > 0;
 }
 
+// If the user shifted the clock backwards too far, our items will stay around
+// for a very long time.  Don't allow that so we don't waste resources with
+// potentially outdated content.
+bool FinalizeFutureItems(PrefetchItemState state,
+                         base::Time now,
+                         sql::Connection* db) {
+  static const char kSql[] =
+      "UPDATE prefetch_items SET state = ?, error_code = ?"
+      " WHERE state = ? AND freshness_time > ?";
+  const int64_t future_fresh_db_time_limit =
+      ToDatabaseTime(now + base::TimeDelta::FromDays(1));
+  sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
+  statement.BindInt(0, static_cast<int>(PrefetchItemState::FINISHED));
+  statement.BindInt(
+      1, static_cast<int>(
+             PrefetchItemErrorCode::MAXIMUM_CLOCK_BACKWARD_SKEW_EXCEEDED));
+  statement.BindInt(2, static_cast<int>(state));
+  statement.BindInt64(3, future_fresh_db_time_limit);
+
+  return statement.Run();
+}
+
 Result FinalizeStaleEntriesSync(StaleEntryFinalizerTask::NowGetter now_getter,
                                 sql::Connection* db) {
   if (!db)
@@ -111,6 +133,9 @@ Result FinalizeStaleEntriesSync(StaleEntryFinalizerTask::NowGetter now_getter,
   base::Time now = now_getter.Run();
   for (PrefetchItemState state : expirable_states) {
     if (!FinalizeStaleItems(state, now, db))
+      return Result::NO_MORE_WORK;
+
+    if (!FinalizeFutureItems(state, now, db))
       return Result::NO_MORE_WORK;
   }
 

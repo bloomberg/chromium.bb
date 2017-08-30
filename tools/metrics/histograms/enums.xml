@@ -28137,6 +28137,9 @@ from previous Chrome versions.
   <int value="1400" label="DOWNLOAD_MAX_ATTEMPTS_REACHED">
     Exceeded maximum retries for download.
   </int>
+  <int value="1500" label="MAXIMUM_CLOCK_BACKWARD_SKEW_EXCEEDED">
+    The clock was set backwards too far in time.
+  </int>
 </enum>
 
 <enum name="OfflinePrefetchPageImportResult">
