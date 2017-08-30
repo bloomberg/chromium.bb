@@ -115,6 +115,8 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
       base::WeakPtr<ServiceWorkerProviderHost> provider_host,
       ServiceWorkerRegistration* registration);
 
+  base::WeakPtr<ServiceWorkerDispatcherHost> AsWeakPtr();
+
  protected:
   ~ServiceWorkerDispatcherHost() override;
 
@@ -294,6 +296,8 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
 
   bool channel_ready_;  // True after BrowserMessageFilter::sender_ != NULL.
   std::vector<std::unique_ptr<IPC::Message>> pending_messages_;
+
+  base::WeakPtrFactory<ServiceWorkerDispatcherHost> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerDispatcherHost);
 };

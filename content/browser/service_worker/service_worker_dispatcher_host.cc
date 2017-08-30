@@ -91,7 +91,8 @@ ServiceWorkerDispatcherHost::ServiceWorkerDispatcherHost(
                                                                      this),
       render_process_id_(render_process_id),
       resource_context_(resource_context),
-      channel_ready_(false) {}
+      channel_ready_(false),
+      weak_ptr_factory_(this) {}
 
 ServiceWorkerDispatcherHost::~ServiceWorkerDispatcherHost() {
   // Temporary CHECK for debugging https://crbug.com/736203.
@@ -140,8 +141,10 @@ void ServiceWorkerDispatcherHost::OnFilterRemoved() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   // Don't wait until the destructor to teardown since a new dispatcher host
   // for this process might be created before then.
-  if (GetContext() && phase_ == Phase::kAddedToContext)
+  if (GetContext() && phase_ == Phase::kAddedToContext) {
     GetContext()->RemoveDispatcherHost(render_process_id_);
+    weak_ptr_factory_.InvalidateWeakPtrs();
+  }
   phase_ = Phase::kRemovedFromContext;
   context_wrapper_ = nullptr;
   channel_ready_ = false;
@@ -257,6 +260,11 @@ ServiceWorkerDispatcherHost::GetOrCreateRegistrationHandle(
   ServiceWorkerRegistrationHandle* new_handle_ptr = new_handle.get();
   RegisterServiceWorkerRegistrationHandle(std::move(new_handle));
   return new_handle_ptr;
+}
+
+base::WeakPtr<ServiceWorkerDispatcherHost>
+ServiceWorkerDispatcherHost::AsWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
 }
 
 void ServiceWorkerDispatcherHost::OnRegisterServiceWorker(
@@ -962,9 +970,9 @@ void ServiceWorkerDispatcherHost::OnProviderCreated(
 
     // If no host is found, create one.
     if (provider_host == nullptr) {
-      GetContext()->AddProviderHost(
-          ServiceWorkerProviderHost::Create(render_process_id_, std::move(info),
-                                            GetContext()->AsWeakPtr(), this));
+      GetContext()->AddProviderHost(ServiceWorkerProviderHost::Create(
+          render_process_id_, std::move(info), GetContext()->AsWeakPtr(),
+          AsWeakPtr()));
       return;
     }
 
@@ -975,7 +983,7 @@ void ServiceWorkerDispatcherHost::OnProviderCreated(
       return;
     }
     provider_host->CompleteNavigationInitialized(render_process_id_,
-                                                 std::move(info), this);
+                                                 std::move(info), AsWeakPtr());
     GetContext()->AddProviderHost(std::move(provider_host));
   } else {
     // Provider host for controller should be pre-created on StartWorker in
@@ -991,7 +999,8 @@ void ServiceWorkerDispatcherHost::OnProviderCreated(
       return;
     }
     GetContext()->AddProviderHost(ServiceWorkerProviderHost::Create(
-        render_process_id_, std::move(info), GetContext()->AsWeakPtr(), this));
+        render_process_id_, std::move(info), GetContext()->AsWeakPtr(),
+        AsWeakPtr()));
   }
 }
 

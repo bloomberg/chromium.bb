@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "content/browser/service_worker/service_worker_dispatcher_host.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/common/service_worker/service_worker_provider.mojom.h"
 #include "content/public/common/child_process_host.h"
@@ -77,7 +78,8 @@ std::unique_ptr<ServiceWorkerProviderHost> CreateProviderHostWithDispatcherHost(
                                      SERVICE_WORKER_PROVIDER_FOR_WINDOW, true);
   output_endpoint->BindWithProviderHostInfo(&info);
   return ServiceWorkerProviderHost::Create(process_id, std::move(info),
-                                           std::move(context), dispatcher_host);
+                                           std::move(context),
+                                           dispatcher_host->AsWeakPtr());
 }
 
 }  // namespace content

@@ -982,8 +982,10 @@ class UpdateJobTestHelper
 
   UpdateJobTestHelper() : EmbeddedWorkerTestHelper(base::FilePath()) {}
   ~UpdateJobTestHelper() override {
-    if (registration_.get())
-      registration_->RemoveListener(this);
+    if (observed_registration_.get())
+      observed_registration_->RemoveListener(this);
+    for (auto& version : observed_versions_)
+      version->RemoveListener(this);
   }
 
   ServiceWorkerStorage* storage() { return context()->storage(); }
@@ -1009,7 +1011,7 @@ class UpdateJobTestHelper
     EXPECT_TRUE(registration->active_version());
     EXPECT_FALSE(registration->installing_version());
     EXPECT_FALSE(registration->waiting_version());
-    registration_ = registration;
+    observed_registration_ = registration;
     return registration;
   }
 
@@ -1033,6 +1035,7 @@ class UpdateJobTestHelper
                      version != registration->active_version();
 
     ASSERT_TRUE(version);
+    observed_versions_.push_back(make_scoped_refptr(version));
     version->AddListener(this);
 
     // Simulate network access.
@@ -1076,9 +1079,20 @@ class UpdateJobTestHelper
           EmbeddedWorkerTestHelper::CreateHttpResponseInfo());
     }
 
+    started_workers_.insert(embedded_worker_id);
     EmbeddedWorkerTestHelper::OnStartWorker(
         embedded_worker_id, version_id, scope, script, pause_after_download,
         std::move(request), std::move(instance_host), std::move(provider_info));
+  }
+
+  void OnStopWorker(int embedded_worker_id) override {
+    // Some of our tests don't call the base class in OnStartWorker(), so we
+    // can't call the base class's OnStopWorker() either.
+    auto iter = started_workers_.find(embedded_worker_id);
+    if (iter == started_workers_.end())
+      return;
+    EmbeddedWorkerTestHelper::OnStopWorker(embedded_worker_id);
+    started_workers_.erase(iter);
   }
 
   void OnResumeAfterDownload(int embedded_worker_id) override {
@@ -1118,10 +1132,12 @@ class UpdateJobTestHelper
     state_change_log_.push_back(entry);
   }
 
-  scoped_refptr<ServiceWorkerRegistration> registration_;
+  scoped_refptr<ServiceWorkerRegistration> observed_registration_;
+  std::vector<scoped_refptr<ServiceWorkerVersion>> observed_versions_;
 
   std::vector<AttributeChangeLogEntry> attribute_change_log_;
   std::vector<StateChangeLogEntry> state_change_log_;
+  std::set<int /* embedded_worker_id */> started_workers_;
   bool update_found_ = false;
   bool force_start_worker_failure_ = false;
 };
