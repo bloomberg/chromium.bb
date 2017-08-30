@@ -68,7 +68,7 @@ inline SVGUseElement::SVGUseElement(Document& document)
           SVGAnimatedLength::Create(this,
                                     SVGNames::heightAttr,
                                     SVGLength::Create(SVGLengthMode::kHeight))),
-      element_identifier_is_local_(true),
+      element_url_is_local_(true),
       have_fired_load_event_(false),
       needs_shadow_tree_recreation_(false) {
   DCHECK(HasCustomStyleCallbacks());
@@ -195,26 +195,26 @@ void SVGUseElement::CollectStyleForPresentationAttribute(
 }
 
 bool SVGUseElement::IsStructurallyExternal() const {
-  return !element_identifier_is_local_;
+  return !element_url_is_local_ &&
+         !EqualIgnoringFragmentIdentifier(element_url_, GetDocument().Url());
 }
 
 void SVGUseElement::UpdateTargetReference() {
-  SVGURLReferenceResolver resolver(HrefString(), GetDocument());
-  element_identifier_ = resolver.FragmentIdentifier();
-  element_identifier_is_local_ = resolver.IsLocal();
-  if (element_identifier_is_local_) {
+  const String& url_string = HrefString();
+  element_url_ = GetDocument().CompleteURL(url_string);
+  element_url_is_local_ = url_string.StartsWith('#');
+  if (element_url_is_local_) {
     SetDocumentResource(nullptr);
     return;
   }
-  KURL resolved_url = resolver.AbsoluteUrl();
-  if (element_identifier_.IsEmpty() ||
+  if (!element_url_.HasFragmentIdentifier() ||
       (resource_ &&
-       EqualIgnoringFragmentIdentifier(resolved_url, resource_->Url())))
+       EqualIgnoringFragmentIdentifier(element_url_, resource_->Url())))
     return;
 
   ResourceLoaderOptions options;
   options.initiator_info.name = localName();
-  FetchParameters params(ResourceRequest(resolved_url), options);
+  FetchParameters params(ResourceRequest(element_url_), options);
   SetDocumentResource(
       DocumentResource::FetchSVGDocument(params, GetDocument().Fetcher()));
 }
@@ -303,19 +303,20 @@ void SVGUseElement::ClearResourceReference() {
 }
 
 Element* SVGUseElement::ResolveTargetElement(ObserveBehavior observe_behavior) {
-  if (element_identifier_.IsEmpty())
+  if (!element_url_.HasFragmentIdentifier())
     return nullptr;
-  if (element_identifier_is_local_) {
+  AtomicString element_identifier(element_url_.FragmentIdentifier());
+  if (!IsStructurallyExternal()) {
     if (observe_behavior == kDontAddObserver)
-      return GetTreeScope().getElementById(element_identifier_);
+      return GetTreeScope().getElementById(element_identifier);
     return ObserveTarget(target_id_observer_, GetTreeScope(),
-                         element_identifier_,
+                         element_identifier,
                          WTF::Bind(&SVGUseElement::InvalidateShadowTree,
                                    WrapWeakPersistent(this)));
   }
   if (!ResourceIsValid())
     return nullptr;
-  return resource_->GetDocument()->getElementById(element_identifier_);
+  return resource_->GetDocument()->getElementById(element_identifier);
 }
 
 void SVGUseElement::BuildPendingResource() {
