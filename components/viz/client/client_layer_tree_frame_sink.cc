@@ -129,10 +129,12 @@ void ClientLayerTreeFrameSink::SubmitCompositorFrame(
   TRACE_EVENT_CATEGORY_GROUP_ENABLED(TRACE_DISABLED_BY_DEFAULT("cc.debug.ipc"),
                                      &tracing_enabled);
 
-  // TODO(gklassen): Use hit_test_data_provider_->GetHitTestData() to obtain
-  // hit-test data and send to |compositor_frame_sink_|.
+  mojom::HitTestRegionListPtr hit_test_region_list;
+  if (hit_test_data_provider_)
+    hit_test_region_list = hit_test_data_provider_->GetHitTestData();
+
   compositor_frame_sink_->SubmitCompositorFrame(
-      local_surface_id_, std::move(frame), nullptr,
+      local_surface_id_, std::move(frame), std::move(hit_test_region_list),
       tracing_enabled ? base::TimeTicks::Now().since_origin().InMicroseconds()
                       : 0);
 }
