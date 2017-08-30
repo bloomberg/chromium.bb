@@ -24,9 +24,10 @@ class SANDBOX_EXPORT ResourceLimits {
   static bool LowerSoftAndHardLimits(int resource,
                                      rlim_t soft_limit,
                                      rlim_t hard_limit) WARN_UNUSED_RESULT;
-  // Change soft limit of |resource| to the current limit plus |change|.  Fails
-  // and returns false if the new soft limit would be greater than the hard
-  // limit.
+  // Change soft limit of |resource| to the current limit plus |change|. If
+  // |resource + change| is larger than the hard limit, the soft limit is set to
+  // be the same as the hard limit. Fails and returns false if the underlying
+  // call to setrlimit fails.
   static bool AdjustCurrent(int resource,
                             long long int change) WARN_UNUSED_RESULT;
 
