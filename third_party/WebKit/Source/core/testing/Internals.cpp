@@ -1169,6 +1169,33 @@ void Internals::addActiveSuggestionMarker(const Range* range,
       });
 }
 
+void Internals::addSuggestionMarker(
+    const Range* range,
+    const Vector<String>& suggestions,
+    const String& suggestion_highlight_color_value,
+    const String& underline_color_value,
+    const String& thickness_value,
+    const String& background_color_value,
+    ExceptionState& exception_state) {
+  Color suggestion_highlight_color;
+  if (!ParseColor(suggestion_highlight_color_value, suggestion_highlight_color,
+                  exception_state, "Invalid suggestion highlight color."))
+    return;
+
+  DocumentMarkerController& document_marker_controller =
+      range->OwnerDocument().Markers();
+  addStyleableMarkerHelper(
+      range, underline_color_value, thickness_value, background_color_value,
+      exception_state,
+      [&document_marker_controller, &suggestions, &suggestion_highlight_color](
+          const EphemeralRange& range, Color underline_color,
+          StyleableMarker::Thickness thickness, Color background_color) {
+        document_marker_controller.AddSuggestionMarker(
+            range, suggestions, suggestion_highlight_color, underline_color,
+            thickness, background_color);
+      });
+}
+
 void Internals::setTextMatchMarkersActive(Node* node,
                                           unsigned start_offset,
                                           unsigned end_offset,

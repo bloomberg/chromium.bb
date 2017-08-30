@@ -403,12 +403,14 @@ void InlineTextBoxPainter::Paint(const PaintInfo& paint_info,
   int ascent = font_data ? font_data->GetFontMetrics().Ascent() : 0;
   LayoutPoint text_origin(box_origin.X(), box_origin.Y() + ascent);
 
+  const DocumentMarkerVector& markers_to_paint = ComputeMarkersToPaint();
+
   // 1. Paint backgrounds behind text if needed. Examples of such backgrounds
   // include selection and composition highlights.
   if (paint_info.phase != kPaintPhaseSelection &&
       paint_info.phase != kPaintPhaseTextClip && !is_printing) {
-    PaintDocumentMarkers(paint_info, box_origin, style_to_use, font,
-                         DocumentMarkerPaintPhase::kBackground);
+    PaintDocumentMarkers(markers_to_paint, paint_info, box_origin, style_to_use,
+                         font, DocumentMarkerPaintPhase::kBackground);
     if (have_selection) {
       if (combined_text)
         PaintSelection<InlineTextBoxPainter::PaintOptions::kCombinedText>(
@@ -526,9 +528,10 @@ void InlineTextBoxPainter::Paint(const PaintInfo& paint_info,
     text_painter.Paint(selection_start, selection_end, length, selection_style);
   }
 
-  if (paint_info.phase == kPaintPhaseForeground)
-    PaintDocumentMarkers(paint_info, box_origin, style_to_use, font,
-                         DocumentMarkerPaintPhase::kForeground);
+  if (paint_info.phase == kPaintPhaseForeground) {
+    PaintDocumentMarkers(markers_to_paint, paint_info, box_origin, style_to_use,
+                         font, DocumentMarkerPaintPhase::kForeground);
+  }
 
   if (should_rotate) {
     context.ConcatCTM(TextPainterBase::Rotation(
@@ -636,7 +639,92 @@ void InlineTextBoxPainter::PaintSingleMarkerBackgroundRun(
                                start_pos, end_pos);
 }
 
+DocumentMarkerVector InlineTextBoxPainter::ComputeMarkersToPaint() const {
+  // We don't render composition or spelling markers that overlap suggestion
+  // markers.
+
+  Node* const node = inline_text_box_.GetLineLayoutItem().GetNode();
+  if (!node)
+    return DocumentMarkerVector();
+
+  DocumentMarkerController& document_marker_controller =
+      inline_text_box_.GetLineLayoutItem().GetDocument().Markers();
+
+  // Note: DocumentMarkerController::MarkersFor() returns markers sorted by
+  // start offset.
+  const DocumentMarkerVector& suggestion_markers =
+      document_marker_controller.MarkersFor(node, DocumentMarker::kSuggestion);
+  if (suggestion_markers.IsEmpty()) {
+    // If there are no suggestion markers, we can return early as a minor
+    // performance optimization.
+    DocumentMarker::MarkerTypes remaining_types = DocumentMarker::AllMarkers();
+    remaining_types.Remove(DocumentMarker::kSuggestion);
+    return document_marker_controller.MarkersFor(node, remaining_types);
+  }
+
+  const DocumentMarkerVector& markers_overridden_by_suggestion_markers =
+      document_marker_controller.MarkersFor(
+          node, DocumentMarker::kComposition | DocumentMarker::kSpelling);
+
+  Vector<unsigned> suggestion_starts;
+  Vector<unsigned> suggestion_ends;
+  for (const DocumentMarker* suggestion_marker : suggestion_markers) {
+    suggestion_starts.push_back(suggestion_marker->StartOffset());
+    suggestion_ends.push_back(suggestion_marker->EndOffset());
+  }
+
+  std::sort(suggestion_starts.begin(), suggestion_starts.end());
+  std::sort(suggestion_ends.begin(), suggestion_ends.end());
+
+  unsigned suggestion_starts_index = 0;
+  unsigned suggestion_ends_index = 0;
+  unsigned number_suggestions_currently_inside = 0;
+
+  DocumentMarkerVector markers_to_paint;
+  for (DocumentMarker* marker : markers_overridden_by_suggestion_markers) {
+    while (suggestion_starts_index < suggestion_starts.size() &&
+           suggestion_starts[suggestion_starts_index] <=
+               marker->StartOffset()) {
+      ++suggestion_starts_index;
+      ++number_suggestions_currently_inside;
+    }
+    while (suggestion_ends_index < suggestion_ends.size() &&
+           suggestion_ends[suggestion_ends_index] <= marker->StartOffset()) {
+      ++suggestion_ends_index;
+      --number_suggestions_currently_inside;
+    }
+
+    // At this point, number_suggestions_currently_inside should be equal to the
+    // number of suggestion markers overlapping the point marker->StartOffset()
+    // (marker endpoints don't count as overlapping).
+
+    // Marker is overlapped by a suggestion marker, do not paint.
+    if (number_suggestions_currently_inside)
+      continue;
+
+    // Verify that no suggestion marker starts before the current marker ends.
+    if (suggestion_starts_index < suggestion_starts.size() &&
+        suggestion_starts[suggestion_starts_index] < marker->EndOffset())
+      continue;
+
+    markers_to_paint.push_back(marker);
+  }
+
+  markers_to_paint.AppendVector(suggestion_markers);
+
+  DocumentMarker::MarkerTypes remaining_types = DocumentMarker::AllMarkers();
+  remaining_types.Remove(DocumentMarker::kComposition |
+                         DocumentMarker::kSpelling |
+                         DocumentMarker::kSuggestion);
+
+  markers_to_paint.AppendVector(
+      document_marker_controller.MarkersFor(node, remaining_types));
+
+  return markers_to_paint;
+}
+
 void InlineTextBoxPainter::PaintDocumentMarkers(
+    const DocumentMarkerVector& markers_to_paint,
     const PaintInfo& paint_info,
     const LayoutPoint& box_origin,
     const ComputedStyle& style,
@@ -648,15 +736,11 @@ void InlineTextBoxPainter::PaintDocumentMarkers(
   DCHECK(inline_text_box_.Truncation() != kCFullTruncation);
   DCHECK(inline_text_box_.Len());
 
-  DocumentMarkerVector markers =
-      inline_text_box_.GetLineLayoutItem().GetDocument().Markers().MarkersFor(
-          inline_text_box_.GetLineLayoutItem().GetNode());
-  DocumentMarkerVector::const_iterator marker_it = markers.begin();
-
+  DocumentMarkerVector::const_iterator marker_it = markers_to_paint.begin();
   // Give any document markers that touch this run a chance to draw before the
   // text has been drawn.  Note end() points at the last char, not one past it
   // like endOffset and ranges do.
-  for (; marker_it != markers.end(); ++marker_it) {
+  for (; marker_it != markers_to_paint.end(); ++marker_it) {
     DCHECK(*marker_it);
     const DocumentMarker& marker = **marker_it;
 
@@ -695,7 +779,8 @@ void InlineTextBoxPainter::PaintDocumentMarkers(
         }
         break;
       case DocumentMarker::kComposition:
-      case DocumentMarker::kActiveSuggestion: {
+      case DocumentMarker::kActiveSuggestion:
+      case DocumentMarker::kSuggestion: {
         const StyleableMarker& styleable_marker = ToStyleableMarker(marker);
         if (marker_paint_phase == DocumentMarkerPaintPhase::kBackground) {
           const PaintOffsets marker_offsets =
