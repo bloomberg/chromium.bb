@@ -601,27 +601,29 @@ class LocalDeviceInstrumentationTestRun(
       logging.info('Could not get tests from pickle: %s', e)
     logging.info('Getting tests by having %s list them.',
                  self._test_instance.junit4_runner_class)
-    def list_tests(dev):
-      with device_temp_file.DeviceTempFile(
-          dev.adb, suffix='.json',
-          dir=dev.GetExternalStoragePath()) as dev_test_list_json:
-        junit4_runner_class = self._test_instance.junit4_runner_class
-        test_package = self._test_instance.test_package
-        extras = {}
-        extras['log'] = 'true'
-        extras[_EXTRA_TEST_LIST] = dev_test_list_json.name
-        target = '%s/%s' % (test_package, junit4_runner_class)
-        test_list_run_output = dev.StartInstrumentation(
-            target, extras=extras)
-        if any(test_list_run_output):
-          logging.error('Unexpected output while listing tests:')
-          for line in test_list_run_output:
-            logging.error('  %s', line)
-        with tempfile_ext.NamedTemporaryDirectory() as host_dir:
-          host_file = os.path.join(host_dir, 'list_tests.json')
-          dev.PullFile(dev_test_list_json.name, host_file)
-          with open(host_file, 'r') as host_file:
-              return json.load(host_file)
+    def list_tests(d):
+      def _run(dev):
+        with device_temp_file.DeviceTempFile(
+            dev.adb, suffix='.json',
+            dir=dev.GetExternalStoragePath()) as dev_test_list_json:
+          junit4_runner_class = self._test_instance.junit4_runner_class
+          test_package = self._test_instance.test_package
+          extras = {}
+          extras['log'] = 'true'
+          extras[_EXTRA_TEST_LIST] = dev_test_list_json.name
+          target = '%s/%s' % (test_package, junit4_runner_class)
+          test_list_run_output = dev.StartInstrumentation(
+              target, extras=extras)
+          if any(test_list_run_output):
+            logging.error('Unexpected output while listing tests:')
+            for line in test_list_run_output:
+              logging.error('  %s', line)
+          with tempfile_ext.NamedTemporaryDirectory() as host_dir:
+            host_file = os.path.join(host_dir, 'list_tests.json')
+            dev.PullFile(dev_test_list_json.name, host_file)
+            with open(host_file, 'r') as host_file:
+                return json.load(host_file)
+      return crash_handler.RetryOnSystemCrash(_run, d)
 
     raw_test_lists = self._env.parallel_devices.pMap(list_tests).pGet(None)
 
