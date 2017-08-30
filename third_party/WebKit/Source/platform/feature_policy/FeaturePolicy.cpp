@@ -1,4 +1,3 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,6 +29,9 @@ bool IsValidOldAllowSyntax(const String& policy,
     return false;
   // Old syntax only allows whitespace as valid delimiter.
   if (policy.Contains(';') || policy.Contains(','))
+    return false;
+  // An empty policy is also allowed in the new syntax.
+  if (policy.ContainsOnlyWhitespace())
     return false;
   // Old syntax does not support specifying wildcards / origins for any feature.
   if (policy.Contains("self") || policy.Contains("src") ||
@@ -126,6 +128,9 @@ Vector<WebParsedFeaturePolicyDeclaration> ParseFeaturePolicy(
       //     "name value1 value2" or "name".
       Vector<String> tokens;
       entry.Split(' ', tokens);
+      // Empty policy. Skip.
+      if (tokens.IsEmpty())
+        continue;
       if (!feature_names.Contains(tokens[0])) {
         if (messages)
           messages->push_back("Unrecognized feature: '" + tokens[0] + "'.");
