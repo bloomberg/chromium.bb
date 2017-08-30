@@ -35,9 +35,11 @@ bool ResourceLimits::AdjustCurrent(int resource, long long int change) {
   struct rlimit old_rlimit;
   if (getrlimit(resource, &old_rlimit))
     return false;
-  base::CheckedNumeric<rlim_t> limit = old_rlimit.rlim_cur;
-  limit += change;
-  const struct rlimit new_rlimit = {limit.ValueOrDie(), old_rlimit.rlim_max};
+  base::CheckedNumeric<rlim_t> checked_limit = old_rlimit.rlim_cur;
+  checked_limit += change;
+  const rlim_t new_limit = checked_limit.ValueOrDefault(old_rlimit.rlim_max);
+  const struct rlimit new_rlimit = {std::min(new_limit, old_rlimit.rlim_max),
+                                    old_rlimit.rlim_max};
   // setrlimit will fail if limit > old_rlimit.rlim_max.
   return setrlimit(resource, &new_rlimit) == 0;
 }
