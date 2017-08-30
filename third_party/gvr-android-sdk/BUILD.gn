@@ -13,7 +13,7 @@ android_aar_prebuilt("controller_test_api_java") {
 }
 
 android_aar_prebuilt("gvr_common_java") {
-  aar_path = "common_library.aar"
+  aar_path = "src/libraries/sdk-common-1.80.0.aar"
   proguard_configs = [ "proguard-gvr-chromium.txt" ]
   ignore_native_libraries = true
 
@@ -39,6 +39,7 @@ android_aar_prebuilt("gvr_common_java") {
     "*google/common/logging/nano/Vr\$VREvent\$DoublePrecisionTransform.class",
     "*google/common/logging/nano/Vr\$VREvent\$Cyclops*.class",
     "*google/common/logging/nano/Vr\$VREvent\$AudioStats.class",
+    "*ThrowableExtension*.class",
   ]
 
   deps = [
@@ -47,7 +48,7 @@ android_aar_prebuilt("gvr_common_java") {
 }
 
 android_aar_prebuilt("gvr_controller_java") {
-  aar_path = "src/libraries/sdk-controller-1.60.1.aar"
+  aar_path = "src/libraries/sdk-controller-1.80.0.aar"
 }
 
 config("libgvr_config") {
