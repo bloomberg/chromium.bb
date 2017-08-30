@@ -1746,6 +1746,43 @@ TEST_F(RenderWidgetHostViewAuraTest, FinishCompositionByMouse) {
   EXPECT_EQ(InputMsg_HandleInputEvent::ID, sink_->GetMessageAt(1)->type());
 }
 
+// Checks that WasOcculded/WasUnOccluded notifies RenderWidgetHostImpl.
+TEST_F(RenderWidgetHostViewAuraTest, WasOccluded) {
+  view_->InitAsChild(nullptr);
+  view_->Show();
+  EXPECT_FALSE(widget_host_->is_hidden());
+
+  // Verifies WasOccluded sets RenderWidgetHostImpl as hidden and WasUnOccluded
+  // resets the state.
+  view_->WasOccluded();
+  EXPECT_TRUE(widget_host_->is_hidden());
+  view_->WasUnOccluded();
+  EXPECT_FALSE(widget_host_->is_hidden());
+
+  // Verifies WasOccluded sets RenderWidgetHostImpl as hidden and Show resets
+  // the state.
+  view_->WasOccluded();
+  EXPECT_TRUE(widget_host_->is_hidden());
+  view_->Show();
+  EXPECT_FALSE(widget_host_->is_hidden());
+
+  // WasOccluded and WasUnOccluded are not in pairs. The last one dictates
+  // the final state.
+  for (int i = 0; i < 2; ++i) {
+    view_->WasOccluded();
+    EXPECT_TRUE(widget_host_->is_hidden());
+  }
+  view_->WasUnOccluded();
+  EXPECT_FALSE(widget_host_->is_hidden());
+
+  for (int i = 0; i < 4; ++i) {
+    view_->WasUnOccluded();
+    EXPECT_FALSE(widget_host_->is_hidden());
+  }
+  view_->WasOccluded();
+  EXPECT_TRUE(widget_host_->is_hidden());
+}
+
 // Checks that touch-event state is maintained correctly.
 TEST_F(RenderWidgetHostViewAuraRafAlignedTouchDisabledTest, TouchEventState) {
   view_->InitAsChild(nullptr);
