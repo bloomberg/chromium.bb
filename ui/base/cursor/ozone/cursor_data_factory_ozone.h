@@ -35,7 +35,7 @@ class UI_BASE_EXPORT CursorDataOzone
   // level CursorFactoryOzone interface. Even worse, there can be multiple
   // subclasses that map to this void* type. This asserts that a magic cookie
   // that we put at the start of valid CursorDataOzone objects is correct.
-  void AssertIsACusrorDataOzone();
+  void AssertIsACursorDataOzone();
 
  private:
   friend class base::RefCounted<CursorDataOzone>;
