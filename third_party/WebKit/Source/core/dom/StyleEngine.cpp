@@ -1222,6 +1222,15 @@ bool StyleEngine::UpdateRemUnits(const ComputedStyle* old_root_style,
   return false;
 }
 
+void StyleEngine::CustomPropertyRegistered() {
+  // TODO(timloh): Invalidate only elements with this custom property set
+  GetDocument().SetNeedsStyleRecalc(
+      kSubtreeStyleChange, StyleChangeReasonForTracing::Create(
+                               StyleChangeReason::kPropertyRegistration));
+  if (resolver_)
+    resolver_->InvalidateMatchedPropertiesCache();
+}
+
 DEFINE_TRACE(StyleEngine) {
   visitor->Trace(document_);
   visitor->Trace(injected_author_style_sheets_);
