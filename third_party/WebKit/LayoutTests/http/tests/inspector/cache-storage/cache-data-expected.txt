@@ -9,9 +9,9 @@ Dumping CacheStorage tree:
         (cache empty)
 Dumping CacheStorage tree:
     cache: testCache1 - http://127.0.0.1:8000
-        1
-        2
+        1, text/plain, 0
+        2, text/plain, 0
     cache: testCache2 - http://127.0.0.1:8000
-        1
-        2
+        1, text/plain, 0
+        2, text/plain, 0
 
