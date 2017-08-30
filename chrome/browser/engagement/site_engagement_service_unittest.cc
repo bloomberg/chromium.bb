@@ -36,8 +36,11 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/navigation_simulator.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using content::NavigationSimulator;
 
 namespace {
 
@@ -171,11 +174,10 @@ class SiteEngagementServiceTest : public ChromeRenderViewHostTestHarness {
       const GURL& url,
       ui::PageTransition transition) {
     double prev_score = service->GetScore(url);
-    controller().LoadURL(url, content::Referrer(), transition, std::string());
-    int pending_id = controller().GetPendingEntry()->GetUniqueID();
-    content::WebContentsTester::For(web_contents())
-        ->TestDidNavigate(web_contents()->GetMainFrame(), pending_id, true,
-                          url, transition);
+    auto navigation =
+        NavigationSimulator::CreateBrowserInitiated(url, web_contents());
+    navigation->SetTransition(transition);
+    navigation->Commit();
     EXPECT_LT(prev_score, service->GetScore(url));
   }
 
@@ -184,11 +186,10 @@ class SiteEngagementServiceTest : public ChromeRenderViewHostTestHarness {
       const GURL& url,
       ui::PageTransition transition) {
     double prev_score = service->GetScore(url);
-    controller().LoadURL(url, content::Referrer(), transition, std::string());
-    int pending_id = controller().GetPendingEntry()->GetUniqueID();
-    content::WebContentsTester::For(web_contents())
-        ->TestDidNavigate(web_contents()->GetMainFrame(), pending_id, true,
-                          url, transition);
+    auto navigation =
+        NavigationSimulator::CreateBrowserInitiated(url, web_contents());
+    navigation->SetTransition(transition);
+    navigation->Commit();
     EXPECT_EQ(prev_score, service->GetScore(url));
   }
 
