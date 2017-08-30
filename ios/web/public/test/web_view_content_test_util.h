@@ -32,6 +32,12 @@ bool WaitForWebViewContainingText(web::WebState* web_state,
 bool WaitForWebViewContainingImage(std::string image_id,
                                    web::WebState* web_state,
                                    ImageStateElement image_state);
+
+// Returns true if there is a web view for |web_state| that contains the CSS
+// selector |css_selector|.
+bool IsWebViewContainingCssSelector(web::WebState* web_state,
+                                    const std::string& css_selector);
+
 }  // namespace test
 }  // namespace web
 

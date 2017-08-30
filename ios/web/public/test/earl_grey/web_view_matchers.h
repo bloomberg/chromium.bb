@@ -26,9 +26,6 @@ id<GREYMatcher> WebViewContainingBlockedImage(std::string image_id,
 id<GREYMatcher> WebViewContainingLoadedImage(std::string image_id,
                                              WebState* web_state);
 
-// Matcher for WKWebView containing an html element which matches |selector|.
-id<GREYMatcher> WebViewCssSelector(std::string selector, WebState* web_state);
-
 // Matcher for WKWebView's scroll view.
 id<GREYMatcher> WebViewScrollView(WebState* web_state);
 

@@ -9,6 +9,7 @@
 
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/values.h"
 #import "ios/testing/wait_util.h"
 #import "ios/web/public/test/web_view_interaction_test_util.h"
 #import "net/base/mac/url_conversions.h"
@@ -145,6 +146,23 @@ bool WaitForWebViewContainingImage(std::string image_id,
     }
     return false;
   });
+}
+
+bool IsWebViewContainingCssSelector(web::WebState* web_state,
+                                    const std::string& css_selector) {
+  // Script that tests presence of css selector.
+  char testCssSelectorJavaScriptTemplate[] =
+      "!!document.querySelector(\"%s\");";
+  std::string script = base::StringPrintf(testCssSelectorJavaScriptTemplate,
+                                          css_selector.c_str());
+
+  bool did_succeed = false;
+  std::unique_ptr<base::Value> value =
+      web::test::ExecuteJavaScript(web_state, script);
+  if (value) {
+    value->GetAsBoolean(&did_succeed);
+  }
+  return did_succeed;
 }
 
 }  // namespace test

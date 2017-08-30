@@ -19,11 +19,6 @@
 
 namespace web {
 
-id<GREYMatcher> WebViewCssSelector(const std::string& selector) {
-  WebState* web_state = shell_test_util::GetCurrentWebState();
-  return WebViewCssSelector(std::move(selector), web_state);
-}
-
 id<GREYMatcher> WebView() {
   return WebViewInWebState(shell_test_util::GetCurrentWebState());
 }

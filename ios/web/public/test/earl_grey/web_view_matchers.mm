@@ -58,8 +58,6 @@ enum ImageState {
 // Script that returns document.body as a string.
 char kGetDocumentBodyJavaScript[] =
     "document.body ? document.body.textContent : null";
-// Script that tests presence of css selector.
-char kTestCssSelectorJavaScriptTemplate[] = "!!document.querySelector(\"%s\");";
 
 // Fetches the image from |image_url|.
 UIImage* LoadImage(const GURL& image_url) {
@@ -193,33 +191,6 @@ id<GREYMatcher> WebViewContainingBlockedImage(std::string image_id,
 id<GREYMatcher> WebViewContainingLoadedImage(std::string image_id,
                                              WebState* web_state) {
   return WebViewContainingImage(image_id, web_state, IMAGE_STATE_LOADED);
-}
-
-id<GREYMatcher> WebViewCssSelector(std::string selector, WebState* web_state) {
-  MatchesBlock matches = ^BOOL(WKWebView*) {
-    std::string script = base::StringPrintf(kTestCssSelectorJavaScriptTemplate,
-                                            selector.c_str());
-    return WaitUntilConditionOrTimeout(testing::kWaitForUIElementTimeout, ^{
-      bool did_succeed = false;
-      std::unique_ptr<base::Value> value =
-          web::test::ExecuteJavaScript(web_state, script);
-      if (value) {
-        value->GetAsBoolean(&did_succeed);
-      }
-      return did_succeed;
-    });
-  };
-
-  DescribeToBlock describe = ^(id<GREYDescription> description) {
-    [description appendText:@"web view selector "];
-    [description appendText:base::SysUTF8ToNSString(selector)];
-  };
-
-  return grey_allOf(
-      WebViewInWebState(web_state),
-      [[GREYElementMatcherBlock alloc] initWithMatchesBlock:matches
-                                           descriptionBlock:describe],
-      nil);
 }
 
 id<GREYMatcher> WebViewScrollView(WebState* web_state) {
