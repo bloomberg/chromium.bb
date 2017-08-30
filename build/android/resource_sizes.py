@@ -492,8 +492,9 @@ def PrintApkAnalysis(apk_filename, tool_prefix, chartjson=None):
   # Always look at uncompressed .so.
   normalized_apk_size -= native_code.ComputeZippedSize()
   normalized_apk_size += native_code.ComputeUncompressedSize()
-  # Always include odex size to optimize for actual disk footprint.
-  normalized_apk_size += java_code.ComputeExtractedSize()
+  # TODO(agrieve): Once we have better tooling (which can tell you where dex
+  #     size came from), change this to "ComputeExtractedSize()".
+  normalized_apk_size += java_code.ComputeUncompressedSize()
   # Avoid noise caused when strings change and translations haven't yet been
   # updated.
   num_translations = translations.GetNumEntries()
