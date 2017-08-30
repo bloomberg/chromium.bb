@@ -74,7 +74,7 @@ public class CastWebContentsComponentTest {
         Assume.assumeFalse(BuildConfig.DISPLAY_WEB_CONTENTS_IN_SERVICE);
 
         BroadcastReceiver receiver = Mockito.mock(BroadcastReceiver.class);
-        IntentFilter intentFilter = new IntentFilter(CastWebContentsActivity.ACTION_STOP_ACTIVITY);
+        IntentFilter intentFilter = new IntentFilter(CastIntents.ACTION_STOP_ACTIVITY);
         intentFilter.addDataScheme(CastWebContentsComponent.ACTION_DATA_SCHEME);
         intentFilter.addDataAuthority(CastWebContentsComponent.ACTION_DATA_AUTHORITY, null);
         intentFilter.addDataPath("/" + INSTANCE_ID, PatternMatcher.PATTERN_LITERAL);
