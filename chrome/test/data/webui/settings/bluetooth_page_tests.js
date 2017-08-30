@@ -118,7 +118,10 @@ suite('Bluetooth', function() {
       assertTrue(!!subpage);
     });
 
-    test('toggle', function() {
+    // Skipping all SubPage tests as this is currently flaky.
+    // TODO(sonnysasaka): re-enable these tests once the flakiness is fixed
+    // (http://crbug.com/756283).
+    test.skip('toggle', function() {
       assertTrue(bluetoothPage.prefs.ash.user.bluetooth.adapter_enabled.value);
 
       var enableButton = subpage.$.enableBluetooth;
@@ -132,7 +135,7 @@ suite('Bluetooth', function() {
       assertFalse(bluetoothPage.prefs.ash.user.bluetooth.adapter_enabled.value);
     });
 
-    test('paired device list', function() {
+    test.skip('paired device list', function() {
       assertTrue(subpage.adapterState.powered);
 
       var pairedContainer = subpage.$.pairedContainer;
@@ -156,7 +159,7 @@ suite('Bluetooth', function() {
       assertFalse(devices[1].device.connected);
     });
 
-    test('unpaired device list', function() {
+    test.skip('unpaired device list', function() {
       assertTrue(subpage.adapterState.powered);
 
       var unpairedContainer = subpage.$.unpairedContainer;
@@ -180,7 +183,7 @@ suite('Bluetooth', function() {
       assertFalse(devices[1].device.paired);
     });
 
-    test('pair device', function(done) {
+    test.skip('pair device', function(done) {
       assertTrue(subpage.adapterState.powered);
 
       bluetoothApi_.setDevicesForTest(fakeDevices_);
@@ -198,7 +201,7 @@ suite('Bluetooth', function() {
       });
     });
 
-    test('pair dialog', function() {
+    test.skip('pair dialog', function() {
       assertTrue(subpage.adapterState.powered);
 
       bluetoothApi_.setDevicesForTest(fakeDevices_);
