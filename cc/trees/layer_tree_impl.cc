@@ -658,52 +658,52 @@ void LayerTreeImpl::UpdatePropertyTreeAnimationFromMainThread() {
   if (layer_list_.empty())
     return;
 
+  // Note we lazily delete element ids from the |element_id_to_xxx|
+  // maps below if we find they have no node present in their
+  // respective tree. This can be the case if the layer associated
+  // with that element id has been removed.
+
   auto element_id_to_opacity = element_id_to_opacity_animations_.begin();
   while (element_id_to_opacity != element_id_to_opacity_animations_.end()) {
     const ElementId id = element_id_to_opacity->first;
-    if (EffectNode* node =
-            property_trees_.effect_tree.FindNodeFromElementId(id)) {
-      if (!node->is_currently_animating_opacity ||
-          node->opacity == element_id_to_opacity->second) {
-        element_id_to_opacity_animations_.erase(element_id_to_opacity++);
-        continue;
-      }
-      node->opacity = element_id_to_opacity->second;
-      property_trees_.effect_tree.set_needs_update(true);
+    EffectNode* node = property_trees_.effect_tree.FindNodeFromElementId(id);
+    if (!node || !node->is_currently_animating_opacity ||
+        node->opacity == element_id_to_opacity->second) {
+      element_id_to_opacity_animations_.erase(element_id_to_opacity++);
+      continue;
     }
+    node->opacity = element_id_to_opacity->second;
+    property_trees_.effect_tree.set_needs_update(true);
     ++element_id_to_opacity;
   }
 
   auto element_id_to_filter = element_id_to_filter_animations_.begin();
   while (element_id_to_filter != element_id_to_filter_animations_.end()) {
     const ElementId id = element_id_to_filter->first;
-    if (EffectNode* node =
-            property_trees_.effect_tree.FindNodeFromElementId(id)) {
-      if (!node->is_currently_animating_filter ||
-          node->filters == element_id_to_filter->second) {
-        element_id_to_filter_animations_.erase(element_id_to_filter++);
-        continue;
-      }
-      node->filters = element_id_to_filter->second;
-      property_trees_.effect_tree.set_needs_update(true);
+    EffectNode* node = property_trees_.effect_tree.FindNodeFromElementId(id);
+    if (!node || !node->is_currently_animating_filter ||
+        node->filters == element_id_to_filter->second) {
+      element_id_to_filter_animations_.erase(element_id_to_filter++);
+      continue;
     }
+    node->filters = element_id_to_filter->second;
+    property_trees_.effect_tree.set_needs_update(true);
     ++element_id_to_filter;
   }
 
   auto element_id_to_transform = element_id_to_transform_animations_.begin();
   while (element_id_to_transform != element_id_to_transform_animations_.end()) {
     const ElementId id = element_id_to_transform->first;
-    if (TransformNode* node =
-            property_trees_.transform_tree.FindNodeFromElementId(id)) {
-      if (!node->is_currently_animating ||
-          node->local == element_id_to_transform->second) {
-        element_id_to_transform_animations_.erase(element_id_to_transform++);
-        continue;
-      }
-      node->local = element_id_to_transform->second;
-      node->needs_local_transform_update = true;
-      property_trees_.transform_tree.set_needs_update(true);
+    TransformNode* node =
+        property_trees_.transform_tree.FindNodeFromElementId(id);
+    if (!node || !node->is_currently_animating ||
+        node->local == element_id_to_transform->second) {
+      element_id_to_transform_animations_.erase(element_id_to_transform++);
+      continue;
     }
+    node->local = element_id_to_transform->second;
+    node->needs_local_transform_update = true;
+    property_trees_.transform_tree.set_needs_update(true);
     ++element_id_to_transform;
   }
 
@@ -1229,9 +1229,6 @@ void LayerTreeImpl::RegisterLayer(LayerImpl* layer) {
 void LayerTreeImpl::UnregisterLayer(LayerImpl* layer) {
   DCHECK(LayerById(layer->id()));
   layers_that_should_push_properties_.erase(layer);
-  element_id_to_transform_animations_.erase(layer->element_id());
-  element_id_to_opacity_animations_.erase(layer->element_id());
-  element_id_to_filter_animations_.erase(layer->element_id());
   layer_id_map_.erase(layer->id());
 }
 

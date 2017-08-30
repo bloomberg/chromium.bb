@@ -94,11 +94,8 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
 
 LayerImpl::~LayerImpl() {
   DCHECK_EQ(DRAW_MODE_NONE, current_draw_mode_);
-
   layer_tree_impl_->UnregisterLayer(this);
-
   layer_tree_impl_->RemoveFromElementMap(this);
-
   TRACE_EVENT_OBJECT_DELETED_WITH_ID(
       TRACE_DISABLED_BY_DEFAULT("cc.debug"), "cc::LayerImpl", this);
 }
