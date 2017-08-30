@@ -577,7 +577,8 @@ def get_waterfall_config():
 def generate_isolate_script_entry(swarming_dimensions, test_args,
     isolate_name, step_name, ignore_task_failure,
     override_compile_targets=None,
-    swarming_timeout=None):
+    swarming_timeout=None,
+    io_timeout=None):
   result = {
     'args': test_args,
     'isolate_name': isolate_name,
@@ -593,7 +594,7 @@ def generate_isolate_script_entry(swarming_dimensions, test_args,
       'expiration': 20 * 60 * 60, # 20 hour timeout for now (crbug.com/753367)
       'hard_timeout': swarming_timeout if swarming_timeout else 10800, # 3 hours
       'ignore_task_failure': ignore_task_failure,
-      'io_timeout': 10 * 60,
+      'io_timeout': io_timeout if io_timeout else 600, # 10 minutes
       'dimension_sets': swarming_dimensions,
       'upload_test_results': False,
     }
@@ -647,7 +648,8 @@ def generate_telemetry_test(swarming_dimensions, benchmark_name, browser):
       swarming_dimensions, test_args, isolate_name,
       step_name, ignore_task_failure=ignore_task_failure,
       override_compile_targets=[isolate_name],
-      swarming_timeout=BENCHMARK_SWARMING_TIMEOUTS.get(benchmark_name))
+      swarming_timeout=BENCHMARK_SWARMING_TIMEOUTS.get(benchmark_name),
+      io_timeout=BENCHMARK_SWARMING_IO_TIMEOUTS.get(benchmark_name))
 
 
 def script_test_enabled_on_tester(master, test, tester_name, shard):
@@ -803,6 +805,12 @@ BENCHMARK_SWARMING_TIMEOUTS = {
     'loading.mobile': 16200, # 4.5 hours
     'system_health.memory_mobile': 10800, # 3 hours
     'system_health.memory_desktop': 10800, # 3 hours
+}
+
+
+# Overrides the default 10m swarming I/O timeout.
+BENCHMARK_SWARMING_IO_TIMEOUTS = {
+    'jetstream': 1200, # 20 minutes
 }
 
 
