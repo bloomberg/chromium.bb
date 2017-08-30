@@ -18,7 +18,7 @@ const uint32_t kBadCookie = 0xBADBADCC;
 CursorDataOzone* ToCursorDataOzone(PlatformCursor cursor) {
   CursorDataOzone* ozone = static_cast<CursorDataOzone*>(cursor);
 #if DCHECK_IS_ON()
-  ozone->AssertIsACusrorDataOzone();
+  ozone->AssertIsACursorDataOzone();
 #endif
   return ozone;
 }
@@ -32,7 +32,7 @@ PlatformCursor ToPlatformCursor(CursorDataOzone* cursor) {
 CursorDataOzone::CursorDataOzone(const ui::CursorData& data)
     : magic_cookie_(kCookie), data_(data) {}
 
-void CursorDataOzone::AssertIsACusrorDataOzone() {
+void CursorDataOzone::AssertIsACursorDataOzone() {
   CHECK_EQ(magic_cookie_, kCookie);
 }
 
