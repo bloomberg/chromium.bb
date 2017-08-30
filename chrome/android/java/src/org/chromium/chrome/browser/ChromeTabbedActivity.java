@@ -780,7 +780,8 @@ public class ChromeTabbedActivity
             @StringRes int stringId, @StringRes int accessibilityStringId) {
         // Don't show the IPH, if bottom sheet is already open.
         if (FeatureUtilities.isChromeHomeEnabled()
-                && getBottomSheet().getSheetState() != BottomSheet.SHEET_STATE_PEEK) {
+                && (getBottomSheet() == null
+                           || getBottomSheet().getSheetState() != BottomSheet.SHEET_STATE_PEEK)) {
             return;
         }
 
