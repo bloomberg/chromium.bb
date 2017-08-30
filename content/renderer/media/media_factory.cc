@@ -37,6 +37,7 @@
 #include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
+#include "url/origin.h"
 
 #if defined(OS_ANDROID)
 #include "content/renderer/media/android/media_player_renderer_client_factory.h"
@@ -45,6 +46,7 @@
 #include "content/renderer/media/android/stream_texture_wrapper_impl.h"
 #include "media/base/android/media_codec_util.h"
 #include "media/base/media.h"
+#include "url/gurl.h"
 #endif
 
 #if BUILDFLAG(ENABLE_MOJO_MEDIA)

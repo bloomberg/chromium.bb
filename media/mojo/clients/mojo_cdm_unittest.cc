@@ -21,6 +21,8 @@
 #include "media/mojo/services/mojo_cdm_service_context.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
+#include "url/origin.h"
 
 using ::testing::_;
 using ::testing::DoAll;
@@ -106,8 +108,8 @@ class MojoCdmTest : public ::testing::Test {
       }
     }
 
-    MojoCdm::Create(key_system, GURL(kTestSecurityOrigin), CdmConfig(),
-                    std::move(remote_cdm),
+    MojoCdm::Create(key_system, url::Origin(GURL(kTestSecurityOrigin)),
+                    CdmConfig(), std::move(remote_cdm),
                     base::Bind(&MockCdmClient::OnSessionMessage,
                                base::Unretained(&cdm_client_)),
                     base::Bind(&MockCdmClient::OnSessionClosed,

@@ -258,8 +258,8 @@ MockCdmFactory::~MockCdmFactory() {}
 
 void MockCdmFactory::Create(
     const std::string& key_system,
-    const GURL& security_origin,
-    const CdmConfig& cdm_config,
+    const url::Origin& /* security_origin */,
+    const CdmConfig& /* cdm_config */,
     const SessionMessageCB& session_message_cb,
     const SessionClosedCB& session_closed_cb,
     const SessionKeysChangeCB& session_keys_change_cb,

@@ -21,14 +21,14 @@
 #include "media/mojo/interfaces/decryptor.mojom.h"
 #include "services/service_manager/public/cpp/connect.h"
 #include "services/service_manager/public/interfaces/interface_provider.mojom.h"
-#include "url/gurl.h"
+#include "url/origin.h"
 
 namespace media {
 
 // static
 void MojoCdm::Create(
     const std::string& key_system,
-    const GURL& security_origin,
+    const url::Origin& security_origin,
     const CdmConfig& cdm_config,
     mojom::ContentDecryptionModulePtr remote_cdm,
     const SessionMessageCB& session_message_cb,
@@ -96,7 +96,7 @@ MojoCdm::~MojoCdm() {
 // error handler can't be invoked and callbacks won't be dispatched.
 
 void MojoCdm::InitializeCdm(const std::string& key_system,
-                            const GURL& security_origin,
+                            const url::Origin& security_origin,
                             const CdmConfig& cdm_config,
                             std::unique_ptr<CdmInitializedPromise> promise) {
   DVLOG(1) << __func__ << ": " << key_system;
@@ -116,8 +116,11 @@ void MojoCdm::InitializeCdm(const std::string& key_system,
 
   pending_init_promise_ = std::move(promise);
 
+  // TODO(jrummell): Pass |security_origin| as a url.mojom.Origin.
+  // http://crbug.com/639438.
   remote_cdm_->Initialize(
-      key_system, security_origin.spec(), mojom::CdmConfig::From(cdm_config),
+      key_system, security_origin.Serialize(),
+      mojom::CdmConfig::From(cdm_config),
       base::Bind(&MojoCdm::OnCdmInitialized, base::Unretained(this)));
 }
 

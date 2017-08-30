@@ -20,7 +20,6 @@
 #include "third_party/WebKit/public/platform/URLConversion.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/WebString.h"
-#include "url/gurl.h"
 #include "url/origin.h"
 
 namespace media {
@@ -101,15 +100,13 @@ void WebContentDecryptionModuleImpl::Create(
     return;
   }
 
-  GURL security_origin_as_gurl(url::Origin(security_origin).GetURL());
-
   // CdmSessionAdapter::CreateCdm() will keep a reference to |adapter|. Then
   // if WebContentDecryptionModuleImpl is successfully created (returned in
   // |result|), it will keep a reference to |adapter|. Otherwise, |adapter| will
   // be destructed.
   scoped_refptr<CdmSessionAdapter> adapter(new CdmSessionAdapter());
-  adapter->CreateCdm(cdm_factory, key_system_ascii, security_origin_as_gurl,
-                     cdm_config, std::move(result));
+  adapter->CreateCdm(cdm_factory, key_system_ascii, security_origin, cdm_config,
+                     std::move(result));
 }
 
 WebContentDecryptionModuleImpl::WebContentDecryptionModuleImpl(

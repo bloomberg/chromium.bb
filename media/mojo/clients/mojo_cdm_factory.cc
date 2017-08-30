@@ -15,6 +15,7 @@
 #include "media/mojo/features.h"
 #include "media/mojo/interfaces/interface_factory.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "url/origin.h"
 
 namespace media {
 
@@ -28,7 +29,7 @@ MojoCdmFactory::~MojoCdmFactory() {}
 
 void MojoCdmFactory::Create(
     const std::string& key_system,
-    const GURL& security_origin,
+    const url::Origin& security_origin,
     const CdmConfig& cdm_config,
     const SessionMessageCB& session_message_cb,
     const SessionClosedCB& session_closed_cb,
@@ -37,7 +38,7 @@ void MojoCdmFactory::Create(
     const CdmCreatedCB& cdm_created_cb) {
   DVLOG(2) << __func__ << ": " << key_system;
 
-  if (!security_origin.is_valid()) {
+  if (security_origin.unique()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(cdm_created_cb, nullptr, "Invalid origin."));
     return;

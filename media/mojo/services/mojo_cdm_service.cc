@@ -20,6 +20,7 @@
 #include "media/mojo/common/media_type_converters.h"
 #include "media/mojo/services/mojo_cdm_service_context.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace media {
 
@@ -67,7 +68,8 @@ void MojoCdmService::Initialize(const std::string& key_system,
 
   auto weak_this = weak_factory_.GetWeakPtr();
   cdm_factory_->Create(
-      key_system, GURL(security_origin), cdm_config.To<CdmConfig>(),
+      key_system, url::Origin(GURL(security_origin)),
+      cdm_config.To<CdmConfig>(),
       base::Bind(&MojoCdmService::OnSessionMessage, weak_this),
       base::Bind(&MojoCdmService::OnSessionClosed, weak_this),
       base::Bind(&MojoCdmService::OnSessionKeysChange, weak_this),

@@ -21,7 +21,6 @@
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/WebSetSinkIdCallbacks.h"
 #include "third_party/WebKit/public/platform/WebString.h"
-#include "url/gurl.h"
 
 #if BUILDFLAG(ENABLE_MOJO_MEDIA)
 #include "media/mojo/interfaces/interface_factory.mojom.h"  // nogncheck

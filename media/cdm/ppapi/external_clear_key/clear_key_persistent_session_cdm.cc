@@ -10,6 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "media/base/cdm_promise.h"
+#include "url/origin.h"
 
 namespace media {
 
@@ -87,7 +88,7 @@ class FinishLoadCdmPromise : public SimpleCdmPromise {
 }  // namespace
 
 ClearKeyPersistentSessionCdm::ClearKeyPersistentSessionCdm(
-    const GURL& origin,
+    const url::Origin& origin,
     ClearKeyCdmHost* host,
     const SessionMessageCB& session_message_cb,
     const SessionClosedCB& session_closed_cb,

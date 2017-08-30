@@ -15,7 +15,7 @@
 #include "media/base/media_switches.h"
 #include "media/cdm/aes_decryptor.h"
 #include "third_party/widevine/cdm/widevine_cdm_common.h"
-#include "url/gurl.h"
+#include "url/origin.h"
 
 namespace media {
 namespace {
@@ -46,7 +46,7 @@ AndroidCdmFactory::~AndroidCdmFactory() {}
 
 void AndroidCdmFactory::Create(
     const std::string& key_system,
-    const GURL& security_origin,
+    const url::Origin& security_origin,
     const CdmConfig& cdm_config,
     const SessionMessageCB& session_message_cb,
     const SessionClosedCB& session_closed_cb,
@@ -56,7 +56,7 @@ void AndroidCdmFactory::Create(
   // Bound |cdm_created_cb| so we always fire it asynchronously.
   CdmCreatedCB bound_cdm_created_cb = BindToCurrentLoop(cdm_created_cb);
 
-  if (!security_origin.is_valid()) {
+  if (security_origin.unique()) {
     bound_cdm_created_cb.Run(nullptr, "Invalid origin.");
     return;
   }

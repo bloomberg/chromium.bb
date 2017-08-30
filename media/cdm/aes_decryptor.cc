@@ -270,7 +270,7 @@ static scoped_refptr<DecoderBuffer> DecryptData(
 }
 
 AesDecryptor::AesDecryptor(
-    const GURL& /* security_origin */,
+    const url::Origin& /* security_origin */,
     const SessionMessageCB& session_message_cb,
     const SessionClosedCB& session_closed_cb,
     const SessionKeysChangeCB& session_keys_change_cb,

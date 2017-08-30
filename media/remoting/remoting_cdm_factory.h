@@ -27,7 +27,7 @@ class RemotingCdmFactory : public CdmFactory {
   ~RemotingCdmFactory() override;
 
   void Create(const std::string& key_system,
-              const GURL& security_origin,
+              const url::Origin& security_origin,
               const CdmConfig& cdm_config,
               const SessionMessageCB& session_message_cb,
               const SessionClosedCB& session_closed_cb,
@@ -38,7 +38,7 @@ class RemotingCdmFactory : public CdmFactory {
  private:
   std::unique_ptr<RemotingCdmController> CreateRemotingCdmController();
   void CreateCdm(const std::string& key_system,
-                 const GURL& security_origin,
+                 const url::Origin& security_origin,
                  const CdmConfig& cdm_config,
                  const SessionMessageCB& session_message_cb,
                  const SessionClosedCB& session_closed_cb,

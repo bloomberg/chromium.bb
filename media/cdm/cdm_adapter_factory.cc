@@ -8,6 +8,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/base/cdm_factory.h"
 #include "media/cdm/cdm_adapter.h"
+#include "url/origin.h"
 
 namespace media {
 
@@ -21,7 +22,7 @@ CdmAdapterFactory::~CdmAdapterFactory() {}
 
 void CdmAdapterFactory::Create(
     const std::string& key_system,
-    const GURL& security_origin,
+    const url::Origin& security_origin,
     const CdmConfig& cdm_config,
     const SessionMessageCB& session_message_cb,
     const SessionClosedCB& session_closed_cb,
@@ -30,7 +31,7 @@ void CdmAdapterFactory::Create(
     const CdmCreatedCB& cdm_created_cb) {
   DVLOG(1) << __FUNCTION__ << ": key_system=" << key_system;
 
-  if (!security_origin.is_valid()) {
+  if (security_origin.unique()) {
     LOG(ERROR) << "Invalid Origin: " << security_origin;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(cdm_created_cb, nullptr, "Invalid origin."));

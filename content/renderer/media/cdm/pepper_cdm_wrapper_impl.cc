@@ -32,7 +32,7 @@ void WebHelperPluginDeleter::operator()(blink::WebHelperPlugin* plugin) const {
 std::unique_ptr<PepperCdmWrapper> PepperCdmWrapperImpl::Create(
     blink::WebLocalFrame* frame,
     const std::string& pluginType,
-    const GURL& security_origin) {
+    const url::Origin& security_origin) {
   DCHECK(frame);
 
   // The frame security origin could be different from the origin where the CDM
@@ -40,8 +40,8 @@ std::unique_ptr<PepperCdmWrapper> PepperCdmWrapperImpl::Create(
   // Note: The code will continue after navigation to the "same" origin, even
   // though the CDM is no longer necessary.
   // TODO: Consider avoiding this possibility entirely. http://crbug.com/575236
-  GURL frame_security_origin(url::Origin(frame->GetSecurityOrigin()).GetURL());
-  if (frame_security_origin != security_origin) {
+  const url::Origin frame_security_origin(frame->GetSecurityOrigin());
+  if (!security_origin.IsSameOriginWith(frame_security_origin)) {
     LOG(ERROR) << "Frame has a different origin than the EME call.";
     return std::unique_ptr<PepperCdmWrapper>();
   }
@@ -61,9 +61,8 @@ std::unique_ptr<PepperCdmWrapper> PepperCdmWrapperImpl::Create(
   if (!plugin_instance.get())
     return std::unique_ptr<PepperCdmWrapper>();
 
-  GURL plugin_url(plugin_instance->container()->GetDocument().Url());
-  GURL plugin_security_origin = plugin_url.GetOrigin();
-  CHECK_EQ(security_origin, plugin_security_origin)
+  CHECK(security_origin.IsSameOriginWith(
+      plugin_instance->container()->GetDocument().GetSecurityOrigin()))
       << "Pepper instance has a different origin than the EME call.";
 
   if (!plugin_instance->GetContentDecryptorDelegate())

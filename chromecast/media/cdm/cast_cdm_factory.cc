@@ -11,6 +11,7 @@
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/cdm_config.h"
 #include "media/base/cdm_key_information.h"
+#include "url/origin.h"
 
 namespace chromecast {
 namespace media {
@@ -28,7 +29,7 @@ CastCdmFactory::~CastCdmFactory() {}
 
 void CastCdmFactory::Create(
     const std::string& key_system,
-    const GURL& security_origin,
+    const url::Origin& security_origin,
     const ::media::CdmConfig& cdm_config,
     const ::media::SessionMessageCB& session_message_cb,
     const ::media::SessionClosedCB& session_closed_cb,
@@ -67,7 +68,7 @@ void CastCdmFactory::Create(
 
 scoped_refptr<CastCdm> CastCdmFactory::CreatePlatformBrowserCdm(
     const CastKeySystem& cast_key_system,
-    const GURL& security_origin,
+    const url::Origin& security_origin,
     const ::media::CdmConfig& cdm_config) {
   return nullptr;
 }

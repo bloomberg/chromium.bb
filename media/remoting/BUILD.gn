@@ -63,6 +63,7 @@ source_set("remoting") {
     "//media/mojo/interfaces:remoting",
     "//mojo/public/cpp/bindings",
     "//ui/gfx",
+    "//url",
   ]
 
   if (enable_media_remoting_rpc) {

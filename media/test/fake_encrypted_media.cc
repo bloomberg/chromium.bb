@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "media/base/cdm_key_information.h"
 #include "media/cdm/aes_decryptor.h"
+#include "url/origin.h"
 
 namespace media {
 
@@ -23,7 +24,7 @@ int FakeEncryptedMedia::TestCdmContext::GetCdmId() const {
 
 FakeEncryptedMedia::FakeEncryptedMedia(AppBase* app)
     : decryptor_(new AesDecryptor(
-          GURL::EmptyGURL(),
+          url::Origin(),
           base::Bind(&FakeEncryptedMedia::OnSessionMessage,
                      base::Unretained(this)),
           base::Bind(&FakeEncryptedMedia::OnSessionClosed,

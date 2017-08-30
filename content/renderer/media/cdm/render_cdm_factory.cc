@@ -17,7 +17,7 @@
 #include "media/base/key_systems.h"
 #include "media/cdm/aes_decryptor.h"
 #include "media/media_features.h"
-#include "url/gurl.h"
+#include "url/origin.h"
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 #include "content/renderer/media/cdm/ppapi_decryptor.h"
@@ -39,7 +39,7 @@ RenderCdmFactory::~RenderCdmFactory() {
 
 void RenderCdmFactory::Create(
     const std::string& key_system,
-    const GURL& security_origin,
+    const url::Origin& security_origin,
     const media::CdmConfig& cdm_config,
     const media::SessionMessageCB& session_message_cb,
     const media::SessionClosedCB& session_closed_cb,
@@ -48,7 +48,7 @@ void RenderCdmFactory::Create(
     const media::CdmCreatedCB& cdm_created_cb) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (!security_origin.is_valid()) {
+  if (security_origin.unique()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(cdm_created_cb, nullptr, "Invalid origin."));
     return;
