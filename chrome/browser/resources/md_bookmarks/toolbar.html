@@ -56,7 +56,8 @@
           id="menuButton"
           class="more-actions more-vert-button"
           title="$i18n{organizeButtonTitle}"
-          on-tap="onMenuButtonOpenTap_">
+          on-tap="onMenuButtonOpenTap_"
+          aria-haspopup="menu">
         <div></div>
         <div></div>
         <div></div>
@@ -70,7 +71,7 @@
             disabled="[[!canSortFolder_]]">
           $i18n{menuSort}
         </button>
-        <hr>
+        <hr aria-hidden="true">
         <button id="addBookmarkButton"
             class="dropdown-item"
             on-tap="onAddBookmarkTap_"
@@ -82,7 +83,7 @@
             disabled="[[!canChangeList_]]">
           $i18n{menuAddFolder}
         </button>
-        <hr>
+        <hr aria-hidden="true">
         <button id="importBookmarkButton"
             class="dropdown-item"
             on-tap="onImportTap_"
