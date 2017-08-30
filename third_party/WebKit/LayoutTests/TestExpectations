@@ -3110,6 +3110,9 @@ crbug.com/752845 [ Win ] inspector/sha1.html [ Pass Crash ]
 crbug.com/754657 http/tests/media/media-source/mediasource-duration.html [ Pass Failure ]
 crbug.com/626703 virtual/outofblink-cors/external/wpt/fetch/api/response/response-cancel-stream.html [ Pass Timeout ]
 
+# Sheriff failure 2017-08-29
+crbug.com/727252 [ Win7 ] external/wpt/media-source/mediasource-endofstream.html [ Pass Timeout ]
+
 # Ganesh dither changes
 crbug.com/753462 virtual/gpu/fast/canvas/canvas-text-alignment.html [ NeedsManualRebaseline ]
 crbug.com/753462 virtual/gpu/fast/canvas/fillrect_gradient.html [ NeedsManualRebaseline ]
