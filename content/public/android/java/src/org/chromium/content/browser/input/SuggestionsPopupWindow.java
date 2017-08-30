@@ -41,6 +41,9 @@ public class SuggestionsPopupWindow
             "com.android.settings.USER_DICTIONARY_INSERT";
     private static final String USER_DICTIONARY_EXTRA_WORD = "word";
 
+    // From Android Settings app's @integer/maximum_user_dictionary_word_length.
+    private static final int ADD_TO_DICTIONARY_MAX_LENGTH_ON_JELLY_BEAN = 48;
+
     private final Context mContext;
     private final TextSuggestionHost mTextSuggestionHost;
     private final View mParentView;
@@ -167,7 +170,23 @@ public class SuggestionsPopupWindow
 
     private void addToDictionary() {
         final Intent intent = new Intent(ACTION_USER_DICTIONARY_INSERT);
-        intent.putExtra(USER_DICTIONARY_EXTRA_WORD, mHighlightedText);
+
+        String wordToAdd = mHighlightedText;
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
+            // There was a bug in Jelly Bean, fixed in the initial version of KitKat, that can cause
+            // a crash if the word we try to add is too long. The "add to dictionary" intent uses an
+            // EditText widget to show the word about to be added (and allow the user to edit it).
+            // It has a maximum length of 48 characters. If a word is longer than this, it will be
+            // truncated, but the intent will try to select the full length of the word, causing a
+            // crash.
+
+            // KitKit and later still truncate the word, but avoid the crash.
+            if (wordToAdd.length() > ADD_TO_DICTIONARY_MAX_LENGTH_ON_JELLY_BEAN) {
+                wordToAdd = wordToAdd.substring(0, ADD_TO_DICTIONARY_MAX_LENGTH_ON_JELLY_BEAN);
+            }
+        }
+
+        intent.putExtra(USER_DICTIONARY_EXTRA_WORD, wordToAdd);
         intent.setFlags(intent.getFlags() | Intent.FLAG_ACTIVITY_NEW_TASK);
         mContext.startActivity(intent);
     }
