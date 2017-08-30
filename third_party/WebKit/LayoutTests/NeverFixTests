@@ -272,7 +272,6 @@ webaudio/codec-tests/aac [ WontFix ]
 # WPT subdirectories without owners.
 external/wpt/accelerometer [ WontFix ]
 external/wpt/assumptions [ WontFix ]
-external/wpt/css-values [ WontFix ]
 external/wpt/css/css-values-3 [ WontFix ]
 external/wpt/gyroscope [ WontFix ]
 external/wpt/magnetometer [ WontFix ]
