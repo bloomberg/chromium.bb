@@ -295,9 +295,7 @@ public class SuggestionsPopupWindow
         // multi-window mode, but we need to make sure we don't do it in single-window mode (in case
         // we're on an old version of Android).
         int statusBarHeight = 0;
-        if (mActivity != null
-                && (Build.VERSION.SDK_INT < Build.VERSION_CODES.N
-                           || !mActivity.isInMultiWindowMode())) {
+        if (mActivity != null && !ApiCompatibilityUtils.isInMultiWindowMode(mActivity)) {
             Rect rect = new Rect();
             mActivity.getWindow().getDecorView().getWindowVisibleDisplayFrame(rect);
             statusBarHeight = rect.top;
