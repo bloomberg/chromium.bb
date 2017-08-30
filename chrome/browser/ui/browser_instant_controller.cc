@@ -147,9 +147,9 @@ void BrowserInstantController::TabDeactivated(content::WebContents* contents) {
     prerenderer->Cancel();
 }
 
-void BrowserInstantController::ModelChanged(const SearchMode& old_mode,
-                                            const SearchMode& new_mode) {
-  instant_.SearchModeChanged(old_mode, new_mode);
+void BrowserInstantController::ModelChanged(SearchModel::Origin old_origin,
+                                            SearchModel::Origin new_origin) {
+  instant_.SearchModeChanged(old_origin, new_origin);
 }
 
 void BrowserInstantController::DefaultSearchProviderChanged(
@@ -174,7 +174,8 @@ void BrowserInstantController::DefaultSearchProviderChanged(
       continue;
 
     SearchModel* model = SearchTabHelper::FromWebContents(contents)->model();
-    if (google_base_url_domain_changed && model->mode().is_origin_ntp()) {
+    if (google_base_url_domain_changed &&
+        model->origin() == SearchModel::Origin::NTP) {
       GURL local_ntp_url(chrome::kChromeSearchLocalNtpUrl);
       // Replace the server NTP with the local NTP.
       content::NavigationController::LoadURLParams params(local_ntp_url);

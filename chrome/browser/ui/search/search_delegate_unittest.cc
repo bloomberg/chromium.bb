@@ -14,15 +14,15 @@ typedef BrowserWithTestWindowTest SearchDelegateTest;
 // the browser's search model.
 TEST_F(SearchDelegateTest, SearchModel) {
   // Initial state.
-  EXPECT_TRUE(browser()->search_model()->mode().is_origin_default());
+  EXPECT_EQ(SearchModel::Origin::DEFAULT, browser()->search_model()->origin());
 
   // Propagate change from tab's search model to browser's search model.
   AddTab(browser(), GURL("http://foo/0"));
   content::WebContents* first_tab =
       browser()->tab_strip_model()->GetWebContentsAt(0);
-  SearchTabHelper::FromWebContents(first_tab)->model()->SetMode(
-      SearchMode(SearchMode::ORIGIN_NTP));
-  EXPECT_TRUE(browser()->search_model()->mode().is_origin_ntp());
+  SearchTabHelper::FromWebContents(first_tab)->model()->SetOrigin(
+      SearchModel::Origin::NTP);
+  EXPECT_EQ(SearchModel::Origin::NTP, browser()->search_model()->origin());
 
   // Add second tab (it gets inserted at index 0), make it active, and make sure
   // its mode changes propagate to the browser's search model.
@@ -31,14 +31,14 @@ TEST_F(SearchDelegateTest, SearchModel) {
       browser()->tab_strip_model()->GetWebContentsAt(0);
   ASSERT_NE(first_tab, second_tab);
   browser()->tab_strip_model()->ActivateTabAt(0, true);
-  EXPECT_TRUE(browser()->search_model()->mode().is_origin_default());
+  EXPECT_EQ(SearchModel::Origin::DEFAULT, browser()->search_model()->origin());
   SearchTabHelper::FromWebContents(second_tab)
       ->model()
-      ->SetMode(SearchMode(SearchMode::ORIGIN_NTP));
-  EXPECT_TRUE(browser()->search_model()->mode().is_origin_ntp());
+      ->SetOrigin(SearchModel::Origin::NTP);
+  EXPECT_EQ(SearchModel::Origin::NTP, browser()->search_model()->origin());
 
   // The first tab is not active so changes should not propagate.
-  SearchTabHelper::FromWebContents(first_tab)->model()->SetMode(
-      SearchMode(SearchMode::ORIGIN_DEFAULT));
-  EXPECT_TRUE(browser()->search_model()->mode().is_origin_ntp());
+  SearchTabHelper::FromWebContents(first_tab)->model()->SetOrigin(
+      SearchModel::Origin::DEFAULT);
+  EXPECT_EQ(SearchModel::Origin::NTP, browser()->search_model()->origin());
 }

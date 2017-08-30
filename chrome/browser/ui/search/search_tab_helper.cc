@@ -435,11 +435,12 @@ void SearchTabHelper::OnHistorySyncCheck() {
 }
 
 void SearchTabHelper::UpdateMode() {
-  SearchMode::Origin origin = IsNTP(web_contents_) ? SearchMode::ORIGIN_NTP
-                                                   : SearchMode::ORIGIN_DEFAULT;
-  model_.SetMode(SearchMode(origin));
+  bool is_ntp = IsNTP(web_contents_);
 
-  if (model_.mode().is_origin_ntp())
+  model_.SetOrigin(is_ntp ? SearchModel::Origin::NTP
+                          : SearchModel::Origin::DEFAULT);
+
+  if (is_ntp)
     ipc_router_.SetInputInProgress(IsInputInProgress());
 }
 

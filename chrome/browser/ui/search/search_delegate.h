@@ -27,8 +27,8 @@ class SearchDelegate : public SearchModelObserver {
   ~SearchDelegate() override;
 
   // Overrides for SearchModelObserver:
-  void ModelChanged(const SearchMode& old_mode,
-                    const SearchMode& new_mode) override;
+  void ModelChanged(SearchModel::Origin old_origin,
+                    SearchModel::Origin new_origin) override;
 
   // When the active tab is changed, the model state of this new active tab is
   // propagated to the browser.
