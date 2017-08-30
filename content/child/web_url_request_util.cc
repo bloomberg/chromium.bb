@@ -20,7 +20,6 @@
 #include "third_party/WebKit/public/platform/WebHTTPHeaderVisitor.h"
 #include "third_party/WebKit/public/platform/WebMixedContent.h"
 #include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/platform/WebURLRequest.h"
 
 using blink::WebCachePolicy;
 using blink::WebData;
@@ -62,26 +61,9 @@ class HeaderFlattener : public blink::WebHTTPHeaderVisitor {
 
 }  // namespace
 
-ResourceType WebURLRequestToResourceType(const WebURLRequest& request) {
-  WebURLRequest::RequestContext requestContext = request.GetRequestContext();
-  if (request.GetFrameType() != WebURLRequest::kFrameTypeNone) {
-    DCHECK(requestContext == WebURLRequest::kRequestContextForm ||
-           requestContext == WebURLRequest::kRequestContextFrame ||
-           requestContext == WebURLRequest::kRequestContextHyperlink ||
-           requestContext == WebURLRequest::kRequestContextIframe ||
-           requestContext == WebURLRequest::kRequestContextInternal ||
-           requestContext == WebURLRequest::kRequestContextLocation);
-    if (request.GetFrameType() == WebURLRequest::kFrameTypeTopLevel ||
-        request.GetFrameType() == WebURLRequest::kFrameTypeAuxiliary) {
-      return RESOURCE_TYPE_MAIN_FRAME;
-    }
-    if (request.GetFrameType() == WebURLRequest::kFrameTypeNested)
-      return RESOURCE_TYPE_SUB_FRAME;
-    NOTREACHED();
-    return RESOURCE_TYPE_SUB_RESOURCE;
-  }
-
-  switch (requestContext) {
+ResourceType WebURLRequestContextToResourceType(
+    WebURLRequest::RequestContext request_context) {
+  switch (request_context) {
     // CSP report
     case WebURLRequest::kRequestContextCSPReport:
       return RESOURCE_TYPE_CSP_REPORT;
@@ -177,13 +159,34 @@ ResourceType WebURLRequestToResourceType(const WebURLRequest& request) {
   }
 }
 
-std::string GetWebURLRequestHeaders(const blink::WebURLRequest& request) {
+ResourceType WebURLRequestToResourceType(const WebURLRequest& request) {
+  WebURLRequest::RequestContext request_context = request.GetRequestContext();
+  if (request.GetFrameType() != WebURLRequest::kFrameTypeNone) {
+    DCHECK(request_context == WebURLRequest::kRequestContextForm ||
+           request_context == WebURLRequest::kRequestContextFrame ||
+           request_context == WebURLRequest::kRequestContextHyperlink ||
+           request_context == WebURLRequest::kRequestContextIframe ||
+           request_context == WebURLRequest::kRequestContextInternal ||
+           request_context == WebURLRequest::kRequestContextLocation);
+    if (request.GetFrameType() == WebURLRequest::kFrameTypeTopLevel ||
+        request.GetFrameType() == WebURLRequest::kFrameTypeAuxiliary) {
+      return RESOURCE_TYPE_MAIN_FRAME;
+    }
+    if (request.GetFrameType() == WebURLRequest::kFrameTypeNested)
+      return RESOURCE_TYPE_SUB_FRAME;
+    NOTREACHED();
+    return RESOURCE_TYPE_SUB_RESOURCE;
+  }
+  return WebURLRequestContextToResourceType(request_context);
+}
+
+std::string GetWebURLRequestHeaders(const WebURLRequest& request) {
   HeaderFlattener flattener;
   request.VisitHTTPHeaderFields(&flattener);
   return flattener.GetBuffer();
 }
 
-int GetLoadFlagsForWebURLRequest(const blink::WebURLRequest& request) {
+int GetLoadFlagsForWebURLRequest(const WebURLRequest& request) {
   int load_flags = net::LOAD_NORMAL;
   GURL url = request.Url();
   switch (request.GetCachePolicy()) {
@@ -266,7 +269,7 @@ WebHTTPBody GetWebHTTPBodyForRequestBody(
 }
 
 scoped_refptr<ResourceRequestBody> GetRequestBodyForWebURLRequest(
-    const blink::WebURLRequest& request) {
+    const WebURLRequest& request) {
   scoped_refptr<ResourceRequestBody> request_body;
 
   if (request.HttpBody().IsNull()) {
@@ -345,7 +348,7 @@ STATIC_ASSERT_ENUM(FETCH_REQUEST_MODE_NAVIGATE,
                    WebURLRequest::kFetchRequestModeNavigate);
 
 FetchRequestMode GetFetchRequestModeForWebURLRequest(
-    const blink::WebURLRequest& request) {
+    const WebURLRequest& request) {
   return static_cast<FetchRequestMode>(request.GetFetchRequestMode());
 }
 
@@ -359,7 +362,7 @@ STATIC_ASSERT_ENUM(FETCH_CREDENTIALS_MODE_PASSWORD,
                    WebURLRequest::kFetchCredentialsModePassword);
 
 FetchCredentialsMode GetFetchCredentialsModeForWebURLRequest(
-    const blink::WebURLRequest& request) {
+    const WebURLRequest& request) {
   return static_cast<FetchCredentialsMode>(request.GetFetchCredentialsMode());
 }
 
@@ -371,12 +374,11 @@ STATIC_ASSERT_ENUM(FetchRedirectMode::MANUAL_MODE,
                    WebURLRequest::kFetchRedirectModeManual);
 
 FetchRedirectMode GetFetchRedirectModeForWebURLRequest(
-    const blink::WebURLRequest& request) {
+    const WebURLRequest& request) {
   return static_cast<FetchRedirectMode>(request.GetFetchRedirectMode());
 }
 
-std::string GetFetchIntegrityForWebURLRequest(
-    const blink::WebURLRequest& request) {
+std::string GetFetchIntegrityForWebURLRequest(const WebURLRequest& request) {
   return request.GetFetchIntegrity().Utf8();
 }
 
@@ -390,7 +392,7 @@ STATIC_ASSERT_ENUM(REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL,
                    WebURLRequest::kFrameTypeTopLevel);
 
 RequestContextFrameType GetRequestContextFrameTypeForWebURLRequest(
-    const blink::WebURLRequest& request) {
+    const WebURLRequest& request) {
   return static_cast<RequestContextFrameType>(request.GetFrameType());
 }
 
@@ -464,12 +466,12 @@ STATIC_ASSERT_ENUM(REQUEST_CONTEXT_TYPE_XSLT,
                    WebURLRequest::kRequestContextXSLT);
 
 RequestContextType GetRequestContextTypeForWebURLRequest(
-    const blink::WebURLRequest& request) {
+    const WebURLRequest& request) {
   return static_cast<RequestContextType>(request.GetRequestContext());
 }
 
 blink::WebMixedContentContextType GetMixedContentContextTypeForWebURLRequest(
-    const blink::WebURLRequest& request) {
+    const WebURLRequest& request) {
   bool block_mixed_plugin_content = false;
   if (request.GetExtraData()) {
     RequestExtraData* extra_data =
@@ -489,7 +491,7 @@ STATIC_ASSERT_ENUM(ServiceWorkerMode::ALL,
                    WebURLRequest::ServiceWorkerMode::kAll);
 
 ServiceWorkerMode GetServiceWorkerModeForWebURLRequest(
-    const blink::WebURLRequest& request) {
+    const WebURLRequest& request) {
   return static_cast<ServiceWorkerMode>(request.GetServiceWorkerMode());
 }
 
