@@ -394,6 +394,46 @@ TEST_F(UIDevToolsTest, FindElementIdTargetedByPoint) {
                    gfx::Point(1, 1), GetPrimaryRootWindow()));
 }
 
+// Test case R1_CONTAINS_R2.
+TEST_F(UIDevToolsTest, OneUIElementContainsAnother) {
+  const gfx::Rect outside_rect(1, 1, 100, 100);
+  std::unique_ptr<views::Widget> widget_outside(CreateTestWidget(outside_rect));
+
+  const gfx::Rect inside_rect(2, 2, 50, 50);
+  std::unique_ptr<views::Widget> widget_inside(CreateTestWidget(inside_rect));
+
+  std::unique_ptr<ui_devtools::protocol::DOM::Node> root;
+  dom_agent()->getDocument(&root);
+
+  int outside_rect_id = dom_agent()->FindElementIdTargetedByPoint(
+      outside_rect.origin(), GetPrimaryRootWindow());
+  int inside_rect_id = dom_agent()->FindElementIdTargetedByPoint(
+      inside_rect.origin(), GetPrimaryRootWindow());
+  dom_agent()->ShowDistancesInHighlightOverlay(outside_rect_id, inside_rect_id);
+
+  HighlightRectsConfiguration highlight_rect_config =
+      dom_agent()->highlight_rect_config();
+
+  // Swapping R1 and R2 shouldn't change |highlight_rect_config|.
+  dom_agent()->ShowDistancesInHighlightOverlay(inside_rect_id, outside_rect_id);
+  DCHECK_EQ(highlight_rect_config, dom_agent()->highlight_rect_config());
+
+  const std::pair<aura::Window*, gfx::Rect> element_outside(
+      dom_agent()
+          ->GetElementFromNodeId(outside_rect_id)
+          ->GetNodeWindowAndBounds());
+
+  const std::pair<aura::Window*, gfx::Rect> element_inside(
+      dom_agent()
+          ->GetElementFromNodeId(inside_rect_id)
+          ->GetNodeWindowAndBounds());
+
+  EXPECT_TRUE(element_outside.second == outside_rect);
+  EXPECT_TRUE(element_inside.second == inside_rect);
+  DCHECK_EQ(dom_agent()->highlight_rect_config(),
+            HighlightRectsConfiguration::R1_CONTAINS_R2);
+}
+
 // Tests that the correct Overlay events are dispatched to the frontend when
 // hovering and clicking over a UI element in inspect mode.
 TEST_F(UIDevToolsTest, MouseEventsGenerateFEEventsInInspectMode) {
@@ -419,48 +459,36 @@ TEST_F(UIDevToolsTest, MouseEventsGenerateFEEventsInInspectMode) {
 
   // 2 mouse events ET_MOUSE_ENTERED and ET_MOUSE_MOVED are generated.
   EXPECT_EQ(2, GetOverlayNodeHighlightRequestedCount(node_id));
-
   EXPECT_EQ(0, GetOverlayInspectNodeRequestedCount(node_id));
 
   // Clicking on the widget should pin that element.
   generator.PressLeftButton();
-  int highlight_notification_count =
-      GetOverlayNodeHighlightRequestedCount(node_id);
+
   int inspect_node_notification_count =
       GetOverlayInspectNodeRequestedCount(node_id);
 
-  EXPECT_EQ(0, GetOverlayInspectNodeRequestedCount(node_id));
+  // Press escape to exit inspect mode.
+  generator.PressKey(ui::KeyboardCode::VKEY_ESCAPE, ui::EventFlags::EF_NONE);
 
-  // Since the last event dispatched to the widget was a click, a subsequent
-  // mouse event should generate neither a nodeHighlightRequested nor a
-  // inspectNodeRequested event.
+  // Upon exiting inspect mode, the element is inspected and highlighted.
+  EXPECT_EQ(inspect_node_notification_count + 1,
+            GetOverlayInspectNodeRequestedCount(node_id));
+  ui::Layer* highlighting_layer = GetHighlightingLayer(GetPrimaryRootWindow());
+  EXPECT_EQ(kBackgroundColor, highlighting_layer->GetTargetColor());
+  EXPECT_TRUE(highlighting_layer->visible());
+
+  int highlight_notification_count =
+      GetOverlayNodeHighlightRequestedCount(node_id);
+  inspect_node_notification_count =
+      GetOverlayInspectNodeRequestedCount(node_id);
+
+  // Since inspect mode is exited, a subsequent mouse move should generate no
+  // nodeHighlightRequested or inspectNodeRequested events.
   generator.MoveMouseBy(p.x(), p.y());
   EXPECT_EQ(highlight_notification_count,
             GetOverlayNodeHighlightRequestedCount(node_id));
   EXPECT_EQ(inspect_node_notification_count,
             GetOverlayInspectNodeRequestedCount(node_id));
-
-  dom_agent()->hideHighlight();
-
-  ui::Layer* highlighting_layer = GetHighlightingLayer(GetPrimaryRootWindow());
-  EXPECT_FALSE(highlighting_layer->visible());
-
-  // Re-enter inspect mode.
-  overlay_agent()->setInspectMode(
-      "searchForNode", protocol::Maybe<protocol::Overlay::HighlightConfig>());
-
-  generator.MoveMouseBy(p.x(), p.y());
-  generator.PressLeftButton();
-
-  inspect_node_notification_count =
-      GetOverlayInspectNodeRequestedCount(node_id);
-  // Press escape to exit inspect mode.
-  generator.PressKey(ui::KeyboardCode::VKEY_ESCAPE, ui::EventFlags::EF_NONE);
-
-  highlighting_layer = GetHighlightingLayer(GetPrimaryRootWindow());
-  // Upon exiting inspect mode, the element is highlighted after mouse click.
-  EXPECT_EQ(kBackgroundColor, highlighting_layer->GetTargetColor());
-  EXPECT_TRUE(highlighting_layer->visible());
 }
 
 TEST_F(UIDevToolsTest, GetDocumentWithWindowWidgetView) {
