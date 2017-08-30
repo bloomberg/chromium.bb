@@ -17,8 +17,6 @@ static_library("vr_android") {
     "android_ui_gesture_target.h",
     "android_vsync_helper.cc",
     "android_vsync_helper.h",
-    "elbow_model.cc",
-    "elbow_model.h",
     "gl_browser_interface.h",
     "gvr_util.cc",
     "gvr_util.h",

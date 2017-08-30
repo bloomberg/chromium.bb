@@ -11,7 +11,6 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "cc/base/math_util.h"
-#include "chrome/browser/android/vr_shell/elbow_model.h"
 #include "third_party/WebKit/public/platform/WebGestureEvent.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr.h"
@@ -48,6 +47,9 @@ constexpr int kMaxNumOfExtrapolations = 2;
 // Distance from the center of the controller to start rendering the laser.
 constexpr float kLaserStartDisplacement = 0.045;
 
+constexpr float kFadeDistanceFromFace = 0.34f;
+constexpr float kDeltaAlpha = 3.0f;
+
 void ClampTouchpadPosition(gfx::Vector2dF* position) {
   position->set_x(cc::MathUtil::ClampToRange(position->x(), 0.0f, 1.0f));
   position->set_y(cc::MathUtil::ClampToRange(position->y(), 0.0f, 1.0f));
@@ -70,6 +72,8 @@ VrController::VrController(gvr_context* gvr_context) {
 
   int32_t options = gvr::ControllerApi::DefaultOptions();
 
+  options |= GVR_CONTROLLER_ENABLE_ARM_MODEL;
+
   // Enable non-default options - WebVR needs gyro and linear acceleration, and
   // since VrShell implements GvrGamepadDataProvider we need this always.
   options |= GVR_CONTROLLER_ENABLE_GYRO;
@@ -79,7 +83,6 @@ VrController::VrController(gvr_context* gvr_context) {
   controller_api_->Resume();
 
   handedness_ = gvr_api_->GetUserPrefs().GetControllerHandedness();
-  elbow_model_ = base::MakeUnique<ElbowModel>(handedness_);
 
   Reset();
   last_timestamp_nanos_ =
@@ -94,7 +97,6 @@ void VrController::OnResume() {
   if (controller_api_) {
     controller_api_->Resume();
     handedness_ = gvr_api_->GetUserPrefs().GetControllerHandedness();
-    elbow_model_->SetHandedness(handedness_);
   }
 }
 
@@ -170,23 +172,27 @@ gfx::Quaternion VrController::Orientation() const {
                          orientation.qw);
 }
 
+gfx::Point3F VrController::Position() const {
+  gvr::Vec3f position = controller_state_->GetPosition();
+  return gfx::Point3F(position.x, position.y, position.z);
+}
+
 void VrController::GetTransform(gfx::Transform* out) const {
-  *out = gfx::Transform(elbow_model_->GetControllerRotation());
-  gfx::Point3F p = elbow_model_->GetControllerPosition();
-  out->matrix().postTranslate(p.x(), p.y(), p.z());
+  *out = gfx::Transform(Orientation());
+  gvr::Vec3f position = controller_state_->GetPosition();
+  out->matrix().postTranslate(position.x, position.y, position.z);
 }
 
 float VrController::GetOpacity() const {
-  return elbow_model_->GetAlphaValue();
+  return alpha_value_;
 }
 
 gfx::Point3F VrController::GetPointerStart() const {
-  gfx::Point3F controller_position = elbow_model_->GetControllerPosition();
   gfx::Vector3dF pointer_direction{0.0f, -sin(kErgoAngleOffset),
                                    -cos(kErgoAngleOffset)};
   gfx::Transform rotation_mat(Orientation());
   rotation_mat.TransformVector(&pointer_direction);
-  return controller_position +
+  return Position() +
          gfx::ScaleVector3d(pointer_direction, kLaserStartDisplacement);
 }
 
@@ -224,7 +230,9 @@ bool VrController::IsConnected() {
   return controller_state_->GetConnectionState() == gvr::kControllerConnected;
 }
 
-void VrController::UpdateState(const gfx::Vector3dF& head_direction) {
+void VrController::UpdateState(const gvr::Mat4f& head_direction) {
+  controller_api_->ApplyArmModel(handedness_, gvr::kArmModelBehaviorFollowGaze,
+                                 head_direction);
   const int32_t old_status = controller_state_->GetApiStatus();
   const int32_t old_connection_state = controller_state_->GetConnectionState();
   // Read current controller state.
@@ -236,12 +244,7 @@ void VrController::UpdateState(const gfx::Vector3dF& head_direction) {
             << gvr_controller_connection_state_to_string(
                    controller_state_->GetConnectionState());
   }
-
-  const gvr::Vec3f& gvr_gyro = controller_state_->GetGyro();
-  elbow_model_->Update({IsConnected(), Orientation(),
-                        gfx::Vector3dF(gvr_gyro.x, gvr_gyro.y, gvr_gyro.z),
-                        head_direction,
-                        DeltaTimeSeconds(last_timestamp_nanos_)});
+  UpdateAlpha();
 }
 
 void VrController::UpdateTouchInfo() {
@@ -463,6 +466,15 @@ void VrController::UpdateOverallVelocity() {
 
   overall_velocity_ = ScaleVector2d(overall_velocity_, (1 - weight)) +
                       ScaleVector2d(velocity, weight);
+}
+
+void VrController::UpdateAlpha() {
+  float distance_to_face = (Position() - gfx::Point3F()).Length();
+  float alpha_change = kDeltaAlpha * DeltaTimeSeconds(last_timestamp_nanos_);
+  alpha_value_ = cc::MathUtil::ClampToRange(
+      distance_to_face < kFadeDistanceFromFace ? alpha_value_ - alpha_change
+                                               : alpha_value_ + alpha_change,
+      0.0f, 1.0f);
 }
 
 }  // namespace vr_shell

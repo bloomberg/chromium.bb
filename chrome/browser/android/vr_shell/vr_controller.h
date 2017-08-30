@@ -32,8 +32,6 @@ class ControllerState;
 
 namespace vr_shell {
 
-class ElbowModel;
-
 // Angle (radians) the beam down from the controller axis, for wrist comfort.
 constexpr float kErgoAngleOffset = 0.26f;
 
@@ -53,8 +51,8 @@ class VrController {
 
   device::GvrGamepadData GetGamepadData();
 
-  // Must be called when the GL renderer gets OnDrawFrame().
-  void UpdateState(const gfx::Vector3dF& head_direction);
+  // Called once per frame to update controller state.
+  void UpdateState(const gvr::Mat4f& head_direction);
 
   std::unique_ptr<GestureList> DetectGestures();
 
@@ -65,6 +63,7 @@ class VrController {
   float TouchPosY();
 
   gfx::Quaternion Orientation() const;
+  gfx::Point3F Position() const;
   void GetTransform(gfx::Transform* out) const;
   float GetOpacity() const;
   gfx::Point3F GetPointerStart() const;
@@ -143,6 +142,8 @@ class VrController {
 
   void UpdateOverallVelocity();
 
+  void UpdateAlpha();
+
   // State of gesture detector.
   GestureDetectorState state_;
 
@@ -188,7 +189,7 @@ class VrController {
   // Number of consecutively extrapolated touch points
   int extrapolated_touch_ = 0;
 
-  std::unique_ptr<ElbowModel> elbow_model_;
+  float alpha_value_ = 1.0f;
 
   DISALLOW_COPY_AND_ASSIGN(VrController);
 };
