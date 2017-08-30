@@ -10,4 +10,12 @@ gpu::SyncPointManager* ContentGpuClient::GetSyncPointManager() {
   return nullptr;
 }
 
+const gpu::GPUInfo* ContentGpuClient::GetGPUInfo() {
+  return nullptr;
+}
+
+const gpu::GpuFeatureInfo* ContentGpuClient::GetGpuFeatureInfo() {
+  return nullptr;
+}
+
 }  // namespace content

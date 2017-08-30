@@ -206,8 +206,8 @@ void GpuChildThread::Init(const base::Time& process_start_time) {
   registry->AddInterface(base::Bind(&GpuChildThread::BindServiceFactoryRequest,
                                     weak_factory_.GetWeakPtr()),
                          base::ThreadTaskRunnerHandle::Get());
-  if (GetContentClient()->gpu())  // NULL in tests.
-    GetContentClient()->gpu()->Initialize(registry.get());
+  if (GetContentClient()->gpu())  // nullptr in tests.
+    GetContentClient()->gpu()->InitializeRegistry(registry.get());
 
   std::unique_ptr<QueueingConnectionFilter> filter =
       base::MakeUnique<QueueingConnectionFilter>(GetIOTaskRunner(),

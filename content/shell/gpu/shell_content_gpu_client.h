@@ -19,7 +19,7 @@ class ShellContentGpuClient : public ContentGpuClient {
   ~ShellContentGpuClient() override;
 
   // ContentGpuClient:
-  void Initialize(service_manager::BinderRegistry* registry) override;
+  void InitializeRegistry(service_manager::BinderRegistry* registry) override;
 
   DISALLOW_COPY_AND_ASSIGN(ShellContentGpuClient);
 };

@@ -15,17 +15,12 @@
 // Forwardly declare a few GL types to avoid including GL header files.
 typedef int GLint;
 
-namespace base {
-class CommandLine;
-}
-
 namespace gpu {
 
 class GPU_EXPORT GpuDriverBugWorkarounds {
  public:
   GpuDriverBugWorkarounds();
   explicit GpuDriverBugWorkarounds(const std::vector<int32_t>&);
-  explicit GpuDriverBugWorkarounds(const base::CommandLine* command_line);
 
   GpuDriverBugWorkarounds(const GpuDriverBugWorkarounds& other);
 

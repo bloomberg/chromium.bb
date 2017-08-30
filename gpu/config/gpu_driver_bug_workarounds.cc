@@ -6,10 +6,7 @@
 
 #include <algorithm>
 
-#include "base/command_line.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/string_split.h"
-#include "gpu/config/gpu_switches.h"
+#include "base/logging.h"
 
 namespace {
 // Construct GpuDriverBugWorkarounds from a set of enabled workaround IDs.
@@ -44,21 +41,6 @@ void IntSetToWorkarounds(const std::vector<int32_t>& enabled_workarounds,
     workarounds->max_copy_texture_chromium_size = 262144;
 }
 
-// Process a string of wordaround type IDs (seperated by ',') and set up
-// the corresponding Workaround flags.
-void StringToWorkarounds(const std::string& types,
-                         gpu::GpuDriverBugWorkarounds* workarounds) {
-  std::vector<int32_t> IDs;
-  for (const auto& piece : base::SplitStringPiece(
-           types, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
-    int number = 0;
-    bool succeed = base::StringToInt(piece, &number);
-    DCHECK(succeed);
-    IDs.push_back(number);
-  }
-  IntSetToWorkarounds(IDs, workarounds);
-}
-
 GLint LowerMax(GLint max0, GLint max1) {
   if (max0 > 0 && max1 > 0)
     return std::min(max0, max1);
@@ -76,16 +58,6 @@ GpuDriverBugWorkarounds::GpuDriverBugWorkarounds() {}
 GpuDriverBugWorkarounds::GpuDriverBugWorkarounds(
     const std::vector<int>& enabled_driver_bug_workarounds) {
   IntSetToWorkarounds(enabled_driver_bug_workarounds, this);
-}
-
-GpuDriverBugWorkarounds::GpuDriverBugWorkarounds(
-    const base::CommandLine* command_line) {
-  if (!command_line)
-    return;
-
-  std::string types =
-      command_line->GetSwitchValueASCII(switches::kGpuDriverBugWorkarounds);
-  StringToWorkarounds(types, this);
 }
 
 GpuDriverBugWorkarounds::GpuDriverBugWorkarounds(
