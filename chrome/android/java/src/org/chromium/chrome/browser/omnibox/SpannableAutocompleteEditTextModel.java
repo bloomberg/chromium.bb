@@ -133,10 +133,8 @@ public class SpannableAutocompleteEditTextModel implements AutocompleteEditTextM
             removedCount = oldState.getUserText().length();
             fromIndex = 0;
         }
-        // Note: send out text changed event only when there is deletion or replacement. This is to
-        // emulate the undocumented behavior of TextView. Check AutocompleteEditTextTest to compare
-        // the behavior with the old model.
-        if (removedCount != 0) {
+        if (!oldState.getText().equals(newState.getText())
+                && (addedCount != 0 || removedCount != 0)) {
             AccessibilityEvent event =
                     AccessibilityEvent.obtain(AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED);
             event.setBeforeText(oldState.getText());
