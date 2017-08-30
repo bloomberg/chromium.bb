@@ -209,6 +209,7 @@ MotionEventAndroid::MotionEventAndroid(JNIEnv* env,
                                        jint android_meta_state,
                                        jfloat raw_offset_x_pixels,
                                        jfloat raw_offset_y_pixels,
+                                       jboolean for_touch_handle,
                                        const Pointer* const pointer0,
                                        const Pointer* const pointer1)
     : pix_to_dip_(pix_to_dip),
@@ -216,6 +217,7 @@ MotionEventAndroid::MotionEventAndroid(JNIEnv* env,
       ticks_y_(ticks_y),
       tick_multiplier_(tick_multiplier),
       time_sec_(time_ms / 1000),
+      for_touch_handle_(for_touch_handle),
       cached_time_(FromAndroidTime(time_ms)),
       cached_action_(FromAndroidAction(android_action)),
       cached_pointer_count_(pointer_count),
@@ -246,6 +248,7 @@ MotionEventAndroid::MotionEventAndroid(const MotionEventAndroid& e)
       ticks_y_(e.ticks_y_),
       tick_multiplier_(e.tick_multiplier_),
       time_sec_(e.time_sec_),
+      for_touch_handle_(e.for_touch_handle_),
       cached_time_(e.cached_time_),
       cached_action_(e.cached_action_),
       cached_pointer_count_(e.cached_pointer_count_),
@@ -259,6 +262,22 @@ MotionEventAndroid::MotionEventAndroid(const MotionEventAndroid& e)
   cached_pointers_[0] = e.cached_pointers_[0];
   if (cached_pointer_count_ > 1)
     cached_pointers_[1] = e.cached_pointers_[1];
+}
+
+//  static
+int MotionEventAndroid::GetAndroidActionForTesting(int action) {
+  int android_action = JNI_MotionEvent::ACTION_CANCEL;
+  switch (action) {
+    case ui::MotionEvent::ACTION_DOWN:
+      android_action = JNI_MotionEvent::ACTION_DOWN;
+      break;
+    case ui::MotionEvent::ACTION_UP:
+      android_action = JNI_MotionEvent::ACTION_UP;
+      break;
+    default:
+      NOTIMPLEMENTED() << "Conversion not supported: " << action;
+  }
+  return android_action;
 }
 
 std::unique_ptr<MotionEventAndroid> MotionEventAndroid::CreateFor(

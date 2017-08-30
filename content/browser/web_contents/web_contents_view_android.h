@@ -101,8 +101,7 @@ class WebContentsViewAndroid : public WebContentsView,
   void TakeFocus(bool reverse) override;
 
   // ui::ViewClient implementation.
-  bool OnTouchEvent(const ui::MotionEventAndroid& event,
-                    bool for_touch_handle) override;
+  bool OnTouchEvent(const ui::MotionEventAndroid& event) override;
   bool OnMouseEvent(const ui::MotionEventAndroid& event) override;
   bool OnDragEvent(const ui::DragEventAndroid& event) override;
   void OnPhysicalBackingSizeChanged() override;

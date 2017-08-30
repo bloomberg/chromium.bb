@@ -67,7 +67,7 @@ jboolean EventForwarder::OnTouchEvent(JNIEnv* env,
                                       jint android_tool_type_1,
                                       jint android_button_state,
                                       jint android_meta_state,
-                                      jboolean is_touch_handle_event) {
+                                      jboolean for_touch_handle) {
   ui::MotionEventAndroid::Pointer pointer0(
       pointer_id_0, pos_x_0, pos_y_0, touch_major_0, touch_minor_0,
       orientation_0, tilt_0, android_tool_type_0);
@@ -78,8 +78,9 @@ jboolean EventForwarder::OnTouchEvent(JNIEnv* env,
       env, motion_event.obj(), 1.f / view_->GetDipScale(), 0.f, 0.f, 0.f,
       time_ms, android_action, pointer_count, history_size, action_index,
       0 /* action_button */, android_button_state, android_meta_state,
-      raw_pos_x - pos_x_0, raw_pos_y - pos_y_0, &pointer0, &pointer1);
-  return view_->OnTouchEvent(event, is_touch_handle_event);
+      raw_pos_x - pos_x_0, raw_pos_y - pos_y_0, for_touch_handle, &pointer0,
+      &pointer1);
+  return view_->OnTouchEvent(event);
 }
 
 void EventForwarder::OnMouseEvent(JNIEnv* env,
@@ -107,7 +108,8 @@ void EventForwarder::OnMouseEvent(JNIEnv* env,
       time_ms, android_action, 1 /* pointer_count */, 0 /* history_size */,
       0 /* action_index */, android_action_button, android_button_state,
       android_meta_state, 0 /* raw_offset_x_pixels */,
-      0 /* raw_offset_y_pixels */, &pointer, nullptr);
+      0 /* raw_offset_y_pixels */, false /* for_touch_handle */, &pointer,
+      nullptr);
   view_->OnMouseEvent(event);
 }
 
@@ -131,12 +133,12 @@ void EventForwarder::OnMouseWheelEvent(JNIEnv* env,
                               delta.InMicroseconds(), 1, 1000000, 50);
   ui::MotionEventAndroid::Pointer pointer(
       0, x, y, 0.0f /* touch_major */, 0.0f /* touch_minor */, 0.0f, 0.0f, 0);
-  ui::MotionEventAndroid event(env, nullptr, 1.f / view_->GetDipScale(),
-                               ticks_x, ticks_y, pixels_per_tick, time_ms,
-                               0 /* action */, 1 /* pointer_count */,
-                               0 /* history_size */, 0 /* action_index */, 0, 0,
-                               0, 0 /* raw_offset_x_pixels */,
-                               0 /* raw_offset_y_pixels */, &pointer, nullptr);
+  ui::MotionEventAndroid event(
+      env, nullptr, 1.f / view_->GetDipScale(), ticks_x, ticks_y,
+      pixels_per_tick, time_ms, 0 /* action */, 1 /* pointer_count */,
+      0 /* history_size */, 0 /* action_index */, 0, 0, 0,
+      0 /* raw_offset_x_pixels */, 0 /* raw_offset_y_pixels */,
+      false /* for_touch_handle */, &pointer, nullptr);
 
   view_->OnMouseWheelEvent(event);
 }

@@ -19,8 +19,7 @@ class MotionEventAndroid;
 // the processing.
 class UI_ANDROID_EXPORT ViewClient {
  public:
-  virtual bool OnTouchEvent(const MotionEventAndroid& event,
-                            bool for_touch_handle);
+  virtual bool OnTouchEvent(const MotionEventAndroid& event);
   virtual bool OnMouseEvent(const MotionEventAndroid& event);
   virtual bool OnMouseWheelEvent(const MotionEventAndroid& event);
   virtual bool OnDragEvent(const DragEventAndroid& event);
