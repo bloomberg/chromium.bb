@@ -80,8 +80,10 @@
 #oobe.auto-enrollment-check #inner-container,
 #oobe.autolaunch #inner-container,
 #oobe.confirm-password #inner-container,
+#oobe:not([md-mode]).connect #inner-container,
 #oobe.debugging #inner-container,
 #oobe.enrollment #inner-container,
+#oobe:not([md-mode]).eula #inner-container,
 #oobe.fatal-error #inner-container,
 #oobe.gaia-signin #inner-container,
 #oobe.hid-detection #inner-container,
@@ -89,6 +91,7 @@
 #oobe.oauth-enrollment #inner-container,
 #oobe.password-changed #inner-container,
 #oobe.ad-password-change #inner-container,
+#oobe:not([md-mode]).reset #inner-container,
 #oobe.supervised-user-creation #inner-container,
 #oobe.supervised-user-creation-dialog #inner-container,
 #oobe.terms-of-service #inner-container,
@@ -118,6 +121,13 @@
 
 .oobe-display #inner-container.down {
   transform: translateY(50px) rotateX(-2.5deg);
+}
+
+#oobe:not([md-mode]) #step-logo {
+  -webkit-margin-start: 17px;
+  display: flex;
+  position: absolute;
+  top: 15px;
 }
 
 #oobe[md-mode] #step-logo {
