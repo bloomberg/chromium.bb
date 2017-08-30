@@ -9,6 +9,7 @@
 #include "base/single_thread_task_runner.h"
 #include "media/base/cdm_config.h"
 #include "media/remoting/remoting_cdm.h"
+#include "url/origin.h"
 
 namespace media {
 namespace remoting {
@@ -48,7 +49,7 @@ RemotingCdmFactory::CreateRemotingCdmController() {
 // TODO(xjz): Replace the callbacks with an interface. http://crbug.com/657940.
 void RemotingCdmFactory::Create(
     const std::string& key_system,
-    const GURL& security_origin,
+    const url::Origin& security_origin,
     const CdmConfig& cdm_config,
     const SessionMessageCB& session_message_cb,
     const SessionClosedCB& session_closed_cb,
@@ -77,7 +78,7 @@ void RemotingCdmFactory::Create(
 
 void RemotingCdmFactory::CreateCdm(
     const std::string& key_system,
-    const GURL& security_origin,
+    const url::Origin& security_origin,
     const CdmConfig& cdm_config,
     const SessionMessageCB& session_message_cb,
     const SessionClosedCB& session_closed_cb,

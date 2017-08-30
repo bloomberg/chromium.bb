@@ -11,7 +11,9 @@
 #include "media/base/content_decryption_module.h"
 #include "media/base/media_export.h"
 
-class GURL;
+namespace url {
+class Origin;
+}
 
 namespace media {
 
@@ -32,7 +34,7 @@ class MEDIA_EXPORT CdmFactory {
   // asynchronously.
   virtual void Create(
       const std::string& key_system,
-      const GURL& security_origin,
+      const url::Origin& security_origin,
       const CdmConfig& cdm_config,
       const SessionMessageCB& session_message_cb,
       const SessionClosedCB& session_closed_cb,

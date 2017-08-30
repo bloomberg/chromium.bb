@@ -20,7 +20,9 @@
 #include "media/cdm/cdm_file_adapter.h"
 #include "media/cdm/ppapi/external_clear_key/clear_key_cdm_common.h"
 
-class GURL;
+namespace url {
+class Origin;
+}
 
 namespace media {
 
@@ -30,7 +32,7 @@ namespace media {
 class ClearKeyPersistentSessionCdm : public ContentDecryptionModule {
  public:
   ClearKeyPersistentSessionCdm(
-      const GURL& origin,
+      const url::Origin& origin,
       ClearKeyCdmHost* host,
       const SessionMessageCB& session_message_cb,
       const SessionClosedCB& session_closed_cb,

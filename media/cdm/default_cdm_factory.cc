@@ -14,7 +14,7 @@
 #include "media/base/key_systems.h"
 #include "media/base/media_switches.h"
 #include "media/cdm/aes_decryptor.h"
-#include "url/gurl.h"
+#include "url/origin.h"
 
 namespace media {
 
@@ -36,14 +36,14 @@ static bool ShouldCreateAesDecryptor(const std::string& key_system) {
 
 void DefaultCdmFactory::Create(
     const std::string& key_system,
-    const GURL& security_origin,
+    const url::Origin& security_origin,
     const CdmConfig& cdm_config,
     const SessionMessageCB& session_message_cb,
     const SessionClosedCB& session_closed_cb,
     const SessionKeysChangeCB& session_keys_change_cb,
     const SessionExpirationUpdateCB& session_expiration_update_cb,
     const CdmCreatedCB& cdm_created_cb) {
-  if (!security_origin.is_valid()) {
+  if (security_origin.unique()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(cdm_created_cb, nullptr, "Invalid origin."));
     return;

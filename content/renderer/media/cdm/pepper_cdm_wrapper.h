@@ -17,7 +17,9 @@
 #include "base/callback.h"
 #include "base/macros.h"
 
-class GURL;
+namespace url {
+class Origin;
+}
 
 namespace content {
 class ContentDecryptorDelegate;
@@ -41,7 +43,7 @@ class PepperCdmWrapper {
 // Pepper CDM can not be created.
 typedef base::Callback<std::unique_ptr<PepperCdmWrapper>(
     const std::string& pluginType,
-    const GURL& security_origin)>
+    const url::Origin& security_origin)>
     CreatePepperCdmCB;
 
 }  // namespace content

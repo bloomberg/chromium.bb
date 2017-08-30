@@ -363,7 +363,7 @@ scoped_refptr<MediaDrmBridge> MediaDrmBridge::CreateInternal(
 // static
 void MediaDrmBridge::Create(
     const std::string& key_system,
-    const GURL& security_origin,
+    const url::Origin& security_origin,
     SecurityLevel security_level,
     const CreateFetcherCB& create_fetcher_cb,
     const CreateStorageCB& create_storage_cb,
@@ -395,7 +395,7 @@ void MediaDrmBridge::Create(
       session_closed_cb, session_keys_change_cb, session_expiration_update_cb);
 
   if (IsPersistentLicenseTypeSupported(key_system) &&
-      !security_origin.is_empty() && !create_storage_cb.is_null()) {
+      !security_origin.unique() && !create_storage_cb.is_null()) {
     raw_storage->Initialize(
         create_storage_cb, base::BindOnce(&OnStorageInitialized,
                                           std::move(create_media_drm_bridge_cb),

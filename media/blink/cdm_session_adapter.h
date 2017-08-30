@@ -19,7 +19,9 @@
 #include "third_party/WebKit/public/platform/WebContentDecryptionModuleResult.h"
 #include "third_party/WebKit/public/platform/WebContentDecryptionModuleSession.h"
 
-class GURL;
+namespace url {
+class Origin;
+}
 
 namespace media {
 
@@ -40,7 +42,7 @@ class CdmSessionAdapter : public base::RefCounted<CdmSessionAdapter> {
   void CreateCdm(
       CdmFactory* cdm_factory,
       const std::string& key_system,
-      const GURL& security_origin,
+      const url::Origin& security_origin,
       const CdmConfig& cdm_config,
       std::unique_ptr<blink::WebContentDecryptionModuleResult> result);
 

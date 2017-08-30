@@ -23,6 +23,10 @@ class WebHelperPlugin;
 class WebLocalFrame;
 }
 
+namespace url {
+class Origin;
+}
+
 namespace content {
 
 class ContentDecryptorDelegate;
@@ -44,9 +48,10 @@ struct WebHelperPluginDeleter {
 // blink:: objects.
 class PepperCdmWrapperImpl : public PepperCdmWrapper {
  public:
-  static std::unique_ptr<PepperCdmWrapper> Create(blink::WebLocalFrame* frame,
-                                                  const std::string& pluginType,
-                                                  const GURL& security_origin);
+  static std::unique_ptr<PepperCdmWrapper> Create(
+      blink::WebLocalFrame* frame,
+      const std::string& pluginType,
+      const url::Origin& security_origin);
 
   ~PepperCdmWrapperImpl() override;
 

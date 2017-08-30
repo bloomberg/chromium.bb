@@ -23,12 +23,13 @@
 #include "media/base/key_systems.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
+#include "url/origin.h"
 
 namespace content {
 
 void PpapiDecryptor::Create(
     const std::string& key_system,
-    const GURL& security_origin,
+    const url::Origin& security_origin,
     bool allow_distinctive_identifier,
     bool allow_persistent_state,
     const CreatePepperCdmCB& create_pepper_cdm_cb,

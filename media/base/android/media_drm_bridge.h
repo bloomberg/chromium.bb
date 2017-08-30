@@ -29,7 +29,7 @@
 #include "media/base/player_tracker.h"
 #include "media/base/provision_fetcher.h"
 #include "media/cdm/player_tracker_impl.h"
-#include "url/gurl.h"
+#include "url/origin.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -95,7 +95,7 @@ class MEDIA_EXPORT MediaDrmBridge : public ContentDecryptionModule,
   // if |security_level| is SECURITY_LEVEL_DEFAULT.
   static void Create(
       const std::string& key_system,
-      const GURL& security_origin,
+      const url::Origin& security_origin,
       SecurityLevel security_level,
       const CreateFetcherCB& create_fetcher_cb,
       const CreateStorageCB& create_storage_cb,

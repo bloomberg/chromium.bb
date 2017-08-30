@@ -20,7 +20,7 @@
 #include "media/base/key_systems.h"
 #include "media/blink/webcontentdecryptionmodule_impl.h"
 #include "media/blink/webcontentdecryptionmodulesession_impl.h"
-#include "url/gurl.h"
+#include "url/origin.h"
 
 namespace media {
 
@@ -38,7 +38,7 @@ CdmSessionAdapter::~CdmSessionAdapter() {}
 void CdmSessionAdapter::CreateCdm(
     CdmFactory* cdm_factory,
     const std::string& key_system,
-    const GURL& security_origin,
+    const url::Origin& security_origin,
     const CdmConfig& cdm_config,
     std::unique_ptr<blink::WebContentDecryptionModuleResult> result) {
   TRACE_EVENT_ASYNC_BEGIN0("media", "CdmSessionAdapter::CreateCdm",

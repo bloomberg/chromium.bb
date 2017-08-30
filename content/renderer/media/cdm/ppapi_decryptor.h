@@ -21,10 +21,12 @@
 #include "media/base/decryptor.h"
 #include "media/base/video_decoder_config.h"
 
-class GURL;
-
 namespace base {
 class SingleThreadTaskRunner;
+}
+
+namespace url {
+class Origin;
 }
 
 namespace content {
@@ -39,7 +41,7 @@ class PpapiDecryptor : public media::ContentDecryptionModule,
  public:
   static void Create(
       const std::string& key_system,
-      const GURL& security_origin,
+      const url::Origin& security_origin,
       bool allow_distinctive_identifier,
       bool allow_persistent_state,
       const CreatePepperCdmCB& create_pepper_cdm_cb,
