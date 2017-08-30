@@ -7865,11 +7865,29 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // Navigate the popup cross-site.  This should keep the unique origin and the
   // inherited sandbox flags.
   GURL c_url(embedded_test_server()->GetURL("c.com", "/title1.html"));
-  TestFrameNavigationObserver popup_observer(foo_root);
-  EXPECT_TRUE(
-      ExecuteScript(foo_root, "location.href = '" + c_url.spec() + "';"));
-  popup_observer.Wait();
-  EXPECT_EQ(c_url, foo_shell->web_contents()->GetLastCommittedURL());
+  {
+    TestFrameNavigationObserver popup_observer(foo_root);
+    EXPECT_TRUE(
+        ExecuteScript(foo_root, "location.href = '" + c_url.spec() + "';"));
+    popup_observer.Wait();
+    EXPECT_EQ(c_url, foo_shell->web_contents()->GetLastCommittedURL());
+  }
+
+  // Confirm that the popup is still sandboxed, both on browser and renderer
+  // sides.
+  EXPECT_EQ(expected_flags, foo_root->effective_sandbox_flags());
+  EXPECT_EQ("null", GetDocumentOrigin(foo_root));
+
+  // Navigate the popup back to b.com.  The popup should perform a
+  // remote-to-local navigation in the b.com process, and keep the unique
+  // origin and the inherited sandbox flags.
+  {
+    TestFrameNavigationObserver popup_observer(foo_root);
+    EXPECT_TRUE(
+        ExecuteScript(foo_root, "location.href = '" + frame_url.spec() + "';"));
+    popup_observer.Wait();
+    EXPECT_EQ(frame_url, foo_shell->web_contents()->GetLastCommittedURL());
+  }
 
   // Confirm that the popup is still sandboxed, both on browser and renderer
   // sides.
