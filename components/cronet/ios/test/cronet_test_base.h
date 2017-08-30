@@ -12,12 +12,18 @@
 
 #pragma mark
 
+namespace base {
+class SingleThreadTaskRunner;
+class Thread;
+}
+
 // Exposes private test-only methods of the Cronet class.
 @interface Cronet (ExposedForTesting)
 + (void)shutdownForTesting;
 + (void)setMockCertVerifierForTesting:
     (std::unique_ptr<net::CertVerifier>)certVerifier;
 + (void)setEnablePublicKeyPinningBypassForLocalTrustAnchors:(BOOL)enable;
++ (base::SingleThreadTaskRunner*)getFileThreadRunnerForTesting;
 @end
 
 // NSURLSessionDataDelegate delegate implementation used by the tests to

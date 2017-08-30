@@ -1,0 +1,146 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
+#include "base/path_service.h"
+#include "base/threading/thread.h"
+#include "components/cronet/ios/test/cronet_test_base.h"
+#include "components/cronet/ios/test/start_cronet.h"
+#include "components/cronet/ios/test/test_server.h"
+#include "components/grpc_support/test/quic_test_server.h"
+#include "net/base/mac/url_conversions.h"
+#include "testing/gtest_mac.h"
+#include "url/gurl.h"
+
+namespace {
+typedef void (^BlockType)(void);
+}  // namespace
+
+namespace cronet {
+class PrefsTest : public CronetTestBase {
+ protected:
+  void SetUp() override {
+    CronetTestBase::SetUp();
+    TestServer::Start();
+
+    [Cronet setRequestFilterBlock:^(NSURLRequest* request) {
+      return YES;
+    }];
+    NSURLSessionConfiguration* config =
+        [NSURLSessionConfiguration ephemeralSessionConfiguration];
+    [Cronet installIntoSessionConfiguration:config];
+    session_ = [NSURLSession sessionWithConfiguration:config
+                                             delegate:delegate_
+                                        delegateQueue:nil];
+  }
+
+  void TearDown() override {
+    TestServer::Shutdown();
+    [Cronet stopNetLog];
+    [Cronet shutdownForTesting];
+    CronetTestBase::TearDown();
+  }
+
+  NSString* GetFileContentWaitUntilCreated(NSString* file,
+                                           NSTimeInterval timeout,
+                                           NSError** error) {
+    // Wait until the file appears on disk.
+    NSFileManager* file_manager = [NSFileManager defaultManager];
+    NSLog(@"Waiting for file %@.", file);
+    while (timeout > 0) {
+      if ([file_manager fileExistsAtPath:file]) {
+        NSLog(@"File %@ exists.", file);
+        break;
+      }
+      NSLog(@"Time left: %i seconds", (int)timeout);
+      NSTimeInterval sleep_interval = fmin(5.0, timeout);
+      [NSThread sleepForTimeInterval:sleep_interval];
+      timeout -= sleep_interval;
+    }
+
+    // Read the file on the file thread to avoid reading the changing file.
+    dispatch_semaphore_t lock = dispatch_semaphore_create(0);
+    __block NSString* file_content = nil;
+    __block NSError* block_error = nil;
+    base::SingleThreadTaskRunner* file_runner =
+        [Cronet getFileThreadRunnerForTesting];
+    file_runner->PostTask(
+        FROM_HERE,
+        base::Bind(&PrefsTest::ExecuteBlockOnFileThread, base::Unretained(this),
+                   ^{
+                     file_content =
+                         [NSString stringWithContentsOfFile:file
+                                                   encoding:NSUTF8StringEncoding
+                                                      error:&block_error];
+                     dispatch_semaphore_signal(lock);
+                   }));
+
+    // Wait for the file thread to finish reading the file content.
+    dispatch_semaphore_wait(lock, DISPATCH_TIME_FOREVER);
+    if (block_error) {
+      *error = block_error;
+    }
+    return file_content;
+  }
+
+  void ExecuteBlockOnFileThread(BlockType block) { block(); }
+
+  NSURLSession* session_;
+};
+
+TEST_F(PrefsTest, HttpSeverProperties) {
+  base::FilePath storage_path;
+  bool result = PathService::Get(base::DIR_CACHE, &storage_path);
+  ASSERT_TRUE(result);
+  storage_path =
+      storage_path.Append(FILE_PATH_LITERAL("cronet/prefs/local_prefs.json"));
+  NSString* prefs_file_name =
+      [NSString stringWithCString:storage_path.AsUTF8Unsafe().c_str()
+                         encoding:NSUTF8StringEncoding];
+
+  // Delete the prefs file if it exists.
+  [[NSFileManager defaultManager] removeItemAtPath:prefs_file_name error:nil];
+
+  // Add "max_server_configs_stored_in_properties" experimental option.
+  NSString* options =
+      @"{ \"QUIC\" : {\"max_server_configs_stored_in_properties\" : 5} }";
+  [Cronet setExperimentalOptions:options];
+
+  // Start Cronet Engine
+  StartCronet(grpc_support::GetQuicTestServerPort());
+
+  // Start the request
+  NSURL* url = net::NSURLWithGURL(GURL(grpc_support::kTestServerSimpleUrl));
+  NSURLSessionDataTask* task = [session_ dataTaskWithURL:url];
+  StartDataTaskAndWaitForCompletion(task);
+
+  // Wait 80 seconds for the prefs file to appear on the disk.
+  NSError* error = nil;
+  NSString* prefs_file_content =
+      GetFileContentWaitUntilCreated(prefs_file_name, 80, &error);
+  ASSERT_FALSE(error) << "Unable to read " << storage_path << " file. Error: "
+                      << error.localizedDescription.UTF8String;
+
+  // Check the file content
+  ASSERT_TRUE(prefs_file_content);
+  ASSERT_TRUE(
+      [prefs_file_content rangeOfString:@"{\"http_server_properties\":{"]
+          .location != NSNotFound)
+      << "Unable to find 'http_server_properties' in the JSON prefs.";
+  ASSERT_TRUE(
+      [prefs_file_content rangeOfString:@"\"supports_quic\":{\"address\""
+                                         ":\"127.0.0.1\",\"used_quic\":true}"]
+          .location != NSNotFound)
+      << "Unable to find 'supports_quic' in the JSON prefs.";
+  ASSERT_TRUE(
+      [prefs_file_content rangeOfString:@"{\"server_info\":\""].location !=
+      NSNotFound)
+      << "Unable to find 'server_info' in the JSON prefs.";
+
+  // Delete the prefs file to avoid side effects with other tests.
+  [[NSFileManager defaultManager] removeItemAtPath:prefs_file_name error:nil];
+}
+
+}  // namespace cronet

@@ -39,28 +39,27 @@ using QuicHintVector =
 base::LazyInstance<std::unique_ptr<cronet::CronetEnvironment>>::Leaky
     gChromeNet = LAZY_INSTANCE_INITIALIZER;
 
-// TODO(lilyhoughton) make these independent across Cronet instances, i.e.:
-// refresh them on shutdown, and add tests to make sure the defaults are
-// sane.
-BOOL gHttp2Enabled = YES;
-BOOL gQuicEnabled = NO;
-BOOL gBrotliEnabled = NO;
-cronet::URLRequestContextConfig::HttpCacheType gHttpCache =
-    cronet::URLRequestContextConfig::HttpCacheType::DISK;
-QuicHintVector gQuicHints;
-NSString* gExperimentalOptions = @"{}";
-NSString* gUserAgent = nil;
-BOOL gUserAgentPartial = NO;
-NSString* gSslKeyLogFileName = nil;
-std::vector<std::unique_ptr<cronet::URLRequestContextConfig::Pkp>> gPkpList;
-RequestFilterBlock gRequestFilterBlock = nil;
 base::LazyInstance<std::unique_ptr<CronetHttpProtocolHandlerDelegate>>::Leaky
     gHttpProtocolHandlerDelegate = LAZY_INSTANCE_INITIALIZER;
-NSURLCache* gPreservedSharedURLCache = nil;
-BOOL gEnableTestCertVerifierForTesting = NO;
+
+// See [Cronet initialize] method to set the default values of the global
+// variables.
+BOOL gHttp2Enabled;
+BOOL gQuicEnabled;
+BOOL gBrotliEnabled;
+cronet::URLRequestContextConfig::HttpCacheType gHttpCache;
+QuicHintVector gQuicHints;
+NSString* gExperimentalOptions;
+NSString* gUserAgent;
+BOOL gUserAgentPartial;
+NSString* gSslKeyLogFileName;
+std::vector<std::unique_ptr<cronet::URLRequestContextConfig::Pkp>> gPkpList;
+RequestFilterBlock gRequestFilterBlock;
+NSURLCache* gPreservedSharedURLCache;
+BOOL gEnableTestCertVerifierForTesting;
 std::unique_ptr<net::CertVerifier> gMockCertVerifier;
-NSString* gAcceptLanguages = nil;
-BOOL gEnablePKPBypassForLocalTrustAnchors = YES;
+NSString* gAcceptLanguages;
+BOOL gEnablePKPBypassForLocalTrustAnchors;
 
 // CertVerifier, which allows any certificates for testing.
 class TestCertVerifier : public net::CertVerifier {
@@ -255,9 +254,11 @@ class CronetHttpProtocolHandlerDelegate
 
   // Pinning a key only makes sense if pin bypassing has been disabled
   if (gEnablePKPBypassForLocalTrustAnchors) {
-    *outError =
-        [self createUnsupportedConfigurationError:
-                  @"Cannot pin keys while public key pinning is bypassed"];
+    if (outError != nil) {
+      *outError =
+          [self createUnsupportedConfigurationError:
+                    @"Cannot pin keys while public key pinning is bypassed"];
+    }
     return NO;
   }
 
@@ -288,6 +289,10 @@ class CronetHttpProtocolHandlerDelegate
 
 + (void)setEnablePublicKeyPinningBypassForLocalTrustAnchors:(BOOL)enable {
   gEnablePKPBypassForLocalTrustAnchors = enable;
+}
+
++ (base::SingleThreadTaskRunner*)getFileThreadRunnerForTesting {
+  return gChromeNet.Get()->GetFileThreadRunnerForTesting();
 }
 
 + (void)startInternal {
@@ -342,7 +347,7 @@ class CronetHttpProtocolHandlerDelegate
 }
 
 + (void)shutdownForTesting {
-  gChromeNet.Get().reset();
+  [Cronet initialize];
 }
 
 + (void)registerHttpProtocolHandler {
@@ -479,6 +484,28 @@ class CronetHttpProtocolHandlerDelegate
   return [NSError errorWithDomain:CRNCronetErrorDomain
                              code:errorCode
                          userInfo:userInfo];
+}
+
+// Static class initializer.
++ (void)initialize {
+  gChromeNet.Get().reset();
+  gHttp2Enabled = YES;
+  gQuicEnabled = NO;
+  gBrotliEnabled = NO;
+  gHttpCache = cronet::URLRequestContextConfig::HttpCacheType::DISK;
+  gQuicHints.clear();
+  gExperimentalOptions = @"{}";
+  gUserAgent = nil;
+  gUserAgentPartial = NO;
+  gSslKeyLogFileName = nil;
+  gPkpList.clear();
+  gRequestFilterBlock = nil;
+  gHttpProtocolHandlerDelegate.Get().reset(nullptr);
+  gPreservedSharedURLCache = nil;
+  gEnableTestCertVerifierForTesting = NO;
+  gMockCertVerifier.reset(nullptr);
+  gAcceptLanguages = nil;
+  gEnablePKPBypassForLocalTrustAnchors = YES;
 }
 
 @end
