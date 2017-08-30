@@ -249,7 +249,7 @@ std::unique_ptr<base::DictionaryValue> GpuInfoAsDictionaryValue() {
   info->Set("diagnostics", std::move(dx_info));
 #endif
 
-#if defined(USE_X11) && !defined(OS_CHROMEOS)
+#if defined(USE_X11)
   basic_info->Append(NewDescriptionValuePair(
       "System visual ID", base::Uint64ToString(gpu_info.system_visual)));
   basic_info->Append(NewDescriptionValuePair(

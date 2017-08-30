@@ -547,7 +547,7 @@ TEST_F(DownloadManagerTest, StartDownload) {
   EXPECT_CALL(GetMockDownloadManagerDelegate(), GetNextId(_))
       .WillOnce(RunCallback<0>(local_id));
 
-#if !defined(USE_X11) || defined(OS_CHROMEOS)
+#if !defined(USE_X11)
   // Doing nothing will set the default download directory to null.
   EXPECT_CALL(GetMockDownloadManagerDelegate(), GetSaveDir(_, _, _, _));
 #endif

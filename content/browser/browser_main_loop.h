@@ -105,7 +105,7 @@ struct MainFunctionParams;
 class ScreenOrientationDelegate;
 #endif
 
-#if defined(USE_X11) && !defined(OS_CHROMEOS)
+#if defined(USE_X11)
 namespace internal {
 class GpuDataManagerVisualProxy;
 }
@@ -303,7 +303,7 @@ class CONTENT_EXPORT BrowserMainLoop {
   // Torn down in ShutdownThreadsAndCleanUp.
   std::unique_ptr<base::MemoryPressureMonitor> memory_pressure_monitor_;
   std::unique_ptr<SwapMetricsDriver> swap_metrics_driver_;
-#if defined(USE_X11) && !(OS_CHROMEOS)
+#if defined(USE_X11)
   std::unique_ptr<internal::GpuDataManagerVisualProxy>
       gpu_data_manager_visual_proxy_;
 #endif

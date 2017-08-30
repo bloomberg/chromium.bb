@@ -91,7 +91,7 @@
 #include "ui/ozone/public/ozone_switches.h"
 #endif
 
-#if defined(USE_X11) && !defined(OS_CHROMEOS)
+#if defined(USE_X11)
 #include "ui/gfx/x/x11_switches.h"  // nogncheck
 #endif
 
@@ -163,7 +163,7 @@ static const char* const kSwitchNames[] = {
 #if defined(USE_OZONE)
     switches::kOzonePlatform,
 #endif
-#if defined(USE_X11) && !defined(OS_CHROMEOS)
+#if defined(USE_X11)
     switches::kX11Display,
 #endif
     switches::kGpuTestingGLVendor,

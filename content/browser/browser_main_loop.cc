@@ -479,7 +479,7 @@ void InitDefaultJob() {
 
 }  // namespace
 
-#if defined(USE_X11) && !defined(OS_CHROMEOS)
+#if defined(USE_X11)
 namespace internal {
 
 // Forwards GPUInfo updates to ui::XVisualManager
@@ -883,7 +883,7 @@ int BrowserMainLoop::PreCreateThreads() {
 
   GpuDataManagerImpl* gpu_data_manager = GpuDataManagerImpl::GetInstance();
 
-#if defined(USE_X11) && !defined(OS_CHROMEOS)
+#if defined(USE_X11)
   // GpuDataManagerVisualProxy() just adds itself as an observer of
   // |gpu_data_manager|, which is safe to do before Initialize().
   gpu_data_manager_visual_proxy_.reset(

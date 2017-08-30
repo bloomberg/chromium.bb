@@ -220,7 +220,7 @@ bool WebClipboardImpl::ConvertBufferType(Buffer buffer,
     case kBufferStandard:
       break;
     case kBufferSelection:
-#if defined(USE_X11) && !defined(OS_CHROMEOS)
+#if defined(USE_X11)
       *result = ui::CLIPBOARD_TYPE_SELECTION;
       break;
 #else
