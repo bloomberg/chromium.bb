@@ -26,6 +26,7 @@
 
 #include "platform/graphics/BitmapImage.h"
 
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/Timer.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/BitmapImageMetrics.h"
@@ -79,12 +80,13 @@ void BitmapImage::DestroyDecodedData() {
   cached_frame_ = PaintImage();
   for (size_t i = 0; i < frames_.size(); ++i)
     frames_[i].Clear(true);
-  source_.ClearCacheExceptFrame(kNotFound);
+  if (decoder_)
+    decoder_->ClearCacheExceptFrame(kNotFound);
   NotifyMemoryChanged();
 }
 
 PassRefPtr<SharedBuffer> BitmapImage::Data() {
-  return source_.Data();
+  return decoder_ ? decoder_->Data() : nullptr;
 }
 
 void BitmapImage::NotifyMemoryChanged() {
@@ -93,15 +95,19 @@ void BitmapImage::NotifyMemoryChanged() {
 }
 
 size_t BitmapImage::TotalFrameBytes() {
+  if (!decoder_)
+    return 0u;
+
   const size_t num_frames = FrameCount();
   size_t total_bytes = 0;
   for (size_t i = 0; i < num_frames; ++i)
-    total_bytes += source_.FrameBytesAtIndex(i);
+    total_bytes += decoder_->FrameBytesAtIndex(i);
   return total_bytes;
 }
 
 PaintImage BitmapImage::CreateAndCacheFrame(size_t index) {
-  sk_sp<PaintImageGenerator> generator = source_.CreateGeneratorAtIndex(index);
+  sk_sp<PaintImageGenerator> generator =
+      decoder_ ? decoder_->CreateGeneratorAtIndex(index) : nullptr;
   if (!generator)
     return PaintImage();
 
@@ -109,13 +115,13 @@ PaintImage BitmapImage::CreateAndCacheFrame(size_t index) {
   if (frames_.size() < num_frames)
     frames_.Grow(num_frames);
 
-  frames_[index].orientation_ = source_.OrientationAtIndex(index);
+  frames_[index].orientation_ = decoder_->OrientationAtIndex(index);
   frames_[index].have_metadata_ = true;
-  frames_[index].is_complete_ = source_.FrameIsReceivedAtIndex(index);
+  frames_[index].is_complete_ = decoder_->FrameIsReceivedAtIndex(index);
   if (RepetitionCount(false) != kAnimationNone)
-    frames_[index].duration_ = source_.FrameDurationAtIndex(index);
-  frames_[index].has_alpha_ = source_.FrameHasAlphaAtIndex(index);
-  frames_[index].frame_bytes_ = source_.FrameBytesAtIndex(index);
+    frames_[index].duration_ = decoder_->FrameDurationAtIndex(index);
+  frames_[index].has_alpha_ = decoder_->FrameHasAlphaAtIndex(index);
+  frames_[index].frame_bytes_ = decoder_->FrameBytesAtIndex(index);
 
   PaintImageBuilder builder;
   InitPaintImageBuilder(builder);
@@ -164,11 +170,14 @@ PaintImage BitmapImage::CreateAndCacheFrame(size_t index) {
 }
 
 void BitmapImage::UpdateSize() const {
-  if (!size_available_ || have_size_)
+  if (!size_available_ || have_size_ || !decoder_)
     return;
 
-  size_ = source_.size();
-  size_respecting_orientation_ = source_.size(kRespectImageOrientation);
+  size_ = decoder_->FrameSizeAtIndex(0);
+  if (decoder_->OrientationAtIndex(0).UsesWidthAsHeight())
+    size_respecting_orientation_ = size_.TransposedSize();
+  else
+    size_respecting_orientation_ = size_;
   have_size_ = true;
 }
 
@@ -183,7 +192,7 @@ IntSize BitmapImage::SizeRespectingOrientation() const {
 }
 
 bool BitmapImage::GetHotSpot(IntPoint& hot_spot) const {
-  return source_.GetHotSpot(hot_spot);
+  return decoder_ && decoder_->HotSpot(hot_spot);
 }
 
 Image::SizeAvailability BitmapImage::SetData(RefPtr<SharedBuffer> data,
@@ -195,12 +204,23 @@ Image::SizeAvailability BitmapImage::SetData(RefPtr<SharedBuffer> data,
   if (!length)
     return kSizeAvailable;
 
-  // If ImageSource::setData() fails, we know that this is a decode error.
-  // Report size available so that it gets registered as such in
-  // ImageResourceContent.
-  if (!source_.SetData(std::move(data), all_data_received))
-    return kSizeAvailable;
+  if (decoder_) {
+    decoder_->SetData(std::move(data), all_data_received);
+    return DataChanged(all_data_received);
+  }
 
+  ColorBehavior color_behavior =
+      RuntimeEnabledFeatures::ColorCorrectRenderingEnabled()
+          ? ColorBehavior::Tag()
+          : ColorBehavior::TransformToGlobalTarget();
+  bool has_enough_data = ImageDecoder::HasSufficientDataToSniffImageType(*data);
+  decoder_ = DeferredImageDecoder::Create(std::move(data), all_data_received,
+                                          ImageDecoder::kAlphaPremultiplied,
+                                          color_behavior);
+  // If we had enough data but couldn't create a decoder, it implies a decode
+  // failure.
+  if (has_enough_data && !decoder_)
+    return kSizeAvailable;
   return DataChanged(all_data_received);
 }
 
@@ -243,11 +263,11 @@ Image::SizeAvailability BitmapImage::DataChanged(bool all_data_received) {
 }
 
 bool BitmapImage::HasColorProfile() const {
-  return source_.HasColorProfile();
+  return decoder_ && decoder_->HasEmbeddedColorSpace();
 }
 
 String BitmapImage::FilenameExtension() const {
-  return source_.FilenameExtension();
+  return decoder_ ? decoder_->FilenameExtension() : String();
 }
 
 void BitmapImage::Draw(
@@ -309,12 +329,9 @@ void BitmapImage::Draw(
 
 size_t BitmapImage::FrameCount() {
   if (!have_frame_count_) {
-    frame_count_ = source_.FrameCount();
-    // If decoder is not initialized yet, m_source.frameCount() returns 0.
-    if (frame_count_)
-      have_frame_count_ = true;
+    frame_count_ = decoder_ ? decoder_->FrameCount() : 0;
+    have_frame_count_ = frame_count_ > 0;
   }
-
   return frame_count_;
 }
 
@@ -326,13 +343,13 @@ bool BitmapImage::IsSizeAvailable() {
   if (size_available_)
     return true;
 
-  size_available_ = source_.IsSizeAvailable();
-
+  size_available_ = decoder_ && decoder_->IsSizeAvailable();
   if (size_available_ && HasVisibleImageSize(Size())) {
-    BitmapImageMetrics::CountDecodedImageType(source_.FilenameExtension());
-    if (source_.FilenameExtension() == "jpg")
+    BitmapImageMetrics::CountDecodedImageType(decoder_->FilenameExtension());
+    if (decoder_->FilenameExtension() == "jpg") {
       BitmapImageMetrics::CountImageOrientation(
-          source_.OrientationAtIndex(0).Orientation());
+          decoder_->OrientationAtIndex(0).Orientation());
+    }
   }
 
   return size_available_;
@@ -353,14 +370,16 @@ bool BitmapImage::FrameIsReceivedAtIndex(size_t index) const {
       frames_[index].is_complete_)
     return true;
 
-  return source_.FrameIsReceivedAtIndex(index);
+  return decoder_ && decoder_->FrameIsReceivedAtIndex(index);
 }
 
 float BitmapImage::FrameDurationAtIndex(size_t index) const {
   if (index < frames_.size() && frames_[index].have_metadata_)
     return frames_[index].duration_;
 
-  return source_.FrameDurationAtIndex(index);
+  if (!decoder_)
+    return 0.f;
+  return decoder_->FrameDurationAtIndex(index);
 }
 
 PaintImage BitmapImage::PaintImageForCurrentFrame() {
@@ -382,9 +401,9 @@ bool BitmapImage::FrameHasAlphaAtIndex(size_t index) {
   if (frames_[index].have_metadata_ && !frames_[index].has_alpha_)
     return false;
 
-  // m_hasAlpha may change after m_haveMetadata is set to true, so always ask
-  // ImageSource for the value if the cached value is the default value.
-  bool has_alpha = source_.FrameHasAlphaAtIndex(index);
+  // has_alpha may change after have_metadata_ is set to true, so always ask
+  // |decoder_| for the value if the cached value is the default value.
+  bool has_alpha = !decoder_ || decoder_->FrameHasAlphaAtIndex(index);
 
   if (frames_[index].have_metadata_)
     frames_[index].has_alpha_ = has_alpha;
@@ -416,13 +435,13 @@ ImageOrientation BitmapImage::CurrentFrameOrientation() {
 }
 
 ImageOrientation BitmapImage::FrameOrientationAtIndex(size_t index) {
-  if (frames_.size() <= index)
+  if (!decoder_ || frames_.size() <= index)
     return kDefaultImageOrientation;
 
   if (frames_[index].have_metadata_)
     return frames_[index].orientation_;
 
-  return source_.OrientationAtIndex(index);
+  return decoder_->OrientationAtIndex(index);
 }
 
 int BitmapImage::RepetitionCount(bool image_known_to_be_complete) {
@@ -433,7 +452,7 @@ int BitmapImage::RepetitionCount(bool image_known_to_be_complete) {
     // repetition count may not be accurate yet for GIFs; in this case the
     // decoder will default to cAnimationLoopOnce, and we'll try and read
     // the count again once the whole image is decoded.
-    repetition_count_ = source_.RepetitionCount();
+    repetition_count_ = decoder_ ? decoder_->RepetitionCount() : kAnimationNone;
     repetition_count_status_ =
         (image_known_to_be_complete || repetition_count_ == kAnimationNone)
             ? kCertain
@@ -562,7 +581,7 @@ bool BitmapImage::MaybeAnimated() {
   if (FrameCount() > 1)
     return true;
 
-  return source_.RepetitionCount() != kAnimationNone;
+  return decoder_ && decoder_->RepetitionCount() != kAnimationNone;
 }
 
 void BitmapImage::AdvanceTime(double delta_time_in_seconds) {

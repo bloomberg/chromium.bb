@@ -38,7 +38,7 @@ TEST_F(DecodingImageGeneratorTest, Create) {
   RefPtr<SegmentReader> reader =
       SegmentReader::CreateFromSharedBuffer(std::move(reference_data));
   std::unique_ptr<SkImageGenerator> generator =
-      DecodingImageGenerator::Create(reader->GetAsSkData().get());
+      DecodingImageGenerator::CreateAsSkImageGenerator(reader->GetAsSkData());
   // Sanity-check the image to make sure it was loaded.
   EXPECT_EQ(generator->getInfo().width(), 32);
   EXPECT_EQ(generator->getInfo().height(), 32);
@@ -48,10 +48,9 @@ TEST_F(DecodingImageGeneratorTest, CreateWithNoSize) {
   // Construct dummy image data that produces no valid size from the
   // ImageDecoder.
   char reference_data[kDefaultTestSize];
-  EXPECT_EQ(nullptr, DecodingImageGenerator::Create(
+  EXPECT_EQ(nullptr, DecodingImageGenerator::CreateAsSkImageGenerator(
                          CreateSegmentReader(reference_data, kDefaultTestSize)
-                             ->GetAsSkData()
-                             .get()));
+                             ->GetAsSkData()));
 }
 
 TEST_F(DecodingImageGeneratorTest, CreateWithNullImageDecoder) {
@@ -59,10 +58,9 @@ TEST_F(DecodingImageGeneratorTest, CreateWithNullImageDecoder) {
   // due to data being too short for a signature.
   char reference_data[kTooShortForSignature];
   EXPECT_EQ(nullptr,
-            DecodingImageGenerator::Create(
+            DecodingImageGenerator::CreateAsSkImageGenerator(
                 CreateSegmentReader(reference_data, kTooShortForSignature)
-                    ->GetAsSkData()
-                    .get()));
+                    ->GetAsSkData()));
 }
 
 // TODO(wkorman): Test Create with a null ImageFrameGenerator. We'd

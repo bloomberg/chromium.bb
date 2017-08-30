@@ -271,7 +271,9 @@ TEST_F(DeferredImageDecoderTest, multiFrameImageLoading) {
   PaintImage image = CreatePaintImageAtIndex(0);
   ASSERT_TRUE(image);
   EXPECT_FALSE(lazy_decoder_->FrameIsReceivedAtIndex(0));
-  EXPECT_EQ(10.0f, lazy_decoder_->FrameDurationAtIndex(0));
+  // Anything below .011f seconds is rounded to 0.1f seconds.
+  // See the implementaiton for details.
+  EXPECT_FLOAT_EQ(0.1f, lazy_decoder_->FrameDurationAtIndex(0));
 
   frame_count_ = 2;
   frame_duration_ = 20;
@@ -283,7 +285,7 @@ TEST_F(DeferredImageDecoderTest, multiFrameImageLoading) {
   ASSERT_TRUE(image);
   EXPECT_TRUE(lazy_decoder_->FrameIsReceivedAtIndex(0));
   EXPECT_TRUE(lazy_decoder_->FrameIsReceivedAtIndex(1));
-  EXPECT_EQ(20.0f, lazy_decoder_->FrameDurationAtIndex(1));
+  EXPECT_FLOAT_EQ(0.02f, lazy_decoder_->FrameDurationAtIndex(1));
   EXPECT_TRUE(actual_decoder_);
 
   frame_count_ = 3;
@@ -294,9 +296,9 @@ TEST_F(DeferredImageDecoderTest, multiFrameImageLoading) {
   EXPECT_TRUE(lazy_decoder_->FrameIsReceivedAtIndex(0));
   EXPECT_TRUE(lazy_decoder_->FrameIsReceivedAtIndex(1));
   EXPECT_TRUE(lazy_decoder_->FrameIsReceivedAtIndex(2));
-  EXPECT_EQ(10.0f, lazy_decoder_->FrameDurationAtIndex(0));
-  EXPECT_EQ(20.0f, lazy_decoder_->FrameDurationAtIndex(1));
-  EXPECT_EQ(30.0f, lazy_decoder_->FrameDurationAtIndex(2));
+  EXPECT_FLOAT_EQ(0.1f, lazy_decoder_->FrameDurationAtIndex(0));
+  EXPECT_FLOAT_EQ(0.02f, lazy_decoder_->FrameDurationAtIndex(1));
+  EXPECT_FLOAT_EQ(0.03f, lazy_decoder_->FrameDurationAtIndex(2));
   EXPECT_EQ(10, lazy_decoder_->RepetitionCount());
 }
 

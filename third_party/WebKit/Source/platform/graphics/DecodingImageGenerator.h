@@ -50,13 +50,18 @@ class PLATFORM_EXPORT DecodingImageGenerator final
   WTF_MAKE_NONCOPYABLE(DecodingImageGenerator);
 
  public:
-  static std::unique_ptr<SkImageGenerator> Create(SkData*);
+  // Aside from tests, this is used to create a decoder from SkData in Skia
+  // (exported via WebImageGenerator and set via
+  // SkGraphics::SetImageGeneratorFromEncodedDataFactory)
+  static std::unique_ptr<SkImageGenerator> CreateAsSkImageGenerator(
+      sk_sp<SkData>);
 
-  DecodingImageGenerator(PassRefPtr<ImageFrameGenerator>,
-                         const SkImageInfo&,
-                         PassRefPtr<SegmentReader>,
-                         bool all_data_received,
-                         size_t index);
+  static sk_sp<DecodingImageGenerator> Create(PassRefPtr<ImageFrameGenerator>,
+                                              const SkImageInfo&,
+                                              PassRefPtr<SegmentReader>,
+                                              bool all_data_received,
+                                              size_t index);
+
   ~DecodingImageGenerator() override;
 
   void SetCanYUVDecode(bool yes) { can_yuv_decode_ = yes; }
@@ -73,6 +78,12 @@ class PLATFORM_EXPORT DecodingImageGenerator final
                      uint32_t lazy_pixel_ref) override;
 
  private:
+  DecodingImageGenerator(PassRefPtr<ImageFrameGenerator>,
+                         const SkImageInfo&,
+                         PassRefPtr<SegmentReader>,
+                         bool all_data_received,
+                         size_t index);
+
   RefPtr<ImageFrameGenerator> frame_generator_;
   const RefPtr<SegmentReader> data_;  // Data source.
   const bool all_data_received_;

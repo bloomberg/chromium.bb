@@ -16,7 +16,7 @@ std::unique_ptr<service_manager::Service> CreatePdfCompositorService(
   content::UtilityThread::Get()->EnsureBlinkInitialized();
   // Hook up blink's codecs so skia can call them.
   SkGraphics::SetImageGeneratorFromEncodedDataFactory(
-      blink::WebImageGenerator::Create);
+      blink::WebImageGenerator::CreateAsSkImageGenerator);
   return printing::PdfCompositorService::Create(creator);
 }
 

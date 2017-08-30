@@ -946,8 +946,6 @@ component("platform") {
     "graphics/ImageOrientation.h",
     "graphics/ImagePattern.cpp",
     "graphics/ImagePattern.h",
-    "graphics/ImageSource.cpp",
-    "graphics/ImageSource.h",
     "graphics/InterceptingCanvas.cpp",
     "graphics/InterceptingCanvas.h",
     "graphics/InterpolationSpace.cpp",
