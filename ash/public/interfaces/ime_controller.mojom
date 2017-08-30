@@ -26,6 +26,10 @@ interface ImeController {
   // some Chinese IMEs) prefer this to keeping the IME menu under the primary
   // system tray menu.
   ShowImeMenuOnShelf(bool show);
+
+  // Report caps lock state changes from chrome (which is the source of truth)
+  // to the tray.
+  SetCapsLockState(bool enabled);
 };
 
 // Interface for ash to send input method requests to its client (e.g. Chrome).
@@ -48,4 +52,12 @@ interface ImeControllerClient {
   // Activates an input method menu item. The |key| must be a value from the
   // ImeMenuItems provided via RefreshIme. Does nothing if the |key| is invalid.
   ActivateImeMenuItem(string key);
+
+  // When the caps lock state change originates from the tray (i.e. clicking the
+  // caps lock toggle from the settings menu from the caps lock icon), propagate
+  // the change to the client without sending a change notification back to the
+  // tray.
+  // TODO(crbug/759435): Ideally this interaction should only be to disable the
+  // caps lock.
+  SetCapsLockFromTray(bool enabled);
 };

@@ -80,10 +80,12 @@ class TestImeControllerClient : public mojom::ImeControllerClient {
     last_show_message_ = show_message;
   }
   void ActivateImeMenuItem(const std::string& key) override {}
+  void SetCapsLockFromTray(bool enabled) override { ++set_caps_lock_count_; }
 
   int next_ime_count_ = 0;
   int previous_ime_count_ = 0;
   int switch_ime_count_ = 0;
+  int set_caps_lock_count_ = 0;
   std::string last_switch_ime_id_;
   bool last_show_message_ = false;
 
@@ -263,6 +265,37 @@ TEST_F(ImeControllerTest, SwitchImeWithAccelerator) {
   controller->FlushMojoForTesting();
   EXPECT_EQ(4, client.switch_ime_count_);
   EXPECT_EQ(nacl_mozc_jp, client.last_switch_ime_id_);
+}
+
+TEST_F(ImeControllerTest, SetCapsLock) {
+  ImeController* controller = Shell::Get()->ime_controller();
+  TestImeControllerClient client;
+  EXPECT_EQ(0, client.set_caps_lock_count_);
+
+  controller->SetCapsLockFromTray(true);
+  EXPECT_EQ(0, client.set_caps_lock_count_);
+
+  controller->SetClient(client.CreateInterfacePtr());
+
+  controller->SetCapsLockFromTray(true);
+  controller->FlushMojoForTesting();
+  EXPECT_EQ(1, client.set_caps_lock_count_);
+  // Does not no-op when the state is the same. Should send all notifications.
+  controller->SetCapsLockFromTray(true);
+  controller->FlushMojoForTesting();
+  EXPECT_EQ(2, client.set_caps_lock_count_);
+  controller->SetCapsLockFromTray(false);
+  controller->FlushMojoForTesting();
+  EXPECT_EQ(3, client.set_caps_lock_count_);
+  controller->SetCapsLockFromTray(false);
+  controller->FlushMojoForTesting();
+  EXPECT_EQ(4, client.set_caps_lock_count_);
+
+  EXPECT_FALSE(controller->IsCapsLockEnabled());
+  controller->SetCapsLockState(true);
+  EXPECT_TRUE(controller->IsCapsLockEnabled());
+  controller->SetCapsLockState(false);
+  EXPECT_FALSE(controller->IsCapsLockEnabled());
 }
 
 }  // namespace
