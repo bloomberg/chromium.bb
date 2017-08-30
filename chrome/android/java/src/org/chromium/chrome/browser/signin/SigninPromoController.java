@@ -39,7 +39,8 @@ public class SigninPromoController {
             "signin_promo_impressions_count_bookmarks";
     private static final String SIGNIN_PROMO_IMPRESSIONS_COUNT_SETTINGS =
             "signin_promo_impressions_count_settings";
-    private static final int MAX_IMPRESSIONS = 20;
+    private static final int MAX_IMPRESSIONS_BOOKMARKS = 20;
+    private static final int MAX_IMPRESSIONS_SETTINGS = 5;
 
     private String mAccountName;
     private final ProfileDataCache mProfileDataCache;
@@ -64,7 +65,7 @@ public class SigninPromoController {
         switch (accessPoint) {
             case SigninAccessPoint.BOOKMARK_MANAGER:
                 return sharedPreferences.getInt(SIGNIN_PROMO_IMPRESSIONS_COUNT_BOOKMARKS, 0)
-                        < MAX_IMPRESSIONS;
+                        < MAX_IMPRESSIONS_BOOKMARKS;
             case SigninAccessPoint.NTP_CONTENT_SUGGESTIONS:
                 // There is no impression limit for NTP content suggestions.
                 return true;
@@ -73,7 +74,7 @@ public class SigninPromoController {
                 return true;
             case SigninAccessPoint.SETTINGS:
                 return sharedPreferences.getInt(SIGNIN_PROMO_IMPRESSIONS_COUNT_SETTINGS, 0)
-                        < MAX_IMPRESSIONS;
+                        < MAX_IMPRESSIONS_SETTINGS;
             default:
                 assert false : "Unexpected value for access point: " + accessPoint;
                 return false;
