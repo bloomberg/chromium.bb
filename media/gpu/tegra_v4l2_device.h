@@ -49,6 +49,10 @@ class TegraV4L2Device : public V4L2Device {
       unsigned int buffer_index,
       uint32_t v4l2_pixfmt,
       const std::vector<base::ScopedFD>& dmabuf_fds) override;
+  scoped_refptr<gl::GLImage> CreateGLImage(
+      const gfx::Size& size,
+      uint32_t fourcc,
+      const std::vector<base::ScopedFD>& dmabuf_fds) override;
   EGLBoolean DestroyEGLImage(EGLDisplay egl_display,
                              EGLImageKHR egl_image) override;
   GLenum GetTextureTarget() override;
