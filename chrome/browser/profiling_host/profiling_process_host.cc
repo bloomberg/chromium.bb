@@ -12,6 +12,8 @@
 #include "base/task_scheduler/post_task.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "build/build_config.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/tracing/crash_service_uploader.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/profiling/constants.mojom.h"
@@ -54,6 +56,10 @@ namespace {
 
 const size_t kMaxTraceSizeUploadInBytes = 10 * 1024 * 1024;
 
+void OnTraceUploadComplete(TraceCrashServiceUploader* uploader,
+                           bool success,
+                           const std::string& feedback);
+
 void UploadTraceToCrashServer(base::FilePath file_path) {
   std::string file_contents;
   if (!base::ReadFileToStringWithMaxSize(file_path, &file_contents,
@@ -62,8 +68,21 @@ void UploadTraceToCrashServer(base::FilePath file_path) {
     return;
   }
 
-  // TODO(bug 753514): Upload the trace |file_contents| to crash server (slow
-  // reports).
+  TraceCrashServiceUploader* uploader = new TraceCrashServiceUploader(
+      g_browser_process->system_request_context());
+
+  uploader->DoUpload(file_contents, content::TraceUploader::UNCOMPRESSED_UPLOAD,
+                     nullptr, content::TraceUploader::UploadProgressCallback(),
+                     base::Bind(&OnTraceUploadComplete, base::Owned(uploader)));
+}
+
+void OnTraceUploadComplete(TraceCrashServiceUploader* uploader,
+                           bool success,
+                           const std::string& feedback) {
+  if (!success) {
+    LOG(ERROR) << "Cannot upload trace file: " << feedback;
+    return;
+  }
 }
 
 }  // namespace
