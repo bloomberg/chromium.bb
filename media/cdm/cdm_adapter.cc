@@ -26,7 +26,7 @@
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_types.h"
-#include "media/cdm/cdm_allocator.h"
+#include "media/cdm/cdm_auxiliary_helper.h"
 #include "media/cdm/cdm_file_io.h"
 #include "media/cdm/cdm_helpers.h"
 #include "media/cdm/cdm_module.h"
@@ -382,8 +382,7 @@ void* GetCdmHost(int host_interface_version, void* user_data) {
 void CdmAdapter::Create(
     const std::string& key_system,
     const CdmConfig& cdm_config,
-    std::unique_ptr<CdmAllocator> allocator,
-    const CreateCdmFileIOCB& create_cdm_file_io_cb,
+    std::unique_ptr<CdmAuxiliaryHelper> helper,
     const SessionMessageCB& session_message_cb,
     const SessionClosedCB& session_closed_cb,
     const SessionKeysChangeCB& session_keys_change_cb,
@@ -396,9 +395,8 @@ void CdmAdapter::Create(
   DCHECK(!session_expiration_update_cb.is_null());
 
   scoped_refptr<CdmAdapter> cdm = new CdmAdapter(
-      key_system, cdm_config, std::move(allocator), create_cdm_file_io_cb,
-      session_message_cb, session_closed_cb, session_keys_change_cb,
-      session_expiration_update_cb);
+      key_system, cdm_config, std::move(helper), session_message_cb,
+      session_closed_cb, session_keys_change_cb, session_expiration_update_cb);
 
   // |cdm| ownership passed to the promise.
   cdm->Initialize(base::MakeUnique<CdmInitializedPromise>(cdm_created_cb, cdm));
@@ -407,8 +405,7 @@ void CdmAdapter::Create(
 CdmAdapter::CdmAdapter(
     const std::string& key_system,
     const CdmConfig& cdm_config,
-    std::unique_ptr<CdmAllocator> allocator,
-    const CreateCdmFileIOCB& create_cdm_file_io_cb,
+    std::unique_ptr<CdmAuxiliaryHelper> helper,
     const SessionMessageCB& session_message_cb,
     const SessionClosedCB& session_closed_cb,
     const SessionKeysChangeCB& session_keys_change_cb,
@@ -421,8 +418,7 @@ CdmAdapter::CdmAdapter(
       session_expiration_update_cb_(session_expiration_update_cb),
       audio_samples_per_second_(0),
       audio_channel_layout_(CHANNEL_LAYOUT_NONE),
-      allocator_(std::move(allocator)),
-      create_cdm_file_io_cb_(create_cdm_file_io_cb),
+      helper_(std::move(helper)),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       pool_(new AudioBufferMemoryPool()),
       weak_factory_(this) {
@@ -431,7 +427,7 @@ CdmAdapter::CdmAdapter(
   DCHECK(!session_closed_cb_.is_null());
   DCHECK(!session_keys_change_cb_.is_null());
   DCHECK(!session_expiration_update_cb_.is_null());
-  DCHECK(allocator_);
+  DCHECK(helper_);
 }
 
 CdmAdapter::~CdmAdapter() {}
@@ -719,8 +715,7 @@ void CdmAdapter::DecryptAndDecodeVideo(
 
   cdm::InputBuffer input_buffer;
   std::vector<cdm::SubsampleEntry> subsamples;
-  std::unique_ptr<VideoFrameImpl> video_frame =
-      allocator_->CreateCdmVideoFrame();
+  std::unique_ptr<VideoFrameImpl> video_frame = helper_->CreateCdmVideoFrame();
 
   ToCdmInputBuffer(encrypted, &subsamples, &input_buffer);
   cdm::Status status =
@@ -760,7 +755,7 @@ void CdmAdapter::DeinitializeDecoder(StreamType stream_type) {
 
 cdm::Buffer* CdmAdapter::Allocate(uint32_t capacity) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  return allocator_->CreateCdmBuffer(capacity);
+  return helper_->CreateCdmBuffer(capacity);
 }
 
 void CdmAdapter::SetTimer(int64_t delay_ms, void* context) {
@@ -911,25 +906,82 @@ void CdmAdapter::SendPlatformChallenge(const char* service_id,
                                        uint32_t challenge_size) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  // TODO(jrummell): If platform verification is available, use it.
-  NOTIMPLEMENTED();
+  helper_->ChallengePlatform(std::string(service_id, service_id_size),
+                             std::string(challenge, challenge_size),
+                             base::Bind(&CdmAdapter::OnChallengePlatformDone,
+                                        weak_factory_.GetWeakPtr()));
+}
+
+void CdmAdapter::OnChallengePlatformDone(
+    bool success,
+    const std::string& signed_data,
+    const std::string& signed_data_signature,
+    const std::string& platform_key_certificate) {
   cdm::PlatformChallengeResponse platform_challenge_response = {};
+  if (success) {
+    platform_challenge_response.signed_data =
+        reinterpret_cast<const uint8_t*>(signed_data.data());
+    platform_challenge_response.signed_data_length = signed_data.length();
+    platform_challenge_response.signed_data_signature =
+        reinterpret_cast<const uint8_t*>(signed_data_signature.data());
+    platform_challenge_response.signed_data_signature_length =
+        signed_data_signature.length();
+    platform_challenge_response.platform_key_certificate =
+        reinterpret_cast<const uint8_t*>(platform_key_certificate.data());
+    platform_challenge_response.platform_key_certificate_length =
+        platform_key_certificate.length();
+  }
+
   cdm_->OnPlatformChallengeResponse(platform_challenge_response);
 }
 
 void CdmAdapter::EnableOutputProtection(uint32_t desired_protection_mask) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  // TODO(jrummell): If output protection is available, use it.
-  NOTIMPLEMENTED();
+  helper_->EnableProtection(
+      desired_protection_mask,
+      base::BindOnce(&CdmAdapter::OnOutputProtectionRequestMade,
+                     weak_factory_.GetWeakPtr()));
+}
+
+void CdmAdapter::OnOutputProtectionRequestMade(bool /* success */) {
+  // CDM needs to call QueryOutputProtectionStatus() to see if it took effect
+  // or not.
 }
 
 void CdmAdapter::QueryOutputProtectionStatus() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  // TODO(jrummell): If output protection is available, use it.
-  NOTIMPLEMENTED();
-  cdm_->OnQueryOutputProtectionStatus(cdm::kQueryFailed, 0, 0);
+  helper_->QueryStatus(base::Bind(&CdmAdapter::OnOutputProtectionStatus,
+                                  weak_factory_.GetWeakPtr()));
+}
+
+void CdmAdapter::OnOutputProtectionStatus(bool success,
+                                          uint32_t link_mask,
+                                          uint32_t protection_mask) {
+// Verify that the values in |link_mask| and |protection_mask| match what the
+// CDM expects.
+#define ASSERT_ENUM_EQ(media_enum, cdm_enum)                              \
+  static_assert(                                                          \
+      static_cast<int32_t>(media_enum) == static_cast<int32_t>(cdm_enum), \
+      "Mismatched enum: " #media_enum " != " #cdm_enum)
+
+  ASSERT_ENUM_EQ(OutputProtection::LinkTypes::NONE, cdm::kLinkTypeNone);
+  ASSERT_ENUM_EQ(OutputProtection::LinkTypes::UNKNOWN, cdm::kLinkTypeUnknown);
+  ASSERT_ENUM_EQ(OutputProtection::LinkTypes::INTERNAL, cdm::kLinkTypeInternal);
+  ASSERT_ENUM_EQ(OutputProtection::LinkTypes::VGA, cdm::kLinkTypeVGA);
+  ASSERT_ENUM_EQ(OutputProtection::LinkTypes::HDMI, cdm::kLinkTypeHDMI);
+  ASSERT_ENUM_EQ(OutputProtection::LinkTypes::DVI, cdm::kLinkTypeDVI);
+  ASSERT_ENUM_EQ(OutputProtection::LinkTypes::DISPLAYPORT,
+                 cdm::kLinkTypeDisplayPort);
+  ASSERT_ENUM_EQ(OutputProtection::LinkTypes::NETWORK, cdm::kLinkTypeNetwork);
+
+  ASSERT_ENUM_EQ(OutputProtection::ProtectionType::NONE, cdm::kProtectionNone);
+  ASSERT_ENUM_EQ(OutputProtection::ProtectionType::HDCP, cdm::kProtectionHDCP);
+
+  cdm_->OnQueryOutputProtectionStatus(
+      success ? cdm::kQuerySucceeded : cdm::kQueryFailed, link_mask,
+      protection_mask);
 }
 
 void CdmAdapter::OnDeferredInitializationDone(cdm::StreamType stream_type,
@@ -955,7 +1007,7 @@ void CdmAdapter::OnDeferredInitializationDone(cdm::StreamType stream_type,
 cdm::FileIO* CdmAdapter::CreateFileIO(cdm::FileIOClient* client) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  std::unique_ptr<CdmFileIO> file_io = create_cdm_file_io_cb_.Run(client);
+  std::unique_ptr<CdmFileIO> file_io = helper_->CreateCdmFileIO(client);
 
   // The CDM owns the returned object and must call FileIO::Close()
   // to release it.
@@ -963,9 +1015,12 @@ cdm::FileIO* CdmAdapter::CreateFileIO(cdm::FileIOClient* client) {
 }
 
 void CdmAdapter::RequestStorageId() {
-  // TODO(jrummell): Implement Storage Id. https://crbug.com/478960.
-  NOTIMPLEMENTED();
-  cdm_->OnStorageId(nullptr, 0);
+  helper_->GetStorageId(
+      base::Bind(&CdmAdapter::OnStorageIdObtained, weak_factory_.GetWeakPtr()));
+}
+
+void CdmAdapter::OnStorageIdObtained(const std::vector<uint8_t>& storage_id) {
+  cdm_->OnStorageId(storage_id.data(), storage_id.size());
 }
 
 bool CdmAdapter::AudioFramesDataToAudioFrames(

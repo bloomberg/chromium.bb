@@ -8,13 +8,13 @@
 #include "base/macros.h"
 #include "media/base/cdm_factory.h"
 #include "media/base/media_export.h"
-#include "media/cdm/cdm_allocator.h"
+#include "media/cdm/cdm_auxiliary_helper.h"
 
 namespace media {
 
 class MEDIA_EXPORT CdmAdapterFactory final : public CdmFactory {
  public:
-  explicit CdmAdapterFactory(CdmAllocator::CreationCB allocator_creation_cb);
+  explicit CdmAdapterFactory(CdmAuxiliaryHelper::CreationCB helper_creation_cb);
   ~CdmAdapterFactory() override;
 
   // CdmFactory implementation.
@@ -28,8 +28,8 @@ class MEDIA_EXPORT CdmAdapterFactory final : public CdmFactory {
               const CdmCreatedCB& cdm_created_cb) override;
 
  private:
-  // Callback to create CdmAllocator for the created CDM.
-  CdmAllocator::CreationCB allocator_creation_cb_;
+  // Callback to create CdmAuxiliaryHelper for the created CDM.
+  CdmAuxiliaryHelper::CreationCB helper_creation_cb_;
 
   DISALLOW_COPY_AND_ASSIGN(CdmAdapterFactory);
 };
