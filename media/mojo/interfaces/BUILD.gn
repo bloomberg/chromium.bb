@@ -17,6 +17,7 @@ mojom("interfaces") {
     "media_service.mojom",
     "media_types.mojom",
     "output_protection.mojom",
+    "platform_verification.mojom",
     "provision_fetcher.mojom",
     "renderer.mojom",
     "video_decode_stats_recorder.mojom",
@@ -27,10 +28,6 @@ mojom("interfaces") {
 
   if (is_android) {
     sources += [ "media_drm_storage.mojom" ]
-  }
-
-  if (is_chromeos) {
-    sources += [ "platform_verification.mojom" ]
   }
 
   if (is_android) {

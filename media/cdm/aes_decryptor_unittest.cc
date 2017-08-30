@@ -36,8 +36,10 @@
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 #include "media/cdm/api/content_decryption_module.h"
 #include "media/cdm/cdm_adapter.h"
+#include "media/cdm/cdm_auxiliary_helper.h"
 #include "media/cdm/cdm_file_io.h"
 #include "media/cdm/external_clear_key_test_helper.h"
+#include "media/cdm/mock_helpers.h"
 #include "media/cdm/simple_cdm_allocator.h"
 #endif
 
@@ -282,10 +284,10 @@ class AesDecryptorTest : public testing::TestWithParam<TestType> {
       CdmModule::GetInstance()->SetCdmPathForTesting(helper_->LibraryPath());
 
       std::unique_ptr<CdmAllocator> allocator(new SimpleCdmAllocator());
+      std::unique_ptr<CdmAuxiliaryHelper> cdm_helper(
+          new MockCdmAuxiliaryHelper(std::move(allocator)));
       CdmAdapter::Create(
-          helper_->KeySystemName(), cdm_config, std::move(allocator),
-          base::Bind(&AesDecryptorTest::CreateCdmFileIO,
-                     base::Unretained(this)),
+          helper_->KeySystemName(), cdm_config, std::move(cdm_helper),
           base::Bind(&MockCdmClient::OnSessionMessage,
                      base::Unretained(&cdm_client_)),
           base::Bind(&MockCdmClient::OnSessionClosed,

@@ -33,17 +33,8 @@
 namespace media {
 
 class AudioFramesImpl;
-class CdmAllocator;
-class CdmFileIO;
+class CdmAuxiliaryHelper;
 class CdmWrapper;
-
-// Called when the CDM needs a FileIO object from the host to do file IO
-// operations. Returns NULL if a FileIO object cannot be obtained. Once a
-// valid FileIO object is returned, |client| must be valid until
-// FileIO::Close() is called. The CDM can call this method multiple times
-// to operate on different files.
-using CreateCdmFileIOCB =
-    base::Callback<std::unique_ptr<CdmFileIO>(cdm::FileIOClient* client)>;
 
 class MEDIA_EXPORT CdmAdapter : public ContentDecryptionModule,
                                 public CdmContext,
@@ -59,8 +50,7 @@ class MEDIA_EXPORT CdmAdapter : public ContentDecryptionModule,
   static void Create(
       const std::string& key_system,
       const CdmConfig& cdm_config,
-      std::unique_ptr<CdmAllocator> allocator,
-      const CreateCdmFileIOCB& create_cdm_file_io_cb,
+      std::unique_ptr<CdmAuxiliaryHelper> helper,
       const SessionMessageCB& session_message_cb,
       const SessionClosedCB& session_closed_cb,
       const SessionKeysChangeCB& session_keys_change_cb,
@@ -175,8 +165,7 @@ class MEDIA_EXPORT CdmAdapter : public ContentDecryptionModule,
  private:
   CdmAdapter(const std::string& key_system,
              const CdmConfig& cdm_config,
-             std::unique_ptr<CdmAllocator> allocator,
-             const CreateCdmFileIOCB& create_cdm_file_io_cb,
+             std::unique_ptr<CdmAuxiliaryHelper> helper,
              const SessionMessageCB& session_message_cb,
              const SessionClosedCB& session_closed_cb,
              const SessionKeysChangeCB& session_keys_change_cb,
@@ -200,6 +189,19 @@ class MEDIA_EXPORT CdmAdapter : public ContentDecryptionModule,
   bool AudioFramesDataToAudioFrames(
       std::unique_ptr<AudioFramesImpl> audio_frames,
       Decryptor::AudioFrames* result_frames);
+
+  // Callbacks for Platform Verification.
+  void OnChallengePlatformDone(bool success,
+                               const std::string& signed_data,
+                               const std::string& signed_data_signature,
+                               const std::string& platform_key_certificate);
+  void OnStorageIdObtained(const std::vector<uint8_t>& storage_id);
+
+  // Callbacks for OutputProtection.
+  void OnOutputProtectionRequestMade(bool success);
+  void OnOutputProtectionStatus(bool success,
+                                uint32_t link_mask,
+                                uint32_t protection_mask);
 
   // Used to keep track of promises while the CDM is processing the request.
   CdmPromiseAdapter cdm_promise_adapter_;
@@ -230,8 +232,8 @@ class MEDIA_EXPORT CdmAdapter : public ContentDecryptionModule,
   int audio_samples_per_second_;
   ChannelLayout audio_channel_layout_;
 
-  std::unique_ptr<CdmAllocator> allocator_;
-  CreateCdmFileIOCB create_cdm_file_io_cb_;
+  // Helper that provides additional functionality for the CDM.
+  std::unique_ptr<CdmAuxiliaryHelper> helper_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 

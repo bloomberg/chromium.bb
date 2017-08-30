@@ -21,6 +21,7 @@
 #include "media/cdm/cdm_file_io.h"
 #include "media/cdm/cdm_module.h"
 #include "media/cdm/external_clear_key_test_helper.h"
+#include "media/cdm/mock_helpers.h"
 #include "media/cdm/simple_cdm_allocator.h"
 #include "media/media_features.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -105,19 +106,20 @@ class CdmAdapterTest : public testing::Test {
   void InitializeAndExpect(ExpectedResult expected_result) {
     CdmConfig cdm_config;  // default settings of false are sufficient.
     std::unique_ptr<CdmAllocator> allocator(new SimpleCdmAllocator());
-    CdmAdapter::Create(
-        helper_.KeySystemName(), cdm_config, std::move(allocator),
-        base::Bind(&CdmAdapterTest::CreateCdmFileIO, base::Unretained(this)),
-        base::Bind(&MockCdmClient::OnSessionMessage,
-                   base::Unretained(&cdm_client_)),
-        base::Bind(&MockCdmClient::OnSessionClosed,
-                   base::Unretained(&cdm_client_)),
-        base::Bind(&MockCdmClient::OnSessionKeysChange,
-                   base::Unretained(&cdm_client_)),
-        base::Bind(&MockCdmClient::OnSessionExpirationUpdate,
-                   base::Unretained(&cdm_client_)),
-        base::Bind(&CdmAdapterTest::OnCdmCreated, base::Unretained(this),
-                   expected_result));
+    std::unique_ptr<CdmAuxiliaryHelper> cdm_helper(
+        new MockCdmAuxiliaryHelper(std::move(allocator)));
+    CdmAdapter::Create(helper_.KeySystemName(), cdm_config,
+                       std::move(cdm_helper),
+                       base::Bind(&MockCdmClient::OnSessionMessage,
+                                  base::Unretained(&cdm_client_)),
+                       base::Bind(&MockCdmClient::OnSessionClosed,
+                                  base::Unretained(&cdm_client_)),
+                       base::Bind(&MockCdmClient::OnSessionKeysChange,
+                                  base::Unretained(&cdm_client_)),
+                       base::Bind(&MockCdmClient::OnSessionExpirationUpdate,
+                                  base::Unretained(&cdm_client_)),
+                       base::Bind(&CdmAdapterTest::OnCdmCreated,
+                                  base::Unretained(this), expected_result));
     RunUntilIdle();
   }
 
@@ -227,11 +229,6 @@ class CdmAdapterTest : public testing::Test {
   }
 
   void RunUntilIdle() { base::RunLoop().RunUntilIdle(); }
-
-  std::unique_ptr<CdmFileIO> CreateCdmFileIO(cdm::FileIOClient* client) {
-    ADD_FAILURE() << "Should never be called";
-    return nullptr;
-  }
 
   // Methods used for promise resolved/rejected.
   MOCK_METHOD0(OnResolve, void());

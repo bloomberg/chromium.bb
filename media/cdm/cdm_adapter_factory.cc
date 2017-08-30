@@ -12,9 +12,9 @@
 namespace media {
 
 CdmAdapterFactory::CdmAdapterFactory(
-    CdmAllocator::CreationCB allocator_creation_cb)
-    : allocator_creation_cb_(std::move(allocator_creation_cb)) {
-  DCHECK(allocator_creation_cb_);
+    CdmAuxiliaryHelper::CreationCB helper_creation_cb)
+    : helper_creation_cb_(std::move(helper_creation_cb)) {
+  DCHECK(helper_creation_cb_);
 }
 
 CdmAdapterFactory::~CdmAdapterFactory() {}
@@ -37,18 +37,16 @@ void CdmAdapterFactory::Create(
     return;
   }
 
-  std::unique_ptr<CdmAllocator> cdm_allocator = allocator_creation_cb_.Run();
-  if (!cdm_allocator) {
+  std::unique_ptr<CdmAuxiliaryHelper> cdm_helper = helper_creation_cb_.Run();
+  if (!cdm_helper) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(cdm_created_cb, nullptr, "CDM allocator creation failed."));
+        base::Bind(cdm_created_cb, nullptr, "CDM helper creation failed."));
     return;
   }
 
-  // TODO(xhwang): Hook up auxiliary services, e.g. File IO, output protection,
-  // and platform verification.
-  CdmAdapter::Create(key_system, cdm_config, std::move(cdm_allocator),
-                     CreateCdmFileIOCB(), session_message_cb, session_closed_cb,
+  CdmAdapter::Create(key_system, cdm_config, std::move(cdm_helper),
+                     session_message_cb, session_closed_cb,
                      session_keys_change_cb, session_expiration_update_cb,
                      cdm_created_cb);
 }
