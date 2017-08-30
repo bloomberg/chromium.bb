@@ -237,6 +237,19 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
 
 - (void)viewDidAppear:(BOOL)animated {
   [super viewDidAppear:animated];
+  // Resize the collection as it might have been rotated while not being
+  // presented (e.g. rotation on stack view).
+  [self.collectionUpdater
+      updateMostVisitedForSize:self.collectionView.bounds.size];
+  [self.headerCommandHandler
+      updateFakeOmniboxOnNewWidth:self.collectionView.bounds.size.width];
+  [self.collectionView reloadData];
+  if (ShouldCellsBeFullWidth(
+          [UIApplication sharedApplication].keyWindow.traitCollection)) {
+    self.styler.cellStyle = MDCCollectionViewCellStyleGrouped;
+  } else {
+    self.styler.cellStyle = MDCCollectionViewCellStyleCard;
+  }
   // Update the shadow bar.
   [self.audience contentOffsetDidChange];
 }
