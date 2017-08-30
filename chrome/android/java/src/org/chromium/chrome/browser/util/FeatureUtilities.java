@@ -23,6 +23,7 @@ import org.chromium.base.FieldTrialList;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -257,6 +258,7 @@ public class FeatureUtilities {
     /**
      * @return Whether or not chrome should attach the toolbar to the bottom of the screen.
      */
+    @CalledByNative
     public static boolean isChromeHomeEnabled() {
         if (DeviceFormFactor.isTablet()) return false;
 

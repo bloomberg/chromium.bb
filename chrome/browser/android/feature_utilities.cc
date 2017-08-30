@@ -27,6 +27,11 @@ bool GetIsInMultiWindowModeValue() {
   return is_in_multi_window_mode;
 }
 
+bool GetIsChromeHomeEnabled() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  return Java_FeatureUtilities_isChromeHomeEnabled(env);
+}
+
 } // namespace android
 } // namespace chrome
 
