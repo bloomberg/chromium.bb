@@ -91,6 +91,11 @@ class PLATFORM_EXPORT V8PrivateProperty {
   WTF_MAKE_NONCOPYABLE(V8PrivateProperty);
 
  public:
+  enum CachedAccessorSymbol : unsigned {
+    kNoCachedAccessor = 0,
+    kWindowDocumentCachedAccessor,
+  };
+
   // Provides fast access to V8's private properties.
   //
   // Retrieving/creating a global private symbol from a string is very
@@ -188,6 +193,18 @@ class PLATFORM_EXPORT V8PrivateProperty {
     return Symbol(
         isolate, private_prop->symbol_window_document_cached_accessor_.NewLocal(
                      isolate));
+  }
+
+  static Symbol GetCachedAccessor(v8::Isolate* isolate,
+                                  CachedAccessorSymbol symbol_id) {
+    switch (symbol_id) {
+      case kWindowDocumentCachedAccessor:
+        return GetWindowDocumentCachedAccessor(isolate);
+      case kNoCachedAccessor:
+        break;
+    };
+    NOTREACHED();
+    return GetSymbol(isolate, "unexpected cached accessor");
   }
 
   static Symbol GetSymbol(v8::Isolate* isolate, const char* symbol) {

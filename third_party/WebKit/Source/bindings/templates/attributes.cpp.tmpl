@@ -263,15 +263,6 @@ const v8::FunctionCallbackInfo<v8::Value>& info
 
 
 {##############################################################################}
-{% macro attribute_cached_property_key(attribute) %}
-v8::Local<v8::Private> {{v8_class_or_partial}}::{{attribute.name}}CachedPropertyKey(v8::Isolate* isolate)
-{
-  return V8PrivateProperty::Get{{attribute.cached_accessor_name}}(isolate).GetPrivate();
-}
-{% endmacro %}
-
-
-{##############################################################################}
 {% macro constructor_getter_callback(attribute, world_suffix) %}
 void {{v8_class_or_partial}}::{{attribute.name}}ConstructorGetterCallback{{world_suffix}}(v8::Local<v8::Name> property, const v8::PropertyCallbackInfo<v8::Value>& info) {
   {{ runtime_timer_scope_disabled_by_default(attribute.runtime_call_stats.constructor_getter_callback_counter) }}
@@ -525,9 +516,9 @@ const v8::FunctionCallbackInfo<v8::Value>& info
     if attribute.constructor_type else 'nullptr' %}
 {% set property_attribute = 'static_cast<v8::PropertyAttribute>(%s)' %
                             ' | '.join(attribute.property_attributes) %}
-{% set cached_property_key =
-    '%s::%sCachedPropertyKey' % (v8_class_or_partial, attribute.name)
-    if attribute.is_cached_accessor else 'nullptr' %}
+{% set cached_property_key = 'V8PrivateProperty::k' +
+    (attribute.cached_accessor_name if attribute.is_cached_accessor
+     else 'NoCachedAccessor') %}
 {% set holder_check = 'V8DOMConfiguration::kDoNotCheckHolder'
     if attribute.is_lenient_this else 'V8DOMConfiguration::kCheckHolder' %}
 {% if attribute.is_per_world_bindings %}
@@ -540,16 +531,17 @@ const v8::FunctionCallbackInfo<v8::Value>& info
         '"%s"' % attribute.name,
         getter_callback_for_main_world,
         setter_callback_for_main_world,
+        wrapper_type_info,
     ],
     'non_main' : [
         '"%s"' % attribute.name,
         getter_callback,
         setter_callback,
+        wrapper_type_info,
     ],
 } %}
 {% set accessor_only_fields = [] if config_type == 'attribute' else [cached_property_key] %}
 {% set config_post = [
-    wrapper_type_info,
     property_attribute,
     property_location(attribute),
     holder_check,

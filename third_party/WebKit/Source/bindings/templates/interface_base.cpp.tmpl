@@ -191,12 +191,8 @@ static const struct {
 
 {# Attributes #}
 {% from 'attributes.cpp.tmpl' import constructor_getter_callback,
-       attribute_getter_callback, attribute_setter_callback,
-       attribute_cached_property_key with context %}
+       attribute_getter_callback, attribute_setter_callback with context %}
 {% for attribute in attributes %}
-{% if attribute.is_cached_accessor %}
-{{attribute_cached_property_key(attribute)}}
-{% endif %}
 {% for world_suffix in attribute.world_suffixes %}
 {% if not attribute.constructor_type %}
 {{attribute_getter_callback(attribute, world_suffix)}}

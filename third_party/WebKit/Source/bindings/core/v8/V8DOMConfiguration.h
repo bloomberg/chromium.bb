@@ -33,6 +33,7 @@
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "core/CoreExport.h"
 #include "platform/bindings/V8DOMWrapper.h"
+#include "platform/bindings/V8PrivateProperty.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -71,8 +72,6 @@ class CORE_EXPORT V8DOMConfiguration final {
     kNonMainWorlds = 1 << 1,
     kAllWorlds = kMainWorld | kNonMainWorlds,
   };
-
-  typedef v8::Local<v8::Private> (*CachedPropertyKey)(v8::Isolate*);
 
   // AttributeConfiguration translates into calls to SetNativeDataProperty() on
   // either of instance or prototype object (or their object template).
@@ -144,9 +143,9 @@ class CORE_EXPORT V8DOMConfiguration final {
     const char* const name;
     v8::FunctionCallback getter;
     v8::FunctionCallback setter;
-    // The accessor's 'result' is stored in a private property.
-    CachedPropertyKey cached_property_key;
     const WrapperTypeInfo* data;
+    // V8PrivateProperty::CachedAccessorSymbol
+    unsigned cached_property_key : 1;
     // v8::PropertyAttribute
     unsigned attribute : 8;
     // PropertyLocationConfiguration
