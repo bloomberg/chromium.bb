@@ -252,14 +252,16 @@ void TabManagerStatsCollector::OnDidStopLoading(
     return;
 
   if (is_session_restore_loading_tabs_ && !IsInOverlappedSession()) {
-    UMA_HISTOGRAM_TIMES(kHistogramSessionRestoreTabSwitchLoadTime,
-                        base::TimeTicks::Now() -
-                            foreground_contents_switched_to_times_[contents]);
+    UMA_HISTOGRAM_MEDIUM_TIMES(
+        kHistogramSessionRestoreTabSwitchLoadTime,
+        base::TimeTicks::Now() -
+            foreground_contents_switched_to_times_[contents]);
   }
   if (is_in_background_tab_opening_session_ && !IsInOverlappedSession()) {
-    UMA_HISTOGRAM_TIMES(kHistogramBackgroundTabOpeningTabSwitchLoadTime,
-                        base::TimeTicks::Now() -
-                            foreground_contents_switched_to_times_[contents]);
+    UMA_HISTOGRAM_MEDIUM_TIMES(
+        kHistogramBackgroundTabOpeningTabSwitchLoadTime,
+        base::TimeTicks::Now() -
+            foreground_contents_switched_to_times_[contents]);
   }
 
   foreground_contents_switched_to_times_.erase(contents);
@@ -310,12 +312,14 @@ const char
 // static
 const char
     TabManagerStatsCollector::kHistogramSessionRestoreTabSwitchLoadTime[] =
-        "TabManager.Experimental.SessionRestore.TabSwitchLoadTime";
+        "TabManager.Experimental.SessionRestore.TabSwitchLoadTime."
+        "UntilTabIsLoaded";
 
 // static
 const char TabManagerStatsCollector::
     kHistogramBackgroundTabOpeningTabSwitchLoadTime[] =
-        "TabManager.Experimental.BackgroundTabOpening.TabSwitchLoadTime";
+        "TabManager.Experimental.BackgroundTabOpening.TabSwitchLoadTime."
+        "UntilTabIsLoaded";
 
 // static
 const char TabManagerStatsCollector::kHistogramBackgroundTabOpeningTabCount[] =
