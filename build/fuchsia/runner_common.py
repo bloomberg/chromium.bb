@@ -347,6 +347,9 @@ def RunFuchsia(bootfs_and_manifest, use_device, dry_run):
       '-machine', 'q35',
       '-kernel', kernel_path,
       '-initrd', bootfs,
+      '-smp', '4',
+      '-enable-kvm',
+      '-cpu', 'host,migratable=no',
 
       # Configure virtual network. It is used in the tests to connect to
       # testserver running on the host.
@@ -363,12 +366,6 @@ def RunFuchsia(bootfs_and_manifest, use_device, dry_run):
       # noisy ANSI spew from the user's terminal emulator.
       '-append', 'TERM=dumb kernel.halt_on_panic=true',
     ]
-
-  if _IsRunningOnBot():
-    qemu_command += ['-smp', '1', '-cpu', 'Haswell,+smap,-check']
-  else:
-    # Bot executions can't (currently) enable KVM.
-    qemu_command += ['-smp', '4', '-enable-kvm', '-cpu', 'host,migratable=no']
 
   if dry_run:
     print 'Run:', ' '.join(qemu_command)
