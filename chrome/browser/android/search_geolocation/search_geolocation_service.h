@@ -37,6 +37,8 @@ class SearchGeolocationService : public KeyedService {
   // testing.
   class SearchEngineDelegate {
    public:
+    virtual ~SearchEngineDelegate() {}
+
     // Returns the name of the current DSE.
     virtual base::string16 GetDSEName() = 0;
 

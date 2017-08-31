@@ -21,7 +21,7 @@ class RenderFrameHost;
 // BrowserSurfaceViewManager creates and owns a ContentVideoView on behalf of
 // a fullscreen media player. Its SurfaceView is registered so that a decoder
 // in the GPU process can look it up and render to it.
-class CONTENT_EXPORT BrowserSurfaceViewManager
+class CONTENT_EXPORT BrowserSurfaceViewManager final
     : public ContentVideoView::Client {
  public:
   explicit BrowserSurfaceViewManager(RenderFrameHost* render_frame_host);
