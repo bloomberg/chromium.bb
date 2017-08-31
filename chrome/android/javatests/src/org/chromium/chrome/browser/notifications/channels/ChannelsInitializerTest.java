@@ -21,15 +21,19 @@ import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.notifications.NotificationManagerProxy;
 import org.chromium.chrome.browser.notifications.NotificationManagerProxyImpl;
 import org.chromium.chrome.browser.notifications.NotificationSettingsBridge;
+import org.chromium.chrome.test.util.browser.Features;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -46,6 +50,10 @@ public class ChannelsInitializerTest {
     private ChannelsInitializer mChannelsInitializer;
     private NotificationManagerProxy mNotificationManagerProxy;
     private Context mContext;
+
+    @Rule
+    @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
+    public Features.Processor processor = new Features.Processor();
 
     @Before
     public void setUp() throws Exception {
@@ -73,6 +81,7 @@ public class ChannelsInitializerTest {
     @MinAndroidSdkLevel(Build.VERSION_CODES.O)
     @TargetApi(Build.VERSION_CODES.O)
     @Feature({"Browser", "Notifications"})
+    @Features(@Features.Register(ChromeFeatureList.SITE_NOTIFICATION_CHANNELS))
     public void testDeleteLegacyChannels_noopOnCurrentDefinitions() throws Exception {
         assertThat(getChannelsIgnoringDefault(), is(empty()));
 
@@ -102,7 +111,7 @@ public class ChannelsInitializerTest {
                 containsInAnyOrder(ChannelDefinitions.CHANNEL_ID_BROWSER,
                         ChannelDefinitions.CHANNEL_ID_DOWNLOADS,
                         ChannelDefinitions.CHANNEL_ID_INCOGNITO,
-                        ChannelDefinitions.CHANNEL_ID_SITES, ChannelDefinitions.CHANNEL_ID_MEDIA));
+                        ChannelDefinitions.CHANNEL_ID_MEDIA));
     }
 
     @Test

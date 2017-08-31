@@ -9,16 +9,26 @@ import static org.hamcrest.Matchers.everyItem;
 import static org.hamcrest.Matchers.isIn;
 import static org.hamcrest.Matchers.not;
 
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.BlockJUnit4ClassRunner;
+
+import org.chromium.base.annotations.SuppressFBWarnings;
+import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.test.util.browser.Features;
 
 /**
  * Java unit tests for ChannelDefinitions.
  */
 @RunWith(BlockJUnit4ClassRunner.class)
 public class ChannelDefinitionsTest {
+    @Rule
+    @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
+    public Features.Processor processor = new Features.Processor();
+
     @Test
+    @Features(@Features.Register(ChromeFeatureList.SITE_NOTIFICATION_CHANNELS))
     public void testNoOverlapBetweenStartupAndLegacyChannelIds() throws Exception {
         assertThat(ChannelDefinitions.getStartupChannelIds(),
                 everyItem(not(isIn(ChannelDefinitions.getLegacyChannelIds()))));
