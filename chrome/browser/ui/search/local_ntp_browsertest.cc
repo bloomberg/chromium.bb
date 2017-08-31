@@ -121,10 +121,14 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, EmbeddedSearchAPIOnlyAvailableOnNTP) {
   EXPECT_TRUE(result);
 
   // Navigate somewhere else in the same tab.
+  content::TestNavigationObserver elsewhere_observer(active_tab);
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), other_url, WindowOpenDisposition::CURRENT_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  elsewhere_observer.Wait();
+  ASSERT_TRUE(elsewhere_observer.last_navigation_succeeded());
   ASSERT_FALSE(search::IsInstantNTP(active_tab));
+
   // Now the embeddedSearch API should have gone away.
   ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
       active_tab, "!!window.chrome.embeddedSearch", &result));
@@ -279,24 +283,33 @@ IN_PROC_BROWSER_TEST_F(LocalNTPRTLTest, RightToLeft) {
   EXPECT_EQ("rtl", dir);
 }
 
-// A test class that sets up local_ntp_browsertest.html as the NTP URL. It's
-// mostly a copy of the real local_ntp.html, but it adds some testing JS.
-class LocalNTPJavascriptTest : public LocalNTPTest {
+// A test class that sets up a local HTML file as the NTP URL.
+class CustomNTPUrlTest : public LocalNTPTest {
  public:
-  LocalNTPJavascriptTest()
-      : https_test_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
-    https_test_server_.ServeFilesFromSourceDirectory("chrome/test/data");
+  explicit CustomNTPUrlTest(const std::string& ntp_file_path)
+      : https_test_server_(net::EmbeddedTestServer::TYPE_HTTPS),
+        ntp_file_path_(ntp_file_path) {
+    https_test_server_.ServeFilesFromSourceDirectory(
+        "chrome/test/data/local_ntp");
   }
 
  private:
   void SetUpOnMainThread() override {
     ASSERT_TRUE(https_test_server_.Start());
-    GURL ntp_url = https_test_server_.GetURL("/local_ntp_browsertest.html");
+    GURL ntp_url = https_test_server_.GetURL(ntp_file_path_);
     SetUserSelectedDefaultSearchProvider(https_test_server_.base_url().spec(),
                                          ntp_url.spec());
   }
 
   net::EmbeddedTestServer https_test_server_;
+  const std::string ntp_file_path_;
+};
+
+// A test class that sets up local_ntp_browsertest.html as the NTP URL. It's
+// mostly a copy of the real local_ntp.html, but it adds some testing JS.
+class LocalNTPJavascriptTest : public CustomNTPUrlTest {
+ public:
+  LocalNTPJavascriptTest() : CustomNTPUrlTest("/local_ntp_browsertest.html") {}
 };
 
 // This runs a bunch of pure JS-side tests, i.e. those that don't require any
@@ -312,11 +325,19 @@ IN_PROC_BROWSER_TEST_F(LocalNTPJavascriptTest, SimpleJavascriptTests) {
       OpenNewTab(browser(), GURL(chrome::kChromeUINewTabURL));
   ASSERT_TRUE(search::IsInstantNTP(active_tab));
 
+  // Run the tests.
   bool success = false;
   ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
-      active_tab, "!!runSimpleTests()", &success));
+      active_tab, "!!runSimpleTests('localNtp')", &success));
   EXPECT_TRUE(success);
 }
+
+// A test class that sets up voice_browsertest.html as the NTP URL. It's
+// mostly a copy of the real local_ntp.html, but it adds some testing JS.
+class LocalNTPVoiceJavascriptTest : public CustomNTPUrlTest {
+ public:
+  LocalNTPVoiceJavascriptTest() : CustomNTPUrlTest("/voice_browsertest.html") {}
+};
 
 namespace {
 
