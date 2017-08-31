@@ -6,7 +6,6 @@
 
 #include "components/viz/client/hit_test_data_provider.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/mus/window_mus.h"
 #include "ui/aura/mus/window_port_mus.h"
 #include "ui/aura/test/aura_mus_test_base.h"
 #include "ui/aura/window.h"
@@ -113,6 +112,8 @@ class HitTestDataProviderAuraTest : public test::AuraTestBaseMus {
 
  protected:
   const viz::HitTestDataProvider* hit_test_data_provider() const {
+    // TODO(varkha): Find a way to get the HitTestDataProvider without depending
+    // on WindowPortMus
     WindowPortMus* port = WindowPortMus::Get(root_.get());
     return port->local_layer_tree_frame_sink_->hit_test_data_provider();
   }
@@ -148,8 +149,7 @@ TEST_F(HitTestDataProviderAuraTest, Stacking) {
     EXPECT_EQ(region->flags, viz::mojom::kHitTestMine |
                                  viz::mojom::kHitTestMouse |
                                  viz::mojom::kHitTestTouch);
-    EXPECT_EQ(region->frame_sink_id,
-              WindowPortMus::Get(expected_order_1[i])->GetFrameSinkId());
+    EXPECT_EQ(region->frame_sink_id, expected_order_1[i]->GetFrameSinkId());
     EXPECT_EQ(region->rect.ToString(),
               expected_order_1[i]->bounds().ToString());
     i++;
@@ -168,8 +168,7 @@ TEST_F(HitTestDataProviderAuraTest, Stacking) {
     EXPECT_EQ(region->flags, viz::mojom::kHitTestMine |
                                  viz::mojom::kHitTestMouse |
                                  viz::mojom::kHitTestTouch);
-    EXPECT_EQ(region->frame_sink_id,
-              WindowPortMus::Get(expected_order_2[i])->GetFrameSinkId());
+    EXPECT_EQ(region->frame_sink_id, expected_order_2[i]->GetFrameSinkId());
     EXPECT_EQ(region->rect.ToString(),
               expected_order_2[i]->bounds().ToString());
     i++;
@@ -201,8 +200,7 @@ TEST_F(HitTestDataProviderAuraTest, CustomTargeter) {
   ASSERT_EQ(hit_test_data->regions.size(), arraysize(expected_insets));
   int i = 0;
   for (const auto& region : hit_test_data->regions) {
-    EXPECT_EQ(region->frame_sink_id,
-              WindowPortMus::Get(expected_windows[i])->GetFrameSinkId());
+    EXPECT_EQ(region->frame_sink_id, expected_windows[i]->GetFrameSinkId());
     EXPECT_EQ(region->flags, expected_flags[i]);
     gfx::Rect expected_bounds = expected_windows[i]->bounds();
     expected_bounds.Inset(gfx::Insets(expected_insets[i]));
@@ -242,8 +240,7 @@ TEST_F(HitTestDataProviderAuraTest, HoleTargeter) {
   ASSERT_EQ(hit_test_data->regions.size(), expected_bounds.size());
   int i = 0;
   for (const auto& region : hit_test_data->regions) {
-    EXPECT_EQ(region->frame_sink_id,
-              WindowPortMus::Get(expected_windows[i])->GetFrameSinkId());
+    EXPECT_EQ(region->frame_sink_id, expected_windows[i]->GetFrameSinkId());
     EXPECT_EQ(region->flags, expected_flags);
     EXPECT_EQ(region->rect.ToString(), expected_bounds[i].ToString());
     i++;

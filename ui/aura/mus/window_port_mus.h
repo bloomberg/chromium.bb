@@ -66,10 +66,6 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
     return primary_surface_info_;
   }
 
-  // Returns either the FrameSinkId set by window server or its server_id with
-  // the client id part 0.
-  viz::FrameSinkId GetFrameSinkId() const;
-
   void SetTextInputState(mojo::TextInputStatePtr state);
   void SetImeVisibility(bool visible, mojo::TextInputStatePtr state);
 
@@ -96,6 +92,11 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   std::unique_ptr<viz::ClientLayerTreeFrameSink> RequestLayerTreeFrameSink(
       scoped_refptr<viz::ContextProvider> context_provider,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager);
+
+  // WindowPort:
+  // Returns either the FrameSinkId set by window server or its server_id with
+  // the client id part 0.
+  viz::FrameSinkId GetFrameSinkId() const override;
 
  private:
   friend class WindowPortMusTestApi;

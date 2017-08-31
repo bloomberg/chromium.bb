@@ -64,12 +64,6 @@ WindowPortMus* WindowPortMus::Get(Window* window) {
   return static_cast<WindowPortMus*>(WindowPort::Get(window));
 }
 
-viz::FrameSinkId WindowPortMus::GetFrameSinkId() const {
-  if (embed_frame_sink_id_.is_valid())
-    return embed_frame_sink_id_;
-  return viz::FrameSinkId(0, server_id());
-}
-
 void WindowPortMus::SetTextInputState(mojo::TextInputStatePtr state) {
   window_tree_client_->SetWindowTextInputState(this, std::move(state));
 }
@@ -132,6 +126,12 @@ WindowPortMus::RequestLayerTreeFrameSink(
   window_tree_client_->AttachCompositorFrameSink(
       server_id(), std::move(sink_request), std::move(client));
   return layer_tree_frame_sink;
+}
+
+viz::FrameSinkId WindowPortMus::GetFrameSinkId() const {
+  if (embed_frame_sink_id_.is_valid())
+    return embed_frame_sink_id_;
+  return viz::FrameSinkId(0, server_id());
 }
 
 WindowPortMus::ServerChangeIdType WindowPortMus::ScheduleChange(
