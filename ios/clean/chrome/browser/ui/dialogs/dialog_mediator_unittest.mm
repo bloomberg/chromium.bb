@@ -41,8 +41,8 @@ class DialogMediatorTest : public PlatformTest {
                   placeholderText:@"placeholderText"
                            secure:YES]),
         mediator_([[TestDialogMediator alloc] init]) {
-    mediator_.title = title_;
-    mediator_.message = message_;
+    mediator_.dialogTitle = title_;
+    mediator_.dialogMessage = message_;
     mediator_.buttonConfigs = @[ button_config_ ];
     mediator_.textFieldConfigs = @[ text_field_config_ ];
   }
