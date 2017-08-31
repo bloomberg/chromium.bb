@@ -39,7 +39,7 @@ struct CYCLIC_REFRESH {
   // RD mult. parameters for segment 1.
   int rdmult;
   // Cyclic refresh map.
-  signed char *map;
+  int8_t *map;
   // Map of the last q a block was coded at.
   uint8_t *last_coded_q_map;
   // Thresholds applied to the projected rate/distortion of the coding block,
