@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_MOCK_WIDGET_IMPL_H_
-#define CONTENT_BROWSER_RENDERER_HOST_MOCK_WIDGET_IMPL_H_
+#ifndef CONTENT_TEST_MOCK_WIDGET_IMPL_H_
+#define CONTENT_TEST_MOCK_WIDGET_IMPL_H_
 
 #include "content/common/widget.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -24,4 +24,4 @@ class MockWidgetImpl : public mojom::Widget {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_MOCK_WIDGET_IMPL_H_
+#endif  // CONTENT_TEST_MOCK_WIDGET_IMPL_H_
