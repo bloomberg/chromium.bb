@@ -14,18 +14,17 @@
 #include "chrome/browser/resource_coordinator/tab_manager_web_contents_data.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/public/browser/web_contents.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using base::Bucket;
+using ::testing::ElementsAre;
 
 using WebContents = content::WebContents;
 
 namespace resource_coordinator {
 
-class TabManagerStatsCollectorTest
-    : public ChromeRenderViewHostTestHarness,
-      public testing::WithParamInterface<
-          std::pair<bool,   // should_test_session_restore
-                    bool>>  // should_test_background_tab_opening
-{
+class TabManagerStatsCollectorTest : public ChromeRenderViewHostTestHarness {
  protected:
   TabManagerStatsCollectorTest() = default;
   ~TabManagerStatsCollectorTest() override = default;
@@ -55,19 +54,10 @@ class TabManagerStatsCollectorTest
   }
 
   void SetUp() override {
-    std::tie(should_test_session_restore_,
-             should_test_background_tab_opening_) = GetParam();
     ChromeRenderViewHostTestHarness::SetUp();
   }
 
- protected:
-  bool IsTestingOverlappedSession() {
-    return should_test_session_restore_ && should_test_background_tab_opening_;
-  }
-
   base::HistogramTester histogram_tester_;
-  bool should_test_session_restore_;
-  bool should_test_background_tab_opening_;
 
  private:
   TabManager tab_manager_;
@@ -75,8 +65,35 @@ class TabManagerStatsCollectorTest
   DISALLOW_COPY_AND_ASSIGN(TabManagerStatsCollectorTest);
 };
 
+class TabManagerStatsCollectorParameterizedTest
+    : public TabManagerStatsCollectorTest,
+      public testing::WithParamInterface<
+          std::pair<bool,   // should_test_session_restore
+                    bool>>  // should_test_background_tab_opening
+{
+ protected:
+  TabManagerStatsCollectorParameterizedTest() = default;
+  ~TabManagerStatsCollectorParameterizedTest() override = default;
+
+  void SetUp() override {
+    std::tie(should_test_session_restore_,
+             should_test_background_tab_opening_) = GetParam();
+    TabManagerStatsCollectorTest::SetUp();
+  }
+
+  bool IsTestingOverlappedSession() {
+    return should_test_session_restore_ && should_test_background_tab_opening_;
+  }
+
+  bool should_test_session_restore_;
+  bool should_test_background_tab_opening_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TabManagerStatsCollectorParameterizedTest);
+};
+
 class TabManagerStatsCollectorTabSwitchTest
-    : public TabManagerStatsCollectorTest {
+    : public TabManagerStatsCollectorParameterizedTest {
  protected:
   TabManagerStatsCollectorTabSwitchTest() = default;
   ~TabManagerStatsCollectorTabSwitchTest() override = default;
@@ -268,7 +285,8 @@ TEST_P(TabManagerStatsCollectorTabSwitchTest, HistogramsTabSwitchLoadTime) {
                                                                            : 0);
 }
 
-TEST_P(TabManagerStatsCollectorTest, HistogramsExpectedTaskQueueingDuration) {
+TEST_P(TabManagerStatsCollectorParameterizedTest,
+       HistogramsExpectedTaskQueueingDuration) {
   auto* stats_collector = tab_manager_stats_collector();
 
   const base::TimeDelta kEQT = base::TimeDelta::FromMilliseconds(1);
@@ -334,6 +352,45 @@ TEST_P(TabManagerStatsCollectorTest, HistogramsExpectedTaskQueueingDuration) {
                                                                            : 0);
 }
 
+TEST_P(TabManagerStatsCollectorParameterizedTest, HistogramsTabCount) {
+  auto* stats_collector = tab_manager_stats_collector();
+
+  if (should_test_session_restore_)
+    StartSessionRestore();
+  if (should_test_background_tab_opening_)
+    StartBackgroundTabOpeningSession();
+
+  stats_collector->TrackNewBackgroundTab(1, 3);
+  stats_collector->TrackBackgroundTabLoadAutoStarted();
+  stats_collector->TrackBackgroundTabLoadAutoStarted();
+  stats_collector->TrackBackgroundTabLoadUserInitiated();
+  stats_collector->TrackPausedBackgroundTabs(1);
+
+  if (should_test_session_restore_)
+    FinishSessionRestore();
+  if (should_test_background_tab_opening_)
+    FinishBackgroundTabOpeningSession();
+
+  histogram_tester_.ExpectTotalCount(
+      TabManagerStatsCollector::kHistogramBackgroundTabOpeningTabCount,
+      should_test_background_tab_opening_ && !IsTestingOverlappedSession() ? 1
+                                                                           : 0);
+  histogram_tester_.ExpectTotalCount(
+      TabManagerStatsCollector::kHistogramBackgroundTabOpeningTabPausedCount,
+      should_test_background_tab_opening_ && !IsTestingOverlappedSession() ? 1
+                                                                           : 0);
+  histogram_tester_.ExpectTotalCount(
+      TabManagerStatsCollector::
+          kHistogramBackgroundTabOpeningTabLoadAutoStartedCount,
+      should_test_background_tab_opening_ && !IsTestingOverlappedSession() ? 1
+                                                                           : 0);
+  histogram_tester_.ExpectTotalCount(
+      TabManagerStatsCollector::
+          kHistogramBackgroundTabOpeningTabLoadUserInitiatedCount,
+      should_test_background_tab_opening_ && !IsTestingOverlappedSession() ? 1
+                                                                           : 0);
+}
+
 INSTANTIATE_TEST_CASE_P(
     ,
     TabManagerStatsCollectorTabSwitchTest,
@@ -344,11 +401,108 @@ INSTANTIATE_TEST_CASE_P(
                       std::make_pair(true, true)));
 INSTANTIATE_TEST_CASE_P(
     ,
-    TabManagerStatsCollectorTest,
+    TabManagerStatsCollectorParameterizedTest,
     ::testing::Values(std::make_pair(false,   // Session restore
                                      false),  // Background tab opening
                       std::make_pair(true, false),
                       std::make_pair(false, true),
                       std::make_pair(true, true)));
+
+TEST_F(TabManagerStatsCollectorTest, HistogramsSessionOverlap) {
+  histogram_tester_.ExpectTotalCount(
+      TabManagerStatsCollector::kHistogramSessionOverlapSessionRestore, 0);
+  histogram_tester_.ExpectTotalCount(
+      TabManagerStatsCollector::kHistogramSessionOverlapBackgroundTabOpening,
+      0);
+
+  // Non-overlapping session restore.
+  StartSessionRestore();
+  FinishSessionRestore();
+  EXPECT_THAT(
+      histogram_tester_.GetAllSamples(
+          TabManagerStatsCollector::kHistogramSessionOverlapSessionRestore),
+      ElementsAre(Bucket(false, 1)));
+
+  // Non-overlapping background tab opening.
+  StartBackgroundTabOpeningSession();
+  FinishBackgroundTabOpeningSession();
+  EXPECT_THAT(histogram_tester_.GetAllSamples(
+                  TabManagerStatsCollector::
+                      kHistogramSessionOverlapBackgroundTabOpening),
+              ElementsAre(Bucket(false, 1)));
+
+  // Overlapping session with session restore before background tab opening.
+  StartSessionRestore();
+  StartBackgroundTabOpeningSession();
+  FinishSessionRestore();
+  FinishBackgroundTabOpeningSession();
+  EXPECT_THAT(
+      histogram_tester_.GetAllSamples(
+          TabManagerStatsCollector::kHistogramSessionOverlapSessionRestore),
+      ElementsAre(Bucket(false, 1), Bucket(true, 1)));
+  EXPECT_THAT(histogram_tester_.GetAllSamples(
+                  TabManagerStatsCollector::
+                      kHistogramSessionOverlapBackgroundTabOpening),
+              ElementsAre(Bucket(false, 1), Bucket(true, 1)));
+
+  // Overlapping session with background tab opening before session restore.
+  StartBackgroundTabOpeningSession();
+  StartSessionRestore();
+  FinishBackgroundTabOpeningSession();
+  FinishSessionRestore();
+  EXPECT_THAT(
+      histogram_tester_.GetAllSamples(
+          TabManagerStatsCollector::kHistogramSessionOverlapSessionRestore),
+      ElementsAre(Bucket(false, 1), Bucket(true, 2)));
+  EXPECT_THAT(histogram_tester_.GetAllSamples(
+                  TabManagerStatsCollector::
+                      kHistogramSessionOverlapBackgroundTabOpening),
+              ElementsAre(Bucket(false, 1), Bucket(true, 2)));
+
+  // Overlapping session with session restore inside background tab opening.
+  StartBackgroundTabOpeningSession();
+  StartSessionRestore();
+  FinishSessionRestore();
+  FinishBackgroundTabOpeningSession();
+  EXPECT_THAT(
+      histogram_tester_.GetAllSamples(
+          TabManagerStatsCollector::kHistogramSessionOverlapSessionRestore),
+      ElementsAre(Bucket(false, 1), Bucket(true, 3)));
+  EXPECT_THAT(histogram_tester_.GetAllSamples(
+                  TabManagerStatsCollector::
+                      kHistogramSessionOverlapBackgroundTabOpening),
+              ElementsAre(Bucket(false, 1), Bucket(true, 3)));
+
+  // Overlapping session with background tab opening inside session restore.
+  StartSessionRestore();
+  StartBackgroundTabOpeningSession();
+  FinishBackgroundTabOpeningSession();
+  FinishSessionRestore();
+  EXPECT_THAT(
+      histogram_tester_.GetAllSamples(
+          TabManagerStatsCollector::kHistogramSessionOverlapSessionRestore),
+      ElementsAre(Bucket(false, 1), Bucket(true, 4)));
+  EXPECT_THAT(histogram_tester_.GetAllSamples(
+                  TabManagerStatsCollector::
+                      kHistogramSessionOverlapBackgroundTabOpening),
+              ElementsAre(Bucket(false, 1), Bucket(true, 4)));
+
+  // Overlapping session with multiple background tab opening sessions
+  // inside session restore.
+  StartSessionRestore();
+  StartBackgroundTabOpeningSession();
+  FinishBackgroundTabOpeningSession();
+  StartBackgroundTabOpeningSession();
+  FinishBackgroundTabOpeningSession();
+  FinishSessionRestore();
+  EXPECT_THAT(
+      histogram_tester_.GetAllSamples(
+          TabManagerStatsCollector::kHistogramSessionOverlapSessionRestore),
+      ElementsAre(Bucket(false, 1), Bucket(true, 5)));
+  EXPECT_THAT(histogram_tester_.GetAllSamples(
+                  TabManagerStatsCollector::
+                      kHistogramSessionOverlapBackgroundTabOpening),
+              ElementsAre(Bucket(false, 1), Bucket(true, 6)));
+}
 
 }  // namespace resource_coordinator

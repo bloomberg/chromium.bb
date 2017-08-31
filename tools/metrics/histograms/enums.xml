@@ -3509,6 +3509,11 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="Orphan"/>
 </enum>
 
+<enum name="BooleanOverlap">
+  <int value="0" label="No overlap"/>
+  <int value="1" label="Overlapped"/>
+</enum>
+
 <enum name="BooleanOverlaySupported">
   <int value="0" label="No overlays supported"/>
   <int value="1" label="Supports overlays"/>

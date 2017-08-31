@@ -81788,6 +81788,66 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="TabManager.BackgroundTabOpening.TabCount" units="tabs">
+  <owner>zhenw@chromium.org</owner>
+  <summary>
+    The max number of background tabs pending or loading when opening background
+    tabs. This is recorded at the end of background tab opening session, which
+    is defined as the duration from the time when the browser starts to open
+    background tabs until the time when browser has finished loading those tabs
+    or paused loading due to memory pressure. A new session starts when the
+    browser resumes loading background tabs when memory pressure returns to
+    normal. The metric is not recorded when the session overlaps with session
+    restore.
+  </summary>
+</histogram>
+
+<histogram name="TabManager.BackgroundTabOpening.TabLoadAutoStartedCount"
+    units="tabs">
+  <owner>zhenw@chromium.org</owner>
+  <summary>
+    The number of background tabs whose loading was triggered by TabManager
+    automatically when opening background tabs. This is recorded at the end of
+    background tab opening session, which is defined as the duration from the
+    time when the browser starts to open background tabs until the time when
+    browser has finished loading those tabs or paused loading due to memory
+    pressure. A new session starts when the browser resumes loading background
+    tabs when memory pressure returns to normal. The metric is not recorded when
+    the session overlaps with session restore.
+  </summary>
+</histogram>
+
+<histogram name="TabManager.BackgroundTabOpening.TabLoadUserInitiatedCount"
+    units="tabs">
+  <owner>zhenw@chromium.org</owner>
+  <summary>
+    The number of background tabs whose loading was triggered by user action
+    when opening background tabs. For example, when the user selects a
+    background tab and brings it to foreground, that tab will start to load
+    immediately if not already loading. This is recorded at the end of
+    background tab opening session, which is defined as the duration from the
+    time when the browser starts to open background tabs until the time when
+    browser has finished loading those tabs or paused loading due to memory
+    pressure. A new session starts when the browser resumes loading background
+    tabs when memory pressure returns to normal. The metric is not recorded when
+    the session overlaps with session restore.
+  </summary>
+</histogram>
+
+<histogram name="TabManager.BackgroundTabOpening.TabPausedCount" units="tabs">
+  <owner>zhenw@chromium.org</owner>
+  <summary>
+    The max number of background tabs paused to load due to memory pressure when
+    opening background tabs. This is recorded at the end of background tab
+    opening session, which is defined as the duration from the time when the
+    browser starts to open background tabs until the time when browser has
+    finished loading those tabs or paused loading them all due to memory
+    pressure. A new session starts when the browser resumes loading background
+    tabs when memory pressure returns to normal. The metric is not recorded when
+    the session overlaps with session restore.
+  </summary>
+</histogram>
+
 <histogram name="TabManager.Discarding.DiscardCount" units="Discards">
   <owner>georgesak@chromium.org</owner>
   <summary>
@@ -82146,6 +82206,34 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     title is updated. The first-time set of title will be ignored; this metric
     will only be recorded after 5 minutes from main frame navigation committed
     and when the tab is in the background.
+  </summary>
+</histogram>
+
+<histogram name="TabManager.SessionOverlap.BackgroundTabOpening"
+    units="BooleanOverlap">
+  <owner>zhenw@chromium.org</owner>
+  <summary>
+    Whether background tab opening session is overlapped with other types of
+    session, e.g., session restore. Background tab opening session is the
+    duration from the time when the browser starts to open background tabs until
+    the time when browser has finished loading those tabs or paused loading due
+    to memory pressure. A new background tab opening session starts when the
+    browser resumes loading background tabs when memory pressure returns to
+    normal. This metric helps to understand how often background tab opening has
+    overlap with other sessions.
+  </summary>
+</histogram>
+
+<histogram name="TabManager.SessionOverlap.SessionRestore"
+    units="BooleanOverlap">
+  <owner>zhenw@chromium.org</owner>
+  <summary>
+    Whether session restore is overlapped with other types of session, e.g.,
+    background tab opening. Session restore is the duration from the time when
+    the browser starts to restore tabs until the time when the browser has
+    finished loading those tabs or when the browser stops loading tabs due to
+    memory pressure. This metric helps to understand how often session restore
+    has overlap with other sessions.
   </summary>
 </histogram>
 
