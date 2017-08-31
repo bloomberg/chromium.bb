@@ -62,6 +62,11 @@ class LayoutTestContentBrowserClient : public ShellContentBrowserClient {
                        bool opener_suppressed,
                        bool* no_javascript_access) override;
 
+  // ShellContentBrowserClient overrides.
+  void ExposeInterfacesToFrame(
+      service_manager::BinderRegistryWithArgs<content::RenderFrameHost*>*
+          registry) override;
+
  private:
   std::unique_ptr<LayoutTestNotificationManager>
       layout_test_notification_manager_;

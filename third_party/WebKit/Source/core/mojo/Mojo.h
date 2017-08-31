@@ -54,7 +54,8 @@ class Mojo final : public GarbageCollected<Mojo>, public ScriptWrappable {
 
   static void bindInterface(ScriptState*,
                             const String& interface_name,
-                            MojoHandle*);
+                            MojoHandle*,
+                            const String& scope);
 
   DEFINE_INLINE_TRACE() {}
 };
