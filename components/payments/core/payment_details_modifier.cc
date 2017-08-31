@@ -16,18 +16,34 @@ namespace {
 static const char kPaymentDetailsModifierTotal[] = "total";
 static const char kPaymentDetailsModifierSupportedMethods[] =
     "supportedMethods";
+static const char kPaymentDetailsModifierData[] = "data";
 
 }  // namespace
 
 PaymentDetailsModifier::PaymentDetailsModifier() {}
-PaymentDetailsModifier::PaymentDetailsModifier(
-    const PaymentDetailsModifier& other) = default;
 PaymentDetailsModifier::~PaymentDetailsModifier() = default;
+
+PaymentDetailsModifier::PaymentDetailsModifier(
+    const PaymentDetailsModifier& other) {
+  *this = other;
+}
+
+PaymentDetailsModifier& PaymentDetailsModifier::operator=(
+    const PaymentDetailsModifier& other) {
+  this->method_data = other.method_data;
+  if (other.total)
+    this->total = base::MakeUnique<PaymentItem>(*other.total);
+  else
+    this->total.reset(nullptr);
+  this->additional_display_items = other.additional_display_items;
+  return *this;
+}
 
 bool PaymentDetailsModifier::operator==(
     const PaymentDetailsModifier& other) const {
-  return this->supported_methods == other.supported_methods &&
-         this->total == other.total &&
+  return this->method_data == other.method_data &&
+         ((!this->total && !other.total) ||
+          (this->total && other.total && *this->total == *other.total)) &&
          this->additional_display_items == other.additional_display_items;
 }
 
@@ -43,13 +59,16 @@ PaymentDetailsModifier::ToDictionaryValue() const {
 
   std::unique_ptr<base::ListValue> methods =
       base::MakeUnique<base::ListValue>();
-  size_t numMethods = this->supported_methods.size();
+  size_t numMethods = this->method_data.supported_methods.size();
   for (size_t i = 0; i < numMethods; i++) {
-    methods->GetList().emplace_back(this->supported_methods[i]);
+    methods->GetList().emplace_back(this->method_data.supported_methods[i]);
   }
   result->SetList(kPaymentDetailsModifierSupportedMethods, std::move(methods));
-  result->SetDictionary(kPaymentDetailsModifierTotal,
-                        this->total.ToDictionaryValue());
+  result->SetString(kPaymentDetailsModifierData, this->method_data.data);
+  if (this->total) {
+    result->SetDictionary(kPaymentDetailsModifierTotal,
+                          this->total->ToDictionaryValue());
+  }
 
   return result;
 }

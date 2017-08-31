@@ -5,8 +5,8 @@
 #include "components/payments/core/payment_details_modifier.h"
 
 #include "base/memory/ptr_util.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "components/payments/core/payment_method_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace payments {
@@ -19,21 +19,11 @@ TEST(PaymentRequestTest, EmptyPaymentDetailsModifierDictionary) {
   std::unique_ptr<base::ListValue> supported_methods_list =
       base::MakeUnique<base::ListValue>();
   expected_value.SetList("supportedMethods", std::move(supported_methods_list));
-  std::unique_ptr<base::DictionaryValue> item_dict =
-      base::MakeUnique<base::DictionaryValue>();
-  item_dict->SetString("label", "");
-  std::unique_ptr<base::DictionaryValue> amount_dict =
-      base::MakeUnique<base::DictionaryValue>();
-  amount_dict->SetString("currency", "");
-  amount_dict->SetString("value", "");
-  amount_dict->SetString("currencySystem", "urn:iso:std:iso:4217");
-  item_dict->SetDictionary("amount", std::move(amount_dict));
-  item_dict->SetBoolean("pending", false);
-  expected_value.SetDictionary("total", std::move(item_dict));
+  expected_value.SetString("data", "");
 
-  PaymentDetailsModifier payment_detials_modififer;
+  PaymentDetailsModifier payment_details_modifier;
   EXPECT_TRUE(expected_value.Equals(
-      payment_detials_modififer.ToDictionaryValue().get()));
+      payment_details_modifier.ToDictionaryValue().get()));
 }
 
 // Tests that serializing a populated PaymentDetailsModifier yields the expected
@@ -43,9 +33,11 @@ TEST(PaymentRequestTest, PopulatedDetailsModifierDictionary) {
 
   std::unique_ptr<base::ListValue> supported_methods_list =
       base::MakeUnique<base::ListValue>();
-  supported_methods_list->GetList().emplace_back("visa");
+  supported_methods_list->GetList().emplace_back("basic-card");
   supported_methods_list->GetList().emplace_back("amex");
   expected_value.SetList("supportedMethods", std::move(supported_methods_list));
+  expected_value.SetString("data",
+                           "{\"supportedNetworks\":[\"visa\",\"mastercard\"]}");
   std::unique_ptr<base::DictionaryValue> item_dict =
       base::MakeUnique<base::DictionaryValue>();
   item_dict->SetString("label", "Gratuity");
@@ -58,15 +50,19 @@ TEST(PaymentRequestTest, PopulatedDetailsModifierDictionary) {
   item_dict->SetBoolean("pending", false);
   expected_value.SetDictionary("total", std::move(item_dict));
 
-  PaymentDetailsModifier payment_detials_modififer;
-  payment_detials_modififer.supported_methods.push_back("visa");
-  payment_detials_modififer.supported_methods.push_back("amex");
-  payment_detials_modififer.total.label = "Gratuity";
-  payment_detials_modififer.total.amount.currency = "USD";
-  payment_detials_modififer.total.amount.value = "139.99";
+  PaymentDetailsModifier payment_details_modifier;
+  payment_details_modifier.method_data.supported_methods.push_back(
+      "basic-card");
+  payment_details_modifier.method_data.supported_methods.push_back("amex");
+  payment_details_modifier.method_data.data =
+      "{\"supportedNetworks\":[\"visa\",\"mastercard\"]}";
+  payment_details_modifier.total = base::MakeUnique<PaymentItem>();
+  payment_details_modifier.total->label = "Gratuity";
+  payment_details_modifier.total->amount.currency = "USD";
+  payment_details_modifier.total->amount.value = "139.99";
 
   EXPECT_TRUE(expected_value.Equals(
-      payment_detials_modififer.ToDictionaryValue().get()));
+      payment_details_modifier.ToDictionaryValue().get()));
 }
 
 // Tests that two details modifier objects are not equal if their property
@@ -81,20 +77,29 @@ TEST(PaymentRequestTest, PaymentDetailsModifierEquality) {
   std::vector<std::string> supported_methods1;
   supported_methods1.push_back("China UnionPay");
   supported_methods1.push_back("BobPay");
-  details_modifier1.supported_methods = supported_methods1;
+  details_modifier1.method_data.supported_methods = supported_methods1;
   EXPECT_NE(details_modifier1, details_modifier2);
   std::vector<std::string> supported_methods2;
   supported_methods2.push_back("BobPay");
-  details_modifier2.supported_methods = supported_methods2;
+  details_modifier2.method_data.supported_methods = supported_methods2;
   EXPECT_NE(details_modifier1, details_modifier2);
-  details_modifier2.supported_methods = supported_methods1;
+  details_modifier2.method_data.supported_methods = supported_methods1;
   EXPECT_EQ(details_modifier1, details_modifier2);
 
-  details_modifier1.total.label = "Total";
+  details_modifier1.method_data.data =
+      "{\"supportedNetworks\":[\"visa\",\"mastercard\"]}";
   EXPECT_NE(details_modifier1, details_modifier2);
-  details_modifier2.total.label = "Gratuity";
+  details_modifier2.method_data.data =
+      "{\"supportedNetworks\":[\"visa\",\"mastercard\"]}";
+  EXPECT_EQ(details_modifier1, details_modifier2);
+
+  details_modifier1.total = base::MakeUnique<PaymentItem>();
+  details_modifier1.total->label = "Total";
   EXPECT_NE(details_modifier1, details_modifier2);
-  details_modifier2.total.label = "Total";
+  details_modifier2.total = base::MakeUnique<PaymentItem>();
+  details_modifier2.total->label = "Gratuity";
+  EXPECT_NE(details_modifier1, details_modifier2);
+  details_modifier2.total->label = "Total";
   EXPECT_EQ(details_modifier1, details_modifier2);
 
   PaymentItem payment_item;
