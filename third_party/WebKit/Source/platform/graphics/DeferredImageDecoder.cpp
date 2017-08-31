@@ -100,8 +100,11 @@ sk_sp<PaintImageGenerator> DeferredImageDecoder::CreateGenerator(size_t index) {
 
   PrepareLazyDecodedFrames();
 
-  // ImageFrameGenerator has the latest known alpha state. There will be a
-  // performance boost if this frame is opaque.
+  // PrepareLazyDecodedFrames should populate the metadata for each frame in
+  // this image and create the |frame_generator_|, if enough data is available.
+  if (index >= frame_data_.size())
+    return nullptr;
+
   DCHECK(frame_generator_);
   const SkISize& decoded_size = frame_generator_->GetFullSize();
   DCHECK_GT(decoded_size.width(), 0);
@@ -111,6 +114,8 @@ sk_sp<PaintImageGenerator> DeferredImageDecoder::CreateGenerator(size_t index) {
   RefPtr<SegmentReader> segment_reader =
       SegmentReader::CreateFromSkROBuffer(std::move(ro_buffer));
 
+  // ImageFrameGenerator has the latest known alpha state. There will be a
+  // performance boost if this frame is opaque.
   SkAlphaType alpha_type = frame_generator_->HasAlpha(index)
                                ? kPremul_SkAlphaType
                                : kOpaque_SkAlphaType;
