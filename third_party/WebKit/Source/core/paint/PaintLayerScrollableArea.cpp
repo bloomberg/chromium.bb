@@ -568,31 +568,39 @@ void PaintLayerScrollableArea::VisibleSizeChanged() {
   ShowOverlayScrollbars();
 }
 
-IntRect PaintLayerScrollableArea::VisibleContentRect(
+LayoutRect PaintLayerScrollableArea::LayoutContentRect(
     IncludeScrollbarsInRect scrollbar_inclusion) const {
-  // VisibleContentRect is conceptually the same as the box's client rect.
-  int border_width = Box().BorderWidth().Round();
-  int border_height = Box().BorderHeight().Round();
-  int horizontal_scrollbar_height = 0;
-  int vertical_scrollbar_width = 0;
+  // LayoutContentRect is conceptually the same as the box's client rect.
+  LayoutSize layer_size = LayoutSize(Layer()->size());
+  LayoutUnit border_width = Box().BorderWidth();
+  LayoutUnit border_height = Box().BorderHeight();
+  LayoutUnit horizontal_scrollbar_height, vertical_scrollbar_width;
   if (scrollbar_inclusion == kExcludeScrollbars) {
-    horizontal_scrollbar_height =
-        (HorizontalScrollbar() && !HorizontalScrollbar()->IsOverlayScrollbar())
+    horizontal_scrollbar_height = LayoutUnit(
+        HorizontalScrollbar() && !HorizontalScrollbar()->IsOverlayScrollbar()
             ? HorizontalScrollbar()->ScrollbarThickness()
-            : 0;
-    vertical_scrollbar_width =
-        (VerticalScrollbar() && !VerticalScrollbar()->IsOverlayScrollbar())
+            : 0);
+    vertical_scrollbar_width = LayoutUnit(
+        VerticalScrollbar() && !VerticalScrollbar()->IsOverlayScrollbar()
             ? VerticalScrollbar()->ScrollbarThickness()
-            : 0;
+            : 0);
   }
 
-  // TOOO(szager): Handle fractional scroll offsets correctly.
-  return IntRect(
-      FlooredIntPoint(ScrollPosition()),
-      IntSize(max(0, Layer()->size().Width() - vertical_scrollbar_width -
-                         border_width),
-              max(0, Layer()->size().Height() - horizontal_scrollbar_height -
-                         border_height)));
+  return LayoutRect(
+      LayoutPoint(ScrollPosition()),
+      LayoutSize(
+          layer_size.Width() - border_width - vertical_scrollbar_width,
+          layer_size.Height() - border_height - horizontal_scrollbar_height)
+          .ExpandedTo(LayoutSize()));
+}
+
+IntRect PaintLayerScrollableArea::VisibleContentRect(
+    IncludeScrollbarsInRect scrollbar_inclusion) const {
+  LayoutRect layout_content_rect(LayoutContentRect(scrollbar_inclusion));
+  // TODO(szager): It's not clear that Floor() is the right thing to do here;
+  // what is the correct behavior for fractional scroll offsets?
+  return IntRect(FlooredIntPoint(layout_content_rect.Location()),
+                 RoundedIntSize(layout_content_rect.Size()));
 }
 
 IntSize PaintLayerScrollableArea::ContentsSize() const {
@@ -968,26 +976,32 @@ ScrollBehavior PaintLayerScrollableArea::ScrollBehaviorStyle() const {
 
 bool PaintLayerScrollableArea::HasHorizontalOverflow() const {
   // TODO(szager): Make the algorithm for adding/subtracting overflow:auto
-  // scrollbars memoryless (crbug.com/625300).  This clientWidth hack will
+  // scrollbars memoryless (crbug.com/625300).  This client_width hack will
   // prevent the spurious horizontal scrollbar, but it can cause a converse
   // problem: it can leave a sliver of horizontal overflow hidden behind the
   // vertical scrollbar without creating a horizontal scrollbar.  This
   // converse problem seems to happen much less frequently in practice, so we
   // bias the logic towards preventing unwanted horizontal scrollbars, which
   // are more common and annoying.
-  int client_width =
-      VisibleContentRect(kIncludeScrollbars).Width() -
+  LayoutUnit client_width =
+      LayoutContentRect(kIncludeScrollbars).Width() -
       VerticalScrollbarWidth(kIgnorePlatformAndCSSOverlayScrollbarSize);
   if (NeedsRelayout() && !HadVerticalScrollbarBeforeRelayout())
     client_width += VerticalScrollbarWidth();
-  return PixelSnappedScrollWidth() > client_width;
+  LayoutUnit scroll_width(ScrollWidth());
+  LayoutUnit box_x = Box().Location().X();
+  return SnapSizeToPixel(scroll_width, box_x) >
+         SnapSizeToPixel(client_width, box_x);
 }
 
 bool PaintLayerScrollableArea::HasVerticalOverflow() const {
-  int client_height =
-      VisibleContentRect(kIncludeScrollbars).Height() -
+  LayoutUnit client_height =
+      LayoutContentRect(kIncludeScrollbars).Height() -
       HorizontalScrollbarHeight(kIgnorePlatformAndCSSOverlayScrollbarSize);
-  return PixelSnappedScrollHeight() > client_height;
+  LayoutUnit scroll_height(ScrollHeight());
+  LayoutUnit box_y = Box().Location().Y();
+  return SnapSizeToPixel(scroll_height, box_y) >
+         SnapSizeToPixel(client_height, box_y);
 }
 
 // This function returns true if the given box requires overflow scrollbars (as

@@ -528,6 +528,7 @@ class CORE_EXPORT PaintLayerScrollableArea final
 
   void UpdateScrollCornerStyle();
   LayoutSize MinimumSizeForResizing(float zoom_factor);
+  LayoutRect LayoutContentRect(IncludeScrollbarsInRect) const;
 
   // See comments on isPointInResizeControl.
   void UpdateResizerAreaSet();
