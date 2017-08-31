@@ -34,11 +34,11 @@ void NamedMessagePipeHandler::Close() {
   delete this;
 }
 
-void NamedMessagePipeHandler::Send(google::protobuf::MessageLite* message,
-                              const base::Closure& done) {
+void NamedMessagePipeHandler::Send(const google::protobuf::MessageLite& message,
+                                   const base::Closure& done) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(connected());
-  pipe_->Send(message, done);
+  pipe_->Send(const_cast<google::protobuf::MessageLite*>(&message), done);
 }
 
 void NamedMessagePipeHandler::OnIncomingMessage(
