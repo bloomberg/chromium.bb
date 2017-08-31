@@ -24,9 +24,6 @@ const char kDisableIOSFeatures[] = "disable-features";
 const char kDisableIOSPasswordSuggestions[] =
     "disable-ios-password-suggestions";
 
-// Disables Physical Web scanning for nearby URLs.
-const char kDisableIOSPhysicalWeb[] = "disable-ios-physical-web";
-
 // Disables the Suggestions UI
 const char kDisableSuggestionsUI[] = "disable-suggestions-ui";
 
@@ -51,9 +48,6 @@ const char kEnableIOSHandoffToOtherDevices[] =
 
 // Enables the Spotlight actions.
 const char kEnableSpotlightActions[] = "enable-spotlight-actions";
-
-// Enables Physical Web scanning for nearby URLs.
-const char kEnableIOSPhysicalWeb[] = "enable-ios-physical-web";
 
 // Enables the Suggestions UI
 const char kEnableSuggestionsUI[] = "enable-suggestions-ui";

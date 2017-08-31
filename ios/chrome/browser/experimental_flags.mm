@@ -128,18 +128,9 @@ bool IsPasswordGenerationEnabled() {
 }
 
 bool IsPhysicalWebEnabled() {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kEnableIOSPhysicalWeb)) {
-    return true;
-  } else if (command_line->HasSwitch(switches::kDisableIOSPhysicalWeb)) {
-    return false;
-  }
-
-  // Check if the finch experiment is turned on
-  std::string group_name =
-      base::FieldTrialList::FindFullName("PhysicalWebEnabled");
-  return base::StartsWith(group_name, "Enabled",
-                          base::CompareCase::INSENSITIVE_ASCII);
+  // TODO(crbug.com/760104): Remove this function and its associated code.
+  // Either by replacing it with a base::Feature or by removing all its uses.
+  return false;
 }
 
 bool IsSafariVCSignInEnabled() {

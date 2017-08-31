@@ -127,10 +127,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kContextualSearchDescription, flags_ui::kOsIos,
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableContextualSearch,
                                switches::kDisableContextualSearch)},
-    {"ios-physical-web", flag_descriptions::kPhysicalWeb,
-     flag_descriptions::kPhysicalWebDescription, flags_ui::kOsIos,
-     ENABLE_DISABLE_VALUE_TYPE(switches::kEnableIOSPhysicalWeb,
-                               switches::kDisableIOSPhysicalWeb)},
     {"browser-task-scheduler", flag_descriptions::kBrowserTaskScheduler,
      flag_descriptions::kBrowserTaskSchedulerDescription, flags_ui::kOsIos,
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableBrowserTaskScheduler,
@@ -194,15 +190,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
 // Add all switches from experimental flags to |command_line|.
 void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
-
-  // Populate command line flags from PhysicalWebEnabled.
-  NSString* enablePhysicalWebValue =
-      [defaults stringForKey:@"PhysicalWebEnabled"];
-  if ([enablePhysicalWebValue isEqualToString:@"Enabled"]) {
-    command_line->AppendSwitch(switches::kEnableIOSPhysicalWeb);
-  } else if ([enablePhysicalWebValue isEqualToString:@"Disabled"]) {
-    command_line->AppendSwitch(switches::kDisableIOSPhysicalWeb);
-  }
 
   // Web page replay flags.
   BOOL webPageReplayEnabled = [defaults boolForKey:@"WebPageReplayEnabled"];
