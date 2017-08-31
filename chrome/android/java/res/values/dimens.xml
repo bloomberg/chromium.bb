@@ -302,7 +302,6 @@
     <dimen name="tile_grid_layout_no_logo_padding_top">20dp</dimen>
     <dimen name="tile_grid_layout_bleed">8dp</dimen>
     <dimen name="tile_grid_layout_vertical_spacing">3dp</dimen>
-    <dimen name="tile_grid_layout_vertical_spacing_modern">6dp</dimen>
     <dimen name="tile_grid_layout_min_horizontal_spacing">4dp</dimen>
     <dimen name="tile_grid_layout_max_horizontal_spacing">16dp</dimen>
     <dimen name="tile_view_bg_corner_radius">2dp</dimen>
@@ -312,17 +311,12 @@
     <dimen name="tile_view_icon_size_modern">24dp</dimen>
     <dimen name="tile_view_icon_margin_top">12dp</dimen>
     <dimen name="tile_view_icon_margin_top_condensed">8dp</dimen>
-    <dimen name="tile_view_icon_margin_top_modern">19dp</dimen>
-    <dimen name="tile_view_icon_background_margin_top_modern">7dp</dimen>
+    <dimen name="tile_view_icon_margin_top_modern">24dp</dimen>
     <dimen name="tile_view_offline_badge_size">24dp</dimen>
     <dimen name="tile_view_offline_badge_size_modern">16dp</dimen>
-    <dimen name="tile_view_offline_badge_margin_top_modern">7dp</dimen>
-    <dimen name="tile_view_offline_badge_margin_end_modern">9dp</dimen>
-    <dimen name="tile_view_offline_badge_margin_top_modern_condensed">6dp</dimen>
-    <dimen name="tile_view_offline_badge_margin_end_modern_condensed">7dp</dimen>
+    <dimen name="tile_view_offline_badge_margin_modern">8dp</dimen>
     <dimen name="tile_view_title_margin_top">66dp</dimen>
     <dimen name="tile_view_title_margin_top_condensed">62dp</dimen>
-    <dimen name="tile_view_title_margin_top_modern">61dp</dimen>
     <dimen name="ntp_logo_height">116dp</dimen>
     <dimen name="ntp_logo_height_modern">30dp</dimen>
     <dimen name="ntp_logo_margin_top_modern">25dp</dimen>
