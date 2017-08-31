@@ -255,7 +255,7 @@ cr.define('extensions', function() {
       if (extension.optionsPage.openInTab) {
         chrome.developerPrivate.showOptions(id);
       } else {
-        this.manager_.changePage(
+        extensions.navigation.navigateTo(
             {page: Page.DETAILS, subpage: Dialog.OPTIONS, extensionId: id});
       }
     }

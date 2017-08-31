@@ -60,6 +60,22 @@ cr.define('extensions', function() {
     close: function() {
       this.$$('dialog').close();
     },
+
+    /** @private */
+    onClose_: function() {
+      const currentPage = extensions.navigation.getCurrentPage();
+      // We update the page when the options dialog closes, but only if we're
+      // still on the details page. We could be on a different page if the
+      // user hit back while the options dialog was visible; in that case, the
+      // new page is already correct.
+      if (currentPage && currentPage.page == Page.DETAILS) {
+        // This will update the currentPage_ and the NavigationHelper; since
+        // the active page is already the details page, no main page
+        // transition occurs.
+        extensions.navigation.navigateTo(
+            {page: Page.DETAILS, extensionId: currentPage.extensionId});
+      }
+    },
   });
 
   return {OptionsDialog: OptionsDialog};

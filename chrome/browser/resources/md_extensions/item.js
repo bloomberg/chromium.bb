@@ -125,12 +125,14 @@ cr.define('extensions', function() {
 
     /** @private */
     onErrorsTap_: function() {
-      this.fire('extension-item-show-errors', {data: this.data});
+      extensions.navigation.navigateTo(
+          {page: Page.ERRORS, extensionId: this.data.id});
     },
 
     /** @private */
     onDetailsTap_: function() {
-      this.fire('extension-item-show-details', {data: this.data});
+      extensions.navigation.navigateTo(
+          {page: Page.DETAILS, extensionId: this.data.id});
     },
 
     /**
@@ -143,7 +145,8 @@ cr.define('extensions', function() {
 
     /** @private */
     onExtraInspectTap_: function() {
-      this.fire('extension-item-show-details', {data: this.data});
+      extensions.navigation.navigateTo(
+          {page: Page.DETAILS, extensionId: this.data.id});
     },
 
     /** @private */

@@ -106,11 +106,6 @@ cr.define('extensions', function() {
       },
     },
 
-    listeners: {
-      'items-list.extension-item-show-details': 'onShouldShowItemDetails_',
-      'items-list.extension-item-show-errors': 'onShouldShowItemErrors_',
-    },
-
     /**
      * The current page being shown. Default to null, and initPage will figure
      * out the initial page based on url.
@@ -127,7 +122,7 @@ cr.define('extensions', function() {
           /** @type {extensions.Toolbar} */ (this.$$('extensions-toolbar'));
       this.readyPromiseResolver.resolve();
       extensions.navigation.onRouteChanged(newPage => {
-        this.changePage(newPage, true);
+        this.changePage_(newPage);
       });
     },
 
@@ -157,7 +152,7 @@ cr.define('extensions', function() {
      */
     initPage: function() {
       this.didInitPage_ = true;
-      this.changePage(extensions.navigation.getCurrentPage(), true);
+      this.changePage_(extensions.navigation.getCurrentPage());
     },
 
     /**
@@ -174,30 +169,18 @@ cr.define('extensions', function() {
     },
 
     /**
-     * @param {chrome.developerPrivate.ExtensionType} type The type of item.
+     * @param {chrome.developerPrivate.ExtensionInfo} item
      * @return {string} The ID of the list that the item belongs in.
      * @private
      */
-    getListId_: function(type) {
-      let listId;
-      const ExtensionType = chrome.developerPrivate.ExtensionType;
-      switch (type) {
-        case ExtensionType.HOSTED_APP:
-        case ExtensionType.LEGACY_PACKAGED_APP:
-        case ExtensionType.PLATFORM_APP:
-          listId = 'apps';
-          break;
-        case ExtensionType.EXTENSION:
-        case ExtensionType.SHARED_MODULE:
-          listId = 'extensions';
-          break;
-        case ExtensionType.THEME:
-          assertNotReached(
-              'Don\'t send themes to the chrome://extensions page');
-          break;
-      }
-      assert(listId);
-      return listId;
+    getListId_: function(item) {
+      const type = extensions.getItemListType(item);
+      if (type == extensions.ShowingType.APPS)
+        return 'apps';
+      else if (type == extensions.ShowingType.EXTENSIONS)
+        return 'extensions';
+
+      assertNotReached();
     },
 
     /**
@@ -228,7 +211,7 @@ cr.define('extensions', function() {
      *     the new element is representing.
      */
     addItem: function(item) {
-      const listId = this.getListId_(item.type);
+      const listId = this.getListId_(item);
       // We should never try and add an existing item.
       assert(this.getIndexInList_(listId, item.id) == -1);
       let insertBeforeChild = this[listId].findIndex(function(listEl) {
@@ -244,7 +227,7 @@ cr.define('extensions', function() {
      *     item to update.
      */
     updateItem: function(item) {
-      const listId = this.getListId_(item.type);
+      const listId = this.getListId_(item);
       const index = this.getIndexInList_(listId, item.id);
       // We should never try and update a non-existent item.
       assert(index >= 0);
@@ -270,7 +253,7 @@ cr.define('extensions', function() {
      *     item to remove.
      */
     removeItem: function(item) {
-      const listId = this.getListId_(item.type);
+      const listId = this.getListId_(item);
       const index = this.getIndexInList_(listId, item.id);
       // We should never try and remove a non-existent item.
       assert(index >= 0);
@@ -301,19 +284,9 @@ cr.define('extensions', function() {
     /**
      * Changes the active page selection.
      * @param {PageState} newPage
-     * @param {boolean=} isSilent If true, does not notify the navigation helper
-     *     of the change.
+     * @private
      */
-    changePage: function(newPage, isSilent) {
-      // TODO(scottchen): Remove this once all calls go through
-      // extensions.navigateTo.
-      if (this.currentPage_ && this.currentPage_.page == newPage.page &&
-          this.currentPage_.type == newPage.type &&
-          this.currentPage_.subpage == newPage.subpage &&
-          this.currentPage_.extensionId == newPage.extensionId) {
-        return;
-      }
-
+    changePage_: function(newPage) {
       this.$.drawer.closeDrawer();
       if (this.optionsDialog.open)
         this.optionsDialog.close();
@@ -347,63 +320,11 @@ cr.define('extensions', function() {
       }
 
       this.currentPage_ = newPage;
-
-      // TODO(scottchen): Remove this once all calls go through
-      // extensions.navigateTo.
-      if (!isSilent)
-        extensions.navigation.updateHistory(newPage);
-    },
-
-    /**
-     * Handles the event for the user clicking on a details button.
-     * @param {!CustomEvent} e
-     * @private
-     */
-    onShouldShowItemDetails_: function(e) {
-      this.changePage({page: Page.DETAILS, extensionId: e.detail.data.id});
-    },
-
-    /**
-     * Handles the event for the user clicking on the errors button.
-     * @param {!CustomEvent} e
-     * @private
-     */
-    onShouldShowItemErrors_: function(e) {
-      this.changePage({page: Page.ERRORS, id: e.detail.data.id});
-    },
-
-    /** @private */
-    onDetailsViewClose_: function() {
-      // Note: we don't reset detailViewItem_ here because doing so just causes
-      // extra work for the data-bound details view.
-      this.changePage({page: Page.LIST, type: this.listType_});
-    },
-
-    /** @private */
-    onErrorPageClose_: function() {
-      // Note: we don't reset errorPageItem_ here because doing so just causes
-      // extra work for the data-bound error page.
-      this.changePage({page: Page.LIST, type: this.listType_});
     },
 
     /** @private */
     onPackTap_: function() {
       this.$['pack-dialog'].show();
-    },
-
-    /** @private */
-    onOptionsDialogClose_: function() {
-      // We update the page when the options dialog closes, but only if we're
-      // still on the details page. We could be on a different page if the
-      // user hit back while the options dialog was visible; in that case, the
-      // new page is already correct.
-      if (this.currentPage_ && this.currentPage_.page == Page.DETAILS) {
-        // This will update the currentPage_ and the NavigationHelper; since
-        // the active page is already the details page, no main page
-        // transition occurs.
-        this.changePage(
-            {page: Page.DETAILS, extensionId: this.currentPage_.extensionId});
-      }
     },
 
     /**
