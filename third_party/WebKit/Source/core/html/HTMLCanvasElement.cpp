@@ -896,6 +896,11 @@ bool HTMLCanvasElement::ShouldUseDisplayList() {
   if (RuntimeEnabledFeatures::ForceDisplayList2dCanvasEnabled())
     return true;
 
+  if (GetDocument().GetSettings() &&
+      GetDocument().GetSettings()->GetForceDisplayList2dCanvasEnabled()) {
+    return true;
+  }
+
   if (MemoryCoordinator::IsLowEndDevice())
     return false;
 
