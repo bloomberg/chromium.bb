@@ -10,7 +10,7 @@ DeltaSizeInfo: after_metadata, before_metadata, raw_symbols, section_sizes, symb
 DeltaSymbol (extends Symbol): after_symbol, before_symbol, diff_status
 DeltaSymbolGroup (extends SymbolGroup): CountsByDiffStatus, WhereDiffStatusIs, diff_status
 
-canned_queries: CategorizeByChromeComponent, CategorizeGenerated, TemplatesByName
+canned_queries: CategorizeByChromeComponent, CategorizeGenerated, StaticInitializers, TemplatesByName
 
 Functions: Diff(), Disassemble(), ExpandRegex(), Print(), ShowExamples()
 Variables:
