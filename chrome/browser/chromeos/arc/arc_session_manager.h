@@ -296,6 +296,7 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   bool IsArcTermsOfServiceNegotiationNeeded() const;
 
   void ShutdownSession();
+  void ResetArcState();
   void OnArcSignInTimeout();
 
   // Starts Android management check. This is for first boot case (= Opt-in
