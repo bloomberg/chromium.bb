@@ -13,7 +13,6 @@
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_handler.h"
 #include "chrome/browser/ntp_snippets/ntp_snippets_metrics.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
@@ -43,6 +42,9 @@ using ntp_snippets::kNotificationsTextParam;
 using ntp_snippets::kNotificationsTextValueAndMore;
 using ntp_snippets::kNotificationsTextValueSnippet;
 
+base::android::ApplicationState*
+    g_content_suggestions_notification_application_state_for_testing = nullptr;
+
 namespace {
 
 const char kNotificationIDWithinCategory[] =
@@ -61,6 +63,9 @@ gfx::Image CropSquare(const gfx::Image& image) {
 }
 
 bool ShouldNotifyInState(base::android::ApplicationState state) {
+  if (g_content_suggestions_notification_application_state_for_testing) {
+    state = *g_content_suggestions_notification_application_state_for_testing;
+  }
   switch (state) {
     case base::android::APPLICATION_STATE_UNKNOWN:
     case base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES:
@@ -110,10 +115,10 @@ class ContentSuggestionsNotifierService::NotifyingObserver
     : public ContentSuggestionsService::Observer {
  public:
   NotifyingObserver(ContentSuggestionsService* service,
-                    Profile* profile,
+                    PrefService* prefs,
                     ContentSuggestionsNotifier* notifier)
       : service_(service),
-        profile_(profile),
+        prefs_(prefs),
         notifier_(notifier),
         app_status_listener_(base::Bind(&NotifyingObserver::AppStatusChanged,
                                         base::Unretained(this))),
@@ -123,10 +128,10 @@ class ContentSuggestionsNotifierService::NotifyingObserver
     if (!ShouldNotifyInState(app_status_listener_.GetState())) {
       DVLOG(1) << "Suppressed notification because Chrome is frontmost";
       return;
-    } else if (!notifier_->IsEnabledForProfile(profile_)) {
+    } else if (!ContentSuggestionsNotifier::ShouldSendNotifications(prefs_)) {
       DVLOG(1) << "Suppressed notification due to opt-out";
       return;
-    } else if (!HaveQuotaForToday(profile_->GetPrefs())) {
+    } else if (!HaveQuotaForToday(prefs_)) {
       DVLOG(1) << "Notification suppressed due to daily limit";
       return;
     }
@@ -221,7 +226,7 @@ class ContentSuggestionsNotifierService::NotifyingObserver
     // check if suggestion is still valid.
     DVLOG(1) << "Fetched " << image.Size().width() << "x"
              << image.Size().height() << " image for " << url.spec();
-    ConsumeQuota(profile_->GetPrefs());
+    ConsumeQuota(prefs_);
     int priority = variations::GetVariationParamByFeatureAsInt(
         kNotificationsFeature, kNotificationsPriorityParam,
         kNotificationsDefaultPriority);
@@ -235,7 +240,7 @@ class ContentSuggestionsNotifierService::NotifyingObserver
   }
 
   ContentSuggestionsService* const service_;
-  Profile* const profile_;
+  PrefService* const prefs_;
   ContentSuggestionsNotifier* const notifier_;
   base::android::ApplicationStatusListener app_status_listener_;
 
@@ -245,23 +250,22 @@ class ContentSuggestionsNotifierService::NotifyingObserver
 };
 
 ContentSuggestionsNotifierService::ContentSuggestionsNotifierService(
-    Profile* profile,
+    PrefService* prefs,
     ContentSuggestionsService* suggestions,
     std::unique_ptr<ContentSuggestionsNotifier> notifier)
-    : profile_(profile),
+    : prefs_(prefs),
       suggestions_service_(suggestions),
       notifier_(std::move(notifier)) {
   notifier_->FlushCachedMetrics();
 
-  if (notifier_->RegisterChannel(profile_->GetPrefs()->GetBoolean(
-          prefs::kContentSuggestionsNotificationsEnabled))) {
+  if (notifier_->RegisterChannel(
+          prefs_->GetBoolean(prefs::kContentSuggestionsNotificationsEnabled))) {
     // Once there is a notification channel, this setting is no longer relevant
     // and the UI to control it is gone. Set it to true so that notifications
     // are sent unconditionally. If the channel is disabled, then notifications
     // will be blocked at the system level, and the user can re-enable them in
     // the system notification settings.
-    profile_->GetPrefs()->SetBoolean(
-        prefs::kContentSuggestionsNotificationsEnabled, true);
+    prefs_->SetBoolean(prefs::kContentSuggestionsNotificationsEnabled, true);
   }
 
   if (IsEnabled()) {
@@ -290,8 +294,7 @@ void ContentSuggestionsNotifierService::RegisterProfilePrefs(
 }
 
 void ContentSuggestionsNotifierService::SetEnabled(bool enabled) {
-  profile_->GetPrefs()->SetBoolean(
-      prefs::kContentSuggestionsNotificationsEnabled, enabled);
+  prefs_->SetBoolean(prefs::kContentSuggestionsNotificationsEnabled, enabled);
   if (enabled) {
     Enable();
   } else {
@@ -300,14 +303,13 @@ void ContentSuggestionsNotifierService::SetEnabled(bool enabled) {
 }
 
 bool ContentSuggestionsNotifierService::IsEnabled() const {
-  return profile_->GetPrefs()->GetBoolean(
-      prefs::kContentSuggestionsNotificationsEnabled);
+  return prefs_->GetBoolean(prefs::kContentSuggestionsNotificationsEnabled);
 }
 
 void ContentSuggestionsNotifierService::Enable() {
   if (!observer_) {
     observer_.reset(
-        new NotifyingObserver(suggestions_service_, profile_, notifier_.get()));
+        new NotifyingObserver(suggestions_service_, prefs_, notifier_.get()));
     suggestions_service_->AddObserver(observer_.get());
   }
 }
