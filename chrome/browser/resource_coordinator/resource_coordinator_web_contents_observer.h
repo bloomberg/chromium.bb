@@ -44,7 +44,7 @@ class ResourceCoordinatorWebContentsObserver
 
   void EnsureUkmRecorderInterface();
   void MaybeSetUkmRecorderInterface(bool ukm_recorder_already_initialized);
-  void UpdateUkmRecorder(int64_t navigation_id);
+  void UpdateUkmRecorder(content::NavigationHandle* handle);
 
  private:
   explicit ResourceCoordinatorWebContentsObserver(
