@@ -194,7 +194,7 @@ class GNRoller(object):
       print('Checking build')
       results = self.CheckBuild()
 
-    ret = 0 if all(r['state'] == 'success' for r in results.values()) else 1
+    ret = 0 if all(r.state == SUCCESS for r in results.values()) else 1
     if ret:
       print('Build failed.')
     else:
@@ -312,7 +312,7 @@ class GNRoller(object):
       fname = 'gn.exe.sha1' if platform == 'win' else 'gn.sha1'
       path = os.path.join(self.buildtools_dir, platform, fname)
       with open(path, 'w') as fp:
-        fp.write('%s\n' % results[platform]['sha1'])
+        fp.write('%s\n' % results[platform].sha1)
 
     desc_file = tempfile.NamedTemporaryFile(delete=False)
     try:
