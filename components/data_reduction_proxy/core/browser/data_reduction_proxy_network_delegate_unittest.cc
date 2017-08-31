@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <algorithm>
 #include <map>
 #include <string>
 #include <utility>
@@ -1613,37 +1614,123 @@ TEST_F(DataReductionProxyNetworkDelegateTest, DetailedNetHistograms) {
   }
 }
 
-TEST_F(DataReductionProxyNetworkDelegateTest, OnCompletedInternalLoFi) {
+TEST_F(DataReductionProxyNetworkDelegateTest,
+       NonServerLoFiResponseDoesNotTriggerInfobar) {
   Init(USE_INSECURE_PROXY, false);
-  // Enable Lo-Fi.
-  const struct {
-    bool lofi_response;
-    bool was_server;
-  } tests[] = {{false, false}, {true, true}, {true, false}};
 
-  for (const auto& test : tests) {
-    lofi_decider()->SetIsUsingClientLoFi(false);
+  ClearLoFiUIService();
+  lofi_decider()->SetIsUsingClientLoFi(false);
+  std::string response_headers =
+      "HTTP/1.1 200 OK\r\n"
+      "Date: Wed, 28 Nov 2007 09:40:09 GMT\r\n"
+      "Expires: Mon, 24 Nov 2014 12:45:26 GMT\r\n"
+      "Via: 1.1 Chrome-Compression-Proxy\r\n"
+      "x-original-content-length: 200\r\n\r\n";
+
+  auto request =
+      FetchURLRequest(GURL(kTestURL), nullptr, response_headers, 140, 0);
+
+  EXPECT_FALSE(DataReductionProxyData::GetData(*request)->lofi_received());
+  VerifyDidNotifyLoFiResponse(false);
+}
+
+TEST_F(DataReductionProxyNetworkDelegateTest,
+       ServerLoFiResponseDoesTriggerInfobar) {
+  Init(USE_INSECURE_PROXY, false);
+
+  ClearLoFiUIService();
+  lofi_decider()->SetIsUsingClientLoFi(false);
+  std::string response_headers =
+      "HTTP/1.1 200 OK\r\n"
+      "Date: Wed, 28 Nov 2007 09:40:09 GMT\r\n"
+      "Expires: Mon, 24 Nov 2014 12:45:26 GMT\r\n"
+      "Via: 1.1 Chrome-Compression-Proxy\r\n"
+      "x-original-content-length: 200\r\n"
+      "Chrome-Proxy-Content-Transform: empty-image\r\n\r\n";
+
+  auto request =
+      FetchURLRequest(GURL(kTestURL), nullptr, response_headers, 140, 0);
+
+  EXPECT_TRUE(DataReductionProxyData::GetData(*request)->lofi_received());
+  VerifyDidNotifyLoFiResponse(true);
+}
+
+TEST_F(DataReductionProxyNetworkDelegateTest,
+       NonClientLoFiResponseDoesNotTriggerInfobar) {
+  Init(USE_INSECURE_PROXY, false);
+
+  ClearLoFiUIService();
+  lofi_decider()->SetIsUsingClientLoFi(false);
+
+  FetchURLRequest(GURL(kTestURL), nullptr,
+                  "HTTP/1.1 206 Partial Content\r\n"
+                  "Date: Wed, 28 Nov 2007 09:40:09 GMT\r\n"
+                  "Expires: Mon, 24 Nov 2014 12:45:26 GMT\r\n"
+                  "Via: 1.1 Chrome-Compression-Proxy\r\n"
+                  "Content-Range: bytes 0-139/2048\r\n\r\n",
+                  140, 0);
+
+  VerifyDidNotifyLoFiResponse(false);
+}
+
+TEST_F(DataReductionProxyNetworkDelegateTest,
+       ClientLoFiCompleteResponseDoesNotTriggerInfobar) {
+  Init(USE_INSECURE_PROXY, false);
+
+  const char* const test_response_headers[] = {
+      "HTTP/1.1 200 OK\r\n"
+      "Date: Wed, 28 Nov 2007 09:40:09 GMT\r\n"
+      "Expires: Mon, 24 Nov 2014 12:45:26 GMT\r\n"
+      "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
+
+      "HTTP/1.1 204 No Content\r\n"
+      "Date: Wed, 28 Nov 2007 09:40:09 GMT\r\n"
+      "Expires: Mon, 24 Nov 2014 12:45:26 GMT\r\n"
+      "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
+
+      "HTTP/1.1 404 Not Found\r\n"
+      "Date: Wed, 28 Nov 2007 09:40:09 GMT\r\n"
+      "Expires: Mon, 24 Nov 2014 12:45:26 GMT\r\n"
+      "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
+
+      "HTTP/1.1 206 Partial Content\r\n"
+      "Date: Wed, 28 Nov 2007 09:40:09 GMT\r\n"
+      "Expires: Mon, 24 Nov 2014 12:45:26 GMT\r\n"
+      "Via: 1.1 Chrome-Compression-Proxy\r\n"
+      "Content-Range: bytes 0-139/140\r\n\r\n",
+  };
+
+  for (const char* headers : test_response_headers) {
     ClearLoFiUIService();
-    std::string response_headers =
-        "HTTP/1.1 200 OK\r\n"
-        "Date: Wed, 28 Nov 2007 09:40:09 GMT\r\n"
-        "Expires: Mon, 24 Nov 2014 12:45:26 GMT\r\n"
-        "Via: 1.1 Chrome-Compression-Proxy\r\n"
-        "x-original-content-length: 200\r\n";
+    lofi_decider()->SetIsUsingClientLoFi(true);
+    FetchURLRequest(GURL(kTestURL), nullptr, headers, 140, 0);
+    VerifyDidNotifyLoFiResponse(false);
+  }
+}
 
-    if (test.lofi_response) {
-      if (test.was_server)
-        response_headers += "Chrome-Proxy-Content-Transform: empty-image\r\n";
-      else
-        lofi_decider()->SetIsUsingClientLoFi(true);
-    }
+TEST_F(DataReductionProxyNetworkDelegateTest,
+       ClientLoFiPartialRangeDoesTriggerInfobar) {
+  Init(USE_INSECURE_PROXY, false);
 
-    response_headers += "\r\n";
-    auto request =
-        FetchURLRequest(GURL(kTestURL), nullptr, response_headers, 140, 0);
-    EXPECT_EQ(test.was_server,
-              DataReductionProxyData::GetData(*request)->lofi_received());
-    VerifyDidNotifyLoFiResponse(test.lofi_response);
+  const char* const test_response_headers[] = {
+      "HTTP/1.1 206 Partial Content\r\n"
+      "Date: Wed, 28 Nov 2007 09:40:09 GMT\r\n"
+      "Expires: Mon, 24 Nov 2014 12:45:26 GMT\r\n"
+      "Via: 1.1 Chrome-Compression-Proxy\r\n"
+      "Content-Range: bytes 0-139/2048\r\n\r\n",
+
+      "HTTP/1.1 206 Partial Content\r\n"
+      "Date: Wed, 28 Nov 2007 09:40:09 GMT\r\n"
+      "Expires: Mon, 24 Nov 2014 12:45:26 GMT\r\n"
+      "Via: 1.1 Chrome-Compression-Proxy\r\n"
+      "Content-Range: bytes 5-144/145\r\n\r\n",
+  };
+
+  for (const char* headers : test_response_headers) {
+    ClearLoFiUIService();
+    lofi_decider()->SetIsUsingClientLoFi(true);
+    FetchURLRequest(GURL(kTestURL), nullptr, headers, 140, 0);
+    VerifyDidNotifyLoFiResponse(true);
   }
 }
 
