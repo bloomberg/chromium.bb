@@ -31,6 +31,9 @@
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_image.h"
 
+#define DVLOGF(level) DVLOG(level) << __func__ << "(): "
+#define VLOGF(level) VLOG(level) << __func__ << "(): "
+
 namespace media {
 
 namespace {
@@ -54,7 +57,7 @@ static void ReportToUMA(VAVDADecoderFailure failure) {
 #define RETURN_AND_NOTIFY_ON_FAILURE(result, log, error_code, ret) \
   do {                                                             \
     if (!(result)) {                                               \
-      LOG(ERROR) << log;                                           \
+      VLOGF(1) << log;                                             \
       NotifyError(error_code);                                     \
       return ret;                                                  \
     }                                                              \
@@ -291,7 +294,7 @@ void VaapiVideoDecodeAccelerator::NotifyError(Error error) {
   task_runner_->PostTask(
       FROM_HERE, base::Bind(&VaapiVideoDecodeAccelerator::Cleanup, weak_this_));
 
-  LOG(ERROR) << "Notifying of error " << error;
+  VLOGF(1) << "Notifying of error " << error;
   if (client_) {
     client_->NotifyError(error);
     client_ptr_factory_.reset();
@@ -302,7 +305,7 @@ VaapiPicture* VaapiVideoDecodeAccelerator::PictureById(
     int32_t picture_buffer_id) {
   Pictures::iterator it = pictures_.find(picture_buffer_id);
   if (it == pictures_.end()) {
-    LOG(WARNING) << "Picture id " << picture_buffer_id << " does not exist";
+    VLOGF(4) << "Picture id " << picture_buffer_id << " does not exist";
     return NULL;
   }
 
@@ -365,17 +368,17 @@ bool VaapiVideoDecodeAccelerator::Initialize(const Config& config,
 
   base::AutoLock auto_lock(lock_);
   DCHECK_EQ(state_, kUninitialized);
-  DVLOG(2) << "Initializing VAVDA, profile: " << GetProfileName(profile);
+  VLOGF(2) << "Initializing VAVDA, profile: " << GetProfileName(profile);
 
 #if defined(USE_X11)
   if (gl::GetGLImplementation() != gl::kGLImplementationDesktopGL) {
-    DVLOG(1) << "HW video decode acceleration not available without "
+    VLOGF(1) << "HW video decode acceleration not available without "
                 "DesktopGL (GLX).";
     return false;
   }
 #elif defined(USE_OZONE)
   if (gl::GetGLImplementation() != gl::kGLImplementationEGLGLES2) {
-    DVLOG(1) << "HW video decode acceleration not available without "
+    VLOGF(1) << "HW video decode acceleration not available without "
              << "EGLGLES2.";
     return false;
   }
@@ -385,7 +388,7 @@ bool VaapiVideoDecodeAccelerator::Initialize(const Config& config,
       VaapiWrapper::kDecode, profile, base::Bind(&ReportToUMA, VAAPI_ERROR));
 
   if (!vaapi_wrapper_.get()) {
-    DVLOG(1) << "Failed initializing VAAPI for profile "
+    VLOGF(1) << "Failed initializing VAAPI for profile "
              << GetProfileName(profile);
     return false;
   }
@@ -401,7 +404,7 @@ bool VaapiVideoDecodeAccelerator::Initialize(const Config& config,
     vp9_accelerator_.reset(new VaapiVP9Accelerator(this, vaapi_wrapper_.get()));
     decoder_.reset(new VP9Decoder(vp9_accelerator_.get()));
   } else {
-    DLOG(ERROR) << "Unsupported profile " << GetProfileName(profile);
+    VLOGF(1) << "Unsupported profile " << GetProfileName(profile);
     return false;
   }
 
@@ -425,7 +428,7 @@ void VaapiVideoDecodeAccelerator::OutputPicture(
   TRACE_EVENT2("Video Decoder", "VAVDA::OutputSurface", "input_id", input_id,
                "output_id", output_id);
 
-  DVLOG(3) << "Outputting VASurface " << va_surface->id()
+  VLOGF(4) << "Outputting VASurface " << va_surface->id()
            << " into pixmap bound to picture buffer id " << output_id;
 
   RETURN_AND_NOTIFY_ON_FAILURE(picture->DownloadFromSurface(va_surface),
@@ -435,7 +438,7 @@ void VaapiVideoDecodeAccelerator::OutputPicture(
   // Notify the client a picture is ready to be displayed.
   ++num_frames_at_client_;
   TRACE_COUNTER1("Video Decoder", "Textures at client", num_frames_at_client_);
-  DVLOG(4) << "Notifying output picture id " << output_id << " for input "
+  VLOGF(4) << "Notifying output picture id " << output_id << " for input "
            << input_id
            << " is ready. visible rect: " << visible_rect.ToString();
   // TODO(hubbe): Use the correct color space.  http://crbug.com/647725
@@ -473,7 +476,7 @@ void VaapiVideoDecodeAccelerator::QueueInputBuffer(
   TRACE_EVENT1("Video Decoder", "QueueInputBuffer", "input_id",
                bitstream_buffer.id());
 
-  DVLOG(4) << "Queueing new input buffer id: " << bitstream_buffer.id()
+  VLOGF(4) << "Queueing new input buffer id: " << bitstream_buffer.id()
            << " size: " << (int)bitstream_buffer.size();
 
   base::AutoLock auto_lock(lock_);
@@ -518,8 +521,8 @@ void VaapiVideoDecodeAccelerator::QueueInputBuffer(
       break;
 
     default:
-      LOG(ERROR) << "Decode/Flush request from client in invalid state: "
-                 << state_;
+      VLOGF(1) << "Decode/Flush request from client in invalid state: "
+               << state_;
       NotifyError(PLATFORM_FAILURE);
       break;
   }
@@ -549,9 +552,9 @@ bool VaapiVideoDecodeAccelerator::GetInputBuffer_Locked() {
       input_buffers_.pop();
 
       if (curr_input_buffer_->is_flush()) {
-        DVLOG(4) << "New flush buffer";
+        VLOGF(4) << "New flush buffer";
       } else {
-        DVLOG(4) << "New current bitstream buffer, id: "
+        VLOGF(4) << "New current bitstream buffer, id: "
                  << curr_input_buffer_->id
                  << " size: " << curr_input_buffer_->shm->size();
 
@@ -575,7 +578,7 @@ void VaapiVideoDecodeAccelerator::ReturnCurrInputBuffer_Locked() {
 
   int32_t id = curr_input_buffer_->id;
   curr_input_buffer_.reset();
-  DVLOG(4) << "End of input buffer " << id;
+  VLOGF(4) << "End of input buffer " << id;
   task_runner_->PostTask(
       FROM_HERE, base::Bind(&Client::NotifyEndOfBitstreamBuffer, client_, id));
 
@@ -610,7 +613,7 @@ void VaapiVideoDecodeAccelerator::DecodeTask() {
     return;
 
   // Main decode task.
-  DVLOG(4) << "Decode task";
+  VLOGF(4) << "Decode task";
 
   // Try to decode what stream data is (still) in the decoder until we run out
   // of it.
@@ -635,7 +638,7 @@ void VaapiVideoDecodeAccelerator::DecodeTask() {
 
     switch (res) {
       case AcceleratedVideoDecoder::kAllocateNewSurfaces:
-        DVLOG(1) << "Decoder requesting a new set of surfaces";
+        VLOGF(2) << "Decoder requesting a new set of surfaces";
         task_runner_->PostTask(
             FROM_HERE,
             base::Bind(&VaapiVideoDecodeAccelerator::InitiateSurfaceSetChange,
@@ -681,7 +684,7 @@ void VaapiVideoDecodeAccelerator::InitiateSurfaceSetChange(size_t num_pics,
   // have had enough TFPictures to output surfaces to. Initiate a wait cycle,
   // which will wait for client to return enough PictureBuffers to us, so that
   // we can finish all pending output callbacks, releasing associated surfaces.
-  DVLOG(1) << "Initiating surface set change";
+  VLOGF(2) << "Initiating surface set change";
   awaiting_va_surfaces_recycle_ = true;
 
   requested_num_pics_ = num_pics;
@@ -722,7 +725,7 @@ void VaapiVideoDecodeAccelerator::TryFinishSurfaceSetChange() {
     // 2. The above happened and all surface release callbacks have been posted
     // as the result, but not all have executed yet. Post ourselves after them
     // to let them release surfaces.
-    DVLOG(2) << "Awaiting pending output/surface release callbacks to finish";
+    DVLOGF(2) << "Awaiting pending output/surface release callbacks to finish";
     task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&VaapiVideoDecodeAccelerator::TryFinishSurfaceSetChange,
@@ -737,14 +740,14 @@ void VaapiVideoDecodeAccelerator::TryFinishSurfaceSetChange() {
 
   for (Pictures::iterator iter = pictures_.begin(); iter != pictures_.end();
        ++iter) {
-    DVLOG(2) << "Dismissing picture id: " << iter->first;
+    VLOGF(2) << "Dismissing picture id: " << iter->first;
     if (client_)
       client_->DismissPictureBuffer(iter->first);
   }
   pictures_.clear();
 
   // And ask for a new set as requested.
-  DVLOG(1) << "Requesting " << requested_num_pics_
+  VLOGF(2) << "Requesting " << requested_num_pics_
            << " pictures of size: " << requested_pic_size_.ToString();
 
   VideoPixelFormat format = BufferFormatToVideoPixelFormat(output_format_);
@@ -764,7 +767,7 @@ void VaapiVideoDecodeAccelerator::Decode(
   if (bitstream_buffer.id() < 0) {
     if (base::SharedMemory::IsHandleValid(bitstream_buffer.handle()))
       base::SharedMemory::CloseHandle(bitstream_buffer.handle());
-    LOG(ERROR) << "Invalid bitstream_buffer, id: " << bitstream_buffer.id();
+    VLOGF(1) << "Invalid bitstream_buffer, id: " << bitstream_buffer.id();
     NotifyError(INVALID_ARGUMENT);
     return;
   }
@@ -865,11 +868,11 @@ void VaapiVideoDecodeAccelerator::ImportBufferForPicture(
     int32_t picture_buffer_id,
     const gfx::GpuMemoryBufferHandle& gpu_memory_buffer_handle) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DVLOG(2) << "Importing picture id: " << picture_buffer_id;
+  VLOGF(2) << "Importing picture id: " << picture_buffer_id;
 
   if (output_mode_ != Config::OutputMode::IMPORT) {
     CloseGpuMemoryBufferHandle(gpu_memory_buffer_handle);
-    LOG(ERROR) << "Cannot import in non-import mode";
+    VLOGF(1) << "Cannot import in non-import mode";
     NotifyError(INVALID_ARGUMENT);
     return;
   }
@@ -882,7 +885,7 @@ void VaapiVideoDecodeAccelerator::ImportBufferForPicture(
     // picture, but it has not yet executed when this ImportBufferForPicture
     // was posted to us by the client. In that case just ignore this (we've
     // already dismissed it and accounted for that).
-    DVLOG(3) << "got picture id=" << picture_buffer_id
+    VLOGF(3) << "got picture id=" << picture_buffer_id
              << " not in use (anymore?).";
     return;
   }
@@ -891,7 +894,7 @@ void VaapiVideoDecodeAccelerator::ImportBufferForPicture(
                                             gpu_memory_buffer_handle)) {
     // ImportGpuMemoryBufferHandle will close the handles even on failure, so
     // we don't need to do this ourselves.
-    LOG(ERROR) << "Failed to import GpuMemoryBufferHandle";
+    VLOGF(1) << "Failed to import GpuMemoryBufferHandle";
     NotifyError(PLATFORM_FAILURE);
     return;
   }
@@ -905,13 +908,14 @@ void VaapiVideoDecodeAccelerator::ReusePictureBuffer(
   DCHECK(task_runner_->BelongsToCurrentThread());
   TRACE_EVENT1("Video Decoder", "VAVDA::ReusePictureBuffer", "Picture id",
                picture_buffer_id);
+  VLOGF(4) << "picture id=" << picture_buffer_id;
 
   if (!PictureById(picture_buffer_id)) {
     // It's possible that we've already posted a DismissPictureBuffer for this
     // picture, but it has not yet executed when this ReusePictureBuffer
     // was posted to us by the client. In that case just ignore this (we've
     // already dismissed it and accounted for that).
-    DVLOG(3) << "got picture id=" << picture_buffer_id
+    VLOGF(3) << "got picture id=" << picture_buffer_id
              << " not in use (anymore?).";
     return;
   }
@@ -927,7 +931,7 @@ void VaapiVideoDecodeAccelerator::FlushTask() {
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
   DCHECK(curr_input_buffer_.get() && curr_input_buffer_->is_flush());
 
-  DVLOG(1) << "Flush task";
+  VLOGF(2) << "Flush task";
 
   curr_input_buffer_.reset();
 
@@ -947,7 +951,7 @@ void VaapiVideoDecodeAccelerator::FlushTask() {
 
 void VaapiVideoDecodeAccelerator::Flush() {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DVLOG(1) << "Got flush request";
+  VLOGF(2) << "Got flush request";
 
   // Queue a dummy buffer, which means flush.
   QueueInputBuffer(media::BitstreamBuffer());
@@ -983,12 +987,12 @@ void VaapiVideoDecodeAccelerator::FinishFlush() {
   task_runner_->PostTask(FROM_HERE,
                          base::Bind(&Client::NotifyFlushDone, client_));
 
-  DVLOG(1) << "Flush finished";
+  VLOGF(2) << "Flush finished";
 }
 
 void VaapiVideoDecodeAccelerator::ResetTask() {
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
-  DVLOG(1) << "ResetTask";
+  VLOGF(2) << "ResetTask";
 
   // All the decoding tasks from before the reset request from client are done
   // by now, as this task was scheduled after them and client is expected not
@@ -1009,7 +1013,7 @@ void VaapiVideoDecodeAccelerator::ResetTask() {
 
 void VaapiVideoDecodeAccelerator::Reset() {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DVLOG(1) << "Got reset request";
+  VLOGF(2) << "Got reset request";
 
   // This will make any new decode tasks exit early.
   base::AutoLock auto_lock(lock_);
@@ -1040,7 +1044,7 @@ void VaapiVideoDecodeAccelerator::Reset() {
 
 void VaapiVideoDecodeAccelerator::FinishReset() {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DVLOG(1) << "FinishReset";
+  VLOGF(2) << "FinishReset";
   base::AutoLock auto_lock(lock_);
 
   if (state_ != kResetting) {
@@ -1080,7 +1084,7 @@ void VaapiVideoDecodeAccelerator::FinishReset() {
                               base::Unretained(this)));
   }
 
-  DVLOG(1) << "Reset finished";
+  VLOGF(2) << "Reset finished";
 }
 
 void VaapiVideoDecodeAccelerator::Cleanup() {
@@ -1090,7 +1094,7 @@ void VaapiVideoDecodeAccelerator::Cleanup() {
   if (state_ == kUninitialized || state_ == kDestroying)
     return;
 
-  DVLOG(1) << "Destroying VAVDA";
+  VLOGF(2) << "Destroying VAVDA";
   state_ = kDestroying;
 
   client_ptr_factory_.reset();
@@ -1125,7 +1129,7 @@ bool VaapiVideoDecodeAccelerator::DecodeSurface(
     const scoped_refptr<VaapiDecodeSurface>& dec_surface) {
   if (!vaapi_wrapper_->ExecuteAndDestroyPendingBuffers(
           dec_surface->va_surface()->id())) {
-    DVLOG(1) << "Failed decoding picture";
+    VLOGF(1) << "Failed decoding picture";
     return false;
   }
 
@@ -1425,7 +1429,7 @@ bool VaapiVideoDecodeAccelerator::VaapiH264Accelerator::SubmitSlice(
 
 bool VaapiVideoDecodeAccelerator::VaapiH264Accelerator::SubmitDecode(
     const scoped_refptr<H264Picture>& pic) {
-  DVLOG(4) << "Decoding POC " << pic->pic_order_cnt;
+  VLOGF(4) << "Decoding POC " << pic->pic_order_cnt;
   scoped_refptr<VaapiDecodeSurface> dec_surface =
       H264PictureToVaapiDecodeSurface(pic);
 
@@ -1771,7 +1775,7 @@ bool VaapiVideoDecodeAccelerator::VaapiVP9Accelerator::SubmitDecode(
   DCHECK(frame_hdr);
 
   if (frame_hdr->profile != 0) {
-    DVLOG(1) << "Unsupported profile" << frame_hdr->profile;
+    VLOGF(1) << "Unsupported profile" << frame_hdr->profile;
     return false;
   }
 
