@@ -66,7 +66,7 @@ class SaveCardBubbleControllerImpl
   void OnBubbleClosed() override;
 
   const LegalMessageLines& GetLegalMessageLines() const override;
-  void SetShowUploadConfirmTitle(bool show_upload_confirm_title) override;
+  void ContinueToRequestCvcStage() override;
 
   // Used to check if an entered CVC value is a valid CVC for the current card.
   // Valid CVCs are a certain length for their card type (4 for AMEX, 3
@@ -117,9 +117,9 @@ class SaveCardBubbleControllerImpl
   // The value of the CVC entered by the user (if it was requested).
   base::string16 cvc_entered_by_user_;
 
-  // Whether the normal "Save this card?" title or the secondary
-  // "Confirm [card]" title should be shown during upload save.
-  bool show_upload_confirm_title_ = false;
+  // When true, the upload save version of the UI is currently in its second
+  // stage, which asks the user for CVC in order to save.
+  bool is_currently_requesting_cvc_ = false;
 
   // Contains the details of the card that will be saved if the user accepts.
   CreditCard card_;

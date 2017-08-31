@@ -2228,6 +2228,15 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="6" label="Ended, navigated away from page while prompt hidden"/>
   <int value="7" label="Dismissed, user clicked Learn More link"/>
   <int value="8" label="Dismissed, user clicked a legal message link"/>
+  <int value="9" label="CVC fix flow shown"/>
+  <int value="10" label="CVC fix flow ended, user explicitly accepted prompt"/>
+  <int value="11"
+      label="CVC fix flow ended, navigated away from page while prompt
+             showing"/>
+  <int value="12"
+      label="CVC fix flow ended, navigated away from page while prompt hidden"/>
+  <int value="13"
+      label="CVC fix flow dismissed, user clicked a legal message link"/>
 </enum>
 
 <enum name="AutofillScanCreditCardPrompt">

@@ -121,7 +121,7 @@ bool SaveCardBubbleViews::Accept() {
     // If user accepted upload but more info is needed, push the next view onto
     // the stack and update the bubble.
     DCHECK(controller_);
-    controller_->SetShowUploadConfirmTitle(true);
+    controller_->ContinueToRequestCvcStage();
     view_stack_->Push(CreateRequestCvcView(), /*animate=*/true);
     GetWidget()->UpdateWindowTitle();
     GetWidget()->UpdateWindowIcon();
@@ -150,6 +150,10 @@ bool SaveCardBubbleViews::Cancel() {
 bool SaveCardBubbleViews::Close() {
   // Cancel is logged as a different user action than closing, so override
   // Close() to prevent the superclass' implementation from calling Cancel().
+  // Additionally, both clicking the top-right [X] close button *and* focusing
+  // then unfocusing the bubble count as a close action, which means we can't
+  // tell the controller to permanently hide the bubble on close, because then
+  // even things like switching tabs would dismiss the offer to save for good.
   // Return true to indicate that the bubble can be closed.
   return true;
 }

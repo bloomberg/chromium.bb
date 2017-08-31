@@ -26,7 +26,7 @@ class MockSaveCardBubbleController : public SaveCardBubbleController {
   MOCK_METHOD1(OnLegalMessageLinkClicked, void(const GURL& url));
   MOCK_METHOD0(OnBubbleClosed, void());
   MOCK_CONST_METHOD0(GetLegalMessageLines, const LegalMessageLines&());
-  MOCK_METHOD1(SetShowUploadConfirmTitle, void(bool show_upload_confirm_title));
+  MOCK_METHOD0(ContinueToRequestCvcStage, void());
   MOCK_CONST_METHOD1(InputCvcIsValid, bool(const base::string16& input_text));
 
   base::string16 GetCvcEnteredByUser() const override;

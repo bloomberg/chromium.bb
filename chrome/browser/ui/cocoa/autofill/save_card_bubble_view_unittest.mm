@@ -56,7 +56,7 @@ class TestSaveCardBubbleController : public SaveCardBubbleController {
     return lines_;
   }
 
-  MOCK_METHOD1(SetShowUploadConfirmTitle, void(bool show_upload_confirm_title));
+  MOCK_METHOD0(ContinueToRequestCvcStage, void());
   MOCK_CONST_METHOD1(InputCvcIsValid, bool(const base::string16& input_text));
 
   // Testing state.
