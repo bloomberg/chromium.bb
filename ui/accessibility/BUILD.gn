@@ -18,6 +18,8 @@ component("accessibility") {
   sources = [
     "ax_action_data.cc",
     "ax_action_data.h",
+    "ax_event_generator.cc",
+    "ax_event_generator.h",
     "ax_export.h",
     "ax_host_delegate.cc",
     "ax_host_delegate.h",
@@ -159,6 +161,7 @@ static_library("test_support") {
 test("accessibility_unittests") {
   testonly = true
   sources = [
+    "ax_event_generator_unittest.cc",
     "ax_generated_tree_unittest.cc",
     "ax_node_position_unittest.cc",
     "ax_text_utils_unittest.cc",
