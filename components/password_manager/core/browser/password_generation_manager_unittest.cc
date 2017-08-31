@@ -70,6 +70,7 @@ class TestPasswordManagerDriver : public StubPasswordManagerDriver {
   }
 
   MOCK_METHOD0(AllowToRunFormClassifier, void());
+  MOCK_METHOD0(MatchingBlacklistedFormFound, void());
 
  private:
   PasswordManager password_manager_;

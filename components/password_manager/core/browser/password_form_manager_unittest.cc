@@ -329,6 +329,7 @@ class MockPasswordManagerDriver : public StubPasswordManagerDriver {
                void(const autofill::PasswordFormFillData&));
   MOCK_METHOD1(AllowPasswordGenerationForForm,
                void(const autofill::PasswordForm&));
+  MOCK_METHOD0(MatchingBlacklistedFormFound, void());
 
   MockAutofillManager* mock_autofill_manager() {
     return &mock_autofill_manager_;
@@ -1475,11 +1476,10 @@ TEST_F(PasswordFormManagerTest,
 }
 
 TEST_F(PasswordFormManagerTest,
-       TestSendNotBlacklistedMessage_BlacklistedCredentials) {
+       TestSendMachedBlacklistedFoundMessage_BlacklistedCredentials) {
   // Signing up on a previously visited site. Credentials are found in the
-  // password store, but they are blacklisted. AllowPasswordGenerationForForm
-  // is still called.
-  EXPECT_CALL(*(client()->mock_driver()), AllowPasswordGenerationForForm(_));
+  // password store, but they are blacklisted.
+  EXPECT_CALL(*client()->mock_driver(), MatchingBlacklistedFormFound());
   PasswordForm simulated_result = CreateSavedMatch(true);
   fake_form_fetcher()->SetNonFederated({&simulated_result}, 0u);
 }
@@ -3956,6 +3956,25 @@ TEST_F(PasswordFormManagerTest, TestUkmForFilling) {
         ukm::builders::PasswordForm::kManagerFill_ActionName,
         test.expected_event);
   }
+}
+TEST_F(PasswordFormManagerTest,
+       TestSendNotBlacklistedMessage_BlacklistedCredentials) {
+  // Signing up on a previously visited site. Credentials are found in the
+  // password store, but they are blacklisted. AllowPasswordGenerationForForm
+  // is still called.
+  EXPECT_CALL(*(client()->mock_driver()), AllowPasswordGenerationForForm(_));
+  PasswordForm simulated_result = CreateSavedMatch(true);
+  fake_form_fetcher()->SetNonFederated({&simulated_result}, 0u);
+}
+
+TEST_F(PasswordFormManagerTest,
+       TestSendMachedBlacklistedFoundMessage_Credentials) {
+  // Signing up on a previously visited site. Credentials are found in the
+  // password store, and are not blacklisted.
+  EXPECT_CALL(*client()->mock_driver(), MatchingBlacklistedFormFound())
+      .Times(0);
+  PasswordForm simulated_result = CreateSavedMatch(false);
+  fake_form_fetcher()->SetNonFederated({&simulated_result}, 0u);
 }
 
 }  // namespace password_manager

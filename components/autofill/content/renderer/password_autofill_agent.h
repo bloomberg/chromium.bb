@@ -61,6 +61,7 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
       const FormsPredictionsMap& predictions) override;
   void FindFocusedPasswordForm(
       FindFocusedPasswordFormCallback callback) override;
+  void BlacklistedFormFound() override;
 
   // WebFrameClient editor related calls forwarded by AutofillAgent.
   // If they return true, it indicates the event was consumed and should not
@@ -321,6 +322,8 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   mojo::Binding<mojom::PasswordAutofillAgent> binding_;
 
   blink::WebFormElementObserver* form_element_observer_;
+
+  bool blacklisted_form_found_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordAutofillAgent);
 };

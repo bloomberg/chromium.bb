@@ -78,6 +78,7 @@ class ContentPasswordManagerDriver
   void AllowToRunFormClassifier() override;
   autofill::AutofillDriver* GetAutofillDriver() override;
   bool IsMainFrame() const override;
+  void MatchingBlacklistedFormFound() override;
 
   PasswordGenerationManager* GetPasswordGenerationManager() override;
   PasswordManager* GetPasswordManager() override;

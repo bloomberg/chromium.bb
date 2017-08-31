@@ -82,6 +82,8 @@ class FakePasswordAutofillAgent
   MOCK_METHOD2(FillPasswordForm,
                void(int, const autofill::PasswordFormFillData&));
 
+  MOCK_METHOD0(BlacklistedFormFound, void());
+
  private:
   void SetLoggingState(bool active) override {
     called_set_logging_state_ = true;
@@ -230,6 +232,16 @@ TEST_F(ContentPasswordManagerDriverTest, ClearPasswordsOnAutofill) {
     fill_data.wait_for_username = true;
     EXPECT_CALL(fake_agent_, FillPasswordForm(_, WerePasswordsCleared()));
     driver->FillPasswordForm(fill_data);
+}
+
+TEST_F(ContentPasswordManagerDriverTest, NotInformAboutBlacklistedForm) {
+  std::unique_ptr<ContentPasswordManagerDriver> driver(
+      new ContentPasswordManagerDriver(main_rfh(), &password_manager_client_,
+                                       &autofill_client_));
+
+  PasswordFormFillData fill_data = GetTestPasswordFormFillData();
+  EXPECT_CALL(fake_agent_, BlacklistedFormFound()).Times(0);
+  driver->FillPasswordForm(fill_data);
 }
 
 #if defined(SAFE_BROWSING_DB_LOCAL)
