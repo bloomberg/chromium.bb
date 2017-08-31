@@ -226,11 +226,6 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
           base::Bind(&WebMediaPlayerImpl::OnProgress, AsWeakPtr()),
           tick_clock_.get()),
       url_index_(url_index),
-      // Threaded compositing isn't enabled universally yet.
-      compositor_task_runner_(params->compositor_task_runner()
-                                  ? params->compositor_task_runner()
-                                  : base::ThreadTaskRunnerHandle::Get()),
-      compositor_(new VideoFrameCompositor(compositor_task_runner_)),
 #if defined(OS_ANDROID)  // WMPI_CAST
       cast_impl_(this, client_, params->context_3d_cb()),
 #endif
@@ -264,8 +259,25 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
   DCHECK(client_);
   DCHECK(delegate_);
 
-  if (surface_layer_for_video_enabled_)
-    bridge_ = base::WrapUnique(blink::WebSurfaceLayerBridge::Create());
+  if (surface_layer_for_video_enabled_) {
+    bridge_ = params->create_bridge_callback().Run(this);
+    // TODO(lethalantidote): Use a seperate task_runner. https://crbug/753605.
+    vfc_task_runner_ = media_task_runner_;
+  } else {
+    // Threaded compositing isn't enabled universally yet.
+    vfc_task_runner_ = params->compositor_task_runner()
+                           ? params->compositor_task_runner()
+                           : base::ThreadTaskRunnerHandle::Get();
+  }
+
+  compositor_ = base::MakeUnique<VideoFrameCompositor>(vfc_task_runner_);
+
+  if (surface_layer_for_video_enabled_) {
+    vfc_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&VideoFrameCompositor::EnableSubmission,
+                              base::Unretained(compositor_.get()),
+                              bridge_->GetFrameSinkId()));
+  }
 
   // If we're supposed to force video overlays, then make sure that they're
   // enabled all the time.
@@ -329,12 +341,12 @@ WebMediaPlayerImpl::~WebMediaPlayerImpl() {
 
   // Destruct compositor resources in the proper order.
   client_->SetWebLayer(nullptr);
+
   if (!surface_layer_for_video_enabled_ && video_weblayer_) {
     static_cast<cc::VideoLayer*>(video_weblayer_->layer())->StopUsingProvider();
   }
-  // TODO(lethalantidote): Handle destruction of compositor for surface layer.
-  // https://crbug/739854.
-  compositor_task_runner_->DeleteSoon(FROM_HERE, compositor_);
+
+  vfc_task_runner_->DeleteSoon(FROM_HERE, std::move(compositor_));
 
   media_log_->AddEvent(
       media_log_->CreateEvent(MediaLogEvent::WEBMEDIAPLAYER_DESTROYED));
@@ -355,6 +367,17 @@ void WebMediaPlayerImpl::Load(LoadType load_type,
     return;
   }
   DoLoad(load_type, url, cors_mode);
+}
+
+void WebMediaPlayerImpl::OnWebLayerReplaced() {
+  DCHECK(bridge_);
+  bridge_->GetWebLayer()->CcLayer()->SetContentsOpaque(opaque_);
+  // TODO(lethalantidote): Figure out how to persist opaque setting
+  // without calling WebLayerImpl's SetContentsOpaueIsFixed;
+  // https://crbug/739859.
+  // TODO(lethalantidote): Figure out how to pass along rotation information.
+  // https://crbug/750313.
+  client_->SetWebLayer(bridge_->GetWebLayer());
 }
 
 bool WebMediaPlayerImpl::SupportsOverlayFullscreenVideo() {
@@ -1421,16 +1444,10 @@ void WebMediaPlayerImpl::OnMetadata(PipelineMetadata metadata) {
     if (!surface_layer_for_video_enabled_) {
       DCHECK(!video_weblayer_);
       video_weblayer_.reset(new cc_blink::WebLayerImpl(cc::VideoLayer::Create(
-          compositor_, pipeline_metadata_.video_rotation)));
+          compositor_.get(), pipeline_metadata_.video_rotation)));
       video_weblayer_->layer()->SetContentsOpaque(opaque_);
       video_weblayer_->SetContentsOpaqueIsFixed(true);
       client_->SetWebLayer(video_weblayer_.get());
-    } else if (bridge_->GetWebLayer()) {
-      bridge_->GetWebLayer()->CcLayer()->SetContentsOpaque(opaque_);
-      // TODO(lethalantidote): Figure out how to persist opaque setting
-      // without calling WebLayerImpl's SetContentsOpaueIsFixed;
-      // https://crbug/739859.
-      client_->SetWebLayer(bridge_->GetWebLayer());
     }
   }
 
@@ -1759,10 +1776,10 @@ void WebMediaPlayerImpl::OnFrameShown() {
     frame_time_report_cb_.Reset(
         base::Bind(&WebMediaPlayerImpl::ReportTimeFromForegroundToFirstFrame,
                    AsWeakPtr(), base::TimeTicks::Now()));
-    compositor_task_runner_->PostTask(
+    vfc_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&VideoFrameCompositor::SetOnNewProcessedFrameCallback,
-                   base::Unretained(compositor_),
+                   base::Unretained(compositor_.get()),
                    BindToCurrentLoop(frame_time_report_cb_.callback())));
   }
 
@@ -2051,7 +2068,7 @@ std::unique_ptr<Renderer> WebMediaPlayerImpl::CreateRenderer() {
 #endif
   return renderer_factory_selector_->GetCurrentFactory()->CreateRenderer(
       media_task_runner_, worker_task_runner_, audio_source_provider_.get(),
-      compositor_, request_overlay_info_cb, client_->TargetColorSpace());
+      compositor_.get(), request_overlay_info_cb, client_->TargetColorSpace());
 }
 
 void WebMediaPlayerImpl::StartPipeline() {
@@ -2173,9 +2190,9 @@ scoped_refptr<VideoFrame> WebMediaPlayerImpl::GetCurrentFrameFromCompositor()
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   TRACE_EVENT0("media", "WebMediaPlayerImpl::GetCurrentFrameFromCompositor");
 
-  // Needed when the |main_task_runner_| and |compositor_task_runner_| are the
+  // Needed when the |main_task_runner_| and |vfc_task_runner_| are the
   // same to avoid deadlock in the Wait() below.
-  if (compositor_task_runner_->BelongsToCurrentThread()) {
+  if (vfc_task_runner_->BelongsToCurrentThread()) {
     scoped_refptr<VideoFrame> video_frame =
         compositor_->GetCurrentFrameAndUpdateIfStale();
     if (!video_frame) {
@@ -2191,9 +2208,9 @@ scoped_refptr<VideoFrame> WebMediaPlayerImpl::GetCurrentFrameFromCompositor()
   scoped_refptr<VideoFrame> video_frame;
   base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                             base::WaitableEvent::InitialState::NOT_SIGNALED);
-  compositor_task_runner_->PostTask(
+  vfc_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&GetCurrentFrameAndSignal, base::Unretained(compositor_),
+      base::Bind(&GetCurrentFrameAndSignal, base::Unretained(compositor_.get()),
                  &video_frame, &event));
   event.Wait();
 

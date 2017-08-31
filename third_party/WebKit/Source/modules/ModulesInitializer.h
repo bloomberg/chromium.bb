@@ -34,7 +34,8 @@ class MODULES_EXPORT ModulesInitializer : public CoreInitializer {
       WebFrameClient*,
       HTMLMediaElement&,
       const WebMediaPlayerSource&,
-      WebMediaPlayerClient*) const override;
+      WebMediaPlayerClient*,
+      WebLayerTreeView*) const override;
   WebRemotePlaybackClient* CreateWebRemotePlaybackClient(
       HTMLMediaElement&) const override;
 

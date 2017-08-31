@@ -107,6 +107,7 @@ struct WebImeTextSpan;
 struct WebContextMenuData;
 struct WebCursorInfo;
 struct WebFindOptions;
+class WebLayerTreeView;
 class WebRelatedAppsFetcher;
 }  // namespace blink
 
@@ -498,7 +499,8 @@ class CONTENT_EXPORT RenderFrameImpl
       blink::WebMediaPlayerClient* client,
       blink::WebMediaPlayerEncryptedMediaClient* encrypted_client,
       blink::WebContentDecryptionModule* initial_cdm,
-      const blink::WebString& sink_id) override;
+      const blink::WebString& sink_id,
+      blink::WebLayerTreeView* layer_tree_view) override;
   std::unique_ptr<blink::WebApplicationCacheHost> CreateApplicationCacheHost(
       blink::WebApplicationCacheHostClient* client) override;
   std::unique_ptr<blink::WebContentSettingsClient>

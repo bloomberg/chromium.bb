@@ -4,6 +4,7 @@
 
 #include "platform/graphics/SurfaceLayerBridge.h"
 
+#include "base/feature_list.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/layers/surface_layer.h"
@@ -11,6 +12,7 @@
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/common/surfaces/surface_info.h"
 #include "components/viz/common/surfaces/surface_sequence.h"
+#include "media/base/media_switches.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/mojo/MojoHelper.h"
 #include "platform/wtf/Functional.h"
@@ -53,8 +55,8 @@ class SequenceSurfaceReferenceFactoryImpl
 
 }  // namespace
 
-SurfaceLayerBridge::SurfaceLayerBridge(SurfaceLayerBridgeObserver* observer,
-                                       WebLayerTreeView* layer_tree_view)
+SurfaceLayerBridge::SurfaceLayerBridge(WebLayerTreeView* layer_tree_view,
+                                       WebSurfaceLayerBridgeObserver* observer)
     : weak_factory_(this),
       observer_(observer),
       binding_(this),
@@ -80,9 +82,6 @@ SurfaceLayerBridge::SurfaceLayerBridge(SurfaceLayerBridgeObserver* observer,
 
 SurfaceLayerBridge::~SurfaceLayerBridge() {
   observer_ = nullptr;
-  if (web_layer_) {
-    GraphicsLayer::UnregisterContentsLayer(web_layer_.get());
-  }
 }
 
 void SurfaceLayerBridge::SatisfyCallback(const viz::SurfaceSequence& sequence) {
@@ -100,6 +99,7 @@ void SurfaceLayerBridge::CreateSolidColorLayer() {
 
   web_layer_ = Platform::Current()->CompositorSupport()->CreateLayerFromCCLayer(
       cc_layer_.get());
+
   GraphicsLayer::RegisterContentsLayer(web_layer_.get());
 }
 
@@ -108,20 +108,22 @@ void SurfaceLayerBridge::OnFirstSurfaceActivation(
   if (!current_surface_id_.is_valid() && surface_info.is_valid()) {
     // First time a SurfaceId is received
     current_surface_id_ = surface_info.id();
-    GraphicsLayer::UnregisterContentsLayer(web_layer_.get());
-    web_layer_->RemoveFromParent();
+    if (web_layer_) {
+      GraphicsLayer::UnregisterContentsLayer(web_layer_.get());
+      web_layer_->RemoveFromParent();
+    }
 
     scoped_refptr<cc::SurfaceLayer> surface_layer =
         cc::SurfaceLayer::Create(ref_factory_);
     surface_layer->SetPrimarySurfaceInfo(surface_info);
     surface_layer->SetFallbackSurfaceInfo(surface_info);
     surface_layer->SetStretchContentToFillBounds(true);
+    surface_layer->SetIsDrawable(true);
     cc_layer_ = surface_layer;
 
     web_layer_ =
         Platform::Current()->CompositorSupport()->CreateLayerFromCCLayer(
             cc_layer_.get());
-    GraphicsLayer::RegisterContentsLayer(web_layer_.get());
   } else if (current_surface_id_ != surface_info.id()) {
     // A different SurfaceId is received, prompting change to existing
     // SurfaceLayer

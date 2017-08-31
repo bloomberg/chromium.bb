@@ -28,7 +28,9 @@ WebMediaPlayerParams::WebMediaPlayerParams(
     bool enable_instant_source_buffer_gc,
     bool embedded_media_experience_enabled,
     mojom::WatchTimeRecorderProvider* provider,
-    CreateCapabilitiesRecorderCB create_capabilities_recorder_cb)
+    CreateCapabilitiesRecorderCB create_capabilities_recorder_cb,
+    base::Callback<std::unique_ptr<blink::WebSurfaceLayerBridge>(
+        blink::WebSurfaceLayerBridgeObserver*)> create_bridge_callback)
     : defer_load_cb_(defer_load_cb),
       audio_renderer_sink_(audio_renderer_sink),
       media_log_(std::move(media_log)),
@@ -49,7 +51,8 @@ WebMediaPlayerParams::WebMediaPlayerParams(
       embedded_media_experience_enabled_(embedded_media_experience_enabled),
       watch_time_recorder_provider_(provider),
       create_capabilities_recorder_cb_(
-          std::move(create_capabilities_recorder_cb)) {}
+          std::move(create_capabilities_recorder_cb)),
+      create_bridge_callback_(create_bridge_callback) {}
 
 WebMediaPlayerParams::~WebMediaPlayerParams() {}
 

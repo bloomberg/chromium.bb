@@ -75,15 +75,16 @@ class
 typedef CanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContextOrImageBitmapRenderingContext
     RenderingContext;
 
-class CORE_EXPORT HTMLCanvasElement final : public HTMLElement,
-                                            public ContextLifecycleObserver,
-                                            public PageVisibilityObserver,
-                                            public CanvasImageSource,
-                                            public CanvasRenderingContextHost,
-                                            public SurfaceLayerBridgeObserver,
-                                            public ImageBufferClient,
-                                            public ImageBitmapSource,
-                                            public OffscreenCanvasPlaceholder {
+class CORE_EXPORT HTMLCanvasElement final
+    : public HTMLElement,
+      public ContextLifecycleObserver,
+      public PageVisibilityObserver,
+      public CanvasImageSource,
+      public CanvasRenderingContextHost,
+      public WebSurfaceLayerBridgeObserver,
+      public ImageBufferClient,
+      public ImageBitmapSource,
+      public OffscreenCanvasPlaceholder {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(HTMLCanvasElement);
   USING_PRE_FINALIZER(HTMLCanvasElement, Dispose);

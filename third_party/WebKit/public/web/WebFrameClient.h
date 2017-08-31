@@ -101,6 +101,7 @@ class WebEncryptedMediaClient;
 class WebExternalPopupMenu;
 class WebExternalPopupMenuClient;
 class WebFileChooserCompletion;
+class WebLayerTreeView;
 class WebLocalFrame;
 class WebMediaPlayer;
 class WebMediaPlayerClient;
@@ -147,7 +148,8 @@ class BLINK_EXPORT WebFrameClient {
                                             WebMediaPlayerClient*,
                                             WebMediaPlayerEncryptedMediaClient*,
                                             WebContentDecryptionModule*,
-                                            const WebString& sink_id) {
+                                            const WebString& sink_id,
+                                            WebLayerTreeView*) {
     return nullptr;
   }
 

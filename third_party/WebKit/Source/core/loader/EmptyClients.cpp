@@ -190,7 +190,8 @@ PluginView* EmptyLocalFrameClient::CreatePlugin(HTMLPlugInElement&,
 std::unique_ptr<WebMediaPlayer> EmptyLocalFrameClient::CreateWebMediaPlayer(
     HTMLMediaElement&,
     const WebMediaPlayerSource&,
-    WebMediaPlayerClient*) {
+    WebMediaPlayerClient*,
+    WebLayerTreeView*) {
   return nullptr;
 }
 

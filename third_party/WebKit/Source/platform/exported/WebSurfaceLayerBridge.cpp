@@ -8,10 +8,12 @@
 
 namespace blink {
 
-WebSurfaceLayerBridge::~WebSurfaceLayerBridge() {}
-
-WebSurfaceLayerBridge* WebSurfaceLayerBridge::Create() {
-  return new SurfaceLayerBridge(nullptr, nullptr);
+std::unique_ptr<WebSurfaceLayerBridge> WebSurfaceLayerBridge::Create(
+    WebLayerTreeView* layer_tree_view,
+    WebSurfaceLayerBridgeObserver* observer) {
+  return base::MakeUnique<SurfaceLayerBridge>(layer_tree_view, observer);
 }
+
+WebSurfaceLayerBridge::~WebSurfaceLayerBridge() {}
 
 }  // namespace blink
