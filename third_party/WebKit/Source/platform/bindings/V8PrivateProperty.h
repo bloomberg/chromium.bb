@@ -38,7 +38,6 @@ class ScriptWrappable;
   X(FetchEvent, Request)                              \
   X(Global, Event)                                    \
   X(IDBCursor, Request)                               \
-  X(IDBObserver, Callback)                            \
   X(InternalBody, Buffer)                             \
   X(InternalBody, Stream)                             \
   X(IntersectionObserver, Callback)                   \

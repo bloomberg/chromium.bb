@@ -7,6 +7,5 @@ bindings_modules_v8_custom_files =
     get_path_info([
                     "V8CustomSQLStatementErrorCallback.cpp",
                     "V8ExtendableMessageEventCustom.cpp",
-                    "V8IDBObserverCustom.cpp",
                   ],
                   "abspath")
