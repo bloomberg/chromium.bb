@@ -16,6 +16,8 @@ static_library("ntp_snippets") {
     "bookmarks/bookmark_suggestions_provider.cc",
     "bookmarks/bookmark_suggestions_provider.h",
     "breaking_news/breaking_news_listener.h",
+    "breaking_news/breaking_news_metrics.cc",
+    "breaking_news/breaking_news_metrics.h",
     "breaking_news/subscription_json_request.cc",
     "breaking_news/subscription_json_request.h",
     "breaking_news/subscription_manager.cc",

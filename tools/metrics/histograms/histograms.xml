@@ -47010,6 +47010,73 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="NewTabPage.ContentSuggestions.BreakingNews.MessageReceived"
+    enum="ContentSuggestionsBreakingNewsMessageContainsNews">
+  <owner>vitaliii@chromium.org</owner>
+  <summary>
+    Android: Number of received messages and whether they contain pushed news. A
+    message contains pushed news if the payload key exists in the message. The
+    payload content is not checked at all (e.g. it may be empty). Recorded when
+    a message is received.
+  </summary>
+</histogram>
+
+<histogram
+    name="NewTabPage.ContentSuggestions.BreakingNews.SubscriptionRequestStatus"
+    enum="ContentSuggestionsStatusCode">
+  <owner>vitaliii@chromium.org</owner>
+  <summary>
+    Android: The result of a subscription request for breaking news at the
+    content suggestions server. Recorded when a request finishes. Analogous to
+    NewTabPage.ContentSuggestions.BreakingNews.UnsubscriptionRequestStatus.
+  </summary>
+</histogram>
+
+<histogram
+    name="NewTabPage.ContentSuggestions.BreakingNews.TimeSinceLastTokenValidation"
+    units="ms">
+  <owner>vitaliii@chromium.org</owner>
+  <summary>
+    Android: Time between a token validation and the last successful token
+    retrieval from InstanceID. Recorded when InstanceID answers our token
+    request for a validation either with a token or an error. If the token was
+    never received before the validation, the metric is not recorded.
+  </summary>
+</histogram>
+
+<histogram
+    name="NewTabPage.ContentSuggestions.BreakingNews.TokenRetrievalResult"
+    enum="InstanceIDResult">
+  <owner>vitaliii@chromium.org</owner>
+  <summary>
+    Android: The result of our inquiry to InstanceID to receive the current
+    token. Recorded when InstanceID replies to our inquiry for a token
+    (including for a validation).
+  </summary>
+</histogram>
+
+<histogram
+    name="NewTabPage.ContentSuggestions.BreakingNews.UnsubscriptionRequestStatus"
+    enum="ContentSuggestionsStatusCode">
+  <owner>vitaliii@chromium.org</owner>
+  <summary>
+    Android: The result of an unsubscription request for breaking news at the
+    content suggestions server. Recorded when a request finishes. Analogous to
+    NewTabPage.ContentSuggestions.BreakingNews.SubscriptionRequestStatus.
+  </summary>
+</histogram>
+
+<histogram
+    name="NewTabPage.ContentSuggestions.BreakingNews.WasTokenValidBeforeValidation"
+    enum="ContentSuggestionsBreakingNewsTokenValidationOutcome">
+  <owner>vitaliii@chromium.org</owner>
+  <summary>
+    Android: Whether a token validation detected an invalid token. This is
+    recorded only for validations where no error occured and the token was
+    actually retrieved.
+  </summary>
+</histogram>
+
 <histogram name="NewTabPage.ContentSuggestions.CategoryDismissed"
     enum="ContentSuggestionsCategory">
   <owner>treib@chromium.org</owner>
