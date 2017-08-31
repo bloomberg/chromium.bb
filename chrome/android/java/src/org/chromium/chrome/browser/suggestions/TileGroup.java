@@ -22,7 +22,6 @@ import org.chromium.chrome.browser.ntp.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.ContextMenuManager.ContextMenuItemId;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 
 import java.util.ArrayList;
@@ -479,12 +478,7 @@ public class TileGroup implements MostVisitedSites.Observer {
             Tile tile = findTile(mSiteData);
             if (tile != null) { // Do nothing if the tile was removed.
                 if (icon == null) {
-                    if (FeatureUtilities.isChromeHomeModernEnabled()) {
-                        mTileRenderer.setDefaultTileIcon(tile);
-                    } else {
-                        mTileRenderer.setTileIconFromColor(
-                                tile, fallbackColor, isFallbackColorDefault);
-                    }
+                    mTileRenderer.setTileIconFromColor(tile, fallbackColor, isFallbackColorDefault);
                 } else {
                     mTileRenderer.setTileIconFromBitmap(tile, icon);
                 }
