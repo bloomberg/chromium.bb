@@ -14044,7 +14044,7 @@ uploading your change for review.  These are checked by presubmit scripts.
 </enum>
 
 <enum name="FeatureObserver">
-<!-- Generated from third_party/WebKit/public/platform/web_feature.mojom -->
+<!-- Generated from third_party/WebKit/public/platform/web_feature.mojom.-->
 
   <int value="0" label="OBSOLETE_PageDestruction"/>
   <int value="1" label="LegacyNotifications"/>
@@ -16220,6 +16220,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="2119" label="V8LabeledExpressionStatement"/>
   <int value="2120" label="PaymentRequestSupportedMethodsArray"/>
   <int value="2121" label="NavigatorDeviceMemory"/>
+  <int value="2122" label="FixedWidthTableDistributionChanged"/>
 </enum>
 
 <enum name="FeedbackSource">

@@ -1654,6 +1654,7 @@ enum WebFeature {
   kV8LabeledExpressionStatement = 2119,
   kPaymentRequestSupportedMethodsArray = 2120,
   kNavigatorDeviceMemory = 2121,
+  kFixedWidthTableDistributionChanged = 2122,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
