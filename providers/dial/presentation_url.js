@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-goog.module('mr.dial.MediaSource');
+goog.module('mr.dial.PresentationUrl');
 
 const Logger = goog.require('mr.Logger');
 const base64 = goog.require('mr.base64');
@@ -12,7 +12,7 @@ const base64 = goog.require('mr.base64');
  * Represents a DIAL media source containing information specific to a DIAL
  * launch.
  */
-const MediaSource = class {
+const PresentationUrl = class {
   /**
    * @param {string} appName The DIAL application name.
    * @param {string=} launchParameter DIAL application launch parameter.
@@ -25,10 +25,25 @@ const MediaSource = class {
   }
 
   /**
+   * Generates a DIAL Presentation URL using given parameters.
+   * @param {string} dialAppName Name of the DIAL app.
+   * @param {?string} dialPostData base-64 encoded string of the data for the
+   *     DIAL launch.
+   * @return {string}
+   */
+  static getPresentationUrlAsString(dialAppName, dialPostData) {
+    const url = new URL('dial:' + dialAppName);
+    if (dialPostData) {
+      url.searchParams.set('postData', dialPostData);
+    }
+    return url.toString();
+  }
+
+  /**
    * Constructs a DIAL media source from a URL. The URL can take on the new
    * format (with dial: protocol) or the old format (with https: protocol).
    * @param {string} urlString The media source URL.
-   * @return {?MediaSource} A DIAL media source if the parse was
+   * @return {?PresentationUrl} A DIAL media source if the parse was
    *     successful, null otherwise.
    */
   static create(urlString) {
@@ -36,17 +51,17 @@ const MediaSource = class {
     try {
       url = new URL(urlString);
     } catch (err) {
-      MediaSource.logger_.info('Invalid URL: ' + urlString);
+      PresentationUrl.logger_.info('Invalid URL: ' + urlString);
       return null;
     }
     switch (url.protocol) {
       case 'dial:':
-        return MediaSource.parseDialUrl_(url);
+        return PresentationUrl.parseDialUrl_(url);
       case 'https:':
 
-        return MediaSource.parseLegacyUrl_(url);
+        return PresentationUrl.parseLegacyUrl_(url);
       default:
-        MediaSource.logger_.fine('Unhandled protocol: ' + url.protocol);
+        PresentationUrl.logger_.fine('Unhandled protocol: ' + url.protocol);
         return null;
     }
   }
@@ -55,13 +70,13 @@ const MediaSource = class {
    * Parses the given URL using the new DIAL URL format, which takes the form:
    * dial:<App name>?postData=<base64-encoded launch parameters>
    * @param {!URL} url
-   * @return {?MediaSource}
+   * @return {?PresentationUrl}
    * @private
    */
   static parseDialUrl_(url) {
     const appName = url.pathname;
     if (!appName.match(/^\w+$/)) {
-      MediaSource.logger_.warning('Invalid app name: ' + appName);
+      PresentationUrl.logger_.warning('Invalid app name: ' + appName);
       return null;
     }
     let postData = url.searchParams.get('postData') || undefined;
@@ -69,12 +84,12 @@ const MediaSource = class {
       try {
         postData = base64.decodeString(postData);
       } catch (err) {
-        MediaSource.logger_.warning(
+        PresentationUrl.logger_.warning(
             'Invalid base64 encoded postData:' + postData);
         return null;
       }
     }
-    return new MediaSource(appName, postData);
+    return new PresentationUrl(appName, postData);
   }
 
   /**
@@ -83,48 +98,49 @@ const MediaSource = class {
    * Example:
    * http://www.youtube.com/tv#__dialAppName__=YouTube/__dialPostData__=dj0xMjM=
    * @param {!URL} url
-   * @return {?MediaSource}
+   * @return {?PresentationUrl}
    * @private
    */
   static parseLegacyUrl_(url) {
     // Parse URI and get fragment.
     const fragment = url.hash;
     if (!fragment) return null;
-    let appName = MediaSource.APP_NAME_REGEX_.exec(fragment);
+    let appName = PresentationUrl.APP_NAME_REGEX_.exec(fragment);
     appName = appName ? appName[1] : null;
     if (!appName) return null;
     appName = decodeURIComponent(appName);
 
-    let postData = MediaSource.LAUNCH_PARAM_REGEX_.exec(fragment);
+    let postData = PresentationUrl.LAUNCH_PARAM_REGEX_.exec(fragment);
     postData = postData ? postData[1] : undefined;
     if (postData) {
       try {
         postData = base64.decodeString(postData);
       } catch (err) {
-        MediaSource.logger_.warning(
+        PresentationUrl.logger_.warning(
             'Invalid base64 encoded postData:' + postData);
         return null;
       }
     }
-    return new MediaSource(appName, postData);
+    return new PresentationUrl(appName, postData);
   }
 };
 
 
 /** @const @private {?Logger} */
-MediaSource.logger_ = Logger.getInstance('mr.dial.MediaSource');
+PresentationUrl.logger_ = Logger.getInstance('mr.dial.PresentationUrl');
 
 
 /** @const {string} */
-MediaSource.URN_PREFIX = 'urn:dial-multiscreen-org:dial:application:';
+PresentationUrl.URN_PREFIX = 'urn:dial-multiscreen-org:dial:application:';
 
 
 /** @private @const {!RegExp} */
-MediaSource.APP_NAME_REGEX_ = /__dialAppName__=([A-Za-z0-9-._~!$&'()*+,;=%]+)/;
+PresentationUrl.APP_NAME_REGEX_ =
+    /__dialAppName__=([A-Za-z0-9-._~!$&'()*+,;=%]+)/;
 
 
 /** @private @const {!RegExp} */
-MediaSource.LAUNCH_PARAM_REGEX_ = /__dialPostData__=([A-Za-z0-9]+={0,2})/;
+PresentationUrl.LAUNCH_PARAM_REGEX_ = /__dialPostData__=([A-Za-z0-9]+={0,2})/;
 
 
-exports = MediaSource;
+exports = PresentationUrl;

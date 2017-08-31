@@ -12,7 +12,7 @@ const Assertions = goog.require('mr.Assertions');
 const CancellablePromise = goog.require('mr.CancellablePromise');
 const DialAnalytics = goog.require('mr.DialAnalytics');
 const DialClient = goog.require('mr.dial.Client');
-const DialMediaSource = goog.require('mr.dial.MediaSource');
+const DialPresentationUrl = goog.require('mr.dial.PresentationUrl');
 const DialSink = goog.require('mr.dial.Sink');
 const Logger = goog.require('mr.Logger');
 const MediaSourceUtils = goog.require('mr.MediaSourceUtils');
@@ -85,7 +85,7 @@ const DialProvider = class {
    */
   getAvailableSinks(sourceUrn) {
     this.logger_.fine('GetAvailableSinks for ' + sourceUrn);
-    const dialMediaSource = DialMediaSource.create(sourceUrn);
+    const dialMediaSource = DialPresentationUrl.create(sourceUrn);
     return dialMediaSource ?
         this.sinkDiscoveryService_.getSinksByAppName(dialMediaSource.appName) :
         SinkList.EMPTY;
@@ -95,7 +95,7 @@ const DialProvider = class {
    * @override
    */
   startObservingMediaSinks(sourceUrn) {
-    const dialMediaSource = DialMediaSource.create(sourceUrn);
+    const dialMediaSource = DialPresentationUrl.create(sourceUrn);
     if (dialMediaSource) {
       this.appDiscoveryService_.registerApp(dialMediaSource.appName);
       this.maybeStartAppDiscovery_();
@@ -106,7 +106,7 @@ const DialProvider = class {
    * @override
    */
   stopObservingMediaSinks(sourceUrn) {
-    const dialMediaSource = DialMediaSource.create(sourceUrn);
+    const dialMediaSource = DialPresentationUrl.create(sourceUrn);
     if (dialMediaSource) {
       this.appDiscoveryService_.unregisterApp(dialMediaSource.appName);
       this.maybeStopAppDiscovery_();
@@ -193,7 +193,7 @@ const DialProvider = class {
     }
     SinkUtils.getInstance().recentLaunchedDevice =
         new SinkUtils.DeviceData(sink.getModelName(), sink.getIpAddress());
-    const dialMediaSource = DialMediaSource.create(sourceUrn);
+    const dialMediaSource = DialPresentationUrl.create(sourceUrn);
     if (!dialMediaSource) {
       return CancellablePromise.reject(Error('No app name set.'));
     }
@@ -389,7 +389,7 @@ const DialProvider = class {
       return false;
     }
 
-    const dialMediaSource = DialMediaSource.create(sourceUrn);
+    const dialMediaSource = DialPresentationUrl.create(sourceUrn);
     if (!dialMediaSource) {
       return false;
     }

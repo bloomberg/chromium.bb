@@ -19,10 +19,17 @@ function PresentationConnection() {}
 
 
 /**
- * @type {?string}
+ * @type {string}
  * @see http://w3c.github.io/presentation-api/#dom-presentationconnection-id
  */
 PresentationConnection.prototype.id;
+
+
+/**
+ * @type {string}
+ * @see http://w3c.github.io/presentation-api/#dom-presentationconnection-url
+ */
+PresentationConnection.prototype.url;
 
 
 /**
@@ -134,7 +141,7 @@ PresentationConnectionAvailableEvent.prototype.connection;
 
 
 /**
- * @param {string} url
+ * @param {string|!Array<string>} url
  * @constructor
  */
 function PresentationRequest(url) {}
