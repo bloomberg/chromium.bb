@@ -47,7 +47,7 @@
 namespace blink {
 
 class ExceptionState;
-class GenericEventQueue;
+class MediaElementEventQueue;
 class WebSourceBuffer;
 
 class MediaSource final : public EventTargetWithInlineData,
@@ -146,7 +146,7 @@ class MediaSource final : public EventTargetWithInlineData,
 
   std::unique_ptr<WebMediaSource> web_media_source_;
   AtomicString ready_state_;
-  Member<GenericEventQueue> async_event_queue_;
+  Member<MediaElementEventQueue> async_event_queue_;
   WeakMember<HTMLMediaElement> attached_element_;
 
   Member<SourceBufferList> source_buffers_;

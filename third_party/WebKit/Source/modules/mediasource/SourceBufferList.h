@@ -38,7 +38,7 @@
 namespace blink {
 
 class SourceBuffer;
-class GenericEventQueue;
+class MediaElementEventQueue;
 
 class SourceBufferList final : public EventTargetWithInlineData,
                                public ContextClient {
@@ -47,7 +47,7 @@ class SourceBufferList final : public EventTargetWithInlineData,
 
  public:
   static SourceBufferList* Create(ExecutionContext* context,
-                                  GenericEventQueue* async_event_queue) {
+                                  MediaElementEventQueue* async_event_queue) {
     return new SourceBufferList(context, async_event_queue);
   }
   ~SourceBufferList() override;
@@ -79,11 +79,11 @@ class SourceBufferList final : public EventTargetWithInlineData,
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  SourceBufferList(ExecutionContext*, GenericEventQueue*);
+  SourceBufferList(ExecutionContext*, MediaElementEventQueue*);
 
   void ScheduleEvent(const AtomicString&);
 
-  Member<GenericEventQueue> async_event_queue_;
+  Member<MediaElementEventQueue> async_event_queue_;
 
   HeapVector<Member<SourceBuffer>> list_;
 };

@@ -26,7 +26,7 @@
 #include "core/html/track/TextTrackList.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/events/GenericEventQueue.h"
+#include "core/dom/events/MediaElementEventQueue.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/track/InbandTextTrack.h"
 #include "core/html/track/LoadableTextTrack.h"
@@ -36,7 +36,7 @@
 namespace blink {
 
 TextTrackList::TextTrackList(HTMLMediaElement* owner)
-    : owner_(owner), async_event_queue_(GenericEventQueue::Create(this)) {}
+    : owner_(owner), async_event_queue_(MediaElementEventQueue::Create(this)) {}
 
 TextTrackList::~TextTrackList() {}
 

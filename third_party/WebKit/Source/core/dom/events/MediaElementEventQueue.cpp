@@ -23,41 +23,45 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/dom/events/GenericEventQueue.h"
+#include "core/dom/events/MediaElementEventQueue.h"
 
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/dom/events/Event.h"
 #include "core/probe/CoreProbes.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 
 namespace blink {
 
-GenericEventQueue* GenericEventQueue::Create(EventTarget* owner) {
-  return new GenericEventQueue(owner);
+MediaElementEventQueue* MediaElementEventQueue::Create(EventTarget* owner) {
+  return new MediaElementEventQueue(owner);
 }
 
-GenericEventQueue::GenericEventQueue(EventTarget* owner)
+MediaElementEventQueue::MediaElementEventQueue(EventTarget* owner)
     : owner_(owner),
-      timer_(this, &GenericEventQueue::TimerFired),
+      timer_(TaskRunnerHelper::Get(TaskType::kMediaElementEvent,
+                                   owner->GetExecutionContext()),
+             this,
+             &MediaElementEventQueue::TimerFired),
       is_closed_(false) {}
 
-GenericEventQueue::~GenericEventQueue() {}
+MediaElementEventQueue::~MediaElementEventQueue() {}
 
-DEFINE_TRACE(GenericEventQueue) {
+DEFINE_TRACE(MediaElementEventQueue) {
   visitor->Trace(owner_);
   visitor->Trace(pending_events_);
   EventQueue::Trace(visitor);
 }
 
-bool GenericEventQueue::EnqueueEvent(const WebTraceLocation& from_here,
-                                     Event* event) {
+bool MediaElementEventQueue::EnqueueEvent(const WebTraceLocation& from_here,
+                                          Event* event) {
   if (is_closed_)
     return false;
 
   if (event->target() == owner_)
     event->SetTarget(nullptr);
 
-  TRACE_EVENT_ASYNC_BEGIN1("event", "GenericEventQueue:enqueueEvent", event,
-                           "type", event->type().Ascii());
+  TRACE_EVENT_ASYNC_BEGIN1("event", "MediaElementEventQueue:enqueueEvent",
+                           event, "type", event->type().Ascii());
   EventTarget* target = event->target() ? event->target() : owner_.Get();
   probe::AsyncTaskScheduled(target->GetExecutionContext(), event->type(),
                             event);
@@ -69,15 +73,15 @@ bool GenericEventQueue::EnqueueEvent(const WebTraceLocation& from_here,
   return true;
 }
 
-bool GenericEventQueue::CancelEvent(Event* event) {
+bool MediaElementEventQueue::CancelEvent(Event* event) {
   bool found = pending_events_.Contains(event);
 
   if (found) {
     EventTarget* target = event->target() ? event->target() : owner_.Get();
     probe::AsyncTaskCanceled(target->GetExecutionContext(), event);
     pending_events_.erase(pending_events_.Find(event));
-    TRACE_EVENT_ASYNC_END2("event", "GenericEventQueue:enqueueEvent", event,
-                           "type", event->type().Ascii(), "status",
+    TRACE_EVENT_ASYNC_END2("event", "MediaElementEventQueue:enqueueEvent",
+                           event, "type", event->type().Ascii(), "status",
                            "cancelled");
   }
 
@@ -87,7 +91,7 @@ bool GenericEventQueue::CancelEvent(Event* event) {
   return found;
 }
 
-void GenericEventQueue::TimerFired(TimerBase*) {
+void MediaElementEventQueue::TimerFired(TimerBase*) {
   DCHECK(!timer_.IsActive());
   DCHECK(!pending_events_.IsEmpty());
 
@@ -99,26 +103,26 @@ void GenericEventQueue::TimerFired(TimerBase*) {
     EventTarget* target = event->target() ? event->target() : owner_.Get();
     CString type(event->type().Ascii());
     probe::AsyncTask async_task(target->GetExecutionContext(), event);
-    TRACE_EVENT_ASYNC_STEP_INTO1("event", "GenericEventQueue:enqueueEvent",
+    TRACE_EVENT_ASYNC_STEP_INTO1("event", "MediaElementEventQueue:enqueueEvent",
                                  event, "dispatch", "type", type);
     target->DispatchEvent(pending_event);
-    TRACE_EVENT_ASYNC_END1("event", "GenericEventQueue:enqueueEvent", event,
-                           "type", type);
+    TRACE_EVENT_ASYNC_END1("event", "MediaElementEventQueue:enqueueEvent",
+                           event, "type", type);
   }
 }
 
-void GenericEventQueue::Close() {
+void MediaElementEventQueue::Close() {
   is_closed_ = true;
   CancelAllEvents();
 }
 
-void GenericEventQueue::CancelAllEvents() {
+void MediaElementEventQueue::CancelAllEvents() {
   timer_.Stop();
 
   for (const auto& pending_event : pending_events_) {
     Event* event = pending_event.Get();
-    TRACE_EVENT_ASYNC_END2("event", "GenericEventQueue:enqueueEvent", event,
-                           "type", event->type().Ascii(), "status",
+    TRACE_EVENT_ASYNC_END2("event", "MediaElementEventQueue:enqueueEvent",
+                           event, "type", event->type().Ascii(), "status",
                            "cancelled");
     EventTarget* target = event->target() ? event->target() : owner_.Get();
     probe::AsyncTaskCanceled(target->GetExecutionContext(), event);
@@ -126,7 +130,7 @@ void GenericEventQueue::CancelAllEvents() {
   pending_events_.clear();
 }
 
-bool GenericEventQueue::HasPendingEvents() const {
+bool MediaElementEventQueue::HasPendingEvents() const {
   return pending_events_.size();
 }
 
