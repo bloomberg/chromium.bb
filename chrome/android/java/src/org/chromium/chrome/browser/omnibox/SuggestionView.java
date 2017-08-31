@@ -89,12 +89,16 @@ class SuggestionView extends ViewGroup {
     private OmniboxSuggestionDelegate mSuggestionDelegate;
     private Boolean mUseDarkColors;
     private int mPosition;
+    private int mRightOffsetPx;
+    private int mSuggestionViewOffset;
 
     private final SuggestionContentsContainer mContentsView;
 
     private final int mRefineWidth;
     private final View mRefineView;
     private TintedDrawable mRefineIcon;
+    private final int mRefineViewModernEndPadding;
+    private final int mSuggestionListModernOffset;
 
     private final int[] mViewPositionHolder = new int[2];
 
@@ -185,6 +189,12 @@ class SuggestionView extends ViewGroup {
         mRefineWidth = getResources()
                 .getDimensionPixelSize(R.dimen.omnibox_suggestion_refine_width);
 
+        mRefineViewModernEndPadding = getResources().getDimensionPixelSize(
+                R.dimen.omnibox_suggestion_refine_view_modern_end_padding);
+
+        mSuggestionListModernOffset =
+                getResources().getDimensionPixelSize(R.dimen.omnibox_suggestion_list_modern_offset);
+
         mUrlBar = (UrlBar) locationBar.getContainerView().findViewById(R.id.url_bar);
 
         mPhoneUrlBarLeftOffsetPx = getResources().getDimensionPixelOffset(
@@ -204,12 +214,11 @@ class SuggestionView extends ViewGroup {
         boolean refineVisible = mRefineView.getVisibility() == VISIBLE;
         boolean isRtl = ApiCompatibilityUtils.isLayoutRtl(this);
         int contentsViewOffsetX = isRtl && refineVisible ? mRefineWidth : 0;
-        mContentsView.layout(
-                contentsViewOffsetX,
-                0,
+        mContentsView.layout(contentsViewOffsetX, 0,
                 contentsViewOffsetX + mContentsView.getMeasuredWidth(),
                 mContentsView.getMeasuredHeight());
-        int refineViewOffsetX = isRtl ? 0 : getMeasuredWidth() - mRefineWidth;
+
+        int refineViewOffsetX = isRtl ? 0 : getMeasuredWidth() - mRefineWidth - mRightOffsetPx;
         mRefineView.layout(
                 refineViewOffsetX,
                 0,
@@ -273,10 +282,10 @@ class SuggestionView extends ViewGroup {
      * @param suggestionDelegate The suggestion delegate.
      * @param position Position of the suggestion in the dropdown list.
      * @param useDarkColors Whether dark colors should be used for fonts and icons.
+     * @param mUseModernDesign Whether modern design padding should be used.
      */
-    public void init(OmniboxResultItem suggestionItem,
-            OmniboxSuggestionDelegate suggestionDelegate,
-            int position, boolean useDarkColors) {
+    public void init(OmniboxResultItem suggestionItem, OmniboxSuggestionDelegate suggestionDelegate,
+            int position, boolean useDarkColors, boolean mUseModernDesign) {
         ViewCompat.setLayoutDirection(this, ViewCompat.getLayoutDirection(mUrlBar));
 
         // Update the position unconditionally.
@@ -304,6 +313,9 @@ class SuggestionView extends ViewGroup {
                 .getDimension(R.dimen.omnibox_suggestion_first_line_text_size));
         mContentsView.mTextLine2.setTextSize(TypedValue.COMPLEX_UNIT_PX, getResources()
                 .getDimension(R.dimen.omnibox_suggestion_second_line_text_size));
+
+        mRightOffsetPx = mUseModernDesign ? mRefineViewModernEndPadding : 0;
+        mSuggestionViewOffset = mUseModernDesign ? mSuggestionListModernOffset : 0;
 
         // Suggestions with attached answers are rendered with rich results regardless of which
         // suggestion type they are.
@@ -848,13 +860,17 @@ class SuggestionView extends ViewGroup {
                         R.dimen.omnibox_suggestion_answer_image_horizontal_spacing);
             }
             if (isRTL) {
-                mTextLine1.layout(0, t, mTextRight, b);
-                mAnswerImage.layout(mTextRight - imageWidth , t, mTextRight, b);
-                mTextLine2.layout(0, t, mTextRight - (imageWidth + imageSpacing), b);
+                mTextLine1.layout(0, t, mTextRight - mSuggestionViewOffset, b);
+                mAnswerImage.layout(
+                        mTextRight - imageWidth, t, mTextRight - mSuggestionViewOffset, b);
+                mTextLine2.layout(
+                        0, t, mTextRight - (imageWidth + imageSpacing) - mSuggestionViewOffset, b);
             } else {
-                mTextLine1.layout(mTextLeft, t, r - l, b);
-                mAnswerImage.layout(mTextLeft, t, mTextLeft + imageWidth, b);
-                mTextLine2.layout(mTextLeft + imageWidth + imageSpacing, t, r - l, b);
+                mTextLine1.layout(mTextLeft + mSuggestionViewOffset, t, r - l, b);
+                mAnswerImage.layout(
+                        mTextLeft + mSuggestionViewOffset, t, mTextLeft + imageWidth, b);
+                mTextLine2.layout(
+                        mTextLeft + imageWidth + imageSpacing + mSuggestionViewOffset, t, r - l, b);
             }
 
             int suggestionIconPosition = getSuggestionIconLeftPosition();

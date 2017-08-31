@@ -136,6 +136,9 @@ public class SelectableListToolbar<E> extends Toolbar implements SelectionObserv
     private UiConfig mUiConfig;
     private int mWideDisplayStartOffsetPx;
     private int mModernSearchViewStartOffsetPx;
+    private int mModernNavButtonStartOffsetPx;
+    private int mModernToolbarActionMenuEndOffsetPx;
+    private int mModernToolbarSearchIconOffsetPx;
 
     private boolean mIsDestroyed;
 
@@ -182,6 +185,15 @@ public class SelectableListToolbar<E> extends Toolbar implements SelectionObserv
         mSelectionDelegate = delegate;
         mSelectionDelegate.addObserver(this);
 
+        mModernSearchViewStartOffsetPx = getResources().getDimensionPixelSize(
+                R.dimen.toolbar_modern_search_view_start_offset);
+        mModernNavButtonStartOffsetPx = getResources().getDimensionPixelSize(
+                R.dimen.selectable_list_toolbar_nav_button_start_offset);
+        mModernToolbarActionMenuEndOffsetPx = getResources().getDimensionPixelSize(
+                R.dimen.selectable_list_action_bar_end_padding);
+        mModernToolbarSearchIconOffsetPx = getResources().getDimensionPixelSize(
+                R.dimen.selectable_list_search_icon_end_padding);
+
         if (mDrawerLayout != null) initActionBarDrawerToggle();
 
         normalBackgroundColorResId = normalBackgroundColorResId != null
@@ -198,10 +210,10 @@ public class SelectableListToolbar<E> extends Toolbar implements SelectionObserv
 
         // TODO(twellington): add the concept of normal & selected tint to apply to all toolbar
         //                    buttons.
-        mNormalMenuButton = TintedDrawable.constructTintedDrawable(getResources(),
-                R.drawable.btn_menu);
-        mSelectionMenuButton = TintedDrawable.constructTintedDrawable(getResources(),
-                R.drawable.btn_menu, android.R.color.white);
+        mNormalMenuButton = TintedDrawable.constructTintedDrawable(
+                getResources(), R.drawable.ic_more_vert_black_24dp);
+        mSelectionMenuButton = TintedDrawable.constructTintedDrawable(
+                getResources(), R.drawable.ic_more_vert_black_24dp, android.R.color.white);
 
         if (!FeatureUtilities.isChromeHomeModernEnabled()) {
             setTitleTextAppearance(getContext(), R.style.BlackHeadline2);
@@ -257,8 +269,7 @@ public class SelectableListToolbar<E> extends Toolbar implements SelectionObserv
         if (FeatureUtilities.isChromeHomeModernEnabled()) {
             mClearTextButton.setPadding(ApiCompatibilityUtils.getPaddingStart(mClearTextButton),
                     mClearTextButton.getPaddingTop(),
-                    getResources().getDimensionPixelSize(
-                            R.dimen.selectable_list_layout_row_padding),
+                    getResources().getDimensionPixelSize(R.dimen.clear_text_button_end_padding),
                     mClearTextButton.getPaddingBottom());
         }
     }
@@ -468,8 +479,6 @@ public class SelectableListToolbar<E> extends Toolbar implements SelectionObserv
     public void configureWideDisplayStyle(UiConfig uiConfig) {
         mWideDisplayStartOffsetPx =
                 getResources().getDimensionPixelSize(R.dimen.toolbar_wide_display_start_offset);
-        mModernSearchViewStartOffsetPx = getResources().getDimensionPixelSize(
-                R.dimen.toolbar_modern_search_view_start_offset);
 
         mUiConfig = uiConfig;
         mUiConfig.addObserver(this);
@@ -502,12 +511,18 @@ public class SelectableListToolbar<E> extends Toolbar implements SelectionObserv
             params.setMargins(0, params.topMargin, 0, params.bottomMargin);
         }
         setLayoutParams(params);
-
         // Navigation button should have more padding start in the modern search view.
         if (isModernSearchViewEnabled) paddingStartOffset += mModernSearchViewStartOffsetPx;
 
-        ApiCompatibilityUtils.setPaddingRelative(this, padding + paddingStartOffset,
-                this.getPaddingTop(), padding, this.getPaddingBottom());
+        int navigationButtonStartOffsetPx =
+                mNavigationButton != NAVIGATION_BUTTON_NONE ? mModernNavButtonStartOffsetPx : 0;
+
+        int actionMenuBarEndOffsetPx = mIsSelectionEnabled ? mModernToolbarActionMenuEndOffsetPx
+                                                           : mModernToolbarSearchIconOffsetPx;
+
+        ApiCompatibilityUtils.setPaddingRelative(this,
+                padding + paddingStartOffset + navigationButtonStartOffsetPx, this.getPaddingTop(),
+                padding + actionMenuBarEndOffsetPx, this.getPaddingBottom());
     }
 
     /**

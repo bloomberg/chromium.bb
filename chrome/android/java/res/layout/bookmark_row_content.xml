@@ -21,9 +21,9 @@
             android:visibility="gone"
             android:background="@null"
             android:contentDescription="@string/accessibility_bookmark_more_info"
-            android:paddingEnd="@dimen/selectable_list_layout_row_padding"
             android:paddingStart="@dimen/selectable_list_layout_row_padding"
-            android:src="@drawable/btn_menu"
+            android:paddingEnd="@dimen/selectable_list_layout_row_padding"
+            android:src="@drawable/ic_more_vert_black_24dp"
             chrome:chrometint="@color/dark_mode_tint" />
     </LinearLayout>
 
