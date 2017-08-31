@@ -1838,21 +1838,36 @@ void Element::AttachLayoutTree(AttachContext& context) {
 
   SelectorFilterParentScope filter_scope(*this);
 
-  CreatePseudoElementIfNeeded(kPseudoIdBefore);
+  AttachContext children_context(context);
+  children_context.resolved_style = nullptr;
+
+  LayoutObject* layout_object = GetLayoutObject();
+  if (layout_object)
+    children_context.previous_in_flow = nullptr;
+  children_context.use_previous_in_flow = true;
+
+  CreateAndAttachPseudoElementIfNeeded(kPseudoIdBefore, children_context);
 
   // When a shadow root exists, it does the work of attaching the children.
   if (ElementShadow* shadow = this->Shadow())
-    shadow->Attach(context);
+    shadow->Attach(children_context);
 
-  ContainerNode::AttachLayoutTree(context);
+  ContainerNode::AttachLayoutTree(children_context);
 
-  CreatePseudoElementIfNeeded(kPseudoIdAfter);
-  CreatePseudoElementIfNeeded(kPseudoIdBackdrop);
+  CreateAndAttachPseudoElementIfNeeded(kPseudoIdAfter, children_context);
+  CreateAndAttachPseudoElementIfNeeded(kPseudoIdBackdrop, children_context);
 
   // We create the first-letter element after the :before, :after and
   // children are attached because the first letter text could come
   // from any of them.
-  CreatePseudoElementIfNeeded(kPseudoIdFirstLetter);
+  CreateAndAttachPseudoElementIfNeeded(kPseudoIdFirstLetter, children_context);
+
+  if (layout_object) {
+    if (!layout_object->IsFloatingOrOutOfFlowPositioned())
+      context.previous_in_flow = layout_object;
+  } else {
+    context.previous_in_flow = children_context.previous_in_flow;
+  }
 }
 
 void Element::DetachLayoutTree(const AttachContext& context) {
@@ -2195,14 +2210,18 @@ void Element::RebuildShadowRootLayoutTree(
 void Element::RebuildPseudoElementLayoutTree(
     PseudoId pseudo_id,
     WhitespaceAttacher& whitespace_attacher) {
-  if (PseudoElement* element = GetPseudoElement(pseudo_id)) {
+  PseudoElement* element = GetPseudoElement(pseudo_id);
+  if (element) {
     if (pseudo_id == kPseudoIdFirstLetter && UpdateFirstLetter(element))
       return;
-    if (element->NeedsRebuildLayoutTree(whitespace_attacher))
-      element->RebuildLayoutTree(whitespace_attacher);
   } else {
-    CreatePseudoElementIfNeeded(pseudo_id);
+    element = CreatePseudoElementIfNeeded(pseudo_id);
+    if (!element)
+      return;
   }
+
+  if (element->NeedsRebuildLayoutTree(whitespace_attacher))
+    element->RebuildLayoutTree(whitespace_attacher);
 }
 
 void Element::UpdateCallbackSelectors(const ComputedStyle* old_style,
@@ -3438,7 +3457,8 @@ void Element::UpdatePseudoElement(PseudoId pseudo_id,
     // fast/css/first-letter-removed-added.html
     GetElementRareData()->SetPseudoElement(pseudo_id, nullptr);
   } else if (change >= kUpdatePseudoElements) {
-    CreatePseudoElementIfNeeded(pseudo_id);
+    if (PseudoElement* new_pseudo = CreatePseudoElementIfNeeded(pseudo_id))
+      new_pseudo->SetNeedsReattachLayoutTree();
   }
 }
 
@@ -3464,9 +3484,9 @@ bool Element::UpdateFirstLetter(Element* element) {
   return false;
 }
 
-void Element::CreatePseudoElementIfNeeded(PseudoId pseudo_id) {
+PseudoElement* Element::CreatePseudoElementIfNeeded(PseudoId pseudo_id) {
   if (IsPseudoElement())
-    return;
+    return nullptr;
 
   // Document::ensureStyleResolver is not inlined and shows up on profiles,
   // avoid it here.
@@ -3475,18 +3495,22 @@ void Element::CreatePseudoElementIfNeeded(PseudoId pseudo_id) {
                                .EnsureResolver()
                                .CreatePseudoElementIfNeeded(*this, pseudo_id);
   if (!element)
-    return;
+    return nullptr;
 
   if (pseudo_id == kPseudoIdBackdrop)
     GetDocument().AddToTopLayer(element, this);
   element->InsertedInto(this);
 
-  AttachContext context;
-  element->AttachLayoutTree(context);
-
   probe::pseudoElementCreated(element);
 
   EnsureElementRareData().SetPseudoElement(pseudo_id, element);
+  return element;
+}
+
+void Element::CreateAndAttachPseudoElementIfNeeded(PseudoId pseudo_id,
+                                                   AttachContext& context) {
+  if (PseudoElement* pseudo_element = CreatePseudoElementIfNeeded(pseudo_id))
+    pseudo_element->AttachLayoutTree(context);
 }
 
 PseudoElement* Element::GetPseudoElement(PseudoId pseudo_id) const {

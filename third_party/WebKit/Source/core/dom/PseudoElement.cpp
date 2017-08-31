@@ -85,7 +85,7 @@ String PseudoElement::PseudoElementNameForEvents(PseudoId pseudo_id) {
 PseudoElement::PseudoElement(Element* parent, PseudoId pseudo_id)
     : Element(PseudoElementTagName(pseudo_id),
               &parent->GetDocument(),
-              kCreateElement),
+              kCreatePseudoElement),
       pseudo_id_(pseudo_id) {
   DCHECK_NE(pseudo_id, kPseudoIdNone);
   parent->GetTreeScope().AdoptIfNeeded(*this);
