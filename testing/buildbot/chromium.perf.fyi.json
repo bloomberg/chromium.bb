@@ -80,8 +80,8 @@
           "blink_perf.bindings",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.bindings",
@@ -110,8 +110,8 @@
           "blink_perf.bindings",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -142,8 +142,8 @@
           "blink_perf.canvas",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.canvas",
@@ -172,8 +172,8 @@
           "blink_perf.canvas",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -204,8 +204,8 @@
           "blink_perf.css",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.css",
@@ -234,8 +234,8 @@
           "blink_perf.css",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -266,8 +266,8 @@
           "blink_perf.dom",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.dom",
@@ -296,8 +296,8 @@
           "blink_perf.dom",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -328,8 +328,8 @@
           "blink_perf.events",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.events",
@@ -358,8 +358,8 @@
           "blink_perf.events",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -390,8 +390,8 @@
           "blink_perf.layout",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.layout",
@@ -420,8 +420,8 @@
           "blink_perf.layout",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -452,8 +452,8 @@
           "blink_perf.owp_storage",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.owp_storage",
@@ -482,8 +482,8 @@
           "blink_perf.owp_storage",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -514,8 +514,8 @@
           "blink_perf.paint",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.paint",
@@ -544,8 +544,8 @@
           "blink_perf.paint",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -576,8 +576,8 @@
           "blink_perf.parser",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.parser",
@@ -606,8 +606,8 @@
           "blink_perf.parser",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -638,8 +638,8 @@
           "blink_perf.shadow_dom",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.shadow_dom",
@@ -668,8 +668,8 @@
           "blink_perf.shadow_dom",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -700,8 +700,8 @@
           "blink_perf.svg",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.svg",
@@ -730,8 +730,8 @@
           "blink_perf.svg",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -762,8 +762,8 @@
           "blob_storage.blob_storage",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blob_storage.blob_storage",
@@ -792,8 +792,8 @@
           "blob_storage.blob_storage",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -845,8 +845,8 @@
           "dromaeo.domcoreattr",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "dromaeo.domcoreattr",
@@ -875,8 +875,8 @@
           "dromaeo.domcoreattr",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -907,8 +907,8 @@
           "dromaeo.domcoremodify",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "dromaeo.domcoremodify",
@@ -937,8 +937,8 @@
           "dromaeo.domcoremodify",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -969,8 +969,8 @@
           "dromaeo.domcorequery",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "dromaeo.domcorequery",
@@ -999,8 +999,8 @@
           "dromaeo.domcorequery",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -1031,8 +1031,8 @@
           "dromaeo.domcoretraverse",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "dromaeo.domcoretraverse",
@@ -1061,8 +1061,8 @@
           "dromaeo.domcoretraverse",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -1093,8 +1093,8 @@
           "dummy_benchmark.noisy_benchmark_1",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "dummy_benchmark.noisy_benchmark_1",
@@ -1123,8 +1123,8 @@
           "dummy_benchmark.noisy_benchmark_1",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -1155,8 +1155,8 @@
           "dummy_benchmark.stable_benchmark_1",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "dummy_benchmark.stable_benchmark_1",
@@ -1185,8 +1185,8 @@
           "dummy_benchmark.stable_benchmark_1",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -1238,8 +1238,8 @@
           "image_decoding.image_decoding_measurement",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "image_decoding.image_decoding_measurement",
@@ -1268,8 +1268,8 @@
           "image_decoding.image_decoding_measurement",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -1300,8 +1300,8 @@
           "jetstream",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "jetstream",
@@ -1330,8 +1330,8 @@
           "jetstream",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -1362,8 +1362,8 @@
           "kraken",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "kraken",
@@ -1392,8 +1392,8 @@
           "kraken",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -1445,8 +1445,8 @@
           "loading.desktop",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "loading.desktop",
@@ -1475,8 +1475,8 @@
           "loading.desktop",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -1507,8 +1507,8 @@
           "media.mse_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "media.mse_cases",
@@ -1537,8 +1537,8 @@
           "media.mse_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -1569,8 +1569,8 @@
           "media.tough_video_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "media.tough_video_cases",
@@ -1599,8 +1599,8 @@
           "media.tough_video_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -1631,8 +1631,8 @@
           "media.tough_video_cases_tbmv2",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "media.tough_video_cases_tbmv2",
@@ -1661,8 +1661,8 @@
           "media.tough_video_cases_tbmv2",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -1693,8 +1693,8 @@
           "memory.desktop",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "memory.desktop",
@@ -1723,8 +1723,8 @@
           "memory.desktop",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -1755,8 +1755,8 @@
           "memory.long_running_idle_gmail_background_tbmv2",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "memory.long_running_idle_gmail_background_tbmv2",
@@ -1785,8 +1785,8 @@
           "memory.long_running_idle_gmail_background_tbmv2",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -1817,8 +1817,8 @@
           "memory.long_running_idle_gmail_tbmv2",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "memory.long_running_idle_gmail_tbmv2",
@@ -1847,8 +1847,8 @@
           "memory.long_running_idle_gmail_tbmv2",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -1879,8 +1879,8 @@
           "octane",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "octane",
@@ -1909,8 +1909,8 @@
           "octane",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -1941,8 +1941,8 @@
           "oortonline",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "oortonline",
@@ -1971,8 +1971,8 @@
           "oortonline",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -2003,8 +2003,8 @@
           "oortonline_tbmv2",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "oortonline_tbmv2",
@@ -2033,8 +2033,8 @@
           "oortonline_tbmv2",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -2086,8 +2086,8 @@
           "power.idle_platform",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "power.idle_platform",
@@ -2116,8 +2116,8 @@
           "rasterize_and_record_micro.partial_invalidation",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "rasterize_and_record_micro.partial_invalidation",
@@ -2146,8 +2146,8 @@
           "rasterize_and_record_micro.partial_invalidation",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -2178,8 +2178,8 @@
           "rasterize_and_record_micro.top_25",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "rasterize_and_record_micro.top_25",
@@ -2208,8 +2208,8 @@
           "rasterize_and_record_micro.top_25",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -2240,8 +2240,8 @@
           "scheduler.tough_scheduling_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "scheduler.tough_scheduling_cases",
@@ -2270,8 +2270,8 @@
           "scheduler.tough_scheduling_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -2302,8 +2302,8 @@
           "service_worker.service_worker",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "service_worker.service_worker",
@@ -2332,8 +2332,8 @@
           "service_worker.service_worker",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -2364,8 +2364,8 @@
           "service_worker.service_worker_micro_benchmark",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "service_worker.service_worker_micro_benchmark",
@@ -2394,8 +2394,8 @@
           "service_worker.service_worker_micro_benchmark",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -2426,8 +2426,8 @@
           "smoothness.desktop_tough_pinch_zoom_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.desktop_tough_pinch_zoom_cases",
@@ -2456,8 +2456,8 @@
           "smoothness.desktop_tough_pinch_zoom_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -2488,8 +2488,8 @@
           "smoothness.gpu_rasterization.tough_filters_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.gpu_rasterization.tough_filters_cases",
@@ -2518,8 +2518,8 @@
           "smoothness.gpu_rasterization.tough_filters_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -2550,8 +2550,8 @@
           "smoothness.gpu_rasterization.tough_path_rendering_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.gpu_rasterization.tough_path_rendering_cases",
@@ -2580,8 +2580,8 @@
           "smoothness.gpu_rasterization.tough_path_rendering_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -2612,8 +2612,8 @@
           "smoothness.gpu_rasterization.tough_scrolling_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.gpu_rasterization.tough_scrolling_cases",
@@ -2642,8 +2642,8 @@
           "smoothness.gpu_rasterization.tough_scrolling_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -2674,8 +2674,8 @@
           "smoothness.gpu_rasterization_and_decoding.image_decoding_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.gpu_rasterization_and_decoding.image_decoding_cases",
@@ -2704,8 +2704,8 @@
           "smoothness.gpu_rasterization_and_decoding.image_decoding_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -2736,8 +2736,8 @@
           "smoothness.image_decoding_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.image_decoding_cases",
@@ -2766,8 +2766,8 @@
           "smoothness.image_decoding_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -2798,8 +2798,8 @@
           "smoothness.key_desktop_move_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.key_desktop_move_cases",
@@ -2828,8 +2828,8 @@
           "smoothness.key_desktop_move_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -2860,8 +2860,8 @@
           "smoothness.maps",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.maps",
@@ -2890,8 +2890,8 @@
           "smoothness.maps",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -2922,8 +2922,8 @@
           "smoothness.top_25_smooth",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.top_25_smooth",
@@ -2952,8 +2952,8 @@
           "smoothness.top_25_smooth",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -2984,8 +2984,8 @@
           "smoothness.tough_ad_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_ad_cases",
@@ -3014,8 +3014,8 @@
           "smoothness.tough_ad_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -3046,8 +3046,8 @@
           "smoothness.tough_animation_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_animation_cases",
@@ -3076,8 +3076,8 @@
           "smoothness.tough_animation_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -3108,8 +3108,8 @@
           "smoothness.tough_canvas_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_canvas_cases",
@@ -3138,8 +3138,8 @@
           "smoothness.tough_canvas_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -3170,8 +3170,8 @@
           "smoothness.tough_filters_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_filters_cases",
@@ -3200,8 +3200,8 @@
           "smoothness.tough_filters_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -3232,8 +3232,8 @@
           "smoothness.tough_image_decode_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_image_decode_cases",
@@ -3262,8 +3262,8 @@
           "smoothness.tough_image_decode_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -3294,8 +3294,8 @@
           "smoothness.tough_path_rendering_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_path_rendering_cases",
@@ -3324,8 +3324,8 @@
           "smoothness.tough_path_rendering_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -3356,8 +3356,8 @@
           "smoothness.tough_scrolling_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_scrolling_cases",
@@ -3386,8 +3386,8 @@
           "smoothness.tough_scrolling_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -3418,8 +3418,8 @@
           "smoothness.tough_texture_upload_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_texture_upload_cases",
@@ -3448,8 +3448,8 @@
           "smoothness.tough_texture_upload_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -3480,8 +3480,8 @@
           "smoothness.tough_webgl_ad_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_webgl_ad_cases",
@@ -3510,8 +3510,8 @@
           "smoothness.tough_webgl_ad_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -3542,8 +3542,8 @@
           "smoothness.tough_webgl_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_webgl_cases",
@@ -3572,8 +3572,8 @@
           "smoothness.tough_webgl_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -3604,8 +3604,8 @@
           "speedometer",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "speedometer",
@@ -3634,8 +3634,8 @@
           "speedometer",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -3666,8 +3666,8 @@
           "speedometer2",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "speedometer2",
@@ -3696,8 +3696,8 @@
           "speedometer2",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -3728,8 +3728,8 @@
           "storage.indexeddb_endure",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "storage.indexeddb_endure",
@@ -3758,8 +3758,8 @@
           "storage.indexeddb_endure",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -3790,8 +3790,8 @@
           "storage.indexeddb_endure_tracing",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "storage.indexeddb_endure_tracing",
@@ -3820,8 +3820,8 @@
           "storage.indexeddb_endure_tracing",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -3852,8 +3852,8 @@
           "system_health.common_desktop",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "system_health.common_desktop",
@@ -3882,8 +3882,8 @@
           "system_health.common_desktop",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -3914,8 +3914,8 @@
           "system_health.memory_desktop",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "system_health.memory_desktop",
@@ -3944,8 +3944,8 @@
           "system_health.memory_desktop",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -3976,8 +3976,8 @@
           "tab_switching.typical_25",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "tab_switching.typical_25",
@@ -4006,8 +4006,8 @@
           "tab_switching.typical_25",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -4038,8 +4038,8 @@
           "thread_times.tough_compositor_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "thread_times.tough_compositor_cases",
@@ -4068,8 +4068,8 @@
           "thread_times.tough_compositor_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -4100,8 +4100,8 @@
           "thread_times.tough_scrolling_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "thread_times.tough_scrolling_cases",
@@ -4130,8 +4130,8 @@
           "thread_times.tough_scrolling_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -4162,8 +4162,8 @@
           "tracing.tracing_with_background_memory_infra",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "tracing.tracing_with_background_memory_infra",
@@ -4192,8 +4192,8 @@
           "tracing.tracing_with_background_memory_infra",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -4245,8 +4245,8 @@
           "v8.browsing_desktop",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "v8.browsing_desktop",
@@ -4275,8 +4275,8 @@
           "v8.browsing_desktop",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -4307,8 +4307,8 @@
           "v8.detached_context_age_in_gc",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "v8.detached_context_age_in_gc",
@@ -4337,8 +4337,8 @@
           "v8.detached_context_age_in_gc",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -4369,8 +4369,8 @@
           "v8.runtimestats.browsing_desktop",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "v8.runtimestats.browsing_desktop",
@@ -4399,8 +4399,8 @@
           "v8.runtimestats.browsing_desktop",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -4431,8 +4431,8 @@
           "webrtc",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "webrtc",
@@ -4461,8 +4461,8 @@
           "webrtc",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -4497,8 +4497,8 @@
           "blink_perf.bindings",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.bindings",
@@ -4527,8 +4527,8 @@
           "blink_perf.bindings",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -4559,8 +4559,8 @@
           "blink_perf.canvas",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.canvas",
@@ -4589,8 +4589,8 @@
           "blink_perf.canvas",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -4621,8 +4621,8 @@
           "blink_perf.css",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.css",
@@ -4651,8 +4651,8 @@
           "blink_perf.css",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -4683,8 +4683,8 @@
           "blink_perf.dom",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.dom",
@@ -4713,8 +4713,8 @@
           "blink_perf.dom",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -4745,8 +4745,8 @@
           "blink_perf.events",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.events",
@@ -4775,8 +4775,8 @@
           "blink_perf.events",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -4807,8 +4807,8 @@
           "blink_perf.layout",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.layout",
@@ -4837,8 +4837,8 @@
           "blink_perf.layout",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -4869,8 +4869,8 @@
           "blink_perf.owp_storage",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.owp_storage",
@@ -4899,8 +4899,8 @@
           "blink_perf.owp_storage",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -4931,8 +4931,8 @@
           "blink_perf.paint",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.paint",
@@ -4961,8 +4961,8 @@
           "blink_perf.paint",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -4993,8 +4993,8 @@
           "blink_perf.parser",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.parser",
@@ -5023,8 +5023,8 @@
           "blink_perf.parser",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -5055,8 +5055,8 @@
           "blink_perf.shadow_dom",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.shadow_dom",
@@ -5085,8 +5085,8 @@
           "blink_perf.shadow_dom",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -5117,8 +5117,8 @@
           "blink_perf.svg",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.svg",
@@ -5147,8 +5147,8 @@
           "blink_perf.svg",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -5179,8 +5179,8 @@
           "blob_storage.blob_storage",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blob_storage.blob_storage",
@@ -5209,8 +5209,8 @@
           "blob_storage.blob_storage",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -5241,8 +5241,8 @@
           "dromaeo.domcoreattr",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "dromaeo.domcoreattr",
@@ -5271,8 +5271,8 @@
           "dromaeo.domcoreattr",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -5303,8 +5303,8 @@
           "dromaeo.domcoremodify",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "dromaeo.domcoremodify",
@@ -5333,8 +5333,8 @@
           "dromaeo.domcoremodify",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -5365,8 +5365,8 @@
           "dromaeo.domcorequery",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "dromaeo.domcorequery",
@@ -5395,8 +5395,8 @@
           "dromaeo.domcorequery",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -5427,8 +5427,8 @@
           "dromaeo.domcoretraverse",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "dromaeo.domcoretraverse",
@@ -5457,8 +5457,8 @@
           "dromaeo.domcoretraverse",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -5489,8 +5489,8 @@
           "dummy_benchmark.noisy_benchmark_1",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "dummy_benchmark.noisy_benchmark_1",
@@ -5519,8 +5519,8 @@
           "dummy_benchmark.noisy_benchmark_1",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -5551,8 +5551,8 @@
           "dummy_benchmark.stable_benchmark_1",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "dummy_benchmark.stable_benchmark_1",
@@ -5581,8 +5581,8 @@
           "dummy_benchmark.stable_benchmark_1",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -5613,8 +5613,8 @@
           "image_decoding.image_decoding_measurement",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "image_decoding.image_decoding_measurement",
@@ -5643,8 +5643,8 @@
           "image_decoding.image_decoding_measurement",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -5675,8 +5675,8 @@
           "jetstream",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "jetstream",
@@ -5705,8 +5705,8 @@
           "jetstream",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -5737,8 +5737,8 @@
           "kraken",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "kraken",
@@ -5767,8 +5767,8 @@
           "kraken",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -5799,8 +5799,8 @@
           "loading.desktop",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "loading.desktop",
@@ -5829,8 +5829,8 @@
           "loading.desktop",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -5861,8 +5861,8 @@
           "media.mse_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "media.mse_cases",
@@ -5891,8 +5891,8 @@
           "media.mse_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -5923,8 +5923,8 @@
           "media.tough_video_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "media.tough_video_cases",
@@ -5953,8 +5953,8 @@
           "media.tough_video_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -5985,8 +5985,8 @@
           "media.tough_video_cases_tbmv2",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "media.tough_video_cases_tbmv2",
@@ -6015,8 +6015,8 @@
           "media.tough_video_cases_tbmv2",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -6047,8 +6047,8 @@
           "memory.desktop",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "memory.desktop",
@@ -6077,8 +6077,8 @@
           "memory.desktop",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -6109,8 +6109,8 @@
           "memory.long_running_idle_gmail_background_tbmv2",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "memory.long_running_idle_gmail_background_tbmv2",
@@ -6139,8 +6139,8 @@
           "memory.long_running_idle_gmail_background_tbmv2",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -6171,8 +6171,8 @@
           "memory.long_running_idle_gmail_tbmv2",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "memory.long_running_idle_gmail_tbmv2",
@@ -6201,8 +6201,8 @@
           "memory.long_running_idle_gmail_tbmv2",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -6233,8 +6233,8 @@
           "octane",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "octane",
@@ -6263,8 +6263,8 @@
           "octane",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -6295,8 +6295,8 @@
           "oortonline",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "oortonline",
@@ -6325,8 +6325,8 @@
           "oortonline",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -6357,8 +6357,8 @@
           "oortonline_tbmv2",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "oortonline_tbmv2",
@@ -6387,8 +6387,8 @@
           "oortonline_tbmv2",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -6419,8 +6419,8 @@
           "power.idle_platform",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "power.idle_platform",
@@ -6449,8 +6449,8 @@
           "rasterize_and_record_micro.partial_invalidation",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "rasterize_and_record_micro.partial_invalidation",
@@ -6479,8 +6479,8 @@
           "rasterize_and_record_micro.partial_invalidation",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -6511,8 +6511,8 @@
           "rasterize_and_record_micro.top_25",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "rasterize_and_record_micro.top_25",
@@ -6541,8 +6541,8 @@
           "rasterize_and_record_micro.top_25",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -6573,8 +6573,8 @@
           "scheduler.tough_scheduling_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "scheduler.tough_scheduling_cases",
@@ -6603,8 +6603,8 @@
           "scheduler.tough_scheduling_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -6635,8 +6635,8 @@
           "service_worker.service_worker",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "service_worker.service_worker",
@@ -6665,8 +6665,8 @@
           "service_worker.service_worker",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -6697,8 +6697,8 @@
           "service_worker.service_worker_micro_benchmark",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "service_worker.service_worker_micro_benchmark",
@@ -6727,8 +6727,8 @@
           "service_worker.service_worker_micro_benchmark",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -6759,8 +6759,8 @@
           "smoothness.desktop_tough_pinch_zoom_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.desktop_tough_pinch_zoom_cases",
@@ -6789,8 +6789,8 @@
           "smoothness.desktop_tough_pinch_zoom_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -6821,8 +6821,8 @@
           "smoothness.gpu_rasterization.tough_filters_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.gpu_rasterization.tough_filters_cases",
@@ -6851,8 +6851,8 @@
           "smoothness.gpu_rasterization.tough_filters_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -6883,8 +6883,8 @@
           "smoothness.gpu_rasterization.tough_path_rendering_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.gpu_rasterization.tough_path_rendering_cases",
@@ -6913,8 +6913,8 @@
           "smoothness.gpu_rasterization.tough_path_rendering_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -6945,8 +6945,8 @@
           "smoothness.gpu_rasterization.tough_scrolling_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.gpu_rasterization.tough_scrolling_cases",
@@ -6975,8 +6975,8 @@
           "smoothness.gpu_rasterization.tough_scrolling_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -7007,8 +7007,8 @@
           "smoothness.gpu_rasterization_and_decoding.image_decoding_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.gpu_rasterization_and_decoding.image_decoding_cases",
@@ -7037,8 +7037,8 @@
           "smoothness.gpu_rasterization_and_decoding.image_decoding_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -7069,8 +7069,8 @@
           "smoothness.image_decoding_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.image_decoding_cases",
@@ -7099,8 +7099,8 @@
           "smoothness.image_decoding_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -7131,8 +7131,8 @@
           "smoothness.key_desktop_move_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.key_desktop_move_cases",
@@ -7161,8 +7161,8 @@
           "smoothness.key_desktop_move_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -7193,8 +7193,8 @@
           "smoothness.maps",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.maps",
@@ -7223,8 +7223,8 @@
           "smoothness.maps",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -7255,8 +7255,8 @@
           "smoothness.top_25_smooth",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.top_25_smooth",
@@ -7285,8 +7285,8 @@
           "smoothness.top_25_smooth",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -7317,8 +7317,8 @@
           "smoothness.tough_ad_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_ad_cases",
@@ -7347,8 +7347,8 @@
           "smoothness.tough_ad_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -7379,8 +7379,8 @@
           "smoothness.tough_animation_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_animation_cases",
@@ -7409,8 +7409,8 @@
           "smoothness.tough_animation_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -7441,8 +7441,8 @@
           "smoothness.tough_canvas_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_canvas_cases",
@@ -7471,8 +7471,8 @@
           "smoothness.tough_canvas_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -7503,8 +7503,8 @@
           "smoothness.tough_filters_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_filters_cases",
@@ -7533,8 +7533,8 @@
           "smoothness.tough_filters_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -7565,8 +7565,8 @@
           "smoothness.tough_image_decode_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_image_decode_cases",
@@ -7595,8 +7595,8 @@
           "smoothness.tough_image_decode_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -7627,8 +7627,8 @@
           "smoothness.tough_path_rendering_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_path_rendering_cases",
@@ -7657,8 +7657,8 @@
           "smoothness.tough_path_rendering_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -7689,8 +7689,8 @@
           "smoothness.tough_scrolling_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_scrolling_cases",
@@ -7719,8 +7719,8 @@
           "smoothness.tough_scrolling_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -7751,8 +7751,8 @@
           "smoothness.tough_texture_upload_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_texture_upload_cases",
@@ -7781,8 +7781,8 @@
           "smoothness.tough_texture_upload_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -7813,8 +7813,8 @@
           "smoothness.tough_webgl_ad_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_webgl_ad_cases",
@@ -7843,8 +7843,8 @@
           "smoothness.tough_webgl_ad_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -7875,8 +7875,8 @@
           "smoothness.tough_webgl_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_webgl_cases",
@@ -7905,8 +7905,8 @@
           "smoothness.tough_webgl_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -7937,8 +7937,8 @@
           "speedometer",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "speedometer",
@@ -7967,8 +7967,8 @@
           "speedometer",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -7999,8 +7999,8 @@
           "speedometer2",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "speedometer2",
@@ -8029,8 +8029,8 @@
           "speedometer2",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -8061,8 +8061,8 @@
           "storage.indexeddb_endure",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "storage.indexeddb_endure",
@@ -8091,8 +8091,8 @@
           "storage.indexeddb_endure",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -8123,8 +8123,8 @@
           "storage.indexeddb_endure_tracing",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "storage.indexeddb_endure_tracing",
@@ -8153,8 +8153,8 @@
           "storage.indexeddb_endure_tracing",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -8185,8 +8185,8 @@
           "system_health.common_desktop",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "system_health.common_desktop",
@@ -8215,8 +8215,8 @@
           "system_health.common_desktop",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -8247,8 +8247,8 @@
           "system_health.memory_desktop",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "system_health.memory_desktop",
@@ -8277,8 +8277,8 @@
           "system_health.memory_desktop",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -8309,8 +8309,8 @@
           "tab_switching.typical_25",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "tab_switching.typical_25",
@@ -8339,8 +8339,8 @@
           "tab_switching.typical_25",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -8371,8 +8371,8 @@
           "thread_times.tough_compositor_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "thread_times.tough_compositor_cases",
@@ -8401,8 +8401,8 @@
           "thread_times.tough_compositor_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -8433,8 +8433,8 @@
           "thread_times.tough_scrolling_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "thread_times.tough_scrolling_cases",
@@ -8463,8 +8463,8 @@
           "thread_times.tough_scrolling_cases",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -8495,8 +8495,8 @@
           "tracing.tracing_with_background_memory_infra",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "tracing.tracing_with_background_memory_infra",
@@ -8525,8 +8525,8 @@
           "tracing.tracing_with_background_memory_infra",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -8557,8 +8557,8 @@
           "v8.browsing_desktop",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "v8.browsing_desktop",
@@ -8587,8 +8587,8 @@
           "v8.browsing_desktop",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -8619,8 +8619,8 @@
           "v8.detached_context_age_in_gc",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "v8.detached_context_age_in_gc",
@@ -8649,8 +8649,8 @@
           "v8.detached_context_age_in_gc",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -8681,8 +8681,8 @@
           "v8.runtimestats.browsing_desktop",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "v8.runtimestats.browsing_desktop",
@@ -8711,8 +8711,8 @@
           "v8.runtimestats.browsing_desktop",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -8743,8 +8743,8 @@
           "webrtc",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release_x64"
+          "--browser=release_x64",
+          "--output-format=chartjson"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "webrtc",
@@ -8773,8 +8773,8 @@
           "webrtc",
           "-v",
           "--upload-results",
-          "--output-format=chartjson",
           "--browser=reference",
+          "--output-format=chartjson",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],

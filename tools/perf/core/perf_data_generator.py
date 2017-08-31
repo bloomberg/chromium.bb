@@ -609,6 +609,9 @@ BENCHMARKS_TO_UPLOAD_TO_FLAKINESS_DASHBOARD = ['system_health.common_desktop',
                                                'system_health.memory_mobile']
 
 
+BENCHMARKS_TO_OUTPUT_HISTOGRAMS = []
+
+
 def generate_telemetry_test(swarming_dimensions, benchmark_name, browser):
   # The step name must end in 'test' or 'tests' in order for the
   # results to automatically show up on the flakiness dashboard.
@@ -619,11 +622,15 @@ def generate_telemetry_test(swarming_dimensions, benchmark_name, browser):
     benchmark_name,
     '-v',
     '--upload-results',
-    '--output-format=chartjson',
     '--browser=%s' % browser
   ]
   # When this is enabled on more than just windows machines we will need
   # --device=android
+
+  if benchmark_name in BENCHMARKS_TO_OUTPUT_HISTOGRAMS:
+    test_args.append('--output-format=histograms')
+  else:
+    test_args.append('--output-format=chartjson')
 
   ignore_task_failure = False
   step_name = benchmark_name
