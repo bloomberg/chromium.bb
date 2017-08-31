@@ -1,13 +1,6 @@
 # Being ported, https://crbug.com/754861.
 
 -AudioRendererSinkCacheTest.SmokeTest
--BrowserThreadTest.PostTask
--BrowserThreadTest.PostTaskAndReply
--BrowserThreadTest.PostTaskViaTaskRunner
--BrowserThreadTest.Release
--BrowserThreadTest.ReleaseViaTaskRunner
--BrowserThreadTest.ReleasedOnCorrectThread
--BrowserThreadTest.RunsTasksInCurrentSequencedDuringShutdown
 -BrowsingDataRemoverImplTest.MultipleTasks
 -CacheStorageManagerTest.GetAllOriginsUsageWithOldIndex
 -ChildMemoryCoordinatorImplTest.MultipleClients
