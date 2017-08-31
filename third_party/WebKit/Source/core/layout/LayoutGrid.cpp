@@ -1110,6 +1110,10 @@ void LayoutGrid::DirtyGrid() {
 
   grid_.SetNeedsItemsPlacement(true);
   grid_items_overflowing_grid_area_.resize(0);
+  // TODO (jfernandez): Should we store the baseline context data into the Grid
+  // structure ?
+  row_axis_alignment_context_.clear();
+  col_axis_alignment_context_.clear();
 }
 
 Vector<LayoutUnit> LayoutGrid::TrackSizesForComputedStyle(
