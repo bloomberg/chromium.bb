@@ -328,6 +328,11 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // Gets the current viz::LocalSurfaceId.
   const viz::LocalSurfaceId& GetLocalSurfaceId() const;
 
+  // Returns the FrameSinkId. In LOCAL mode, this returns a valid FrameSinkId
+  // only if a LayerTreeFrameSink has been created. In MUS mode, this always
+  // return a valid FrameSinkId.
+  viz::FrameSinkId GetFrameSinkId() const;
+
  protected:
   // Deletes (or removes if not owned by parent) all child windows. Intended for
   // use from the destructor.

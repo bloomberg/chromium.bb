@@ -1026,6 +1026,10 @@ const viz::LocalSurfaceId& Window::GetLocalSurfaceId() const {
   return port_->GetLocalSurfaceId();
 }
 
+viz::FrameSinkId Window::GetFrameSinkId() const {
+  return port_->GetFrameSinkId();
+}
+
 void Window::OnPaintLayer(const ui::PaintContext& context) {
   Paint(context);
 }
