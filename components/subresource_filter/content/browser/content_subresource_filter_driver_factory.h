@@ -46,9 +46,7 @@ class ContentSubresourceFilterDriverFactory
   ~ContentSubresourceFilterDriverFactory() override;
 
   // This class will be notified of page level activation, before the associated
-  // navigation commits. Note that the passed |matched_configuration| may have
-  // activation options altered (in the event of e.g. forced activation via
-  // devtools), but the activation conditions should remain unaltered.
+  // navigation commits.
   void NotifyPageActivationComputed(
       content::NavigationHandle* navigation_handle,
       ActivationDecision activation_decision,
@@ -58,13 +56,9 @@ class ContentSubresourceFilterDriverFactory
   // window.
   bool ShouldDisallowNewWindow(const content::OpenURLParams* open_url_params);
 
-  // Returns the |ActivationOptions| for the current main frame
-  // document. Do not rely on this API, it is only temporary.
-  // TODO(csharrison): Remove this and |activation_options_| in place of adding
-  // |should_suppress_notifications| on ActivationState.
-  const Configuration::ActivationOptions&
-  GetActivationOptionsForLastCommittedPageLoad() const {
-    return activation_options();
+  // Returns the Configuration for the current main frame document.
+  const Configuration& GetMatchedConfigurationForLastCommittedPageLoad() const {
+    return matched_configuration_;
   }
 
   // ContentSubresourceFilterThrottleManager::Delegate:
@@ -117,8 +111,7 @@ class ContentSubresourceFilterDriverFactory
   //
   // Careful note: the Configuration may not entirely match up with
   // a config in GetEnabledConfigurations() due to activation computation
-  // changing the config (e.g. for forcing devtools activation). However, the
-  // Configuration::ActivationConditions should remain unchanged.
+  // changing the config (e.g. for forcing devtools activation).
   Configuration matched_configuration_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSubresourceFilterDriverFactory);

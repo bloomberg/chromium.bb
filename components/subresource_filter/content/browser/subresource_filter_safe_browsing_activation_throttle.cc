@@ -185,37 +185,38 @@ void SubresourceFilterSafeBrowsingActivationThrottle::NotifyResult() {
   auto* driver_factory = ContentSubresourceFilterDriverFactory::FromWebContents(
       navigation_handle()->GetWebContents());
   DCHECK(driver_factory);
-  if (driver_factory->GetActivationOptionsForLastCommittedPageLoad()
-          .should_whitelist_site_on_reload &&
+  if (driver_factory->GetMatchedConfigurationForLastCommittedPageLoad()
+          .activation_options.should_whitelist_site_on_reload &&
       NavigationIsPageReload(navigation_handle())) {
     // Whitelist this host for the current as well as subsequent navigations.
     client_->WhitelistInCurrentWebContents(navigation_handle()->GetURL());
   }
 
   Configuration matched_configuration;
-  ActivationDecision activation_decision =
-      ComputeActivation(&matched_configuration);
-  Configuration::ActivationOptions& matched_options =
-      matched_configuration.activation_options;
-
-  // For forced activation, keep all the options except activation_level.
+  ActivationDecision activation_decision = ActivationDecision::UNKNOWN;
   if (client_->ForceActivationInCurrentWebContents()) {
     TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"), "ActivationForced");
     activation_decision = ActivationDecision::ACTIVATED;
-    matched_options.activation_level = ActivationLevel::ENABLED;
+    matched_configuration = Configuration::MakeForForcedActivation();
+  } else {
+    activation_decision = ComputeActivation(&matched_configuration);
   }
+  DCHECK_NE(activation_decision, ActivationDecision::UNKNOWN);
 
   // Check for whitelisted status last, so that the client gets an accurate
   // indication of whether there would be activation otherwise.
+  // Note that the client is responsible for noticing if we're forcing
+  // activation.
   bool whitelisted = client_->OnPageActivationComputed(
       navigation_handle(),
-      matched_options.activation_level == ActivationLevel::ENABLED);
+      matched_configuration.activation_options.activation_level ==
+          ActivationLevel::ENABLED);
 
   // Only reset the activation decision reason if we would have activated.
   if (whitelisted && activation_decision == ActivationDecision::ACTIVATED) {
     TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"), "ActivationWhitelisted");
     activation_decision = ActivationDecision::URL_WHITELISTED;
-    matched_options = Configuration::ActivationOptions();
+    matched_configuration = Configuration();
   }
 
   driver_factory->NotifyPageActivationComputed(

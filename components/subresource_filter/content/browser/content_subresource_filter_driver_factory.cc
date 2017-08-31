@@ -82,6 +82,14 @@ void ContentSubresourceFilterDriverFactory::NotifyPageActivationComputed(
   // ACTIVATION_DISABLED implies DISABLED activation level.
   DCHECK(activation_decision_ != ActivationDecision::ACTIVATION_DISABLED ||
          activation_options().activation_level == ActivationLevel::DISABLED);
+
+  // Ensure the matched config is in our config list. If it wasn't then this
+  // must be a forced activation via devtools.
+  DCHECK(activation_decision_ != ActivationDecision::ACTIVATED ||
+         HasEnabledConfiguration(matched_configuration) ||
+         matched_configuration == Configuration::MakeForForcedActivation())
+      << matched_configuration;
+
   ActivationState state =
       ActivationState(activation_options().activation_level);
   state.measure_performance = ShouldMeasurePerformanceForPageLoad(
