@@ -167,6 +167,19 @@ public class PictureInPictureController {
         // Inform the WebContents when we enter and when we leave PiP.
         final WebContents webContents = getWebContents(activity);
         assert webContents != null;
+
+        Rect bounds = getVideoBounds(webContents, activity);
+        try {
+            activity.enterPictureInPictureMode(
+                    new PictureInPictureParams.Builder()
+                            .setAspectRatio(new Rational(bounds.width(), bounds.height()))
+                            .setSourceRectHint(bounds)
+                            .build());
+        } catch (IllegalStateException e) {
+            Log.e(TAG, "Error entering PiP: " + e);
+            return;
+        }
+
         webContents.setHasPersistentVideo(true);
 
         mOnLeavePipCallbacks.add(new Callback<ChromeActivity>() {
@@ -175,13 +188,6 @@ public class PictureInPictureController {
                 webContents.setHasPersistentVideo(false);
             }
         });
-
-        Rect bounds = getVideoBounds(webContents, activity);
-        activity.enterPictureInPictureMode(
-                new PictureInPictureParams.Builder()
-                        .setAspectRatio(new Rational(bounds.width(), bounds.height()))
-                        .setSourceRectHint(bounds)
-                        .build());
 
         // Setup observers to dismiss the Activity on events that should end PiP.
         final Tab activityTab = activity.getActivityTab();
