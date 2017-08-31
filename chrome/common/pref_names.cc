@@ -2542,4 +2542,9 @@ const char kOfflineUsageOnlineCount[] = "offline_pages.online_count";
 const char kOfflineUsageMixedCount[] = "offline_pages.mixed_count";
 #endif
 
+// Stores the Media Engagement Index schema version. If the stored value
+// is lower than the value in MediaEngagementService then the MEI data
+// will be wiped.
+const char kMediaEngagementSchemaVersion[] = "media.engagement.schema_version";
+
 }  // namespace prefs

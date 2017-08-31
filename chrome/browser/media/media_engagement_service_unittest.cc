@@ -116,8 +116,8 @@ class MediaEngagementServiceTest : public ChromeRenderViewHostTestHarness {
         new MediaEngagementService(profile(), base::WrapUnique(test_clock_)));
   }
 
-  void StartNewMediaEngagementService() {
-    MediaEngagementService::Get(profile());
+  MediaEngagementService* StartNewMediaEngagementService() {
+    return MediaEngagementService::Get(profile());
   }
 
   void RecordVisitAndPlaybackAndAdvanceClock(GURL url) {
@@ -205,6 +205,8 @@ class MediaEngagementServiceTest : public ChromeRenderViewHostTestHarness {
   bool HasHighEngagement(const GURL& url) const {
     return service_->HasHighEngagement(url);
   }
+
+  void SetSchemaVersion(int version) { service_->SetSchemaVersion(version); }
 
  private:
   base::SimpleTestClock* test_clock_ = nullptr;
@@ -503,4 +505,21 @@ TEST_F(MediaEngagementServiceTest, HasHighEngagement) {
   EXPECT_TRUE(HasHighEngagement(url1));
   EXPECT_FALSE(HasHighEngagement(url2));
   EXPECT_FALSE(HasHighEngagement(url3));
+}
+
+TEST_F(MediaEngagementServiceTest, SchemaVersion_Changed) {
+  GURL url("https://www.google.com");
+  SetScores(url, 1, 2);
+
+  SetSchemaVersion(0);
+  MediaEngagementService* service = StartNewMediaEngagementService();
+  ExpectScores(service, url, 0.0, 0, 0, TimeNotSet());
+}
+
+TEST_F(MediaEngagementServiceTest, SchemaVersion_Same) {
+  GURL url("https://www.google.com");
+  SetScores(url, 1, 2);
+
+  MediaEngagementService* service = StartNewMediaEngagementService();
+  ExpectScores(service, url, 0.0, 1, 2, TimeNotSet());
 }
