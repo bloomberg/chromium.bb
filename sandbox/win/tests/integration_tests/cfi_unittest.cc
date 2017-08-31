@@ -19,7 +19,7 @@ namespace sandbox {
 // a hook and throw an exception.
 // - If this test fails, the expected CFG exception did NOT happen.  This
 //   indicates a build system change that has disabled Chrome process-wide CFG.
-TEST(CFGSupportTests, MsIndirectFailure) {
+TEST(CFGSupportTests, DISABLED_MsIndirectFailure) {
   // CFG is only supported on >= Win8.1 Update 3.
   // Not checking for update, since test infra is updated and it would add
   // a lot of complexity.
