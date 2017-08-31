@@ -605,14 +605,13 @@ TEST_F(LayerTest, DeleteRemovedScrollParent) {
   EXPECT_EQ(child1, parent->children()[0]);
   EXPECT_EQ(child2, parent->children()[1]);
 
-  EXPECT_SET_NEEDS_COMMIT(2, child1->SetScrollParent(child2.get()));
+  EXPECT_SET_NEEDS_COMMIT(1, child1->SetScrollParent(child2.get()));
 
   EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, child2->RemoveFromParent());
 
   child1->ResetNeedsPushPropertiesForTesting();
 
-  EXPECT_SET_NEEDS_COMMIT(1, child2 = nullptr);
-
+  EXPECT_SET_NEEDS_COMMIT(1, child1->SetScrollParent(nullptr));
   EXPECT_TRUE(
       layer_tree_host_->LayerNeedsPushPropertiesForTesting(child1.get()));
 
@@ -635,17 +634,9 @@ TEST_F(LayerTest, DeleteRemovedScrollChild) {
   EXPECT_EQ(child1, parent->children()[0]);
   EXPECT_EQ(child2, parent->children()[1]);
 
-  EXPECT_SET_NEEDS_COMMIT(2, child1->SetScrollParent(child2.get()));
+  EXPECT_SET_NEEDS_COMMIT(1, child1->SetScrollParent(child2.get()));
 
   EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, child1->RemoveFromParent());
-
-  child2->ResetNeedsPushPropertiesForTesting();
-
-  EXPECT_SET_NEEDS_COMMIT(1, child1 = nullptr);
-
-  EXPECT_TRUE(
-      layer_tree_host_->LayerNeedsPushPropertiesForTesting(child2.get()));
-
   EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, layer_tree_host_->SetRootLayer(nullptr));
 }
 

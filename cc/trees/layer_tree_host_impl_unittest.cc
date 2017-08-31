@@ -2388,10 +2388,6 @@ TEST_F(LayerTreeHostImplTest, ScrollDoesntBubble) {
   viewport_scroll->test_properties()->AddChild(std::move(scroll_child_clip));
 
   child_clip->test_properties()->scroll_parent = parent;
-  std::unique_ptr<std::set<LayerImpl*>> scroll_children(
-      new std::set<LayerImpl*>);
-  scroll_children->insert(child_clip);
-  parent->test_properties()->scroll_children = std::move(scroll_children);
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
 
   DrawFrame();

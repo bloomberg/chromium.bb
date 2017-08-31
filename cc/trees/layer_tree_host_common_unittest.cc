@@ -5709,9 +5709,6 @@ TEST_F(LayerTreeHostCommonTest, ClippedByScrollParent) {
   scroll_parent_clip->SetMasksToBounds(true);
 
   scroll_child->test_properties()->scroll_parent = scroll_parent;
-  scroll_parent->test_properties()->scroll_children =
-      std::make_unique<std::set<LayerImpl*>>();
-  scroll_parent->test_properties()->scroll_children->insert(scroll_child);
 
   root->SetBounds(gfx::Size(50, 50));
   scroll_parent_border->SetBounds(gfx::Size(40, 40));
@@ -5739,9 +5736,6 @@ TEST_F(LayerTreeHostCommonTest, ScrollChildAndScrollParentDifferentTargets) {
   scroll_child->SetDrawsContent(true);
 
   scroll_child->test_properties()->scroll_parent = scroll_parent;
-  scroll_parent->test_properties()->scroll_children =
-      std::make_unique<std::set<LayerImpl*>>();
-  scroll_parent->test_properties()->scroll_children->insert(scroll_child);
 
   root->SetBounds(gfx::Size(50, 50));
   scroll_child_target->SetBounds(gfx::Size(50, 50));
@@ -5841,9 +5835,6 @@ TEST_F(LayerTreeHostCommonTest, ClippedByOutOfOrderScrollParent) {
   scroll_child->SetBounds(gfx::Size(50, 50));
 
   scroll_child->test_properties()->scroll_parent = scroll_parent;
-  scroll_parent->test_properties()->scroll_children =
-      std::make_unique<std::set<LayerImpl*>>();
-  scroll_parent->test_properties()->scroll_children->insert(scroll_child);
 
   ExecuteCalculateDrawProperties(root);
 
@@ -5884,15 +5875,8 @@ TEST_F(LayerTreeHostCommonTest, ClippedByOutOfOrderScrollGrandparent) {
   scroll_grandparent_clip->SetMasksToBounds(true);
 
   scroll_child->test_properties()->scroll_parent = scroll_parent;
-  scroll_parent->test_properties()->scroll_children =
-      std::make_unique<std::set<LayerImpl*>>();
-  scroll_parent->test_properties()->scroll_children->insert(scroll_child);
 
   scroll_parent_border->test_properties()->scroll_parent = scroll_grandparent;
-  scroll_grandparent->test_properties()->scroll_children =
-      std::make_unique<std::set<LayerImpl*>>();
-  scroll_grandparent->test_properties()->scroll_children->insert(
-      scroll_parent_border);
 
   root->SetBounds(gfx::Size(50, 50));
   scroll_grandparent_border->SetBounds(gfx::Size(40, 40));
@@ -5957,15 +5941,8 @@ TEST_F(LayerTreeHostCommonTest, OutOfOrderClippingRequiresRSLLSorting) {
   scroll_grandparent_clip->SetMasksToBounds(true);
 
   scroll_child->test_properties()->scroll_parent = scroll_parent;
-  scroll_parent->test_properties()->scroll_children =
-      std::make_unique<std::set<LayerImpl*>>();
-  scroll_parent->test_properties()->scroll_children->insert(scroll_child);
 
   scroll_parent_border->test_properties()->scroll_parent = scroll_grandparent;
-  scroll_grandparent->test_properties()->scroll_children =
-      std::make_unique<std::set<LayerImpl*>>();
-  scroll_grandparent->test_properties()->scroll_children->insert(
-      scroll_parent_border);
 
   root->SetBounds(gfx::Size(50, 50));
   scroll_grandparent_border->SetBounds(gfx::Size(40, 40));
@@ -8593,9 +8570,6 @@ TEST_F(LayerTreeHostCommonTest, UpdateScrollChildPosition) {
   scroll_parent->SetDrawsContent(true);
 
   scroll_child->test_properties()->scroll_parent = scroll_parent;
-  scroll_parent->test_properties()->scroll_children =
-      std::make_unique<std::set<LayerImpl*>>();
-  scroll_parent->test_properties()->scroll_children->insert(scroll_child);
 
   ExecuteCalculateDrawProperties(root);
   EXPECT_EQ(gfx::Rect(25, 25), scroll_child->visible_layer_rect());
@@ -9668,9 +9642,6 @@ TEST_F(LayerTreeHostCommonTest, NoisyTransform) {
   LayerImpl* scroll_parent = AddChild<LayerImpl>(scroll_clip);
 
   scroll_child->test_properties()->scroll_parent = scroll_parent;
-  scroll_parent->test_properties()->scroll_children =
-      std::make_unique<std::set<LayerImpl*>>();
-  scroll_parent->test_properties()->scroll_children->insert(scroll_child);
 
   scroll_parent->SetDrawsContent(true);
   scroll_child->SetDrawsContent(true);
@@ -10425,6 +10396,52 @@ TEST_F(LayerTreeHostCommonTest, VisibleRectInNonRootCacheRenderSurface) {
   EXPECT_EQ(gfx::Rect(20, 20), copy_child->visible_layer_rect());
   EXPECT_EQ(gfx::Rect(15, 15), copy_clipped_child->visible_layer_rect());
   EXPECT_EQ(gfx::Rect(20, 20), cache_surface->visible_layer_rect());
+}
+
+TEST_F(LayerTreeHostCommonTest, BuildPropertyNodesForScrollChildrenInOrder) {
+  // This test is intended to test against a bug that scroll children were
+  // visited in unspecified order, which can cause data dependency to fail
+  // while resolving clip parent.
+
+  // Try multiple times because in the original bug the probability to fail
+  // was 50%, depends on the hash values.
+  int trial = 10;
+  while (trial--) {
+    scoped_refptr<Layer> root = Layer::Create();
+    scoped_refptr<Layer> scroller = Layer::Create();
+    scoped_refptr<Layer> scroll_sibling_1 = Layer::Create();
+    scoped_refptr<Layer> scroll_sibling_2 = Layer::Create();
+    scoped_refptr<Layer> clip_escaper = Layer::Create();
+
+    root->SetBounds(gfx::Size(100, 100));
+    scroll_sibling_1->SetBounds(gfx::Size(10, 20));
+    scroll_sibling_1->SetMasksToBounds(true);
+    scroll_sibling_2->SetBounds(gfx::Size(20, 10));
+    scroll_sibling_2->SetMasksToBounds(true);
+    clip_escaper->SetBounds(gfx::Size(30, 30));
+    clip_escaper->SetIsDrawable(true);
+
+    host()->SetRootLayer(root);
+    root->AddChild(scroller.get());
+    root->AddChild(scroll_sibling_1.get());
+    root->AddChild(scroll_sibling_2.get());
+    scroll_sibling_2->AddChild(clip_escaper.get());
+
+    // Also randomize scroll children insertion order.
+    if (trial & 1) {
+      scroll_sibling_1->SetScrollParent(scroller.get());
+      scroll_sibling_2->SetScrollParent(scroller.get());
+    } else {
+      scroll_sibling_2->SetScrollParent(scroller.get());
+      scroll_sibling_1->SetScrollParent(scroller.get());
+    }
+    clip_escaper->SetClipParent(scroll_sibling_1.get());
+
+    ExecuteCalculateDrawProperties(root.get());
+
+    EXPECT_EQ(scroll_sibling_1->clip_tree_index(),
+              clip_escaper->clip_tree_index());
+  }
 }
 
 }  // namespace

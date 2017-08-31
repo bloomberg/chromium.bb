@@ -109,7 +109,6 @@ Layer::~Layer() {
   // reference to us.
   DCHECK(!layer_tree_host());
 
-  RemoveFromScrollTree();
   RemoveFromClipTree();
 
   // Remove the parent reference from all children and dependents.
@@ -721,29 +720,9 @@ void Layer::SetScrollParent(Layer* parent) {
   if (inputs_.scroll_parent == parent)
     return;
 
-  if (inputs_.scroll_parent)
-    inputs_.scroll_parent->RemoveScrollChild(this);
-
   inputs_.scroll_parent = parent;
 
-  if (inputs_.scroll_parent)
-    inputs_.scroll_parent->AddScrollChild(this);
-
   SetPropertyTreesNeedRebuild();
-  SetNeedsCommit();
-}
-
-void Layer::AddScrollChild(Layer* child) {
-  if (!scroll_children_)
-    scroll_children_.reset(new std::set<Layer*>);
-  scroll_children_->insert(child);
-  SetNeedsCommit();
-}
-
-void Layer::RemoveScrollChild(Layer* child) {
-  scroll_children_->erase(child);
-  if (scroll_children_->empty())
-    scroll_children_ = nullptr;
   SetNeedsCommit();
 }
 
@@ -1390,17 +1369,6 @@ ElementListType Layer::GetElementTypeForAnimation() const {
 
 ScrollbarLayerInterface* Layer::ToScrollbarLayer() {
   return nullptr;
-}
-
-void Layer::RemoveFromScrollTree() {
-  if (scroll_children_.get()) {
-    std::set<Layer*> copy = *scroll_children_;
-    for (std::set<Layer*>::iterator it = copy.begin(); it != copy.end(); ++it)
-      (*it)->SetScrollParent(nullptr);
-  }
-
-  DCHECK(!scroll_children_);
-  SetScrollParent(nullptr);
 }
 
 void Layer::RemoveFromClipTree() {
