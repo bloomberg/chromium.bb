@@ -69,8 +69,6 @@ class MessageCenterNotificationManager
   // MessageCenterObserver
   void OnNotificationRemoved(const std::string& notification_id,
                              bool by_user) override;
-  void OnCenterVisibilityChanged(message_center::Visibility) override;
-  void OnNotificationUpdated(const std::string& notification_id) override;
 
   // Takes ownership of |delegate|.
   void SetMessageCenterTrayDelegateForTest(

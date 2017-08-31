@@ -10,7 +10,9 @@
 #include "base/timer/timer.h"
 #include "ui/message_center/notification_blocker.h"
 
-// A notification blocker which checks the screen lock state constantly.
+// A notification blocker which checks the screen lock state for desktop
+// platforms other than ChromeOS. The ChromeOS equivalent for this is
+// LoginStateNotificationBlocker.
 class ScreenLockNotificationBlocker
     : public message_center::NotificationBlocker {
  public:
