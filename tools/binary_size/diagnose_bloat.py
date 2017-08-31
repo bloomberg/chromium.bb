@@ -326,6 +326,7 @@ class _BuildArchive(object):
     _EnsureDirsExist(self.dir)
     if self.build.IsAndroid():
       self._ArchiveFile(self.build.abs_apk_path)
+      self._ArchiveFile(self.build.abs_apk_path + '.mapping')
       self._ArchiveResourceSizes()
     self._ArchiveSizeFile(supersize_path)
     self.metadata.Write()
@@ -668,7 +669,8 @@ def _DownloadAndArchive(gsutil_path, archive, dl_dir, build, supersize_path):
   # Files needed for supersize and resource_sizes. Paths relative to out dir.
   to_extract = [build.main_lib_path, build.map_file_path, 'args.gn']
   if build.IsAndroid():
-    to_extract += ['build_vars.txt', build.apk_path, build.apk_path + '.size']
+    to_extract += ['build_vars.txt', build.apk_path,
+                   build.apk_path + '.mapping', build.apk_path + '.size']
   extract_dir = dl_dst + '_' + 'unzipped'
   logging.info('Extracting build artifacts')
   with zipfile.ZipFile(dl_dst, 'r') as z:
