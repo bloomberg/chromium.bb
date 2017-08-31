@@ -18,7 +18,7 @@ namespace safe_browsing {
 
 void BaseParallelResourceThrottle::URLLoaderThrottleDelegateImpl::
     CancelWithError(int error_code) {
-  owner_->CancelWithError(error_code);
+  owner_->CancelResourceLoad();
 }
 
 void BaseParallelResourceThrottle::URLLoaderThrottleDelegateImpl::Resume() {
@@ -75,8 +75,13 @@ void BaseParallelResourceThrottle::WillRedirectRequest(
 void BaseParallelResourceThrottle::WillProcessResponse(bool* defer) {
   url_loader_throttle_->WillProcessResponse(defer);
 }
+
 const char* BaseParallelResourceThrottle::GetNameForLogging() const {
   return "BaseParallelResourceThrottle";
+}
+
+void BaseParallelResourceThrottle::CancelResourceLoad() {
+  Cancel();
 }
 
 }  // namespace safe_browsing
