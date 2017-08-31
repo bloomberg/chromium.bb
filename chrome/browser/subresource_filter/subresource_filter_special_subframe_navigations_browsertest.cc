@@ -28,16 +28,18 @@ class SubresourceFilterSpecialSubframeNavigationsBrowserTest
 // Tests that navigations to special URLs (e.g. about:blank, data URLs, etc)
 // which do not trigger ReadyToCommitNavigation (and therefore our activation
 // IPC), properly inherit the activation of their parent frame.
+// Also tests that a child frame of a special url frame inherits the activation
+// state of its parent.
 IN_PROC_BROWSER_TEST_F(SubresourceFilterSpecialSubframeNavigationsBrowserTest,
                        NavigationsWithNoIPC_HaveActivation) {
   const GURL url(GetTestUrl("subresource_filter/frame_set_special_urls.html"));
-  const std::vector<const char*> subframe_names{"blank", "js", "data",
-                                                "srcdoc"};
+  const std::vector<const char*> subframe_names{"blank", "grandChild", "js",
+                                                "data", "srcdoc"};
   ConfigureAsPhishingURL(url);
 
   ui_test_utils::NavigateToURL(browser(), url);
   ASSERT_NO_FATAL_FAILURE(ExpectParsedScriptElementLoadedStatusInFrames(
-      subframe_names, {true, true, true, true}));
+      subframe_names, {true, true, true, true, true}));
 
   // Disallow included_script.js, and all frames should filter it in subsequent
   // navigations.
@@ -45,7 +47,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterSpecialSubframeNavigationsBrowserTest,
       SetRulesetToDisallowURLsWithPathSuffix("included_script.js"));
   ui_test_utils::NavigateToURL(browser(), url);
   ASSERT_NO_FATAL_FAILURE(ExpectParsedScriptElementLoadedStatusInFrames(
-      subframe_names, {false, false, false, false}));
+      subframe_names, {false, false, false, false, false}));
 }
 
 // Navigate to a site with site hierarchy a(b(c)). Let a navigate c to a data
