@@ -85,8 +85,6 @@ class TetherService : public KeyedService,
                              bool powered) override;
 
   // chromeos::NetworkStateHandlerObserver:
-  void NetworkConnectionStateChanged(
-      const chromeos::NetworkState* network) override;
   void DeviceListChanged() override;
 
   // chromeos::tether::Initializer::Observer:
@@ -176,10 +174,6 @@ class TetherService : public KeyedService,
 
   // Whether Tether is enabled.
   bool IsEnabledbyPreference() const;
-
-  // Returns whether the "enable Bluetooth" notification can be shown under the
-  // current conditions.
-  bool CanEnableBluetoothNotificationBeShown();
 
   TetherFeatureState GetTetherFeatureState();
 

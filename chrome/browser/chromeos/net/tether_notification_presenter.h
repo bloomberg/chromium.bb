@@ -56,8 +56,6 @@ class TetherNotificationPresenter
   void RemoveSetupRequiredNotification() override;
   void NotifyConnectionToHostFailed() override;
   void RemoveConnectionToHostFailedNotification() override;
-  void NotifyEnableBluetooth() override;
-  void RemoveEnableBluetoothNotification() override;
 
   // message_center::MessageCenterObserver:
   void OnNotificationClicked(const std::string& notification_id) override;
@@ -81,7 +79,6 @@ class TetherNotificationPresenter
   static const char kPotentialHotspotNotificationId[];
   static const char kActiveHostNotificationId[];
   static const char kSetupRequiredNotificationId[];
-  static const char kEnableBluetoothNotificationId[];
 
   // IDs of all notifications which, when clicked, open mobile data settings.
   static const char* const kIdsWhichOpenTetherSettingsOnClick[];
