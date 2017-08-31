@@ -346,6 +346,7 @@ void Text::AttachLayoutTree(AttachContext& context) {
       LayoutTreeBuilderForText(*this, parent_layout_object,
                                style_parent->MutableComputedStyle())
           .CreateLayoutObject();
+      context.previous_in_flow = GetLayoutObject();
     }
   }
   CharacterData::AttachLayoutTree(context);

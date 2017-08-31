@@ -904,7 +904,8 @@ class CORE_EXPORT Element : public ContainerNode {
   void UpdatePseudoElement(PseudoId, StyleRecalcChange);
   bool UpdateFirstLetter(Element*);
 
-  inline void CreatePseudoElementIfNeeded(PseudoId);
+  inline PseudoElement* CreatePseudoElementIfNeeded(PseudoId);
+  void CreateAndAttachPseudoElementIfNeeded(PseudoId, AttachContext&);
 
   ShadowRoot* GetShadowRoot() const;
 

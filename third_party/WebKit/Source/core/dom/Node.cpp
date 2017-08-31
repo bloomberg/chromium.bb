@@ -1030,9 +1030,6 @@ void Node::AttachLayoutTree(AttachContext& context) {
   ClearNeedsStyleRecalc();
   ClearNeedsReattachLayoutTree();
 
-  if (layout_object && !layout_object->IsFloatingOrOutOfFlowPositioned())
-    context.previous_in_flow = layout_object;
-
   if (AXObjectCache* cache = GetDocument().AxObjectCache())
     cache->UpdateCacheAfterNodeIsAttached(this);
 }

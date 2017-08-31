@@ -911,24 +911,14 @@ void ContainerNode::NotifyNodeRemoved(Node& root) {
 
 DISABLE_CFI_PERF
 void ContainerNode::AttachLayoutTree(AttachContext& context) {
-  AttachContext children_context(context);
-  children_context.resolved_style = nullptr;
-  bool clear_previous_in_flow = !!GetLayoutObject();
-  if (clear_previous_in_flow)
-    children_context.previous_in_flow = nullptr;
-  children_context.use_previous_in_flow = true;
-
   for (Node* child = firstChild(); child; child = child->nextSibling()) {
 #if DCHECK_IS_ON()
     DCHECK(child->NeedsAttach() ||
            ChildAttachedAllowedWhenAttachingChildren(this));
 #endif
     if (child->NeedsAttach())
-      child->AttachLayoutTree(children_context);
+      child->AttachLayoutTree(context);
   }
-
-  if (children_context.previous_in_flow && !clear_previous_in_flow)
-    context.previous_in_flow = children_context.previous_in_flow;
 
   ClearChildNeedsStyleRecalc();
   ClearChildNeedsReattachLayoutTree();
