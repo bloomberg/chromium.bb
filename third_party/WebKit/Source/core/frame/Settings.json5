@@ -966,6 +966,10 @@
     {
       name: "mediaDownloadInProductHelpEnabled",
       initial: false,
-    }
+    },
+    {
+      name: "forceDisplayList2dCanvasEnabled",
+      initial: false,
+    },
   ],
 }
