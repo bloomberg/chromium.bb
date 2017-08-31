@@ -9,28 +9,6 @@
 #include <bitset>
 
 namespace blink {
-{% for flag, function_name in switches %}
-
-bool CSSPropertyMetadata::{{function_name}}(CSSPropertyID unresolvedProperty) {
-  switch (unresolvedProperty) {
-    case CSSPropertyInvalid:
-      NOTREACHED();
-      return false;
-    {% for property in properties_including_aliases if property[flag] %}
-    case {{property.property_id}}:
-    {% endfor %}
-    {% if function_name == "IsProperty" %}
-    case CSSPropertyVariable:
-    case CSSPropertyApplyAtRule:
-    {% endif %}
-      return true;
-    default:
-      return false;
-  }
-}
-{% endfor %}
-
-
 bool CSSPropertyMetadata::IsEnabledProperty(CSSPropertyID unresolvedProperty) {
   CSSPropertyID property = resolveCSSPropertyID(unresolvedProperty);
   static std::bitset<numCSSProperties>* enabledProperties = []() {

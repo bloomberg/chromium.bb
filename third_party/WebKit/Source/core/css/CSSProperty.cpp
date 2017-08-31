@@ -21,6 +21,7 @@
 #include "core/css/CSSProperty.h"
 
 #include "core/StylePropertyShorthand.h"
+#include "core/css/properties/CSSPropertyAPI.h"
 #include "core/style/ComputedStyleConstants.h"
 
 namespace blink {
@@ -308,7 +309,7 @@ bool CSSProperty::IsAffectedByAllProperty(CSSPropertyID property_id) {
   if (property_id == CSSPropertyVariable)
     return false;
 
-  if (!CSSPropertyMetadata::IsProperty(property_id))
+  if (!CSSPropertyAPI::Get(property_id).IsProperty())
     return false;
 
   // all shorthand spec says:

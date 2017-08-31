@@ -56,13 +56,7 @@ class CSSPropertyAPIHeadersWriter(CSSPropertyAPIWriter):
             return {
                 'input_files': self._input_files,
                 'api_classname': api_classname,
-                'methods_for_class': property_['api_methods'],
-                'is_interpolable': property_['interpolable'],
-                'is_inherited': property_['inherited'],
-                'separator': property_['separator'],
-                'is_repeated': True if property_['separator'] else False,
-                'is_descriptor': property_['is_descriptor'],
-                'supports_percentage': 'Percent' in property_['typedom_types'],
+                'property': property_,
             }
         return generate_property_api_h
 

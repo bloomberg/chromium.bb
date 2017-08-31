@@ -230,7 +230,7 @@ String StylePropertySerializer::AsText() const {
     DCHECK(CSSPropertyMetadata::IsEnabledProperty(property_id));
     // All shorthand properties should have been expanded at parse time.
     DCHECK(property_set_.IsDescriptorContext() ||
-           (CSSPropertyMetadata::IsProperty(property_id) &&
+           (CSSPropertyAPI::Get(property_id).IsProperty() &&
             !isShorthandProperty(property_id)));
     DCHECK(!property_set_.IsDescriptorContext() ||
            CSSPropertyAPI::Get(property_id).IsDescriptor());

@@ -22,25 +22,28 @@ class CSSValue;
 
 class {{api_classname}} : public CSSPropertyAPI {
  public:
-  {% for api_method in methods_for_class %}
+  {% for api_method in property.api_methods %}
   {{api_method.return_type}} {{api_method.name}}{{api_method.parameters}} const override;
   {% endfor %}
 
-  {% if is_interpolable %}
+  {% if property.interpolable %}
   bool IsInterpolable() const override { return true; }
   {% endif %}
-  {% if is_inherited %}
+  {% if property.inherited %}
   bool IsInherited() const override { return true; }
   {% endif %}
-  {% if is_repeated %}
+  {% if property.separator != None %}
   bool IsRepeated() const override { return true; }
-  char RepetitionSeparator() const override { return '{{separator}}'; }
+  char RepetitionSeparator() const override { return '{{property.separator}}'; }
   {% endif %}
-  {% if is_descriptor %}
+  {% if property.is_descriptor %}
   bool IsDescriptor() const override { return true; }
   {% endif %}
-  {% if supports_percentage %}
+  {% if 'Percent' in property.typedom_types %}
   bool SupportsPercentage() const override { return true; }
+  {% endif %}
+  {% if not property.is_property %}
+  bool IsProperty() const override { return false; }
   {% endif %}
 };
 
