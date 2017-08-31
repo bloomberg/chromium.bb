@@ -46,6 +46,10 @@ class CC_EXPORT LayerTreeResourceProvider : public ResourceProvider {
   void ReceiveReturnsFromParent(
       const std::vector<viz::ReturnedResource>& transferable_resources);
 
+  // The following lock classes are part of the LayerTreeResourceProvider API
+  // and are needed to write the resource contents. The user must ensure that
+  // they only use GL locks on GL resources, etc, and this is enforced by
+  // assertions.
   class CC_EXPORT ScopedWriteLockGpuMemoryBuffer {
    public:
     ScopedWriteLockGpuMemoryBuffer(LayerTreeResourceProvider* resource_provider,

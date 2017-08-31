@@ -413,7 +413,7 @@ void GetResourcePixels(DisplayResourceProvider* resource_provider,
   switch (resource_provider->default_resource_type()) {
     case ResourceProvider::RESOURCE_TYPE_GPU_MEMORY_BUFFER:
     case ResourceProvider::RESOURCE_TYPE_GL_TEXTURE: {
-      ResourceProvider::ScopedReadLockGL lock_gl(resource_provider, id);
+      DisplayResourceProvider::ScopedReadLockGL lock_gl(resource_provider, id);
       ASSERT_NE(0U, lock_gl.texture_id());
       context->bindTexture(GL_TEXTURE_2D, lock_gl.texture_id());
       context->GetPixels(size, format, pixels);
@@ -712,8 +712,8 @@ TEST_P(ResourceProviderTest, TransferGLResources) {
               context3d_->last_waited_sync_token());
     {
       resource_provider_->WaitSyncToken(list[0].id);
-      ResourceProvider::ScopedReadLockGL lock(resource_provider_.get(),
-                                              list[0].id);
+      DisplayResourceProvider::ScopedReadLockGL lock(resource_provider_.get(),
+                                                     list[0].id);
     }
     EXPECT_EQ(list[0].mailbox_holder.sync_token,
               context3d_->last_waited_sync_token());
@@ -758,13 +758,13 @@ TEST_P(ResourceProviderTest, TransferGLResources) {
 
   {
     resource_provider_->WaitSyncToken(mapped_id1);
-    ResourceProvider::ScopedReadLockGL lock1(resource_provider_.get(),
-                                             mapped_id1);
+    DisplayResourceProvider::ScopedReadLockGL lock1(resource_provider_.get(),
+                                                    mapped_id1);
     EXPECT_TRUE(lock1.color_space() == color_space1);
 
     resource_provider_->WaitSyncToken(mapped_id4);
-    ResourceProvider::ScopedReadLockGL lock4(resource_provider_.get(),
-                                             mapped_id4);
+    DisplayResourceProvider::ScopedReadLockGL lock4(resource_provider_.get(),
+                                                    mapped_id4);
     EXPECT_TRUE(lock4.color_space() == color_space4);
   }
 
@@ -824,21 +824,17 @@ TEST_P(ResourceProviderTest, TransferGLResources) {
 
   {
     child_resource_provider_->WaitSyncToken(id1);
-    ResourceProvider::ScopedReadLockGL lock(child_resource_provider_.get(),
-                                            id1);
-    ASSERT_NE(0U, lock.texture_id());
-    child_context_->bindTexture(GL_TEXTURE_2D, lock.texture_id());
-    child_context_->GetPixels(size, format, result);
-    EXPECT_EQ(0, memcmp(data1, result, pixel_size));
+    ResourceProvider::ScopedWriteLockGL lock(child_resource_provider_.get(),
+                                             id1);
+    ASSERT_NE(0U, lock.GetTexture());
   }
   // Ensure copying to resource doesn't fail.
   child_resource_provider_->CopyToResource(id2, data2, size);
   {
     child_resource_provider_->WaitSyncToken(id3);
-    ResourceProvider::ScopedReadLockGL lock(child_resource_provider_.get(),
-                                            id3);
-    ASSERT_NE(0U, lock.texture_id());
-    child_context_->bindTexture(GL_TEXTURE_2D, lock.texture_id());
+    ResourceProvider::ScopedWriteLockGL lock(child_resource_provider_.get(),
+                                             id3);
+    ASSERT_NE(0U, lock.GetTexture());
   }
   {
     // Transfer resources to the parent again.
@@ -951,8 +947,8 @@ TEST_P(ResourceProviderTest, OverlayPromotionHint) {
     resource_provider_->ReceiveFromChild(child_id, list);
     {
       resource_provider_->WaitSyncToken(list[0].id);
-      ResourceProvider::ScopedReadLockGL lock(resource_provider_.get(),
-                                              list[0].id);
+      DisplayResourceProvider::ScopedReadLockGL lock(resource_provider_.get(),
+                                                     list[0].id);
     }
 
     EXPECT_EQ(list[0].mailbox_holder.sync_token,
@@ -1141,11 +1137,13 @@ TEST_P(ResourceProviderTest, SetBatchPreventsReturn) {
 
   resource_provider_->ReceiveFromChild(child_id, list);
 
-  std::vector<std::unique_ptr<ResourceProvider::ScopedReadLockGL>> read_locks;
+  std::vector<std::unique_ptr<DisplayResourceProvider::ScopedReadLockGL>>
+      read_locks;
   for (auto& parent_resource : list) {
     resource_provider_->WaitSyncToken(parent_resource.id);
-    read_locks.push_back(std::make_unique<ResourceProvider::ScopedReadLockGL>(
-        resource_provider_.get(), parent_resource.id));
+    read_locks.push_back(
+        std::make_unique<DisplayResourceProvider::ScopedReadLockGL>(
+            resource_provider_.get(), parent_resource.id));
   }
 
   resource_provider_->DeclareUsedResourcesFromChild(child_id,
@@ -1199,8 +1197,8 @@ TEST_P(ResourceProviderTest, ReadLockCountStopsReturnToChildOrDelete) {
     resource_provider_->ReceiveFromChild(child_id, list);
 
     resource_provider_->WaitSyncToken(list[0].id);
-    ResourceProvider::ScopedReadLockGL lock(resource_provider_.get(),
-                                            list[0].id);
+    DisplayResourceProvider::ScopedReadLockGL lock(resource_provider_.get(),
+                                                   list[0].id);
 
     resource_provider_->DeclareUsedResourcesFromChild(child_id,
                                                       viz::ResourceIdSet());
@@ -1210,16 +1208,11 @@ TEST_P(ResourceProviderTest, ReadLockCountStopsReturnToChildOrDelete) {
   EXPECT_EQ(1u, returned_to_child.size());
   child_resource_provider_->ReceiveReturnsFromParent(returned_to_child);
 
-  {
-    child_resource_provider_->WaitSyncToken(id1);
-    ResourceProvider::ScopedReadLockGL lock(child_resource_provider_.get(),
-                                            id1);
-    child_resource_provider_->DeleteResource(id1);
-    EXPECT_EQ(1u, child_resource_provider_->num_resources());
-    EXPECT_TRUE(child_resource_provider_->InUseByConsumer(id1));
-  }
-
+  child_resource_provider_->WaitSyncToken(id1);
+  EXPECT_EQ(1u, child_resource_provider_->num_resources());
+  child_resource_provider_->DeleteResource(id1);
   EXPECT_EQ(0u, child_resource_provider_->num_resources());
+
   resource_provider_->DestroyChild(child_id);
 }
 
@@ -1271,8 +1264,8 @@ TEST_P(ResourceProviderTest, ReadLockFenceStopsReturnToChildOrDelete) {
   {
     unsigned parent_id = list.front().id;
     resource_provider_->WaitSyncToken(parent_id);
-    ResourceProvider::ScopedReadLockGL lock(resource_provider_.get(),
-                                            parent_id);
+    DisplayResourceProvider::ScopedReadLockGL lock(resource_provider_.get(),
+                                                   parent_id);
   }
   resource_provider_->DeclareUsedResourcesFromChild(child_id,
                                                     viz::ResourceIdSet());
@@ -1334,8 +1327,8 @@ TEST_P(ResourceProviderTest, ReadLockFenceDestroyChild) {
     for (size_t i = 0; i < list.size(); i++) {
       unsigned parent_id = list[i].id;
       resource_provider_->WaitSyncToken(parent_id);
-      ResourceProvider::ScopedReadLockGL lock(resource_provider_.get(),
-                                              parent_id);
+      DisplayResourceProvider::ScopedReadLockGL lock(resource_provider_.get(),
+                                                     parent_id);
     }
   }
   EXPECT_EQ(0u, returned_to_child.size());
@@ -1399,8 +1392,8 @@ TEST_P(ResourceProviderTest, ReadLockFenceContextLost) {
     for (size_t i = 0; i < list.size(); i++) {
       unsigned parent_id = list[i].id;
       resource_provider_->WaitSyncToken(parent_id);
-      ResourceProvider::ScopedReadLockGL lock(resource_provider_.get(),
-                                              parent_id);
+      DisplayResourceProvider::ScopedReadLockGL lock(resource_provider_.get(),
+                                                     parent_id);
     }
   }
   EXPECT_EQ(0u, returned_to_child.size());
@@ -1982,8 +1975,8 @@ class ResourceProviderTestTextureFilters : public ResourceProviderTest {
       parent_resource_provider->ReceiveFromChild(child_id, list);
       {
         parent_resource_provider->WaitSyncToken(list[0].id);
-        ResourceProvider::ScopedReadLockGL lock(parent_resource_provider.get(),
-                                                list[0].id);
+        DisplayResourceProvider::ScopedReadLockGL lock(
+            parent_resource_provider.get(), list[0].id);
       }
       Mock::VerifyAndClearExpectations(parent_context);
 
@@ -2794,8 +2787,8 @@ TEST_P(ResourceProviderTest, TextureMailbox_GLTextureExternalOES) {
   auto context_provider = TestContextProvider::Create(std::move(context_owned));
   context_provider->BindToCurrentThread();
 
-  std::unique_ptr<ResourceProvider> resource_provider(
-      std::make_unique<ResourceProvider>(
+  std::unique_ptr<DisplayResourceProvider> resource_provider(
+      std::make_unique<DisplayResourceProvider>(
           context_provider.get(), shared_bitmap_manager_.get(),
           gpu_memory_buffer_manager_.get(), nullptr,
           kDelegatedSyncPointsRequired, kEnableColorCorrectRendering,
@@ -2838,7 +2831,7 @@ TEST_P(ResourceProviderTest, TextureMailbox_GLTextureExternalOES) {
 
     EXPECT_CALL(*context, produceTextureDirectCHROMIUM(_, _, _)).Times(0);
 
-    ResourceProvider::ScopedReadLockGL lock(resource_provider.get(), id);
+    DisplayResourceProvider::ScopedReadLockGL lock(resource_provider.get(), id);
     Mock::VerifyAndClearExpectations(context);
 
     // When done with it, a sync point should be inserted, but no produce is

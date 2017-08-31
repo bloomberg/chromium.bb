@@ -39,6 +39,32 @@ class CC_EXPORT DisplayResourceProvider : public ResourceProvider {
       const OverlayCandidateList::PromotionHintInfoMap& promotion_hints);
 #endif
 
+  // The following lock classes are part of the DisplayResourceProvider API and
+  // are needed to read the resource contents. The user must ensure that they
+  // only use GL locks on GL resources, etc, and this is enforced by assertions.
+  class CC_EXPORT ScopedReadLockGL {
+   public:
+    ScopedReadLockGL(DisplayResourceProvider* resource_provider,
+                     viz::ResourceId resource_id);
+    ~ScopedReadLockGL();
+
+    GLuint texture_id() const { return texture_id_; }
+    GLenum target() const { return target_; }
+    const gfx::Size& size() const { return size_; }
+    const gfx::ColorSpace& color_space() const { return color_space_; }
+
+   private:
+    DisplayResourceProvider* const resource_provider_;
+    const viz::ResourceId resource_id_;
+
+    GLuint texture_id_;
+    GLenum target_;
+    gfx::Size size_;
+    gfx::ColorSpace color_space_;
+
+    DISALLOW_COPY_AND_ASSIGN(ScopedReadLockGL);
+  };
+
   class CC_EXPORT ScopedSamplerGL {
    public:
     ScopedSamplerGL(DisplayResourceProvider* resource_provider,
