@@ -13,6 +13,7 @@
 #include "url/gurl.h"
 
 namespace chromecast {
+class CastWebContentsManager;
 class CastWindowManager;
 
 namespace shell {
@@ -41,6 +42,7 @@ class CastServiceSimple : public CastService, public CastWebView::Delegate {
 
  private:
   CastWindowManager* const window_manager_;
+  const std::unique_ptr<CastWebContentsManager> web_contents_manager_;
   std::unique_ptr<CastWebView> cast_web_view_;
   GURL startup_url_;
 

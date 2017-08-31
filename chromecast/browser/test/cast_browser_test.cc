@@ -13,6 +13,7 @@
 #include "chromecast/browser/cast_browser_context.h"
 #include "chromecast/browser/cast_browser_process.h"
 #include "chromecast/browser/cast_content_window.h"
+#include "chromecast/browser/cast_web_contents_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
@@ -44,6 +45,8 @@ void CastBrowserTest::PreRunTestOnMainThread() {
   base::RunLoop().RunUntilIdle();
 
   metrics::CastMetricsHelper::GetInstance()->SetDummySessionIdForTesting();
+  web_contents_manager_ = base::MakeUnique<CastWebContentsManager>(
+      CastBrowserProcess::GetInstance()->browser_context());
 }
 
 void CastBrowserTest::PostRunTestOnMainThread() {
@@ -51,9 +54,8 @@ void CastBrowserTest::PostRunTestOnMainThread() {
 }
 
 content::WebContents* CastBrowserTest::NavigateToURL(const GURL& url) {
-  cast_web_view_ = base::WrapUnique(new CastWebView(
-      this, CastBrowserProcess::GetInstance()->browser_context(), nullptr,
-      false /*transparent*/));
+  cast_web_view_ = web_contents_manager_->CreateWebView(
+      this, nullptr /*site_instance*/, false /*transparent*/);
 
   content::WebContents* web_contents = cast_web_view_->web_contents();
   content::WaitForLoadStop(web_contents);

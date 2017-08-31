@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromecast/base/metrics/cast_metrics_helper.h"
+#include "chromecast/browser/cast_web_contents_manager.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -31,9 +32,6 @@
 namespace chromecast {
 
 namespace {
-// The time (in milliseconds) we wait for after a page is closed (i.e.
-// after an app is stopped) before we delete the corresponding WebContents.
-constexpr int kWebContentsDestructionDelayInMs = 50;
 
 std::unique_ptr<content::WebContents> CreateWebContents(
     content::BrowserContext* browser_context,
@@ -55,10 +53,12 @@ std::unique_ptr<content::WebContents> CreateWebContents(
 }  // namespace
 
 CastWebView::CastWebView(Delegate* delegate,
+                         CastWebContentsManager* web_contents_manager,
                          content::BrowserContext* browser_context,
                          scoped_refptr<content::SiteInstance> site_instance,
                          bool transparent)
     : delegate_(delegate),
+      web_contents_manager_(web_contents_manager),
       browser_context_(browser_context),
       site_instance_(std::move(site_instance)),
       transparent_(transparent),
@@ -67,6 +67,7 @@ CastWebView::CastWebView(Delegate* delegate,
       did_start_navigation_(false),
       weak_factory_(this) {
   DCHECK(delegate_);
+  DCHECK(web_contents_manager_);
   DCHECK(browser_context_);
   DCHECK(window_);
   content::WebContentsObserver::Observe(web_contents_.get());
@@ -83,31 +84,21 @@ void CastWebView::LoadUrl(GURL url) {
                                          ui::PAGE_TRANSITION_TYPED, "");
 }
 
-void CastWebView::ClosePage() {
+void CastWebView::ClosePage(const base::TimeDelta& shutdown_delay) {
+  shutdown_delay_ = shutdown_delay;
   content::WebContentsObserver::Observe(nullptr);
+  web_contents_->DispatchBeforeUnload();
   web_contents_->ClosePage();
 }
 
 void CastWebView::CloseContents(content::WebContents* source) {
   DCHECK_EQ(source, web_contents_.get());
-
+  window_.reset();  // Window destructor requires live web_contents on Android.
   // We need to delay the deletion of web_contents_ to give (and guarantee) the
   // renderer enough time to finish 'onunload' handler (but we don't want to
   // wait any longer than that to delay the starting of next app).
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::Bind(&CastWebView::DelayedCloseContents,
-                            weak_factory_.GetWeakPtr()),
-      base::TimeDelta::FromMilliseconds(kWebContentsDestructionDelayInMs));
-}
-
-void CastWebView::DelayedCloseContents() {
-  // Delete the WebContents object here so that the gfx surface will be
-  // deleted as part of destroying RenderWidgetHostViewCast object.
-  // We want to delete the surface before we start the next app because
-  // the next app could be an external one whose Start() function would
-  // destroy the primary gfx plane.
-  window_.reset();  // Window destructor requires live web_contents on Android.
-  web_contents_.reset();
+  web_contents_manager_->DelayWebContentsDeletion(std::move(web_contents_),
+                                                  shutdown_delay_);
   delegate_->OnPageStopped(net::OK);
 }
 
