@@ -24,7 +24,6 @@
 #include "media/cdm/json_web_key.h"
 #include "media/cdm/ppapi/cdm_file_io_test.h"
 #include "media/cdm/ppapi/external_clear_key/cdm_video_decoder.h"
-#include "url/origin.h"
 
 #if defined(CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER)
 const int64_t kNoTimestamp = INT64_MIN;
@@ -270,8 +269,7 @@ void* CreateCdmInstance(int cdm_interface_version,
   if (!host)
     return nullptr;
 
-  // TODO(jrummell): Obtain the proper origin for this instance.
-  return new media::ClearKeyCdm(host, key_system_string, url::Origin());
+  return new media::ClearKeyCdm(host, key_system_string);
 }
 
 const char* GetCdmVersion() {
@@ -334,11 +332,8 @@ bool VerifyCdmHost_0(const cdm::HostFile* host_files, uint32_t num_files) {
 
 namespace media {
 
-ClearKeyCdm::ClearKeyCdm(ClearKeyCdmHost* host,
-                         const std::string& key_system,
-                         const url::Origin& origin)
+ClearKeyCdm::ClearKeyCdm(ClearKeyCdmHost* host, const std::string& key_system)
     : cdm_(new ClearKeyPersistentSessionCdm(
-          origin,
           host,
           base::Bind(&ClearKeyCdm::OnSessionMessage, base::Unretained(this)),
           base::Bind(&ClearKeyCdm::OnSessionClosed, base::Unretained(this)),
