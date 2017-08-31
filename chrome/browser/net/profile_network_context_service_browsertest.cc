@@ -23,11 +23,8 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/network_service.mojom.h"
-#include "content/public/common/resource_response.h"
-#include "content/public/common/resource_response_info.h"
-#include "content/public/common/url_loader.mojom.h"
 #include "content/public/common/url_loader_factory.mojom.h"
-#include "content/public/test/test_url_loader_client.h"
+#include "content/public/test/simple_url_loader_test_helper.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -73,21 +70,18 @@ class ProfileNetworkContextServiceBrowsertest
 
 IN_PROC_BROWSER_TEST_P(ProfileNetworkContextServiceBrowsertest,
                        DiskCacheLocation) {
-  // Start a request, to give the network service time to create a cache
-  // directory.
-  content::mojom::URLLoaderPtr loader;
+  // Run a request that caches the response, to give the network service time to
+  // create a cache directory.
+  content::SimpleURLLoaderTestHelper simple_loader_helper;
+  std::unique_ptr<content::SimpleURLLoader> simple_loader =
+      content::SimpleURLLoader::Create();
   content::ResourceRequest request;
-  content::TestURLLoaderClient client;
   request.url = embedded_test_server()->GetURL("/cachetime");
-  request.method = "GET";
-  loader_factory()->CreateLoaderAndStart(
-      mojo::MakeRequest(&loader), 2, 1, content::mojom::kURLLoadOptionNone,
-      request, client.CreateInterfacePtr(),
-      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
-  client.RunUntilResponseReceived();
-  ASSERT_TRUE(client.response_head().headers);
-  EXPECT_EQ(200, client.response_head().headers->response_code());
-  client.RunUntilResponseBodyArrived();
+  simple_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      request, loader_factory(), TRAFFIC_ANNOTATION_FOR_TESTS,
+      simple_loader_helper.GetCallback());
+  simple_loader_helper.WaitForCallback();
+  ASSERT_TRUE(simple_loader_helper.response_body());
 
   base::FilePath expected_cache_path;
   chrome::GetUserCacheDirectory(browser()->profile()->GetPath(),
@@ -126,21 +120,18 @@ IN_PROC_BROWSER_TEST_P(ProfileNetworkContextServiceDiskCacheDirBrowsertest,
   ASSERT_EQ(TempPath(), browser()->profile()->GetPrefs()->GetFilePath(
                             prefs::kDiskCacheDir));
 
-  // Start a request, to give the network service time to create a cache
-  // directory.
-  content::mojom::URLLoaderPtr loader;
+  // Run a request that caches the response, to give the network service time to
+  // create a cache directory.
+  content::SimpleURLLoaderTestHelper simple_loader_helper;
+  std::unique_ptr<content::SimpleURLLoader> simple_loader =
+      content::SimpleURLLoader::Create();
   content::ResourceRequest request;
-  content::TestURLLoaderClient client;
   request.url = embedded_test_server()->GetURL("/cachetime");
-  request.method = "GET";
-  loader_factory()->CreateLoaderAndStart(
-      mojo::MakeRequest(&loader), 2, 1, content::mojom::kURLLoadOptionNone,
-      request, client.CreateInterfacePtr(),
-      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
-  client.RunUntilResponseReceived();
-  ASSERT_TRUE(client.response_head().headers);
-  EXPECT_EQ(200, client.response_head().headers->response_code());
-  client.RunUntilResponseBodyArrived();
+  simple_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      request, loader_factory(), TRAFFIC_ANNOTATION_FOR_TESTS,
+      simple_loader_helper.GetCallback());
+  simple_loader_helper.WaitForCallback();
+  ASSERT_TRUE(simple_loader_helper.response_body());
 
   // Cache directory should now exist.
   base::FilePath expected_cache_path =

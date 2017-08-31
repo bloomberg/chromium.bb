@@ -26,9 +26,11 @@
 #include "content/public/common/network_service.mojom.h"
 #include "content/public/common/resource_response.h"
 #include "content/public/common/resource_response_info.h"
+#include "content/public/common/simple_url_loader.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_loader.mojom.h"
 #include "content/public/common/url_loader_factory.mojom.h"
+#include "content/public/test/simple_url_loader_test_helper.h"
 #include "content/public/test/test_url_loader_client.h"
 #include "mojo/common/data_pipe_utils.h"
 #include "net/base/filename_util.h"
@@ -132,56 +134,42 @@ class NetworkContextConfigurationBrowserTest
 };
 
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, BasicRequest) {
-  content::mojom::URLLoaderPtr loader;
+  content::SimpleURLLoaderTestHelper simple_loader_helper;
+  std::unique_ptr<content::SimpleURLLoader> simple_loader =
+      content::SimpleURLLoader::Create();
+
   content::ResourceRequest request;
-  content::TestURLLoaderClient client;
   request.url = embedded_test_server()->GetURL("/echo");
-  request.method = "GET";
-  request.request_initiator = url::Origin();
-  loader_factory()->CreateLoaderAndStart(
-      mojo::MakeRequest(&loader), 2, 1, content::mojom::kURLLoadOptionNone,
-      request, client.CreateInterfacePtr(),
-      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
-  client.RunUntilResponseReceived();
-  ASSERT_TRUE(client.response_head().headers);
-  EXPECT_EQ(200, client.response_head().headers->response_code());
+  simple_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      request, loader_factory(), TRAFFIC_ANNOTATION_FOR_TESTS,
+      simple_loader_helper.GetCallback());
+  simple_loader_helper.WaitForCallback();
 
-  client.RunUntilResponseBodyArrived();
-  // TODO(mmenke):  Is blocking the UI Thread while reading the response really
-  // the best way to test requests in a browser test?
-  std::string response_body;
-  EXPECT_TRUE(mojo::common::BlockingCopyToString(client.response_body_release(),
-                                                 &response_body));
-  EXPECT_EQ("Echo", response_body);
-
-  client.RunUntilComplete();
-  EXPECT_EQ(net::OK, client.completion_status().error_code);
+  ASSERT_TRUE(simple_loader->ResponseInfo());
+  ASSERT_TRUE(simple_loader->ResponseInfo()->headers);
+  EXPECT_EQ(200, simple_loader->ResponseInfo()->headers->response_code());
+  ASSERT_TRUE(simple_loader_helper.response_body());
+  EXPECT_EQ("Echo", *simple_loader_helper.response_body());
 }
 
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, DataURL) {
-  content::mojom::URLLoaderPtr loader;
+  content::SimpleURLLoaderTestHelper simple_loader_helper;
+  std::unique_ptr<content::SimpleURLLoader> simple_loader =
+      content::SimpleURLLoader::Create();
+
   content::ResourceRequest request;
-  content::TestURLLoaderClient client;
   request.url = GURL("data:text/plain,foo");
-  request.method = "GET";
-  request.request_initiator = url::Origin();
-  loader_factory()->CreateLoaderAndStart(
-      mojo::MakeRequest(&loader), 2, 1, content::mojom::kURLLoadOptionNone,
-      request, client.CreateInterfacePtr(),
-      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
-  client.RunUntilResponseReceived();
+  simple_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      request, loader_factory(), TRAFFIC_ANNOTATION_FOR_TESTS,
+      simple_loader_helper.GetCallback());
+  simple_loader_helper.WaitForCallback();
+
+  ASSERT_TRUE(simple_loader->ResponseInfo());
   // Data URLs don't have headers.
-  EXPECT_FALSE(client.response_head().headers);
-  EXPECT_EQ("text/plain", client.response_head().mime_type);
-
-  client.RunUntilResponseBodyArrived();
-  std::string response_body;
-  EXPECT_TRUE(mojo::common::BlockingCopyToString(client.response_body_release(),
-                                                 &response_body));
-  EXPECT_EQ("foo", response_body);
-
-  client.RunUntilComplete();
-  EXPECT_EQ(net::OK, client.completion_status().error_code);
+  EXPECT_FALSE(simple_loader->ResponseInfo()->headers);
+  EXPECT_EQ("text/plain", simple_loader->ResponseInfo()->mime_type);
+  ASSERT_TRUE(simple_loader_helper.response_body());
+  EXPECT_EQ("foo", *simple_loader_helper.response_body());
 }
 
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, FileURL) {
@@ -194,84 +182,64 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, FileURL) {
   ASSERT_EQ(static_cast<int>(strlen(kFileContents)),
             base::WriteFile(file_path, kFileContents, strlen(kFileContents)));
 
-  content::mojom::URLLoaderPtr loader;
+  content::SimpleURLLoaderTestHelper simple_loader_helper;
+  std::unique_ptr<content::SimpleURLLoader> simple_loader =
+      content::SimpleURLLoader::Create();
+
   content::ResourceRequest request;
-  content::TestURLLoaderClient client;
   request.url = net::FilePathToFileURL(file_path);
-  request.method = "GET";
-  request.request_initiator = url::Origin();
-  loader_factory()->CreateLoaderAndStart(
-      mojo::MakeRequest(&loader), 2, 1, content::mojom::kURLLoadOptionNone,
-      request, client.CreateInterfacePtr(),
-      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
-  client.RunUntilResponseReceived();
+  simple_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      request, loader_factory(), TRAFFIC_ANNOTATION_FOR_TESTS,
+      simple_loader_helper.GetCallback());
+  simple_loader_helper.WaitForCallback();
+
+  ASSERT_TRUE(simple_loader->ResponseInfo());
   // File URLs don't have headers.
-  EXPECT_FALSE(client.response_head().headers);
-
-  client.RunUntilResponseBodyArrived();
-  std::string response_body;
-  EXPECT_TRUE(mojo::common::BlockingCopyToString(client.response_body_release(),
-                                                 &response_body));
-  EXPECT_EQ(kFileContents, response_body);
-
-  client.RunUntilComplete();
-  EXPECT_EQ(net::OK, client.completion_status().error_code);
+  EXPECT_FALSE(simple_loader->ResponseInfo()->headers);
+  ASSERT_TRUE(simple_loader_helper.response_body());
+  EXPECT_EQ(kFileContents, *simple_loader_helper.response_body());
 }
 
 // Make sure a cache is used when expected.
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, Cache) {
+  content::SimpleURLLoaderTestHelper simple_loader_helper;
+  std::unique_ptr<content::SimpleURLLoader> simple_loader =
+      content::SimpleURLLoader::Create();
+
   // Make a request whose response should be cached.
-  content::mojom::URLLoaderPtr loader;
   content::ResourceRequest request;
-  content::TestURLLoaderClient client;
   request.url = embedded_test_server()->GetURL("/cachetime");
-  request.method = "GET";
-  loader_factory()->CreateLoaderAndStart(
-      mojo::MakeRequest(&loader), 2, 1, content::mojom::kURLLoadOptionNone,
-      request, client.CreateInterfacePtr(),
-      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
-  client.RunUntilResponseReceived();
-  ASSERT_TRUE(client.response_head().headers);
-  EXPECT_EQ(200, client.response_head().headers->response_code());
-  client.RunUntilResponseBodyArrived();
-  std::string response_body;
-  EXPECT_TRUE(mojo::common::BlockingCopyToString(client.response_body_release(),
-                                                 &response_body));
-  EXPECT_GE(response_body.size(), 0u);
-  client.RunUntilComplete();
-  EXPECT_EQ(net::OK, client.completion_status().error_code);
-  EXPECT_FALSE(client.completion_status().exists_in_cache);
+  simple_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      request, loader_factory(), TRAFFIC_ANNOTATION_FOR_TESTS,
+      simple_loader_helper.GetCallback());
+  simple_loader_helper.WaitForCallback();
+
+  ASSERT_TRUE(simple_loader_helper.response_body());
+  EXPECT_GT(simple_loader_helper.response_body()->size(), 0u);
 
   // Stop the server.
   ASSERT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
 
   // Make the request again, and make sure it's cached or not, according to
   // expectations. Reuse the content::ResourceRequest, but nothing else.
-  content::mojom::URLLoaderPtr loader2;
-  content::TestURLLoaderClient client2;
-  loader_factory()->CreateLoaderAndStart(
-      mojo::MakeRequest(&loader2), 3, 2, content::mojom::kURLLoadOptionNone,
-      request, client2.CreateInterfacePtr(),
-      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
+  content::SimpleURLLoaderTestHelper simple_loader_helper2;
+  std::unique_ptr<content::SimpleURLLoader> simple_loader2 =
+      content::SimpleURLLoader::Create();
+  simple_loader2->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      request, loader_factory(), TRAFFIC_ANNOTATION_FOR_TESTS,
+      simple_loader_helper2.GetCallback());
+  simple_loader_helper2.WaitForCallback();
   if (GetHttpCacheType() == StorageType::kNone) {
-    client2.RunUntilComplete();
-    // If there's no cache, and not server running, the request should fail.
-    EXPECT_EQ(net::ERR_CONNECTION_REFUSED,
-              client2.completion_status().error_code);
+    // If there's no cache, and not server running, the request should have
+    // failed.
+    EXPECT_FALSE(simple_loader_helper2.response_body());
+    EXPECT_EQ(net::ERR_CONNECTION_REFUSED, simple_loader2->NetError());
   } else {
-    // Otherwise, the request should succeed, and return the same result as
-    // before.
-    client2.RunUntilResponseReceived();
-    ASSERT_TRUE(client2.response_head().headers);
-    EXPECT_EQ(200, client2.response_head().headers->response_code());
-    client2.RunUntilResponseBodyArrived();
-    std::string response_body2;
-    EXPECT_TRUE(mojo::common::BlockingCopyToString(
-        client2.response_body_release(), &response_body2));
-    EXPECT_EQ(response_body, response_body2);
-    client2.RunUntilComplete();
-    EXPECT_EQ(net::OK, client2.completion_status().error_code);
-    EXPECT_TRUE(client2.completion_status().exists_in_cache);
+    // Otherwise, the request should have succeeded, and returned the same
+    // result as before.
+    ASSERT_TRUE(simple_loader_helper2.response_body());
+    EXPECT_EQ(*simple_loader_helper.response_body(),
+              *simple_loader_helper2.response_body());
   }
 }
 
@@ -291,28 +259,22 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, PRE_DiskCache) {
             base::WriteFile(save_url_file_path, test_url.spec().c_str(),
                             test_url.spec().length()));
 
+  content::SimpleURLLoaderTestHelper simple_loader_helper;
+  std::unique_ptr<content::SimpleURLLoader> simple_loader =
+      content::SimpleURLLoader::Create();
+
   // Make a request whose response should be cached.
-  content::mojom::URLLoaderPtr loader;
   content::ResourceRequest request;
-  content::TestURLLoaderClient client;
   request.url = test_url;
-  request.method = "GET";
   request.headers = "foo: foopity foo\r\n\r\n";
-  loader_factory()->CreateLoaderAndStart(
-      mojo::MakeRequest(&loader), 2, 1, content::mojom::kURLLoadOptionNone,
-      request, client.CreateInterfacePtr(),
-      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
-  client.RunUntilResponseReceived();
-  ASSERT_TRUE(client.response_head().headers);
-  EXPECT_EQ(200, client.response_head().headers->response_code());
-  client.RunUntilResponseBodyArrived();
-  std::string response_body;
-  EXPECT_TRUE(mojo::common::BlockingCopyToString(client.response_body_release(),
-                                                 &response_body));
-  EXPECT_EQ("foopity foo", response_body);
-  client.RunUntilComplete();
-  EXPECT_EQ(net::OK, client.completion_status().error_code);
-  EXPECT_FALSE(client.completion_status().exists_in_cache);
+  simple_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      request, loader_factory(), TRAFFIC_ANNOTATION_FOR_TESTS,
+      simple_loader_helper.GetCallback());
+  simple_loader_helper.WaitForCallback();
+
+  EXPECT_EQ(net::OK, simple_loader->NetError());
+  ASSERT_TRUE(simple_loader_helper.response_body());
+  EXPECT_EQ(*simple_loader_helper.response_body(), "foopity foo");
 }
 
 // Check if the URL loaded in PRE_DiskCache is still in the cache, across a
@@ -373,77 +335,52 @@ class NetworkContextConfigurationFixedPortBrowserTest
 // respected.
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationFixedPortBrowserTest,
                        TestingFixedPort) {
-  content::mojom::URLLoaderPtr loader;
+  content::SimpleURLLoaderTestHelper simple_loader_helper;
+  std::unique_ptr<content::SimpleURLLoader> simple_loader =
+      content::SimpleURLLoader::Create();
+
   content::ResourceRequest request;
-  content::TestURLLoaderClient client;
   // This URL does not use the port the embedded test server is using. The
   // command line switch should make it result in the request being directed to
   // the test server anyways.
   request.url = GURL("http://127.0.0.1/echo");
-  loader_factory()->CreateLoaderAndStart(
-      mojo::MakeRequest(&loader), 0, 0, content::mojom::kURLLoadOptionNone,
-      request, client.CreateInterfacePtr(),
-      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
-  client.RunUntilResponseReceived();
-  ASSERT_TRUE(client.response_head().headers);
-  EXPECT_EQ(200, client.response_head().headers->response_code());
+  simple_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      request, loader_factory(), TRAFFIC_ANNOTATION_FOR_TESTS,
+      simple_loader_helper.GetCallback());
+  simple_loader_helper.WaitForCallback();
 
-  client.RunUntilResponseBodyArrived();
-  std::string response_body;
-  EXPECT_TRUE(mojo::common::BlockingCopyToString(client.response_body_release(),
-                                                 &response_body));
-  EXPECT_EQ("Echo", response_body);
-
-  client.RunUntilComplete();
-  EXPECT_EQ(net::OK, client.completion_status().error_code);
+  EXPECT_EQ(net::OK, simple_loader->NetError());
+  ASSERT_TRUE(simple_loader_helper.response_body());
+  EXPECT_EQ(*simple_loader_helper.response_body(), "Echo");
 }
 
-INSTANTIATE_TEST_CASE_P(
-    SystemNetworkContext,
-    NetworkContextConfigurationBrowserTest,
-    ::testing::Values(TestCase({NetworkServiceState::kDisabled,
-                                NetworkContextType::kSystem}),
-                      TestCase({NetworkServiceState::kEnabled,
-                                NetworkContextType::kSystem})));
+// Instiates tests with a prefix indicating which NetworkContext is being
+// tested, and a suffix of "/0" if the network service is disabled and "/1" if
+// it's enabled.
+#define INSTANTIATE_TEST_CASES_FOR_TEST_FIXTURE(TestFixture)               \
+  INSTANTIATE_TEST_CASE_P(                                                 \
+      SystemNetworkContext, TestFixture,                                   \
+      ::testing::Values(TestCase({NetworkServiceState::kDisabled,          \
+                                  NetworkContextType::kSystem}),           \
+                        TestCase({NetworkServiceState::kEnabled,           \
+                                  NetworkContextType::kSystem})));         \
+                                                                           \
+  INSTANTIATE_TEST_CASE_P(                                                 \
+      ProfileMainNetworkContext, TestFixture,                              \
+      ::testing::Values(TestCase({NetworkServiceState::kDisabled,          \
+                                  NetworkContextType::kProfile}),          \
+                        TestCase({NetworkServiceState::kEnabled,           \
+                                  NetworkContextType::kProfile})));        \
+                                                                           \
+  INSTANTIATE_TEST_CASE_P(                                                 \
+      IncognitoProfileMainNetworkContext, TestFixture,                     \
+      ::testing::Values(TestCase({NetworkServiceState::kDisabled,          \
+                                  NetworkContextType::kIncognitoProfile}), \
+                        TestCase({NetworkServiceState::kEnabled,           \
+                                  NetworkContextType::kIncognitoProfile})))
 
-INSTANTIATE_TEST_CASE_P(
-    ProfileMainNetworkContext,
-    NetworkContextConfigurationBrowserTest,
-    ::testing::Values(TestCase({NetworkServiceState::kDisabled,
-                                NetworkContextType::kProfile}),
-                      TestCase({NetworkServiceState::kEnabled,
-                                NetworkContextType::kProfile})));
-
-INSTANTIATE_TEST_CASE_P(
-    IncognitoProfileMainNetworkContext,
-    NetworkContextConfigurationBrowserTest,
-    ::testing::Values(TestCase({NetworkServiceState::kDisabled,
-                                NetworkContextType::kIncognitoProfile}),
-                      TestCase({NetworkServiceState::kEnabled,
-                                NetworkContextType::kIncognitoProfile})));
-
-INSTANTIATE_TEST_CASE_P(
-    SystemNetworkContext,
-    NetworkContextConfigurationFixedPortBrowserTest,
-    ::testing::Values(TestCase({NetworkServiceState::kDisabled,
-                                NetworkContextType::kSystem}),
-                      TestCase({NetworkServiceState::kEnabled,
-                                NetworkContextType::kSystem})));
-
-INSTANTIATE_TEST_CASE_P(
-    ProfileMainNetworkContext,
-    NetworkContextConfigurationFixedPortBrowserTest,
-    ::testing::Values(TestCase({NetworkServiceState::kDisabled,
-                                NetworkContextType::kProfile}),
-                      TestCase({NetworkServiceState::kEnabled,
-                                NetworkContextType::kProfile})));
-
-INSTANTIATE_TEST_CASE_P(
-    IncognitoProfileMainNetworkContext,
-    NetworkContextConfigurationFixedPortBrowserTest,
-    ::testing::Values(TestCase({NetworkServiceState::kDisabled,
-                                NetworkContextType::kIncognitoProfile}),
-                      TestCase({NetworkServiceState::kEnabled,
-                                NetworkContextType::kIncognitoProfile})));
+INSTANTIATE_TEST_CASES_FOR_TEST_FIXTURE(NetworkContextConfigurationBrowserTest);
+INSTANTIATE_TEST_CASES_FOR_TEST_FIXTURE(
+    NetworkContextConfigurationFixedPortBrowserTest);
 
 }  // namespace

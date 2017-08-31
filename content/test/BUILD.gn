@@ -104,6 +104,8 @@ static_library("test_support") {
     "../public/test/render_view_test.h",
     "../public/test/service_worker_test_helpers.cc",
     "../public/test/service_worker_test_helpers.h",
+    "../public/test/simple_url_loader_test_helper.cc",
+    "../public/test/simple_url_loader_test_helper.h",
     "../public/test/test_browser_context.cc",
     "../public/test/test_browser_context.h",
     "../public/test/test_browser_thread.cc",
