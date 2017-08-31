@@ -98,6 +98,9 @@
 // Show the security help page.
 - (void)showSecurityHelpPage;
 
+// Shows the online help page in a tab.
+- (void)showHelpPage;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_COMMANDS_BROWSER_COMMANDS_H_

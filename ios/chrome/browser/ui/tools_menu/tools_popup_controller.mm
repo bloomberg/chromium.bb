@@ -175,7 +175,7 @@ NS_INLINE UIEdgeInsets TabHistoryPopupMenuInsets() {
     case TOOLS_SHOW_FIND_IN_PAGE:
       base::RecordAction(UserMetricsAction("MobileMenuFindInPage"));
       break;
-    case IDC_HELP_PAGE_VIA_MENU:
+    case TOOLS_SHOW_HELP_PAGE:
       base::RecordAction(UserMetricsAction("MobileMenuHelp"));
       break;
     case TOOLS_NEW_INCOGNITO_TAB_ITEM:

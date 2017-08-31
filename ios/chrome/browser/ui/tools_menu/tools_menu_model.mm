@@ -87,7 +87,8 @@ const MenuItemInfo itemInfoList[kToolsMenuNumberOfItems] = {
     @selector(showSettings),              ToolbarTypeAll,
     0,                                    nil },
   { IDS_IOS_TOOLS_MENU_HELP_MOBILE,       kToolsMenuHelpId,
-    IDC_HELP_PAGE_VIA_MENU, nullptr,      ToolbarTypeWebAll,
+    TOOLS_SHOW_HELP_PAGE,
+    @selector(showHelpPage),              ToolbarTypeWebAll,
     0,                                    nil },
     // clang-format on
 };
