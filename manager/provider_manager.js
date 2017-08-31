@@ -297,7 +297,7 @@ mr.ProviderManager = class extends mr.Module {
         timerId = null;
         // Refer to the CancellablePromise class for more details on the
         // cancel()
-        // method, and [redacted] for a diagram
+        // method, and <http://go/cancellablepromise-interaction> for a diagram
         // of
         // how promise cancellation works with this class.
         routePromise.cancel(new mr.RouteRequestError(

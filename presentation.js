@@ -59,6 +59,10 @@ PresentationConnection.prototype.onterminate;
  */
 PresentationConnection.prototype.send = function(message) {};
 
+/**
+ * @see https://w3c.github.io/presentation-api/#dom-presentationconnection-terminate
+ */
+PresentationConnection.prototype.terminate = function() {};
 
 /**
  * @see http://w3c.github.io/presentation-api/#dom-presentationconnection-close

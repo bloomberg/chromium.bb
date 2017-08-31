@@ -23,7 +23,7 @@ goog.module.declareLegacyNamespace();
  *
  * For an explanation of how this class is used in practice (in the interaction
  * between ProviderManager and RouteProvider classes), see the diagram at
- * [redacted].
+ * <http://go/cancellablepromise-interaction>.
  *
  * @template T
  */
