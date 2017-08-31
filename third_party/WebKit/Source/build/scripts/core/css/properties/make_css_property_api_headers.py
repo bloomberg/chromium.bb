@@ -6,16 +6,61 @@
 import os
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../..'))
+import types
 
 import json5_generator
 import template_expander
 
 from collections import namedtuple, defaultdict
 from make_css_property_api_base import CSSPropertyAPIWriter
+from name_utilities import upper_camel_case
 
 
 class ApiMethod(namedtuple('ApiMethod', 'name,return_type,parameters')):
     pass
+
+
+def apply_computed_style_builder_function_parameters(property_):
+    """Generate function parameters for generated implementations of Apply*
+    """
+    def set_if_none(property_, key, value):
+        if property_[key] is None:
+            property_[key] = value
+
+    # Functions should only be declared on the API classes if they are
+    # implemented and not shared (denoted by api_class = true. Shared classes
+    # are denoted by api_class = "some string").
+    property_['should_declare_application_functions'] = \
+        property_['api_class'] \
+        and isinstance(property_['api_class'], types.BooleanType) \
+        and property_['is_property'] \
+        and not property_['use_handlers_for'] \
+        and not property_['longhands'] \
+        and not property_['direction_aware'] \
+        and not property_['builder_skip']
+    if not property_['should_declare_application_functions']:
+        return
+
+    if property_['custom_all']:
+        property_['custom_initial'] = True
+        property_['custom_inherit'] = True
+        property_['custom_value'] = True
+
+    name = property_['name_for_methods']
+    if not name:
+        name = upper_camel_case(property_['name']).replace('Webkit', '')
+    simple_type_name = str(property_['type_name']).split('::')[-1]
+
+    set_if_none(property_, 'name_for_methods', name)
+    set_if_none(property_, 'type_name', 'E' + name)
+    set_if_none(
+        property_, 'getter', name if simple_type_name != name else 'Get' + name)
+    set_if_none(property_, 'setter', 'Set' + name)
+    set_if_none(property_, 'inherited', False)
+    set_if_none(property_, 'initial', 'Initial' + name)
+
+    if property_['inherited']:
+        property_['is_inherited_setter'] = 'Set' + name + 'IsInherited'
 
 
 class CSSPropertyAPIHeadersWriter(CSSPropertyAPIWriter):
@@ -46,6 +91,7 @@ class CSSPropertyAPIHeadersWriter(CSSPropertyAPIWriter):
             property_['api_methods'] = methods
             classname = self.get_classname(property_)
             assert classname is not None
+            apply_computed_style_builder_function_parameters(property_)
             self._outputs[classname + '.h'] = (
                 self.generate_property_api_h_builder(classname, property_))
 
@@ -56,13 +102,7 @@ class CSSPropertyAPIHeadersWriter(CSSPropertyAPIWriter):
             return {
                 'input_files': self._input_files,
                 'api_classname': api_classname,
-                'methods_for_class': property_['api_methods'],
-                'is_interpolable': property_['interpolable'],
-                'is_inherited': property_['inherited'],
-                'separator': property_['separator'],
-                'is_repeated': True if property_['separator'] else False,
-                'is_descriptor': property_['is_descriptor'],
-                'supports_percentage': 'Percent' in property_['typedom_types'],
+                'property': property_
             }
         return generate_property_api_h
 
