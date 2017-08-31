@@ -6,7 +6,7 @@
 // https://w3c.github.io/accelerometer/#accelerometer-interface
 
 [
-    RuntimeEnabled=Sensor,
+    OriginTrialEnabled=Sensor,
     Constructor(optional SensorOptions sensorOptions),
     ConstructorCallWith=ExecutionContext,
     RaisesException=Constructor,
