@@ -89,14 +89,15 @@ static constexpr float kIndicatorGap = 0.05;
 static constexpr float kIndicatorVerticalOffset = 0.1;
 static constexpr float kIndicatorDistanceOffset = 0.1;
 
+static constexpr float kWebVrUrlToastWidthDMM = 0.472;
+static constexpr float kWebVrUrlToastHeightDMM = 0.064;
 static constexpr float kWebVrUrlToastDistance = 1.0;
 static constexpr float kWebVrUrlToastWidth =
-    kUrlBarWidthDMM * kWebVrUrlToastDistance;
+    kWebVrUrlToastWidthDMM * kWebVrUrlToastDistance;
 static constexpr float kWebVrUrlToastHeight =
-    kUrlBarHeightDMM * kWebVrUrlToastDistance;
-static constexpr float kWebVrUrlToastVerticalOffset =
-    -0.2 * kWebVrUrlToastDistance;
+    kWebVrUrlToastHeightDMM * kWebVrUrlToastDistance;
 static constexpr int kWebVrUrlToastTimeoutSeconds = 6;
+static constexpr float kWebVrUrlToastRotationRad = 14 * M_PI / 180.0;
 
 static constexpr float kWebVrToastDistance = 1.0;
 static constexpr float kFullscreenToastDistance = kFullscreenDistance;
@@ -558,13 +559,14 @@ void UiSceneManager::CreateWebVrUrlToast() {
       512, base::TimeDelta::FromSeconds(kWebVrUrlToastTimeoutSeconds),
       base::Bind(&UiSceneManager::OnUnsupportedMode, base::Unretained(this)));
   url_bar->set_name(kWebVrUrlToast);
+  url_bar->set_opacity_when_visible(0.8);
   url_bar->set_draw_phase(kPhaseForeground);
   url_bar->set_viewport_aware(true);
   url_bar->SetVisible(false);
   url_bar->set_hit_testable(false);
-  url_bar->SetTranslate(0, kWebVrUrlToastVerticalOffset,
-                        -kWebVrUrlToastDistance);
-  url_bar->SetRotate(1, 0, 0, kUrlBarRotationRad);
+  url_bar->SetTranslate(0, kWebVrToastDistance * sin(kWebVrUrlToastRotationRad),
+                        -kWebVrToastDistance * cos(kWebVrUrlToastRotationRad));
+  url_bar->SetRotate(1, 0, 0, kWebVrUrlToastRotationRad);
   url_bar->SetSize(kWebVrUrlToastWidth, kWebVrUrlToastHeight);
   webvr_url_toast_ = url_bar.get();
   scene_->AddUiElement(kWebVrViewportAwareRoot, std::move(url_bar));
