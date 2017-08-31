@@ -1347,6 +1347,7 @@ void WebMediaPlayerImpl::OnError(PipelineStatus status) {
     renderer_factory_selector_->SetUseMediaPlayer(true);
 
     pipeline_controller_.Stop();
+    SetMemoryReportingState(false);
 
     main_task_runner_->PostTask(
         FROM_HERE, base::Bind(&WebMediaPlayerImpl::StartPipeline, AsWeakPtr()));
@@ -2409,7 +2410,7 @@ WebMediaPlayerImpl::UpdatePlayState_ComputePlayState(bool is_remote,
   // It's not critical if some cases where memory usage can change are missed,
   // since media memory changes are usually gradual.
   result.is_memory_reporting_enabled =
-      can_play && !result.is_suspended && (!paused_ || seeking_);
+      !has_error && can_play && !result.is_suspended && (!paused_ || seeking_);
 
   return result;
 }
@@ -2421,8 +2422,12 @@ void WebMediaPlayerImpl::ReportMemoryUsage() {
   // thread.  Before that, however, ~WebMediaPlayerImpl() posts a task to the
   // media thread and waits for it to finish.  Hence, the GetMemoryUsage() task
   // posted here must finish earlier.
-
-  if (demuxer_) {
+  //
+  // The exception to the above is when OnError() has been called. If we're in
+  // the error state we've already shut down the pipeline and can't rely on it
+  // to cycle the media thread before we destroy |demuxer_|. In this case skip
+  // collection of the demuxer memory stats.
+  if (demuxer_ && !IsNetworkStateError(network_state_)) {
     base::PostTaskAndReplyWithResult(
         media_task_runner_.get(), FROM_HERE,
         base::Bind(&Demuxer::GetMemoryUsage, base::Unretained(demuxer_.get())),

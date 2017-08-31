@@ -318,6 +318,10 @@ class WebMediaPlayerImplTest : public testing::Test {
           TestAudioConfig::Normal();
   }
 
+  void SetError(PipelineStatus status = PIPELINE_ERROR_DECODE) {
+    wmpi_->OnError(status);
+  }
+
   void OnMetadata(PipelineMetadata metadata) { wmpi_->OnMetadata(metadata); }
 
   void OnVideoNaturalSizeChange(const gfx::Size& size) {
@@ -522,6 +526,24 @@ TEST_F(WebMediaPlayerImplTest, ComputePlayState_HaveFutureData) {
   SetReadyState(blink::WebMediaPlayer::kReadyStateHaveFutureData);
   WebMediaPlayerImpl::PlayState state = ComputePlayState();
   EXPECT_EQ(WebMediaPlayerImpl::DelegateState::PAUSED, state.delegate_state);
+  EXPECT_TRUE(state.is_idle);
+  EXPECT_FALSE(state.is_suspended);
+  EXPECT_FALSE(state.is_memory_reporting_enabled);
+}
+
+// Ensure memory reporting is not running after an error.
+TEST_F(WebMediaPlayerImplTest, ComputePlayState_PlayingError) {
+  InitializeWebMediaPlayerImpl();
+  SetMetadata(true, true);
+  SetReadyState(blink::WebMediaPlayer::kReadyStateHaveFutureData);
+  SetPaused(false);
+  WebMediaPlayerImpl::PlayState state = ComputePlayState();
+  EXPECT_EQ(WebMediaPlayerImpl::DelegateState::PLAYING, state.delegate_state);
+  EXPECT_FALSE(state.is_idle);
+  EXPECT_FALSE(state.is_suspended);
+  EXPECT_TRUE(state.is_memory_reporting_enabled);
+  SetError();
+  state = ComputePlayState();
   EXPECT_TRUE(state.is_idle);
   EXPECT_FALSE(state.is_suspended);
   EXPECT_FALSE(state.is_memory_reporting_enabled);
