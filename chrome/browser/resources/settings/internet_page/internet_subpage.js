@@ -84,7 +84,7 @@ Polymer({
     },
   },
 
-  observers: ['updateScanning_(networkingPrivate, deviceState)'],
+  observers: ['deviceStateChanged_(networkingPrivate, deviceState)'],
 
   /** @private {number|null} */
   scanIntervalId_: null,
@@ -98,8 +98,6 @@ Polymer({
 
   /** override */
   attached: function() {
-    this.scanIntervalId_ = null;
-
     this.networkListChangedListener_ = this.networkListChangedListener_ ||
         this.onNetworkListChangedEvent_.bind(this);
     this.networkingPrivate.onNetworkListChanged.addListener(
@@ -132,21 +130,50 @@ Polymer({
   },
 
   /** @private */
+  deviceStateChanged_: function() {
+    this.showSpinner = !!this.deviceState.Scanning;
+
+    // Scans should only be triggered by the "networks" subpage.
+    if (settings.getCurrentRoute() != settings.routes.INTERNET_NETWORKS) {
+      this.stopScanning_();
+      return;
+    }
+
+    this.updateScanning_();
+  },
+
+  /** @private */
   updateScanning_: function() {
     if (!this.deviceState)
       return;
 
-    if (this.deviceState.Type == CrOnc.Type.WI_FI ||
-        this.deviceState.Type == CrOnc.Type.TETHER ||
-        (this.deviceState.Type == CrOnc.Type.CELLULAR &&
-         this.tetherDeviceState)) {
-      this.showSpinner = !!this.deviceState.Scanning;
+    if (this.shouldStartScan_()) {
       this.startScanning_();
       return;
     }
 
     // deviceState probably changed, re-request networks.
     this.getNetworkStateList_();
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  shouldStartScan_: function() {
+    // Scans should be kicked off from the Wi-Fi networks subpage.
+    if (this.deviceState.Type == CrOnc.Type.WI_FI)
+      return true;
+
+    // Scans should be kicked off from the Mobile data subpage, as long as it
+    // includes Tether networks.
+    if (this.deviceState.Type == CrOnc.Type.TETHER ||
+        (this.deviceState.Type == CrOnc.Type.CELLULAR &&
+         this.tetherDeviceState)) {
+      return true;
+    }
+
+    return false;
   },
 
   /** @private */
