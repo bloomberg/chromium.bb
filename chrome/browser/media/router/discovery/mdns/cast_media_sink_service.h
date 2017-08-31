@@ -52,6 +52,10 @@ class CastMediaSinkService
 
   void SetDnsSdRegistryForTest(DnsSdRegistry* registry);
 
+  // Forces a mDNS discovery if the service has been started; No-op otherwise.
+  // It is invoked by OnUserGesture().
+  void ForceDiscovery();
+
  protected:
   ~CastMediaSinkService() override;
 
