@@ -5,6 +5,7 @@
       "provides": {
         "renderer": [
           "content::mojom::LayoutTestBluetoothFakeAdapterSetter",
+          "content::mojom::MojoLayoutTestHelper",
           "bluetooth::mojom::FakeBluetooth"
         ]
       }

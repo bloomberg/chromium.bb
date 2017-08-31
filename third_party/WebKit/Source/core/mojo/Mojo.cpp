@@ -19,6 +19,8 @@
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/wtf/text/StringUTF8Adaptor.h"
+#include "public/platform/InterfaceProvider.h"
+#include "public/platform/Platform.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 
 namespace blink {
@@ -79,11 +81,18 @@ void Mojo::createSharedBuffer(unsigned num_bytes,
 // static
 void Mojo::bindInterface(ScriptState* script_state,
                          const String& interface_name,
-                         MojoHandle* request_handle) {
+                         MojoHandle* request_handle,
+                         const String& scope) {
   std::string name =
       StringUTF8Adaptor(interface_name).AsStringPiece().as_string();
   auto handle =
       mojo::ScopedMessagePipeHandle::From(request_handle->TakeHandle());
+
+  if (scope == "process") {
+    Platform::Current()->GetInterfaceProvider()->GetInterface(
+        name.c_str(), std::move(handle));
+    return;
+  }
 
   ExecutionContext* context = ExecutionContext::From(script_state);
   if (context->IsWorkerGlobalScope()) {

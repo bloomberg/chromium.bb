@@ -99,6 +99,10 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   }
 
  protected:
+  virtual void ExposeInterfacesToFrame(
+      service_manager::BinderRegistryWithArgs<content::RenderFrameHost*>*
+          registry);
+
   void set_resource_dispatcher_host_delegate(
       std::unique_ptr<ShellResourceDispatcherHostDelegate> delegate) {
     resource_dispatcher_host_delegate_ = std::move(delegate);
@@ -114,7 +118,8 @@ class ShellContentBrowserClient : public ContentBrowserClient {
 
   base::Closure select_client_certificate_callback_;
 
-  service_manager::BinderRegistryWithArgs<content::RenderFrameHost*>
+  std::unique_ptr<
+      service_manager::BinderRegistryWithArgs<content::RenderFrameHost*>>
       frame_interfaces_;
 
   ShellBrowserMainParts* shell_browser_main_parts_;

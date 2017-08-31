@@ -92,6 +92,8 @@ static_library("content_shell_lib") {
     "browser/layout_test/layout_test_resource_dispatcher_host_delegate.h",
     "browser/layout_test/layout_test_url_request_context_getter.cc",
     "browser/layout_test/layout_test_url_request_context_getter.h",
+    "browser/layout_test/mojo_layout_test_helper.cc",
+    "browser/layout_test/mojo_layout_test_helper.h",
     "browser/layout_test/secondary_test_window_observer.cc",
     "browser/layout_test/secondary_test_window_observer.h",
     "browser/layout_test/test_info_extractor.cc",
