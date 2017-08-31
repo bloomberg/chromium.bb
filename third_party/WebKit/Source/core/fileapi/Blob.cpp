@@ -175,12 +175,6 @@ Blob* Blob::slice(long long start,
                   long long end,
                   const String& content_type,
                   ExceptionState& exception_state) const {
-  if (isClosed()) {
-    exception_state.ThrowDOMException(kInvalidStateError,
-                                      "Blob has been closed.");
-    return nullptr;
-  }
-
   long long size = this->size();
   ClampSliceOffsets(size, start, end);
 
@@ -189,28 +183,6 @@ Blob* Blob::slice(long long start,
   blob_data->SetContentType(NormalizeType(content_type));
   blob_data->AppendBlob(blob_data_handle_, start, length);
   return Blob::Create(BlobDataHandle::Create(std::move(blob_data), length));
-}
-
-void Blob::close(ScriptState* script_state, ExceptionState& exception_state) {
-  if (isClosed()) {
-    exception_state.ThrowDOMException(kInvalidStateError,
-                                      "Blob has been closed.");
-    return;
-  }
-
-  // Dereferencing a Blob that has been closed should result in
-  // a network error. Revoke URLs registered against it through
-  // its UUID.
-  DOMURL::RevokeObjectUUID(ExecutionContext::From(script_state), Uuid());
-
-  // A Blob enters a 'readability state' of closed, where it will report its
-  // size as zero. Blob and FileReader operations now throws on
-  // being passed a Blob in that state. Downstream uses of closed Blobs
-  // (e.g., XHR.send()) consider them as empty.
-  std::unique_ptr<BlobData> blob_data = BlobData::Create();
-  blob_data->SetContentType(type());
-  blob_data_handle_ = BlobDataHandle::Create(std::move(blob_data), 0);
-  is_closed_ = true;
 }
 
 void Blob::AppendTo(BlobData& blob_data) const {

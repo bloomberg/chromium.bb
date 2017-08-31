@@ -274,13 +274,6 @@ void FileReader::ReadInternal(Blob* blob,
     return;
   }
 
-  if (blob->isClosed()) {
-    exception_state.ThrowDOMException(
-        kInvalidStateError,
-        String(blob->IsFile() ? "File" : "Blob") + " has been closed.");
-    return;
-  }
-
   ExecutionContext* context = GetExecutionContext();
   if (!context) {
     exception_state.ThrowDOMException(

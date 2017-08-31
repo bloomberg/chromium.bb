@@ -29,10 +29,8 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method detect
 [Worker] interface Blob
 [Worker]     attribute @@toStringTag
-[Worker]     getter isClosed
 [Worker]     getter size
 [Worker]     getter type
-[Worker]     method close
 [Worker]     method constructor
 [Worker]     method slice
 [Worker] interface BroadcastChannel : EventTarget

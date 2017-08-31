@@ -427,10 +427,6 @@
       status: "experimental",
     },
     {
-      name: "FileAPIBlobClose",
-      status: "experimental",
-    },
-    {
       name: "FileSystem",
       status: "stable",
     },
