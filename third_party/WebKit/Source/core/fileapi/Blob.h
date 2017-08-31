@@ -48,7 +48,6 @@ namespace blink {
 class BlobPropertyBag;
 class ExceptionState;
 class ExecutionContext;
-class ScriptState;
 
 class CORE_EXPORT Blob : public GarbageCollectedFinalized<Blob>,
                          public ScriptWrappable,
@@ -99,8 +98,6 @@ class CORE_EXPORT Blob : public GarbageCollectedFinalized<Blob>,
     return slice(start, end, String(), exception_state);
   }
 
-  virtual void close(ScriptState*, ExceptionState&);
-
   String type() const { return blob_data_handle_->GetType(); }
   String Uuid() const { return blob_data_handle_->Uuid(); }
   RefPtr<BlobDataHandle> GetBlobDataHandle() const { return blob_data_handle_; }
@@ -108,7 +105,6 @@ class CORE_EXPORT Blob : public GarbageCollectedFinalized<Blob>,
   virtual bool IsFile() const { return false; }
   // Only true for File instances that are backed by platform files.
   virtual bool HasBackingFile() const { return false; }
-  bool isClosed() const { return is_closed_; }
 
   // Used by the JavaScript Blob and File constructors.
   virtual void AppendTo(BlobData&) const;

@@ -83,17 +83,13 @@ tryPostMessage('mutatedImageData.data', false, imageData.data)
 for (var i = 0; i < imageData.data.length * 4; i++)
     mutatedImageData.data[i] = 0;
 
-// Test close() special case for Blob (and File.)
-
 var blob = new Blob(["Hello"]);
 var blobSize = blob.size;
 tryPostMessage('blob', false, "evalThunk", function(v) { doPassFail(v.size === blobSize, "Cloned Blob size equal to the original size."); });
-tryPostMessage('blob.close(); blob', true, null, DOMException.DATA_CLONE_ERR);
 
 var constructedFile = new File(["Hello"], "test");
 var fileSize = constructedFile.size;
 tryPostMessage('constructedFile', false, "evalThunk", function(v) { doPassFail(v.size === fileSize, "Cloned File size equal to the original size."); });
-tryPostMessage('constructedFile.close(); constructedFile', true, null, DOMException.DATA_CLONE_ERR);
 
 function thunk(s) {
     return "(function() {" + s + "})()";

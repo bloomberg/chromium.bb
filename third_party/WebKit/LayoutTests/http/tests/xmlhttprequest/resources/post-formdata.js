@@ -9,14 +9,6 @@ var xhrFormDataTestCases = [{
     data: { bareBlob: new Blob(['blob-value']) },
     result: 'bareBlob=blob:application/octet-stream:blob-value'
 }, {
-    data: { bareBlob: new Blob(['blob-value']) },
-    beforeConstruct: function (t) { t.data.bareBlob.close(); },
-    result: 'bareBlob=blob:application/octet-stream:'
-}, {
-    data: { bareBlob: new Blob(['blob-value']) },
-    beforeSend: function (t) { t.data.bareBlob.close(); },
-    result: 'bareBlob=blob:application/octet-stream:'
-}, {
     data: { mimeBlob: new Blob(['blob-value'], { type: 'text/html' }) },
     result: 'mimeBlob=blob:text/html:blob-value'
 }, {
@@ -30,14 +22,6 @@ var xhrFormDataTestCases = [{
 }, {
     data: { bareFile: new File(['file-value'], 'file-name.txt') },
     result: 'bareFile=file-name.txt:application/octet-stream:file-value'
-}, {
-    data: { bareFile: new File(['file-value'], 'file-name.txt') },
-    beforeConstruct: function (t) { t.data.bareFile.close(); },
-    result: 'bareFile=file-name.txt:application/octet-stream:'
-}, {
-    data: { bareFile: new File(['file-value'], 'file-name.txt') },
-    beforeSend: function (t) { t.data.bareFile.close(); },
-    result: 'bareFile=file-name.txt:application/octet-stream:'
 }, {
     data: {
         mimeFile: new File(['file-value'], 'file-name.html', { type: 'text/html' })

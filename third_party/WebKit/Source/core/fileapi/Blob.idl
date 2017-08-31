@@ -39,9 +39,7 @@ typedef (ArrayBuffer or ArrayBufferView or Blob or USVString) BlobPart;
 ] interface Blob {
     readonly attribute unsigned long long size;
     readonly attribute DOMString type;
-    [RuntimeEnabled=FileAPIBlobClose] readonly attribute boolean isClosed;
 
     // TODO(jsbell): start and end arguments should be [Clamp]
     [RaisesException] Blob slice(optional long long start, optional long long end, optional DOMString contentType);
-    [RaisesException, CallWith=ScriptState, RuntimeEnabled=FileAPIBlobClose] void close();
 };

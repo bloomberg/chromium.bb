@@ -306,12 +306,6 @@ Blob* File::slice(long long start,
                   long long end,
                   const String& content_type,
                   ExceptionState& exception_state) const {
-  if (isClosed()) {
-    exception_state.ThrowDOMException(kInvalidStateError,
-                                      "File has been closed.");
-    return nullptr;
-  }
-
   if (!has_backing_file_)
     return Blob::slice(start, end, content_type, exception_state);
 
@@ -357,24 +351,6 @@ void File::CaptureSnapshot(long long& snapshot_size,
 
   snapshot_size = metadata.length;
   snapshot_modification_time_ms = metadata.modification_time;
-}
-
-void File::close(ScriptState* script_state, ExceptionState& exception_state) {
-  if (isClosed()) {
-    exception_state.ThrowDOMException(kInvalidStateError,
-                                      "Blob has been closed.");
-    return;
-  }
-
-  // Reset the File to its closed representation, an empty
-  // Blob. The name isn't cleared, as it should still be
-  // available.
-  has_backing_file_ = false;
-  path_ = String();
-  file_system_url_ = KURL();
-  InvalidateSnapshotMetadata();
-  relative_path_ = String();
-  Blob::close(script_state, exception_state);
 }
 
 void File::AppendTo(BlobData& blob_data) const {

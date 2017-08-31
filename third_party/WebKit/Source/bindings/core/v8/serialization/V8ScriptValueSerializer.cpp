@@ -178,12 +178,6 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
   const WrapperTypeInfo* wrapper_type_info = wrappable->GetWrapperTypeInfo();
   if (wrapper_type_info == &V8Blob::wrapperTypeInfo) {
     Blob* blob = wrappable->ToImpl<Blob>();
-    if (blob->isClosed()) {
-      exception_state.ThrowDOMException(
-          kDataCloneError,
-          "A Blob object has been closed, and could therefore not be cloned.");
-      return false;
-    }
     serialized_script_value_->BlobDataHandles().Set(blob->Uuid(),
                                                     blob->GetBlobDataHandle());
     if (blob_info_array_) {
@@ -437,12 +431,6 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
 
 bool V8ScriptValueSerializer::WriteFile(File* file,
                                         ExceptionState& exception_state) {
-  if (file->isClosed()) {
-    exception_state.ThrowDOMException(
-        kDataCloneError,
-        "A File object has been closed, and could therefore not be cloned.");
-    return false;
-  }
   serialized_script_value_->BlobDataHandles().Set(file->Uuid(),
                                                   file->GetBlobDataHandle());
   if (blob_info_array_) {

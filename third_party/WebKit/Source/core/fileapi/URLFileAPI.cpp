@@ -22,15 +22,6 @@ String URLFileAPI::createObjectURL(ScriptState* script_state,
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
   DCHECK(execution_context);
 
-  if (blob->isClosed()) {
-    // TODO(jsbell): The spec doesn't throw, but rather returns a blob: URL
-    // without adding it to the store.
-    exception_state.ThrowDOMException(
-        kInvalidStateError,
-        String(blob->IsFile() ? "File" : "Blob") + " has been closed.");
-    return String();
-  }
-
   UseCounter::Count(execution_context, WebFeature::kCreateObjectURLBlob);
   return DOMURL::CreatePublicURL(execution_context, blob, blob->Uuid());
 }
