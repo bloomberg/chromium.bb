@@ -1783,7 +1783,7 @@ GL_FUNCTIONS = [
 { 'return_type': 'void',
   'names': ['glViewport'],
   'arguments': 'GLint x, GLint y, GLsizei width, GLsizei height', },
-{ 'return_type': 'GLenum',
+{ 'return_type': 'void',
   'versions': [{ 'name': 'glWaitSync',
                  'extensions': ['GL_ARB_sync'] }],
   'arguments':

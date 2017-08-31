@@ -70,9 +70,6 @@ class GL_EXPORT GLStubApi: public GLStubApiBase {
   GLboolean glTestFenceAPPLEFn(GLuint fence) override;
   GLboolean glTestFenceNVFn(GLuint fence) override;
   GLboolean glUnmapBufferFn(GLenum target) override;
-  GLenum glWaitSyncFn(GLsync sync,
-                      GLbitfield flags,
-                      GLuint64 timeout) override;
 
  private:
   std::string version_;

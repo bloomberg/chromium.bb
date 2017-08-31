@@ -1292,4 +1292,4 @@ void glVertexAttribPointerFn(GLuint indx,
                              GLsizei stride,
                              const void* ptr) override {}
 void glViewportFn(GLint x, GLint y, GLsizei width, GLsizei height) override {}
-GLenum glWaitSyncFn(GLsync sync, GLbitfield flags, GLuint64 timeout) override;
+void glWaitSyncFn(GLsync sync, GLbitfield flags, GLuint64 timeout) override {}

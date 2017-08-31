@@ -336,10 +336,4 @@ GLboolean GLStubApi::glUnmapBufferFn(GLenum target) {
   return GL_TRUE;
 }
 
-GLenum GLStubApi::glWaitSyncFn(GLsync sync,
-                               GLbitfield flags,
-                               GLuint64 timeout) {
-  return GL_TRUE;
-}
-
 }  // namespace gl
