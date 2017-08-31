@@ -8,7 +8,7 @@
 namespace arc {
 
 // The minimum battery level to start the migration.
-constexpr double kMigrationMinimumBatteryPercent = 30;
+constexpr double kMigrationMinimumBatteryPercent = 10;
 
 // The minimum size of available space to start the migration. (50MB)
 constexpr int64_t kMigrationMinimumAvailableStorage = 50LL * 1024 * 1024;
