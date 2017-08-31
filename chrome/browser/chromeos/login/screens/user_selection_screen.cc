@@ -230,6 +230,15 @@ class UserSelectionScreen::DircryptoMigrationChecker {
   void Check(const AccountId& account_id) {
     focused_user_ = account_id;
 
+    // If the user may be enterprise-managed, don't display the banner, because
+    // migration may be blocked by user policy (and user policy is not available
+    // at this time yet).
+    if (!policy::BrowserPolicyConnector::IsNonEnterpriseUser(
+            account_id.GetUserEmail())) {
+      UpdateUI(account_id, false);
+      return;
+    }
+
     auto it = needs_dircrypto_migration_cache_.find(account_id);
     if (it != needs_dircrypto_migration_cache_.end()) {
       UpdateUI(account_id, it->second);
