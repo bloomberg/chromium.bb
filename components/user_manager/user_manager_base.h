@@ -111,6 +111,7 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
       const User& user,
       const gfx::ImageSkia& profile_image) override;
   void ChangeUserChildStatus(User* user, bool is_child) override;
+  void ResetProfileEverInitialized(const AccountId& account_id) override;
   void Initialize() override;
 
   // This method updates "User was added to the device in this session nad is

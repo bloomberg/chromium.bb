@@ -933,15 +933,19 @@ class CryptohomeClientImpl : public CryptohomeClient {
   }
 
   void MigrateToDircrypto(const cryptohome::Identification& cryptohome_id,
+                          const cryptohome::MigrateToDircryptoRequest& request,
                           VoidDBusMethodCallback callback) override {
+    // TODO(bug758837,pmarko): Switch back to MigrateToDircrypto when its
+    // signature matches MigrateToDircryptoEx.
     dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
-                                 cryptohome::kCryptohomeMigrateToDircrypto);
+                                 cryptohome::kCryptohomeMigrateToDircryptoEx);
 
     cryptohome::AccountIdentifier id_proto;
     FillIdentificationProtobuf(cryptohome_id, &id_proto);
 
     dbus::MessageWriter writer(&method_call);
     writer.AppendProtoAsArrayOfBytes(id_proto);
+    writer.AppendProtoAsArrayOfBytes(request);
 
     // The migration progress takes unpredicatable time depending on the
     // user file size and the number. Setting the time limit to infinite.

@@ -17,7 +17,8 @@ var EncryptionMigrationUIState = {
   READY: 1,
   MIGRATING: 2,
   MIGRATION_FAILED: 3,
-  NOT_ENOUGH_SPACE: 4
+  NOT_ENOUGH_SPACE: 4,
+  MIGRATING_MINIMAL: 5
 };
 
 Polymer({
@@ -112,6 +113,15 @@ Polymer({
    */
   isNotEnoughSpace_: function(state) {
     return state == EncryptionMigrationUIState.NOT_ENOUGH_SPACE;
+  },
+
+  /**
+   * Returns true if we're in minimal migration mode.
+   * @param {EncryptionMigrationUIState} state Current UI state
+   * @priave
+   */
+  isMigratingMinimal_: function(state) {
+    return state == EncryptionMigrationUIState.MIGRATING_MINIMAL;
   },
 
   /**

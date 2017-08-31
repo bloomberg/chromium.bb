@@ -16,6 +16,13 @@
     <template is="dom-if" if="[[isInitial_(uiState)]]">
       <oobe-dialog tabindex="0" has-buttons></oobe-dialog>
     </template>
+    <template is="dom-if" if="[[isMigratingMinimal_(uiState)]]">
+      <oobe-dialog tabindex="0" has-buttons>
+        <div class="footer layout vertical">
+          <throbber-notice text="$i18n{gaiaLoading}"></throbber-notice>
+        </div>
+      </oobe-dialog>
+    </template>
     <template is="dom-if" if="[[isReady_(uiState)]]">
       <oobe-dialog tabindex="0" has-buttons>
         <iron-icon class="oobe-icon chrome-logo"></iron-icon>

@@ -329,6 +329,9 @@ class USER_MANAGER_EXPORT UserManager {
   // Changes the child status and notifies observers.
   virtual void ChangeUserChildStatus(User* user, bool is_child) = 0;
 
+  // Resets this profile to be regarded as if it has never been initialized
+  // before. Used on profile wipe.
+  virtual void ResetProfileEverInitialized(const AccountId& account_id) = 0;
 
   // Returns true if supervised users allowed.
   virtual bool AreSupervisedUsersAllowed() const = 0;

@@ -13,8 +13,12 @@ enum class EncryptionMigrationMode {
   ASK_USER,
   // Start migration immediately.
   START_MIGRATION,
+  // Start minimal migration immediately.
+  START_MINIMAL_MIGRATION,
   // Resume incomplete migration.
-  RESUME_MIGRATION
+  RESUME_MIGRATION,
+  // Resume minimal migration.
+  RESUME_MINIMAL_MIGRATION
 };
 
 }  // namespace chromeos
