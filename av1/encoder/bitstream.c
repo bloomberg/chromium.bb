@@ -3341,8 +3341,75 @@ static void write_sgrproj_filter(SgrprojInfo *sgrproj_info,
   memcpy(ref_sgrproj_info, sgrproj_info, sizeof(*sgrproj_info));
 }
 
+static void encode_restoration_for_tile(AV1_COMMON *cm, aom_writer *wb,
+                                        int tile_row, int tile_col,
+                                        const int nrtiles_x[2],
+                                        const int nrtiles_y[2]) {
+  for (int p = 0; p < MAX_MB_PLANE; ++p) {
+    RestorationInfo *rsi = &cm->rst_info[p];
+    if (rsi->frame_restoration_type == RESTORE_NONE) continue;
+
+    const int tile_width =
+        (p > 0) ? ROUND_POWER_OF_TWO(cm->tile_width, cm->subsampling_x)
+                : cm->tile_width;
+    const int tile_height =
+        (p > 0) ? ROUND_POWER_OF_TWO(cm->tile_height, cm->subsampling_y)
+                : cm->tile_height;
+    const int rtile_size = rsi->restoration_tilesize;
+    const int rtiles_per_tile_x = tile_width * MI_SIZE / rtile_size;
+    const int rtiles_per_tile_y = tile_height * MI_SIZE / rtile_size;
+
+    const int rtile_row0 = rtiles_per_tile_y * tile_row;
+    const int rtile_row1 =
+        AOMMIN(rtile_row0 + rtiles_per_tile_y, nrtiles_y[p > 0]);
+
+    const int rtile_col0 = rtiles_per_tile_x * tile_col;
+    const int rtile_col1 =
+        AOMMIN(rtile_col0 + rtiles_per_tile_x, nrtiles_x[p > 0]);
+
+    WienerInfo wiener_info;
+    SgrprojInfo sgrproj_info;
+    set_default_wiener(&wiener_info);
+    set_default_sgrproj(&sgrproj_info);
+
+    const int wiener_win = (p > 0) ? WIENER_WIN_CHROMA : WIENER_WIN;
+
+    for (int rtile_row = rtile_row0; rtile_row < rtile_row1; ++rtile_row) {
+      for (int rtile_col = rtile_col0; rtile_col < rtile_col1; ++rtile_col) {
+        const int rtile_idx = rtile_row * nrtiles_x[p > 0] + rtile_col;
+        if (rsi->frame_restoration_type == RESTORE_SWITCHABLE) {
+          assert(p == 0);
+          av1_write_token(
+              wb, av1_switchable_restore_tree, cm->fc->switchable_restore_prob,
+              &switchable_restore_encodings[rsi->restoration_type[rtile_idx]]);
+          if (rsi->restoration_type[rtile_idx] == RESTORE_WIENER) {
+            write_wiener_filter(wiener_win, &rsi->wiener_info[rtile_idx],
+                                &wiener_info, wb);
+          } else if (rsi->restoration_type[rtile_idx] == RESTORE_SGRPROJ) {
+            write_sgrproj_filter(&rsi->sgrproj_info[rtile_idx], &sgrproj_info,
+                                 wb);
+          }
+        } else if (rsi->frame_restoration_type == RESTORE_WIENER) {
+          aom_write(wb, rsi->restoration_type[rtile_idx] != RESTORE_NONE,
+                    RESTORE_NONE_WIENER_PROB);
+          if (rsi->restoration_type[rtile_idx] != RESTORE_NONE) {
+            write_wiener_filter(wiener_win, &rsi->wiener_info[rtile_idx],
+                                &wiener_info, wb);
+          }
+        } else if (rsi->frame_restoration_type == RESTORE_SGRPROJ) {
+          aom_write(wb, rsi->restoration_type[rtile_idx] != RESTORE_NONE,
+                    RESTORE_NONE_SGRPROJ_PROB);
+          if (rsi->restoration_type[rtile_idx] != RESTORE_NONE) {
+            write_sgrproj_filter(&rsi->sgrproj_info[rtile_idx], &sgrproj_info,
+                                 wb);
+          }
+        }
+      }
+    }
+  }
+}
+
 static void encode_restoration(AV1_COMMON *cm, aom_writer *wb) {
-  int i, p;
 #if CONFIG_FRAME_SUPERRES
   const int width = cm->superres_upscaled_width;
   const int height = cm->superres_upscaled_height;
@@ -3350,76 +3417,19 @@ static void encode_restoration(AV1_COMMON *cm, aom_writer *wb) {
   const int width = cm->width;
   const int height = cm->height;
 #endif  // CONFIG_FRAME_SUPERRES
-  const int ntiles =
-      av1_get_rest_ntiles(width, height, cm->rst_info[0].restoration_tilesize,
-                          NULL, NULL, NULL, NULL);
-  WienerInfo ref_wiener_info;
-  SgrprojInfo ref_sgrproj_info;
-  set_default_wiener(&ref_wiener_info);
-  set_default_sgrproj(&ref_sgrproj_info);
-  const int ntiles_uv = av1_get_rest_ntiles(
-      ROUND_POWER_OF_TWO(width, cm->subsampling_x),
-      ROUND_POWER_OF_TWO(height, cm->subsampling_y),
-      cm->rst_info[1].restoration_tilesize, NULL, NULL, NULL, NULL);
-  RestorationInfo *rsi = &cm->rst_info[0];
-  if (rsi->frame_restoration_type != RESTORE_NONE) {
-    if (rsi->frame_restoration_type == RESTORE_SWITCHABLE) {
-      // RESTORE_SWITCHABLE
-      for (i = 0; i < ntiles; ++i) {
-        av1_write_token(
-            wb, av1_switchable_restore_tree, cm->fc->switchable_restore_prob,
-            &switchable_restore_encodings[rsi->restoration_type[i]]);
-        if (rsi->restoration_type[i] == RESTORE_WIENER) {
-          write_wiener_filter(WIENER_WIN, &rsi->wiener_info[i],
-                              &ref_wiener_info, wb);
-        } else if (rsi->restoration_type[i] == RESTORE_SGRPROJ) {
-          write_sgrproj_filter(&rsi->sgrproj_info[i], &ref_sgrproj_info, wb);
-        }
-      }
-    } else if (rsi->frame_restoration_type == RESTORE_WIENER) {
-      for (i = 0; i < ntiles; ++i) {
-        aom_write(wb, rsi->restoration_type[i] != RESTORE_NONE,
-                  RESTORE_NONE_WIENER_PROB);
-        if (rsi->restoration_type[i] != RESTORE_NONE) {
-          write_wiener_filter(WIENER_WIN, &rsi->wiener_info[i],
-                              &ref_wiener_info, wb);
-        }
-      }
-    } else if (rsi->frame_restoration_type == RESTORE_SGRPROJ) {
-      for (i = 0; i < ntiles; ++i) {
-        aom_write(wb, rsi->restoration_type[i] != RESTORE_NONE,
-                  RESTORE_NONE_SGRPROJ_PROB);
-        if (rsi->restoration_type[i] != RESTORE_NONE) {
-          write_sgrproj_filter(&rsi->sgrproj_info[i], &ref_sgrproj_info, wb);
-        }
-      }
-    }
-  }
-  for (p = 1; p < MAX_MB_PLANE; ++p) {
-    set_default_wiener(&ref_wiener_info);
-    set_default_sgrproj(&ref_sgrproj_info);
-    rsi = &cm->rst_info[p];
-    if (rsi->frame_restoration_type == RESTORE_WIENER) {
-      for (i = 0; i < ntiles_uv; ++i) {
-        if (ntiles_uv > 1)
-          aom_write(wb, rsi->restoration_type[i] != RESTORE_NONE,
-                    RESTORE_NONE_WIENER_PROB);
-        if (rsi->restoration_type[i] != RESTORE_NONE) {
-          write_wiener_filter(WIENER_WIN_CHROMA, &rsi->wiener_info[i],
-                              &ref_wiener_info, wb);
-        }
-      }
-    } else if (rsi->frame_restoration_type == RESTORE_SGRPROJ) {
-      for (i = 0; i < ntiles_uv; ++i) {
-        if (ntiles_uv > 1)
-          aom_write(wb, rsi->restoration_type[i] != RESTORE_NONE,
-                    RESTORE_NONE_SGRPROJ_PROB);
-        if (rsi->restoration_type[i] != RESTORE_NONE) {
-          write_sgrproj_filter(&rsi->sgrproj_info[i], &ref_sgrproj_info, wb);
-        }
-      }
-    } else if (rsi->frame_restoration_type != RESTORE_NONE) {
-      assert(0);
+
+  int nrtiles_x[2], nrtiles_y[2];
+  av1_get_rest_ntiles(width, height, cm->rst_info[0].restoration_tilesize, NULL,
+                      NULL, &nrtiles_x[0], &nrtiles_y[0]);
+  av1_get_rest_ntiles(ROUND_POWER_OF_TWO(width, cm->subsampling_x),
+                      ROUND_POWER_OF_TWO(height, cm->subsampling_y),
+                      cm->rst_info[1].restoration_tilesize, NULL, NULL,
+                      &nrtiles_x[1], &nrtiles_y[1]);
+
+  for (int tile_row = 0; tile_row < cm->tile_rows; ++tile_row) {
+    for (int tile_col = 0; tile_col < cm->tile_cols; ++tile_col) {
+      encode_restoration_for_tile(cm, wb, tile_row, tile_col, nrtiles_x,
+                                  nrtiles_y);
     }
   }
 }
