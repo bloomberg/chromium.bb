@@ -201,6 +201,7 @@ struct macroblock {
 
 #if CONFIG_EXT_INTER
   int inter_compound_mode_cost[INTER_MODE_CONTEXTS][INTER_COMPOUND_MODES];
+  int compound_type_cost[BLOCK_SIZES_ALL][COMPOUND_TYPES];
 #if CONFIG_COMPOUND_SINGLEREF
   int inter_singleref_comp_mode_cost[INTER_MODE_CONTEXTS]
                                     [INTER_SINGLEREF_COMP_MODES];
