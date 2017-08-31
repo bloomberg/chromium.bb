@@ -772,8 +772,14 @@ class circular_deque {
     ValidateIterator(first);
     ValidateIterator(last);
 
+    IncrementGeneration();
+
     // First, call the destructor on the deleted items.
-    if (first.index_ < last.index_) {
+    if (first.index_ == last.index_) {
+      // Nothing deleted. Need to return early to avoid falling through to
+      // moving items on top of themselves.
+      return iterator(this, first.index_);
+    } else if (first.index_ < last.index_) {
       // Contiguous range.
       buffer_.DestructRange(&buffer_[first.index_], &buffer_[last.index_]);
     } else {
@@ -782,8 +788,6 @@ class circular_deque {
                             &buffer_[buffer_.capacity()]);
       buffer_.DestructRange(&buffer_[0], &buffer_[last.index_]);
     }
-
-    IncrementGeneration();
 
     if (last.index_ == begin_) {
       // This deletion is from the beginning. Nothing needs to be copied, only
