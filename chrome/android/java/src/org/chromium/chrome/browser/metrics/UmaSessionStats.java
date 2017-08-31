@@ -143,6 +143,10 @@ public class UmaSessionStats {
                 .apply();
     }
 
+    public static void logRendererCrash() {
+        nativeLogRendererCrash();
+    }
+
     /**
      * Updates the metrics services based on a change of consent. This can happen during first-run
      * flow, and when the user changes their preferences.
@@ -201,6 +205,7 @@ public class UmaSessionStats {
     private static native void nativeUpdateMetricsServiceState(boolean mayUpload);
     private native void nativeUmaResumeSession(long nativeUmaSessionStats);
     private native void nativeUmaEndSession(long nativeUmaSessionStats);
+    private static native void nativeLogRendererCrash();
     private static native void nativeRegisterExternalExperiment(
             String studyName, int[] experimentIds);
     private static native void nativeRegisterSyntheticFieldTrial(

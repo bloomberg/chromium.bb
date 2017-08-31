@@ -17,6 +17,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.media.MediaCaptureNotificationService;
+import org.chromium.chrome.browser.metrics.UmaSessionStats;
 import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.policy.PolicyAuditor;
 import org.chromium.chrome.browser.policy.PolicyAuditor.AuditEvent;
@@ -124,7 +125,7 @@ public class TabWebContentsObserver extends WebContentsObserver {
             rendererCrashStatus = TAB_RENDERER_CRASH_STATUS_SHOWN_IN_FOREGROUND_APP;
             mTab.showSadTab();
             // This is necessary to correlate histogram data with stability counts.
-            RecordHistogram.recordBooleanHistogram("Stability.Android.RendererCrash", true);
+            UmaSessionStats.logRendererCrash();
         }
         RecordHistogram.recordEnumeratedHistogram(
                 "Tab.RendererCrashStatus", rendererCrashStatus, TAB_RENDERER_CRASH_STATUS_MAX);
