@@ -24,15 +24,16 @@
         tools:src="@drawable/ic_snippet_thumbnail_placeholder" />
 
     <ImageView
-        android:id="@+id/article_thumbnail_video_overlay"
-        android:layout_width="@dimen/content_suggestions_card_video_overlay_size"
-        android:layout_height="@dimen/content_suggestions_card_video_overlay_size"
+        android:id="@+id/offline_icon"
+        android:layout_width="@dimen/content_suggestions_card_modern_offline_badge_overlay_size"
+        android:layout_height="@dimen/content_suggestions_card_modern_offline_badge_overlay_size"
         android:layout_alignTop="@id/article_thumbnail"
         android:layout_alignStart="@id/article_thumbnail"
-        android:layout_marginStart="@dimen/content_suggestions_card_video_overlay_margin_start"
-        android:layout_marginTop="@dimen/content_suggestions_card_video_overlay_margin_top"
+        android:layout_marginStart="@dimen/content_suggestions_card_modern_offline_badge_overlay_margin_start"
+        android:layout_marginTop="@dimen/content_suggestions_card_modern_offline_badge_overlay_margin_top"
         android:contentDescription="@null"
-        app:srcCompat="@drawable/ic_play_circle_filled" />
+        app:srcCompat="@drawable/ic_offline_pin_white"
+        tools:src="@drawable/ic_offline_pin_white"/>
 
     <!-- It would have been nice to use RoundedBitmapDrawable on the thumbnail, but with that you
          cannot select which corners must be rounded, they are all rounded. -->
@@ -123,20 +124,6 @@
                 android:textColor="@color/snippets_publisher_name_color"
                 android:textDirection="locale"
                 tools:text=" - 3 hours ago" />
-
-            <!-- We can't add this ImageView as a CompoundDrawable to the TextView because we want to
-                 have different paddings between the favicon (which is a compound drawable on the
-                 TextView) and the offline icon. -->
-            <org.chromium.chrome.browser.widget.TintedImageView
-                android:id="@+id/offline_icon"
-                android:layout_width="@dimen/snippets_offline_icon_size"
-                android:layout_height="@dimen/snippets_offline_icon_size"
-                android:layout_marginStart="6dp"
-                android:alpha="0.54"
-                android:src="@drawable/offline_pin_round"
-                android:contentDescription="@string/accessibility_ntp_offline_badge"
-                android:visibility="gone"
-                chrome:chrometint="#000" />
         </LinearLayout>
     </LinearLayout>
 </RelativeLayout>
