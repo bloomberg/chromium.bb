@@ -82,6 +82,8 @@ class TestContentViewDelegate : public ArcNotificationContentViewDelegate {
       const override {
     return nullptr;
   }
+  bool IsExpanded() const override { return false; }
+  void SetExpanded(bool expanded) override {}
 };
 
 class TestNotificationDelegate : public message_center::NotificationDelegate {

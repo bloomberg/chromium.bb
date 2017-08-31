@@ -201,6 +201,7 @@ void MessagePopupCollection::UpdateWidgets() {
     // Disable pinned feature since this is a popup.
     view->set_force_disable_pinned();
 #endif  // defined(OS_CHROMEOS)
+    view->SetExpanded(true);
 
     // TODO(yoshiki): Temporary disable context menu on custom notifications.
     // See crbug.com/750307 for detail.

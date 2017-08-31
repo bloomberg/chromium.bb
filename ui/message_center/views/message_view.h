@@ -55,6 +55,9 @@ class MESSAGE_CENTER_EXPORT MessageView
   virtual void RequestFocusOnCloseButton() = 0;
   virtual void UpdateControlButtonsVisibility() = 0;
 
+  virtual void SetExpanded(bool expanded);
+  virtual bool IsExpanded() const;
+
   void OnCloseButtonPressed();
   void OnSettingsButtonPressed();
 

@@ -45,6 +45,8 @@ class ArcNotificationView : public message_center::MessageView {
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   message_center::NotificationControlButtonsView* GetControlButtonsView()
       const override;
+  bool IsExpanded() const override;
+  void SetExpanded(bool expanded) override;
 
   // views::SlideOutController::Delegate:
   void OnSlideChanged() override;

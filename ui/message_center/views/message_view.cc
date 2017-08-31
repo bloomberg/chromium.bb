@@ -113,6 +113,15 @@ void MessageView::SetIsNested() {
       -gfx::ShadowValue::GetMargin(shadow.values)));
 }
 
+void MessageView::SetExpanded(bool expanded) {
+  // Not implemented by default.
+}
+
+bool MessageView::IsExpanded() const {
+  // Not implemented by default.
+  return false;
+}
+
 void MessageView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ui::AX_ROLE_BUTTON;
   node_data->AddStringAttribute(

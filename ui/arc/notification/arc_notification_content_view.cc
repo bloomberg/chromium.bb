@@ -235,6 +235,10 @@ class ArcNotificationContentView::ContentViewDelegate
     return owner_->control_buttons_view_;
   }
 
+  bool IsExpanded() const override { return owner_->IsExpanded(); }
+
+  void SetExpanded(bool expanded) override { owner_->SetExpanded(expanded); }
+
  private:
   ArcNotificationContentView* const owner_;
 
@@ -462,6 +466,21 @@ void ArcNotificationContentView::UpdateAccessibleName() {
     return;
 
   accessible_name_ = item_->GetAccessibleName();
+}
+
+bool ArcNotificationContentView::IsExpanded() const {
+  return item_->GetExpandState() == mojom::ArcNotificationExpandState::EXPANDED;
+}
+
+void ArcNotificationContentView::SetExpanded(bool expanded) {
+  auto expand_state = item_->GetExpandState();
+  if (expanded) {
+    if (expand_state == mojom::ArcNotificationExpandState::COLLAPSED)
+      item_->ToggleExpansion();
+  } else {
+    if (expand_state == mojom::ArcNotificationExpandState::EXPANDED)
+      item_->ToggleExpansion();
+  }
 }
 
 void ArcNotificationContentView::ViewHierarchyChanged(
