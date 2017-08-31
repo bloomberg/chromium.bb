@@ -52,10 +52,7 @@ class CORE_EXPORT ScriptModule final {
   ScriptValue Instantiate(ScriptState*);
 
   void Evaluate(ScriptState*) const;
-  static void ReportException(ScriptState*,
-                              v8::Local<v8::Value> exception,
-                              const String& file_name,
-                              const TextPosition& start_position);
+  static void ReportException(ScriptState*, v8::Local<v8::Value> exception);
 
   Vector<String> ModuleRequests(ScriptState*);
   Vector<TextPosition> ModuleRequestPositions(ScriptState*);

@@ -127,15 +127,6 @@ DEFINE_TRACE_WRAPPERS(ScriptCustomElementDefinition) {
   visitor->TraceWrappers(attribute_changed_callback_.Cast<v8::Value>());
 }
 
-static void DispatchErrorEvent(v8::Isolate* isolate,
-                               v8::Local<v8::Value> exception,
-                               v8::Local<v8::Object> constructor) {
-  v8::TryCatch try_catch(isolate);
-  try_catch.SetVerbose(true);
-  V8ScriptRunner::ThrowException(
-      isolate, exception, constructor.As<v8::Function>()->GetScriptOrigin());
-}
-
 HTMLElement* ScriptCustomElementDefinition::HandleCreateElementSyncException(
     Document& document,
     const QualifiedName& tag_name,
@@ -144,7 +135,7 @@ HTMLElement* ScriptCustomElementDefinition::HandleCreateElementSyncException(
   DCHECK(exception_state.HadException());
   // 6.1."If any of these subsubsteps threw an exception".1
   // Report the exception.
-  DispatchErrorEvent(isolate, exception_state.GetException(), Constructor());
+  V8ScriptRunner::ReportException(isolate, exception_state.GetException());
   exception_state.ClearException();
   // ... .2 Return HTMLUnknownElement.
   return CustomElement::CreateFailedElement(document, tag_name);
@@ -229,7 +220,7 @@ bool ScriptCustomElementDefinition::RunConstructor(Element* element) {
         "not return a different object";
     v8::Local<v8::Value> exception = V8ThrowDOMException::CreateDOMException(
         script_state_->GetIsolate(), kInvalidStateError, message);
-    DispatchErrorEvent(isolate, exception, Constructor());
+    V8ScriptRunner::ReportException(isolate, exception);
     return false;
   }
 

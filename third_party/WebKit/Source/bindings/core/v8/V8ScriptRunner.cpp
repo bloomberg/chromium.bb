@@ -30,6 +30,7 @@
 #include "bindings/core/v8/ScriptStreamer.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8GCController.h"
+#include "bindings/core/v8/V8Initializer.h"
 #include "build/build_config.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
@@ -524,29 +525,6 @@ v8::MaybeLocal<v8::Module> V8ScriptRunner::CompileModule(
   return v8::ScriptCompiler::CompileModule(isolate, &script_source);
 }
 
-void V8ScriptRunner::ReportExceptionForModule(
-    v8::Isolate* isolate,
-    v8::Local<v8::Value> exception,
-    const String& file_name,
-    const TextPosition& start_position) {
-  // |origin| is for compiling a fragment that throws |exception|.
-  // Therefore |is_module| is false and |access_control_status| is
-  // kSharableCrossOrigin.
-  AccessControlStatus access_control_status = kSharableCrossOrigin;
-  v8::ScriptOrigin origin(
-      V8String(isolate, file_name),
-      v8::Integer::New(isolate, start_position.line_.ZeroBasedInt()),
-      v8::Integer::New(isolate, start_position.column_.ZeroBasedInt()),
-      v8::Boolean::New(isolate, access_control_status == kSharableCrossOrigin),
-      v8::Local<v8::Integer>(),    // script id
-      v8::String::Empty(isolate),  // source_map_url
-      v8::Boolean::New(isolate, access_control_status == kOpaqueResource),
-      v8::False(isolate),   // is_wasm
-      v8::False(isolate));  // is_module
-
-  ThrowException(isolate, exception, origin);
-}
-
 v8::MaybeLocal<v8::Value> V8ScriptRunner::RunCompiledScript(
     v8::Isolate* isolate,
     v8::Local<v8::Script> script,
@@ -746,44 +724,16 @@ void V8ScriptRunner::SetCacheTimeStamp(CachedMetadataHandler* cache_handler) {
                                    CachedMetadataHandler::kSendToPlatform);
 }
 
-void V8ScriptRunner::ThrowException(v8::Isolate* isolate,
-                                    v8::Local<v8::Value> exception,
-                                    const v8::ScriptOrigin& origin) {
-  // This is intentionally a CHECK, as CallInternalFunction below will deref
-  // nullptr if this condition is false.
-  CHECK(!exception.IsEmpty());
+void V8ScriptRunner::ReportException(v8::Isolate* isolate,
+                                     v8::Local<v8::Value> exception) {
+  // TODO(adamk): Handle calls on worker threads.
+  DCHECK(IsMainThread());
+  DCHECK(!exception.IsEmpty());
 
-  // In order for the current TryCatch to catch this exception and
-  // call MessageCallback when SetVerbose(true), create a v8::Function
-  // that calls isolate->throwException().
-  // Unlike throwStackOverflowExceptionIfNeeded(), create a temporary Script
-  // with the specified ScriptOrigin. When the exception was created but not
-  // thrown yet, the ScriptOrigin of the thrower is set to the exception.
-  // v8::Function::New() has empty ScriptOrigin, and thus the exception will
-  // be "muted" (sanitized in our terminology) if CORS does not allow.
   // https://html.spec.whatwg.org/multipage/webappapis.html#report-the-error
-  // Avoid compile and run scripts when API is available: crbug.com/639739
-  v8::ScriptOriginOptions origin_options = origin.Options();
-  // Create a new ScriptOrigin with is_wasm and is_module bits left off
-  // (they default to false).
-  v8::ScriptOrigin origin_copy(
-      origin.ResourceName(), origin.ResourceLineOffset(),
-      origin.ResourceColumnOffset(),
-      v8::Boolean::New(isolate, origin_options.IsSharedCrossOrigin()),
-      origin.ScriptID(), origin.SourceMapUrl(),
-      v8::Boolean::New(isolate, origin_options.IsOpaque()));
-  DCHECK(!origin_copy.Options().IsWasm());
-  DCHECK(!origin_copy.Options().IsModule());
-  v8::Local<v8::Script> script =
-      CompileWithoutOptions(
-          V8CompileHistogram::Cacheability::kNoncacheable, isolate,
-          V8AtomicString(isolate, "((e) => { throw e; })"), origin_copy)
-          .ToLocalChecked();
-  v8::Local<v8::Function> thrower = RunCompiledInternalScript(isolate, script)
-                                        .ToLocalChecked()
-                                        .As<v8::Function>();
-  v8::Local<v8::Value> args[] = {exception};
-  CallInternalFunction(thrower, thrower, WTF_ARRAY_LENGTH(args), args, isolate);
+  v8::Local<v8::Message> message =
+      v8::Exception::CreateMessage(isolate, exception);
+  V8Initializer::MessageHandlerInMainThread(message, exception);
 }
 
 v8::MaybeLocal<v8::Value> V8ScriptRunner::CallExtraHelper(
