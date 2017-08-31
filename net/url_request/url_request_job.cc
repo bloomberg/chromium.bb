@@ -27,7 +27,6 @@
 #include "net/base/load_states.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_delegate.h"
-#include "net/http/http_response_headers.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_capture_mode.h"
 #include "net/log/net_log_event_type.h"
@@ -380,10 +379,6 @@ void URLRequestJob::NotifyURLRequestDestroyed() {
 
 void URLRequestJob::GetConnectionAttempts(ConnectionAttempts* out) const {
   out->clear();
-}
-
-void URLRequestJob::SetRequestHeadersCallback(RequestHeadersCallback callback) {
-  request_headers_callback_ = std::move(callback);
 }
 
 // static

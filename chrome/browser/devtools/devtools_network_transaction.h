@@ -89,6 +89,8 @@ class DevToolsNetworkTransaction
   void SetBeforeHeadersSentCallback(
       const BeforeHeadersSentCallback& callback) override;
   void SetRequestHeadersCallback(net::RequestHeadersCallback callback) override;
+  void SetResponseHeadersCallback(
+      net::ResponseHeadersCallback callback) override;
   int ResumeNetworkStart() override;
   void GetConnectionAttempts(net::ConnectionAttempts* out) const override;
 

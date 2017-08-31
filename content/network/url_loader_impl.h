@@ -19,6 +19,10 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request.h"
 
+namespace net {
+class HttpResponseHeaders;
+}
+
 namespace network {
 class NetToMojoPendingBuffer;
 }
@@ -67,6 +71,7 @@ class CONTENT_EXPORT URLLoaderImpl : public mojom::URLLoader,
   void DeleteIfNeeded();
   void SendResponseToClient();
   void CompletePendingWrite();
+  void SetRawResponseHeaders(scoped_refptr<const net::HttpResponseHeaders>);
 
   NetworkContext* context_;
   int32_t options_;
@@ -90,6 +95,7 @@ class CONTENT_EXPORT URLLoaderImpl : public mojom::URLLoader,
 
   bool report_raw_headers_;
   net::HttpRawRequestHeaders raw_request_headers_;
+  scoped_refptr<const net::HttpResponseHeaders> raw_response_headers_;
 
   base::WeakPtrFactory<URLLoaderImpl> weak_ptr_factory_;
 

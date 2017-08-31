@@ -576,6 +576,7 @@ void URLRequestHttpJob::StartTransactionInternal() {
           base::Bind(&URLRequestHttpJob::NotifyBeforeSendHeadersCallback,
                      base::Unretained(this)));
       transaction_->SetRequestHeadersCallback(request_headers_callback_);
+      transaction_->SetResponseHeadersCallback(response_headers_callback_);
 
       if (!throttling_entry_.get() ||
           !throttling_entry_->ShouldRejectRequest(*request_)) {
@@ -1556,6 +1557,13 @@ void URLRequestHttpJob::SetRequestHeadersCallback(
   DCHECK(!transaction_);
   DCHECK(!request_headers_callback_);
   request_headers_callback_ = std::move(callback);
+}
+
+void URLRequestHttpJob::SetResponseHeadersCallback(
+    ResponseHeadersCallback callback) {
+  DCHECK(!transaction_);
+  DCHECK(!response_headers_callback_);
+  response_headers_callback_ = std::move(callback);
 }
 
 void URLRequestHttpJob::RecordPerfHistograms(CompletionCause reason) {

@@ -390,6 +390,9 @@ class NET_EXPORT HttpResponseHeaders
   DISALLOW_COPY_AND_ASSIGN(HttpResponseHeaders);
 };
 
+using ResponseHeadersCallback =
+    base::Callback<void(scoped_refptr<const HttpResponseHeaders>)>;
+
 }  // namespace net
 
 #endif  // NET_HTTP_HTTP_RESPONSE_HEADERS_H_
