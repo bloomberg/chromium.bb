@@ -251,6 +251,10 @@ ArcNotificationContentView::ArcNotificationContentView(
       notification_key_(item->GetNotificationKey()),
       event_forwarder_(new EventForwarder(this)),
       mouse_enter_exit_handler_(new MouseEnterExitHandler(this)) {
+  // kNotificationWidth must be 360, since this value is separately defiend in
+  // ArcNotificationWrapperView class in Android side.
+  DCHECK_EQ(360, message_center::kNotificationWidth);
+
   SetFocusBehavior(FocusBehavior::ALWAYS);
   set_notify_enter_exit_on_child(true);
 

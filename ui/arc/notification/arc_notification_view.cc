@@ -113,17 +113,17 @@ void ArcNotificationView::OnSlideChanged() {
 
 gfx::Size ArcNotificationView::CalculatePreferredSize() const {
   const gfx::Insets insets = GetInsets();
-  const int contents_width =
-      message_center::kNotificationWidth - insets.width();
+  const int contents_width = message_center::kNotificationWidth;
   const int contents_height = contents_view_->GetHeightForWidth(contents_width);
-  return gfx::Size(message_center::kNotificationWidth,
+  return gfx::Size(contents_width + insets.width(),
                    contents_height + insets.height());
 }
 
 void ArcNotificationView::Layout() {
-  message_center::MessageView::Layout();
-
+  // Setting the bounds before calling the parent to prevent double Layout.
   contents_view_->SetBoundsRect(GetContentsBounds());
+
+  message_center::MessageView::Layout();
 
   // If the content view claims focus, defer focus handling to the content view.
   if (contents_view_->IsFocusable())
