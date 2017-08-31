@@ -11,28 +11,8 @@
 #endif
 
 @implementation TestDialogMediator
-@synthesize title = _title;
-@synthesize message = _message;
+@synthesize dialogTitle = _dialogTitle;
+@synthesize dialogMessage = _dialogMessage;
 @synthesize buttonConfigs = _buttonConfigs;
 @synthesize textFieldConfigs = _textFieldConfigs;
-@end
-
-@implementation TestDialogMediator (DialogMediatorSubclassing)
-
-- (NSString*)dialogTitle {
-  return _title;
-}
-
-- (NSString*)dialogMessage {
-  return _message;
-}
-
-- (NSArray<DialogButtonConfiguration*>*)buttonConfigs {
-  return _buttonConfigs;
-}
-
-- (NSArray<DialogTextFieldConfiguration*>*)textFieldConfigs {
-  return _textFieldConfigs;
-}
-
 @end

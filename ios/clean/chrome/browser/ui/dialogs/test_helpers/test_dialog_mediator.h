@@ -10,10 +10,10 @@
 @class DialogButtonConfiguration;
 @class DialogTextFieldConfiguration;
 
-// A DialogMediator subclass that can be configured via properties.
+// A DialogMediator subclass that can be configured via readwrite properties.
 @interface TestDialogMediator : DialogMediator
-@property(nonatomic, copy) NSString* title;
-@property(nonatomic, copy) NSString* message;
+@property(nonatomic, copy) NSString* dialogTitle;
+@property(nonatomic, copy) NSString* dialogMessage;
 @property(nonatomic, copy) NSArray<DialogButtonConfiguration*>* buttonConfigs;
 @property(nonatomic, copy)
     NSArray<DialogTextFieldConfiguration*>* textFieldConfigs;
