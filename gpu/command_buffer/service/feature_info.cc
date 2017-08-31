@@ -523,14 +523,18 @@ void FeatureInfo::InitializeFeatures() {
     // GL_COMPRESSED_RGBA_ASTC(0x93B0 ~ 0x93BD)
     GLint astc_format_it = GL_COMPRESSED_RGBA_ASTC_4x4_KHR;
     GLint astc_format_max = GL_COMPRESSED_RGBA_ASTC_12x12_KHR;
-    for (; astc_format_it <= astc_format_max; astc_format_it++)
-        validators_.compressed_texture_format.AddValue(astc_format_it);
+    for (; astc_format_it <= astc_format_max; astc_format_it++) {
+      validators_.compressed_texture_format.AddValue(astc_format_it);
+      validators_.texture_internal_format_storage.AddValue(astc_format_it);
+    }
 
     // GL_COMPRESSED_SRGB8_ALPHA8_ASTC(0x93D0 ~ 0x93DD)
     astc_format_it = GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR;
     astc_format_max = GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR;
-    for (; astc_format_it <= astc_format_max; astc_format_it++)
-        validators_.compressed_texture_format.AddValue(astc_format_it);
+    for (; astc_format_it <= astc_format_max; astc_format_it++) {
+      validators_.compressed_texture_format.AddValue(astc_format_it);
+      validators_.texture_internal_format_storage.AddValue(astc_format_it);
+    }
   }
 
   bool have_atc = extensions.Contains("GL_AMD_compressed_ATC_texture") ||
