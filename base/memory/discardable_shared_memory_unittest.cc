@@ -2,13 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <fcntl.h>
 #include <stdint.h>
 
+#include "base/files/scoped_file.h"
 #include "base/memory/discardable_shared_memory.h"
 #include "base/memory/shared_memory_tracker.h"
 #include "base/process/process_metrics.h"
 #include "base/trace_event/memory_allocator_dump.h"
 #include "base/trace_event/process_memory_dump.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -237,6 +240,34 @@ TEST(DiscardableSharedMemoryTest, LockShouldAlwaysFailAfterSuccessfulPurge) {
   // Lock should fail as memory has been purged.
   DiscardableSharedMemory::LockResult lock_rv = memory2.Lock(0, 0);
   EXPECT_EQ(DiscardableSharedMemory::FAILED, lock_rv);
+}
+
+TEST(DiscardableSharedMemoryTest, LockShouldFailIfPlatformLockPagesFails) {
+  const uint32_t kDataSize = 1024;
+
+  DiscardableSharedMemory memory;
+  bool rv = memory.CreateAndMap(kDataSize);
+  ASSERT_TRUE(rv);
+
+  // Unlock() the first page of memory, so we can test Lock()ing it.
+  memory.Unlock(0, base::GetPageSize());
+#if defined(OS_ANDROID)
+  // To cause ashmem_pin_region() to fail, we arrange for it to be called with
+  // an invalid file-descriptor, which requires a valid-looking fd (i.e. we
+  // can't just Close() |memory|), but one on which the operation is invalid.
+  // We can overwrite the |memory| fd with a handle to a different file using
+  // dup2(), which has the nice properties that |memory| still has a valid fd
+  // that it can close, etc without errors, but on which ashmem_pin_region()
+  // will fail.
+  base::ScopedFD null(open("/dev/null", O_RDONLY));
+  ASSERT_EQ(memory.handle().GetHandle(),
+            dup2(null.get(), memory.handle().GetHandle()));
+
+  // Now re-Lock()ing the first page should fail.
+  DiscardableSharedMemory::LockResult lock_rv =
+      memory.Lock(0, base::GetPageSize());
+  EXPECT_EQ(DiscardableSharedMemory::FAILED, lock_rv);
+#endif  // defined(OS_ANDROID)
 }
 
 TEST(DiscardableSharedMemoryTest, LockAndUnlockRange) {
