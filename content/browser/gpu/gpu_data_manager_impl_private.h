@@ -24,7 +24,6 @@
 #include "build/build_config.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "gpu/config/gpu_blacklist.h"
-#include "gpu/config/gpu_driver_bug_list.h"
 
 namespace base {
 class CommandLine;
@@ -193,7 +192,6 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   explicit GpuDataManagerImplPrivate(GpuDataManagerImpl* owner);
 
   void InitializeImpl(const gpu::GpuControlListData& gpu_blacklist_data,
-                      const gpu::GpuControlListData& gpu_driver_bug_list_data,
                       const gpu::GPUInfo& gpu_info);
 
   void RunPostInitTasks();
@@ -235,12 +233,9 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   // Eventually |blacklisted_features_| should be folded in to this.
   gpu::GpuFeatureInfo gpu_feature_info_;
 
-  std::set<int> gpu_driver_bugs_;
-
   gpu::GPUInfo gpu_info_;
 
   std::unique_ptr<gpu::GpuBlacklist> gpu_blacklist_;
-  std::unique_ptr<gpu::GpuDriverBugList> gpu_driver_bug_list_;
 
   const scoped_refptr<GpuDataManagerObserverList> observer_list_;
 

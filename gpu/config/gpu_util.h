@@ -23,12 +23,18 @@ GPU_EXPORT void ParseSecondaryGpuDevicesFromCommandLine(
     const base::CommandLine& command_line,
     GPUInfo* gpu_info);
 
+// Command line contains basic GPU info collected at browser startup time in
+// GpuDataManagerImplPrivate::Initialize().
+// TODO(zmo): Obsolete this.
+GPU_EXPORT void GetGpuInfoFromCommandLine(const base::CommandLine& command_line,
+                                          GPUInfo* gpu_info);
+
 // This function should only be called from the GPU process, or the Browser
 // process while using in-process GPU. This function is safe to call at any
 // point, and is not dependent on sandbox initialization.
+// This function also appends a few commandline switches caused by driver bugs.
 GPU_EXPORT GpuFeatureInfo
-GetGpuFeatureInfo(const GPUInfo& gpu_info,
-                  const base::CommandLine& command_line);
+ComputeGpuFeatureInfo(const GPUInfo& gpu_info, base::CommandLine* command_line);
 
 GPU_EXPORT void SetKeysForCrashLogging(const GPUInfo& gpu_info);
 }  // namespace gpu
