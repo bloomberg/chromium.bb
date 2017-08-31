@@ -2538,7 +2538,30 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
 
 #if CONFIG_LPF_SB
   if (bsize == cm->sb_size) {
-    int filt_lvl = aom_read_literal(r, 6, ACCT_STR);
+    int filt_lvl;
+    if (mi_row == 0 && mi_col == 0) {
+      filt_lvl = aom_read_literal(r, 6, ACCT_STR);
+    } else {
+      int prev_mi_row, prev_mi_col;
+      if (mi_col - MAX_MIB_SIZE < 0) {
+        prev_mi_row = mi_row - MAX_MIB_SIZE;
+        prev_mi_col = mi_col;
+      } else {
+        prev_mi_row = mi_row;
+        prev_mi_col = mi_col - MAX_MIB_SIZE;
+      }
+      const uint8_t prev_lvl =
+          cm->mi_grid_visible[prev_mi_row * cm->mi_stride + prev_mi_col]
+              ->mbmi.filt_lvl;
+
+      const unsigned int delta = aom_read_literal(r, LPF_DELTA_BITS, ACCT_STR);
+      if (delta) {
+        const int sign = aom_read_literal(r, 1, ACCT_STR);
+        filt_lvl = sign ? prev_lvl + delta : prev_lvl - delta;
+      } else {
+        filt_lvl = prev_lvl;
+      }
+    }
     int row, col;
     // set filter level for each mbmi
     for (row = mi_row; row < mi_row + MAX_MIB_SIZE && row < cm->mi_rows;

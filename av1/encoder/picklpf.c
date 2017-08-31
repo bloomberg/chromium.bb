@@ -135,90 +135,25 @@ static int search_filter_level(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi,
                                int partial_frame, double *best_cost_ret,
                                int mi_row, int mi_col, int last_lvl) {
   const AV1_COMMON *const cm = &cpi->common;
-  const struct loopfilter *const lf = &cm->lf;
-  const int min_filter_level = 0;
-  const int max_filter_level = av1_get_max_filter_level(cpi);
-  int filt_direction = 0;
-  int64_t best_err;
-  int filt_best;
+  const int min_filter_level = AOMMAX(0, last_lvl - MAX_LPF_OFFSET);
+  const int max_filter_level =
+      AOMMIN(av1_get_max_filter_level(cpi), last_lvl + MAX_LPF_OFFSET);
+  int64_t best_err = INT64_MAX;
+  int filt_best = last_lvl;
   MACROBLOCK *x = &cpi->td.mb;
-
-  // Start the search at the previous frame filter level unless it is now out of
-  // range.
-  int filt_mid = clamp(last_lvl, min_filter_level, max_filter_level);
-  (void)lf;
-  int filter_step = filt_mid < 16 ? 4 : filt_mid / 4;
-  // Sum squared error at each filter level
-  int64_t ss_err[MAX_LOOP_FILTER + 1];
-
-  // Set each entry to -1
-  memset(ss_err, 0xFF, sizeof(ss_err));
 
   //  Make a copy of the unfiltered / processed recon buffer
   aom_yv12_copy_y(cm->frame_to_show, &cpi->last_frame_uf);
 
-  best_err = try_filter_frame(sd, cpi, filt_mid, partial_frame, mi_row, mi_col);
-  filt_best = filt_mid;
-  ss_err[filt_mid] = best_err;
-
-  while (filter_step > 0) {
-    const int filt_high = AOMMIN(filt_mid + filter_step, max_filter_level);
-    const int filt_low = AOMMAX(filt_mid - filter_step, min_filter_level);
-
-    // Bias against raising loop filter in favor of lowering it.
-    int64_t bias = (best_err >> (15 - (filt_mid / 8))) * filter_step;
-
-    if ((cpi->oxcf.pass == 2) && (cpi->twopass.section_intra_rating < 20))
-      bias = (bias * cpi->twopass.section_intra_rating) / 20;
-
-    // yx, bias less for large block size
-    if (cm->tx_mode != ONLY_4X4) bias >>= 1;
-
-    bias = 0;
-
-    if (filt_direction <= 0 && filt_low != filt_mid) {
-      // Get Low filter error score
-      if (ss_err[filt_low] < 0) {
-        ss_err[filt_low] =
-            try_filter_frame(sd, cpi, filt_low, partial_frame, mi_row, mi_col);
-      }
-      // If value is close to the best so far then bias towards a lower loop
-      // filter value.
-      if (ss_err[filt_low] < (best_err + bias)) {
-        // Was it actually better than the previous best?
-        if (ss_err[filt_low] < best_err) {
-          best_err = ss_err[filt_low];
-        }
-        filt_best = filt_low;
-      }
-    }
-
-    // Now look at filt_high
-    if (filt_direction >= 0 && filt_high != filt_mid) {
-      if (ss_err[filt_high] < 0) {
-        ss_err[filt_high] =
-            try_filter_frame(sd, cpi, filt_high, partial_frame, mi_row, mi_col);
-      }
-      // If value is significantly better than previous best, bias added against
-      // raising filter value
-      if (ss_err[filt_high] < (best_err - bias)) {
-        best_err = ss_err[filt_high];
-        filt_best = filt_high;
-      }
-    }
-
-    // Half the step distance if the best filter value was the same as last time
-    if (filt_best == filt_mid) {
-      filter_step /= 2;
-      filt_direction = 0;
-    } else {
-      filt_direction = (filt_best < filt_mid) ? -1 : 1;
-      filt_mid = filt_best;
+  int i;
+  for (i = min_filter_level; i <= max_filter_level; ++i) {
+    int64_t filt_err =
+        try_filter_frame(sd, cpi, i, partial_frame, mi_row, mi_col);
+    if (filt_err < best_err) {
+      best_err = filt_err;
+      filt_best = i;
     }
   }
-
-  // Update best error
-  best_err = ss_err[filt_best];
 
   if (best_cost_ret) *best_cost_ret = RDCOST_DBL(x->rdmult, 0, best_err);
   return filt_best;
@@ -465,7 +400,14 @@ void av1_pick_filter_level(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi,
             cm->mi_grid_visible[row * cm->mi_stride + col]->mbmi.filt_lvl = lvl;
           }
         }
-        last_lvl = lvl;
+
+        // For the superblock at row start, its previous filter level should be
+        // the one above it, not the one at the end of last row
+        if (mi_col + MAX_MIB_SIZE >= cm->mi_cols) {
+          last_lvl = cm->mi_grid_visible[mi_row * cm->mi_stride]->mbmi.filt_lvl;
+        } else {
+          last_lvl = lvl;
+        }
       }
     }
 #else

@@ -3131,9 +3131,33 @@ static void write_modes_sb(AV1_COMP *const cpi, const TileInfo *const tile,
 #if CONFIG_LPF_SB
   // send filter level for each superblock (64x64)
   if (bsize == cm->sb_size) {
-    aom_write_literal(
-        w, cm->mi_grid_visible[mi_row * cm->mi_stride + mi_col]->mbmi.filt_lvl,
-        6);
+    if (mi_row == 0 && mi_col == 0) {
+      aom_write_literal(
+          w,
+          cm->mi_grid_visible[mi_row * cm->mi_stride + mi_col]->mbmi.filt_lvl,
+          6);
+    } else {
+      int prev_mi_row, prev_mi_col;
+      if (mi_col - MAX_MIB_SIZE < 0) {
+        prev_mi_row = mi_row - MAX_MIB_SIZE;
+        prev_mi_col = mi_col;
+      } else {
+        prev_mi_row = mi_row;
+        prev_mi_col = mi_col - MAX_MIB_SIZE;
+      }
+      MB_MODE_INFO *curr_mbmi =
+          &cm->mi_grid_visible[mi_row * cm->mi_stride + mi_col]->mbmi;
+      MB_MODE_INFO *prev_mbmi =
+          &cm->mi_grid_visible[prev_mi_row * cm->mi_stride + prev_mi_col]->mbmi;
+
+      const uint8_t curr_lvl = curr_mbmi->filt_lvl;
+      const uint8_t prev_lvl = prev_mbmi->filt_lvl;
+      const int sign = curr_lvl > prev_lvl;
+      const unsigned int delta = abs(curr_lvl - prev_lvl);
+
+      aom_write_literal(w, delta, LPF_DELTA_BITS);
+      if (delta) aom_write_literal(w, sign, 1);
+    }
   }
 #endif
 
