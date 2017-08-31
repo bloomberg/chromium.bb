@@ -1695,6 +1695,14 @@ if (enable_java_templates) {
         defined(invoker.use_chromium_linker) && invoker.use_chromium_linker
     _enable_relocation_packing = defined(invoker.enable_relocation_packing) &&
                                  invoker.enable_relocation_packing
+
+    if (use_lld) {
+      # TODO(pcc): lld's output is currently incompatible with the relocation
+      # packer tool. We will probably want to implement relocation packing in
+      # lld itself eventually. http://crbug.com/760838.
+      _enable_relocation_packing = false
+    }
+
     _load_library_from_apk =
         defined(invoker.load_library_from_apk) && invoker.load_library_from_apk
     _requires_sdk_api_level_23 = defined(invoker.requires_sdk_api_level_23) &&
