@@ -7,8 +7,8 @@
         "composite": [ "printing::mojom::PdfCompositor" ]
        },
        "requires": {
-         "service_manager": [ "service_manager:all_users" ],
-         "content_browser": [ "utility" ]
+         "*": [ "app" ],
+        "service_manager": [ "service_manager:all_users" ]
        }
      }
   }
