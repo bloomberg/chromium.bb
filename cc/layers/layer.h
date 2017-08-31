@@ -201,11 +201,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
   Layer* scroll_parent() { return inputs_.scroll_parent; }
 
-  std::set<Layer*>* scroll_children() { return scroll_children_.get(); }
-  const std::set<Layer*>* scroll_children() const {
-    return scroll_children_.get();
-  }
-
   void SetClipParent(Layer* ancestor);
 
   Layer* clip_parent() { return inputs_.clip_parent; }
@@ -496,9 +491,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
   bool ScrollOffsetAnimationWasInterrupted() const;
 
-  void AddScrollChild(Layer* child);
-  void RemoveScrollChild(Layer* child);
-
   void AddClipChild(Layer* child);
   void RemoveClipChild(Layer* child);
 
@@ -507,10 +499,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
   // This should only be called from RemoveFromParent().
   void RemoveChildOrDependent(Layer* child);
-
-  // If this layer has a scroll parent, it removes |this| from its list of
-  // scroll children.
-  void RemoveFromScrollTree();
 
   // If this layer has a clip parent, it removes |this| from its list of clip
   // children.
@@ -668,7 +656,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // This value is valid only when LayerTreeHost::has_copy_request() is true
   bool subtree_has_copy_request_ : 1;
   SkColor safe_opaque_background_color_;
-  std::unique_ptr<std::set<Layer*>> scroll_children_;
 
   std::unique_ptr<std::set<Layer*>> clip_children_;
 

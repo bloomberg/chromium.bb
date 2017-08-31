@@ -53,29 +53,34 @@ struct DataForRecursion {
 template <typename LayerType>
 class PropertyTreeBuilderContext {
  public:
-  PropertyTreeBuilderContext(const LayerType* page_scale_layer,
+  PropertyTreeBuilderContext(LayerType* root_layer,
+                             const LayerType* page_scale_layer,
                              const LayerType* inner_viewport_scroll_layer,
                              const LayerType* outer_viewport_scroll_layer,
                              const LayerType* overscroll_elasticity_layer,
                              const gfx::Vector2dF& elastic_overscroll,
                              float page_scale_factor,
                              const gfx::Transform& device_transform,
-                             PropertyTrees& property_trees)
-      : page_scale_layer_(page_scale_layer),
+                             PropertyTrees* property_trees)
+      : root_layer_(root_layer),
+        page_scale_layer_(page_scale_layer),
         inner_viewport_scroll_layer_(inner_viewport_scroll_layer),
         outer_viewport_scroll_layer_(outer_viewport_scroll_layer),
         overscroll_elasticity_layer_(overscroll_elasticity_layer),
         elastic_overscroll_(elastic_overscroll),
         page_scale_factor_(page_scale_factor),
         device_transform_(device_transform),
-        property_trees_(property_trees),
-        transform_tree_(property_trees.transform_tree),
-        clip_tree_(property_trees.clip_tree),
-        effect_tree_(property_trees.effect_tree),
-        scroll_tree_(property_trees.scroll_tree) {}
+        property_trees_(*property_trees),
+        transform_tree_(property_trees->transform_tree),
+        clip_tree_(property_trees->clip_tree),
+        effect_tree_(property_trees->effect_tree),
+        scroll_tree_(property_trees->scroll_tree) {
+    InitializeScrollChildrenMap();
+  }
 
-  void BuildPropertyTrees(LayerType* root_layer,
-                          float device_scale_factor,
+  void InitializeScrollChildrenMap();
+
+  void BuildPropertyTrees(float device_scale_factor,
                           const gfx::Rect& viewport,
                           SkColor root_background_color) const;
 
@@ -106,6 +111,7 @@ class PropertyTreeBuilderContext {
       LayerType* layer,
       DataForRecursion<LayerType>* data_for_children) const;
 
+  LayerType* root_layer_;
   const LayerType* page_scale_layer_;
   const LayerType* inner_viewport_scroll_layer_;
   const LayerType* outer_viewport_scroll_layer_;
@@ -118,6 +124,7 @@ class PropertyTreeBuilderContext {
   ClipTree& clip_tree_;
   EffectTree& effect_tree_;
   ScrollTree& scroll_tree_;
+  std::multimap<const LayerType*, LayerType*> scroll_children_map_;
 };
 
 static LayerPositionConstraint PositionConstraint(Layer* layer) {
@@ -159,14 +166,6 @@ static Layer* ScrollParent(Layer* layer) {
 
 static LayerImpl* ScrollParent(LayerImpl* layer) {
   return layer->test_properties()->scroll_parent;
-}
-
-static std::set<Layer*>* ScrollChildren(Layer* layer) {
-  return layer->scroll_children();
-}
-
-static std::set<LayerImpl*>* ScrollChildren(LayerImpl* layer) {
-  return layer->test_properties()->scroll_children.get();
 }
 
 static Layer* ClipParent(Layer* layer) {
@@ -1213,21 +1212,18 @@ void PropertyTreeBuilderContext<LayerType>::BuildPropertyTreesInternal(
     SetLayerPropertyChangedForChild(layer, current_child);
     if (!ScrollParent(current_child)) {
       BuildPropertyTreesInternal(current_child, data_for_children);
-    } else {
-      // The child should be included in its scroll parent's list of scroll
-      // children.
-      DCHECK(ScrollChildren(ScrollParent(current_child))->count(current_child));
     }
   }
 
-  if (ScrollChildren(layer)) {
-    for (LayerType* scroll_child : *ScrollChildren(layer)) {
-      DCHECK_EQ(ScrollParent(scroll_child), layer);
-      DCHECK(Parent(scroll_child));
-      data_for_children.effect_tree_parent =
-          Parent(scroll_child)->effect_tree_index();
-      BuildPropertyTreesInternal(scroll_child, data_for_children);
-    }
+  auto scroll_children_range = scroll_children_map_.equal_range(layer);
+  for (auto it = scroll_children_range.first;
+       it != scroll_children_range.second; ++it) {
+    LayerType* scroll_child = it->second;
+    DCHECK_EQ(ScrollParent(scroll_child), layer);
+    DCHECK(Parent(scroll_child));
+    data_for_children.effect_tree_parent =
+        Parent(scroll_child)->effect_tree_index();
+    BuildPropertyTreesInternal(scroll_child, data_for_children);
   }
 
   if (MaskLayer(layer)) {
@@ -1240,6 +1236,13 @@ void PropertyTreeBuilderContext<LayerType>::BuildPropertyTreesInternal(
     MaskLayer(layer)->SetEffectTreeIndex(layer->effect_tree_index());
     MaskLayer(layer)->SetScrollTreeIndex(layer->scroll_tree_index());
   }
+}
+
+const LayerTreeHost& AllLayerRange(const Layer* root_layer) {
+  return *root_layer->layer_tree_host();
+}
+const LayerTreeImpl& AllLayerRange(const LayerImpl* root_layer) {
+  return *root_layer->layer_tree_impl();
 }
 
 }  // namespace
@@ -1262,7 +1265,6 @@ Layer* PropertyTreeBuilder::FindFirstScrollableLayer(Layer* layer) {
 
 template <typename LayerType>
 void PropertyTreeBuilderContext<LayerType>::BuildPropertyTrees(
-    LayerType* root_layer,
     float device_scale_factor,
     const gfx::Rect& viewport,
     SkColor root_background_color) const {
@@ -1274,10 +1276,10 @@ void PropertyTreeBuilderContext<LayerType>::BuildPropertyTrees(
         &property_trees_, overscroll_elasticity_layer_, elastic_overscroll_);
     clip_tree_.SetViewportClip(gfx::RectF(viewport));
     float page_scale_factor_for_root =
-        page_scale_layer_ == root_layer ? page_scale_factor_ : 1.f;
+        page_scale_layer_ == root_layer_ ? page_scale_factor_ : 1.f;
     transform_tree_.SetRootTransformsAndScales(
         device_scale_factor, page_scale_factor_for_root, device_transform_,
-        root_layer->position());
+        root_layer_->position());
     return;
   }
 
@@ -1313,7 +1315,7 @@ void PropertyTreeBuilderContext<LayerType>::BuildPropertyTrees(
   data_for_recursion.clip_tree_parent =
       clip_tree_.Insert(root_clip, ClipTree::kRootNodeId);
 
-  BuildPropertyTreesInternal(root_layer, data_for_recursion);
+  BuildPropertyTreesInternal(root_layer_, data_for_recursion);
   property_trees_.needs_rebuild = false;
 
   // The transform tree is kept up to date as it is built, but the
@@ -1326,16 +1328,19 @@ void PropertyTreeBuilderContext<LayerType>::BuildPropertyTrees(
 }
 
 #if DCHECK_IS_ON()
-static void CheckScrollAndClipPointersForLayer(Layer* layer) {
+template <typename LayerType>
+static void CheckDanglingScrollParent(LayerType* root_layer) {
+  std::unordered_set<const LayerType*> layers;
+  for (const auto* layer : AllLayerRange(root_layer))
+    layers.insert(layer);
+  for (auto* layer : AllLayerRange(root_layer))
+    DCHECK(!ScrollParent(layer) ||
+           layers.find(ScrollParent(layer)) != layers.end());
+}
+
+static void CheckClipPointersForLayer(Layer* layer) {
   if (!layer)
     return;
-
-  if (layer->scroll_children()) {
-    for (std::set<Layer*>::iterator it = layer->scroll_children()->begin();
-         it != layer->scroll_children()->end(); ++it) {
-      DCHECK_EQ((*it)->scroll_parent(), layer);
-    }
-  }
 
   if (layer->clip_children()) {
     for (std::set<Layer*>::iterator it = layer->clip_children()->begin();
@@ -1345,6 +1350,17 @@ static void CheckScrollAndClipPointersForLayer(Layer* layer) {
   }
 }
 #endif
+
+template <typename LayerType>
+void PropertyTreeBuilderContext<LayerType>::InitializeScrollChildrenMap() {
+#if DCHECK_IS_ON()
+  CheckDanglingScrollParent(root_layer_);
+#endif
+  for (auto* layer : AllLayerRange(root_layer_)) {
+    if (ScrollParent(layer))
+      scroll_children_map_.emplace(ScrollParent(layer), layer);
+  }
+}
 
 void PropertyTreeBuilder::BuildPropertyTrees(
     Layer* root_layer,
@@ -1366,13 +1382,13 @@ void PropertyTreeBuilder::BuildPropertyTrees(
   if (root_layer->layer_tree_host()->has_copy_request())
     UpdateSubtreeHasCopyRequestRecursive(root_layer);
   PropertyTreeBuilderContext<Layer>(
-      page_scale_layer, inner_viewport_scroll_layer,
+      root_layer, page_scale_layer, inner_viewport_scroll_layer,
       outer_viewport_scroll_layer, overscroll_elasticity_layer,
-      elastic_overscroll, page_scale_factor, device_transform, *property_trees)
-      .BuildPropertyTrees(root_layer, device_scale_factor, viewport, color);
+      elastic_overscroll, page_scale_factor, device_transform, property_trees)
+      .BuildPropertyTrees(device_scale_factor, viewport, color);
 #if DCHECK_IS_ON()
-  for (auto* layer : *root_layer->layer_tree_host())
-    CheckScrollAndClipPointersForLayer(layer);
+  for (auto* layer : AllLayerRange(root_layer))
+    CheckClipPointersForLayer(layer);
 #endif
   property_trees->ResetCachedData();
   // During building property trees, all copy requests are moved from layers to
@@ -1405,10 +1421,10 @@ void PropertyTreeBuilder::BuildPropertyTrees(
   UpdateSubtreeHasCopyRequestRecursive(root_layer);
 
   PropertyTreeBuilderContext<LayerImpl>(
-      page_scale_layer, inner_viewport_scroll_layer,
+      root_layer, page_scale_layer, inner_viewport_scroll_layer,
       outer_viewport_scroll_layer, overscroll_elasticity_layer,
-      elastic_overscroll, page_scale_factor, device_transform, *property_trees)
-      .BuildPropertyTrees(root_layer, device_scale_factor, viewport, color);
+      elastic_overscroll, page_scale_factor, device_transform, property_trees)
+      .BuildPropertyTrees(device_scale_factor, viewport, color);
   property_trees->effect_tree.CreateOrReuseRenderSurfaces(
       &render_surfaces, root_layer->layer_tree_impl());
   property_trees->ResetCachedData();

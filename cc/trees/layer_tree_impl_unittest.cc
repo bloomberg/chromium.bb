@@ -1065,9 +1065,6 @@ TEST_F(LayerTreeImplTest, HitTestingRespectsScrollParents) {
     // This should cause scroll child and its descendants to be affected by
     // |child|'s clip.
     scroll_child->test_properties()->scroll_parent = child.get();
-    child->test_properties()->scroll_children =
-        std::make_unique<std::set<LayerImpl*>>();
-    child->test_properties()->scroll_children->insert(scroll_child.get());
 
     grand_child->SetBounds(gfx::Size(200, 200));
     grand_child->SetDrawsContent(true);

@@ -117,13 +117,6 @@ void ExpectTreesAreIdentical(Layer* root_layer,
           effect_tree.Node(layer_impl->effect_tree_index())->mask_layer_id);
     }
 
-    const Layer* layer_scroll_parent = layer->scroll_parent();
-
-    if (layer_scroll_parent) {
-      ASSERT_TRUE(layer_scroll_parent->scroll_children()->find(layer) !=
-                  layer_scroll_parent->scroll_children()->end());
-    }
-
     const Layer* layer_clip_parent = layer->clip_parent();
 
     if (layer_clip_parent) {
