@@ -7,7 +7,6 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "chrome/common/search/search_types.h"
 
 class SearchModelObserver;
 
@@ -15,24 +14,30 @@ class SearchModelObserver;
 // changes.
 class SearchModel {
  public:
+  enum class Origin {
+    // The user is on some page other than the NTP.
+    DEFAULT = 0,
+
+    // The user is on the NTP.
+    NTP,
+  };
+
   SearchModel();
   ~SearchModel();
 
-  // Change the mode.  Change notifications are sent to observers.
-  void SetMode(const SearchMode& mode);
+  // Change the origin.  Change notifications are sent to observers.
+  void SetOrigin(Origin origin);
 
-  // Get the active mode.
-  const SearchMode& mode() const { return mode_; }
+  // Get the active origin.
+  Origin origin() const { return origin_; }
 
   // Add and remove observers.
   void AddObserver(SearchModelObserver* observer);
   void RemoveObserver(SearchModelObserver* observer);
 
  private:
-  // Current state of model.
-  SearchMode mode_;
+  Origin origin_;
 
-  // Observers.
   base::ObserverList<SearchModelObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchModel);

@@ -15,7 +15,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/search/instant_tab.h"
-#include "chrome/common/search/search_types.h"
+#include "chrome/browser/ui/search/search_model.h"
 
 class BrowserInstantController;
 
@@ -36,8 +36,8 @@ class InstantController : public InstantTab::Delegate {
 
   // The search mode in the active tab has changed. Bind |instant_tab_| if the
   // |new_mode| reflects an Instant NTP.
-  void SearchModeChanged(const SearchMode& old_mode,
-                         const SearchMode& new_mode);
+  void SearchModeChanged(SearchModel::Origin old_origin,
+                         SearchModel::Origin new_origin);
 
   // The user switched tabs. Bind |instant_tab_| if the newly active tab is an
   // Instant NTP.
@@ -82,7 +82,7 @@ class InstantController : public InstantTab::Delegate {
   std::unique_ptr<InstantTab> instant_tab_;
 
   // The search model mode for the active tab.
-  SearchMode search_mode_;
+  SearchModel::Origin search_origin_;
 
   // List of events and their timestamps, useful in debugging Instant behaviour.
   mutable std::list<std::pair<int64_t, std::string>> debug_events_;
