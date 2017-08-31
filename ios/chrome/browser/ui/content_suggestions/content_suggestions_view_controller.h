@@ -64,6 +64,8 @@
 // Returns the number of sections containing suggestions displayed above this
 // |section|.
 - (NSInteger)numberOfSectionsAbove:(NSInteger)section;
+// Updates the constraints of the collection.
+- (void)updateConstraints;
 
 // Returns the accessibility identifier of the collection.
 + (NSString*)collectionAccessibilityIdentifier;
