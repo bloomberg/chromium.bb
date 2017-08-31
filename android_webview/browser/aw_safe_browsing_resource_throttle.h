@@ -39,10 +39,7 @@ content::ResourceThrottle* MaybeCreateAwSafeBrowsingResourceThrottle(
     scoped_refptr<AwSafeBrowsingUIManager> ui_manager,
     AwSafeBrowsingWhitelistManager* whitelist_manager);
 
-// This is used as a user data key for net::URLRequest. Setting it indicates
-// that the error code should be overridden with a SafeBrowsing-specific error
-// code.
-extern const void* const kAwSafeBrowsingResourceThrottleUserDataKey;
+bool IsCancelledBySafeBrowsing(const net::URLRequest* request);
 
 class AwSafeBrowsingResourceThrottle
     : public safe_browsing::BaseResourceThrottle {

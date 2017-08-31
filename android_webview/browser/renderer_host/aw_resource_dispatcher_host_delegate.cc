@@ -342,7 +342,7 @@ void AwResourceDispatcherHostDelegate::RequestComplete(
         content::ResourceRequestInfo::ForRequest(request);
 
     bool safebrowsing_hit = false;
-    if (request->GetUserData(kAwSafeBrowsingResourceThrottleUserDataKey)) {
+    if (IsCancelledBySafeBrowsing(request)) {
       safebrowsing_hit = true;
     }
     BrowserThread::PostTask(
