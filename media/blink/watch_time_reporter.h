@@ -108,9 +108,8 @@ class MEDIA_BLINK_EXPORT WatchTimeReporter : base::PowerObserver {
   void OnShown();
   void OnHidden();
 
-  // Returns true if the current size is large enough that watch time will be
-  // recorded for playback.
-  bool IsSizeLargeEnoughToReportWatchTime() const;
+  // Called when a playback ends in error.
+  void OnError(PipelineStatus status);
 
   // Indicates a rebuffering event occurred during playback. When watch time is
   // finalized the total watch time for a given category will be divided by the

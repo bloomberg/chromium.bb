@@ -145,12 +145,19 @@ void WatchTimeReporter::OnHidden() {
   MaybeFinalizeWatchTime(FinalizeTime::ON_NEXT_UPDATE);
 }
 
-bool WatchTimeReporter::IsSizeLargeEnoughToReportWatchTime() const {
-  return properties_->natural_size.height() >= kMinimumVideoSize.height() &&
-         properties_->natural_size.width() >= kMinimumVideoSize.width();
+void WatchTimeReporter::OnError(PipelineStatus status) {
+  // Since playback should have stopped by this point, go ahead and send the
+  // error directly instead of on the next timer tick. It won't be recorded
+  // until finalization anyways.
+  recorder_->OnError(status);
+  if (background_reporter_)
+    background_reporter_->OnError(status);
 }
 
 void WatchTimeReporter::OnUnderflow() {
+  // We don't report underflow for background players since we don't want to
+  // pollute our foreground stats. TODO(dalecurtis): Create a background metric.
+
   if (!reporting_timer_.IsRunning())
     return;
 
@@ -227,7 +234,8 @@ bool WatchTimeReporter::ShouldReportWatchTime() {
   // have both an audio and video track of sufficient size.
   return (!properties_->has_video && properties_->has_audio) ||
          (properties_->has_video && properties_->has_audio &&
-          IsSizeLargeEnoughToReportWatchTime());
+          properties_->natural_size.height() >= kMinimumVideoSize.height() &&
+          properties_->natural_size.width() >= kMinimumVideoSize.width());
 }
 
 void WatchTimeReporter::MaybeStartReportingTimer(

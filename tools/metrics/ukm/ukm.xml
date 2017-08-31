@@ -534,6 +534,9 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="Media.WatchTime">
+  <obsolete>
+    Deprecated 8/2017 in favor Media.BasicPlayback
+  </obsolete>
   <owner>dalecurtis@chromium.org</owner>
   <summary>
     Watch time is defined as the amount of elapsed media time for audio+video
@@ -579,6 +582,131 @@ be describing additional metrics about the same event.
   <metric name="AudioVideo.NativeControlsOff"/>
   <metric name="AudioVideo.NativeControlsOn"/>
   <metric name="AudioVideo.SRC"/>
+</event>
+
+<event name="Media.BasicPlayback">
+  <owner>dalecurtis@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
+  <summary>
+    Core metrics associated with a media playback. Only recorded if a playback
+    qualifies for WatchTime recording (see Media.WatchTime metrics). Reported at
+    the time of WebMediaPlayer destruction or render process termination;
+    whichever comes first.
+  </summary>
+  <metric name="AudioCodec">
+    <summary>
+      media::AudioCodec enum value. Can be kUnknownAudioCodec even with HasAudio
+      is true because we don't always know the codec.
+    </summary>
+  </metric>
+  <metric name="HasAudio">
+    <summary>
+      Boolean value indicating the presence of audio.
+    </summary>
+  </metric>
+  <metric name="HasVideo">
+    <summary>
+      Boolean value indicating the presence of video.
+    </summary>
+  </metric>
+  <metric name="IsBackground">
+    <summary>
+      Boolean value indicating if this event is for a background playback.
+    </summary>
+  </metric>
+  <metric name="IsEME">
+    <summary>
+      Boolean value indicating if this event is for an EME playback.
+    </summary>
+  </metric>
+  <metric name="IsMSE">
+    <summary>
+      Boolean value indicating if this event is for an MSE playback. If false it
+      means this was a SRC playback.
+    </summary>
+  </metric>
+  <metric name="LastPipelineStatus">
+    <summary>
+      media::PipelineStatus enum value. Always 0 if the playback succeeded; all
+      other values indicate the playback ended in an error.
+    </summary>
+  </metric>
+  <metric name="MeanTimeBetweenRebuffers">
+    <summary>
+      Average number of milliseconds between rebuffering events. Only reported
+      if a rebuffering event occurred. Computed by dividing total watch time by
+      the number of rebuffering events.
+    </summary>
+  </metric>
+  <metric name="RebuffersCount">
+    <summary>
+      Integer count of the number of times playback experienced rebuffering.
+    </summary>
+  </metric>
+  <metric name="VideoCodec">
+    <summary>
+      media::VideoCodec enum value. Can be kUnknownVideoCodec even with HasVideo
+      is true because we don't always know the codec.
+    </summary>
+  </metric>
+  <metric name="VideoNaturalHeight">
+    <summary>
+      Integer value indicating the natural height of the playback.
+    </summary>
+  </metric>
+  <metric name="VideoNaturalWidth">
+    <summary>
+      Integer value indicating the natural width of the playback.
+    </summary>
+  </metric>
+  <metric name="WatchTime">
+    <summary>
+      Watch time in milliseconds for this playback. See Media.WatchTime UMA
+      metrics.
+    </summary>
+  </metric>
+  <metric name="WatchTime.AC">
+    <summary>
+      Watch time on AC power in milliseconds for this playback. See
+      Media.WatchTime UMA metrics.
+    </summary>
+  </metric>
+  <metric name="WatchTime.Battery">
+    <summary>
+      Watch time on battery power in milliseconds for this playback. See
+      Media.WatchTime UMA metrics.
+    </summary>
+  </metric>
+  <metric name="WatchTime.DisplayFullscreen">
+    <summary>
+      Watch time for fullscreen in milliseconds for this playback. See
+      Media.WatchTime UMA metrics.
+    </summary>
+  </metric>
+  <metric name="WatchTime.DisplayInline">
+    <summary>
+      Watch time for inline display in milliseconds for this playback. See
+      Media.WatchTime UMA metrics.
+    </summary>
+  </metric>
+  <metric name="WatchTime.DisplayPictureInPicture">
+    <summary>
+      Watch time for picture in picture display in milliseconds for this
+      playback. See Media.WatchTime UMA metrics.
+    </summary>
+  </metric>
+  <metric name="WatchTime.NativeControlsOff">
+    <summary>
+      Watch time with no controls in milliseconds for this playback. See
+      Media.WatchTime UMA metrics.
+    </summary>
+  </metric>
+  <metric name="WatchTime.NativeControlsOn">
+    <summary>
+      Watch time with native controls in milliseconds for this playback. See
+      Media.WatchTime UMA metrics.
+    </summary>
+  </metric>
 </event>
 
 <event name="Memory.Experimental">

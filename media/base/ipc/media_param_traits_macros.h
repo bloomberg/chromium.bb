@@ -20,6 +20,7 @@
 #include "media/base/encryption_scheme.h"
 #include "media/base/media_log_event.h"
 #include "media/base/output_device_info.h"
+#include "media/base/pipeline_status.h"
 #include "media/base/sample_format.h"
 #include "media/base/subsample_entry.h"
 #include "media/base/video_codecs.h"
@@ -85,6 +86,9 @@ IPC_ENUM_TRAITS_MAX_VALUE(media::MediaLogEvent::Type,
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::OutputDeviceStatus,
                           media::OUTPUT_DEVICE_STATUS_MAX)
+
+IPC_ENUM_TRAITS_MAX_VALUE(media::PipelineStatus,
+                          media::PipelineStatus::PIPELINE_STATUS_MAX);
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::SampleFormat, media::kSampleFormatMax)
 

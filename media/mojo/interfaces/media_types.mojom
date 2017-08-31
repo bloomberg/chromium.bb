@@ -37,6 +37,10 @@ struct MediaLogEvent;
 [Native]
 enum OutputDeviceStatus;
 
+// See media/base/pipeline_status.h for descriptions.
+[Native]
+enum PipelineStatus;
+
 // See media/base/sample_format.h for descriptions.
 [Native]
 enum SampleFormat;
