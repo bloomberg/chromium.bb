@@ -5,7 +5,6 @@
 package org.chromium.chromoting;
 
 import android.content.Context;
-import android.content.res.Resources;
 import android.text.TextUtils;
 
 import org.json.JSONArray;
@@ -74,19 +73,39 @@ public class HostInfo {
         this.updatedTime = updatedTimeCandidate;
     }
 
+    private int getHostOfflineReasonResourceId(String reason) {
+        switch (reason) {
+            case "initialization_failed":
+                return R.string.offline_reason_initialization_failed;
+            case "invalid_host_configuration":
+                return R.string.offline_reason_invalid_host_configuration;
+            case "invalid_host_id":
+                return R.string.offline_reason_invalid_host_id;
+            case "invalid_oauth_credentials":
+                return R.string.offline_reason_invalid_oauth_credentials;
+            case "invalid_host_domain":
+                return R.string.offline_reason_invalid_host_domain;
+            case "login_screen_not_supported":
+                return R.string.offline_reason_login_screen_not_supported;
+            case "policy_read_error":
+                return R.string.offline_reason_policy_read_error;
+            case "policy_change_requires_restart":
+                return R.string.offline_reason_policy_change_requires_restart;
+            case "success_exit":
+                return R.string.offline_reason_success_exit;
+            case "username_mismatch":
+                return R.string.offline_reason_username_mismatch;
+            default:
+                return R.string.offline_reason_unknown;
+        }
+    }
+
     public String getHostOfflineReasonText(Context context) {
         if (TextUtils.isEmpty(hostOfflineReason)) {
             return context.getString(R.string.host_offline_tooltip);
         }
-        try {
-            // TODO(wnwen): Replace this with explicit usage so errors move to compile time.
-            String resourceName = "offline_reason_" + hostOfflineReason.toLowerCase(Locale.ENGLISH);
-            int resourceId = context.getResources().getIdentifier(
-                    resourceName, "string", context.getPackageName());
-            return context.getString(resourceId);
-        } catch (Resources.NotFoundException ignored) {
-            return context.getString(R.string.offline_reason_unknown, hostOfflineReason);
-        }
+        return context.getString(
+                getHostOfflineReasonResourceId(hostOfflineReason.toLowerCase(Locale.ENGLISH)));
     }
 
     public ArrayList<String> getTokenUrlPatterns() {
