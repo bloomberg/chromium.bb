@@ -11,6 +11,8 @@
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 
+@protocol ApplicationCommands;
+
 namespace password_manager {
 class PasswordFormManager;
 }
@@ -45,6 +47,10 @@ class IOSChromePasswordManagerInfoBarDelegate : public ConfirmInfoBarDelegate {
     return infobar_response_;
   }
 
+  void set_dispatcher(id<ApplicationCommands> dispatcher) {
+    dispatcher_ = dispatcher;
+  }
+
  private:
   // ConfirmInfoBarDelegate implementation.
   Type GetInfoBarType() const override;
@@ -61,6 +67,9 @@ class IOSChromePasswordManagerInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   // Whether to show the password manager branded as Smart Lock.
   const bool is_smart_lock_branding_enabled_;
+
+  // Dispatcher for calling Application commands.
+  __weak id<ApplicationCommands> dispatcher_ = nil;
 
   DISALLOW_COPY_AND_ASSIGN(IOSChromePasswordManagerInfoBarDelegate);
 };

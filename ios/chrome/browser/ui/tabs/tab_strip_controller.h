@@ -39,16 +39,18 @@ extern NSString* const kTabStripDragEnded;
 @property(nonatomic, assign) BOOL highlightsSelectedTab;
 @property(nonatomic, readonly, retain) UIView* view;
 
-@property(nonatomic, readonly, weak) id<BrowserCommands> dispatcher;
+@property(nonatomic, readonly, weak) id<BrowserCommands, ApplicationCommands>
+    dispatcher;
 
 // Used to check if the tabstrip is visible before starting an animation.
 @property(nonatomic, assign) id<FullScreenControllerDelegate>
     fullscreenDelegate;
 
-// Designated initializer.
+// Designated initializer, |dispatcher| is not retained.
 - (instancetype)initWithTabModel:(TabModel*)tabModel
                            style:(TabStrip::Style)style
-                      dispatcher:(id<BrowserCommands>)dispatcher
+                      dispatcher:
+                          (id<ApplicationCommands, BrowserCommands>)dispatcher
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;

@@ -11,7 +11,6 @@
 #include "components/ui_metrics/sadtab_metrics_types.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
-#import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/open_url_command.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
@@ -325,7 +324,7 @@ NSString* const kMessageTextViewBulletRTLFormat = @"\u202E%@\u202C";
              action:^(const GURL& URL) {
                OpenUrlCommand* command =
                    [[OpenUrlCommand alloc] initWithURLFromChrome:URL];
-               [weakSelf chromeExecuteCommand:command];
+               [weakSelf.dispatcher openURL:command];
              }];
 
   _footerLabelLinkController.linkFont =

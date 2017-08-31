@@ -26,10 +26,12 @@ using password_manager::PasswordFormManager;
 void IOSChromeSavePasswordInfoBarDelegate::Create(
     bool is_smart_lock_branding_enabled,
     infobars::InfoBarManager* infobar_manager,
-    std::unique_ptr<PasswordFormManager> form_to_save) {
+    std::unique_ptr<PasswordFormManager> form_to_save,
+    id<ApplicationCommands> dispatcher) {
   DCHECK(infobar_manager);
   auto delegate = base::WrapUnique(new IOSChromeSavePasswordInfoBarDelegate(
       is_smart_lock_branding_enabled, std::move(form_to_save)));
+  delegate->set_dispatcher(dispatcher);
   infobar_manager->AddInfoBar(
       infobar_manager->CreateConfirmInfoBar(std::move(delegate)));
 }

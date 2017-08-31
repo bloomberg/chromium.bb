@@ -901,12 +901,14 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
   switch (type) {
     case PasswordInfoBarType::SAVE:
       IOSChromeSavePasswordInfoBarDelegate::Create(
-          isSmartLockBrandingEnabled, infoBarManager, std::move(form));
+          isSmartLockBrandingEnabled, infoBarManager, std::move(form),
+          self.dispatcher);
       break;
 
     case PasswordInfoBarType::UPDATE:
       IOSChromeUpdatePasswordInfoBarDelegate::Create(
-          isSmartLockBrandingEnabled, infoBarManager, std::move(form));
+          isSmartLockBrandingEnabled, infoBarManager, std::move(form),
+          self.dispatcher);
       break;
   }
 }

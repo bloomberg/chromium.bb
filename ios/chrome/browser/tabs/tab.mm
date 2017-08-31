@@ -1607,7 +1607,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
          inIncognito:YES
         inBackground:NO
             appendTo:kLastTab];
-    [self.view chromeExecuteCommand:command];
+    [self.dispatcher openURL:command];
   } else {
     [self.dispatcher openNewTab:[OpenNewTabCommand command]];
   }

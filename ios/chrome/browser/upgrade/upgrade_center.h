@@ -9,6 +9,7 @@
 
 #include "ios/chrome/browser/upgrade/upgrade_recommended_details.h"
 
+@protocol ApplicationCommands;
 @class UpgradeCenter;
 
 namespace infobars {
@@ -29,9 +30,11 @@ class InfoBarManager;
 // Returns the singleton instance of the class.
 + (UpgradeCenter*)sharedInstance;
 
-// Registers a client for the UpgradeCenter. The clients are not retained,
-// unregisterClient: must be called before the object goes away.
-- (void)registerClient:(id<UpgradeCenterClientProtocol>)client;
+// Registers a client and a |dispatcher| for the UpgradeCenter. Client and
+// |dispatcher| are not retained, unregisterClient: must be called before
+// the object goes away.
+- (void)registerClient:(id<UpgradeCenterClientProtocol>)client
+        withDispatcher:(id<ApplicationCommands>)dispatcher;
 
 // Unregisters a client.
 - (void)unregisterClient:(id<UpgradeCenterClientProtocol>)client;

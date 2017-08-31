@@ -12,6 +12,7 @@
 #include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view.h"
+#import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/open_url_command.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_controller.h"
@@ -372,7 +373,7 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
   // Open new tab to cancel sign-in.
   OpenUrlCommand* command =
       [[OpenUrlCommand alloc] initWithURLFromChrome:GURL("about:blank")];
-  chrome_test_util::RunCommandWithActiveViewController(command);
+  [chrome_test_util::DispatcherForActiveViewController() openURL:command];
 
   // Re-open the sign-in screen. If it wasn't correctly dismissed previously,
   // this will fail.
@@ -413,7 +414,7 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
   // Open new tab to cancel sign-in.
   OpenUrlCommand* command =
       [[OpenUrlCommand alloc] initWithURLFromChrome:GURL("about:blank")];
-  chrome_test_util::RunCommandWithActiveViewController(command);
+  [chrome_test_util::DispatcherForActiveViewController() openURL:command];
 
   // Re-open the sign-in screen. If it wasn't correctly dismissed previously,
   // this will fail.
@@ -475,7 +476,7 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
   // Open new tab to cancel sign-in.
   OpenUrlCommand* command =
       [[OpenUrlCommand alloc] initWithURLFromChrome:GURL("about:blank")];
-  chrome_test_util::RunCommandWithActiveViewController(command);
+  [chrome_test_util::DispatcherForActiveViewController() openURL:command];
 
   // Re-open the sign-in screen. If it wasn't correctly dismissed previously,
   // this will fail.
@@ -541,7 +542,7 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
   // Open new tab to cancel sign-in.
   OpenUrlCommand* command =
       [[OpenUrlCommand alloc] initWithURLFromChrome:GURL("about:blank")];
-  chrome_test_util::RunCommandWithActiveViewController(command);
+  [chrome_test_util::DispatcherForActiveViewController() openURL:command];
 
   // Re-open the sign-in screen. If it wasn't correctly dismissed previously,
   // this will fail.
