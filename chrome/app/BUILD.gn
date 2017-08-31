@@ -400,6 +400,10 @@ if (is_chromeos) {
       [ "//chrome/browser/chromeos:ash_pref_connector_manifest" ]
 }
 
+if (!is_android) {
+  chrome_packaged_services += [ "//chrome/utility:profile_import_manifest" ]
+}
+
 service_manifest("chrome_manifest") {
   source = "chrome_manifest.json"
 }

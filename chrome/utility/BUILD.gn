@@ -7,6 +7,7 @@ import("//build/config/features.gni")
 import("//build/config/sysroot.gni")
 import("//extensions/features/features.gni")
 import("//printing/features/features.gni")
+import("//services/service_manager/public/service_manifest.gni")
 
 static_library("utility") {
   sources = [
@@ -87,10 +88,12 @@ static_library("utility") {
       "importer/nss_decryptor_mac.mm",
       "importer/nss_decryptor_win.cc",
       "importer/nss_decryptor_win.h",
+      "importer/profile_import_impl.cc",
+      "importer/profile_import_impl.h",
+      "importer/profile_import_service.cc",
+      "importer/profile_import_service.h",
       "importer/safari_importer.h",
       "importer/safari_importer.mm",
-      "profile_import_handler.cc",
-      "profile_import_handler.h",
     ]
     deps += [
       "//chrome/common:mojo_bindings",
@@ -192,5 +195,12 @@ static_library("utility") {
       "media_router/dial_device_description_parser_impl.cc",
       "media_router/dial_device_description_parser_impl.h",
     ]
+  }
+}
+
+if (!is_android) {
+  service_manifest("profile_import_manifest") {
+    name = "profile_import"
+    source = "importer/profile_import_manifest.json"
   }
 }

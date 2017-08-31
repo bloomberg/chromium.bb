@@ -14,6 +14,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/common/features.h"
 #include "chrome/common/file_patcher.mojom.h"
 #include "chrome/common/profiling/constants.mojom.h"
@@ -36,8 +37,9 @@
 
 #if !defined(OS_ANDROID)
 #include "chrome/common/resource_usage_reporter.mojom.h"
+#include "chrome/utility/importer/profile_import_impl.h"
+#include "chrome/utility/importer/profile_import_service.h"
 #include "chrome/utility/media_router/dial_device_description_parser_impl.h"
-#include "chrome/utility/profile_import_handler.h"
 #include "net/proxy/mojo_proxy_resolver_factory_impl.h"  // nogncheck
 #include "net/proxy/proxy_resolver_v8.h"
 #endif  // !defined(OS_ANDROID)
@@ -281,8 +283,6 @@ void ChromeContentUtilityClient::UtilityThreadStarted() {
         base::ThreadTaskRunnerHandle::Get());
     registry->AddInterface(base::Bind(CreateResourceUsageReporter),
                            base::ThreadTaskRunnerHandle::Get());
-    registry->AddInterface(base::Bind(&ProfileImportHandler::Create),
-                           base::ThreadTaskRunnerHandle::Get());
     registry->AddInterface(
         base::Bind(&media_router::DialDeviceDescriptionParserImpl::Create),
         base::ThreadTaskRunnerHandle::Get());
@@ -337,6 +337,14 @@ void ChromeContentUtilityClient::RegisterServices(
   profiling_info.factory =
       base::Bind(&profiling::ProfilingService::CreateService);
   services->emplace(profiling::mojom::kServiceName, profiling_info);
+
+#if !defined(OS_ANDROID)
+  service_manager::EmbeddedServiceInfo profile_import_info;
+  profile_import_info.factory =
+      base::Bind(&ProfileImportService::CreateService);
+  services->emplace(chrome::mojom::kProfileImportServiceName,
+                    profile_import_info);
+#endif
 }
 
 void ChromeContentUtilityClient::RegisterNetworkBinders(

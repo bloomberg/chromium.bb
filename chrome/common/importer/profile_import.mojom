@@ -9,6 +9,8 @@ import "mojo/common/string16.mojom";
 import "mojo/common/values.mojom";
 import "url/mojo/url.mojom";
 
+const string kProfileImportServiceName = "profile_import";
+
 [Native]
 struct ImportedBookmarkEntry;
 
