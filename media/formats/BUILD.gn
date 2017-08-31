@@ -149,3 +149,91 @@ source_set("formats") {
     ]
   }
 }
+
+static_library("test_support") {
+  testonly = true
+  visibility = [ "//media:test_support" ]
+
+  sources = [
+    "webm/cluster_builder.cc",
+    "webm/cluster_builder.h",
+    "webm/opus_packet_builder.cc",
+    "webm/opus_packet_builder.h",
+    "webm/tracks_builder.cc",
+    "webm/tracks_builder.h",
+  ]
+
+  deps = [
+    "//base/test:test_support",
+    "//media/base:test_support",
+  ]
+
+  if (proprietary_codecs) {
+    sources += [
+      "common/stream_parser_test_base.cc",
+      "common/stream_parser_test_base.h",
+    ]
+
+    deps += [ "//testing/gtest" ]
+
+    if (enable_mse_mpeg2ts_stream_parser) {
+      sources += [
+        "mp2t/es_parser_test_base.cc",
+        "mp2t/es_parser_test_base.h",
+      ]
+    }
+  }
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "ac3/ac3_util_unittest.cc",
+    "common/offset_byte_queue_unittest.cc",
+    "webm/webm_cluster_parser_unittest.cc",
+    "webm/webm_content_encodings_client_unittest.cc",
+    "webm/webm_crypto_helpers_unittest.cc",
+    "webm/webm_parser_unittest.cc",
+    "webm/webm_stream_parser_unittest.cc",
+    "webm/webm_tracks_parser_unittest.cc",
+    "webm/webm_webvtt_parser_unittest.cc",
+  ]
+
+  deps = [
+    "//base/test:test_support",
+    "//media:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+
+  if (proprietary_codecs) {
+    sources += [
+      "mp4/aac_unittest.cc",
+      "mp4/avc_unittest.cc",
+      "mp4/box_reader_unittest.cc",
+      "mp4/es_descriptor_unittest.cc",
+      "mp4/mp4_stream_parser_unittest.cc",
+      "mp4/sample_to_group_iterator_unittest.cc",
+      "mp4/track_run_iterator_unittest.cc",
+      "mpeg/adts_stream_parser_unittest.cc",
+      "mpeg/mpeg1_audio_stream_parser_unittest.cc",
+    ]
+
+    deps += [ "//crypto" ]
+
+    if (enable_mse_mpeg2ts_stream_parser) {
+      sources += [
+        "mp2t/es_adapter_video_unittest.cc",
+        "mp2t/es_parser_adts_unittest.cc",
+        "mp2t/es_parser_h264_unittest.cc",
+        "mp2t/es_parser_mpeg1audio_unittest.cc",
+        "mp2t/mp2t_stream_parser_unittest.cc",
+        "mp2t/timestamp_unroller_unittest.cc",
+      ]
+    }
+
+    if (enable_dolby_vision_demuxing) {
+      sources += [ "mp4/dolby_vision_unittest.cc" ]
+    }
+  }
+}
