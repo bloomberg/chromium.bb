@@ -28,11 +28,12 @@
 #define WebCORSPreflightResultCache_h
 
 #include <memory>
+#include <string>
+#include "base/containers/flat_set.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/HashSet.h"
-#include "platform/wtf/ThreadSpecific.h"
-#include "platform/wtf/text/WTFString.h"
+#include "public/platform/WebHTTPHeaderMap.h"
+#include "public/platform/WebHTTPHeaderSet.h"
+#include "public/platform/WebNonCopyable.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLRequest.h"
@@ -40,34 +41,28 @@
 
 namespace blink {
 
-class HTTPHeaderMap;
-
 // Represents an entry of the CORS-preflight cache.
 // See https://fetch.spec.whatwg.org/#concept-cache.
-class BLINK_PLATFORM_EXPORT WebCORSPreflightResultCacheItem {
-  WTF_MAKE_NONCOPYABLE(WebCORSPreflightResultCacheItem);
-  USING_FAST_MALLOC(WebCORSPreflightResultCacheItem);
-
+class BLINK_PLATFORM_EXPORT WebCORSPreflightResultCacheItem
+    : public WebNonCopyable {
  public:
   static std::unique_ptr<WebCORSPreflightResultCacheItem> Create(
       const WebURLRequest::FetchCredentialsMode,
-      const HTTPHeaderMap&,
+      const WebHTTPHeaderMap&,
       WebString& error_description);
 
   bool AllowsCrossOriginMethod(const WebString&,
                                WebString& error_description) const;
-  bool AllowsCrossOriginHeaders(const HTTPHeaderMap&,
+  bool AllowsCrossOriginHeaders(const WebHTTPHeaderMap&,
                                 WebString& error_description) const;
   bool AllowsRequest(WebURLRequest::FetchCredentialsMode,
                      const WebString& method,
-                     const HTTPHeaderMap& request_headers) const;
+                     const WebHTTPHeaderMap& request_headers) const;
 
  private:
-  typedef HashSet<String, CaseFoldingHash> HeadersSet;
-
   explicit WebCORSPreflightResultCacheItem(WebURLRequest::FetchCredentialsMode);
 
-  bool Parse(const HTTPHeaderMap& response_header,
+  bool Parse(const WebHTTPHeaderMap& response_header,
              WebString& error_description);
 
   // FIXME: A better solution to holding onto the absolute expiration time might
@@ -77,14 +72,12 @@ class BLINK_PLATFORM_EXPORT WebCORSPreflightResultCacheItem {
 
   // Corresponds to the fields of the CORS-preflight cache with the same name.
   bool credentials_;
-  HashSet<String> methods_;
-  HeadersSet headers_;
+  base::flat_set<std::string> methods_;
+  WebHTTPHeaderSet headers_;
 };
 
-class BLINK_PLATFORM_EXPORT WebCORSPreflightResultCache {
-  WTF_MAKE_NONCOPYABLE(WebCORSPreflightResultCache);
-  USING_FAST_MALLOC(WebCORSPreflightResultCache);
-
+class BLINK_PLATFORM_EXPORT WebCORSPreflightResultCache
+    : public WebNonCopyable {
  public:
   // Returns a WebCORSPreflightResultCache which is shared in the same thread.
   static WebCORSPreflightResultCache& Shared();
@@ -96,14 +89,12 @@ class BLINK_PLATFORM_EXPORT WebCORSPreflightResultCache {
                         const WebURL&,
                         WebURLRequest::FetchCredentialsMode,
                         const WebString& method,
-                        const HTTPHeaderMap& request_headers);
-
- protected:
-  friend class WTF::ThreadSpecific<WebCORSPreflightResultCache>;
-
-  // Protected for tests:
+                        const WebHTTPHeaderMap& request_headers);
   WebCORSPreflightResultCache() {}
 
+  ~WebCORSPreflightResultCache();
+
+ protected:
   typedef std::map<
       std::string,
       std::map<std::string, std::unique_ptr<WebCORSPreflightResultCacheItem>>>

@@ -68,20 +68,21 @@ void ForeignFetchRespondWithObserver::OnResponseFulfilled(
         kWebServiceWorkerResponseErrorForeignFetchMismatchedOrigin);
     return;
   } else if (!is_opaque) {
-    WebCORS::HTTPHeaderSet headers;
+    WebHTTPHeaderSet headers;
     if (foreign_fetch_response.hasHeaders()) {
       for (const String& header : foreign_fetch_response.headers())
-        headers.insert(header);
+        headers.emplace(header.Ascii().data(), header.Ascii().length());
       if (response->GetResponse()->GetType() == FetchResponseData::kCORSType) {
-        const WebCORS::HTTPHeaderSet& existing_headers =
+        const WebHTTPHeaderSet& existing_headers =
             response->GetResponse()->CorsExposedHeaderNames();
-        WebCORS::HTTPHeaderSet headers_to_remove;
-        for (WebCORS::HTTPHeaderSet::iterator it = headers.begin();
-             it != headers.end(); ++it) {
-          if (!existing_headers.Contains(*it))
-            headers_to_remove.insert(*it);
+        for (WebHTTPHeaderSet::iterator it = headers.begin();
+             it != headers.end();) {
+          if (existing_headers.find(*it) == existing_headers.end()) {
+            it = headers.erase(it);
+          } else {
+            ++it;
+          }
         }
-        headers.RemoveAll(headers_to_remove);
       }
     }
     FetchResponseData* response_data =

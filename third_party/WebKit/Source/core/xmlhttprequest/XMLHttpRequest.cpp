@@ -1413,7 +1413,7 @@ String XMLHttpRequest::getAllResponseHeaders() const {
 
   StringBuilder string_builder;
 
-  WebCORS::HTTPHeaderSet access_control_expose_header_set;
+  WebHTTPHeaderSet access_control_expose_header_set;
   WebCORS::ExtractCorsExposedHeaderNamesList(WrappedResourceResponse(response_),
                                              access_control_expose_header_set);
 
@@ -1431,7 +1431,8 @@ String XMLHttpRequest::getAllResponseHeaders() const {
 
     if (!same_origin_request_ &&
         !WebCORS::IsOnAccessControlResponseHeaderWhitelist(it->key) &&
-        !access_control_expose_header_set.Contains(it->key))
+        access_control_expose_header_set.find(it->key.Ascii().data()) ==
+            access_control_expose_header_set.end())
       continue;
 
     string_builder.Append(it->key.LowerASCII());
@@ -1458,13 +1459,14 @@ const AtomicString& XMLHttpRequest::getResponseHeader(
     return g_null_atom;
   }
 
-  WebCORS::HTTPHeaderSet access_control_expose_header_set;
+  WebHTTPHeaderSet access_control_expose_header_set;
   WebCORS::ExtractCorsExposedHeaderNamesList(WrappedResourceResponse(response_),
                                              access_control_expose_header_set);
 
   if (!same_origin_request_ &&
       !WebCORS::IsOnAccessControlResponseHeaderWhitelist(name) &&
-      !access_control_expose_header_set.Contains(name)) {
+      access_control_expose_header_set.find(name.Ascii().data()) ==
+          access_control_expose_header_set.end()) {
     LogConsoleError(GetExecutionContext(),
                     "Refused to get unsafe header \"" + name + "\"");
     return g_null_atom;
