@@ -86,7 +86,7 @@ const char kWebMVP9VideoOnly[] = "video/webm; codecs=\"vp9\"";
 const char kWebMVP8VideoOnly[] = "video/webm; codecs=\"vp8\"";
 #endif
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
-const char kMP4VideoOnly[] = "video/mp4; codecs=\"avc1.4D000C\"";
+const char kMP4VideoOnly[] = "video/mp4; codecs=\"avc1.64001E\"";
 const char kMP4VideoVp9Only[] =
     "video/mp4; codecs=\"vp09.00.10.08.01.02.02.02.00\"";
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
