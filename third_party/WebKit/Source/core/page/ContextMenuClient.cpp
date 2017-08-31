@@ -248,6 +248,8 @@ bool ContextMenuClient::ShowContextMenu(const ContextMenu* default_menu,
     // An image can be null for many reasons, like being blocked, no image
     // data received from server yet.
     data.has_image_contents = r.GetImage() && !r.GetImage()->IsNull();
+    data.is_placeholder_image =
+        r.GetImage() && r.GetImage()->IsPlaceholderImage();
     if (data.has_image_contents &&
         isHTMLImageElement(r.InnerNodeOrImageMapImage())) {
       HTMLImageElement* image_element =
