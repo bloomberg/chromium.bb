@@ -20,6 +20,7 @@ namespace scheduler {
 
 using QueueType = MainThreadTaskQueue::QueueType;
 using testing::ElementsAre;
+using testing::UnorderedElementsAre;
 using base::Bucket;
 
 class RendererMetricsHelperTest : public ::testing::Test {
@@ -88,7 +89,7 @@ TEST_F(RendererMetricsHelperTest, Metrics) {
           base::TimeDelta::FromMilliseconds(5));
   RunTask(QueueType::FRAME_LOADING, Milliseconds(800),
           base::TimeDelta::FromMilliseconds(70));
-  RunTask(QueueType::FRAME_UNTHROTTLED, Milliseconds(1000),
+  RunTask(QueueType::FRAME_PAUSABLE, Milliseconds(1000),
           base::TimeDelta::FromMilliseconds(20));
   RunTask(QueueType::COMPOSITOR, Milliseconds(1200),
           base::TimeDelta::FromMilliseconds(25));
@@ -99,13 +100,13 @@ TEST_F(RendererMetricsHelperTest, Metrics) {
 
   RunTask(QueueType::CONTROL, Milliseconds(2000),
           base::TimeDelta::FromMilliseconds(25));
-  RunTask(QueueType::FRAME_TIMER, Milliseconds(2600),
+  RunTask(QueueType::FRAME_THROTTLEABLE, Milliseconds(2600),
           base::TimeDelta::FromMilliseconds(175));
   RunTask(QueueType::UNTHROTTLED, Milliseconds(2800),
           base::TimeDelta::FromMilliseconds(25));
   RunTask(QueueType::FRAME_LOADING, Milliseconds(3000),
           base::TimeDelta::FromMilliseconds(35));
-  RunTask(QueueType::FRAME_TIMER, Milliseconds(3200),
+  RunTask(QueueType::FRAME_THROTTLEABLE, Milliseconds(3200),
           base::TimeDelta::FromMilliseconds(5));
   RunTask(QueueType::COMPOSITOR, Milliseconds(3400),
           base::TimeDelta::FromMilliseconds(20));
@@ -115,9 +116,9 @@ TEST_F(RendererMetricsHelperTest, Metrics) {
           base::TimeDelta::FromMilliseconds(5));
   RunTask(QueueType::CONTROL, Milliseconds(4200),
           base::TimeDelta::FromMilliseconds(20));
-  RunTask(QueueType::FRAME_TIMER, Milliseconds(4400),
+  RunTask(QueueType::FRAME_THROTTLEABLE, Milliseconds(4400),
           base::TimeDelta::FromMilliseconds(115));
-  RunTask(QueueType::FRAME_UNTHROTTLED, Milliseconds(4600),
+  RunTask(QueueType::FRAME_PAUSABLE, Milliseconds(4600),
           base::TimeDelta::FromMilliseconds(175));
   RunTask(QueueType::IDLE, Milliseconds(5000),
           base::TimeDelta::FromMilliseconds(1600));
@@ -129,37 +130,37 @@ TEST_F(RendererMetricsHelperTest, Metrics) {
       {static_cast<int>(QueueType::DEFAULT_TIMER), 5},
       {static_cast<int>(QueueType::UNTHROTTLED), 25},
       {static_cast<int>(QueueType::FRAME_LOADING), 105},
-      {static_cast<int>(QueueType::FRAME_TIMER), 295},
-      {static_cast<int>(QueueType::FRAME_UNTHROTTLED), 195},
       {static_cast<int>(QueueType::COMPOSITOR), 45},
       {static_cast<int>(QueueType::IDLE), 1650},
       {static_cast<int>(QueueType::TEST), 85},
-      {static_cast<int>(QueueType::FRAME_LOADING_CONTROL), 5}};
+      {static_cast<int>(QueueType::FRAME_LOADING_CONTROL), 5},
+      {static_cast<int>(QueueType::FRAME_THROTTLEABLE), 295},
+      {static_cast<int>(QueueType::FRAME_PAUSABLE), 195}};
   EXPECT_THAT(histogram_tester_->GetAllSamples(
                   "RendererScheduler.TaskDurationPerQueueType2"),
               testing::ContainerEq(expected_samples));
 
-  EXPECT_THAT(
-      histogram_tester_->GetAllSamples(
-          "RendererScheduler.TaskDurationPerQueueType2.Foreground"),
-      ElementsAre(Bucket(static_cast<int>(QueueType::CONTROL), 30),
+  EXPECT_THAT(histogram_tester_->GetAllSamples(
+                  "RendererScheduler.TaskDurationPerQueueType2.Foreground"),
+              UnorderedElementsAre(
+                  Bucket(static_cast<int>(QueueType::CONTROL), 30),
                   Bucket(static_cast<int>(QueueType::DEFAULT), 2),
                   Bucket(static_cast<int>(QueueType::DEFAULT_LOADING), 20),
                   Bucket(static_cast<int>(QueueType::DEFAULT_TIMER), 5),
                   Bucket(static_cast<int>(QueueType::FRAME_LOADING), 70),
-                  Bucket(static_cast<int>(QueueType::FRAME_UNTHROTTLED), 20),
                   Bucket(static_cast<int>(QueueType::COMPOSITOR), 25),
-                  Bucket(static_cast<int>(QueueType::TEST), 85)));
+                  Bucket(static_cast<int>(QueueType::TEST), 85),
+                  Bucket(static_cast<int>(QueueType::FRAME_PAUSABLE), 20)));
 
   EXPECT_THAT(
       histogram_tester_->GetAllSamples(
           "RendererScheduler.TaskDurationPerQueueType2.Background"),
-      ElementsAre(
+      UnorderedElementsAre(
           Bucket(static_cast<int>(QueueType::CONTROL), 45),
           Bucket(static_cast<int>(QueueType::UNTHROTTLED), 25),
           Bucket(static_cast<int>(QueueType::FRAME_LOADING), 35),
-          Bucket(static_cast<int>(QueueType::FRAME_TIMER), 295),
-          Bucket(static_cast<int>(QueueType::FRAME_UNTHROTTLED), 175),
+          Bucket(static_cast<int>(QueueType::FRAME_THROTTLEABLE), 295),
+          Bucket(static_cast<int>(QueueType::FRAME_PAUSABLE), 175),
           Bucket(static_cast<int>(QueueType::COMPOSITOR), 20),
           Bucket(static_cast<int>(QueueType::IDLE), 1650),
           Bucket(static_cast<int>(QueueType::FRAME_LOADING_CONTROL), 5)));

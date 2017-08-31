@@ -49,10 +49,10 @@ class WebFrameSchedulerImpl : public WebFrameScheduler {
   void SetCrossOrigin(bool cross_origin) override;
   RefPtr<WebTaskRunner> LoadingTaskRunner() override;
   RefPtr<WebTaskRunner> LoadingControlTaskRunner() override;
-  RefPtr<WebTaskRunner> TimerTaskRunner() override;
-  RefPtr<WebTaskRunner> SuspendableTaskRunner() override;
-  RefPtr<WebTaskRunner> UnthrottledTaskRunner() override;
-  RefPtr<WebTaskRunner> UnthrottledButBlockableTaskRunner() override;
+  RefPtr<WebTaskRunner> ThrottleableTaskRunner() override;
+  RefPtr<WebTaskRunner> DeferrableTaskRunner() override;
+  RefPtr<WebTaskRunner> PausableTaskRunner() override;
+  RefPtr<WebTaskRunner> UnpausableTaskRunner() override;
   WebViewScheduler* GetWebViewScheduler() override;
   void WillNavigateBackForwardSoon() override;
   void DidStartProvisionalLoad(bool is_main_frame) override;
@@ -84,10 +84,10 @@ class WebFrameSchedulerImpl : public WebFrameScheduler {
   };
 
   void DetachFromWebViewScheduler();
-  void RemoveTimerQueueFromBackgroundCPUTimeBudgetPool();
-  void ApplyPolicyToTimerQueue();
+  void RemoveThrottleableQueueFromBackgroundCPUTimeBudgetPool();
+  void ApplyPolicyToThrottleableQueue();
   bool ShouldThrottleTimers() const;
-  void UpdateTimerThrottling(bool was_throttled);
+  void UpdateThrottling(bool was_throttled);
 
   void DidOpenActiveConnection();
   void DidCloseActiveConnection();
@@ -96,22 +96,23 @@ class WebFrameSchedulerImpl : public WebFrameScheduler {
 
   scoped_refptr<MainThreadTaskQueue> loading_task_queue_;
   scoped_refptr<MainThreadTaskQueue> loading_control_task_queue_;
-  scoped_refptr<MainThreadTaskQueue> timer_task_queue_;
-  scoped_refptr<MainThreadTaskQueue> unthrottled_task_queue_;
-  scoped_refptr<MainThreadTaskQueue> suspendable_task_queue_;
-  scoped_refptr<MainThreadTaskQueue> unthrottled_but_blockable_task_queue_;
+  scoped_refptr<MainThreadTaskQueue> throttleable_task_queue_;
+  scoped_refptr<MainThreadTaskQueue> deferrable_task_queue_;
+  scoped_refptr<MainThreadTaskQueue> pausable_task_queue_;
+  scoped_refptr<MainThreadTaskQueue> unpausable_task_queue_;
   std::unique_ptr<TaskQueue::QueueEnabledVoter> loading_queue_enabled_voter_;
   std::unique_ptr<TaskQueue::QueueEnabledVoter>
       loading_control_queue_enabled_voter_;
-  std::unique_ptr<TaskQueue::QueueEnabledVoter> timer_queue_enabled_voter_;
   std::unique_ptr<TaskQueue::QueueEnabledVoter>
-      suspendable_queue_enabled_voter_;
+      throttleable_queue_enabled_voter_;
+  std::unique_ptr<TaskQueue::QueueEnabledVoter> deferrable_queue_enabled_voter_;
+  std::unique_ptr<TaskQueue::QueueEnabledVoter> pausable_queue_enabled_voter_;
   RefPtr<WebTaskRunnerImpl> loading_web_task_runner_;
   RefPtr<WebTaskRunnerImpl> loading_control_web_task_runner_;
-  RefPtr<WebTaskRunnerImpl> timer_web_task_runner_;
-  RefPtr<WebTaskRunnerImpl> unthrottled_web_task_runner_;
-  RefPtr<WebTaskRunnerImpl> suspendable_web_task_runner_;
-  RefPtr<WebTaskRunnerImpl> unthrottled_but_blockable_web_task_runner_;
+  RefPtr<WebTaskRunnerImpl> throttleable_web_task_runner_;
+  RefPtr<WebTaskRunnerImpl> deferrable_web_task_runner_;
+  RefPtr<WebTaskRunnerImpl> pausable_web_task_runner_;
+  RefPtr<WebTaskRunnerImpl> unpausable_web_task_runner_;
   RendererSchedulerImpl* renderer_scheduler_;        // NOT OWNED
   WebViewSchedulerImpl* parent_web_view_scheduler_;  // NOT OWNED
   base::trace_event::BlameContext* blame_context_;   // NOT OWNED

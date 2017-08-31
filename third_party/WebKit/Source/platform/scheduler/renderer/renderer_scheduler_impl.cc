@@ -330,6 +330,11 @@ scoped_refptr<MainThreadTaskQueue> RendererSchedulerImpl::NewTaskQueue(
   if (task_queue->CanBeThrottled())
     AddQueueToWakeUpBudgetPool(task_queue.get());
 
+  if (queue_class == MainThreadTaskQueue::QueueClass::TIMER) {
+    if (main_thread_only().virtual_time_stopped)
+      task_queue->InsertFence(TaskQueue::InsertFencePosition::NOW);
+  }
+
   return task_queue;
 }
 
@@ -340,7 +345,7 @@ scoped_refptr<MainThreadTaskQueue> RendererSchedulerImpl::NewLoadingTaskQueue(
   return NewTaskQueue(
       MainThreadTaskQueue::QueueCreationParams(queue_type)
           .SetCanBePaused(true)
-          .SetCanBeBlocked(true)
+          .SetCanBeDeferred(true)
           .SetUsedForControlTasks(
               queue_type ==
               MainThreadTaskQueue::QueueType::FRAME_LOADING_CONTROL));
@@ -350,16 +355,12 @@ scoped_refptr<MainThreadTaskQueue> RendererSchedulerImpl::NewTimerTaskQueue(
     MainThreadTaskQueue::QueueType queue_type) {
   DCHECK_EQ(MainThreadTaskQueue::QueueClassForQueueType(queue_type),
             MainThreadTaskQueue::QueueClass::TIMER);
-  auto timer_task_queue =
-      NewTaskQueue(MainThreadTaskQueue::QueueCreationParams(queue_type)
-                       .SetShouldReportWhenExecutionBlocked(true)
-                       .SetCanBePaused(true)
-                       .SetCanBeStopped(true)
-                       .SetCanBeBlocked(true)
-                       .SetCanBeThrottled(true));
-  if (main_thread_only().virtual_time_stopped)
-    timer_task_queue->InsertFence(TaskQueue::InsertFencePosition::NOW);
-  return timer_task_queue;
+  return NewTaskQueue(MainThreadTaskQueue::QueueCreationParams(queue_type)
+                          .SetShouldReportWhenExecutionBlocked(true)
+                          .SetCanBePaused(true)
+                          .SetCanBeStopped(true)
+                          .SetCanBeDeferred(true)
+                          .SetCanBeThrottled(true));
 }
 
 std::unique_ptr<RenderWidgetSchedulingState>
@@ -1147,10 +1148,11 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
   }
   main_thread_only().expensive_task_policy = expensive_task_policy;
 
-  if (main_thread_only().timer_queue_pause_count != 0 ||
-      main_thread_only().timer_queue_stopped_when_backgrounded) {
+  if (main_thread_only().timer_queue_pause_count != 0)
+    new_policy.timer_queue_policy().is_paused = true;
+
+  if (main_thread_only().timer_queue_stopped_when_backgrounded)
     new_policy.timer_queue_policy().is_stopped = true;
-  }
 
   if (main_thread_only().renderer_paused) {
     new_policy.loading_queue_policy().is_paused = true;
@@ -1588,7 +1590,7 @@ bool RendererSchedulerImpl::TaskQueuePolicy::IsQueueEnabled(
     return false;
   if (is_paused && task_queue->CanBePaused())
     return false;
-  if (is_blocked && task_queue->CanBeBlocked())
+  if (is_blocked && task_queue->CanBeDeferred())
     return false;
   if (is_stopped && task_queue->CanBeStopped())
     return false;

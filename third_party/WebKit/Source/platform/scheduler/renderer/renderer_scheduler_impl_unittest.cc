@@ -3769,7 +3769,7 @@ TEST_F(RendererSchedulerImplTest, EnableVirtualTime) {
   scoped_refptr<TaskQueue> loading_control_tq = scheduler_->NewLoadingTaskQueue(
       MainThreadTaskQueue::QueueType::FRAME_LOADING_CONTROL);
   scoped_refptr<MainThreadTaskQueue> timer_tq = scheduler_->NewTimerTaskQueue(
-      MainThreadTaskQueue::QueueType::FRAME_TIMER);
+      MainThreadTaskQueue::QueueType::FRAME_THROTTLEABLE);
   scoped_refptr<MainThreadTaskQueue> unthrottled_tq =
       scheduler_->NewTaskQueue(MainThreadTaskQueue::QueueCreationParams(
           MainThreadTaskQueue::QueueType::UNTHROTTLED));
@@ -3801,10 +3801,11 @@ TEST_F(RendererSchedulerImplTest, EnableVirtualTime) {
           ->NewLoadingTaskQueue(MainThreadTaskQueue::QueueType::FRAME_LOADING)
           ->GetTimeDomain(),
       scheduler_->GetVirtualTimeDomain());
-  EXPECT_EQ(
-      scheduler_->NewTimerTaskQueue(MainThreadTaskQueue::QueueType::FRAME_TIMER)
-          ->GetTimeDomain(),
-      scheduler_->GetVirtualTimeDomain());
+  EXPECT_EQ(scheduler_
+                ->NewTimerTaskQueue(
+                    MainThreadTaskQueue::QueueType::FRAME_THROTTLEABLE)
+                ->GetTimeDomain(),
+            scheduler_->GetVirtualTimeDomain());
   EXPECT_EQ(scheduler_
                 ->NewTaskQueue(MainThreadTaskQueue::QueueCreationParams(
                     MainThreadTaskQueue::QueueType::UNTHROTTLED))
@@ -3821,7 +3822,7 @@ TEST_F(RendererSchedulerImplTest, DisableVirtualTimeForTesting) {
   scheduler_->EnableVirtualTime();
 
   scoped_refptr<MainThreadTaskQueue> timer_tq = scheduler_->NewTimerTaskQueue(
-      MainThreadTaskQueue::QueueType::FRAME_TIMER);
+      MainThreadTaskQueue::QueueType::FRAME_THROTTLEABLE);
   scoped_refptr<MainThreadTaskQueue> unthrottled_tq =
       scheduler_->NewTaskQueue(MainThreadTaskQueue::QueueCreationParams(
           MainThreadTaskQueue::QueueType::UNTHROTTLED));
