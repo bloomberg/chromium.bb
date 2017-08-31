@@ -1,0 +1,28 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+{% macro set_value(property) %}
+  {% if property.svg %}
+state.Style()->AccessSVGStyle().{{property.setter}}
+  {%- elif property.font %}
+state.GetFontBuilder().{{property.setter}}
+  {%- else %}
+state.Style()->{{property.setter}}
+  {%- endif %}
+{% endmacro %}
+
+{% macro convert_and_set_value(property) %}
+  {% if property.converter %}
+{{set_value(property)}}(StyleBuilderConverter::{{property.converter}}(state, value));
+  {# TODO(sashab): Remove this list from this file. #}
+  {% elif property.type_name in ['short', 'unsigned short', 'int', 'unsigned int', 'unsigned', 'float', 'LineClampValue'] %}
+{{set_value(property)}}(ToCSSPrimitiveValue(value).ConvertTo<{{property.type_name}}>());
+  {%- else %}
+{{set_value(property)}}(ToCSSIdentifierValue(value).ConvertTo<{{property.type_name}}>());
+  {%- endif %}
+{% endmacro %}
+
+{% macro set_is_inherited(property) %}
+state.Style()->{{property.is_inherited_setter}}
+{% endmacro %}
