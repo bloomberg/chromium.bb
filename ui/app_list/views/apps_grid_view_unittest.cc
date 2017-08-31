@@ -251,7 +251,7 @@ class AppsGridViewTest : public views::ViewsTestBase,
   AppsGridView* apps_grid_view_ = nullptr;  // Owned by |app_list_view_|.
   ContentsView* contents_view_ = nullptr;   // Owned by |app_list_view_|.
   SuggestionsContainerView* suggestions_container_ =
-      nullptr;  // Owned by |apps_grid_view_|.
+      nullptr;                                    // Owned by |apps_grid_view_|.
   ExpandArrowView* expand_arrow_view_ = nullptr;  // Owned by |apps_grid_view_|.
   std::unique_ptr<AppListTestViewDelegate> delegate_;
   AppListTestModel* model_ = nullptr;  // Owned by |delegate_|.
@@ -503,6 +503,11 @@ TEST_P(AppsGridViewTest, MouseDragMaxItemsInFolder) {
 // Check that moving items around doesn't allow a drop to happen into a full
 // folder.
 TEST_P(AppsGridViewTest, MouseDragMaxItemsInFolderWithMovement) {
+  // TODO(newcomer): this test needs to be reevaluated for the fullscreen app
+  // list (http://crbug.com/759779).
+  if (features::IsFullscreenAppListEnabled())
+    return;
+
   // Create and add a folder with 16 items in it.
   size_t kTotalItems = kMaxFolderItems;
   model_->CreateAndPopulateFolderWithApps(kTotalItems);
@@ -552,6 +557,11 @@ TEST_P(AppsGridViewTest, MouseDragMaxItemsInFolderWithMovement) {
 }
 
 TEST_P(AppsGridViewTest, MouseDragItemReorder) {
+  // TODO(newcomer): this test needs to be reevaluated for the fullscreen app
+  // list (http://crbug.com/759779).
+  if (features::IsFullscreenAppListEnabled())
+    return;
+
   // Using a simulated 2x2 layout for the test. If fullscreen app list is
   // enabled, rows_per_page passed should be 3 as the first row is occupied by
   // suggested apps.
@@ -675,7 +685,12 @@ TEST_P(AppsGridViewTest, MouseDragWithCancelDeleteAddItem) {
   test_api_->LayoutToIdealBounds();
 }
 
-TEST_P(AppsGridViewTest, MouseDragFlipPage) {
+TEST_F(AppsGridViewTest, MouseDragFlipPage) {
+  // TODO(newcomer): this test needs to be reevaluated for the fullscreen app
+  // list (http://crbug.com/759779).
+  if (features::IsFullscreenAppListEnabled())
+    return;
+
   apps_grid_view_->set_page_flip_delay_in_ms_for_testing(10);
   GetPaginationModel()->SetTransitionDurations(10, 10);
 
@@ -779,6 +794,11 @@ TEST_P(AppsGridViewTest, UpdateFolderBackgroundOnCancelDrag) {
 }
 
 TEST_P(AppsGridViewTest, HighlightWithKeyboard) {
+  // TODO(newcomer): this test needs to be reevaluated for the fullscreen app
+  // list (http://crbug.com/759779).
+  if (features::IsFullscreenAppListEnabled())
+    return;
+
   if (test_with_fullscreen_)
     return;
 

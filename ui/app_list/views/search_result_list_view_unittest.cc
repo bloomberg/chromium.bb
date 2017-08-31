@@ -12,6 +12,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ui/app_list/app_list_features.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/test/app_list_test_view_delegate.h"
 #include "ui/app_list/test/test_search_result.h"
@@ -88,9 +89,7 @@ class SearchResultListViewTest : public views::ViewsTestBase,
 
   int GetSelectedIndex() { return view_->selected_index(); }
 
-  void ResetSelectedIndex() {
-    view_->SetSelectedIndex(0);
-  }
+  void ResetSelectedIndex() { view_->SetSelectedIndex(0); }
 
   void AddTestResultAtIndex(int index) {
     GetResults()->Add(base::MakeUnique<TestSearchResult>());
@@ -105,9 +104,7 @@ class SearchResultListViewTest : public views::ViewsTestBase,
 
   bool IsAutoLaunching() { return !!view_->auto_launch_animation_; }
 
-  void ForceAutoLaunch() {
-    view_->ForceAutoLaunchForTest();
-  }
+  void ForceAutoLaunch() { view_->ForceAutoLaunchForTest(); }
 
   void ExpectConsistent() {
     // Adding results will schedule Update().
@@ -220,6 +217,11 @@ TEST_F(SearchResultListViewTest, SpokenFeedback) {
 }
 
 TEST_F(SearchResultListViewTest, ModelObservers) {
+  // TODO(newcomer): this test needs to be reevaluated for the fullscreen app
+  // list (http://crbug.com/759779).
+  if (features::IsFullscreenAppListEnabled())
+    return;
+
   SetUpSearchResults();
   ExpectConsistent();
 

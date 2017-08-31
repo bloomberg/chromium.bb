@@ -16,6 +16,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/switches.h"
 #include "extensions/test/extension_test_message_listener.h"
+#include "ui/app_list/app_list_features.h"
 #include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/presenter/app_list_presenter_impl.h"
 #include "ui/app_list/views/app_list_main_view.h"
@@ -113,6 +114,11 @@ class CustomLauncherPageBrowserTest
 
 IN_PROC_BROWSER_TEST_F(CustomLauncherPageBrowserTest,
                        OpenLauncherAndSwitchToCustomPage) {
+  // TODO(newcomer): this test needs to be reevaluated for the fullscreen app
+  // list (http://crbug.com/759779).
+  if (app_list::features::IsFullscreenAppListEnabled())
+    return;
+
   LoadAndLaunchPlatformApp(kCustomLauncherPagePath, "Launched");
   app_list::AppListView* app_list_view = GetAppListView();
   app_list::ContentsView* contents_view =
@@ -140,6 +146,11 @@ IN_PROC_BROWSER_TEST_F(CustomLauncherPageBrowserTest,
 // click inside the clickzone, or a mouse scroll event.
 IN_PROC_BROWSER_TEST_F(CustomLauncherPageBrowserTest,
                        EventsActivateSwitchToCustomPage) {
+  // TODO(newcomer): this test needs to be reevaluated for the fullscreen app
+  // list (http://crbug.com/759779).
+  if (app_list::features::IsFullscreenAppListEnabled())
+    return;
+
   LoadAndLaunchPlatformApp(kCustomLauncherPagePath, "Launched");
   // Use an event generator to ensure targeting is correct.
   app_list::AppListView* app_list_view = GetAppListView();
@@ -259,8 +270,12 @@ IN_PROC_BROWSER_TEST_F(CustomLauncherPageBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(CustomLauncherPageBrowserTest, LauncherPageSubpages) {
-  LoadAndLaunchPlatformApp(kCustomLauncherPagePath, "Launched");
+  // TODO(newcomer): this test needs to be reevaluated for the fullscreen app
+  // list (http://crbug.com/759779).
+  if (app_list::features::IsFullscreenAppListEnabled())
+    return;
 
+  LoadAndLaunchPlatformApp(kCustomLauncherPagePath, "Launched");
   app_list::AppListView* app_list_view = GetAppListView();
   app_list::AppListModel* model = app_list_view->app_list_main_view()->model();
   app_list::ContentsView* contents_view =
@@ -308,6 +323,11 @@ IN_PROC_BROWSER_TEST_F(CustomLauncherPageBrowserTest, LauncherPageSubpages) {
 }
 
 IN_PROC_BROWSER_TEST_F(CustomLauncherPageBrowserTest, LauncherPageShowAndHide) {
+  // TODO(newcomer): this test needs to be reevaluated for the fullscreen app
+  // list (http://crbug.com/759779).
+  if (app_list::features::IsFullscreenAppListEnabled())
+    return;
+
   const base::string16 kLauncherPageShowScript =
       base::ASCIIToUTF16("chrome.launcherPage.show();");
   const base::string16 kLauncherPageHideScript =
@@ -381,6 +401,11 @@ IN_PROC_BROWSER_TEST_F(CustomLauncherPageBrowserTest, LauncherPageShowAndHide) {
 }
 
 IN_PROC_BROWSER_TEST_F(CustomLauncherPageBrowserTest, LauncherPageSetEnabled) {
+  // TODO(newcomer): this test needs to be reevaluated for the fullscreen app
+  // list (http://crbug.com/759779).
+  if (app_list::features::IsFullscreenAppListEnabled())
+    return;
+
   LoadAndLaunchPlatformApp(kCustomLauncherPagePath, "Launched");
   app_list::AppListView* app_list_view = GetAppListView();
   app_list::AppListModel* model = app_list_view->app_list_main_view()->model();
@@ -407,6 +432,11 @@ IN_PROC_BROWSER_TEST_F(CustomLauncherPageBrowserTest, LauncherPageSetEnabled) {
 // Disabled test http://crbug.com/463456
 IN_PROC_BROWSER_TEST_F(CustomLauncherPageBrowserTest,
                        LauncherPageFocusTraversal) {
+  // TODO(newcomer): this test needs to be reevaluated for the fullscreen app
+  // list (http://crbug.com/759779).
+  if (app_list::features::IsFullscreenAppListEnabled())
+    return;
+
   LoadAndLaunchPlatformApp(kCustomLauncherPagePath, "Launched");
   app_list::AppListView* app_list_view = GetAppListView();
   app_list::ContentsView* contents_view =
