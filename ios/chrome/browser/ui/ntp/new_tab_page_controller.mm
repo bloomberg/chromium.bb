@@ -365,8 +365,11 @@ enum {
 
 - (void)wasShown {
   [_currentController wasShown];
-  // Ensure that the NTP has the latest data when it is shown.
-  [self reload];
+  if (_currentController != self.homePanel) {
+    // Ensure that the NTP has the latest data when it is shown, except for
+    // Home.
+    [self reload];
+  }
   [self.ntpView.tabBar updateColorsForScrollView:self.ntpView.scrollView];
   [self.ntpView.tabBar
       setShadowAlpha:[_currentController alphaForBottomShadow]];
