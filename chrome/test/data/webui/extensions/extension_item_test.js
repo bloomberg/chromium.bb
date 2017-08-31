@@ -85,10 +85,6 @@ cr.define('extension_item_tests', function() {
     /** @type {extension_test_util.MockItemDelegate} */
     var mockDelegate;
 
-    suiteSetup(function() {
-      return PolymerTest.importHtml('chrome://extensions/item.html');
-    });
-
     // Initialize an extension item before each test.
     setup(function() {
       PolymerTest.clearBody();
@@ -132,18 +128,23 @@ cr.define('extension_item_tests', function() {
           item.$$('#inspect-views a[is="action-link"]'), 'inspectItemView',
           [item.data.id, item.data.views[0]]);
 
-      var listener1 = new extension_test_util.ListenerMock();
-      listener1.addListener(
-          item, 'extension-item-show-details', {data: item.data});
-      MockInteractions.tap(item.$$('#details-button'));
-      listener1.verify();
+      // Setup for testing navigation buttons.
+      var currentPage = null;
+      extensions.navigation.onRouteChanged(newPage => {
+        currentPage = newPage;
+      });
 
-      var listener2 = new extension_test_util.ListenerMock();
-      listener2.addListener(
-          item, 'extension-item-show-details', {data: item.data});
+      MockInteractions.tap(item.$$('#details-button'));
+      expectDeepEquals(
+          currentPage, {page: Page.DETAILS, extensionId: item.data.id});
+
+      // Reset current page and test inspect-view navigation.
+      extensions.navigation.navigateTo({page: Page.LIST});
+      currentPage = null;
       MockInteractions.tap(
           item.$$('#inspect-views a[is="action-link"]:nth-of-type(2)'));
-      listener2.verify();
+      expectDeepEquals(
+          currentPage, {page: Page.DETAILS, extensionId: item.data.id});
 
       item.set('data.disableReasons.corruptInstall', true);
       Polymer.dom.flush();

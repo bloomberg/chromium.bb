@@ -102,6 +102,10 @@ TEST_F('CrExtensionsToolbarTest', 'ClickHandlers', function() {
 // Extension Item Tests
 
 var CrExtensionsItemsTest = class extends CrExtensionsBrowserTest {
+  get browsePreload() {
+    return 'chrome://extensions/item.html';
+  }
+
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
