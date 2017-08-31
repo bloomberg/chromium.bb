@@ -8,6 +8,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/stringprintf.h"
+#include "components/ntp_snippets/breaking_news/breaking_news_metrics.h"
 #include "components/ntp_snippets/breaking_news/subscription_json_request.h"
 #include "components/ntp_snippets/features.h"
 #include "components/ntp_snippets/ntp_snippets_constants.h"
@@ -159,6 +160,8 @@ void SubscriptionManagerImpl::DidSubscribe(
     const std::string& subscription_token,
     bool is_authenticated,
     const Status& status) {
+  metrics::OnSubscriptionRequestCompleted(status);
+
   // Delete the request only after we leave this method (which is called from
   // the request itself).
   std::unique_ptr<internal::SubscriptionJsonRequest> request_deleter(
@@ -235,6 +238,8 @@ void SubscriptionManagerImpl::Resubscribe(const std::string& new_token) {
 
 void SubscriptionManagerImpl::DidUnsubscribe(const std::string& new_token,
                                              const Status& status) {
+  metrics::OnUnsubscriptionRequestCompleted(status);
+
   // Delete the request only after we leave this method (which is called from
   // the request itself).
   std::unique_ptr<internal::SubscriptionJsonRequest> request_deleter(

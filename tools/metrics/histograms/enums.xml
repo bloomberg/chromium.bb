@@ -5947,6 +5947,16 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="6" label="chrome-search"/>
 </enum>
 
+<enum name="ContentSuggestionsBreakingNewsMessageContainsNews">
+  <int value="0" label="Without pushed news"/>
+  <int value="1" label="With (possibly empty) pushed news"/>
+</enum>
+
+<enum name="ContentSuggestionsBreakingNewsTokenValidationOutcome">
+  <int value="0" label="Token invalid"/>
+  <int value="1" label="Token revalidated"/>
+</enum>
+
 <enum name="ContentSuggestionsCategory">
   <int value="0" label="Experimental"/>
   <int value="1" label="Recent Tabs"/>
@@ -5976,6 +5986,12 @@ uploading your change for review.  These are checked by presubmit scripts.
 <enum name="ContentSuggestionsNotificationsOptOut">
   <int value="0" label="Implicit"/>
   <int value="1" label="Explicit"/>
+</enum>
+
+<enum name="ContentSuggestionsStatusCode">
+  <int value="0" label="Success"/>
+  <int value="1" label="Temporary error"/>
+  <int value="2" label="Permanent error"/>
 </enum>
 
 <enum name="ContentSuggestionsUIUpdateResult">

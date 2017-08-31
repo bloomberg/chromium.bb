@@ -12,6 +12,7 @@
 #include "components/gcm_driver/gcm_profile_service.h"
 #include "components/gcm_driver/instance_id/instance_id.h"
 #include "components/gcm_driver/instance_id/instance_id_driver.h"
+#include "components/ntp_snippets/breaking_news/breaking_news_metrics.h"
 #include "components/ntp_snippets/features.h"
 #include "components/ntp_snippets/pref_names.h"
 #include "components/ntp_snippets/time_serialization.h"
@@ -168,6 +169,8 @@ void BreakingNewsGCMAppHandler::Subscribe(bool force_token_retrieval) {
 void BreakingNewsGCMAppHandler::DidRetrieveToken(
     const std::string& subscription_token,
     InstanceID::Result result) {
+  metrics::OnTokenRetrieved(result);
+
   switch (result) {
     case InstanceID::SUCCESS:
       // The received token is assumed to be valid, therefore, we reschedule
@@ -212,25 +215,35 @@ void BreakingNewsGCMAppHandler::ResubscribeIfInvalidToken() {
 void BreakingNewsGCMAppHandler::DidReceiveTokenForValidation(
     const std::string& new_token,
     InstanceID::Result result) {
-  // TODO(crbug.com/744557): Add a metric to record time from last validation.
+  metrics::OnTokenRetrieved(result);
+
+  base::Optional<base::TimeDelta> time_since_last_validation;
+  if (pref_service_->HasPrefPath(
+          prefs::kBreakingNewsGCMLastTokenValidationTime)) {
+    const base::Time last_validation_time =
+        DeserializeTime(pref_service_->GetInt64(
+            prefs::kBreakingNewsGCMLastTokenValidationTime));
+    time_since_last_validation = clock_->Now() - last_validation_time;
+  }
 
   // We intentionally reschedule as normal even if we don't get a token.
-  // TODO(crbug.com/744557): Add a metric to record number of failed token
-  // retrievals. Consider rescheduling next validation sooner.
   pref_service_->SetInt64(prefs::kBreakingNewsGCMLastTokenValidationTime,
                           SerializeTime(clock_->Now()));
   ScheduleNextTokenValidation();
 
-  if (result != InstanceID::SUCCESS) {
-    return;
+  base::Optional<bool> was_token_valid;
+  if (result == InstanceID::SUCCESS) {
+    const std::string old_token =
+        pref_service_->GetString(prefs::kBreakingNewsGCMSubscriptionTokenCache);
+
+    was_token_valid = old_token == new_token;
+    if (!*was_token_valid) {
+      subscription_manager_->Resubscribe(new_token);
+    }
   }
-  const std::string old_token =
-      pref_service_->GetString(prefs::kBreakingNewsGCMSubscriptionTokenCache);
-  if (old_token != new_token) {
-    // TODO(crbug.com/744557): Add a metric to record time since last validation
-    // when the token was valid.
-    subscription_manager_->Resubscribe(new_token);
-  }
+
+  metrics::OnTokenValidationAttempted(time_since_last_validation,
+                                      was_token_valid);
 }
 
 void BreakingNewsGCMAppHandler::ScheduleNextTokenValidation() {
@@ -291,19 +304,20 @@ void BreakingNewsGCMAppHandler::OnMessage(const std::string& app_id,
   DCHECK_EQ(app_id, kBreakingNewsGCMAppID);
 
   gcm::MessageData::const_iterator it = message.data.find(kPushedNewsKey);
-  if (it == message.data.end()) {
+  if (it != message.data.end()) {
+    const std::string& news = it->second;
+    parse_json_callback_.Run(
+        news,
+        base::Bind(&BreakingNewsGCMAppHandler::OnJsonSuccess,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&BreakingNewsGCMAppHandler::OnJsonError,
+                   weak_ptr_factory_.GetWeakPtr(), news));
+  } else {
     LOG(WARNING)
         << "Receiving pushed content failure: Breaking News ID missing.";
-    return;
   }
 
-  std::string news = it->second;
-
-  parse_json_callback_.Run(news,
-                           base::Bind(&BreakingNewsGCMAppHandler::OnJsonSuccess,
-                                      weak_ptr_factory_.GetWeakPtr()),
-                           base::Bind(&BreakingNewsGCMAppHandler::OnJsonError,
-                                      weak_ptr_factory_.GetWeakPtr(), news));
+  metrics::OnMessageReceived(/*contains_pushed_news=*/it != message.data.end());
 }
 
 void BreakingNewsGCMAppHandler::OnMessagesDeleted(const std::string& app_id) {

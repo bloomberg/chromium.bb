@@ -9,6 +9,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/test/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/time/clock.h"
@@ -37,6 +38,8 @@ using instance_id::InstanceIDDriver;
 using testing::_;
 using testing::AnyNumber;
 using testing::AtMost;
+using testing::ElementsAre;
+using testing::IsEmpty;
 using testing::NiceMock;
 using testing::StrictMock;
 
@@ -232,10 +235,19 @@ class BreakingNewsGCMAppHandlerTest : public testing::Test {
         base::MakeUnique<base::OneShotTimer>(tick_clock_.get());
     forced_subscription_timer->SetTaskRunner(timer_mock_task_runner);
 
+    // TODO(vitaliii): Either parse JSON for real or expose another method to
+    // avoid it completely.
     return base::MakeUnique<BreakingNewsGCMAppHandler>(
         mock_gcm_driver_.get(), mock_instance_id_driver_.get(), pref_service(),
         std::move(wrapped_mock_subscription_manager),
-        BreakingNewsGCMAppHandler::ParseJSONCallback(),
+        /*parse_json_callback=*/
+        base::Bind(
+            [](const std::string& raw_json_string,
+               const BreakingNewsGCMAppHandler::SuccessCallback&
+                   success_callback,
+               const BreakingNewsGCMAppHandler::ErrorCallback& error_callback) {
+              error_callback.Run(/*error=*/"Not implemented");
+            }),
         timer_mock_task_runner->GetMockClock(),
         std::move(token_validation_timer),
         std::move(forced_subscription_timer));
@@ -790,6 +802,167 @@ TEST_F(BreakingNewsGCMAppHandlerTest,
 
   EXPECT_CALL(*mock_subscription_manager(), Subscribe("token"));
   task_runner->FastForwardBy(base::TimeDelta::FromSeconds(1));
+}
+
+TEST_F(BreakingNewsGCMAppHandlerTest, ShouldReportReceivedMessageWithoutNews) {
+  base::HistogramTester histogram_tester;
+  SetFeatureParams(/*enable_token_validation=*/false,
+                   /*enable_forced_subscription=*/false);
+
+  // Omit receiving the token by putting it there directly.
+  pref_service()->SetString(prefs::kBreakingNewsGCMSubscriptionTokenCache,
+                            "token");
+
+  scoped_refptr<TestMockTimeTaskRunner> task_runner(
+      new TestMockTimeTaskRunner(GetDummyNow(), TimeTicks::Now()));
+  auto handler = MakeHandler(task_runner);
+  handler->StartListening(
+      base::Bind([](std::unique_ptr<RemoteSuggestion> remote_suggestion) {}));
+
+  handler->OnMessage("com.google.breakingnews.gcm", gcm::IncomingMessage());
+
+  // Bucket 0 corresponds to a message without news.
+  EXPECT_THAT(histogram_tester.GetAllSamples(
+                  "NewTabPage.ContentSuggestions.BreakingNews.MessageReceived"),
+              ElementsAre(base::Bucket(/*min=*/0, /*count=*/1)));
+}
+
+TEST_F(BreakingNewsGCMAppHandlerTest, ShouldReportReceivedMessageWithNews) {
+  base::HistogramTester histogram_tester;
+  SetFeatureParams(/*enable_token_validation=*/false,
+                   /*enable_forced_subscription=*/false);
+
+  // Omit receiving the token by putting it there directly.
+  pref_service()->SetString(prefs::kBreakingNewsGCMSubscriptionTokenCache,
+                            "token");
+
+  scoped_refptr<TestMockTimeTaskRunner> task_runner(
+      new TestMockTimeTaskRunner(GetDummyNow(), TimeTicks::Now()));
+  auto handler = MakeHandler(task_runner);
+  handler->StartListening(
+      base::Bind([](std::unique_ptr<RemoteSuggestion> remote_suggestion) {}));
+  gcm::IncomingMessage message;
+  message.data["payload"] = "news";
+
+  handler->OnMessage("com.google.breakingnews.gcm", message);
+
+  // Bucket 1 corresponds to a message with news.
+  EXPECT_THAT(histogram_tester.GetAllSamples(
+                  "NewTabPage.ContentSuggestions.BreakingNews.MessageReceived"),
+              ElementsAre(base::Bucket(/*min=*/1, /*count=*/1)));
+}
+
+TEST_F(BreakingNewsGCMAppHandlerTest, ShouldReportTokenRetrievalResult) {
+  base::HistogramTester histogram_tester;
+  SetFeatureParams(/*enable_token_validation=*/false,
+                   /*enable_forced_subscription=*/false);
+
+  scoped_refptr<TestMockTimeTaskRunner> task_runner(
+      new TestMockTimeTaskRunner(GetDummyNow(), TimeTicks::Now()));
+  auto handler = MakeHandler(task_runner);
+
+  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _))
+      .WillOnce(InvokeCallbackArgument<3>(/*token=*/"",
+                                          InstanceID::Result::NETWORK_ERROR));
+  handler->StartListening(
+      base::Bind([](std::unique_ptr<RemoteSuggestion> remote_suggestion) {}));
+
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples(
+          "NewTabPage.ContentSuggestions.BreakingNews.TokenRetrievalResult"),
+      ElementsAre(base::Bucket(
+          /*min=*/static_cast<int>(InstanceID::Result::NETWORK_ERROR),
+          /*count=*/1)));
+}
+
+TEST_F(BreakingNewsGCMAppHandlerTest,
+       ShouldReportTimeSinceLastTokenValidation) {
+  base::HistogramTester histogram_tester;
+  SetFeatureParams(/*enable_token_validation=*/true,
+                   /*enable_forced_subscription=*/false);
+
+  // The next validation will be soon.
+  const base::TimeDelta time_to_validation = base::TimeDelta::FromHours(1);
+  const base::Time last_validation =
+      GetDummyNow() - (GetTokenValidationPeriod() - time_to_validation);
+  pref_service()->SetInt64(prefs::kBreakingNewsGCMLastTokenValidationTime,
+                           SerializeTime(last_validation));
+  // Omit receiving the token by putting it there directly.
+  pref_service()->SetString(prefs::kBreakingNewsGCMSubscriptionTokenCache,
+                            "token");
+
+  scoped_refptr<TestMockTimeTaskRunner> task_runner(
+      new TestMockTimeTaskRunner(GetDummyNow(), TimeTicks::Now()));
+  auto handler = MakeHandler(task_runner);
+  handler->StartListening(
+      base::Bind([](std::unique_ptr<RemoteSuggestion> remote_suggestion) {}));
+
+  // Check that handler does not report the metric before the validation.
+  task_runner->FastForwardBy(time_to_validation -
+                             base::TimeDelta::FromSeconds(1));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples(
+          "NewTabPage.ContentSuggestions.BreakingNews.TokenRetrievalResult"),
+      IsEmpty());
+
+  // But when the validation happens, the time is reported.
+  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _))
+      .WillOnce(
+          InvokeCallbackArgument<3>("token", InstanceID::Result::SUCCESS));
+  task_runner->FastForwardBy(base::TimeDelta::FromSeconds(1));
+
+  histogram_tester.ExpectTimeBucketCount(
+      "NewTabPage.ContentSuggestions.BreakingNews.TimeSinceLastTokenValidation",
+      GetTokenValidationPeriod(), /*count=*/1);
+  // |ExpectTimeBucketCount| allows other buckets. Let's ensure that there are
+  // none.
+  histogram_tester.ExpectTotalCount(
+      "NewTabPage.ContentSuggestions.BreakingNews.TimeSinceLastTokenValidation",
+      /*count=*/1);
+}
+
+TEST_F(BreakingNewsGCMAppHandlerTest,
+       ShouldReportWhetherTokenWasValidBeforeValidation) {
+  base::HistogramTester histogram_tester;
+  SetFeatureParams(/*enable_token_validation=*/true,
+                   /*enable_forced_subscription=*/false);
+
+  // The next validation will be soon.
+  const base::TimeDelta time_to_validation = base::TimeDelta::FromHours(1);
+  const base::Time last_validation =
+      GetDummyNow() - (GetTokenValidationPeriod() - time_to_validation);
+  pref_service()->SetInt64(prefs::kBreakingNewsGCMLastTokenValidationTime,
+                           SerializeTime(last_validation));
+  // Omit receiving the token by putting it there directly.
+  pref_service()->SetString(prefs::kBreakingNewsGCMSubscriptionTokenCache,
+                            "token");
+
+  scoped_refptr<TestMockTimeTaskRunner> task_runner(
+      new TestMockTimeTaskRunner(GetDummyNow(), TimeTicks::Now()));
+  auto handler = MakeHandler(task_runner);
+  handler->StartListening(
+      base::Bind([](std::unique_ptr<RemoteSuggestion> remote_suggestion) {}));
+
+  // Check that handler does not report the metric before the validation.
+  task_runner->FastForwardBy(time_to_validation -
+                             base::TimeDelta::FromSeconds(1));
+  EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.ContentSuggestions."
+                                             "BreakingNews."
+                                             "WasTokenValidBeforeValidation"),
+              IsEmpty());
+
+  // But when the validation happens, the old token validness is reported.
+  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _))
+      .WillOnce(
+          InvokeCallbackArgument<3>("token", InstanceID::Result::SUCCESS));
+  task_runner->FastForwardBy(base::TimeDelta::FromSeconds(1));
+
+  EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.ContentSuggestions."
+                                             "BreakingNews."
+                                             "WasTokenValidBeforeValidation"),
+              ElementsAre(base::Bucket(
+                  /*min=*/1,
+                  /*count=*/1)));
 }
 
 }  // namespace ntp_snippets
