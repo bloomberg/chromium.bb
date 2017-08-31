@@ -35,7 +35,7 @@ InstantAppsInfoBarDelegate::InstantAppsInfoBarDelegate(
     const std::string& url)
     : content::WebContentsObserver(web_contents),
       url_(url),
-      web_contents_(web_contents) {
+      has_navigated_away_from_launch_url_(false) {
   JNIEnv* env = base::android::AttachCurrentThread();
   java_delegate_.Reset(Java_InstantAppsInfoBarDelegate_create(env));
   data_.Reset(env, jdata);
@@ -66,9 +66,19 @@ bool InstantAppsInfoBarDelegate::EqualsDelegate(
 
 
 void InstantAppsInfoBarDelegate::InfoBarDismissed() {
-  InstantAppsSettings::RecordInfoBarDismissEvent(web_contents_, url_);
+  content::WebContents* web_contents =
+      InfoBarService::WebContentsFromInfoBar(infobar());
+  InstantAppsSettings::RecordInfoBarDismissEvent(web_contents, url_);
   base::RecordAction(base::UserMetricsAction(
       "Android.InstantApps.BannerDismissed"));
+}
+
+void InstantAppsInfoBarDelegate::DidStartNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (!GURL(url_).EqualsIgnoringRef(
+          navigation_handle->GetWebContents()->GetURL())) {
+    has_navigated_away_from_launch_url_ = true;
+  }
 }
 
 void InstantAppsInfoBarDelegate::DidFinishNavigation(
@@ -80,10 +90,7 @@ void InstantAppsInfoBarDelegate::DidFinishNavigation(
 
 bool InstantAppsInfoBarDelegate::ShouldExpire(
     const NavigationDetails& details) const {
-  bool navigation_url_is_launch_url =
-      web_contents_ != NULL &&
-      web_contents_->GetURL().EqualsIgnoringRef(GURL(url_));
-  return !navigation_url_is_launch_url &&
+  return has_navigated_away_from_launch_url_ &&
          ConfirmInfoBarDelegate::ShouldExpire(details);
 }
 
