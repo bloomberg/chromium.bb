@@ -110,7 +110,10 @@ namespace feedbackPrivate {
     lsusb,
 
     // Logs from daemon for Atrus device.
-    atrusLog
+    atrusLog,
+
+    // Network logs.
+    netLog
   };
 
   // Input parameters for a readLogSource() call.
