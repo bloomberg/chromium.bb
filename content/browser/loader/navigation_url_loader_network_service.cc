@@ -513,6 +513,7 @@ void NavigationURLLoaderNetworkService::OnReceiveResponse(
   if (ssl_info && ssl_info->cert)
     NavigationResourceHandler::GetSSLStatusForRequest(*ssl_info, &ssl_status_);
   response_ = std::move(response);
+  ssl_info_ = ssl_info;
 }
 
 void NavigationURLLoaderNetworkService::OnReceiveRedirect(
@@ -544,19 +545,19 @@ void NavigationURLLoaderNetworkService::OnStartLoadingResponseBody(
 
 void NavigationURLLoaderNetworkService::OnComplete(
     const ResourceRequestCompletionStatus& completion_status) {
-  if (completion_status.error_code != net::OK) {
-    TRACE_EVENT_ASYNC_END2("navigation", "Navigation timeToResponseStarted",
-                           this, "&NavigationURLLoaderNetworkService", this,
-                           "success", false);
-  }
+  if (completion_status.error_code == net::OK)
+    return;
+
+  TRACE_EVENT_ASYNC_END2("navigation", "Navigation timeToResponseStarted", this,
+                         "&NavigationURLLoaderNetworkService", this, "success",
+                         false);
 
   // TODO(https://crbug.com/757633): Pass real values in the case of cert
   // errors.
-  base::Optional<net::SSLInfo> ssl_info = base::nullopt;
   bool should_ssl_errors_be_fatal = true;
 
   delegate_->OnRequestFailed(completion_status.exists_in_cache,
-                             completion_status.error_code, ssl_info,
+                             completion_status.error_code, ssl_info_,
                              should_ssl_errors_be_fatal);
 }
 

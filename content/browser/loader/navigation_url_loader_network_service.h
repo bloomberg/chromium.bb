@@ -53,6 +53,7 @@ class NavigationURLLoaderNetworkService : public NavigationURLLoader {
   NavigationURLLoaderDelegate* delegate_;
 
   scoped_refptr<ResourceResponse> response_;
+  base::Optional<net::SSLInfo> ssl_info_;
   SSLStatus ssl_status_;
 
   // Lives on the IO thread.
