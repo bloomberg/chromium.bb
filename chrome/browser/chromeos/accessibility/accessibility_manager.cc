@@ -60,6 +60,7 @@
 #include "chrome/grit/browser_resources.h"
 #include "chromeos/audio/audio_a11y_controller.h"
 #include "chromeos/audio/chromeos_sounds.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "components/prefs/pref_member.h"
@@ -115,7 +116,7 @@ BrailleController* GetBrailleController() {
   // Don't use the real braille controller for tests to avoid automatically
   // starting ChromeVox which confuses some tests.
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kTestType))
+  if (command_line->HasSwitch(::switches::kTestType))
     return StubBrailleController::GetInstance();
   return BrailleController::GetInstance();
 }
@@ -1062,6 +1063,18 @@ void AccessibilityManager::UpdateSwitchAccessFromPref() {
   const bool enabled = profile_->GetPrefs()->GetBoolean(
       ash::prefs::kAccessibilitySwitchAccessEnabled);
 
+  // The Switch Access setting is behind a flag. Don't enable the feature
+  // even if the preference is enabled, if the flag isn't also set.
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (!command_line->HasSwitch(
+          chromeos::switches::kEnableExperimentalAccessibilityFeatures)) {
+    if (enabled) {
+      LOG(WARNING) << "Switch access enabled but experimental accessibility "
+                   << "features flag is not set.";
+    }
+    return;
+  }
+
   if (switch_access_enabled_ == enabled)
     return;
   switch_access_enabled_ = enabled;
@@ -1520,9 +1533,9 @@ void AccessibilityManager::PostLoadChromeVox() {
   }
 
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableAudioFocus)) {
+          ::switches::kEnableAudioFocus)) {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableAudioFocus);
+        ::switches::kEnableAudioFocus);
   }
 }
 
