@@ -287,7 +287,8 @@ The suite job has another 2:39:39.789250 till timeout.
     self._file_bugs = True
     self._wait_for_results = True
     self._priority = 'test-priority'
-    self._timeout_mins = 23
+    self._timeout_mins = 2880
+    self._max_runtime_mins = None
     self._retry = False
     self._max_retries = 3
     self._minimum_duts = 2
@@ -473,7 +474,8 @@ The suite job has another 2:39:39.789250 till timeout.
         args=[
             '--pool', 'test-pool', '--num', '42',
             '--file_bugs', 'True',
-            '--priority', 'test-priority', '--timeout_mins', '23',
+            '--priority', 'test-priority', '--timeout_mins', '2880',
+            '--max_runtime_mins', '2880',
             '--retry', 'False', '--max_retries', '3', '--minimum_duts', '2',
             '--suite_min_duts', '2', '--subsystems', '["light", "network"]'
         ],
@@ -489,6 +491,7 @@ The suite job has another 2:39:39.789250 till timeout.
                                        wait_for_results=self._wait_for_results,
                                        priority=self._priority,
                                        timeout_mins=self._timeout_mins,
+                                       max_runtime_mins=self._max_runtime_mins,
                                        retry=self._retry,
                                        max_retries=self._max_retries,
                                        minimum_duts=self._minimum_duts,

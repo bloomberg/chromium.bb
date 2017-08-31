@@ -964,7 +964,7 @@ HWTestSuiteResult = collections.namedtuple('HWTestSuiteResult',
                              timeout_util.TimeoutError)
 def RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
                    wait_for_results=None, priority=None, timeout_mins=None,
-                   retry=None, max_retries=None,
+                   max_runtime_mins=None, retry=None, max_retries=None,
                    minimum_duts=0, suite_min_duts=0,
                    offload_failures_only=None, debug=True, subsystems=None,
                    skip_duts_check=False, job_keyvals=None):
@@ -982,6 +982,7 @@ def RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
     wait_for_results: If True, wait for autotest results before returning.
     priority: Priority of this suite run.
     timeout_mins: Timeout in minutes for the suite job and its sub-jobs.
+    max_runtime_mins: Maximum runtime for the suite job and its sub-jobs.
     retry: If True, will enable job-level retry. Only works when
            wait_for_results is True.
     max_retries: Integer, maximum job retries allowed at suite level.
@@ -1007,9 +1008,10 @@ def RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
   try:
     cmd = [RUN_SUITE_PATH]
     cmd += _GetRunSuiteArgs(build, suite, board, pool, num, file_bugs,
-                            priority, timeout_mins, retry, max_retries,
-                            minimum_duts, suite_min_duts, offload_failures_only,
-                            subsystems, skip_duts_check, job_keyvals)
+                            priority, timeout_mins, max_runtime_mins, retry,
+                            max_retries, minimum_duts, suite_min_duts,
+                            offload_failures_only, subsystems, skip_duts_check,
+                            job_keyvals)
     swarming_args = _CreateSwarmingArgs(build, suite, board, priority,
                                         timeout_mins)
     running_json_dump_flag = False
@@ -1116,12 +1118,11 @@ def RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
 
 
 # pylint: disable=docstring-missing-args
-def _GetRunSuiteArgs(build, suite, board, pool=None, num=None,
-                     file_bugs=None, priority=None, timeout_mins=None,
+def _GetRunSuiteArgs(build, suite, board, pool=None, num=None, file_bugs=None,
+                     priority=None, timeout_mins=None, max_runtime_mins=None,
                      retry=None, max_retries=None, minimum_duts=0,
                      suite_min_duts=0, offload_failures_only=None,
-                     subsystems=None, skip_duts_check=False,
-                     job_keyvals=None):
+                     subsystems=None, skip_duts_check=False, job_keyvals=None):
   """Get a list of args for run_suite.
 
   Args:
@@ -1152,6 +1153,13 @@ def _GetRunSuiteArgs(build, suite, board, pool=None, num=None,
 
   if timeout_mins is not None:
     args += ['--timeout_mins', str(timeout_mins)]
+    # The default for max_runtime_mins is one day. We increase this if longer
+    # timeouts are requested to avoid premature (and unexpected) aborts.
+    if not max_runtime_mins and timeout_mins > 1440:
+      args += ['--max_runtime_mins', str(timeout_mins)]
+
+  if max_runtime_mins is not None:
+    args += ['--max_runtime_mins', str(max_runtime_mins)]
 
   if retry is not None:
     args += ['--retry', str(retry)]
