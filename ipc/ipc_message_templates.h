@@ -20,6 +20,30 @@
 
 namespace IPC {
 
+template <typename Tuple, size_t... Ns>
+auto TupleForwardImpl(Tuple&& tuple, std::index_sequence<Ns...>) -> decltype(
+    std::forward_as_tuple(std::get<Ns>(std::forward<Tuple>(tuple))...)) {
+  return std::forward_as_tuple(std::get<Ns>(std::forward<Tuple>(tuple))...);
+}
+
+// Transforms std::tuple contents to the forwarding form.
+// Example:
+//   std::tuple<int, int&, const int&, int&&>&&
+//     -> std::tuple<int&&, int&, const int&, int&&>.
+//   const std::tuple<int, const int&, int&&>&
+//     -> std::tuple<const int&, int&, const int&, int&>.
+//
+// TupleForward(std::make_tuple(a, b, c)) is equivalent to
+// std::forward_as_tuple(a, b, c).
+template <typename Tuple>
+auto TupleForward(Tuple&& tuple) -> decltype(TupleForwardImpl(
+    std::forward<Tuple>(tuple),
+    std::make_index_sequence<std::tuple_size<std::decay_t<Tuple>>::value>())) {
+  return TupleForwardImpl(
+      std::forward<Tuple>(tuple),
+      std::make_index_sequence<std::tuple_size<std::decay_t<Tuple>>::value>());
+}
+
 // This function is for all the async IPCs that don't pass an extra parameter
 // using IPC_BEGIN_MESSAGE_MAP_WITH_PARAM.
 template <typename ObjT, typename Method, typename P, typename Tuple>
@@ -169,17 +193,19 @@ class MessageT<Meta, std::tuple<Ins...>, std::tuple<Outs...>>
     SendParam send_params;
     bool ok = ReadSendParam(msg, &send_params);
     Message* reply = SyncMessage::GenerateReply(msg);
-    if (ok) {
-      ReplyParam reply_params;
-      base::DispatchToMethod(obj, func, std::move(send_params), &reply_params);
-      WriteParam(reply, reply_params);
-      LogReplyParamsToMessage(reply_params, msg);
-    } else {
+    if (!ok) {
       NOTREACHED() << "Error deserializing message " << msg->type();
       reply->set_reply_error();
+      sender->Send(reply);
+      return false;
     }
+
+    ReplyParam reply_params;
+    base::DispatchToMethod(obj, func, std::move(send_params), &reply_params);
+    WriteParam(reply, reply_params);
+    LogReplyParamsToMessage(reply_params, msg);
     sender->Send(reply);
-    return ok;
+    return true;
   }
 
   template <class T, class P, class Method>
@@ -191,16 +217,17 @@ class MessageT<Meta, std::tuple<Ins...>, std::tuple<Outs...>>
     SendParam send_params;
     bool ok = ReadSendParam(msg, &send_params);
     Message* reply = SyncMessage::GenerateReply(msg);
-    if (ok) {
-      std::tuple<Message&> t = std::tie(*reply);
-      ConnectMessageAndReply(msg, reply);
-      base::DispatchToMethod(obj, func, std::move(send_params), &t);
-    } else {
+    if (!ok) {
       NOTREACHED() << "Error deserializing message " << msg->type();
       reply->set_reply_error();
       obj->Send(reply);
+      return false;
     }
-    return ok;
+
+    std::tuple<Message&> t = std::tie(*reply);
+    ConnectMessageAndReply(msg, reply);
+    base::DispatchToMethod(obj, func, std::move(send_params), &t);
+    return true;
   }
 
   template <class T, class P, class Method>
@@ -212,19 +239,21 @@ class MessageT<Meta, std::tuple<Ins...>, std::tuple<Outs...>>
     SendParam send_params;
     bool ok = ReadSendParam(msg, &send_params);
     Message* reply = SyncMessage::GenerateReply(msg);
-    if (ok) {
-      std::tuple<Message&> t = std::tie(*reply);
-      ConnectMessageAndReply(msg, reply);
-      std::tuple<P*> parameter_tuple(parameter);
-      auto concat_params =
-          std::tuple_cat(std::move(parameter_tuple), std::move(send_params));
-      base::DispatchToMethod(obj, func, std::move(concat_params), &t);
-    } else {
+    if (!ok) {
       NOTREACHED() << "Error deserializing message " << msg->type();
       reply->set_reply_error();
       obj->Send(reply);
+      return false;
     }
-    return ok;
+
+    std::tuple<Message&> t = std::tie(*reply);
+    ConnectMessageAndReply(msg, reply);
+    std::tuple<P*> parameter_tuple(parameter);
+    base::DispatchToMethod(
+        obj, func,
+        std::tuple_cat(std::move(parameter_tuple), TupleForward(send_params)),
+        &t);
+    return true;
   }
 
  private:
