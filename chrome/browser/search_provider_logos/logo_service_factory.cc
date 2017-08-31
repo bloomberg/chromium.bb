@@ -14,10 +14,14 @@
 #include "net/url_request/url_request_context_getter.h"
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/android/chrome_feature_list.h"
+#include "chrome/browser/android/feature_utilities.h"
 #endif
 
 using search_provider_logos::LogoService;
+
+#if defined(OS_ANDROID)
+using chrome::android::GetIsChromeHomeEnabled;
+#endif  // defined(OS_ANDROID)
 
 namespace {
 
@@ -51,8 +55,7 @@ KeyedService* LogoServiceFactory::BuildServiceInstanceFor(
   Profile* profile = static_cast<Profile*>(context);
   DCHECK(!profile->IsOffTheRecord());
 #if defined(OS_ANDROID)
-  bool use_gray_background =
-      !base::FeatureList::IsEnabled(chrome::android::kChromeHomeFeature);
+  bool use_gray_background = !GetIsChromeHomeEnabled();
 #else
   bool use_gray_background = false;
 #endif

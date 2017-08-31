@@ -68,6 +68,7 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/chrome_feature_list.h"
+#include "chrome/browser/android/feature_utilities.h"
 #include "chrome/browser/android/ntp/ntp_snippets_launcher.h"
 #include "chrome/browser/download/download_core_service.h"
 #include "chrome/browser/download/download_core_service_factory.h"
@@ -118,6 +119,7 @@ using suggestions::ImageDecoderImpl;
 using syncer::SyncService;
 
 #if defined(OS_ANDROID)
+using chrome::android::GetIsChromeHomeEnabled;
 using content::DownloadManager;
 using ntp_snippets::BreakingNewsGCMAppHandler;
 using ntp_snippets::GetPushUpdatesSubscriptionEndpoint;
@@ -149,14 +151,6 @@ using offline_pages::RequestCoordinatorFactory;
 #if CONTENT_SUGGESTIONS_ENABLED
 
 namespace {
-
-bool IsChromeHomeEnabled() {
-#if defined(OS_ANDROID)
-  return base::FeatureList::IsEnabled(chrome::android::kChromeHomeFeature);
-#else
-  return false;
-#endif
-}
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
 
@@ -199,13 +193,13 @@ void RegisterPrefetchingObserver(ContentSuggestionsService* service,
 #if defined(OS_ANDROID)
 
 bool AreAssetDownloadsEnabled() {
-  return !IsChromeHomeEnabled() &&
+  return !GetIsChromeHomeEnabled() &&
          base::FeatureList::IsEnabled(
              features::kAssetDownloadSuggestionsFeature);
 }
 
 bool AreOfflinePageDownloadsEnabled() {
-  return !IsChromeHomeEnabled() &&
+  return !GetIsChromeHomeEnabled() &&
          base::FeatureList::IsEnabled(
              features::kOfflinePageDownloadSuggestionsFeature);
 }
@@ -244,7 +238,7 @@ bool IsBookmarkProviderEnabled(BookmarkModel* bookmark_model) {
   return base::FeatureList::IsEnabled(
              ntp_snippets::kBookmarkSuggestionsFeature) &&
          bookmark_model &&  // |bookmark_model| can be null in tests.
-         !IsChromeHomeEnabled();
+         !GetIsChromeHomeEnabled();
 }
 
 void RegisterBookmarkProviderIfEnabled(ContentSuggestionsService* service,
