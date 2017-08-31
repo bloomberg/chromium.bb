@@ -16230,6 +16230,28 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="2120" label="PaymentRequestSupportedMethodsArray"/>
   <int value="2121" label="NavigatorDeviceMemory"/>
   <int value="2122" label="FixedWidthTableDistributionChanged"/>
+  <int value="2123" label="WebkitBoxLayout"/>
+  <int value="2124" label="WebkitBoxLayoutHorizontal"/>
+  <int value="2125" label="WebkitBoxLayoutVertical"/>
+  <int value="2126" label="WebkitBoxAlignNotInitial"/>
+  <int value="2127" label="WebkitBoxDirectionNotInitial"/>
+  <int value="2128" label="WebkitBoxLinesNotInitial"/>
+  <int value="2129" label="WebkitBoxPackNotInitial"/>
+  <int value="2130" label="WebkitBoxChildFlexNotInitial"/>
+  <int value="2131" label="WebkitBoxChildFlexGroupNotInitial"/>
+  <int value="2132" label="WebkitBoxChildOrdinalGroupNotInitial"/>
+  <int value="2133" label="WebkitBoxNotDefaultOrder"/>
+  <int value="2134" label="WebkitBoxNoChildren"/>
+  <int value="2135" label="WebkitBoxOneChild"/>
+  <int value="2136" label="WebkitBoxOneChildIsLayoutBlockFlowInline"/>
+  <int value="2137" label="WebkitBoxManyChildren"/>
+  <int value="2138" label="WebkitBoxLineClamp"/>
+  <int value="2139" label="WebkitBoxLineClampPercentage"/>
+  <int value="2140" label="WebkitBoxLineClampNoChildren"/>
+  <int value="2141" label="WebkitBoxLineClampOneChild"/>
+  <int value="2142" label="WebkitBoxLineClampOneChildIsLayoutBlockFlowInline"/>
+  <int value="2143" label="WebkitBoxLineClampManyChildren"/>
+  <int value="2144" label="WebkitBoxLineClampDoesSomething"/>
 </enum>
 
 <enum name="FeedbackSource">
