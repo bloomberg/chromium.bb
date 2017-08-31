@@ -15,6 +15,7 @@ class ChromeBrowserState;
 }
 
 @protocol ApplicationCommands;
+@protocol RecentTabsHandsetViewControllerCommand;
 @class RecentTabsTableViewController;
 @protocol UrlLoader;
 
@@ -27,6 +28,11 @@ class ChromeBrowserState;
 //
 @interface RecentTabsTableCoordinator
     : ChromeCoordinator<NewTabPagePanelProtocol>
+
+// Command handler for the command sent when the device is a handset. Nil
+// otherwise.
+@property(nonatomic, weak) id<RecentTabsHandsetViewControllerCommand>
+    handsetCommandHandler;
 
 // Public initializer.
 - (instancetype)initWithLoader:(id<UrlLoader>)loader

@@ -36,6 +36,7 @@
       [[RecentTabsTableCoordinator alloc] initWithLoader:self.loader
                                             browserState:self.browserState
                                               dispatcher:self.dispatcher];
+  self.tableCoordinator.handsetCommandHandler = self;
   [self.tableCoordinator start];
 
   self.recentTabsViewController = [[RecentTabsHandsetViewController alloc]
@@ -55,6 +56,9 @@
                                                     completion:nil];
   [self.tableCoordinator dismissKeyboard];
   [self.tableCoordinator dismissModals];
+  [self.tableCoordinator stop];
+  self.tableCoordinator = nil;
+  self.recentTabsViewController = nil;
 }
 
 #pragma mark - RecentTabsHandsetViewControllerCommand

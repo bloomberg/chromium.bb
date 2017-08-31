@@ -54,6 +54,7 @@
 // UITableViewController of any signed in state change.
 @implementation RecentTabsTableCoordinator
 
+@synthesize handsetCommandHandler = _handsetCommandHandler;
 // Property declared in NewTabPagePanelProtocol.
 @synthesize delegate = _delegate;
 
@@ -81,6 +82,7 @@
 }
 
 - (void)start {
+  _tableViewController.handsetCommandHandler = self.handsetCommandHandler;
   [self initObservers];
   [self reloadSessions];
 }

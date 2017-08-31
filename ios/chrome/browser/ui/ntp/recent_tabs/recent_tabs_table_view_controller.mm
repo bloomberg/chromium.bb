@@ -28,6 +28,7 @@
 #import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
 #import "ios/chrome/browser/ui/context_menu/context_menu_coordinator.h"
+#import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_handset_view_controller.h"
 #include "ios/chrome/browser/ui/ntp/recent_tabs/synced_sessions.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/views/generic_section_header_view.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/views/header_of_collapsable_section_protocol.h"
@@ -167,6 +168,7 @@ enum CellType {
 
 @synthesize delegate = delegate_;
 @synthesize dispatcher = _dispatcher;
+@synthesize handsetCommandHandler = _handsetCommandHandler;
 
 - (instancetype)init {
   NOTREACHED();
@@ -363,13 +365,7 @@ enum CellType {
 }
 
 - (void)dismissRecentTabsModalWithCompletion:(ProceduralBlock)completion {
-  // Recent Tabs are modally presented only on iPhone.
-  if (!IsIPadIdiom()) {
-    // TODO(crbug.com/434683): Use a delegate to dismiss the table view.
-    [self.tableView.window.rootViewController
-        dismissViewControllerAnimated:YES
-                           completion:completion];
-  }
+  [self.handsetCommandHandler dismissRecentTabs];
 }
 
 - (void)openTabWithContentOfDistantTab:
