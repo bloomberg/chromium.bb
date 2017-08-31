@@ -732,10 +732,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
 - (void)showFindBarWithAnimation:(BOOL)animate
                       selectText:(BOOL)selectText
                      shouldFocus:(BOOL)shouldFocus;
-// Show the Page Security Info.
-- (void)showPageInfoPopupForView:(UIView*)sourceView;
-// Hide the Page Security Info.
-- (void)hidePageInfoPopupForView:(UIView*)sourceView;
+
 // The infobar state (typically height) has changed.
 - (void)infoBarContainerStateChanged:(bool)is_animating;
 // Adds a CardView on top of the contentArea either taking the size of the full
@@ -2035,7 +2032,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
 - (void)dismissPopups {
   [_toolbarController dismissToolsMenuPopup];
-  [self hidePageInfoPopupForView:nil];
+  [self hidePageInfo];
   [self.tabTipBubblePresenter dismissAnimated:YES];
 }
 
@@ -3620,68 +3617,6 @@ bubblePresenterForFeature:(const base::Feature&)feature
 
 #pragma mark - Showing popups
 
-- (void)showPageInfoPopupForView:(UIView*)sourceView {
-  Tab* tab = [_model currentTab];
-  DCHECK([tab navigationManager]);
-  web::NavigationItem* navItem = [tab navigationManager]->GetVisibleItem();
-
-  // It is fully expected to have a navItem here, as showPageInfoPopup can only
-  // be trigerred by a button enabled when a current item matches some
-  // conditions. However a crash was seen were navItem was NULL hence this
-  // test after a DCHECK.
-  DCHECK(navItem);
-  if (!navItem)
-    return;
-
-  // Don't show if the page is native except for offline pages (to show the
-  // offline page info).
-  if ([self isTabNativePage:tab] &&
-      !reading_list::IsOfflineURL(navItem->GetURL())) {
-    return;
-  }
-
-  // Don't show the bubble twice (this can happen when tapping very quickly in
-  // accessibility mode).
-  if (_pageInfoController)
-    return;
-
-  base::RecordAction(UserMetricsAction("MobileToolbarPageSecurityInfo"));
-
-  // Dismiss the omnibox (if open).
-  [_toolbarController cancelOmniboxEdit];
-
-  [[NSNotificationCenter defaultCenter]
-      postNotificationName:ios_internal::kPageInfoWillShowNotification
-                    object:nil];
-
-  // TODO(rohitrao): Get rid of PageInfoModel completely.
-  PageInfoModelBubbleBridge* bridge = new PageInfoModelBubbleBridge();
-  PageInfoModel* pageInfoModel = new PageInfoModel(
-      _browserState, navItem->GetURL(), navItem->GetSSL(), bridge);
-
-  UIView* view = [self view];
-  _pageInfoController = [[PageInfoViewController alloc]
-      initWithModel:pageInfoModel
-             bridge:bridge
-        sourceFrame:[sourceView convertRect:[sourceView bounds] toView:view]
-         parentView:view];
-  _pageInfoController.dispatcher = self.dispatcher;
-  bridge->set_controller(_pageInfoController);
-}
-
-- (void)hidePageInfoPopupForView:(UIView*)sourceView {
-  [_pageInfoController dismiss];
-  _pageInfoController = nil;
-}
-
-- (void)showSecurityHelpPage {
-  [self webPageOrderedOpen:GURL(kPageInfoHelpCenterURL)
-                  referrer:web::Referrer()
-              inBackground:NO
-                  appendTo:kCurrentTab];
-  [self hidePageInfoPopupForView:nil];
-}
-
 - (void)addToReadingListURL:(const GURL&)URL title:(NSString*)title {
   base::RecordAction(UserMetricsAction("MobileReadingListAdd"));
 
@@ -4408,6 +4343,76 @@ bubblePresenterForFeature:(const base::Feature&)feature
       });
 }
 
+- (void)showPageInfoForOriginPoint:(CGPoint)originPoint {
+  Tab* tab = [_model currentTab];
+  DCHECK([tab navigationManager]);
+  web::NavigationItem* navItem = [tab navigationManager]->GetVisibleItem();
+
+  // It is fully expected to have a navItem here, as showPageInfoPopup can only
+  // be trigerred by a button enabled when a current item matches some
+  // conditions. However a crash was seen were navItem was NULL hence this
+  // test after a DCHECK.
+  DCHECK(navItem);
+  if (!navItem)
+    return;
+
+  // Don't show if the page is native except for offline pages (to show the
+  // offline page info).
+  if ([self isTabNativePage:tab] &&
+      !reading_list::IsOfflineURL(navItem->GetURL())) {
+    return;
+  }
+
+  // Don't show the bubble twice (this can happen when tapping very quickly in
+  // accessibility mode).
+  if (_pageInfoController)
+    return;
+
+  base::RecordAction(UserMetricsAction("MobileToolbarPageSecurityInfo"));
+
+  // Dismiss the omnibox (if open).
+  [_toolbarController cancelOmniboxEdit];
+
+  [[NSNotificationCenter defaultCenter]
+      postNotificationName:ios_internal::kPageInfoWillShowNotification
+                    object:nil];
+
+  // TODO(crbug.com/760387): Get rid of PageInfoModel completely.
+  PageInfoModelBubbleBridge* bridge = new PageInfoModelBubbleBridge();
+  PageInfoModel* pageInfoModel = new PageInfoModel(
+      _browserState, navItem->GetURL(), navItem->GetSSL(), bridge);
+
+  UIView* view = [self view];
+  _pageInfoController = [[PageInfoViewController alloc]
+      initWithModel:pageInfoModel
+             bridge:bridge
+        sourcePoint:[view convertPoint:originPoint fromView:nil]
+         parentView:view];
+  _pageInfoController.dispatcher = self.dispatcher;
+  bridge->set_controller(_pageInfoController);
+}
+
+- (void)hidePageInfo {
+  // Early return if the PageInfoPopup is not presented.
+  if (!_pageInfoController)
+    return;
+
+  [[NSNotificationCenter defaultCenter]
+      postNotificationName:ios_internal::kPageInfoWillHideNotification
+                    object:nil];
+
+  [_pageInfoController dismiss];
+  _pageInfoController = nil;
+}
+
+- (void)showSecurityHelpPage {
+  [self webPageOrderedOpen:GURL(kPageInfoHelpCenterURL)
+                  referrer:web::Referrer()
+              inBackground:NO
+                  appendTo:kCurrentTab];
+  [self hidePageInfo];
+}
+
 #pragma mark - Command Handling
 
 - (IBAction)chromeExecuteCommand:(id)sender {
@@ -4453,19 +4458,6 @@ bubblePresenterForFeature:(const base::Feature&)feature
       }
       break;
     }
-    case IDC_SHOW_PAGE_INFO:
-      DCHECK([sender isKindOfClass:[UIButton class]]);
-      [self showPageInfoPopupForView:sender];
-      break;
-    case IDC_HIDE_PAGE_INFO:
-      [[NSNotificationCenter defaultCenter]
-          postNotificationName:ios_internal::kPageInfoWillHideNotification
-                        object:nil];
-      [self hidePageInfoPopupForView:sender];
-      break;
-    case IDC_SHOW_SECURITY_HELP:
-      [self showSecurityHelpPage];
-      break;
     default:
       // Unknown commands get sent up the responder chain.
       [super chromeExecuteCommand:sender];
@@ -4504,7 +4496,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
   [_bookmarkInteractionController dismissSnackbar];
   [_toolbarController cancelOmniboxEdit];
   [_dialogPresenter cancelAllDialogs];
-  [self hidePageInfoPopupForView:nil];
+  [self hidePageInfo];
   [self.tabTipBubblePresenter dismissAnimated:NO];
   if (_voiceSearchController)
     _voiceSearchController->DismissMicPermissionsHelp();

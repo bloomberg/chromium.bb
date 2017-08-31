@@ -24,11 +24,11 @@ class PageInfoModel;
 @interface PageInfoViewController : NSObject
 // Designated initializer.
 // The |source| parameter should be in the coordinate system of the parent.
-// Typically this would be the frame of a button that resulted in this popup
+// Typically this would be the midpoint of a button that resulted in this popup
 // being displayed.
 - (id)initWithModel:(PageInfoModel*)model
              bridge:(PageInfoModelObserver*)bridge
-        sourceFrame:(CGRect)source
+        sourcePoint:(CGPoint)sourcePoint
          parentView:(UIView*)parent;
 
 // Dispatcher for browser commands.

@@ -42,7 +42,7 @@
       base::MakeUnique<LocationBarControllerImpl>(
           self.viewController.omnibox, browser->browser_state(),
           nil /* PreloadProvider */, nil /* OmniboxPopupPositioner */,
-          self.mediator);
+          self.mediator, nil /* dispatcher */);
   [self.mediator setLocationBar:std::move(locationBar)];
   [super start];
 }
