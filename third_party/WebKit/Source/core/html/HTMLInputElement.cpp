@@ -1584,13 +1584,8 @@ HTMLDataListElement* HTMLInputElement::DataList() const {
   if (!input_type_->ShouldRespectListAttribute())
     return nullptr;
 
-  Element* element = GetTreeScope().getElementById(FastGetAttribute(listAttr));
-  if (!element)
-    return nullptr;
-  if (!isHTMLDataListElement(*element))
-    return nullptr;
-
-  return toHTMLDataListElement(element);
+  return ToHTMLDataListElementOrNull(
+      GetTreeScope().getElementById(FastGetAttribute(listAttr)));
 }
 
 bool HTMLInputElement::HasValidDataListOptions() const {

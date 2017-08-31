@@ -449,10 +449,9 @@ HTMLOptionElement* HTMLSelectElement::OptionAtListIndex(int list_index) const {
   if (list_index < 0)
     return nullptr;
   const ListItems& items = GetListItems();
-  if (static_cast<size_t>(list_index) >= items.size() ||
-      !isHTMLOptionElement(items[list_index]))
+  if (static_cast<size_t>(list_index) >= items.size())
     return nullptr;
-  return toHTMLOptionElement(items[list_index]);
+  return ToHTMLOptionElementOrNull(items[list_index]);
 }
 
 // Returns the 1st valid OPTION |skip| items from |listIndex| in direction
@@ -1842,11 +1841,10 @@ HTMLOptionElement* HTMLSelectElement::SpatialNavigationFocusedOption() {
 
 String HTMLSelectElement::ItemText(const Element& element) const {
   String item_string;
-  if (isHTMLOptGroupElement(element))
-    item_string = toHTMLOptGroupElement(element).GroupLabelText();
-  else if (isHTMLOptionElement(element))
-    item_string =
-        toHTMLOptionElement(element).TextIndentedToRespectGroupLabel();
+  if (auto* optgroup = ToHTMLOptGroupElementOrNull(element))
+    item_string = optgroup->GroupLabelText();
+  else if (auto* option = ToHTMLOptionElementOrNull(element))
+    item_string = option->TextIndentedToRespectGroupLabel();
 
   if (GetLayoutObject())
     ApplyTextTransform(GetLayoutObject()->Style(), item_string, ' ');
@@ -1854,8 +1852,8 @@ String HTMLSelectElement::ItemText(const Element& element) const {
 }
 
 bool HTMLSelectElement::ItemIsDisplayNone(Element& element) const {
-  if (isHTMLOptionElement(element))
-    return toHTMLOptionElement(element).IsDisplayNone();
+  if (auto* option = ToHTMLOptionElementOrNull(element))
+    return option->IsDisplayNone();
   if (const ComputedStyle* style = ItemComputedStyle(element))
     return style->Display() == EDisplay::kNone;
   return false;

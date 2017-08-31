@@ -360,8 +360,8 @@ void HTMLFormElement::submitFromJavaScript() {
 
 void HTMLFormElement::SubmitDialog(FormSubmission* form_submission) {
   for (Node* node = this; node; node = node->ParentOrShadowHostNode()) {
-    if (isHTMLDialogElement(*node)) {
-      toHTMLDialogElement(*node).CloseDialog(form_submission->Result());
+    if (auto* dialog = ToHTMLDialogElementOrNull(*node)) {
+      dialog->CloseDialog(form_submission->Result());
       return;
     }
   }
