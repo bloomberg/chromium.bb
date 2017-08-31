@@ -73,6 +73,7 @@ class Shell::DevToolsWebContentsObserver : public WebContentsObserver {
 
 Shell::Shell(WebContents* web_contents)
     : WebContentsObserver(web_contents),
+      web_contents_(web_contents),
       devtools_frontend_(NULL),
       is_fullscreen_(false),
       window_(NULL),
@@ -80,6 +81,8 @@ Shell::Shell(WebContents* web_contents)
       url_edit_view_(NULL),
 #endif
       headless_(false) {
+  web_contents_->SetDelegate(this);
+
   if (switches::IsRunLayoutTestSwitchPresent())
     headless_ = true;
   windows_.push_back(this);
@@ -106,15 +109,14 @@ Shell::~Shell() {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
   }
+
+  web_contents_->SetDelegate(nullptr);
 }
 
 Shell* Shell::CreateShell(WebContents* web_contents,
                           const gfx::Size& initial_size) {
   Shell* shell = new Shell(web_contents);
   shell->PlatformCreateWindow(initial_size.width(), initial_size.height());
-
-  shell->web_contents_.reset(web_contents);
-  web_contents->SetDelegate(shell);
 
   shell->PlatformSetContents();
 
