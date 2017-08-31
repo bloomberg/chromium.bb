@@ -565,8 +565,6 @@ void WallpaperManagerBase::GetCustomWallpaperInternal(
     // Falls back to custom wallpaper that uses AccountId as part of its file
     // path.
     // Note that account id is used instead of wallpaper_files_id here.
-    LOG(ERROR) << "Failed to load custom wallpaper from its original fallback "
-                  "file path: " << valid_path.value();
     const std::string& old_path = account_id.GetUserEmail();  // Migrated
     valid_path = GetCustomWallpaperPath(kOriginalWallpaperSubDir,
                                         WallpaperFilesId::FromString(old_path),
@@ -574,13 +572,11 @@ void WallpaperManagerBase::GetCustomWallpaperInternal(
   }
 
   if (!base::PathExists(valid_path)) {
-    LOG(ERROR) << "Failed to load previously selected custom wallpaper. "
-               << "Fallback to default wallpaper. Expected wallpaper path: "
-               << wallpaper_path.value();
     reply_task_runner->PostTask(
         FROM_HERE,
-        base::Bind(&WallpaperManagerBase::DoSetDefaultWallpaper, weak_ptr,
-                   account_id, base::Passed(std::move(on_finish))));
+        base::Bind(&WallpaperManagerBase::OnCustomWallpaperFileNotFound,
+                   weak_ptr, account_id, wallpaper_path, update_wallpaper,
+                   base::Passed(std::move(on_finish))));
   } else {
     reply_task_runner->PostTask(
         FROM_HERE, base::Bind(&WallpaperManagerBase::StartLoad, weak_ptr,
@@ -831,7 +827,7 @@ void WallpaperManagerBase::LoadWallpaper(
     // In unexpected cases, revert to default wallpaper to fail safely. See
     // crosbug.com/38429.
     LOG(ERROR) << "Wallpaper reverts to default unexpected.";
-    DoSetDefaultWallpaper(account_id, std::move(on_finish));
+    DoSetDefaultWallpaper(account_id, update_wallpaper, std::move(on_finish));
   }
 }
 
@@ -1008,6 +1004,27 @@ void WallpaperManagerBase::CreateSolidDefaultWallpaper() {
   bitmap.eraseColor(kDefaultWallpaperColor);
   const gfx::ImageSkia image = gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
   default_wallpaper_image_.reset(new user_manager::UserImage(image));
+}
+
+void WallpaperManagerBase::OnCustomWallpaperFileNotFound(
+    const AccountId& account_id,
+    const base::FilePath& expected_path,
+    bool update_wallpaper,
+    MovableOnDestroyCallbackHolder on_finish) {
+  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
+  const user_manager::User* user = user_manager->FindUser(account_id);
+  LOG(ERROR) << "Failed to load previously selected custom wallpaper. "
+             << "Fallback to default wallpaper. Expected wallpaper path: "
+             << expected_path.value() << ". Number of users on the device: "
+             << user_manager->GetUsers().size()
+             << ", Number of logged in users on the device: "
+             << user_manager->GetLoggedInUsers().size()
+             << ". Current user type: " << user->GetType()
+             << ", IsActiveUser=" << (user_manager->GetActiveUser() == user)
+             << ", IsPrimaryUser=" << (user_manager->GetPrimaryUser() == user)
+             << ".";
+
+  DoSetDefaultWallpaper(account_id, update_wallpaper, std::move(on_finish));
 }
 
 }  // namespace wallpaper

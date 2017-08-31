@@ -481,9 +481,11 @@ class WALLPAPER_EXPORT WallpaperManagerBase {
   virtual void ScheduleSetUserWallpaper(const AccountId& account_id,
                                         bool delayed) = 0;
 
-  // Sets wallpaper to default.
+  // Sets wallpaper to default if |update_wallpaper| is true. Otherwise just
+  // load defaut wallpaper to cache.
   virtual void DoSetDefaultWallpaper(
       const AccountId& account_id,
+      bool update_wallpaper,
       MovableOnDestroyCallbackHolder on_finish) = 0;
 
   // Starts to load wallpaper at |wallpaper_path|. If |wallpaper_path| is
@@ -533,18 +535,21 @@ class WALLPAPER_EXPORT WallpaperManagerBase {
   virtual void SetDefaultWallpaperPathsFromCommandLine(
       base::CommandLine* command_line) = 0;
 
-  // Sets wallpaper to decoded default.
+  // Sets wallpaper to decoded default if |update_wallpaper| is true.
   virtual void OnDefaultWallpaperDecoded(
       const base::FilePath& path,
       const WallpaperLayout layout,
+      bool update_wallpaper,
       std::unique_ptr<user_manager::UserImage>* result,
       MovableOnDestroyCallbackHolder on_finish,
       std::unique_ptr<user_manager::UserImage> user_image) = 0;
 
-  // Start decoding given default wallpaper.
+  // Start decoding given default wallpaper and set it as wallpaper if
+  // |update_wallpaper| is true.
   virtual void StartLoadAndSetDefaultWallpaper(
       const base::FilePath& path,
       const WallpaperLayout layout,
+      bool update_wallpaper,
       MovableOnDestroyCallbackHolder on_finish,
       std::unique_ptr<user_manager::UserImage>* result_out) = 0;
 
@@ -556,6 +561,12 @@ class WALLPAPER_EXPORT WallpaperManagerBase {
 
   // Init default_wallpaper_image_ with 1x1 image of default color.
   virtual void CreateSolidDefaultWallpaper();
+
+  // Callback function for WallpaperManagerBase::GetCustomWallpaperInternal().
+  void OnCustomWallpaperFileNotFound(const AccountId& account_id,
+                                     const base::FilePath& expected_path,
+                                     bool update_wallpaper,
+                                     MovableOnDestroyCallbackHolder on_finish);
 
   // The number of loaded wallpapers.
   int loaded_wallpapers_for_test_;
