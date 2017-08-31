@@ -99,7 +99,6 @@ action("cpplib_stripped") {
   _rebased_output_so = rebase_path(_output_so, root_build_dir)
   args = [
     _rebased_strip_bin,
-    "--strip-unneeded",
     "-o",
     _rebased_output_so,
     _rebased_input_so,
