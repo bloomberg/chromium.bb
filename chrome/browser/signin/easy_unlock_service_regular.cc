@@ -491,15 +491,15 @@ void EasyUnlockServiceRegular::SetAutoPairingResult(
 void EasyUnlockServiceRegular::InitializeInternal() {
   proximity_auth::ScreenlockBridge::Get()->AddObserver(this);
 
+  pref_manager_.reset(new proximity_auth::ProximityAuthProfilePrefManager(
+      profile()->GetPrefs()));
+
 #if defined(OS_CHROMEOS)
   // TODO(tengs): Due to badly configured browser_tests, Chrome crashes during
   // shutdown. Revisit this condition after migration is fully completed.
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           proximity_auth::switches::kDisableBluetoothLowEnergyDiscovery) &&
       !base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType)) {
-    pref_manager_.reset(new proximity_auth::ProximityAuthProfilePrefManager(
-        profile()->GetPrefs()));
-
     // Note: There is no local state in tests.
     if (g_browser_process->local_state()) {
       pref_manager_->StartSyncingToLocalState(g_browser_process->local_state(),
