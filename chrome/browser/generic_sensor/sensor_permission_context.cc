@@ -4,6 +4,11 @@
 
 #include "chrome/browser/generic_sensor/sensor_permission_context.h"
 
+#include "components/content_settings/core/common/content_settings.h"
+#include "components/content_settings/core/common/content_settings_types.h"
+#include "third_party/WebKit/public/platform/WebFeaturePolicyFeature.h"
+#include "url/gurl.h"
+
 SensorPermissionContext::SensorPermissionContext(Profile* profile)
     : PermissionContextBase(profile,
                             CONTENT_SETTINGS_TYPE_SENSORS,
