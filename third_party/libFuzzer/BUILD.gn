@@ -8,6 +8,7 @@ source_set("libfuzzer") {
   configs +=
       [ "//build/config/sanitizers:default_sanitizer_flags_but_coverage" ]
   sources = [
+    "src/FuzzerClangCounters.cpp",
     "src/FuzzerCrossOver.cpp",
     "src/FuzzerDriver.cpp",
     "src/FuzzerExtFunctionsDlsym.cpp",
