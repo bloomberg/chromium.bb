@@ -437,9 +437,10 @@ class Manager(object):
 
         crash_logs = self._port.look_for_new_crash_logs(crashed_processes, start_time)
         if crash_logs:
-            for test, crash_log in crash_logs.iteritems():
+            for test, (crash_log, crash_site) in crash_logs.iteritems():
                 writer = TestResultWriter(self._filesystem, self._port, self._port.results_directory(), test)
                 writer.write_crash_log(crash_log)
+                run_results.unexpected_results_by_name[test].crash_site = crash_site
 
     def _clobber_old_results(self):
         dir_above_results_path = self._filesystem.dirname(self._results_directory)

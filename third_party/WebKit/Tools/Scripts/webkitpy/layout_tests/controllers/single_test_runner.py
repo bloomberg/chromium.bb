@@ -153,7 +153,7 @@ class SingleTestRunner(object):
         expected_driver_output = self._expected_driver_output()
         failures = self._handle_error(driver_output)
         test_result = TestResult(self._test_name, failures, driver_output.test_time, driver_output.has_stderr(),
-                                 pid=driver_output.pid)
+                                 pid=driver_output.pid, crash_site=driver_output.crash_site)
         test_result_writer.write_test_result(self._filesystem, self._port, self._results_directory,
                                              self._test_name, driver_output, expected_driver_output, test_result.failures)
         return test_result
@@ -176,7 +176,7 @@ class SingleTestRunner(object):
         # to write new baselines.
         self._update_or_add_new_baselines(driver_output)
         return TestResult(self._test_name, failures, driver_output.test_time, driver_output.has_stderr(),
-                          pid=driver_output.pid)
+                          pid=driver_output.pid, crash_site=driver_output.crash_site)
 
     _render_tree_dump_pattern = re.compile(r"^layer at \(\d+,\d+\) size \d+x\d+\n")
 
@@ -264,7 +264,7 @@ class SingleTestRunner(object):
             # Don't continue any more if we already have a crash.
             # In case of timeouts, we continue since we still want to see the text and image output.
             return TestResult(self._test_name, failures, driver_output.test_time, driver_output.has_stderr(),
-                              pid=driver_output.pid)
+                              pid=driver_output.pid, crash_site=driver_output.crash_site)
 
         is_testharness_test, testharness_failures = self._compare_testharness_test(driver_output, expected_driver_output)
         if is_testharness_test:

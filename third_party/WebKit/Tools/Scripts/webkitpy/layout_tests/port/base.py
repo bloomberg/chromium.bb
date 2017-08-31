@@ -1542,9 +1542,25 @@ class Port(object):
         else:
             stderr_lines = [u'<empty>']
 
-        return (stderr, 'crash log for %s (pid %s):\n%s\n%s\n' % (name_str, pid_str,
-                                                                  '\n'.join(('STDOUT: ' + l) for l in stdout_lines),
-                                                                  '\n'.join(('STDERR: ' + l) for l in stderr_lines)))
+        return (stderr,
+                'crash log for %s (pid %s):\n%s\n%s\n' % (name_str, pid_str,
+                                                          '\n'.join(('STDOUT: ' + l) for l in stdout_lines),
+                                                          '\n'.join(('STDERR: ' + l) for l in stderr_lines)),
+                self._get_crash_site(stderr_lines))
+
+    def _get_crash_site(self, stderr_lines):
+        # [blah:blah:blah:FATAL:
+        prefix_re = r'\[[\w:/.]*FATAL:'
+        # crash_file.ext(line)
+        site_re = r'(?P<site>[\w_]*\.[\w_]*\(\d*\))'
+        # ] blah failed
+        suffix_re = r'\]\s*(Check failed|Security DCHECK failed)'
+        pattern = re.compile(prefix_re + site_re + suffix_re)
+        for line in stderr_lines:
+            match = pattern.search(line)
+            if match:
+                return match.group('site')
+        return None
 
     def look_for_new_crash_logs(self, crashed_processes, start_time):
         pass

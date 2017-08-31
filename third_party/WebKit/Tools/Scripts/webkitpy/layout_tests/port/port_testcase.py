@@ -193,16 +193,17 @@ class PortTestCase(LoggingTestCase):
 
     def test_get_crash_log_all_none(self):
         port = self.make_port()
-        stderr, details = port._get_crash_log(None, None, None, None, newer_than=None)
+        stderr, details, crash_site = port._get_crash_log(None, None, None, None, newer_than=None)
         self.assertIsNone(stderr)
         self.assertEqual(details,
                          'crash log for <unknown process name> (pid <unknown>):\n'
                          'STDOUT: <empty>\n'
                          'STDERR: <empty>\n')
+        self.assertIsNone(crash_site)
 
     def test_get_crash_log_simple(self):
         port = self.make_port()
-        stderr, details = port._get_crash_log('foo', 1234, 'out bar\nout baz', 'err bar\nerr baz\n', newer_than=None)
+        stderr, details, crash_site = port._get_crash_log('foo', 1234, 'out bar\nout baz', 'err bar\nerr baz\n', newer_than=None)
         self.assertEqual(stderr, 'err bar\nerr baz\n')
         self.assertEqual(details,
                          'crash log for foo (pid 1234):\n'
@@ -210,24 +211,41 @@ class PortTestCase(LoggingTestCase):
                          'STDOUT: out baz\n'
                          'STDERR: err bar\n'
                          'STDERR: err baz\n')
+        self.assertIsNone(crash_site)
 
     def test_get_crash_log_non_ascii(self):
         port = self.make_port()
-        stderr, details = port._get_crash_log('foo', 1234, 'foo\xa6bar', 'foo\xa6bar', newer_than=None)
+        stderr, details, crash_site = port._get_crash_log('foo', 1234, 'foo\xa6bar', 'foo\xa6bar', newer_than=None)
         self.assertEqual(stderr, 'foo\xa6bar')
         self.assertEqual(details,
                          u'crash log for foo (pid 1234):\n'
                          u'STDOUT: foo\ufffdbar\n'
                          u'STDERR: foo\ufffdbar\n')
+        self.assertIsNone(crash_site)
 
     def test_get_crash_log_newer_than(self):
         port = self.make_port()
-        stderr, details = port._get_crash_log('foo', 1234, 'foo\xa6bar', 'foo\xa6bar', newer_than=1.0)
+        stderr, details, crash_site = port._get_crash_log('foo', 1234, 'foo\xa6bar', 'foo\xa6bar', newer_than=1.0)
         self.assertEqual(stderr, 'foo\xa6bar')
         self.assertEqual(details,
                          u'crash log for foo (pid 1234):\n'
                          u'STDOUT: foo\ufffdbar\n'
                          u'STDERR: foo\ufffdbar\n')
+        self.assertIsNone(crash_site)
+
+    def test_get_crash_log_crash_site(self):
+        port = self.make_port()
+        stderr, details, crash_site = port._get_crash_log('foo',
+                                                          1234,
+                                                          'out bar',
+                                                          '[1:2:3:4:FATAL:example.cc(567)] Check failed.',
+                                                          newer_than=None)
+        self.assertEqual(stderr, '[1:2:3:4:FATAL:example.cc(567)] Check failed.')
+        self.assertEqual(details,
+                         'crash log for foo (pid 1234):\n'
+                         'STDOUT: out bar\n'
+                         'STDERR: [1:2:3:4:FATAL:example.cc(567)] Check failed.\n')
+        self.assertEqual(crash_site, 'example.cc(567)')
 
     def test_expectations_files(self):
         port = self.make_port()
