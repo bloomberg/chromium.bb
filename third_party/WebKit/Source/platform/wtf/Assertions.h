@@ -96,10 +96,14 @@ WTF_EXPORT PRINTF_FORMAT(1, 2)  // NOLINT
 
 // DEFINE_TYPE_CASTS
 //
-// toType() functions are static_cast<> wrappers with SECURITY_DCHECK. It's
+// ToType() functions are static_cast<> wrappers with SECURITY_DCHECK. It's
 // helpful to find bad casts.
 //
-// toTypeOrDie() has a runtime type check, and it crashes if the specified
+// ToTypeOrNull() functions are similar to dynamic_cast<>. They return
+// type-casted values if the specified predicate is true, and return
+// nullptr otherwise.
+//
+// ToTypeOrDie() has a runtime type check, and it crashes if the specified
 // object is not an instance of the destination type. It is used if
 // * it's hard to prevent from passing unexpected objects,
 // * proceeding with the following code doesn't make sense, and
@@ -124,6 +128,30 @@ WTF_EXPORT PRINTF_FORMAT(1, 2)  // NOLINT
   }                                                                           \
   void To##thisType(const thisType*);                                         \
   void To##thisType(const thisType&);                                         \
+                                                                              \
+  inline thisType* To##thisType##OrNull(argumentType* argument) {             \
+    if (!(argument) || !(pointerPredicate))                                   \
+      return nullptr;                                                         \
+    return static_cast<thisType*>(argument);                                  \
+  }                                                                           \
+  inline const thisType* To##thisType##OrNull(const argumentType* argument) { \
+    if (!(argument) || !(pointerPredicate))                                   \
+      return nullptr;                                                         \
+    return static_cast<const thisType*>(argument);                            \
+  }                                                                           \
+  inline thisType* To##thisType##OrNull(argumentType& argument) {             \
+    if (!(referencePredicate))                                                \
+      return nullptr;                                                         \
+    return static_cast<thisType*>(&argument);                                 \
+  }                                                                           \
+  inline const thisType* To##thisType##OrNull(const argumentType& argument) { \
+    if (!(referencePredicate))                                                \
+      return nullptr;                                                         \
+    return static_cast<const thisType*>(&argument);                           \
+  }                                                                           \
+  void To##thisType##OrNull(const thisType*);                                 \
+  void To##thisType##OrNull(const thisType&);                                 \
+                                                                              \
   inline thisType* To##thisType##OrDie(argumentType* argument) {              \
     CHECK(!argument || (pointerPredicate));                                   \
     return static_cast<thisType*>(argument);                                  \
