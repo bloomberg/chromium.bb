@@ -393,8 +393,10 @@ void Display::OnFocusChanged(FocusControllerChangeSource change_source,
     }
   }
 
-  UpdateTextInputState(new_focused_window,
-                       new_focused_window->text_input_state());
+  if (new_focused_window) {
+    UpdateTextInputState(new_focused_window,
+                         new_focused_window->text_input_state());
+  }
 }
 
 void Display::OnUserIdRemoved(const UserId& id) {
