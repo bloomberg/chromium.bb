@@ -67,9 +67,11 @@ class DirectoryOwnersExtractor(object):
         assert not self.filesystem.isabs(start_directory)
         directory = self.finder.path_from_chromium_base(start_directory)
         external_root = self.finder.path_from_layout_tests('external')
-        # Changes to LayoutTests/TestExpectations itself should be skipped and
-        # not raise an assertion.
-        if directory == self.finder.layout_tests_dir():
+        # Changes to both LayoutTests/TestExpectations and the entire
+        # LayoutTests/FlagExpectations/ directory should be skipped and not
+        # raise an assertion.
+        if directory == self.finder.layout_tests_dir() or \
+           directory.startswith(self.finder.path_from_layout_tests('FlagExpectations')):
             return None, None
         assert directory.startswith(external_root), '%s must start with %s' % (
             directory, external_root)
