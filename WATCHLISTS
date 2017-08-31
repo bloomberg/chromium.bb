@@ -157,7 +157,8 @@
                   'components/webdata/',
     },
     'background_fetch': {
-      'filepath': 'background_fetch',
+      'filepath': 'background_fetch|'\
+                  'background-fetch',
     },
     'background_sync': {
       'filepath': '/background_sync/',
@@ -423,11 +424,6 @@
       'filepath': 'third_party/WebKit/Source/modules/navigatorcontentutils' \
                   '|third_party/WebKit/LayoutTests/fast/dom/navigatorcontentutils'
     },
-    'blink_notifications': {
-      'filepath': 'third_party/WebKit/LayoutTests/http/tests/notifications' \
-                  '|third_party/WebKit/Source/modules/notifications' \
-                  '|third_party/WebKit/public/platform/modules/notifications'
-    },
     'blink_out_of_process_frames': {
       'filepath': 'third_party/WebKit/Source/core/frame/FrameOwner' \
                   '|third_party/WebKit/Source/core/frame/Frame\.' \
@@ -463,11 +459,6 @@
     },
     'blink_public_api': {
       'filepath': 'third_party/WebKit/public'
-    },
-    'blink_push_messaging': {
-      'filepath': 'third_party/WebKit/LayoutTests/http/tests/push_messaging' \
-                  '|third_party/WebKit/Source/modules/push_messaging' \
-                  '|third_party/WebKit/public/platform/modules/push_messaging'
     },
     'blink_quota': {
       'filepath': 'third_party/WebKit/Source/modules/quota/' \
@@ -1166,15 +1157,19 @@
       'filepath': '/netinfo/',
     },
     'notifications': {
-      'filepath': 'chrome/browser/extensions/api/notifications/|' \
-        'chrome/browser/notifications/|' \
-        'chrome/test/data/notifications/|' \
-        'content/browser/notifications/|' \
-        'content/child/notifications/|' \
-        'content/common/platform_notification|' \
-        'content/public/browser/platform_notification|' \
-        'content/public/common/platform_notification|' \
-        'content/renderer/notification_|' \
+      'filepath': 'chrome/browser/extensions/api/notifications/|'\
+        'chrome/browser/notifications/|'\
+        'chrome/test/data/notifications/|'\
+        'content/browser/notifications/|'\
+        'content/child/notifications/|'\
+        'content/common/platform_notification|'\
+        'content/public/browser/platform_notification|'\
+        'content/public/common/platform_notification|'\
+        'content/renderer/notification_|'\
+        'third_party/WebKit/LayoutTests/external/wpt/notifications|'\
+        'third_party/WebKit/LayoutTests/http/tests/notifications|'\
+        'third_party/WebKit/Source/modules/notifications|'\
+        'third_party/WebKit/public/platform/modules/notifications|'\
         'ui/message_center/'
     },
     'nqe': {
@@ -1671,7 +1666,7 @@
                  'mathp+autofillwatch@chromium.org',
                  'sebsg+autofillwatch@chromium.org',
                  'rogerm+autofillwatch@chromium.org'],
-    'background_fetch': ['awdf+watch@chromium.org',
+    'background_fetch': ['delphick+watch@chromium.org',
                          'johnme+watch@chromium.org',
                          'peter@chromium.org'],
     'background_sync': ['chasej+watch@chromium.org',
@@ -1802,8 +1797,6 @@
     'blink_mediastream': ['tommyw+watchlist@chromium.org'],
     'blink_modules': ['haraken@chromium.org'],
     'blink_navigator_content_utils': ['gyuyoung.kim@chromium.org'],
-    'blink_notifications': ['awdf+watch@chromium.org',
-                            'peter@chromium.org'],
     'blink_out_of_process_frames': ['dcheng@chromium.org',
                                     'mlamouri+watch-blink@chromium.org'],
     'blink_owners': ['abarth@chromium.org'],
@@ -1826,9 +1819,6 @@
                         'yoav@yoav.ws'],
     'blink_public_api': ['blink-reviews-api@chromium.org',
                          'dglazkov+blink@chromium.org'],
-    'blink_push_messaging': ['awdf+watch@chromium.org',
-                             'johnme+watch@chromium.org',
-                             'peter@chromium.org'],
     'blink_quota': ['kinuko+fileapi@chromium.org',
                     'nhiroki@chromium.org',
                     'tzik@chromium.org'],
@@ -2191,7 +2181,8 @@
                   'tburkard+watch@chromium.org'],
     'presentation': ['amp+watch@chromium.org',
                      'mfoltz+watch@chromium.org'],
-    'push_messaging': ['johnme+watch@chromium.org',
+    'push_messaging': ['awdf+watch@chromium.org',
+                       'johnme+watch@chromium.org',
                        'peter@chromium.org'],
     'reading_list': ['stkhapugin@chromium.org'],
     'remoting': ['chromoting-reviews@chromium.org'],
