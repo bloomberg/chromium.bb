@@ -1,7 +1,9 @@
 AXWebArea
 ++AXGroup
 ++++AXCheckBox AXTitle='Checkbox1' AXValue='0'
+++++AXStaticText AXValue=' '
 ++++AXCheckBox AXTitle='Checkbox2' AXValue='1'
 ++AXMenu
 ++++AXCheckBox AXTitle='Checkbox3' AXValue='1'
+++++AXStaticText AXValue=' '
 ++++AXCheckBox AXTitle='Checkbox4' AXValue='2'

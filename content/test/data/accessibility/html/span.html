@@ -5,7 +5,36 @@
 <html>
 <body>
   <p>
-    This paragraph has one <span>word</span> in a span.
+    This<span> </span>paragraph has <span>text</span><span> </span><span>in</span> <span>spans</span>.
+  </p>
+  <!-- Eat whitespace because of focusable element type adjacent to it: -->
+  <p>
+    <span>E1. Eat</span> <a href="#">space</a>
+  </p>
+  <p>
+    <span>E2. Eat</span><b> </b><a href="#">space</a>
+  </p>
+  <p>
+    <span>E3. Eat</span><i><b> </b></i><a href="#">space</a>
+  </p>
+  <p>
+    <a href="#">E4. Eat</a> <span>space</span>
+  </p>
+  <p>
+    <a href="#">E5. Eat</a><b> </b><span>space</span>
+  </p>
+  <p>
+    <a href="#">E6. Eat</a><i><b> </b></i><span>space</span>
+  </p>
+  <!-- Keep whitespace: -->
+  <p>
+    <span>K1. Keep</span> <span>space</span>
+  </p>
+  <p>
+    <span>K2. Keep</span><b> </b><span>space</span>
+  </p>
+  <p>
+    <span>K3. Keep</span><i><b> </b></i><span>space</span>
   </p>
 </body>
 </html>

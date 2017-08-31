@@ -11,6 +11,8 @@ rootWebArea
 ++++++++++spinButton description='Minutes' descriptionFrom=attribute valueForRange=0.00 minValueForRange=0.00 maxValueForRange=59.00
 ++++++++++++staticText name='00'
 ++++++++++++++inlineTextBox name='00'
+++++++++++staticText name=' '
+++++++++++++inlineTextBox name=' '
 ++++++++++spinButton description='AM/PM' descriptionFrom=attribute valueForRange=1.00 minValueForRange=1.00 maxValueForRange=2.00
 ++++++++++++staticText name='AM'
 ++++++++++++++inlineTextBox name='AM'

@@ -2,5 +2,6 @@ AXWebArea
 ++AXGroup
 ++++AXStaticText AXValue='My favorite browser is '
 ++++AXStaticText AXValue='ABC'
+++++AXStaticText AXValue=' '
 ++++AXStaticText AXValue='Chrome'
 ++++AXStaticText AXValue='!'

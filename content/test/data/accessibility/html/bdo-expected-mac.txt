@@ -1,7 +1,6 @@
-# The spec states that <bdo> should have a role of AXGroup, but that seems
-# wrong, so we assume this is correct.
 AXWebArea
 ++AXGroup
 ++++AXStaticText AXValue='Some LTR text'
+++++AXStaticText AXValue=' '
 ++++AXStaticText AXValue='Some RTL text '
 ++++AXStaticText AXValue='with some LTR text embedded'
