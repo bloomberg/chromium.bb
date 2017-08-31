@@ -42,6 +42,7 @@
 #include "net/log/file_net_log_observer.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_capture_mode.h"
+#include "net/log/net_log_util.h"
 #include "net/proxy/proxy_service.h"
 #include "net/quic/core/quic_versions.h"
 #include "net/socket/ssl_client_socket.h"
@@ -190,11 +191,22 @@ void CronetEnvironment::StopNetLogOnNetworkThread(
   if (file_net_log_observer_) {
     DLOG(WARNING) << "Stopped NetLog.";
     file_net_log_observer_->StopObserving(
-        nullptr, base::BindOnce(&SignalEvent, log_stopped_event));
+        GetNetLogInfo(), base::BindOnce(&SignalEvent, log_stopped_event));
     file_net_log_observer_.reset();
   } else {
     log_stopped_event->Signal();
   }
+}
+
+std::unique_ptr<base::DictionaryValue> CronetEnvironment::GetNetLogInfo()
+    const {
+  std::unique_ptr<base::DictionaryValue> net_info =
+      net::GetNetInfo(main_context_.get(), net::NET_INFO_ALL_SOURCES);
+  if (effective_experimental_options_) {
+    net_info->Set("cronetExperimentalParams",
+                  effective_experimental_options_->CreateDeepCopy());
+  }
+  return net_info;
 }
 
 net::HttpNetworkSession* CronetEnvironment::GetHttpNetworkSession(
@@ -329,6 +341,9 @@ void CronetEnvironment::InitializeOnNetworkThread() {
   context_builder.set_transport_security_persister_path(base::FilePath());
 
   config->ConfigureURLRequestContextBuilder(&context_builder, net_log_.get());
+
+  effective_experimental_options_ =
+      std::move(config->effective_experimental_options);
 
   std::unique_ptr<net::MappedHostResolver> mapped_host_resolver(
       new net::MappedHostResolver(

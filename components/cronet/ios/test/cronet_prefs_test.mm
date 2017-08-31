@@ -126,17 +126,13 @@ TEST_F(PrefsTest, HttpSeverProperties) {
   // Check the file content
   ASSERT_TRUE(prefs_file_content);
   ASSERT_TRUE(
-      [prefs_file_content rangeOfString:@"{\"http_server_properties\":{"]
-          .location != NSNotFound)
+      [prefs_file_content containsString:@"{\"http_server_properties\":{"])
       << "Unable to find 'http_server_properties' in the JSON prefs.";
   ASSERT_TRUE(
-      [prefs_file_content rangeOfString:@"\"supports_quic\":{\"address\""
-                                         ":\"127.0.0.1\",\"used_quic\":true}"]
-          .location != NSNotFound)
+      [prefs_file_content containsString:@"\"supports_quic\":{\"address\""
+                                          ":\"127.0.0.1\",\"used_quic\":true}"])
       << "Unable to find 'supports_quic' in the JSON prefs.";
-  ASSERT_TRUE(
-      [prefs_file_content rangeOfString:@"{\"server_info\":\""].location !=
-      NSNotFound)
+  ASSERT_TRUE([prefs_file_content containsString:@"{\"server_info\":\""])
       << "Unable to find 'server_info' in the JSON prefs.";
 
   // Delete the prefs file to avoid side effects with other tests.

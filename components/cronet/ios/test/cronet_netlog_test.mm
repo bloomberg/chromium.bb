@@ -101,4 +101,38 @@ TEST_F(NetLogTest, AbsoluteFilename) {
 
   EXPECT_FALSE(netlog_started);
 }
+
+TEST_F(NetLogTest, ExperimentalOptions) {
+  [Cronet shutdownForTesting];
+  NSString* netlog_file = @"cronet_netlog.json";
+  NSString* netlog_path = [Cronet getNetLogPathForFile:netlog_file];
+
+  // Remove old netlog if any.
+  [[NSFileManager defaultManager] removeItemAtPath:netlog_path error:nil];
+
+  // Set experimental options and start the netlog.
+  [Cronet
+      setExperimentalOptions:
+          @"{ \"QUIC\" : {\"max_server_configs_stored_in_properties\" : 8} }"];
+
+  StartCronet(grpc_support::GetQuicTestServerPort());
+  bool netlog_started =
+      [Cronet startNetLogToFile:@"cronet_netlog.json" logBytes:NO];
+  ASSERT_TRUE(netlog_started);
+
+  // Stop the netlog and check that it contains the experimental options.
+  [Cronet stopNetLog];
+
+  NSError* error = nil;
+  NSString* netlog_content =
+      [NSString stringWithContentsOfFile:netlog_path
+                                encoding:NSASCIIStringEncoding
+                                   error:&error];
+  ASSERT_FALSE(error) << error.localizedDescription.UTF8String;
+  ASSERT_TRUE(netlog_content);
+  ASSERT_TRUE([netlog_content
+      containsString:@"\"cronetExperimentalParams\":{\"QUIC\":{\"max_server_"
+                     @"configs_stored_in_properties\":8}}"])
+      << "Netlog doesn't contain 'cronetExperimentalParams'.";
+}
 }
