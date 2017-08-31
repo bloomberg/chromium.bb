@@ -110,16 +110,17 @@ AXObject* AXSlider::ElementAccessibilityHitTest(const IntPoint& point) const {
   return AxObjectCache().GetOrCreate(layout_object_);
 }
 
-void AXSlider::SetValue(const String& value) {
+bool AXSlider::OnNativeSetValueAction(const String& value) {
   HTMLInputElement* input = GetInputElement();
 
   if (input->value() == value)
-    return;
+    return false;
 
   input->setValue(value, kDispatchInputAndChangeEvent);
 
   // Fire change event manually, as LayoutSlider::setValueForPosition does.
   input->DispatchFormControlChangeEvent();
+  return true;
 }
 
 HTMLInputElement* AXSlider::GetInputElement() const {
