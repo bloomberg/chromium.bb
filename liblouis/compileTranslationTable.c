@@ -3844,11 +3844,11 @@ doOpcode:
     case CTO_Locale:
       break;
     case CTO_Undefined:
+      tmp_offset = table->undefined;
       ok =
-	tmp_offset = table->undefined;
 	compileBrailleIndicator (nested, "undefined character opcode",
 				 CTO_Undefined, &tmp_offset, &lastToken, newRuleOffset, newRule, noback, nofor);
-	table->undefined = tmp_offset;
+      table->undefined = tmp_offset;
       break;
 
     case CTO_Match:
