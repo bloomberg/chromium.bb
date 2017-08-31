@@ -4,6 +4,7 @@
 
 #include "ash/shelf/app_list_button.h"
 
+#include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_view.h"
@@ -47,6 +48,17 @@ class AppListButtonTest : public AshTestBase {
     app_list_button_->OnGestureEvent(event);
   }
 
+  void SendGestureEventToSecondaryDisplay(ui::GestureEvent* event) {
+    // Add secondary display.
+    UpdateDisplay("1+1-1000x600,1002+0-600x400");
+    // Send the gesture event to the secondary display.
+    Shell::GetRootWindowControllerWithDisplayId(GetSecondaryDisplay().id())
+        ->shelf()
+        ->GetShelfViewForTesting()
+        ->GetAppListButton()
+        ->OnGestureEvent(event);
+  }
+
   const AppListButton* app_list_button() const { return app_list_button_; }
 
  protected:
@@ -70,6 +82,11 @@ TEST_F(AppListButtonTest, LongPressGestureWithoutVoiceInteractionFlag) {
   ui::GestureEvent long_press =
       CreateGestureEvent(ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS));
   SendGestureEvent(&long_press);
+  RunAllPendingInMessageLoop();
+  EXPECT_EQ(0u, test_app_list_presenter.voice_session_count());
+
+  // Test long press gesture on secondary display.
+  SendGestureEventToSecondaryDisplay(&long_press);
   RunAllPendingInMessageLoop();
   EXPECT_EQ(0u, test_app_list_presenter.voice_session_count());
 }
@@ -102,6 +119,11 @@ TEST_F(VoiceInteractionAppListButtonTest,
   SendGestureEvent(&long_press);
   RunAllPendingInMessageLoop();
   EXPECT_EQ(1u, test_app_list_presenter.voice_session_count());
+
+  // Test long press gesture on secondary display.
+  SendGestureEventToSecondaryDisplay(&long_press);
+  RunAllPendingInMessageLoop();
+  EXPECT_EQ(2u, test_app_list_presenter.voice_session_count());
 }
 
 TEST_F(VoiceInteractionAppListButtonTest, LongPressGestureWithSecondaryUser) {
@@ -121,6 +143,11 @@ TEST_F(VoiceInteractionAppListButtonTest, LongPressGestureWithSecondaryUser) {
   RunAllPendingInMessageLoop();
   // Voice interaction is disabled for secondary user, so the count here should
   // be 0.
+  EXPECT_EQ(0u, test_app_list_presenter.voice_session_count());
+
+  // Test long press gesture on secondary display.
+  SendGestureEventToSecondaryDisplay(&long_press);
+  RunAllPendingInMessageLoop();
   EXPECT_EQ(0u, test_app_list_presenter.voice_session_count());
 }
 
@@ -148,6 +175,11 @@ TEST_F(VoiceInteractionAppListButtonTest,
   // After value prop has been accepted, if voice interaction is disalbed in
   // settings we should not handle long press action in app list button.
   EXPECT_EQ(0u, test_app_list_presenter.voice_session_count());
+
+  // Test long press gesture on secondary display.
+  SendGestureEventToSecondaryDisplay(&long_press);
+  RunAllPendingInMessageLoop();
+  EXPECT_EQ(0u, test_app_list_presenter.voice_session_count());
 }
 
 TEST_F(VoiceInteractionAppListButtonTest,
@@ -172,6 +204,11 @@ TEST_F(VoiceInteractionAppListButtonTest,
   // Before setup flow completed we should show the animation even if the
   // settings are disabled.
   EXPECT_EQ(1u, test_app_list_presenter.voice_session_count());
+
+  // Test long press gesture on secondary display.
+  SendGestureEventToSecondaryDisplay(&long_press);
+  RunAllPendingInMessageLoop();
+  EXPECT_EQ(2u, test_app_list_presenter.voice_session_count());
 }
 
 namespace {
