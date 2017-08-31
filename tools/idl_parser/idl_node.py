@@ -83,7 +83,7 @@ class IDLNode(object):
       'WARNINGS': [],
       'FILENAME': filename,
       'LINENO' : lineno,
-      'POSSITION' : pos,
+      'POSITION' : pos,
     }
 
     self._children = []
