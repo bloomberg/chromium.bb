@@ -30,11 +30,11 @@ DataUseAggregator::DataUseAggregator(
 #if defined(OS_ANDROID)
   mcc_mnc_ = net::android::GetTelephonySimOperator();
 #endif  // OS_ANDROID
-  net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
+  net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
 }
 
 DataUseAggregator::~DataUseAggregator() {
-  net::NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
+  net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
 }
 
 void DataUseAggregator::AddObserver(Observer* observer) {
@@ -89,7 +89,7 @@ base::WeakPtr<DataUseAggregator> DataUseAggregator::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
-void DataUseAggregator::OnConnectionTypeChanged(
+void DataUseAggregator::OnNetworkChanged(
     net::NetworkChangeNotifier::ConnectionType type) {
   DCHECK(thread_checker_.CalledOnValidThread());
 

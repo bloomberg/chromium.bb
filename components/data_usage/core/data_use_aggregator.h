@@ -29,7 +29,7 @@ struct DataUse;
 // Class that collects and aggregates network usage, reporting the usage to
 // observers. Should only be used on the IO thread.
 class DataUseAggregator
-    : public net::NetworkChangeNotifier::ConnectionTypeObserver {
+    : public net::NetworkChangeNotifier::NetworkChangeObserver {
  public:
   class Observer {
    public:
@@ -63,9 +63,9 @@ class DataUseAggregator
   base::WeakPtr<DataUseAggregator> GetWeakPtr();
 
  protected:
-  // net::NetworkChangeNotifier::ConnectionTypeObserver implementation.
+  // net::NetworkChangeNotifier::NetworkChangeObserver implementation.
   // Protected for testing.
-  void OnConnectionTypeChanged(
+  void OnNetworkChanged(
       net::NetworkChangeNotifier::ConnectionType type) override;
 
   // Protected for testing.
