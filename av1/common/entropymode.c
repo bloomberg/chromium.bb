@@ -1160,7 +1160,7 @@ static const aom_cdf_prob
       { AOM_ICDF(32640), AOM_ICDF(32740), AOM_ICDF(32767), AOM_ICDF(32768), 0 }
     };
 
-const aom_tree_index av1_ncobmc_tree[TREE_SIZE(MOTION_MODES)] = {
+const aom_tree_index av1_ncobmc_tree[TREE_SIZE(OBMC_FAMILY_MODES)] = {
   -SIMPLE_TRANSLATION, 2, -OBMC_CAUSAL, -NCOBMC_ADAPT_WEIGHT
 };
 
@@ -5328,7 +5328,12 @@ void av1_adapt_inter_frame_probs(AV1_COMMON *cm) {
   for (i = 0; i < ADAPT_OVERLAP_BLOCKS; ++i)
     aom_tree_merge_probs(av1_ncobmc_mode_tree, pre_fc->ncobmc_mode_prob[i],
                          counts->ncobmc_mode[i], fc->ncobmc_mode_prob[i]);
+#if CONFIG_WARPED_MOTION
+  for (i = BLOCK_8X8; i < BLOCK_SIZES_ALL; ++i)
+    aom_tree_merge_probs(av1_ncobmc_tree, pre_fc->ncobmc_prob[i],
+                         counts->ncobmc[i], fc->ncobmc_prob[i]);
 #endif
+#endif  // CONFIG_NCOBMC_ADAPT_WEIGHT
 #if CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
   for (i = BLOCK_8X8; i < BLOCK_SIZES_ALL; ++i)
     fc->obmc_prob[i] =

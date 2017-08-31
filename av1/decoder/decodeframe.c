@@ -4958,13 +4958,6 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
 #endif  // CONFIG_INTERINTRA
 #endif  // CONFIG_EXT_INTER
 
-#if CONFIG_NCOBMC_ADAPT_WEIGHT && CONFIG_MOTION_VAR
-    for (i = 0; i < ADAPT_OVERLAP_BLOCKS; ++i) {
-      for (int j = 0; j < MAX_NCOBMC_MODES - 1; ++j)
-        av1_diff_update_prob(&r, &fc->ncobmc_mode_prob[i][j], ACCT_STR);
-    }
-#endif  // CONFIG_NCOBMC_ADAPT_WEIGHT && CONFIG_MOTION_VAR
-
 #if !CONFIG_NEW_MULTISYMBOL
     for (i = 0; i < INTRA_INTER_CONTEXTS; i++)
       av1_diff_update_prob(&r, &fc->intra_inter_prob[i], ACCT_STR);

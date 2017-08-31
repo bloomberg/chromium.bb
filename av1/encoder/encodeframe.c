@@ -2150,8 +2150,7 @@ static void encode_b(const AV1_COMP *const cpi, const TileInfo *const tile,
 
 #if CONFIG_NCOBMC_ADAPT_WEIGHT
   if (dry_run == OUTPUT_ENABLED && !frame_is_intra_only(&cpi->common)) {
-    // we also need to handle inter-intra
-    if (motion_allowed == NCOBMC_ADAPT_WEIGHT && is_inter_block(mbmi)) {
+    if (motion_allowed >= NCOBMC_ADAPT_WEIGHT && is_inter_block(mbmi)) {
       get_ncobmc_intrpl_pred(cpi, td, mi_row, mi_col, bsize);
       av1_check_ncobmc_adapt_weight_rd(cpi, x, mi_row, mi_col);
     }

@@ -4187,7 +4187,7 @@ void av1_get_ori_blk_pred(const AV1_COMMON *cm, MACROBLOCKD *xd, int bsize,
 
   for (i = 0; i < MAX_MB_PLANE; ++i) {
     const struct macroblockd_plane *pd = &xd->plane[i];
-    build_inter_predictors(cm, xd, i, mi, 0, 0, bw >> pd->subsampling_x,
+    build_inter_predictors(cm, xd, i, mi, 1, 0, bw >> pd->subsampling_x,
                            bh >> pd->subsampling_y, 0, 0,
                            bw >> pd->subsampling_x, bh >> pd->subsampling_y,
 #if CONFIG_SUPERTX && CONFIG_EXT_INTER

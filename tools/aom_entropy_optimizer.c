@@ -557,7 +557,19 @@ int main(int argc, const char **argv) {
                      "static const aom_cdf_prob\n"
                      "default_ncobmc_mode_cdf[ADAPT_OVERLAP_BLOCKS]"
                      "[CDF_SIZE(MAX_NCOBMC_MODES)]");
+#if CONFIG_WARPED_MOTION
+  cts_each_dim[0] = BLOCK_SIZES_ALL;
+  cts_each_dim[1] = OBMC_FAMILY_MODES;
+  optimize_entropy_table(
+      &fc.ncobmc[0][0], probsfile, 2, cts_each_dim, av1_ncobmc_tree, 0,
+      "static const aom_prob default_ncobmc_prob[BLOCK_SIZES_ALL]"
+      "[OBMC_FAMILY_MODES - 1]");
+  optimize_cdf_table(&fc.ncobmc[0][0], probsfile, 2, cts_each_dim,
+                     "static const aom_cdf_prob\n"
+                     "default_ncobmc_cdf[BLOCK_SIZES_ALL]"
+                     "[CDF_SIZE(OBMC_FAMILY_MODES)]");
 #endif
+#endif  // CONFIG_NCOBMC_ADAPT_WEIGHT
 #endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
 
   /* Intra/inter flag */

@@ -95,11 +95,6 @@ static struct av1_token interintra_mode_encodings[INTERINTRA_MODES];
 static struct av1_token compound_type_encodings[COMPOUND_TYPES];
 #endif  // CONFIG_COMPOUND_SEGMENT || CONFIG_WEDGE
 #endif  // CONFIG_EXT_INTER
-#if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
-#if CONFIG_NCOBMC_ADAPT_WEIGHT
-static struct av1_token ncobmc_mode_encodings[MAX_NCOBMC_MODES];
-#endif
-#endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
 #if CONFIG_LOOP_RESTORATION
 static struct av1_token switchable_restore_encodings[RESTORE_SWITCHABLE_TYPES];
 static void loop_restoration_write_sb_coeffs(const AV1_COMMON *const cm,
@@ -146,11 +141,6 @@ void av1_encode_token_init(void) {
   av1_tokens_from_tree(compound_type_encodings, av1_compound_type_tree);
 #endif  // CONFIG_COMPOUND_SEGMENT || CONFIG_WEDGE
 #endif  // CONFIG_EXT_INTER
-#if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
-#if CONFIG_NCOBMC_ADAPT_WEIGHT
-  av1_tokens_from_tree(ncobmc_mode_encodings, av1_ncobmc_mode_tree);
-#endif
-#endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
 #if CONFIG_LOOP_RESTORATION
   av1_tokens_from_tree(switchable_restore_encodings,
                        av1_switchable_restore_tree);
@@ -310,23 +300,6 @@ static void encode_unsigned_max(struct aom_write_bit_buffer *wb, int data,
                                 int max) {
   aom_wb_write_literal(wb, data, get_unsigned_bits(max));
 }
-
-#if CONFIG_NCOBMC_ADAPT_WEIGHT
-static void prob_diff_update(const aom_tree_index *tree,
-                             aom_prob probs[/*n - 1*/],
-                             const unsigned int counts[/* n */], int n,
-                             int probwt, aom_writer *w) {
-  int i;
-  unsigned int branch_ct[32][2];
-
-  // Assuming max number of probabilities <= 32
-  assert(n <= 32);
-
-  av1_tree_probs_from_distribution(tree, branch_ct, counts);
-  for (i = 0; i < n - 1; ++i)
-    av1_cond_prob_diff_update(w, &probs[i], branch_ct[i], probwt);
-}
-#endif
 
 #if CONFIG_VAR_TX
 static void write_tx_size_vartx(const AV1_COMMON *cm, MACROBLOCKD *xd,
@@ -4686,16 +4659,6 @@ static uint32_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
     }
 #endif  // CONFIG_INTERINTRA
 #endif  // CONFIG_EXT_INTER
-
-#if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
-#if CONFIG_NCOBMC_ADAPT_WEIGHT
-    for (i = ADAPT_OVERLAP_BLOCK_8X8; i < ADAPT_OVERLAP_BLOCKS; ++i) {
-      prob_diff_update(av1_ncobmc_mode_tree, fc->ncobmc_mode_prob[i],
-                       counts->ncobmc_mode[i], MAX_NCOBMC_MODES, probwt,
-                       header_bc);
-    }
-#endif
-#endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
 
 #if !CONFIG_NEW_MULTISYMBOL
     for (i = 0; i < INTRA_INTER_CONTEXTS; i++)

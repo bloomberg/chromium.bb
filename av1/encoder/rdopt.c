@@ -12671,6 +12671,16 @@ int64_t get_prediction_rd_cost(const struct AV1_COMP *cpi, struct macroblock *x,
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   BLOCK_SIZE bsize = mbmi->sb_type;
+#if CONFIG_NCOBMC_ADAPT_WEIGHT && CONFIG_WARPED_MOTION
+  const MOTION_MODE motion_allowed = motion_mode_allowed(
+#if CONFIG_GLOBAL_MOTION
+      0, xd->global_motion,
+#endif  // CONFIG_GLOBAL_MOTION
+#if CONFIG_WARPED_MOTION
+      xd,
+#endif
+      xd->mi[0]);
+#endif  // CONFIG_NCOBMC_ADAPT_WEIGHT && CONFIG_WARPED_MOTION
   RD_STATS rd_stats_y, rd_stats_uv;
   int rate_skip0 = av1_cost_bit(av1_get_skip_prob(cm, xd), 0);
   int rate_skip1 = av1_cost_bit(av1_get_skip_prob(cm, xd), 1);
@@ -12759,9 +12769,22 @@ int64_t get_prediction_rd_cost(const struct AV1_COMP *cpi, struct macroblock *x,
 
   this_rd = RDCOST(x->rdmult, (rd_stats_y.rate + rd_stats_uv.rate),
                    (rd_stats_y.dist + rd_stats_uv.dist));
-  this_rd +=
-      RDCOST(x->rdmult, x->motion_mode_cost[bsize][mbmi->motion_mode], 0);
-
+#if CONFIG_NCOBMC_ADAPT_WEIGHT && CONFIG_WARPED_MOTION
+  if (motion_allowed == NCOBMC_ADAPT_WEIGHT) {
+    assert(mbmi->motion_mode <= NCOBMC_ADAPT_WEIGHT);
+    this_rd +=
+        RDCOST(x->rdmult, x->motion_mode_cost2[bsize][mbmi->motion_mode], 0);
+  } else if (motion_allowed == OBMC_CAUSAL) {
+    assert(mbmi->motion_mode <= OBMC_CAUSAL);
+    this_rd +=
+        RDCOST(x->rdmult, x->motion_mode_cost1[bsize][mbmi->motion_mode], 0);
+  } else {
+#endif  // CONFIG_NCOBMC_ADAPT_WEIGHT && CONFIG_WARPED_MOTION
+    this_rd +=
+        RDCOST(x->rdmult, x->motion_mode_cost[bsize][mbmi->motion_mode], 0);
+#if CONFIG_NCOBMC_ADAPT_WEIGHT && CONFIG_WARPED_MOTION
+  }
+#endif  // CONFIG_NCOBMC_ADAPT_WEIGHT && CONFIG_WARPED_MOTION
   return this_rd;
 }
 
@@ -12776,14 +12799,26 @@ void av1_check_ncobmc_adapt_weight_rd(const struct AV1_COMP *cpi,
   const int n4 = bsize_to_num_blk(bsize);
   uint8_t st_blk_skip[MAX_MIB_SIZE * MAX_MIB_SIZE * 8];
   uint8_t obmc_blk_skip[MAX_MIB_SIZE * MAX_MIB_SIZE * 8];
+  uint8_t ncobmc_blk_skip[MAX_MIB_SIZE * MAX_MIB_SIZE * 8];
 #endif
-  MB_MODE_INFO st_mbmi, obmc_mbmi;
-  int skip_blk, st_skip, obmc_skip;
+  MB_MODE_INFO st_mbmi, obmc_mbmi, ncobmc_mbmi;
+  int st_skip, obmc_skip, ncobmc_skip;
   int64_t st_rd, obmc_rd, ncobmc_rd;
+#if CONFIG_WARPED_MOTION
+  const AV1_COMMON *const cm = &cpi->common;
+  const int is_warp_motion = mbmi->motion_mode == WARPED_CAUSAL;
+  const int rs = RDCOST(x->rdmult, av1_get_switchable_rate(cm, x, xd), 0);
+  MB_MODE_INFO warp_mbmi;
+  int64_t warp_rd;
+  int warp_skip;
+#endif
 
   // Recompute the rd for the motion mode decided in rd loop
   mbmi->motion_mode = SIMPLE_TRANSLATION;
   st_rd = get_prediction_rd_cost(cpi, x, mi_row, mi_col, &st_skip, &st_mbmi);
+#if CONFIG_WARPED_MOTION
+  st_rd += rs;
+#endif
 #if CONFIG_VAR_TX
   memcpy(st_blk_skip, x->blk_skip[0], sizeof(st_blk_skip[0]) * n4);
 #endif
@@ -12791,13 +12826,20 @@ void av1_check_ncobmc_adapt_weight_rd(const struct AV1_COMP *cpi,
   mbmi->motion_mode = OBMC_CAUSAL;
   obmc_rd =
       get_prediction_rd_cost(cpi, x, mi_row, mi_col, &obmc_skip, &obmc_mbmi);
+#if CONFIG_WARPED_MOTION
+  obmc_rd += rs;
+#endif
 #if CONFIG_VAR_TX
   memcpy(obmc_blk_skip, x->blk_skip[0], sizeof(obmc_blk_skip[0]) * n4);
 #endif
+
   // Compute the rd cost for ncobmc adaptive weight
   mbmi->motion_mode = NCOBMC_ADAPT_WEIGHT;
-  ncobmc_rd = get_prediction_rd_cost(cpi, x, mi_row, mi_col, &skip_blk, NULL);
-
+  ncobmc_rd = get_prediction_rd_cost(cpi, x, mi_row, mi_col, &ncobmc_skip,
+                                     &ncobmc_mbmi);
+#if CONFIG_WARPED_MOTION
+  ncobmc_rd += rs;
+#endif
   // Calculate the ncobmc mode costs
   {
     ADAPT_OVERLAP_BLOCK aob = adapt_overlap_block_lookup[bsize];
@@ -12807,21 +12849,54 @@ void av1_check_ncobmc_adapt_weight_rd(const struct AV1_COMP *cpi,
       ncobmc_rd +=
           RDCOST(x->rdmult, x->ncobmc_mode_cost[aob][mbmi->ncobmc_mode[1]], 0);
   }
+#if CONFIG_VAR_TX
+  memcpy(ncobmc_blk_skip, x->blk_skip[0], sizeof(ncobmc_blk_skip[0]) * n4);
+#endif
 
-  if (ncobmc_rd < AOMMIN(st_rd, obmc_rd)) {
-    x->skip = skip_blk;
-  } else if (obmc_rd < st_rd) {
-    *mbmi = obmc_mbmi;
-    x->skip = obmc_skip;
-#if CONFIG_VAR_TX
-    memcpy(x->blk_skip[0], obmc_blk_skip, sizeof(obmc_blk_skip[0]) * n4);
-#endif
+#if CONFIG_WARPED_MOTION
+  if (is_warp_motion) {
+    mbmi->motion_mode = WARPED_CAUSAL;
+    warp_rd =
+        get_prediction_rd_cost(cpi, x, mi_row, mi_col, &warp_skip, &warp_mbmi);
   } else {
-    *mbmi = st_mbmi;
-    x->skip = st_skip;
-#if CONFIG_VAR_TX
-    memcpy(x->blk_skip[0], st_blk_skip, sizeof(st_blk_skip[0]) * n4);
+    warp_rd = INT64_MAX;
+  }
 #endif
+
+#if CONFIG_WARPED_MOTION
+  if (AOMMIN(ncobmc_rd, warp_rd) < AOMMIN(st_rd, obmc_rd)) {
+    if (ncobmc_rd < warp_rd) {
+      x->skip = ncobmc_skip;
+      *mbmi = ncobmc_mbmi;
+#if CONFIG_VAR_TX
+      memcpy(x->blk_skip[0], ncobmc_blk_skip, sizeof(ncobmc_blk_skip[0]) * n4);
+#endif
+    } else {
+      x->skip = warp_skip;
+      *mbmi = warp_mbmi;
+    }
+#else
+  if (ncobmc_rd < AOMMIN(st_rd, obmc_rd)) {
+    x->skip = ncobmc_skip;
+    *mbmi = ncobmc_mbmi;
+#if CONFIG_VAR_TX
+    memcpy(x->blk_skip[0], ncobmc_blk_skip, sizeof(ncobmc_blk_skip[0]) * n4);
+#endif
+#endif  // CONFIG_WARPED_MOTION
+  } else {
+    if (obmc_rd < st_rd) {
+      *mbmi = obmc_mbmi;
+      x->skip = obmc_skip;
+#if CONFIG_VAR_TX
+      memcpy(x->blk_skip[0], obmc_blk_skip, sizeof(obmc_blk_skip[0]) * n4);
+#endif
+    } else {
+      *mbmi = st_mbmi;
+      x->skip = st_skip;
+#if CONFIG_VAR_TX
+      memcpy(x->blk_skip[0], st_blk_skip, sizeof(st_blk_skip[0]) * n4);
+#endif
+    }
   }
 }
 
