@@ -65,7 +65,7 @@ KeyedService* ContentSuggestionsNotifierServiceFactory::BuildServiceInstanceFor(
     ntp_snippets::ContentSuggestionsService* suggestions =
         ContentSuggestionsServiceFactory::GetForProfile(profile);
     return new ContentSuggestionsNotifierService(
-        profile, suggestions,
+        profile->GetPrefs(), suggestions,
         base::MakeUnique<AndroidContentSuggestionsNotifier>());
   }
 #endif
