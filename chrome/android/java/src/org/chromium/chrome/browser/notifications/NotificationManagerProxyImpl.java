@@ -98,4 +98,11 @@ public class NotificationManagerProxyImpl implements NotificationManagerProxy {
         assert BuildInfo.isAtLeastO();
         return mNotificationManager.getNotificationChannel(channelId);
     }
+
+    @TargetApi(Build.VERSION_CODES.O)
+    @Override
+    public void deleteNotificationChannelGroup(String groupId) {
+        assert BuildInfo.isAtLeastO();
+        mNotificationManager.deleteNotificationChannelGroup(groupId);
+    }
 }

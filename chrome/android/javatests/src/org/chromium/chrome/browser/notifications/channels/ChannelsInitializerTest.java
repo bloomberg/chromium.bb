@@ -13,6 +13,7 @@ import static org.junit.Assert.assertThat;
 
 import android.annotation.TargetApi;
 import android.app.NotificationChannel;
+import android.app.NotificationChannelGroup;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.os.Build;
@@ -53,12 +54,17 @@ public class ChannelsInitializerTest {
                 (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE));
         mChannelsInitializer =
                 new ChannelsInitializer(mNotificationManagerProxy, mContext.getResources());
-        // Delete any channels that may already have been initialized. Cleaning up here rather than
-        // in tearDown in case tests running before these ones caused channels to be created.
+        // Delete any channels and channel groups that may already have been initialized. Cleaning
+        // up here rather than in tearDown in case tests running before these ones caused channels
+        // to be created.
         for (NotificationChannel channel : mNotificationManagerProxy.getNotificationChannels()) {
             if (!channel.getId().equals(NotificationChannel.DEFAULT_CHANNEL_ID)) {
                 mNotificationManagerProxy.deleteNotificationChannel(channel.getId());
             }
+        }
+        for (NotificationChannelGroup group :
+                mNotificationManagerProxy.getNotificationChannelGroups()) {
+            mNotificationManagerProxy.deleteNotificationChannelGroup(group.getId());
         }
     }
 

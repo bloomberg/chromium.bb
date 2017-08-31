@@ -41,4 +41,7 @@ public interface NotificationManagerProxy {
 
     @TargetApi(Build.VERSION_CODES.O)
     NotificationChannel getNotificationChannel(String channelId);
+
+    @TargetApi(Build.VERSION_CODES.O)
+    void deleteNotificationChannelGroup(String groupId);
 }
