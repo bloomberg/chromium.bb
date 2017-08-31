@@ -69,15 +69,13 @@ std::unique_ptr<JSONObject> ContentLayerClientImpl::LayerAsJSON(
   json->SetBoolean("contentsOpaque", cc_picture_layer_->contents_opaque());
   json->SetBoolean("drawsContent", cc_picture_layer_->DrawsContent());
 
-  if (flags & kLayerTreeIncludesDebugInfo) {
-    std::unique_ptr<JSONArray> paint_chunk_contents_array = JSONArray::Create();
-    for (const auto& debug_data : paint_chunk_debug_data_) {
-      paint_chunk_contents_array->PushValue(debug_data->Clone());
-    }
-    json->SetArray("paintChunkContents", std::move(paint_chunk_contents_array));
-  }
+#ifndef NDEBUG
+  if (flags & kLayerTreeIncludesDebugInfo)
+    json->SetValue("paintChunkContents", paint_chunk_debug_data_->Clone());
+#endif
 
-  if (raster_invalidation_tracking_info_)
+  if ((flags & kLayerTreeIncludesPaintInvalidations) &&
+      raster_invalidation_tracking_info_)
     raster_invalidation_tracking_info_->tracking.AsJSON(json.get());
 
   return json;
@@ -253,21 +251,24 @@ scoped_refptr<cc::PictureLayer> ContentLayerClientImpl::UpdateCcPictureLayer(
     const PaintArtifact& paint_artifact,
     const gfx::Rect& layer_bounds,
     const Vector<const PaintChunk*>& paint_chunks,
-    const PropertyTreeState& layer_state,
-    bool store_debug_info) {
+    const PropertyTreeState& layer_state) {
   // TODO(wangxianzhu): Avoid calling DebugName() in official release build.
   debug_name_ = paint_chunks[0]->id.client.DebugName();
 
-  paint_chunk_debug_data_.clear();
-  if (store_debug_info) {
-    for (const auto* chunk : paint_chunks) {
-      paint_chunk_debug_data_.push_back(
-          paint_artifact.GetDisplayItemList().SubsequenceAsJSON(
-              chunk->begin_index, chunk->end_index,
-              DisplayItemList::kSkipNonDrawings |
-                  DisplayItemList::kShownOnlyDisplayItemTypes));
-    }
+#ifndef NDEBUG
+  paint_chunk_debug_data_ = JSONArray::Create();
+  for (const auto* chunk : paint_chunks) {
+    auto json = JSONObject::Create();
+    json->SetArray("displayItems",
+                   paint_artifact.GetDisplayItemList().SubsequenceAsJSON(
+                       chunk->begin_index, chunk->end_index,
+                       DisplayItemList::kSkipNonDrawings |
+                           DisplayItemList::kShownOnlyDisplayItemTypes));
+    json->SetString("propertyTreeState",
+                    chunk->properties.property_tree_state.ToTreeString());
+    paint_chunk_debug_data_->PushObject(std::move(json));
   }
+#endif
 
   if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() &&
       !raster_invalidation_tracking_info_) {

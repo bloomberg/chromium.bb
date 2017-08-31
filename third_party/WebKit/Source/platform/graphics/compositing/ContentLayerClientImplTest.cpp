@@ -105,9 +105,8 @@ TEST_F(ContentLayerClientImplTest, LayerBounds) {
   c.SetTracksRasterInvalidations(true);
   CHUNKS(chunks, Chunk(0));
 
-  auto cc_layer =
-      c.UpdateCcPictureLayer(PaintArtifact(), kDefaultLayerBounds, chunks,
-                             DefaultPropertyTreeState(), false);
+  auto cc_layer = c.UpdateCcPictureLayer(PaintArtifact(), kDefaultLayerBounds,
+                                         chunks, DefaultPropertyTreeState());
   ASSERT_TRUE(cc_layer);
   EXPECT_EQ(gfx::Rect(kDefaultLayerBounds.Size()), c.PaintableRegion());
   EXPECT_EQ(gfx::Size(kDefaultLayerBounds.Size()), cc_layer->bounds());
@@ -117,7 +116,7 @@ TEST_F(ContentLayerClientImplTest, LayerBounds) {
   auto cc_layer1 = c.UpdateCcPictureLayer(
       PaintArtifact(),
       IntRect(kDefaultLayerBounds.Location(), IntSize(1234, 2345)), chunks,
-      DefaultPropertyTreeState(), false);
+      DefaultPropertyTreeState());
   EXPECT_EQ(cc_layer, cc_layer1);
   EXPECT_EQ(gfx::Rect(0, 0, 1234, 2345), c.PaintableRegion());
   EXPECT_EQ(gfx::Size(1234, 2345), cc_layer->bounds());
@@ -126,7 +125,7 @@ TEST_F(ContentLayerClientImplTest, LayerBounds) {
 
   auto cc_layer2 =
       c.UpdateCcPictureLayer(PaintArtifact(), IntRect(-555, -666, 777, 888),
-                             chunks, DefaultPropertyTreeState(), false);
+                             chunks, DefaultPropertyTreeState());
   EXPECT_EQ(cc_layer, cc_layer2);
   EXPECT_EQ(gfx::Rect(0, 0, 777, 888), c.PaintableRegion());
   EXPECT_EQ(gfx::Size(777, 888), cc_layer->bounds());
@@ -142,14 +141,14 @@ TEST_F(ContentLayerClientImplTest, RasterInvalidationReorderChunks) {
   CHUNKS(chunks, Chunk(0), Chunk(1), Chunk(2));
   c.SetTracksRasterInvalidations(true);
   c.UpdateCcPictureLayer(PaintArtifact(), kDefaultLayerBounds, chunks,
-                         DefaultPropertyTreeState(), false);
+                         DefaultPropertyTreeState());
   EXPECT_TRUE(TrackedRasterInvalidations(c).IsEmpty());
 
   // Swap chunk 1 and 2. All chunks have their own local raster invalidations.
   CHUNKS(new_chunks, Chunk(0, 2), Chunk(2, 4), Chunk(1, 3));
   new_chunks_array[1].bounds = FloatRect(11, 22, 33, 44);
   c.UpdateCcPictureLayer(PaintArtifact(), kDefaultLayerBounds, new_chunks,
-                         DefaultPropertyTreeState(), false);
+                         DefaultPropertyTreeState());
   const auto& invalidations = TrackedRasterInvalidations(c);
   ASSERT_EQ(5u, invalidations.size());
   // The first chunk should always match because otherwise we won't reuse the
@@ -174,14 +173,14 @@ TEST_F(ContentLayerClientImplTest, RasterInvalidationAppearAndDisappear) {
   CHUNKS(chunks, Chunk(0), Chunk(1), Chunk(2));
   c.SetTracksRasterInvalidations(true);
   c.UpdateCcPictureLayer(PaintArtifact(), kDefaultLayerBounds, chunks,
-                         DefaultPropertyTreeState(), false);
+                         DefaultPropertyTreeState());
   EXPECT_TRUE(TrackedRasterInvalidations(c).IsEmpty());
 
   // Chunk 1 and 2 disappeared, 3 and 4 appeared. All chunks have their own
   // local raster invalidations.
   CHUNKS(new_chunks, Chunk(0, 2), Chunk(3, 3), Chunk(4, 3));
   c.UpdateCcPictureLayer(PaintArtifact(), kDefaultLayerBounds, new_chunks,
-                         DefaultPropertyTreeState(), false);
+                         DefaultPropertyTreeState());
   const auto& invalidations = TrackedRasterInvalidations(c);
   ASSERT_EQ(6u, invalidations.size());
   ExpectDisplayItemInvalidations(invalidations, 0, *new_chunks[0]);
@@ -200,12 +199,12 @@ TEST_F(ContentLayerClientImplTest, RasterInvalidationAppearAtEnd) {
   CHUNKS(chunks, Chunk(0));
   c.SetTracksRasterInvalidations(true);
   c.UpdateCcPictureLayer(PaintArtifact(), kDefaultLayerBounds, chunks,
-                         DefaultPropertyTreeState(), false);
+                         DefaultPropertyTreeState());
   EXPECT_TRUE(TrackedRasterInvalidations(c).IsEmpty());
 
   CHUNKS(new_chunks, Chunk(0, 2), Chunk(1, 3), Chunk(2, 3));
   c.UpdateCcPictureLayer(PaintArtifact(), kDefaultLayerBounds, new_chunks,
-                         DefaultPropertyTreeState(), false);
+                         DefaultPropertyTreeState());
   const auto& invalidations = TrackedRasterInvalidations(c);
   ASSERT_EQ(4u, invalidations.size());
   ExpectDisplayItemInvalidations(invalidations, 0, *new_chunks[0]);
@@ -221,13 +220,13 @@ TEST_F(ContentLayerClientImplTest, RasterInvalidationUncacheableChunks) {
 
   c.SetTracksRasterInvalidations(true);
   c.UpdateCcPictureLayer(PaintArtifact(), kDefaultLayerBounds, chunks,
-                         DefaultPropertyTreeState(), false);
+                         DefaultPropertyTreeState());
   EXPECT_TRUE(TrackedRasterInvalidations(c).IsEmpty());
 
   CHUNKS(new_chunks, Chunk(0, 2), Chunk(2, 3),
          Chunk(1, 3, PaintChunk::kUncacheable));
   c.UpdateCcPictureLayer(PaintArtifact(), kDefaultLayerBounds, new_chunks,
-                         DefaultPropertyTreeState(), false);
+                         DefaultPropertyTreeState());
   const auto& invalidations = TrackedRasterInvalidations(c);
   ASSERT_EQ(5u, invalidations.size());
   ExpectDisplayItemInvalidations(invalidations, 0, *new_chunks[0]);
@@ -259,7 +258,7 @@ TEST_F(ContentLayerClientImplTest, RasterInvalidationPaintPropertyChange) {
 
   c.SetTracksRasterInvalidations(true);
   c.UpdateCcPictureLayer(PaintArtifact(), kDefaultLayerBounds, chunks,
-                         layer_state, false);
+                         layer_state);
   EXPECT_TRUE(TrackedRasterInvalidations(c).IsEmpty());
 
   // Change both clip0 and clip2.
@@ -272,7 +271,7 @@ TEST_F(ContentLayerClientImplTest, RasterInvalidationPaintPropertyChange) {
   new_chunks_array[2].properties = chunks[2]->properties;
 
   c.UpdateCcPictureLayer(PaintArtifact(), kDefaultLayerBounds, new_chunks,
-                         layer_state, false);
+                         layer_state);
   const auto& invalidations = TrackedRasterInvalidations(c);
   ASSERT_EQ(1u, invalidations.size());
   // Property change in the layer state should not trigger raster invalidation.
@@ -290,7 +289,7 @@ TEST_F(ContentLayerClientImplTest, RasterInvalidationPaintPropertyChange) {
 
   c.SetTracksRasterInvalidations(true);
   c.UpdateCcPictureLayer(PaintArtifact(), kDefaultLayerBounds, new_chunks1,
-                         layer_state, false);
+                         layer_state);
   const auto& invalidations1 = TrackedRasterInvalidations(c);
   ASSERT_EQ(1u, invalidations1.size());
   ExpectChunkInvalidation(invalidations1, 0, *new_chunks1[1],
@@ -300,7 +299,7 @@ TEST_F(ContentLayerClientImplTest, RasterInvalidationPaintPropertyChange) {
   // Change of layer state invalidates the whole layer.
   c.SetTracksRasterInvalidations(true);
   c.UpdateCcPictureLayer(PaintArtifact(), kDefaultLayerBounds, new_chunks1,
-                         DefaultPropertyTreeState(), false);
+                         DefaultPropertyTreeState());
   const auto& invalidations2 = TrackedRasterInvalidations(c);
   ASSERT_EQ(1u, invalidations2.size());
   EXPECT_EQ(PaintInvalidationReason::kFullLayer, invalidations2[0].reason);
