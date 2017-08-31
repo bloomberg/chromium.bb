@@ -331,7 +331,7 @@ ScriptPromise MediaStreamTrack::applyConstraints(
   }
 
   // |constraints| empty means "remove/clear all current constraints".
-  if (!constraints.hasAdvanced())
+  if (!constraints.hasAdvanced() || constraints.advanced().IsEmpty())
     image_capture_->ClearMediaTrackConstraints(resolver);
   else
     image_capture_->SetMediaTrackConstraints(resolver, constraints.advanced());

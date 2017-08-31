@@ -325,6 +325,7 @@ MediaTrackCapabilities& ImageCapture::GetMediaTrackCapabilities() {
 void ImageCapture::SetMediaTrackConstraints(
     ScriptPromiseResolver* resolver,
     const HeapVector<MediaTrackConstraintSet>& constraints_vector) {
+  DCHECK_GT(constraints_vector.size(), 0u);
   if (!service_) {
     resolver->Reject(DOMException::Create(kNotFoundError, kNoServiceError));
     return;
