@@ -38,7 +38,7 @@ std::unique_ptr<AudioSystem> AudioSystemImpl::Create(
 
 void AudioSystemImpl::GetInputStreamParameters(
     const std::string& device_id,
-    OnAudioParamsCallback on_params_cb) const {
+    OnAudioParamsCallback on_params_cb) {
   if (GetTaskRunner()->BelongsToCurrentThread()) {
     GetTaskRunner()->PostTask(FROM_HERE,
                               base::BindOnce(std::move(on_params_cb),
@@ -55,7 +55,7 @@ void AudioSystemImpl::GetInputStreamParameters(
 
 void AudioSystemImpl::GetOutputStreamParameters(
     const std::string& device_id,
-    OnAudioParamsCallback on_params_cb) const {
+    OnAudioParamsCallback on_params_cb) {
   if (GetTaskRunner()->BelongsToCurrentThread()) {
     GetTaskRunner()->PostTask(FROM_HERE,
                               base::BindOnce(std::move(on_params_cb),
@@ -70,7 +70,7 @@ void AudioSystemImpl::GetOutputStreamParameters(
       std::move(on_params_cb));
 }
 
-void AudioSystemImpl::HasInputDevices(OnBoolCallback on_has_devices_cb) const {
+void AudioSystemImpl::HasInputDevices(OnBoolCallback on_has_devices_cb) {
   if (GetTaskRunner()->BelongsToCurrentThread()) {
     GetTaskRunner()->PostTask(
         FROM_HERE, base::BindOnce(std::move(on_has_devices_cb),
@@ -84,7 +84,7 @@ void AudioSystemImpl::HasInputDevices(OnBoolCallback on_has_devices_cb) const {
       std::move(on_has_devices_cb));
 }
 
-void AudioSystemImpl::HasOutputDevices(OnBoolCallback on_has_devices_cb) const {
+void AudioSystemImpl::HasOutputDevices(OnBoolCallback on_has_devices_cb) {
   if (GetTaskRunner()->BelongsToCurrentThread()) {
     GetTaskRunner()->PostTask(
         FROM_HERE, base::BindOnce(std::move(on_has_devices_cb),
@@ -99,8 +99,8 @@ void AudioSystemImpl::HasOutputDevices(OnBoolCallback on_has_devices_cb) const {
 }
 
 void AudioSystemImpl::GetDeviceDescriptions(
-    OnDeviceDescriptionsCallback on_descriptions_cb,
-    bool for_input) {
+    bool for_input,
+    OnDeviceDescriptionsCallback on_descriptions_cb) {
   if (GetTaskRunner()->BelongsToCurrentThread()) {
     GetTaskRunner()->PostTask(
         FROM_HERE,

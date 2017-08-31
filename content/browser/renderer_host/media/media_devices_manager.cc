@@ -355,9 +355,8 @@ void MediaDevicesManager::EnumerateAudioDevices(bool is_input) {
   }
 
   audio_system_->GetDeviceDescriptions(
-      base::BindOnce(&MediaDevicesManager::AudioDevicesEnumerated,
-                     weak_factory_.GetWeakPtr(), type),
-      is_input);
+      is_input, base::BindOnce(&MediaDevicesManager::AudioDevicesEnumerated,
+                               weak_factory_.GetWeakPtr(), type));
 }
 
 void MediaDevicesManager::VideoInputDevicesEnumerated(

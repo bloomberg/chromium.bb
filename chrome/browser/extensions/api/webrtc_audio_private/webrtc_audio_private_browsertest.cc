@@ -63,14 +63,14 @@ void GetAudioDeviceDescriptions(bool for_input,
                                 AudioDeviceDescriptions* device_descriptions) {
   base::RunLoop run_loop;
   media::AudioSystem::Get()->GetDeviceDescriptions(
+      for_input,
       base::BindOnce(
           [](base::Closure finished_callback, AudioDeviceDescriptions* result,
              AudioDeviceDescriptions received) {
             *result = std::move(received);
             finished_callback.Run();
           },
-          base::Passed(run_loop.QuitClosure()), device_descriptions),
-      for_input);
+          base::Passed(run_loop.QuitClosure()), device_descriptions));
   run_loop.Run();
 }
 
