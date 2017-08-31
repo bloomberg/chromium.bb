@@ -32,29 +32,23 @@ class AutofillProfile : public AutofillDataModel {
   enum RecordType {
     // A profile stored and editable locally.
     LOCAL_PROFILE,
-
     // A profile synced down from the server. These are read-only locally.
     SERVER_PROFILE,
-
     // An auxiliary profile, such as a Mac address book entry.
     AUXILIARY_PROFILE,
   };
 
   enum ValidityState {
     // The field has not been validated.
-    UNVALIDATED,
-
+    UNVALIDATED = 0,
     // The field is empty.
-    EMPTY,
-
+    EMPTY = 1,
     // The field is valid.
-    VALID,
-
+    VALID = 2,
     // The field is invalid.
-    INVALID,
-
+    INVALID = 3,
     // The validation for the field is unsupported.
-    UNSUPPORTED,
+    UNSUPPORTED = 4,
   };
 
   AutofillProfile(const std::string& guid, const std::string& origin);
@@ -210,6 +204,9 @@ class AutofillProfile : public AutofillDataModel {
 
   // Returns whether autofill does the validation of the specified |type|.
   bool IsValidationSupportedForType(ServerFieldType type);
+
+  // Returns the bitfield value representing the validity state of this profile.
+  int GetValidityBitfieldValue();
 
  private:
   typedef std::vector<const FormGroup*> FormGroupList;
