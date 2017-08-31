@@ -55,10 +55,6 @@ enum ImageState {
   IMAGE_STATE_LOADED,
 };
 
-// Script that returns document.body as a string.
-char kGetDocumentBodyJavaScript[] =
-    "document.body ? document.body.textContent : null";
-
 // Fetches the image from |image_url|.
 UIImage* LoadImage(const GURL& image_url) {
   __block UIImage* image;
@@ -222,28 +218,6 @@ id<GREYMatcher> Interstitial(WebState* web_state) {
 
   return grey_allOf(
       WebViewInWebState(web_state),
-      [[GREYElementMatcherBlock alloc] initWithMatchesBlock:matches
-                                           descriptionBlock:describe],
-      nil);
-}
-
-id<GREYMatcher> InterstitialContainingText(NSString* text,
-                                           WebState* web_state) {
-  MatchesBlock matches = ^BOOL(WKWebView* view) {
-    return WaitUntilConditionOrTimeout(testing::kWaitForUIElementTimeout, ^{
-      NSString* script = base::SysUTF8ToNSString(kGetDocumentBodyJavaScript);
-      id body = ExecuteScriptOnInterstitial(web_state, script);
-      return [body containsString:text] ? true : false;
-    });
-  };
-
-  DescribeToBlock describe = ^(id<GREYDescription> description) {
-    [description appendText:@"interstitial containing "];
-    [description appendText:text];
-  };
-
-  return grey_allOf(
-      Interstitial(web_state),
       [[GREYElementMatcherBlock alloc] initWithMatchesBlock:matches
                                            descriptionBlock:describe],
       nil);
