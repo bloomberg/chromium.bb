@@ -1754,6 +1754,10 @@ if (enable_java_templates) {
       if (defined(invoker.native_lib_version_arg)) {
         _native_lib_version_arg = invoker.native_lib_version_arg
       }
+    } else {
+      # Must exist for instrumentation_test_apk() to depend on.
+      group("${_template_name}__runtime_deps") {
+      }
     }
 
     if (_secondary_abi_shared_libraries_is_valid) {
@@ -1765,9 +1769,13 @@ if (enable_java_templates) {
       # complete list.
       _secondary_abi_runtime_deps_file =
           "$target_gen_dir/${_template_name}.secondary.abi.native.runtimedeps"
-      group("${_template_name}_secondary_abi__runtime_deps") {
+      group("${_template_name}__secondary_abi__runtime_deps") {
         deps = _secondary_abi_native_libs_deps
         write_runtime_deps = _secondary_abi_runtime_deps_file
+      }
+    } else {
+      # Must exist for instrumentation_test_apk() to depend on.
+      group("${_template_name}__secondary_abi_runtime_deps") {
       }
     }
 
@@ -2677,7 +2685,7 @@ if (enable_java_templates) {
 
     group(target_name) {
       if (incremental_apk_by_default) {
-        deps = [
+        public_deps = [
           ":${target_name}_incremental",
         ]
       } else {
@@ -2691,6 +2699,21 @@ if (enable_java_templates) {
         if (defined(invoker.apk_under_test)) {
           public_deps += [ invoker.apk_under_test ]
         }
+      }
+
+      # Ensure unstripped libraries are included in runtime deps so that
+      # symbolization can be done.
+      deps = [
+        ":${_apk_target_name}__runtime_deps",
+        ":${_apk_target_name}__secondary_abi_runtime_deps",
+      ]
+      if (defined(invoker.apk_under_test)) {
+        _under_test_label =
+            get_label_info(invoker.apk_under_test, "label_no_toolchain")
+        deps += [
+          "${_under_test_label}__runtime_deps",
+          "${_under_test_label}__secondary_abi_runtime_deps",
+        ]
       }
     }
 

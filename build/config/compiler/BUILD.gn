@@ -107,6 +107,9 @@ declare_args() {
 
   # Allow projects that wish to stay on C++11 to override Chromium's default.
   use_cxx11 = false
+
+  # Strip the debug info of symbols file in lib.unstripped to reduce size.
+  strip_debug_info = false
 }
 
 declare_args() {
@@ -1829,6 +1832,7 @@ config("minimal_symbols") {
       cflags += [ "-gdwarf-3" ]
     }
     cflags += [ "-g1" ]
+    ldflags = []
     if (is_android) {
       # Android defaults to symbol_level=1 builds in production builds
       # (https://crbug.com/648948), but clang, unlike gcc, doesn't emit
@@ -1838,11 +1842,13 @@ config("minimal_symbols") {
       # TODO(thakis): Consider making clang emit DW_AT_linkage_name in -g1 mode;
       #               failing that consider doing this on non-Android too.
       cflags += [ "-fdebug-info-for-profiling" ]
+      if (strip_debug_info) {
+        ldflags += [ "-Wl,--strip-debug" ]
+      }
     }
 
     # Note: -gsplit-dwarf implicitly turns on -g2 with clang, so don't pass it.
     asmflags = cflags
-    ldflags = []
   }
 }
 
