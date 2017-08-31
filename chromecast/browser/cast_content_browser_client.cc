@@ -11,6 +11,7 @@
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/files/scoped_file.h"
 #include "base/i18n/rtl.h"
 #include "base/json/json_reader.h"
@@ -22,6 +23,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chromecast/base/cast_constants.h"
+#include "chromecast/base/cast_features.h"
 #include "chromecast/base/cast_paths.h"
 #include "chromecast/base/chromecast_switches.h"
 #include "chromecast/browser/cast_browser_context.h"
@@ -132,14 +134,11 @@ void CastContentBrowserClient::AppendExtraCommandLineSwitches(
       command_line->AppendSwitchASCII(switches::kCastInitialScreenHeight,
                                       base::IntToString(res.height()));
     }
-    base::CommandLine* browser_command_line =
-        base::CommandLine::ForCurrentProcess();
-    for (auto* const switch_name : {switches::kUseDoubleBuffering}) {
-      if (browser_command_line->HasSwitch(switch_name)) {
-        command_line->AppendSwitchASCII(
-            switch_name,
-            browser_command_line->GetSwitchValueASCII(switch_name));
-      }
+
+    if (base::FeatureList::IsEnabled(kSingleBuffer)) {
+      command_line->AppendSwitchASCII(switches::kGraphicsBufferCount, "1");
+    } else if (base::FeatureList::IsEnabled(chromecast::kTripleBuffer720)) {
+      command_line->AppendSwitchASCII(switches::kGraphicsBufferCount, "3");
     }
   }
 #endif  // defined(USE_AURA)

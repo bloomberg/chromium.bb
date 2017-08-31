@@ -112,6 +112,14 @@ void SetExperimentIds(const base::ListValue& list) {
 // chromecast/browser/url_request_context_factory.cc for usage.
 const base::Feature kEnableQuic{"enable_quic",
                                 base::FEATURE_DISABLED_BY_DEFAULT};
+// Enables triple-buffer 720p graphics (overriding default graphics buffer
+// settings for a platform).
+const base::Feature kTripleBuffer720{"enable_triple_buffer_720",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+// Enables single-buffered graphics (overriding default graphics buffer
+// settings and takes precedence over triple-buffer feature).
+const base::Feature kSingleBuffer{"enable_single_buffer",
+                                  base::FEATURE_DISABLED_BY_DEFAULT};
 
 // End Chromecast Feature definitions.
 
