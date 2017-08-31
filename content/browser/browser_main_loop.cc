@@ -1555,7 +1555,8 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   device_monitor_linux_.reset(
       new media::DeviceMonitorLinux(io_thread_->task_runner()));
 #elif defined(OS_MACOSX)
-  device_monitor_mac_.reset(new media::DeviceMonitorMac());
+  device_monitor_mac_.reset(
+      new media::DeviceMonitorMac(audio_manager_->GetTaskRunner()));
 #endif
 
   // RDH needs the IO thread to be created

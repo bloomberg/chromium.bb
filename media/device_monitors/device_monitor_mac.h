@@ -23,15 +23,16 @@ namespace media {
 // is created from the browser main process and lives as long as this one.
 class MEDIA_EXPORT DeviceMonitorMac {
  public:
-  DeviceMonitorMac();
+  // The |device_task_runner| argument represents the thread on which device
+  // enumeration will occur.
+  explicit DeviceMonitorMac(
+      scoped_refptr<base::SingleThreadTaskRunner> device_task_runner);
   ~DeviceMonitorMac();
 
   // Registers the observers for the audio/video device removal, connection and
   // suspension. The AVFoundation library is also loaded and initialised if the
-  // OS supports it. The |device_task_runner| argument represents the thread on
-  // which device enumeration will occur.
-  void StartMonitoring(
-      const scoped_refptr<base::SingleThreadTaskRunner>& device_task_runner);
+  // OS supports it.
+  void StartMonitoring();
 
   // Method called by the internal DeviceMonitorMacImpl object
   // |device_monitor_impl_| when a device of type |type| has been added to or
@@ -39,6 +40,7 @@ class MEDIA_EXPORT DeviceMonitorMac {
   void NotifyDeviceChanged(base::SystemMonitor::DeviceType type);
 
  private:
+  scoped_refptr<base::SingleThreadTaskRunner> device_task_runner_;
   std::unique_ptr<DeviceMonitorMacImpl> device_monitor_impl_;
 
   // |thread_checker_| is used to check that constructor and StartMonitoring()
