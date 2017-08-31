@@ -18,6 +18,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/test/test_io_thread.h"
 #include "device/hid/hid_service.h"
+#include "device/hid/public/interfaces/hid.mojom.h"
 #include "device/test/test_device_client.h"
 #include "device/test/usb_test_gadget.h"
 #include "device/usb/usb_device.h"
@@ -54,10 +55,10 @@ class DeviceCatcher : HidService::Observer {
  private:
   void OnEnumerationComplete(
       HidService* hid_service,
-      const std::vector<scoped_refptr<HidDeviceInfo>>& devices) {
-    for (const scoped_refptr<HidDeviceInfo>& device_info : devices) {
-      if (device_info->serial_number() == serial_number_) {
-        device_guid_ = device_info->device_guid();
+      std::vector<device::mojom::HidDeviceInfoPtr> devices) {
+    for (auto& device_info : devices) {
+      if (device_info->serial_number == serial_number_) {
+        device_guid_ = device_info->guid;
         run_loop_.Quit();
         break;
       }
@@ -65,9 +66,9 @@ class DeviceCatcher : HidService::Observer {
     observer_.Add(hid_service);
   }
 
-  void OnDeviceAdded(scoped_refptr<HidDeviceInfo> device_info) override {
-    if (device_info->serial_number() == serial_number_) {
-      device_guid_ = device_info->device_guid();
+  void OnDeviceAdded(device::mojom::HidDeviceInfoPtr device_info) override {
+    if (device_info->serial_number == serial_number_) {
+      device_guid_ = device_info->guid;
       run_loop_.Quit();
     }
   }

@@ -15,13 +15,9 @@
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
 #include "device/hid/hid_collection_info.h"
+#include "device/hid/public/interfaces/hid.mojom.h"
 
 namespace device {
-
-enum HidBusType {
-  kHIDBusTypeUSB = 0,
-  kHIDBusTypeBluetooth = 1,
-};
 
 #if defined(OS_MACOSX)
 typedef uint64_t HidPlatformDeviceId;
@@ -36,44 +32,54 @@ class HidDeviceInfo : public base::RefCountedThreadSafe<HidDeviceInfo> {
                 uint16_t product_id,
                 const std::string& product_name,
                 const std::string& serial_number,
-                HidBusType bus_type,
-                const std::vector<uint8_t> report_descriptor);
+                device::mojom::HidBusType bus_type,
+                const std::vector<uint8_t> report_descriptor,
+                std::string device_node = "");
 
   HidDeviceInfo(const HidPlatformDeviceId& platform_device_id,
                 uint16_t vendor_id,
                 uint16_t product_id,
                 const std::string& product_name,
                 const std::string& serial_number,
-                HidBusType bus_type,
+                device::mojom::HidBusType bus_type,
                 const HidCollectionInfo& collection,
                 size_t max_input_report_size,
                 size_t max_output_report_size,
                 size_t max_feature_report_size);
 
+  const device::mojom::HidDeviceInfoPtr& device() { return device_; }
+
   // Device identification.
-  const std::string& device_guid() const { return guid_; }
+  const std::string& device_guid() const { return device_->guid; }
   const HidPlatformDeviceId& platform_device_id() const {
     return platform_device_id_;
   }
-  uint16_t vendor_id() const { return vendor_id_; }
-  uint16_t product_id() const { return product_id_; }
-  const std::string& product_name() const { return product_name_; }
-  const std::string& serial_number() const { return serial_number_; }
-  HidBusType bus_type() const { return bus_type_; }
+  uint16_t vendor_id() const { return device_->vendor_id; }
+  uint16_t product_id() const { return device_->product_id; }
+  const std::string& product_name() const { return device_->product_name; }
+  const std::string& serial_number() const { return device_->serial_number; }
+  device::mojom::HidBusType bus_type() const { return device_->bus_type; }
 
   // Top-Level Collections information.
   const std::vector<HidCollectionInfo>& collections() const {
-    return collections_;
+    return device_->collections;
   }
-  bool has_report_id() const { return has_report_id_; };
-  size_t max_input_report_size() const { return max_input_report_size_; }
-  size_t max_output_report_size() const { return max_output_report_size_; }
-  size_t max_feature_report_size() const { return max_feature_report_size_; }
+  bool has_report_id() const { return device_->has_report_id; };
+  size_t max_input_report_size() const {
+    return device_->max_input_report_size;
+  }
+  size_t max_output_report_size() const {
+    return device_->max_output_report_size;
+  }
+  size_t max_feature_report_size() const {
+    return device_->max_feature_report_size;
+  }
 
   // The raw HID report descriptor is not available on Windows.
   const std::vector<uint8_t>& report_descriptor() const {
-    return report_descriptor_;
+    return device_->report_descriptor;
   }
+  const std::string& device_node() const { return device_->device_node; }
 
  protected:
   virtual ~HidDeviceInfo();
@@ -81,22 +87,8 @@ class HidDeviceInfo : public base::RefCountedThreadSafe<HidDeviceInfo> {
  private:
   friend class base::RefCountedThreadSafe<HidDeviceInfo>;
 
-  // Device identification for client.
-  std::string guid_;
   HidPlatformDeviceId platform_device_id_;
-  uint16_t vendor_id_;
-  uint16_t product_id_;
-  std::string product_name_;
-  std::string serial_number_;
-  HidBusType bus_type_;
-  std::vector<uint8_t> report_descriptor_;
-
-  // Top-Level Collections information.
-  std::vector<HidCollectionInfo> collections_;
-  bool has_report_id_;
-  size_t max_input_report_size_;
-  size_t max_output_report_size_;
-  size_t max_feature_report_size_;
+  device::mojom::HidDeviceInfoPtr device_;
 
   DISALLOW_COPY_AND_ASSIGN(HidDeviceInfo);
 };

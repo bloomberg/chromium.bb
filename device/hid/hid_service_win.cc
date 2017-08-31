@@ -260,9 +260,9 @@ void HidServiceWin::AddDeviceBlocking(
   scoped_refptr<HidDeviceInfo> device_info(new HidDeviceInfo(
       device_path, attrib.VendorID, attrib.ProductID, product_name,
       serial_number,
-      kHIDBusTypeUSB,  // TODO(reillyg): Detect Bluetooth. crbug.com/443335
-      collection_info, max_input_report_size, max_output_report_size,
-      max_feature_report_size));
+      // TODO(reillyg): Detect Bluetooth. crbug.com/443335
+      device::mojom::HidBusType::kHIDBusTypeUSB, collection_info,
+      max_input_report_size, max_output_report_size, max_feature_report_size));
 
   HidD_FreePreparsedData(preparsed_data);
   task_runner->PostTask(

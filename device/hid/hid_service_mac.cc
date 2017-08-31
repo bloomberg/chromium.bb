@@ -85,8 +85,8 @@ scoped_refptr<HidDeviceInfo> CreateDeviceInfo(
       GetIntProperty(service, CFSTR(kIOHIDProductIDKey)),
       GetStringProperty(service, CFSTR(kIOHIDProductKey)),
       GetStringProperty(service, CFSTR(kIOHIDSerialNumberKey)),
-      kHIDBusTypeUSB,  // TODO(reillyg): Detect Bluetooth. crbug.com/443335
-      report_descriptor);
+      // TODO(reillyg): Detect Bluetooth. crbug.com/443335
+      device::mojom::HidBusType::kHIDBusTypeUSB, report_descriptor);
 }
 
 }  // namespace

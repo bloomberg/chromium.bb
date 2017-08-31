@@ -14,8 +14,8 @@
 #include "build/build_config.h"
 #include "device/base/device_client.h"
 #include "device/hid/hid_device_filter.h"
-#include "device/hid/hid_device_info.h"
 #include "device/hid/hid_service.h"
+#include "device/hid/public/interfaces/hid.mojom.h"
 #include "device/usb/public/cpp/filter_utils.h"
 #include "device/usb/usb_device.h"
 #include "device/usb/usb_ids.h"
@@ -27,7 +27,6 @@
 #if defined(OS_CHROMEOS)
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/permission_broker_client.h"
-#include "device/hid/hid_device_info_linux.h"
 #endif  // defined(OS_CHROMEOS)
 
 using device::HidDeviceFilter;
@@ -40,8 +39,7 @@ namespace extensions {
 
 namespace {
 
-void NoopHidCallback(const std::vector<scoped_refptr<device::HidDeviceInfo>>&) {
-}
+void NoopHidCallback(std::vector<device::mojom::HidDeviceInfoPtr>) {}
 
 void NoopUsbCallback(const std::vector<scoped_refptr<device::UsbDevice>>&) {}
 
@@ -158,23 +156,23 @@ class UsbDevicePermissionsPrompt : public DevicePermissionsPrompt::Prompt,
 
 class HidDeviceInfo : public DevicePermissionsPrompt::Prompt::DeviceInfo {
  public:
-  explicit HidDeviceInfo(scoped_refptr<device::HidDeviceInfo> device)
-      : device_(device) {
+  explicit HidDeviceInfo(device::mojom::HidDeviceInfoPtr device)
+      : device_(std::move(device)) {
     name_ = DevicePermissionsManager::GetPermissionMessage(
-        device->vendor_id(), device->product_id(),
+        device_->vendor_id, device_->product_id,
         base::string16(),  // HID devices include manufacturer in product name.
-        base::UTF8ToUTF16(device->product_name()),
+        base::UTF8ToUTF16(device_->product_name),
         base::string16(),  // Serial number is displayed separately.
         false);
-    serial_number_ = base::UTF8ToUTF16(device->serial_number());
+    serial_number_ = base::UTF8ToUTF16(device_->serial_number);
   }
 
   ~HidDeviceInfo() override {}
 
-  const scoped_refptr<device::HidDeviceInfo>& device() const { return device_; }
+  device::mojom::HidDeviceInfoPtr& device() { return device_; }
 
  private:
-  scoped_refptr<device::HidDeviceInfo> device_;
+  device::mojom::HidDeviceInfoPtr device_;
 };
 
 class HidDevicePermissionsPrompt : public DevicePermissionsPrompt::Prompt,
@@ -211,36 +209,34 @@ class HidDevicePermissionsPrompt : public DevicePermissionsPrompt::Prompt,
   void Dismissed() override {
     DevicePermissionsManager* permissions_manager =
         DevicePermissionsManager::Get(browser_context());
-    std::vector<scoped_refptr<device::HidDeviceInfo>> devices;
+    std::vector<device::mojom::HidDeviceInfoPtr> devices;
     for (const auto& device : devices_) {
       if (device->granted()) {
-        const HidDeviceInfo* hid_device =
-            static_cast<const HidDeviceInfo*>(device.get());
-        devices.push_back(hid_device->device());
+        HidDeviceInfo* hid_device = static_cast<HidDeviceInfo*>(device.get());
         if (permissions_manager) {
+          DCHECK(hid_device->device());
           permissions_manager->AllowHidDevice(extension()->id(),
-                                              hid_device->device());
+                                              *(hid_device->device()));
         }
+        devices.push_back(std::move(hid_device->device()));
       }
     }
     DCHECK(multiple() || devices.size() <= 1);
-    callback_.Run(devices);
+    callback_.Run(std::move(devices));
     callback_.Reset();
   }
 
   // device::HidService::Observer implementation:
-  void OnDeviceAdded(scoped_refptr<device::HidDeviceInfo> device) override {
-    if (HasUnprotectedCollections(device) &&
-        (filters_.empty() || HidDeviceFilter::MatchesAny(device, filters_))) {
-      std::unique_ptr<DeviceInfo> device_info(new HidDeviceInfo(device));
+  void OnDeviceAdded(device::mojom::HidDeviceInfoPtr device) override {
+    if (HasUnprotectedCollections(*device) &&
+        (filters_.empty() || HidDeviceFilter::MatchesAny(*device, filters_))) {
+      auto device_info = base::MakeUnique<HidDeviceInfo>(std::move(device));
 #if defined(OS_CHROMEOS)
       chromeos::PermissionBrokerClient* client =
           chromeos::DBusThreadManager::Get()->GetPermissionBrokerClient();
       DCHECK(client) << "Could not get permission broker client.";
-      device::HidDeviceInfoLinux* linux_device_info =
-          static_cast<device::HidDeviceInfoLinux*>(device.get());
       client->CheckPathAccess(
-          linux_device_info->device_node(),
+          device_info.get()->device()->device_node,
           base::Bind(&HidDevicePermissionsPrompt::AddCheckedDevice, this,
                      base::Passed(&device_info)));
 #else
@@ -249,11 +245,10 @@ class HidDevicePermissionsPrompt : public DevicePermissionsPrompt::Prompt,
     }
   }
 
-  void OnDeviceRemoved(scoped_refptr<device::HidDeviceInfo> device) override {
+  void OnDeviceRemoved(device::mojom::HidDeviceInfoPtr device) override {
     for (auto it = devices_.begin(); it != devices_.end(); ++it) {
-      const HidDeviceInfo* entry =
-          static_cast<const HidDeviceInfo*>((*it).get());
-      if (entry->device() == device) {
+      HidDeviceInfo* entry = static_cast<HidDeviceInfo*>((*it).get());
+      if (entry->device()->guid == device->guid) {
         size_t index = it - devices_.begin();
         base::string16 device_name = (*it)->name();
         devices_.erase(it);
@@ -266,15 +261,15 @@ class HidDevicePermissionsPrompt : public DevicePermissionsPrompt::Prompt,
 
   void OnDevicesEnumerated(
       HidService* service,
-      const std::vector<scoped_refptr<device::HidDeviceInfo>>& devices) {
-    for (const auto& device : devices) {
-      OnDeviceAdded(device);
+      std::vector<device::mojom::HidDeviceInfoPtr> devices) {
+    for (auto& device : devices) {
+      OnDeviceAdded(std::move(device));
     }
     service_observer_.Add(service);
   }
 
-  bool HasUnprotectedCollections(scoped_refptr<device::HidDeviceInfo> device) {
-    for (const auto& collection : device->collections()) {
+  bool HasUnprotectedCollections(const device::mojom::HidDeviceInfo& device) {
+    for (const auto& collection : device.collections) {
       if (!collection.usage.IsProtected()) {
         return true;
       }

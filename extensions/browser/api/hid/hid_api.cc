@@ -15,7 +15,6 @@
 #include "device/base/device_client.h"
 #include "device/hid/hid_connection.h"
 #include "device/hid/hid_device_filter.h"
-#include "device/hid/hid_device_info.h"
 #include "device/hid/hid_service.h"
 #include "extensions/browser/api/api_resource_manager.h"
 #include "extensions/browser/api/device_permissions_prompt.h"
@@ -27,7 +26,6 @@ namespace hid = extensions::api::hid;
 
 using device::HidConnection;
 using device::HidDeviceFilter;
-using device::HidDeviceInfo;
 using device::HidService;
 
 namespace {
@@ -144,10 +142,11 @@ ExtensionFunction::ResponseAction HidGetUserSelectedDevicesFunction::Run() {
 }
 
 void HidGetUserSelectedDevicesFunction::OnDevicesChosen(
-    const std::vector<scoped_refptr<HidDeviceInfo>>& devices) {
+    std::vector<device::mojom::HidDeviceInfoPtr> devices) {
   HidDeviceManager* device_manager = HidDeviceManager::Get(browser_context());
   CHECK(device_manager);
-  Respond(OneArgument(device_manager->GetApiDevicesFromList(devices)));
+  Respond(
+      OneArgument(device_manager->GetApiDevicesFromList(std::move(devices))));
 }
 
 HidConnectFunction::HidConnectFunction() : connection_manager_(nullptr) {
@@ -167,13 +166,13 @@ ExtensionFunction::ResponseAction HidConnectFunction::Run() {
       ApiResourceManager<HidConnectionResource>::Get(browser_context());
   CHECK(connection_manager_);
 
-  scoped_refptr<HidDeviceInfo> device_info =
+  const device::mojom::HidDeviceInfo* device_info =
       device_manager->GetDeviceInfo(parameters->device_id);
   if (!device_info) {
     return RespondNow(Error(kErrorInvalidDeviceId));
   }
 
-  if (!device_manager->HasPermission(extension(), device_info, true)) {
+  if (!device_manager->HasPermission(extension(), *device_info, true)) {
     return RespondNow(Error(kErrorPermissionDenied));
   }
 
@@ -181,7 +180,7 @@ ExtensionFunction::ResponseAction HidConnectFunction::Run() {
   CHECK(hid_service);
 
   hid_service->Connect(
-      device_info->device_guid(),
+      device_info->guid,
       base::Bind(&HidConnectFunction::OnConnectComplete, this));
   return RespondLater();
 }

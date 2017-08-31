@@ -10,6 +10,7 @@
 #include "base/test/test_io_thread.h"
 #include "device/base/mock_device_client.h"
 #include "device/hid/mock_hid_service.h"
+#include "device/hid/public/interfaces/hid.mojom.h"
 #include "device/test/test_device_client.h"
 #include "device/test/usb_test_gadget.h"
 #include "device/u2f/u2f_hid_device.h"
@@ -87,9 +88,10 @@ TEST_F(U2fRequestTest, TestAddRemoveDevice) {
   request.Enumerate();
 
   c_info.usage = HidUsageAndPage(1, static_cast<HidUsageAndPage::Page>(0xf1d0));
-  scoped_refptr<HidDeviceInfo> u2f_device_0 = make_scoped_refptr(
-      new HidDeviceInfo(kTestDeviceId0, 0, 0, "Test Fido Device", "123FIDO",
-                        kHIDBusTypeUSB, c_info, 64, 64, 0));
+  scoped_refptr<HidDeviceInfo> u2f_device_0 =
+      make_scoped_refptr(new HidDeviceInfo(
+          kTestDeviceId0, 0, 0, "Test Fido Device", "123FIDO",
+          device::mojom::HidBusType::kHIDBusTypeUSB, c_info, 64, 64, 0));
   hid_service->AddDevice(u2f_device_0);
 
   // Make sure the enumeration is finshed, so HidService is ready to send
@@ -98,16 +100,18 @@ TEST_F(U2fRequestTest, TestAddRemoveDevice) {
   EXPECT_EQ(static_cast<size_t>(0), request.devices_.size());
 
   // Add one U2F device
-  scoped_refptr<HidDeviceInfo> u2f_device_1 = make_scoped_refptr(
-      new HidDeviceInfo(kTestDeviceId1, 0, 0, "Test Fido Device", "123FIDO",
-                        kHIDBusTypeUSB, c_info, 64, 64, 0));
+  scoped_refptr<HidDeviceInfo> u2f_device_1 =
+      make_scoped_refptr(new HidDeviceInfo(
+          kTestDeviceId1, 0, 0, "Test Fido Device", "123FIDO",
+          device::mojom::HidBusType::kHIDBusTypeUSB, c_info, 64, 64, 0));
   hid_service->AddDevice(u2f_device_1);
   EXPECT_EQ(static_cast<size_t>(1), request.devices_.size());
 
   // Add one non-U2F device. Verify that it is not added to our device list.
-  scoped_refptr<HidDeviceInfo> other_device = make_scoped_refptr(
-      new HidDeviceInfo(kTestDeviceId2, 0, 0, "Other Device", "OtherDevice",
-                        kHIDBusTypeUSB, std::vector<uint8_t>()));
+  scoped_refptr<HidDeviceInfo> other_device =
+      make_scoped_refptr(new HidDeviceInfo(
+          kTestDeviceId2, 0, 0, "Other Device", "OtherDevice",
+          device::mojom::HidBusType::kHIDBusTypeUSB, std::vector<uint8_t>()));
   hid_service->AddDevice(other_device);
   EXPECT_EQ(static_cast<size_t>(1), request.devices_.size());
 
@@ -126,14 +130,16 @@ TEST_F(U2fRequestTest, TestIterateDevice) {
   HidCollectionInfo c_info;
   // Add one U2F device and one non-U2f device
   c_info.usage = HidUsageAndPage(1, static_cast<HidUsageAndPage::Page>(0xf1d0));
-  scoped_refptr<HidDeviceInfo> device0 = make_scoped_refptr(
-      new HidDeviceInfo(kTestDeviceId0, 0, 0, "Test Fido Device", "123FIDO",
-                        kHIDBusTypeUSB, c_info, 64, 64, 0));
-  request.devices_.push_back(std::make_unique<U2fHidDevice>(device0));
-  scoped_refptr<HidDeviceInfo> device1 = make_scoped_refptr(
-      new HidDeviceInfo(kTestDeviceId1, 0, 0, "Test Fido Device", "123FIDO",
-                        kHIDBusTypeUSB, c_info, 64, 64, 0));
-  request.devices_.push_back(std::make_unique<U2fHidDevice>(device1));
+  scoped_refptr<HidDeviceInfo> device0 = make_scoped_refptr(new HidDeviceInfo(
+      kTestDeviceId0, 0, 0, "Test Fido Device", "123FIDO",
+      device::mojom::HidBusType::kHIDBusTypeUSB, c_info, 64, 64, 0));
+  request.devices_.push_back(
+      std::make_unique<U2fHidDevice>(device0->device()->Clone()));
+  scoped_refptr<HidDeviceInfo> device1 = make_scoped_refptr(new HidDeviceInfo(
+      kTestDeviceId1, 0, 0, "Test Fido Device", "123FIDO",
+      device::mojom::HidBusType::kHIDBusTypeUSB, c_info, 64, 64, 0));
+  request.devices_.push_back(
+      std::make_unique<U2fHidDevice>(device1->device()->Clone()));
 
   // Move first device to current
   request.IterateDevice();
@@ -162,9 +168,10 @@ TEST_F(U2fRequestTest, TestBasicMachine) {
   // Add one U2F device
   HidCollectionInfo c_info;
   c_info.usage = HidUsageAndPage(1, static_cast<HidUsageAndPage::Page>(0xf1d0));
-  scoped_refptr<HidDeviceInfo> u2f_device = make_scoped_refptr(
-      new HidDeviceInfo(kTestDeviceId0, 0, 0, "Test Fido Device", "123FIDO",
-                        kHIDBusTypeUSB, c_info, 64, 64, 0));
+  scoped_refptr<HidDeviceInfo> u2f_device =
+      make_scoped_refptr(new HidDeviceInfo(
+          kTestDeviceId0, 0, 0, "Test Fido Device", "123FIDO",
+          device::mojom::HidBusType::kHIDBusTypeUSB, c_info, 64, 64, 0));
   hid_service->AddDevice(u2f_device);
   cb.WaitForCallback();
   EXPECT_EQ(U2fRequest::State::BUSY, request.state_);

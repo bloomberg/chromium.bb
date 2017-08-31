@@ -9,10 +9,9 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
+#include "device/hid/public/interfaces/hid.mojom.h"
 
 namespace device {
-
-class HidDeviceInfo;
 
 class HidDeviceFilter {
  public:
@@ -24,9 +23,9 @@ class HidDeviceFilter {
   void SetUsagePage(uint16_t usage_page);
   void SetUsage(uint16_t usage);
 
-  bool Matches(scoped_refptr<const HidDeviceInfo> device_info) const;
+  bool Matches(const device::mojom::HidDeviceInfo& device_info) const;
 
-  static bool MatchesAny(scoped_refptr<const HidDeviceInfo> device_info,
+  static bool MatchesAny(const device::mojom::HidDeviceInfo& device_info,
                          const std::vector<HidDeviceFilter>& filters);
 
  private:

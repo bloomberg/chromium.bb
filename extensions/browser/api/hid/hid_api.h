@@ -12,6 +12,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "device/hid/public/interfaces/hid.mojom.h"
 #include "extensions/browser/api/api_resource_manager.h"
 #include "extensions/browser/api/hid/hid_connection_resource.h"
 #include "extensions/browser/api/hid/hid_device_manager.h"
@@ -20,7 +21,6 @@
 
 namespace device {
 class HidConnection;
-class HidDeviceInfo;
 }  // namespace device
 
 namespace net {
@@ -61,8 +61,7 @@ class HidGetUserSelectedDevicesFunction : public UIThreadExtensionFunction {
   // ExtensionFunction:
   ResponseAction Run() override;
 
-  void OnDevicesChosen(
-      const std::vector<scoped_refptr<device::HidDeviceInfo>>& devices);
+  void OnDevicesChosen(std::vector<device::mojom::HidDeviceInfoPtr> devices);
 
   std::unique_ptr<DevicePermissionsPrompt> prompt_;
 

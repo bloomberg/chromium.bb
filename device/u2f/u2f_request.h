@@ -9,6 +9,7 @@
 #include "base/scoped_observer.h"
 #include "device/hid/hid_device_filter.h"
 #include "device/hid/hid_service.h"
+#include "device/hid/public/interfaces/hid.mojom.h"
 #include "u2f_device.h"
 
 namespace device {
@@ -50,10 +51,10 @@ class U2fRequest : HidService::Observer {
   void IterateDevice();
   void OnWaitComplete();
   void AddDevice(std::unique_ptr<U2fDevice> device);
-  void OnDeviceAdded(scoped_refptr<HidDeviceInfo> device_info) override;
-  void OnDeviceRemoved(scoped_refptr<HidDeviceInfo> device_info) override;
+  void OnDeviceAdded(device::mojom::HidDeviceInfoPtr device_info) override;
+  void OnDeviceRemoved(device::mojom::HidDeviceInfoPtr device_info) override;
   void OnEnumerate(HidService* hid_service,
-                   const std::vector<scoped_refptr<HidDeviceInfo>>& devices);
+                   std::vector<device::mojom::HidDeviceInfoPtr> devices);
 
   std::list<std::unique_ptr<U2fDevice>> devices_;
   std::list<std::unique_ptr<U2fDevice>> attempted_devices_;
