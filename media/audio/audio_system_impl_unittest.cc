@@ -241,9 +241,8 @@ TEST_P(AudioSystemImplTest, GetInputDeviceDescriptionsNoInputDevices) {
   EXPECT_EQ(1, static_cast<int>(output_device_descriptions_.size()));
   EXPECT_CALL(*this, DeviceDescriptionsReceived());
   audio_system_->GetDeviceDescriptions(
-      base::Bind(&AudioSystemImplTest::OnGetDeviceDescriptions,
-                 base::Unretained(this), input_device_descriptions_),
-      true);
+      true, base::Bind(&AudioSystemImplTest::OnGetDeviceDescriptions,
+                       base::Unretained(this), input_device_descriptions_));
   WaitForCallback();
 }
 
@@ -258,9 +257,8 @@ TEST_P(AudioSystemImplTest, GetInputDeviceDescriptions) {
   EXPECT_EQ(1, static_cast<int>(output_device_descriptions_.size()));
   EXPECT_CALL(*this, DeviceDescriptionsReceived());
   audio_system_->GetDeviceDescriptions(
-      base::Bind(&AudioSystemImplTest::OnGetDeviceDescriptions,
-                 base::Unretained(this), input_device_descriptions_),
-      true);
+      true, base::Bind(&AudioSystemImplTest::OnGetDeviceDescriptions,
+                       base::Unretained(this), input_device_descriptions_));
   WaitForCallback();
 }
 
@@ -271,9 +269,8 @@ TEST_P(AudioSystemImplTest, GetOutputDeviceDescriptionsNoInputDevices) {
   EXPECT_EQ(1, static_cast<int>(input_device_descriptions_.size()));
   EXPECT_CALL(*this, DeviceDescriptionsReceived());
   audio_system_->GetDeviceDescriptions(
-      base::Bind(&AudioSystemImplTest::OnGetDeviceDescriptions,
-                 base::Unretained(this), output_device_descriptions_),
-      false);
+      false, base::Bind(&AudioSystemImplTest::OnGetDeviceDescriptions,
+                        base::Unretained(this), output_device_descriptions_));
   WaitForCallback();
 }
 
@@ -288,9 +285,8 @@ TEST_P(AudioSystemImplTest, GetOutputDeviceDescriptions) {
   EXPECT_EQ(1, static_cast<int>(input_device_descriptions_.size()));
   EXPECT_CALL(*this, DeviceDescriptionsReceived());
   audio_system_->GetDeviceDescriptions(
-      base::Bind(&AudioSystemImplTest::OnGetDeviceDescriptions,
-                 base::Unretained(this), output_device_descriptions_),
-      false);
+      false, base::Bind(&AudioSystemImplTest::OnGetDeviceDescriptions,
+                        base::Unretained(this), output_device_descriptions_));
   WaitForCallback();
 }
 

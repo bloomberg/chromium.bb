@@ -15,9 +15,7 @@
 namespace media {
 class AudioManager;
 
-// Work in progress: Provides asynchronous interface to AudioManager. All the
-// AudioManager clients will be switched to it, in preparation for moving
-// to Mojo audio service.
+// Provides asynchronous interface to access audio device information
 class MEDIA_EXPORT AudioSystem {
  public:
   // Replies are asynchronously sent from audio system thread to the thread the
@@ -32,8 +30,6 @@ class MEDIA_EXPORT AudioSystem {
   using OnInputDeviceInfoCallback = base::OnceCallback<
       void(const AudioParameters&, const AudioParameters&, const std::string&)>;
 
-  // Must not be called on audio system thread if it differs from the one
-  // AudioSystem is destroyed on. See http://crbug.com/705455.
   static AudioSystem* Get();
 
   virtual ~AudioSystem();
@@ -43,9 +39,8 @@ class MEDIA_EXPORT AudioSystem {
   // of the device.
   // TODO(olka,tommi): fix all AudioManager implementations to return invalid
   // parameters if the device is not found.
-  virtual void GetInputStreamParameters(
-      const std::string& device_id,
-      OnAudioParamsCallback on_params_cb) const = 0;
+  virtual void GetInputStreamParameters(const std::string& device_id,
+                                        OnAudioParamsCallback on_params_cb) = 0;
 
   // If media::AudioDeviceDescription::IsDefaultDevice(device_id) is true,
   // callback will receive the parameters of the default output device.
@@ -56,17 +51,17 @@ class MEDIA_EXPORT AudioSystem {
   // parameters if the device is not found.
   virtual void GetOutputStreamParameters(
       const std::string& device_id,
-      OnAudioParamsCallback on_params_cb) const = 0;
+      OnAudioParamsCallback on_params_cb) = 0;
 
-  virtual void HasInputDevices(OnBoolCallback on_has_devices_cb) const = 0;
+  virtual void HasInputDevices(OnBoolCallback on_has_devices_cb) = 0;
 
-  virtual void HasOutputDevices(OnBoolCallback on_has_devices_cb) const = 0;
+  virtual void HasOutputDevices(OnBoolCallback on_has_devices_cb) = 0;
 
   // Replies with device descriptions of input audio devices if |for_input| is
   // true, and of output audio devices otherwise.
   virtual void GetDeviceDescriptions(
-      OnDeviceDescriptionsCallback on_descriptions_cb,
-      bool for_input) = 0;
+      bool for_input,
+      OnDeviceDescriptionsCallback on_descriptions_cb) = 0;
 
   // Replies with an empty string if there is no associated output device found.
   virtual void GetAssociatedOutputDeviceID(
