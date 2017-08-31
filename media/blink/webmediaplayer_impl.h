@@ -124,6 +124,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   void SetSinkId(const blink::WebString& sink_id,
                  const blink::WebSecurityOrigin& security_origin,
                  blink::WebSetSinkIdCallbacks* web_callback) override;
+  void SetPoster(const blink::WebURL& poster) override;
   void SetPreload(blink::WebMediaPlayer::Preload preload) override;
   blink::WebTimeRanges Buffered() const override;
   blink::WebTimeRanges Seekable() const override;
@@ -231,7 +232,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   gfx::Size GetCanvasSize() const;
   void SetDeviceScaleFactor(float scale_factor);
   void SetUseFallbackPath(bool use_fallback_path);
-  void SetPoster(const blink::WebURL& poster) override;
 #endif
 
   // MediaObserverClient implementation.
@@ -527,6 +527,9 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
 
   // Preload state for when |data_source_| is created after setPreload().
   MultibufferDataSource::Preload preload_;
+
+  // Poster state (for UMA reporting).
+  bool has_poster_;
 
   // Task runner for posting tasks on Chrome's main thread. Also used
   // for DCHECKs so methods calls won't execute in the wrong thread.

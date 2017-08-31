@@ -32280,6 +32280,26 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.SRC.PreloadAutoHasPoster" enum="Boolean">
+  <owner>media-dev@chromium.org</owner>
+  <summary>
+    Whether a SRC= playback had a poster set at load() when the effective
+    preload type is &quot;auto&quot;. Note that this includes audio playbacks,
+    since we do not have track metadata at load(); audio elements never have
+    posters.
+  </summary>
+</histogram>
+
+<histogram name="Media.SRC.PreloadMetaDataHasPoster" enum="Boolean">
+  <owner>media-dev@chromium.org</owner>
+  <summary>
+    Whether a SRC= playback had a poster set at load() when the effective
+    preload type is &quot;metadata&quot;. Note that this includes audio
+    playbacks, since we do not have track metadata at load(); audio elements
+    never have posters.
+  </summary>
+</histogram>
+
 <histogram name="Media.SRC.VideoCodec.MP4" enum="VideoCodec">
   <owner>media-dev@chromium.org</owner>
   <summary>
