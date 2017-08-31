@@ -20,7 +20,7 @@
           "ash::mojom::ShelfController",
           "ash::mojom::ShutdownController",
           "ash::mojom::SystemTray",
-          "ash::mojom::TouchViewManager",
+          "ash::mojom::TabletModeManager",
           "ash::mojom::TrayAction",
           "ash::mojom::VpnList",
           "ash::mojom::WallpaperController"
