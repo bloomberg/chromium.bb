@@ -95,19 +95,19 @@ v8::Local<v8::Value> V8EventListener::CallListenerFunction(
   if (handler_function.IsEmpty() || receiver.IsEmpty())
     return v8::Local<v8::Value>();
 
-  if (!ExecutionContext::From(script_state)->IsDocument())
+  ExecutionContext* execution_context =
+      ToExecutionContext(script_state->GetContext());
+  if (!execution_context->IsDocument())
     return v8::Local<v8::Value>();
 
-  LocalFrame* frame =
-      ToDocument(ExecutionContext::From(script_state))->GetFrame();
+  LocalFrame* frame = ToDocument(execution_context)->GetFrame();
   if (!frame)
     return v8::Local<v8::Value>();
 
   // TODO(jochen): Consider moving this check into canExecuteScripts.
   // http://crbug.com/608641
   if (script_state->World().IsMainWorld() &&
-      !ExecutionContext::From(script_state)
-           ->CanExecuteScripts(kAboutToExecuteScript))
+      !execution_context->CanExecuteScripts(kAboutToExecuteScript))
     return v8::Local<v8::Value>();
 
   v8::Local<v8::Value> parameters[1] = {js_event};

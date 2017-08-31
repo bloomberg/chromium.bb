@@ -88,8 +88,9 @@ v8::Local<v8::Value> V8LazyEventListener::CallListenerFunction(
     v8::Local<v8::Value> js_event,
     Event* event) {
   DCHECK(!js_event.IsEmpty());
-  v8::Local<v8::Object> listener_object =
-      GetListenerObject(ExecutionContext::From(script_state));
+  ExecutionContext* execution_context =
+      ToExecutionContext(script_state->GetContext());
+  v8::Local<v8::Object> listener_object = GetListenerObject(execution_context);
   if (listener_object.IsEmpty())
     return v8::Local<v8::Value>();
 
@@ -98,16 +99,14 @@ v8::Local<v8::Value> V8LazyEventListener::CallListenerFunction(
   if (handler_function.IsEmpty() || receiver.IsEmpty())
     return v8::Local<v8::Value>();
 
-  if (!ExecutionContext::From(script_state)->IsDocument())
+  if (!execution_context->IsDocument())
     return v8::Local<v8::Value>();
 
-  LocalFrame* frame =
-      ToDocument(ExecutionContext::From(script_state))->GetFrame();
+  LocalFrame* frame = ToDocument(execution_context)->GetFrame();
   if (!frame)
     return v8::Local<v8::Value>();
 
-  if (!ExecutionContext::From(script_state)
-           ->CanExecuteScripts(kAboutToExecuteScript))
+  if (!execution_context->CanExecuteScripts(kAboutToExecuteScript))
     return v8::Local<v8::Value>();
 
   v8::Local<v8::Value> parameters[1] = {js_event};

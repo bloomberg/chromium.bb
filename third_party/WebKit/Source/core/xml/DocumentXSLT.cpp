@@ -39,7 +39,8 @@ class DOMContentLoadedListener final
     DCHECK_EQ(event->type(), "DOMContentLoaded");
     ScriptState::Scope scope(script_state);
 
-    Document& document = *ToDocument(ExecutionContext::From(script_state));
+    Document& document =
+        *ToDocument(ToExecutionContext(script_state->GetContext()));
     DCHECK(!document.Parsing());
 
     // Processing instruction (XML documents only).

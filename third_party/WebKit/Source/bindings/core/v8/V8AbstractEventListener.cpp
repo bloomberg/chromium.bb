@@ -125,13 +125,14 @@ void V8AbstractEventListener::InvokeEventHandler(
     return;
 
   v8::Local<v8::Value> return_value;
+  v8::Local<v8::Context> context = script_state->GetContext();
   {
     // Catch exceptions thrown in the event handler so they do not propagate to
     // javascript code that caused the event to fire.
     v8::TryCatch try_catch(GetIsolate());
     try_catch.SetVerbose(true);
 
-    v8::Local<v8::Object> global = script_state->GetContext()->Global();
+    v8::Local<v8::Object> global = context->Global();
     V8PrivateProperty::Symbol event_symbol =
         V8PrivateProperty::GetGlobalEvent(GetIsolate());
     // Save the old 'event' property so we can restore it later.
@@ -148,8 +149,9 @@ void V8AbstractEventListener::InvokeEventHandler(
       event->target()->UncaughtExceptionInEventHandler();
 
     if (!try_catch.CanContinue()) {  // Result of TerminateExecution().
-      if (ExecutionContext::From(script_state)->IsWorkerGlobalScope())
-        ToWorkerGlobalScope(ExecutionContext::From(script_state))
+      ExecutionContext* execution_context = ToExecutionContext(context);
+      if (execution_context->IsWorkerGlobalScope())
+        ToWorkerGlobalScope(execution_context)
             ->ScriptController()
             ->ForbidExecution();
       return;
