@@ -306,6 +306,8 @@ std::unique_ptr<GestureList> VrController::DetectGestures() {
         fling->data.fling_start.velocity_y =
             last_velocity_.y() * kDisplacementScaleFactor;
       }
+      // FlingStart replaces ScrollEnd
+      gesture_list->pop_back();
       gesture_list->push_back(std::move(fling));
     }
     Reset();
