@@ -301,7 +301,7 @@ template("linux_package") {
 
       inputs = packaging_files_binaries
       outputs = [
-        "$root_out_dir/google-chrome-${channel}_${chrome_version_full}-1.${rpm_arch}.rpm",
+        "$root_out_dir/google-chrome-${channel}-${chrome_version_full}-1.${rpm_arch}.rpm",
       ]
 
       args = [
