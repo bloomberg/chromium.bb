@@ -13,7 +13,7 @@
 class ContextualSearchFieldTrial {
  public:
   ContextualSearchFieldTrial();
-  ~ContextualSearchFieldTrial();
+  virtual ~ContextualSearchFieldTrial();
 
   // Returns a partial URL to use for a Contextual Search Resolve request, or
   // an empty string if no override is required.  The returned value is a prefix

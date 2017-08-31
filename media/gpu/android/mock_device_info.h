@@ -15,7 +15,7 @@ namespace media {
 class MockDeviceInfo : public DeviceInfo {
  public:
   MockDeviceInfo();
-  ~MockDeviceInfo();
+  virtual ~MockDeviceInfo();
 
   MOCK_METHOD0(SdkVersion, int());
   MOCK_METHOD0(IsVp8DecoderAvailable, bool());

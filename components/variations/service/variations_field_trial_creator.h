@@ -27,7 +27,7 @@ class VariationsFieldTrialCreator {
   VariationsFieldTrialCreator(PrefService* local_state,
                               VariationsServiceClient* client,
                               const UIStringOverrider& ui_string_overrider);
-  ~VariationsFieldTrialCreator();
+  virtual ~VariationsFieldTrialCreator();
 
   // Returns what variations will consider to be the latest country. Returns
   // empty if it is not available.

@@ -32,7 +32,7 @@ const char kEmbeddingOrigin[] = "https://www.google.com/";
 const char kRequestingOrigin1[] = "https://www.google.com/";
 const char kRequestingOrigin2[] = "https://www.chromium.org/";
 
-class AwBrowserPermissionRequestDelegateForTesting
+class AwBrowserPermissionRequestDelegateForTesting final
     : public AwBrowserPermissionRequestDelegate {
  public:
   void EnqueueResponse(const std::string& origin,

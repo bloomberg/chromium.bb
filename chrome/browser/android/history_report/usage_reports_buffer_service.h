@@ -28,7 +28,7 @@ class UsageReportsBufferBackend;
 class UsageReportsBufferService {
  public:
   explicit UsageReportsBufferService(const base::FilePath& dir);
-  ~UsageReportsBufferService();
+  virtual ~UsageReportsBufferService();
 
   // Init buffer. All calls to buffer before it's initialized are ignored. It's
   // asynchronous.

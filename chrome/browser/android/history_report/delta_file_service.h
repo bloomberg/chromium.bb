@@ -29,7 +29,7 @@ class DeltaFileBackend;
 class DeltaFileService {
  public:
   explicit DeltaFileService(const base::FilePath& dir);
-  ~DeltaFileService();
+  virtual ~DeltaFileService();
 
   // Adds new addtion entry to delta file.
   virtual void PageAdded(const GURL& url);

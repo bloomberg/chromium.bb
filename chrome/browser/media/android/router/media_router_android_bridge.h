@@ -20,7 +20,7 @@ class MediaRouterAndroid;
 class MediaRouterAndroidBridge {
  public:
   explicit MediaRouterAndroidBridge(MediaRouterAndroid* router);
-  ~MediaRouterAndroidBridge();
+  virtual ~MediaRouterAndroidBridge();
 
   // Implement the corresponding calls for the MediaRouterAndroid class.
   // Virtual so could be overridden by tests.

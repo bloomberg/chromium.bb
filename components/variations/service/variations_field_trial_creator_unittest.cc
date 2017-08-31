@@ -80,7 +80,7 @@ class TestVariationsFieldTrialCreator : public VariationsFieldTrialCreator {
     SetCreateTrialsFromSeedCalledForTesting(true);
   }
 
-  ~TestVariationsFieldTrialCreator() {
+  ~TestVariationsFieldTrialCreator() override {
     delete client_;
     client_ = 0;
   }
