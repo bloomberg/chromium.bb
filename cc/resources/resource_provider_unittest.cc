@@ -420,8 +420,8 @@ void GetResourcePixels(DisplayResourceProvider* resource_provider,
       break;
     }
     case ResourceProvider::RESOURCE_TYPE_BITMAP: {
-      ResourceProvider::ScopedReadLockSoftware lock_software(resource_provider,
-                                                             id);
+      DisplayResourceProvider::ScopedReadLockSoftware lock_software(
+          resource_provider, id);
       memcpy(pixels,
              lock_software.sk_bitmap()->getPixels(),
              lock_software.sk_bitmap()->getSize());
@@ -1541,20 +1541,20 @@ TEST_P(ResourceProviderTest, TransferSoftwareResources) {
   EXPECT_FALSE(child_resource_provider_->InUseByConsumer(id3));
 
   {
-    ResourceProvider::ScopedReadLockSoftware lock(
+    ResourceProvider::ScopedWriteLockSoftware lock(
         child_resource_provider_.get(), id1);
-    const SkBitmap* sk_bitmap = lock.sk_bitmap();
-    EXPECT_EQ(sk_bitmap->width(), size.width());
-    EXPECT_EQ(sk_bitmap->height(), size.height());
-    EXPECT_EQ(0, memcmp(data1, sk_bitmap->getPixels(), pixel_size));
+    const SkBitmap sk_bitmap = lock.sk_bitmap();
+    EXPECT_EQ(sk_bitmap.width(), size.width());
+    EXPECT_EQ(sk_bitmap.height(), size.height());
+    EXPECT_EQ(0, memcmp(data1, sk_bitmap.getPixels(), pixel_size));
   }
   {
-    ResourceProvider::ScopedReadLockSoftware lock(
+    ResourceProvider::ScopedWriteLockSoftware lock(
         child_resource_provider_.get(), id2);
-    const SkBitmap* sk_bitmap = lock.sk_bitmap();
-    EXPECT_EQ(sk_bitmap->width(), size.width());
-    EXPECT_EQ(sk_bitmap->height(), size.height());
-    EXPECT_EQ(0, memcmp(data2, sk_bitmap->getPixels(), pixel_size));
+    const SkBitmap sk_bitmap = lock.sk_bitmap();
+    EXPECT_EQ(sk_bitmap.width(), size.width());
+    EXPECT_EQ(sk_bitmap.height(), size.height());
+    EXPECT_EQ(0, memcmp(data2, sk_bitmap.getPixels(), pixel_size));
   }
   {
     // Transfer resources to the parent again.
@@ -1705,8 +1705,8 @@ TEST_P(ResourceProviderTest, TransferInvalidSoftware) {
   viz::ResourceId mapped_id1 = resource_map[id1];
   EXPECT_NE(0u, mapped_id1);
   {
-    ResourceProvider::ScopedReadLockSoftware lock(resource_provider_.get(),
-                                                  mapped_id1);
+    DisplayResourceProvider::ScopedReadLockSoftware lock(
+        resource_provider_.get(), mapped_id1);
     EXPECT_FALSE(lock.valid());
   }
 
@@ -2593,8 +2593,8 @@ TEST_P(ResourceProviderTest, TextureMailbox_SharedMemory) {
   std::unique_ptr<viz::SharedBitmap> shared_bitmap(
       CreateAndFillSharedBitmap(shared_bitmap_manager_.get(), size, kBadBeef));
 
-  std::unique_ptr<ResourceProvider> resource_provider(
-      std::make_unique<ResourceProvider>(
+  std::unique_ptr<DisplayResourceProvider> resource_provider(
+      std::make_unique<DisplayResourceProvider>(
           nullptr, shared_bitmap_manager_.get(),
           gpu_memory_buffer_manager_.get(), main_thread_task_runner_.get(),
           kDelegatedSyncPointsRequired, kEnableColorCorrectRendering,
@@ -2614,7 +2614,8 @@ TEST_P(ResourceProviderTest, TextureMailbox_SharedMemory) {
   EXPECT_NE(0u, id);
 
   {
-    ResourceProvider::ScopedReadLockSoftware lock(resource_provider.get(), id);
+    DisplayResourceProvider::ScopedReadLockSoftware lock(
+        resource_provider.get(), id);
     const SkBitmap* sk_bitmap = lock.sk_bitmap();
     EXPECT_EQ(sk_bitmap->width(), size.width());
     EXPECT_EQ(sk_bitmap->height(), size.height());

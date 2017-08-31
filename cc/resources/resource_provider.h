@@ -276,27 +276,6 @@ class CC_EXPORT ResourceProvider
     DISALLOW_COPY_AND_ASSIGN(ScopedSkSurface);
   };
 
-  class CC_EXPORT ScopedReadLockSoftware {
-   public:
-    ScopedReadLockSoftware(ResourceProvider* resource_provider,
-                           viz::ResourceId resource_id);
-    ~ScopedReadLockSoftware();
-
-    const SkBitmap* sk_bitmap() const {
-      DCHECK(valid());
-      return &sk_bitmap_;
-    }
-
-    bool valid() const { return !!sk_bitmap_.getPixels(); }
-
-   private:
-    ResourceProvider* const resource_provider_;
-    const viz::ResourceId resource_id_;
-    SkBitmap sk_bitmap_;
-
-    DISALLOW_COPY_AND_ASSIGN(ScopedReadLockSoftware);
-  };
-
   class CC_EXPORT ScopedWriteLockSoftware {
    public:
     ScopedWriteLockSoftware(ResourceProvider* resource_provider,

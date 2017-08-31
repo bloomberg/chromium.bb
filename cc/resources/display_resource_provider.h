@@ -108,6 +108,27 @@ class CC_EXPORT DisplayResourceProvider : public ResourceProvider {
     DISALLOW_COPY_AND_ASSIGN(ScopedReadLockSkImage);
   };
 
+  class CC_EXPORT ScopedReadLockSoftware {
+   public:
+    ScopedReadLockSoftware(DisplayResourceProvider* resource_provider,
+                           viz::ResourceId resource_id);
+    ~ScopedReadLockSoftware();
+
+    const SkBitmap* sk_bitmap() const {
+      DCHECK(valid());
+      return &sk_bitmap_;
+    }
+
+    bool valid() const { return !!sk_bitmap_.getPixels(); }
+
+   private:
+    DisplayResourceProvider* const resource_provider_;
+    const viz::ResourceId resource_id_;
+    SkBitmap sk_bitmap_;
+
+    DISALLOW_COPY_AND_ASSIGN(ScopedReadLockSoftware);
+  };
+
   // All resources that are returned to children while an instance of this
   // class exists will be stored and returned when the instance is destroyed.
   class CC_EXPORT ScopedBatchReturnResources {
