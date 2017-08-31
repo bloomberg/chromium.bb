@@ -32,7 +32,6 @@ class SurfacelessGlRenderer : public GlRenderer {
   // GlRenderer:
   void RenderFrame() override;
   void PostRenderFrameTask(gfx::SwapResult result) override;
-  void OverlayChecker(int z_order, gfx::Rect bounds_rect, gfx::RectF crop_rect);
 
   class BufferWrapper {
    public:
@@ -57,7 +56,7 @@ class SurfacelessGlRenderer : public GlRenderer {
 
   std::unique_ptr<BufferWrapper> buffers_[2];
 
-  std::unique_ptr<BufferWrapper> overlay_buffer_;
+  std::unique_ptr<BufferWrapper> overlay_buffer_[2];
   bool disable_primary_plane_ = false;
 
   std::unique_ptr<OverlayCandidatesOzone> overlay_checker_;
