@@ -184,11 +184,6 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
     public void markItemForRemoval(HistoryItem item) {
         removeItem(item);
         mHistoryProvider.markItemForRemoval(item);
-
-        // If there is only one item left, remove the header so the empty view will be displayed.
-        if (getItemCount() == 1) {
-            removeHeader();
-        }
     }
 
     /**

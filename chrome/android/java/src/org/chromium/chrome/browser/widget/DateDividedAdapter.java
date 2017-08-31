@@ -699,6 +699,9 @@ public abstract class DateDividedAdapter extends Adapter<RecyclerView.ViewHolder
             mSize--;
         }
 
+        // Remove header if only the header is left.
+        if (hasListHeader() && mGroups.size() == 1) removeHeader();
+
         setGroupPositions();
         notifyDataSetChanged();
     }
