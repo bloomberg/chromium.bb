@@ -143,7 +143,7 @@ class TestScreenWinInitializer {
   virtual HWND CreateFakeHwnd(const gfx::Rect& bounds) = 0;
 };
 
-class TestScreenWinManager : public TestScreenWinInitializer {
+class TestScreenWinManager final : public TestScreenWinInitializer {
  public:
   TestScreenWinManager() = default;
 
