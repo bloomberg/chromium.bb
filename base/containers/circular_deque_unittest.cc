@@ -391,7 +391,13 @@ TEST(CircularDeque, IteratorComparisons) {
 }
 
 TEST(CircularDeque, IteratorIncDec) {
-  circular_deque<int> q = MakeSequence(10);
+  circular_deque<int> q;
+
+  // No-op offset computations with no capacity.
+  EXPECT_EQ(q.end(), q.end() + 0);
+  EXPECT_EQ(q.end(), q.end() - 0);
+
+  q = MakeSequence(10);
 
   // Mutable preincrement, predecrement.
   {
