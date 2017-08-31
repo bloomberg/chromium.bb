@@ -32,6 +32,12 @@ namespace chromeos {
 
 namespace {
 
+// Enumeration values for NativePrintersBulkAccessMode.
+constexpr int kBlacklistAccess = 0;
+// TODO(crbug.com/758680): Parse the access policy.
+// constexpr int kWhitelistAccess = 1;
+// constexpr int kAllAccess = 2;
+
 class SyncedPrintersManagerImpl : public SyncedPrintersManager {
  public:
   SyncedPrintersManagerImpl(Profile* profile,
@@ -238,6 +244,11 @@ void SyncedPrintersManager::RegisterProfilePrefs(
   registry->RegisterListPref(prefs::kPrintingDevices,
                              user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterListPref(prefs::kRecommendedNativePrinters);
+  // Default value is blacklist.
+  registry->RegisterIntegerPref(prefs::kRecommendedNativePrintersAccessMode,
+                                kBlacklistAccess);
+  registry->RegisterListPref(prefs::kRecommendedNativePrintersBlacklist);
+  registry->RegisterListPref(prefs::kRecommendedNativePrintersWhitelist);
 }
 
 // static

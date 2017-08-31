@@ -319,6 +319,45 @@
     ]
   },
 
+  "NativePrintersBulkConfiguration": {
+    "os": ["chromeos"],
+    "test_policy": {
+      "NativePrintersBulkConfiguration": {
+        "url": "https://example.com/policyfile",
+        "hash": "deadbeefdeadbeefdeadbeef"
+      }
+    }
+  },
+
+  "NativePrintersBulkAccessMode": {
+    "os": ["chromeos"],
+    "test_policy": {
+      "NativePrintersBulkAccessMode": 1
+    },
+    "pref_mappings": [
+      { "pref": "native_printing.recommended_printers_access_mode" }
+    ]
+  },
+
+  "NativePrintersBulkBlacklist": {
+    "os": ["chromeos"],
+    "test_policy": {
+      "NativePrintersBulkBlacklist": ["id4", "id7", "id10"]
+    },
+    "pref_mappings": [
+      { "pref": "native_printing.recommended_printers_blacklist" }
+    ]
+  },
+  "NativePrintersBulkWhitelist": {
+    "os": ["chromeos"],
+    "test_policy": {
+      "NativePrintersBulkWhitelist":  ["id4", "id7", "id10"]
+    },
+    "pref_mappings": [
+      { "pref": "native_printing.recommended_printers_whitelist" }
+    ]
+  },
+
   "SafeBrowsingEnabled": {
     "os": ["win", "linux", "mac", "chromeos"],
     "can_be_recommended": true,
