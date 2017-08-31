@@ -187,6 +187,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       preload_(base::FeatureList::IsEnabled(kPreloadDefaultIsMetadata)
                    ? MultibufferDataSource::METADATA
                    : MultibufferDataSource::AUTO),
+      has_poster_(false),
       main_task_runner_(frame->LoadingTaskRunner()),
       media_task_runner_(params->media_task_runner()),
       worker_task_runner_(params->worker_task_runner()),
@@ -511,6 +512,15 @@ void WebMediaPlayerImpl::DoLoad(LoadType load_type,
 
   GURL gurl(url);
   ReportMetrics(load_type, gurl, frame_->GetSecurityOrigin(), media_log_.get());
+
+  // Report poster availability for SRC=.
+  if (load_type == kLoadTypeURL) {
+    if (preload_ == MultibufferDataSource::METADATA) {
+      UMA_HISTOGRAM_BOOLEAN("Media.SRC.PreloadMetaDataHasPoster", has_poster_);
+    } else if (preload_ == MultibufferDataSource::AUTO) {
+      UMA_HISTOGRAM_BOOLEAN("Media.SRC.PreloadAutoHasPoster", has_poster_);
+    }
+  }
 
   // Set subresource URL for crash reporting.
   base::debug::SetCrashKeyValue("subresource_url", gurl.spec());
@@ -1913,11 +1923,14 @@ gfx::Size WebMediaPlayerImpl::GetCanvasSize() const {
 void WebMediaPlayerImpl::SetDeviceScaleFactor(float scale_factor) {
   cast_impl_.SetDeviceScaleFactor(scale_factor);
 }
+#endif  // defined(OS_ANDROID)  // WMPI_CAST
 
 void WebMediaPlayerImpl::SetPoster(const blink::WebURL& poster) {
+  has_poster_ = !poster.IsEmpty();
+#if defined(OS_ANDROID)  // WMPI_CAST
   cast_impl_.setPoster(poster);
-}
 #endif  // defined(OS_ANDROID)  // WMPI_CAST
+}
 
 void WebMediaPlayerImpl::DataSourceInitialized(bool success) {
   DVLOG(1) << __func__;
