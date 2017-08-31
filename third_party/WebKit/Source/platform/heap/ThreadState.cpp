@@ -1484,103 +1484,102 @@ void ThreadState::CollectGarbage(BlinkGC::StackState stack_state,
     // from accessing any GCed heap while a GC runs.
     CrossThreadPersistentRegion::LockScope persistent_lock(
         ProcessHeap::GetCrossThreadPersistentRegion());
-    {
-      SafePointScope safe_point_scope(stack_state, this);
-
-      std::unique_ptr<Visitor> visitor;
-      if (gc_type == BlinkGC::kTakeSnapshot) {
-        visitor = Visitor::Create(this, Visitor::kSnapshotMarking);
+    std::unique_ptr<Visitor> visitor;
+    if (gc_type == BlinkGC::kTakeSnapshot) {
+      visitor = Visitor::Create(this, Visitor::kSnapshotMarking);
+    } else {
+      DCHECK(gc_type == BlinkGC::kGCWithSweep ||
+             gc_type == BlinkGC::kGCWithoutSweep);
+      if (Heap().Compaction()->ShouldCompact(this, stack_state, gc_type,
+                                             reason)) {
+        Heap().Compaction()->Initialize(this);
+        visitor = Visitor::Create(this, Visitor::kGlobalMarkingWithCompaction);
       } else {
-        DCHECK(gc_type == BlinkGC::kGCWithSweep ||
-               gc_type == BlinkGC::kGCWithoutSweep);
-        if (Heap().Compaction()->ShouldCompact(this, gc_type, reason)) {
-          Heap().Compaction()->Initialize(this);
-          visitor =
-              Visitor::Create(this, Visitor::kGlobalMarkingWithCompaction);
-        } else {
-          visitor = Visitor::Create(this, Visitor::kGlobalMarking);
-        }
+        visitor = Visitor::Create(this, Visitor::kGlobalMarking);
       }
+    }
 
-      ScriptForbiddenIfMainThreadScope script_forbidden;
+    ScriptForbiddenIfMainThreadScope script_forbidden;
 
-      TRACE_EVENT2("blink_gc,devtools.timeline", "BlinkGCMarking",
-                   "lazySweeping", gc_type == BlinkGC::kGCWithoutSweep,
-                   "gcReason", GcReasonString(reason));
-      double start_time = WTF::CurrentTimeMS();
+    TRACE_EVENT2("blink_gc,devtools.timeline", "BlinkGCMarking", "lazySweeping",
+                 gc_type == BlinkGC::kGCWithoutSweep, "gcReason",
+                 GcReasonString(reason));
+    double start_time = WTF::CurrentTimeMS();
 
-      if (gc_type == BlinkGC::kTakeSnapshot)
-        BlinkGCMemoryDumpProvider::Instance()->ClearProcessDumpForCurrentGC();
+    if (gc_type == BlinkGC::kTakeSnapshot)
+      BlinkGCMemoryDumpProvider::Instance()->ClearProcessDumpForCurrentGC();
 
-      // Disallow allocation during garbage collection (but not during the
-      // finalization that happens when the visitorScope is torn down).
-      NoAllocationScope no_allocation_scope(this);
+    // Disallow allocation during garbage collection (but not during the
+    // finalization that happens when the visitorScope is torn down).
+    NoAllocationScope no_allocation_scope(this);
 
-      Heap().CommitCallbackStacks();
-      PreGC();
+    Heap().CommitCallbackStacks();
+    PreGC();
 
-      StackFrameDepthScope stack_depth_scope(&Heap().GetStackFrameDepth());
+    StackFrameDepthScope stack_depth_scope(&Heap().GetStackFrameDepth());
 
-      size_t total_object_size = Heap().HeapStats().AllocatedObjectSize() +
-                                 Heap().HeapStats().MarkedObjectSize();
-      if (gc_type != BlinkGC::kTakeSnapshot)
-        Heap().ResetHeapCounters();
+    size_t total_object_size = Heap().HeapStats().AllocatedObjectSize() +
+                               Heap().HeapStats().MarkedObjectSize();
+    if (gc_type != BlinkGC::kTakeSnapshot)
+      Heap().ResetHeapCounters();
 
+    {
+      // 1. Trace persistent roots.
+      Heap().VisitPersistentRoots(visitor.get());
+
+      // 2. Trace objects reachable from the stack.  We do this independent of
+      // the
+      // given stackState since other threads might have a different stack
+      // state.
       {
-        // 1. Trace persistent roots.
-        Heap().VisitPersistentRoots(visitor.get());
-
-        // 2. Trace objects reachable from the stack.  We do this independent of
-        // the
-        // given stackState since other threads might have a different stack
-        // state.
+        SafePointScope safe_point_scope(stack_state, this);
         Heap().VisitStackRoots(visitor.get());
-
-        // 3. Transitive closure to trace objects including ephemerons.
-        Heap().ProcessMarkingStack(visitor.get());
-
-        Heap().PostMarkingProcessing(visitor.get());
-        Heap().WeakProcessing(visitor.get());
       }
 
-      double marking_time_in_milliseconds = WTF::CurrentTimeMS() - start_time;
-      Heap().HeapStats().SetEstimatedMarkingTimePerByte(
-          total_object_size
-              ? (marking_time_in_milliseconds / 1000 / total_object_size)
-              : 0);
+      // 3. Transitive closure to trace objects including ephemerons.
+      Heap().ProcessMarkingStack(visitor.get());
+
+      Heap().PostMarkingProcessing(visitor.get());
+      Heap().WeakProcessing(visitor.get());
+    }
+
+    double marking_time_in_milliseconds = WTF::CurrentTimeMS() - start_time;
+    Heap().HeapStats().SetEstimatedMarkingTimePerByte(
+        total_object_size
+            ? (marking_time_in_milliseconds / 1000 / total_object_size)
+            : 0);
 
 #if PRINT_HEAP_STATS
-      DataLogF(
-          "ThreadHeap::collectGarbage (gcReason=%s, lazySweeping=%d, "
-          "time=%.1lfms)\n",
-          GcReasonString(reason), gc_type == BlinkGC::kGCWithoutSweep,
-          marking_time_in_milliseconds);
+    DataLogF(
+        "ThreadHeap::collectGarbage (gcReason=%s, lazySweeping=%d, "
+        "time=%.1lfms)\n",
+        GcReasonString(reason), gc_type == BlinkGC::kGCWithoutSweep,
+        marking_time_in_milliseconds);
 #endif
 
-      DEFINE_THREAD_SAFE_STATIC_LOCAL(
-          CustomCountHistogram, marking_time_histogram,
-          ("BlinkGC.CollectGarbage", 0, 10 * 1000, 50));
-      marking_time_histogram.Count(marking_time_in_milliseconds);
-      DEFINE_THREAD_SAFE_STATIC_LOCAL(
-          CustomCountHistogram, total_object_space_histogram,
-          ("BlinkGC.TotalObjectSpace", 0, 4 * 1024 * 1024, 50));
-      total_object_space_histogram.Count(
-          ProcessHeap::TotalAllocatedObjectSize() / 1024);
-      DEFINE_THREAD_SAFE_STATIC_LOCAL(
-          CustomCountHistogram, total_allocated_space_histogram,
-          ("BlinkGC.TotalAllocatedSpace", 0, 4 * 1024 * 1024, 50));
-      total_allocated_space_histogram.Count(ProcessHeap::TotalAllocatedSpace() /
-                                            1024);
-      DEFINE_THREAD_SAFE_STATIC_LOCAL(
-          EnumerationHistogram, gc_reason_histogram,
-          ("BlinkGC.GCReason", BlinkGC::kLastGCReason + 1));
-      gc_reason_histogram.Count(reason);
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(
+        CustomCountHistogram, marking_time_histogram,
+        ("BlinkGC.CollectGarbage", 0, 10 * 1000, 50));
+    marking_time_histogram.Count(marking_time_in_milliseconds);
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(
+        CustomCountHistogram, total_object_space_histogram,
+        ("BlinkGC.TotalObjectSpace", 0, 4 * 1024 * 1024, 50));
+    total_object_space_histogram.Count(ProcessHeap::TotalAllocatedObjectSize() /
+                                       1024);
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(
+        CustomCountHistogram, total_allocated_space_histogram,
+        ("BlinkGC.TotalAllocatedSpace", 0, 4 * 1024 * 1024, 50));
+    total_allocated_space_histogram.Count(ProcessHeap::TotalAllocatedSpace() /
+                                          1024);
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(
+        EnumerationHistogram, gc_reason_histogram,
+        ("BlinkGC.GCReason", BlinkGC::kLastGCReason + 1));
+    gc_reason_histogram.Count(reason);
 
-      Heap().last_gc_reason_ = reason;
+    Heap().last_gc_reason_ = reason;
 
-      ThreadHeap::ReportMemoryUsageHistogram();
-      WTF::Partitions::ReportMemoryUsageHistogram();
-    }
+    ThreadHeap::ReportMemoryUsageHistogram();
+    WTF::Partitions::ReportMemoryUsageHistogram();
     PostGC(gc_type);
   }
 

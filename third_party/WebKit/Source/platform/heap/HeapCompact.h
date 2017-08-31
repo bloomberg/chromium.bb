@@ -50,7 +50,10 @@ class PLATFORM_EXPORT HeapCompact final {
   // Determine if a GC for the given type and reason should also perform
   // additional heap compaction.
   //
-  bool ShouldCompact(ThreadState*, BlinkGC::GCType, BlinkGC::GCReason);
+  bool ShouldCompact(ThreadState*,
+                     BlinkGC::StackState,
+                     BlinkGC::GCType,
+                     BlinkGC::GCReason);
 
   // Compaction should be performed as part of the ongoing GC, initialize
   // the heap compaction pass. Returns the appropriate visitor type to

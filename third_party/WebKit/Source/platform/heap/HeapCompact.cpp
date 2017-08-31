@@ -285,6 +285,7 @@ HeapCompact::MovableObjectFixups& HeapCompact::Fixups() {
 }
 
 bool HeapCompact::ShouldCompact(ThreadState* state,
+                                BlinkGC::StackState stack_state,
                                 BlinkGC::GCType gc_type,
                                 BlinkGC::GCReason reason) {
 #if !ENABLE_HEAP_COMPACTION
@@ -307,7 +308,7 @@ bool HeapCompact::ShouldCompact(ThreadState* state,
   // Why? Should the stack contain an iterator pointing into its
   // associated backing store, its references wouldn't be
   // correctly relocated.
-  if (state->GetStackState() == BlinkGC::kHeapPointersOnStack)
+  if (stack_state == BlinkGC::kHeapPointersOnStack)
     return false;
 
   // Compaction enable rules:
