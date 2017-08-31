@@ -140,7 +140,7 @@ mr.presentation.webrtc.CloudWebRtcSession = class {
         const offerData = new mr.webrtc.OfferMessageData(
             description,
             /* opt_settings_ */ null,
-            /* opt_mediaConstraints */ null, this.sourceUrn);
+            /* opt_mediaConstraints */ null, this.sourceUrn, this.route.id);
         const message =
             new mr.webrtc.Message(mr.webrtc.MessageType.OFFER, offerData);
         this.sendMessageToMrp_(message);

@@ -134,9 +134,11 @@ mr.webrtc.OfferMessageData = class {
    * @param {mr.mirror.Settings=} opt_settings
    * @param {MediaConstraints=} opt_mediaConstraints
    * @param {string=} opt_presentationUrl
+   * @param {string=} opt_presentationId
    */
   constructor(
-      description, opt_settings, opt_mediaConstraints, opt_presentationUrl) {
+      description, opt_settings, opt_mediaConstraints, opt_presentationUrl,
+      opt_presentationId) {
     /**
      * @type {RTCSessionDescription}
      * @export
@@ -160,6 +162,12 @@ mr.webrtc.OfferMessageData = class {
      * @export
      */
     this.presentationUrl = opt_presentationUrl || null;
+
+    /**
+     * @type {?string}
+     * @export
+     */
+    this.presentationId = opt_presentationId || null;
   }
 };
 
