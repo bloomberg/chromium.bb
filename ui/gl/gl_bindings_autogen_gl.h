@@ -1527,9 +1527,9 @@ typedef void(GL_BINDING_CALL* glViewportProc)(GLint x,
                                               GLint y,
                                               GLsizei width,
                                               GLsizei height);
-typedef GLenum(GL_BINDING_CALL* glWaitSyncProc)(GLsync sync,
-                                                GLbitfield flags,
-                                                GLuint64 timeout);
+typedef void(GL_BINDING_CALL* glWaitSyncProc)(GLsync sync,
+                                              GLbitfield flags,
+                                              GLuint64 timeout);
 
 struct ExtensionsGL {
   bool b_GL_ANGLE_framebuffer_blit;
@@ -3360,9 +3360,9 @@ class GL_EXPORT GLApi {
                             GLint y,
                             GLsizei width,
                             GLsizei height) = 0;
-  virtual GLenum glWaitSyncFn(GLsync sync,
-                              GLbitfield flags,
-                              GLuint64 timeout) = 0;
+  virtual void glWaitSyncFn(GLsync sync,
+                            GLbitfield flags,
+                            GLuint64 timeout) = 0;
 };
 
 }  // namespace gl

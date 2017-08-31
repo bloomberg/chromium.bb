@@ -5121,10 +5121,8 @@ void GLApiBase::glViewportFn(GLint x, GLint y, GLsizei width, GLsizei height) {
   driver_->fn.glViewportFn(x, y, width, height);
 }
 
-GLenum GLApiBase::glWaitSyncFn(GLsync sync,
-                               GLbitfield flags,
-                               GLuint64 timeout) {
-  return driver_->fn.glWaitSyncFn(sync, flags, timeout);
+void GLApiBase::glWaitSyncFn(GLsync sync, GLbitfield flags, GLuint64 timeout) {
+  driver_->fn.glWaitSyncFn(sync, flags, timeout);
 }
 
 void TraceGLApi::glActiveTextureFn(GLenum texture) {
@@ -8222,11 +8220,9 @@ void TraceGLApi::glViewportFn(GLint x, GLint y, GLsizei width, GLsizei height) {
   gl_api_->glViewportFn(x, y, width, height);
 }
 
-GLenum TraceGLApi::glWaitSyncFn(GLsync sync,
-                                GLbitfield flags,
-                                GLuint64 timeout) {
+void TraceGLApi::glWaitSyncFn(GLsync sync, GLbitfield flags, GLuint64 timeout) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glWaitSync")
-  return gl_api_->glWaitSyncFn(sync, flags, timeout);
+  gl_api_->glWaitSyncFn(sync, flags, timeout);
 }
 
 void DebugGLApi::glActiveTextureFn(GLenum texture) {
@@ -12325,14 +12321,10 @@ void DebugGLApi::glViewportFn(GLint x, GLint y, GLsizei width, GLsizei height) {
   gl_api_->glViewportFn(x, y, width, height);
 }
 
-GLenum DebugGLApi::glWaitSyncFn(GLsync sync,
-                                GLbitfield flags,
-                                GLuint64 timeout) {
+void DebugGLApi::glWaitSyncFn(GLsync sync, GLbitfield flags, GLuint64 timeout) {
   GL_SERVICE_LOG("glWaitSync"
                  << "(" << sync << ", " << flags << ", " << timeout << ")");
-  GLenum result = gl_api_->glWaitSyncFn(sync, flags, timeout);
-  GL_SERVICE_LOG("GL_RESULT: " << result);
-  return result;
+  gl_api_->glWaitSyncFn(sync, flags, timeout);
 }
 
 void NoContextGLApi::glActiveTextureFn(GLenum texture) {
@@ -15814,12 +15806,11 @@ void NoContextGLApi::glViewportFn(GLint x,
   LOG(ERROR) << "Trying to call glViewport() without current GL context";
 }
 
-GLenum NoContextGLApi::glWaitSyncFn(GLsync sync,
-                                    GLbitfield flags,
-                                    GLuint64 timeout) {
+void NoContextGLApi::glWaitSyncFn(GLsync sync,
+                                  GLbitfield flags,
+                                  GLuint64 timeout) {
   NOTREACHED() << "Trying to call glWaitSync() without current GL context";
   LOG(ERROR) << "Trying to call glWaitSync() without current GL context";
-  return static_cast<GLenum>(0);
 }
 
 }  // namespace gl

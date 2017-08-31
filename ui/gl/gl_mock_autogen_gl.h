@@ -1237,4 +1237,4 @@ MOCK_METHOD6(VertexAttribPointer,
                   GLsizei stride,
                   const void* ptr));
 MOCK_METHOD4(Viewport, void(GLint x, GLint y, GLsizei width, GLsizei height));
-MOCK_METHOD3(WaitSync, GLenum(GLsync sync, GLbitfield flags, GLuint64 timeout));
+MOCK_METHOD3(WaitSync, void(GLsync sync, GLbitfield flags, GLuint64 timeout));

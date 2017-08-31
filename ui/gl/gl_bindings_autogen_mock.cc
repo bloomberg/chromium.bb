@@ -3940,11 +3940,11 @@ void GL_BINDING_CALL MockGLInterface::Mock_glViewport(GLint x,
   interface_->Viewport(x, y, width, height);
 }
 
-GLenum GL_BINDING_CALL MockGLInterface::Mock_glWaitSync(GLsync sync,
-                                                        GLbitfield flags,
-                                                        GLuint64 timeout) {
+void GL_BINDING_CALL MockGLInterface::Mock_glWaitSync(GLsync sync,
+                                                      GLbitfield flags,
+                                                      GLuint64 timeout) {
   MakeFunctionUnique("glWaitSync");
-  return interface_->WaitSync(sync, flags, timeout);
+  interface_->WaitSync(sync, flags, timeout);
 }
 
 static void MockInvalidFunction() {
