@@ -210,20 +210,23 @@ void UiInputManager::SendScrollEnd(GestureList* gesture_list,
   }
   DCHECK(input_locked_element_->scrollable());
   if (gesture_list->empty() || (gesture_list->front()->GetType() !=
-                                blink::WebInputEvent::kGestureScrollEnd)) {
+                                    blink::WebInputEvent::kGestureScrollEnd &&
+                                gesture_list->front()->GetType() !=
+                                    blink::WebInputEvent::kGestureFlingStart)) {
     return;
   }
   DCHECK_LE(gesture_list->size(), 2LU);
-  input_locked_element_->OnScrollEnd(std::move(gesture_list->front()),
-                                     target_point);
-  gesture_list->erase(gesture_list->begin());
-  if (!gesture_list->empty()) {
+  if (gesture_list->front()->GetType() ==
+      blink::WebInputEvent::kGestureScrollEnd) {
+    input_locked_element_->OnScrollEnd(std::move(gesture_list->front()),
+                                       target_point);
+  } else {
     DCHECK_EQ(gesture_list->front()->GetType(),
               blink::WebInputEvent::kGestureFlingStart);
     fling_target_ = input_locked_element_;
     fling_target_->OnFlingStart(std::move(gesture_list->front()), target_point);
-    gesture_list->erase(gesture_list->begin());
   }
+  gesture_list->erase(gesture_list->begin());
   input_locked_element_ = nullptr;
   in_scroll_ = false;
 }
