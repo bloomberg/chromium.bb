@@ -19,6 +19,9 @@ rjkroege@chromium.org
 sadrul@chromium.org
 tdresser@chromium.org
 
+# For surface ID propagation and synchronization
+fsamuel@chromium.org
+
 # Linux sandboxing
 per-file render_sandbox_host_linux.*=jln@chromium.org
 per-file render_sandbox_host_linux.*=jorgelo@chromium.org
