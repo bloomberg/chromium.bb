@@ -17,9 +17,12 @@
 
 @interface NTPHomeHeaderMediator ()
 
-// Redifined as readwrite
+// Redefined as readwrite
 @property(nonatomic, assign, getter=isOmniboxFocused, readwrite)
     BOOL omniboxFocused;
+// |YES| if the header view is visible.  When set to |NO| various UI updates are
+// ignored, like shifting the tiles up when the omnibox is focused.
+@property(nonatomic, assign) BOOL isShowing;
 
 @property(nonatomic, assign) BOOL promoCanShow;
 
@@ -154,6 +157,12 @@
 - (CGFloat)headerHeight {
   return content_suggestions::heightForLogoHeader(
       self.headerProvider.logoVendor.showingLogo, self.promoCanShow, NO);
+}
+
+#pragma mark - ChromeBroadcastObserver
+
+- (void)broadcastSelectedNTPPanel:(ntp_home::PanelIdentifier)panelIdentifier {
+  self.isShowing = panelIdentifier == ntp_home::HOME_PANEL;
 }
 
 #pragma mark - Private

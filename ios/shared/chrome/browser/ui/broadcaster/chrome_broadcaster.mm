@@ -314,6 +314,10 @@ NSInvocation* InvocationForBroadcasterSelector(SEL selector) {
     CGFloat cgfloatValue = valueAsNumber.floatValue;
 #endif
     [invocation setArgument:&cgfloatValue atIndex:2];
+  } else if (type == @encode(int)) {
+    DCHECK(valueAsNumber);
+    int intValue = valueAsNumber.intValue;
+    [invocation setArgument:&intValue atIndex:2];
   } else {
     // Add more clauses as needed.
     NOTREACHED() << "Unknown argument type: " << type;

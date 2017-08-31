@@ -48,6 +48,7 @@ source_set("ntp") {
     "//ios/clean/chrome/browser/ui/bookmarks",
     "//ios/clean/chrome/browser/ui/commands",
     "//ios/clean/chrome/browser/ui/recent_tabs",
+    "//ios/shared/chrome/browser/ui/broadcaster",
     "//ios/web:web",
     "//ui/base:base",
     "//url:url",
