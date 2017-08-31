@@ -11,8 +11,6 @@
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/cert_verify_result.h"
 #include "net/cert/x509_certificate.h"
-// TODO(merge): Remove the following include.
-#include "net/quic/chromium/crypto/proof_source_chromium.h"
 #include "net/quic/core/crypto/proof_source.h"
 #include "net/quic/core/crypto/proof_verifier.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
@@ -193,9 +191,8 @@ TEST_P(ProofTest, DISABLED_Verify) {
 }
 
 namespace {
-// TODO(merge): Change ProofSourceChromium::SignatureCallback to
-// ProofSource::SignatureCallback.
-class TestingSignatureCallback : public ProofSourceChromium::SignatureCallback {
+
+class TestingSignatureCallback : public ProofSource::SignatureCallback {
  public:
   TestingSignatureCallback(bool* ok_out, std::string* signature_out)
       : ok_out_(ok_out), signature_out_(signature_out) {}
@@ -213,12 +210,8 @@ class TestingSignatureCallback : public ProofSourceChromium::SignatureCallback {
 }  // namespace
 
 TEST_P(ProofTest, TlsSignature) {
-  // TODO(merge): Change 'proof_source' to 'source' and remove the following
-  // static_cast.
-  std::unique_ptr<ProofSource> proof_source(
+  std::unique_ptr<ProofSource> source(
       crypto_test_utils::ProofSourceForTesting());
-  std::unique_ptr<ProofSourceChromium> source(
-      static_cast<ProofSourceChromium*>(proof_source.release()));
 
   QuicSocketAddress server_address;
   const string hostname = "test.example.com";
