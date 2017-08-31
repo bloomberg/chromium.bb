@@ -911,8 +911,10 @@ WebContents* TabManager::DiscardWebContentsAt(int index,
 }
 
 void TabManager::PauseBackgroundTabOpeningIfNeeded() {
-  if (IsInBackgroundTabOpeningSession())
+  if (IsInBackgroundTabOpeningSession()) {
+    stats_collector_->TrackPausedBackgroundTabs(pending_navigations_.size());
     stats_collector_->OnBackgroundTabOpeningSessionEnded();
+  }
 
   background_tab_loading_mode_ = BackgroundTabLoadingMode::kPaused;
 }
@@ -1138,10 +1140,14 @@ TabManager::MaybeThrottleNavigation(BackgroundTabNavigationThrottle* throttle) {
     stats_collector_->OnBackgroundTabOpeningSessionStarted();
   }
 
+  stats_collector_->TrackNewBackgroundTab(pending_navigations_.size(),
+                                          loading_contents_.size());
+
   if (!base::FeatureList::IsEnabled(
           features::kStaggeredBackgroundTabOpeningExperiment) ||
       CanLoadNextTab()) {
     loading_contents_.insert(contents);
+    stats_collector_->TrackBackgroundTabLoadAutoStarted();
     return content::NavigationThrottle::PROCEED;
   }
 
@@ -1241,6 +1247,7 @@ void TabManager::LoadNextBackgroundTabIfNeeded() {
   BackgroundTabNavigationThrottle* throttle = pending_navigations_.front();
   pending_navigations_.erase(pending_navigations_.begin());
   ResumeNavigation(throttle);
+  stats_collector_->TrackBackgroundTabLoadAutoStarted();
 
   StartForceLoadTimer();
 }
@@ -1248,8 +1255,10 @@ void TabManager::LoadNextBackgroundTabIfNeeded() {
 void TabManager::ResumeTabNavigationIfNeeded(content::WebContents* contents) {
   BackgroundTabNavigationThrottle* throttle =
       RemovePendingNavigationIfNeeded(contents);
-  if (throttle)
+  if (throttle) {
     ResumeNavigation(throttle);
+    stats_collector_->TrackBackgroundTabLoadUserInitiated();
+  }
 }
 
 void TabManager::ResumeNavigation(BackgroundTabNavigationThrottle* throttle) {
