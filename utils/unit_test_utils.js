@@ -90,7 +90,7 @@ mr.UnitTestUtils.mockMojoApi = function() {
       PlayState: {PLAYING: 0, PAUSED: 1, BUFFERING: 2},
     },
     MediaController: {},
-    RouteControllerType: {NONE: 0, GENERIC: 1, HANGOUTS: 2},
+    RouteControllerType: {kNone: 0, kGeneric: 1, kHangouts: 2},
     TimeDelta: {},
     Origin: {}
   };

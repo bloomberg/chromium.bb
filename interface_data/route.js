@@ -90,7 +90,7 @@ mr.Route = class {
      * @export
      */
     this.controllerType =
-        mojo && mojo.RouteControllerType && mojo.RouteControllerType.NONE;
+        mojo && mojo.RouteControllerType && mojo.RouteControllerType.kNone;
 
     /**
      * If set to true, this route should be displayed for |sinkId| in UI.

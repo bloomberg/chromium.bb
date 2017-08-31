@@ -360,11 +360,11 @@ mojo.Origin.prototype.unique;
 /** @constructor */
 mojo.RouteControllerType = function() {};
 /** @type {mojo.RouteControllerType} */
-mojo.RouteControllerType.NONE;
+mojo.RouteControllerType.kNone;
 /** @type {mojo.RouteControllerType} */
-mojo.RouteControllerType.GENERIC;
+mojo.RouteControllerType.kGeneric;
 /** @type {mojo.RouteControllerType} */
-mojo.RouteControllerType.HANGOUTS;
+mojo.RouteControllerType.kHangouts;
 
 
 
