@@ -172,8 +172,7 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
       gfx::Vector2dF& layer_offset,
       Vector<std::unique_ptr<ContentLayerClientImpl>>&
           new_content_layer_clients,
-      Vector<scoped_refptr<cc::Layer>>& new_scroll_hit_test_layers,
-      bool store_debug_info);
+      Vector<scoped_refptr<cc::Layer>>& new_scroll_hit_test_layers);
 
   const TransformPaintPropertyNode& ScrollTranslationForPendingLayer(
       const PaintArtifact&,

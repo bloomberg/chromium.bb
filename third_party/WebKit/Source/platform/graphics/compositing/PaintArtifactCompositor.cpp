@@ -215,8 +215,7 @@ PaintArtifactCompositor::CompositedLayerForPendingLayer(
     const PendingLayer& pending_layer,
     gfx::Vector2dF& layer_offset,
     Vector<std::unique_ptr<ContentLayerClientImpl>>& new_content_layer_clients,
-    Vector<scoped_refptr<cc::Layer>>& new_scroll_hit_test_layers,
-    bool store_debug_info) {
+    Vector<scoped_refptr<cc::Layer>>& new_scroll_hit_test_layers) {
   DCHECK(pending_layer.paint_chunks.size());
   const PaintChunk& first_paint_chunk = *pending_layer.paint_chunks[0];
   DCHECK(first_paint_chunk.size());
@@ -248,7 +247,7 @@ PaintArtifactCompositor::CompositedLayerForPendingLayer(
 
   auto cc_layer = content_layer_client->UpdateCcPictureLayer(
       paint_artifact, cc_combined_bounds, pending_layer.paint_chunks,
-      pending_layer.property_tree_state, store_debug_info);
+      pending_layer.property_tree_state);
   new_content_layer_clients.push_back(std::move(content_layer_client));
   if (extra_data_for_testing_enabled_)
     extra_data_for_testing_->content_layers.push_back(cc_layer);
@@ -658,16 +657,11 @@ void PaintArtifactCompositor::Update(
   for (auto& entry : synthesized_clip_cache_)
     entry.in_use = false;
 
-  bool store_debug_info = false;
-#ifndef NDEBUG
-  store_debug_info = true;
-#endif
-
   for (const PendingLayer& pending_layer : pending_layers) {
     gfx::Vector2dF layer_offset;
     scoped_refptr<cc::Layer> layer = CompositedLayerForPendingLayer(
         paint_artifact, pending_layer, layer_offset, new_content_layer_clients,
-        new_scroll_hit_test_layers, store_debug_info);
+        new_scroll_hit_test_layers);
 
     auto property_state = pending_layer.property_tree_state;
     const auto* transform = property_state.Transform();

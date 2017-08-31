@@ -52,8 +52,7 @@ class PLATFORM_EXPORT ContentLayerClientImpl : public cc::ContentLayerClient {
       const PaintArtifact&,
       const gfx::Rect& layer_bounds,
       const Vector<const PaintChunk*>&,
-      const PropertyTreeState& layer_state,
-      bool store_debug_info);
+      const PropertyTreeState& layer_state);
 
   bool Matches(const PaintChunk& paint_chunk) {
     return paint_chunks_info_.size() && paint_chunks_info_[0].is_cacheable &&
@@ -101,8 +100,10 @@ class PLATFORM_EXPORT ContentLayerClientImpl : public cc::ContentLayerClient {
   PropertyTreeState layer_state_;
 
   Vector<PaintChunkInfo> paint_chunks_info_;
-  Vector<std::unique_ptr<JSONArray>> paint_chunk_debug_data_;
   String debug_name_;
+#ifndef NDEBUG
+  std::unique_ptr<JSONArray> paint_chunk_debug_data_;
+#endif
 
   struct RasterInvalidationTrackingInfo {
     using ClientDebugNamesMap = HashMap<const DisplayItemClient*, String>;
