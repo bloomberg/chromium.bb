@@ -9,14 +9,17 @@
 #include "ui/gl/gl_context.h"
 
 namespace gpu {
-struct GpuPreferences;
 
 namespace gles2 {
 struct ContextCreationAttribHelper;
+class ContextGroup;
 
 GPU_EXPORT gl::GLContextAttribs GenerateGLContextAttribs(
     const ContextCreationAttribHelper& attribs_helper,
-    const GpuPreferences& gpu_preferences);
+    const ContextGroup* context_group);
+
+// Returns true if the driver supports creating passthrough command decoders
+GPU_EXPORT bool PassthroughCommandDecoderSupported();
 
 }  // namespace gles2
 }  // namespace gpu

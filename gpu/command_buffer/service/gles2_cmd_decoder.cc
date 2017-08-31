@@ -3103,7 +3103,7 @@ GLES2Decoder* GLES2Decoder::Create(
     GLES2DecoderClient* client,
     CommandBufferServiceBase* command_buffer_service,
     ContextGroup* group) {
-  if (group->gpu_preferences().use_passthrough_cmd_decoder) {
+  if (group->use_passthrough_cmd_decoder()) {
     return new GLES2DecoderPassthroughImpl(client, command_buffer_service,
                                            group);
   }

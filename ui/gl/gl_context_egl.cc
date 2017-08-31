@@ -154,7 +154,7 @@ bool GLContextEGL::Initialize(GLSurface* compatible_surface,
     }
   }
 
-  if (GLSurfaceEGL::HasEGLExtension("EGL_ANGLE_display_texture_share_group")) {
+  if (GLSurfaceEGL::IsDisplayTextureShareGroupSupported()) {
     context_attributes.push_back(EGL_DISPLAY_TEXTURE_SHARE_GROUP_ANGLE);
     context_attributes.push_back(
         attribs.global_texture_share_group ? EGL_TRUE : EGL_FALSE);
@@ -162,7 +162,7 @@ bool GLContextEGL::Initialize(GLSurface* compatible_surface,
     DCHECK(!attribs.global_texture_share_group);
   }
 
-  if (GLSurfaceEGL::HasEGLExtension("EGL_ANGLE_create_context_client_arrays")) {
+  if (GLSurfaceEGL::IsCreateContextClientArraysSupported()) {
     // Disable client arrays if the context supports it
     context_attributes.push_back(EGL_CONTEXT_CLIENT_ARRAYS_ENABLED_ANGLE);
     context_attributes.push_back(EGL_FALSE);

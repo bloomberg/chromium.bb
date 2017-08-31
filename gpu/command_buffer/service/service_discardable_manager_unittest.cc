@@ -70,7 +70,7 @@ class ServiceDiscardableManagerTest : public GpuServiceTest {
     decoder_.reset(new MockGLES2Decoder(&command_buffer_service_));
     feature_info_ = new FeatureInfo();
     context_group_ = scoped_refptr<ContextGroup>(new ContextGroup(
-        gpu_preferences_, &mailbox_manager_, nullptr, nullptr, nullptr,
+        gpu_preferences_, false, &mailbox_manager_, nullptr, nullptr, nullptr,
         feature_info_, false, &image_manager_, nullptr, nullptr,
         GpuFeatureInfo(), &discardable_manager_));
     TestHelper::SetupContextGroupInitExpectations(

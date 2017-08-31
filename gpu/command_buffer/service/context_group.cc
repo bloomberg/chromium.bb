@@ -61,6 +61,7 @@ DisallowedFeatures AdjustDisallowedFeatures(
 
 ContextGroup::ContextGroup(
     const GpuPreferences& gpu_preferences,
+    bool supports_passthrough_command_decoders,
     MailboxManager* mailbox_manager,
     const scoped_refptr<MemoryTracker>& memory_tracker,
     ShaderTranslatorCache* shader_translator_cache,
@@ -110,6 +111,7 @@ ContextGroup::ContextGroup(
       feature_info_(feature_info),
       image_manager_(image_manager),
       image_factory_(image_factory),
+      use_passthrough_cmd_decoder_(false),
       passthrough_resources_(new PassthroughResources),
       progress_reporter_(progress_reporter),
       gpu_feature_info_(gpu_feature_info),
@@ -119,6 +121,8 @@ ContextGroup::ContextGroup(
   DCHECK(mailbox_manager_);
   transfer_buffer_manager_ =
       base::MakeUnique<TransferBufferManager>(memory_tracker_.get());
+  use_passthrough_cmd_decoder_ = supports_passthrough_command_decoders &&
+                                 gpu_preferences_.use_passthrough_cmd_decoder;
 }
 
 bool ContextGroup::Initialize(GLES2Decoder* decoder,

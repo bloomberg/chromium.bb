@@ -46,8 +46,8 @@ class ContextGroupTest : public GpuServiceTest {
     decoder_.reset(new MockGLES2Decoder(&command_buffer_service_));
     scoped_refptr<FeatureInfo> feature_info = new FeatureInfo;
     group_ = scoped_refptr<ContextGroup>(new ContextGroup(
-        gpu_preferences_, &mailbox_manager_, nullptr /* memory_tracker */,
-        nullptr /* shader_translator_cache */,
+        gpu_preferences_, false, &mailbox_manager_,
+        nullptr /* memory_tracker */, nullptr /* shader_translator_cache */,
         nullptr /* framebuffer_completeness_cache */, feature_info,
         kBindGeneratesResource, &image_manager_, nullptr /* image_factory */,
         nullptr /* progress_reporter */, GpuFeatureInfo(),
@@ -77,6 +77,7 @@ TEST_F(ContextGroupTest, Basic) {
   EXPECT_TRUE(group_->texture_manager() == NULL);
   EXPECT_TRUE(group_->program_manager() == NULL);
   EXPECT_TRUE(group_->shader_manager() == NULL);
+  EXPECT_FALSE(group_->use_passthrough_cmd_decoder());
 }
 
 TEST_F(ContextGroupTest, InitializeNoExtensions) {
