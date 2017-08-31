@@ -33,9 +33,11 @@ const NSTimeInterval kUpdatePaymentSummaryItemIntervalSeconds = 10.0;
 
 @interface PaymentRequestCoordinator ()
 
-// A weak reference to self used in -stop. -stop gets called in the
+// A weak reference to self used in -stop. -stop is run twice, once by the
+// coordinator that manages the lifetime of this coordinator and once in
 // ChromeCoordinator's -dealloc. It is not possible to create a weak reference
-// to self in the process of deallocation.
+// to self in the process of deallocation. The second time -stop is called in
+// -dealloc this weak reference is expected to be nil.
 @property(nonatomic, weak) PaymentRequestCoordinator* weakSelf;
 
 @end
@@ -111,8 +113,9 @@ const NSTimeInterval kUpdatePaymentSummaryItemIntervalSeconds = 10.0;
 - (void)stop {
   [_updatePaymentSummaryItemTimer invalidate];
 
+  __weak PaymentRequestCoordinator* weakSelf = self.weakSelf;
   ProceduralBlock callback = ^() {
-    [_weakSelf.delegate paymentRequestCoordinatorDidStop:_weakSelf];
+    [weakSelf.delegate paymentRequestCoordinatorDidStop:weakSelf];
   };
   [[_navigationController presentingViewController]
       dismissViewControllerAnimated:YES
