@@ -3038,9 +3038,7 @@ class LayerTreeHostImplOverridePhysicalTime : public LayerTreeHostImpl {
   base::TimeTicks fake_current_physical_time_;
 };
 
-class LayerTreeHostImplTestScrollbarAnimation
-    : public ::testing::WithParamInterface<bool>,
-      public LayerTreeHostImplTest {
+class LayerTreeHostImplTestScrollbarAnimation : public LayerTreeHostImplTest {
  protected:
   void SetupLayers(LayerTreeSettings settings) {
     host_impl_->ReleaseLayerTreeFrameSink();
@@ -3083,8 +3081,6 @@ class LayerTreeHostImplTestScrollbarAnimation
   }
 
   void RunTest(LayerTreeSettings::ScrollbarAnimator animator) {
-    bool latching = GetParam();
-
     LayerTreeSettings settings = DefaultSettings();
     settings.scrollbar_animator = animator;
     settings.scrollbar_fade_delay = base::TimeDelta::FromMilliseconds(20);
@@ -3094,10 +3090,6 @@ class LayerTreeHostImplTestScrollbarAnimation
     bool expecting_animations = animator != LayerTreeSettings::NO_ANIMATOR;
 
     SetupLayers(settings);
-
-    // Enable wheel scroll latching flag.
-    TestInputHandlerClient input_handler_client;
-    host_impl_->BindToClient(&input_handler_client, latching);
 
     base::TimeTicks fake_now = base::TimeTicks::Now();
 
@@ -3130,31 +3122,15 @@ class LayerTreeHostImplTestScrollbarAnimation
     host_impl_->ScrollBegin(BeginState(gfx::Point()).get(),
                             InputHandler::WHEEL);
     host_impl_->ScrollBy(UpdateState(gfx::Point(), gfx::Vector2dF(0, 0)).get());
-    if (expecting_animations) {
-      if (latching) {
-        EXPECT_FALSE(did_request_next_frame_);
-        EXPECT_FALSE(did_request_redraw_);
-        EXPECT_EQ(base::TimeDelta(), requested_animation_delay_);
-        EXPECT_TRUE(animation_task_.Equals(base::Closure()));
-      } else if (animator == LayerTreeSettings::AURA_OVERLAY) {
-        EXPECT_FALSE(did_request_redraw_);
-        EXPECT_EQ(base::TimeDelta::FromMilliseconds(20),
-                  requested_animation_delay_);
-        EXPECT_FALSE(animation_task_.Equals(base::Closure()));
-        requested_animation_delay_ = base::TimeDelta();
-        animation_task_ = base::Closure();
-      }
-    }
     host_impl_->ScrollEnd(EndState().get());
     EXPECT_FALSE(did_request_next_frame_);
     EXPECT_FALSE(did_request_redraw_);
-    if (animator == LayerTreeSettings::AURA_OVERLAY && latching) {
+    if (animator == LayerTreeSettings::AURA_OVERLAY) {
       EXPECT_EQ(base::TimeDelta::FromMilliseconds(20),
                 requested_animation_delay_);
       EXPECT_FALSE(animation_task_.Equals(base::Closure()));
       requested_animation_delay_ = base::TimeDelta();
       animation_task_ = base::Closure();
-      did_request_redraw_ = false;
     } else {
       EXPECT_EQ(base::TimeDelta(), requested_animation_delay_);
       EXPECT_TRUE(animation_task_.Equals(base::Closure()));
@@ -3173,37 +3149,36 @@ class LayerTreeHostImplTestScrollbarAnimation
     EXPECT_TRUE(animation_task_.Equals(base::Closure()));
     host_impl_->DidFinishImplFrame();
 
-    // After a scroll, a scrollbar animation should not be scheduled after
-    // ScrollBegin with latching.
+    // After a scroll, a scrollbar animation should be scheduled about 20ms from
+    // now.
     host_impl_->ScrollBegin(BeginState(gfx::Point()).get(),
                             InputHandler::WHEEL);
     host_impl_->ScrollBy(UpdateState(gfx::Point(), gfx::Vector2dF(0, 5)).get());
     EXPECT_FALSE(did_request_next_frame_);
-    if (expecting_animations) {
-      // With latching, ScrollUpdate after ScrollBegin should not schedule a
-      // delay fadeout. Without latching, ScrollUpdate should always schedule a
-      // new delay fadeout.
-      if (latching) {
-        EXPECT_EQ(base::TimeDelta(), requested_animation_delay_);
-        EXPECT_TRUE(animation_task_.Equals(base::Closure()));
-      } else {
-        EXPECT_EQ(base::TimeDelta::FromMilliseconds(20),
-                  requested_animation_delay_);
-        EXPECT_FALSE(animation_task_.Equals(base::Closure()));
-        requested_animation_delay_ = base::TimeDelta();
-        animation_task_ = base::Closure();
-      }
-    }
+    EXPECT_TRUE(did_request_redraw_);
     did_request_redraw_ = false;
+    if (expecting_animations) {
+      EXPECT_EQ(base::TimeDelta::FromMilliseconds(20),
+                requested_animation_delay_);
+      EXPECT_FALSE(animation_task_.Equals(base::Closure()));
+    } else {
+      EXPECT_EQ(base::TimeDelta(), requested_animation_delay_);
+      EXPECT_TRUE(animation_task_.Equals(base::Closure()));
+    }
 
     host_impl_->ScrollEnd(EndState().get());
     EXPECT_FALSE(did_request_next_frame_);
     EXPECT_FALSE(did_request_redraw_);
-
-    if (expecting_animations && latching) {
+    if (expecting_animations) {
       EXPECT_EQ(base::TimeDelta::FromMilliseconds(20),
                 requested_animation_delay_);
       EXPECT_FALSE(animation_task_.Equals(base::Closure()));
+    } else {
+      EXPECT_EQ(base::TimeDelta(), requested_animation_delay_);
+      EXPECT_TRUE(animation_task_.Equals(base::Closure()));
+    }
+
+    if (expecting_animations) {
       // Before the scrollbar animation begins, we should not get redraws.
       begin_frame_args = viz::CreateBeginFrameArgsForTesting(
           BEGINFRAME_FROM_HERE, 0, 3, fake_now);
@@ -3236,10 +3211,8 @@ class LayerTreeHostImplTestScrollbarAnimation
       EXPECT_EQ(base::TimeDelta(), requested_animation_delay_);
       EXPECT_TRUE(animation_task_.Equals(base::Closure()));
       host_impl_->DidFinishImplFrame();
-    } else {
-      EXPECT_EQ(base::TimeDelta(), requested_animation_delay_);
-      EXPECT_TRUE(animation_task_.Equals(base::Closure()));
     }
+
     // Setting the scroll offset outside a scroll should not cause the
     // scrollbar to appear or schedule a scrollbar animation.
     if (host_impl_->active_tree()
@@ -3269,26 +3242,18 @@ class LayerTreeHostImplTestScrollbarAnimation
       EXPECT_EQ(base::TimeDelta(), requested_animation_delay_);
       EXPECT_TRUE(animation_task_.Equals(base::Closure()));
     }
-
-    // Tear down the LayerTreeHostImpl before the InputHandlerClient.
-    host_impl_->ReleaseLayerTreeFrameSink();
-    host_impl_ = nullptr;
   }
 };
 
-INSTANTIATE_TEST_CASE_P(All,
-                        LayerTreeHostImplTestScrollbarAnimation,
-                        ::testing::Bool());
-
-TEST_P(LayerTreeHostImplTestScrollbarAnimation, Android) {
+TEST_F(LayerTreeHostImplTestScrollbarAnimation, Android) {
   RunTest(LayerTreeSettings::ANDROID_OVERLAY);
 }
 
-TEST_P(LayerTreeHostImplTestScrollbarAnimation, AuraOverlay) {
+TEST_F(LayerTreeHostImplTestScrollbarAnimation, AuraOverlay) {
   RunTest(LayerTreeSettings::AURA_OVERLAY);
 }
 
-TEST_P(LayerTreeHostImplTestScrollbarAnimation, NoAnimator) {
+TEST_F(LayerTreeHostImplTestScrollbarAnimation, NoAnimator) {
   RunTest(LayerTreeSettings::NO_ANIMATOR);
 }
 
