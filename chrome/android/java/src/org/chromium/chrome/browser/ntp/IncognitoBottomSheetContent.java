@@ -5,9 +5,13 @@
 package org.chromium.chrome.browser.ntp;
 
 import android.app.Activity;
+import android.content.res.Resources;
+import android.view.Gravity;
 import android.view.View;
 import android.view.ViewTreeObserver.OnScrollChangedListener;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.LinearLayout.LayoutParams;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
@@ -37,7 +41,7 @@ public class IncognitoBottomSheetContent extends IncognitoNewTabPage implements 
                             mIncognitoNewTabPageView.getResources(), R.color.toolbar_shadow_color),
                 FadingShadow.POSITION_TOP);
 
-        initTextViewColors();
+        initTextViews();
 
         // Hide the incognito image from the Chrome Home NTP pages.
         ImageView incognitoSplash =
@@ -63,7 +67,7 @@ public class IncognitoBottomSheetContent extends IncognitoNewTabPage implements 
         });
     }
 
-    private void initTextViewColors() {
+    private void initTextViews() {
         final int locationBarLightHintTextColor = ApiCompatibilityUtils.getColor(
                 mIncognitoNewTabPageView.getResources(), R.color.locationbar_light_hint_text);
         final int googleBlueColor = ApiCompatibilityUtils.getColor(
@@ -97,9 +101,29 @@ public class IncognitoBottomSheetContent extends IncognitoNewTabPage implements 
             final TextView newTabIncognitoMessageView =
                     (TextView) mIncognitoNewTabPageView.findViewById(
                             R.id.new_tab_incognito_message);
+            final LinearLayout newTabIncognitoContainer =
+                    (LinearLayout) mIncognitoNewTabPageView.findViewById(
+                            R.id.new_tab_incognito_container);
 
             incognitoNtpHeaderView.setTextColor(locationBarLightHintTextColor);
+
+            Resources resources = getContentView().getResources();
             newTabIncognitoMessageView.setTextColor(locationBarLightHintTextColor);
+            newTabIncognitoMessageView.setLineSpacing(
+                    resources.getDimensionPixelSize(R.dimen.md_incognito_ntp_line_spacing), 1.0f);
+            LayoutParams layoutParams = (LayoutParams) newTabIncognitoMessageView.getLayoutParams();
+            layoutParams.bottomMargin = resources.getDimensionPixelSize(
+                    R.dimen.chrome_home_incognito_ntp_bottom_margin);
+
+            newTabIncognitoContainer.setPadding(
+                    resources.getDimensionPixelSize(R.dimen.md_incognito_ntp_padding_left),
+                    newTabIncognitoContainer.getPaddingTop(),
+                    newTabIncognitoContainer.getPaddingRight(),
+                    newTabIncognitoContainer.getPaddingBottom());
+            newTabIncognitoContainer.setGravity(Gravity.START);
+
+            learnMoreView.setPadding(0, 0, 0, 0);
+            learnMoreView.setAllCaps(false);
         }
     }
 
