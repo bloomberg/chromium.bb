@@ -154,6 +154,11 @@ void CastMediaSinkService::SetDnsSdRegistryForTest(DnsSdRegistry* registry) {
   dns_sd_registry_->RegisterDnsSdListener(kCastServiceType);
 }
 
+void CastMediaSinkService::ForceDiscovery() {
+  if (dns_sd_registry_)
+    dns_sd_registry_->ForceDiscovery();
+}
+
 void CastMediaSinkService::OnDnsSdEvent(
     const std::string& service_type,
     const DnsSdRegistry::DnsSdServiceList& services) {

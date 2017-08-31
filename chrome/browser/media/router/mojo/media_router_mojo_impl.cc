@@ -297,7 +297,11 @@ void MediaRouterMojoImpl::ClearIssue(const Issue::Id& issue_id) {
   issue_manager_.ClearIssue(issue_id);
 }
 
-void MediaRouterMojoImpl::OnUserGesture() {}
+void MediaRouterMojoImpl::OnUserGesture() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (cast_media_sink_service_)
+    cast_media_sink_service_->ForceDiscovery();
+}
 
 void MediaRouterMojoImpl::SearchSinks(
     const MediaSink::Id& sink_id,
