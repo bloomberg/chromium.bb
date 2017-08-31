@@ -4,11 +4,11 @@
 
 #import "ios/clean/chrome/browser/ui/ntp/ntp_home_header_coordinator.h"
 
+#import "ios/chrome/browser/ui/broadcaster/chrome_broadcaster.h"
 #import "ios/chrome/browser/ui/browser_list/browser.h"
 #import "ios/chrome/browser/ui/coordinators/browser_coordinator+internal.h"
 #import "ios/clean/chrome/browser/ui/ntp/ntp_home_header_mediator.h"
 #import "ios/clean/chrome/browser/ui/ntp/ntp_home_header_view_controller.h"
-#import "ios/shared/chrome/browser/ui/broadcaster/chrome_broadcaster.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

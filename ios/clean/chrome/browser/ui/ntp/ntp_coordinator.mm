@@ -5,6 +5,7 @@
 #import "ios/clean/chrome/browser/ui/ntp/ntp_coordinator.h"
 
 #include "base/logging.h"
+#import "ios/chrome/browser/ui/broadcaster/chrome_broadcaster.h"
 #import "ios/chrome/browser/ui/browser_list/browser.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
@@ -16,7 +17,6 @@
 #import "ios/clean/chrome/browser/ui/ntp/ntp_mediator.h"
 #import "ios/clean/chrome/browser/ui/ntp/ntp_view_controller.h"
 #import "ios/clean/chrome/browser/ui/recent_tabs/recent_tabs_coordinator.h"
-#import "ios/shared/chrome/browser/ui/broadcaster/chrome_broadcaster.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

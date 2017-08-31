@@ -7,11 +7,11 @@
 
 #import <UIKit/UIKit.h>
 
+#import "ios/chrome/browser/ui/broadcaster/chrome_broadcast_observer.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_controlling.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_provider.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/ntp/google_landing_consumer.h"
-#import "ios/shared/chrome/browser/ui/broadcaster/chrome_broadcast_observer.h"
 
 @protocol ContentSuggestionsCollectionSynchronizing;
 @protocol ContentSuggestionsHeaderViewControllerCommandHandler;

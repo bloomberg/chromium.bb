@@ -7,7 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
-#import "ios/shared/chrome/browser/ui/broadcaster/chrome_broadcast_observer.h"
+#import "ios/chrome/browser/ui/broadcaster/chrome_broadcast_observer.h"
 
 @protocol ToolbarConsumer;
 
