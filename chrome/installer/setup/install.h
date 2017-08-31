@@ -44,16 +44,26 @@ enum InstallShortcutLevel {
   ALL_USERS,
 };
 
-// Escape |att_value| as per the XML AttValue production
-// (http://www.w3.org/TR/2008/REC-xml-20081126/#NT-AttValue) for a value in
-// single quotes.
-void EscapeXmlAttributeValueInSingleQuotes(base::string16* att_value);
-
-// Creates VisualElementsManifest.xml beside chrome.exe in |src_path| if
-// |src_path|\VisualElements exists.
-// Returns true unless the manifest is supposed to be created, but fails to be.
+// Creates chrome.VisualElementsManifest.xml in |src_path| if
+// |src_path|\VisualElements exists. |supports_dark_text| indicates whether or
+// not the OS supports drawing dark text on light assets. When true, and such
+// light assets are present, the generated manifest references those light
+// assets. Returns true unless the manifest is supposed to be created, but fails
+// to be.
 bool CreateVisualElementsManifest(const base::FilePath& src_path,
-                                  const base::Version& version);
+                                  const base::Version& version,
+                                  bool supports_dark_text);
+
+// Updates chrome.VisualElementsManifest.xml in |target_path| if
+// |target_path|\VisualElements exists. |supports_dark_text| indicates whether
+// or not the OS supports drawing dark text on light assets. When true, and such
+// light assets are present, the generated manifest references those light
+// assets. The file is not modified if no changes are needed. If it is modified,
+// Chrome's start menu shortcut is touched so that the Start Menu refreshes its
+// representation of the tile.
+void UpdateVisualElementsManifest(const base::FilePath& target_path,
+                                  const base::Version& version,
+                                  bool supports_dark_text);
 
 // Overwrites shortcuts (desktop, quick launch, and start menu) if they are
 // present on the system.

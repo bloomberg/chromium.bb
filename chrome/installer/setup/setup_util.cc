@@ -36,6 +36,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/version.h"
 #include "base/win/registry.h"
+#include "base/win/windows_version.h"
 #include "chrome/install_static/install_details.h"
 #include "chrome/install_static/install_modes.h"
 #include "chrome/install_static/install_util.h"
@@ -845,6 +846,12 @@ base::Time GetConsoleSessionStartTime() {
   FILETIME filetime = {wts_info->LogonTime.u.LowPart,
                        wts_info->LogonTime.u.HighPart};
   return base::Time::FromFileTime(filetime);
+}
+
+bool OsSupportsDarkTextTiles() {
+  auto windows_version = base::win::GetVersion();
+  return windows_version == base::win::VERSION_WIN8_1 ||
+         windows_version >= base::win::VERSION_WIN10_RS1;
 }
 
 }  // namespace installer
