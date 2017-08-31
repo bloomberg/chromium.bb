@@ -39,16 +39,12 @@ class FocusController : public ServerWindowDrawnTrackerObserver {
   bool SetFocusedWindow(ServerWindow* window);
   ServerWindow* GetFocusedWindow();
 
-  // Moves activation to the next activatable window.
-  void ActivateNextWindow();
-
   void AddObserver(FocusControllerObserver* observer);
   void RemoveObserver(FocusControllerObserver* observer);
 
  private:
   enum class ActivationChangeReason {
-    UNKNONW,
-    CYCLE,  // Activation changed because of ActivateNextWindow().
+    UNKNOWN,
     FOCUS,  // Focus change required a different window to be activated.
     DRAWN_STATE_CHANGED,  // Active window was hidden or destroyed.
   };
@@ -84,11 +80,6 @@ class FocusController : public ServerWindowDrawnTrackerObserver {
   ServerWindow* active_window_;
   // Tracks what caused |active_window_| to be activated.
   ActivationChangeReason activation_reason_;
-
-  // Keeps track of the list of windows that have already been visited during a
-  // window cycle. This is only active when |activation_reason_| is set to
-  // CYCLE.
-  std::unique_ptr<ServerWindowTracker> cycle_windows_;
 
   base::ObserverList<FocusControllerObserver> observers_;
 

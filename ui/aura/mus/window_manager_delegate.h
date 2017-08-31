@@ -62,7 +62,6 @@ class AURA_EXPORT WindowManagerClient {
   virtual void RemoveAccelerator(uint32_t id) = 0;
   virtual void AddActivationParent(Window* window) = 0;
   virtual void RemoveActivationParent(Window* window) = 0;
-  virtual void ActivateNextWindow() = 0;
   virtual void SetExtendedHitRegionForChildren(
       Window* window,
       const gfx::Insets& mouse_area,

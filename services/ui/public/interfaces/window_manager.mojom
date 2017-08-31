@@ -264,8 +264,6 @@ interface WindowManagerClient {
   AddActivationParent(uint32 window_id);
   RemoveActivationParent(uint32 window_id);
 
-  ActivateNextWindow();
-
   // Extends the hit area for children of |window_id| by the specified amount.
   // |mouse_insets| is used for mouse events, and |touch_insets| for touch
   // events. NOTE: the insets are expected to be negative (or zero). If one

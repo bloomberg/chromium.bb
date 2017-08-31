@@ -2347,30 +2347,6 @@ void WindowTree::RemoveActivationParent(Id transport_window_id) {
   window->set_is_activation_parent(false);
 }
 
-void WindowTree::ActivateNextWindow() {
-  DCHECK(window_manager_state_);
-  if (window_server_->user_id_tracker()->active_id() != user_id_)
-    return;
-
-  ServerWindow* focused_window = window_server_->GetFocusedWindow();
-  if (focused_window) {
-    WindowManagerDisplayRoot* display_root =
-        GetWindowManagerDisplayRoot(focused_window);
-    if (display_root->window_manager_state() != window_manager_state_.get()) {
-      // We aren't active.
-      return;
-    }
-    display_root->display()->ActivateNextWindow();
-    return;
-  }
-  // Use the first display.
-  std::set<Display*> displays = display_manager()->displays();
-  if (displays.empty())
-    return;
-
-  (*displays.begin())->ActivateNextWindow();
-}
-
 void WindowTree::SetExtendedHitRegionForChildren(
     Id window_id,
     const gfx::Insets& mouse_insets,
