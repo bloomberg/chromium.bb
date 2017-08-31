@@ -47,11 +47,12 @@ class UI_ANDROID_EXPORT OverscrollGlow {
   // |velocity| is in device pixels / second.
   // |overscroll_location| is the coordinate of the causal overscrolling event.
   // Returns true if the effect still needs animation ticks.
-  bool OnOverscrolled(base::TimeTicks current_time,
-                      const gfx::Vector2dF& accumulated_overscroll,
-                      gfx::Vector2dF overscroll_delta,
-                      gfx::Vector2dF velocity,
-                      const gfx::Vector2dF& overscroll_location);
+  // This method is made virtual for mocking.
+  virtual bool OnOverscrolled(base::TimeTicks current_time,
+                              gfx::Vector2dF accumulated_overscroll,
+                              gfx::Vector2dF overscroll_delta,
+                              gfx::Vector2dF velocity,
+                              gfx::Vector2dF overscroll_location);
 
   // Returns true if the effect still needs animation ticks, with effect layers
   // attached to |parent_layer| if necessary.

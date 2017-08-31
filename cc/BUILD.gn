@@ -37,6 +37,7 @@ cc_component("cc") {
     "input/main_thread_scrolling_reason.h",
     "input/page_scale_animation.cc",
     "input/page_scale_animation.h",
+    "input/scroll_boundary_behavior.h",
     "input/scroll_elasticity_helper.cc",
     "input/scroll_elasticity_helper.h",
     "input/scroll_state.cc",

@@ -18,7 +18,8 @@ struct CC_EXPORT ScrollBoundaryBehavior {
     kScrollBoundaryBehaviorTypeAuto,
     // Hint to disable scroll chaining. The user agent may show an appropriate
     // overscroll affordance.
-    kScrollBoundaryBehaviorTypeContain
+    kScrollBoundaryBehaviorTypeContain,
+    kScrollBoundaryBehaviorTypeMax = kScrollBoundaryBehaviorTypeContain
   };
 
   ScrollBoundaryBehavior()

@@ -67,9 +67,17 @@ void OverscrollController::HandleOverscroll(
 
   if (delta_in_viewport != FloatSize()) {
     accumulated_root_overscroll_ += delta_in_viewport;
-    chrome_client_->DidOverscroll(delta_in_viewport,
-                                  accumulated_root_overscroll_,
-                                  position_in_viewport, velocity_in_viewport);
+    chrome_client_->DidOverscroll(
+        delta_in_viewport, accumulated_root_overscroll_, position_in_viewport,
+        velocity_in_viewport, scroll_boundary_behavior_);
+  }
+}
+
+void OverscrollController::SetScrollBoundaryBehavior(
+    const WebScrollBoundaryBehavior& behavior) {
+  if (behavior != scroll_boundary_behavior_) {
+    scroll_boundary_behavior_ = behavior;
+    chrome_client_->SetScrollBoundaryBehavior(behavior);
   }
 }
 

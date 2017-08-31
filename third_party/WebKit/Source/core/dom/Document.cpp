@@ -204,6 +204,7 @@
 #include "core/page/FrameTree.h"
 #include "core/page/Page.h"
 #include "core/page/PointerLockController.h"
+#include "core/page/scrolling/OverscrollController.h"
 #include "core/page/scrolling/RootScrollerController.h"
 #include "core/page/scrolling/ScrollStateCallback.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
@@ -2018,6 +2019,21 @@ void Document::PropagateStyleToViewport(StyleRecalcChange change) {
   ScrollSnapType snap_type = overflow_style->GetScrollSnapType();
   ScrollBehavior scroll_behavior = document_element_style->GetScrollBehavior();
 
+  EScrollBoundaryBehavior scroll_boundary_behavior_x =
+      overflow_style->ScrollBoundaryBehaviorX();
+  EScrollBoundaryBehavior scroll_boundary_behavior_y =
+      overflow_style->ScrollBoundaryBehaviorY();
+  using ScrollBoundaryBehaviorType =
+      WebScrollBoundaryBehavior::ScrollBoundaryBehaviorType;
+  if (RuntimeEnabledFeatures::CSSScrollBoundaryBehaviorEnabled() &&
+      IsInMainFrame()) {
+    GetPage()->GetOverscrollController().SetScrollBoundaryBehavior(
+        WebScrollBoundaryBehavior(
+            static_cast<ScrollBoundaryBehaviorType>(scroll_boundary_behavior_x),
+            static_cast<ScrollBoundaryBehaviorType>(
+                scroll_boundary_behavior_y)));
+  }
+
   RefPtr<ComputedStyle> viewport_style;
   if (change == kForce || !GetLayoutViewItem().Style()) {
     viewport_style = StyleResolver::StyleForViewport(*this);
@@ -2035,7 +2051,9 @@ void Document::PropagateStyleToViewport(StyleRecalcChange change) {
         old_style.HasNormalColumnGap() == column_gap_normal &&
         old_style.ColumnGap() == column_gap &&
         old_style.GetScrollSnapType() == snap_type &&
-        old_style.GetScrollBehavior() == scroll_behavior) {
+        old_style.GetScrollBehavior() == scroll_behavior &&
+        old_style.ScrollBoundaryBehaviorX() == scroll_boundary_behavior_x &&
+        old_style.ScrollBoundaryBehaviorY() == scroll_boundary_behavior_y) {
       return;
     }
     viewport_style = ComputedStyle::Clone(old_style);
@@ -2054,6 +2072,8 @@ void Document::PropagateStyleToViewport(StyleRecalcChange change) {
     viewport_style->SetColumnGap(column_gap);
   viewport_style->SetScrollSnapType(snap_type);
   viewport_style->SetScrollBehavior(scroll_behavior);
+  viewport_style->SetScrollBoundaryBehaviorX(scroll_boundary_behavior_x);
+  viewport_style->SetScrollBoundaryBehaviorY(scroll_boundary_behavior_y);
   GetLayoutViewItem().SetStyle(viewport_style);
   SetupFontBuilder(*viewport_style);
 }

@@ -86,7 +86,7 @@ TEST_F(OverscrollRefreshTest, Basic) {
   EXPECT_TRUE(effect.IsAwaitingScrollUpdateAck());
 
   // The unconsumed, overscrolling scroll will trigger the effect.
-  effect.OnScrollUpdateAck(false);
+  effect.OnOverscrolled();
   EXPECT_TRUE(effect.IsActive());
   EXPECT_FALSE(effect.IsAwaitingScrollUpdateAck());
   EXPECT_TRUE(GetAndResetPullStarted());
@@ -124,7 +124,7 @@ TEST_F(OverscrollRefreshTest, NotTriggeredIfInitialYOffsetIsNotZero) {
   ASSERT_FALSE(effect.WillHandleScrollUpdate(gfx::Vector2dF(0, 10)));
   EXPECT_FALSE(effect.IsActive());
   EXPECT_FALSE(effect.IsAwaitingScrollUpdateAck());
-  effect.OnScrollUpdateAck(false);
+  effect.OnOverscrolled();
   EXPECT_FALSE(effect.IsActive());
   EXPECT_FALSE(effect.IsAwaitingScrollUpdateAck());
   EXPECT_FALSE(effect.WillHandleScrollUpdate(gfx::Vector2dF(0, 500)));
@@ -145,7 +145,7 @@ TEST_F(OverscrollRefreshTest, NotTriggeredIfOverflowYHidden) {
   ASSERT_FALSE(effect.WillHandleScrollUpdate(gfx::Vector2dF(0, 10)));
   EXPECT_FALSE(effect.IsActive());
   EXPECT_FALSE(effect.IsAwaitingScrollUpdateAck());
-  effect.OnScrollUpdateAck(false);
+  effect.OnOverscrolled();
   EXPECT_FALSE(effect.IsActive());
   EXPECT_FALSE(effect.IsAwaitingScrollUpdateAck());
   EXPECT_FALSE(effect.WillHandleScrollUpdate(gfx::Vector2dF(0, 500)));
@@ -164,7 +164,7 @@ TEST_F(OverscrollRefreshTest, NotTriggeredIfInitialScrollDownward) {
   EXPECT_FALSE(effect.IsActive());
   EXPECT_FALSE(effect.IsAwaitingScrollUpdateAck());
 
-  effect.OnScrollUpdateAck(false);
+  effect.OnOverscrolled();
   EXPECT_FALSE(effect.IsActive());
   EXPECT_FALSE(effect.IsAwaitingScrollUpdateAck());
   EXPECT_FALSE(effect.WillHandleScrollUpdate(gfx::Vector2dF(0, 500)));
@@ -180,11 +180,12 @@ TEST_F(OverscrollRefreshTest, NotTriggeredIfInitialScrollOrTouchConsumed) {
 
   // Consumption of the initial touchmove or scroll should prevent future
   // activation.
-  effect.OnScrollUpdateAck(true);
+  effect.Reset();
+  effect.OnOverscrolled();
   EXPECT_FALSE(effect.IsActive());
   EXPECT_FALSE(effect.IsAwaitingScrollUpdateAck());
   EXPECT_FALSE(effect.WillHandleScrollUpdate(gfx::Vector2dF(0, 500)));
-  effect.OnScrollUpdateAck(false);
+  effect.OnOverscrolled();
   EXPECT_FALSE(effect.IsActive());
   EXPECT_FALSE(effect.IsAwaitingScrollUpdateAck());
   EXPECT_FALSE(effect.WillHandleScrollUpdate(gfx::Vector2dF(0, 500)));
@@ -198,7 +199,7 @@ TEST_F(OverscrollRefreshTest, NotTriggeredIfFlungDownward) {
   effect.OnScrollBegin();
   ASSERT_FALSE(effect.WillHandleScrollUpdate(gfx::Vector2dF(0, 10)));
   ASSERT_TRUE(effect.IsAwaitingScrollUpdateAck());
-  effect.OnScrollUpdateAck(false);
+  effect.OnOverscrolled();
   ASSERT_TRUE(effect.IsActive());
   EXPECT_TRUE(GetAndResetPullStarted());
 
@@ -213,7 +214,7 @@ TEST_F(OverscrollRefreshTest, NotTriggeredIfReleasedWithoutActivation) {
   effect.OnScrollBegin();
   ASSERT_FALSE(effect.WillHandleScrollUpdate(gfx::Vector2dF(0, 10)));
   ASSERT_TRUE(effect.IsAwaitingScrollUpdateAck());
-  effect.OnScrollUpdateAck(false);
+  effect.OnOverscrolled();
   ASSERT_TRUE(effect.IsActive());
   EXPECT_TRUE(GetAndResetPullStarted());
 
@@ -229,7 +230,7 @@ TEST_F(OverscrollRefreshTest, NotTriggeredIfReset) {
   effect.OnScrollBegin();
   ASSERT_FALSE(effect.WillHandleScrollUpdate(gfx::Vector2dF(0, 10)));
   ASSERT_TRUE(effect.IsAwaitingScrollUpdateAck());
-  effect.OnScrollUpdateAck(false);
+  effect.OnOverscrolled();
   ASSERT_TRUE(effect.IsActive());
   EXPECT_TRUE(GetAndResetPullStarted());
 

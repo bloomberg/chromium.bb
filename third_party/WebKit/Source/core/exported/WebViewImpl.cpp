@@ -1858,6 +1858,12 @@ void WebViewImpl::DidUpdateBrowserControls() {
   }
 }
 
+void WebViewImpl::SetScrollBoundaryBehavior(
+    const WebScrollBoundaryBehavior& scroll_boundary_behavior) {
+  if (layer_tree_view_)
+    layer_tree_view_->SetScrollBoundaryBehavior(scroll_boundary_behavior);
+}
+
 BrowserControls& WebViewImpl::GetBrowserControls() {
   return GetPage()->GetBrowserControls();
 }

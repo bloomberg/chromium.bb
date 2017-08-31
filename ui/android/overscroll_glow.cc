@@ -74,10 +74,10 @@ float OverscrollGlow::GetVisibleAlpha() const {
 }
 
 bool OverscrollGlow::OnOverscrolled(base::TimeTicks current_time,
-          const gfx::Vector2dF& accumulated_overscroll,
-          gfx::Vector2dF overscroll_delta,
-          gfx::Vector2dF velocity,
-          const gfx::Vector2dF& overscroll_location) {
+                                    gfx::Vector2dF accumulated_overscroll,
+                                    gfx::Vector2dF overscroll_delta,
+                                    gfx::Vector2dF velocity,
+                                    gfx::Vector2dF overscroll_location) {
   // The size of the glow determines the relative effect of the inputs; an
   // empty-sized effect is effectively disabled.
   if (viewport_size_.IsEmpty())

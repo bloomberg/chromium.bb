@@ -109,7 +109,8 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
   void DidOverscroll(const FloatSize&,
                      const FloatSize&,
                      const FloatPoint&,
-                     const FloatSize&) override {}
+                     const FloatSize&,
+                     const WebScrollBoundaryBehavior&) override {}
 
   void BeginLifecycleUpdates() override {}
 
