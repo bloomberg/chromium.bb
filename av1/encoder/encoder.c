@@ -3874,6 +3874,12 @@ static void set_restoration_tilesize(int width, int height, int sx, int sy,
   rst[0].restoration_tilesize = (RESTORATION_TILESIZE_MAX >> 1);
   rst[1].restoration_tilesize = rst[0].restoration_tilesize >> s;
   rst[2].restoration_tilesize = rst[1].restoration_tilesize;
+
+  rst[0].procunit_width = rst[0].procunit_height = RESTORATION_PROC_UNIT_SIZE;
+  rst[1].procunit_width = rst[2].procunit_width =
+      RESTORATION_PROC_UNIT_SIZE >> sx;
+  rst[1].procunit_height = rst[2].procunit_height =
+      RESTORATION_PROC_UNIT_SIZE >> sy;
 }
 #endif  // CONFIG_LOOP_RESTORATION
 
@@ -3921,6 +3927,8 @@ static void set_frame_size(AV1_COMP *cpi, int width, int height) {
   for (int i = 0; i < MAX_MB_PLANE; ++i) {
     cpi->rst_search[i].restoration_tilesize =
         cm->rst_info[i].restoration_tilesize;
+    cpi->rst_search[i].procunit_width = cm->rst_info[i].procunit_width;
+    cpi->rst_search[i].procunit_height = cm->rst_info[i].procunit_height;
     av1_alloc_restoration_struct(cm, &cpi->rst_search[i],
 #if CONFIG_FRAME_SUPERRES
                                  cm->superres_upscaled_width,

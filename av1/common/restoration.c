@@ -150,6 +150,8 @@ static void loop_wiener_filter_tile(uint8_t *data, int tile_idx, int width,
                                     int height, int stride,
                                     RestorationInternal *rst, uint8_t *dst,
                                     int dst_stride) {
+  const int procunit_width = rst->rsi->procunit_width;
+  const int procunit_height = rst->rsi->procunit_height;
   const int tile_width = rst->tile_width;
   const int tile_height = rst->tile_height;
   int i, j;
@@ -164,10 +166,10 @@ static void loop_wiener_filter_tile(uint8_t *data, int tile_idx, int width,
                            &h_start, &h_end, &v_start, &v_end);
   // Convolve the whole tile (done in blocks here to match the requirements
   // of the vectorized convolve functions, but the result is equivalent)
-  for (i = v_start; i < v_end; i += MAX_SB_SIZE)
-    for (j = h_start; j < h_end; j += MAX_SB_SIZE) {
-      int w = AOMMIN(MAX_SB_SIZE, (h_end - j + 15) & ~15);
-      int h = AOMMIN(MAX_SB_SIZE, (v_end - i + 15) & ~15);
+  for (i = v_start; i < v_end; i += procunit_height)
+    for (j = h_start; j < h_end; j += procunit_width) {
+      int w = AOMMIN(procunit_width, (h_end - j + 15) & ~15);
+      int h = AOMMIN(procunit_height, (v_end - i + 15) & ~15);
       const uint8_t *data_p = data + i * stride + j;
       uint8_t *dst_p = dst + i * dst_stride + j;
 #if USE_WIENER_HIGH_INTERMEDIATE_PRECISION
@@ -896,10 +898,12 @@ static void loop_sgrproj_filter_tile(uint8_t *data, int tile_idx, int width,
                                      int height, int stride,
                                      RestorationInternal *rst, uint8_t *dst,
                                      int dst_stride) {
+  const int procunit_width = rst->rsi->procunit_width;
+  const int procunit_height = rst->rsi->procunit_height;
   const int tile_width = rst->tile_width;
   const int tile_height = rst->tile_height;
+  int i, j;
   int h_start, h_end, v_start, v_end;
-  uint8_t *data_p, *dst_p;
 
   if (rst->rsi->restoration_type[tile_idx] == RESTORE_NONE) {
     loop_copy_tile(data, tile_idx, 0, 0, width, height, stride, rst, dst,
@@ -909,12 +913,16 @@ static void loop_sgrproj_filter_tile(uint8_t *data, int tile_idx, int width,
   av1_get_rest_tile_limits(tile_idx, 0, 0, rst->nhtiles, rst->nvtiles,
                            tile_width, tile_height, width, height, 0, 0,
                            &h_start, &h_end, &v_start, &v_end);
-  data_p = data + h_start + v_start * stride;
-  dst_p = dst + h_start + v_start * dst_stride;
-  apply_selfguided_restoration(data_p, h_end - h_start, v_end - v_start, stride,
-                               rst->rsi->sgrproj_info[tile_idx].ep,
-                               rst->rsi->sgrproj_info[tile_idx].xqd, dst_p,
-                               dst_stride, rst->tmpbuf);
+  for (i = v_start; i < v_end; i += procunit_height)
+    for (j = h_start; j < h_end; j += procunit_width) {
+      int w = AOMMIN(procunit_width, h_end - j);
+      int h = AOMMIN(procunit_height, v_end - i);
+      uint8_t *data_p = data + i * stride + j;
+      uint8_t *dst_p = dst + i * dst_stride + j;
+      apply_selfguided_restoration(
+          data_p, w, h, stride, rst->rsi->sgrproj_info[tile_idx].ep,
+          rst->rsi->sgrproj_info[tile_idx].xqd, dst_p, dst_stride, rst->tmpbuf);
+    }
 }
 
 static void loop_sgrproj_filter(uint8_t *data, int width, int height,
@@ -988,6 +996,8 @@ static void loop_wiener_filter_tile_highbd(uint16_t *data, int tile_idx,
                                            RestorationInternal *rst,
                                            int bit_depth, uint16_t *dst,
                                            int dst_stride) {
+  const int procunit_width = rst->rsi->procunit_width;
+  const int procunit_height = rst->rsi->procunit_height;
   const int tile_width = rst->tile_width;
   const int tile_height = rst->tile_height;
   int h_start, h_end, v_start, v_end;
@@ -1003,10 +1013,10 @@ static void loop_wiener_filter_tile_highbd(uint16_t *data, int tile_idx,
                            &h_start, &h_end, &v_start, &v_end);
   // Convolve the whole tile (done in blocks here to match the requirements
   // of the vectorized convolve functions, but the result is equivalent)
-  for (i = v_start; i < v_end; i += MAX_SB_SIZE)
-    for (j = h_start; j < h_end; j += MAX_SB_SIZE) {
-      int w = AOMMIN(MAX_SB_SIZE, (h_end - j + 15) & ~15);
-      int h = AOMMIN(MAX_SB_SIZE, (v_end - i + 15) & ~15);
+  for (i = v_start; i < v_end; i += procunit_height)
+    for (j = h_start; j < h_end; j += procunit_width) {
+      int w = AOMMIN(procunit_width, (h_end - j + 15) & ~15);
+      int h = AOMMIN(procunit_height, (v_end - i + 15) & ~15);
       const uint16_t *data_p = data + i * stride + j;
       uint16_t *dst_p = dst + i * dst_stride + j;
 #if USE_WIENER_HIGH_INTERMEDIATE_PRECISION
@@ -1185,10 +1195,12 @@ static void loop_sgrproj_filter_tile_highbd(uint16_t *data, int tile_idx,
                                             RestorationInternal *rst,
                                             int bit_depth, uint16_t *dst,
                                             int dst_stride) {
+  const int procunit_width = rst->rsi->procunit_width;
+  const int procunit_height = rst->rsi->procunit_height;
   const int tile_width = rst->tile_width;
   const int tile_height = rst->tile_height;
+  int i, j;
   int h_start, h_end, v_start, v_end;
-  uint16_t *data_p, *dst_p;
 
   if (rst->rsi->restoration_type[tile_idx] == RESTORE_NONE) {
     loop_copy_tile_highbd(data, tile_idx, 0, 0, width, height, stride, rst, dst,
@@ -1198,12 +1210,16 @@ static void loop_sgrproj_filter_tile_highbd(uint16_t *data, int tile_idx,
   av1_get_rest_tile_limits(tile_idx, 0, 0, rst->nhtiles, rst->nvtiles,
                            tile_width, tile_height, width, height, 0, 0,
                            &h_start, &h_end, &v_start, &v_end);
-  data_p = data + h_start + v_start * stride;
-  dst_p = dst + h_start + v_start * dst_stride;
-  apply_selfguided_restoration_highbd(
-      data_p, h_end - h_start, v_end - v_start, stride, bit_depth,
-      rst->rsi->sgrproj_info[tile_idx].ep, rst->rsi->sgrproj_info[tile_idx].xqd,
-      dst_p, dst_stride, rst->tmpbuf);
+  for (i = v_start; i < v_end; i += procunit_height)
+    for (j = h_start; j < h_end; j += procunit_width) {
+      int w = AOMMIN(procunit_width, h_end - j);
+      int h = AOMMIN(procunit_height, v_end - i);
+      uint16_t *data_p = data + i * stride + j;
+      uint16_t *dst_p = dst + i * dst_stride + j;
+      apply_selfguided_restoration_highbd(
+          data_p, w, h, stride, bit_depth, rst->rsi->sgrproj_info[tile_idx].ep,
+          rst->rsi->sgrproj_info[tile_idx].xqd, dst_p, dst_stride, rst->tmpbuf);
+    }
 }
 
 static void loop_sgrproj_filter_highbd(uint8_t *data8, int width, int height,

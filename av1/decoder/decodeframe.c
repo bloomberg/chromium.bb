@@ -2790,6 +2790,13 @@ static void decode_restoration_mode(AV1_COMMON *cm,
     cm->rst_info[1].restoration_tilesize = cm->rst_info[0].restoration_tilesize;
   }
   cm->rst_info[2].restoration_tilesize = cm->rst_info[1].restoration_tilesize;
+
+  cm->rst_info[0].procunit_width = cm->rst_info[0].procunit_height =
+      RESTORATION_PROC_UNIT_SIZE;
+  cm->rst_info[1].procunit_width = cm->rst_info[2].procunit_width =
+      RESTORATION_PROC_UNIT_SIZE >> cm->subsampling_x;
+  cm->rst_info[1].procunit_height = cm->rst_info[2].procunit_height =
+      RESTORATION_PROC_UNIT_SIZE >> cm->subsampling_y;
 }
 
 static void read_wiener_filter(int wiener_win, WienerInfo *wiener_info,

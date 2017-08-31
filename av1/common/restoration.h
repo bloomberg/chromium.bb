@@ -24,6 +24,8 @@ extern "C" {
 #define CLIP(x, lo, hi) ((x) < (lo) ? (lo) : (x) > (hi) ? (hi) : (x))
 #define RINT(x) ((x) < 0 ? (int)((x)-0.5) : (int)((x) + 0.5))
 
+#define RESTORATION_PROC_UNIT_SIZE 64
+
 #define RESTORATION_TILESIZE_MAX 256
 #define RESTORATION_TILEPELS_MAX \
   (RESTORATION_TILESIZE_MAX * RESTORATION_TILESIZE_MAX * 9 / 4)
@@ -150,6 +152,7 @@ typedef struct {
 
 typedef struct {
   int restoration_tilesize;
+  int procunit_width, procunit_height;
   RestorationType frame_restoration_type;
   RestorationType *restoration_type;
   // Wiener filter
