@@ -26,6 +26,7 @@
 #include "content/browser/renderer_host/media/audio_input_sync_writer.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/webrtc/webrtc_internals.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents_media_capture_id.h"
 #include "media/audio/audio_device_description.h"
 #include "media/base/audio_bus.h"
@@ -50,6 +51,18 @@ void LogMessage(int stream_id, const std::string& msg, bool add_prefix) {
   const std::string message = oss.str();
   content::MediaStreamManager::SendMessageToNativeLog(message);
   DVLOG(1) << message;
+}
+
+void NotifyProcessHostStreamAdded(int render_process_id) {
+  auto* process_host = RenderProcessHost::FromID(render_process_id);
+  if (process_host)
+    process_host->OnMediaStreamAdded();
+}
+
+void NotifyProcessHostStreamRemoved(int render_process_id) {
+  auto* process_host = RenderProcessHost::FromID(render_process_id);
+  if (process_host)
+    process_host->OnMediaStreamRemoved();
 }
 
 }  // namespace
@@ -405,6 +418,11 @@ void AudioInputRendererHost::DoCreateStream(
   MediaInternals::GetInstance()->SetWebContentsTitleForAudioLogEntry(
       stream_id, render_process_id_, render_frame_id, audio_log_.get());
 
+  // Prevent process backgrounding while audio input is active:
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&NotifyProcessHostStreamAdded, render_process_id_));
+
 #if BUILDFLAG(ENABLE_WEBRTC)
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
@@ -483,6 +501,10 @@ void AudioInputRendererHost::CloseAndDeleteStream(AudioEntry* entry) {
         base::BindOnce(&AudioInputRendererHost::DeleteEntry, this, entry));
     entry->pending_close = true;
     audio_log_->OnClosed(entry->stream_id);
+
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&NotifyProcessHostStreamRemoved, render_process_id_));
   }
 }
 
