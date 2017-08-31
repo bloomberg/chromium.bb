@@ -3182,6 +3182,15 @@ TEST_F(PasswordAutofillAgentTest, NotShowShowAllSavedPasswordsTest) {
   ASSERT_FALSE(GetCalledShowManualFallbackSuggestion());
 }
 
+TEST_F(PasswordAutofillAgentTest, NotShowShowAllSavedPasswordsTestBlacklisted) {
+  SetManualFallbacks();
+  LoadHTML(kFormHTML);
+  password_autofill_agent_->BlacklistedFormFound();
+  SetFocused(password_element_);
+  SimulateElementClick("password");
+  EXPECT_FALSE(GetCalledShowManualFallbackSuggestion());
+}
+
 TEST_F(PasswordAutofillAgentTest,
        UpdateSuggestionsIfNewerCredentialsAreSupplied) {
   // Supply old fill data

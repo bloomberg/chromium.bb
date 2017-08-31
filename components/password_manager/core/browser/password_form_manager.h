@@ -587,6 +587,10 @@ class PasswordFormManager : public FormFetcher::Consumer {
   // match found.
   base::Optional<base::string16> corrected_username_element_;
 
+  // Tracks if a form with same origin as |observed_form_| found in blacklisted
+  // forms.
+  bool blacklisted_origin_found_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(PasswordFormManager);
 };
 

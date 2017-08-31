@@ -1054,7 +1054,7 @@ bool PasswordAutofillAgent::ShowSuggestions(
                                                                 frame_url);
       }
 #endif
-      if (!generation_popup_showing &&
+      if (!generation_popup_showing && !blacklisted_form_found_ &&
           ShouldShowStandaloneManuallFallback(element, frame_url) &&
           ShowManualFallbackSuggestion(element)) {
         return true;
@@ -1711,6 +1711,10 @@ void PasswordAutofillAgent::FindFocusedPasswordForm(
   std::move(callback).Run(*password_form);
 }
 
+void PasswordAutofillAgent::BlacklistedFormFound() {
+  blacklisted_form_found_ = true;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // PasswordAutofillAgent, private:
 
@@ -1784,6 +1788,7 @@ void PasswordAutofillAgent::FrameClosing() {
   field_value_and_properties_map_.clear();
   sent_request_to_store_ = false;
   checked_safe_browsing_reputation_ = false;
+  blacklisted_form_found_ = false;
 }
 
 void PasswordAutofillAgent::ClearPreview(

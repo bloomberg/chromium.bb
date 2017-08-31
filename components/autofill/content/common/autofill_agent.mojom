@@ -89,6 +89,10 @@ interface PasswordAutofillAgent {
   // Renderer is expected to return the found password form. If no password form
   // is focused, the response will contain an empty |autofill::PasswordForm|.
   FindFocusedPasswordForm() => (PasswordForm form);
+
+  // Notifies PasswordAutofillAgent that the matching blacklisted form was
+  // found.
+  BlacklistedFormFound();
 };
 
 // There is one instance of this interface per render frame in the render

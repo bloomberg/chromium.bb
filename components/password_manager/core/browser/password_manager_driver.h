@@ -112,6 +112,9 @@ class PasswordManagerDriver
   // Return true iff the driver corresponds to the main frame.
   virtual bool IsMainFrame() const = 0;
 
+  // Tells the driver that the matching blacklisted form was found.
+  virtual void MatchingBlacklistedFormFound() = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerDriver);
 };
