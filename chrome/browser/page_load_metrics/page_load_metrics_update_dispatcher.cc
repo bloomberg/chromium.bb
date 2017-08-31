@@ -17,6 +17,8 @@
 #include "chrome/common/page_load_metrics/page_load_metrics_constants.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
+#include "extensions/common/constants.h"
+#include "url/gurl.h"
 
 namespace page_load_metrics {
 
@@ -337,6 +339,12 @@ void PageLoadMetricsUpdateDispatcher::UpdateMetrics(
     const mojom::PageLoadTiming& new_timing,
     const mojom::PageLoadMetadata& new_metadata,
     const mojom::PageLoadFeatures& new_features) {
+  if (render_frame_host->GetLastCommittedURL().SchemeIs(
+          extensions::kExtensionScheme)) {
+    // Ignore updates from Chrome extensions.
+    return;
+  }
+
   if (render_frame_host->GetParent() == nullptr) {
     UpdateMainFrameMetadata(new_metadata);
     UpdateMainFrameTiming(new_timing);
