@@ -435,6 +435,7 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
   [self.consumer setPromoCanShow:_notificationPromo->CanShow()];
 }
 
+// TODO(crbug.com/761096) : Promo handling should be DRY and tested.
 - (void)promoTapped {
   DCHECK(_notificationPromo);
   _notificationPromo->HandleClosed();
