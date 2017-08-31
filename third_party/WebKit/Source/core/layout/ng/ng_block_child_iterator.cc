@@ -11,7 +11,15 @@ namespace blink {
 
 NGBlockChildIterator::NGBlockChildIterator(NGLayoutInputNode first_child,
                                            NGBlockBreakToken* break_token)
-    : child_(first_child), break_token_(break_token), child_token_idx_(0) {}
+    : child_(first_child), break_token_(break_token), child_token_idx_(0) {
+  // Locate the first child to resume layout at.
+  if (!break_token)
+    return;
+  const auto& child_break_tokens = break_token->ChildBreakTokens();
+  if (!child_break_tokens.size())
+    return;
+  child_ = child_break_tokens[0]->InputNode();
+}
 
 NGBlockChildIterator::Entry NGBlockChildIterator::NextChild() {
   NGBreakToken* child_break_token = nullptr;
