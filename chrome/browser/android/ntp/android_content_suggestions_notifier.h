@@ -12,6 +12,12 @@
 #include "chrome/browser/ntp_snippets/ntp_snippets_metrics.h"
 #include "url/gurl.h"
 
+class Profile;
+
+namespace gfx {
+class Image;
+}  // namespace gfx
+
 // Implements ContentSuggestionsNotifier methods with JNI calls.
 class AndroidContentSuggestionsNotifier : public ContentSuggestionsNotifier {
  public:
@@ -29,6 +35,7 @@ class AndroidContentSuggestionsNotifier : public ContentSuggestionsNotifier {
                         ContentSuggestionsNotificationAction why) override;
   void HideAllNotifications(ContentSuggestionsNotificationAction why) override;
   void FlushCachedMetrics() override;
+  bool IsEnabledForProfile(Profile* profile) override;
   bool RegisterChannel(bool enabled) override;
   void UnregisterChannel() override;
 
