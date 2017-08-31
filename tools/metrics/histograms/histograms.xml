@@ -49301,6 +49301,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="NQE.Kbps.RawObservation" units="Kbps">
+  <owner>tbansal@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <summary>
+    Downstream throughput observation received or synthesized by network quality
+    estimator. Observations from different sources are recorded in separate
+    histograms.
+  </summary>
+</histogram>
+
 <histogram name="NQE.MainFrame.EffectiveConnectionType"
     enum="NQEEffectiveConnectionType">
   <owner>tbansal@chromium.org</owner>
@@ -49453,6 +49463,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     Rough estimate of the round trip time at the URLRequest layer.  Recorded by
     the network quality estimator every time the effective connection type is
     computed.
+  </summary>
+</histogram>
+
+<histogram name="NQE.RTT.RawObservation" units="ms">
+  <owner>tbansal@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <summary>
+    RTT observation received or synthesized by network quality estimator.
+    Observations from different sources are recorded in separate histograms.
   </summary>
 </histogram>
 
@@ -98275,6 +98294,21 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <affected-histogram name="NQE.TransportRTT.Percentile100"/>
   <affected-histogram name="NQE.TransportRTT.Percentile50"/>
   <affected-histogram name="NQE.TransportRTT.Percentile90"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="NQE.ObservationSources" separator=".">
+  <suffix name="Http" label="Observed from HTTP requests"/>
+  <suffix name="Tcp" label="Observed from TCP sockets"/>
+  <suffix name="Quic" label="Observed from QUIC"/>
+  <suffix name="HttpCachedEstimate" label="Cached HTTP layer observation"/>
+  <suffix name="HttpPlatform" label="Synthetic HTTP layer observation"/>
+  <suffix name="HttpExternalEstimate" label="From external estimate provider"/>
+  <suffix name="TransportCachedEstimate"
+      label="Cached transport layer observation"/>
+  <suffix name="TransportPlatform"
+      label="Synthetic transport layer observation"/>
+  <affected-histogram name="NQE.Kbps.RawObservation"/>
+  <affected-histogram name="NQE.RTT.RawObservation"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="NumLayersBucket" separator=".">
