@@ -7,6 +7,7 @@
 #include <unordered_map>
 
 #include "base/logging.h"
+#include "base/macros.h"
 
 namespace vr {
 
@@ -14,33 +15,49 @@ namespace gltf {
 
 namespace {
 
-const std::unordered_map<std::string, Type> kTypeMap = {
-    {"SCALAR", SCALAR}, {"VEC2", VEC2}, {"VEC3", VEC3}, {"VEC4", VEC4},
-    {"MAT2", MAT2},     {"MAT3", MAT3}, {"MAT4", MAT4},
-};
+using TypeMap = std::unordered_map<std::string, Type>;
 
-const std::vector<int> kTypeComponents = {
-    0,
-    1,   // SCALAR
-    2,   // VEC2
-    3,   // VEC3
-    4,   // VEC4
-    4,   // MAT2
-    9,   // MAT3
-    16,  // MAT4
-};
+static const std::unordered_map<std::string, Type>& GetTypeMap() {
+  CR_DEFINE_STATIC_LOCAL(TypeMap, type_map,
+                         ({
+                             {"SCALAR", SCALAR},
+                             {"VEC2", VEC2},
+                             {"VEC3", VEC3},
+                             {"VEC4", VEC4},
+                             {"MAT2", MAT2},
+                             {"MAT3", MAT3},
+                             {"MAT4", MAT4},
+                         }));
+  return type_map;
+}
+
+static const std::vector<int>& GetTypeComponents() {
+  CR_DEFINE_STATIC_LOCAL(std::vector<int>, type_components,
+                         ({
+                             0,
+                             1,   // SCALAR
+                             2,   // VEC2
+                             3,   // VEC3
+                             4,   // VEC4
+                             4,   // MAT2
+                             9,   // MAT3
+                             16,  // MAT4
+                         }));
+  return type_components;
+}
 
 }  // namespace
 
 Type GetType(const std::string& type) {
-  auto it = kTypeMap.find(type);
-  if (it == kTypeMap.end())
+  const TypeMap& type_map = GetTypeMap();
+  auto it = type_map.find(type);
+  if (it == type_map.end())
     return UNKNOWN;
   return it->second;
 }
 
 GLint GetTypeComponents(Type type) {
-  return kTypeComponents[type];
+  return GetTypeComponents()[type];
 }
 
 Mesh::Primitive::Primitive() : indices(nullptr), mode(4) {}
