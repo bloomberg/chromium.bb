@@ -5,18 +5,11 @@
 <dom-module id="network-shared">
   <template>
     <style include="cr-shared-style">
-      /* This mirrors .settings-box.two-line. */
       .property-box {
-        align-items: center;
-        border-top: var(--cr-separator-line);
-        display: flex;
-        min-height: var(--cr-section-two-line-min-height);
-        padding: 0 var(--cr-section-padding);
-      }
-
-      .property-box.first,
-      .property-box.continuation {
+        @apply(--cr-section);
         border-top: none;
+        min-height: var(--cr-section-two-line-min-height);
+        padding: 0;
       }
 
       .property-box.indented {

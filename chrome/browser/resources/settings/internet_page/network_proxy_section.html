@@ -61,7 +61,7 @@
     </template>
 
     <!-- Allow shared proxies -->
-    <settings-toggle-button id="allowShared" class="continuation"
+    <settings-toggle-button id="allowShared" class="continuation indented"
         hidden$="[[!shouldShowAllowShared_(
             networkProperties.ProxySettings.Type)]]"
         pref="{{prefs.settings.use_shared_proxies}}"
@@ -70,10 +70,12 @@
         no-set-pref>
     </settings-toggle-button>
 
-    <network-proxy editable
-        network-properties="[[networkProperties]]"
-        use-shared-proxies="[[useSharedProxies_]]">
-    </network-proxy>
+    <div class="settings-box single-column stretch continuation indented">
+      <network-proxy editable
+          network-properties="[[networkProperties]]"
+          use-shared-proxies="[[useSharedProxies_]]">
+      </network-proxy>
+    </div>
 
     <!-- Confirm Allow shared proxies dialog -->
     <dialog is="cr-dialog" id="confirmAllowSharedDialog"

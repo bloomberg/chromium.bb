@@ -53,14 +53,6 @@
         border-top: none;
       }
 
-      .settings-box.indented {
-        -webkit-margin-start: var(--settings-box-row-padding);
-      }
-
-      .settings-box.stretch {
-        align-items: stretch;
-      }
-
       #networkState[connected] {
         color: var(--google-green-500);
       }
@@ -250,7 +242,7 @@
         </div>
 
         <iron-collapse opened="[[networkExpanded_]]">
-          <div class="settings-box single-column stretch">
+          <div class="settings-box single-column stretch indented">
             <!-- APN -->
             <template is="dom-if" if="[[isCellular_(networkProperties)]]">
               <network-apnlist editable on-apn-change="onNetworkPropertyChange_"
@@ -281,12 +273,10 @@
         </div>
 
         <iron-collapse opened="[[proxyExpanded_]]">
-          <div class="settings-box single-column stretch">
-            <network-proxy-section prefs="{{prefs}}"
-                on-proxy-change="onProxyChange_"
-                network-properties="[[networkProperties]]">
-            </network-proxy-section>
-          </div>
+          <network-proxy-section prefs="{{prefs}}"
+              on-proxy-change="onProxyChange_"
+              network-properties="[[networkProperties]]">
+          </network-proxy-section>
         </iron-collapse>
       </template>
     </template>

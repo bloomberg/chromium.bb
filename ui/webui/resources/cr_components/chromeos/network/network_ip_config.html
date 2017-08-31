@@ -9,7 +9,7 @@
 <dom-module id="network-ip-config">
   <template>
     <style include="network-shared iron-flex"></style>
-    <div class="property-box first">
+    <div class="property-box">
       <div id="autoIPConfigLabel" class="start">
         [[i18n('networkIPConfigAuto')]]
       </div>
@@ -17,7 +17,7 @@
           aria-labelledby="autoIPConfigLabel">
       </paper-toggle-button>
     </div>
-    <div class="property-box single-column continuation indented stretch"
+    <div class="property-box single-column indented stretch"
         hidden$="[[!ipConfig_]]">
       <network-property-list
           fields="[[ipConfigFields_]]" property-dict="[[ipConfig_]]"

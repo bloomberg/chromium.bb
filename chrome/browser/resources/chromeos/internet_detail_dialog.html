@@ -17,8 +17,24 @@
 <dom-module id="internet-detail-dialog">
   <template>
     <style include="network-shared iron-flex">
-      div.property-box {
+      .section {
+        @apply(--cr-section);
         margin-bottom: 10px;
+      }
+
+      .section.first {
+        border-top: none;
+      }
+
+      .section.single-column {
+        align-items: stretch;
+        flex-direction: column;
+        justify-content: center;
+      }
+
+      .section > .start {
+        align-items: center;
+        flex: auto;
       }
 
       .title {
@@ -33,7 +49,7 @@
     </style>
 
     <!-- Title section: Icon + name + connection state. -->
-    <div class="property-box first">
+    <div class="section first">
       <div class="start layout horizontal center">
         <cr-network-icon network-state="[[networkProperties]]">
         </cr-network-icon>
@@ -57,7 +73,7 @@
     </div>
 
     <!-- Proxy -->
-    <div class="property-box single-column stretch">
+    <div class="section single-column">
       <network-proxy editable use-shared-proxies
           on-proxy-change="onProxyChange_"
           network-properties="[[networkProperties]]">
@@ -67,14 +83,14 @@
     <template is="dom-if"
         if="[[isRememberedOrConnected_(networkProperties)]]">
       <!-- IP Config -->
-      <div class="property-box single-column stretch">
+      <div class="section single-column">
         <network-ip-config editable on-ip-change="onIPConfigChange_"
             network-properties="[[networkProperties]]">
         </network-ip-config>
       </div>
 
       <!-- IP Config, Nameservers -->
-      <div class="property-box single-column stretch">
+      <div class="section single-column">
         <network-nameservers editable
             on-nameservers-change="onIPConfigChange_"
             network-properties="[[networkProperties]]">
@@ -84,7 +100,7 @@
 
     <!-- APN -->
     <template is="dom-if" if="[[isCellular_(networkProperties)]]">
-      <div class="property-box single-column stretch">
+      <div class="section single-column">
         <network-apnlist editable on-apn-change="onNetworkPropertyChange_"
             network-properties="[[networkProperties]]">
         </network-apnlist>
@@ -93,7 +109,7 @@
 
     <!-- Other properties to show if present. -->
     <template is="dom-if" if="[[hasInfoFields_(networkProperties)]]">
-      <div class="property-box single-column stretch indented">
+      <div class="section single-column indented">
         <network-property-list
             fields="[[getInfoFields_(networkProperties)]]"
             property-dict="[[networkProperties]]"

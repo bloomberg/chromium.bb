@@ -28,13 +28,12 @@
       }
 
       #manualProxy {
-        -webkit-padding-end: 20px;
-        -webkit-padding-start: 60px;
+        -webkit-padding-start: var(--cr-section-padding);
       }
     </style>
 
     <!-- Proxy type dropdown -->
-    <div class="property-box start">
+    <div class="property-box">
       <div class="start">[[i18n('networkProxyConnectionType')]]</div>
       <div class="md-select-wrapper">
         <select id="proxyType" class="md-select" on-change="onTypeChange_"
@@ -51,7 +50,7 @@
     </div>
 
     <!-- Autoconfiguration (PAC) -->
-    <div class="property-box continuation"
+    <div class="property-box indented"
         hidden$="[[!matches_(proxy_.Type, ProxySettingsType_.PAC)]]">
       <div>[[i18n('networkProxyAutoConfig')]]</div>
       <paper-input no-label-float class="middle" value="{{proxy_.PAC}}"
@@ -62,14 +61,14 @@
     </div>
 
     <!-- Web Proxy Auto Discovery (WPAD) -->
-    <div class="property-box continuation"
+    <div class="property-box indented"
         hidden$="[[!matches_(proxy_.Type, ProxySettingsType_.WPAD)]]">
       <div>[[i18n('networkProxyWpad')]]</div>
       <div class="middle">[[WPAD_]]</div>
     </div>
 
     <!-- Manual -->
-    <div class="property-box continuation"
+    <div class="property-box indented"
         hidden$="[[!matches_(proxy_.Type, ProxySettingsType_.MANUAL)]]">
       <div id="networkProxyToggleLabel" class="flex">
         [[i18n('networkProxyUseSame')]]
