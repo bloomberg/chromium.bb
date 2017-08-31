@@ -19,6 +19,7 @@
 #include "content/public/browser/stream_handle.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/common/url_utils.h"
 #include "content/public/test/browser_side_navigation_test_utils.h"
 #include "content/test/test_navigation_url_loader.h"
 #include "content/test/test_render_view_host.h"
@@ -472,7 +473,7 @@ void TestRenderFrameHost::PrepareForCommitWithServerRedirect(
   NavigationRequest* request = frame_tree_node_->navigation_request();
   CHECK(request);
   bool have_to_make_network_request =
-      ShouldMakeNetworkRequestForURL(request->common_params().url) &&
+      IsURLHandledByNetworkStack(request->common_params().url) &&
       !FrameMsg_Navigate_Type::IsSameDocument(
           request->common_params().navigation_type);
 

@@ -15,6 +15,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/resource_request_body.h"
+#include "content/public/common/url_utils.h"
 #include "content/test/test_navigation_url_loader.h"
 #include "content/test/test_render_frame_host.h"
 #include "content/test/test_web_contents.h"
@@ -193,7 +194,7 @@ void NavigationSimulator::Start() {
 
   if (same_document_ ||
       (IsBrowserSideNavigationEnabled() &&
-       !ShouldMakeNetworkRequestForURL(navigation_url_)) ||
+       !IsURLHandledByNetworkStack(navigation_url_)) ||
       navigation_url_.IsAboutBlank()) {
     CHECK_EQ(1, num_did_start_navigation_called_);
     return;
@@ -326,7 +327,7 @@ void NavigationSimulator::ReadyToCommit() {
   if (!same_document_ && !IsRendererDebugURL(navigation_url_) &&
       !navigation_url_.IsAboutBlank() &&
       (!IsBrowserSideNavigationEnabled() ||
-       ShouldMakeNetworkRequestForURL(navigation_url_))) {
+       IsURLHandledByNetworkStack(navigation_url_))) {
     WaitForThrottleChecksComplete();
 
     if (GetLastThrottleCheckResult() != NavigationThrottle::PROCEED) {
@@ -743,7 +744,7 @@ bool NavigationSimulator::SimulateBrowserInitiatedStart() {
   if (!request) {
     if (web_contents_->GetMainFrame()->navigation_handle() == handle_) {
       DCHECK(handle_->IsSameDocument() ||
-             !ShouldMakeNetworkRequestForURL(handle_->GetURL()));
+             !IsURLHandledByNetworkStack(handle_->GetURL()));
       same_document_ = handle_->IsSameDocument();
       return true;
     }

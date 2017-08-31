@@ -13,6 +13,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "components/subresource_filter/content/common/subresource_filter_messages.h"
+#include "components/subresource_filter/content/common/subresource_filter_utils.h"
 #include "components/subresource_filter/content/renderer/unverified_ruleset_dealer.h"
 #include "components/subresource_filter/content/renderer/web_document_subresource_filter_impl.h"
 #include "components/subresource_filter/core/common/document_load_statistics.h"
@@ -45,6 +46,10 @@ SubresourceFilterAgent::~SubresourceFilterAgent() = default;
 
 GURL SubresourceFilterAgent::GetDocumentURL() {
   return render_frame()->GetWebFrame()->GetDocument().Url();
+}
+
+bool SubresourceFilterAgent::IsMainFrame() {
+  return render_frame()->IsMainFrame();
 }
 
 void SubresourceFilterAgent::SetSubresourceFilterForCommittedLoad(
@@ -163,13 +168,16 @@ void SubresourceFilterAgent::DidCommitProvisionalLoad(
   // which require changes to the unit tests.
   const GURL& url = GetDocumentURL();
 
-  bool use_parent_activation = ShouldUseParentActivation(url);
+  bool use_parent_activation = !IsMainFrame() && ShouldUseParentActivation(url);
+
   const ActivationState activation_state =
       use_parent_activation ? GetParentActivationState(render_frame())
                             : activation_state_for_next_commit_;
+
   ResetActivatonStateForNextCommit();
-  if (!url.SchemeIsHTTPOrHTTPS() && !url.SchemeIsFile() &&
-      !use_parent_activation)
+
+  // Do not pollute the histograms for empty main frame documents.
+  if (IsMainFrame() && !url.SchemeIsHTTPOrHTTPS() && !url.SchemeIsFile())
     return;
 
   RecordHistogramsOnLoadCommitted(activation_state);
@@ -236,16 +244,6 @@ void SubresourceFilterAgent::WillCreateWorkerFetchContext(
           base::BindOnce(&SubresourceFilterAgent::
                              SignalFirstSubresourceDisallowedForCommittedLoad,
                          AsWeakPtr())));
-}
-
-bool SubresourceFilterAgent::ShouldUseParentActivation(const GURL& url) const {
-  // TODO(csharrison): It is not always true that a data URL can use its
-  // parent's activation in OOPIF mode, where the resulting data frame will
-  // be same-process to its initiator. See crbug.com/739777 for more
-  // information.
-  return render_frame() && !render_frame()->IsMainFrame() &&
-         (url.SchemeIs(url::kDataScheme) || url == url::kAboutBlankURL ||
-          url == content::kAboutSrcDocURL);
 }
 
 }  // namespace subresource_filter

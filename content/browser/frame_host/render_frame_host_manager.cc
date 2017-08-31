@@ -49,6 +49,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/common/url_utils.h"
 
 namespace content {
 
@@ -1923,7 +1924,7 @@ RenderFrameHostManager::GetSiteInstanceForNavigationRequest(
     // go cross-process. Check it first.
     bool can_renderer_initiate_transfer =
         render_frame_host_->IsRenderFrameLive() &&
-        ShouldMakeNetworkRequestForURL(request.common_params().url) &&
+        IsURLHandledByNetworkStack(request.common_params().url) &&
         IsRendererTransferNeededForNavigation(render_frame_host_.get(),
                                               request.common_params().url);
 

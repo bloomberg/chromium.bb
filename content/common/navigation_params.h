@@ -32,12 +32,6 @@
 namespace content {
 
 // PlzNavigate
-// Helper function to determine if the navigation to |url| should make a request
-// to the network stack. A request should not be sent for JavaScript URLs or
-// about:blank. In these cases, no request needs to be sent.
-bool CONTENT_EXPORT ShouldMakeNetworkRequestForURL(const GURL& url);
-
-// PlzNavigate
 // Struct keeping track of the Javascript SourceLocation that triggered the
 // navigation. This is initialized based on information from Blink at the start
 // of navigation, and passed back to Blink when the navigation commits.

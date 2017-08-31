@@ -9,6 +9,8 @@ static_library("common") {
     "subresource_filter_message_generator.cc",
     "subresource_filter_message_generator.h",
     "subresource_filter_messages.h",
+    "subresource_filter_utils.cc",
+    "subresource_filter_utils.h",
   ]
   public_deps = [
     "//base",
