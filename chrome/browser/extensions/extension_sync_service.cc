@@ -276,9 +276,12 @@ ExtensionSyncData ExtensionSyncService::CreateSyncData(
   // for the existence of disable reasons instead), we're just setting it here
   // for older Chrome versions (<M48).
   bool enabled = (disable_reasons == extensions::disable_reason::DISABLE_NONE);
-  enabled = enabled &&
-      extension_prefs->GetExtensionBlacklistState(extension.id()) ==
-          extensions::NOT_BLACKLISTED;
+  if (extension_prefs->GetExtensionBlacklistState(extension.id()) ==
+      extensions::BLACKLISTED_MALWARE) {
+    enabled = false;
+    NOTREACHED() << "Blacklisted extensions should not be getting synced.";
+  }
+
   bool incognito_enabled = extensions::util::IsIncognitoEnabled(id, profile_);
   bool remote_install = extension_prefs->HasDisableReason(
       id, extensions::disable_reason::DISABLE_REMOTE_INSTALL);
