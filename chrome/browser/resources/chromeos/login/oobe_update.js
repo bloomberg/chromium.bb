@@ -55,10 +55,12 @@ Polymer({
     },
 
     /**
-     * Message above the progress bar.
+     * True if update is fully completed and, probably manual action is
+     * required.
      */
-    updateUpperLabel: {
-      type: String,
+    updateCompleted: {
+      type: Boolean,
+      value: false,
     },
 
     /**
@@ -76,5 +78,15 @@ Polymer({
   setCancelHint: function(message) {
     this.$.checkingForUpdateCancelHint.textContent = message;
     this.$.updatingCancelHint.textContent = message;
+  },
+
+  /**
+   * Calculates visibility of UI element. Returns true if element is hidden.
+   * @param {Boolean} isAllowed Element flag that marks it visible.
+   * @param {Boolean} updateCompleted If update is completed and all
+   * intermediate status elements are hidden.
+   */
+  isNotAllowedOrUpdateCompleted_: function(isAllowed, updateCompleted) {
+    return !isAllowed || updateCompleted;
   },
 });

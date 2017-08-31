@@ -38,7 +38,7 @@ namespace {
 
 constexpr const char kContextKeyEstimatedTimeLeftSec[] = "time-left-sec";
 constexpr const char kContextKeyShowEstimatedTimeLeft[] = "show-time-left";
-constexpr const char kContextKeyUpdateMessage[] = "update-msg";
+constexpr const char kContextKeyUpdateCompleted[] = "update-completed";
 constexpr const char kContextKeyShowCurtain[] = "show-curtain";
 constexpr const char kContextKeyShowProgressMessage[] = "show-progress-msg";
 constexpr const char kContextKeyProgress[] = "progress";
@@ -504,8 +504,7 @@ bool UpdateScreen::HasCriticalUpdate() {
 void UpdateScreen::OnWaitForRebootTimeElapsed() {
   LOG(ERROR) << "Unable to reboot - asking user for a manual reboot.";
   MakeSureScreenIsShown();
-  GetContextEditor().SetString(kContextKeyUpdateMessage,
-                               l10n_util::GetStringUTF16(IDS_UPDATE_COMPLETED));
+  GetContextEditor().SetBoolean(kContextKeyUpdateCompleted, true);
 }
 
 void UpdateScreen::MakeSureScreenIsShown() {

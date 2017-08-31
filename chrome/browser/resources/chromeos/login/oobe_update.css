@@ -8,6 +8,12 @@
   line-height: 18px;
 }
 
+.subtitle.update-subtitle {
+  color: #333;
+  font: 13px Roboto, sans-serif;
+  line-height: 18px;
+}
+
 #estimated-time-left,
 #progress-message {
   padding-top: 31px; /* = 44 - font size */
