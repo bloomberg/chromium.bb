@@ -171,6 +171,9 @@ class WebWidget {
   // Changes the text direction of the selected input node.
   virtual void SetTextDirection(WebTextDirection) {}
 
+  // Returns true if the WebWidget is currently animating a GestureFling.
+  virtual bool IsFlinging() const { return false; }
+
   // Returns true if the WebWidget uses GPU accelerated compositing
   // to render its contents.
   virtual bool IsAcceleratedCompositingActive() const { return false; }

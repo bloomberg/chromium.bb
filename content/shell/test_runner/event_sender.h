@@ -136,7 +136,7 @@ class EventSender {
                          float velocity_x,
                          float velocity_y,
                          gin::Arguments* args);
-  bool IsFlinging() const;
+  bool IsFlinging();
   void GestureScrollFirstPoint(int x, int y);
 
   void TouchStart(gin::Arguments* args);

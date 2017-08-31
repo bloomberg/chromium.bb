@@ -57,7 +57,6 @@ class WebSettings;
 class WebString;
 class WebViewClient;
 class WebViewScheduler;
-struct WebActiveWheelFlingParameters;
 struct WebDeviceEmulationParams;
 struct WebFloatPoint;
 struct WebMediaPlayerAction;
@@ -411,18 +410,6 @@ class WebView : protected WebWidget {
   // to suspend script callbacks and resource loads.
   BLINK_EXPORT static void WillEnterModalLoop();
   BLINK_EXPORT static void DidExitModalLoop();
-
-  // Called to inform the WebView that a wheel fling animation was started
-  // externally (for instance by the compositor) but must be completed by the
-  // WebView.
-  virtual void TransferActiveWheelFlingAnimation(
-      const WebActiveWheelFlingParameters&) = 0;
-
-  // Cancels an active fling, returning true if a fling was active.
-  virtual bool EndActiveFlingAnimation() = 0;
-
-  // Returns true if there's an active fling animation.
-  virtual bool IsFlinging() const = 0;
 
   virtual void SetShowPaintRects(bool) = 0;
   virtual void SetShowFPSCounter(bool) = 0;

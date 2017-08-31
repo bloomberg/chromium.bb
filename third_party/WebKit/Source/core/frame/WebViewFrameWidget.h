@@ -109,6 +109,8 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   DECLARE_VIRTUAL_TRACE();
 
  private:
+  PageWidgetEventHandler* GetPageWidgetEventHandler() override;
+
   WebWidgetClient* client_;
   RefPtr<WebViewImpl> web_view_;
   Member<WebLocalFrameImpl> main_frame_;

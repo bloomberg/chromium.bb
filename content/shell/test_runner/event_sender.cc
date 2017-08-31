@@ -589,7 +589,7 @@ class EventSenderBindings : public gin::Wrappable<EventSenderBindings> {
                          float velocity_x,
                          float velocity_y,
                          gin::Arguments* args);
-  bool IsFlinging() const;
+  bool IsFlinging();
   void GestureScrollFirstPoint(int x, int y);
   void TouchStart(gin::Arguments* args);
   void TouchMove(gin::Arguments* args);
@@ -879,7 +879,7 @@ void EventSenderBindings::GestureFlingStart(float x,
     sender_->GestureFlingStart(x, y, velocity_x, velocity_y, args);
 }
 
-bool EventSenderBindings::IsFlinging() const {
+bool EventSenderBindings::IsFlinging() {
   if (sender_)
     return sender_->IsFlinging();
   return false;
@@ -1989,8 +1989,8 @@ void EventSender::GestureFlingStart(float x,
   HandleInputEventOnViewOrPopup(event);
 }
 
-bool EventSender::IsFlinging() const {
-  return view()->IsFlinging();
+bool EventSender::IsFlinging() {
+  return mainFrameWidget()->IsFlinging();
 }
 
 void EventSender::GestureScrollFirstPoint(int x, int y) {

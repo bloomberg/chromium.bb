@@ -85,7 +85,6 @@ class PageScaleConstraintsSet;
 class PaintLayerCompositor;
 class UserGestureToken;
 class ValidationMessageClient;
-class WebActiveGestureAnimation;
 class WebDevToolsAgentImpl;
 class WebElement;
 class WebInputMethodController;
@@ -100,7 +99,6 @@ class WebViewScheduler;
 class CORE_EXPORT WebViewImpl final
     : public WebView,
       public RefCounted<WebViewImpl>,
-      public WebGestureCurveTarget,
       public PageWidgetEventHandler,
       public WebScheduler::InterventionReporter,
       public WebViewScheduler::WebViewSchedulerDelegate {
@@ -239,10 +237,6 @@ class CORE_EXPORT WebViewImpl final
   void HidePopups() override;
   void SetPageOverlayColor(WebColor) override;
   WebPageImportanceSignals* PageImportanceSignals() override;
-  void TransferActiveWheelFlingAnimation(
-      const WebActiveWheelFlingParameters&) override;
-  bool EndActiveFlingAnimation() override;
-  bool IsFlinging() const override { return !!gesture_animation_.get(); }
   void SetShowPaintRects(bool) override;
   void SetShowDebugBorders(bool);
   void SetShowFPSCounter(bool) override;
@@ -314,10 +308,6 @@ class CORE_EXPORT WebViewImpl final
                                bool use_anchor,
                                float new_scale,
                                double duration_in_seconds);
-
-  // WebGestureCurveTarget implementation for fling.
-  bool ScrollBy(const WebFloatSize& delta,
-                const WebFloatSize& velocity) override;
 
   // Handles context menu events orignated via the the keyboard. These
   // include the VK_APPS virtual key and the Shift+F10 combine. Code is
@@ -558,9 +548,6 @@ class CORE_EXPORT WebViewImpl final
   WebInputEventResult HandleSyntheticWheelFromTouchpadPinchEvent(
       const WebGestureEvent&);
 
-  WebGestureEvent CreateGestureScrollEventFromFling(WebInputEvent::Type,
-                                                    WebGestureDevice) const;
-
   void EnablePopupMouseWheelEventListener(WebLocalFrameImpl* local_root);
   void DisablePopupMouseWheelEventListener();
 
@@ -668,11 +655,6 @@ class CORE_EXPORT WebViewImpl final
   GraphicsLayer* visual_viewport_container_layer_;
   bool matches_heuristics_for_gpu_rasterization_;
 
-  std::unique_ptr<WebActiveGestureAnimation> gesture_animation_;
-  WebPoint position_on_fling_start_;
-  WebPoint global_position_on_fling_start_;
-  int fling_modifier_;
-  WebGestureDevice fling_source_device_;
   Vector<std::unique_ptr<LinkHighlightImpl>> link_highlights_;
   std::unique_ptr<CompositorAnimationTimeline> link_highlights_timeline_;
   std::unique_ptr<FullscreenController> fullscreen_controller_;

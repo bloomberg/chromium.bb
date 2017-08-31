@@ -260,11 +260,11 @@ void PageWidgetEventHandler::HandleMouseUp(LocalFrame& main_frame,
 }
 
 WebInputEventResult PageWidgetEventHandler::HandleMouseWheel(
-    LocalFrame& main_frame,
+    LocalFrame& frame,
     const WebMouseWheelEvent& event) {
   WebMouseWheelEvent transformed_event =
-      TransformWebMouseWheelEvent(main_frame.View(), event);
-  return main_frame.GetEventHandler().HandleWheelEvent(transformed_event);
+      TransformWebMouseWheelEvent(frame.View(), event);
+  return frame.GetEventHandler().HandleWheelEvent(transformed_event);
 }
 
 WebInputEventResult PageWidgetEventHandler::HandleTouchEvent(
