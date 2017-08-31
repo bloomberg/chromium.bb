@@ -457,6 +457,12 @@ void HttpNetworkTransaction::SetRequestHeadersCallback(
   request_headers_callback_ = std::move(callback);
 }
 
+void HttpNetworkTransaction::SetResponseHeadersCallback(
+    ResponseHeadersCallback callback) {
+  DCHECK(!stream_);
+  response_headers_callback_ = std::move(callback);
+}
+
 int HttpNetworkTransaction::ResumeNetworkStart() {
   DCHECK_EQ(next_state_, STATE_CREATE_STREAM);
   return DoLoop(OK);
@@ -1280,6 +1286,8 @@ int HttpNetworkTransaction::DoReadHeadersComplete(int result) {
   net_log_.AddEvent(
       NetLogEventType::HTTP_TRANSACTION_READ_RESPONSE_HEADERS,
       base::Bind(&HttpResponseHeaders::NetLogCallback, response_.headers));
+  if (response_headers_callback_)
+    response_headers_callback_.Run(response_.headers);
 
   if (response_.headers->GetHttpVersion() < HttpVersion(1, 0)) {
     // HTTP/0.9 doesn't support the PUT method, so lack of response headers

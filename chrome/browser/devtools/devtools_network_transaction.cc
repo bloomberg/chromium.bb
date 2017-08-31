@@ -290,6 +290,11 @@ void DevToolsNetworkTransaction::SetRequestHeadersCallback(
   network_transaction_->SetRequestHeadersCallback(std::move(callback));
 }
 
+void DevToolsNetworkTransaction::SetResponseHeadersCallback(
+    net::ResponseHeadersCallback callback) {
+  network_transaction_->SetResponseHeadersCallback(std::move(callback));
+}
+
 void DevToolsNetworkTransaction::SetBeforeHeadersSentCallback(
     const BeforeHeadersSentCallback& callback) {
   network_transaction_->SetBeforeHeadersSentCallback(callback);

@@ -84,6 +84,7 @@
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/test/url_request/url_request_mock_http_job.h"
 #include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_filter.h"
 #include "net/url_request/url_request_http_job.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
@@ -2115,4 +2116,41 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
 
   DevToolsWindowTesting::CloseDevToolsWindowSync(window);
   content::WebUIControllerFactory::UnregisterFactoryForTesting(&test_factory);
+}
+
+void AddHSTSHost(scoped_refptr<net::URLRequestContextGetter> context,
+                 std::string host) {
+  net::TransportSecurityState* transport_security_state =
+      context->GetURLRequestContext()->transport_security_state();
+  base::Time expiry = base::Time::Now() + base::TimeDelta::FromDays(1000);
+  bool include_subdomains = false;
+  transport_security_state->AddHSTS(host, expiry, include_subdomains);
+}
+
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestRawHeadersWithRedirectAndHSTS) {
+  net::EmbeddedTestServer https_test_server(
+      net::EmbeddedTestServer::TYPE_HTTPS);
+  https_test_server.SetSSLConfig(
+      net::EmbeddedTestServer::CERT_COMMON_NAME_IS_DOMAIN);
+  https_test_server.ServeFilesFromSourceDirectory("chrome/test/data");
+  ASSERT_TRUE(https_test_server.Start());
+  GURL https_url = https_test_server.GetURL("localhost", "/devtools/image.png");
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(
+          AddHSTSHost,
+          base::RetainedRef(browser()->profile()->GetRequestContext()),
+          https_url.host()));
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  OpenDevToolsWindow(std::string(), false);
+  GURL::Replacements replace_scheme;
+  replace_scheme.SetSchemeStr("http");
+  GURL http_url = https_url.ReplaceComponents(replace_scheme);
+  GURL redirect_url =
+      embedded_test_server()->GetURL("/server-redirect?" + http_url.spec());
+
+  DispatchOnTestSuite(window_, "testRawHeadersWithHSTS",
+                      redirect_url.spec().c_str());
+  CloseDevToolsWindow();
 }

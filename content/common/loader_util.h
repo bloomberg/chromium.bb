@@ -9,6 +9,7 @@
 
 namespace net {
 class HttpRawRequestHeaders;
+class HttpResponseHeaders;
 class URLRequest;
 }
 
@@ -27,7 +28,8 @@ bool ShouldSniffContent(net::URLRequest* url_request,
 // Fill ResourceDevToolsInfo based on raw headers.
 scoped_refptr<ResourceDevToolsInfo> BuildDevToolsInfo(
     const net::URLRequest& request,
-    const net::HttpRawRequestHeaders& raw_request_headers);
+    const net::HttpRawRequestHeaders& raw_request_headers,
+    const net::HttpResponseHeaders* raw_response_headers);
 
 }  // namespace content
 

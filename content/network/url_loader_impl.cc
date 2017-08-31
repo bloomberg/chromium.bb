@@ -211,6 +211,8 @@ URLLoaderImpl::URLLoaderImpl(
     url_request_->SetRequestHeadersCallback(
         base::Bind(&net::HttpRawRequestHeaders::Assign,
                    base::Unretained(&raw_request_headers_)));
+    url_request_->SetResponseHeadersCallback(base::Bind(
+        &URLLoaderImpl::SetRawResponseHeaders, base::Unretained(this)));
   }
   url_request_->Start();
 }
@@ -253,8 +255,10 @@ void URLLoaderImpl::OnReceivedRedirect(net::URLRequest* url_request,
   scoped_refptr<ResourceResponse> response = new ResourceResponse();
   PopulateResourceResponse(url_request_.get(), response.get());
   if (report_raw_headers_) {
-    response->head.devtools_info =
-        BuildDevToolsInfo(*url_request_, raw_request_headers_);
+    response->head.devtools_info = BuildDevToolsInfo(
+        *url_request_, raw_request_headers_, raw_response_headers_.get());
+    raw_request_headers_ = net::HttpRawRequestHeaders();
+    raw_response_headers_ = nullptr;
   }
   url_loader_client_->OnReceiveRedirect(redirect_info, response->head);
 }
@@ -272,8 +276,10 @@ void URLLoaderImpl::OnResponseStarted(net::URLRequest* url_request,
   response_ = new ResourceResponse();
   PopulateResourceResponse(url_request_.get(), response_.get());
   if (report_raw_headers_) {
-    response_->head.devtools_info =
-        BuildDevToolsInfo(*url_request_, raw_request_headers_);
+    response_->head.devtools_info = BuildDevToolsInfo(
+        *url_request_, raw_request_headers_, raw_response_headers_.get());
+    raw_request_headers_ = net::HttpRawRequestHeaders();
+    raw_response_headers_ = nullptr;
   }
 
   mojo::DataPipe data_pipe(kDefaultAllocationSize);
@@ -479,6 +485,11 @@ void URLLoaderImpl::CompletePendingWrite() {
       pending_write_->Complete(pending_write_buffer_offset_);
   pending_write_ = nullptr;
   total_written_bytes_ += pending_write_buffer_offset_;
+}
+
+void URLLoaderImpl::SetRawResponseHeaders(
+    scoped_refptr<const net::HttpResponseHeaders> headers) {
+  raw_response_headers_ = headers;
 }
 
 }  // namespace content

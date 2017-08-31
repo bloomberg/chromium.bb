@@ -52,7 +52,8 @@ void PopulateResourceResponse(
     ResourceRequestInfoImpl* info,
     net::URLRequest* request,
     ResourceResponse* response,
-    const net::HttpRawRequestHeaders& raw_request_headers) {
+    const net::HttpRawRequestHeaders& raw_request_headers,
+    const net::HttpResponseHeaders* raw_response_headers) {
   response->head.request_time = request->request_time();
   response->head.response_time = request->response_time();
   response->head.headers = request->response_headers();
@@ -72,7 +73,7 @@ void PopulateResourceResponse(
     response->head.previews_state = request_info->GetPreviewsState();
   if (info->ShouldReportRawHeaders()) {
     response->head.devtools_info =
-        BuildDevToolsInfo(*request, raw_request_headers);
+        BuildDevToolsInfo(*request, raw_request_headers, raw_response_headers);
   }
 
   response->head.effective_connection_type =
@@ -342,7 +343,10 @@ void ResourceLoader::OnReceivedRedirect(net::URLRequest* unused,
 
   scoped_refptr<ResourceResponse> response = new ResourceResponse();
   PopulateResourceResponse(info, request_.get(), response.get(),
-                           raw_request_headers_);
+                           raw_request_headers_, raw_response_headers_.get());
+  raw_request_headers_ = net::HttpRawRequestHeaders();
+  raw_response_headers_ = nullptr;
+
   delegate_->DidReceiveRedirect(this, redirect_info.new_url, response.get());
 
   // Can't used ScopedDeferral here, because on sync completion, need to set
@@ -573,6 +577,8 @@ void ResourceLoader::StartRequestInternal() {
     request_->SetRequestHeadersCallback(
         base::Bind(&net::HttpRawRequestHeaders::Assign,
                    base::Unretained(&raw_request_headers_)));
+    request_->SetResponseHeadersCallback(base::Bind(
+        &ResourceLoader::SetRawResponseHeaders, base::Unretained(this)));
   }
   request_->Start();
 
@@ -640,7 +646,9 @@ void ResourceLoader::CompleteResponseStarted() {
   ResourceRequestInfoImpl* info = GetRequestInfo();
   scoped_refptr<ResourceResponse> response = new ResourceResponse();
   PopulateResourceResponse(info, request_.get(), response.get(),
-                           raw_request_headers_);
+                           raw_request_headers_, raw_response_headers_.get());
+  raw_request_headers_ = net::HttpRawRequestHeaders();
+  raw_response_headers_ = nullptr;
 
   delegate_->DidReceiveResponse(this, response.get());
 
@@ -819,6 +827,11 @@ void ResourceLoader::RecordHistograms() {
     TimeDelta total_time = base::TimeTicks::Now() - request_->creation_time();
     UMA_HISTOGRAM_TIMES("Net.Prefetch.TimeSpentOnPrefetchHit", total_time);
   }
+}
+
+void ResourceLoader::SetRawResponseHeaders(
+    scoped_refptr<const net::HttpResponseHeaders> headers) {
+  raw_response_headers_ = headers;
 }
 
 }  // namespace content

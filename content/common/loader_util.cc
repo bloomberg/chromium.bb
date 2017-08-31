@@ -41,7 +41,8 @@ bool ShouldSniffContent(net::URLRequest* url_request,
 
 scoped_refptr<ResourceDevToolsInfo> BuildDevToolsInfo(
     const net::URLRequest& request,
-    const net::HttpRawRequestHeaders& raw_request_headers) {
+    const net::HttpRawRequestHeaders& raw_request_headers,
+    const net::HttpResponseHeaders* raw_response_headers) {
   scoped_refptr<ResourceDevToolsInfo> info = new ResourceDevToolsInfo();
 
   const net::HttpResponseInfo& response_info = request.response_info();
@@ -65,21 +66,22 @@ scoped_refptr<ResourceDevToolsInfo> BuildDevToolsInfo(
     info->request_headers_text = std::move(text);
   }
 
-  const net::HttpResponseHeaders* response_headers = request.response_headers();
-  if (response_headers) {
-    info->http_status_code = response_headers->response_code();
-    info->http_status_text = response_headers->GetStatusText();
+  if (!raw_response_headers)
+    raw_response_headers = request.response_headers();
+  if (raw_response_headers) {
+    info->http_status_code = raw_response_headers->response_code();
+    info->http_status_text = raw_response_headers->GetStatusText();
 
     std::string name;
     std::string value;
     for (size_t it = 0;
-         response_headers->EnumerateHeaderLines(&it, &name, &value);) {
+         raw_response_headers->EnumerateHeaderLines(&it, &name, &value);) {
       info->response_headers.push_back(std::make_pair(name, value));
     }
     if (report_headers_text) {
       info->response_headers_text =
           net::HttpUtil::ConvertHeadersBackToHTTPResponse(
-              response_headers->raw_headers());
+              raw_response_headers->raw_headers());
     }
   }
   return info;

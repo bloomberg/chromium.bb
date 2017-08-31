@@ -11716,7 +11716,7 @@ TEST_F(URLRequestTest, URLRequestRedirectJobCancelRequest) {
   EXPECT_EQ(0, d.received_redirect_count());
 }
 
-TEST_F(URLRequestTestHTTP, RequestHeadersCallback) {
+TEST_F(URLRequestTestHTTP, HeadersCallbacks) {
   ASSERT_TRUE(http_test_server()->Start());
   TestURLRequestContext context;
   GURL url(http_test_server()->GetURL("/cachetime"));
@@ -11725,44 +11725,54 @@ TEST_F(URLRequestTestHTTP, RequestHeadersCallback) {
   extra_headers.SetHeader("X-Foo", "bar");
 
   {
-    HttpRawRequestHeaders raw_headers;
+    HttpRawRequestHeaders raw_req_headers;
+    scoped_refptr<const HttpResponseHeaders> raw_resp_headers;
+
     std::unique_ptr<URLRequest> r(context.CreateRequest(
         url, DEFAULT_PRIORITY, &delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
     r->SetExtraRequestHeaders(extra_headers);
-    r->SetRequestHeadersCallback(base::Bind(&HttpRawRequestHeaders::Assign,
-                                            base::Unretained(&raw_headers)));
+    r->SetRequestHeadersCallback(base::Bind(
+        &HttpRawRequestHeaders::Assign, base::Unretained(&raw_req_headers)));
+    r->SetResponseHeadersCallback(base::Bind(
+        [](scoped_refptr<const HttpResponseHeaders>* left,
+           scoped_refptr<const HttpResponseHeaders> right) { *left = right; },
+        base::Unretained(&raw_resp_headers)));
     r->Start();
     while (!delegate.response_started_count())
       base::RunLoop().RunUntilIdle();
-    EXPECT_FALSE(raw_headers.headers().empty());
+    EXPECT_FALSE(raw_req_headers.headers().empty());
     std::string value;
-    EXPECT_TRUE(raw_headers.FindHeaderForTest("X-Foo", &value));
+    EXPECT_TRUE(raw_req_headers.FindHeaderForTest("X-Foo", &value));
     EXPECT_EQ("bar", value);
-    EXPECT_TRUE(raw_headers.FindHeaderForTest("Accept-Encoding", &value));
+    EXPECT_TRUE(raw_req_headers.FindHeaderForTest("Accept-Encoding", &value));
     EXPECT_EQ("gzip, deflate", value);
-    EXPECT_TRUE(raw_headers.FindHeaderForTest("Connection", &value));
-    EXPECT_TRUE(raw_headers.FindHeaderForTest("Host", &value));
-    EXPECT_EQ("GET /cachetime HTTP/1.1\r\n", raw_headers.request_line());
+    EXPECT_TRUE(raw_req_headers.FindHeaderForTest("Connection", &value));
+    EXPECT_TRUE(raw_req_headers.FindHeaderForTest("Host", &value));
+    EXPECT_EQ("GET /cachetime HTTP/1.1\r\n", raw_req_headers.request_line());
+    EXPECT_EQ(raw_resp_headers.get(), r->response_headers());
   }
   {
-    HttpRawRequestHeaders raw_headers;
     std::unique_ptr<URLRequest> r(context.CreateRequest(
         url, DEFAULT_PRIORITY, &delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
     r->SetExtraRequestHeaders(extra_headers);
-    r->SetRequestHeadersCallback(base::Bind([](net::HttpRawRequestHeaders) {
+    r->SetRequestHeadersCallback(base::Bind([](HttpRawRequestHeaders) {
       FAIL() << "Callback should not be called unless request is sent";
     }));
+    r->SetResponseHeadersCallback(
+        base::Bind([](scoped_refptr<const HttpResponseHeaders>) {
+          FAIL() << "Callback should not be called unless request is sent";
+        }));
     r->Start();
     base::RunLoop().Run();
     EXPECT_TRUE(r->was_cached());
-    EXPECT_TRUE(raw_headers.headers().empty());
-    EXPECT_TRUE(raw_headers.request_line().empty());
   }
 }
 
-TEST_F(URLRequestTestHTTP, RequestHeadersCallbackWithRedirect) {
+TEST_F(URLRequestTestHTTP, HeadersCallbacksWithRedirect) {
   ASSERT_TRUE(http_test_server()->Start());
-  HttpRawRequestHeaders raw_headers;
+  HttpRawRequestHeaders raw_req_headers;
+  scoped_refptr<const HttpResponseHeaders> raw_resp_headers;
+
   TestURLRequestContext context;
   TestDelegate delegate;
   HttpRequestHeaders extra_headers;
@@ -11773,30 +11783,41 @@ TEST_F(URLRequestTestHTTP, RequestHeadersCallbackWithRedirect) {
       url, DEFAULT_PRIORITY, &delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
   r->SetExtraRequestHeaders(extra_headers);
   r->SetRequestHeadersCallback(base::Bind(&HttpRawRequestHeaders::Assign,
-                                          base::Unretained(&raw_headers)));
+                                          base::Unretained(&raw_req_headers)));
+  r->SetResponseHeadersCallback(base::Bind(
+      [](scoped_refptr<const HttpResponseHeaders>* left,
+         scoped_refptr<const HttpResponseHeaders> right) { *left = right; },
+      base::Unretained(&raw_resp_headers)));
   r->Start();
   base::RunLoop().Run();
 
   ASSERT_EQ(1, delegate.received_redirect_count());
   std::string value;
-  EXPECT_TRUE(raw_headers.FindHeaderForTest("X-Foo", &value));
+  EXPECT_TRUE(raw_req_headers.FindHeaderForTest("X-Foo", &value));
   EXPECT_EQ("bar", value);
-  EXPECT_TRUE(raw_headers.FindHeaderForTest("Accept-Encoding", &value));
+  EXPECT_TRUE(raw_req_headers.FindHeaderForTest("Accept-Encoding", &value));
   EXPECT_EQ("gzip, deflate", value);
   EXPECT_EQ(1, delegate.received_redirect_count());
-  EXPECT_EQ("GET /redirect-test.html HTTP/1.1\r\n", raw_headers.request_line());
+  EXPECT_EQ("GET /redirect-test.html HTTP/1.1\r\n",
+            raw_req_headers.request_line());
+  EXPECT_TRUE(raw_resp_headers->HasHeader("Location"));
+  EXPECT_EQ(302, raw_resp_headers->response_code());
+  EXPECT_EQ("Redirect", raw_resp_headers->GetStatusText());
 
-  raw_headers = HttpRawRequestHeaders();
+  raw_req_headers = HttpRawRequestHeaders();
+  raw_resp_headers = nullptr;
   r->FollowDeferredRedirect();
   base::RunLoop().Run();
-  EXPECT_TRUE(raw_headers.FindHeaderForTest("X-Foo", &value));
+  EXPECT_TRUE(raw_req_headers.FindHeaderForTest("X-Foo", &value));
   EXPECT_EQ("bar", value);
-  EXPECT_TRUE(raw_headers.FindHeaderForTest("Accept-Encoding", &value));
+  EXPECT_TRUE(raw_req_headers.FindHeaderForTest("Accept-Encoding", &value));
   EXPECT_EQ("gzip, deflate", value);
-  EXPECT_EQ("GET /with-headers.html HTTP/1.1\r\n", raw_headers.request_line());
+  EXPECT_EQ("GET /with-headers.html HTTP/1.1\r\n",
+            raw_req_headers.request_line());
+  EXPECT_EQ(r->response_headers(), raw_resp_headers.get());
 }
 
-TEST_F(URLRequestTest, RequestHeadersCallbackConnectFailed) {
+TEST_F(URLRequestTest, HeadersCallbacksConnectFailed) {
   TestDelegate request_delegate;
 
   std::unique_ptr<URLRequest> r(default_context_.CreateRequest(
@@ -11805,12 +11826,16 @@ TEST_F(URLRequestTest, RequestHeadersCallbackConnectFailed) {
   r->SetRequestHeadersCallback(base::Bind([](net::HttpRawRequestHeaders) {
     FAIL() << "Callback should not be called unless request is sent";
   }));
+  r->SetResponseHeadersCallback(
+      base::Bind([](scoped_refptr<const net::HttpResponseHeaders>) {
+        FAIL() << "Callback should not be called unless request is sent";
+      }));
   r->Start();
   base::RunLoop().Run();
   EXPECT_FALSE(r->is_pending());
 }
 
-TEST_F(URLRequestTestHTTP, RequestHeadersCallbackAuthRetry) {
+TEST_F(URLRequestTestHTTP, HeadersCallbacksAuthRetry) {
   ASSERT_TRUE(http_test_server()->Start());
   GURL url(http_test_server()->GetURL("/auth-basic"));
 
@@ -11821,38 +11846,75 @@ TEST_F(URLRequestTestHTTP, RequestHeadersCallbackAuthRetry) {
   HttpRequestHeaders extra_headers;
   extra_headers.SetHeader("X-Foo", "bar");
 
-  using HeadersVector = std::vector<std::unique_ptr<HttpRawRequestHeaders>>;
-  HeadersVector raw_headers;
+  using ReqHeadersVector = std::vector<std::unique_ptr<HttpRawRequestHeaders>>;
+  ReqHeadersVector raw_req_headers;
 
+  using RespHeadersVector =
+      std::vector<scoped_refptr<const HttpResponseHeaders>>;
+  RespHeadersVector raw_resp_headers;
+
+  auto req_headers_callback = base::Bind(
+      [](ReqHeadersVector* vec, HttpRawRequestHeaders headers) {
+        vec->emplace_back(new HttpRawRequestHeaders(std::move(headers)));
+      },
+      &raw_req_headers);
+  auto resp_headers_callback = base::Bind(
+      [](RespHeadersVector* vec,
+         scoped_refptr<const HttpResponseHeaders> headers) {
+        vec->push_back(headers);
+      },
+      &raw_resp_headers);
   std::unique_ptr<URLRequest> r(context.CreateRequest(
       url, DEFAULT_PRIORITY, &delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
   r->SetExtraRequestHeaders(extra_headers);
-  r->SetRequestHeadersCallback(base::Bind(
-      [](HeadersVector* vec, HttpRawRequestHeaders headers) {
-        vec->emplace_back(new HttpRawRequestHeaders(std::move(headers)));
-      },
-      &raw_headers));
+  r->SetRequestHeadersCallback(req_headers_callback);
+  r->SetResponseHeadersCallback(resp_headers_callback);
   r->Start();
   base::RunLoop().Run();
   EXPECT_FALSE(r->is_pending());
-  ASSERT_GE(raw_headers.size(), 2u);
+  ASSERT_EQ(raw_req_headers.size(), 2u);
+  ASSERT_EQ(raw_resp_headers.size(), 2u);
   std::string value;
-  EXPECT_FALSE(raw_headers[0]->FindHeaderForTest("Authorization", &value));
-  EXPECT_TRUE(raw_headers[0]->FindHeaderForTest("X-Foo", &value));
+  EXPECT_FALSE(raw_req_headers[0]->FindHeaderForTest("Authorization", &value));
+  EXPECT_TRUE(raw_req_headers[0]->FindHeaderForTest("X-Foo", &value));
   EXPECT_EQ("bar", value);
-  EXPECT_TRUE(raw_headers[1]->FindHeaderForTest("Authorization", &value));
-  EXPECT_TRUE(raw_headers[1]->FindHeaderForTest("X-Foo", &value));
+  EXPECT_TRUE(raw_req_headers[1]->FindHeaderForTest("Authorization", &value));
+  EXPECT_TRUE(raw_req_headers[1]->FindHeaderForTest("X-Foo", &value));
   EXPECT_EQ("bar", value);
+  EXPECT_EQ(raw_resp_headers[1], r->response_headers());
+  EXPECT_NE(raw_resp_headers[0], raw_resp_headers[1]);
+  EXPECT_EQ(401, raw_resp_headers[0]->response_code());
+  EXPECT_EQ("Unauthorized", raw_resp_headers[0]->GetStatusText());
+
+  std::unique_ptr<URLRequest> r2(context.CreateRequest(
+      url, DEFAULT_PRIORITY, &delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
+  r2->SetExtraRequestHeaders(extra_headers);
+  r2->SetRequestHeadersCallback(req_headers_callback);
+  r2->SetResponseHeadersCallback(resp_headers_callback);
+  r2->SetLoadFlags(LOAD_VALIDATE_CACHE);
+  r2->Start();
+  base::RunLoop().Run();
+  EXPECT_FALSE(r2->is_pending());
+  ASSERT_EQ(raw_req_headers.size(), 3u);
+  ASSERT_EQ(raw_resp_headers.size(), 3u);
+  EXPECT_TRUE(raw_req_headers[2]->FindHeaderForTest("If-None-Match", &value));
+  EXPECT_NE(raw_resp_headers[2].get(), r2->response_headers());
+  EXPECT_EQ(304, raw_resp_headers[2]->response_code());
+  EXPECT_EQ("Not Modified", raw_resp_headers[2]->GetStatusText());
 }
 
-TEST_F(URLRequestTest, RequestHeadersCallbackNonHTTP) {
+TEST_F(URLRequestTest, HeadersCallbacksNonHTTP) {
   GURL data_url("data:text/html,<html><body>Hello!</body></html>");
   TestDelegate d;
   std::unique_ptr<URLRequest> r(default_context_.CreateRequest(
       data_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
   r->SetRequestHeadersCallback(base::Bind([](net::HttpRawRequestHeaders) {
-    FAIL() << "Callback should not be called unless request is sent";
+    FAIL() << "Callback should not be called for non-HTTP schemes";
   }));
+  r->SetResponseHeadersCallback(
+      base::Bind([](scoped_refptr<const net::HttpResponseHeaders>) {
+        FAIL() << "Callback should not be called for non-HTTP schemes";
+      }));
   r->Start();
   base::RunLoop().Run();
   EXPECT_FALSE(r->is_pending());
