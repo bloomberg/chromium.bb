@@ -15,10 +15,11 @@ __version__ = '0.2'
 
 import json
 import os
-import tempfile
 import shutil
+import string
 import subprocess
 import sys
+import tempfile
 
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(
     __file__.decode(sys.getfilesystemencoding()))))
@@ -114,7 +115,9 @@ def run_serial(
         cmd.extend(('-d', k, v))
       for k, v in env:
         cmd.extend(('--env', k, v))
-      cmd.extend(args)
+      if args:
+        cmd.append('--')
+        cmd.extend(args)
       r = subprocess.call(cmd, cwd=ROOT_DIR)
       result = max(r, result)
   return result
@@ -143,7 +146,9 @@ def run_parallel(
 
 def main():
   parser = parallel_execution.OptionParser(
-      usage='%prog [options] script.py', version=__version__)
+      usage='%prog [options] (script.py|isolated hash) '
+            '-- [script.py arguments]',
+      version=__version__)
   parser.add_option(
       '--serial', action='store_true',
       help='Runs the task serially, to be used when debugging problems since '
@@ -152,6 +157,9 @@ def main():
       '--repeat', type='int', default=1,
       help='Runs the task multiple time on each bot, meant to be used as a '
            'load test')
+  parser.add_option(
+      '--name',
+      help='Name to use when providing an isolated hash')
   options, args = parser.parse_args()
 
   if len(args) < 1:
@@ -164,7 +172,31 @@ def main():
         'so the task completes as fast as possible, or an high number so the\n'
         'task only runs when the bot is idle.')
 
-  # 1. Query the bots list.
+  # 1. Archive the script to run.
+  if not os.path.exists(args[0]):
+    if not options.name:
+      parser.error(
+          'Please provide --name when using an isolated hash.')
+    if len(args[0]) not in (40, 64):
+      parser.error(
+          'Hash wrong length %d (%r)' % (len(args.hash), args[0]))
+    for i, c in enumerate(args[0]):
+      if c not in string.hexdigits:
+        parser.error(
+            'Hash character invalid\n'
+            ' %s\n' % args[0] +
+            ' '+'-'*i+'^\n'
+            )
+
+    isolated_hash = args[0]
+    name = options.name
+  else:
+    isolated_hash = archive(options.isolate_server, args[0])
+    name = os.path.basename(args[0])
+
+  print('Running %s' % isolated_hash)
+
+  # 2. Query the bots list.
   bots, quarantined_bots, dead_bots = get_bot_list(
       options.swarming, options.dimensions)
   print('Found %d bots to process' % len(bots))
@@ -175,12 +207,7 @@ def main():
   if not bots:
     return 1
 
-  # 2. Archive the script to run.
-  isolated_hash = archive(options.isolate_server, args[0])
-  print('Running %s' % isolated_hash)
-
   # 3. Trigger the tasks.
-  name = os.path.basename(args[0])
   if options.serial:
     return run_serial(
         options.swarming,
