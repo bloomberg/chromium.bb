@@ -3231,12 +3231,10 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
     throttles.push_back(std::move(background_tab_navigation_throttle));
 #endif
 
-  if (base::FeatureList::IsEnabled(features::kClickToOpenPDFPlaceholder)) {
-    std::unique_ptr<content::NavigationThrottle> pdf_iframe_throttle =
-        PDFIFrameNavigationThrottle::MaybeCreateThrottleFor(handle);
-    if (pdf_iframe_throttle)
-      throttles.push_back(std::move(pdf_iframe_throttle));
-  }
+  std::unique_ptr<content::NavigationThrottle> pdf_iframe_throttle =
+      PDFIFrameNavigationThrottle::MaybeCreateThrottleFor(handle);
+  if (pdf_iframe_throttle)
+    throttles.push_back(std::move(pdf_iframe_throttle));
 
   return throttles;
 }

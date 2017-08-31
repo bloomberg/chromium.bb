@@ -5,6 +5,8 @@
 #include "chrome/browser/plugins/pdf_iframe_navigation_throttle.h"
 
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/navigation_handle.h"
@@ -68,8 +70,11 @@ class PDFIFrameNavigationThrottleTest : public ChromeRenderViewHostTestHarness {
         ->InitializeRenderFrameIfNeeded();
     subframe_ = content::RenderFrameHostTester::For(main_rfh())
                     ->AppendChild("subframe");
+
+    feature_list_.InitAndEnableFeature(features::kClickToOpenPDFPlaceholder);
   }
 
+  base::test::ScopedFeatureList feature_list_;
   content::RenderFrameHost* subframe_;
 };
 

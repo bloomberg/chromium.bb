@@ -55972,7 +55972,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="PDF.LoadStatus" enum="PDFLoadStatus">
+<histogram name="PDF.LoadStatus" enum="ChromePDFViewerLoadStatus">
   <owner>tommycli@chromium.org</owner>
   <summary>
     Tracks what happens when Chrome tries to load a PDF. This metric tracks all

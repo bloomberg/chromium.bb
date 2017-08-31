@@ -4,6 +4,7 @@
 
 #include "chrome/renderer/plugins/pdf_plugin_placeholder.h"
 
+#include "chrome/common/pdf_uma.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/grit/renderer_resources.h"
 #include "content/public/renderer/render_thread.h"
@@ -44,6 +45,7 @@ gin::ObjectTemplateBuilder PDFPluginPlaceholder::GetObjectTemplateBuilder(
 }
 
 void PDFPluginPlaceholder::OpenPDFCallback() {
+  ReportPDFLoadStatus(PDFLoadStatus::kViewPdfClickedInPdfPluginPlaceholder);
   content::RenderThread::Get()->Send(
       new ChromeViewHostMsg_OpenPDF(routing_id(), GetPluginParams().url));
 }
