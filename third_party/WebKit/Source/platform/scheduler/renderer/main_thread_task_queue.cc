@@ -26,10 +26,14 @@ const char* MainThreadTaskQueue::NameForQueueType(
       return "unthrottled_tq";
     case MainThreadTaskQueue::QueueType::FRAME_LOADING:
       return "frame_loading_tq";
-    case MainThreadTaskQueue::QueueType::FRAME_TIMER:
-      return "frame_timer_tq";
-    case MainThreadTaskQueue::QueueType::FRAME_UNTHROTTLED:
-      return "frame_unthrottled_tq";
+    case MainThreadTaskQueue::QueueType::FRAME_THROTTLEABLE:
+      return "frame_throttleable_tq";
+    case MainThreadTaskQueue::QueueType::FRAME_DEFERRABLE:
+      return "frame_deferrable_tq";
+    case MainThreadTaskQueue::QueueType::FRAME_PAUSABLE:
+      return "frame_pausable_tq";
+    case MainThreadTaskQueue::QueueType::FRAME_UNPAUSABLE:
+      return "frame_unpausable_tq";
     case MainThreadTaskQueue::QueueType::COMPOSITOR:
       return "compositor_tq";
     case MainThreadTaskQueue::QueueType::IDLE:
@@ -59,11 +63,11 @@ MainThreadTaskQueue::QueueClass MainThreadTaskQueue::QueueClassForQueueType(
     case QueueType::FRAME_LOADING_CONTROL:
       return QueueClass::LOADING;
     case QueueType::DEFAULT_TIMER:
-    case QueueType::FRAME_TIMER:
-    // Unthrottled tasks are considered timers which can't be throttled and
-    // fall into TIMER class.
-    case QueueType::FRAME_UNTHROTTLED:
     case QueueType::UNTHROTTLED:
+    case QueueType::FRAME_THROTTLEABLE:
+    case QueueType::FRAME_DEFERRABLE:
+    case QueueType::FRAME_PAUSABLE:
+    case QueueType::FRAME_UNPAUSABLE:
       return QueueClass::TIMER;
     case QueueType::COMPOSITOR:
       return QueueClass::COMPOSITOR;
