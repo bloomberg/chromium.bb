@@ -59,8 +59,7 @@ static int MaxOffsetIncludingCollapsedSpaces(Node* node) {
 template <typename Strategy>
 SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::
     SimplifiedBackwardsTextIteratorAlgorithm(
-        const PositionTemplate<Strategy>& start,
-        const PositionTemplate<Strategy>& end,
+        const EphemeralRangeTemplate<Strategy>& range,
         const TextIteratorBehavior& behavior)
     : node_(nullptr),
       offset_(0),
@@ -86,12 +85,12 @@ SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::
       behavior ==
           TextIteratorBehavior::Builder().SetStopsOnFormControls(true).Build());
 
-  Node* start_node = start.AnchorNode();
+  Node* start_node = range.StartPosition().AnchorNode();
   if (!start_node)
     return;
-  Node* end_node = end.AnchorNode();
-  int start_offset = start.ComputeEditingOffset();
-  int end_offset = end.ComputeEditingOffset();
+  Node* end_node = range.EndPosition().AnchorNode();
+  int start_offset = range.StartPosition().ComputeEditingOffset();
+  int end_offset = range.EndPosition().ComputeEditingOffset();
 
   Init(start_node, end_node, start_offset, end_offset);
 }

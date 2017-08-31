@@ -37,7 +37,7 @@ BackwardsCharacterIteratorAlgorithm<Strategy>::
     : offset_(0),
       run_offset_(0),
       at_break_(true),
-      text_iterator_(range.StartPosition(), range.EndPosition(), behavior) {
+      text_iterator_(range, behavior) {
   while (!AtEnd() && !text_iterator_.length())
     text_iterator_.Advance();
 }
