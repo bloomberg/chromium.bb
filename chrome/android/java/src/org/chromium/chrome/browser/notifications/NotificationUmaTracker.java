@@ -106,7 +106,7 @@ public class NotificationUmaTracker {
         NotificationManager notificationManager =
                 ContextUtils.getApplicationContext().getSystemService(NotificationManager.class);
         NotificationChannel channel = notificationManager.getNotificationChannel(channelId);
-        return channel.getImportance() == NotificationManager.IMPORTANCE_NONE;
+        return channel != null && channel.getImportance() == NotificationManager.IMPORTANCE_NONE;
     }
 
     private void saveLastShownNotification(@SystemNotificationType int type) {

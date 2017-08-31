@@ -640,7 +640,7 @@ public class NotificationPlatformBridge {
 
             mNotificationManager.notify(platformTag, PLATFORM_ID, notificationBuilder.build());
             NotificationUmaTracker.getInstance().onNotificationShown(
-                    NotificationUmaTracker.SITES, ChannelDefinitions.CHANNEL_ID_SITES);
+                    NotificationUmaTracker.SITES, notificationBuilder.mChannelId);
         }
     }
 
