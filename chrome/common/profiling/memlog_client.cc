@@ -17,7 +17,15 @@ namespace profiling {
 
 MemlogClient::MemlogClient() = default;
 
-MemlogClient::~MemlogClient() = default;
+MemlogClient::~MemlogClient() {
+  StopAllocatorShimDangerous();
+
+  // The allocator shim cannot be synchronously, consistently stopped. We leak
+  // the memlog_sender_pipe_, with the idea that very few future messages will
+  // be sent to it. This happens at shutdown, so resources will be reclaimed by
+  // the OS after the process is terminated.
+  memlog_sender_pipe_.release();
+}
 
 void MemlogClient::OnServiceManagerConnected(
     content::ServiceManagerConnection* connection) {
