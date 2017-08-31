@@ -113,6 +113,11 @@ void LayoutTableSection::StyleDidChange(StyleDifference diff,
   LayoutTableBoxComponent::StyleDidChange(diff, old_style);
   PropagateStyleToAnonymousChildren();
 
+  // We allow transforms on table sections, so they must be able to act as
+  // containers for style reasons.
+  SetCanContainFixedPositionObjects(
+      StyleRef().CanContainFixedPositionObjects());
+
   if (!old_style)
     return;
 
@@ -124,9 +129,10 @@ void LayoutTableSection::StyleDidChange(StyleDifference diff,
       *this, *table, diff, *old_style);
 
   if (LayoutTableBoxComponent::DoCellsHaveDirtyWidth(*this, *table, diff,
-                                                     *old_style))
+                                                     *old_style)) {
     MarkAllCellsWidthsDirtyAndOrNeedsLayout(
         LayoutTable::kMarkDirtyAndNeedsLayout);
+  }
 }
 
 void LayoutTableSection::WillBeRemovedFromTree() {
