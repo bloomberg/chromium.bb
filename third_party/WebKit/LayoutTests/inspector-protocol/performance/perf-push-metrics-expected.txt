@@ -20,6 +20,8 @@ title: test1
 	RecalcStyleDuration
 	ScriptDuration
 	TaskDuration
+	JSHeapUsedSize
+	JSHeapTotalSize
 	FirstMeaningfulPaint
 	DomContentLoaded
 	NavigationStart
@@ -44,6 +46,8 @@ title: test1
 	RecalcStyleDuration
 	ScriptDuration
 	TaskDuration
+	JSHeapUsedSize
+	JSHeapTotalSize
 	FirstMeaningfulPaint
 	DomContentLoaded
 	NavigationStart
@@ -68,6 +72,8 @@ title:
 	RecalcStyleDuration
 	ScriptDuration
 	TaskDuration
+	JSHeapUsedSize
+	JSHeapTotalSize
 	FirstMeaningfulPaint
 	DomContentLoaded
 	NavigationStart
