@@ -12,6 +12,7 @@ import org.junit.Assert;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.base.test.util.ScalableTimeout;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -128,7 +129,8 @@ public class ChromeTabUtils {
         });
 
         try {
-            loadedCallback.waitForCallback(0);
+            loadedCallback.waitForCallback(
+                    0, 1, ScalableTimeout.scaleTimeout(10), TimeUnit.SECONDS);
         } catch (TimeoutException e) {
             // In the event that:
             //  1) the tab is on the correct page
