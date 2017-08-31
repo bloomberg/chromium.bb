@@ -100,9 +100,10 @@ bool IOSPaymentInstrumentLauncher::LaunchIOSPaymentInstrument(
       SerializeCertificateChain(
           active_web_state->GetNavigationManager()->GetVisibleItem()));
 
+  DCHECK(payment_request->web_payment_request().details.total);
   params_to_payment_app->SetDictionary(
       kTotal, payment_request->web_payment_request()
-                  .details.total.amount.ToDictionaryValue());
+                  .details.total->amount.ToDictionaryValue());
 
   params_to_payment_app->SetList(
       kModifiers,

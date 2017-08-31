@@ -66,9 +66,10 @@ TEST(PaymentRequestTest, ParsingFullyPopulatedRequestDictionarySucceeds) {
   // Add the expected values to expected_request.
   expected_request.payment_request_id = "123456789";
   expected_request.details.id = "12345";
-  expected_request.details.total.label = "TOTAL";
-  expected_request.details.total.amount.currency = "GBP";
-  expected_request.details.total.amount.value = "6.66";
+  expected_request.details.total = base::MakeUnique<payments::PaymentItem>();
+  expected_request.details.total->label = "TOTAL";
+  expected_request.details.total->amount.currency = "GBP";
+  expected_request.details.total->amount.value = "6.66";
   expected_request.details.error = "Error in details";
 
   payments::PaymentMethodData method_data;
@@ -307,11 +308,13 @@ TEST(PaymentRequestTest, PaymentRequestEquality) {
   EXPECT_EQ(request1, request2);
 
   payments::PaymentDetails details1;
-  details1.total.label = "Total";
+  details1.total = base::MakeUnique<payments::PaymentItem>();
+  details1.total->label = "Total";
   request1.details = details1;
   EXPECT_NE(request1, request2);
   payments::PaymentDetails details2;
-  details2.total.amount.value = "0.01";
+  details2.total = base::MakeUnique<payments::PaymentItem>();
+  details2.total->amount.value = "0.01";
   request2.details = details2;
   EXPECT_NE(request1, request2);
   request2.details = details1;

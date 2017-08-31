@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -23,9 +24,10 @@ TEST(PaymentRequestTest, PaymentDetailsFromDictionaryValueSuccess) {
       actual.FromDictionaryValue(details_dict, /*requires_total=*/false));
   EXPECT_EQ(expected, actual);
 
-  expected.total.label = "TOTAL";
-  expected.total.amount.currency = "GBP";
-  expected.total.amount.value = "6.66";
+  expected.total = base::MakeUnique<PaymentItem>();
+  expected.total->label = "TOTAL";
+  expected.total->amount.currency = "GBP";
+  expected.total->amount.value = "6.66";
 
   std::unique_ptr<base::DictionaryValue> total_dict(new base::DictionaryValue);
   total_dict->SetString("label", "TOTAL");
@@ -47,9 +49,10 @@ TEST(PaymentRequestTest, PaymentDetailsFromDictionaryValueSuccess) {
 // Tests the failure case when populating a PaymentDetails from a dictionary.
 TEST(PaymentRequestTest, PaymentDetailsFromDictionaryValueFailure) {
   PaymentDetails expected;
-  expected.total.label = "TOTAL";
-  expected.total.amount.currency = "GBP";
-  expected.total.amount.value = "6.66";
+  expected.total = base::MakeUnique<PaymentItem>();
+  expected.total->label = "TOTAL";
+  expected.total->amount.currency = "GBP";
+  expected.total->amount.value = "6.66";
   expected.error = "Error in details";
 
   base::DictionaryValue details_dict;
@@ -76,11 +79,13 @@ TEST(PaymentRequestTest, PaymentDetailsEquality) {
   details2.id = details1.id;
   EXPECT_EQ(details1, details2);
 
-  details1.total.label = "Total";
+  details1.total = base::MakeUnique<PaymentItem>();
+  details1.total->label = "Total";
   EXPECT_NE(details1, details2);
-  details2.total.label = "Shipping";
+  details2.total = base::MakeUnique<PaymentItem>();
+  details2.total->label = "Shipping";
   EXPECT_NE(details1, details2);
-  details2.total.label = "Total";
+  details2.total->label = "Total";
   EXPECT_EQ(details1, details2);
 
   details1.error = "Foo";

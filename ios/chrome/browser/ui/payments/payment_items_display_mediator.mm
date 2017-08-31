@@ -57,14 +57,14 @@
 - (CollectionViewItem*)totalItem {
   PriceItem* totalItem = [[PriceItem alloc] init];
   totalItem.item =
-      base::SysUTF8ToNSString(_paymentRequest->payment_details().total.label);
+      base::SysUTF8ToNSString(_paymentRequest->payment_details().total->label);
   payments::CurrencyFormatter* currencyFormatter =
       _paymentRequest->GetOrCreateCurrencyFormatter();
   totalItem.price = base::SysUTF16ToNSString(l10n_util::GetStringFUTF16(
       IDS_PAYMENT_REQUEST_ORDER_SUMMARY_SHEET_TOTAL_FORMAT,
       base::UTF8ToUTF16(currencyFormatter->formatted_currency_code()),
       currencyFormatter->Format(
-          _paymentRequest->payment_details().total.amount.value)));
+          _paymentRequest->payment_details().total->amount.value)));
   return totalItem;
 }
 

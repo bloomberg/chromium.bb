@@ -172,8 +172,10 @@ requestFullCreditCard:(const autofill::CreditCard&)card
 - (void)updatePaymentDetails:(payments::PaymentDetails)paymentDetails {
   [_updatePaymentSummaryItemTimer invalidate];
 
+  DCHECK(_paymentRequest->payment_details().total);
   BOOL totalValueChanged =
-      (_paymentRequest->payment_details().total != paymentDetails.total);
+      (paymentDetails.total &&
+       *_paymentRequest->payment_details().total != *paymentDetails.total);
   [_mediator setTotalValueChanged:totalValueChanged];
 
   _paymentRequest->UpdatePaymentDetails(paymentDetails);
