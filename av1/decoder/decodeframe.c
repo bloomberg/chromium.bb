@@ -5358,6 +5358,7 @@ void av1_decode_frame(AV1Decoder *pbi, const uint8_t *data,
     *p_data_end = decode_tiles(pbi, data + first_partition_size, data_end);
   }
 
+  aom_extend_frame_borders(new_fb);
 #if CONFIG_CDEF
   if (!cm->skip_loop_filter && !cm->all_lossless) {
     av1_cdef_frame(&pbi->cur_buf->buf, cm, &pbi->mb);

@@ -637,6 +637,15 @@ static double search_sgrproj(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
   // Compute best Sgrproj filters for each rtile, one (encoder/decoder)
   // tile at a time.
   const AV1_COMMON *const cm = &cpi->common;
+#if CONFIG_HIGHBITDEPTH
+  if (cm->use_highbitdepth)
+    extend_frame_highbd(CONVERT_TO_SHORTPTR(ctxt.dgd_buffer), ctxt.plane_width,
+                        ctxt.plane_height, ctxt.dgd_stride);
+  else
+#endif
+    extend_frame(ctxt.dgd_buffer, ctxt.plane_width, ctxt.plane_height,
+                 ctxt.dgd_stride);
+
   for (int tile_row = 0; tile_row < cm->tile_rows; ++tile_row) {
     for (int tile_col = 0; tile_col < cm->tile_cols; ++tile_col) {
       SgrprojInfo ref_sgrproj_info;

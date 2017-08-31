@@ -25,23 +25,41 @@ extern "C" {
 #define RINT(x) ((x) < 0 ? (int)((x)-0.5) : (int)((x) + 0.5))
 
 #define RESTORATION_PROC_UNIT_SIZE 64
+// Determines line buffer requirement for LR. Should be set at the max
+// of SGRPROJ_BORDER_VERT and WIENER_BORDER_VERT
+#define RESTORATION_BORDER_VERT 0
+#define RESTORATION_BORDER_HORZ 3  // Do not change this
+
+// Pad up to 20 more (may be much less is needed)
+#define RESTORATION_PADDING 20
+#define RESTORATION_PROC_UNIT_PELS                             \
+  ((RESTORATION_PROC_UNIT_SIZE + RESTORATION_BORDER_HORZ * 2 + \
+    RESTORATION_PADDING) *                                     \
+   (RESTORATION_PROC_UNIT_SIZE + RESTORATION_BORDER_VERT * 2 + \
+    RESTORATION_PADDING))
 
 #define RESTORATION_TILESIZE_MAX 256
-#define RESTORATION_TILEPELS_MAX \
-  (RESTORATION_TILESIZE_MAX * RESTORATION_TILESIZE_MAX * 9 / 4)
+#define RESTORATION_TILEPELS_MAX                                     \
+  (RESTORATION_TILESIZE_MAX * 3 / 2 + 2 * RESTORATION_BORDER_HORZ) * \
+      (RESTORATION_TILESIZE_MAX * 3 / 2 + 2 * RESTORATION_BORDER_VERT)
 
 // 4 32-bit buffers needed for the filter:
 // 2 for the restored versions of the frame and
 // 2 for each restoration operation
-#define SGRPROJ_OUTBUF_SIZE \
-  ((RESTORATION_TILESIZE_MAX * 3 / 2) * (RESTORATION_TILESIZE_MAX * 3 / 2 + 16))
+#define SGRPROJ_OUTBUF_SIZE                                           \
+  ((RESTORATION_TILESIZE_MAX * 3 / 2 + 2 * RESTORATION_BORDER_VERT) * \
+   (RESTORATION_TILESIZE_MAX * 3 / 2 + 2 * RESTORATION_BORDER_HORZ + 16))
 #define SGRPROJ_TMPBUF_SIZE                         \
   (RESTORATION_TILEPELS_MAX * 2 * sizeof(int32_t) + \
-   SGRPROJ_OUTBUF_SIZE * 2 * sizeof(int32_t))
+   SGRPROJ_OUTBUF_SIZE * 3 * sizeof(int32_t) + 2 * RESTORATION_PROC_UNIT_PELS)
+
 #define SGRPROJ_EXTBUF_SIZE (0)
 #define SGRPROJ_PARAMS_BITS 4
 #define SGRPROJ_PARAMS (1 << SGRPROJ_PARAMS_BITS)
 #define USE_HIGHPASS_IN_SGRPROJ 0
+
+#define SGRPROJ_BORDER_VERT 0  // Vertical border used for sgr
+#define SGRPROJ_BORDER_HORZ 2  // Horizontal border used for sgr
 
 // Precision bits for projection
 #define SGRPROJ_PRJ_BITS 7
@@ -74,6 +92,8 @@ extern "C" {
 #define SGRPROJ_RECIP_BITS 12
 
 #define WIENER_HALFWIN 3
+#define WIENER_BORDER_HORZ (WIENER_HALFWIN)
+#define WIENER_BORDER_VERT 0
 #define WIENER_HALFWIN1 (WIENER_HALFWIN + 1)
 #define WIENER_WIN (2 * WIENER_HALFWIN + 1)
 #define WIENER_WIN2 ((WIENER_WIN) * (WIENER_WIN))

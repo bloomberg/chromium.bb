@@ -663,8 +663,11 @@ static void selfguided_restoration_3_h(int32_t *A, int32_t *B, int width,
 }
 
 void av1_selfguided_restoration_sse4_1(uint8_t *dgd, int width, int height,
-                                       int stride, int32_t *dst, int dst_stride,
-                                       int r, int eps, int32_t *tmpbuf) {
+                                       int dgd_stride, int32_t *dst,
+                                       int dst_stride, int r, int eps,
+                                       int32_t *tmpbuf) {
+  const int width_ext = width + 2 * SGRPROJ_BORDER_HORZ;
+  const int height_ext = height + 2 * SGRPROJ_BORDER_VERT;
   int32_t *A = tmpbuf;
   int32_t *B = A + SGRPROJ_OUTBUF_SIZE;
   int i, j;
@@ -676,25 +679,31 @@ void av1_selfguided_restoration_sse4_1(uint8_t *dgd, int width, int height,
   // Don't filter tiles with dimensions < 5 on any axis
   if ((width < 5) || (height < 5)) return;
 
+  uint8_t *dgd0 = dgd - dgd_stride * SGRPROJ_BORDER_VERT - SGRPROJ_BORDER_HORZ;
   if (r == 1) {
-    selfguided_restoration_1_v(dgd, width, height, stride, A, B, buf_stride);
-    selfguided_restoration_1_h(A, B, width, height, buf_stride, eps, 8);
+    selfguided_restoration_1_v(dgd0, width_ext, height_ext, dgd_stride, A, B,
+                               buf_stride);
+    selfguided_restoration_1_h(A, B, width_ext, height_ext, buf_stride, eps, 8);
   } else if (r == 2) {
-    selfguided_restoration_2_v(dgd, width, height, stride, A, B, buf_stride);
-    selfguided_restoration_2_h(A, B, width, height, buf_stride, eps, 8);
+    selfguided_restoration_2_v(dgd0, width_ext, height_ext, dgd_stride, A, B,
+                               buf_stride);
+    selfguided_restoration_2_h(A, B, width_ext, height_ext, buf_stride, eps, 8);
   } else if (r == 3) {
-    selfguided_restoration_3_v(dgd, width, height, stride, A, B, buf_stride);
-    selfguided_restoration_3_h(A, B, width, height, buf_stride, eps, 8);
+    selfguided_restoration_3_v(dgd0, width_ext, height_ext, dgd_stride, A, B,
+                               buf_stride);
+    selfguided_restoration_3_h(A, B, width_ext, height_ext, buf_stride, eps, 8);
   } else {
     assert(0);
   }
+  A += SGRPROJ_BORDER_VERT * buf_stride + SGRPROJ_BORDER_HORZ;
+  B += SGRPROJ_BORDER_VERT * buf_stride + SGRPROJ_BORDER_HORZ;
 
   {
     i = 0;
     j = 0;
     {
       const int k = i * buf_stride + j;
-      const int l = i * stride + j;
+      const int l = i * dgd_stride + j;
       const int m = i * dst_stride + j;
       const int nb = 3;
       const int32_t a = 3 * A[k] + 2 * A[k + 1] + 2 * A[k + buf_stride] +
@@ -706,7 +715,7 @@ void av1_selfguided_restoration_sse4_1(uint8_t *dgd, int width, int height,
     }
     for (j = 1; j < width - 1; ++j) {
       const int k = i * buf_stride + j;
-      const int l = i * stride + j;
+      const int l = i * dgd_stride + j;
       const int m = i * dst_stride + j;
       const int nb = 3;
       const int32_t a = A[k] + 2 * (A[k - 1] + A[k + 1]) + A[k + buf_stride] +
@@ -719,7 +728,7 @@ void av1_selfguided_restoration_sse4_1(uint8_t *dgd, int width, int height,
     j = width - 1;
     {
       const int k = i * buf_stride + j;
-      const int l = i * stride + j;
+      const int l = i * dgd_stride + j;
       const int m = i * dst_stride + j;
       const int nb = 3;
       const int32_t a = 3 * A[k] + 2 * A[k - 1] + 2 * A[k + buf_stride] +
@@ -734,7 +743,7 @@ void av1_selfguided_restoration_sse4_1(uint8_t *dgd, int width, int height,
     j = 0;
     {
       const int k = i * buf_stride + j;
-      const int l = i * stride + j;
+      const int l = i * dgd_stride + j;
       const int m = i * dst_stride + j;
       const int nb = 3;
       const int32_t a = A[k] + 2 * (A[k - buf_stride] + A[k + buf_stride]) +
@@ -750,7 +759,7 @@ void av1_selfguided_restoration_sse4_1(uint8_t *dgd, int width, int height,
     // Vectorize the innermost loop
     for (j = 1; j < width - 1; j += 4) {
       const int k = i * buf_stride + j;
-      const int l = i * stride + j;
+      const int l = i * dgd_stride + j;
       const int m = i * dst_stride + j;
       const int nb = 5;
 
@@ -803,7 +812,7 @@ void av1_selfguided_restoration_sse4_1(uint8_t *dgd, int width, int height,
     // (typically have 2 such pixels, but may have anywhere between 0 and 3)
     for (; j < width - 1; ++j) {
       const int k = i * buf_stride + j;
-      const int l = i * stride + j;
+      const int l = i * dgd_stride + j;
       const int m = i * dst_stride + j;
       const int nb = 5;
       const int32_t a =
@@ -825,7 +834,7 @@ void av1_selfguided_restoration_sse4_1(uint8_t *dgd, int width, int height,
     j = width - 1;
     {
       const int k = i * buf_stride + j;
-      const int l = i * stride + j;
+      const int l = i * dgd_stride + j;
       const int m = i * dst_stride + j;
       const int nb = 3;
       const int32_t a = A[k] + 2 * (A[k - buf_stride] + A[k + buf_stride]) +
@@ -844,7 +853,7 @@ void av1_selfguided_restoration_sse4_1(uint8_t *dgd, int width, int height,
     j = 0;
     {
       const int k = i * buf_stride + j;
-      const int l = i * stride + j;
+      const int l = i * dgd_stride + j;
       const int m = i * dst_stride + j;
       const int nb = 3;
       const int32_t a = 3 * A[k] + 2 * A[k + 1] + 2 * A[k - buf_stride] +
@@ -856,7 +865,7 @@ void av1_selfguided_restoration_sse4_1(uint8_t *dgd, int width, int height,
     }
     for (j = 1; j < width - 1; ++j) {
       const int k = i * buf_stride + j;
-      const int l = i * stride + j;
+      const int l = i * dgd_stride + j;
       const int m = i * dst_stride + j;
       const int nb = 3;
       const int32_t a = A[k] + 2 * (A[k - 1] + A[k + 1]) + A[k - buf_stride] +
@@ -869,7 +878,7 @@ void av1_selfguided_restoration_sse4_1(uint8_t *dgd, int width, int height,
     j = width - 1;
     {
       const int k = i * buf_stride + j;
-      const int l = i * stride + j;
+      const int l = i * dgd_stride + j;
       const int m = i * dst_stride + j;
       const int nb = 3;
       const int32_t a = 3 * A[k] + 2 * A[k - 1] + 2 * A[k - buf_stride] +
@@ -1363,10 +1372,12 @@ static void highbd_selfguided_restoration_3_v(uint16_t *src, int width,
 }
 
 void av1_selfguided_restoration_highbd_sse4_1(uint16_t *dgd, int width,
-                                              int height, int stride,
+                                              int height, int dgd_stride,
                                               int32_t *dst, int dst_stride,
                                               int bit_depth, int r, int eps,
                                               int32_t *tmpbuf) {
+  const int width_ext = width + 2 * SGRPROJ_BORDER_HORZ;
+  const int height_ext = height + 2 * SGRPROJ_BORDER_VERT;
   int32_t *A = tmpbuf;
   int32_t *B = A + SGRPROJ_OUTBUF_SIZE;
   int i, j;
@@ -1378,28 +1389,34 @@ void av1_selfguided_restoration_highbd_sse4_1(uint16_t *dgd, int width,
   // Don't filter tiles with dimensions < 5 on any axis
   if ((width < 5) || (height < 5)) return;
 
+  uint16_t *dgd0 = dgd - dgd_stride * SGRPROJ_BORDER_VERT - SGRPROJ_BORDER_HORZ;
   if (r == 1) {
-    highbd_selfguided_restoration_1_v(dgd, width, height, stride, A, B,
-                                      buf_stride);
-    selfguided_restoration_1_h(A, B, width, height, buf_stride, eps, bit_depth);
+    highbd_selfguided_restoration_1_v(dgd0, width_ext, height_ext, dgd_stride,
+                                      A, B, buf_stride);
+    selfguided_restoration_1_h(A, B, width_ext, height_ext, buf_stride, eps,
+                               bit_depth);
   } else if (r == 2) {
-    highbd_selfguided_restoration_2_v(dgd, width, height, stride, A, B,
-                                      buf_stride);
-    selfguided_restoration_2_h(A, B, width, height, buf_stride, eps, bit_depth);
+    highbd_selfguided_restoration_2_v(dgd0, width_ext, height_ext, dgd_stride,
+                                      A, B, buf_stride);
+    selfguided_restoration_2_h(A, B, width_ext, height_ext, buf_stride, eps,
+                               bit_depth);
   } else if (r == 3) {
-    highbd_selfguided_restoration_3_v(dgd, width, height, stride, A, B,
-                                      buf_stride);
-    selfguided_restoration_3_h(A, B, width, height, buf_stride, eps, bit_depth);
+    highbd_selfguided_restoration_3_v(dgd0, width_ext, height_ext, dgd_stride,
+                                      A, B, buf_stride);
+    selfguided_restoration_3_h(A, B, width_ext, height_ext, buf_stride, eps,
+                               bit_depth);
   } else {
     assert(0);
   }
+  A += SGRPROJ_BORDER_VERT * buf_stride + SGRPROJ_BORDER_HORZ;
+  B += SGRPROJ_BORDER_VERT * buf_stride + SGRPROJ_BORDER_HORZ;
 
   {
     i = 0;
     j = 0;
     {
       const int k = i * buf_stride + j;
-      const int l = i * stride + j;
+      const int l = i * dgd_stride + j;
       const int m = i * dst_stride + j;
       const int nb = 3;
       const int32_t a = 3 * A[k] + 2 * A[k + 1] + 2 * A[k + buf_stride] +
@@ -1411,7 +1428,7 @@ void av1_selfguided_restoration_highbd_sse4_1(uint16_t *dgd, int width,
     }
     for (j = 1; j < width - 1; ++j) {
       const int k = i * buf_stride + j;
-      const int l = i * stride + j;
+      const int l = i * dgd_stride + j;
       const int m = i * dst_stride + j;
       const int nb = 3;
       const int32_t a = A[k] + 2 * (A[k - 1] + A[k + 1]) + A[k + buf_stride] +
@@ -1424,7 +1441,7 @@ void av1_selfguided_restoration_highbd_sse4_1(uint16_t *dgd, int width,
     j = width - 1;
     {
       const int k = i * buf_stride + j;
-      const int l = i * stride + j;
+      const int l = i * dgd_stride + j;
       const int m = i * dst_stride + j;
       const int nb = 3;
       const int32_t a = 3 * A[k] + 2 * A[k - 1] + 2 * A[k + buf_stride] +
@@ -1439,7 +1456,7 @@ void av1_selfguided_restoration_highbd_sse4_1(uint16_t *dgd, int width,
     j = 0;
     {
       const int k = i * buf_stride + j;
-      const int l = i * stride + j;
+      const int l = i * dgd_stride + j;
       const int m = i * dst_stride + j;
       const int nb = 3;
       const int32_t a = A[k] + 2 * (A[k - buf_stride] + A[k + buf_stride]) +
@@ -1455,7 +1472,7 @@ void av1_selfguided_restoration_highbd_sse4_1(uint16_t *dgd, int width,
     // Vectorize the innermost loop
     for (j = 1; j < width - 1; j += 4) {
       const int k = i * buf_stride + j;
-      const int l = i * stride + j;
+      const int l = i * dgd_stride + j;
       const int m = i * dst_stride + j;
       const int nb = 5;
 
@@ -1508,7 +1525,7 @@ void av1_selfguided_restoration_highbd_sse4_1(uint16_t *dgd, int width,
     // (typically have 2 such pixels, but may have anywhere between 0 and 3)
     for (; j < width - 1; ++j) {
       const int k = i * buf_stride + j;
-      const int l = i * stride + j;
+      const int l = i * dgd_stride + j;
       const int m = i * dst_stride + j;
       const int nb = 5;
       const int32_t a =
@@ -1530,7 +1547,7 @@ void av1_selfguided_restoration_highbd_sse4_1(uint16_t *dgd, int width,
     j = width - 1;
     {
       const int k = i * buf_stride + j;
-      const int l = i * stride + j;
+      const int l = i * dgd_stride + j;
       const int m = i * dst_stride + j;
       const int nb = 3;
       const int32_t a = A[k] + 2 * (A[k - buf_stride] + A[k + buf_stride]) +
@@ -1549,7 +1566,7 @@ void av1_selfguided_restoration_highbd_sse4_1(uint16_t *dgd, int width,
     j = 0;
     {
       const int k = i * buf_stride + j;
-      const int l = i * stride + j;
+      const int l = i * dgd_stride + j;
       const int m = i * dst_stride + j;
       const int nb = 3;
       const int32_t a = 3 * A[k] + 2 * A[k + 1] + 2 * A[k - buf_stride] +
@@ -1561,7 +1578,7 @@ void av1_selfguided_restoration_highbd_sse4_1(uint16_t *dgd, int width,
     }
     for (j = 1; j < width - 1; ++j) {
       const int k = i * buf_stride + j;
-      const int l = i * stride + j;
+      const int l = i * dgd_stride + j;
       const int m = i * dst_stride + j;
       const int nb = 3;
       const int32_t a = A[k] + 2 * (A[k - 1] + A[k + 1]) + A[k - buf_stride] +
@@ -1574,7 +1591,7 @@ void av1_selfguided_restoration_highbd_sse4_1(uint16_t *dgd, int width,
     j = width - 1;
     {
       const int k = i * buf_stride + j;
-      const int l = i * stride + j;
+      const int l = i * dgd_stride + j;
       const int m = i * dst_stride + j;
       const int nb = 3;
       const int32_t a = 3 * A[k] + 2 * A[k - 1] + 2 * A[k - buf_stride] +

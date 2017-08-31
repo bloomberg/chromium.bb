@@ -40,18 +40,23 @@ class AV1SelfguidedFilterTest
 
  protected:
   void RunSpeedTest() {
-    const int w = 256, h = 256;
+    const int width = 256, height = 256, stride = 288, out_stride = 288;
     const int NUM_ITERS = 2000;
     int i, j;
 
-    uint8_t *input = (uint8_t *)aom_memalign(16, w * h * sizeof(uint8_t));
-    uint8_t *output = (uint8_t *)aom_memalign(16, w * h * sizeof(uint8_t));
+    uint8_t *input_ =
+        (uint8_t *)aom_memalign(16, stride * (height + 32) * sizeof(uint8_t));
+    uint8_t *output_ = (uint8_t *)aom_memalign(
+        16, out_stride * (height + 32) * sizeof(uint8_t));
     int32_t *tmpbuf = (int32_t *)aom_memalign(16, RESTORATION_TMPBUF_SIZE);
+    uint8_t *input = input_ + stride * 16 + 16;
+    uint8_t *output = output_ + out_stride * 16 + 16;
 
     ACMRandom rnd(ACMRandom::DeterministicSeed());
 
-    for (i = 0; i < h; ++i)
-      for (j = 0; j < w; ++j) input[i * w + j] = rnd.Rand16() & 0xFF;
+    for (i = -16; i < height + 16; ++i)
+      for (j = -16; j < width + 16; ++j)
+        input[i * stride + j] = rnd.Rand16() & 0xFF;
 
     int xqd[2] = {
       SGRPROJ_PRJ_MIN0 +
@@ -67,16 +72,17 @@ class AV1SelfguidedFilterTest
 
     std::clock_t start = std::clock();
     for (i = 0; i < NUM_ITERS; ++i) {
-      apply_selfguided_restoration(input, w, h, w, eps, xqd, output, w, tmpbuf);
+      apply_selfguided_restoration(input, width, height, stride, eps, xqd,
+                                   output, out_stride, tmpbuf);
     }
     std::clock_t end = std::clock();
     double elapsed = ((end - start) / (double)CLOCKS_PER_SEC);
 
-    printf("%5d %dx%d blocks in %7.3fs = %7.3fus/block\n", NUM_ITERS, w, h,
-           elapsed, elapsed * 1000000. / NUM_ITERS);
+    printf("%5d %dx%d blocks in %7.3fs = %7.3fus/block\n", NUM_ITERS, width,
+           height, elapsed, elapsed * 1000000. / NUM_ITERS);
 
-    aom_free(input);
-    aom_free(output);
+    aom_free(input_);
+    aom_free(output_);
     aom_free(tmpbuf);
   }
 
@@ -88,21 +94,26 @@ class AV1SelfguidedFilterTest
     const int NUM_ITERS = 81;
     int i, j, k;
 
-    uint8_t *input =
-        (uint8_t *)aom_memalign(16, stride * max_h * sizeof(uint8_t));
-    uint8_t *output =
-        (uint8_t *)aom_memalign(16, out_stride * max_h * sizeof(uint8_t));
-    uint8_t *output2 =
-        (uint8_t *)aom_memalign(16, out_stride * max_h * sizeof(uint8_t));
+    uint8_t *input_ =
+        (uint8_t *)aom_memalign(16, stride * (max_h + 32) * sizeof(uint8_t));
+    uint8_t *output_ = (uint8_t *)aom_memalign(
+        16, out_stride * (max_h + 32) * sizeof(uint8_t));
+    uint8_t *output2_ = (uint8_t *)aom_memalign(
+        16, out_stride * (max_h + 32) * sizeof(uint8_t));
     int32_t *tmpbuf = (int32_t *)aom_memalign(16, RESTORATION_TMPBUF_SIZE);
+
+    uint8_t *input = input_ + stride * 16 + 16;
+    uint8_t *output = output_ + out_stride * 16 + 16;
+    uint8_t *output2 = output2_ + out_stride * 16 + 16;
 
     ACMRandom rnd(ACMRandom::DeterministicSeed());
 
     av1_loop_restoration_precal();
 
     for (i = 0; i < NUM_ITERS; ++i) {
-      for (j = 0; j < max_h; ++j)
-        for (k = 0; k < max_w; ++k) input[j * stride + k] = rnd.Rand16() & 0xFF;
+      for (j = -16; j < max_h + 16; ++j)
+        for (k = -16; k < max_w + 16; ++k)
+          input[j * stride + k] = rnd.Rand16() & 0xFF;
 
       int xqd[2] = {
         SGRPROJ_PRJ_MIN0 +
@@ -121,13 +132,14 @@ class AV1SelfguidedFilterTest
       apply_selfguided_restoration_c(input, test_w, test_h, stride, eps, xqd,
                                      output2, out_stride, tmpbuf);
       for (j = 0; j < test_h; ++j)
-        for (k = 0; k < test_w; ++k)
+        for (k = 0; k < test_w; ++k) {
           ASSERT_EQ(output[j * out_stride + k], output2[j * out_stride + k]);
+        }
     }
 
-    aom_free(input);
-    aom_free(output);
-    aom_free(output2);
+    aom_free(input_);
+    aom_free(output_);
+    aom_free(output2_);
     aom_free(tmpbuf);
   }
 };
@@ -155,20 +167,25 @@ class AV1HighbdSelfguidedFilterTest
 
  protected:
   void RunSpeedTest() {
-    const int w = 256, h = 256;
+    const int width = 256, height = 256, stride = 288, out_stride = 288;
     const int NUM_ITERS = 2000;
     int i, j;
     int bit_depth = GET_PARAM(0);
     int mask = (1 << bit_depth) - 1;
 
-    uint16_t *input = (uint16_t *)aom_memalign(16, w * h * sizeof(uint16_t));
-    uint16_t *output = (uint16_t *)aom_memalign(16, w * h * sizeof(uint16_t));
+    uint16_t *input_ =
+        (uint16_t *)aom_memalign(16, stride * (height + 32) * sizeof(uint16_t));
+    uint16_t *output_ = (uint16_t *)aom_memalign(
+        16, out_stride * (height + 32) * sizeof(uint16_t));
     int32_t *tmpbuf = (int32_t *)aom_memalign(16, RESTORATION_TMPBUF_SIZE);
+    uint16_t *input = input_ + stride * 16 + 16;
+    uint16_t *output = output_ + out_stride * 16 + 16;
 
     ACMRandom rnd(ACMRandom::DeterministicSeed());
 
-    for (i = 0; i < h; ++i)
-      for (j = 0; j < w; ++j) input[i * w + j] = rnd.Rand16() & mask;
+    for (i = -16; i < height + 16; ++i)
+      for (j = -16; j < width + 16; ++j)
+        input[i * stride + j] = rnd.Rand16() & mask;
 
     int xqd[2] = {
       SGRPROJ_PRJ_MIN0 +
@@ -184,17 +201,18 @@ class AV1HighbdSelfguidedFilterTest
 
     std::clock_t start = std::clock();
     for (i = 0; i < NUM_ITERS; ++i) {
-      apply_selfguided_restoration_highbd(input, w, h, w, bit_depth, eps, xqd,
-                                          output, w, tmpbuf);
+      apply_selfguided_restoration_highbd(input, width, height, stride,
+                                          bit_depth, eps, xqd, output,
+                                          out_stride, tmpbuf);
     }
     std::clock_t end = std::clock();
     double elapsed = ((end - start) / (double)CLOCKS_PER_SEC);
 
-    printf("%5d %dx%d blocks in %7.3fs = %7.3fus/block\n", NUM_ITERS, w, h,
-           elapsed, elapsed * 1000000. / NUM_ITERS);
+    printf("%5d %dx%d blocks in %7.3fs = %7.3fus/block\n", NUM_ITERS, width,
+           height, elapsed, elapsed * 1000000. / NUM_ITERS);
 
-    aom_free(input);
-    aom_free(output);
+    aom_free(input_);
+    aom_free(output_);
     aom_free(tmpbuf);
   }
 
@@ -208,21 +226,26 @@ class AV1HighbdSelfguidedFilterTest
     int bit_depth = GET_PARAM(0);
     int mask = (1 << bit_depth) - 1;
 
-    uint16_t *input =
-        (uint16_t *)aom_memalign(16, stride * max_h * sizeof(uint16_t));
-    uint16_t *output =
-        (uint16_t *)aom_memalign(16, out_stride * max_h * sizeof(uint16_t));
-    uint16_t *output2 =
-        (uint16_t *)aom_memalign(16, out_stride * max_h * sizeof(uint16_t));
+    uint16_t *input_ =
+        (uint16_t *)aom_memalign(16, stride * (max_h + 32) * sizeof(uint16_t));
+    uint16_t *output_ = (uint16_t *)aom_memalign(
+        16, out_stride * (max_h + 32) * sizeof(uint16_t));
+    uint16_t *output2_ = (uint16_t *)aom_memalign(
+        16, out_stride * (max_h + 32) * sizeof(uint16_t));
     int32_t *tmpbuf = (int32_t *)aom_memalign(16, RESTORATION_TMPBUF_SIZE);
+
+    uint16_t *input = input_ + stride * 16 + 16;
+    uint16_t *output = output_ + out_stride * 16 + 16;
+    uint16_t *output2 = output2_ + out_stride * 16 + 16;
 
     ACMRandom rnd(ACMRandom::DeterministicSeed());
 
     av1_loop_restoration_precal();
 
     for (i = 0; i < NUM_ITERS; ++i) {
-      for (j = 0; j < max_h; ++j)
-        for (k = 0; k < max_w; ++k) input[j * stride + k] = rnd.Rand16() & mask;
+      for (j = -16; j < max_h + 16; ++j)
+        for (k = -16; k < max_w + 16; ++k)
+          input[j * stride + k] = rnd.Rand16() & mask;
 
       int xqd[2] = {
         SGRPROJ_PRJ_MIN0 +
@@ -247,9 +270,9 @@ class AV1HighbdSelfguidedFilterTest
           ASSERT_EQ(output[j * out_stride + k], output2[j * out_stride + k]);
     }
 
-    aom_free(input);
-    aom_free(output);
-    aom_free(output2);
+    aom_free(input_);
+    aom_free(output_);
+    aom_free(output2_);
     aom_free(tmpbuf);
   }
 };

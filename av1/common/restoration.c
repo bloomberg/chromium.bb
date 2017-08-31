@@ -146,15 +146,36 @@ static void loop_copy_tile(uint8_t *data, int tile_idx, int subtile_idx,
            h_end - h_start);
 }
 
-// Convert 7-tap filter to 5-tap for top and bottom rows of a processing unit
-static void stepdown_wiener_kernel(const InterpKernel orig, InterpKernel vert) {
+static void stepdown_wiener_kernel(const InterpKernel orig, InterpKernel vert,
+                                   int boundary_dist, int istop) {
   memcpy(vert, orig, sizeof(InterpKernel));
-  int delta = vert[0] / 2;
-  vert[1] += delta;
-  vert[WIENER_WIN - 2] += delta;
-  vert[2] += vert[0] - delta;
-  vert[WIENER_WIN - 3] += vert[0] - delta;
-  vert[0] = vert[WIENER_WIN - 1] = 0;
+  switch (boundary_dist) {
+    case 0:
+      vert[WIENER_HALFWIN] += vert[2] + vert[1] + vert[0];
+      vert[2] = vert[1] = vert[0] = 0;
+      break;
+    case 1:
+      vert[2] += vert[1] + vert[0];
+      vert[1] = vert[0] = 0;
+      break;
+    case 2:
+      vert[1] += vert[0];
+      vert[0] = 0;
+      break;
+    default: break;
+  }
+  if (!istop) {
+    int tmp;
+    tmp = vert[0];
+    vert[0] = vert[WIENER_WIN - 1];
+    vert[WIENER_WIN - 1] = tmp;
+    tmp = vert[1];
+    vert[1] = vert[WIENER_WIN - 2];
+    vert[WIENER_WIN - 2] = tmp;
+    tmp = vert[2];
+    vert[2] = vert[WIENER_WIN - 3];
+    vert[WIENER_WIN - 3] = tmp;
+  }
 }
 
 static void loop_wiener_filter_tile(uint8_t *data, int tile_idx, int width,
@@ -173,8 +194,6 @@ static void loop_wiener_filter_tile(uint8_t *data, int tile_idx, int width,
     return;
   }
   InterpKernel vertical_topbot;
-  stepdown_wiener_kernel(rst->rsi->wiener_info[tile_idx].vfilter,
-                         vertical_topbot);
   av1_get_rest_tile_limits(tile_idx, 0, 0, rst->nhtiles, rst->nvtiles,
                            tile_width, tile_height, width, height, 0, 0,
                            &h_start, &h_end, &v_start, &v_end);
@@ -186,42 +205,50 @@ static void loop_wiener_filter_tile(uint8_t *data, int tile_idx, int width,
       int h = AOMMIN(procunit_height, (v_end - i + 15) & ~15);
       const uint8_t *data_p = data + i * stride + j;
       uint8_t *dst_p = dst + i * dst_stride + j;
-// Use 5-tap vertical filtering for top and bottom rows in
-// processing unit
+      // Note h is at least 16
+      for (int b = 0; b < WIENER_HALFWIN - WIENER_BORDER_VERT; ++b) {
+        stepdown_wiener_kernel(rst->rsi->wiener_info[tile_idx].vfilter,
+                               vertical_topbot, WIENER_BORDER_VERT + b, 1);
 #if USE_WIENER_HIGH_INTERMEDIATE_PRECISION
-      aom_convolve8_add_src_hip(data_p, stride, dst_p, dst_stride,
-                                rst->rsi->wiener_info[tile_idx].hfilter, 16,
-                                vertical_topbot, 16, w, 1);
+        aom_convolve8_add_src_hip(data_p, stride, dst_p, dst_stride,
+                                  rst->rsi->wiener_info[tile_idx].hfilter, 16,
+                                  vertical_topbot, 16, w, 1);
 #else
-      aom_convolve8_add_src(data_p, stride, dst_p, dst_stride,
-                            rst->rsi->wiener_info[tile_idx].hfilter, 16,
-                            vertical_topbot, 16, w, 1);
+        aom_convolve8_add_src(data_p, stride, dst_p, dst_stride,
+                              rst->rsi->wiener_info[tile_idx].hfilter, 16,
+                              vertical_topbot, 16, w, 1);
 #endif  // USE_WIENER_HIGH_INTERMEDIATE_PRECISION
-      data_p += stride;
-      dst_p += dst_stride;
-// Note h is at least 16
+        data_p += stride;
+        dst_p += dst_stride;
+      }
 #if USE_WIENER_HIGH_INTERMEDIATE_PRECISION
       aom_convolve8_add_src_hip(data_p, stride, dst_p, dst_stride,
                                 rst->rsi->wiener_info[tile_idx].hfilter, 16,
                                 rst->rsi->wiener_info[tile_idx].vfilter, 16, w,
-                                h - 2);
+                                h - (WIENER_HALFWIN - WIENER_BORDER_VERT) * 2);
 #else
       aom_convolve8_add_src(data_p, stride, dst_p, dst_stride,
                             rst->rsi->wiener_info[tile_idx].hfilter, 16,
                             rst->rsi->wiener_info[tile_idx].vfilter, 16, w,
-                            h - 2);
+                            h - (WIENER_HALFWIN - WIENER_BORDER_VERT) * 2);
 #endif  // USE_WIENER_HIGH_INTERMEDIATE_PRECISION
-      data_p += stride * (h - 2);
-      dst_p += dst_stride * (h - 2);
+      data_p += stride * (h - (WIENER_HALFWIN - WIENER_BORDER_VERT) * 2);
+      dst_p += dst_stride * (h - (WIENER_HALFWIN - WIENER_BORDER_VERT) * 2);
+      for (int b = WIENER_HALFWIN - WIENER_BORDER_VERT - 1; b >= 0; --b) {
+        stepdown_wiener_kernel(rst->rsi->wiener_info[tile_idx].vfilter,
+                               vertical_topbot, WIENER_BORDER_VERT + b, 0);
 #if USE_WIENER_HIGH_INTERMEDIATE_PRECISION
-      aom_convolve8_add_src_hip(data_p, stride, dst_p, dst_stride,
-                                rst->rsi->wiener_info[tile_idx].hfilter, 16,
-                                vertical_topbot, 16, w, 1);
+        aom_convolve8_add_src_hip(data_p, stride, dst_p, dst_stride,
+                                  rst->rsi->wiener_info[tile_idx].hfilter, 16,
+                                  vertical_topbot, 16, w, 1);
 #else
-      aom_convolve8_add_src(data_p, stride, dst_p, dst_stride,
-                            rst->rsi->wiener_info[tile_idx].hfilter, 16,
-                            vertical_topbot, 16, w, 1);
+        aom_convolve8_add_src(data_p, stride, dst_p, dst_stride,
+                              rst->rsi->wiener_info[tile_idx].hfilter, 16,
+                              vertical_topbot, 16, w, 1);
 #endif  // USE_WIENER_HIGH_INTERMEDIATE_PRECISION
+        data_p += stride;
+        dst_p += dst_stride;
+      }
     }
 }
 
@@ -618,30 +645,40 @@ const int32_t one_by_x[MAX_NELEM] = {
 };
 
 static void av1_selfguided_restoration_internal(int32_t *dgd, int width,
-                                                int height, int stride,
+                                                int height, int dgd_stride,
+                                                int32_t *dst, int dst_stride,
                                                 int bit_depth, int r, int eps,
                                                 int32_t *tmpbuf) {
-  int32_t *A = tmpbuf;
-  int32_t *B = A + SGRPROJ_OUTBUF_SIZE;
-  int8_t num[RESTORATION_TILEPELS_MAX];
-  int i, j;
+  const int width_ext = width + 2 * SGRPROJ_BORDER_HORZ;
+  const int height_ext = height + 2 * SGRPROJ_BORDER_VERT;
+  const int num_stride = width_ext;
   // Adjusting the stride of A and B here appears to avoid bad cache effects,
   // leading to a significant speed improvement.
   // We also align the stride to a multiple of 16 bytes, for consistency
   // with the SIMD version of this function.
-  int buf_stride = ((width + 3) & ~3) + 16;
+  int buf_stride = ((width_ext + 3) & ~3) + 16;
+
+  int32_t *A = tmpbuf;
+  int32_t *B = tmpbuf + SGRPROJ_OUTBUF_SIZE;
+  int8_t num_[RESTORATION_TILEPELS_MAX];
+  int8_t *num = num_ + SGRPROJ_BORDER_VERT * num_stride + SGRPROJ_BORDER_HORZ;
+  int i, j;
 
   // Don't filter tiles with dimensions < 5 on any axis
   if ((width < 5) || (height < 5)) return;
 
-  boxsum(dgd, width, height, stride, r, 0, B, buf_stride);
-  boxsum(dgd, width, height, stride, r, 1, A, buf_stride);
-  boxnum(width, height, r, num, width);
+  boxsum(dgd - dgd_stride * SGRPROJ_BORDER_VERT - SGRPROJ_BORDER_HORZ,
+         width_ext, height_ext, dgd_stride, r, 0, B, buf_stride);
+  boxsum(dgd - dgd_stride * SGRPROJ_BORDER_VERT - SGRPROJ_BORDER_HORZ,
+         width_ext, height_ext, dgd_stride, r, 1, A, buf_stride);
+  boxnum(width_ext, height_ext, r, num_, num_stride);
   assert(r <= 3);
+  A += SGRPROJ_BORDER_VERT * buf_stride + SGRPROJ_BORDER_HORZ;
+  B += SGRPROJ_BORDER_VERT * buf_stride + SGRPROJ_BORDER_HORZ;
   for (i = 0; i < height; ++i) {
     for (j = 0; j < width; ++j) {
       const int k = i * buf_stride + j;
-      const int n = num[i * width + j];
+      const int n = num[i * num_stride + j];
 
       // a < 2^16 * n < 2^22 regardless of bit depth
       uint32_t a = ROUND_POWER_OF_TWO(A[k], 2 * (bit_depth - 8));
@@ -677,106 +714,115 @@ static void av1_selfguided_restoration_internal(int32_t *dgd, int width,
   j = 0;
   {
     const int k = i * buf_stride + j;
-    const int l = i * stride + j;
+    const int l = i * dgd_stride + j;
+    const int m = i * dst_stride + j;
     const int nb = 3;
     const int32_t a =
         3 * A[k] + 2 * A[k + 1] + 2 * A[k + buf_stride] + A[k + buf_stride + 1];
     const int32_t b =
         3 * B[k] + 2 * B[k + 1] + 2 * B[k + buf_stride] + B[k + buf_stride + 1];
     const int32_t v = a * dgd[l] + b;
-    dgd[l] = ROUND_POWER_OF_TWO(v, SGRPROJ_SGR_BITS + nb - SGRPROJ_RST_BITS);
+    dst[m] = ROUND_POWER_OF_TWO(v, SGRPROJ_SGR_BITS + nb - SGRPROJ_RST_BITS);
   }
   i = 0;
   j = width - 1;
   {
     const int k = i * buf_stride + j;
-    const int l = i * stride + j;
+    const int l = i * dgd_stride + j;
+    const int m = i * dst_stride + j;
     const int nb = 3;
     const int32_t a =
         3 * A[k] + 2 * A[k - 1] + 2 * A[k + buf_stride] + A[k + buf_stride - 1];
     const int32_t b =
         3 * B[k] + 2 * B[k - 1] + 2 * B[k + buf_stride] + B[k + buf_stride - 1];
     const int32_t v = a * dgd[l] + b;
-    dgd[l] = ROUND_POWER_OF_TWO(v, SGRPROJ_SGR_BITS + nb - SGRPROJ_RST_BITS);
+    dst[m] = ROUND_POWER_OF_TWO(v, SGRPROJ_SGR_BITS + nb - SGRPROJ_RST_BITS);
   }
   i = height - 1;
   j = 0;
   {
     const int k = i * buf_stride + j;
-    const int l = i * stride + j;
+    const int l = i * dgd_stride + j;
+    const int m = i * dst_stride + j;
     const int nb = 3;
     const int32_t a =
         3 * A[k] + 2 * A[k + 1] + 2 * A[k - buf_stride] + A[k - buf_stride + 1];
     const int32_t b =
         3 * B[k] + 2 * B[k + 1] + 2 * B[k - buf_stride] + B[k - buf_stride + 1];
     const int32_t v = a * dgd[l] + b;
-    dgd[l] = ROUND_POWER_OF_TWO(v, SGRPROJ_SGR_BITS + nb - SGRPROJ_RST_BITS);
+    dst[m] = ROUND_POWER_OF_TWO(v, SGRPROJ_SGR_BITS + nb - SGRPROJ_RST_BITS);
   }
   i = height - 1;
   j = width - 1;
   {
     const int k = i * buf_stride + j;
-    const int l = i * stride + j;
+    const int l = i * dgd_stride + j;
+    const int m = i * dst_stride + j;
     const int nb = 3;
     const int32_t a =
         3 * A[k] + 2 * A[k - 1] + 2 * A[k - buf_stride] + A[k - buf_stride - 1];
     const int32_t b =
         3 * B[k] + 2 * B[k - 1] + 2 * B[k - buf_stride] + B[k - buf_stride - 1];
     const int32_t v = a * dgd[l] + b;
-    dgd[l] = ROUND_POWER_OF_TWO(v, SGRPROJ_SGR_BITS + nb - SGRPROJ_RST_BITS);
+    dst[m] = ROUND_POWER_OF_TWO(v, SGRPROJ_SGR_BITS + nb - SGRPROJ_RST_BITS);
   }
   i = 0;
   for (j = 1; j < width - 1; ++j) {
     const int k = i * buf_stride + j;
-    const int l = i * stride + j;
+    const int l = i * dgd_stride + j;
+    const int m = i * dst_stride + j;
     const int nb = 3;
     const int32_t a = A[k] + 2 * (A[k - 1] + A[k + 1]) + A[k + buf_stride] +
                       A[k + buf_stride - 1] + A[k + buf_stride + 1];
     const int32_t b = B[k] + 2 * (B[k - 1] + B[k + 1]) + B[k + buf_stride] +
                       B[k + buf_stride - 1] + B[k + buf_stride + 1];
     const int32_t v = a * dgd[l] + b;
-    dgd[l] = ROUND_POWER_OF_TWO(v, SGRPROJ_SGR_BITS + nb - SGRPROJ_RST_BITS);
+    dst[m] = ROUND_POWER_OF_TWO(v, SGRPROJ_SGR_BITS + nb - SGRPROJ_RST_BITS);
   }
   i = height - 1;
   for (j = 1; j < width - 1; ++j) {
     const int k = i * buf_stride + j;
-    const int l = i * stride + j;
+    const int l = i * dgd_stride + j;
+    const int m = i * dst_stride + j;
     const int nb = 3;
     const int32_t a = A[k] + 2 * (A[k - 1] + A[k + 1]) + A[k - buf_stride] +
                       A[k - buf_stride - 1] + A[k - buf_stride + 1];
     const int32_t b = B[k] + 2 * (B[k - 1] + B[k + 1]) + B[k - buf_stride] +
                       B[k - buf_stride - 1] + B[k - buf_stride + 1];
     const int32_t v = a * dgd[l] + b;
-    dgd[l] = ROUND_POWER_OF_TWO(v, SGRPROJ_SGR_BITS + nb - SGRPROJ_RST_BITS);
+    dst[m] = ROUND_POWER_OF_TWO(v, SGRPROJ_SGR_BITS + nb - SGRPROJ_RST_BITS);
   }
   j = 0;
   for (i = 1; i < height - 1; ++i) {
     const int k = i * buf_stride + j;
-    const int l = i * stride + j;
+    const int l = i * dgd_stride + j;
+    const int m = i * dst_stride + j;
     const int nb = 3;
     const int32_t a = A[k] + 2 * (A[k - buf_stride] + A[k + buf_stride]) +
                       A[k + 1] + A[k - buf_stride + 1] + A[k + buf_stride + 1];
     const int32_t b = B[k] + 2 * (B[k - buf_stride] + B[k + buf_stride]) +
                       B[k + 1] + B[k - buf_stride + 1] + B[k + buf_stride + 1];
     const int32_t v = a * dgd[l] + b;
-    dgd[l] = ROUND_POWER_OF_TWO(v, SGRPROJ_SGR_BITS + nb - SGRPROJ_RST_BITS);
+    dst[m] = ROUND_POWER_OF_TWO(v, SGRPROJ_SGR_BITS + nb - SGRPROJ_RST_BITS);
   }
   j = width - 1;
   for (i = 1; i < height - 1; ++i) {
     const int k = i * buf_stride + j;
-    const int l = i * stride + j;
+    const int l = i * dgd_stride + j;
+    const int m = i * dst_stride + j;
     const int nb = 3;
     const int32_t a = A[k] + 2 * (A[k - buf_stride] + A[k + buf_stride]) +
                       A[k - 1] + A[k - buf_stride - 1] + A[k + buf_stride - 1];
     const int32_t b = B[k] + 2 * (B[k - buf_stride] + B[k + buf_stride]) +
                       B[k - 1] + B[k - buf_stride - 1] + B[k + buf_stride - 1];
     const int32_t v = a * dgd[l] + b;
-    dgd[l] = ROUND_POWER_OF_TWO(v, SGRPROJ_SGR_BITS + nb - SGRPROJ_RST_BITS);
+    dst[m] = ROUND_POWER_OF_TWO(v, SGRPROJ_SGR_BITS + nb - SGRPROJ_RST_BITS);
   }
   for (i = 1; i < height - 1; ++i) {
     for (j = 1; j < width - 1; ++j) {
       const int k = i * buf_stride + j;
-      const int l = i * stride + j;
+      const int l = i * dgd_stride + j;
+      const int m = i * dst_stride + j;
       const int nb = 5;
       const int32_t a =
           (A[k] + A[k - 1] + A[k + 1] + A[k - buf_stride] + A[k + buf_stride]) *
@@ -791,7 +837,7 @@ static void av1_selfguided_restoration_internal(int32_t *dgd, int width,
            B[k + 1 - buf_stride] + B[k + 1 + buf_stride]) *
               3;
       const int32_t v = a * dgd[l] + b;
-      dgd[l] = ROUND_POWER_OF_TWO(v, SGRPROJ_SGR_BITS + nb - SGRPROJ_RST_BITS);
+      dst[m] = ROUND_POWER_OF_TWO(v, SGRPROJ_SGR_BITS + nb - SGRPROJ_RST_BITS);
     }
   }
 }
@@ -799,14 +845,18 @@ static void av1_selfguided_restoration_internal(int32_t *dgd, int width,
 void av1_selfguided_restoration_c(uint8_t *dgd, int width, int height,
                                   int stride, int32_t *dst, int dst_stride,
                                   int r, int eps, int32_t *tmpbuf) {
+  const int dgd32_stride = width + 2 * SGRPROJ_BORDER_HORZ;
+  int32_t *dgd32 =
+      tmpbuf + dgd32_stride * SGRPROJ_BORDER_VERT + SGRPROJ_BORDER_HORZ;
   int i, j;
-  for (i = 0; i < height; ++i) {
-    for (j = 0; j < width; ++j) {
-      dst[i * dst_stride + j] = dgd[i * stride + j];
+  for (i = -SGRPROJ_BORDER_VERT; i < height + SGRPROJ_BORDER_VERT; ++i) {
+    for (j = -SGRPROJ_BORDER_HORZ; j < width + SGRPROJ_BORDER_HORZ; ++j) {
+      dgd32[i * dgd32_stride + j] = dgd[i * stride + j];
     }
   }
-  av1_selfguided_restoration_internal(dst, width, height, dst_stride, 8, r, eps,
-                                      tmpbuf);
+  av1_selfguided_restoration_internal(dgd32, width, height, dgd32_stride, dst,
+                                      dst_stride, 8, r, eps,
+                                      tmpbuf + RESTORATION_TILEPELS_MAX);
 }
 
 void av1_highpass_filter_c(uint8_t *dgd, int width, int height, int stride,
@@ -959,7 +1009,7 @@ static void loop_sgrproj_filter_tile(uint8_t *data, int tile_idx, int width,
       int h = AOMMIN(procunit_height, v_end - i);
       uint8_t *data_p = data + i * stride + j;
       uint8_t *dst_p = dst + i * dst_stride + j;
-      apply_selfguided_restoration(
+      apply_selfguided_restoration_c(
           data_p, w, h, stride, rst->rsi->sgrproj_info[tile_idx].ep,
           rst->rsi->sgrproj_info[tile_idx].xqd, dst_p, dst_stride, rst->tmpbuf);
     }
@@ -969,6 +1019,7 @@ static void loop_sgrproj_filter(uint8_t *data, int width, int height,
                                 int stride, RestorationInternal *rst,
                                 uint8_t *dst, int dst_stride) {
   int tile_idx;
+  extend_frame(data, width, height, stride);
   for (tile_idx = 0; tile_idx < rst->ntiles; ++tile_idx) {
     loop_sgrproj_filter_tile(data, tile_idx, width, height, stride, rst, dst,
                              dst_stride);
@@ -1052,8 +1103,6 @@ static void loop_wiener_filter_tile_highbd(uint16_t *data, int tile_idx,
                            tile_width, tile_height, width, height, 0, 0,
                            &h_start, &h_end, &v_start, &v_end);
   InterpKernel vertical_topbot;
-  stepdown_wiener_kernel(rst->rsi->wiener_info[tile_idx].vfilter,
-                         vertical_topbot);
   // Convolve the whole tile (done in blocks here to match the requirements
   // of the vectorized convolve functions, but the result is equivalent)
   for (i = v_start; i < v_end; i += procunit_height)
@@ -1062,46 +1111,56 @@ static void loop_wiener_filter_tile_highbd(uint16_t *data, int tile_idx,
       int h = AOMMIN(procunit_height, (v_end - i + 15) & ~15);
       const uint16_t *data_p = data + i * stride + j;
       uint16_t *dst_p = dst + i * dst_stride + j;
-// if the filter is 7-tap do only horizontal filtering for top and
-// bottom rows.
+      // Note h is at least 16
+      for (int b = 0; b < WIENER_HALFWIN - WIENER_BORDER_VERT; ++b) {
+        stepdown_wiener_kernel(rst->rsi->wiener_info[tile_idx].vfilter,
+                               vertical_topbot, WIENER_BORDER_VERT + b, 1);
 #if USE_WIENER_HIGH_INTERMEDIATE_PRECISION
-      aom_highbd_convolve8_add_src_hip(
-          CONVERT_TO_BYTEPTR(data_p), stride, CONVERT_TO_BYTEPTR(dst_p),
-          dst_stride, rst->rsi->wiener_info[tile_idx].hfilter, 16,
-          vertical_topbot, 16, w, 1, bit_depth);
+        aom_highbd_convolve8_add_src_hip(
+            CONVERT_TO_BYTEPTR(data_p), stride, CONVERT_TO_BYTEPTR(dst_p),
+            dst_stride, rst->rsi->wiener_info[tile_idx].hfilter, 16,
+            vertical_topbot, 16, w, 1, bit_depth);
 #else
-      aom_highbd_convolve8_add_src(CONVERT_TO_BYTEPTR(data_p), stride,
-                                   CONVERT_TO_BYTEPTR(dst_p), dst_stride,
-                                   rst->rsi->wiener_info[tile_idx].hfilter, 16,
-                                   vertical_topbot, 16, w, 1, bit_depth);
+        aom_highbd_convolve8_add_src(CONVERT_TO_BYTEPTR(data_p), stride,
+                                     CONVERT_TO_BYTEPTR(dst_p), dst_stride,
+                                     rst->rsi->wiener_info[tile_idx].hfilter,
+                                     16, vertical_topbot, 16, w, 1, bit_depth);
 #endif  // USE_WIENER_HIGH_INTERMEDIATE_PRECISION
-      data_p += stride;
-      dst_p += dst_stride;
-// Note h is at least 16
+        data_p += stride;
+        dst_p += dst_stride;
+      }
 #if USE_WIENER_HIGH_INTERMEDIATE_PRECISION
       aom_highbd_convolve8_add_src_hip(
           CONVERT_TO_BYTEPTR(data_p), stride, CONVERT_TO_BYTEPTR(dst_p),
           dst_stride, rst->rsi->wiener_info[tile_idx].hfilter, 16,
-          rst->rsi->wiener_info[tile_idx].vfilter, 16, w, h - 2, bit_depth);
+          rst->rsi->wiener_info[tile_idx].vfilter, 16, w,
+          h - (WIENER_HALFWIN - WIENER_BORDER_VERT) * 2, bit_depth);
 #else
       aom_highbd_convolve8_add_src(
           CONVERT_TO_BYTEPTR(data_p), stride, CONVERT_TO_BYTEPTR(dst_p),
           dst_stride, rst->rsi->wiener_info[tile_idx].hfilter, 16,
-          rst->rsi->wiener_info[tile_idx].vfilter, 16, w, h - 2, bit_depth);
+          rst->rsi->wiener_info[tile_idx].vfilter, 16, w,
+          h - (WIENER_HALFWIN - WIENER_BORDER_VERT) * 2, bit_depth);
 #endif  // USE_WIENER_HIGH_INTERMEDIATE_PRECISION
-      data_p += stride * (h - 2);
-      dst_p += dst_stride * (h - 2);
+      data_p += stride * (h - (WIENER_HALFWIN - WIENER_BORDER_VERT) * 2);
+      dst_p += dst_stride * (h - (WIENER_HALFWIN - WIENER_BORDER_VERT) * 2);
+      for (int b = WIENER_HALFWIN - WIENER_BORDER_VERT - 1; b >= 0; --b) {
+        stepdown_wiener_kernel(rst->rsi->wiener_info[tile_idx].vfilter,
+                               vertical_topbot, WIENER_BORDER_VERT + b, 0);
 #if USE_WIENER_HIGH_INTERMEDIATE_PRECISION
-      aom_highbd_convolve8_add_src_hip(
-          CONVERT_TO_BYTEPTR(data_p), stride, CONVERT_TO_BYTEPTR(dst_p),
-          dst_stride, rst->rsi->wiener_info[tile_idx].hfilter, 16,
-          vertical_topbot, 16, w, 1, bit_depth);
+        aom_highbd_convolve8_add_src_hip(
+            CONVERT_TO_BYTEPTR(data_p), stride, CONVERT_TO_BYTEPTR(dst_p),
+            dst_stride, rst->rsi->wiener_info[tile_idx].hfilter, 16,
+            vertical_topbot, 16, w, 1, bit_depth);
 #else
-      aom_highbd_convolve8_add_src(CONVERT_TO_BYTEPTR(data_p), stride,
-                                   CONVERT_TO_BYTEPTR(dst_p), dst_stride,
-                                   rst->rsi->wiener_info[tile_idx].hfilter, 16,
-                                   vertical_topbot, 16, w, 1, bit_depth);
+        aom_highbd_convolve8_add_src(CONVERT_TO_BYTEPTR(data_p), stride,
+                                     CONVERT_TO_BYTEPTR(dst_p), dst_stride,
+                                     rst->rsi->wiener_info[tile_idx].hfilter,
+                                     16, vertical_topbot, 16, w, 1, bit_depth);
 #endif  // USE_WIENER_HIGH_INTERMEDIATE_PRECISION
+        data_p += stride;
+        dst_p += dst_stride;
+      }
     }
 }
 
@@ -1123,14 +1182,18 @@ void av1_selfguided_restoration_highbd_c(uint16_t *dgd, int width, int height,
                                          int stride, int32_t *dst,
                                          int dst_stride, int bit_depth, int r,
                                          int eps, int32_t *tmpbuf) {
+  const int dgd32_stride = width + 2 * SGRPROJ_BORDER_HORZ;
+  int32_t *dgd32 =
+      tmpbuf + dgd32_stride * SGRPROJ_BORDER_VERT + SGRPROJ_BORDER_HORZ;
   int i, j;
-  for (i = 0; i < height; ++i) {
-    for (j = 0; j < width; ++j) {
-      dst[i * dst_stride + j] = dgd[i * stride + j];
+  for (i = -SGRPROJ_BORDER_VERT; i < height + SGRPROJ_BORDER_VERT; ++i) {
+    for (j = -SGRPROJ_BORDER_HORZ; j < width + SGRPROJ_BORDER_HORZ; ++j) {
+      dgd32[i * dgd32_stride + j] = dgd[i * stride + j];
     }
   }
-  av1_selfguided_restoration_internal(dst, width, height, dst_stride, bit_depth,
-                                      r, eps, tmpbuf);
+  av1_selfguided_restoration_internal(dgd32, width, height, dgd32_stride, dst,
+                                      dst_stride, bit_depth, r, eps,
+                                      tmpbuf + RESTORATION_TILEPELS_MAX);
 }
 
 void av1_highpass_filter_highbd_c(uint16_t *dgd, int width, int height,
@@ -1288,7 +1351,7 @@ static void loop_sgrproj_filter_tile_highbd(uint16_t *data, int tile_idx,
       int h = AOMMIN(procunit_height, v_end - i);
       uint16_t *data_p = data + i * stride + j;
       uint16_t *dst_p = dst + i * dst_stride + j;
-      apply_selfguided_restoration_highbd(
+      apply_selfguided_restoration_highbd_c(
           data_p, w, h, stride, bit_depth, rst->rsi->sgrproj_info[tile_idx].ep,
           rst->rsi->sgrproj_info[tile_idx].xqd, dst_p, dst_stride, rst->tmpbuf);
     }
@@ -1301,6 +1364,7 @@ static void loop_sgrproj_filter_highbd(uint8_t *data8, int width, int height,
   int tile_idx;
   uint16_t *data = CONVERT_TO_SHORTPTR(data8);
   uint16_t *dst = CONVERT_TO_SHORTPTR(dst8);
+  extend_frame_highbd(data, width, height, stride);
   for (tile_idx = 0; tile_idx < rst->ntiles; ++tile_idx) {
     loop_sgrproj_filter_tile_highbd(data, tile_idx, width, height, stride, rst,
                                     bit_depth, dst, dst_stride);

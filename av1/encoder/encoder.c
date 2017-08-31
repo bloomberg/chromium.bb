@@ -4183,6 +4183,8 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
       av1_loop_filter_frame(cm->frame_to_show, cm, xd, lf->filter_level, 0, 0);
 #endif
   }
+  aom_extend_frame_borders(cm->frame_to_show);
+
 #if CONFIG_CDEF
   if (is_lossless_requested(&cpi->oxcf)) {
     cm->cdef_bits = 0;
