@@ -6,7 +6,9 @@
 
 #include "build/build_config.h"
 #include "content/common/url_schemes.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/url_constants.h"
+#include "url/url_util.h"
 
 namespace content {
 
@@ -21,6 +23,34 @@ bool IsSavableURL(const GURL& url) {
       return true;
   }
   return false;
+}
+
+// PlzNavigate
+bool IsURLHandledByNetworkStack(const GURL& url) {
+  CHECK(IsBrowserSideNavigationEnabled());
+
+  // Javascript URLs, srcdoc, schemes that don't load data should not send a
+  // request to the network stack.
+  if (url.SchemeIs(url::kJavaScriptScheme) || url.is_empty() ||
+      url == content::kAboutSrcDocURL) {
+    return false;
+  }
+
+  for (const auto& scheme : url::GetEmptyDocumentSchemes()) {
+    if (url.SchemeIs(scheme))
+      return false;
+  }
+
+  // For you information, even though a "data:" url doesn't generate actual
+  // network requests, it is handled by the network stack and so must return
+  // true. The reason is that a few "data:" urls can't be handled locally. For
+  // instance:
+  // - the ones that result in downloads.
+  // - the ones that are invalid. An error page must be served instead.
+  // - the ones that have an unsupported MIME type.
+  // - the ones that target the top-level frame on Android.
+
+  return true;
 }
 
 }  // namespace content

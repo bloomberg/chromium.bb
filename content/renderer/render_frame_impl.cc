@@ -5600,7 +5600,7 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
   // This includes navigations with no request being sent to the network stack.
   if (IsBrowserSideNavigationEnabled() &&
       info.url_request.CheckForBrowserSideNavigation() &&
-      ShouldMakeNetworkRequestForURL(url) && !use_archive) {
+      IsURLHandledByNetworkStack(url) && !use_archive) {
     if (info.default_policy == blink::kWebNavigationPolicyCurrentTab) {
       // The BeginNavigation() call happens in didStartProvisionalLoad(). We
       // need to save information about the navigation here.

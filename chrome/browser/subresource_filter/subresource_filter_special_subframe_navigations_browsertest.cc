@@ -50,8 +50,9 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterSpecialSubframeNavigationsBrowserTest,
 
 // Navigate to a site with site hierarchy a(b(c)). Let a navigate c to a data
 // URL, and expect that the resulting frame has activation. We expect to fail in
-// --site-per-process because c is navigated to a's process. Therefore we can't
-// sniff b's activation state from c. See crbug.com/739777.
+// --site-per-process with PlzNavigate disabled because c is navigated to a's
+// process. Therefore we can't sniff b's activation state from c.
+// See crbug.com/739777.
 IN_PROC_BROWSER_TEST_F(SubresourceFilterSpecialSubframeNavigationsBrowserTest,
                        NavigateCrossProcessDataUrl_MaintainsActivation) {
   const GURL main_url(embedded_test_server()->GetURL(

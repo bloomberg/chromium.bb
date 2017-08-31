@@ -51,6 +51,8 @@ class SubresourceFilterAgentUnderTest : public SubresourceFilterAgent {
   MOCK_METHOD0(SignalFirstSubresourceDisallowedForCommittedLoad, void());
   MOCK_METHOD1(SendDocumentLoadStatistics, void(const DocumentLoadStatistics&));
 
+  bool IsMainFrame() override { return true; }
+
   void SetSubresourceFilterForCommittedLoad(
       std::unique_ptr<blink::WebDocumentSubresourceFilter> filter) override {
     last_injected_filter_ = std::move(filter);

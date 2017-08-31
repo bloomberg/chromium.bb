@@ -45,6 +45,8 @@ class SubresourceFilterAgent
   // Returns the URL of the currently committed document.
   virtual GURL GetDocumentURL();
 
+  virtual bool IsMainFrame();
+
   // Injects the provided subresource |filter| into the DocumentLoader
   // orchestrating the most recently committed load.
   virtual void SetSubresourceFilterForCommittedLoad(
@@ -77,11 +79,6 @@ class SubresourceFilterAgent
   void DidFinishLoad() override;
   bool OnMessageReceived(const IPC::Message& message) override;
   void WillCreateWorkerFetchContext(blink::WebWorkerFetchContext*) override;
-
-  // Subframe navigations matching these URLs/schemes will not trigger
-  // ReadyToCommitNavigation in the browser process, so they must be treated
-  // specially to maintain activation.
-  bool ShouldUseParentActivation(const GURL& url) const;
 
   // Owned by the ChromeContentRendererClient and outlives us.
   UnverifiedRulesetDealer* ruleset_dealer_;
