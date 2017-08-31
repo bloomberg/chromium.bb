@@ -82,6 +82,7 @@ class WallpaperManager
   void SetDefaultWallpaperDelayed(const AccountId& account_id) override;
   void DoSetDefaultWallpaper(
       const AccountId& account_id,
+      bool update_wallpaper,
       wallpaper::MovableOnDestroyCallbackHolder on_finish) override;
   void SetUserWallpaperInfo(const AccountId& account_id,
                             const wallpaper::WallpaperInfo& info,
@@ -200,12 +201,14 @@ class WallpaperManager
   void OnDefaultWallpaperDecoded(
       const base::FilePath& path,
       const wallpaper::WallpaperLayout layout,
+      bool update_wallpaper,
       std::unique_ptr<user_manager::UserImage>* result,
       wallpaper::MovableOnDestroyCallbackHolder on_finish,
       std::unique_ptr<user_manager::UserImage> user_image) override;
   void StartLoadAndSetDefaultWallpaper(
       const base::FilePath& path,
       const wallpaper::WallpaperLayout layout,
+      bool update_wallpaper,
       wallpaper::MovableOnDestroyCallbackHolder on_finish,
       std::unique_ptr<user_manager::UserImage>* result_out) override;
   void SetDefaultWallpaperPath(

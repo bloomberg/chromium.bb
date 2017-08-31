@@ -851,4 +851,62 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest, IsPendingWallpaper) {
   EXPECT_FALSE(WallpaperManager::Get()->IsPendingWallpaper(
       wallpaper::WallpaperResizer::GetImageId(image)));
 }
+
+// Tests that if there are multiple users on the device and if one user lost his
+// wallpaper somehow, the wallpapers should still show correctly on lock/login
+// screen.
+IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest, CustomWallpaperLostTest) {
+  UpdateDisplay("640x480");
+  WallpaperManager* wallpaper_manager = WallpaperManager::Get();
+
+  LogIn(test_account_id1_, kTestUser1Hash);
+  wallpaper_manager_test_utils::WaitAsyncWallpaperLoadFinished();
+
+  // Now log in |test_account_id2_| to make it the current active user.
+  LogIn(test_account_id2_, kTestUser2Hash);
+  wallpaper_manager_test_utils::WaitAsyncWallpaperLoadFinished();
+  EXPECT_EQ(user_manager::UserManager::Get()->GetActiveUser()->GetAccountId(),
+            test_account_id2_);
+
+  // Set a different wallpaper for |test_account_id2_|.
+  std::string id = std::to_string(
+      std::abs((base::Time::Now() - base::Time::Now().LocalMidnight())
+                   .InMilliseconds()));
+  base::FilePath small_wallpaper_path = GetCustomWallpaperPath(
+      wallpaper::kSmallWallpaperSubDir, test_account2_wallpaper_files_id_, id);
+  ASSERT_TRUE(wallpaper_manager_test_utils::WriteJPEGFile(
+      small_wallpaper_path, kSmallWallpaperWidth, kSmallWallpaperHeight,
+      wallpaper_manager_test_utils::kCustomWallpaperColor));
+  std::string relative_path2 =
+      base::FilePath(test_account2_wallpaper_files_id_.id()).Append(id).value();
+  WallpaperInfo info2 = {relative_path2, WALLPAPER_LAYOUT_CENTER_CROPPED,
+                         wallpaper::CUSTOMIZED,
+                         base::Time::Now().LocalMidnight()};
+  wallpaper_manager->SetUserWallpaperInfo(test_account_id2_, info2, true);
+  wallpaper_manager->SetUserWallpaperNow(test_account_id2_);
+  wallpaper_manager_test_utils::WaitAsyncWallpaperLoadFinished();
+  EXPECT_TRUE(wallpaper_manager_test_utils::ImageIsNearColor(
+      controller_->GetWallpaper(),
+      wallpaper_manager_test_utils::kCustomWallpaperColor));
+
+  // Now simulate the lost of |test_account_id1_|'s wallpaper by only updating
+  // its WallpaperInfo but not providing its wallpaper. In this case we just
+  // fallback to the default wallpaper.
+  std::string relative_path =
+      base::FilePath(test_account1_wallpaper_files_id_.id()).Append(id).value();
+  // Saves wallpaper info to local state for user |test_account_id1_|.
+  WallpaperInfo info = {relative_path, WALLPAPER_LAYOUT_CENTER_CROPPED,
+                        wallpaper::CUSTOMIZED,
+                        base::Time::Now().LocalMidnight()};
+  wallpaper_manager->SetUserWallpaperInfo(test_account_id1_, info, true);
+
+  // Now simulate lock/login screen. On lock/login screen all users' wallpapers
+  // will be cached. Test that caching |test_account_id1_| wallpaper won't
+  // change the current wallpaper (|teset_account_id2_|'s wallpaper).
+  CacheUserWallpaper(test_account_id1_);
+  EXPECT_TRUE(wallpaper_manager_test_utils::ImageIsNearColor(
+      controller_->GetWallpaper(),
+      wallpaper_manager_test_utils::kCustomWallpaperColor));
+}
+
 }  // namespace chromeos
