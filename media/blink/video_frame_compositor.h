@@ -18,12 +18,17 @@
 #include "cc/layers/video_frame_provider.h"
 #include "media/base/video_renderer_sink.h"
 #include "media/blink/media_blink_export.h"
+#include "third_party/WebKit/public/platform/WebVideoFrameSubmitter.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace base {
 namespace trace_event {
 class AutoOpenCloseEvent;
 }
+}
+
+namespace viz {
+class FrameSinkId;
 }
 
 namespace media {
@@ -60,18 +65,21 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor : public VideoRendererSink,
   // Used to report back the time when the new frame has been processed.
   using OnNewProcessedFrameCB = base::Callback<void(base::TimeTicks)>;
 
-  // |compositor_task_runner| is the task runner on which this class will live,
+  // |task_runner| is the task runner on which this class will live,
   // though it may be constructed on any thread.
   explicit VideoFrameCompositor(
-      const scoped_refptr<base::SingleThreadTaskRunner>&
-          compositor_task_runner);
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
 
   // Destruction must happen on the compositor thread; Stop() must have been
   // called before destruction starts.
   ~VideoFrameCompositor() override;
 
+  // Signals the VideoFrameSubmitter to prepare to receive BeginFrames and
+  // submit video frames given by VideoFrameCompositor.
+  void EnableSubmission(const viz::FrameSinkId& id);
+
   // cc::VideoFrameProvider implementation. These methods must be called on the
-  // |compositor_task_runner_|.
+  // |task_runner_|.
   void SetVideoFrameProviderClient(
       cc::VideoFrameProvider::Client* client) override;
   bool UpdateCurrentFrame(base::TimeTicks deadline_min,
@@ -125,7 +133,17 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor : public VideoRendererSink,
     background_rendering_enabled_ = enabled;
   }
 
+  void set_submitter_for_test(
+      std::unique_ptr<blink::WebVideoFrameSubmitter> submitter) {
+    submitter_ = std::move(submitter);
+  }
+
  private:
+  // Indicates whether the endpoint for the VideoFrame exists.
+  // TODO(lethalantidote): Update this function to read creation/destruction
+  // signals of the SurfaceLayerImpl.
+  bool IsClientSinkAvailable();
+
   // Called on the compositor thread in response to Start() or Stop() calls;
   // must be used to change |rendering_| state.
   void OnRendererStateUpdate(bool new_state);
@@ -146,14 +164,18 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor : public VideoRendererSink,
                   base::TimeTicks deadline_max,
                   bool background_rendering);
 
-  scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
+  // This will run tasks on the compositor thread. If
+  // kEnableSurfaceLayerForVideo is enabled, it will instead run tasks on the
+  // media thread.
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+
   std::unique_ptr<base::TickClock> tick_clock_;
 
   // Allows tests to disable the background rendering task.
   bool background_rendering_enabled_;
 
   // Manages UpdateCurrentFrame() callbacks if |client_| has stopped sending
-  // them for various reasons.  Runs on |compositor_task_runner_| and is reset
+  // them for various reasons.  Runs on |task_runner_| and is reset
   // after each successful UpdateCurrentFrame() call.
   base::Timer background_rendering_timer_;
 
@@ -177,6 +199,10 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor : public VideoRendererSink,
 
   // AutoOpenCloseEvent for begin/end events.
   std::unique_ptr<base::trace_event::AutoOpenCloseEvent> auto_open_close_;
+  std::unique_ptr<blink::WebVideoFrameSubmitter> submitter_;
+
+  // Whether the use of a surface layer instead of a video layer is enabled.
+  bool surface_layer_for_video_enabled_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(VideoFrameCompositor);
 };

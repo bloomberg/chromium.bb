@@ -89,6 +89,7 @@ class WebApplicationCacheHost;
 class WebApplicationCacheHostClient;
 class WebCookieJar;
 class WebFrame;
+class WebLayerTreeView;
 class WebMediaPlayer;
 class WebMediaPlayerClient;
 class WebMediaPlayerSource;
@@ -231,7 +232,8 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   virtual std::unique_ptr<WebMediaPlayer> CreateWebMediaPlayer(
       HTMLMediaElement&,
       const WebMediaPlayerSource&,
-      WebMediaPlayerClient*) = 0;
+      WebMediaPlayerClient*,
+      WebLayerTreeView*) = 0;
   virtual WebRemotePlaybackClient* CreateWebRemotePlaybackClient(
       HTMLMediaElement&) = 0;
 

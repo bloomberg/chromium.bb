@@ -50,6 +50,7 @@ class Settings;
 class ShadowRoot;
 class WebCredentialManagerClient;
 class WebFrameClient;
+class WebLayerTreeView;
 class WebMediaPlayer;
 class WebMediaPlayerClient;
 class WebMediaPlayerSource;
@@ -102,7 +103,8 @@ class CORE_EXPORT CoreInitializer {
       WebFrameClient*,
       HTMLMediaElement&,
       const WebMediaPlayerSource&,
-      WebMediaPlayerClient*) const = 0;
+      WebMediaPlayerClient*,
+      WebLayerTreeView*) const = 0;
 
   virtual WebRemotePlaybackClient* CreateWebRemotePlaybackClient(
       HTMLMediaElement&) const = 0;

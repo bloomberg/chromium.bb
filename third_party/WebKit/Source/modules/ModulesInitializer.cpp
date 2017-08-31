@@ -238,14 +238,15 @@ std::unique_ptr<WebMediaPlayer> ModulesInitializer::CreateWebMediaPlayer(
     WebFrameClient* web_frame_client,
     HTMLMediaElement& html_media_element,
     const WebMediaPlayerSource& source,
-    WebMediaPlayerClient* media_player_client) const {
+    WebMediaPlayerClient* media_player_client,
+    WebLayerTreeView* view) const {
   HTMLMediaElementEncryptedMedia& encrypted_media =
       HTMLMediaElementEncryptedMedia::From(html_media_element);
   WebString sink_id(
       HTMLMediaElementAudioOutputDevice::sinkId(html_media_element));
   return WTF::WrapUnique(web_frame_client->CreateMediaPlayer(
       source, media_player_client, &encrypted_media,
-      encrypted_media.ContentDecryptionModule(), sink_id));
+      encrypted_media.ContentDecryptionModule(), sink_id, view));
 }
 
 WebRemotePlaybackClient* ModulesInitializer::CreateWebRemotePlaybackClient(

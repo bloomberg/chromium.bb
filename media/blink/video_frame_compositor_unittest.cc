@@ -2,33 +2,70 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "media/blink/video_frame_compositor.h"
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
-#include "cc/layers/video_frame_provider.h"
+#include "components/viz/common/surfaces/frame_sink_id.h"
 #include "media/base/gmock_callback_support.h"
 #include "media/base/video_frame.h"
-#include "media/blink/video_frame_compositor.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/WebVideoFrameSubmitter.h"
 
 using testing::_;
 using testing::DoAll;
 using testing::Return;
+using testing::StrictMock;
 
 namespace media {
 
-class VideoFrameCompositorTest : public testing::Test,
-                                 public cc::VideoFrameProvider::Client,
-                                 public VideoRendererSink::RenderCallback {
+class MockWebVideoFrameSubmitter : public blink::WebVideoFrameSubmitter {
+ public:
+  // blink::WebVideoFrameSubmitter implementation.
+  void StopUsingProvider() override {}
+  MOCK_METHOD1(StartSubmitting, void(const viz::FrameSinkId&));
+  MOCK_METHOD0(StartRendering, void());
+  MOCK_METHOD0(StopRendering, void());
+  void DidReceiveFrame() override { ++did_receive_frame_count_; }
+
+  int did_receive_frame_count() { return did_receive_frame_count_; }
+
+ private:
+  int did_receive_frame_count_ = 0;
+};
+
+class VideoFrameCompositorTest : public VideoRendererSink::RenderCallback,
+                                 public ::testing::TestWithParam<bool> {
  public:
   VideoFrameCompositorTest()
       : tick_clock_(new base::SimpleTestTickClock()),
-        compositor_(new VideoFrameCompositor(message_loop.task_runner())),
-        did_receive_frame_count_(0) {
-    compositor_->SetVideoFrameProviderClient(this);
+        client_(new StrictMock<MockWebVideoFrameSubmitter>()) {}
+
+  void SetUp() {
+    if (IsSurfaceLayerForVideoEnabled()) {
+      feature_list_.InitFromCommandLine("UseSurfaceLayerForVideo", "");
+
+      // When SurfaceLayerForVideo is enabled, |compositor_| owns the
+      // |submitter_|. Otherwise, the |compositor_| treats the |submitter_| if
+      // were a VideoFrameProviderClient in the VideoLayer code path, holding
+      // only a bare pointer.
+    }
+    submitter_ = client_.get();
+    compositor_ =
+        base::MakeUnique<VideoFrameCompositor>(message_loop.task_runner());
+
+    if (!IsSurfaceLayerForVideoEnabled()) {
+      compositor_->SetVideoFrameProviderClient(client_.get());
+    } else {
+      EXPECT_CALL(*submitter_, StartSubmitting(_));
+      compositor_->set_submitter_for_test(std::move(client_));
+      compositor_->EnableSubmission(viz::FrameSinkId(1, 1));
+    }
+
     compositor_->set_tick_clock_for_testing(
         std::unique_ptr<base::TickClock>(tick_clock_));
     // Disable background rendering by default.
@@ -46,14 +83,9 @@ class VideoFrameCompositorTest : public testing::Test,
   }
 
   VideoFrameCompositor* compositor() { return compositor_.get(); }
-  int did_receive_frame_count() { return did_receive_frame_count_; }
 
  protected:
-  // cc::VideoFrameProvider::Client implementation.
-  void StopUsingProvider() override {}
-  MOCK_METHOD0(StartRendering, void());
-  MOCK_METHOD0(StopRendering, void());
-  void DidReceiveFrame() override { ++did_receive_frame_count_; }
+  bool IsSurfaceLayerForVideoEnabled() { return GetParam(); }
 
   // VideoRendererSink::RenderCallback implementation.
   MOCK_METHOD3(Render,
@@ -63,7 +95,7 @@ class VideoFrameCompositorTest : public testing::Test,
   MOCK_METHOD0(OnFrameDropped, void());
 
   void StartVideoRendererSink() {
-    EXPECT_CALL(*this, StartRendering());
+    EXPECT_CALL(*submitter_, StartRendering());
     const bool had_current_frame = !!compositor_->GetCurrentFrame();
     compositor()->Start(this);
     // If we previously had a frame, we should still have one now.
@@ -73,7 +105,7 @@ class VideoFrameCompositorTest : public testing::Test,
 
   void StopVideoRendererSink(bool have_client) {
     if (have_client)
-      EXPECT_CALL(*this, StopRendering());
+      EXPECT_CALL(*submitter_, StopRendering());
     const bool had_current_frame = !!compositor_->GetCurrentFrame();
     compositor()->Stop();
     // If we previously had a frame, we should still have one now.
@@ -88,29 +120,32 @@ class VideoFrameCompositorTest : public testing::Test,
 
   base::MessageLoop message_loop;
   base::SimpleTestTickClock* tick_clock_;  // Owned by |compositor_|
+  StrictMock<MockWebVideoFrameSubmitter>* submitter_;
+  std::unique_ptr<StrictMock<MockWebVideoFrameSubmitter>> client_;
   std::unique_ptr<VideoFrameCompositor> compositor_;
 
-  int did_receive_frame_count_;
+ private:
+  base::test::ScopedFeatureList feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoFrameCompositorTest);
 };
 
-TEST_F(VideoFrameCompositorTest, InitialValues) {
+TEST_P(VideoFrameCompositorTest, InitialValues) {
   EXPECT_FALSE(compositor()->GetCurrentFrame().get());
 }
 
-TEST_F(VideoFrameCompositorTest, PaintSingleFrame) {
+TEST_P(VideoFrameCompositorTest, PaintSingleFrame) {
   scoped_refptr<VideoFrame> expected = VideoFrame::CreateEOSFrame();
 
   // Should notify compositor synchronously.
-  EXPECT_EQ(0, did_receive_frame_count());
+  EXPECT_EQ(0, submitter_->did_receive_frame_count());
   compositor()->PaintSingleFrame(expected);
   scoped_refptr<VideoFrame> actual = compositor()->GetCurrentFrame();
   EXPECT_EQ(expected, actual);
-  EXPECT_EQ(1, did_receive_frame_count());
+  EXPECT_EQ(1, submitter_->did_receive_frame_count());
 }
 
-TEST_F(VideoFrameCompositorTest, VideoRendererSinkFrameDropped) {
+TEST_P(VideoFrameCompositorTest, VideoRendererSinkFrameDropped) {
   scoped_refptr<VideoFrame> opaque_frame = CreateOpaqueFrame();
 
   EXPECT_CALL(*this, Render(_, _, _)).WillRepeatedly(Return(opaque_frame));
@@ -144,21 +179,23 @@ TEST_F(VideoFrameCompositorTest, VideoRendererSinkFrameDropped) {
   StopVideoRendererSink(true);
 }
 
-TEST_F(VideoFrameCompositorTest, VideoLayerShutdownWhileRendering) {
-  EXPECT_CALL(*this, Render(_, _, true)).WillOnce(Return(nullptr));
-  StartVideoRendererSink();
-  compositor_->SetVideoFrameProviderClient(nullptr);
-  StopVideoRendererSink(false);
+TEST_P(VideoFrameCompositorTest, VideoLayerShutdownWhileRendering) {
+  if (!IsSurfaceLayerForVideoEnabled()) {
+    EXPECT_CALL(*this, Render(_, _, true)).WillOnce(Return(nullptr));
+    StartVideoRendererSink();
+    compositor_->SetVideoFrameProviderClient(nullptr);
+    StopVideoRendererSink(false);
+  }
 }
 
-TEST_F(VideoFrameCompositorTest, StartFiresBackgroundRender) {
+TEST_P(VideoFrameCompositorTest, StartFiresBackgroundRender) {
   scoped_refptr<VideoFrame> opaque_frame = CreateOpaqueFrame();
   EXPECT_CALL(*this, Render(_, _, true)).WillRepeatedly(Return(opaque_frame));
   StartVideoRendererSink();
   StopVideoRendererSink(true);
 }
 
-TEST_F(VideoFrameCompositorTest, BackgroundRenderTicks) {
+TEST_P(VideoFrameCompositorTest, BackgroundRenderTicks) {
   scoped_refptr<VideoFrame> opaque_frame = CreateOpaqueFrame();
   compositor_->set_background_rendering_for_testing(true);
 
@@ -179,7 +216,7 @@ TEST_F(VideoFrameCompositorTest, BackgroundRenderTicks) {
   StopVideoRendererSink(true);
 }
 
-TEST_F(VideoFrameCompositorTest,
+TEST_P(VideoFrameCompositorTest,
        UpdateCurrentFrameWorksWhenBackgroundRendered) {
   scoped_refptr<VideoFrame> opaque_frame = CreateOpaqueFrame();
   compositor_->set_background_rendering_for_testing(true);
@@ -207,7 +244,7 @@ TEST_F(VideoFrameCompositorTest,
   StopVideoRendererSink(true);
 }
 
-TEST_F(VideoFrameCompositorTest, GetCurrentFrameAndUpdateIfStale) {
+TEST_P(VideoFrameCompositorTest, GetCurrentFrameAndUpdateIfStale) {
   scoped_refptr<VideoFrame> opaque_frame_1 = CreateOpaqueFrame();
   scoped_refptr<VideoFrame> opaque_frame_2 = CreateOpaqueFrame();
   compositor_->set_background_rendering_for_testing(true);
@@ -235,8 +272,12 @@ TEST_F(VideoFrameCompositorTest, GetCurrentFrameAndUpdateIfStale) {
 
   testing::Mock::VerifyAndClearExpectations(this);
 
-  // Clear our client, which means no mock function calls for Client.
-  compositor()->SetVideoFrameProviderClient(nullptr);
+  if (IsSurfaceLayerForVideoEnabled()) {
+    compositor()->set_submitter_for_test(nullptr);
+  } else {
+    // Clear our client, which means no mock function calls for Client.
+    compositor()->SetVideoFrameProviderClient(nullptr);
+  }
 
   // This call should still not call background render, because we aren't in the
   // background rendering state yet.
@@ -261,5 +302,9 @@ TEST_F(VideoFrameCompositorTest, GetCurrentFrameAndUpdateIfStale) {
   // Background rendering should tick another render callback.
   StopVideoRendererSink(false);
 }
+
+INSTANTIATE_TEST_CASE_P(SubmitterEnabled,
+                        VideoFrameCompositorTest,
+                        ::testing::Bool());
 
 }  // namespace media

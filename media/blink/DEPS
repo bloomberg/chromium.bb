@@ -3,6 +3,7 @@ include_rules = [
   "+cc/layers/video_frame_provider.h",
   "+cc/layers/video_layer.h",
   "+components/scheduler",  # Only allowed in tests.
+  "+components/viz/common/surfaces/frame_sink_id.h",
   "+gin",
   "+media",
   "+mojo/edk/embedder",

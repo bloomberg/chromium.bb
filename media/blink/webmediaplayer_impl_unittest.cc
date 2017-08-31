@@ -20,6 +20,7 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "cc/blink/web_layer_impl.h"
 #include "media/base/media_log.h"
 #include "media/base/media_switches.h"
 #include "media/base/test_helpers.h"
@@ -34,6 +35,7 @@
 #include "third_party/WebKit/public/platform/WebMediaPlayerClient.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
+#include "third_party/WebKit/public/platform/WebSurfaceLayerBridge.h"
 #include "third_party/WebKit/public/web/WebFrameClient.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebScopedUserGesture.h"
@@ -43,6 +45,8 @@
 using ::testing::AnyNumber;
 using ::testing::InSequence;
 using ::testing::Return;
+using ::testing::ReturnRef;
+using ::testing::StrictMock;
 using ::testing::_;
 
 namespace media {
@@ -218,6 +222,12 @@ class MockWebMediaPlayerDelegate : public WebMediaPlayerDelegate {
   bool is_closed_ = false;
 };
 
+class MockSurfaceLayerBridge : public blink::WebSurfaceLayerBridge {
+ public:
+  MOCK_CONST_METHOD0(GetWebLayer, blink::WebLayer*());
+  MOCK_CONST_METHOD0(GetFrameSinkId, const viz::FrameSinkId&());
+};
+
 class WebMediaPlayerImplTest : public testing::Test {
  public:
   WebMediaPlayerImplTest()
@@ -261,8 +271,11 @@ class WebMediaPlayerImplTest : public testing::Test {
             RequestRoutingTokenCallback(), nullptr,
             kMaxKeyframeDistanceToDisableBackgroundVideo,
             kMaxKeyframeDistanceToDisableBackgroundVideoMSE, false, false,
-            provider_.get(), base::Bind(&CreateCapabilitiesRecorder)));
-  }
+            provider_.get(),
+            base::Bind(&CreateCapabilitiesRecorder),
+            base::Bind(&WebMediaPlayerImplTest::CreateMockSurfaceLayerBridge,
+                       base::Unretained(this))));
+}
 
   ~WebMediaPlayerImplTest() override {
     // Destruct WebMediaPlayerImpl and pump the message loop to ensure that
@@ -271,15 +284,23 @@ class WebMediaPlayerImplTest : public testing::Test {
     // NOTE: This should be done before any other member variables are
     // destructed since WMPI may reference them during destruction.
     wmpi_.reset();
+
     base::RunLoop().RunUntilIdle();
 
     web_view_->Close();
   }
 
  protected:
+  std::unique_ptr<blink::WebSurfaceLayerBridge> CreateMockSurfaceLayerBridge(
+      blink::WebSurfaceLayerBridgeObserver*) {
+    return base::WrapUnique<blink::WebSurfaceLayerBridge>(
+        surface_layer_bridge_);
+  }
+
   void SetNetworkState(blink::WebMediaPlayer::NetworkState state) {
     wmpi_->SetNetworkState(state);
   }
+
   void SetReadyState(blink::WebMediaPlayer::ReadyState state) {
     wmpi_->SetReadyState(state);
   }
@@ -436,6 +457,8 @@ class WebMediaPlayerImplTest : public testing::Test {
   testing::NiceMock<MockWebMediaPlayerDelegate> delegate_;
 
   mojom::WatchTimeRecorderProviderPtr provider_;
+
+  StrictMock<MockSurfaceLayerBridge>* surface_layer_bridge_ = nullptr;
 
   // The WebMediaPlayerImpl instance under test.
   std::unique_ptr<WebMediaPlayerImpl> wmpi_;
@@ -925,6 +948,26 @@ TEST_F(WebMediaPlayerImplTest, InfiniteDuration) {
   EXPECT_EQ(base::TimeDelta(), GetCurrentTimeInternal());
 }
 
+// TODO(lethalantidote): Once |client_| is converted from a dummy to a mock,
+// test that |web_layer| is actually used by |client_|.
+// http://crbug/755880.
+TEST_F(WebMediaPlayerImplTest, OnWebLayerReplacedGetsWebLayerFromBridge) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitFromCommandLine("UseSurfaceLayerForVideo", "");
+  surface_layer_bridge_ = new StrictMock<MockSurfaceLayerBridge>();
+
+  viz::FrameSinkId id = viz::FrameSinkId(1, 1);
+  EXPECT_CALL(*surface_layer_bridge_, GetFrameSinkId()).WillOnce(ReturnRef(id));
+  InitializeWebMediaPlayerImpl();
+
+  std::unique_ptr<cc_blink::WebLayerImpl> web_layer =
+      base::MakeUnique<cc_blink::WebLayerImpl>();
+
+  EXPECT_CALL(*surface_layer_bridge_, GetWebLayer())
+      .WillRepeatedly(Return(web_layer.get()));
+  wmpi_->OnWebLayerReplaced();
+}
+
 class WebMediaPlayerImplBackgroundBehaviorTest
     : public WebMediaPlayerImplTest,
       public ::testing::WithParamInterface<
@@ -941,7 +984,6 @@ class WebMediaPlayerImplBackgroundBehaviorTest
 
   void SetUp() override {
     WebMediaPlayerImplTest::SetUp();
-
     SetUpMediaSuspend(IsMediaSuspendOn());
 
     std::string enabled_features;

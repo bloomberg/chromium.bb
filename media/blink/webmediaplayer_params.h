@@ -26,7 +26,9 @@ class TaskRunner;
 
 namespace blink {
 class WebContentDecryptionModule;
-}
+class WebSurfaceLayerBridge;
+class WebSurfaceLayerBridgeObserver;
+}  // namespace blink
 
 namespace media {
 
@@ -73,7 +75,9 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
       bool enable_instant_source_buffer_gc,
       bool embedded_media_experience_enabled,
       mojom::WatchTimeRecorderProvider* provider,
-      CreateCapabilitiesRecorderCB create_capabilities_recorder_cb);
+      CreateCapabilitiesRecorderCB create_capabilities_recorder_cb,
+      base::Callback<std::unique_ptr<blink::WebSurfaceLayerBridge>(
+          blink::WebSurfaceLayerBridgeObserver*)> bridge_callback);
 
   ~WebMediaPlayerParams();
 
@@ -140,6 +144,11 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
     return watch_time_recorder_provider_;
   }
 
+  const base::Callback<std::unique_ptr<blink::WebSurfaceLayerBridge>(
+      blink::WebSurfaceLayerBridgeObserver*)>& create_bridge_callback() const {
+    return create_bridge_callback_;
+  }
+
   CreateCapabilitiesRecorderCB create_capabilities_recorder_cb() const {
     return create_capabilities_recorder_cb_;
   }
@@ -164,6 +173,9 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
   const bool embedded_media_experience_enabled_;
   mojom::WatchTimeRecorderProvider* watch_time_recorder_provider_;
   CreateCapabilitiesRecorderCB create_capabilities_recorder_cb_;
+  base::Callback<std::unique_ptr<blink::WebSurfaceLayerBridge>(
+      blink::WebSurfaceLayerBridgeObserver*)>
+      create_bridge_callback_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(WebMediaPlayerParams);
 };

@@ -28,20 +28,14 @@ namespace blink {
 class WebLayer;
 class WebLayerTreeView;
 
-class PLATFORM_EXPORT SurfaceLayerBridgeObserver {
- public:
-  SurfaceLayerBridgeObserver() {}
-  virtual ~SurfaceLayerBridgeObserver() {}
-
-  virtual void OnWebLayerReplaced() = 0;
-};
-
+// The SurfaceLayerBridge facilitates communication about changes to a Surface
+// between the Render and Browser processes.
 class PLATFORM_EXPORT SurfaceLayerBridge
     : public blink::mojom::blink::OffscreenCanvasSurfaceClient,
       public WebSurfaceLayerBridge {
  public:
-  SurfaceLayerBridge(SurfaceLayerBridgeObserver*, WebLayerTreeView*);
-  ~SurfaceLayerBridge() override;
+  SurfaceLayerBridge(WebLayerTreeView*, WebSurfaceLayerBridgeObserver*);
+  virtual ~SurfaceLayerBridge();
 
   void CreateSolidColorLayer();
 
@@ -53,7 +47,9 @@ class PLATFORM_EXPORT SurfaceLayerBridge
   // Implementation of WebSurfaceLayerBridge.
   WebLayer* GetWebLayer() const override { return web_layer_.get(); }
 
-  const viz::FrameSinkId& GetFrameSinkId() const { return frame_sink_id_; }
+  const viz::FrameSinkId& GetFrameSinkId() const override {
+    return frame_sink_id_;
+  }
 
  private:
   mojom::blink::OffscreenCanvasSurfacePtr service_;
@@ -64,7 +60,7 @@ class PLATFORM_EXPORT SurfaceLayerBridge
   scoped_refptr<viz::SurfaceReferenceFactory> ref_factory_;
   base::WeakPtrFactory<SurfaceLayerBridge> weak_factory_;
 
-  SurfaceLayerBridgeObserver* observer_;
+  WebSurfaceLayerBridgeObserver* observer_;
 
   mojo::Binding<blink::mojom::blink::OffscreenCanvasSurfaceClient> binding_;
 
