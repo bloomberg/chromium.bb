@@ -144,11 +144,9 @@ void GaiaCookieManagerService::ExternalCcResultFetcher::Start() {
   helper_->gaia_auth_fetcher_->StartGetCheckConnectionInfo();
 
   // Some fetches may timeout.  Start a timer to decide when the result fetcher
-  // has waited long enough.
-  // TODO(rogerta): I have no idea how long to wait before timing out.
-  // Gaia folks say this should take no more than 2 second even in mobile.
-  // This will need to be tweaked.
-  timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(5), this,
+  // has waited long enough. See https://crbug.com/750316#c36 for details on
+  // exact timeout duration.
+  timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(7), this,
                &GaiaCookieManagerService::ExternalCcResultFetcher::Timeout);
 }
 
