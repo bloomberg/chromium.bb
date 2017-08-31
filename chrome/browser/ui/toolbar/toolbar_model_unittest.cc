@@ -22,7 +22,8 @@
 #include "ui/gfx/text_elider.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-#include "extensions/browser/extension_registry.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/test_extension_system.h"
 #include "extensions/common/extension_builder.h"
 #endif
 
@@ -101,10 +102,16 @@ void ToolbarModelTest::SetUp() {
   // Install a fake extension so that the ID in the chrome-extension test URL is
   // valid. Invalid extension URLs may result in error pages (if blocked by
   // ExtensionNavigationThrottle), which this test doesn't wish to exercise.
-  ASSERT_TRUE(extensions::ExtensionRegistry::Get(profile())->AddEnabled(
+  extensions::TestExtensionSystem* extension_system =
+      static_cast<extensions::TestExtensionSystem*>(
+          extensions::ExtensionSystem::Get(profile()));
+  extension_system->CreateExtensionService(
+      base::CommandLine::ForCurrentProcess(), base::FilePath(), false);
+  scoped_refptr<const extensions::Extension> extension =
       extensions::ExtensionBuilder("Test")
           .SetID("fooooooooooooooooooooooooooooooo")
-          .Build()));
+          .Build();
+  extension_system->extension_service()->AddExtension(extension.get());
 #endif
 }
 
