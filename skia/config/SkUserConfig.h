@@ -204,10 +204,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #   define SK_USE_LEGACY_DISTANCE_FIELDS
 #endif
 
-#ifndef SK_SUPPORT_LEGACY_LINEAR_GRADIENT
-#define SK_SUPPORT_LEGACY_LINEAR_GRADIENT
-#endif
-
 #ifndef SK_SUPPORT_LEGACY_STREAM_API
 #define SK_SUPPORT_LEGACY_STREAM_API
 #endif
