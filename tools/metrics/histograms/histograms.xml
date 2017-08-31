@@ -47741,14 +47741,27 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NewTabPage.LogoShown" enum="NewTabPageLogoShown">
-  <owner>ianwen@chromium.org</owner>
+  <owner>treib@chromium.org</owner>
   <summary>
-    The number of static logos and animated logos shown to users. Android and
-    iOS only.
+    The number of static logos and animated logos shown to users. Note that this
+    is recorded both for logos from the cache and for fresh (or revalidated)
+    logos, so it can be recorded twice per NTP impression. Android and iOS only.
   </summary>
 </histogram>
 
 <histogram name="NewTabPage.LogoShownTime" units="ms">
+  <obsolete>
+    Deprecated 2017-08 because it was only recorded for cached logos. Replaced
+    by LogoShownTime2.
+  </obsolete>
+  <owner>treib@chromium.org</owner>
+  <summary>
+    The amount of time between opening an NTP and the logo appearing. Only
+    recorded when there is a logo, and only recorded once per NTP. Android only.
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.LogoShownTime2" units="ms">
   <owner>treib@chromium.org</owner>
   <summary>
     The amount of time between opening an NTP and the logo appearing. Only
@@ -98049,6 +98062,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
       label="Default gray box in place of a thumbnail/screenshot."/>
   <affected-histogram name="NewTabPage.MostVisited"/>
   <affected-histogram name="NewTabPage.SuggestionsImpression"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="NewTabPageLogoShownFromCache" separator=".">
+  <suffix name="FromCache" label="Logo from cache."/>
+  <suffix name="Fresh" label="Fresh logo from network."/>
+  <affected-histogram name="NewTabPage.LogoShown"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="NewTabPageProviders" separator=".">
