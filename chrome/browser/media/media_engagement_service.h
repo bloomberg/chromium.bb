@@ -14,6 +14,7 @@
 #include "chrome/browser/media/media_engagement_score_details.mojom.h"
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 
 class GURL;
 class MediaEngagementContentsObserver;
@@ -44,6 +45,9 @@ class MediaEngagementService : public KeyedService,
   // Observe the given |web_contents| by creating an internal
   // WebContentsObserver.
   static void CreateWebContentsObserver(content::WebContents* web_contents);
+
+  // Register profile prefs in the pref registry.
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   explicit MediaEngagementService(Profile* profile);
   ~MediaEngagementService() override;
@@ -112,6 +116,9 @@ class MediaEngagementService : public KeyedService,
 
   // Records all the stored scores to a histogram.
   void RecordStoredScoresToHistogram();
+
+  int GetSchemaVersion() const;
+  void SetSchemaVersion(int);
 
   DISALLOW_COPY_AND_ASSIGN(MediaEngagementService);
 };
