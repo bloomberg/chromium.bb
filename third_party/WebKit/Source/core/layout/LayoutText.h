@@ -228,13 +228,13 @@ class CORE_EXPORT LayoutText : public LayoutObject {
     known_to_have_no_overflow_and_no_fallback_fonts_ = false;
   }
 
+  virtual UChar PreviousCharacter() const;
+
  protected:
   void WillBeDestroyed() override;
 
   void StyleWillChange(StyleDifference, const ComputedStyle&) final {}
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
-
-  virtual UChar PreviousCharacter() const;
 
   void AddLayerHitTestRects(LayerHitTestRects&,
                             const PaintLayer* current_layer,

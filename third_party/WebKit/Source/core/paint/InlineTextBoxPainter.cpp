@@ -339,8 +339,19 @@ void InlineTextBoxPainter::Paint(const PaintInfo& paint_info,
       inline_text_box_.GetLineLayoutItem().GetText();
   // TODO(szager): Figure out why this CHECK sometimes fails, it shouldn't.
   CHECK(inline_text_box_.Start() + length <= layout_item_string.length());
+  String first_line_string;
+  if (inline_text_box_.IsFirstLineStyle()) {
+    first_line_string = layout_item_string;
+    ApplyTextTransform(
+        inline_text_box_.GetLineLayoutItem().Style(
+            inline_text_box_.IsFirstLineStyle()),
+        first_line_string,
+        inline_text_box_.GetLineLayoutItem().PreviousCharacter());
+  }
   StringView string =
-      StringView(layout_item_string, inline_text_box_.Start(), length);
+      StringView(inline_text_box_.IsFirstLineStyle() ? first_line_string
+                                                     : layout_item_string,
+                 inline_text_box_.Start(), length);
   int maximum_length = inline_text_box_.GetLineLayoutItem().TextLength() -
                        inline_text_box_.Start();
 
