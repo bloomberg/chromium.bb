@@ -105,7 +105,6 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
   [self.collectionView performBatchUpdates:^{
     [self collectionView:self.collectionView
         willDeleteItemsAtIndexPaths:@[ indexPath ]];
-
     [self.collectionView deleteItemsAtIndexPaths:@[ indexPath ]];
 
     // Check if the section is now empty.
@@ -311,7 +310,7 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
                                                  atIndex:indexPath.item];
       break;
     case ContentSuggestionTypePromo:
-      [self dismissEntryAtIndexPath:indexPath];
+      [self dismissSection:indexPath.section];
       [self.suggestionCommandHandler handlePromoTapped];
       [self.collectionViewLayout invalidateLayout];
       break;
