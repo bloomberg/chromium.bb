@@ -1102,12 +1102,6 @@ void RenderViewImpl::OnGetRenderedText() {
 
 #endif  // ENABLE_PLUGINS
 
-void RenderViewImpl::TransferActiveWheelFlingAnimation(
-    const blink::WebActiveWheelFlingParameters& params) {
-  if (webview())
-    webview()->TransferActiveWheelFlingAnimation(params);
-}
-
 // RenderWidgetInputHandlerDelegate -----------------------------------------
 
 bool RenderViewImpl::DoesRenderWidgetHaveTouchEventHandlersAt(

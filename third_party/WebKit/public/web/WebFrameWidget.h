@@ -42,6 +42,7 @@ class WebDragData;
 class WebLocalFrame;
 class WebInputMethodController;
 class WebWidgetClient;
+struct WebActiveWheelFlingParameters;
 
 class WebFrameWidget : public WebWidget {
  public:
@@ -121,6 +122,12 @@ class WebFrameWidget : public WebWidget {
   // Sets the inert bit on an out-of-process iframe, causing it to ignore
   // input.
   virtual void SetIsInert(bool) {}
+
+  // Called to inform the WebFrameWidget that a wheel fling animation was
+  // started externally (for instance by the compositor) but must be completed
+  // by the WebFrameWidget.
+  virtual void TransferActiveWheelFlingAnimation(
+      const WebActiveWheelFlingParameters&) = 0;
 };
 
 }  // namespace blink

@@ -1953,6 +1953,15 @@ void RenderWidget::ConvertWindowToViewport(blink::WebFloatRect* rect) {
   }
 }
 
+void RenderWidget::TransferActiveWheelFlingAnimation(
+    const blink::WebActiveWheelFlingParameters& params) {
+  blink::WebWidget* web_widget = GetWebWidget();
+  if (web_widget && web_widget->IsWebFrameWidget()) {
+    static_cast<blink::WebFrameWidget*>(web_widget)
+        ->TransferActiveWheelFlingAnimation(params);
+  }
+}
+
 void RenderWidget::OnRequestTextInputStateUpdate() {
 #if defined(OS_ANDROID)
   DCHECK(!ime_event_guard_);

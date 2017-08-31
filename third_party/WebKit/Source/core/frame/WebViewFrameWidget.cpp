@@ -7,6 +7,7 @@
 #include "core/exported/WebViewImpl.h"
 #include "core/frame/WebLocalFrameImpl.h"
 #include "core/layout/HitTestResult.h"
+#include "platform/exported/WebActiveGestureAnimation.h"
 
 namespace blink {
 
@@ -248,6 +249,10 @@ HitTestResult WebViewFrameWidget::CoreHitTestResultAt(const WebPoint& point) {
 DEFINE_TRACE(WebViewFrameWidget) {
   visitor->Trace(main_frame_);
   WebFrameWidgetBase::Trace(visitor);
+}
+
+PageWidgetEventHandler* WebViewFrameWidget::GetPageWidgetEventHandler() {
+  return web_view_.Get();
 }
 
 }  // namespace blink
