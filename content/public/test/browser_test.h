@@ -91,6 +91,20 @@
 #define IN_PROC_BROWSER_TEST_P(test_case_name, test_name) \
   IN_PROC_BROWSER_TEST_P_(test_case_name, test_name)
 
+#else
+
+// Complain if HAS_OUT_OF_PROC_TEST_RUNNER is missing, to save debugging
+// headaches. Includes a hack to generate a uniqueish symbol in the form
+// of an unfinished function defition. The unfinished definition serves to
+// lexcially eat the basic block that often follows this macro's usage.
+// Doing this removes some potential spurious compile errors.
+#define IN_PROC_BROWSER_TEST_F(test_fixture, test_name)            \
+  static_assert(false, "HAS_OUT_OF_PROC_TEST_RUNNER not defined"); \
+  void Eat##test_fixture##test_name(void)
+#define IN_PROC_BROWSER_TEST_P(test_case_name, test_name)          \
+  static_assert(false, "HAS_OUT_OF_PROC_TEST_RUNNER not defined"); \
+  void Eat##test_fixture##test_name(void)
+
 #endif  // defined(HAS_OUT_OF_PROC_TEST_RUNNER)
 
 #endif  // CONTENT_PUBLIC_TEST_BROWSER_TEST_H_
