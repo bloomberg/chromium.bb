@@ -69,7 +69,7 @@ class TestExporterTest(LoggingTestCase):
                 'remote': 'github',
                 'format-patch': 'fake patch',
                 'diff': 'fake patch diff',
-                'diff-tree': 'fake\n\files\nchanged',
+                'diff-tree': 'third_party/WebKit/LayoutTests/external/wpt/some_files',
                 'crrev-parse': 'c881563d734a86f7d9cd57ac509653a61c45c240',
             }
             if args[1] == 'show':

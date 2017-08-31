@@ -21,7 +21,7 @@ from webkitpy.common.system.log_utils import configure_logging
 from webkitpy.layout_tests.models.test_expectations import TestExpectations, TestExpectationParser
 from webkitpy.layout_tests.port.base import Port
 from webkitpy.w3c.chromium_exportable_commits import exportable_commits_over_last_n_commits
-from webkitpy.w3c.common import read_credentials
+from webkitpy.w3c.common import read_credentials, is_testharness_baseline, is_file_exportable
 from webkitpy.w3c.directory_owners_extractor import DirectoryOwnersExtractor
 from webkitpy.w3c.local_wpt import LocalWPT
 from webkitpy.w3c.test_copier import TestCopier
@@ -308,11 +308,14 @@ class TestImporter(object):
         self.run(['git', 'add', manifest_base_path])
 
     def _clear_out_dest_path(self):
+        """Removes all files that are synced with upstream from Chromium WPT.
+
+        Instead of relying on TestCopier to overwrite these files, cleaning up
+        first ensures if upstream deletes some files, we also delete them.
+        """
         _log.info('Cleaning out tests from %s.', self.dest_path)
         should_remove = lambda fs, dirname, basename: (
-            not self.is_baseline(basename) and
-            # See http://crbug.com/702283 for context.
-            basename != 'OWNERS')
+            is_file_exportable(fs.relpath(fs.join(dirname, basename), self.finder.chromium_base())))
         files_to_delete = self.fs.files_under(self.dest_path, file_filter=should_remove)
         for subpath in files_to_delete:
             self.remove(self.finder.path_from_layout_tests('external', subpath))
@@ -338,7 +341,7 @@ class TestImporter(object):
     def _delete_orphaned_baselines(self):
         _log.info('Deleting any orphaned baselines.')
 
-        is_baseline_filter = lambda fs, dirname, basename: self.is_baseline(basename)
+        is_baseline_filter = lambda fs, dirname, basename: is_testharness_baseline(basename)
 
         baselines = self.fs.files_under(self.dest_path, file_filter=is_baseline_filter)
 
@@ -366,12 +369,6 @@ class TestImporter(object):
         # virtual baselines, and add unit tests.
         base = '/' + rel_path.replace('-expected.txt', '')
         return any((base + ext) in wpt_urls for ext in Port.supported_file_extensions)
-
-    @staticmethod
-    def is_baseline(basename):
-        # TODO(qyearsley): Find a better, centralized place for this.
-        # Also, the name for this method should be is_text_baseline.
-        return basename.endswith('-expected.txt')
 
     def run(self, cmd, exit_on_failure=True, cwd=None, stdin=''):
         _log.debug('Running command: %s', ' '.join(cmd))

@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 from webkitpy.w3c.chromium_finder import absolute_chromium_dir, absolute_chromium_wpt_dir
+from webkitpy.w3c.common import is_file_exportable
 from webkitpy.common.system.executive import ScriptError
 
 
@@ -106,27 +107,7 @@ class ChromiumCommit(object):
             'git', 'diff-tree', '--name-only', '--no-commit-id', '-r', self.sha,
             '--', self.absolute_chromium_wpt_dir
         ], cwd=self.absolute_chromium_dir).splitlines()
-        fs = self.host.filesystem
-        blacklist = [
-            'MANIFEST.json',
-            fs.join('resources', 'testharnessreport.js'),
-        ]
-        relative_wpt_path = fs.relpath(
-            self.absolute_chromium_wpt_dir, self.absolute_chromium_dir)
-        qualified_blacklist = [fs.join(relative_wpt_path, f) for f in blacklist]
-
-        is_ignored = lambda f: (
-            f in qualified_blacklist or
-            self.is_baseline(f) or
-            # See http://crbug.com/702283 for context.
-            fs.basename(f) == 'OWNERS')
-        return [f for f in changed_files if not is_ignored(f)]
-
-    @staticmethod
-    def is_baseline(basename):
-        """Checks whether a given file name in wpt appears to be a baseline."""
-        # TODO(qyearsley): Find a better, centralized place for this.
-        return basename.endswith('-expected.txt')
+        return [f for f in changed_files if is_file_exportable(f)]
 
     def format_patch(self):
         """Makes a patch with only exportable changes."""

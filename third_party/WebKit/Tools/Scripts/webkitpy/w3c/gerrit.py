@@ -5,10 +5,9 @@
 import base64
 import json
 import logging
-import os
 import re
 
-from webkitpy.w3c.common import CHROMIUM_WPT_DIR
+from webkitpy.w3c.common import CHROMIUM_WPT_DIR, is_file_exportable
 
 _log = logging.getLogger(__name__)
 URL_BASE = 'https://chromium-review.googlesource.com'
@@ -133,25 +132,16 @@ class GerritCL(object):
         if 'NOEXPORT=true' in self.current_revision['commit_with_footers']:
             return False
 
-        files_in_wpt = [f for f in files if f.startswith('third_party/WebKit/LayoutTests/external/wpt')]
+        files_in_wpt = [f for f in files if f.startswith(CHROMIUM_WPT_DIR)]
         if not files_in_wpt:
             return False
 
-        exportable_files = [f for f in files_in_wpt if self.exportable_filename(f)]
+        exportable_files = [f for f in files_in_wpt if is_file_exportable(f)]
 
         if not exportable_files:
             return False
 
         return True
-
-    def exportable_filename(self, filename):
-        """Returns True if the file could be exportable, or False otherwise."""
-        filename = os.path.basename(filename.lower())
-        return (
-            not filename.endswith('-expected.txt')
-            and not filename.startswith('.')
-            and not filename.endswith('.json')
-        )
 
     def get_patch(self):
         """Gets patch for latest revision of CL.
@@ -170,6 +160,7 @@ class GerritCL(object):
         This method expects a `git diff`-formatted patch.
         """
         filtered_patch = []
+        diff_re = re.compile(r'^diff --git a/(.*) b/(.*)$')
 
         # Patch begins with message, always applicable.
         in_exportable_diff = True
@@ -182,7 +173,10 @@ class GerritCL(object):
                 continue
 
             # File is being changed, detect if it's exportable.
-            if CHROMIUM_WPT_DIR in line and not line.endswith('-expected.txt'):
+            match = diff_re.match(line)
+            assert match, "%s is not an expected git diff header" % line
+            _, new_file = match.groups()
+            if CHROMIUM_WPT_DIR in new_file and is_file_exportable(new_file):
                 in_exportable_diff = True
                 filtered_patch.append(line)
             else:
