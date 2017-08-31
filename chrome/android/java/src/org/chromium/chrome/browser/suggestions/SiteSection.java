@@ -20,7 +20,6 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.suggestions.SiteSectionViewHolder.UpdateIconViewCallback;
 import org.chromium.chrome.browser.suggestions.SiteSectionViewHolder.UpdateOfflineBadgeCallback;
 import org.chromium.chrome.browser.suggestions.SiteSectionViewHolder.UpdateTilesCallback;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 
 /**
@@ -47,8 +46,12 @@ public class SiteSection extends OptionalLeaf implements TileGroup.Observer {
     private final TileRenderer mTileRenderer;
 
     public static ViewGroup inflateSiteSection(ViewGroup parent) {
+        @LayoutRes
+        int layoutResource =
+                SuggestionsConfig.useSitesExplorationUi() ? R.layout.suggestions_site_explore
+                                                          : R.layout.suggestions_site_tile_grid;
         return (ViewGroup) LayoutInflater.from(parent.getContext())
-                .inflate(getLayout(), parent, false);
+                .inflate(layoutResource, parent, false);
     }
 
     public static SiteSectionViewHolder createViewHolder(ViewGroup view) {
@@ -121,16 +124,5 @@ public class SiteSection extends OptionalLeaf implements TileGroup.Observer {
         int defaultValue = 1;
         return ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
                 ChromeFeatureList.CHROME_HOME, PARAM_CHROME_HOME_TILE_TITLE_LINES, defaultValue);
-    }
-
-    @LayoutRes
-    private static int getLayout() {
-        if (SuggestionsConfig.useSitesExplorationUi()) {
-            return R.layout.suggestions_site_explore;
-        }
-        if (FeatureUtilities.isChromeHomeModernEnabled()) {
-            return R.layout.suggestions_site_tile_grid_modern;
-        }
-        return R.layout.suggestions_site_tile_grid;
     }
 }
