@@ -13,6 +13,8 @@ bool SpellCheckMarkerListImpl::IsEmpty() const {
 }
 
 void SpellCheckMarkerListImpl::Add(DocumentMarker* marker) {
+  DCHECK_EQ(MarkerType(), marker->GetType());
+
   if (markers_.IsEmpty() ||
       markers_.back()->EndOffset() < marker->StartOffset()) {
     markers_.push_back(marker);

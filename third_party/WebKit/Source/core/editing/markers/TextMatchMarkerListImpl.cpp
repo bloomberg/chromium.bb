@@ -22,6 +22,7 @@ bool TextMatchMarkerListImpl::IsEmpty() const {
 }
 
 void TextMatchMarkerListImpl::Add(DocumentMarker* marker) {
+  DCHECK_EQ(DocumentMarker::kTextMatch, marker->GetType());
   SortedDocumentMarkerListEditor::AddMarkerWithoutMergingOverlapping(&markers_,
                                                                      marker);
 }

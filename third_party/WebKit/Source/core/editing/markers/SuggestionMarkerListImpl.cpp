@@ -63,6 +63,7 @@ bool SuggestionMarkerListImpl::IsEmpty() const {
 }
 
 void SuggestionMarkerListImpl::Add(DocumentMarker* marker) {
+  DCHECK_EQ(DocumentMarker::kSuggestion, marker->GetType());
   markers_.push_back(marker);
 }
 
