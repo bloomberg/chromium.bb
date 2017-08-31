@@ -869,7 +869,6 @@ public class VrShellDelegate
         ScreenOrientationDelegateManager.setOrientationDelegate(null);
         mRestoreOrientation = null;
         clearVrModeWindowFlags();
-        if (mVrShell != null) mVrShell.getContainer().setOnSystemUiVisibilityChangeListener(null);
     }
 
     /* package */ boolean canEnterVr(Tab tab, boolean justCompletedDon) {
@@ -1447,10 +1446,6 @@ public class VrShellDelegate
     private void removeVrViews() {
         mVrShell.onBeforeWindowDetached();
         mActivity.onExitVr();
-        if (mActivity.getCompositorViewHolder() != null) {
-            mActivity.getCompositorViewHolder().onExitVr(mTabModelSelector);
-        }
-        mTabModelSelector = null;
         FrameLayout decor = (FrameLayout) mActivity.getWindow().getDecorView();
         decor.removeView(mVrShell.getContainer());
     }
@@ -1478,8 +1473,13 @@ public class VrShellDelegate
      */
     private void destroyVrShell() {
         if (mVrShell != null) {
+            mVrShell.getContainer().setOnSystemUiVisibilityChangeListener(null);
             mVrShell.teardown();
             mVrShell = null;
+            if (mActivity.getCompositorViewHolder() != null) {
+                mActivity.getCompositorViewHolder().onExitVr(mTabModelSelector);
+            }
+            mTabModelSelector = null;
         }
     }
 

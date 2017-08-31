@@ -158,10 +158,6 @@ VrShell::VrShell(JNIEnv* env,
     UMA_HISTOGRAM_BOOLEAN("VRAutopresentedWebVR", !for_web_vr);
 }
 
-void VrShell::RestoreLayer(JNIEnv* env, const JavaParamRef<jobject>& obj) {
-  compositor_->SetLayer(nullptr);
-}
-
 void VrShell::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   delete this;
 }
