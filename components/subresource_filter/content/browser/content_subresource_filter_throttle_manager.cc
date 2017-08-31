@@ -19,6 +19,7 @@
 #include "components/subresource_filter/content/browser/subframe_navigation_filtering_throttle.h"
 #include "components/subresource_filter/content/browser/subresource_filter_observer_manager.h"
 #include "components/subresource_filter/content/common/subresource_filter_messages.h"
+#include "components/subresource_filter/content/common/subresource_filter_utils.h"
 #include "components/subresource_filter/core/browser/subresource_filter_constants.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle.h"
@@ -164,7 +165,13 @@ void ContentSubresourceFilterThrottleManager::DidFinishNavigation(
     activated_frame_hosts_[frame_host] = std::move(filter);
   } else {
     activated_frame_hosts_.erase(frame_host);
+
+    // If this is for a special url that did not go through the navigation
+    // throttles, then based on the parent's activation state, possibly add this
+    // to activated_frame_hosts_.
+    MaybeActivateSubframeSpecialUrls(navigation_handle);
   }
+
   DestroyRulesetHandleIfNoLongerUsed();
 }
 
@@ -283,8 +290,25 @@ ContentSubresourceFilterThrottleManager::GetParentFrameFilter(
   DCHECK(!child_frame_navigation->IsInMainFrame());
   content::RenderFrameHost* parent = child_frame_navigation->GetParentFrame();
   DCHECK(parent);
-  auto it = activated_frame_hosts_.find(parent);
-  return it == activated_frame_hosts_.end() ? nullptr : it->second.get();
+
+  // Filter will be null for those special url navigations that were added in
+  // MaybeActivateSubframeSpecialUrls. Return the filter of the first parent
+  // with a non-null filter.
+  while (parent) {
+    auto it = activated_frame_hosts_.find(parent);
+    if (it == activated_frame_hosts_.end())
+      return nullptr;
+
+    if (it->second.get())
+      return it->second.get();
+    parent = it->first->GetParent();
+  }
+
+  // Since null filter is only possible for special navigations of iframes, the
+  // above loop should have found a filter for at least the top level frame,
+  // thus making this unreachable.
+  NOTREACHED();
+  return nullptr;
 }
 
 void ContentSubresourceFilterThrottleManager::MaybeCallFirstDisallowedLoad() {
@@ -320,6 +344,25 @@ void ContentSubresourceFilterThrottleManager::OnActivationThrottleDestroyed(
     content::NavigationHandle* navigation_handle) {
   size_t num_erased = ongoing_activation_throttles_.erase(navigation_handle);
   CHECK_EQ(0u, num_erased);
+}
+
+void ContentSubresourceFilterThrottleManager::MaybeActivateSubframeSpecialUrls(
+    content::NavigationHandle* navigation_handle) {
+  if (navigation_handle->IsInMainFrame())
+    return;
+
+  if (!ShouldUseParentActivation(navigation_handle->GetURL()))
+    return;
+
+  content::RenderFrameHost* frame_host =
+      navigation_handle->GetRenderFrameHost();
+  if (!frame_host)
+    return;
+
+  content::RenderFrameHost* parent = navigation_handle->GetParentFrame();
+  DCHECK(parent);
+  if (base::ContainsKey(activated_frame_hosts_, parent))
+    activated_frame_hosts_[frame_host] = nullptr;
 }
 
 }  // namespace subresource_filter
