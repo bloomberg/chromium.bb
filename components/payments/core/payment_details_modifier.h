@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "components/payments/core/payment_item.h"
+#include "components/payments/core/payment_method_data.h"
 
 // C++ bindings for the PaymentRequest API PaymentDetailsModifier. Conforms to
 // the following spec:
@@ -29,6 +30,7 @@ class PaymentDetailsModifier {
   PaymentDetailsModifier(const PaymentDetailsModifier& other);
   ~PaymentDetailsModifier();
 
+  PaymentDetailsModifier& operator=(const PaymentDetailsModifier& other);
   bool operator==(const PaymentDetailsModifier& other) const;
   bool operator!=(const PaymentDetailsModifier& other) const;
 
@@ -36,14 +38,14 @@ class PaymentDetailsModifier {
   // PaymentDetailsModifier.
   std::unique_ptr<base::DictionaryValue> ToDictionaryValue() const;
 
-  // A sequence of payment method identifiers. The remaining fields in the
-  // PaymentDetailsModifier apply only if the user selects a payment method
-  // included in this sequence.
-  std::vector<std::string> supported_methods;
+  // A payment method identifier and any associated payment method specific
+  // data. The remaining fields in the PaymentDetailsModifier apply only if the
+  // user selects this payment method.
+  PaymentMethodData method_data;
 
   // This value overrides the total field in the PaymentDetails dictionary for
   // the payment method identifiers in the supportedMethods field.
-  payments::PaymentItem total;
+  std::unique_ptr<PaymentItem> total;
 
   // Provides additional display items that are appended to the displayItems
   // field in the PaymentDetails dictionary for the payment method identifiers
@@ -51,7 +53,7 @@ class PaymentDetailsModifier {
   // discount or surcharge line item indicating the reason for the different
   // total amount for the selected payment method that the user agent may
   // display.
-  std::vector<payments::PaymentItem> additional_display_items;
+  std::vector<PaymentItem> additional_display_items;
 };
 
 }  // namespace payments

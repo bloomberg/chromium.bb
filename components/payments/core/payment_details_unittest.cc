@@ -124,7 +124,9 @@ TEST(PaymentRequestTest, PaymentDetailsEquality) {
   EXPECT_EQ(details1, details2);
 
   PaymentDetailsModifier details_modifier;
-  details_modifier.total.label = "Total";
+
+  details_modifier.total = base::MakeUnique<PaymentItem>();
+  details_modifier.total->label = "Total";
   details1.modifiers.push_back(details_modifier);
   EXPECT_NE(details1, details2);
   details2.modifiers.push_back(details_modifier);
