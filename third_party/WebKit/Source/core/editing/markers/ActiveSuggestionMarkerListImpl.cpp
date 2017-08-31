@@ -17,6 +17,7 @@ bool ActiveSuggestionMarkerListImpl::IsEmpty() const {
 }
 
 void ActiveSuggestionMarkerListImpl::Add(DocumentMarker* marker) {
+  DCHECK_EQ(DocumentMarker::kActiveSuggestion, marker->GetType());
   SortedDocumentMarkerListEditor::AddMarkerWithoutMergingOverlapping(&markers_,
                                                                      marker);
 }
