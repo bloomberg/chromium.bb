@@ -124,11 +124,6 @@ constexpr const char
         "cros_tether_notification_ids.setup_required";
 
 // static
-constexpr const char
-    TetherNotificationPresenter::kEnableBluetoothNotificationId[] =
-        "cros_tether_notification_ids.enable_bluetooth";
-
-// static
 constexpr const char* const
     TetherNotificationPresenter::kIdsWhichOpenTetherSettingsOnClick[] = {
         TetherNotificationPresenter::kActiveHostNotificationId,
@@ -244,28 +239,8 @@ void TetherNotificationPresenter::RemoveConnectionToHostFailedNotification() {
   RemoveNotificationIfVisible(kActiveHostNotificationId);
 }
 
-void TetherNotificationPresenter::NotifyEnableBluetooth() {
-  PA_LOG(INFO) << "Displaying \"enable Bluetooth\" notification. "
-               << "Notification ID = " << kEnableBluetoothNotificationId;
-
-  ShowNotification(CreateNotificationWithMediumSignalStrengthIcon(
-      kEnableBluetoothNotificationId,
-      l10n_util::GetStringUTF16(IDS_TETHER_NOTIFICATION_ENABLE_BLUETOOTH_TITLE),
-      base::string16()));
-}
-
-void TetherNotificationPresenter::RemoveEnableBluetoothNotification() {
-  RemoveNotificationIfVisible(kEnableBluetoothNotificationId);
-}
-
 void TetherNotificationPresenter::OnNotificationClicked(
     const std::string& notification_id) {
-  if (notification_id == kEnableBluetoothNotificationId) {
-    OpenSettingsAndRemoveNotification(chrome::kBluetoothSubPage,
-                                      notification_id);
-    return;
-  }
-
   // Iterate through all IDs corresponding to notifications which should open
   // the Tether settings page when clicked. If the notification ID provided
   // exists in |kIdsWhichOpenTetherSettingsOnClick|, open settings.

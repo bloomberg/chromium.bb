@@ -191,11 +191,6 @@ class TetherNotificationPresenterTest : public testing::Test {
         TetherNotificationPresenter::kSetupRequiredNotificationId);
   }
 
-  std::string GetEnableBluetoothNotificationId() {
-    return std::string(
-        TetherNotificationPresenter::kEnableBluetoothNotificationId);
-  }
-
   void VerifySettingsOpened(const std::string& expected_subpage) {
     EXPECT_EQ(profile_.get(), test_settings_ui_delegate_->last_profile());
     EXPECT_EQ(expected_subpage,
@@ -298,46 +293,6 @@ TEST_F(TetherNotificationPresenterTest,
   VerifySettingsOpened(kTetherSettingsSubpage);
   EXPECT_FALSE(test_message_center_->FindVisibleNotificationById(
       GetSetupRequiredNotificationId()));
-  EXPECT_EQ(0u, test_message_center_->GetNumNotifications());
-}
-
-TEST_F(TetherNotificationPresenterTest,
-       TestEnableBluetoothNotification_RemoveProgrammatically) {
-  EXPECT_FALSE(test_message_center_->FindVisibleNotificationById(
-      GetEnableBluetoothNotificationId()));
-  notification_presenter_->NotifyEnableBluetooth();
-
-  message_center::Notification* notification =
-      test_message_center_->FindVisibleNotificationById(
-          GetEnableBluetoothNotificationId());
-  EXPECT_TRUE(notification);
-  EXPECT_EQ(GetEnableBluetoothNotificationId(), notification->id());
-
-  EXPECT_EQ(1u, test_message_center_->GetNumNotifications());
-  notification_presenter_->RemoveEnableBluetoothNotification();
-  EXPECT_FALSE(test_message_center_->FindVisibleNotificationById(
-      GetEnableBluetoothNotificationId()));
-  EXPECT_EQ(0u, test_message_center_->GetNumNotifications());
-}
-
-TEST_F(TetherNotificationPresenterTest,
-       TestEnableBluetoothNotification_TapNotification) {
-  EXPECT_FALSE(test_message_center_->FindVisibleNotificationById(
-      GetEnableBluetoothNotificationId()));
-  notification_presenter_->NotifyEnableBluetooth();
-
-  message_center::Notification* notification =
-      test_message_center_->FindVisibleNotificationById(
-          GetEnableBluetoothNotificationId());
-  EXPECT_TRUE(notification);
-  EXPECT_EQ(GetEnableBluetoothNotificationId(), notification->id());
-
-  // Tap the notification.
-  test_message_center_->NotifyNotificationTapped(
-      GetEnableBluetoothNotificationId());
-  VerifySettingsOpened(chrome::kBluetoothSubPage);
-  EXPECT_FALSE(test_message_center_->FindVisibleNotificationById(
-      GetEnableBluetoothNotificationId()));
   EXPECT_EQ(0u, test_message_center_->GetNumNotifications());
 }
 

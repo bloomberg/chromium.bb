@@ -220,18 +220,6 @@ void TetherService::AdapterPoweredChanged(device::BluetoothAdapter* adapter,
     SetBleAdvertisingInterval();
 }
 
-void TetherService::NetworkConnectionStateChanged(
-    const chromeos::NetworkState* network) {
-  if (CanEnableBluetoothNotificationBeShown()) {
-    // If the device has just been disconnected from the Internet, the user may
-    // be looking for a way to find a connection. If Bluetooth is disabled and
-    // is preventing Tether connections from being found, alert the user.
-    notification_presenter_->NotifyEnableBluetooth();
-  } else {
-    notification_presenter_->RemoveEnableBluetoothNotification();
-  }
-}
-
 void TetherService::DeviceListChanged() {
   bool was_pref_enabled = IsEnabledbyPreference();
   chromeos::NetworkStateHandler::TechnologyState tether_technology_state =
@@ -309,9 +297,6 @@ void TetherService::UpdateTetherTechnologyState() {
     network_state_handler_->SetTetherTechnologyState(
         new_tether_technology_state);
   }
-
-  if (!CanEnableBluetoothNotificationBeShown())
-    notification_presenter_->RemoveEnableBluetoothNotification();
 }
 
 chromeos::NetworkStateHandler::TechnologyState
@@ -363,11 +348,6 @@ void TetherService::OnBluetoothAdapterFetched(
   // SetBleAdvertisingInterval(). See AdapterPoweredChanged().
   if (IsBluetoothPowered())
     SetBleAdvertisingInterval();
-
-  // The user has just logged in; display the "enable Bluetooth" notification if
-  // applicable.
-  if (CanEnableBluetoothNotificationBeShown())
-    notification_presenter_->NotifyEnableBluetooth();
 }
 
 void TetherService::OnBluetoothAdapterAdvertisingIntervalSet() {
@@ -429,30 +409,6 @@ bool TetherService::IsAllowedByPolicy() const {
 
 bool TetherService::IsEnabledbyPreference() const {
   return profile_->GetPrefs()->GetBoolean(prefs::kInstantTetheringEnabled);
-}
-
-bool TetherService::CanEnableBluetoothNotificationBeShown() {
-  if (!IsEnabledbyPreference() || IsBluetoothPowered() ||
-      GetTetherTechnologyState() !=
-          chromeos::NetworkStateHandler::TechnologyState::
-              TECHNOLOGY_UNINITIALIZED) {
-    // Cannot be shown unless Tether is uninitialized.
-    return false;
-  }
-
-  // If a network is currently connecting or connected, it will be listed in the
-  // list first.
-  const chromeos::NetworkState* network =
-      network_state_handler_->FirstNetworkByType(
-          chromeos::NetworkTypePattern::Default());
-  if (network &&
-      (network->IsConnectingState() || network->IsConnectedState())) {
-    // If an Internet connection is available, there is no need to show a
-    // notification which helps the user find an Internet connection.
-    return false;
-  }
-
-  return true;
 }
 
 TetherService::TetherFeatureState TetherService::GetTetherFeatureState() {
