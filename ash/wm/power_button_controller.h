@@ -18,6 +18,7 @@
 namespace ash {
 
 class LockStateController;
+class PowerButtonDisplayController;
 class TabletPowerButtonController;
 
 // Handles power & lock button events which may result in the locking or
@@ -58,10 +59,6 @@ class ASH_EXPORT PowerButtonController
   void OnAccelerometerUpdated(
       scoped_refptr<const chromeos::AccelerometerUpdate> update) override;
 
-  // Resets |tablet_controller_| to hold a new object to simulate Chrome
-  // starting. Also calls ProcessCommandLine().
-  void ResetTabletPowerButtonControllerForTest();
-
   TabletPowerButtonController* tablet_power_button_controller_for_test() {
     return tablet_controller_.get();
   }
@@ -99,6 +96,9 @@ class ASH_EXPORT PowerButtonController
   bool force_clamshell_power_button_ = false;
 
   LockStateController* lock_state_controller_;  // Not owned.
+
+  // Used to interact with the display.
+  std::unique_ptr<PowerButtonDisplayController> display_controller_;
 
   // Handles events for convertible/tablet devices.
   std::unique_ptr<TabletPowerButtonController> tablet_controller_;

@@ -122,10 +122,11 @@ void TabletPowerButtonController::TestApi::SendKeyEvent(ui::KeyEvent* event) {
 }
 
 TabletPowerButtonController::TabletPowerButtonController(
-    LockStateController* controller)
-    : display_controller_(base::MakeUnique<PowerButtonDisplayController>()),
-      tick_clock_(new base::DefaultTickClock()),
+    LockStateController* controller,
+    PowerButtonDisplayController* display_controller)
+    : tick_clock_(new base::DefaultTickClock()),
       controller_(controller),
+      display_controller_(display_controller),
       accelerometer_scoped_observer_(this) {
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
       this);

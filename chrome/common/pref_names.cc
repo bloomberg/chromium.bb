@@ -1942,9 +1942,6 @@ const char kReportArcStatusEnabled[] = "arc.status_reporting_enabled";
 // and download rate in kbits/s to throttle to)
 const char kNetworkThrottlingEnabled[] = "net.throttling_enabled";
 
-// Boolean prefs for the local status of the touchscreen.
-const char kTouchscreenEnabledLocal[] = "events.touch_screen.enabled_local";
-
 #endif  // defined(OS_CHROMEOS)
 
 // Whether there is a Flash version installed that supports clearing LSO data.

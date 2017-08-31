@@ -40,6 +40,10 @@ class ShellTestApi {
   void OnLocalStatePrefServiceInitialized(
       std::unique_ptr<PrefService> pref_service);
 
+  // Resets |shell_->power_button_controller_| to hold a new object to simulate
+  // Chrome starting.
+  void ResetPowerButtonControllerForTest();
+
  private:
   Shell* shell_;  // not owned
 

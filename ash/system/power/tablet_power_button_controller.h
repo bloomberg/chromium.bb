@@ -73,7 +73,8 @@ class ASH_EXPORT TabletPowerButtonController
   // Public for tests.
   static constexpr float kGravity = 9.80665f;
 
-  explicit TabletPowerButtonController(LockStateController* controller);
+  TabletPowerButtonController(LockStateController* controller,
+                              PowerButtonDisplayController* display_controller);
   ~TabletPowerButtonController() override;
 
   // Returns true if power button events should be handled by this class instead
@@ -118,9 +119,6 @@ class ASH_EXPORT TabletPowerButtonController
   // and locking is possible.
   void LockScreenIfRequired();
 
-  // Used to interact with the display.
-  std::unique_ptr<PowerButtonDisplayController> display_controller_;
-
   // True if the screen was off when the power button was pressed.
   bool screen_off_when_power_button_down_ = false;
 
@@ -147,6 +145,9 @@ class ASH_EXPORT TabletPowerButtonController
   base::OneShotTimer shutdown_timer_;
 
   LockStateController* controller_;  // Not owned.
+
+  // Used to interact with the display.
+  PowerButtonDisplayController* display_controller_;  // Not owned.
 
   ScopedObserver<chromeos::AccelerometerReader, TabletPowerButtonController>
       accelerometer_scoped_observer_;

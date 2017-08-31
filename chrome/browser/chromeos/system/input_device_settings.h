@@ -11,6 +11,10 @@
 
 class PrefRegistrySimple;
 
+namespace ash {
+enum class TouchscreenEnabledSource;
+}  // namespace ash
+
 namespace chromeos {
 namespace system {
 
@@ -130,9 +134,6 @@ class CHROMEOS_EXPORT InputDeviceSettings {
   // where other input devices like mouse are absent.
   static bool ForceKeyboardDrivenUINavigation();
 
-  // Registers local state pref names for touchscreen status.
-  static void RegisterPrefs(PrefRegistrySimple* registry);
-
   // Registers profile pref names for touchpad and touchscreen statuses.
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
@@ -140,17 +141,16 @@ class CHROMEOS_EXPORT InputDeviceSettings {
   // preferences.
   void UpdateTouchDevicesStatusFromPrefs();
 
-  // If |use_local_state| is true, returns the touchscreen status from local
-  // state, otherwise from user prefs.
-  bool IsTouchscreenEnabledInPrefs(bool use_local_state) const;
+  // Returns the current touchscreen enabled status as specified by |source|.
+  // Note that the actual state of the touchscreen device is automatically
+  // determined based on the requests of multiple sources.
+  bool GetTouchscreenEnabled(ash::TouchscreenEnabledSource source) const;
 
-  // Sets the status of touchscreen to |enabled| in prefs. If |use_local_state|,
-  // pref is set in local state, otherwise in user pref.
-  void SetTouchscreenEnabledInPrefs(bool enabled, bool use_local_state);
-
-  // Updates the enabled/disabled status of the touchscreen from prefs. Enabled
-  // if both local state and user prefs are enabled, otherwise disabled.
-  void UpdateTouchscreenStatusFromPrefs();
+  // Sets |source|'s requested touchscreen enabled status to |enabled|. Note
+  // that the actual state of the touchscreen device is automatically determined
+  // based on the requests of multiple sources.
+  void SetTouchscreenEnabled(bool enabled,
+                             ash::TouchscreenEnabledSource source);
 
   // Toggles the status of touchpad between enabled and disabled.
   void ToggleTouchpad();
@@ -211,6 +211,14 @@ class CHROMEOS_EXPORT InputDeviceSettings {
  private:
   virtual void SetInternalTouchpadEnabled(bool enabled) {}
   virtual void SetTouchscreensEnabled(bool enabled) {}
+
+  // Updates the actual enabled/disabled status of the touchscreen. Touchscreen
+  // is enabled if all the touchscreen enabled sources are enabled.
+  void UpdateTouchscreenEnabled();
+
+  // The touchscreen state which is associated with the global touchscreen
+  // enabled source.
+  bool global_touchscreen_enabled_ = false;
 };
 
 }  // namespace system

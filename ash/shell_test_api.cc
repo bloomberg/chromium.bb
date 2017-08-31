@@ -9,6 +9,7 @@
 #include "ash/palette_delegate.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
+#include "ash/wm/power_button_controller.h"
 #include "components/prefs/testing_pref_service.h"
 
 namespace ash {
@@ -45,6 +46,11 @@ void ShellTestApi::SetPaletteDelegate(
 void ShellTestApi::OnLocalStatePrefServiceInitialized(
     std::unique_ptr<PrefService> pref_service) {
   shell_->OnLocalStatePrefServiceInitialized(std::move(pref_service));
+}
+
+void ShellTestApi::ResetPowerButtonControllerForTest() {
+  shell_->power_button_controller_ =
+      std::make_unique<PowerButtonController>(shell_->lock_state_controller());
 }
 
 }  // namespace ash
