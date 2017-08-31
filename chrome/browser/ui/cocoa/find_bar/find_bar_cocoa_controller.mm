@@ -367,7 +367,8 @@ const int kUndefinedResultCount = -1;
 
 - (void)setFocusAndSelection {
   [[findText_ window] makeFirstResponder:findText_];
-  BOOL buttonsEnabled = ([self lastNumberOfMatchesForActiveWebContents] != 0);
+  BOOL buttonsEnabled = [self lastNumberOfMatchesForActiveWebContents] != 0 &&
+                        [[findText_ stringValue] length] > 0;
 
   [previousButton_ setEnabled:buttonsEnabled];
   [nextButton_ setEnabled:buttonsEnabled];
