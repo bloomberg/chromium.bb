@@ -484,6 +484,26 @@
     "args": ["--enable-features=OutOfBlinkCORS,LoadingWithMojo"]
   },
   {
+    "prefix": "outofblink-cors",
+    "base": "external/wpt/http",
+    "args": ["--enable-features=OutOfBlinkCORS,LoadingWithMojo"]
+  },
+  {
+    "prefix": "outofblink-cors",
+    "base": "external/wpt/referrer-policy",
+    "args": ["--enable-features=OutOfBlinkCORS,LoadingWithMojo"]
+  },
+  {
+    "prefix": "outofblink-cors",
+    "base": "external/wpt/service-workers",
+    "args": ["--enable-features=OutOfBlinkCORS,LoadingWithMojo"]
+  },
+  {
+    "prefix": "outofblink-cors",
+    "base": "http/tests/xmlhttprequest",
+    "args": ["--enable-features=OutOfBlinkCORS,LoadingWithMojo"]
+  },
+  {
     "prefix": "presentation",
     "base": "receiver",
     "args": ["--force-presentation-receiver-for-testing"]
