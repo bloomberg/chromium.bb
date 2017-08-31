@@ -176,10 +176,12 @@ bool LocalTestServer::WaitToStart() {
     return false;
   }
 
-  if (!ParseServerData(server_data)) {
+  int port;
+  if (!SetAndParseServerData(server_data, &port)) {
     LOG(ERROR) << "Could not parse server_data: " << server_data;
     return false;
   }
+  SetPort(port);
 
   return true;
 }

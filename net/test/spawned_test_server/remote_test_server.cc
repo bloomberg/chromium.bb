@@ -14,7 +14,6 @@
 #include "base/files/file_util.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -22,6 +21,7 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
 #include "net/test/spawned_test_server/remote_test_server_config.h"
+#include "net/test/spawned_test_server/remote_test_server_proxy.h"
 #include "net/test/spawned_test_server/spawner_communicator.h"
 #include "url/gurl.h"
 
@@ -54,7 +54,7 @@ std::string GetServerTypeString(BaseTestServer::Type type) {
 
 RemoteTestServer::RemoteTestServer(Type type,
                                    const base::FilePath& document_root)
-    : BaseTestServer(type) {
+    : BaseTestServer(type), io_thread_("RemoteTestServer IO Thread") {
   if (!Init(document_root))
     NOTREACHED();
 }
@@ -62,7 +62,8 @@ RemoteTestServer::RemoteTestServer(Type type,
 RemoteTestServer::RemoteTestServer(Type type,
                                    const SSLOptions& ssl_options,
                                    const base::FilePath& document_root)
-    : BaseTestServer(type, ssl_options) {
+    : BaseTestServer(type, ssl_options),
+      io_thread_("RemoteTestServer IO Thread") {
   if (!Init(document_root))
     NOTREACHED();
 }
@@ -75,8 +76,9 @@ bool RemoteTestServer::Start() {
   if (spawner_communicator_.get())
     return true;
 
-  spawner_communicator_ =
-      std::make_unique<SpawnerCommunicator>(RemoteTestServerConfig::Load());
+  RemoteTestServerConfig config = RemoteTestServerConfig::Load();
+
+  spawner_communicator_ = std::make_unique<SpawnerCommunicator>(config);
 
   base::DictionaryValue arguments_dict;
   if (!GenerateArguments(&arguments_dict))
@@ -100,9 +102,21 @@ bool RemoteTestServer::Start() {
     return false;
 
   // Parse server_data.
-  if (server_data.empty() || !ParseServerData(server_data)) {
+  int server_port;
+  if (server_data.empty() ||
+      !SetAndParseServerData(server_data, &server_port)) {
     LOG(ERROR) << "Could not parse server_data: " << server_data;
     return false;
+  }
+
+  // If the server is not on localhost then start a proxy on localhost to
+  // forward connections to the server.
+  if (config.address() != IPAddress::IPv4Localhost()) {
+    test_server_proxy_ = std::make_unique<RemoteTestServerProxy>(
+        IPEndPoint(config.address(), server_port), io_thread_.task_runner());
+    SetPort(test_server_proxy_->local_port());
+  } else {
+    SetPort(server_port);
   }
 
   return SetupWhenServerStarted();
@@ -147,6 +161,10 @@ base::FilePath RemoteTestServer::GetDocumentRoot() const {
 bool RemoteTestServer::Init(const base::FilePath& document_root) {
   if (document_root.IsAbsolute())
     return false;
+
+  bool thread_started = io_thread_.StartWithOptions(
+      base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
+  CHECK(thread_started);
 
   // Unlike LocalTestServer, RemoteTestServer passes relative paths to the test
   // server. The test server fails on empty strings in some configurations.
