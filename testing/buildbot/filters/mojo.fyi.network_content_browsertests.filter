@@ -148,6 +148,7 @@
 -SitePerProcessBrowserTest.RFHTransfersWhilePendingDeletion
 -NavigationControllerBrowserTest.SameDocumentNavigationDoesntDeleteNavigationHandle
 -NavigationHandleImplBrowserTest.ThrottleDefer
+-NavigationHandleImplBrowserTest.VerifyRequestContextTypeForFrameTree
 
 # Cross-origin request to file:// URL should be blocked. crbug.com/759230
 -BrowserSideNavigationBrowserDisableWebSecurityTest.ValidateBaseUrlForDataUrl
