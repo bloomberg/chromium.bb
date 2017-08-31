@@ -58,9 +58,9 @@ class SaveCardBubbleController {
   // Returns empty vector if no legal message should be shown.
   virtual const LegalMessageLines& GetLegalMessageLines() const = 0;
 
-  // Sets whether the normal title or the "Confirm [card]" title shown be shown
-  // during upload save.
-  virtual void SetShowUploadConfirmTitle(bool show_upload_confirm_title) = 0;
+  // Called when the upload save version of the UI needs to request CVC in order
+  // to save, and has user has clicked [Next] in order to surface that UI.
+  virtual void ContinueToRequestCvcStage() = 0;
 
   // Utilities.
   virtual bool InputCvcIsValid(const base::string16& input_text) const = 0;

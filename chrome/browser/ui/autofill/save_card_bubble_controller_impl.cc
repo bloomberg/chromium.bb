@@ -109,7 +109,6 @@ void SaveCardBubbleControllerImpl::HideBubble() {
     save_card_bubble_view_->Hide();
     save_card_bubble_view_ = nullptr;
   }
-  show_upload_confirm_title_ = false;
 }
 
 void SaveCardBubbleControllerImpl::ReshowBubble() {
@@ -138,7 +137,7 @@ SaveCardBubbleView* SaveCardBubbleControllerImpl::save_card_bubble_view()
 
 base::string16 SaveCardBubbleControllerImpl::GetWindowTitle() const {
   if (is_uploading_) {
-    if (show_upload_confirm_title_) {
+    if (is_currently_requesting_cvc_) {
       return l10n_util::GetStringUTF16(
           IDS_AUTOFILL_SAVE_CARD_PROMPT_ENTER_CVC_TITLE);
     }
@@ -195,6 +194,13 @@ void SaveCardBubbleControllerImpl::OnSaveButton(const base::string16& cvc) {
       AutofillMetrics::SAVE_CARD_PROMPT_END_ACCEPTED, is_uploading_, is_reshow_,
       pref_service_->GetInteger(
           prefs::kAutofillAcceptSaveCreditCardPromptState));
+  if (is_currently_requesting_cvc_) {
+    AutofillMetrics::LogSaveCardPromptMetric(
+        AutofillMetrics::SAVE_CARD_PROMPT_CVC_FIX_FLOW_END_ACCEPTED,
+        is_uploading_, is_reshow_,
+        pref_service_->GetInteger(
+            prefs::kAutofillAcceptSaveCreditCardPromptState));
+  }
   pref_service_->SetInteger(
       prefs::kAutofillAcceptSaveCreditCardPromptState,
       prefs::PREVIOUS_SAVE_CREDIT_CARD_PROMPT_USER_DECISION_ACCEPTED);
@@ -227,12 +233,19 @@ void SaveCardBubbleControllerImpl::OnLegalMessageLinkClicked(const GURL& url) {
       is_uploading_, is_reshow_,
       pref_service_->GetInteger(
           prefs::kAutofillAcceptSaveCreditCardPromptState));
+  if (is_currently_requesting_cvc_) {
+    AutofillMetrics::LogSaveCardPromptMetric(
+        AutofillMetrics::
+            SAVE_CARD_PROMPT_CVC_FIX_FLOW_DISMISS_CLICK_LEGAL_MESSAGE,
+        is_uploading_, is_reshow_,
+        pref_service_->GetInteger(
+            prefs::kAutofillAcceptSaveCreditCardPromptState));
+  }
 }
 
 void SaveCardBubbleControllerImpl::OnBubbleClosed() {
   save_card_bubble_view_ = nullptr;
   UpdateIcon();
-  show_upload_confirm_title_ = false;
 }
 
 const LegalMessageLines& SaveCardBubbleControllerImpl::GetLegalMessageLines()
@@ -240,9 +253,13 @@ const LegalMessageLines& SaveCardBubbleControllerImpl::GetLegalMessageLines()
   return legal_message_lines_;
 }
 
-void SaveCardBubbleControllerImpl::SetShowUploadConfirmTitle(
-    bool show_upload_confirm_title) {
-  show_upload_confirm_title_ = show_upload_confirm_title;
+void SaveCardBubbleControllerImpl::ContinueToRequestCvcStage() {
+  is_currently_requesting_cvc_ = true;
+  AutofillMetrics::LogSaveCardPromptMetric(
+      AutofillMetrics::SAVE_CARD_PROMPT_CVC_FIX_FLOW_SHOWN, is_uploading_,
+      is_reshow_,
+      pref_service_->GetInteger(
+          prefs::kAutofillAcceptSaveCreditCardPromptState));
 }
 
 bool SaveCardBubbleControllerImpl::InputCvcIsValid(
@@ -285,6 +302,13 @@ void SaveCardBubbleControllerImpl::DidFinishNavigation(
         is_reshow_,
         pref_service_->GetInteger(
             prefs::kAutofillAcceptSaveCreditCardPromptState));
+    if (is_currently_requesting_cvc_) {
+      AutofillMetrics::LogSaveCardPromptMetric(
+          AutofillMetrics::SAVE_CARD_PROMPT_CVC_FIX_FLOW_END_NAVIGATION_SHOWING,
+          is_uploading_, is_reshow_,
+          pref_service_->GetInteger(
+              prefs::kAutofillAcceptSaveCreditCardPromptState));
+    }
   } else {
     UpdateIcon();
 
@@ -293,12 +317,21 @@ void SaveCardBubbleControllerImpl::DidFinishNavigation(
         is_reshow_,
         pref_service_->GetInteger(
             prefs::kAutofillAcceptSaveCreditCardPromptState));
+    if (is_currently_requesting_cvc_) {
+      AutofillMetrics::LogSaveCardPromptMetric(
+          AutofillMetrics::SAVE_CARD_PROMPT_CVC_FIX_FLOW_END_NAVIGATION_HIDDEN,
+          is_uploading_, is_reshow_,
+          pref_service_->GetInteger(
+              prefs::kAutofillAcceptSaveCreditCardPromptState));
+    }
   }
 }
 
 void SaveCardBubbleControllerImpl::ShowBubble() {
   DCHECK(!save_card_callback_.is_null());
   DCHECK(!save_card_bubble_view_);
+
+  is_currently_requesting_cvc_ = false;
 
   // Need to create location bar icon before bubble, otherwise bubble will be
   // unanchored.
