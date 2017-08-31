@@ -40,11 +40,12 @@
     <!-- The offline badge. -->
     <org.chromium.chrome.browser.widget.TintedImageView
         android:id="@+id/offline_badge"
-        android:layout_width="@dimen/tile_view_offline_badge_size"
-        android:layout_height="@dimen/tile_view_offline_badge_size"
+        android:layout_width="@dimen/tile_view_offline_badge_size_modern"
+        android:layout_height="@dimen/tile_view_offline_badge_size_modern"
         android:layout_gravity="top|end"
+        android:layout_marginTop="@dimen/tile_view_offline_badge_margin_modern"
+        android:layout_marginEnd="@dimen/tile_view_offline_badge_margin_modern"
         android:visibility="gone"
-        android:background="@drawable/offline_badge_background"
         android:contentDescription="@string/accessibility_ntp_offline_badge"
         chrome:chrometint="@color/tile_view_offline_badge_tint"
         android:src="@drawable/offline_pin_round" />
