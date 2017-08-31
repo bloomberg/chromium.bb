@@ -7,6 +7,7 @@
 #include <memory>
 #include "core/workers/GlobalScopeCreationParams.h"
 #include "core/workers/WorkerBackingThread.h"
+#include "modules/webaudio/AudioWorklet.h"
 #include "modules/webaudio/AudioWorkletGlobalScope.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/WaitableEvent.h"
@@ -20,6 +21,8 @@
 namespace blink {
 
 template class WorkletThreadHolder<AudioWorkletThread>;
+
+WebThread* AudioWorkletThread::s_backing_thread_ = nullptr;
 
 std::unique_ptr<AudioWorkletThread> AudioWorkletThread::Create(
     ThreadableLoadingContext* loading_context,
@@ -62,20 +65,22 @@ void AudioWorkletThread::CollectAllGarbage() {
 
 void AudioWorkletThread::EnsureSharedBackingThread() {
   DCHECK(IsMainThread());
-  WorkletThreadHolder<AudioWorkletThread>::EnsureInstance("AudioWorkletThread");
+  if (!s_backing_thread_)
+    s_backing_thread_ = Platform::Current()->CreateWebAudioThread().release();
+  WorkletThreadHolder<AudioWorkletThread>::EnsureInstance(s_backing_thread_);
 }
 
 void AudioWorkletThread::ClearSharedBackingThread() {
   DCHECK(IsMainThread());
   WorkletThreadHolder<AudioWorkletThread>::ClearInstance();
+  delete s_backing_thread_;
+  s_backing_thread_ = nullptr;
 }
 
 WebThread* AudioWorkletThread::GetSharedBackingThread() {
   DCHECK(IsMainThread());
   WorkletThreadHolder<AudioWorkletThread>* instance =
       WorkletThreadHolder<AudioWorkletThread>::GetInstance();
-  if (!instance)
-    return nullptr;
   return &(instance->GetThread()->BackingThread().PlatformThread());
 }
 

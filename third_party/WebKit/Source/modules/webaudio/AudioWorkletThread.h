@@ -12,6 +12,7 @@
 
 namespace blink {
 
+class WebThread;
 class WorkerReportingProxy;
 
 // AudioWorkletThread is a per-frame singleton object that represents the
@@ -50,6 +51,10 @@ class MODULES_EXPORT AudioWorkletThread final : public WorkerThread {
 
  private:
   AudioWorkletThread(ThreadableLoadingContext*, WorkerReportingProxy&);
+
+  // This raw pointer gets assigned in EnsureSharedBackingThread() and manually
+  // released by ClearSharedBackingThread().
+  static WebThread* s_backing_thread_;
 };
 
 }  // namespace blink
