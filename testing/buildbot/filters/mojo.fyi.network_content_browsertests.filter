@@ -142,6 +142,13 @@
 # sometimes.
 -SRC_ClearKey/EncryptedMediaTest.FrameSizeChangeVideo/0
 
+# crbug.com/760831
+-NavigationControllerBrowserTest.ForwardInSubframeWithPendingForward
+-BrowserSideNavigationBrowserTest.SanitizeReferrer
+-SitePerProcessBrowserTest.RFHTransfersWhilePendingDeletion
+-NavigationControllerBrowserTest.SameDocumentNavigationDoesntDeleteNavigationHandle
+-NavigationHandleImplBrowserTest.ThrottleDefer
+
 # Cross-origin request to file:// URL should be blocked. crbug.com/759230
 -BrowserSideNavigationBrowserDisableWebSecurityTest.ValidateBaseUrlForDataUrl
 
