@@ -69,7 +69,7 @@ class ASH_EXPORT SessionStateAnimator {
   // Specific containers or groups of containers that can be animated.
   enum Container {
     WALLPAPER = 1 << 0,
-    LAUNCHER = 1 << 1,
+    SHELF = 1 << 1,
 
     // All user session related containers including the system wallpaper but
     // not including the user's wallpaper.

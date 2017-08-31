@@ -395,12 +395,12 @@ void GetContainersInRootWindow(int container_mask,
     containers->push_back(
         Shell::GetContainer(root_window, kShellWindowId_WallpaperContainer));
   }
-  if (container_mask & SessionStateAnimator::LAUNCHER) {
+  if (container_mask & SessionStateAnimator::SHELF) {
     containers->push_back(
         Shell::GetContainer(root_window, kShellWindowId_ShelfContainer));
   }
   if (container_mask & SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS) {
-    // TODO(antrim): Figure out a way to eliminate a need to exclude launcher
+    // TODO(antrim): Figure out a way to eliminate a need to exclude shelf
     // in such way.
     aura::Window* non_lock_screen_containers = Shell::GetContainer(
         root_window, kShellWindowId_NonLockScreenContainersContainer);

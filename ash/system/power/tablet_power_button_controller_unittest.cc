@@ -719,9 +719,9 @@ TEST_F(TabletPowerButtonControllerTest, SuspendDoneStopsForcingOff) {
   EXPECT_FALSE(GetBacklightsForcedOff());
 }
 
-// Tests that for tablet power button, the animation type for hiding non lock
-// screen containers are immediate (crbug.com/746657).
-TEST_F(TabletPowerButtonControllerTest, NonLockScreenContainersHideAnimation) {
+// Tests that for tablet power button, we have immediate pre-lock animation
+// (crbug.com/746657).
+TEST_F(TabletPowerButtonControllerTest, ImmediatePreLockAnimation) {
   TestSessionStateAnimator* test_animator = new TestSessionStateAnimator;
   lock_state_controller_->set_animator_for_test(test_animator);
   Initialize(LoginStatus::USER);
@@ -731,7 +731,7 @@ TEST_F(TabletPowerButtonControllerTest, NonLockScreenContainersHideAnimation) {
   PressPowerButton();
   ReleasePowerButton();
   EXPECT_TRUE(test_animator->AreContainersAnimated(
-      SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS,
+      LockStateController::kPreLockContainersMask,
       SessionStateAnimator::ANIMATION_HIDE_IMMEDIATELY));
   EXPECT_TRUE(lock_state_test_api_->is_animating_lock());
 

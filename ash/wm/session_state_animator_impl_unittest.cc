@@ -49,8 +49,8 @@ TEST_F(SessionStateAnimatiorImplContainersTest, ContainersHaveIdTest) {
 
   containers.clear();
 
-  // Check for shelf in launcher.
-  SessionStateAnimatorImpl::GetContainers(SessionStateAnimator::LAUNCHER,
+  // Check for shelf.
+  SessionStateAnimatorImpl::GetContainers(SessionStateAnimator::SHELF,
                                           &containers);
   EXPECT_TRUE(
       ContainersHaveWindowWithId(containers, kShellWindowId_ShelfContainer));

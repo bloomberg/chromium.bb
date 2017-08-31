@@ -49,6 +49,10 @@ enum class ShutdownReason;
 class ASH_EXPORT LockStateController : public aura::WindowTreeHostObserver,
                                        public SessionObserver {
  public:
+  // A bitfield mask including NON_LOCK_SCREEN_CONTAINERS and LAUNCHER, used for
+  // pre-lock hiding animation.
+  static const int kPreLockContainersMask;
+
   explicit LockStateController(ShutdownController* shutdown_controller);
   ~LockStateController() override;
 
