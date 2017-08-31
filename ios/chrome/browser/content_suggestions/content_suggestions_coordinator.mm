@@ -325,6 +325,7 @@ const char kNTPHelpURL[] = "https://support.google.com/chrome/?p=ios_new_tab";
   [self.alertCoordinator start];
 }
 
+// TODO(crbug.com/761096) : Promo handling should be DRY and tested.
 - (void)handlePromoTapped {
   NotificationPromoWhatsNew* notificationPromo =
       [self.contentSuggestionsMediator notificationPromo];
@@ -342,9 +343,14 @@ const char kNTPHelpURL[] = "https://support.google.com/chrome/?p=ios_new_tab";
   }
 
   if (notificationPromo->IsChromeCommand()) {
-    GenericChromeCommand* command = [[GenericChromeCommand alloc]
-        initWithTag:notificationPromo->command_id()];
-    [self.suggestionsViewController chromeExecuteCommand:command];
+    int command_id = notificationPromo->command_id();
+    if (command_id == IDC_RATE_THIS_APP) {
+      [self.dispatcher performSelector:@selector(showRateThisAppDialog)];
+    } else {
+      GenericChromeCommand* command = [[GenericChromeCommand alloc]
+          initWithTag:notificationPromo->command_id()];
+      [self.suggestionsViewController chromeExecuteCommand:command];
+    }
     return;
   }
   NOTREACHED();
