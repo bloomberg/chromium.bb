@@ -39,7 +39,6 @@ License along with liblouis. If not, see <http://www.gnu.org/licenses/>.
 #include <sys/stat.h>
 
 #include "internal.h"
-#include "findTable.h"
 #include "config.h"
 
 #define QUOTESUB 28		/*Stand-in for double quotes in strings */
@@ -5064,7 +5063,7 @@ resolveSubtable (const char *table, const char *base, const char *searchPath)
       char *dir;
       int last;
       char *cp;
-      char *searchPath_copy = strdup (searchPath + 1);
+      char *searchPath_copy = strdup (searchPath);
       for (dir = searchPath_copy; ; dir = cp + 1)
 	{
 	  for (cp = dir; *cp != '\0' && *cp != ','; cp++)
@@ -5122,7 +5121,10 @@ _lou_getTablePath(void)
 #else
   cp += sprintf (cp, ",%s", TABLESDIR);
 #endif
-  return strdup(searchPath);
+  if (searchPath[0] != '\0')
+    return strdup(&searchPath[1]);
+  else
+    return strdup(".");
 }
 
 /**
@@ -5170,7 +5172,11 @@ _lou_defaultTableResolver (const char *tableList, const char *base)
       *cp = '\0';
       if (!(tableFiles[k++] = resolveSubtable (subTable, base, searchPath)))
 	{
+	  char *path;
 	  _lou_logMessage (LOG_ERROR, "Cannot resolve table '%s'", subTable);
+	  path = getenv ("LOUIS_TABLEPATH");
+	  if (path != NULL && path[0] != '\0')
+	    _lou_logMessage (LOG_ERROR, "LOUIS_TABLEPATH=%s", path);
 	  free(searchPath);
 	  free(tableList_copy);
 	  free (tableFiles);

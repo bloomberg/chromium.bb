@@ -245,6 +245,7 @@ TAGS
 /tools/lou_checktable
 /tools/lou_checkyaml
 /tools/lou_debug
+/tools/lou_tableinfo
 /tools/lou_trace
 /tools/lou_translate
 /tools/lou_compare
