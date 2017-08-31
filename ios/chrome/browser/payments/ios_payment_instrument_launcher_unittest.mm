@@ -16,6 +16,7 @@
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/payments/core/payment_instrument.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#include "ios/chrome/browser/payments/payment_request_test_util.h"
 #include "ios/chrome/browser/payments/test_payment_request.h"
 #include "ios/web/public/payments/payment_request.h"
 #include "ios/web/public/test/fakes/test_navigation_manager.h"
@@ -171,7 +172,8 @@ TEST_F(IOSPaymentInstrumentLauncherTest,
         base::MakeUnique<web::TestNavigationManager>();
     web_state_.SetNavigationManager(std::move(navigation_manager));
 
-    web::PaymentRequest web_payment_request;
+    web::PaymentRequest web_payment_request =
+        payment_request_test_util::CreateTestWebPaymentRequest();
     autofill::TestPersonalDataManager personal_data_manager;
     TestPaymentRequest payment_request(web_payment_request,
                                        chrome_browser_state_.get(), &web_state_,

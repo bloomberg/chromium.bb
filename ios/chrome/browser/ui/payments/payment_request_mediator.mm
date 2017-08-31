@@ -108,14 +108,14 @@ using ::payment_request_util::GetShippingSectionTitle;
 - (CollectionViewItem*)paymentSummaryItem {
   PriceItem* item = [[PriceItem alloc] init];
   item.item = base::SysUTF8ToNSString(
-      self.paymentRequest->payment_details().total.label);
+      self.paymentRequest->payment_details().total->label);
   payments::CurrencyFormatter* currencyFormatter =
       self.paymentRequest->GetOrCreateCurrencyFormatter();
   item.price = base::SysUTF16ToNSString(l10n_util::GetStringFUTF16(
       IDS_PAYMENT_REQUEST_ORDER_SUMMARY_SHEET_TOTAL_FORMAT,
       base::UTF8ToUTF16(currencyFormatter->formatted_currency_code()),
       currencyFormatter->Format(
-          self.paymentRequest->payment_details().total.amount.value)));
+          self.paymentRequest->payment_details().total->amount.value)));
   item.notification = self.totalValueChanged
                           ? l10n_util::GetNSString(IDS_PAYMENTS_UPDATED_LABEL)
                           : nil;
