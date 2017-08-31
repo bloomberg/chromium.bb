@@ -24,6 +24,7 @@
 #include "gpu/command_buffer/service/passthrough_program_cache.h"
 #include "gpu/command_buffer/service/preemption_flag.h"
 #include "gpu/command_buffer/service/scheduler.h"
+#include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/ipc/common/gpu_messages.h"
 #include "gpu/ipc/service/gpu_channel.h"
@@ -111,7 +112,8 @@ gles2::ProgramCache* GpuChannelManager::program_cache() {
         workarounds.disable_program_disk_cache;
 
     // Use the EGL cache control extension for the passthrough decoder.
-    if (gpu_preferences_.use_passthrough_cmd_decoder) {
+    if (gpu_preferences_.use_passthrough_cmd_decoder &&
+        gles2::PassthroughCommandDecoderSupported()) {
       program_cache_.reset(new gles2::PassthroughProgramCache(
           gpu_preferences_.gpu_program_cache_size, disable_disk_cache));
     } else {

@@ -6,18 +6,23 @@
 
 #include "base/command_line.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
-#include "gpu/command_buffer/service/gpu_preferences.h"
+#include "gpu/command_buffer/service/context_group.h"
 #include "ui/gl/gl_switches.h"
+
+#if defined(USE_EGL)
+#include "ui/gl/gl_surface_egl.h"
+#endif  // defined(USE_EGL)
 
 namespace gpu {
 namespace gles2 {
 
 gl::GLContextAttribs GenerateGLContextAttribs(
     const ContextCreationAttribHelper& attribs_helper,
-    const GpuPreferences& gpu_preferences) {
+    const ContextGroup* context_group) {
+  DCHECK(context_group != nullptr);
   gl::GLContextAttribs attribs;
   attribs.gpu_preference = attribs_helper.gpu_preference;
-  if (gpu_preferences.use_passthrough_cmd_decoder) {
+  if (context_group->use_passthrough_cmd_decoder()) {
     attribs.bind_generates_resource = attribs_helper.bind_generates_resource;
     attribs.webgl_compatibility_context =
         IsWebGLContextType(attribs_helper.context_type);
@@ -49,6 +54,21 @@ gl::GLContextAttribs GenerateGLContextAttribs(
 
   return attribs;
 }
+
+bool PassthroughCommandDecoderSupported() {
+#if defined(USE_EGL)
+  // Using the passthrough command buffer requires that specific ANGLE
+  // extensions are exposed
+  return gl::GLSurfaceEGL::IsCreateContextBindGeneratesResourceSupported() &&
+         gl::GLSurfaceEGL::IsCreateContextWebGLCompatabilitySupported() &&
+         gl::GLSurfaceEGL::IsRobustResourceInitSupported() &&
+         gl::GLSurfaceEGL::IsDisplayTextureShareGroupSupported() &&
+         gl::GLSurfaceEGL::IsCreateContextClientArraysSupported();
+#else
+  // The passthrough command buffer is only supported on top of ANGLE/EGL
+  return false;
+#endif  // defined(USE_EGL)
+}  // namespace gles2
 
 }  // namespace gles2
 }  // namespace gpu

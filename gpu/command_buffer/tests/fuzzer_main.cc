@@ -152,7 +152,7 @@ class CommandBufferSetup {
     scoped_refptr<gles2::FeatureInfo> feature_info =
         new gles2::FeatureInfo();
     scoped_refptr<gles2::ContextGroup> context_group = new gles2::ContextGroup(
-        gpu_preferences_, &mailbox_manager_, nullptr /* memory_tracker */,
+        gpu_preferences_, true, &mailbox_manager_, nullptr /* memory_tracker */,
         &translator_cache_, &completeness_cache_, feature_info,
         true /* bind_generates_resource */, &image_manager_,
         nullptr /* image_factory */, nullptr /* progress_reporter */,

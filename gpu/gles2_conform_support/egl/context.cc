@@ -263,9 +263,9 @@ bool Context::CreateService(gl::GLSurface* gl_surface) {
   scoped_refptr<gpu::gles2::FeatureInfo> feature_info(
       new gpu::gles2::FeatureInfo(gpu_driver_bug_workarounds_));
   scoped_refptr<gpu::gles2::ContextGroup> group(new gpu::gles2::ContextGroup(
-      gpu::GpuPreferences(), &mailbox_manager_, nullptr /* memory_tracker */,
-      &translator_cache_, &completeness_cache_, feature_info, true,
-      &image_manager_, nullptr /* image_factory */,
+      gpu::GpuPreferences(), true, &mailbox_manager_,
+      nullptr /* memory_tracker */, &translator_cache_, &completeness_cache_,
+      feature_info, true, &image_manager_, nullptr /* image_factory */,
       nullptr /* progress_reporter */, gpu::GpuFeatureInfo(),
       &discardable_manager_));
 

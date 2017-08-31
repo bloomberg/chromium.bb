@@ -12,6 +12,7 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
+#include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/config/gpu_driver_bug_list.h"
 #include "gpu/config/gpu_info_collector.h"
 #include "gpu/config/gpu_switches.h"
@@ -158,9 +159,6 @@ bool GpuInit::InitializeAndStartSandbox(const base::CommandLine& command_line,
 #endif
   gpu_info_.in_process_gpu = in_process_gpu;
 
-  gpu_info_.passthrough_cmd_decoder =
-      gl::UsePassthroughCommandDecoder(&command_line);
-
   // Compute blacklist and driver bug workaround decisions based on basic GPU
   // info.
   gpu_feature_info_ = gpu::GetGpuFeatureInfo(gpu_info_, command_line);
@@ -295,6 +293,10 @@ bool GpuInit::InitializeAndStartSandbox(const base::CommandLine& command_line,
   }
   UMA_HISTOGRAM_BOOLEAN("GPU.Sandbox.InitializedSuccessfully",
                         gpu_info_.sandboxed);
+
+  gpu_info_.passthrough_cmd_decoder =
+      gl::UsePassthroughCommandDecoder(&command_line) &&
+      gles2::PassthroughCommandDecoderSupported();
 
   return true;
 }

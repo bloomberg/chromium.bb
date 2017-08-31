@@ -58,6 +58,7 @@ DisallowedFeatures AdjustDisallowedFeatures(
 class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
  public:
   ContextGroup(const GpuPreferences& gpu_preferences,
+               bool supports_passthrough_command_decoders,
                MailboxManager* mailbox_manager,
                const scoped_refptr<MemoryTracker>& memory_tracker,
                ShaderTranslatorCache* shader_translator_cache,
@@ -228,6 +229,10 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
     syncs_id_map_.erase(client_id);
   }
 
+  bool use_passthrough_cmd_decoder() const {
+    return use_passthrough_cmd_decoder_;
+  }
+
   PassthroughResources* passthrough_resources() const {
     return passthrough_resources_.get();
   }
@@ -304,6 +309,7 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
   // Mappings from client side IDs to service side IDs.
   base::hash_map<GLuint, GLsync> syncs_id_map_;
 
+  bool use_passthrough_cmd_decoder_;
   std::unique_ptr<PassthroughResources> passthrough_resources_;
 
   // Used to notify the watchdog thread of progress during destruction,
