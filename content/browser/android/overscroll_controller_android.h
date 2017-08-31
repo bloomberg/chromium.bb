@@ -10,6 +10,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "content/common/content_export.h"
 #include "content/common/input/input_event_ack_state.h"
 #include "ui/android/overscroll_glow.h"
 #include "ui/android/overscroll_refresh.h"
@@ -34,12 +35,20 @@ namespace content {
 // Glue class for handling all inputs into Android-specific overscroll effects,
 // both the passive overscroll glow and the active overscroll pull-to-refresh.
 // Note that all input coordinates (both for events and overscroll) are in DIPs.
-class OverscrollControllerAndroid : public ui::OverscrollGlowClient {
+class CONTENT_EXPORT OverscrollControllerAndroid
+    : public ui::OverscrollGlowClient {
  public:
   OverscrollControllerAndroid(
       ui::OverscrollRefreshHandler* overscroll_refresh_handler,
       ui::WindowAndroidCompositor* compositor,
       float dpi_scale);
+
+  static std::unique_ptr<OverscrollControllerAndroid> CreateForTests(
+      ui::WindowAndroidCompositor* compositor,
+      float dpi_scale,
+      std::unique_ptr<ui::OverscrollGlow> glow_effect,
+      std::unique_ptr<ui::OverscrollRefresh> refresh_effect);
+
   ~OverscrollControllerAndroid() override;
 
   // Returns true if |event| is consumed by an overscroll effect, in which
@@ -66,6 +75,13 @@ class OverscrollControllerAndroid : public ui::OverscrollGlowClient {
   void Disable();
 
  private:
+  // This method should only be called from CreateForTests.
+  OverscrollControllerAndroid(
+      ui::WindowAndroidCompositor* compositor,
+      float dpi_scale,
+      std::unique_ptr<ui::OverscrollGlow> glow_effect,
+      std::unique_ptr<ui::OverscrollRefresh> refresh_effect);
+
   // OverscrollGlowClient implementation.
   std::unique_ptr<ui::EdgeEffectBase> CreateEdgeEffect() override;
 

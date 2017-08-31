@@ -1770,9 +1770,10 @@ void RenderViewImpl::DidOverscroll(
     const blink::WebFloatSize& overscrollDelta,
     const blink::WebFloatSize& accumulatedOverscroll,
     const blink::WebFloatPoint& positionInViewport,
-    const blink::WebFloatSize& velocityInViewport) {
+    const blink::WebFloatSize& velocityInViewport,
+    const blink::WebScrollBoundaryBehavior& behavior) {
   RenderWidget::DidOverscroll(overscrollDelta, accumulatedOverscroll,
-                              positionInViewport, velocityInViewport);
+                              positionInViewport, velocityInViewport, behavior);
 }
 
 void RenderViewImpl::HasTouchEventHandlers(bool has_handlers) {

@@ -17,6 +17,7 @@
 #include "cc/base/synced_property.h"
 #include "cc/input/event_listener_properties.h"
 #include "cc/input/layer_selection_bound.h"
+#include "cc/input/scroll_boundary_behavior.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/layer_list_iterator.h"
 #include "cc/output/swap_promise.h"
@@ -494,6 +495,11 @@ class CC_EXPORT LayerTreeImpl {
   void set_bottom_controls_height(float bottom_controls_height);
   float bottom_controls_height() const { return bottom_controls_height_; }
 
+  void set_scroll_boundary_behavior(const ScrollBoundaryBehavior& behavior);
+  ScrollBoundaryBehavior scroll_boundary_behavior() const {
+    return scroll_boundary_behavior_;
+  }
+
   void SetPendingPageScaleAnimation(
       std::unique_ptr<PendingPageScaleAnimation> pending_animation);
   std::unique_ptr<PendingPageScaleAnimation> TakePendingPageScaleAnimation();
@@ -658,6 +664,8 @@ class CC_EXPORT LayerTreeImpl {
   bool browser_controls_shrink_blink_size_;
   float top_controls_height_;
   float bottom_controls_height_;
+
+  ScrollBoundaryBehavior scroll_boundary_behavior_;
 
   // The amount that the browser controls are shown from 0 (hidden) to 1 (fully
   // shown).

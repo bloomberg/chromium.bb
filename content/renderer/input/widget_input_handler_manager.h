@@ -49,10 +49,12 @@ class WidgetInputHandlerManager
       const blink::WebFloatPoint& velocity,
       const blink::WebSize& cumulative_scroll) override;
 
-  void DidOverscroll(const gfx::Vector2dF& accumulated_overscroll,
-                     const gfx::Vector2dF& latest_overscroll_delta,
-                     const gfx::Vector2dF& current_fling_velocity,
-                     const gfx::PointF& causal_event_viewport_point) override;
+  void DidOverscroll(
+      const gfx::Vector2dF& accumulated_overscroll,
+      const gfx::Vector2dF& latest_overscroll_delta,
+      const gfx::Vector2dF& current_fling_velocity,
+      const gfx::PointF& causal_event_viewport_point,
+      const cc::ScrollBoundaryBehavior& scroll_boundary_behavior) override;
   void DidStopFlinging() override;
   void DidAnimateForInput() override;
   void GenerateScrollBeginAndSendToMainThread(

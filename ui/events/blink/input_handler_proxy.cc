@@ -1461,13 +1461,16 @@ void InputHandlerProxy::HandleOverscroll(
         ToClientScrollIncrement(current_fling_velocity_);
     current_overscroll_params_->causal_event_viewport_point =
         gfx::PointF(causal_event_viewport_point);
+    current_overscroll_params_->scroll_boundary_behavior =
+        scroll_result.scroll_boundary_behavior;
     return;
   }
 
   client_->DidOverscroll(scroll_result.accumulated_root_overscroll,
                          scroll_result.unused_scroll_delta,
                          ToClientScrollIncrement(current_fling_velocity_),
-                         gfx::PointF(causal_event_viewport_point));
+                         gfx::PointF(causal_event_viewport_point),
+                         scroll_result.scroll_boundary_behavior);
 }
 
 bool InputHandlerProxy::CancelCurrentFling() {

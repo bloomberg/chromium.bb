@@ -90,6 +90,7 @@ using blink::WebSelection;
 using blink::WebSize;
 using blink::WebBrowserControlsState;
 using blink::WebLayerTreeView;
+using blink::WebScrollBoundaryBehavior;
 
 namespace content {
 namespace {
@@ -1183,6 +1184,11 @@ void RenderWidgetCompositor::RequestDecode(
         FROM_HERE, base::Bind(&RenderWidgetCompositor::SynchronouslyComposite,
                               weak_factory_.GetWeakPtr()));
   }
+}
+
+void RenderWidgetCompositor::SetScrollBoundaryBehavior(
+    const WebScrollBoundaryBehavior& behavior) {
+  layer_tree_host_->SetScrollBoundaryBehavior(behavior);
 }
 
 void RenderWidgetCompositor::WillBeginMainFrame() {

@@ -59,6 +59,13 @@ class CC_EXPORT ScrollStateData {
   bool caused_scroll_x;
   bool caused_scroll_y;
 
+  // Track if the scroll_chain has been cut by scroll_boundary_behavior, in
+  // order to properly handle overscroll-effects.
+  // TODO(sunyunjia): overscroll should be handled at the top of scroll_chain,
+  // as implemented at blink side. This field should be removed after it's
+  // resolved. crbug.com/755164.
+  bool is_scroll_chain_cut;
+
   ScrollNode* current_native_scrolling_node() const;
   void set_current_native_scrolling_node(
       ScrollNode* current_native_scrolling_node);

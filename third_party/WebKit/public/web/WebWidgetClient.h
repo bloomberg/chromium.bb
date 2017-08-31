@@ -136,7 +136,8 @@ class WebWidgetClient {
   virtual void DidOverscroll(const WebFloatSize& overscroll_delta,
                              const WebFloatSize& accumulated_overscroll,
                              const WebFloatPoint& position_in_viewport,
-                             const WebFloatSize& velocity_in_viewport) {}
+                             const WebFloatSize& velocity_in_viewport,
+                             const WebScrollBoundaryBehavior& behavior) {}
 
   // Called to update if touch events should be sent.
   virtual void HasTouchEventHandlers(bool) {}

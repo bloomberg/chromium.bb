@@ -3213,8 +3213,10 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
 
       pending_delta -= scroll_delta;
 
-      if (!CanPropagate(scroll_node, pending_delta.x(), pending_delta.y()))
+      if (!CanPropagate(scroll_node, pending_delta.x(), pending_delta.y())) {
+        scroll_state.set_is_scroll_chain_cut(true);
         break;
+      }
     }
   }
   scroll_state.set_is_ending(true);
@@ -3477,8 +3479,10 @@ void LayerTreeHostImpl::DistributeScrollDelta(ScrollState* scroll_state) {
                           ? scroll_state->delta_y_hint()
                           : scroll_state->delta_y();
 
-      if (!CanPropagate(scroll_node, delta_x, delta_y))
+      if (!CanPropagate(scroll_node, delta_x, delta_y)) {
+        scroll_state->set_is_scroll_chain_cut(true);
         break;
+      }
     }
   }
   active_tree_->SetCurrentlyScrollingNode(
@@ -3601,6 +3605,12 @@ InputHandlerScrollResult LayerTreeHostImpl::ScrollBy(
   scroll_result.did_overscroll_root = !unused_root_delta.IsZero();
   scroll_result.accumulated_root_overscroll = accumulated_root_overscroll_;
   scroll_result.unused_scroll_delta = unused_root_delta;
+  scroll_result.scroll_boundary_behavior =
+      scroll_state->is_scroll_chain_cut()
+          ? ScrollBoundaryBehavior(
+                ScrollBoundaryBehavior::ScrollBoundaryBehaviorType::
+                    kScrollBoundaryBehaviorTypeNone)
+          : active_tree()->scroll_boundary_behavior();
 
   if (scroll_result.did_scroll) {
     // Scrolling can change the root scroll offset, so inform the synchronous

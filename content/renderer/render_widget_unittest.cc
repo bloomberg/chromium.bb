@@ -120,7 +120,8 @@ class InteractiveRenderWidget : public RenderWidget {
                                         event.data.scroll_update.delta_y),
                     blink::WebFloatPoint(event.x, event.y),
                     blink::WebFloatSize(event.data.scroll_update.velocity_x,
-                                        event.data.scroll_update.velocity_y));
+                                        event.data.scroll_update.velocity_y),
+                    blink::WebScrollBoundaryBehavior());
       return true;
     }
 
@@ -292,7 +293,8 @@ TEST_F(RenderWidgetUnittest, FlingOverscroll) {
   // be sent as a separate IPC.
   widget()->DidOverscroll(blink::WebFloatSize(10, 5), blink::WebFloatSize(5, 5),
                           blink::WebFloatPoint(1, 1),
-                          blink::WebFloatSize(10, 5));
+                          blink::WebFloatSize(10, 5),
+                          blink::WebScrollBoundaryBehavior());
   ASSERT_EQ(1u, widget()->sink()->message_count());
   const IPC::Message* message = widget()->sink()->GetMessageAt(0);
   ASSERT_EQ(InputHostMsg_DidOverscroll::ID, message->type());

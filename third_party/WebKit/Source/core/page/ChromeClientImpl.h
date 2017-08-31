@@ -81,7 +81,8 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
   void DidOverscroll(const FloatSize& overscroll_delta,
                      const FloatSize& accumulated_overscroll,
                      const FloatPoint& position_in_viewport,
-                     const FloatSize& velocity_in_viewport) override;
+                     const FloatSize& velocity_in_viewport,
+                     const WebScrollBoundaryBehavior&) override;
   bool ShouldReportDetailedMessageForSource(LocalFrame&,
                                             const String&) override;
   void AddMessageToConsole(LocalFrame*,
@@ -214,6 +215,7 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
   void ShowUnhandledTapUIIfNeeded(WebTappedInfo&) override;
   void OnMouseDown(Node&) override;
   void DidUpdateBrowserControls() const override;
+  void SetScrollBoundaryBehavior(const WebScrollBoundaryBehavior&) override;
 
   FloatSize ElasticOverscroll() const override;
 

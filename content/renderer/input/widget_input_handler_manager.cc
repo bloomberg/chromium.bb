@@ -158,12 +158,14 @@ void WidgetInputHandlerManager::DidOverscroll(
     const gfx::Vector2dF& accumulated_overscroll,
     const gfx::Vector2dF& latest_overscroll_delta,
     const gfx::Vector2dF& current_fling_velocity,
-    const gfx::PointF& causal_event_viewport_point) {
+    const gfx::PointF& causal_event_viewport_point,
+    const cc::ScrollBoundaryBehavior& scroll_boundary_behavior) {
   ui::DidOverscrollParams params;
   params.accumulated_overscroll = accumulated_overscroll;
   params.latest_overscroll_delta = latest_overscroll_delta;
   params.current_fling_velocity = current_fling_velocity;
   params.causal_event_viewport_point = causal_event_viewport_point;
+  params.scroll_boundary_behavior = scroll_boundary_behavior;
   if (legacy_host_message_sender_) {
     legacy_host_message_sender_->Send(new InputHostMsg_DidOverscroll(
         legacy_host_message_routing_id_, params));

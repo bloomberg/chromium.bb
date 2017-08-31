@@ -319,6 +319,7 @@ source_set("blink_headers") {
     "platform/WebRenderingStats.h",
     "platform/WebRuntimeFeatures.h",
     "platform/WebScreenInfo.h",
+    "platform/WebScrollBoundaryBehavior.h",
     "platform/WebScrollbar.h",
     "platform/WebScrollbarBehavior.h",
     "platform/WebScrollbarButtonsPlacement.h",

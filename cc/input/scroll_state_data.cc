@@ -26,6 +26,7 @@ ScrollStateData::ScrollStateData()
       delta_granularity(0),
       caused_scroll_x(false),
       caused_scroll_y(false),
+      is_scroll_chain_cut(false),
       current_native_scrolling_node_(nullptr) {}
 
 ScrollStateData::ScrollStateData(const ScrollStateData& other) = default;
