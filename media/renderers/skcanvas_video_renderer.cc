@@ -240,7 +240,10 @@ class VideoImageGenerator : public cc::PaintImageGenerator {
   bool GetPixels(const SkImageInfo& info,
                  void* pixels,
                  size_t row_bytes,
+                 size_t frame_index,
                  uint32_t lazy_pixel_ref) override {
+    DCHECK_EQ(frame_index, 0u);
+
     // If skia couldn't do the YUV conversion on GPU, we will on CPU.
     SkCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(frame_.get(), pixels,
                                                         row_bytes);
@@ -280,7 +283,10 @@ class VideoImageGenerator : public cc::PaintImageGenerator {
 
   bool GetYUV8Planes(const SkYUVSizeInfo& sizeInfo,
                      void* planes[3],
+                     size_t frame_index,
                      uint32_t lazy_pixel_ref) override {
+    DCHECK_EQ(frame_index, 0u);
+
     media::VideoPixelFormat format = frame_->format();
     DCHECK(media::IsYuvPlanar(format) && format != PIXEL_FORMAT_YV12A);
 

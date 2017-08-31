@@ -81,7 +81,7 @@ class ImageFrameGeneratorTest : public ::testing::Test,
 
   void MemoryAllocatorSet() override { ++memory_allocator_set_count_; }
 
-  ImageFrame::Status GetStatus() override {
+  ImageFrame::Status GetStatus(size_t index) override {
     ImageFrame::Status current_status = status_;
     status_ = next_frame_status_;
     return current_status;

@@ -9,6 +9,7 @@
 #include "cc/paint/paint_image_builder.h"
 
 namespace blink {
+using cc::FrameMetadata;
 using cc::PaintImage;
 using cc::PaintImageBuilder;
 using cc::PaintImageGenerator;
