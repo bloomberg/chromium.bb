@@ -11,6 +11,7 @@ class CardboardGamepadDataFetcher;
 
 // Filled in by vr_shell and consumed by CardboardGamepadDataFetcher.
 struct CardboardGamepadData {
+  CardboardGamepadData() : timestamp(0), is_screen_touching(false) {}
   int64_t timestamp;
   bool is_screen_touching;
 };

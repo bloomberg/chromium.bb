@@ -34,6 +34,10 @@ public class EmulatedVrController {
         return mApi;
     }
 
+    public void sendClickButtonToggleEvent() {
+        mApi.buttonEvent.sendClickButtonToggleEvent();
+    }
+
     /**
      * Presses and quickly releases the Daydream controller's touchpad button.
      * Or, if the button is already pressed, releases and quickly presses again.

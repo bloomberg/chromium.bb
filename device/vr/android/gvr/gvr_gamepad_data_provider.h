@@ -16,6 +16,12 @@ class GvrGamepadDataFetcher;
 // Subset of GVR controller data needed for the gamepad API. Filled in
 // by vr_shell's VrController and consumed by GvrGamepadDataFetcher.
 struct GvrGamepadData {
+  GvrGamepadData()
+      : timestamp(0),
+        is_touching(false),
+        controller_button_pressed(false),
+        right_handed(true),
+        connected(false) {}
   int64_t timestamp;
   gfx::Vector2dF touch_pos;
   gfx::Quaternion orientation;
