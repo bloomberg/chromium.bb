@@ -9,66 +9,55 @@
 
 namespace media {
 
-DestructionObservable::DestructionObservable() {}
+DestructionObservable::DestructionObservable() = default;
 
-DestructionObservable::~DestructionObservable() {
-  if (!destruction_cb_.is_null())
-    destruction_cb_.Run();
-}
+DestructionObservable::~DestructionObservable() = default;
 
-DestructionObservable::DestructionObserver::DestructionObserver()
-    : weak_factory_(this) {
-  // By default, destruction is okay, but not required.
-  DestructionIsOptional();
-}
-
-DestructionObservable::DestructionObserver::~DestructionObserver() {}
-
-base::Closure DestructionObservable::DestructionObserver::GetCallback() {
-  return base::Bind(&DestructionObservable::DestructionObserver::OnDestroyed,
-                    weak_factory_.GetWeakPtr());
-}
-
-void DestructionObservable::DestructionObserver::OnDestroyed() {
-  destroyed_ = true;
-  // Notify the mock.
-  MockOnDestroyed();
-}
-
-void DestructionObservable::DestructionObserver::DestructionIsOptional() {
-  testing::Mock::VerifyAndClearExpectations(this);
-  // We're a NiceMock, so we don't need to set any expectations.
-}
-
-void DestructionObservable::DestructionObserver::ExpectDestruction() {
-  // Fail if the observerable has already been destroyed.  This may seem a
-  // little odd, but our semantics are "destroyed in the future".  If it's
-  // already gone at this point, then it's likely that the test didn't set
-  // expectations properly before, unless some previous expectation of ours
-  // already failed.  (e.g., if the test previous told us DoNotAllowDestruction
-  // but the object was destroyed, and we will fail anyway).
-  ASSERT_TRUE(!destroyed_);
-  testing::Mock::VerifyAndClearExpectations(this);
-  EXPECT_CALL(*this, MockOnDestroyed()).Times(1);
-}
-
-void DestructionObservable::DestructionObserver::DoNotAllowDestruction() {
-  testing::Mock::VerifyAndClearExpectations(this);
-  // Fail if the observerable has already been destroyed.
-  ASSERT_TRUE(!destroyed_);
-  EXPECT_CALL(*this, MockOnDestroyed()).Times(0);
-}
-
-std::unique_ptr<DestructionObservable::DestructionObserver>
+std::unique_ptr<DestructionObserver>
 DestructionObservable::CreateDestructionObserver() {
-  DCHECK(destruction_cb_.is_null());
+  return base::MakeUnique<DestructionObserver>(this);
+}
 
-  std::unique_ptr<DestructionObservable::DestructionObserver> observer(
-      new DestructionObserver());
+DestructionObserver::DestructionObserver(DestructionObservable* observable)
+    : destructed_(false), weak_factory_(this) {
+  // Only one observer is allowed.
+  DCHECK(!observable->destruction_cb.Release());
+  observable->destruction_cb.ReplaceClosure(
+      base::Bind(&DestructionObserver::OnObservableDestructed,
+                 weak_factory_.GetWeakPtr()));
+}
 
-  destruction_cb_ = observer->GetCallback();
+DestructionObserver::~DestructionObserver() {
+  VerifyExpectations();
+}
 
-  return observer;
+void DestructionObserver::VerifyAndClearExpectations() {
+  VerifyExpectations();
+  expect_destruction_.reset();
+}
+
+void DestructionObserver::VerifyExpectations() {
+  if (!expect_destruction_.has_value())
+    return;
+  if (*expect_destruction_)
+    ASSERT_TRUE(destructed_) << "Expected the observable to be destructed.";
+  else
+    ASSERT_FALSE(destructed_) << "Expected the observable to not be destructed";
+}
+
+void DestructionObserver::OnObservableDestructed() {
+  destructed_ = true;
+  VerifyExpectations();
+}
+
+void DestructionObserver::ExpectDestruction() {
+  ASSERT_FALSE(destructed_);
+  expect_destruction_ = true;
+}
+
+void DestructionObserver::DoNotAllowDestruction() {
+  ASSERT_FALSE(destructed_);
+  expect_destruction_ = false;
 }
 
 }  // namespace media

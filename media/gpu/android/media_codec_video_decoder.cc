@@ -110,7 +110,7 @@ MediaCodecVideoDecoder::MediaCodecVideoDecoder(
     AVDACodecAllocator* codec_allocator,
     std::unique_ptr<AndroidVideoSurfaceChooser> surface_chooser,
     std::unique_ptr<VideoFrameFactory> video_frame_factory,
-    std::unique_ptr<service_manager::ServiceContextRef> connection_ref)
+    std::unique_ptr<service_manager::ServiceContextRef> context_ref)
     : state_(State::kBeforeSurfaceInit),
       lazy_init_pending_(true),
       reset_generation_(0),
@@ -121,7 +121,7 @@ MediaCodecVideoDecoder::MediaCodecVideoDecoder(
       surface_chooser_(std::move(surface_chooser)),
       video_frame_factory_(std::move(video_frame_factory)),
       device_info_(device_info),
-      connection_ref_(std::move(connection_ref)),
+      context_ref_(std::move(context_ref)),
       weak_factory_(this) {
   DVLOG(2) << __func__;
 }
@@ -129,15 +129,16 @@ MediaCodecVideoDecoder::MediaCodecVideoDecoder(
 MediaCodecVideoDecoder::~MediaCodecVideoDecoder() {
   DVLOG(2) << __func__;
   ReleaseCodec();
-  // Mojo callbacks require that they're run before destruction.
-  if (reset_cb_)
-    reset_cb_.Run();
   codec_allocator_->StopThread(&codec_allocator_adapter_);
 }
 
 void MediaCodecVideoDecoder::Destroy() {
   DVLOG(2) << __func__;
-  delete this;
+  // Mojo callbacks require that they're run before destruction.
+  if (reset_cb_)
+    reset_cb_.Run();
+  ClearPendingDecodes(DecodeStatus::ABORTED);
+  StartDrainingCodec(DrainType::kForDestroy);
 }
 
 void MediaCodecVideoDecoder::Initialize(const VideoDecoderConfig& config,
@@ -384,8 +385,11 @@ void MediaCodecVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
 
 void MediaCodecVideoDecoder::FlushCodec() {
   DVLOG(2) << __func__;
-  if (!codec_ || codec_->IsFlushed())
+  if (!codec_ || codec_->IsFlushed() || state_ == State::kSurfaceDestroyed ||
+      state_ == State::kError) {
     return;
+  }
+
   if (codec_->SupportsFlush(device_info_)) {
     DVLOG(2) << "Flushing codec";
     if (!codec_->Flush()) {
@@ -426,6 +430,11 @@ void MediaCodecVideoDecoder::ManageTimer(bool start_timer) {
 
   if (!start_timer && idle_timer_->Elapsed() > kIdleTimeout) {
     DVLOG(2) << __func__ << " Stopping timer; idle timeout hit";
+    // Draining for destroy can no longer proceed if the timer is stopping,
+    // because no more Decode() calls can be made, so complete it now to avoid
+    // leaking |this|.
+    if (drain_type_ == DrainType::kForDestroy)
+      OnCodecDrained();
     pump_codec_timer_.Stop();
   } else if (!pump_codec_timer_.IsRunning()) {
     pump_codec_timer_.Start(FROM_HERE, kPollingPeriod,
@@ -603,21 +612,25 @@ void MediaCodecVideoDecoder::StartDrainingCodec(DrainType drain_type) {
   // Queue EOS if the codec isn't already processing one.
   if (!codec_->IsDraining())
     pending_decodes_.push_back(PendingDecode::CreateEos());
+  // We can safely invalidate outstanding buffers for both types of drain, and
+  // doing so can only make the drain complete quicker.
+  codec_->DiscardCodecOutputBuffers();
+  PumpCodec(true);
 }
 
 void MediaCodecVideoDecoder::OnCodecDrained() {
   DVLOG(2) << __func__;
-  if (drain_type_ == DrainType::kForDestroy) {
-    // TODO(watk): Delete |this|.
+  DrainType drain_type = *drain_type_;
+  drain_type_.reset();
+
+  if (drain_type == DrainType::kForDestroy) {
+    // Post the delete in case the caller uses |this| after we return.
+    base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
     return;
   }
 
-  DCHECK(drain_type_ == DrainType::kForReset);
   base::ResetAndReturn(&reset_cb_).Run();
-  if (state_ == State::kSurfaceDestroyed || state_ == State::kError)
-    return;
   FlushCodec();
-  drain_type_.reset();
 }
 
 void MediaCodecVideoDecoder::HandleError() {

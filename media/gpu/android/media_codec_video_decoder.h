@@ -83,9 +83,14 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder : public VideoDecoder {
   // set the first overlay.
   void SetOverlayInfo(const OverlayInfo& overlay_info);
 
+ protected:
+  // Protected for testing.
+  ~MediaCodecVideoDecoder() override;
+
  private:
   // The test has access for PumpCodec().
   friend class MediaCodecVideoDecoderTest;
+  friend class base::DeleteHelper<MediaCodecVideoDecoder>;
 
   enum class State {
     kOk,
@@ -109,7 +114,6 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder : public VideoDecoder {
 
   // Starts teardown.
   void Destroy() override;
-  ~MediaCodecVideoDecoder() override;
 
   // Finishes initialization.
   void StartLazyInit();
@@ -227,7 +231,10 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder : public VideoDecoder {
   AndroidOverlayMojoFactoryCB overlay_factory_cb_;
 
   DeviceInfo* device_info_;
-  std::unique_ptr<service_manager::ServiceContextRef> connection_ref_;
+
+  // If we're running in a service context this ref lets us keep the service
+  // thread alive until destruction.
+  std::unique_ptr<service_manager::ServiceContextRef> context_ref_;
   base::WeakPtrFactory<MediaCodecVideoDecoder> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaCodecVideoDecoder);

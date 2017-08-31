@@ -343,7 +343,7 @@ TEST_F(AndroidVideoDecodeAcceleratorTest,
   // AVDA is actually calling SetSurface properly.
   EXPECT_CALL(*codec_allocator_->most_recent_codec(), SetSurface(_))
       .WillOnce(Return(true));
-  codec_allocator_->codec_destruction_observer()->DestructionIsOptional();
+  codec_allocator_->codec_destruction_observer()->VerifyAndClearExpectations();
   overlay_callbacks_.SurfaceDestroyed.Run();
   base::RunLoop().RunUntilIdle();
 
@@ -392,7 +392,7 @@ TEST_F(AndroidVideoDecodeAcceleratorTest,
   EXPECT_CALL(client_,
               NotifyError(AndroidVideoDecodeAccelerator::PLATFORM_FAILURE))
       .Times(1);
-  codec_allocator_->codec_destruction_observer()->DestructionIsOptional();
+  codec_allocator_->codec_destruction_observer()->VerifyAndClearExpectations();
   chooser_->ProvideSurfaceTexture();
   LetAVDAUpdateSurface();
 }
@@ -412,7 +412,7 @@ TEST_F(AndroidVideoDecodeAcceleratorTest,
   std::unique_ptr<MockAndroidOverlay> overlay =
       base::MakeUnique<MockAndroidOverlay>();
   // Make sure that the overlay is not destroyed too soon.
-  std::unique_ptr<DestructionObservable::DestructionObserver> observer =
+  std::unique_ptr<DestructionObserver> observer =
       overlay->CreateDestructionObserver();
   observer->DoNotAllowDestruction();
 
@@ -472,7 +472,7 @@ TEST_F(AndroidVideoDecodeAcceleratorTest,
   // Verify that the codec has been released, since |vda_| will be destroyed
   // soon.  The expectations must be met before that.
   testing::Mock::VerifyAndClearExpectations(&codec_allocator_);
-  codec_allocator_->codec_destruction_observer()->DestructionIsOptional();
+  codec_allocator_->codec_destruction_observer()->VerifyAndClearExpectations();
 }
 
 TEST_F(AndroidVideoDecodeAcceleratorTest,

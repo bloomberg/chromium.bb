@@ -16,7 +16,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using ::testing::_;
 using ::testing::AnyNumber;
 using ::testing::Bool;
 using ::testing::Combine;
@@ -24,6 +23,7 @@ using ::testing::NotNull;
 using ::testing::Return;
 using ::testing::StrictMock;
 using ::testing::Values;
+using ::testing::_;
 
 namespace {
 using ::media::AndroidOverlay;
@@ -174,8 +174,7 @@ class AndroidVideoSurfaceChooserImplTest
   // Callbacks to control the overlay that will be vended by |factory_|
   MockAndroidOverlay::Callbacks overlay_callbacks_;
 
-  std::unique_ptr<MockAndroidOverlay::DestructionObserver>
-      destruction_observer_;
+  std::unique_ptr<DestructionObserver> destruction_observer_;
 
   // Will the chooser created by StartChooser() support dynamic surface changes?
   bool allow_dynamic_ = true;

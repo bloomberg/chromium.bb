@@ -242,17 +242,4 @@ TEST_F(CodecWrapperTest, DequeuingEosTransitionsToStateDrained) {
   ASSERT_FALSE(wrapper_->IsDrained());
 }
 
-#if DCHECK_IS_ON()
-TEST_F(CodecWrapperTest, CallsDcheckAfterTakingTheCodec) {
-  wrapper_->TakeCodec();
-  ASSERT_DEATH(wrapper_->Flush(), "");
-}
-
-TEST_F(CodecWrapperTest, CallsDcheckAfterAnError) {
-  EXPECT_CALL(*codec_, Flush()).WillOnce(Return(MEDIA_CODEC_ERROR));
-  wrapper_->Flush();
-  ASSERT_DEATH(wrapper_->SetSurface(0), "");
-}
-#endif
-
 }  // namespace media
