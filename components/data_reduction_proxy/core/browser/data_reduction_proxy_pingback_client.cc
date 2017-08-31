@@ -17,6 +17,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_util.h"
 #include "components/data_reduction_proxy/proto/client_config.pb.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
+#include "components/variations/net/variations_http_headers.h"
 #include "net/base/load_flags.h"
 #include "net/nqe/effective_connection_type.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -225,6 +226,15 @@ void DataReductionProxyPingbackClient::CreateFetcherForDataAndStart() {
   // already be overloaded.
   static const int kMaxRetries = 5;
   current_fetcher_->SetAutomaticallyRetryOnNetworkChanges(kMaxRetries);
+
+  // Attach variations headers.
+  net::HttpRequestHeaders headers;
+  variations::AppendVariationHeaders(pingback_url_, false /* incognito */,
+                                     false /* uma_enabled */,
+                                     false /* is_signed_in */, &headers);
+  if (!headers.IsEmpty())
+    current_fetcher_->SetExtraRequestHeaders(headers.ToString());
+
   current_fetcher_->Start();
 }
 
