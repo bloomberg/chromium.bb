@@ -10,9 +10,10 @@
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
-#include "chrome/browser/notifications/login_state_notification_blocker_chromeos.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/test/test_utils.h"
 #include "ui/message_center/message_center.h"
+#include "ui/message_center/message_center_observer.h"
 
 using base::UTF8ToUTF16;
 using namespace testing;
@@ -58,28 +59,24 @@ class UserAddingFinishObserver : public chromeos::UserAddingScreen::Observer {
 
 class LoginStateNotificationBlockerChromeOSBrowserTest
     : public chromeos::LoginManagerTest,
-      public message_center::NotificationBlocker::Observer {
+      public message_center::MessageCenterObserver {
  public:
   LoginStateNotificationBlockerChromeOSBrowserTest()
-      : chromeos::LoginManagerTest(false),
-        state_changed_count_(0) {}
+      : chromeos::LoginManagerTest(false) {}
   ~LoginStateNotificationBlockerChromeOSBrowserTest() override {}
 
+  void SetUpOnMainThread() override {
+    message_center::MessageCenter::Get()->AddObserver(this);
+    chromeos::LoginManagerTest::SetUpOnMainThread();
+  }
+
   void TearDownOnMainThread() override {
-    if (blocker_)
-      blocker_->RemoveObserver(this);
-    blocker_.reset();
+    message_center::MessageCenter::Get()->RemoveObserver(this);
     chromeos::LoginManagerTest::TearDownOnMainThread();
   }
 
  protected:
-  void CreateBlocker() {
-    blocker_.reset(new LoginStateNotificationBlockerChromeOS(
-        message_center::MessageCenter::Get()));
-    blocker_->AddObserver(this);
-  }
-
-  // message_center::NotificationBlocker::Observer ovverrides:
+  // message_center::MessageCenterObserver:
   void OnBlockingStateChanged(
       message_center::NotificationBlocker* blocker) override {
     state_changed_count_++;
@@ -91,19 +88,27 @@ class LoginStateNotificationBlockerChromeOSBrowserTest
     return result;
   }
 
+  // Compares the number of notifications before and after adding a notification
+  // to verify whether the new one is shown.
   bool ShouldShowNotificationAsPopup(
       const message_center::NotifierId& notifier_id) {
-    message_center::Notification notification(
-        message_center::NOTIFICATION_TYPE_SIMPLE, "browser-id",
-        UTF8ToUTF16("browser-title"), UTF8ToUTF16("browser-message"),
-        gfx::Image(), UTF8ToUTF16("browser-source"), GURL(),
-        notifier_id, message_center::RichNotificationData(), NULL);
-    return blocker_->ShouldShowNotificationAsPopup(notification);
+    size_t initial_count =
+        message_center::MessageCenter::Get()->GetPopupNotifications().size();
+    std::string id("browser-id");
+    message_center::MessageCenter::Get()->AddNotification(
+        base::MakeUnique<message_center::Notification>(
+            message_center::NOTIFICATION_TYPE_SIMPLE, id,
+            UTF8ToUTF16("browser-title"), UTF8ToUTF16("browser-message"),
+            gfx::Image(), UTF8ToUTF16("browser-source"), GURL(), notifier_id,
+            message_center::RichNotificationData(), nullptr));
+    size_t new_count =
+        message_center::MessageCenter::Get()->GetPopupNotifications().size();
+    message_center::MessageCenter::Get()->RemoveNotification(id, false);
+    return new_count == initial_count + 1;
   }
 
  private:
-  int state_changed_count_;
-  std::unique_ptr<message_center::NotificationBlocker> blocker_;
+  int state_changed_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(LoginStateNotificationBlockerChromeOSBrowserTest);
 };
@@ -117,9 +122,9 @@ IN_PROC_BROWSER_TEST_F(LoginStateNotificationBlockerChromeOSBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(LoginStateNotificationBlockerChromeOSBrowserTest,
                        BaseTest) {
-  CreateBlocker();
   message_center::NotifierId notifier_id(
       message_center::NotifierId::APPLICATION, "test-notifier");
+  notifier_id.profile_id = kTestUsers[0];
 
   // Logged in as a normal user.
   LoginUser(kTestUsers[0]);
@@ -152,12 +157,11 @@ IN_PROC_BROWSER_TEST_F(LoginStateNotificationBlockerChromeOSBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(LoginStateNotificationBlockerChromeOSBrowserTest,
                        AlwaysAllowedNotifier) {
-  CreateBlocker();
-
   // NOTIFIER_DISPLAY is allowed to shown in the login screen.
   message_center::NotifierId notifier_id(
       message_center::NotifierId::SYSTEM_COMPONENT,
       ash::system_notifier::kNotifierDisplay);
+  notifier_id.profile_id = kTestUsers[0];
 
   // Logged in as a normal user.
   LoginUser(kTestUsers[0]);

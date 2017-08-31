@@ -119,6 +119,7 @@ class LockScreenController;
 class MagnificationController;
 class TabletModeController;
 class MediaController;
+class MessageCenterController;
 class MouseCursorEventFilter;
 class MruWindowTracker;
 class NewWindowController;
@@ -830,6 +831,8 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<ImmersiveHandlerFactoryAsh> immersive_handler_factory_;
 
   std::unique_ptr<AppListDelegateImpl> app_list_delegate_impl_;
+
+  std::unique_ptr<MessageCenterController> message_center_controller_;
 
   base::ObserverList<ShellObserver> shell_observers_;
 

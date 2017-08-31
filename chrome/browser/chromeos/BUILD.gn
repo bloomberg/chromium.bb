@@ -1677,7 +1677,6 @@ source_set("unit_tests") {
     "../metrics/leak_detector/leak_detector_controller_unittest.cc",
     "../metrics/perf/cpu_identity_unittest.cc",
     "../metrics/perf/random_selector_unittest.cc",
-    "../notifications/login_state_notification_blocker_chromeos_unittest.cc",
     "../policy/default_geolocation_policy_handler_unittest.cc",
     "../ui/browser_finder_chromeos_unittest.cc",
     "accessibility/magnification_manager_unittest.cc",

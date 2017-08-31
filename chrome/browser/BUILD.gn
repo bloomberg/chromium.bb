@@ -785,8 +785,6 @@ split_static_library("browser") {
     "notifications/alert_dispatcher_mac.h",
     "notifications/desktop_notification_profile_util.cc",
     "notifications/desktop_notification_profile_util.h",
-    "notifications/login_state_notification_blocker_chromeos.cc",
-    "notifications/login_state_notification_blocker_chromeos.h",
     "notifications/message_center_display_service.cc",
     "notifications/message_center_display_service.h",
     "notifications/native_notification_display_service.cc",

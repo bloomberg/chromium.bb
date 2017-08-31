@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/notifications/login_state_notification_blocker_chromeos.h"
+#include "ash/system/web_notification/login_state_notification_blocker.h"
 
 #include "ash/system/system_notifier.h"
 #include "components/session_manager/core/session_manager.h"
@@ -11,7 +11,9 @@
 using session_manager::SessionManager;
 using session_manager::SessionState;
 
-LoginStateNotificationBlockerChromeOS::LoginStateNotificationBlockerChromeOS(
+namespace ash {
+
+LoginStateNotificationBlocker::LoginStateNotificationBlocker(
     message_center::MessageCenter* message_center)
     : NotificationBlocker(message_center) {
   // SessionManager may not exist in some tests.
@@ -19,13 +21,12 @@ LoginStateNotificationBlockerChromeOS::LoginStateNotificationBlockerChromeOS(
     SessionManager::Get()->AddObserver(this);
 }
 
-LoginStateNotificationBlockerChromeOS::
-    ~LoginStateNotificationBlockerChromeOS() {
+LoginStateNotificationBlocker::~LoginStateNotificationBlocker() {
   if (SessionManager::Get())
     SessionManager::Get()->RemoveObserver(this);
 }
 
-bool LoginStateNotificationBlockerChromeOS::ShouldShowNotificationAsPopup(
+bool LoginStateNotificationBlocker::ShouldShowNotificationAsPopup(
     const message_center::Notification& notification) const {
   if (ash::system_notifier::ShouldAlwaysShowPopups(notification.notifier_id()))
     return true;
@@ -36,6 +37,8 @@ bool LoginStateNotificationBlockerChromeOS::ShouldShowNotificationAsPopup(
   return true;
 }
 
-void LoginStateNotificationBlockerChromeOS::OnSessionStateChanged() {
+void LoginStateNotificationBlocker::OnSessionStateChanged() {
   NotifyBlockingStateChanged();
 }
+
+}  // namespace ash
