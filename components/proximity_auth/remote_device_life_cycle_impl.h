@@ -12,7 +12,6 @@
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
 #include "components/cryptauth/authenticator.h"
-#include "components/cryptauth/bluetooth_throttler.h"
 #include "components/cryptauth/connection.h"
 #include "components/cryptauth/connection_finder.h"
 #include "components/cryptauth/remote_device.h"
@@ -109,10 +108,6 @@ class RemoteDeviceLifeCycleImpl : public RemoteDeviceLifeCycle,
   // Used in the FINDING_CONNECTION state to establish a connection to the
   // remote device.
   std::unique_ptr<cryptauth::ConnectionFinder> connection_finder_;
-
-  // Rate limits Bluetooth connections to the same device. Used to in the
-  // created cryptauth::ConnectionFinder.
-  cryptauth::BluetoothThrottler* bluetooth_throttler_;
 
   // After authentication fails, this timer waits for a period of time before
   // retrying the connection.

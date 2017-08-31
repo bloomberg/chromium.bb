@@ -14,7 +14,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "components/cryptauth/background_eid_generator.h"
-#include "components/cryptauth/bluetooth_throttler.h"
 #include "components/cryptauth/connection.h"
 #include "components/cryptauth/connection_finder.h"
 #include "components/cryptauth/connection_observer.h"
@@ -39,10 +38,8 @@ class BluetoothLowEnergyConnectionFinder
   // advertised by the remote device.
   //
   // |remote_device|: The BLE remote device.
-  // |bluetooth_throttler|: The reconnection throttler.
   BluetoothLowEnergyConnectionFinder(
-      const cryptauth::RemoteDevice remote_device,
-      cryptauth::BluetoothThrottler* bluetooth_throttler);
+      const cryptauth::RemoteDevice remote_device);
 
   ~BluetoothLowEnergyConnectionFinder() override;
 
@@ -68,8 +65,7 @@ class BluetoothLowEnergyConnectionFinder
   BluetoothLowEnergyConnectionFinder(
       const cryptauth::RemoteDevice remote_device,
       const std::string& service_uuid,
-      std::unique_ptr<cryptauth::BackgroundEidGenerator> eid_generator,
-      cryptauth::BluetoothThrottler* bluetooth_throttler);
+      std::unique_ptr<cryptauth::BackgroundEidGenerator> eid_generator);
 
   // Creates a proximity_auth::Connection with the device given by
   // |device_address|. Exposed for testing.
@@ -118,10 +114,6 @@ class BluetoothLowEnergyConnectionFinder
   // Generates the expected EIDs that may be advertised by |remote_device_|. If
   // an EID matches, we know its a device we should connect to.
   std::unique_ptr<cryptauth::BackgroundEidGenerator> eid_generator_;
-
-  // Throttles repeated connection attempts to the same device. This is a
-  // workaround for crbug.com/508919. Not owned, must outlive this instance.
-  cryptauth::BluetoothThrottler* bluetooth_throttler_;
 
   // The Bluetooth adapter over which the Bluetooth connection will be made.
   scoped_refptr<device::BluetoothAdapter> adapter_;

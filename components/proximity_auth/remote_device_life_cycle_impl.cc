@@ -12,7 +12,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
-#include "components/cryptauth/bluetooth_throttler_impl.h"
 #include "components/cryptauth/connection_finder.h"
 #include "components/cryptauth/device_to_device_authenticator.h"
 #include "components/cryptauth/secure_context.h"
@@ -46,7 +45,6 @@ RemoteDeviceLifeCycleImpl::RemoteDeviceLifeCycleImpl(
       proximity_auth_client_(proximity_auth_client),
       state_(RemoteDeviceLifeCycle::State::STOPPED),
       observers_(base::ObserverList<Observer>::NOTIFY_EXISTING_ONLY),
-      bluetooth_throttler_(cryptauth::BluetoothThrottlerImpl::GetInstance()),
       weak_ptr_factory_(this) {}
 
 RemoteDeviceLifeCycleImpl::~RemoteDeviceLifeCycleImpl() {}
@@ -90,8 +88,7 @@ std::unique_ptr<cryptauth::ConnectionFinder>
 RemoteDeviceLifeCycleImpl::CreateConnectionFinder() {
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           proximity_auth::switches::kDisableBluetoothLowEnergyDiscovery)) {
-    return base::MakeUnique<BluetoothLowEnergyConnectionFinder>(
-        remote_device_, bluetooth_throttler_);
+    return base::MakeUnique<BluetoothLowEnergyConnectionFinder>(remote_device_);
   } else {
     return base::MakeUnique<BluetoothConnectionFinder>(
         remote_device_, device::BluetoothUUID(kClassicBluetoothServiceUUID),

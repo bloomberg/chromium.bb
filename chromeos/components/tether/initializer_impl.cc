@@ -34,7 +34,6 @@
 #include "chromeos/network/network_connect.h"
 #include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_state_handler.h"
-#include "components/cryptauth/bluetooth_throttler_impl.h"
 #include "components/cryptauth/cryptauth_service.h"
 #include "components/cryptauth/local_device_data_provider.h"
 #include "components/cryptauth/remote_beacon_seed_fetcher.h"
@@ -192,8 +191,7 @@ void InitializerImpl::OnPendingDisconnectRequestsComplete() {
       base::MakeUnique<DummyDisconnectTetheringRequestSender>();
   ble_connection_manager_ = base::MakeUnique<BleConnectionManager>(
       cryptauth_service_, adapter_, local_device_data_provider_.get(),
-      remote_beacon_seed_fetcher_.get(),
-      cryptauth::BluetoothThrottlerImpl::GetInstance());
+      remote_beacon_seed_fetcher_.get());
   remote_beacon_seed_fetcher_ =
       base::MakeUnique<cryptauth::RemoteBeaconSeedFetcher>(
           cryptauth_service_->GetCryptAuthDeviceManager());
@@ -218,8 +216,7 @@ void InitializerImpl::CreateComponent() {
           cryptauth_service_->GetCryptAuthDeviceManager());
   ble_connection_manager_ = base::MakeUnique<BleConnectionManager>(
       cryptauth_service_, adapter_, local_device_data_provider_.get(),
-      remote_beacon_seed_fetcher_.get(),
-      cryptauth::BluetoothThrottlerImpl::GetInstance());
+      remote_beacon_seed_fetcher_.get());
   // TODO(lesliewatkins): Use actual DisconnectTetheringRequestSender.
   disconnect_tethering_request_sender_ =
       base::MakeUnique<DummyDisconnectTetheringRequestSender>();

@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/macros.h"
-#include "components/cryptauth/bluetooth_throttler.h"
 #include "components/cryptauth/remote_device.h"
 #include "components/proximity_auth/bluetooth_low_energy_connection_finder.h"
 #include "device/bluetooth/bluetooth_device.h"
@@ -25,10 +24,8 @@ class BluetoothLowEnergySetupConnectionFinder
   //
   // |remote_service_uuid|: The UUID of the service used to send/receive data in
   // remote device.
-  // |bluetooth_throttler|: The reconnection throttler.
   BluetoothLowEnergySetupConnectionFinder(
-      const std::string& remote_service_uuid,
-      cryptauth::BluetoothThrottler* bluetooth_throttler);
+      const std::string& remote_service_uuid);
 
  private:
   // Checks if |device| is the right device, that is is adversing tthe right

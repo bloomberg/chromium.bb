@@ -8,7 +8,6 @@
 
 #include "base/memory/ptr_util.h"
 #include "components/cryptauth/ble/bluetooth_low_energy_weave_client_connection.h"
-#include "components/cryptauth/bluetooth_throttler.h"
 #include "components/cryptauth/connection.h"
 #include "components/proximity_auth/logging/logging.h"
 #include "device/bluetooth/bluetooth_device.h"
@@ -20,13 +19,11 @@ namespace proximity_auth {
 
 BluetoothLowEnergySetupConnectionFinder::
     BluetoothLowEnergySetupConnectionFinder(
-        const std::string& remote_service_uuid,
-        cryptauth::BluetoothThrottler* bluetooth_throttler)
+        const std::string& remote_service_uuid)
     : BluetoothLowEnergyConnectionFinder(
           cryptauth::RemoteDevice(),
           remote_service_uuid,
-          base::MakeUnique<cryptauth::BackgroundEidGenerator>(),
-          bluetooth_throttler),
+          base::MakeUnique<cryptauth::BackgroundEidGenerator>()),
       remote_service_uuid_(device::BluetoothUUID(remote_service_uuid)) {}
 
 bool BluetoothLowEnergySetupConnectionFinder::IsRightDevice(

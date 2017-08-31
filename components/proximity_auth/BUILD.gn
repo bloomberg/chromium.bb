@@ -50,8 +50,6 @@ static_library("proximity_auth") {
     "screenlock_state.h",
     "switches.cc",
     "switches.h",
-    "throttled_bluetooth_connection_finder.cc",
-    "throttled_bluetooth_connection_finder.h",
     "unlock_manager.h",
     "unlock_manager_impl.cc",
     "unlock_manager_impl.h",
@@ -113,7 +111,6 @@ source_set("unit_tests") {
     "proximity_monitor_impl_unittest.cc",
     "remote_device_life_cycle_impl_unittest.cc",
     "remote_status_update_unittest.cc",
-    "throttled_bluetooth_connection_finder_unittest.cc",
     "unlock_manager_impl_unittest.cc",
   ]
 

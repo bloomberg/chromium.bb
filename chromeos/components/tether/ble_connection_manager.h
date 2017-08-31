@@ -22,7 +22,6 @@
 #include "components/cryptauth/secure_channel.h"
 
 namespace cryptauth {
-class BluetoothThrottler;
 class CryptAuthService;
 class LocalDeviceDataProvider;
 }  // namespace cryptauth
@@ -78,8 +77,7 @@ class BleConnectionManager : public BleScanner::Observer {
       cryptauth::CryptAuthService* cryptauth_service,
       scoped_refptr<device::BluetoothAdapter> adapter,
       const cryptauth::LocalDeviceDataProvider* local_device_data_provider,
-      const cryptauth::RemoteBeaconSeedFetcher* remote_beacon_seed_fetcher,
-      cryptauth::BluetoothThrottler* bluetooth_throttler);
+      const cryptauth::RemoteBeaconSeedFetcher* remote_beacon_seed_fetcher);
   virtual ~BleConnectionManager();
 
   // Registers |remote_device| for |connection_reason|. Once registered, this
@@ -126,8 +124,7 @@ class BleConnectionManager : public BleScanner::Observer {
       std::unique_ptr<BleScanner> ble_scanner,
       std::unique_ptr<BleAdvertiser> ble_advertiser,
       std::unique_ptr<BleAdvertisementDeviceQueue> device_queue,
-      std::unique_ptr<TimerFactory> timer_factory,
-      cryptauth::BluetoothThrottler* bluetooth_throttler);
+      std::unique_ptr<TimerFactory> timer_factory);
 
   void SendMessageReceivedEvent(cryptauth::RemoteDevice remote_device,
                                 std::string payload);
@@ -225,7 +222,6 @@ class BleConnectionManager : public BleScanner::Observer {
   std::unique_ptr<BleAdvertiser> ble_advertiser_;
   std::unique_ptr<BleAdvertisementDeviceQueue> device_queue_;
   std::unique_ptr<TimerFactory> timer_factory_;
-  cryptauth::BluetoothThrottler* bluetooth_throttler_;
   std::unique_ptr<base::Clock> clock_;
 
   bool has_registered_observer_;
