@@ -64,6 +64,9 @@ typedef struct TxbProbs {
   const aom_prob *coeff_lps;
   const aom_prob *eob_flag;
   const aom_prob *txb_skip;
+#if BR_NODE
+  const aom_prob *coeff_br;
+#endif
 } TxbProbs;
 
 void av1_alloc_txb_buf(AV1_COMP *cpi);

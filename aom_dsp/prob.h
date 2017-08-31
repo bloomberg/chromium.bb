@@ -48,6 +48,8 @@ typedef uint16_t aom_cdf_prob;
 
 #define LV_MAP_PROB 1
 
+#define BR_NODE 1
+
 #define aom_prob_half ((aom_prob)128)
 
 typedef int8_t aom_tree_index;

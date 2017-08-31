@@ -160,10 +160,20 @@ void av1_init_txb_probs(FRAME_CONTEXT *fc) {
         fc->coeff_lps_cdf[tx_size][plane][ctx][1] = AOM_ICDF(32768);
         fc->coeff_lps_cdf[tx_size][plane][ctx][2] = 0;
       }
+#if BR_NODE
+      for (int br = 0; br < BASE_RANGE_SETS; ++br) {
+        for (ctx = 0; ctx < LEVEL_CONTEXTS; ++ctx) {
+          fc->coeff_br_cdf[tx_size][plane][br][ctx][0] = AOM_ICDF(
+              128 * (aom_cdf_prob)fc->coeff_br[tx_size][plane][br][ctx]);
+          fc->coeff_br_cdf[tx_size][plane][br][ctx][1] = AOM_ICDF(32768);
+          fc->coeff_br_cdf[tx_size][plane][br][ctx][2] = 0;
+        }
+      }
+#endif  // BR_NODE
     }
   }
 }
-#endif
+#endif  // LV_MAP_PROB
 
 void av1_adapt_txb_probs(AV1_COMMON *cm, unsigned int count_sat,
                          unsigned int update_factor) {
@@ -211,11 +221,23 @@ void av1_adapt_txb_probs(AV1_COMMON *cm, unsigned int count_sat,
   }
 
   for (tx_size = 0; tx_size < TX_SIZES; ++tx_size) {
-    for (plane = 0; plane < PLANE_TYPES; ++plane)
-      for (ctx = 0; ctx < LEVEL_CONTEXTS; ++ctx)
+    for (plane = 0; plane < PLANE_TYPES; ++plane) {
+      for (ctx = 0; ctx < LEVEL_CONTEXTS; ++ctx) {
         fc->coeff_lps[tx_size][plane][ctx] = merge_probs(
             pre_fc->coeff_lps[tx_size][plane][ctx],
             counts->coeff_lps[tx_size][plane][ctx], count_sat, update_factor);
+      }
+#if BR_NODE
+      for (int br = 0; br < BASE_RANGE_SETS; ++br) {
+        for (ctx = 0; ctx < LEVEL_CONTEXTS; ++ctx) {
+          fc->coeff_br[tx_size][plane][br][ctx] =
+              merge_probs(pre_fc->coeff_br[tx_size][plane][br][ctx],
+                          counts->coeff_br[tx_size][plane][br][ctx], count_sat,
+                          update_factor);
+        }
+      }
+#endif  // BR_NODE
+    }
   }
 }
 

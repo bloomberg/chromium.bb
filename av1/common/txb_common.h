@@ -173,8 +173,20 @@ static int br_ref_offset[BR_CONTEXT_POSITION_NUM][2] = {
   /* clang-format on*/
 };
 
-static int br_level_map[9] = {
+static const int br_level_map[9] = {
   0, 0, 1, 1, 2, 2, 3, 3, 3,
+};
+
+static const int coeff_to_br_index[COEFF_BASE_RANGE] = {
+  0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2,
+};
+
+static const int br_index_to_coeff[BASE_RANGE_SETS] = {
+  0, 2, 6,
+};
+
+static const int br_extra_bits[BASE_RANGE_SETS] = {
+  1, 2, 3,
 };
 
 #define BR_MAG_OFFSET 1
@@ -214,7 +226,7 @@ static INLINE int get_br_ctx_from_count_mag(int row, int col, int count,
     offset = 0;
   else if (mag <= 3)
     offset = 1;
-  else if (mag <= 6)
+  else if (mag <= 5)
     offset = 2;
   else
     offset = 3;

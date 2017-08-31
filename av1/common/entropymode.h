@@ -175,6 +175,9 @@ typedef struct frame_contexts {
   aom_prob coeff_base[TX_SIZES][PLANE_TYPES][NUM_BASE_LEVELS]
                      [COEFF_BASE_CONTEXTS];
   aom_prob coeff_lps[TX_SIZES][PLANE_TYPES][LEVEL_CONTEXTS];
+#if BR_NODE
+  aom_prob coeff_br[TX_SIZES][PLANE_TYPES][BASE_RANGE_SETS][LEVEL_CONTEXTS];
+#endif
 
 #if LV_MAP_PROB
   aom_cdf_prob txb_skip_cdf[TX_SIZES][TXB_SKIP_CONTEXTS][CDF_SIZE(2)];
@@ -187,6 +190,10 @@ typedef struct frame_contexts {
                              [COEFF_BASE_CONTEXTS][CDF_SIZE(2)];
   aom_cdf_prob coeff_lps_cdf[TX_SIZES][PLANE_TYPES][LEVEL_CONTEXTS]
                             [CDF_SIZE(2)];
+#if BR_NODE
+  aom_cdf_prob coeff_br_cdf[TX_SIZES][PLANE_TYPES][BASE_RANGE_SETS]
+                           [LEVEL_CONTEXTS][CDF_SIZE(2)];
+#endif
 #endif  // LV_MAP_PROB
 #endif
 
@@ -435,6 +442,8 @@ typedef struct FRAME_COUNTS {
   unsigned int coeff_base[TX_SIZES][PLANE_TYPES][NUM_BASE_LEVELS]
                          [COEFF_BASE_CONTEXTS][2];
   unsigned int coeff_lps[TX_SIZES][PLANE_TYPES][LEVEL_CONTEXTS][2];
+  unsigned int coeff_br[TX_SIZES][PLANE_TYPES][BASE_RANGE_SETS][LEVEL_CONTEXTS]
+                       [2];
 #endif  // CONFIG_LV_MAP
 
   av1_blockz_count_model blockz_count[TX_SIZES][PLANE_TYPES];

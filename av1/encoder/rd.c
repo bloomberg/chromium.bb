@@ -500,10 +500,18 @@ void av1_fill_coeff_costs(MACROBLOCK *x, FRAME_CONTEXT *fc) {
               pcost->base_cost[layer][ctx],
               fc->coeff_base_cdf[tx_size][plane][layer][ctx], NULL);
 
+#if BR_NODE
+      for (int br = 0; br < BASE_RANGE_SETS; ++br)
+        for (int ctx = 0; ctx < LEVEL_CONTEXTS; ++ctx)
+          av1_cost_tokens_from_cdf(pcost->br_cost[br][ctx],
+                                   fc->coeff_br_cdf[tx_size][plane][br][ctx],
+                                   NULL);
+#endif  // BR_NODE
+
       for (int ctx = 0; ctx < LEVEL_CONTEXTS; ++ctx)
         av1_cost_tokens_from_cdf(pcost->lps_cost[ctx],
                                  fc->coeff_lps_cdf[tx_size][plane][ctx], NULL);
-#else
+#else   // LV_MAP_PROB
       for (int ctx = 0; ctx < TXB_SKIP_CONTEXTS; ++ctx)
         get_rate_cost(fc->txb_skip[tx_size][ctx], pcost->txb_skip_cost[ctx]);
 
@@ -523,11 +531,11 @@ void av1_fill_coeff_costs(MACROBLOCK *x, FRAME_CONTEXT *fc) {
 
       for (int ctx = 0; ctx < LEVEL_CONTEXTS; ++ctx)
         get_rate_cost(fc->coeff_lps[tx_size][plane][ctx], pcost->lps_cost[ctx]);
-#endif
+#endif  // LV_MAP_PROB
     }
   }
 }
-#endif
+#endif  // CONFIG_LV_MAP
 
 void av1_fill_token_costs_from_cdf(av1_coeff_cost *cost,
                                    coeff_cdf_model (*cdf)[PLANE_TYPES]) {
