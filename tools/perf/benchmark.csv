@@ -25,7 +25,6 @@ dummy_benchmark.histogram_benchmark_1,"eakuefner@chromium.org, simonhatch@chromi
 dummy_benchmark.noisy_benchmark_1,nednguyen@google.com,
 dummy_benchmark.stable_benchmark_1,nednguyen@google.com,
 gpu_perftests,reveman@chromium.org,
-image_decoding.image_decoding_measurement,"cblume@chromium.org, reveman@chromium.org",
 jetstream,"bmeurer@chromium.org, mvstanton@chromium.org",
 kraken,"bmeurer@chromium.org, mvstanton@chromium.org",
 load_library_perf_tests,,
