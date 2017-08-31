@@ -115,7 +115,7 @@ class NotificationChannelsProviderAndroid
 
   std::unique_ptr<NotificationChannelsBridge> bridge_;
 
-  bool should_use_channels_;
+  bool platform_supports_channels_;
 
   std::unique_ptr<base::Clock> clock_;
 
