@@ -238,7 +238,7 @@ def GetClangOptionsFromCommandLine(clang_commandline, out_dir,
 
   # Parse flags that are important for YCM's purposes.
   clang_tokens = shlex.split(clang_commandline)
-  include_pattern = re.compile(r'^(-I|-isystem)(.*)$')
+  include_pattern = re.compile(r'^(-I|-isystem)(.+)$')
   for flag_index, flag in enumerate(clang_tokens):
     include_match = include_pattern.match(flag)
     if include_match:
@@ -254,9 +254,7 @@ def GetClangOptionsFromCommandLine(clang_commandline, out_dir,
         # are fixed.
         continue
       clang_flags.append(flag)
-    elif flag == '-isysroot':
-      # On Mac -isysroot <path> is used to find the system headers.
-      # Copy over both flags.
+    elif flag == '-isysroot' or flag == '-isystem' or flag == '-I':
       if flag_index + 1 < len(clang_tokens):
         clang_flags.append(flag)
         clang_flags.append(abspath(clang_tokens[flag_index + 1]))

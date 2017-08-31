@@ -368,6 +368,42 @@ class Chromium_ycmExtraConfTest(unittest.TestCase):
             '[SRC]/build/mac.sdk',
         ])
 
+  def testGetFlagsForIsystem(self):
+    result = self.ycm_extra_conf.FlagsForFile(
+        os.path.join(self.chrome_root, 'ten.cc'))
+    self.assertTrue(result)
+    self.assertTrue('flags' in result)
+    self.assertEquals(
+        self.NormalizeStringsInList(result['flags']), [
+            '-DUSE_CLANG_COMPLETER',
+            '-std=c++14',
+            '-x',
+            'c++',
+            '-I[SRC]',
+            '-Wno-unknown-warning-option',
+            '-I[OUT]/b',
+            '-isystem[OUT]/a',
+            '-isystem', '[SRC]/build/c',
+            '-isystem', '/usr/lib/include'
+        ])
+
+  def testGetFlagsTwoPartI(self):
+    result = self.ycm_extra_conf.FlagsForFile(
+        os.path.join(self.chrome_root, 'eleven.cc'))
+    self.assertTrue(result)
+    self.assertTrue('flags' in result)
+    self.assertEquals(
+        self.NormalizeStringsInList(result['flags']), [
+            '-DUSE_CLANG_COMPLETER',
+            '-std=c++14',
+            '-x',
+            'c++',
+            '-I[SRC]',
+            '-Wno-unknown-warning-option',
+            '-I', '[OUT]/a',
+            '-I', '[OUT]/tag-eleven'
+        ])
+
 
 if __name__ == '__main__':
   if not os.path.isfile('chromium.ycm_extra_conf.py'):
