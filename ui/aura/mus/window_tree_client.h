@@ -494,7 +494,6 @@ class AURA_EXPORT WindowTreeClient
   void RemoveAccelerator(uint32_t id) override;
   void AddActivationParent(Window* window) override;
   void RemoveActivationParent(Window* window) override;
-  void ActivateNextWindow() override;
   void SetExtendedHitRegionForChildren(
       Window* window,
       const gfx::Insets& mouse_insets,

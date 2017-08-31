@@ -35,8 +35,6 @@ void TestWindowManagerClient::AddActivationParent(Id transport_window_id) {
 
 void TestWindowManagerClient::RemoveActivationParent(Id transport_window_id) {}
 
-void TestWindowManagerClient::ActivateNextWindow() {}
-
 void TestWindowManagerClient::SetExtendedHitRegionForChildren(
     Id window_id,
     const gfx::Insets& mouse_insets,

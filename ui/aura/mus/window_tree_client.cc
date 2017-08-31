@@ -1974,11 +1974,6 @@ void WindowTreeClient::RemoveActivationParent(Window* window) {
   }
 }
 
-void WindowTreeClient::ActivateNextWindow() {
-  if (window_manager_client_)
-    window_manager_client_->ActivateNextWindow();
-}
-
 void WindowTreeClient::SetExtendedHitRegionForChildren(
     Window* window,
     const gfx::Insets& mouse_insets,

@@ -152,12 +152,6 @@ ServerWindow* Display::GetFocusedWindow() {
   return focus_controller_->GetFocusedWindow();
 }
 
-void Display::ActivateNextWindow() {
-  // TODO(sky): this is wrong, needs to figure out the next window to activate
-  // and then route setting through WindowServer.
-  focus_controller_->ActivateNextWindow();
-}
-
 void Display::UpdateTextInputState(ServerWindow* window,
                                    const ui::TextInputState& state) {
   // Do not need to update text input for unfocused windows.

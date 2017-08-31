@@ -544,7 +544,6 @@ class WindowTree : public mojom::WindowTree,
   void RemoveAccelerator(uint32_t id) override;
   void AddActivationParent(Id transport_window_id) override;
   void RemoveActivationParent(Id transport_window_id) override;
-  void ActivateNextWindow() override;
   void SetExtendedHitRegionForChildren(
       Id window_id,
       const gfx::Insets& mouse_insets,

@@ -61,7 +61,7 @@ FocusController::FocusController(ServerWindow* root)
     : root_(root),
       focused_window_(nullptr),
       active_window_(nullptr),
-      activation_reason_(ActivationChangeReason::UNKNONW) {
+      activation_reason_(ActivationChangeReason::UNKNOWN) {
   DCHECK(root_);
 }
 
@@ -79,53 +79,6 @@ ServerWindow* FocusController::GetFocusedWindow() {
   return focused_window_;
 }
 
-void FocusController::ActivateNextWindow() {
-  WindowTreeIterator iter(root_);
-  ServerWindow* activate = active_window_;
-  while (true) {
-    activate = iter.GetNext(activate);
-    if (activation_reason_ == ActivationChangeReason::CYCLE) {
-      if (activate == active_window_) {
-        // We have cycled over all the activatable windows. Remove the oldest
-        // window that was cycled.
-        if (!cycle_windows_->windows().empty()) {
-          cycle_windows_->Remove(cycle_windows_->windows().front());
-          continue;
-        }
-      } else if (cycle_windows_->Contains(activate)) {
-        // We are cycling between activated windows, and this window has already
-        // been through the cycle. So skip over it.
-        continue;
-      }
-    }
-    if (active_window_ == nullptr && activate == root_) {
-      // The root can't be active, so if we get here we've looped. Early out
-      // to avoid cycling forever.
-      return;
-    }
-
-    if (activate == active_window_ || CanBeActivated(activate))
-      break;
-  }
-  SetActiveWindow(activate, ActivationChangeReason::CYCLE);
-
-  if (active_window_) {
-    // Do not shift focus if the focused window already lives in the active
-    // window.
-    if (focused_window_ && active_window_->Contains(focused_window_))
-      return;
-    // Focus the first focusable window in the tree.
-    WindowTreeIterator iter(active_window_);
-    ServerWindow* focus = nullptr;
-    do {
-      focus = iter.GetNext(focus);
-    } while (focus != active_window_ && !CanBeFocused(focus));
-    SetFocusedWindow(focus);
-  } else {
-    SetFocusedWindow(nullptr);
-  }
-}
-
 void FocusController::AddObserver(FocusControllerObserver* observer) {
   observers_.AddObserver(observer);
 }
@@ -139,22 +92,12 @@ void FocusController::SetActiveWindow(ServerWindow* window,
   DCHECK(!window || CanBeActivated(window));
   if (active_window_ == window)
     return;
-  if (reason != ActivationChangeReason::CYCLE) {
-    cycle_windows_.reset();
-  } else if (activation_reason_ != ActivationChangeReason::CYCLE) {
-    DCHECK(!cycle_windows_);
-    cycle_windows_ = base::MakeUnique<ServerWindowTracker>();
-    if (active_window_)
-      cycle_windows_->Add(active_window_);
-  }
 
   ServerWindow* old_active = active_window_;
   active_window_ = window;
   activation_reason_ = reason;
   for (auto& observer : observers_)
     observer.OnActivationChanged(old_active, active_window_);
-  if (active_window_ && activation_reason_ == ActivationChangeReason::CYCLE)
-    cycle_windows_->Add(active_window_);
 }
 
 bool FocusController::CanBeFocused(ServerWindow* window) const {

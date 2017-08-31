@@ -129,8 +129,6 @@ class Display : public PlatformDisplayDelegate,
   // display. If this returns null focus may be in another display.
   ServerWindow* GetFocusedWindow();
 
-  void ActivateNextWindow();
-
   void UpdateTextInputState(ServerWindow* window,
                             const ui::TextInputState& state);
   void SetImeVisibility(ServerWindow* window, bool visible);

@@ -35,7 +35,6 @@ class TestWindowManagerClient : public ui::mojom::WindowManagerClient {
   // ui::mojom::WindowManagerClient:
   void AddActivationParent(Id transport_window_id) override;
   void RemoveActivationParent(Id transport_window_id) override;
-  void ActivateNextWindow() override;
   void SetExtendedHitRegionForChildren(
       Id window_id,
       const gfx::Insets& mouse_insets,
