@@ -81,6 +81,7 @@ class ManagePasswordsBubbleView : public LocationBarBubbleDelegateView,
   void CloseBubble() override;
   void AddedToWidget() override;
   base::string16 GetWindowTitle() const override;
+  bool ShouldShowWindowTitle() const override;
   gfx::ImageSkia GetWindowIcon() override;
   bool ShouldShowWindowIcon() const override;
   bool ShouldShowCloseButton() const override;

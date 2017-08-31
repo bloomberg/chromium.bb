@@ -606,8 +606,10 @@ gfx::Size BubbleFrameView::GetFrameSizeForClientSize(
 }
 
 bool BubbleFrameView::HasTitle() const {
-  return custom_title_ != nullptr ||
-         default_title_->GetPreferredSize().height() > 0 ||
+  return (custom_title_ != nullptr &&
+          GetWidget()->widget_delegate()->ShouldShowWindowTitle()) ||
+         (default_title_ != nullptr &&
+          default_title_->GetPreferredSize().height() > 0) ||
          title_icon_->GetPreferredSize().height() > 0;
 }
 

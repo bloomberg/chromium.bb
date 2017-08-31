@@ -985,6 +985,10 @@ base::string16 ManagePasswordsBubbleView::GetWindowTitle() const {
   return model_.title();
 }
 
+bool ManagePasswordsBubbleView::ShouldShowWindowTitle() const {
+  return !model_.title().empty();
+}
+
 gfx::ImageSkia ManagePasswordsBubbleView::GetWindowIcon() {
 #if defined(OS_WIN)
   if (model_.state() == password_manager::ui::CHROME_DESKTOP_IOS_PROMO_STATE) {
