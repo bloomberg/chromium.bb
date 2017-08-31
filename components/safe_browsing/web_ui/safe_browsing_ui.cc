@@ -106,7 +106,7 @@ void ParseFullHashInfo(
     base::DictionaryValue* full_hash_info_dict) {
   if (full_hash_info.has_positive_expiry()) {
     full_hash_info_dict->SetString(
-        "Positivie expiry",
+        "Positive expiry",
         UserReadableTimeFromMillisSinceEpoch(full_hash_info.positive_expiry())
             .GetString());
   }
