@@ -1733,6 +1733,7 @@ test("content_unittests") {
       "../renderer/media/webrtc/processed_local_audio_source_unittest.cc",
       "../renderer/media/webrtc/rtc_stats_unittest.cc",
       "../renderer/media/webrtc/stun_field_trial_unittest.cc",
+      "../renderer/media/webrtc/two_keys_adapter_map_unittest.cc",
       "../renderer/media/webrtc/webrtc_media_stream_adapter_map_unittest.cc",
       "../renderer/media/webrtc/webrtc_media_stream_adapter_unittest.cc",
       "../renderer/media/webrtc/webrtc_media_stream_track_adapter_map_unittest.cc",

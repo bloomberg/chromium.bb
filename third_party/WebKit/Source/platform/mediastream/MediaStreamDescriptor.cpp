@@ -36,6 +36,17 @@
 
 namespace blink {
 
+namespace {
+
+static int g_unique_id = 0;
+
+}  // namespace
+
+// static
+int MediaStreamDescriptor::GenerateUniqueId() {
+  return ++g_unique_id;
+}
+
 MediaStreamDescriptor* MediaStreamDescriptor::Create(
     const MediaStreamSourceVector& audio_sources,
     const MediaStreamSourceVector& video_sources) {
@@ -123,7 +134,7 @@ MediaStreamDescriptor::MediaStreamDescriptor(
     const String& id,
     const MediaStreamSourceVector& audio_sources,
     const MediaStreamSourceVector& video_sources)
-    : client_(nullptr), id_(id), active_(true) {
+    : client_(nullptr), id_(id), unique_id_(GenerateUniqueId()), active_(true) {
   DCHECK(id_.length());
   for (size_t i = 0; i < audio_sources.size(); i++)
     audio_components_.push_back(MediaStreamComponent::Create(audio_sources[i]));
@@ -136,7 +147,7 @@ MediaStreamDescriptor::MediaStreamDescriptor(
     const String& id,
     const MediaStreamComponentVector& audio_components,
     const MediaStreamComponentVector& video_components)
-    : client_(nullptr), id_(id), active_(true) {
+    : client_(nullptr), id_(id), unique_id_(GenerateUniqueId()), active_(true) {
   DCHECK(id_.length());
   for (MediaStreamComponentVector::const_iterator iter =
            audio_components.begin();

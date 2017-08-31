@@ -230,23 +230,7 @@ function hasReceiverWithTrack(trackId) {
 function createReceiverWithSetRemoteDescription() {
   var pc = new RTCPeerConnection();
   var receivers = null;
-  pc.setRemoteDescription({
-    type: "offer",
-    sdp: "v=0\n" +
-      "o=- 0 1 IN IP4 0.0.0.0\n" +
-      "s=-\n" +
-      "t=0 0\n" +
-      "a=ice-ufrag:0000\n" +
-      "a=ice-pwd:0000000000000000000000\n" +
-      "a=fingerprint:sha-256 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:" +
-      "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00\n" +
-      "m=audio 9 UDP/TLS/RTP/SAVPF 0\n" +
-      "c=IN IP4 0.0.0.0\n" +
-      "a=sendonly\n" +
-      "a=rtcp-mux\n" +
-      "a=ssrc:1 cname:0\n" +
-      "a=ssrc:1 msid:stream track1\n"
-    }).then(() => {
+  pc.setRemoteDescription(createOffer("stream", "track1")).then(() => {
       receivers = pc.getReceivers();
       if (receivers.length != 1)
         throw failTest('getReceivers() should return 1 receiver: ' +
@@ -261,6 +245,36 @@ function createReceiverWithSetRemoteDescription() {
                    receivers.length)
 }
 
+function switchRemoteStreamAndBackAgain() {
+  let pc1 = new RTCPeerConnection();
+  let firstStream0 = null;
+  let firstTrack0 = null;
+  pc1.setRemoteDescription(createOffer('stream0', 'track0'))
+    .then(() => {
+      firstStream0 = pc1.getRemoteStreams()[0];
+      firstTrack0 = firstStream0.getTracks()[0];
+      if (firstStream0.id != 'stream0')
+        throw failTest('Unexpected firstStream0.id');
+      if (firstTrack0.id != 'track0')
+        throw failTest('Unexpected firstTrack0.id');
+      return pc1.setRemoteDescription(createOffer('stream1', 'track1'));
+    }).then(() => {
+      return pc1.setRemoteDescription(createOffer('stream0', 'track0'));
+    }).then(() => {
+      let secondStream0 = pc1.getRemoteStreams()[0];
+      let secondTrack0 = secondStream0.getTracks()[0];
+      if (secondStream0.id != 'stream0')
+        throw failTest('Unexpected secondStream0.id');
+      if (secondTrack0.id != 'track0')
+        throw failTest('Unexpected secondTrack0.id');
+      if (secondTrack0 == firstTrack0)
+        throw failTest('Expected a new track object with the same id');
+      if (secondStream0 == firstStream0)
+        throw failTest('Expected a new stream object with the same id');
+      returnToTest('ok');
+    });
+}
+
 /**
  * Invokes the GC and returns "ok-gc".
  */
@@ -270,6 +284,26 @@ function collectGarbage() {
 }
 
 // Internals.
+
+function createOffer(streamId, trackId) {
+  return {
+    type: "offer",
+    sdp: "v=0\n" +
+      "o=- 0 1 IN IP4 0.0.0.0\n" +
+      "s=-\n" +
+      "t=0 0\n" +
+      "a=ice-ufrag:0000\n" +
+      "a=ice-pwd:0000000000000000000000\n" +
+      "a=fingerprint:sha-256 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:" +
+      "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00\n" +
+      "m=audio 9 UDP/TLS/RTP/SAVPF 0\n" +
+      "c=IN IP4 0.0.0.0\n" +
+      "a=sendonly\n" +
+      "a=rtcp-mux\n" +
+      "a=ssrc:1 cname:0\n" +
+      "a=ssrc:1 msid:" + streamId + " " + trackId + "\n"
+  };
+}
 
 /** @private */
 function hasStreamWithTrack(streams, streamId, trackId) {

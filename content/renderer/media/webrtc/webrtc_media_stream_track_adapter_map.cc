@@ -10,24 +10,11 @@
 
 namespace content {
 
-WebRtcMediaStreamTrackAdapterMap::AdapterEntry::AdapterEntry(
-    const scoped_refptr<WebRtcMediaStreamTrackAdapter>& adapter)
-    : adapter(adapter) {}
-
-WebRtcMediaStreamTrackAdapterMap::AdapterEntry::AdapterEntry(
-    AdapterEntry&& other)
-    : adapter(other.adapter) {
-  other.adapter = nullptr;
-}
-
-WebRtcMediaStreamTrackAdapterMap::AdapterEntry::~AdapterEntry() {
-}
-
 WebRtcMediaStreamTrackAdapterMap::AdapterRef::AdapterRef(
-    const scoped_refptr<WebRtcMediaStreamTrackAdapterMap>& map,
+    scoped_refptr<WebRtcMediaStreamTrackAdapterMap> map,
     Type type,
-    const MapEntryIterator& it)
-    : map_(map), type_(type), it_(it), adapter_(entry()->adapter) {
+    scoped_refptr<WebRtcMediaStreamTrackAdapter> adapter)
+    : map_(std::move(map)), type_(type), adapter_(std::move(adapter)) {
   DCHECK(map_);
   DCHECK(adapter_);
 }
@@ -37,13 +24,25 @@ WebRtcMediaStreamTrackAdapterMap::AdapterRef::~AdapterRef() {
   scoped_refptr<WebRtcMediaStreamTrackAdapter> removed_adapter;
   {
     base::AutoLock scoped_lock(map_->lock_);
+    // The adapter is stored in the track adapter map and we have |adapter_|,
+    // so there must be at least two references to the adapter.
+    DCHECK(!adapter_->HasOneRef());
+    // Using a raw pointer instead of |adapter_| allows the reference count to
+    // go down to one if this is the last |AdapterRef|.
+    WebRtcMediaStreamTrackAdapter* adapter = adapter_.get();
     adapter_ = nullptr;
-    if (entry()->adapter->HasOneRef()) {
-      removed_adapter = entry()->adapter;
-      if (type_ == Type::kLocal)
-        map_->local_track_adapters_.erase(it_);
-      else
-        map_->remote_track_adapters_.erase(it_);
+    if (adapter->HasOneRef()) {
+      removed_adapter = adapter;
+      // "GetOrCreate..." ensures the adapter is initialized and the secondary
+      // key is set before the last |AdapterRef| is destroyed. We can use either
+      // the primary or secondary key for removal.
+      DCHECK(adapter->is_initialized());
+      if (type_ == Type::kLocal) {
+        map_->local_track_adapters_.EraseByPrimary(
+            adapter->web_track().UniqueId());
+      } else {
+        map_->remote_track_adapters_.EraseByPrimary(adapter->webrtc_track());
+      }
     }
   }
   // Dispose the adapter if it was removed. This is performed after releasing
@@ -57,7 +56,7 @@ WebRtcMediaStreamTrackAdapterMap::AdapterRef::~AdapterRef() {
 std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef>
 WebRtcMediaStreamTrackAdapterMap::AdapterRef::Copy() const {
   base::AutoLock scoped_lock(map_->lock_);
-  return base::WrapUnique(new AdapterRef(map_, type_, it_));
+  return base::WrapUnique(new AdapterRef(map_, type_, adapter_));
 }
 
 WebRtcMediaStreamTrackAdapterMap::WebRtcMediaStreamTrackAdapterMap(
@@ -73,8 +72,27 @@ WebRtcMediaStreamTrackAdapterMap::~WebRtcMediaStreamTrackAdapterMap() {
 }
 
 std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef>
-WebRtcMediaStreamTrackAdapterMap::GetLocalTrackAdapter(const std::string& id) {
-  return GetTrackAdapter(AdapterRef::Type::kLocal, id);
+WebRtcMediaStreamTrackAdapterMap::GetLocalTrackAdapter(
+    const blink::WebMediaStreamTrack& web_track) {
+  base::AutoLock scoped_lock(lock_);
+  scoped_refptr<WebRtcMediaStreamTrackAdapter>* adapter_ptr =
+      local_track_adapters_.FindByPrimary(web_track.UniqueId());
+  if (!adapter_ptr)
+    return nullptr;
+  return base::WrapUnique(
+      new AdapterRef(this, AdapterRef::Type::kLocal, *adapter_ptr));
+}
+
+std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef>
+WebRtcMediaStreamTrackAdapterMap::GetLocalTrackAdapter(
+    webrtc::MediaStreamTrackInterface* webrtc_track) {
+  base::AutoLock scoped_lock(lock_);
+  scoped_refptr<WebRtcMediaStreamTrackAdapter>* adapter_ptr =
+      local_track_adapters_.FindBySecondary(webrtc_track);
+  if (!adapter_ptr)
+    return nullptr;
+  return base::WrapUnique(
+      new AdapterRef(this, AdapterRef::Type::kLocal, *adapter_ptr));
 }
 
 std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef>
@@ -82,21 +100,51 @@ WebRtcMediaStreamTrackAdapterMap::GetOrCreateLocalTrackAdapter(
     const blink::WebMediaStreamTrack& web_track) {
   DCHECK(!web_track.IsNull());
   DCHECK(main_thread_->BelongsToCurrentThread());
-  return GetOrCreateTrackAdapter(
-      AdapterRef::Type::kLocal,
-      base::Bind(&WebRtcMediaStreamTrackAdapter::CreateLocalTrackAdapter,
-                 factory_, main_thread_, web_track),
-      web_track.Id().Utf8());
+  base::AutoLock scoped_lock(lock_);
+  scoped_refptr<WebRtcMediaStreamTrackAdapter>* adapter_ptr =
+      local_track_adapters_.FindByPrimary(web_track.UniqueId());
+  if (adapter_ptr) {
+    return base::WrapUnique(
+        new AdapterRef(this, AdapterRef::Type::kLocal, *adapter_ptr));
+  }
+  scoped_refptr<WebRtcMediaStreamTrackAdapter> new_adapter =
+      WebRtcMediaStreamTrackAdapter::CreateLocalTrackAdapter(
+          factory_, main_thread_, web_track);
+  DCHECK(new_adapter->is_initialized());
+  local_track_adapters_.Insert(web_track.UniqueId(), new_adapter);
+  local_track_adapters_.SetSecondaryKey(web_track.UniqueId(),
+                                        new_adapter->webrtc_track());
+  return base::WrapUnique(
+      new AdapterRef(this, AdapterRef::Type::kLocal, new_adapter));
 }
 
 size_t WebRtcMediaStreamTrackAdapterMap::GetLocalTrackCount() const {
   base::AutoLock scoped_lock(lock_);
-  return local_track_adapters_.size();
+  return local_track_adapters_.PrimarySize();
 }
 
 std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef>
-WebRtcMediaStreamTrackAdapterMap::GetRemoteTrackAdapter(const std::string& id) {
-  return GetTrackAdapter(AdapterRef::Type::kRemote, id);
+WebRtcMediaStreamTrackAdapterMap::GetRemoteTrackAdapter(
+    const blink::WebMediaStreamTrack& web_track) {
+  base::AutoLock scoped_lock(lock_);
+  scoped_refptr<WebRtcMediaStreamTrackAdapter>* adapter_ptr =
+      remote_track_adapters_.FindBySecondary(web_track.UniqueId());
+  if (!adapter_ptr || !(*adapter_ptr)->is_initialized())
+    return nullptr;
+  return base::WrapUnique(
+      new AdapterRef(this, AdapterRef::Type::kRemote, *adapter_ptr));
+}
+
+std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef>
+WebRtcMediaStreamTrackAdapterMap::GetRemoteTrackAdapter(
+    webrtc::MediaStreamTrackInterface* webrtc_track) {
+  base::AutoLock scoped_lock(lock_);
+  scoped_refptr<WebRtcMediaStreamTrackAdapter>* adapter_ptr =
+      remote_track_adapters_.FindByPrimary(webrtc_track);
+  if (!adapter_ptr || !(*adapter_ptr)->is_initialized())
+    return nullptr;
+  return base::WrapUnique(
+      new AdapterRef(this, AdapterRef::Type::kRemote, *adapter_ptr));
 }
 
 std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef>
@@ -104,50 +152,46 @@ WebRtcMediaStreamTrackAdapterMap::GetOrCreateRemoteTrackAdapter(
     webrtc::MediaStreamTrackInterface* webrtc_track) {
   DCHECK(webrtc_track);
   DCHECK(!main_thread_->BelongsToCurrentThread());
-  return GetOrCreateTrackAdapter(
-      AdapterRef::Type::kRemote,
-      base::Bind(&WebRtcMediaStreamTrackAdapter::CreateRemoteTrackAdapter,
-                 factory_, main_thread_, webrtc_track),
-      webrtc_track->id());
+  base::AutoLock scoped_lock(lock_);
+  scoped_refptr<WebRtcMediaStreamTrackAdapter>* adapter_ptr =
+      remote_track_adapters_.FindByPrimary(webrtc_track);
+  if (adapter_ptr) {
+    return base::WrapUnique(
+        new AdapterRef(this, AdapterRef::Type::kRemote, *adapter_ptr));
+  }
+  scoped_refptr<WebRtcMediaStreamTrackAdapter> new_adapter =
+      WebRtcMediaStreamTrackAdapter::CreateRemoteTrackAdapter(
+          factory_, main_thread_, webrtc_track);
+  remote_track_adapters_.Insert(webrtc_track, new_adapter);
+  // The new adapter is initialized in a post to the main thread. As soon as it
+  // is initialized we map its |webrtc_track| to the |remote_track_adapters_|
+  // entry as its secondary key. This ensures that there is at least one
+  // |AdapterRef| alive until after the adapter is initialized and its secondary
+  // key is set.
+  main_thread_->PostTask(
+      FROM_HERE,
+      base::Bind(
+          &WebRtcMediaStreamTrackAdapterMap::OnRemoteTrackAdapterInitialized,
+          this,
+          base::Passed(base::WrapUnique(
+              new AdapterRef(this, AdapterRef::Type::kRemote, new_adapter)))));
+  return base::WrapUnique(
+      new AdapterRef(this, AdapterRef::Type::kRemote, new_adapter));
 }
 
 size_t WebRtcMediaStreamTrackAdapterMap::GetRemoteTrackCount() const {
   base::AutoLock scoped_lock(lock_);
-  return remote_track_adapters_.size();
+  return remote_track_adapters_.PrimarySize();
 }
 
-std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef>
-WebRtcMediaStreamTrackAdapterMap::GetTrackAdapter(
-    WebRtcMediaStreamTrackAdapterMap::AdapterRef::Type type,
-    const std::string& id) {
-  std::map<std::string, AdapterEntry>* track_adapters =
-      type == AdapterRef::Type::kLocal ? &local_track_adapters_
-                                       : &remote_track_adapters_;
-  base::AutoLock scoped_lock(lock_);
-  auto it = track_adapters->find(id);
-  if (it == track_adapters->end())
-    return nullptr;
-  return base::WrapUnique(new AdapterRef(this, type, it));
-}
-
-std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef>
-WebRtcMediaStreamTrackAdapterMap::GetOrCreateTrackAdapter(
-    AdapterRef::Type type,
-    base::Callback<scoped_refptr<WebRtcMediaStreamTrackAdapter>()>
-        create_adapter_callback,
-    const std::string& id) {
-  std::map<std::string, AdapterEntry>* track_adapters =
-      type == AdapterRef::Type::kLocal ? &local_track_adapters_
-                                       : &remote_track_adapters_;
-  base::AutoLock scoped_lock(lock_);
-  auto it = track_adapters->find(id);
-  if (it == track_adapters->end()) {
-    scoped_refptr<WebRtcMediaStreamTrackAdapter> adapter =
-        create_adapter_callback.Run();
-    it =
-        track_adapters->insert(std::make_pair(id, AdapterEntry(adapter))).first;
+void WebRtcMediaStreamTrackAdapterMap::OnRemoteTrackAdapterInitialized(
+    std::unique_ptr<AdapterRef> adapter_ref) {
+  DCHECK(adapter_ref->is_initialized());
+  {
+    base::AutoLock scoped_lock(lock_);
+    remote_track_adapters_.SetSecondaryKey(adapter_ref->webrtc_track(),
+                                           adapter_ref->web_track().UniqueId());
   }
-  return base::WrapUnique(new AdapterRef(this, type, it));
 }
 
 }  // namespace content

@@ -40,6 +40,17 @@
 
 namespace blink {
 
+namespace {
+
+static int g_unique_id = 0;
+
+}  // namespace
+
+// static
+int MediaStreamComponent::GenerateUniqueId() {
+  return ++g_unique_id;
+}
+
 MediaStreamComponent* MediaStreamComponent::Create(MediaStreamSource* source) {
   return new MediaStreamComponent(CreateCanonicalUUIDString(), source);
 }
@@ -65,6 +76,7 @@ MediaStreamComponent::MediaStreamComponent(
     WebMediaStreamTrack::ContentHintType content_hint)
     : source_(source),
       id_(id),
+      unique_id_(GenerateUniqueId()),
       enabled_(enabled),
       muted_(muted),
       content_hint_(content_hint) {
