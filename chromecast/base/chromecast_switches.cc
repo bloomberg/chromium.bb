@@ -107,7 +107,7 @@ const char kMemPressureSystemReservedKb[] = "mem-pressure-system-reserved-kb";
 // screen size correctly (so no need to resize when first window is created).
 const char kCastInitialScreenWidth[] = "cast-initial-screen-width";
 const char kCastInitialScreenHeight[] = "cast-initial-screen-height";
-const char kUseDoubleBuffering[] = "use-double-buffering";
+const char kGraphicsBufferCount[] = "graphics-buffer-count";
 
 // Used to pass configuration for the I2S input to enable loopback for AEC.
 const char kLoopbackI2sBits[] = "loopback-i2s-bits";

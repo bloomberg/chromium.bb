@@ -22,6 +22,8 @@ namespace chromecast {
 
 // Add Cast Features here.
 extern const base::Feature kEnableQuic;
+extern const base::Feature kTripleBuffer720;
+extern const base::Feature kSingleBuffer;
 
 // Below are utilities needed by the Cast receiver to persist feature
 // information. Client code which is simply querying the status of a feature

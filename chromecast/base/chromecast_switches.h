@@ -58,7 +58,7 @@ extern const char kMemPressureSystemReservedKb[];
 // GPU process switches
 extern const char kCastInitialScreenWidth[];
 extern const char kCastInitialScreenHeight[];
-extern const char kUseDoubleBuffering[];
+extern const char kGraphicsBufferCount[];
 
 // I2S loopback configuration switches
 extern const char kLoopbackI2sBits[];

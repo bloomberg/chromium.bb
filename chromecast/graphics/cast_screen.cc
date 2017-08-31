@@ -7,6 +7,8 @@
 #include <stdint.h>
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
+#include "chromecast/base/cast_features.h"
 #include "chromecast/public/graphics_properties_shlib.h"
 #include "ui/aura/env.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -23,9 +25,11 @@ const int64_t kDisplayId = 1;
 // Helper to return the screen resolution (device pixels)
 // to use.
 gfx::Size GetScreenResolution() {
-  if (GraphicsPropertiesShlib::IsSupported(
-          GraphicsPropertiesShlib::k1080p,
-          base::CommandLine::ForCurrentProcess()->argv())) {
+  if (base::FeatureList::IsEnabled(kTripleBuffer720)) {
+    return gfx::Size(1280, 720);
+  } else if (GraphicsPropertiesShlib::IsSupported(
+                 GraphicsPropertiesShlib::k1080p,
+                 base::CommandLine::ForCurrentProcess()->argv())) {
     return gfx::Size(1920, 1080);
   } else {
     return gfx::Size(1280, 720);
