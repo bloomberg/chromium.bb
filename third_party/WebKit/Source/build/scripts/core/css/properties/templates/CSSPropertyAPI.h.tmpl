@@ -18,7 +18,6 @@ class CSSParserContext;
 class CSSParserLocalContext;
 class CSSProperty;
 class CSSValue;
-class StyleResolverState;
 
 class CORE_EXPORT CSSPropertyAPI {
  public:
@@ -48,11 +47,6 @@ class CORE_EXPORT CSSPropertyAPI {
   }
   virtual bool IsDescriptor() const { return false; }
   virtual bool SupportsPercentage() const { return false; }
-  virtual void ApplyInitial(StyleResolverState&) const { NOTREACHED(); }
-  virtual void ApplyInherit(StyleResolverState&) const { NOTREACHED(); }
-  virtual void ApplyValue(StyleResolverState&, const CSSValue&) const {
-    NOTREACHED();
-  }
 };
 
 {% for api_class_data in api_classes_by_property_id %}
