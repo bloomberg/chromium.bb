@@ -120,6 +120,7 @@ public class LocationBarLayout extends FrameLayout
     private static final float VOICE_SEARCH_CONFIDENCE_NAVIGATE_THRESHOLD = 0.9f;
 
     private static final int OMNIBOX_RESULTS_BG_COLOR = 0xFFF5F5F6;
+    private static final int OMNIBOX_RESULTS_CHROME_HOME_MODERN_LAYOUT_BG_COLOR = 0xFFFFFFFF;
     private static final int OMNIBOX_INCOGNITO_RESULTS_BG_COLOR = 0xFF323232;
 
     /**
@@ -466,6 +467,7 @@ public class LocationBarLayout extends FrameLayout
          */
         public OmniboxSuggestionsList(Context context) {
             super(context, null, android.R.attr.dropDownListViewStyle);
+
             setDivider(null);
             setFocusable(true);
             setFocusableInTouchMode(true);
@@ -1603,6 +1605,8 @@ public class LocationBarLayout extends FrameLayout
         // onNativeLibraryReady(), so this assert is safe.
         assert mNativeInitialized : "Trying to initialize suggestions list before native init";
         if (mSuggestionList != null) return;
+        mSuggestionListAdapter.setUseModernDesign(
+                mBottomSheet != null && FeatureUtilities.isChromeHomeModernEnabled());
 
         OnLayoutChangeListener suggestionListResizer = new OnLayoutChangeListener() {
             @Override
@@ -1720,8 +1724,12 @@ public class LocationBarLayout extends FrameLayout
      * @return The background for the omnibox suggestions popup.
      */
     protected Drawable getSuggestionPopupBackground() {
-        int color = mToolbarDataProvider.isIncognito() ? OMNIBOX_INCOGNITO_RESULTS_BG_COLOR
+        int omniboxResultsColorForNonIncognito =
+                FeatureUtilities.isChromeHomeModernEnabled() && mBottomSheet != null
+                ? OMNIBOX_RESULTS_CHROME_HOME_MODERN_LAYOUT_BG_COLOR
                 : OMNIBOX_RESULTS_BG_COLOR;
+        int color = mToolbarDataProvider.isIncognito() ? OMNIBOX_INCOGNITO_RESULTS_BG_COLOR
+                                                       : omniboxResultsColorForNonIncognito;
         if (!isHardwareAccelerated()) {
             // When HW acceleration is disabled, changing mSuggestionList' items somehow erases
             // mOmniboxResultsContainer' background from the area not covered by mSuggestionList.
