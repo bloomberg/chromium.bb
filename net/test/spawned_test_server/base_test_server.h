@@ -371,9 +371,13 @@ class BaseTestServer {
   void SetResourcePath(const base::FilePath& document_root,
                        const base::FilePath& certificates_dir);
 
-  // Parses the server data read from the test server.  Returns true
-  // on success.
-  bool ParseServerData(const std::string& server_data) WARN_UNUSED_RESULT;
+  // Parses the server data read from the test server and sets |server_data_|.
+  // *port is set to the port number specified in server_data. The port may be
+  // different from the local port set in |host_port_pair_|, specifically when
+  // using RemoteTestServer (which proxies connections from 127.0.0.1 to a
+  // different IP). Returns true on success.
+  bool SetAndParseServerData(const std::string& server_data,
+                             int* port) WARN_UNUSED_RESULT;
 
   // Generates a DictionaryValue with the arguments for launching the external
   // Python test server.
@@ -394,7 +398,9 @@ class BaseTestServer {
   // Directory that contains the SSL certificates.
   base::FilePath certificates_dir_;
 
-  // Address the test server listens on.
+  // Address on which the tests should connect to the server. With
+  // RemoteTestServer it may be different from the address on which the server
+  // listens on.
   HostPortPair host_port_pair_;
 
   // Holds the data sent from the server (e.g., port number).
