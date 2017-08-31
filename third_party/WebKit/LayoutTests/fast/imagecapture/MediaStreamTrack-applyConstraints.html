@@ -21,10 +21,25 @@ promise_test(function(t) {
   assert_equals(stream.getVideoTracks().length, 1);
 
   var videoTrack = stream.getVideoTracks()[0];
-  assert_equals(typeof videoTrack.applyConstraints, 'function');
-
   return videoTrack.applyConstraints();
 }, 'MediaStreamTrack.applyConstraints()');
+
+// This test verifies that MediaStreamTrack.applyConstraints() exists and that,
+// when called with an empty advanced constraint set, returns a Promise that is
+// resolved.
+promise_test(function(t) {
+var canvas = document.getElementById('canvas');
+var context = canvas.getContext("2d");
+context.fillStyle = "red";
+context.fillRect(0, 0, 10, 10);
+
+var stream = canvas.captureStream();
+assert_equals(stream.getAudioTracks().length, 0);
+assert_equals(stream.getVideoTracks().length, 1);
+
+var videoTrack = stream.getVideoTracks()[0];
+return videoTrack.applyConstraints({advanced: []});
+}, 'MediaStreamTrack.applyConstraints({advanced: []})');
 
 // This test verifies that applyConstraints() rejects the returned Promise if
 // passed a non-supported image-capture constraint (https://crbug.com/711694).
