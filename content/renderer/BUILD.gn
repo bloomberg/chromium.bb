@@ -688,6 +688,7 @@ target(link_target_type, "renderer") {
       "media/webrtc/stun_field_trial.h",
       "media/webrtc/track_observer.cc",
       "media/webrtc/track_observer.h",
+      "media/webrtc/two_keys_adapter_map.h",
       "media/webrtc/webrtc_audio_sink.cc",
       "media/webrtc/webrtc_audio_sink.h",
       "media/webrtc/webrtc_media_stream_adapter.cc",

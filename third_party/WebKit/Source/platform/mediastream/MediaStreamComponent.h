@@ -52,6 +52,9 @@ class PLATFORM_EXPORT MediaStreamComponent final
     : public GarbageCollectedFinalized<MediaStreamComponent> {
   USING_PRE_FINALIZER(MediaStreamComponent, Dispose);
 
+ private:
+  static int GenerateUniqueId();
+
  public:
   // This class represents whatever data the Web layer uses to represent
   // a track. It needs to be able to answer the getSettings question.
@@ -75,7 +78,13 @@ class PLATFORM_EXPORT MediaStreamComponent final
 
   MediaStreamSource* Source() const { return source_.Get(); }
 
+  // This is the same as the id of the |MediaStreamTrack|. It is unique in most
+  // contexts but collisions can occur e.g. if tracks are created by different
+  // |RTCPeerConnection|s or a remote track ID is signaled to be added, removed
+  // and then re-added resulting in a new track object the second time around.
   String Id() const { return id_; }
+  // Uniquely identifies this component.
+  int UniqueId() const { return unique_id_; }
   bool Enabled() const { return enabled_; }
   void SetEnabled(bool enabled) { enabled_ = enabled; }
   bool Muted() const { return muted_; }
@@ -128,6 +137,7 @@ class PLATFORM_EXPORT MediaStreamComponent final
   AudioSourceProviderImpl source_provider_;
   Member<MediaStreamSource> source_;
   String id_;
+  int unique_id_;
   bool enabled_;
   bool muted_;
   WebMediaStreamTrack::ContentHintType content_hint_;

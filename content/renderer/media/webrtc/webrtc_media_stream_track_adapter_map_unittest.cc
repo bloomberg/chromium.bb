@@ -108,8 +108,7 @@ TEST_F(WebRtcMediaStreamTrackAdapterMapTest, AddAndRemoveLocalTrackAdapter) {
       map_->GetOrCreateLocalTrackAdapter(web_track);
   EXPECT_TRUE(adapter_ref->is_initialized());
   EXPECT_EQ(adapter_ref->GetAdapterForTesting(),
-            map_->GetLocalTrackAdapter(web_track.Id().Utf8())
-                ->GetAdapterForTesting());
+            map_->GetLocalTrackAdapter(web_track)->GetAdapterForTesting());
   EXPECT_EQ(1u, map_->GetLocalTrackCount());
 
   // "GetOrCreate" for already existing track.
@@ -127,7 +126,7 @@ TEST_F(WebRtcMediaStreamTrackAdapterMapTest, AddAndRemoveLocalTrackAdapter) {
   // dispose it.
   adapter_ref.reset();
   EXPECT_EQ(0u, map_->GetLocalTrackCount());
-  EXPECT_EQ(nullptr, map_->GetLocalTrackAdapter(web_track.Id().Utf8()));
+  EXPECT_EQ(nullptr, map_->GetLocalTrackAdapter(web_track));
   // Allow the disposing of track to occur.
   RunMessageLoopsUntilIdle();
 }
@@ -140,7 +139,7 @@ TEST_F(WebRtcMediaStreamTrackAdapterMapTest, AddAndRemoveRemoteTrackAdapter) {
   EXPECT_TRUE(adapter_ref->is_initialized());
   EXPECT_EQ(
       adapter_ref->GetAdapterForTesting(),
-      map_->GetRemoteTrackAdapter(webrtc_track->id())->GetAdapterForTesting());
+      map_->GetRemoteTrackAdapter(webrtc_track.get())->GetAdapterForTesting());
   EXPECT_EQ(1u, map_->GetRemoteTrackCount());
 
   // "GetOrCreate" for already existing track.
@@ -158,7 +157,7 @@ TEST_F(WebRtcMediaStreamTrackAdapterMapTest, AddAndRemoveRemoteTrackAdapter) {
   // dispose it.
   adapter_ref.reset();
   EXPECT_EQ(0u, map_->GetRemoteTrackCount());
-  EXPECT_EQ(nullptr, map_->GetRemoteTrackAdapter(webrtc_track->id()));
+  EXPECT_EQ(nullptr, map_->GetRemoteTrackAdapter(webrtc_track.get()));
   // Allow the disposing of track to occur.
   RunMessageLoopsUntilIdle();
 }
@@ -172,8 +171,9 @@ TEST_F(WebRtcMediaStreamTrackAdapterMapTest,
   std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef> local_adapter =
       map_->GetOrCreateLocalTrackAdapter(local_web_track);
   EXPECT_TRUE(local_adapter->is_initialized());
-  EXPECT_EQ(local_adapter->GetAdapterForTesting(),
-            map_->GetLocalTrackAdapter(id)->GetAdapterForTesting());
+  EXPECT_EQ(
+      local_adapter->GetAdapterForTesting(),
+      map_->GetLocalTrackAdapter(local_web_track)->GetAdapterForTesting());
   EXPECT_EQ(1u, map_->GetLocalTrackCount());
 
   scoped_refptr<MockWebRtcAudioTrack> remote_webrtc_track =
@@ -182,7 +182,8 @@ TEST_F(WebRtcMediaStreamTrackAdapterMapTest,
       GetOrCreateRemoteTrackAdapter(remote_webrtc_track.get());
   EXPECT_TRUE(remote_adapter->is_initialized());
   EXPECT_EQ(remote_adapter->GetAdapterForTesting(),
-            map_->GetRemoteTrackAdapter(id)->GetAdapterForTesting());
+            map_->GetRemoteTrackAdapter(remote_webrtc_track.get())
+                ->GetAdapterForTesting());
   EXPECT_NE(local_adapter->GetAdapterForTesting(),
             remote_adapter->GetAdapterForTesting());
   EXPECT_EQ(1u, map_->GetRemoteTrackCount());
@@ -192,18 +193,21 @@ TEST_F(WebRtcMediaStreamTrackAdapterMapTest,
   remote_adapter.reset();
   EXPECT_EQ(0u, map_->GetLocalTrackCount());
   EXPECT_EQ(0u, map_->GetRemoteTrackCount());
-  EXPECT_EQ(nullptr, map_->GetLocalTrackAdapter(id));
-  EXPECT_EQ(nullptr, map_->GetRemoteTrackAdapter(id));
+  EXPECT_EQ(nullptr, map_->GetLocalTrackAdapter(local_web_track));
+  EXPECT_EQ(nullptr, map_->GetRemoteTrackAdapter(remote_webrtc_track.get()));
   // Allow the disposing of tracks to occur.
   RunMessageLoopsUntilIdle();
 }
 
-TEST_F(WebRtcMediaStreamTrackAdapterMapTest, GetLocalTrackAdapterInvalidID) {
-  EXPECT_EQ(nullptr, map_->GetLocalTrackAdapter("invalid"));
+TEST_F(WebRtcMediaStreamTrackAdapterMapTest, GetMissingLocalTrackAdapter) {
+  blink::WebMediaStreamTrack local_web_track = CreateLocalTrack("missing");
+  EXPECT_EQ(nullptr, map_->GetLocalTrackAdapter(local_web_track));
 }
 
-TEST_F(WebRtcMediaStreamTrackAdapterMapTest, GetRemoteTrackAdapterInvalidID) {
-  EXPECT_EQ(nullptr, map_->GetRemoteTrackAdapter("invalid"));
+TEST_F(WebRtcMediaStreamTrackAdapterMapTest, GetMissingRemoteTrackAdapter) {
+  scoped_refptr<MockWebRtcAudioTrack> webrtc_track =
+      MockWebRtcAudioTrack::Create("missing");
+  EXPECT_EQ(nullptr, map_->GetRemoteTrackAdapter(webrtc_track.get()));
 }
 
 }  // namespace content

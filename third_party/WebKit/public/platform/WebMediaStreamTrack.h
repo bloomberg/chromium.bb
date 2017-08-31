@@ -107,6 +107,7 @@ class WebMediaStreamTrack {
   bool IsNull() const { return private_.IsNull(); }
 
   BLINK_PLATFORM_EXPORT WebString Id() const;
+  BLINK_PLATFORM_EXPORT int UniqueId() const;
 
   BLINK_PLATFORM_EXPORT WebMediaStreamSource Source() const;
   BLINK_PLATFORM_EXPORT bool IsEnabled() const;

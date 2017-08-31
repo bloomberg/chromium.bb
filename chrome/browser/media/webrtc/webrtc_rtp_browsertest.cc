@@ -375,3 +375,9 @@ IN_PROC_BROWSER_TEST_F(WebRtcRtpBrowserTest, GetReceiversSetRemoteDescription) {
   EXPECT_EQ("ok", ExecuteJavascript("createReceiverWithSetRemoteDescription()",
                                     left_tab_));
 }
+
+IN_PROC_BROWSER_TEST_F(WebRtcRtpBrowserTest, SwitchRemoteStreamAndBackAgain) {
+  StartServerAndOpenTabs();
+  EXPECT_EQ("ok",
+            ExecuteJavascript("switchRemoteStreamAndBackAgain()", left_tab_));
+}

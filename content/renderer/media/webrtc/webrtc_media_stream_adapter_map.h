@@ -14,6 +14,11 @@
 
 namespace content {
 
+// TODO(hbos): The string id of streams is not necessarily unique as is assumed
+// here. When updating the map to take care of both local and remote streams
+// as part of https://crbug.com/705901, make use of |TwoKeysAdapterMap| like
+// |WebRtcMediaStreamTrackAdapterMap| does.
+
 // A map and owner of |WebRtcMediaStreamAdapter|s. Adapters are the glue between
 // blink and webrtc layer versions of streams. As long as a stream is in use by
 // a peer connection there has to exist an adapter for it. The map takes care of

@@ -56,6 +56,9 @@ class PLATFORM_EXPORT MediaStreamDescriptorClient
 
 class PLATFORM_EXPORT MediaStreamDescriptor final
     : public GarbageCollectedFinalized<MediaStreamDescriptor> {
+ private:
+  static int GenerateUniqueId();
+
  public:
   // Only used for AudioDestinationNode.
   static MediaStreamDescriptor* Create(
@@ -74,7 +77,13 @@ class PLATFORM_EXPORT MediaStreamDescriptor final
   MediaStreamDescriptorClient* Client() const { return client_; }
   void SetClient(MediaStreamDescriptorClient* client) { client_ = client; }
 
+  // This is the same as the id of the |MediaStream|. It is unique in most
+  // contexts but collisions can occur e.g. if streams are created by different
+  // |RTCPeerConnection|s or a remote stream ID is signaled to be added, removed
+  // and then re-added resulting in a new stream object the second time around.
   String Id() const { return id_; }
+  // Uniquely identifies this descriptor.
+  int UniqueId() const { return unique_id_; }
 
   unsigned NumberOfAudioComponents() const { return audio_components_.size(); }
   MediaStreamComponent* AudioComponent(unsigned index) const {
@@ -114,6 +123,7 @@ class PLATFORM_EXPORT MediaStreamDescriptor final
 
   Member<MediaStreamDescriptorClient> client_;
   String id_;
+  int unique_id_;
   HeapVector<Member<MediaStreamComponent>> audio_components_;
   HeapVector<Member<MediaStreamComponent>> video_components_;
   Vector<WebMediaStreamObserver*> observers_;
