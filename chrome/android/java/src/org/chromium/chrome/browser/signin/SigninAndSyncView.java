@@ -199,8 +199,8 @@ public class SigninAndSyncView extends LinearLayout
                 new OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        AccountSigninActivity
-                                .startAccountSigninActivity(getContext(), mAccessPoint);
+                        AccountSigninActivity.startAccountSigninActivity(
+                                getContext(), mAccessPoint, false);
                     }
                 });
 
