@@ -1001,6 +1001,10 @@ crbug.com/492664 external/wpt/css/css-writing-modes-3/line-box-direction-vrl-009
 
 crbug.com/637255 [ Win10 ] media/video-transformed.html [ Pass Failure ]
 
+crbug.com/760367 http/tests/devtools/console/console-tainted-globals.html [ NeedsManualRebaseline Timeout ]
+crbug.com/760367 inspector/runtime/runtime-callFunctionOn.html [ NeedsManualRebaseline Timeout ]
+crbug.com/760367 virtual/mojo-loading/http/tests/devtools/console/console-tainted-globals.html [ NeedsManualRebaseline Timeout ]
+
 # These tests pass but images do not match because tests are stricter than the spec.
 crbug.com/492664 external/wpt/css/css-writing-modes-3/text-combine-upright-value-all-001.html [ Failure ]
 crbug.com/492664 external/wpt/css/css-writing-modes-3/text-combine-upright-value-all-002.html [ Failure ]

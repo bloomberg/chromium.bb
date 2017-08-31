@@ -157,7 +157,7 @@ function test() {
       function sum() {
         return this.a + this.b;
       }
-      result = await TestRunner.RuntimeAgent.callFunctionOn(result.objectId, sum.toString());
+      result = await TestRunner.RuntimeAgent.callFunctionOn(sum.toString(), result.objectId);
 
       TestRunner.assertEquals(3, result.value);
       next();
