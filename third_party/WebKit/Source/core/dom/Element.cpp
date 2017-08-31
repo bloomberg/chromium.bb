@@ -379,10 +379,8 @@ void Element::SynchronizeAllAttributes() const {
     DCHECK(IsStyledElement());
     SynchronizeStyleAttributeInternal();
   }
-  if (GetElementData()->animated_svg_attributes_are_dirty_) {
-    DCHECK(IsSVGElement());
+  if (GetElementData()->animated_svg_attributes_are_dirty_)
     ToSVGElement(this)->SynchronizeAnimatedSVGAttribute(AnyQName());
-  }
 }
 
 inline void Element::SynchronizeAttribute(const QualifiedName& name) const {
@@ -395,8 +393,7 @@ inline void Element::SynchronizeAttribute(const QualifiedName& name) const {
     return;
   }
   if (UNLIKELY(GetElementData()->animated_svg_attributes_are_dirty_)) {
-    DCHECK(IsSVGElement());
-    // See comment in the AtomicString version of synchronizeAttribute()
+    // See comment in the AtomicString version of SynchronizeAttribute()
     // also.
     ToSVGElement(this)->SynchronizeAnimatedSVGAttribute(name);
   }

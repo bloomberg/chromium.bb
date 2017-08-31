@@ -269,7 +269,6 @@ ScopedFocusNavigation ScopedFocusNavigation::OwnedByNonFocusableFocusScopeOwner(
   if (IsShadowInsertionPointFocusScopeOwner(element))
     return ScopedFocusNavigation::OwnedByShadowInsertionPoint(
         toHTMLShadowElement(element));
-  DCHECK(isHTMLSlotElement(element));
   return ScopedFocusNavigation::OwnedByHTMLSlotElement(
       toHTMLSlotElement(element));
 }
