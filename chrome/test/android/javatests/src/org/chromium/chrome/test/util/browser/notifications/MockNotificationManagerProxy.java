@@ -144,4 +144,7 @@ public class MockNotificationManagerProxy implements NotificationManagerProxy {
     public NotificationChannel getNotificationChannel(String channelId) {
         return null;
     }
+
+    @Override
+    public void deleteNotificationChannelGroup(String groupId) {}
 }
