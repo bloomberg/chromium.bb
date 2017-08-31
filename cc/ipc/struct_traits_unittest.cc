@@ -7,7 +7,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "cc/input/selection.h"
-#include "cc/ipc/copy_output_request_struct_traits.h"
 #include "cc/ipc/traits_test_service.mojom.h"
 #include "cc/quads/debug_border_draw_quad.h"
 #include "cc/quads/render_pass.h"
@@ -41,11 +40,6 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
 
  private:
   // TraitsTestService:
-  void EchoCopyOutputRequest(std::unique_ptr<viz::CopyOutputRequest> c,
-                             EchoCopyOutputRequestCallback callback) override {
-    std::move(callback).Run(std::move(c));
-  }
-
   void EchoCopyOutputResult(std::unique_ptr<viz::CopyOutputResult> c,
                             EchoCopyOutputResultCallback callback) override {
     std::move(callback).Run(std::move(c));
@@ -60,26 +54,6 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
   DISALLOW_COPY_AND_ASSIGN(StructTraitsTest);
 };
 
-void CopyOutputRequestCallback(base::Closure quit_closure,
-                               gfx::Size expected_size,
-                               std::unique_ptr<viz::CopyOutputResult> result) {
-  EXPECT_EQ(expected_size, result->size());
-  quit_closure.Run();
-}
-
-void CopyOutputRequestCallbackRunsOnceCallback(
-    int* n_called,
-    std::unique_ptr<viz::CopyOutputResult> result) {
-  ++*n_called;
-}
-
-void CopyOutputRequestMessagePipeBrokenCallback(
-    base::Closure closure,
-    std::unique_ptr<viz::CopyOutputResult> result) {
-  EXPECT_TRUE(result->IsEmpty());
-  closure.Run();
-}
-
 void CopyOutputResultCallback(base::Closure quit_closure,
                               const gpu::SyncToken& expected_sync_token,
                               bool expected_is_lost,
@@ -91,89 +65,6 @@ void CopyOutputResultCallback(base::Closure quit_closure,
 }
 
 }  // namespace
-
-TEST_F(StructTraitsTest, CopyOutputRequest_BitmapRequest) {
-  const gfx::Rect area(5, 7, 44, 55);
-  const auto source =
-      base::UnguessableToken::Deserialize(0xdeadbeef, 0xdeadf00d);
-  gfx::Size size(9, 8);
-  auto bitmap = std::make_unique<SkBitmap>();
-  bitmap->allocN32Pixels(size.width(), size.height());
-  base::RunLoop run_loop;
-  std::unique_ptr<viz::CopyOutputRequest> input =
-      viz::CopyOutputRequest::CreateBitmapRequest(base::BindOnce(
-          CopyOutputRequestCallback, run_loop.QuitClosure(), size));
-  input->set_area(area);
-  input->set_source(source);
-  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
-  std::unique_ptr<viz::CopyOutputRequest> output;
-  proxy->EchoCopyOutputRequest(std::move(input), &output);
-
-  EXPECT_TRUE(output->force_bitmap_result());
-  EXPECT_FALSE(output->has_texture_mailbox());
-  EXPECT_TRUE(output->has_area());
-  EXPECT_EQ(area, output->area());
-  EXPECT_EQ(source, output->source());
-  output->SendBitmapResult(std::move(bitmap));
-  // If CopyOutputRequestCallback is called, this ends. Otherwise, the test
-  // will time out and fail.
-  run_loop.Run();
-}
-
-TEST_F(StructTraitsTest, CopyOutputRequest_TextureRequest) {
-  const int8_t mailbox_name[GL_MAILBOX_SIZE_CHROMIUM] = {
-      0, 9, 8, 7, 6, 5, 4, 3, 2, 1, 9, 7, 5, 3, 1, 3};
-  const uint32_t target = 3;
-  gpu::Mailbox mailbox;
-  mailbox.SetName(mailbox_name);
-  viz::TextureMailbox texture_mailbox(mailbox, gpu::SyncToken(), target);
-  base::RunLoop run_loop;
-  std::unique_ptr<viz::CopyOutputRequest> input =
-      viz::CopyOutputRequest::CreateRequest(base::BindOnce(
-          CopyOutputRequestCallback, run_loop.QuitClosure(), gfx::Size()));
-  input->SetTextureMailbox(texture_mailbox);
-
-  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
-  std::unique_ptr<viz::CopyOutputRequest> output;
-  proxy->EchoCopyOutputRequest(std::move(input), &output);
-
-  EXPECT_TRUE(output->has_texture_mailbox());
-  EXPECT_FALSE(output->has_area());
-  EXPECT_EQ(mailbox, output->texture_mailbox().mailbox());
-  EXPECT_EQ(target, output->texture_mailbox().target());
-  EXPECT_FALSE(output->has_source());
-  output->SendEmptyResult();
-  // If CopyOutputRequestCallback is called, this ends. Otherwise, the test
-  // will time out and fail.
-  run_loop.Run();
-}
-
-TEST_F(StructTraitsTest, CopyOutputRequest_CallbackRunsOnce) {
-  int n_called = 0;
-  auto request = viz::CopyOutputRequest::CreateRequest(
-      base::BindOnce(CopyOutputRequestCallbackRunsOnceCallback, &n_called));
-  auto result_sender = mojo::StructTraits<
-      mojom::CopyOutputRequestDataView,
-      std::unique_ptr<viz::CopyOutputRequest>>::result_sender(request);
-  for (int i = 0; i < 10; i++)
-    result_sender->SendResult(viz::CopyOutputResult::CreateEmptyResult());
-  EXPECT_EQ(0, n_called);
-  result_sender.FlushForTesting();
-  EXPECT_EQ(1, n_called);
-}
-
-TEST_F(StructTraitsTest, CopyOutputRequest_MessagePipeBroken) {
-  base::RunLoop run_loop;
-  auto request = viz::CopyOutputRequest::CreateRequest(base::BindOnce(
-      CopyOutputRequestMessagePipeBrokenCallback, run_loop.QuitClosure()));
-  auto result_sender = mojo::StructTraits<
-      mojom::CopyOutputRequestDataView,
-      std::unique_ptr<viz::CopyOutputRequest>>::result_sender(request);
-  result_sender.reset();
-  // The callback must be called with an empty viz::CopyOutputResult. If it's
-  // never called, this will never end and the test times out.
-  run_loop.Run();
-}
 
 TEST_F(StructTraitsTest, CopyOutputResult_Bitmap) {
   auto bitmap = std::make_unique<SkBitmap>();

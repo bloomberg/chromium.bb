@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/ipc/copy_output_request_struct_traits.h"
+#include "services/viz/public/cpp/compositing/copy_output_request_struct_traits.h"
 
 #include <utility>
 
@@ -14,7 +14,7 @@ namespace {
 // When we're sending a CopyOutputRequest, we keep the result_callback_ in a
 // CopyOutputResultSenderImpl and send a CopyOutputResultSenderPtr to the other
 // process. When SendResult is called, we run the stored result_callback_.
-class CopyOutputResultSenderImpl : public cc::mojom::CopyOutputResultSender {
+class CopyOutputResultSenderImpl : public viz::mojom::CopyOutputResultSender {
  public:
   CopyOutputResultSenderImpl(
       viz::CopyOutputRequest::CopyOutputRequestCallback result_callback)
@@ -40,7 +40,7 @@ class CopyOutputResultSenderImpl : public cc::mojom::CopyOutputResultSender {
   viz::CopyOutputRequest::CopyOutputRequestCallback result_callback_;
 };
 
-void SendResult(cc::mojom::CopyOutputResultSenderPtr ptr,
+void SendResult(viz::mojom::CopyOutputResultSenderPtr ptr,
                 std::unique_ptr<viz::CopyOutputResult> result) {
   ptr->SendResult(std::move(result));
 }
@@ -50,11 +50,11 @@ void SendResult(cc::mojom::CopyOutputResultSenderPtr ptr,
 namespace mojo {
 
 // static
-cc::mojom::CopyOutputResultSenderPtr
-StructTraits<cc::mojom::CopyOutputRequestDataView,
+viz::mojom::CopyOutputResultSenderPtr
+StructTraits<viz::mojom::CopyOutputRequestDataView,
              std::unique_ptr<viz::CopyOutputRequest>>::
     result_sender(const std::unique_ptr<viz::CopyOutputRequest>& request) {
-  cc::mojom::CopyOutputResultSenderPtr result_sender;
+  viz::mojom::CopyOutputResultSenderPtr result_sender;
   auto impl = std::make_unique<CopyOutputResultSenderImpl>(
       std::move(request->result_callback_));
   MakeStrongBinding(std::move(impl), MakeRequest(&result_sender));
@@ -62,9 +62,9 @@ StructTraits<cc::mojom::CopyOutputRequestDataView,
 }
 
 // static
-bool StructTraits<cc::mojom::CopyOutputRequestDataView,
+bool StructTraits<viz::mojom::CopyOutputRequestDataView,
                   std::unique_ptr<viz::CopyOutputRequest>>::
-    Read(cc::mojom::CopyOutputRequestDataView data,
+    Read(viz::mojom::CopyOutputRequestDataView data,
          std::unique_ptr<viz::CopyOutputRequest>* out_p) {
   auto request = viz::CopyOutputRequest::CreateEmptyRequest();
 
@@ -80,7 +80,7 @@ bool StructTraits<cc::mojom::CopyOutputRequestDataView,
     return false;
 
   auto result_sender =
-      data.TakeResultSender<cc::mojom::CopyOutputResultSenderPtr>();
+      data.TakeResultSender<viz::mojom::CopyOutputResultSenderPtr>();
   request->result_callback_ =
       base::BindOnce(SendResult, base::Passed(&result_sender));
 

@@ -20,13 +20,11 @@
 
 class SkBitmap;
 
-namespace cc {
+namespace viz {
+
 namespace mojom {
 class CopyOutputRequestDataView;
 }
-}  // namespace cc
-
-namespace viz {
 
 class CopyOutputResult;
 
@@ -94,7 +92,7 @@ class VIZ_COMMON_EXPORT CopyOutputRequest {
   void SendResult(std::unique_ptr<CopyOutputResult> result);
 
  private:
-  friend struct mojo::StructTraits<cc::mojom::CopyOutputRequestDataView,
+  friend struct mojo::StructTraits<mojom::CopyOutputRequestDataView,
                                    std::unique_ptr<CopyOutputRequest>>;
 
   CopyOutputRequest();

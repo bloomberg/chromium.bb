@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_IPC_COPY_OUTPUT_REQUEST_STRUCT_TRAITS_H_
-#define CC_IPC_COPY_OUTPUT_REQUEST_STRUCT_TRAITS_H_
+#ifndef SERVICES_VIZ_PUBLIC_CPP_COMPOSITING_COPY_OUTPUT_REQUEST_STRUCT_TRAITS_H_
+#define SERVICES_VIZ_PUBLIC_CPP_COMPOSITING_COPY_OUTPUT_REQUEST_STRUCT_TRAITS_H_
 
-#include "cc/ipc/copy_output_request.mojom.h"
 #include "cc/ipc/texture_mailbox_struct_traits.h"
 #include "components/viz/common/quads/copy_output_request.h"
 #include "mojo/common/common_custom_types_struct_traits.h"
+#include "services/viz/public/interfaces/compositing/copy_output_request.mojom.h"
 #include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
 
 namespace mojo {
 
 template <>
-struct StructTraits<cc::mojom::CopyOutputRequestDataView,
+struct StructTraits<viz::mojom::CopyOutputRequestDataView,
                     std::unique_ptr<viz::CopyOutputRequest>> {
   static const base::Optional<base::UnguessableToken>& source(
       const std::unique_ptr<viz::CopyOutputRequest>& request) {
@@ -36,13 +36,13 @@ struct StructTraits<cc::mojom::CopyOutputRequestDataView,
     return request->texture_mailbox_;
   }
 
-  static cc::mojom::CopyOutputResultSenderPtr result_sender(
+  static viz::mojom::CopyOutputResultSenderPtr result_sender(
       const std::unique_ptr<viz::CopyOutputRequest>& request);
 
-  static bool Read(cc::mojom::CopyOutputRequestDataView data,
+  static bool Read(viz::mojom::CopyOutputRequestDataView data,
                    std::unique_ptr<viz::CopyOutputRequest>* out_p);
 };
 
 }  // namespace mojo
 
-#endif  // CC_IPC_COPY_OUTPUT_REQUEST_STRUCT_TRAITS_H_
+#endif  // SERVICES_VIZ_PUBLIC_CPP_COMPOSITING_COPY_OUTPUT_REQUEST_STRUCT_TRAITS_H_
