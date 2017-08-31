@@ -99,13 +99,11 @@ NSString* const kSignInSkipButtonAccessibilityIdentifier =
 
 - (void)finishFirstRunAndDismiss {
   DCHECK(self.presentingViewController);
-  ios_internal::FinishFirstRun(self.browserState, [_tabModel currentTab],
-                               _firstRunConfig);
-  [self.presentingViewController
-      dismissViewControllerAnimated:YES
-                         completion:^{
-                           ios_internal::FirstRunDismissed();
-                         }];
+  FinishFirstRun(self.browserState, [_tabModel currentTab], _firstRunConfig);
+  [self.presentingViewController dismissViewControllerAnimated:YES
+                                                    completion:^{
+                                                      FirstRunDismissed();
+                                                    }];
 }
 
 #pragma mark ChromeSigninViewControllerDelegate
@@ -135,8 +133,8 @@ NSString* const kSignInSkipButtonAccessibilityIdentifier =
   DCHECK_EQ(self, controller);
 
   // User is considered done with First Run only after successful sign-in.
-  ios_internal::WriteFirstRunSentinelAndRecordMetrics(
-      self.browserState, YES, [_firstRunConfig hasSSOAccount]);
+  WriteFirstRunSentinelAndRecordMetrics(self.browserState, YES,
+                                        [_firstRunConfig hasSSOAccount]);
 }
 
 - (void)didUndoSignIn:(ChromeSigninViewController*)controller

@@ -74,8 +74,7 @@ const CGFloat kDesiredHeight = 180;
 }
 
 - (void)showSyncSettings {
-  [self chromeExecuteCommand:ios_internal::sync::GetSyncCommandForBrowserState(
-                                 _browserState)];
+  [self chromeExecuteCommand:GetSyncCommandForBrowserState(_browserState)];
 }
 
 @end

@@ -15,8 +15,6 @@
 #error "This file requires ARC support."
 #endif
 
-namespace ios_internal {
-
 AlertCoordinator* ErrorCoordinator(NSError* error,
                                    ProceduralBlock dismissAction,
                                    UIViewController* viewController) {
@@ -76,5 +74,3 @@ AlertCoordinator* ErrorCoordinatorNoItem(NSError* error,
                                                    message:errorMessage];
   return alertCoordinator;
 }
-
-}  // namespace ios_internal

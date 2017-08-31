@@ -30,7 +30,7 @@ TEST(AuthenticationUIUtil, DialogMessageFromErrorWithLocalizedDescription) {
       @{NSLocalizedDescriptionKey : @"MyLocalizedDescription"};
   NSError* error =
       [NSError errorWithDomain:@"MyErrorDomain" code:-1234 userInfo:userInfo];
-  NSString* message = ios_internal::DialogMessageFromError(error);
+  NSString* message = DialogMessageFromError(error);
   ExpectErrorInMessage(error, message, YES);
 }
 
@@ -38,7 +38,7 @@ TEST(AuthenticationUIUtil, DialogMessageFromErrorWithLocalizedDescription) {
 TEST(AuthenticationUIUtil, DialogMessageFromErrorWithoutLocalizedDescription) {
   NSError* error =
       [NSError errorWithDomain:@"MyErrorDomain" code:-1234 userInfo:nil];
-  NSString* message = ios_internal::DialogMessageFromError(error);
+  NSString* message = DialogMessageFromError(error);
   ExpectErrorInMessage(error, message, NO);
 }
 
@@ -66,7 +66,7 @@ TEST(AuthenticationUIUtil, DialogMessageFromErrorWithUnderlyingErrors) {
   NSError* error3 =
       [NSError errorWithDomain:@"MyErrorDomain3" code:-890 userInfo:userInfo3];
 
-  NSString* message = ios_internal::DialogMessageFromError(error3);
+  NSString* message = DialogMessageFromError(error3);
   ExpectErrorInMessage(error3, message, YES);
   ExpectErrorInMessage(error2, message, NO);
   ExpectErrorInMessage(error1, message, NO);

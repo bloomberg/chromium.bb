@@ -21,7 +21,7 @@ TEST(PaymentRequestPaymentsTextItemTest, TextLabelAndImage) {
 
   NSString* text = @"Lorem ipsum";
   NSString* detailText = @"Dolor sit amet";
-  UIImage* image = ios_internal::CollectionViewTestImage();
+  UIImage* image = CollectionViewTestImage();
 
   item.text = text;
   item.detailText = detailText;

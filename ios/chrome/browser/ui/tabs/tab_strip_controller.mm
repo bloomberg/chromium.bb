@@ -1505,7 +1505,7 @@ const CGFloat kNewTabButtonBottomOffsetHighRes = 2.0;
     if ([self.fullscreenDelegate currentHeaderOffset] != 0) {
       // Move the toolbar to visible and wait for the end of that animation to
       // animate the appearance of the new tab.
-      delay = ios_internal::kToolbarAnimationDuration;
+      delay = kFullScreenControllerToolbarAnimationDuration;
       // Signal the FullscreenController that the toolbar needs to stay on
       // screen for a bit, so the animation is visible.
       [[NSNotificationCenter defaultCenter]

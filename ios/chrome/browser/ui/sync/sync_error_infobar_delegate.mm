@@ -51,12 +51,10 @@ SyncErrorInfoBarDelegate::SyncErrorInfoBarDelegate(
   // they all correspond to the same sync error.
   error_state_ = sync_setup_service->GetSyncServiceState();
   message_ = base::SysNSStringToUTF16(
-      ios_internal::sync::GetSyncErrorMessageForBrowserState(browser_state_));
+      GetSyncErrorMessageForBrowserState(browser_state_));
   button_text_ = base::SysNSStringToUTF16(
-      ios_internal::sync::GetSyncErrorButtonTitleForBrowserState(
-          browser_state_));
-  command_.reset(
-      ios_internal::sync::GetSyncCommandForBrowserState(browser_state_));
+      GetSyncErrorButtonTitleForBrowserState(browser_state_));
+  command_.reset(GetSyncCommandForBrowserState(browser_state_));
 
   // Register for sync status changes.
   syncer::SyncService* sync_service =
@@ -113,7 +111,7 @@ void SyncErrorInfoBarDelegate::OnStateChanged(syncer::SyncService* sync) {
   if (error_state_ == new_error_state)
     return;
   error_state_ = new_error_state;
-  if (ios_internal::sync::IsTransientSyncError(new_error_state)) {
+  if (IsTransientSyncError(new_error_state)) {
     infobar->RemoveSelf();
   } else {
     infobars::InfoBarManager* infobar_manager = infobar->owner();

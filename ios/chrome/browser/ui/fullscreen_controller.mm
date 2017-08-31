@@ -257,22 +257,20 @@ BOOL CGFloatEquals(CGFloat a, CGFloat b) {
                  object:nil];
     [center addObserver:self
                selector:@selector(incrementFullScreenLock)
-                   name:ios_internal::kPageInfoWillShowNotification
+                   name:kPageInfoWillShowNotification
                  object:nil];
     [center addObserver:self
                selector:@selector(decrementFullScreenLock)
-                   name:ios_internal::kPageInfoWillHideNotification
+                   name:kPageInfoWillHideNotification
                  object:nil];
-    [center
-        addObserver:self
-           selector:@selector(incrementFullScreenLock)
-               name:ios_internal::kLocationBarBecomesFirstResponderNotification
-             object:nil];
-    [center
-        addObserver:self
-           selector:@selector(decrementFullScreenLock)
-               name:ios_internal::kLocationBarResignsFirstResponderNotification
-             object:nil];
+    [center addObserver:self
+               selector:@selector(incrementFullScreenLock)
+                   name:kLocationBarBecomesFirstResponderNotification
+                 object:nil];
+    [center addObserver:self
+               selector:@selector(decrementFullScreenLock)
+                   name:kLocationBarResignsFirstResponderNotification
+                 object:nil];
     [center addObserver:self
                selector:@selector(incrementFullScreenLock)
                    name:kTabStripDragStarted
@@ -283,11 +281,11 @@ BOOL CGFloatEquals(CGFloat a, CGFloat b) {
                  object:nil];
     [center addObserver:self
                selector:@selector(incrementFullScreenLock)
-                   name:ios_internal::kSideSwipeWillStartNotification
+                   name:kSideSwipeWillStartNotification
                  object:nil];
     [center addObserver:self
                selector:@selector(decrementFullScreenLock)
-                   name:ios_internal::kSideSwipeDidStopNotification
+                   name:kSideSwipeDidStopNotification
                  object:nil];
     // TODO(crbug.com/451373): Evaluate using listeners instead of
     // notifications.

@@ -462,8 +462,7 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule {
                                    IDS_IOS_SETTINGS_SET_UP_SCREENLOCK_CONTENT)
                 preferredStyle:UIAlertControllerStyleAlert];
 
-  ProceduralBlockWithURL blockOpenURL =
-      ios_internal_settings::BlockToOpenURL(self, self.dispatcher);
+  ProceduralBlockWithURL blockOpenURL = BlockToOpenURL(self, self.dispatcher);
   UIAlertAction* learnAction = [UIAlertAction
       actionWithTitle:l10n_util::GetNSString(
                           IDS_IOS_SETTINGS_SET_UP_SCREENLOCK_LEARN_HOW)

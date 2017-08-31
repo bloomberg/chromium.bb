@@ -39,9 +39,6 @@ enum ErrorState {
 
 }  // namespace
 
-namespace ios_internal {
-namespace sync {
-
 NSString* GetSyncErrorDescriptionForBrowserState(
     ios::ChromeBrowserState* browserState) {
   SyncSetupService* syncSetupService =
@@ -128,7 +125,7 @@ GenericChromeCommand* GetSyncCommandForBrowserState(
   }
 }
 
-bool displaySyncErrors(ios::ChromeBrowserState* browser_state, Tab* tab) {
+bool DisplaySyncErrors(ios::ChromeBrowserState* browser_state, Tab* tab) {
   // Avoid displaying sync errors on incognito tabs.
   if (browser_state->IsOffTheRecord())
     return false;
@@ -183,5 +180,3 @@ bool IsTransientSyncError(SyncSetupService::SyncServiceState errorState) {
   }
 }
 
-}  // namespace sync
-}  // namespace ios_internal

@@ -36,13 +36,13 @@ TEST(UICommonTest, TestFixOrphanWord) {
 
   UILabel* label = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 300, 500)];
   [label setText:englishString];
-  ios_internal::FixOrphanWord(label);
+  FixOrphanWord(label);
   NSRange range = [[label text] rangeOfString:@"\n"];
   // Check that the label's text does not contain a newline.
   EXPECT_EQ(NSNotFound, static_cast<NSInteger>(range.location));
 
   [label setText:englishStringWithOrphan];
-  ios_internal::FixOrphanWord(label);
+  FixOrphanWord(label);
   range = [[label text] rangeOfString:@"\n"];
   // Check that the label's text contains a newline.
   EXPECT_NE(NSNotFound, static_cast<NSInteger>(range.location));
@@ -53,13 +53,13 @@ TEST(UICommonTest, TestFixOrphanWord) {
   EXPECT_TRUE([@"laoreet nisi." isEqualToString:wordsAfterNewline]);
 
   [label setText:chineseString];
-  ios_internal::FixOrphanWord(label);
+  FixOrphanWord(label);
   range = [[label text] rangeOfString:@"\n"];
   // Check that the label's text does not contain a newline.
   EXPECT_EQ(NSNotFound, static_cast<NSInteger>(range.location));
 
   [label setText:chineseStringWithOrphan];
-  ios_internal::FixOrphanWord(label);
+  FixOrphanWord(label);
   range = [[label text] rangeOfString:@"\n"];
   // Check that the label's text contains a newline.
   ASSERT_NE(NSNotFound, static_cast<NSInteger>(range.location));

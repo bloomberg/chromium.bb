@@ -288,10 +288,9 @@ const NSTimeInterval kUploadTotalTime = 5;
   NSTimeInterval elapsed =
       [[NSDate date] timeIntervalSinceDate:uploadStartTime_];
   // Theoretically we could stop early when the value returned by
-  // ios_internal::breakpad::GetCrashReportCount() changes, but this is
-  // simpler. If we decide to look for a change in crash report count, then we
-  // also probably want to replace the UIProgressView with a
-  // UIActivityIndicatorView.
+  // breakpad::GetCrashReportCount() changes, but this is simpler. If we decide
+  // to look for a change in crash report count, then we also probably want to
+  // replace the UIProgressView with a UIActivityIndicatorView.
   if (elapsed <= kUploadTotalTime) {
     [uploadProgress_ setProgress:elapsed / kUploadTotalTime animated:YES];
   } else {

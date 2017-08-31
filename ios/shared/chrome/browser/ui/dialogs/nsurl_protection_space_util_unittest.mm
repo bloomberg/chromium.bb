@@ -17,7 +17,7 @@
 #error "This file requires ARC support."
 #endif
 
-using namespace ios_internal::nsurlprotectionspace_util;
+using namespace nsurlprotectionspace_util;
 
 namespace {
 

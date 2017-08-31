@@ -341,8 +341,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       [[CollectionViewAccountItem alloc] initWithType:ItemTypeSyncError];
   syncErrorItem.text = l10n_util::GetNSString(IDS_IOS_SYNC_ERROR_TITLE);
   syncErrorItem.image = [UIImage imageNamed:@"settings_error"];
-  syncErrorItem.detailText =
-      ios_internal::sync::GetSyncErrorMessageForBrowserState(_browserState);
+  syncErrorItem.detailText = GetSyncErrorMessageForBrowserState(_browserState);
   return syncErrorItem;
 }
 
@@ -591,8 +590,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     return;
   }
 
-  GenericChromeCommand* command =
-      ios_internal::sync::GetSyncCommandForBrowserState(_browserState);
+  GenericChromeCommand* command = GetSyncCommandForBrowserState(_browserState);
   [self chromeExecuteCommand:command];
 }
 

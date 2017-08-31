@@ -22,7 +22,7 @@ TEST(CollectionViewFooterItemTest, ConfigureCell) {
   NSString* text = @"Test Footer";
   item.text = text;
 
-  UIImage* image = ios_internal::CollectionViewTestImage();
+  UIImage* image = CollectionViewTestImage();
   item.image = image;
 
   CollectionViewFooterCell* cell = [[[item cellClass] alloc] init];

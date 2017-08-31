@@ -225,16 +225,14 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
 
   // Set up notifications;
   NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
-  [defaultCenter
-      addObserver:self.consumer
-         selector:@selector(locationBarBecomesFirstResponder)
-             name:ios_internal::kLocationBarBecomesFirstResponderNotification
-           object:nil];
-  [defaultCenter
-      addObserver:self.consumer
-         selector:@selector(locationBarResignsFirstResponder)
-             name:ios_internal::kLocationBarResignsFirstResponderNotification
-           object:nil];
+  [defaultCenter addObserver:self.consumer
+                    selector:@selector(locationBarBecomesFirstResponder)
+                        name:kLocationBarBecomesFirstResponderNotification
+                      object:nil];
+  [defaultCenter addObserver:self.consumer
+                    selector:@selector(locationBarResignsFirstResponder)
+                        name:kLocationBarResignsFirstResponderNotification
+                      object:nil];
 
   // Set up what's new.
   _notificationPromo.reset(

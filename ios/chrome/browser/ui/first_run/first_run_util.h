@@ -26,8 +26,6 @@ extern NSString* const kChromeFirstRunUIWillFinishNotification;
 // of Service modal view.
 extern NSString* const kChromeFirstRunUIDidFinishNotification;
 
-namespace ios_internal {
-
 // Checks if the last line of the label only contains one word and if so, insert
 // a newline character before the second to last word so that there are two
 // words on the last line. Should only be called on labels that span multiple
@@ -61,7 +59,5 @@ void FirstRunDismissed();
 void SetDataReductionProxyEnabled(ios::ChromeBrowserState* browserState,
                                   BOOL enabled,
                                   BOOL toggled_switch);
-
-}  // namespace ios_internal
 
 #endif  // IOS_CHROME_BROWSER_UI_FIRST_RUN_FIRST_RUN_UTIL_H_

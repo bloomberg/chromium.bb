@@ -325,7 +325,6 @@ const int kNumberOfURLsToSend = 1;
 
 @end
 
-namespace ios_internal {
 namespace breakpad {
 
 void MonitorURLsForTabModel(TabModel* tab_model) {
@@ -354,4 +353,3 @@ void ClearStateForTabModel(TabModel* tab_model) {
 }
 
 }  // namespace breakpad
-}  // namespace ios_internal

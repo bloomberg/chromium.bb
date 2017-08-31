@@ -949,12 +949,10 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
     return;
   }
   identityAccountItem.shouldDisplayError =
-      !ios_internal::sync::IsTransientSyncError(
-          syncSetupService->GetSyncServiceState());
+      !IsTransientSyncError(syncSetupService->GetSyncServiceState());
   if (identityAccountItem.shouldDisplayError) {
     identityAccountItem.detailText =
-        ios_internal::sync::GetSyncErrorDescriptionForBrowserState(
-            _browserState);
+        GetSyncErrorDescriptionForBrowserState(_browserState);
   } else {
     identityAccountItem.detailText =
         syncSetupService->IsSyncEnabled()

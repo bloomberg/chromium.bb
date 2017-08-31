@@ -1274,8 +1274,7 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
 
 - (void)crashIfRequested {
   if (experimental_flags::IsStartupCrashEnabled()) {
-    // Flush out the value cached for
-    // ios_internal::breakpad::SetUploadingEnabled().
+    // Flush out the value cached for breakpad::SetUploadingEnabled().
     [[NSUserDefaults standardUserDefaults] synchronize];
 
     int* x = NULL;

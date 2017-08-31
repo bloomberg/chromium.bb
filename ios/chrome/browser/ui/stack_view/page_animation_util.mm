@@ -75,8 +75,6 @@ const CGFloat kAnimateOutAnchorY = 0;
 
 @end
 
-namespace ios_internal {
-
 namespace page_animation_util {
 
 const CGFloat kCardMargin = 14.0;
@@ -471,5 +469,3 @@ CGFloat AnimateOutTransformBreadth() {
 }
 
 }  // namespace page_animation_util
-
-}  // namespace ios_internal

@@ -15,8 +15,6 @@
 // The expected use is to create a view with the same size and position as the
 // page content area, add it to the view hierarchy, then call the appropriate
 // animation method.
-namespace ios_internal {
-
 namespace page_animation_util {
 
 // The standard margin between a card and the edge of the content view, in
@@ -102,7 +100,5 @@ CGAffineTransform AnimateOutTransform(CGFloat fraction,
 CGFloat AnimateOutTransformBreadth();
 
 }  // namespace page_animation_util
-
-}  // namespace ios_internal
 
 #endif  // IOS_CHROME_BROWSER_UI_STACK_VIEW_PAGE_ANIMATION_UTIL_H_

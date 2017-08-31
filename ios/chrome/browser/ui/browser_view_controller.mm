@@ -219,7 +219,6 @@ using bookmarks::BookmarkNode;
 class BrowserBookmarkModelBridge;
 class InfoBarContainerDelegateIOS;
 
-namespace ios_internal {
 NSString* const kPageInfoWillShowNotification =
     @"kPageInfoWillShowNotification";
 NSString* const kPageInfoWillHideNotification =
@@ -228,7 +227,6 @@ NSString* const kLocationBarBecomesFirstResponderNotification =
     @"kLocationBarBecomesFirstResponderNotification";
 NSString* const kLocationBarResignsFirstResponderNotification =
     @"kLocationBarResignsFirstResponderNotification";
-}  // namespace ios_internal
 
 namespace {
 
@@ -1579,7 +1577,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [[UpgradeCenter sharedInstance] addInfoBarToManager:infoBarManager
                                              forTabId:[tab tabId]];
   if (!ReSignInInfoBarDelegate::Create(_browserState, tab)) {
-    ios_internal::sync::displaySyncErrors(_browserState, tab);
+    DisplaySyncErrors(_browserState, tab);
   }
 
   // The rest of this function initiates the new tab animation, which is
@@ -1628,7 +1626,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     newPage.image = [tab updateSnapshotWithOverlay:YES visibleFrameOnly:YES];
     [animationParentView addSubview:newPage];
     CGPoint origin = [self lastTapPoint];
-    ios_internal::page_animation_util::AnimateInPaperWithAnimationAndCompletion(
+    page_animation_util::AnimateInPaperWithAnimationAndCompletion(
         newPage, -newPageOffset,
         newPage.frame.size.height - newPage.image.size.height, origin,
         _isOffTheRecord, NULL, ^{
@@ -1673,7 +1671,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
     // 3. A new, blank CardView to represent the new tab being added.
     // Launch the new background tab animation.
-    ios_internal::page_animation_util::AnimateNewBackgroundPageWithCompletion(
+    page_animation_util::AnimateNewBackgroundPageWithCompletion(
         topCard, [_contentArea frame], IsPortrait(), ^{
           [background removeFromSuperview];
           [topCard removeFromSuperview];
@@ -3066,7 +3064,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
                           offset:headerOffset];
   };
   if (animate) {
-    [UIView animateWithDuration:ios_internal::kToolbarAnimationDuration
+    [UIView animateWithDuration:kFullScreenControllerToolbarAnimationDuration
                           delay:0.0
                         options:UIViewAnimationOptionBeginFromCurrentState
                      animations:block
@@ -3110,7 +3108,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
                           offset:headerOffset];
   };
 
-  [UIView animateWithDuration:ios_internal::kToolbarAnimationDuration
+  [UIView animateWithDuration:kFullScreenControllerToolbarAnimationDuration
                         delay:0.0
                       options:UIViewAnimationOptionBeginFromCurrentState
                    animations:block
@@ -3933,8 +3931,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
     return;  // TODO(crbug.com/244366): This should not be necessary.
   _locationBarHasFocus = YES;
   [[NSNotificationCenter defaultCenter]
-      postNotificationName:ios_internal::
-                               kLocationBarBecomesFirstResponderNotification
+      postNotificationName:kLocationBarBecomesFirstResponderNotification
                     object:nil];
   [_sideSwipeController setEnabled:NO];
   if ([[_model currentTab].webController wantsKeyboardShield]) {
@@ -3956,8 +3953,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
   _locationBarHasFocus = NO;
   [_sideSwipeController setEnabled:YES];
   [[NSNotificationCenter defaultCenter]
-      postNotificationName:ios_internal::
-                               kLocationBarResignsFirstResponderNotification
+      postNotificationName:kLocationBarResignsFirstResponderNotification
                     object:nil];
   [UIView animateWithDuration:0.3
       animations:^{
@@ -4024,7 +4020,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
 
   CGFloat shortAxis = frame.size.width;
   CGFloat shortInset = kCardImageInsets.left + kCardImageInsets.right;
-  shortAxis -= shortInset + 2 * ios_internal::page_animation_util::kCardMargin;
+  shortAxis -= shortInset + 2 * page_animation_util::kCardMargin;
   CGFloat aspectRatio = frame.size.height / frame.size.width;
   CGFloat longAxis = std::floor(aspectRatio * shortAxis);
   CGFloat longInset = kCardImageInsets.top + kCardImageInsets.bottom;
@@ -4374,7 +4370,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
   [_toolbarController cancelOmniboxEdit];
 
   [[NSNotificationCenter defaultCenter]
-      postNotificationName:ios_internal::kPageInfoWillShowNotification
+      postNotificationName:kPageInfoWillShowNotification
                     object:nil];
 
   // TODO(crbug.com/760387): Get rid of PageInfoModel completely.
@@ -4398,7 +4394,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
     return;
 
   [[NSNotificationCenter defaultCenter]
-      postNotificationName:ios_internal::kPageInfoWillHideNotification
+      postNotificationName:kPageInfoWillHideNotification
                     object:nil];
 
   [_pageInfoController dismiss];
@@ -4483,7 +4479,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
   // Do not animate close in iPad.
   if (!IsIPadIdiom()) {
     [_contentArea addSubview:exitingPage];
-    ios_internal::page_animation_util::AnimateOutWithCompletion(
+    page_animation_util::AnimateOutWithCompletion(
         exitingPage, 0, YES, IsPortrait(), ^{
           [exitingPage removeFromSuperview];
         });

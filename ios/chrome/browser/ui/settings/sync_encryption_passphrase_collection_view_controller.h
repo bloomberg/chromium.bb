@@ -15,7 +15,6 @@ namespace ios {
 class ChromeBrowserState;
 }  // namespace ios
 
-namespace ios_internal {
 namespace sync_encryption_passphrase {
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
   SectionIdentifierPassphrase = kSectionIdentifierEnumZero,
@@ -29,7 +28,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeFooter,
 };
 }  // namespace sync_encryption_passphrase
-}  // namespace ios_internal
 
 // Controller to allow user to specify encryption passphrase for Sync.
 @interface SyncEncryptionPassphraseCollectionViewController

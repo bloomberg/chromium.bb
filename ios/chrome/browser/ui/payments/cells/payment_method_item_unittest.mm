@@ -23,7 +23,7 @@ TEST(PaymentRequestPaymentMethodItemTest, TextLabels) {
   NSString* methodDetail = @"Bobs Your Uncle III, esq.";
   NSString* methodAddress = @"123 Bob St, Halifax, NS";
   NSString* notification = @"More information is required.";
-  UIImage* methodTypeIcon = ios_internal::CollectionViewTestImage();
+  UIImage* methodTypeIcon = CollectionViewTestImage();
   MDCCollectionViewCellAccessoryType accessoryType =
       MDCCollectionViewCellAccessoryDisclosureIndicator;
 

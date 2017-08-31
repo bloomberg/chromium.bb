@@ -265,8 +265,7 @@ NSString* const kJavaScriptDialogTextFieldAccessibiltyIdentifier =
                                                   NSString* password))handler {
   NSString* title = l10n_util::GetNSStringWithFixup(IDS_LOGIN_DIALOG_TITLE);
   NSString* message =
-      ios_internal::nsurlprotectionspace_util::MessageForHTTPAuth(
-          protectionSpace);
+      nsurlprotectionspace_util::MessageForHTTPAuth(protectionSpace);
 
   InputAlertCoordinator* alertCoordinator = [[InputAlertCoordinator alloc]
       initWithBaseViewController:self.viewController

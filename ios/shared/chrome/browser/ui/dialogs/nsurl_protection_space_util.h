@@ -9,7 +9,6 @@
 
 class GURL;
 
-namespace ios_internal {
 namespace nsurlprotectionspace_util {
 
 // Information describing dialog requester used as dialog subtitle.
@@ -25,6 +24,5 @@ NSString* RequesterIdentity(NSURLProtectionSpace* protectionSpace);
 GURL RequesterOrigin(NSURLProtectionSpace* protectionSpace);
 
 }  // namespace nsurlprotectionspace_util
-}  // namespace ios_internal
 
 #endif  // IOS_SHARED_CHROME_BROWSER_UI_DIALOGS_NSURL_PROTECTION_SPACE_UTIL_H_

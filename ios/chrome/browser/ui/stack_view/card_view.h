@@ -110,8 +110,8 @@ typedef enum {
 // Removes the top-level frame animation added by
 // |-animateFromBeginFrame:toEndFrame:tabAnimationStyle:|.  This is necessary to
 // avoid animation glitches that occur when a card is closed mid-animation, as
-// ios_internal::page_animation_util::AnimateOutWithCompletion updates the
-// CardView's anchorPoint.
+// page_animation_util::AnimateOutWithCompletion updates the CardView's
+// anchorPoint.
 - (void)removeFrameAnimation;
 
 // Adds the dummy toolbar background view to the back of the card tab view.
