@@ -30,6 +30,8 @@ class InstantAppsInfoBarDelegate : public ConfirmInfoBarDelegate,
   // WebContentsObserver:
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
+  void DidStartNavigation(
+      content::NavigationHandle* navigation_handle) override;
 
  private:
   explicit InstantAppsInfoBarDelegate(content::WebContents* web_contents,
@@ -46,7 +48,7 @@ class InstantAppsInfoBarDelegate : public ConfirmInfoBarDelegate,
   base::android::ScopedJavaGlobalRef<jobject> java_delegate_;
   base::android::ScopedJavaGlobalRef<jobject> data_;
   std::string url_;
-  content::WebContents* web_contents_;
+  bool has_navigated_away_from_launch_url_;
 
   DISALLOW_COPY_AND_ASSIGN(InstantAppsInfoBarDelegate);
 };
