@@ -465,4 +465,18 @@ TEST_F(DialogClientViewTest, FocusMultipleButtons) {
   EXPECT_TRUE(client_view()->cancel_button()->HasFocus());
 }
 
+// Ensures that the focus persistence works correctly when buttons are removed.
+TEST_F(DialogClientViewTest, FocusChangingButtons) {
+  // Start with ok and cancel buttons.
+  widget()->Show();
+  SetDialogButtons(ui::DIALOG_BUTTON_CANCEL | ui::DIALOG_BUTTON_OK);
+  client_view()->cancel_button()->RequestFocus();  // Set focus.
+  FocusManager* focus_manager = GetFocusManager();
+  EXPECT_EQ(client_view()->cancel_button(), focus_manager->GetFocusedView());
+
+  // Remove buttons.
+  SetDialogButtons(ui::DIALOG_BUTTON_NONE);
+  EXPECT_EQ(nullptr, focus_manager->GetFocusedView());
+}
+
 }  // namespace views

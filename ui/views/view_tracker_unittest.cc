@@ -4,6 +4,7 @@
 
 #include "ui/views/view_tracker.h"
 
+#include "base/memory/ptr_util.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/view.h"
 
@@ -19,6 +20,16 @@ TEST_F(ViewTrackerTest, RemovedOnDelete) {
     EXPECT_EQ(&view, tracker.view());
   }
   EXPECT_EQ(nullptr, tracker.view());
+}
+
+TEST_F(ViewTrackerTest, ObservedAtConstruction) {
+  std::unique_ptr<ViewTracker> tracker;
+  {
+    View view;
+    tracker = base::MakeUnique<ViewTracker>(&view);
+    EXPECT_EQ(&view, tracker->view());
+  }
+  EXPECT_EQ(nullptr, tracker->view());
 }
 
 }  // namespace views
