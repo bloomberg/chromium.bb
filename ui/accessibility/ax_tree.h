@@ -163,6 +163,7 @@ class AX_EXPORT AXTree {
   virtual ~AXTree();
 
   virtual void SetDelegate(AXTreeDelegate* delegate);
+  AXTreeDelegate* delegate() const { return delegate_; }
 
   AXNode* root() const { return root_; }
 
