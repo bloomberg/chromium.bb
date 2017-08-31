@@ -37,12 +37,10 @@ class DISPLAY_MANAGER_EXPORT ForwardingDisplayDelegate
   void RelinquishDisplayControl(
       const DisplayControlCallback& callback) override;
   void GetDisplays(const GetDisplaysCallback& callback) override;
-  void AddMode(const DisplaySnapshot& output, const DisplayMode* mode) override;
   void Configure(const DisplaySnapshot& output,
                  const DisplayMode* mode,
                  const gfx::Point& origin,
                  const ConfigureCallback& callback) override;
-  void CreateFrameBuffer(const gfx::Size& size) override;
   void GetHDCPState(const DisplaySnapshot& output,
                     const GetHDCPStateCallback& callback) override;
   void SetHDCPState(const DisplaySnapshot& output,

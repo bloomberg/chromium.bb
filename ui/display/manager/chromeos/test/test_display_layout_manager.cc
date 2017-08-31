@@ -41,8 +41,7 @@ bool TestDisplayLayoutManager::GetDisplayLayout(
     const std::vector<DisplaySnapshot*>& displays,
     MultipleDisplayState new_display_state,
     chromeos::DisplayPowerState new_power_state,
-    std::vector<DisplayConfigureRequest>* requests,
-    gfx::Size* framebuffer_size) const {
+    std::vector<DisplayConfigureRequest>* requests) const {
   NOTREACHED();
   return false;
 }

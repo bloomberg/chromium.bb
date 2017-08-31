@@ -125,9 +125,6 @@ void FakeDisplayDelegate::GetDisplays(const GetDisplaysCallback& callback) {
   callback.Run(displays);
 }
 
-void FakeDisplayDelegate::AddMode(const DisplaySnapshot& output,
-                                  const DisplayMode* mode) {}
-
 void FakeDisplayDelegate::Configure(const DisplaySnapshot& output,
                                     const DisplayMode* mode,
                                     const gfx::Point& origin,
@@ -158,8 +155,6 @@ void FakeDisplayDelegate::Configure(const DisplaySnapshot& output,
         this, &FakeDisplayDelegate::ConfigureDone);
   }
 }
-
-void FakeDisplayDelegate::CreateFrameBuffer(const gfx::Size& size) {}
 
 void FakeDisplayDelegate::GetHDCPState(const DisplaySnapshot& output,
                                        const GetHDCPStateCallback& callback) {

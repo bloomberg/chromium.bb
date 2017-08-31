@@ -53,9 +53,6 @@ void ForwardingDisplayDelegate::GetDisplays(
                  base::Unretained(this), callback));
 }
 
-void ForwardingDisplayDelegate::AddMode(const DisplaySnapshot& snapshot,
-                                        const DisplayMode* mode) {}
-
 void ForwardingDisplayDelegate::Configure(const DisplaySnapshot& snapshot,
                                           const DisplayMode* mode,
                                           const gfx::Point& origin,
@@ -73,8 +70,6 @@ void ForwardingDisplayDelegate::Configure(const DisplaySnapshot& snapshot,
   delegate_->Configure(snapshot.display_id(), std::move(transport_mode), origin,
                        callback);
 }
-
-void ForwardingDisplayDelegate::CreateFrameBuffer(const gfx::Size& size) {}
 
 void ForwardingDisplayDelegate::GetHDCPState(
     const DisplaySnapshot& snapshot,

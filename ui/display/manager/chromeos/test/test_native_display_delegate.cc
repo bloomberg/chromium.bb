@@ -55,11 +55,6 @@ void TestNativeDisplayDelegate::GetDisplays(
   }
 }
 
-void TestNativeDisplayDelegate::AddMode(const DisplaySnapshot& output,
-                                        const DisplayMode* mode) {
-  log_->AppendAction(GetAddOutputModeAction(output, mode));
-}
-
 bool TestNativeDisplayDelegate::Configure(const DisplaySnapshot& output,
                                           const DisplayMode* mode,
                                           const gfx::Point& origin) {
@@ -85,12 +80,6 @@ void TestNativeDisplayDelegate::Configure(const DisplaySnapshot& output,
   } else {
     callback.Run(result);
   }
-}
-
-void TestNativeDisplayDelegate::CreateFrameBuffer(const gfx::Size& size) {
-  log_->AppendAction(
-      GetFramebufferAction(size, outputs_.size() >= 1 ? outputs_[0] : nullptr,
-                           outputs_.size() >= 2 ? outputs_[1] : nullptr));
 }
 
 void TestNativeDisplayDelegate::GetHDCPState(

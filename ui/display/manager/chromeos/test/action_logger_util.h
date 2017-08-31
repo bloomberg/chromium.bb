@@ -14,7 +14,6 @@
 
 namespace gfx {
 class Point;
-class Size;
 }  // namespace gfx
 
 namespace display {
@@ -37,22 +36,11 @@ const char kNoActions[] = "";
 
 std::string DisplaySnapshotToString(const DisplaySnapshot& output);
 
-// Returns a string describing a TestNativeDisplayDelegate::AddOutputMode()
-// call.
-std::string GetAddOutputModeAction(const DisplaySnapshot& output,
-                                   const DisplayMode* mode);
-
 // Returns a string describing a TestNativeDisplayDelegate::Configure()
 // call.
 std::string GetCrtcAction(const DisplaySnapshot& output,
                           const DisplayMode* mode,
                           const gfx::Point& origin);
-
-// Returns a string describing a TestNativeDisplayDelegate::CreateFramebuffer()
-// call.
-std::string GetFramebufferAction(const gfx::Size& size,
-                                 const DisplaySnapshot* out1,
-                                 const DisplaySnapshot* out2);
 
 // Returns a string describing a TestNativeDisplayDelegate::SetHDCPState() call.
 std::string GetSetHDCPStateAction(const DisplaySnapshot& output,
