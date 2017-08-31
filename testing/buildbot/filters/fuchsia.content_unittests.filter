@@ -10,14 +10,6 @@
 -RenderWidgetHostViewAuraCopyRequestTest.PresentTime
 -ServiceWorkerDatabaseTest.DatabaseVersion_CorruptedSchemaVersion
 -ServiceWorkerProviderHostTest.ActiveIsNotController
--URLLoaderFactoryImplTest/URLLoaderFactoryImplTest.DownloadToFile/0
--URLLoaderFactoryImplTest/URLLoaderFactoryImplTest.DownloadToFile/1
--URLLoaderFactoryImplTest/URLLoaderFactoryImplTest.GetFailedResponse2/0
--URLLoaderFactoryImplTest/URLLoaderFactoryImplTest.GetFailedResponse2/1
--URLLoaderFactoryImplTest/URLLoaderFactoryImplTest.GetResponse/0
--URLLoaderFactoryImplTest/URLLoaderFactoryImplTest.GetResponse/1
--URLLoaderFactoryImplTest/URLLoaderFactoryImplTest.OnTransferSizeUpdated/0
--URLLoaderFactoryImplTest/URLLoaderFactoryImplTest.OnTransferSizeUpdated/1
 -URLLoaderImplTest.Basic
 -URLLoaderImplTest.BasicSSL
 -URLLoaderImplTest.CantSniffEmptyHtml
@@ -27,11 +19,6 @@
 -URLLoaderImplTest.SSLSentOnlyWhenRequested
 -URLLoaderImplTest.SniffMimeType
 -WebContentsAudioInputStreamTest.MirroringOneStreamAfterTargetChange/0
-
-# Failing after SDK roll due to failure to install cert, see
-# https://crbug.com/761033.
--NavigationURLLoaderTest.RequestFailedCertError
--NavigationURLLoaderTest.RequestFailedCertErrorFatal
 
 # These rely on chmod() for MakeFileUnread/writable(), https://crbug.com/759853.
 -BaseFileTest.ReadonlyBaseFile
@@ -60,6 +47,7 @@
 -AppCacheStorageImplTest.Reinitialize2
 -AppCacheStorageImplTest.Reinitialize3
 -AppCacheUpdateJobTest.AlreadyChecking/1
+-AppCacheUpdateJobTest.AlreadyDownloading/1
 -BrowsingDataRemoverImplTest.MultipleTasks
 -ChromeAppCacheServiceTest.KeepOnDestruction
 -ChromeAppCacheServiceTest.SaveSessionState
