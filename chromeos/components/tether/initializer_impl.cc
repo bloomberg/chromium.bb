@@ -20,6 +20,7 @@
 #include "chromeos/components/tether/network_configuration_remover.h"
 #include "chromeos/components/tether/network_connection_handler_tether_delegate.h"
 #include "chromeos/components/tether/network_host_scan_cache.h"
+#include "chromeos/components/tether/network_list_sorter.h"
 #include "chromeos/components/tether/notification_presenter.h"
 #include "chromeos/components/tether/notification_remover.h"
 #include "chromeos/components/tether/persistent_host_scan_cache_impl.h"
@@ -187,18 +188,11 @@ void InitializerImpl::OnPendingDisconnectRequestsComplete() {
 
   // Shutdown has completed. It is now safe to delete the objects that were
   // shutting down asynchronously.
-  disconnect_tethering_request_sender_ =
-      base::MakeUnique<DummyDisconnectTetheringRequestSender>();
-  ble_connection_manager_ = base::MakeUnique<BleConnectionManager>(
-      cryptauth_service_, adapter_, local_device_data_provider_.get(),
-      remote_beacon_seed_fetcher_.get());
-  remote_beacon_seed_fetcher_ =
-      base::MakeUnique<cryptauth::RemoteBeaconSeedFetcher>(
-          cryptauth_service_->GetCryptAuthDeviceManager());
-  local_device_data_provider_ =
-      base::MakeUnique<cryptauth::LocalDeviceDataProvider>(cryptauth_service_);
-  tether_host_fetcher_ =
-      base::MakeUnique<TetherHostFetcher>(cryptauth_service_);
+  disconnect_tethering_request_sender_.reset();
+  ble_connection_manager_.reset();
+  remote_beacon_seed_fetcher_.reset();
+  local_device_data_provider_.reset();
+  tether_host_fetcher_.reset();
 
   TransitionToStatus(Initializer::Status::SHUT_DOWN);
 }
@@ -207,6 +201,8 @@ void InitializerImpl::CreateComponent() {
   PA_LOG(INFO) << "Successfully set Bluetooth advertisement interval. "
                << "Initializing tether feature.";
 
+  network_list_sorter_ = base::MakeUnique<NetworkListSorter>();
+  network_state_handler_->set_tether_sort_delegate(network_list_sorter_.get());
   tether_host_fetcher_ =
       base::MakeUnique<TetherHostFetcher>(cryptauth_service_);
   local_device_data_provider_ =
@@ -226,10 +222,7 @@ void InitializerImpl::CreateComponent() {
       base::MakeUnique<DeviceIdTetherNetworkGuidMap>();
   host_scan_device_prioritizer_ =
       base::MakeUnique<HostScanDevicePrioritizerImpl>(
-          tether_host_response_recorder_.get(),
-          device_id_tether_network_guid_map_.get());
-  network_state_handler_->set_tether_sort_delegate(
-      host_scan_device_prioritizer_.get());
+          tether_host_response_recorder_.get());
   wifi_hotspot_connector_ = base::MakeUnique<WifiHotspotConnector>(
       network_state_handler_, network_connect_);
   active_host_ =
@@ -311,7 +304,8 @@ void InitializerImpl::StartAsynchronousShutdown() {
   disconnect_tethering_request_sender_->AddObserver(this);
 
   // All objects which are not dependencies of
-  // |disconnect_tethering_request_sender_| are
+  // |disconnect_tethering_request_sender_| are no longer needed, so delete
+  // them.
   crash_recovery_manager_.reset();
   network_connection_handler_tether_delegate_.reset();
   tether_network_disconnection_handler_.reset();
@@ -333,6 +327,8 @@ void InitializerImpl::StartAsynchronousShutdown() {
   host_scan_device_prioritizer_.reset();
   device_id_tether_network_guid_map_.reset();
   tether_host_response_recorder_.reset();
+  network_state_handler_->set_tether_sort_delegate(nullptr);
+  network_list_sorter_.reset();
 }
 
 }  // namespace tether

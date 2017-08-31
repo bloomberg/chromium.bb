@@ -50,6 +50,7 @@ class HostConnectionMetricsLogger;
 class MasterHostScanCache;
 class NetworkConfigurationRemover;
 class NetworkHostScanCache;
+class NetworkListSorter;
 class NotificationPresenter;
 class NotificationRemover;
 class PersistentHostScanCache;
@@ -142,6 +143,7 @@ class InitializerImpl : public Initializer,
   // Declare new objects in the order that they will be created during
   // initialization to ensure that they are destroyed in the correct order. This
   // order will be enforced by InitializerTest.TestCreateAndDestroy.
+  std::unique_ptr<NetworkListSorter> network_list_sorter_;
   std::unique_ptr<TetherHostFetcher> tether_host_fetcher_;
   std::unique_ptr<cryptauth::LocalDeviceDataProvider>
       local_device_data_provider_;

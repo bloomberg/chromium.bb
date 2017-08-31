@@ -7,48 +7,27 @@
 
 #include "base/macros.h"
 #include "chromeos/components/tether/host_scan_device_prioritizer.h"
-#include "chromeos/network/network_state_handler.h"
 #include "components/cryptauth/remote_device.h"
 
 namespace chromeos {
 
-class NetworkStateHandler;
-
 namespace tether {
 
 class TetherHostResponseRecorder;
-class DeviceIdTetherNetworkGuidMap;
 
 // Implementation of HostScanDevicePrioritizer.
-class HostScanDevicePrioritizerImpl
-    : public HostScanDevicePrioritizer,
-      public NetworkStateHandler::TetherSortDelegate {
+class HostScanDevicePrioritizerImpl : public HostScanDevicePrioritizer {
  public:
   HostScanDevicePrioritizerImpl(
-      TetherHostResponseRecorder* tether_host_response_recorder,
-      DeviceIdTetherNetworkGuidMap* device_id_tether_network_guid_map);
+      TetherHostResponseRecorder* tether_host_response_recorder);
   ~HostScanDevicePrioritizerImpl() override;
 
   // HostScanDevicePrioritizer:
   void SortByHostScanOrder(
       std::vector<cryptauth::RemoteDevice>* remote_devices) const override;
 
-  // NetworkStateHandler::TetherNetworkListSorter:
-  void SortTetherNetworkList(
-      NetworkStateHandler::ManagedStateList* tether_networks) const override;
-
  private:
-  // Performs sorting for both SortByHostScanOrder() and
-  // SortTetherNetworkList().
-  template <typename T>
-  void SortNetworks(std::vector<T>* list_to_sort) const;
-
-  std::string GetDeviceId(const cryptauth::RemoteDevice& remote_device) const;
-  std::string GetDeviceId(
-      const std::unique_ptr<ManagedState>& tether_network_state) const;
-
   TetherHostResponseRecorder* tether_host_response_recorder_;
-  DeviceIdTetherNetworkGuidMap* device_id_tether_network_guid_map_;
 
   DISALLOW_COPY_AND_ASSIGN(HostScanDevicePrioritizerImpl);
 };
