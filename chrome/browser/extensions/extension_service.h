@@ -755,6 +755,9 @@ class ExtensionService
                            ManagementPolicyProhibitsEnableOnInstalled);
   FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
                            BlockAndUnblockBlacklistedExtension);
+  FRIEND_TEST_ALL_PREFIXES(BlacklistedExtensionSyncServiceTest,
+                           SyncBlacklistedExtension);
+  friend class BlacklistedExtensionSyncServiceTest;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionService);
 };
