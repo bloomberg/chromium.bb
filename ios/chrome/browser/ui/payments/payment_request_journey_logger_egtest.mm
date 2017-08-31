@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/ios/ios_util.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/payments/core/journey_logger.h"
@@ -98,11 +99,17 @@ using payments::JourneyLogger;
 }
 
 - (void)testOnlyBobpaySupported {
+  if (!base::ios::IsRunningOnOrLater(10, 3, 0)) {
+    EARL_GREY_TEST_SKIPPED(
+        @"Disabled on iOS versions below 10.3 because DOMException is not "
+        @"available.");
+  }
+
   chrome_test_util::HistogramTester histogramTester;
 
   [self loadTestPage:"payment_request_bobpay_test.html"];
   [ChromeEarlGrey tapWebViewElementWithID:@"buy"];
-  [ChromeEarlGrey waitForWebViewContainingText:"rejected"];
+  [self waitForWebViewContainingTexts:{"rejected"}];
 
   FailureBlock failureBlock = ^(NSString* error) {
     GREYFail(error);
