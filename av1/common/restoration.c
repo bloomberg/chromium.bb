@@ -146,6 +146,17 @@ static void loop_copy_tile(uint8_t *data, int tile_idx, int subtile_idx,
            h_end - h_start);
 }
 
+// Convert 7-tap filter to 5-tap for top and bottom rows of a processing unit
+static void stepdown_wiener_kernel(const InterpKernel orig, InterpKernel vert) {
+  memcpy(vert, orig, sizeof(InterpKernel));
+  int delta = vert[0] / 2;
+  vert[1] += delta;
+  vert[WIENER_WIN - 2] += delta;
+  vert[2] += vert[0] - delta;
+  vert[WIENER_WIN - 3] += vert[0] - delta;
+  vert[0] = vert[WIENER_WIN - 1] = 0;
+}
+
 static void loop_wiener_filter_tile(uint8_t *data, int tile_idx, int width,
                                     int height, int stride,
                                     RestorationInternal *rst, uint8_t *dst,
@@ -161,6 +172,9 @@ static void loop_wiener_filter_tile(uint8_t *data, int tile_idx, int width,
                    dst_stride);
     return;
   }
+  InterpKernel vertical_topbot;
+  stepdown_wiener_kernel(rst->rsi->wiener_info[tile_idx].vfilter,
+                         vertical_topbot);
   av1_get_rest_tile_limits(tile_idx, 0, 0, rst->nhtiles, rst->nvtiles,
                            tile_width, tile_height, width, height, 0, 0,
                            &h_start, &h_end, &v_start, &v_end);
@@ -172,15 +186,41 @@ static void loop_wiener_filter_tile(uint8_t *data, int tile_idx, int width,
       int h = AOMMIN(procunit_height, (v_end - i + 15) & ~15);
       const uint8_t *data_p = data + i * stride + j;
       uint8_t *dst_p = dst + i * dst_stride + j;
+// Use 5-tap vertical filtering for top and bottom rows in
+// processing unit
+#if USE_WIENER_HIGH_INTERMEDIATE_PRECISION
+      aom_convolve8_add_src_hip(data_p, stride, dst_p, dst_stride,
+                                rst->rsi->wiener_info[tile_idx].hfilter, 16,
+                                vertical_topbot, 16, w, 1);
+#else
+      aom_convolve8_add_src(data_p, stride, dst_p, dst_stride,
+                            rst->rsi->wiener_info[tile_idx].hfilter, 16,
+                            vertical_topbot, 16, w, 1);
+#endif  // USE_WIENER_HIGH_INTERMEDIATE_PRECISION
+      data_p += stride;
+      dst_p += dst_stride;
+// Note h is at least 16
 #if USE_WIENER_HIGH_INTERMEDIATE_PRECISION
       aom_convolve8_add_src_hip(data_p, stride, dst_p, dst_stride,
                                 rst->rsi->wiener_info[tile_idx].hfilter, 16,
                                 rst->rsi->wiener_info[tile_idx].vfilter, 16, w,
-                                h);
+                                h - 2);
 #else
       aom_convolve8_add_src(data_p, stride, dst_p, dst_stride,
                             rst->rsi->wiener_info[tile_idx].hfilter, 16,
-                            rst->rsi->wiener_info[tile_idx].vfilter, 16, w, h);
+                            rst->rsi->wiener_info[tile_idx].vfilter, 16, w,
+                            h - 2);
+#endif  // USE_WIENER_HIGH_INTERMEDIATE_PRECISION
+      data_p += stride * (h - 2);
+      dst_p += dst_stride * (h - 2);
+#if USE_WIENER_HIGH_INTERMEDIATE_PRECISION
+      aom_convolve8_add_src_hip(data_p, stride, dst_p, dst_stride,
+                                rst->rsi->wiener_info[tile_idx].hfilter, 16,
+                                vertical_topbot, 16, w, 1);
+#else
+      aom_convolve8_add_src(data_p, stride, dst_p, dst_stride,
+                            rst->rsi->wiener_info[tile_idx].hfilter, 16,
+                            vertical_topbot, 16, w, 1);
 #endif  // USE_WIENER_HIGH_INTERMEDIATE_PRECISION
     }
 }
@@ -1011,6 +1051,9 @@ static void loop_wiener_filter_tile_highbd(uint16_t *data, int tile_idx,
   av1_get_rest_tile_limits(tile_idx, 0, 0, rst->nhtiles, rst->nvtiles,
                            tile_width, tile_height, width, height, 0, 0,
                            &h_start, &h_end, &v_start, &v_end);
+  InterpKernel vertical_topbot;
+  stepdown_wiener_kernel(rst->rsi->wiener_info[tile_idx].vfilter,
+                         vertical_topbot);
   // Convolve the whole tile (done in blocks here to match the requirements
   // of the vectorized convolve functions, but the result is equivalent)
   for (i = v_start; i < v_end; i += procunit_height)
@@ -1019,16 +1062,45 @@ static void loop_wiener_filter_tile_highbd(uint16_t *data, int tile_idx,
       int h = AOMMIN(procunit_height, (v_end - i + 15) & ~15);
       const uint16_t *data_p = data + i * stride + j;
       uint16_t *dst_p = dst + i * dst_stride + j;
+// if the filter is 7-tap do only horizontal filtering for top and
+// bottom rows.
 #if USE_WIENER_HIGH_INTERMEDIATE_PRECISION
       aom_highbd_convolve8_add_src_hip(
           CONVERT_TO_BYTEPTR(data_p), stride, CONVERT_TO_BYTEPTR(dst_p),
           dst_stride, rst->rsi->wiener_info[tile_idx].hfilter, 16,
-          rst->rsi->wiener_info[tile_idx].vfilter, 16, w, h, bit_depth);
+          vertical_topbot, 16, w, 1, bit_depth);
+#else
+      aom_highbd_convolve8_add_src(CONVERT_TO_BYTEPTR(data_p), stride,
+                                   CONVERT_TO_BYTEPTR(dst_p), dst_stride,
+                                   rst->rsi->wiener_info[tile_idx].hfilter, 16,
+                                   vertical_topbot, 16, w, 1, bit_depth);
+#endif  // USE_WIENER_HIGH_INTERMEDIATE_PRECISION
+      data_p += stride;
+      dst_p += dst_stride;
+// Note h is at least 16
+#if USE_WIENER_HIGH_INTERMEDIATE_PRECISION
+      aom_highbd_convolve8_add_src_hip(
+          CONVERT_TO_BYTEPTR(data_p), stride, CONVERT_TO_BYTEPTR(dst_p),
+          dst_stride, rst->rsi->wiener_info[tile_idx].hfilter, 16,
+          rst->rsi->wiener_info[tile_idx].vfilter, 16, w, h - 2, bit_depth);
 #else
       aom_highbd_convolve8_add_src(
           CONVERT_TO_BYTEPTR(data_p), stride, CONVERT_TO_BYTEPTR(dst_p),
           dst_stride, rst->rsi->wiener_info[tile_idx].hfilter, 16,
-          rst->rsi->wiener_info[tile_idx].vfilter, 16, w, h, bit_depth);
+          rst->rsi->wiener_info[tile_idx].vfilter, 16, w, h - 2, bit_depth);
+#endif  // USE_WIENER_HIGH_INTERMEDIATE_PRECISION
+      data_p += stride * (h - 2);
+      dst_p += dst_stride * (h - 2);
+#if USE_WIENER_HIGH_INTERMEDIATE_PRECISION
+      aom_highbd_convolve8_add_src_hip(
+          CONVERT_TO_BYTEPTR(data_p), stride, CONVERT_TO_BYTEPTR(dst_p),
+          dst_stride, rst->rsi->wiener_info[tile_idx].hfilter, 16,
+          vertical_topbot, 16, w, 1, bit_depth);
+#else
+      aom_highbd_convolve8_add_src(CONVERT_TO_BYTEPTR(data_p), stride,
+                                   CONVERT_TO_BYTEPTR(dst_p), dst_stride,
+                                   rst->rsi->wiener_info[tile_idx].hfilter, 16,
+                                   vertical_topbot, 16, w, 1, bit_depth);
 #endif  // USE_WIENER_HIGH_INTERMEDIATE_PRECISION
     }
 }

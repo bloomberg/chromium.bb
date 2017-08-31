@@ -358,8 +358,8 @@ static void search_selfguided_restoration(uint8_t *dat8, int width, int height,
   int ep, bestep = 0;
   int64_t err, besterr = -1;
   int exqd[2], bestxqd[2] = { 0, 0 };
-  int flt1_stride = width;
-  int flt2_stride = width;
+  int flt1_stride = ((width + 7) & ~7) + 8;
+  int flt2_stride = ((width + 7) & ~7) + 8;
   assert(pu_width == (RESTORATION_PROC_UNIT_SIZE >> 1) ||
          pu_width == RESTORATION_PROC_UNIT_SIZE);
   assert(pu_height == (RESTORATION_PROC_UNIT_SIZE >> 1) ||
@@ -385,11 +385,11 @@ static void search_selfguided_restoration(uint8_t *dat8, int width, int height,
                                      flt1_stride, sgr_params[ep].corner,
                                      sgr_params[ep].edge);
 #else
-          av1_selfguided_restoration_highbd_c(
+          av1_selfguided_restoration_highbd(
               dat_p, w, h, dat_stride, flt1_p, flt1_stride, bit_depth,
               sgr_params[ep].r1, sgr_params[ep].e1, tmpbuf2);
 #endif  // USE_HIGHPASS_IN_SGRPROJ
-          av1_selfguided_restoration_highbd_c(
+          av1_selfguided_restoration_highbd(
               dat_p, w, h, dat_stride, flt2_p, flt2_stride, bit_depth,
               sgr_params[ep].r2, sgr_params[ep].e2, tmpbuf2);
         }
@@ -406,13 +406,13 @@ static void search_selfguided_restoration(uint8_t *dat8, int width, int height,
           av1_highpass_filter(dat_p, w, h, dat_stride, flt1_p, flt1_stride,
                               sgr_params[ep].corner, sgr_params[ep].edge);
 #else
-        av1_selfguided_restoration_c(dat_p, w, h, dat_stride, flt1_p,
-                                     flt1_stride, sgr_params[ep].r1,
-                                     sgr_params[ep].e1, tmpbuf2);
+        av1_selfguided_restoration(dat_p, w, h, dat_stride, flt1_p, flt1_stride,
+                                   sgr_params[ep].r1, sgr_params[ep].e1,
+                                   tmpbuf2);
 #endif  // USE_HIGHPASS_IN_SGRPROJ
-          av1_selfguided_restoration_c(dat_p, w, h, dat_stride, flt2_p,
-                                       flt2_stride, sgr_params[ep].r2,
-                                       sgr_params[ep].e2, tmpbuf2);
+          av1_selfguided_restoration(dat_p, w, h, dat_stride, flt2_p,
+                                     flt2_stride, sgr_params[ep].r2,
+                                     sgr_params[ep].e2, tmpbuf2);
         }
 #if CONFIG_HIGHBITDEPTH
     }
