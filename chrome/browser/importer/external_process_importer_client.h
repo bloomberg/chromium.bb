@@ -13,6 +13,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
@@ -22,8 +23,6 @@
 #include "chrome/common/importer/profile_import.mojom.h"
 #include "components/favicon_base/favicon_usage_data.h"
 #include "components/history/core/browser/history_types.h"
-#include "content/public/browser/browser_thread.h"
-#include "content/public/browser/utility_process_host_client.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 class ExternalProcessImporterHost;
@@ -32,10 +31,6 @@ class InProcessImporterBridge;
 
 namespace autofill {
 struct PasswordForm;
-}
-
-namespace content{
-class UtilityProcessHost;
 }
 
 namespace importer {
@@ -50,8 +45,8 @@ struct SearchEngineInfo;
 // collects notifications from this process host and feeds data back to the
 // importer host, who actually does the writing.
 class ExternalProcessImporterClient
-    : public content::UtilityProcessHostClient,
-      public chrome::mojom::ProfileImportObserver {
+    : public chrome::mojom::ProfileImportObserver,
+      public base::RefCounted<ExternalProcessImporterClient> {
  public:
   ExternalProcessImporterClient(
       base::WeakPtr<ExternalProcessImporterHost> importer_host,
@@ -64,10 +59,6 @@ class ExternalProcessImporterClient
 
   // Called by the ExternalProcessImporterHost on import cancel.
   void Cancel();
-
-  // UtilityProcessHostClient implementation:
-  void OnProcessCrashed(int exit_code) override;
-  bool OnMessageReceived(const IPC::Message& message) override;
 
   // chrome::mojom::ProfileImportObserver:
   void OnImportStart() override;
@@ -104,12 +95,13 @@ class ExternalProcessImporterClient
   ~ExternalProcessImporterClient() override;
 
  private:
+  friend class base::RefCounted<ExternalProcessImporterClient>;
+
+  // Invoked if the ProfileImport service process crashes.
+  void OnProcessCrashed();
+
   // Notifies the importerhost that import has finished, and calls Release().
   void Cleanup();
-
-  // Creates a new UtilityProcessHost, which launches the import process.
-  void StartProcessOnIOThread(content::BrowserThread::ID thread_id,
-                              chrome::mojom::ProfileImportRequest request);
 
   // The Mojo connections need to be torn down on the same thread that created
   // them, but the destructor is not guaranteed to be run on that thread so we

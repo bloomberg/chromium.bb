@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_UTILITY_PROFILE_IMPORT_HANDLER_H_
-#define CHROME_UTILITY_PROFILE_IMPORT_HANDLER_H_
+#ifndef CHROME_UTILITY_IMPORTER_PROFILE_IMPORT_IMPL_H_
+#define CHROME_UTILITY_IMPORTER_PROFILE_IMPORT_IMPL_H_
 
 #include <stdint.h>
 
@@ -14,6 +14,7 @@
 #include "chrome/common/importer/profile_import.mojom.h"
 #include "chrome/utility/utility_message_handler.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "services/service_manager/public/cpp/service_context_ref.h"
 
 class ExternalProcessImporterBridge;
 class Importer;
@@ -21,19 +22,17 @@ class Importer;
 namespace base {
 class DictionaryValue;
 class Thread;
-}
+}  // namespace base
 
 namespace importer {
 struct SourceProfile;
 }
 
-// Dispatches IPCs for out of process profile import.
-class ProfileImportHandler : public chrome::mojom::ProfileImport {
+class ProfileImportImpl : public chrome::mojom::ProfileImport {
  public:
-  ProfileImportHandler();
-  ~ProfileImportHandler() override;
-
-  static void Create(chrome::mojom::ProfileImportRequest request);
+  explicit ProfileImportImpl(
+      std::unique_ptr<service_manager::ServiceContextRef> service_ref);
+  ~ProfileImportImpl() override;
 
  private:
   // chrome::mojom::ProfileImport:
@@ -56,12 +55,14 @@ class ProfileImportHandler : public chrome::mojom::ProfileImport {
   scoped_refptr<ExternalProcessImporterBridge> bridge_;
 
   // A bitmask of importer::ImportItem.
-  uint16_t items_to_import_;
+  uint16_t items_to_import_ = 0;
 
   // Importer of the appropriate type (Firefox, Safari, IE, etc.)
   scoped_refptr<Importer> importer_;
 
-  DISALLOW_COPY_AND_ASSIGN(ProfileImportHandler);
+  const std::unique_ptr<service_manager::ServiceContextRef> service_ref_;
+
+  DISALLOW_COPY_AND_ASSIGN(ProfileImportImpl);
 };
 
-#endif  // CHROME_UTILITY_PROFILE_IMPORT_HANDLER_H_
+#endif  // CHROME_UTILITY_IMPORTER_PROFILE_IMPORT_IMPL_H_
