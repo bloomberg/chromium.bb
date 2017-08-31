@@ -3645,3 +3645,7 @@ crbug.com/760543 [ Linux Release ] virtual/mojo-loading/http/tests/devtools/trac
 
 # Tests crashing or timing out on WebKit Linux Trusty ASAN
 crbug.com/760904 [ Linux Release ] svg/as-image/svg-nested.html [ Pass Crash Timeout ]
+
+# Tests failing on WebKit Mac10.11, WebKit Mac10.10, WebKit Mac10.9
+crbug.com/760967 [ Mac ] external/wpt/payment-request/payment-request-constructor.https.html [ Pass Failure ]
+crbug.com/760967 [ Mac ] external/wpt/payment-request/payment-request-ctor-pmi-handling.https.html [ Pass Failure ]
