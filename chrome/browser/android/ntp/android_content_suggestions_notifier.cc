@@ -16,7 +16,6 @@
 #include "chrome/common/pref_names.h"
 #include "components/ntp_snippets/features.h"
 #include "components/prefs/pref_service.h"
-#include "components/variations/variations_associated_data.h"
 #include "jni/ContentSuggestionsNotifier_jni.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/image/image.h"
@@ -27,41 +26,6 @@ using ntp_snippets::ContentSuggestion;
 using ntp_snippets::kNotificationsFeature;
 using ntp_snippets::kNotificationsIgnoredLimitParam;
 using ntp_snippets::kNotificationsIgnoredDefaultLimit;
-
-namespace {
-
-// Whether auto opt out is enabled. Note that this does not disable collection
-// of data required for auto opt out. Auto opt out is currently disabled,
-// because notification settings page is shown when kNotificationsFeature is
-// enabled.
-const bool kEnableAutoOptOutDefault = false;
-const char kEnableAutoOptOutParamName[] = "enable_auto_opt_out";
-
-bool IsAutoOptOutEnabled() {
-  return variations::GetVariationParamByFeatureAsBool(
-      ntp_snippets::kNotificationsFeature, kEnableAutoOptOutParamName,
-      kEnableAutoOptOutDefault);
-}
-
-bool IsEnabledForProfile(Profile* profile) {
-  PrefService* prefs = profile->GetPrefs();
-  if (!prefs->GetBoolean(prefs::kContentSuggestionsNotificationsEnabled)) {
-    return false;
-  }
-
-  if (!IsAutoOptOutEnabled()) {
-    return true;
-  }
-
-  int current =
-      prefs->GetInteger(prefs::kContentSuggestionsConsecutiveIgnoredPrefName);
-  int limit = variations::GetVariationParamByFeatureAsInt(
-      kNotificationsFeature, kNotificationsIgnoredLimitParam,
-      kNotificationsIgnoredDefaultLimit);
-  return current < limit;
-}
-
-}  // namespace
 
 AndroidContentSuggestionsNotifier::AndroidContentSuggestionsNotifier() =
     default;
@@ -118,10 +82,6 @@ void AndroidContentSuggestionsNotifier::HideAllNotifications(
 void AndroidContentSuggestionsNotifier::FlushCachedMetrics() {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_ContentSuggestionsNotifier_flushCachedMetrics(env);
-}
-
-bool AndroidContentSuggestionsNotifier::IsEnabledForProfile(Profile* profile) {
-  return ::IsEnabledForProfile(profile);
 }
 
 bool AndroidContentSuggestionsNotifier::RegisterChannel(bool enabled) {
@@ -195,7 +155,8 @@ static void ReceiveFlushedMetrics(JNIEnv* env,
         CONTENT_SUGGESTIONS_HIDE_SHUTDOWN);
   }
 
-  const bool was_enabled = IsEnabledForProfile(profile);
+  const bool was_enabled =
+      ContentSuggestionsNotifier::ShouldSendNotifications(prefs);
   if (tap_count == 0) {
     // There were no taps, consecutive_ignored has not been reset and continues
     // from where it left off. If there was a tap, then Java has provided us
@@ -205,7 +166,8 @@ static void ReceiveFlushedMetrics(JNIEnv* env,
   }
   prefs->SetInteger(prefs::kContentSuggestionsConsecutiveIgnoredPrefName,
                     consecutive_ignored);
-  const bool is_enabled = IsEnabledForProfile(profile);
+  const bool is_enabled =
+      ContentSuggestionsNotifier::ShouldSendNotifications(prefs);
   if (was_enabled && !is_enabled) {
     RecordContentSuggestionsNotificationOptOut(CONTENT_SUGGESTIONS_IMPLICIT);
   }

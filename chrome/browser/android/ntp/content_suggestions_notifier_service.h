@@ -11,7 +11,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 
 class ContentSuggestionsNotifier;
-class Profile;
+class PrefService;
 
 namespace ntp_snippets {
 class ContentSuggestionsService;
@@ -24,7 +24,7 @@ class PrefRegistrySyncable;
 class ContentSuggestionsNotifierService : public KeyedService {
  public:
   ContentSuggestionsNotifierService(
-      Profile* profile,
+      PrefService* prefs,
       ntp_snippets::ContentSuggestionsService* suggestions,
       std::unique_ptr<ContentSuggestionsNotifier> notifier);
 
@@ -47,7 +47,7 @@ class ContentSuggestionsNotifierService : public KeyedService {
   // Destroys |observer_| if necessary and deregisters notification channel.
   void Disable();
 
-  Profile* const profile_;
+  PrefService* const prefs_;
   ntp_snippets::ContentSuggestionsService* const suggestions_service_;
   const std::unique_ptr<ContentSuggestionsNotifier> notifier_;
 
