@@ -103,6 +103,18 @@ struct CommittedKBytes {
   size_t image;
 };
 
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+// Minor and major page fault counts since the process creation.
+// Both counts are process-wide, and exclude child processes.
+//
+// minor: Number of page faults that didn't require disk IO.
+// major: Number of page faults that required disk IO.
+struct PageFaultCounts {
+  int64_t minor;
+  int64_t major;
+};
+#endif  // defined(OS_LINUX) || defined(OS_ANDROID)
+
 // Convert a POSIX timeval to microseconds.
 BASE_EXPORT int64_t TimeValToMicroseconds(const struct timeval& tv);
 
@@ -228,6 +240,10 @@ class BASE_EXPORT ProcessMetrics {
 #if defined(OS_LINUX) || defined(OS_ANDROID)
   // Bytes of swap as reported by /proc/[pid]/status.
   uint64_t GetVmSwapBytes() const;
+
+  // Minor and major page fault count as reported by /proc/[pid]/stat.
+  // Returns true for success.
+  bool GetPageFaultCounts(PageFaultCounts* counts) const;
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
 
   // Returns total memory usage of malloc.

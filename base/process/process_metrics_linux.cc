@@ -334,6 +334,25 @@ uint64_t ProcessMetrics::GetVmSwapBytes() const {
 }
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
 
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+bool ProcessMetrics::GetPageFaultCounts(PageFaultCounts* counts) const {
+  // We are not using internal::ReadStatsFileAndGetFieldAsInt64(), since it
+  // would read the file twice, and return inconsistent numbers.
+  std::string stats_data;
+  if (!internal::ReadProcStats(process_, &stats_data))
+    return false;
+  std::vector<std::string> proc_stats;
+  if (!internal::ParseProcStats(stats_data, &proc_stats))
+    return false;
+
+  counts->minor =
+      internal::GetProcStatsFieldAsInt64(proc_stats, internal::VM_MINFLT);
+  counts->major =
+      internal::GetProcStatsFieldAsInt64(proc_stats, internal::VM_MAJFLT);
+  return true;
+}
+#endif  // defined(OS_LINUX) || defined(OS_ANDROID)
+
 #if defined(OS_LINUX) || defined(OS_AIX)
 int ProcessMetrics::GetOpenFdCount() const {
   // Use /proc/<pid>/fd to count the number of entries there.
