@@ -40,6 +40,8 @@ class BaseParallelResourceThrottle : public content::ResourceThrottle {
   void WillProcessResponse(bool* defer) override;
   const char* GetNameForLogging() const override;
 
+  virtual void CancelResourceLoad();
+
  private:
   class URLLoaderThrottleDelegateImpl
       : public content::URLLoaderThrottle::Delegate {
