@@ -15,7 +15,19 @@
 
 namespace profiling {
 
+// Begin profiling all allocations in the process. Send the results to
+// |sender_pipe|.
 void InitAllocatorShim(MemlogSenderPipe* sender_pipe);
+
+// Stop profiling allocations by dropping shim callbacks. There is no way to
+// consistently, synchronously stop the allocator shim without negatively
+// impacting fast-path performance. This method eventually "turns off" the
+// allocator shim by turning future calls to AllocatorShimLogAlloc and
+// AllocatorShimLogFree into no-ops, modulo caching [g_send_buffers is not
+// volatile, intentionally]. This method is well-defined, but isn't guaranteed
+// to stop all messages to sender_pipe, since another thread might already be in
+// the process of forming a message.
+void StopAllocatorShimDangerous();
 
 void AllocatorShimLogAlloc(void* address, size_t sz);
 void AllocatorShimLogFree(void* address);

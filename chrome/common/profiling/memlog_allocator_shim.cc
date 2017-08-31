@@ -187,6 +187,10 @@ void InitAllocatorShim(MemlogSenderPipe* sender_pipe) {
 #endif
 }
 
+void StopAllocatorShimDangerous() {
+  g_send_buffers = nullptr;
+}
+
 void AllocatorShimLogAlloc(void* address, size_t sz) {
   if (!g_send_buffers)
     return;
