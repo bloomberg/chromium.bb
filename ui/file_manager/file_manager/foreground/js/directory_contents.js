@@ -325,7 +325,7 @@ function RecentContentScanner(query, opt_sourceRestriction) {
   /**
    * @private {string}
    */
-  this.query_ = query;
+  this.query_ = query.toLowerCase();
 
   /**
    * @private {string}
