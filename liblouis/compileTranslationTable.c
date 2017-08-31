@@ -3970,11 +3970,11 @@ doOpcode:
       }
 
     case CTO_BegCapsPhrase:
-	tmp_offset = table->emphRules[capsRule][begPhraseOffset];
+      tmp_offset = table->emphRules[capsRule][begPhraseOffset];
       ok =
 	compileBrailleIndicator (nested, "first word capital sign",
 				 CTO_BegCapsPhraseRule, &tmp_offset, &lastToken, newRuleOffset, newRule, noback, nofor);
-	table->emphRules[capsRule][begPhraseOffset] = tmp_offset;
+      table->emphRules[capsRule][begPhraseOffset] = tmp_offset;
       break;
     case CTO_EndCapsPhrase:
 		switch (compileBeforeAfter(nested, &lastToken)) {
@@ -3984,12 +3984,12 @@ doOpcode:
 					ok = 0;
 					break;
 				}
-	tmp_offset = table->emphRules[capsRule][endPhraseBeforeOffset];
+				tmp_offset = table->emphRules[capsRule][endPhraseBeforeOffset];
 				ok =
 					compileBrailleIndicator (nested, "capital sign before last word",
 						CTO_EndCapsPhraseBeforeRule, &tmp_offset,
 						&lastToken, newRuleOffset, newRule, noback, nofor);
-	table->emphRules[capsRule][endPhraseBeforeOffset] = tmp_offset;
+				table->emphRules[capsRule][endPhraseBeforeOffset] = tmp_offset;
 				break;
 			case 2: // after
 				if (table->emphRules[capsRule][endPhraseBeforeOffset]) {
@@ -3997,12 +3997,12 @@ doOpcode:
 					ok = 0;
 					break;
 				}
-	tmp_offset = table->emphRules[capsRule][endPhraseAfterOffset];
+				tmp_offset = table->emphRules[capsRule][endPhraseAfterOffset];
 				ok =
 					compileBrailleIndicator (nested, "capital sign after last word",
 						CTO_EndCapsPhraseAfterRule, &tmp_offset,
 						&lastToken, newRuleOffset, newRule, noback, nofor);
-	table->emphRules[capsRule][endPhraseAfterOffset] = tmp_offset;
+				table->emphRules[capsRule][endPhraseAfterOffset] = tmp_offset;
 				break;
 			default: // error
 				compileError (nested, "Invalid lastword indicator location.");
