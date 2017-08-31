@@ -727,7 +727,8 @@ const char kTryChromeAgain[]                = "try-chrome-again";
 const char kUnlimitedStorage[]              = "unlimited-storage";
 
 // Treat given (insecure) origins as secure origins. Multiple origins can be
-// supplied as a comma-separated list.
+// supplied as a comma-separated list. For the definition of secure contexts,
+// see https://w3c.github.io/webappsec-secure-contexts/
 //
 // Example:
 // --unsafely-treat-insecure-origin-as-secure=http://a.test,http://b.test
