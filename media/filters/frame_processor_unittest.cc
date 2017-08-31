@@ -91,13 +91,13 @@ class FrameProcessorTest : public testing::TestWithParam<bool> {
       CreateAndConfigureStream(DemuxerStream::AUDIO);
       ASSERT_TRUE(audio_);
       EXPECT_TRUE(frame_processor_->AddTrack(audio_id_, audio_.get()));
-      seek(audio_.get(), base::TimeDelta());
+      SeekStream(audio_.get(), base::TimeDelta());
     }
     if (has_video) {
       CreateAndConfigureStream(DemuxerStream::VIDEO);
       ASSERT_TRUE(video_);
       EXPECT_TRUE(frame_processor_->AddTrack(video_id_, video_.get()));
-      seek(video_.get(), base::TimeDelta());
+      SeekStream(video_.get(), base::TimeDelta());
     }
   }
 
@@ -262,7 +262,7 @@ class FrameProcessorTest : public testing::TestWithParam<bool> {
     return !frame_processor_->pending_notify_all_group_start_;
   }
 
-  void seek(ChunkDemuxerStream* stream, base::TimeDelta seek_time) {
+  void SeekStream(ChunkDemuxerStream* stream, base::TimeDelta seek_time) {
     stream->AbortReads();
     stream->Seek(seek_time);
     stream->StartReturningData();
@@ -534,7 +534,7 @@ TEST_P(FrameProcessorTest, AudioOnly_NonSequentialProcessFrames) {
     EXPECT_EQ(base::TimeDelta(), timestamp_offset_);
     // Re-seek to 0ms now that we've appended data earlier than what has already
     // satisfied our initial seek to start, above.
-    seek(audio_.get(), base::TimeDelta());
+    SeekStream(audio_.get(), base::TimeDelta());
     CheckReadsThenReadStalls(audio_.get(), "0 10 20 30");
   }
 }
@@ -603,7 +603,7 @@ TEST_P(FrameProcessorTest, AudioVideo_Discontinuity) {
     CheckExpectedRangesByTimestamp(video_.get(), "{ [0,20) [50,60) }");
     CheckReadsThenReadStalls(audio_.get(), "0 10 30 40 50");
     CheckReadsThenReadStalls(video_.get(), "0 10");
-    seek(video_.get(), frame_duration_ * 5);
+    SeekStream(video_.get(), frame_duration_ * 5);
     CheckReadsThenReadStalls(video_.get(), "50");
   }
 }
@@ -695,8 +695,8 @@ TEST_P(FrameProcessorTest, AudioVideo_Discontinuity_TimestampOffset) {
   // Verify the buffers.
   // Re-seek now that we've appended data earlier than what already satisfied
   // our initial seek to start.
-  seek(audio_.get(), fifty_five_ms);
-  seek(video_.get(), fifty_five_ms);
+  SeekStream(audio_.get(), fifty_five_ms);
+  SeekStream(video_.get(), fifty_five_ms);
   if (using_sequence_mode) {
     CheckReadsThenReadStalls(
         audio_.get(),
@@ -707,12 +707,12 @@ TEST_P(FrameProcessorTest, AudioVideo_Discontinuity_TimestampOffset) {
   } else {
     CheckReadsThenReadStalls(audio_.get(), "55:0 65:10 75:20");
     CheckReadsThenReadStalls(video_.get(), "65:10 75:20 85:30");
-    seek(audio_.get(), frame_duration_ * 10);
-    seek(video_.get(), frame_duration_ * 10);
+    SeekStream(audio_.get(), frame_duration_ * 10);
+    SeekStream(video_.get(), frame_duration_ * 10);
     CheckReadsThenReadStalls(audio_.get(), "100:0 110:10 120:20");
     CheckReadsThenReadStalls(video_.get(), "110:10 120:20 130:30");
-    seek(audio_.get(), frame_duration_ * 20);
-    seek(video_.get(), frame_duration_ * 20);
+    SeekStream(audio_.get(), frame_duration_ * 20);
+    SeekStream(video_.get(), frame_duration_ * 20);
     CheckReadsThenReadStalls(audio_.get(), "200:0 210:10 220:20");
     CheckReadsThenReadStalls(video_.get(), "210:10 220:20 230:30");
   }
@@ -814,13 +814,13 @@ TEST_P(FrameProcessorTest, AudioVideo_OutOfSequence_After_Discontinuity) {
   // Verify the final buffers. First, re-seek audio since we appended data
   // earlier than what already satisfied our initial seek to start. We satisfy
   // the seek with the first buffer in [0,1000).
-  seek(audio_.get(), base::TimeDelta());
+  SeekStream(audio_.get(), base::TimeDelta());
   if (using_sequence_mode) {
     // The new video buffer is relocated into [150,160).
     EXPECT_EQ(frame_duration_ * -2, timestamp_offset_);
     CheckExpectedRangesByTimestamp(audio_.get(), "{ [30,40) [100,130) }");
     CheckReadsThenReadStalls(audio_.get(), "30:50");
-    seek(audio_.get(), 10 * frame_duration_);
+    SeekStream(audio_.get(), 10 * frame_duration_);
     CheckReadsThenReadStalls(audio_.get(), "100 110 120");
 
     CheckExpectedRangesByTimestamp(video_.get(), "{ [100,160) }");
@@ -829,12 +829,12 @@ TEST_P(FrameProcessorTest, AudioVideo_OutOfSequence_After_Discontinuity) {
     EXPECT_EQ(base::TimeDelta(), timestamp_offset_);
     CheckExpectedRangesByTimestamp(audio_.get(), "{ [50,60) [100,130) }");
     CheckReadsThenReadStalls(audio_.get(), "50");
-    seek(audio_.get(), 10 * frame_duration_);
+    SeekStream(audio_.get(), 10 * frame_duration_);
     CheckReadsThenReadStalls(audio_.get(), "100 110 120");
 
     CheckExpectedRangesByTimestamp(video_.get(), "{ [100,140) [160,180) }");
     CheckReadsThenReadStalls(video_.get(), "110 120 130");
-    seek(video_.get(), 16 * frame_duration_);
+    SeekStream(video_.get(), 16 * frame_duration_);
     CheckReadsThenReadStalls(video_.get(), "160 170");
   }
 }
@@ -1028,7 +1028,7 @@ TEST_P(FrameProcessorTest, PartialAppendWindowZeroDurationPreroll) {
   // Abort the reads from last stall. We don't want those reads to "complete"
   // when we append below. We will initiate new reads to confirm the buffer
   // looks as we expect.
-  seek(audio_.get(), base::TimeDelta());
+  SeekStream(audio_.get(), base::TimeDelta());
 
   // Append a frame with 10ms duration, with 9ms falling after the window start.
   base::TimeDelta expected_duration =
@@ -1096,8 +1096,35 @@ TEST_P(FrameProcessorTest,
   // that would do that "pulling backward". See https://crbug.com/718641 and
   // https://github.com/w3c/media-source/issues/187.
   CheckExpectedRangesByTimestamp(video_.get(), "{ [50,80) }");
-  seek(video_.get(), base::TimeDelta());
+  SeekStream(video_.get(), base::TimeDelta());
   CheckReadsThenReadStalls(video_.get(), "50 60 40");
+}
+
+TEST_P(FrameProcessorTest, AudioNonKeyframeChangedToKeyframe) {
+  // Verifies that an audio non-keyframe is changed to a keyframe with a media
+  // log warning. An exact overlap append of the preceding keyframe is also done
+  // to ensure that the (original non-keyframe) survives (because it was changed
+  // to a keyframe, so no longer depends on the original preceding keyframe).
+  // The sequence mode test version uses SetTimestampOffset to make it behave
+  // like segments mode to simplify the tests.
+  bool is_sequence_mode = GetParam();
+  InSequence s;
+  AddTestTracks(HAS_AUDIO);
+  frame_processor_->SetSequenceMode(is_sequence_mode);
+
+  EXPECT_MEDIA_LOG(AudioNonKeyframe(10000, 10000));
+  EXPECT_CALL(callbacks_, PossibleDurationIncrease(frame_duration_ * 3));
+  ProcessFrames("0K 10 20K", "");
+
+  if (is_sequence_mode)
+    SetTimestampOffset(base::TimeDelta());
+
+  EXPECT_CALL(callbacks_, PossibleDurationIncrease(frame_duration_));
+  ProcessFrames("0K", "");
+
+  CheckExpectedRangesByTimestamp(audio_.get(), "{ [0,30) }");
+  SeekStream(audio_.get(), base::TimeDelta());
+  CheckReadsThenReadStalls(audio_.get(), "0 10 20");
 }
 
 INSTANTIATE_TEST_CASE_P(SequenceMode, FrameProcessorTest, Values(true));

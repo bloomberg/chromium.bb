@@ -284,6 +284,15 @@ MATCHER_P2(FrameTypeMismatchesTrackType, frame_type, track_type, "") {
                                   track_type);
 }
 
+MATCHER_P2(AudioNonKeyframe, pts_microseconds, dts_microseconds, "") {
+  return CONTAINS_STRING(
+      arg, std::string("Bytestream with audio frame PTS ") +
+               base::IntToString(pts_microseconds) + "us and DTS " +
+               base::IntToString(dts_microseconds) +
+               "us indicated the frame is not a random access point (key "
+               "frame). All audio frames are expected to be key frames.");
+}
+
 MATCHER_P2(SkippingSpliceAtOrBefore,
            new_microseconds,
            existing_microseconds,
