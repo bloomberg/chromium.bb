@@ -8,6 +8,7 @@
 
 #include <windows.h>
 
+#include "build/build_config.h"
 #include "components/crash/content/app/crash_export_thunks.h"
 #include "components/crash/content/app/crashpad.h"
 
@@ -33,3 +34,19 @@ void ClearCrashKeyValueImpl(const wchar_t* key) {}
 void SetCrashKeyValueImplEx(const char* key, const char* value) {}
 
 void ClearCrashKeyValueImplEx(const char* key) {}
+
+HANDLE InjectDumpForHungInput(HANDLE process, void* serialized_crash_keys) {
+  return nullptr;
+}
+
+HANDLE InjectDumpForHungInputNoCrashKeys(HANDLE process, int reason) {
+  return nullptr;
+}
+
+#if defined(ARCH_CPU_X86_64)
+
+void RegisterNonABICompliantCodeRange(void* start, size_t size_in_bytes) {}
+
+void UnregisterNonABICompliantCodeRange(void* start) {}
+
+#endif  // defined(ARCH_CPU_X86_64)

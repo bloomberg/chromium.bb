@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "chrome/common/chrome_constants.h"
+#include "components/crash/content/app/crash_export_thunks.h"
 #include "content/public/common/result_codes.h"
 
 namespace {
@@ -31,24 +32,6 @@ void CrashDumpAndTerminateHungChildProcess(
     const base::StringPairs& additional_child_crash_keys) {
   // Before terminating the process we try collecting a dump. Which
   // a transient thread in the child process will do for us.
-  typedef HANDLE(__cdecl * DumpFunction)(HANDLE, void*);
-  typedef HANDLE(__cdecl * DumpFunctionNoCrashKeys)(HANDLE, int);
-  static DumpFunction request_dump = nullptr;
-  static DumpFunctionNoCrashKeys request_dump_no_crash_keys = nullptr;
-  if (!request_dump) {
-    request_dump = reinterpret_cast<DumpFunction>(GetProcAddress(
-        GetModuleHandle(chrome::kChromeElfDllName), "InjectDumpForHungInput"));
-    DCHECK(request_dump) << "Failed loading DumpProcessWithoutCrash: error " <<
-        GetLastError();
-  }
-  if (!request_dump_no_crash_keys) {
-    request_dump_no_crash_keys = reinterpret_cast<DumpFunctionNoCrashKeys>(
-        GetProcAddress(GetModuleHandle(chrome::kChromeElfDllName),
-                       "InjectDumpForHungInputNoCrashKeys"));
-    DCHECK(request_dump_no_crash_keys)
-        << "Failed loading DumpProcessWithoutCrash: error " << GetLastError();
-  }
-
   DWORD crash_key_failure = 0;
   void* remote_memory = nullptr;
   bool send_remote_memory = false;
@@ -81,10 +64,11 @@ void CrashDumpAndTerminateHungChildProcess(
   }
 
   HANDLE remote_thread = nullptr;
-  if (request_dump && send_remote_memory) {
-    remote_thread = request_dump(hprocess, remote_memory);
-  } else if (request_dump_no_crash_keys) {
-    remote_thread = request_dump_no_crash_keys(hprocess, crash_key_failure);
+  if (send_remote_memory) {
+    remote_thread = InjectDumpForHungInput(hprocess, remote_memory);
+  } else {
+    remote_thread =
+        InjectDumpForHungInputNoCrashKeys(hprocess, crash_key_failure);
   }
   DCHECK(remote_thread) << "Failed creating remote thread: error "
                         << GetLastError();

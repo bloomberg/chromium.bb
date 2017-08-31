@@ -32,11 +32,12 @@ windows_manifest("chrome_elf_manifest") {
 # in the world.
 shared_library("chrome_elf") {
   sources = [
-    "chrome_elf.def",
     "chrome_elf_main.cc",
     "chrome_elf_main.h",
   ]
-  if (target_cpu == "x64") {
+  if (target_cpu == "x86") {
+    sources += [ "chrome_elf_x86.def" ]
+  } else {
     sources += [ "chrome_elf_x64.def" ]
   }
 
