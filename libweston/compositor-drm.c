@@ -5197,7 +5197,8 @@ update_outputs(struct drm_backend *b, struct udev_device *drm_device)
 {
 	drmModeConnector *connector;
 	drmModeRes *resources;
-	struct drm_output *output, *next;
+	struct weston_head *base, *next;
+	struct drm_head *head;
 	uint32_t *connected;
 	int i;
 
@@ -5238,12 +5239,17 @@ update_outputs(struct drm_backend *b, struct udev_device *drm_device)
 		weston_log("connector %d connected\n", connector_id);
 	}
 
-	wl_list_for_each_safe(output, next, &b->compositor->output_list,
-			      base.link) {
+	wl_list_for_each_safe(base, next,
+			      &b->compositor->head_list, compositor_link) {
 		bool disconnected = true;
 
+		head = to_drm_head(base);
+
+		if (!head->output)
+			continue;
+
 		for (i = 0; i < resources->count_connectors; i++) {
-			if (connected[i] == output->connector_id) {
+			if (connected[i] == head->output->connector_id) {
 				disconnected = false;
 				break;
 			}
@@ -5252,26 +5258,8 @@ update_outputs(struct drm_backend *b, struct udev_device *drm_device)
 		if (!disconnected)
 			continue;
 
-		weston_log("connector %d disconnected\n", output->connector_id);
-		drm_output_destroy(&output->base);
-	}
-
-	wl_list_for_each_safe(output, next, &b->compositor->pending_output_list,
-			      base.link) {
-		bool disconnected = true;
-
-		for (i = 0; i < resources->count_connectors; i++) {
-			if (connected[i] == output->connector_id) {
-				disconnected = false;
-				break;
-			}
-		}
-
-		if (!disconnected)
-			continue;
-
-		weston_log("connector %d disconnected\n", output->connector_id);
-		drm_output_destroy(&output->base);
+		weston_log("connector %d disconnected\n", head->output->connector_id);
+		drm_output_destroy(&head->output->base);
 	}
 
 	drm_backend_update_unused_outputs(b, resources);
