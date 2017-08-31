@@ -159,14 +159,14 @@ GpuImageDecodeCache::InUseCacheKey::FromDrawImage(const DrawImage& draw_image) {
 // Extract the information to uniquely identify a DrawImage for the purposes of
 // the |in_use_cache_|.
 GpuImageDecodeCache::InUseCacheKey::InUseCacheKey(const DrawImage& draw_image)
-    : image_id(draw_image.paint_image().unique_id()),
+    : frame_key(draw_image.frame_key()),
       mip_level(CalculateUploadScaleMipLevel(draw_image)),
       filter_quality(CalculateDesiredFilterQuality(draw_image)),
       target_color_space(draw_image.target_color_space()) {}
 
 bool GpuImageDecodeCache::InUseCacheKey::operator==(
     const InUseCacheKey& other) const {
-  return image_id == other.image_id && mip_level == other.mip_level &&
+  return frame_key == other.frame_key && mip_level == other.mip_level &&
          filter_quality == other.filter_quality &&
          target_color_space == other.target_color_space;
 }
@@ -176,7 +176,7 @@ size_t GpuImageDecodeCache::InUseCacheKeyHash::operator()(
   return base::HashInts(
       cache_key.target_color_space.GetHash(),
       base::HashInts(
-          cache_key.image_id,
+          cache_key.frame_key.hash(),
           base::HashInts(cache_key.mip_level, cache_key.filter_quality)));
 }
 
@@ -471,7 +471,7 @@ bool GpuImageDecodeCache::GetTaskForImageAndRefInternal(
   }
 
   base::AutoLock lock(lock_);
-  const auto image_id = draw_image.paint_image().unique_id();
+  const PaintImage::FrameKey frame_key = draw_image.frame_key();
   ImageData* image_data = GetImageDataForDrawImage(draw_image);
   scoped_refptr<ImageData> new_data;
   if (!image_data) {
@@ -515,7 +515,7 @@ bool GpuImageDecodeCache::GetTaskForImageAndRefInternal(
   // If we had to create new image data, add it to our map now that we know it
   // will fit.
   if (new_data)
-    persistent_cache_.Put(image_id, std::move(new_data));
+    persistent_cache_.Put(frame_key, std::move(new_data));
 
   // Ref the image before creating a task - this ref is owned by the caller, and
   // it is their responsibility to release it by calling UnrefImage.
@@ -562,8 +562,7 @@ DecodedDrawImage GpuImageDecodeCache::GetDecodedImageForDraw(
     // We didn't find the image, create a new entry.
     auto data = CreateImageData(draw_image);
     image_data = data.get();
-    persistent_cache_.Put(draw_image.paint_image().unique_id(),
-                          std::move(data));
+    persistent_cache_.Put(draw_image.frame_key(), std::move(data));
   }
 
   if (!image_data->upload.budgeted) {
@@ -668,8 +667,9 @@ size_t GpuImageDecodeCache::GetMaximumMemoryLimitBytes() const {
   return normal_max_cache_bytes_;
 }
 
-void GpuImageDecodeCache::NotifyImageUnused(uint32_t skimage_id) {
-  auto it = persistent_cache_.Peek(skimage_id);
+void GpuImageDecodeCache::NotifyImageUnused(
+    const PaintImage::FrameKey& frame_key) {
+  auto it = persistent_cache_.Peek(frame_key);
   if (it != persistent_cache_.end()) {
     if (it->second->decode.ref_count != 0 ||
         it->second->upload.ref_count != 0) {
@@ -708,7 +708,7 @@ bool GpuImageDecodeCache::OnMemoryDump(
 
   for (const auto& image_pair : persistent_cache_) {
     const ImageData* image_data = image_pair.second.get();
-    const uint32_t image_id = image_pair.first;
+    int image_id = static_cast<int>(image_pair.first.hash());
 
     // If we have discardable decoded data, dump this here.
     if (image_data->decode.data()) {
@@ -902,8 +902,7 @@ void GpuImageDecodeCache::RefImage(const DrawImage& draw_image) {
   // the draw_image only exists in the |persistent_cache_|. Create an in-use
   // cache entry now.
   if (found == in_use_cache_.end()) {
-    auto found_image =
-        persistent_cache_.Peek(draw_image.paint_image().unique_id());
+    auto found_image = persistent_cache_.Peek(draw_image.frame_key());
     DCHECK(found_image != persistent_cache_.end());
     DCHECK(IsCompatible(found_image->second.get(), draw_image));
     found = in_use_cache_
@@ -945,8 +944,7 @@ void GpuImageDecodeCache::OwnershipChanged(const DrawImage& draw_image,
   // decode/upload tasks were both cancelled before completing.
   if (!has_any_refs && !image_data->upload.image() &&
       !image_data->decode.data()) {
-    auto found_persistent =
-        persistent_cache_.Peek(draw_image.paint_image().unique_id());
+    auto found_persistent = persistent_cache_.Peek(draw_image.frame_key());
     if (found_persistent != persistent_cache_.end())
       persistent_cache_.Erase(found_persistent);
   }
@@ -1341,8 +1339,7 @@ GpuImageDecodeCache::ImageData* GpuImageDecodeCache::GetImageDataForDrawImage(
   if (found_in_use != in_use_cache_.end())
     return found_in_use->second.image_data.get();
 
-  auto found_persistent =
-      persistent_cache_.Get(draw_image.paint_image().unique_id());
+  auto found_persistent = persistent_cache_.Get(draw_image.frame_key());
   if (found_persistent != persistent_cache_.end()) {
     ImageData* image_data = found_persistent->second.get();
     if (IsCompatible(image_data, draw_image)) {
@@ -1389,7 +1386,7 @@ size_t GpuImageDecodeCache::GetDrawImageSizeForTesting(const DrawImage& image) {
 void GpuImageDecodeCache::SetImageDecodingFailedForTesting(
     const DrawImage& image) {
   base::AutoLock lock(lock_);
-  auto found = persistent_cache_.Peek(image.paint_image().unique_id());
+  auto found = persistent_cache_.Peek(image.frame_key());
   DCHECK(found != persistent_cache_.end());
   ImageData* image_data = found->second.get();
   image_data->decode.decode_failure = true;
@@ -1398,7 +1395,7 @@ void GpuImageDecodeCache::SetImageDecodingFailedForTesting(
 bool GpuImageDecodeCache::DiscardableIsLockedForTesting(
     const DrawImage& image) {
   base::AutoLock lock(lock_);
-  auto found = persistent_cache_.Peek(image.paint_image().unique_id());
+  auto found = persistent_cache_.Peek(image.frame_key());
   DCHECK(found != persistent_cache_.end());
   ImageData* image_data = found->second.get();
   return image_data->decode.is_locked();

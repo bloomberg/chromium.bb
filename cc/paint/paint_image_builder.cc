@@ -27,9 +27,13 @@ PaintImage PaintImageBuilder::TakePaintImage() const {
     DCHECK(!paint_image_.paint_record_);
     DCHECK(!paint_image_.paint_image_generator_);
     DCHECK(!paint_image_.sk_image_->isLazyGenerated());
+    // TODO(khushalsagar): Assert that we don't have an animated image type
+    // here.
   } else if (paint_image_.paint_record_) {
     DCHECK(!paint_image_.sk_image_);
     DCHECK(!paint_image_.paint_image_generator_);
+    // TODO(khushalsagar): Assert that we don't have an animated image type
+    // here.
   } else if (paint_image_.paint_image_generator_) {
     DCHECK(!paint_image_.sk_image_);
     DCHECK(!paint_image_.paint_record_);

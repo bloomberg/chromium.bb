@@ -51,7 +51,9 @@ class ImageDecodingStoreTest : public ::testing::Test,
     ASSERT_TRUE(false);
   }
 
-  ImageFrame::Status GetStatus() override { return ImageFrame::kFramePartial; }
+  ImageFrame::Status GetStatus(size_t index) override {
+    return ImageFrame::kFramePartial;
+  }
 
   size_t FrameCount() override { return 1; }
   int RepetitionCount() const override { return kAnimationNone; }

@@ -257,7 +257,7 @@ TEST_F(BitmapImageTest, recachingFrameAfterDataChanged) {
   EXPECT_EQ(0, LastDecodedSizeChange());
 }
 
-TEST_F(BitmapImageTest, ConstantSkImageIdForPartiallyLoadedImages) {
+TEST_F(BitmapImageTest, ConstantImageIdForPartiallyLoadedImages) {
   RefPtr<SharedBuffer> image_data =
       ReadFile("/LayoutTests/images/resources/green.jpg");
   ASSERT_TRUE(image_data.Get());
@@ -269,29 +269,53 @@ TEST_F(BitmapImageTest, ConstantSkImageIdForPartiallyLoadedImages) {
   // First partial load. Repeated calls for a PaintImage should have the same
   // image until the data changes or the decoded data is destroyed.
   ASSERT_EQ(image_->SetData(partial_buffer, false), Image::kSizeAvailable);
-  auto sk_image1 = image_->PaintImageForCurrentFrame().GetSkImage();
-  auto sk_image2 = image_->PaintImageForCurrentFrame().GetSkImage();
-  EXPECT_EQ(sk_image1, sk_image2);
+  auto image1 = image_->PaintImageForCurrentFrame();
+  auto image2 = image_->PaintImageForCurrentFrame();
+  EXPECT_EQ(image1, image2);
+  auto sk_image1 = image1.GetSkImage();
+  auto sk_image2 = image2.GetSkImage();
+  EXPECT_EQ(sk_image1->uniqueID(), sk_image2->uniqueID());
+
+  // Frame keys should be the same for these PaintImages.
+  EXPECT_EQ(image1.GetKeyForFrame(image1.frame_index()),
+            image2.GetKeyForFrame(image2.frame_index()));
+  EXPECT_EQ(image1.frame_index(), 0u);
+  EXPECT_EQ(image2.frame_index(), 0u);
 
   // Destroy the decoded data. This generates a new id since we don't cache
   // image ids for partial decodes.
   DestroyDecodedData();
-  auto sk_image3 = image_->PaintImageForCurrentFrame().GetSkImage();
+  auto image3 = image_->PaintImageForCurrentFrame();
+  auto sk_image3 = image3.GetSkImage();
   EXPECT_NE(sk_image1, sk_image3);
   EXPECT_NE(sk_image1->uniqueID(), sk_image3->uniqueID());
 
+  // Since the cached generator is discarded on destroying the cached decode,
+  // the new content id is generated resulting in an updated frame key.
+  EXPECT_NE(image1.GetKeyForFrame(image1.frame_index()),
+            image3.GetKeyForFrame(image3.frame_index()));
+  EXPECT_EQ(image3.frame_index(), 0u);
+
   // Load complete. This should generate a new image id.
   image_->SetData(image_data, true);
-  auto complete_image = image_->PaintImageForCurrentFrame().GetSkImage();
-  EXPECT_NE(sk_image3, complete_image);
-  EXPECT_NE(sk_image3->uniqueID(), complete_image->uniqueID());
+  auto complete_image = image_->PaintImageForCurrentFrame();
+  auto complete_sk_image = complete_image.GetSkImage();
+  EXPECT_NE(sk_image3, complete_sk_image);
+  EXPECT_NE(sk_image3->uniqueID(), complete_sk_image->uniqueID());
+  EXPECT_NE(complete_image.GetKeyForFrame(complete_image.frame_index()),
+            image3.GetKeyForFrame(image3.frame_index()));
+  EXPECT_EQ(complete_image.frame_index(), 0u);
 
   // Destroy the decoded data and re-create the PaintImage. The SkImage id used
   // should remain consistent, even if a new image is created.
   DestroyDecodedData();
-  auto new_complete_image = image_->PaintImageForCurrentFrame().GetSkImage();
-  EXPECT_NE(new_complete_image, complete_image);
-  EXPECT_EQ(new_complete_image->uniqueID(), complete_image->uniqueID());
+  auto new_complete_image = image_->PaintImageForCurrentFrame();
+  auto new_complete_sk_image = new_complete_image.GetSkImage();
+  EXPECT_NE(new_complete_sk_image, complete_sk_image);
+  EXPECT_EQ(new_complete_sk_image->uniqueID(), complete_sk_image->uniqueID());
+  EXPECT_EQ(new_complete_image.GetKeyForFrame(new_complete_image.frame_index()),
+            complete_image.GetKeyForFrame(complete_image.frame_index()));
+  EXPECT_EQ(new_complete_image.frame_index(), 0u);
 }
 
 TEST_F(BitmapImageTest, ImageForDefaultFrame_MultiFrame) {

@@ -2313,7 +2313,8 @@ class CheckerImagingTileManagerTest : public TestLayerTreeHostBase {
         : StubPaintImageGenerator(
               SkImageInfo::MakeN32Premul(size.width(), size.height())) {}
 
-    MOCK_METHOD4(GetPixels, bool(const SkImageInfo&, void*, size_t, uint32_t));
+    MOCK_METHOD5(GetPixels,
+                 bool(const SkImageInfo&, void*, size_t, size_t, uint32_t));
   };
 
   void TearDown() override {

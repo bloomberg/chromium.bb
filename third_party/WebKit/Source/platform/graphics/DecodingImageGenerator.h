@@ -59,8 +59,9 @@ class PLATFORM_EXPORT DecodingImageGenerator final
   static sk_sp<DecodingImageGenerator> Create(PassRefPtr<ImageFrameGenerator>,
                                               const SkImageInfo&,
                                               PassRefPtr<SegmentReader>,
-                                              bool all_data_received,
-                                              size_t index);
+                                              std::vector<FrameMetadata>,
+                                              PaintImage::ContentId,
+                                              bool all_data_received);
 
   ~DecodingImageGenerator() override;
 
@@ -71,25 +72,29 @@ class PLATFORM_EXPORT DecodingImageGenerator final
   bool GetPixels(const SkImageInfo&,
                  void* pixels,
                  size_t row_bytes,
+                 size_t frame_index,
                  uint32_t lazy_pixel_ref) override;
   bool QueryYUV8(SkYUVSizeInfo*, SkYUVColorSpace*) const override;
   bool GetYUV8Planes(const SkYUVSizeInfo&,
                      void* planes[3],
+                     size_t frame_index,
                      uint32_t lazy_pixel_ref) override;
   SkISize GetSupportedDecodeSize(const SkISize& requested_size) const override;
+  PaintImage::ContentId GetContentIdForFrame(size_t frame_index) const override;
 
  private:
   DecodingImageGenerator(PassRefPtr<ImageFrameGenerator>,
                          const SkImageInfo&,
                          PassRefPtr<SegmentReader>,
-                         bool all_data_received,
-                         size_t index);
+                         std::vector<FrameMetadata>,
+                         PaintImage::ContentId,
+                         bool all_data_received);
 
   RefPtr<ImageFrameGenerator> frame_generator_;
   const RefPtr<SegmentReader> data_;  // Data source.
   const bool all_data_received_;
-  const size_t frame_index_;
   bool can_yuv_decode_;
+  const PaintImage::ContentId complete_frame_content_id_;
 };
 
 }  // namespace blink
