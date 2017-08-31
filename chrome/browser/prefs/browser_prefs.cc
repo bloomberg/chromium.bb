@@ -285,17 +285,6 @@
 
 namespace {
 
-// Deprecated 8/2016.
-constexpr char kRecentlySelectedEncoding[] =
-    "profile.recently_selected_encodings";
-constexpr char kStaticEncodings[] = "intl.static_encodings";
-
-// Deprecated 9/2016.
-constexpr char kWebKitUsesUniversalDetector[] =
-    "webkit.webprefs.uses_universal_detector";
-constexpr char kWebKitAllowDisplayingInsecureContent[] =
-    "webkit.webprefs.allow_displaying_insecure_content";
-
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 // Deprecated 2/2017.
 constexpr char kToolbarMigratedComponentActionStatus[] =
@@ -665,12 +654,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   // Preferences registered only for migration (clearing or moving to a new key)
   // go here.
 
-  registry->RegisterStringPref(kStaticEncodings, std::string());
-  registry->RegisterStringPref(kRecentlySelectedEncoding, std::string());
-  registry->RegisterBooleanPref(kWebKitUsesUniversalDetector, true);
-
-  registry->RegisterBooleanPref(kWebKitAllowDisplayingInsecureContent, true);
-
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   registry->RegisterDictionaryPref(kToolbarMigratedComponentActionStatus);
 #endif
@@ -731,14 +714,6 @@ void MigrateObsoleteBrowserPrefs(Profile* profile, PrefService* local_state) {
 // This method should be periodically pruned of year+ old migrations.
 void MigrateObsoleteProfilePrefs(Profile* profile) {
   PrefService* profile_prefs = profile->GetPrefs();
-
-  // Added 8/2016.
-  profile_prefs->ClearPref(kStaticEncodings);
-  profile_prefs->ClearPref(kRecentlySelectedEncoding);
-
-  // Added 9/2016.
-  profile_prefs->ClearPref(kWebKitUsesUniversalDetector);
-  profile_prefs->ClearPref(kWebKitAllowDisplayingInsecureContent);
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // Added 2/2017.
