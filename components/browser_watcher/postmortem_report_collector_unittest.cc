@@ -101,7 +101,7 @@ class MockCrashReportDatabase : public CrashReportDatabase {
                CrashReportDatabase::OperationStatus(const UUID& uuid));
 };
 
-class MockPostmortemReportCollector : public PostmortemReportCollector {
+class MockPostmortemReportCollector final : public PostmortemReportCollector {
  public:
   explicit MockPostmortemReportCollector(CrashReportDatabase* crash_database)
       : PostmortemReportCollector(kProductName,
