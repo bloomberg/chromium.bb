@@ -27,10 +27,6 @@ namespace crypto {
 class SymmetricKey;
 }
 
-namespace url {
-class Origin;
-}
-
 namespace media {
 
 // Decrypts an AES encrypted buffer into an unencrypted buffer. The AES
@@ -39,8 +35,7 @@ class MEDIA_EXPORT AesDecryptor : public ContentDecryptionModule,
                                   public CdmContext,
                                   public Decryptor {
  public:
-  AesDecryptor(const url::Origin& security_origin,
-               const SessionMessageCB& session_message_cb,
+  AesDecryptor(const SessionMessageCB& session_message_cb,
                const SessionClosedCB& session_closed_cb,
                const SessionKeysChangeCB& session_keys_change_cb,
                const SessionExpirationUpdateCB& session_expiration_update_cb);

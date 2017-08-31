@@ -52,7 +52,7 @@ void MojoCdmFactory::Create(
 #if !BUILDFLAG(ENABLE_MOJO_RENDERER)
   if (CanUseAesDecryptor(key_system)) {
     scoped_refptr<ContentDecryptionModule> cdm(
-        new AesDecryptor(security_origin, session_message_cb, session_closed_cb,
+        new AesDecryptor(session_message_cb, session_closed_cb,
                          session_keys_change_cb, session_expiration_update_cb));
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(cdm_created_cb, cdm, ""));

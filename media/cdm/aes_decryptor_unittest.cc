@@ -31,7 +31,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest-param-test.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "url/origin.h"
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 #include "media/cdm/api/content_decryption_module.h"
@@ -260,8 +259,7 @@ class AesDecryptorTest : public testing::TestWithParam<TestType> {
   void SetUp() override {
     if (GetParam() == TestType::kAesDecryptor) {
       OnCdmCreated(
-          new AesDecryptor(url::Origin(),
-                           base::Bind(&MockCdmClient::OnSessionMessage,
+          new AesDecryptor(base::Bind(&MockCdmClient::OnSessionMessage,
                                       base::Unretained(&cdm_client_)),
                            base::Bind(&MockCdmClient::OnSessionClosed,
                                       base::Unretained(&cdm_client_)),
