@@ -20,6 +20,7 @@
 #include "base/task_scheduler/task_traits.h"
 #include "base/threading/thread_checker.h"
 #include "device/hid/hid_device_info.h"
+#include "device/hid/public/interfaces/hid.mojom.h"
 
 namespace device {
 
@@ -38,15 +39,15 @@ class HidService {
   // the observer immediately after calling the GetDevicesCallback.
   class Observer {
    public:
-    virtual void OnDeviceAdded(scoped_refptr<HidDeviceInfo> info);
+    virtual void OnDeviceAdded(device::mojom::HidDeviceInfoPtr info);
     // Notifies all observers that a device is being removed, called before
     // removing the device from HidService. Observers should not depend on the
     // order in which they are notified of the OnDeviceRemove event.
-    virtual void OnDeviceRemoved(scoped_refptr<HidDeviceInfo> info);
+    virtual void OnDeviceRemoved(device::mojom::HidDeviceInfoPtr info);
   };
 
   using GetDevicesCallback =
-      base::Callback<void(const std::vector<scoped_refptr<HidDeviceInfo>>&)>;
+      base::Callback<void(std::vector<device::mojom::HidDeviceInfoPtr>)>;
   using ConnectCallback =
       base::Callback<void(scoped_refptr<HidConnection> connection)>;
 
@@ -65,9 +66,6 @@ class HidService {
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
-
-  scoped_refptr<HidDeviceInfo> GetDeviceInfo(
-      const std::string& device_guid) const;
 
   // Opens a connection to a device. The callback will be run with null on
   // failure.

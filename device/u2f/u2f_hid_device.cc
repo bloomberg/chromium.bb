@@ -20,12 +20,11 @@ namespace switches {
 static constexpr char kEnableU2fHidTest[] = "enable-u2f-hid-tests";
 }  // namespace switches
 
-U2fHidDevice::U2fHidDevice(scoped_refptr<HidDeviceInfo> device_info)
+U2fHidDevice::U2fHidDevice(device::mojom::HidDeviceInfoPtr device_info)
     : U2fDevice(),
       state_(State::INIT),
-      device_info_(device_info),
-      weak_factory_(this) {
-}
+      device_info_(std::move(device_info)),
+      weak_factory_(this) {}
 
 U2fHidDevice::~U2fHidDevice() {
   // Cleanup connection
@@ -85,7 +84,7 @@ void U2fHidDevice::Transition(std::unique_ptr<U2fApduCommand> command,
 void U2fHidDevice::Connect(const HidService::ConnectCallback& callback) {
   HidService* hid_service = DeviceClient::Get()->GetHidService();
 
-  hid_service->Connect(device_info_->device_guid(), callback);
+  hid_service->Connect(device_info_->guid, callback);
 }
 
 void U2fHidDevice::OnConnect(std::unique_ptr<U2fApduCommand> command,
@@ -332,7 +331,7 @@ void U2fHidDevice::OnTimeout(const DeviceCallback& callback) {
 
 std::string U2fHidDevice::GetId() {
   std::ostringstream id("hid:", std::ios::ate);
-  id << device_info_->device_guid();
+  id << device_info_->guid;
   return id.str();
 }
 

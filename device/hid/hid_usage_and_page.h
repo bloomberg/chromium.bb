@@ -119,6 +119,7 @@ struct HidUsageAndPage {
     kGenericDesktopSystemDisplaySwap = 0xb6,
   };
 
+  HidUsageAndPage() {}
   HidUsageAndPage(uint16_t usage, Page usage_page)
       : usage(usage), usage_page(usage_page) {}
   ~HidUsageAndPage() {}

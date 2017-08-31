@@ -14,6 +14,7 @@
 #include "base/scoped_observer.h"
 #include "base/threading/thread_checker.h"
 #include "device/hid/hid_service.h"
+#include "device/hid/public/interfaces/hid.mojom.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_event_histogram_value.h"
@@ -21,7 +22,6 @@
 
 namespace device {
 class HidDeviceFilter;
-class HidDeviceInfo;
 }
 
 namespace extensions {
@@ -56,17 +56,17 @@ class HidDeviceManager : public BrowserContextKeyedAPI,
                      const std::vector<device::HidDeviceFilter>& filters,
                      const GetApiDevicesCallback& callback);
 
-  // Converts a list of HidDeviceInfo objects into a value that can be returned
-  // through the API.
+  // Converts a list of device::mojom::HidDeviceInfo objects into a value that
+  // can be returned through the API.
   std::unique_ptr<base::ListValue> GetApiDevicesFromList(
-      const std::vector<scoped_refptr<device::HidDeviceInfo>>& devices);
+      std::vector<device::mojom::HidDeviceInfoPtr> devices);
 
-  scoped_refptr<device::HidDeviceInfo> GetDeviceInfo(int resource_id);
+  const device::mojom::HidDeviceInfo* GetDeviceInfo(int resource_id);
 
   // Checks if |extension| has permission to open |device_info|. Set
   // |update_last_used| to update the timestamp in the DevicePermissionsManager.
   bool HasPermission(const Extension* extension,
-                     scoped_refptr<device::HidDeviceInfo> device_info,
+                     const device::mojom::HidDeviceInfo& device_info,
                      bool update_last_used);
 
   // Wait to perform an initial enumeration and register a HidService::Observer
@@ -77,7 +77,8 @@ class HidDeviceManager : public BrowserContextKeyedAPI,
  private:
   friend class BrowserContextKeyedAPIFactory<HidDeviceManager>;
 
-  typedef std::map<int, std::string> ResourceIdToDeviceIdMap;
+  typedef std::map<int, device::mojom::HidDeviceInfoPtr>
+      ResourceIdToDeviceInfoMap;
   typedef std::map<std::string, int> DeviceIdToResourceIdMap;
 
   struct GetApiDevicesParams;
@@ -94,9 +95,8 @@ class HidDeviceManager : public BrowserContextKeyedAPI,
   void OnListenerAdded(const EventListenerInfo& details) override;
 
   // HidService::Observer:
-  void OnDeviceAdded(scoped_refptr<device::HidDeviceInfo> device_info) override;
-  void OnDeviceRemoved(
-      scoped_refptr<device::HidDeviceInfo> device_info) override;
+  void OnDeviceAdded(device::mojom::HidDeviceInfoPtr device) override;
+  void OnDeviceRemoved(device::mojom::HidDeviceInfoPtr device) override;
 
   // Builds a list of device info objects representing the currently enumerated
   // devices, taking into account the permissions held by the given extension
@@ -106,12 +106,12 @@ class HidDeviceManager : public BrowserContextKeyedAPI,
       const std::vector<device::HidDeviceFilter>& filters);
   void OnEnumerationComplete(
       device::HidService* hid_service,
-      const std::vector<scoped_refptr<device::HidDeviceInfo>>& devices);
+      std::vector<device::mojom::HidDeviceInfoPtr> devices);
 
   void DispatchEvent(events::HistogramValue histogram_value,
                      const std::string& event_name,
                      std::unique_ptr<base::ListValue> event_args,
-                     scoped_refptr<device::HidDeviceInfo> device_info);
+                     const device::mojom::HidDeviceInfo& device_info);
 
   base::ThreadChecker thread_checker_;
   content::BrowserContext* browser_context_ = nullptr;
@@ -122,7 +122,7 @@ class HidDeviceManager : public BrowserContextKeyedAPI,
   bool enumeration_ready_ = false;
   std::vector<std::unique_ptr<GetApiDevicesParams>> pending_enumerations_;
   int next_resource_id_ = 0;
-  ResourceIdToDeviceIdMap device_ids_;
+  ResourceIdToDeviceInfoMap devices_;
   DeviceIdToResourceIdMap resource_ids_;
   base::WeakPtrFactory<HidDeviceManager> weak_factory_;
 

@@ -30,7 +30,6 @@
 #include "build/build_config.h"
 #include "components/device_event_log/device_event_log.h"
 #include "device/hid/hid_connection_linux.h"
-#include "device/hid/hid_device_info_linux.h"
 #include "device/udev_linux/scoped_udev.h"
 #include "device/udev_linux/udev_watcher.h"
 
@@ -53,7 +52,7 @@ const char kSysfsReportDescriptorKey[] = "report_descriptor";
 }  // namespace
 
 struct HidServiceLinux::ConnectParams {
-  ConnectParams(scoped_refptr<HidDeviceInfoLinux> device_info,
+  ConnectParams(scoped_refptr<HidDeviceInfo> device_info,
                 const ConnectCallback& callback)
       : device_info(std::move(device_info)),
         callback(callback),
@@ -62,7 +61,7 @@ struct HidServiceLinux::ConnectParams {
             base::CreateSequencedTaskRunnerWithTraits(kBlockingTaskTraits)) {}
   ~ConnectParams() {}
 
-  scoped_refptr<HidDeviceInfoLinux> device_info;
+  scoped_refptr<HidDeviceInfo> device_info;
   ConnectCallback callback;
   scoped_refptr<base::SequencedTaskRunner> task_runner;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner;
@@ -155,12 +154,13 @@ class HidServiceLinux::BlockingTaskHelper : public UdevWatcher::Observer {
     if (!base::ReadFileToString(report_descriptor_path, &report_descriptor_str))
       return;
 
-    scoped_refptr<HidDeviceInfo> device_info(new HidDeviceInfoLinux(
-        platform_device_id, device_node, vendor_id, product_id, product_name,
-        serial_number,
-        kHIDBusTypeUSB,  // TODO(reillyg): Detect Bluetooth. crbug.com/443335
+    scoped_refptr<HidDeviceInfo> device_info(new HidDeviceInfo(
+        platform_device_id, vendor_id, product_id, product_name, serial_number,
+        // TODO(reillyg): Detect Bluetooth. crbug.com/443335
+        device::mojom::HidBusType::kHIDBusTypeUSB,
         std::vector<uint8_t>(report_descriptor_str.begin(),
-                             report_descriptor_str.end())));
+                             report_descriptor_str.end()),
+        device_node));
 
     task_runner_->PostTask(FROM_HERE, base::Bind(&HidServiceLinux::AddDevice,
                                                  service_, device_info));
@@ -214,8 +214,7 @@ void HidServiceLinux::Connect(const std::string& device_guid,
         FROM_HERE, base::Bind(callback, nullptr));
     return;
   }
-  scoped_refptr<HidDeviceInfoLinux> device_info =
-      static_cast<HidDeviceInfoLinux*>(map_entry->second.get());
+  scoped_refptr<HidDeviceInfo> device_info = map_entry->second;
 
   auto params = std::make_unique<ConnectParams>(device_info, callback);
 

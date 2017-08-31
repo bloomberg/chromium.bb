@@ -39,20 +39,20 @@ void HidDeviceFilter::SetUsage(uint16_t usage) {
 }
 
 bool HidDeviceFilter::Matches(
-    scoped_refptr<const HidDeviceInfo> device_info) const {
+    const device::mojom::HidDeviceInfo& device_info) const {
   if (vendor_id_set_) {
-    if (device_info->vendor_id() != vendor_id_) {
+    if (device_info.vendor_id != vendor_id_) {
       return false;
     }
 
-    if (product_id_set_ && device_info->product_id() != product_id_) {
+    if (product_id_set_ && device_info.product_id != product_id_) {
       return false;
     }
   }
 
   if (usage_page_set_) {
     bool found_matching_collection = false;
-    for (const HidCollectionInfo& collection : device_info->collections()) {
+    for (const HidCollectionInfo& collection : device_info.collections) {
       if (collection.usage.usage_page != usage_page_) {
         continue;
       }
@@ -70,8 +70,9 @@ bool HidDeviceFilter::Matches(
 }
 
 // static
-bool HidDeviceFilter::MatchesAny(scoped_refptr<const HidDeviceInfo> device_info,
-                                 const std::vector<HidDeviceFilter>& filters) {
+bool HidDeviceFilter::MatchesAny(
+    const device::mojom::HidDeviceInfo& device_info,
+    const std::vector<HidDeviceFilter>& filters) {
   for (const HidDeviceFilter& filter : filters) {
     if (filter.Matches(device_info)) {
       return true;

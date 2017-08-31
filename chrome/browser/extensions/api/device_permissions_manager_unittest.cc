@@ -13,6 +13,7 @@
 #include "device/base/mock_device_client.h"
 #include "device/hid/hid_device_info.h"
 #include "device/hid/mock_hid_service.h"
+#include "device/hid/public/interfaces/hid.mojom.h"
 #include "device/usb/mock_usb_device.h"
 #include "device/usb/mock_usb_service.h"
 #include "extensions/browser/api/device_permissions_manager.h"
@@ -70,21 +71,21 @@ class DevicePermissionsManagerTest : public testing::Test {
     device2_ =
         new MockUsbDevice(0, 0, "Test Manufacturer", "Test Product", "12345");
     device3_ = new MockUsbDevice(0, 0, "Test Manufacturer", "Test Product", "");
-    device4_ =
-        new HidDeviceInfo(kTestDeviceIds[0], 0, 0, "Test HID Device", "abcde",
-                          device::kHIDBusTypeUSB, std::vector<uint8_t>());
+    device4_ = new HidDeviceInfo(
+        kTestDeviceIds[0], 0, 0, "Test HID Device", "abcde",
+        device::mojom::HidBusType::kHIDBusTypeUSB, std::vector<uint8_t>());
     device_client_.hid_service()->AddDevice(device4_);
-    device5_ =
-        new HidDeviceInfo(kTestDeviceIds[1], 0, 0, "Test HID Device", "",
-                          device::kHIDBusTypeUSB, std::vector<uint8_t>());
+    device5_ = new HidDeviceInfo(kTestDeviceIds[1], 0, 0, "Test HID Device", "",
+                                 device::mojom::HidBusType::kHIDBusTypeUSB,
+                                 std::vector<uint8_t>());
     device_client_.hid_service()->AddDevice(device5_);
-    device6_ =
-        new HidDeviceInfo(kTestDeviceIds[2], 0, 0, "Test HID Device", "67890",
-                          device::kHIDBusTypeUSB, std::vector<uint8_t>());
+    device6_ = new HidDeviceInfo(
+        kTestDeviceIds[2], 0, 0, "Test HID Device", "67890",
+        device::mojom::HidBusType::kHIDBusTypeUSB, std::vector<uint8_t>());
     device_client_.hid_service()->AddDevice(device6_);
-    device7_ =
-        new HidDeviceInfo(kTestDeviceIds[3], 0, 0, "Test HID Device", "",
-                          device::kHIDBusTypeUSB, std::vector<uint8_t>());
+    device7_ = new HidDeviceInfo(kTestDeviceIds[3], 0, 0, "Test HID Device", "",
+                                 device::mojom::HidBusType::kHIDBusTypeUSB,
+                                 std::vector<uint8_t>());
     device_client_.hid_service()->AddDevice(device7_);
     device_client_.hid_service()->FirstEnumerationComplete();
   }
@@ -109,8 +110,8 @@ TEST_F(DevicePermissionsManagerTest, AllowAndClearDevices) {
       DevicePermissionsManager::Get(env_->profile());
   manager->AllowUsbDevice(extension_->id(), device0_);
   manager->AllowUsbDevice(extension_->id(), device1_);
-  manager->AllowHidDevice(extension_->id(), device4_);
-  manager->AllowHidDevice(extension_->id(), device5_);
+  manager->AllowHidDevice(extension_->id(), *device4_->device());
+  manager->AllowHidDevice(extension_->id(), *device5_->device());
 
   DevicePermissions* device_permissions =
       manager->GetForExtension(extension_->id());
@@ -123,13 +124,15 @@ TEST_F(DevicePermissionsManagerTest, AllowAndClearDevices) {
   EXPECT_FALSE(device_permissions->FindUsbDeviceEntry(device2_).get());
   EXPECT_FALSE(device_permissions->FindUsbDeviceEntry(device3_).get());
   scoped_refptr<DevicePermissionEntry> device4_entry =
-      device_permissions->FindHidDeviceEntry(device4_);
+      device_permissions->FindHidDeviceEntry(*device4_->device());
   ASSERT_TRUE(device4_entry.get());
   scoped_refptr<DevicePermissionEntry> device5_entry =
-      device_permissions->FindHidDeviceEntry(device5_);
+      device_permissions->FindHidDeviceEntry(*device5_->device());
   ASSERT_TRUE(device5_entry.get());
-  EXPECT_FALSE(device_permissions->FindHidDeviceEntry(device6_).get());
-  EXPECT_FALSE(device_permissions->FindHidDeviceEntry(device7_).get());
+  EXPECT_FALSE(
+      device_permissions->FindHidDeviceEntry(*device6_->device()).get());
+  EXPECT_FALSE(
+      device_permissions->FindHidDeviceEntry(*device7_->device()).get());
   EXPECT_EQ(4U, device_permissions->entries().size());
 
   EXPECT_EQ(base::ASCIIToUTF16(
@@ -150,26 +153,34 @@ TEST_F(DevicePermissionsManagerTest, AllowAndClearDevices) {
   EXPECT_FALSE(device_permissions->FindUsbDeviceEntry(device1_).get());
   EXPECT_FALSE(device_permissions->FindUsbDeviceEntry(device2_).get());
   EXPECT_FALSE(device_permissions->FindUsbDeviceEntry(device3_).get());
-  EXPECT_FALSE(device_permissions->FindHidDeviceEntry(device4_).get());
-  EXPECT_FALSE(device_permissions->FindHidDeviceEntry(device5_).get());
-  EXPECT_FALSE(device_permissions->FindHidDeviceEntry(device6_).get());
-  EXPECT_FALSE(device_permissions->FindHidDeviceEntry(device7_).get());
+  EXPECT_FALSE(
+      device_permissions->FindHidDeviceEntry(*device4_->device()).get());
+  EXPECT_FALSE(
+      device_permissions->FindHidDeviceEntry(*device5_->device()).get());
+  EXPECT_FALSE(
+      device_permissions->FindHidDeviceEntry(*device6_->device()).get());
+  EXPECT_FALSE(
+      device_permissions->FindHidDeviceEntry(*device7_->device()).get());
   EXPECT_EQ(0U, device_permissions->entries().size());
 
   // After clearing device it should be possible to grant permission again.
   manager->AllowUsbDevice(extension_->id(), device0_);
   manager->AllowUsbDevice(extension_->id(), device1_);
-  manager->AllowHidDevice(extension_->id(), device4_);
-  manager->AllowHidDevice(extension_->id(), device5_);
+  manager->AllowHidDevice(extension_->id(), *device4_->device());
+  manager->AllowHidDevice(extension_->id(), *device5_->device());
 
   EXPECT_TRUE(device_permissions->FindUsbDeviceEntry(device0_).get());
   EXPECT_TRUE(device_permissions->FindUsbDeviceEntry(device1_).get());
   EXPECT_FALSE(device_permissions->FindUsbDeviceEntry(device2_).get());
   EXPECT_FALSE(device_permissions->FindUsbDeviceEntry(device3_).get());
-  EXPECT_TRUE(device_permissions->FindHidDeviceEntry(device4_).get());
-  EXPECT_TRUE(device_permissions->FindHidDeviceEntry(device5_).get());
-  EXPECT_FALSE(device_permissions->FindHidDeviceEntry(device6_).get());
-  EXPECT_FALSE(device_permissions->FindHidDeviceEntry(device7_).get());
+  EXPECT_TRUE(
+      device_permissions->FindHidDeviceEntry(*device4_->device()).get());
+  EXPECT_TRUE(
+      device_permissions->FindHidDeviceEntry(*device5_->device()).get());
+  EXPECT_FALSE(
+      device_permissions->FindHidDeviceEntry(*device6_->device()).get());
+  EXPECT_FALSE(
+      device_permissions->FindHidDeviceEntry(*device7_->device()).get());
 }
 
 TEST_F(DevicePermissionsManagerTest, DisconnectDevice) {
@@ -177,8 +188,8 @@ TEST_F(DevicePermissionsManagerTest, DisconnectDevice) {
       DevicePermissionsManager::Get(env_->profile());
   manager->AllowUsbDevice(extension_->id(), device0_);
   manager->AllowUsbDevice(extension_->id(), device1_);
-  manager->AllowHidDevice(extension_->id(), device4_);
-  manager->AllowHidDevice(extension_->id(), device5_);
+  manager->AllowHidDevice(extension_->id(), *device4_->device());
+  manager->AllowHidDevice(extension_->id(), *device5_->device());
 
   DevicePermissions* device_permissions =
       manager->GetForExtension(extension_->id());
@@ -186,10 +197,14 @@ TEST_F(DevicePermissionsManagerTest, DisconnectDevice) {
   EXPECT_TRUE(device_permissions->FindUsbDeviceEntry(device1_).get());
   EXPECT_FALSE(device_permissions->FindUsbDeviceEntry(device2_).get());
   EXPECT_FALSE(device_permissions->FindUsbDeviceEntry(device3_).get());
-  EXPECT_TRUE(device_permissions->FindHidDeviceEntry(device4_).get());
-  EXPECT_TRUE(device_permissions->FindHidDeviceEntry(device5_).get());
-  EXPECT_FALSE(device_permissions->FindHidDeviceEntry(device6_).get());
-  EXPECT_FALSE(device_permissions->FindHidDeviceEntry(device7_).get());
+  EXPECT_TRUE(
+      device_permissions->FindHidDeviceEntry(*device4_->device()).get());
+  EXPECT_TRUE(
+      device_permissions->FindHidDeviceEntry(*device5_->device()).get());
+  EXPECT_FALSE(
+      device_permissions->FindHidDeviceEntry(*device6_->device()).get());
+  EXPECT_FALSE(
+      device_permissions->FindHidDeviceEntry(*device7_->device()).get());
 
   device_client_.usb_service()->RemoveDevice(device0_);
   device_client_.usb_service()->RemoveDevice(device1_);
@@ -210,11 +225,15 @@ TEST_F(DevicePermissionsManagerTest, DisconnectDevice) {
   EXPECT_FALSE(device_permissions->FindUsbDeviceEntry(device2_).get());
   EXPECT_FALSE(device_permissions->FindUsbDeviceEntry(device3_).get());
   // Device 4 is like device 0, but HID.
-  EXPECT_TRUE(device_permissions->FindHidDeviceEntry(device4_).get());
+  EXPECT_TRUE(
+      device_permissions->FindHidDeviceEntry(*device4_->device()).get());
   // Device 5 is like device 1, but HID.
-  EXPECT_FALSE(device_permissions->FindHidDeviceEntry(device5_).get());
-  EXPECT_FALSE(device_permissions->FindHidDeviceEntry(device6_).get());
-  EXPECT_FALSE(device_permissions->FindHidDeviceEntry(device7_).get());
+  EXPECT_FALSE(
+      device_permissions->FindHidDeviceEntry(*device5_->device()).get());
+  EXPECT_FALSE(
+      device_permissions->FindHidDeviceEntry(*device6_->device()).get());
+  EXPECT_FALSE(
+      device_permissions->FindHidDeviceEntry(*device7_->device()).get());
 }
 
 TEST_F(DevicePermissionsManagerTest, RevokeAndRegrantAccess) {
@@ -222,8 +241,8 @@ TEST_F(DevicePermissionsManagerTest, RevokeAndRegrantAccess) {
       DevicePermissionsManager::Get(env_->profile());
   manager->AllowUsbDevice(extension_->id(), device0_);
   manager->AllowUsbDevice(extension_->id(), device1_);
-  manager->AllowHidDevice(extension_->id(), device4_);
-  manager->AllowHidDevice(extension_->id(), device5_);
+  manager->AllowHidDevice(extension_->id(), *device4_->device());
+  manager->AllowHidDevice(extension_->id(), *device5_->device());
 
   DevicePermissions* device_permissions =
       manager->GetForExtension(extension_->id());
@@ -234,10 +253,10 @@ TEST_F(DevicePermissionsManagerTest, RevokeAndRegrantAccess) {
       device_permissions->FindUsbDeviceEntry(device1_);
   ASSERT_TRUE(device1_entry.get());
   scoped_refptr<DevicePermissionEntry> device4_entry =
-      device_permissions->FindHidDeviceEntry(device4_);
+      device_permissions->FindHidDeviceEntry(*device4_->device());
   ASSERT_TRUE(device4_entry.get());
   scoped_refptr<DevicePermissionEntry> device5_entry =
-      device_permissions->FindHidDeviceEntry(device5_);
+      device_permissions->FindHidDeviceEntry(*device5_->device());
   ASSERT_TRUE(device5_entry.get());
 
   manager->RemoveEntry(extension_->id(), device0_entry);
@@ -257,27 +276,35 @@ TEST_F(DevicePermissionsManagerTest, RevokeAndRegrantAccess) {
   EXPECT_TRUE(device_permissions->FindUsbDeviceEntry(device1_).get());
 
   manager->RemoveEntry(extension_->id(), device4_entry);
-  EXPECT_FALSE(device_permissions->FindHidDeviceEntry(device4_).get());
-  EXPECT_TRUE(device_permissions->FindHidDeviceEntry(device5_).get());
+  EXPECT_FALSE(
+      device_permissions->FindHidDeviceEntry(*device4_->device()).get());
+  EXPECT_TRUE(
+      device_permissions->FindHidDeviceEntry(*device5_->device()).get());
 
-  manager->AllowHidDevice(extension_->id(), device4_);
-  EXPECT_TRUE(device_permissions->FindHidDeviceEntry(device4_).get());
-  EXPECT_TRUE(device_permissions->FindHidDeviceEntry(device5_).get());
+  manager->AllowHidDevice(extension_->id(), *device4_->device());
+  EXPECT_TRUE(
+      device_permissions->FindHidDeviceEntry(*device4_->device()).get());
+  EXPECT_TRUE(
+      device_permissions->FindHidDeviceEntry(*device5_->device()).get());
 
   manager->RemoveEntry(extension_->id(), device5_entry);
-  EXPECT_TRUE(device_permissions->FindHidDeviceEntry(device4_).get());
-  EXPECT_FALSE(device_permissions->FindHidDeviceEntry(device5_).get());
+  EXPECT_TRUE(
+      device_permissions->FindHidDeviceEntry(*device4_->device()).get());
+  EXPECT_FALSE(
+      device_permissions->FindHidDeviceEntry(*device5_->device()).get());
 
-  manager->AllowHidDevice(extension_->id(), device5_);
-  EXPECT_TRUE(device_permissions->FindHidDeviceEntry(device4_).get());
-  EXPECT_TRUE(device_permissions->FindHidDeviceEntry(device5_).get());
+  manager->AllowHidDevice(extension_->id(), *device5_->device());
+  EXPECT_TRUE(
+      device_permissions->FindHidDeviceEntry(*device4_->device()).get());
+  EXPECT_TRUE(
+      device_permissions->FindHidDeviceEntry(*device5_->device()).get());
 }
 
 TEST_F(DevicePermissionsManagerTest, UpdateLastUsed) {
   DevicePermissionsManager* manager =
       DevicePermissionsManager::Get(env_->profile());
   manager->AllowUsbDevice(extension_->id(), device0_);
-  manager->AllowHidDevice(extension_->id(), device4_);
+  manager->AllowHidDevice(extension_->id(), *device4_->device());
 
   DevicePermissions* device_permissions =
       manager->GetForExtension(extension_->id());
@@ -285,7 +312,7 @@ TEST_F(DevicePermissionsManagerTest, UpdateLastUsed) {
       device_permissions->FindUsbDeviceEntry(device0_);
   EXPECT_TRUE(device0_entry->last_used().is_null());
   scoped_refptr<DevicePermissionEntry> device4_entry =
-      device_permissions->FindHidDeviceEntry(device4_);
+      device_permissions->FindHidDeviceEntry(*device4_->device());
   EXPECT_TRUE(device4_entry->last_used().is_null());
 
   manager->UpdateLastUsed(extension_->id(), device0_entry);
@@ -327,11 +354,14 @@ TEST_F(DevicePermissionsManagerTest, LoadPrefs) {
   EXPECT_FALSE(device_permissions->FindUsbDeviceEntry(device2_).get());
   EXPECT_FALSE(device_permissions->FindUsbDeviceEntry(device3_).get());
   scoped_refptr<DevicePermissionEntry> device4_entry =
-      device_permissions->FindHidDeviceEntry(device4_);
+      device_permissions->FindHidDeviceEntry(*device4_->device());
   ASSERT_TRUE(device4_entry.get());
-  EXPECT_FALSE(device_permissions->FindHidDeviceEntry(device5_).get());
-  EXPECT_FALSE(device_permissions->FindHidDeviceEntry(device6_).get());
-  EXPECT_FALSE(device_permissions->FindHidDeviceEntry(device7_).get());
+  EXPECT_FALSE(
+      device_permissions->FindHidDeviceEntry(*device5_->device()).get());
+  EXPECT_FALSE(
+      device_permissions->FindHidDeviceEntry(*device6_->device()).get());
+  EXPECT_FALSE(
+      device_permissions->FindHidDeviceEntry(*device7_->device()).get());
 
   EXPECT_EQ(base::ASCIIToUTF16(
                 "Test Product from Test Manufacturer (serial number ABCDE)"),

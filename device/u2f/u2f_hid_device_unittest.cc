@@ -74,13 +74,13 @@ class U2fDeviceEnumerate {
         run_loop_() {}
   ~U2fDeviceEnumerate() {}
 
-  void ReceivedCallback(
-      const std::vector<scoped_refptr<HidDeviceInfo>>& devices) {
+  void ReceivedCallback(std::vector<device::mojom::HidDeviceInfoPtr> devices) {
     std::list<std::unique_ptr<U2fHidDevice>> u2f_devices;
     filter_.SetUsagePage(0xf1d0);
-    for (auto device_info : devices) {
-      if (filter_.Matches(device_info))
-        u2f_devices.push_front(std::make_unique<U2fHidDevice>(device_info));
+    for (auto& device_info : devices) {
+      if (filter_.Matches(*device_info))
+        u2f_devices.push_front(
+            std::make_unique<U2fHidDevice>(std::move(device_info)));
     }
     devices_ = std::move(u2f_devices);
     closure_.Run();
@@ -220,9 +220,9 @@ TEST_F(U2fHidDeviceTest, TestConnectionFailure) {
   MockHidService* hid_service = client->hid_service();
   HidCollectionInfo c_info;
   c_info.usage = HidUsageAndPage(1, static_cast<HidUsageAndPage::Page>(0xf1d0));
-  scoped_refptr<HidDeviceInfo> device0 =
-      new HidDeviceInfo(kTestDeviceId, 0, 0, "Test Fido Device", "123FIDO",
-                        kHIDBusTypeUSB, c_info, 64, 64, 0);
+  scoped_refptr<HidDeviceInfo> device0 = new HidDeviceInfo(
+      kTestDeviceId, 0, 0, "Test Fido Device", "123FIDO",
+      device::mojom::HidBusType::kHIDBusTypeUSB, c_info, 64, 64, 0);
   hid_service->AddDevice(device0);
   hid_service->FirstEnumerationComplete();
   hid_service->GetDevices(callback.callback());
@@ -265,9 +265,9 @@ TEST_F(U2fHidDeviceTest, TestDeviceError) {
   MockHidService* hid_service = client->hid_service();
   HidCollectionInfo c_info;
   c_info.usage = HidUsageAndPage(1, static_cast<HidUsageAndPage::Page>(0xf1d0));
-  scoped_refptr<HidDeviceInfo> device0 =
-      new HidDeviceInfo(kTestDeviceId, 0, 0, "Test Fido Device", "123FIDO",
-                        kHIDBusTypeUSB, c_info, 64, 64, 0);
+  scoped_refptr<HidDeviceInfo> device0 = new HidDeviceInfo(
+      kTestDeviceId, 0, 0, "Test Fido Device", "123FIDO",
+      device::mojom::HidBusType::kHIDBusTypeUSB, c_info, 64, 64, 0);
   hid_service->AddDevice(device0);
   hid_service->FirstEnumerationComplete();
   hid_service->GetDevices(callback.callback());

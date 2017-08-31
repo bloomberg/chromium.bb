@@ -17,6 +17,7 @@
 #include "device/hid/hid_device_info.h"
 #include "device/hid/hid_usage_and_page.h"
 #include "device/hid/mock_hid_service.h"
+#include "device/hid/public/interfaces/hid.mojom.h"
 #include "extensions/browser/api/device_permissions_prompt.h"
 #include "extensions/shell/browser/shell_extensions_api_client.h"
 #include "extensions/shell/test/shell_apitest.h"
@@ -225,7 +226,7 @@ class HidApiTest : public ShellApiTest {
     }
     device_client_->hid_service()->AddDevice(new HidDeviceInfo(
         platform_device_id, vendor_id, product_id, "Test Device", serial_number,
-        device::kHIDBusTypeUSB, report_descriptor));
+        device::mojom::HidBusType::kHIDBusTypeUSB, report_descriptor));
   }
 
  protected:

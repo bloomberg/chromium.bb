@@ -6,6 +6,7 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
+#include "device/hid/public/interfaces/hid.mojom.h"
 #include "device/test/test_device_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -25,7 +26,7 @@ class HidServiceTest : public ::testing::Test {
 };
 
 void OnGetDevices(const base::Closure& quit_closure,
-                  const std::vector<scoped_refptr<HidDeviceInfo>>& devices) {
+                  std::vector<device::mojom::HidDeviceInfoPtr> devices) {
   // Since there's no guarantee that any devices are connected at the moment
   // this test doesn't assume anything about the result but it at least verifies
   // that devices can be enumerated without the application crashing.
