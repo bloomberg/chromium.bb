@@ -24,6 +24,10 @@ CORSURLLoader::CORSURLLoader(
 
   mojom::URLLoaderClientPtr network_client;
   network_client_binding_.Bind(mojo::MakeRequest(&network_client));
+  // Binding |this| as an unretained pointer is safe because
+  // |network_client_binding_| shares this object's lifetime.
+  network_client_binding_.set_connection_error_handler(base::BindOnce(
+      &CORSURLLoader::OnUpstreamConnectionError, base::Unretained(this)));
   network_loader_factory_->CreateLoaderAndStart(
       mojo::MakeRequest(&network_loader_), routing_id, request_id, options,
       resource_request, std::move(network_client), traffic_annotation);
@@ -82,6 +86,15 @@ void CORSURLLoader::OnStartLoadingResponseBody(
 
 void CORSURLLoader::OnComplete(const ResourceRequestCompletionStatus& status) {
   forwarding_client_->OnComplete(status);
+}
+
+void CORSURLLoader::OnUpstreamConnectionError() {
+  // |network_client_binding_| has experienced a connection error and will no
+  // longer call any of the mojom::URLLoaderClient methods above. The client
+  // pipe to the downstream client is closed to inform it of this failure. The
+  // client should respond by closing its mojom::URLLoader pipe which will cause
+  // this object to be destroyed.
+  forwarding_client_.reset();
 }
 
 }  // namespace content
