@@ -1,6 +1,6 @@
 {
   "name": "gpu driver bug list",
-  "version": "10.27",
+  "version": "10.28",
   "entries": [
     {
       "id": 1,
@@ -2622,6 +2622,18 @@
       "disabled_extensions": [
         "GL_EXT_disjoint_timer_query",
         "GL_EXT_disjoint_timer_query_webgl2"
+      ]
+    },
+    {
+      "id": 241,
+      "description": "On Intel GPUs MSAA performance is not acceptable for GPU rasterization. Duplicate of 132 for Android",
+      "cr_bugs": [759471],
+      "os": {
+        "type": "android"
+      },
+      "gl_vendor": "Intel",
+      "features": [
+        "msaa_is_slow"
       ]
     }
   ],
