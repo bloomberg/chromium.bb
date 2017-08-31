@@ -30,12 +30,10 @@
 #error "This file requires ARC support."
 #endif
 
-namespace ios_internal {
 NSString* const kSideSwipeWillStartNotification =
     @"kSideSwipeWillStartNotification";
 NSString* const kSideSwipeDidStopNotification =
     @"kSideSwipeDidStopNotification";
-}  // namespace ios_internal
 
 namespace {
 
@@ -309,7 +307,7 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
     [[model_ currentTab] updateFullscreenWithToolbarVisible:YES];
     [[model_ currentTab] updateSnapshotWithOverlay:YES visibleFrameOnly:YES];
     [[NSNotificationCenter defaultCenter]
-        postNotificationName:ios_internal::kSideSwipeWillStartNotification
+        postNotificationName:kSideSwipeWillStartNotification
                       object:nil];
     [[swipeDelegate_ tabStripController] setHighlightsSelectedTab:YES];
     startingTabIndex_ = [model_ indexOfTab:[model_ currentTab]];
@@ -365,7 +363,7 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
     [[swipeDelegate_ tabStripController] setHighlightsSelectedTab:NO];
     [self deleteGreyCache];
     [[NSNotificationCenter defaultCenter]
-        postNotificationName:ios_internal::kSideSwipeDidStopNotification
+        postNotificationName:kSideSwipeDidStopNotification
                       object:nil];
   }
 }

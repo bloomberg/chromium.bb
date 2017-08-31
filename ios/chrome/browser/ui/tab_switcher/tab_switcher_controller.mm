@@ -1142,24 +1142,23 @@ enum class SnapshotViewOption {
       openNewTab:[OpenNewTabCommand commandWithIncognito:incognito]];
 }
 
-- (ios_internal::NewTabButtonStyle)buttonStyleForPanelAtIndex:
-    (NSInteger)panelIndex {
+- (NewTabButtonStyle)buttonStyleForPanelAtIndex:(NSInteger)panelIndex {
   CHECK(panelIndex >= 0);
   switch (panelIndex) {
     case kLocalTabsOnTheRecordPanelIndex:
       if ([_onTheRecordSession shouldShowNewTabButton]) {
-        return ios_internal::NewTabButtonStyle::BLUE;
+        return NewTabButtonStyle::BLUE;
       } else {
-        return ios_internal::NewTabButtonStyle::HIDDEN;
+        return NewTabButtonStyle::HIDDEN;
       }
     case kLocalTabsOffTheRecordPanelIndex:
       if ([_offTheRecordSession shouldShowNewTabButton]) {
-        return ios_internal::NewTabButtonStyle::GRAY;
+        return NewTabButtonStyle::GRAY;
       } else {
-        return ios_internal::NewTabButtonStyle::HIDDEN;
+        return NewTabButtonStyle::HIDDEN;
       }
     default:
-      return ios_internal::NewTabButtonStyle::HIDDEN;
+      return NewTabButtonStyle::HIDDEN;
   }
 }
 

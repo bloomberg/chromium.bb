@@ -39,7 +39,6 @@ namespace ios {
 class ChromeBrowserState;
 }
 
-namespace ios_internal {
 // Notification sent when the page info is shown.
 extern NSString* const kPageInfoWillShowNotification;
 // Notification sent when the page info is hidden.
@@ -48,7 +47,6 @@ extern NSString* const kPageInfoWillHideNotification;
 extern NSString* const kLocationBarBecomesFirstResponderNotification;
 // Notification sent when the location bar resigns first responder.
 extern NSString* const kLocationBarResignsFirstResponderNotification;
-}  // namespace ios_internal
 
 // The top-level view controller for the browser UI. Manages other controllers
 // which implement the interface.

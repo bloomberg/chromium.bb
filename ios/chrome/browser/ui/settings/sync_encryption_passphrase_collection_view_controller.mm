@@ -47,7 +47,7 @@
 #error "This file requires ARC support."
 #endif
 
-using namespace ios_internal::sync_encryption_passphrase;
+using namespace sync_encryption_passphrase;
 
 namespace {
 
@@ -165,7 +165,7 @@ const CGFloat kSpinnerButtonPadding = 18;
   if (syncServiceState == SyncSetupService::kSyncServiceNeedsPassphrase)
     return nil;
 
-  return ios_internal::sync::GetSyncErrorMessageForBrowserState(browserState_);
+  return GetSyncErrorMessageForBrowserState(browserState_);
 }
 
 #pragma mark - View lifecycle

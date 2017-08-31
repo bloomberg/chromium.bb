@@ -155,7 +155,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 #pragma mark Private methods
 
 - (void)openURL:(GURL)URL {
-  ios_internal_settings::BlockToOpenURL(self, self.dispatcher)(URL);
+  BlockToOpenURL(self, self.dispatcher)(URL);
 }
 
 - (void)copyVersionToPasteboard {

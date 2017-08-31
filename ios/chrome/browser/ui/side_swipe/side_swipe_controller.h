@@ -17,12 +17,10 @@
 @class CardSideSwipeView;
 @class SideSwipeGestureRecognizer;
 
-namespace ios_internal {
 // Notification sent when the user starts a side swipe (on tablet).
 extern NSString* const kSideSwipeWillStartNotification;
 // Notification sent when the user finishes a side swipe (on tablet).
 extern NSString* const kSideSwipeDidStopNotification;
-}  // namespace ios_internal
 
 // A protocol for the Side Swipe controller sources.
 @protocol SideSwipeContentProvider

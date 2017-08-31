@@ -19,7 +19,7 @@ namespace {
 TEST(PaymentRequestPageInfoItemTest, TextLabels) {
   PageInfoItem* item = [[PageInfoItem alloc] init];
 
-  UIImage* pageFavicon = ios_internal::CollectionViewTestImage();
+  UIImage* pageFavicon = CollectionViewTestImage();
   NSString* pageTitle = @"The Greatest Website Ever";
   NSString* pageHost = @"http://localhost";
   NSString* pageHostSecure = @"https://www.greatest.example.com";

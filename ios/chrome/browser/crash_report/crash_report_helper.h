@@ -8,7 +8,6 @@
 @class NSString;
 @class TabModel;
 
-namespace ios_internal {
 namespace breakpad {
 
 // Monitors the urls loaded in |tab_model| to allow crash reports to contain
@@ -32,6 +31,5 @@ void StopMonitoringTabStateForTabModel(TabModel* tab_model);
 void ClearStateForTabModel(TabModel* tab_model);
 
 }  // namespace breakpad
-}  // namespace ios_internal
 
 #endif  // IOS_CHROME_BROWSER_CRASH_REPORT_CRASH_REPORT_HELPER_H_

@@ -121,8 +121,6 @@ void RecordFirstRunMetricsInternal(ios::ChromeBrowserState* browserState,
 
 }  // namespace
 
-namespace ios_internal {
-
 BOOL FixOrphanWord(UILabel* label) {
   // Calculate the height of the label's text.
   NSString* text = label.text;
@@ -169,7 +167,7 @@ void FinishFirstRun(ios::ChromeBrowserState* browserState,
                                         config.hasSSOAccount);
 
   // Display the sync errors infobar.
-  ios_internal::sync::displaySyncErrors(browserState, tab);
+  DisplaySyncErrors(browserState, tab);
 }
 
 void RecordProductTourTimingMetrics(NSString* timer_name,
@@ -188,5 +186,3 @@ void FirstRunDismissed() {
       postNotificationName:kChromeFirstRunUIDidFinishNotification
                     object:nil];
 }
-
-}  // namespace ios_internal

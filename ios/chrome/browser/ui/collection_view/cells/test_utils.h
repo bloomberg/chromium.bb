@@ -7,11 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
-namespace ios_internal {
-
 // Returns a 1*1 test image.
 UIImage* CollectionViewTestImage();
-
-}  // namespace ios_internal
 
 #endif  // IOS_CHROME_BROWSER_UI_COLLECTION_VIEW_CELLS_TEST_UTILS_H_

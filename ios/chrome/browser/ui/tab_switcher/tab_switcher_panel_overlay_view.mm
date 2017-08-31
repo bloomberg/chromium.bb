@@ -462,8 +462,7 @@ const CGFloat kSubtitleMinimunLineHeight = 24.0;
 }
 
 - (void)showSyncSettings {
-  [self chromeExecuteCommand:ios_internal::sync::GetSyncCommandForBrowserState(
-                                 _browserState)];
+  [self chromeExecuteCommand:GetSyncCommandForBrowserState(_browserState)];
 }
 
 - (void)sendNewTabCommand:(id)sender {

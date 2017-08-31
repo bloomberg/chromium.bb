@@ -119,7 +119,7 @@
     self.mainTabModel = [self tabModelForBrowserState:_browserState empty:NO];
     // Follow loaded URLs in the main tab model to send those in case of
     // crashes.
-    ios_internal::breakpad::MonitorURLsForTabModel(_mainTabModel);
+    breakpad::MonitorURLsForTabModel(_mainTabModel);
     ios::GetChromeBrowserProvider()->InitializeCastService(_mainTabModel);
   }
   return _mainTabModel;
@@ -278,7 +278,7 @@
   DCHECK(_browserState);
 
   // Stop watching the OTR tab model's state for crashes.
-  ios_internal::breakpad::StopMonitoringTabStateForTabModel(self.otrTabModel);
+  breakpad::StopMonitoringTabStateForTabModel(self.otrTabModel);
 
   // At this stage, a new OTR BVC shouldn't be lazily constructed by calling the
   // .otrBVC property getter. Instead, the ivar is accessed directly through the
@@ -326,11 +326,11 @@
   [_otrTabModel removeObserver:self];
 
   // Stop URL monitoring of the main tab model.
-  ios_internal::breakpad::StopMonitoringURLsForTabModel(_mainTabModel);
+  breakpad::StopMonitoringURLsForTabModel(_mainTabModel);
 
   // Stop Breakpad state monitoring of both tab models (if necessary).
-  ios_internal::breakpad::StopMonitoringTabStateForTabModel(_mainTabModel);
-  ios_internal::breakpad::StopMonitoringTabStateForTabModel(_otrTabModel);
+  breakpad::StopMonitoringTabStateForTabModel(_mainTabModel);
+  breakpad::StopMonitoringTabStateForTabModel(_otrTabModel);
 
   // Normally other objects will take care of unhooking the tab models from
   // the browser state, but this code should ensure that it happens regardless.
@@ -379,7 +379,7 @@
     [tabModel addObserver:_tabModelObserver];
     [tabModel addObserver:self];
   }
-  ios_internal::breakpad::MonitorTabStateForTabModel(tabModel);
+  breakpad::MonitorTabStateForTabModel(tabModel);
 
   return tabModel;
 }

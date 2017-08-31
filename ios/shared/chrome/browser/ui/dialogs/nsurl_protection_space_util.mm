@@ -16,7 +16,6 @@
 #error "This file requires ARC support."
 #endif
 
-namespace ios_internal {
 namespace nsurlprotectionspace_util {
 
 NSString* MessageForHTTPAuth(NSURLProtectionSpace* protectionSpace) {
@@ -69,4 +68,3 @@ GURL RequesterOrigin(NSURLProtectionSpace* protectionSpace) {
 }
 
 }  // namespace nsurlprotectionspace_util
-}  // namespace ios_internal

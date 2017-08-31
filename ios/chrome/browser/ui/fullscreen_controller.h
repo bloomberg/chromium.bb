@@ -10,10 +10,8 @@
 #import "ios/web/public/web_state/crw_web_controller_observer.h"
 #import "ios/web/public/web_state/ui/crw_web_view_scroll_view_proxy.h"
 
-namespace ios_internal {
 // Duration of the toolbar animation.
-const NSTimeInterval kToolbarAnimationDuration = 0.3;
-}  // namespace ios_internal
+const NSTimeInterval kFullScreenControllerToolbarAnimationDuration = 0.3;
 
 @class CRWWebViewScrollViewProxy;
 @class FullScreenController;

@@ -366,7 +366,7 @@ NSString* const kCheckBoxCheckedImageName = @"checkbox_checked";
   DCHECK_NE(0u, linkTextRange.length);
 
   self.TOSLabel.text = strippedText;
-  if (ios_internal::FixOrphanWord(self.TOSLabel)) {
+  if (FixOrphanWord(self.TOSLabel)) {
     // If a newline is inserted, check whether it was added mid-link and adjust
     // |linkTextRange| accordingly.
     NSRange newlineRange =
@@ -416,7 +416,7 @@ NSString* const kCheckBoxCheckedImageName = @"checkbox_checked";
       CGRectMake(optInLabelOriginX,
                  CGRectGetMaxY(self.TOSLabel.frame) + optInLabelTopPadding,
                  optInLabelSize.width, optInLabelSize.height));
-  ios_internal::FixOrphanWord(self.optInLabel);
+  FixOrphanWord(self.optInLabel);
 }
 
 - (void)layoutCheckBoxButton {

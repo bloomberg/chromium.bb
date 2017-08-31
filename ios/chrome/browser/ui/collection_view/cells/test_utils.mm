@@ -8,8 +8,6 @@
 #error "This file requires ARC support."
 #endif
 
-namespace ios_internal {
-
 UIImage* CollectionViewTestImage() {
   CGRect rect = CGRectMake(0.0, 0.0, 1.0, 1.0);
   UIGraphicsBeginImageContext(rect.size);
@@ -23,5 +21,3 @@ UIImage* CollectionViewTestImage() {
 
   return image;
 }
-
-}  // namespace ios_internal

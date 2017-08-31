@@ -20,10 +20,8 @@ TEST(PaymentRequestAcceptedPaymentMethodsItemTest, TextLabelsAndImages) {
   AcceptedPaymentMethodsItem* item = [[AcceptedPaymentMethodsItem alloc] init];
 
   NSString* message = @"Lorem ipsum dolor sit amet";
-  NSArray* methodTypeIcons = @[
-    ios_internal::CollectionViewTestImage(),
-    ios_internal::CollectionViewTestImage()
-  ];
+  NSArray* methodTypeIcons =
+      @[ CollectionViewTestImage(), CollectionViewTestImage() ];
 
   item.message = message;
   item.methodTypeIcons = methodTypeIcons;

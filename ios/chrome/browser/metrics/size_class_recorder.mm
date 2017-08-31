@@ -13,8 +13,6 @@
 #error "This file requires ARC support."
 #endif
 
-namespace ios_internal {
-
 // Converts a UIKit size class to a size class for reporting.
 SizeClassForReporting SizeClassForReportingForUIUserInterfaceSizeClass(
     UIUserInterfaceSizeClass sizeClass) {
@@ -27,11 +25,6 @@ SizeClassForReporting SizeClassForReportingForUIUserInterfaceSizeClass(
       return SizeClassForReporting::REGULAR;
   }
 }
-
-}  // namespace ios_internal
-
-using ios_internal::SizeClassForReporting;
-using ios_internal::SizeClassForReportingForUIUserInterfaceSizeClass;
 
 namespace {
 

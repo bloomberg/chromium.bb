@@ -322,7 +322,7 @@ enum AuthenticationState {
   if (!ShouldHandleSigninError(error)) {
     return;
   }
-  _alertCoordinator = ios_internal::ErrorCoordinator(error, nil, self);
+  _alertCoordinator = ErrorCoordinator(error, nil, self);
   [_alertCoordinator start];
 }
 

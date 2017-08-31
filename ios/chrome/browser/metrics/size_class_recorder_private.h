@@ -5,10 +5,8 @@
 #ifndef IOS_CHROME_BROWSER_METRICS_SIZE_CLASS_RECORDER_PRIVATE_H_
 #define IOS_CHROME_BROWSER_METRICS_SIZE_CLASS_RECORDER_PRIVATE_H_
 
-namespace ios_internal {
-
 // Reported size classes.
-enum SizeClassForReporting {
+enum class SizeClassForReporting {
   UNSPECIFIED = 0,
   COMPACT,
   REGULAR,
@@ -17,9 +15,7 @@ enum SizeClassForReporting {
 };
 
 // Converts a UIKit size class to a size class for reporting.
-extern SizeClassForReporting SizeClassForReportingForUIUserInterfaceSizeClass(
+SizeClassForReporting SizeClassForReportingForUIUserInterfaceSizeClass(
     UIUserInterfaceSizeClass sizeClass);
-
-}  // namespace ios_internal
 
 #endif  // IOS_CHROME_BROWSER_METRICS_SIZE_CLASS_RECORDER_PRIVATE_H_

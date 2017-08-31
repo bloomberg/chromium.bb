@@ -357,8 +357,7 @@ const int64_t kAuthenticationFlowTimeoutSeconds = 10;
                  viewController:(UIViewController*)viewController {
   DCHECK(!_alertCoordinator);
 
-  _alertCoordinator =
-      ios_internal::ErrorCoordinatorNoItem(error, viewController);
+  _alertCoordinator = ErrorCoordinatorNoItem(error, viewController);
 
   __weak AuthenticationFlowPerformer* weakSelf = self;
   __weak AlertCoordinator* weakAlert = _alertCoordinator;

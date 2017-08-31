@@ -33,7 +33,7 @@ const CGFloat kNewTabButtonWidth = 48;
   UIScrollView* _scrollView;
   MDCButton* _openNewTabButton;
   NSMutableArray* _panels;
-  ios_internal::NewTabButtonStyle _openNewTabButtonStyle;
+  NewTabButtonStyle _openNewTabButtonStyle;
   NSInteger _previousPanelIndex;
 }
 
@@ -62,7 +62,7 @@ const CGFloat kNewTabButtonWidth = 48;
 - (instancetype)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
   if (self) {
-    _openNewTabButtonStyle = ios_internal::NewTabButtonStyle::UNINITIALIZED;
+    _openNewTabButtonStyle = NewTabButtonStyle::UNINITIALIZED;
     [self loadSubviews];
     _panels = [[NSMutableArray alloc] init];
     _previousPanelIndex = -1;
@@ -120,7 +120,7 @@ const CGFloat kNewTabButtonWidth = 48;
 
 - (void)updateOverlayButtonState {
   NSInteger panelIndex = [self currentPageIndex];
-  ios_internal::NewTabButtonStyle newButtonStyle =
+  NewTabButtonStyle newButtonStyle =
       [delegate_ buttonStyleForPanelAtIndex:panelIndex];
   [self setNewTabButtonStyle:newButtonStyle];
   BOOL dismissButtonVisible =
@@ -210,7 +210,7 @@ const CGFloat kNewTabButtonWidth = 48;
                         action:@selector(openNewTabButtonPressed)
               forControlEvents:UIControlEventTouchUpInside];
   [self addSubview:_openNewTabButton];
-  [self setNewTabButtonStyle:ios_internal::NewTabButtonStyle::GRAY];
+  [self setNewTabButtonStyle:NewTabButtonStyle::GRAY];
 }
 
 - (CGRect)headerViewFrame {
@@ -254,17 +254,17 @@ const CGFloat kNewTabButtonWidth = 48;
   [self.delegate openNewTabInPanelAtIndex:[self currentPageIndex]];
 }
 
-- (void)setNewTabButtonStyle:(ios_internal::NewTabButtonStyle)newStyle {
+- (void)setNewTabButtonStyle:(NewTabButtonStyle)newStyle {
   if (newStyle == _openNewTabButtonStyle)
     return;
   _openNewTabButtonStyle = newStyle;
   [UIView animateWithDuration:0.25
       animations:^{
         switch (_openNewTabButtonStyle) {
-          case ios_internal::NewTabButtonStyle::HIDDEN:
+          case NewTabButtonStyle::HIDDEN:
             [_openNewTabButton setFrame:[self openNewTabButtonFrameOffscreen]];
             break;
-          case ios_internal::NewTabButtonStyle::BLUE: {
+          case NewTabButtonStyle::BLUE: {
             [_openNewTabButton setFrame:[self openNewTabButtonFrame]];
             MDCPalette* palette = [MDCPalette cr_bluePalette];
             [_openNewTabButton
@@ -279,7 +279,7 @@ const CGFloat kNewTabButtonWidth = 48;
                                           IDS_IOS_TAB_SWITCHER_CREATE_NEW_TAB)];
             break;
           }
-          case ios_internal::NewTabButtonStyle::GRAY: {
+          case NewTabButtonStyle::GRAY: {
             [_openNewTabButton setFrame:[self openNewTabButtonFrame]];
             MDCPalette* palette = [MDCPalette greyPalette];
             [_openNewTabButton
@@ -295,7 +295,7 @@ const CGFloat kNewTabButtonWidth = 48;
                         IDS_IOS_TAB_SWITCHER_CREATE_NEW_INCOGNITO_TAB)];
             break;
           }
-          case ios_internal::NewTabButtonStyle::UNINITIALIZED:
+          case NewTabButtonStyle::UNINITIALIZED:
             NOTREACHED();
         }
       }
@@ -355,15 +355,15 @@ const CGFloat kNewTabButtonWidth = 48;
 - (BOOL)accessibilityPerformMagicTap {
   // If the New Tab Button is visible, then the magic tap opens a new tab.
   NSInteger panelIndex = [self currentPageIndex];
-  ios_internal::NewTabButtonStyle buttonStyle =
+  NewTabButtonStyle buttonStyle =
       [delegate_ buttonStyleForPanelAtIndex:panelIndex];
   switch (buttonStyle) {
-    case ios_internal::BLUE:
-    case ios_internal::GRAY:
+    case NewTabButtonStyle::BLUE:
+    case NewTabButtonStyle::GRAY:
       [self.delegate openNewTabInPanelAtIndex:panelIndex];
       return YES;
-    case ios_internal::UNINITIALIZED:
-    case ios_internal::HIDDEN:
+    case NewTabButtonStyle::UNINITIALIZED:
+    case NewTabButtonStyle::HIDDEN:
       return NO;
   }
 }

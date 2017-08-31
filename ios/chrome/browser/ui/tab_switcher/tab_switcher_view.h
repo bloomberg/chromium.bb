@@ -12,15 +12,12 @@
 @class TabSwitcherHeaderView;
 @class TabSwitcherView;
 
-namespace ios_internal {
-enum NewTabButtonStyle { UNINITIALIZED, BLUE, GRAY, HIDDEN };
-}  // namespace ios_internal
+enum class NewTabButtonStyle { UNINITIALIZED, BLUE, GRAY, HIDDEN };
 
 @protocol TabSwitcherViewDelegate<NSObject>
 
 - (void)openNewTabInPanelAtIndex:(NSInteger)panelIndex;
-- (ios_internal::NewTabButtonStyle)buttonStyleForPanelAtIndex:
-    (NSInteger)panelIndex;
+- (NewTabButtonStyle)buttonStyleForPanelAtIndex:(NSInteger)panelIndex;
 - (BOOL)shouldShowDismissButtonForPanelAtIndex:(NSInteger)panelIndex;
 - (void)tabSwitcherViewDelegateDismissTabSwitcher:(TabSwitcherView*)delegate;
 

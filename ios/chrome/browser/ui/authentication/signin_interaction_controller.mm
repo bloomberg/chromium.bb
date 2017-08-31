@@ -222,7 +222,7 @@ using signin_ui::CompletionCallback;
     };
 
     // TODO(crbug.com/754642): Stop using TopPresentedViewControllerFrom().
-    alertCoordinator_ = ios_internal::ErrorCoordinator(
+    alertCoordinator_ = ErrorCoordinator(
         error, dismissAction,
         top_view_controller::TopPresentedViewControllerFrom(viewController));
     [alertCoordinator_ start];

@@ -294,14 +294,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
   }
 
   ChromeIdentity* identity = [self authService]->GetAuthenticatedIdentity();
-  bool hasSyncError = !ios_internal::sync::IsTransientSyncError(
-      syncSetupService->GetSyncServiceState());
+  bool hasSyncError =
+      !IsTransientSyncError(syncSetupService->GetSyncServiceState());
   bool hasMDMError = [self authService]->HasCachedMDMErrorForIdentity(identity);
   if (hasSyncError || hasMDMError) {
     syncItem.image = [UIImage imageNamed:@"settings_error"];
-    syncItem.detailText =
-        ios_internal::sync::GetSyncErrorDescriptionForBrowserState(
-            _browserState);
+    syncItem.detailText = GetSyncErrorDescriptionForBrowserState(_browserState);
     syncItem.shouldDisplayError = YES;
   } else {
     syncItem.image = [UIImage imageNamed:@"settings_sync"];

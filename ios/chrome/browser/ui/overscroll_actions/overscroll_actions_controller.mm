@@ -264,12 +264,10 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
       kVoiceSearchWillHideNotification : kVoiceSearchWillShowNotification,
       kVoiceSearchBarViewButtonDeselectedNotification :
           kVoiceSearchBarViewButtonSelectedNotification,
-      ios_internal::kPageInfoWillHideNotification :
-          ios_internal::kPageInfoWillShowNotification,
-      ios_internal::kLocationBarResignsFirstResponderNotification :
-          ios_internal::kLocationBarBecomesFirstResponderNotification,
-      ios_internal::kSideSwipeDidStopNotification :
-          ios_internal::kSideSwipeWillStartNotification
+      kPageInfoWillHideNotification : kPageInfoWillShowNotification,
+      kLocationBarResignsFirstResponderNotification :
+          kLocationBarBecomesFirstResponderNotification,
+      kSideSwipeDidStopNotification : kSideSwipeWillStartNotification
     };
     [self registerNotifications];
   }
