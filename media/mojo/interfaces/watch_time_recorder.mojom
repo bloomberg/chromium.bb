@@ -45,6 +45,10 @@ interface WatchTimeRecorder {
   // If no keys are specified, all currently held keys will be finalized.
   FinalizeWatchTime(array<WatchTimeKey> watch_time_keys);
 
+  // Called when a playback ends in error. The status is reported to UKM when
+  // finalizing UKM watch time.
+  OnError(PipelineStatus status);
+
   // Indicates that an underflow event has occurred while collecting watch time.
   // Used to report mean values for rebuffering metrics. As with watch time,
   // this is an absolute count and not relative since the last call.

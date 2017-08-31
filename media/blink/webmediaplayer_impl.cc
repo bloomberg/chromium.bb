@@ -1357,6 +1357,8 @@ void WebMediaPlayerImpl::OnError(PipelineStatus status) {
 
   ReportPipelineError(load_type_, status, media_log_.get());
   media_log_->AddEvent(media_log_->CreatePipelineErrorEvent(status));
+  if (watch_time_reporter_)
+    watch_time_reporter_->OnError(status);
 
   if (ready_state_ == WebMediaPlayer::kReadyStateHaveNothing) {
     // Any error that occurs before reaching ReadyStateHaveMetadata should
@@ -1626,11 +1628,7 @@ void WebMediaPlayerImpl::OnVideoNaturalSizeChange(const gfx::Size& size) {
     return;
 
   pipeline_metadata_.natural_size = rotated_size;
-
-  // Re-create |watch_time_reporter_| if we didn't originally know the video
-  // size or the previous size was too small for reporting.
-  if (!watch_time_reporter_->IsSizeLargeEnoughToReportWatchTime())
-    CreateWatchTimeReporter();
+  CreateWatchTimeReporter();
 
   if (video_decode_stats_reporter_)
     video_decode_stats_reporter_->OnNaturalSizeChanged(rotated_size);
@@ -1667,15 +1665,23 @@ void WebMediaPlayerImpl::OnAudioConfigChange(const AudioDecoderConfig& config) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   DCHECK_NE(ready_state_, WebMediaPlayer::kReadyStateHaveNothing);
 
+  const bool codec_change =
+      pipeline_metadata_.audio_decoder_config.codec() != config.codec();
   pipeline_metadata_.audio_decoder_config = config;
 
   if (observer_)
     observer_->OnMetadataChanged(pipeline_metadata_);
+
+  if (codec_change)
+    CreateWatchTimeReporter();
 }
 
 void WebMediaPlayerImpl::OnVideoConfigChange(const VideoDecoderConfig& config) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   DCHECK_NE(ready_state_, WebMediaPlayer::kReadyStateHaveNothing);
+
+  const bool codec_change =
+      pipeline_metadata_.video_decoder_config.codec() != config.codec();
 
   // TODO(chcunningham): Observe changes to video codec profile to signal
   // beginning of a new Media Capabilities playback report.
@@ -1686,6 +1692,9 @@ void WebMediaPlayerImpl::OnVideoConfigChange(const VideoDecoderConfig& config) {
 
   if (video_decode_stats_reporter_)
     video_decode_stats_reporter_->OnVideoConfigChanged(config);
+
+  if (codec_change)
+    CreateWatchTimeReporter();
 }
 
 void WebMediaPlayerImpl::OnVideoAverageKeyframeDistanceUpdate() {

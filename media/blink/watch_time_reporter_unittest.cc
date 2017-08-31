@@ -139,6 +139,8 @@ class WatchTimeReporterTest : public testing::TestWithParam<bool>,
       }
     }
 
+    void OnError(PipelineStatus status) override { parent_->OnError(status); }
+
     void UpdateUnderflowCount(int32_t count) override {
       parent_->OnUnderflowUpdate(count);
     }
@@ -462,6 +464,7 @@ class WatchTimeReporterTest : public testing::TestWithParam<bool>,
   MOCK_METHOD0(OnDisplayWatchTimeFinalized, void(void));
   MOCK_METHOD2(OnWatchTimeUpdate, void(WatchTimeKey, base::TimeDelta));
   MOCK_METHOD1(OnUnderflowUpdate, void(int));
+  MOCK_METHOD1(OnError, void(PipelineStatus));
 
   const bool has_video_;
   base::TestMessageLoop message_loop_;
@@ -479,48 +482,42 @@ TEST_P(WatchTimeReporterTest, WatchTimeReporter) {
   Initialize(!has_video_, true, true, gfx::Size());
   wtr_->OnPlaying();
   EXPECT_EQ(!has_video_, IsMonitoring());
-  EXPECT_FALSE(wtr_->IsSizeLargeEnoughToReportWatchTime());
 
   Initialize(true, true, true, gfx::Size());
   wtr_->OnPlaying();
   EXPECT_EQ(!has_video_, IsMonitoring());
-  EXPECT_FALSE(wtr_->IsSizeLargeEnoughToReportWatchTime());
 
   constexpr gfx::Size kSizeTooSmall = gfx::Size(100, 100);
   Initialize(!has_video_, true, true, kSizeTooSmall);
   wtr_->OnPlaying();
   EXPECT_EQ(!has_video_, IsMonitoring());
-  EXPECT_FALSE(wtr_->IsSizeLargeEnoughToReportWatchTime());
 
   Initialize(true, true, true, kSizeJustRight);
   wtr_->OnPlaying();
   EXPECT_TRUE(IsMonitoring());
-  EXPECT_TRUE(wtr_->IsSizeLargeEnoughToReportWatchTime());
 
   Initialize(true, false, false, kSizeJustRight);
   wtr_->OnPlaying();
   EXPECT_TRUE(IsMonitoring());
-  EXPECT_TRUE(wtr_->IsSizeLargeEnoughToReportWatchTime());
 
   Initialize(true, true, false, kSizeJustRight);
   wtr_->OnPlaying();
   EXPECT_TRUE(IsMonitoring());
-  EXPECT_TRUE(wtr_->IsSizeLargeEnoughToReportWatchTime());
 
   Initialize(true, true, true, gfx::Size());
   wtr_->OnPlaying();
   EXPECT_EQ(!has_video_, IsMonitoring());
-  EXPECT_FALSE(wtr_->IsSizeLargeEnoughToReportWatchTime());
 
   Initialize(true, false, false, gfx::Size());
   wtr_->OnPlaying();
   EXPECT_EQ(!has_video_, IsMonitoring());
-  EXPECT_FALSE(wtr_->IsSizeLargeEnoughToReportWatchTime());
 
   Initialize(true, true, false, gfx::Size());
   wtr_->OnPlaying();
   EXPECT_EQ(!has_video_, IsMonitoring());
-  EXPECT_FALSE(wtr_->IsSizeLargeEnoughToReportWatchTime());
+
+  EXPECT_CALL(*this, OnError(PIPELINE_ERROR_DECODE));
+  wtr_->OnError(PIPELINE_ERROR_DECODE);
 
   if (!has_video_)
     EXPECT_WATCH_TIME_FINALIZED();
@@ -620,6 +617,10 @@ TEST_P(WatchTimeReporterTest, WatchTimeReporterShownHidden) {
     EXPECT_BACKGROUND_WATCH_TIME(Eme, kExpectedWatchTime);
     EXPECT_BACKGROUND_WATCH_TIME(Mse, kExpectedWatchTime);
     EXPECT_WATCH_TIME_FINALIZED();
+
+    // One call for the background reporter and one for the foreground.
+    EXPECT_CALL(*this, OnError(PIPELINE_ERROR_DECODE)).Times(2);
+    wtr_->OnError(PIPELINE_ERROR_DECODE);
   }
 
   const base::TimeDelta kExpectedWatchTime =
