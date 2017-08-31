@@ -1032,8 +1032,15 @@ float SVGSMILElement::CalculateAnimationPercentAndRepeat(
     if (!fmod(repeating_duration.Value(), simple_duration.Value()))
       repeat--;
 
-    double percent = (interval_.end.Value() - interval_.begin.Value()) /
-                     simple_duration.Value();
+    // Use the interval to compute the interval position if we've passed the
+    // interval end, otherwise use the "repeating duration". This prevents a
+    // stale interval (with for instance an 'indefinite' end) from yielding an
+    // invalid interval position.
+    double last_active_duration =
+        elapsed >= interval_.end
+            ? interval_.end.Value() - interval_.begin.Value()
+            : repeating_duration.Value();
+    double percent = last_active_duration / simple_duration.Value();
     percent = percent - floor(percent);
     if (percent < std::numeric_limits<float>::epsilon() ||
         1 - percent < std::numeric_limits<float>::epsilon())
