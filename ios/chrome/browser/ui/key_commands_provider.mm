@@ -6,8 +6,6 @@
 
 #include "base/logging.h"
 #include "components/strings/grit/components_strings.h"
-#import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
-#include "ios/chrome/browser/ui/commands/ios_command_ids.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #include "ios/chrome/browser/ui/commands/start_voice_search_command.h"
 #import "ios/chrome/browser/ui/keyboard/UIKeyCommand+Chrome.h"
@@ -27,12 +25,6 @@
                        editingText:(BOOL)editingText {
   __weak id<KeyCommandsPlumbing> weakConsumer = consumer;
   __weak id<ApplicationCommands, BrowserCommands> weakDispatcher = dispatcher;
-
-  // Block to execute a command from the |tag|.
-  void (^execute)(NSInteger) = ^(NSInteger tag) {
-    [weakConsumer
-        chromeExecuteCommand:[GenericChromeCommand commandWithTag:tag]];
-  };
 
   // Block to have the tab model open the tab at |index|, if there is one.
   void (^focusTab)(NSUInteger) = ^(NSUInteger index) {
@@ -246,7 +238,7 @@
                              modifierFlags:UIKeyModifierCommand
                                      title:nil
                                     action:^{
-                                      execute(IDC_HELP_PAGE_VIA_MENU);
+                                      [weakDispatcher showHelpPage];
                                     }],
       [UIKeyCommand cr_keyCommandWithInput:@"1"
                              modifierFlags:UIKeyModifierCommand

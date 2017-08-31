@@ -659,8 +659,6 @@ bool IsURLAllowedInIncognito(const GURL& url) {
 - (void)uninstallDelegatesForTab:(Tab*)tab;
 // Closes the current tab, with animation if applicable.
 - (void)closeCurrentTab;
-// Shows the Online Help Page in a tab.
-- (void)showHelpPage;
 // Show the bookmarks page.
 - (void)showAllBookmarks;
 // Shows a panel within the New Tab Page.
@@ -4409,6 +4407,14 @@ bubblePresenterForFeature:(const base::Feature&)feature
   [self hidePageInfo];
 }
 
+- (void)showHelpPage {
+  GURL helpUrl(l10n_util::GetStringUTF16(IDS_IOS_TOOLS_MENU_HELP_URL));
+  [self webPageOrderedOpen:helpUrl
+                  referrer:web::Referrer()
+              inBackground:NO
+                  appendTo:kCurrentTab];
+}
+
 #pragma mark - Command Handling
 
 - (IBAction)chromeExecuteCommand:(id)sender {
@@ -4418,9 +4424,6 @@ bubblePresenterForFeature:(const base::Feature&)feature
     return;
 
   switch (command) {
-    case IDC_HELP_PAGE_VIA_MENU:
-      [self showHelpPage];
-      break;
     case IDC_SHOW_MAIL_COMPOSER:
       [self showMailComposer:sender];
       break;
@@ -4542,14 +4545,6 @@ bubblePresenterForFeature:(const base::Feature&)feature
     // the completion block directly.
     dispatch_async(dispatch_get_main_queue(), completion);
   }
-}
-
-- (void)showHelpPage {
-  GURL helpUrl(l10n_util::GetStringUTF16(IDS_IOS_TOOLS_MENU_HELP_URL));
-  [self webPageOrderedOpen:helpUrl
-                  referrer:web::Referrer()
-              inBackground:NO
-                  appendTo:kCurrentTab];
 }
 
 #pragma mark - Find Bar

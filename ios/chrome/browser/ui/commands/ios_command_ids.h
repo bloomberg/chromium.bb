@@ -14,7 +14,6 @@
 
 // clang-format off
 #define IDC_SHOW_BOOKMARK_MANAGER                      40011
-#define IDC_HELP_PAGE_VIA_MENU                         40020
 #define IDC_SHOW_SIGNIN_IOS                            40905
 #define IDC_SHOW_ADD_ACCOUNT                           40910
 #define IDC_SHOW_SYNC_SETTINGS                         40914
