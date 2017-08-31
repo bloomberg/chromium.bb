@@ -33,7 +33,7 @@
                 inIncognito:(BOOL)inIncognito
                inBackground:(BOOL)inBackground
                    appendTo:(OpenPosition)appendTo {
-  if ((self = [super initWithTag:IDC_OPEN_URL])) {
+  if ((self = [super initWithTag:0])) {
     _url = url;
     _referrer = referrer;
     _inIncognito = inIncognito;

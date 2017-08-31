@@ -70,6 +70,9 @@
 // Shows the Report an Issue UI.
 - (void)showReportAnIssue;
 
+// Opens the |command| URL.
+- (void)openURL:(OpenUrlCommand*)command;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_COMMANDS_APPLICATION_COMMANDS_H_

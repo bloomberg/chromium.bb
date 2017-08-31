@@ -141,7 +141,7 @@ id<BrowserCommands> BrowserCommandDispatcherForMainBVC() {
   return mainBVC.dispatcher;
 }
 
-id<BrowserCommands> DispatcherForActiveViewController() {
+id<ApplicationCommands, BrowserCommands> DispatcherForActiveViewController() {
   UIViewController* vc = GetActiveViewController();
   BrowserViewController* bvc = base::mac::ObjCCast<BrowserViewController>(vc);
   if (bvc)

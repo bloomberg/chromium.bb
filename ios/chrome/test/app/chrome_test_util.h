@@ -13,6 +13,7 @@ namespace ios {
 class ChromeBrowserState;
 }
 
+@protocol ApplicationCommands;
 @class DeviceSharingManager;
 @class GenericChromeCommand;
 @class MainController;
@@ -47,7 +48,7 @@ NSUInteger GetRegisteredKeyCommandsCount();
 id<BrowserCommands> BrowserCommandDispatcherForMainBVC();
 
 // Returns the dispatcher for the active view controller.
-id<BrowserCommands> DispatcherForActiveViewController();
+id<ApplicationCommands, BrowserCommands> DispatcherForActiveViewController();
 
 // Runs |command| using the active view controller.
 void RunCommandWithActiveViewController(GenericChromeCommand* command);
