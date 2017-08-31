@@ -2354,7 +2354,8 @@ class GLRendererWithOverlaysTest : public testing::Test {
     renderer_->SwapBuffersComplete();
   }
   void ReturnResourceInUseQuery(viz::ResourceId id) {
-    ResourceProvider::ScopedReadLockGL lock(resource_provider_.get(), id);
+    DisplayResourceProvider::ScopedReadLockGL lock(resource_provider_.get(),
+                                                   id);
     gpu::TextureInUseResponse response;
     response.texture = lock.texture_id();
     response.in_use = false;

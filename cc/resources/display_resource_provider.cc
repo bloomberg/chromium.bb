@@ -209,6 +209,21 @@ DisplayResourceProvider::GetChildToParentMap(int child) const {
   return it->second.child_to_parent_map;
 }
 
+DisplayResourceProvider::ScopedReadLockGL::ScopedReadLockGL(
+    DisplayResourceProvider* resource_provider,
+    viz::ResourceId resource_id)
+    : resource_provider_(resource_provider), resource_id_(resource_id) {
+  const Resource* resource = resource_provider->LockForRead(resource_id);
+  texture_id_ = resource->gl_id;
+  target_ = resource->target;
+  size_ = resource->size;
+  color_space_ = resource->color_space;
+}
+
+DisplayResourceProvider::ScopedReadLockGL::~ScopedReadLockGL() {
+  resource_provider_->UnlockForRead(resource_id_);
+}
+
 DisplayResourceProvider::ScopedSamplerGL::ScopedSamplerGL(
     DisplayResourceProvider* resource_provider,
     viz::ResourceId resource_id,

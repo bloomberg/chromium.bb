@@ -280,7 +280,7 @@ class VIZ_SERVICE_EXPORT GLRenderer : public cc::DirectRenderer {
                                int multiplier);
 
   using OverlayResourceLock =
-      std::unique_ptr<cc::ResourceProvider::ScopedReadLockGL>;
+      std::unique_ptr<cc::DisplayResourceProvider::ScopedReadLockGL>;
   using OverlayResourceLockList = std::vector<OverlayResourceLock>;
 
   // Resources that have been sent to the GPU process, but not yet swapped.
