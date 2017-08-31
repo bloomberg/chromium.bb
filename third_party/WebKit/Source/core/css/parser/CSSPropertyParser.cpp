@@ -237,7 +237,7 @@ bool CSSPropertyParser::ConsumeCSSWideKeyword(CSSPropertyID unresolved_property,
   CSSPropertyID property = resolveCSSPropertyID(unresolved_property);
   const StylePropertyShorthand& shorthand = shorthandForProperty(property);
   if (!shorthand.length()) {
-    if (!CSSPropertyMetadata::IsProperty(unresolved_property))
+    if (!CSSPropertyAPI::Get(property).IsProperty())
       return false;
     AddParsedProperty(property, CSSPropertyInvalid, *value, important);
   } else {

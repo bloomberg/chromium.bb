@@ -51,6 +51,7 @@
 #include "core/css/StyleSheetList.h"
 #include "core/css/parser/CSSParser.h"
 #include "core/css/parser/CSSParserContext.h"
+#include "core/css/properties/CSSPropertyAPI.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/css/resolver/StyleRuleUsageTracker.h"
 #include "core/dom/DOMException.h"
@@ -1101,7 +1102,7 @@ Response InspectorCSSAgent::getComputedStyleForNode(
     CSSPropertyID property_id = static_cast<CSSPropertyID>(id);
     if (!CSSPropertyMetadata::IsEnabledProperty(property_id) ||
         isShorthandProperty(property_id) ||
-        !CSSPropertyMetadata::IsProperty(property_id))
+        !CSSPropertyAPI::Get(property_id).IsProperty())
       continue;
     (*style)->addItem(
         protocol::CSS::CSSComputedStyleProperty::create()

@@ -15,6 +15,7 @@
 #include "core/css/StyleColor.h"
 #include "core/css/parser/CSSParserIdioms.h"
 #include "core/css/parser/CSSPropertyParser.h"
+#include "core/css/properties/CSSPropertyAPI.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/wtf/text/StringToNumber.h"
@@ -1001,7 +1002,7 @@ static CSSValue* ParseKeywordValue(CSSPropertyID property_id,
       return nullptr;
 
     // Descriptors do not support css wide keywords.
-    if (!CSSPropertyMetadata::IsProperty(property_id))
+    if (!CSSPropertyAPI::Get(property_id).IsProperty())
       return nullptr;
   }
 
