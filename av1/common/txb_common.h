@@ -116,9 +116,9 @@ static INLINE int get_level_count_mag(int *mag, const tran_low_t *tcoeffs,
   for (int idx = 0; idx < nb_num; ++idx) {
     const int ref_row = row + nb_offset[idx][0];
     const int ref_col = col + nb_offset[idx][1];
-    const int pos = (ref_row << bwl) + ref_col;
     if (ref_row < 0 || ref_col < 0 || ref_row >= height || ref_col >= stride)
       continue;
+    const int pos = (ref_row << bwl) + ref_col;
     tran_low_t abs_coeff = abs(tcoeffs[pos]);
     count += abs_coeff > level;
     if (nb_offset[idx][0] >= 0 && nb_offset[idx][1] >= 0)
