@@ -74,7 +74,8 @@ class OfflineContentProvider {
   virtual void PauseDownload(const ContentId& id) = 0;
 
   // Called to resume a paused download of an OfflineItem represented by |id|.
-  virtual void ResumeDownload(const ContentId& id) = 0;
+  // TODO(shaktisahu): Remove |has_user_gesture| if we end up not needing it.
+  virtual void ResumeDownload(const ContentId& id, bool has_user_gesture) = 0;
 
   // Returns an OfflineItem represented by |id| or |nullptr| if none exists.
   // The caller should not hold ownership of the returned item beyond the scope
