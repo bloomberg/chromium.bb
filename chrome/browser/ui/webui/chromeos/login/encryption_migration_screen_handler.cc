@@ -404,8 +404,12 @@ void EncryptionMigrationScreenHandler::PowerChanged(
     if (!current_battery_percent_) {
       // If initial battery level is below the minimum, migration should start
       // automatically once the device is charged enough.
-      if (proto.battery_percent() < arc::kMigrationMinimumBatteryPercent)
+      if (proto.battery_percent() < arc::kMigrationMinimumBatteryPercent) {
         should_migrate_on_enough_battery_ = true;
+        // If migration was forced by policy, stop forcing it (we don't want the
+        // user to have to wait until the battery is charged).
+        MaybeStopForcingMigration();
+      }
     }
     current_battery_percent_ = proto.battery_percent();
   } else {
@@ -528,10 +532,15 @@ void EncryptionMigrationScreenHandler::OnGetAvailableStorage(int64_t size) {
 }
 
 void EncryptionMigrationScreenHandler::WaitBatteryAndMigrate() {
-  if (current_battery_percent_ &&
-      *current_battery_percent_ >= arc::kMigrationMinimumBatteryPercent) {
-    StartMigration();
-    return;
+  if (current_battery_percent_) {
+    if (*current_battery_percent_ >= arc::kMigrationMinimumBatteryPercent) {
+      StartMigration();
+      return;
+    } else {
+      // If migration was forced by policy, stop forcing it (we don't want the
+      // user to have to wait until the battery is charged).
+      MaybeStopForcingMigration();
+    }
   }
   UpdateUIState(UIState::READY);
 
@@ -764,6 +773,15 @@ bool EncryptionMigrationScreenHandler::IsMinimalMigration() const {
 EncryptionMigrationScreenHandler::UIState
 EncryptionMigrationScreenHandler::GetMigratingUIState() const {
   return IsMinimalMigration() ? UIState::MIGRATING_MINIMAL : UIState::MIGRATING;
+}
+
+void EncryptionMigrationScreenHandler::MaybeStopForcingMigration() {
+  // |mode_| will be START_MIGRATION if migration was forced by user policy.
+  // If an incomplete migration is being resumed, it would be RESUME_MIGRATION.
+  // We only want to disable auto-starting migration in the first case.
+  if (mode_ == EncryptionMigrationMode::START_MIGRATION ||
+      mode_ == EncryptionMigrationMode::START_MINIMAL_MIGRATION)
+    CallJS("setIsResuming", false);
 }
 
 }  // namespace chromeos
