@@ -496,6 +496,10 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaGrid) {
   RunAriaTest(FILE_PATH_LITERAL("aria-grid.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       AccessibilityAriaGridExtraWrapElems) {
+  RunAriaTest(FILE_PATH_LITERAL("aria-grid-extra-wrap-elems.html"));
+}
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaGridCell) {
   RunAriaTest(FILE_PATH_LITERAL("aria-gridcell.html"));
 }

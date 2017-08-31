@@ -44,12 +44,13 @@ AXARIAGridRow* AXARIAGridRow::Create(LayoutObject* layout_object,
   return new AXARIAGridRow(layout_object, ax_object_cache);
 }
 
-bool AXARIAGridRow::IsARIATreeGridRow() const {
+bool AXARIAGridRow::IsARIARow() const {
   AXObject* parent = ParentTable();
   if (!parent)
     return false;
 
-  return parent->AriaRoleAttribute() == kTreeGridRole;
+  AccessibilityRole parent_role = parent->AriaRoleAttribute();
+  return parent_role == kTreeGridRole || parent_role == kGridRole;
 }
 
 void AXARIAGridRow::HeaderObjectsForRow(AXObjectVector& headers) {
@@ -57,6 +58,16 @@ void AXARIAGridRow::HeaderObjectsForRow(AXObjectVector& headers) {
     if (cell->RoleValue() == kRowHeaderRole)
       headers.push_back(cell);
   }
+}
+
+AXObject* AXARIAGridRow::ParentTable() const {
+  // A poorly-authored ARIA grid row could be nested within wrapper elements.
+  AXObject* ancestor = static_cast<AXObject*>(const_cast<AXARIAGridRow*>(this));
+  do {
+    ancestor = ancestor->ParentObjectUnignored();
+  } while (ancestor && !ancestor->IsAXTable());
+
+  return ancestor;
 }
 
 }  // namespace blink

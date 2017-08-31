@@ -46,9 +46,10 @@ class AXARIAGridCell final : public AXTableCell {
   ~AXARIAGridCell() override;
 
   // fills in the start location and row span of cell
-  void RowIndexRange(std::pair<unsigned, unsigned>& row_range) override;
+  bool RowIndexRange(std::pair<unsigned, unsigned>& row_range) const override;
   // fills in the start location and column span of cell
-  void ColumnIndexRange(std::pair<unsigned, unsigned>& column_range) override;
+  bool ColumnIndexRange(
+      std::pair<unsigned, unsigned>& column_range) const override;
   AccessibilityRole ScanToDecideHeaderRole() final;
   AXRestriction Restriction() const final;
   bool CanSetSelectedAttribute() const final {

@@ -1,16 +1,16 @@
 rootWebArea
 ++grid ariaColumnCount=4 tableRowCount=3 tableColumnCount=3 cellIds=columnHeader,columnHeader,columnHeader,cell,cell,cell,cell,cell,cell
-++++row
-++++++columnHeader name='Month' ariaCellColumnIndex=1 ariaCellRowIndex=1
+++++row selectable
+++++++columnHeader selectable name='Month' ariaCellColumnIndex=1 ariaCellRowIndex=1
 ++++++++staticText name='Month'
 ++++++++++inlineTextBox name='Month'
-++++++columnHeader name='Day' ariaCellColumnIndex=2 ariaCellRowIndex=1
+++++++columnHeader selectable name='Day' ariaCellColumnIndex=2 ariaCellRowIndex=1
 ++++++++staticText name='Day'
 ++++++++++inlineTextBox name='Day'
-++++++columnHeader name='Weather' ariaCellColumnIndex=4 ariaCellRowIndex=1
+++++++columnHeader selectable name='Weather' ariaCellColumnIndex=4 ariaCellRowIndex=1
 ++++++++staticText name='Weather'
 ++++++++++inlineTextBox name='Weather'
-++++row
+++++row selectable
 ++++++cell selectable name='January' ariaCellColumnIndex=1 ariaCellRowIndex=2
 ++++++++staticText name='January'
 ++++++++++inlineTextBox name='January'
@@ -20,7 +20,7 @@ rootWebArea
 ++++++cell selectable name='Sunny' ariaCellColumnIndex=4 ariaCellRowIndex=2
 ++++++++staticText name='Sunny'
 ++++++++++inlineTextBox name='Sunny'
-++++row
+++++row selectable
 ++++++cell selectable name='January' ariaCellColumnIndex=1 ariaCellRowIndex=2
 ++++++++staticText name='January'
 ++++++++++inlineTextBox name='January'

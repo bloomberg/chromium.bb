@@ -59,9 +59,11 @@ class AXARIAGrid final : public AXTable {
   bool SupportsSelectedRows() override { return true; }
   bool IsTableExposableThroughAccessibility() const override { return true; }
 
-  bool AddTableRowChild(AXObject*,
-                        HeapHashSet<Member<AXObject>>& appended_rows,
-                        unsigned& column_count);
+  void ComputeRows(AXObjectVector from_child_list);
+  bool AddRow(AXObject*);
+  unsigned CalculateNumColumns();
+  void AddColumnChildren(unsigned num_cols);
+  void AddHeaderContainerChild();
 };
 
 }  // namespace blink
