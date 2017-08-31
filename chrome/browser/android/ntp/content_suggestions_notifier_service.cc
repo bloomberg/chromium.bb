@@ -252,6 +252,18 @@ ContentSuggestionsNotifierService::ContentSuggestionsNotifierService(
       suggestions_service_(suggestions),
       notifier_(std::move(notifier)) {
   notifier_->FlushCachedMetrics();
+
+  if (notifier_->RegisterChannel(profile_->GetPrefs()->GetBoolean(
+          prefs::kContentSuggestionsNotificationsEnabled))) {
+    // Once there is a notification channel, this setting is no longer relevant
+    // and the UI to control it is gone. Set it to true so that notifications
+    // are sent unconditionally. If the channel is disabled, then notifications
+    // will be blocked at the system level, and the user can re-enable them in
+    // the system notification settings.
+    profile_->GetPrefs()->SetBoolean(
+        prefs::kContentSuggestionsNotificationsEnabled, true);
+  }
+
   if (IsEnabled()) {
     Enable();
   } else {
@@ -293,7 +305,6 @@ bool ContentSuggestionsNotifierService::IsEnabled() const {
 }
 
 void ContentSuggestionsNotifierService::Enable() {
-  notifier_->RegisterChannel();
   if (!observer_) {
     observer_.reset(
         new NotifyingObserver(suggestions_service_, profile_, notifier_.get()));
@@ -302,7 +313,6 @@ void ContentSuggestionsNotifierService::Enable() {
 }
 
 void ContentSuggestionsNotifierService::Disable() {
-  notifier_->UnregisterChannel();
   if (observer_) {
     suggestions_service_->RemoveObserver(observer_.get());
     observer_.reset();

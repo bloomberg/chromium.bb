@@ -445,20 +445,30 @@ public class ContentSuggestionsNotifier {
      * missing, the channel will be (re-)registered.
      *
      * <p>May be called on any Android version; before Android O, it is a no-op.
+     *
+     * <p>Returns true if the channel was registered, false if not (pre-O, or already registered).
+     *
+     * @param enabled If false, the channel is created in a disabled state.
      */
     @CalledByNative
-    private static void registerChannel() {
-        if (!BuildInfo.isAtLeastO()) return;
+    private static boolean registerChannel(boolean enabled) {
+        if (!BuildInfo.isAtLeastO()) return false;
         SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
-        if (prefs.getBoolean(PREF_CHANNEL_CREATED, false)) return;
+        if (prefs.getBoolean(PREF_CHANNEL_CREATED, false)) return false;
 
         ChannelsInitializer initializer = new ChannelsInitializer(
                 new NotificationManagerProxyImpl(
                         (NotificationManager) ContextUtils.getApplicationContext().getSystemService(
                                 Context.NOTIFICATION_SERVICE)),
                 ContextUtils.getApplicationContext().getResources());
-        initializer.ensureInitialized(ChannelDefinitions.CHANNEL_ID_CONTENT_SUGGESTIONS);
+        if (enabled) {
+            initializer.ensureInitialized(ChannelDefinitions.CHANNEL_ID_CONTENT_SUGGESTIONS);
+        } else {
+            initializer.ensureInitializedAndDisabled(
+                    ChannelDefinitions.CHANNEL_ID_CONTENT_SUGGESTIONS);
+        }
         prefs.edit().putBoolean(PREF_CHANNEL_CREATED, true).apply();
+        return true;
     }
 
     /**

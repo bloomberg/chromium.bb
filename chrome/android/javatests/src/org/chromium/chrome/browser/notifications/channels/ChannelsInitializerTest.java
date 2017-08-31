@@ -204,6 +204,45 @@ public class ChannelsInitializerTest {
     @MinAndroidSdkLevel(Build.VERSION_CODES.O)
     @TargetApi(Build.VERSION_CODES.O)
     @Feature({"Browser", "Notifications"})
+    public void testEnsureInitialized_contentSuggestionsEnabled() throws Exception {
+        mChannelsInitializer.ensureInitialized(ChannelDefinitions.CHANNEL_ID_CONTENT_SUGGESTIONS);
+
+        assertThat(getChannelsIgnoringDefault(), hasSize(1));
+
+        NotificationChannel channel = getChannelsIgnoringDefault().get(0);
+        assertThat(channel.getId(), is(ChannelDefinitions.CHANNEL_ID_CONTENT_SUGGESTIONS));
+        assertThat(channel.getName().toString(),
+                is(mContext.getString(
+                        org.chromium.chrome.R.string.notification_category_content_suggestions)));
+        assertThat(channel.getImportance(), is(NotificationManager.IMPORTANCE_LOW));
+        assertThat(channel.getGroup(), is(ChannelDefinitions.CHANNEL_GROUP_ID_GENERAL));
+    }
+
+    @Test
+    @SmallTest
+    @MinAndroidSdkLevel(Build.VERSION_CODES.O)
+    @TargetApi(Build.VERSION_CODES.O)
+    @Feature({"Browser", "Notifications"})
+    public void testEnsureInitialized_contentSuggestionsDisabled() throws Exception {
+        mChannelsInitializer.ensureInitializedAndDisabled(
+                ChannelDefinitions.CHANNEL_ID_CONTENT_SUGGESTIONS);
+
+        assertThat(getChannelsIgnoringDefault(), hasSize(1));
+
+        NotificationChannel channel = getChannelsIgnoringDefault().get(0);
+        assertThat(channel.getId(), is(ChannelDefinitions.CHANNEL_ID_CONTENT_SUGGESTIONS));
+        assertThat(channel.getName().toString(),
+                is(mContext.getString(
+                        org.chromium.chrome.R.string.notification_category_content_suggestions)));
+        assertThat(channel.getImportance(), is(NotificationManager.IMPORTANCE_NONE));
+        assertThat(channel.getGroup(), is(ChannelDefinitions.CHANNEL_GROUP_ID_GENERAL));
+    }
+
+    @Test
+    @SmallTest
+    @MinAndroidSdkLevel(Build.VERSION_CODES.O)
+    @TargetApi(Build.VERSION_CODES.O)
+    @Feature({"Browser", "Notifications"})
     public void testEnsureInitialized_singleOriginSiteChannel() throws Exception {
         String origin = "https://example.com";
         long creationTime = 621046800000L;
