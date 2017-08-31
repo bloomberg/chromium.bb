@@ -14,7 +14,7 @@
       }
     </style>
 
-    <div class="property-box first">
+    <div class="property-box">
       <div class="start">[[i18n('networkNameservers')]]</div>
       <div class="md-select-wrapper">
         <select id="nameserverType" class="md-select" on-change="onTypeChange_"
@@ -28,7 +28,7 @@
       </div>
     </div>
 
-    <div class="property-box continuation single-column indented"
+    <div class="property-box single-column indented"
         hidden$="[[!nameservers_.length]]">
       <template is="dom-repeat" items="[[nameservers_]]">
         <paper-input-container no-label-float>

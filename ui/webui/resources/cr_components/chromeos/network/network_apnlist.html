@@ -14,7 +14,7 @@
         margin: 4px 0;
       }
     </style>
-    <div class="property-box first">
+    <div class="property-box">
       <div class="start">[[i18n('networkAccessPoint')]]</div>
       <div class="md-select-wrapper">
         <select id="selectApn" class="md-select" on-change="onSelectApnChange_"
@@ -28,7 +28,7 @@
       </div>
     </div>
 
-    <div class="property-box continuation single-column"
+    <div class="property-box single-column indented"
         hidden$="[[!isOtherSelected_(selectedApn_, networkProperties)]]">
       <network-property-list on-property-change="onOtherApnChange_"
           fields="[[otherApnFields_]]" property-dict="[[otherApn_]]"
