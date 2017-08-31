@@ -5,6 +5,7 @@
 #import <EarlGrey/EarlGrey.h>
 #import <XCTest/XCTest.h>
 
+#include "base/test/scoped_feature_list.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/bookmarks/bookmark_new_generation_features.h"
 #import "ios/chrome/browser/ui/browser_view_controller.h"
@@ -176,11 +177,13 @@ const CGFloat kScrollDisplacement = 50.0;
 
 // Tests that keyboard commands are not registered when the Bookmarks UI is
 // shown on iPhone and registered on iPad.
+// TODO(crbug.com/695749): Check if we need to rewrite this test for the new
+// Bookmarks UI.
 - (void)testKeyboardCommandsNotRegistered_BookmarksPresented {
-  if (base::FeatureList::IsEnabled(
-          bookmark_new_generation::features::kBookmarkNewGeneration)) {
-    EARL_GREY_TEST_SKIPPED(@"Only enabled with old Bookmarks UI.");
-  }
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      bookmark_new_generation::features::kBookmarkNewGeneration);
+
   // Open Bookmarks
   [self selectToolsMenuItem:grey_accessibilityID(kToolsMenuBookmarksId)];
 
