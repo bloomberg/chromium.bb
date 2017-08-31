@@ -227,6 +227,28 @@ TEST_F(SubresourceFilterTest, ToggleForceActivation) {
                                      kActionForcedActivationEnabled, 1);
 }
 
+// Ensure that forcing activation uses its own custom configuration without
+// inheriting any custom activation options.
+TEST_F(SubresourceFilterTest,
+       ForceActivation_DisableRuleset_SubframeDisallowed) {
+  subresource_filter::Configuration config(
+      subresource_filter::ActivationLevel::ENABLED,
+      subresource_filter::ActivationScope::ALL_SITES);
+  config.activation_options.should_disable_ruleset_rules = true;
+  scoped_configuration().ResetConfiguration(std::move(config));
+
+  const GURL url("https://a.test/");
+  ConfigureAsSubresourceFilterOnlyURL(url);
+  SimulateNavigateAndCommit(url, main_rfh());
+  EXPECT_TRUE(CreateAndNavigateDisallowedSubframe(main_rfh()));
+
+  GetClient()->ToggleForceActivationInCurrentWebContents(true);
+  SimulateNavigateAndCommit(url, main_rfh());
+  // should_disable_ruleset_rules is not inherited by the forced activation
+  // configuration.
+  EXPECT_FALSE(CreateAndNavigateDisallowedSubframe(main_rfh()));
+}
+
 TEST_F(SubresourceFilterTest, UIShown_LogsRappor) {
   rappor::TestRapporServiceImpl rappor_tester;
   TestingBrowserProcess::GetGlobal()->SetRapporServiceImpl(&rappor_tester);

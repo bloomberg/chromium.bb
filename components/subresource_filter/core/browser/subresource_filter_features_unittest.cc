@@ -683,4 +683,21 @@ TEST(SubresourceFilterFeaturesTest,
             config_list->lexicographically_greatest_ruleset_flavor());
 }
 
+TEST(SubresourceFilterFeaturesTest, ForcedActivation_NotConfigurable) {
+  ScopedExperimentalStateToggle scoped_experimental_state(
+      base::FeatureList::OVERRIDE_ENABLE_FEATURE,
+      {{kActivationLevelParameterName, kActivationLevelEnabled},
+       {kActivationScopeParameterName, kActivationScopeNoSites},
+       {"forced_activation", "true"}});
+
+  Configuration actual_configuration;
+  ExpectAndRetrieveExactlyOneEnabledConfig(&actual_configuration);
+  EXPECT_EQ(ActivationLevel::ENABLED,
+            actual_configuration.activation_options.activation_level);
+  EXPECT_EQ(ActivationScope::NO_SITES,
+            actual_configuration.activation_conditions.activation_scope);
+
+  EXPECT_FALSE(actual_configuration.activation_conditions.forced_activation);
+}
+
 }  // namespace subresource_filter
