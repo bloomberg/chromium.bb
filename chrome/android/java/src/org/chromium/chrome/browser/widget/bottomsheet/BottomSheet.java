@@ -1057,13 +1057,17 @@ public class BottomSheet
                     } else {
                         oldView.setVisibility(View.INVISIBLE);
                     }
+                    if (parent != newView.getParent()) parent.addView(newView);
                 }
             });
             animators.add(fadeOutAnimator);
+        } else {
+            // Normally the new view is added at the end of the fade-out animation of the old view,
+            // if there is no old view, attach the new one immediately.
+            if (parent != newView.getParent()) parent.addView(newView);
         }
 
         // Fade in the new view.
-        if (parent != newView.getParent()) parent.addView(newView);
         newView.setAlpha(0);
         ValueAnimator fadeInAnimator = ObjectAnimator.ofFloat(newView, View.ALPHA, 1);
         fadeInAnimator.setDuration(TRANSITION_DURATION_MS);
