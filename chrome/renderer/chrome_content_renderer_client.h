@@ -192,6 +192,7 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   void RecordRapporURL(const std::string& metric, const GURL& url) override;
   void AddImageContextMenuProperties(
       const blink::WebURLResponse& response,
+      bool is_image_in_context_a_placeholder_image,
       std::map<std::string, std::string>* properties) override;
   void RunScriptsAtDocumentStart(content::RenderFrame* render_frame) override;
   void RunScriptsAtDocumentEnd(content::RenderFrame* render_frame) override;

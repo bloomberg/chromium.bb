@@ -44,6 +44,8 @@ class PLATFORM_EXPORT PlaceholderImage final : public Image {
 
   PaintImage PaintImageForCurrentFrame() override;
 
+  bool IsPlaceholderImage() const override { return true; }
+
  private:
   PlaceholderImage(ImageObserver*, const IntSize&);
 

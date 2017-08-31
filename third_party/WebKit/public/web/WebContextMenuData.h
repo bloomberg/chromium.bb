@@ -83,6 +83,9 @@ struct WebContextMenuData {
   // Whether the image in context is a null.
   bool has_image_contents;
 
+  // Whether the image in context is a Client-side Lo-Fi placeholder image.
+  bool is_placeholder_image;
+
   // If |media_type| is MediaTypeImage and |has_image_contents| is true, then
   // this contains the image's WebURLResponse.
   WebURLResponse image_response;
