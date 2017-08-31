@@ -12,10 +12,9 @@
 #include "base/time/time.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/app_list/app_list_features.h"
-#include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/app_list_view_delegate.h"
 #include "ui/app_list/search_result.h"
-#include "ui/app_list/views/search_result_list_view_delegate.h"
+#include "ui/app_list/views/app_list_main_view.h"
 #include "ui/app_list/views/search_result_view.h"
 #include "ui/events/event.h"
 #include "ui/gfx/animation/linear_animation.h"
@@ -36,10 +35,9 @@ constexpr SkColor kTimeoutIndicatorColor =
 
 namespace app_list {
 
-SearchResultListView::SearchResultListView(
-    SearchResultListViewDelegate* delegate,
-    AppListViewDelegate* view_delegate)
-    : delegate_(delegate),
+SearchResultListView::SearchResultListView(AppListMainView* main_view,
+                                           AppListViewDelegate* view_delegate)
+    : main_view_(main_view),
       view_delegate_(view_delegate),
       results_container_(new views::View),
       auto_launch_indicator_(new views::View),
@@ -283,8 +281,8 @@ void SearchResultListView::SearchResultActionActivated(SearchResultView* view,
 }
 
 void SearchResultListView::OnSearchResultInstalled(SearchResultView* view) {
-  if (delegate_ && view->result())
-    delegate_->OnResultInstalled(view->result());
+  if (main_view_ && view->result())
+    main_view_->OnResultInstalled(view->result());
 }
 
 }  // namespace app_list

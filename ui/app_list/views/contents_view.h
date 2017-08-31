@@ -24,17 +24,19 @@ class Rect;
 
 namespace app_list {
 
-class AppsGridView;
 class AppListPage;
 class AppListView;
 class ApplicationDragAndDropHost;
 class AppListFolderItem;
 class AppListMainView;
 class AppsContainerView;
+class AppsGridView;
 class CustomLauncherPageView;
 class PaginationModel;
 class SearchBoxView;
+class SearchResultListView;
 class SearchResultPageView;
+class SearchResultTileItemListView;
 class StartPageView;
 
 // A view to manage launcher pages within the Launcher (eg. start page, apps
@@ -96,8 +98,15 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   }
   StartPageView* start_page_view() const { return start_page_view_; }
   CustomLauncherPageView* custom_page_view() const { return custom_page_view_; }
-  SearchResultPageView* search_results_page_view() {
+  SearchResultPageView* search_results_page_view() const {
     return search_results_page_view_;
+  }
+  SearchResultTileItemListView* search_result_tile_item_list_view_for_test()
+      const {
+    return search_result_tile_item_list_view_;
+  }
+  SearchResultListView* search_result_list_view_for_test() const {
+    return search_result_list_view_;
   }
   AppListPage* GetPageView(int index) const;
 
@@ -192,13 +201,15 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   PaginationModel* GetAppsPaginationModel();
 
   // Unowned pointer to application list model.
-  AppListModel* model_;
+  AppListModel* model_ = nullptr;
 
   // Sub-views of the ContentsView. All owned by the views hierarchy.
-  AppsContainerView* apps_container_view_;
-  SearchResultPageView* search_results_page_view_;
-  StartPageView* start_page_view_;
-  CustomLauncherPageView* custom_page_view_;
+  AppsContainerView* apps_container_view_ = nullptr;
+  SearchResultPageView* search_results_page_view_ = nullptr;
+  SearchResultTileItemListView* search_result_tile_item_list_view_ = nullptr;
+  SearchResultListView* search_result_list_view_ = nullptr;
+  StartPageView* start_page_view_ = nullptr;
+  CustomLauncherPageView* custom_page_view_ = nullptr;
 
   // The child page views. Owned by the views hierarchy.
   std::vector<AppListPage*> app_list_pages_;
@@ -216,7 +227,7 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   std::map<int, AppListModel::State> view_to_state_;
 
   // The page that was showing before ShowSearchResults(true) was invoked.
-  int page_before_search_;
+  int page_before_search_ = 0;
 
   // Manages the pagination for the launcher pages.
   PaginationModel pagination_model_;

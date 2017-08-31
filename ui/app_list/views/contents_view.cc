@@ -51,14 +51,8 @@ void DoCloseAnimation(base::TimeDelta animation_duration, ui::Layer* layer) {
 
 ContentsView::ContentsView(AppListMainView* app_list_main_view,
                            AppListView* app_list_view)
-    : model_(nullptr),
-      apps_container_view_(nullptr),
-      search_results_page_view_(nullptr),
-      start_page_view_(nullptr),
-      custom_page_view_(nullptr),
-      app_list_main_view_(app_list_main_view),
+    : app_list_main_view_(app_list_main_view),
       app_list_view_(app_list_view),
-      page_before_search_(0),
       is_fullscreen_app_list_enabled_(features::IsFullscreenAppListEnabled()) {
   pagination_model_.SetTransitionDurations(kPageTransitionDurationInMs,
                                            kOverscrollPageTransitionDurationMs);
@@ -110,12 +104,16 @@ void ContentsView::Init(AppListModel* model) {
         results, new SearchResultAnswerCardView(view_delegate));
   }
 
+  search_result_tile_item_list_view_ = new SearchResultTileItemListView(
+      GetSearchBoxView()->search_box(), view_delegate);
   search_results_page_view_->AddSearchResultContainerView(
-      results, new SearchResultListView(app_list_main_view_, view_delegate));
+      results, search_result_tile_item_list_view_);
 
+  search_result_list_view_ =
+      new SearchResultListView(app_list_main_view_, view_delegate);
   search_results_page_view_->AddSearchResultContainerView(
-      results, new SearchResultTileItemListView(
-                   GetSearchBoxView()->search_box(), view_delegate));
+      results, search_result_list_view_);
+
   AddLauncherPage(search_results_page_view_,
                   AppListModel::STATE_SEARCH_RESULTS);
 
