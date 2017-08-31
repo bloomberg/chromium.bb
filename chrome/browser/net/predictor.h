@@ -390,14 +390,13 @@ class Predictor {
   // resolution of names.  Rather than letting this congestion potentially grow
   // without bounds, we abandon our queued efforts at pre-resolutions in such a
   // case.
-  // To do this, we will recycle |info|, as well as all queued items, back to
-  // the state they had before they were queued up.  We can't do anything about
-  // the resolutions we've already sent off for processing on another thread, so
-  // we just let them complete.  On a slow system, subject to congestion, this
-  // will greatly reduce the number of resolutions done, but it will assure that
-  // any resolutions that are done, are in a timely and hence potentially
-  // helpful manner.
-  bool CongestionControlPerformed(UrlInfo* info);
+  // To do this, we will recycle |info_it|, as well as all queued items.
+  // We can't do anything about the resolutions we've already sent off for
+  // processing on another thread, so we just let them complete.  On a slow
+  // system, subject to congestion, this will greatly reduce the number of
+  // resolutions done, but it will assure that any resolutions that are done,
+  // are in a timely and hence potentially helpful manner.
+  bool CongestionControlPerformed(Results::iterator info_it);
 
   // Take lookup requests from work_queue_ and tell HostResolver to look them up
   // asynchronously, provided we don't exceed concurrent resolution limit.

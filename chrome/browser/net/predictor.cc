@@ -961,16 +961,18 @@ void Predictor::OnLookupFinished(const GURL& url, int result) {
 
 void Predictor::LookupFinished(const GURL& url, bool found) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  UrlInfo* info = &results_[url];
+  auto info_it = results_.find(url);
+  UrlInfo* info = &info_it->second;
   DCHECK(info->HasUrl(url));
-  if (info->is_marked_to_delete()) {
-    results_.erase(url);
-  } else {
-    if (found)
-      info->SetFoundState();
-    else
-      info->SetNoSuchNameState();
-  }
+  bool is_marked_to_delete = info->is_marked_to_delete();
+
+  if (found)
+    info->SetFoundState();
+  else
+    info->SetNoSuchNameState();
+
+  if (is_marked_to_delete)
+    results_.erase(info_it);
 }
 
 bool Predictor::WouldLikelyProxyURL(const GURL& url) {
@@ -1013,8 +1015,9 @@ void Predictor::AppendToResolutionQueue(
   StartSomeQueuedResolutions();
 }
 
-bool Predictor::CongestionControlPerformed(UrlInfo* info) {
+bool Predictor::CongestionControlPerformed(Results::iterator info_it) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  UrlInfo* info = &info_it->second;
   // Note: queue_duration is ONLY valid after we go to assigned state.
   if (info->queue_duration() < max_dns_queue_delay_)
     return false;
@@ -1023,9 +1026,11 @@ bool Predictor::CongestionControlPerformed(UrlInfo* info) {
   // resolutions, and not have a bogged down system.
   while (true) {
     info->RemoveFromQueue();
+    results_.erase(info_it);
     if (work_queue_.IsEmpty())
       break;
-    info = &results_[work_queue_.Pop()];
+    info_it = results_.find(work_queue_.Pop());
+    info = &info_it->second;
     info->SetAssignedState();
   }
   return true;
@@ -1037,16 +1042,17 @@ void Predictor::StartSomeQueuedResolutions() {
   while (!work_queue_.IsEmpty() &&
          num_pending_lookups_ < max_concurrent_dns_lookups_) {
     const GURL url(work_queue_.Pop());
-    UrlInfo* info = &results_[url];
+    auto info_it = results_.find(url);
+    UrlInfo* info = &info_it->second;
     DCHECK(info->HasUrl(url));
     info->SetAssignedState();
-    info->SetPendingDeleteState();
 
-    if (CongestionControlPerformed(info)) {
+    if (CongestionControlPerformed(info_it)) {
       DCHECK(work_queue_.IsEmpty());
       return;
     }
 
+    info->SetPendingDeleteState();
     int status =
         content::PreresolveUrl(url_request_context_getter_.get(), url,
                                base::Bind(&Predictor::OnLookupFinished,

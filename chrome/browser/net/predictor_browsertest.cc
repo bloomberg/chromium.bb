@@ -507,6 +507,9 @@ class PredictorBrowserTest : public InProcessBrowserTest {
                                                   "127.0.0.1", 44);
     rule_based_resolver_proc_->AddRuleWithLatency("gmail.com", "127.0.0.1", 63);
     rule_based_resolver_proc_->AddSimulatedFailure("*.notfound");
+    rule_based_resolver_proc_->AddRuleWithLatency(
+        "slow*.google.com", "127.0.0.1",
+        Predictor::kMaxSpeculativeResolveQueueDelayMs + 300);
     rule_based_resolver_proc_->AddRuleWithLatency("delay.google.com",
                                                   "127.0.0.1", 1000 * 60);
   }
@@ -875,6 +878,28 @@ IN_PROC_BROWSER_TEST_F(PredictorBrowserTest,
 
   ExpectUrlLookupIsInProgressOnUIThread(delayed_url);
   EXPECT_FALSE(observer()->HasHostBeenLookedUp(delayed_url));
+}
+
+IN_PROC_BROWSER_TEST_F(PredictorBrowserTest, CongestionControlTest) {
+  const int queue_max_size = Predictor::kMaxSpeculativeParallelResolves;
+  std::vector<GURL> slow_names;
+  std::vector<GURL> recycled_names;
+  for (int i = 0; i < queue_max_size; ++i)
+    slow_names.emplace_back(base::StringPrintf("http://slow%d.google.com", i));
+  for (int i = queue_max_size; i < 5; ++i) {
+    recycled_names.emplace_back(
+        base::StringPrintf("http://host%d.notfound", i));
+  }
+
+  FloodResolveRequestsOnUIThread(slow_names);
+  FloodResolveRequestsOnUIThread(recycled_names);
+
+  WaitUntilHostsLookedUp(slow_names);
+  ExpectFoundUrls(slow_names, {});
+  for (const auto& name : recycled_names)
+    EXPECT_FALSE(observer()->HasHostBeenLookedUp(name));
+  ExpectValidPeakPendingLookupsOnUI(slow_names.size());
+  ExpectNoLookupsAreInProgressOnUIThread();
 }
 
 IN_PROC_BROWSER_TEST_F(PredictorBrowserTest, SimplePreconnectOne) {
