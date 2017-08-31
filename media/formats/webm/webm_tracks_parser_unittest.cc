@@ -207,6 +207,38 @@ TEST_F(WebMTracksParserTest, InvalidZeroDefaultDurationSet) {
   EXPECT_EQ(-1, parser->Parse(&buf[0], buf.size()));
 }
 
+TEST_F(WebMTracksParserTest, InvalidTracksCodecIdFormat) {
+  // Inexhaustively confirms parse error if Tracks CodecID element value
+  // contains a character outside of 0x01 - 0x7F.
+  TracksBuilder tb(true);
+  tb.AddAudioTrack(1, 1, "A_VORB\xA1S", "audio", "", -1, 2, 8000);
+  const std::vector<uint8_t> buf = tb.Finish();
+
+  std::unique_ptr<WebMTracksParser> parser(
+      new WebMTracksParser(&media_log_, true));
+
+  EXPECT_MEDIA_LOG(
+      HasSubstr("Tracks CodecID element value must be an ASCII string"));
+
+  EXPECT_EQ(-1, parser->Parse(&buf[0], buf.size()));
+}
+
+TEST_F(WebMTracksParserTest, InvalidTracksNameFormat) {
+  // Inexhaustively confirms parse error if Tracks Name element value
+  // contains a character outside of 0x01 - 0x7F.
+  TracksBuilder tb(true);
+  tb.AddAudioTrack(1, 1, "A_VORBIS", "aud\x80o", "", -1, 2, 8000);
+  const std::vector<uint8_t> buf = tb.Finish();
+
+  std::unique_ptr<WebMTracksParser> parser(
+      new WebMTracksParser(&media_log_, true));
+
+  EXPECT_MEDIA_LOG(
+      HasSubstr("Tracks Name element value must be an ASCII string"));
+
+  EXPECT_EQ(-1, parser->Parse(&buf[0], buf.size()));
+}
+
 TEST_F(WebMTracksParserTest, HighTrackUID) {
   // Confirm no parse error if TrackEntry TrackUID has MSb set
   // (http://crbug.com/397067).

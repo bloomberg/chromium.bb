@@ -36,6 +36,11 @@ class MEDIA_EXPORT WebMParserClient {
   virtual bool OnUInt(int id, int64_t val);
   virtual bool OnFloat(int id, double val);
   virtual bool OnBinary(int id, const uint8_t* data, int size);
+
+  // Note that |str| is not necessarily a valid WebM string-value; various EBML
+  // "s" or "8" string elements are specified as either ASCII-printable (0x20 -
+  // 0x7F) or UTF-8, respectively.  It is left to the overrides of this method
+  // to do string format validation, if any.
   virtual bool OnString(int id, const std::string& str);
 
  protected:

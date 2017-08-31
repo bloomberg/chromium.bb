@@ -345,11 +345,26 @@ bool WebMTracksParser::OnString(int id, const std::string& str) {
       return false;
     }
 
+    // This element is specified to be printable ASCII (0x20-0x7F). Here, we
+    // allow also 0x01-0x1F.
+    if (!base::IsStringASCII(str)) {
+      MEDIA_LOG(ERROR, media_log_)
+          << "Tracks CodecID element value must be an ASCII string";
+      return false;
+    }
+
     codec_id_ = str;
     return true;
   }
 
   if (id == kWebMIdName) {
+    // This element is specified to be printable ASCII (0x20-0x7F). Here, we
+    // allow also 0x01-0x1F.
+    if (!base::IsStringASCII(str)) {
+      MEDIA_LOG(ERROR, media_log_)
+          << "Tracks Name element value must be an ASCII string";
+      return false;
+    }
     track_name_ = str;
     return true;
   }
