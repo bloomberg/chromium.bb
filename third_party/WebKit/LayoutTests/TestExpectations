@@ -3088,7 +3088,7 @@ crbug.com/749965 [ Win7 Debug ] media/controls/controls-video-keynav.html [ Fail
 crbug.com/626703 [ Win7 Mac10.11 ] external/wpt/html/semantics/tabular-data/processing-model-1/span-limits.html [ Timeout ]
 
 # Sheriff failure 2017-08-07
-crbug.com/708499 [ Mac10.11 Retina Debug ] virtual/wheelscrolllatching/fast/compositor-wheel-scroll-latching/touchpad-scroll-impl-to-main.html [ Failure Pass ]
+crbug.com/708499 [ Linux ] virtual/wheelscrolllatching/fast/compositor-wheel-scroll-latching/touchpad-scroll-impl-to-main.html [ Failure Pass ]
 crbug.com/752845 [ Win ] inspector/sha1.html [ Pass Crash ]
 
 # Sheriff failure 2017-08-11
