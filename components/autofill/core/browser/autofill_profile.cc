@@ -191,6 +191,21 @@ void GetFieldsForDistinguishingProfiles(
   }
 }
 
+// Constants for the validity bitfield.
+static const size_t validity_bits_per_type = 2;
+static const size_t number_supported_types_for_validation = 7;
+// The order is important to ensure a consistent bitfield value. New values
+// should be added at the end NOT at the start or middle.
+static const ServerFieldType
+    supported_types_for_validation[number_supported_types_for_validation] = {
+        ADDRESS_HOME_COUNTRY,
+        ADDRESS_HOME_STATE,
+        ADDRESS_HOME_ZIP,
+        ADDRESS_HOME_CITY,
+        ADDRESS_HOME_DEPENDENT_LOCALITY,
+        EMAIL_ADDRESS,
+        PHONE_HOME_WHOLE_NUMBER};
+
 }  // namespace
 
 AutofillProfile::AutofillProfile(const std::string& guid,
@@ -715,18 +730,23 @@ void AutofillProfile::SetValidityState(ServerFieldType type,
 }
 
 bool AutofillProfile::IsValidationSupportedForType(ServerFieldType type) {
-  switch (type) {
-    case ADDRESS_HOME_STATE:
-    case ADDRESS_HOME_ZIP:
-    case ADDRESS_HOME_COUNTRY:
-    case ADDRESS_HOME_CITY:
-    case ADDRESS_HOME_DEPENDENT_LOCALITY:
-    case EMAIL_ADDRESS:
-    case PHONE_HOME_WHOLE_NUMBER:
-      return true;
-    default:
-      return false;
+  return std::find(supported_types_for_validation,
+                   supported_types_for_validation +
+                       number_supported_types_for_validation,
+                   type) !=
+         supported_types_for_validation + number_supported_types_for_validation;
+}
+
+int AutofillProfile::GetValidityBitfieldValue() {
+  int validity_value = 0;
+  size_t field_type_shift = 0;
+  for (ServerFieldType supported_type : supported_types_for_validation) {
+    DCHECK(GetValidityState(supported_type) != UNSUPPORTED);
+    validity_value |= GetValidityState(supported_type) << field_type_shift;
+    field_type_shift += validity_bits_per_type;
   }
+
+  return validity_value;
 }
 
 base::string16 AutofillProfile::GetInfoImpl(
