@@ -4,21 +4,19 @@
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutBlockFlow DIV",
       "position": [8, 8],
       "bounds": [200, 200],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#D3D3D3"
     },
     {
       "name": "LayoutIFrame (positioned) IFRAME",
       "bounds": [104, 104],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#ADD8E6"
     }
   ]

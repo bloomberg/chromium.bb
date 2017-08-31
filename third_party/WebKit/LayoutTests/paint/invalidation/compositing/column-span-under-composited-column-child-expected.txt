@@ -4,7 +4,7 @@
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true,
+      "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow (column spanner) DIV id='target'",
@@ -16,13 +16,13 @@
     {
       "name": "LayoutBlockFlow DIV",
       "position": [8, 8],
-      "contentsOpaque": true
+      "contentsOpaque": true,
+      "drawsContent": false
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV",
       "position": [8, 8],
-      "contentsOpaque": true,
-      "drawsContent": true
+      "contentsOpaque": true
     }
   ],
   "objectPaintInvalidations": [

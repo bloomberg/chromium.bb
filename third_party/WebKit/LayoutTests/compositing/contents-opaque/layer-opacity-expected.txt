@@ -4,7 +4,7 @@
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutBlockFlow DIV class='box opaque-background translucent composited'",
@@ -12,7 +12,6 @@
       "bounds": [100, 100],
       "opacity": 0.5,
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#008000"
     }
   ]

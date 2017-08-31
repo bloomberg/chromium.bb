@@ -2323,4 +2323,45 @@ TEST_P(CompositedLayerMappingTest, ScrollingContainerBoundsChange) {
   EXPECT_EQ(100, scrolling_layer->ScrollContainerBoundsForTesting().height);
 }
 
+TEST_P(CompositedLayerMappingTest, MainFrameLayerBackgroundColor) {
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  EXPECT_EQ(Color::kWhite, GetDocument().View()->BaseBackgroundColor());
+  auto* view_layer =
+      GetDocument().GetLayoutViewItem().Layer()->GraphicsLayerBacking();
+  EXPECT_EQ(Color::kWhite, view_layer->BackgroundColor());
+
+  Color base_background(255, 0, 0);
+  GetDocument().View()->SetBaseBackgroundColor(base_background);
+  GetDocument().body()->setAttribute(HTMLNames::styleAttr,
+                                     "background: rgba(0, 255, 0, 0.5)");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  EXPECT_EQ(base_background, GetDocument().View()->BaseBackgroundColor());
+  EXPECT_EQ(Color(127, 128, 0, 255), view_layer->BackgroundColor());
+}
+
+TEST_P(CompositedLayerMappingTest, ScrollingLayerBackgroundColor) {
+  SetBodyInnerHTML(
+      "<style>.color {background-color: blue}</style>"
+      "<div id='target' style='width: 100px; height: 100px;"
+      "     overflow: scroll; will-change: transform'>"
+      "  <div style='height: 200px'></div>"
+      "</div>");
+
+  auto* target = GetDocument().getElementById("target");
+  auto* mapping = ToLayoutBoxModelObject(target->GetLayoutObject())
+                      ->Layer()
+                      ->GetCompositedLayerMapping();
+  auto* graphics_layer = mapping->MainGraphicsLayer();
+  auto* scrolling_contents_layer = mapping->ScrollingContentsLayer();
+  ASSERT_TRUE(graphics_layer);
+  ASSERT_TRUE(scrolling_contents_layer);
+  EXPECT_EQ(Color::kTransparent, graphics_layer->BackgroundColor());
+  EXPECT_EQ(Color::kTransparent, scrolling_contents_layer->BackgroundColor());
+
+  target->setAttribute(HTMLNames::classAttr, "color");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  EXPECT_EQ(Color(0, 0, 255), graphics_layer->BackgroundColor());
+  EXPECT_EQ(Color(0, 0, 255), scrolling_contents_layer->BackgroundColor());
+}
+
 }  // namespace blink

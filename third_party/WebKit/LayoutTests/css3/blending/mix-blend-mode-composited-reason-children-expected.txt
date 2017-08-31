@@ -3,18 +3,18 @@
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
-      "contentsOpaque": true
+      "contentsOpaque": true,
+      "drawsContent": false,
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutBlockFlow HTML",
-      "bounds": [800, 600],
-      "drawsContent": true
+      "bounds": [800, 600]
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='stacking-context'",
       "position": [8, 8],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#FF0000"
     },
     {
@@ -23,7 +23,6 @@
       "bounds": [160, 90],
       "isolate": true,
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#008000"
     },
     {
@@ -31,23 +30,21 @@
       "position": [8, 8],
       "bounds": [160, 90],
       "blendMode": "multiply",
-      "drawsContent": true,
       "backgroundColor": "#0000FF"
     },
     {
       "name": "LayoutImage IMG class='accelerated'",
       "position": [8, 8],
-      "bounds": [160, 90]
+      "bounds": [160, 90],
+      "drawsContent": false
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='stacking-context' (foreground) Layer",
-      "position": [8, 8],
-      "drawsContent": true
+      "position": [8, 8]
     },
     {
       "name": "LayoutBlockFlow HTML (foreground) Layer",
-      "bounds": [800, 600],
-      "drawsContent": true
+      "bounds": [800, 600]
     }
   ]
 }

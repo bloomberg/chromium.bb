@@ -8,31 +8,27 @@
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutImage IMG id='grayscale-box'",
       "position": [18, 18],
-      "bounds": [160, 90],
-      "drawsContent": true
+      "bounds": [160, 90]
     },
     {
       "name": "LayoutImage IMG id='saturate-box'",
       "position": [18, 133],
-      "bounds": [160, 90],
-      "drawsContent": true
+      "bounds": [160, 90]
     },
     {
       "name": "LayoutImage IMG id='invert-box'",
       "position": [18, 248],
-      "bounds": [160, 90],
-      "drawsContent": true
+      "bounds": [160, 90]
     },
     {
       "name": "LayoutImage IMG id='brightness-box'",
       "position": [18, 363],
-      "bounds": [160, 90],
-      "drawsContent": true
+      "bounds": [160, 90]
     }
   ]
 }

@@ -7,13 +7,12 @@ This layer should be composited.
       "name": "LayoutView #document",
       "bounds": [785, 618],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutBlockFlow DIV class='preserve3d'",
       "position": [18, 394],
       "bounds": [342, 182],
-      "drawsContent": true,
       "transform": 1
     },
     {
@@ -21,7 +20,6 @@ This layer should be composited.
       "position": [31, 51],
       "bounds": [100, 100],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#C0C0C0",
       "transform": 2
     }

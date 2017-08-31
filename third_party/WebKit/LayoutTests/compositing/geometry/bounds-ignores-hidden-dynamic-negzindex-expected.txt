@@ -6,33 +6,30 @@
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='composited'",
-      "bounds": [500, 250],
-      "drawsContent": true
+      "bounds": [500, 250]
     },
     {
-      "name": "Squashing Containment Layer"
+      "name": "Squashing Containment Layer",
+      "drawsContent": false
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='composited'",
       "position": [0, 250],
-      "bounds": [150, 150],
-      "drawsContent": true
+      "bounds": [150, 150]
     },
     {
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow PRE id='layers')",
-      "bounds": [792, 100],
-      "drawsContent": true
+      "bounds": [792, 100]
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='indicator box'",
       "position": [0, 250],
       "bounds": [100, 100],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#008000"
     }
   ]

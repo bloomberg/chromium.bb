@@ -4,26 +4,23 @@
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutTableRow TR",
       "position": [8, 18],
-      "drawsContent": true,
       "backgroundColor": "#0000FF"
     },
     {
       "name": "LayoutTableRow TR",
       "position": [8, 28],
       "bounds": [234, 102],
-      "drawsContent": true,
       "backgroundColor": "#0000FF"
     },
     {
       "name": "LayoutTableRow TR class='shadow-inset'",
       "position": [8, 140],
       "bounds": [234, 102],
-      "drawsContent": true,
       "backgroundColor": "#0000FF",
       "paintInvalidations": [
         {

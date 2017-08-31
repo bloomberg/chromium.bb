@@ -4,7 +4,7 @@
       "name": "LayoutView #document",
       "bounds": [939, 235],
       "contentsOpaque": true,
-      "drawsContent": true,
+      "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow HTML",
@@ -144,7 +144,7 @@
       "name": "LayoutView #document",
       "bounds": [939, 235],
       "contentsOpaque": true,
-      "drawsContent": true,
+      "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow HTML",
@@ -289,7 +289,7 @@
       "name": "LayoutView #document",
       "bounds": [400, 600],
       "contentsOpaque": true,
-      "drawsContent": true,
+      "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
           "object": "LayoutView #document",
@@ -397,7 +397,7 @@
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true,
+      "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
           "object": "LayoutView #document",

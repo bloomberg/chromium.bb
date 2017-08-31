@@ -4,6 +4,8 @@
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
+      "drawsContent": false,
+      "backgroundColor": "#FFFFFF",
       "paintingPhases": [
         "GraphicsLayerPaintBackground",
         "GraphicsLayerPaintForeground",
@@ -14,7 +16,6 @@
     {
       "name": "LayoutBlockFlow HTML",
       "bounds": [800, 242],
-      "drawsContent": true,
       "paintingPhases": [
         "GraphicsLayerPaintBackground",
         "GraphicsLayerPaintMask",
@@ -26,7 +27,6 @@
       "position": [29, 31],
       "bounds": [80, 10],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#008000",
       "paintingPhases": [
         "GraphicsLayerPaintBackground",
@@ -38,7 +38,6 @@
     {
       "name": "LayoutBlockFlow HTML (foreground) Layer",
       "bounds": [800, 242],
-      "drawsContent": true,
       "paintingPhases": [
         "GraphicsLayerPaintForeground"
       ]
@@ -47,7 +46,6 @@
       "name": "LayoutBlockFlow DIV class='container'",
       "position": [28, 20],
       "bounds": [202, 202],
-      "drawsContent": true,
       "paintingPhases": [
         "GraphicsLayerPaintBackground",
         "GraphicsLayerPaintMask",
@@ -59,6 +57,7 @@
       "name": "Scrolling Layer",
       "position": [29, 21],
       "bounds": [185, 185],
+      "drawsContent": false,
       "paintingPhases": [
         "GraphicsLayerPaintBackground",
         "GraphicsLayerPaintForeground",
@@ -70,7 +69,6 @@
       "name": "Scrolling Contents Layer",
       "position": [29, 21],
       "bounds": [185, 715],
-      "drawsContent": true,
       "paintingPhases": [
         "GraphicsLayerPaintForeground",
         "GraphicsLayerPaintOverflowContents",
@@ -81,6 +79,7 @@
       "name": "Overflow Controls Host Layer",
       "position": [28, 20],
       "bounds": [202, 202],
+      "drawsContent": false,
       "paintingPhases": [
         "GraphicsLayerPaintBackground",
         "GraphicsLayerPaintForeground",
@@ -92,6 +91,7 @@
       "name": "Horizontal Scrollbar Layer",
       "position": [29, 206],
       "bounds": [185, 15],
+      "drawsContent": false,
       "paintingPhases": [
         "GraphicsLayerPaintBackground",
         "GraphicsLayerPaintForeground",
@@ -103,6 +103,7 @@
       "name": "Vertical Scrollbar Layer",
       "position": [214, 21],
       "bounds": [15, 185],
+      "drawsContent": false,
       "paintingPhases": [
         "GraphicsLayerPaintBackground",
         "GraphicsLayerPaintForeground",
@@ -114,7 +115,6 @@
       "name": "Scroll Corner Layer",
       "position": [214, 206],
       "bounds": [15, 15],
-      "drawsContent": true,
       "paintingPhases": [
         "GraphicsLayerPaintBackground",
         "GraphicsLayerPaintForeground",

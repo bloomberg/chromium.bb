@@ -4,7 +4,7 @@
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true,
+      "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow (positioned) DIV id='outer'",
@@ -16,14 +16,14 @@
     {
       "name": "Ancestor Clipping Layer",
       "position": [8, 8],
-      "bounds": [285, 285]
+      "bounds": [285, 285],
+      "drawsContent": false
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV id='container'",
       "position": [-307, 8],
       "bounds": [600, 600],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#FF0000",
       "paintInvalidations": [
         {

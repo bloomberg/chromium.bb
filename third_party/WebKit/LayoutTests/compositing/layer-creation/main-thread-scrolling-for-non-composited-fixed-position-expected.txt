@@ -5,7 +5,7 @@ TEST
       "name": "LayoutView #document",
       "bounds": [785, 5021],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     }
   ]
 }

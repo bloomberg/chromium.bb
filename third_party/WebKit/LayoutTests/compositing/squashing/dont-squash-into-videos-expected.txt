@@ -4,30 +4,28 @@
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutVideo (positioned) VIDEO",
       "bounds": [100, 100],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#ADD8E6"
     },
     {
       "name": "LayoutFlexibleBox (relative positioned) DIV",
-      "bounds": [100, 100],
-      "drawsContent": true
+      "bounds": [100, 100]
     },
     {
       "name": "LayoutFlexibleBox (relative positioned) DIV",
-      "bounds": [100, 58]
+      "bounds": [100, 58],
+      "drawsContent": false
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV",
       "position": [50, 50],
       "bounds": [200, 200],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#D3D3D3"
     }
   ]

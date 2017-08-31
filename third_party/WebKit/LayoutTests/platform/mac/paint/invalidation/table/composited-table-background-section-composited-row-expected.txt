@@ -4,13 +4,12 @@
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutTableSection TBODY id='target'",
       "position": [8, 26],
       "bounds": [186, 134],
-      "drawsContent": true,
       "backgroundColor": "#ADD8E6",
       "paintInvalidations": [
         {
@@ -23,14 +22,12 @@
     {
       "name": "LayoutTableRow TR",
       "position": [8, 94],
-      "bounds": [186, 64],
-      "drawsContent": true
+      "bounds": [186, 64]
     },
     {
       "name": "LayoutTableCell TD",
       "position": [72, 94],
-      "bounds": [59, 64],
-      "drawsContent": true
+      "bounds": [59, 64]
     }
   ],
   "objectPaintInvalidations": [

@@ -4,14 +4,13 @@
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV id='composited-parent' class='compositor-painted-shadow'",
       "position": [100, 100],
       "bounds": [100, 100],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#FF0000"
     },
     {
@@ -19,7 +18,6 @@
       "position": [100, 100],
       "bounds": [100, 100],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#008000"
     }
   ]
@@ -30,14 +28,13 @@
       "name": "LayoutView #document",
       "bounds": [856, 585],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV id='composited-parent' class='software-painted-shadow'",
       "position": [100, 100],
       "bounds": [100, 100],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#FF0000"
     },
     {
@@ -45,7 +42,6 @@
       "position": [100, 100],
       "bounds": [100, 100],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#008000"
     }
   ]

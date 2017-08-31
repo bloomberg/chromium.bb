@@ -4,24 +4,25 @@
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV id='fixedTransformed'",
       "position": [8, 88],
-      "contentsOpaque": true
+      "contentsOpaque": true,
+      "drawsContent": false
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV id='fixedOverlapping'",
       "position": [8, 88],
-      "bounds": [800, 600]
+      "bounds": [800, 600],
+      "drawsContent": false
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV id='moveMe'",
       "position": [150, 150],
       "bounds": [100, 100],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#008000"
     }
   ]

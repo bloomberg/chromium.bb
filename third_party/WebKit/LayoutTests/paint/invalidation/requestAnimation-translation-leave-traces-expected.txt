@@ -7,7 +7,7 @@ Tested locations: 1200,1500
       "name": "LayoutView #document",
       "bounds": [1600, 585],
       "contentsOpaque": true,
-      "drawsContent": true,
+      "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
           "object": "LayoutView #document",

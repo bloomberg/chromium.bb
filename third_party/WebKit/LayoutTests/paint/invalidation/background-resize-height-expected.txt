@@ -4,14 +4,13 @@
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='test image'",
       "position": [8, 8],
       "bounds": [60, 44],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backfaceVisibility": "hidden",
       "paintInvalidations": [
         {
@@ -26,7 +25,6 @@
       "position": [58, 8],
       "bounds": [60, 44],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backfaceVisibility": "hidden",
       "paintInvalidations": [
         {
@@ -41,7 +39,6 @@
       "position": [108, 8],
       "bounds": [60, 44],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backfaceVisibility": "hidden",
       "paintInvalidations": [
         {
@@ -56,7 +53,6 @@
       "position": [158, 8],
       "bounds": [60, 44],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backfaceVisibility": "hidden",
       "paintInvalidations": [
         {
@@ -71,7 +67,6 @@
       "position": [208, 8],
       "bounds": [60, 44],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backfaceVisibility": "hidden",
       "paintInvalidations": [
         {
@@ -86,7 +81,6 @@
       "position": [258, 8],
       "bounds": [60, 44],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backfaceVisibility": "hidden",
       "paintInvalidations": [
         {
@@ -101,7 +95,6 @@
       "position": [308, 8],
       "bounds": [60, 44],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backfaceVisibility": "hidden",
       "paintInvalidations": [
         {
@@ -116,7 +109,6 @@
       "position": [358, 8],
       "bounds": [60, 44],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backfaceVisibility": "hidden",
       "paintInvalidations": [
         {
@@ -130,7 +122,6 @@
       "name": "LayoutBlockFlow (positioned) DIV class='test image no-repeat'",
       "position": [408, 8],
       "bounds": [60, 44],
-      "drawsContent": true,
       "backfaceVisibility": "hidden",
       "paintInvalidations": [
         {
@@ -144,7 +135,6 @@
       "name": "LayoutBlockFlow (positioned) DIV class='test image repeat-space'",
       "position": [458, 8],
       "bounds": [60, 44],
-      "drawsContent": true,
       "backfaceVisibility": "hidden",
       "paintInvalidations": [
         {
@@ -159,7 +149,6 @@
       "position": [508, 8],
       "bounds": [60, 44],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backfaceVisibility": "hidden",
       "paintInvalidations": [
         {
@@ -174,7 +163,6 @@
       "position": [8, 108],
       "bounds": [60, 44],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backfaceVisibility": "hidden",
       "paintInvalidations": [
         {
@@ -189,7 +177,6 @@
       "position": [58, 108],
       "bounds": [60, 44],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backfaceVisibility": "hidden",
       "paintInvalidations": [
         {
@@ -204,7 +191,6 @@
       "position": [108, 108],
       "bounds": [60, 44],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backfaceVisibility": "hidden",
       "paintInvalidations": [
         {
@@ -219,7 +205,6 @@
       "position": [208, 108],
       "bounds": [60, 44],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backfaceVisibility": "hidden",
       "paintInvalidations": [
         {
@@ -234,7 +219,6 @@
       "position": [258, 108],
       "bounds": [60, 44],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backfaceVisibility": "hidden",
       "paintInvalidations": [
         {
@@ -249,7 +233,6 @@
       "position": [308, 108],
       "bounds": [60, 44],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backfaceVisibility": "hidden",
       "paintInvalidations": [
         {
@@ -264,7 +247,6 @@
       "position": [358, 108],
       "bounds": [60, 44],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backfaceVisibility": "hidden",
       "paintInvalidations": [
         {
@@ -278,7 +260,6 @@
       "name": "LayoutBlockFlow (positioned) DIV class='test generated no-repeat'",
       "position": [408, 108],
       "bounds": [60, 44],
-      "drawsContent": true,
       "backfaceVisibility": "hidden",
       "paintInvalidations": [
         {
@@ -292,7 +273,6 @@
       "name": "LayoutBlockFlow (positioned) DIV class='test generated repeat-space'",
       "position": [458, 108],
       "bounds": [60, 44],
-      "drawsContent": true,
       "backfaceVisibility": "hidden",
       "paintInvalidations": [
         {
@@ -307,7 +287,6 @@
       "position": [508, 108],
       "bounds": [60, 44],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backfaceVisibility": "hidden",
       "paintInvalidations": [
         {

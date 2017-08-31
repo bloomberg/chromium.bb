@@ -7,29 +7,29 @@ Case 1, original layer tree:
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutBlockFlow DIV class='composited'",
       "position": [8, 8],
-      "contentsOpaque": true
+      "contentsOpaque": true,
+      "drawsContent": false
     },
     {
-      "name": "Squashing Containment Layer"
+      "name": "Squashing Containment Layer",
+      "drawsContent": false
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='composited box behind'",
       "position": [100, 100],
       "bounds": [100, 100],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#0000FF"
     },
     {
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='box middle')",
       "position": [180, 180],
-      "bounds": [260, 260],
-      "drawsContent": true
+      "bounds": [260, 260]
     }
   ]
 }
@@ -40,37 +40,36 @@ Case 2: hovering over the "middle" element (causes that div to become its own co
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutBlockFlow DIV class='composited'",
       "position": [8, 8],
-      "contentsOpaque": true
+      "contentsOpaque": true,
+      "drawsContent": false
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='composited box behind'",
       "position": [100, 100],
       "bounds": [100, 100],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#0000FF"
     },
     {
-      "name": "Squashing Containment Layer"
+      "name": "Squashing Containment Layer",
+      "drawsContent": false
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='box middle'",
       "position": [180, 180],
       "bounds": [100, 100],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#008000"
     },
     {
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='box middle2')",
       "position": [260, 260],
-      "bounds": [180, 180],
-      "drawsContent": true
+      "bounds": [180, 180]
     }
   ]
 }
@@ -81,46 +80,45 @@ Case 3: hovering over the "middle2" element (causes that div to become its own c
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutBlockFlow DIV class='composited'",
       "position": [8, 8],
-      "contentsOpaque": true
+      "contentsOpaque": true,
+      "drawsContent": false
     },
     {
-      "name": "Squashing Containment Layer"
+      "name": "Squashing Containment Layer",
+      "drawsContent": false
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='composited box behind'",
       "position": [100, 100],
       "bounds": [100, 100],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#0000FF"
     },
     {
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='box middle')",
       "position": [180, 180],
-      "bounds": [100, 100],
-      "drawsContent": true
+      "bounds": [100, 100]
     },
     {
-      "name": "Squashing Containment Layer"
+      "name": "Squashing Containment Layer",
+      "drawsContent": false
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='box middle2'",
       "position": [260, 260],
       "bounds": [100, 100],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#008000"
     },
     {
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='box top')",
       "position": [340, 340],
-      "bounds": [100, 100],
-      "drawsContent": true
+      "bounds": [100, 100]
     }
   ]
 }
@@ -131,36 +129,35 @@ Case 4: hovering over the "top" element (causes that div to become its own compo
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutBlockFlow DIV class='composited'",
       "position": [8, 8],
-      "contentsOpaque": true
+      "contentsOpaque": true,
+      "drawsContent": false
     },
     {
-      "name": "Squashing Containment Layer"
+      "name": "Squashing Containment Layer",
+      "drawsContent": false
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='composited box behind'",
       "position": [100, 100],
       "bounds": [100, 100],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#0000FF"
     },
     {
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='box middle')",
       "position": [180, 180],
-      "bounds": [180, 180],
-      "drawsContent": true
+      "bounds": [180, 180]
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='box top'",
       "position": [340, 340],
       "bounds": [100, 100],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#008000"
     }
   ]
@@ -172,29 +169,29 @@ Case 5: back to situation in case 1
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutBlockFlow DIV class='composited'",
       "position": [8, 8],
-      "contentsOpaque": true
+      "contentsOpaque": true,
+      "drawsContent": false
     },
     {
-      "name": "Squashing Containment Layer"
+      "name": "Squashing Containment Layer",
+      "drawsContent": false
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='composited box behind'",
       "position": [100, 100],
       "bounds": [100, 100],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#0000FF"
     },
     {
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='box middle')",
       "position": [180, 180],
-      "bounds": [260, 260],
-      "drawsContent": true
+      "bounds": [260, 260]
     }
   ]
 }

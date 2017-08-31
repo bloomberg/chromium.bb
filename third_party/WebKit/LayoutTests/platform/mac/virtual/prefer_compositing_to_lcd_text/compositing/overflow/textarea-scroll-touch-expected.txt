@@ -5,77 +5,79 @@
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutTextControl TEXTAREA",
       "position": [18, 18],
       "bounds": [206, 126],
-      "drawsContent": true,
       "backgroundColor": "#CCCCCC"
     },
     {
       "name": "Scrolling Layer",
       "position": [19, 19],
-      "bounds": [189, 124]
+      "bounds": [189, 124],
+      "drawsContent": false
     },
     {
       "name": "Scrolling Contents Layer",
       "position": [19, 19],
       "bounds": [189, 270],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#CCCCCC"
     },
     {
       "name": "Overflow Controls Host Layer",
       "position": [18, 18],
-      "bounds": [206, 126]
+      "bounds": [206, 126],
+      "drawsContent": false
     },
     {
       "name": "Vertical Scrollbar Layer",
       "position": [208, 19],
-      "bounds": [15, 109]
+      "bounds": [15, 109],
+      "drawsContent": false
     },
     {
       "name": "Scroll Corner Layer",
       "position": [208, 128],
-      "bounds": [15, 15],
-      "drawsContent": true
+      "bounds": [15, 15]
     },
     {
       "name": "LayoutTextControl TEXTAREA",
       "position": [248, 18],
       "bounds": [206, 126],
-      "drawsContent": true,
       "backgroundColor": "#CCCCCC"
     },
     {
       "name": "Scrolling Layer",
       "position": [249, 19],
-      "bounds": [189, 124]
+      "bounds": [189, 124],
+      "drawsContent": false
     },
     {
       "name": "Scrolling Contents Layer",
       "position": [249, 19],
       "bounds": [189, 270],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#CCCCCC"
     },
     {
       "name": "Overflow Controls Host Layer",
       "position": [248, 18],
-      "bounds": [206, 126]
+      "bounds": [206, 126],
+      "drawsContent": false
     },
     {
       "name": "Vertical Scrollbar Layer",
       "position": [438, 19],
-      "bounds": [15, 109]
+      "bounds": [15, 109],
+      "drawsContent": false
     },
     {
       "name": "Scroll Corner Layer",
       "position": [438, 128],
-      "bounds": [15, 15],
-      "drawsContent": true
+      "bounds": [15, 15]
     }
   ]
 }

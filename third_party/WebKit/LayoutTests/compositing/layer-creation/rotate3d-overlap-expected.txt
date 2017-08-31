@@ -6,48 +6,45 @@
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV class='box translateZ'",
       "position": [23, 23],
       "bounds": [110, 110],
-      "drawsContent": true,
       "backgroundColor": "#0000FF"
     },
     {
-      "name": "Squashing Containment Layer"
+      "name": "Squashing Containment Layer",
+      "drawsContent": false
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV class='composited box rotate15'",
       "position": [167, 23],
       "bounds": [110, 110],
-      "drawsContent": true,
       "backgroundColor": "#0000FF",
       "transform": 1
     },
     {
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (relative positioned) DIV class='box')",
       "position": [167, 143],
-      "bounds": [110, 110],
-      "drawsContent": true
+      "bounds": [110, 110]
     },
     {
-      "name": "Squashing Containment Layer"
+      "name": "Squashing Containment Layer",
+      "drawsContent": false
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV class='composited box rotate45'",
       "position": [311, 23],
       "bounds": [110, 110],
-      "drawsContent": true,
       "backgroundColor": "#0000FF",
       "transform": 2
     },
     {
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (relative positioned) DIV class='box')",
       "position": [311, 143],
-      "bounds": [110, 110],
-      "drawsContent": true
+      "bounds": [110, 110]
     }
   ],
   "transforms": [

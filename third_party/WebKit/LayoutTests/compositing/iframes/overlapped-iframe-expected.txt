@@ -5,38 +5,40 @@
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutIFrame IFRAME id='parent-iframe'",
       "position": [9, 9],
-      "bounds": [368, 218],
-      "drawsContent": true
+      "bounds": [368, 218]
     },
     {
       "name": "Frame Overflow Controls Host Layer",
       "position": [43, 43],
-      "bounds": [300, 150]
+      "bounds": [300, 150],
+      "drawsContent": false
     },
     {
       "name": "Frame Clipping Layer",
       "position": [43, 43],
-      "bounds": [285, 150]
+      "bounds": [285, 150],
+      "drawsContent": false
     },
     {
       "name": "Frame Scrolling Layer",
-      "position": [43, 43]
+      "position": [43, 43],
+      "drawsContent": false
     },
     {
       "name": "Content Root Layer",
       "position": [43, 43],
-      "bounds": [285, 230]
+      "bounds": [285, 230],
+      "drawsContent": false
     },
     {
       "name": "LayoutView #document",
       "position": [43, 43],
       "bounds": [285, 230],
-      "drawsContent": true,
       "backgroundColor": "#C0C0C0"
     },
     {
@@ -44,19 +46,18 @@
       "position": [61, 53],
       "bounds": [210, 210],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#0000FF"
     },
     {
       "name": "Frame Vertical Scrollbar Layer",
       "position": [328, 43],
-      "bounds": [15, 150]
+      "bounds": [15, 150],
+      "drawsContent": false
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='overlay'",
       "position": [5, 5],
       "bounds": [50, 50],
-      "drawsContent": true,
       "backgroundColor": "#00000033"
     }
   ]

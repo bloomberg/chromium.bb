@@ -4,26 +4,25 @@
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='composited box'",
       "position": [15, 15],
       "bounds": [110, 110],
-      "drawsContent": true,
       "backgroundColor": "#808080",
       "transform": 1
     },
     {
       "name": "Ancestor Clipping Layer",
       "position": [215, 15],
-      "bounds": [110, 110]
+      "bounds": [110, 110],
+      "drawsContent": false
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV class='composited inner'",
       "position": [-5, -5],
       "bounds": [120, 120],
-      "drawsContent": true,
       "backgroundColor": "#00000033",
       "transform": 2
     }

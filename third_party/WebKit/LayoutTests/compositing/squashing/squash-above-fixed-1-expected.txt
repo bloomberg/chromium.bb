@@ -9,32 +9,30 @@ CASE 1, original layer tree:
       "name": "LayoutView #document",
       "bounds": [785, 1400],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='composited background'",
       "position": [100, 150],
       "bounds": [300, 300],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#D3D3D3"
     },
     {
-      "name": "Squashing Containment Layer"
+      "name": "Squashing Containment Layer",
+      "drawsContent": false
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV id='paragraph-b' class='overlapping lime'",
       "position": [0, 100],
       "bounds": [200, 100],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#00FF00"
     },
     {
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (relative positioned) DIV id='paragraph-c' class='overlapping cyan')",
       "position": [0, 200],
-      "bounds": [200, 300],
-      "drawsContent": true
+      "bounds": [200, 300]
     }
   ]
 }
@@ -45,7 +43,7 @@ CASE 2, scrolling y to 80, new layers will be squashed, so things repaint:
       "name": "LayoutView #document",
       "bounds": [785, 1400],
       "contentsOpaque": true,
-      "drawsContent": true,
+      "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow (relative positioned) DIV id='paragraph-f' class='overlapping lime'",
@@ -79,18 +77,17 @@ CASE 2, scrolling y to 80, new layers will be squashed, so things repaint:
       "position": [100, 230],
       "bounds": [300, 300],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#D3D3D3"
     },
     {
-      "name": "Squashing Containment Layer"
+      "name": "Squashing Containment Layer",
+      "drawsContent": false
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV id='paragraph-c' class='overlapping cyan'",
       "position": [0, 200],
       "bounds": [200, 100],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#00FFFF",
       "paintInvalidations": [
         {
@@ -109,7 +106,6 @@ CASE 2, scrolling y to 80, new layers will be squashed, so things repaint:
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (relative positioned) DIV id='paragraph-d' class='overlapping lime')",
       "position": [0, 300],
       "bounds": [200, 300],
-      "drawsContent": true,
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow (relative positioned) DIV id='paragraph-f' class='overlapping lime'",
@@ -175,32 +171,30 @@ CASE 3, scrolling y to 120, no repaints expected:
       "name": "LayoutView #document",
       "bounds": [785, 1400],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='composited background'",
       "position": [100, 270],
       "bounds": [300, 300],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#D3D3D3"
     },
     {
-      "name": "Squashing Containment Layer"
+      "name": "Squashing Containment Layer",
+      "drawsContent": false
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV id='paragraph-c' class='overlapping cyan'",
       "position": [0, 200],
       "bounds": [200, 100],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#00FFFF"
     },
     {
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (relative positioned) DIV id='paragraph-d' class='overlapping lime')",
       "position": [0, 300],
-      "bounds": [200, 300],
-      "drawsContent": true
+      "bounds": [200, 300]
     }
   ]
 }
@@ -211,7 +205,7 @@ CASE 4, scrolling y to 170 new layers will be squashed, so things repaint:
       "name": "LayoutView #document",
       "bounds": [785, 1400],
       "contentsOpaque": true,
-      "drawsContent": true,
+      "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow (relative positioned) DIV id='paragraph-g' class='overlapping cyan'",
@@ -245,18 +239,17 @@ CASE 4, scrolling y to 170 new layers will be squashed, so things repaint:
       "position": [100, 320],
       "bounds": [300, 300],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#D3D3D3"
     },
     {
-      "name": "Squashing Containment Layer"
+      "name": "Squashing Containment Layer",
+      "drawsContent": false
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV id='paragraph-d' class='overlapping lime'",
       "position": [0, 300],
       "bounds": [200, 100],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#00FF00",
       "paintInvalidations": [
         {
@@ -275,7 +268,6 @@ CASE 4, scrolling y to 170 new layers will be squashed, so things repaint:
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (relative positioned) DIV id='paragraph-e' class='overlapping cyan')",
       "position": [0, 400],
       "bounds": [200, 300],
-      "drawsContent": true,
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow (relative positioned) DIV id='paragraph-g' class='overlapping cyan'",

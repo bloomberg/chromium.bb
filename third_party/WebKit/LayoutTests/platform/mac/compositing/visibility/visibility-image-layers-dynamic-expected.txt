@@ -9,23 +9,26 @@ Initial
       "name": "LayoutView #document",
       "bounds": [785, 626],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutBlockFlow DIV class='composited container'",
       "position": [18, 10],
-      "bounds": [749, 144]
+      "bounds": [749, 144],
+      "drawsContent": false
     },
     {
       "name": "LayoutBlockFlow DIV class='composited hidden container'",
       "position": [14, 314],
       "bounds": [757, 152],
+      "drawsContent": false,
       "contentsVisible": false
     },
     {
       "name": "LayoutImage IMG class='visible composited box'",
       "position": [38, 338],
-      "bounds": [100, 100]
+      "bounds": [100, 100],
+      "drawsContent": false
     }
   ]
 }
@@ -35,30 +38,34 @@ After step 1
   "layers": [
     {
       "name": "LayoutView #document",
-      "bounds": [785, 1036],
+      "bounds": [785, 1081],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutBlockFlow DIV class='composited container'",
       "position": [18, 10],
-      "bounds": [749, 144]
+      "bounds": [749, 144],
+      "drawsContent": false
     },
     {
       "name": "LayoutImage IMG class='hidden composited box'",
       "position": [38, 30],
-      "bounds": [100, 100]
+      "bounds": [100, 100],
+      "drawsContent": false
     },
     {
       "name": "LayoutBlockFlow DIV class='composited hidden container'",
       "position": [14, 314],
       "bounds": [757, 152],
+      "drawsContent": false,
       "contentsVisible": false
     },
     {
       "name": "LayoutImage IMG class='visible composited box'",
       "position": [38, 338],
-      "bounds": [100, 100]
+      "bounds": [100, 100],
+      "drawsContent": false
     }
   ]
 }
@@ -68,41 +75,45 @@ After step 2
   "layers": [
     {
       "name": "LayoutView #document",
-      "bounds": [785, 1520],
+      "bounds": [785, 1625],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutBlockFlow DIV class='composited container'",
       "position": [18, 10],
-      "bounds": [749, 144]
+      "bounds": [749, 144],
+      "drawsContent": false
     },
     {
       "name": "LayoutImage IMG class='hidden composited box'",
       "position": [38, 30],
-      "bounds": [100, 100]
+      "bounds": [100, 100],
+      "drawsContent": false
     },
     {
       "name": "LayoutBlockFlow DIV class='composited hidden container'",
       "position": [14, 160],
-      "bounds": [757, 152],
-      "drawsContent": true
+      "bounds": [757, 152]
     },
     {
       "name": "LayoutImage IMG class='composited box'",
       "position": [38, 184],
-      "bounds": [100, 100]
+      "bounds": [100, 100],
+      "drawsContent": false
     },
     {
       "name": "LayoutBlockFlow DIV class='composited hidden container'",
       "position": [14, 314],
       "bounds": [757, 152],
+      "drawsContent": false,
       "contentsVisible": false
     },
     {
       "name": "LayoutImage IMG class='visible composited box'",
       "position": [38, 338],
-      "bounds": [100, 100]
+      "bounds": [100, 100],
+      "drawsContent": false
     }
   ]
 }

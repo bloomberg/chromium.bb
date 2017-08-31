@@ -4,7 +4,7 @@
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true,
+      "backgroundColor": "#FFFFFF",
       "paintingPhases": [
         "GraphicsLayerPaintBackground",
         "GraphicsLayerPaintForeground",
@@ -16,7 +16,6 @@
       "name": "LayoutBlockFlow DIV class='scroller'",
       "position": [8, 8],
       "bounds": [102, 102],
-      "drawsContent": true,
       "paintingPhases": [
         "GraphicsLayerPaintBackground",
         "GraphicsLayerPaintMask",
@@ -28,6 +27,7 @@
       "name": "Scrolling Layer",
       "position": [9, 9],
       "bounds": [85, 85],
+      "drawsContent": false,
       "paintingPhases": [
         "GraphicsLayerPaintBackground",
         "GraphicsLayerPaintForeground",
@@ -39,7 +39,6 @@
       "name": "Scrolling Contents Layer",
       "position": [9, 9],
       "bounds": [85, 120],
-      "drawsContent": true,
       "paintingPhases": [
         "GraphicsLayerPaintForeground",
         "GraphicsLayerPaintOverflowContents",
@@ -50,6 +49,7 @@
       "name": "Overflow Controls Host Layer",
       "position": [8, 8],
       "bounds": [102, 102],
+      "drawsContent": false,
       "paintingPhases": [
         "GraphicsLayerPaintBackground",
         "GraphicsLayerPaintForeground",
@@ -61,6 +61,7 @@
       "name": "Horizontal Scrollbar Layer",
       "position": [9, 94],
       "bounds": [85, 15],
+      "drawsContent": false,
       "paintingPhases": [
         "GraphicsLayerPaintBackground",
         "GraphicsLayerPaintForeground",
@@ -72,6 +73,7 @@
       "name": "Vertical Scrollbar Layer",
       "position": [94, 9],
       "bounds": [15, 85],
+      "drawsContent": false,
       "paintingPhases": [
         "GraphicsLayerPaintBackground",
         "GraphicsLayerPaintForeground",
@@ -83,7 +85,6 @@
       "name": "Scroll Corner Layer",
       "position": [94, 94],
       "bounds": [15, 15],
-      "drawsContent": true,
       "paintingPhases": [
         "GraphicsLayerPaintBackground",
         "GraphicsLayerPaintForeground",

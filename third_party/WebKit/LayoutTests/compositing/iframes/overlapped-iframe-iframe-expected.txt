@@ -4,37 +4,39 @@
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutIFrame (positioned) IFRAME",
-      "bounds": [304, 304],
-      "drawsContent": true
+      "bounds": [304, 304]
     },
     {
       "name": "Frame Overflow Controls Host Layer",
       "position": [2, 2],
-      "bounds": [300, 300]
+      "bounds": [300, 300],
+      "drawsContent": false
     },
     {
       "name": "Frame Clipping Layer",
       "position": [2, 2],
-      "bounds": [300, 300]
+      "bounds": [300, 300],
+      "drawsContent": false
     },
     {
       "name": "Frame Scrolling Layer",
-      "position": [2, 2]
+      "position": [2, 2],
+      "drawsContent": false
     },
     {
       "name": "Content Root Layer",
       "position": [2, 2],
-      "bounds": [300, 300]
+      "bounds": [300, 300],
+      "drawsContent": false
     },
     {
       "name": "LayoutView #document",
       "position": [2, 2],
       "bounds": [300, 300],
-      "drawsContent": true,
       "backgroundColor": "#C0C0C0"
     },
     {
@@ -42,14 +44,12 @@
       "position": [20, 12],
       "bounds": [210, 210],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#0000FF"
     },
     {
       "name": "LayoutIFrame (positioned) IFRAME id='overlap'",
       "position": [250, 0],
-      "bounds": [304, 304],
-      "drawsContent": true
+      "bounds": [304, 304]
     }
   ]
 }

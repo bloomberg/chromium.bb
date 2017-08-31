@@ -4,26 +4,25 @@
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutBlockFlow BODY",
       "position": [8, 8],
-      "bounds": [784, 584],
-      "drawsContent": true
+      "bounds": [784, 584]
     },
     {
       "name": "LayoutBlockFlow DIV id='container'",
       "position": [15, 0],
       "bounds": [256, 256],
       "contentsOpaque": true,
-      "drawsContent": true,
       "transform": 1
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV id='composited'",
       "position": [400, 0],
       "contentsOpaque": true,
+      "drawsContent": false,
       "transform": 1
     },
     {
@@ -31,7 +30,6 @@
       "position": [8, 8],
       "bounds": [300, 300],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#008000"
     }
   ],

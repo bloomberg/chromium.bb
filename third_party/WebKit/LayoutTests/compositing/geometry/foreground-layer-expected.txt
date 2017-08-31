@@ -5,49 +5,48 @@
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV class='main box'",
       "position": [19, 89],
       "bounds": [318, 318],
-      "drawsContent": true,
       "backgroundColor": "#FF0000"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='negative child'",
       "position": [59, 59],
       "bounds": [50, 50],
+      "drawsContent": false,
       "transform": 1
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV class='main box' (foreground) Layer",
       "position": [19, 89],
-      "bounds": [318, 318],
-      "drawsContent": true
+      "bounds": [318, 318]
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV class='main box'",
       "position": [363, 19],
       "bounds": [318, 318],
-      "drawsContent": true,
       "backgroundColor": "#FF0000"
     },
     {
       "name": "Child Containment Layer",
       "position": [422, 78],
-      "bounds": [200, 200]
+      "bounds": [200, 200],
+      "drawsContent": false
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='negative child'",
       "bounds": [50, 50],
+      "drawsContent": false,
       "transform": 2
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV class='main box' (foreground) Layer",
       "position": [422, 78],
-      "bounds": [200, 200],
-      "drawsContent": true
+      "bounds": [200, 200]
     }
   ],
   "transforms": [

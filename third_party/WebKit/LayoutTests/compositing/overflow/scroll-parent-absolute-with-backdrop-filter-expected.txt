@@ -4,31 +4,29 @@
       "name": "LayoutView #document",
       "bounds": [785, 5516],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutBlockFlow DIV id='top'",
       "position": [8, 8],
-      "bounds": [500, 500],
-      "drawsContent": true
+      "bounds": [500, 500]
     },
     {
       "name": "Scrolling Layer",
       "position": [8, 8],
-      "bounds": [485, 485]
+      "bounds": [485, 485],
+      "drawsContent": false
     },
     {
       "name": "Scrolling Contents Layer",
       "position": [8, 8],
-      "bounds": [485, 5000],
-      "drawsContent": true
+      "bounds": [485, 5000]
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV id='middle'",
       "position": [8, 8],
       "bounds": [400, 400],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#008000",
       "hasClipParent": true
     },
@@ -37,7 +35,6 @@
       "position": [8, 8],
       "bounds": [300, 300],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backfaceVisibility": "hidden",
       "backgroundColor": "#FFFF00",
       "hasClipParent": true
@@ -47,29 +44,30 @@
       "position": [8, 8],
       "bounds": [20, 5000],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#FA8072"
     },
     {
       "name": "Overflow Controls Host Layer",
       "position": [8, 8],
-      "bounds": [500, 500]
+      "bounds": [500, 500],
+      "drawsContent": false
     },
     {
       "name": "Horizontal Scrollbar Layer",
       "position": [8, 493],
-      "bounds": [485, 15]
+      "bounds": [485, 15],
+      "drawsContent": false
     },
     {
       "name": "Vertical Scrollbar Layer",
       "position": [493, 8],
-      "bounds": [15, 485]
+      "bounds": [15, 485],
+      "drawsContent": false
     },
     {
       "name": "Scroll Corner Layer",
       "position": [493, 493],
-      "bounds": [15, 15],
-      "drawsContent": true
+      "bounds": [15, 15]
     }
   ]
 }

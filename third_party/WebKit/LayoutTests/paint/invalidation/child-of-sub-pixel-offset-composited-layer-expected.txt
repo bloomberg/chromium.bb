@@ -4,13 +4,12 @@
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='container'",
       "position": [101, 100],
       "bounds": [14, 14],
-      "drawsContent": true,
       "backgroundColor": "#FF0000",
       "paintInvalidations": [
         {

@@ -7,12 +7,13 @@ layer tree before image style change
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutImage IMG class='composited'",
       "position": [8, 8],
-      "bounds": [256, 256]
+      "bounds": [256, 256],
+      "drawsContent": false
     }
   ]
 }
@@ -25,13 +26,12 @@ layer tree after image style change
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutImage IMG class='composited border'",
       "position": [8, 8],
-      "bounds": [260, 260],
-      "drawsContent": true
+      "bounds": [260, 260]
     }
   ]
 }

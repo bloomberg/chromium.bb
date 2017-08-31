@@ -4,13 +4,12 @@
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutBlockFlow DIV id='scroller'",
       "position": [8, 8],
       "bounds": [200, 200],
-      "drawsContent": true,
       "backgroundColor": "#0000FF",
       "paintInvalidations": [
         {
@@ -23,14 +22,15 @@
     {
       "name": "Scrolling Layer",
       "position": [8, 8],
-      "bounds": [185, 185]
+      "bounds": [185, 185],
+      "drawsContent": false
     },
     {
       "name": "Scrolling Contents Layer",
       "position": [8, 8],
       "bounds": [185, 550],
       "contentsOpaque": true,
-      "drawsContent": true,
+      "backgroundColor": "#0000FF",
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow DIV id='scroller'",
@@ -42,12 +42,14 @@
     {
       "name": "Overflow Controls Host Layer",
       "position": [8, 8],
-      "bounds": [200, 200]
+      "bounds": [200, 200],
+      "drawsContent": false
     },
     {
       "name": "Horizontal Scrollbar Layer",
       "position": [8, 193],
       "bounds": [185, 15],
+      "drawsContent": false,
       "paintInvalidations": [
         {
           "object": "Horizontal Scrollbar Layer",
@@ -60,6 +62,7 @@
       "name": "Vertical Scrollbar Layer",
       "position": [193, 8],
       "bounds": [15, 185],
+      "drawsContent": false,
       "paintInvalidations": [
         {
           "object": "Vertical Scrollbar Layer",
@@ -76,8 +79,7 @@
     {
       "name": "Scroll Corner Layer",
       "position": [193, 193],
-      "bounds": [15, 15],
-      "drawsContent": true
+      "bounds": [15, 15]
     }
   ],
   "objectPaintInvalidations": [

@@ -4,13 +4,12 @@
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV id='clip'",
       "position": [8, 8],
       "bounds": [800, 300],
-      "drawsContent": true,
       "backfaceVisibility": "hidden",
       "backgroundColor": "#FF0000E6",
       "transform": 1

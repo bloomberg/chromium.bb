@@ -5,24 +5,23 @@ CASE 1, original layer tree
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "Squashing Containment Layer"
+      "name": "Squashing Containment Layer",
+      "drawsContent": false
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='composited box behind'",
       "position": [50, 50],
       "bounds": [100, 100],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#0000FF"
     },
     {
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='box top')",
       "position": [130, 130],
-      "bounds": [100, 100],
-      "drawsContent": true
+      "bounds": [100, 100]
     }
   ]
 }
@@ -33,24 +32,23 @@ CASE 2, change color of "inner" to red
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "Squashing Containment Layer"
+      "name": "Squashing Containment Layer",
+      "drawsContent": false
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='composited box behind'",
       "position": [50, 50],
       "bounds": [100, 100],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#0000FF"
     },
     {
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='box top')",
       "position": [130, 130],
       "bounds": [100, 100],
-      "drawsContent": true,
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow (positioned) DIV id='inner'",

@@ -4,46 +4,46 @@
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutIFrame IFRAME",
-      "bounds": [300, 100],
-      "drawsContent": true
+      "bounds": [300, 100]
     },
     {
       "name": "Frame Overflow Controls Host Layer",
-      "bounds": [300, 100]
+      "bounds": [300, 100],
+      "drawsContent": false
     },
     {
       "name": "Frame Clipping Layer",
-      "bounds": [300, 100]
+      "bounds": [300, 100],
+      "drawsContent": false
     },
     {
-      "name": "Frame Scrolling Layer"
+      "name": "Frame Scrolling Layer",
+      "drawsContent": false
     },
     {
       "name": "Content Root Layer",
-      "bounds": [300, 100]
+      "bounds": [300, 100],
+      "drawsContent": false
     },
     {
       "name": "LayoutView #document",
       "bounds": [300, 100],
-      "drawsContent": true,
       "backgroundColor": "#FFFF00"
     },
     {
       "name": "LayoutBlockFlow BODY",
       "position": [8, 8],
       "bounds": [284, 84],
-      "drawsContent": true,
       "backgroundColor": "#FFFF00"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV",
       "bounds": [300, 100],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#D3D3D3",
       "transform": 1
     }

@@ -4,7 +4,7 @@
       "name": "LayoutView #document",
       "bounds": [802, 585],
       "contentsOpaque": true,
-      "drawsContent": true,
+      "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow (relative positioned) DIV id='box' class='rotated'",

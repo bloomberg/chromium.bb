@@ -696,21 +696,19 @@ std::unique_ptr<JSONObject> GraphicsLayer::LayerAsJSONInternal(
   }
 
   if (is_root_for_isolated_group_)
-    json->SetBoolean("isolate", is_root_for_isolated_group_);
+    json->SetBoolean("isolate", true);
 
   if (contents_opaque_)
-    json->SetBoolean("contentsOpaque", contents_opaque_);
+    json->SetBoolean("contentsOpaque", true);
 
-  if (draws_content_)
-    json->SetBoolean("drawsContent", draws_content_);
+  if (!draws_content_)
+    json->SetBoolean("drawsContent", false);
 
   if (!contents_visible_)
-    json->SetBoolean("contentsVisible", contents_visible_);
+    json->SetBoolean("contentsVisible", false);
 
-  if (!backface_visibility_) {
-    json->SetString("backfaceVisibility",
-                    backface_visibility_ ? "visible" : "hidden");
-  }
+  if (!backface_visibility_)
+    json->SetString("backfaceVisibility", "hidden");
 
   if (flags & kLayerTreeIncludesDebugInfo)
     json->SetString("client", PointerAsString(client_));

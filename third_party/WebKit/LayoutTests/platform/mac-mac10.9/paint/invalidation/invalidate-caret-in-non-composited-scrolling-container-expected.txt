@@ -4,13 +4,12 @@
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutTextControl INPUT id='root'",
       "position": [5, 5],
       "bounds": [54, 25],
-      "drawsContent": true,
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {

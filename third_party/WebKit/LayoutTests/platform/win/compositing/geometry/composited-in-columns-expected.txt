@@ -4,13 +4,12 @@
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutBlockFlow DIV class='composited block'",
       "position": [14, 164],
       "bounds": [210, 60],
-      "drawsContent": true,
       "backgroundColor": "#0000FF"
     },
     {
@@ -18,14 +17,12 @@
       "position": [19, 169],
       "bounds": [50, 50],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#008000"
     },
     {
       "name": "LayoutBlockFlow DIV class='composited block'",
       "position": [272, 89],
       "bounds": [210, 60],
-      "drawsContent": true,
       "backgroundColor": "#0000FF"
     },
     {
@@ -33,7 +30,6 @@
       "position": [277, 94],
       "bounds": [50, 50],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#008000"
     }
   ]

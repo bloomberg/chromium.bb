@@ -7,38 +7,40 @@ When the parent document becomes composited, the layer trees should get connecte
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutIFrame IFRAME id='iframe'",
       "position": [9, 109],
-      "bounds": [368, 218],
-      "drawsContent": true
+      "bounds": [368, 218]
     },
     {
       "name": "Frame Overflow Controls Host Layer",
       "position": [43, 143],
-      "bounds": [300, 150]
+      "bounds": [300, 150],
+      "drawsContent": false
     },
     {
       "name": "Frame Clipping Layer",
       "position": [43, 143],
-      "bounds": [285, 150]
+      "bounds": [285, 150],
+      "drawsContent": false
     },
     {
       "name": "Frame Scrolling Layer",
-      "position": [43, 143]
+      "position": [43, 143],
+      "drawsContent": false
     },
     {
       "name": "Content Root Layer",
       "position": [43, 143],
-      "bounds": [285, 230]
+      "bounds": [285, 230],
+      "drawsContent": false
     },
     {
       "name": "LayoutView #document",
       "position": [43, 143],
       "bounds": [285, 230],
-      "drawsContent": true,
       "backgroundColor": "#C0C0C0"
     },
     {
@@ -46,20 +48,19 @@ When the parent document becomes composited, the layer trees should get connecte
       "position": [61, 153],
       "bounds": [210, 210],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#0000FF"
     },
     {
       "name": "Frame Vertical Scrollbar Layer",
       "position": [328, 143],
-      "bounds": [15, 150]
+      "bounds": [15, 150],
+      "drawsContent": false
     },
     {
       "name": "LayoutBlockFlow DIV id='box' class='composited'",
       "position": [8, 8],
       "bounds": [100, 100],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#0000FF"
     }
   ]

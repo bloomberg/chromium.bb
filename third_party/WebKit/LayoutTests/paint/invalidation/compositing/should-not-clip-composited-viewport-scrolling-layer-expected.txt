@@ -4,7 +4,7 @@
       "name": "LayoutView #document",
       "bounds": [2008, 1516],
       "contentsOpaque": true,
-      "drawsContent": true,
+      "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow DIV id='content'",

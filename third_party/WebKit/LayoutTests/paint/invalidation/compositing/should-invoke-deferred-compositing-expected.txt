@@ -4,16 +4,16 @@
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV id='container' class='composited box'",
-      "bounds": [300, 300]
+      "bounds": [300, 300],
+      "drawsContent": false
     },
     {
       "name": "LayoutHTMLCanvas (positioned) CANVAS",
       "bounds": [200, 200],
-      "drawsContent": true,
       "paintInvalidations": [
         {
           "object": "LayoutHTMLCanvas (positioned) CANVAS",

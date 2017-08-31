@@ -4,20 +4,18 @@
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutBlockFlow DIV class='filtered box'",
       "position": [8, 8],
-      "bounds": [144, 144],
-      "drawsContent": true
+      "bounds": [144, 144]
     },
     {
       "name": "LayoutBlockFlow DIV class='compositing box'",
       "position": [22, 22],
       "bounds": [100, 100],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#FF0000",
       "transform": 1
     }

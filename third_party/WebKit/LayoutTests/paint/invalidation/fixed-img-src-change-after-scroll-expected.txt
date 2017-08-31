@@ -4,7 +4,7 @@
       "name": "LayoutView #document",
       "bounds": [785, 2016],
       "contentsOpaque": true,
-      "drawsContent": true,
+      "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
           "object": "LayoutImage (positioned) IMG id='img'",

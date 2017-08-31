@@ -4,7 +4,7 @@
       "name": "LayoutView #document",
       "bounds": [1059, 585],
       "contentsOpaque": true,
-      "drawsContent": true,
+      "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
           "object": "LayoutText #text",

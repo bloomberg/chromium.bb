@@ -5,13 +5,12 @@
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV id='container'",
       "position": [11, 0],
       "bounds": [100, 50],
-      "drawsContent": true,
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow (positioned) DIV id='test'",
@@ -40,13 +39,12 @@
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV id='container'",
       "position": [11, 0],
       "bounds": [100, 50],
-      "drawsContent": true,
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow (positioned) DIV id='test'",
@@ -75,13 +73,12 @@
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV id='container'",
       "position": [10, 0],
       "bounds": [100, 50],
-      "drawsContent": true,
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow (positioned) DIV id='test'",
@@ -110,13 +107,12 @@
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV id='container'",
       "position": [11, 0],
       "bounds": [100, 50],
-      "drawsContent": true,
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow (positioned) DIV id='test'",
@@ -145,13 +141,12 @@
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV id='container'",
       "position": [10, 0],
       "bounds": [100, 50],
-      "drawsContent": true,
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow (positioned) DIV id='test'",

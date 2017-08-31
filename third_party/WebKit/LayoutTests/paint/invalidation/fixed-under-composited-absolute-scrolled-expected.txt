@@ -4,13 +4,12 @@
       "name": "LayoutView #document",
       "bounds": [785, 2001],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV id='absolute'",
       "position": [0, 400],
       "bounds": [100, 1601],
-      "drawsContent": true,
       "backfaceVisibility": "hidden",
       "backgroundColor": "#FF0000",
       "paintInvalidations": [

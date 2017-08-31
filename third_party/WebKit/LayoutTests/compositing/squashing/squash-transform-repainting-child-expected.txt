@@ -5,33 +5,31 @@ CASE 1, original layer tree
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='composited box behind'",
       "position": [100, 100],
       "bounds": [100, 100],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#0000FF"
     },
     {
-      "name": "Squashing Containment Layer"
+      "name": "Squashing Containment Layer",
+      "drawsContent": false
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='box middle'",
       "position": [20, 20],
       "bounds": [100, 100],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#00FF00",
       "transform": 1
     },
     {
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='box top')",
       "position": [180, 180],
-      "bounds": [100, 100],
-      "drawsContent": true
+      "bounds": [100, 100]
     }
   ],
   "transforms": [
@@ -54,25 +52,24 @@ CASE 2, hovering over the outer div
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='composited box behind'",
       "position": [100, 100],
       "bounds": [100, 100],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#0000FF"
     },
     {
-      "name": "Squashing Containment Layer"
+      "name": "Squashing Containment Layer",
+      "drawsContent": false
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='box middle'",
       "position": [20, 20],
       "bounds": [100, 100],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#008000",
       "paintInvalidations": [
         {
@@ -86,8 +83,7 @@ CASE 2, hovering over the outer div
     {
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='box top')",
       "position": [180, 180],
-      "bounds": [100, 100],
-      "drawsContent": true
+      "bounds": [100, 100]
     }
   ],
   "transforms": [
@@ -116,25 +112,24 @@ CASE 3, hovering over the inner div
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='composited box behind'",
       "position": [100, 100],
       "bounds": [100, 100],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#0000FF"
     },
     {
-      "name": "Squashing Containment Layer"
+      "name": "Squashing Containment Layer",
+      "drawsContent": false
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='box middle'",
       "position": [20, 20],
       "bounds": [100, 100],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#008000",
       "paintInvalidations": [
         {
@@ -153,8 +148,7 @@ CASE 3, hovering over the inner div
     {
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='box top')",
       "position": [180, 180],
-      "bounds": [100, 100],
-      "drawsContent": true
+      "bounds": [100, 100]
     }
   ],
   "transforms": [

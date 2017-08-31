@@ -4,14 +4,13 @@
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV id='composited-box'",
       "position": [38, 38],
       "bounds": [20, 70],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backfaceVisibility": "hidden",
       "backgroundColor": "#008000",
       "paintInvalidations": [
@@ -35,14 +34,14 @@
     {
       "name": "Child Containment Layer",
       "position": [38, 38],
-      "bounds": [90, 90]
+      "bounds": [90, 90],
+      "drawsContent": false
     },
     {
       "name": "LayoutBlockFlow DIV class='composited child'",
       "position": [8, 58],
       "bounds": [50, 50],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backfaceVisibility": "hidden",
       "backgroundColor": "#008000"
     }
