@@ -121,17 +121,14 @@ int32_t PlatformVerificationPrivateResource::GetStorageId(
 void PlatformVerificationPrivateResource::OnGetStorageIdReply(
     GetStorageIdParams output_params,
     const ResourceMessageReplyParams& params,
-    const std::vector<uint8_t>& storage_id) {
+    const std::string& storage_id) {
   if (!TrackedCallback::IsPending(output_params.callback) ||
       TrackedCallback::IsScheduledToRun(output_params.callback)) {
     return;
   }
 
   if (params.result() == PP_OK) {
-    *(output_params.storage_id) =
-        (PpapiGlobals::Get()->GetVarTracker()->MakeArrayBufferVar(
-             static_cast<uint32_t>(storage_id.size()), &storage_id.front()))
-            ->GetPPVar();
+    *(output_params.storage_id) = (new StringVar(storage_id))->GetPPVar();
   }
   output_params.callback->Run(params.result());
 }

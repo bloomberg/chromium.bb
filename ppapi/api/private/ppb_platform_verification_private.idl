@@ -87,7 +87,7 @@ interface PPB_PlatformVerification_Private {
    * Requests the device's storage ID.
    *
    * @param[out] storage_id A <code>PP_Var</code> of type
-   * <code>PP_VARTYPE_ARRAY_BUFFER</code> that contains the storage ID.
+   * <code>PP_VARTYPE_STRING</code> that contains the storage ID.
    *
    * @param[in] callback A <code>PP_CompletionCallback</code> to be called after
    * the storage ID has been obtained. This callback will only run if

@@ -1204,6 +1204,8 @@ void PpapiCdmAdapter::OnDeferredInitializationDone(cdm::StreamType stream_type,
 }
 
 void PpapiCdmAdapter::RequestStorageId() {
+  CDM_DLOG() << __func__;
+
   // If persistent storage is not allowed, no need to get the Storage ID.
   if (allow_persistent_state_) {
     linked_ptr<pp::Var> response(new pp::Var());
@@ -1337,20 +1339,16 @@ void PpapiCdmAdapter::QueryOutputProtectionStatusDone(int32_t result) {
 void PpapiCdmAdapter::RequestStorageIdDone(
     int32_t result,
     const linked_ptr<pp::Var>& response) {
-  uint8_t* storage_id_ptr;
-  uint32_t storage_id_size;
+  std::string storage_id;
 
-  if (result == PP_OK && response->is_array_buffer()) {
-    pp::VarArrayBuffer storage_id(*response);
-    storage_id_ptr = static_cast<uint8_t*>(storage_id.Map());
-    storage_id_size = storage_id.ByteLength();
-  } else {
-    CDM_DLOG() << __func__ << " failed, result = " << result;
-    storage_id_ptr = nullptr;
-    storage_id_size = 0;
-  }
+  if (result == PP_OK)
+    storage_id = response->AsString();
 
-  cdm_->OnStorageId(storage_id_ptr, storage_id_size);
+  CDM_DLOG() << __func__ << ": result = " << result
+             << ", storage_id = " << storage_id;
+
+  cdm_->OnStorageId(reinterpret_cast<const uint8_t*>(storage_id.data()),
+                    static_cast<uint32_t>(storage_id.length()));
 }
 
 PpapiCdmAdapter::SessionError::SessionError(

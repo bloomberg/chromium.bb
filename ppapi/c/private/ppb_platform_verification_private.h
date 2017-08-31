@@ -4,7 +4,7 @@
  */
 
 /* From private/ppb_platform_verification_private.idl,
- *   modified Fri Aug 11 11:47:35 2017.
+ *   modified Tue Jun 13 15:47:24 2017.
  */
 
 #ifndef PPAPI_C_PRIVATE_PPB_PLATFORM_VERIFICATION_PRIVATE_H_
@@ -102,7 +102,7 @@ struct PPB_PlatformVerification_Private_0_3 {
    * Requests the device's storage ID.
    *
    * @param[out] storage_id A <code>PP_Var</code> of type
-   * <code>PP_VARTYPE_ARRAY_BUFFER</code> that contains the storage ID.
+   * <code>PP_VARTYPE_STRING</code> that contains the storage ID.
    *
    * @param[in] callback A <code>PP_CompletionCallback</code> to be called after
    * the storage ID has been obtained. This callback will only run if
