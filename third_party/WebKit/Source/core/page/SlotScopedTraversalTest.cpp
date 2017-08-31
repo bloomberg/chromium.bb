@@ -75,9 +75,7 @@ TEST_F(SlotScopedTraversalTest, emptySlot) {
 
   Element* host = GetDocument().QuerySelector("#host");
   ShadowRoot* shadow_root = host->OpenShadowRoot();
-  Element* slot_element = shadow_root->QuerySelector("slot");
-  DCHECK(isHTMLSlotElement(slot_element));
-  HTMLSlotElement* slot = toHTMLSlotElement(slot_element);
+  auto* slot = toHTMLSlotElement(shadow_root->QuerySelector("slot"));
 
   EXPECT_EQ(nullptr, SlotScopedTraversal::FirstAssignedToSlot(*slot));
   EXPECT_EQ(nullptr, SlotScopedTraversal::LastAssignedToSlot(*slot));
@@ -111,9 +109,7 @@ TEST_F(SlotScopedTraversalTest, simpleSlot) {
   Element* inner1 = GetDocument().QuerySelector("#inner1");
   Element* inner2 = GetDocument().QuerySelector("#inner2");
   ShadowRoot* shadow_root = host->OpenShadowRoot();
-  Element* slot_element = shadow_root->QuerySelector("slot");
-  DCHECK(isHTMLSlotElement(slot_element));
-  HTMLSlotElement* slot = toHTMLSlotElement(slot_element);
+  auto* slot = toHTMLSlotElement(shadow_root->QuerySelector("slot"));
 
   EXPECT_EQ(inner1, SlotScopedTraversal::FirstAssignedToSlot(*slot));
   EXPECT_EQ(inner2, SlotScopedTraversal::LastAssignedToSlot(*slot));
@@ -238,9 +234,7 @@ TEST_F(SlotScopedTraversalTest, shadowHostAtTopLevel) {
     AttachOpenShadowRoot(*inner[i], shadow_html);
 
     ShadowRoot* shadow_root = host->OpenShadowRoot();
-    Element* slot_element = shadow_root->QuerySelector("slot");
-    DCHECK(isHTMLSlotElement(slot_element));
-    HTMLSlotElement* slot = toHTMLSlotElement(slot_element);
+    auto* slot = toHTMLSlotElement(shadow_root->QuerySelector("slot"));
 
     switch (i) {
       case 0: {
@@ -346,9 +340,7 @@ TEST_F(SlotScopedTraversalTest, shadowHostAtSecondLevel) {
     }
 
     ShadowRoot* shadow_root = host->OpenShadowRoot();
-    Element* slot_element = shadow_root->QuerySelector("slot");
-    DCHECK(isHTMLSlotElement(slot_element));
-    HTMLSlotElement* slot = toHTMLSlotElement(slot_element);
+    auto* slot = toHTMLSlotElement(shadow_root->QuerySelector("slot"));
 
     switch (i) {
       case 0: {

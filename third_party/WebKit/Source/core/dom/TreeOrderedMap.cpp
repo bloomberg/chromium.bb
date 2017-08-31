@@ -193,10 +193,8 @@ Element* TreeOrderedMap::GetElementByMapName(const AtomicString& key,
 // TODO(hayato): Template get<> by return type.
 HTMLSlotElement* TreeOrderedMap::GetSlotByName(const AtomicString& key,
                                                const TreeScope& scope) const {
-  if (Element* slot = Get<KeyMatchesSlotName>(key, scope)) {
-    DCHECK(isHTMLSlotElement(slot));
+  if (Element* slot = Get<KeyMatchesSlotName>(key, scope))
     return toHTMLSlotElement(slot);
-  }
   return nullptr;
 }
 

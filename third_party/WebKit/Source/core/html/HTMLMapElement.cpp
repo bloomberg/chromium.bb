@@ -62,8 +62,6 @@ HTMLAreaElement* HTMLMapElement::AreaForPoint(
 HTMLImageElement* HTMLMapElement::ImageElement() {
   HTMLCollection* images = GetDocument().images();
   for (unsigned i = 0; Element* curr = images->item(i); ++i) {
-    DCHECK(isHTMLImageElement(curr));
-
     // The HTMLImageElement's useMap() value includes the '#' symbol at the
     // beginning, which has to be stripped off.
     HTMLImageElement& image_element = toHTMLImageElement(*curr);
