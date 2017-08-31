@@ -70,6 +70,8 @@ class VIEWS_EXPORT Checkbox : public LabelButton {
  private:
   friend class IconFocusRing;
 
+  SkColor GetIconImageColor(bool checked) const;
+
   // Button:
   void NotifyClick(const ui::Event& event) override;
 

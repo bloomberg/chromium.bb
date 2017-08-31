@@ -457,8 +457,12 @@ SkColor NativeThemeWin::GetSystemColor(ColorId color_id) const {
 
     // FocusableBorder
     case kColorId_FocusedBorderColor:
+      if (ui::MaterialDesignController::IsSecondaryUiMaterial())
+        break;
       return kFocusedBorderColor;
     case kColorId_UnfocusedBorderColor:
+      if (ui::MaterialDesignController::IsSecondaryUiMaterial())
+        break;
       return kUnfocusedBorderColor;
 
     // Button
