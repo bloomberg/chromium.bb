@@ -17,6 +17,7 @@ namespace media {
 
 const int kMaxDroppedPrerollWarnings = 10;
 const int kMaxDtsBeyondPtsWarnings = 10;
+const int kMaxAudioNonKeyframeWarnings = 10;
 const int kMaxNumKeyframeTimeGreaterThanDependantWarnings = 1;
 const int kMaxMuxedSequenceModeWarnings = 1;
 
@@ -611,6 +612,21 @@ bool FrameProcessor::ProcessFrame(
              << ", DTS=" << decode_timestamp.InSecondsF()
              << ", DUR=" << frame_duration.InSecondsF()
              << ", RAP=" << frame->is_key_frame();
+
+    // Buffering, splicing, append window trimming, etc., all depend on the
+    // assumption that all audio coded frames are key frames. Metadata in the
+    // bytestream may not indicate that, so we need to enforce that assumption
+    // here with a warning log.
+    if (frame->type() == DemuxerStream::AUDIO && !frame->is_key_frame()) {
+      LIMITED_MEDIA_LOG(DEBUG, media_log_, num_audio_non_keyframe_warnings_,
+                        kMaxAudioNonKeyframeWarnings)
+          << "Bytestream with audio frame PTS "
+          << presentation_timestamp.InMicroseconds() << "us and DTS "
+          << decode_timestamp.InMicroseconds()
+          << "us indicated the frame is not a random access point (key frame). "
+             "All audio frames are expected to be key frames.";
+      frame->set_is_key_frame(true);
+    }
 
     // Sanity check the timestamps.
     if (presentation_timestamp == kNoTimestamp) {
