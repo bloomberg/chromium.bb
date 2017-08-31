@@ -26,7 +26,6 @@ from third_party import colorama
 from third_party.depot_tools import fix_encoding
 from third_party.depot_tools import subcommand
 
-from libs import arfile
 from utils import file_path
 from utils import fs
 from utils import logging_utils
@@ -1713,16 +1712,8 @@ def fetch_isolated(isolated_hash, storage, cache, outdir, use_symlinks):
                     putfile(ifd, fp, 0700, ti.size)
 
               elif filetype == 'ar':
-                basedir = os.path.dirname(fullpath)
-                extractor = arfile.ArFileReader(srcfileobj, fullparse=False)
-                for ai, ifd in extractor:
-                  fp = os.path.normpath(os.path.join(basedir, ai.name))
-                  if not fp.startswith(basedir):
-                    logging.error(
-                        'Path(%r) is outside root directory',
-                        fp)
-                  file_path.ensure_tree(os.path.dirname(fp))
-                  putfile(ifd, fp, 0700, ai.size)
+                raise isolated_format.MappingError(
+                    'Ar files are no longer supported')
 
               else:
                 raise isolated_format.IsolatedError(
