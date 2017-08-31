@@ -10,6 +10,7 @@
 #include "core/paint/PaintTiming.h"
 #include "core/probe/CoreProbes.h"
 #include "platform/InstanceCounters.h"
+#include "platform/bindings/V8PerIsolateData.h"
 #include "platform/wtf/dtoa/utils.h"
 #include "public/platform/Platform.h"
 
@@ -101,6 +102,13 @@ Response InspectorPerformanceAgent::getMetrics(
   AppendMetric(result.get(), "RecalcStyleDuration", recalc_style_duration_);
   AppendMetric(result.get(), "ScriptDuration", script_duration_);
   AppendMetric(result.get(), "TaskDuration", task_duration_);
+
+  v8::HeapStatistics heap_statistics;
+  V8PerIsolateData::MainThreadIsolate()->GetHeapStatistics(&heap_statistics);
+  AppendMetric(result.get(), "JSHeapUsedSize",
+               heap_statistics.used_heap_size());
+  AppendMetric(result.get(), "JSHeapTotalSize",
+               heap_statistics.total_heap_size());
 
   // Performance timings.
   Document* document = inspected_frames_->Root()->GetDocument();

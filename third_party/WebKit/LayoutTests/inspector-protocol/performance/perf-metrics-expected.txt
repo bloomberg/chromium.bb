@@ -21,6 +21,8 @@ Received metrics:
 	RecalcStyleDuration
 	ScriptDuration
 	TaskDuration
+	JSHeapUsedSize
+	JSHeapTotalSize
 	FirstMeaningfulPaint
 	DomContentLoaded
 	NavigationStart
@@ -45,6 +47,8 @@ Received metrics:
 	RecalcStyleDuration
 	ScriptDuration
 	TaskDuration
+	JSHeapUsedSize
+	JSHeapTotalSize
 	FirstMeaningfulPaint
 	DomContentLoaded
 	NavigationStart
