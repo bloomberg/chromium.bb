@@ -3193,7 +3193,7 @@ static int rd_pick_palette_intra_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
 
   if (best_mbmi->palette_mode_info.palette_size[0] > 0) {
     memcpy(color_map, best_palette_color_map,
-           rows * cols * sizeof(best_palette_color_map[0]));
+           block_width * block_height * sizeof(best_palette_color_map[0]));
   }
   *mbmi = *best_mbmi;
   return rate_overhead;
@@ -5616,7 +5616,8 @@ static void rd_pick_palette_intra_sbuv(const AV1_COMP *const cpi, MACROBLOCK *x,
   }
   if (best_mbmi->palette_mode_info.palette_size[1] > 0) {
     memcpy(color_map, best_palette_color_map,
-           rows * cols * sizeof(best_palette_color_map[0]));
+           plane_block_width * plane_block_height *
+               sizeof(best_palette_color_map[0]));
   }
 }
 
