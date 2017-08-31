@@ -107,14 +107,16 @@ void OfflineContentAggregator::PauseDownload(const ContentId& id) {
                                     base::Unretained(it->second), id));
 }
 
-void OfflineContentAggregator::ResumeDownload(const ContentId& id) {
+void OfflineContentAggregator::ResumeDownload(const ContentId& id,
+                                              bool has_user_gesture) {
   auto it = providers_.find(id.name_space);
 
   if (it == providers_.end())
     return;
 
-  RunIfReady(it->second, base::Bind(&OfflineContentProvider::ResumeDownload,
-                                    base::Unretained(it->second), id));
+  RunIfReady(it->second,
+             base::Bind(&OfflineContentProvider::ResumeDownload,
+                        base::Unretained(it->second), id, has_user_gesture));
 }
 
 const OfflineItem* OfflineContentAggregator::GetItemById(const ContentId& id) {
