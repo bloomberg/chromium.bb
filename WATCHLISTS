@@ -196,7 +196,7 @@
                   'tools/binary_size/',
     },
     'blink': {
-      'filepath': 'third_party/WebKit/',
+      'filepath': 'third_party/(WebKit|blink)/',
     },
     'blink_accessibility': {
       'filepath': 'third_party/WebKit/.*(accessibility|AXObjectCache|WebAX)'
@@ -435,7 +435,7 @@
                   '|third_party/WebKit/Source/web/WebRemoteFrameImpl'
     },
     'blink_owners': {
-      'filepath': 'third_party/WebKit/.*OWNERS',
+      'filepath': 'third_party/(WebKit|blink)/.*OWNERS',
     },
     'blink_paint': {
       'filepath': 'third_party/WebKit/Source/core/paint/'

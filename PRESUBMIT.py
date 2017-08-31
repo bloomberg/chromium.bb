@@ -16,7 +16,7 @@ _EXCLUDED_PATHS = (
     r"^native_client_sdk[\\\/]src[\\\/]tools[\\\/].*.mk",
     r"^net[\\\/]tools[\\\/]spdyshark[\\\/].*",
     r"^skia[\\\/].*",
-    r"^third_party[\\\/]WebKit[\\\/].*",
+    r"^third_party[\\\/](WebKit|blink)[\\\/].*",
     r"^v8[\\\/].*",
     r".*MakeFile$",
     r".+_autogen\.h$",
@@ -1138,7 +1138,7 @@ def _CheckAddedDepsHaveTargetApprovals(input_api, output_api):
   virtual_depended_on_files = set()
 
   file_filter = lambda f: not input_api.re.match(
-      r"^third_party[\\\/]WebKit[\\\/].*", f.LocalPath())
+      r"^third_party[\\\/](WebKit|blink)[\\\/].*", f.LocalPath())
   for f in input_api.AffectedFiles(include_deletes=False,
                                    file_filter=file_filter):
     filename = input_api.os_path.basename(f.LocalPath())
@@ -1635,6 +1635,8 @@ def _CheckUselessForwardDeclarations(input_api, output_api):
                                         input_api.re.MULTILINE)
   for f in input_api.AffectedFiles(include_deletes=False):
     if (f.LocalPath().startswith('third_party') and
+        not f.LocalPath().startswith('third_party/blink') and
+        not f.LocalPath().startswith('third_party\\blink') and
         not f.LocalPath().startswith('third_party/WebKit') and
         not f.LocalPath().startswith('third_party\\WebKit')):
       continue
