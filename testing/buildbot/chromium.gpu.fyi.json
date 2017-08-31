@@ -2296,7 +2296,7 @@
       {
         "args": [
           "--enable-xml-result-parsing",
-          "--shard-timeout=300"
+          "--shard-timeout=500"
         ],
         "name": "angle_deqp_gles2_gles_tests",
         "swarming": {
@@ -2333,7 +2333,7 @@
       {
         "args": [
           "--enable-xml-result-parsing",
-          "--shard-timeout=300"
+          "--shard-timeout=500"
         ],
         "name": "angle_deqp_gles3_gles_tests",
         "swarming": {

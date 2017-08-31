@@ -1096,7 +1096,7 @@ COMMON_GTESTS = {
     ],
     'android_args': [
       '--enable-xml-result-parsing',
-      '--shard-timeout=300'
+      '--shard-timeout=500'
     ],
   },
 
@@ -1137,7 +1137,7 @@ COMMON_GTESTS = {
     ],
     'android_args': [
       '--enable-xml-result-parsing',
-      '--shard-timeout=300'
+      '--shard-timeout=500'
     ],
   },
 
