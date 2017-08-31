@@ -183,9 +183,10 @@ AccessibilityRole AXTableCell::DetermineAccessibilityRole() {
   return ScanToDecideHeaderRole();
 }
 
-void AXTableCell::RowIndexRange(std::pair<unsigned, unsigned>& row_range) {
+bool AXTableCell::RowIndexRange(
+    std::pair<unsigned, unsigned>& row_range) const {
   if (!layout_object_ || !layout_object_->IsTableCell())
-    return;
+    return false;
 
   LayoutTableCell* layout_cell = ToLayoutTableCell(layout_object_);
   row_range.first = layout_cell->RowIndex();
@@ -196,7 +197,7 @@ void AXTableCell::RowIndexRange(std::pair<unsigned, unsigned>& row_range) {
   LayoutTableSection* section = layout_cell->Section();
   LayoutTable* table = layout_cell->Table();
   if (!table || !section)
-    return;
+    return false;
 
   LayoutTableSection* table_section = table->TopSection();
   unsigned row_offset = 0;
@@ -208,19 +209,23 @@ void AXTableCell::RowIndexRange(std::pair<unsigned, unsigned>& row_range) {
   }
 
   row_range.first += row_offset;
+  return true;
 }
 
-void AXTableCell::ColumnIndexRange(
-    std::pair<unsigned, unsigned>& column_range) {
+bool AXTableCell::ColumnIndexRange(
+    std::pair<unsigned, unsigned>& column_range) const {
   if (!layout_object_ || !layout_object_->IsTableCell())
-    return;
+    return false;
 
   LayoutTableCell* cell = ToLayoutTableCell(layout_object_);
   column_range.first = cell->Table()->AbsoluteColumnToEffectiveColumn(
       cell->AbsoluteColumnIndex());
+
   column_range.second = cell->Table()->AbsoluteColumnToEffectiveColumn(
                             cell->AbsoluteColumnIndex() + cell->ColSpan()) -
                         column_range.first;
+
+  return true;
 }
 
 SortDirection AXTableCell::GetSortDirection() const {

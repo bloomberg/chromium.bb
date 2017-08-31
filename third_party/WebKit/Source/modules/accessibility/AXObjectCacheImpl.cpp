@@ -272,11 +272,15 @@ AXObject* AXObjectCacheImpl::Get(AbstractInlineTextBox* inline_text_box) {
 
 // FIXME: This probably belongs on Node.
 // FIXME: This should take a const char*, but one caller passes nullAtom.
-bool NodeHasRole(Node* node, const String& role) {
+static bool NodeHasRole(Node* node, const String& role) {
   if (!node || !node->IsElementNode())
     return false;
 
   return EqualIgnoringASCIICase(ToElement(node)->getAttribute(roleAttr), role);
+}
+
+static bool NodeHasGridRole(Node* node) {
+  return NodeHasRole(node, "grid") || NodeHasRole(node, "treegrid");
 }
 
 AXObject* AXObjectCacheImpl::CreateFromRenderer(LayoutObject* layout_object) {
@@ -292,7 +296,7 @@ AXObject* AXObjectCacheImpl::CreateFromRenderer(LayoutObject* layout_object) {
     return AXList::Create(layout_object, *this);
 
   // aria tables
-  if (NodeHasRole(node, "grid") || NodeHasRole(node, "treegrid"))
+  if (NodeHasGridRole(node))
     return AXARIAGrid::Create(layout_object, *this);
   if (NodeHasRole(node, "row"))
     return AXARIAGridRow::Create(layout_object, *this);
@@ -324,10 +328,24 @@ AXObject* AXObjectCacheImpl::CreateFromRenderer(LayoutObject* layout_object) {
     // standard tables
     if (css_box->IsTable())
       return AXTable::Create(ToLayoutTable(css_box), *this);
-    if (css_box->IsTableRow())
+    if (css_box->IsTableRow()) {
+      // In an ARIA [tree]grid, use an ARIA row, otherwise a table row.
+      LayoutTableRow* table_row = ToLayoutTableRow(css_box);
+      LayoutTable* containing_table = table_row->Table();
+      DCHECK(containing_table);
+      if (NodeHasGridRole(containing_table->GetNode()))
+        return AXARIAGridRow::Create(layout_object, *this);
       return AXTableRow::Create(ToLayoutTableRow(css_box), *this);
-    if (css_box->IsTableCell())
+    }
+    if (css_box->IsTableCell()) {
+      // In an ARIA [tree]grid, use an ARIA gridcell, otherwise a table cell.
+      LayoutTableCell* table_cell = ToLayoutTableCell(css_box);
+      LayoutTable* containing_table = table_cell->Table();
+      DCHECK(containing_table);
+      if (NodeHasGridRole(containing_table->GetNode()))
+        return AXARIAGridCell::Create(layout_object, *this);
       return AXTableCell::Create(ToLayoutTableCell(css_box), *this);
+    }
 
     // progress bar
     if (css_box->IsProgress())

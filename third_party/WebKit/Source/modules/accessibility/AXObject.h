@@ -380,7 +380,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   // Check object role or purpose.
   virtual AccessibilityRole RoleValue() const { return role_; }
   bool IsARIATextControl() const;
-  virtual bool IsARIATreeGridRow() const { return false; }
+  virtual bool IsARIARow() const { return false; }
   virtual bool IsAXTable() const { return false; }
   virtual bool IsAnchor() const { return false; }
   bool IsButton() const;

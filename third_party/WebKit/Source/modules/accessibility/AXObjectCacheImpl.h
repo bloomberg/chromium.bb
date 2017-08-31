@@ -298,7 +298,6 @@ class MODULES_EXPORT AXObjectCacheImpl
 // This is the only subclass of AXObjectCache.
 DEFINE_TYPE_CASTS(AXObjectCacheImpl, AXObjectCache, cache, true, true);
 
-bool NodeHasRole(Node*, const String& role);
 // This will let you know if aria-hidden was explicitly set to false.
 bool IsNodeAriaVisible(Node*);
 

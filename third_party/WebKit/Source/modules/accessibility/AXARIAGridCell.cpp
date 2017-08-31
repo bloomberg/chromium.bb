@@ -73,10 +73,15 @@ AXObject* AXARIAGridCell::ParentTable() const {
   return parent;
 }
 
-void AXARIAGridCell::RowIndexRange(std::pair<unsigned, unsigned>& row_range) {
+bool AXARIAGridCell::RowIndexRange(
+    std::pair<unsigned, unsigned>& row_range) const {
   AXObject* parent = ParentObjectUnignored();
   if (!parent)
-    return;
+    return false;
+
+  // Use native table semantics if this is ARIA overlayed on an HTML table.
+  if (AXTableCell::RowIndexRange(row_range))
+    return true;
 
   if (parent->IsTableRow()) {
     // We already got a table row, use its API.
@@ -86,7 +91,7 @@ void AXARIAGridCell::RowIndexRange(std::pair<unsigned, unsigned>& row_range) {
     // children to determine the row index for the cell in it.
     unsigned column_count = ToAXTable(parent)->ColumnCount();
     if (!column_count)
-      return;
+      return false;
 
     const auto& siblings = parent->Children();
     unsigned children_size = siblings.size();
@@ -98,18 +103,23 @@ void AXARIAGridCell::RowIndexRange(std::pair<unsigned, unsigned>& row_range) {
     }
   }
 
-  // as far as I can tell, grid cells cannot span rows
+  // TODO should aria-rowspan be checked here? We also support it another way.
   row_range.second = 1;
+  return true;
 }
 
-void AXARIAGridCell::ColumnIndexRange(
-    std::pair<unsigned, unsigned>& column_range) {
+bool AXARIAGridCell::ColumnIndexRange(
+    std::pair<unsigned, unsigned>& column_range) const {
   AXObject* parent = ParentObjectUnignored();
   if (!parent)
-    return;
+    return false;
+
+  // Use native table semantics if this is ARIA overlayed on an HTML table.
+  if (AXTableCell::ColumnIndexRange(column_range))
+    return true;
 
   if (!parent->IsTableRow() && !parent->IsAXTable())
-    return;
+    return false;
 
   const auto& siblings = parent->Children();
   unsigned children_size = siblings.size();
@@ -120,8 +130,9 @@ void AXARIAGridCell::ColumnIndexRange(
     }
   }
 
-  // as far as I can tell, grid cells cannot span columns
+  // TODO should aria-colspan be checked here? We also support it another way.
   column_range.second = 1;
+  return true;
 }
 
 AccessibilityRole AXARIAGridCell::ScanToDecideHeaderRole() {
@@ -131,7 +142,7 @@ AccessibilityRole AXARIAGridCell::ScanToDecideHeaderRole() {
   if (IsAriaColumnHeader())
     return kColumnHeaderRole;
 
-  return kCellRole;
+  return AXTableCell::ScanToDecideHeaderRole();
 }
 
 AXRestriction AXARIAGridCell::Restriction() const {

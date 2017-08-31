@@ -53,7 +53,7 @@ class MODULES_EXPORT AXTableRow : public AXLayoutObject {
   // Retrieves the "row" headers (th, scope) from left to right for the each
   // row.
   virtual void HeaderObjectsForRow(AXObjectVector&);
-  AXObject* ParentTable() const;
+  virtual AXObject* ParentTable() const;
 
   void SetRowIndex(int row_index) { row_index_ = row_index; }
   int RowIndex() const { return row_index_; }
