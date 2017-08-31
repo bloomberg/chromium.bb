@@ -19,6 +19,7 @@ class ChromeBrowserState;
 }
 
 @protocol ApplicationCommands;
+@protocol RecentTabsHandsetViewControllerCommand;
 
 @protocol RecentTabsTableViewControllerDelegate<NSObject>
 // Tells the delegate when the table view content scrolled or changed size.
@@ -46,6 +47,8 @@ class ChromeBrowserState;
     : UITableViewController<UIGestureRecognizerDelegate>
 
 @property(nonatomic, weak) id<RecentTabsTableViewControllerDelegate> delegate;
+@property(nonatomic, weak) id<RecentTabsHandsetViewControllerCommand>
+    handsetCommandHandler;
 
 // Designated initializer. The controller opens link with |loader|.
 // |browserState|
