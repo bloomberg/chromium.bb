@@ -21,6 +21,7 @@
 
 #include "core/layout/TableLayoutAlgorithmFixed.h"
 
+#include "core/frame/UseCounter.h"
 #include "core/layout/LayoutTable.h"
 #include "core/layout/LayoutTableCell.h"
 #include "core/layout/LayoutTableCol.h"
@@ -71,7 +72,7 @@
 namespace blink {
 
 TableLayoutAlgorithmFixed::TableLayoutAlgorithmFixed(LayoutTable* table)
-    : TableLayoutAlgorithm(table) {}
+    : TableLayoutAlgorithm(table), recorded_width_difference_(false) {}
 
 int TableLayoutAlgorithmFixed::CalcWidthArray() {
   // FIXME: We might want to wait until we have all of the first row before
@@ -274,10 +275,26 @@ void TableLayoutAlgorithmFixed::UpdateLayout() {
     if (total_width != table_logical_width) {
       // Fixed widths only scale up
       if (total_fixed_width && total_width < table_logical_width) {
+        int first_pass_fixed_width_total = total_fixed_width;
         total_fixed_width = 0;
+        int width_available_for_fixed =
+            table_logical_width - total_percent_width;
         for (unsigned i = 0; i < n_eff_cols; i++) {
           if (width_[i].IsFixed()) {
-            calc_width[i] = calc_width[i] * table_logical_width / total_width;
+            int legacy_expanded_width =
+                calc_width[i] * table_logical_width / total_width;
+            if (!recorded_width_difference_) {
+              int future_expanded_width = calc_width[i] *
+                                          width_available_for_fixed /
+                                          first_pass_fixed_width_total;
+              if (future_expanded_width != legacy_expanded_width) {
+                recorded_width_difference_ = true;
+                UseCounter::Count(
+                    table_->GetDocument(),
+                    WebFeature::kFixedWidthTableDistributionChanged);
+              }
+            }
+            calc_width[i] = legacy_expanded_width;
             total_fixed_width += calc_width[i];
           }
         }

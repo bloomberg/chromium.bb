@@ -42,6 +42,7 @@ class TableLayoutAlgorithmFixed final : public TableLayoutAlgorithm {
 
  private:
   int CalcWidthArray();
+  bool recorded_width_difference_;
 
   Vector<Length> width_;
 };
