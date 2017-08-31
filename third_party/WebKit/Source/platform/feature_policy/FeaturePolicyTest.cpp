@@ -28,6 +28,7 @@ const char* const kValidPolicies[] = {
     "vibrate 'self'",
     "vibrate 'src'",  // Only valid for iframe allow attribute.
     "vibrate",        // Only valid for iframe allow attribute.
+    "vibrate; fullscreen; payment",
     "vibrate *",
     "vibrate " ORIGIN_A "",
     "vibrate " ORIGIN_B "",
@@ -170,6 +171,27 @@ TEST_F(FeaturePolicyTest, PolicyParsedCorrectly) {
   // Expect 2 messages: one about deprecation warning, one about unrecognized
   // feature name.
   EXPECT_EQ(2UL, messages.size());
+  EXPECT_EQ(3UL, parsed_policy.size());
+  EXPECT_EQ(WebFeaturePolicyFeature::kVibrate, parsed_policy[0].feature);
+  EXPECT_FALSE(parsed_policy[0].matches_all_origins);
+  EXPECT_EQ(1UL, parsed_policy[0].origins.size());
+  EXPECT_TRUE(origin_a_->IsSameSchemeHostPortAndSuborigin(
+      parsed_policy[0].origins[0].Get()));
+  EXPECT_EQ(WebFeaturePolicyFeature::kFullscreen, parsed_policy[1].feature);
+  EXPECT_FALSE(parsed_policy[1].matches_all_origins);
+  EXPECT_EQ(1UL, parsed_policy[1].origins.size());
+  EXPECT_TRUE(origin_a_->IsSameSchemeHostPortAndSuborigin(
+      parsed_policy[1].origins[0].Get()));
+  EXPECT_EQ(WebFeaturePolicyFeature::kPayment, parsed_policy[2].feature);
+  EXPECT_FALSE(parsed_policy[2].matches_all_origins);
+  EXPECT_EQ(1UL, parsed_policy[2].origins.size());
+  EXPECT_TRUE(origin_a_->IsSameSchemeHostPortAndSuborigin(
+      parsed_policy[2].origins[0].Get()));
+
+  // Header policies with no optional origin lists.
+  parsed_policy =
+      ParseFeaturePolicy("vibrate;fullscreen;payment", origin_a_.Get(), nullptr,
+                         &messages, test_feature_name_map);
   EXPECT_EQ(3UL, parsed_policy.size());
   EXPECT_EQ(WebFeaturePolicyFeature::kVibrate, parsed_policy[0].feature);
   EXPECT_FALSE(parsed_policy[0].matches_all_origins);
