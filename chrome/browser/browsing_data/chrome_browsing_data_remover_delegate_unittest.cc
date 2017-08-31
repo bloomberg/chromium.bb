@@ -2464,8 +2464,6 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, AllTypesAreGettingDeleted) {
       CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE,
 
       // TODO(710873): Make sure that these get fixed:
-      // No one ever seems to write to this content setting? Can it be removed?
-      CONTENT_SETTINGS_TYPE_CLIENT_HINTS,
       // Not deleted but should be deleted with history?
       CONTENT_SETTINGS_TYPE_IMPORTANT_SITE_INFO,
       // Deprecated and should be removed after M60.
