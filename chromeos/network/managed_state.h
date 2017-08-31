@@ -31,6 +31,10 @@ class DeviceState;
 class NetworkState;
 class NetworkTypePattern;
 
+namespace tether {
+class NetworkListSorterTest;
+}
+
 // Base class for states managed by NetworkStateManger which are associated
 // with a Shill path (e.g. service path or device path).
 class CHROMEOS_EXPORT ManagedState {
@@ -120,6 +124,7 @@ class CHROMEOS_EXPORT ManagedState {
   friend class NetworkChangeNotifierChromeosUpdateTest;
   friend class NetworkStateHandler;
   friend class ash::network_icon::NetworkIconTest;
+  friend class chromeos::tether::NetworkListSorterTest;
 
   ManagedType managed_type_;
 
