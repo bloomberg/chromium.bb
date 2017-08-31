@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.notifications.channels;
 import android.annotation.TargetApi;
 import android.app.NotificationChannel;
 import android.app.NotificationChannelGroup;
+import android.app.NotificationManager;
 import android.content.res.Resources;
 import android.os.Build;
 
@@ -56,6 +57,19 @@ public class ChannelsInitializer {
      * @param channelId The ID of the channel to be initialized.
      */
     public void ensureInitialized(String channelId) {
+        ensureInitializedWithEnabledState(channelId, true);
+    }
+
+    /**
+     * As ensureInitialized, but create the channel in disabled mode. The channel's importance will
+     * be set to IMPORTANCE_NONE, instead of using the value from
+     * {@link ChannelDefinitions.PredefinedChannels}.
+     */
+    public void ensureInitializedAndDisabled(String channelId) {
+        ensureInitializedWithEnabledState(channelId, true);
+    }
+
+    private void ensureInitializedWithEnabledState(String channelId, boolean enabled) {
         if (channelId.startsWith(ChannelDefinitions.CHANNEL_ID_PREFIX_SITES)) {
             // If we have a valid site channel ID at this point, it is safe to assume a channel
             // has already been created, since the only way to obtain a site channel ID is by
@@ -74,6 +88,9 @@ public class ChannelsInitializer {
                         .toNotificationChannelGroup(mResources);
         mNotificationManager.createNotificationChannelGroup(channelGroup);
         NotificationChannel channel = predefinedChannel.toNotificationChannel(mResources);
+        if (!enabled) {
+            channel.setImportance(NotificationManager.IMPORTANCE_NONE);
+        }
         mNotificationManager.createNotificationChannel(channel);
     }
 }

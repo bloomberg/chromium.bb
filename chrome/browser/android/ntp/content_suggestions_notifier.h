@@ -48,10 +48,16 @@ class ContentSuggestionsNotifier {
   // notifications that we no longer think that the user is interested in them.
   virtual bool IsEnabledForProfile(Profile* profile) = 0;
 
-  // Registers or unregisters the notification channel on Android O. May be
-  // called regardless of Android version or registration state; they are no-ops
-  // before Android O, or if the channel is already (de)registered.
-  virtual void RegisterChannel() = 0;
+  // Registers the notification channel on Android O. May be called regardless
+  // of Android version or registration state; it is a no-op before Android O,
+  // or if the channel is already registered. If |!enabled|, then the channel is
+  // disabled at creation. Returns true if the channel was created (false pre-O,
+  // or if it already existed).
+  virtual bool RegisterChannel(bool enabled) = 0;
+
+  // Unregisters the notification channel on Android O. May be called regardless
+  // of Android version or registration state; it is a no-op before Android O,
+  // or if the channel is not registered.
   virtual void UnregisterChannel() = 0;
 
  private:

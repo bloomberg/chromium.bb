@@ -124,14 +124,14 @@ bool AndroidContentSuggestionsNotifier::IsEnabledForProfile(Profile* profile) {
   return ::IsEnabledForProfile(profile);
 }
 
-void AndroidContentSuggestionsNotifier::RegisterChannel() {
+bool AndroidContentSuggestionsNotifier::RegisterChannel(bool enabled) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_ContentSuggestionsNotifier_registerChannel(env);
+  return Java_ContentSuggestionsNotifier_registerChannel(env, enabled);
 }
 
 void AndroidContentSuggestionsNotifier::UnregisterChannel() {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_ContentSuggestionsNotifier_unregisterChannel(env);
+  return Java_ContentSuggestionsNotifier_unregisterChannel(env);
 }
 
 static void RecordNotificationOptOut(JNIEnv* env,
