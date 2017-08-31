@@ -1390,6 +1390,17 @@ void LayoutBlock::ComputePreferredLogicalWidths() {
     ComputeIntrinsicLogicalWidths(min_preferred_logical_width_,
                                   max_preferred_logical_width_);
 
+  if (style_to_use.LogicalMaxWidth().IsFixed()) {
+    max_preferred_logical_width_ =
+        std::min(max_preferred_logical_width_,
+                 AdjustContentBoxLogicalWidthForBoxSizing(
+                     LayoutUnit(style_to_use.LogicalMaxWidth().Value())));
+    min_preferred_logical_width_ =
+        std::min(min_preferred_logical_width_,
+                 AdjustContentBoxLogicalWidthForBoxSizing(
+                     LayoutUnit(style_to_use.LogicalMaxWidth().Value())));
+  }
+
   if (style_to_use.LogicalMinWidth().IsFixed() &&
       style_to_use.LogicalMinWidth().Value() > 0) {
     max_preferred_logical_width_ =
@@ -1400,17 +1411,6 @@ void LayoutBlock::ComputePreferredLogicalWidths() {
         std::max(min_preferred_logical_width_,
                  AdjustContentBoxLogicalWidthForBoxSizing(
                      LayoutUnit(style_to_use.LogicalMinWidth().Value())));
-  }
-
-  if (style_to_use.LogicalMaxWidth().IsFixed()) {
-    max_preferred_logical_width_ =
-        std::min(max_preferred_logical_width_,
-                 AdjustContentBoxLogicalWidthForBoxSizing(
-                     LayoutUnit(style_to_use.LogicalMaxWidth().Value())));
-    min_preferred_logical_width_ =
-        std::min(min_preferred_logical_width_,
-                 AdjustContentBoxLogicalWidthForBoxSizing(
-                     LayoutUnit(style_to_use.LogicalMaxWidth().Value())));
   }
 
   // Table layout uses integers, ceil the preferred widths to ensure that they
