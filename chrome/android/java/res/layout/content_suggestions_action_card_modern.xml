@@ -5,6 +5,8 @@
               android:layout_width="match_parent"
               android:layout_height="wrap_content"
               style="@style/SuggestionCardModern"
+              android:background="@null"
+              android:foreground="@null"
               android:padding="8dp">
 
     <Button
@@ -12,7 +14,7 @@
         android:id="@+id/action_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical"
+        android:layout_gravity="center"
         android:layout_margin="0dp"
         android:text="@string/more"
         tools:text="Action" />
