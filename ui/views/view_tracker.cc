@@ -8,7 +8,7 @@
 
 namespace views {
 
-ViewTracker::ViewTracker(View* view) : view_(view) {
+ViewTracker::ViewTracker(View* view) : view_(nullptr) {
   SetView(view);
 }
 
