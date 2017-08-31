@@ -377,8 +377,9 @@ std::vector<display::Display> DesktopScreenX11::BuildDisplaysFromXRandRInfo() {
       // TODO(ccameron): Populate this based on this specific display.
       // http://crbug.com/735613
       if (!display::Display::HasForceColorProfile()) {
-        display.set_color_space(
-            gfx::ICCProfile::FromBestMonitor().GetColorSpace());
+        gfx::ICCProfile icc_profile = gfx::ICCProfile::FromBestMonitor();
+        icc_profile.HistogramDisplay(display.id());
+        display.set_color_space(icc_profile.GetColorSpace());
       }
 
       displays.push_back(display);
