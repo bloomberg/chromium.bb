@@ -11,7 +11,10 @@
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
+#import "ios/web/public/web_state/navigation_context.h"
 #import "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state/web_state_observer.h"
+#include "ui/base/page_transition_types.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -58,10 +61,75 @@ const char kRendererTerminationAliveRenderers[] =
 const char kRendererTerminationRecentlyAliveRenderers[] =
     "Tab.RendererTermination.RecentlyAliveRenderersCount";
 
+// Name of histogram for recording the state of the tab when the renderer is
+// terminated.
+const char kRendererTerminationStateHistogram[] =
+    "Tab.StateAtRendererTermination";
+
 // The recently alive renderer count metric counts all renderers that were alive
 // x seconds before a renderer termination. |kSecondsBeforeRendererTermination|
 // specifies x.
 const int kSecondsBeforeRendererTermination = 2;
+
+class TabUsageRecorder::WebStateObserver : public web::WebStateObserver {
+ public:
+  WebStateObserver(web::WebState* web_state,
+                   TabUsageRecorder* tab_usage_recorder);
+  ~WebStateObserver() override;
+
+ private:
+  // web::WebStateObserver implementation.
+  void WasShown() override;
+  void WasHidden() override;
+  void DidStartNavigation(web::NavigationContext* navigation_context) override;
+  void PageLoaded(
+      web::PageLoadCompletionStatus load_completion_status) override;
+  void RenderProcessGone() override;
+
+  TabUsageRecorder* tab_usage_recorder_;
+  bool web_state_visible_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(WebStateObserver);
+};
+
+TabUsageRecorder::WebStateObserver::WebStateObserver(
+    web::WebState* web_state,
+    TabUsageRecorder* tab_usage_recorder)
+    : web::WebStateObserver(web_state),
+      tab_usage_recorder_(tab_usage_recorder) {
+  DCHECK(tab_usage_recorder_);
+}
+
+TabUsageRecorder::WebStateObserver::~WebStateObserver() = default;
+
+void TabUsageRecorder::WebStateObserver::WasShown() {
+  web_state_visible_ = true;
+}
+
+void TabUsageRecorder::WebStateObserver::WasHidden() {
+  web_state_visible_ = false;
+}
+
+void TabUsageRecorder::WebStateObserver::DidStartNavigation(
+    web::NavigationContext* navigation_context) {
+  if (PageTransitionCoreTypeIs(navigation_context->GetPageTransition(),
+                               ui::PAGE_TRANSITION_RELOAD)) {
+    tab_usage_recorder_->RecordReload(web_state());
+  }
+}
+
+void TabUsageRecorder::WebStateObserver::PageLoaded(
+    web::PageLoadCompletionStatus load_completion_status) {
+  tab_usage_recorder_->RecordPageLoadDone(
+      web_state(),
+      load_completion_status == web::PageLoadCompletionStatus::SUCCESS);
+}
+
+void TabUsageRecorder::WebStateObserver::RenderProcessGone() {
+  tab_usage_recorder_->RendererTerminated(
+      web_state(), web_state_visible_,
+      [UIApplication sharedApplication].applicationState);
+}
 
 TabUsageRecorder::TabUsageRecorder(WebStateList* web_state_list,
                                    PrerenderService* prerender_service)
@@ -253,8 +321,20 @@ void TabUsageRecorder::RecordReload(web::WebState* tab) {
 }
 
 void TabUsageRecorder::RendererTerminated(web::WebState* terminated_tab,
-                                          bool visible) {
-  if (!visible) {
+                                          bool tab_visible,
+                                          bool application_active) {
+  // Log the tab state for the termination.
+  const RendererTerminationTabState tab_state =
+      application_active ? (tab_visible ? FOREGROUND_TAB_FOREGROUND_APP
+                                        : BACKGROUND_TAB_FOREGROUND_APP)
+                         : (tab_visible ? FOREGROUND_TAB_BACKGROUND_APP
+                                        : BACKGROUND_TAB_BACKGROUND_APP);
+
+  UMA_HISTOGRAM_ENUMERATION(kRendererTerminationStateHistogram,
+                            static_cast<int>(tab_state),
+                            static_cast<int>(TERMINATION_TAB_STATE_COUNT));
+
+  if (!tab_visible) {
     DCHECK(!TabAlreadyEvicted(terminated_tab));
     evicted_tabs_[terminated_tab] = EVICTED_DUE_TO_RENDERER_TERMINATION;
   }
@@ -379,6 +459,13 @@ int TabUsageRecorder::GetLiveTabsCount() const {
   return count;
 }
 
+void TabUsageRecorder::OnWebStateInserted(web::WebState* web_state) {
+  DCHECK(web_state_observers_.find(web_state) == web_state_observers_.end());
+  web_state_observers_.insert(std::make_pair(
+      web_state,
+      std::make_unique<TabUsageRecorder::WebStateObserver>(web_state, this)));
+}
+
 void TabUsageRecorder::OnWebStateDestroyed(web::WebState* web_state) {
   if (web_state == tab_created_selected_)
     tab_created_selected_ = nullptr;
@@ -389,19 +476,23 @@ void TabUsageRecorder::OnWebStateDestroyed(web::WebState* web_state) {
   if (web_state == mode_switch_tab_)
     mode_switch_tab_ = nullptr;
 
-  auto iter = evicted_tabs_.find(web_state);
-  if (iter != evicted_tabs_.end())
-    evicted_tabs_.erase(iter);
+  auto evicted_tabs_iter = evicted_tabs_.find(web_state);
+  if (evicted_tabs_iter != evicted_tabs_.end())
+    evicted_tabs_.erase(evicted_tabs_iter);
+
+  auto web_state_observers_iter = web_state_observers_.find(web_state);
+  if (web_state_observers_iter != web_state_observers_.end())
+    web_state_observers_.erase(web_state_observers_iter);
 }
 
 void TabUsageRecorder::WebStateInsertedAt(WebStateList* web_state_list,
                                           web::WebState* web_state,
                                           int index,
                                           bool activating) {
-  if (!activating)
-    return;
+  if (activating)
+    tab_created_selected_ = web_state;
 
-  tab_created_selected_ = web_state;
+  OnWebStateInserted(web_state);
 }
 
 void TabUsageRecorder::WebStateReplacedAt(WebStateList* web_state_list,
@@ -409,6 +500,7 @@ void TabUsageRecorder::WebStateReplacedAt(WebStateList* web_state_list,
                                           web::WebState* new_web_state,
                                           int index) {
   OnWebStateDestroyed(old_web_state);
+  OnWebStateInserted(new_web_state);
 }
 
 void TabUsageRecorder::WebStateDetachedAt(WebStateList* web_state_list,
@@ -422,8 +514,6 @@ void TabUsageRecorder::WebStateActivatedAt(WebStateList* web_state_list,
                                            web::WebState* new_web_state,
                                            int active_index,
                                            bool user_action) {
-  if (!user_action)
-    return;
-
-  RecordTabSwitched(old_web_state, new_web_state);
+  if (user_action)
+    RecordTabSwitched(old_web_state, new_web_state);
 }

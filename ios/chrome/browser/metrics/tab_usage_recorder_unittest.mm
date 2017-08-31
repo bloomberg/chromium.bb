@@ -282,7 +282,7 @@ TEST_F(TabUsageRecorderTest, RendererTerminated) {
       now - base::TimeDelta::FromSeconds(kSecondsBeforeRendererTermination / 2);
   AddTimeToDequeInTabUsageRecorder(recent_time);
 
-  tab_usage_recorder_.RendererTerminated(mock_tab_a, false);
+  tab_usage_recorder_.RendererTerminated(mock_tab_a, false, true);
 
   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
   BOOL saw_memory_warning =
@@ -306,10 +306,44 @@ TEST_F(TabUsageRecorderTest, SwitchToRendererTerminatedTab) {
   web::WebState* mock_tab_a = InsertTestWebState(kURL, true);
   web::WebState* mock_tab_b = InsertTestWebState(kURL, false);
 
-  tab_usage_recorder_.RendererTerminated(mock_tab_b, false);
+  tab_usage_recorder_.RendererTerminated(mock_tab_b, false, true);
   tab_usage_recorder_.RecordTabSwitched(mock_tab_a, mock_tab_b);
 
   histogram_tester_.ExpectUniqueSample(
       kSelectedTabHistogramName,
       TabUsageRecorder::EVICTED_DUE_TO_RENDERER_TERMINATION, 1);
+}
+
+// Verifies that Tab.StateAtRendererTermination metric is correctly reported
+// when the application is in the foreground.
+TEST_F(TabUsageRecorderTest, StateAtRendererTerminationForeground) {
+  web::WebState* mock_tab_a = InsertTestWebState(kURL, true);
+  web::WebState* mock_tab_b = InsertTestWebState(kURL, true);
+
+  tab_usage_recorder_.RendererTerminated(mock_tab_a, true, true);
+  histogram_tester_.ExpectBucketCount(
+      kRendererTerminationStateHistogram,
+      TabUsageRecorder::FOREGROUND_TAB_FOREGROUND_APP, 1);
+
+  tab_usage_recorder_.RendererTerminated(mock_tab_b, false, true);
+  histogram_tester_.ExpectBucketCount(
+      kRendererTerminationStateHistogram,
+      TabUsageRecorder::BACKGROUND_TAB_FOREGROUND_APP, 1);
+}
+
+// Verifies that Tab.StateAtRendererTermination metric is correctly reported
+// when the application is in the background.
+TEST_F(TabUsageRecorderTest, StateAtRendererTerminationBackground) {
+  web::WebState* mock_tab_a = InsertTestWebState(kURL, true);
+  web::WebState* mock_tab_b = InsertTestWebState(kURL, true);
+
+  tab_usage_recorder_.RendererTerminated(mock_tab_a, true, false);
+  histogram_tester_.ExpectBucketCount(
+      kRendererTerminationStateHistogram,
+      TabUsageRecorder::FOREGROUND_TAB_BACKGROUND_APP, 1);
+
+  tab_usage_recorder_.RendererTerminated(mock_tab_b, false, false);
+  histogram_tester_.ExpectBucketCount(
+      kRendererTerminationStateHistogram,
+      TabUsageRecorder::BACKGROUND_TAB_BACKGROUND_APP, 1);
 }

@@ -157,29 +157,6 @@ class TabHistoryContext;
 class FaviconDriverObserverBridge;
 class TabInfoBarObserver;
 
-// Name of histogram for recording the state of the tab when the renderer is
-// terminated.
-const char kRendererTerminationStateHistogram[] =
-    "Tab.StateAtRendererTermination";
-
-// Enum corresponding to UMA's TabForegroundState, for
-// Tab.StateAtRendererTermination. Must be kept in sync with the UMA enum.
-enum class RendererTerminationTabState {
-  // These two values are for when the app is in the foreground.
-  FOREGROUND_TAB_FOREGROUND_APP = 0,
-  BACKGROUND_TAB_FOREGROUND_APP,
-  // These are for when the app is in the background.
-  FOREGROUND_TAB_BACKGROUND_APP,
-  BACKGROUND_TAB_BACKGROUND_APP,
-  TERMINATION_TAB_STATE_COUNT
-};
-
-// Returns true if the application is in the background or inactive state.
-bool IsApplicationStateNotActive(UIApplicationState state) {
-  return (state == UIApplicationStateBackground ||
-          state == UIApplicationStateInactive);
-}
-
 // Returns true if |item| is the result of a HTTP redirect.
 // Returns false if |item| is nullptr;
 bool IsItemRedirectItem(web::NavigationItem* item) {
@@ -1247,12 +1224,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 
 - (void)webState:(web::WebState*)webState
     didStartNavigation:(web::NavigationContext*)navigation {
-  if ([_parentTabModel tabUsageRecorder] &&
-      PageTransitionCoreTypeIs(navigation->GetPageTransition(),
-                               ui::PAGE_TRANSITION_RELOAD)) {
-    [_parentTabModel tabUsageRecorder]->RecordReload(self.webState);
-  }
-
   if (!navigation->IsSameDocument()) {
     // Reset |isVoiceSearchResultsTab| since a new page is being navigated to.
     self.isVoiceSearchResultsTab = NO;
@@ -1359,10 +1330,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   [_parentTabModel notifyTabChanged:self];
 
   if (_parentTabModel) {
-    if ([_parentTabModel tabUsageRecorder]) {
-      [_parentTabModel tabUsageRecorder]->RecordPageLoadDone(self.webState,
-                                                             loadSuccess);
-    }
     [[NSNotificationCenter defaultCenter]
         postNotificationName:kTabModelTabDidFinishLoadingNotification
                       object:_parentTabModel
@@ -1563,28 +1530,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 
 - (void)renderProcessGoneForWebState:(web::WebState*)webState {
   UIApplicationState state = [UIApplication sharedApplication].applicationState;
-  BOOL applicationIsNotActive = IsApplicationStateNotActive(state);
-  if (_browserState && !_browserState->IsOffTheRecord()) {
-    // Log the tab state for the termination.
-    RendererTerminationTabState tab_state =
-        _visible ? RendererTerminationTabState::FOREGROUND_TAB_FOREGROUND_APP
-                 : RendererTerminationTabState::BACKGROUND_TAB_FOREGROUND_APP;
-    if (applicationIsNotActive) {
-      tab_state =
-          _visible ? RendererTerminationTabState::FOREGROUND_TAB_BACKGROUND_APP
-                   : RendererTerminationTabState::BACKGROUND_TAB_BACKGROUND_APP;
-    }
-    UMA_HISTOGRAM_ENUMERATION(
-        kRendererTerminationStateHistogram, static_cast<int>(tab_state),
-        static_cast<int>(
-            RendererTerminationTabState::TERMINATION_TAB_STATE_COUNT));
-    if ([_parentTabModel tabUsageRecorder]) {
-      [_parentTabModel tabUsageRecorder]->RendererTerminated(self.webState,
-                                                             _visible);
-    }
-  }
-
-  if (_visible && !applicationIsNotActive) {
+  if (_visible && state == UIApplicationStateActive) {
     [_fullScreenController disableFullScreen];
   }
   [self.dialogDelegate cancelDialogForTab:self];
