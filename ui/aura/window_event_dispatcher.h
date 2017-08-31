@@ -184,6 +184,7 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
   void ReleaseNativeCapture() override;
 
   // Overridden from ui::EventProcessor:
+  ui::EventTarget* GetInitialEventTarget(ui::Event* event) override;
   ui::EventTarget* GetRootForEvent(ui::Event* event) override;
   void OnEventProcessingStarted(ui::Event* event) override;
   void OnEventProcessingFinished(ui::Event* event) override;
