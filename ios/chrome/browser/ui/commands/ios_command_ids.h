@@ -17,9 +17,6 @@
 #define IDC_HELP_PAGE_VIA_MENU                         40020
 #define IDC_SHOW_SIGNIN_IOS                            40905
 #define IDC_SHOW_ADD_ACCOUNT                           40910
-#define IDC_SHOW_PAGE_INFO                             40911
-#define IDC_HIDE_PAGE_INFO                             40912
-#define IDC_SHOW_SECURITY_HELP                         40913
 #define IDC_SHOW_SYNC_SETTINGS                         40914
 #define IDC_SHOW_OTHER_DEVICES                         40917
 #define IDC_REQUEST_DESKTOP_SITE                       40921

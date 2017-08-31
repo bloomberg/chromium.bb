@@ -614,7 +614,7 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
                                    UIViewAutoresizingFlexibleBottomMargin];
   [_webToolbar setFrame:[self specificControlsArea]];
   _locationBar = base::MakeUnique<LocationBarControllerImpl>(
-      _omniBox, _browserState, preloader, self, self);
+      _omniBox, _browserState, preloader, self, self, self.dispatcher);
 
   // Create the determinate progress bar (phone only).
   if (idiom == IPHONE_IDIOM) {

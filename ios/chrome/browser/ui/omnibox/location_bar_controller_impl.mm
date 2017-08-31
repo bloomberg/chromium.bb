@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/mac/foundation_util.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
@@ -18,8 +19,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/experimental_flags.h"
-#include "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
-#include "ios/chrome/browser/ui/commands/ios_command_ids.h"
+#import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_text_field_ios.h"
 #include "ios/chrome/browser/ui/omnibox/omnibox_view_ios.h"
 #include "ios/chrome/browser/ui/ui_util.h"
@@ -113,19 +113,47 @@ bool IsCurrentPageOffline(web::WebState* webState) {
 
 @end
 
+// An ObjC bridge class to map between a UIControl action and the
+// dispatcher command that displays the page info popup.
+@interface PageInfoBridge : NSObject
+
+// A method (in the form of a UIControl action) that invokes the command on the
+// dispatcher to open the page info popup.
+- (void)showPageInfoPopup:(id)sender;
+
+// The dispatcher to which commands invoked by the bridge will be sent.
+@property(nonatomic, weak) id<BrowserCommands> dispatcher;
+
+@end
+
+@implementation PageInfoBridge
+@synthesize dispatcher = _dispatcher;
+
+- (void)showPageInfoPopup:(id)sender {
+  UIView* view = base::mac::ObjCCastStrict<UIView>(sender);
+  CGPoint originPoint =
+      CGPointMake(CGRectGetMidX(view.bounds), CGRectGetMidY(view.bounds));
+  [self.dispatcher
+      showPageInfoForOriginPoint:[view convertPoint:originPoint toView:nil]];
+}
+
+@end
+
 LocationBarControllerImpl::LocationBarControllerImpl(
     OmniboxTextFieldIOS* field,
     ios::ChromeBrowserState* browser_state,
     id<PreloadProvider> preloader,
     id<OmniboxPopupPositioner> positioner,
-    id<LocationBarDelegate> delegate)
+    id<LocationBarDelegate> delegate,
+    id<BrowserCommands> dispatcher)
     : edit_view_(base::MakeUnique<OmniboxViewIOS>(field,
                                                   this,
                                                   browser_state,
                                                   preloader,
                                                   positioner)),
       field_(field),
-      delegate_(delegate) {
+      delegate_(delegate),
+      dispatcher_(dispatcher) {
   DCHECK([delegate_ toolbarModel]);
   show_hint_text_ = true;
 
@@ -264,15 +292,16 @@ web::WebState* LocationBarControllerImpl::GetWebState() {
 }
 
 void LocationBarControllerImpl::InstallLocationIcon() {
+  page_info_bridge_ = [[PageInfoBridge alloc] init];
+  page_info_bridge_.dispatcher = dispatcher_;
   // Set the placeholder for empty omnibox.
   UIButton* button = [UIButton buttonWithType:UIButtonTypeCustom];
   UIImage* image = NativeImage(IDR_IOS_OMNIBOX_SEARCH);
   [button setImage:image forState:UIControlStateNormal];
   [button setFrame:CGRectMake(0, 0, image.size.width, image.size.height)];
-  [button addTarget:nil
-                action:@selector(chromeExecuteCommand:)
+  [button addTarget:page_info_bridge_
+                action:@selector(showPageInfoPopup:)
       forControlEvents:UIControlEventTouchUpInside];
-  [button setTag:IDC_SHOW_PAGE_INFO];
   SetA11yLabelAndUiAutomationName(
       button, IDS_IOS_PAGE_INFO_SECURITY_BUTTON_ACCESSIBILITY_LABEL,
       @"Page Security Info");
@@ -307,12 +336,12 @@ void LocationBarControllerImpl::CreateClearTextIcon(bool is_incognito) {
   frame.size = CGSizeMake(kClearTextButtonWidth, kClearTextButtonHeight);
   [button setFrame:frame];
 
-  clear_button_bridge_.reset(
-      [[OmniboxClearButtonBridge alloc] initWithOmniboxView:edit_view_.get()]);
+  clear_button_bridge_ =
+      [[OmniboxClearButtonBridge alloc] initWithOmniboxView:edit_view_.get()];
   [button addTarget:clear_button_bridge_
                 action:@selector(clearText)
       forControlEvents:UIControlEventTouchUpInside];
-  clear_text_button_.reset(button);
+  clear_text_button_ = button;
 
   SetA11yLabelAndUiAutomationName(clear_text_button_,
                                   IDS_IOS_ACCNAME_CLEAR_TEXT, @"Clear Text");
