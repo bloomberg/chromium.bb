@@ -12,10 +12,6 @@
 #include "media/base/audio_parameters.h"
 #include "media/base/media_export.h"
 
-namespace base {
-class SingleThreadTaskRunner;
-}
-
 namespace media {
 class AudioManager;
 
@@ -83,8 +79,6 @@ class MEDIA_EXPORT AudioSystem {
   virtual void GetInputDeviceInfo(
       const std::string& input_device_id,
       OnInputDeviceInfoCallback on_input_device_info_cb) = 0;
-
-  virtual base::SingleThreadTaskRunner* GetTaskRunner() const = 0;
 
  protected:
   // Sets the global AudioSystem pointer to the specified non-null value.

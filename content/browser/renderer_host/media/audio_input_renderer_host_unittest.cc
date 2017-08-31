@@ -269,8 +269,8 @@ class AudioInputRendererHostTest : public testing::Test {
     audio_manager_.reset(new media::FakeAudioManager(
         base::MakeUnique<media::TestAudioThread>(), &log_factory_));
     audio_system_ = media::AudioSystemImpl::Create(audio_manager_.get());
-    media_stream_manager_ =
-        base::MakeUnique<MediaStreamManager>(audio_system_.get());
+    media_stream_manager_ = base::MakeUnique<MediaStreamManager>(
+        audio_system_.get(), audio_manager_->GetTaskRunner());
     airh_ = new AudioInputRendererHostWithInterception(
         kRenderProcessId, kRendererPid, media::AudioManager::Get(),
         media_stream_manager_.get(), AudioMirroringManager::GetInstance(),

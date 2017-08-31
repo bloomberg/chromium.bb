@@ -102,8 +102,8 @@ class AudioOutputAuthorizationHandlerTest : public RenderViewHostTestHarness {
     audio_manager_ = base::MakeUnique<media::FakeAudioManager>(
         base::MakeUnique<media::AudioThreadImpl>(), &log_factory_);
     audio_system_ = media::AudioSystemImpl::Create(audio_manager_.get());
-    media_stream_manager_ =
-        base::MakeUnique<MediaStreamManager>(audio_system_.get());
+    media_stream_manager_ = base::MakeUnique<MediaStreamManager>(
+        audio_system_.get(), audio_manager_->GetTaskRunner());
 
     // Make sure everything is done initializing:
     SyncWithAllThreads();

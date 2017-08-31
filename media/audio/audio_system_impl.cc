@@ -151,10 +151,6 @@ void AudioSystemImpl::GetInputDeviceInfo(
               : media::BindToCurrentLoop(std::move(on_input_device_info_cb))));
 }
 
-base::SingleThreadTaskRunner* AudioSystemImpl::GetTaskRunner() const {
-  return audio_manager_->GetTaskRunner();
-}
-
 // static
 AudioParameters AudioSystemImpl::GetInputParametersOnDeviceThread(
     AudioManager* audio_manager,
@@ -223,6 +219,10 @@ void AudioSystemImpl::GetInputDeviceInfoOnDeviceThread(
                : GetOutputParametersOnDeviceThread(audio_manager,
                                                    associated_output_device_id),
            associated_output_device_id);
+}
+
+base::SingleThreadTaskRunner* AudioSystemImpl::GetTaskRunner() const {
+  return audio_manager_->GetTaskRunner();
 }
 
 }  // namespace media

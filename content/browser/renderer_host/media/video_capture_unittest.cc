@@ -130,8 +130,8 @@ class VideoCaptureTest : public testing::Test,
         switches::kUseFakeDeviceForMediaStream);
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kUseFakeUIForMediaStream);
-    media_stream_manager_ =
-        base::MakeUnique<MediaStreamManager>(audio_system_.get());
+    media_stream_manager_ = base::MakeUnique<MediaStreamManager>(
+        audio_system_.get(), audio_manager_->GetTaskRunner());
 
     // Create a Host and connect it to a simulated IPC channel.
     host_.reset(new VideoCaptureHost(0 /* render_process_id */,

@@ -214,8 +214,8 @@ class AudioRendererHostTest : public RenderViewHostTestHarness {
     audio_manager_ =
         base::MakeUnique<FakeAudioManagerWithAssociations>(&log_factory_);
     audio_system_ = media::AudioSystemImpl::Create(audio_manager_.get());
-    media_stream_manager_ =
-        base::MakeUnique<MediaStreamManager>(audio_system_.get());
+    media_stream_manager_ = base::MakeUnique<MediaStreamManager>(
+        audio_system_.get(), audio_manager_->GetTaskRunner());
     auth_run_loop_ = base::MakeUnique<base::RunLoop>();
     host_ = base::MakeRefCounted<MockAudioRendererHost>(
         auth_run_loop_.get(), process()->GetID(), audio_manager_.get(),

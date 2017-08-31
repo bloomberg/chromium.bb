@@ -400,11 +400,14 @@ void MediaStreamManager::SendMessageToNativeLog(const std::string& message) {
   msm->AddLogMessageOnIOThread(message);
 }
 
-MediaStreamManager::MediaStreamManager(media::AudioSystem* audio_system)
-    : MediaStreamManager(audio_system, nullptr) {}
+MediaStreamManager::MediaStreamManager(
+    media::AudioSystem* audio_system,
+    scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner)
+    : MediaStreamManager(audio_system, std::move(audio_task_runner), nullptr) {}
 
 MediaStreamManager::MediaStreamManager(
     media::AudioSystem* audio_system,
+    scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner,
     std::unique_ptr<VideoCaptureProvider> video_capture_provider)
     : audio_system_(audio_system),
 #if defined(OS_WIN)
@@ -416,7 +419,7 @@ MediaStreamManager::MediaStreamManager(
 
   if (!video_capture_provider) {
     scoped_refptr<base::SingleThreadTaskRunner> device_task_runner =
-        audio_system_->GetTaskRunner();
+        std::move(audio_task_runner);
 #if defined(OS_WIN)
     // Use an STA Video Capture Thread to try to avoid crashes on enumeration of
     // buggy third party Direct Show modules, http://crbug.com/428958.
