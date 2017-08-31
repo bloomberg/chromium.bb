@@ -357,6 +357,8 @@
     <dimen name="content_suggestions_card_video_overlay_margin_start">38dp</dimen>
     <dimen name="content_suggestions_card_video_overlay_margin_top">38dp</dimen>
     <dimen name="contextual_carousel_space_between_cards">8dp</dimen>
+    <dimen name="md_incognito_ntp_line_spacing">6sp</dimen>
+    <dimen name="md_incognito_ntp_padding_left">16dp</dimen>
 
     <!-- Recent tabs page -->
     <dimen name="recent_tabs_visible_separator_padding">8dp</dimen>
@@ -487,6 +489,7 @@
     <dimen name="chrome_home_empty_view_top_padding">72dp</dimen>
     <dimen name="chrome_home_min_full_half_distance">160dp</dimen>
     <dimen name="chrome_home_progress_bar_height">4dp</dimen>
+    <dimen name="chrome_home_incognito_ntp_bottom_margin">32dp</dimen>
 
     <!-- TextBubble dimensions -->
     <dimen name="text_bubble_margin">4dp</dimen>
