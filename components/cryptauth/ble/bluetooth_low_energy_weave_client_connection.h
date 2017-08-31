@@ -22,7 +22,6 @@
 #include "components/cryptauth/ble/bluetooth_low_energy_weave_packet_receiver.h"
 #include "components/cryptauth/ble/fake_wire_message.h"
 #include "components/cryptauth/ble/remote_attribute.h"
-#include "components/cryptauth/bluetooth_throttler.h"
 #include "components/cryptauth/connection.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_device.h"
@@ -60,8 +59,7 @@ class BluetoothLowEnergyWeaveClientConnection
         const RemoteDevice& remote_device,
         const std::string& device_address,
         scoped_refptr<device::BluetoothAdapter> adapter,
-        const device::BluetoothUUID remote_service_uuid,
-        BluetoothThrottler* bluetooth_throttler);
+        const device::BluetoothUUID remote_service_uuid);
     static void SetInstanceForTesting(Factory* factory);
 
    protected:
@@ -69,8 +67,7 @@ class BluetoothLowEnergyWeaveClientConnection
         const RemoteDevice& remote_device,
         const std::string& device_address,
         scoped_refptr<device::BluetoothAdapter> adapter,
-        const device::BluetoothUUID remote_service_uuid,
-        BluetoothThrottler* bluetooth_throttler);
+        const device::BluetoothUUID remote_service_uuid);
 
    private:
     static Factory* factory_instance_;
@@ -103,8 +100,7 @@ class BluetoothLowEnergyWeaveClientConnection
       const RemoteDevice& remote_device,
       const std::string& device_address,
       scoped_refptr<device::BluetoothAdapter> adapter,
-      const device::BluetoothUUID remote_service_uuid,
-      BluetoothThrottler* bluetooth_throttler);
+      const device::BluetoothUUID remote_service_uuid);
 
   ~BluetoothLowEnergyWeaveClientConnection() override;
 
@@ -235,7 +231,6 @@ class BluetoothLowEnergyWeaveClientConnection
   std::unique_ptr<BluetoothLowEnergyWeavePacketReceiver> packet_receiver_;
   RemoteAttribute tx_characteristic_;
   RemoteAttribute rx_characteristic_;
-  BluetoothThrottler* bluetooth_throttler_;
   std::unique_ptr<TimerFactory> timer_factory_;
   scoped_refptr<base::TaskRunner> task_runner_;
   std::unique_ptr<base::Timer> connection_response_timer_;

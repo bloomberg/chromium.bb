@@ -11,7 +11,6 @@
 #include "chromeos/components/tether/proto/tether.pb.h"
 #include "chromeos/components/tether/timer_factory.h"
 #include "components/cryptauth/ble/bluetooth_low_energy_weave_client_connection.h"
-#include "components/cryptauth/bluetooth_throttler.h"
 #include "components/cryptauth/connection.h"
 #include "components/cryptauth/fake_connection.h"
 #include "components/cryptauth/fake_cryptauth_service.h"
@@ -148,7 +147,7 @@ class UnregisteringObserver : public BleConnectionManager::Observer {
 
 class MockBleScanner : public BleScanner {
  public:
-  MockBleScanner(scoped_refptr<device::BluetoothAdapter> adapter)
+  explicit MockBleScanner(scoped_refptr<device::BluetoothAdapter> adapter)
       : BleScanner(adapter, nullptr) {}
   ~MockBleScanner() override {}
 
@@ -174,15 +173,6 @@ class MockBleAdvertiser : public BleAdvertiser {
   MOCK_METHOD1(StopAdvertisingToDevice, bool(const cryptauth::RemoteDevice&));
 };
 
-class MockBluetoothThrottler : public cryptauth::BluetoothThrottler {
- public:
-  MockBluetoothThrottler() {}
-  virtual ~MockBluetoothThrottler() {}
-
-  MOCK_CONST_METHOD0(GetDelay, base::TimeDelta());
-  MOCK_METHOD1(OnConnection, void(cryptauth::Connection*));
-};
-
 class FakeConnectionWithAddress : public cryptauth::FakeConnection {
  public:
   FakeConnectionWithAddress(const cryptauth::RemoteDevice& remote_device,
@@ -203,21 +193,17 @@ class FakeConnectionFactory
  public:
   FakeConnectionFactory(
       scoped_refptr<device::BluetoothAdapter> expected_adapter,
-      const device::BluetoothUUID expected_remote_service_uuid,
-      cryptauth::BluetoothThrottler* expected_bluetooth_throttler)
+      const device::BluetoothUUID expected_remote_service_uuid)
       : expected_adapter_(expected_adapter),
-        expected_remote_service_uuid_(expected_remote_service_uuid),
-        expected_bluetooth_throttler_(expected_bluetooth_throttler) {}
+        expected_remote_service_uuid_(expected_remote_service_uuid) {}
 
   std::unique_ptr<cryptauth::Connection> BuildInstance(
       const cryptauth::RemoteDevice& remote_device,
       const std::string& device_address,
       scoped_refptr<device::BluetoothAdapter> adapter,
-      const device::BluetoothUUID remote_service_uuid,
-      cryptauth::BluetoothThrottler* bluetooth_throttler) override {
+      const device::BluetoothUUID remote_service_uuid) override {
     EXPECT_EQ(expected_adapter_, adapter);
     EXPECT_EQ(expected_remote_service_uuid_, remote_service_uuid);
-    EXPECT_EQ(expected_bluetooth_throttler_, bluetooth_throttler);
 
     return base::WrapUnique<FakeConnectionWithAddress>(
         new FakeConnectionWithAddress(remote_device, device_address));
@@ -226,7 +212,6 @@ class FakeConnectionFactory
  private:
   scoped_refptr<device::BluetoothAdapter> expected_adapter_;
   const device::BluetoothUUID expected_remote_service_uuid_;
-  cryptauth::BluetoothThrottler* expected_bluetooth_throttler_;
 };
 
 std::vector<cryptauth::RemoteDevice> CreateTestDevices(size_t num_to_create) {
@@ -313,11 +298,9 @@ class BleConnectionManagerTest : public testing::Test {
 
     device_queue_ = new BleAdvertisementDeviceQueue();
     mock_timer_factory_ = new MockTimerFactory();
-    mock_bluetooth_throttler_ = base::WrapUnique(new MockBluetoothThrottler());
 
     fake_connection_factory_ = base::WrapUnique(new FakeConnectionFactory(
-        mock_adapter_, device::BluetoothUUID(std::string(kGattServerUuid)),
-        mock_bluetooth_throttler_.get()));
+        mock_adapter_, device::BluetoothUUID(std::string(kGattServerUuid))));
     cryptauth::weave::BluetoothLowEnergyWeaveClientConnection::Factory::
         SetInstanceForTesting(fake_connection_factory_.get());
 
@@ -330,8 +313,7 @@ class BleConnectionManagerTest : public testing::Test {
         fake_cryptauth_service_.get(), mock_adapter_,
         base::WrapUnique(mock_ble_scanner_),
         base::WrapUnique(mock_ble_advertiser_), base::WrapUnique(device_queue_),
-        base::WrapUnique(mock_timer_factory_),
-        mock_bluetooth_throttler_.get()));
+        base::WrapUnique(mock_timer_factory_)));
     test_observer_ = base::WrapUnique(new TestObserver());
     manager_->AddObserver(test_observer_.get());
 
@@ -557,7 +539,6 @@ class BleConnectionManagerTest : public testing::Test {
   BleAdvertisementDeviceQueue* device_queue_;
   MockTimerFactory* mock_timer_factory_;
   base::SimpleTestClock* test_clock_;
-  std::unique_ptr<MockBluetoothThrottler> mock_bluetooth_throttler_;
   std::unique_ptr<FakeConnectionFactory> fake_connection_factory_;
   std::unique_ptr<FakeSecureChannelFactory> fake_secure_channel_factory_;
   std::unique_ptr<TestObserver> test_observer_;
@@ -1396,4 +1377,4 @@ TEST_F(BleConnectionManagerTest, ObserverUnregisters) {
 
 }  // namespace tether
 
-}  // namespace cryptauth
+}  // namespace chromeos

@@ -182,8 +182,7 @@ BleConnectionManager::BleConnectionManager(
     cryptauth::CryptAuthService* cryptauth_service,
     scoped_refptr<device::BluetoothAdapter> adapter,
     const cryptauth::LocalDeviceDataProvider* local_device_data_provider,
-    const cryptauth::RemoteBeaconSeedFetcher* remote_beacon_seed_fetcher,
-    cryptauth::BluetoothThrottler* bluetooth_throttler)
+    const cryptauth::RemoteBeaconSeedFetcher* remote_beacon_seed_fetcher)
     : BleConnectionManager(
           cryptauth_service,
           adapter,
@@ -192,8 +191,7 @@ BleConnectionManager::BleConnectionManager(
                                           local_device_data_provider,
                                           remote_beacon_seed_fetcher),
           base::MakeUnique<BleAdvertisementDeviceQueue>(),
-          base::MakeUnique<TimerFactory>(),
-          bluetooth_throttler) {}
+          base::MakeUnique<TimerFactory>()) {}
 
 BleConnectionManager::BleConnectionManager(
     cryptauth::CryptAuthService* cryptauth_service,
@@ -201,15 +199,13 @@ BleConnectionManager::BleConnectionManager(
     std::unique_ptr<BleScanner> ble_scanner,
     std::unique_ptr<BleAdvertiser> ble_advertiser,
     std::unique_ptr<BleAdvertisementDeviceQueue> device_queue,
-    std::unique_ptr<TimerFactory> timer_factory,
-    cryptauth::BluetoothThrottler* bluetooth_throttler)
+    std::unique_ptr<TimerFactory> timer_factory)
     : cryptauth_service_(cryptauth_service),
       adapter_(adapter),
       ble_scanner_(std::move(ble_scanner)),
       ble_advertiser_(std::move(ble_advertiser)),
       device_queue_(std::move(device_queue)),
       timer_factory_(std::move(timer_factory)),
-      bluetooth_throttler_(bluetooth_throttler),
       clock_(base::MakeUnique<base::DefaultClock>()),
       has_registered_observer_(false),
       weak_ptr_factory_(this) {}
@@ -354,8 +350,7 @@ void BleConnectionManager::OnReceivedAdvertisementFromDevice(
   std::unique_ptr<cryptauth::Connection> connection =
       cryptauth::weave::BluetoothLowEnergyWeaveClientConnection::Factory::
           NewInstance(remote_device, device_address, adapter_,
-                      device::BluetoothUUID(std::string(kGattServerUuid)),
-                      bluetooth_throttler_);
+                      device::BluetoothUUID(std::string(kGattServerUuid)));
   std::unique_ptr<cryptauth::SecureChannel> secure_channel =
       cryptauth::SecureChannel::Factory::NewInstance(std::move(connection),
                                                      cryptauth_service_);

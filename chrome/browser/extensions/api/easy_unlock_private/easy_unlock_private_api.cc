@@ -30,7 +30,6 @@
 #include "chrome/browser/ui/proximity_auth/proximity_auth_error_bubble.h"
 #include "chrome/common/extensions/api/easy_unlock_private.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/cryptauth/bluetooth_throttler_impl.h"
 #include "components/cryptauth/cryptauth_device_manager.h"
 #include "components/cryptauth/cryptauth_enrollment_manager.h"
 #include "components/cryptauth/cryptauth_enrollment_utils.h"
@@ -1077,8 +1076,7 @@ bool EasyUnlockPrivateFindSetupConnectionFunction::RunAsync() {
   // |params->setup_service_uuid|.
   connection_finder_.reset(
       new proximity_auth::BluetoothLowEnergySetupConnectionFinder(
-          params->setup_service_uuid,
-          cryptauth::BluetoothThrottlerImpl::GetInstance()));
+          params->setup_service_uuid));
 
   connection_finder_->Find(base::Bind(
       &EasyUnlockPrivateFindSetupConnectionFunction::OnConnectionFound, this));

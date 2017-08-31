@@ -17,7 +17,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/cryptauth/background_eid_generator.h"
 #include "components/cryptauth/ble/bluetooth_low_energy_weave_client_connection.h"
-#include "components/cryptauth/bluetooth_throttler.h"
 #include "components/cryptauth/connection.h"
 #include "components/cryptauth/raw_eid_generator.h"
 #include "components/proximity_auth/logging/logging.h"
@@ -40,23 +39,19 @@ const int kRestartDiscoveryOnErrorDelaySeconds = 2;
 }  // namespace
 
 BluetoothLowEnergyConnectionFinder::BluetoothLowEnergyConnectionFinder(
-    const cryptauth::RemoteDevice remote_device,
-    cryptauth::BluetoothThrottler* bluetooth_throttler)
+    const cryptauth::RemoteDevice remote_device)
     : BluetoothLowEnergyConnectionFinder(
           remote_device,
           kBLEGattServiceUUID,
-          base::MakeUnique<cryptauth::BackgroundEidGenerator>(),
-          bluetooth_throttler) {}
+          base::MakeUnique<cryptauth::BackgroundEidGenerator>()) {}
 
 BluetoothLowEnergyConnectionFinder::BluetoothLowEnergyConnectionFinder(
     const cryptauth::RemoteDevice remote_device,
     const std::string& service_uuid,
-    std::unique_ptr<cryptauth::BackgroundEidGenerator> eid_generator,
-    cryptauth::BluetoothThrottler* bluetooth_throttler)
+    std::unique_ptr<cryptauth::BackgroundEidGenerator> eid_generator)
     : remote_device_(remote_device),
       service_uuid_(service_uuid),
       eid_generator_(std::move(eid_generator)),
-      bluetooth_throttler_(bluetooth_throttler),
       weak_ptr_factory_(this) {}
 
 BluetoothLowEnergyConnectionFinder::~BluetoothLowEnergyConnectionFinder() {
@@ -233,7 +228,7 @@ BluetoothLowEnergyConnectionFinder::CreateConnection(
     const std::string& device_address) {
   return cryptauth::weave::BluetoothLowEnergyWeaveClientConnection::Factory::
       NewInstance(remote_device_, device_address, adapter_,
-                  device::BluetoothUUID(service_uuid_), bluetooth_throttler_);
+                  device::BluetoothUUID(service_uuid_));
 }
 
 void BluetoothLowEnergyConnectionFinder::OnConnectionStatusChanged(

@@ -16,7 +16,6 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/timer/mock_timer.h"
 #include "base/timer/timer.h"
-#include "components/cryptauth/bluetooth_throttler.h"
 #include "components/cryptauth/connection_finder.h"
 #include "components/cryptauth/connection_observer.h"
 #include "components/cryptauth/cryptauth_test_util.h"
@@ -228,13 +227,11 @@ class TestBluetoothLowEnergyWeaveClientConnection
       const RemoteDevice& remote_device,
       const std::string& device_address,
       scoped_refptr<device::BluetoothAdapter> adapter,
-      const device::BluetoothUUID remote_service_uuid,
-      BluetoothThrottler* bluetooth_throttler)
+      const device::BluetoothUUID remote_service_uuid)
       : BluetoothLowEnergyWeaveClientConnection(remote_device,
                                                 device_address,
                                                 adapter,
-                                                remote_service_uuid,
-                                                bluetooth_throttler) {}
+                                                remote_service_uuid) {}
 
   ~TestBluetoothLowEnergyWeaveClientConnection() override {}
 
@@ -258,18 +255,6 @@ class TestBluetoothLowEnergyWeaveClientConnection
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestBluetoothLowEnergyWeaveClientConnection);
-};
-
-class MockBluetoothThrottler : public BluetoothThrottler {
- public:
-  MockBluetoothThrottler() {}
-  ~MockBluetoothThrottler() override {}
-
-  MOCK_CONST_METHOD0(GetDelay, base::TimeDelta());
-  MOCK_METHOD1(OnConnection, void(Connection* connection));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockBluetoothThrottler);
 };
 
 class MockBluetoothLowEnergyCharacteristicsFinder
@@ -356,7 +341,6 @@ class CryptAuthBluetoothLowEnergyWeaveClientConnectionTest
     receiver_ = nullptr;
 
     adapter_ = make_scoped_refptr(new NiceMock<device::MockBluetoothAdapter>());
-    bluetooth_throttler_ = base::MakeUnique<NiceMock<MockBluetoothThrottler>>();
     task_runner_ = make_scoped_refptr(new base::TestSimpleTaskRunner());
 
     mock_bluetooth_device_ =
@@ -403,7 +387,7 @@ class CryptAuthBluetoothLowEnergyWeaveClientConnectionTest
     std::unique_ptr<TestBluetoothLowEnergyWeaveClientConnection> connection(
         new TestBluetoothLowEnergyWeaveClientConnection(
             remote_device_, kTestRemoteDeviceBluetoothAddress, adapter_,
-            service_uuid_, bluetooth_throttler_.get()));
+            service_uuid_));
 
     EXPECT_EQ(connection->sub_status(), SubStatus::DISCONNECTED);
     EXPECT_EQ(connection->status(), Connection::DISCONNECTED);
@@ -436,10 +420,6 @@ class CryptAuthBluetoothLowEnergyWeaveClientConnectionTest
     EXPECT_CALL(*mock_bluetooth_device_, CreateGattConnection(_, _))
         .WillOnce(DoAll(SaveArg<0>(&create_gatt_connection_success_callback_),
                         SaveArg<1>(&create_gatt_connection_error_callback_)));
-
-    // No throttling by default
-    EXPECT_CALL(*bluetooth_throttler_, GetDelay())
-        .WillOnce(Return(base::TimeDelta()));
 
     connection->Connect();
 
@@ -595,7 +575,6 @@ class CryptAuthBluetoothLowEnergyWeaveClientConnectionTest
   const proximity_auth::ScopedDisableLoggingForTesting disable_logging_;
 
   scoped_refptr<device::MockBluetoothAdapter> adapter_;
-  std::unique_ptr<NiceMock<MockBluetoothThrottler>> bluetooth_throttler_;
   TestTimerFactory* test_timer_factory_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
 
@@ -641,7 +620,7 @@ TEST_F(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
        CreateAndDestroyWithoutConnectCallDoesntCrash) {
   BluetoothLowEnergyWeaveClientConnection connection(
       remote_device_, kTestRemoteDeviceBluetoothAddress, adapter_,
-      service_uuid_, bluetooth_throttler_.get());
+      service_uuid_);
 }
 
 TEST_F(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
@@ -1109,8 +1088,6 @@ TEST_F(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
   std::unique_ptr<TestBluetoothLowEnergyWeaveClientConnection> connection(
       CreateConnection());
 
-  EXPECT_CALL(*bluetooth_throttler_, GetDelay())
-      .WillOnce(Return(base::TimeDelta(base::TimeDelta::FromSeconds(1))));
   EXPECT_CALL(*mock_bluetooth_device_,
               SetConnectionLatency(
                   device::BluetoothDevice::CONNECTION_LATENCY_LOW, _, _))
