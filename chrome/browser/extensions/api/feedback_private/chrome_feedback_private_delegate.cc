@@ -123,6 +123,9 @@ ChromeFeedbackPrivateDelegate::CreateSingleLogSource(
     case api::feedback_private::LOG_SOURCE_ATRUSLOG:
       return base::MakeUnique<system_logs::SingleLogFileLogSource>(
           system_logs::SingleLogFileLogSource::SupportedSource::kAtrusLog);
+    case api::feedback_private::LOG_SOURCE_NETLOG:
+      return base::MakeUnique<system_logs::SingleLogFileLogSource>(
+          system_logs::SingleLogFileLogSource::SupportedSource::kNetLog);
     case api::feedback_private::LOG_SOURCE_NONE:
     default:
       NOTREACHED() << "Unknown log source type.";
