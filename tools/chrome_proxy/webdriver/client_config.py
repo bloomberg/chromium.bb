@@ -43,25 +43,24 @@ class ClientConfig(IntegrationTest):
       t.AddChromeArg('--force-variation-ids=42')
 
       t.LoadURL('http://check.googlezip.net/test.html')
-      t._StopDriver()
 
-      variation_header_count = 0
+    variation_header_count = 0
 
-      # Look for the request made to data saver client config server.
-      with open('chrome.netlog.json') as data_file:
-        data = json.load(data_file)
-      for i in data["events"]:
-       dumped_event = json.dumps(i)
-       if dumped_event.find("datasaver.googleapis.com") !=-1 and\
+    # Look for the request made to data saver client config server.
+    with open('chrome.netlog.json') as data_file:
+      data = json.load(data_file)
+    for i in data["events"]:
+      dumped_event = json.dumps(i)
+      if dumped_event.find("datasaver.googleapis.com") !=-1 and\
         dumped_event.find("clientConfigs") != -1 and\
         dumped_event.find("headers") != -1 and\
         dumped_event.find("accept-encoding") != -1 and\
         dumped_event.find("x-client-data") !=-1:
           variation_header_count = variation_header_count + 1
 
-      # Variation IDs are set. x-client-data should be present in the request
-      # headers.
-      self.assertLessEqual(1, variation_header_count)
+    # Variation IDs are set. x-client-data should be present in the request
+    # headers.
+    self.assertLessEqual(1, variation_header_count)
 
   # Ensure client config is fetched at the start of the Chrome session, and the
   # variations ID is not set in the request.
@@ -72,25 +71,24 @@ class ClientConfig(IntegrationTest):
       t.AddChromeArg('--enable-spdy-proxy-auth')
 
       t.LoadURL('http://check.googlezip.net/test.html')
-      t._StopDriver()
 
-      variation_header_count = 0
+    variation_header_count = 0
 
-      # Look for the request made to data saver client config server.
-      with open('chrome.netlog.json') as data_file:
-        data = json.load(data_file)
-      for i in data["events"]:
-       dumped_event = json.dumps(i)
-       if dumped_event.find("datasaver.googleapis.com") !=-1 and\
+    # Look for the request made to data saver client config server.
+    with open('chrome.netlog.json') as data_file:
+      data = json.load(data_file)
+    for i in data["events"]:
+      dumped_event = json.dumps(i)
+      if dumped_event.find("datasaver.googleapis.com") !=-1 and\
         dumped_event.find("clientConfigs") != -1 and\
         dumped_event.find("headers") != -1 and\
         dumped_event.find("accept-encoding") != -1 and\
         dumped_event.find("x-client-data") !=-1:
           variation_header_count = variation_header_count + 1
 
-      # Variation IDs are not set. x-client-data should not be present in the
-      # request headers.
-      self.assertEqual(0, variation_header_count)
+    # Variation IDs are not set. x-client-data should not be present in the
+    # request headers.
+    self.assertEqual(0, variation_header_count)
 
 if __name__ == '__main__':
   IntegrationTest.RunAllTests()
