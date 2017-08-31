@@ -28,10 +28,6 @@ const char kANGLEImplementationNullName[]     = "null";
 
 namespace switches {
 
-// Ask the GLX driver for the default context instead of trying to get the
-// highest version possible.
-const char kCreateDefaultGLContext[] = "create-default-gl-context";
-
 // Disables use of D3D11.
 const char kDisableD3D11[]                  = "disable-d3d11";
 
@@ -129,6 +125,7 @@ const char kUsePassthroughCmdDecoder[] = "use-passthrough-cmd-decoder";
 const char* const kGLSwitchesCopiedFromGpuProcessHost[] = {
     kDisableGpuVsync,
     kDisableD3D11,
+    kDisableES3GLContext,
     kEnableGPUServiceLogging,
     kEnableGPUServiceTracing,
     kEnableSgiVideoSync,
@@ -136,7 +133,6 @@ const char* const kGLSwitchesCopiedFromGpuProcessHost[] = {
     kDisableGLDrawingForTests,
     kOverrideUseSoftwareGLForTests,
     kUseANGLE,
-    kDisableDirectComposition,
     kEnableSwapBuffersWithBounds,
     kEnableDirectCompositionLayers,
     kDisableDirectCompositionLayers,

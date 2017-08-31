@@ -37,77 +37,28 @@
 namespace gpu {
 
 namespace {
-
-void GetGpuInfoFromCommandLine(gpu::GPUInfo& gpu_info,
-                               const base::CommandLine& command_line) {
-  if (!command_line.HasSwitch(switches::kGpuVendorID) ||
-      !command_line.HasSwitch(switches::kGpuDeviceID) ||
-      !command_line.HasSwitch(switches::kGpuDriverVersion))
-    return;
-  bool success = base::HexStringToUInt(
-      command_line.GetSwitchValueASCII(switches::kGpuVendorID),
-      &gpu_info.gpu.vendor_id);
-  DCHECK(success);
-  success = base::HexStringToUInt(
-      command_line.GetSwitchValueASCII(switches::kGpuDeviceID),
-      &gpu_info.gpu.device_id);
-  DCHECK(success);
-  gpu_info.driver_vendor =
-      command_line.GetSwitchValueASCII(switches::kGpuDriverVendor);
-  gpu_info.driver_version =
-      command_line.GetSwitchValueASCII(switches::kGpuDriverVersion);
-  gpu_info.driver_date =
-      command_line.GetSwitchValueASCII(switches::kGpuDriverDate);
-  gpu::ParseSecondaryGpuDevicesFromCommandLine(command_line, &gpu_info);
-
-  // Set active gpu device.
-  if (command_line.HasSwitch(switches::kGpuActiveVendorID) &&
-      command_line.HasSwitch(switches::kGpuActiveDeviceID)) {
-    uint32_t active_vendor_id = 0;
-    uint32_t active_device_id = 0;
-    success = base::HexStringToUInt(
-        command_line.GetSwitchValueASCII(switches::kGpuActiveVendorID),
-        &active_vendor_id);
-    DCHECK(success);
-    success = base::HexStringToUInt(
-        command_line.GetSwitchValueASCII(switches::kGpuActiveDeviceID),
-        &active_device_id);
-    DCHECK(success);
-    if (gpu_info.gpu.vendor_id == active_vendor_id &&
-        gpu_info.gpu.device_id == active_device_id) {
-      gpu_info.gpu.active = true;
-    } else {
-      for (size_t i = 0; i < gpu_info.secondary_gpus.size(); ++i) {
-        if (gpu_info.secondary_gpus[i].vendor_id == active_vendor_id &&
-            gpu_info.secondary_gpus[i].device_id == active_device_id) {
-          gpu_info.secondary_gpus[i].active = true;
-          break;
-        }
-      }
-    }
-  }
-}
-
 #if !defined(OS_MACOSX)
-void CollectGraphicsInfo(gpu::GPUInfo& gpu_info) {
+void CollectGraphicsInfo(GPUInfo* gpu_info) {
+  DCHECK(gpu_info);
 #if defined(OS_FUCHSIA)
   // TODO(crbug.com/707031): Implement this.
   NOTIMPLEMENTED();
   return;
 #else
   TRACE_EVENT0("gpu,startup", "Collect Graphics Info");
-  gpu::CollectInfoResult result = gpu::CollectContextGraphicsInfo(&gpu_info);
+  base::TimeTicks before_collect_context_graphics_info = base::TimeTicks::Now();
+  CollectInfoResult result = CollectContextGraphicsInfo(gpu_info);
   switch (result) {
-    case gpu::kCollectInfoFatalFailure:
+    case kCollectInfoFatalFailure:
       LOG(ERROR) << "gpu::CollectGraphicsInfo failed (fatal).";
       break;
-    case gpu::kCollectInfoNonFatalFailure:
+    case kCollectInfoNonFatalFailure:
       DVLOG(1) << "gpu::CollectGraphicsInfo failed (non-fatal).";
       break;
-    case gpu::kCollectInfoNone:
+    case kCollectInfoNone:
       NOTREACHED();
       break;
-    case gpu::kCollectInfoSuccess:
+    case kCollectInfoSuccess:
       break;
   }
 
@@ -115,12 +66,18 @@ void CollectGraphicsInfo(gpu::GPUInfo& gpu_info) {
   if (gl::GetGLImplementation() == gl::kGLImplementationEGLGLES2 &&
       gl::GLSurfaceEGL::IsDirectCompositionSupported() &&
       DirectCompositionSurfaceWin::AreOverlaysSupported()) {
-    gpu_info.supports_overlays = true;
+    gpu_info->supports_overlays = true;
   }
   if (DirectCompositionSurfaceWin::IsHDRSupported()) {
-    gpu_info.hdr = true;
+    gpu_info->hdr = true;
   }
 #endif  // defined(OS_WIN)
+
+  if (result != kCollectInfoFatalFailure) {
+    base::TimeDelta collect_context_time =
+        base::TimeTicks::Now() - before_collect_context_graphics_info;
+    UMA_HISTOGRAM_TIMES("GPU.CollectContextGraphicsInfo", collect_context_time);
+  }
 #endif  // defined(OS_FUCHSIA)
 }
 #endif  // defined(OS_MACOSX)
@@ -145,13 +102,21 @@ GpuInit::~GpuInit() {
   gpu::StopForceDiscreteGPU();
 }
 
-bool GpuInit::InitializeAndStartSandbox(const base::CommandLine& command_line,
+bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
                                         bool in_process_gpu) {
+#if defined(OS_ANDROID)
+  // Android doesn't have PCI vendor/device IDs, so collecting GL strings early
+  // is necessary.
+  CollectGraphicsInfo(&gpu_info_);
+  if (gpu_info_.context_info_state == gpu::kCollectInfoFatalFailure)
+    return false;
+#else
   // Get vendor_id, device_id, driver_version from browser process through
   // commandline switches.
   // TODO(zmo): Collect basic GPU info (without a context) here instead of
   // passing from browser process.
-  GetGpuInfoFromCommandLine(gpu_info_, command_line);
+  GetGpuInfoFromCommandLine(*command_line, &gpu_info_);
+#endif  // OS_ANDROID
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   if (gpu_info_.gpu.vendor_id == 0x10de &&  // NVIDIA
       gpu_info_.driver_vendor == "NVIDIA" && !CanAccessNvidiaDeviceFile())
@@ -161,8 +126,8 @@ bool GpuInit::InitializeAndStartSandbox(const base::CommandLine& command_line,
 
   // Compute blacklist and driver bug workaround decisions based on basic GPU
   // info.
-  gpu_feature_info_ = gpu::GetGpuFeatureInfo(gpu_info_, command_line);
-  if (gpu::SwitchableGPUsSupported(gpu_info_, command_line)) {
+  gpu_feature_info_ = gpu::ComputeGpuFeatureInfo(gpu_info_, command_line);
+  if (gpu::SwitchableGPUsSupported(gpu_info_, *command_line)) {
     gpu::InitializeSwitchableGPUs(
         gpu_feature_info_.enabled_gpu_driver_bug_workarounds);
   }
@@ -171,9 +136,8 @@ bool GpuInit::InitializeAndStartSandbox(const base::CommandLine& command_line,
   // present, disable the watchdog on valgrind because the code is expected
   // to run slowly in that case.
   bool enable_watchdog =
-      !command_line.HasSwitch(switches::kDisableGpuWatchdog) &&
-      !command_line.HasSwitch(switches::kHeadless) &&
-      !RunningOnValgrind();
+      !command_line->HasSwitch(switches::kDisableGpuWatchdog) &&
+      !command_line->HasSwitch(switches::kHeadless) && !RunningOnValgrind();
 
   // Disable the watchdog in debug builds because they tend to only be run by
   // developers who will not appreciate the watchdog killing the GPU process.
@@ -215,12 +179,11 @@ bool GpuInit::InitializeAndStartSandbox(const base::CommandLine& command_line,
   // On Chrome OS ARM Mali, GPU driver userspace creates threads when
   // initializing a GL context, so start the sandbox early.
   // TODO(zmo): Need to collect OS version before this.
-  if (command_line.HasSwitch(switches::kGpuSandboxStartEarly)) {
+  if (command_line->HasSwitch(switches::kGpuSandboxStartEarly)) {
     gpu_info_.sandboxed =
         sandbox_helper_->EnsureSandboxInitialized(watchdog_thread_.get());
     attempted_startsandbox = true;
   }
-
 #endif  // defined(OS_LINUX)
 
   base::TimeTicks before_initialize_one_off = base::TimeTicks::Now();
@@ -251,17 +214,13 @@ bool GpuInit::InitializeAndStartSandbox(const base::CommandLine& command_line,
   // multiple seconds to finish, which in turn cause the GPU process to crash.
   // By skipping the following code on Mac, we don't really lose anything,
   // because the basic GPU information is passed down from the host process.
-  base::TimeTicks before_collect_context_graphics_info = base::TimeTicks::Now();
-#if !defined(OS_MACOSX)
-  CollectGraphicsInfo(gpu_info_);
+#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
+  CollectGraphicsInfo(&gpu_info_);
   if (gpu_info_.context_info_state == gpu::kCollectInfoFatalFailure)
     return false;
-#endif  // !defined(OS_MACOSX)
-  base::TimeDelta collect_context_time =
-      base::TimeTicks::Now() - before_collect_context_graphics_info;
-  UMA_HISTOGRAM_TIMES("GPU.CollectContextGraphicsInfo", collect_context_time);
+  gpu_feature_info_ = gpu::ComputeGpuFeatureInfo(gpu_info_, command_line);
+#endif
 
-  gpu_feature_info_ = gpu::GetGpuFeatureInfo(gpu_info_, command_line);
   if (!gpu_feature_info_.disabled_extensions.empty()) {
     gl::init::SetDisabledExtensionsPlatform(
         gpu_feature_info_.disabled_extensions);
@@ -295,7 +254,7 @@ bool GpuInit::InitializeAndStartSandbox(const base::CommandLine& command_line,
                         gpu_info_.sandboxed);
 
   gpu_info_.passthrough_cmd_decoder =
-      gl::UsePassthroughCommandDecoder(&command_line) &&
+      gl::UsePassthroughCommandDecoder(command_line) &&
       gles2::PassthroughCommandDecoderSupported();
 
   return true;

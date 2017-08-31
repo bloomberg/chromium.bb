@@ -91,7 +91,7 @@ void ContentTestSuite::Initialize() {
     gpu::GPUInfo gpu_info;
     gpu::CollectBasicGraphicsInfo(&gpu_info);
     gpu::GpuFeatureInfo gpu_feature_info =
-        gpu::GetGpuFeatureInfo(gpu_info, *command_line);
+        gpu::ComputeGpuFeatureInfo(gpu_info, command_line);
     gpu::InProcessCommandBuffer::InitializeDefaultServiceForTesting(
         gpu_feature_info);
     gl::GLSurfaceTestSupport::InitializeNoExtensionsOneOff();

@@ -156,7 +156,7 @@ void GpuMain::InitOnGpuThread(
   gpu_init_.reset(new gpu::GpuInit());
   gpu_init_->set_sandbox_helper(this);
   bool success = gpu_init_->InitializeAndStartSandbox(
-      *base::CommandLine::ForCurrentProcess(), kInProcessGpu);
+      base::CommandLine::ForCurrentProcess(), kInProcessGpu);
   if (!success)
     return;
 

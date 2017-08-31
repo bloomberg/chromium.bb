@@ -82,7 +82,7 @@ egl::ThreadState* ThreadState::Get() {
       if (!command_line->HasSwitch(switches::kDisableGpuDriverBugWorkarounds)) {
         gpu::GPUInfo gpu_info;
         gpu::CollectBasicGraphicsInfo(&gpu_info);
-        gpu_feature_info = gpu::GetGpuFeatureInfo(gpu_info, *command_line);
+        gpu_feature_info = gpu::ComputeGpuFeatureInfo(gpu_info, command_line);
         Context::SetPlatformGpuFeatureInfo(gpu_feature_info);
       }
 

@@ -267,8 +267,8 @@ int GpuMain(const MainFunctionParams& parameters) {
   // defer tearing down the GPU process until receiving the initialization
   // message from the browser (through mojom::GpuMain::CreateGpuService()).
   constexpr bool kInProcessGpu = false;
-  const bool init_success =
-      gpu_init.InitializeAndStartSandbox(command_line, kInProcessGpu);
+  const bool init_success = gpu_init.InitializeAndStartSandbox(
+      const_cast<base::CommandLine*>(&command_line), kInProcessGpu);
   const bool dead_on_arrival = !init_success;
 
   logging::SetLogMessageHandler(NULL);

@@ -59,18 +59,27 @@ void InProcessGpuThread::Init() {
   gpu::GPUInfo gpu_info;
   gpu::GpuFeatureInfo gpu_feature_info;
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (!gl::init::InitializeGLNoExtensionsOneOff()) {
-    VLOG(1) << "gl::init::InitializeGLNoExtensionsOneOff failed";
-  } else if (GetContentClient()->gpu() &&
-             GetContentClient()->gpu()->GetGPUInfo() &&
-             GetContentClient()->gpu()->GetGpuFeatureInfo()) {
+  if (GetContentClient()->gpu() && GetContentClient()->gpu()->GetGPUInfo() &&
+      GetContentClient()->gpu()->GetGpuFeatureInfo()) {
     gpu_info = *(GetContentClient()->gpu()->GetGPUInfo());
     gpu_feature_info = *(GetContentClient()->gpu()->GetGpuFeatureInfo());
-  } else if (!command_line->HasSwitch(switches::kSkipGpuDataLoading)) {
-    // TODO(zmo): No need to initialize bindings again inside
-    // CollectContextGraphicsInfo().
+  } else {
+#if defined(OS_ANDROID)
     gpu::CollectContextGraphicsInfo(&gpu_info);
-    gpu_feature_info = gpu::GetGpuFeatureInfo(gpu_info, *command_line);
+#else
+    // TODO(zmo): Collect basic GPU info here instead.
+    gpu::GetGpuInfoFromCommandLine(*command_line, &gpu_info);
+#endif
+    gpu_feature_info = gpu::ComputeGpuFeatureInfo(gpu_info, command_line);
+  }
+
+  if (!gl::init::InitializeGLNoExtensionsOneOff()) {
+    VLOG(1) << "gl::init::InitializeGLNoExtensionsOneOff failed";
+  } else {
+#if !defined(OS_ANDROID)
+    gpu::CollectContextGraphicsInfo(&gpu_info);
+    gpu_feature_info = gpu::ComputeGpuFeatureInfo(gpu_info, command_line);
+#endif
   }
   if (!gpu_feature_info.disabled_extensions.empty()) {
     gl::init::SetDisabledExtensionsPlatform(

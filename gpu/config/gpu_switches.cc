@@ -6,6 +6,9 @@
 
 namespace switches {
 
+// Passes if it's AMD switchable dual GPUs from browser process to GPU process.
+const char kAMDSwitchable[] = "amd-switchable";
+
 // Disable workarounds for various GPU driver bugs.
 const char kDisableGpuDriverBugWorkarounds[] =
     "disable-gpu-driver-bug-workarounds";
