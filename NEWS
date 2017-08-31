@@ -5,6 +5,8 @@ For a detailed list of all the changes refer to [[https://github.com/liblouis/li
 issues]].
 
 ** New features
+- A new API and a corresponding command line tool to query table meta
+  data thanks to Bert Frees
 ** Bug fixes
 *** Back translation
 - UEB grade 2
