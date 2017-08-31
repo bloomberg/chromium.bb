@@ -157,7 +157,7 @@ template <class FunctionOrTemplate>
 v8::Local<FunctionOrTemplate> CreateAccessorFunctionOrTemplate(
     v8::Isolate*,
     v8::FunctionCallback,
-    V8DOMConfiguration::CachedPropertyKey,
+    V8PrivateProperty::CachedAccessorSymbol,
     v8::Local<v8::Value> data,
     v8::Local<v8::Signature>,
     int length);
@@ -167,16 +167,18 @@ v8::Local<v8::FunctionTemplate>
 CreateAccessorFunctionOrTemplate<v8::FunctionTemplate>(
     v8::Isolate* isolate,
     v8::FunctionCallback callback,
-    V8DOMConfiguration::CachedPropertyKey cached_property_key,
+    V8PrivateProperty::CachedAccessorSymbol cached_property_key,
     v8::Local<v8::Value> data,
     v8::Local<v8::Signature> signature,
     int length) {
   v8::Local<v8::FunctionTemplate> function_template;
   if (callback) {
-    if (cached_property_key) {
+    if (cached_property_key != V8PrivateProperty::kNoCachedAccessor) {
       function_template = v8::FunctionTemplate::NewWithCache(
-          isolate, callback, cached_property_key(isolate), data, signature,
-          length);
+          isolate, callback,
+          V8PrivateProperty::GetCachedAccessor(isolate, cached_property_key)
+              .GetPrivate(),
+          data, signature, length);
     } else {
       function_template =
           v8::FunctionTemplate::New(isolate, callback, data, signature, length);
@@ -194,7 +196,7 @@ template <>
 v8::Local<v8::Function> CreateAccessorFunctionOrTemplate<v8::Function>(
     v8::Isolate* isolate,
     v8::FunctionCallback callback,
-    V8DOMConfiguration::CachedPropertyKey,
+    V8PrivateProperty::CachedAccessorSymbol,
     v8::Local<v8::Value> data,
     v8::Local<v8::Signature> signature,
     int length) {
@@ -203,7 +205,8 @@ v8::Local<v8::Function> CreateAccessorFunctionOrTemplate<v8::Function>(
 
   v8::Local<v8::FunctionTemplate> function_template =
       CreateAccessorFunctionOrTemplate<v8::FunctionTemplate>(
-          isolate, callback, nullptr, data, signature, length);
+          isolate, callback, V8PrivateProperty::kNoCachedAccessor, data,
+          signature, length);
   if (function_template.IsEmpty())
     return v8::Local<v8::Function>();
 
@@ -250,9 +253,10 @@ void InstallAccessorInternal(
   v8::Local<v8::Name> name = V8AtomicString(isolate, config.name);
   v8::FunctionCallback getter_callback = config.getter;
   v8::FunctionCallback setter_callback = config.setter;
-  V8DOMConfiguration::CachedPropertyKey cached_property_key = nullptr;
+  auto cached_property_key = V8PrivateProperty::kNoCachedAccessor;
   if (world.IsMainWorld()) {
-    cached_property_key = config.cached_property_key;
+    cached_property_key = static_cast<V8PrivateProperty::CachedAccessorSymbol>(
+        config.cached_property_key);
   }
 
   // Support [LenientThis] by not specifying the signature.  V8 does not do
@@ -273,7 +277,8 @@ void InstallAccessorInternal(
             isolate, getter_callback, cached_property_key, data, signature, 0);
     v8::Local<FunctionOrTemplate> setter =
         CreateAccessorFunctionOrTemplate<FunctionOrTemplate>(
-            isolate, setter_callback, nullptr, data, signature, 1);
+            isolate, setter_callback, V8PrivateProperty::kNoCachedAccessor,
+            data, signature, 1);
     if (location & V8DOMConfiguration::kOnInstance &&
         !IsObjectAndEmpty(instance_or_template)) {
       instance_or_template->SetAccessorProperty(
@@ -294,12 +299,12 @@ void InstallAccessorInternal(
     // type check against a holder.
     v8::Local<FunctionOrTemplate> getter =
         CreateAccessorFunctionOrTemplate<FunctionOrTemplate>(
-            isolate, getter_callback, nullptr, data, v8::Local<v8::Signature>(),
-            0);
+            isolate, getter_callback, V8PrivateProperty::kNoCachedAccessor,
+            data, v8::Local<v8::Signature>(), 0);
     v8::Local<FunctionOrTemplate> setter =
         CreateAccessorFunctionOrTemplate<FunctionOrTemplate>(
-            isolate, setter_callback, nullptr, data, v8::Local<v8::Signature>(),
-            1);
+            isolate, setter_callback, V8PrivateProperty::kNoCachedAccessor,
+            data, v8::Local<v8::Signature>(), 1);
     interface_or_template->SetAccessorProperty(
         name, getter, setter,
         static_cast<v8::PropertyAttribute>(config.attribute));
