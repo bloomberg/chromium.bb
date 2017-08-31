@@ -803,21 +803,31 @@ drm_output_find_by_crtc(struct drm_backend *b, uint32_t crtc_id)
 	return NULL;
 }
 
+static struct drm_head *
+drm_head_find_by_connector(struct drm_backend *backend, uint32_t connector_id)
+{
+	struct weston_head *base;
+	struct drm_head *head;
+
+	wl_list_for_each(base,
+			 &backend->compositor->head_list, compositor_link) {
+		head = to_drm_head(base);
+		if (head->output && head->output->connector_id == connector_id)
+			return head;
+	}
+
+	return NULL;
+}
+
 static struct drm_output *
 drm_output_find_by_connector(struct drm_backend *b, uint32_t connector_id)
 {
-	struct drm_output *output;
+	struct drm_head *head;
 
-	wl_list_for_each(output, &b->compositor->output_list, base.link) {
-		if (output->connector_id == connector_id)
-			return output;
-	}
-
-	wl_list_for_each(output, &b->compositor->pending_output_list,
-			 base.link) {
-		if (output->connector_id == connector_id)
-			return output;
-	}
+	/* XXX: like the old version, this counts both enabled and disabled outputs */
+	head = drm_head_find_by_connector(b, connector_id);
+	if (head && head->output)
+		return head->output;
 
 	return NULL;
 }
