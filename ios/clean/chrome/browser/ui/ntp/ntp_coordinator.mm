@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #import "ios/chrome/browser/ui/browser_list/browser.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
+#import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/coordinators/browser_coordinator+internal.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/clean/chrome/browser/ui/bookmarks/bookmarks_coordinator.h"
@@ -15,6 +16,7 @@
 #import "ios/clean/chrome/browser/ui/ntp/ntp_mediator.h"
 #import "ios/clean/chrome/browser/ui/ntp/ntp_view_controller.h"
 #import "ios/clean/chrome/browser/ui/recent_tabs/recent_tabs_coordinator.h"
+#import "ios/shared/chrome/browser/ui/broadcaster/chrome_broadcaster.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -23,30 +25,36 @@
 @interface NTPCoordinator ()<NTPCommands>
 @property(nonatomic, strong) NTPMediator* mediator;
 @property(nonatomic, strong) NTPViewController* viewController;
+@property(nonatomic, strong) NTPHomeCoordinator* homeCoordinator;
 @end
 
 @implementation NTPCoordinator
 @synthesize mediator = _mediator;
 @synthesize viewController = _viewController;
+@synthesize homeCoordinator = _homeCoordinator;
 
 - (void)start {
+  if (self.started)
+    return;
+
   self.viewController = [[NTPViewController alloc] init];
   self.mediator = [[NTPMediator alloc] initWithConsumer:self.viewController];
 
   CommandDispatcher* dispatcher = self.browser->dispatcher();
   // NTPCommands
-  [dispatcher startDispatchingToTarget:self
-                           forSelector:@selector(showNTPHomePanel)];
-  [dispatcher startDispatchingToTarget:self
-                           forSelector:@selector(showNTPBookmarksPanel)];
-  [dispatcher startDispatchingToTarget:self
-                           forSelector:@selector(showNTPRecentTabsPanel)];
+  [dispatcher startDispatchingToTarget:self forProtocol:@protocol(NTPCommands)];
   self.viewController.dispatcher = static_cast<id>(self.browser->dispatcher());
+  [self.browser->broadcaster()
+      broadcastValue:@"selectedNTPPanel"
+            ofObject:self.viewController
+            selector:@selector(broadcastSelectedNTPPanel:)];
   [super start];
 }
 
 - (void)stop {
   [super stop];
+  [self.browser->broadcaster()
+      stopBroadcastingForSelector:@selector(broadcastSelectedNTPPanel:)];
   [self.browser->dispatcher() stopDispatchingToTarget:self];
 }
 

@@ -34,6 +34,7 @@
 @synthesize NTPView = _NTPView;
 @synthesize recentTabsViewController = _recentTabsViewController;
 @synthesize tabBarItems = _tabBarItems;
+@synthesize selectedNTPPanel = _selectedNTPPanel;
 
 #pragma mark - UIViewController
 
@@ -82,6 +83,7 @@
     [self.NTPView layoutIfNeeded];
     // PLACEHOLDER: This should come from the mediator.
     if (IsIPadIdiom()) {
+      self.selectedNTPPanel = ntp_home::HOME_PANEL;
       CGRect itemFrame = [self.NTPView panelFrameForItemAtIndex:1];
       CGPoint point = CGPointMake(CGRectGetMinX(itemFrame), 0);
       [self.NTPView.scrollView setContentOffset:point animated:NO];
@@ -100,6 +102,7 @@
   }
   NewTabPageBarItem* item = self.NTPView.tabBar.items[1];
   item.view = controller.view;
+  self.selectedNTPPanel = ntp_home::HOME_PANEL;
   [self addControllerToScrollView:controller];
 }
 
@@ -108,6 +111,7 @@
   controller.view.frame = [self.NTPView panelFrameForItemAtIndex:0];
   NewTabPageBarItem* item = self.NTPView.tabBar.items[0];
   item.view = controller.view;
+  self.selectedNTPPanel = ntp_home::BOOKMARKS_PANEL;
   [self addControllerToScrollView:controller];
 }
 
@@ -116,6 +120,7 @@
   controller.view.frame = [self.NTPView panelFrameForItemAtIndex:2];
   NewTabPageBarItem* item = self.NTPView.tabBar.items[2];
   item.view = controller.view;
+  self.selectedNTPPanel = ntp_home::RECENT_TABS_PANEL;
   [self addControllerToScrollView:_recentTabsViewController];
 }
 
@@ -151,14 +156,19 @@
     return;
 
   NewTabPageBarItem* item = self.NTPView.tabBar.items[index];
-  if (item.identifier == ntp_home::BOOKMARKS_PANEL &&
-      !self.bookmarksViewController)
-    [self.dispatcher showNTPBookmarksPanel];
-  else if (item.identifier == ntp_home::HOME_PANEL && !self.homeViewController)
-    [self.dispatcher showNTPHomePanel];
-  else if (item.identifier == ntp_home::RECENT_TABS_PANEL &&
-           !self.recentTabsViewController)
-    [self.dispatcher showNTPRecentTabsPanel];
+  if (item.identifier == ntp_home::BOOKMARKS_PANEL) {
+    self.selectedNTPPanel = ntp_home::BOOKMARKS_PANEL;
+    if (!self.bookmarksViewController)
+      [self.dispatcher showNTPBookmarksPanel];
+  } else if (item.identifier == ntp_home::HOME_PANEL) {
+    self.selectedNTPPanel = ntp_home::HOME_PANEL;
+    if (!self.homeViewController)
+      [self.dispatcher showNTPHomePanel];
+  } else if (item.identifier == ntp_home::RECENT_TABS_PANEL) {
+    self.selectedNTPPanel = ntp_home::RECENT_TABS_PANEL;
+    if (!self.recentTabsViewController)
+      [self.dispatcher showNTPRecentTabsPanel];
+  }
 
   // If index changed, follow same path as if a tab bar item was pressed.  When
   // |index| == |position|, the panel is completely in view.
