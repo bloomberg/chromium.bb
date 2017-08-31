@@ -143,7 +143,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 381
+#   For your editing convenience: highest ID currently used: 385
 #   And don't forget to also update the EnterprisePolicies enum of
 #   histograms.xml (run 'python tools/metrics/histograms/update_policies.py').
 #
@@ -9389,6 +9389,151 @@
       This policy has no effect on whether users can configure printers on
       individual devices.  It is intended to be supplementary to the
       configuration of printers by individual users.''',
+    },
+    {
+      'name': 'NativePrintersBulkConfiguration',
+      'id': 382,
+      'type': 'external',
+      'schema': {
+        'type': 'object',
+        'properties': {
+          'url': { 'type': 'string' },
+          'hash': { 'type': 'string' }
+        },
+      },
+      'supported_on': ['chrome_os:62-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': {
+        "url": "https://example.com/printerpolicy",
+        "hash": "deadbeefdeadbeefdeadbeefdeadbeefdeafdeadbeefdeadbeef"
+      },
+      'max_size': 5242880,
+      'caption': '''Enterprise printer configuration file''',
+      'tags': [],
+      'desc': '''Provides configurations for enterprise printers.
+
+      This policy allows you to provide printer configurations to
+      <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> devices.
+      The size of the file must not exceed 5MB and must be encoded in JSON.
+      The format is the same as the NativePrinters dictionary.  It is estimated
+      that a file containing approximately 21,000 printers will encode as a 5MB
+      file.  The cryptographic hash is used to verify the integrity of the
+      download.
+
+      The file is downloaded and cached. It will be re-downloaded whenever
+      the URL or the hash changes.
+
+      If this policy is set,
+      <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will download
+      the file for printer configurations and make printers available in
+      accordance with NativePrintersBulkAccessMode, NativePrintersBulkWhitelist,
+      and NativePrintersBulkBlacklist.
+
+      If you set this policy, users cannot change or override it.
+
+      This policy has no effect on whether users can configure printers on
+      individual devices.  It is intended to be supplementary to the
+      configuration of printers by individual users.''',
+    },
+    {
+      'name': 'NativePrintersBulkAccessMode',
+      'id': 383,
+      'supported_on': ['chrome_os:62-'],
+      'type': 'int-enum',
+      'schema': {
+        'type': 'integer',
+        'enum': [ 0, 1, 2 ],
+      },
+      'items': [
+        {
+          'name': 'BlacklistRestriction',
+          'value': 0,
+          'caption': '''All printers are shown except those in the blacklist.''',
+        },
+        {
+          'name': 'WhitelistPrintersOnly',
+          'value': 1,
+          'caption': '''Only printers in the whitelist are shown to users''',
+        },
+        {
+          'name': 'AllowAll',
+          'value': 2,
+          'caption': '''Allow all printers from the configuration file.''',
+        },
+      ],
+      'features' : {
+        'can_be_recommended': True,
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': 1,
+      'caption': '''Printer configuration access policy.''',
+      'tags': [],
+      'desc': '''Controls which printers from the
+      NativePrintersBulkConfiguration are available to users.
+
+      Designates which access policy is used for bulk printer configuration.
+      If AllowAll is selected, all printers are shown. If BlacklistRestrction
+      is selected, NativePrintersBulkBlacklist is used to restrict access to
+      the specified printers.  If WhitelistPrintersOnly is selected,
+      NativePrintersWhitelist designates only those printers which are
+      selectable.
+
+      If this policy is not set, BlacklistRestriction is assumed.
+      ''',
+    },
+    {
+      'name': 'NativePrintersBulkBlacklist',
+      'supported_on': ['chrome_os:62-'],
+      'id': 384,
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value':  ["id1", "id2", "id3"],
+      'caption': '''Disabled enterprise printers''',
+      'tags': [],
+      'desc': '''Specifies the printers which a user cannot use.
+
+      This policy is only used if BlacklistRestriction is chosen for
+      NativePrintersBulkAccessMode.
+
+      If this policy is used, all printers are provided to the user except
+      for the ids listed in this policy.
+      ''',
+    },
+    {
+      'name': 'NativePrintersBulkWhitelist',
+      'supported_on': ['chrome_os:62-'],
+      'id': 385,
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value':  ["id1", "id2", "id3"],
+      'caption': '''Enabled enterprise printers''',
+      'tags': [],
+      'desc': '''Specifies the printers which a user can use.
+
+      This policy is only used if WhitelistPrintersOnly is chosen for
+      NativePrintersBulkAccessMode.
+
+      If this policy is used, only the printers with ids matching the values
+      in this policy are available to the user. The ids must coorespond to
+      the entries in the file specified in NativePrintersBulkConfiguration.''',
     },
     {
       'name': 'QuickUnlock',

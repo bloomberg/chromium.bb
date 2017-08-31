@@ -11309,6 +11309,10 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="379" label="CastReceiverName"/>
   <int value="380" label="DeviceOffHours"/>
   <int value="381" label="CloudPolicyOverridesMachinePolicy"/>
+  <int value="382" label="NativePrintersBulkConfiguration"/>
+  <int value="383" label="NativePrintersBulkAccessMode"/>
+  <int value="384" label="NativePrintersBulkBlacklist"/>
+  <int value="385" label="NativePrintersBulkWhitelist"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">

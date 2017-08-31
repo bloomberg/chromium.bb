@@ -1226,6 +1226,22 @@ const char kPrintingDevices[] = "printing.devices";
 // List of printers configured by policy.
 const char kRecommendedNativePrinters[] =
     "native_printing.recommended_printers";
+
+// External resource containing all printer configurations for an enterprise.
+const char kRecommendedNativePrintersFile[] =
+    "native_printing.recommended_printers_file";
+
+// Enum designating the type of restrictions bulk printers are using.
+const char kRecommendedNativePrintersAccessMode[] =
+    "native_printing.recommended_printers_access_mode";
+
+// List of printer ids which are explicitly disallowed.  List of strings.
+const char kRecommendedNativePrintersBlacklist[] =
+    "native_printing.recommended_printers_blacklist";
+
+// List of printer ids that are allowed.  List of strings.
+const char kRecommendedNativePrintersWhitelist[] =
+    "native_printing.recommended_printers_whitelist";
 #endif  // OS_CHROMEOS
 
 // An integer pref specifying the fallback behavior for sites outside of content
