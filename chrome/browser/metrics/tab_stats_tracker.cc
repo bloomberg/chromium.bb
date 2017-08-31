@@ -4,6 +4,8 @@
 
 #include "chrome/browser/metrics/tab_stats_tracker.h"
 
+#include <algorithm>
+
 #include "base/metrics/histogram_macros.h"
 #include "base/power_monitor/power_monitor.h"
 #include "chrome/browser/background/background_mode_manager.h"
@@ -11,52 +13,80 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "components/metrics/metrics_pref_names.h"
+#include "components/prefs/pref_service.h"
 
 namespace metrics {
 
+namespace {
+
+// The interval at which the DailyEvent::CheckInterval function should be
+// called.
+constexpr base::TimeDelta kDailyEventIntervalTimeDelta =
+    base::TimeDelta::FromMilliseconds(60 * 30);
+
+// The global TabStatsTracker instance.
+TabStatsTracker* g_instance = nullptr;
+
+}  // namespace
+
 // static
+const char TabStatsTracker::kTabStatsDailyEventHistogramName[] =
+    "Tabs.TabsStatsDailyEventInteral";
 const char TabStatsTracker::UmaStatsReportingDelegate::
     kNumberOfTabsOnResumeHistogramName[] = "Tabs.NumberOfTabsOnResume";
+const char
+    TabStatsTracker::UmaStatsReportingDelegate::kMaxTabsInADayHistogramName[] =
+        "Tabs.MaxTabsInADay";
+const char TabStatsTracker::UmaStatsReportingDelegate::
+    kMaxTabsPerWindowInADayHistogramName[] = "Tabs.MaxTabsPerWindowInADay";
+const char TabStatsTracker::UmaStatsReportingDelegate::
+    kMaxWindowsInADayHistogramName[] = "Tabs.MaxWindowsInADay";
 
-// static
-void TabStatsTracker::Initialize() {
-  // Calls GetInstance() to initialize the static instance.
-  GetInstance();
+const TabStatsDataStore::TabsStats& TabStatsTracker::tab_stats() const {
+  return tab_stats_data_store_->tab_stats();
 }
 
-// static
-TabStatsTracker* TabStatsTracker::GetInstance() {
-  static TabStatsTracker* instance = new TabStatsTracker();
-  return instance;
-}
-
-TabStatsTracker::TabStatsTracker()
-    : total_tabs_count_(0U),
-      browser_count_(0U),
-      reporting_delegate_(base::MakeUnique<UmaStatsReportingDelegate>()) {
-  // Get the list of existing browsers/tabs. There shouldn't be any if this is
-  // initialized at startup but this will ensure that the count stay accurate if
-  // the initialization gets moved to after the creation of the first tab.
+TabStatsTracker::TabStatsTracker(PrefService* pref_service)
+    : reporting_delegate_(base::MakeUnique<UmaStatsReportingDelegate>()),
+      tab_stats_data_store_(base::MakeUnique<TabStatsDataStore>(pref_service)),
+      daily_event_(
+          base::MakeUnique<DailyEvent>(pref_service,
+                                       prefs::kTabStatsDailySample,
+                                       kTabStatsDailyEventHistogramName)) {
+  DCHECK(pref_service != nullptr);
+  // Get the list of existing windows/tabs. There shouldn't be any if this is
+  // initialized at startup but this will ensure that the counts stay accurate
+  // if the initialization gets moved to after the creation of the first tab.
   BrowserList* browser_list = BrowserList::GetInstance();
   for (Browser* browser : *browser_list) {
-    ++browser_count_;
     browser->tab_strip_model()->AddObserver(this);
-    total_tabs_count_ += browser->tab_strip_model()->count();
+    tab_stats_data_store_->OnWindowAdded();
+    tab_stats_data_store_->OnTabsAdded(browser->tab_strip_model()->count());
+    tab_stats_data_store_->UpdateMaxTabsPerWindowIfNeeded(
+        static_cast<size_t>(browser->tab_strip_model()->count()));
   }
+
   browser_list->AddObserver(this);
   base::PowerMonitor* power_monitor = base::PowerMonitor::Get();
   if (power_monitor != nullptr)
     power_monitor->AddObserver(this);
+
+  daily_event_->AddObserver(base::MakeUnique<TabStatsDailyObserver>(
+      reporting_delegate_.get(), tab_stats_data_store_.get()));
+  // Call the CheckInterval method to see if the data need to be immediately
+  // reported.
+  daily_event_->CheckInterval();
+  timer_.Start(FROM_HERE, kDailyEventIntervalTimeDelta, daily_event_.get(),
+               &DailyEvent::CheckInterval);
 }
 
 TabStatsTracker::~TabStatsTracker() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   BrowserList* browser_list = BrowserList::GetInstance();
-  for (Browser* browser : *browser_list) {
-    --browser_count_;
+  for (Browser* browser : *browser_list)
     browser->tab_strip_model()->RemoveObserver(this);
-    total_tabs_count_ -= browser->tab_strip_model()->count();
-  }
+
   browser_list->RemoveObserver(this);
 
   base::PowerMonitor* power_monitor = base::PowerMonitor::Get();
@@ -64,15 +94,30 @@ TabStatsTracker::~TabStatsTracker() {
     power_monitor->RemoveObserver(this);
 }
 
+// static
+void TabStatsTracker::SetInstance(std::unique_ptr<TabStatsTracker> instance) {
+  DCHECK_EQ(nullptr, g_instance);
+  g_instance = instance.release();
+}
+
+TabStatsTracker* TabStatsTracker::GetInstance() {
+  return g_instance;
+}
+
+void TabStatsTracker::TabStatsDailyObserver::OnDailyEvent() {
+  reporting_delegate_->ReportDailyMetrics(data_store_->tab_stats());
+  data_store_->ResetMaximumsToCurrentState();
+}
+
 void TabStatsTracker::OnBrowserAdded(Browser* browser) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  ++browser_count_;
+  tab_stats_data_store_->OnWindowAdded();
   browser->tab_strip_model()->AddObserver(this);
 }
 
 void TabStatsTracker::OnBrowserRemoved(Browser* browser) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  --browser_count_;
+  tab_stats_data_store_->OnWindowRemoved();
   browser->tab_strip_model()->RemoveObserver(this);
 }
 
@@ -81,18 +126,22 @@ void TabStatsTracker::TabInsertedAt(TabStripModel* model,
                                     int index,
                                     bool foreground) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  ++total_tabs_count_;
+  tab_stats_data_store_->OnTabsAdded(1);
+
+  tab_stats_data_store_->UpdateMaxTabsPerWindowIfNeeded(
+      static_cast<size_t>(model->count()));
 }
 
 void TabStatsTracker::TabClosingAt(TabStripModel* model,
                                    content::WebContents* web_contents,
                                    int index) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  --total_tabs_count_;
+  tab_stats_data_store_->OnTabsRemoved(1);
 }
 
 void TabStatsTracker::OnResume() {
-  reporting_delegate_->ReportTabCountOnResume(total_tabs_count_);
+  reporting_delegate_->ReportTabCountOnResume(
+      tab_stats_data_store_->tab_stats().total_tab_count);
 }
 
 void TabStatsTracker::UmaStatsReportingDelegate::ReportTabCountOnResume(
@@ -104,6 +153,16 @@ void TabStatsTracker::UmaStatsReportingDelegate::ReportTabCountOnResume(
     return;
   }
   UMA_HISTOGRAM_COUNTS_10000(kNumberOfTabsOnResumeHistogramName, tab_count);
+}
+
+void TabStatsTracker::UmaStatsReportingDelegate::ReportDailyMetrics(
+    const TabStatsDataStore::TabsStats& tab_stats) {
+  UMA_HISTOGRAM_COUNTS_10000(kMaxTabsInADayHistogramName,
+                             tab_stats.total_tab_count_max);
+  UMA_HISTOGRAM_COUNTS_10000(kMaxTabsPerWindowInADayHistogramName,
+                             tab_stats.max_tab_per_window);
+  UMA_HISTOGRAM_COUNTS_10000(kMaxWindowsInADayHistogramName,
+                             tab_stats.window_count_max);
 }
 
 }  // namespace metrics
