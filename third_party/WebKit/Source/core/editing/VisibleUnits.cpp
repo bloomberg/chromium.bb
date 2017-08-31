@@ -342,7 +342,8 @@ static PositionTemplate<Strategy> PreviousBoundaryAlgorithm(
   BackwardsTextBuffer string;
   string.PushRange(suffix_string.Data(), suffix_string.Size());
 
-  SimplifiedBackwardsTextIteratorAlgorithm<Strategy> it(start, end);
+  SimplifiedBackwardsTextIteratorAlgorithm<Strategy> it(
+      EphemeralRangeTemplate<Strategy>(start, end));
   int remaining_length = 0;
   unsigned next = 0;
   bool need_more_context = false;
@@ -415,7 +416,8 @@ static PositionTemplate<Strategy> NextBoundaryAlgorithm(
   BackwardsTextBuffer prefix_string;
   if (RequiresContextForWordBoundary(CharacterAfter(c))) {
     SimplifiedBackwardsTextIteratorAlgorithm<Strategy> backwards_iterator(
-        PositionTemplate<Strategy>::FirstPositionInNode(d), start);
+        EphemeralRangeTemplate<Strategy>(
+            PositionTemplate<Strategy>::FirstPositionInNode(d), start));
     while (!backwards_iterator.AtEnd()) {
       backwards_iterator.CopyTextTo(&prefix_string);
       int context_start_index = StartOfLastWordBoundaryContext(

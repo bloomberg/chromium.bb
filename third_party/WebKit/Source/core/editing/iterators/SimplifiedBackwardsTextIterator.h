@@ -26,6 +26,7 @@
 #ifndef SimplifiedBackwardsTextIterator_h
 #define SimplifiedBackwardsTextIterator_h
 
+#include "core/editing/EphemeralRange.h"
 #include "core/editing/Position.h"
 #include "core/editing/iterators/BackwardsTextBuffer.h"
 #include "core/editing/iterators/FullyClippedStateStack.h"
@@ -45,8 +46,7 @@ class CORE_TEMPLATE_CLASS_EXPORT SimplifiedBackwardsTextIteratorAlgorithm {
 
  public:
   SimplifiedBackwardsTextIteratorAlgorithm(
-      const PositionTemplate<Strategy>& start,
-      const PositionTemplate<Strategy>& end,
+      const EphemeralRangeTemplate<Strategy>&,
       const TextIteratorBehavior& = TextIteratorBehavior());
 
   bool AtEnd() const { return !position_node_ || should_stop_; }

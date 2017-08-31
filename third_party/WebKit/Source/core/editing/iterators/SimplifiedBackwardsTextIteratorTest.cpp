@@ -18,8 +18,7 @@ static String ExtractString(const Element& element) {
   const EphemeralRangeTemplate<Strategy> range =
       EphemeralRangeTemplate<Strategy>::RangeOfContents(element);
   BackwardsTextBuffer buffer;
-  for (SimplifiedBackwardsTextIteratorAlgorithm<Strategy> it(
-           range.StartPosition(), range.EndPosition());
+  for (SimplifiedBackwardsTextIteratorAlgorithm<Strategy> it(range);
        !it.AtEnd(); it.Advance()) {
     it.CopyTextTo(&buffer);
   }
@@ -29,8 +28,8 @@ static String ExtractString(const Element& element) {
 TEST_F(SimplifiedBackwardsTextIteratorTest, Basic) {
   SetBodyContent("<p> [(3)]678</p>");
   const Element* const sample = GetDocument().QuerySelector("p");
-  SimplifiedBackwardsTextIterator iterator(Position(sample->firstChild(), 0),
-                                           Position(sample->firstChild(), 9));
+  SimplifiedBackwardsTextIterator iterator(EphemeralRange(
+      Position(sample->firstChild(), 0), Position(sample->firstChild(), 9)));
   // TODO(editing-dev): |SimplifiedBackwardsTextIterator| should not account
   // collapsed whitespace (http://crbug.com/760428)
   EXPECT_EQ(9, iterator.length())
@@ -60,8 +59,8 @@ TEST_F(SimplifiedBackwardsTextIteratorTest, FirstLetter) {
       "<style>p::first-letter {font-size: 200%}</style>"
       "<p> [(3)]678</p>");
   const Element* const sample = GetDocument().QuerySelector("p");
-  SimplifiedBackwardsTextIterator iterator(Position(sample->firstChild(), 0),
-                                           Position(sample->firstChild(), 9));
+  SimplifiedBackwardsTextIterator iterator(EphemeralRange(
+      Position(sample->firstChild(), 0), Position(sample->firstChild(), 9)));
   EXPECT_EQ(3, iterator.length());
   EXPECT_EQ(Position(sample->firstChild(), 6), iterator.StartPosition());
   EXPECT_EQ(Position(sample->firstChild(), 9), iterator.EndPosition());
@@ -126,8 +125,7 @@ TEST_F(SimplifiedBackwardsTextIteratorTest, characterAt) {
 
   EphemeralRangeTemplate<EditingStrategy> range1(
       EphemeralRangeTemplate<EditingStrategy>::RangeOfContents(*host));
-  SimplifiedBackwardsTextIteratorAlgorithm<EditingStrategy> back_iter1(
-      range1.StartPosition(), range1.EndPosition());
+  SimplifiedBackwardsTextIteratorAlgorithm<EditingStrategy> back_iter1(range1);
   const char* message1 =
       "|backIter1| should emit 'one' and 'two' in reverse order.";
   EXPECT_EQ('o', back_iter1.CharacterAt(0)) << message1;
@@ -142,7 +140,7 @@ TEST_F(SimplifiedBackwardsTextIteratorTest, characterAt) {
       EphemeralRangeTemplate<EditingInFlatTreeStrategy>::RangeOfContents(
           *host));
   SimplifiedBackwardsTextIteratorAlgorithm<EditingInFlatTreeStrategy>
-      back_iter2(range2.StartPosition(), range2.EndPosition());
+      back_iter2(range2);
   const char* message2 =
       "|backIter2| should emit 'three ', 'two', ' ', 'one' and ' zero' in "
       "reverse order.";
@@ -185,8 +183,7 @@ TEST_F(SimplifiedBackwardsTextIteratorTest, copyTextTo) {
 
   EphemeralRangeTemplate<EditingStrategy> range1(
       EphemeralRangeTemplate<EditingStrategy>::RangeOfContents(*host));
-  SimplifiedBackwardsTextIteratorAlgorithm<EditingStrategy> back_iter1(
-      range1.StartPosition(), range1.EndPosition());
+  SimplifiedBackwardsTextIteratorAlgorithm<EditingStrategy> back_iter1(range1);
   BackwardsTextBuffer output1;
   back_iter1.CopyTextTo(&output1, 0, 2);
   EXPECT_EQ("wo", String(output1.Data(), output1.Size()))
@@ -206,7 +203,7 @@ TEST_F(SimplifiedBackwardsTextIteratorTest, copyTextTo) {
       EphemeralRangeTemplate<EditingInFlatTreeStrategy>::RangeOfContents(
           *host));
   SimplifiedBackwardsTextIteratorAlgorithm<EditingInFlatTreeStrategy>
-      back_iter2(range2.StartPosition(), range2.EndPosition());
+      back_iter2(range2);
   BackwardsTextBuffer output2;
   back_iter2.CopyTextTo(&output2, 0, 2);
   EXPECT_EQ("ro", String(output2.Data(), output2.Size()))
@@ -249,8 +246,7 @@ TEST_F(SimplifiedBackwardsTextIteratorTest, CopyWholeCodePoints) {
                              ' ',    0xD80C, 0xDD40, 0xD80C, 0xDD41, '.'};
 
   EphemeralRange range(EphemeralRange::RangeOfContents(GetDocument()));
-  SimplifiedBackwardsTextIterator iter(range.StartPosition(),
-                                       range.EndPosition());
+  SimplifiedBackwardsTextIterator iter(range);
   BackwardsTextBuffer buffer;
   EXPECT_EQ(1, iter.CopyTextTo(&buffer, 0, 1))
       << "Should emit 1 UChar for '.'.";
