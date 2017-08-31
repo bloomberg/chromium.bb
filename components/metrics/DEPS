@@ -10,7 +10,6 @@ include_rules = [
   "+components/variations",
   "+components/version_info",
   "+content/public/test",
-  "+extensions/features",
   "+mojo/public/cpp",
   "+services/service_manager/public/cpp",
   "+third_party/zlib/google",

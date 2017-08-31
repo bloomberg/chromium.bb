@@ -48,14 +48,11 @@ class StabilityMetricsHelper {
   // Registers local state prefs used by this class.
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
-  // Increments the RendererCrash pref.
-  static void IncreaseRendererCrashCount(PrefService* local_state);
-
  private:
-  // Increments an Integer pref value specified by |path|.
+  // Increment an Integer pref value specified by |path|.
   void IncrementPrefValue(const char* path);
 
-  // Increments a 64-bit Integer pref value specified by |path|.
+  // Increment a 64-bit Integer pref value specified by |path|.
   void IncrementLongPrefsValue(const char* path);
 
   PrefService* local_state_;

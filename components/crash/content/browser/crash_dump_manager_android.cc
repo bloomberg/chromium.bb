@@ -60,19 +60,18 @@ base::ScopedFD CrashDumpManager::CreateMinidumpFileForChild(
   return base::ScopedFD(minidump_file.TakePlatformFile());
 }
 
-bool CrashDumpManager::ProcessMinidumpFileFromChild(
+void CrashDumpManager::ProcessMinidumpFileFromChild(
     base::FilePath crash_dump_dir,
     base::ProcessHandle pid,
     content::ProcessType process_type,
     base::TerminationStatus termination_status,
     base::android::ApplicationState app_state) {
   base::ThreadRestrictions::AssertIOAllowed();
-  bool increase_crash_count = false;
   base::FilePath minidump_path;
   // If the minidump for a given child process has already been
   // processed, then there is no more work to do.
   if (!GetMinidumpPath(pid, &minidump_path))
-    return increase_crash_count;
+    return;
 
   int64_t file_size = 0;
   int r = base::GetFileSize(minidump_path, &file_size);
@@ -109,9 +108,6 @@ bool CrashDumpManager::ProcessMinidumpFileFromChild(
     }
     if (process_type == content::PROCESS_TYPE_RENDERER) {
       if (termination_status == base::TERMINATION_STATUS_OOM_PROTECTED) {
-        // There is a delay for OOM flag to be removed when app goes to
-        // background, so we can't just check for OOM_PROTECTED flag.
-        increase_crash_count = is_running || is_paused;
         UMA_HISTOGRAM_ENUMERATION("Tab.RendererDetailedExitStatus",
                                   exit_status,
                                   ExitStatus::MINIDUMP_STATUS_COUNT);
@@ -132,14 +128,14 @@ bool CrashDumpManager::ProcessMinidumpFileFromChild(
     r = base::DeleteFile(minidump_path, false);
     DCHECK(r) << "Failed to delete temporary minidump file "
               << minidump_path.value();
-    return increase_crash_count;
+    return;
   }
 
   // We are dealing with a valid minidump. Copy it to the crash report
   // directory from where Java code will upload it later on.
   if (crash_dump_dir.empty()) {
     NOTREACHED() << "Failed to retrieve the crash dump directory.";
-    return increase_crash_count;
+    return;
   }
   const uint64_t rand = base::RandUint64();
   const std::string filename =
@@ -151,7 +147,7 @@ bool CrashDumpManager::ProcessMinidumpFileFromChild(
     LOG(ERROR) << "Failed to move crash dump from " << minidump_path.value()
                << " to " << dest_path.value();
     base::DeleteFile(minidump_path, false);
-    return increase_crash_count;
+    return;
   }
   VLOG(1) << "Crash minidump successfully generated: " << dest_path.value();
 
@@ -162,7 +158,6 @@ bool CrashDumpManager::ProcessMinidumpFileFromChild(
   base::android::ScopedJavaLocalRef<jstring> j_dest_path =
       base::android::ConvertUTF8ToJavaString(env, dest_path.value());
   Java_CrashDumpManager_tryToUploadMinidump(env, j_dest_path);
-  return increase_crash_count;
 }
 
 void CrashDumpManager::SetMinidumpPath(int child_process_id,
