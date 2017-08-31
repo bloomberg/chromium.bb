@@ -4460,6 +4460,15 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="22" label="Profile image"/>
 </enum>
 
+<enum name="ChromePDFViewerLoadStatus">
+  <int value="0" label="Loaded a full-page PDF with Chrome PDF Viewer"/>
+  <int value="1" label="Loaded an embedded PDF with Chrome PDF Viewer"/>
+  <int value="2" label="Showed disabled plugin placeholder for embedded PDF"/>
+  <int value="3" label="Triggered a drive-by download without user gesture"/>
+  <int value="4" label="Loaded iframe PDF with no PDF viewer available"/>
+  <int value="5" label="View PDF button clicked in the PDF plugin placeholder"/>
+</enum>
+
 <enum name="ChromiumAndroidLinkerBrowserState">
   <int value="0" label="Normal, Random Address Load"/>
   <int value="1" label="Low memory, Fixed Address Load Success"/>
@@ -30064,13 +30073,6 @@ from previous Chrome versions.
   <int value="0" label="Loaded Document"/>
   <int value="1" label="Has Title"/>
   <int value="2" label="Has Bookmarks"/>
-</enum>
-
-<enum name="PDFLoadStatus">
-  <int value="0" label="Loaded a full-page PDF with PDFium"/>
-  <int value="1" label="Loaded an embedded PDF with PDFium"/>
-  <int value="2" label="Showed disabled plugin placeholder for embedded PDF"/>
-  <int value="3" label="Triggered a drive-by download without user gesture"/>
 </enum>
 
 <enum name="PeerConnectionCounters">

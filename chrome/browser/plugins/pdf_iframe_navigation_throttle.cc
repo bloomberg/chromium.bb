@@ -4,7 +4,9 @@
 
 #include "chrome/browser/plugins/pdf_iframe_navigation_throttle.h"
 
+#include "base/feature_list.h"
 #include "chrome/common/chrome_content_client.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/pdf_uma.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_handle.h"
@@ -63,13 +65,23 @@ PDFIFrameNavigationThrottle::MaybeCreateThrottleFor(
 
 content::NavigationThrottle::ThrottleCheckResult
 PDFIFrameNavigationThrottle::WillProcessResponse() {
+  const net::HttpResponseHeaders* response_headers =
+      navigation_handle()->GetResponseHeaders();
+  if (!response_headers)
+    return content::NavigationThrottle::PROCEED;
+
   std::string mime_type;
-  navigation_handle()->GetResponseHeaders()->GetMimeType(&mime_type);
+  response_headers->GetMimeType(&mime_type);
   if (mime_type != kPDFMimeType)
     return content::NavigationThrottle::PROCEED;
 
+  ReportPDFLoadStatus(PDFLoadStatus::kLoadedIframePdfWithNoPdfViewer);
+
+  if (!base::FeatureList::IsEnabled(features::kClickToOpenPDFPlaceholder))
+    return content::NavigationThrottle::PROCEED;
+
   std::string html = base::StringPrintf(
-      R"(<body style="margin: 0;"><object data="%s"  type="application/pdf" )"
+      R"(<body style="margin: 0;"><object data="%s" type="application/pdf" )"
       R"(style="width: 100%%; height: 100%%;"></object></body>)",
       navigation_handle()->GetURL().spec().c_str());
   GURL data_url("data:text/html," + net::EscapePath(html));

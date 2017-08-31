@@ -12,6 +12,8 @@ enum class PDFLoadStatus {
   kLoadedEmbeddedPdfWithPdfium = 1,
   kShowedDisabledPluginPlaceholderForEmbeddedPdf = 2,
   kTriggeredNoGestureDriveByDownload = 3,
+  kLoadedIframePdfWithNoPdfViewer = 4,
+  kViewPdfClickedInPdfPluginPlaceholder = 5,
   kPdfLoadStatusCount
 };
 
