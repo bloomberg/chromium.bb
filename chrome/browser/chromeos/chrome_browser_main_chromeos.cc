@@ -952,8 +952,6 @@ void ChromeBrowserMainPartsChromeos::PreBrowserStart() {
 
 void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
   if (!ash_util::IsRunningInMash()) {
-    system::InputDeviceSettings::Get()->UpdateTouchDevicesStatusFromPrefs();
-
     // These are dependent on the ash::Shell singleton already having been
     // initialized. Consequently, these cannot be used when running as a mus
     // client.

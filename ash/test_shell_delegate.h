@@ -49,10 +49,9 @@ class TestShellDelegate : public ShellDelegate {
   GPUSupport* CreateGPUSupport() override;
   base::string16 GetProductName() const override;
   gfx::Image GetDeprecatedAcceleratorImage() const override;
-  bool IsTouchscreenEnabledInPrefs(bool use_local_state) const override;
-  void SetTouchscreenEnabledInPrefs(bool enabled,
-                                    bool use_local_state) override;
-  void UpdateTouchscreenStatusFromPrefs() override;
+  bool GetTouchscreenEnabled(TouchscreenEnabledSource source) const override;
+  void SetTouchscreenEnabled(bool enabled,
+                             TouchscreenEnabledSource source) override;
   void SuspendMediaSessions() override;
   ui::InputDeviceControllerClient* GetInputDeviceControllerClient() override;
 
@@ -68,7 +67,7 @@ class TestShellDelegate : public ShellDelegate {
   int num_exit_requests_ = 0;
   bool multi_profiles_enabled_ = false;
   bool force_maximize_on_first_run_ = false;
-  bool touchscreen_enabled_in_local_pref_ = true;
+  bool global_touchscreen_enabled_ = true;
   bool media_sessions_suspended_ = false;
   std::unique_ptr<ShelfInitializer> shelf_initializer_;
 

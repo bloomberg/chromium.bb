@@ -9,9 +9,9 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
-#include "ash/shell_delegate.h"
 #include "ash/shutdown_reason.h"
 #include "ash/system/audio/tray_audio.h"
+#include "ash/system/power/power_button_display_controller.h"
 #include "ash/system/power/tablet_power_button_controller.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/wm/lock_state_controller.h"
@@ -29,6 +29,7 @@ namespace ash {
 PowerButtonController::PowerButtonController(LockStateController* controller)
     : lock_state_controller_(controller) {
   ProcessCommandLine();
+  display_controller_ = base::MakeUnique<PowerButtonDisplayController>();
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
       this);
   chromeos::AccelerometerReader::GetInstance()->AddObserver(this);
@@ -192,13 +193,8 @@ void PowerButtonController::OnAccelerometerUpdated(
     scoped_refptr<const chromeos::AccelerometerUpdate> update) {
   if (force_clamshell_power_button_ || tablet_controller_)
     return;
-  tablet_controller_.reset(
-      new TabletPowerButtonController(lock_state_controller_));
-}
-
-void PowerButtonController::ResetTabletPowerButtonControllerForTest() {
-  tablet_controller_.reset();
-  ProcessCommandLine();
+  tablet_controller_.reset(new TabletPowerButtonController(
+      lock_state_controller_, display_controller_.get()));
 }
 
 void PowerButtonController::ProcessCommandLine() {
@@ -206,14 +202,6 @@ void PowerButtonController::ProcessCommandLine() {
   has_legacy_power_button_ = cl->HasSwitch(switches::kAuraLegacyPowerButton);
   force_clamshell_power_button_ =
       cl->HasSwitch(switches::kForceClamshellPowerButton);
-  if (force_clamshell_power_button_) {
-    // We may update power button behavior from tablet behavior to clamshell
-    // behavior with touchscreen local state disabled. Enabling touchscreen
-    // local state to ensure touchscreen is initially enabled for clamshell.
-    ShellDelegate* delegate = Shell::Get()->shell_delegate();
-    delegate->SetTouchscreenEnabledInPrefs(true, true /* use_local_state */);
-    delegate->UpdateTouchscreenStatusFromPrefs();
-  }
 }
 
 }  // namespace ash

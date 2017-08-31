@@ -41,6 +41,7 @@ class GPUSupport;
 class NetworkingConfigDelegate;
 class PaletteDelegate;
 class WallpaperDelegate;
+enum class TouchscreenEnabledSource;
 
 // Delegate of the Shell.
 class ASH_EXPORT ShellDelegate {
@@ -113,18 +114,16 @@ class ASH_EXPORT ShellDelegate {
 
   virtual gfx::Image GetDeprecatedAcceleratorImage() const = 0;
 
-  // If |use_local_state| is true, returns the touchscreen status from local
-  // state, otherwise from user prefs.
-  virtual bool IsTouchscreenEnabledInPrefs(bool use_local_state) const = 0;
+  // Returns the current touchscreen enabled status as specified by |source|.
+  // Note that the actual state of the touchscreen device is automatically
+  // determined based on the requests of multiple sources.
+  virtual bool GetTouchscreenEnabled(TouchscreenEnabledSource source) const = 0;
 
-  // Sets the status of touchscreen to |enabled| in prefs. If |use_local_state|,
-  // pref is set in local state, otherwise in user prefs.
-  virtual void SetTouchscreenEnabledInPrefs(bool enabled,
-                                            bool use_local_state) = 0;
-
-  // Updates the enabled/disabled status of the touchscreen from prefs. Enabled
-  // if both local state and user prefs are enabled, otherwise disabled.
-  virtual void UpdateTouchscreenStatusFromPrefs() = 0;
+  // Sets |source|'s requested touchscreen enabled status to |enabled|. Note
+  // that the actual state of the touchscreen device is automatically determined
+  // based on the requests of multiple sources.
+  virtual void SetTouchscreenEnabled(bool enabled,
+                                     TouchscreenEnabledSource source) = 0;
 
   // Toggles the status of touchpad between enabled and disabled.
   virtual void ToggleTouchpad() {}

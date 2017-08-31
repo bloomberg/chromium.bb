@@ -66,8 +66,9 @@ class ASH_EXPORT PowerButtonDisplayController
   // Initializes |backlights_forced_off_|.
   void OnGotInitialBacklightsForcedOff(bool is_forced_off);
 
-  // Enables or disables the touchscreen, also writing its state to a pref in
-  // local state. The touchscreen is disabled when backlights are forced off.
+  // Enables or disables the touchscreen by updating the global touchscreen
+  // enabled status. The touchscreen is disabled when backlights are forced off
+  // or |screen_state_| is OFF_AUTO.
   void UpdateTouchscreenStatus();
 
   // Current screen state.

@@ -5,6 +5,7 @@
 #include "ash/system/power/power_button_display_controller.h"
 
 #include "ash/accessibility_delegate.h"
+#include "ash/public/cpp/touchscreen_enabled_source.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -151,10 +152,8 @@ void PowerButtonDisplayController::OnGotInitialBacklightsForcedOff(
 void PowerButtonDisplayController::UpdateTouchscreenStatus() {
   const bool enable_touchscreen =
       !backlights_forced_off_ && (screen_state_ != ScreenState::OFF_AUTO);
-  ShellDelegate* delegate = Shell::Get()->shell_delegate();
-  delegate->SetTouchscreenEnabledInPrefs(enable_touchscreen,
-                                         true /* use_local_state */);
-  delegate->UpdateTouchscreenStatusFromPrefs();
+  Shell::Get()->shell_delegate()->SetTouchscreenEnabled(
+      enable_touchscreen, TouchscreenEnabledSource::GLOBAL);
 }
 
 }  // namespace ash
