@@ -135,38 +135,3 @@ void BrowserNonClientFrameViewMac::PaintThemedFrame(gfx::Canvas* canvas) {
   gfx::ImageSkia overlay = GetFrameOverlayImage();
   canvas->TileImageInt(overlay, 0, 0, width(), overlay.height());
 }
-
-void BrowserNonClientFrameViewMac::PaintToolbarBackground(gfx::Canvas* canvas) {
-  gfx::Rect bounds(browser_view()->GetToolbarBounds());
-  if (bounds.IsEmpty())
-    return;
-
-  const ui::ThemeProvider* tp = GetThemeProvider();
-  gfx::ImageSkia* border = tp->GetImageSkiaNamed(IDR_TOOLBAR_SHADE_TOP);
-
-  const int x = bounds.x();
-  const int y = bounds.y() - border->height();
-  const int w = bounds.width();
-  const int h = bounds.height() + border->height();
-
-  // The tabstrip border image height is 2*scale pixels, but only the bottom 2
-  // pixels contain the actual border (the rest is transparent). We can't draw
-  // the toolbar image below this transparent upper area when scale > 1.
-  const int fill_y = y + canvas->image_scale() - 1;
-  const int fill_height = bounds.bottom() - fill_y;
-
-  // Draw the toolbar fill.
-  canvas->TileImageInt(*tp->GetImageSkiaNamed(IDR_THEME_TOOLBAR),
-                       x + GetThemeBackgroundXInset(),
-                       fill_y - GetTopInset(false), x, fill_y, w, fill_height);
-
-  // Draw the tabstrip/toolbar separator.
-  canvas->TileImageInt(*border, 0, 0, x, y, w, border->height());
-
-  // Draw the content/toolbar separator.
-  canvas->FillRect(
-      gfx::Rect(x, y + h - kClientEdgeThickness, w, kClientEdgeThickness),
-      ThemeProperties::GetDefaultColor(
-          ThemeProperties::COLOR_TOOLBAR_BOTTOM_SEPARATOR,
-          browser_view()->IsIncognito()));
-}
