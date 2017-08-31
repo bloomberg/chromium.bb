@@ -87,6 +87,14 @@ AppListButton::AppListButton(InkDropButtonListener* listener,
   // edge cases with ink drops, events, etc. in tablet mode where we have two
   // buttons in one.
   EnableCanvasFlippingForRTLUI(false);
+
+  // Initialize voice interaction overlay and sync the flags if active user
+  // session has already started. This could happen when an external monitor
+  // is plugged in.
+  if (Shell::Get()->session_controller()->IsActiveUserSessionStarted() &&
+      chromeos::switches::IsVoiceInteractionEnabled()) {
+    InitializeVoiceInteractionOverlay();
+  }
 }
 
 AppListButton::~AppListButton() {
@@ -385,7 +393,7 @@ void AppListButton::PaintButtonContents(gfx::Canvas* canvas) {
 
     if (UseVoiceInteractionStyle())
       // active: 100% alpha, inactive: 54% alpha
-      fg_flags.setAlpha(voice_interaction_state_ ==
+      fg_flags.setAlpha(Shell::Get()->voice_interaction_state() ==
                                 ash::VoiceInteractionState::RUNNING
                             ? kVoiceInteractionRunningAlpha
                             : kVoiceInteractionNotRunningAlpha);
@@ -491,7 +499,6 @@ void AppListButton::OnAppListVisibilityChanged(bool shown,
 
 void AppListButton::OnVoiceInteractionStatusChanged(
     ash::VoiceInteractionState state) {
-  voice_interaction_state_ = state;
   SchedulePaint();
 
   if (!voice_interaction_overlay_)
@@ -524,40 +531,20 @@ void AppListButton::OnVoiceInteractionStatusChanged(
 }
 
 void AppListButton::OnVoiceInteractionEnabled(bool enabled) {
-  voice_interaction_settings_enabled_ = enabled;
   SchedulePaint();
 }
 
 void AppListButton::OnVoiceInteractionSetupCompleted() {
-  voice_interaction_setup_completed_ = true;
   SchedulePaint();
 }
 
 void AppListButton::OnActiveUserSessionChanged(const AccountId& account_id) {
   SchedulePaint();
-
-  // If the active user is not the primary user, app list button animation will
-  // be disabled.
-  const mojom::UserSession* const primary_user_session =
-      Shell::Get()->session_controller()->GetPrimaryUserSession();
-  if (!primary_user_session ||
-      account_id != primary_user_session->user_info->account_id) {
-    is_primary_user_active_ = false;
-    return;
-  }
-
-  is_primary_user_active_ = true;
   // Initialize voice interaction overlay when primary user session becomes
   // active.
-  if (!voice_interaction_overlay_ &&
+  if (IsUserPrimary() && !voice_interaction_overlay_ &&
       chromeos::switches::IsVoiceInteractionEnabled()) {
-    voice_interaction_overlay_ = new VoiceInteractionOverlay(this);
-    AddChildView(voice_interaction_overlay_);
-    voice_interaction_overlay_->SetVisible(false);
-    voice_interaction_animation_delay_timer_ =
-        base::MakeUnique<base::OneShotTimer>();
-    voice_interaction_animation_hide_delay_timer_ =
-        base::MakeUnique<base::OneShotTimer>();
+    InitializeVoiceInteractionOverlay();
   }
 }
 
@@ -568,8 +555,9 @@ void AppListButton::StartVoiceInteractionAnimation() {
   ShelfAlignment alignment = shelf_->alignment();
   bool show_icon = (alignment == SHELF_ALIGNMENT_BOTTOM ||
                     alignment == SHELF_ALIGNMENT_BOTTOM_LOCKED) &&
-                   voice_interaction_state_ == VoiceInteractionState::STOPPED &&
-                   voice_interaction_setup_completed_;
+                   Shell::Get()->voice_interaction_state() ==
+                       VoiceInteractionState::STOPPED &&
+                   Shell::Get()->voice_interaction_setup_completed();
   voice_interaction_overlay_->StartAnimation(show_icon);
 }
 
@@ -612,13 +600,29 @@ void AppListButton::GenerateAndSendBackEvent(
 
 bool AppListButton::UseVoiceInteractionStyle() {
   if (voice_interaction_overlay_ &&
-      chromeos::switches::IsVoiceInteractionEnabled() &&
-      is_primary_user_active_ &&
-      (voice_interaction_settings_enabled_ ||
-       !voice_interaction_setup_completed_)) {
+      chromeos::switches::IsVoiceInteractionEnabled() && IsUserPrimary() &&
+      (Shell::Get()->voice_interaction_settings_enabled() ||
+       !Shell::Get()->voice_interaction_setup_completed())) {
     return true;
   }
   return false;
+}
+
+void AppListButton::InitializeVoiceInteractionOverlay() {
+  voice_interaction_overlay_ = new VoiceInteractionOverlay(this);
+  AddChildView(voice_interaction_overlay_);
+  voice_interaction_overlay_->SetVisible(false);
+  voice_interaction_animation_delay_timer_ =
+      base::MakeUnique<base::OneShotTimer>();
+  voice_interaction_animation_hide_delay_timer_ =
+      base::MakeUnique<base::OneShotTimer>();
+}
+
+bool AppListButton::IsUserPrimary() {
+  // TODO(updowndota) Switch to use SessionController::IsUserPrimary() when
+  // refactoring voice interaction related shell methods (crbug.com/758650).
+  return Shell::Get()->session_controller()->GetPrimaryUserSession() ==
+         Shell::Get()->session_controller()->GetUserSession(0);
 }
 
 }  // namespace ash

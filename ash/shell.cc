@@ -598,11 +598,16 @@ void Shell::NotifyAppListVisibilityChanged(bool visible,
 }
 
 void Shell::NotifyVoiceInteractionStatusChanged(VoiceInteractionState state) {
+  voice_interaction_state_ = state;
   for (auto& observer : shell_observers_)
     observer.OnVoiceInteractionStatusChanged(state);
 }
 
 void Shell::NotifyVoiceInteractionEnabled(bool enabled) {
+  // TODO(updowndota) Rename the methods name to be consist with the flag name
+  // after the methods are refactored into the voice interaction related
+  // cotroller (crbug.com/758650).
+  voice_interaction_settings_enabled_ = enabled;
   for (auto& observer : shell_observers_)
     observer.OnVoiceInteractionEnabled(enabled);
 }
@@ -613,6 +618,7 @@ void Shell::NotifyVoiceInteractionContextEnabled(bool enabled) {
 }
 
 void Shell::NotifyVoiceInteractionSetupCompleted() {
+  voice_interaction_setup_completed_ = true;
   for (auto& observer : shell_observers_)
     observer.OnVoiceInteractionSetupCompleted();
 }

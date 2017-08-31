@@ -12,6 +12,7 @@
 #include "ash/ash_export.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/public/cpp/shelf_types.h"
+#include "ash/public/cpp/voice_interaction_state.h"
 #include "ash/session/session_observer.h"
 #include "ash/wm/system_modal_container_event_filter_delegate.h"
 #include "base/gtest_prod_util.h"
@@ -613,6 +614,18 @@ class ASH_EXPORT Shell : public SessionObserver,
 
   void NotifyVoiceInteractionSetupCompleted();
 
+  VoiceInteractionState voice_interaction_state() const {
+    return voice_interaction_state_;
+  }
+
+  bool voice_interaction_settings_enabled() const {
+    return voice_interaction_settings_enabled_;
+  }
+
+  bool voice_interaction_setup_completed() const {
+    return voice_interaction_setup_completed_;
+  }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ExtendedDesktopTest, TestCursor);
   FRIEND_TEST_ALL_PREFIXES(WindowManagerTest, MouseEventCursors);
@@ -815,6 +828,21 @@ class ASH_EXPORT Shell : public SessionObserver,
   // Cursor may be hidden on certain key events in Chrome OS, whereas we never
   // hide the cursor on Windows.
   std::unique_ptr<::wm::CursorManager> cursor_manager_;
+
+  // Cached state and flags related to voice interaction.
+  // TODO(updowndota) Move the cached voice interaction flags into a separate
+  // controller after the controller is added (crbug.com/758650).
+
+  // Voice interaction state. The intial value should be set to STOPPED to make
+  // sure the burst animation could be correctly shown.
+  VoiceInteractionState voice_interaction_state_ =
+      VoiceInteractionState::STOPPED;
+
+  // Whether voice interaction is enabled in system settings.
+  bool voice_interaction_settings_enabled_ = false;
+
+  // Whether voice intearction setup flow has completed.
+  bool voice_interaction_setup_completed_ = false;
 
   // For testing only: simulate that a modal window is open
   bool simulate_modal_window_open_for_testing_;
