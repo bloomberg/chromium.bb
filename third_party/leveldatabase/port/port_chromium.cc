@@ -4,7 +4,10 @@
 
 #include "port/port_chromium.h"
 
+#include <string>
+
 #include "base/threading/platform_thread.h"
+#include "third_party/crc32c/src/include/crc32c/crc32c.h"
 #include "third_party/snappy/src/snappy.h"
 #include "util/logging.h"
 
@@ -88,6 +91,10 @@ bool Snappy_Uncompress(const char* input_data,
                        size_t input_length,
                        char* output) {
   return snappy::RawUncompress(input_data, input_length, output);
+}
+
+uint32_t AcceleratedCRC32C(uint32_t crc, const char* buf, size_t size) {
+  return crc32c::Extend(crc, reinterpret_cast<const uint8_t*>(buf), size);
 }
 
 }  // namespace port

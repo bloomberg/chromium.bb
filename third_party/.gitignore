@@ -41,6 +41,7 @@
 /cld_2/src
 /cld_3/src
 /colorama/src
+/crc32c/src
 /cros
 /cros_system_api
 /custom_tabs_client/src
@@ -214,4 +215,3 @@
 /yasm/generate_files.xml
 /yasm/source/patched-yasm
 /yasm/yasm.xml
-
