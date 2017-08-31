@@ -25,4 +25,4 @@ Local Additions:
 * TRACE macros/thread name for chrome://tracing diagnostics
 * Handle in-process exclusive file locks, based on src/util/env_posix.cc
 * Unit tests for the Chromium environment.
-* db_bench is built as leveldb_db_bench in Chromium.
+* db_bench is built as leveldb_bench in Chromium.

@@ -5,12 +5,12 @@
 #include "components/sync/engine/attachments/attachment_util.h"
 
 #include "base/memory/ref_counted_memory.h"
-#include "third_party/crc32c/src/include/crc32c/crc32c.h"
+#include "third_party/leveldatabase/src/util/crc32c.h"
 
 namespace syncer {
 
 uint32_t ComputeCrc32c(const scoped_refptr<base::RefCountedMemory>& data) {
-  return crc32c::Crc32c(data->front_as<char>(), data->size());
+  return leveldb::crc32c::Value(data->front_as<char>(), data->size());
 }
 
 }  // namespace syncer
