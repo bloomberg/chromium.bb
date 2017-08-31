@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
+
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/test/histogram_tester.h"
@@ -9,12 +11,13 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/external_protocol_dialog_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/browser/ui/views/external_protocol_dialog.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "ui/views/controls/message_box_view.h"
+#include "ui/views/controls/button/checkbox.h"
 #include "url/gurl.h"
 
 namespace test {
@@ -25,7 +28,7 @@ class ExternalProtocolDialogTestApi {
       : dialog_(dialog) {}
 
   void SetCheckBoxSelected(bool checked) {
-    dialog_->message_box_view_->SetCheckBoxSelected(checked);
+    dialog_->remember_decision_checkbox_->SetChecked(checked);
   }
 
  private:
@@ -80,11 +83,12 @@ class TestExternalProtocolDialogDelegate
   DISALLOW_COPY_AND_ASSIGN(TestExternalProtocolDialogDelegate);
 };
 
-class ExternalProtocolDialogBrowserTest : public InProcessBrowserTest {
+class ExternalProtocolDialogBrowserTest : public DialogBrowserTest {
  public:
   ExternalProtocolDialogBrowserTest() {}
 
-  void ShowDialog() {
+  // DialogBrowserTest:
+  void ShowDialog(const std::string& name = "") override {
     content::WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
     int render_process_host_id = web_contents->GetRenderProcessHost()->GetID();
@@ -203,4 +207,11 @@ IN_PROC_BROWSER_TEST_F(ExternalProtocolDialogBrowserTest,
       ExternalProtocolHandler::kRememberCheckboxMetric, 0);
   histogram_tester_.ExpectTotalCount(
       ExternalProtocolHandler::kHandleStateMetric, 0);
+}
+
+// Invokes a dialog that asks the user if an external application is allowed to
+// run. See test_browser_dialog.h.
+IN_PROC_BROWSER_TEST_F(ExternalProtocolDialogBrowserTest,
+                       InvokeDialog_default) {
+  RunDialog();
 }

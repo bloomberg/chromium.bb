@@ -12,24 +12,19 @@
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/external_protocol_dialog_delegate.h"
+#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/harmony/chrome_typography.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_features.h"
 #include "ui/gfx/text_elider.h"
-#include "ui/views/controls/message_box_view.h"
+#include "ui/views/controls/button/checkbox.h"
+#include "ui/views/controls/label.h"
+#include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/widget.h"
 
 using content::WebContents;
-
-namespace {
-
-const int kMessageWidth = 400;
-
-}  // namespace
-
-///////////////////////////////////////////////////////////////////////////////
-// ExternalProtocolHandler
 
 #if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
 // This should be kept in sync with RunExternalProtocolDialogViews in
@@ -52,14 +47,12 @@ void ExternalProtocolHandler::RunExternalProtocolDialog(
 }
 #endif  // !OS_MACOSX || MAC_VIEWS_BROWSER
 
-///////////////////////////////////////////////////////////////////////////////
-// ExternalProtocolDialog
+ExternalProtocolDialog::~ExternalProtocolDialog() {}
 
-ExternalProtocolDialog::~ExternalProtocolDialog() {
+gfx::Size ExternalProtocolDialog::CalculatePreferredSize() const {
+  constexpr int kDialogContentWidth = 400;
+  return gfx::Size(kDialogContentWidth, GetHeightForWidth(kDialogContentWidth));
 }
-
-//////////////////////////////////////////////////////////////////////////////
-// ExternalProtocolDialog, views::DialogDelegate implementation:
 
 int ExternalProtocolDialog::GetDefaultDialogButton() const {
   return ui::DIALOG_BUTTON_CANCEL;
@@ -74,17 +67,13 @@ base::string16 ExternalProtocolDialog::GetWindowTitle() const {
   return delegate_->GetTitleText();
 }
 
-void ExternalProtocolDialog::DeleteDelegate() {
-  delete this;
-}
-
 bool ExternalProtocolDialog::Cancel() {
-  bool is_checked = message_box_view_->IsCheckBoxSelected();
-  delegate_->DoCancel(delegate_->url(), is_checked);
+  const bool remember = remember_decision_checkbox_->checked();
+  delegate_->DoCancel(delegate_->url(), remember);
 
-  ExternalProtocolHandler::RecordCheckboxStateMetrics(is_checked);
+  ExternalProtocolHandler::RecordCheckboxStateMetrics(remember);
   ExternalProtocolHandler::RecordHandleStateMetrics(
-      is_checked, ExternalProtocolHandler::BLOCK);
+      remember, ExternalProtocolHandler::BLOCK);
 
   // Returning true closes the dialog.
   return true;
@@ -97,12 +86,12 @@ bool ExternalProtocolDialog::Accept() {
   UMA_HISTOGRAM_LONG_TIMES("clickjacking.launch_url",
                            base::TimeTicks::Now() - creation_time_);
 
-  bool is_checked = message_box_view_->IsCheckBoxSelected();
-  ExternalProtocolHandler::RecordCheckboxStateMetrics(is_checked);
+  const bool remember = remember_decision_checkbox_->checked();
+  ExternalProtocolHandler::RecordCheckboxStateMetrics(remember);
   ExternalProtocolHandler::RecordHandleStateMetrics(
-      is_checked, ExternalProtocolHandler::DONT_BLOCK);
+      remember, ExternalProtocolHandler::DONT_BLOCK);
 
-  delegate_->DoAccept(delegate_->url(), is_checked);
+  delegate_->DoAccept(delegate_->url(), remember);
 
   // Returning true closes the dialog.
   return true;
@@ -117,24 +106,9 @@ bool ExternalProtocolDialog::Close() {
   return true;
 }
 
-views::View* ExternalProtocolDialog::GetContentsView() {
-  return message_box_view_;
-}
-
-views::Widget* ExternalProtocolDialog::GetWidget() {
-  return message_box_view_->GetWidget();
-}
-
-const views::Widget* ExternalProtocolDialog::GetWidget() const {
-  return message_box_view_->GetWidget();
-}
-
 ui::ModalType ExternalProtocolDialog::GetModalType() const {
   return ui::MODAL_TYPE_CHILD;
 }
-
-///////////////////////////////////////////////////////////////////////////////
-// ExternalProtocolDialog, private:
 
 ExternalProtocolDialog::ExternalProtocolDialog(
     std::unique_ptr<const ProtocolDialogDelegate> delegate,
@@ -144,10 +118,17 @@ ExternalProtocolDialog::ExternalProtocolDialog(
       render_process_host_id_(render_process_host_id),
       routing_id_(routing_id),
       creation_time_(base::TimeTicks::Now()) {
-  views::MessageBoxView::InitParams params(delegate_->GetMessageText());
-  params.message_width = kMessageWidth;
-  message_box_view_ = new views::MessageBoxView(params);
-  message_box_view_->SetCheckBoxLabel(delegate_->GetCheckboxText());
+  ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
+  set_margins(provider->GetInsetsMetric(views::INSETS_DIALOG_CONTENTS));
+
+  // TODO(crbug.com/760651): We should use FillLayout since we only have one
+  // child, but it causes the checkbox image to get cut off in MD.
+  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal));
+
+  DCHECK(delegate_->GetMessageText().empty());
+  remember_decision_checkbox_ =
+      new views::Checkbox(delegate_->GetCheckboxText());
+  AddChildView(remember_decision_checkbox_);
 
   WebContents* web_contents = tab_util::GetWebContentsByID(
       render_process_host_id_, routing_id_);
