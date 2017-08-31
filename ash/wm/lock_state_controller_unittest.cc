@@ -128,8 +128,7 @@ class LockStateControllerTest : public AshTestBase {
         SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS,
         SessionStateAnimator::ANIMATION_LIFT));
     EXPECT_TRUE(test_animator_->AreContainersAnimated(
-        SessionStateAnimator::LAUNCHER,
-        SessionStateAnimator::ANIMATION_FADE_OUT));
+        SessionStateAnimator::SHELF, SessionStateAnimator::ANIMATION_FADE_OUT));
     EXPECT_TRUE(test_animator_->AreContainersAnimated(
         SessionStateAnimator::LOCK_SCREEN_CONTAINERS,
         SessionStateAnimator::ANIMATION_HIDE_IMMEDIATELY));
@@ -143,8 +142,7 @@ class LockStateControllerTest : public AshTestBase {
         SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS,
         SessionStateAnimator::ANIMATION_LIFT));
     EXPECT_TRUE(test_animator_->AreContainersAnimated(
-        SessionStateAnimator::LAUNCHER,
-        SessionStateAnimator::ANIMATION_FADE_OUT));
+        SessionStateAnimator::SHELF, SessionStateAnimator::ANIMATION_FADE_OUT));
     EXPECT_TRUE(test_api_->is_animating_lock());
   }
 
@@ -155,8 +153,7 @@ class LockStateControllerTest : public AshTestBase {
         SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS,
         SessionStateAnimator::ANIMATION_UNDO_LIFT));
     EXPECT_TRUE(test_animator_->AreContainersAnimated(
-        SessionStateAnimator::LAUNCHER,
-        SessionStateAnimator::ANIMATION_FADE_IN));
+        SessionStateAnimator::SHELF, SessionStateAnimator::ANIMATION_FADE_IN));
   }
 
   void ExpectPreLockAnimationFinished() {
@@ -165,8 +162,7 @@ class LockStateControllerTest : public AshTestBase {
         SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS,
         SessionStateAnimator::ANIMATION_LIFT));
     EXPECT_FALSE(test_animator_->AreContainersAnimated(
-        SessionStateAnimator::LAUNCHER,
-        SessionStateAnimator::ANIMATION_FADE_OUT));
+        SessionStateAnimator::SHELF, SessionStateAnimator::ANIMATION_FADE_OUT));
     EXPECT_FALSE(test_animator_->AreContainersAnimated(
         SessionStateAnimator::LOCK_SCREEN_CONTAINERS,
         SessionStateAnimator::ANIMATION_HIDE_IMMEDIATELY));
@@ -209,8 +205,7 @@ class LockStateControllerTest : public AshTestBase {
         SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS,
         SessionStateAnimator::ANIMATION_DROP));
     EXPECT_TRUE(test_animator_->AreContainersAnimated(
-        SessionStateAnimator::LAUNCHER,
-        SessionStateAnimator::ANIMATION_FADE_IN));
+        SessionStateAnimator::SHELF, SessionStateAnimator::ANIMATION_FADE_IN));
   }
 
   void ExpectUnlockAfterUIDestroyedAnimationFinished() {
@@ -220,8 +215,7 @@ class LockStateControllerTest : public AshTestBase {
         SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS,
         SessionStateAnimator::ANIMATION_DROP));
     EXPECT_FALSE(test_animator_->AreContainersAnimated(
-        SessionStateAnimator::LAUNCHER,
-        SessionStateAnimator::ANIMATION_FADE_IN));
+        SessionStateAnimator::SHELF, SessionStateAnimator::ANIMATION_FADE_IN));
   }
 
   void ExpectShutdownAnimationStarted() {

@@ -36,7 +36,7 @@ const int SessionStateAnimator::kAllLockScreenContainersMask =
 
 const int SessionStateAnimator::kAllNonRootContainersMask =
     SessionStateAnimator::kAllLockScreenContainersMask |
-    SessionStateAnimator::WALLPAPER | SessionStateAnimator::LAUNCHER |
+    SessionStateAnimator::WALLPAPER | SessionStateAnimator::SHELF |
     SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS;
 
 SessionStateAnimator::AnimationSequence::AnimationSequence(

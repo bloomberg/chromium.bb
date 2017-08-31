@@ -21,7 +21,7 @@ void DummyCallback() {}
 const SessionStateAnimator::Container
     TestSessionStateAnimator::kAllContainers[] = {
         SessionStateAnimator::WALLPAPER,
-        SessionStateAnimator::LAUNCHER,
+        SessionStateAnimator::SHELF,
         SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS,
         SessionStateAnimator::LOCK_SCREEN_WALLPAPER,
         SessionStateAnimator::LOCK_SCREEN_CONTAINERS,
