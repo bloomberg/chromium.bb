@@ -4,24 +4,30 @@
 
 #include "android_webview/browser/aw_safe_browsing_resource_throttle.h"
 
+#include <memory>
+
 #include "android_webview/browser/aw_contents_client_bridge.h"
-#include "android_webview/browser/aw_safe_browsing_ui_manager.h"
 #include "android_webview/browser/aw_safe_browsing_whitelist_manager.h"
-#include "base/macros.h"
 #include "components/safe_browsing/features.h"
-#include "components/safe_browsing_db/database_manager.h"
 #include "components/safe_browsing_db/v4_protocol_manager_util.h"
-#include "components/security_interstitials/content/unsafe_resource.h"
-#include "content/public/browser/browser_thread.h"
-#include "content/public/browser/navigation_entry.h"
-#include "content/public/common/resource_type.h"
-#include "net/base/net_errors.h"
 #include "net/url_request/url_request.h"
 
 namespace android_webview {
+namespace {
 
-const void* const kAwSafeBrowsingResourceThrottleUserDataKey =
-    &kAwSafeBrowsingResourceThrottleUserDataKey;
+// This is used as a user data key for net::URLRequest. Setting it indicates
+// that the request is cancelled because of SafeBrowsing. It could be used, for
+// example, to decide whether to override the error code with a
+// SafeBrowsing-specific error code.
+const void* const kCancelledBySafeBrowsingUserDataKey =
+    &kCancelledBySafeBrowsingUserDataKey;
+
+void SetCancelledBySafeBrowsing(net::URLRequest* request) {
+  request->SetUserData(kCancelledBySafeBrowsingUserDataKey,
+                       std::make_unique<base::SupportsUserData::Data>());
+}
+
+}  // namespace
 
 content::ResourceThrottle* MaybeCreateAwSafeBrowsingResourceThrottle(
     net::URLRequest* request,
@@ -41,6 +47,10 @@ content::ResourceThrottle* MaybeCreateAwSafeBrowsingResourceThrottle(
   return new AwSafeBrowsingResourceThrottle(
       request, resource_type, std::move(database_manager),
       std::move(ui_manager), whitelist_manager);
+}
+
+bool IsCancelledBySafeBrowsing(const net::URLRequest* request) {
+  return request->GetUserData(kCancelledBySafeBrowsingUserDataKey) != nullptr;
 }
 
 AwSafeBrowsingResourceThrottle::AwSafeBrowsingResourceThrottle(
@@ -89,8 +99,7 @@ void AwSafeBrowsingResourceThrottle::StartDisplayingBlockingPageHelper(
 }
 
 void AwSafeBrowsingResourceThrottle::CancelResourceLoad() {
-  request_->SetUserData(kAwSafeBrowsingResourceThrottleUserDataKey,
-                        base::MakeUnique<base::SupportsUserData::Data>());
+  SetCancelledBySafeBrowsing(request_);
   Cancel();
 }
 
@@ -112,8 +121,7 @@ AwSafeBrowsingParallelResourceThrottle::
     ~AwSafeBrowsingParallelResourceThrottle() = default;
 
 void AwSafeBrowsingParallelResourceThrottle::CancelResourceLoad() {
-  request_->SetUserData(kAwSafeBrowsingResourceThrottleUserDataKey,
-                        base::MakeUnique<base::SupportsUserData::Data>());
+  SetCancelledBySafeBrowsing(request_);
   Cancel();
 }
 
