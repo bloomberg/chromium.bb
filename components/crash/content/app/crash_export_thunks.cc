@@ -11,7 +11,7 @@
 #include "components/crash/content/app/crashpad.h"
 #include "third_party/crashpad/crashpad/client/crashpad_client.h"
 
-void RequestSingleCrashUploadThunk(const char* local_id) {
+void RequestSingleCrashUploadImpl(const char* local_id) {
   crash_reporter::RequestSingleCrashUploadImpl(local_id);
 }
 
