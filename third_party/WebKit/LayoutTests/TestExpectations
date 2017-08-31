@@ -1746,6 +1746,7 @@ crbug.com/751952 virtual/origin-trials-runtimeflags-disabled/http/tests/origin_t
 crbug.com/751952 virtual/service-worker-script-streaming/external/wpt/service-workers/service-worker/link-element-register-security-error.https.html [ Pass Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/payment-request/updateWith-method-pmi-handling-manual.https.html [ Skip ]
 crbug.com/626703 external/wpt/audio-output/setSinkId-manual.https.html [ Skip ]
 crbug.com/626703 external/wpt/payment-request/payment-response/complete-method-manual.https.html [ Skip ]
 crbug.com/626703 external/wpt/payment-request/payment-response/methodName-attribute-manual.https.html [ Skip ]
