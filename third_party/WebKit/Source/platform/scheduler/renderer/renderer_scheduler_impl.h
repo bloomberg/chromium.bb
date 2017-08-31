@@ -164,6 +164,9 @@ class PLATFORM_EXPORT RendererSchedulerImpl
   // Returns a task queue where tasks run at the highest possible priority.
   scoped_refptr<MainThreadTaskQueue> ControlTaskQueue();
 
+  // Returns a task queue where tasks run at the lowest priority.
+  scoped_refptr<MainThreadTaskQueue> BestEffortTaskQueue();
+
   // A control task queue which also respects virtual time. Only available if
   // virtual time has been enabled.
   scoped_refptr<MainThreadTaskQueue> VirtualTimeControlTaskQueue();

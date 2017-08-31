@@ -10,7 +10,9 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/observer_list.h"
 #include "platform/PlatformExport.h"
+#include "platform/scheduler/base/cancelable_closure_holder.h"
 #include "platform/scheduler/base/task_queue.h"
 #include "platform/scheduler/child/web_scheduler.h"
 #include "platform/scheduler/child/web_task_runner_impl.h"
@@ -54,6 +56,8 @@ class PLATFORM_EXPORT WebViewSchedulerImpl : public WebViewScheduler {
   void AudioStateChanged(bool is_audio_playing) override;
   bool HasActiveConnectionForTest() const override;
   void RequestBeginMainFrameNotExpected(bool new_state) override;
+  void AddVirtualTimeObserver(VirtualTimeObserver*) override;
+  void RemoveVirtualTimeObserver(VirtualTimeObserver*) override;
 
   // Virtual for testing.
   virtual void ReportIntervention(const std::string& message);
@@ -101,6 +105,8 @@ class PLATFORM_EXPORT WebViewSchedulerImpl : public WebViewScheduler {
   // number of active connections.
   void UpdateBackgroundBudgetPoolThrottlingState();
 
+  void NotifyVirtualTimePaused();
+
   std::set<WebFrameSchedulerImpl*> frame_schedulers_;
   std::set<unsigned long> pending_loads_;
   std::set<WebFrameSchedulerImpl*> provisional_loads_;
@@ -122,6 +128,9 @@ class PLATFORM_EXPORT WebViewSchedulerImpl : public WebViewScheduler {
   bool has_active_connection_;
   CPUTimeBudgetPool* background_time_budget_pool_;  // Not owned.
   WebViewScheduler::WebViewSchedulerDelegate* delegate_;  // Not owned.
+  base::ObserverList<VirtualTimeObserver> virtual_time_observers_;
+  CancelableClosureHolder virtual_time_paused_notification_;
+  base::TimeTicks initial_virtual_time_;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewSchedulerImpl);
 };

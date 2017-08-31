@@ -13,7 +13,6 @@
 #include "core/page/Page.h"
 #include "platform/geometry/DoubleRect.h"
 #include "platform/graphics/Color.h"
-#include "platform/scheduler/renderer/web_view_scheduler.h"
 #include "platform/wtf/Time.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebFloatPoint.h"
@@ -43,7 +42,9 @@ InspectorEmulationAgent* InspectorEmulationAgent::Create(
 InspectorEmulationAgent::InspectorEmulationAgent(
     WebLocalFrameImpl* web_local_frame_impl,
     Client* client)
-    : web_local_frame_(web_local_frame_impl), client_(client) {}
+    : web_local_frame_(web_local_frame_impl),
+      client_(client),
+      virtual_time_observer_registered_(false) {}
 
 InspectorEmulationAgent::~InspectorEmulationAgent() {}
 
@@ -79,6 +80,10 @@ Response InspectorEmulationAgent::disable() {
   setEmulatedMedia(String());
   setCPUThrottlingRate(1);
   setDefaultBackgroundColorOverride(Maybe<protocol::DOM::RGBA>());
+  if (virtual_time_observer_registered_) {
+    web_local_frame_->View()->Scheduler()->RemoveVirtualTimeObserver(this);
+    virtual_time_observer_registered_ = false;
+  }
   return Response::OK();
 }
 
@@ -139,6 +144,10 @@ Response InspectorEmulationAgent::setVirtualTimePolicy(const String& policy,
         WebViewScheduler::VirtualTimePolicy::DETERMINISTIC_LOADING);
   }
   web_local_frame_->View()->Scheduler()->EnableVirtualTime();
+  if (!virtual_time_observer_registered_) {
+    web_local_frame_->View()->Scheduler()->AddVirtualTimeObserver(this);
+    virtual_time_observer_registered_ = true;
+  }
 
   if (budget.isJust()) {
     WTF::TimeDelta budget_amount =
@@ -155,6 +164,11 @@ void InspectorEmulationAgent::VirtualTimeBudgetExpired() {
   web_local_frame_->View()->Scheduler()->SetVirtualTimePolicy(
       WebViewScheduler::VirtualTimePolicy::PAUSE);
   GetFrontend()->virtualTimeBudgetExpired();
+}
+
+void InspectorEmulationAgent::OnVirtualTimePaused(
+    WTF::TimeDelta virtual_time_offset) {
+  GetFrontend()->virtualTimePaused(virtual_time_offset.InMilliseconds());
 }
 
 Response InspectorEmulationAgent::setDefaultBackgroundColorOverride(
