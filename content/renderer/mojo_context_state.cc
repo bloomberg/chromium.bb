@@ -16,6 +16,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/stl_util.h"
 #include "content/grit/content_resources.h"
+#include "content/public/child/child_url_loader_factory_getter.h"
 #include "content/public/common/content_client.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/resource_fetcher.h"
@@ -186,6 +187,27 @@ void MojoContextState::FetchModules(const std::vector<std::string>& ids) {
 }
 
 void MojoContextState::FetchModule(const std::string& id) {
+  static const net::NetworkTrafficAnnotationTag network_traffic_annotation_tag =
+      net::DefineNetworkTrafficAnnotation("mojo_context_state", R"(
+    semantics {
+      sender: "MojoContextState"
+      description:
+        "Chrome does fetch for AMD-style module loading of Mojo JavaScript "
+        "bindings."
+      trigger:
+        "When AMD-style module loading of Mojo JavaScript bindings is used."
+      data:
+        "Load JavaScript files for Mojo bindings from embedded resources. "
+        "Nothing is sent over networks."
+      destination: OTHER
+    }
+    policy {
+      cookies_allowed: NO
+      setting: "These requests cannot be disabled in settings."
+      policy_exception_justification:
+        "Not implemented. Without these requests, Chrome will not work."
+    })");
+
   const GURL url(module_prefix_ + id);
   // TODO(sky): better error checks here?
   DCHECK(url.is_valid() && !url.is_empty());
@@ -194,6 +216,10 @@ void MojoContextState::FetchModule(const std::string& id) {
   ResourceFetcher* fetcher = ResourceFetcher::Create(url);
   module_fetchers_.push_back(base::WrapUnique(fetcher));
   fetcher->Start(frame_, blink::WebURLRequest::kRequestContextScript,
+                 RenderFrame::FromWebFrame(frame_)
+                     ->GetDefaultURLLoaderFactoryGetter()
+                     ->GetNetworkLoaderFactory(),
+                 network_traffic_annotation_tag,
                  base::Bind(&MojoContextState::OnFetchModuleComplete,
                             base::Unretained(this), fetcher, id));
 }
