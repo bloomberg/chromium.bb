@@ -145,7 +145,7 @@ PASS CanvasPattern interface object length
 PASS CanvasPattern interface object name
 PASS CanvasPattern interface: existence and properties of interface prototype object
 PASS CanvasPattern interface: existence and properties of interface prototype object's "constructor" property
-FAIL CanvasPattern interface: operation setTransform(DOMMatrixInit) assert_own_property: interface prototype object missing non-static operation expected property "setTransform" missing
+FAIL CanvasPattern interface: operation setTransform(DOMMatrix2DInit) assert_own_property: interface prototype object missing non-static operation expected property "setTransform" missing
 PASS TextMetrics interface: existence and properties of interface object
 PASS ImageData interface: existence and properties of interface object
 PASS ImageData interface object length
@@ -160,7 +160,7 @@ PASS Path2D interface object length
 PASS Path2D interface object name
 PASS Path2D interface: existence and properties of interface prototype object
 PASS Path2D interface: existence and properties of interface prototype object's "constructor" property
-PASS Path2D interface: operation addPath(Path2D, DOMMatrixInit)
+PASS Path2D interface: operation addPath(Path2D, DOMMatrix2DInit)
 PASS Path2D interface: operation closePath()
 PASS Path2D interface: operation moveTo(unrestricted double, unrestricted double)
 PASS Path2D interface: operation lineTo(unrestricted double, unrestricted double)
@@ -199,7 +199,7 @@ PASS OffscreenCanvasRenderingContext2D interface: operation translate(unrestrict
 PASS OffscreenCanvasRenderingContext2D interface: operation transform(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double)
 FAIL OffscreenCanvasRenderingContext2D interface: operation getTransform() assert_own_property: interface prototype object missing non-static operation expected property "getTransform" missing
 FAIL OffscreenCanvasRenderingContext2D interface: operation setTransform(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double) assert_equals: property has wrong .length expected 0 but got 6
-FAIL OffscreenCanvasRenderingContext2D interface: operation setTransform(DOMMatrixInit) assert_equals: property has wrong .length expected 0 but got 6
+FAIL OffscreenCanvasRenderingContext2D interface: operation setTransform(DOMMatrix2DInit) assert_equals: property has wrong .length expected 0 but got 6
 PASS OffscreenCanvasRenderingContext2D interface: operation resetTransform()
 PASS OffscreenCanvasRenderingContext2D interface: attribute globalAlpha
 PASS OffscreenCanvasRenderingContext2D interface: attribute globalCompositeOperation
