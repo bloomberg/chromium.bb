@@ -12,6 +12,9 @@ issues]].
     contractions thanks to James Teh.
   - Fix back-translation for contractions followed by punctuation
     thanks to James Teh.
+*** Security
+- Fix a number of CVEs (illegal address access, buffer overflow and
+  use-after-free) thanks to Mike Gorse.
 ** Other changes
 ** Braille table improvements
 - New table for Croatian grade 1 Braille thanks to Zlatko Sobočan.
