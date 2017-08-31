@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/components/tether/initializer.h"
+#include "chromeos/components/tether/initializer_impl.h"
 
 #include <memory>
 
@@ -129,7 +129,7 @@ class InitializerTest : public NetworkStateTest {
         NetworkStateHandler::TECHNOLOGY_ENABLED);
 
     test_pref_service_ = base::MakeUnique<TestingPrefServiceSimple>();
-    Initializer::RegisterProfilePrefs(test_pref_service_->registry());
+    InitializerImpl::RegisterProfilePrefs(test_pref_service_->registry());
   }
 
   void TearDown() override {
@@ -148,7 +148,7 @@ class InitializerTest : public NetworkStateTest {
       NetworkConnect* network_connect,
       NetworkConnectionHandler* network_connection_handler,
       scoped_refptr<device::BluetoothAdapter> adapter) {
-    Initializer* initializer = new Initializer(
+    Initializer* initializer = new InitializerImpl(
         cryptauth_service, notification_presenter, pref_service, token_service,
         network_state_handler, managed_network_configuration_handler,
         network_connect, network_connection_handler, adapter);

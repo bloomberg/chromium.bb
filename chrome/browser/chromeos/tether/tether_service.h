@@ -10,6 +10,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chromeos/components/tether/initializer.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/network/network_state_handler.h"
@@ -21,9 +22,6 @@
 
 namespace chromeos {
 class NetworkStateHandler;
-class ManagedNetworkConfigurationHandler;
-class NetworkConnect;
-class NetworkConnectionHandler;
 namespace tether {
 class NotificationPresenter;
 }  // namespace tether
@@ -35,14 +33,14 @@ class CryptAuthService;
 
 class PrefRegistrySimple;
 class Profile;
-class ProfileOAuth2TokenService;
 
 class TetherService : public KeyedService,
                       public chromeos::PowerManagerClient::Observer,
                       public chromeos::SessionManagerClient::Observer,
                       public cryptauth::CryptAuthDeviceManager::Observer,
                       public device::BluetoothAdapter::Observer,
-                      public chromeos::NetworkStateHandlerObserver {
+                      public chromeos::NetworkStateHandlerObserver,
+                      public chromeos::tether::Initializer::Observer {
  public:
   TetherService(Profile* profile,
                 chromeos::PowerManagerClient* power_manager_client,
@@ -64,24 +62,6 @@ class TetherService : public KeyedService,
   // reach chromeos::NetworkStateHandler::TechnologyState::ENABLED are reached.
   // Should only be called once a user is logged in.
   virtual void StartTetherIfPossible();
-
-  // Delegate used to call the static functions of Initializer. Injected to
-  // aid in testing.
-  class InitializerDelegate {
-   public:
-    virtual void InitializeTether(
-        cryptauth::CryptAuthService* cryptauth_service,
-        chromeos::tether::NotificationPresenter* notification_presenter,
-        PrefService* pref_service,
-        ProfileOAuth2TokenService* token_service,
-        chromeos::NetworkStateHandler* network_state_handler,
-        chromeos::ManagedNetworkConfigurationHandler*
-            managed_network_configuration_handler,
-        chromeos::NetworkConnect* network_connect,
-        chromeos::NetworkConnectionHandler* network_connection_handler,
-        scoped_refptr<device::BluetoothAdapter> adapter);
-    virtual void ShutdownTether();
-  };
 
  protected:
   // KeyedService:
@@ -108,6 +88,9 @@ class TetherService : public KeyedService,
   void NetworkConnectionStateChanged(
       const chromeos::NetworkState* network) override;
   void DeviceListChanged() override;
+
+  // chromeos::tether::Initializer::Observer:
+  void OnShutdownComplete() override;
 
   // Callback when the controlling pref changes.
   void OnPrefsChanged();
@@ -203,8 +186,6 @@ class TetherService : public KeyedService,
   // Record to UMA Tether's current feature state.
   void RecordTetherFeatureState();
 
-  void SetInitializerDelegateForTest(
-      std::unique_ptr<InitializerDelegate> initializer_delegate);
   void SetNotificationPresenterForTest(
       std::unique_ptr<chromeos::tether::NotificationPresenter>
           notification_presenter);
@@ -223,9 +204,9 @@ class TetherService : public KeyedService,
   chromeos::SessionManagerClient* session_manager_client_;
   cryptauth::CryptAuthService* cryptauth_service_;
   chromeos::NetworkStateHandler* network_state_handler_;
-  std::unique_ptr<InitializerDelegate> initializer_delegate_;
   std::unique_ptr<chromeos::tether::NotificationPresenter>
       notification_presenter_;
+  std::unique_ptr<chromeos::tether::Initializer> initializer_;
 
   PrefChangeRegistrar registrar_;
   scoped_refptr<device::BluetoothAdapter> adapter_;
