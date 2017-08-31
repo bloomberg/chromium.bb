@@ -23,6 +23,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/navigation_simulator.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -33,6 +34,7 @@
 
 using content::InterstitialPage;
 using content::NavigationEntry;
+using content::NavigationSimulator;
 using content::WebContents;
 using content::WebContentsTester;
 using security_interstitials::BaseSafeBrowsingErrorUI;
@@ -251,29 +253,11 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness {
       user_response_ = CANCEL;
   }
 
-  void Navigate(const char* url,
-                int nav_entry_id,
-                bool did_create_new_entry) {
-    NavigateInternal(url, nav_entry_id, did_create_new_entry, false);
-  }
-
-  void NavigateCrossSite(const char* url,
-                         int nav_entry_id,
-                         bool did_create_new_entry) {
-    NavigateInternal(url, nav_entry_id, did_create_new_entry, true);
-  }
-
-  void NavigateInternal(const char* url,
-                        int nav_entry_id,
-                        bool did_create_new_entry,
-                        bool is_cross_site) {
-    // The pending RVH should commit for cross-site navigations.
+  void DidNavigateCrossSite(const char* url,
+                            int nav_entry_id,
+                            bool did_create_new_entry) {
     content::RenderFrameHost* render_frame_host =
-        is_cross_site
-            ? content::WebContentsTester::For(web_contents())
-                  ->GetPendingMainFrame()
-            : web_contents()->GetMainFrame();
-
+        content::WebContentsTester::For(web_contents())->GetPendingMainFrame();
     content::WebContentsTester::For(web_contents())
         ->TestDidNavigate(render_frame_host, nav_entry_id,
                           did_create_new_entry, GURL(url),
@@ -336,7 +320,7 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness {
       SafeBrowsingBlockingPage* sb_interstitial) {
     // CommandReceived(kTakeMeBackCommand) does a back navigation for
     // subresource interstitials.
-    GoBack(false);
+    GoBack(true);
     // DontProceed() posts a task to update the SafeBrowsingService::Client.
     base::RunLoop().RunUntilIdle();
   }
@@ -412,9 +396,9 @@ TEST_F(SafeBrowsingBlockingPageTest, MalwarePageProceed) {
   SetExtendedReportingPref(profile->GetPrefs(), true);
 
   // Start a load.
-  controller().LoadURL(GURL(kBadURL), content::Referrer(),
-                       ui::PAGE_TRANSITION_TYPED, std::string());
-  int pending_id = controller().GetPendingEntry()->GetUniqueID();
+  auto navigation = NavigationSimulator::CreateBrowserInitiated(GURL(kBadURL),
+                                                                web_contents());
+  navigation->Start();
 
   // Simulate the load causing a safe browsing interstitial to be shown.
   ShowInterstitial(false, kBadURL);
@@ -427,7 +411,7 @@ TEST_F(SafeBrowsingBlockingPageTest, MalwarePageProceed) {
   // The interstitial is shown until the navigation commits.
   ASSERT_TRUE(InterstitialPage::GetInterstitialPage(web_contents()));
   // Commit the navigation.
-  Navigate(kBadURL, pending_id, true);
+  navigation->Commit();
   // The interstitial should be gone now.
   ASSERT_FALSE(InterstitialPage::GetInterstitialPage(web_contents()));
 
@@ -445,10 +429,12 @@ TEST_F(SafeBrowsingBlockingPageTest, PageWithMalwareResourceDontProceed) {
   SetExtendedReportingPref(profile->GetPrefs(), true);
 
   // Navigate somewhere.
-  Navigate(kGoogleURL, 0, true);
+  NavigationSimulator::NavigateAndCommitFromBrowser(web_contents(),
+                                                    GURL(kGoogleURL));
 
   // Navigate somewhere else.
-  Navigate(kGoodURL, 0, true);
+  NavigationSimulator::NavigateAndCommitFromBrowser(web_contents(),
+                                                    GURL(kGoodURL));
 
   // Simulate that page loading a bad-resource triggering an interstitial.
   ShowInterstitial(true, kBadURL);
@@ -480,7 +466,8 @@ TEST_F(SafeBrowsingBlockingPageTest, PageWithMalwareResourceProceed) {
   SetExtendedReportingPref(profile->GetPrefs(), true);
 
   // Navigate somewhere.
-  Navigate(kGoodURL, 0, true);
+  NavigationSimulator::NavigateAndCommitFromBrowser(web_contents(),
+                                                    GURL(kGoodURL));
 
   // Simulate that page loading a bad-resource triggering an interstitial.
   ShowInterstitial(true, kBadURL);
@@ -513,10 +500,12 @@ TEST_F(SafeBrowsingBlockingPageTest,
   SetExtendedReportingPref(profile->GetPrefs(), true);
 
   // Navigate somewhere.
-  Navigate(kGoogleURL, 0, true);
+  NavigationSimulator::NavigateAndCommitFromBrowser(web_contents(),
+                                                    GURL(kGoogleURL));
 
   // Navigate somewhere else.
-  Navigate(kGoodURL, 0, true);
+  NavigationSimulator::NavigateAndCommitFromBrowser(web_contents(),
+                                                    GURL(kGoodURL));
 
   // Simulate that page loading a bad-resource triggering an interstitial.
   ShowInterstitial(true, kBadURL);
@@ -554,10 +543,12 @@ TEST_F(SafeBrowsingBlockingPageTest,
   SetExtendedReportingPref(profile->GetPrefs(), true);
 
   // Navigate somewhere.
-  Navigate(kGoogleURL, 0, true);
+  NavigationSimulator::NavigateAndCommitFromBrowser(web_contents(),
+                                                    GURL(kGoogleURL));
 
   // Navigate somewhere else.
-  Navigate(kGoodURL, 0, true);
+  NavigationSimulator::NavigateAndCommitFromBrowser(web_contents(),
+                                                    GURL(kGoodURL));
 
   // Simulate that page loading a bad-resource triggering an interstitial.
   ShowInterstitial(true, kBadURL);
@@ -610,7 +601,8 @@ TEST_F(SafeBrowsingBlockingPageTest, PageWithMultipleMalwareResourceProceed) {
   SetExtendedReportingPref(profile->GetPrefs(), true);
 
   // Navigate somewhere else.
-  Navigate(kGoodURL, 0, true);
+  NavigationSimulator::NavigateAndCommitFromBrowser(web_contents(),
+                                                    GURL(kGoodURL));
 
   // Simulate that page loading a bad-resource triggering an interstitial.
   ShowInterstitial(true, kBadURL);
@@ -661,19 +653,20 @@ TEST_F(SafeBrowsingBlockingPageTest, NavigatingBackAndForth) {
   SetExtendedReportingPref(profile->GetPrefs(), true);
 
   // Navigate somewhere.
-  Navigate(kGoodURL, 0, true);
+  NavigationSimulator::NavigateAndCommitFromBrowser(web_contents(),
+                                                    GURL(kGoodURL));
 
   // Now navigate to a bad page triggerring an interstitial.
-  controller().LoadURL(GURL(kBadURL), content::Referrer(),
-                       ui::PAGE_TRANSITION_TYPED, std::string());
-  int pending_id = controller().GetPendingEntry()->GetUniqueID();
+  auto navigation = NavigationSimulator::CreateBrowserInitiated(GURL(kBadURL),
+                                                                web_contents());
+  navigation->Start();
   ShowInterstitial(false, kBadURL);
   SafeBrowsingBlockingPage* sb_interstitial = GetSafeBrowsingBlockingPage();
   ASSERT_TRUE(sb_interstitial);
 
   // Proceed, then navigate back.
   ProceedThroughInterstitial(sb_interstitial);
-  NavigateCrossSite(kBadURL, pending_id, true);  // Commit the navigation.
+  navigation->Commit();
   GoBack(true);
 
   // We are back on the good page.
@@ -684,7 +677,7 @@ TEST_F(SafeBrowsingBlockingPageTest, NavigatingBackAndForth) {
 
   // Navigate forward to the malware URL.
   web_contents()->GetController().GoForward();
-  pending_id = controller().GetPendingEntry()->GetUniqueID();
+  int pending_id = controller().GetPendingEntry()->GetUniqueID();
   ShowInterstitial(false, kBadURL);
   sb_interstitial = GetSafeBrowsingBlockingPage();
   ASSERT_TRUE(sb_interstitial);
@@ -692,7 +685,9 @@ TEST_F(SafeBrowsingBlockingPageTest, NavigatingBackAndForth) {
   // Let's proceed and make sure everything is OK (bug 17627).
   ProceedThroughInterstitial(sb_interstitial);
   // Commit the navigation.
-  NavigateCrossSite(kBadURL, pending_id, false);
+  // TODO(ahemery): Remove this and DidNavigateCrossSite function once we are
+  // able to use NavigationSimulator to do back/forward navigations.
+  DidNavigateCrossSite(kBadURL, pending_id, false);
   sb_interstitial = GetSafeBrowsingBlockingPage();
   ASSERT_FALSE(sb_interstitial);
   ASSERT_EQ(2, controller().GetEntryCount());
@@ -712,8 +707,9 @@ TEST_F(SafeBrowsingBlockingPageTest, ProceedThenDontProceed) {
   SetExtendedReportingPref(profile->GetPrefs(), true);
 
   // Start a load.
-  controller().LoadURL(GURL(kBadURL), content::Referrer(),
-                       ui::PAGE_TRANSITION_TYPED, std::string());
+  auto navigation = NavigationSimulator::CreateBrowserInitiated(GURL(kBadURL),
+                                                                web_contents());
+  navigation->Start();
 
   // Simulate the load causing a safe browsing interstitial to be shown.
   ShowInterstitial(false, kBadURL);
@@ -747,8 +743,9 @@ TEST_F(SafeBrowsingBlockingPageTest, MalwareReportsDisabled) {
   SetExtendedReportingPref(profile->GetPrefs(), false);
 
   // Start a load.
-  controller().LoadURL(GURL(kBadURL), content::Referrer(),
-                       ui::PAGE_TRANSITION_TYPED, std::string());
+  auto navigation = NavigationSimulator::CreateBrowserInitiated(GURL(kBadURL),
+                                                                web_contents());
+  navigation->Start();
 
   // Simulate the load causing a safe browsing interstitial to be shown.
   ShowInterstitial(false, kBadURL);
@@ -781,8 +778,9 @@ TEST_F(SafeBrowsingBlockingPageTest, MalwareReportsToggling) {
   SetExtendedReportingPref(profile->GetPrefs(), false);
 
   // Start a load.
-  controller().LoadURL(GURL(kBadURL), content::Referrer(),
-                       ui::PAGE_TRANSITION_TYPED, std::string());
+  auto navigation = NavigationSimulator::CreateBrowserInitiated(GURL(kBadURL),
+                                                                web_contents());
+  navigation->Start();
 
   // Simulate the load causing a safe browsing interstitial to be shown.
   ShowInterstitial(false, kBadURL);
@@ -817,8 +815,9 @@ TEST_F(SafeBrowsingBlockingPageTest,
   SetExtendedReportingPref(profile->GetPrefs(), true);
 
   // Start a load.
-  controller().LoadURL(GURL(kBadURL), content::Referrer(),
-                       ui::PAGE_TRANSITION_TYPED, std::string());
+  auto navigation = NavigationSimulator::CreateBrowserInitiated(GURL(kBadURL),
+                                                                web_contents());
+  navigation->Start();
 
   // Simulate the load causing a safe browsing interstitial to be shown.
   ShowInterstitial(false, kBadURL);
@@ -852,8 +851,9 @@ TEST_F(SafeBrowsingBlockingPageTest,
       prefs::kSafeBrowsingExtendedReportingOptInAllowed, false);
 
   // Start a load.
-  controller().LoadURL(GURL(kBadURL), content::Referrer(),
-                       ui::PAGE_TRANSITION_TYPED, std::string());
+  auto navigation = NavigationSimulator::CreateBrowserInitiated(GURL(kBadURL),
+                                                                web_contents());
+  navigation->Start();
 
   // Simulate the load causing a safe browsing interstitial to be shown.
   ShowInterstitial(false, kBadURL);
