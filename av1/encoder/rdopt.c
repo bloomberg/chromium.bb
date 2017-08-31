@@ -4686,8 +4686,14 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
   TX_SIZE txs_ctx = get_txsize_context(tx_size);
   TXB_CTX txb_ctx;
   get_txb_ctx(plane_bsize, tx_size, plane, pta, ptl, &txb_ctx);
+
+#if LV_MAP_PROB
+  zero_blk_rate = x->coeff_costs[txs_ctx][get_plane_type(plane)]
+                      .txb_skip_cost[txb_ctx.txb_skip_ctx][1];
+#else
   zero_blk_rate =
       av1_cost_bit(xd->fc->txb_skip[txs_ctx][txb_ctx.txb_skip_ctx], 1);
+#endif  // LV_MAP_PROB
 #else
   int tx_size_ctx = txsize_sqr_map[tx_size];
   int coeff_ctx = get_entropy_context(tx_size, pta, ptl);
