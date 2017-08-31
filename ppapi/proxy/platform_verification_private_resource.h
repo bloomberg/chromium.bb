@@ -58,7 +58,7 @@ class PPAPI_PROXY_EXPORT PlatformVerificationPrivateResource
                        const scoped_refptr<TrackedCallback>& callback) override;
   void OnGetStorageIdReply(GetStorageIdParams output_params,
                            const ResourceMessageReplyParams& params,
-                           const std::vector<uint8_t>& storage_id);
+                           const std::string& storage_id);
 
   DISALLOW_COPY_AND_ASSIGN(PlatformVerificationPrivateResource);
 };

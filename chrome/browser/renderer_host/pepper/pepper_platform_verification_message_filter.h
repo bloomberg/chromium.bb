@@ -7,9 +7,6 @@
 
 #include <stdint.h>
 
-#include <string>
-#include <vector>
-
 #include "base/macros.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/host/resource_message_filter.h"
@@ -61,8 +58,6 @@ class PepperPlatformVerificationMessageFilter
 #endif
 
   int32_t OnGetStorageId(ppapi::host::HostMessageContext* context);
-  void GetStorageIdCallback(ppapi::host::ReplyMessageContext reply_context,
-                            const std::vector<uint8_t>& storage_id);
 
   // Used to lookup the WebContents associated with this PP_Instance.
   int render_process_id_;

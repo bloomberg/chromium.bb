@@ -1868,7 +1868,7 @@ IPC_MESSAGE_CONTROL3(PpapiHostMsg_PlatformVerification_ChallengePlatformReply,
                      std::string /* platform_key_certificate */)
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_PlatformVerification_GetStorageId)
 IPC_MESSAGE_CONTROL1(PpapiHostMsg_PlatformVerification_GetStorageIdReply,
-                     std::vector<uint8_t> /* storage_id */)
+                     std::string /* storage_id */)
 
 // Printing.
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_Printing_Create)
