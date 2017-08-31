@@ -52,7 +52,7 @@ class TestDataUseAggregator : public DataUseAggregator {
 
  private:
   friend class TestNetworkChangeNotifier;
-  using DataUseAggregator::OnConnectionTypeChanged;
+  using DataUseAggregator::OnNetworkChanged;
   using DataUseAggregator::SetMccMncForTests;
 };
 
@@ -69,7 +69,7 @@ class TestNetworkChangeNotifier : public net::NetworkChangeNotifier {
   void SimulateNetworkConnectionChange(ConnectionType type,
                                        const std::string& mcc_mnc) {
     connection_type_to_return_ = type;
-    data_use_aggregator_->OnConnectionTypeChanged(type);
+    data_use_aggregator_->OnNetworkChanged(type);
     data_use_aggregator_->SetMccMncForTests(mcc_mnc);
   }
 
