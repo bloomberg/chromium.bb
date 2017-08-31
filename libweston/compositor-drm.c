@@ -408,20 +408,22 @@ struct drm_head {
 
 	struct drm_output *output; /* XXX: temporary */
 
-	struct backlight *backlight;
-};
-
-struct drm_output {
-	struct weston_output base;
 	drmModeConnector *connector;
-
-	uint32_t crtc_id; /* object ID to pass to DRM functions */
-	int pipe; /* index of CRTC in resource array / bitmasks */
 	uint32_t connector_id;
 	struct drm_edid edid;
 
 	/* Holds the properties for the connector */
 	struct drm_property_info props_conn[WDRM_CONNECTOR__COUNT];
+
+	struct backlight *backlight;
+};
+
+struct drm_output {
+	struct weston_output base;
+
+	uint32_t crtc_id; /* object ID to pass to DRM functions */
+	int pipe; /* index of CRTC in resource array / bitmasks */
+
 	/* Holds the properties for the CRTC */
 	struct drm_property_info props_crtc[WDRM_CRTC__COUNT];
 
@@ -812,7 +814,7 @@ drm_head_find_by_connector(struct drm_backend *backend, uint32_t connector_id)
 	wl_list_for_each(base,
 			 &backend->compositor->head_list, compositor_link) {
 		head = to_drm_head(base);
-		if (head->output && head->output->connector_id == connector_id)
+		if (head->connector_id == connector_id)
 			return head;
 	}
 
@@ -1815,10 +1817,11 @@ static int
 drm_output_apply_state_legacy(struct drm_output_state *state)
 {
 	struct drm_output *output = state->output;
+	struct drm_head *head = to_drm_head(weston_output_get_first_head(&output->base));
 	struct drm_backend *backend = to_drm_backend(output->base.compositor);
 	struct drm_plane *scanout_plane = output->scanout_plane;
 	struct drm_property_info *dpms_prop =
-		&output->props_conn[WDRM_CONNECTOR_DPMS];
+		&head->props_conn[WDRM_CONNECTOR_DPMS];
 	struct drm_plane_state *scanout_state;
 	struct drm_plane_state *ps;
 	struct drm_plane *p;
@@ -1861,7 +1864,7 @@ drm_output_apply_state_legacy(struct drm_output_state *state)
 		}
 
 		ret = drmModeSetCrtc(backend->drm.fd, output->crtc_id, 0, 0, 0,
-				     &output->connector_id, 0, NULL);
+				     &head->connector_id, 0, NULL);
 		if (ret)
 			weston_log("drmModeSetCrtc failed disabling: %m\n");
 
@@ -1896,7 +1899,7 @@ drm_output_apply_state_legacy(struct drm_output_state *state)
 		ret = drmModeSetCrtc(backend->drm.fd, output->crtc_id,
 				     scanout_state->fb->fb_id,
 				     0, 0,
-				     &output->connector_id, 1,
+				     &head->connector_id, 1,
 				     &mode->mode_info);
 		if (ret) {
 			weston_log("set mode failed: %m\n");
@@ -1969,7 +1972,7 @@ drm_output_apply_state_legacy(struct drm_output_state *state)
 
 	if (dpms_prop->prop_id && state->dpms != output->state_cur->dpms) {
 		ret = drmModeConnectorSetProperty(backend->drm.fd,
-						  output->connector_id,
+						  head->connector_id,
 						  dpms_prop->prop_id,
 						  state->dpms);
 		if (ret) {
@@ -2005,16 +2008,16 @@ crtc_add_prop(drmModeAtomicReq *req, struct drm_output *output,
 }
 
 static int
-connector_add_prop(drmModeAtomicReq *req, struct drm_output *output,
+connector_add_prop(drmModeAtomicReq *req, struct drm_head *head,
 		   enum wdrm_connector_property prop, uint64_t val)
 {
-	struct drm_property_info *info = &output->props_conn[prop];
+	struct drm_property_info *info = &head->props_conn[prop];
 	int ret;
 
 	if (info->prop_id == 0)
 		return -1;
 
-	ret = drmModeAtomicAddProperty(req, output->connector_id,
+	ret = drmModeAtomicAddProperty(req, head->connector_id,
 				       info->prop_id, val);
 	return (ret <= 0) ? -1 : 0;
 }
@@ -2058,6 +2061,7 @@ drm_output_apply_state_atomic(struct drm_output_state *state,
 			      uint32_t *flags)
 {
 	struct drm_output *output = state->output;
+	struct drm_head *head = to_drm_head(weston_output_get_first_head(&output->base));
 	struct drm_backend *backend = to_drm_backend(output->base.compositor);
 	struct drm_plane_state *plane_state;
 	struct drm_mode *current_mode = to_drm_mode(output->base.current_mode);
@@ -2074,13 +2078,12 @@ drm_output_apply_state_atomic(struct drm_output_state *state,
 		ret |= crtc_add_prop(req, output, WDRM_CRTC_MODE_ID,
 				     current_mode->blob_id);
 		ret |= crtc_add_prop(req, output, WDRM_CRTC_ACTIVE, 1);
-		ret |= connector_add_prop(req, output, WDRM_CONNECTOR_CRTC_ID,
+		ret |= connector_add_prop(req, head, WDRM_CONNECTOR_CRTC_ID,
 					  output->crtc_id);
 	} else {
 		ret |= crtc_add_prop(req, output, WDRM_CRTC_MODE_ID, 0);
 		ret |= crtc_add_prop(req, output, WDRM_CRTC_ACTIVE, 0);
-		ret |= connector_add_prop(req, output, WDRM_CONNECTOR_CRTC_ID,
-					  0);
+		ret |= connector_add_prop(req, head, WDRM_CONNECTOR_CRTC_ID, 0);
 	}
 
 	if (ret != 0) {
@@ -4296,8 +4299,7 @@ edid_parse(struct drm_edid *edid, const uint8_t *data, size_t length)
 
 /** Parse monitor make, model and serial from EDID
  *
- * \param b The backend instance.
- * \param output The output whose \c drm_edid to fill in.
+ * \param head The head whose \c drm_edid to fill in.
  * \param props The DRM connector properties to get the EDID from.
  * \param make[out] The monitor make (PNP ID).
  * \param model[out] The monitor model (name).
@@ -4306,10 +4308,10 @@ edid_parse(struct drm_edid *edid, const uint8_t *data, size_t length)
  * Each of \c *make, \c *model and \c *serial_number are set only if the
  * information is found in the EDID. The pointers they are set to must not
  * be free()'d explicitly, instead they get implicitly freed when the
- * \c drm_output is destroyed.
+ * \c drm_head is destroyed.
  */
 static void
-find_and_parse_output_edid(struct drm_backend *b, struct drm_output *output,
+find_and_parse_output_edid(struct drm_head *head,
 			   drmModeObjectPropertiesPtr props,
 			   const char **make,
 			   const char **model,
@@ -4320,29 +4322,29 @@ find_and_parse_output_edid(struct drm_backend *b, struct drm_output *output,
 	int rc;
 
 	blob_id =
-		drm_property_get_value(&output->props_conn[WDRM_CONNECTOR_EDID],
+		drm_property_get_value(&head->props_conn[WDRM_CONNECTOR_EDID],
 				       props, 0);
 	if (!blob_id)
 		return;
 
-	edid_blob = drmModeGetPropertyBlob(b->drm.fd, blob_id);
+	edid_blob = drmModeGetPropertyBlob(head->backend->drm.fd, blob_id);
 	if (!edid_blob)
 		return;
 
-	rc = edid_parse(&output->edid,
+	rc = edid_parse(&head->edid,
 			edid_blob->data,
 			edid_blob->length);
 	if (!rc) {
 		weston_log("EDID data '%s', '%s', '%s'\n",
-			   output->edid.pnp_id,
-			   output->edid.monitor_name,
-			   output->edid.serial_number);
-		if (output->edid.pnp_id[0] != '\0')
-			*make = output->edid.pnp_id;
-		if (output->edid.monitor_name[0] != '\0')
-			*model = output->edid.monitor_name;
-		if (output->edid.serial_number[0] != '\0')
-			*serial_number = output->edid.serial_number;
+			   head->edid.pnp_id,
+			   head->edid.monitor_name,
+			   head->edid.serial_number);
+		if (head->edid.pnp_id[0] != '\0')
+			*make = head->edid.pnp_id;
+		if (head->edid.monitor_name[0] != '\0')
+			*model = head->edid.monitor_name;
+		if (head->edid.serial_number[0] != '\0')
+			*serial_number = head->edid.serial_number;
 	}
 	drmModeFreePropertyBlob(edid_blob);
 }
@@ -4569,11 +4571,12 @@ drm_output_set_mode(struct weston_output *base,
 {
 	struct drm_output *output = to_drm_output(base);
 	struct drm_backend *b = to_drm_backend(base->compositor);
+	struct drm_head *head = to_drm_head(weston_output_get_first_head(base));
 
 	struct drm_mode *current;
 	drmModeModeInfo crtc_mode;
 
-	if (connector_get_current_mode(output->connector, b->drm.fd, &crtc_mode) < 0)
+	if (connector_get_current_mode(head->connector, b->drm.fd, &crtc_mode) < 0)
 		return -1;
 
 	current = drm_output_choose_initial_mode(b, output, mode, modeline, &crtc_mode);
@@ -4788,11 +4791,11 @@ drm_output_enable(struct weston_output *base)
 				      &output->scanout_plane->base,
 				      &b->compositor->primary_plane);
 
-	wl_array_remove_uint32(&b->unused_connectors, output->connector_id);
+	wl_array_remove_uint32(&b->unused_connectors, head->connector_id);
 	wl_array_remove_uint32(&b->unused_crtcs, output->crtc_id);
 
 	weston_log("Output %s, (connector %d, crtc %d)\n",
-		   output->base.name, output->connector_id, output->crtc_id);
+		   output->base.name, head->connector_id, output->crtc_id);
 	wl_list_for_each(m, &output->base.mode_list, link)
 		weston_log_continue(STAMP_SPACE "mode %dx%d@%.1f%s%s%s\n",
 				    m->width, m->height, m->refresh / 1000.0,
@@ -4800,7 +4803,7 @@ drm_output_enable(struct weston_output *base)
 				    ", preferred" : "",
 				    m->flags & WL_OUTPUT_MODE_CURRENT ?
 				    ", current" : "",
-				    output->connector->count_modes == 0 ?
+				    head->connector->count_modes == 0 ?
 				    ", built-in" : "");
 
 	return 0;
@@ -4813,6 +4816,7 @@ static void
 drm_output_deinit(struct weston_output *base)
 {
 	struct drm_output *output = to_drm_output(base);
+	struct drm_head *head = to_drm_head(weston_output_get_first_head(base));
 	struct drm_backend *b = to_drm_backend(base->compositor);
 	uint32_t *unused;
 
@@ -4838,7 +4842,7 @@ drm_output_deinit(struct weston_output *base)
 	}
 
 	unused = wl_array_add(&b->unused_connectors, sizeof(*unused));
-	*unused = output->connector_id;
+	*unused = head->connector_id;
 	unused = wl_array_add(&b->unused_crtcs, sizeof(*unused));
 	*unused = output->crtc_id;
 
@@ -4874,9 +4878,6 @@ drm_output_destroy(struct weston_output *base)
 	weston_output_release(&output->base);
 
 	drm_output_fini_crtc(output);
-
-	drm_property_info_free(output->props_conn, WDRM_CONNECTOR__COUNT);
-	drmModeFreeConnector(output->connector);
 
 	assert(!output->state_last);
 	drm_output_state_free(output->state_cur);
@@ -4967,6 +4968,62 @@ drm_backend_update_unused_outputs(struct drm_backend *b, drmModeRes *resources)
 	}
 }
 
+/** Replace connector data and monitor information
+ *
+ * @param head The head to update.
+ * @param connector The connector data to be owned by the head, must match
+ * the head's connector ID.
+ * @return 0 on success, -1 on failure.
+ *
+ * Takes ownership of @c connector on success, not on failure.
+ *
+ * May schedule a heads changed call.
+ */
+static int
+drm_head_assign_connector_info(struct drm_head *head,
+			       drmModeConnector *connector)
+{
+	drmModeObjectProperties *props;
+	const char *make = "unknown";
+	const char *model = "unknown";
+	const char *serial_number = "unknown";
+
+	assert(connector);
+	assert(head->connector_id == connector->connector_id);
+
+	props = drmModeObjectGetProperties(head->backend->drm.fd,
+					   head->connector_id,
+					   DRM_MODE_OBJECT_CONNECTOR);
+	if (!props) {
+		weston_log("Error: failed to get connector '%s' properties\n",
+			   head->base.name);
+		return -1;
+	}
+
+	if (head->connector)
+		drmModeFreeConnector(head->connector);
+	head->connector = connector;
+
+	drm_property_info_populate(head->backend, connector_props,
+				   head->props_conn,
+				   WDRM_CONNECTOR__COUNT, props);
+	find_and_parse_output_edid(head, props, &make, &model, &serial_number);
+	weston_head_set_monitor_strings(&head->base, make, model, serial_number);
+	weston_head_set_subpixel(&head->base,
+		drm_subpixel_to_wayland(head->connector->subpixel));
+
+	weston_head_set_physical_size(&head->base, head->connector->mmWidth,
+				      head->connector->mmHeight);
+
+	drmModeFreeObjectProperties(props);
+
+	/* Unknown connection status is assumed disconnected. */
+	weston_head_set_connection_status(&head->base,
+			head->connector->connection == DRM_MODE_CONNECTED);
+
+	return 0;
+}
+
 /**
  * Create a Weston head for a connector
  *
@@ -5001,22 +5058,28 @@ drm_head_create(struct drm_backend *backend, uint32_t connector_id,
 	weston_head_init(&head->base, name);
 	free(name);
 
+	head->connector_id = connector_id;
 	head->backend = backend;
 
 	head->backlight = backlight_init(drm_device, connector->connector_type);
 
-	/* Unknown connection status is assumed disconnected. */
-	weston_head_set_connection_status(&head->base,
-				connector->connection == DRM_MODE_CONNECTED);
+	if (drm_head_assign_connector_info(head, connector) < 0)
+		goto err_init;
+
+	if (head->connector->connector_type == DRM_MODE_CONNECTOR_LVDS ||
+	    head->connector->connector_type == DRM_MODE_CONNECTOR_eDP)
+		weston_head_set_internal(&head->base);
 
 	weston_compositor_add_head(backend->compositor, &head->base);
-	drmModeFreeConnector(connector);
 
 	weston_log("DRM: found head '%s', connector %d %s.\n",
-		   head->base.name, connector_id,
+		   head->base.name, head->connector_id,
 		   head->base.connected ? "connected" : "disconnected");
 
 	return head;
+
+err_init:
+	weston_head_release(&head->base);
 
 err_alloc:
 	if (connector)
@@ -5031,6 +5094,9 @@ static void
 drm_head_destroy(struct drm_head *head)
 {
 	weston_head_release(&head->base);
+
+	drm_property_info_free(head->props_conn, WDRM_CONNECTOR__COUNT);
+	drmModeFreeConnector(head->connector);
 
 	if (head->backlight)
 		backlight_destroy(head->backlight);
@@ -5059,30 +5125,20 @@ create_output_for_connector(struct drm_backend *b,
 {
 	struct drm_output *output;
 	struct drm_head *head;
-	drmModeObjectPropertiesPtr props;
 	struct drm_mode *drm_mode;
-	char *name;
-	const char *make = "unknown";
-	const char *model = "unknown";
-	const char *serial_number = "unknown";
 	int i;
 
 	output = zalloc(sizeof *output);
 	if (output == NULL)
 		goto err_init;
 
-	output->connector = connector;
-	output->connector_id = connector->connector_id;
-
-	name = make_connector_name(connector);
-	weston_output_init(&output->base, b->compositor, name);
-	free(name);
-
 	/* XXX: temporary */
 	head = drm_head_create(b, connector->connector_id, drm_device);
 	if (!head)
 		abort();
 	head->output = output;
+
+	weston_output_init(&output->base, b->compositor, head->base.name);
 
 	output->base.enable = drm_output_enable;
 	output->base.destroy = drm_output_destroy;
@@ -5095,36 +5151,13 @@ create_output_for_connector(struct drm_backend *b,
 	if (drm_output_init_crtc(output, resources, connector) < 0)
 		goto err_output;
 
-	props = drmModeObjectGetProperties(b->drm.fd, connector->connector_id,
-					   DRM_MODE_OBJECT_CONNECTOR);
-	if (!props) {
-		weston_log("failed to get connector properties\n");
-		goto err_output;
-	}
-	drm_property_info_populate(b, connector_props, output->props_conn,
-				   WDRM_CONNECTOR__COUNT, props);
-	find_and_parse_output_edid(b, output, props,
-				   &make, &model, &serial_number);
-	weston_head_set_monitor_strings(&head->base, make, model, serial_number);
-	weston_head_set_subpixel(&head->base,
-		drm_subpixel_to_wayland(output->connector->subpixel));
-
-	drmModeFreeObjectProperties(props);
-
-	if (output->connector->connector_type == DRM_MODE_CONNECTOR_LVDS ||
-	    output->connector->connector_type == DRM_MODE_CONNECTOR_eDP)
-		weston_head_set_internal(&head->base);
-
 	if (drm_output_init_gamma_size(output) < 0)
 		goto err_output;
 
-	weston_head_set_physical_size(&head->base, output->connector->mmWidth,
-				      output->connector->mmHeight);
-
 	output->state_cur = drm_output_state_alloc(output, NULL);
 
-	for (i = 0; i < output->connector->count_modes; i++) {
-		drm_mode = drm_output_add_mode(output, &output->connector->modes[i]);
+	for (i = 0; i < head->connector->count_modes; i++) {
+		drm_mode = drm_output_add_mode(output, &head->connector->modes[i]);
 		if (!drm_mode) {
 			weston_log("failed to add mode\n");
 			goto err_output;
@@ -5133,13 +5166,14 @@ create_output_for_connector(struct drm_backend *b,
 
 	weston_compositor_add_pending_output(&output->base, b->compositor);
 
+	/* drm_head_create() made its own connector */
+	drmModeFreeConnector(connector);
+
 	return 0;
 
 err_output:
 	drm_head_destroy(head);
 	drm_output_destroy(&output->base);
-	return -1;
-	/* no fallthrough! */
 
 err_init:
 	drmModeFreeConnector(connector);
@@ -5250,7 +5284,7 @@ update_outputs(struct drm_backend *b, struct udev_device *drm_device)
 			continue;
 
 		for (i = 0; i < resources->count_connectors; i++) {
-			if (connected[i] == head->output->connector_id) {
+			if (connected[i] == head->connector_id) {
 				disconnected = false;
 				break;
 			}
@@ -5259,7 +5293,7 @@ update_outputs(struct drm_backend *b, struct udev_device *drm_device)
 		if (!disconnected)
 			continue;
 
-		weston_log("connector %d disconnected\n", head->output->connector_id);
+		weston_log("connector %d disconnected\n", head->connector_id);
 		drm_output_destroy(&head->output->base);
 	}
 
