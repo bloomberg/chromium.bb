@@ -140,6 +140,8 @@ test("zucchini_unittests") {
     "rel32_finder_unittest.cc",
     "rel32_utils_unittest.cc",
     "suffix_array_unittest.cc",
+    "test_disassembler.cc",
+    "test_disassembler.h",
     "test_reference_reader.cc",
     "test_reference_reader.h",
     "typed_value_unittest.cc",

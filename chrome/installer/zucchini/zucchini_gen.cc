@@ -32,30 +32,22 @@ constexpr double kLargeEquivalenceSimilarity = 64.0;
 // TODO(etiennep): Figure out if this should be a member function of ImageIndex.
 std::vector<offset_t> MakeSuffixArrayFromImageIndex(
     const ImageIndex& image_index) {
-  EncodedView view(&image_index);
+  EncodedView view(image_index);
   return MakeSuffixArray<InducedSuffixSort>(view, view.Cardinality());
 }
 
 }  // namespace
 
 base::Optional<ImageIndex> MakeImageIndex(Disassembler* disasm) {
-  std::vector<ReferenceGroup> ref_groups = disasm->MakeReferenceGroups();
-  std::vector<ReferenceTypeTraits> reference_traits(ref_groups.size());
-  std::transform(ref_groups.begin(), ref_groups.end(), reference_traits.begin(),
-                 [](const ReferenceGroup& group) { return group.traits(); });
-  ImageIndex image_index(disasm->GetImage(), std::move(reference_traits));
-  for (const ReferenceGroup& ref_group : ref_groups) {
-    // An error occurs if overlapping references are found. This can be caused
-    // by malformed images or Zucchini bug, but this is not a fatal mistake.
-    // Return nullopt so caller can mitigate this (e.g., by generating raw
-    // patches instead).
-    if (!image_index.InsertReferences(
-            ref_group.type_tag(), std::move(*ref_group.GetReader(disasm)))) {
-      LOG(WARNING) << "Warning: Overlapping references detected.";
-      return base::nullopt;
-    }
-  }
-  return image_index;
+  ImageIndex image_index(disasm->GetImage());
+  if (image_index.Initialize(disasm))
+    return image_index;
+  // An error occurs if overlapping references are found. This can be caused
+  // by malformed images or Zucchini bug, but this is not a fatal mistake.
+  // Return nullopt so caller can mitigate this (e.g., by generating raw
+  // patches instead).
+  LOG(WARNING) << "Warning: Overlapping references detected.";
+  return base::nullopt;
 }
 
 std::vector<offset_t> MakeNewTargetsFromEquivalenceMap(
@@ -295,8 +287,8 @@ bool GenerateRawElement(const std::vector<offset_t>& old_sa,
                         ConstBufferView old_image,
                         ConstBufferView new_image,
                         PatchElementWriter* patch_writer) {
-  ImageIndex old_image_index(old_image, {});
-  ImageIndex new_image_index(new_image, {});
+  ImageIndex old_image_index(old_image);
+  ImageIndex new_image_index(new_image);
 
   EquivalenceMap equivalences;
   equivalences.Build(old_sa, old_image_index, new_image_index,
@@ -427,8 +419,8 @@ status::Code GenerateRaw(ConstBufferView old_image,
                          EnsemblePatchWriter* patch_writer) {
   patch_writer->SetPatchType(PatchType::kRawPatch);
 
-  ImageIndex old_image_index(old_image, {});
-  EncodedView old_view(&old_image_index);
+  ImageIndex old_image_index(old_image);
+  EncodedView old_view(old_image_index);
   std::vector<offset_t> old_sa =
       MakeSuffixArray<InducedSuffixSort>(old_view, old_view.Cardinality());
 

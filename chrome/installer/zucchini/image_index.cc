@@ -5,47 +5,38 @@
 #include "chrome/installer/zucchini/image_index.h"
 
 #include <algorithm>
+#include <utility>
+
+#include "chrome/installer/zucchini/disassembler.h"
 
 namespace zucchini {
 
-ImageIndex::ImageIndex(ConstBufferView image,
-                       std::vector<ReferenceTypeTraits>&& traits_map)
-    : raw_image_(image),
-      type_tags_(image.size(), kNoTypeTag),
-      types_(traits_map.size()) {
-  int pool_count = 0;
-  for (const auto& traits : traits_map) {
-    DCHECK_LT(traits.type_tag.value(), types_.size());
-    types_[traits.type_tag.value()].traits = traits;
-
-    DCHECK(kNoPoolTag != traits.pool_tag);
-    pool_count = std::max(pool_count, traits.pool_tag.value() + 1);
-  }
-  pools_.resize(pool_count);
-  for (const auto& traits : traits_map) {
-    pools_[traits.pool_tag.value()].types.push_back(traits.type_tag);
-  }
-}
+ImageIndex::ImageIndex(ConstBufferView image)
+    : image_(image), type_tags_(image.size(), kNoTypeTag) {}
 
 ImageIndex::ImageIndex(ImageIndex&& that) = default;
 
 ImageIndex::~ImageIndex() = default;
 
-bool ImageIndex::InsertReferences(TypeTag type, ReferenceReader&& ref_reader) {
-  const ReferenceTypeTraits& traits = GetTraits(type);
-  for (base::Optional<Reference> ref = ref_reader.GetNext(); ref.has_value();
-       ref = ref_reader.GetNext()) {
-    DCHECK_LE(ref->location + traits.width, size());
+bool ImageIndex::Initialize(Disassembler* disasm) {
+  std::vector<ReferenceGroup> ref_groups = disasm->MakeReferenceGroups();
 
-    // Check for overlap with existing reference. If found, then invalidate.
-    if (std::any_of(type_tags_.begin() + ref->location,
-                    type_tags_.begin() + ref->location + traits.width,
-                    [](TypeTag type) { return type != kNoTypeTag; }))
+  for (const auto& group : ref_groups) {
+    // Store TypeInfo for current type (of |group|).
+    DCHECK_NE(kNoTypeTag, group.type_tag());
+    auto result = types_.emplace(group.type_tag(), group.traits());
+    DCHECK(result.second);
+
+    // Find and store all references for current type, returns false on finding
+    // any overlap, to signal error.
+    if (!InsertReferences(group.type_tag(),
+                          std::move(*group.GetReader(disasm)))) {
       return false;
-    std::fill(type_tags_.begin() + ref->location,
-              type_tags_.begin() + ref->location + traits.width,
-              traits.type_tag);
-    types_[traits.type_tag.value()].references.push_back(*ref);
+    }
+
+    // Build pool-to-type mapping.
+    DCHECK_NE(kNoPoolTag, group.pool_tag());
+    pools_[group.pool_tag()].types.push_back(group.type_tag());
   }
   return true;
 }
@@ -53,12 +44,12 @@ bool ImageIndex::InsertReferences(TypeTag type, ReferenceReader&& ref_reader) {
 Reference ImageIndex::FindReference(TypeTag type, offset_t location) const {
   DCHECK_LE(location, size());
   DCHECK_LT(type.value(), types_.size());
+  const TypeInfo& type_info = types_.at(type);
   auto pos = std::upper_bound(
-      types_[type.value()].references.begin(),
-      types_[type.value()].references.end(), location,
+      type_info.references.begin(), type_info.references.end(), location,
       [](offset_t a, const Reference& ref) { return a < ref.location; });
 
-  DCHECK(pos != types_[type.value()].references.begin());
+  DCHECK(pos != type_info.references.begin());
   --pos;
   DCHECK_LT(location, pos->location + GetTraits(type).width);
   return *pos;
@@ -77,7 +68,7 @@ std::vector<offset_t> ImageIndex::GetTargets(PoolTag pool) const {
 }
 
 bool ImageIndex::IsToken(offset_t location) const {
-  TypeTag type = GetType(location);
+  TypeTag type = LookupType(location);
 
   // |location| points into raw data.
   if (type == kNoTypeTag)
@@ -91,20 +82,20 @@ bool ImageIndex::IsToken(offset_t location) const {
 
 void ImageIndex::LabelTargets(PoolTag pool,
                               const BaseLabelManager& label_manager) {
-  for (const TypeTag& type : pools_[pool.value()].types)
-    for (auto& ref : types_[type.value()].references)
+  for (const TypeTag& type : pools_.at(pool).types)
+    for (auto& ref : types_.at(type).references)
       ref.target = label_manager.MarkedIndexFromOffset(ref.target);
-  pools_[pool.value()].label_bound = label_manager.size();
+  pools_.at(pool).label_bound = label_manager.size();
 }
 
 void ImageIndex::UnlabelTargets(PoolTag pool,
                                 const BaseLabelManager& label_manager) {
-  for (const TypeTag& type : pools_[pool.value()].types)
-    for (auto& ref : types_[type.value()].references) {
+  for (const TypeTag& type : pools_.at(pool).types)
+    for (auto& ref : types_.at(type).references) {
       ref.target = label_manager.OffsetFromMarkedIndex(ref.target);
       DCHECK(!IsMarked(ref.target));  // Expected to be represented as offset.
     }
-  pools_[pool.value()].label_bound = 0;
+  pools_.at(pool).label_bound = 0;
 }
 
 void ImageIndex::LabelAssociatedTargets(
@@ -112,8 +103,8 @@ void ImageIndex::LabelAssociatedTargets(
     const BaseLabelManager& label_manager,
     const BaseLabelManager& reference_label_manager) {
   // Convert to marked indexes.
-  for (const auto& type : pools_[pool.value()].types) {
-    for (auto& ref : types_[type.value()].references) {
+  for (const auto& type : pools_.at(pool).types) {
+    for (auto& ref : types_.at(type).references) {
       // Represent Label as marked index iff the index is also in
       // |reference_label_manager|.
       DCHECK(!IsMarked(ref.target));  // Expected to be represented as offset.
@@ -123,10 +114,35 @@ void ImageIndex::LabelAssociatedTargets(
         ref.target = MarkIndex(index);
     }
   }
-  pools_[pool.value()].label_bound = label_manager.size();
+  pools_.at(pool).label_bound = label_manager.size();
 }
 
-ImageIndex::TypeInfo::TypeInfo() = default;
+bool ImageIndex::InsertReferences(TypeTag type, ReferenceReader&& ref_reader) {
+  const ReferenceTypeTraits& traits = GetTraits(type);
+  TypeInfo& type_info = types_.at(traits.type_tag);
+  for (base::Optional<Reference> ref = ref_reader.GetNext(); ref.has_value();
+       ref = ref_reader.GetNext()) {
+    DCHECK_LE(ref->location + traits.width, size());
+    auto cur_type_tag = type_tags_.begin() + ref->location;
+
+    // Check for overlap with existing reference. If found, then invalidate.
+    if (std::any_of(cur_type_tag, cur_type_tag + traits.width,
+                    [](TypeTag type) { return type != kNoTypeTag; })) {
+      return false;
+    }
+    std::fill(cur_type_tag, cur_type_tag + traits.width, traits.type_tag);
+    type_info.references.push_back(*ref);
+  }
+  DCHECK(std::is_sorted(type_info.references.begin(),
+                        type_info.references.end(),
+                        [](const Reference& a, const Reference& b) {
+                          return a.location < b.location;
+                        }));
+  return true;
+}
+
+ImageIndex::TypeInfo::TypeInfo(ReferenceTypeTraits traits_in)
+    : traits(traits_in) {}
 ImageIndex::TypeInfo::TypeInfo(TypeInfo&&) = default;
 ImageIndex::TypeInfo::~TypeInfo() = default;
 
