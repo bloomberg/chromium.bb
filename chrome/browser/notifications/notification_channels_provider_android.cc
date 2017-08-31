@@ -169,7 +169,7 @@ NotificationChannelsProviderAndroid::NotificationChannelsProviderAndroid(
     std::unique_ptr<NotificationChannelsBridge> bridge,
     std::unique_ptr<base::Clock> clock)
     : bridge_(std::move(bridge)),
-      should_use_channels_(bridge_->ShouldUseChannelSettings()),
+      platform_supports_channels_(bridge_->ShouldUseChannelSettings()),
       clock_(std::move(clock)),
       initialized_cached_channels_(false),
       weak_factory_(this) {}
@@ -180,7 +180,7 @@ NotificationChannelsProviderAndroid::~NotificationChannelsProviderAndroid() =
 void NotificationChannelsProviderAndroid::MigrateToChannelsIfNecessary(
     PrefService* prefs,
     content_settings::ProviderInterface* pref_provider) {
-  if (!should_use_channels_ ||
+  if (!platform_supports_channels_ ||
       prefs->GetBoolean(prefs::kMigratedToSiteNotificationChannels)) {
     return;
   }
@@ -196,7 +196,7 @@ void NotificationChannelsProviderAndroid::MigrateToChannelsIfNecessary(
 void NotificationChannelsProviderAndroid::UnmigrateChannelsIfNecessary(
     PrefService* prefs,
     content_settings::ProviderInterface* pref_provider) {
-  if (!should_use_channels_ ||
+  if (!platform_supports_channels_ ||
       !prefs->GetBoolean(prefs::kMigratedToSiteNotificationChannels)) {
     return;
   }
@@ -224,7 +224,7 @@ NotificationChannelsProviderAndroid::GetRuleIterator(
     const content_settings::ResourceIdentifier& resource_identifier,
     bool incognito) const {
   if (content_type != CONTENT_SETTINGS_TYPE_NOTIFICATIONS || incognito ||
-      !should_use_channels_) {
+      !platform_supports_channels_) {
     return nullptr;
   }
   std::vector<NotificationChannel> channels = UpdateCachedChannels();
@@ -264,7 +264,7 @@ bool NotificationChannelsProviderAndroid::SetWebsiteSetting(
     const content_settings::ResourceIdentifier& resource_identifier,
     base::Value* value) {
   if (content_type != CONTENT_SETTINGS_TYPE_NOTIFICATIONS ||
-      !should_use_channels_) {
+      !platform_supports_channels_) {
     return false;
   }
   // This provider only handles settings for specific origins.
@@ -309,7 +309,7 @@ bool NotificationChannelsProviderAndroid::SetWebsiteSetting(
 void NotificationChannelsProviderAndroid::ClearAllContentSettingsRules(
     ContentSettingsType content_type) {
   if (content_type != CONTENT_SETTINGS_TYPE_NOTIFICATIONS ||
-      !should_use_channels_) {
+      !platform_supports_channels_) {
     return;
   }
   std::vector<NotificationChannel> channels = bridge_->GetChannels();
@@ -332,7 +332,7 @@ base::Time NotificationChannelsProviderAndroid::GetWebsiteSettingLastModified(
     ContentSettingsType content_type,
     const content_settings::ResourceIdentifier& resource_identifier) {
   if (content_type != CONTENT_SETTINGS_TYPE_NOTIFICATIONS ||
-      !should_use_channels_) {
+      !platform_supports_channels_) {
     return base::Time();
   }
   url::Origin origin = url::Origin(GURL(primary_pattern.ToString()));
