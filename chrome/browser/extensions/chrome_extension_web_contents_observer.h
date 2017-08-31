@@ -40,7 +40,7 @@ class ChromeExtensionWebContentsObserver
       content::RenderFrameHost* render_frame_host) override;
 
   // content::WebContentsObserver overrides.
-  void RenderViewCreated(content::RenderViewHost* render_view_host) override;
+  void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
 
@@ -57,7 +57,7 @@ class ChromeExtensionWebContentsObserver
       int32_t severity_level);
 
   // Reloads an extension if it is on the terminated list.
-  void ReloadIfTerminated(content::RenderViewHost* render_view_host);
+  void ReloadIfTerminated(content::RenderFrameHost* render_frame_host);
 
   DISALLOW_COPY_AND_ASSIGN(ChromeExtensionWebContentsObserver);
 };

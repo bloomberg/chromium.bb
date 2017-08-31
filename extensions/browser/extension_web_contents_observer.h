@@ -16,7 +16,6 @@
 namespace content {
 class BrowserContext;
 class RenderFrameHost;
-class RenderViewHost;
 class WebContents;
 }
 
@@ -82,10 +81,6 @@ class ExtensionWebContentsObserver
   content::WebContents* GetAssociatedWebContents() const override;
 
   // content::WebContentsObserver overrides.
-
-  // A subclass should invoke this method to finish extension process setup.
-  void RenderViewCreated(content::RenderViewHost* render_view_host) override;
-
   void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
   void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
   void DidFinishNavigation(
@@ -109,15 +104,6 @@ class ExtensionWebContentsObserver
   // the empty string if there is none.
   std::string GetExtensionIdFromFrame(
       content::RenderFrameHost* render_frame_host) const;
-
-  // TODO(devlin): Remove these once callers are updated to use the FromFrame
-  // equivalents.
-  // Returns the extension or app associated with a render view host. Returns
-  // NULL if the render view host is not for a valid extension.
-  const Extension* GetExtension(content::RenderViewHost* render_view_host);
-  // Returns the extension or app ID associated with a render view host. Returns
-  // the empty string if the render view host is not for a valid extension.
-  static std::string GetExtensionId(content::RenderViewHost* render_view_host);
 
  private:
   void OnRequest(content::RenderFrameHost* render_frame_host,
