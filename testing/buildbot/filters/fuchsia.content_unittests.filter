@@ -1,8 +1,5 @@
 # Being ported, https://crbug.com/754861.
 
--AudioRendererSinkCacheTest.SmokeTest
--BrowsingDataRemoverImplTest.MultipleTasks
--CacheStorageManagerTest.GetAllOriginsUsageWithOldIndex
 -ChildMemoryCoordinatorImplTest.MultipleClients
 -LegacyInputRouterImplTest.AckedTouchEventState
 -MediaStreamManagerTest.MakeAndCancelMultipleRequests
@@ -11,7 +8,6 @@
 -RenderWidgetHostViewAuraCopyRequestTest.DedupeFrameSubscriberRequests
 -RenderWidgetHostViewAuraCopyRequestTest.DestroyedAfterCopyRequest
 -RenderWidgetHostViewAuraCopyRequestTest.PresentTime
--RendererAudioOutputStreamFactoryIntegrationTest.StreamIntegrationTest
 -ServiceWorkerDatabaseTest.DatabaseVersion_CorruptedSchemaVersion
 -ServiceWorkerProviderHostTest.ActiveIsNotController
 -URLLoaderFactoryImplTest/URLLoaderFactoryImplTest.DownloadToFile/0
@@ -24,12 +20,18 @@
 -URLLoaderFactoryImplTest/URLLoaderFactoryImplTest.OnTransferSizeUpdated/1
 -URLLoaderImplTest.Basic
 -URLLoaderImplTest.BasicSSL
+-URLLoaderImplTest.CantSniffEmptyHtml
 -URLLoaderImplTest.DoNotSniffHTMLFromImageGIF
 -URLLoaderImplTest.DoNotSniffHTMLFromTextPlain
 -URLLoaderImplTest.Empty
 -URLLoaderImplTest.SSLSentOnlyWhenRequested
 -URLLoaderImplTest.SniffMimeType
 -WebContentsAudioInputStreamTest.MirroringOneStreamAfterTargetChange/0
+
+# Failing after SDK roll due to failure to install cert, see
+# https://crbug.com/761033.
+-NavigationURLLoaderTest.RequestFailedCertError
+-NavigationURLLoaderTest.RequestFailedCertErrorFatal
 
 # These rely on chmod() for MakeFileUnread/writable(), https://crbug.com/759853.
 -BaseFileTest.ReadonlyBaseFile
@@ -58,6 +60,7 @@
 -AppCacheStorageImplTest.Reinitialize2
 -AppCacheStorageImplTest.Reinitialize3
 -AppCacheUpdateJobTest.AlreadyChecking/1
+-BrowsingDataRemoverImplTest.MultipleTasks
 -ChromeAppCacheServiceTest.KeepOnDestruction
 -ChromeAppCacheServiceTest.SaveSessionState
 -DOMStorageAreaTest.DeleteOrigin
