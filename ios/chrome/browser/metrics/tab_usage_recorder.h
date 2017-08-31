@@ -7,6 +7,7 @@
 
 #include <deque>
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "base/ios/weak_nsobject.h"
@@ -65,6 +66,10 @@ extern const char kRendererTerminationAliveRenderers[];
 // kills renderers in batches.
 extern const char kRendererTerminationRecentlyAliveRenderers[];
 
+// Name of histogram for recording the state of the tab when the renderer is
+// terminated.
+extern const char kRendererTerminationStateHistogram[];
+
 // The recently alive renderer count metric counts all renderers that were alive
 // x seconds before a renderer termination. |kSecondsBeforeRendererTermination|
 // specifies x.
@@ -102,6 +107,18 @@ class TabUsageRecorder : public WebStateListObserver {
     USER_BEHAVIOR_COUNT,
   };
 
+  // Enum corresponding to UMA's TabForegroundState, for
+  // Tab.StateAtRendererTermination. Must be kept in sync with the UMA enum.
+  enum RendererTerminationTabState {
+    // These two values are for when the app is in the foreground.
+    FOREGROUND_TAB_FOREGROUND_APP = 0,
+    BACKGROUND_TAB_FOREGROUND_APP,
+    // These are for when the app is in the background or inactive.
+    FOREGROUND_TAB_BACKGROUND_APP,
+    BACKGROUND_TAB_BACKGROUND_APP,
+    TERMINATION_TAB_STATE_COUNT
+  };
+
   // Initializes the TabUsageRecorder to watch |web_state_list|.
   TabUsageRecorder(WebStateList* web_state_list,
                    PrerenderService* prerender_service);
@@ -134,10 +151,13 @@ class TabUsageRecorder : public WebStateListObserver {
   // Called when there is a user-initiated reload.
   void RecordReload(web::WebState* tab);
 
-  // Called when WKWebView's renderer is terminated. |web_state| contains the
-  // tab whose renderer was terminated, and |visible| indicates whether or not
-  // the tab was visible when the renderer terminated.
-  void RendererTerminated(web::WebState* tab, bool visible);
+  // Called when WKWebView's renderer is terminated. |tab| contains the tab
+  // whose renderer was terminated, |tab_visible| indicates whether or not
+  // the tab was visible when the renderer terminated and |application_active|
+  // indicates whether the application was in the foreground or background.
+  void RendererTerminated(web::WebState* tab,
+                          bool tab_visible,
+                          bool application_active);
 
   // Called when the app has been backgrounded.
   void AppDidEnterBackground();
@@ -159,6 +179,11 @@ class TabUsageRecorder : public WebStateListObserver {
   // to depends on injecting values in |termination_timestamps_|.
   friend class TabUsageRecorderTest;
 
+  // Sub-class of web::WebStateObserver to allow track events from multiple
+  // web::WebState (needs to be forward-declared here because the destructor
+  // of web::WebStateObserver is protected).
+  class WebStateObserver;
+
   // Clear out all state regarding a current evicted tab.
   void ResetEvictedTab();
 
@@ -177,6 +202,10 @@ class TabUsageRecorder : public WebStateListObserver {
 
   // Returns the number of WebState that are still alive (in-memory).
   int GetLiveTabsCount() const;
+
+  // Called after a WebState is added to the WebStateList; will create the
+  // observer used to track the WebState's events.
+  void OnWebStateInserted(web::WebState* web_state);
 
   // Called before one of the tracked WebState is destroyed. The WebState is
   // still valid but will become invalid afterwards, so any reference to it
@@ -234,6 +263,10 @@ class TabUsageRecorder : public WebStateListObserver {
 
   // Keep track of the tabs that have a known eviction cause.
   std::map<web::WebState*, TabStateWhenSelected> evicted_tabs_;
+
+  // Maps WebStates to the WebStateObserver used to track its events.
+  std::map<web::WebState*, std::unique_ptr<WebStateObserver>>
+      web_state_observers_;
 
   // The WebStateList containing all the monitored tabs.
   WebStateList* web_state_list_;  // weak
