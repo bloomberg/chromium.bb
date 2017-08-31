@@ -23,8 +23,12 @@ rootWebArea
 ++genericContainer
 ++++staticText name='Span 1'
 ++++++inlineTextBox name='Span 1'
+++++staticText name=' '
+++++++inlineTextBox name=' '
 ++++genericContainer ariaCurrentState=true
 ++++++staticText name='Span 2'
 ++++++++inlineTextBox name='Span 2'
+++++staticText name=' '
+++++++inlineTextBox name=' '
 ++++staticText name='Span 3'
 ++++++inlineTextBox name='Span 3'

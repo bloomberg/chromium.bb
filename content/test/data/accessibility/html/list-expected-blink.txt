@@ -16,9 +16,13 @@ rootWebArea
 ++++listItem
 ++++++staticText name='tic'
 ++++++++inlineTextBox name='tic'
+++++staticText name=' '
+++++++inlineTextBox name=' '
 ++++listItem
 ++++++staticText name='tac'
 ++++++++inlineTextBox name='tac'
+++++staticText name=' '
+++++++inlineTextBox name=' '
 ++++listItem
 ++++++staticText name='toe'
 ++++++++inlineTextBox name='toe'

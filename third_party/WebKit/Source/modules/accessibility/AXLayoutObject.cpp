@@ -569,24 +569,7 @@ bool AXLayoutObject::ComputeAccessibilityIsIgnored(
     return false;
 
   if (layout_object_->IsText()) {
-    LayoutText* layout_text = ToLayoutText(layout_object_);
-    if (!layout_text->HasTextBoxes()) {
-      if (ignored_reasons)
-        ignored_reasons->push_back(IgnoredReason(kAXEmptyText));
-      return true;
-    }
-
-    // Don't ignore static text in editable text controls.
-    for (AXObject* parent = ParentObject(); parent;
-         parent = parent->ParentObject()) {
-      if (parent->RoleValue() == kTextFieldRole)
-        return false;
-    }
-
-    // Text elements that are just empty whitespace should not be returned.
-    // FIXME(dmazzoni): we probably shouldn't ignore this if the style is 'pre',
-    // or similar...
-    if (layout_text->GetText().Impl()->ContainsOnlyWhitespace()) {
+    if (CanIgnoreTextAsEmpty()) {
       if (ignored_reasons)
         ignored_reasons->push_back(IgnoredReason(kAXEmptyText));
       return true;
@@ -747,6 +730,86 @@ bool AXLayoutObject::ComputeAccessibilityIsIgnored(
   if (ignored_reasons)
     ignored_reasons->push_back(IgnoredReason(kAXUninteresting));
   return true;
+}
+
+bool AXLayoutObject::IsFocusableByDefault(Element* elem) const {
+  // These are the only naturally focusable elements that are focusable without
+  // contenteditable or tabindex.
+  DCHECK(elem);
+  return elem->IsFormControlElement() || elem->HasTagName(aTag) ||
+         elem->HasTagName(audioTag) || elem->HasTagName(iframeTag) ||
+         elem->HasTagName(summaryTag) || elem->HasTagName(videoTag);
+}
+
+bool AXLayoutObject::HasAriaCellRole(Element* elem) const {
+  DCHECK(elem);
+  const AtomicString& aria_role_str = elem->FastGetAttribute(roleAttr);
+  if (aria_role_str.IsEmpty())
+    return false;
+
+  AccessibilityRole aria_role = AriaRoleToWebCoreRole(aria_role_str);
+  return aria_role == kCellRole || aria_role == kColumnHeaderRole ||
+         aria_role == kRowHeaderRole;
+}
+
+// Return true if whitespace is not necessary to keep adjacent_node separate
+// in screen reader output from surrounding nodes.
+bool AXLayoutObject::CanIgnoreSpaceNextTo(Node* adjacent_node) const {
+  if (!adjacent_node)
+    return true;
+  if (!adjacent_node->IsElementNode())
+    return false;
+
+  // Use layout whitespace to separate elements if a screen reader would
+  // otherwise incorrectly merge the text without whitespace in its output.
+  // Elements that are naturally focusable even without a tabindex tend
+  // to be rendered separately even if there is no space between them.
+  // Some ARIA roles act like table cells and don't need adjacent whitespace to
+  // indicate separation.
+  // False negatives are acceptable in that they merely lead to extra whitespace
+  // static text nodes.
+  Element* adjacent_elem = ToElement(adjacent_node);
+  return IsFocusableByDefault(adjacent_elem) || HasAriaCellRole(adjacent_elem);
+}
+
+bool AXLayoutObject::CanIgnoreTextAsEmpty() const {
+  DCHECK(layout_object_->IsText());
+  LayoutText* layout_text = ToLayoutText(layout_object_);
+  if (!layout_text->HasTextBoxes()) {
+    return true;
+  }
+
+  // Ignore empty text
+  if (layout_text->HasEmptyText()) {
+    return true;
+  }
+
+  // Don't ignore node-less text (e.g. list bullets)
+  Node* node = GetNode();
+  if (!node)
+    return false;
+
+  // Don't ignore static text in editable text controls.
+  if (HasEditableStyle(*node))
+    return false;
+
+  // Ignore extra whitespace-only text if a sibling doesn't will be presented
+  // separately by scren readers whether whitespace is there or not.
+  // Using "skipping children" methods as we need the closest element to the
+  // whitespace markup-wise, e.g. tag1 in these examples:
+  // [whitespace] <tag1><tag2>x</tag2></tag1>
+  // <span>[whitespace]</span> <tag1><tag2>x</tag2></tag1>
+  if (layout_text->GetText().Impl()->ContainsOnlyWhitespace() &&
+      (CanIgnoreSpaceNextTo(FlatTreeTraversal::NextSkippingChildren(*node)) ||
+       CanIgnoreSpaceNextTo(
+           FlatTreeTraversal::PreviousSkippingChildren(*node))))
+    return true;
+
+  // Text elements with empty whitespace are returned, because of cases
+  // such as <span>Hello</span><span> </span><span>World</span>. Keeping
+  // the whitespace-only node means we now correctly expose "Hello World".
+  // See crbug.com/435765.
+  return false;
 }
 
 //

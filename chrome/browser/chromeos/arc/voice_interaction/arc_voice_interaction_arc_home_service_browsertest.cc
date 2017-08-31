@@ -144,9 +144,7 @@ IN_PROC_BROWSER_TEST_F(ArcVoiceInteractionArcHomeServiceTest,
   auto result = GetVoiceInteractionStructure(
       "<html>"
       "  <body>"
-      "    <b id='node1'>foo</b>"
-      "    <b>middle</b>"
-      "    <b id='node2'>bar</b>"
+      "    <b id='node1'>foo</b><b>middle</b><b id='node2'>bar</b>"
       "    <script type='text/javascript'>"
       "      var element1 = document.getElementById('node1');"
       "      var node1 = element1.childNodes.item(0);"

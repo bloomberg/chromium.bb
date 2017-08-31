@@ -12,7 +12,9 @@ AXWebArea
 ++AXList AXSubrole=AXContentList
 ++++AXGroup
 ++++++AXStaticText AXValue='tic'
+++++AXStaticText AXValue=' '
 ++++AXGroup
 ++++++AXStaticText AXValue='tac'
+++++AXStaticText AXValue=' '
 ++++AXGroup
 ++++++AXStaticText AXValue='toe'

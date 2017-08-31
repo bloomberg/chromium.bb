@@ -46,6 +46,8 @@ AXRole: AXWebArea
                 AXRole: AXMenuListOption "Implicit dropdown 1"
                 AXRole: AXMenuListOption "Implicit dropdown 2"
         AXRole: AXStatus
+        AXRole: AXStaticText " "
+            AXRole: AXInlineTextBox " "
         AXRole: AXProgressIndicator
         AXRole: AXStatus
             AXRole: AXSliderThumb

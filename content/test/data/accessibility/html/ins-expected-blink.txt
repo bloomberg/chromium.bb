@@ -4,6 +4,8 @@ rootWebArea
 ++++++inlineTextBox name='My favorite browser is '
 ++++staticText name='ABC'
 ++++++inlineTextBox name='ABC'
+++++staticText name=' '
+++++++inlineTextBox name=' '
 ++++staticText name='Chrome'
 ++++++inlineTextBox name='Chrome'
 ++++staticText name='!'

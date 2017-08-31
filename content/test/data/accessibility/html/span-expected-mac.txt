@@ -1,5 +1,47 @@
 AXWebArea
 ++AXGroup
-++++AXStaticText AXValue='This paragraph has one '
-++++AXStaticText AXValue='word'
-++++AXStaticText AXValue=' in a span.'
+++++AXStaticText AXValue='This'
+++++AXStaticText AXValue=' '
+++++AXStaticText AXValue='paragraph has '
+++++AXStaticText AXValue='text'
+++++AXStaticText AXValue=' '
+++++AXStaticText AXValue='in'
+++++AXStaticText AXValue=' '
+++++AXStaticText AXValue='spans'
+++++AXStaticText AXValue='.'
+++AXGroup
+++++AXStaticText AXValue='E1. Eat'
+++++AXLink
+++++++AXStaticText AXValue='space'
+++AXGroup
+++++AXStaticText AXValue='E2. Eat'
+++++AXLink
+++++++AXStaticText AXValue='space'
+++AXGroup
+++++AXStaticText AXValue='E3. Eat'
+++++AXLink
+++++++AXStaticText AXValue='space'
+++AXGroup
+++++AXLink
+++++++AXStaticText AXValue='E4. Eat'
+++++AXStaticText AXValue='space'
+++AXGroup
+++++AXLink
+++++++AXStaticText AXValue='E5. Eat'
+++++AXStaticText AXValue='space'
+++AXGroup
+++++AXLink
+++++++AXStaticText AXValue='E6. Eat'
+++++AXStaticText AXValue='space'
+++AXGroup
+++++AXStaticText AXValue='K1. Keep'
+++++AXStaticText AXValue=' '
+++++AXStaticText AXValue='space'
+++AXGroup
+++++AXStaticText AXValue='K2. Keep'
+++++AXStaticText AXValue=' '
+++++AXStaticText AXValue='space'
+++AXGroup
+++++AXStaticText AXValue='K3. Keep'
+++++AXStaticText AXValue=' '
+++++AXStaticText AXValue='space'
