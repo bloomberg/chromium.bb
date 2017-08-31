@@ -82,6 +82,8 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
   void RequestFocusOnCloseButton() override;
   void UpdateControlButtonsVisibility() override;
   NotificationControlButtonsView* GetControlButtonsView() const override;
+  bool IsExpanded() const override;
+  void SetExpanded(bool expanded) override;
 
   // views::ViewTargeterDelegate:
   views::View* TargetForRect(views::View* root, const gfx::Rect& rect) override;

@@ -70,6 +70,8 @@ class ArcNotificationContentView
   void AttachSurface();
   void Activate();
   void UpdateAccessibleName();
+  void SetExpanded(bool expanded);
+  bool IsExpanded() const;
 
   // views::NativeViewHost
   void ViewHierarchyChanged(
