@@ -23,6 +23,7 @@
 #include "ui/views/painter.h"
 #include "ui/views/resources/grit/views_resources.h"
 #include "ui/views/style/platform_style.h"
+#include "ui/views/style/typography.h"
 #include "ui/views/vector_icons.h"
 
 namespace views {
@@ -207,18 +208,15 @@ std::unique_ptr<InkDropRipple> Checkbox::CreateInkDropRipple() const {
 }
 
 SkColor Checkbox::GetInkDropBaseColor() const {
-  return GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_LabelEnabledColor);
+  // Usually ink drop ripples match the text color. Checkboxes use the color of
+  // the unchecked icon.
+  return GetIconImageColor(false);
 }
 
 gfx::ImageSkia Checkbox::GetImage(ButtonState for_state) const {
   if (UseMd()) {
-    return gfx::CreateVectorIcon(
-        GetVectorIcon(), 16,
-        // When not checked, the icon color matches the button text color.
-        GetNativeTheme()->GetSystemColor(
-            checked_ ? ui::NativeTheme::kColorId_FocusedBorderColor
-                     : ui::NativeTheme::kColorId_LabelEnabledColor));
+    return gfx::CreateVectorIcon(GetVectorIcon(), 16,
+                                 GetIconImageColor(checked_));
   }
 
   const size_t checked_index = checked_ ? 1 : 0;
@@ -257,6 +255,17 @@ void Checkbox::PaintFocusRing(View* view,
 
 const gfx::VectorIcon& Checkbox::GetVectorIcon() const {
   return checked() ? kCheckboxActiveIcon : kCheckboxNormalIcon;
+}
+
+SkColor Checkbox::GetIconImageColor(bool checked) const {
+  DCHECK(UseMd());
+  const ui::NativeTheme* theme = GetNativeTheme();
+  return checked
+             ? theme->GetSystemColor(
+                   ui::NativeTheme::kColorId_FocusedBorderColor)
+             // When unchecked, the icon color matches push button text color.
+             : style::GetColor(style::CONTEXT_BUTTON_MD, style::STYLE_PRIMARY,
+                               theme);
 }
 
 void Checkbox::NotifyClick(const ui::Event& event) {
