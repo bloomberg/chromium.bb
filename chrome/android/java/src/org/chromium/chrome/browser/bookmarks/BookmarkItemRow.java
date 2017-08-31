@@ -15,6 +15,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
 import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 import org.chromium.components.bookmarks.BookmarkId;
 
@@ -40,8 +41,10 @@ public class BookmarkItemRow extends BookmarkRow implements LargeIconCallback {
         int textSize = getResources().getDimensionPixelSize(R.dimen.default_favicon_icon_text_size);
         int iconColor = ApiCompatibilityUtils.getColor(
                 getResources(), R.color.default_favicon_background_color);
-        mIconGenerator = new RoundedIconGenerator(mDisplayedIconSize , mDisplayedIconSize,
-                mCornerRadius, iconColor, textSize);
+        mIconGenerator = new RoundedIconGenerator(mDisplayedIconSize, mDisplayedIconSize,
+                FeatureUtilities.isChromeHomeModernEnabled() ? mDisplayedIconSize / 2
+                                                             : mCornerRadius,
+                iconColor, textSize);
     }
 
     // BookmarkRow implementation.
