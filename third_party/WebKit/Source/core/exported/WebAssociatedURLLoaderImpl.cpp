@@ -222,18 +222,19 @@ void WebAssociatedURLLoaderImpl::ClientAdapter::DidReceiveResponse(
     return;
   }
 
-  WebCORS::HTTPHeaderSet exposed_headers;
+  WebHTTPHeaderSet exposed_headers;
   WebCORS::ExtractCorsExposedHeaderNamesList(WrappedResourceResponse(response),
                                              exposed_headers);
-  WebCORS::HTTPHeaderSet blocked_headers;
+  WebHTTPHeaderSet blocked_headers;
   for (const auto& header : response.HttpHeaderFields()) {
     if (FetchUtils::IsForbiddenResponseHeaderName(header.key) ||
         (!WebCORS::IsOnAccessControlResponseHeaderWhitelist(header.key) &&
-         !exposed_headers.Contains(header.key)))
-      blocked_headers.insert(header.key);
+         exposed_headers.find(header.key.Ascii().data()) ==
+             exposed_headers.end()))
+      blocked_headers.insert(header.key.Ascii().data());
   }
 
-  if (blocked_headers.IsEmpty()) {
+  if (blocked_headers.empty()) {
     // Use the original ResourceResponse.
     client_->DidReceiveResponse(WrappedResourceResponse(response));
     return;
@@ -242,7 +243,7 @@ void WebAssociatedURLLoaderImpl::ClientAdapter::DidReceiveResponse(
   // If there are blocked headers, copy the response so we can remove them.
   WebURLResponse validated_response = WrappedResourceResponse(response);
   for (const auto& header : blocked_headers)
-    validated_response.ClearHTTPHeaderField(header);
+    validated_response.ClearHTTPHeaderField(WebString::FromASCII(header));
   client_->DidReceiveResponse(validated_response);
 }
 

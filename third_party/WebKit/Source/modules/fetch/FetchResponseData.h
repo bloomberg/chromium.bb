@@ -60,7 +60,7 @@ class MODULES_EXPORT FetchResponseData final
   // Creates a CORS filtered response with an explicit set of exposed header
   // names.
   FetchResponseData* CreateCORSFilteredResponse(
-      const WebCORS::HTTPHeaderSet& exposed_headers) const;
+      const WebHTTPHeaderSet& exposed_headers) const;
   FetchResponseData* CreateOpaqueFilteredResponse() const;
   FetchResponseData* CreateOpaqueRedirectFilteredResponse() const;
 
@@ -84,7 +84,7 @@ class MODULES_EXPORT FetchResponseData final
   String InternalMIMEType() const;
   Time ResponseTime() const { return response_time_; }
   String CacheStorageCacheName() const { return cache_storage_cache_name_; }
-  const WebCORS::HTTPHeaderSet& CorsExposedHeaderNames() const {
+  const WebHTTPHeaderSet& CorsExposedHeaderNames() const {
     return cors_exposed_header_names_;
   }
 
@@ -101,7 +101,7 @@ class MODULES_EXPORT FetchResponseData final
   void SetCacheStorageCacheName(const String& cache_storage_cache_name) {
     cache_storage_cache_name_ = cache_storage_cache_name;
   }
-  void SetCorsExposedHeaderNames(const WebCORS::HTTPHeaderSet& header_names) {
+  void SetCorsExposedHeaderNames(const WebHTTPHeaderSet& header_names) {
     cors_exposed_header_names_ = header_names;
   }
 
@@ -132,7 +132,7 @@ class MODULES_EXPORT FetchResponseData final
   String mime_type_;
   Time response_time_;
   String cache_storage_cache_name_;
-  WebCORS::HTTPHeaderSet cors_exposed_header_names_;
+  WebHTTPHeaderSet cors_exposed_header_names_;
 };
 
 }  // namespace blink

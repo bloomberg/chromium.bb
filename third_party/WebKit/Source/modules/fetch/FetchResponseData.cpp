@@ -44,14 +44,13 @@ network::mojom::FetchResponseType FetchTypeToWebType(
   return web_type;
 }
 
-WebVector<WebString> HeaderSetToWebVector(
-    const WebCORS::HTTPHeaderSet& headers) {
+WebVector<WebString> HeaderSetToWebVector(const WebHTTPHeaderSet& headers) {
   // Can't just pass *headers to the WebVector constructor because HashSet
   // iterators are not stl iterator compatible.
   WebVector<WebString> result(static_cast<size_t>(headers.size()));
   int idx = 0;
   for (const auto& header : headers)
-    result[idx++] = header;
+    result[idx++] = WebString::FromASCII(header);
   return result;
 }
 
@@ -98,7 +97,7 @@ FetchResponseData* FetchResponseData::CreateBasicFilteredResponse() const {
 
 FetchResponseData* FetchResponseData::CreateCORSFilteredResponse() const {
   DCHECK_EQ(type_, kDefaultType);
-  WebCORS::HTTPHeaderSet access_control_expose_header_set;
+  WebHTTPHeaderSet access_control_expose_header_set;
   String access_control_expose_headers;
   if (header_list_->Get(HTTPNames::Access_Control_Expose_Headers,
                         access_control_expose_headers)) {
@@ -109,7 +108,7 @@ FetchResponseData* FetchResponseData::CreateCORSFilteredResponse() const {
 }
 
 FetchResponseData* FetchResponseData::CreateCORSFilteredResponse(
-    const WebCORS::HTTPHeaderSet& exposed_headers) const {
+    const WebHTTPHeaderSet& exposed_headers) const {
   DCHECK_EQ(type_, kDefaultType);
   // "A CORS filtered response is a filtered response whose type is |CORS|,
   // header list excludes all headers in internal response's header list,
@@ -123,12 +122,15 @@ FetchResponseData* FetchResponseData::CreateCORSFilteredResponse(
   response->SetURLList(url_list_);
   for (const auto& header : header_list_->List()) {
     const String& name = header.first;
-    const bool explicitly_exposed = exposed_headers.Contains(name);
+    const bool explicitly_exposed =
+        exposed_headers.find(name.Ascii().data()) != exposed_headers.end();
     if (WebCORS::IsOnAccessControlResponseHeaderWhitelist(name) ||
         (explicitly_exposed &&
          !FetchUtils::IsForbiddenResponseHeaderName(name))) {
-      if (explicitly_exposed)
-        response->cors_exposed_header_names_.insert(name);
+      if (explicitly_exposed) {
+        response->cors_exposed_header_names_.emplace(name.Ascii().data(),
+                                                     name.Ascii().length());
+      }
       response->header_list_->Append(name, header.second);
     }
   }

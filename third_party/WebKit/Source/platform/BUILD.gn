@@ -605,6 +605,7 @@ component("platform") {
     "exported/WebFont.cpp",
     "exported/WebFontDescription.cpp",
     "exported/WebHTTPBody.cpp",
+    "exported/WebHTTPHeaderMap.cpp",
     "exported/WebHTTPLoadInfo.cpp",
     "exported/WebImage.cpp",
     "exported/WebImageGenerator.cpp",

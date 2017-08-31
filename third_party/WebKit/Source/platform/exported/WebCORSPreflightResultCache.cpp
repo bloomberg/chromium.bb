@@ -27,12 +27,12 @@
 #include "public/platform/WebCORSPreflightResultCache.h"
 
 #include <memory>
+#include "base/lazy_instance.h"
 #include "platform/HTTPNames.h"
 #include "platform/loader/fetch/FetchUtils.h"
 #include "platform/loader/fetch/ResourceResponse.h"
 #include "platform/wtf/CurrentTime.h"
 #include "platform/wtf/StdLibExtras.h"
-#include "platform/wtf/ThreadSpecific.h"
 #include "public/platform/WebCORS.h"
 
 namespace blink {
@@ -54,17 +54,16 @@ bool ParseAccessControlMaxAge(const String& string, unsigned& expiry_delta) {
   return ok;
 }
 
-template <class HashType>
-void AddToAccessControlAllowList(const String& string,
+template <class SetType>
+void AddToAccessControlAllowList(const std::string& string,
                                  unsigned start,
                                  unsigned end,
-                                 HashSet<String, HashType>& set) {
-  StringImpl* string_impl = string.Impl();
-  if (!string_impl)
+                                 SetType& set) {
+  if (string.empty())
     return;
 
   // Skip white space from start.
-  while (start <= end && IsSpaceOrNewline((*string_impl)[start]))
+  while (start <= end && IsSpaceOrNewline(string.at(start)))
     ++start;
 
   // only white space
@@ -72,15 +71,14 @@ void AddToAccessControlAllowList(const String& string,
     return;
 
   // Skip white space from end.
-  while (end && IsSpaceOrNewline((*string_impl)[end]))
+  while (end && IsSpaceOrNewline(string.at(end)))
     --end;
 
-  set.insert(string.Substring(start, end - start + 1));
+  set.insert(string.substr(start, end - start + 1));
 }
 
-template <class HashType>
-bool ParseAccessControlAllowList(const String& string,
-                                 HashSet<String, HashType>& set) {
+template <class SetType>
+bool ParseAccessControlAllowList(const std::string& string, SetType& set) {
   unsigned start = 0;
   size_t end;
   while ((end = string.find(',', start)) != kNotFound) {
@@ -94,6 +92,9 @@ bool ParseAccessControlAllowList(const String& string,
   return true;
 }
 
+static base::LazyInstance<WebCORSPreflightResultCache>::Leaky lazy_cache_ptr_ =
+    LAZY_INSTANCE_INITIALIZER;
+
 }  // namespace
 
 WebCORSPreflightResultCacheItem::WebCORSPreflightResultCacheItem(
@@ -106,7 +107,7 @@ WebCORSPreflightResultCacheItem::WebCORSPreflightResultCacheItem(
 std::unique_ptr<WebCORSPreflightResultCacheItem>
 WebCORSPreflightResultCacheItem::Create(
     const WebURLRequest::FetchCredentialsMode credentials_mode,
-    const HTTPHeaderMap& response_header,
+    const WebHTTPHeaderMap& response_header,
     WebString& error_description) {
   std::unique_ptr<WebCORSPreflightResultCacheItem> item =
       base::WrapUnique(new WebCORSPreflightResultCacheItem(credentials_mode));
@@ -118,11 +119,16 @@ WebCORSPreflightResultCacheItem::Create(
 }
 
 bool WebCORSPreflightResultCacheItem::Parse(
-    const HTTPHeaderMap& response_header,
+    const WebHTTPHeaderMap& response_header,
     WebString& error_description) {
   methods_.clear();
+
+  const HTTPHeaderMap& response_header_map = response_header.GetHTTPHeaderMap();
+
   if (!ParseAccessControlAllowList(
-          response_header.Get(HTTPNames::Access_Control_Allow_Methods),
+          response_header_map.Get(HTTPNames::Access_Control_Allow_Methods)
+              .Ascii()
+              .data(),
           methods_)) {
     error_description =
         "Cannot parse Access-Control-Allow-Methods response header field in "
@@ -132,7 +138,9 @@ bool WebCORSPreflightResultCacheItem::Parse(
 
   headers_.clear();
   if (!ParseAccessControlAllowList(
-          response_header.Get(HTTPNames::Access_Control_Allow_Headers),
+          response_header_map.Get(HTTPNames::Access_Control_Allow_Headers)
+              .Ascii()
+              .data(),
           headers_)) {
     error_description =
         "Cannot parse Access-Control-Allow-Headers response header field in "
@@ -142,7 +150,7 @@ bool WebCORSPreflightResultCacheItem::Parse(
 
   unsigned expiry_delta;
   if (ParseAccessControlMaxAge(
-          response_header.Get(HTTPNames::Access_Control_Max_Age),
+          response_header_map.Get(HTTPNames::Access_Control_Max_Age),
           expiry_delta)) {
     if (expiry_delta > kMaxPreflightCacheTimeoutSeconds)
       expiry_delta = kMaxPreflightCacheTimeoutSeconds;
@@ -158,7 +166,8 @@ bool WebCORSPreflightResultCacheItem::Parse(
 bool WebCORSPreflightResultCacheItem::AllowsCrossOriginMethod(
     const WebString& method,
     WebString& error_description) const {
-  if (methods_.Contains(method) || WebCORS::IsCORSSafelistedMethod(method))
+  if (methods_.find(method.Ascii().data()) != methods_.end() ||
+      FetchUtils::IsCORSSafelistedMethod(method))
     return true;
 
   error_description.Assign(WebString::FromASCII("Method " + method.Ascii() +
@@ -170,10 +179,10 @@ bool WebCORSPreflightResultCacheItem::AllowsCrossOriginMethod(
 }
 
 bool WebCORSPreflightResultCacheItem::AllowsCrossOriginHeaders(
-    const HTTPHeaderMap& request_headers,
+    const WebHTTPHeaderMap& request_headers,
     WebString& error_description) const {
-  for (const auto& header : request_headers) {
-    if (!headers_.Contains(header.key) &&
+  for (const auto& header : request_headers.GetHTTPHeaderMap()) {
+    if (headers_.find(header.key.Ascii().data()) == headers_.end() &&
         !FetchUtils::IsCORSSafelistedHeader(header.key, header.value) &&
         !FetchUtils::IsForbiddenHeaderName(header.key)) {
       error_description.Assign(
@@ -189,7 +198,7 @@ bool WebCORSPreflightResultCacheItem::AllowsCrossOriginHeaders(
 bool WebCORSPreflightResultCacheItem::AllowsRequest(
     WebURLRequest::FetchCredentialsMode credentials_mode,
     const WebString& method,
-    const HTTPHeaderMap& request_headers) const {
+    const WebHTTPHeaderMap& request_headers) const {
   WebString ignored_explanation;
 
   if (absolute_expiry_time_ < CurrentTime())
@@ -205,17 +214,19 @@ bool WebCORSPreflightResultCacheItem::AllowsRequest(
 }
 
 WebCORSPreflightResultCache& WebCORSPreflightResultCache::Shared() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<WebCORSPreflightResultCache>,
-                                  cache, ());
-  return *cache;
+  return lazy_cache_ptr_.Get();
 }
 
+WebCORSPreflightResultCache::~WebCORSPreflightResultCache() {}
+
 void WebCORSPreflightResultCache::AppendEntry(
-    const WebString& origin,
-    const WebURL& url,
+    const WebString& web_origin,
+    const WebURL& web_url,
     std::unique_ptr<WebCORSPreflightResultCacheItem> preflight_result) {
-  preflight_hash_map_[origin.Ascii()][url.GetString().Ascii()] =
-      std::move(preflight_result);
+  std::string url(web_url.GetString().Ascii());
+  std::string origin(web_origin.Ascii());
+
+  preflight_hash_map_[origin][url] = std::move(preflight_result);
 }
 
 bool WebCORSPreflightResultCache::CanSkipPreflight(
@@ -223,7 +234,7 @@ bool WebCORSPreflightResultCache::CanSkipPreflight(
     const WebURL& web_url,
     WebURLRequest::FetchCredentialsMode credentials_mode,
     const WebString& method,
-    const HTTPHeaderMap& request_headers) {
+    const WebHTTPHeaderMap& request_headers) {
   std::string origin(web_origin.Ascii());
   std::string url(web_url.GetString().Ascii());
 
