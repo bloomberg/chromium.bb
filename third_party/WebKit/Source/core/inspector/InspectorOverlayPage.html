@@ -722,8 +722,8 @@ function emptyBounds()
 
 function _drawLayoutGridHighlight(highlight, context)
 {
-    var originX = highlight.columns.origin - 0.5;
-    var originY = highlight.rows.origin - 0.5;
+    var originX = highlight.columns.origin;
+    var originY = highlight.rows.origin;
 
     var columnGap = highlight.columns.gap;
     var rowGap = highlight.rows.gap;
@@ -734,37 +734,41 @@ function _drawLayoutGridHighlight(highlight, context)
     if (!rows.length || !columns.length)
         return;
 
+    context.save();
+    context.translate(originX + 0.5, originY + 0.5);
+    context.scale(pageScaleFactor, pageScaleFactor)
+
     if (columnGap > 1 && highlight.isPrimaryGrid) {
-        var top = rows[0] + originY;
-        var height = rows[rows.length - 1] - rows[0] + 1;
+        var top = rows[0];
+        var height = rows[rows.length - 1] - rows[0];
         for (var i = 1; i < columns.length - 1; i++)
-            context.clearRect(columns[i] - columnGap + originX, top, columnGap, height);
+            context.clearRect(columns[i] - columnGap, top, columnGap, height);
     }
 
     if (rowGap > 1 && highlight.isPrimaryGrid) {
-        var left = columns[0] + originX;
-        var width = columns[columns.length - 1] - columns[0] + 1;
+        var left = columns[0];
+        var width = columns[columns.length - 1] - columns[0];
         for (var i = 1; i < rows.length - 1; i++)
-            context.clearRect(left, rows[i] - rowGap + originY, width, rowGap);
+            context.clearRect(left, rows[i] - rowGap, width, rowGap);
     }
 
     context.setLineDash([3, 3]);
     context.strokeStyle = highlight.color;
 
     for (var column = 1; column < columns.length; column++) {
-        var x = originX + columns[column - 1];
-        var width = columns[column] - columns[column - 1] + 1;
+        var x = columns[column - 1];
+        var width = columns[column] - columns[column - 1];
         if (column !== columns.length - 1)
             width -= columnGap;
-
         for (var row = 1; row < rows.length; row++) {
-            var y = originY + rows[row - 1];
-            var height = rows[row] - rows[row - 1] + 1;
+            var y = rows[row - 1];
+            var height = rows[row] - rows[row - 1];
             if (row !== rows.length - 1)
                 height -= rowGap;
             context.strokeRect(x, y, width, height);
         }
     }
+    context.restore();
 }
 
 function drawHighlight(highlight, context)
