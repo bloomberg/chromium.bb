@@ -15,6 +15,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.StringRes;
 import android.text.InputType;
 import android.text.SpannableString;
 import android.text.Spanned;
@@ -367,20 +368,23 @@ public class PasswordEntryEditor extends Fragment {
         });
     }
 
-    private void changeHowPasswordIsDisplayed(int visibilityIcon, int inputType) {
+    private void changeHowPasswordIsDisplayed(
+            int visibilityIcon, int inputType, @StringRes int annotation) {
         TextView passwordView = (TextView) mView.findViewById(R.id.password_entry_editor_password);
         ImageButton viewPasswordButton =
                 (ImageButton) mView.findViewById(R.id.password_entry_editor_view_password);
         passwordView.setText(mExtras.getString(SavePasswordsPreferences.PASSWORD_LIST_PASSWORD));
         passwordView.setInputType(inputType);
         viewPasswordButton.setImageResource(visibilityIcon);
+        viewPasswordButton.setContentDescription(getActivity().getString(annotation));
     }
 
     private void displayPassword() {
         getActivity().getWindow().setFlags(LayoutParams.FLAG_SECURE, LayoutParams.FLAG_SECURE);
 
-        changeHowPasswordIsDisplayed(
-                R.drawable.ic_visibility_off, InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
+        changeHowPasswordIsDisplayed(R.drawable.ic_visibility_off,
+                InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD,
+                R.string.password_entry_editor_hide_stored_password);
         RecordHistogram.recordEnumeratedHistogram(
                 "PasswordManager.Android.PasswordCredentialEntry.Password",
                 PASSWORD_ACTION_DISPLAYED, PASSWORD_ACTION_BOUNDARY);
@@ -388,7 +392,8 @@ public class PasswordEntryEditor extends Fragment {
 
     private void hidePassword() {
         changeHowPasswordIsDisplayed(R.drawable.ic_visibility,
-                InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD,
+                R.string.password_entry_editor_view_stored_password);
         RecordHistogram.recordEnumeratedHistogram(
                 "PasswordManager.Android.PasswordCredentialEntry.Password", PASSWORD_ACTION_HIDDEN,
                 PASSWORD_ACTION_BOUNDARY);

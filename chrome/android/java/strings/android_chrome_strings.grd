@@ -449,6 +449,9 @@ CHAR-LIMIT guidelines:
       <message name="IDS_PASSWORD_ENTRY_EDITOR_DELETE_STORED_PASSWORD_ACTION_TITLE" desc='Title for button on action bar that deletes the stored password.'>
         Delete password
       </message>
+      <message name="IDS_PASSWORD_ENTRY_EDITOR_HIDE_STORED_PASSWORD" desc="A tooltip on a button that hides the saved password that is being shown.">
+        Hide password
+      </message>
       <message name="IDS_PASSWORD_ENTRY_EDITOR_DELETE_STORED_PASSWORD" desc='Content description for the button that allows users to delete the stored password.'>
         Delete stored password
       </message>
