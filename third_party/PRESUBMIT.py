@@ -46,6 +46,8 @@ def _CheckThirdPartyReadmesUpdated(input_api, output_api):
         not local_path.startswith('third_party' + input_api.os_path.sep +
                                   'WebKit' + input_api.os_path.sep) and
         not local_path.startswith('third_party' + input_api.os_path.sep +
+                                  'blink' + input_api.os_path.sep) and
+        not local_path.startswith('third_party' + input_api.os_path.sep +
                                   'mojo' + input_api.os_path.sep) and
         not local_path.startswith('third_party' + input_api.os_path.sep +
                                   'boringssl' + input_api.os_path.sep)):
