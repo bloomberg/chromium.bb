@@ -10,7 +10,7 @@ login.createScreen('UpdateScreen', 'update', function() {
   var USER_ACTION_CANCEL_UPDATE_SHORTCUT = 'cancel-update';
   var CONTEXT_KEY_TIME_LEFT_SEC = 'time-left-sec';
   var CONTEXT_KEY_SHOW_TIME_LEFT = 'show-time-left';
-  var CONTEXT_KEY_UPDATE_MESSAGE = 'update-msg';
+  var CONTEXT_KEY_UPDATE_COMPLETED = 'update-completed';
   var CONTEXT_KEY_SHOW_CURTAIN = 'show-curtain';
   var CONTEXT_KEY_SHOW_PROGRESS_MESSAGE = 'show-progress-msg';
   var CONTEXT_KEY_PROGRESS = 'progress';
@@ -33,8 +33,8 @@ login.createScreen('UpdateScreen', 'update', function() {
             self.showEstimatedTimeLeft(show_time_left);
           });
       this.context.addObserver(
-          CONTEXT_KEY_UPDATE_MESSAGE, function(update_msg) {
-            self.setUpdateMessage(update_msg);
+          CONTEXT_KEY_UPDATE_COMPLETED, function(is_completed) {
+            self.setUpdateCompleted(is_completed);
           });
       this.context.addObserver(
           CONTEXT_KEY_SHOW_CURTAIN, function(show_curtain) {
@@ -146,12 +146,12 @@ login.createScreen('UpdateScreen', 'update', function() {
     },
 
     /**
-     * Sets update message, which is shown above the progress bar.
-     * @param {text} message Message which is shown by the label.
+     * Marks update completed. Shows "update completed" message.
+     * @param {boolean} is_completed True if update process is completed.
      */
-    setUpdateMessage: function(message) {
-      $('update-upper-label').textContent = message;
-      $('oobe-update-md').updateUpperLabel = message;
+    setUpdateCompleted: function(is_completed) {
+      $('update-upper-label').hidden = is_completed;
+      $('oobe-update-md').updateCompleted = is_completed;
     },
 
     /**
