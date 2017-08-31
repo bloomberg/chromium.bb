@@ -62,7 +62,7 @@ class FakeCodecAllocator : public testing::NiceMock<AVDACodecAllocator> {
 
   // Returns the destruction observer for the most recent codec.  We retain
   // ownership of it.
-  DestructionObservable::DestructionObserver* codec_destruction_observer() {
+  DestructionObserver* codec_destruction_observer() {
     return most_recent_codec_destruction_observer_.get();
   }
 
@@ -78,8 +78,7 @@ class FakeCodecAllocator : public testing::NiceMock<AVDACodecAllocator> {
   MockMediaCodecBridge* most_recent_codec_;
 
   // DestructionObserver for |most_recent_codec_|.
-  std::unique_ptr<DestructionObservable::DestructionObserver>
-      most_recent_codec_destruction_observer_;
+  std::unique_ptr<DestructionObserver> most_recent_codec_destruction_observer_;
 
   // The most recent overlay provided during codec allocation.
   AndroidOverlay* most_recent_overlay_ = nullptr;
