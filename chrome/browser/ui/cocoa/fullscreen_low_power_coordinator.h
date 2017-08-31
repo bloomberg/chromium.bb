@@ -20,7 +20,7 @@
 // or not the current web content can be displayed in fullscreen low power mode,
 // and the BrowserWindowController, which tells this whether or not there is any
 // UI that the fullscreen low power window would cover.
-class FullscreenLowPowerCoordinatorCocoa
+class FullscreenLowPowerCoordinatorCocoa final
     : public ui::FullscreenLowPowerCoordinator {
  public:
   FullscreenLowPowerCoordinatorCocoa(NSWindow* content_window,
