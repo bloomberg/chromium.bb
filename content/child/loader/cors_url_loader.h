@@ -31,36 +31,30 @@ class CONTENT_EXPORT CORSURLLoader : public mojom::URLLoader,
   ~CORSURLLoader() override;
 
   // mojom::URLLoader overrides:
-
   void FollowRedirect() override;
-
   void SetPriority(net::RequestPriority priority,
                    int intra_priority_value) override;
 
   // mojom::URLLoaderClient overrides:
-
   void OnReceiveResponse(const ResourceResponseHead& head,
                          const base::Optional<net::SSLInfo>& ssl_info,
                          mojom::DownloadedTempFilePtr downloaded_file) override;
-
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
                          const ResourceResponseHead& head) override;
-
   void OnDataDownloaded(int64_t data_length, int64_t encoded_length) override;
-
   void OnUploadProgress(int64_t current_position,
                         int64_t total_size,
                         base::OnceCallback<void()> callback) override;
-
   void OnReceiveCachedMetadata(const std::vector<uint8_t>& data) override;
-
   void OnTransferSizeUpdated(int32_t transfer_size_diff) override;
-
   void OnStartLoadingResponseBody(
       mojo::ScopedDataPipeConsumerHandle body) override;
-
   void OnComplete(
       const ResourceRequestCompletionStatus& completion_status) override;
+
+  // Called when there is a connection error on the upstream pipe used for the
+  // actual request.
+  void OnUpstreamConnectionError();
 
  private:
   // This raw URLLoaderFactory pointer is shared with the CORSURLLoaderFactory
