@@ -108,9 +108,19 @@ class MESSAGE_CENTER_EXPORT RichNotificationData {
   // notification. Optional.
   gfx::Image small_image;
 
-  // Vector version of |small_image|. Used by Notification::GetMaskedSmallIcon.
+  // Vector version of |small_image|.
+  // Used by Notification::GenerateMaskedSmallIcon.
   // If not available, |small_image| will be used by the method. Optional.
-  gfx::VectorIcon vector_small_image = gfx::kNoneIcon;
+  //
+  // Due to the restriction of CreateVectorIcon, this should be a pointer to
+  // globally defined VectorIcon instance e.g. kNotificationCapsLockIcon.
+  // gfx::Image created by gfx::CreateVectorIcon internally stores reference to
+  // VectorIcon, so the VectorIcon should live longer than gfx::Image instance.
+  // As a temporary solution to this problem, we make this variable a pointer
+  // and only pass globally defined constants.
+  // TODO(tetsui): Remove the pointer, after fixing VectorIconSource not to
+  // retain VectorIcon reference.  https://crbug.com/760866
+  const gfx::VectorIcon* vector_small_image = &gfx::kNoneIcon;
 
   // Items to display on the notification. Only applicable for notifications
   // that have type NOTIFICATION_TYPE_MULTIPLE.
@@ -323,10 +333,13 @@ class MESSAGE_CENTER_EXPORT Notification {
   }
 
   const gfx::VectorIcon& vector_small_image() const {
-    return optional_fields_.vector_small_image;
+    return *optional_fields_.vector_small_image;
   }
+  // Due to the restriction of CreateVectorIcon, this should be a pointer to
+  // globally defined VectorIcon instance e.g. kNotificationCapsLockIcon.
+  // See detailed comment in RichNotificationData::vector_small_image.
   void set_vector_small_image(const gfx::VectorIcon& image) {
-    optional_fields_.vector_small_image = image;
+    optional_fields_.vector_small_image = &image;
   }
 
   // Mask the color of |small_image| to the given |color|.
