@@ -8,6 +8,7 @@
 #include <type_traits>
 
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "components/crash/content/app/crashpad.h"
 #include "third_party/crashpad/crashpad/client/crashpad_client.h"
 
@@ -71,3 +72,30 @@ void SetCrashKeyValueImplEx(const char* key, const char* value) {
 void ClearCrashKeyValueImplEx(const char* key) {
   crash_reporter::ClearCrashKey(key);
 }
+
+HANDLE InjectDumpForHungInput(HANDLE process, void* serialized_crash_keys) {
+  return CreateRemoteThread(
+      process, nullptr, 0,
+      crash_reporter::internal::DumpProcessForHungInputThread,
+      serialized_crash_keys, 0, nullptr);
+}
+
+HANDLE InjectDumpForHungInputNoCrashKeys(HANDLE process, int reason) {
+  return CreateRemoteThread(
+      process, nullptr, 0,
+      crash_reporter::internal::DumpProcessForHungInputNoCrashKeysThread,
+      reinterpret_cast<void*>(reason), 0, nullptr);
+}
+
+#if defined(ARCH_CPU_X86_64)
+
+void RegisterNonABICompliantCodeRange(void* start, size_t size_in_bytes) {
+  crash_reporter::internal::RegisterNonABICompliantCodeRangeImpl(start,
+                                                                 size_in_bytes);
+}
+
+void UnregisterNonABICompliantCodeRange(void* start) {
+  crash_reporter::internal::UnregisterNonABICompliantCodeRangeImpl(start);
+}
+
+#endif  // ARCH_CPU_X86_64

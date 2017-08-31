@@ -1,10 +1,45 @@
 ; Copyright 2013 The Chromium Authors. All rights reserved.
 ; Use of this source code is governed by a BSD-style license that can be
 ; found in the LICENSE file.
-
 LIBRARY  "chrome_elf.dll"
 
 EXPORTS
+  ; When functions are added to this file, they must also be added to
+  ; chrome_elf_x86.def
+
+  ; From components/crash/content/app/crashpad.cc
+  ClearCrashKeyValueImpl
+  ClearCrashKeyValueImplEx
+  RequestSingleCrashUploadImpl
+  SetCrashKeyValueImpl
+  SetCrashKeyValueImplEx
+  SetUploadConsentImpl
+
+  ; From components/crash/content/app/crashpad_win.cc
+  CrashForException
+  InjectDumpForHungInput
+  InjectDumpForHungInputNoCrashKeys
+
+  ; From chrome_elf/crash_helper.cc
+  GetCrashReportsImpl
+  SetMetricsClientId
+
+  ; From chrome_elf_main.cc
+  DumpProcessWithoutCrash
+  GetUserDataDirectoryThunk
+  SignalChromeElf
+  SignalInitializeCrashReporting
+
+  ; From chrome/install_static
+  GetInstallDetailsPayload
+
+  ; From chrome_elf/blacklist.cc
+  AddDllToBlacklist
+  GetBlacklistIndex
+  IsBlacklistInitialized
+  SuccessfullyBlocked
+
+  ; X64-only exports
   ; From components/crash/content/app/crashpad_win.cc
   RegisterNonABICompliantCodeRange
   UnregisterNonABICompliantCodeRange

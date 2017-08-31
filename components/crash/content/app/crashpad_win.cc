@@ -158,8 +158,6 @@ base::FilePath PlatformCrashpadInitialization(
   return database_path;
 }
 
-namespace {
-
 // We need to prevent ICF from folding DumpProcessForHungInputThread(),
 // DumpProcessForHungInputNoCrashKeysThread() together, since that makes them
 // indistinguishable in crash dumps. We do this by making the function
@@ -198,36 +196,6 @@ DWORD WINAPI DumpProcessForHungInputNoCrashKeysThread(void* reason) {
 MSVC_POP_WARNING()
 MSVC_ENABLE_OPTIMIZE()
 
-}  // namespace
-
-}  // namespace internal
-}  // namespace crash_reporter
-
-extern "C" {
-
-
-// Injects a thread into a remote process to dump state when there is no crash.
-// |serialized_crash_keys| is a nul terminated string that represents serialized
-// crash keys sent from the browser. Keys and values are separated by ':', and
-// key/value pairs are separated by ','. All keys should be previously
-// registered as crash keys. This method is used solely to classify hung input.
-HANDLE __cdecl InjectDumpForHungInput(HANDLE process,
-                                      void* serialized_crash_keys) {
-  return CreateRemoteThread(
-      process, nullptr, 0,
-      crash_reporter::internal::DumpProcessForHungInputThread,
-      serialized_crash_keys, 0, nullptr);
-}
-
-// Injects a thread into a remote process to dump state when there is no crash.
-// This method provides |reason| which will interpreted as an integer and logged
-// as a crash key.
-HANDLE __cdecl InjectDumpForHungInputNoCrashKeys(HANDLE process, int reason) {
-  return CreateRemoteThread(
-      process, nullptr, 0,
-      crash_reporter::internal::DumpProcessForHungInputNoCrashKeysThread,
-      reinterpret_cast<void*>(reason), 0, nullptr);
-}
 
 #if defined(ARCH_CPU_X86_64)
 
@@ -258,8 +226,8 @@ struct ExceptionHandlerRecord {
 };
 
 // These are GetProcAddress()d from V8 binding code.
-void __cdecl RegisterNonABICompliantCodeRange(void* start,
-                                              size_t size_in_bytes) {
+void __cdecl RegisterNonABICompliantCodeRangeImpl(void* start,
+                                                  size_t size_in_bytes) {
   ExceptionHandlerRecord* record =
       reinterpret_cast<ExceptionHandlerRecord*>(start);
 
@@ -302,7 +270,7 @@ void __cdecl RegisterNonABICompliantCodeRange(void* start,
       &record->runtime_function, 1, reinterpret_cast<DWORD64>(start)));
 }
 
-void __cdecl UnregisterNonABICompliantCodeRange(void* start) {
+void UnregisterNonABICompliantCodeRangeImpl(void* start) {
   ExceptionHandlerRecord* record =
       reinterpret_cast<ExceptionHandlerRecord*>(start);
 
@@ -310,4 +278,5 @@ void __cdecl UnregisterNonABICompliantCodeRange(void* start) {
 }
 #endif  // ARCH_CPU_X86_64
 
-}  // extern "C"
+}  // namespace internal
+}  // namespace crash_reporter

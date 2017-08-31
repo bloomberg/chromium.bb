@@ -20,4 +20,8 @@ static_library("child") {
     "//gin",
     "//v8",
   ]
+
+  if (is_win) {
+    deps += [ "//components/crash/content/app:crash_export_thunk_include" ]
+  }
 }

@@ -17,6 +17,9 @@
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_mach_port.h"
 #endif
+#if defined(OS_WIN)
+#include <windows.h>
+#endif
 
 namespace crashpad {
 class CrashpadClient;
@@ -131,6 +134,18 @@ namespace internal {
 // that it may be reused by GetCrashKeysForKasko.
 void GetPlatformCrashpadAnnotations(
     std::map<std::string, std::string>* annotations);
+
+// The thread functions that implement the InjectDumpForHungInput and
+// InjectDumpForHungInputNoCrashKeys in the target process.
+DWORD WINAPI DumpProcessForHungInputThread(void* crash_keys_str);
+DWORD WINAPI DumpProcessForHungInputNoCrashKeysThread(void* reason);
+
+#if defined(ARCH_CPU_X86_64)
+// V8 support functions.
+void RegisterNonABICompliantCodeRangeImpl(void* start, size_t size_in_bytes);
+void UnregisterNonABICompliantCodeRangeImpl(void* start);
+#endif  // defined(ARCH_CPU_X86_64)
+
 #endif  // defined(OS_WIN)
 
 // The platform-specific portion of InitializeCrashpad(). On windows, if
