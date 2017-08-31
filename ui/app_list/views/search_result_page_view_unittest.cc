@@ -4,30 +4,31 @@
 
 #include "ui/app_list/views/search_result_page_view.h"
 
+#include <memory>
 #include <utility>
 #include <vector>
 
-#include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "ui/app_list/app_list_features.h"
 #include "ui/app_list/app_list_model.h"
-#include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/test/app_list_test_view_delegate.h"
 #include "ui/app_list/test/test_search_result.h"
+#include "ui/app_list/views/app_list_main_view.h"
+#include "ui/app_list/views/app_list_view.h"
+#include "ui/app_list/views/contents_view.h"
 #include "ui/app_list/views/search_result_list_view.h"
-#include "ui/app_list/views/search_result_list_view_delegate.h"
 #include "ui/app_list/views/search_result_tile_item_list_view.h"
 #include "ui/app_list/views/search_result_view.h"
-#include "ui/views/controls/textfield/textfield.h"
+#include "ui/aura/window.h"
 #include "ui/views/test/views_test_base.h"
 
 namespace app_list {
 namespace test {
 
 class SearchResultPageViewTest : public views::ViewsTestBase,
-                                 public SearchResultListViewDelegate {
+                                 public testing::WithParamInterface<bool> {
  public:
   SearchResultPageViewTest() = default;
   ~SearchResultPageViewTest() override = default;
@@ -35,27 +36,50 @@ class SearchResultPageViewTest : public views::ViewsTestBase,
   // Overridden from testing::Test:
   void SetUp() override {
     views::ViewsTestBase::SetUp();
-    view_.reset(new SearchResultPageView());
-    list_view_ = new SearchResultListView(this, &view_delegate_);
-    view_->AddSearchResultContainerView(GetResults(), list_view_);
-    textfield_.reset(new views::Textfield());
+
+    if (testing::UnitTest::GetInstance()->current_test_info()->value_param())
+      test_with_fullscreen_ = GetParam();
+    if (!test_with_fullscreen_) {
+      scoped_feature_list_.InitAndDisableFeature(
+          features::kEnableFullscreenAppList);
+    }
+
+    delegate_.reset(new AppListTestViewDelegate);
+    app_list_view_ = new AppListView(delegate_.get());
+    gfx::NativeView parent = GetContext();
+    app_list_view_->Initialize(parent, 0, false, false);
+    // TODO(warx): remove MaybeSetAnchorPoint setup when bubble launcher is
+    // removed from code base.
+    app_list_view_->MaybeSetAnchorPoint(
+        parent->GetBoundsInRootWindow().CenterPoint());
+    app_list_view_->GetWidget()->Show();
+
+    ContentsView* contents_view =
+        app_list_view_->app_list_main_view()->contents_view();
+    view_ = contents_view->search_results_page_view();
     tile_list_view_ =
-        new SearchResultTileItemListView(textfield_.get(), &view_delegate_);
-    view_->AddSearchResultContainerView(GetResults(), tile_list_view_);
+        contents_view->search_result_tile_item_list_view_for_test();
+    list_view_ = contents_view->search_result_list_view_for_test();
+  }
+  void TearDown() override {
+    app_list_view_->GetWidget()->Close();
+    views::ViewsTestBase::TearDown();
   }
 
  protected:
-  SearchResultPageView* view() { return view_.get(); }
+  SearchResultPageView* view() const { return view_; }
 
-  SearchResultListView* list_view() { return list_view_; }
-  SearchResultTileItemListView* tile_list_view() { return tile_list_view_; }
+  SearchResultTileItemListView* tile_list_view() const {
+    return tile_list_view_;
+  }
+  SearchResultListView* list_view() const { return list_view_; }
 
-  AppListModel::SearchResults* GetResults() {
-    return view_delegate_.GetModel()->results();
+  AppListModel::SearchResults* GetResults() const {
+    return delegate_->GetModel()->results();
   }
 
   void SetUpSearchResults(
-      const std::vector<std::pair<SearchResult::DisplayType, int>>
+      const std::vector<std::pair<SearchResult::DisplayType, int>>&
           result_types) {
     AppListModel::SearchResults* results = GetResults();
     results->DeleteAll();
@@ -77,46 +101,6 @@ class SearchResultPageViewTest : public views::ViewsTestBase,
     RunPendingMessages();
   }
 
-  int GetSelectedIndex() { return view_->selected_index(); }
-
-  bool KeyPress(ui::KeyboardCode key_code) { return KeyPress(key_code, false); }
-
-  bool KeyPress(ui::KeyboardCode key_code, bool shift_down) {
-    int flags = ui::EF_NONE;
-    if (shift_down)
-      flags |= ui::EF_SHIFT_DOWN;
-    ui::KeyEvent event(ui::ET_KEY_PRESSED, key_code, flags);
-    return view_->OnKeyPressed(event);
-  }
-
- private:
-  void OnResultInstalled(SearchResult* result) override {}
-
-  SearchResultListView* list_view_;
-  SearchResultTileItemListView* tile_list_view_;
-
-  AppListTestViewDelegate view_delegate_;
-  std::unique_ptr<SearchResultPageView> view_;
-  std::unique_ptr<views::Textfield> textfield_;
-
-  DISALLOW_COPY_AND_ASSIGN(SearchResultPageViewTest);
-};
-
-class SearchResultPageViewFullscreenTest
-    : public SearchResultPageViewTest,
-      public testing::WithParamInterface<bool> {
- public:
-  SearchResultPageViewFullscreenTest() = default;
-  ~SearchResultPageViewFullscreenTest() override = default;
-
-  // Overridden from testing::Test:
-  void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kEnableFullscreenAppList);
-    SearchResultPageViewTest::SetUp();
-  }
-
- protected:
   // Add search results for test on focus movement.
   void SetUpFocusTestEnv() {
     std::vector<std::pair<SearchResult::DisplayType, int>> result_types;
@@ -133,30 +117,44 @@ class SearchResultPageViewFullscreenTest
     SetUpSearchResults(result_types);
   }
 
+  int GetSelectedIndex() const { return view_->selected_index(); }
+
+  bool KeyPress(ui::KeyboardCode key_code) { return KeyPress(key_code, false); }
+
+  bool KeyPress(ui::KeyboardCode key_code, bool shift_down) {
+    int flags = ui::EF_NONE;
+    if (shift_down)
+      flags |= ui::EF_SHIFT_DOWN;
+    ui::KeyEvent event(ui::ET_KEY_PRESSED, key_code, flags);
+    return view_->OnKeyPressed(event);
+  }
+
+  bool test_with_fullscreen() const { return test_with_fullscreen_; }
+
  private:
+  AppListView* app_list_view_ = nullptr;  // Owned by native widget.
+  SearchResultPageView* view_ = nullptr;  // Owned by views hierarchy.
+  SearchResultTileItemListView* tile_list_view_ =
+      nullptr;                                 // Owned by views hierarchy.
+  SearchResultListView* list_view_ = nullptr;  // Owned by views hierarchy.
+  std::unique_ptr<AppListTestViewDelegate> delegate_;
+  bool test_with_fullscreen_ = true;
   base::test::ScopedFeatureList scoped_feature_list_;
 
-  DISALLOW_COPY_AND_ASSIGN(SearchResultPageViewFullscreenTest);
+  DISALLOW_COPY_AND_ASSIGN(SearchResultPageViewTest);
 };
 
-TEST_F(SearchResultPageViewTest, DirectionalMovement) {
-  // TODO(newcomer): this test needs to be reevaluated for the fullscreen app
-  // list (http://crbug.com/759779).
-  if (features::IsFullscreenAppListEnabled())
-    return;
-  std::vector<std::pair<SearchResult::DisplayType, int>> result_types;
-  // 3 tile results, followed by 2 list results.
-  const int kTileResults = 3;
-  const int kListResults = 2;
-  const int kNoneResults = 3;
-  result_types.push_back(
-      std::make_pair(SearchResult::DISPLAY_TILE, kTileResults));
-  result_types.push_back(
-      std::make_pair(SearchResult::DISPLAY_LIST, kListResults));
-  result_types.push_back(
-      std::make_pair(SearchResult::DISPLAY_NONE, kNoneResults));
+// Instantiate the Boolean which is used to toggle the Fullscreen app list in
+// the parameterized tests.
+INSTANTIATE_TEST_CASE_P(, SearchResultPageViewTest, testing::Bool());
 
-  SetUpSearchResults(result_types);
+// TODO(warx): This test applies to bubble launcher only. Remove this test once
+// bubble launcher is removed from code base.
+TEST_P(SearchResultPageViewTest, DirectionalMovement) {
+  if (test_with_fullscreen())
+    return;
+
+  SetUpFocusTestEnv();
   EXPECT_EQ(0, GetSelectedIndex());
   EXPECT_EQ(0, tile_list_view()->selected_index());
 
@@ -197,20 +195,8 @@ TEST_F(SearchResultPageViewTest, DirectionalMovement) {
   EXPECT_EQ(0, tile_list_view()->selected_index());
 }
 
-TEST_F(SearchResultPageViewTest, TabMovement) {
-  std::vector<std::pair<SearchResult::DisplayType, int>> result_types;
-  // 3 tile results, followed by 2 list results.
-  const int kTileResults = 3;
-  const int kListResults = 2;
-  const int kNoneResults = 3;
-  result_types.push_back(
-      std::make_pair(SearchResult::DISPLAY_TILE, kTileResults));
-  result_types.push_back(
-      std::make_pair(SearchResult::DISPLAY_LIST, kListResults));
-  result_types.push_back(
-      std::make_pair(SearchResult::DISPLAY_NONE, kNoneResults));
-
-  SetUpSearchResults(result_types);
+TEST_P(SearchResultPageViewTest, TabMovement) {
+  SetUpFocusTestEnv();
   EXPECT_EQ(0, GetSelectedIndex());
   EXPECT_EQ(0, tile_list_view()->selected_index());
 
@@ -228,11 +214,6 @@ TEST_F(SearchResultPageViewTest, TabMovement) {
   EXPECT_EQ(1, GetSelectedIndex());
   EXPECT_EQ(-1, tile_list_view()->selected_index());
   EXPECT_EQ(0, list_view()->selected_index());
-
-  // TODO(newcomer): this test needs to be reevaluated for the fullscreen app
-  // list (http://crbug.com/759779).
-  if (app_list::features::IsFullscreenAppListEnabled())
-    return;
 
   // Navigate to the second result in the list view.
   EXPECT_TRUE(KeyPress(ui::VKEY_TAB));
@@ -254,16 +235,25 @@ TEST_F(SearchResultPageViewTest, TabMovement) {
   EXPECT_EQ(-1, list_view()->selected_index());
 
   // Navigate off top of list.
-  EXPECT_TRUE(KeyPress(ui::VKEY_TAB, true));
-  EXPECT_EQ(1, tile_list_view()->selected_index());
-  EXPECT_TRUE(KeyPress(ui::VKEY_TAB, true));
-  EXPECT_EQ(0, tile_list_view()->selected_index());
-  EXPECT_FALSE(KeyPress(ui::VKEY_TAB, true));
-  EXPECT_EQ(0, GetSelectedIndex());
-  EXPECT_EQ(0, tile_list_view()->selected_index());
+  if (test_with_fullscreen()) {
+    EXPECT_TRUE(KeyPress(ui::VKEY_TAB, true));
+    EXPECT_TRUE(KeyPress(ui::VKEY_TAB, true));
+    EXPECT_FALSE(KeyPress(ui::VKEY_TAB, true));
+    EXPECT_EQ(-1, GetSelectedIndex());
+    EXPECT_EQ(-1, tile_list_view()->selected_index());
+    EXPECT_EQ(-1, list_view()->selected_index());
+  } else {
+    EXPECT_TRUE(KeyPress(ui::VKEY_TAB, true));
+    EXPECT_EQ(1, tile_list_view()->selected_index());
+    EXPECT_TRUE(KeyPress(ui::VKEY_TAB, true));
+    EXPECT_EQ(0, tile_list_view()->selected_index());
+    EXPECT_FALSE(KeyPress(ui::VKEY_TAB, true));
+    EXPECT_EQ(0, GetSelectedIndex());
+    EXPECT_EQ(0, tile_list_view()->selected_index());
+  }
 }
 
-TEST_F(SearchResultPageViewTest, ResultsSorted) {
+TEST_P(SearchResultPageViewTest, ResultsSorted) {
   AppListModel::SearchResults* results = GetResults();
 
   // Add 3 results and expect the tile list view to be the first result
@@ -293,19 +283,18 @@ TEST_F(SearchResultPageViewTest, ResultsSorted) {
 
   // Change the relevance of the tile result and expect the list results to be
   // displayed first.
+  // TODO(warx): fullscreen launcher should always have tile list view to be
+  // displayed first over list view.
   tile_result->set_relevance(0.4);
 
   results->NotifyItemsChanged(0, 1);
   RunPendingMessages();
-  // TODO(newcomer): this test needs to be reevaluated for the fullscreen app
-  // list (http://crbug.com/759779).
-  if (app_list::features::IsFullscreenAppListEnabled())
-    return;
+
   EXPECT_EQ(list_view(), view()->result_container_views()[0]);
   EXPECT_EQ(tile_list_view(), view()->result_container_views()[1]);
 }
 
-TEST_F(SearchResultPageViewTest, UpdateWithSelection) {
+TEST_P(SearchResultPageViewTest, UpdateWithSelection) {
   {
     std::vector<std::pair<SearchResult::DisplayType, int>> result_types;
     result_types.push_back(std::make_pair(SearchResult::DISPLAY_TILE, 3));
@@ -382,6 +371,8 @@ TEST_F(SearchResultPageViewTest, UpdateWithSelection) {
   EXPECT_EQ(-1, tile_list_view()->selected_index());
   EXPECT_EQ(0, list_view()->selected_index());
 }
+
+using SearchResultPageViewFullscreenTest = SearchResultPageViewTest;
 
 TEST_F(SearchResultPageViewFullscreenTest, LeftRightMovement) {
   SetUpFocusTestEnv();
@@ -463,53 +454,6 @@ TEST_F(SearchResultPageViewFullscreenTest, UpDownMovement) {
 
   // Navigate off top of list.
   EXPECT_FALSE(KeyPress(ui::VKEY_UP));
-  EXPECT_EQ(-1, GetSelectedIndex());
-  EXPECT_EQ(-1, tile_list_view()->selected_index());
-  EXPECT_EQ(-1, list_view()->selected_index());
-}
-
-TEST_F(SearchResultPageViewFullscreenTest, TabMovement) {
-  SetUpFocusTestEnv();
-  EXPECT_EQ(0, GetSelectedIndex());
-  EXPECT_EQ(0, tile_list_view()->selected_index());
-  EXPECT_EQ(-1, list_view()->selected_index());
-
-  // Navigate to the second tile in the tile group.
-  EXPECT_TRUE(KeyPress(ui::VKEY_TAB));
-  EXPECT_EQ(0, GetSelectedIndex());
-  EXPECT_EQ(1, tile_list_view()->selected_index());
-  EXPECT_EQ(-1, list_view()->selected_index());
-
-  // Navigate to the list group.
-  EXPECT_TRUE(KeyPress(ui::VKEY_TAB));
-  EXPECT_TRUE(KeyPress(ui::VKEY_TAB));
-  EXPECT_EQ(1, GetSelectedIndex());
-  EXPECT_EQ(-1, tile_list_view()->selected_index());
-  EXPECT_EQ(0, list_view()->selected_index());
-
-  // Navigate to the second result in the list view.
-  EXPECT_TRUE(KeyPress(ui::VKEY_TAB));
-  EXPECT_EQ(1, GetSelectedIndex());
-  EXPECT_EQ(1, list_view()->selected_index());
-
-  // Attempt to navigate off bottom of list items.
-  EXPECT_FALSE(KeyPress(ui::VKEY_TAB));
-  EXPECT_EQ(1, GetSelectedIndex());
-  EXPECT_EQ(1, list_view()->selected_index());
-
-  // Navigate back to the tile group (should select the last tile result).
-  EXPECT_TRUE(KeyPress(ui::VKEY_TAB, true));
-  EXPECT_EQ(1, GetSelectedIndex());
-  EXPECT_EQ(0, list_view()->selected_index());
-  EXPECT_TRUE(KeyPress(ui::VKEY_TAB, true));
-  EXPECT_EQ(0, GetSelectedIndex());
-  EXPECT_EQ(2, tile_list_view()->selected_index());
-  EXPECT_EQ(-1, list_view()->selected_index());
-
-  // Navigate off top of list.
-  EXPECT_TRUE(KeyPress(ui::VKEY_TAB, true));
-  EXPECT_TRUE(KeyPress(ui::VKEY_TAB, true));
-  EXPECT_FALSE(KeyPress(ui::VKEY_TAB, true));
   EXPECT_EQ(-1, GetSelectedIndex());
   EXPECT_EQ(-1, tile_list_view()->selected_index());
   EXPECT_EQ(-1, list_view()->selected_index());

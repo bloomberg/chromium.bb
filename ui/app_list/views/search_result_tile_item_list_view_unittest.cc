@@ -18,7 +18,6 @@
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/test/app_list_test_view_delegate.h"
 #include "ui/app_list/test/test_search_result.h"
-#include "ui/app_list/views/search_result_list_view_delegate.h"
 #include "ui/app_list/views/search_result_view.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/test/views_test_base.h"

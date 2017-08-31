@@ -13,7 +13,6 @@
 #include "ui/app_list/app_list_export.h"
 #include "ui/app_list/app_list_model_observer.h"
 #include "ui/app_list/views/search_box_view_delegate.h"
-#include "ui/app_list/views/search_result_list_view_delegate.h"
 #include "ui/views/view.h"
 
 namespace app_list {
@@ -31,8 +30,7 @@ class SearchBoxView;
 // when the user is signed in.
 class APP_LIST_EXPORT AppListMainView : public views::View,
                                         public AppListModelObserver,
-                                        public SearchBoxViewDelegate,
-                                        public SearchResultListViewDelegate {
+                                        public SearchBoxViewDelegate {
  public:
   AppListMainView(AppListViewDelegate* delegate, AppListView* app_list_view);
   ~AppListMainView() override;
@@ -82,6 +80,9 @@ class APP_LIST_EXPORT AppListMainView : public views::View,
   // changes, necessitating a cancel of the drag operation.
   void CancelDragInActiveFolder();
 
+  // Called when the app represented by |result| is installed.
+  void OnResultInstalled(SearchResult* result);
+
  private:
   // Adds the ContentsView.
   void AddContentsViews();
@@ -93,9 +94,6 @@ class APP_LIST_EXPORT AppListMainView : public views::View,
   void QueryChanged(SearchBoxView* sender) override;
   void BackButtonPressed() override;
   void SetSearchResultSelection(bool select) override;
-
-  // Overridden from SearchResultListViewDelegate:
-  void OnResultInstalled(SearchResult* result) override;
 
   AppListViewDelegate* delegate_;  // Owned by parent view (AppListView).
   AppListModel* model_;  // Unowned; ownership is handled by |delegate_|.

@@ -4,6 +4,8 @@
 
 #include "ui/app_list/views/search_result_answer_card_view.h"
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -11,7 +13,6 @@
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/test/app_list_test_view_delegate.h"
 #include "ui/app_list/test/test_search_result.h"
-#include "ui/app_list/views/search_result_list_view_delegate.h"
 #include "ui/app_list/views/search_result_view.h"
 #include "ui/views/background.h"
 #include "ui/views/test/views_test_base.h"
