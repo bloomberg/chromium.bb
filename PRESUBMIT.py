@@ -1509,6 +1509,7 @@ def _CheckIpcOwners(input_api, output_api):
   # matching the above patterns, which trigger false positives.
   exclude_paths = [
       'third_party/crashpad/*',
+      'third_party/win_build_output/*',
   ]
 
   # Dictionary mapping an OWNERS file path to Patterns.
