@@ -1677,17 +1677,41 @@
     "NetDelayableH2AndQuicRequests": [
         {
             "platforms": [
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled3",
+                    "enable_features": [
+                        "PrioritySupportedRequestsDelayable"
+                    ]
+                }
+            ]
+        },
+        {
+            "platforms": [
+                "mac"
+            ],
+            "experiments": [
+                {
+                    "name": "EnabledHead3",
+                    "enable_features": [
+                        "HeadPriorityRequestsDelayable"
+                    ]
+                }
+            ]
+        },
+        {
+            "platforms": [
                 "chromeos",
                 "linux",
-                "mac",
-                "win",
                 "android"
             ],
             "experiments": [
                 {
-                    "name": "Enabled",
+                    "name": "Yielding3",
                     "enable_features": [
-                        "PrioritySupportedRequestsDelayable"
+                        "NetworkSchedulerYielding"
                     ]
                 }
             ]
@@ -1708,25 +1732,6 @@
                         "throughput_min_requests_in_flight": "5",
                         "upper_bound_http_rtt_transport_rtt_multiplier": "10"
                     }
-                }
-            ]
-        }
-    ],
-    "NetworkSchedulerYielding": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "win",
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "NetworkSchedulerYielding"
-                    ]
                 }
             ]
         }

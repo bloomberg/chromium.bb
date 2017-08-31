@@ -9,16 +9,17 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
+#include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/supports_user_data.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "content/common/resource_messages.h"
 #include "content/public/browser/resource_request_info.h"
@@ -60,6 +61,8 @@ const base::Feature kNetworkSchedulerYielding{
     "NetworkSchedulerYielding", base::FEATURE_DISABLED_BY_DEFAULT};
 const char kMaxRequestsBeforeYieldingParam[] = "MaxRequestsBeforeYieldingParam";
 const int kMaxRequestsBeforeYieldingDefault = 5;
+const char kYieldMsParam[] = "MaxYieldMs";
+const int kYieldMsDefault = 0;
 
 // Based on the field trial parameters, this feature will override the value of
 // the maximum number of delayable requests allowed in flight. The number of
@@ -292,7 +295,7 @@ class ResourceScheduler::ScheduledResourceRequest : public ResourceThrottle {
       // If can't start the request synchronously, post a task to start the
       // request.
       if (start_mode == START_ASYNC) {
-        base::ThreadTaskRunnerHandle::Get()->PostTask(
+        scheduler_->task_runner()->PostTask(
             FROM_HERE,
             base::BindOnce(&ScheduledResourceRequest::Start,
                            weak_ptr_factory_.GetWeakPtr(), START_SYNC));
@@ -405,24 +408,16 @@ void ResourceScheduler::RequestQueue::Insert(
 // Each client represents a tab.
 class ResourceScheduler::Client {
  public:
-  Client(bool priority_requests_delayable,
-         bool head_priority_requests_delayable,
-         bool yielding_scheduler_enabled,
-         int max_requests_before_yielding,
-         const net::NetworkQualityEstimator* const network_quality_estimator,
+  Client(const net::NetworkQualityEstimator* const network_quality_estimator,
          ResourceScheduler* resource_scheduler)
       : is_loaded_(false),
         has_html_body_(false),
         using_spdy_proxy_(false),
         in_flight_delayable_count_(0),
         total_layout_blocking_count_(0),
-        priority_requests_delayable_(priority_requests_delayable),
-        head_priority_requests_delayable_(head_priority_requests_delayable),
         num_skipped_scans_due_to_scheduled_start_(0),
         started_requests_since_yielding_(0),
         did_scheduler_yield_(false),
-        yielding_scheduler_enabled_(yielding_scheduler_enabled),
-        max_requests_before_yielding_(max_requests_before_yielding),
         network_quality_estimator_(network_quality_estimator),
         max_delayable_requests_(
             resource_scheduler->throttle_delayable_.GetMaxDelayableRequests(
@@ -677,8 +672,9 @@ class ResourceScheduler::Client {
       attributes |= kAttributeLayoutBlocking;
     } else if (request->url_request()->priority() <
                kDelayablePriorityThreshold) {
-      if (priority_requests_delayable_ ||
-          (head_priority_requests_delayable_ && !has_html_body_)) {
+      if (resource_scheduler_->priority_requests_delayable() ||
+          (resource_scheduler_->head_priority_requests_delayable() &&
+           !has_html_body_)) {
         // Resources below the delayable priority threshold that are considered
         // delayable.
         attributes |= kAttributeDelayable;
@@ -714,15 +710,19 @@ class ResourceScheduler::Client {
   void StartRequest(ScheduledResourceRequest* request,
                     StartMode start_mode,
                     RequestStartTrigger trigger) {
-    started_requests_since_yielding_ += 1;
-    if (started_requests_since_yielding_ == 1) {
-      // This is the first started request since last yielding. Post a task to
-      // reset the counter and start any yielded tasks if necessary. We post
-      // this now instead of when we first yield so that if there is a pause
-      // between requests the counter is reset.
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(&Client::ResumeIfYielded,
-                                    weak_ptr_factory_.GetWeakPtr()));
+    if (resource_scheduler_->yielding_scheduler_enabled()) {
+      started_requests_since_yielding_ += 1;
+      if (started_requests_since_yielding_ == 1) {
+        // This is the first started request since last yielding. Post a task to
+        // reset the counter and start any yielded tasks if necessary. We post
+        // this now instead of when we first yield so that if there is a pause
+        // between requests the counter is reset.
+        resource_scheduler_->task_runner()->PostDelayedTask(
+            FROM_HERE,
+            base::BindOnce(&Client::ResumeIfYielded,
+                           weak_ptr_factory_.GetWeakPtr()),
+            resource_scheduler_->yield_time());
+      }
     }
 
     // Only log on requests that were blocked by the ResourceScheduler.
@@ -794,28 +794,28 @@ class ResourceScheduler::Client {
     const net::HostPortPair& host_port_pair = request->host_port_pair();
 
     bool priority_delayable =
-        priority_requests_delayable_ ||
-        (head_priority_requests_delayable_ && !has_html_body_);
+        resource_scheduler_->priority_requests_delayable() ||
+        (resource_scheduler_->head_priority_requests_delayable() &&
+         !has_html_body_);
 
     if (!priority_delayable) {
       if (using_spdy_proxy_ && url_request.url().SchemeIs(url::kHttpScheme))
-        return ShouldStartOrYieldRequest();
+        return ShouldStartOrYieldRequest(request);
 
       url::SchemeHostPort scheme_host_port(url_request.url());
 
       net::HttpServerProperties& http_server_properties =
           *url_request.context()->http_server_properties();
-
       // TODO(willchan): We should really improve this algorithm as described in
       // crbug.com/164101. Also, theoretically we should not count a
       // request-priority capable request against the delayable requests limit.
       if (http_server_properties.SupportsRequestPriority(scheme_host_port))
-        return ShouldStartOrYieldRequest();
+        return ShouldStartOrYieldRequest(request);
     }
 
     // Non-delayable requests.
     if (!RequestAttributesAreSet(request->attributes(), kAttributeDelayable))
-      return ShouldStartOrYieldRequest();
+      return START_REQUEST;
 
     // Delayable requests.
     DCHECK_GE(in_flight_requests_.size(), in_flight_delayable_count_);
@@ -858,7 +858,7 @@ class ResourceScheduler::Client {
       }
     }
 
-    return ShouldStartOrYieldRequest();
+    return START_REQUEST;
   }
 
   // It is common for a burst of messages to come from the renderer which
@@ -873,7 +873,7 @@ class ResourceScheduler::Client {
   void ScheduleLoadAnyStartablePendingRequests(RequestStartTrigger trigger) {
     if (num_skipped_scans_due_to_scheduled_start_ == 0) {
       TRACE_EVENT0("loading", "ScheduleLoadAnyStartablePendingRequests");
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
+      resource_scheduler_->task_runner()->PostTask(
           FROM_HERE, base::BindOnce(&Client::LoadAnyStartablePendingRequests,
                                     weak_ptr_factory_.GetWeakPtr(), trigger));
     }
@@ -891,11 +891,18 @@ class ResourceScheduler::Client {
 
   // For a request that is ready to start, return START_REQUEST if the
   // scheduler doesn't need to yield, else YIELD_SCHEDULER.
-  ShouldStartReqResult ShouldStartOrYieldRequest() const {
+  ShouldStartReqResult ShouldStartOrYieldRequest(
+      ScheduledResourceRequest* request) const {
     DCHECK_GE(started_requests_since_yielding_, 0);
 
-    if (!yielding_scheduler_enabled_ ||
-        started_requests_since_yielding_ < max_requests_before_yielding_) {
+    // Don't yield if:
+    // 1. The yielding scheduler isn't enabled
+    // 2. The resource is high priority
+    // 3. There haven't been enough recent requests to warrant yielding.
+    if (!resource_scheduler_->yielding_scheduler_enabled() ||
+        request->url_request()->priority() >= kDelayablePriorityThreshold ||
+        started_requests_since_yielding_ <
+            resource_scheduler_->max_requests_before_yielding()) {
       return START_REQUEST;
     }
     return YIELD_SCHEDULER;
@@ -959,14 +966,6 @@ class ResourceScheduler::Client {
   // The number of layout-blocking in-flight requests.
   size_t total_layout_blocking_count_;
 
-  // True if requests to servers that support priorities (e.g., H2/QUIC) can
-  // be delayed.
-  bool priority_requests_delayable_;
-
-  // True if requests to servers that support priorities (e.g., H2/QUIC) can
-  // be delayed while the parser is in head.
-  bool head_priority_requests_delayable_;
-
   // The number of LoadAnyStartablePendingRequests scans that were skipped due
   // to smarter task scheduling around reprioritization.
   int num_skipped_scans_due_to_scheduled_start_;
@@ -978,12 +977,6 @@ class ResourceScheduler::Client {
   // If the scheduler had to yield the start of a request since the last
   // ResumeIfYielded task was run.
   bool did_scheduler_yield_;
-
-  // Whether or not to periodically yield when starting lots of requests.
-  bool yielding_scheduler_enabled_;
-
-  // The number of requests that can start before yielding.
-  int max_requests_before_yielding_;
 
   // Network quality estimator for network aware resource scheudling. This may
   // be null.
@@ -1010,7 +1003,12 @@ ResourceScheduler::ResourceScheduler()
       max_requests_before_yielding_(base::GetFieldTrialParamByFeatureAsInt(
           kNetworkSchedulerYielding,
           kMaxRequestsBeforeYieldingParam,
-          kMaxRequestsBeforeYieldingDefault)) {
+          kMaxRequestsBeforeYieldingDefault)),
+      yield_time_(base::TimeDelta::FromMilliseconds(
+          base::GetFieldTrialParamByFeatureAsInt(kNetworkSchedulerYielding,
+                                                 kYieldMsParam,
+                                                 kYieldMsDefault))),
+      task_runner_(base::ThreadTaskRunnerHandle::Get()) {
   // Don't run the two experiments together.
   if (priority_requests_delayable_ && head_priority_requests_delayable_)
     priority_requests_delayable_ = false;
@@ -1075,8 +1073,6 @@ void ResourceScheduler::OnClientCreated(
   DCHECK(!base::ContainsKey(client_map_, client_id));
 
   Client* client = new Client(
-      priority_requests_delayable_, head_priority_requests_delayable_,
-      yielding_scheduler_enabled_, max_requests_before_yielding_,
       network_quality_estimator, this);
   client_map_[client_id] = client;
 }
