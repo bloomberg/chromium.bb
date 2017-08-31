@@ -159,7 +159,8 @@
 
 <if expr="chromeos">
         <!-- Google Assistant -->
-        <template is="dom-if" if="[[voiceInteractionFeatureEnabled_]]">
+        <template is="dom-if" if="[[showAssistantSection_(
+            voiceInteractionFeatureEnabled_, prefs.arc.enabled.value)]]">
           <div id="assistant-subpage-trigger" class="settings-box two-line"
             on-tap="onGoogleAssistantTap_" actionable>
           <div class="start">
