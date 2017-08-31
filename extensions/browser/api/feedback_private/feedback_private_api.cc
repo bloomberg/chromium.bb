@@ -134,9 +134,12 @@ void FeedbackPrivateAPI::RequestFeedbackForFlow(
         feedback_private::OnFeedbackRequested::kEventName, std::move(args),
         browser_context_);
 
+    // TODO(weidongg/754329): Using DispatchEventWithLazyListener() is a
+    // temporary fix to the bug. Investigate a better solution that apply to all
+    // scenarios.
     EventRouter::Get(browser_context_)
-        ->DispatchEventToExtension(extension_misc::kFeedbackExtensionId,
-                                   std::move(event));
+        ->DispatchEventWithLazyListener(extension_misc::kFeedbackExtensionId,
+                                        std::move(event));
   }
 }
 
