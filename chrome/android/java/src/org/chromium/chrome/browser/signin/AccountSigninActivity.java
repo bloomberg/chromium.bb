@@ -15,6 +15,7 @@ import android.view.LayoutInflater;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.ProcessInitException;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
@@ -39,6 +40,8 @@ public class AccountSigninActivity extends AppCompatActivity
     private static final String INTENT_ACCOUNT_NAME = "AccountSigninActivity.AccountName";
     private static final String INTENT_IS_DEFAULT_ACCOUNT =
             "AccountSigninActivity.IsDefaultAccount";
+    private static final String INTENT_IS_FROM_PERSONALIZED_PROMO =
+            "AccountSigninActivity.IsFromPersonalizedPromo";
 
     @IntDef({SIGNIN_FLOW_DEFAULT, SIGNIN_FLOW_CONFIRMATION_ONLY, SIGNIN_FLOW_ADD_NEW_ACCOUNT})
     @Retention(RetentionPolicy.SOURCE)
@@ -54,18 +57,23 @@ public class AccountSigninActivity extends AppCompatActivity
     @Retention(RetentionPolicy.SOURCE)
     public @interface AccessPoint {}
 
-    private AccountSigninView mView;
-    @AccessPoint private int mAccessPoint;
+    private @AccessPoint int mAccessPoint;
+    private @SigninFlowType int mSigninFlowType;
+    private boolean mIsFromPersonalizedPromo;
 
     /**
      * A convenience method to create a AccountSigninActivity passing the access point as an
      * intent.
      * @param accessPoint {@link AccessPoint} for starting signin flow. Used in metrics.
+     * @param isFromPersonalizedPromo Whether the signin activity is started from a personalized
+     *         promo.
      */
-    public static void startAccountSigninActivity(Context context, @AccessPoint int accessPoint) {
+    public static void startAccountSigninActivity(
+            Context context, @AccessPoint int accessPoint, boolean isFromPersonalizedPromo) {
         Intent intent = new Intent(context, AccountSigninActivity.class);
         intent.putExtra(INTENT_SIGNIN_ACCESS_POINT, accessPoint);
         intent.putExtra(INTENT_SIGNIN_FLOW_TYPE, SIGNIN_FLOW_DEFAULT);
+        intent.putExtra(INTENT_IS_FROM_PERSONALIZED_PROMO, isFromPersonalizedPromo);
         context.startActivity(intent);
     }
 
@@ -83,7 +91,7 @@ public class AccountSigninActivity extends AppCompatActivity
             return false;
         }
 
-        startAccountSigninActivity(context, accessPoint);
+        startAccountSigninActivity(context, accessPoint, false);
         return true;
     }
 
@@ -93,25 +101,32 @@ public class AccountSigninActivity extends AppCompatActivity
      * @param selectAccount Account for which signin confirmation page should be shown.
      * @param isDefaultAccount Whether {@param selectedAccount} is the default account on
      *         the device. Used in metrics.
+     * @param isFromPersonalizedPromo Whether the signin activity is started from a personalized
+     *         promo.
      */
     public static void startFromConfirmationPage(Context context, @AccessPoint int accessPoint,
-            String selectAccount, boolean isDefaultAccount) {
+            String selectAccount, boolean isDefaultAccount, boolean isFromPersonalizedPromo) {
         Intent intent = new Intent(context, AccountSigninActivity.class);
         intent.putExtra(INTENT_SIGNIN_ACCESS_POINT, accessPoint);
         intent.putExtra(INTENT_SIGNIN_FLOW_TYPE, SIGNIN_FLOW_CONFIRMATION_ONLY);
         intent.putExtra(INTENT_ACCOUNT_NAME, selectAccount);
         intent.putExtra(INTENT_IS_DEFAULT_ACCOUNT, isDefaultAccount);
+        intent.putExtra(INTENT_IS_FROM_PERSONALIZED_PROMO, isFromPersonalizedPromo);
         context.startActivity(intent);
     }
 
     /**
      * Starts AccountSigninActivity from "Add account" page.
      * @param accessPoint {@link AccessPoint} for starting signin flow. Used in metrics.
+     * @param isFromPersonalizedPromo Whether the signin activity is started from a personalized
+     *         promo.
      */
-    public static void startFromAddAccountPage(Context context, @AccessPoint int accessPoint) {
+    public static void startFromAddAccountPage(
+            Context context, @AccessPoint int accessPoint, boolean isFromPersonalizedPromo) {
         Intent intent = new Intent(context, AccountSigninActivity.class);
         intent.putExtra(INTENT_SIGNIN_ACCESS_POINT, accessPoint);
         intent.putExtra(INTENT_SIGNIN_FLOW_TYPE, SIGNIN_FLOW_ADD_NEW_ACCOUNT);
+        intent.putExtra(INTENT_IS_FROM_PERSONALIZED_PROMO, isFromPersonalizedPromo);
         context.startActivity(intent);
     }
 
@@ -141,17 +156,20 @@ public class AccountSigninActivity extends AppCompatActivity
                 || mAccessPoint == SigninAccessPoint.AUTOFILL_DROPDOWN
                 : "invalid access point: " + mAccessPoint;
 
-        mView = (AccountSigninView) LayoutInflater.from(this).inflate(
+        mIsFromPersonalizedPromo =
+                getIntent().getBooleanExtra(INTENT_IS_FROM_PERSONALIZED_PROMO, false);
+
+        AccountSigninView view = (AccountSigninView) LayoutInflater.from(this).inflate(
                 R.layout.account_signin_view, null);
 
         int imageSize = getResources().getDimensionPixelSize(R.dimen.signin_account_image_size);
         ProfileDataCache profileDataCache =
                 new ProfileDataCache(this, Profile.getLastUsedProfile(), imageSize);
 
-        int flowType = getIntent().getIntExtra(INTENT_SIGNIN_FLOW_TYPE, -1);
-        switch (flowType) {
+        mSigninFlowType = getIntent().getIntExtra(INTENT_SIGNIN_FLOW_TYPE, -1);
+        switch (mSigninFlowType) {
             case SIGNIN_FLOW_DEFAULT:
-                mView.initFromSelectionPage(profileDataCache, false, this, this);
+                view.initFromSelectionPage(profileDataCache, false, this, this);
                 break;
             case SIGNIN_FLOW_CONFIRMATION_ONLY: {
                 String accountName = getIntent().getStringExtra(INTENT_ACCOUNT_NAME);
@@ -160,30 +178,27 @@ public class AccountSigninActivity extends AppCompatActivity
                 }
                 boolean isDefaultAccount =
                         getIntent().getBooleanExtra(INTENT_IS_DEFAULT_ACCOUNT, false);
-                mView.initFromConfirmationPage(profileDataCache, false, accountName,
+                view.initFromConfirmationPage(profileDataCache, false, accountName,
                         isDefaultAccount, AccountSigninView.UNDO_ABORT, this, this);
                 break;
             }
             case SIGNIN_FLOW_ADD_NEW_ACCOUNT:
-                mView.initFromAddAccountPage(profileDataCache, this, this);
+                view.initFromAddAccountPage(profileDataCache, this, this);
                 break;
             default:
-                throw new IllegalArgumentException("Unknown signin flow type: " + flowType);
+                throw new IllegalArgumentException("Unknown signin flow type: " + mSigninFlowType);
         }
 
-        if (getAccessPoint() == SigninAccessPoint.BOOKMARK_MANAGER
-                || getAccessPoint() == SigninAccessPoint.RECENT_TABS) {
-            mView.configureForRecentTabsOrBookmarksPage();
+        if (mAccessPoint == SigninAccessPoint.BOOKMARK_MANAGER
+                || mAccessPoint == SigninAccessPoint.RECENT_TABS) {
+            view.configureForRecentTabsOrBookmarksPage();
         }
 
-        setContentView(mView);
+        setContentView(view);
 
-        SigninManager.logSigninStartAccessPoint(getAccessPoint());
+        SigninManager.logSigninStartAccessPoint(mAccessPoint);
+        recordSigninStartedHistogramAccountInfo();
         recordSigninStartedUserAction();
-    }
-
-    @AccessPoint private int getAccessPoint() {
-        return mAccessPoint;
     }
 
     @Override
@@ -209,6 +224,7 @@ public class AccountSigninActivity extends AppCompatActivity
                     startActivity(intent);
                 }
 
+                recordSigninCompletedHistogramAccountInfo();
                 finish();
             }
 
@@ -220,8 +236,56 @@ public class AccountSigninActivity extends AppCompatActivity
     @Override
     public void onFailedToSetForcedAccount(String forcedAccountName) {}
 
+    private void recordSigninCompletedHistogramAccountInfo() {
+        if (!mIsFromPersonalizedPromo) {
+            return;
+        }
+
+        final String histogram;
+        switch (mSigninFlowType) {
+            case SIGNIN_FLOW_ADD_NEW_ACCOUNT:
+                histogram = "Signin.SigninCompletedAccessPoint.NewAccount";
+                break;
+            case SIGNIN_FLOW_CONFIRMATION_ONLY:
+                histogram = "Signin.SigninCompletedAccessPoint.WithDefault";
+                break;
+            case SIGNIN_FLOW_DEFAULT:
+                histogram = "Signin.SigninCompletedAccessPoint.NotDefault";
+                break;
+            default:
+                assert false : "Unexpected signin flow type!";
+                return;
+        }
+
+        RecordHistogram.recordEnumeratedHistogram(histogram, mAccessPoint, SigninAccessPoint.MAX);
+    }
+
+    private void recordSigninStartedHistogramAccountInfo() {
+        if (!mIsFromPersonalizedPromo) {
+            return;
+        }
+
+        final String histogram;
+        switch (mSigninFlowType) {
+            case SIGNIN_FLOW_ADD_NEW_ACCOUNT:
+                histogram = "Signin.SigninStartedAccessPoint.NewAccount";
+                break;
+            case SIGNIN_FLOW_CONFIRMATION_ONLY:
+                histogram = "Signin.SigninStartedAccessPoint.WithDefault";
+                break;
+            case SIGNIN_FLOW_DEFAULT:
+                histogram = "Signin.SigninStartedAccessPoint.NotDefault";
+                break;
+            default:
+                assert false : "Unexpected signin flow type!";
+                return;
+        }
+
+        RecordHistogram.recordEnumeratedHistogram(histogram, mAccessPoint, SigninAccessPoint.MAX);
+    }
+
     private void recordSigninStartedUserAction() {
-        switch (getAccessPoint()) {
+        switch (mAccessPoint) {
             case SigninAccessPoint.AUTOFILL_DROPDOWN:
                 RecordUserAction.record("Signin_Signin_FromAutofillDropdown");
                 break;

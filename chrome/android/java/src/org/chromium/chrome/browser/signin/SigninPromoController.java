@@ -206,7 +206,7 @@ public class SigninPromoController {
         view.getSigninButton().setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                AccountSigninActivity.startFromAddAccountPage(context, mAccessPoint);
+                AccountSigninActivity.startFromAddAccountPage(context, mAccessPoint, true);
             }
         });
 
@@ -226,7 +226,7 @@ public class SigninPromoController {
             @Override
             public void onClick(View view) {
                 AccountSigninActivity.startFromConfirmationPage(
-                        context, mAccessPoint, mAccountName, true);
+                        context, mAccessPoint, mAccountName, true, true);
             }
         });
 
@@ -236,7 +236,7 @@ public class SigninPromoController {
         view.getChooseAccountButton().setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                AccountSigninActivity.startAccountSigninActivity(context, mAccessPoint);
+                AccountSigninActivity.startAccountSigninActivity(context, mAccessPoint, true);
             }
         });
         view.getChooseAccountButton().setVisibility(View.VISIBLE);
