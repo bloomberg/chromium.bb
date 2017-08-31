@@ -82465,6 +82465,30 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Tabs.MaxTabsInADay" units="tabs">
+  <owner>sebmarchand@chromium.org</owner>
+  <summary>
+    The maximum number of tabs that Chrome displays at the same time over the
+    course of a day.
+  </summary>
+</histogram>
+
+<histogram name="Tabs.MaxTabsPerWindowInADay" units="tabs">
+  <owner>sebmarchand@chromium.org</owner>
+  <summary>
+    The maximum number of tabs per window that Chrome displays over the course
+    of a day.
+  </summary>
+</histogram>
+
+<histogram name="Tabs.MaxWindowsInADay" units="tabs">
+  <owner>sebmarchand@chromium.org</owner>
+  <summary>
+    The maximum number of windows opened at the same time over the course of a
+    day.
+  </summary>
+</histogram>
+
 <histogram name="Tabs.NumberOfTabsOnResume" units="tabs">
   <owner>sebmarchand@chromium.org</owner>
   <summary>
