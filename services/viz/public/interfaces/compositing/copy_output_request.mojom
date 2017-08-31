@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module cc.mojom;
+module viz.mojom;
 
 import "cc/ipc/copy_output_result.mojom";
 import "cc/ipc/texture_mailbox.mojom";
@@ -14,12 +14,12 @@ struct CopyOutputRequest {
   mojo.common.mojom.UnguessableToken? source;
   bool force_bitmap_result;
   gfx.mojom.Rect? area;
-  TextureMailbox? texture_mailbox;
+  cc.mojom.TextureMailbox? texture_mailbox;
   CopyOutputResultSender result_sender;
 };
 
 // When the display compositor is ready to respond to the CopyOutputRequest,
 // it uses this interface to send back the result.
 interface CopyOutputResultSender {
-  SendResult(CopyOutputResult result);
+  SendResult(cc.mojom.CopyOutputResult result);
 };
