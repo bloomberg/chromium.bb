@@ -54,10 +54,9 @@ id<GREYMatcher> BookmarksBackButton() {
   return ButtonWithAccessibilityLabel(@"Back");
 }
 
-// Matcher for the Back button on the bookmarks UI.
+// Matcher for the DONE button on the bookmarks UI.
 id<GREYMatcher> BookmarksDoneButton() {
-  return grey_allOf(grey_accessibilityID(@"DONE"), grey_sufficientlyVisible(),
-                    nil);
+  return grey_accessibilityID(@"bookmark_done_button");
 }
 
 // Bookmark integration tests for Chrome.
@@ -349,6 +348,37 @@ id<GREYMatcher> BookmarksDoneButton() {
   [BookmarksNewGenTestCase verifyPromoAlreadySeen:NO];
   [SignPromoViewEarlgreyUtils
       checkSigninPromoVisibleWithMode:SigninPromoViewModeWarmState];
+}
+
+// Tests that the sign-in promo should not be shown after been shown 19 times.
+- (void)testAutomaticSigninPromoDismiss {
+  if (IsIPadIdiom()) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
+  }
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      bookmark_new_generation::features::kBookmarkNewGeneration);
+
+  ios::ChromeBrowserState* browser_state =
+      chrome_test_util::GetOriginalBrowserState();
+  PrefService* prefs = browser_state->GetPrefs();
+  prefs->SetInteger(prefs::kIosBookmarkSigninPromoDisplayedCount, 19);
+  [BookmarksNewGenTestCase openBookmarks];
+  // Check the sign-in promo view is visible.
+  [SignPromoViewEarlgreyUtils
+      checkSigninPromoVisibleWithMode:SigninPromoViewModeColdState];
+  // Check the sign-in promo will not be shown anymore.
+  [BookmarksNewGenTestCase verifyPromoAlreadySeen:YES];
+  GREYAssertEqual(
+      20, prefs->GetInteger(prefs::kIosBookmarkSigninPromoDisplayedCount),
+      @"Should have incremented the display count");
+  // Close the bookmark view and open it again.
+  [[EarlGrey selectElementWithMatcher:BookmarksDoneButton()]
+      performAction:grey_tap()];
+  [BookmarksNewGenTestCase openBookmarks];
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  // Check that the sign-in promo is not visible anymore.
+  [SignPromoViewEarlgreyUtils checkSigninPromoNotVisible];
 }
 
 #pragma mark - Helpers
