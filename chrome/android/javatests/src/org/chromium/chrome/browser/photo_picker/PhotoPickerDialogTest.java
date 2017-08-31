@@ -29,7 +29,8 @@ import java.util.concurrent.Callable;
  * Tests for the PhotoPickerDialog class.
  */
 public class PhotoPickerDialogTest extends ChromeActivityTestCaseBase<ChromeActivity>
-        implements PhotoPickerListener, SelectionObserver<PickerBitmap> {
+        implements PhotoPickerListener, DecoderServiceHost.ServiceReadyCallback,
+                   SelectionObserver<PickerBitmap> {
     // The dialog we are testing.
     private PhotoPickerDialog mDialog;
 
@@ -56,6 +57,9 @@ public class PhotoPickerDialogTest extends ChromeActivityTestCaseBase<ChromeActi
     // A callback that fires when an action is taken in the dialog (cancel/done etc).
     public final CallbackHelper onActionCallback = new CallbackHelper();
 
+    // A callback that fires when the decoder is ready.
+    public final CallbackHelper onDecoderReadyCallback = new CallbackHelper();
+
     public PhotoPickerDialogTest() {
         super(ChromeActivity.class);
     }
@@ -74,6 +78,8 @@ public class PhotoPickerDialogTest extends ChromeActivityTestCaseBase<ChromeActi
         mTestFiles.add(new PickerBitmap("e", 1L, PickerBitmap.PICTURE));
         mTestFiles.add(new PickerBitmap("f", 0L, PickerBitmap.PICTURE));
         PickerCategoryView.setTestFiles(mTestFiles);
+
+        DecoderServiceHost.setReadyCallback(this);
     }
 
     @Override
@@ -89,6 +95,13 @@ public class PhotoPickerDialogTest extends ChromeActivityTestCaseBase<ChromeActi
         mLastSelectedPhotos = photos != null ? photos.clone() : null;
         if (mLastSelectedPhotos != null) Arrays.sort(mLastSelectedPhotos);
         onActionCallback.notifyCalled();
+    }
+
+    // DecoderServiceHost.ServiceReadyCallback:
+
+    @Override
+    public void serviceReady() {
+        onDecoderReadyCallback.notifyCalled();
     }
 
     // SelectionObserver:
@@ -122,6 +135,11 @@ public class PhotoPickerDialogTest extends ChromeActivityTestCaseBase<ChromeActi
         mDialog = dialog;
 
         return dialog;
+    }
+
+    private void waitForDecoder() throws Exception {
+        int callCount = onSelectionCallback.getCallCount();
+        onDecoderReadyCallback.waitForCallback(callCount, 1);
     }
 
     private void clickView(final int position, final int expectedSelectionCount) throws Exception {
@@ -173,6 +191,7 @@ public class PhotoPickerDialogTest extends ChromeActivityTestCaseBase<ChromeActi
     public void testNoSelection() throws Throwable {
         createDialog(false, Arrays.asList("image/*")); // Multi-select = false.
         assertTrue(mDialog.isShowing());
+        waitForDecoder();
 
         int expectedSelectionCount = 1;
         clickView(0, expectedSelectionCount);
@@ -188,6 +207,7 @@ public class PhotoPickerDialogTest extends ChromeActivityTestCaseBase<ChromeActi
     public void testSingleSelectionPhoto() throws Throwable {
         createDialog(false, Arrays.asList("image/*")); // Multi-select = false.
         assertTrue(mDialog.isShowing());
+        waitForDecoder();
 
         // Expected selection count is 1 because clicking on a new view unselects other.
         int expectedSelectionCount = 1;
@@ -206,6 +226,7 @@ public class PhotoPickerDialogTest extends ChromeActivityTestCaseBase<ChromeActi
     public void testMultiSelectionPhoto() throws Throwable {
         createDialog(true, Arrays.asList("image/*")); // Multi-select = true.
         assertTrue(mDialog.isShowing());
+        waitForDecoder();
 
         // Multi-selection is enabled, so each click is counted.
         int expectedSelectionCount = 1;
