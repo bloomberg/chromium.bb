@@ -53,7 +53,8 @@ public class SuggestionsBinder {
     private final TextView mSnippetTextView;
     private final TextView mAgeTextView;
     private final TintedImageView mThumbnailView;
-    private final ImageView mThumbnailVideoOverlay;
+    // TODO(dgn): Modern suggestions currently do not support the video overlay at all.
+    private final @Nullable ImageView mThumbnailVideoOverlay;
     private final ImageView mOfflineBadge;
     private final View mPublisherBar;
 
@@ -111,7 +112,10 @@ public class SuggestionsBinder {
         mHeadlineTextView.setMaxLines(headerMaxLines);
         mSnippetTextView.setVisibility(showDescription ? View.VISIBLE : View.GONE);
         mThumbnailView.setVisibility(showThumbnail ? View.VISIBLE : View.GONE);
-        mThumbnailVideoOverlay.setVisibility(showThumbnailVideoOverlay ? View.VISIBLE : View.GONE);
+        if (mThumbnailVideoOverlay != null) {
+            mThumbnailVideoOverlay.setVisibility(
+                    showThumbnailVideoOverlay ? View.VISIBLE : View.GONE);
+        }
 
         ViewGroup.MarginLayoutParams publisherBarParams =
                 (ViewGroup.MarginLayoutParams) mPublisherBar.getLayoutParams();
