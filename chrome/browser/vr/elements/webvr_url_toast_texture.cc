@@ -12,6 +12,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/render_text.h"
 #include "ui/gfx/text_constants.h"
+#include "ui/gfx/text_elider.h"
 #include "url/gurl.h"
 
 namespace vr {
@@ -111,10 +112,18 @@ void WebVrUrlToastTexture::RenderUrl(const gfx::Size& texture_size,
   url_formatter::FormatUrlTypes format_types =
       url_formatter::kFormatUrlOmitDefaults;
   format_types |= url_formatter::kFormatUrlOmitHTTPS;
-  format_types |= url_formatter::kFormatUrlExperimentalElideAfterHost;
   const base::string16 formatted_url = url_formatter::FormatUrl(
       state_.gurl, format_types, net::UnescapeRule::NORMAL, &parsed, nullptr,
       nullptr);
+
+  base::string16 url;
+  if (parsed.host.is_valid())
+    url = formatted_url.substr(parsed.host.begin, parsed.host.len);
+
+  if (parsed.path.is_nonempty() || parsed.query.is_nonempty() ||
+      parsed.ref.is_nonempty()) {
+    url += gfx::kForwardSlash + base::string16(gfx::kEllipsisUTF16);
+  }
 
   gfx::FontList font_list;
   if (!UiTexture::GetFontList(pixel_font_height, formatted_url, &font_list))
@@ -125,7 +134,7 @@ void WebVrUrlToastTexture::RenderUrl(const gfx::Size& texture_size,
   render_text->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   render_text->SetElideBehavior(gfx::ELIDE_HEAD);
   render_text->SetDirectionalityMode(gfx::DIRECTIONALITY_FORCE_LTR);
-  render_text->SetText(formatted_url);
+  render_text->SetText(url);
 
   url_render_text_ = std::move(render_text);
 }
