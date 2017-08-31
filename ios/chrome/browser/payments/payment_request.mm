@@ -129,6 +129,7 @@ PaymentRequest::PaymentRequest(
   }
 
   RecordNumberOfSuggestionsShown();
+  RecordRequestedInformation();
 }
 
 PaymentRequest::~PaymentRequest() {}
@@ -512,6 +513,34 @@ void PaymentRequest::RecordNumberOfSuggestionsShown() {
   journey_logger().SetNumberOfSuggestionsShown(
       payments::JourneyLogger::Section::SECTION_PAYMENT_METHOD,
       payment_methods().size(), has_complete_instrument);
+}
+
+void PaymentRequest::RecordRequestedInformation() {
+  journey_logger().SetRequestedInformation(
+      request_shipping(), request_payer_email(), request_payer_phone(),
+      request_payer_name());
+
+  // Log metrics around which payment methods are requested by the merchant.
+  const GURL kGooglePayUrl("https://google.com/pay");
+  const GURL kAndroidPayUrl("https://android.com/pay");
+
+  // Looking for payment methods that are NOT Google-related as well as the
+  // Google-related ones.
+  bool requestedMethodGoogle = false;
+  bool requestedMethodOther = false;
+  for (const GURL& url_payment_method : url_payment_method_identifiers()) {
+    if (url_payment_method == kGooglePayUrl ||
+        url_payment_method == kAndroidPayUrl) {
+      requestedMethodGoogle = true;
+    } else {
+      requestedMethodOther = true;
+    }
+  }
+
+  journey_logger().SetRequestedPaymentMethodTypes(
+      /*requested_basic_card=*/!supported_card_networks().empty(),
+      /*requested_method_google=*/requestedMethodGoogle,
+      /*requested_method_other=*/requestedMethodOther);
 }
 
 }  // namespace payments

@@ -474,10 +474,30 @@ struct PendingPaymentResponse {
   return YES;
 }
 
+- (void)abortPaymentRequest:(payments::PaymentRequest*)paymentRequest
+                abortReason:(payments::JourneyLogger::AbortReason)abortReason
+                  errorName:(NSString*)errorName
+               errorMessage:(NSString*)errorMessage
+          completionHandler:(ProceduralBlockWithBool)completionHandler {
+  LOG(ERROR) << "Request promise rejected (" << abortReason
+             << "): " << base::SysNSStringToUTF16(errorName) << ":"
+             << base::SysNSStringToUTF16(errorMessage);
+
+  paymentRequest->journey_logger().SetAborted(abortReason);
+
+  [_paymentRequestJsManager
+      rejectRequestPromiseWithErrorName:errorName
+                           errorMessage:errorMessage
+                      completionHandler:completionHandler];
+}
+
 - (BOOL)handleRequestShow:(const base::DictionaryValue&)message {
   payments::PaymentRequest* paymentRequest =
       [self paymentRequestFromMessage:message];
   if (!paymentRequest) {
+    LOG(ERROR) << "Request promise rejected: "
+               << base::SysNSStringToUTF16(kInvalidStateError)
+               << ": Unable to get PaymentRequest from message";
     [_paymentRequestJsManager
         rejectRequestPromiseWithErrorName:kInvalidStateError
                              errorMessage:@"Cannot show the payment request"
@@ -486,29 +506,31 @@ struct PendingPaymentResponse {
   }
 
   if (![self webStateContentIsSecureHTML]) {
-    [_paymentRequestJsManager
-        rejectRequestPromiseWithErrorName:kNotSupportedError
-                             errorMessage:@"Must be in a secure context"
-                        completionHandler:nil];
+    [self abortPaymentRequest:paymentRequest
+                  abortReason:payments::JourneyLogger::ABORT_REASON_OTHER
+                    errorName:kNotSupportedError
+                 errorMessage:@"Must be in a secure context"
+            completionHandler:nil];
     return YES;
   }
 
   if (paymentRequest->state() != payments::PaymentRequest::State::CREATED) {
-    [_paymentRequestJsManager
-        rejectRequestPromiseWithErrorName:kInvalidStateError
-                             errorMessage:@"Already called show() once"
-                        completionHandler:nil];
+    [self abortPaymentRequest:paymentRequest
+                  abortReason:payments::JourneyLogger::ABORT_REASON_OTHER
+                    errorName:kInvalidStateError
+                 errorMessage:@"Already called show() once"
+            completionHandler:nil];
+    return YES;
   }
 
   if (_pendingPaymentRequest) {
     paymentRequest->journey_logger().SetNotShown(
         payments::JourneyLogger::NOT_SHOWN_REASON_CONCURRENT_REQUESTS);
-    [_paymentRequestJsManager
-        rejectRequestPromiseWithErrorName:kAbortError
-                             errorMessage:
-                                 @"Only one PaymentRequest may be shown at a "
-                                 @"time"
-                        completionHandler:nil];
+    [self abortPaymentRequest:paymentRequest
+                  abortReason:payments::JourneyLogger::ABORT_REASON_OTHER
+                    errorName:kAbortError
+                 errorMessage:@"Only one PaymentRequest may be shown at a time"
+            completionHandler:nil];
     return YES;
   }
 
@@ -518,10 +540,11 @@ struct PendingPaymentResponse {
        paymentRequest->url_payment_method_identifiers().empty())) {
     paymentRequest->journey_logger().SetNotShown(
         payments::JourneyLogger::NOT_SHOWN_REASON_NO_SUPPORTED_PAYMENT_METHOD);
-    [_paymentRequestJsManager
-        rejectRequestPromiseWithErrorName:kNotSupportedError
-                             errorMessage:@"The payment method is not supported"
-                        completionHandler:nil];
+    [self abortPaymentRequest:paymentRequest
+                  abortReason:payments::JourneyLogger::ABORT_REASON_OTHER
+                    errorName:kNotSupportedError
+                 errorMessage:@"The payment method is not supported"
+            completionHandler:nil];
     return YES;
   }
 
@@ -530,34 +553,6 @@ struct PendingPaymentResponse {
 
   paymentRequest->journey_logger().SetEventOccurred(
       payments::JourneyLogger::EVENT_SHOWN);
-  paymentRequest->journey_logger().SetRequestedInformation(
-      paymentRequest->request_shipping(), paymentRequest->request_payer_email(),
-      paymentRequest->request_payer_phone(),
-      paymentRequest->request_payer_name());
-
-  // Log metrics around which payment methods are requested by the merchant.
-  const GURL kGooglePayUrl("https://google.com/pay");
-  const GURL kAndroidPayUrl("https://android.com/pay");
-  // Looking for payment methods that are NOT Google-related as well as the
-  // Google-related ones.
-  bool requestedMethodGoogle = false;
-  bool requestedMethodOther = false;
-  for (const GURL& url_payment_method :
-       paymentRequest->url_payment_method_identifiers()) {
-    if (url_payment_method == kGooglePayUrl ||
-        url_payment_method == kAndroidPayUrl) {
-      requestedMethodGoogle = true;
-    } else {
-      requestedMethodOther = true;
-    }
-  }
-
-  paymentRequest->journey_logger().SetRequestedPaymentMethodTypes(
-      /*requested_basic_card=*/!paymentRequest->supported_card_networks()
-          .empty(),
-      /*requested_method_google=*/
-      requestedMethodGoogle,
-      /*requested_method_other=*/requestedMethodOther);
 
   UIImage* pageFavicon = nil;
   web::NavigationItem* navigationItem =
