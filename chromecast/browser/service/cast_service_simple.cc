@@ -9,6 +9,8 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
+#include "base/time/time.h"
+#include "chromecast/browser/cast_web_contents_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "net/base/filename_util.h"
@@ -39,7 +41,9 @@ CastServiceSimple::CastServiceSimple(content::BrowserContext* browser_context,
                                      PrefService* pref_service,
                                      CastWindowManager* window_manager)
     : CastService(browser_context, pref_service),
-      window_manager_(window_manager) {
+      window_manager_(window_manager),
+      web_contents_manager_(
+          base::MakeUnique<CastWebContentsManager>(browser_context)) {
   DCHECK(window_manager_);
 }
 
@@ -58,16 +62,15 @@ void CastServiceSimple::StartInternal() {
     return;
   }
 
-  cast_web_view_ = base::MakeUnique<CastWebView>(this, browser_context(),
-                                                 /*site_instance*/ nullptr,
-                                                 /*transparent*/ false);
+  cast_web_view_ = web_contents_manager_->CreateWebView(
+      this, /*site_instance*/ nullptr, /*transparent*/ false);
   cast_web_view_->LoadUrl(startup_url_);
   cast_web_view_->Show(window_manager_);
 }
 
 void CastServiceSimple::StopInternal() {
   if (cast_web_view_) {
-    cast_web_view_->ClosePage();
+    cast_web_view_->ClosePage(base::TimeDelta());
   }
   cast_web_view_.reset();
 }

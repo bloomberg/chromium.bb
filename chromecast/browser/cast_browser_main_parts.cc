@@ -223,7 +223,6 @@ const DefaultCommandLineSwitch kDefaultSwitches[] = {
     // TODO(714676): this should probably set the no restrictions autoplay
     // policy instead.
     {switches::kIgnoreAutoplayRestrictionsForTests, ""},
-    {switches::kDisableMediaSuspend, ""},
 #else
     // GPU shader disk cache disabling is largely to conserve disk space.
     {switches::kDisableGpuShaderDiskCache, ""},
@@ -265,6 +264,7 @@ const DefaultCommandLineSwitch kDefaultSwitches[] = {
     {switches::kEnableUseZoomForDSF, "false"},
     // TODO(halliwell): Revert after fix for b/63101386.
     {switches::kDisallowNonExactResourceReuse, ""},
+    {switches::kEnableMediaSuspend, ""},
 };
 
 void AddDefaultCommandLineSwitches(base::CommandLine* command_line) {
