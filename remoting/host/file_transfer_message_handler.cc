@@ -71,7 +71,7 @@ void FileTransferMessageHandler::StatusCallback(
     response.set_state(protocol::FileTransferResponse_TransferState_DONE);
     response.set_total_bytes_written(request_->filesize());
   }
-  Send(&response, base::Closure());
+  Send(response, base::Closure());
 }
 
 void FileTransferMessageHandler::SendToFileProxy(
@@ -117,7 +117,7 @@ void FileTransferMessageHandler::CancelAndSendError(const std::string& error) {
   file_proxy_wrapper_->Cancel();
   protocol::FileTransferResponse response;
   response.set_error(protocol::FileTransferResponse_ErrorCode_UNEXPECTED_ERROR);
-  Send(&response, base::Closure());
+  Send(response, base::Closure());
 }
 
 }  // namespace remoting

@@ -47,8 +47,10 @@ class NamedMessagePipeHandler : public MessagePipe::EventHandler {
   bool connected() const { return is_connected_; }
 
   // Sends the message through the pipe. This function should only be called
-  // once connected() returns true.
-  void Send(google::protobuf::MessageLite* message, const base::Closure& done);
+  // once connected() returns true. See comments of
+  // remoting::protocol::MessagePipe::Send() for details.
+  void Send(const google::protobuf::MessageLite& message,
+            const base::Closure& done);
 
   // Derived classes can override these functions to receive data from the
   // connection or observe the connection state. These functions will not be
