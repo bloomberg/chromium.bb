@@ -275,6 +275,13 @@ class circular_deque_const_iterator {
     else
       parent_deque_->CheckValidIndex(index_);
 #endif
+    // It should be valid to add 0 to any iterator, even if the container is
+    // empty and the iterator points to end(). The modulo below will divide
+    // by 0 if the buffer capacity is empty, so it's important to check for
+    // this case explicitly.
+    if (delta == 0)
+      return;
+
     difference_type new_offset = OffsetFromBegin() + delta;
     DCHECK(new_offset >= 0 &&
            new_offset <= static_cast<difference_type>(parent_deque_->size()));
