@@ -154,7 +154,7 @@ deps = {
     Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'e081cbe5aae6b131955b6c3bd7308d95d650948f',
 
   'src/third_party/googletest/src':
-    Var('chromium_git') + '/external/github.com/google/googletest.git' + '@' + '42bc671f47b122fad36db5eccbc06868afdf7862',
+    Var('chromium_git') + '/external/github.com/google/googletest.git' + '@' + '7f8fefabedf2965980585be8c2bff97458f28e0b',
 
   'src/third_party/icu':
     Var('chromium_git') + '/chromium/deps/icu.git' + '@' + '08cb956852a5ccdba7f9c941728bb833529ba3c6',
