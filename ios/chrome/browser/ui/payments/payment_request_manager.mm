@@ -315,8 +315,12 @@ struct PendingPaymentResponse {
 }
 
 - (void)cancelRequest {
-  if (!_pendingPaymentRequest)
+  if (!_pendingPaymentRequest ||
+      _pendingPaymentRequest->state() !=
+          payments::PaymentRequest::State::INTERACTIVE) {
     return;
+  }
+
   _pendingPaymentRequest->journey_logger().SetAborted(
       payments::JourneyLogger::ABORT_REASON_MERCHANT_NAVIGATION);
 
@@ -328,6 +332,11 @@ struct PendingPaymentResponse {
                                        callback:
                                            (ProceduralBlockWithBool)callback {
   DCHECK(_pendingPaymentRequest);
+  DCHECK(_pendingPaymentRequest->state() ==
+         payments::PaymentRequest::State::INTERACTIVE);
+
+  _pendingPaymentRequest->set_updating(false);
+  _pendingPaymentRequest->set_state(payments::PaymentRequest::State::CLOSED);
   _pendingPaymentRequest = nullptr;
   [self resetIOSPaymentInstrumentLauncherDelegate];
 
@@ -581,11 +590,12 @@ struct PendingPaymentResponse {
 }
 
 - (BOOL)handleRequestAbort:(const base::DictionaryValue&)message {
-  DCHECK(_pendingPaymentRequest);
+  if (!_pendingPaymentRequest ||
+      _pendingPaymentRequest->state() !=
+          payments::PaymentRequest::State::INTERACTIVE) {
+    return YES;
+  }
 
-  _pendingPaymentRequest->set_updating(false);
-
-  _pendingPaymentRequest->set_state(payments::PaymentRequest::State::CLOSED);
   _pendingPaymentRequest->journey_logger().SetAborted(
       payments::JourneyLogger::ABORT_REASON_ABORTED_BY_MERCHANT);
 
@@ -673,7 +683,12 @@ struct PendingPaymentResponse {
 }
 
 - (BOOL)displayErrorThenCancelRequest {
-  DCHECK(_pendingPaymentRequest);
+  if (!_pendingPaymentRequest ||
+      _pendingPaymentRequest->state() !=
+          payments::PaymentRequest::State::INTERACTIVE) {
+    return YES;
+  }
+
   _pendingPaymentRequest->journey_logger().SetAborted(
       payments::JourneyLogger::ABORT_REASON_ABORTED_BY_USER);
 
