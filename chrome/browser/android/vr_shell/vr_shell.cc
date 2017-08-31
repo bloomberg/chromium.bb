@@ -291,7 +291,7 @@ void VrShell::ExitCct() {
 }
 
 void VrShell::ToggleCardboardGamepad(bool enabled) {
-  // enable/disable updating gamepad state
+  // Enable/disable updating gamepad state.
   if (cardboard_gamepad_source_active_ && !enabled) {
     device::GamepadDataFetcherManager::GetInstance()->RemoveSourceFactory(
         device::GAMEPAD_SOURCE_CARDBOARD);
@@ -307,18 +307,36 @@ void VrShell::ToggleCardboardGamepad(bool enabled) {
     device::GamepadDataFetcherManager::GetInstance()->AddFactory(
         new device::CardboardGamepadDataFetcher::Factory(this, device->id()));
     cardboard_gamepad_source_active_ = true;
+    if (pending_cardboard_trigger_) {
+      OnTriggerEvent(nullptr, JavaParamRef<jobject>(nullptr), true);
+    }
+    pending_cardboard_trigger_ = false;
+  }
+}
+
+void VrShell::ToggleGvrGamepad(bool enabled) {
+  // Enable/disable updating gamepad state.
+  if (enabled) {
+    DCHECK(!gvr_gamepad_source_active_);
+    device::VRDevice* device = delegate_provider_->GetDevice();
+    if (!device)
+      return;
+
+    device::GamepadDataFetcherManager::GetInstance()->AddFactory(
+        new device::GvrGamepadDataFetcher::Factory(this, device->id()));
+    gvr_gamepad_source_active_ = true;
+  } else {
+    DCHECK(gvr_gamepad_source_active_);
+    device::GamepadDataFetcherManager::GetInstance()->RemoveSourceFactory(
+        device::GAMEPAD_SOURCE_GVR);
+    gvr_gamepad_data_fetcher_ = nullptr;
+    gvr_gamepad_source_active_ = false;
   }
 }
 
 void VrShell::OnTriggerEvent(JNIEnv* env,
                              const JavaParamRef<jobject>& obj,
                              bool touched) {
-  // Send screen taps over to VrShellGl to be turned into simulated clicks for
-  // cardboard.
-  if (touched)
-    PostToGlThread(FROM_HERE, base::Bind(&VrShellGl::OnTriggerEvent,
-                                         gl_thread_->GetVrShellGl()));
-
   // If we are running cardboard, update gamepad state.
   if (cardboard_gamepad_source_active_) {
     device::CardboardGamepadData pad;
@@ -327,6 +345,8 @@ void VrShell::OnTriggerEvent(JNIEnv* env,
     if (cardboard_gamepad_data_fetcher_) {
       cardboard_gamepad_data_fetcher_->SetGamepadData(pad);
     }
+  } else {
+    pending_cardboard_trigger_ = touched;
   }
 }
 
@@ -786,18 +806,11 @@ void VrShell::ProcessContentGesture(
 }
 
 void VrShell::UpdateGamepadData(device::GvrGamepadData pad) {
-  if (!gvr_gamepad_source_active_) {
-    device::VRDevice* device = delegate_provider_->GetDevice();
-    if (!device)
-      return;
+  if (gvr_gamepad_source_active_ != pad.connected)
+    ToggleGvrGamepad(pad.connected);
 
-    device::GamepadDataFetcherManager::GetInstance()->AddFactory(
-        new device::GvrGamepadDataFetcher::Factory(this, device->id()));
-    gvr_gamepad_source_active_ = true;
-  }
-  if (gvr_gamepad_data_fetcher_) {
+  if (gvr_gamepad_data_fetcher_)
     gvr_gamepad_data_fetcher_->SetGamepadData(pad);
-  }
 }
 
 void VrShell::RegisterGvrGamepadDataFetcher(

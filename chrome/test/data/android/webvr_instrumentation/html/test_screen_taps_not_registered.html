@@ -1,8 +1,6 @@
 <!doctype html>
 <!--
-Tests that either screen taps are registered in VR when viewer is Cardboard
-or that controller clicks are registered as screen taps in VR when viewer is
-Daydream View.
+Tests that screen taps aren't registered while in VR
 -->
 <html>
   <head>
@@ -14,18 +12,11 @@ Daydream View.
     <script src="../resources/webvr_e2e.js"></script>
     <script src="../resources/webvr_boilerplate.js"></script>
     <script>
-      var t = async_test("Screen taps/clicks registered when in VR");
+      var t = async_test("Screen taps not registered when in VR");
       window.addEventListener("vrdisplaypresentchange",
           () => {finishJavaScriptStep();}, false);
       var numTaps = 0;
-      webglCanvas.addEventListener("click",
-          () => {
-            numTaps++;
-            // Notify Java when we've received the tap after entering VR
-            if (numTaps == 2) {
-              t.done();
-            }
-          }, false);
+      webglCanvas.addEventListener("click", () => {numTaps++;}, false);
 
       function stepVerifyNoInitialTaps() {
         t.step( () => {
@@ -33,6 +24,15 @@ Daydream View.
         });
         finishJavaScriptStep();
       }
+
+      function stepVerifyNoAdditionalTaps() {
+          t.step_func_done( () => {
+            // We expect 1 tap from entering VR
+            assert_equals(numTaps, 1,
+                "Only one tap registered after two taps given");
+          })();
+      }
+
     </script>
   </body>
 </html>

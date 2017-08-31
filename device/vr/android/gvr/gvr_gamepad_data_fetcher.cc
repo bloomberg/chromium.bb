@@ -47,7 +47,7 @@ GamepadSource GvrGamepadDataFetcher::Factory::source() {
 GvrGamepadDataFetcher::GvrGamepadDataFetcher(
     GvrGamepadDataProvider* data_provider,
     unsigned int display_id)
-    : display_id_(display_id), gamepad_data_({}) {
+    : display_id_(display_id) {
   // Called on UI thread.
   DVLOG(1) << __FUNCTION__ << "=" << this;
   data_provider->RegisterGvrGamepadDataFetcher(this);

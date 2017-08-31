@@ -1,0 +1,41 @@
+<!doctype html>
+<!--
+Tests that either screen taps are registered in VR when viewer is Cardboard
+or that controller clicks are registered as screen taps in VR when viewer is
+Daydream View.
+-->
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css" href="../resources/webvr_e2e.css">
+  </head>
+  <body>
+    <canvas id="webgl-canvas"></canvas>
+    <script src="../../../../../../third_party/WebKit/LayoutTests/resources/testharness.js"></script>
+    <script src="../resources/webvr_e2e.js"></script>
+    <script src="../resources/webvr_boilerplate.js"></script>
+    <script>
+      var t = async_test("Screen taps/clicks registered when in VR");
+      window.addEventListener("vrdisplaypresentchange",
+          () => {finishJavaScriptStep();}, false);
+      var pressed = false;
+      var index = -1;
+      window.addEventListener("gamepadconnected", function(e) {
+        t.step( () => {
+          assert_equals(index, -1, "Should only receive gamepadconnected once");
+          index = e.gamepad.index;
+        });
+      });
+      onAnimationFrameCallback = function() {
+        if (index == -1) return;
+        var gp = navigator.getGamepads()[index];
+        if (!pressed && gp.buttons[0].pressed == true) {
+          pressed = true;
+          finishJavaScriptStep();
+        }
+        if (pressed && gp.buttons[0].pressed == false) {
+          t.done();
+        }
+      }
+    </script>
+  </body>
+</html>

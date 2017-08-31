@@ -128,7 +128,6 @@ class VrShellGl : public device::mojom::VRPresentationProvider,
   bool WebVrPoseByteIsValid(int pose_index_byte);
 
   void UpdateController(const gfx::Transform& head_pose);
-  void HandleWebVrCompatibilityClick();
   std::unique_ptr<blink::WebMouseEvent> MakeMouseEvent(
       blink::WebInputEvent::Type type,
       const gfx::PointF& normalized_web_content_location);
@@ -223,7 +222,6 @@ class VrShellGl : public device::mojom::VRPresentationProvider,
   std::unique_ptr<vr::VrShellRenderer> vr_shell_renderer_;
 
   bool cardboard_ = false;
-  bool touch_pending_ = false;
   gfx::Quaternion controller_quat_;
 
   int content_tex_css_width_ = 0;

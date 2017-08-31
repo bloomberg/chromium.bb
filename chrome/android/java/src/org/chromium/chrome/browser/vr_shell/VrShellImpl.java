@@ -738,6 +738,11 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
         return mLastContentHeight;
     }
 
+    @VisibleForTesting
+    public View getPresentationViewForTesting() {
+        return mPresentationView;
+    }
+
     private native long nativeInit(VrShellDelegate delegate, long nativeWindowAndroid,
             boolean forWebVR, boolean webVrAutopresentationExpected, boolean inCct, long gvrApi,
             boolean reprojectedRendering, float displayWidthMeters, float displayHeightMeters,
