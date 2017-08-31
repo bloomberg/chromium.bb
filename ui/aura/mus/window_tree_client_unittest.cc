@@ -1085,12 +1085,11 @@ TEST_F(WindowTreeClientClientTest, InputEventCaptureWindow) {
   // child1 has a custom targeter set which would always return itself as the
   // target window therefore event should go to child1.
   const gfx::Point event_location(50, 60);
-  const gfx::Point root_location;
   uint32_t event_id = 1;
   window_delegate1->set_event_id(event_id);
   window_delegate2->set_event_id(event_id);
   std::unique_ptr<ui::Event> ui_event(
-      new ui::MouseEvent(ui::ET_MOUSE_MOVED, event_location, root_location,
+      new ui::MouseEvent(ui::ET_MOUSE_MOVED, event_location, gfx::Point(),
                          ui::EventTimeForNow(), ui::EF_NONE, 0));
   window_tree_client()->OnWindowInputEvent(
       event_id, server_id(child1.get()), window_tree_host->display_id(),
@@ -1104,8 +1103,7 @@ TEST_F(WindowTreeClientClientTest, InputEventCaptureWindow) {
   window_delegate1->reset();
   window_delegate2->reset();
 
-  // Set capture to |child2|. Capture takes precedence, and because the event is
-  // converted local coordinates are converted from the root.
+  // The same event should go to child2 if child2 is the capture window.
   std::unique_ptr<client::DefaultCaptureClient> capture_client(
       base::MakeUnique<client::DefaultCaptureClient>());
   client::SetCaptureClient(top_level, capture_client.get());
@@ -1122,9 +1120,7 @@ TEST_F(WindowTreeClientClientTest, InputEventCaptureWindow) {
             window_tree()->GetEventResult(event_id));
   EXPECT_EQ(0, window_delegate1->move_count());
   EXPECT_EQ(1, window_delegate2->move_count());
-  gfx::Point root_point_in_child2;
-  Window::ConvertPointToTarget(top_level, child2.get(), &root_point_in_child2);
-  EXPECT_EQ(root_point_in_child2, window_delegate2->last_event_location());
+  EXPECT_EQ(gfx::Point(30, 30), window_delegate2->last_event_location());
   child2.reset();
   child1.reset();
   window_tree_host.reset();

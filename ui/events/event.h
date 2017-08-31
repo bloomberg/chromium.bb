@@ -378,7 +378,7 @@ class EVENTS_EXPORT LocatedEvent : public Event {
     gfx::Point offset = gfx::ToFlooredPoint(location_);
     T::ConvertPointToTarget(source, target, &offset);
     gfx::Vector2d diff = gfx::ToFlooredPoint(location_) - offset;
-    location_ = location_ - diff;
+    location_= location_ - diff;
   }
 
  protected:
