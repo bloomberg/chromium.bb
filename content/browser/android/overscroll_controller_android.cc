@@ -9,6 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "cc/layers/layer.h"
 #include "cc/output/compositor_frame_metadata.h"
+#include "content/common/content_switches_internal.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/common/content_switches.h"
 #include "third_party/WebKit/public/platform/WebGestureEvent.h"
@@ -208,15 +209,18 @@ void OverscrollControllerAndroid::OnOverscrolled(
     return;
   }
 
+  // When use-zoom-for-dsf is enabled, each value of params was already scaled
+  // by the device scale factor.
+  float scale_factor = IsUseZoomForDSFEnabled() ? 1.f : dpi_scale_;
   if (glow_effect_ &&
       glow_effect_->OnOverscrolled(
           base::TimeTicks::Now(),
-          gfx::ScaleVector2d(params.accumulated_overscroll, dpi_scale_),
-          gfx::ScaleVector2d(params.latest_overscroll_delta, dpi_scale_),
-          gfx::ScaleVector2d(params.current_fling_velocity, dpi_scale_),
+          gfx::ScaleVector2d(params.accumulated_overscroll, scale_factor),
+          gfx::ScaleVector2d(params.latest_overscroll_delta, scale_factor),
+          gfx::ScaleVector2d(params.current_fling_velocity, scale_factor),
           gfx::ScaleVector2d(
               params.causal_event_viewport_point.OffsetFromOrigin(),
-              dpi_scale_))) {
+              scale_factor))) {
     SetNeedsAnimate();
   }
 }
@@ -235,8 +239,12 @@ void OverscrollControllerAndroid::OnFrameMetadataUpdated(
   if (!refresh_effect_ && !glow_effect_)
     return;
 
-  const float scale_factor =
-      frame_metadata.page_scale_factor * frame_metadata.device_scale_factor;
+  // When use-zoom-for-dsf is enabled, frame_metadata.page_scale_factor was
+  // already scaled by the device scale factor.
+  float scale_factor = frame_metadata.page_scale_factor;
+  if (!IsUseZoomForDSFEnabled()) {
+    scale_factor *= frame_metadata.device_scale_factor;
+  }
   gfx::SizeF viewport_size =
       gfx::ScaleSize(frame_metadata.scrollable_viewport_size, scale_factor);
   gfx::SizeF content_size =
