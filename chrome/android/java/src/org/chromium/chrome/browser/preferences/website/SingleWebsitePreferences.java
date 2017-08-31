@@ -573,7 +573,8 @@ public class SingleWebsitePreferences extends PreferenceFragment
                 preference.setIcon(category.getDisabledInAndroidIcon(getActivity()));
                 preference.setEnabled(false);
             } else {
-                preference.setIcon(ContentSettingsResources.getIcon(contentType));
+                preference.setIcon(
+                        ContentSettingsResources.getTintedIcon(contentType, getResources()));
             }
         } else {
             preference.setIcon(

@@ -68,6 +68,7 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.ssl.SecurityStateModel;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.UrlUtilities;
+import org.chromium.chrome.browser.widget.TintedDrawable;
 import org.chromium.components.location.LocationUtils;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content_public.browser.WebContents;
@@ -605,7 +606,8 @@ public class PageInfoPopup implements OnClickListener {
 
         ImageView permissionIcon = (ImageView) permissionRow.findViewById(
                 R.id.page_info_permission_icon);
-        permissionIcon.setImageResource(getImageResourceForPermission(permission.type));
+        permissionIcon.setImageDrawable(TintedDrawable.constructTintedDrawable(
+                permissionIcon.getResources(), getImageResourceForPermission(permission.type)));
 
         if (permission.setting == ContentSetting.ALLOW) {
             int warningTextResource = 0;
