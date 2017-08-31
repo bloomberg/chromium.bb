@@ -29,9 +29,12 @@ MemlogSenderPipe* g_sender_pipe = nullptr;
 // Matches the native buffer size on the pipe.
 constexpr int kSendBufferSize = 65536;
 #else
-// Writes on Posix greater than PIPE_BUF are not guaranteed to be atomic so
-// our buffers can't be larger than that.
-constexpr int kSendBufferSize = PIPE_BUF;
+// Writes on Posix greater than PIPE_BUF are not guaranteed to be atomic, but
+// PIPE_BUF is potentially as low as 512, which isn't large enough to accomodate
+// a message with 256 stack frames. Instead, we use a large value [artifically
+// chosen to match that of Windows], and make the Send() method of the
+// MemlogSenderPipe a critical section.
+constexpr int kSendBufferSize = 65536;
 #endif
 
 // Prime since this is used like a hash table. Numbers of this magnitude seemed
@@ -197,6 +200,9 @@ void AllocatorShimLogAlloc(void* address, size_t sz) {
   if (address) {
     constexpr size_t max_message_size =
         sizeof(AllocPacket) + kMaxStackEntries * sizeof(uint64_t);
+    static_assert(max_message_size < kSendBufferSize,
+                  "We can't have a message size that exceeds the pipe write "
+                  "buffer size.");
     char message[max_message_size];
     // TODO(ajwong) check that this is technically valid.
     AllocPacket* alloc_packet = reinterpret_cast<AllocPacket*>(message);

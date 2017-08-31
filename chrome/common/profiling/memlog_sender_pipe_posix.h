@@ -10,6 +10,7 @@
 
 #include "base/files/platform_file.h"
 #include "base/macros.h"
+#include "base/synchronization/lock.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 
 namespace profiling {
@@ -25,6 +26,10 @@ class MemlogSenderPipe {
 
  private:
   mojo::edk::ScopedPlatformHandle handle_;
+
+  // All calls to Send() are wrapped in a Lock, since the size of the data might
+  // be larger than the maximum atomic write size of a pipe on Posix [PIPE_BUF].
+  base::Lock lock_;
 
   DISALLOW_COPY_AND_ASSIGN(MemlogSenderPipe);
 };
