@@ -1101,6 +1101,11 @@ void ServiceWorkerContextClient::DidHandleFetchEvent(
     int fetch_event_id,
     blink::WebServiceWorkerEventResult result,
     double event_dispatch_time) {
+  // This TRACE_EVENT is used for perf benchmark to confirm if all of fetch
+  // events have completed. (crbug.com/736697)
+  TRACE_EVENT1("ServiceWorker",
+               "ServiceWorkerContextClient::DidHandleFetchEvent", "event_id",
+               fetch_event_id);
   WorkerContextData::SimpleEventCallback callback =
       std::move(context_->fetch_event_callbacks[fetch_event_id]);
   DCHECK(callback);
@@ -1559,14 +1564,17 @@ void ServiceWorkerContextClient::DispatchFetchEvent(
     mojom::FetchEventPreloadHandlePtr preload_handle,
     mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
     DispatchFetchEventCallback callback) {
+  // This TRACE_EVENT is used for perf benchmark to confirm if all of fetch
+  // events have completed. (crbug.com/736697)
+  TRACE_EVENT1("ServiceWorker",
+               "ServiceWorkerContextClient::DispatchFetchEvent", "event_id",
+               fetch_event_id);
   std::unique_ptr<NavigationPreloadRequest> preload_request =
       preload_handle
           ? base::MakeUnique<NavigationPreloadRequest>(
                 fetch_event_id, request.url, std::move(preload_handle))
           : nullptr;
   const bool navigation_preload_sent = !!preload_request;
-  TRACE_EVENT0("ServiceWorker",
-               "ServiceWorkerContextClient::DispatchFetchEvent");
   context_->fetch_response_callbacks.insert(
       std::make_pair(fetch_event_id, std::move(response_callback)));
   context_->fetch_event_callbacks.insert(
