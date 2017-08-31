@@ -52,7 +52,7 @@ public class ChannelDefinitions {
      * the set of channels returned by {@link #getStartupChannelIds()} or
      * {@link #getLegacyChannelIds()} changes.
      */
-    static final int CHANNELS_VERSION = 1;
+    static final int CHANNELS_VERSION = 2;
 
     /**
      * To define a new channel, add the channel ID to this StringDef and add a new entry to
