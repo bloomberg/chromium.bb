@@ -22,7 +22,6 @@ set(ARCH_X86 0 CACHE NUMBER "Enables X86 architecture.")
 set(ARCH_X86_64 0 CACHE NUMBER "Enables X86_64 architecture.")
 
 # ARM optimization flags.
-set(HAVE_EDSP 0 CACHE NUMBER "Enables EDSP optimizations.")
 set(HAVE_NEON 0 CACHE NUMBER "Enables NEON intrinsics optimizations.")
 set(HAVE_NEON_ASM 0 CACHE NUMBER "Enables NEON assembly optimizations.")
 
