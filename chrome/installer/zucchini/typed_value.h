@@ -5,6 +5,8 @@
 #ifndef CHROME_INSTALLER_ZUCCHINI_TYPED_VALUE_H_
 #define CHROME_INSTALLER_ZUCCHINI_TYPED_VALUE_H_
 
+#include <ostream>
+
 namespace zucchini {
 
 // Strong typed values, with compare and convert functions for underlying data.
@@ -44,6 +46,11 @@ class TypedValue {
  private:
   T value_ = {};
 };
+
+template <class Tag, class T>
+std::ostream& operator<<(std::ostream& os, const TypedValue<Tag, T>& tag) {
+  return os << tag.value();
+}
 
 }  // namespace zucchini
 

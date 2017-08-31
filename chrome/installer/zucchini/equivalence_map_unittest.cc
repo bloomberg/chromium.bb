@@ -11,7 +11,7 @@
 #include "chrome/installer/zucchini/encoded_view.h"
 #include "chrome/installer/zucchini/image_index.h"
 #include "chrome/installer/zucchini/suffix_array.h"
-#include "chrome/installer/zucchini/test_reference_reader.h"
+#include "chrome/installer/zucchini/test_disassembler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace zucchini {
@@ -25,20 +25,17 @@ constexpr offset_t kReferenceSize = 2;
 // The result is populated with |refs0| and |refs1|. |a| is expected to be a
 // string literal valid for the lifetime of the object.
 ImageIndex MakeImageIndexForTesting(const char* a,
-                                    const std::vector<Reference>& refs0,
-                                    const std::vector<Reference>& refs1) {
-  std::vector<ReferenceTypeTraits> traits(
-      {ReferenceTypeTraits{kReferenceSize, TypeTag(0), PoolTag(0)},
-       ReferenceTypeTraits{kReferenceSize, TypeTag(1), PoolTag(0)}});
+                                    std::vector<Reference>&& refs0,
+                                    std::vector<Reference>&& refs1) {
+  TestDisassembler disasm(
+      {kReferenceSize, TypeTag(0), PoolTag(0)}, std::move(refs0),
+      {kReferenceSize, TypeTag(1), PoolTag(0)}, std::move(refs1),
+      {kReferenceSize, TypeTag(2), PoolTag(1)}, {});
 
   ImageIndex image_index(
-      ConstBufferView(reinterpret_cast<const uint8_t*>(a), std::strlen(a)),
-      std::move(traits));
+      ConstBufferView(reinterpret_cast<const uint8_t*>(a), std::strlen(a)));
 
-  EXPECT_TRUE(
-      image_index.InsertReferences(TypeTag(0), TestReferenceReader(refs0)));
-  EXPECT_TRUE(
-      image_index.InsertReferences(TypeTag(1), TestReferenceReader(refs1)));
+  EXPECT_TRUE(image_index.Initialize(&disasm));
   return image_index;
 }
 
@@ -217,7 +214,7 @@ TEST(EquivalenceMapTest, Build) {
   auto test_build_equivalence = [](const ImageIndex old_index,
                                    const ImageIndex new_index,
                                    double minimum_similarity) {
-    EncodedView old_view(&old_index);
+    EncodedView old_view(old_index);
     std::vector<offset_t> old_sa =
         MakeSuffixArray<InducedSuffixSort>(old_view, old_view.Cardinality());
 

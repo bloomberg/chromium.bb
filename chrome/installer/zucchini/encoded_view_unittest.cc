@@ -9,7 +9,7 @@
 
 #include "chrome/installer/zucchini/image_index.h"
 #include "chrome/installer/zucchini/label_manager.h"
-#include "chrome/installer/zucchini/test_reference_reader.h"
+#include "chrome/installer/zucchini/test_disassembler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace zucchini {
@@ -113,36 +113,33 @@ class EncodedViewTest : public testing::Test {
  protected:
   EncodedViewTest()
       : buffer_(20),
-        image_index_(ConstBufferView(buffer_.data(), buffer_.size()),
-                     {ReferenceTypeTraits{2, TypeTag(0), PoolTag(0)},
-                      ReferenceTypeTraits{4, TypeTag(1), PoolTag(0)},
-                      ReferenceTypeTraits{3, TypeTag(2), PoolTag(1)}}),
-        encoded_view_(&image_index_) {
+        image_index_(ConstBufferView(buffer_.data(), buffer_.size())) {
     for (uint8_t i = 0; i < buffer_.size(); ++i) {
       buffer_[i] = i;
     }
-    EXPECT_TRUE(image_index_.InsertReferences(
-        TypeTag(0), TestReferenceReader({{1, 0}, {8, 1}, {10, 2}})));
-    EXPECT_TRUE(image_index_.InsertReferences(TypeTag(1),
-                                              TestReferenceReader({{3, 3}})));
-    EXPECT_TRUE(image_index_.InsertReferences(
-        TypeTag(2), TestReferenceReader({{12, 4}, {17, 5}})));
+    TestDisassembler disasm({2, TypeTag(0), PoolTag(0)},
+                            {{1, 0}, {8, 1}, {10, 2}},
+                            {4, TypeTag(1), PoolTag(0)}, {{3, 3}},
+                            {3, TypeTag(2), PoolTag(1)}, {{12, 4}, {17, 5}});
+    image_index_.Initialize(&disasm);
   }
 
-  void CheckView(std::vector<size_t> expected) const {
-    for (offset_t i = 0; i < image_index_.size(); ++i) {
-      EXPECT_EQ(expected[i], EncodedView::Projection(image_index_, i)) << i;
+  void CheckView(std::vector<size_t> expected,
+                 const EncodedView& encoded_view) const {
+    for (offset_t i = 0; i < encoded_view.size(); ++i) {
+      EXPECT_EQ(expected[i], encoded_view.Projection(i)) << i;
     }
     TestRandomAccessIterator(expected.begin(), expected.end(),
-                             encoded_view_.begin(), encoded_view_.end());
+                             encoded_view.begin(), encoded_view.end());
   }
 
   std::vector<uint8_t> buffer_;
   ImageIndex image_index_;
-  EncodedView encoded_view_;
 };
 
 TEST_F(EncodedViewTest, Unlabeled) {
+  EncodedView encoded_view(image_index_);
+
   std::vector<size_t> expected = {
       0,                                     // raw
       kBaseReferenceProjection + 0 + 0 * 3,  // ref 0
@@ -165,11 +162,13 @@ TEST_F(EncodedViewTest, Unlabeled) {
       PADDING,
       PADDING,
   };
-  EXPECT_EQ(kBaseReferenceProjection + 3 * 1, encoded_view_.Cardinality());
-  CheckView(expected);
+  EXPECT_EQ(kBaseReferenceProjection + 3 * 1, encoded_view.Cardinality());
+  CheckView(expected, encoded_view);
 }
 
 TEST_F(EncodedViewTest, Labeled) {
+  EncodedView encoded_view(image_index_);
+
   OrderedLabelManager label_manager0;
   label_manager0.InsertOffsets({0, 2});
   image_index_.LabelTargets(PoolTag(0), label_manager0);
@@ -196,8 +195,8 @@ TEST_F(EncodedViewTest, Labeled) {
       PADDING,
       PADDING,
   };
-  EXPECT_EQ(kBaseReferenceProjection + 3 * 3, encoded_view_.Cardinality());
-  CheckView(expected);
+  EXPECT_EQ(kBaseReferenceProjection + 3 * 3, encoded_view.Cardinality());
+  CheckView(expected, encoded_view);
 }
 
 }  // namespace zucchini

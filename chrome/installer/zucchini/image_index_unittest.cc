@@ -11,7 +11,7 @@
 
 #include "base/test/gtest_util.h"
 #include "chrome/installer/zucchini/image_utils.h"
-#include "chrome/installer/zucchini/test_reference_reader.h"
+#include "chrome/installer/zucchini/test_disassembler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace zucchini {
@@ -20,29 +20,16 @@ class ImageIndexTest : public testing::Test {
  protected:
   ImageIndexTest()
       : buffer_(20),
-        image_index_(ConstBufferView(buffer_.data(), buffer_.size()),
-                     {ReferenceTypeTraits{2, TypeTag(0), PoolTag(0)},
-                      ReferenceTypeTraits{4, TypeTag(1), PoolTag(0)},
-                      ReferenceTypeTraits{3, TypeTag(2), PoolTag(1)}}) {
+        image_index_(ConstBufferView(buffer_.data(), buffer_.size())) {
     std::iota(buffer_.begin(), buffer_.end(), 0);
   }
 
-  void InsertReferences0() {
-    EXPECT_TRUE(image_index_.InsertReferences(
-        TypeTag(0), TestReferenceReader({{1, 0}, {8, 1}, {10, 2}})));
-  }
-  void InsertReferences1() {
-    EXPECT_TRUE(image_index_.InsertReferences(TypeTag(1),
-                                              TestReferenceReader({{3, 3}})));
-  }
-  void InsertReferences2() {
-    EXPECT_TRUE(image_index_.InsertReferences(
-        TypeTag(2), TestReferenceReader({{12, 4}, {17, 5}})));
-  }
-  void InsertAllReferences() {
-    InsertReferences0();
-    InsertReferences1();
-    InsertReferences2();
+  void InitializeWithDefaultTestData() {
+    TestDisassembler disasm({2, TypeTag(0), PoolTag(0)},
+                            {{1, 0}, {8, 1}, {10, 2}},
+                            {4, TypeTag(1), PoolTag(0)}, {{3, 3}},
+                            {3, TypeTag(2), PoolTag(1)}, {{12, 4}, {17, 5}});
+    EXPECT_TRUE(image_index_.Initialize(&disasm));
   }
 
   std::vector<uint8_t> buffer_;
@@ -50,7 +37,10 @@ class ImageIndexTest : public testing::Test {
 };
 
 TEST_F(ImageIndexTest, TypeAndPool) {
-  InsertAllReferences();
+  TestDisassembler disasm({2, TypeTag(0), PoolTag(0)}, {},
+                          {4, TypeTag(1), PoolTag(0)}, {},
+                          {3, TypeTag(2), PoolTag(1)}, {});
+  EXPECT_TRUE(image_index_.Initialize(&disasm));
 
   EXPECT_EQ(3U, image_index_.TypeCount());
   EXPECT_EQ(2U, image_index_.PoolCount());
@@ -64,22 +54,25 @@ TEST_F(ImageIndexTest, TypeAndPool) {
 }
 
 TEST_F(ImageIndexTest, InvalidInsertReferences1) {
-  // Overlap within the same reader.
-  EXPECT_FALSE(image_index_.InsertReferences(
-      TypeTag(0), TestReferenceReader({{1, 0}, {2, 0}})));
+  // Overlap within the same group.
+  TestDisassembler disasm({2, TypeTag(0), PoolTag(0)}, {{1, 0}, {2, 0}},
+                          {4, TypeTag(1), PoolTag(0)}, {},
+                          {3, TypeTag(2), PoolTag(1)}, {});
+  EXPECT_FALSE(image_index_.Initialize(&disasm));
 }
 
 TEST_F(ImageIndexTest, InvalidInsertReferences2) {
-  InsertReferences0();
-  InsertReferences1();
+  TestDisassembler disasm({2, TypeTag(0), PoolTag(0)},
+                          {{1, 0}, {8, 1}, {10, 2}},
+                          {4, TypeTag(1), PoolTag(0)}, {{3, 3}},
+                          {3, TypeTag(2), PoolTag(1)}, {{11, 0}});
 
   // Overlap across different readers.
-  EXPECT_FALSE(image_index_.InsertReferences(TypeTag(2),
-                                             TestReferenceReader({{11, 0}})));
+  EXPECT_FALSE(image_index_.Initialize(&disasm));
 }
 
-TEST_F(ImageIndexTest, GetType) {
-  InsertAllReferences();
+TEST_F(ImageIndexTest, LookupType) {
+  InitializeWithDefaultTestData();
 
   std::vector<int> expected = {
       -1,            // raw
@@ -94,11 +87,11 @@ TEST_F(ImageIndexTest, GetType) {
   };
 
   for (offset_t i = 0; i < image_index_.size(); ++i)
-    EXPECT_EQ(TypeTag(expected[i]), image_index_.GetType(i));
+    EXPECT_EQ(TypeTag(expected[i]), image_index_.LookupType(i));
 }
 
 TEST_F(ImageIndexTest, IsToken) {
-  InsertAllReferences();
+  InitializeWithDefaultTestData();
 
   std::vector<bool> expected = {
       1,           // raw
@@ -117,7 +110,7 @@ TEST_F(ImageIndexTest, IsToken) {
 }
 
 TEST_F(ImageIndexTest, IsReference) {
-  InsertAllReferences();
+  InitializeWithDefaultTestData();
 
   std::vector<bool> expected = {
       0,           // raw
@@ -131,13 +124,12 @@ TEST_F(ImageIndexTest, IsReference) {
       1, 1, 1,     // ref 2
   };
 
-  for (offset_t i = 0; i < image_index_.size(); ++i) {
+  for (offset_t i = 0; i < image_index_.size(); ++i)
     EXPECT_EQ(expected[i], image_index_.IsReference(i));
-  }
 }
 
 TEST_F(ImageIndexTest, FindReference) {
-  InsertAllReferences();
+  InitializeWithDefaultTestData();
 
   EXPECT_DCHECK_DEATH(image_index_.FindReference(TypeTag(0), 0));
   EXPECT_EQ(Reference({1, 0}), image_index_.FindReference(TypeTag(0), 1));
@@ -151,7 +143,7 @@ TEST_F(ImageIndexTest, FindReference) {
 }
 
 TEST_F(ImageIndexTest, LabelTargets) {
-  InsertAllReferences();
+  InitializeWithDefaultTestData();
 
   OrderedLabelManager label_manager0;
   label_manager0.InsertOffsets({0, 2, 3, 4});
@@ -189,7 +181,7 @@ TEST_F(ImageIndexTest, LabelTargets) {
 }
 
 TEST_F(ImageIndexTest, LabelAssociatedTargets) {
-  InsertAllReferences();
+  InitializeWithDefaultTestData();
 
   OrderedLabelManager label_manager;
   label_manager.InsertOffsets({0, 1, 2, 3, 4});
