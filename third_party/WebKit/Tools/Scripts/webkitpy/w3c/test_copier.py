@@ -32,10 +32,10 @@ a local W3C repository source directory into a destination directory.
 """
 
 import logging
-import mimetypes
 
 from webkitpy.common.path_finder import PathFinder
 from webkitpy.layout_tests.models.test_expectations import TestExpectationParser
+from webkitpy.w3c.common import is_basename_skipped
 
 _log = logging.getLogger(__name__)
 
@@ -124,8 +124,7 @@ class TestCopier(object):
                         continue
                 # FIXME: This block should really be a separate function, but the early-continues make that difficult.
 
-                if filename == 'OWNERS' or filename == 'reftest.list':
-                    # See http://crbug.com/584660 and http://crbug.com/582838.
+                if is_basename_skipped(filename):
                     _log.debug('Skipping: %s', path_full)
                     _log.debug('  Reason: This file may cause Chromium presubmit to fail.')
                     continue
