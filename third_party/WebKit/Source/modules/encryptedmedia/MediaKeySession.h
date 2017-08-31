@@ -41,7 +41,7 @@
 namespace blink {
 
 class DOMException;
-class GenericEventQueue;
+class MediaElementEventQueue;
 class MediaKeys;
 
 // References are held by JS only. However, even if all JS references are
@@ -135,7 +135,7 @@ class MediaKeySession final
   void KeysStatusesChange(const WebVector<WebEncryptedMediaKeyInformation>&,
                           bool has_additional_usable_key) override;
 
-  Member<GenericEventQueue> async_event_queue_;
+  Member<MediaElementEventQueue> async_event_queue_;
   std::unique_ptr<WebContentDecryptionModuleSession> session_;
 
   // Used to determine if MediaKeys is still active.

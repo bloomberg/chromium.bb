@@ -48,7 +48,7 @@ class AudioTrackList;
 class DOMArrayBuffer;
 class DOMArrayBufferView;
 class ExceptionState;
-class GenericEventQueue;
+class MediaElementEventQueue;
 class MediaSource;
 class TimeRanges;
 class VideoTrackList;
@@ -65,7 +65,7 @@ class SourceBuffer final : public EventTargetWithInlineData,
  public:
   static SourceBuffer* Create(std::unique_ptr<WebSourceBuffer>,
                               MediaSource*,
-                              GenericEventQueue*);
+                              MediaElementEventQueue*);
   static const AtomicString& SegmentsKeyword();
   static const AtomicString& SequenceKeyword();
 
@@ -121,7 +121,7 @@ class SourceBuffer final : public EventTargetWithInlineData,
  private:
   SourceBuffer(std::unique_ptr<WebSourceBuffer>,
                MediaSource*,
-               GenericEventQueue*);
+               MediaElementEventQueue*);
   void Dispose();
 
   bool IsRemoved() const;
@@ -160,7 +160,7 @@ class SourceBuffer final : public EventTargetWithInlineData,
   std::unique_ptr<WebSourceBuffer> web_source_buffer_;
   Member<MediaSource> source_;
   Member<TrackDefaultList> track_defaults_;
-  Member<GenericEventQueue> async_event_queue_;
+  Member<MediaElementEventQueue> async_event_queue_;
 
   AtomicString mode_;
   bool updating_;

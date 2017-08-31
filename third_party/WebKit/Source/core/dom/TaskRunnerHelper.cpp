@@ -39,7 +39,6 @@ RefPtr<WebTaskRunner> TaskRunnerHelper::Get(TaskType type, LocalFrame* frame) {
     case TaskType::kDOMManipulation:
     case TaskType::kHistoryTraversal:
     case TaskType::kEmbed:
-    case TaskType::kMediaElementEvent:
     case TaskType::kCanvasBlobSerialization:
     case TaskType::kRemoteEvent:
     case TaskType::kWebSocket:
@@ -60,6 +59,9 @@ RefPtr<WebTaskRunner> TaskRunnerHelper::Get(TaskType type, LocalFrame* frame) {
     case TaskType::kPostedMessage:
     // UserInteraction tasks should be run even when expecting a user gesture.
     case TaskType::kUserInteraction:
+    // Media events should not be deferred to ensure that media playback is
+    // smooth.
+    case TaskType::kMediaElementEvent:
       return frame ? frame->FrameScheduler()->PausableTaskRunner()
                    : Platform::Current()->CurrentThread()->GetWebTaskRunner();
     case TaskType::kUnthrottled:

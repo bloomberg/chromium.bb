@@ -36,7 +36,7 @@
 
 namespace blink {
 
-class GenericEventQueue;
+class MediaElementEventQueue;
 class TextTrack;
 
 class CORE_EXPORT TextTrackList final : public EventTargetWithInlineData {
@@ -89,7 +89,7 @@ class CORE_EXPORT TextTrackList final : public EventTargetWithInlineData {
 
   Member<HTMLMediaElement> owner_;
 
-  Member<GenericEventQueue> async_event_queue_;
+  Member<MediaElementEventQueue> async_event_queue_;
 
   HeapVector<TraceWrapperMember<TextTrack>> add_track_tracks_;
   HeapVector<TraceWrapperMember<TextTrack>> element_tracks_;

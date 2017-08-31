@@ -33,7 +33,7 @@
 #include "core/CoreExport.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/SuspendableObject.h"
-#include "core/dom/events/GenericEventQueue.h"
+#include "core/dom/events/MediaElementEventQueue.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/media/MediaControls.h"
 #include "core/html/track/TextTrack.h"
@@ -546,7 +546,7 @@ class CORE_EXPORT HTMLMediaElement
   TaskRunnerTimer<HTMLMediaElement> check_viewport_intersection_timer_;
 
   Member<TimeRanges> played_time_ranges_;
-  Member<GenericEventQueue> async_event_queue_;
+  Member<MediaElementEventQueue> async_event_queue_;
 
   double playback_rate_;
   double default_playback_rate_;
