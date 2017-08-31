@@ -575,6 +575,12 @@ void ExistingUserController::ContinuePerformLoginWithoutMigration(
   ContinuePerformLogin(auth_mode, user_context_ecryptfs);
 }
 
+void ExistingUserController::RestartLogin(const UserContext& user_context) {
+  is_login_in_progress_ = false;
+  login_performer_.reset();
+  login_display_->ShowSigninUI(user_context.GetAccountId().GetUserEmail());
+}
+
 void ExistingUserController::MigrateUserData(const std::string& old_password) {
   // LoginPerformer instance has state of the user so it should exist.
   if (login_performer_.get()) {
@@ -719,6 +725,8 @@ void ExistingUserController::ShowEncryptionMigrationScreen(
   migration_screen->SetContinueLoginCallback(base::BindOnce(
       &ExistingUserController::ContinuePerformLogin, weak_factory_.GetWeakPtr(),
       login_performer_->auth_mode()));
+  migration_screen->SetRestartLoginCallback(base::BindOnce(
+      &ExistingUserController::RestartLogin, weak_factory_.GetWeakPtr()));
   migration_screen->SetupInitialView();
 }
 
@@ -967,8 +975,14 @@ void ExistingUserController::OnOldEncryptionDetected(
   if (has_incomplete_migration) {
     // If migration was incomplete, continue migration without checking user
     // policy.
-    ShowEncryptionMigrationScreen(user_context,
-                                  EncryptionMigrationMode::RESUME_MIGRATION);
+    // If the last attempted migration was a minimal migration, try to resume
+    // minimal migration.
+    const EncryptionMigrationMode mode =
+        user_manager::known_user::WasUserHomeMinimalMigrationAttempted(
+            user_context.GetAccountId())
+            ? EncryptionMigrationMode::RESUME_MINIMAL_MIGRATION
+            : EncryptionMigrationMode::RESUME_MIGRATION;
+    ShowEncryptionMigrationScreen(user_context, mode);
     return;
   }
 
@@ -1033,23 +1047,36 @@ void ExistingUserController::OnPolicyFetchResult(
 
   switch (action) {
     case apu::EcryptfsMigrationAction::kMigrate:
+      user_manager::known_user::SetUserHomeMinimalMigrationAttempted(
+          user_context.GetAccountId(), false);
       ShowEncryptionMigrationScreen(user_context,
                                     EncryptionMigrationMode::START_MIGRATION);
       break;
 
     case apu::EcryptfsMigrationAction::kAskUser:
+      user_manager::known_user::SetUserHomeMinimalMigrationAttempted(
+          user_context.GetAccountId(), false);
       ShowEncryptionMigrationScreen(user_context,
                                     EncryptionMigrationMode::ASK_USER);
       break;
 
-    case apu::EcryptfsMigrationAction::kMinimalMigrate:
-    // Fall-through intended. Minimal migration behaves as Wipe for Chrome OS
-    // versions which don't support it yet.
     case apu::EcryptfsMigrationAction::kWipe:
       cryptohome::AsyncMethodCaller::GetInstance()->AsyncRemove(
           cryptohome::Identification(user_context.GetAccountId()),
           base::Bind(&ExistingUserController::WipePerformed,
                      weak_factory_.GetWeakPtr(), user_context));
+      break;
+
+    case apu::EcryptfsMigrationAction::kMinimalMigrate:
+      // Reset the profile ever initialized flag, so that user policy manager
+      // will block sign-in if no policy can be retrieved for the migrated
+      // profile.
+      user_manager::UserManager::Get()->ResetProfileEverInitialized(
+          user_context.GetAccountId());
+      user_manager::known_user::SetUserHomeMinimalMigrationAttempted(
+          user_context.GetAccountId(), true);
+      ShowEncryptionMigrationScreen(
+          user_context, EncryptionMigrationMode::START_MINIMAL_MIGRATION);
       break;
 
     case apu::EcryptfsMigrationAction::kAskForEcryptfsArcUsers:

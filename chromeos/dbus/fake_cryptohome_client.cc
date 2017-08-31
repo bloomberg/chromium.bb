@@ -671,6 +671,7 @@ void FakeCryptohomeClient::FlushAndSignBootAttributes(
 
 void FakeCryptohomeClient::MigrateToDircrypto(
     const cryptohome::Identification& cryptohome_id,
+    const cryptohome::MigrateToDircryptoRequest& request,
     VoidDBusMethodCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), DBUS_METHOD_CALL_SUCCESS));

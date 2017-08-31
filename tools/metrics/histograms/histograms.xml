@@ -11040,6 +11040,26 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Cryptohome.DircryptoMinimalMigrationEndStatus"
+    enum="DircryptoMigrationEndStatus">
+  <owner>dspaid@chromium.org</owner>
+  <owner>pmarko@chromium.org</owner>
+  <summary>
+    The status of the user home directory minimal migration from ecryptfs to
+    ext4-crypto. This is logged once at the end of each minimal migration.
+  </summary>
+</histogram>
+
+<histogram name="Cryptohome.DircryptoMinimalMigrationStartStatus"
+    enum="DircryptoMigrationStartStatus">
+  <owner>dspaid@chromium.org</owner>
+  <owner>pmarko@chromium.org</owner>
+  <summary>
+    The status of the user home directory minimal migration from ecryptfs to
+    ext4-crypto. This is logged once at the start of each minimal migration.
+  </summary>
+</histogram>
+
 <histogram name="Cryptohome.Errors" enum="CryptohomeError">
   <owner>dkrahn@chromium.org</owner>
   <summary>Cryptohome errors.</summary>
@@ -11134,8 +11154,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     The amount of time (ms) for the user's home directory to be migrated from
     ecryptfs to ext4-crypto.  If the migration is interrupted and subsequently
-    resumed (such as due to power loss) the no value is recorded for either
+    resumed (such as due to power loss) then no value is recorded for either
     attempt.
+  </summary>
+</histogram>
+
+<histogram name="Cryptohome.TimeToCompleteDircryptoMinimalMigration" units="ms">
+  <owner>dspaid@chromium.org</owner>
+  <summary>
+    The amount of time (ms) for the user's home directory to be migrated from
+    ecryptfs to ext4-crypto if the minimal migration method was used. If the
+    minimal migration is interrupted and subsequently resumed (such as due to
+    power loss) then no value is recorded for either attempt.
   </summary>
 </histogram>
 

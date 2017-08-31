@@ -16,6 +16,7 @@ class UserContext;
 class EncryptionMigrationScreenView {
  public:
   using ContinueLoginCallback = base::OnceCallback<void(const UserContext&)>;
+  using RestartLoginCallback = base::OnceCallback<void(const UserContext&)>;
 
   class Delegate {
    public:
@@ -40,6 +41,7 @@ class EncryptionMigrationScreenView {
   virtual void SetUserContext(const UserContext& user_context) = 0;
   virtual void SetMode(EncryptionMigrationMode mode) = 0;
   virtual void SetContinueLoginCallback(ContinueLoginCallback callback) = 0;
+  virtual void SetRestartLoginCallback(RestartLoginCallback callback) = 0;
   virtual void SetupInitialView() = 0;
 };
 

@@ -202,6 +202,7 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
       const cryptohome::FlushAndSignBootAttributesRequest& request,
       const ProtobufMethodCallback& callback) override;
   void MigrateToDircrypto(const cryptohome::Identification& cryptohome_id,
+                          const cryptohome::MigrateToDircryptoRequest& request,
                           VoidDBusMethodCallback callback) override;
   void SetDircryptoMigrationProgressHandler(
       const DircryptoMigrationProgessHandler& handler) override;
@@ -264,6 +265,10 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
 
   void SetTpmAttestationDeviceKeyPayload(const std::string& key_name,
                                          const std::string& payload);
+
+  DircryptoMigrationProgessHandler dircrypto_migration_progress_handler() {
+    return dircrypto_migration_progress_handler_;
+  }
 
  private:
   void ReturnProtobufMethodCallback(

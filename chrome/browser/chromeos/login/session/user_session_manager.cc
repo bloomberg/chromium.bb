@@ -1057,7 +1057,11 @@ void UserSessionManager::InitProfilePreferences(
         input_method::InputMethodManager::Get();
     manager->SetState(GetDefaultIMEState(profile));
   }
-  if (user_manager::UserManager::Get()->IsCurrentUserNew()) {
+  // Set initial prefs if the user is new, or if the user was already present on
+  // the device and the profile was re-created. This can happen e.g. in ext4
+  // migration in wipe mode.
+  if (user_manager::UserManager::Get()->IsCurrentUserNew() ||
+      profile->IsNewProfile()) {
     SetFirstLoginPrefs(profile,
                        user_context.GetPublicSessionLocale(),
                        user_context.GetPublicSessionInputMethod());

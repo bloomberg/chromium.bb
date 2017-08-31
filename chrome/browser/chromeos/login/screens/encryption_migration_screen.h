@@ -19,6 +19,7 @@ class EncryptionMigrationScreen
       public EncryptionMigrationScreenView::Delegate {
  public:
   using ContinueLoginCallback = base::OnceCallback<void(const UserContext&)>;
+  using RestartLoginCallback = base::OnceCallback<void(const UserContext&)>;
 
   EncryptionMigrationScreen(BaseScreenDelegate* base_screen_delegate,
                             EncryptionMigrationScreenView* view);
@@ -41,6 +42,10 @@ class EncryptionMigrationScreen
   // Sets a callback, which should be called when the user want to log in to the
   // session from the migration UI.
   void SetContinueLoginCallback(ContinueLoginCallback callback);
+
+  // Sets a callback, which should be called when the user should re-enter their
+  // password.
+  void SetRestartLoginCallback(RestartLoginCallback callback);
 
   // Setup the initial view in the migration UI.
   // This should be called after other state like UserContext, etc... are set.

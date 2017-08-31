@@ -1032,6 +1032,18 @@ void UserManagerBase::ChangeUserChildStatus(User* user, bool is_child) {
     observer.UserChangedChildStatus(user);
 }
 
+void UserManagerBase::ResetProfileEverInitialized(const AccountId& account_id) {
+  User* user = FindUserAndModify(account_id);
+  if (!user) {
+    LOG(ERROR) << "User not found: " << account_id.GetUserEmail();
+    return;  // Ignore if there is no such user.
+  }
+
+  user->set_profile_ever_initialized(false);
+  known_user::SetProfileEverInitialized(user->GetAccountId(), false);
+  GetLocalState()->CommitPendingWrite();
+}
+
 void UserManagerBase::Initialize() {
   UserManager::Initialize();
   CallUpdateLoginState();
