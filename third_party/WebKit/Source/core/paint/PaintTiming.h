@@ -197,6 +197,9 @@ class CORE_EXPORT PaintTiming final
       WaitForMultipleOutstandingSwapPromisesAfterNetworkStable);
   FRIEND_TEST_ALL_PREFIXES(FirstMeaningfulPaintDetectorTest,
                            WaitForFirstContentfulPaintSwapAfterNetworkStable);
+  FRIEND_TEST_ALL_PREFIXES(
+      FirstMeaningfulPaintDetectorTest,
+      ProvisionalTimestampChangesAfterNetworkQuietWithOutstandingSwapPromise);
 };
 
 }  // namespace blink

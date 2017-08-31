@@ -91,9 +91,14 @@ class FirstMeaningfulPaintDetectorTest : public ::testing::Test {
 
   void ClearProvisionalFirstMeaningfulPaintSwapPromise() {
     platform_->AdvanceClockSeconds(0.001);
+    ClearProvisionalFirstMeaningfulPaintSwapPromise(
+        MonotonicallyIncreasingTime());
+  }
+
+  void ClearProvisionalFirstMeaningfulPaintSwapPromise(double timestamp) {
     Detector().ReportSwapTime(PaintEvent::kProvisionalFirstMeaningfulPaint,
                               WebLayerTreeView::SwapResult::kDidSwap,
-                              MonotonicallyIncreasingTime());
+                              timestamp);
   }
 
   unsigned OutstandingDetectorSwapPromiseCount() {
@@ -188,15 +193,21 @@ TEST_F(FirstMeaningfulPaintDetectorTest, FirstMeaningfulPaintCandidate) {
   MarkFirstContentfulPaintAndClearSwapPromise();
   EXPECT_EQ(GetPaintTiming().FirstMeaningfulPaintCandidate(), 0.0);
   SimulateLayoutAndPaint(1);
+  EXPECT_EQ(OutstandingDetectorSwapPromiseCount(), 1U);
+  ClearProvisionalFirstMeaningfulPaintSwapPromise();
   double after_paint = AdvanceClockAndGetTime();
   // The first candidate gets ignored.
   EXPECT_EQ(GetPaintTiming().FirstMeaningfulPaintCandidate(), 0.0);
   SimulateLayoutAndPaint(10);
+  EXPECT_EQ(OutstandingDetectorSwapPromiseCount(), 1U);
+  ClearProvisionalFirstMeaningfulPaintSwapPromise();
   // The second candidate gets reported.
   EXPECT_GT(GetPaintTiming().FirstMeaningfulPaintCandidate(), after_paint);
   double candidate = GetPaintTiming().FirstMeaningfulPaintCandidate();
   // The third candidate gets ignored since we already saw the first candidate.
-  SimulateLayoutAndPaint(10);
+  SimulateLayoutAndPaint(20);
+  EXPECT_EQ(OutstandingDetectorSwapPromiseCount(), 1U);
+  ClearProvisionalFirstMeaningfulPaintSwapPromise();
   EXPECT_EQ(GetPaintTiming().FirstMeaningfulPaintCandidate(), candidate);
 }
 
@@ -206,6 +217,8 @@ TEST_F(FirstMeaningfulPaintDetectorTest,
   EXPECT_EQ(GetPaintTiming().FirstMeaningfulPaintCandidate(), 0.0);
   double before_paint = AdvanceClockAndGetTime();
   SimulateLayoutAndPaint(1);
+  EXPECT_EQ(OutstandingDetectorSwapPromiseCount(), 1U);
+  ClearProvisionalFirstMeaningfulPaintSwapPromise();
   // The first candidate is initially ignored.
   EXPECT_EQ(GetPaintTiming().FirstMeaningfulPaintCandidate(), 0.0);
   SimulateNetworkStable();
@@ -214,6 +227,7 @@ TEST_F(FirstMeaningfulPaintDetectorTest,
   double candidate = GetPaintTiming().FirstMeaningfulPaintCandidate();
   // The second candidate is then ignored.
   SimulateLayoutAndPaint(10);
+  EXPECT_EQ(OutstandingDetectorSwapPromiseCount(), 0U);
   EXPECT_EQ(GetPaintTiming().FirstMeaningfulPaintCandidate(), candidate);
 }
 
@@ -436,6 +450,38 @@ TEST_F(FirstMeaningfulPaintDetectorTest,
             after_first_meaningful_paint_candidate);
   EXPECT_GT(GetPaintTiming().FirstMeaningfulPaint(),
             GetPaintTiming().FirstMeaningfulPaintRendered());
+}
+
+TEST_F(FirstMeaningfulPaintDetectorTest,
+       ProvisionalTimestampChangesAfterNetworkQuietWithOutstandingSwapPromise) {
+  MarkFirstContentfulPaintAndClearSwapPromise();
+  SimulateLayoutAndPaint(1);
+  EXPECT_EQ(OutstandingDetectorSwapPromiseCount(), 1U);
+
+  // Simulate only network 2-quiet so provisional FMP will be set on next
+  // layout.
+  double pre_stable_timestamp = AdvanceClockAndGetTime();
+  platform_->AdvanceClockSeconds(0.001);
+  SimulateNetwork2Quiet();
+  EXPECT_EQ(GetPaintTiming().FirstMeaningfulPaintRendered(), 0.0);
+  EXPECT_EQ(GetPaintTiming().FirstMeaningfulPaint(), 0.0);
+
+  // Force another FMP candidate while there is a pending swap promise and the
+  // network 2-quiet FMP non-swap timestamp is set.
+  platform_->AdvanceClockSeconds(0.001);
+  SimulateLayoutAndPaint(10);
+  EXPECT_EQ(OutstandingDetectorSwapPromiseCount(), 1U);
+
+  // Simulate a delay in receiving the SwapPromise timestamp. Clearing this
+  // SwapPromise will set FMP, and this will crash if the new provisional
+  // non-swap timestamp is used.
+  ClearProvisionalFirstMeaningfulPaintSwapPromise(pre_stable_timestamp);
+  EXPECT_EQ(OutstandingDetectorSwapPromiseCount(), 0U);
+  EXPECT_GT(GetPaintTiming().FirstMeaningfulPaintRendered(), 0.0);
+  EXPECT_GT(GetPaintTiming().FirstMeaningfulPaint(), 0.0);
+  EXPECT_EQ(GetPaintTiming().FirstMeaningfulPaint(), pre_stable_timestamp);
+  EXPECT_LT(GetPaintTiming().FirstMeaningfulPaintRendered(),
+            pre_stable_timestamp);
 }
 
 }  // namespace blink
