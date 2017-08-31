@@ -1165,7 +1165,7 @@ static void update_supertx_param_sb(const AV1_COMP *const cpi, ThreadData *td,
 }
 #endif  // CONFIG_SUPERTX
 
-#if CONFIG_MOTION_VAR && (CONFIG_NCOBMC || CONFIG_NCOBMC_ADAPT_WEIGHT)
+#if CONFIG_MOTION_VAR && NC_MODE_INFO
 static void set_mode_info_b(const AV1_COMP *const cpi,
                             const TileInfo *const tile, ThreadData *td,
                             int mi_row, int mi_col, BLOCK_SIZE bsize,
@@ -2117,9 +2117,12 @@ static void encode_b(const AV1_COMP *const cpi, const TileInfo *const tile,
 #endif
 
 #if CONFIG_NCOBMC_ADAPT_WEIGHT
-  if (dry_run == OUTPUT_ENABLED && motion_allowed == NCOBMC_ADAPT_WEIGHT) {
-    get_ncobmc_intrpl_pred(cpi, td, mi_row, mi_col, bsize);
-    av1_check_ncobmc_adapt_weight_rd(cpi, x, mi_row, mi_col);
+  if (dry_run == OUTPUT_ENABLED && !frame_is_intra_only(&cpi->common)) {
+    // we also need to handle inter-intra
+    if (motion_allowed == NCOBMC_ADAPT_WEIGHT && is_inter_block(mbmi)) {
+      get_ncobmc_intrpl_pred(cpi, td, mi_row, mi_col, bsize);
+      av1_check_ncobmc_adapt_weight_rd(cpi, x, mi_row, mi_col);
+    }
     av1_setup_dst_planes(x->e_mbd.plane, bsize,
                          get_frame_new_buffer(&cpi->common), mi_row, mi_col);
   }
@@ -4500,7 +4503,7 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
   if (best_rdc.rate < INT_MAX && best_rdc.dist < INT64_MAX &&
       pc_tree->index != 3) {
     if (bsize == cm->sb_size) {
-#if CONFIG_MOTION_VAR && (CONFIG_NCOBMC || CONFIG_NCOBMC_ADAPT_WEIGHT)
+#if CONFIG_MOTION_VAR && NC_MODE_INFO
       set_mode_info_sb(cpi, td, tile_info, tp, mi_row, mi_col, bsize, pc_tree);
 #endif
 
