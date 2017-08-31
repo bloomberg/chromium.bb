@@ -284,10 +284,6 @@ class UIThreadExtensionFunction::RenderFrameHostTracker
         function_->OnMessageReceived(message);
   }
 
-  bool OnMessageReceived(const IPC::Message& message) override {
-    return function_->OnMessageReceived(message);
-  }
-
   UIThreadExtensionFunction* function_;  // Owns us.
 
   DISALLOW_COPY_AND_ASSIGN(RenderFrameHostTracker);
