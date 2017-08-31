@@ -479,6 +479,10 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
       mojo::ScopedMessagePipeHandle* interface_pipe) {}
 
   // IPC::Listener implementation.
+  // DEPRECATED: Use (i.e. override) the other overload instead:
+  //     virtual bool OnMessageReceived(const IPC::Message& message,
+  //                                    RenderFrameHost* render_frame_host);
+  // TODO(https://crbug.com/758026): Delete this overload when possible.
   bool OnMessageReceived(const IPC::Message& message) override;
 
   // IPC::Sender implementation.
