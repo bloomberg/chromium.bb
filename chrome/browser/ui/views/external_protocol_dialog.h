@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_EXTERNAL_PROTOCOL_DIALOG_H_
 #define CHROME_BROWSER_UI_VIEWS_EXTERNAL_PROTOCOL_DIALOG_H_
 
-#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "ui/views/window/dialog_delegate.h"
@@ -18,29 +17,26 @@ class ExternalProtocolDialogTestApi;
 }
 
 namespace views {
-class MessageBoxView;
+class Checkbox;
 }
 
-class ExternalProtocolDialog : public views::DialogDelegate {
+class ExternalProtocolDialog : public views::DialogDelegateView {
  public:
-  // RunExternalProtocolDialog calls this private constructor.
+  // Show by calling ExternalProtocolHandler::RunExternalProtocolDialog.
   ExternalProtocolDialog(std::unique_ptr<const ProtocolDialogDelegate> delegate,
                          int render_process_host_id,
                          int routing_id);
 
   ~ExternalProtocolDialog() override;
 
-  // views::DialogDelegate methods:
+  // views::DialogDelegateView:
+  gfx::Size CalculatePreferredSize() const override;
   int GetDefaultDialogButton() const override;
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   base::string16 GetWindowTitle() const override;
-  void DeleteDelegate() override;
   bool Cancel() override;
   bool Accept() override;
   bool Close() override;
-  views::View* GetContentsView() override;
-  views::Widget* GetWidget() override;
-  const views::Widget* GetWidget() const override;
   ui::ModalType GetModalType() const override;
 
  private:
@@ -48,8 +44,7 @@ class ExternalProtocolDialog : public views::DialogDelegate {
 
   const std::unique_ptr<const ProtocolDialogDelegate> delegate_;
 
-  // The message box view whose commands we handle.
-  views::MessageBoxView* message_box_view_;
+  views::Checkbox* remember_decision_checkbox_;
 
   // IDs of the associated WebContents.
   int render_process_host_id_;
