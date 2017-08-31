@@ -115,6 +115,8 @@ class LineLayoutText : public LineLayoutItem {
 
   float MinLogicalWidth() const { return ToText()->MinLogicalWidth(); }
 
+  UChar PreviousCharacter() const { return ToText()->PreviousCharacter(); }
+
  private:
   LayoutText* ToText() { return ToLayoutText(GetLayoutObject()); }
   const LayoutText* ToText() const { return ToLayoutText(GetLayoutObject()); }
