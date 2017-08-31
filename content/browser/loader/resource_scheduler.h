@@ -11,16 +11,23 @@
 #include <map>
 #include <memory>
 #include <set>
+#include <utility>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/feature_list.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
+#include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "net/base/priority_queue.h"
 #include "net/base/request_priority.h"
 #include "net/nqe/effective_connection_type.h"
+
+namespace base {
+class SequencedTaskRunner;
+}
 
 namespace net {
 class URLRequest;
@@ -132,6 +139,34 @@ class CONTENT_EXPORT ResourceScheduler {
     return ThrottleDelayble::GetMaxRequestsForBDPRanges();
   }
 
+  bool priority_requests_delayable() const {
+    return priority_requests_delayable_;
+  }
+  bool head_priority_requests_delayable() const {
+    return head_priority_requests_delayable_;
+  }
+  bool yielding_scheduler_enabled() const {
+    return yielding_scheduler_enabled_;
+  }
+  int max_requests_before_yielding() const {
+    return max_requests_before_yielding_;
+  }
+  base::TimeDelta yield_time() const { return yield_time_; }
+  base::SequencedTaskRunner* task_runner() { return task_runner_.get(); }
+
+  // Testing setters
+  void SetMaxRequestsBeforeYieldingForTesting(
+      int max_requests_before_yielding) {
+    max_requests_before_yielding_ = max_requests_before_yielding;
+  }
+  void SetYieldTimeForTesting(base::TimeDelta yield_time) {
+    yield_time_ = yield_time;
+  }
+  void SetTaskRunnerForTesting(
+      scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner) {
+    task_runner_ = std::move(sequenced_task_runner);
+  }
+
  private:
   class Client;
   class RequestQueue;
@@ -230,8 +265,12 @@ class CONTENT_EXPORT ResourceScheduler {
   // start resource requests.
   bool yielding_scheduler_enabled_;
   int max_requests_before_yielding_;
+  base::TimeDelta yield_time_;
 
   const ThrottleDelayble throttle_delayable_;
+
+  // The TaskRunner to post tasks on. Can be overridden for tests.
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
