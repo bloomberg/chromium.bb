@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/components/tether/tether_connector.h"
+#include "chromeos/components/tether/tether_connector_impl.h"
 
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
@@ -119,11 +119,11 @@ class FakeConnectTetheringOperationFactory
 
 }  // namespace
 
-class TetherConnectorTest : public NetworkStateTest {
+class TetherConnectorImplTest : public NetworkStateTest {
  public:
-  TetherConnectorTest()
+  TetherConnectorImplTest()
       : test_devices_(cryptauth::GenerateTestRemoteDevices(2u)) {}
-  ~TetherConnectorTest() override {}
+  ~TetherConnectorImplTest() override {}
 
   void SetUp() override {
     DBusThreadManager::Initialize();
@@ -154,7 +154,7 @@ class TetherConnectorTest : public NetworkStateTest {
 
     result_.clear();
 
-    tether_connector_ = base::WrapUnique(new TetherConnector(
+    tether_connector_ = base::WrapUnique(new TetherConnectorImpl(
         network_state_handler(), fake_wifi_hotspot_connector_.get(),
         fake_active_host_.get(), fake_tether_host_fetcher_.get(),
         fake_ble_connection_manager_.get(),
@@ -185,7 +185,7 @@ class TetherConnectorTest : public NetworkStateTest {
   void SetUpTetherNetworks() {
     // Add a tether network corresponding to both of the test devices. These
     // networks are expected to be added already before
-    // TetherConnector::ConnectToNetwork is called.
+    // TetherConnectorImpl::ConnectToNetwork is called.
     AddTetherNetwork(GetTetherNetworkGuid(test_devices_[0].GetDeviceId()),
                      "TetherNetworkName1", "TetherNetworkCarrier1",
                      85 /* battery_percentage */, 75 /* signal_strength */,
@@ -231,9 +231,9 @@ class TetherConnectorTest : public NetworkStateTest {
   void CallConnect(const std::string& tether_network_guid) {
     tether_connector_->ConnectToNetwork(
         tether_network_guid,
-        base::Bind(&TetherConnectorTest::SuccessCallback,
+        base::Bind(&TetherConnectorImplTest::SuccessCallback,
                    base::Unretained(this)),
-        base::Bind(&TetherConnectorTest::ErrorCallback,
+        base::Bind(&TetherConnectorImplTest::ErrorCallback,
                    base::Unretained(this)));
   }
 
@@ -317,13 +317,13 @@ class TetherConnectorTest : public NetworkStateTest {
 
   std::string result_;
 
-  std::unique_ptr<TetherConnector> tether_connector_;
+  std::unique_ptr<TetherConnectorImpl> tether_connector_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(TetherConnectorTest);
+  DISALLOW_COPY_AND_ASSIGN(TetherConnectorImplTest);
 };
 
-TEST_F(TetherConnectorTest, TestCannotFetchDevice) {
+TEST_F(TetherConnectorImplTest, TestCannotFetchDevice) {
   EXPECT_CALL(
       *mock_host_connection_metrics_logger_,
       RecordConnectionToHostResult(
@@ -352,7 +352,7 @@ TEST_F(TetherConnectorTest, TestCannotFetchDevice) {
       fake_notification_presenter_->is_connection_failed_notification_shown());
 }
 
-TEST_F(TetherConnectorTest, TestCancelWhileOperationActive) {
+TEST_F(TetherConnectorImplTest, TestCancelWhileOperationActive) {
   EXPECT_CALL(
       *mock_host_connection_metrics_logger_,
       RecordConnectionToHostResult(
@@ -386,7 +386,7 @@ TEST_F(TetherConnectorTest, TestCancelWhileOperationActive) {
       fake_notification_presenter_->is_connection_failed_notification_shown());
 }
 
-TEST_F(TetherConnectorTest,
+TEST_F(TetherConnectorImplTest,
        TestConnectTetheringOperationFails_SetupNotRequired) {
   VerifyConnectTetheringOperationFails(
       ConnectTetheringResponse_ResponseCode::
@@ -396,7 +396,8 @@ TEST_F(TetherConnectorTest,
           CONNECTION_RESULT_FAILURE_UNKNOWN_ERROR);
 }
 
-TEST_F(TetherConnectorTest, TestConnectTetheringOperationFails_SetupRequired) {
+TEST_F(TetherConnectorImplTest,
+       TestConnectTetheringOperationFails_SetupRequired) {
   VerifyConnectTetheringOperationFails(
       ConnectTetheringResponse_ResponseCode::
           ConnectTetheringResponse_ResponseCode_UNKNOWN_ERROR,
@@ -405,7 +406,7 @@ TEST_F(TetherConnectorTest, TestConnectTetheringOperationFails_SetupRequired) {
           CONNECTION_RESULT_FAILURE_UNKNOWN_ERROR);
 }
 
-TEST_F(TetherConnectorTest,
+TEST_F(TetherConnectorImplTest,
        TestConnectTetheringOperationFails_ProvisioningFailed) {
   VerifyConnectTetheringOperationFails(
       ConnectTetheringResponse_ResponseCode::
@@ -415,7 +416,7 @@ TEST_F(TetherConnectorTest,
           CONNECTION_RESULT_PROVISIONING_FAILED);
 }
 
-TEST_F(TetherConnectorTest,
+TEST_F(TetherConnectorImplTest,
        TestConnectTetheringOperationFails_TetheringTimeout_SetupNotRequired) {
   VerifyConnectTetheringOperationFails(
       ConnectTetheringResponse_ResponseCode::
@@ -425,7 +426,7 @@ TEST_F(TetherConnectorTest,
           CONNECTION_RESULT_FAILURE_TETHERING_TIMED_OUT_FIRST_TIME_SETUP_WAS_NOT_REQUIRED);
 }
 
-TEST_F(TetherConnectorTest,
+TEST_F(TetherConnectorImplTest,
        TestConnectTetheringOperationFails_TetheringTimeout_SetupRequired) {
   VerifyConnectTetheringOperationFails(
       ConnectTetheringResponse_ResponseCode::
@@ -435,7 +436,7 @@ TEST_F(TetherConnectorTest,
           CONNECTION_RESULT_FAILURE_TETHERING_TIMED_OUT_FIRST_TIME_SETUP_WAS_REQUIRED);
 }
 
-TEST_F(TetherConnectorTest,
+TEST_F(TetherConnectorImplTest,
        ConnectionToHostFailedNotificationRemovedWhenConnectionStarts) {
   // Start with the "connection to host failed" notification showing.
   fake_notification_presenter_->NotifyConnectionToHostFailed();
@@ -446,7 +447,7 @@ TEST_F(TetherConnectorTest,
       fake_notification_presenter_->is_connection_failed_notification_shown());
 }
 
-TEST_F(TetherConnectorTest, TestConnectingToWifiFails) {
+TEST_F(TetherConnectorImplTest, TestConnectingToWifiFails) {
   EXPECT_CALL(*mock_host_connection_metrics_logger_,
               RecordConnectionToHostResult(
                   HostConnectionMetricsLogger::ConnectionToHostResult::
@@ -489,7 +490,7 @@ TEST_F(TetherConnectorTest, TestConnectingToWifiFails) {
       fake_notification_presenter_->is_connection_failed_notification_shown());
 }
 
-TEST_F(TetherConnectorTest, TestCancelWhileConnectingToWifi) {
+TEST_F(TetherConnectorImplTest, TestCancelWhileConnectingToWifi) {
   EXPECT_CALL(
       *mock_host_connection_metrics_logger_,
       RecordConnectionToHostResult(
@@ -527,7 +528,7 @@ TEST_F(TetherConnectorTest, TestCancelWhileConnectingToWifi) {
       fake_notification_presenter_->is_connection_failed_notification_shown());
 }
 
-TEST_F(TetherConnectorTest, TestSuccessfulConnection) {
+TEST_F(TetherConnectorImplTest, TestSuccessfulConnection) {
   EXPECT_CALL(*mock_host_connection_metrics_logger_,
               RecordConnectionToHostResult(
                   HostConnectionMetricsLogger::ConnectionToHostResult::
@@ -578,7 +579,7 @@ TEST_F(TetherConnectorTest, TestSuccessfulConnection) {
       fake_notification_presenter_->is_connection_failed_notification_shown());
 }
 
-TEST_F(TetherConnectorTest, TestSuccessfulConnection_SetupRequired) {
+TEST_F(TetherConnectorImplTest, TestSuccessfulConnection_SetupRequired) {
   EXPECT_CALL(*mock_host_connection_metrics_logger_,
               RecordConnectionToHostResult(
                   HostConnectionMetricsLogger::ConnectionToHostResult::
@@ -615,7 +616,7 @@ TEST_F(TetherConnectorTest, TestSuccessfulConnection_SetupRequired) {
       fake_notification_presenter_->is_connection_failed_notification_shown());
 }
 
-TEST_F(TetherConnectorTest,
+TEST_F(TetherConnectorImplTest,
        TestNewConnectionAttemptDuringFetch_DifferentDevice) {
   EXPECT_CALL(
       *mock_host_connection_metrics_logger_,
@@ -644,7 +645,7 @@ TEST_F(TetherConnectorTest,
       fake_operation_factory_->created_operations()[0]->GetRemoteDevice());
 }
 
-TEST_F(TetherConnectorTest,
+TEST_F(TetherConnectorImplTest,
        TestNewConnectionAttemptDuringOperation_DifferentDevice) {
   EXPECT_CALL(
       *mock_host_connection_metrics_logger_,
@@ -704,7 +705,7 @@ TEST_F(TetherConnectorTest,
             fake_wifi_hotspot_connector_->most_recent_tether_network_guid());
 }
 
-TEST_F(TetherConnectorTest,
+TEST_F(TetherConnectorImplTest,
        TestNewConnectionAttemptDuringWifiConnection_DifferentDevice) {
   EXPECT_CALL(
       *mock_host_connection_metrics_logger_,

@@ -24,7 +24,7 @@
 #include "chromeos/components/tether/notification_presenter.h"
 #include "chromeos/components/tether/notification_remover.h"
 #include "chromeos/components/tether/persistent_host_scan_cache_impl.h"
-#include "chromeos/components/tether/tether_connector.h"
+#include "chromeos/components/tether/tether_connector_impl.h"
 #include "chromeos/components/tether/tether_disconnector_impl.h"
 #include "chromeos/components/tether/tether_host_fetcher.h"
 #include "chromeos/components/tether/tether_host_response_recorder.h"
@@ -255,7 +255,7 @@ void InitializerImpl::CreateComponent() {
       network_state_handler_, host_scanner_.get());
   host_connection_metrics_logger_ =
       base::MakeUnique<HostConnectionMetricsLogger>();
-  tether_connector_ = base::MakeUnique<TetherConnector>(
+  tether_connector_ = base::MakeUnique<TetherConnectorImpl>(
       network_state_handler_, wifi_hotspot_connector_.get(), active_host_.get(),
       tether_host_fetcher_.get(), ble_connection_manager_.get(),
       tether_host_response_recorder_.get(),
@@ -275,8 +275,8 @@ void InitializerImpl::CreateComponent() {
           network_configuration_remover_.get());
   network_connection_handler_tether_delegate_ =
       base::MakeUnique<NetworkConnectionHandlerTetherDelegate>(
-          network_connection_handler_, tether_connector_.get(),
-          tether_disconnector_.get());
+          network_connection_handler_, active_host_.get(),
+          tether_connector_.get(), tether_disconnector_.get());
 
   crash_recovery_manager_ = base::MakeUnique<CrashRecoveryManager>(
       network_state_handler_, active_host_.get(),
