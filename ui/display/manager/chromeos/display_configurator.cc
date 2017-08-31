@@ -75,16 +75,16 @@ class DisplayConfigurator::DisplayLayoutManagerImpl
   explicit DisplayLayoutManagerImpl(DisplayConfigurator* configurator);
   ~DisplayLayoutManagerImpl() override;
 
-  // DisplayConfigurator::DisplayLayoutManager:
+  // DisplayLayoutManager:
   SoftwareMirroringController* GetSoftwareMirroringController() const override;
   StateController* GetStateController() const override;
   MultipleDisplayState GetDisplayState() const override;
   chromeos::DisplayPowerState GetPowerState() const override;
-  bool GetDisplayLayout(const std::vector<DisplaySnapshot*>& displays,
-                        MultipleDisplayState new_display_state,
-                        chromeos::DisplayPowerState new_power_state,
-                        std::vector<DisplayConfigureRequest>* requests,
-                        gfx::Size* framebuffer_size) const override;
+  bool GetDisplayLayout(
+      const std::vector<DisplaySnapshot*>& displays,
+      MultipleDisplayState new_display_state,
+      chromeos::DisplayPowerState new_power_state,
+      std::vector<DisplayConfigureRequest>* requests) const override;
   DisplayStateList GetDisplayStates() const override;
   bool IsMirroring() const override;
 
@@ -204,8 +204,7 @@ bool DisplayConfigurator::DisplayLayoutManagerImpl::GetDisplayLayout(
     const std::vector<DisplaySnapshot*>& displays,
     MultipleDisplayState new_display_state,
     chromeos::DisplayPowerState new_power_state,
-    std::vector<DisplayConfigureRequest>* requests,
-    gfx::Size* framebuffer_size) const {
+    std::vector<DisplayConfigureRequest>* requests) const {
   std::vector<DisplayState> states = ParseDisplays(displays);
   std::vector<bool> display_power;
   int num_on_displays =
@@ -328,7 +327,6 @@ bool DisplayConfigurator::DisplayLayoutManagerImpl::GetDisplayLayout(
   }
   DCHECK(new_display_state == MULTIPLE_DISPLAY_STATE_HEADLESS ||
          !size.IsEmpty());
-  *framebuffer_size = size;
   return true;
 }
 
@@ -410,8 +408,6 @@ bool DisplayConfigurator::DisplayLayoutManagerImpl::FindMirrorMode(
                          external_mode->size().height() &&
                      !external_mode->is_interlaced();
       if (can_fit) {
-        configurator_->native_display_delegate_->AddMode(
-            *internal_display->display, external_mode.get());
         internal_display->display->add_mode(external_mode.get());
         internal_display->mirror_mode =
             internal_display->display->modes().back().get();
@@ -1021,7 +1017,6 @@ void DisplayConfigurator::RunPendingConfiguration() {
 void DisplayConfigurator::OnConfigured(
     bool success,
     const std::vector<DisplaySnapshot*>& displays,
-    const gfx::Size& framebuffer_size,
     MultipleDisplayState new_display_state,
     chromeos::DisplayPowerState new_power_state) {
   VLOG(1) << "OnConfigured: success=" << success << " new_display_state="
@@ -1033,17 +1028,6 @@ void DisplayConfigurator::OnConfigured(
     chromeos::DisplayPowerState old_power_state = current_power_state_;
     current_display_state_ = new_display_state;
     current_power_state_ = new_power_state;
-
-    // |framebuffer_size| is empty in software mirroring mode, headless mode,
-    // or all displays are off.
-    DCHECK(!framebuffer_size.IsEmpty() ||
-           (mirroring_controller_ &&
-            mirroring_controller_->SoftwareMirroringEnabled()) ||
-           new_display_state == MULTIPLE_DISPLAY_STATE_HEADLESS ||
-           new_power_state == chromeos::DISPLAY_POWER_ALL_OFF);
-
-    if (!framebuffer_size.IsEmpty())
-      framebuffer_size_ = framebuffer_size;
 
     // If the pending power state hasn't changed then make sure that value
     // gets updated as well since the last requested value may have been

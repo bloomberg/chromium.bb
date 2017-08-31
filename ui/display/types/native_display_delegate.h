@@ -16,7 +16,6 @@
 
 namespace gfx {
 class Point;
-class Size;
 }
 
 namespace display {
@@ -56,10 +55,6 @@ class DISPLAY_TYPES_EXPORT NativeDisplayDelegate {
   // Note the query operation may be expensive and take over 60 milliseconds.
   virtual void GetDisplays(const GetDisplaysCallback& callback) = 0;
 
-  // Adds |mode| to |output|. |mode| must be a valid display mode pointer.
-  virtual void AddMode(const DisplaySnapshot& output,
-                       const DisplayMode* mode) = 0;
-
   // Configures the display represented by |output| to use |mode| and positions
   // the display to |origin| in the framebuffer. |mode| can be NULL, which
   // represents disabling the display. The callback will return the status of
@@ -68,9 +63,6 @@ class DISPLAY_TYPES_EXPORT NativeDisplayDelegate {
                          const DisplayMode* mode,
                          const gfx::Point& origin,
                          const ConfigureCallback& callback) = 0;
-
-  // Called to set the frame buffer (underlying XRR "screen") size.
-  virtual void CreateFrameBuffer(const gfx::Size& size) = 0;
 
   // Gets HDCP state of output.
   virtual void GetHDCPState(const DisplaySnapshot& output,

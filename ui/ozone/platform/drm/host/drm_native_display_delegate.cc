@@ -49,9 +49,6 @@ void DrmNativeDisplayDelegate::GetDisplays(
   display_manager_->UpdateDisplays(callback);
 }
 
-void DrmNativeDisplayDelegate::AddMode(const display::DisplaySnapshot& output,
-                                       const display::DisplayMode* mode) {}
-
 void DrmNativeDisplayDelegate::Configure(
     const display::DisplaySnapshot& output,
     const display::DisplayMode* mode,
@@ -59,9 +56,6 @@ void DrmNativeDisplayDelegate::Configure(
     const display::ConfigureCallback& callback) {
   DrmDisplayHost* display = display_manager_->GetDisplay(output.display_id());
   display->Configure(mode, origin, callback);
-}
-
-void DrmNativeDisplayDelegate::CreateFrameBuffer(const gfx::Size& size) {
 }
 
 void DrmNativeDisplayDelegate::GetHDCPState(

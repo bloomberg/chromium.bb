@@ -174,7 +174,6 @@ class DISPLAY_MANAGER_EXPORT DisplayConfigurator
   chromeos::DisplayPowerState requested_power_state() const {
     return requested_power_state_;
   }
-  const gfx::Size framebuffer_size() const { return framebuffer_size_; }
   const std::vector<DisplaySnapshot*>& cached_displays() const {
     return cached_displays_;
   }
@@ -320,7 +319,6 @@ class DISPLAY_MANAGER_EXPORT DisplayConfigurator
   // this is called with the result (|success|) and the updated display state.
   void OnConfigured(bool success,
                     const std::vector<DisplaySnapshot*>& displays,
-                    const gfx::Size& framebuffer_size,
                     MultipleDisplayState new_display_state,
                     chromeos::DisplayPowerState new_power_state);
 
@@ -416,9 +414,6 @@ class DISPLAY_MANAGER_EXPORT DisplayConfigurator
   // Most-recently-used display configuration. Note that the actual
   // configuration changes asynchronously.
   DisplayStateList cached_displays_;
-
-  // Most-recently-used framebuffer size.
-  gfx::Size framebuffer_size_;
 
   base::ObserverList<Observer> observers_;
 

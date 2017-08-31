@@ -23,12 +23,6 @@ std::string DisplaySnapshotToString(const DisplaySnapshot& output) {
   return base::StringPrintf("id=%" PRId64, output.display_id());
 }
 
-std::string GetAddOutputModeAction(const DisplaySnapshot& output,
-                                   const DisplayMode* mode) {
-  return base::StringPrintf("add_mode(output=%" PRId64 ",mode=%s)",
-                            output.display_id(), mode->ToString().c_str());
-}
-
 std::string GetCrtcAction(const DisplaySnapshot& output,
                           const DisplayMode* mode,
                           const gfx::Point& origin) {
@@ -36,15 +30,6 @@ std::string GetCrtcAction(const DisplaySnapshot& output,
                             DisplaySnapshotToString(output).c_str(), origin.x(),
                             origin.y(),
                             mode ? mode->ToString().c_str() : "NULL");
-}
-
-std::string GetFramebufferAction(const gfx::Size& size,
-                                 const DisplaySnapshot* out1,
-                                 const DisplaySnapshot* out2) {
-  return base::StringPrintf(
-      "framebuffer(width=%d,height=%d,display1=%s,display2=%s)", size.width(),
-      size.height(), out1 ? DisplaySnapshotToString(*out1).c_str() : "NULL",
-      out2 ? DisplaySnapshotToString(*out2).c_str() : "NULL");
 }
 
 std::string GetSetHDCPStateAction(const DisplaySnapshot& output,

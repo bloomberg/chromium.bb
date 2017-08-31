@@ -30,13 +30,10 @@ class DrmNativeDisplayDelegate : public display::NativeDisplayDelegate {
   void RelinquishDisplayControl(
       const display::DisplayControlCallback& callback) override;
   void GetDisplays(const display::GetDisplaysCallback& callback) override;
-  void AddMode(const display::DisplaySnapshot& output,
-               const display::DisplayMode* mode) override;
   void Configure(const display::DisplaySnapshot& output,
                  const display::DisplayMode* mode,
                  const gfx::Point& origin,
                  const display::ConfigureCallback& callback) override;
-  void CreateFrameBuffer(const gfx::Size& size) override;
   void GetHDCPState(const display::DisplaySnapshot& output,
                     const display::GetHDCPStateCallback& callback) override;
   void SetHDCPState(const display::DisplaySnapshot& output,

@@ -92,14 +92,11 @@ void UpdateDisplayConfigurationTask::EnterState(
   VLOG(2) << "EnterState";
   std::vector<DisplayConfigureRequest> requests;
   if (!layout_manager_->GetDisplayLayout(cached_displays_, new_display_state_,
-                                         new_power_state_, &requests,
-                                         &framebuffer_size_)) {
+                                         new_power_state_, &requests)) {
     callback.Run(ConfigureDisplaysTask::ERROR);
     return;
   }
   if (!requests.empty()) {
-    DCHECK(!framebuffer_size_.IsEmpty());
-    delegate_->CreateFrameBuffer(framebuffer_size_);
     configure_task_.reset(
         new ConfigureDisplaysTask(delegate_, requests, callback));
     configure_task_->Run();
@@ -153,8 +150,8 @@ void UpdateDisplayConfigurationTask::OnEnableSoftwareMirroring(
 }
 
 void UpdateDisplayConfigurationTask::FinishConfiguration(bool success) {
-  callback_.Run(success, cached_displays_, framebuffer_size_,
-                new_display_state_, new_power_state_);
+  callback_.Run(success, cached_displays_, new_display_state_,
+                new_power_state_);
 }
 
 bool UpdateDisplayConfigurationTask::ShouldForceDpms() const {
