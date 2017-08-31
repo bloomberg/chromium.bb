@@ -39,7 +39,7 @@ class TestResult(object):
         return cPickle.loads(string)
 
     def __init__(self, test_name, failures=None, test_run_time=None, has_stderr=False, reftest_type=None,
-                 pid=None, references=None, device_failed=False, has_repaint_overlay=False):
+                 pid=None, references=None, device_failed=False, has_repaint_overlay=False, crash_site=None):
         self.test_name = test_name
         self.failures = failures or []
         self.test_run_time = test_run_time or 0  # The time taken to execute the test itself.
@@ -49,6 +49,7 @@ class TestResult(object):
         self.references = references or []
         self.device_failed = device_failed
         self.has_repaint_overlay = has_repaint_overlay
+        self.crash_site = crash_site
 
         # FIXME: Setting this in the constructor makes this class hard to mutate.
         self.type = test_failures.determine_result_type(failures)

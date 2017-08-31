@@ -260,6 +260,7 @@ TestResult(CRASH) + TextExpectation(Failure) => [ Failure <b>Crash</b> ]</pre>
     <select id="report_format" onchange="Query.generateReport()">
       <option value="plain" selected>Plain text</option>
       <option value="expectation">TestExpectations</option>
+      <option value="crashsite">Crash site</option>
     </select>
 </div>
 
@@ -402,10 +403,12 @@ let Report = {
     window.localStorage.setItem("reportFormat", val);
     switch(document.querySelector("#report_format").value) {
       case "expectation":
-        return Report.printExpectation;
+        return {print: Report.printExpectation, summarize: Report.renderResultList};
+      case "crashsite":
+       return {print: Report.printCrashSite, summarize: Report.renderGroupCrashSite};
       case "plain":
       default:
-        return Report.printPlainTest;
+        return {print: Report.printPlainTest, summarize: Report.renderResultList};
     }
   },
 
@@ -467,6 +470,69 @@ let Report = {
     html += " [ " + status + " ]";
     html = "<div class='expect' tabindex='0' data-id='"+ test.expectId +"'><div class='details'></div>" + html + "</div>";
     traversal.html.push(html);
+  },
+
+  printCrashSite: (test, path, traversal) => {
+    let pathParser = new PathParser(path);
+    let key = test["crash_site"];
+    let html = ""
+      + "<input type='checkbox' class='rebaseline-checkbox' style='display:none'>"
+      + pathParser.dir + "/"
+      + "<a target='test' tabindex='-1' href='" + pathParser.testHref + "'>"
+      + pathParser.file + "</a>";
+    html = "<div class='expect' tabindex='0' data-id='"+ test.expectId +"'><div class='details'></div>" + html + "</div>";
+    traversal.html.push({key: key, html: html});
+  },
+
+  indicateNone: function(report) {
+    let pre = document.createElement("div");
+    pre.innerHTML = "<i>None</i>";
+    report.appendChild(pre);
+  },
+
+  renderResultList: function(html) {
+    let report = document.querySelector("#report");
+    if (report.childNodes.length === 0 && html.length === 0) {
+      Report.indicateNone(report);
+      return;
+    }
+
+    let pre = document.createElement("div");
+    pre.innerHTML = html.join("\n");
+    report.appendChild(pre);
+  },
+
+  createContainerForCrashSite: function(report, key) {
+    let container = document.createElement("div");
+    container.setAttribute("key", key);
+    container.innerHTML = ""
+      + "<br><b>"
+      + (key !== 'null' ? "### Crash site: " + key
+                        : "### Didn't crash")
+      + "</b>";
+
+    // Ensure that the "didn't crash" container appears last.
+    if (report.lastChild && report.lastChild.getAttribute("key") == 'null')
+      report.insertBefore(container, report.lastChild);
+    else
+      report.appendChild(container);
+    return container;
+  },
+
+  renderGroupCrashSite: function(html) {
+    let report = document.querySelector("#report");
+    if (report.childNodes.length === 0 && html.length === 0) {
+      Report.indicateNone(report);
+      return;
+    }
+
+    html.forEach(result => {
+      let key = result.key || 'null';
+      let container = report.querySelector(`div[key="${key}"]`) || Report.createContainerForCrashSite(report, key);
+      let pre = document.createElement("div");
+      pre.innerHTML = result.html;
+      container.appendChild(pre);
+    });
   },
 
   getTestById: function(testId) {
@@ -666,19 +732,13 @@ let Query = {
     let index = 0;
     let callback = _ => {
       this.currentRAF = null;
-      let pre = document.createElement("div");
-      if (traversal.html.length == 0) {
-        pre.innerHTML = "<i>None</i>";
-      } else {
-        pre.innerHTML = traversal.html.slice(index, index + chunkSize).join("\n");
-      }
-      document.querySelector("#report").appendChild(pre);
+      report.summarize(traversal.html.slice(index, index + chunkSize));
       index += chunkSize;
       if (index < traversal.html.length)
         this.currentRAF = window.requestAnimationFrame(callback);
     }
     window.setTimeout( _ => {
-      traversal.traverse(filter, report);
+      traversal.traverse(filter, report.print);
       this.completeReportPromise(traversal);
       this.currentRAF = window.requestAnimationFrame(callback)
     }, 0);
@@ -781,6 +841,7 @@ let GUI = {
     // - test.actualMap, map of actual results
     // - test.actualFinal, last result
     // - test.expectedMap, maps of expected results
+    // For all crashing tests without crash_site, set crash_site to "Can't identify"
     let nextId = 1;
     t.traverse(
       test => true,
@@ -795,6 +856,9 @@ let GUI = {
         test.expectedMap = new Map();
         for (let result of test.expected.split(" ")) {
           test.expectedMap.set(result, true);
+        }
+        if (test.actualMap.has("CRASH") && !test["crash_site"]) {
+          test["crash_site"] = "Can't identify";
         }
       }
     );

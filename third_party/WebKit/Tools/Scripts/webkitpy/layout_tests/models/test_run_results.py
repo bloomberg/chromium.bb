@@ -185,6 +185,7 @@ def summarize_results(port_obj, expectations, initial_results,
         expected = expectations.get_expectations_string(test_name)
         actual = [keywords[result.type]]
         actual_types = [result.type]
+        crash_sites = [result.crash_site]
 
         if only_include_failing and result.type == test_expectations.SKIP:
             continue
@@ -204,9 +205,11 @@ def summarize_results(port_obj, expectations, initial_results,
                 if test_name not in retry_attempt_results.results_by_name:
                     break
 
-                retry_result_type = retry_attempt_results.results_by_name[test_name].type
+                retry_result = retry_attempt_results.results_by_name[test_name]
+                retry_result_type = retry_result.type
                 actual.append(keywords[retry_result_type])
                 actual_types.append(retry_result_type)
+                crash_sites.append(retry_result.crash_site)
                 if test_name in retry_attempt_results.unexpected_results_by_name:
                     if retry_result_type == test_expectations.PASS:
                         # The test failed unexpectedly at first, then passed
@@ -249,6 +252,10 @@ def summarize_results(port_obj, expectations, initial_results,
 
         test_dict['expected'] = expected
         test_dict['actual'] = ' '.join(actual)
+
+        crash_sites = [site for site in crash_sites if site]
+        if len(crash_sites) > 0:
+            test_dict['crash_site'] = crash_sites[0]
 
         def is_expected(actual_result):
             return expectations.matches_an_expected_result(test_name, actual_result,
