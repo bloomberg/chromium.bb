@@ -46,15 +46,22 @@ void ReportRegexSuccessMetric(bool success) {
 // these users are not from hosted enterprise domains.
 const wchar_t* const kNonManagedDomainPatterns[] = {
   L"aol\\.com",
+  L"comcast\\.net",
   L"googlemail\\.com",
   L"gmail\\.com",
+  L"gmx\\.de",
   L"hotmail(\\.co|\\.com|)\\.[^.]+",  // hotmail.com, hotmail.it, hotmail.co.uk
   L"live\\.com",
   L"mail\\.ru",
   L"msn\\.com",
+  L"naver\\.com",
+  L"orange\\.fr",
+  L"outlook\\.com",
   L"qq\\.com",
   L"yahoo(\\.co|\\.com|)\\.[^.]+",  // yahoo.com, yahoo.co.uk, yahoo.com.tw
   L"yandex\\.ru",
+  L"web\\.de",
+  L"wp\\.pl",
   L"consumer\\.example\\.com",
 };
 
