@@ -5,6 +5,7 @@
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_coordinator.h"
 
 #include "ios/chrome/browser/chrome_url_constants.h"
+#import "ios/chrome/browser/ui/broadcaster/chrome_broadcaster.h"
 #import "ios/chrome/browser/ui/browser_list/browser.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/history_popup_commands.h"
@@ -17,7 +18,6 @@
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_mediator.h"
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_view_controller.h"
 #import "ios/clean/chrome/browser/ui/tools/tools_coordinator.h"
-#import "ios/shared/chrome/browser/ui/broadcaster/chrome_broadcaster.h"
 #import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/web_state/web_state.h"
 
