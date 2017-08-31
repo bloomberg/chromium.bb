@@ -327,6 +327,9 @@ class PaymentRequest : public PaymentOptionsProvider,
   // instrument in the JourneyLogger.
   void RecordNumberOfSuggestionsShown();
 
+  // Records the Contact Info that is requested, and the payment method types.
+  void RecordRequestedInformation();
+
   // The current state of the payment request.
   State state_;
 
