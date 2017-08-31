@@ -4,63 +4,64 @@
       "name": "LayoutView #document",
       "bounds": [785, 5516],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "Squashing Containment Layer"
+      "name": "Squashing Containment Layer",
+      "drawsContent": false
     },
     {
       "name": "LayoutBlockFlow DIV id='top'",
       "position": [8, 8],
       "bounds": [500, 500],
-      "drawsContent": true,
       "backgroundColor": "#0000FF"
     },
     {
       "name": "Scrolling Layer",
       "position": [8, 8],
-      "bounds": [485, 485]
+      "bounds": [485, 485],
+      "drawsContent": false
     },
     {
       "name": "Scrolling Contents Layer",
       "position": [8, 8],
       "bounds": [485, 5000],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#0000FF"
     },
     {
       "name": "Overflow Controls Host Layer",
       "position": [8, 8],
-      "bounds": [500, 500]
+      "bounds": [500, 500],
+      "drawsContent": false
     },
     {
       "name": "Horizontal Scrollbar Layer",
       "position": [8, 493],
-      "bounds": [485, 15]
+      "bounds": [485, 15],
+      "drawsContent": false
     },
     {
       "name": "Vertical Scrollbar Layer",
       "position": [493, 8],
-      "bounds": [15, 485]
+      "bounds": [15, 485],
+      "drawsContent": false
     },
     {
       "name": "Scroll Corner Layer",
       "position": [493, 493],
-      "bounds": [15, 15],
-      "drawsContent": true
+      "bounds": [15, 15]
     },
     {
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV id='middle')",
       "position": [8, 8],
-      "bounds": [400, 400],
-      "drawsContent": true
+      "bounds": [400, 400]
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV id='child'",
       "position": [8, 8],
       "bounds": [300, 300],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backfaceVisibility": "hidden",
       "backgroundColor": "#FFFF00"
     },
@@ -69,7 +70,6 @@
       "position": [8, 8],
       "bounds": [20, 5000],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#FA8072",
       "hasScrollParent": true
     }

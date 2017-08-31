@@ -4,7 +4,7 @@
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true,
+      "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow (positioned) UL id='submenu'",
@@ -31,19 +31,18 @@
     {
       "name": "LayoutListItem (floating) LI id='watches'",
       "position": [30, 44],
-      "bounds": [25, 19],
-      "drawsContent": true
+      "bounds": [25, 19]
     },
     {
       "name": "LayoutInline (relative positioned) SPAN id='placeholder'",
       "position": [48, 44],
+      "drawsContent": false,
       "backfaceVisibility": "hidden"
     },
     {
       "name": "LayoutListItem (relative positioned) (floating) LI id='menu'",
       "position": [30, 44],
       "bounds": [18, 19],
-      "drawsContent": true,
       "paintInvalidations": [
         {
           "object": "LayoutListMarker (anonymous)",

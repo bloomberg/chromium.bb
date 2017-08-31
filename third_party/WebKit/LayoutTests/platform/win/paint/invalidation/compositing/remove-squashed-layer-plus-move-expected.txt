@@ -4,7 +4,7 @@
       "name": "LayoutView #document",
       "bounds": [1418, 1008],
       "contentsOpaque": true,
-      "drawsContent": true,
+      "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow DIV id='container'",
@@ -24,18 +24,19 @@
       ]
     },
     {
-      "name": "Squashing Containment Layer"
+      "name": "Squashing Containment Layer",
+      "drawsContent": false
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV",
       "position": [8, 8],
-      "bounds": [1000, 1000]
+      "bounds": [1000, 1000],
+      "drawsContent": false
     },
     {
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (relative positioned) DIV class='mv-tile')",
       "position": [8, 8],
       "bounds": [1000, 105],
-      "drawsContent": true,
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow (relative positioned) DIV class='mv-tile'",

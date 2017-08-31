@@ -4,7 +4,7 @@
       "name": "LayoutView #document",
       "bounds": [808, 585],
       "contentsOpaque": true,
-      "drawsContent": true,
+      "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
           "object": "LayoutTableCell TD",

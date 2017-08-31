@@ -3,20 +3,20 @@
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
-      "contentsOpaque": true
+      "contentsOpaque": true,
+      "drawsContent": false,
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutBlockFlow HTML",
       "bounds": [800, 69],
-      "isolate": true,
-      "drawsContent": true
+      "isolate": true
     },
     {
       "name": "LayoutBlockFlow DIV",
       "position": [8, 18],
       "bounds": [10, 10],
       "blendMode": "multiply",
-      "drawsContent": true,
       "backgroundColor": "#0000FF"
     },
     {
@@ -24,7 +24,6 @@
       "position": [8, 18],
       "bounds": [10, 10],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#FFFF00"
     }
   ]

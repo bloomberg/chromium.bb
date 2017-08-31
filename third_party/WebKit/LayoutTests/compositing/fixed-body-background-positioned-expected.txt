@@ -1,53 +1,62 @@
 {
   "layers": [
     {
-      "name": "Root Transform Layer"
+      "name": "Root Transform Layer",
+      "drawsContent": false
     },
     {
       "name": "Inner Viewport Container Layer",
-      "bounds": [800, 600]
+      "bounds": [800, 600],
+      "drawsContent": false
     },
     {
-      "name": "Overscroll Elasticity Layer"
+      "name": "Overscroll Elasticity Layer",
+      "drawsContent": false
     },
     {
-      "name": "Page Scale Layer"
+      "name": "Page Scale Layer",
+      "drawsContent": false
     },
     {
       "name": "Inner Viewport Scroll Layer",
-      "bounds": [800, 600]
+      "bounds": [800, 600],
+      "drawsContent": false
     },
     {
       "name": "Frame Overflow Controls Host Layer",
-      "bounds": [800, 600]
+      "bounds": [800, 600],
+      "drawsContent": false
     },
     {
       "name": "Frame Clipping Layer",
-      "bounds": [785, 600]
+      "bounds": [785, 600],
+      "drawsContent": false
     },
     {
       "name": "LayoutView #document (background) Layer",
       "bounds": [785, 600],
-      "contentsOpaque": true,
-      "drawsContent": true
+      "contentsOpaque": true
     },
     {
-      "name": "Frame Scrolling Layer"
+      "name": "Frame Scrolling Layer",
+      "drawsContent": false
     },
     {
       "name": "Content Root Layer",
-      "bounds": [785, 3700]
+      "bounds": [785, 3700],
+      "drawsContent": false
     },
     {
       "name": "LayoutView #document",
       "bounds": [785, 3700],
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "Frame Vertical Scrollbar Layer",
       "position": [785, 0],
       "bounds": [15, 600],
-      "contentsOpaque": true
+      "contentsOpaque": true,
+      "drawsContent": false
     }
   ]
 }

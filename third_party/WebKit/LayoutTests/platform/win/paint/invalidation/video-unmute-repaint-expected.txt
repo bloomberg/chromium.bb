@@ -4,7 +4,7 @@
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true,
+      "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow (anonymous)",
@@ -16,16 +16,17 @@
     {
       "name": "LayoutVideo VIDEO id='v'",
       "position": [8, 8],
-      "bounds": [700, 525]
+      "bounds": [700, 525],
+      "drawsContent": false
     },
     {
-      "name": "Squashing Containment Layer"
+      "name": "Squashing Containment Layer",
+      "drawsContent": false
     },
     {
       "name": "LayoutFlexibleBox (relative positioned) DIV",
       "position": [8, 8],
       "bounds": [700, 525],
-      "drawsContent": true,
       "paintInvalidations": [
         {
           "object": "LayoutFlexibleBox (relative positioned) DIV",
@@ -38,7 +39,6 @@
       "name": "Squashing Layer (first squashed layer: LayoutFlexibleBox (relative positioned) DIV)",
       "position": [8, 8],
       "bounds": [700, 525],
-      "drawsContent": true,
       "paintInvalidations": [
         {
           "object": "LayoutFlexibleBox DIV",

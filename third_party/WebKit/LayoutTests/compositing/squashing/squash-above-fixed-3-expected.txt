@@ -9,13 +9,12 @@ CASE 1, original layer tree:
       "name": "LayoutView #document",
       "bounds": [785, 4100],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV id='backgroundFixed'",
       "bounds": [400, 400],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#808080"
     },
     {
@@ -23,7 +22,6 @@ CASE 1, original layer tree:
       "position": [100, 100],
       "bounds": [100, 4000],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#008000"
     },
     {
@@ -31,7 +29,6 @@ CASE 1, original layer tree:
       "position": [100, 150],
       "bounds": [200, 100],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#0000FF"
     },
     {
@@ -39,7 +36,6 @@ CASE 1, original layer tree:
       "position": [200, 100],
       "bounds": [100, 100],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#00FF00"
     }
   ]
@@ -51,14 +47,13 @@ CASE 2, scrolling y by 10 pixels, both the "container" and "inner" should scroll
       "name": "LayoutView #document",
       "bounds": [785, 4100],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV id='backgroundFixed'",
       "position": [0, 10],
       "bounds": [400, 400],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#808080"
     },
     {
@@ -66,7 +61,6 @@ CASE 2, scrolling y by 10 pixels, both the "container" and "inner" should scroll
       "position": [100, 100],
       "bounds": [100, 4000],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#008000"
     },
     {
@@ -74,7 +68,6 @@ CASE 2, scrolling y by 10 pixels, both the "container" and "inner" should scroll
       "position": [100, 160],
       "bounds": [200, 100],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#0000FF"
     },
     {
@@ -82,7 +75,6 @@ CASE 2, scrolling y by 10 pixels, both the "container" and "inner" should scroll
       "position": [200, 100],
       "bounds": [100, 100],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#00FF00"
     }
   ]
@@ -94,21 +86,19 @@ CASE 3, scrolling y further so that "inner" no longer overlaps the fixed-pos lay
       "name": "LayoutView #document",
       "bounds": [785, 4100],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV id='backgroundFixed'",
       "position": [0, 110],
       "bounds": [400, 400],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#808080"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV id='container'",
       "position": [100, 100],
       "bounds": [200, 4000],
-      "drawsContent": true,
       "backgroundColor": "#008000",
       "paintInvalidations": [
         {
@@ -123,7 +113,6 @@ CASE 3, scrolling y further so that "inner" no longer overlaps the fixed-pos lay
       "position": [100, 260],
       "bounds": [200, 100],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#0000FF"
     }
   ],

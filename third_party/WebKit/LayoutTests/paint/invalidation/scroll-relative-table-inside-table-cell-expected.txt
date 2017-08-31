@@ -4,7 +4,7 @@
       "name": "LayoutView #document",
       "bounds": [1566, 1781],
       "contentsOpaque": true,
-      "drawsContent": true,
+      "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
           "object": "LayoutTableCell (relative positioned) TD id='cellToScroll' class='relative'",

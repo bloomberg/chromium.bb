@@ -4,34 +4,32 @@
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='fixedpos'",
       "position": [0, 50],
       "bounds": [800, 550],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#ADD8E6"
     },
     {
       "name": "Child Containment Layer",
       "position": [0, 50],
-      "bounds": [800, 550]
+      "bounds": [800, 550],
+      "drawsContent": false
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='compositedlayer'",
       "position": [400, 40],
       "bounds": [24, 100],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#D3D3D3"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='notsquashedelement'",
       "bounds": [800, 60],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#008000"
     }
   ]

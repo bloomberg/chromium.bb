@@ -4,37 +4,36 @@
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV id='outer'",
       "position": [50, 50],
-      "bounds": [300, 300],
-      "drawsContent": true
+      "bounds": [300, 300]
     },
     {
       "name": "Child Containment Layer",
       "position": [50, 50],
       "bounds": [300, 300],
+      "drawsContent": false,
       "maskLayer": [
         {
           "name": "Child Clipping Mask Layer",
-          "bounds": [300, 300],
-          "drawsContent": true
+          "bounds": [300, 300]
         }
       ]
     },
     {
       "name": "Ancestor Clipping Layer",
       "position": [50, 50],
-      "bounds": [285, 300]
+      "bounds": [285, 300],
+      "drawsContent": false
     },
     {
       "name": "LayoutBlockFlow DIV id='content'",
       "position": [50, 50],
       "bounds": [285, 1000],
-      "contentsOpaque": true,
-      "drawsContent": true
+      "contentsOpaque": true
     }
   ]
 }

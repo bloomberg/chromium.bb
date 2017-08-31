@@ -4,13 +4,12 @@
       "name": "LayoutView #document",
       "bounds": [785, 5056],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutBlockFlow (relative positioned) HEADER",
       "position": [8, 28],
       "bounds": [769, 1972],
-      "drawsContent": true,
       "backfaceVisibility": "hidden",
       "paintInvalidations": [
         {

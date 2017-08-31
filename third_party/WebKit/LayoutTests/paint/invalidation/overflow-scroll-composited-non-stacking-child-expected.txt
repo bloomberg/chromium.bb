@@ -4,7 +4,7 @@
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true,
+      "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow DIV class='scroller'",
@@ -33,24 +33,24 @@
       "position": [200, 10],
       "bounds": [40, 40],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#FFDDBB"
     },
     {
       "name": "Ancestor Clipping Layer",
       "position": [23, 65],
-      "bounds": [285, 175]
+      "bounds": [285, 175],
+      "drawsContent": false
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV class='list'",
       "position": [43, 35],
-      "bounds": [180, 250]
+      "bounds": [180, 250],
+      "drawsContent": false
     },
     {
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (relative positioned) DIV class='commit')",
       "position": [43, 35],
-      "bounds": [180, 250],
-      "drawsContent": true
+      "bounds": [180, 250]
     }
   ],
   "objectPaintInvalidations": [

@@ -1,1 +1,5 @@
+CONSOLE ERROR: line 2579: Uncaught Error: assert_equals: expected 4 but got 0
+This is a testharness.js-based test.
+FAIL Untitled Uncaught Error: assert_equals: expected 4 but got 0
+Harness: the test ran to completion.
 

@@ -4,7 +4,7 @@
       "name": "LayoutView #document",
       "bounds": [1250, 585],
       "contentsOpaque": true,
-      "drawsContent": true,
+      "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow (positioned) DIV id='shiftMe'",

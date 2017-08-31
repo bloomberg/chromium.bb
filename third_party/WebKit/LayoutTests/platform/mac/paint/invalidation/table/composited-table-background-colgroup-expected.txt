@@ -4,7 +4,7 @@
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true,
+      "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
           "object": "LayoutTableCol COLGROUP id='target'",
@@ -16,8 +16,7 @@
     {
       "name": "LayoutTableCell TD id='target'",
       "position": [72, 94],
-      "bounds": [59, 64],
-      "drawsContent": true
+      "bounds": [59, 64]
     }
   ],
   "objectPaintInvalidations": [

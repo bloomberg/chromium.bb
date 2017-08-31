@@ -5,13 +5,12 @@ TEST
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutBlockFlow DIV class='transform'",
       "position": [8, 8],
-      "bounds": [100, 30],
-      "drawsContent": true
+      "bounds": [100, 30]
     }
   ]
 }

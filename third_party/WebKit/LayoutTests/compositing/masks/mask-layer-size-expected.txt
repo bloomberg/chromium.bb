@@ -4,20 +4,18 @@
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutBlockFlow DIV id='masked'",
       "position": [10, 10],
       "bounds": [400, 200],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#000000",
       "maskLayer": [
         {
           "name": "Mask Layer",
-          "bounds": [400, 200],
-          "drawsContent": true
+          "bounds": [400, 200]
         }
       ]
     }

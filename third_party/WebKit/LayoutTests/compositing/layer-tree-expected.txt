@@ -1,40 +1,49 @@
 {
   "name": "Root Transform Layer",
+  "drawsContent": false,
   "children": [
     {
       "name": "Inner Viewport Container Layer",
       "bounds": [800, 600],
+      "drawsContent": false,
       "children": [
         {
           "name": "Overscroll Elasticity Layer",
+          "drawsContent": false,
           "children": [
             {
               "name": "Page Scale Layer",
+              "drawsContent": false,
               "children": [
                 {
                   "name": "Inner Viewport Scroll Layer",
                   "bounds": [800, 600],
+                  "drawsContent": false,
                   "children": [
                     {
                       "name": "Frame Overflow Controls Host Layer",
                       "bounds": [800, 600],
+                      "drawsContent": false,
                       "children": [
                         {
                           "name": "Frame Clipping Layer",
                           "bounds": [780, 580],
+                          "drawsContent": false,
                           "children": [
                             {
                               "name": "Frame Scrolling Layer",
+                              "drawsContent": false,
                               "children": [
                                 {
                                   "name": "Content Root Layer",
                                   "bounds": [1200, 900],
+                                  "drawsContent": false,
                                   "children": [
                                     {
                                       "name": "LayoutView #document",
                                       "bounds": [1200, 900],
                                       "contentsOpaque": true,
-                                      "drawsContent": true
+                                      "backgroundColor": "#FFFFFF"
                                     }
                                   ]
                                 }
@@ -53,20 +62,17 @@
         {
           "name": "Frame Horizontal Scrollbar Layer",
           "position": [0, 580],
-          "bounds": [780, 20],
-          "drawsContent": true
+          "bounds": [780, 20]
         },
         {
           "name": "Frame Vertical Scrollbar Layer",
           "position": [780, 0],
-          "bounds": [20, 580],
-          "drawsContent": true
+          "bounds": [20, 580]
         },
         {
           "name": "Frame Scroll Corner Layer",
           "position": [780, 580],
-          "bounds": [20, 20],
-          "drawsContent": true
+          "bounds": [20, 20]
         }
       ]
     }

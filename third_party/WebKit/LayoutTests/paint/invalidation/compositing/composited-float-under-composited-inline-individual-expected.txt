@@ -4,19 +4,17 @@
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutInline (relative positioned) SPAN",
-      "position": [108, 108],
-      "drawsContent": true
+      "position": [108, 108]
     },
     {
       "name": "LayoutBlockFlow (relative positioned) (floating) DIV id='float'",
       "position": [58, 58],
       "bounds": [100, 100],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#008000",
       "paintInvalidations": [
         {

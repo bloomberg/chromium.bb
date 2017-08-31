@@ -8,7 +8,7 @@ Case: No src, no poster
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     }
   ]
 }
@@ -21,7 +21,7 @@ Case: Displaying poster
       "name": "LayoutView #document",
       "bounds": [785, 605],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     }
   ]
 }
@@ -34,27 +34,27 @@ Case: Displaying movie
       "name": "LayoutView #document",
       "bounds": [785, 813],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutVideo VIDEO",
       "position": [8, 8],
-      "bounds": [352, 288]
+      "bounds": [352, 288],
+      "drawsContent": false
     },
     {
-      "name": "Squashing Containment Layer"
+      "name": "Squashing Containment Layer",
+      "drawsContent": false
     },
     {
       "name": "LayoutFlexibleBox (relative positioned) DIV",
       "position": [8, 8],
-      "bounds": [352, 288],
-      "drawsContent": true
+      "bounds": [352, 288]
     },
     {
       "name": "Squashing Layer (first squashed layer: LayoutFlexibleBox (relative positioned) DIV)",
       "position": [8, 8],
-      "bounds": [352, 246],
-      "drawsContent": true
+      "bounds": [352, 246]
     }
   ]
 }

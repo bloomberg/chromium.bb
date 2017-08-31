@@ -4,26 +4,25 @@
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "Ancestor Clipping Layer",
       "position": [8, 8],
-      "bounds": [185, 185]
+      "bounds": [185, 185],
+      "drawsContent": false
     },
     {
       "name": "LayoutBlockFlow DIV id='foo2'",
       "position": [8, 8],
       "bounds": [150, 1000],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#ADD8E6"
     },
     {
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV id='foo')",
       "position": [8, 8],
       "bounds": [100, 1000],
-      "drawsContent": true,
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow (positioned) DIV id='foo'",

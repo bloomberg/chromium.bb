@@ -5,69 +5,73 @@
       "name": "LayoutView #document",
       "bounds": [785, 1650],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutIFrame IFRAME",
       "position": [20, 150],
-      "bounds": [284, 204],
-      "drawsContent": true
+      "bounds": [284, 204]
     },
     {
       "name": "Frame Overflow Controls Host Layer",
       "position": [22, 152],
-      "bounds": [280, 200]
+      "bounds": [280, 200],
+      "drawsContent": false
     },
     {
       "name": "Frame Clipping Layer",
       "position": [22, 152],
-      "bounds": [280, 200]
+      "bounds": [280, 200],
+      "drawsContent": false
     },
     {
       "name": "Frame Scrolling Layer",
-      "position": [22, 152]
+      "position": [22, 152],
+      "drawsContent": false
     },
     {
       "name": "Content Root Layer",
       "position": [22, 152],
-      "bounds": [280, 200]
+      "bounds": [280, 200],
+      "drawsContent": false
     },
     {
       "name": "LayoutView #document",
       "position": [22, 152],
-      "bounds": [280, 200],
-      "drawsContent": true
+      "bounds": [280, 200]
     },
     {
       "name": "LayoutIFrame IFRAME",
       "position": [30, 160],
-      "bounds": [252, 172],
-      "drawsContent": true
+      "bounds": [252, 172]
     },
     {
       "name": "Frame Overflow Controls Host Layer",
       "position": [31, 161],
-      "bounds": [250, 170]
+      "bounds": [250, 170],
+      "drawsContent": false
     },
     {
       "name": "Frame Clipping Layer",
       "position": [31, 161],
-      "bounds": [250, 170]
+      "bounds": [250, 170],
+      "drawsContent": false
     },
     {
       "name": "Frame Scrolling Layer",
-      "position": [31, 161]
+      "position": [31, 161],
+      "drawsContent": false
     },
     {
       "name": "Content Root Layer",
       "position": [31, 161],
-      "bounds": [250, 230]
+      "bounds": [250, 230],
+      "drawsContent": false
     },
     {
       "name": "LayoutView #document",
       "position": [31, 161],
       "bounds": [250, 230],
-      "drawsContent": true,
       "backgroundColor": "#C0C0C0"
     },
     {
@@ -75,70 +79,73 @@
       "position": [49, 171],
       "bounds": [210, 210],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#0000FF"
     },
     {
       "name": "LayoutIFrame IFRAME",
       "position": [20, 374],
-      "bounds": [284, 204],
-      "drawsContent": true
+      "bounds": [284, 204]
     },
     {
       "name": "Frame Overflow Controls Host Layer",
       "position": [22, 376],
-      "bounds": [280, 200]
+      "bounds": [280, 200],
+      "drawsContent": false
     },
     {
       "name": "Frame Clipping Layer",
       "position": [22, 376],
-      "bounds": [280, 200]
+      "bounds": [280, 200],
+      "drawsContent": false
     },
     {
       "name": "Frame Scrolling Layer",
-      "position": [22, 376]
+      "position": [22, 376],
+      "drawsContent": false
     },
     {
       "name": "Content Root Layer",
       "position": [22, 376],
-      "bounds": [280, 200]
+      "bounds": [280, 200],
+      "drawsContent": false
     },
     {
       "name": "LayoutView #document",
       "position": [22, 376],
-      "bounds": [280, 200],
-      "drawsContent": true
+      "bounds": [280, 200]
     },
     {
       "name": "LayoutIFrame IFRAME",
       "position": [30, 384],
-      "bounds": [252, 172],
-      "drawsContent": true
+      "bounds": [252, 172]
     },
     {
       "name": "Frame Overflow Controls Host Layer",
       "position": [31, 385],
-      "bounds": [250, 170]
+      "bounds": [250, 170],
+      "drawsContent": false
     },
     {
       "name": "Frame Clipping Layer",
       "position": [31, 385],
-      "bounds": [250, 170]
+      "bounds": [250, 170],
+      "drawsContent": false
     },
     {
       "name": "Frame Scrolling Layer",
-      "position": [31, 385]
+      "position": [31, 385],
+      "drawsContent": false
     },
     {
       "name": "Content Root Layer",
       "position": [31, 385],
-      "bounds": [250, 230]
+      "bounds": [250, 230],
+      "drawsContent": false
     },
     {
       "name": "LayoutView #document",
       "position": [31, 385],
       "bounds": [250, 230],
-      "drawsContent": true,
       "backgroundColor": "#C0C0C0"
     },
     {
@@ -146,14 +153,12 @@
       "position": [49, 395],
       "bounds": [210, 210],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#0000FF"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV id='banner'",
       "position": [0, 100],
       "bounds": [785, 120],
-      "drawsContent": true,
       "backgroundColor": "#00000080"
     }
   ]

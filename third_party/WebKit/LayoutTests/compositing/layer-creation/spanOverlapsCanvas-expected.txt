@@ -4,22 +4,21 @@
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "Squashing Containment Layer"
+      "name": "Squashing Containment Layer",
+      "drawsContent": false
     },
     {
       "name": "LayoutHTMLCanvas CANVAS id='world'",
       "position": [8, 8],
-      "bounds": [100, 50],
-      "drawsContent": true
+      "bounds": [100, 50]
     },
     {
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV id='output')",
       "position": [8, 8],
-      "bounds": [100, 50],
-      "drawsContent": true
+      "bounds": [100, 50]
     }
   ]
 }

@@ -6,26 +6,23 @@
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='composited'",
       "position": [10, 10],
-      "bounds": [590, 210],
-      "drawsContent": true
+      "bounds": [590, 210]
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='composited'",
       "position": [10, 260],
-      "bounds": [590, 210],
-      "drawsContent": true
+      "bounds": [590, 210]
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV class='composited inner box'",
       "position": [500, 370],
       "bounds": [100, 100],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#0000FF"
     }
   ]

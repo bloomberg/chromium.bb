@@ -5,21 +5,22 @@ scroll me
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "Squashing Containment Layer"
+      "name": "Squashing Containment Layer",
+      "drawsContent": false
     },
     {
       "name": "LayoutBlockFlow DIV id='composited'",
       "position": [8, 8],
-      "bounds": [20, 20]
+      "bounds": [20, 20],
+      "drawsContent": false
     },
     {
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV id='overlay')",
       "position": [10, 8],
-      "bounds": [400, 204],
-      "drawsContent": true
+      "bounds": [400, 204]
     }
   ]
 }

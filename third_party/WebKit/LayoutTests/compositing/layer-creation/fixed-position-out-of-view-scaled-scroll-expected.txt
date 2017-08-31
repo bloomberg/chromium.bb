@@ -5,14 +5,13 @@ Not scaled:
       "name": "LayoutView #document",
       "bounds": [4008, 4016],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='fixed'",
       "position": [108, 0],
       "bounds": [10, 10],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#C0C0C0"
     },
     {
@@ -20,7 +19,6 @@ Not scaled:
       "position": [108, 1108],
       "bounds": [10, 10],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#C0C0C0"
     },
     {
@@ -28,7 +26,6 @@ Not scaled:
       "position": [1100, 100],
       "bounds": [10, 10],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#C0C0C0"
     },
     {
@@ -36,7 +33,6 @@ Not scaled:
       "position": [700, 100],
       "bounds": [10, 10],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#C0C0C0"
     },
     {
@@ -44,7 +40,6 @@ Not scaled:
       "position": [100, 100],
       "bounds": [10, 10],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#C0C0C0"
     }
   ]
@@ -56,14 +51,13 @@ Scale=0.5:
       "name": "LayoutView #document",
       "bounds": [4008, 4016],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='fixed'",
       "position": [108, 0],
       "bounds": [10, 10],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#C0C0C0"
     },
     {
@@ -71,7 +65,6 @@ Scale=0.5:
       "position": [108, 1108],
       "bounds": [10, 10],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#C0C0C0"
     },
     {
@@ -79,7 +72,6 @@ Scale=0.5:
       "position": [1100, 100],
       "bounds": [10, 10],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#C0C0C0"
     },
     {
@@ -87,7 +79,6 @@ Scale=0.5:
       "position": [700, 100],
       "bounds": [10, 10],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#C0C0C0"
     },
     {
@@ -95,7 +86,6 @@ Scale=0.5:
       "position": [100, 100],
       "bounds": [10, 10],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#C0C0C0"
     }
   ]
@@ -107,14 +97,13 @@ Scale=1.5:
       "name": "LayoutView #document",
       "bounds": [4008, 4016],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='fixed'",
       "position": [108, 0],
       "bounds": [10, 10],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#C0C0C0"
     },
     {
@@ -122,7 +111,6 @@ Scale=1.5:
       "position": [108, 1108],
       "bounds": [10, 10],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#C0C0C0"
     },
     {
@@ -130,7 +118,6 @@ Scale=1.5:
       "position": [1100, 100],
       "bounds": [10, 10],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#C0C0C0"
     },
     {
@@ -138,7 +125,6 @@ Scale=1.5:
       "position": [700, 100],
       "bounds": [10, 10],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#C0C0C0"
     },
     {
@@ -146,7 +132,6 @@ Scale=1.5:
       "position": [100, 100],
       "bounds": [10, 10],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#C0C0C0"
     }
   ]

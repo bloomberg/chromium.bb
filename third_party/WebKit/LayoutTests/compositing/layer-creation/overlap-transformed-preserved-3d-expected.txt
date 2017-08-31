@@ -5,61 +5,58 @@
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV id='green-box' class='center box-container'",
       "position": [108, 108],
-      "contentsOpaque": true
+      "contentsOpaque": true,
+      "drawsContent": false
     },
     {
       "name": "Child Transform Layer",
+      "drawsContent": false,
       "transform": 1
     },
     {
       "name": "LayoutBlockFlow DIV id='camera' class='rotate-3d-start'",
       "contentsOpaque": true,
+      "drawsContent": false,
       "transform": 2
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='side side-1'",
       "bounds": [100, 100],
-      "drawsContent": true,
       "backgroundColor": "#00FF00CC",
       "transform": 3
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='side side-2'",
       "bounds": [100, 100],
-      "drawsContent": true,
       "backgroundColor": "#00FF00CC",
       "transform": 4
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='side side-3'",
       "bounds": [100, 100],
-      "drawsContent": true,
       "backgroundColor": "#00FF00CC",
       "transform": 5
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='side side-4'",
       "bounds": [100, 100],
-      "drawsContent": true,
       "backgroundColor": "#00FF00CC",
       "transform": 6
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='side side-5'",
       "bounds": [100, 100],
-      "drawsContent": true,
       "backgroundColor": "#00FF00CC",
       "transform": 7
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='side side-6'",
       "bounds": [100, 100],
-      "drawsContent": true,
       "backgroundColor": "#00FF00CC",
       "transform": 8
     }
@@ -170,80 +167,76 @@ After:
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV id='green-box' class='center box-container'",
       "position": [108, 108],
-      "contentsOpaque": true
+      "contentsOpaque": true,
+      "drawsContent": false
     },
     {
       "name": "Child Transform Layer",
+      "drawsContent": false,
       "transform": 1
     },
     {
       "name": "LayoutBlockFlow DIV id='camera' class='rotate-3d-start rotate-3d-end'",
       "contentsOpaque": true,
+      "drawsContent": false,
       "transform": 2
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='side side-1'",
       "bounds": [100, 100],
-      "drawsContent": true,
       "backgroundColor": "#00FF00CC",
       "transform": 3
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='side side-2'",
       "bounds": [100, 100],
-      "drawsContent": true,
       "backgroundColor": "#00FF00CC",
       "transform": 4
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='side side-3'",
       "bounds": [100, 100],
-      "drawsContent": true,
       "backgroundColor": "#00FF00CC",
       "transform": 5
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='side side-4'",
       "bounds": [100, 100],
-      "drawsContent": true,
       "backgroundColor": "#00FF00CC",
       "transform": 6
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='side side-5'",
       "bounds": [100, 100],
-      "drawsContent": true,
       "backgroundColor": "#00FF00CC",
       "transform": 7
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='side side-6'",
       "bounds": [100, 100],
-      "drawsContent": true,
       "backgroundColor": "#00FF00CC",
       "transform": 8
     },
     {
-      "name": "Squashing Containment Layer"
+      "name": "Squashing Containment Layer",
+      "drawsContent": false
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='box top left'",
       "position": [8, 8],
       "bounds": [100, 150],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#808080"
     },
     {
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='box top right')",
       "position": [8, 8],
-      "bounds": [300, 300],
-      "drawsContent": true
+      "bounds": [300, 300]
     }
   ],
   "transforms": [

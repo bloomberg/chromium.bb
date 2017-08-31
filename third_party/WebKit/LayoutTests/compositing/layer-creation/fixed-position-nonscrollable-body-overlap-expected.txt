@@ -6,14 +6,13 @@ Even though we can opt-out of fixed-position compositing for unscrollable fixed-
       "name": "LayoutView #document",
       "bounds": [800, 4024],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='absolute composited red box'",
       "position": [10, 100],
       "bounds": [100, 100],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#FF0000"
     },
     {
@@ -21,7 +20,6 @@ Even though we can opt-out of fixed-position compositing for unscrollable fixed-
       "position": [10, 100],
       "bounds": [100, 100],
       "contentsOpaque": true,
-      "drawsContent": true,
       "backgroundColor": "#00FF00"
     }
   ]

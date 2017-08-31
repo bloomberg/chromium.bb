@@ -4,24 +4,23 @@
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutBlockFlow DIV id='scroller'",
       "position": [8, 48],
-      "bounds": [100, 100],
-      "drawsContent": true
+      "bounds": [100, 100]
     },
     {
       "name": "Scrolling Layer",
       "position": [8, 48],
-      "bounds": [100, 100]
+      "bounds": [100, 100],
+      "drawsContent": false
     },
     {
       "name": "Scrolling Contents Layer",
       "position": [8, 48],
       "bounds": [205, 1022],
-      "drawsContent": true,
       "paintInvalidations": [
         {
           "object": "LayoutTextControl INPUT id='text'",
@@ -38,19 +37,18 @@
     {
       "name": "Overflow Controls Host Layer",
       "position": [8, 48],
-      "bounds": [100, 100]
+      "bounds": [100, 100],
+      "drawsContent": false
     },
     {
       "name": "Horizontal Scrollbar Layer",
       "position": [8, 148],
-      "bounds": [100, 0],
-      "drawsContent": true
+      "bounds": [100, 0]
     },
     {
       "name": "Vertical Scrollbar Layer",
       "position": [108, 48],
-      "bounds": [0, 100],
-      "drawsContent": true
+      "bounds": [0, 100]
     }
   ],
   "objectPaintInvalidations": [
