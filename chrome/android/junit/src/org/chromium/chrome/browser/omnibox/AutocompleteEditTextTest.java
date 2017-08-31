@@ -52,7 +52,7 @@ public class AutocompleteEditTextTest {
 
     // Robolectric's ShadowAccessibilityManager has a bug (crbug.com/756707). Turn this on once it's
     // fixed, and you can turn this off temporarily when upgrading robolectric library.
-    private static final boolean TEST_ACCESSIBILITY = false;
+    private static final boolean TEST_ACCESSIBILITY = true;
 
     @Rule
     public Features.Processor mProcessor = new Features.Processor();
