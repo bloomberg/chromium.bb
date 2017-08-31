@@ -1196,18 +1196,6 @@ void ResourceProvider::PopulateSkBitmapWithResource(SkBitmap* sk_bitmap,
   sk_bitmap->installPixels(info, resource->pixels, info.minRowBytes());
 }
 
-ResourceProvider::ScopedReadLockSoftware::ScopedReadLockSoftware(
-    ResourceProvider* resource_provider,
-    viz::ResourceId resource_id)
-    : resource_provider_(resource_provider), resource_id_(resource_id) {
-  const Resource* resource = resource_provider->LockForRead(resource_id);
-  resource_provider->PopulateSkBitmapWithResource(&sk_bitmap_, resource);
-}
-
-ResourceProvider::ScopedReadLockSoftware::~ScopedReadLockSoftware() {
-  resource_provider_->UnlockForRead(resource_id_);
-}
-
 ResourceProvider::ScopedWriteLockSoftware::ScopedWriteLockSoftware(
     ResourceProvider* resource_provider,
     viz::ResourceId resource_id)

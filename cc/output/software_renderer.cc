@@ -456,8 +456,8 @@ void SoftwareRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad) {
   DCHECK(content_texture->id());
   DCHECK(IsSoftwareResource(content_texture->id()));
 
-  ResourceProvider::ScopedReadLockSoftware lock(resource_provider_,
-                                                content_texture->id());
+  DisplayResourceProvider::ScopedReadLockSoftware lock(resource_provider_,
+                                                       content_texture->id());
   if (!lock.valid())
     return;
 
@@ -509,11 +509,12 @@ void SoftwareRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad) {
                                       SkShader::kClamp_TileMode, &content_mat);
   }
 
-  std::unique_ptr<ResourceProvider::ScopedReadLockSoftware> mask_lock;
+  std::unique_ptr<DisplayResourceProvider::ScopedReadLockSoftware> mask_lock;
   if (quad->mask_resource_id()) {
-    mask_lock = std::unique_ptr<ResourceProvider::ScopedReadLockSoftware>(
-        new ResourceProvider::ScopedReadLockSoftware(resource_provider_,
-                                                     quad->mask_resource_id()));
+    mask_lock =
+        std::unique_ptr<DisplayResourceProvider::ScopedReadLockSoftware>(
+            new DisplayResourceProvider::ScopedReadLockSoftware(
+                resource_provider_, quad->mask_resource_id()));
 
     if (!mask_lock->valid())
       return;
