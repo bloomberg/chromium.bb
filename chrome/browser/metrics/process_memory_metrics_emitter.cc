@@ -248,8 +248,10 @@ void ProcessMemoryMetricsEmitter::CollateResults() {
     private_footprint_total_kb += pmd->os_dump->private_footprint_kb;
     switch (pmd->process_type) {
       case memory_instrumentation::mojom::ProcessType::BROWSER: {
-        EmitBrowserMemoryMetrics(pmd, ukm::UkmRecorder::GetNewSourceID(),
-                                 GetUkmRecorder());
+        // Create a separate source for each non-renderer process type.
+        ukm::SourceId source_id = ukm::UkmRecorder::GetNewSourceID();
+        ukm::UkmRecorder::Get()->UpdateSourceURL(source_id, GURL());
+        EmitBrowserMemoryMetrics(pmd, source_id, GetUkmRecorder());
         break;
       }
       case memory_instrumentation::mojom::ProcessType::RENDERER: {
@@ -270,8 +272,10 @@ void ProcessMemoryMetricsEmitter::CollateResults() {
         break;
       }
       case memory_instrumentation::mojom::ProcessType::GPU: {
-        EmitGpuMemoryMetrics(pmd, ukm::UkmRecorder::GetNewSourceID(),
-                             GetUkmRecorder());
+        // Create a separate source for each non-renderer process type.
+        ukm::SourceId source_id = ukm::UkmRecorder::GetNewSourceID();
+        ukm::UkmRecorder::Get()->UpdateSourceURL(source_id, GURL());
+        EmitGpuMemoryMetrics(pmd, source_id, GetUkmRecorder());
         break;
       }
       case memory_instrumentation::mojom::ProcessType::UTILITY:
@@ -286,7 +290,9 @@ void ProcessMemoryMetricsEmitter::CollateResults() {
   UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Total.PrivateMemoryFootprint",
                                 private_footprint_total_kb / 1024);
 
-  ukm::builders::Memory_Experimental(ukm::UkmRecorder::GetNewSourceID())
+  ukm::SourceId source_id = ukm::UkmRecorder::GetNewSourceID();
+  ukm::UkmRecorder::Get()->UpdateSourceURL(source_id, GURL());
+  ukm::builders::Memory_Experimental(source_id)
       .SetTotal2_PrivateMemoryFootprint(private_footprint_total_kb / 1024)
       .Record(GetUkmRecorder());
 }
