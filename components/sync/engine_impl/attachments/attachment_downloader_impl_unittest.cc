@@ -25,7 +25,7 @@
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/crc32c/src/include/crc32c/crc32c.h"
+#include "third_party/leveldatabase/src/util/crc32c.h"
 
 namespace syncer {
 
@@ -292,8 +292,8 @@ void AttachmentDownloaderImplTest::AddHashHeader(
     case HASH_HEADER_NONE:
       break;
     case HASH_HEADER_VALID:
-      header += AttachmentUploaderImpl::FormatCrc32cHash(
-          crc32c::Crc32c(kAttachmentContent, strlen(kAttachmentContent)));
+      header += AttachmentUploaderImpl::FormatCrc32cHash(leveldb::crc32c::Value(
+          kAttachmentContent, strlen(kAttachmentContent)));
       headers->AddHeader(header);
       break;
     case HASH_HEADER_INVALID:
