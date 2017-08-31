@@ -22,6 +22,19 @@ namespace net {
 // TODO(rtenneti): implement details of this class.
 class NET_EXPORT_PRIVATE ProofSourceChromium : public ProofSource {
  public:
+  // TODO(merge): Remove this class.
+  class SignatureCallback {
+   public:
+    SignatureCallback() {}
+    virtual ~SignatureCallback() = default;
+
+    virtual void Run(bool ok, std::string signature) = 0;
+
+   private:
+    SignatureCallback(const SignatureCallback&) = delete;
+    SignatureCallback& operator=(const SignatureCallback&) = delete;
+  };
+
   ProofSourceChromium();
   ~ProofSourceChromium() override;
 
@@ -40,6 +53,18 @@ class NET_EXPORT_PRIVATE ProofSourceChromium : public ProofSource {
                 QuicStringPiece chlo_hash,
                 const QuicTagVector& connection_options,
                 std::unique_ptr<Callback> callback) override;
+
+  // TODO(merge): Change this from 'virtual' to 'override'.
+  virtual QuicReferenceCountedPointer<Chain> GetCertChain(
+      const QuicSocketAddress& server_address,
+      const std::string& hostname);
+
+  // TODO(merge): Change this from 'virtual' to 'override'.
+  virtual void ComputeTlsSignature(const QuicSocketAddress& server_address,
+                                   const std::string& hostname,
+                                   uint16_t signature_algorithm,
+                                   QuicStringPiece in,
+                                   std::unique_ptr<SignatureCallback> callback);
 
  private:
   bool GetProofInner(const QuicSocketAddress& server_ip,
