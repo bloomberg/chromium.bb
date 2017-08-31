@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/components/tether/tether_connector.h"
+#include "chromeos/components/tether/tether_connector_impl.h"
 
 #include "base/bind.h"
 #include "chromeos/components/tether/active_host.h"
@@ -21,7 +21,7 @@ namespace chromeos {
 
 namespace tether {
 
-TetherConnector::TetherConnector(
+TetherConnectorImpl::TetherConnectorImpl(
     NetworkStateHandler* network_state_handler,
     WifiHotspotConnector* wifi_hotspot_connector,
     ActiveHost* active_host,
@@ -44,13 +44,13 @@ TetherConnector::TetherConnector(
       host_connection_metrics_logger_(host_connection_metrics_logger),
       weak_ptr_factory_(this) {}
 
-TetherConnector::~TetherConnector() {
+TetherConnectorImpl::~TetherConnectorImpl() {
   if (connect_tethering_operation_) {
     connect_tethering_operation_->RemoveObserver(this);
   }
 }
 
-void TetherConnector::ConnectToNetwork(
+void TetherConnectorImpl::ConnectToNetwork(
     const std::string& tether_network_guid,
     const base::Closure& success_callback,
     const network_handler::StringResultCallback& error_callback) {
@@ -96,12 +96,12 @@ void TetherConnector::ConnectToNetwork(
 
   tether_host_fetcher_->FetchTetherHost(
       device_id_pending_connection_,
-      base::Bind(&TetherConnector::OnTetherHostToConnectFetched,
+      base::Bind(&TetherConnectorImpl::OnTetherHostToConnectFetched,
                  weak_ptr_factory_.GetWeakPtr(),
                  device_id_pending_connection_));
 }
 
-bool TetherConnector::CancelConnectionAttempt(
+bool TetherConnectorImpl::CancelConnectionAttempt(
     const std::string& tether_network_guid) {
   const std::string device_id =
       device_id_tether_network_guid_map_->GetDeviceIdForTetherNetworkGuid(
@@ -130,7 +130,7 @@ bool TetherConnector::CancelConnectionAttempt(
   return true;
 }
 
-void TetherConnector::OnSuccessfulConnectTetheringResponse(
+void TetherConnectorImpl::OnSuccessfulConnectTetheringResponse(
     const cryptauth::RemoteDevice& remote_device,
     const std::string& ssid,
     const std::string& password) {
@@ -160,11 +160,11 @@ void TetherConnector::OnSuccessfulConnectTetheringResponse(
 
   wifi_hotspot_connector_->ConnectToWifiHotspot(
       ssid_copy, password_copy, active_host_->GetTetherNetworkGuid(),
-      base::Bind(&TetherConnector::OnWifiConnection,
+      base::Bind(&TetherConnectorImpl::OnWifiConnection,
                  weak_ptr_factory_.GetWeakPtr(), remote_device_id));
 }
 
-void TetherConnector::OnConnectTetheringFailure(
+void TetherConnectorImpl::OnConnectTetheringFailure(
     const cryptauth::RemoteDevice& remote_device,
     ConnectTetheringResponse_ResponseCode error_code) {
   std::string device_id_copy = remote_device.GetDeviceId();
@@ -188,7 +188,7 @@ void TetherConnector::OnConnectTetheringFailure(
       GetConnectionToHostResultFromErrorCode(device_id_copy, error_code));
 }
 
-void TetherConnector::OnTetherHostToConnectFetched(
+void TetherConnectorImpl::OnTetherHostToConnectFetched(
     const std::string& device_id,
     std::unique_ptr<cryptauth::RemoteDevice> tether_host_to_connect) {
   if (device_id_pending_connection_ != device_id) {
@@ -223,7 +223,7 @@ void TetherConnector::OnTetherHostToConnectFetched(
   connect_tethering_operation_->Initialize();
 }
 
-void TetherConnector::SetConnectionFailed(
+void TetherConnectorImpl::SetConnectionFailed(
     const std::string& error_name,
     HostConnectionMetricsLogger::ConnectionToHostResult
         connection_to_host_result) {
@@ -253,7 +253,7 @@ void TetherConnector::SetConnectionFailed(
   }
 }
 
-void TetherConnector::SetConnectionSucceeded(
+void TetherConnectorImpl::SetConnectionSucceeded(
     const std::string& device_id,
     const std::string& wifi_network_guid) {
   DCHECK(!device_id_pending_connection_.empty());
@@ -281,8 +281,9 @@ void TetherConnector::SetConnectionSucceeded(
       wifi_network_guid);
 }
 
-void TetherConnector::OnWifiConnection(const std::string& device_id,
-                                       const std::string& wifi_network_guid) {
+void TetherConnectorImpl::OnWifiConnection(
+    const std::string& device_id,
+    const std::string& wifi_network_guid) {
   if (device_id != device_id_pending_connection_) {
     // If the device ID does not match the ID of the device pending connection,
     // this is a stale attempt.
@@ -313,7 +314,7 @@ void TetherConnector::OnWifiConnection(const std::string& device_id,
 }
 
 HostConnectionMetricsLogger::ConnectionToHostResult
-TetherConnector::GetConnectionToHostResultFromErrorCode(
+TetherConnectorImpl::GetConnectionToHostResultFromErrorCode(
     const std::string& device_id,
     ConnectTetheringResponse_ResponseCode error_code) {
   if (error_code ==

@@ -11,6 +11,7 @@
 #include "chromeos/components/tether/fake_active_host.h"
 #include "chromeos/components/tether/fake_ble_connection_manager.h"
 #include "chromeos/components/tether/fake_network_configuration_remover.h"
+#include "chromeos/components/tether/fake_tether_connector.h"
 #include "chromeos/components/tether/fake_tether_host_fetcher.h"
 #include "chromeos/components/tether/fake_wifi_hotspot_connector.h"
 #include "chromeos/components/tether/mock_tether_host_response_recorder.h"
@@ -99,42 +100,6 @@ class TestNetworkConnectionHandler : public NetworkConnectionHandler {
   network_handler::ErrorCallback last_disconnect_error_callback_;
 };
 
-class TestTetherConnector : public TetherConnector {
- public:
-  TestTetherConnector()
-      : TetherConnector(nullptr /* network_state_handler */,
-                        nullptr /* wifi_hotspot_connector */,
-                        nullptr /* active_host */,
-                        nullptr /* tether_host_fetcher */,
-                        nullptr /* connection_manager */,
-                        nullptr /* tether_host_response_recorder */,
-                        nullptr /* device_id_tether_network_guid_map */,
-                        nullptr /* host_scan_cache */,
-                        nullptr /* notification_presenter */,
-                        nullptr /* host_connection_metrics_logger */),
-        should_cancel_successfully_(true) {}
-  ~TestTetherConnector() override {}
-
-  void set_should_cancel_successfully(bool should_cancel_successfully) {
-    should_cancel_successfully_ = should_cancel_successfully;
-  }
-
-  std::string last_canceled_tether_network_guid() {
-    return last_canceled_tether_network_guid_;
-  }
-
-  // TetherConnector:
-  bool CancelConnectionAttempt(
-      const std::string& tether_network_guid) override {
-    last_canceled_tether_network_guid_ = tether_network_guid;
-    return should_cancel_successfully_;
-  }
-
- private:
-  bool should_cancel_successfully_;
-  std::string last_canceled_tether_network_guid_;
-};
-
 class FakeDisconnectTetheringOperation : public DisconnectTetheringOperation {
  public:
   FakeDisconnectTetheringOperation(
@@ -203,7 +168,7 @@ class TetherDisconnectorImplTest : public NetworkStateTest {
     fake_ble_connection_manager_ = base::MakeUnique<FakeBleConnectionManager>();
     fake_network_configuration_remover_ =
         base::MakeUnique<FakeNetworkConfigurationRemover>();
-    test_tether_connector_ = base::WrapUnique(new TestTetherConnector());
+    fake_tether_connector_ = base::MakeUnique<FakeTetherConnector>();
     device_id_tether_network_guid_map_ =
         base::MakeUnique<DeviceIdTetherNetworkGuidMap>();
     fake_tether_host_fetcher_ = base::MakeUnique<FakeTetherHostFetcher>(
@@ -221,7 +186,7 @@ class TetherDisconnectorImplTest : public NetworkStateTest {
     tether_disconnector_ = base::MakeUnique<TetherDisconnectorImpl>(
         test_network_connection_handler_.get(), network_state_handler(),
         fake_active_host_.get(), fake_ble_connection_manager_.get(),
-        fake_network_configuration_remover_.get(), test_tether_connector_.get(),
+        fake_network_configuration_remover_.get(), fake_tether_connector_.get(),
         device_id_tether_network_guid_map_.get(),
         fake_tether_host_fetcher_.get(), test_pref_service_.get());
   }
@@ -343,7 +308,7 @@ class TetherDisconnectorImplTest : public NetworkStateTest {
   std::unique_ptr<FakeBleConnectionManager> fake_ble_connection_manager_;
   std::unique_ptr<FakeNetworkConfigurationRemover>
       fake_network_configuration_remover_;
-  std::unique_ptr<TestTetherConnector> test_tether_connector_;
+  std::unique_ptr<FakeTetherConnector> fake_tether_connector_;
   // TODO(hansberry): Use a fake for this when a real mapping scheme is created.
   std::unique_ptr<DeviceIdTetherNetworkGuidMap>
       device_id_tether_network_guid_map_;
@@ -395,13 +360,13 @@ TEST_F(TetherDisconnectorImplTest, DisconnectWhenConnecting_CancelFails) {
   fake_active_host_->SetActiveHostConnecting(
       test_devices_[0].GetDeviceId(),
       GetTetherNetworkGuid(test_devices_[0].GetDeviceId()));
-  test_tether_connector_->set_should_cancel_successfully(false);
+  fake_tether_connector_->set_should_cancel_successfully(false);
 
   CallDisconnect(GetTetherNetworkGuid(test_devices_[0].GetDeviceId()));
   EXPECT_EQ(NetworkConnectionHandler::kErrorDisconnectFailed,
             GetResultAndReset());
   EXPECT_EQ(GetTetherNetworkGuid(test_devices_[0].GetDeviceId()),
-            test_tether_connector_->last_canceled_tether_network_guid());
+            fake_tether_connector_->last_canceled_tether_network_guid());
 
   // Note: This test does not check the active host's status because it will be
   // changed by TetherConnector.
@@ -411,12 +376,12 @@ TEST_F(TetherDisconnectorImplTest, DisconnectWhenConnecting_CancelSucceeds) {
   fake_active_host_->SetActiveHostConnecting(
       test_devices_[0].GetDeviceId(),
       GetTetherNetworkGuid(test_devices_[0].GetDeviceId()));
-  test_tether_connector_->set_should_cancel_successfully(true);
+  fake_tether_connector_->set_should_cancel_successfully(true);
 
   CallDisconnect(GetTetherNetworkGuid(test_devices_[0].GetDeviceId()));
   EXPECT_EQ(kSuccessResult, GetResultAndReset());
   EXPECT_EQ(GetTetherNetworkGuid(test_devices_[0].GetDeviceId()),
-            test_tether_connector_->last_canceled_tether_network_guid());
+            fake_tether_connector_->last_canceled_tether_network_guid());
 
   // Note: This test does not check the active host's status because it will be
   // changed by TetherConnector.
@@ -669,7 +634,7 @@ TEST_F(TetherDisconnectorImplTest, DisconnectsWhenDestructorCalled) {
   tether_disconnector_ = base::MakeUnique<TetherDisconnectorImpl>(
       test_network_connection_handler_.get(), network_state_handler(),
       fake_active_host_.get(), fake_ble_connection_manager_.get(),
-      fake_network_configuration_remover_.get(), test_tether_connector_.get(),
+      fake_network_configuration_remover_.get(), fake_tether_connector_.get(),
       device_id_tether_network_guid_map_.get(), fake_tether_host_fetcher_.get(),
       test_pref_service_.get());
   EXPECT_EQ(
