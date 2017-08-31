@@ -43,14 +43,10 @@ class MEDIA_EXPORT AudioSystemImpl : public AudioSystem {
       const std::string& input_device_id,
       OnInputDeviceInfoCallback on_input_device_info_cb) override;
 
-  base::SingleThreadTaskRunner* GetTaskRunner() const override;
-
  protected:
   AudioSystemImpl(AudioManager* audio_manager);
 
  private:
-  AudioManager* const audio_manager_;
-
   static AudioParameters GetInputParametersOnDeviceThread(
       AudioManager* audio_manager,
       const std::string& device_id);
@@ -67,6 +63,10 @@ class MEDIA_EXPORT AudioSystemImpl : public AudioSystem {
       AudioManager* audio_manager,
       const std::string& input_device_id,
       AudioSystem::OnInputDeviceInfoCallback on_input_device_info_cb);
+
+  base::SingleThreadTaskRunner* GetTaskRunner() const;
+
+  AudioManager* const audio_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioSystemImpl);
 };

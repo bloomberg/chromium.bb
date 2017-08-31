@@ -106,7 +106,8 @@ class MediaDevicesDispatcherHostTest : public testing::TestWithParam<GURL> {
             base::ThreadTaskRunnerHandle::Get());
 
     media_stream_manager_ = base::MakeUnique<MediaStreamManager>(
-        audio_system_.get(), std::move(video_capture_provider));
+        audio_system_.get(), audio_manager_->GetTaskRunner(),
+        std::move(video_capture_provider));
     host_ = base::MakeUnique<MediaDevicesDispatcherHost>(
         kProcessId, kRenderId, browser_context_.GetMediaDeviceIDSalt(),
         media_stream_manager_.get());

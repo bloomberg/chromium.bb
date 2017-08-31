@@ -86,12 +86,15 @@ class CONTENT_EXPORT MediaStreamManager
   // logging from webrtcLoggingPrivate API. Safe to call from any thread.
   static void SendMessageToNativeLog(const std::string& message);
 
-  explicit MediaStreamManager(media::AudioSystem* audio_system);
+  MediaStreamManager(
+      media::AudioSystem* audio_system,
+      scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner);
 
   // |audio_system| is required but defaults will be used if either
   // |video_capture_system| or |device_task_runner| are null.
-  explicit MediaStreamManager(
+  MediaStreamManager(
       media::AudioSystem* audio_system,
+      scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner,
       std::unique_ptr<VideoCaptureProvider> video_capture_provider);
 
   ~MediaStreamManager() override;
