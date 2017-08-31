@@ -128,7 +128,7 @@ void AXSpinButtonPart::GetRelativeBounds(
   *out_container = ParentObject();
 }
 
-bool AXSpinButtonPart::Press() {
+bool AXSpinButtonPart::OnNativeClickAction() {
   if (!parent_ || !parent_->IsSpinButton())
     return false;
 

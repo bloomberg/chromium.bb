@@ -341,7 +341,7 @@ void AXNodeObject::AlterSliderValue(bool increase) {
 
   value += increase ? step : -step;
 
-  SetValue(String::Number(value));
+  OnNativeSetValueAction(String::Number(value));
   AxObjectCache().PostNotification(GetNode(),
                                    AXObjectCacheImpl::kAXValueChanged);
 }
@@ -2545,50 +2545,57 @@ HTMLLabelElement* AXNodeObject::LabelElementContainer() const {
   return Traversal<HTMLLabelElement>::FirstAncestorOrSelf(*GetNode());
 }
 
-void AXNodeObject::SetFocused(bool on) {
+bool AXNodeObject::OnNativeFocusAction() {
   if (!CanSetFocusAttribute())
-    return;
+    return false;
 
-  Document* document = this->GetDocument();
-  if (!on) {
+  Document* document = GetDocument();
+  if (IsWebArea()) {
     document->ClearFocusedElement();
-  } else {
-    Node* node = this->GetNode();
-    if (node && node->IsElementNode()) {
-      // If this node is already the currently focused node, then calling
-      // focus() won't do anything.  That is a problem when focus is removed
-      // from the webpage to chrome, and then returns.  In these cases, we need
-      // to do what keyboard and mouse focus do, which is reset focus first.
-      if (document->FocusedElement() == node)
-        document->ClearFocusedElement();
-
-      ToElement(node)->focus();
-    } else {
-      document->ClearFocusedElement();
-    }
+    return true;
   }
+
+  Element* element = GetElement();
+  if (!element) {
+    document->ClearFocusedElement();
+    return true;
+  }
+
+  // If this node is already the currently focused node, then calling
+  // focus() won't do anything.  That is a problem when focus is removed
+  // from the webpage to chrome, and then returns.  In these cases, we need
+  // to do what keyboard and mouse focus do, which is reset focus first.
+  if (document->FocusedElement() == element)
+    document->ClearFocusedElement();
+
+  element->focus();
+  return true;
 }
 
-void AXNodeObject::Increment() {
+bool AXNodeObject::OnNativeIncrementAction() {
   LocalFrame* frame = GetDocument() ? GetDocument()->GetFrame() : nullptr;
   std::unique_ptr<UserGestureIndicator> gesture_indicator =
       LocalFrame::CreateUserGesture(frame, UserGestureToken::kNewGesture);
   AlterSliderValue(true);
+  return true;
 }
 
-void AXNodeObject::Decrement() {
+bool AXNodeObject::OnNativeDecrementAction() {
   LocalFrame* frame = GetDocument() ? GetDocument()->GetFrame() : nullptr;
   std::unique_ptr<UserGestureIndicator> gesture_indicator =
       LocalFrame::CreateUserGesture(frame, UserGestureToken::kNewGesture);
   AlterSliderValue(false);
+  return true;
 }
 
-void AXNodeObject::SetSequentialFocusNavigationStartingPoint() {
+bool AXNodeObject::OnNativeSetSequentialFocusNavigationStartingPointAction() {
   if (!GetNode())
-    return;
+    return false;
 
-  GetNode()->GetDocument().ClearFocusedElement();
-  GetNode()->GetDocument().SetSequentialFocusNavigationStartingPoint(GetNode());
+  Document* document = GetDocument();
+  document->ClearFocusedElement();
+  document->SetSequentialFocusNavigationStartingPoint(GetNode());
+  return true;
 }
 
 void AXNodeObject::ChildrenChanged() {

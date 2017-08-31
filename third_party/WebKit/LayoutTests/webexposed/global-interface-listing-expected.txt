@@ -44,6 +44,11 @@ interface AccessibleNode : EventTarget
     getter multiline
     getter multiselectable
     getter onaccessibleclick
+    getter onaccessiblecontextmenu
+    getter onaccessibledecrement
+    getter onaccessiblefocus
+    getter onaccessibleincrement
+    getter onaccessiblescrollintoview
     getter orientation
     getter owns
     getter placeholder
@@ -93,6 +98,11 @@ interface AccessibleNode : EventTarget
     setter multiline
     setter multiselectable
     setter onaccessibleclick
+    setter onaccessiblecontextmenu
+    setter onaccessibledecrement
+    setter onaccessiblefocus
+    setter onaccessibleincrement
+    setter onaccessiblescrollintoview
     setter orientation
     setter owns
     setter placeholder

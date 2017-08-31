@@ -48,7 +48,7 @@ AccessibilityRole AXMenuList::DetermineAccessibilityRole() {
   return kPopUpButtonRole;
 }
 
-bool AXMenuList::Press() {
+bool AXMenuList::OnNativeClickAction() {
   if (!layout_object_)
     return false;
 

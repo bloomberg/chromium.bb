@@ -204,10 +204,10 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   Node* GetNode() const override { return node_; }
 
   // Modify or take an action on an object.
-  void SetFocused(bool) final;
-  void Increment() final;
-  void Decrement() final;
-  void SetSequentialFocusNavigationStartingPoint() final;
+  bool OnNativeFocusAction() final;
+  bool OnNativeIncrementAction() final;
+  bool OnNativeDecrementAction() final;
+  bool OnNativeSetSequentialFocusNavigationStartingPointAction() final;
 
   // Notifications that this object may have changed.
   void ChildrenChanged() override;

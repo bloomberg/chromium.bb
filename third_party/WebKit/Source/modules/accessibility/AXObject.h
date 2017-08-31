@@ -752,7 +752,6 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   // current object as the starting point. Returns a null selection if there is
   // no selection in the subtree rooted at this object.
   virtual AXRange SelectionUnderObject() const { return AXRange(); }
-  virtual void SetSelection(const AXRange&) {}
 
   // Scrollable containers.
   bool IsScrollableContainer() const;
@@ -765,24 +764,44 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   virtual ScrollableArea* GetScrollableAreaIfScrollable() const { return 0; }
 
   // Modify or take an action on an object.
-  virtual void Increment() {}
-  virtual void Decrement() {}
-  bool PerformDefaultAction();
-  virtual bool Press();
-  // Make this object visible by scrolling as many nested scrollable views as
-  // needed.
-  void ScrollToMakeVisible() const;
-  // Same, but if the whole object can't be made visible, try for this subrect,
-  // in local coordinates.
-  void ScrollToMakeVisibleWithSubFocus(const IntRect&) const;
-  // Scroll this object to a given point in global coordinates of the top-level
-  // window.
-  void ScrollToGlobalPoint(const IntPoint&) const;
-  virtual void SetFocused(bool) {}
-  virtual void SetSelected(bool) {}
-  virtual void SetSequentialFocusNavigationStartingPoint();
-  virtual void SetValue(const String&) {}
-  virtual void SetValue(float) {}
+  //
+  // These are the public interfaces, called from outside of Blink.
+  // Each one first tries to fire an Accessibility Object Model event,
+  // if applicable, and if that isn't handled, falls back on the
+  // native implementation via a virtual member function, below.
+  //
+  // For example, |RequestIncrementAction| fires the AOM event and if
+  // that isn't handled it calls |DoNativeIncrement|.
+  //
+  // These all return true if handled.
+  bool RequestDecrementAction();
+  bool RequestClickAction();
+  bool RequestFocusAction();
+  bool RequestIncrementAction();
+  bool RequestScrollToGlobalPointAction(const IntPoint&);
+  bool RequestScrollToMakeVisibleAction();
+  bool RequestScrollToMakeVisibleWithSubFocusAction(const IntRect&);
+  bool RequestSetSelectedAction(bool);
+  bool RequestSetSelectionAction(const AXRange&);
+  bool RequestSetSequentialFocusNavigationStartingPointAction();
+  bool RequestSetValueAction(const String&);
+  bool RequestShowContextMenuAction();
+
+  // Native implementations of actions that aren't handled by AOM
+  // event listeners. These all return true if handled.
+  virtual bool OnNativeDecrementAction();
+  virtual bool OnNativeClickAction();
+  virtual bool OnNativeFocusAction();
+  virtual bool OnNativeIncrementAction();
+  virtual bool OnNativeScrollToGlobalPointAction(const IntPoint&) const;
+  virtual bool OnNativeScrollToMakeVisibleAction() const;
+  virtual bool OnNativeScrollToMakeVisibleWithSubFocusAction(
+      const IntRect&) const;
+  virtual bool OnNativeSetSelectedAction(bool);
+  virtual bool OnNativeSetSelectionAction(const AXRange&);
+  virtual bool OnNativeSetSequentialFocusNavigationStartingPointAction();
+  virtual bool OnNativeSetValueAction(const String&);
+  virtual bool OnNativeShowContextMenuAction();
 
   // Notifications that this object may have changed.
   virtual void ChildrenChanged() {}

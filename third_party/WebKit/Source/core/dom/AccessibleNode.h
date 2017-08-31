@@ -332,6 +332,11 @@ class CORE_EXPORT AccessibleNode : public EventTargetWithInlineData {
   ExecutionContext* GetExecutionContext() const override;
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(accessibleclick);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(accessiblecontextmenu);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(accessibledecrement);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(accessiblefocus);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(accessibleincrement);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(accessiblescrollintoview);
 
   DECLARE_VIRTUAL_TRACE();
 
