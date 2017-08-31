@@ -151,6 +151,10 @@ void DoLegacyCleanups(const InstallerState& installer_state,
 // a null time in case of error.
 base::Time GetConsoleSessionStartTime();
 
+// Returns true if the current OS vesion suppors drawing dark text on Start Menu
+// tiles.
+bool OsSupportsDarkTextTiles();
+
 }  // namespace installer
 
 #endif  // CHROME_INSTALLER_SETUP_SETUP_UTIL_H_
