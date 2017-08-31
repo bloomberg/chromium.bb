@@ -1,8 +1,0 @@
-CONSOLE ERROR: line 5: Uncaught SyntaxError: The requested module does not provide an export named 'x'
-CONSOLE ERROR: line 5: Uncaught SyntaxError: The requested module does not provide an export named 'x'
-Tests lineNumber for import error inside of inline module.
-
-Script execution paused.
-line 4, content: <script type="module">
-Script execution resumed.
-

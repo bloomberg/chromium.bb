@@ -6,6 +6,7 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/V8BindingForCore.h"
+#include "bindings/core/v8/V8ScriptRunner.h"
 #include "core/dom/Modulator.h"
 #include "core/dom/ScriptModuleResolver.h"
 #include "core/probe/CoreProbes.h"
@@ -120,20 +121,11 @@ void ScriptModule::Evaluate(ScriptState* script_state) const {
 }
 
 void ScriptModule::ReportException(ScriptState* script_state,
-                                   v8::Local<v8::Value> exception,
-                                   const String& file_name,
-                                   const TextPosition& start_position) {
+                                   v8::Local<v8::Value> exception) {
   // We ensure module-related code is not executed without the flag.
   // https://crbug.com/715376
   CHECK(RuntimeEnabledFeatures::ModuleScriptsEnabled());
-
-  v8::Isolate* isolate = script_state->GetIsolate();
-
-  v8::TryCatch try_catch(isolate);
-  try_catch.SetVerbose(true);
-
-  V8ScriptRunner::ReportExceptionForModule(isolate, exception, file_name,
-                                           start_position);
+  V8ScriptRunner::ReportException(script_state->GetIsolate(), exception);
 }
 
 Vector<String> ScriptModule::ModuleRequests(ScriptState* script_state) {

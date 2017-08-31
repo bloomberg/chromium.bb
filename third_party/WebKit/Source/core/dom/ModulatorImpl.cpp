@@ -217,9 +217,7 @@ void ModulatorImpl::ExecuteModule(const ModuleScript* module_script) {
   // s and abort these steps." [spec text]
   if (module_script->IsErrored()) {
     ScriptValue error = GetError(module_script);
-    ScriptModule::ReportException(script_state_.Get(), error.V8Value(),
-                                  module_script->BaseURL().GetString(),
-                                  module_script->StartPosition());
+    ScriptModule::ReportException(script_state_.Get(), error.V8Value());
     return;
   }
 
