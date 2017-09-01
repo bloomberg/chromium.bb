@@ -638,10 +638,6 @@ void MaybeScanAndPrompt(const SwReporterInvocation& reporter_invocation) {
 void MaybeFetchSRT(Browser* browser, const base::Version& reporter_version) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  if (g_testing_delegate_) {
-    g_testing_delegate_->TriggerPrompt();
-    return;
-  }
   Profile* profile = browser->profile();
   DCHECK(profile);
   PrefService* prefs = profile->GetPrefs();
@@ -669,6 +665,11 @@ void MaybeFetchSRT(Browser* browser, const base::Version& reporter_version) {
   }
   prefs->SetString(prefs::kSwReporterPromptVersion,
                    reporter_version.GetString());
+
+  if (g_testing_delegate_) {
+    g_testing_delegate_->TriggerPrompt();
+    return;
+  }
 
   // Download the SRT.
   RecordReporterStepHistogram(SW_REPORTER_DOWNLOAD_START);
