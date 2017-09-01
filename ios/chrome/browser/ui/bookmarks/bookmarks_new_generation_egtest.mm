@@ -345,6 +345,9 @@ id<GREYMatcher> BookmarksDoneButton() {
 - (void)testAutomaticSigninPromoDismiss {
   if (IsIPadIdiom()) {
     EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
+  } else {
+    // TODO(crbug.com/761349): Fix test.
+    EARL_GREY_TEST_DISABLED(@"Test temporarily disabled on iPhone.");
   }
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
