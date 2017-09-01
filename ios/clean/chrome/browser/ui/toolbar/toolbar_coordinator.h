@@ -15,6 +15,10 @@ class WebState;
 @interface ToolbarCoordinator : BrowserCoordinator
 // The web state this ToolbarCoordinator is handling.
 @property(nonatomic, assign) web::WebState* webState;
+
+// By default, this component does not interact with the tab strip. Setting
+// |usesTabStrip| to YES, allows interaction with the tab strip.
+@property(nonatomic, assign) BOOL usesTabStrip;
 @end
 
 #endif  // IOS_CLEAN_CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_COORDINATOR_H_

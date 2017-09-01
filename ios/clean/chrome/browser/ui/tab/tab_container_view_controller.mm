@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #import "ios/clean/chrome/browser/ui/tab/tab_container_view_controller.h"
+#import "ios/clean/chrome/browser/ui/tab/tab_container_view_controller+internal.h"
 
 #import "base/logging.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
@@ -17,16 +18,17 @@
 #endif
 
 namespace {
-CGFloat kToolbarHeight = 56.0f;
-CGFloat kTabStripHeight = 120.0f;
-}
+const CGFloat kToolbarHeight = 56.0f;
+}  // namespace
 
 @interface TabContainerViewController ()<ContainmentTransitioningDelegate>
+
+// Container view enclosing all child view controllers.
+@property(nonatomic, strong) UIView* containerView;
 
 // Container views for child view controllers. The child view controller's
 // view is added as a subview that fills its container view via autoresizing.
 @property(nonatomic, strong) UIView* findBarView;
-@property(nonatomic, strong) UIView* tabStripView;
 @property(nonatomic, strong) UIView* toolbarView;
 @property(nonatomic, strong) UIView* contentView;
 
@@ -35,82 +37,36 @@ CGFloat kTabStripHeight = 120.0f;
 // means that this view will not be displayed on landscape.
 @property(nonatomic, strong) UIView* statusBarBackgroundView;
 
-// Height constraints for tabStripView and toolbarView.
-@property(nonatomic, strong) NSLayoutConstraint* tabStripHeightConstraint;
-@property(nonatomic, strong) NSLayoutConstraint* toolbarHeightConstraint;
-
-// Abstract base method for subclasses to implement.
-// Returns constraints for tabStrip, toolbar, and content subviews.
-- (Constraints*)subviewConstraints;
-
 @end
 
 @implementation TabContainerViewController
-
 @synthesize contentViewController = _contentViewController;
-@synthesize findBarView = _findBarView;
 @synthesize findBarViewController = _findBarViewController;
 @synthesize toolbarViewController = _toolbarViewController;
-@synthesize tabStripViewController = _tabStripViewController;
-@synthesize tabStripVisible = _tabStripVisible;
-@synthesize tabStripView = _tabStripView;
+@synthesize containerView = _containerView;
+@synthesize findBarView = _findBarView;
 @synthesize toolbarView = _toolbarView;
 @synthesize contentView = _contentView;
 @synthesize statusBarBackgroundView = _statusBarBackgroundView;
-@synthesize tabStripHeightConstraint = _tabStripHeightConstraint;
-@synthesize toolbarHeightConstraint = _toolbarHeightConstraint;
 @synthesize containmentTransitioningDelegate =
     _containmentTransitioningDelegate;
+@synthesize usesBottomToolbar = _usesBottomToolbar;
 
 #pragma mark - UIViewController
 
 - (void)viewDidLoad {
   [super viewDidLoad];
-  self.containmentTransitioningDelegate = self;
-  self.findBarView = [[UIView alloc] init];
-  self.tabStripView = [[UIView alloc] init];
-  self.toolbarView = [[UIView alloc] init];
-  self.contentView = [[UIView alloc] init];
-  self.statusBarBackgroundView = [[UIView alloc] init];
-  self.findBarView.translatesAutoresizingMaskIntoConstraints = NO;
-  self.tabStripView.translatesAutoresizingMaskIntoConstraints = NO;
-  self.toolbarView.translatesAutoresizingMaskIntoConstraints = NO;
-  self.contentView.translatesAutoresizingMaskIntoConstraints = NO;
-  self.statusBarBackgroundView.translatesAutoresizingMaskIntoConstraints = NO;
-  self.view.backgroundColor = [UIColor blackColor];
-  self.findBarView.backgroundColor = [UIColor clearColor];
-  self.tabStripView.backgroundColor = [UIColor blackColor];
-  self.toolbarView.backgroundColor = [UIColor blackColor];
-  self.contentView.backgroundColor = [UIColor blackColor];
-  self.statusBarBackgroundView.backgroundColor =
-      UIColorFromRGB(kToolbarBackgroundColor);
-  self.findBarView.clipsToBounds = YES;
+  [self configureSubviews];
 
-  // Views that are added last have the highest z-order.
-  [self.view addSubview:self.tabStripView];
-  [self.view addSubview:self.statusBarBackgroundView];
-  [self.view addSubview:self.toolbarView];
-  [self.view addSubview:self.contentView];
-  [self.view addSubview:self.findBarView];
-  self.findBarView.hidden = YES;
-
-  [self addChildViewController:self.tabStripViewController
-                     toSubview:self.tabStripView];
-  [self addChildViewController:self.toolbarViewController
-                     toSubview:self.toolbarView];
-  [self addChildViewController:self.contentViewController
-                     toSubview:self.contentView];
-
-  self.tabStripHeightConstraint =
-      [self.tabStripView.heightAnchor constraintEqualToConstant:0.0f];
-  self.toolbarHeightConstraint =
-      [self.toolbarView.heightAnchor constraintEqualToConstant:0.0f];
-  self.toolbarHeightConstraint.priority = UILayoutPriorityDefaultHigh;
-  if (self.toolbarViewController) {
-    self.toolbarHeightConstraint.constant = kToolbarHeight;
-  }
-
-  [NSLayoutConstraint activateConstraints:[self subviewConstraints]];
+  NSMutableArray* constraints = [NSMutableArray array];
+  [constraints addObjectsFromArray:[self statusBarBackgroundConstraints]];
+  [constraints addObjectsFromArray:[self commonToolbarConstraints]];
+  [constraints addObjectsFromArray:(self.usesBottomToolbar
+                                        ? [self bottomToolbarConstraints]
+                                        : [self topToolbarConstraints])];
+  [constraints addObjectsFromArray:[self findbarConstraints]];
+  [constraints addObjectsFromArray:[self containerConstraints]];
+  [NSLayoutConstraint activateConstraints:constraints];
 }
 
 #pragma mark - Public properties
@@ -120,8 +76,8 @@ CGFloat kTabStripHeight = 120.0f;
     return;
   if ([self isViewLoaded]) {
     [self detachChildViewController:self.contentViewController];
-    [self addChildViewController:contentViewController
-                       toSubview:self.contentView];
+    [self attachChildViewController:contentViewController
+                          toSubview:self.contentView];
   }
   _contentViewController = contentViewController;
 }
@@ -162,54 +118,15 @@ CGFloat kTabStripHeight = 120.0f;
     return;
   if ([self isViewLoaded]) {
     [self detachChildViewController:self.toolbarViewController];
-    [self addChildViewController:toolbarViewController
-                       toSubview:self.toolbarView];
+    [self attachChildViewController:toolbarViewController
+                          toSubview:self.toolbarView];
   }
   _toolbarViewController = toolbarViewController;
 }
 
-- (void)setTabStripVisible:(BOOL)tabStripVisible {
-  if (tabStripVisible) {
-    self.tabStripHeightConstraint.constant = kTabStripHeight;
-  } else {
-    self.tabStripHeightConstraint.constant = 0.0f;
-  }
-  _tabStripVisible = tabStripVisible;
-}
-
-- (void)setTabStripViewController:(UIViewController*)tabStripViewController {
-  if (self.tabStripViewController == tabStripViewController)
-    return;
-  if ([self isViewLoaded]) {
-    [self detachChildViewController:self.tabStripViewController];
-    [self addChildViewController:tabStripViewController
-                       toSubview:self.tabStripView];
-  }
-  _tabStripViewController = tabStripViewController;
-}
-
-#pragma mark - ChildViewController helper methods
-
-- (void)addChildViewController:(UIViewController*)viewController
-                     toSubview:(UIView*)subview {
-  if (!viewController || !subview) {
-    return;
-  }
-  [self addChildViewController:viewController];
-  viewController.view.translatesAutoresizingMaskIntoConstraints = YES;
-  viewController.view.autoresizingMask =
-      UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-  viewController.view.frame = subview.bounds;
-  [subview addSubview:viewController.view];
-  [viewController didMoveToParentViewController:self];
-}
-
-- (void)detachChildViewController:(UIViewController*)viewController {
-  if (viewController.parentViewController != self)
-    return;
-  [viewController willMoveToParentViewController:nil];
-  [viewController.view removeFromSuperview];
-  [viewController removeFromParentViewController];
+- (void)setUsesBottomToolbar:(BOOL)usesBottomToolbar {
+  DCHECK(![self isViewLoaded]);
+  _usesBottomToolbar = usesBottomToolbar;
 }
 
 #pragma mark - MenuPresentationDelegate
@@ -233,17 +150,74 @@ CGFloat kTabStripHeight = 120.0f;
   return CGRectNull;
 }
 
-#pragma mark - Tab Strip actions.
+#pragma mark - Methods in Internal category
 
-- (void)hideTabStrip:(id)sender {
-  self.tabStripVisible = NO;
+- (void)attachChildViewController:(UIViewController*)viewController
+                        toSubview:(UIView*)subview {
+  if (!viewController || !subview)
+    return;
+  [self addChildViewController:viewController];
+  viewController.view.translatesAutoresizingMaskIntoConstraints = YES;
+  viewController.view.autoresizingMask =
+      UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+  viewController.view.frame = subview.bounds;
+  [subview addSubview:viewController.view];
+  [viewController didMoveToParentViewController:self];
 }
 
-#pragma mark - Abstract methods to be overriden by subclass
+- (void)detachChildViewController:(UIViewController*)viewController {
+  if (viewController.parentViewController != self)
+    return;
+  [viewController willMoveToParentViewController:nil];
+  [viewController.view removeFromSuperview];
+  [viewController removeFromParentViewController];
+}
 
-- (Constraints*)subviewConstraints {
-  NOTREACHED() << "You must override -subviewConstraints in a subclass";
-  return nil;
+- (void)configureSubviews {
+  self.containmentTransitioningDelegate = self;
+  self.containerView = [[UIView alloc] init];
+  self.findBarView = [[UIView alloc] init];
+  self.toolbarView = [[UIView alloc] init];
+  self.contentView = [[UIView alloc] init];
+  self.statusBarBackgroundView = [[UIView alloc] init];
+  self.containerView.translatesAutoresizingMaskIntoConstraints = NO;
+  self.findBarView.translatesAutoresizingMaskIntoConstraints = NO;
+  self.toolbarView.translatesAutoresizingMaskIntoConstraints = NO;
+  self.contentView.translatesAutoresizingMaskIntoConstraints = NO;
+  self.statusBarBackgroundView.translatesAutoresizingMaskIntoConstraints = NO;
+  self.view.backgroundColor = [UIColor blackColor];
+  self.findBarView.backgroundColor = [UIColor clearColor];
+  self.toolbarView.backgroundColor = [UIColor blackColor];
+  self.contentView.backgroundColor = [UIColor blackColor];
+  self.statusBarBackgroundView.backgroundColor =
+      UIColorFromRGB(kToolbarBackgroundColor);
+  self.findBarView.clipsToBounds = YES;
+
+  [self.view addSubview:self.containerView];
+  [self.view addSubview:self.statusBarBackgroundView];
+  [self.containerView addSubview:self.toolbarView];
+  [self.containerView addSubview:self.contentView];
+  // Findbar should have higher z-order than toolbar.
+  [self.containerView addSubview:self.findBarView];
+  self.findBarView.hidden = YES;
+
+  [self attachChildViewController:self.toolbarViewController
+                        toSubview:self.toolbarView];
+  [self attachChildViewController:self.contentViewController
+                        toSubview:self.contentView];
+}
+
+- (Constraints*)containerConstraints {
+  return @[
+    [self.containerView.topAnchor
+        constraintEqualToAnchor:self.topLayoutGuide.bottomAnchor],
+    [self.containerView.bottomAnchor
+        constraintEqualToAnchor:self.bottomLayoutGuide.topAnchor],
+    [self.containerView.leadingAnchor
+        constraintEqualToAnchor:self.view.leadingAnchor],
+    [self.containerView.trailingAnchor
+        constraintEqualToAnchor:self.view.trailingAnchor],
+  ];
 }
 
 #pragma mark - ContainmentTransitioningDelegate
@@ -255,12 +229,10 @@ animationControllerForAddingChildController:(UIViewController*)addedChild
   return [[SwapFromAboveAnimator alloc] init];
 }
 
-@end
+#pragma mark - Private methods
 
-@implementation TopToolbarTabViewController
-
-// Override with constraints that place the toolbar on top.
-- (Constraints*)subviewConstraints {
+// Constraints for the status bar background.
+- (Constraints*)statusBarBackgroundConstraints {
   return @[
     [self.statusBarBackgroundView.topAnchor
         constraintEqualToAnchor:self.topLayoutGuide.topAnchor],
@@ -270,30 +242,12 @@ animationControllerForAddingChildController:(UIViewController*)addedChild
         constraintEqualToAnchor:self.view.leadingAnchor],
     [self.statusBarBackgroundView.trailingAnchor
         constraintEqualToAnchor:self.view.trailingAnchor],
+  ];
+}
 
-    [self.tabStripView.topAnchor
-        constraintEqualToAnchor:self.topLayoutGuide.bottomAnchor],
-    [self.tabStripView.leadingAnchor
-        constraintEqualToAnchor:self.view.leadingAnchor],
-    [self.tabStripView.trailingAnchor
-        constraintEqualToAnchor:self.view.trailingAnchor],
-    self.tabStripHeightConstraint,
-    [self.toolbarView.topAnchor
-        constraintEqualToAnchor:self.tabStripView.bottomAnchor],
-    [self.toolbarView.leadingAnchor
-        constraintEqualToAnchor:self.view.leadingAnchor],
-    [self.toolbarView.trailingAnchor
-        constraintEqualToAnchor:self.view.trailingAnchor],
-    self.toolbarHeightConstraint,
-    [self.contentView.topAnchor
-        constraintEqualToAnchor:self.toolbarView.bottomAnchor],
-    [self.contentView.leadingAnchor
-        constraintEqualToAnchor:self.view.leadingAnchor],
-    [self.contentView.trailingAnchor
-        constraintEqualToAnchor:self.view.trailingAnchor],
-    [self.contentView.bottomAnchor
-        constraintEqualToAnchor:self.bottomLayoutGuide.topAnchor],
-
+// Constraints for the findbar.
+- (Constraints*)findbarConstraints {
+  return @[
     [self.findBarView.topAnchor
         constraintEqualToAnchor:self.toolbarView.topAnchor],
     [self.findBarView.bottomAnchor
@@ -305,44 +259,46 @@ animationControllerForAddingChildController:(UIViewController*)addedChild
   ];
 }
 
-@end
-
-@implementation BottomToolbarTabViewController
-
-// Override with constraints that place the toolbar on bottom.
-- (Constraints*)subviewConstraints {
+// Constraints that are shared between topToolbar and bottomToolbar
+// configurations.
+- (Constraints*)commonToolbarConstraints {
   return @[
-    [self.statusBarBackgroundView.topAnchor
-        constraintEqualToAnchor:self.topLayoutGuide.topAnchor],
-    [self.statusBarBackgroundView.bottomAnchor
-        constraintEqualToAnchor:self.topLayoutGuide.bottomAnchor],
-    [self.statusBarBackgroundView.leadingAnchor
-        constraintEqualToAnchor:self.view.leadingAnchor],
-    [self.statusBarBackgroundView.trailingAnchor
-        constraintEqualToAnchor:self.view.trailingAnchor],
+    // Toolbar leading, trailing, and height constraints.
+    [self.toolbarView.leadingAnchor
+        constraintEqualToAnchor:self.containerView.leadingAnchor],
+    [self.toolbarView.trailingAnchor
+        constraintEqualToAnchor:self.containerView.trailingAnchor],
+    [self.toolbarView.heightAnchor constraintEqualToConstant:kToolbarHeight],
 
-    [self.tabStripView.topAnchor
-        constraintEqualToAnchor:self.topLayoutGuide.bottomAnchor],
-    [self.tabStripView.leadingAnchor
-        constraintEqualToAnchor:self.view.leadingAnchor],
-    [self.tabStripView.trailingAnchor
-        constraintEqualToAnchor:self.view.trailingAnchor],
-    self.tabStripHeightConstraint,
-    [self.contentView.topAnchor
-        constraintEqualToAnchor:self.tabStripView.bottomAnchor],
+    // Content leading and trailing constraints.
     [self.contentView.leadingAnchor
-        constraintEqualToAnchor:self.view.leadingAnchor],
+        constraintEqualToAnchor:self.containerView.leadingAnchor],
     [self.contentView.trailingAnchor
-        constraintEqualToAnchor:self.view.trailingAnchor],
+        constraintEqualToAnchor:self.containerView.trailingAnchor],
+  ];
+}
+
+// Constraints that configure the toolbar at the top.
+- (Constraints*)topToolbarConstraints {
+  return @[
+    [self.toolbarView.topAnchor
+        constraintEqualToAnchor:self.containerView.topAnchor],
+    [self.contentView.topAnchor
+        constraintEqualToAnchor:self.toolbarView.bottomAnchor],
+    [self.contentView.bottomAnchor
+        constraintEqualToAnchor:self.containerView.bottomAnchor],
+  ];
+}
+
+// Constraints that configure the toolbar at the bottom.
+- (Constraints*)bottomToolbarConstraints {
+  return @[
+    [self.contentView.topAnchor
+        constraintEqualToAnchor:self.containerView.topAnchor],
     [self.toolbarView.topAnchor
         constraintEqualToAnchor:self.contentView.bottomAnchor],
-    [self.toolbarView.leadingAnchor
-        constraintEqualToAnchor:self.view.leadingAnchor],
-    [self.toolbarView.trailingAnchor
-        constraintEqualToAnchor:self.view.trailingAnchor],
-    self.toolbarHeightConstraint,
     [self.toolbarView.bottomAnchor
-        constraintEqualToAnchor:self.bottomLayoutGuide.topAnchor],
+        constraintEqualToAnchor:self.containerView.bottomAnchor],
   ];
 }
 

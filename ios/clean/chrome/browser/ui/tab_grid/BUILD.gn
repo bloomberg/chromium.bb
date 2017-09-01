@@ -28,6 +28,7 @@ source_set("tab_grid") {
     "//ios/clean/chrome/browser/ui/overlays",
     "//ios/clean/chrome/browser/ui/settings",
     "//ios/clean/chrome/browser/ui/tab",
+    "//ios/clean/chrome/browser/ui/tab:features",
     "//ios/clean/chrome/browser/ui/tab_collection",
     "//ios/clean/chrome/browser/ui/tab_collection:tab_collection_ui",
     "//ios/clean/chrome/browser/ui/tools",
