@@ -57,9 +57,4 @@
     attribute DOMString? valueText;
 
     attribute EventHandler onaccessibleclick;
-    attribute EventHandler onaccessiblecontextmenu;
-    attribute EventHandler onaccessibledecrement;
-    attribute EventHandler onaccessiblefocus;
-    attribute EventHandler onaccessibleincrement;
-    attribute EventHandler onaccessiblescrollintoview;
 };

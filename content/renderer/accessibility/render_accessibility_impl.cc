@@ -518,13 +518,13 @@ void RenderAccessibilityImpl::OnPerformAction(
 
   switch (data.action) {
     case ui::AX_ACTION_BLUR:
-      root.Focus();
+      target.SetFocused(false);
       break;
     case ui::AX_ACTION_DECREMENT:
       target.Decrement();
       break;
     case ui::AX_ACTION_DO_DEFAULT:
-      target.Click();
+      target.PerformDefaultAction();
       break;
     case ui::AX_ACTION_GET_IMAGE_DATA:
       OnGetImageData(target, data.target_rect.size());
@@ -549,7 +549,12 @@ void RenderAccessibilityImpl::OnPerformAction(
       OnLoadInlineTextBoxes(target);
       break;
     case ui::AX_ACTION_FOCUS:
-      target.Focus();
+      // By convention, calling SetFocus on the root of the tree should
+      // clear the current focus. Otherwise set the focus to the new node.
+      if (data.target_node_id == root.AxID())
+        render_frame_->GetRenderView()->GetWebView()->ClearFocusedElement();
+      else
+        target.SetFocused(true);
       break;
     case ui::AX_ACTION_SET_SCROLL_OFFSET:
       target.SetScrollOffset(

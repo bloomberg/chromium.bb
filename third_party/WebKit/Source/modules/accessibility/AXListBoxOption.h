@@ -52,7 +52,7 @@ class AXListBoxOption final : public AXLayoutObject {
   AccessibilityRole DetermineAccessibilityRole() final;
   bool IsSelected() const override;
   bool IsSelectedOptionActive() const override;
-  bool OnNativeSetSelectedAction(bool) override;
+  void SetSelected(bool) override;
 
   String TextAlternative(bool recursive,
                          bool in_aria_labelled_by_traversal,

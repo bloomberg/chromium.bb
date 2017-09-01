@@ -119,12 +119,11 @@ bool AXMenuListOption::IsSelected() const {
   return element_ && element_->Selected();
 }
 
-bool AXMenuListOption::OnNativeSetSelectedAction(bool b) {
+void AXMenuListOption::SetSelected(bool b) {
   if (!element_ || !CanSetSelectedAttribute())
-    return false;
+    return;
 
   element_->SetSelected(b);
-  return true;
 }
 
 bool AXMenuListOption::ComputeAccessibilityIsIgnored(
