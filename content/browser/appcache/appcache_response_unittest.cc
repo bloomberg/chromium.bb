@@ -139,12 +139,12 @@ class AppCacheResponseTest : public testing::Test {
     test_finished_event_->Signal();
   }
 
-  void PushNextTask(base::Closure task) {
+  void PushNextTask(base::OnceClosure task) {
     task_stack_.push(
         std::pair<base::OnceClosure, bool>(std::move(task), false));
   }
 
-  void PushNextTaskAsImmediate(const base::Closure& task) {
+  void PushNextTaskAsImmediate(base::OnceClosure task) {
     task_stack_.push(std::pair<base::OnceClosure, bool>(std::move(task), true));
   }
 
@@ -181,8 +181,8 @@ class AppCacheResponseTest : public testing::Test {
                      IOBuffer* body, int body_len) {
     DCHECK(body);
     scoped_refptr<IOBuffer> body_ref(body);
-    PushNextTask(base::Bind(&AppCacheResponseTest::WriteResponseBody,
-                            base::Unretained(this), body_ref, body_len));
+    PushNextTask(base::BindOnce(&AppCacheResponseTest::WriteResponseBody,
+                                base::Unretained(this), body_ref, body_len));
     WriteResponseHead(head);
   }
 
@@ -329,10 +329,10 @@ class AppCacheResponseTest : public testing::Test {
         service_->storage()->CreateResponseReader(GURL(), kNoSuchResponseId));
 
     // Push tasks in reverse order
-    PushNextTask(base::Bind(&AppCacheResponseTest::ReadNonExistentData,
-                            base::Unretained(this)));
-    PushNextTask(base::Bind(&AppCacheResponseTest::ReadNonExistentInfo,
-                            base::Unretained(this)));
+    PushNextTask(base::BindOnce(&AppCacheResponseTest::ReadNonExistentData,
+                                base::Unretained(this)));
+    PushNextTask(base::BindOnce(&AppCacheResponseTest::ReadNonExistentInfo,
+                                base::Unretained(this)));
     ScheduleNextTask();
   }
 
@@ -359,8 +359,9 @@ class AppCacheResponseTest : public testing::Test {
 
   // LoadResponseInfo_Miss ----------------------------------------------------
   void LoadResponseInfo_Miss() {
-    PushNextTask(base::Bind(&AppCacheResponseTest::LoadResponseInfo_Miss_Verify,
-                            base::Unretained(this)));
+    PushNextTask(
+        base::BindOnce(&AppCacheResponseTest::LoadResponseInfo_Miss_Verify,
+                       base::Unretained(this)));
     service_->storage()->LoadResponseInfo(GURL(), kNoSuchResponseId,
                                           storage_delegate_.get());
   }
@@ -378,8 +379,9 @@ class AppCacheResponseTest : public testing::Test {
     //   a. headers
     //   b. body
     // 2. Use LoadResponseInfo to read the response headers back out
-    PushNextTask(base::Bind(&AppCacheResponseTest::LoadResponseInfo_Hit_Step2,
-                            base::Unretained(this)));
+    PushNextTask(
+        base::BindOnce(&AppCacheResponseTest::LoadResponseInfo_Hit_Step2,
+                       base::Unretained(this)));
     writer_.reset(service_->storage()->CreateResponseWriter(GURL()));
     written_response_id_ = writer_->response_id();
     WriteBasicResponse();
@@ -387,8 +389,9 @@ class AppCacheResponseTest : public testing::Test {
 
   void LoadResponseInfo_Hit_Step2() {
     writer_.reset();
-    PushNextTask(base::Bind(&AppCacheResponseTest::LoadResponseInfo_Hit_Verify,
-                            base::Unretained(this)));
+    PushNextTask(
+        base::BindOnce(&AppCacheResponseTest::LoadResponseInfo_Hit_Verify,
+                       base::Unretained(this)));
     service_->storage()->LoadResponseInfo(GURL(), written_response_id_,
                                           storage_delegate_.get());
   }
@@ -418,26 +421,29 @@ class AppCacheResponseTest : public testing::Test {
     // 7. Check metadata was deleted.
 
     // Push tasks in reverse order.
-    PushNextTask(base::Bind(&AppCacheResponseTest::Metadata_VerifyMetadata,
-                            base::Unretained(this), ""));
-    PushNextTask(base::Bind(&AppCacheResponseTest::Metadata_LoadResponseInfo,
-                            base::Unretained(this)));
-    PushNextTask(base::Bind(&AppCacheResponseTest::Metadata_WriteMetadata,
-                            base::Unretained(this), ""));
-    PushNextTask(base::Bind(&AppCacheResponseTest::Metadata_VerifyMetadata,
-                            base::Unretained(this), "Second"));
-    PushNextTask(base::Bind(&AppCacheResponseTest::Metadata_LoadResponseInfo,
-                            base::Unretained(this)));
-    PushNextTask(base::Bind(&AppCacheResponseTest::Metadata_WriteMetadata,
-                            base::Unretained(this), "Second"));
-    PushNextTask(base::Bind(&AppCacheResponseTest::Metadata_VerifyMetadata,
-                            base::Unretained(this), "Metadata First"));
-    PushNextTask(base::Bind(&AppCacheResponseTest::Metadata_LoadResponseInfo,
-                            base::Unretained(this)));
-    PushNextTask(base::Bind(&AppCacheResponseTest::Metadata_WriteMetadata,
-                            base::Unretained(this), "Metadata First"));
-    PushNextTask(base::Bind(&AppCacheResponseTest::Metadata_ResetWriter,
-                            base::Unretained(this)));
+    PushNextTask(base::BindOnce(&AppCacheResponseTest::Metadata_VerifyMetadata,
+                                base::Unretained(this), ""));
+    PushNextTask(
+        base::BindOnce(&AppCacheResponseTest::Metadata_LoadResponseInfo,
+                       base::Unretained(this)));
+    PushNextTask(base::BindOnce(&AppCacheResponseTest::Metadata_WriteMetadata,
+                                base::Unretained(this), ""));
+    PushNextTask(base::BindOnce(&AppCacheResponseTest::Metadata_VerifyMetadata,
+                                base::Unretained(this), "Second"));
+    PushNextTask(
+        base::BindOnce(&AppCacheResponseTest::Metadata_LoadResponseInfo,
+                       base::Unretained(this)));
+    PushNextTask(base::BindOnce(&AppCacheResponseTest::Metadata_WriteMetadata,
+                                base::Unretained(this), "Second"));
+    PushNextTask(base::BindOnce(&AppCacheResponseTest::Metadata_VerifyMetadata,
+                                base::Unretained(this), "Metadata First"));
+    PushNextTask(
+        base::BindOnce(&AppCacheResponseTest::Metadata_LoadResponseInfo,
+                       base::Unretained(this)));
+    PushNextTask(base::BindOnce(&AppCacheResponseTest::Metadata_WriteMetadata,
+                                base::Unretained(this), "Metadata First"));
+    PushNextTask(base::BindOnce(&AppCacheResponseTest::Metadata_ResetWriter,
+                                base::Unretained(this)));
     writer_.reset(service_->storage()->CreateResponseWriter(GURL()));
     written_response_id_ = writer_->response_id();
     WriteBasicResponse();
@@ -495,14 +501,15 @@ class AppCacheResponseTest : public testing::Test {
         GetHttpResponseInfoSize(head) + kNumBlocks * kBlockSize;
 
     // Push tasks in reverse order.
-    PushNextTask(base::Bind(&AppCacheResponseTest::Verify_AmountWritten,
-                            base::Unretained(this), expected_amount_written));
+    PushNextTask(base::BindOnce(&AppCacheResponseTest::Verify_AmountWritten,
+                                base::Unretained(this),
+                                expected_amount_written));
     for (int i = 0; i < kNumBlocks; ++i) {
-      PushNextTask(base::Bind(&AppCacheResponseTest::WriteOneBlock,
-                              base::Unretained(this), kNumBlocks - i));
+      PushNextTask(base::BindOnce(&AppCacheResponseTest::WriteOneBlock,
+                                  base::Unretained(this), kNumBlocks - i));
     }
-    PushNextTask(base::Bind(&AppCacheResponseTest::WriteResponseHead,
-                            base::Unretained(this), head));
+    PushNextTask(base::BindOnce(&AppCacheResponseTest::WriteResponseHead,
+                                base::Unretained(this), head));
 
     writer_.reset(service_->storage()->CreateResponseWriter(GURL()));
     written_response_id_ = writer_->response_id();
@@ -528,22 +535,23 @@ class AppCacheResponseTest : public testing::Test {
     // 6. Attempt to read beyond EOF of a range.
 
     // Push tasks in reverse order
-    PushNextTask(base::Bind(&AppCacheResponseTest::ReadRangeFullyBeyondEOF,
-                            base::Unretained(this)));
-    PushNextTask(base::Bind(&AppCacheResponseTest::ReadRangePartiallyBeyondEOF,
-                            base::Unretained(this)));
-    PushNextTask(base::Bind(&AppCacheResponseTest::ReadPastEOF,
-                            base::Unretained(this)));
-    PushNextTask(base::Bind(&AppCacheResponseTest::ReadRange,
-                            base::Unretained(this)));
-    PushNextTask(base::Bind(&AppCacheResponseTest::ReadPastEOF,
-                            base::Unretained(this)));
-    PushNextTask(base::Bind(&AppCacheResponseTest::ReadAllAtOnce,
-                            base::Unretained(this)));
-    PushNextTask(base::Bind(&AppCacheResponseTest::ReadInBlocks,
-                            base::Unretained(this)));
-    PushNextTask(base::Bind(&AppCacheResponseTest::WriteOutBlocks,
-                            base::Unretained(this)));
+    PushNextTask(base::BindOnce(&AppCacheResponseTest::ReadRangeFullyBeyondEOF,
+                                base::Unretained(this)));
+    PushNextTask(
+        base::BindOnce(&AppCacheResponseTest::ReadRangePartiallyBeyondEOF,
+                       base::Unretained(this)));
+    PushNextTask(base::BindOnce(&AppCacheResponseTest::ReadPastEOF,
+                                base::Unretained(this)));
+    PushNextTask(base::BindOnce(&AppCacheResponseTest::ReadRange,
+                                base::Unretained(this)));
+    PushNextTask(base::BindOnce(&AppCacheResponseTest::ReadPastEOF,
+                                base::Unretained(this)));
+    PushNextTask(base::BindOnce(&AppCacheResponseTest::ReadAllAtOnce,
+                                base::Unretained(this)));
+    PushNextTask(base::BindOnce(&AppCacheResponseTest::ReadInBlocks,
+                                base::Unretained(this)));
+    PushNextTask(base::BindOnce(&AppCacheResponseTest::WriteOutBlocks,
+                                base::Unretained(this)));
 
     // Get them going.
     ScheduleNextTask();
@@ -553,8 +561,8 @@ class AppCacheResponseTest : public testing::Test {
     writer_.reset(service_->storage()->CreateResponseWriter(GURL()));
     written_response_id_ = writer_->response_id();
     for (int i = 0; i < kNumBlocks; ++i) {
-      PushNextTask(base::Bind(&AppCacheResponseTest::WriteOneBlock,
-                              base::Unretained(this), kNumBlocks - i));
+      PushNextTask(base::BindOnce(&AppCacheResponseTest::WriteOneBlock,
+                                  base::Unretained(this), kNumBlocks - i));
     }
     ScheduleNextTask();
   }
@@ -571,15 +579,15 @@ class AppCacheResponseTest : public testing::Test {
     reader_.reset(service_->storage()->CreateResponseReader(
         GURL(), written_response_id_));
     for (int i = 0; i < kNumBlocks; ++i) {
-      PushNextTask(base::Bind(&AppCacheResponseTest::ReadOneBlock,
-                              base::Unretained(this), kNumBlocks - i));
+      PushNextTask(base::BindOnce(&AppCacheResponseTest::ReadOneBlock,
+                                  base::Unretained(this), kNumBlocks - i));
     }
     ScheduleNextTask();
   }
 
   void ReadOneBlock(int block_number) {
-    PushNextTask(base::Bind(&AppCacheResponseTest::VerifyOneBlock,
-                            base::Unretained(this), block_number));
+    PushNextTask(base::BindOnce(&AppCacheResponseTest::VerifyOneBlock,
+                                base::Unretained(this), block_number));
     ReadResponseBody(new IOBuffer(kBlockSize), kBlockSize);
   }
 
@@ -589,8 +597,8 @@ class AppCacheResponseTest : public testing::Test {
   }
 
   void ReadAllAtOnce() {
-    PushNextTask(base::Bind(&AppCacheResponseTest::VerifyAllAtOnce,
-                            base::Unretained(this)));
+    PushNextTask(base::BindOnce(&AppCacheResponseTest::VerifyAllAtOnce,
+                                base::Unretained(this)));
     reader_.reset(service_->storage()->CreateResponseReader(
         GURL(), written_response_id_));
     int big_size = kNumBlocks * kBlockSize;
@@ -615,8 +623,8 @@ class AppCacheResponseTest : public testing::Test {
   }
 
   void ReadRange() {
-    PushNextTask(base::Bind(&AppCacheResponseTest::VerifyRange,
-                            base::Unretained(this)));
+    PushNextTask(base::BindOnce(&AppCacheResponseTest::VerifyRange,
+                                base::Unretained(this)));
     reader_.reset(service_->storage()->CreateResponseReader(
         GURL(), written_response_id_));
     reader_->SetReadRange(kBlockSize, kBlockSize);
@@ -629,8 +637,8 @@ class AppCacheResponseTest : public testing::Test {
   }
 
   void ReadRangePartiallyBeyondEOF() {
-    PushNextTask(base::Bind(&AppCacheResponseTest::VerifyRangeBeyondEOF,
-                            base::Unretained(this)));
+    PushNextTask(base::BindOnce(&AppCacheResponseTest::VerifyRangeBeyondEOF,
+                                base::Unretained(this)));
     reader_.reset(service_->storage()->CreateResponseReader(
         GURL(), written_response_id_));
     reader_->SetReadRange(kBlockSize, kNumBlocks * kBlockSize);
@@ -712,10 +720,10 @@ class AppCacheResponseTest : public testing::Test {
     should_delete_writer_in_completion_callback_ = true;
     writer_deletion_count_down_ = kNumBlocks;
 
-    PushNextTask(base::Bind(&AppCacheResponseTest::ReadInBlocks,
-                            base::Unretained(this)));
-    PushNextTask(base::Bind(&AppCacheResponseTest::WriteOutBlocks,
-                            base::Unretained(this)));
+    PushNextTask(base::BindOnce(&AppCacheResponseTest::ReadInBlocks,
+                                base::Unretained(this)));
+    PushNextTask(base::BindOnce(&AppCacheResponseTest::WriteOutBlocks,
+                                base::Unretained(this)));
     ScheduleNextTask();
   }
 
@@ -724,12 +732,12 @@ class AppCacheResponseTest : public testing::Test {
     // 1. Write a few blocks normally.
     // 2. Start a write, delete with it pending.
     // 3. Start a read, delete with it pending.
-    PushNextTask(base::Bind(&AppCacheResponseTest::ReadThenDelete,
-                            base::Unretained(this)));
-    PushNextTask(base::Bind(&AppCacheResponseTest::WriteThenDelete,
-                            base::Unretained(this)));
-    PushNextTask(base::Bind(&AppCacheResponseTest::WriteOutBlocks,
-                            base::Unretained(this)));
+    PushNextTask(base::BindOnce(&AppCacheResponseTest::ReadThenDelete,
+                                base::Unretained(this)));
+    PushNextTask(base::BindOnce(&AppCacheResponseTest::WriteThenDelete,
+                                base::Unretained(this)));
+    PushNextTask(base::BindOnce(&AppCacheResponseTest::WriteOutBlocks,
+                                base::Unretained(this)));
     ScheduleNextTask();
   }
 
