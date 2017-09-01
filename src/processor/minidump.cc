@@ -2578,7 +2578,7 @@ void MinidumpModule::Print() {
 //
 
 
-uint32_t MinidumpModuleList::max_modules_ = 1024;
+uint32_t MinidumpModuleList::max_modules_ = 2048;
 
 
 MinidumpModuleList::MinidumpModuleList(Minidump* minidump)
@@ -2645,7 +2645,7 @@ bool MinidumpModuleList::Read(uint32_t expected_size) {
   }
 
   if (module_count > max_modules_) {
-    BPLOG(ERROR) << "MinidumpModuleList count " << module_count_ <<
+    BPLOG(ERROR) << "MinidumpModuleList count " << module_count <<
                     " exceeds maximum " << max_modules_;
     return false;
   }
@@ -3758,7 +3758,7 @@ bool MinidumpUnloadedModule::ReadAuxiliaryData() {
 //
 
 
-uint32_t MinidumpUnloadedModuleList::max_modules_ = 1024;
+uint32_t MinidumpUnloadedModuleList::max_modules_ = 2048;
 
 
 MinidumpUnloadedModuleList::MinidumpUnloadedModuleList(Minidump* minidump)
