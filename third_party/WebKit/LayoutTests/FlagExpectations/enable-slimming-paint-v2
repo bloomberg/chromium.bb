@@ -1007,12 +1007,6 @@ Bug(none) paint/invalidation/svg/clip-path-units-changes.svg [ Failure ]
 Bug(none) paint/invalidation/svg/resize-svg-invalidate-children-2.html [ Failure ]
 Bug(none) paint/invalidation/svg/resize-svg-invalidate-children.html [ Failure ]
 
-# Wrong incremental invalidation for resized images or transformed objects.
-Bug(none) paint/invalidation/image-resize.html [ Failure ]
-Bug(none) paint/invalidation/percent-size-image-resize-container.html [ Failure ]
-Bug(none) paint/invalidation/resize-skewed.html [ Failure ]
-Bug(none) paint/invalidation/resize-with-border-clipped.html [ Pass Failure ]
-
 # The expectation seems incorrect?
 Bug(none) paint/invalidation/paged-with-overflowing-block-rl.html [ Failure ]
 
