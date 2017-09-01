@@ -48,10 +48,23 @@ cr.define('print_preview', function() {
     this.isEnabled_ = true;
 
     /**
+     * Last valid scaling value. Used to restore value when fit to page is
+     * unchecked. Must always be a valid scaling value.
+     * @private {string}
+     */
+    this.lastValidScaling_ = '100';
+
+    /**
      * The textfield input element
-     * @private {HTMLElement}
+     * @private {?HTMLElement}
      */
     this.inputField_ = null;
+
+    /**
+     * The fit to page checkbox.
+     * @private {?HTMLElement}
+     */
+    this.fitToPageCheckbox_ = null;
   }
 
   /**
@@ -66,25 +79,36 @@ cr.define('print_preview', function() {
 
     /** @override */
     isAvailable: function() {
-      return this.scalingTicketItem_.isCapabilityAvailable();
+      return this.scalingTicketItem_.isCapabilityAvailable() ||
+          this.fitToPageTicketItem_.isCapabilityAvailable();
     },
 
     /** @override */
     hasCollapsibleContent: function() {
-      return this.isAvailable();
+      return this.scalingTicketItem_.isCapabilityAvailable();
     },
 
     /** @override */
     set isEnabled(isEnabled) {
       this.inputField_.disabled = !isEnabled;
+      this.fitToPageCheckbox_.disabled = !isEnabled;
       this.isEnabled_ = isEnabled;
-      if (isEnabled)
-        this.updateState_();
+    },
+
+    /**
+     * @return {boolean} Whether fit to page is available and selected.
+     * @private
+     */
+    isFitToPageSelected_: function() {
+      return this.fitToPageTicketItem_.isCapabilityAvailable() &&
+          /** @type {boolean} */ (this.fitToPageTicketItem_.getValue());
     },
 
     /** @override */
     enterDocument: function() {
       this.inputField_ = assert(this.getChildElement('input.user-value'));
+      this.fitToPageCheckbox_ =
+          assert(this.getChildElement('input[type=checkbox]'));
       print_preview.SettingsSection.prototype.enterDocument.call(this);
       this.tracker.add(
           this.inputField_, 'keydown', this.onTextfieldKeyDown_.bind(this));
@@ -93,30 +117,16 @@ cr.define('print_preview', function() {
       this.tracker.add(
           this.inputField_, 'blur', this.onTextfieldBlur_.bind(this));
       this.tracker.add(
+          this.fitToPageCheckbox_, 'click',
+          this.onFitToPageClicked_.bind(this));
+      this.tracker.add(
           this.scalingTicketItem_,
           print_preview.ticket_items.TicketItem.EventType.CHANGE,
-          this.updateState_.bind(this));
+          this.updateState_.bind(this, false));
       this.tracker.add(
           this.fitToPageTicketItem_,
           print_preview.ticket_items.TicketItem.EventType.CHANGE,
-          this.onFitToPageChange_.bind(this));
-    },
-
-    /**
-     * @return {boolean} true if fit to page is available and selected.
-     * @private
-     */
-    isFitToPageSelected: function() {
-      return this.fitToPageTicketItem_.isCapabilityAvailable() &&
-          !!this.fitToPageTicketItem_.getValue();
-    },
-
-    /**
-     * @return {number} The current input field value as an integer.
-     * @private
-     */
-    getInputAsNumber: function() {
-      return this.inputField_.valueAsNumber;
+          this.updateState_.bind(this, true));
     },
 
     /**
@@ -126,18 +136,9 @@ cr.define('print_preview', function() {
      * @private
      */
     displayFitToPageScaling: function() {
+      this.fitToPageCheckbox_.checked = true;
       this.inputField_.value = this.fitToPageScaling_ || '';
       this.removeHint_();
-    },
-
-    /**
-     * Whether the displayed scaling value matches the fit to page scaling.
-     * @private
-     */
-    displayMatchesFitToPage: function() {
-      return (
-          this.getInputAsNumber() == this.fitToPageScaling_ ||
-          (this.inputField_.value == '' && !this.fitToPageScaling_));
     },
 
     /**
@@ -147,8 +148,7 @@ cr.define('print_preview', function() {
      */
     updateFitToPageScaling: function(fitToPageScaling) {
       this.fitToPageScaling_ = fitToPageScaling;
-      // Display the new value if fit to page is checked.
-      if (this.isFitToPageSelected())
+      if (this.isFitToPageSelected_())
         this.displayFitToPageScaling();
     },
 
@@ -161,50 +161,60 @@ cr.define('print_preview', function() {
       fadeOutElement(this.getChildElement('.hint'));
     },
 
-    /**
-     * Updates the state of the scaling settings UI controls.
-     * @private
-     */
-    updateState_: function() {
-      if (this.isAvailable()) {
-        // If fit to page is selected and the display matches, mark valid
-        // and return.
-        if (this.isFitToPageSelected() && this.displayMatchesFitToPage()) {
-          this.removeHint_();
-          this.updateUiStateInternal();
-          return;
-        }
+    /** @override */
+    updateUiStateInternal: function() {
+      setIsVisible(
+          this.getChildElement('#fit-to-page-container'),
+          this.fitToPageTicketItem_.isCapabilityAvailable());
+      setIsVisible(
+          this.getChildElement('.settings-box'),
+          this.scalingTicketItem_.isCapabilityAvailable() &&
+              !this.collapseContent);
+      print_preview.SettingsSection.prototype.updateUiStateInternal.call(this);
+    },
 
-        if (!this.inputField_.validity.valid) {
-          this.inputField_.classList.add('invalid');
-          fadeInElement(this.getChildElement('.hint'));
-          this.updateUiStateInternal();
-          return;
-        }
-
-        this.inputField_.value = this.scalingTicketItem_.getValue();
-        this.removeHint_();
-      }
-      this.updateUiStateInternal();
+    /** @override */
+    isSectionVisibleInternal: function() {
+      return this.fitToPageTicketItem_.isCapabilityAvailable() ||
+          (!this.collapseContent_ &&
+           this.scalingTicketItem_.isCapabilityAvailable());
     },
 
     /**
-     * Helper function to adjust the scaling display if fit to page is checked
-     * by the user.
+     * Updates the state of the scaling settings UI controls.
+     * @param {boolean} fitToPageChange Whether this update is due to a change
+     *     to the fit to page ticket item.
      * @private
      */
-    onFitToPageChange_: function() {
-      if (this.isFitToPageSelected()) {
-        // Fit to page was checked. Set scaling to the fit to page scaling.
-        this.displayFitToPageScaling();
-      } else if (
-          this.fitToPageTicketItem_.isCapabilityAvailable() &&
-          (this.displayMatchesFitToPage() ||
-           !this.inputField_.validity.valid)) {
-        // Fit to page unchecked. Return to last scaling.
-        this.inputField_.value = this.scalingTicketItem_.getValue();
-        this.removeHint_();
+    updateState_: function(fitToPageChange) {
+      if (this.isAvailable()) {
+        if (fitToPageChange && this.isFitToPageSelected_()) {
+          // Fit to page was checked. Set scaling to the fit to page scaling.
+          this.displayFitToPageScaling();
+          this.scalingTicketItem_.updateValue(this.lastValidScaling_);
+        } else if (
+            fitToPageChange &&
+            this.fitToPageTicketItem_.isCapabilityAvailable()) {
+          // Fit to page unchecked. Return to last valid scaling.
+          this.fitToPageCheckbox_.checked = false;
+          if (this.scalingTicketItem_.getValue() == this.lastValidScaling_)
+            this.inputField_.value = this.lastValidScaling_;
+          else
+            this.scalingTicketItem_.updateValue(this.lastValidScaling_);
+        } else if (!this.scalingTicketItem_.isValid()) {
+          // User entered invalid scaling value, display error message.
+          this.inputField_.classList.add('invalid');
+          fadeInElement(this.getChildElement('.hint'));
+        } else {
+          // User entered valid scaling. Update the field and last valid.
+          if (!this.isFitToPageSelected_())
+            this.inputField_.value = this.scalingTicketItem_.getValue();
+          this.lastValidScaling_ =
+              /** @type {string} */ (this.scalingTicketItem_.getValue());
+          this.removeHint_();
+        }
       }
+      this.updateUiStateInternal();
     },
 
     /**
@@ -213,26 +223,17 @@ cr.define('print_preview', function() {
      */
     onTextfieldTimeout_: function() {
       this.textfieldTimeout_ = null;
-      if (!this.inputField_.validity.valid) {
-        this.updateState_();
-        return;
-      }
-      if (this.isFitToPageSelected() && !this.displayMatchesFitToPage() &&
-          this.inputField_.value != '') {
-        // User modified value away from fit to page.
-        this.fitToPageTicketItem_.updateValue(false);
-      }
-      // Check this after checking for fit to page in case the user went
-      // back to their old value.
-      if (this.inputField_.valueAsNumber.toString() ===
-          this.scalingTicketItem_.getValue()) {
-        this.updateState_();
-        return;
-      }
       if (this.inputField_.value == '')
         return;
-      this.scalingTicketItem_.updateValue(
-          this.inputField_.valueAsNumber.toString());
+      // Convert value to a valid number or ''. The scaling ticket item assumes
+      // the only invalid value is ''.
+      var value =
+          (this.inputField_.validity.valid && this.inputField_.value != '') ?
+          this.inputField_.valueAsNumber.toString() :
+          '';
+      if (value != '' && this.isFitToPageSelected_())
+        this.fitToPageTicketItem_.updateValue(false);
+      this.scalingTicketItem_.updateValue(value);
     },
 
     /**
@@ -251,10 +252,12 @@ cr.define('print_preview', function() {
 
     /**
      * Called when a input event occurs on the textfield. Starts an input
-     * timeout.
+     * timeout and unchecks fit to page.
      * @private
      */
     onTextfieldInput_: function() {
+      this.fitToPageCheckbox_.checked = false;
+
       if (this.textfieldTimeout_) {
         clearTimeout(this.textfieldTimeout_);
       }
@@ -270,19 +273,33 @@ cr.define('print_preview', function() {
      * @private
      */
     onTextfieldBlur_: function() {
-      if (this.inputField_.value == '' && this.inputField_.validity.valid) {
-        if (this.isFitToPageSelected()) {
-          this.displayFitToPageScaling();
-        } else if (this.scalingTicketItem_.getValue() == '100') {
+      if (this.inputField_.value == '') {
+        if (this.isFitToPageSelected_() && this.fitToPageCheckbox_.checked)
+          return;
+        if (this.isFitToPageSelected_() && this.inputField_.validity.valid)
+          this.fitToPageTicketItem_.updateValue(false);
+        if (this.scalingTicketItem_.getValue() == '100') {
           // No need to update the ticket, but change the display to match.
-          this.inputField_.value = '100';
-          this.removeHint_();
+          this.updateState_(false);
         } else {
           this.scalingTicketItem_.updateValue('100');
         }
       }
     },
 
+    /**
+     * Called when the fit to page checkbox is clicked. Updates the fit to page
+     * ticket item and the display.
+     * @private
+     */
+    onFitToPageClicked_: function() {
+      if (this.fitToPageTicketItem_.getValue() ==
+          this.fitToPageCheckbox_.checked) {
+        this.updateState_(true);
+      } else {
+        this.fitToPageTicketItem_.updateValue(this.fitToPageCheckbox_.checked);
+      }
+    },
   };
 
   // Export

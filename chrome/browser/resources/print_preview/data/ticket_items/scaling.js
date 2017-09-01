@@ -28,12 +28,12 @@ cr.define('print_preview.ticket_items', function() {
 
     /** @override */
     wouldValueBeValid: function(value) {
-      return true;
+      return value != '';
     },
 
     /** @override */
     isValueEqual: function(value) {
-      return this.getValueAsNumber() == value;
+      return this.getValue() == value;
     },
 
     /** @override */
@@ -51,7 +51,9 @@ cr.define('print_preview.ticket_items', function() {
 
     /** @return {number} The scaling percentage indicated by the ticket item. */
     getValueAsNumber: function() {
-      return parseInt(this.getValue(), 10);
+      var value = this.getValue() == '' ? 0 : parseInt(this.getValue(), 10);
+      assert(!isNaN(value));
+      return value;
     },
 
     /** @override */
