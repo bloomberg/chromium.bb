@@ -2451,8 +2451,8 @@ TEST_P(ResourceProviderTest, ManagedResource) {
   auto context_provider = TestContextProvider::Create(std::move(context_owned));
   context_provider->BindToCurrentThread();
 
-  std::unique_ptr<ResourceProvider> resource_provider(
-      std::make_unique<ResourceProvider>(
+  std::unique_ptr<LayerTreeResourceProvider> resource_provider(
+      std::make_unique<LayerTreeResourceProvider>(
           context_provider.get(), shared_bitmap_manager_.get(),
           gpu_memory_buffer_manager_.get(), nullptr,
           kDelegatedSyncPointsRequired, kEnableColorCorrectRendering,
@@ -2494,8 +2494,8 @@ TEST_P(ResourceProviderTest, TextureWrapMode) {
   auto context_provider = TestContextProvider::Create(std::move(context_owned));
   context_provider->BindToCurrentThread();
 
-  std::unique_ptr<ResourceProvider> resource_provider(
-      std::make_unique<ResourceProvider>(
+  std::unique_ptr<LayerTreeResourceProvider> resource_provider(
+      std::make_unique<LayerTreeResourceProvider>(
           context_provider.get(), shared_bitmap_manager_.get(),
           gpu_memory_buffer_manager_.get(), nullptr,
           kDelegatedSyncPointsRequired, kEnableColorCorrectRendering,
@@ -2538,8 +2538,8 @@ TEST_P(ResourceProviderTest, TextureHint) {
   auto context_provider = TestContextProvider::Create(std::move(context_owned));
   context_provider->BindToCurrentThread();
 
-  std::unique_ptr<ResourceProvider> resource_provider(
-      std::make_unique<ResourceProvider>(
+  std::unique_ptr<LayerTreeResourceProvider> resource_provider(
+      std::make_unique<LayerTreeResourceProvider>(
           context_provider.get(), shared_bitmap_manager_.get(),
           gpu_memory_buffer_manager_.get(), nullptr,
           kDelegatedSyncPointsRequired, kEnableColorCorrectRendering,
@@ -2857,8 +2857,8 @@ TEST_P(ResourceProviderTest,
   auto context_provider = TestContextProvider::Create(std::move(context_owned));
   context_provider->BindToCurrentThread();
 
-  std::unique_ptr<ResourceProvider> resource_provider(
-      std::make_unique<ResourceProvider>(
+  std::unique_ptr<LayerTreeResourceProvider> resource_provider(
+      std::make_unique<LayerTreeResourceProvider>(
           context_provider.get(), shared_bitmap_manager_.get(),
           gpu_memory_buffer_manager_.get(), nullptr,
           kDelegatedSyncPointsRequired, kEnableColorCorrectRendering,
@@ -2912,8 +2912,8 @@ TEST_P(ResourceProviderTest, TextureMailbox_WaitSyncTokenIfNeeded_NoSyncToken) {
   auto context_provider = TestContextProvider::Create(std::move(context_owned));
   context_provider->BindToCurrentThread();
 
-  std::unique_ptr<ResourceProvider> resource_provider(
-      std::make_unique<ResourceProvider>(
+  std::unique_ptr<LayerTreeResourceProvider> resource_provider(
+      std::make_unique<LayerTreeResourceProvider>(
           context_provider.get(), shared_bitmap_manager_.get(),
           gpu_memory_buffer_manager_.get(), nullptr,
           kDelegatedSyncPointsRequired, kEnableColorCorrectRendering,
@@ -3075,8 +3075,8 @@ TEST_P(ResourceProviderTest, TextureAllocation) {
   auto context_provider = TestContextProvider::Create(std::move(context_owned));
   context_provider->BindToCurrentThread();
 
-  std::unique_ptr<ResourceProvider> resource_provider(
-      std::make_unique<ResourceProvider>(
+  std::unique_ptr<LayerTreeResourceProvider> resource_provider(
+      std::make_unique<LayerTreeResourceProvider>(
           context_provider.get(), shared_bitmap_manager_.get(),
           gpu_memory_buffer_manager_.get(), nullptr,
           kDelegatedSyncPointsRequired, kEnableColorCorrectRendering,
@@ -3132,8 +3132,8 @@ TEST_P(ResourceProviderTest, TextureAllocationHint) {
   auto context_provider = TestContextProvider::Create(std::move(context_owned));
   context_provider->BindToCurrentThread();
 
-  std::unique_ptr<ResourceProvider> resource_provider(
-      std::make_unique<ResourceProvider>(
+  std::unique_ptr<LayerTreeResourceProvider> resource_provider(
+      std::make_unique<LayerTreeResourceProvider>(
           context_provider.get(), shared_bitmap_manager_.get(),
           gpu_memory_buffer_manager_.get(), nullptr,
           kDelegatedSyncPointsRequired, kEnableColorCorrectRendering,
@@ -3188,8 +3188,8 @@ TEST_P(ResourceProviderTest, TextureAllocationHint_BGRA) {
   auto context_provider = TestContextProvider::Create(std::move(context_owned));
   context_provider->BindToCurrentThread();
 
-  std::unique_ptr<ResourceProvider> resource_provider(
-      std::make_unique<ResourceProvider>(
+  std::unique_ptr<LayerTreeResourceProvider> resource_provider(
+      std::make_unique<LayerTreeResourceProvider>(
           context_provider.get(), shared_bitmap_manager_.get(),
           gpu_memory_buffer_manager_.get(), nullptr,
           kDelegatedSyncPointsRequired, kEnableColorCorrectRendering,
@@ -3300,8 +3300,8 @@ TEST_P(ResourceProviderTest, CompressedTextureETC1Allocate) {
   context_provider->BindToCurrentThread();
 
   gfx::Size size(4, 4);
-  std::unique_ptr<ResourceProvider> resource_provider(
-      std::make_unique<ResourceProvider>(
+  std::unique_ptr<LayerTreeResourceProvider> resource_provider(
+      std::make_unique<LayerTreeResourceProvider>(
           context_provider.get(), shared_bitmap_manager_.get(),
           gpu_memory_buffer_manager_.get(), nullptr,
           kDelegatedSyncPointsRequired, kEnableColorCorrectRendering,
@@ -3332,8 +3332,8 @@ TEST_P(ResourceProviderTest, CompressedTextureETC1Upload) {
   context_provider->BindToCurrentThread();
 
   gfx::Size size(4, 4);
-  std::unique_ptr<ResourceProvider> resource_provider(
-      std::make_unique<ResourceProvider>(
+  std::unique_ptr<LayerTreeResourceProvider> resource_provider(
+      std::make_unique<LayerTreeResourceProvider>(
           context_provider.get(), shared_bitmap_manager_.get(),
           gpu_memory_buffer_manager_.get(), nullptr,
           kDelegatedSyncPointsRequired, kEnableColorCorrectRendering,
@@ -3388,8 +3388,8 @@ TEST(ResourceProviderTest, TextureAllocationChunkSize) {
 
   {
     size_t kTextureAllocationChunkSize = 1;
-    std::unique_ptr<ResourceProvider> resource_provider(
-        std::make_unique<ResourceProvider>(
+    std::unique_ptr<LayerTreeResourceProvider> resource_provider(
+        std::make_unique<LayerTreeResourceProvider>(
             context_provider.get(), shared_bitmap_manager.get(), nullptr,
             nullptr, kDelegatedSyncPointsRequired, kEnableColorCorrectRendering,
             CreateResourceSettings(kTextureAllocationChunkSize)));
@@ -3406,8 +3406,8 @@ TEST(ResourceProviderTest, TextureAllocationChunkSize) {
 
   {
     size_t kTextureAllocationChunkSize = 8;
-    std::unique_ptr<ResourceProvider> resource_provider(
-        std::make_unique<ResourceProvider>(
+    std::unique_ptr<LayerTreeResourceProvider> resource_provider(
+        std::make_unique<LayerTreeResourceProvider>(
             context_provider.get(), shared_bitmap_manager.get(), nullptr,
             nullptr, kDelegatedSyncPointsRequired, kEnableColorCorrectRendering,
             CreateResourceSettings(kTextureAllocationChunkSize)));
@@ -3467,8 +3467,8 @@ TEST_P(ResourceProviderTest, ScopedWriteLockGL) {
   const viz::ResourceFormat format = viz::RGBA_8888;
   const unsigned kTextureId = 123u;
 
-  std::unique_ptr<ResourceProvider> resource_provider(
-      std::make_unique<ResourceProvider>(
+  std::unique_ptr<LayerTreeResourceProvider> resource_provider(
+      std::make_unique<LayerTreeResourceProvider>(
           context_provider.get(), shared_bitmap_manager_.get(),
           gpu_memory_buffer_manager_.get(), nullptr,
           kDelegatedSyncPointsRequired, kEnableColorCorrectRendering,
@@ -3517,8 +3517,8 @@ TEST_P(ResourceProviderTest, ScopedWriteLockGL_GpuMemoryBuffer) {
   const unsigned kTextureId = 123u;
   const unsigned kImageId = 234u;
 
-  std::unique_ptr<ResourceProvider> resource_provider(
-      std::make_unique<ResourceProvider>(
+  std::unique_ptr<LayerTreeResourceProvider> resource_provider(
+      std::make_unique<LayerTreeResourceProvider>(
           context_provider.get(), shared_bitmap_manager_.get(),
           gpu_memory_buffer_manager_.get(), nullptr,
           kDelegatedSyncPointsRequired, kEnableColorCorrectRendering,
@@ -3570,8 +3570,8 @@ TEST_P(ResourceProviderTest, ScopedWriteLockGL_Mailbox) {
   const unsigned kTextureId = 123u;
   const unsigned kWorkerTextureId = 234u;
 
-  std::unique_ptr<ResourceProvider> resource_provider(
-      std::make_unique<ResourceProvider>(
+  std::unique_ptr<LayerTreeResourceProvider> resource_provider(
+      std::make_unique<LayerTreeResourceProvider>(
           context_provider.get(), shared_bitmap_manager_.get(),
           gpu_memory_buffer_manager_.get(), nullptr,
           kDelegatedSyncPointsRequired, kEnableColorCorrectRendering,
@@ -3655,8 +3655,8 @@ TEST_P(ResourceProviderTest, ScopedWriteLockGL_GpuMemoryBuffer_Mailbox) {
   const unsigned kWorkerTextureId = 234u;
   const unsigned kImageId = 345u;
 
-  std::unique_ptr<ResourceProvider> resource_provider(
-      std::make_unique<ResourceProvider>(
+  std::unique_ptr<LayerTreeResourceProvider> resource_provider(
+      std::make_unique<LayerTreeResourceProvider>(
           context_provider.get(), shared_bitmap_manager_.get(),
           gpu_memory_buffer_manager_.get(), nullptr,
           kDelegatedSyncPointsRequired, kEnableColorCorrectRendering,

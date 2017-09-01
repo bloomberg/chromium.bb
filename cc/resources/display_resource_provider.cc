@@ -6,6 +6,7 @@
 
 #include "base/trace_event/trace_event.h"
 #include "components/viz/common/resources/resource_format_utils.h"
+#include "components/viz/common/resources/shared_bitmap_manager.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
 
@@ -29,7 +30,10 @@ DisplayResourceProvider::DisplayResourceProvider(
                        enable_color_correct_rasterization,
                        resource_settings) {}
 
-DisplayResourceProvider::~DisplayResourceProvider() {}
+DisplayResourceProvider::~DisplayResourceProvider() {
+  while (!children_.empty())
+    DestroyChildInternal(children_.begin(), FOR_SHUTDOWN);
+}
 
 #if defined(OS_ANDROID)
 void DisplayResourceProvider::SendPromotionHints(
@@ -89,6 +93,13 @@ void DisplayResourceProvider::SetBatchReturnResources(bool batch) {
   }
 }
 
+DisplayResourceProvider::Child::Child()
+    : marked_for_deletion(false), needs_sync_tokens(true) {}
+
+DisplayResourceProvider::Child::Child(const Child& other) = default;
+
+DisplayResourceProvider::Child::~Child() {}
+
 int DisplayResourceProvider::CreateChild(
     const ReturnCallback& return_callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -112,6 +123,142 @@ void DisplayResourceProvider::DestroyChild(int child_id) {
   ChildMap::iterator it = children_.find(child_id);
   DCHECK(it != children_.end());
   DestroyChildInternal(it, NORMAL);
+}
+
+void DisplayResourceProvider::DestroyChildInternal(ChildMap::iterator it,
+                                                   DeleteStyle style) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  Child& child = it->second;
+  DCHECK(style == FOR_SHUTDOWN || !child.marked_for_deletion);
+
+  ResourceIdArray resources_for_child;
+
+  for (ResourceIdMap::iterator child_it = child.child_to_parent_map.begin();
+       child_it != child.child_to_parent_map.end(); ++child_it) {
+    viz::ResourceId id = child_it->second;
+    resources_for_child.push_back(id);
+  }
+
+  child.marked_for_deletion = true;
+
+  DeleteAndReturnUnusedResourcesToChild(it, style, resources_for_child);
+}
+
+void DisplayResourceProvider::DeleteAndReturnUnusedResourcesToChild(
+    ChildMap::iterator child_it,
+    DeleteStyle style,
+    const ResourceIdArray& unused) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(child_it != children_.end());
+  Child* child_info = &child_it->second;
+
+  if (unused.empty() && !child_info->marked_for_deletion)
+    return;
+
+  std::vector<viz::ReturnedResource> to_return;
+  to_return.reserve(unused.size());
+  std::vector<viz::ReturnedResource*> need_synchronization_resources;
+  std::vector<GLbyte*> unverified_sync_tokens;
+
+  GLES2Interface* gl = ContextGL();
+
+  for (viz::ResourceId local_id : unused) {
+    ResourceMap::iterator it = resources_.find(local_id);
+    CHECK(it != resources_.end());
+    Resource& resource = it->second;
+
+    DCHECK(!resource.locked_for_write);
+
+    viz::ResourceId child_id = resource.id_in_child;
+    DCHECK(child_info->child_to_parent_map.count(child_id));
+
+    bool is_lost = resource.lost ||
+                   (IsGpuResourceType(resource.type) && lost_context_provider_);
+    if (resource.exported_count > 0 || resource.lock_for_read_count > 0) {
+      if (style != FOR_SHUTDOWN) {
+        // Defer this resource deletion.
+        resource.marked_for_deletion = true;
+        continue;
+      }
+      // We can't postpone the deletion, so we'll have to lose it.
+      is_lost = true;
+    } else if (!ReadLockFenceHasPassed(&resource)) {
+      // TODO(dcastagna): see if it's possible to use this logic for
+      // the branch above too, where the resource is locked or still exported.
+      if (style != FOR_SHUTDOWN && !child_info->marked_for_deletion) {
+        // Defer this resource deletion.
+        resource.marked_for_deletion = true;
+        continue;
+      }
+      // We can't postpone the deletion, so we'll have to lose it.
+      is_lost = true;
+    }
+
+    if (IsGpuResourceType(resource.type) &&
+        resource.filter != resource.original_filter) {
+      DCHECK(resource.target);
+      DCHECK(resource.gl_id);
+      DCHECK(gl);
+      gl->BindTexture(resource.target, resource.gl_id);
+      gl->TexParameteri(resource.target, GL_TEXTURE_MIN_FILTER,
+                        resource.original_filter);
+      gl->TexParameteri(resource.target, GL_TEXTURE_MAG_FILTER,
+                        resource.original_filter);
+      resource.SetLocallyUsed();
+    }
+
+    viz::ReturnedResource returned;
+    returned.id = child_id;
+    returned.sync_token = resource.mailbox().sync_token();
+    returned.count = resource.imported_count;
+    returned.lost = is_lost;
+    to_return.push_back(returned);
+
+    if (IsGpuResourceType(resource.type) && child_info->needs_sync_tokens) {
+      if (resource.needs_sync_token()) {
+        need_synchronization_resources.push_back(&to_return.back());
+      } else if (returned.sync_token.HasData() &&
+                 !returned.sync_token.verified_flush()) {
+        // Before returning any sync tokens, they must be verified.
+        unverified_sync_tokens.push_back(returned.sync_token.GetData());
+      }
+    }
+
+    child_info->child_to_parent_map.erase(child_id);
+    resource.imported_count = 0;
+    DeleteResourceInternal(it, style);
+  }
+
+  gpu::SyncToken new_sync_token;
+  if (!need_synchronization_resources.empty()) {
+    DCHECK(child_info->needs_sync_tokens);
+    DCHECK(gl);
+    const uint64_t fence_sync = gl->InsertFenceSyncCHROMIUM();
+    gl->OrderingBarrierCHROMIUM();
+    gl->GenUnverifiedSyncTokenCHROMIUM(fence_sync, new_sync_token.GetData());
+    unverified_sync_tokens.push_back(new_sync_token.GetData());
+  }
+
+  if (!unverified_sync_tokens.empty()) {
+    DCHECK(child_info->needs_sync_tokens);
+    DCHECK(gl);
+    gl->VerifySyncTokensCHROMIUM(unverified_sync_tokens.data(),
+                                 unverified_sync_tokens.size());
+  }
+
+  // Set sync token after verification.
+  for (viz::ReturnedResource* returned : need_synchronization_resources)
+    returned->sync_token = new_sync_token;
+
+  if (!to_return.empty())
+    child_info->return_callback.Run(to_return,
+                                    blocking_main_thread_task_runner_);
+
+  if (child_info->marked_for_deletion &&
+      child_info->child_to_parent_map.empty()) {
+    children_.erase(child_it);
+  }
 }
 
 void DisplayResourceProvider::ReceiveFromChild(
@@ -218,6 +365,77 @@ DisplayResourceProvider::ScopedReadLockGL::ScopedReadLockGL(
   target_ = resource->target;
   size_ = resource->size;
   color_space_ = resource->color_space;
+}
+
+const ResourceProvider::Resource* DisplayResourceProvider::LockForRead(
+    viz::ResourceId id) {
+  Resource* resource = GetResource(id);
+  DCHECK(!resource->locked_for_write)
+      << "locked for write: " << resource->locked_for_write;
+  DCHECK_EQ(resource->exported_count, 0);
+  // Uninitialized! Call SetPixels or LockForWrite first.
+  DCHECK(resource->allocated);
+
+  // Mailbox sync_tokens must be processed by a call to WaitSyncToken() prior to
+  // calling LockForRead().
+  DCHECK_NE(Resource::NEEDS_WAIT, resource->synchronization_state());
+
+  if (IsGpuResourceType(resource->type) && !resource->gl_id) {
+    DCHECK(resource->origin != Resource::INTERNAL);
+    DCHECK(resource->mailbox().IsTexture());
+
+    GLES2Interface* gl = ContextGL();
+    DCHECK(gl);
+    resource->gl_id = gl->CreateAndConsumeTextureCHROMIUM(
+        resource->mailbox().target(), resource->mailbox().name());
+    resource->SetLocallyUsed();
+  }
+
+  if (!resource->pixels && resource->has_shared_bitmap_id &&
+      shared_bitmap_manager_) {
+    std::unique_ptr<viz::SharedBitmap> bitmap =
+        shared_bitmap_manager_->GetSharedBitmapFromId(
+            resource->size, resource->shared_bitmap_id);
+    if (bitmap) {
+      resource->shared_bitmap = bitmap.release();
+      resource->pixels = resource->shared_bitmap->pixels();
+    }
+  }
+
+  resource->lock_for_read_count++;
+  if (resource->read_lock_fences_enabled) {
+    if (current_read_lock_fence_.get())
+      current_read_lock_fence_->Set();
+    resource->read_lock_fence = current_read_lock_fence_;
+  }
+
+  return resource;
+}
+
+void DisplayResourceProvider::UnlockForRead(viz::ResourceId id) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  ResourceMap::iterator it = resources_.find(id);
+  CHECK(it != resources_.end());
+
+  Resource* resource = &it->second;
+  DCHECK_GT(resource->lock_for_read_count, 0);
+  DCHECK_EQ(resource->exported_count, 0);
+  resource->lock_for_read_count--;
+  if (resource->marked_for_deletion && !resource->lock_for_read_count) {
+    if (!resource->child_id) {
+      // The resource belongs to this ResourceProvider, so it can be destroyed.
+      DeleteResourceInternal(it, NORMAL);
+    } else {
+      if (batch_return_resources_) {
+        batched_returning_resources_[resource->child_id].push_back(id);
+      } else {
+        ChildMap::iterator child_it = children_.find(resource->child_id);
+        ResourceIdArray unused;
+        unused.push_back(id);
+        DeleteAndReturnUnusedResourcesToChild(child_it, NORMAL, unused);
+      }
+    }
+  }
 }
 
 DisplayResourceProvider::ScopedReadLockGL::~ScopedReadLockGL() {
