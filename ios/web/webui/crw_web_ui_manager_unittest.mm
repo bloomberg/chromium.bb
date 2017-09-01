@@ -144,7 +144,7 @@ TEST_F(CRWWebUIManagerTest, LoadWebUI) {
   std::unique_ptr<web::NavigationContext> context =
       NavigationContextImpl::CreateNavigationContext(
           web_state_impl_.get(), url,
-          ui::PageTransition::PAGE_TRANSITION_AUTO_BOOKMARK);
+          ui::PageTransition::PAGE_TRANSITION_AUTO_BOOKMARK, true);
   web_state_impl_->OnNavigationStarted(context.get());
 }
 

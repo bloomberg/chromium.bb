@@ -85,7 +85,7 @@ TEST_F(CRWWKNavigationStatesTest, LastAddedNavigation) {
   std::unique_ptr<web::NavigationContextImpl> context =
       NavigationContextImpl::CreateNavigationContext(
           nullptr /*web_state*/, GURL(kTestUrl1),
-          ui::PageTransition::PAGE_TRANSITION_SERVER_REDIRECT);
+          ui::PageTransition::PAGE_TRANSITION_SERVER_REDIRECT, true);
   [states_ setContext:std::move(context) forNavigation:navigation3_];
   EXPECT_EQ(navigation3_, [states_ lastAddedNavigation]);
   EXPECT_EQ(WKNavigationState::NONE, [states_ lastAddedNavigationState]);
@@ -101,7 +101,7 @@ TEST_F(CRWWKNavigationStatesTest, Context) {
   std::unique_ptr<web::NavigationContextImpl> context1 =
       NavigationContextImpl::CreateNavigationContext(
           nullptr /*web_state*/, GURL(kTestUrl1),
-          ui::PageTransition::PAGE_TRANSITION_RELOAD);
+          ui::PageTransition::PAGE_TRANSITION_RELOAD, false);
   context1->SetIsSameDocument(true);
   [states_ setContext:std::move(context1) forNavigation:navigation1_];
   EXPECT_FALSE([states_ contextForNavigation:navigation2_]);
@@ -111,12 +111,14 @@ TEST_F(CRWWKNavigationStatesTest, Context) {
             [states_ contextForNavigation:navigation1_]->GetUrl());
   EXPECT_TRUE([states_ contextForNavigation:navigation1_]->IsSameDocument());
   EXPECT_FALSE([states_ contextForNavigation:navigation1_]->GetError());
+  EXPECT_FALSE(
+      [states_ contextForNavigation:navigation1_]->IsRendererInitiated());
 
   // Replace existing context.
   std::unique_ptr<web::NavigationContextImpl> context2 =
       NavigationContextImpl::CreateNavigationContext(
           nullptr /*web_state*/, GURL(kTestUrl2),
-          ui::PageTransition::PAGE_TRANSITION_GENERATED);
+          ui::PageTransition::PAGE_TRANSITION_GENERATED, true);
   NSError* error = [[NSError alloc] init];
   context2->SetError(error);
   [states_ setContext:std::move(context2) forNavigation:navigation1_];
@@ -127,6 +129,8 @@ TEST_F(CRWWKNavigationStatesTest, Context) {
             [states_ contextForNavigation:navigation1_]->GetUrl());
   EXPECT_FALSE([states_ contextForNavigation:navigation1_]->IsSameDocument());
   EXPECT_EQ(error, [states_ contextForNavigation:navigation1_]->GetError());
+  EXPECT_TRUE(
+      [states_ contextForNavigation:navigation1_]->IsRendererInitiated());
 }
 
 // Tests null WKNavigation object.

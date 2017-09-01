@@ -152,7 +152,7 @@ TestUpdateFaviconUrlCandidatesInfo::~TestUpdateFaviconUrlCandidatesInfo() =
   std::unique_ptr<web::NavigationContextImpl> context =
       web::NavigationContextImpl::CreateNavigationContext(
           navigation->GetWebState(), navigation->GetUrl(),
-          navigation->GetPageTransition());
+          navigation->GetPageTransition(), navigation->IsRendererInitiated());
   context->SetIsSameDocument(navigation->IsSameDocument());
   context->SetError(navigation->GetError());
   _didStartNavigationInfo->context = std::move(context);
@@ -175,7 +175,7 @@ TestUpdateFaviconUrlCandidatesInfo::~TestUpdateFaviconUrlCandidatesInfo() =
   std::unique_ptr<web::NavigationContextImpl> context =
       web::NavigationContextImpl::CreateNavigationContext(
           navigation->GetWebState(), navigation->GetUrl(),
-          navigation->GetPageTransition());
+          navigation->GetPageTransition(), navigation->IsRendererInitiated());
   context->SetIsSameDocument(navigation->IsSameDocument());
   context->SetError(navigation->GetError());
   _didFinishNavigationInfo->context = std::move(context);

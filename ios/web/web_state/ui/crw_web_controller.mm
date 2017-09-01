@@ -1279,8 +1279,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
                  stateObject:(NSString*)stateObject
                   transition:(ui::PageTransition)transition {
   std::unique_ptr<web::NavigationContextImpl> context =
-      web::NavigationContextImpl::CreateNavigationContext(_webStateImpl,
-                                                          pageURL, transition);
+      web::NavigationContextImpl::CreateNavigationContext(
+          _webStateImpl, pageURL, transition, true);
   context->SetIsSameDocument(true);
   _webStateImpl->OnNavigationStarted(context.get());
   [[self sessionController] pushNewItemWithURL:pageURL
@@ -1295,7 +1295,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   std::unique_ptr<web::NavigationContextImpl> context =
       web::NavigationContextImpl::CreateNavigationContext(
           _webStateImpl, pageURL,
-          ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT);
+          ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT, true);
   context->SetIsSameDocument(true);
   _webStateImpl->OnNavigationStarted(context.get());
   [[self sessionController] updateCurrentItemWithURL:pageURL
@@ -1438,10 +1438,16 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
   [_delegate webWillAddPendingURL:requestURL transition:transition];
   // Add or update pending url.
-  if (self.navigationManagerImpl->GetPendingItem()) {
+  bool isRendererInitiated = true;
+  web::NavigationItem* pendingItem =
+      self.navigationManagerImpl->GetPendingItem();
+  if (pendingItem) {
     // Update the existing pending entry.
     // Typically on PAGE_TRANSITION_CLIENT_REDIRECT.
     self.navigationManagerImpl->UpdatePendingItemUrl(requestURL);
+    isRendererInitiated = static_cast<web::NavigationItemImpl*>(pendingItem)
+                              ->NavigationInitiationType() ==
+                          web::NavigationInitiationType::RENDERER_INITIATED;
   } else {
     // A new session history entry needs to be created.
     self.navigationManagerImpl->AddPendingItem(
@@ -1451,7 +1457,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
   }
   std::unique_ptr<web::NavigationContextImpl> context =
       web::NavigationContextImpl::CreateNavigationContext(
-          _webStateImpl, requestURL, transition);
+          _webStateImpl, requestURL, transition, isRendererInitiated);
 
   web::NavigationItem* item = self.navigationManagerImpl->GetPendingItem();
   // TODO(crbug.com/676129): AddPendingItem does not always create a pending
@@ -4018,7 +4024,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
     // should not be treated as a navigation, but WKNavigationDelegate callbacks
     // still expect a valid context.
     context = web::NavigationContextImpl::CreateNavigationContext(
-        _webStateImpl, URL, loadHTMLTransition);
+        _webStateImpl, URL, loadHTMLTransition, false);
   } else {
     context = [self registerLoadRequestForURL:URL
                                      referrer:web::Referrer()
