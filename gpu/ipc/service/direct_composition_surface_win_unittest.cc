@@ -472,32 +472,6 @@ class DirectCompositionPixelTest : public testing::Test {
     DestroySurface(std::move(surface_));
   }
 
-  void PixelTestCopyTexture(bool layers_enabled) {
-    if (!CheckIfDCSupported())
-      return;
-    InitializeSurface();
-    surface_->SetEnableDCLayers(layers_enabled);
-    gfx::Size window_size(100, 100);
-
-    scoped_refptr<gl::GLContext> context = gl::init::CreateGLContext(
-        nullptr, surface_.get(), gl::GLContextAttribs());
-    EXPECT_TRUE(surface_->Resize(window_size, 1.0,
-                                 gl::GLSurface::ColorSpace::UNSPECIFIED, true));
-
-    EXPECT_TRUE(surface_->SetDrawRectangle(gfx::Rect(0, 0, 100, 100)));
-    EXPECT_TRUE(context->MakeCurrent(surface_.get()));
-
-    Sleep(1000);
-
-    GLuint texture = 0;
-    glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
-    glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 0, 0, 100, 100, 0);
-
-    context = nullptr;
-    DestroySurface(std::move(surface_));
-  }
-
   TestPlatformDelegate platform_delegate_;
   TestImageTransportSurfaceDelegate delegate_;
   ui::WinWindow window_;
@@ -510,14 +484,6 @@ TEST_F(DirectCompositionPixelTest, DCLayersEnabled) {
 
 TEST_F(DirectCompositionPixelTest, DCLayersDisabled) {
   PixelTestSwapChain(false);
-}
-
-TEST_F(DirectCompositionPixelTest, CopyTextureFromSurfaceWithLayersEnabled) {
-  PixelTestCopyTexture(true);
-}
-
-TEST_F(DirectCompositionPixelTest, CopyTextureFromSurfaceWithLayersDisabled) {
-  PixelTestCopyTexture(false);
 }
 
 bool AreColorsSimilar(int a, int b) {
