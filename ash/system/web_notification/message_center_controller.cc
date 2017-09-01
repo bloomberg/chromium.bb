@@ -9,7 +9,8 @@
 namespace ash {
 
 MessageCenterController::MessageCenterController()
-    : login_notification_blocker_(message_center::MessageCenter::Get()) {}
+    : fullscreen_notification_blocker_(message_center::MessageCenter::Get()),
+      login_notification_blocker_(message_center::MessageCenter::Get()) {}
 
 MessageCenterController::~MessageCenterController() {}
 

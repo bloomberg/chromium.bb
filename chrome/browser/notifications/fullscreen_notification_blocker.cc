@@ -12,44 +12,7 @@
 #include "ui/display/types/display_constants.h"
 #include "ui/message_center/notifier_settings.h"
 
-#if defined(USE_ASH)
-#include "ash/root_window_controller.h"
-#include "ash/shell.h"
-#include "ash/system/system_notifier.h"
-#include "ash/wm/window_state.h"
-#include "ui/aura/window.h"
-#include "ui/aura/window_event_dispatcher.h"
-#endif
-
 using message_center::NotifierId;
-
-namespace {
-
-bool DoesFullscreenModeBlockNotifications() {
-#if defined(USE_ASH)
-  if (ash::Shell::HasInstance()) {
-    ash::RootWindowController* controller =
-        ash::RootWindowController::ForTargetRootWindow();
-
-    // During shutdown |controller| can be NULL.
-    if (!controller)
-      return false;
-
-    // Block notifications if the shelf is hidden because of a fullscreen
-    // window.
-    const aura::Window* fullscreen_window =
-        controller->GetWindowForFullscreenMode();
-    if (!fullscreen_window)
-      return false;
-    return ash::wm::GetWindowState(fullscreen_window)
-        ->hide_shelf_when_fullscreen();
-  }
-#endif
-  // Fullscreen is global state on platforms other than chromeos.
-  return IsFullScreenMode(display::kInvalidDisplayId);
-}
-
-}  // namespace
 
 FullscreenNotificationBlocker::FullscreenNotificationBlocker(
     message_center::MessageCenter* message_center)
@@ -64,7 +27,7 @@ FullscreenNotificationBlocker::~FullscreenNotificationBlocker() {
 
 void FullscreenNotificationBlocker::CheckState() {
   bool was_fullscreen_mode = is_fullscreen_mode_;
-  is_fullscreen_mode_ = DoesFullscreenModeBlockNotifications();
+  is_fullscreen_mode_ = IsFullScreenMode(display::kInvalidDisplayId);
   if (is_fullscreen_mode_ != was_fullscreen_mode)
     NotifyBlockingStateChanged();
 }
@@ -74,12 +37,6 @@ bool FullscreenNotificationBlocker::ShouldShowNotificationAsPopup(
   bool enabled = !is_fullscreen_mode_;
   if (is_fullscreen_mode_ && notification.delegate())
     enabled = notification.delegate()->ShouldDisplayOverFullscreen();
-
-#if defined(USE_ASH)
-  if (ash::Shell::HasInstance())
-    enabled = enabled || ash::system_notifier::ShouldAlwaysShowPopups(
-        notification.notifier_id());
-#endif
 
   if (enabled && !is_fullscreen_mode_) {
     UMA_HISTOGRAM_ENUMERATION("Notifications.Display_Windowed",
