@@ -21,6 +21,13 @@ RendererURLLoaderThrottle::RendererURLLoaderThrottle(
 
 RendererURLLoaderThrottle::~RendererURLLoaderThrottle() = default;
 
+void RendererURLLoaderThrottle::DetachFromCurrentSequence() {
+  // Create a new pipe to the SafeBrowsing interface that can be bound to a
+  // different sequence.
+  safe_browsing_->Clone(mojo::MakeRequest(&safe_browsing_ptr_info_));
+  safe_browsing_ = nullptr;
+}
+
 void RendererURLLoaderThrottle::WillStartRequest(
     const content::ResourceRequest& request,
     bool* defer) {
@@ -28,9 +35,16 @@ void RendererURLLoaderThrottle::WillStartRequest(
   DCHECK(!blocked_);
   DCHECK(!url_checker_);
 
+  if (safe_browsing_ptr_info_.is_valid()) {
+    // Bind the pipe created in DetachFromCurrentSequence to the current
+    // sequence.
+    safe_browsing_ptr_.Bind(std::move(safe_browsing_ptr_info_));
+    safe_browsing_ = safe_browsing_ptr_.get();
+  }
+
   pending_checks_++;
-  // Use a weak pointer to self because |safe_browsing_| is not owned by this
-  // object.
+  // Use a weak pointer to self because |safe_browsing_| may not be owned by
+  // this object.
   net::HttpRequestHeaders headers;
   headers.CopyFrom(request.headers);
   safe_browsing_->CreateCheckerAndCheck(

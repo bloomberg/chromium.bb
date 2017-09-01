@@ -22,12 +22,11 @@ void SyncLoadContext::StartAsyncWithWaitableEvent(
     int routing_id,
     const url::Origin& frame_origin,
     mojom::URLLoaderFactoryPtrInfo url_loader_factory_pipe,
+    std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
     SyncLoadResponse* response,
     base::WaitableEvent* event) {
   auto* context = new SyncLoadContext(
       request.get(), std::move(url_loader_factory_pipe), response, event);
-  // TODO(reillyg): Support throttles.
-  std::vector<std::unique_ptr<URLLoaderThrottle>> throttles;
 
   context->request_id_ = context->resource_dispatcher_->StartAsync(
       std::move(request), routing_id, nullptr, frame_origin, true /* is_sync */,

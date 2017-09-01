@@ -35,6 +35,7 @@ class SyncLoadContext : public RequestPeer {
       int routing_id,
       const url::Origin& frame_origin,
       mojom::URLLoaderFactoryPtrInfo url_loader_factory_pipe,
+      std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
       SyncLoadResponse* response,
       base::WaitableEvent* event);
 

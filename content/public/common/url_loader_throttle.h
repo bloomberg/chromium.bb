@@ -33,28 +33,33 @@ class CONTENT_EXPORT URLLoaderThrottle {
     virtual void Resume() = 0;
 
    protected:
-    virtual ~Delegate() {}
+    virtual ~Delegate();
   };
 
-  virtual ~URLLoaderThrottle() {}
+  virtual ~URLLoaderThrottle();
+
+  // Detaches this object from the current sequence in preparation for a move to
+  // a different sequence. If this method is called it must be before any of the
+  // Will* methods below and may only be called once.
+  virtual void DetachFromCurrentSequence();
 
   // Called before the resource request is started.
-  virtual void WillStartRequest(const ResourceRequest& request, bool* defer) {}
+  virtual void WillStartRequest(const ResourceRequest& request, bool* defer);
 
   // Called when the request was redirected.  |redirect_info| contains the
   // redirect responses's HTTP status code and some information about the new
   // request that will be sent if the redirect is followed, including the new
   // URL and new method.
   virtual void WillRedirectRequest(const net::RedirectInfo& redirect_info,
-                                   bool* defer) {}
+                                   bool* defer);
 
   // Called when the response headers and meta data are available.
-  virtual void WillProcessResponse(bool* defer) {}
+  virtual void WillProcessResponse(bool* defer);
 
   void set_delegate(Delegate* delegate) { delegate_ = delegate; }
 
  protected:
-  URLLoaderThrottle() = default;
+  URLLoaderThrottle();
 
   Delegate* delegate_ = nullptr;
 };
