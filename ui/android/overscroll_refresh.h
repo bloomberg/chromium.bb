@@ -31,7 +31,7 @@ class UI_ANDROID_EXPORT OverscrollRefresh {
 
   explicit OverscrollRefresh(OverscrollRefreshHandler* handler);
 
-  ~OverscrollRefresh();
+  virtual ~OverscrollRefresh();
 
   // Scroll event stream listening methods.
   void OnScrollBegin();
