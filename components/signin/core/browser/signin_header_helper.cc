@@ -24,8 +24,9 @@
 
 namespace signin {
 
-extern const char kChromeConnectedHeader[] = "X-Chrome-Connected";
-extern const char kDiceRequestHeader[] = "X-Chrome-ID-Consistency-Request";
+const char kChromeConnectedHeader[] = "X-Chrome-Connected";
+const char kDiceRequestHeader[] = "X-Chrome-ID-Consistency-Request";
+const char kDiceResponseHeader[] = "X-Chrome-ID-Consistency-Response";
 
 ManageAccountsParams::ManageAccountsParams()
     : service_type(GAIA_SERVICE_TYPE_NONE),

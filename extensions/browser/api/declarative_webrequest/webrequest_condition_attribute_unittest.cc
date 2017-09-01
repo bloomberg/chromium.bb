@@ -19,12 +19,14 @@
 #include "content/public/common/previews_state.h"
 #include "extensions/browser/api/declarative_webrequest/webrequest_condition.h"
 #include "extensions/browser/api/declarative_webrequest/webrequest_constants.h"
+#include "extensions/browser/api/extensions_api_client.h"
 #include "net/base/request_priority.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 using base::DictionaryValue;
 using base::ListValue;
@@ -531,6 +533,7 @@ TEST(WebRequestConditionAttributeTest, RequestHeaders) {
 // 2. Performing logical disjunction (||) between multiple specifications.
 // 3. Negating the match in case of 'doesNotContainHeaders'.
 TEST(WebRequestConditionAttributeTest, ResponseHeaders) {
+  ExtensionsAPIClient api_client;
   // Necessary for TestURLRequest.
   base::MessageLoopForIO message_loop;
 
@@ -721,6 +724,71 @@ TEST(WebRequestConditionAttributeTest, ResponseHeaders) {
   MatchAndCheck(tests, keys::kExcludeResponseHeadersKey, stage,
                 url_request.get(), &result);
   EXPECT_FALSE(result);
+}
+
+TEST(WebRequestConditionAttributeTest, HideResponseHeaders) {
+  // Necessary for TestURLRequest.
+  base::MessageLoopForIO message_loop;
+
+  net::EmbeddedTestServer test_server;
+  test_server.ServeFilesFromDirectory(TestDataPath(
+      "chrome/test/data/extensions/api_test/webrequest/declarative"));
+  ASSERT_TRUE(test_server.Start());
+
+  net::TestURLRequestContext context;
+  net::TestDelegate delegate;
+  GURL url = test_server.GetURL("/headers.html");
+  std::unique_ptr<net::URLRequest> url_request(context.CreateRequest(
+      url, net::DEFAULT_PRIORITY, &delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
+  url_request->Start();
+  base::RunLoop().Run();
+
+  // In all the test below we assume that the server includes the headers
+  // Custom-Header: custom/value
+  // Custom-Header-B: valueA
+  // Custom-Header-B: valueB
+  // Custom-Header-C: valueC, valueD
+  // Custom-Header-D:
+
+  std::vector<std::vector<const std::string*>> tests;
+  bool result;
+  const RequestStage stage = ON_HEADERS_RECEIVED;
+  const std::string kCondition[] = {keys::kValueEqualsKey, "custom/value"};
+  const size_t kConditionSizes[] = {arraysize(kCondition)};
+  GetArrayAsVector(kCondition, kConditionSizes, 1u, &tests);
+
+  {
+    // Default client does not hide the response header.
+    ExtensionsAPIClient api_client;
+    MatchAndCheck(tests, keys::kResponseHeadersKey, stage, url_request.get(),
+                  &result);
+    EXPECT_TRUE(result);
+  }
+
+  {
+    // Custom client hides the response header.
+    class TestExtensionsAPIClient : public ExtensionsAPIClient {
+     public:
+      TestExtensionsAPIClient(const GURL& url) : url_(url) {}
+
+     private:
+      bool ShouldHideResponseHeader(
+          const GURL& url,
+          const std::string& header_name) const override {
+        // Check that the client is called with the right URL.
+        EXPECT_EQ(url_, url);
+        // Hide the header.
+        return header_name == "Custom-Header";
+      }
+
+      GURL url_;
+    };
+
+    TestExtensionsAPIClient api_client(url);
+    MatchAndCheck(tests, keys::kResponseHeadersKey, stage, url_request.get(),
+                  &result);
+    EXPECT_FALSE(result);
+  }
 }
 
 }  // namespace

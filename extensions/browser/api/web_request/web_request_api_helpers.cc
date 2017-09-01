@@ -22,6 +22,7 @@
 #include "components/web_cache/browser/web_cache_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
+#include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/api/web_request/web_request_api_constants.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -329,6 +330,7 @@ EventResponseDelta* CalculateOnHeadersReceivedDelta(
     const std::string& extension_id,
     const base::Time& extension_install_time,
     bool cancel,
+    const GURL& old_url,
     const GURL& new_url,
     const net::HttpResponseHeaders* old_response_headers,
     ResponseHeaders* new_response_headers) {
@@ -340,14 +342,18 @@ EventResponseDelta* CalculateOnHeadersReceivedDelta(
   if (!new_response_headers)
     return result;
 
+  extensions::ExtensionsAPIClient* api_client =
+      extensions::ExtensionsAPIClient::Get();
+
   // Find deleted headers (header keys are treated case insensitively).
   {
     size_t iter = 0;
     std::string name;
     std::string value;
     while (old_response_headers->EnumerateHeaderLines(&iter, &name, &value)) {
+      if (api_client->ShouldHideResponseHeader(old_url, name))
+        continue;
       std::string name_lowercase = base::ToLowerASCII(name);
-
       bool header_found = false;
       for (const auto& i : *new_response_headers) {
         if (base::LowerCaseEqualsASCII(i.first, name_lowercase) &&
@@ -364,6 +370,8 @@ EventResponseDelta* CalculateOnHeadersReceivedDelta(
   // Find added headers (header keys are treated case insensitively).
   {
     for (const auto& i : *new_response_headers) {
+      if (api_client->ShouldHideResponseHeader(old_url, i.first))
+        continue;
       std::string name_lowercase = base::ToLowerASCII(i.first);
       size_t iter = 0;
       std::string name;

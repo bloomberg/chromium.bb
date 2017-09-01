@@ -38,6 +38,12 @@ void ExtensionsAPIClient::AttachWebContentsHelpers(
     content::WebContents* web_contents) const {
 }
 
+bool ExtensionsAPIClient::ShouldHideResponseHeader(
+    const GURL& url,
+    const std::string& header_name) const {
+  return false;
+}
+
 AppViewGuestDelegate* ExtensionsAPIClient::CreateAppViewGuestDelegate() const {
   return NULL;
 }

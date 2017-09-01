@@ -4,9 +4,12 @@
 
 #include "chrome/browser/extensions/api/chrome_extensions_api_client.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/data_use_measurement/data_use_web_contents_observer.h"
 #include "chrome/browser/extensions/api/chrome_device_permissions_prompt.h"
@@ -31,12 +34,15 @@
 #include "chrome/browser/guest_view/web_view/chrome_web_view_permission_helper_delegate.h"
 #include "chrome/browser/ui/pdf/chrome_pdf_web_contents_helper_client.h"
 #include "components/pdf/browser/pdf_web_contents_helper.h"
+#include "components/signin/core/browser/signin_header_helper.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/virtual_keyboard_private/virtual_keyboard_delegate.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/browser/guest_view/web_view/web_view_permission_helper.h"
+#include "google_apis/gaia/gaia_urls.h"
 #include "printing/features/features.h"
+#include "url/gurl.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/extensions/api/file_handlers/non_native_file_system_delegate_chromeos.h"
@@ -83,6 +89,17 @@ void ChromeExtensionsAPIClient::AttachWebContentsHelpers(
       web_contents);
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
       web_contents);
+}
+
+bool ChromeExtensionsAPIClient::ShouldHideResponseHeader(
+    const GURL& url,
+    const std::string& header_name) const {
+  // Gaia may send a OAUth2 authorization code in the Dice response header,
+  // which could allow an extension to generate a refresh token for the account.
+  return (
+      (url.host_piece() == GaiaUrls::GetInstance()->gaia_url().host_piece()) &&
+      (base::CompareCaseInsensitiveASCII(header_name,
+                                         signin::kDiceResponseHeader) == 0));
 }
 
 AppViewGuestDelegate* ChromeExtensionsAPIClient::CreateAppViewGuestDelegate()

@@ -1602,12 +1602,9 @@ helpers::EventResponseDelta* CalculateDelta(
       helpers::ResponseHeaders* new_headers =
           response->response_headers.get();
       return helpers::CalculateOnHeadersReceivedDelta(
-          response->extension_id,
-          response->extension_install_time,
-          response->cancel,
-          response->new_url,
-          old_headers,
-          new_headers);
+          response->extension_id, response->extension_install_time,
+          response->cancel, blocked_request->request->url(), response->new_url,
+          old_headers, new_headers);
     }
     case ExtensionWebRequestEventRouter::kOnAuthRequired:
       return helpers::CalculateOnAuthRequiredDelta(
