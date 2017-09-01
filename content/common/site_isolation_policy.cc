@@ -14,7 +14,8 @@ namespace content {
 // static
 bool SiteIsolationPolicy::UseDedicatedProcessesForAllSites() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kSitePerProcess);
+             switches::kSitePerProcess) ||
+         base::FeatureList::IsEnabled(features::kSitePerProcess);
 }
 
 // static

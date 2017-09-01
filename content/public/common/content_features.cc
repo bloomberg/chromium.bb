@@ -267,6 +267,11 @@ const base::Feature kSharedArrayBuffer{"SharedArrayBuffer",
 const base::Feature kSignInProcessIsolation{"sign-in-process-isolation",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Alternative to switches::kSitePerProcess, for turning on full site isolation.
+// Launch bug: https://crbug.com/739418.
+const base::Feature kSitePerProcess{"site-per-process",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // An experiment for skipping compositing small scrollers.
 const base::Feature kSkipCompositingSmallScrollers{
     "SkipCompositingSmallScrollers", base::FEATURE_DISABLED_BY_DEFAULT};
