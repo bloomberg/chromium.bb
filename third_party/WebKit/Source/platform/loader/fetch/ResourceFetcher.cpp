@@ -297,7 +297,7 @@ ResourceFetcher::~ResourceFetcher() {}
 
 Resource* ResourceFetcher::CachedResource(const KURL& resource_url) const {
   KURL url = MemoryCache::RemoveFragmentIdentifierIfNeeded(resource_url);
-  const WeakMember<Resource>& resource = document_resources_.at(url);
+  const WeakMember<Resource>& resource = cached_resources_map_.at(url);
   return resource.Get();
 }
 
@@ -323,17 +323,14 @@ bool ResourceFetcher::ResourceNeedsLoad(Resource* resource,
   return policy != kUse || resource->StillNeedsLoad();
 }
 
-// Limit the number of URLs in m_validatedURLs to avoid memory bloat.
-// http://crbug.com/52411
-static const int kMaxValidatedURLsSize = 10000;
-
 void ResourceFetcher::RequestLoadStarted(unsigned long identifier,
                                          Resource* resource,
                                          const FetchParameters& params,
                                          RevalidationPolicy policy,
                                          bool is_static_data) {
+  KURL url = MemoryCache::RemoveFragmentIdentifierIfNeeded(params.Url());
   if (policy == kUse && resource->GetStatus() == ResourceStatus::kCached &&
-      !validated_urls_.Contains(resource->Url())) {
+      !cached_resources_map_.Contains(url)) {
     // Loaded from MemoryCache.
     DidLoadResourceFromMemoryCache(identifier, resource,
                                    params.GetResourceRequest());
@@ -343,7 +340,7 @@ void ResourceFetcher::RequestLoadStarted(unsigned long identifier,
     return;
 
   if (policy == kUse && !resource->StillNeedsLoad() &&
-      !validated_urls_.Contains(params.GetResourceRequest().Url())) {
+      !cached_resources_map_.Contains(url)) {
     // Resources loaded from memory cache should be reported the first time
     // they're used.
     RefPtr<ResourceTimingInfo> info = ResourceTimingInfo::Create(
@@ -356,11 +353,6 @@ void ResourceFetcher::RequestLoadStarted(unsigned long identifier,
     if (!resource_timing_report_timer_.IsActive())
       resource_timing_report_timer_.StartOneShot(0, BLINK_FROM_HERE);
   }
-
-  if (validated_urls_.size() >= kMaxValidatedURLsSize) {
-    validated_urls_.clear();
-  }
-  validated_urls_.insert(params.GetResourceRequest().Url());
 }
 
 void ResourceFetcher::DidLoadResourceFromMemoryCache(
@@ -756,8 +748,9 @@ Resource* ResourceFetcher::RequestResource(
   // If only the fragment identifiers differ, it is the same resource.
   DCHECK(EqualIgnoringFragmentIdentifier(resource->Url(), params.Url()));
   RequestLoadStarted(identifier, resource, params, policy, is_static_data);
-  document_resources_.Set(
+  cached_resources_map_.Set(
       MemoryCache::RemoveFragmentIdentifierIfNeeded(params.Url()), resource);
+  document_resources_.insert(resource);
 
   // Returns with an existing resource if the resource does not need to start
   // loading immediately. If revalidation policy was determined as |Revalidate|,
@@ -1088,7 +1081,9 @@ ResourceFetcher::DetermineRevalidationPolicyInternal(
   // or other factors that require separate requests.
   if (type != Resource::kRaw) {
     if (!Context().IsLoadComplete() &&
-        validated_urls_.Contains(existing_resource.Url()))
+        cached_resources_map_.Contains(
+            MemoryCache::RemoveFragmentIdentifierIfNeeded(
+                existing_resource.Url())))
       return kUse;
     if (existing_resource.IsLoading())
       return kUse;
@@ -1192,7 +1187,7 @@ bool ResourceFetcher::ShouldDeferImageLoad(const KURL& url) const {
 }
 
 void ResourceFetcher::ReloadImagesIfNotDeferred() {
-  for (Resource* resource : document_resources_.Values()) {
+  for (Resource* resource : document_resources_) {
     if (resource->GetType() == Resource::kImage && resource->StillNeedsLoad() &&
         !ShouldDeferImageLoad(resource->Url()))
       StartLoad(resource);
@@ -1485,8 +1480,7 @@ void ResourceFetcher::UpdateAllImageResourcePriorities() {
   TRACE_EVENT0(
       "blink",
       "ResourceLoadPriorityOptimizer::updateAllImageResourcePriorities");
-  for (const auto& document_resource : document_resources_) {
-    Resource* resource = document_resource.value.Get();
+  for (Resource* resource : document_resources_) {
     if (!resource || resource->GetType() != Resource::kImage ||
         !resource->IsLoading())
       continue;
@@ -1509,8 +1503,7 @@ void ResourceFetcher::UpdateAllImageResourcePriorities() {
 }
 
 void ResourceFetcher::ReloadLoFiImages() {
-  for (const auto& document_resource : document_resources_) {
-    Resource* resource = document_resource.value.Get();
+  for (Resource* resource : document_resources_) {
     if (resource)
       resource->ReloadIfLoFiOrPlaceholderImage(this, Resource::kReloadAlways);
   }
@@ -1710,6 +1703,7 @@ DEFINE_TRACE(ResourceFetcher) {
   visitor->Trace(archive_);
   visitor->Trace(loaders_);
   visitor->Trace(non_blocking_loaders_);
+  visitor->Trace(cached_resources_map_);
   visitor->Trace(document_resources_);
   visitor->Trace(preloads_);
   visitor->Trace(matched_preloads_);
