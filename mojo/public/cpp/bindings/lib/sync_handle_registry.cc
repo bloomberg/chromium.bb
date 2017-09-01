@@ -72,15 +72,12 @@ void SyncHandleRegistry::RegisterEvent(base::WaitableEvent* event,
     it = result.first;
   }
 
-  auto& callbacks = it->second.container();
-  if (callbacks.empty()) {
-    // AddEvent() must succeed since we only attempt it when there are
-    // previously no callbacks registered for this event.
-    MojoResult rv = wait_set_.AddEvent(event);
-    DCHECK_EQ(MOJO_RESULT_OK, rv);
-  }
+  // The event may already be in the WaitSet, but we don't care. This will be a
+  // no-op in that case, which is more efficient than scanning the list of
+  // callbacks to see if any are valid.
+  wait_set_.AddEvent(event);
 
-  callbacks.push_back(callback);
+  it->second.container().push_back(callback);
 }
 
 void SyncHandleRegistry::UnregisterEvent(base::WaitableEvent* event,
@@ -89,6 +86,7 @@ void SyncHandleRegistry::UnregisterEvent(base::WaitableEvent* event,
   if (it == events_.end())
     return;
 
+  bool has_valid_callbacks = false;
   auto& callbacks = it->second.container();
   if (is_dispatching_event_callbacks_) {
     // Not safe to remove any elements from |callbacks| here since an outer
@@ -96,6 +94,8 @@ void SyncHandleRegistry::UnregisterEvent(base::WaitableEvent* event,
     for (auto& cb : callbacks) {
       if (cb.Equals(callback))
         cb.Reset();
+      else if (cb)
+        has_valid_callbacks = true;
     }
     remove_invalid_event_callbacks_after_dispatch_ = true;
   } else {
@@ -104,11 +104,18 @@ void SyncHandleRegistry::UnregisterEvent(base::WaitableEvent* event,
                                      return cb.Equals(callback);
                                    }),
                     callbacks.end());
-    if (callbacks.empty()) {
+    if (callbacks.empty())
       events_.erase(it);
-      MojoResult rv = wait_set_.RemoveEvent(event);
-      DCHECK_EQ(MOJO_RESULT_OK, rv);
-    }
+    else
+      has_valid_callbacks = true;
+  }
+
+  if (!has_valid_callbacks) {
+    // Regardless of whether or not we're nested within a Wait(), we need to
+    // ensure that |event| is removed from the WaitSet before returning if this
+    // was the last callback registered for it.
+    MojoResult rv = wait_set_.RemoveEvent(event);
+    DCHECK_EQ(MOJO_RESULT_OK, rv);
   }
 }
 
@@ -180,14 +187,10 @@ void SyncHandleRegistry::RemoveInvalidEventCallbacks() {
         std::remove_if(callbacks.begin(), callbacks.end(),
                        [](const base::Closure& callback) { return !callback; }),
         callbacks.end());
-    if (callbacks.empty()) {
-      MojoResult rv = wait_set_.RemoveEvent(it->first);
-      DCHECK_EQ(MOJO_RESULT_OK, rv);
-
+    if (callbacks.empty())
       events_.erase(it++);
-    } else {
+    else
       ++it;
-    }
   }
 }
 
