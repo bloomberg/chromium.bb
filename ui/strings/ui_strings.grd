@@ -757,7 +757,7 @@ need to be translated for each locale.-->
         Expand to all apps
       </message>
       <message name="IDS_APP_LIST_CLEAR_SEARCHBOX" desc="Tooltip for the button that clears all text from the search box in the app list.">
-        Clear searchbox text button
+        Clear searchbox text
       </message>
 
       <!-- Strings describing the touch calibration UX -->
