@@ -97,10 +97,26 @@ found in the LICENSE file.
       // ================================
 
       // WebGL setup.
-      var webglCanvas = document.getElementById("webgl-canvas");
       var gl = null;
       var cubeSea = null;
       var stats = null;
+
+      function onContextLost( event ) {
+        event.preventDefault();
+        console.log( 'WebGL Context Lost.' );
+        gl = null;
+        cubeSea = null;
+        stats = null;
+      }
+
+      function onContextRestored( event ) {
+        console.log( 'WebGL Context Restored.' );
+        initWebGL(vrDisplay ? vrDisplay.capabilities.hasExternalDisplay : false);
+      }
+
+      var webglCanvas = document.getElementById("webgl-canvas");
+      webglCanvas.addEventListener( 'webglcontextlost', onContextLost, false );
+      webglCanvas.addEventListener( 'webglcontextrestored', onContextRestored, false );
 
       function initWebGL (preserveDrawingBuffer) {
         var glAttribs = {
@@ -194,6 +210,8 @@ found in the LICENSE file.
             initWebGL(false);
             VRSamplesUtil.addInfo("WebVR supported, but no VRDisplays found.", 3000);
           }
+        }, function () {
+          VRSamplesUtil.addError("Your browser does not support WebVR. See <a href='http://webvr.info'>webvr.info</a> for assistance.");
         });
       } else if (navigator.getVRDevices) {
         initWebGL(false);
@@ -225,6 +243,10 @@ found in the LICENSE file.
       var now = (window.performance && performance.now) ? performance.now.bind(performance) : Date.now;
 
       function onAnimationFrame (t) {
+        // do not attempt to render if there is no available WebGL context
+        if (!gl || !stats || !cubeSea) {
+          return;
+        }
         stats.begin();
 
         if (simulatedWorkTimeMs > 0) {

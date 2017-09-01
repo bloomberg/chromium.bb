@@ -94,42 +94,64 @@ found in the LICENSE file.
       var viewMat = mat4.create();
 
       var vrPresentButton = null;
+      var presentingMessage = document.getElementById("presenting-message");
 
       // ===================================================
       // WebGL scene setup. This code is not WebVR specific.
       // ===================================================
 
       // WebGL setup.
-      var webglCanvas = document.getElementById("webgl-canvas");
-      var glAttribs = {
-        alpha: false,
-      };
-      var useWebgl2 = WGLUUrl.getBool('webgl2', false);
-      var contextTypes = useWebgl2 ? ["webgl2"] : ["webgl", "experimental-webgl"];
       var gl = null;
-      for (var i in contextTypes) {
-        gl = webglCanvas.getContext(contextTypes[i], glAttribs);
-        if (gl)
-          break;
+      var cubeSea = null;
+      var stats = null;
+
+      function onContextLost( event ) {
+        event.preventDefault();
+        console.log( 'WebGL Context Lost.' );
+        gl = null;
+        cubeSea = null;
+        stats = null;
       }
-      if (!gl) {
-        var webglType = (useWebgl2 ? "WebGL 2" : "WebGL")
-        VRSamplesUtil.addError("Your browser does not support " + webglType + ".");
-        return;
+
+      function onContextRestored( event ) {
+        console.log( 'WebGL Context Restored.' );
+        initWebGL();
       }
-      gl.clearColor(0.1, 0.2, 0.3, 1.0);
-      gl.enable(gl.DEPTH_TEST);
-      gl.enable(gl.CULL_FACE);
 
-      var textureLoader = new WGLUTextureLoader(gl);
-      var texture = textureLoader.loadTexture("../media/textures/cube-sea.png");
-      var cubeSea = new VRCubeSea(gl, texture);
+      var webglCanvas = document.getElementById("webgl-canvas");
+      webglCanvas.addEventListener( 'webglcontextlost', onContextLost, false );
+      webglCanvas.addEventListener( 'webglcontextrestored', onContextRestored, false );
 
-      var enablePerformanceMonitoring = WGLUUrl.getBool(
-          'enablePerformanceMonitoring', false);
-      var stats = new WGLUStats(gl, enablePerformanceMonitoring);
+      function initWebGL() {
+        var glAttribs = {
+          alpha: false,
+        };
+        var useWebgl2 = WGLUUrl.getBool('webgl2', false);
+        var contextTypes = useWebgl2 ? ["webgl2"] : ["webgl", "experimental-webgl"];
 
-      var presentingMessage = document.getElementById("presenting-message");
+        for (var i in contextTypes) {
+          gl = webglCanvas.getContext(contextTypes[i], glAttribs);
+          if (gl)
+            break;
+        }
+        if (!gl) {
+          var webglType = (useWebgl2 ? "WebGL 2" : "WebGL")
+          VRSamplesUtil.addError("Your browser does not support " + webglType + ".");
+          return;
+        }
+        gl.clearColor(0.1, 0.2, 0.3, 1.0);
+        gl.enable(gl.DEPTH_TEST);
+        gl.enable(gl.CULL_FACE);
+
+        var textureLoader = new WGLUTextureLoader(gl);
+        var texture = textureLoader.loadTexture("../media/textures/cube-sea.png");
+        cubeSea = new VRCubeSea(gl, texture);
+
+        var enablePerformanceMonitoring = WGLUUrl.getBool(
+            'enablePerformanceMonitoring', false);
+        stats = new WGLUStats(gl, enablePerformanceMonitoring);
+      }
+      initWebGL();
 
       // ================================
       // WebVR-specific code begins here.
@@ -181,7 +203,7 @@ found in the LICENSE file.
             // On devices with an external display the UA may not provide a way
             // to exit VR presentation mode, so we should provide one ourselves.
             VRSamplesUtil.removeButton(vrPresentButton);
-            vrPresentButton = VRSamplesUtil.addButton("Exit VR", "E", "media/icons/cardboard64.png", onVRExitPresent);
+            vrPresentButton = VRSamplesUtil.addButton("Exit VR", "E", "../media/icons/cardboard64.png", onVRExitPresent);
           }
         } else {
           // If we have an external display take down the presenting message and
@@ -190,7 +212,7 @@ found in the LICENSE file.
             presentingMessage.style.display = "";
 
             VRSamplesUtil.removeButton(vrPresentButton);
-            vrPresentButton = VRSamplesUtil.addButton("Enter VR", "E", "media/icons/cardboard64.png", onVRRequestPresent);
+            vrPresentButton = VRSamplesUtil.addButton("Enter VR", "E", "../media/icons/cardboard64.png", onVRRequestPresent);
           }
         }
       }
@@ -212,7 +234,7 @@ found in the LICENSE file.
             // you know the user has a VRDisplay capable of presenting connected
             // before adding UI that advertises VR features.
             if (vrDisplay.capabilities.canPresent)
-              vrPresentButton = VRSamplesUtil.addButton("Enter VR", "E", "media/icons/cardboard64.png", onVRRequestPresent);
+              vrPresentButton = VRSamplesUtil.addButton("Enter VR", "E", "../media/icons/cardboard64.png", onVRRequestPresent);
 
             // For the benefit of automated testing. Safe to ignore.
             if (vrDisplay.capabilities.canPresent && WGLUUrl.getBool('canvasClickPresents', false))
@@ -234,6 +256,8 @@ found in the LICENSE file.
           } else {
             VRSamplesUtil.addInfo("WebVR supported, but no VRDisplays found.", 3000);
           }
+        }, function () {
+          VRSamplesUtil.addError("Your browser does not support WebVR. See <a href='http://webvr.info'>webvr.info</a> for assistance.");
         });
       } else if (navigator.getVRDevices) {
         VRSamplesUtil.addError("Your browser supports WebVR but not the latest version. See <a href='http://webvr.info'>webvr.info</a> for more info.");
@@ -272,14 +296,40 @@ found in the LICENSE file.
       // should ideally always be minimally supported.
       function onClick () {
         // Reset the background color to a random value
-        gl.clearColor(
+        if (gl) {
+          gl.clearColor(
             Math.random() * 0.5,
             Math.random() * 0.5,
             Math.random() * 0.5, 1.0);
+        }
       }
+
+      // Register for mouse restricted events while in VR
+      // (e.g. mouse no longer available on desktop 2D view)
+      function onDisplayPointerRestricted() {
+        if (webglCanvas && webglCanvas.requestPointerLock) {
+          webglCanvas.requestPointerLock();
+        }
+      }
+
+      // Register for mouse unrestricted events while in VR
+      // (e.g. mouse once again available on desktop 2D view)
+      function onDisplayPointerUnrestricted() {
+        var lock = document.pointerLockElement;
+        if (lock && lock === webglCanvas && document.exitPointerLock) {
+          document.exitPointerLock();
+        }
+      }
+
       webglCanvas.addEventListener("click", onClick, false);
+      window.addEventListener('vrdisplaypointerrestricted', onDisplayPointerRestricted);
+      window.addEventListener('vrdisplaypointerunrestricted', onDisplayPointerUnrestricted);
 
       function onAnimationFrame (t) {
+        // do not attempt to render if there is no available WebGL context
+        if (!gl || !stats || !cubeSea) {
+          return;
+        }
         stats.begin();
 
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);

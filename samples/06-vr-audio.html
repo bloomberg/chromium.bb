@@ -95,11 +95,28 @@ found in the LICENSE file.
       // ================================================================
 
       // WebGL setup.
-      var webglCanvas = document.getElementById("webgl-canvas");
       var gl = null;
       var cubeIsland = null;
       var stats = null;
       var debugGeom = null;
+
+      function onContextLost( event ) {
+        event.preventDefault();
+        console.log( 'WebGL Context Lost.' );
+        gl = null;
+        cubeIsland = null;
+        debugGeom = null;
+        stats = null;
+      }
+
+      function onContextRestored( event ) {
+        console.log( 'WebGL Context Restored.' );
+        initWebGL(vrDisplay ? vrDisplay.capabilities.hasExternalDisplay : false);
+      }
+
+      var webglCanvas = document.getElementById("webgl-canvas");
+      webglCanvas.addEventListener( 'webglcontextlost', onContextLost, false );
+      webglCanvas.addEventListener( 'webglcontextrestored', onContextRestored, false );
 
       function initWebGL (preserveDrawingBuffer) {
         var glAttribs = {
@@ -144,24 +161,24 @@ found in the LICENSE file.
         window.requestAnimationFrame(onAnimationFrame);
       }
 
+      function getSoundFileData(audioFileFormat) {
+        return [
+          {
+            name: 'drums',
+            url: 'media/sound/drums.' + audioFileFormat
+          }, {
+            name: 'guitar',
+            url: 'media/sound/guitar.' + audioFileFormat
+          }, {
+            name: 'perc',
+            url: 'media/sound/perc.' + audioFileFormat
+          }
+        ];
+      }
+
       // WebAudio setup.
       var isAudioPannerReady = false;
       var drumSource, guitarSource, percSource;
-      var audioFileFormat = VRAudioPanner.isWebAudioOutdated() ? 'mp3' : 'ogg';
-
-      // For special Chromium build.
-      var soundFileData = [
-        {
-          name: 'drums',
-          url: 'media/sound/drums.' + audioFileFormat
-        }, {
-          name: 'guitar',
-          url: 'media/sound/guitar.' + audioFileFormat
-        }, {
-          name: 'perc',
-          url: 'media/sound/perc.' + audioFileFormat
-        }
-      ];
 
       function initAudio (buffers) {
         drumSource = VRAudioPanner.createTestSource({
@@ -201,12 +218,24 @@ found in the LICENSE file.
 
         // Load sound files and then initiate WebAudio.
         var infoElement = VRSamplesUtil.addInfo("Loading audio files...");
+        var audioFileFormat = VRAudioPanner.isWebAudioOutdated() ? 'mp3' : 'ogg';
 
-        VRAudioPanner
-          .loadAudioFiles(soundFileData, null)
+        VRAudioPanner.loadAudioFiles(getSoundFileData(audioFileFormat), null)
           .then(function (buffers) {
             VRSamplesUtil.makeToast(infoElement, 2000);
             initAudio(buffers);
+          }, function () {
+            if (audioFileFormat === "mp3") {
+              VRSamplesUtil.err("Can't load audio");
+              return;
+            }
+
+            // Fall back to mp3 file format
+            return VRAudioPanner.loadAudioFiles(getSoundFileData("mp3"))
+              .then(function(buffers) {
+                VRSamplesUtil.makeToast(infoElement, 2000);
+                initAudio(buffers);
+              });
           });
       }
 
@@ -277,6 +306,8 @@ found in the LICENSE file.
             init(false);
             VRSamplesUtil.addInfo("WebVR supported, but no VRDisplays found.", 3000);
           }
+        }, function () {
+          VRSamplesUtil.addError("Your browser does not support WebVR. See <a href='http://webvr.info'>webvr.info</a> for assistance.");
         });
       } else if (navigator.getVRDevices) {
         init(false);
@@ -301,12 +332,34 @@ found in the LICENSE file.
 
       function onClick () {
         // Reset the background color to a random value
-        gl.clearColor(
+        if (gl) {
+          gl.clearColor(
             Math.random() * 0.5,
             Math.random() * 0.5,
             Math.random() * 0.5, 1.0);
+        }
       }
+
+      // Register for mouse restricted events while in VR
+      // (e.g. mouse no longer available on desktop 2D view)
+      function onDisplayPointerRestricted() {
+        if (webglCanvas && webglCanvas.requestPointerLock) {
+          webglCanvas.requestPointerLock();
+        }
+      }
+
+      // Register for mouse unrestricted events while in VR
+      // (e.g. mouse once again available on desktop 2D view)
+      function onDisplayPointerUnrestricted() {
+        var lock = document.pointerLockElement;
+        if (lock && lock === webglCanvas && document.exitPointerLock) {
+          document.exitPointerLock();
+        }
+      }
+
       webglCanvas.addEventListener("click", onClick, false);
+      window.addEventListener('vrdisplaypointerrestricted', onDisplayPointerRestricted);
+      window.addEventListener('vrdisplaypointerunrestricted', onDisplayPointerUnrestricted);
 
       function getStandingViewMatrix (out, view) {
         if (vrDisplay.stageParameters) {
@@ -373,6 +426,10 @@ found in the LICENSE file.
       })();
 
       function onAnimationFrame (t) {
+        // do not attempt to render if there is no available WebGL context
+        if (!gl || !stats || !cubeIsland || !debugGeom) {
+          return;
+        }
         stats.begin();
 
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);

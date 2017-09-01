@@ -88,10 +88,26 @@ found in the LICENSE file.
       // ================================================================
 
       // WebGL setup.
-      var webglCanvas = document.getElementById("webgl-canvas");
       var gl = null;
       var panorama = null;
       var stats = null;
+
+      function onContextLost( event ) {
+        event.preventDefault();
+        console.log( 'WebGL Context Lost.' );
+        gl = null;
+        panorama = null;
+        stats = null;
+      }
+
+      function onContextRestored( event ) {
+        console.log( 'WebGL Context Restored.' );
+        init(vrDisplay ? vrDisplay.capabilities.hasExternalDisplay : false);
+      }
+
+      var webglCanvas = document.getElementById("webgl-canvas");
+      webglCanvas.addEventListener( 'webglcontextlost', onContextLost, false );
+      webglCanvas.addEventListener( 'webglcontextrestored', onContextRestored, false );
 
       function init (preserveDrawingBuffer) {
         var glAttribs = {
@@ -189,6 +205,8 @@ found in the LICENSE file.
             init(false);
             VRSamplesUtil.addInfo("WebVR supported, but no VRDisplays found.", 3000);
           }
+        }, function () {
+          VRSamplesUtil.addError("Your browser does not support WebVR. See <a href='http://webvr.info'>webvr.info</a> for assistance.");
         });
       } else if (navigator.getVRDevices) {
         init(false);
@@ -222,6 +240,10 @@ found in the LICENSE file.
       }
 
       function onAnimationFrame (t) {
+        // do not attempt to render if there is no available WebGL context
+        if (!gl || !stats || !panorama) {
+          return;
+        }
         stats.begin();
 
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
