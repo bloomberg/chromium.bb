@@ -144,7 +144,7 @@ void HTMLFrameOwnerElement::SetSandboxFlags(SandboxFlags flags) {
   sandbox_flags_ = flags;
   // Recalculate the container policy in case the allow-same-origin flag has
   // changed.
-  container_policy_ = ConstructContainerPolicy(nullptr);
+  container_policy_ = ConstructContainerPolicy(nullptr, nullptr);
 
   // Don't notify about updates if ContentFrame() is null, for example when
   // the subframe hasn't been created yet.
@@ -165,8 +165,9 @@ void HTMLFrameOwnerElement::DisposePluginSoon(PluginView* plugin) {
     plugin->Dispose();
 }
 
-void HTMLFrameOwnerElement::UpdateContainerPolicy(Vector<String>* messages) {
-  container_policy_ = ConstructContainerPolicy(messages);
+void HTMLFrameOwnerElement::UpdateContainerPolicy(Vector<String>* messages,
+                                                  bool* old_syntax) {
+  container_policy_ = ConstructContainerPolicy(messages, old_syntax);
   // Don't notify about updates if ContentFrame() is null, for example when
   // the subframe hasn't been created yet.
   if (ContentFrame()) {

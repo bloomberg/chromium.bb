@@ -16261,6 +16261,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="2142" label="WebkitBoxLineClampOneChildIsLayoutBlockFlowInline"/>
   <int value="2143" label="WebkitBoxLineClampManyChildren"/>
   <int value="2144" label="WebkitBoxLineClampDoesSomething"/>
+  <int value="2145" label="FeaturePolicyAllowAttributeDeprecatedSyntax"/>
 </enum>
 
 <enum name="FeedbackSource">
