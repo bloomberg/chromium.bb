@@ -4726,9 +4726,9 @@ static void read_supertx_probs(FRAME_CONTEXT *fc, aom_reader *r) {
 #endif  // CONFIG_SUPERTX
 
 #if CONFIG_GLOBAL_MOTION
-static void read_global_motion_params(WarpedMotionParams *params,
-                                      WarpedMotionParams *ref_params,
-                                      aom_reader *r, int allow_hp) {
+static int read_global_motion_params(WarpedMotionParams *params,
+                                     WarpedMotionParams *ref_params,
+                                     aom_reader *r, int allow_hp) {
   TransformationType type = aom_read_bit(r, ACCT_STR);
   if (type != IDENTITY) {
 #if GLOBAL_TRANS_TYPES > 4
@@ -4818,16 +4818,24 @@ static void read_global_motion_params(WarpedMotionParams *params,
     case IDENTITY: break;
     default: assert(0);
   }
-  if (params->wmtype <= AFFINE)
-    if (!get_shear_params(params)) assert(0);
+  if (params->wmtype <= AFFINE) {
+    int good_shear_params = get_shear_params(params);
+    if (!good_shear_params) return 0;
+  }
+
+  return 1;
 }
 
 static void read_global_motion(AV1_COMMON *cm, aom_reader *r) {
   int frame;
   for (frame = LAST_FRAME; frame <= ALTREF_FRAME; ++frame) {
-    read_global_motion_params(&cm->global_motion[frame],
-                              &cm->prev_frame->global_motion[frame], r,
-                              cm->allow_high_precision_mv);
+    int good_params = read_global_motion_params(
+        &cm->global_motion[frame], &cm->prev_frame->global_motion[frame], r,
+        cm->allow_high_precision_mv);
+    if (!good_params)
+      aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
+                         "Invalid shear parameters for global motion.");
+
     // TODO(sarahparker, debargha): The logic in the commented out code below
     // does not work currently and causes mismatches when resize is on. Fix it
     // before turning the optimization back on.
