@@ -11,7 +11,6 @@
 
 #include "base/base_export.h"
 #include "base/callback_forward.h"
-#include "base/debug/task_annotator.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -281,10 +280,6 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate,
   // Returns true if the message loop is "idle". Provided for testing.
   bool IsIdleForTesting();
 
-  // Returns the TaskAnnotator which is used to add debug information to posted
-  // tasks.
-  debug::TaskAnnotator* task_annotator() { return &task_annotator_; }
-
   // Runs the specified PendingTask.
   void RunTask(PendingTask* pending_task);
 
@@ -418,8 +413,6 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate,
   MessagePumpFactoryCallback pump_factory_;
 
   ObserverList<TaskObserver> task_observers_;
-
-  debug::TaskAnnotator task_annotator_;
 
   // Used to allow creating a breadcrumb of program counters in PostTask.
   // This variable is only initialized while a task is being executed and is

@@ -7,9 +7,11 @@
 
 #include "base/base_export.h"
 #include "base/callback.h"
+#include "base/debug/task_annotator.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/pending_task.h"
+#include "base/sequence_checker.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/read_write_lock.h"
 #include "base/time/time.h"
@@ -55,6 +57,9 @@ class BASE_EXPORT IncomingTaskQueue
   // scheduling work.
   void StartScheduling();
 
+  // Runs |pending_task|.
+  void RunTask(PendingTask* pending_task);
+
  private:
   friend class RefCountedThreadSafe<IncomingTaskQueue>;
   virtual ~IncomingTaskQueue();
@@ -67,6 +72,8 @@ class BASE_EXPORT IncomingTaskQueue
 
   // Wakes up the message loop and schedules work.
   void ScheduleWork();
+
+  debug::TaskAnnotator task_annotator_;
 
   // Number of tasks that require high resolution timing. This value is kept
   // so that ReloadWorkQueue() completes in constant time.
@@ -101,6 +108,9 @@ class BASE_EXPORT IncomingTaskQueue
 
   // False until StartScheduling() is called.
   bool is_ready_for_scheduling_;
+
+  // Checks calls made only on the MessageLoop thread.
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(IncomingTaskQueue);
 };

@@ -403,7 +403,7 @@ void MessageLoop::RunTask(PendingTask* pending_task) {
 
   for (auto& observer : task_observers_)
     observer.WillProcessTask(*pending_task);
-  task_annotator_.RunTask("MessageLoop::PostTask", pending_task);
+  incoming_task_queue_->RunTask(pending_task);
   for (auto& observer : task_observers_)
     observer.DidProcessTask(*pending_task);
 
