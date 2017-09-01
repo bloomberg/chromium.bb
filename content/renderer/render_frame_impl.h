@@ -132,7 +132,6 @@ namespace content {
 
 class AssociatedInterfaceProviderImpl;
 class BlinkInterfaceRegistryImpl;
-class ChildFrameCompositingHelper;
 class ChildURLLoaderFactoryGetter;
 class CompositorDependencies;
 class DevToolsAgent;
@@ -1283,8 +1282,6 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // All the registered observers.
   base::ObserverList<RenderFrameObserver> observers_;
-
-  scoped_refptr<ChildFrameCompositingHelper> compositing_helper_;
 
   // External context menu requests we're waiting for. "Internal"
   // (WebKit-originated) context menu events will have an ID of 0 and will not

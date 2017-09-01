@@ -104,7 +104,6 @@
 #include "content/renderer/accessibility/render_accessibility_impl.h"
 #include "content/renderer/browser_plugin/browser_plugin.h"
 #include "content/renderer/browser_plugin/browser_plugin_manager.h"
-#include "content/renderer/child_frame_compositing_helper.h"
 #include "content/renderer/content_security_policy_util.h"
 #include "content/renderer/context_menu_params_builder.h"
 #include "content/renderer/devtools/devtools_agent.h"

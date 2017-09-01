@@ -109,7 +109,7 @@ BrowserPlugin::BrowserPlugin(
 BrowserPlugin::~BrowserPlugin() {
   Detach();
 
-  if (compositing_helper_.get())
+  if (compositing_helper_)
     compositing_helper_->OnContainerDestroy();
 
   if (delegate_) {
@@ -145,8 +145,9 @@ void BrowserPlugin::OnSetChildFrameSurface(
     return;
 
   if (!compositing_helper_) {
-    compositing_helper_ = ChildFrameCompositingHelper::CreateForBrowserPlugin(
-        weak_ptr_factory_.GetWeakPtr());
+    compositing_helper_.reset(
+        ChildFrameCompositingHelper::CreateForBrowserPlugin(
+            weak_ptr_factory_.GetWeakPtr()));
     if (enable_surface_synchronization_) {
       // We wait until there is a single CompositorFrame guaranteed to be
       // available and ready for display in the display compositor before using
@@ -232,7 +233,7 @@ void BrowserPlugin::Detach() {
   guest_crashed_ = false;
   if (compositing_helper_) {
     compositing_helper_->OnContainerDestroy();
-    compositing_helper_ = nullptr;
+    compositing_helper_.reset();
   }
 
   BrowserPluginManager::Get()->Send(
@@ -256,8 +257,9 @@ void BrowserPlugin::OnGuestGone(int browser_plugin_instance_id) {
   guest_crashed_ = true;
 
   if (!compositing_helper_) {
-    compositing_helper_ = ChildFrameCompositingHelper::CreateForBrowserPlugin(
-        weak_ptr_factory_.GetWeakPtr());
+    compositing_helper_.reset(
+        ChildFrameCompositingHelper::CreateForBrowserPlugin(
+            weak_ptr_factory_.GetWeakPtr()));
   }
   compositing_helper_->ChildFrameGone();
 }
@@ -484,7 +486,7 @@ void BrowserPlugin::UpdateVisibility(bool visible) {
   if (!attached())
     return;
 
-  if (compositing_helper_.get())
+  if (compositing_helper_)
     compositing_helper_->UpdateVisibility(visible);
 
   BrowserPluginManager::Get()->Send(new BrowserPluginHostMsg_SetVisibility(
