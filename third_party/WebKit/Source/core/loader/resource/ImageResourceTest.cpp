@@ -931,6 +931,36 @@ TEST_P(ImageResourceReloadTest, ReloadIfLoFiOrPlaceholderForPlaceholder) {
       WebCachePolicy::kBypassingCache, false);
 }
 
+TEST_P(ImageResourceReloadTest, ReloadLoFiImagesWithDuplicateURLs) {
+  KURL test_url(kParsedURLString, kTestURL);
+  ScopedMockedURLLoad scoped_mocked_url_load(test_url, GetTestFilePath());
+  ResourceFetcher* fetcher = CreateFetcher();
+
+  FetchParameters placeholder_params{ResourceRequest(test_url)};
+  placeholder_params.SetAllowImagePlaceholder();
+  ImageResource* placeholder_resource =
+      ImageResource::Fetch(placeholder_params, fetcher);
+  EXPECT_EQ(FetchParameters::kAllowPlaceholder,
+            placeholder_params.GetPlaceholderImageRequestType());
+  EXPECT_TRUE(placeholder_resource->ShouldShowPlaceholder());
+
+  FetchParameters full_image_params{ResourceRequest(test_url)};
+  ImageResource* full_image_resource =
+      ImageResource::Fetch(full_image_params, fetcher);
+  EXPECT_EQ(FetchParameters::kDisallowPlaceholder,
+            full_image_params.GetPlaceholderImageRequestType());
+  EXPECT_FALSE(full_image_resource->ShouldShowPlaceholder());
+
+  // The |placeholder_resource| should not be reused for the
+  // |full_image_resource|.
+  EXPECT_NE(placeholder_resource, full_image_resource);
+
+  fetcher->ReloadLoFiImages();
+
+  EXPECT_FALSE(placeholder_resource->ShouldShowPlaceholder());
+  EXPECT_FALSE(full_image_resource->ShouldShowPlaceholder());
+}
+
 INSTANTIATE_TEST_CASE_P(/* no prefix */,
                         ImageResourceReloadTest,
                         ::testing::Bool());
