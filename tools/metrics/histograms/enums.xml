@@ -1167,6 +1167,12 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="3" label="Scrolled With Mouse"/>
 </enum>
 
+<enum name="AppListPlayStoreQueryState">
+  <int value="0" label="SUCCESS"/>
+  <int value="1" label="CANCELED"/>
+  <int value="2" label="ERROR"/>
+</enum>
+
 <enum name="AppListSearchResult">
   <int value="0" label="OMNIBOX"/>
   <int value="1" label="APP"/>
