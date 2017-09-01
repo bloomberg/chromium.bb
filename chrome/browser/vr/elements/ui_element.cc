@@ -26,12 +26,12 @@ bool GetRayPlaneDistance(const gfx::Point3F& ray_origin,
                          const gfx::Point3F& plane_origin,
                          const gfx::Vector3dF& plane_normal,
                          float* distance) {
-  float denom = gfx::DotProduct(ray_vector, plane_normal);
+  float denom = gfx::DotProduct(-ray_vector, plane_normal);
   if (denom == 0) {
     return false;
   }
   gfx::Vector3dF rel = ray_origin - plane_origin;
-  *distance = -gfx::DotProduct(plane_normal, rel) / denom;
+  *distance = gfx::DotProduct(plane_normal, rel) / denom;
   return true;
 }
 
@@ -209,7 +209,7 @@ gfx::Vector3dF UiElement::GetNormal() const {
   gfx::Vector3dF y_axis(0, 1, 0);
   world_space_transform_.TransformVector(&x_axis);
   world_space_transform_.TransformVector(&y_axis);
-  gfx::Vector3dF normal = CrossProduct(y_axis, x_axis);
+  gfx::Vector3dF normal = CrossProduct(x_axis, y_axis);
   normal.GetNormalized(&normal);
   return normal;
 }

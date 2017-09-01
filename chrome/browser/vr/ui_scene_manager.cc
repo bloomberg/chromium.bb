@@ -642,7 +642,7 @@ void UiSceneManager::CreateToasts() {
   element->SetSize(kToastWidthDMM, kToastHeightDMM);
   element->SetTranslate(0, kWebVrToastDistance * sin(kWebVrAngleRadians),
                         -kWebVrToastDistance * cos(kWebVrAngleRadians));
-  element->SetRotate(1, 0, 0, cc::MathUtil::Rad2Deg(kWebVrAngleRadians));
+  element->SetRotate(1, 0, 0, kWebVrAngleRadians);
   element->SetScale(kWebVrToastDistance, kWebVrToastDistance, 1);
   element->SetVisible(false);
   element->set_hit_testable(false);
