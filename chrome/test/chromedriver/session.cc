@@ -42,6 +42,7 @@ Session::Session(const std::string& id)
       force_devtools_screenshot(false),
       sticky_modifiers(0),
       mouse_position(0, 0),
+      pressed_mouse_button(kNoneMouseButton),
       page_load_timeout(kDefaultPageLoadTimeout),
       script_timeout(kDefaultScriptTimeout),
       auto_reporting_enabled(false) {}
@@ -55,6 +56,7 @@ Session::Session(const std::string& id, std::unique_ptr<Chrome> chrome)
       chrome(std::move(chrome)),
       sticky_modifiers(0),
       mouse_position(0, 0),
+      pressed_mouse_button(kNoneMouseButton),
       page_load_timeout(kDefaultPageLoadTimeout),
       script_timeout(kDefaultScriptTimeout),
       auto_reporting_enabled(false) {}

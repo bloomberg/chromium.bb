@@ -16,6 +16,7 @@
 #include "chrome/test/chromedriver/chrome/geoposition.h"
 #include "chrome/test/chromedriver/chrome/network_conditions.h"
 #include "chrome/test/chromedriver/chrome/scoped_temp_dir_with_retry.h"
+#include "chrome/test/chromedriver/chrome/ui_events.h"
 #include "chrome/test/chromedriver/command_listener.h"
 
 static const char kAccept[] = "accept";
@@ -72,6 +73,7 @@ struct Session {
   // this list will be empty.
   std::list<FrameInfo> frames;
   WebPoint mouse_position;
+  MouseButton pressed_mouse_button;
   base::TimeDelta implicit_wait;
   base::TimeDelta page_load_timeout;
   base::TimeDelta script_timeout;
