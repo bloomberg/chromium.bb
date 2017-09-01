@@ -41,6 +41,8 @@ const bool kBattOrCtsFlowControl = true;
 const bool kBattOrHasCtsFlowControl = true;
 // The maximum BattOr message is 50kB long.
 const size_t kMaxMessageSizeBytes = 50000;
+// The number of seconds allowed for the connection to open before timing out.
+const uint8_t kConnectTimeoutSeconds = 10;
 const size_t kFlushBufferSize = 50000;
 // The length of time that must pass without receiving any bytes in order for a
 // flush to be considered complete.
@@ -102,6 +104,7 @@ void BattOrConnectionImpl::Open() {
   options.has_cts_flow_control = kBattOrHasCtsFlowControl;
 
   LogSerial("Opening serial connection.");
+  SetTimeout(base::TimeDelta::FromSeconds(kConnectTimeoutSeconds));
   io_handler_->Open(
       path_, options,
       base::BindOnce(&BattOrConnectionImpl::OnOpened, AsWeakPtr()));
@@ -110,6 +113,7 @@ void BattOrConnectionImpl::Open() {
 void BattOrConnectionImpl::OnOpened(bool success) {
   LogSerial(StringPrintf("Serial connection open finished with success: %d.",
                          success));
+  timeout_callback_.Cancel();
 
   if (!success) {
     Close();
@@ -316,21 +320,20 @@ void BattOrConnectionImpl::BeginReadBytesForFlush() {
       pending_read_buffer_, static_cast<uint32_t>(kFlushBufferSize),
       base::BindOnce(&BattOrConnectionImpl::OnBytesReadForFlush,
                      base::Unretained(this))));
-  SetFlushReadTimeout();
+  SetTimeout(base::TimeDelta::FromMilliseconds(kFlushQuietPeriodThresholdMs));
 }
 
-void BattOrConnectionImpl::SetFlushReadTimeout() {
-  flush_timeout_callback_.Reset(
+void BattOrConnectionImpl::SetTimeout(base::TimeDelta timeout) {
+  timeout_callback_.Reset(
       base::Bind(&BattOrConnectionImpl::CancelReadMessage, AsWeakPtr()));
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, flush_timeout_callback_.callback(),
-      base::TimeDelta::FromMilliseconds(kFlushQuietPeriodThresholdMs));
+      FROM_HERE, timeout_callback_.callback(), timeout);
 }
 
 void BattOrConnectionImpl::OnBytesReadForFlush(
     int bytes_read,
     device::mojom::SerialReceiveError error) {
-  flush_timeout_callback_.Cancel();
+  timeout_callback_.Cancel();
 
   if (error != device::mojom::SerialReceiveError::NONE &&
       error != device::mojom::SerialReceiveError::TIMEOUT) {
