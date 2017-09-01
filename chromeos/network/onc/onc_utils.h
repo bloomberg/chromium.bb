@@ -15,16 +15,13 @@
 #include "chromeos/chromeos_export.h"
 #include "chromeos/network/network_type_pattern.h"
 #include "components/onc/onc_constants.h"
+#include "net/cert/scoped_nss_types.h"
 
 class PrefService;
 
 namespace base {
 class DictionaryValue;
 class ListValue;
-}
-
-namespace net {
-class X509Certificate;
 }
 
 namespace user_manager {
@@ -126,8 +123,8 @@ CHROMEOS_EXPORT bool ParseAndValidateOncForImport(
     base::ListValue* certificates);
 
 // Parse the given PEM encoded certificate |pem_encoded| and create a
-// X509Certificate from it.
-CHROMEOS_EXPORT scoped_refptr<net::X509Certificate> DecodePEMCertificate(
+// CERTCertificate from it.
+CHROMEOS_EXPORT net::ScopedCERTCertificate DecodePEMCertificate(
     const std::string& pem_encoded);
 
 // Replaces all references by GUID to Server or CA certs by their PEM

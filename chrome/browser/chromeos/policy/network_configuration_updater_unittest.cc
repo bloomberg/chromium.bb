@@ -38,6 +38,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "net/cert/x509_certificate.h"
+#include "net/cert/x509_util_nss.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -117,8 +118,8 @@ class FakeCertificateImporter : public chromeos::onc::CertificateImporter {
   ~FakeCertificateImporter() override {}
 
   void SetTrustedCertificatesResult(
-      net::CertificateList onc_trusted_certificates) {
-    onc_trusted_certificates_ = onc_trusted_certificates;
+      net::ScopedCERTCertificateList onc_trusted_certificates) {
+    onc_trusted_certificates_ = std::move(onc_trusted_certificates);
   }
 
   void SetExpectedONCCertificates(const base::ListValue& certificates) {
@@ -145,13 +146,14 @@ class FakeCertificateImporter : public chromeos::onc::CertificateImporter {
           expected_onc_certificates_.get(), &certificates));
     }
     ++call_count_;
-    done_callback.Run(true, onc_trusted_certificates_);
+    done_callback.Run(true, net::x509_util::DupCERTCertificateList(
+                                onc_trusted_certificates_));
   }
 
  private:
   ::onc::ONCSource expected_onc_source_;
   std::unique_ptr<base::ListValue> expected_onc_certificates_;
-  net::CertificateList onc_trusted_certificates_;
+  net::ScopedCERTCertificateList onc_trusted_certificates_;
   unsigned int call_count_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeCertificateImporter);
@@ -377,16 +379,15 @@ TEST_F(NetworkConfigurationUpdaterTest, PolicyIsValidatedAndRepaired) {
 
 TEST_F(NetworkConfigurationUpdaterTest,
        DoNotAllowTrustedCertificatesFromPolicy) {
-  net::CertificateList cert_list;
-  cert_list =
-      net::CreateCertificateListFromFile(net::GetTestCertsDirectory(),
-                                         "ok_cert.pem",
-                                         net::X509Certificate::FORMAT_AUTO);
+  net::ScopedCERTCertificateList cert_list =
+      net::CreateCERTCertificateListFromFile(net::GetTestCertsDirectory(),
+                                             "ok_cert.pem",
+                                             net::X509Certificate::FORMAT_AUTO);
   ASSERT_EQ(1u, cert_list.size());
 
   EXPECT_CALL(network_config_handler_,
               SetPolicy(onc::ONC_SOURCE_USER_POLICY, _, _, _));
-  certificate_importer_->SetTrustedCertificatesResult(cert_list);
+  certificate_importer_->SetTrustedCertificatesResult(std::move(cert_list));
 
   UserNetworkConfigurationUpdater* updater =
       CreateNetworkConfigurationUpdaterForUserPolicy(
@@ -415,15 +416,14 @@ TEST_F(NetworkConfigurationUpdaterTest,
   EXPECT_CALL(network_config_handler_, SetPolicy(_, _, _, _))
       .Times(AnyNumber());
 
-  net::CertificateList cert_list;
-  cert_list =
-      net::CreateCertificateListFromFile(net::GetTestCertsDirectory(),
-                                         "ok_cert.pem",
-                                         net::X509Certificate::FORMAT_AUTO);
+  net::ScopedCERTCertificateList cert_list =
+      net::CreateCERTCertificateListFromFile(net::GetTestCertsDirectory(),
+                                             "ok_cert.pem",
+                                             net::X509Certificate::FORMAT_AUTO);
   ASSERT_EQ(1u, cert_list.size());
 
   certificate_importer_->SetExpectedONCSource(onc::ONC_SOURCE_USER_POLICY);
-  certificate_importer_->SetTrustedCertificatesResult(cert_list);
+  certificate_importer_->SetTrustedCertificatesResult(std::move(cert_list));
 
   UserNetworkConfigurationUpdater* updater =
       CreateNetworkConfigurationUpdaterForUserPolicy(
@@ -466,13 +466,12 @@ TEST_F(NetworkConfigurationUpdaterTest,
   EXPECT_TRUE(observer.trust_anchors_.empty());
 
   // Now use a non-empty certificate list to test the observer notification.
-  net::CertificateList cert_list;
-  cert_list =
-      net::CreateCertificateListFromFile(net::GetTestCertsDirectory(),
-                                         "ok_cert.pem",
-                                         net::X509Certificate::FORMAT_AUTO);
+  net::ScopedCERTCertificateList cert_list =
+      net::CreateCERTCertificateListFromFile(net::GetTestCertsDirectory(),
+                                             "ok_cert.pem",
+                                             net::X509Certificate::FORMAT_AUTO);
   ASSERT_EQ(1u, cert_list.size());
-  certificate_importer_->SetTrustedCertificatesResult(cert_list);
+  certificate_importer_->SetTrustedCertificatesResult(std::move(cert_list));
 
   // Change to any non-empty policy, so that updates are triggered. The actual
   // content of the policy is irrelevant.

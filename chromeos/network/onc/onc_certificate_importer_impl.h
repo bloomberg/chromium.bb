@@ -25,8 +25,6 @@ class SequencedTaskRunner;
 
 namespace net {
 class NSSCertDatabase;
-class X509Certificate;
-typedef std::vector<scoped_refptr<X509Certificate> > CertificateList;
 }
 
 namespace chromeos {
@@ -54,7 +52,7 @@ class CHROMEOS_EXPORT CertificateImporterImpl : public CertificateImporter {
  private:
   void RunDoneCallback(const CertificateImporter::DoneCallback& callback,
                        bool success,
-                       const net::CertificateList& onc_trusted_certificates);
+                       net::ScopedCERTCertificateList onc_trusted_certificates);
 
   // This is the synchronous implementation of ImportCertificates. It is
   // executed on the given |io_task_runner_|.
@@ -70,7 +68,7 @@ class CHROMEOS_EXPORT CertificateImporterImpl : public CertificateImporter {
       bool allow_trust_imports,
       const base::DictionaryValue& certificate,
       net::NSSCertDatabase* nssdb,
-      net::CertificateList* onc_trusted_certificates);
+      net::ScopedCERTCertificateList* onc_trusted_certificates);
 
   // Imports the Server or CA certificate |certificate|. Web trust is only
   // applied if the certificate requests the TrustBits attribute "Web" and if
@@ -83,7 +81,7 @@ class CHROMEOS_EXPORT CertificateImporterImpl : public CertificateImporter {
       const std::string& guid,
       const base::DictionaryValue& certificate,
       net::NSSCertDatabase* nssdb,
-      net::CertificateList* onc_trusted_certificates);
+      net::ScopedCERTCertificateList* onc_trusted_certificates);
 
   static bool ParseClientCertificate(const std::string& guid,
                                      const base::DictionaryValue& certificate,

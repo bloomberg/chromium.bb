@@ -17,6 +17,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "net/cert/scoped_nss_types.h"
 
 class Profile;
 
@@ -98,7 +99,7 @@ class UserNetworkConfigurationUpdater : public NetworkConfigurationUpdater,
   // Called by the CertificateImporter when an import finished.
   void OnCertificatesImported(
       bool success,
-      const net::CertificateList& onc_trusted_certificates);
+      net::ScopedCERTCertificateList onc_trusted_certificates);
 
   // NetworkConfigurationUpdater:
   void ImportCertificates(const base::ListValue& certificates_onc) override;
