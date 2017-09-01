@@ -52,6 +52,9 @@ class MockInputRouterClient : public InputRouterClient {
   int in_flight_event_count() const {
     return in_flight_event_count_;
   }
+  blink::WebInputEvent::Type last_in_flight_event_type() const {
+    return last_in_flight_event_type_;
+  }
   void set_allow_send_event(bool allow) {
     filter_state_ = INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS;
   }
@@ -62,6 +65,8 @@ class MockInputRouterClient : public InputRouterClient {
  private:
   InputRouter* input_router_;
   int in_flight_event_count_;
+  blink::WebInputEvent::Type last_in_flight_event_type_ =
+      blink::WebInputEvent::kUndefined;
   bool has_touch_handler_;
 
   InputEventAckState filter_state_;

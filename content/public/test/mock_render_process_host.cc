@@ -22,6 +22,7 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/frame_messages.h"
+#include "content/common/input_messages.h"
 #include "content/common/renderer.mojom.h"
 #include "content/public/browser/android/child_process_importance.h"
 #include "content/public/browser/browser_context.h"
@@ -474,6 +475,23 @@ void MockRenderProcessHostFactory::Remove(MockRenderProcessHost* host) const {
 viz::SharedBitmapAllocationNotifierImpl*
 MockRenderProcessHost::GetSharedBitmapAllocationNotifier() {
   return &shared_bitmap_allocation_notifier_impl_;
+}
+
+std::string GetInputMessageTypes(MockRenderProcessHost* process) {
+  std::vector<std::string> result;
+  for (size_t i = 0; i < process->sink().message_count(); ++i) {
+    const IPC::Message* message = process->sink().GetMessageAt(i);
+    InputMsg_HandleInputEvent::Param params;
+    if (message->type() != InputMsg_HandleInputEvent::ID ||
+        !InputMsg_HandleInputEvent::Read(message, &params)) {
+      result.push_back("*");
+      break;
+    }
+    const blink::WebInputEvent* event = std::get<0>(params);
+    result.push_back(blink::WebInputEvent::GetName(event->GetType()));
+  }
+  process->sink().ClearMessages();
+  return base::JoinString(result, " ");
 }
 
 }  // namespace content
