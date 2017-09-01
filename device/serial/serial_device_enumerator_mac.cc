@@ -22,6 +22,7 @@
 #include "base/strings/pattern.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/threading/thread_restrictions.h"
 
 namespace device {
 
@@ -216,6 +217,8 @@ SerialDeviceEnumeratorMac::~SerialDeviceEnumeratorMac() {}
 
 std::vector<mojom::SerialDeviceInfoPtr>
 SerialDeviceEnumeratorMac::GetDevices() {
+  base::ThreadRestrictions::AssertIOAllowed();
+
   std::vector<mojom::SerialDeviceInfoPtr> devices = GetDevicesNew();
   std::vector<mojom::SerialDeviceInfoPtr> old_devices = GetDevicesOld();
 
