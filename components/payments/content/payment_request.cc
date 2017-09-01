@@ -11,9 +11,11 @@
 #include "base/stl_util.h"
 #include "components/payments/content/can_make_payment_query_factory.h"
 #include "components/payments/content/origin_security_checker.h"
-#include "components/payments/content/payment_details_validation.h"
+#include "components/payments/content/payment_request_converter.h"
 #include "components/payments/content/payment_request_web_contents_manager.h"
 #include "components/payments/core/can_make_payment_query.h"
+#include "components/payments/core/payment_details.h"
+#include "components/payments/core/payment_details_validation.h"
 #include "components/payments/core/payment_prefs.h"
 #include "components/prefs/pref_service.h"
 #include "components/url_formatter/elide_url.h"
@@ -96,7 +98,7 @@ void PaymentRequest::Init(mojom::PaymentRequestClientPtr client,
   }
 
   std::string error;
-  if (!validatePaymentDetails(details, &error)) {
+  if (!ValidatePaymentDetails(ConvertPaymentDetails(details), &error)) {
     LOG(ERROR) << error;
     OnConnectionTerminated();
     return;
@@ -174,7 +176,7 @@ void PaymentRequest::Show() {
 
 void PaymentRequest::UpdateWith(mojom::PaymentDetailsPtr details) {
   std::string error;
-  if (!validatePaymentDetails(details, &error)) {
+  if (!ValidatePaymentDetails(ConvertPaymentDetails(details), &error)) {
     LOG(ERROR) << error;
     OnConnectionTerminated();
     return;

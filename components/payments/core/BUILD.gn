@@ -29,6 +29,8 @@ static_library("core") {
     "payment_details.h",
     "payment_details_modifier.cc",
     "payment_details_modifier.h",
+    "payment_details_validation.cc",
+    "payment_details_validation.h",
     "payment_instrument.cc",
     "payment_instrument.h",
     "payment_item.cc",
