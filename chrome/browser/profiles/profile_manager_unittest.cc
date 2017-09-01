@@ -60,6 +60,7 @@
 #include "chromeos/chromeos_switches.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_names.h"
+#include "extensions/common/features/feature_session_type.h"
 #endif  // defined(OS_CHROMEOS)
 
 using base::ASCIIToUTF16;
@@ -141,6 +142,13 @@ class ProfileManagerTest : public testing::Test {
     base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
     cl->AppendSwitch(switches::kTestType);
     chromeos::WallpaperManager::Initialize();
+
+    // Have to manually reset the session type in between test runs because
+    // some tests log in users.
+    ASSERT_EQ(extensions::FeatureSessionType::INITIAL,
+              extensions::GetCurrentFeatureSessionType());
+    session_type_ = extensions::ScopedCurrentFeatureSessionType(
+        extensions::GetCurrentFeatureSessionType());
 #endif
   }
 
@@ -148,6 +156,7 @@ class ProfileManagerTest : public testing::Test {
     TestingBrowserProcess::GetGlobal()->SetProfileManager(NULL);
     content::RunAllBlockingPoolTasksUntilIdle();
 #if defined(OS_CHROMEOS)
+    session_type_.reset();
     chromeos::WallpaperManager::Shutdown();
 #endif
   }
@@ -220,6 +229,8 @@ class ProfileManagerTest : public testing::Test {
 
 #if defined(OS_CHROMEOS)
   chromeos::ScopedTestUserManager test_user_manager_;
+  std::unique_ptr<base::AutoReset<extensions::FeatureSessionType>>
+      session_type_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(ProfileManagerTest);
@@ -582,6 +593,13 @@ class ProfileManagerGuestTest : public ProfileManagerTest  {
     cl->AppendSwitch(::switches::kIncognito);
 
     chromeos::WallpaperManager::Initialize();
+    // Have to manually reset the session type in between test runs because
+    // RegisterUser() changes it.
+    ASSERT_EQ(extensions::FeatureSessionType::INITIAL,
+              extensions::GetCurrentFeatureSessionType());
+    session_type_ = extensions::ScopedCurrentFeatureSessionType(
+        extensions::GetCurrentFeatureSessionType());
+
     RegisterUser(user_manager::kGuestUserName);
 #endif
   }
