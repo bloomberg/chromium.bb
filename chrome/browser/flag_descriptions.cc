@@ -2299,6 +2299,11 @@ const char kEnableEncryptionMigrationDescription[] =
     "If enabled and the device supports ARC, the user will be asked to update "
     "the encryption of user data when the user signs in.";
 
+const char kEnableExternalDriveRename[] = "Enable external drive rename";
+const char kEnableExternalDriveRenameDescription[] =
+    "If enabled, external removable drives will get 'Rename' action in the "
+    "context menu";
+
 const char kEnableImeMenuName[] = "Enable opt-in IME menu";
 const char kEnableImeMenuDescription[] =
     "Enable access to the new IME menu in the Language Settings page.";
