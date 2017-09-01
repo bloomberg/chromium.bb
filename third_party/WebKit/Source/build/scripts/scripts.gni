@@ -20,7 +20,6 @@ scripts_for_json5_files = [
   "$_scripts_dir/name_utilities.py",
   "$_scripts_dir/template_expander.py",
   "$_scripts_dir/templates/macros.tmpl",
-  "$_scripts_dir/core/css/properties/templates/application_macros.tmpl",
 ]
 
 css_properties_files =
