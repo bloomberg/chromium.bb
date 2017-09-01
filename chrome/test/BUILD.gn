@@ -3972,6 +3972,7 @@ test("unit_tests") {
       "../browser/extensions/api/activity_log_private/activity_log_private_api_unittest.cc",
       "../browser/extensions/api/bookmark_manager_private/bookmark_manager_private_api_unittest.cc",
       "../browser/extensions/api/bookmarks/bookmark_api_helpers_unittest.cc",
+      "../browser/extensions/api/chrome_extensions_api_client_unittest.cc",
       "../browser/extensions/api/content_settings/content_settings_store_unittest.cc",
       "../browser/extensions/api/content_settings/content_settings_unittest.cc",
       "../browser/extensions/api/cookies/cookies_unittest.cc",
@@ -4257,6 +4258,7 @@ test("unit_tests") {
       "//extensions/browser:test_support",
       "//extensions/common",
       "//extensions/strings",
+      "//google_apis",
       "//media/cast:test_support",
 
       # This will add all of the unit tests for the schema compiler to this

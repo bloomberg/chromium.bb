@@ -5,6 +5,7 @@
 #include "extensions/browser/api/web_request/web_request_event_details.h"
 
 #include <utility>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
@@ -14,6 +15,7 @@
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/websocket_handshake_request_info.h"
 #include "content/public/common/child_process_host.h"
+#include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/api/web_request/upload_data_presenter.h"
 #include "extensions/browser/api/web_request/web_request_api_constants.h"
 #include "extensions/browser/api/web_request/web_request_api_helpers.h"
@@ -154,8 +156,13 @@ void WebRequestEventDetails::SetResponseHeaders(
       size_t iter = 0;
       std::string name;
       std::string value;
-      while (response_headers->EnumerateHeaderLines(&iter, &name, &value))
+      while (response_headers->EnumerateHeaderLines(&iter, &name, &value)) {
+        if (ExtensionsAPIClient::Get()->ShouldHideResponseHeader(request->url(),
+                                                                 name)) {
+          continue;
+        }
         headers->Append(helpers::CreateHeaderDictionary(name, value));
+      }
     }
     response_headers_.reset(headers);
   }

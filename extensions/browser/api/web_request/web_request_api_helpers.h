@@ -11,6 +11,8 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
@@ -232,6 +234,7 @@ EventResponseDelta* CalculateOnHeadersReceivedDelta(
     const std::string& extension_id,
     const base::Time& extension_install_time,
     bool cancel,
+    const GURL& old_url,
     const GURL& new_url,
     const net::HttpResponseHeaders* old_response_headers,
     ResponseHeaders* new_response_headers);

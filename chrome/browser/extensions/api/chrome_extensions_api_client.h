@@ -30,6 +30,8 @@ class ChromeExtensionsAPIClient : public ExtensionsAPIClient {
       override;
   void AttachWebContentsHelpers(content::WebContents* web_contents) const
       override;
+  bool ShouldHideResponseHeader(const GURL& url,
+                                const std::string& header_name) const override;
   AppViewGuestDelegate* CreateAppViewGuestDelegate() const override;
   ExtensionOptionsGuestDelegate* CreateExtensionOptionsGuestDelegate(
       ExtensionOptionsGuest* guest) const override;

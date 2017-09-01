@@ -33,6 +33,7 @@ enum ProfileMode {
 
 extern const char kChromeConnectedHeader[];
 extern const char kDiceRequestHeader[];
+extern const char kDiceResponseHeader[];
 
 // The ServiceType specified by Gaia in the response header accompanying the 204
 // response. This indicates the action Chrome is supposed to lead the user to

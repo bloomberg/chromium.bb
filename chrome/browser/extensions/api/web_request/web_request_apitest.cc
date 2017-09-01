@@ -30,6 +30,7 @@
 #include "chromeos/login/scoped_test_public_session_login_state.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
@@ -45,7 +46,9 @@
 #include "extensions/common/features/feature.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
+#include "google_apis/gaia/gaia_switches.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/http/http_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/test_data_directory.h"
@@ -103,6 +106,10 @@ const char kPerformXhrJs[] =
     "  window.domAutomationController.send(false);\n"
     "};\n"
     "xhr.send();\n";
+
+// Header values set by the server and by the extension.
+const char kHeaderValueFromExtension[] = "ValueFromExtension";
+const char kHeaderValueFromServer[] = "ValueFromServer";
 
 // Performs an XHR in the given |frame|, replying when complete.
 void PerformXhrInFrame(content::RenderFrameHost* frame,
@@ -202,6 +209,11 @@ class ExtensionWebRequestApiTest : public ExtensionApiTest {
   void SetUpInProcessBrowserTestFixture() override {
     ExtensionApiTest::SetUpInProcessBrowserTestFixture();
     host_resolver()->AddRule("*", "127.0.0.1");
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    ExtensionApiTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitchASCII(switches::kGaiaUrl, "http://gaia.com");
   }
 
   void RunPermissionTest(
@@ -844,6 +856,112 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
   // This request should not be observed by the extension.
   EXPECT_EQ(expected_requests_observed,
             GetWebRequestCountFromBackgroundPage(extension, profile()));
+}
+
+// Checks that the Dice response header is protected for Gaia URLs, but not
+// other URLs.
+IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
+                       WebRequestDiceHeaderProtection) {
+  // Load an extension that registers a listener for webRequest events, and
+  // wait until it is initialized.
+  ExtensionTestMessageListener listener("ready", false);
+  const Extension* extension =
+      LoadExtension(test_data_dir_.AppendASCII("webrequest_dice_header"));
+  ASSERT_TRUE(extension) << message_;
+  EXPECT_TRUE(listener.WaitUntilSatisfied());
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Setup a web contents observer to inspect the response headers after the
+  // extension was run.
+  class TestWebContentsObserver : public content::WebContentsObserver {
+   public:
+    explicit TestWebContentsObserver(content::WebContents* contents)
+        : WebContentsObserver(contents) {}
+
+    void DidFinishNavigation(
+        content::NavigationHandle* navigation_handle) override {
+      // Check that the extension cannot add a Dice header.
+      const net::HttpResponseHeaders* headers =
+          navigation_handle->GetResponseHeaders();
+      EXPECT_TRUE(headers->GetNormalizedHeader(
+          "X-Chrome-ID-Consistency-Response", &dice_header_value_));
+      EXPECT_TRUE(
+          headers->GetNormalizedHeader("X-New-Header", &new_header_value_));
+      EXPECT_TRUE(
+          headers->GetNormalizedHeader("X-Control", &control_header_value_));
+      did_finish_navigation_called_ = true;
+    }
+
+    bool did_finish_navigation_called() const {
+      return did_finish_navigation_called_;
+    }
+
+    const std::string& dice_header_value() const { return dice_header_value_; }
+
+    const std::string& new_header_value() const { return new_header_value_; }
+
+    const std::string& control_header_value() const {
+      return control_header_value_;
+    }
+
+    void Clear() {
+      did_finish_navigation_called_ = false;
+      dice_header_value_.clear();
+      new_header_value_.clear();
+      control_header_value_.clear();
+    }
+
+   private:
+    bool did_finish_navigation_called_ = false;
+    std::string dice_header_value_;
+    std::string new_header_value_;
+    std::string control_header_value_;
+  };
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  TestWebContentsObserver test_webcontents_observer(web_contents);
+
+  // Navigate to the Gaia URL intercepted by the extension.
+  GURL url =
+      embedded_test_server()->GetURL("gaia.com", "/extensions/dice.html");
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // Check that the Dice header was not changed by the extension.
+  EXPECT_TRUE(test_webcontents_observer.did_finish_navigation_called());
+  EXPECT_EQ(kHeaderValueFromServer,
+            test_webcontents_observer.dice_header_value());
+  EXPECT_EQ(kHeaderValueFromExtension,
+            test_webcontents_observer.new_header_value());
+  EXPECT_EQ(kHeaderValueFromExtension,
+            test_webcontents_observer.control_header_value());
+
+  // Check that the Dice header cannot be read by the extension.
+  EXPECT_EQ(0, GetCountFromBackgroundPage(extension, profile(),
+                                          "window.diceResponseHeaderCount"));
+  EXPECT_EQ(1, GetCountFromBackgroundPage(extension, profile(),
+                                          "window.controlResponseHeaderCount"));
+
+  // Navigate to a non-Gaia URL intercepted by the extension.
+  test_webcontents_observer.Clear();
+  url = embedded_test_server()->GetURL("example.com", "/extensions/dice.html");
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // Check that the Dice header was changed by the extension.
+  EXPECT_TRUE(test_webcontents_observer.did_finish_navigation_called());
+  EXPECT_EQ(kHeaderValueFromExtension,
+            test_webcontents_observer.dice_header_value());
+  EXPECT_EQ(kHeaderValueFromExtension,
+            test_webcontents_observer.new_header_value());
+  EXPECT_EQ(kHeaderValueFromExtension,
+            test_webcontents_observer.control_header_value());
+
+  // Check that the Dice header can be read by the extension.
+  EXPECT_EQ(1, GetCountFromBackgroundPage(extension, profile(),
+                                          "window.diceResponseHeaderCount"));
+  EXPECT_EQ(2, GetCountFromBackgroundPage(extension, profile(),
+                                          "window.controlResponseHeaderCount"));
 }
 
 // Test that the webRequest events are dispatched for the WebSocket handshake

@@ -50,12 +50,15 @@
 #include "extensions/common/api/web_request.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/features/feature.h"
+#include "google_apis/gaia/gaia_urls.h"
 #include "net/base/auth.h"
 #include "net/base/elements_upload_data_stream.h"
 #include "net/base/request_priority.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_file_element_reader.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/http/http_response_headers.h"
+#include "net/http/http_util.h"
 #include "net/log/net_log_with_source.h"
 #include "net/log/test_net_log.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -1485,6 +1488,7 @@ TEST(ExtensionWebRequestHelpersTest, TestCalculateOnHeadersReceivedDelta) {
       "Key2: Value2, Bar\r\n"
       "Key3: Value3\r\n"
       "Key5: Value5, end5\r\n"
+      "X-Chrome-ID-Consistency-Response: Value6\r\n"
       "\r\n";
   scoped_refptr<net::HttpResponseHeaders> base_headers(
       new net::HttpResponseHeaders(
@@ -1497,11 +1501,39 @@ TEST(ExtensionWebRequestHelpersTest, TestCalculateOnHeadersReceivedDelta) {
   // Key3 is deleted
   new_headers.push_back(ResponseHeader("Key4", "Value4"));  // Added
   new_headers.push_back(ResponseHeader("Key5", "Value5, end5"));  // Unchanged
-  GURL effective_new_url;
+  new_headers.push_back(ResponseHeader("X-Chrome-ID-Consistency-Response",
+                                       "Value1"));  // Modified
+  GURL url;
 
-  std::unique_ptr<EventResponseDelta> delta(CalculateOnHeadersReceivedDelta(
-      "extid", base::Time::Now(), cancel, effective_new_url, base_headers.get(),
-      &new_headers));
+  // The X-Chrome-ID-Consistency-Response is a protected header, but only for
+  // Gaia URLs. It should be modifiable when sent from anywhere else.
+  // Non-Gaia URL:
+  std::unique_ptr<EventResponseDelta> delta(
+      CalculateOnHeadersReceivedDelta("extid", base::Time::Now(), cancel, url,
+                                      url, base_headers.get(), &new_headers));
+  ASSERT_TRUE(delta.get());
+  EXPECT_TRUE(delta->cancel);
+  EXPECT_EQ(3u, delta->added_response_headers.size());
+  EXPECT_TRUE(base::ContainsValue(delta->added_response_headers,
+                                  ResponseHeader("Key2", "Value1")));
+  EXPECT_TRUE(base::ContainsValue(delta->added_response_headers,
+                                  ResponseHeader("Key4", "Value4")));
+  EXPECT_TRUE(base::ContainsValue(
+      delta->added_response_headers,
+      ResponseHeader("X-Chrome-ID-Consistency-Response", "Value1")));
+  EXPECT_EQ(3u, delta->deleted_response_headers.size());
+  EXPECT_TRUE(base::ContainsValue(delta->deleted_response_headers,
+                                  ResponseHeader("Key2", "Value2, Bar")));
+  EXPECT_TRUE(base::ContainsValue(delta->deleted_response_headers,
+                                  ResponseHeader("Key3", "Value3")));
+  EXPECT_TRUE(base::ContainsValue(
+      delta->deleted_response_headers,
+      ResponseHeader("X-Chrome-ID-Consistency-Response", "Value6")));
+
+  // Gaia URL:
+  delta.reset(CalculateOnHeadersReceivedDelta(
+      "extid", base::Time::Now(), cancel, GaiaUrls::GetInstance()->gaia_url(),
+      url, base_headers.get(), &new_headers));
   ASSERT_TRUE(delta.get());
   EXPECT_TRUE(delta->cancel);
   EXPECT_EQ(2u, delta->added_response_headers.size());

@@ -4,7 +4,17 @@
 
 #include "extensions/browser/api/web_request/web_request_event_details.h"
 
+#include "base/message_loop/message_loop.h"
+#include "base/values.h"
+#include "extensions/browser/api/web_request/web_request_api_constants.h"
+#include "extensions/browser/api/web_request/web_request_api_helpers.h"
+#include "google_apis/gaia/gaia_urls.h"
+#include "net/http/http_response_headers.h"
+#include "net/http/http_util.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace extensions {
 
@@ -62,6 +72,62 @@ TEST(WebRequestEventDetailsTest, WhitelistedCopyForPublicSession) {
 
   // Extras are filtered out (+1 for url).
   EXPECT_EQ(arraysize(safe_attributes) + 1, copy->dict_.size());
+}
+
+TEST(WebRequestEventDetailsTest, SetResponseHeaders) {
+  const int kFilter =
+      extension_web_request_api_helpers::ExtraInfoSpec::RESPONSE_HEADERS;
+  base::MessageLoop message_loop;
+  net::TestURLRequestContext context;
+
+  char headers_string[] =
+      "HTTP/1.0 200 OK\r\n"
+      "Key1: Value1\r\n"
+      "X-Chrome-ID-Consistency-Response: Value2\r\n"
+      "\r\n";
+  scoped_refptr<net::HttpResponseHeaders> headers(
+      new net::HttpResponseHeaders(net::HttpUtil::AssembleRawHeaders(
+          headers_string, sizeof(headers_string))));
+
+  {
+    // Non-Gaia URL.
+    std::unique_ptr<net::URLRequest> request = context.CreateRequest(
+        GURL("http://www.example.com"), net::DEFAULT_PRIORITY, nullptr,
+        TRAFFIC_ANNOTATION_FOR_TESTS);
+    WebRequestEventDetails details(request.get(), kFilter);
+    details.SetResponseHeaders(request.get(), headers.get());
+    std::unique_ptr<base::DictionaryValue> dict =
+        details.GetFilteredDict(kFilter);
+    base::Value* filtered_headers = dict->FindPath({"responseHeaders"});
+    ASSERT_TRUE(filtered_headers);
+    EXPECT_EQ(2u, filtered_headers->GetList().size());
+    EXPECT_EQ("Key1",
+              filtered_headers->GetList()[0].FindPath({"name"})->GetString());
+    EXPECT_EQ("Value1",
+              filtered_headers->GetList()[0].FindPath({"value"})->GetString());
+    EXPECT_EQ("X-Chrome-ID-Consistency-Response",
+              filtered_headers->GetList()[1].FindPath({"name"})->GetString());
+    EXPECT_EQ("Value2",
+              filtered_headers->GetList()[1].FindPath({"value"})->GetString());
+  }
+
+  {
+    // Gaia URL.
+    std::unique_ptr<net::URLRequest> gaia_request = context.CreateRequest(
+        GaiaUrls::GetInstance()->gaia_url(), net::DEFAULT_PRIORITY, nullptr,
+        TRAFFIC_ANNOTATION_FOR_TESTS);
+    WebRequestEventDetails gaia_details(gaia_request.get(), kFilter);
+    gaia_details.SetResponseHeaders(gaia_request.get(), headers.get());
+    std::unique_ptr<base::DictionaryValue> dict =
+        gaia_details.GetFilteredDict(kFilter);
+    base::Value* filtered_headers = dict->FindPath({"responseHeaders"});
+    ASSERT_TRUE(filtered_headers);
+    EXPECT_EQ(1u, filtered_headers->GetList().size());
+    EXPECT_EQ("Key1",
+              filtered_headers->GetList()[0].FindPath({"name"})->GetString());
+    EXPECT_EQ("Value1",
+              filtered_headers->GetList()[0].FindPath({"value"})->GetString());
+  }
 }
 
 }  // namespace extensions

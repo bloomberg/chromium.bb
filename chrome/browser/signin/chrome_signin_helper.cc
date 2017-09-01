@@ -42,7 +42,6 @@ namespace {
 const char kChromeManageAccountsHeader[] = "X-Chrome-Manage-Accounts";
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
-const char kDiceResponseHeader[] = "X-Chrome-ID-Consistency-Response";
 const char kGoogleSignoutResponseHeader[] = "Google-Accounts-SignOut";
 #endif
 
