@@ -79,6 +79,16 @@ def get_webkitpy_thirdparty_dir():
     return os.path.join(get_scripts_dir(), 'webkitpy', 'thirdparty')
 
 
+def get_blink_tools_dir():
+    return os.path.join(get_chromium_src_dir(), 'third_party', 'blink', 'tools')
+
+
+def add_blink_tools_dir_to_sys_path():
+    path = get_blink_tools_dir()
+    if path not in sys.path:
+        sys.path.append(path)
+
+
 class PathFinder(object):
 
     def __init__(self, filesystem, sys_path=None, env_path=None):
