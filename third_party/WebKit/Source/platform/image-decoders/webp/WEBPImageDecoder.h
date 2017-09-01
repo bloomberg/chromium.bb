@@ -30,6 +30,7 @@
 #define WEBPImageDecoder_h
 
 #include "platform/image-decoders/ImageDecoder.h"
+#include "platform/wtf/Time.h"
 #include "webp/decode.h"
 #include "webp/demux.h"
 
@@ -49,7 +50,7 @@ class PLATFORM_EXPORT WEBPImageDecoder final : public ImageDecoder {
   void OnSetData(SegmentReader* data) override;
   int RepetitionCount() const override;
   bool FrameIsReceivedAtIndex(size_t) const override;
-  float FrameDurationAtIndex(size_t) const override;
+  TimeDelta FrameDurationAtIndex(size_t) const override;
 
  private:
   // ImageDecoder:

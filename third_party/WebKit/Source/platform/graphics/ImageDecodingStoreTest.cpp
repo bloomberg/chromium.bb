@@ -57,7 +57,7 @@ class ImageDecodingStoreTest : public ::testing::Test,
 
   size_t FrameCount() override { return 1; }
   int RepetitionCount() const override { return kAnimationNone; }
-  float FrameDuration() const override { return 0; }
+  TimeDelta FrameDuration() const override { return TimeDelta(); }
 
  protected:
   void EvictOneCache() {

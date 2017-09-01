@@ -37,6 +37,7 @@
 #include "platform/image-decoders/SegmentReader.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/RefPtr.h"
+#include "platform/wtf/Time.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/Platform.h"
@@ -197,9 +198,9 @@ class PLATFORM_EXPORT ImageDecoder {
   // Returns true if a cached complete decode is available.
   bool FrameIsDecodedAtIndex(size_t) const;
 
-  // Duration for displaying a frame in milliseconds. This method is only used
-  // by animated images.
-  virtual float FrameDurationAtIndex(size_t) const { return 0; }
+  // Duration for displaying a frame. This method is only used by animated
+  // images.
+  virtual TimeDelta FrameDurationAtIndex(size_t) const { return TimeDelta(); }
 
   // Number of bytes in the decoded frame. Returns 0 if the decoder doesn't
   // have this frame cached (either because it hasn't been decoded, or because

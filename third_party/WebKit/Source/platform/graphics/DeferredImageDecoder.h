@@ -33,6 +33,7 @@
 #include "platform/image-decoders/ImageDecoder.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Forward.h"
+#include "platform/wtf/Time.h"
 #include "platform/wtf/Vector.h"
 #include "third_party/skia/include/core/SkRWBuffer.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
@@ -74,9 +75,7 @@ class PLATFORM_EXPORT DeferredImageDecoder final {
   void ClearCacheExceptFrame(size_t index);
   bool FrameHasAlphaAtIndex(size_t index) const;
   bool FrameIsReceivedAtIndex(size_t index) const;
-  // Duration is reported in seconds.
-  // TODO(vmpstr): Use something like TimeDelta here.
-  float FrameDurationAtIndex(size_t index) const;
+  TimeDelta FrameDurationAtIndex(size_t index) const;
   ImageOrientation OrientationAtIndex(size_t index) const;
   bool HotSpot(IntPoint&) const;
 

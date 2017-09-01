@@ -128,10 +128,10 @@ bool GIFImageDecoder::FrameIsReceivedAtIndex(size_t index) const {
   return frame_info.fFullyReceived;
 }
 
-float GIFImageDecoder::FrameDurationAtIndex(size_t index) const {
+TimeDelta GIFImageDecoder::FrameDurationAtIndex(size_t index) const {
   if (index < frame_buffer_cache_.size())
     return frame_buffer_cache_[index].Duration();
-  return 0;
+  return TimeDelta();
 }
 
 bool GIFImageDecoder::SetFailed() {
@@ -182,7 +182,7 @@ void GIFImageDecoder::InitializeNewFrame(size_t index) {
   SkCodec::FrameInfo frame_info;
   bool frame_info_received = codec_->getFrameInfo(index, &frame_info);
   DCHECK(frame_info_received);
-  frame.SetDuration(frame_info.fDuration);
+  frame.SetDuration(TimeDelta::FromMilliseconds(frame_info.fDuration));
   size_t required_previous_frame_index;
   if (frame_info.fRequiredFrame == SkCodec::kNone) {
     required_previous_frame_index = kNotFound;

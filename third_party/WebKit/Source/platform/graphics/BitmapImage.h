@@ -39,6 +39,7 @@
 #include "platform/graphics/ImageOrientation.h"
 #include "platform/image-decoders/ImageAnimation.h"
 #include "platform/wtf/Forward.h"
+#include "platform/wtf/Time.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
 namespace blink {
@@ -119,7 +120,7 @@ class PLATFORM_EXPORT BitmapImage final : public Image {
   PaintImage FrameAtIndex(size_t);
 
   bool FrameIsReceivedAtIndex(size_t) const;
-  float FrameDurationAtIndex(size_t) const;
+  TimeDelta FrameDurationAtIndex(size_t) const;
   bool FrameHasAlphaAtIndex(size_t);
   ImageOrientation FrameOrientationAtIndex(size_t);
 
