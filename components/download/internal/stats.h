@@ -147,7 +147,6 @@ void LogRecoveryOperation(Entry::State to_state);
 
 // Logs download completion event, download time, and the file size.
 void LogDownloadCompletion(CompletionType type,
-                           const base::TimeDelta& time_span,
                            uint64_t file_size_bytes);
 
 // Logs statistics about the result of a model operation.  Used to track failure

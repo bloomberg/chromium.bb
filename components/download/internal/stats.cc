@@ -207,7 +207,6 @@ void LogRecoveryOperation(Entry::State to_state) {
 }
 
 void LogDownloadCompletion(CompletionType type,
-                           const base::TimeDelta& time_span,
                            uint64_t file_size_bytes) {
   // Records completion type.
   UMA_HISTOGRAM_ENUMERATION("Download.Service.Finish.Type", type,
