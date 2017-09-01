@@ -31,6 +31,7 @@
 #include "components/payments/core/journey_logger.h"
 #include "components/payments/core/payment_address.h"
 #include "components/payments/core/payment_details.h"
+#include "components/payments/core/payment_details_validation.h"
 #include "components/payments/core/payment_instrument.h"
 #include "components/payments/core/payment_prefs.h"
 #include "components/payments/core/payment_request_base_delegate.h"
@@ -427,7 +428,7 @@ struct PendingPaymentResponse {
 - (BOOL)handleScriptCommand:(const base::DictionaryValue&)JSONCommand {
   std::string command;
   if (!JSONCommand.GetString("command", &command)) {
-    DLOG(ERROR) << "RECEIVED BAD JSON - NO 'command' field";
+    LOG(ERROR) << "Received bad JSON: No 'command' field";
     return NO;
   }
 
@@ -457,20 +458,28 @@ struct PendingPaymentResponse {
 
 // Extracts a web::PaymentRequest from |message|. Creates and returns an
 // instance of payments::PaymentRequest which is initialized with the
-// web::PaymentRequest object. Returns nullptr if it cannot extract a
-// web::PaymentRequest from |message|.
-- (payments::PaymentRequest*)newPaymentRequestFromMessage:
-    (const base::DictionaryValue&)message {
+// web::PaymentRequest object. Returns nullptr and populates |errorMessage| with
+// the appropriate error message if it cannot extract a web::PaymentRequest from
+// |message| or the web::PaymentRequest instance is invalid.
+- (payments::PaymentRequest*)
+newPaymentRequestFromMessage:(const base::DictionaryValue&)message
+                errorMessage:(std::string*)errorMessage {
+  DCHECK(errorMessage);
   const base::DictionaryValue* paymentRequestData;
   web::PaymentRequest webPaymentRequest;
   if (!message.GetDictionary("payment_request", &paymentRequestData)) {
-    DLOG(ERROR) << "JS message parameter 'payment_request' is missing";
+    *errorMessage = "JS message parameter 'payment_request' is missing";
     return nullptr;
   }
   if (!webPaymentRequest.FromDictionaryValue(*paymentRequestData)) {
-    DLOG(ERROR) << "JS message parameter 'payment_request' is invalid";
+    *errorMessage = "Cannot create payment request";
     return nullptr;
   }
+  if (!payments::ValidatePaymentDetails(webPaymentRequest.details,
+                                        errorMessage)) {
+    return nullptr;
+  }
+
   return _paymentRequestCache->AddPaymentRequest(
       _activeWebState, base::MakeUnique<payments::PaymentRequest>(
                            webPaymentRequest, _browserState, _activeWebState,
@@ -481,18 +490,26 @@ struct PendingPaymentResponse {
 // payments::PaymentRequest that corresponds to the extracted
 // web::PaymentRequest object, if one exists. Otherwise, creates and returns a
 // new one which is initialized with the web::PaymentRequest object. Returns
-// nullptr if it cannot extract a web::PaymentRequest from |message| or cannot
-// find the payments::PaymentRequest instance.
-- (payments::PaymentRequest*)paymentRequestFromMessage:
-    (const base::DictionaryValue&)message {
+// nullptr and populates |errorMessage| with the appropriate error message if it
+// cannot extract a web::PaymentRequest from |message|, cannot find the
+// payments::PaymentRequest instance or the web::PaymentRequest instance is
+// invalid.
+- (payments::PaymentRequest*)
+paymentRequestFromMessage:(const base::DictionaryValue&)message
+             errorMessage:(std::string*)errorMessage {
+  DCHECK(errorMessage);
   const base::DictionaryValue* paymentRequestData;
   web::PaymentRequest webPaymentRequest;
   if (!message.GetDictionary("payment_request", &paymentRequestData)) {
-    DLOG(ERROR) << "JS message parameter 'payment_request' is missing";
+    *errorMessage = "JS message parameter 'payment_request' is missing";
     return nullptr;
   }
   if (!webPaymentRequest.FromDictionaryValue(*paymentRequestData)) {
-    DLOG(ERROR) << "JS message parameter 'payment_request' is invalid";
+    *errorMessage = "Cannot create payment request";
+    return nullptr;
+  }
+  if (!payments::ValidatePaymentDetails(webPaymentRequest.details,
+                                        errorMessage)) {
     return nullptr;
   }
 
@@ -500,28 +517,30 @@ struct PendingPaymentResponse {
 }
 
 - (BOOL)handleCreatePaymentRequest:(const base::DictionaryValue&)message {
+  std::string errorMessage;
   payments::PaymentRequest* paymentRequest =
-      [self newPaymentRequestFromMessage:message];
+      [self newPaymentRequestFromMessage:message errorMessage:&errorMessage];
   if (!paymentRequest) {
+    LOG(ERROR) << errorMessage;
     [_paymentRequestJsManager
         throwDOMExceptionWithErrorName:kInvalidStateError
-                          errorMessage:@"Cannot create payment request"
+                          errorMessage:base::SysUTF8ToNSString(errorMessage)
                      completionHandler:nil];
   }
   return YES;
 }
 
 - (BOOL)handleRequestShow:(const base::DictionaryValue&)message {
+  std::string errorMessage;
   payments::PaymentRequest* paymentRequest =
-      [self paymentRequestFromMessage:message];
+      [self paymentRequestFromMessage:message errorMessage:&errorMessage];
   if (!paymentRequest) {
     LOG(ERROR) << "Request promise rejected: "
-               << base::SysNSStringToUTF16(kInvalidStateError)
-               << "Cannot show the payment request";
+               << base::SysNSStringToUTF16(kInvalidStateError) << errorMessage;
     [self abortPaymentRequest:nil
                        reason:payments::JourneyLogger::ABORT_REASON_OTHER
                     errorName:kInvalidStateError
-                 errorMessage:@"Cannot show the payment request"
+                 errorMessage:base::SysUTF8ToNSString(errorMessage)
                      callback:nil];
     return YES;
   }
@@ -656,12 +675,15 @@ struct PendingPaymentResponse {
 }
 
 - (BOOL)handleCanMakePayment:(const base::DictionaryValue&)message {
+  std::string errorMessage;
   payments::PaymentRequest* paymentRequest =
-      [self paymentRequestFromMessage:message];
+      [self paymentRequestFromMessage:message errorMessage:&errorMessage];
   if (!paymentRequest) {
+    LOG(ERROR) << errorMessage;
     [_paymentRequestJsManager
         rejectCanMakePaymentPromiseWithErrorName:kInvalidStateError
-                                    errorMessage:@"Cannot query payment request"
+                                    errorMessage:base::SysUTF8ToNSString(
+                                                     errorMessage)
                                completionHandler:nil];
     return YES;
   }
@@ -758,7 +780,7 @@ struct PendingPaymentResponse {
 
   std::string result;
   if (!message.GetString("result", &result)) {
-    DLOG(ERROR) << "JS message parameter 'result' is missing";
+    LOG(ERROR) << "JS message parameter 'result' is missing";
     return NO;
   }
 
@@ -798,7 +820,7 @@ struct PendingPaymentResponse {
 
   bool updating;
   if (!message.GetBoolean("updating", &updating)) {
-    DLOG(ERROR) << "JS message parameter 'updating' is missing";
+    LOG(ERROR) << "JS message parameter 'updating' is missing";
     return NO;
   }
 
@@ -820,12 +842,17 @@ struct PendingPaymentResponse {
   const base::DictionaryValue* paymentDetailsData = nullptr;
   payments::PaymentDetails paymentDetails;
   if (!message.GetDictionary("payment_details", &paymentDetailsData)) {
-    DLOG(ERROR) << "JS message parameter 'payment_details' is missing";
+    LOG(ERROR) << "JS message parameter 'payment_details' is missing";
     return NO;
   }
   if (!paymentDetails.FromDictionaryValue(*paymentDetailsData,
                                           /*requires_total=*/false)) {
-    DLOG(ERROR) << "JS message parameter 'payment_details' is invalid";
+    LOG(ERROR) << "Cannot create payment details";
+    return NO;
+  }
+  std::string errorMessage;
+  if (!payments::ValidatePaymentDetails(paymentDetails, &errorMessage)) {
+    LOG(ERROR) << errorMessage;
     return NO;
   }
 
@@ -878,14 +905,14 @@ struct PendingPaymentResponse {
   }
 
   if (!_activeWebState->ContentIsHTML()) {
-    DLOG(ERROR) << "Not a web view with HTML.";
+    LOG(ERROR) << "Not a web view with HTML.";
     return NO;
   }
 
   const GURL lastCommittedURL = _activeWebState->GetLastCommittedURL();
 
   if (!payments::OriginSecurityChecker::IsContextSecure(lastCommittedURL)) {
-    DLOG(ERROR) << "Not in a secure context.";
+    LOG(ERROR) << "Not in a secure context.";
     return NO;
   }
 
@@ -893,7 +920,7 @@ struct PendingPaymentResponse {
           lastCommittedURL) &&
       !payments::OriginSecurityChecker::IsOriginLocalhostOrFile(
           lastCommittedURL)) {
-    DLOG(ERROR) << "Not localhost, or with file or cryptographic scheme.";
+    LOG(ERROR) << "Not localhost, or with file or cryptographic scheme.";
     return NO;
   }
 
