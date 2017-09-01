@@ -103,6 +103,17 @@ void av1_setup_frame_boundary_info(const AV1_COMMON *const cm) {
   }
 }
 
+int get_tile_size(int frame_mi_size, int log2_tile_num) {
+  // Round the frame up to a whole number of max superblocks
+  frame_mi_size = ALIGN_POWER_OF_TWO(frame_mi_size, MAX_MIB_SIZE_LOG2);
+  // Divide by the number of tiles, rounding up to the multiple of the max
+  // superblock size. To do this, shift right (and round up) to get the number
+  // of super-blocks and then shift left again to convert it to mi units.
+  const int shift = log2_tile_num + MAX_MIB_SIZE_LOG2;
+  const int round = (1 << shift) - 1;
+  return ((frame_mi_size + round) >> shift) << MAX_MIB_SIZE_LOG2;
+}
+
 #if CONFIG_LOOPFILTERING_ACROSS_TILES
 void av1_setup_across_tile_boundary_info(const AV1_COMMON *const cm,
                                          const TileInfo *const tile_info) {
