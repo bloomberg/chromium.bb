@@ -144,14 +144,6 @@ void BackdropController::OnOverviewModeEnded() {
   RemoveForceHidden();
 }
 
-void BackdropController::OnSplitViewModeStarting() {
-  AddForceHidden();
-}
-
-void BackdropController::OnSplitViewModeEnded() {
-  RemoveForceHidden();
-}
-
 void BackdropController::OnAppListVisibilityChanged(bool shown,
                                                     aura::Window* root_window) {
   // Ignore the notification if it is not for this display.
@@ -215,16 +207,6 @@ void BackdropController::UpdateAccessibilityMode() {
 }
 
 aura::Window* BackdropController::GetTopmostWindowWithBackdrop() {
-  // ARC app should always have a backdrop when spoken feedback is enabled.
-  if (Shell::Get()->accessibility_delegate()->IsSpokenFeedbackEnabled()) {
-    aura::Window* active_window = wm::GetActiveWindow();
-    if (active_window && active_window->parent() == container_ &&
-        active_window->GetProperty(aura::client::kAppType) ==
-            static_cast<int>(AppType::ARC_APP)) {
-      return active_window;
-    }
-  }
-
   const aura::Window::Windows windows = container_->children();
   for (auto window_iter = windows.rbegin(); window_iter != windows.rend();
        ++window_iter) {
@@ -243,6 +225,16 @@ bool BackdropController::WindowShouldHaveBackdrop(aura::Window* window) {
       window->GetProperty(aura::client::kHasBackdrop)) {
     return true;
   }
+
+  // If |window| is the current active window and is an ARC app window, |window|
+  // should have a backdrop when spoken feedback is enabled.
+  if (window->GetProperty(aura::client::kAppType) ==
+          static_cast<int>(AppType::ARC_APP) &&
+      wm::IsActiveWindow(window) &&
+      Shell::Get()->accessibility_delegate()->IsSpokenFeedbackEnabled()) {
+    return true;
+  }
+
   return delegate_ ? delegate_->HasBackdrop(window) : false;
 }
 

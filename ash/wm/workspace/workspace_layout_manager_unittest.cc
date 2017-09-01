@@ -9,6 +9,7 @@
 
 #include "ash/accessibility_delegate.h"
 #include "ash/app_list/test_app_list_presenter_impl.h"
+#include "ash/ash_switches.h"
 #include "ash/frame/custom_frame_view_ash.h"
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/config.h"
@@ -28,7 +29,9 @@
 #include "ash/test/test_accessibility_delegate.h"
 #include "ash/wm/fullscreen_window_finder.h"
 #include "ash/wm/overview/window_selector_controller.h"
+#include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_backdrop_delegate_impl.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
@@ -1653,6 +1656,69 @@ TEST_F(WorkspaceLayoutManagerKeyboardTest, IgnoreKeyboardBoundsChange) {
   EXPECT_EQ(keyboard_bounds(), window->bounds());
   ShowKeyboard();
   EXPECT_EQ(keyboard_bounds(), window->bounds());
+}
+
+// Test that backdrop works in split view mode.
+TEST_F(WorkspaceLayoutManagerBackdropTest, BackdropForSplitScreenTest) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kAshEnableTabletSplitView);
+  ShowTopWindowBackdropForContainer(default_container(), true);
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+
+  SplitViewController* split_view_controller =
+      Shell::Get()->split_view_controller();
+
+  const gfx::Rect bounds(0, 0, 400, 400);
+  std::unique_ptr<aura::Window> window1(CreateTestWindow(bounds));
+  window1->Show();
+
+  // Test that backdrop window is visible and is the second child in the
+  // container. Its bounds should be the same as the container bounds.
+  ASSERT_EQ(2U, default_container()->children().size());
+  EXPECT_TRUE(default_container()->children()[0]->IsVisible());
+  EXPECT_TRUE(default_container()->children()[1]->IsVisible());
+  EXPECT_EQ(window1.get(), default_container()->children()[1]);
+  EXPECT_EQ(default_container()->bounds(),
+            default_container()->children()[0]->bounds());
+
+  // Snap the window to left. Test that the backdrop window is still visible
+  // and is the second child in the container. Its bounds should still be the
+  // same as the container bounds.
+  split_view_controller->SnapWindow(window1.get(), SplitViewController::LEFT);
+  ASSERT_EQ(2U, default_container()->children().size());
+  EXPECT_TRUE(default_container()->children()[0]->IsVisible());
+  EXPECT_TRUE(default_container()->children()[1]->IsVisible());
+  EXPECT_EQ(window1.get(), default_container()->children()[1]);
+  EXPECT_EQ(default_container()->bounds(),
+            default_container()->children()[0]->bounds());
+
+  // Now snap another window to right. Test that the backdrop window is still
+  // visible but is now the third window in the container. Its bounds should
+  // still be the same as the container bounds.
+  std::unique_ptr<aura::Window> window2(CreateTestWindow(bounds));
+  split_view_controller->SnapWindow(window2.get(), SplitViewController::RIGHT);
+
+  ASSERT_EQ(3U, default_container()->children().size());
+  EXPECT_TRUE(default_container()->children()[0]->IsVisible());
+  EXPECT_TRUE(default_container()->children()[1]->IsVisible());
+  EXPECT_TRUE(default_container()->children()[2]->IsVisible());
+  EXPECT_EQ(window1.get(), default_container()->children()[1]);
+  EXPECT_EQ(window2.get(), default_container()->children()[2]);
+  EXPECT_EQ(default_container()->bounds(),
+            default_container()->children()[0]->bounds());
+
+  // Test activation change correctly updates the backdrop.
+  wm::ActivateWindow(window1.get());
+  EXPECT_EQ(window1.get(), default_container()->children()[2]);
+  EXPECT_EQ(window2.get(), default_container()->children()[1]);
+  EXPECT_EQ(default_container()->bounds(),
+            default_container()->children()[0]->bounds());
+
+  wm::ActivateWindow(window2.get());
+  EXPECT_EQ(window1.get(), default_container()->children()[1]);
+  EXPECT_EQ(window2.get(), default_container()->children()[2]);
+  EXPECT_EQ(default_container()->bounds(),
+            default_container()->children()[0]->bounds());
 }
 
 }  // namespace ash
