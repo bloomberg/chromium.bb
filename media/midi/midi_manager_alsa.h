@@ -396,6 +396,10 @@ class MIDI_EXPORT MidiManagerAlsa final : public MidiManager {
   // Returns true if successful.
   bool Subscribe(uint32_t port_index, int client_id, int port_id);
 
+  // Allocates new snd_midi_event_t instance and wraps it to return as
+  // ScopedSndMidiEventPtr.
+  ScopedSndMidiEventPtr CreateScopedSndMidiEventPtr(size_t size);
+
   // Members initialized in the constructor are below.
   // Our copies of the internal state of the ports of seq and udev.
   AlsaSeqState alsa_seq_state_;
