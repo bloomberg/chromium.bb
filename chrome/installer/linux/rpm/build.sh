@@ -179,7 +179,6 @@ do_package() {
   gen_spec
 
   # Create temporary rpmbuild dirs.
-  RPMBUILD_DIR=$(mktemp -d -t rpmbuild.XXXXXX) || exit 1
   mkdir -p "$RPMBUILD_DIR/BUILD"
   mkdir -p "$RPMBUILD_DIR/RPMS"
 
@@ -198,7 +197,6 @@ do_package() {
   # Make sure the package is world-readable, otherwise it causes problems when
   # copied to share drive.
   chmod a+r "${OUTPUTDIR}/${PKGNAME}.${ARCHITECTURE}.rpm"
-  rm -rf "$RPMBUILD_DIR"
 
   verify_package "$DEPENDS"
 }
@@ -207,6 +205,7 @@ do_package() {
 cleanup() {
   rm -rf "${STAGEDIR}"
   rm -rf "${TMPFILEDIR}"
+  rm -rf "${RPMBUILD_DIR}"
 }
 
 usage() {
@@ -301,8 +300,6 @@ process_opts() {
 
 SCRIPTDIR=$(readlink -f "$(dirname "$0")")
 OUTPUTDIR="${PWD}"
-STAGEDIR=$(mktemp -d -t rpm.build.XXXXXX) || exit 1
-TMPFILEDIR=$(mktemp -d -t rpm.tmp.XXXXXX) || exit 1
 CHANNEL="trunk"
 # Default target architecture to same as build host.
 if [ "$(uname -m)" = "x86_64" ]; then
@@ -310,12 +307,19 @@ if [ "$(uname -m)" = "x86_64" ]; then
 else
   TARGETARCH="ia32"
 fi
-SPEC="${TMPFILEDIR}/chrome.spec"
 
 # call cleanup() on exit
 trap cleanup 0
 process_opts "$@"
 BUILDDIR=${BUILDDIR:=$(readlink -f "${SCRIPTDIR}/../../../../out/Release")}
+
+STAGEDIR="${BUILDDIR}/rpm-staging-${CHANNEL}"
+mkdir -p "${STAGEDIR}"
+TMPFILEDIR="${BUILDDIR}/rpm-tmp-${CHANNEL}"
+mkdir -p "${TMPFILEDIR}"
+RPMBUILD_DIR="${BUILDDIR}/rpm-build-${CHANNEL}"
+mkdir -p "${RPMBUILD_DIR}"
+SPEC="${TMPFILEDIR}/chrome.spec"
 
 source ${BUILDDIR}/installer/common/installer.include
 
