@@ -423,6 +423,12 @@ const base::Feature kStaggeredBackgroundTabOpeningExperiment{
 const base::Feature kSupervisedUserCreation{"SupervisedUserCreation",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
+#if defined(OS_CHROMEOS)
+// Enables or disables chrome://sys-internals.
+const base::Feature kSysInternals{"SysInternals",
+                                  base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 #if defined(SYZYASAN)
 // Enable the deferred free mechanism in the syzyasan module, which helps the
 // performance by deferring some work on the critical path to a background

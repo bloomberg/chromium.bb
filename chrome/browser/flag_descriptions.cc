@@ -2467,6 +2467,11 @@ const char kSpuriousPowerButtonLidAngleChangeDescription[] =
     "Change in lid angle (i.e. hinge between keyboard and screen) that must be "
     "met or exceeded for a power button event to be considered spurious.";
 
+const char kSysInternalsName[] = "Enable Sys-Internals";
+const char kSysInternalsDescription[] =
+    "If enabled, user can monitor system information at "
+    "chrome://sys-internals.";
+
 const char kTeamDrivesName[] = "Enable Team Drives Integration";
 const char kTeamDrivesDescription[] =
     "If enabled, files under Team Drives will appear in the Files app.";
