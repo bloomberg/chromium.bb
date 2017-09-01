@@ -122,7 +122,9 @@ class WTF_EXPORT ArrayBufferContents {
     void* Data() const { return data_; }
     size_t DataLength() const { return data_length_; }
 
-    ArrayBufferContents::AllocationKind AllocationKind() const { return kind_; }
+    ArrayBufferContents::AllocationKind GetAllocationKind() const {
+      return kind_;
+    }
 
     operator bool() const { return allocation_base_; }
 
