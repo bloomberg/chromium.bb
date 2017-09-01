@@ -14,21 +14,21 @@
 #include "base/run_loop.h"
 #include "chrome/browser/ui/sync/one_click_signin_links_delegate.h"
 #include "chrome/browser/ui/views/chrome_constrained_window_views_client.h"
+#include "chrome/test/views/chrome_views_test_base.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "ui/events/event_utils.h"
 #include "ui/views/controls/button/label_button.h"
-#include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 #include "ui/views/window/dialog_client_view.h"
 
-class OneClickSigninDialogViewTest : public views::ViewsTestBase,
+class OneClickSigninDialogViewTest : public ChromeViewsTestBase,
                                      public views::WidgetObserver {
  public:
   OneClickSigninDialogViewTest() {}
 
   void SetUp() override {
-    views::ViewsTestBase::SetUp();
+    ChromeViewsTestBase::SetUp();
     SetConstrainedWindowViewsClient(CreateChromeConstrainedWindowViewsClient());
 
     // Create a widget to host the anchor view.
@@ -43,7 +43,7 @@ class OneClickSigninDialogViewTest : public views::ViewsTestBase,
     OneClickSigninDialogView::Hide();
     anchor_widget_->Close();
     anchor_widget_ = NULL;
-    views::ViewsTestBase::TearDown();
+    ChromeViewsTestBase::TearDown();
   }
 
  protected:

@@ -47,8 +47,8 @@ enum ChromeDistanceMetric {
 
 class ChromeLayoutProvider : public views::LayoutProvider {
  public:
-  ChromeLayoutProvider() {}
-  ~ChromeLayoutProvider() override {}
+  ChromeLayoutProvider();
+  ~ChromeLayoutProvider() override;
 
   static ChromeLayoutProvider* Get();
   static std::unique_ptr<views::LayoutProvider> CreateLayoutProvider();

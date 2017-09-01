@@ -259,6 +259,10 @@ static_library("test_support") {
   }
   if (toolkit_views) {
     public_deps += [ "//ui/views:test_support" ]
+    sources += [
+      "views/chrome_views_test_base.cc",
+      "views/chrome_views_test_base.h",
+    ]
   }
 }
 

@@ -12,8 +12,26 @@
 #include "chrome/browser/ui/views/harmony/harmony_layout_provider.h"
 #include "ui/base/material_design/material_design_controller.h"
 
+namespace {
+
+ChromeLayoutProvider* g_chrome_layout_provider = nullptr;
+
+}  // namespace
+
+ChromeLayoutProvider::ChromeLayoutProvider() {
+  DCHECK_EQ(nullptr, g_chrome_layout_provider);
+  g_chrome_layout_provider = this;
+}
+
+ChromeLayoutProvider::~ChromeLayoutProvider() {
+  DCHECK_EQ(this, g_chrome_layout_provider);
+  g_chrome_layout_provider = nullptr;
+}
+
 // static
 ChromeLayoutProvider* ChromeLayoutProvider::Get() {
+  // Check to avoid downcasting a base LayoutProvider.
+  DCHECK_EQ(g_chrome_layout_provider, views::LayoutProvider::Get());
   return static_cast<ChromeLayoutProvider*>(views::LayoutProvider::Get());
 }
 
