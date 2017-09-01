@@ -167,7 +167,7 @@ ClientCertIdentityList ClientCertStoreNSS::GetAndFilterCertsOnWorkerThread(
         password_delegate,
     const SSLCertRequestInfo* request) {
   ClientCertIdentityList selected_identities;
-  GetPlatformCertsOnWorkerThread(std::move(password_delegate),
+  GetPlatformCertsOnWorkerThread(std::move(password_delegate), CertFilter(),
                                  &selected_identities);
   FilterCertsOnWorkerThread(&selected_identities, *request);
   return selected_identities;
@@ -177,6 +177,7 @@ ClientCertIdentityList ClientCertStoreNSS::GetAndFilterCertsOnWorkerThread(
 void ClientCertStoreNSS::GetPlatformCertsOnWorkerThread(
     scoped_refptr<crypto::CryptoModuleBlockingPasswordDelegate>
         password_delegate,
+    const CertFilter& cert_filter,
     ClientCertIdentityList* identities) {
   CERTCertList* found_certs =
       CERT_FindUserCertsByUsage(CERT_GetDefaultCertDB(), certUsageSSLClient,
@@ -187,6 +188,8 @@ void ClientCertStoreNSS::GetPlatformCertsOnWorkerThread(
   }
   for (CERTCertListNode* node = CERT_LIST_HEAD(found_certs);
        !CERT_LIST_END(node, found_certs); node = CERT_LIST_NEXT(node)) {
+    if (!cert_filter.is_null() && !cert_filter.Run(node->cert))
+      continue;
     scoped_refptr<X509Certificate> cert =
         x509_util::CreateX509CertificateFromCERTCertificate(node->cert);
     if (!cert) {

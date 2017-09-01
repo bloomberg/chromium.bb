@@ -19,6 +19,7 @@
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider.h"
 #include "crypto/scoped_test_nss_db.h"
 #include "net/cert/x509_certificate.h"
+#include "net/cert/x509_util_nss.h"
 #include "net/ssl/client_cert_identity_test_util.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/test/cert_test_util.h"
@@ -49,9 +50,9 @@ class TestCertFilter : public ClientCertStoreChromeOS::CertFilter {
     return false;
   }
 
-  bool IsCertAllowed(
-      const scoped_refptr<net::X509Certificate>& cert) const override {
-    if (not_allowed_cert_.get() && cert->Equals(not_allowed_cert_.get()))
+  bool IsCertAllowed(CERTCertificate* cert) const override {
+    if (not_allowed_cert_.get() &&
+        net::x509_util::IsSameCertificate(cert, not_allowed_cert_.get()))
       return false;
     return true;
   }
@@ -64,15 +65,15 @@ class TestCertFilter : public ClientCertStoreChromeOS::CertFilter {
     pending_callback_.Reset();
   }
 
-  void SetNotAllowedCert(scoped_refptr<net::X509Certificate> cert) {
-    not_allowed_cert_ = cert;
+  void SetNotAllowedCert(net::ScopedCERTCertificate cert) {
+    not_allowed_cert_ = std::move(cert);
   }
 
  private:
   bool init_finished_;
   bool init_called_ = false;
   base::Closure pending_callback_;
-  scoped_refptr<net::X509Certificate> not_allowed_cert_;
+  net::ScopedCERTCertificate not_allowed_cert_;
 };
 
 void SaveIdentitiesAndQuitCallback(net::ClientCertIdentityList* out_identities,
@@ -91,9 +92,11 @@ class ClientCertStoreChromeOSTest : public ::testing::Test {
   scoped_refptr<net::X509Certificate> ImportCertToSlot(
       const std::string& cert_filename,
       const std::string& key_filename,
-      PK11SlotInfo* slot) {
-    return net::ImportClientCertAndKeyFromFile(
-        net::GetTestCertsDirectory(), cert_filename, key_filename, slot);
+      PK11SlotInfo* slot,
+      net::ScopedCERTCertificate* nss_cert) {
+    return net::ImportClientCertAndKeyFromFile(net::GetTestCertsDirectory(),
+                                               cert_filename, key_filename,
+                                               slot, nss_cert);
   }
 
  private:
@@ -112,8 +115,9 @@ TEST_F(ClientCertStoreChromeOSTest, RequestWaitsForNSSInitAndSucceeds) {
       nullptr /* no additional provider */, base::WrapUnique(cert_filter),
       ClientCertStoreChromeOS::PasswordDelegateFactory());
 
-  scoped_refptr<net::X509Certificate> cert_1(
-      ImportCertToSlot("client_1.pem", "client_1.pk8", test_db.slot()));
+  net::ScopedCERTCertificate nss_cert_1;
+  scoped_refptr<net::X509Certificate> cert_1(ImportCertToSlot(
+      "client_1.pem", "client_1.pk8", test_db.slot(), &nss_cert_1));
   ASSERT_TRUE(cert_1.get());
 
   // Request any client certificate, which is expected to match client_1.
@@ -151,8 +155,9 @@ TEST_F(ClientCertStoreChromeOSTest, RequestsAfterNSSInitSucceed) {
       base::WrapUnique(new TestCertFilter(true /* init synchronously */)),
       ClientCertStoreChromeOS::PasswordDelegateFactory());
 
-  scoped_refptr<net::X509Certificate> cert_1(
-      ImportCertToSlot("client_1.pem", "client_1.pk8", test_db.slot()));
+  net::ScopedCERTCertificate nss_cert_1;
+  scoped_refptr<net::X509Certificate> cert_1(ImportCertToSlot(
+      "client_1.pem", "client_1.pk8", test_db.slot(), &nss_cert_1));
   ASSERT_TRUE(cert_1.get());
 
   scoped_refptr<net::SSLCertRequestInfo> request_all(
@@ -178,11 +183,13 @@ TEST_F(ClientCertStoreChromeOSTest, Filter) {
       nullptr /* no additional provider */, base::WrapUnique(cert_filter),
       ClientCertStoreChromeOS::PasswordDelegateFactory());
 
-  scoped_refptr<net::X509Certificate> cert_1(
-      ImportCertToSlot("client_1.pem", "client_1.pk8", test_db.slot()));
+  net::ScopedCERTCertificate nss_cert_1;
+  scoped_refptr<net::X509Certificate> cert_1(ImportCertToSlot(
+      "client_1.pem", "client_1.pk8", test_db.slot(), &nss_cert_1));
   ASSERT_TRUE(cert_1.get());
-  scoped_refptr<net::X509Certificate> cert_2(
-      ImportCertToSlot("client_2.pem", "client_2.pk8", test_db.slot()));
+  net::ScopedCERTCertificate nss_cert_2;
+  scoped_refptr<net::X509Certificate> cert_2(ImportCertToSlot(
+      "client_2.pem", "client_2.pk8", test_db.slot(), &nss_cert_2));
   ASSERT_TRUE(cert_2.get());
 
   scoped_refptr<net::SSLCertRequestInfo> request_all(
@@ -190,7 +197,8 @@ TEST_F(ClientCertStoreChromeOSTest, Filter) {
 
   {
     base::RunLoop run_loop;
-    cert_filter->SetNotAllowedCert(cert_2);
+    cert_filter->SetNotAllowedCert(
+        net::x509_util::DupCERTCertificate(nss_cert_2.get()));
     net::ClientCertIdentityList selected_identities;
     store.GetClientCerts(
         *request_all, base::Bind(SaveIdentitiesAndQuitCallback,
@@ -203,7 +211,8 @@ TEST_F(ClientCertStoreChromeOSTest, Filter) {
 
   {
     base::RunLoop run_loop;
-    cert_filter->SetNotAllowedCert(cert_1);
+    cert_filter->SetNotAllowedCert(
+        net::x509_util::DupCERTCertificate(nss_cert_1.get()));
     net::ClientCertIdentityList selected_identities;
     store.GetClientCerts(
         *request_all, base::Bind(SaveIdentitiesAndQuitCallback,
@@ -228,11 +237,13 @@ TEST_F(ClientCertStoreChromeOSTest, CertRequestMatching) {
       base::WrapUnique(cert_filter),
       ClientCertStoreChromeOS::PasswordDelegateFactory());
 
-  scoped_refptr<net::X509Certificate> cert_1(
-      ImportCertToSlot("client_1.pem", "client_1.pk8", test_db.slot()));
+  net::ScopedCERTCertificate nss_cert_1;
+  scoped_refptr<net::X509Certificate> cert_1(ImportCertToSlot(
+      "client_1.pem", "client_1.pk8", test_db.slot(), &nss_cert_1));
   ASSERT_TRUE(cert_1.get());
-  scoped_refptr<net::X509Certificate> cert_2(
-      ImportCertToSlot("client_2.pem", "client_2.pk8", test_db.slot()));
+  net::ScopedCERTCertificate nss_cert_2;
+  scoped_refptr<net::X509Certificate> cert_2(ImportCertToSlot(
+      "client_2.pem", "client_2.pk8", test_db.slot(), &nss_cert_2));
   ASSERT_TRUE(cert_2.get());
 
   std::vector<std::string> authority_1(

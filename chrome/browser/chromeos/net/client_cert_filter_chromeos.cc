@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "crypto/nss_util_internal.h"
-#include "net/cert/x509_certificate.h"
 
 namespace chromeos {
 
@@ -55,9 +54,8 @@ bool ClientCertFilterChromeOS::Init(const base::Closure& callback) {
   return false;
 }
 
-bool ClientCertFilterChromeOS::IsCertAllowed(
-    const scoped_refptr<net::X509Certificate>& cert) const {
-  return nss_profile_filter_.IsCertAllowed(cert->os_cert_handle());
+bool ClientCertFilterChromeOS::IsCertAllowed(CERTCertificate* cert) const {
+  return nss_profile_filter_.IsCertAllowed(cert);
 }
 
 void ClientCertFilterChromeOS::GotSystemSlot(
