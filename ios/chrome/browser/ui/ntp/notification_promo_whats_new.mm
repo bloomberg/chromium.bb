@@ -21,7 +21,6 @@
 #include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/notification_promo.h"
 #include "ios/chrome/browser/pref_names.h"
-#include "ios/chrome/browser/ui/commands/ios_command_ids.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -160,7 +159,7 @@ bool NotificationPromoWhatsNew::IsURLPromo() const {
   return promo_type_ == "url";
 }
 
-bool NotificationPromoWhatsNew::IsChromeCommand() const {
+bool NotificationPromoWhatsNew::IsChromeCommandPromo() const {
   return promo_type_ == "chrome_command";
 }
 
@@ -193,14 +192,9 @@ bool NotificationPromoWhatsNew::InitFromNotificationPromo() {
     if (url_.is_empty() || !url_.is_valid()) {
       return valid_;
     }
-  } else if (IsChromeCommand()) {
-    std::string command;
-    notification_promo_.promo_payload()->GetString("command", &command);
-    if (command == "bookmark") {
-      command_id_ = IDC_SHOW_BOOKMARK_MANAGER;
-    } else if (command == "ratethisapp") {
-      command_id_ = IDC_RATE_THIS_APP;
-    } else {
+  } else if (IsChromeCommandPromo()) {
+    notification_promo_.promo_payload()->GetString("command", &command_);
+    if ((command_ != "bookmark") && (command_ != "ratethisapp")) {
       return valid_;
     }
   } else {  // If |promo_type_| is not set to URL or Command, return early.

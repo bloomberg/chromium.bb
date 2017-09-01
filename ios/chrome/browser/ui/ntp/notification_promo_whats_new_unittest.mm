@@ -15,7 +15,6 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/variations/variations_associated_data.h"
-#include "ios/chrome/browser/ui/commands/ios_command_ids.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/public/provider/chrome/browser/images/whats_new_icon.h"
 #include "testing/platform_test.h"
@@ -92,7 +91,7 @@ class NotificationPromoWhatsNewTest : public PlatformTest {
   void RunTests(const std::string& promo_text,
                 const std::string& promo_type,
                 const std::string& url,
-                int command_id,
+                const std::string& command,
                 WhatsNewIcon icon,
                 bool valid) {
     EXPECT_EQ(promo_text, promo_.promo_text());
@@ -100,7 +99,7 @@ class NotificationPromoWhatsNewTest : public PlatformTest {
     if (promo_type == "url")
       EXPECT_EQ(url, promo_.url().spec());
     else
-      EXPECT_EQ(command_id, promo_.command_id());
+      EXPECT_EQ(command, promo_.command());
 
     EXPECT_EQ(valid, promo_.CanShow());
     // |icon()| is set only if the promo is valid.
@@ -132,7 +131,7 @@ TEST_F(NotificationPromoWhatsNewTest, NotificationPromoCommandTest) {
        "0", "chrome_command", "", "ratethisapp", "RateThisAppPromo", "logo",
        "0", "0");
   RunTests(l10n_util::GetStringUTF8(IDS_IOS_APP_RATING_PROMO_STRING),
-           "chrome_command", "", IDC_RATE_THIS_APP, WHATS_NEW_LOGO, true);
+           "chrome_command", "", "ratethisapp", WHATS_NEW_LOGO, true);
 }
 
 // Test that a url-based, valid promo is shown with the correct text and icon.
@@ -140,7 +139,7 @@ TEST_F(NotificationPromoWhatsNewTest, NotificationPromoURLTest) {
   Init("3 Aug 1999 9:26:06 GMT", "3 Aug 2199 9:26:06 GMT", "moveToDockTip", "0",
        "url", "http://blog.chromium.org", "", "TestURLPromo", "", "0", "0");
   RunTests(l10n_util::GetStringUTF8(IDS_IOS_MOVE_TO_DOCK_TIP), "url",
-           "http://blog.chromium.org/", 0, WHATS_NEW_INFO, true);
+           "http://blog.chromium.org/", "", WHATS_NEW_INFO, true);
 }
 
 // Test that a promo without a valid promo type is not shown.
