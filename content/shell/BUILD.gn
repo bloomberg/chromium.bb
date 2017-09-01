@@ -98,6 +98,8 @@ static_library("content_shell_lib") {
     "browser/layout_test/secondary_test_window_observer.h",
     "browser/layout_test/test_info_extractor.cc",
     "browser/layout_test/test_info_extractor.h",
+    "browser/renderer_host/shell_render_widget_host_view_mac_delegate.h",
+    "browser/renderer_host/shell_render_widget_host_view_mac_delegate.mm",
     "browser/shell.cc",
     "browser/shell.h",
     "browser/shell_access_token_store.cc",
