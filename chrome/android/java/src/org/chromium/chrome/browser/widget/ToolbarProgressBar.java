@@ -170,6 +170,7 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
         setAlpha(0.0f);
         mMarginTop = topMargin;
         mUseStatusBarColorAsBackground = useStatusBarColorAsBackground;
+        mAnimationLogic = new ProgressAnimationSmooth();
 
         // This tells accessibility services that progress bar changes are important enough to
         // announce to the user even when not focused.
@@ -231,7 +232,6 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
         if (mAnimationInitialized) return;
 
         mAnimationInitialized = true;
-        mAnimationLogic = new ProgressAnimationSmooth();
 
         // Only use the indeterminate animation if the Android version is > J.
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN_MR2) {
