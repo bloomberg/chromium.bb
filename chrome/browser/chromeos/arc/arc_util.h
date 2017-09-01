@@ -50,7 +50,7 @@ bool IsArcAllowedForProfile(const Profile* profile);
 // EcryptfsMigrationStrategy for the user doesn't disable the migration.
 // Specifically if the policy states to ask the user, it is also considered that
 // migration is allowed, so return true.
-bool IsArcMigrationAllowedForProfile(const Profile* profile);
+bool IsArcMigrationAllowedByPolicyForProfile(const Profile* profile);
 
 // Returns true if the profile is temporarily blocked to run ARC in the current
 // session, because the filesystem storing the profile is incompatible with the

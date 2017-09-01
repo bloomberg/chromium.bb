@@ -243,6 +243,15 @@ bool DecodeMigrationActionFromPolicy(
   return true;
 }
 
+// Returns true if ArcEnabled policy is present and set to true. Otherwise
+// returns false.
+bool IsArcEnabledFromPolicy(
+    const enterprise_management::CloudPolicySettings* policy) {
+  if (policy->has_arcenabled())
+    return policy->arcenabled().value();
+  return false;
+}
+
 }  // namespace
 
 // static
@@ -1046,6 +1055,11 @@ void ExistingUserController::OnPolicyFetchResult(
   VLOG(1) << "Migration action: " << static_cast<int>(action);
 
   switch (action) {
+    case apu::EcryptfsMigrationAction::kDisallowMigration:
+      ContinuePerformLoginWithoutMigration(login_performer_->auth_mode(),
+                                           user_context);
+      break;
+
     case apu::EcryptfsMigrationAction::kMigrate:
       user_manager::known_user::SetUserHomeMinimalMigrationAttempted(
           user_context.GetAccountId(), false);
@@ -1080,11 +1094,18 @@ void ExistingUserController::OnPolicyFetchResult(
       break;
 
     case apu::EcryptfsMigrationAction::kAskForEcryptfsArcUsers:
-    // TODO(igorcov): Fall-through intended. This behaves as Disallow Migration
-    // until it's implemented.
-    case apu::EcryptfsMigrationAction::kDisallowMigration:
-      ContinuePerformLoginWithoutMigration(login_performer_->auth_mode(),
-                                           user_context);
+      // If the device is transitioning from ARC M to ARC N and has ARC enabled
+      // by policy, then ask the user about the migration. Otherwise disallow
+      // migration.
+      if (IsArcEnabledFromPolicy(policy_payload.get()) &&
+          base::CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kArcTransitionMigrationRequired)) {
+        ShowEncryptionMigrationScreen(user_context,
+                                      EncryptionMigrationMode::ASK_USER);
+      } else {
+        ContinuePerformLoginWithoutMigration(login_performer_->auth_mode(),
+                                             user_context);
+      }
       break;
   }
 }

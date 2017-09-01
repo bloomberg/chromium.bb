@@ -30,6 +30,7 @@ CHROMEOS_EXPORT extern const char kAppAutoLaunched[];
 CHROMEOS_EXPORT extern const char kAppOemManifestFile[];
 CHROMEOS_EXPORT extern const char kArcAvailability[];
 CHROMEOS_EXPORT extern const char kArcAvailable[];
+CHROMEOS_EXPORT extern const char kArcTransitionMigrationRequired[];
 CHROMEOS_EXPORT extern const char kArcStartMode[];
 CHROMEOS_EXPORT extern const char kArtifactsDir[];
 CHROMEOS_EXPORT extern const char kAshWebUIInit[];

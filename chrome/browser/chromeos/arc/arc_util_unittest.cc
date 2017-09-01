@@ -24,6 +24,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/chromeos_switches.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
@@ -561,7 +562,7 @@ TEST_F(ArcMigrationTest, IsMigrationAllowedUnmanagedUser) {
                     AccountId::AdFromUserEmailObjGuid(
                         profile()->GetProfileUserName(), kTestGaiaId));
   profile()->GetPrefs()->SetInteger(prefs::kEcryptfsMigrationStrategy, 0);
-  EXPECT_TRUE(IsArcMigrationAllowedForProfile(profile()));
+  EXPECT_TRUE(IsArcMigrationAllowedByPolicyForProfile(profile()));
 }
 
 TEST_F(ArcMigrationTest, IsMigrationAllowedForbiddenByPolicy) {
@@ -570,7 +571,7 @@ TEST_F(ArcMigrationTest, IsMigrationAllowedForbiddenByPolicy) {
                         profile()->GetProfileUserName(), kTestGaiaId));
   profile()->GetTestingPrefService()->SetManagedPref(
       prefs::kEcryptfsMigrationStrategy, base::MakeUnique<base::Value>(0));
-  EXPECT_FALSE(IsArcMigrationAllowedForProfile(profile()));
+  EXPECT_FALSE(IsArcMigrationAllowedByPolicyForProfile(profile()));
 }
 
 TEST_F(ArcMigrationTest, IsMigrationAllowedMigrate) {
@@ -579,7 +580,7 @@ TEST_F(ArcMigrationTest, IsMigrationAllowedMigrate) {
                         profile()->GetProfileUserName(), kTestGaiaId));
   profile()->GetTestingPrefService()->SetManagedPref(
       prefs::kEcryptfsMigrationStrategy, base::MakeUnique<base::Value>(1));
-  EXPECT_TRUE(IsArcMigrationAllowedForProfile(profile()));
+  EXPECT_TRUE(IsArcMigrationAllowedByPolicyForProfile(profile()));
 }
 
 TEST_F(ArcMigrationTest, IsMigrationAllowedWipe) {
@@ -588,7 +589,7 @@ TEST_F(ArcMigrationTest, IsMigrationAllowedWipe) {
                         profile()->GetProfileUserName(), kTestGaiaId));
   profile()->GetTestingPrefService()->SetManagedPref(
       prefs::kEcryptfsMigrationStrategy, base::MakeUnique<base::Value>(2));
-  EXPECT_TRUE(IsArcMigrationAllowedForProfile(profile()));
+  EXPECT_TRUE(IsArcMigrationAllowedByPolicyForProfile(profile()));
 }
 
 TEST_F(ArcMigrationTest, IsMigrationAllowedAskUser) {
@@ -597,8 +598,70 @@ TEST_F(ArcMigrationTest, IsMigrationAllowedAskUser) {
                         profile()->GetProfileUserName(), kTestGaiaId));
   profile()->GetTestingPrefService()->SetManagedPref(
       prefs::kEcryptfsMigrationStrategy, base::MakeUnique<base::Value>(3));
-  EXPECT_TRUE(IsArcMigrationAllowedForProfile(profile()));
+  EXPECT_TRUE(IsArcMigrationAllowedByPolicyForProfile(profile()));
 }
+
+TEST_F(ArcMigrationTest, IsMigrationAllowedMinimalMigration) {
+  ScopedLogIn login(GetFakeUserManager(),
+                    AccountId::AdFromUserEmailObjGuid(
+                        profile()->GetProfileUserName(), kTestGaiaId));
+  profile()->GetTestingPrefService()->SetManagedPref(
+      prefs::kEcryptfsMigrationStrategy, base::MakeUnique<base::Value>(4));
+  EXPECT_TRUE(IsArcMigrationAllowedByPolicyForProfile(profile()));
+}
+
+// Defines parameters for parametrized test
+// ArcMigrationAskForEcryptfsArcUsersTest.
+struct AskForEcryptfsArcUserTestParam {
+  bool device_supported_arc;
+  bool arc_enabled;
+  bool expect_migration_allowed;
+};
+
+class ArcMigrationAskForEcryptfsArcUsersTest
+    : public ArcMigrationTest,
+      public testing::WithParamInterface<AskForEcryptfsArcUserTestParam> {
+ protected:
+  ArcMigrationAskForEcryptfsArcUsersTest() {}
+  ~ArcMigrationAskForEcryptfsArcUsersTest() override {}
+};
+
+// Migration policy is 5 (kAskForEcryptfsArcUsers, EDU default).
+TEST_P(ArcMigrationAskForEcryptfsArcUsersTest,
+       IsMigrationAllowedAskForEcryptfsArcUsers) {
+  const AskForEcryptfsArcUserTestParam& param = GetParam();
+
+  ScopedLogIn login(GetFakeUserManager(),
+                    AccountId::AdFromUserEmailObjGuid(
+                        profile()->GetProfileUserName(), kTestGaiaId));
+  if (param.device_supported_arc) {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        chromeos::switches::kArcTransitionMigrationRequired);
+  }
+  profile()->GetTestingPrefService()->SetManagedPref(
+      prefs::kEcryptfsMigrationStrategy, base::MakeUnique<base::Value>(5));
+  profile()->GetTestingPrefService()->SetManagedPref(
+      prefs::kArcEnabled, base::MakeUnique<base::Value>(param.arc_enabled));
+  EXPECT_EQ(param.expect_migration_allowed,
+            IsArcMigrationAllowedByPolicyForProfile(profile()));
+}
+
+INSTANTIATE_TEST_CASE_P(
+    ArcMigrationTest,
+    ArcMigrationAskForEcryptfsArcUsersTest,
+    ::testing::Values(
+        AskForEcryptfsArcUserTestParam{true /* device_supported_arc */,
+                                       true /* arc_enabled */,
+                                       true /* expect_migration_allowed */},
+        AskForEcryptfsArcUserTestParam{true /* device_supported_arc */,
+                                       false /* arc_enabled */,
+                                       false /* expect_migration_allowed */},
+        AskForEcryptfsArcUserTestParam{false /* device_supported_arc */,
+                                       true /* arc_enabled */,
+                                       false /* expect_migration_allowed */},
+        AskForEcryptfsArcUserTestParam{false /* device_supported_arc */,
+                                       false /* arc_enabled */,
+                                       false /* expect_migration_allowed */}));
 
 }  // namespace util
 }  // namespace arc
