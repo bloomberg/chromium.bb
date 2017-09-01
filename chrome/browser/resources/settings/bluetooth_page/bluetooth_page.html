@@ -1,15 +1,12 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_pref_indicator.html">
-<link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-toggle-button/paper-toggle-button.html">
-<link rel="import" href="../controls/settings_toggle_button.html">
 <link rel="import" href="../i18n_setup.html">
 <link rel="import" href="../icons.html">
 <link rel="import" href="../prefs/prefs.html">
-<link rel="import" href="../prefs/prefs_behavior.html">
 <link rel="import" href="../settings_page/settings_animated_pages.html">
 <link rel="import" href="../settings_page/settings_subpage.html">
 <link rel="import" href="../settings_shared_css.html">
@@ -22,45 +19,34 @@
     <settings-animated-pages id="pages" section="bluetooth"
         focus-config="[[focusConfig_]]">
       <neon-animatable route-path="default">
-        <template is="dom-if" if="[[!isSecondaryUser_]]">
-          <div id="bluetoothDevices"
-              class="settings-box two-line" actionable on-tap="onTap_">
-            <iron-icon icon="[[getIcon_(adapterState_.powered)]]"></iron-icon>
-            <div class="middle">
-              $i18n{bluetoothPageTitle}
-              <div class="secondary" id="bluetoothSecondary">
-                [[getOnOffString_(adapterState_.powered,
-                '$i18nPolymer{deviceOn}', '$i18nPolymer{deviceOff}')]]
-              </div>
-            </div>
-            <cr-policy-pref-indicator
-                icon-aria-label="$i18n{bluetoothPageTitle}"
-                pref="[[prefs.cros.device.allow_bluetooth]]"
-              hidden="[[prefs.cros.device.allow_bluetooth.value]]">
-            </cr-policy-pref-indicator>
-            <template is="dom-if" if="[[adapterState_.powered]]">
-              <button class="subpage-arrow" is="paper-icon-button-light"
-                  on-tap="onSubpageArrowTap_"
-                  aria-label="$i18n{bluetoothPageTitle}"
-                  aria-describedby="bluetoothSecondary">
-              </button>
-            </template>
-            <div class="separator"></div>
-            <settings-toggle-button id="enableBluetooth"
-                pref="{{prefs.ash.user.bluetooth.adapter_enabled}}"
-                disabled$="[[!adapterState_.available]]" on-tap="stopTap_"
-                label="$i18n{bluetoothToggleA11yLabel}">
-            </settings-toggle-button>
-          </div>
-        </template>
-        <template is="dom-if" if="[[isSecondaryUser_]]">
-          <div id="bluetoothDevices" class="settings-box two-line">
-            <iron-icon class="policy" icon="cr:group"></iron-icon>
-            <div class="middle">
-              [[i18n('networkPrimaryUserControlled', primaryUserEmail_)]]
+        <div id="bluetoothDevices"
+            class="settings-box two-line" actionable on-tap="onTap_">
+          <iron-icon icon="[[getIcon_(bluetoothToggleState_)]]"></iron-icon>
+          <div class="middle">
+            $i18n{bluetoothPageTitle}
+            <div class="secondary" id="bluetoothSecondary">
+              [[getOnOffString_(bluetoothToggleState_,
+              '$i18nPolymer{deviceOn}', '$i18nPolymer{deviceOff}')]]
             </div>
           </div>
-        </template>
+          <cr-policy-pref-indicator icon-aria-label="$i18n{bluetoothPageTitle}"
+              pref="[[prefs.cros.device.allow_bluetooth]]"
+            hidden="[[prefs.cros.device.allow_bluetooth.value]]">
+          </cr-policy-pref-indicator>
+          <template is="dom-if" if="[[bluetoothToggleState_]]">
+            <button class="subpage-arrow" is="paper-icon-button-light"
+                on-tap="onSubpageArrowTap_"
+                aria-label="$i18n{bluetoothPageTitle}"
+                aria-describedby="bluetoothSecondary">
+            </button>
+          </template>
+          <div class="separator"></div>
+          <paper-toggle-button id="enableBluetooth"
+              checked="{{bluetoothToggleState_}}"
+              disabled$="[[bluetoothToggleDisabled_]]" on-tap="stopTap_"
+              aria-label="$i18n{bluetoothToggleA11yLabel}">
+          </paper-toggle-button>
+        </div>
       </neon-animatable>
 
       <template is="dom-if" route-path="/bluetoothDevices">
@@ -68,9 +54,10 @@
             page-title="$i18n{bluetoothPageTitle}">
           <settings-bluetooth-subpage
               adapter-state="[[adapterState_]]"
+              bluetooth-toggle-state="{{bluetoothToggleState_}}"
+              bluetooth-toggle-disabled="[[bluetoothToggleDisabled_]]"
               bluetooth="[[bluetooth]]"
-              bluetooth-private="[[bluetoothPrivate]]"
-              prefs="{{prefs}}">
+              bluetooth-private="[[bluetoothPrivate]]">
           </settings-bluetooth-subpage>
         </settings-subpage>
       </template>
