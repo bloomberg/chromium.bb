@@ -240,6 +240,8 @@ public class SpannableAutocompleteEditTextModel implements AutocompleteEditTextM
     @Override
     public void onSelectionChanged(int selStart, int selEnd) {
         if (DEBUG) Log.i(TAG, "onSelectionChanged [%d,%d]", selStart, selEnd);
+        if (mCurrentState.getSelStart() == selStart && mCurrentState.getSelEnd() == selEnd) return;
+
         mCurrentState.setSelection(selStart, selEnd);
         if (mBatchEditNestCount > 0) return;
         int len = mCurrentState.getUserText().length();
