@@ -7,6 +7,7 @@
 
 #include "StyleBuilderFunctions.h"
 #include "core/css/CSSProperty.h"
+#include "core/css/properties/CSSPropertyAPI.h"
 #include "core/css/resolver/StyleResolverState.h"
 
 // FIXME: currently we're just generating a switch statement, but we should
@@ -21,9 +22,19 @@ void StyleBuilder::ApplyProperty(CSSPropertyID property,
                                  bool isInherit) {
   switch (property) {
     {% for property_id, property in properties.items()
-    if property.should_declare_functions or property.use_handlers_for %}
+        if property.should_declare_functions or property.use_handlers_for %}
     {% set used_property = properties[property.use_handlers_for] or property %}
     {% set used_property_id = used_property.property_id %}
+    {% if used_property.use_api_in_stylebuilder %}
+    case {{property_id}}:
+      if (isInitial)
+        Get{{used_property_id}}API().ApplyInitial(state);
+      else if (isInherit)
+        Get{{used_property_id}}API().ApplyInherit(state);
+      else
+        Get{{used_property_id}}API().ApplyValue(state, value);
+      return;
+      {% else %}
     case {{property_id}}:
       if (isInitial)
         StyleBuilderFunctions::applyInitial{{used_property_id}}(state);
@@ -32,6 +43,7 @@ void StyleBuilder::ApplyProperty(CSSPropertyID property,
       else
         StyleBuilderFunctions::applyValue{{used_property_id}}(state, value);
       return;
+    {% endif %}
 
     {% endfor %}
     case CSSPropertyVariable:
