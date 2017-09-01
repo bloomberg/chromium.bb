@@ -9,11 +9,11 @@
 #include <stdint.h>
 
 #include <memory>
-#include <queue>
 #include <string>
 
 #include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread.h"
@@ -250,7 +250,7 @@ class CronetURLRequestContextAdapter
   std::unique_ptr<base::DictionaryValue> effective_experimental_options_;
 
   // A queue of tasks that need to be run after context has been initialized.
-  std::queue<base::Closure> tasks_waiting_for_context_;
+  base::queue<base::Closure> tasks_waiting_for_context_;
   bool is_context_initialized_;
   int default_load_flags_;
 

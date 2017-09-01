@@ -5,10 +5,10 @@
 #include "components/sync/syncable/change_reorder_buffer.h"
 
 #include <limits>
-#include <queue>
 #include <set>
 #include <utility>  // for pair<>
 
+#include "base/containers/queue.h"
 #include "components/sync/syncable/base_node.h"
 #include "components/sync/syncable/base_transaction.h"
 #include "components/sync/syncable/entry.h"
@@ -16,7 +16,6 @@
 
 using std::numeric_limits;
 using std::pair;
-using std::queue;
 using std::set;
 
 namespace syncer {
@@ -186,7 +185,7 @@ bool ChangeReorderBuffer::GetAllChangesInTreeOrder(
   }
 
   // Step 2: Breadth-first expansion of the traversal.
-  queue<int64_t> to_visit;
+  base::queue<int64_t> to_visit;
   to_visit.push(traversal.top());
   while (!to_visit.empty()) {
     int64_t next = to_visit.front();

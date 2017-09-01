@@ -9,11 +9,11 @@
 
 #include <map>
 #include <memory>
-#include <queue>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/queue.h"
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -153,7 +153,7 @@ class NaClIPCAdapter : public base::RefCountedThreadSafe<NaClIPCAdapter>,
 
     // Messages that we have read off of the Chrome IPC channel that are waiting
     // to be received by the plugin.
-    std::queue<std::unique_ptr<RewrittenMessage>> to_be_received_;
+    base::queue<std::unique_ptr<RewrittenMessage>> to_be_received_;
 
     ppapi::proxy::NaClMessageScanner nacl_msg_scanner_;
 

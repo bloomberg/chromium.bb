@@ -8,11 +8,11 @@
 #include <stdint.h>
 
 #include <memory>
-#include <queue>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
@@ -146,7 +146,7 @@ class PreviewsBlackList {
 
   // Callbacks to be run after loading information from the backing store has
   // completed.
-  std::queue<base::Closure> pending_callbacks_;
+  base::queue<base::Closure> pending_callbacks_;
 
   std::unique_ptr<base::Clock> clock_;
 

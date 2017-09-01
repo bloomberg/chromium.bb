@@ -8,9 +8,9 @@
 #include <stdint.h>
 
 #include <algorithm>
-#include <queue>
 #include <utility>
 
+#include "base/containers/queue.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/viz/common/surfaces/local_surface_id_allocator.h"
@@ -272,7 +272,7 @@ SurfaceManager::SurfaceIdSet SurfaceManager::GetLiveSurfacesForReferences() {
 
   // Walk down from the root and mark each SurfaceId we encounter as
   // reachable.
-  std::queue<SurfaceId> surface_queue;
+  base::queue<SurfaceId> surface_queue;
   surface_queue.push(root_surface_id_);
 
   // All surfaces not marked for destruction are reachable.

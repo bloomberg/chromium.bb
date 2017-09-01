@@ -8,10 +8,10 @@
 #include <stdint.h>
 
 #include <memory>
-#include <queue>
 #include <string>
 #include <vector>
 
+#include "base/containers/queue.h"
 #include "base/json/json_writer.h"
 #include "components/sync/base/cryptographer.h"
 #include "components/sync/base/passphrase_type.h"
@@ -107,7 +107,7 @@ bool VerifyDataTypeEncryptionForTest(BaseTransaction* const trans,
     return false;
   }
 
-  std::queue<Id> to_visit;
+  base::queue<Id> to_visit;
   Id id_string = type_root.GetFirstChildId();
   to_visit.push(id_string);
   while (!to_visit.empty()) {

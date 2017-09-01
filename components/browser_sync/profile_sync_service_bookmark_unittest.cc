@@ -11,12 +11,12 @@
 
 #include <map>
 #include <memory>
-#include <queue>
 #include <stack>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/containers/queue.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/macros.h"
@@ -2410,7 +2410,7 @@ void ProfileSyncServiceBookmarkTestWithData::GetTransactionVersions(
     const BookmarkNode* root,
     BookmarkNodeVersionMap* node_versions) {
   node_versions->clear();
-  std::queue<const BookmarkNode*> nodes;
+  base::queue<const BookmarkNode*> nodes;
   nodes.push(root);
   while (!nodes.empty()) {
     const BookmarkNode* n = nodes.front();

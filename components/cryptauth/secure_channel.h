@@ -5,8 +5,7 @@
 #ifndef COMPONENTS_CRYPTAUTH_SECURE_CHANNEL_H_
 #define COMPONENTS_CRYPTAUTH_SECURE_CHANNEL_H_
 
-#include <queue>
-
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/cryptauth/authenticator.h"
@@ -151,7 +150,7 @@ class SecureChannel : public ConnectionObserver {
   CryptAuthService* cryptauth_service_;  // Outlives this instance.
   std::unique_ptr<Authenticator> authenticator_;
   std::unique_ptr<SecureContext> secure_context_;
-  std::queue<std::unique_ptr<PendingMessage>> queued_messages_;
+  base::queue<std::unique_ptr<PendingMessage>> queued_messages_;
   std::unique_ptr<PendingMessage> pending_message_;
   int next_sequence_number_ = 0;
   base::ObserverList<Observer> observer_list_;

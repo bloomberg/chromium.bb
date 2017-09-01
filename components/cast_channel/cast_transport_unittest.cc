@@ -7,8 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <queue>
-
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
@@ -79,7 +78,7 @@ class CompletionQueue {
   }
 
  private:
-  std::queue<net::CompletionCallback> cb_queue_;
+  base::queue<net::CompletionCallback> cb_queue_;
   DISALLOW_COPY_AND_ASSIGN(CompletionQueue);
 };
 

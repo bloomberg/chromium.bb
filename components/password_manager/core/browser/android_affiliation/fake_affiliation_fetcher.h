@@ -6,8 +6,8 @@
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_ANDROID_AFFILIATION_FAKE_AFFILIATION_FETCHER_H_
 
 #include <memory>
-#include <queue>
 
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_fetcher.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_fetcher_delegate.h"
@@ -73,7 +73,7 @@ class ScopedFakeAffiliationFetcherFactory
  private:
   // Fakes created by this factory. The elements are owned by the production
   // code that normally owns the result of AffiliationFetcher::Create().
-  std::queue<FakeAffiliationFetcher*> pending_fetchers_;
+  base::queue<FakeAffiliationFetcher*> pending_fetchers_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedFakeAffiliationFetcherFactory);
 };

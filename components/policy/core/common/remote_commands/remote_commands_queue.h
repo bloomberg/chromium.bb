@@ -6,8 +6,8 @@
 #define COMPONENTS_POLICY_CORE_COMMON_REMOTE_COMMANDS_REMOTE_COMMANDS_QUEUE_H_
 
 #include <memory>
-#include <queue>
 
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/observer_list.h"
@@ -72,7 +72,7 @@ class POLICY_EXPORT RemoteCommandsQueue {
   // Attempts to start a new command.
   void ScheduleNextJob();
 
-  std::queue<linked_ptr<RemoteCommandJob>> incoming_commands_;
+  base::queue<linked_ptr<RemoteCommandJob>> incoming_commands_;
 
   std::unique_ptr<RemoteCommandJob> running_command_;
 

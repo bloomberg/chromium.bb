@@ -8,11 +8,11 @@
 #include "components/sync/driver/data_type_manager.h"
 
 #include <map>
-#include <queue>
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
@@ -31,7 +31,7 @@ struct DataTypeConfigurationStats;
 
 // List of data types grouped by priority and ordered from high priority to
 // low priority.
-using TypeSetPriorityList = std::queue<ModelTypeSet>;
+using TypeSetPriorityList = base::queue<ModelTypeSet>;
 
 class DataTypeManagerImpl : public DataTypeManager,
                             public ModelAssociationManagerDelegate {
@@ -254,7 +254,7 @@ class DataTypeManagerImpl : public DataTypeManager,
     // The subset of |types| that were successfully configured.
     ModelTypeSet configured_types;
   };
-  std::queue<AssociationTypesInfo> association_types_queue_;
+  base::queue<AssociationTypesInfo> association_types_queue_;
 
   // The encryption handler lets the DataTypeManager know the state of sync
   // datatype encryption.

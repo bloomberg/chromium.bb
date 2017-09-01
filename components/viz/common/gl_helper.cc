@@ -7,10 +7,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <queue>
 #include <string>
 
 #include "base/bind.h"
+#include "base/containers/queue.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -249,7 +249,7 @@ class GLHelper::CopyTextureToImpl
     void Add(Request* r) { requests_.push(r); }
 
    private:
-    std::queue<Request*> requests_;
+    base::queue<Request*> requests_;
     DISALLOW_COPY_AND_ASSIGN(FinishRequestHelper);
   };
 
@@ -391,7 +391,7 @@ class GLHelper::CopyTextureToImpl
   // this object is destroyed. Must be declared before other Scoped* fields.
   ScopedFlush flush_;
 
-  std::queue<Request*> request_queue_;
+  base::queue<Request*> request_queue_;
   GLint max_draw_buffers_;
 };
 

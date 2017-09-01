@@ -10,10 +10,10 @@
 
 #include <map>
 #include <memory>
-#include <queue>
 #include <string>
 
 #include "base/callback_forward.h"
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -113,7 +113,7 @@ class POLICY_EXPORT ExternalPolicyDataUpdater {
 
   // Queue of jobs waiting to be run. Jobs are taken off the queue and started
   // by StartNextJobs().
-  std::queue<base::WeakPtr<FetchJob>> job_queue_;
+  base::queue<base::WeakPtr<FetchJob>> job_queue_;
 
   // Map that owns all existing jobs, regardless of whether they are currently
   // queued, running or waiting for a retry.
