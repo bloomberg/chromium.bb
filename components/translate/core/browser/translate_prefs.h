@@ -102,7 +102,7 @@ class TranslatePrefs {
   bool IsEnabled() const;
 
   // Sets the country that the application is run in. Determined by the
-  // VariationsService, can be left empty. Used by TranslateExperiment.
+  // VariationsService, can be left empty. Used by the TranslateRanker.
   void SetCountry(const std::string& country);
   std::string GetCountry() const;
 
