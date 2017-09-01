@@ -283,6 +283,7 @@ struct zcr_remote_shell_v1_interface {
 #define ZCR_REMOTE_SHELL_V1_CONFIGURATION_CHANGED 1
 #define ZCR_REMOTE_SHELL_V1_WORKSPACE 2
 #define ZCR_REMOTE_SHELL_V1_CONFIGURE 3
+#define ZCR_REMOTE_SHELL_V1_DEFAULT_DEVICE_SCALE_FACTOR 4
 
 /**
  * @ingroup iface_zcr_remote_shell_v1
@@ -300,6 +301,10 @@ struct zcr_remote_shell_v1_interface {
  * @ingroup iface_zcr_remote_shell_v1
  */
 #define ZCR_REMOTE_SHELL_V1_CONFIGURE_SINCE_VERSION 5
+/**
+ * @ingroup iface_zcr_remote_shell_v1
+ */
+#define ZCR_REMOTE_SHELL_V1_DEFAULT_DEVICE_SCALE_FACTOR_SINCE_VERSION 8
 
 /**
  * @ingroup iface_zcr_remote_shell_v1
@@ -359,6 +364,18 @@ zcr_remote_shell_v1_send_configure(struct wl_resource *resource_, uint32_t layou
 	wl_resource_post_event(resource_, ZCR_REMOTE_SHELL_V1_CONFIGURE, layout_mode);
 }
 
+/**
+ * @ingroup iface_zcr_remote_shell_v1
+ * Sends an default_device_scale_factor event to the client owning the resource.
+ * @param resource_ The client's resource
+ * @param scale DP to pixels ratio, in 16.16 fixed point format
+ */
+static inline void
+zcr_remote_shell_v1_send_default_device_scale_factor(struct wl_resource *resource_, int32_t scale)
+{
+	wl_resource_post_event(resource_, ZCR_REMOTE_SHELL_V1_DEFAULT_DEVICE_SCALE_FACTOR, scale);
+}
+
 #ifndef ZCR_REMOTE_SURFACE_V1_SYSTEMUI_VISIBILITY_STATE_ENUM
 #define ZCR_REMOTE_SURFACE_V1_SYSTEMUI_VISIBILITY_STATE_ENUM
 /**
@@ -412,14 +429,14 @@ enum zcr_remote_surface_v1_orientation {
  * The type of the window.
  */
 enum zcr_remote_surface_v1_window_type {
-  /**
-   * normal app window
-   */
-  ZCR_REMOTE_SURFACE_V1_WINDOW_TYPE_NORMAL = 1,
-  /**
-   * window is treated as systemui
-   */
-  ZCR_REMOTE_SURFACE_V1_WINDOW_TYPE_SYSTEM_UI = 2,
+	/**
+	 * normal app window
+	 */
+	ZCR_REMOTE_SURFACE_V1_WINDOW_TYPE_NORMAL = 1,
+	/**
+	 * window is treated as systemui
+	 */
+	ZCR_REMOTE_SURFACE_V1_WINDOW_TYPE_SYSTEM_UI = 2,
 };
 #endif /* ZCR_REMOTE_SURFACE_V1_WINDOW_TYPE_ENUM */
 
@@ -761,17 +778,17 @@ struct zcr_remote_surface_v1_interface {
 	void (*set_orientation)(struct wl_client *client,
 				struct wl_resource *resource,
 				int32_t orientation);
-        /**
-         * set the type of the window
-         *
-         * Set the type of window. This is only a hint to the compositor
-         * and the compositor is free to ignore it.
-         * @param type type of the window
-         * @since 7
-         */
-        void (*set_window_type)(struct wl_client* client,
-                                struct wl_resource* resource,
-                                uint32_t type);
+	/**
+	 * set the type of the window
+	 *
+	 * Set the type of window. This is only a hint to the compositor
+	 * and the compositor is free to ignore it.
+	 * @param type type of the window
+	 * @since 7
+	 */
+	void (*set_window_type)(struct wl_client *client,
+				struct wl_resource *resource,
+				uint32_t type);
 };
 
 #define ZCR_REMOTE_SURFACE_V1_CLOSE 0

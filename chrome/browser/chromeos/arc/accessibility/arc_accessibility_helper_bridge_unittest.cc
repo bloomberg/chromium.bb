@@ -50,6 +50,7 @@ class ArcAccessibilityHelperBridgeTest : public testing::Test {
     void AddPostTargetHandler(ui::EventHandler* handler) override {}
     void RemovePostTargetHandler(ui::EventHandler* handler) override {}
     bool IsTabletModeWindowManagerEnabled() const override { return false; }
+    double GetDefaultDeviceScaleFactor() const override { return 1.0; }
 
     DISALLOW_COPY_AND_ASSIGN(FakeWMHelper);
   };

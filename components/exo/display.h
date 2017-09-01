@@ -80,7 +80,8 @@ class Display {
   // Creates a remote shell surface for an existing surface using |container|.
   std::unique_ptr<ShellSurface> CreateRemoteShellSurface(
       Surface* surface,
-      int container);
+      int container,
+      bool scale_by_default_device_scale_factor);
 
   // Creates a sub-surface for an existing surface. The sub-surface will be
   // a child of |parent|.

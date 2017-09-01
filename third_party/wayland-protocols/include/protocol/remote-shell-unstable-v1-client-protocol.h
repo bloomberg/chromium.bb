@@ -293,6 +293,16 @@ struct zcr_remote_shell_v1_listener {
 	void (*configure)(void *data,
 			  struct zcr_remote_shell_v1 *zcr_remote_shell_v1,
 			  uint32_t layout_mode);
+	/**
+	 * initialize scale configuration
+	 *
+	 * Sends the default device scale factor.
+	 * @param scale DP to pixels ratio, in 16.16 fixed point format
+	 * @since 8
+	 */
+	void (*default_device_scale_factor)(void *data,
+					    struct zcr_remote_shell_v1 *zcr_remote_shell_v1,
+					    int32_t scale);
 };
 
 /**
@@ -326,6 +336,10 @@ zcr_remote_shell_v1_add_listener(struct zcr_remote_shell_v1 *zcr_remote_shell_v1
  * @ingroup iface_zcr_remote_shell_v1
  */
 #define ZCR_REMOTE_SHELL_V1_CONFIGURE_SINCE_VERSION 5
+/**
+ * @ingroup iface_zcr_remote_shell_v1
+ */
+#define ZCR_REMOTE_SHELL_V1_DEFAULT_DEVICE_SCALE_FACTOR_SINCE_VERSION 8
 
 /**
  * @ingroup iface_zcr_remote_shell_v1
@@ -471,14 +485,14 @@ enum zcr_remote_surface_v1_orientation {
  * The type of the window.
  */
 enum zcr_remote_surface_v1_window_type {
-  /**
-   * normal app window
-   */
-  ZCR_REMOTE_SURFACE_V1_WINDOW_TYPE_NORMAL = 1,
-  /**
-   * window is treated as systemui
-   */
-  ZCR_REMOTE_SURFACE_V1_WINDOW_TYPE_SYSTEM_UI = 2,
+	/**
+	 * normal app window
+	 */
+	ZCR_REMOTE_SURFACE_V1_WINDOW_TYPE_NORMAL = 1,
+	/**
+	 * window is treated as systemui
+	 */
+	ZCR_REMOTE_SURFACE_V1_WINDOW_TYPE_SYSTEM_UI = 2,
 };
 #endif /* ZCR_REMOTE_SURFACE_V1_WINDOW_TYPE_ENUM */
 
@@ -1144,11 +1158,11 @@ zcr_remote_surface_v1_set_orientation(struct zcr_remote_surface_v1 *zcr_remote_s
  * Set the type of window. This is only a hint to the compositor and the
  * compositor is free to ignore it.
  */
-static inline void zcr_remote_surface_v1_set_window_type(
-    struct zcr_remote_surface_v1* zcr_remote_surface_v1,
-    uint32_t type) {
-  wl_proxy_marshal((struct wl_proxy*)zcr_remote_surface_v1,
-                   ZCR_REMOTE_SURFACE_V1_SET_WINDOW_TYPE, type);
+static inline void
+zcr_remote_surface_v1_set_window_type(struct zcr_remote_surface_v1 *zcr_remote_surface_v1, uint32_t type)
+{
+	wl_proxy_marshal((struct wl_proxy *) zcr_remote_surface_v1,
+			 ZCR_REMOTE_SURFACE_V1_SET_WINDOW_TYPE, type);
 }
 
 #define ZCR_NOTIFICATION_SURFACE_V1_DESTROY 0

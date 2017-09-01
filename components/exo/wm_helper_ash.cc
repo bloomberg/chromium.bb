@@ -112,6 +112,26 @@ bool WMHelperAsh::IsTabletModeWindowManagerEnabled() const {
       ->IsTabletModeWindowManagerEnabled();
 }
 
+double WMHelperAsh::GetDefaultDeviceScaleFactor() const {
+  if (!display::Display::HasInternalDisplay())
+    return 1.0;
+
+  if (display::Display::HasForceDeviceScaleFactor())
+    return display::Display::GetForcedDeviceScaleFactor();
+
+  display::DisplayManager* display_manager =
+      ash::Shell::Get()->display_manager();
+  const display::ManagedDisplayInfo& display_info =
+      display_manager->GetDisplayInfo(display::Display::InternalDisplayId());
+  for (auto& mode : display_info.display_modes()) {
+    if (mode->is_default())
+      return mode->device_scale_factor();
+  }
+
+  NOTREACHED();
+  return 1.0f;
+}
+
 void WMHelperAsh::OnWindowActivated(
     wm::ActivationChangeObserver::ActivationReason reason,
     aura::Window* gained_active,
