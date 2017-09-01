@@ -8,3 +8,8 @@ Bottom navigation menu widget from Android SDK Sources 25.
 Local Modifications:
 * Change package.
 * Removed unnecessary version check when creating animation helper in BottomNavigationMenuView.
+* Removed onMeasure/onLayout behaviour from BottomNavigationMenuView, made it a linear layout and
+    used padding for icon spacing instead.
+* Added ability to hide labels.
+* Removed shifting mode and associated code paths.
+* Removed animations and associated helpers.

@@ -23,9 +23,6 @@ import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.R;
-import android.support.design.internal.BottomNavigationMenu;
-import android.support.design.internal.BottomNavigationMenuView;
-import android.support.design.internal.BottomNavigationPresenter;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.content.res.AppCompatResources;
@@ -188,6 +185,15 @@ public class BottomNavigationView extends FrameLayout {
     @NonNull
     public Menu getMenu() {
         return mMenu;
+    }
+
+    /**
+     * Returns the {@link BottomNavigationMenuView} instance associated with this bottom
+     * navigation bar.
+     */
+    @NonNull
+    public BottomNavigationMenuView getMenuView() {
+        return mMenuView;
     }
 
     /**

@@ -49,16 +49,14 @@ public class BottomNavigationItemView extends FrameLayout implements MenuView.It
     private static final int[] CHECKED_STATE_SET = {android.R.attr.state_checked};
 
     private final int mDefaultMargin;
-    private final int mShiftAmount;
     private final float mScaleUpFactor;
     private final float mScaleDownFactor;
-
-    private boolean mShiftingMode;
 
     private ImageView mIcon;
     private final TextView mSmallLabel;
     private final TextView mLargeLabel;
     private int mItemPosition = INVALID_ITEM_POSITION;
+    private boolean mLabelHidden;
 
     private MenuItemImpl mItemData;
 
@@ -80,7 +78,6 @@ public class BottomNavigationItemView extends FrameLayout implements MenuView.It
         int activeLabelSize =
                 res.getDimensionPixelSize(R.dimen.design_bottom_navigation_active_text_size);
         mDefaultMargin = res.getDimensionPixelSize(R.dimen.design_bottom_navigation_margin);
-        mShiftAmount = inactiveLabelSize - activeLabelSize;
         mScaleUpFactor = 1f * activeLabelSize / inactiveLabelSize;
         mScaleDownFactor = 1f * inactiveLabelSize / activeLabelSize;
 
@@ -110,10 +107,6 @@ public class BottomNavigationItemView extends FrameLayout implements MenuView.It
         return mItemPosition;
     }
 
-    public void setShiftingMode(boolean enabled) {
-        mShiftingMode = enabled;
-    }
-
     @Override
     public MenuItemImpl getItemData() {
         return mItemData;
@@ -132,35 +125,18 @@ public class BottomNavigationItemView extends FrameLayout implements MenuView.It
 
     @Override
     public void setChecked(boolean checked) {
-        ViewCompat.setPivotX(mLargeLabel, mLargeLabel.getWidth() / 2f);
-        ViewCompat.setPivotY(mLargeLabel, mLargeLabel.getBaseline());
-        ViewCompat.setPivotX(mSmallLabel, mSmallLabel.getWidth() / 2f);
-        ViewCompat.setPivotY(mSmallLabel, mSmallLabel.getBaseline());
-        if (mShiftingMode) {
+        LayoutParams iconParams = (LayoutParams) mIcon.getLayoutParams();
+        iconParams.gravity = Gravity.CENTER_HORIZONTAL | Gravity.CENTER;
+        iconParams.topMargin = mDefaultMargin;
+        mIcon.setLayoutParams(iconParams);
+
+        if (!mLabelHidden) {
+            ViewCompat.setPivotX(mLargeLabel, mLargeLabel.getWidth() / 2f);
+            ViewCompat.setPivotY(mLargeLabel, mLargeLabel.getBaseline());
+            ViewCompat.setPivotX(mSmallLabel, mSmallLabel.getWidth() / 2f);
+            ViewCompat.setPivotY(mSmallLabel, mSmallLabel.getBaseline());
+
             if (checked) {
-                LayoutParams iconParams = (LayoutParams) mIcon.getLayoutParams();
-                iconParams.gravity = Gravity.CENTER_HORIZONTAL | Gravity.TOP;
-                iconParams.topMargin = mDefaultMargin;
-                mIcon.setLayoutParams(iconParams);
-                mLargeLabel.setVisibility(VISIBLE);
-                ViewCompat.setScaleX(mLargeLabel, 1f);
-                ViewCompat.setScaleY(mLargeLabel, 1f);
-            } else {
-                LayoutParams iconParams = (LayoutParams) mIcon.getLayoutParams();
-                iconParams.gravity = Gravity.CENTER;
-                iconParams.topMargin = mDefaultMargin;
-                mIcon.setLayoutParams(iconParams);
-                mLargeLabel.setVisibility(INVISIBLE);
-                ViewCompat.setScaleX(mLargeLabel, 0.5f);
-                ViewCompat.setScaleY(mLargeLabel, 0.5f);
-            }
-            mSmallLabel.setVisibility(INVISIBLE);
-        } else {
-            if (checked) {
-                LayoutParams iconParams = (LayoutParams) mIcon.getLayoutParams();
-                iconParams.gravity = Gravity.CENTER_HORIZONTAL | Gravity.TOP;
-                iconParams.topMargin = mDefaultMargin + mShiftAmount;
-                mIcon.setLayoutParams(iconParams);
                 mLargeLabel.setVisibility(VISIBLE);
                 mSmallLabel.setVisibility(INVISIBLE);
 
@@ -169,10 +145,6 @@ public class BottomNavigationItemView extends FrameLayout implements MenuView.It
                 ViewCompat.setScaleX(mSmallLabel, mScaleUpFactor);
                 ViewCompat.setScaleY(mSmallLabel, mScaleUpFactor);
             } else {
-                LayoutParams iconParams = (LayoutParams) mIcon.getLayoutParams();
-                iconParams.gravity = Gravity.CENTER_HORIZONTAL | Gravity.TOP;
-                iconParams.topMargin = mDefaultMargin;
-                mIcon.setLayoutParams(iconParams);
                 mLargeLabel.setVisibility(INVISIBLE);
                 mSmallLabel.setVisibility(VISIBLE);
 
@@ -224,6 +196,15 @@ public class BottomNavigationItemView extends FrameLayout implements MenuView.It
     @Override
     public boolean showsIcon() {
         return true;
+    }
+
+    /**
+     * Hides the label below the menu item's icon.
+     */
+    public void hideLabel() {
+        mLabelHidden = true;
+        mSmallLabel.setVisibility(GONE);
+        mLargeLabel.setVisibility(GONE);
     }
 
     public void setIconTintList(ColorStateList tint) {
