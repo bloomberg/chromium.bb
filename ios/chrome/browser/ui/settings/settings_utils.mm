@@ -25,10 +25,3 @@ ProceduralBlockWithURL BlockToOpenURL(UIResponder* responder,
   };
   return [blockToOpenURL copy];
 }
-
-namespace ios_internal_settings {
-ProceduralBlockWithURL BlockToOpenURL(UIResponder* responder,
-                                      id<ApplicationCommands> dispatcher) {
-  return ::BlockToOpenURL(responder, dispatcher);
-}
-}  // namespace ios_internal_settings

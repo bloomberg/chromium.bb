@@ -16,13 +16,4 @@
 ProceduralBlockWithURL BlockToOpenURL(UIResponder* responder,
                                       id<ApplicationCommands> dispatcher);
 
-namespace ios_internal_settings {
-// Returns a ProceduralBlockWithURL that uses the dispatcher and opens url
-// (parameter to the block) in a new tab. Forwards to ::BlockToOpenURL.
-// TODO(crbug.com/677941): remove this declaration once ios_internal code
-// has been fixed to use the function in the global namespace instead.
-ProceduralBlockWithURL BlockToOpenURL(UIResponder* responder,
-                                      id<ApplicationCommands> dispatcher);
-}  // namespace ios_internal_settings
-
 #endif  // IOS_CHROME_BROWSER_UI_SETTINGS_SETTINGS_UTILS_H_
