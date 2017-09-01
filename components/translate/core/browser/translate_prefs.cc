@@ -18,7 +18,6 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/translate/core/browser/translate_accept_languages.h"
 #include "components/translate/core/browser/translate_download_manager.h"
-#include "components/translate/core/browser/translate_experiment.h"
 #include "components/translate/core/browser/translate_pref_names.h"
 #include "components/translate/core/common/translate_util.h"
 
@@ -491,13 +490,6 @@ bool TranslatePrefs::CanTranslateLanguage(
       TranslateAcceptLanguages::CanBeAcceptLanguage(language);
   bool is_accept_language = accept_languages->IsAcceptLanguage(language);
 
-  // For the translate language experiment, blocklists can be overridden.
-  const std::string& app_locale =
-      TranslateDownloadManager::GetInstance()->application_locale();
-  std::string ui_lang = TranslateDownloadManager::GetLanguageCode(app_locale);
-  if (TranslateExperiment::ShouldOverrideBlocking(ui_lang, language))
-    return true;
-
   // Don't translate any user black-listed languages. Checking
   // |is_accept_language| is necessary because if the user eliminates the
   // language from the preference, it is natural to forget whether or not
@@ -505,11 +497,8 @@ bool TranslatePrefs::CanTranslateLanguage(
   // is also necessary because some minor languages can't be selected in the
   // language preference even though the language is available in Translate
   // server.
-  if (IsBlockedLanguage(language) &&
-      (is_accept_language || !can_be_accept_language))
-    return false;
-
-  return true;
+  return !IsBlockedLanguage(language) ||
+         (!is_accept_language && can_be_accept_language);
 }
 
 bool TranslatePrefs::ShouldAutoTranslate(const std::string& original_language,
