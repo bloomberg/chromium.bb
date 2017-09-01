@@ -191,6 +191,10 @@ bool TouchSelectionControllerClientAura::HandleContextMenu(
   return false;
 }
 
+void TouchSelectionControllerClientAura::DidStopFlinging() {
+  OnScrollCompleted();
+}
+
 void TouchSelectionControllerClientAura::UpdateClientSelectionBounds(
     const gfx::SelectionBound& start,
     const gfx::SelectionBound& end) {

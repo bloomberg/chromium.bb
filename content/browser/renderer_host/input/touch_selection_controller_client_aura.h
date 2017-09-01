@@ -55,6 +55,7 @@ class CONTENT_EXPORT TouchSelectionControllerClientAura
                                    const gfx::SelectionBound& end);
 
   // TouchSelectionControllerClientManager.
+  void DidStopFlinging() override;
   void UpdateClientSelectionBounds(
       const gfx::SelectionBound& start,
       const gfx::SelectionBound& end,

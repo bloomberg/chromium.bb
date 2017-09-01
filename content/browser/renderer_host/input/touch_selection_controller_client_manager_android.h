@@ -25,6 +25,7 @@ class TouchSelectionControllerClientManagerAndroid
   float page_scale_factor() { return page_scale_factor_; }
 
   // TouchSelectionControllerClientManager implementation.
+  void DidStopFlinging() override;
   void UpdateClientSelectionBounds(
       const gfx::SelectionBound& start,
       const gfx::SelectionBound& end,

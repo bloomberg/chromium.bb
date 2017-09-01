@@ -43,6 +43,10 @@ gfx::SelectionBound ScaleSelectionBound(const gfx::SelectionBound& bound,
 }  // namespace
 
 // TouchSelectionControllerClientManager implementation.
+void TouchSelectionControllerClientManagerAndroid::DidStopFlinging() {
+  // TODO(wjmaclean): determine what, if anything, needs to happen here.
+}
+
 void TouchSelectionControllerClientManagerAndroid::UpdateClientSelectionBounds(
     const gfx::SelectionBound& start,
     const gfx::SelectionBound& end,
