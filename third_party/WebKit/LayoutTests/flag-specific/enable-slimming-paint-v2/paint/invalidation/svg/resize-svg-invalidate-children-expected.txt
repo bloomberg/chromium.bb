@@ -7,29 +7,14 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV id='target'",
-          "rect": [8, 8, 200, 200],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutSVGRect rect",
-          "rect": [58, 58, 100, 100],
-          "reason": "geometry"
-        },
-        {
           "object": "LayoutSVGRoot svg",
           "rect": [58, 58, 100, 100],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutSVGRect rect",
-          "rect": [33, 33, 50, 50],
-          "reason": "geometry"
+          "reason": "paint property change"
         },
         {
           "object": "LayoutSVGRoot svg",
           "rect": [33, 33, 50, 50],
-          "reason": "geometry"
+          "reason": "paint property change"
         }
       ]
     }
@@ -45,10 +30,6 @@
     },
     {
       "object": "LayoutSVGRoot svg",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutSVGRect rect",
       "reason": "geometry"
     }
   ]

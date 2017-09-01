@@ -61,11 +61,13 @@ function checkObjectPaintInvalidations(layersWithInvalidationsText)
     }
 
     window.expectedObjectInvalidations.forEach(function(objectName) {
-        assert_true(objectNameSet.has(objectName), "Expected object to be invalidated, but it was not: '" + objectName + "'");
+        assert_true(objectNameSet.has(objectName),
+                    "Expected object to be invalidated, but it was not: '" + objectName + "'\n" + layersWithInvalidationsText);
     });
 
     window.expectedObjectNonInvalidations.forEach(function(objectName) {
-        assert_false(objectNameSet.has(objectName), "Expected object to *not* be invalidated, but it was: '" + objectName + "'");
+        assert_false(objectNameSet.has(objectName),
+                     "Expected object to *not* be invalidated, but it was: '" + objectName + "'\n" + layersWithInvalidationsText);
     });
 }
 

@@ -1,14 +1,8 @@
 <!DOCTYPE html>
-<script src="../../../resources/testharness.js"></script>
-<script src="../../../resources/testharnessreport.js"></script>
 <script src="../resources/text-based-repaint.js"></script>
 <script>
 // When resizing the div that contains SVG, the SVG root element and rect resize accordingly.
-// It's necessary to invalidate the rect in this case.
-window.expectedObjectInvalidations.push("LayoutSVGRect rect");
-
-onload = runRepaintTest;
-window.outputRepaintRects = false;
+onload = runRepaintAndPixelTest;
 function repaintTest() {
 	target.style.width = '200px';
 	target.style.height= '200px';
