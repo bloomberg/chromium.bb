@@ -4,6 +4,8 @@
 
 package org.chromium.net.impl;
 
+import android.support.annotation.NonNull;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,11 +25,11 @@ final class InputStreamChannel implements ReadableByteChannel {
     private final InputStream mInputStream;
     private final AtomicBoolean mIsOpen = new AtomicBoolean(true);
 
-    private InputStreamChannel(InputStream inputStream) {
+    private InputStreamChannel(@NonNull InputStream inputStream) {
         mInputStream = inputStream;
     }
 
-    static ReadableByteChannel wrap(InputStream inputStream) {
+    static ReadableByteChannel wrap(@NonNull InputStream inputStream) {
         if (inputStream instanceof FileInputStream) {
             return ((FileInputStream) inputStream).getChannel();
         }

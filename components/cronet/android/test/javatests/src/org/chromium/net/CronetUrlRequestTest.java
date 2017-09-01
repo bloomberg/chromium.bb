@@ -2159,4 +2159,15 @@ public class CronetUrlRequestTest extends CronetTestBase {
             // leak.
         }
     }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    /** Do a HEAD request and get back a 404. */
+    public void test404Head() throws Exception {
+        TestUrlRequestCallback callback = new TestUrlRequestCallback();
+        UrlRequest.Builder builder = mTestFramework.mCronetEngine.newUrlRequestBuilder(
+                NativeTestServer.getFileURL("/notfound.html"), callback, callback.getExecutor());
+        builder.setHttpMethod("HEAD").build().start();
+        callback.blockForDone();
+    }
 }
