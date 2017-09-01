@@ -51,7 +51,7 @@ id<GREYMatcher> BookmarksDeleteSwipeButton() {
 
 // Matcher for the Back button on the bookmarks UI.
 id<GREYMatcher> BookmarksBackButton() {
-  return ButtonWithAccessibilityLabel(@"Back");
+  return grey_accessibilityLabel(@"Back");
 }
 
 // Matcher for the DONE button on the bookmarks UI.
@@ -149,8 +149,6 @@ id<GREYMatcher> BookmarksDoneButton() {
 // Tests that the promo view is only seen at root level and not in any of the
 // child nodes.
 - (void)testPromoViewIsSeenOnlyInRootNode {
-  // TODO(crbug.com/760065): Re-enable this test.
-  EARL_GREY_TEST_DISABLED(@"Test disabled, issue with back button.");
   if (IsIPadIdiom()) {
     EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
   }
