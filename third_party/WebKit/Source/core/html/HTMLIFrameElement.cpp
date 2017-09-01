@@ -178,14 +178,22 @@ void HTMLIFrameElement::ParseAttribute(
     if (allow_ != value) {
       allow_ = value;
       Vector<String> messages;
-      UpdateContainerPolicy(&messages);
-      UseCounter::Count(GetDocument(),
-                        WebFeature::kFeaturePolicyAllowAttribute);
+      bool old_syntax = false;
+      UpdateContainerPolicy(&messages, &old_syntax);
       if (!messages.IsEmpty()) {
         for (const String& message : messages) {
           GetDocument().AddConsoleMessage(ConsoleMessage::Create(
               kOtherMessageSource, kWarningMessageLevel, message));
         }
+      }
+
+      if (old_syntax) {
+        UseCounter::Count(
+            GetDocument(),
+            WebFeature::kFeaturePolicyAllowAttributeDeprecatedSyntax);
+      } else {
+        UseCounter::Count(GetDocument(),
+                          WebFeature::kFeaturePolicyAllowAttribute);
       }
     }
   } else {
@@ -196,11 +204,13 @@ void HTMLIFrameElement::ParseAttribute(
 }
 
 Vector<WebParsedFeaturePolicyDeclaration>
-HTMLIFrameElement::ConstructContainerPolicy(Vector<String>* messages) const {
+HTMLIFrameElement::ConstructContainerPolicy(Vector<String>* messages,
+                                            bool* old_syntax) const {
   RefPtr<SecurityOrigin> src_origin = GetOriginForFeaturePolicy();
   RefPtr<SecurityOrigin> self_origin = GetDocument().GetSecurityOrigin();
   Vector<WebParsedFeaturePolicyDeclaration> container_policy =
-      ParseFeaturePolicyAttribute(allow_, self_origin, src_origin, messages);
+      ParseFeaturePolicyAttribute(allow_, self_origin, src_origin, messages,
+                                  old_syntax);
 
   // If allowfullscreen attribute is present and no fullscreen policy is set,
   // enable the feature for all origins.

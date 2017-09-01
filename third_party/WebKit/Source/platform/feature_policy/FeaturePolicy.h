@@ -40,22 +40,34 @@ ParseFeaturePolicyHeader(const String& policy,
 // input will cause as warning message to be appended to it.
 // Example of a feature policy string:
 //     "vibrate a.com 'src'; fullscreen 'none'; payment 'self', payment *".
+// If |old_syntax| is not null, it will be set true if the deprecated
+// space-deparated feature list syntax is detected.
+// TODO(loonybear): remove the boolean once the space separated feature list
+// syntax is deprecated.
+// https://crbug.com/761009.
 PLATFORM_EXPORT Vector<WebParsedFeaturePolicyDeclaration>
 ParseFeaturePolicyAttribute(const String& policy,
                             RefPtr<SecurityOrigin> self_origin,
                             RefPtr<SecurityOrigin> src_origin,
-                            Vector<String>* messages);
+                            Vector<String>* messages,
+                            bool* old_syntax);
 
 // Converts a feature policy string into a vector of whitelists (see comments
 // above), with an explicit FeatureNameMap. This algorithm is called by both
 // header policy parsing and container policy parsing. |self_origin| and
 // |src_origin| are both nullable.
+// If |old_syntax| is not null, it will be set true if the deprecated
+// space-deparated feature list syntax is detected.
+// TODO(loonybear): remove the boolean once the space separated feature list
+// syntax is deprecated.
+// https://crbug.com/761009.
 PLATFORM_EXPORT Vector<WebParsedFeaturePolicyDeclaration> ParseFeaturePolicy(
     const String& policy,
     RefPtr<SecurityOrigin> self_origin,
     RefPtr<SecurityOrigin> src_origin,
     Vector<String>* messages,
-    const FeatureNameMap& feature_names);
+    const FeatureNameMap& feature_names,
+    bool* old_syntax = nullptr);
 
 // Verifies whether feature policy is enabled and |feature| is supported in
 // feature policy.

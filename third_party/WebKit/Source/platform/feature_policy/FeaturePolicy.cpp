@@ -15,7 +15,7 @@
 namespace blink {
 
 namespace {
-// TODO(lunalu): Deprecate the methods in this namesapce when deprecating old
+// TODO(loonybear): Deprecate the methods in this namesapce when deprecating old
 // allow syntax.
 bool IsValidOldAllowSyntax(const String& policy,
                            RefPtr<SecurityOrigin> src_origin) {
@@ -92,9 +92,10 @@ Vector<WebParsedFeaturePolicyDeclaration> ParseFeaturePolicyAttribute(
     const String& policy,
     RefPtr<SecurityOrigin> self_origin,
     RefPtr<SecurityOrigin> src_origin,
-    Vector<String>* messages) {
+    Vector<String>* messages,
+    bool* old_syntax) {
   return ParseFeaturePolicy(policy, self_origin, src_origin, messages,
-                            GetDefaultFeatureNameMap());
+                            GetDefaultFeatureNameMap(), old_syntax);
 }
 
 Vector<WebParsedFeaturePolicyDeclaration> ParseFeaturePolicy(
@@ -102,12 +103,16 @@ Vector<WebParsedFeaturePolicyDeclaration> ParseFeaturePolicy(
     RefPtr<SecurityOrigin> self_origin,
     RefPtr<SecurityOrigin> src_origin,
     Vector<String>* messages,
-    const FeatureNameMap& feature_names) {
+    const FeatureNameMap& feature_names,
+    bool* old_syntax) {
   // Temporarily supporting old allow syntax:
   //     allow = "feature1 feature2 feature3 ... "
-  // TODO(lunalu): depracate this old syntax in the future.
-  if (IsValidOldAllowSyntax(policy, src_origin))
+  // TODO(loonybear): depracate this old syntax in the future.
+  if (IsValidOldAllowSyntax(policy, src_origin)) {
+    if (old_syntax)
+      *old_syntax = true;
     return ParseOldAllowSyntax(policy, src_origin, messages, feature_names);
+  }
 
   Vector<WebParsedFeaturePolicyDeclaration> whitelists;
   BitVector features_specified(
