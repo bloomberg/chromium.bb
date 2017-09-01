@@ -282,6 +282,63 @@ def SafeMakedirsNonRoot(path, mode=0o775, user=None):
                                   redirect_stdout=True)
   return created
 
+class BadPathsException(Exception):
+  """Raised by various osutils path manipulation functions on bad input."""
+
+
+def CopyDirContents(from_dir, to_dir, symlink=False):
+  """Copy contents of from_dir to to_dir. Both should exist.
+
+  shutil.copytree allows one to copy a rooted directory tree along with the
+  containing directory. OTOH, this function copies the contents of from_dir to
+  an existing directory. The target directory must be empty. For example, for
+  the given paths:
+
+  from/
+    inside/x.py
+    y.py
+  to/
+
+  shutil.copytree('from', 'to')
+  # Raises because 'to' already exists.
+
+  shutil.copytree('from', 'to/non_existent_dir')
+  to/non_existent_dir/
+    inside/x.py
+    y.py
+
+  CopyDirContents('from', 'to')
+  to/
+    inside/x.py
+    y.py
+
+  Args:
+    from_dir: The directory whose contents should be copied. Must exist.
+    to_dir: The directory to which contents should be copied. Must exist.
+    symlink: Whether symlinks should be copied.
+
+  Raises:
+    BadPathsException: if the source / target directories don't exist, or if
+        target directory is non-empty.
+    OSError: on esoteric permission errors.
+  """
+  if not os.path.isdir(from_dir):
+    raise BadPathsException('Source directory %s does not exist.' % from_dir)
+  if not os.path.isdir(to_dir):
+    raise BadPathsException('Destination directory %s does not exist.' % to_dir)
+  if os.listdir(to_dir):
+    raise BadPathsException('Destination directory %s is not empty.' % to_dir)
+
+  for name in os.listdir(from_dir):
+    from_path = os.path.join(from_dir, name)
+    to_path = os.path.join(to_dir, name)
+    if os.path.isdir(from_path):
+      shutil.copytree(from_path, to_path)
+    elif symlink and os.path.islink(from_path):
+      os.symlink(os.readlink(from_path), to_path)
+    elif os.path.isfile(from_path):
+      shutil.copy2(from_path, to_path)
+
 
 def RmDir(path, ignore_missing=False, sudo=False):
   """Recursively remove a directory.
@@ -310,7 +367,7 @@ def RmDir(path, ignore_missing=False, sudo=False):
         raise
 
 
-class EmptyDirNonExistentException(Exception):
+class EmptyDirNonExistentException(BadPathsException):
   """EmptyDir was called on a non-existent directory without ignore_missing."""
 
 
