@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Multiply-included message file, no traditional include guard.
+#ifndef CONTENT_COMMON_DOM_STORAGE_DOM_STORAGE_MESSAGES_H_
+#define CONTENT_COMMON_DOM_STORAGE_DOM_STORAGE_MESSAGES_H_
 
 #include <stdint.h>
 
@@ -99,3 +100,5 @@ IPC_MESSAGE_CONTROL2(DOMStorageHostMsg_Clear,
 
 // Used to flush the ipc message queue.
 IPC_SYNC_MESSAGE_CONTROL0_0(DOMStorageHostMsg_FlushMessages)
+
+#endif  // CONTENT_COMMON_DOM_STORAGE_DOM_STORAGE_MESSAGES_H_

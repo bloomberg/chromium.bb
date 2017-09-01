@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef CONTENT_COMMON_RENDER_PROCESS_MESSAGES_H_
+#define CONTENT_COMMON_RENDER_PROCESS_MESSAGES_H_
+
 // Common IPC messages used for render processes.
-// Multiply-included message file, hence no include guard.
 
 #include <stdint.h>
 
@@ -68,3 +70,5 @@ IPC_SYNC_MESSAGE_CONTROL1_3(RenderProcessHostMsg_LoadFont,
                             base::SharedMemoryHandle /* font data */,
                             uint32_t /* font id */)
 #endif
+
+#endif  // CONTENT_COMMON_RENDER_PROCESS_MESSAGES_H_

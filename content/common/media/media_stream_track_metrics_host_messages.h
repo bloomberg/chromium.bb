@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef CONTENT_COMMON_MEDIA_MEDIA_STREAM_TRACK_METRICS_HOST_MESSAGES_H_
+#define CONTENT_COMMON_MEDIA_MEDIA_STREAM_TRACK_METRICS_HOST_MESSAGES_H_
+
 #include <stdint.h>
 
 #include "base/values.h"
@@ -18,3 +21,5 @@ IPC_MESSAGE_CONTROL3(MediaStreamTrackMetricsHost_AddTrack,
                      bool /* is_audio */,
                      bool /* is_remote */)
 IPC_MESSAGE_CONTROL1(MediaStreamTrackMetricsHost_RemoveTrack, uint64_t /* id */)
+
+#endif  // CONTENT_COMMON_MEDIA_MEDIA_STREAM_TRACK_METRICS_HOST_MESSAGES_H_

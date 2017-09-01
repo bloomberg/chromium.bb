@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef CONTENT_COMMON_DWRITE_FONT_PROXY_MESSAGES_H_
+#define CONTENT_COMMON_DWRITE_FONT_PROXY_MESSAGES_H_
+
 #include <stdint.h>
 
 #include <utility>
@@ -16,13 +19,13 @@
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 #define IPC_MESSAGE_START DWriteFontProxyMsgStart
 
-#ifndef CONTENT_COMMON_DWRITE_FONT_PROXY_MESSAGES_H_
-#define CONTENT_COMMON_DWRITE_FONT_PROXY_MESSAGES_H_
+#ifndef INTERNAL_CONTENT_COMMON_DWRITE_FONT_PROXY_MESSAGES_H_
+#define INTERNAL_CONTENT_COMMON_DWRITE_FONT_PROXY_MESSAGES_H_
 
 // The macros can't handle a complex template declaration, so we typedef it.
 typedef std::pair<base::string16, base::string16> DWriteStringPair;
 
-#endif  // CONTENT_COMMON_DWRITE_FONT_PROXY_MESSAGES_H_
+#endif  // INTERNAL_CONTENT_COMMON_DWRITE_FONT_PROXY_MESSAGES_H_
 
 IPC_STRUCT_BEGIN(DWriteFontStyle)
   IPC_STRUCT_MEMBER(uint16_t, font_weight)
@@ -76,3 +79,5 @@ IPC_SYNC_MESSAGE_CONTROL5_1(DWriteFontProxyMsg_MapCharacters,
                             uint32_t /* reading_direction */,
                             base::string16 /* base_family_name - optional */,
                             MapCharactersResult /* out */)
+
+#endif  // CONTENT_COMMON_DWRITE_FONT_PROXY_MESSAGES_H_

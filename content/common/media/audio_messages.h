@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef CONTENT_COMMON_MEDIA_AUDIO_MESSAGES_H_
+#define CONTENT_COMMON_MEDIA_AUDIO_MESSAGES_H_
+
 // IPC messages for the audio.
-// Multiply-included message file, hence no include guard.
 
 #include <stdint.h>
 
@@ -135,3 +137,5 @@ IPC_MESSAGE_CONTROL2(AudioHostMsg_SetVolume,
 IPC_MESSAGE_CONTROL2(AudioInputHostMsg_SetVolume,
                      int /* stream_id */,
                      double /* volume */)
+
+#endif  // CONTENT_COMMON_MEDIA_AUDIO_MESSAGES_H_

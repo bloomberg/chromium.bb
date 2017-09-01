@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Multiply-included message file, so no include guard.
+#ifndef CONTENT_COMMON_CLIPBOARD_MESSAGES_H_
+#define CONTENT_COMMON_CLIPBOARD_MESSAGES_H_
 
 #include <stdint.h>
 
@@ -23,15 +24,15 @@
 #include "url/ipc/url_param_traits.h"
 
 // Singly-included section for types and/or struct declarations.
-#ifndef CONTENT_COMMON_CLIPBOARD_MESSAGES_H_
-#define CONTENT_COMMON_CLIPBOARD_MESSAGES_H_
+#ifndef INTERNAL_CONTENT_COMMON_CLIPBOARD_MESSAGES_H_
+#define INTERNAL_CONTENT_COMMON_CLIPBOARD_MESSAGES_H_
 
 // Custom data consists of arbitrary MIME types an untrusted sender wants to
 // write to the clipboard. Note that exposing a general interface to do this is
 // dangerous--an untrusted sender could cause a DoS or code execution.
 typedef std::map<base::string16, base::string16> CustomDataMap;
 
-#endif  // CONTENT_COMMON_CLIPBOARD_MESSAGES_H_
+#endif  // INTERNAL_CONTENT_COMMON_CLIPBOARD_MESSAGES_H_
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
@@ -112,3 +113,5 @@ IPC_MESSAGE_CONTROL1(ClipboardHostMsg_CommitWrite, ui::ClipboardType /* type */)
 IPC_MESSAGE_CONTROL1(ClipboardHostMsg_FindPboardWriteStringAsync,
                      base::string16 /* text */)
 #endif
+
+#endif  // CONTENT_COMMON_CLIPBOARD_MESSAGES_H_

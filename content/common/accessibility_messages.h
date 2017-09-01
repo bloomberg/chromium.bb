@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef CONTENT_COMMON_ACCESSIBILITY_MESSAGES_H_
+#define CONTENT_COMMON_ACCESSIBILITY_MESSAGES_H_
+
 // IPC messages for accessibility.
-// Multiply-included message file, hence no include guard.
 
 #include "content/common/ax_content_node_data.h"
 #include "content/common/content_export.h"
@@ -212,3 +214,5 @@ IPC_MESSAGE_ROUTED3(AccessibilityHostMsg_ChildFrameHitTestResult,
 IPC_MESSAGE_ROUTED2(AccessibilityHostMsg_SnapshotResponse,
                     int /* callback_id */,
                     content::AXContentTreeUpdate)
+
+#endif  // CONTENT_COMMON_ACCESSIBILITY_MESSAGES_H_

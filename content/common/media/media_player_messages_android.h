@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef CONTENT_COMMON_MEDIA_MEDIA_PLAYER_MESSAGES_ANDROID_H_
+#define CONTENT_COMMON_MEDIA_MEDIA_PLAYER_MESSAGES_ANDROID_H_
+
 // IPC messages for android media player.
-// Multiply-included message file, hence no include guard.
 
 #include "base/time/time.h"
 #include "content/common/content_export.h"
@@ -188,3 +190,5 @@ IPC_MESSAGE_ROUTED1(MediaPlayerHostMsg_RequestRemotePlaybackControl,
 // Stop playing media on a remote device.
 IPC_MESSAGE_ROUTED1(MediaPlayerHostMsg_RequestRemotePlaybackStop,
                     int /* player_id */)
+
+#endif  // #ifndef CONTENT_COMMON_MEDIA_MEDIA_PLAYER_MESSAGES_ANDROID_H_

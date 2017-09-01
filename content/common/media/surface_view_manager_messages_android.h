@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef CONTENT_COMMON_MEDIA_SURFACE_VIEW_MANAGER_MESSAGES_ANDROID_H_
+#define CONTENT_COMMON_MEDIA_SURFACE_VIEW_MANAGER_MESSAGES_ANDROID_H_
+
 // IPC messages for surface view manager.
-// Multiply-included message file, hence no include guard.
 
 #include "content/common/content_export.h"
 #include "ipc/ipc_message_macros.h"
@@ -24,3 +26,5 @@ IPC_MESSAGE_ROUTED1(SurfaceViewManagerHostMsg_NaturalSizeChanged,
 
 IPC_MESSAGE_ROUTED1(SurfaceViewManagerMsg_FullscreenSurfaceCreated,
                     int /* surface_id */)
+
+#endif  // CONTENT_COMMON_MEDIA_SURFACE_VIEW_MANAGER_MESSAGES_ANDROID_H_

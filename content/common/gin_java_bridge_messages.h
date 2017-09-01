@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// IPC messages for injected Java objects (Gin-based implementation).
+#ifndef CONTENT_COMMON_GIN_JAVA_BRIDGE_MESSAGES_H_
+#define CONTENT_COMMON_GIN_JAVA_BRIDGE_MESSAGES_H_
 
-// Multiply-included message file, hence no include guard.
+// IPC messages for injected Java objects (Gin-based implementation).
 
 #include <stdint.h>
 
@@ -73,3 +74,5 @@ IPC_SYNC_MESSAGE_ROUTED3_2(GinJavaBridgeHostMsg_InvokeMethod,
 //     this expectation has failed.
 IPC_MESSAGE_ROUTED1(GinJavaBridgeHostMsg_ObjectWrapperDeleted,
                     int32_t /* object_id */)
+
+#endif  // CONTENT_COMMON_GIN_JAVA_BRIDGE_MESSAGES_H_

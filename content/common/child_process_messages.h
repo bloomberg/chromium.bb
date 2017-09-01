@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef CONTENT_COMMON_CHILD_PROCESS_MESSAGES_H_
+#define CONTENT_COMMON_CHILD_PROCESS_MESSAGES_H_
+
 // Common IPC messages used for child processes.
-// Multiply-included message file, hence no include guard.
 
 #include <stdint.h>
 
@@ -178,3 +180,5 @@ IPC_MESSAGE_CONTROL2(ChildProcessHostMsg_SetThreadPriority,
                      base::PlatformThreadId,
                      base::ThreadPriority)
 #endif
+
+#endif  // CONTENT_COMMON_CHILD_PROCESS_MESSAGES_H_

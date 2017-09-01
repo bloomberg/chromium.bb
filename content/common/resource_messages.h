@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef CONTENT_COMMON_RESOURCE_MESSAGES_H_
+#define CONTENT_COMMON_RESOURCE_MESSAGES_H_
+
 // IPC messages for resource loading.
 //
 // NOTE: All messages must send an |int request_id| as their first parameter.
-
-// Multiply-included message file, hence no include guard.
 
 #include <stdint.h>
 
@@ -31,8 +32,8 @@
 #include "net/url_request/redirect_info.h"
 #include "third_party/WebKit/public/platform/WebMixedContentContextType.h"
 
-#ifndef CONTENT_COMMON_RESOURCE_MESSAGES_H_
-#define CONTENT_COMMON_RESOURCE_MESSAGES_H_
+#ifndef INTERNAL_CONTENT_COMMON_RESOURCE_MESSAGES_H_
+#define INTERNAL_CONTENT_COMMON_RESOURCE_MESSAGES_H_
 
 namespace net {
 struct LoadTimingInfo;
@@ -134,8 +135,7 @@ struct ParamTraits<scoped_refptr<net::ct::SignedCertificateTimestamp>> {
 
 }  // namespace IPC
 
-#endif  // CONTENT_COMMON_RESOURCE_MESSAGES_H_
-
+#endif  // INTERNAL_CONTENT_COMMON_RESOURCE_MESSAGES_H_
 
 #define IPC_MESSAGE_START ResourceMsgStart
 #undef IPC_MESSAGE_EXPORT
@@ -415,3 +415,5 @@ IPC_MESSAGE_CONTROL3(ResourceHostMsg_DidChangePriority,
                      int /* request_id */,
                      net::RequestPriority,
                      int /* intra_priority_value */)
+
+#endif  // CONTENT_COMMON_RESOURCE_MESSAGES_H_
