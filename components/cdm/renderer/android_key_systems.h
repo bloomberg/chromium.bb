@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "components/cdm/common/cdm_messages_android.h"
 #include "media/base/key_system_properties.h"
 
 namespace cdm {
@@ -21,6 +22,9 @@ void AddAndroidWidevine(
 void AddAndroidPlatformKeySystems(
     std::vector<std::unique_ptr<media::KeySystemProperties>>*
         concrete_key_systems);
+
+// Query key system property in browser process.
+SupportedKeySystemResponse QueryKeySystemSupport(const std::string& key_system);
 
 }  // namespace cdm
 

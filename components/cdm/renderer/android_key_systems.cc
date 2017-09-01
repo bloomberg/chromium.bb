@@ -9,7 +9,6 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "components/cdm/common/cdm_messages_android.h"
 #include "components/cdm/renderer/widevine_key_system_properties.h"
 #include "content/public/renderer/render_thread.h"
 #include "media/base/eme_constants.h"
@@ -92,6 +91,8 @@ class AndroidPlatformKeySystemProperties : public KeySystemProperties {
   const SupportedCodecs supported_codecs_;
 };
 
+}  // namespace
+
 SupportedKeySystemResponse QueryKeySystemSupport(
     const std::string& key_system) {
   SupportedKeySystemRequest request;
@@ -108,8 +109,6 @@ SupportedKeySystemResponse QueryKeySystemSupport(
       << "unrecognized codec";
   return response;
 }
-
-}  // namespace
 
 void AddAndroidWidevine(
     std::vector<std::unique_ptr<KeySystemProperties>>* concrete_key_systems) {
