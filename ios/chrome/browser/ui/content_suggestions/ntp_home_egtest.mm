@@ -6,12 +6,16 @@
 #import <XCTest/XCTest.h>
 
 #include "base/test/scoped_command_line.h"
+#include "base/values.h"
 #include "components/reading_list/core/reading_list_model.h"
+#include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_switches.h"
+#include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/ntp_snippets/ios_chrome_content_suggestions_service_factory.h"
 #include "ios/chrome/browser/ntp_snippets/ios_chrome_content_suggestions_service_factory_util.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
+#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_whats_new_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
@@ -34,6 +38,11 @@ using namespace ntp_home;
 using namespace ntp_snippets;
 
 namespace {
+const char kPrefPromoObject[] = "ios.ntppromo";
+const char kPrefPromoFirstViewTime[] = "first_view_time";
+const char kPrefPromoViews[] = "views";
+const char kPrefPromoClosed[] = "closed";
+
 // Returns a matcher, which is true if the view has its width equals to |width|.
 id<GREYMatcher> OmniboxWidth(CGFloat width) {
   MatchesBlock matches = ^BOOL(UIView* view) {
@@ -293,6 +302,45 @@ UIView* CollectionView() {
                                           FakeOmniboxAccessibilityID())]
       assertWithMatcher:OmniboxWidthBetween(collectionWidthAfterRotation + 1,
                                             1)];
+}
+
+// Tests that the promo is correctly displayed and removed once tapped.
+- (void)testPromoTap {
+  // Setup the promo.
+  NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
+  [defaults setInteger:experimental_flags::WHATS_NEW_APP_RATING
+                forKey:@"WhatsNewPromoStatus"];
+  auto ntp_promo = base::MakeUnique<base::DictionaryValue>();
+  ntp_promo->SetPath({kPrefPromoFirstViewTime},
+                     base::Value(base::Time::Now().ToDoubleT()));
+  ntp_promo->SetPath({kPrefPromoViews}, base::Value(0));
+  ntp_promo->SetPath({kPrefPromoClosed}, base::Value(false));
+
+  PrefService* local_state = GetApplicationContext()->GetLocalState();
+  base::DictionaryValue promo_dict;
+  promo_dict.MergeDictionary(local_state->GetDictionary(kPrefPromoObject));
+  promo_dict.Set(std::to_string(experimental_flags::WHATS_NEW_APP_RATING),
+                 std::move(ntp_promo));
+  local_state->Set(kPrefPromoObject, promo_dict);
+
+  // Open a new tab to have the promo.
+  [ChromeEarlGreyUI openNewTab];
+
+  // Tap the promo.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          [ContentSuggestionsWhatsNewItem
+                                              accessibilityIdentifier])]
+      performAction:grey_tap()];
+
+  // Promo dismissed.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          [ContentSuggestionsWhatsNewItem
+                                              accessibilityIdentifier])]
+      assertWithMatcher:grey_not(grey_sufficientlyVisible())];
+
+  // Reset the promo.
+  [defaults setInteger:experimental_flags::WHATS_NEW_DEFAULT
+                forKey:@"WhatsNewPromoStatus"];
 }
 
 @end
