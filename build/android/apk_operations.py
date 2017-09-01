@@ -887,7 +887,9 @@ def _RunInternal(parser, output_directory=None):
   run_tests_helper.SetLogLevel(args.verbose_count)
   args.command.ProcessArgs(args)
   args.command.Run()
-  _SaveDeviceCaches(args.command.devices, output_directory)
+  # Incremental install depends on the cache being cleared when uninstalling.
+  if args.command.name != 'uninstall':
+    _SaveDeviceCaches(args.command.devices, output_directory)
 
 
 # TODO(agrieve): Remove =None from target_cpu on or after October 2017.
