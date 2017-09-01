@@ -34,7 +34,10 @@ void SetTextDirectionIfPseudoRTLEnabled() {
   @autoreleasepool {
     NSUserDefaults* standard_defaults = [NSUserDefaults standardUserDefaults];
     if ([standard_defaults boolForKey:@"EnablePseudoRTL"]) {
-      NSDictionary* pseudoDict = @{@"YES" : @"AppleTextDirection"};
+      NSDictionary* pseudoDict = @{
+        @"AppleTextDirection" : @"YES",
+        @"NSForceRightToLeftWritingDirection" : @"YES"
+      };
       [standard_defaults registerDefaults:pseudoDict];
     }
   }
