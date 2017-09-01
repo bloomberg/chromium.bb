@@ -123,7 +123,7 @@ int TableLayoutAlgorithmFixed::CalcWidthArray() {
       }
       // TODO(alancutter): Make this work correctly for calc lengths.
       if ((col_style_logical_width.IsFixed() ||
-           col_style_logical_width.IsPercentOrCalc()) &&
+           col_style_logical_width.IsPercent()) &&
           col_style_logical_width.IsPositive()) {
         width_[current_effective_column] = col_style_logical_width;
         width_[current_effective_column] *= span_in_current_effective_column;
@@ -255,7 +255,7 @@ void TableLayoutAlgorithmFixed::UpdateLayout() {
     if (width_[i].IsFixed()) {
       calc_width[i] = width_[i].Value();
       total_fixed_width += calc_width[i];
-    } else if (width_[i].IsPercentOrCalc()) {
+    } else if (width_[i].IsPercent()) {
       // TODO(alancutter): Make this work correctly for calc lengths.
       calc_width[i] =
           ValueForLength(width_[i], LayoutUnit(table_logical_width)).ToInt();
@@ -303,7 +303,7 @@ void TableLayoutAlgorithmFixed::UpdateLayout() {
         total_percent_width = 0;
         for (unsigned i = 0; i < n_eff_cols; i++) {
           // TODO(alancutter): Make this work correctly for calc lengths.
-          if (width_[i].IsPercentOrCalc()) {
+          if (width_[i].IsPercent()) {
             calc_width[i] = width_[i].Percent() *
                             (table_logical_width - total_fixed_width) /
                             total_percent;
@@ -329,7 +329,6 @@ void TableLayoutAlgorithmFixed::UpdateLayout() {
         if (!remaining_width)
           break;
         last_auto = i;
-        num_auto--;
         DCHECK_GE(auto_span, span);
         auto_span -= span;
       }
