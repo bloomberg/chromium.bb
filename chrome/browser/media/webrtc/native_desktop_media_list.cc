@@ -43,7 +43,7 @@ const int kDefaultUpdatePeriod = 1000;
 // media source has changed.
 uint32_t GetFrameHash(webrtc::DesktopFrame* frame) {
   int data_size = frame->stride() * frame->size().height();
-  return base::Hash(reinterpret_cast<char*>(frame->data()), data_size);
+  return base::Hash(frame->data(), data_size);
 }
 
 gfx::ImageSkia ScaleDesktopFrame(std::unique_ptr<webrtc::DesktopFrame> frame,

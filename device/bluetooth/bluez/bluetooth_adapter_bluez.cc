@@ -1042,9 +1042,8 @@ void BluetoothAdapterBlueZ::SetStandardChromeOSAdapterName() {
   // Take the lower 2 bytes of hashed Bluetooth address and combine it with the
   // device type to create a more identifiable device name.
   const std::string address = GetAddress();
-  alias = base::StringPrintf(
-      "%s_%04X", alias.c_str(),
-      base::SuperFastHash(address.data(), address.size()) & 0xFFFF);
+  alias = base::StringPrintf("%s_%04X", alias.c_str(),
+                             base::PersistentHash(address) & 0xFFFF);
   SetName(alias, base::Bind(&base::DoNothing), base::Bind(&base::DoNothing));
 }
 #endif

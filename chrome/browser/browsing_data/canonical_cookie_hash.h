@@ -38,6 +38,6 @@ typedef base::hash_set<net::CanonicalCookie,
                        CanonicalCookieHasher,
                        CanonicalCookieComparer> CookieHashSet;
 
-};  // namespace canonical_cookie
+}  // namespace canonical_cookie
 
 #endif  // CHROME_BROWSER_BROWSING_DATA_CANONICAL_COOKIE_HASH_H_

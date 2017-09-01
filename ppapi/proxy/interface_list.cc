@@ -410,7 +410,7 @@ void InterfaceList::AddPPP(const char* name,
 }
 
 int InterfaceList::HashInterfaceName(const std::string& name) {
-  uint32_t data = base::Hash(name.c_str(), name.size());
+  uint32_t data = base::Hash(name);
   // Strip off the signed bit because UMA doesn't support negative values,
   // but takes a signed int as input.
   return static_cast<int>(data & 0x7fffffff);

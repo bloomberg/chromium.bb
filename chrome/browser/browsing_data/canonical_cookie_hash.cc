@@ -9,10 +9,9 @@
 namespace canonical_cookie {
 
 size_t FastHash(const net::CanonicalCookie& cookie) {
-  return base::SuperFastHash(cookie.Name().c_str(), cookie.Name().size()) +
-         3 * base::SuperFastHash(cookie.Domain().c_str(),
-                                 cookie.Domain().size()) +
-         7 * base::SuperFastHash(cookie.Path().c_str(), cookie.Path().size());
+  return base::PersistentHash(cookie.Name()) +
+         3 * base::PersistentHash(cookie.Domain()) +
+         7 * base::PersistentHash(cookie.Path());
 }
 
-};  // namespace canonical_cookie
+}  // namespace canonical_cookie

@@ -31,8 +31,7 @@ int HashUUID(const std::string& canonical_uuid) {
 
   // TODO(520284): Other than verifying that |uuid| contains a value, this logic
   // should be migrated to a dedicated histogram macro for hashed strings.
-  uint32_t data =
-      base::SuperFastHash(canonical_uuid.data(), canonical_uuid.size());
+  uint32_t data = base::PersistentHash(canonical_uuid);
 
   // Strip off the sign bit because UMA doesn't support negative values,
   // but takes a signed int as input.

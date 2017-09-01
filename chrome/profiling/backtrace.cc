@@ -20,8 +20,7 @@ size_t ComputeHash(const std::vector<Address>& addrs) {
   if (addrs.empty())
     return 0;
   // Assume Address is a POD containing only the address with no padding.
-  return base::Hash(reinterpret_cast<const char*>(&addrs[0]),
-                    addrs.size() * sizeof(Address));
+  return base::Hash(addrs.data(), addrs.size() * sizeof(Address));
 }
 
 }  // namespace
