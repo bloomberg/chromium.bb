@@ -9,18 +9,15 @@
 #include <utility>
 
 #include "base/command_line.h"
-#include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -46,21 +43,17 @@
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/grit/locale_settings.h"
 #include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/master_preferences_constants.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/signin/core/browser/signin_manager.h"
-#include "components/signin/core/browser/signin_tracker.h"
-#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
@@ -69,7 +62,6 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/one_shot_event.h"
 #include "google_apis/gaia/gaia_auth_util.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -590,20 +582,6 @@ bool ShouldShowWelcomePage() {
 }
 
 bool IsOnWelcomePage(content::WebContents* contents) {
-  // We have to check both the GetURL() similar to the other checks below, but
-  // also the original request url because the welcome page we use is a
-  // redirect.
-  // TODO(crbug.com/651465): Remove this once kUseConsolidatedStartupFlow is on
-  // by default.
-  const GURL deprecated_welcome_page(
-      l10n_util::GetStringUTF8(IDS_WELCOME_PAGE_URL));
-  if (contents->GetURL() == deprecated_welcome_page ||
-      (contents->GetController().GetVisibleEntry() &&
-       contents->GetController().GetVisibleEntry()->GetOriginalRequestURL() ==
-           deprecated_welcome_page)) {
-    return true;
-  }
-
   const GURL welcome_page(chrome::kChromeUIWelcomeURL);
   const GURL welcome_page_win10(chrome::kChromeUIWelcomeWin10URL);
   const GURL current = contents->GetURL().GetWithEmptyPath();

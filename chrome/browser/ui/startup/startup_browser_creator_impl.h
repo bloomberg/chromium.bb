@@ -13,13 +13,14 @@
 #include "base/macros.h"
 #include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/ui/startup/startup_tab.h"
-#include "chrome/browser/ui/startup/startup_tab_provider.h"
 #include "chrome/browser/ui/startup/startup_types.h"
 #include "url/gurl.h"
 
 class Browser;
 class Profile;
 class StartupBrowserCreator;
+class StartupTabProvider;
+struct SessionStartupPref;
 
 namespace base {
 class CommandLine;
@@ -134,9 +135,8 @@ class StartupBrowserCreatorImpl {
   // Determines the URLs to be shown at startup by way of various policies
   // (onboarding, pinned tabs, etc.), determines whether a session restore
   // is necessary, and opens the URLs in a new or restored browser accordingly.
-  void ProcessLaunchUrlsUsingConsolidatedFlow(
-      bool process_startup,
-      const std::vector<GURL>& cmd_line_urls);
+  void DetermineURLsAndLaunch(bool process_startup,
+                              const std::vector<GURL>& cmd_line_urls);
 
   // Returns the tabs to be shown on startup, based on the policy functions in
   // the given StartupTabProvider, the given tabs passed by the command line,
@@ -164,9 +164,6 @@ class StartupBrowserCreatorImpl {
     SessionRestore::BehaviorBitmask restore_options, bool process_startup,
     bool is_post_crash_launch);
 
-  // Adds a Tab to |tabs| for each url in |urls| that doesn't already exist
-  // in |tabs|.
-  void AddUniqueURLs(const std::vector<GURL>& urls, StartupTabs* tabs);
 
   // Adds any startup infobars to the selected tab of the given browser.
   void AddInfoBarsIfNecessary(
@@ -188,63 +185,11 @@ class StartupBrowserCreatorImpl {
       bool has_create_browser_switch,
       bool was_mac_login_or_resume);
 
-  // TODO(crbug.com/651465): The following functions are deprecated. They will
-  // be removed once kUseConsolidatedStartupFlow is enabled by default.
-
-  // Invoked from Launch to handle processing of urls. This may do any of the
-  // following:
-  // . Invoke ProcessStartupURLs if |process_startup| is true.
-  // . If |process_startup| is false, restore the last session if necessary,
-  //   or invoke ProcessSpecifiedURLs.
-  // . Open the urls directly.
-  // Under the kUseConsolidatedStartupFlow feature, this is replaced by
-  // ProcessLaunchUrlsUsingConsolidatedFlow().
-  void ProcessLaunchURLs(bool process_startup,
-                         const std::vector<GURL>& urls_to_open);
-
-  // Does the following:
-  // . If the user's startup pref is to restore the last session (or the
-  //   command line flag is present to force using last session), it is
-  //   restored.
-  // . Otherwise invoke ProcessSpecifiedURLs
-  // If a browser was created, true is returned.  Otherwise returns false and
-  // the caller must create a new browser.
-  bool ProcessStartupURLs(const std::vector<GURL>& urls_to_open);
-
-  // Invoked from either ProcessLaunchURLs or ProcessStartupURLs to handle
-  // processing of URLs where the behavior is common between process startup
-  // and launch via an existing process (i.e. those explicitly specified by
-  // the user somehow).  Does the following:
-  // . Attempts to restore any pinned tabs from last run of chrome.
-  // . If urls_to_open is non-empty, they are opened.
-  // . If the user's startup pref is to launch a specific set of URLs they
-  //   are opened.
-  //
-  // If any tabs were opened, the Browser which was created is returned.
-  // Otherwise null is returned and the caller must create a new browser.
-  Browser* ProcessSpecifiedURLs(const std::vector<GURL>& urls_to_open);
-
-  // Adds additional startup URLs to the specified vector.
-  void AddStartupURLs(std::vector<GURL>* startup_urls) const;
-
-  // Adds special URLs to the specified vector. These URLs are triggered by
-  // special-case logic, such as profile reset or presentation of the welcome
-  // page.
-  void AddSpecialURLs(std::vector<GURL>* startup_urls) const;
-
-  // Initializes |welcome_run_type_| for this launch. Also persists state to
-  // suppress injecting the welcome page for future launches.
-  void InitializeWelcomeRunType(const std::vector<GURL>& urls_to_open);
-
-  // Checks whether |profile_| has a reset trigger set.
-  bool ProfileHasResetTrigger() const;
-
   const base::FilePath cur_dir_;
   const base::CommandLine& command_line_;
   Profile* profile_;
   StartupBrowserCreator* browser_creator_;
   bool is_first_run_;
-  WelcomeRunType welcome_run_type_;
   DISALLOW_COPY_AND_ASSIGN(StartupBrowserCreatorImpl);
 };
 

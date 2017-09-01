@@ -5,18 +5,14 @@
 #ifndef CHROME_BROWSER_UI_STARTUP_STARTUP_BROWSER_CREATOR_H_
 #define CHROME_BROWSER_UI_STARTUP_STARTUP_BROWSER_CREATOR_H_
 
-#include <string>
 #include <vector>
 
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "build/build_config.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/startup/startup_tab.h"
 #include "chrome/browser/ui/startup/startup_types.h"
-#include "url/gurl.h"
 
 class Browser;
 class GURL;
@@ -128,11 +124,6 @@ class StartupBrowserCreator {
 
   static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
-
-  // Returns whether the Consolidated startup flow will be used, based on the
-  // platform-appropriate Feature.
-  // TODO(tmartino): Remove once this is on 100%.
-  static bool UseConsolidatedFlow();
 
  private:
   friend class CloudPrintProxyPolicyTest;

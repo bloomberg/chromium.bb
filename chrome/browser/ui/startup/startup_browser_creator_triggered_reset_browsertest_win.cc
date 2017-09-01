@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/startup/startup_browser_creator_impl.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -71,6 +72,11 @@ bool MockTriggeredProfileResetter::has_reset_trigger_ = false;
 std::unique_ptr<KeyedService> BuildMockTriggeredProfileResetter(
     content::BrowserContext* context) {
   return base::WrapUnique(new MockTriggeredProfileResetter);
+}
+
+GURL GetTriggeredResetSettingsURL() {
+  return GURL(
+      chrome::GetSettingsUrl(chrome::kTriggeredResetProfileSettingsSubPage));
 }
 
 }  // namespace
@@ -148,8 +154,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTriggeredResetTest,
   ASSERT_TRUE(new_browser);
 
   std::vector<GURL> expected_urls(urls);
-  expected_urls.insert(expected_urls.begin(),
-                       internals::GetTriggeredResetSettingsURL());
+  expected_urls.insert(expected_urls.begin(), GetTriggeredResetSettingsURL());
 
   TabStripModel* tab_strip = new_browser->tab_strip_model();
   ASSERT_EQ(static_cast<int>(expected_urls.size()), tab_strip->count());
@@ -273,6 +278,6 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTriggeredResetTest,
   // Check for the expected reset dialog in the second browser too.
   TabStripModel* other_tab_strip = other_profile_browser->tab_strip_model();
   ASSERT_LT(0, other_tab_strip->count());
-  EXPECT_EQ(internals::GetTriggeredResetSettingsURL(),
+  EXPECT_EQ(GetTriggeredResetSettingsURL(),
             other_tab_strip->GetActiveWebContents()->GetURL());
 }

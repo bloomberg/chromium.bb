@@ -1015,14 +1015,12 @@ void ProfileManager::InitProfileUserPrefs(Profile* profile) {
                                    supervised_user_id);
   }
 #if !defined(OS_ANDROID)
-  if (StartupBrowserCreator::UseConsolidatedFlow()) {
-    // TODO(pmonette): Fix IsNewProfile() to handle the case where the profile
-    // is new even if the "Preferences" file already existed (For example: The
-    // master_preferences file is dumped into the default profile on first run,
-    // before profile creation).
-    if (profile->IsNewProfile() || first_run::IsChromeFirstRun())
-      profile->GetPrefs()->SetBoolean(prefs::kHasSeenWelcomePage, false);
-  }
+  // TODO(pmonette): Fix IsNewProfile() to handle the case where the profile is
+  // new even if the "Preferences" file already existed. (For example: The
+  // master_preferences file is dumped into the default profile on first run,
+  // before profile creation.)
+  if (profile->IsNewProfile() || first_run::IsChromeFirstRun())
+    profile->GetPrefs()->SetBoolean(prefs::kHasSeenWelcomePage, false);
 #endif
 }
 
