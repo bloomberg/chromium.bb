@@ -9,6 +9,7 @@
 
 #include "net/quic/core/frames/quic_stream_frame.h"
 #include "net/quic/core/quic_iovector.h"
+#include "net/quic/platform/api/quic_mem_slice.h"
 
 namespace net {
 
@@ -18,21 +19,23 @@ class QuicStreamSendBufferPeer;
 
 class QuicDataWriter;
 
-// QuicStreamDataSlice comprises information of a piece of stream data.
-struct QuicStreamDataSlice {
-  QuicStreamDataSlice(UniqueStreamBuffer data,
-                      QuicStreamOffset offset,
-                      QuicByteCount data_length);
-  QuicStreamDataSlice(const QuicStreamDataSlice& other) = delete;
-  QuicStreamDataSlice(QuicStreamDataSlice&& other) = delete;
-  ~QuicStreamDataSlice();
+// BufferedSlice comprises information of a piece of stream data stored in
+// contiguous memory space. Please note, BufferedSlice is constructed when
+// stream data is saved in send buffer and is removed when stream data is fully
+// acked. There is no usage cases that BufferedSlice needs to be either copied
+// or moved.
+struct BufferedSlice {
+  BufferedSlice(QuicMemSlice mem_slice, QuicStreamOffset offset);
+  BufferedSlice(const BufferedSlice& other) = delete;
+  BufferedSlice& operator=(const BufferedSlice& other) = delete;
+  BufferedSlice(BufferedSlice&& other) = delete;
+  BufferedSlice& operator=(BufferedSlice&& other) = delete;
+  ~BufferedSlice();
 
   // Stream data of this data slice.
-  UniqueStreamBuffer data;
+  QuicMemSlice slice;
   // Location of this data slice in the stream.
   QuicStreamOffset offset;
-  // Length of this data slice in bytes.
-  QuicByteCount data_length;
   // Length of payload which is outstanding and waiting for acks.
   QuicByteCount outstanding_data_length;
 };
@@ -53,6 +56,9 @@ class QUIC_EXPORT_PRIVATE QuicStreamSendBuffer {
                       size_t iov_offset,
                       QuicByteCount data_length);
 
+  // Save |slice| to send buffer.
+  void SaveMemSlice(QuicMemSlice slice);
+
   // Write |data_length| of data starts at |offset|.
   bool WriteStreamData(QuicStreamOffset offset,
                        QuicByteCount data_length,
@@ -69,13 +75,7 @@ class QUIC_EXPORT_PRIVATE QuicStreamSendBuffer {
 
  private:
   friend class test::QuicStreamSendBufferPeer;
-  // Save |data_length| of data starts at |iov_offset| in |iov| to one data
-  // slice which contains data in a contiguous memory space.
-  void SaveStreamDataOneSlice(QuicIOVector iov,
-                              size_t iov_offset,
-                              QuicByteCount data_length);
-
-  std::deque<QuicStreamDataSlice> send_buffer_;
+  std::deque<BufferedSlice> buffered_slices_;
 
   // Offset of next inserted byte.
   QuicStreamOffset stream_offset_;
