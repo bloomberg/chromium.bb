@@ -45,8 +45,8 @@ class NotificationPromoWhatsNew {
   WhatsNewIcon icon() { return icon_; }
   bool IsURLPromo() const;
   const GURL& url() { return url_; }
-  bool IsChromeCommand() const;
-  int command_id() { return command_id_; }
+  bool IsChromeCommandPromo() const;
+  const std::string& command() { return command_; }
 
  private:
   // Initialize the state and validity from the low-level notification_promo_.
@@ -92,7 +92,7 @@ class NotificationPromoWhatsNew {
   GURL url_;
 
   // If promo type is 'chrome_command'.
-  int command_id_;
+  std::string command_;
 
   // Metric name to append
   std::string metric_name_;

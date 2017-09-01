@@ -28,11 +28,8 @@
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/ui/browser_view_controller.h"
-#import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
 #include "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
-#import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
-#include "ios/chrome/browser/ui/commands/ios_command_ids.h"
 #import "ios/chrome/browser/ui/ntp/google_landing_consumer.h"
 #import "ios/chrome/browser/ui/ntp/notification_promo_whats_new.h"
 #include "ios/chrome/browser/ui/ntp/ntp_tile_saver.h"
@@ -53,6 +50,12 @@
 using base::UserMetricsAction;
 
 namespace {
+
+// The What's New promo command that shows the Bookmarks Manager.
+const char kBookmarkCommand[] = "bookmark";
+
+// The What's New promo command that launches Rate This App.
+const char kRateThisAppCommand[] = "ratethisapp";
 
 const CGFloat kFaviconMinSize = 32;
 const NSInteger kMaxNumMostVisitedFavicons = 8;
@@ -150,7 +153,8 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
 @property(nonatomic, assign, readonly) WebStateList* webStateList;
 
 // The dispatcher for this mediator.
-@property(nonatomic, weak) id<ChromeExecuteCommand, UrlLoader> dispatcher;
+@property(nonatomic, weak) id<BrowserCommands, ChromeExecuteCommand, UrlLoader>
+    dispatcher;
 
 // Perform initial setup.
 - (void)setUp;
@@ -165,7 +169,9 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
 
 - (instancetype)initWithConsumer:(id<GoogleLandingConsumer>)consumer
                     browserState:(ios::ChromeBrowserState*)browserState
-                      dispatcher:(id<ChromeExecuteCommand, UrlLoader>)dispatcher
+                      dispatcher:
+                          (id<BrowserCommands, ChromeExecuteCommand, UrlLoader>)
+                              dispatcher
                     webStateList:(WebStateList*)webStateList {
   self = [super init];
   if (self) {
@@ -449,18 +455,18 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
     return;
   }
 
-  if (_notificationPromo->IsChromeCommand()) {
-    int command_id = _notificationPromo->command_id();
-    if (command_id == IDC_RATE_THIS_APP) {
-      [self.dispatcher performSelector:@selector(showRateThisAppDialog)];
+  if (_notificationPromo->IsChromeCommandPromo()) {
+    std::string command = _notificationPromo->command();
+    if (command == kBookmarkCommand) {
+      [self.dispatcher showBookmarksManager];
+    } else if (command == kRateThisAppCommand) {
+      [self.dispatcher showRateThisAppDialog];
     } else {
-      GenericChromeCommand* command =
-          [[GenericChromeCommand alloc] initWithTag:command_id];
-      [self.dispatcher chromeExecuteCommand:command];
+      NOTREACHED() << "Promo command is not valid.";
     }
     return;
   }
-  NOTREACHED();
+  NOTREACHED() << "Promo type is neither URL or command.";
 }
 
 #pragma mark - Private

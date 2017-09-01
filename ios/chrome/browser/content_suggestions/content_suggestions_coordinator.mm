@@ -32,10 +32,7 @@
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #include "ios/chrome/browser/tabs/tab_constants.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
-#import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
-#import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
-#include "ios/chrome/browser/ui/commands/ios_command_ids.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/commands/reading_list_add_command.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_gesture_commands.h"
@@ -73,7 +70,15 @@
 #endif
 
 namespace {
+
 const char kNTPHelpURL[] = "https://support.google.com/chrome/?p=ios_new_tab";
+
+// The What's New promo command that shows the Bookmarks Manager.
+const char kBookmarkCommand[] = "bookmark";
+
+// The What's New promo command that launches Rate This App.
+const char kRateThisAppCommand[] = "ratethisapp";
+
 }  // namespace
 
 @interface ContentSuggestionsCoordinator ()<
@@ -342,18 +347,18 @@ const char kNTPHelpURL[] = "https://support.google.com/chrome/?p=ios_new_tab";
     return;
   }
 
-  if (notificationPromo->IsChromeCommand()) {
-    int command_id = notificationPromo->command_id();
-    if (command_id == IDC_RATE_THIS_APP) {
-      [self.dispatcher performSelector:@selector(showRateThisAppDialog)];
+  if (notificationPromo->IsChromeCommandPromo()) {
+    std::string command = notificationPromo->command();
+    if (command == kBookmarkCommand) {
+      [self.dispatcher showBookmarksManager];
+    } else if (command == kRateThisAppCommand) {
+      [self.dispatcher showRateThisAppDialog];
     } else {
-      GenericChromeCommand* command = [[GenericChromeCommand alloc]
-          initWithTag:notificationPromo->command_id()];
-      [self.suggestionsViewController chromeExecuteCommand:command];
+      NOTREACHED() << "Promo command is not valid.";
     }
     return;
   }
-  NOTREACHED();
+  NOTREACHED() << "Promo type is neither URL or command.";
 }
 
 - (void)handleLearnMoreTapped {

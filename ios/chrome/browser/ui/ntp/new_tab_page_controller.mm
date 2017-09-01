@@ -26,6 +26,7 @@
 #import "ios/chrome/browser/ui/bookmarks/bookmark_controller_factory.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_home_tablet_ntp_controller.h"
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
+#import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
@@ -179,6 +180,7 @@ enum {
 // is initiated, and when WebController calls -willBeDismissed.
 @property(nonatomic, weak) UIViewController* parentViewController;
 
+// TODO(crbug.com/761031) : Make dispatcher conform to necessary protocols.
 // To ease modernizing the NTP a non-descript CommandDispatcher is passed
 // through to be used by the reuabled NTP panels.
 @property(nonatomic, weak) id dispatcher;
@@ -671,9 +673,9 @@ enum {
     [self.ntpView.scrollView setContentOffset:point animated:animate];
   } else {
     if (item.identifier == ntp_home::BOOKMARKS_PANEL) {
-      GenericChromeCommand* command =
-          [[GenericChromeCommand alloc] initWithTag:IDC_SHOW_BOOKMARK_MANAGER];
-      [self.ntpView chromeExecuteCommand:command];
+      // TODO(crbug.com/761031) : Directly call method after dispatcher conforms
+      // to protocol.
+      [self.dispatcher performSelector:@selector(showBookmarksManager)];
     } else if (item.identifier == ntp_home::RECENT_TABS_PANEL) {
       GenericChromeCommand* command =
           [[GenericChromeCommand alloc] initWithTag:IDC_SHOW_OTHER_DEVICES];
