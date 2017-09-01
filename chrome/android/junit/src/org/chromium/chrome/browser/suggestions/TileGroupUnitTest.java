@@ -39,6 +39,7 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
@@ -59,6 +60,7 @@ import java.util.List;
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 @Features({@Features.Register(ChromeFeatureList.NTP_OFFLINE_PAGES_FEATURE_NAME),
+        @Features.Register(ChromeFeatureList.CHROME_HOME),
         @Features.Register(ChromeFeatureList.CHROME_HOME_MODERN_LAYOUT),
         @Features.Register(ChromeFeatureList.NTP_TILES_LOWER_RESOLUTION_FAVICONS)})
 public class TileGroupUnitTest {
@@ -82,6 +84,7 @@ public class TileGroupUnitTest {
     public void setUp() {
         CardsVariationParameters.setTestVariationParams(new HashMap<>());
         MockitoAnnotations.initMocks(this);
+        ContextUtils.initApplicationContextForTests(RuntimeEnvironment.application);
 
         mImageFetcher = new FakeImageFetcher();
         mTileRenderer = new TileRenderer(

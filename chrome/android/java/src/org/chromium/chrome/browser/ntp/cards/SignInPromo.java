@@ -334,8 +334,10 @@ public class SignInPromo extends OptionalLeaf implements ImpressionTracker.Liste
                             ? R.layout.personalized_signin_promo_view_modern_content_suggestions
                             : R.layout.personalized_signin_promo_view_ntp_content_suggestions,
                     parent, config, contextMenuManager);
-            getParams().topMargin = parent.getResources().getDimensionPixelSize(
-                    R.dimen.ntp_sign_in_promo_margin_top);
+            if (!FeatureUtilities.isChromeHomeModernEnabled()) {
+                getParams().topMargin = parent.getResources().getDimensionPixelSize(
+                        R.dimen.ntp_sign_in_promo_margin_top);
+            }
 
             mProfileDataCache = profileDataCache;
             mSigninPromoController = signinPromoController;
@@ -405,8 +407,10 @@ public class SignInPromo extends OptionalLeaf implements ImpressionTracker.Liste
         public GenericPromoViewHolder(SuggestionsRecyclerView parent,
                 ContextMenuManager contextMenuManager, UiConfig config) {
             super(parent, contextMenuManager, config);
-            getParams().topMargin = parent.getResources().getDimensionPixelSize(
-                    R.dimen.ntp_sign_in_promo_margin_top);
+            if (!FeatureUtilities.isChromeHomeModernEnabled()) {
+                getParams().topMargin = parent.getResources().getDimensionPixelSize(
+                        R.dimen.ntp_sign_in_promo_margin_top);
+            }
         }
 
         @DrawableRes

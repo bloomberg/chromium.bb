@@ -13,6 +13,7 @@ import android.widget.FrameLayout;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.MathUtils;
 
 import java.util.ArrayList;
@@ -44,7 +45,9 @@ public class TileGridLayout extends FrameLayout {
         super(context, attrs);
 
         Resources res = getResources();
-        mVerticalSpacing = res.getDimensionPixelOffset(R.dimen.tile_grid_layout_vertical_spacing);
+        mVerticalSpacing = FeatureUtilities.isChromeHomeModernEnabled()
+                ? res.getDimensionPixelOffset(R.dimen.tile_grid_layout_vertical_spacing_modern)
+                : res.getDimensionPixelOffset(R.dimen.tile_grid_layout_vertical_spacing);
         mMinHorizontalSpacing =
                 res.getDimensionPixelOffset(R.dimen.tile_grid_layout_min_horizontal_spacing);
         mMaxHorizontalSpacing =
