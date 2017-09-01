@@ -7,6 +7,7 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/system_tray.h"
+#include "ash/system/web_notification/web_notification_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/strings/string16.h"
@@ -31,6 +32,16 @@ class ScreenLayoutObserverTest : public AshTestBase {
   ~ScreenLayoutObserverTest() override;
 
  protected:
+  void SetUp() override {
+    AshTestBase::SetUp();
+    WebNotificationTray::DisableAnimationsForTest(true);
+  }
+
+  void TearDown() override {
+    WebNotificationTray::DisableAnimationsForTest(false);
+    AshTestBase::TearDown();
+  }
+
   ScreenLayoutObserver* GetScreenLayoutObserver();
   void CheckUpdate();
 
