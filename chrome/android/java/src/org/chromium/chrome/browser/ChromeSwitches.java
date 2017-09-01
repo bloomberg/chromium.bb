@@ -164,6 +164,9 @@ public abstract class ChromeSwitches {
     public static final String ALWAYS_EXTRACT_WEBAPK_RUNTIME_DEX_ON_STARTUP =
             "always-extract-webapk-dex-on-startup";
 
+    /** Treats all WebAPKs as valid - useful only for local testing. */
+    public static final String SKIP_WEBAPK_VERIFICATION = "skip-webapk-verification";
+
     /**
      * Forces a check for whether the WebAPK's Web Manifest has changed each time that a WebAPK is
      * launched.
