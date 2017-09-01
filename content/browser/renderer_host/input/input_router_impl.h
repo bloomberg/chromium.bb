@@ -66,15 +66,12 @@ class CONTENT_EXPORT InputRouterImpl
   void NotifySiteIsMobileOptimized(bool is_mobile_optimized) override;
   bool HasPendingEvents() const override;
   void SetDeviceScaleFactor(float device_scale_factor) override;
+  void SetFrameTreeNodeId(int frame_tree_node_id) override;
+  void SetForceEnableZoom(bool enabled) override;
+  cc::TouchAction AllowedTouchAction() override;
 
   // IPC::Listener
   bool OnMessageReceived(const IPC::Message& message) override;
-
-  void SetFrameTreeNodeId(int frame_tree_node_id) override;
-
-  void SetForceEnableZoom(bool enabled) override;
-
-  cc::TouchAction AllowedTouchAction() override;
 
  private:
   friend class InputRouterImplTest;
@@ -107,10 +104,6 @@ class CONTENT_EXPORT InputRouterImpl
   void ForwardGestureEventWithLatencyInfo(
       const blink::WebGestureEvent& gesture_event,
       const ui::LatencyInfo& latency_info) override;
-
-  bool SendMoveCaret(std::unique_ptr<IPC::Message> message);
-  bool SendSelectMessage(std::unique_ptr<IPC::Message> message);
-  bool Send(IPC::Message* message);
 
   void FilterAndSendWebInputEvent(
       const blink::WebInputEvent& input_event,
@@ -161,33 +154,6 @@ class CONTENT_EXPORT InputRouterImpl
                                    uint32_t unique_touch_event_id,
                                    InputEventAckState ack_result);
   void OnDidStopFlinging();
-
-  // Dispatches the ack'ed event to |ack_handler_|.
-  void ProcessKeyboardAck(blink::WebInputEvent::Type type,
-                          InputEventAckState ack_result,
-                          const ui::LatencyInfo& latency);
-
-  // Forwards a valid |next_mouse_move_| if |type| is MouseMove.
-  void ProcessMouseAck(blink::WebInputEvent::Type type,
-                       InputEventAckState ack_result,
-                       const ui::LatencyInfo& latency);
-
-  // Dispatches the ack'ed event to |ack_handler_|, forwarding queued events
-  // from |coalesced_mouse_wheel_events_|.
-  void ProcessWheelAck(InputEventAckState ack_result,
-                       const ui::LatencyInfo& latency);
-
-  // Forwards the event ack to |gesture_event_queue|, potentially triggering
-  // dispatch of queued gesture events.
-  void ProcessGestureAck(blink::WebInputEvent::Type type,
-                         InputEventAckState ack_result,
-                         const ui::LatencyInfo& latency);
-
-  // Forwards the event ack to |touch_event_queue_|, potentially triggering
-  // dispatch of queued touch events, or the creation of gesture events.
-  void ProcessTouchAck(InputEventAckState ack_result,
-                       const ui::LatencyInfo& latency,
-                       uint32_t unique_touch_event_id);
 
   // Called when a touch timeout-affecting bit has changed, in turn toggling the
   // touch ack timeout feature of the |touch_event_queue_| as appropriate. Input
