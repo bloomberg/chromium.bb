@@ -16,6 +16,8 @@
 
 package org.chromium.chrome.browser.widget.bottomsheet.base;
 
+import static android.support.annotation.RestrictTo.Scope.GROUP_ID;
+
 import android.content.Context;
 import android.os.Parcelable;
 import android.support.annotation.RestrictTo;
@@ -25,8 +27,6 @@ import android.support.v7.view.menu.MenuPresenter;
 import android.support.v7.view.menu.MenuView;
 import android.support.v7.view.menu.SubMenuBuilder;
 import android.view.ViewGroup;
-
-import static android.support.annotation.RestrictTo.Scope.GROUP_ID;
 
 /**
  * Forked from android.support.design.internal.BottomNavigationPresenter.
