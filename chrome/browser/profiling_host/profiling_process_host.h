@@ -61,10 +61,13 @@ class ProfilingProcessHost : public content::BrowserChildProcessObserver,
   // Returns the mode set on the current process' command line.
   static Mode GetCurrentMode();
 
-  // Launches the profiling process if necessary and returns a pointer to it.
-  static ProfilingProcessHost* EnsureStarted(
+  // Launches the profiling process and returns a pointer to it.
+  static ProfilingProcessHost* Start(
       content::ServiceManagerConnection* connection,
       Mode mode);
+
+  // Returns true if Start() has been called.
+  static bool has_started() { return has_started_; }
 
   // Returns a pointer to the current global profiling process host.
   static ProfilingProcessHost* GetInstance();
@@ -137,6 +140,8 @@ class ProfilingProcessHost : public content::BrowserChildProcessObserver,
 
   // The mode determines which processes should be profiled.
   Mode mode_;
+
+  static bool has_started_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfilingProcessHost);
 };

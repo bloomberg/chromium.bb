@@ -16,7 +16,6 @@
 #include "build/build_config.h"
 #include "chrome/common/features.h"
 #include "chrome/common/origin_trials/chrome_origin_trial_policy.h"
-#include "chrome/common/profiling/memlog_client.h"
 #include "content/public/common/content_client.h"
 #include "ppapi/features/features.h"
 
@@ -114,7 +113,6 @@ class ChromeContentClient : public content::ContentClient {
   // Used to lock when |origin_trial_policy_| is initialized.
   base::Lock origin_trial_policy_lock_;
   std::unique_ptr<ChromeOriginTrialPolicy> origin_trial_policy_;
-  profiling::MemlogClient memlog_client_;
 };
 
 #endif  // CHROME_COMMON_CHROME_CONTENT_CLIENT_H_

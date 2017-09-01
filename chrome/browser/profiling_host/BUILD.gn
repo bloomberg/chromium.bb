@@ -19,3 +19,27 @@ static_library("profiling_host") {
     "//content/public/common",
   ]
 }
+
+if (!is_android) {
+  source_set("profiling_browsertests") {
+    testonly = true
+
+    sources = [
+      "memlog_browsertest.cc",
+    ]
+
+    defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
+
+    deps = [
+      "//base",
+      "//base/allocator:features",
+      "//chrome/test:test_support_ui",
+      "//testing/gmock",
+      "//testing/gtest",
+    ]
+  }
+} else {
+  # In-process browser tests aren't supported on Android.
+  group("profiling_browsertests") {
+  }
+}

@@ -76,6 +76,7 @@ check_targets = [
   "//chrome/browser/ui/*",
   "//chrome/common/*",
   "//chrome/installer/*",
+  "//chrome/profiling",
   "//chrome/third_party/mozilla_security_manager/*",
   "//chrome/tools/*",
   "//chrome/utility/*",
