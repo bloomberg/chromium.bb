@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "ash/ash_constants.h"
 #include "ash/ash_export.h"
 #include "ash/session/session_observer.h"
 #include "base/macros.h"
@@ -31,6 +32,10 @@ class ASH_EXPORT AccessibilityController : public SessionObserver {
   void SetLargeCursorEnabled(bool enabled);
   bool IsLargeCursorEnabled() const;
 
+  // Returns true if an accessibility feature is enabled that requires cursor
+  // compositing.
+  static bool RequiresCursorCompositing(PrefService* prefs);
+
   // SessionObserver:
   void OnActiveUserPrefServiceChanged(PrefService* prefs) override;
 
@@ -41,7 +46,12 @@ class ASH_EXPORT AccessibilityController : public SessionObserver {
   // the active user profile prefs.
   PrefService* GetActivePrefService() const;
 
+  void UpdateLargeCursorFromPref();
+
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
+
+  bool large_cursor_enabled_ = false;
+  int large_cursor_size_in_dip_ = kDefaultLargeCursorSize;
 
   PrefService* pref_service_for_test_ = nullptr;
 

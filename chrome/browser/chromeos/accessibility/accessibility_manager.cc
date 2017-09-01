@@ -10,7 +10,7 @@
 #include <memory>
 #include <utility>
 
-#include "ash/ash_constants.h"
+#include "ash/accessibility/accessibility_controller.h"
 #include "ash/autoclick/autoclick_controller.h"
 #include "ash/autoclick/mus/public/interfaces/autoclick.mojom.h"
 #include "ash/high_contrast/high_contrast_controller.h"
@@ -245,8 +245,6 @@ AccessibilityManager::AccessibilityManager()
           ash::prefs::kAccessibilitySelectToSpeakEnabled),
       switch_access_pref_handler_(
           ash::prefs::kAccessibilitySwitchAccessEnabled),
-      large_cursor_enabled_(false),
-      large_cursor_size_in_dip_(ash::kDefaultLargeCursorSize),
       sticky_keys_enabled_(false),
       spoken_feedback_enabled_(false),
       high_contrast_enabled_(false),
@@ -381,19 +379,6 @@ void AccessibilityManager::UpdateAlwaysShowMenuFromPref() {
       ash::A11Y_NOTIFICATION_NONE);
 }
 
-bool AccessibilityManager::ShouldEnableCursorCompositing() {
-  if (!profile_)
-    return false;
-  PrefService* prefs = profile_->GetPrefs();
-  // Enable cursor compositing when one or more of the listed accessibility
-  // features are turned on.
-  if (prefs->GetBoolean(ash::prefs::kAccessibilityLargeCursorEnabled) ||
-      prefs->GetBoolean(ash::prefs::kAccessibilityHighContrastEnabled) ||
-      prefs->GetBoolean(ash::prefs::kAccessibilityScreenMagnifierEnabled))
-    return true;
-  return false;
-}
-
 void AccessibilityManager::EnableLargeCursor(bool enabled) {
   if (!profile_)
     return;
@@ -404,46 +389,11 @@ void AccessibilityManager::EnableLargeCursor(bool enabled) {
   pref_service->CommitPendingWrite();
 }
 
-void AccessibilityManager::UpdateLargeCursorFromPref() {
-  if (!profile_)
-    return;
-
-  const bool enabled = profile_->GetPrefs()->GetBoolean(
-      ash::prefs::kAccessibilityLargeCursorEnabled);
-
-  // Clear cursor size if large cursor is disabled.
-  if (enabled != large_cursor_enabled_ && !enabled) {
-    profile_->GetPrefs()->ClearPref(
-        ash::prefs::kAccessibilityLargeCursorDipSize);
-  }
-
-  const int large_cursor_size_in_dip = profile_->GetPrefs()->GetInteger(
-      ash::prefs::kAccessibilityLargeCursorDipSize);
-
-  // Do nothing if nothing has changed.
-  if (large_cursor_enabled_ == enabled &&
-      large_cursor_size_in_dip_ == large_cursor_size_in_dip) {
-    return;
-  }
-
-  large_cursor_enabled_ = enabled;
-  large_cursor_size_in_dip_ = large_cursor_size_in_dip;
-
+void AccessibilityManager::OnLargeCursorChanged() {
   AccessibilityStatusEventDetails details(ACCESSIBILITY_TOGGLE_LARGE_CURSOR,
-                                          enabled, ash::A11Y_NOTIFICATION_NONE);
+                                          IsLargeCursorEnabled(),
+                                          ash::A11Y_NOTIFICATION_NONE);
   NotifyAccessibilityStatusChanged(details);
-
-  // TODO(crbug.com/594887): Fix for mash by moving pref into ash.
-  if (GetAshConfig() == ash::Config::MASH)
-    return;
-
-  // TODO(crbug.com/594887): Move into ash. This requires moving the prefs
-  // needed by ShouldEnableCursorCompositing().
-  ash::Shell::Get()->cursor_manager()->SetCursorSize(
-      enabled ? ui::CursorSize::kLarge : ui::CursorSize::kNormal);
-  ash::Shell::Get()->SetLargeCursorSizeInDip(large_cursor_size_in_dip);
-  ash::Shell::Get()->SetCursorCompositingEnabled(
-      ShouldEnableCursorCompositing());
 }
 
 bool AccessibilityManager::IsIncognitoAllowed() {
@@ -454,7 +404,8 @@ bool AccessibilityManager::IsIncognitoAllowed() {
 }
 
 bool AccessibilityManager::IsLargeCursorEnabled() const {
-  return large_cursor_enabled_;
+  return profile_ && profile_->GetPrefs()->GetBoolean(
+                         ash::prefs::kAccessibilityLargeCursorEnabled);
 }
 
 void AccessibilityManager::EnableStickyKeys(bool enabled) {
@@ -570,8 +521,9 @@ void AccessibilityManager::UpdateHighContrastFromPref() {
   if (!profile_)
     return;
 
-  const bool enabled = profile_->GetPrefs()->GetBoolean(
-      ash::prefs::kAccessibilityHighContrastEnabled);
+  PrefService* prefs = profile_->GetPrefs();
+  const bool enabled =
+      prefs->GetBoolean(ash::prefs::kAccessibilityHighContrastEnabled);
 
   if (high_contrast_enabled_ == enabled)
     return;
@@ -590,7 +542,7 @@ void AccessibilityManager::UpdateHighContrastFromPref() {
 
   ash::Shell::Get()->high_contrast_controller()->SetEnabled(enabled);
   ash::Shell::Get()->SetCursorCompositingEnabled(
-      ShouldEnableCursorCompositing());
+      ash::AccessibilityController::RequiresCursorCompositing(prefs));
 }
 
 void AccessibilityManager::OnLocaleChanged() {
@@ -1210,11 +1162,11 @@ void AccessibilityManager::SetProfile(Profile* profile) {
                    base::Unretained(this)));
     pref_change_registrar_->Add(
         ash::prefs::kAccessibilityLargeCursorEnabled,
-        base::Bind(&AccessibilityManager::UpdateLargeCursorFromPref,
+        base::Bind(&AccessibilityManager::OnLargeCursorChanged,
                    base::Unretained(this)));
     pref_change_registrar_->Add(
         ash::prefs::kAccessibilityLargeCursorDipSize,
-        base::Bind(&AccessibilityManager::UpdateLargeCursorFromPref,
+        base::Bind(&AccessibilityManager::OnLargeCursorChanged,
                    base::Unretained(this)));
     pref_change_registrar_->Add(
         ash::prefs::kAccessibilityStickyKeysEnabled,
@@ -1310,7 +1262,6 @@ void AccessibilityManager::SetProfile(Profile* profile) {
   else
     UpdateBrailleImeState();
   UpdateAlwaysShowMenuFromPref();
-  UpdateLargeCursorFromPref();
   UpdateStickyKeysFromPref();
   UpdateSpokenFeedbackFromPref();
   UpdateHighContrastFromPref();

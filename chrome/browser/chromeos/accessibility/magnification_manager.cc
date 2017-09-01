@@ -7,6 +7,7 @@
 #include <limits>
 #include <memory>
 
+#include "ash/accessibility/accessibility_controller.h"
 #include "ash/accessibility_types.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/magnifier/partial_magnification_controller.h"
@@ -155,10 +156,11 @@ class MagnificationManagerImpl
     if (!profile_)
       return;
 
-    const bool enabled = profile_->GetPrefs()->GetBoolean(
-        ash::prefs::kAccessibilityScreenMagnifierEnabled);
-    const bool keep_focus_centered = profile_->GetPrefs()->GetBoolean(
-        ash::prefs::kAccessibilityScreenMagnifierCenterFocus);
+    PrefService* prefs = profile_->GetPrefs();
+    const bool enabled =
+        prefs->GetBoolean(ash::prefs::kAccessibilityScreenMagnifierEnabled);
+    const bool keep_focus_centered =
+        prefs->GetBoolean(ash::prefs::kAccessibilityScreenMagnifierCenterFocus);
 
     if (!enabled) {
       SetMagnifierEnabledInternal(enabled);
@@ -176,7 +178,7 @@ class MagnificationManagerImpl
       AccessibilityManager::Get()->NotifyAccessibilityStatusChanged(details);
       if (ash::Shell::Get()) {
         ash::Shell::Get()->SetCursorCompositingEnabled(
-            AccessibilityManager::Get()->ShouldEnableCursorCompositing());
+            ash::AccessibilityController::RequiresCursorCompositing(prefs));
       }
     }
   }

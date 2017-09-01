@@ -127,11 +127,9 @@ class AccessibilityManager
   // Returns true when the accessibility menu should be shown.
   bool ShouldShowAccessibilityMenu();
 
-  // Returns true when cursor compositing should be enabled.
-  bool ShouldEnableCursorCompositing();
-
   // Enables or disables the large cursor.
   void EnableLargeCursor(bool enabled);
+
   // Returns true if the large cursor is enabled, or false if not.
   bool IsLargeCursorEnabled() const;
 
@@ -315,7 +313,7 @@ class AccessibilityManager
   void ReloadChromeVoxPanel();
 
   void UpdateAlwaysShowMenuFromPref();
-  void UpdateLargeCursorFromPref();
+  void OnLargeCursorChanged();
   void UpdateStickyKeysFromPref();
   void UpdateSpokenFeedbackFromPref();
   void UpdateHighContrastFromPref();
@@ -392,8 +390,6 @@ class AccessibilityManager
   PrefHandler select_to_speak_pref_handler_;
   PrefHandler switch_access_pref_handler_;
 
-  bool large_cursor_enabled_;
-  int large_cursor_size_in_dip_;
   bool sticky_keys_enabled_;
   bool spoken_feedback_enabled_;
   bool high_contrast_enabled_;
