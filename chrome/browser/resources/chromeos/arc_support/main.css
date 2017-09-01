@@ -24,14 +24,12 @@ p.title {
   font-size: 28px;
   font-weight: normal;
   margin: 36px 0 0 0; /* = 64 - font height*/
-  padding: 0 0 0 64px;
 }
 
 .subtitle {
   color: rgba(0, 0, 0, 0.87);
   font-size: 13px;
   margin: 23px 0 0 0; /* = 40 - 4 (adjustment) - line-height */
-  padding-left: 64px;
 }
 
 ::-webkit-scrollbar {
@@ -93,10 +91,10 @@ p.title {
 }
 
 .content {
-  /* height plus padding equals 360px, which is app height (640px) minus icon
-   * header (96px), greeting header (64px), subtitle (40px) and bottom (80px).
+  /* height plus padding equals 464px, which is app height (640px) minus icon
+   * header (96px) and bottom (80px).
    */
-  height: 338px;
+  height: 452px;
   margin: 0;
   padding: 0 64px 12px 64px;
 }
@@ -128,6 +126,7 @@ p.title {
 }
 
 .icon-header {
+  display: block;
   height: 32px;
   width: 32px;
 }
