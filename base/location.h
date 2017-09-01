@@ -128,7 +128,7 @@ template <>
 struct hash<::tracked_objects::Location> {
   std::size_t operator()(const ::tracked_objects::Location& loc) const {
     const void* program_counter = loc.program_counter();
-    return base::Hash(reinterpret_cast<char*>(&program_counter), sizeof(void*));
+    return base::Hash(&program_counter, sizeof(void*));
   }
 };
 

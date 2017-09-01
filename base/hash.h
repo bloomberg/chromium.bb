@@ -14,23 +14,27 @@
 
 #include "base/base_export.h"
 #include "base/logging.h"
+#include "base/strings/string16.h"
 
 namespace base {
 
+// Computes a hash of a memory buffer. This hash function is subject to change
+// in the future, so use only for temporary in-memory structures. If you need
+// to persist a change on disk or between computers, use PersistentHash().
+//
 // WARNING: This hash function should not be used for any cryptographic purpose.
-BASE_EXPORT uint32_t SuperFastHash(const char* data, size_t length);
+BASE_EXPORT uint32_t Hash(const void* data, size_t length);
+BASE_EXPORT uint32_t Hash(const std::string& str);
+BASE_EXPORT uint32_t Hash(const string16& str);
 
-// Computes a hash of a memory buffer |data| of a given |length|.
+// Computes a hash of a memory buffer. This hash function must not change so
+// that code can use the hashed values for persistent storage purposes or
+// sending across the network. If a new persistent hash function is desired, a
+// new version will have to be added in addition.
+//
 // WARNING: This hash function should not be used for any cryptographic purpose.
-inline uint32_t Hash(const char* data, size_t length) {
-  return SuperFastHash(data, length);
-}
-
-// Computes a hash of a string |str|.
-// WARNING: This hash function should not be used for any cryptographic purpose.
-inline uint32_t Hash(const std::string& str) {
-  return Hash(str.data(), str.size());
-}
+BASE_EXPORT uint32_t PersistentHash(const void* data, size_t length);
+BASE_EXPORT uint32_t PersistentHash(const std::string& str);
 
 // Implement hashing for pairs of at-most 32 bit integer values.
 // When size_t is 32 bits, we turn the 64-bit hash code into 32 bits by using

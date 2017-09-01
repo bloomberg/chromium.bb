@@ -34,8 +34,7 @@ int main(int argc, char** argv) {
     std::string label_string((i + 1 < argc) ? argv[i + 1] : "");
     device::BluetoothUUID uuid(uuid_string);
     std::string uuid_canonical_string = uuid.canonical_value();
-    uint32_t hash = base::SuperFastHash(uuid_canonical_string.data(),
-                                        uuid_canonical_string.size());
+    uint32_t hash = base::PersistentHash(uuid_canonical_string);
 
     // Strip off the sign bit because UMA doesn't support negative values,
     // but takes a signed int as input.

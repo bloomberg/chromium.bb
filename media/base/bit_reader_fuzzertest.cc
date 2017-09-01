@@ -17,7 +17,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   // Need a simple random number generator to generate the number of bits to
   // read/skip in a reproducible way (given the same |data|). Using Hash() to
   // ensure the seed varies significantly over minor changes in |data|.
-  media::TestRandom rnd(base::Hash(reinterpret_cast<const char*>(data), size));
+  media::TestRandom rnd(base::Hash(data, size));
 
   // Read and skip through the data in |reader|.
   while (reader.bits_available() > 0) {

@@ -244,7 +244,7 @@ LeakDetectorImpl::AllocSizeEntry::AllocSizeEntry() : num_allocs(0),
 LeakDetectorImpl::AllocSizeEntry::~AllocSizeEntry() {}
 
 size_t LeakDetectorImpl::AddressHash::operator()(uintptr_t addr) const {
-  return base::Hash(reinterpret_cast<const char*>(&addr), sizeof(addr));
+  return base::Hash(&addr, sizeof(addr));
 }
 
 uintptr_t LeakDetectorImpl::GetOffset(const void* ptr) const {

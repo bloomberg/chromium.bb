@@ -228,7 +228,7 @@ TEST_F(ProtoZeroMessageTest, StressTest) {
   // already covered in the other text fixtures. Keeping just a final smoke test
   // here on the full buffer hash.
   std::string full_buf = GetNextSerializedBytes(GetNumSerializedBytes());
-  uint32_t buf_hash = base::SuperFastHash(full_buf.data(), full_buf.size());
+  uint32_t buf_hash = base::PersistentHash(full_buf);
   EXPECT_EQ(0x14BC1BA3u, buf_hash);
 }
 

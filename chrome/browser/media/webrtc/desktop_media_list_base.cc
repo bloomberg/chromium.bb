@@ -141,7 +141,6 @@ void DesktopMediaListBase::ScheduleNextRefresh() {
 // static
 uint32_t DesktopMediaListBase::GetImageHash(const gfx::Image& image) {
   SkBitmap bitmap = image.AsBitmap();
-  uint32_t value =
-      base::Hash(reinterpret_cast<char*>(bitmap.getPixels()), bitmap.getSize());
+  uint32_t value = base::Hash(bitmap.getPixels(), bitmap.getSize());
   return value;
 }

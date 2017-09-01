@@ -40,8 +40,7 @@ const CallStack* CallStackManager::GetCallStack(size_t depth,
   temp.stack = const_cast<const void**>(stack);
   // This is the only place where the call stack's hash is computed. This value
   // can be reused in the created object to avoid further hash computation.
-  temp.hash =
-      base::Hash(reinterpret_cast<const char*>(stack), sizeof(*stack) * depth);
+  temp.hash = base::Hash(stack, sizeof(*stack) * depth);
 
   auto iter = call_stacks_.find(&temp);
   if (iter != call_stacks_.end())

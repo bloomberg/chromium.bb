@@ -56,7 +56,7 @@ struct hash<profiling::Address> {
   typedef profiling::Address argument_type;
   typedef uint32_t result_type;
   result_type operator()(argument_type a) const {
-    return base::Hash(reinterpret_cast<char*>(&a.value), sizeof(int64_t));
+    return base::Hash(&a.value, sizeof(int64_t));
   }
 };
 

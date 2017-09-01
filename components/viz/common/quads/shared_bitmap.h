@@ -24,7 +24,7 @@ using SharedBitmapId = gpu::Mailbox;
 
 struct SharedBitmapIdHash {
   size_t operator()(const SharedBitmapId& id) const {
-    return base::Hash(reinterpret_cast<const char*>(id.name), sizeof(id.name));
+    return base::Hash(id.name, sizeof(id.name));
   }
 };
 
