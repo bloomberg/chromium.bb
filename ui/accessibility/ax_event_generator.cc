@@ -23,6 +23,8 @@ AXEventGenerator::Iterator::Iterator(
 AXEventGenerator::Iterator::Iterator(const AXEventGenerator::Iterator& other) =
     default;
 
+AXEventGenerator::Iterator::~Iterator() = default;
+
 bool AXEventGenerator::Iterator::operator!=(
     const AXEventGenerator::Iterator& rhs) const {
   return map_iter_ != rhs.map_iter_ ||
