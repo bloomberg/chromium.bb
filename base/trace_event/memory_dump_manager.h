@@ -41,7 +41,7 @@ enum HeapProfilingMode {
   kHeapProfilingModeNative,
   kHeapProfilingModeNoStack,
   kHeapProfilingModeTaskProfiler,
-  kHeapProfilingModeInvalid
+  kHeapProfilingModeInvalid  // Disabled permanently or unsupported.
 };
 
 // This is the interface exposed to the rest of the codebase to deal with
@@ -140,10 +140,11 @@ class BASE_EXPORT MemoryDumpManager {
   // is specified.
   void EnableHeapProfilingIfNeeded();
 
-  // Enable heap profiling with specified |profiling_mode|. Disabling heap
-  // profiler will disable it permanently and cannot be enabled again. Noop if
-  // heap profiling was already enabled or permanently disabled.
-  void EnableHeapProfiling(HeapProfilingMode profiling_mode);
+  // Enable heap profiling with specified |profiling_mode|.
+  // Use kHeapProfilingModeDisabled to disable, but it can't be re-enabled then.
+  // Returns true if mode has been *changed* to the desired |profiling_mode|.
+  bool EnableHeapProfiling(HeapProfilingMode profiling_mode);
+  HeapProfilingMode GetHeapProfilingMode();
 
   // Lets tests see if a dump provider is registered.
   bool IsDumpProviderRegisteredForTesting(MemoryDumpProvider*);
@@ -179,8 +180,6 @@ class BASE_EXPORT MemoryDumpManager {
   friend std::default_delete<MemoryDumpManager>;  // For the testing instance.
   friend struct DefaultSingletonTraits<MemoryDumpManager>;
   friend class MemoryDumpManagerTest;
-
-  enum class HeapProfilingState { DISABLED, ENABLED, DISABLED_PERMANENTLY };
 
   // Holds the state of a process memory dump that needs to be carried over
   // across task runners in order to fulfill an asynchronous CreateProcessDump()
@@ -306,10 +305,7 @@ class BASE_EXPORT MemoryDumpManager {
   // When true, calling |RegisterMemoryDumpProvider| is a no-op.
   bool dumper_registrations_ignored_for_testing_;
 
-  // Heap profiling can be enabled and disabled only once in the process.
-  // New memory dump providers should be told to enable heap profiling if state
-  // is ENABLED.
-  HeapProfilingState heap_profiling_state_;
+  HeapProfilingMode heap_profiling_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(MemoryDumpManager);
 };
