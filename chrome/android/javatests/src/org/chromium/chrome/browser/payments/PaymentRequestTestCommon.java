@@ -818,6 +818,7 @@ final class PaymentRequestTestCommon implements PaymentRequestObserverForTest,
         @Override
         public void getInstruments(Map<String, PaymentMethodData> methodData, String origin,
                 String iframeOrigin, byte[][] certificateChain,
+                Map<String, PaymentDetailsModifier> modifiers,
                 InstrumentsCallback instrumentsCallback) {
             mCallback = instrumentsCallback;
             respond();

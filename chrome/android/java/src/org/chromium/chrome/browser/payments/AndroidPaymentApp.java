@@ -145,7 +145,7 @@ public class AndroidPaymentApp
     @Override
     public void getInstruments(Map<String, PaymentMethodData> methodDataMap, String origin,
             String iframeOrigin, @Nullable byte[][] certificateChain,
-            InstrumentsCallback callback) {
+            Map<String, PaymentDetailsModifier> modifiers, InstrumentsCallback callback) {
         assert mMethodNames.containsAll(methodDataMap.keySet());
         assert mInstrumentsCallback
                 == null : "Have not responded to previous request for instruments yet";
