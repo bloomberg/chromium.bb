@@ -67,12 +67,12 @@ const struct {
     {"com.google.android.youtube", extension_misc::kYoutubeAppId},
     {"com.google.android.youtube", "pbdihpaifchmclcmkfdgffnnpfbobefh"},
     // Google Play Books
-    {"com.google.android.apps.books", "mmimngoggfoobjdlefbcabngfnmieonb"},
+    {"com.google.android.apps.books", extension_misc::kGooglePlayBooksAppId},
     // Google+
     {"com.google.android.apps.plus", "dlppkpafhbajpcmmoheippocdidnckmm"},
     {"com.google.android.apps.plus", "fgjnkhlabjcaajddbaenilcmpcidahll"},
     // Google Play Movies & TV
-    {"com.google.android.videos", "gdijeikdkaembjbdobgfkoidjkpbmlkd"},
+    {"com.google.android.videos", extension_misc::kGooglePlayMoviesAppId},
     {"com.google.android.videos", "amfoiggnkefambnaaphodjdmdooiinna"},
     // Google Play Music
     {"com.google.android.music", extension_misc::kGooglePlayMusicAppId},

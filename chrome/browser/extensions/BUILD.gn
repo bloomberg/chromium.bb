@@ -966,6 +966,7 @@ static_library("extensions") {
       configs += [ "//build/config/linux/dbus" ]
     }
     deps += [
+      "//components/arc",
       "//components/chrome_apps",
       "//components/constrained_window",
       "//components/drive",
