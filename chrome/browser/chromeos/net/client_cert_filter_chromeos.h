@@ -29,8 +29,7 @@ class ClientCertFilterChromeOS : public ClientCertStoreChromeOS::CertFilter {
 
   // ClientCertStoreChromeOS::CertFilter:
   bool Init(const base::Closure& callback) override;
-  bool IsCertAllowed(
-      const scoped_refptr<net::X509Certificate>& cert) const override;
+  bool IsCertAllowed(CERTCertificate* cert) const override;
 
  private:
   // Called back if the system slot was retrieved asynchronously. Continues the

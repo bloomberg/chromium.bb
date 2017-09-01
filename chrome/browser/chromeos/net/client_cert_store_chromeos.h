@@ -11,7 +11,6 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "net/cert/x509_certificate.h"
 #include "net/ssl/client_cert_store_nss.h"
 
 namespace chromeos {
@@ -36,8 +35,7 @@ class ClientCertStoreChromeOS : public net::ClientCertStore {
     // Returns true if |cert| is allowed to be used as a client certificate
     // (e.g. for a certain browser context or user).
     // This is only called once initialization is finished, see Init().
-    virtual bool IsCertAllowed(
-        const scoped_refptr<net::X509Certificate>& cert) const = 0;
+    virtual bool IsCertAllowed(CERTCertificate* cert) const = 0;
   };
 
   // This ClientCertStore will return client certs from NSS certificate

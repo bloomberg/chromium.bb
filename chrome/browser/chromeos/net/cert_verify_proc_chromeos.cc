@@ -8,6 +8,7 @@
 
 #include "net/cert/test_root_certs.h"
 #include "net/cert/x509_certificate.h"
+#include "net/cert/x509_util_nss.h"
 
 // NSS doesn't currently define CERT_LIST_TAIL.
 // See https://bugzilla.mozilla.org/show_bug.cgi?id=962413
@@ -82,7 +83,7 @@ SECStatus CertVerifyProcChromeOS::IsChainValidFunc(
            args->additional_trust_anchors.begin();
        i != args->additional_trust_anchors.end();
        ++i) {
-    if (net::X509Certificate::IsSameOSCert(cert, (*i)->os_cert_handle())) {
+    if (net::x509_util::IsSameCertificate(cert, i->get())) {
       // Certs in the additional_trust_anchors should always be allowed, even if
       // they aren't stored in a slot that would be allowed by the
       // profile_filter.

@@ -23,24 +23,6 @@
 
 namespace chromeos {
 
-namespace {
-
-class CertNotAllowedPredicate {
- public:
-  explicit CertNotAllowedPredicate(
-      const ClientCertStoreChromeOS::CertFilter* filter)
-      : filter_(filter) {}
-  bool operator()(
-      const std::unique_ptr<net::ClientCertIdentity>& identity) const {
-    return !filter_->IsCertAllowed(identity->certificate());
-  }
-
- private:
-  const ClientCertStoreChromeOS::CertFilter* const filter_;
-};
-
-}  // namespace
-
 ClientCertStoreChromeOS::ClientCertStoreChromeOS(
     std::unique_ptr<CertificateProvider> cert_provider,
     std::unique_ptr<CertFilter> cert_filter,
@@ -104,12 +86,10 @@ ClientCertStoreChromeOS::GetAndFilterCertsOnWorkerThread(
     net::ClientCertIdentityList additional_certs) {
   net::ClientCertIdentityList client_certs;
   net::ClientCertStoreNSS::GetPlatformCertsOnWorkerThread(
-      std::move(password_delegate), &client_certs);
-
-  client_certs.erase(
-      std::remove_if(client_certs.begin(), client_certs.end(),
-                     CertNotAllowedPredicate(cert_filter_.get())),
-      client_certs.end());
+      std::move(password_delegate),
+      base::BindRepeating(&CertFilter::IsCertAllowed,
+                          base::Unretained(cert_filter_.get())),
+      &client_certs);
 
   client_certs.reserve(client_certs.size() + additional_certs.size());
   for (std::unique_ptr<net::ClientCertIdentity>& cert : additional_certs)

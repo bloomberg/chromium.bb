@@ -12,11 +12,25 @@
 #include "net/cert/cert_verify_proc.h"
 #include "net/cert/cert_verify_result.h"
 #include "net/cert/nss_cert_database_chromeos.h"
+#include "net/cert/x509_util_nss.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
+
+namespace {
+
+std::string GetSubjectCN(net::X509Certificate::OSCertHandle cert_handle) {
+  scoped_refptr<net::X509Certificate> cert =
+      net::X509Certificate::CreateFromHandle(
+          cert_handle, net::X509Certificate::OSCertHandles());
+  if (!cert)
+    return std::string();
+  return "CN=" + cert->subject().common_name;
+}
+
+}  // namespace
 
 class CertVerifyProcChromeOSTest : public testing::Test {
  public:
@@ -47,32 +61,42 @@ class CertVerifyProcChromeOSTest : public testing::Test {
     verify_proc_2_ = new CertVerifyProcChromeOS(db_2_->GetPublicSlot());
 
     // Load test cert chains from disk.
-    certs_1_ =
-        net::CreateCertificateListFromFile(net::GetTestCertsDirectory(),
-                                           "multi-root-chain1.pem",
-                                           net::X509Certificate::FORMAT_AUTO);
+    certs_1_ = net::CreateCERTCertificateListFromFile(
+        net::GetTestCertsDirectory(), "multi-root-chain1.pem",
+        net::X509Certificate::FORMAT_AUTO);
     ASSERT_EQ(4U, certs_1_.size());
 
-    certs_2_ =
-        net::CreateCertificateListFromFile(net::GetTestCertsDirectory(),
-                                           "multi-root-chain2.pem",
-                                           net::X509Certificate::FORMAT_AUTO);
+    certs_2_ = net::CreateCERTCertificateListFromFile(
+        net::GetTestCertsDirectory(), "multi-root-chain2.pem",
+        net::X509Certificate::FORMAT_AUTO);
     ASSERT_EQ(4U, certs_2_.size());
 
     // The chains:
     //   1. A (end-entity) -> B -> C -> D (self-signed root)
     //   2. A (end-entity) -> B -> C2 -> E (self-signed root)
-    ASSERT_TRUE(certs_1_[0]->Equals(certs_2_[0].get()));
-    ASSERT_TRUE(certs_1_[1]->Equals(certs_2_[1].get()));
-    ASSERT_FALSE(certs_1_[2]->Equals(certs_2_[2].get()));
-    ASSERT_EQ("C CA - Multi-root", certs_1_[2]->subject().common_name);
-    ASSERT_EQ("C CA - Multi-root", certs_2_[2]->subject().common_name);
+    ASSERT_TRUE(net::x509_util::IsSameCertificate(certs_1_[0].get(),
+                                                  certs_2_[0].get()));
+    ASSERT_TRUE(net::x509_util::IsSameCertificate(certs_1_[1].get(),
+                                                  certs_2_[1].get()));
+    ASSERT_FALSE(net::x509_util::IsSameCertificate(certs_1_[2].get(),
+                                                   certs_2_[2].get()));
+    ASSERT_STREQ("CN=C CA - Multi-root", certs_1_[2]->subjectName);
+    ASSERT_STREQ("CN=C CA - Multi-root", certs_2_[2]->subjectName);
 
-    root_1_.push_back(certs_1_.back());
-    root_2_.push_back(certs_2_.back());
+    ASSERT_STREQ("CN=D Root CA - Multi-root", certs_1_.back()->subjectName);
+    ASSERT_STREQ("CN=E Root CA - Multi-root", certs_2_.back()->subjectName);
+    root_1_.push_back(
+        net::x509_util::DupCERTCertificate(certs_1_.back().get()));
+    ASSERT_TRUE(root_1_.back());
+    root_2_.push_back(
+        net::x509_util::DupCERTCertificate(certs_2_.back().get()));
+    ASSERT_TRUE(root_2_.back());
+    ASSERT_STREQ("CN=D Root CA - Multi-root", root_1_.back()->subjectName);
+    ASSERT_STREQ("CN=E Root CA - Multi-root", root_2_.back()->subjectName);
 
-    ASSERT_EQ("D Root CA - Multi-root", root_1_[0]->subject().common_name);
-    ASSERT_EQ("E Root CA - Multi-root", root_2_[0]->subject().common_name);
+    server_ = net::x509_util::CreateX509CertificateFromCERTCertificate(
+        certs_1_[0].get());
+    ASSERT_TRUE(server_);
   }
 
   int VerifyWithAdditionalTrustAnchors(
@@ -88,7 +112,7 @@ class CertVerifyProcChromeOSTest : public testing::Test {
     if (!verify_result.verified_cert->GetIntermediateCertificates().empty()) {
       net::X509Certificate::OSCertHandle root =
           verify_result.verified_cert->GetIntermediateCertificates().back();
-      root_subject_name->assign(root->subjectName);
+      root_subject_name->assign(GetSubjectCN(root));
     } else {
       root_subject_name->clear();
     }
@@ -111,26 +135,26 @@ class CertVerifyProcChromeOSTest : public testing::Test {
   scoped_refptr<net::CertVerifyProc> verify_proc_default_;
   scoped_refptr<net::CertVerifyProc> verify_proc_1_;
   scoped_refptr<net::CertVerifyProc> verify_proc_2_;
-  net::CertificateList certs_1_;
-  net::CertificateList certs_2_;
-  net::CertificateList root_1_;
-  net::CertificateList root_2_;
+  net::ScopedCERTCertificateList certs_1_;
+  net::ScopedCERTCertificateList certs_2_;
+  net::ScopedCERTCertificateList root_1_;
+  net::ScopedCERTCertificateList root_2_;
+  scoped_refptr<net::X509Certificate> server_;
 };
 
 // Test that the CertVerifyProcChromeOS doesn't trusts roots that are in other
 // user's slots or that have been deleted, and that verifying done by one user
 // doesn't affect verifications done by others.
 TEST_F(CertVerifyProcChromeOSTest, TestChainVerify) {
-  scoped_refptr<net::X509Certificate> server = certs_1_[0];
   std::string verify_root;
   // Before either of the root certs have been trusted, all verifications should
   // fail with CERT_AUTHORITY_INVALID.
   EXPECT_EQ(net::ERR_CERT_AUTHORITY_INVALID,
-            Verify(verify_proc_default_.get(), server.get(), &verify_root));
+            Verify(verify_proc_default_.get(), server_.get(), &verify_root));
   EXPECT_EQ(net::ERR_CERT_AUTHORITY_INVALID,
-            Verify(verify_proc_1_.get(), server.get(), &verify_root));
+            Verify(verify_proc_1_.get(), server_.get(), &verify_root));
   EXPECT_EQ(net::ERR_CERT_AUTHORITY_INVALID,
-            Verify(verify_proc_2_.get(), server.get(), &verify_root));
+            Verify(verify_proc_2_.get(), server_.get(), &verify_root));
 
   // Import and trust the D root for user 1.
   net::NSSCertDatabase::ImportCertFailureList failed;
@@ -140,13 +164,13 @@ TEST_F(CertVerifyProcChromeOSTest, TestChainVerify) {
 
   // Imported CA certs are not trusted by default verifier.
   EXPECT_EQ(net::ERR_CERT_AUTHORITY_INVALID,
-            Verify(verify_proc_default_.get(), server.get(), &verify_root));
+            Verify(verify_proc_default_.get(), server_.get(), &verify_root));
   // User 1 should now verify successfully through the D root.
-  EXPECT_EQ(net::OK, Verify(verify_proc_1_.get(), server.get(), &verify_root));
+  EXPECT_EQ(net::OK, Verify(verify_proc_1_.get(), server_.get(), &verify_root));
   EXPECT_EQ("CN=D Root CA - Multi-root", verify_root);
   // User 2 should still fail.
   EXPECT_EQ(net::ERR_CERT_AUTHORITY_INVALID,
-            Verify(verify_proc_2_.get(), server.get(), &verify_root));
+            Verify(verify_proc_2_.get(), server_.get(), &verify_root));
 
   // Import and trust the E root for user 2.
   failed.clear();
@@ -156,35 +180,35 @@ TEST_F(CertVerifyProcChromeOSTest, TestChainVerify) {
 
   // Imported CA certs are not trusted by default verifier.
   EXPECT_EQ(net::ERR_CERT_AUTHORITY_INVALID,
-            Verify(verify_proc_default_.get(), server.get(), &verify_root));
+            Verify(verify_proc_default_.get(), server_.get(), &verify_root));
   // User 1 should still verify successfully through the D root.
-  EXPECT_EQ(net::OK, Verify(verify_proc_1_.get(), server.get(), &verify_root));
+  EXPECT_EQ(net::OK, Verify(verify_proc_1_.get(), server_.get(), &verify_root));
   EXPECT_EQ("CN=D Root CA - Multi-root", verify_root);
   // User 2 should now verify successfully through the E root.
-  EXPECT_EQ(net::OK, Verify(verify_proc_2_.get(), server.get(), &verify_root));
+  EXPECT_EQ(net::OK, Verify(verify_proc_2_.get(), server_.get(), &verify_root));
   EXPECT_EQ("CN=E Root CA - Multi-root", verify_root);
 
   // Delete D root.
   EXPECT_TRUE(db_1_->DeleteCertAndKey(root_1_[0].get()));
   EXPECT_EQ(net::ERR_CERT_AUTHORITY_INVALID,
-            Verify(verify_proc_default_.get(), server.get(), &verify_root));
+            Verify(verify_proc_default_.get(), server_.get(), &verify_root));
   // User 1 should now fail to verify.
   EXPECT_EQ(net::ERR_CERT_AUTHORITY_INVALID,
-            Verify(verify_proc_1_.get(), server.get(), &verify_root));
+            Verify(verify_proc_1_.get(), server_.get(), &verify_root));
   // User 2 should still verify successfully through the E root.
-  EXPECT_EQ(net::OK, Verify(verify_proc_2_.get(), server.get(), &verify_root));
+  EXPECT_EQ(net::OK, Verify(verify_proc_2_.get(), server_.get(), &verify_root));
   EXPECT_EQ("CN=E Root CA - Multi-root", verify_root);
 
   // Delete E root.
   EXPECT_TRUE(db_2_->DeleteCertAndKey(root_2_[0].get()));
   EXPECT_EQ(net::ERR_CERT_AUTHORITY_INVALID,
-            Verify(verify_proc_default_.get(), server.get(), &verify_root));
+            Verify(verify_proc_default_.get(), server_.get(), &verify_root));
   // User 1 should still fail to verify.
   EXPECT_EQ(net::ERR_CERT_AUTHORITY_INVALID,
-            Verify(verify_proc_1_.get(), server.get(), &verify_root));
+            Verify(verify_proc_1_.get(), server_.get(), &verify_root));
   // User 2 should now fail to verify.
   EXPECT_EQ(net::ERR_CERT_AUTHORITY_INVALID,
-            Verify(verify_proc_2_.get(), server.get(), &verify_root));
+            Verify(verify_proc_2_.get(), server_.get(), &verify_root));
 }
 
 // Test that roots specified through additional_trust_anchors are trusted for
@@ -194,85 +218,71 @@ TEST_F(CertVerifyProcChromeOSTest, TestAdditionalTrustAnchors) {
   EXPECT_TRUE(verify_proc_default_->SupportsAdditionalTrustAnchors());
   EXPECT_TRUE(verify_proc_1_->SupportsAdditionalTrustAnchors());
 
-  scoped_refptr<net::X509Certificate> server = certs_1_[0];
   std::string verify_root;
   net::CertificateList additional_trust_anchors;
+  scoped_refptr<net::X509Certificate> d_root_ca =
+      net::x509_util::CreateX509CertificateFromCERTCertificate(
+          certs_1_.back().get());
+  ASSERT_TRUE(d_root_ca);
 
   // Before either of the root certs have been trusted, all verifications should
   // fail with CERT_AUTHORITY_INVALID.
   EXPECT_EQ(net::ERR_CERT_AUTHORITY_INVALID,
             VerifyWithAdditionalTrustAnchors(verify_proc_default_.get(),
                                              additional_trust_anchors,
-                                             server.get(),
-                                             &verify_root));
+                                             server_.get(), &verify_root));
   EXPECT_EQ(net::ERR_CERT_AUTHORITY_INVALID,
             VerifyWithAdditionalTrustAnchors(verify_proc_1_.get(),
                                              additional_trust_anchors,
-                                             server.get(),
-                                             &verify_root));
+                                             server_.get(), &verify_root));
 
   // Use D Root CA as additional trust anchor. Verifications should succeed now.
-  additional_trust_anchors.push_back(root_1_[0]);
-  EXPECT_EQ(net::OK,
-            VerifyWithAdditionalTrustAnchors(verify_proc_default_.get(),
-                                             additional_trust_anchors,
-                                             server.get(),
-                                             &verify_root));
+  additional_trust_anchors.push_back(d_root_ca);
+  EXPECT_EQ(net::OK, VerifyWithAdditionalTrustAnchors(
+                         verify_proc_default_.get(), additional_trust_anchors,
+                         server_.get(), &verify_root));
   EXPECT_EQ("CN=D Root CA - Multi-root", verify_root);
-  EXPECT_EQ(net::OK,
-            VerifyWithAdditionalTrustAnchors(verify_proc_1_.get(),
-                                             additional_trust_anchors,
-                                             server.get(),
-                                             &verify_root));
+  EXPECT_EQ(net::OK, VerifyWithAdditionalTrustAnchors(
+                         verify_proc_1_.get(), additional_trust_anchors,
+                         server_.get(), &verify_root));
   EXPECT_EQ("CN=D Root CA - Multi-root", verify_root);
   // User 2 should still fail.
   EXPECT_EQ(net::ERR_CERT_AUTHORITY_INVALID,
             VerifyWithAdditionalTrustAnchors(verify_proc_2_.get(),
                                              net::CertificateList(),
-                                             server.get(),
-                                             &verify_root));
+                                             server_.get(), &verify_root));
 
   // Without additional trust anchors, verification should fail again.
   additional_trust_anchors.clear();
   EXPECT_EQ(net::ERR_CERT_AUTHORITY_INVALID,
             VerifyWithAdditionalTrustAnchors(verify_proc_default_.get(),
                                              additional_trust_anchors,
-                                             server.get(),
-                                             &verify_root));
+                                             server_.get(), &verify_root));
   EXPECT_EQ(net::ERR_CERT_AUTHORITY_INVALID,
             VerifyWithAdditionalTrustAnchors(verify_proc_1_.get(),
                                              additional_trust_anchors,
-                                             server.get(),
-                                             &verify_root));
+                                             server_.get(), &verify_root));
 
   // Import and trust the D Root CA for user 2.
-  net::CertificateList roots;
-  roots.push_back(root_1_[0]);
   net::NSSCertDatabase::ImportCertFailureList failed;
-  EXPECT_TRUE(
-      db_2_->ImportCACerts(roots, net::NSSCertDatabase::TRUSTED_SSL, &failed));
+  EXPECT_TRUE(db_2_->ImportCACerts(root_1_, net::NSSCertDatabase::TRUSTED_SSL,
+                                   &failed));
   EXPECT_EQ(0U, failed.size());
 
   // Use D Root CA as additional trust anchor. Verifications should still
   // succeed even if the cert is trusted by a different profile.
-  additional_trust_anchors.push_back(root_1_[0]);
-  EXPECT_EQ(net::OK,
-            VerifyWithAdditionalTrustAnchors(verify_proc_default_.get(),
-                                             additional_trust_anchors,
-                                             server.get(),
-                                             &verify_root));
+  additional_trust_anchors.push_back(d_root_ca);
+  EXPECT_EQ(net::OK, VerifyWithAdditionalTrustAnchors(
+                         verify_proc_default_.get(), additional_trust_anchors,
+                         server_.get(), &verify_root));
   EXPECT_EQ("CN=D Root CA - Multi-root", verify_root);
-  EXPECT_EQ(net::OK,
-            VerifyWithAdditionalTrustAnchors(verify_proc_1_.get(),
-                                             additional_trust_anchors,
-                                             server.get(),
-                                             &verify_root));
+  EXPECT_EQ(net::OK, VerifyWithAdditionalTrustAnchors(
+                         verify_proc_1_.get(), additional_trust_anchors,
+                         server_.get(), &verify_root));
   EXPECT_EQ("CN=D Root CA - Multi-root", verify_root);
-  EXPECT_EQ(net::OK,
-            VerifyWithAdditionalTrustAnchors(verify_proc_2_.get(),
-                                             additional_trust_anchors,
-                                             server.get(),
-                                             &verify_root));
+  EXPECT_EQ(net::OK, VerifyWithAdditionalTrustAnchors(
+                         verify_proc_2_.get(), additional_trust_anchors,
+                         server_.get(), &verify_root));
   EXPECT_EQ("CN=D Root CA - Multi-root", verify_root);
 }
 
@@ -294,18 +304,17 @@ TEST_P(CertVerifyProcChromeOSOrderingTest, DISABLED_TrustThenVerify) {
            << " trust_bitmask: " << trust_bitmask
            << " test_order: " << test_order;
 
-  scoped_refptr<net::X509Certificate> server = certs_1_[0];
   std::string verify_root;
 
   if (verify_first) {
     // Before either of the root certs have been trusted, all verifications
     // should fail with CERT_AUTHORITY_INVALID.
     EXPECT_EQ(net::ERR_CERT_AUTHORITY_INVALID,
-              Verify(verify_proc_default_.get(), server.get(), &verify_root));
+              Verify(verify_proc_default_.get(), server_.get(), &verify_root));
     EXPECT_EQ(net::ERR_CERT_AUTHORITY_INVALID,
-              Verify(verify_proc_1_.get(), server.get(), &verify_root));
+              Verify(verify_proc_1_.get(), server_.get(), &verify_root));
     EXPECT_EQ(net::ERR_CERT_AUTHORITY_INVALID,
-              Verify(verify_proc_2_.get(), server.get(), &verify_root));
+              Verify(verify_proc_2_.get(), server_.get(), &verify_root));
   }
 
   int expected_user1_result = net::ERR_CERT_AUTHORITY_INVALID;
@@ -348,17 +357,17 @@ TEST_P(CertVerifyProcChromeOSOrderingTest, DISABLED_TrustThenVerify) {
           // Default verifier should always fail.
           EXPECT_EQ(
               net::ERR_CERT_AUTHORITY_INVALID,
-              Verify(verify_proc_default_.get(), server.get(), &verify_root));
+              Verify(verify_proc_default_.get(), server_.get(), &verify_root));
           break;
         case '1':
           EXPECT_EQ(expected_user1_result,
-                    Verify(verify_proc_1_.get(), server.get(), &verify_root));
+                    Verify(verify_proc_1_.get(), server_.get(), &verify_root));
           if (expected_user1_result == net::OK)
             EXPECT_EQ("CN=D Root CA - Multi-root", verify_root);
           break;
         case '2':
           EXPECT_EQ(expected_user2_result,
-                    Verify(verify_proc_2_.get(), server.get(), &verify_root));
+                    Verify(verify_proc_2_.get(), server_.get(), &verify_root));
           if (expected_user2_result == net::OK)
             EXPECT_EQ("CN=E Root CA - Multi-root", verify_root);
           break;
