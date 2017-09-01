@@ -4658,6 +4658,7 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
     cm->delta_q_res = 1;
 #if CONFIG_EXT_DELTA_Q
     cm->delta_lf_res = 1;
+    cm->delta_lf_present_flag = 0;
 #endif
     if (segment_quantizer_active == 0 && cm->base_qindex > 0) {
       cm->delta_q_present_flag = aom_rb_read_bit(rb);
