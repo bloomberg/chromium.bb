@@ -66,8 +66,10 @@ crbug.com/602497 virtual/mojo-loading/http/tests/security/mixedContent/insecure-
 # https://crbug.com/585188 - testRunner.addOriginAccessWhitelistEntry is not replicated to OOPIFs.
 crbug.com/585188 http/tests/xmlhttprequest/origin-whitelisting-all.html [ Failure ]
 crbug.com/585188 virtual/mojo-loading/http/tests/xmlhttprequest/origin-whitelisting-all.html [ Failure ]
+crbug.com/585188 virtual/outofblink-cors/http/tests/xmlhttprequest/origin-whitelisting-all.html [ Failure ]
 crbug.com/585188 http/tests/xmlhttprequest/origin-whitelisting-ip-addresses.html [ Failure ]
 crbug.com/585188 virtual/mojo-loading/http/tests/xmlhttprequest/origin-whitelisting-ip-addresses.html [ Failure ]
+crbug.com/585188 virtual/outofblink-cors/http/tests/xmlhttprequest/origin-whitelisting-ip-addresses.html [ Failure ]
 
 # https://crbug.com/601584 - No OOPIF support for UserGestureIndicator triggers
 #                            cross-origin-iframe.html layout test failure
