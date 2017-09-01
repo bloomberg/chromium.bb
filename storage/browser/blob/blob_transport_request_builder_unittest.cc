@@ -20,7 +20,7 @@ const char kFakeBlobUUID[] = "fakeBlob";
 void AddMemoryItem(size_t length, std::vector<DataElement>* out) {
   DataElement bytes;
   bytes.SetToBytesDescription(length);
-  out->push_back(bytes);
+  out->push_back(std::move(bytes));
 }
 
 void AddShortcutMemoryItem(size_t length, std::vector<DataElement>* out) {
@@ -29,13 +29,13 @@ void AddShortcutMemoryItem(size_t length, std::vector<DataElement>* out) {
   for (size_t i = 0; i < length; i++) {
     bytes.mutable_bytes()[i] = static_cast<char>(i);
   }
-  out->push_back(bytes);
+  out->push_back(std::move(bytes));
 }
 
 void AddBlobItem(std::vector<DataElement>* out) {
   DataElement blob;
   blob.SetToBlob(kFakeBlobUUID);
-  out->push_back(blob);
+  out->push_back(std::move(blob));
 }
 
 TEST(BlobAsyncTransportRequestBuilderTest, TestNoMemoryItems) {
