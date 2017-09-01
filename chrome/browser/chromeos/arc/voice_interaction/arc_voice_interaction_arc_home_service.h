@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_ARC_VOICE_INTERACTION_ARC_VOICE_INTERACTION_ARC_HOME_SERVICE_H_
 #define CHROME_BROWSER_CHROMEOS_ARC_VOICE_INTERACTION_ARC_VOICE_INTERACTION_ARC_HOME_SERVICE_H_
 
+#include <string>
+
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
@@ -51,6 +53,9 @@ class ArcVoiceInteractionArcHomeService
   void OnAssistantAppRequested();
   // Notifies that assistant flow has been canceled.
   void OnAssistantCanceled();
+
+  // KeyedService overrides:
+  void Shutdown() override;
 
   // InstanceHolder<mojom::VoiceInteractionArcHomeInstance> overrides;
   void OnInstanceReady() override;

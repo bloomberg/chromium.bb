@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/voice_interaction/arc_voice_interaction_framework_service.h"
 #include "chrome/browser/chromeos/first_run/first_run.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs_factory.h"
 #include "chrome/browser/ui/app_list/arc/arc_pai_starter.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/browser.h"
@@ -112,6 +113,7 @@ class ArcVoiceInteractionArcHomeServiceFactory
   friend base::DefaultSingletonTraits<ArcVoiceInteractionArcHomeServiceFactory>;
 
   ArcVoiceInteractionArcHomeServiceFactory() {
+    DependsOn(ArcAppListPrefsFactory::GetInstance());
     DependsOn(ArcVoiceInteractionFrameworkService::GetFactory());
   }
   ~ArcVoiceInteractionArcHomeServiceFactory() override = default;
@@ -151,9 +153,12 @@ ArcVoiceInteractionArcHomeService::ArcVoiceInteractionArcHomeService(
   arc_bridge_service_->voice_interaction_arc_home()->AddObserver(this);
 }
 
-ArcVoiceInteractionArcHomeService::~ArcVoiceInteractionArcHomeService() {
-  arc_bridge_service_->voice_interaction_arc_home()->RemoveObserver(this);
+ArcVoiceInteractionArcHomeService::~ArcVoiceInteractionArcHomeService() =
+    default;
+
+void ArcVoiceInteractionArcHomeService::Shutdown() {
   ResetTimeouts();
+  arc_bridge_service_->voice_interaction_arc_home()->RemoveObserver(this);
 }
 
 void ArcVoiceInteractionArcHomeService::LockPai() {
