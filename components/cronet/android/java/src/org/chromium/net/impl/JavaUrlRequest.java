@@ -8,6 +8,7 @@ import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.net.TrafficStats;
 import android.os.Build;
+import android.support.annotation.Nullable;
 import android.util.Log;
 
 import org.chromium.net.CronetException;
@@ -17,6 +18,7 @@ import org.chromium.net.UploadDataSink;
 import org.chromium.net.UrlResponseInfo;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
@@ -96,6 +98,7 @@ final class JavaUrlRequest extends UrlRequestBase {
 
     /* These change with redirects. */
     private String mCurrentUrl;
+    @Nullable
     private ReadableByteChannel mResponseChannel; // Only accessed on mExecutor.
     private UrlResponseInfoImpl mUrlResponseInfo;
     private String mPendingRedirectUrl;
@@ -630,8 +633,9 @@ final class JavaUrlRequest extends UrlRequestBase {
                 }
                 fireCloseUploadDataProvider();
                 if (responseCode >= 400) {
+                    InputStream inputStream = mCurrentUrlConnection.getErrorStream();
                     mResponseChannel =
-                            InputStreamChannel.wrap(mCurrentUrlConnection.getErrorStream());
+                            inputStream == null ? null : InputStreamChannel.wrap(inputStream);
                     mCallbackAsync.onResponseStarted(mUrlResponseInfo);
                 } else {
                     mResponseChannel =
@@ -768,7 +772,7 @@ final class JavaUrlRequest extends UrlRequestBase {
                 mExecutor.execute(errorSetting(new CheckedRunnable() {
                     @Override
                     public void run() throws Exception {
-                        int read = mResponseChannel.read(buffer);
+                        int read = mResponseChannel == null ? -1 : mResponseChannel.read(buffer);
                         processReadResult(read, buffer);
                     }
                 }));
@@ -780,7 +784,9 @@ final class JavaUrlRequest extends UrlRequestBase {
         if (read != -1) {
             mCallbackAsync.onReadCompleted(mUrlResponseInfo, buffer);
         } else {
-            mResponseChannel.close();
+            if (mResponseChannel != null) {
+                mResponseChannel.close();
+            }
             if (mState.compareAndSet(State.READING, State.COMPLETE)) {
                 fireDisconnect();
                 mCallbackAsync.onSucceeded(mUrlResponseInfo);
