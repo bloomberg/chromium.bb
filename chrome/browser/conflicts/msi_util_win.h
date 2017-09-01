@@ -12,6 +12,8 @@
 
 class MsiUtil {
  public:
+  virtual ~MsiUtil() {}
+
   // Using the Microsoft Installer API, retrieves the path of all the components
   // for a given product. This function should be called on a thread that allows
   // access to the file system. Returns false if any error occured, including if
