@@ -31,6 +31,7 @@
 #include "build/build_config.h"
 #include "cc/base/switches.h"
 #include "cc/output/compositor_frame.h"
+#include "components/viz/common/switches.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/browser/bad_message.h"
@@ -307,6 +308,11 @@ class UnboundWidgetInputHandler : public mojom::WidgetInputHandler {
   }
 };
 
+bool IsRunningInMash() {
+  const base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
+  return cmdline->HasSwitch(switches::kIsRunningInMash);
+}
+
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -402,6 +408,12 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
   new_content_rendering_timeout_.reset(new TimeoutMonitor(
       base::Bind(&RenderWidgetHostImpl::ClearDisplayedGraphics,
                  weak_factory_.GetWeakPtr())));
+
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  enable_surface_synchronization_ =
+      IsRunningInMash() ||
+      command_line.HasSwitch(switches::kEnableSurfaceSynchronization);
 
   delegate_->RenderWidgetCreated(this);
 }
@@ -780,14 +792,18 @@ bool RenderWidgetHostImpl::GetResizeParams(ResizeParams* resize_params) {
       old_resize_params_->bottom_controls_height !=
           resize_params->bottom_controls_height ||
       old_resize_params_->visible_viewport_size !=
-          resize_params->visible_viewport_size;
+          resize_params->visible_viewport_size ||
+      (enable_surface_synchronization_ &&
+       old_resize_params_->local_surface_id != resize_params->local_surface_id);
 
   // We don't expect to receive an ACK when the requested size or the physical
   // backing size is empty, or when the main viewport size didn't change.
   resize_params->needs_resize_ack =
       g_check_for_pending_resize_ack && !resize_params->new_size.IsEmpty() &&
-      !resize_params->physical_backing_size.IsEmpty() && size_changed;
-
+      !resize_params->physical_backing_size.IsEmpty() && size_changed &&
+      (!enable_surface_synchronization_ ||
+       (resize_params->local_surface_id.has_value() &&
+        resize_params->local_surface_id->is_valid()));
   return dirty;
 }
 

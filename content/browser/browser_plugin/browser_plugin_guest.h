@@ -29,6 +29,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "components/viz/common/surfaces/local_surface_id.h"
 #include "content/common/edit_command.h"
 #include "content/common/input/input_event_ack_state.h"
 #include "content/public/browser/browser_plugin_guest_delegate.h"
@@ -56,6 +57,7 @@ class Range;
 }  // namespace gfx
 
 namespace viz {
+class LocalSurfaceId;
 class SurfaceId;
 class SurfaceInfo;
 struct SurfaceSequence;
@@ -161,6 +163,13 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
 
   bool focused() const { return focused_; }
   bool visible() const { return guest_visible_; }
+
+  // Returns the viz::LocalSurfaceId propagated from the parent to be used by
+  // this guest.
+  const viz::LocalSurfaceId& local_surface_id() const {
+    return local_surface_id_;
+  }
+
   bool is_in_destruction() { return is_in_destruction_; }
 
   void UpdateVisibility();
@@ -330,7 +339,9 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   void OnSetVisibility(int instance_id, bool visible);
   void OnUnlockMouse();
   void OnUnlockMouseAck(int instance_id);
-  void OnUpdateGeometry(int instance_id, const gfx::Rect& view_rect);
+  void OnUpdateGeometry(int instance_id,
+                        const gfx::Rect& view_rect,
+                        const viz::LocalSurfaceId& local_surface_id);
 
   void OnTextInputStateChanged(const TextInputState& params);
   void OnImeSetComposition(
@@ -450,6 +461,8 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   // means when we have --use-cross-process-frames-for-guests on, the
   // WebContents associated with this BrowserPluginGuest has OOPIF structure.
   bool can_use_cross_process_frames_;
+
+  viz::LocalSurfaceId local_surface_id_;
 
   // Weak pointer used to ask GeolocationPermissionContext about geolocation
   // permission.

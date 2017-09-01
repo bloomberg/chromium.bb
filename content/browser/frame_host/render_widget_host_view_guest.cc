@@ -451,6 +451,12 @@ void RenderWidgetHostViewGuest::UnlockMouse() {
   return platform_view_->UnlockMouse();
 }
 
+viz::LocalSurfaceId RenderWidgetHostViewGuest::GetLocalSurfaceId() const {
+  if (guest_)
+    return guest_->local_surface_id();
+  return viz::LocalSurfaceId();
+}
+
 void RenderWidgetHostViewGuest::DidCreateNewRendererCompositorFrameSink(
     viz::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink) {
   RenderWidgetHostViewChildFrame::DidCreateNewRendererCompositorFrameSink(

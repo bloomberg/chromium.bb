@@ -107,6 +107,7 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
 
   bool LockMouse() override;
   void UnlockMouse() override;
+  viz::LocalSurfaceId GetLocalSurfaceId() const override;
   void DidCreateNewRendererCompositorFrameSink(
       viz::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink)
       override;

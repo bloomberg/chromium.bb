@@ -1024,6 +1024,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
     viz::mojom::HitTestRegionListPtr hit_test_region_list;
   } saved_frame_;
 
+  bool enable_surface_synchronization_ = false;
+
   // If the |associated_widget_input_handler_| is set it should always be
   // used to ensure in order delivery of related messages that may occur
   // at the frame input level; see FrameInputHandler. Note that when the
