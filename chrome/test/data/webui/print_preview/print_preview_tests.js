@@ -576,17 +576,18 @@ cr.define('print_preview_test', function() {
         return nativeLayer.whenCalled('getPrinterCapabilities');
       }).then(function() {
         var otherOptions = $('other-options-settings');
+        var scalingSettings = $('scaling-settings');
         // If rasterization is an option, other options should be visible.
         // If not, there should be no available other options.
         checkSectionVisible(otherOptions, isPrintAsImageEnabled());
         if (isPrintAsImageEnabled()) {
           checkElementDisplayed(
-              otherOptions.querySelector('#fit-to-page-container'), false);
-          checkElementDisplayed(
               otherOptions.querySelector('#rasterize-container'), true);
         }
         checkSectionVisible($('media-size-settings'), false);
-        checkSectionVisible($('scaling-settings'), false);
+        checkSectionVisible(scalingSettings, false);
+        checkElementDisplayed(
+            scalingSettings.querySelector('#fit-to-page-container'), false);
       });
     });
 
@@ -595,12 +596,12 @@ cr.define('print_preview_test', function() {
     test('SourceIsHTMLCapabilities', function() {
       return setupSettingsAndDestinationsWithCapabilities().then(function() {
         var otherOptions = $('other-options-settings');
-        var fitToPage = otherOptions.querySelector('#fit-to-page-container');
         var rasterize;
         if (isPrintAsImageEnabled())
           rasterize = otherOptions.querySelector('#rasterize-container');
         var mediaSize = $('media-size-settings');
         var scalingSettings = $('scaling-settings');
+        var fitToPage = scalingSettings.querySelector('#fit-to-page-container');
 
         // Check that options are collapsed (section is visible, because
         // duplex is available).
@@ -631,7 +632,7 @@ cr.define('print_preview_test', function() {
         var otherOptions = $('other-options-settings');
         var scalingSettings = $('scaling-settings');
         var fitToPageContainer =
-            otherOptions.querySelector('#fit-to-page-container');
+            scalingSettings.querySelector('#fit-to-page-container');
         var rasterizeContainer;
         if (isPrintAsImageEnabled()) {
           rasterizeContainer =
@@ -661,36 +662,44 @@ cr.define('print_preview_test', function() {
     // we show/hide the fit to page option and hide media size selection.
     test('ScalingUnchecksFitToPage', function() {
       initialSettings.isDocumentModifiable_ = false;
-      return setupSettingsAndDestinationsWithCapabilities().then(function() {
-        var otherOptions = $('other-options-settings');
-        var scalingSettings = $('scaling-settings');
+      // Wait for preview to load.
+      return Promise.all([setupSettingsAndDestinationsWithCapabilities(),
+                          nativeLayer.whenCalled('getPreview')]).then(
+        function(args) {
+          var scalingSettings = $('scaling-settings');
+          checkSectionVisible(scalingSettings, true);
+          var fitToPageContainer =
+              scalingSettings.querySelector('#fit-to-page-container');
+          checkElementDisplayed(fitToPageContainer, true);
+          expectTrue(args[1].printTicketStore.fitToPage.getValue());
+          expectEquals('100', args[1].printTicketStore.scaling.getValue());
+          expectTrue(fitToPageContainer.querySelector('.checkbox').checked);
+          expandMoreSettings();
+          checkSectionVisible($('media-size-settings'), true);
+          checkSectionVisible(scalingSettings, true);
+          nativeLayer.resetResolver('getPreview');
 
-        checkSectionVisible(otherOptions, true);
-        var fitToPageContainer =
-            otherOptions.querySelector('#fit-to-page-container');
-        checkElementDisplayed(fitToPageContainer, true);
-        expectTrue(
-            fitToPageContainer.querySelector('.checkbox').checked);
-        expandMoreSettings();
-        checkSectionVisible($('media-size-settings'), true);
-        checkSectionVisible(scalingSettings, true);
+          // Change scaling input
+          var scalingInput = scalingSettings.querySelector('.user-value');
+          expectEquals('100', scalingInput.value);
+          scalingInput.stepUp(5);
+          expectEquals('105', scalingInput.value);
 
-        // Change scaling input
-        var scalingInput = scalingSettings.querySelector('.user-value');
-        expectEquals('100', scalingInput.value);
-        scalingInput.stepUp(5);
-        expectEquals('105', scalingInput.value);
+          // Trigger the event
+          var enterEvent = document.createEvent('Event');
+          enterEvent.initEvent('keydown');
+          enterEvent.keyCode = 'Enter';
+          scalingInput.dispatchEvent(enterEvent);
 
-        // Trigger the event
-        var enterEvent = document.createEvent('Event');
-        enterEvent.initEvent('keydown');
-        enterEvent.keyCode = 'Enter';
-        scalingInput.dispatchEvent(enterEvent);
-        expectFalse(
-            fitToPageContainer.querySelector('.checkbox').checked);
-
-        return whenAnimationDone('other-options-collapsible');
-      });
+          // Wait for the preview to refresh and verify print ticket and
+          // display.
+          return nativeLayer.whenCalled('getPreview').then(function(args) {
+            expectFalse(args.printTicketStore.fitToPage.getValue());
+            expectEquals('105', args.printTicketStore.scaling.getValue());
+            expectFalse(fitToPageContainer.querySelector('.checkbox').checked);
+            return whenAnimationDone('more-settings');
+          });
+        });
     });
 
     // When the number of copies print preset is set for source 'PDF', we update

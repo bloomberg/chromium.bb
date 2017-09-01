@@ -420,10 +420,11 @@ cr.define('print_preview', function() {
     /** @return {boolean} Whether the ticket is valid for preview generation. */
     isTicketValidForPreview: function() {
       return (
-          !this.marginsType_.isCapabilityAvailable() ||
-          !this.marginsType_.isValueEqual(
-              print_preview.ticket_items.MarginsTypeValue.CUSTOM) ||
-          this.customMargins_.isValid());
+          (!this.marginsType_.isCapabilityAvailable() ||
+           !this.marginsType_.isValueEqual(
+               print_preview.ticket_items.MarginsTypeValue.CUSTOM) ||
+           this.customMargins_.isValid()) &&
+          (!this.scaling_.isCapabilityAvailable() || this.scaling_.isValid()));
     },
 
     /**

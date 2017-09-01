@@ -104,6 +104,11 @@ header {
   padding-top: 5px;
 }
 
+.two-column.visible .left-column.multirow {
+  padding-top: 16px;
+  vertical-align: top;
+}
+
 .two-column:not(.visible) .left-column,
 .two-column:not(.visible) .right-column {
   padding-bottom: 0;
