@@ -180,10 +180,13 @@ enum {
 // is initiated, and when WebController calls -willBeDismissed.
 @property(nonatomic, weak) UIViewController* parentViewController;
 
-// TODO(crbug.com/761031) : Make dispatcher conform to necessary protocols.
-// To ease modernizing the NTP a non-descript CommandDispatcher is passed
-// through to be used by the reuabled NTP panels.
-@property(nonatomic, weak) id dispatcher;
+// The command dispatcher.
+@property(nonatomic, weak) id<ApplicationCommands,
+                              BrowserCommands,
+                              ChromeExecuteCommand,
+                              OmniboxFocuser,
+                              UrlLoader>
+    dispatcher;
 
 // Panel displaying the "Home" view, with the logo and the fake omnibox.
 @property(nonatomic, strong) id<NewTabPagePanelProtocol> homePanel;
@@ -217,7 +220,11 @@ enum {
       webToolbarDelegate:(id<WebToolbarDelegate>)webToolbarDelegate
                 tabModel:(TabModel*)tabModel
     parentViewController:(UIViewController*)parentViewController
-              dispatcher:(id)dispatcher {
+              dispatcher:(id<ApplicationCommands,
+                             BrowserCommands,
+                             ChromeExecuteCommand,
+                             OmniboxFocuser,
+                             UrlLoader>)dispatcher {
   self = [super initWithNibName:nil url:url];
   if (self) {
     DCHECK(browserState);
@@ -673,9 +680,7 @@ enum {
     [self.ntpView.scrollView setContentOffset:point animated:animate];
   } else {
     if (item.identifier == ntp_home::BOOKMARKS_PANEL) {
-      // TODO(crbug.com/761031) : Directly call method after dispatcher conforms
-      // to protocol.
-      [self.dispatcher performSelector:@selector(showBookmarksManager)];
+      [self.dispatcher showBookmarksManager];
     } else if (item.identifier == ntp_home::RECENT_TABS_PANEL) {
       GenericChromeCommand* command =
           [[GenericChromeCommand alloc] initWithTag:IDC_SHOW_OTHER_DEVICES];

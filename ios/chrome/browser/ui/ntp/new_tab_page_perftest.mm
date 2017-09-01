@@ -8,6 +8,7 @@
 #include "ios/chrome/browser/test/perf_test_with_bvc_ios.h"
 #import "ios/chrome/browser/ui/browser_view_controller.h"
 #import "ios/chrome/browser/ui/browser_view_controller_dependency_factory.h"
+#import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
