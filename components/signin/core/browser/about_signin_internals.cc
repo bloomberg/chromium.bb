@@ -270,6 +270,7 @@ void AboutSigninInternals::Initialize(SigninClient* client) {
   RefreshSigninPrefs();
 
   signin_error_controller_->AddObserver(this);
+  signin_manager_->AddObserver(this);
   signin_manager_->AddSigninDiagnosticsObserver(this);
   token_service_->AddDiagnosticsObserver(this);
   cookie_manager_service_->AddObserver(this);
@@ -277,6 +278,7 @@ void AboutSigninInternals::Initialize(SigninClient* client) {
 
 void AboutSigninInternals::Shutdown() {
   signin_error_controller_->RemoveObserver(this);
+  signin_manager_->RemoveObserver(this);
   signin_manager_->RemoveSigninDiagnosticsObserver(this);
   token_service_->RemoveDiagnosticsObserver(this);
   cookie_manager_service_->RemoveObserver(this);
