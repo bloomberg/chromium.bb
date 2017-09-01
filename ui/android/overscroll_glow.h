@@ -40,7 +40,7 @@ class UI_ANDROID_EXPORT OverscrollGlow {
   // The effect is enabled by default, but will remain dormant until the first
   // overscroll event.
   explicit OverscrollGlow(OverscrollGlowClient* client);
-  ~OverscrollGlow();
+  virtual ~OverscrollGlow();
 
   // Called when the root content layer overscrolls.
   // |accumulated_overscroll| and |overscroll_delta| are in device pixels, while
