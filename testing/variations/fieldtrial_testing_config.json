@@ -1500,24 +1500,6 @@
             ]
         }
     ],
-    "MojoInputMessages": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "MojoInputMessages"
-                    ]
-                }
-            ]
-        }
-    ],
     "NTPArticleSuggestions": [
         {
             "platforms": [
