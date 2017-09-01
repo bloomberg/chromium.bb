@@ -186,18 +186,19 @@ int amdgpu_parse_asic_ids(struct amdgpu_asic_id **p_asic_id_table)
 		table_size++;
 	}
 
-	/* end of table */
-	id = asic_id_table + table_size;
-	memset(id, 0, sizeof(struct amdgpu_asic_id));
-
 	if (table_size != table_max_size) {
 		id = realloc(asic_id_table, (table_size + 1) *
 			     sizeof(struct amdgpu_asic_id));
-		if (!id)
+		if (!id) {
 			r = -ENOMEM;
-		else
-			asic_id_table = id;
+			goto free;
+		}
+		asic_id_table = id;
         }
+
+	/* end of table */
+	id = asic_id_table + table_size;
+	memset(id, 0, sizeof(struct amdgpu_asic_id));
 
 free:
 	free(line);
