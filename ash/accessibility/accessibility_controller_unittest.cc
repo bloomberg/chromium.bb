@@ -4,13 +4,33 @@
 
 #include "ash/accessibility/accessibility_controller.h"
 
+#include "ash/ash_constants.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
+#include "ash/system/accessibility_observer.h"
+#include "ash/system/tray/system_tray_notifier.h"
 #include "ash/test/ash_test_base.h"
 #include "components/prefs/pref_service.h"
 
 namespace ash {
+
+class TestAccessibilityObserver : public AccessibilityObserver {
+ public:
+  TestAccessibilityObserver() = default;
+  ~TestAccessibilityObserver() override = default;
+
+  // AccessibilityObserver:
+  void OnAccessibilityStatusChanged(
+      AccessibilityNotificationVisibility notify) override {
+    changed_++;
+  }
+
+  int changed_ = 0;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestAccessibilityObserver);
+};
 
 using AccessibilityControllerTest = AshTestBase;
 
@@ -18,6 +38,10 @@ TEST_F(AccessibilityControllerTest, PrefsAreRegistered) {
   PrefService* prefs =
       Shell::Get()->session_controller()->GetLastActiveUserPrefService();
   EXPECT_TRUE(prefs->FindPreference(prefs::kAccessibilityLargeCursorEnabled));
+  EXPECT_TRUE(prefs->FindPreference(prefs::kAccessibilityLargeCursorDipSize));
+  EXPECT_TRUE(prefs->FindPreference(prefs::kAccessibilityHighContrastEnabled));
+  EXPECT_TRUE(
+      prefs->FindPreference(prefs::kAccessibilityScreenMagnifierEnabled));
 }
 
 TEST_F(AccessibilityControllerTest, SetLargeCursorEnabled) {
@@ -28,6 +52,38 @@ TEST_F(AccessibilityControllerTest, SetLargeCursorEnabled) {
   EXPECT_TRUE(controller->IsLargeCursorEnabled());
   controller->SetLargeCursorEnabled(false);
   EXPECT_FALSE(controller->IsLargeCursorEnabled());
+}
+
+TEST_F(AccessibilityControllerTest, SetLargeCursorNotifiesObservers) {
+  TestAccessibilityObserver observer;
+  Shell::Get()->system_tray_notifier()->AddAccessibilityObserver(&observer);
+  EXPECT_EQ(0, observer.changed_);
+
+  AccessibilityController* controller =
+      Shell::Get()->accessibility_controller();
+  controller->SetLargeCursorEnabled(true);
+  EXPECT_EQ(1, observer.changed_);
+  controller->SetLargeCursorEnabled(false);
+  EXPECT_EQ(2, observer.changed_);
+
+  Shell::Get()->system_tray_notifier()->RemoveAccessibilityObserver(&observer);
+}
+
+TEST_F(AccessibilityControllerTest, DisableLargeCursorResetsSize) {
+  PrefService* prefs =
+      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+  EXPECT_EQ(kDefaultLargeCursorSize,
+            prefs->GetInteger(prefs::kAccessibilityLargeCursorDipSize));
+
+  // Simulate using chrome settings webui to turn on large cursor and set a
+  // custom size.
+  prefs->SetBoolean(prefs::kAccessibilityLargeCursorEnabled, true);
+  prefs->SetInteger(prefs::kAccessibilityLargeCursorDipSize, 48);
+
+  // Turning off large cursor resets the size to the default.
+  prefs->SetBoolean(prefs::kAccessibilityLargeCursorEnabled, false);
+  EXPECT_EQ(kDefaultLargeCursorSize,
+            prefs->GetInteger(prefs::kAccessibilityLargeCursorDipSize));
 }
 
 }  // namespace ash
