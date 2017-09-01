@@ -11,8 +11,9 @@
 namespace {
 
 void EmitLowRamDeviceHistogram() {
-  UMA_HISTOGRAM_BOOLEAN("MemoryAndroid.LowRamDevice",
-                        base::SysInfo::IsLowEndDevice());
+  // Equivalent to UMA_HISTOGRAM_BOOLEAN with the stability flag set.
+  UMA_STABILITY_HISTOGRAM_ENUMERATION(
+      "MemoryAndroid.LowRamDevice", base::SysInfo::IsLowEndDevice() ? 1 : 0, 2);
 }
 
 }  // namespace
