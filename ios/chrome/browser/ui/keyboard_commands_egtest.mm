@@ -181,8 +181,7 @@ const CGFloat kScrollDisplacement = 50.0;
 // Bookmarks UI.
 - (void)testKeyboardCommandsNotRegistered_BookmarksPresented {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(
-      bookmark_new_generation::features::kBookmarkNewGeneration);
+  scoped_feature_list.InitAndDisableFeature(kBookmarkNewGeneration);
 
   // Open Bookmarks
   [self selectToolsMenuItem:grey_accessibilityID(kToolsMenuBookmarksId)];

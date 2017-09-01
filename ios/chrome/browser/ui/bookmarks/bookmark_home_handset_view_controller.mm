@@ -95,8 +95,7 @@ using bookmarks::BookmarkNode;
 - (void)viewDidLoad {
   [super viewDidLoad];
 
-  if (!base::FeatureList::IsEnabled(
-          bookmark_new_generation::features::kBookmarkNewGeneration)) {
+  if (!base::FeatureList::IsEnabled(kBookmarkNewGeneration)) {
     self.navigationBar.frame = [self navigationBarFrame];
     [self.navigationBar setMenuTarget:self
                                action:@selector(navigationBarToggledMenu:)];
@@ -133,8 +132,7 @@ using bookmarks::BookmarkNode;
 
 - (void)viewWillLayoutSubviews {
   [super viewWillLayoutSubviews];
-  if (base::FeatureList::IsEnabled(
-          bookmark_new_generation::features::kBookmarkNewGeneration)) {
+  if (base::FeatureList::IsEnabled(kBookmarkNewGeneration)) {
     // TODO(crbug.com/695749): See if we need to store/restore the content
     // scroll position for BookmarkTableView here.
     return;
@@ -185,8 +183,7 @@ using bookmarks::BookmarkNode;
   // TODO(crbug.com/695749): Restore the content scroll position for
   // BookmarkTableView in the UI.
 
-  if (!base::FeatureList::IsEnabled(
-          bookmark_new_generation::features::kBookmarkNewGeneration)) {
+  if (!base::FeatureList::IsEnabled(kBookmarkNewGeneration)) {
     self.menuView.delegate = self;
 
     // Set view frames and add them to hierarchy.

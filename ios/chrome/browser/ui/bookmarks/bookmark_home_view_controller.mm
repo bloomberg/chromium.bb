@@ -128,8 +128,7 @@ const CGFloat kSpacer = 50;
 
 - (void)viewDidLoad {
   [super viewDidLoad];
-  if (!base::FeatureList::IsEnabled(
-          bookmark_new_generation::features::kBookmarkNewGeneration)) {
+  if (!base::FeatureList::IsEnabled(kBookmarkNewGeneration)) {
     self.navigationBar =
         [[BookmarkNavigationBar alloc] initWithFrame:CGRectZero];
     [self.navigationBar setEditTarget:self
@@ -143,8 +142,7 @@ const CGFloat kSpacer = 50;
 
 - (void)viewWillLayoutSubviews {
   [super viewWillLayoutSubviews];
-  if (base::FeatureList::IsEnabled(
-          bookmark_new_generation::features::kBookmarkNewGeneration)) {
+  if (base::FeatureList::IsEnabled(kBookmarkNewGeneration)) {
     // Resize the custom title view (placed as leftBarButtonItem) on the
     // navigation bar according to the space available, so that we truncate it
     // correctly.
@@ -172,8 +170,7 @@ const CGFloat kSpacer = 50;
 #pragma mark - Protected
 
 - (void)loadBookmarkViews {
-  if (base::FeatureList::IsEnabled(
-          bookmark_new_generation::features::kBookmarkNewGeneration)) {
+  if (base::FeatureList::IsEnabled(kBookmarkNewGeneration)) {
     [self loadBookmarkViewsForNewUI];
   } else {
     [self loadBookmarkViewsForOldUI];
@@ -262,8 +259,7 @@ const CGFloat kSpacer = 50;
 #pragma mark - BookmarkPromoControllerDelegate
 
 - (void)promoStateChanged:(BOOL)promoEnabled {
-  if (base::FeatureList::IsEnabled(
-          bookmark_new_generation::features::kBookmarkNewGeneration)) {
+  if (base::FeatureList::IsEnabled(kBookmarkNewGeneration)) {
     [self.bookmarksTableView promoStateChangedAnimated:YES];
   } else {
     [self.folderView promoStateChangedAnimated:YES];
@@ -1001,8 +997,7 @@ const CGFloat kSpacer = 50;
 }
 
 - (void)updateViewConstraints {
-  if (base::FeatureList::IsEnabled(
-          bookmark_new_generation::features::kBookmarkNewGeneration)) {
+  if (base::FeatureList::IsEnabled(kBookmarkNewGeneration)) {
     if (self.contextBar) {
       NSDictionary* views = @{
         @"tableView" : self.bookmarksTableView,

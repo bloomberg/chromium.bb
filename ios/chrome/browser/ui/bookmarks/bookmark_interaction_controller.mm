@@ -169,8 +169,7 @@ using bookmarks::BookmarkNode;
                                   loader:_loader];
   self.bookmarkBrowser.homeDelegate = self;
 
-  if (base::FeatureList::IsEnabled(
-          bookmark_new_generation::features::kBookmarkNewGeneration)) {
+  if (base::FeatureList::IsEnabled(kBookmarkNewGeneration)) {
     [self.bookmarkBrowser setRootNode:self.bookmarkModel->root_node()];
     UINavigationController* navController = [[UINavigationController alloc]
         initWithRootViewController:self.bookmarkBrowser];

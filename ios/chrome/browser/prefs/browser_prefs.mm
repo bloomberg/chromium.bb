@@ -126,8 +126,7 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   DesktopPromotionSyncService::RegisterDesktopPromotionUserPrefs(registry);
   RegisterVoiceSearchBrowserStatePrefs(registry);
 
-  if (base::FeatureList::IsEnabled(
-          bookmark_new_generation::features::kBookmarkNewGeneration)) {
+  if (base::FeatureList::IsEnabled(kBookmarkNewGeneration)) {
     [BookmarkTableView registerBrowserStatePrefs:registry];
   } else {
     [BookmarkCollectionView registerBrowserStatePrefs:registry];

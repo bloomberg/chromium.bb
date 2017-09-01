@@ -93,8 +93,7 @@ id<GREYMatcher> BookmarksDoneButton() {
   }
 
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      bookmark_new_generation::features::kBookmarkNewGeneration);
+  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
 
   [BookmarksNewGenTestCase setupStandardBookmarks];
   [BookmarksNewGenTestCase openBookmarks];
@@ -126,8 +125,7 @@ id<GREYMatcher> BookmarksDoneButton() {
     EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
   }
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      bookmark_new_generation::features::kBookmarkNewGeneration);
+  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
 
   [BookmarksNewGenTestCase setupStandardBookmarks];
   [BookmarksNewGenTestCase openBookmarks];
@@ -153,8 +151,7 @@ id<GREYMatcher> BookmarksDoneButton() {
     EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
   }
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      bookmark_new_generation::features::kBookmarkNewGeneration);
+  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
 
   [BookmarksNewGenTestCase setupStandardBookmarks];
   [BookmarksNewGenTestCase openBookmarks];
@@ -193,8 +190,7 @@ id<GREYMatcher> BookmarksDoneButton() {
     EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
   }
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      bookmark_new_generation::features::kBookmarkNewGeneration);
+  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
 
   [BookmarksNewGenTestCase setupStandardBookmarks];
   [BookmarksNewGenTestCase openBookmarks];
@@ -229,8 +225,7 @@ id<GREYMatcher> BookmarksDoneButton() {
     EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
   }
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      bookmark_new_generation::features::kBookmarkNewGeneration);
+  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
 
   [BookmarksNewGenTestCase openBookmarks];
 
@@ -261,8 +256,7 @@ id<GREYMatcher> BookmarksDoneButton() {
     EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
   }
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      bookmark_new_generation::features::kBookmarkNewGeneration);
+  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
 
   [BookmarksNewGenTestCase setupStandardBookmarks];
   [BookmarksNewGenTestCase openBookmarks];
@@ -312,8 +306,7 @@ id<GREYMatcher> BookmarksDoneButton() {
     EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
   }
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      bookmark_new_generation::features::kBookmarkNewGeneration);
+  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
 
   [BookmarksNewGenTestCase setupStandardBookmarks];
   [BookmarksNewGenTestCase openBookmarks];
@@ -354,8 +347,7 @@ id<GREYMatcher> BookmarksDoneButton() {
     EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
   }
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      bookmark_new_generation::features::kBookmarkNewGeneration);
+  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
 
   ios::ChromeBrowserState* browser_state =
       chrome_test_util::GetOriginalBrowserState();

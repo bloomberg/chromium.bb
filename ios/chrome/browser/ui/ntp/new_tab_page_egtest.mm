@@ -127,8 +127,7 @@ void AssertNTPScrolledToTop(bool scrolledToTop) {
 // Bookmarks UI.
 - (void)testAccessibilityOnBookmarks {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(
-      bookmark_new_generation::features::kBookmarkNewGeneration);
+  scoped_feature_list.InitAndDisableFeature(kBookmarkNewGeneration);
 
   SelectNewTabPagePanel(ntp_home::BOOKMARKS_PANEL);
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
