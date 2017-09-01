@@ -509,6 +509,18 @@ TEST_F(WebViewSchedulerImplTest, VirtualTimePolicy_DETERMINISTIC_LOADING) {
 
   web_view_scheduler_->DidStopLoading(4u);
   EXPECT_TRUE(web_view_scheduler_->VirtualTimeAllowedToAdvance());
+
+  // If we set the policy again, virtual time is not allowed to advance until we
+  // have seen at least one subsequent load.
+  web_view_scheduler_->SetVirtualTimePolicy(
+      VirtualTimePolicy::DETERMINISTIC_LOADING);
+  EXPECT_FALSE(web_view_scheduler_->VirtualTimeAllowedToAdvance());
+
+  web_view_scheduler_->DidStartLoading(5u);
+  EXPECT_FALSE(web_view_scheduler_->VirtualTimeAllowedToAdvance());
+
+  web_view_scheduler_->DidStopLoading(5u);
+  EXPECT_TRUE(web_view_scheduler_->VirtualTimeAllowedToAdvance());
 }
 
 TEST_F(WebViewSchedulerImplTest, RedundantDidStopLoadingCallsAreHarmless) {

@@ -295,6 +295,11 @@ void WebViewSchedulerImpl::SetVirtualTimePolicy(VirtualTimePolicy policy) {
       break;
 
     case VirtualTimePolicy::DETERMINISTIC_LOADING:
+      // If we're using VirtualTimePolicy::DETERMINISTIC_LOADING it's because
+      // we're expecting a network fetch. We reset |have_seen_loading_task_| to
+      // avoid a race between the load starting and virtual time budget
+      // expiring.
+      have_seen_loading_task_ = false;
       ApplyVirtualTimePolicyForLoading();
       break;
   }

@@ -72,6 +72,8 @@ void RunTasksForPeriod(double delay_ms) {
 #endif
 TEST_F(VirtualTimeTest, MAYBE_DOMTimersFireInExpectedOrder) {
   WebView().Scheduler()->EnableVirtualTime();
+  WebView().Scheduler()->SetVirtualTimePolicy(
+      WebViewScheduler::VirtualTimePolicy::ADVANCE);
 
   ExecuteJavaScript(
       "var run_order = [];"
@@ -99,6 +101,8 @@ TEST_F(VirtualTimeTest, MAYBE_DOMTimersFireInExpectedOrder) {
 #endif
 TEST_F(VirtualTimeTest, MAYBE_SetInterval) {
   WebView().Scheduler()->EnableVirtualTime();
+  WebView().Scheduler()->SetVirtualTimePolicy(
+      WebViewScheduler::VirtualTimePolicy::ADVANCE);
 
   ExecuteJavaScript(
       "var run_order = [];"
@@ -204,6 +208,8 @@ TEST_F(VirtualTimeTest,
 #endif
 TEST_F(VirtualTimeTest, MAYBE_DOMTimersSuspended) {
   WebView().Scheduler()->EnableVirtualTime();
+  WebView().Scheduler()->SetVirtualTimePolicy(
+      WebViewScheduler::VirtualTimePolicy::ADVANCE);
 
   // Schedule normal DOM timers to run at 1s and 1.001s in the future.
   ExecuteJavaScript(
