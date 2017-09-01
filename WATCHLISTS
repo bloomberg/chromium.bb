@@ -1107,6 +1107,9 @@
     'mojo': {
       'filepath': 'mojo',
     },
+    'mojo_top_level_directory': {
+      'filepath': '^mojo/',
+    },
     'mouse_lock': {
       'filepath': 'mouse_lock',
     },
@@ -1348,6 +1351,9 @@
     },
     'service_worker': {
       'filepath': 'content/(browser|renderer|child|common)/service_worker/',
+    },
+    'services_network': {
+      'filepath': 'services/network',
     },
     'services_public': {
       'filepath': 'services/([^/]*/)*public/',
@@ -1952,7 +1958,8 @@
                        'rdsmith+watch@chromium.org'],
     'content_network': ['asanka@chromium.org',
                         'rdsmith+watch@chromium.org',
-                        'kinuko@chromium.org'],
+                        'kinuko@chromium.org',
+                        'yzshen+watch@chromium.org'],
     'content_renderer': ['mlamouri+watch-content@chromium.org'],
     'content_shell': ['jochen+watch@chromium.org',
                       'mlamouri+watch-content@chromium.org',
@@ -2104,8 +2111,8 @@
              'abarth@chromium.org',
              'darin@chromium.org',
              'qsr+mojo@chromium.org',
-             'viettrungluu+watch@chromium.org',
-             'yzshen+watch@chromium.org'],
+             'viettrungluu+watch@chromium.org'],
+    'mojo_top_level_directory': ['yzshen+watch@chromium.org'],
     'mouse_lock': ['scheib+watch@chromium.org'],
     'mus': ['rjkroege@chromium.org'],
     'nacl': ['native-client-reviews@googlegroups.com'],
@@ -2203,6 +2210,7 @@
                        'serviceworker-reviews@chromium.org',
                        'shimazu+serviceworker@chromium.org',
                        'tzik@chromium.org'],
+    'services_network': ['yzshen+watch@chromium.org'],
     'services_public': ['blundell+services-watchlist@chromium.org'],
     'settings_reset_prompt': ['alito+watch@chromium.org'],
     'site_engagement': ['dominickn+watch@chromium.org'],
