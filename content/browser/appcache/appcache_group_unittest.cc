@@ -52,6 +52,10 @@ class TestAppCacheFrontend : public content::AppCacheFrontend {
 
   void OnContentBlocked(int host_id, const GURL& manifest_url) override {}
 
+  void OnSetSubresourceFactory(
+      int host_id,
+      mojo::MessagePipeHandle loader_factory_pipe_handle) override {}
+
   int last_host_id_;
   int64_t last_cache_id_;
   content::AppCacheStatus last_status_;

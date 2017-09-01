@@ -123,4 +123,11 @@ void AppCacheNavigationHandleCore::OnContentBlocked(int host_id,
   DCHECK(false);
 }
 
+void AppCacheNavigationHandleCore::OnSetSubresourceFactory(
+    int host_id,
+    mojo::MessagePipeHandle loader_factory_pipe_handle) {
+  // Should never be called.
+  DCHECK(false);
+}
+
 }  // namespace content

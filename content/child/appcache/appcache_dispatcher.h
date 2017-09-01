@@ -12,6 +12,7 @@
 #include "content/child/appcache/appcache_backend_proxy.h"
 #include "content/common/appcache_interfaces.h"
 #include "ipc/ipc_listener.h"
+#include "mojo/public/cpp/system/message_pipe.h"
 
 namespace content {
 
@@ -43,7 +44,8 @@ class AppCacheDispatcher : public IPC::Listener {
                           const AppCacheErrorDetails& details);
   void OnLogMessage(int host_id, int log_level, const std::string& message);
   void OnContentBlocked(int host_id, const GURL& manifest_url);
-
+  void OnSetSubresourceFactory(int host_id,
+                               mojo::MessagePipeHandle loader_factory_pipe);
   AppCacheBackendProxy backend_proxy_;
   std::unique_ptr<AppCacheFrontend> frontend_;
 };

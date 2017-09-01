@@ -785,6 +785,10 @@ class CONTENT_EXPORT RenderFrameImpl
   // selection handles in sync with the webpage.
   void SyncSelectionIfRequired();
 
+  // Sets the custom URLLoaderFactory instance to be used for network requests.
+  void SetCustomURLLoadeFactory(
+      mojo::MessagePipeHandle custom_loader_factory_handle);
+
  protected:
   explicit RenderFrameImpl(const CreateParams& params);
 

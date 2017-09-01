@@ -16,7 +16,8 @@ class RendererWebApplicationCacheHostImpl : public WebApplicationCacheHostImpl {
       RenderViewImpl* render_view,
       blink::WebApplicationCacheHostClient* client,
       AppCacheBackend* backend,
-      int appcache_host_id);
+      int appcache_host_id,
+      int frame_routing_id);
 
   // WebApplicationCacheHostImpl:
   void OnLogMessage(AppCacheLogLevel log_level,
@@ -24,10 +25,14 @@ class RendererWebApplicationCacheHostImpl : public WebApplicationCacheHostImpl {
   void OnContentBlocked(const GURL& manifest_url) override;
   void OnCacheSelected(const AppCacheInfo& info) override;
 
+  void SetSubresourceFactory(
+      mojo::MessagePipeHandle loader_factory_pipe_handle) override;
+
  private:
   RenderViewImpl* GetRenderView();
 
   int routing_id_;
+  int frame_routing_id_;
 };
 
 }  // namespace content

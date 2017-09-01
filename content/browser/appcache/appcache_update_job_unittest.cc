@@ -314,6 +314,10 @@ class MockFrontend : public AppCacheFrontend {
 
   void OnContentBlocked(int host_id, const GURL& manifest_url) override {}
 
+  void OnSetSubresourceFactory(
+      int host_id,
+      mojo::MessagePipeHandle loader_factory_pipe_handle) override {}
+
   void AddExpectedEvent(const std::vector<int>& host_ids,
       AppCacheEventID event_id) {
     DCHECK(!ignore_progress_events_ || event_id != APPCACHE_PROGRESS_EVENT);

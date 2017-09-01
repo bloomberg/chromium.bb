@@ -89,6 +89,10 @@ class AppCacheRequestHandlerTest
                       const std::string& message) override {}
 
     void OnContentBlocked(int host_id, const GURL& manifest_url) override {}
+
+    void OnSetSubresourceFactory(
+        int host_id,
+        mojo::MessagePipeHandle loader_factory_pipe_handle) override {}
   };
 
   // Helper callback to run a test on our io_thread. The io_thread is spun up

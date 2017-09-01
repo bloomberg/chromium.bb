@@ -49,6 +49,7 @@ class AppCacheRequest;
 class AppCacheRequestHandler;
 class AppCacheRequestHandlerTest;
 class AppCacheStorageImplTest;
+class AppCacheSubresourceURLFactory;
 class AppCacheTest;
 class AppCacheUpdateJobTest;
 
@@ -195,6 +196,16 @@ class CONTENT_EXPORT AppCacheHost
 
   // Returns a weak pointer reference to the host.
   base::WeakPtr<AppCacheHost> GetWeakPtr();
+
+  // In the network service world, we need to pass the URLLoaderFactory
+  // instance to the renderer which it can use to request subresources.
+  // This ensures that they can be served out of the AppCache.
+  void MaybePassSubresourceFactory();
+
+  // This is called when the frame is navigated to a page which loads from
+  // the AppCache.
+  void SetAppCacheSubresourceFactory(
+      AppCacheSubresourceURLFactory* subresource_factory);
 
  private:
   friend class content::AppCacheHostTest;
@@ -354,6 +365,9 @@ class CONTENT_EXPORT AppCacheHost
   FRIEND_TEST_ALL_PREFIXES(content::AppCacheHostTest, SelectCacheBlocked);
   FRIEND_TEST_ALL_PREFIXES(content::AppCacheHostTest, SelectCacheTwice);
   FRIEND_TEST_ALL_PREFIXES(content::AppCacheTest, CleanupUnusedCache);
+
+  // In the network service world points to the subresource URLLoaderFactory.
+  base::WeakPtr<AppCacheSubresourceURLFactory> subresource_url_factory_;
 
   base::WeakPtrFactory<AppCacheHost> weak_factory_;
 
