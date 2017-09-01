@@ -513,7 +513,7 @@ void WebNotificationTray::UpdateTrayContent() {
   should_update_tray_content_ = false;
 
   std::unordered_set<std::string> notification_ids;
-  for (auto pair : visible_small_icons_)
+  for (auto& pair : visible_small_icons_)
     notification_ids.insert(pair.first);
 
   // Add small icons (up to kMaximumSmallIconCount = 3).
@@ -533,17 +533,17 @@ void WebNotificationTray::UpdateTrayContent() {
     if (visible_small_icons_.count(notification->id()) != 0)
       continue;
 
-    auto* item = new WebNotificationImage(image.AsImageSkia(),
-                                          animation_container_.get(), this);
-    visible_small_icons_.insert(std::make_pair(notification->id(), item));
-
-    tray_container()->AddChildViewAt(item, 0);
+    auto item = base::MakeUnique<WebNotificationImage>(
+        image.AsImageSkia(), animation_container_.get(), this);
+    tray_container()->AddChildViewAt(item.get(), 0);
     item->SetVisible(true);
+    visible_small_icons_.insert(
+        std::make_pair(notification->id(), std::move(item)));
   }
 
   // Remove unnecessary icons.
   for (const std::string& id : notification_ids) {
-    WebNotificationImage* item = visible_small_icons_[id];
+    WebNotificationImage* item = visible_small_icons_[id].release();
     visible_small_icons_.erase(id);
     item->HideAndDelete();
   }
