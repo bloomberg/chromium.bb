@@ -171,10 +171,15 @@ if (NOT BUILD_SHARED_LIBS)
     if (CONFIG_LOOP_RESTORATION)
       set(AOM_UNIT_TEST_COMMON_SOURCES
           ${AOM_UNIT_TEST_COMMON_SOURCES}
-           "${AOM_ROOT}/test/hiprec_convolve_test.cc"
+          "${AOM_ROOT}/test/selfguided_filter_test.cc")
+
+      if (HAVE_SSE2)
+        set(AOM_UNIT_TEST_COMMON_SOURCES
+            ${AOM_UNIT_TEST_COMMON_SOURCES}
+            "${AOM_ROOT}/test/hiprec_convolve_test.cc"
             "${AOM_ROOT}/test/hiprec_convolve_test_util.cc"
-            "${AOM_ROOT}/test/hiprec_convolve_test_util.h"
-            "${AOM_ROOT}/test/selfguided_filter_test.cc")
+            "${AOM_ROOT}/test/hiprec_convolve_test_util.h")
+      endif ()
     endif ()
 
     set(AOM_UNIT_TEST_COMMON_INTRIN_NEON
