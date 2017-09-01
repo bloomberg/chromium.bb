@@ -18,7 +18,7 @@ class NetworkStatusListener {
   // Observer to receive network connection type change notifications.
   class Observer {
    public:
-    virtual void OnConnectionTypeChanged(
+    virtual void OnNetworkChanged(
         net::NetworkChangeNotifier::ConnectionType type) = 0;
 
    protected:
@@ -53,7 +53,7 @@ class NetworkStatusListener {
 // Default implementation of NetworkStatusListener using
 // net::NetworkChangeNotifier to listen to connectivity changes.
 class NetworkStatusListenerImpl
-    : public net::NetworkChangeNotifier::ConnectionTypeObserver,
+    : public net::NetworkChangeNotifier::NetworkChangeObserver,
       public NetworkStatusListener {
  public:
   NetworkStatusListenerImpl();
@@ -65,8 +65,8 @@ class NetworkStatusListenerImpl
   net::NetworkChangeNotifier::ConnectionType GetConnectionType() override;
 
  private:
-  // net::NetworkChangeNotifier::ConnectionTypeObserver implementation.
-  void OnConnectionTypeChanged(
+  // net::NetworkChangeNotifier::NetworkChangeObserver implementation.
+  void OnNetworkChanged(
       net::NetworkChangeNotifier::ConnectionType type) override;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkStatusListenerImpl);

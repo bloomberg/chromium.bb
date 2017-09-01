@@ -20,7 +20,7 @@ void NetworkStatusListenerAndroid::NotifyNetworkChange(
   DCHECK(observer_);
   using ConnectionType = net::NetworkChangeNotifier::ConnectionType;
   ConnectionType connection_type = static_cast<ConnectionType>(connectionType);
-  observer_->OnConnectionTypeChanged(connection_type);
+  observer_->OnNetworkChanged(connection_type);
 }
 
 void NetworkStatusListenerAndroid::Start(

@@ -93,7 +93,7 @@ void DeviceStatusListener::Stop() {
   observer_ = nullptr;
 }
 
-void DeviceStatusListener::OnConnectionTypeChanged(
+void DeviceStatusListener::OnNetworkChanged(
     net::NetworkChangeNotifier::ConnectionType type) {
   NetworkStatus new_network_status = ToNetworkStatus(type);
   if (status_.network_status == new_network_status)
@@ -105,6 +105,9 @@ void DeviceStatusListener::OnConnectionTypeChanged(
 
   // It's unreliable to send requests immediately after the network becomes
   // online. Notify network change to the observer after a delay.
+  // (With crbug.com/754695, the online signal comes after the network has
+  // been established, so the above statement might not be true and the delay
+  // might not be necessary.)
   if (change_to_online) {
     timer_.Start(
         FROM_HERE, delay_,

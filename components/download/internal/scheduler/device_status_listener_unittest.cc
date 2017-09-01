@@ -36,8 +36,7 @@ class TestNetworkChangeNotifier : public net::NetworkChangeNotifier {
   // Changes the network type.
   void ChangeNetworkType(ConnectionType type) {
     conn_type_ = type;
-    net::NetworkChangeNotifier::NotifyObserversOfConnectionTypeChangeForTests(
-        type);
+    net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(type);
   }
 
  private:

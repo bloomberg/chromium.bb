@@ -54,7 +54,7 @@ class DeviceStatusListener : public NetworkStatusListener::Observer,
 
  private:
   // NetworkStatusListener::Observer implementation.
-  void OnConnectionTypeChanged(
+  void OnNetworkChanged(
       net::NetworkChangeNotifier::ConnectionType type) override;
 
   // base::PowerObserver implementation.
