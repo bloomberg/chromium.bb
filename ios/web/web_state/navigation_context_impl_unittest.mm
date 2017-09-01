@@ -38,7 +38,8 @@ class NavigationContextImplTest : public PlatformTest {
 TEST_F(NavigationContextImplTest, NavigationContext) {
   std::unique_ptr<NavigationContext> context =
       NavigationContextImpl::CreateNavigationContext(
-          &web_state_, url_, ui::PageTransition::PAGE_TRANSITION_FORWARD_BACK);
+          &web_state_, url_, ui::PageTransition::PAGE_TRANSITION_FORWARD_BACK,
+          true);
   ASSERT_TRUE(context);
 
   EXPECT_EQ(&web_state_, context->GetWebState());
@@ -49,18 +50,21 @@ TEST_F(NavigationContextImplTest, NavigationContext) {
   EXPECT_FALSE(context->IsSameDocument());
   EXPECT_FALSE(context->GetError());
   EXPECT_FALSE(context->GetResponseHeaders());
+  EXPECT_TRUE(context->IsRendererInitiated());
 }
 
 // Tests NavigationContextImpl Setters.
 TEST_F(NavigationContextImplTest, Setters) {
   std::unique_ptr<NavigationContextImpl> context =
       NavigationContextImpl::CreateNavigationContext(
-          &web_state_, url_, ui::PageTransition::PAGE_TRANSITION_FORWARD_BACK);
+          &web_state_, url_, ui::PageTransition::PAGE_TRANSITION_FORWARD_BACK,
+          false);
   ASSERT_TRUE(context);
 
   ASSERT_FALSE(context->IsSameDocument());
   ASSERT_FALSE(context->IsPost());
   ASSERT_FALSE(context->GetError());
+  ASSERT_FALSE(context->IsRendererInitiated());
   ASSERT_NE(response_headers_.get(), context->GetResponseHeaders());
 
   // SetSameDocument
@@ -68,6 +72,7 @@ TEST_F(NavigationContextImplTest, Setters) {
   EXPECT_TRUE(context->IsSameDocument());
   ASSERT_FALSE(context->IsPost());
   EXPECT_FALSE(context->GetError());
+  EXPECT_FALSE(context->IsRendererInitiated());
   EXPECT_NE(response_headers_.get(), context->GetResponseHeaders());
 
   // SetPost
@@ -75,6 +80,7 @@ TEST_F(NavigationContextImplTest, Setters) {
   EXPECT_TRUE(context->IsSameDocument());
   ASSERT_TRUE(context->IsPost());
   EXPECT_FALSE(context->GetError());
+  EXPECT_FALSE(context->IsRendererInitiated());
   EXPECT_NE(response_headers_.get(), context->GetResponseHeaders());
 
   // SetErrorPage
@@ -83,6 +89,7 @@ TEST_F(NavigationContextImplTest, Setters) {
   EXPECT_TRUE(context->IsSameDocument());
   ASSERT_TRUE(context->IsPost());
   EXPECT_EQ(error, context->GetError());
+  EXPECT_FALSE(context->IsRendererInitiated());
   EXPECT_NE(response_headers_.get(), context->GetResponseHeaders());
 
   // SetResponseHeaders
@@ -90,6 +97,15 @@ TEST_F(NavigationContextImplTest, Setters) {
   EXPECT_TRUE(context->IsSameDocument());
   ASSERT_TRUE(context->IsPost());
   EXPECT_EQ(error, context->GetError());
+  EXPECT_FALSE(context->IsRendererInitiated());
+  EXPECT_EQ(response_headers_.get(), context->GetResponseHeaders());
+
+  // SetIsRendererInitiated
+  context->SetIsRendererInitiated(true);
+  EXPECT_TRUE(context->IsSameDocument());
+  ASSERT_TRUE(context->IsPost());
+  EXPECT_EQ(error, context->GetError());
+  EXPECT_TRUE(context->IsRendererInitiated());
   EXPECT_EQ(response_headers_.get(), context->GetResponseHeaders());
 }
 

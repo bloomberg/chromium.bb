@@ -29,6 +29,7 @@ class FakeNavigationContext : public NavigationContext {
   bool IsPost() const override;
   NSError* GetError() const override;
   net::HttpResponseHeaders* GetResponseHeaders() const override;
+  bool IsRendererInitiated() const override;
 
   // Setters for navigation context data members.
   void SetResponseHeaders(

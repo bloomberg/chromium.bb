@@ -60,7 +60,7 @@ TEST_F(WebStateObserverBridgeTest, DidStartNavigation) {
   std::unique_ptr<web::NavigationContext> context =
       web::NavigationContextImpl::CreateNavigationContext(
           &test_web_state_, url,
-          ui::PageTransition::PAGE_TRANSITION_FORWARD_BACK);
+          ui::PageTransition::PAGE_TRANSITION_FORWARD_BACK, false);
   bridge_->DidStartNavigation(context.get());
 
   ASSERT_TRUE([observer_ didStartNavigationInfo]);
@@ -87,7 +87,7 @@ TEST_F(WebStateObserverBridgeTest, DidFinishNavigation) {
   std::unique_ptr<web::NavigationContext> context =
       web::NavigationContextImpl::CreateNavigationContext(
           &test_web_state_, url,
-          ui::PageTransition::PAGE_TRANSITION_FROM_ADDRESS_BAR);
+          ui::PageTransition::PAGE_TRANSITION_FROM_ADDRESS_BAR, false);
   bridge_->DidFinishNavigation(context.get());
 
   ASSERT_TRUE([observer_ didFinishNavigationInfo]);

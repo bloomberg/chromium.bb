@@ -20,9 +20,10 @@ std::unique_ptr<NavigationContextImpl>
 NavigationContextImpl::CreateNavigationContext(
     WebState* web_state,
     const GURL& url,
-    ui::PageTransition page_transition) {
-  std::unique_ptr<NavigationContextImpl> result(
-      new NavigationContextImpl(web_state, url, page_transition));
+    ui::PageTransition page_transition,
+    bool is_renderer_initiated) {
+  std::unique_ptr<NavigationContextImpl> result(new NavigationContextImpl(
+      web_state, url, page_transition, is_renderer_initiated));
   return result;
 }
 
@@ -64,6 +65,10 @@ net::HttpResponseHeaders* NavigationContextImpl::GetResponseHeaders() const {
   return response_headers_.get();
 }
 
+bool NavigationContextImpl::IsRendererInitiated() const {
+  return is_renderer_initiated_;
+}
+
 void NavigationContextImpl::SetIsSameDocument(bool is_same_document) {
   is_same_document_ = is_same_document;
 }
@@ -81,6 +86,10 @@ void NavigationContextImpl::SetResponseHeaders(
   response_headers_ = response_headers;
 }
 
+void NavigationContextImpl::SetIsRendererInitiated(bool is_renderer_initiated) {
+  is_renderer_initiated_ = is_renderer_initiated;
+}
+
 int NavigationContextImpl::GetNavigationItemUniqueID() const {
   return navigation_item_unique_id_;
 }
@@ -91,13 +100,15 @@ void NavigationContextImpl::SetNavigationItemUniqueID(int unique_id) {
 
 NavigationContextImpl::NavigationContextImpl(WebState* web_state,
                                              const GURL& url,
-                                             ui::PageTransition page_transition)
+                                             ui::PageTransition page_transition,
+                                             bool is_renderer_initiated)
     : web_state_(web_state),
       url_(url),
       page_transition_(page_transition),
       is_same_document_(false),
       error_(nil),
-      response_headers_(nullptr) {}
+      response_headers_(nullptr),
+      is_renderer_initiated_(is_renderer_initiated) {}
 
 NavigationContextImpl::~NavigationContextImpl() = default;
 

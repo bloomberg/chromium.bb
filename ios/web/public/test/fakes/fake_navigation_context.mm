@@ -44,6 +44,10 @@ net::HttpResponseHeaders* FakeNavigationContext::GetResponseHeaders() const {
   return response_headers_.get();
 }
 
+bool FakeNavigationContext::IsRendererInitiated() const {
+  return false;
+}
+
 void FakeNavigationContext::SetResponseHeaders(
     const scoped_refptr<net::HttpResponseHeaders>& response_headers) {
   response_headers_ = response_headers;

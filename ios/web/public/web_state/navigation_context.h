@@ -59,6 +59,14 @@ class NavigationContext {
   // returned should not be modified, as modifications will not be reflected.
   virtual net::HttpResponseHeaders* GetResponseHeaders() const = 0;
 
+  // Whether the navigation was initiated by the renderer process. Examples of
+  // renderer-initiated navigations include:
+  //  * <a> link click
+  //  * changing window.location.href
+  //  * redirect via the <meta http-equiv="refresh"> tag
+  //  * using window.history.pushState
+  virtual bool IsRendererInitiated() const = 0;
+
   virtual ~NavigationContext() {}
 };
 
