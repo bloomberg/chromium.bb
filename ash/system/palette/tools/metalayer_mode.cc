@@ -30,7 +30,8 @@ const int kToastDurationMs = 2500;
 
 }  // namespace
 
-MetalayerMode::MetalayerMode(Delegate* delegate) : CommonPaletteTool(delegate) {
+MetalayerMode::MetalayerMode(Delegate* delegate)
+    : CommonPaletteTool(delegate), weak_factory_(this) {
   Shell::Get()->AddPreTargetHandler(this);
   Shell::Get()->AddShellObserver(this);
 }
@@ -51,7 +52,8 @@ PaletteToolId MetalayerMode::GetToolId() const {
 void MetalayerMode::OnEnable() {
   CommonPaletteTool::OnEnable();
 
-  Shell::Get()->palette_delegate()->ShowMetalayer();
+  Shell::Get()->palette_delegate()->ShowMetalayer(base::BindOnce(
+      &MetalayerMode::OnMetalayerSessionComplete, weak_factory_.GetWeakPtr()));
   delegate()->HidePalette();
 }
 
@@ -159,6 +161,10 @@ void MetalayerMode::UpdateView() {
 
   highlight_view_->left_icon()->SetImage(
       CreateVectorIcon(GetPaletteIcon(), kMenuIconSize, style.GetIconColor()));
+}
+
+void MetalayerMode::OnMetalayerSessionComplete() {
+  delegate()->DisableTool(GetToolId());
 }
 
 }  // namespace ash

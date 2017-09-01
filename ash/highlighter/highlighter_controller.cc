@@ -66,6 +66,12 @@ void HighlighterController::SetEnabled(bool enabled) {
     UMA_HISTOGRAM_COUNTS_100(
         "Ash.Shelf.Palette.Assistant.GesturesPerSession.Recognized",
         recognized_gesture_counter_);
+
+    // If |highlighter_view_| is animating it will delete itself when done
+    // animating. |result_view_| will exist only if |highlighter_view_| is
+    // animating, and it will also delete itself when done animating.
+    if (highlighter_view_ && !highlighter_view_->animating())
+      DestroyPointerView();
   }
 }
 

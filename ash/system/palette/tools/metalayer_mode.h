@@ -9,6 +9,7 @@
 #include "ash/public/cpp/voice_interaction_state.h"
 #include "ash/shell_observer.h"
 #include "ash/system/palette/common_palette_tool.h"
+#include "base/memory/weak_ptr.h"
 #include "ui/events/event_handler.h"
 
 namespace ash {
@@ -72,12 +73,17 @@ class ASH_EXPORT MetalayerMode : public CommonPaletteTool,
   // Update the palette menu item based on the current availability of the tool.
   void UpdateView();
 
+  // Called when the metalayer session is complete.
+  void OnMetalayerSessionComplete();
+
   ash::VoiceInteractionState voice_interaction_state_ =
       ash::VoiceInteractionState::NOT_READY;
 
   bool voice_interaction_enabled_ = false;
 
   bool voice_interaction_context_enabled_ = false;
+
+  base::WeakPtrFactory<MetalayerMode> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MetalayerMode);
 };

@@ -20,6 +20,9 @@ class ASH_EXPORT LaserPointerController : public FastInkPointerController {
   LaserPointerController();
   ~LaserPointerController() override;
 
+  // FastInkPointerController:
+  void SetEnabled(bool enabled) override;
+
  private:
   friend class LaserPointerControllerTestApi;
 

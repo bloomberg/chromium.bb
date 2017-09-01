@@ -45,13 +45,11 @@ FastInkPointerController::~FastInkPointerController() {
 }
 
 void FastInkPointerController::SetEnabled(bool enabled) {
-  if (enabled == enabled_)
-    return;
-
   enabled_ = enabled;
-
-  if (!enabled_)
-    DestroyPointerView();
+  // Not calling DestroyPointerView when disabling, leaving the control over
+  // the pointer view lifetime to the specific controller implementation.
+  // For instance, a controller might prefer to keep the pointer view around
+  // while it is being animated away.
 }
 
 void FastInkPointerController::OnTouchEvent(ui::TouchEvent* event) {

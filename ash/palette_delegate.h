@@ -55,8 +55,9 @@ class PaletteDelegate {
   // Cancels any active partial screenshot session.
   virtual void CancelPartialScreenshot() = 0;
 
-  // Shows the metalayer.
-  virtual void ShowMetalayer() = 0;
+  // Shows the metalayer. |done| is called when the metalayer session has
+  // finished.
+  virtual void ShowMetalayer(base::OnceClosure done) = 0;
 
   // Hides the metalayer.
   virtual void HideMetalayer() = 0;

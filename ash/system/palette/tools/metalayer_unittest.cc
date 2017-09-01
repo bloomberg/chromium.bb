@@ -156,4 +156,13 @@ TEST_F(MetalayerToolTest, MetalayerUnsupportedDisablesPaletteTool) {
   testing::Mock::VerifyAndClearExpectations(palette_tool_delegate_.get());
 }
 
+// Verifies that invoking the callback passed to the delegate disables the tool.
+TEST_F(MetalayerToolTest, MetalayerCallbackDisablesPaletteTool) {
+  tool_->OnEnable();
+  // Calling the associated callback |metalayer_done| will disable the tool.
+  EXPECT_CALL(*palette_tool_delegate_.get(),
+              DisableTool(PaletteToolId::METALAYER));
+  test_palette_delegate()->CallMetalayerDone();
+}
+
 }  // namespace ash

@@ -47,7 +47,8 @@ void TestPaletteDelegate::TakePartialScreenshot(const base::Closure& done) {
 
 void TestPaletteDelegate::CancelPartialScreenshot() {}
 
-void TestPaletteDelegate::ShowMetalayer() {
+void TestPaletteDelegate::ShowMetalayer(base::OnceClosure done) {
+  metalayer_done_ = std::move(done);
   ++show_metalayer_count_;
   if (highlighter_test_api_)
     highlighter_test_api_->SetEnabled(true);
