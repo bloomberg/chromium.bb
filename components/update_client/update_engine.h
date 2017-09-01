@@ -9,12 +9,12 @@
 #include <list>
 #include <map>
 #include <memory>
-#include <queue>
 #include <set>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
@@ -165,7 +165,7 @@ struct UpdateContext {
 
   IdToComponentPtrMap components;
 
-  std::queue<std::string> component_queue;
+  base::queue<std::string> component_queue;
 
   // The time to wait before handling the update for a component.
   // The wait time is proportional with the cost incurred by updating

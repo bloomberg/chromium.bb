@@ -6,12 +6,12 @@
 
 #include <stddef.h>
 
-#include <queue>
 #include <string>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
@@ -167,7 +167,7 @@ class TestingCloudPolicyClientForRemoteCommands : public CloudPolicyClient {
             kTestClientServerCommunicationDelayInSeconds));
   }
 
-  std::queue<FetchCallExpectation> expected_fetch_commands_calls_;
+  base::queue<FetchCallExpectation> expected_fetch_commands_calls_;
   TestingRemoteCommandsServer* server_;
 
   DISALLOW_COPY_AND_ASSIGN(TestingCloudPolicyClientForRemoteCommands);

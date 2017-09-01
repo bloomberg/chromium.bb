@@ -6,10 +6,10 @@
 #define COMPONENTS_HISTORY_CORE_BROWSER_EXPIRE_HISTORY_BACKEND_H_
 
 #include <memory>
-#include <queue>
 #include <set>
 #include <vector>
 
+#include "base/containers/queue.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -269,7 +269,7 @@ class ExpireHistoryBackend {
   // Work queue for periodic expiration tasks, used by DoExpireIteration() to
   // determine what to do at an iteration, as well as populate it for future
   // iterations.
-  std::queue<const ExpiringVisitsReader*> work_queue_;
+  base::queue<const ExpiringVisitsReader*> work_queue_;
 
   // Readers for various types of visits.
   // TODO(dglazkov): If you are adding another one, please consider reorganizing

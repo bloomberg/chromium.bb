@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <queue>
 
+#include "base/containers/queue.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 
@@ -192,7 +193,7 @@ void SubstringSetMatcher::InsertPatternIntoAhoCorasickTree(
 void SubstringSetMatcher::CreateFailureEdges() {
   typedef AhoCorasickNode::Edges Edges;
 
-  std::queue<uint32_t> queue;
+  base::queue<uint32_t> queue;
 
   AhoCorasickNode& root = tree_[0];
   root.set_failure(0);

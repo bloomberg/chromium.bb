@@ -7,11 +7,11 @@
 
 #include <stdint.h>
 #include <map>
-#include <queue>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
@@ -97,7 +97,7 @@ class URLRequestPostInterceptor {
   mutable base::Lock interceptor_lock_;
   mutable int hit_count_;
   mutable std::vector<std::string> requests_;
-  mutable std::queue<Expectation> expectations_;
+  mutable base::queue<Expectation> expectations_;
 
   DISALLOW_COPY_AND_ASSIGN(URLRequestPostInterceptor);
 };

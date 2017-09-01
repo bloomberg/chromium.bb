@@ -9,9 +9,9 @@
 
 #include <map>
 #include <memory>
-#include <queue>
 #include <string>
 
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -247,12 +247,12 @@ class BluetoothLowEnergyWeaveClientConnection
   // The WriteRequest that is currently being sent as well as those queued to be
   // sent. Each WriteRequest corresponds to one uWeave packet to be sent.
   std::unique_ptr<WriteRequest> pending_write_request_;
-  std::queue<std::unique_ptr<WriteRequest>> queued_write_requests_;
+  base::queue<std::unique_ptr<WriteRequest>> queued_write_requests_;
 
   // WireMessages queued to be sent. Each WireMessage correponds to one or more
   // WriteRequests. WireMessages remain in this queue until the last
   // corresponding WriteRequest has been sent.
-  std::queue<std::unique_ptr<WireMessage>> queued_wire_messages_;
+  base::queue<std::unique_ptr<WireMessage>> queued_wire_messages_;
 
   base::WeakPtrFactory<BluetoothLowEnergyWeaveClientConnection>
       weak_ptr_factory_;

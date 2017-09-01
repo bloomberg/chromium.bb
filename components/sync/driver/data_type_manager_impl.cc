@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/containers/queue.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/profiler/scoped_tracker.h"
@@ -292,7 +293,7 @@ void DataTypeManagerImpl::Restart(ConfigureReason reason) {
     NotifyStart();
 
   download_types_queue_ = PrioritizeTypes(last_enabled_types_);
-  association_types_queue_ = std::queue<AssociationTypesInfo>();
+  association_types_queue_ = base::queue<AssociationTypesInfo>();
 
   // If we're performing a "catch up", first stop the model types to ensure the
   // call to Initialize triggers model association.
@@ -381,7 +382,7 @@ void DataTypeManagerImpl::ProcessReconfigure() {
     return;
   }
 
-  association_types_queue_ = std::queue<AssociationTypesInfo>();
+  association_types_queue_ = base::queue<AssociationTypesInfo>();
 
   // An attempt was made to reconfigure while we were already configuring.
   // This can be because a passphrase was accepted or the user changed the

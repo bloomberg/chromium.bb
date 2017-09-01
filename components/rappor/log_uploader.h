@@ -6,10 +6,10 @@
 #define COMPONENTS_RAPPOR_LOG_UPLOADER_H_
 
 #include <memory>
-#include <queue>
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -93,7 +93,7 @@ class LogUploader : public net::URLFetcherDelegate,
   std::unique_ptr<net::URLFetcher> current_fetch_;
 
   // The logs that still need to be uploaded.
-  std::queue<std::string> queued_logs_;
+  base::queue<std::string> queued_logs_;
 
   // A timer used to delay before attempting another upload.
   base::OneShotTimer upload_timer_;

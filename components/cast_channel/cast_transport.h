@@ -5,9 +5,9 @@
 #ifndef COMPONENTS_CAST_CHANNEL_CAST_TRANSPORT_H_
 #define COMPONENTS_CAST_CHANNEL_CAST_TRANSPORT_H_
 
-#include <queue>
 #include <string>
 
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
@@ -149,7 +149,7 @@ class CastTransportImpl : public CastTransport {
 
   // Queue of pending writes. The message at the front of the queue is the one
   // being written.
-  std::queue<WriteRequest> write_queue_;
+  base::queue<WriteRequest> write_queue_;
 
   // Buffer used for read operations. Reused for every read.
   scoped_refptr<net::GrowableIOBuffer> read_buffer_;

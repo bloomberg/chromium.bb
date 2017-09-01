@@ -5,10 +5,9 @@
 #ifndef COMPONENTS_CRYPTAUTH_DEVICE_CAPABILITY_MANAGER_H_
 #define COMPONENTS_CRYPTAUTH_DEVICE_CAPABILITY_MANAGER_H_
 
-#include <queue>
-
 #include "base/bind.h"
 #include "base/callback_forward.h"
+#include "base/containers/queue.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "components/cryptauth/cryptauth_client.h"
@@ -134,7 +133,7 @@ class DeviceCapabilityManager {
 
   std::unique_ptr<CryptAuthClient> current_cryptauth_client_;
   std::unique_ptr<Request> current_request_;
-  std::queue<std::unique_ptr<Request>> pending_requests_;
+  base::queue<std::unique_ptr<Request>> pending_requests_;
   CryptAuthClientFactory* crypt_auth_client_factory_;
   base::WeakPtrFactory<DeviceCapabilityManager> weak_ptr_factory_;
 };

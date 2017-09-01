@@ -6,9 +6,9 @@
 #define COMPONENTS_OFFLINE_PAGES_CORE_TASK_QUEUE_H_
 
 #include <memory>
-#include <queue>
 
 #include "base/callback.h"
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -65,7 +65,7 @@ class TaskQueue {
   std::unique_ptr<Task> current_task_;
 
   // A FIFO queue of tasks that will be run using this task queue.
-  std::queue<std::unique_ptr<Task>> tasks_;
+  base::queue<std::unique_ptr<Task>> tasks_;
 
   base::WeakPtrFactory<TaskQueue> weak_ptr_factory_;
 

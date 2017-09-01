@@ -8,10 +8,10 @@
 #include <stdint.h>
 
 #include <memory>
-#include <queue>
 
 #include "base/base64.h"
 #include "base/bind.h"
+#include "base/containers/queue.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
@@ -816,7 +816,7 @@ void SyncEncryptionHandlerImpl::ReEncryptEverything(WriteTransaction* trans) {
       continue;  // Don't try to reencrypt if the type's data is unavailable.
 
     // Iterate through all children of this datatype.
-    std::queue<int64_t> to_visit;
+    base::queue<int64_t> to_visit;
     int64_t child_id = type_root.GetFirstChildId();
     to_visit.push(child_id);
     while (!to_visit.empty()) {
