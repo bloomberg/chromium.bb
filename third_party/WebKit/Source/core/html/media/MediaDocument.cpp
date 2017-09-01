@@ -124,7 +124,6 @@ void MediaDocumentParser::CreateDocumentStructure() {
   media->AppendChild(source);
 
   HTMLBodyElement* body = HTMLBodyElement::Create(*GetDocument());
-  body->setAttribute(styleAttr, "margin: 0px;");
 
   GetDocument()->WillInsertBody();
 

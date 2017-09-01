@@ -970,7 +970,10 @@ void PaintController::ShowUnderInvalidationError(
 #else
   LOG(ERROR) << "Run debug build to get more details.";
 #endif
-  LOG(ERROR) << "See http://crbug.com/619103.";
+  LOG(ERROR) << "See http://crbug.com/619103. For media layout tests, this "
+                "could fail due to change in buffered range. In that case, set "
+                "internals.runtimeFlags.paintUnderInvalidationCheckingEnabled "
+                "to false in layout test.";
 
 #ifndef NDEBUG
   const PaintRecord* new_record = nullptr;

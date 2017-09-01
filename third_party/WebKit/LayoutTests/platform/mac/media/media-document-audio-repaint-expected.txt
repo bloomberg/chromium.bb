@@ -9,17 +9,15 @@ layer at (0,0) size 800x600
           text run at (666,0) width 93: "while playing."
       LayoutBlockFlow (anonymous) at (0,34) size 784x334
         LayoutText {#text} at (0,0) size 0x0
-        LayoutText {#text} at (0,0) size 0x0
 layer at (8,42) size 384x334
   LayoutIFrame {IFRAME} at (0,0) size 384x334 [border: (2px inset #EEEEEE)]
     layer at (0,0) size 380x330
       LayoutView at (0,0) size 380x330
     layer at (0,0) size 380x330
       LayoutBlockFlow {HTML} at (0,0) size 380x330
-        LayoutBlockFlow {BODY} at (0,0) size 380x330 [bgcolor=#000000]
-          LayoutFlexibleBox {DIV} at (0,0) size 380x330
+        LayoutBlockFlow {BODY} at (8,8) size 364x314 [bgcolor=#000000]
     layer at (40,165) size 300x1
-      LayoutVideo {VIDEO} at (40,164.50) size 300x1
+      LayoutVideo (positioned) {VIDEO} at (40,164.50) size 300x1
     layer at (40,165) size 300x1
       LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 300x1
         LayoutBlockFlow {DIV} at (0,-31) size 300x32

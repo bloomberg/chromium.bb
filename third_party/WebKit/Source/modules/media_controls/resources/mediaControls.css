@@ -87,6 +87,15 @@ audio::-webkit-media-controls-panel, video::-webkit-media-controls-panel {
     font-style: normal;
 }
 
+video:-webkit-full-page-media {
+    margin: auto;
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+}
+
 audio:-webkit-full-page-media, video:-webkit-full-page-media {
     max-height: 100%;
     max-width: 100%;
