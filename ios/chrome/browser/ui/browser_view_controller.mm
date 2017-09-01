@@ -1030,8 +1030,15 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
 #pragma mark - Properties
 
-- (id<ApplicationCommands, BrowserCommands>)dispatcher {
-  return static_cast<id<ApplicationCommands, BrowserCommands>>(_dispatcher);
+- (id<ApplicationCommands,
+      BrowserCommands,
+      ChromeExecuteCommand,
+      OmniboxFocuser,
+      UrlLoader,
+      WebToolbarDelegate>)dispatcher {
+  return static_cast<
+      id<ApplicationCommands, BrowserCommands, ChromeExecuteCommand,
+         OmniboxFocuser, UrlLoader, WebToolbarDelegate>>(_dispatcher);
 }
 
 - (void)setActive:(BOOL)active {
@@ -3262,7 +3269,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
                                webToolbarDelegate:self
                                          tabModel:_model
                              parentViewController:self
-                                       dispatcher:_dispatcher];
+                                       dispatcher:self.dispatcher];
     pageController.swipeRecognizerProvider = self.sideSwipeController;
 
     // Panel is always NTP for iPhone.

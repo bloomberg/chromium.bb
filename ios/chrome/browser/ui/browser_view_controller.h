@@ -10,30 +10,20 @@
 #import <UIKit/UIKit.h>
 
 #import "base/ios/block_types.h"
-#import "ios/chrome/browser/ui/commands/application_commands.h"
-#import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/side_swipe/side_swipe_controller.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_owner.h"
 #import "ios/chrome/browser/ui/toolbar/web_toolbar_controller.h"
 #import "ios/chrome/browser/ui/url_loader.h"
 #import "ios/public/provider/chrome/browser/voice/voice_search_presenter.h"
 
+@protocol ApplicationCommands;
+@protocol BrowserCommands;
 @class BrowserContainerView;
 @class BrowserViewControllerDependencyFactory;
-@class ContextualSearchController;
-@class ContextualSearchPanelView;
-@class FindBarControllerIOS;
+@protocol ChromeExecuteCommand;
 class GURL;
-@class NoTabsController;
-@class PageInfoViewController;
-@class PreloadController;
-@class PrintController;
-@class SideSwipeController;
 @class Tab;
 @class TabModel;
-@class TabStripController;
-@class ThumbnailHelper;
-@class VoiceSearchBarView;
 
 namespace ios {
 class ChromeBrowserState;
@@ -72,7 +62,12 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
 
 - (instancetype)initWithCoder:(NSCoder*)aDecoder NS_UNAVAILABLE;
 
-@property(nonatomic, readonly) id<ApplicationCommands, BrowserCommands>
+@property(nonatomic, readonly) id<ApplicationCommands,
+                                  BrowserCommands,
+                                  ChromeExecuteCommand,
+                                  OmniboxFocuser,
+                                  UrlLoader,
+                                  WebToolbarDelegate>
     dispatcher;
 
 // The top-level browser container view.

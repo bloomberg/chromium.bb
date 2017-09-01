@@ -51,6 +51,7 @@ source_set("unit_tests") {
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/u2f",
     "//ios/chrome/browser/ui:ui_internal",
+    "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/main",
     "//ios/chrome/browser/ui/settings",
     "//ios/chrome/test:test_support",

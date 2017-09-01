@@ -28,7 +28,10 @@ std::string FragmentFromIdentifier(ntp_home::PanelIdentifier panel);
 
 }  // namespace NewTabPage
 
+@protocol ApplicationCommands;
 @class BookmarkHomeTabletNTPController;
+@protocol BrowserCommands;
+@protocol ChromeExecuteCommand;
 @protocol CRWSwipeRecognizerProvider;
 @class GoogleLandingViewController;
 @protocol NewTabPagePanelProtocol;
@@ -84,7 +87,11 @@ std::string FragmentFromIdentifier(ntp_home::PanelIdentifier panel);
       webToolbarDelegate:(id<WebToolbarDelegate>)webToolbarDelegate
                 tabModel:(TabModel*)tabModel
     parentViewController:(UIViewController*)parentViewController
-              dispatcher:(id)dispatcher;
+              dispatcher:(id<ApplicationCommands,
+                             BrowserCommands,
+                             ChromeExecuteCommand,
+                             OmniboxFocuser,
+                             UrlLoader>)dispatcher;
 
 // Select a panel based on the given |panelType|.
 - (void)selectPanel:(ntp_home::PanelIdentifier)panelType;
