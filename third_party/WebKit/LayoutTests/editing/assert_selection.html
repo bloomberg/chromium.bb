@@ -60,66 +60,64 @@ test(() => {
         '|<table><tbody><tr><td>foo</td></tr></tbody></table>^');
 }, 'markers around table');
 
-test(() => {
-    assert_selection(
-        '<div>foo</div>',
-        selection => {
-            let doc = selection.document;
-            doc.documentElement.replaceChild(
-                doc.createTextNode('baz'), doc.body);
-        },
-        '<html><head></head>baz</html>',
-        'Serialize document element instead of document.body when it is null.');
-}, 'result with out body');
+selection_test(
+    '<div>foo</div>',
+    selection => {
+        let doc = selection.document;
+        doc.documentElement.replaceChild(
+            doc.createTextNode('baz'), doc.body);
+    },
+    '<html><head></head>baz</html>',
+    'Serialize document element instead of document.body when it is null.');
 
 // Tests for TEXTAREA
-test(() => assert_selection(
+selection_test(
     '<div>|<textarea>foo</textarea></div>',
     'noop',
-    '<div>|<textarea>foo</textarea></div>'),
+    '<div>|<textarea>foo</textarea></div>',
     'We can place caret before TEXTAREA');
 
-test(() => assert_selection(
+selection_test(
     '<div><textarea>foo</textarea>|</div>',
     'noop',
-    '<div><textarea>foo</textarea>|</div>'),
+    '<div><textarea>foo</textarea>|</div>',
     'We can place caret after TEXTAREA');
 
-test(() => assert_selection(
+selection_test(
     '<div>^<textarea>foo</textarea>|</div>',
     'noop',
-    '<div>^<textarea>foo</textarea>|</div>'),
+    '<div>^<textarea>foo</textarea>|</div>',
     'We can select TEXTAREA');
 
-test(()=> assert_selection(
+selection_test(
     '<div><textarea>f|oo</textarea></div>',
     selection => {
       const textarea = selection.document.querySelector('textarea');
       textarea.value = 'bar';
     },
-    '<div><textarea>bar|</textarea></div>'),
+    '<div><textarea>bar|</textarea></div>',
     'TEXTAREA is serialized with value property');
 
-test(() => assert_selection(
+selection_test(
     '<div><textarea>01234|56789</textarea></div>',
     selection => {
       const textarea = selection.document.querySelector('textarea');
       textarea.setSelectionRange(3, 7);
     },
-    '<div><textarea>012^3456|789</textarea></div>'),
+    '<div><textarea>012^3456|789</textarea></div>',
     'HTMLTextArea#setSelectionRange()');
 
-test(() => assert_selection(
+selection_test(
     '<textarea>0123^456|789</textarea>',
     selection => {
       const textarea = selection.document.querySelector('textarea');
       assert_equals(textarea.selectionStart, 4, 'selectionStart');
       assert_equals(textarea.selectionEnd, 7, 'selectionEnd');
     },
-    '<textarea>0123^456|789</textarea>'),
+    '<textarea>0123^456|789</textarea>',
     'range selection');
 
-test(() => assert_selection(
+selection_test(
     '<textarea>0123|456^789</textarea>',
     selection => {
       const textarea = selection.document.querySelector('textarea');
@@ -127,21 +125,21 @@ test(() => assert_selection(
       assert_equals(textarea.selectionEnd, 7, 'selectionEnd');
       assert_equals(textarea.selectionDirection, 'backward', 'selectionEnd');
     },
-    '<textarea>0123|456^789</textarea>'),
+    '<textarea>0123|456^789</textarea>',
     'backward range selection');
 
-test(() => assert_selection(
+selection_test(
     '<textarea>01234|56789</textarea>',
     selection => {
       const textarea = selection.document.querySelector('textarea');
       assert_equals(textarea.selectionStart, 5, 'selectionStart');
       assert_equals(textarea.selectionEnd, 5, 'selectionEnd');
     },
-    '<textarea>01234|56789</textarea>'),
+    '<textarea>01234|56789</textarea>',
     'caret selection');
 
 // Shadow DOM
-test(() => assert_selection(
+selection_test(
     [
         '<div id="host">',
             '<b id="abc">abc</b>',
@@ -171,9 +169,9 @@ test(() => assert_selection(
             '<span id="mno">mno</span>',
         '</div>',
     ],
-    {dumpAs: 'flattree'}), 'dump flat tree for shadow DOM V0');
+    {dumpAs: 'flattree'}, 'dump flat tree for shadow DOM V0');
 
-test(() => assert_selection(
+selection_test(
     [
         '<div id="host">',
             '<b id="abc" slot="abc">abc</b>',
@@ -203,9 +201,9 @@ test(() => assert_selection(
             '<span id="mno">mno</span>',
         '</div>',
     ].join(''),
-    {dumpAs: 'flattree'}), 'dump flat tree for shadow DOM V1');
+    {dumpAs: 'flattree'}, 'dump flat tree for shadow DOM V1');
 
-test(() => assert_selection(
+selection_test(
     '<br>',
     selection => {
         selection.document.documentElement.prepend('Pre-HEAD');
@@ -213,8 +211,8 @@ test(() => assert_selection(
         selection.document.documentElement.append('Post-BODY');
     },
     '<html>Pre-HEAD<head></head>Pre-BODY<body><br></body>Post-BODY</html>',
-    {dumpFromRoot: true}
-), 'Serialize with dumpFromRoot option');
+    {dumpFromRoot: true},
+    'Serialize with dumpFromRoot option');
 
 test(() => {
     assert_equals(checked_assert_selection('fo|o', 'noop', 'fo|o'),
@@ -271,12 +269,11 @@ test(() => {
         `\t sameupto fo`);
 }, 'Compare result');
 
-test(() => {
-    assert_selection(
-        '<div contenteditable><p>^test|</p></div>',
-        'insertHTML <span style="color: green">green</span>',
-        '<div contenteditable><p><span style="color: green">green|</span></p></div>');
-}, 'multiple spaces in function');
+selection_test(
+    '<div contenteditable><p>^test|</p></div>',
+    'insertHTML <span style="color: green">green</span>',
+    '<div contenteditable><p><span style="color: green">green|</span></p></div>',
+    'multiple spaces in function');
 
 test(() => {
     assert_selection(
