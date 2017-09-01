@@ -172,6 +172,12 @@ class TestImporter(object):
         try_results = self.git_cl.wait_for_try_jobs(
             poll_delay_seconds=POLL_DELAY_SECONDS,
             timeout_seconds=TIMEOUT_SECONDS)
+
+        if not try_results:
+            self.git_cl.run(['set-close'])
+            _log.error('Timed out waiting for CQ; aborting.')
+            return False
+
         try_results = self.git_cl.filter_latest(try_results)
 
         # We only want to check the status of CQ bots. The set of CQ bots is
@@ -180,15 +186,15 @@ class TestImporter(object):
         # Blink try bots to get the set of CQ try bots.
         # Important: if any CQ bots are added to the builder list
         # (self.host.builders), then this logic will need to be updated.
-        try_results = {build: status for build, status in try_results.items()
-                       if build.builder_name not in self.blink_try_bots()}
+        cq_try_results = {build: status for build, status in try_results.items()
+                          if build.builder_name not in self.blink_try_bots()}
 
-        if not try_results:
+        if not cq_try_results:
+            _log.error('No CQ try results found in try results: %s.', try_results)
             self.git_cl.run(['set-close'])
-            _log.error('No CQ try job results, aborting.')
             return False
 
-        if try_results and self.git_cl.all_success(try_results):
+        if self.git_cl.all_success(cq_try_results):
             _log.info('CQ appears to have passed; trying to commit.')
             self.git_cl.run(['upload', '-f', '--send-mail'])  # Turn off WIP mode.
             self.git_cl.run(['set-commit'])
