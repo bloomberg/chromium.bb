@@ -233,14 +233,14 @@ void VideoCaptureImplManager::UnrefDevice(
 }
 
 void VideoCaptureImplManager::SuspendDevices(
-    const StreamDeviceInfoArray& video_device_array,
+    const MediaStreamDevices& video_devices,
     bool suspend) {
   DCHECK(render_main_task_runner_->BelongsToCurrentThread());
   if (is_suspending_all_ == suspend)
     return;
   is_suspending_all_ = suspend;
-  for (const StreamDeviceInfo& device_info : video_device_array) {
-    const media::VideoCaptureSessionId id = device_info.session_id;
+  for (const MediaStreamDevice& device : video_devices) {
+    const media::VideoCaptureSessionId id = device.session_id;
     const auto it = std::find_if(
         devices_.begin(), devices_.end(),
         [id](const DeviceEntry& entry) { return entry.session_id == id; });

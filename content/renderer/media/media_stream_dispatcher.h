@@ -82,7 +82,7 @@ class CONTENT_EXPORT MediaStreamDispatcher
   // Get all the media devices of video capture, e.g. webcam. This is the set
   // of devices that should be suspended when the content frame is no longer
   // being shown to the user.
-  StreamDeviceInfoArray GetNonScreenCaptureDevices();
+  MediaStreamDevices GetNonScreenCaptureDevices();
 
   // Check if the label is a valid stream.
   virtual bool IsStream(const std::string& label);

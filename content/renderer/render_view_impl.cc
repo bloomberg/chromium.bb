@@ -2398,10 +2398,10 @@ void RenderViewImpl::SuspendVideoCaptureDevices(bool suspend) {
   if (!media_stream_dispatcher)
     return;
 
-  StreamDeviceInfoArray video_array =
+  MediaStreamDevices video_devices =
       media_stream_dispatcher->GetNonScreenCaptureDevices();
   RenderThreadImpl::current()->video_capture_impl_manager()->SuspendDevices(
-      video_array, suspend);
+      video_devices, suspend);
 #endif  // BUILDFLAG(ENABLE_WEBRTC)
 }
 #endif  // defined(OS_ANDROID)

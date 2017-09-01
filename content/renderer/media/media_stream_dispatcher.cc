@@ -179,15 +179,20 @@ void MediaStreamDispatcher::OnStreamStarted(const std::string& label) {
   GetMediaStreamDispatcherHost()->StreamStarted(label);
 }
 
-StreamDeviceInfoArray MediaStreamDispatcher::GetNonScreenCaptureDevices() {
-  StreamDeviceInfoArray video_array;
+MediaStreamDevices MediaStreamDispatcher::GetNonScreenCaptureDevices() {
+  MediaStreamDevices video_devices;
   for (const auto& stream_it : label_stream_map_) {
-    for (const auto& video_device : stream_it.second.video_array) {
-      if (!IsScreenCaptureMediaType(video_device.device.type))
-        video_array.push_back(video_device);
+    for (const auto& video_device_info : stream_it.second.video_array) {
+      if (!IsScreenCaptureMediaType(video_device_info.device.type)) {
+        // TODO(c.padhi): Remove this when |video_device_info|'s type is changed
+        // to MediaStreamDevice, see https://crbug.com/760493.
+        MediaStreamDevice video_device = video_device_info.device;
+        video_device.session_id = video_device_info.session_id;
+        video_devices.push_back(video_device);
+      }
     }
   }
-  return video_array;
+  return video_devices;
 }
 
 void MediaStreamDispatcher::OnInterfaceRequestForFrame(
