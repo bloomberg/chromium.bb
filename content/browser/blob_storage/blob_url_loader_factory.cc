@@ -76,10 +76,8 @@ class BlobURLLoader : public storage::MojoBlobReader::Delegate,
       return;
     }
 
-    net::HttpRequestHeaders request_headers;
-    request_headers.AddHeadersFromString(request.headers);
     std::string range_header;
-    if (request_headers.GetHeader(net::HttpRequestHeaders::kRange,
+    if (request.headers.GetHeader(net::HttpRequestHeaders::kRange,
                                   &range_header)) {
       // We only care about "Range" header here.
       std::vector<net::HttpByteRange> ranges;

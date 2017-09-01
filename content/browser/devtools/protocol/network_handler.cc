@@ -788,9 +788,7 @@ void NetworkHandler::NavigationPreloadRequestSent(
     return;
   const std::string version_id(base::IntToString(worker_version_id));
   std::unique_ptr<DictionaryValue> headers_dict(DictionaryValue::create());
-  net::HttpRequestHeaders headers;
-  headers.AddHeadersFromString(request.headers);
-  for (net::HttpRequestHeaders::Iterator it(headers); it.GetNext();)
+  for (net::HttpRequestHeaders::Iterator it(request.headers); it.GetNext();)
     headers_dict->setString(it.name(), it.value());
   frontend_->RequestWillBeSent(
       request_id, "" /* loader_id */, request.url.spec(),

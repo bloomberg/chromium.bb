@@ -48,8 +48,8 @@ void BaseParallelResourceThrottle::WillStartRequest(bool* defer) {
 
   net::HttpRequestHeaders full_headers;
   resource_request.headers = request_->GetFullRequestHeaders(&full_headers)
-                                 ? full_headers.ToString()
-                                 : request_->extra_request_headers().ToString();
+                                 ? full_headers
+                                 : request_->extra_request_headers();
 
   resource_request.load_flags = request_->load_flags();
   resource_request.resource_type = resource_type_;

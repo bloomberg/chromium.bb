@@ -213,9 +213,7 @@ void ServiceWorkerControlleeRequestHandler::MaybeCreateLoader(
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
   // Fall back for the subsequent offline page interceptor to load the offline
   // snapshot of the page if required.
-  net::HttpRequestHeaders extra_request_headers;
-  extra_request_headers.AddHeadersFromString(resource_request.headers);
-  if (ShouldFallbackToLoadOfflinePage(extra_request_headers)) {
+  if (ShouldFallbackToLoadOfflinePage(resource_request.headers)) {
     std::move(callback).Run(StartLoaderCallback());
     return;
   }

@@ -192,9 +192,7 @@ URLLoaderImpl::URLLoaderImpl(
   const Referrer referrer(request.referrer, request.referrer_policy);
   Referrer::SetReferrerForRequest(url_request_.get(), referrer);
 
-  net::HttpRequestHeaders headers;
-  headers.AddHeadersFromString(request.headers);
-  url_request_->SetExtraRequestHeaders(headers);
+  url_request_->SetExtraRequestHeaders(request.headers);
 
   // Resolve elements from request_body and prepare upload data.
   if (request.request_body.get()) {

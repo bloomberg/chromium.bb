@@ -60,11 +60,6 @@ class ResourceFetcherImpl : public ResourceFetcher {
   // Request to send.
   ResourceRequest request_;
 
-  // HTTP headers to build a header string for |request_|.
-  // TODO(toyoshim): Remove this member once ResourceRequest uses
-  // net::HttpRequestHeaders instead of std::string for headers.
-  net::HttpRequestHeaders headers_;
-
   // Limit how long to wait for the server.
   base::OneShotTimer timeout_timer_;
 

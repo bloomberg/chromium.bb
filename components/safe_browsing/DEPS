@@ -8,6 +8,7 @@ include_rules = [
   "+google_apis",
   "+mojo/public/cpp",
   "+net/base",
+  "+net/http",
   "+net/log",
   "+net/traffic_annotation",
   "+net/url_request",

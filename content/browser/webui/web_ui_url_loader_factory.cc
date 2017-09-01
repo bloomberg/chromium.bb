@@ -156,10 +156,8 @@ void StartURLLoader(const ResourceRequest& request,
   std::string path;
   URLDataManagerBackend::URLToRequestPath(request.url, &path);
 
-  net::HttpRequestHeaders request_headers;
-  request_headers.AddHeadersFromString(request.headers);
   std::string origin_header;
-  request_headers.GetHeader(net::HttpRequestHeaders::kOrigin, &origin_header);
+  request.headers.GetHeader(net::HttpRequestHeaders::kOrigin, &origin_header);
 
   scoped_refptr<net::HttpResponseHeaders> headers =
       URLDataManagerBackend::GetHeaders(source, path, origin_header);

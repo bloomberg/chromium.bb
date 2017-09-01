@@ -31,10 +31,12 @@ void RendererURLLoaderThrottle::WillStartRequest(
   pending_checks_++;
   // Use a weak pointer to self because |safe_browsing_| is not owned by this
   // object.
+  net::HttpRequestHeaders headers;
+  headers.CopyFrom(request.headers);
   safe_browsing_->CreateCheckerAndCheck(
       render_frame_id_, mojo::MakeRequest(&url_checker_), request.url,
-      request.method, request.headers, request.load_flags,
-      request.resource_type, request.has_user_gesture,
+      request.method, headers, request.load_flags, request.resource_type,
+      request.has_user_gesture,
       base::BindOnce(&RendererURLLoaderThrottle::OnCheckUrlResult,
                      weak_factory_.GetWeakPtr()));
   safe_browsing_ = nullptr;

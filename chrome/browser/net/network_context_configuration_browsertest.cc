@@ -266,7 +266,7 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, PRE_DiskCache) {
   // Make a request whose response should be cached.
   content::ResourceRequest request;
   request.url = test_url;
-  request.headers = "foo: foopity foo\r\n\r\n";
+  request.headers.SetHeader("foo", "foopity foo");
   simple_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
       request, loader_factory(), TRAFFIC_ANNOTATION_FOR_TESTS,
       simple_loader_helper.GetCallback());

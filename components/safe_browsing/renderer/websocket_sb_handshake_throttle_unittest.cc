@@ -14,6 +14,7 @@
 #include "content/public/common/resource_type.h"
 #include "ipc/ipc_message.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "net/http/http_request_headers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -37,7 +38,7 @@ class FakeSafeBrowsing : public mojom::SafeBrowsing {
                              mojom::SafeBrowsingUrlCheckerRequest request,
                              const GURL& url,
                              const std::string& method,
-                             const std::string& headers,
+                             const net::HttpRequestHeaders& headers,
                              int32_t load_flags,
                              content::ResourceType resource_type,
                              bool has_user_gesture,
@@ -60,7 +61,7 @@ class FakeSafeBrowsing : public mojom::SafeBrowsing {
   mojom::SafeBrowsingUrlCheckerRequest request_;
   GURL url_;
   std::string method_;
-  std::string headers_;
+  net::HttpRequestHeaders headers_;
   int32_t load_flags_;
   content::ResourceType resource_type_;
   bool has_user_gesture_;
@@ -119,7 +120,7 @@ TEST_F(WebSocketSBHandshakeThrottleTest, CheckArguments) {
   EXPECT_EQ(MSG_ROUTING_NONE, safe_browsing_.render_frame_id_);
   EXPECT_EQ(GURL(kTestUrl), safe_browsing_.url_);
   EXPECT_EQ("GET", safe_browsing_.method_);
-  EXPECT_TRUE(safe_browsing_.headers_.empty());
+  EXPECT_TRUE(safe_browsing_.headers_.GetHeaderVector().empty());
   EXPECT_EQ(0, safe_browsing_.load_flags_);
   EXPECT_EQ(content::RESOURCE_TYPE_SUB_RESOURCE, safe_browsing_.resource_type_);
   EXPECT_FALSE(safe_browsing_.has_user_gesture_);

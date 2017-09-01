@@ -7,5 +7,6 @@ import("//mojo/public/tools/bindings/mojom.gni")
 mojom("interfaces") {
   sources = [
     "fetch_api.mojom",
+    "http_request_headers.mojom",
   ]
 }

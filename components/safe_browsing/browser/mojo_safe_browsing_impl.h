@@ -33,7 +33,7 @@ class MojoSafeBrowsingImpl : public mojom::SafeBrowsing {
                              mojom::SafeBrowsingUrlCheckerRequest request,
                              const GURL& url,
                              const std::string& method,
-                             const std::string& headers,
+                             const net::HttpRequestHeaders& headers,
                              int32_t load_flags,
                              content::ResourceType resource_type,
                              bool has_user_gesture,

@@ -5983,7 +5983,7 @@ void RenderFrameImpl::OpenURL(const NavigationPolicyInfo& info,
   params.uses_post = IsHttpPost(info.url_request);
   params.resource_request_body =
       GetRequestBodyForWebURLRequest(info.url_request);
-  params.extra_headers = GetWebURLRequestHeaders(info.url_request);
+  params.extra_headers = GetWebURLRequestHeadersAsString(info.url_request);
   params.referrer = send_referrer ? RenderViewImpl::GetReferrerFromRequest(
                                         frame_, info.url_request)
                                   : content::Referrer();
@@ -6469,7 +6469,7 @@ void RenderFrameImpl::BeginNavigation(const NavigationPolicyInfo& info) {
       info.navigation_type == blink::kWebNavigationTypeFormResubmitted;
 
   BeginNavigationParams begin_navigation_params(
-      GetWebURLRequestHeaders(info.url_request), load_flags,
+      GetWebURLRequestHeadersAsString(info.url_request), load_flags,
       info.url_request.HasUserGesture(),
       info.url_request.GetServiceWorkerMode() !=
           blink::WebURLRequest::ServiceWorkerMode::kAll,

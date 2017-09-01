@@ -239,7 +239,7 @@ TEST_F(SimpleURLLoaderTest, BasicRequest) {
   // Use a more interesting request than "/echo", just to verify more than the
   // request URL is hooked up.
   resource_request.url = test_server_.GetURL("/echoheader?foo");
-  resource_request.headers = "foo: Expected Response";
+  resource_request.headers.SetHeader("foo", "Expected Response");
   WaitForStringHelper string_helper;
   string_helper.RunRequest(url_loader_factory_.get(), resource_request);
 

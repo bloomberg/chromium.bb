@@ -5,6 +5,7 @@
 module safe_browsing.mojom;
 
 import "content/public/common/resource_type.mojom";
+import "services/network/public/interfaces/http_request_headers.mojom";
 import "url/mojo/url.mojom";
 
 // Provided by the browser and used by renderers to perform SafeBrowsing URL
@@ -32,7 +33,7 @@ interface SafeBrowsing {
       SafeBrowsingUrlChecker& request,
       url.mojom.Url url,
       string method,
-      string headers,
+      network.mojom.HttpRequestHeaders headers,
       int32 load_flags,
       content.mojom.ResourceType resource_type,
       bool has_user_gesture) => (bool proceed, bool showed_interstitial);

@@ -14,6 +14,7 @@
 #include "components/safe_browsing/common/safe_browsing.mojom.h"
 #include "components/safe_browsing_db/database_manager.h"
 #include "content/public/common/resource_type.h"
+#include "net/http/http_request_headers.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -34,7 +35,7 @@ class SafeBrowsingUrlCheckerImpl : public mojom::SafeBrowsingUrlChecker,
                                    public SafeBrowsingDatabaseManager::Client {
  public:
   SafeBrowsingUrlCheckerImpl(
-      const std::string& headers,
+      const net::HttpRequestHeaders& headers,
       int load_flags,
       content::ResourceType resource_type,
       bool has_user_gesture,
@@ -102,7 +103,7 @@ class SafeBrowsingUrlCheckerImpl : public mojom::SafeBrowsingUrlChecker,
     CheckUrlCallback callback;
   };
 
-  const std::string headers_;
+  const net::HttpRequestHeaders headers_;
   const int load_flags_;
   const content::ResourceType resource_type_;
   const bool has_user_gesture_;

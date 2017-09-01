@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//mojo/public/tools/bindings/mojom.gni")
+
 static_library("cpp") {
   sources = [
     "net_adapters.cc",
@@ -12,5 +14,29 @@ static_library("cpp") {
     "//base",
     "//mojo/common",
     "//net",
+  ]
+}
+
+mojom("test_interfaces") {
+  sources = [
+    "network_traits_test_service.mojom",
+  ]
+  public_deps = [
+    "//services/network/public/interfaces",
+  ]
+}
+
+source_set("tests") {
+  testonly = true
+
+  sources = [
+    "network_struct_traits_unittest.cc",
+  ]
+  deps = [
+    ":test_interfaces",
+    "//base",
+    "//mojo/public/cpp/bindings",
+    "//net",
+    "//testing/gtest",
   ]
 }
