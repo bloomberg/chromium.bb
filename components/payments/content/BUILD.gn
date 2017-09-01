@@ -8,6 +8,8 @@ static_library("content") {
     "can_make_payment_query_factory.h",
     "payment_request.cc",
     "payment_request.h",
+    "payment_request_converter.cc",
+    "payment_request_converter.h",
     "payment_request_dialog.h",
     "payment_request_spec.cc",
     "payment_request_spec.h",
@@ -39,8 +41,6 @@ static_library("utils") {
   sources = [
     "origin_security_checker.cc",
     "origin_security_checker.h",
-    "payment_details_validation.cc",
-    "payment_details_validation.h",
     "payment_manifest_parser_host.cc",
     "payment_manifest_parser_host.h",
   ]

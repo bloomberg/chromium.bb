@@ -19,6 +19,7 @@ static_library("android") {
   deps = [
     ":jni_headers",
     "//base",
+    "//components/payments/content",
     "//components/payments/content:utils",
     "//components/payments/core",
     "//content/public/browser",

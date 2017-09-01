@@ -9,6 +9,7 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/payments/content/payment_request_converter.h"
 #include "components/payments/core/features.h"
 #include "components/payments/core/payment_instrument.h"
 #include "components/payments/core/payment_method_data.h"
@@ -19,64 +20,6 @@
 namespace payments {
 
 namespace {
-
-// Returns the card network name associated with a given BasicCardNetwork. Names
-// are inspired by https://www.w3.org/Payments/card-network-ids.
-std::string GetBasicCardNetworkName(const mojom::BasicCardNetwork& network) {
-  switch (network) {
-    case mojom::BasicCardNetwork::AMEX:
-      return "amex";
-    case mojom::BasicCardNetwork::DINERS:
-      return "diners";
-    case mojom::BasicCardNetwork::DISCOVER:
-      return "discover";
-    case mojom::BasicCardNetwork::JCB:
-      return "jcb";
-    case mojom::BasicCardNetwork::MASTERCARD:
-      return "mastercard";
-    case mojom::BasicCardNetwork::MIR:
-      return "mir";
-    case mojom::BasicCardNetwork::UNIONPAY:
-      return "unionpay";
-    case mojom::BasicCardNetwork::VISA:
-      return "visa";
-  }
-  NOTREACHED();
-  return std::string();
-}
-
-// Returns the card type associated with the given BasicCardType.
-autofill::CreditCard::CardType GetBasicCardType(
-    const mojom::BasicCardType& type) {
-  switch (type) {
-    case mojom::BasicCardType::CREDIT:
-      return autofill::CreditCard::CARD_TYPE_CREDIT;
-    case mojom::BasicCardType::DEBIT:
-      return autofill::CreditCard::CARD_TYPE_DEBIT;
-    case mojom::BasicCardType::PREPAID:
-      return autofill::CreditCard::CARD_TYPE_PREPAID;
-  }
-  NOTREACHED();
-  return autofill::CreditCard::CARD_TYPE_UNKNOWN;
-}
-
-PaymentMethodData CreatePaymentMethodData(
-    const mojom::PaymentMethodDataPtr& method_data_entry) {
-  PaymentMethodData method_data;
-  method_data.supported_methods = method_data_entry->supported_methods;
-
-  // Transfer the supported basic card networks (visa, amex) and types
-  // (credit, debit).
-  for (const mojom::BasicCardNetwork& network :
-       method_data_entry->supported_networks) {
-    method_data.supported_networks.push_back(GetBasicCardNetworkName(network));
-  }
-  for (const mojom::BasicCardType& type : method_data_entry->supported_types) {
-    autofill::CreditCard::CardType card_type = GetBasicCardType(type);
-    method_data.supported_types.insert(card_type);
-  }
-  return method_data;
-}
 
 // Validates the |method_data| and fills |supported_card_networks_|,
 // |supported_card_networks_set_|, |basic_card_specified_networks_|,
@@ -116,7 +59,7 @@ void PopulateValidatedMethodData(
           method_data_entry->stringified_data);
     }
 
-    method_data_vector.push_back(CreatePaymentMethodData(method_data_entry));
+    method_data_vector.push_back(ConvertPaymentMethodData(method_data_entry));
   }
 
   PopulateValidatedMethodData(
@@ -280,7 +223,7 @@ PaymentRequestSpec::GetApplicableModifier(
     std::vector<GURL> url_payment_method_identifiers;
     std::map<std::string, std::set<std::string>> stringified_method_data;
     PopulateValidatedMethodData(
-        {CreatePaymentMethodData(modifier->method_data)}, &supported_networks,
+        {ConvertPaymentMethodData(modifier->method_data)}, &supported_networks,
         &basic_card_specified_networks, &supported_card_networks_set,
         &supported_types, &url_payment_method_identifiers,
         &stringified_method_data);
