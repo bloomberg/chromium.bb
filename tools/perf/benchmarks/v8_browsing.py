@@ -173,6 +173,10 @@ class V8RuntimeStatsDesktopBrowsingBenchmark(
   PLATFORM = 'desktop'
   SUPPORTED_PLATFORMS = [story.expectations.ALL_DESKTOP]
 
+  def SetExtraBrowserOptions(self, options):
+    options.AppendExtraBrowserArgs(
+      '--enable-blink-features=BlinkRuntimeCallStats')
+
   @classmethod
   def Name(cls):
     return 'v8.runtimestats.browsing_desktop'
