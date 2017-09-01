@@ -456,7 +456,9 @@ class AppCacheStorageImplTest : public testing::Test {
     test_finished_event_->Signal();
   }
 
-  void PushNextTask(base::Closure task) { task_stack_.push(std::move(task)); }
+  void PushNextTask(base::OnceClosure task) {
+    task_stack_.push(std::move(task));
+  }
 
   void ScheduleNextTask() {
     DCHECK(io_thread->task_runner()->BelongsToCurrentThread());
@@ -494,8 +496,8 @@ class AppCacheStorageImplTest : public testing::Test {
   void LoadCache_Miss() {
     // Attempt to load a cache that doesn't exist. Should
     // complete asynchronously.
-    PushNextTask(base::Bind(&AppCacheStorageImplTest::Verify_LoadCache_Miss,
-                            base::Unretained(this)));
+    PushNextTask(base::BindOnce(&AppCacheStorageImplTest::Verify_LoadCache_Miss,
+                                base::Unretained(this)));
 
     storage()->LoadCache(111, delegate());
     EXPECT_NE(111, delegate()->loaded_cache_id_);
@@ -545,8 +547,8 @@ class AppCacheStorageImplTest : public testing::Test {
   void CreateGroupInPopulatedOrigin() {
     // Attempt to load a group that doesn't exist, one should
     // be created for us, but not stored.
-    PushNextTask(base::Bind(&AppCacheStorageImplTest::Verify_CreateGroup,
-                            base::Unretained(this)));
+    PushNextTask(base::BindOnce(&AppCacheStorageImplTest::Verify_CreateGroup,
+                                base::Unretained(this)));
 
     // Since the origin has groups, storage class will have to
     // consult the database and completion will be async.
@@ -579,8 +581,9 @@ class AppCacheStorageImplTest : public testing::Test {
     // Attempt to load a cache that is not currently in use
     // and does require loading from disk. This
     // load should complete asynchronously.
-    PushNextTask(base::Bind(&AppCacheStorageImplTest::Verify_LoadCache_Far_Hit,
-                            base::Unretained(this)));
+    PushNextTask(
+        base::BindOnce(&AppCacheStorageImplTest::Verify_LoadCache_Far_Hit,
+                       base::Unretained(this)));
 
     // Setup some preconditions. Create a group and newest cache that
     // appear to be "stored" and "not currently in use".
@@ -610,8 +613,9 @@ class AppCacheStorageImplTest : public testing::Test {
     EXPECT_FALSE(delegate()->loaded_group_.get());
 
     // Conduct the group load test, also complete asynchronously.
-    PushNextTask(base::Bind(&AppCacheStorageImplTest::Verify_LoadGroup_Far_Hit,
-                            base::Unretained(this)));
+    PushNextTask(
+        base::BindOnce(&AppCacheStorageImplTest::Verify_LoadGroup_Far_Hit,
+                       base::Unretained(this)));
 
     storage()->LoadOrCreateGroup(kManifestUrl, delegate());
   }
@@ -631,8 +635,8 @@ class AppCacheStorageImplTest : public testing::Test {
 
   void StoreNewGroup() {
     // Store a group and its newest cache. Should complete asynchronously.
-    PushNextTask(base::Bind(&AppCacheStorageImplTest::Verify_StoreNewGroup,
-                            base::Unretained(this)));
+    PushNextTask(base::BindOnce(&AppCacheStorageImplTest::Verify_StoreNewGroup,
+                                base::Unretained(this)));
 
     // Setup some preconditions. Create a group and newest cache that
     // appear to be "unstored".
@@ -677,8 +681,9 @@ class AppCacheStorageImplTest : public testing::Test {
 
   void StoreExistingGroup() {
     // Store a group and its newest cache. Should complete asynchronously.
-    PushNextTask(base::Bind(&AppCacheStorageImplTest::Verify_StoreExistingGroup,
-                            base::Unretained(this)));
+    PushNextTask(
+        base::BindOnce(&AppCacheStorageImplTest::Verify_StoreExistingGroup,
+                       base::Unretained(this)));
 
     // Setup some preconditions. Create a group and old complete cache
     // that appear to be "stored"
@@ -737,7 +742,7 @@ class AppCacheStorageImplTest : public testing::Test {
     cache_->AddEntry(kEntryUrl, AppCacheEntry(AppCacheEntry::MASTER, 1, 100));
     cache_->set_update_time(now);
 
-    PushNextTask(base::Bind(
+    PushNextTask(base::BindOnce(
         &AppCacheStorageImplTest::Verify_StoreExistingGroupExistingCache,
         base::Unretained(this), now));
 
@@ -784,8 +789,8 @@ class AppCacheStorageImplTest : public testing::Test {
 
   void FailStoreGroup() {
     // Store a group and its newest cache. Should complete asynchronously.
-    PushNextTask(base::Bind(&AppCacheStorageImplTest::Verify_FailStoreGroup,
-                            base::Unretained(this)));
+    PushNextTask(base::BindOnce(&AppCacheStorageImplTest::Verify_FailStoreGroup,
+                                base::Unretained(this)));
 
     // Setup some preconditions. Create a group and newest cache that
     // appear to be "unstored" and big enough to exceed the 5M limit.
@@ -823,8 +828,9 @@ class AppCacheStorageImplTest : public testing::Test {
 
   void MakeGroupObsolete() {
     // Make a group obsolete, should complete asynchronously.
-    PushNextTask(base::Bind(&AppCacheStorageImplTest::Verify_MakeGroupObsolete,
-                            base::Unretained(this)));
+    PushNextTask(
+        base::BindOnce(&AppCacheStorageImplTest::Verify_MakeGroupObsolete,
+                       base::Unretained(this)));
 
     // Setup some preconditions. Create a group and newest cache that
     // appears to be "stored" and "currently in use".
@@ -925,9 +931,9 @@ class AppCacheStorageImplTest : public testing::Test {
   // MarkEntryAsForeignWithLoadInProgress  -------------------------------
 
   void MarkEntryAsForeignWithLoadInProgress() {
-    PushNextTask(base::Bind(
-       &AppCacheStorageImplTest::Verify_MarkEntryAsForeignWithLoadInProgress,
-       base::Unretained(this)));
+    PushNextTask(base::BindOnce(
+        &AppCacheStorageImplTest::Verify_MarkEntryAsForeignWithLoadInProgress,
+        base::Unretained(this)));
 
     // Setup some preconditions. Create a cache with an entry
     // in storage, but not in the working set.
@@ -970,8 +976,9 @@ class AppCacheStorageImplTest : public testing::Test {
   // FindNoMainResponse  -------------------------------
 
   void FindNoMainResponse() {
-    PushNextTask(base::Bind(&AppCacheStorageImplTest::Verify_FindNoMainResponse,
-                            base::Unretained(this)));
+    PushNextTask(
+        base::BindOnce(&AppCacheStorageImplTest::Verify_FindNoMainResponse,
+                       base::Unretained(this)));
 
     // Conduct the test.
     storage()->FindResponseForMainRequest(kEntryUrl, GURL(), delegate());
@@ -1002,9 +1009,9 @@ class AppCacheStorageImplTest : public testing::Test {
   }
 
   void BasicFindMainResponse(bool drop_from_working_set) {
-    PushNextTask(base::Bind(
-        &AppCacheStorageImplTest::Verify_BasicFindMainResponse,
-        base::Unretained(this)));
+    PushNextTask(
+        base::BindOnce(&AppCacheStorageImplTest::Verify_BasicFindMainResponse,
+                       base::Unretained(this)));
 
     // Setup some preconditions. Create a complete cache with an entry
     // in storage.
@@ -1052,7 +1059,7 @@ class AppCacheStorageImplTest : public testing::Test {
   }
 
   void BasicFindMainFallbackResponse(bool drop_from_working_set) {
-    PushNextTask(base::Bind(
+    PushNextTask(base::BindOnce(
         &AppCacheStorageImplTest::Verify_BasicFindMainFallbackResponse,
         base::Unretained(this)));
 
@@ -1130,7 +1137,7 @@ class AppCacheStorageImplTest : public testing::Test {
   }
 
   void BasicFindMainInterceptResponse(bool drop_from_working_set) {
-    PushNextTask(base::Bind(
+    PushNextTask(base::BindOnce(
         &AppCacheStorageImplTest::Verify_BasicFindMainInterceptResponse,
         base::Unretained(this)));
 
@@ -1242,7 +1249,7 @@ class AppCacheStorageImplTest : public testing::Test {
     }
 
     // First test something that does not match the pattern.
-    PushNextTask(base::Bind(
+    PushNextTask(base::BindOnce(
         &AppCacheStorageImplTest::Verify_FindInterceptPatternMatchNegative,
         base::Unretained(this)));
     storage()->FindResponseForMainRequest(
@@ -1262,7 +1269,7 @@ class AppCacheStorageImplTest : public testing::Test {
     EXPECT_EQ(0, delegate()->found_fallback_entry_.types());
 
     // Then test something that matches.
-    PushNextTask(base::Bind(
+    PushNextTask(base::BindOnce(
         &AppCacheStorageImplTest::Verify_FindInterceptPatternMatchPositive,
         base::Unretained(this)));
     storage()->FindResponseForMainRequest(
@@ -1329,7 +1336,7 @@ class AppCacheStorageImplTest : public testing::Test {
     }
 
     // First test something that does not match the pattern.
-    PushNextTask(base::Bind(
+    PushNextTask(base::BindOnce(
         &AppCacheStorageImplTest::Verify_FindFallbackPatternMatchNegative,
         base::Unretained(this)));
     storage()->FindResponseForMainRequest(
@@ -1349,7 +1356,7 @@ class AppCacheStorageImplTest : public testing::Test {
       EXPECT_EQ(0, delegate()->found_fallback_entry_.types());
 
       // Then test something that matches.
-      PushNextTask(base::Bind(
+      PushNextTask(base::BindOnce(
           &AppCacheStorageImplTest::Verify_FindFallbackPatternMatchPositive,
           base::Unretained(this)));
       storage()->FindResponseForMainRequest(
@@ -1371,7 +1378,7 @@ class AppCacheStorageImplTest : public testing::Test {
   // FindMainResponseWithMultipleHits  -------------------------------
 
   void FindMainResponseWithMultipleHits() {
-    PushNextTask(base::Bind(
+    PushNextTask(base::BindOnce(
         &AppCacheStorageImplTest::Verify_FindMainResponseWithMultipleHits,
         base::Unretained(this)));
 
@@ -1445,7 +1452,7 @@ class AppCacheStorageImplTest : public testing::Test {
 
     // Conduct another test preferring kManifestUrl
     delegate_.reset(new MockStorageDelegate(this));
-    PushNextTask(base::Bind(
+    PushNextTask(base::BindOnce(
         &AppCacheStorageImplTest::Verify_FindMainResponseWithMultipleHits2,
         base::Unretained(this)));
     storage()->FindResponseForMainRequest(kEntryUrl, kManifestUrl, delegate());
@@ -1463,7 +1470,7 @@ class AppCacheStorageImplTest : public testing::Test {
 
     // Conduct the another test preferring kManifestUrl2
     delegate_.reset(new MockStorageDelegate(this));
-    PushNextTask(base::Bind(
+    PushNextTask(base::BindOnce(
         &AppCacheStorageImplTest::Verify_FindMainResponseWithMultipleHits3,
         base::Unretained(this)));
     storage()->FindResponseForMainRequest(kEntryUrl, kManifestUrl2, delegate());
@@ -1481,7 +1488,7 @@ class AppCacheStorageImplTest : public testing::Test {
 
     // Conduct another test with no preferred manifest that hits the fallback.
     delegate_.reset(new MockStorageDelegate(this));
-    PushNextTask(base::Bind(
+    PushNextTask(base::BindOnce(
         &AppCacheStorageImplTest::Verify_FindMainResponseWithMultipleHits4,
         base::Unretained(this)));
     storage()->FindResponseForMainRequest(
@@ -1502,7 +1509,7 @@ class AppCacheStorageImplTest : public testing::Test {
 
     // Conduct another test preferring kManifestUrl2 that hits the fallback.
     delegate_.reset(new MockStorageDelegate(this));
-    PushNextTask(base::Bind(
+    PushNextTask(base::BindOnce(
         &AppCacheStorageImplTest::Verify_FindMainResponseWithMultipleHits5,
         base::Unretained(this)));
     storage()->FindResponseForMainRequest(
@@ -1579,8 +1586,9 @@ class AppCacheStorageImplTest : public testing::Test {
     }
 
     // We should not find anything for the foreign entry.
-    PushNextTask(base::Bind(&AppCacheStorageImplTest::Verify_ExclusionNotFound,
-                            base::Unretained(this), kEntryUrl, 1));
+    PushNextTask(
+        base::BindOnce(&AppCacheStorageImplTest::Verify_ExclusionNotFound,
+                       base::Unretained(this), kEntryUrl, 1));
     storage()->FindResponseForMainRequest(kEntryUrl, GURL(), delegate());
   }
 
@@ -1608,7 +1616,7 @@ class AppCacheStorageImplTest : public testing::Test {
     if (phase == 2) {
       // We should not find anything for the online namespace nested within
       // the fallback namespace.
-      PushNextTask(base::Bind(
+      PushNextTask(base::BindOnce(
           &AppCacheStorageImplTest::Verify_ExclusionNotFound,
           base::Unretained(this), kOnlineNamespaceWithinFallback, 3));
       storage()->FindResponseForMainRequest(
@@ -1797,10 +1805,8 @@ class AppCacheStorageImplTest : public testing::Test {
       request_->Start();
     }
 
-    PushNextTask(base::Bind(
-        &AppCacheStorageImplTest::Verify_Reinitialized,
-        base::Unretained(this),
-        test_case));
+    PushNextTask(base::BindOnce(&AppCacheStorageImplTest::Verify_Reinitialized,
+                                base::Unretained(this), test_case));
   }
 
   void Verify_Reinitialized(ReinitTestCase test_case) {
