@@ -83,7 +83,7 @@ class BattOrConnectionImpl
   void BeginReadBytesForFlush();
   void OnBytesReadForFlush(int bytes_read,
                            device::mojom::SerialReceiveError error);
-  void SetFlushReadTimeout();
+  void SetTimeout(base::TimeDelta timeout);
 
   // Pulls off the next complete message from already_read_buffer_, returning
   // its type and contents through out parameters and any error that occurred
@@ -123,8 +123,8 @@ class BattOrConnectionImpl
   // connection in order for Flush() to be considered complete.
   base::TimeTicks flush_quiet_period_start_;
 
-  // The timeout that will trigger a timeout at the end of a flush quiet period.
-  base::CancelableClosure flush_timeout_callback_;
+  // The timeout for the current action.
+  base::CancelableClosure timeout_callback_;
 
   // Threads needed for serial communication.
   scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner_;

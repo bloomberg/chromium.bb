@@ -29,9 +29,6 @@ const uint16_t kCommandRetryDelaySeconds = 2;
 // The number of seconds allowed for a control message before timing out.
 const uint8_t kBattOrControlMessageTimeoutSeconds = 2;
 
-// The number of seconds allowed for connection to open before timing out.
-const uint8_t kBattOrConnectionTimeoutSeconds = 10;
-
 // Returns true if the specified vector of bytes decodes to a message that is an
 // ack for the specified control message type.
 bool IsAckOfControlCommand(BattOrMessageType message_type,
@@ -161,15 +158,10 @@ void BattOrAgent::GetFirmwareGitHash() {
 void BattOrAgent::BeginConnect() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  SetActionTimeout(kBattOrConnectionTimeoutSeconds);
-
   connection_->Open();
 }
 
 void BattOrAgent::OnConnectionOpened(bool success) {
-  // Cancel timeout because the connection was opened in time.
-  timeout_callback_.Cancel();
-
   if (!success) {
     CompleteCommand(BATTOR_ERROR_CONNECTION_FAILED);
     return;
