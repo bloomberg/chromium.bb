@@ -6,12 +6,15 @@ import common
 from common import TestDriver
 from common import IntegrationTest
 from decorators import ChromeVersionEqualOrAfterM
+from decorators import NotAndroid
 import json
 
 
 class CrossOriginPush(IntegrationTest):
   # Ensure cross origin push from trusted proxy server is adopted by Chromium.
+  # Disabled on android because the net log is not copied yet. crbug.com/761507
   @ChromeVersionEqualOrAfterM(62)
+  @NotAndroid
   def testClientConfigVariationsHeader(self):
     with TestDriver() as t:
       t.AddChromeArg('--log-net-log=chrome.netlog.json')
@@ -38,16 +41,16 @@ class CrossOriginPush(IntegrationTest):
     self.assertLess(0, mapped_const)
 
     for i in data["events"]:
-     dumped_event = json.dumps(i)
-     if dumped_event.find("chrome-proxy") != -1 and\
-      dumped_event.find("check.googlezip.net/test.html") != -1 and\
-      dumped_event.find("promised_stream_id") !=-1:
-        promised_stream_count = promised_stream_count + 1
+      dumped_event = json.dumps(i)
+      if dumped_event.find("chrome-proxy") != -1 and\
+        dumped_event.find("check.googlezip.net/test.html") != -1 and\
+        dumped_event.find("promised_stream_id") !=-1:
+          promised_stream_count = promised_stream_count + 1
 
-     if dumped_event.find(str(mapped_const)) != -1 and\
-      dumped_event.find("check.googlezip.net/test.html") != -1 and\
-      dumped_event.find("stream_id") !=-1:
-        adopted_stream_count = adopted_stream_count + 1
+      if dumped_event.find(str(mapped_const)) != -1 and\
+        dumped_event.find("check.googlezip.net/test.html") != -1 and\
+        dumped_event.find("stream_id") !=-1:
+          adopted_stream_count = adopted_stream_count + 1
 
     # Verify that the stream was pushed and adopted.
     self.assertEqual(1, promised_stream_count)
