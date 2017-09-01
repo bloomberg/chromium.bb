@@ -354,4 +354,114 @@ TEST_F(WKBasedNavigationManagerTest, GoForwardShouldDiscardsUncommittedItems) {
   EXPECT_EQ(nullptr, manager_->GetTransientItem());
 }
 
+// Tests CanGoToOffset API for positive, negative and zero delta.
+TEST_F(WKBasedNavigationManagerTest, CanGoToOffset) {
+  manager_->AddPendingItem(
+      GURL("http://www.url.com/0"), Referrer(), ui::PAGE_TRANSITION_LINK,
+      web::NavigationInitiationType::USER_INITIATED,
+      web::NavigationManager::UserAgentOverrideOption::INHERIT);
+
+  [mock_wk_list_ setCurrentURL:@"http://www.url.com/0"];
+  manager_->CommitPendingItem();
+
+  manager_->AddPendingItem(
+      GURL("http://www.url.com/1"), Referrer(), ui::PAGE_TRANSITION_LINK,
+      web::NavigationInitiationType::USER_INITIATED,
+      web::NavigationManager::UserAgentOverrideOption::INHERIT);
+
+  [mock_wk_list_ setCurrentURL:@"http://www.url.com/1"
+                  backListURLs:@[ @"http://www.url.com/0" ]
+               forwardListURLs:nil];
+  manager_->CommitPendingItem();
+
+  manager_->AddPendingItem(
+      GURL("http://www.url.com/2"), Referrer(), ui::PAGE_TRANSITION_LINK,
+      web::NavigationInitiationType::USER_INITIATED,
+      web::NavigationManager::UserAgentOverrideOption::INHERIT);
+
+  [mock_wk_list_
+        setCurrentURL:@"http://www.url.com/2"
+         backListURLs:@[ @"http://www.url.com/0", @"http://www.url.com/1" ]
+      forwardListURLs:nil];
+  manager_->CommitPendingItem();
+
+  ASSERT_EQ(3, manager_->GetItemCount());
+  ASSERT_EQ(2, manager_->GetLastCommittedItemIndex());
+
+  // Go to entry at index 1 and test API from that state.
+  [mock_wk_list_ moveCurrentToIndex:1];
+  ASSERT_EQ(1, manager_->GetLastCommittedItemIndex());
+  ASSERT_EQ(-1, manager_->GetPendingItemIndex());
+  EXPECT_TRUE(manager_->CanGoToOffset(-1));
+  EXPECT_EQ(0, manager_->GetIndexForOffset(-1));
+  EXPECT_FALSE(manager_->CanGoToOffset(-2));
+  EXPECT_TRUE(manager_->CanGoToOffset(1));
+  EXPECT_EQ(2, manager_->GetIndexForOffset(1));
+  EXPECT_FALSE(manager_->CanGoToOffset(2));
+  // Test with large values
+  EXPECT_FALSE(manager_->CanGoToOffset(INT_MAX));
+  EXPECT_FALSE(manager_->CanGoToOffset(INT_MIN));
+
+  // Go to entry at index 0 and test API from that state.
+  [mock_wk_list_ moveCurrentToIndex:0];
+  ASSERT_EQ(0, manager_->GetLastCommittedItemIndex());
+  ASSERT_EQ(-1, manager_->GetPendingItemIndex());
+  EXPECT_FALSE(manager_->CanGoToOffset(-1));
+  EXPECT_TRUE(manager_->CanGoToOffset(1));
+  EXPECT_EQ(1, manager_->GetIndexForOffset(1));
+  EXPECT_TRUE(manager_->CanGoToOffset(2));
+  EXPECT_EQ(2, manager_->GetIndexForOffset(2));
+  EXPECT_FALSE(manager_->CanGoToOffset(3));
+  // Test with large values
+  EXPECT_FALSE(manager_->CanGoToOffset(INT_MAX));
+  EXPECT_FALSE(manager_->CanGoToOffset(INT_MIN));
+
+  // Go to entry at index 2 and test API from that state.
+  [mock_wk_list_ moveCurrentToIndex:2];
+  ASSERT_EQ(2, manager_->GetLastCommittedItemIndex());
+  ASSERT_EQ(-1, manager_->GetPendingItemIndex());
+  EXPECT_TRUE(manager_->CanGoToOffset(-1));
+  EXPECT_EQ(1, manager_->GetIndexForOffset(-1));
+  EXPECT_TRUE(manager_->CanGoToOffset(-2));
+  EXPECT_EQ(0, manager_->GetIndexForOffset(-2));
+  EXPECT_FALSE(manager_->CanGoToOffset(1));
+  // Test with large values
+  EXPECT_FALSE(manager_->CanGoToOffset(INT_MAX));
+  EXPECT_FALSE(manager_->CanGoToOffset(INT_MIN));
+
+  // Test with transient entry.
+  manager_->AddPendingItem(
+      GURL("http://www.url.com/3"), Referrer(), ui::PAGE_TRANSITION_LINK,
+      web::NavigationInitiationType::USER_INITIATED,
+      web::NavigationManager::UserAgentOverrideOption::INHERIT);
+  manager_->AddTransientItem(GURL("http://www.url.com/3"));
+  ASSERT_EQ(3, manager_->GetItemCount());
+  ASSERT_EQ(2, manager_->GetLastCommittedItemIndex());
+  EXPECT_TRUE(manager_->CanGoToOffset(-1));
+  EXPECT_EQ(2, manager_->GetIndexForOffset(-1));
+  EXPECT_TRUE(manager_->CanGoToOffset(-3));
+  EXPECT_EQ(0, manager_->GetIndexForOffset(-3));
+  EXPECT_FALSE(manager_->CanGoToOffset(-4));
+  EXPECT_FALSE(manager_->CanGoToOffset(1));
+
+  // Simulate a history navigation pending item.
+  [mock_wk_list_ moveCurrentToIndex:1];
+  OCMExpect([mock_web_view_ URL])
+      .andReturn([[NSURL alloc] initWithString:@"http://www.url.com/1"]);
+  manager_->AddPendingItem(
+      GURL("http://www.url.com/1"), Referrer(), ui::PAGE_TRANSITION_LINK,
+      web::NavigationInitiationType::USER_INITIATED,
+      web::NavigationManager::UserAgentOverrideOption::INHERIT);
+
+  EXPECT_EQ(3, manager_->GetItemCount());
+  EXPECT_EQ(2, manager_->GetLastCommittedItemIndex());
+  EXPECT_EQ(1, manager_->GetPendingItemIndex());
+  EXPECT_TRUE(manager_->CanGoToOffset(-1));
+  EXPECT_EQ(0, manager_->GetIndexForOffset(-1));
+  EXPECT_FALSE(manager_->CanGoToOffset(-2));
+  EXPECT_TRUE(manager_->CanGoToOffset(1));
+  EXPECT_EQ(2, manager_->GetIndexForOffset(1));
+  EXPECT_FALSE(manager_->CanGoToOffset(2));
+}
+
 }  // namespace web

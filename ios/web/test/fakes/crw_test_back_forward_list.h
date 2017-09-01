@@ -35,6 +35,13 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)setCurrentURL:(NSString*)currentItemURL
          backListURLs:(nullable NSArray<NSString*>*)backListURLs
       forwardListURLs:(nullable NSArray<NSString*>*)forwardListURLs;
+
+// Simulates go-to-index operation on this instance. Shuffles the items in this
+// instance such that currentItem is at position |index| of the logical list
+// formed by backList + currentItem + forwardList. backList[0] has index 0.
+// |index| must be in the range [0, # of items in this instance).
+- (void)moveCurrentToIndex:(NSUInteger)index;
+
 @end
 
 NS_ASSUME_NONNULL_END
