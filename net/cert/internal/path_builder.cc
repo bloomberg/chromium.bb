@@ -563,7 +563,6 @@ CertPathBuilder::CertPathBuilder(
       user_initial_policy_set_(user_initial_policy_set),
       initial_policy_mapping_inhibit_(initial_policy_mapping_inhibit),
       initial_any_policy_inhibit_(initial_any_policy_inhibit),
-      next_state_(STATE_NONE),
       out_result_(result) {
   DCHECK(delegate);
   result->Clear();
@@ -578,71 +577,42 @@ void CertPathBuilder::AddCertIssuerSource(
   cert_path_iter_->AddCertIssuerSource(cert_issuer_source);
 }
 
-// TODO(eroman): Simplify (doesn't need to use the "DoLoop" pattern).
 void CertPathBuilder::Run() {
-  DCHECK_EQ(STATE_NONE, next_state_);
-  next_state_ = STATE_GET_NEXT_PATH;
-
-  do {
-    State state = next_state_;
-    next_state_ = STATE_NONE;
-    switch (state) {
-      case STATE_NONE:
-        NOTREACHED();
-        break;
-      case STATE_GET_NEXT_PATH:
-        DoGetNextPath();
-        break;
-      case STATE_GET_NEXT_PATH_COMPLETE:
-        DoGetNextPathComplete();
-        break;
+  CertPath next_path;
+  while (true) {
+    cert_path_iter_->GetNextPath(&next_path);
+    if (next_path.IsEmpty()) {
+      // No more paths to check.
+      return;
     }
-  } while (next_state_ != STATE_NONE);
-}
 
-void CertPathBuilder::DoGetNextPath() {
-  next_state_ = STATE_GET_NEXT_PATH_COMPLETE;
-  cert_path_iter_->GetNextPath(&next_path_);
-}
+    // Verify the entire certificate chain.
+    auto result_path = std::make_unique<ResultPath>();
+    result_path->path = next_path;
+    VerifyCertificateChain(
+        result_path->path.certs, result_path->path.last_cert_trust, delegate_,
+        time_, key_purpose_, initial_explicit_policy_, user_initial_policy_set_,
+        initial_policy_mapping_inhibit_, initial_any_policy_inhibit_,
+        &result_path->user_constrained_policy_set, &result_path->errors);
 
-void CertPathBuilder::DoGetNextPathComplete() {
-  if (next_path_.IsEmpty()) {
-    // No more paths to check, signal completion.
-    next_state_ = STATE_NONE;
-    return;
+    DVLOG(1) << "CertPathBuilder VerifyCertificateChain errors:\n"
+             << result_path->errors.ToDebugString(result_path->path.certs);
+
+    // Give the delegate a chance to add errors to the path.
+    delegate_->CheckPathAfterVerification(result_path->path,
+                                          &result_path->errors);
+
+    bool path_is_good = result_path->IsValid();
+
+    AddResultPath(std::move(result_path));
+
+    if (path_is_good) {
+      // Found a valid path, return immediately.
+      // TODO(mattm): add debug/test mode that tries all possible paths.
+      return;
+    }
+    // Path did not verify. Try more paths.
   }
-
-  // Verify the entire certificate chain.
-  auto result_path = std::make_unique<ResultPath>();
-  result_path->path = next_path_;
-  VerifyCertificateChain(
-      result_path->path.certs, result_path->path.last_cert_trust, delegate_,
-      time_, key_purpose_, initial_explicit_policy_, user_initial_policy_set_,
-      initial_policy_mapping_inhibit_, initial_any_policy_inhibit_,
-      &result_path->user_constrained_policy_set, &result_path->errors);
-
-  DVLOG(1) << "CertPathBuilder VerifyCertificateChain errors:\n"
-           << result_path->errors.ToDebugString(result_path->path.certs);
-
-  // Give the delegate a chance to add errors to the path.
-  delegate_->CheckPathAfterVerification(result_path->path,
-                                        &result_path->errors);
-
-  bool path_is_good = result_path->IsValid();
-
-  AddResultPath(std::move(result_path));
-
-  if (path_is_good) {
-    // Found a valid path, return immediately.
-    // TODO(mattm): add debug/test mode that tries all possible paths.
-    next_state_ = STATE_NONE;
-    return;
-  }
-
-  // Path did not verify. Try more paths. If there are no more paths, the result
-  // will be returned next time DoGetNextPathComplete is called with next_path_
-  // empty.
-  next_state_ = STATE_GET_NEXT_PATH;
 }
 
 void CertPathBuilder::AddResultPath(std::unique_ptr<ResultPath> result_path) {
