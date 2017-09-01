@@ -306,7 +306,7 @@ SSLSocketDataProvider::SSLSocketDataProvider(IoMode mode, int result)
   SSLConnectionStatusSetVersion(SSL_CONNECTION_VERSION_TLS1_2,
                                 &connection_status);
   // Set to TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305
-  SSLConnectionStatusSetCipherSuite(0xcc14, &connection_status);
+  SSLConnectionStatusSetCipherSuite(0xcca9, &connection_status);
 }
 
 SSLSocketDataProvider::SSLSocketDataProvider(
