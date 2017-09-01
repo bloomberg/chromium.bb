@@ -597,6 +597,8 @@ component("ash") {
     "system/virtual_keyboard/virtual_keyboard_tray.h",
     "system/web_notification/ash_popup_alignment_delegate.cc",
     "system/web_notification/ash_popup_alignment_delegate.h",
+    "system/web_notification/fullscreen_notification_blocker.cc",
+    "system/web_notification/fullscreen_notification_blocker.h",
     "system/web_notification/login_state_notification_blocker.cc",
     "system/web_notification/login_state_notification_blocker.h",
     "system/web_notification/message_center_bubble.cc",
