@@ -279,6 +279,8 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
     return save_data_before_consumption_;
   }
 
+  bool can_use_slices() const { return can_use_slices_; }
+
  protected:
   using StaticStreamMap = QuicSmallMap<QuicStreamId, QuicStream*, 2>;
 
@@ -491,6 +493,10 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
 
   // Application data is saved before it is actually consumed.
   const bool save_data_before_consumption_;
+
+  // QUIC stream can take ownership of application data provided in reference
+  // counted memory to avoid data copy.
+  const bool can_use_slices_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicSession);
 };
