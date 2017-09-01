@@ -700,6 +700,9 @@ putCharAndDots (FileInfo * nested, widechar c, widechar d)
 
 /**
  * Print out dot numbers
+ *
+ * @return a string containing the dot numbers. The longest possible
+ * output is "\123456789ABCDEF0/"
  */
 static char *
 unknownDots (widechar dots)
