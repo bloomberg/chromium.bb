@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/grit/generated_resources.h"
 #include "extensions/common/permissions/permission_set.h"
@@ -50,6 +51,10 @@ class ChromePermissionMessageProviderUnittest : public testing::Test {
         PermissionSet(new_permissions, ManifestPermissionSet(), URLPatternSet(),
                       URLPatternSet()),
         Manifest::TYPE_EXTENSION);
+  }
+
+  ChromePermissionMessageProvider* message_provider() {
+    return message_provider_.get();
   }
 
  private:
@@ -154,6 +159,32 @@ TEST_F(ChromePermissionMessageProviderUnittest,
   // still be considered a privilege escalation.
   EXPECT_TRUE(IsPrivilegeIncrease(APIPermissionSet(), granted_permissions));
   EXPECT_TRUE(IsPrivilegeIncrease(APIPermissionSet(), actual_permissions));
+}
+
+// Check that if IDN domains are provided in host permissions, then those
+// domains are converted to punycode.
+TEST_F(ChromePermissionMessageProviderUnittest,
+       IDNDomainsInHostPermissionsArePunycoded) {
+  extensions::URLPatternSet explicit_hosts;
+
+  explicit_hosts.AddPattern(
+      URLPattern(URLPattern::SCHEME_ALL, "https://ɡoogle.com/"));
+  explicit_hosts.AddPattern(
+      URLPattern(URLPattern::SCHEME_ALL, "https://*.ɡoogle.com/"));
+  extensions::PermissionSet permissions(APIPermissionSet(),
+                                        ManifestPermissionSet(), explicit_hosts,
+                                        URLPatternSet());
+
+  PermissionMessages messages = message_provider()->GetPermissionMessages(
+      message_provider()->GetAllPermissionIDs(permissions,
+                                              Manifest::TYPE_EXTENSION));
+
+  ASSERT_EQ(1U, messages.size());
+  EXPECT_EQ(l10n_util::GetStringFUTF16(
+                IDS_EXTENSION_PROMPT_WARNING_2_HOSTS,
+                base::ASCIIToUTF16("all xn--oogle-qmc.com sites"),
+                base::ASCIIToUTF16("xn--oogle-qmc.com")),
+            messages.front().message());
 }
 
 }  // namespace extensions
