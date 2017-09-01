@@ -33,6 +33,7 @@
 #include <algorithm>
 #include <cmath>
 #include <limits>
+#include "platform/geometry/FloatShapeHelpers.h"
 #include "platform/wtf/text/WTFString.h"
 #include "third_party/skia/include/core/SkPoint.h"
 
@@ -48,10 +49,6 @@ static inline float Max4(float a, float b, float c, float d) {
 
 inline float Dot(const FloatSize& a, const FloatSize& b) {
   return a.Width() * b.Width() + a.Height() * b.Height();
-}
-
-inline float Determinant(const FloatSize& a, const FloatSize& b) {
-  return a.Width() * b.Height() - a.Height() * b.Width();
 }
 
 inline bool IsPointInTriangle(const FloatPoint& p,

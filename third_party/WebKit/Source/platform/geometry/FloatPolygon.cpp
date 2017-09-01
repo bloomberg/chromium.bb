@@ -28,15 +28,12 @@
  */
 
 #include "platform/geometry/FloatPolygon.h"
+#include "platform/geometry/FloatShapeHelpers.h"
 
 #include <memory>
 #include "platform/wtf/MathExtras.h"
 
 namespace blink {
-
-static inline float Determinant(const FloatSize& a, const FloatSize& b) {
-  return a.Width() * b.Height() - a.Height() * b.Width();
-}
 
 static inline bool AreCollinearPoints(const FloatPoint& p0,
                                       const FloatPoint& p1,
