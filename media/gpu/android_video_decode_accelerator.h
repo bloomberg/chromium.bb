@@ -409,6 +409,27 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
   // Are overlays required by command-line options?
   bool is_overlay_required_ = false;
 
+  // Must match AVDAFrameInformation UMA enum.  Please do not remove or re-order
+  // values, only append new ones.
+  enum FrameInformation {
+    SURFACETEXTURE_INSECURE = 0,
+    SURFACETEXTURE_L3 = 1,
+    OVERLAY_L3 = 2,
+    OVERLAY_L1 = 3,
+    OVERLAY_INSECURE_PLAYER_ELEMENT_FULLSCREEN = 4,
+    OVERLAY_INSECURE_NON_PLAYER_ELEMENT_FULLSCREEN = 5,
+
+    // Max enum value.
+    FRAME_INFORMATION_MAX = OVERLAY_INSECURE_NON_PLAYER_ELEMENT_FULLSCREEN
+  };
+
+  // Update |cached_frame_information_|.
+  void CacheFrameInformation();
+
+  // Most recently cached frame information, so that we can dispatch it without
+  // recomputing it on every frame.  It changes very rarely.
+  FrameInformation cached_frame_information_ = SURFACETEXTURE_INSECURE;
+
   // WeakPtrFactory for posting tasks back to |this|.
   base::WeakPtrFactory<AndroidVideoDecodeAccelerator> weak_this_factory_;
 
