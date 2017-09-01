@@ -17,7 +17,6 @@ void ApplyCommonFontStyles(int context,
   if (context == CONTEXT_WINDOWS10_NATIVE) {
     // Adjusts default font size up to match Win10 modern UI.
     *size_delta = 15 - gfx::PlatformFont::kDefaultBaseFontSize;
-    *weight = views::TypographyProvider::MediumWeightForUI();
   }
 #endif
 }
