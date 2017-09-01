@@ -190,7 +190,7 @@ class CONTENT_EXPORT BrowserPlugin : public blink::WebPlugin,
   bool ready_;
 
   // Used for HW compositing.
-  scoped_refptr<ChildFrameCompositingHelper> compositing_helper_;
+  std::unique_ptr<ChildFrameCompositingHelper> compositing_helper_;
 
   // URL for the embedder frame.
   int browser_plugin_instance_id_;

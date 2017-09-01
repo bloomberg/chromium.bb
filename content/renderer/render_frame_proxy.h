@@ -199,7 +199,7 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   // Stores the WebRemoteFrame we are associated with.
   blink::WebRemoteFrame* web_frame_;
   std::string unique_name_;
-  scoped_refptr<ChildFrameCompositingHelper> compositing_helper_;
+  std::unique_ptr<ChildFrameCompositingHelper> compositing_helper_;
 
   RenderViewImpl* render_view_;
   RenderWidget* render_widget_;

@@ -356,8 +356,8 @@ void RenderFrameProxy::OnSetChildFrameSurface(
     return;
 
   if (!compositing_helper_) {
-    compositing_helper_ =
-        ChildFrameCompositingHelper::CreateForRenderFrameProxy(this);
+    compositing_helper_.reset(
+        ChildFrameCompositingHelper::CreateForRenderFrameProxy(this));
     if (enable_surface_synchronization_) {
       // We wait until there is a single CompositorFrame guaranteed to be
       // available and ready for display in the display compositor before using

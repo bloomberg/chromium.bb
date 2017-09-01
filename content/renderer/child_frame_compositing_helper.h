@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/shared_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "cc/layers/surface_layer.h"
@@ -46,9 +45,10 @@ namespace content {
 class BrowserPlugin;
 class RenderFrameProxy;
 
-class CONTENT_EXPORT ChildFrameCompositingHelper
-    : public base::RefCounted<ChildFrameCompositingHelper> {
+class CONTENT_EXPORT ChildFrameCompositingHelper {
  public:
+  virtual ~ChildFrameCompositingHelper();
+
   static ChildFrameCompositingHelper* CreateForBrowserPlugin(
       const base::WeakPtr<BrowserPlugin>& browser_plugin);
   static ChildFrameCompositingHelper* CreateForRenderFrameProxy(
@@ -73,8 +73,6 @@ class CONTENT_EXPORT ChildFrameCompositingHelper
       blink::WebRemoteFrame* frame,
       RenderFrameProxy* render_frame_proxy,
       int host_routing_id);
-
-  virtual ~ChildFrameCompositingHelper();
 
   blink::WebPluginContainer* GetContainer();
 
