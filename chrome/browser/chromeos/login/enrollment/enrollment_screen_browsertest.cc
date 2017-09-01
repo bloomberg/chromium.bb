@@ -96,6 +96,7 @@ class AttestationAuthEnrollmentScreenTest : public EnrollmentScreenTest {
  private:
   // Overridden from InProcessBrowserTest:
   void SetUpCommandLine(base::CommandLine* command_line) override {
+    EnrollmentScreenTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kEnterpriseEnableZeroTouchEnrollment);
   }
 
@@ -168,6 +169,7 @@ class ForcedAttestationAuthEnrollmentScreenTest : public EnrollmentScreenTest {
  private:
   // Overridden from InProcessBrowserTest:
   void SetUpCommandLine(base::CommandLine* command_line) override {
+    EnrollmentScreenTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(
         switches::kEnterpriseEnableZeroTouchEnrollment, "forced");
   }
@@ -209,6 +211,7 @@ class MultiAuthEnrollmentScreenTest : public EnrollmentScreenTest {
  private:
   // Overridden from InProcessBrowserTest:
   void SetUpCommandLine(base::CommandLine* command_line) override {
+    EnrollmentScreenTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kEnterpriseEnableZeroTouchEnrollment);
     // Kiosk mode will force OAuth enrollment.
     base::FilePath test_data_dir;
@@ -256,6 +259,7 @@ class ProvisionedEnrollmentScreenTest : public EnrollmentScreenTest {
  private:
   // Overridden from InProcessBrowserTest:
   void SetUpCommandLine(base::CommandLine* command_line) override {
+    EnrollmentScreenTest::SetUpCommandLine(command_line);
     base::FilePath test_data_dir;
     ASSERT_TRUE(chromeos::test_utils::GetTestDataPath(
                     "app_mode", "kiosk_manifest", &test_data_dir));

@@ -1110,6 +1110,7 @@ class WizardControllerKioskFlowTest : public WizardControllerFlowTest {
 
   // Overridden from InProcessBrowserTest:
   void SetUpCommandLine(base::CommandLine* command_line) override {
+    WizardControllerFlowTest::SetUpCommandLine(command_line);
     base::FilePath test_data_dir;
     ASSERT_TRUE(chromeos::test_utils::GetTestDataPath(
                     "app_mode", "kiosk_manifest", &test_data_dir));
@@ -1317,6 +1318,7 @@ class WizardControllerCellularFirstTest : public WizardControllerFlowTest {
   WizardControllerCellularFirstTest() {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
+    WizardControllerFlowTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kCellularFirst);
   }
 

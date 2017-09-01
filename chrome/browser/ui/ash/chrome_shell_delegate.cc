@@ -145,16 +145,6 @@ class AccessibilityDelegateImpl : public ash::AccessibilityDelegate {
     return chromeos::MagnificationManager::Get()->IsMagnifierEnabled();
   }
 
-  void SetLargeCursorEnabled(bool enabled) override {
-    DCHECK(AccessibilityManager::Get());
-    return AccessibilityManager::Get()->EnableLargeCursor(enabled);
-  }
-
-  bool IsLargeCursorEnabled() const override {
-    DCHECK(AccessibilityManager::Get());
-    return AccessibilityManager::Get()->IsLargeCursorEnabled();
-  }
-
   void SetAutoclickEnabled(bool enabled) override {
     DCHECK(AccessibilityManager::Get());
     return AccessibilityManager::Get()->EnableAutoclick(enabled);

@@ -38,6 +38,8 @@ class AccessibilityDetailedView : public TrayDetailsView {
   ~AccessibilityDetailedView() override {}
 
  private:
+  friend class chromeos::TrayAccessibilityTest;
+
   // TrayDetailsView:
   void HandleViewClicked(views::View* view) override;
   void HandleButtonPressed(views::Button* sender,
@@ -68,6 +70,7 @@ class AccessibilityDetailedView : public TrayDetailsView {
   views::View* sticky_keys_view_ = nullptr;
   views::View* tap_dragging_view_ = nullptr;
 
+  // These exist for tests. The canonical state is stored in prefs.
   bool spoken_feedback_enabled_ = false;
   bool high_contrast_enabled_ = false;
   bool screen_magnifier_enabled_ = false;
@@ -80,9 +83,9 @@ class AccessibilityDetailedView : public TrayDetailsView {
   bool highlight_keyboard_focus_enabled_ = false;
   bool sticky_keys_enabled_ = false;
   bool tap_dragging_enabled_ = false;
+
   LoginStatus login_;
 
-  friend class chromeos::TrayAccessibilityTest;
   DISALLOW_COPY_AND_ASSIGN(AccessibilityDetailedView);
 };
 
@@ -94,6 +97,8 @@ class TrayAccessibility : public TrayImageItem, public AccessibilityObserver {
   ~TrayAccessibility() override;
 
  private:
+  friend class chromeos::TrayAccessibilityTest;
+
   void SetTrayIconVisible(bool visible);
   tray::AccessibilityDetailedView* CreateDetailedMenu();
 
@@ -121,7 +126,6 @@ class TrayAccessibility : public TrayImageItem, public AccessibilityObserver {
   // A11y feature status on just entering the lock screen.
   bool show_a11y_menu_on_lock_screen_;
 
-  friend class chromeos::TrayAccessibilityTest;
   DISALLOW_COPY_AND_ASSIGN(TrayAccessibility);
 };
 

@@ -13,6 +13,7 @@
 #include "ash/accelerators/ash_focus_manager_factory.h"
 #include "ash/accelerators/magnifier_key_scroller.h"
 #include "ash/accelerators/spoken_feedback_toggler.h"
+#include "ash/accessibility/accessibility_controller.h"
 #include "ash/accessibility_delegate.h"
 #include "ash/app_list/app_list_delegate_impl.h"
 #include "ash/ash_constants.h"
@@ -339,13 +340,12 @@ void Shell::RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
 }
 
 // static
-void Shell::RegisterProfilePrefs(PrefRegistrySimple* registry) {
+void Shell::RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test) {
+  AccessibilityController::RegisterProfilePrefs(registry, for_test);
   LogoutButtonTray::RegisterProfilePrefs(registry);
   NightLightController::RegisterProfilePrefs(registry);
   ShelfController::RegisterProfilePrefs(registry);
-  // Request access to prefs used by ash but owned by chrome.
-  // See //services/preferences/README.md
-  TrayCapsLock::RegisterForeignPrefs(registry);
+  TrayCapsLock::RegisterProfilePrefs(registry, for_test);
   BluetoothPowerController::RegisterProfilePrefs(registry);
 }
 
@@ -805,6 +805,7 @@ Shell::~Shell() {
 
   // These members access Shell in their destructors.
   wallpaper_controller_.reset();
+  accessibility_controller_.reset();
   accessibility_delegate_.reset();
 
   // Balances the Install() in Initialize().
@@ -902,6 +903,7 @@ void Shell::Init(const ShellInitParams& init_params) {
   // Some delegates access ShellPort during their construction. Create them here
   // instead of the ShellPort constructor.
   accessibility_delegate_.reset(shell_delegate_->CreateAccessibilityDelegate());
+  accessibility_controller_ = base::MakeUnique<AccessibilityController>();
   palette_delegate_ = shell_delegate_->CreatePaletteDelegate();
   toast_manager_ = base::MakeUnique<ToastManager>();
 
