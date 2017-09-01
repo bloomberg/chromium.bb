@@ -135,7 +135,7 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
                            "frame_number", frame_number, "trigger",
                            VideoCaptureOracle::EventAsString(event));
 
-  auto output_buffer_access =
+  std::unique_ptr<VideoCaptureBufferHandle> output_buffer_access =
       output_buffer.handle_provider->GetHandleForInProcessAccess();
   DCHECK_EQ(media::PIXEL_STORAGE_CPU, params_.requested_format.pixel_storage);
   *storage = VideoFrame::WrapExternalSharedMemory(
@@ -147,13 +147,30 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
   // !success to execute the required post-capture steps (tracing, notification
   // of failure to VideoCaptureOracle, etc.).
   if (!(*storage)) {
-    DidCaptureFrame(frame_number, std::move(output_buffer), capture_begin_time,
+    DidCaptureFrame(frame_number, std::move(output_buffer),
+                    std::move(output_buffer_access), capture_begin_time,
                     estimated_frame_duration, *storage, event_time, false);
     return false;
   }
 
+  // Note: Passing the |output_buffer_access| in the callback is a bit of a
+  // hack. Really, the access should be owned by the VideoFrame so that access
+  // is released (unpinning the shared memory) when the VideoFrame goes
+  // out-of-scope. However, there is an an issue where, at browser shutdown, the
+  // callback below may never be run, and instead it self-deletes: If this
+  // happens, the VideoFrame will release access *after* the Buffer goes
+  // out-of-scope, which is an invalid sequence of steps. This could be fixed in
+  // upstream implementation, but it's not worth spending time tracking it down
+  // because all of this code (and upstream code) is about to be replaced.
+  // http://crbug.com/754872
+  //
+  // To be clear, this solution allows |output_buffer_access| to be deleted
+  // before |output_buffer| if the callback self-deletes rather than ever being
+  // run.
+
   *callback = base::Bind(&ThreadSafeCaptureOracle::DidCaptureFrame, this,
                          frame_number, base::Passed(&output_buffer),
+                         base::Passed(&output_buffer_access),
                          capture_begin_time, estimated_frame_duration);
 
   return true;
@@ -207,11 +224,16 @@ void ThreadSafeCaptureOracle::ReportStarted() {
 void ThreadSafeCaptureOracle::DidCaptureFrame(
     int frame_number,
     VideoCaptureDevice::Client::Buffer buffer,
+    std::unique_ptr<media::VideoCaptureBufferHandle> buffer_access,
     base::TimeTicks capture_begin_time,
     base::TimeDelta estimated_frame_duration,
     scoped_refptr<VideoFrame> frame,
     base::TimeTicks reference_time,
     bool success) {
+  // Release |buffer_access| now that nothing is accessing the memory via the
+  // VideoFrame data pointers anymore.
+  buffer_access.reset();
+
   base::AutoLock guard(lock_);
 
   const bool should_deliver_frame =
@@ -238,7 +260,6 @@ void ThreadSafeCaptureOracle::DidCaptureFrame(
   frame->metadata()->SetTimeTicks(VideoFrameMetadata::REFERENCE_TIME,
                                   reference_time);
 
-  DCHECK(frame->IsMappable());
   media::VideoCaptureFormat format(frame->coded_size(),
                                    params_.requested_format.frame_rate,
                                    frame->format(), media::PIXEL_STORAGE_CPU);

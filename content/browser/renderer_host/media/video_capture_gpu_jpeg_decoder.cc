@@ -153,6 +153,11 @@ void VideoCaptureGpuJpegDecoder::DecodeCapturedData(
     LOG(ERROR) << "DecodeCapturedData: WrapExternalSharedMemory failed";
     return;
   }
+  // Hold onto the buffer access handle for the lifetime of the VideoFrame, to
+  // ensure the data pointers remain valid.
+  out_frame->AddDestructionObserver(base::BindOnce(
+      [](std::unique_ptr<media::VideoCaptureBufferHandle> handle) {},
+      base::Passed(&out_buffer_access)));
   out_frame->metadata()->SetDouble(media::VideoFrameMetadata::FRAME_RATE,
                                    frame_format.frame_rate);
 

@@ -27,8 +27,7 @@ class CAPTURE_EXPORT VideoCaptureBufferTracker {
         frame_feedback_id_(0) {}
   virtual bool Init(const gfx::Size& dimensions,
                     media::VideoPixelFormat format,
-                    media::VideoPixelStorage storage_type,
-                    base::Lock* lock) = 0;
+                    media::VideoPixelStorage storage_type) = 0;
   virtual ~VideoCaptureBufferTracker(){};
 
   const gfx::Size& dimensions() const { return dimensions_; }
@@ -51,7 +50,8 @@ class CAPTURE_EXPORT VideoCaptureBufferTracker {
   int frame_feedback_id() { return frame_feedback_id_; }
 
   virtual std::unique_ptr<VideoCaptureBufferHandle> GetMemoryMappedAccess() = 0;
-  virtual mojo::ScopedSharedBufferHandle GetHandleForTransit() = 0;
+  virtual mojo::ScopedSharedBufferHandle GetHandleForTransit(
+      bool read_only) = 0;
   virtual base::SharedMemoryHandle
   GetNonOwnedSharedMemoryHandleForLegacyIPC() = 0;
 
