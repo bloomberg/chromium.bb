@@ -441,7 +441,8 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
     if self._test_instance.enable_xml_result_parsing:
       results = gtest_test_instance.ParseGTestXML(gtest_xml)
     else:
-      results = gtest_test_instance.ParseGTestOutput(output)
+      results = gtest_test_instance.ParseGTestOutput(
+          output, self._test_instance.symbolizer, device.product_cpu_abi)
 
     # Check whether there are any crashed testcases.
     self._crashes.update(r.GetName() for r in results
