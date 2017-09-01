@@ -174,8 +174,7 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
          omnibox::kUIExperimentHideSuggestionUrlTrivialSubdomains)},
     {"bookmark-new-generation", flag_descriptions::kBookmarkNewGenerationName,
      flag_descriptions::kBookmarkNewGenerationDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(
-         bookmark_new_generation::features::kBookmarkNewGeneration)},
+     FEATURE_VALUE_TYPE(kBookmarkNewGeneration)},
     {"mailto-prompt-for-user-choice",
      flag_descriptions::kMailtoPromptForUserChoiceName,
      flag_descriptions::kMailtoPromptForUserChoiceDescription, flags_ui::kOsIos,

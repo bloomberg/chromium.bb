@@ -503,8 +503,7 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
 // Bookmarks UI.
 - (void)testSignInCancelFromBookmarks {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(
-      bookmark_new_generation::features::kBookmarkNewGeneration);
+  scoped_feature_list.InitAndDisableFeature(kBookmarkNewGeneration);
 
   ChromeIdentity* identity = GetFakeIdentity1();
   ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
