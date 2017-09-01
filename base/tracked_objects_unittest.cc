@@ -19,8 +19,6 @@
 #include "base/tracking_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-// Various tests use the address of the line number as a fake unique PC for
-// Locations that need to be equivalent.
 const int kLineNumber = 1776;
 const char kFile[] = "FixedUnitTestFileName";
 const char kWorkerThreadName[] = "WorkerThread-*";
@@ -191,7 +189,7 @@ TEST_F(TrackedObjectsTest, TinyStartupShutdown) {
 
   // Instigate tracking on a single tracked object, on our thread.
   const char kFunction[] = "TinyStartupShutdown";
-  Location location(kFunction, kFile, kLineNumber, &kLineNumber);
+  Location location(kFunction, kFile, kLineNumber, NULL);
   ThreadData::TallyABirthIfActive(location);
 
   ThreadData* data = ThreadData::first();
@@ -555,7 +553,7 @@ TEST_F(TrackedObjectsTest, DeactivatedBirthOnlyToSnapshotWorkerThread) {
   ThreadData::InitializeAndSetTrackingStatus(ThreadData::DEACTIVATED);
 
   const char kFunction[] = "DeactivatedBirthOnlyToSnapshotWorkerThread";
-  Location location(kFunction, kFile, kLineNumber, &kLineNumber);
+  Location location(kFunction, kFile, kLineNumber, NULL);
   TallyABirth(location, std::string());
 
   ProcessDataSnapshot process_data;
@@ -577,7 +575,7 @@ TEST_F(TrackedObjectsTest, DeactivatedBirthOnlyToSnapshotMainThread) {
   ThreadData::InitializeAndSetTrackingStatus(ThreadData::DEACTIVATED);
 
   const char kFunction[] = "DeactivatedBirthOnlyToSnapshotMainThread";
-  Location location(kFunction, kFile, kLineNumber, &kLineNumber);
+  Location location(kFunction, kFile, kLineNumber, NULL);
   TallyABirth(location, kMainThreadName);
 
   ProcessDataSnapshot process_data;
@@ -598,7 +596,7 @@ TEST_F(TrackedObjectsTest, BirthOnlyToSnapshotWorkerThread) {
   ThreadData::InitializeAndSetTrackingStatus(ThreadData::PROFILING_ACTIVE);
 
   const char kFunction[] = "BirthOnlyToSnapshotWorkerThread";
-  Location location(kFunction, kFile, kLineNumber, &kLineNumber);
+  Location location(kFunction, kFile, kLineNumber, NULL);
   TallyABirth(location, std::string());
 
   ProcessDataSnapshot process_data;
@@ -611,7 +609,7 @@ TEST_F(TrackedObjectsTest, BirthOnlyToSnapshotMainThread) {
   ThreadData::InitializeAndSetTrackingStatus(ThreadData::PROFILING_ACTIVE);
 
   const char kFunction[] = "BirthOnlyToSnapshotMainThread";
-  Location location(kFunction, kFile, kLineNumber, &kLineNumber);
+  Location location(kFunction, kFile, kLineNumber, NULL);
   TallyABirth(location, kMainThreadName);
 
   ProcessDataSnapshot process_data;
@@ -624,7 +622,7 @@ TEST_F(TrackedObjectsTest, LifeCycleToSnapshotMainThread) {
   ThreadData::InitializeAndSetTrackingStatus(ThreadData::PROFILING_ACTIVE);
 
   const char kFunction[] = "LifeCycleToSnapshotMainThread";
-  Location location(kFunction, kFile, kLineNumber, &kLineNumber);
+  Location location(kFunction, kFile, kLineNumber, NULL);
   TallyABirth(location, kMainThreadName);
 
   const base::TimeTicks kTimePosted = base::TimeTicks::FromInternalValue(1000);
@@ -653,7 +651,7 @@ TEST_F(TrackedObjectsTest, TwoPhases) {
   ThreadData::InitializeAndSetTrackingStatus(ThreadData::PROFILING_ACTIVE);
 
   const char kFunction[] = "TwoPhases";
-  Location location(kFunction, kFile, kLineNumber, &kLineNumber);
+  Location location(kFunction, kFile, kLineNumber, NULL);
   TallyABirth(location, kMainThreadName);
 
   const base::TimeTicks kTimePosted = base::TimeTicks::FromInternalValue(1000);
@@ -756,7 +754,7 @@ TEST_F(TrackedObjectsTest, ThreePhases) {
   ThreadData::InitializeAndSetTrackingStatus(ThreadData::PROFILING_ACTIVE);
 
   const char kFunction[] = "ThreePhases";
-  Location location(kFunction, kFile, kLineNumber, &kLineNumber);
+  Location location(kFunction, kFile, kLineNumber, NULL);
 
   // Phase 0
   {
@@ -903,7 +901,7 @@ TEST_F(TrackedObjectsTest, TwoPhasesSecondEmpty) {
   ThreadData::InitializeAndSetTrackingStatus(ThreadData::PROFILING_ACTIVE);
 
   const char kFunction[] = "TwoPhasesSecondEmpty";
-  Location location(kFunction, kFile, kLineNumber, &kLineNumber);
+  Location location(kFunction, kFile, kLineNumber, NULL);
   ThreadData::InitializeThreadContext(kMainThreadName);
 
   const base::TimeTicks kTimePosted =
@@ -971,7 +969,7 @@ TEST_F(TrackedObjectsTest, TwoPhasesFirstEmpty) {
   ThreadData::OnProfilingPhaseCompleted(0);
 
   const char kFunction[] = "TwoPhasesSecondEmpty";
-  Location location(kFunction, kFile, kLineNumber, &kLineNumber);
+  Location location(kFunction, kFile, kLineNumber, NULL);
   ThreadData::InitializeThreadContext(kMainThreadName);
 
   const base::TimeTicks kTimePosted =
@@ -1033,7 +1031,7 @@ TEST_F(TrackedObjectsTest, LifeCycleMidDeactivatedToSnapshotMainThread) {
   ThreadData::InitializeAndSetTrackingStatus(ThreadData::PROFILING_ACTIVE);
 
   const char kFunction[] = "LifeCycleMidDeactivatedToSnapshotMainThread";
-  Location location(kFunction, kFile, kLineNumber, &kLineNumber);
+  Location location(kFunction, kFile, kLineNumber, NULL);
   TallyABirth(location, kMainThreadName);
 
   const base::TimeTicks kTimePosted =
@@ -1069,7 +1067,7 @@ TEST_F(TrackedObjectsTest, LifeCyclePreDeactivatedToSnapshotMainThread) {
   ThreadData::InitializeAndSetTrackingStatus(ThreadData::DEACTIVATED);
 
   const char kFunction[] = "LifeCyclePreDeactivatedToSnapshotMainThread";
-  Location location(kFunction, kFile, kLineNumber, &kLineNumber);
+  Location location(kFunction, kFile, kLineNumber, NULL);
   TallyABirth(location, kMainThreadName);
 
   const base::TimeTicks kTimePosted =
@@ -1107,7 +1105,7 @@ TEST_F(TrackedObjectsTest, TwoLives) {
   ThreadData::InitializeAndSetTrackingStatus(ThreadData::PROFILING_ACTIVE);
 
   const char kFunction[] = "TwoLives";
-  Location location(kFunction, kFile, kLineNumber, &kLineNumber);
+  Location location(kFunction, kFile, kLineNumber, NULL);
   TallyABirth(location, kMainThreadName);
 
   const base::TimeTicks kTimePosted =
@@ -1150,7 +1148,7 @@ TEST_F(TrackedObjectsTest, DifferentLives) {
   // Use a well named thread.
   ThreadData::InitializeThreadContext(kMainThreadName);
   const char kFunction[] = "DifferentLives";
-  Location location(kFunction, kFile, kLineNumber, &kLineNumber);
+  Location location(kFunction, kFile, kLineNumber, NULL);
 
   const base::TimeTicks kTimePosted =
       base::TimeTicks() + base::TimeDelta::FromMilliseconds(1);
@@ -1170,8 +1168,7 @@ TEST_F(TrackedObjectsTest, DifferentLives) {
   ThreadData::TallyRunOnNamedThreadIfTracking(pending_task, stopwatch);
 
   const int kSecondFakeLineNumber = 999;
-  Location second_location(kFunction, kFile, kSecondFakeLineNumber,
-                           &kSecondFakeLineNumber);
+  Location second_location(kFunction, kFile, kSecondFakeLineNumber, NULL);
 
   // TrackingInfo will call TallyABirth() during construction.
   base::TrackingInfo pending_task2(second_location, kDelayedStartTime);
@@ -1226,7 +1223,7 @@ TEST_F(TrackedObjectsTest, TaskWithNestedExclusion) {
   ThreadData::InitializeAndSetTrackingStatus(ThreadData::PROFILING_ACTIVE);
 
   const char kFunction[] = "TaskWithNestedExclusion";
-  Location location(kFunction, kFile, kLineNumber, &kLineNumber);
+  Location location(kFunction, kFile, kLineNumber, NULL);
   TallyABirth(location, kMainThreadName);
 
   const base::TimeTicks kTimePosted =
@@ -1261,7 +1258,7 @@ TEST_F(TrackedObjectsTest, TaskWith2NestedExclusions) {
   ThreadData::InitializeAndSetTrackingStatus(ThreadData::PROFILING_ACTIVE);
 
   const char kFunction[] = "TaskWith2NestedExclusions";
-  Location location(kFunction, kFile, kLineNumber, &kLineNumber);
+  Location location(kFunction, kFile, kLineNumber, NULL);
   TallyABirth(location, kMainThreadName);
 
   const base::TimeTicks kTimePosted =
@@ -1302,7 +1299,7 @@ TEST_F(TrackedObjectsTest, TaskWithNestedExclusionWithNestedTask) {
   ThreadData::InitializeAndSetTrackingStatus(ThreadData::PROFILING_ACTIVE);
 
   const char kFunction[] = "TaskWithNestedExclusionWithNestedTask";
-  Location location(kFunction, kFile, kLineNumber, &kLineNumber);
+  Location location(kFunction, kFile, kLineNumber, NULL);
 
   const int kSecondFakeLineNumber = 999;
 
@@ -1323,8 +1320,7 @@ TEST_F(TrackedObjectsTest, TaskWithNestedExclusionWithNestedTask) {
     TaskStopwatch exclusion_stopwatch;
     exclusion_stopwatch.Start();
     {
-      Location second_location(kFunction, kFile, kSecondFakeLineNumber,
-                               &kSecondFakeLineNumber);
+      Location second_location(kFunction, kFile, kSecondFakeLineNumber, NULL);
       base::TrackingInfo nested_task(second_location, kDelayedStartTime);
        // Overwrite implied Now().
       nested_task.time_posted =
