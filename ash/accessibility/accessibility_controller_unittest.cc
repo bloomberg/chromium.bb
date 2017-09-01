@@ -86,4 +86,24 @@ TEST_F(AccessibilityControllerTest, DisableLargeCursorResetsSize) {
             prefs->GetInteger(prefs::kAccessibilityLargeCursorDipSize));
 }
 
+TEST_F(AccessibilityControllerTest, SetHighContrastEnabled) {
+  AccessibilityController* controller =
+      Shell::Get()->accessibility_controller();
+  EXPECT_FALSE(controller->IsHighContrastEnabled());
+
+  TestAccessibilityObserver observer;
+  Shell::Get()->system_tray_notifier()->AddAccessibilityObserver(&observer);
+  EXPECT_EQ(0, observer.changed_);
+
+  controller->SetHighContrastEnabled(true);
+  EXPECT_TRUE(controller->IsHighContrastEnabled());
+  EXPECT_EQ(1, observer.changed_);
+
+  controller->SetHighContrastEnabled(false);
+  EXPECT_FALSE(controller->IsHighContrastEnabled());
+  EXPECT_EQ(2, observer.changed_);
+
+  Shell::Get()->system_tray_notifier()->RemoveAccessibilityObserver(&observer);
+}
+
 }  // namespace ash

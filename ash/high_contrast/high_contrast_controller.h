@@ -15,6 +15,7 @@ class Window;
 
 namespace ash {
 
+// Controls the accessibility high contrast mode for classic ash.
 class ASH_EXPORT HighContrastController : public ShellObserver {
  public:
   HighContrastController();

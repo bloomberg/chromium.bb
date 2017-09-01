@@ -316,7 +316,7 @@ class AccessibilityManager
   void OnLargeCursorChanged();
   void UpdateStickyKeysFromPref();
   void UpdateSpokenFeedbackFromPref();
-  void UpdateHighContrastFromPref();
+  void OnHighContrastChanged();
   void UpdateAutoclickFromPref();
   void UpdateAutoclickDelayFromPref();
   void UpdateVirtualKeyboardFromPref();
@@ -392,7 +392,6 @@ class AccessibilityManager
 
   bool sticky_keys_enabled_;
   bool spoken_feedback_enabled_;
-  bool high_contrast_enabled_;
   bool autoclick_enabled_;
   base::TimeDelta autoclick_delay_ms_;
   bool virtual_keyboard_enabled_;

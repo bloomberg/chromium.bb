@@ -113,12 +113,6 @@ class AccessibilityDelegateImpl : public ash::AccessibilityDelegate {
     ash::Shell::Get()->RemoveShellObserver(AccessibilityManager::Get());
   }
 
-  void ToggleHighContrast() override {
-    DCHECK(AccessibilityManager::Get());
-    AccessibilityManager::Get()->EnableHighContrast(
-        !AccessibilityManager::Get()->IsHighContrastEnabled());
-  }
-
   bool IsSpokenFeedbackEnabled() const override {
     DCHECK(AccessibilityManager::Get());
     return AccessibilityManager::Get()->IsSpokenFeedbackEnabled();
@@ -128,11 +122,6 @@ class AccessibilityDelegateImpl : public ash::AccessibilityDelegate {
       ash::AccessibilityNotificationVisibility notify) override {
     DCHECK(AccessibilityManager::Get());
     AccessibilityManager::Get()->ToggleSpokenFeedback(notify);
-  }
-
-  bool IsHighContrastEnabled() const override {
-    DCHECK(AccessibilityManager::Get());
-    return AccessibilityManager::Get()->IsHighContrastEnabled();
   }
 
   void SetMagnifierEnabled(bool enabled) override {
