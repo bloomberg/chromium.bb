@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/aura/mus/hit_test_data_provider_aura.h"
+#include "ui/aura/hit_test_data_provider_aura.h"
 
 #include "base/containers/adapters.h"
 #include "services/ui/public/interfaces/window_tree_constants.mojom.h"

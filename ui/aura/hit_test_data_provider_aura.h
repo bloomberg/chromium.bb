@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_MUS_HIT_TEST_DATA_PROVIDER_AURA_H_
-#define UI_AURA_MUS_HIT_TEST_DATA_PROVIDER_AURA_H_
+#ifndef UI_AURA_HIT_TEST_DATA_PROVIDER_AURA_H_
+#define UI_AURA_HIT_TEST_DATA_PROVIDER_AURA_H_
 
 #include "base/macros.h"
 #include "components/viz/client/hit_test_data_provider.h"
+#include "ui/aura/aura_export.h"
 
 namespace aura {
 
@@ -15,7 +16,7 @@ class Window;
 // A HitTestDataProvider that captures hit-test areas from a aura::Window tree
 // and packages it to be submitted to compositor frame sink. The |window| used
 // when creating the HitTestDataProviderAura should outlive the data provider.
-class HitTestDataProviderAura : public viz::HitTestDataProvider {
+class AURA_EXPORT HitTestDataProviderAura : public viz::HitTestDataProvider {
  public:
   explicit HitTestDataProviderAura(Window* window);
   ~HitTestDataProviderAura() override;
@@ -38,4 +39,4 @@ class HitTestDataProviderAura : public viz::HitTestDataProvider {
 
 }  // namespace aura
 
-#endif  // UI_AURA_MUS_HIT_TEST_DATA_PROVIDER_AURA_H_
+#endif  // UI_AURA_HIT_TEST_DATA_PROVIDER_AURA_H_

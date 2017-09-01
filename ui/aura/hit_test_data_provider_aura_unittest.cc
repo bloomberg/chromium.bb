@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/aura/mus/window_tree_client.h"
+#include "ui/aura/hit_test_data_provider_aura.h"
 
 #include "components/viz/client/hit_test_data_provider.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/mus/window_port_mus.h"
-#include "ui/aura/test/aura_mus_test_base.h"
+#include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_targeter.h"
 #include "ui/gfx/geometry/rect.h"
@@ -74,8 +73,11 @@ class TestHoleWindowTargeter : public aura::WindowTargeter {
 
 }  // namespace
 
-// Creates a root window and child windows. Maintains a cc:LayerTreeFrameSink
-// to help exercise its viz::HitTestDataProvider.
+// Creates a root window, child windows and a viz::HitTestDataProvider.
+// root
+//   +- window2
+//   |_ window3
+//        |_ window4
 class HitTestDataProviderAuraTest : public test::AuraTestBaseMus {
  public:
   HitTestDataProviderAuraTest() {}
@@ -106,16 +108,12 @@ class HitTestDataProviderAuraTest : public test::AuraTestBaseMus {
     root_->AddChild(window2_);
     root_->AddChild(window3_);
 
-    WindowPort* port = WindowPortMus::Get(root_.get());
-    sink_ = port->CreateLayerTreeFrameSink();
+    hit_test_data_provider_ = base::MakeUnique<HitTestDataProviderAura>(root());
   }
 
  protected:
   const viz::HitTestDataProvider* hit_test_data_provider() const {
-    // TODO(varkha): Find a way to get the HitTestDataProvider without depending
-    // on WindowPortMus
-    WindowPortMus* port = WindowPortMus::Get(root_.get());
-    return port->local_layer_tree_frame_sink_->hit_test_data_provider();
+    return hit_test_data_provider_.get();
   }
 
   Window* root() { return root_.get(); }
@@ -124,11 +122,11 @@ class HitTestDataProviderAuraTest : public test::AuraTestBaseMus {
   Window* window4() { return window4_; }
 
  private:
-  std::unique_ptr<cc::LayerTreeFrameSink> sink_;
   std::unique_ptr<Window> root_;
   Window* window2_;
   Window* window3_;
   Window* window4_;
+  std::unique_ptr<viz::HitTestDataProvider> hit_test_data_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(HitTestDataProviderAuraTest);
 };
