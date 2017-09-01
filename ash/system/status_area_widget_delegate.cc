@@ -139,8 +139,7 @@ void StatusAreaWidgetDelegate::AddTray(views::View* tray) {
 void StatusAreaWidgetDelegate::UpdateLayout() {
   // Use a grid layout so that the trays can be centered in each cell, and
   // so that the widget gets laid out correctly when tray sizes change.
-  views::GridLayout* layout = new views::GridLayout(this);
-  SetLayoutManager(layout);
+  views::GridLayout* layout = views::GridLayout::CreateAndInstall(this);
 
   // Update tray border based on layout.
   bool is_child_on_edge = true;

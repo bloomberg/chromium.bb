@@ -38,8 +38,7 @@ void RadioButtonExample::CreateExampleView(View* container) {
     radio_buttons_[i]->set_listener(this);
   }
 
-  GridLayout* layout = new GridLayout(container);
-  container->SetLayoutManager(layout);
+  GridLayout* layout = GridLayout::CreateAndInstall(container);
 
   ColumnSet* column_set = layout->AddColumnSet(0);
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL,

@@ -150,7 +150,7 @@ std::unique_ptr<PaymentRequestRowView> CreatePaymentSheetRow(
       kPaymentRequestRowVerticalInsets, trailing_inset);
   std::unique_ptr<PaymentRequestRowView> row =
       base::MakeUnique<PaymentRequestRowView>(listener, clickable, row_insets);
-  views::GridLayout* layout = new views::GridLayout(row.get());
+  views::GridLayout* layout = views::GridLayout::CreateAndInstall(row.get());
   row->SetLayoutManager(layout);
 
   views::ColumnSet* columns = layout->AddColumnSet(0);
@@ -211,8 +211,8 @@ std::unique_ptr<views::View> CreateInlineCurrencyAmountItem(
     bool bold) {
   std::unique_ptr<views::View> item_amount_line =
       base::MakeUnique<views::View>();
-  std::unique_ptr<views::GridLayout> item_amount_layout =
-      base::MakeUnique<views::GridLayout>(item_amount_line.get());
+  views::GridLayout* item_amount_layout =
+      views::GridLayout::CreateAndInstall(item_amount_line.get());
   views::ColumnSet* item_amount_columns = item_amount_layout->AddColumnSet(0);
   item_amount_columns->AddColumn(views::GridLayout::LEADING,
                                  views::GridLayout::LEADING, 0,
@@ -240,7 +240,6 @@ std::unique_ptr<views::View> CreateInlineCurrencyAmountItem(
   item_amount_layout->AddView(currency_label.release());
   item_amount_layout->AddView(amount_label.release());
 
-  item_amount_line->SetLayoutManager(item_amount_layout.release());
   return item_amount_line;
 }
 
@@ -413,7 +412,7 @@ base::string16 PaymentSheetViewController::GetSheetTitle() {
 }
 
 void PaymentSheetViewController::FillContentView(views::View* content_view) {
-  views::GridLayout* layout = new views::GridLayout(content_view);
+  views::GridLayout* layout = views::GridLayout::CreateAndInstall(content_view);
   content_view->SetLayoutManager(layout);
   views::ColumnSet* columns = layout->AddColumnSet(0);
   columns->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER, 1,
@@ -563,8 +562,8 @@ void PaymentSheetViewController::UpdatePayButtonState(bool enabled) {
 std::unique_ptr<PaymentRequestRowView>
 PaymentSheetViewController::CreatePaymentSheetSummaryRow() {
   std::unique_ptr<views::View> inline_summary = base::MakeUnique<views::View>();
-  std::unique_ptr<views::GridLayout> layout =
-      base::MakeUnique<views::GridLayout>(inline_summary.get());
+  views::GridLayout* layout =
+      views::GridLayout::CreateAndInstall(inline_summary.get());
   views::ColumnSet* columns = layout->AddColumnSet(0);
   columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::LEADING, 1,
                      views::GridLayout::USE_PREF, 0, 0);
@@ -635,8 +634,6 @@ PaymentSheetViewController::CreatePaymentSheetSummaryRow() {
               spec()->GetTotal(state()->selected_instrument())->amount),
           false, true)
           .release());
-
-  inline_summary->SetLayoutManager(layout.release());
 
   PaymentSheetRowBuilder builder(
       this, l10n_util::GetStringUTF16(IDS_PAYMENTS_ORDER_SUMMARY_LABEL));
@@ -731,7 +728,8 @@ PaymentSheetViewController::CreatePaymentMethodRow() {
   if (selected_instrument) {
     std::unique_ptr<views::View> content_view = base::MakeUnique<views::View>();
 
-    views::GridLayout* layout = new views::GridLayout(content_view.get());
+    views::GridLayout* layout =
+        views::GridLayout::CreateAndInstall(content_view.get());
     content_view->SetLayoutManager(layout);
     views::ColumnSet* columns = layout->AddColumnSet(0);
     columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER, 1,

@@ -38,7 +38,7 @@ CredentialsSelectionView::CredentialsSelectionView(
   DCHECK(!password_forms_->empty());
 
   // Layout.
-  views::GridLayout* layout = new views::GridLayout(this);
+  views::GridLayout* layout = views::GridLayout::CreateAndInstall(this);
   SetLayoutManager(layout);
 
   // ColumnSet.

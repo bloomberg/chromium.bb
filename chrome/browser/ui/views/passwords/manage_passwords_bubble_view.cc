@@ -378,9 +378,8 @@ ManagePasswordsBubbleView::PendingView::PendingView(
 }
 
 void ManagePasswordsBubbleView::PendingView::CreateAndSetLayout() {
-  views::GridLayout* layout = new views::GridLayout(this);
+  views::GridLayout* layout = views::GridLayout::CreateAndInstall(this);
   layout->set_minimum_size(gfx::Size(kDesiredBubbleWidth, 0));
-  SetLayoutManager(layout);
 
   // Create the edit, save and never buttons.
   if (!edit_button_ &&
@@ -557,9 +556,8 @@ class ManagePasswordsBubbleView::ManageView : public views::View,
 ManagePasswordsBubbleView::ManageView::ManageView(
     ManagePasswordsBubbleView* parent)
     : parent_(parent) {
-  views::GridLayout* layout = new views::GridLayout(this);
+  views::GridLayout* layout = views::GridLayout::CreateAndInstall(this);
   layout->set_minimum_size(gfx::Size(kDesiredBubbleWidth, 0));
-  SetLayoutManager(layout);
   BuildColumnSet(layout, SINGLE_VIEW_COLUMN_SET);
   layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
 
@@ -650,9 +648,8 @@ class ManagePasswordsBubbleView::SaveConfirmationView
 ManagePasswordsBubbleView::SaveConfirmationView::SaveConfirmationView(
     ManagePasswordsBubbleView* parent)
     : parent_(parent) {
-  views::GridLayout* layout = new views::GridLayout(this);
+  views::GridLayout* layout = views::GridLayout::CreateAndInstall(this);
   layout->set_minimum_size(gfx::Size(kDesiredBubbleWidth, 0));
-  SetLayoutManager(layout);
 
   views::StyledLabel* confirmation =
       new views::StyledLabel(parent_->model()->save_confirmation_text(), this);
@@ -724,9 +721,8 @@ class ManagePasswordsBubbleView::SignInPromoView
 ManagePasswordsBubbleView::SignInPromoView::SignInPromoView(
     ManagePasswordsBubbleView* parent)
     : parent_(parent) {
-  views::GridLayout* layout = new views::GridLayout(this);
+  views::GridLayout* layout = views::GridLayout::CreateAndInstall(this);
   layout->set_minimum_size(gfx::Size(kDesiredBubbleWidth, 0));
-  SetLayoutManager(layout);
 
   signin_button_ = views::MdTextButton::CreateSecondaryUiBlueButton(
       this,
@@ -792,9 +788,8 @@ ManagePasswordsBubbleView::UpdatePendingView::UpdatePendingView(
     ManagePasswordsBubbleView* parent)
     : parent_(parent), selection_view_(nullptr) {
   ChromeLayoutProvider* layout_provider = ChromeLayoutProvider::Get();
-  views::GridLayout* layout = new views::GridLayout(this);
+  views::GridLayout* layout = views::GridLayout::CreateAndInstall(this);
   layout->set_minimum_size(gfx::Size(kDesiredBubbleWidth, 0));
-  SetLayoutManager(layout);
 
   // Credential row.
   if (parent->model()->ShouldShowMultipleAccountUpdateUI()) {

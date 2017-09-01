@@ -210,8 +210,7 @@ WindowTypeLauncher::WindowTypeLauncher(
           this,
           base::ASCIIToUTF16("Show a web/app notification"))),
       show_views_examples_callback_(show_views_examples_callback) {
-  views::GridLayout* layout = new views::GridLayout(this);
-  SetLayoutManager(layout);
+  views::GridLayout* layout = views::GridLayout::CreateAndInstall(this);
   SetBorder(views::CreateEmptyBorder(gfx::Insets(5)));
   views::ColumnSet* column_set = layout->AddColumnSet(0);
   column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,

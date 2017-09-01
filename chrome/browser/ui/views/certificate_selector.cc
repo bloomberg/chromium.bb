@@ -118,6 +118,9 @@ CertificateSelector::CertificateSelector(net::ClientCertIdentityList identities,
     : web_contents_(web_contents) {
   CHECK(web_contents_);
 
+  set_margins(ChromeLayoutProvider::Get()->GetInsetsMetric(
+      views::INSETS_DIALOG_CONTENTS));
+
   // |provider_names| and |identities_| are parallel arrays.
   // The entry at index |i| is the provider name for |identities_[i]|.
   std::vector<std::string> provider_names;
@@ -197,7 +200,7 @@ void CertificateSelector::Show() {
 
 void CertificateSelector::InitWithText(
     std::unique_ptr<views::View> text_label) {
-  views::GridLayout* const layout = views::GridLayout::CreatePanel(this);
+  views::GridLayout* const layout = views::GridLayout::CreateAndInstall(this);
 
   const int kColumnSetId = 0;
   views::ColumnSet* const column_set = layout->AddColumnSet(kColumnSetId);

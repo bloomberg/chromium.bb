@@ -26,7 +26,6 @@ class DictionaryValue;
 
 namespace views {
 class Checkbox;
-class GridLayout;
 class Label;
 }
 
@@ -159,7 +158,6 @@ class VPNConfigView : public ChildNetworkConfigView,
 
   int title_;
 
-  views::GridLayout* layout_;
   views::Textfield* server_textfield_;
   views::Label* service_text_;
   views::Textfield* service_textfield_;

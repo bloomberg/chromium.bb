@@ -249,8 +249,7 @@ int ContentSettingBubbleContents::ListItemContainer::GetRowIndexOf(
 
 void ContentSettingBubbleContents::ListItemContainer::ResetLayout() {
   using views::GridLayout;
-  GridLayout* layout = new GridLayout(this);
-  SetLayoutManager(layout);
+  GridLayout* layout = GridLayout::CreateAndInstall(this);
   views::ColumnSet* item_list_column_set = layout->AddColumnSet(0);
   item_list_column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL, 0,
                                   GridLayout::USE_PREF, 0, 0);
@@ -344,8 +343,7 @@ void ContentSettingBubbleContents::OnNativeThemeChanged(
 void ContentSettingBubbleContents::Init() {
   using views::GridLayout;
 
-  GridLayout* layout = new views::GridLayout(this);
-  SetLayoutManager(layout);
+  GridLayout* layout = views::GridLayout::CreateAndInstall(this);
   const ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   const int related_control_horizontal_spacing =
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_HORIZONTAL);

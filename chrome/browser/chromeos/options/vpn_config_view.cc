@@ -31,6 +31,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/combobox_model.h"
 #include "ui/events/event.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/label.h"
@@ -236,7 +237,6 @@ VPNConfigView::VPNConfigView(NetworkConfigView* parent,
       enable_group_name_(false),
       user_passphrase_required_(false),
       title_(0),
-      layout_(NULL),
       server_textfield_(NULL),
       service_text_(NULL),
       service_textfield_(NULL),
@@ -495,6 +495,10 @@ std::string VPNConfigView::GetProviderTypeString() const {
 }
 
 void VPNConfigView::Init() {
+  const views::LayoutProvider* provider = views::LayoutProvider::Get();
+  SetBorder(views::CreateEmptyBorder(
+      provider->GetInsetsMetric(views::INSETS_DIALOG_CONTENTS)));
+
   const NetworkState* vpn = NULL;
   if (!service_path_.empty()) {
     vpn = NetworkHandler::Get()->network_state_handler()->
@@ -502,13 +506,12 @@ void VPNConfigView::Init() {
     DCHECK(vpn && vpn->type() == shill::kTypeVPN);
   }
 
-  layout_ = views::GridLayout::CreatePanel(this);
-  views::LayoutProvider* provider = views::LayoutProvider::Get();
+  views::GridLayout* layout = views::GridLayout::CreateAndInstall(this);
 
   // Observer any changes to the certificate list.
   CertLibrary::Get()->AddObserver(this);
 
-  views::ColumnSet* column_set = layout_->AddColumnSet(0);
+  views::ColumnSet* column_set = layout->AddColumnSet(0);
   // Label.
   column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL, 1,
                         views::GridLayout::USE_PREF, 0, 0);
@@ -538,15 +541,15 @@ void VPNConfigView::Init() {
   enable_group_name_ = true;
 
   // Server label and input.
-  layout_->StartRow(0, 0);
+  layout->StartRow(0, 0);
   views::View* server_label =
       new views::Label(l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_SERVER_HOSTNAME));
-  layout_->AddView(server_label);
+  layout->AddView(server_label);
   server_textfield_ = new views::Textfield();
   server_textfield_->set_controller(this);
-  layout_->AddView(server_textfield_);
-  layout_->AddPaddingRow(
+  layout->AddView(server_textfield_);
+  layout->AddPaddingRow(
       0, provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL));
   if (!service_path_.empty()) {
     server_label->SetEnabled(false);
@@ -554,26 +557,26 @@ void VPNConfigView::Init() {
   }
 
   // Service label and name or input.
-  layout_->StartRow(0, 0);
-  layout_->AddView(new views::Label(l10n_util::GetStringUTF16(
+  layout->StartRow(0, 0);
+  layout->AddView(new views::Label(l10n_util::GetStringUTF16(
       IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_SERVICE_NAME)));
   if (service_path_.empty()) {
     service_textfield_ = new views::Textfield();
     service_textfield_->set_controller(this);
-    layout_->AddView(service_textfield_);
+    layout->AddView(service_textfield_);
     service_text_ = NULL;
   } else {
     service_text_ = new views::Label();
     service_text_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    layout_->AddView(service_text_);
+    layout->AddView(service_text_);
     service_textfield_ = NULL;
   }
-  layout_->AddPaddingRow(
+  layout->AddPaddingRow(
       0, provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL));
 
   // Provider type label and select.
-  layout_->StartRow(0, 0);
-  layout_->AddView(new views::Label(l10n_util::GetStringUTF16(
+  layout->StartRow(0, 0);
+  layout->AddView(new views::Label(l10n_util::GetStringUTF16(
       IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_PROVIDER_TYPE)));
   if (service_path_.empty()) {
     provider_type_combobox_model_.reset(
@@ -581,131 +584,129 @@ void VPNConfigView::Init() {
     provider_type_combobox_ = new views::Combobox(
         provider_type_combobox_model_.get());
     provider_type_combobox_->set_listener(this);
-    layout_->AddView(provider_type_combobox_);
+    layout->AddView(provider_type_combobox_);
     provider_type_text_label_ = NULL;
   } else {
     provider_type_text_label_ = new views::Label();
     provider_type_text_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    layout_->AddView(provider_type_text_label_);
+    layout->AddView(provider_type_text_label_);
     provider_type_combobox_ = NULL;
   }
-  layout_->AddPaddingRow(
+  layout->AddPaddingRow(
       0, provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL));
 
   // PSK passphrase label, input and visible button.
-  layout_->StartRow(0, 0);
+  layout->StartRow(0, 0);
   psk_passphrase_label_ =  new views::Label(l10n_util::GetStringUTF16(
       IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_PSK_PASSPHRASE));
-  layout_->AddView(psk_passphrase_label_);
+  layout->AddView(psk_passphrase_label_);
   psk_passphrase_textfield_ = new PassphraseTextfield();
   psk_passphrase_textfield_->set_controller(this);
-  layout_->AddView(psk_passphrase_textfield_);
-  layout_->AddView(
-      new ControlledSettingIndicatorView(psk_passphrase_ui_data_));
-  layout_->AddPaddingRow(
+  layout->AddView(psk_passphrase_textfield_);
+  layout->AddView(new ControlledSettingIndicatorView(psk_passphrase_ui_data_));
+  layout->AddPaddingRow(
       0, provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL));
 
   // Server CA certificate
   if (service_path_.empty()) {
-    layout_->StartRow(0, 0);
+    layout->StartRow(0, 0);
     server_ca_cert_label_ = new views::Label(l10n_util::GetStringUTF16(
         IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_SERVER_CA));
-    layout_->AddView(server_ca_cert_label_);
+    layout->AddView(server_ca_cert_label_);
     server_ca_cert_combobox_model_.reset(
         new internal::VpnServerCACertComboboxModel());
     server_ca_cert_combobox_ = new views::Combobox(
         server_ca_cert_combobox_model_.get());
-    layout_->AddView(server_ca_cert_combobox_);
-    layout_->AddView(new ControlledSettingIndicatorView(ca_cert_ui_data_));
-    layout_->AddPaddingRow(0, provider->GetDistanceMetric(
-                                  views::DISTANCE_RELATED_CONTROL_VERTICAL));
+    layout->AddView(server_ca_cert_combobox_);
+    layout->AddView(new ControlledSettingIndicatorView(ca_cert_ui_data_));
+    layout->AddPaddingRow(0, provider->GetDistanceMetric(
+                                 views::DISTANCE_RELATED_CONTROL_VERTICAL));
   } else {
     server_ca_cert_label_ = NULL;
     server_ca_cert_combobox_ = NULL;
   }
 
   // User certificate label and input.
-  layout_->StartRow(0, 0);
+  layout->StartRow(0, 0);
   user_cert_label_ = new views::Label(l10n_util::GetStringUTF16(
       IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_USER_CERT));
-  layout_->AddView(user_cert_label_);
+  layout->AddView(user_cert_label_);
   user_cert_combobox_model_.reset(
       new internal::VpnUserCertComboboxModel());
   user_cert_combobox_ = new views::Combobox(user_cert_combobox_model_.get());
   user_cert_combobox_->set_listener(this);
-  layout_->AddView(user_cert_combobox_);
-  layout_->AddView(new ControlledSettingIndicatorView(user_cert_ui_data_));
-  layout_->AddPaddingRow(
+  layout->AddView(user_cert_combobox_);
+  layout->AddView(new ControlledSettingIndicatorView(user_cert_ui_data_));
+  layout->AddPaddingRow(
       0, provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL));
 
   // Username label and input.
-  layout_->StartRow(0, 0);
-  layout_->AddView(new views::Label(l10n_util::GetStringUTF16(
+  layout->StartRow(0, 0);
+  layout->AddView(new views::Label(l10n_util::GetStringUTF16(
       IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_USERNAME)));
   username_textfield_ = new views::Textfield();
   username_textfield_->set_controller(this);
   username_textfield_->SetEnabled(username_ui_data_.IsEditable());
-  layout_->AddView(username_textfield_);
-  layout_->AddView(new ControlledSettingIndicatorView(username_ui_data_));
-  layout_->AddPaddingRow(
+  layout->AddView(username_textfield_);
+  layout->AddView(new ControlledSettingIndicatorView(username_ui_data_));
+  layout->AddPaddingRow(
       0, provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL));
 
   // User passphrase label, input and visble button.
-  layout_->StartRow(0, 0);
-  layout_->AddView(new views::Label(l10n_util::GetStringUTF16(
+  layout->StartRow(0, 0);
+  layout->AddView(new views::Label(l10n_util::GetStringUTF16(
       IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_USER_PASSPHRASE)));
   user_passphrase_textfield_ = new PassphraseTextfield();
   user_passphrase_textfield_->set_controller(this);
   user_passphrase_textfield_->SetEnabled(user_passphrase_ui_data_.IsEditable());
-  layout_->AddView(user_passphrase_textfield_);
-  layout_->AddView(
-      new ControlledSettingIndicatorView(user_passphrase_ui_data_));
-  layout_->AddPaddingRow(
+  layout->AddView(user_passphrase_textfield_);
+  layout->AddView(new ControlledSettingIndicatorView(user_passphrase_ui_data_));
+  layout->AddPaddingRow(
       0, provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL));
 
   // OTP label and input.
-  layout_->StartRow(0, 0);
+  layout->StartRow(0, 0);
   otp_label_ = new views::Label(l10n_util::GetStringUTF16(
       IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_OTP));
-  layout_->AddView(otp_label_);
+  layout->AddView(otp_label_);
   otp_textfield_ = new views::Textfield();
   otp_textfield_->set_controller(this);
-  layout_->AddView(otp_textfield_);
-  layout_->AddPaddingRow(
+  layout->AddView(otp_textfield_);
+  layout->AddPaddingRow(
       0, provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL));
 
   // Group Name label and input.
-  layout_->StartRow(0, 0);
+  layout->StartRow(0, 0);
   group_name_label_ = new views::Label(l10n_util::GetStringUTF16(
       IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_GROUP_NAME));
-  layout_->AddView(group_name_label_);
+  layout->AddView(group_name_label_);
   group_name_textfield_ =
       new views::Textfield();
   group_name_textfield_->set_controller(this);
-  layout_->AddView(group_name_textfield_);
-  layout_->AddView(new ControlledSettingIndicatorView(group_name_ui_data_));
-  layout_->AddPaddingRow(
+  layout->AddView(group_name_textfield_);
+  layout->AddView(new ControlledSettingIndicatorView(group_name_ui_data_));
+  layout->AddPaddingRow(
       0, provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL));
 
   // Save credentials
-  layout_->StartRow(0, 0);
+  layout->StartRow(0, 0);
   save_credentials_checkbox_ = new views::Checkbox(
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SAVE_CREDENTIALS));
   save_credentials_checkbox_->SetEnabled(
       save_credentials_ui_data_.IsEditable());
-  layout_->SkipColumns(1);
-  layout_->AddView(save_credentials_checkbox_);
-  layout_->AddView(
+  layout->SkipColumns(1);
+  layout->AddView(save_credentials_checkbox_);
+  layout->AddView(
       new ControlledSettingIndicatorView(save_credentials_ui_data_));
 
   // Error label.
-  layout_->StartRow(0, 0);
-  layout_->SkipColumns(1);
+  layout->StartRow(0, 0);
+  layout->SkipColumns(1);
   error_label_ = new views::Label();
   error_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   error_label_->SetEnabledColor(SK_ColorRED);
-  layout_->AddView(error_label_);
+  layout->AddView(error_label_);
 
   // Set or hide the UI, update comboboxes and error labels.
   Refresh();

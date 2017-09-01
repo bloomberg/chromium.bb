@@ -251,8 +251,8 @@ std::unique_ptr<views::View> EditorViewController::CreateEditorView() {
   constexpr int kShortFieldMinimumWidth = 176;
   constexpr int kLongFieldMinimumWidth = 272;
 
-  std::unique_ptr<views::GridLayout> editor_layout =
-      base::MakeUnique<views::GridLayout>(editor_view.get());
+  views::GridLayout* editor_layout =
+      views::GridLayout::CreateAndInstall(editor_view.get());
   // Column set for short fields.
   views::ColumnSet* columns_short = editor_layout->AddColumnSet(0);
   columns_short->AddColumn(views::GridLayout::LEADING,
@@ -307,7 +307,7 @@ std::unique_ptr<views::View> EditorViewController::CreateEditorView() {
   for (const auto& field : GetFieldDefinitions()) {
     bool valid = false;
     views::View* focusable_field =
-        CreateInputField(editor_layout.get(), field, &valid);
+        CreateInputField(editor_layout, field, &valid);
     if (!first_field)
       first_field = focusable_field;
     if (!initial_focus_field_view_ && !valid)
@@ -330,8 +330,6 @@ std::unique_ptr<views::View> EditorViewController::CreateEditorView() {
       CreateHintLabel(
           l10n_util::GetStringUTF16(IDS_PAYMENTS_REQUIRED_FIELD_MESSAGE))
           .release());
-
-  editor_view->SetLayoutManager(editor_layout.release());
 
   return editor_view;
 }
