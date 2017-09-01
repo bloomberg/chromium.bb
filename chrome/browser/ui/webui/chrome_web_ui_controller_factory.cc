@@ -193,10 +193,6 @@
 #include "chrome/browser/ui/webui/app_list/start_page_ui.h"
 #endif
 
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-#include "chrome/browser/ui/webui/signin/signin_dice_internals_ui.h"
-#endif
-
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/extension_web_ui.h"
 #include "chrome/browser/ui/webui/extensions/extensions_ui.h"
@@ -551,12 +547,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
 #if BUILDFLAG(ENABLE_APP_LIST)
   if (url.host_piece() == chrome::kChromeUIAppListStartPageHost)
     return &NewWebUI<app_list::StartPageUI>;
-#endif
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-  if (url.host() == chrome::kChromeUISigninDiceInternalsHost &&
-      !profile->IsOffTheRecord() && signin::IsAccountConsistencyDiceEnabled()) {
-    return &NewWebUI<SigninDiceInternalsUI>;
-  }
 #endif
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   if (url.host_piece() == chrome::kChromeUIExtensionsFrameHost)
