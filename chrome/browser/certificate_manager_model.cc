@@ -22,6 +22,7 @@
 #include "crypto/nss_util.h"
 #include "net/base/net_errors.h"
 #include "net/cert/x509_certificate.h"
+#include "net/cert/x509_util_nss.h"
 #include "ui/base/l10n/l10n_util.h"
 
 // TODO(wychen): ChromeOS headers should only be included when building
@@ -61,14 +62,13 @@ using content::BrowserThread;
 
 namespace {
 
-std::string GetCertificateOrg(net::X509Certificate* cert) {
-    std::string org;
-    if (!cert->subject().organization_names.empty())
-      org = cert->subject().organization_names[0];
-    if (org.empty())
-      org = cert->subject().GetDisplayName();
+std::string GetCertificateOrg(CERTCertificate* cert) {
+  std::string org =
+      x509_certificate_model::GetSubjectOrgName(cert, std::string());
+  if (org.empty())
+    org = x509_certificate_model::GetSubjectDisplayName(cert);
 
-    return org;
+  return org;
 }
 
 }  // namespace
@@ -137,7 +137,7 @@ void CertificateManagerModel::Refresh() {
 void CertificateManagerModel::RefreshSlotsUnlocked() {
   DVLOG(1) << "refresh listing certs...";
   // TODO(tbarzic): Use async |ListCerts|.
-  cert_db_->ListCertsSync(&cert_list_);
+  cert_list_ = cert_db_->ListCertsSync();
   observer_->CertificatesRefreshed();
   DVLOG(1) << "refresh finished for platform provided certificates";
 }
@@ -146,8 +146,13 @@ void CertificateManagerModel::RefreshExtensionCertificates(
     net::ClientCertIdentityList new_cert_identities) {
   extension_cert_list_.clear();
   extension_cert_list_.reserve(new_cert_identities.size());
-  for (const auto& identity : new_cert_identities)
-    extension_cert_list_.push_back(identity->certificate());
+  for (const auto& identity : new_cert_identities) {
+    net::ScopedCERTCertificate nss_cert(
+        net::x509_util::CreateCERTCertificateFromX509Certificate(
+            identity->certificate()));
+    if (nss_cert)
+      extension_cert_list_.push_back(std::move(nss_cert));
+  }
   observer_->CertificatesRefreshed();
   DVLOG(1) << "refresh finished for extension provided certificates";
 }
@@ -155,42 +160,41 @@ void CertificateManagerModel::RefreshExtensionCertificates(
 void CertificateManagerModel::FilterAndBuildOrgGroupingMap(
     net::CertType filter_type,
     CertificateManagerModel::OrgGroupingMap* map) const {
-  for (net::CertificateList::const_iterator i = cert_list_.begin();
-       i != cert_list_.end(); ++i) {
-    net::X509Certificate* cert = i->get();
-    net::CertType type =
-        x509_certificate_model::GetType(cert->os_cert_handle());
+  for (const net::ScopedCERTCertificate& cert : cert_list_) {
+    net::CertType type = x509_certificate_model::GetType(cert.get());
     if (type != filter_type)
       continue;
 
-    std::string org = GetCertificateOrg(cert);
-    (*map)[org].push_back(cert);
+    std::string org = GetCertificateOrg(cert.get());
+    (*map)[org].push_back(net::x509_util::DupCERTCertificate(cert.get()));
   }
 
   // Display extension provided certificates under the "Your Certificates" tab.
   if (filter_type == net::USER_CERT) {
     for (const auto& cert : extension_cert_list_) {
       std::string org = GetCertificateOrg(cert.get());
-      (*map)[org].push_back(cert);
+      (*map)[org].push_back(net::x509_util::DupCERTCertificate(cert.get()));
     }
   }
 }
 
-base::string16 CertificateManagerModel::GetColumnText(
-    const net::X509Certificate& cert,
-    Column column) const {
+base::string16 CertificateManagerModel::GetColumnText(CERTCertificate* cert,
+                                                      Column column) const {
   base::string16 rv;
   switch (column) {
     case COL_SUBJECT_NAME:
       rv = base::UTF8ToUTF16(
-          x509_certificate_model::GetCertNameOrNickname(cert.os_cert_handle()));
+          x509_certificate_model::GetCertNameOrNickname(cert));
 
       // Mark extension provided certificates.
-      if (base::ContainsValue(extension_cert_list_, &cert)) {
+      if (std::find_if(extension_cert_list_.begin(), extension_cert_list_.end(),
+                       [cert](const net::ScopedCERTCertificate& element) {
+                         return element.get() == cert;
+                       }) != extension_cert_list_.end()) {
         rv = l10n_util::GetStringFUTF16(
             IDS_CERT_MANAGER_EXTENSION_PROVIDED_FORMAT,
             rv);
-      } else if (IsHardwareBacked(&cert)) {
+      } else if (IsHardwareBacked(cert)) {
         // TODO(xiyuan): Put this into a column when we have js tree-table.
         rv = l10n_util::GetStringFUTF16(
             IDS_CERT_MANAGER_HARDWARE_BACKED_KEY_FORMAT,
@@ -199,17 +203,18 @@ base::string16 CertificateManagerModel::GetColumnText(
       }
       break;
     case COL_CERTIFICATE_STORE:
-      rv = base::UTF8ToUTF16(
-          x509_certificate_model::GetTokenName(cert.os_cert_handle()));
+      rv = base::UTF8ToUTF16(x509_certificate_model::GetTokenName(cert));
       break;
     case COL_SERIAL_NUMBER:
-      rv = base::ASCIIToUTF16(x509_certificate_model::GetSerialNumberHexified(
-          cert.os_cert_handle(), std::string()));
+      rv = base::ASCIIToUTF16(
+          x509_certificate_model::GetSerialNumberHexified(cert, std::string()));
       break;
-    case COL_EXPIRES_ON:
-      if (!cert.valid_expiry().is_null())
-        rv = base::TimeFormatShortDateNumeric(cert.valid_expiry());
+    case COL_EXPIRES_ON: {
+      base::Time not_before, not_after;
+      if (net::x509_util::GetValidityTimes(cert, &not_before, &not_after))
+        rv = base::TimeFormatShortDateNumeric(not_after);
       break;
+    }
     default:
       NOTREACHED();
   }
@@ -235,42 +240,43 @@ int CertificateManagerModel::ImportUserCert(const std::string& data) {
 }
 
 bool CertificateManagerModel::ImportCACerts(
-    const net::CertificateList& certificates,
+    const net::ScopedCERTCertificateList& certificates,
     net::NSSCertDatabase::TrustBits trust_bits,
     net::NSSCertDatabase::ImportCertFailureList* not_imported) {
+  const size_t num_certs = certificates.size();
   bool result = cert_db_->ImportCACerts(certificates, trust_bits, not_imported);
-  if (result && not_imported->size() != certificates.size())
+  if (result && not_imported->size() != num_certs)
     Refresh();
   return result;
 }
 
 bool CertificateManagerModel::ImportServerCert(
-    const net::CertificateList& certificates,
+    const net::ScopedCERTCertificateList& certificates,
     net::NSSCertDatabase::TrustBits trust_bits,
     net::NSSCertDatabase::ImportCertFailureList* not_imported) {
-  bool result = cert_db_->ImportServerCert(certificates, trust_bits,
-                                           not_imported);
-  if (result && not_imported->size() != certificates.size())
+  const size_t num_certs = certificates.size();
+  bool result =
+      cert_db_->ImportServerCert(certificates, trust_bits, not_imported);
+  if (result && not_imported->size() != num_certs)
     Refresh();
   return result;
 }
 
 bool CertificateManagerModel::SetCertTrust(
-    const net::X509Certificate* cert,
+    CERTCertificate* cert,
     net::CertType type,
     net::NSSCertDatabase::TrustBits trust_bits) {
   return cert_db_->SetCertTrust(cert, type, trust_bits);
 }
 
-bool CertificateManagerModel::Delete(net::X509Certificate* cert) {
+bool CertificateManagerModel::Delete(CERTCertificate* cert) {
   bool result = cert_db_->DeleteCertAndKey(cert);
   if (result)
     Refresh();
   return result;
 }
 
-bool CertificateManagerModel::IsHardwareBacked(
-    const net::X509Certificate* cert) const {
+bool CertificateManagerModel::IsHardwareBacked(CERTCertificate* cert) const {
   return cert_db_->IsHardwareBacked(cert);
 }
 

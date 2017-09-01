@@ -172,6 +172,39 @@ TEST(X509UtilNSSTest, DupCERTCertificate) {
       cert2->subjectName);
 }
 
+TEST(X509UtilNSSTest, DupCERTCertificateList) {
+  ScopedCERTCertificate cert(x509_util::CreateCERTCertificateFromBytes(
+      google_der, arraysize(google_der)));
+  ASSERT_TRUE(cert);
+  ScopedCERTCertificate cert2(x509_util::CreateCERTCertificateFromBytes(
+      webkit_der, arraysize(webkit_der)));
+  ASSERT_TRUE(cert2);
+  ScopedCERTCertificateList certs;
+  certs.push_back(std::move(cert));
+  certs.push_back(std::move(cert2));
+
+  ScopedCERTCertificateList certs_dup =
+      x509_util::DupCERTCertificateList(certs);
+  ASSERT_EQ(2U, certs_dup.size());
+  ASSERT_EQ(certs[0].get(), certs_dup[0].get());
+  ASSERT_EQ(certs[1].get(), certs_dup[1].get());
+
+  // Release the initial handles.
+  certs.clear();
+  // The duped handles should still be safe to access.
+  EXPECT_STREQ(
+      "CN=www.google.com,O=Google Inc,L=Mountain View,ST=California,C=US",
+      certs_dup[0]->subjectName);
+  EXPECT_STREQ(
+      "CN=*.webkit.org,OU=Mac OS Forge,O=Apple "
+      "Inc.,L=Cupertino,ST=California,C=US",
+      certs_dup[1]->subjectName);
+}
+
+TEST(X509UtilNSSTest, DupCERTCertificateList_EmptyList) {
+  EXPECT_EQ(0U, x509_util::DupCERTCertificateList({}).size());
+}
+
 TEST(X509UtilNSSTest, CreateX509CertificateFromCERTCertificate_NoChain) {
   ScopedCERTCertificate nss_cert(x509_util::CreateCERTCertificateFromBytes(
       google_der, arraysize(google_der)));
@@ -319,6 +352,22 @@ TEST(X509UtilNSSTest, ParseClientSubjectAltNames) {
   x509_util::GetUPNSubjectAltNames(san_cert->os_cert_handle(), &upn_names);
   ASSERT_EQ(1U, upn_names.size());
   EXPECT_EQ("santest@ad.corp.example.com", upn_names[0]);
+}
+
+TEST(X509UtilNSSTest, GetValidityTimes) {
+  ScopedCERTCertificate google_cert(x509_util::CreateCERTCertificateFromBytes(
+      google_der, arraysize(google_der)));
+  ASSERT_TRUE(google_cert);
+
+  base::Time not_before, not_after;
+  EXPECT_TRUE(
+      x509_util::GetValidityTimes(google_cert.get(), &not_before, &not_after));
+
+  // Constants copied from x509_certificate_unittest.cc.
+  EXPECT_EQ(1238192407,  // Mar 27 22:20:07 2009 GMT
+            not_before.ToDoubleT());
+  EXPECT_EQ(1269728407,  // Mar 27 22:20:07 2010 GMT
+            not_after.ToDoubleT());
 }
 
 TEST(X509UtilNSSTest, CalculateFingerprint256) {

@@ -16,7 +16,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/test/browser_test_utils.h"
-#include "net/cert/x509_certificate.h"
+#include "net/cert/x509_util_nss.h"
 #include "net/test/test_certificate_data.h"
 
 // Test framework for chrome/test/data/webui/certificate_viewer_dialog_test.js.
@@ -39,16 +39,18 @@ void CertificateViewerUITest::CreateCertViewerDialog() {
 }
 
 void CertificateViewerUITest::ShowCertificateViewer() {
-  scoped_refptr<net::X509Certificate> google_cert(
-      net::X509Certificate::CreateFromBytes(
-          reinterpret_cast<const char*>(google_der), sizeof(google_der)));
+  net::ScopedCERTCertificate google_cert(
+      net::x509_util::CreateCERTCertificateFromBytes(google_der,
+                                                     sizeof(google_der)));
   ASSERT_TRUE(google_cert);
+  net::ScopedCERTCertificateList certs;
+  certs.push_back(net::x509_util::DupCERTCertificate(google_cert.get()));
 
   ASSERT_TRUE(browser());
   ASSERT_TRUE(browser()->window());
 
   CertificateViewerDialog* dialog =
-      new CertificateViewerDialog(google_cert.get());
+      new CertificateViewerDialog(std::move(certs));
   dialog->Show(browser()->tab_strip_model()->GetActiveWebContents(),
                browser()->window()->GetNativeWindow());
   content::WebContents* webui_webcontents =
@@ -62,16 +64,18 @@ void CertificateViewerUITest::ShowCertificateViewer() {
 
 #if defined(OS_CHROMEOS)
 void CertificateViewerUITest::ShowModalCertificateViewer() {
-  scoped_refptr<net::X509Certificate> google_cert(
-      net::X509Certificate::CreateFromBytes(
-          reinterpret_cast<const char*>(google_der), sizeof(google_der)));
+  net::ScopedCERTCertificate google_cert(
+      net::x509_util::CreateCERTCertificateFromBytes(google_der,
+                                                     sizeof(google_der)));
   ASSERT_TRUE(google_cert);
+  net::ScopedCERTCertificateList certs;
+  certs.push_back(net::x509_util::DupCERTCertificate(google_cert.get()));
 
   ASSERT_TRUE(browser());
   ASSERT_TRUE(browser()->window());
 
   CertificateViewerModalDialog* dialog =
-      new CertificateViewerModalDialog(google_cert.get());
+      new CertificateViewerModalDialog(std::move(certs));
   dialog->Show(browser()->tab_strip_model()->GetActiveWebContents(),
                browser()->window()->GetNativeWindow());
   content::WebContents* webui_webcontents =

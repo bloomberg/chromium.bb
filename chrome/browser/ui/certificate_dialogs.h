@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_CERTIFICATE_DIALOGS_H_
 #define CHROME_BROWSER_UI_CERTIFICATE_DIALOGS_H_
 
+#include "net/cert/scoped_nss_types.h"
 #include "net/cert/x509_certificate.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 
@@ -25,10 +26,9 @@ void ShowCertExportDialog(content::WebContents* web_contents,
 
 // Show a dialog to save the first certificate or the whole chain encompassed by
 // the iterators.
-void ShowCertExportDialog(
-    content::WebContents* web_contents,
-    gfx::NativeWindow parent,
-    net::X509Certificate::OSCertHandles::iterator certs_begin,
-    net::X509Certificate::OSCertHandles::iterator certs_end);
+void ShowCertExportDialog(content::WebContents* web_contents,
+                          gfx::NativeWindow parent,
+                          net::ScopedCERTCertificateList::iterator certs_begin,
+                          net::ScopedCERTCertificateList::iterator certs_end);
 
 #endif  // CHROME_BROWSER_UI_CERTIFICATE_DIALOGS_H_

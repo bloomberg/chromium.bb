@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "net/cert/nss_cert_database.h"
+#include "net/cert/scoped_nss_types.h"
 #include "net/ssl/client_cert_identity.h"
 
 namespace chromeos {
@@ -33,7 +34,7 @@ class CertificateManagerModel {
   // Map from the subject organization name to the list of certs from that
   // organization.  If a cert does not have an organization name, the
   // subject's CertPrincipal::GetDisplayName() value is used instead.
-  typedef std::map<std::string, net::CertificateList> OrgGroupingMap;
+  typedef std::map<std::string, net::ScopedCERTCertificateList> OrgGroupingMap;
 
   typedef base::Callback<void(std::unique_ptr<CertificateManagerModel>)>
       CreationCallback;
@@ -80,7 +81,7 @@ class CertificateManagerModel {
                                     OrgGroupingMap* map) const;
 
   // Get the data to be displayed in |column| for the given |cert|.
-  base::string16 GetColumnText(const net::X509Certificate& cert, Column column) const;
+  base::string16 GetColumnText(CERTCertificate* cert, Column column) const;
 
   // Import private keys and certificates from PKCS #12 encoded
   // |data|, using the given |password|. If |is_extractable| is false,
@@ -101,7 +102,7 @@ class CertificateManagerModel {
   // Returns false if there is an internal error, otherwise true is returned and
   // |not_imported| should be checked for any certificates that were not
   // imported.
-  bool ImportCACerts(const net::CertificateList& certificates,
+  bool ImportCACerts(const net::ScopedCERTCertificateList& certificates,
                      net::NSSCertDatabase::TrustBits trust_bits,
                      net::NSSCertDatabase::ImportCertFailureList* not_imported);
 
@@ -116,23 +117,23 @@ class CertificateManagerModel {
   // |not_imported| should be checked for any certificates that were not
   // imported.
   bool ImportServerCert(
-      const net::CertificateList& certificates,
+      const net::ScopedCERTCertificateList& certificates,
       net::NSSCertDatabase::TrustBits trust_bits,
       net::NSSCertDatabase::ImportCertFailureList* not_imported);
 
   // Set trust values for certificate.
   // |trust_bits| should be a bit field of TRUST* values from NSSCertDatabase.
   // Returns true on success or false on failure.
-  bool SetCertTrust(const net::X509Certificate* cert,
+  bool SetCertTrust(CERTCertificate* cert,
                     net::CertType type,
                     net::NSSCertDatabase::TrustBits trust_bits);
 
   // Delete the cert.  Returns true on success.  |cert| is still valid when this
   // function returns.
-  bool Delete(net::X509Certificate* cert);
+  bool Delete(CERTCertificate* cert);
 
   // IsHardwareBacked returns true if |cert| is hardware backed.
-  bool IsHardwareBacked(const net::X509Certificate* cert) const;
+  bool IsHardwareBacked(CERTCertificate* cert) const;
 
  private:
   CertificateManagerModel(
@@ -175,8 +176,8 @@ class CertificateManagerModel {
       net::ClientCertIdentityList new_cert_identities);
 
   net::NSSCertDatabase* cert_db_;
-  net::CertificateList cert_list_;
-  net::CertificateList extension_cert_list_;
+  net::ScopedCERTCertificateList cert_list_;
+  net::ScopedCERTCertificateList extension_cert_list_;
   // Whether the certificate database has a public slot associated with the
   // profile. If not set, importing certificates is not allowed with this model.
   bool is_user_db_available_;

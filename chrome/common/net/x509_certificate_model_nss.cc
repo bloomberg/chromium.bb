@@ -191,13 +191,7 @@ string GetSubjectCommonName(CERTCertificate* cert_handle,
 bool GetTimes(CERTCertificate* cert_handle,
               base::Time* issued,
               base::Time* expires) {
-  PRTime pr_issued, pr_expires;
-  if (CERT_GetCertTimes(cert_handle, &pr_issued, &pr_expires) == SECSuccess) {
-    *issued = crypto::PRTimeToBaseTime(pr_issued);
-    *expires = crypto::PRTimeToBaseTime(pr_expires);
-    return true;
-  }
-  return false;
+  return net::x509_util::GetValidityTimes(cert_handle, issued, expires);
 }
 
 string GetTitle(CERTCertificate* cert_handle) {
@@ -243,7 +237,7 @@ string HashCertSHA1(CERTCertificate* cert_handle) {
   return HashCert(cert_handle, HASH_AlgSHA1, SHA1_LENGTH);
 }
 
-string GetCMSString(const std::vector<CERTCertificate*>& cert_chain,
+string GetCMSString(const net::ScopedCERTCertificateList& cert_chain,
                     size_t start,
                     size_t end) {
   crypto::ScopedPLArenaPool arena(PORT_NewArena(1024));
@@ -254,15 +248,15 @@ string GetCMSString(const std::vector<CERTCertificate*>& cert_chain,
 
   // First, create SignedData with the certificate only (no chain).
   ScopedNSSCMSSignedData signed_data(NSS_CMSSignedData_CreateCertsOnly(
-      message.get(), cert_chain[start], PR_FALSE));
+      message.get(), cert_chain[start].get(), PR_FALSE));
   if (!signed_data.get()) {
     DLOG(ERROR) << "NSS_CMSSignedData_Create failed";
     return std::string();
   }
   // Add the rest of the chain (if any).
   for (size_t i = start + 1; i < end; ++i) {
-    if (NSS_CMSSignedData_AddCertificate(signed_data.get(), cert_chain[i]) !=
-        SECSuccess) {
+    if (NSS_CMSSignedData_AddCertificate(signed_data.get(),
+                                         cert_chain[i].get()) != SECSuccess) {
       DLOG(ERROR) << "NSS_CMSSignedData_AddCertificate failed on " << i;
       return std::string();
     }

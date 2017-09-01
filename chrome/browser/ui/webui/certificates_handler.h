@@ -177,7 +177,7 @@ class CertificatesHandler : public content::WebUIMessageHandler,
   std::string webui_callback_id_;
   bool use_hardware_backed_;
   std::string file_data_;
-  net::CertificateList selected_cert_list_;
+  net::ScopedCERTCertificateList selected_cert_list_;
   scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
   crypto::ScopedPK11Slot slot_;
 

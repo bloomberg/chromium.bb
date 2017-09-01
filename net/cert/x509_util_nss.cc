@@ -232,6 +232,15 @@ ScopedCERTCertificate DupCERTCertificate(CERTCertificate* cert) {
   return ScopedCERTCertificate(CERT_DupCertificate(cert));
 }
 
+ScopedCERTCertificateList DupCERTCertificateList(
+    const ScopedCERTCertificateList& certs) {
+  ScopedCERTCertificateList result;
+  result.reserve(certs.size());
+  for (const ScopedCERTCertificate& cert : certs)
+    result.push_back(DupCERTCertificate(cert.get()));
+  return result;
+}
+
 scoped_refptr<X509Certificate> CreateX509CertificateFromCERTCertificate(
     CERTCertificate* nss_cert,
     const std::vector<CERTCertificate*>& nss_chain) {
@@ -398,6 +407,18 @@ std::string GetCERTNameDisplayName(CERTName* name) {
   if (ou_ava)
     return DecodeAVAValue(ou_ava);
   return std::string();
+}
+
+bool GetValidityTimes(CERTCertificate* cert,
+                      base::Time* not_before,
+                      base::Time* not_after) {
+  PRTime pr_not_before, pr_not_after;
+  if (CERT_GetCertTimes(cert, &pr_not_before, &pr_not_after) == SECSuccess) {
+    *not_before = crypto::PRTimeToBaseTime(pr_not_before);
+    *not_after = crypto::PRTimeToBaseTime(pr_not_after);
+    return true;
+  }
+  return false;
 }
 
 SHA256HashValue CalculateFingerprint256(CERTCertificate* cert) {

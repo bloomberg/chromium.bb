@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/values.h"
 #include "content/public/browser/web_ui_message_handler.h"
+#include "net/cert/scoped_nss_types.h"
 #include "net/cert/x509_certificate.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
@@ -30,8 +31,7 @@ class CertificateViewerModalDialog : public ui::WebDialogDelegate {
   // Construct a certificate viewer for the passed in certificate. A reference
   // to the certificate pointer is added for the lifetime of the certificate
   // viewer.
-  explicit CertificateViewerModalDialog(
-      net::X509Certificate* cert);
+  explicit CertificateViewerModalDialog(net::ScopedCERTCertificateList certs);
   ~CertificateViewerModalDialog() override;
 
   virtual void Show(content::WebContents* web_contents,
@@ -55,8 +55,8 @@ class CertificateViewerModalDialog : public ui::WebDialogDelegate {
                        bool* out_close_dialog) override;
   bool ShouldShowDialogTitle() const override;
 
-  // The certificate being viewed.
-  scoped_refptr<net::X509Certificate> cert_;
+  // The certificate chain, as NSS cert objects.
+  net::ScopedCERTCertificateList nss_certs_;
 
   // The title of the certificate viewer dialog, Certificate Viewer: CN.
   base::string16 title_;
@@ -76,7 +76,7 @@ class CertificateViewerDialog : public CertificateViewerModalDialog {
   // Construct a certificate viewer for the passed in certificate. A reference
   // to the certificate pointer is added for the lifetime of the certificate
   // viewer.
-  explicit CertificateViewerDialog(net::X509Certificate* cert);
+  explicit CertificateViewerDialog(net::ScopedCERTCertificateList certs);
   ~CertificateViewerDialog() override;
 
   // CertificateViewerModalDialog overrides.
@@ -100,7 +100,7 @@ class CertificateViewerDialog : public CertificateViewerModalDialog {
 class CertificateViewerDialogHandler : public content::WebUIMessageHandler {
  public:
   CertificateViewerDialogHandler(CertificateViewerModalDialog* dialog,
-                                 net::X509Certificate* cert);
+                                 net::ScopedCERTCertificateList cert_chain);
   ~CertificateViewerDialogHandler() override;
 
   // Overridden from WebUIMessageHandler
@@ -124,15 +124,11 @@ class CertificateViewerDialogHandler : public content::WebUIMessageHandler {
   // the index is out of range.
   int GetCertificateIndex(const base::ListValue* args) const;
 
-  // The certificate being viewed.
-  scoped_refptr<net::X509Certificate> cert_;
-
   // The dialog.
   CertificateViewerModalDialog* dialog_;
 
-  // The certificate chain. Does not take references, so only valid as long as
-  // |cert_| is.
-  net::X509Certificate::OSCertHandles cert_chain_;
+  // The certificate chain.
+  net::ScopedCERTCertificateList cert_chain_;
 
   DISALLOW_COPY_AND_ASSIGN(CertificateViewerDialogHandler);
 };

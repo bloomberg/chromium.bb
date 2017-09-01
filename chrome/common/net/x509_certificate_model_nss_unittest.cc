@@ -263,14 +263,11 @@ TEST(X509CertificateModelTest, GetCMSString) {
   net::ScopedCERTCertificateList certs = CreateCERTCertificateListFromFile(
       net::GetTestCertsDirectory(), "multi-root-chain1.pem",
       net::X509Certificate::FORMAT_AUTO);
-  std::vector<CERTCertificate*> certs_raw;
-  for (const auto& cert : certs)
-    certs_raw.push_back(cert.get());
 
   {
     // Write the full chain.
     std::string pkcs7_string =
-        x509_certificate_model::GetCMSString(certs_raw, 0, certs_raw.size());
+        x509_certificate_model::GetCMSString(certs, 0, certs.size());
 
     ASSERT_FALSE(pkcs7_string.empty());
 
@@ -292,7 +289,7 @@ TEST(X509CertificateModelTest, GetCMSString) {
   {
     // Write only the first cert.
     std::string pkcs7_string =
-        x509_certificate_model::GetCMSString(certs_raw, 0, 1);
+        x509_certificate_model::GetCMSString(certs, 0, 1);
 
     net::ScopedCERTCertificateList decoded_certs =
         net::x509_util::CreateCERTCertificateListFromBytes(
