@@ -61,7 +61,7 @@ class AXMenuListOption final : public AXMockObject {
   bool IsVisible() const override;
   bool IsOffScreen() const override;
   bool IsSelected() const override;
-  bool OnNativeSetSelectedAction(bool) override;
+  void SetSelected(bool) override;
 
   void GetRelativeBounds(AXObject** out_container,
                          FloatRect& out_bounds_in_container,

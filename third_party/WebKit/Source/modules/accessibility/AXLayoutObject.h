@@ -140,13 +140,11 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
                          AXRelatedObjectVector*,
                          NameSources*) const override;
 
-  // Modify or take an action on an object.
-  bool OnNativeSetSelectionAction(const AXRange&) override;
-  bool OnNativeSetValueAction(const String&) override;
-
   // Methods that retrieve or manipulate the current selection.
+
   AXRange Selection() const override;
   AXRange SelectionUnderObject() const override;
+  void SetSelection(const AXRange&) override;
 
   // Hit testing.
   AXObject* AccessibilityHitTest(const IntPoint&) const override;
@@ -176,6 +174,8 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   Document* GetDocument() const override;
   LocalFrameView* DocumentFrameView() const override;
   Element* AnchorElement() const override;
+
+  void SetValue(const String&) override;
 
   // Notifications that this object may have changed.
   void HandleActiveDescendantChanged() override;

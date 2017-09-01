@@ -42,8 +42,6 @@
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
-#include "core/input/ContextMenuAllowedScope.h"
-#include "core/input/EventHandler.h"
 #include "core/layout/LayoutBoxModelObject.h"
 #include "core/layout/LayoutView.h"
 #include "core/page/Page.h"
@@ -1798,30 +1796,11 @@ LayoutRect AXObject::GetBoundsInFrameCoordinates() const {
 // Modify or take an action on an object.
 //
 
-bool AXObject::RequestDecrementAction() {
-  Element* element = GetElement();
-  if (element) {
-    Event* event = Event::CreateCancelable(EventTypeNames::accessibledecrement);
-    if (DispatchEventToAOMEventListeners(*event, element)) {
-      return true;
-    }
-  }
-
-  return OnNativeDecrementAction();
+bool AXObject::PerformDefaultAction() {
+  return Press();
 }
 
-bool AXObject::RequestClickAction() {
-  Element* element = GetElement();
-  if (element) {
-    Event* event = Event::CreateCancelable(EventTypeNames::accessibleclick);
-    if (DispatchEventToAOMEventListeners(*event, element))
-      return true;
-  }
-
-  return OnNativeClickAction();
-}
-
-bool AXObject::OnNativeClickAction() {
+bool AXObject::Press() {
   Document* document = GetDocument();
   if (!document)
     return false;
@@ -1830,93 +1809,29 @@ bool AXObject::OnNativeClickAction() {
       LocalFrame::CreateUserGesture(document->GetFrame(),
                                     UserGestureToken::kNewGesture);
   Element* action_elem = ActionElement();
+  Event* event = Event::CreateCancelable(EventTypeNames::accessibleclick);
+  if (DispatchEventToAOMEventListeners(*event, action_elem)) {
+    return true;
+  }
+
   if (action_elem) {
     action_elem->AccessKeyAction(true);
     return true;
   }
 
-  if (CanSetFocusAttribute())
-    return OnNativeFocusAction();
+  if (CanSetFocusAttribute()) {
+    SetFocused(true);
+    return true;
+  }
 
   return false;
 }
 
-bool AXObject::RequestFocusAction() {
-  Element* element = GetElement();
-  if (element) {
-    Event* event = Event::CreateCancelable(EventTypeNames::accessiblefocus);
-    if (DispatchEventToAOMEventListeners(*event, element))
-      return true;
-  }
-
-  return OnNativeFocusAction();
-}
-
-bool AXObject::RequestIncrementAction() {
-  Element* element = GetElement();
-  if (element) {
-    Event* event = Event::CreateCancelable(EventTypeNames::accessibleincrement);
-    if (DispatchEventToAOMEventListeners(*event, element))
-      return true;
-  }
-
-  return OnNativeIncrementAction();
-}
-
-bool AXObject::RequestScrollToGlobalPointAction(const IntPoint& point) {
-  return OnNativeScrollToGlobalPointAction(point);
-}
-
-bool AXObject::RequestScrollToMakeVisibleAction() {
-  Element* element = GetElement();
-  if (element) {
-    Event* event =
-        Event::CreateCancelable(EventTypeNames::accessiblescrollintoview);
-    if (DispatchEventToAOMEventListeners(*event, element))
-      return true;
-  }
-
-  return OnNativeScrollToMakeVisibleAction();
-}
-
-bool AXObject::RequestScrollToMakeVisibleWithSubFocusAction(
-    const IntRect& subfocus) {
-  return OnNativeScrollToMakeVisibleWithSubFocusAction(subfocus);
-}
-
-bool AXObject::RequestSetSelectedAction(bool selected) {
-  return OnNativeSetSelectedAction(selected);
-}
-
-bool AXObject::RequestSetSelectionAction(const AXRange& range) {
-  return OnNativeSetSelectionAction(range);
-}
-
-bool AXObject::RequestSetSequentialFocusNavigationStartingPointAction() {
-  return OnNativeSetSequentialFocusNavigationStartingPointAction();
-}
-
-bool AXObject::RequestSetValueAction(const String& value) {
-  return OnNativeSetValueAction(value);
-}
-
-bool AXObject::RequestShowContextMenuAction() {
-  Element* element = GetElement();
-  if (element) {
-    Event* event =
-        Event::CreateCancelable(EventTypeNames::accessiblecontextmenu);
-    if (DispatchEventToAOMEventListeners(*event, element))
-      return true;
-  }
-
-  return OnNativeShowContextMenuAction();
-}
-
-bool AXObject::OnNativeScrollToMakeVisibleAction() const {
+void AXObject::ScrollToMakeVisible() const {
   Node* node = GetNode();
   LayoutObject* layout_object = node ? node->GetLayoutObject() : nullptr;
   if (!layout_object || !node->isConnected())
-    return false;
+    return;
   LayoutRect target_rect(layout_object->AbsoluteBoundingBoxRect());
   layout_object->ScrollRectToVisible(
       target_rect, ScrollAlignment::kAlignCenterIfNeeded,
@@ -1926,15 +1841,13 @@ bool AXObject::OnNativeScrollToMakeVisibleAction() const {
   AxObjectCache().PostNotification(
       AxObjectCache().GetOrCreate(GetDocument()->GetLayoutView()),
       AXObjectCacheImpl::kAXLocationChanged);
-  return true;
 }
 
-bool AXObject::OnNativeScrollToMakeVisibleWithSubFocusAction(
-    const IntRect& rect) const {
+void AXObject::ScrollToMakeVisibleWithSubFocus(const IntRect& rect) const {
   Node* node = GetNode();
   LayoutObject* layout_object = node ? node->GetLayoutObject() : nullptr;
   if (!layout_object || !node->isConnected())
-    return false;
+    return;
   LayoutRect target_rect(
       layout_object->LocalToAbsoluteQuad(FloatQuad(FloatRect(rect)))
           .BoundingBox());
@@ -1952,15 +1865,13 @@ bool AXObject::OnNativeScrollToMakeVisibleWithSubFocusAction(
   AxObjectCache().PostNotification(
       AxObjectCache().GetOrCreate(GetDocument()->GetLayoutView()),
       AXObjectCacheImpl::kAXLocationChanged);
-  return true;
 }
 
-bool AXObject::OnNativeScrollToGlobalPointAction(
-    const IntPoint& global_point) const {
+void AXObject::ScrollToGlobalPoint(const IntPoint& global_point) const {
   Node* node = GetNode();
   LayoutObject* layout_object = node ? node->GetLayoutObject() : nullptr;
   if (!layout_object || !node->isConnected())
-    return false;
+    return;
   LayoutRect target_rect(layout_object->AbsoluteBoundingBoxRect());
   target_rect.MoveBy(-global_point);
   layout_object->ScrollRectToVisible(
@@ -1971,57 +1882,13 @@ bool AXObject::OnNativeScrollToGlobalPointAction(
   AxObjectCache().PostNotification(
       AxObjectCache().GetOrCreate(GetDocument()->GetLayoutView()),
       AXObjectCacheImpl::kAXLocationChanged);
-  return true;
 }
 
-bool AXObject::OnNativeSetSequentialFocusNavigationStartingPointAction() {
+void AXObject::SetSequentialFocusNavigationStartingPoint() {
   // Call it on the nearest ancestor that overrides this with a specific
   // implementation.
-  if (ParentObject()) {
-    return ParentObject()
-        ->OnNativeSetSequentialFocusNavigationStartingPointAction();
-  }
-  return false;
-}
-
-bool AXObject::OnNativeDecrementAction() {
-  return false;
-}
-
-bool AXObject::OnNativeFocusAction() {
-  return false;
-}
-
-bool AXObject::OnNativeIncrementAction() {
-  return false;
-}
-
-bool AXObject::OnNativeSetValueAction(const String&) {
-  return false;
-}
-
-bool AXObject::OnNativeSetSelectedAction(bool) {
-  return false;
-}
-
-bool AXObject::OnNativeSetSelectionAction(const AXRange& range) {
-  return false;
-}
-
-bool AXObject::OnNativeShowContextMenuAction() {
-  Element* element = GetElement();
-  if (!element)
-    element = ParentObject() ? ParentObject()->GetElement() : nullptr;
-  if (!element)
-    return false;
-
-  Document* document = GetDocument();
-  if (!document || !document->GetFrame())
-    return false;
-
-  ContextMenuAllowedScope scope;
-  document->GetFrame()->GetEventHandler().ShowNonLocatedContextMenu(element);
-  return true;
+  if (ParentObject())
+    ParentObject()->SetSequentialFocusNavigationStartingPoint();
 }
 
 void AXObject::NotifyIfIgnoredValueChanged() {
