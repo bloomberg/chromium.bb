@@ -14,5 +14,8 @@
     }
   });
 
-  dp.Page.navigate({url: 'data:,Hello!'});
+  // It's possible for Blink to finish the load and run out of tasks before
+  // network idle lifecycle events are generated.  Add a timeout
+  // greater than the network quiet window to guarantee that those events fire.
+  dp.Page.navigate({url: "data:text/html,Hello! <script>setTimeout(() => {}, 2000);</script>"});
 })
