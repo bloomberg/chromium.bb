@@ -132,10 +132,11 @@ TAGS
 /man/lou_allround.1
 /man/lou_checkhyphens.1
 /man/lou_checktable.1
+/man/lou_checkyaml.1
 /man/lou_debug.1
+/man/lou_tableinfo.1
 /man/lou_trace.1
 /man/lou_translate.1
-/man/lou_checkyaml.1
 
 # /python/
 /python/Makefile
