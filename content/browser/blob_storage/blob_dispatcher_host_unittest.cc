@@ -133,7 +133,8 @@ class BlobDispatcherHostTest : public testing::Test {
     ExpectBlobNotExist(id);
     DataElement element;
     element.SetToBytes(kData, kDataSize);
-    std::vector<DataElement> elements = {element};
+    std::vector<DataElement> elements;
+    elements.push_back(std::move(element));
     host_->OnRegisterBlob(id, std::string(kContentType),
                           std::string(kContentDisposition), elements);
     EXPECT_FALSE(host_->shutdown_for_bad_message_);
@@ -146,7 +147,8 @@ class BlobDispatcherHostTest : public testing::Test {
     ExpectBlobNotExist(id);
     DataElement element;
     element.SetToBytesDescription(kDataSize);
-    std::vector<DataElement> elements = {element};
+    std::vector<DataElement> elements;
+    elements.push_back(std::move(element));
     host_->OnRegisterBlob(id, std::string(kContentType),
                           std::string(kContentDisposition), elements);
     EXPECT_FALSE(host_->shutdown_for_bad_message_);
@@ -288,7 +290,8 @@ TEST_F(BlobDispatcherHostTest, Shortcut) {
 
   DataElement expected;
   expected.SetToBytes(kData, kDataSize);
-  std::vector<DataElement> elements = {expected};
+  std::vector<DataElement> elements;
+  elements.push_back(std::move(expected));
   ExpectHandleEqualsData(handle.get(), elements);
 }
 
@@ -301,7 +304,8 @@ TEST_F(BlobDispatcherHostTest, RegularTransfer) {
 
   DataElement expected;
   expected.SetToBytes(kData, kDataSize);
-  std::vector<DataElement> elements = {expected};
+  std::vector<DataElement> elements;
+  elements.push_back(std::move(expected));
   ExpectHandleEqualsData(handle.get(), elements);
 }
 
@@ -315,7 +319,8 @@ TEST_F(BlobDispatcherHostTest, MultipleTransfers) {
     ExpectBlobNotExist(id);
     DataElement element;
     element.SetToBytesDescription(kDataSize);
-    std::vector<DataElement> elements = {element};
+    std::vector<DataElement> elements;
+    elements.push_back(std::move(element));
     host_->OnRegisterBlob(id, std::string(kContentType),
                           std::string(kContentDisposition), elements);
     EXPECT_FALSE(host_->shutdown_for_bad_message_);
@@ -346,7 +351,8 @@ TEST_F(BlobDispatcherHostTest, SharedMemoryTransfer) {
   ExpectBlobNotExist(kId);
   DataElement element;
   element.SetToBytesDescription(kLargeSize);
-  std::vector<DataElement> elements = {element};
+  std::vector<DataElement> elements;
+  elements.push_back(std::move(element));
   host_->OnRegisterBlob(kId, std::string(kContentType),
                         std::string(kContentDisposition), elements);
   EXPECT_FALSE(host_->shutdown_for_bad_message_);
@@ -425,9 +431,11 @@ TEST_F(BlobDispatcherHostTest, SharedMemoryTransfer) {
   DataElement expected;
   expected.SetToAllocatedBytes(kLargeSize / 2);
   std::memset(expected.mutable_bytes(), 'X', kLargeSize / 2);
-  elements = {expected};
+  elements.clear();
+  elements.push_back(std::move(expected));
+  expected.SetToAllocatedBytes(kLargeSize / 2);
   std::memset(expected.mutable_bytes(), 'Z', kLargeSize / 2);
-  elements.push_back(expected);
+  elements.push_back(std::move(expected));
   ExpectHandleEqualsData(handle.get(), elements);
 }
 
@@ -442,7 +450,8 @@ TEST_F(BlobDispatcherHostTest, OnCancelBuildingBlob) {
   // Start building blob.
   DataElement element;
   element.SetToBytesDescription(kDataSize);
-  std::vector<DataElement> elements = {element};
+  std::vector<DataElement> elements;
+  elements.push_back(std::move(element));
   host_->OnRegisterBlob(kId, std::string(kContentType),
                         std::string(kContentDisposition), elements);
   // It should have requested memory here.
@@ -475,7 +484,8 @@ TEST_F(BlobDispatcherHostTest, OnCancelBuildingBlob) {
   EXPECT_TRUE(handle);
   DataElement expected;
   expected.SetToBytes(kData, kDataSize);
-  std::vector<DataElement> expecteds = {expected};
+  std::vector<DataElement> expecteds;
+  expecteds.push_back(std::move(expected));
   ExpectHandleEqualsData(handle.get(), expecteds);
 
   // Verify we can't cancel after the fact.
@@ -513,7 +523,8 @@ TEST_F(BlobDispatcherHostTest, BlobReferenceWhileConstructing) {
   // Start building blob.
   DataElement element;
   element.SetToBytesDescription(kDataSize);
-  std::vector<DataElement> elements = {element};
+  std::vector<DataElement> elements;
+  elements.push_back(std::move(element));
   host_->OnRegisterBlob(kId, std::string(kContentType),
                         std::string(kContentDisposition), elements);
 
@@ -547,7 +558,8 @@ TEST_F(BlobDispatcherHostTest, BlobReferenceWhileConstructingCancelled) {
   // Start building blob.
   DataElement element;
   element.SetToBytesDescription(kDataSize);
-  std::vector<DataElement> elements = {element};
+  std::vector<DataElement> elements;
+  elements.push_back(std::move(element));
   host_->OnRegisterBlob(kId, std::string(kContentType),
                         std::string(kContentDisposition), elements);
 
@@ -591,7 +603,8 @@ TEST_F(BlobDispatcherHostTest, DecrementRefAfterOnStart) {
   // Decrement the refcount while building, after we call OnStartBuildlingBlob.
   DataElement element;
   element.SetToBytesDescription(kDataSize);
-  std::vector<DataElement> elements = {element};
+  std::vector<DataElement> elements;
+  elements.push_back(std::move(element));
   host_->OnRegisterBlob(kId, std::string(kContentType),
                         std::string(kContentDisposition), elements);
   EXPECT_FALSE(host_->shutdown_for_bad_message_);
@@ -647,7 +660,8 @@ TEST_F(BlobDispatcherHostTest, DecrementRefAfterOnStartWithHandle) {
   // OnStartBuildlingBlob, except we have another handle.
   DataElement element;
   element.SetToBytesDescription(kDataSize);
-  std::vector<DataElement> elements = {element};
+  std::vector<DataElement> elements;
+  elements.push_back(std::move(element));
   host_->OnRegisterBlob(kId, std::string(kContentType),
                         std::string(kContentDisposition), elements);
   EXPECT_FALSE(host_->shutdown_for_bad_message_);
@@ -697,7 +711,8 @@ TEST_F(BlobDispatcherHostTest, HostDisconnectAfterOnStart) {
   // Host deleted after OnStartBuilding.
   DataElement element;
   element.SetToBytesDescription(kDataSize);
-  std::vector<DataElement> elements = {element};
+  std::vector<DataElement> elements;
+  elements.push_back(std::move(element));
   host_->OnRegisterBlob(kId, std::string(kContentType),
                         std::string(kContentDisposition), elements);
 
@@ -717,7 +732,10 @@ TEST_F(BlobDispatcherHostTest, HostDisconnectAfterOnMemoryResponse) {
   // Host deleted after OnMemoryItemResponse.
   DataElement element;
   element.SetToBytesDescription(kDataSize);
-  std::vector<DataElement> elements = {element, element};
+  std::vector<DataElement> elements;
+  elements.push_back(std::move(element));
+  element.SetToBytesDescription(kDataSize);
+  elements.push_back(std::move(element));
   host_->OnRegisterBlob(kId, std::string(kContentType),
                         std::string(kContentDisposition), elements);
 
@@ -748,7 +766,8 @@ TEST_F(BlobDispatcherHostTest, CreateBlobWithBrokenReference) {
   const std::string kCircularId("id1");
   DataElement element;
   element.SetToBlob(kCircularId);
-  std::vector<DataElement> elements = {element};
+  std::vector<DataElement> elements;
+  elements.push_back(std::move(element));
   host_->OnRegisterBlob(kCircularId, std::string(kContentType),
                         std::string(kContentDisposition), elements);
   ExpectAndResetBadMessage();
@@ -758,7 +777,8 @@ TEST_F(BlobDispatcherHostTest, CreateBlobWithBrokenReference) {
 
   // Next, test a blob that references a broken blob.
   element.SetToBytesDescription(kDataSize);
-  elements = {element};
+  elements.clear();
+  elements.push_back(std::move(element));
   host_->OnRegisterBlob(kBrokenId, std::string(kContentType),
                         std::string(kContentDisposition), elements);
   EXPECT_FALSE(host_->shutdown_for_bad_message_);
@@ -771,9 +791,11 @@ TEST_F(BlobDispatcherHostTest, CreateBlobWithBrokenReference) {
   // Create referencing blob. We should be broken right away, but also ignore
   // the subsequent OnStart message.
   element.SetToBytesDescription(kDataSize);
-  elements = {element};
+  elements.clear();
+  elements.push_back(std::move(element));
+  element.SetToBytesDescription(kDataSize);
   element.SetToBlob(kBrokenId);
-  elements.push_back(element);
+  elements.push_back(std::move(element));
   host_->OnRegisterBlob(kReferencingId, std::string(kContentType),
                         std::string(kContentDisposition), elements);
   EXPECT_TRUE(context_->GetBlobDataFromUUID(kReferencingId)->IsBroken());
@@ -788,7 +810,8 @@ TEST_F(BlobDispatcherHostTest, DeferenceBlobOnDifferentHost) {
   // Data elements for our transfer & checking messages.
   DataElement element;
   element.SetToBytesDescription(kDataSize);
-  std::vector<DataElement> elements = {element};
+  std::vector<DataElement> elements;
+  elements.push_back(std::move(element));
   std::vector<BlobItemBytesRequest> expected_requests = {
       BlobItemBytesRequest::CreateIPCRequest(0, 0, 0, kDataSize)};
   BlobItemBytesResponse response(0);
@@ -855,8 +878,10 @@ TEST_F(BlobDispatcherHostTest, BuildingReferenceChain) {
   element.SetToBytesDescription(kDataSize);
   DataElement referencing_element;
   referencing_element.SetToBlob(kId);
-  std::vector<DataElement> elements = {element};
-  std::vector<DataElement> referencing_elements = {referencing_element};
+  std::vector<DataElement> elements;
+  elements.push_back(std::move(element));
+  std::vector<DataElement> referencing_elements;
+  referencing_elements.push_back(std::move(referencing_element));
   std::vector<BlobItemBytesRequest> expected_requests = {
       BlobItemBytesRequest::CreateIPCRequest(0, 0, 0, kDataSize)};
   BlobItemBytesResponse response(0);
@@ -921,7 +946,8 @@ TEST_F(BlobDispatcherHostTest, BuildingReferenceChain) {
       context_->GetBlobDataFromUUID(kDifferentHostReferencingId);
   DataElement expected;
   expected.SetToBytes(kData, kDataSize);
-  std::vector<DataElement> expecteds = {expected};
+  std::vector<DataElement> expecteds;
+  expecteds.push_back(std::move(expected));
   ExpectHandleEqualsData(handle.get(), expecteds);
 }
 
@@ -934,8 +960,10 @@ TEST_F(BlobDispatcherHostTest, BuildingReferenceChainWithCancel) {
   element.SetToBytesDescription(kDataSize);
   DataElement referencing_element;
   referencing_element.SetToBlob(kId);
-  std::vector<DataElement> elements = {element};
-  std::vector<DataElement> referencing_elements = {referencing_element};
+  std::vector<DataElement> elements;
+  elements.push_back(std::move(element));
+  std::vector<DataElement> referencing_elements;
+  referencing_elements.push_back(std::move(referencing_element));
   std::vector<BlobItemBytesRequest> expected_requests = {
       BlobItemBytesRequest::CreateIPCRequest(0, 0, 0, kDataSize)};
 
@@ -1009,8 +1037,10 @@ TEST_F(BlobDispatcherHostTest, BuildingReferenceChainWithSourceDeath) {
   element.SetToBytesDescription(kDataSize);
   DataElement referencing_element;
   referencing_element.SetToBlob(kId);
-  std::vector<DataElement> elements = {element};
-  std::vector<DataElement> referencing_elements = {referencing_element};
+  std::vector<DataElement> elements;
+  elements.push_back(std::move(element));
+  std::vector<DataElement> referencing_elements;
+  referencing_elements.push_back(std::move(referencing_element));
   std::vector<BlobItemBytesRequest> expected_requests = {
       BlobItemBytesRequest::CreateIPCRequest(0, 0, 0, kDataSize)};
   BlobItemBytesResponse response(0);

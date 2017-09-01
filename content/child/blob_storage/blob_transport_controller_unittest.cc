@@ -138,7 +138,7 @@ class BlobTransportControllerTest : public testing::Test {
     EXPECT_EQ(expected_uuid, std::get<0>(register_contents));
     EXPECT_EQ(expected_content_type, std::get<1>(register_contents));
     if (descriptions)
-      *descriptions = std::get<3>(register_contents);
+      *descriptions = std::get<3>(std::move(register_contents));
     // We don't have dispositions from the renderer.
     EXPECT_TRUE(std::get<2>(register_contents).empty());
     sink_.ClearMessages();

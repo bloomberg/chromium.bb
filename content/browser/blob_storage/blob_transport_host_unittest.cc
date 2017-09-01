@@ -43,14 +43,14 @@ void PopulateBytes(char* bytes, size_t length) {
 void AddMemoryItem(size_t length, std::vector<DataElement>* out) {
   DataElement bytes;
   bytes.SetToBytesDescription(length);
-  out->push_back(bytes);
+  out->push_back(std::move(bytes));
 }
 
 void AddShortcutMemoryItem(size_t length, std::vector<DataElement>* out) {
   DataElement bytes;
   bytes.SetToAllocatedBytes(length);
   PopulateBytes(bytes.mutable_bytes(), length);
-  out->push_back(bytes);
+  out->push_back(std::move(bytes));
 }
 
 void AddShortcutMemoryItem(size_t length, BlobDataBuilder* out) {
@@ -63,7 +63,7 @@ void AddShortcutMemoryItem(size_t length, BlobDataBuilder* out) {
 void AddBlobItem(std::vector<DataElement>* out) {
   DataElement blob;
   blob.SetToBlob(kCompletedBlobUUID);
-  out->push_back(blob);
+  out->push_back(std::move(blob));
 }
 }  // namespace
 
@@ -460,9 +460,9 @@ TEST_F(BlobTransportHostTest, WaitOnReferencedBlob) {
   // Finish the third one, with a reference to the first and second blob.
   DataElement element;
   element.SetToBlob(kBlob1);
-  descriptions.push_back(element);
+  descriptions.push_back(std::move(element));
   element.SetToBlob(kBlob2);
-  descriptions.push_back(element);
+  descriptions.push_back(std::move(element));
 
   EXPECT_EQ(BlobStatus::PENDING_TRANSPORT,
             BuildBlobAsync(kBlob3, descriptions, &handle3));

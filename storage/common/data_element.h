@@ -40,8 +40,12 @@ class STORAGE_COMMON_EXPORT DataElement {
   };
 
   DataElement();
-  DataElement(const DataElement& other);
   ~DataElement();
+
+  DataElement(const DataElement&) = delete;
+  void operator=(const DataElement&) = delete;
+  DataElement(DataElement&& other);
+  DataElement& operator=(DataElement&& other);
 
   Type type() const { return type_; }
   const char* bytes() const { return bytes_ ? bytes_ : buf_.data(); }
