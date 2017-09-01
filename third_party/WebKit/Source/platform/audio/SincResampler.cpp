@@ -464,6 +464,7 @@ void SincResampler::Process(AudioSourceProvider* source_provider,
         }
 #endif
       }
+#undef CONVOLVE_ONE_SAMPLE
 
       // Linearly interpolate the two "convolutions".
       double result = (1.0 - kernel_interpolation_factor) * sum1 +

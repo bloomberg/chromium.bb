@@ -401,6 +401,7 @@ void DirectConvolver::Process(AudioFloatArray* convolution_kernel,
   }
 #endif
 #endif  // OS_MACOSX
+#undef CONVOLVE_ONE_SAMPLE
 
   // Copy 2nd half of input buffer to 1st half.
   memcpy(buffer_.Data(), input_p, sizeof(float) * frames_to_process);
