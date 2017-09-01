@@ -39,6 +39,7 @@ class UiTexture {
   virtual bool HitTest(const gfx::PointF& point) const;
 
   bool dirty() const { return dirty_; }
+  void set_ready_for_testing() { dirty_ = false; }
 
   void SetMode(ColorScheme::Mode mode);
 

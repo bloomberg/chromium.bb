@@ -55,7 +55,12 @@ void TexturedElement::Render(UiElementRenderer* renderer,
                        drawn_size.height() / texture_size_.height());
   renderer->DrawTexturedQuad(
       texture_handle_, UiElementRenderer::kTextureLocationLocal,
-      view_proj_matrix, copy_rect, opacity(), size(), corner_radius());
+      view_proj_matrix, copy_rect, computed_opacity(), size(), corner_radius());
+}
+
+void TexturedElement::SetInitializedForTesting() {
+  initialized_ = true;
+  GetTexture()->set_ready_for_testing();
 }
 
 void TexturedElement::Flush(SkSurface* surface) {

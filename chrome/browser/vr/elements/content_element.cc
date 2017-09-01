@@ -25,7 +25,7 @@ void ContentElement::Render(UiElementRenderer* renderer,
   gfx::RectF copy_rect(0, 0, 1, 1);
   renderer->DrawTexturedQuad(
       texture_id_, UiElementRenderer::kTextureLocationExternal,
-      view_proj_matrix, copy_rect, opacity(), size(), corner_radius());
+      view_proj_matrix, copy_rect, computed_opacity(), size(), corner_radius());
 }
 
 void ContentElement::OnHoverEnter(const gfx::PointF& position) {
