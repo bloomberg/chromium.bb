@@ -428,6 +428,10 @@ void HTMLInputElement::UpdateType() {
     PseudoStateChanged(CSSSelector::kPseudoChecked);
   }
   PseudoStateChanged(CSSSelector::kPseudoIndeterminate);
+  if (input_type_->IsSteppable() || new_type->IsSteppable()) {
+    PseudoStateChanged(CSSSelector::kPseudoInRange);
+    PseudoStateChanged(CSSSelector::kPseudoOutOfRange);
+  }
 
   bool placeholder_changed =
       input_type_->SupportsPlaceholder() != new_type->SupportsPlaceholder();
