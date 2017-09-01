@@ -24,13 +24,16 @@ void HighlighterControllerTestApi::SetEnabled(bool enabled) {
   instance_->SetEnabled(enabled);
 }
 
+void HighlighterControllerTestApi::DestroyPointerView() {
+  instance_->DestroyPointerView();
+}
+
 bool HighlighterControllerTestApi::IsShowingHighlighter() const {
   return instance_->highlighter_view_.get();
 }
 
 bool HighlighterControllerTestApi::IsFadingAway() const {
-  return IsShowingHighlighter() &&
-         instance_->highlighter_view_->animation_timer_.get();
+  return IsShowingHighlighter() && instance_->highlighter_view_->animating();
 }
 
 bool HighlighterControllerTestApi::IsShowingSelectionResult() const {

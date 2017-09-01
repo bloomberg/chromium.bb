@@ -32,6 +32,12 @@ LaserPointerController::LaserPointerController() {}
 
 LaserPointerController::~LaserPointerController() {}
 
+void LaserPointerController::SetEnabled(bool enabled) {
+  FastInkPointerController::SetEnabled(enabled);
+  if (!enabled)
+    DestroyPointerView();
+}
+
 views::View* LaserPointerController::GetPointerView() const {
   return laser_pointer_view_.get();
 }

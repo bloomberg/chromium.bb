@@ -23,6 +23,7 @@ class HighlighterControllerTestApi : public HighlighterSelectionObserver {
   ~HighlighterControllerTestApi() override;
 
   void SetEnabled(bool enabled);
+  void DestroyPointerView();
   bool IsShowingHighlighter() const;
   bool IsFadingAway() const;
   bool IsShowingSelectionResult() const;

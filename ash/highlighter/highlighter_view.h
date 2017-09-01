@@ -37,6 +37,8 @@ class HighlighterView : public FastInkView {
 
   const FastInkPoints& points() const { return points_; }
 
+  bool animating() const { return animation_timer_.get(); }
+
   void AddNewPoint(const gfx::PointF& new_point, const base::TimeTicks& time);
 
   void Animate(const gfx::PointF& pivot,

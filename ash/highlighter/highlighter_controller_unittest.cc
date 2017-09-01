@@ -95,13 +95,16 @@ TEST_F(HighlighterControllerTest, HighlighterRenderer) {
   EXPECT_TRUE(controller_test_api_->IsShowingHighlighter());
   EXPECT_TRUE(controller_test_api_->IsFadingAway());
 
-  // Verify that disabling the mode does not display the highlighter pointer.
+  // Verify that disabling the mode right after the gesture completion does not
+  // hide the highlighter pointer immediately but lets it play out the
+  // animation.
   controller_test_api_->SetEnabled(false);
-  EXPECT_FALSE(controller_test_api_->IsShowingHighlighter());
-  EXPECT_FALSE(controller_test_api_->IsFadingAway());
+  EXPECT_TRUE(controller_test_api_->IsShowingHighlighter());
+  EXPECT_TRUE(controller_test_api_->IsFadingAway());
 
-  // Verify that disabling the mode while highlighter pointer is displayed does
-  // not display the highlighter pointer.
+  // Verify that disabling the mode mid-gesture hides the highlighter pointer
+  // immediately.
+  controller_test_api_->DestroyPointerView();
   controller_test_api_->SetEnabled(true);
   GetEventGenerator().PressTouch();
   GetEventGenerator().MoveTouch(gfx::Point(6, 6));

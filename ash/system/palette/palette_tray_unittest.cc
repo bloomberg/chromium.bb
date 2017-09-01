@@ -248,9 +248,7 @@ TEST_F(PaletteTrayTestWithVoiceInteraction, MetalayerToolActivatesHighlighter) {
   EXPECT_TRUE(highlighter_test_api.IsShowingHighlighter());
   generator.ReleaseTouch();
 
-  // Disable/enable the palette tool to hide the highlighter.
-  test_api_->GetPaletteToolManager()->DeactivateTool(PaletteToolId::METALAYER);
-  test_api_->GetPaletteToolManager()->ActivateTool(PaletteToolId::METALAYER);
+  highlighter_test_api.DestroyPointerView();
   EXPECT_FALSE(highlighter_test_api.IsShowingHighlighter());
 
   // Press/drag over the palette button. This should not activate the
@@ -399,6 +397,8 @@ TEST_F(PaletteTrayTestWithVoiceInteraction,
   Shell::Get()->NotifyVoiceInteractionContextEnabled(false);
   EXPECT_FALSE(test_api_->GetPaletteToolManager()->IsToolActive(
       PaletteToolId::METALAYER));
+
+  highlighter_test_api.DestroyPointerView();
   EXPECT_FALSE(highlighter_test_api.IsShowingHighlighter());
 
   // Press/drag with the stylus button down should activate neither the palette
