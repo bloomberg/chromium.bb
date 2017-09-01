@@ -31,6 +31,10 @@ TouchSelectionControllerClientChildFrame::
   manager_->InvalidateClient(this);
 }
 
+void TouchSelectionControllerClientChildFrame::DidStopFlinging() {
+  manager_->DidStopFlinging();
+}
+
 void TouchSelectionControllerClientChildFrame::UpdateSelectionBoundsIfNeeded(
     const cc::Selection<gfx::SelectionBound>& selection,
     float device_scale_factor) {

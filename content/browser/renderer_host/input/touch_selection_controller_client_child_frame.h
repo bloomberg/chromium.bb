@@ -31,6 +31,7 @@ class CONTENT_EXPORT TouchSelectionControllerClientChildFrame
       TouchSelectionControllerClientManager* manager);
   ~TouchSelectionControllerClientChildFrame() override;
 
+  void DidStopFlinging();
   void UpdateSelectionBoundsIfNeeded(
       const cc::Selection<gfx::SelectionBound>& selection,
       float device_scale_factor);

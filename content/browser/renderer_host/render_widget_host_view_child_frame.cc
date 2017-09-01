@@ -590,6 +590,11 @@ void RenderWidgetHostViewChildFrame::ProcessAckedTouchEvent(
   frame_connector_->ForwardProcessAckedTouchEvent(touch, ack_result);
 }
 
+void RenderWidgetHostViewChildFrame::DidStopFlinging() {
+  if (selection_controller_client_)
+    selection_controller_client_->DidStopFlinging();
+}
+
 bool RenderWidgetHostViewChildFrame::LockMouse() {
   if (frame_connector_)
     return frame_connector_->LockMouse();
