@@ -205,7 +205,7 @@ NS_INLINE UIEdgeInsets TabHistoryPopupMenuInsets() {
     case TOOLS_SHOW_HISTORY:
       base::RecordAction(UserMetricsAction("MobileMenuHistory"));
       break;
-    case IDC_SHOW_OTHER_DEVICES:
+    case TOOLS_SHOW_RECENT_TABS:
       base::RecordAction(UserMetricsAction("MobileMenuRecentTabs"));
       break;
     case TOOLS_STOP_ITEM:

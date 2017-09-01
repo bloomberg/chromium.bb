@@ -104,6 +104,9 @@
 // Shows the bookmarks manager.
 - (void)showBookmarksManager;
 
+// Shows recent tabs.
+- (void)showRecentTabs;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_COMMANDS_BROWSER_COMMANDS_H_

@@ -4431,6 +4431,21 @@ bubblePresenterForFeature:(const base::Feature&)feature
   }
 }
 
+- (void)showRecentTabs {
+  if (IsIPadIdiom()) {
+    [self showNTPPanel:ntp_home::RECENT_TABS_PANEL];
+  } else {
+    if (!self.recentTabsCoordinator) {
+      self.recentTabsCoordinator = [[RecentTabsHandsetCoordinator alloc]
+          initWithBaseViewController:self];
+      self.recentTabsCoordinator.loader = self;
+      self.recentTabsCoordinator.dispatcher = self.dispatcher;
+      self.recentTabsCoordinator.browserState = _browserState;
+    }
+    [self.recentTabsCoordinator start];
+  }
+}
+
 #pragma mark - Command Handling
 
 - (IBAction)chromeExecuteCommand:(id)sender {
@@ -4449,21 +4464,6 @@ bubblePresenterForFeature:(const base::Feature&)feature
     case IDC_REQUEST_MOBILE_SITE:
       [[_model currentTab] reloadWithUserAgentType:web::UserAgentType::MOBILE];
       break;
-    case IDC_SHOW_OTHER_DEVICES: {
-      if (IsIPadIdiom()) {
-        [self showNTPPanel:ntp_home::RECENT_TABS_PANEL];
-      } else {
-        if (!self.recentTabsCoordinator) {
-          self.recentTabsCoordinator = [[RecentTabsHandsetCoordinator alloc]
-              initWithBaseViewController:self];
-          self.recentTabsCoordinator.loader = self;
-          self.recentTabsCoordinator.dispatcher = self.dispatcher;
-          self.recentTabsCoordinator.browserState = _browserState;
-        }
-        [self.recentTabsCoordinator start];
-      }
-      break;
-    }
     default:
       // Unknown commands get sent up the responder chain.
       [super chromeExecuteCommand:sender];

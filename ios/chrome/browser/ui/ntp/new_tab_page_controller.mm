@@ -25,10 +25,7 @@
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_controller_factory.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_home_tablet_ntp_controller.h"
-#import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
-#import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
-#include "ios/chrome/browser/ui/commands/ios_command_ids.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/ntp/google_landing_mediator.h"
 #import "ios/chrome/browser/ui/ntp/google_landing_view_controller.h"
@@ -682,9 +679,7 @@ enum {
     if (item.identifier == ntp_home::BOOKMARKS_PANEL) {
       [self.dispatcher showBookmarksManager];
     } else if (item.identifier == ntp_home::RECENT_TABS_PANEL) {
-      GenericChromeCommand* command =
-          [[GenericChromeCommand alloc] initWithTag:IDC_SHOW_OTHER_DEVICES];
-      [self.ntpView chromeExecuteCommand:command];
+      [self.dispatcher showRecentTabs];
     }
   }
 
