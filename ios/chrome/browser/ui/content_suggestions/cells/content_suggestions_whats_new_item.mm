@@ -49,10 +49,15 @@ const int kLinkColorRGB = 0x5595FE;
   [super configureCell:cell];
   [cell setIcon:self.icon];
   [cell setText:self.text];
+  cell.accessibilityIdentifier = [[self class] accessibilityIdentifier];
 }
 
 - (CGFloat)cellHeightForWidth:(CGFloat)width {
   return [self.cellClass heightForWidth:width withText:self.text];
+}
+
++ (NSString*)accessibilityIdentifier {
+  return @"ContentSuggestionsWhatsNewIdentifier";
 }
 
 @end

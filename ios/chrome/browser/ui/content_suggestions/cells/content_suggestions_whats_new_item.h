@@ -17,6 +17,8 @@
 // Text describing what is new.
 @property(nonatomic, copy, nullable) NSString* text;
 
++ (nonnull NSString*)accessibilityIdentifier;
+
 @end
 
 // Associated cell, displaying what is new.
