@@ -2816,6 +2816,8 @@ if (enable_java_templates) {
         "//base:base_java",
         "//testing/android/appurify_support:appurify_support_java",
         "//testing/android/reporter:reporter_java",
+        ":${target_name}__runtime_deps",
+        ":${target_name}__secondary_abi_runtime_deps",
       ]
       data_deps += [
         "//build/android/pylib/device/commands",
