@@ -16,8 +16,8 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
-#include "content/common/media/media_stream_options.h"
 #include "content/common/media/video_capture.h"
+#include "content/public/common/media_stream_request.h"
 #include "content/public/renderer/media_stream_video_sink.h"
 #include "media/capture/video_capture_types.h"
 
@@ -91,14 +91,13 @@ class CONTENT_EXPORT VideoCaptureImplManager {
   void GetDeviceFormatsInUse(media::VideoCaptureSessionId id,
                              const VideoCaptureDeviceFormatsCB& callback);
 
-  // Make all VideoCaptureImpl instances in the input |video_device_array|
+  // Make all VideoCaptureImpl instances in the input |video_devices|
   // stop/resume delivering video frames to their clients, depends on flag
   // |suspend|. This is called in response to a RenderView-wide
   // PageHidden/Shown() event.
   // To suspend/resume an individual session, please call Suspend(id) or
   // Resume(id).
-  void SuspendDevices(const StreamDeviceInfoArray& video_device_array,
-                      bool suspend);
+  void SuspendDevices(const MediaStreamDevices& video_devices, bool suspend);
 
   virtual std::unique_ptr<VideoCaptureImpl> CreateVideoCaptureImplForTesting(
       media::VideoCaptureSessionId session_id) const;

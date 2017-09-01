@@ -374,9 +374,8 @@ TEST_F(MediaStreamDispatcherTest, GetNonScreenCaptureDevices) {
   EXPECT_EQ(dispatcher_->label_stream_map_.size(), 2u);
 
   // Only the device with type MEDIA_DEVICE_VIDEO_CAPTURE will be returned.
-  StreamDeviceInfoArray video_device_array =
-      dispatcher_->GetNonScreenCaptureDevices();
-  EXPECT_EQ(video_device_array.size(), 1u);
+  MediaStreamDevices video_devices = dispatcher_->GetNonScreenCaptureDevices();
+  EXPECT_EQ(video_devices.size(), 1u);
 
   // Close the device from request 2.
   dispatcher_->CloseDevice(stream_label2);
