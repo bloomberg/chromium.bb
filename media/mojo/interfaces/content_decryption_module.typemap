@@ -5,6 +5,7 @@
 mojom = "//media/mojo/interfaces/content_decryption_module.mojom"
 
 public_headers = [
+  "//media/base/cdm_config.h",
   "//media/base/cdm_key_information.h",
   "//media/base/cdm_promise.h",
   "//media/base/eme_constants.h",
@@ -19,6 +20,7 @@ deps = [
 ]
 
 type_mappings = [
+  "media.mojom.CdmConfig=media::CdmConfig",
   "media.mojom.CdmKeyStatus=media::CdmKeyInformation::KeyStatus",
   "media.mojom.CdmPromiseResult.Exception=media::CdmPromise::Exception",
   "media.mojom.CdmSessionType=media::CdmSessionType",

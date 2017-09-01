@@ -17,7 +17,6 @@ class AudioBuffer;
 class AudioDecoderConfig;
 class DecoderBuffer;
 class DecryptConfig;
-struct CdmConfig;
 struct CdmKeyInformation;
 }
 
@@ -74,15 +73,6 @@ struct TypeConverter<std::unique_ptr<media::CdmKeyInformation>,
                      media::mojom::CdmKeyInformationPtr> {
   static std::unique_ptr<media::CdmKeyInformation> Convert(
       const media::mojom::CdmKeyInformationPtr& input);
-};
-
-template <>
-struct TypeConverter<media::mojom::CdmConfigPtr, media::CdmConfig> {
-  static media::mojom::CdmConfigPtr Convert(const media::CdmConfig& input);
-};
-template <>
-struct TypeConverter<media::CdmConfig, media::mojom::CdmConfigPtr> {
-  static media::CdmConfig Convert(const media::mojom::CdmConfigPtr& input);
 };
 
 template <>

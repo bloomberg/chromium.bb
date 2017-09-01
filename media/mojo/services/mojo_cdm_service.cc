@@ -61,15 +61,14 @@ void MojoCdmService::SetClient(mojom::ContentDecryptionModuleClientPtr client) {
 
 void MojoCdmService::Initialize(const std::string& key_system,
                                 const std::string& security_origin,
-                                mojom::CdmConfigPtr cdm_config,
+                                const CdmConfig& cdm_config,
                                 InitializeCallback callback) {
   DVLOG(1) << __func__ << ": " << key_system;
   DCHECK(!cdm_);
 
   auto weak_this = weak_factory_.GetWeakPtr();
   cdm_factory_->Create(
-      key_system, url::Origin(GURL(security_origin)),
-      cdm_config.To<CdmConfig>(),
+      key_system, url::Origin(GURL(security_origin)), cdm_config,
       base::Bind(&MojoCdmService::OnSessionMessage, weak_this),
       base::Bind(&MojoCdmService::OnSessionClosed, weak_this),
       base::Bind(&MojoCdmService::OnSessionKeysChange, weak_this),

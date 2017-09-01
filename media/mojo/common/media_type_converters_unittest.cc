@@ -12,7 +12,6 @@
 #include "base/memory/ptr_util.h"
 #include "media/base/audio_buffer.h"
 #include "media/base/audio_decoder_config.h"
-#include "media/base/cdm_config.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/encryption_scheme.h"
 #include "media/base/media_util.h"
@@ -161,21 +160,6 @@ TEST(MediaTypeConvertersTest, ConvertDecoderBuffer_EncryptedBuffer) {
       mojom::DecoderBuffer::From(buffer).To<scoped_refptr<DecoderBuffer>>();
   EXPECT_TRUE(buffer->decrypt_config()->Matches(*result->decrypt_config()));
   EXPECT_TRUE(buffer->decrypt_config()->iv().empty());
-}
-
-TEST(MediaTypeConvertersTest, ConvertCdmConfig) {
-  CdmConfig config;
-  config.allow_distinctive_identifier = true;
-  config.allow_persistent_state = false;
-  config.use_hw_secure_codecs = true;
-
-  mojom::CdmConfigPtr ptr(mojom::CdmConfig::From(config));
-  CdmConfig result(ptr.To<CdmConfig>());
-
-  EXPECT_EQ(config.allow_distinctive_identifier,
-            result.allow_distinctive_identifier);
-  EXPECT_EQ(config.allow_persistent_state, result.allow_persistent_state);
-  EXPECT_EQ(config.use_hw_secure_codecs, result.use_hw_secure_codecs);
 }
 
 TEST(MediaTypeConvertersTest, ConvertAudioBuffer_EOS) {
