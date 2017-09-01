@@ -65,18 +65,17 @@ void CreateBidiRuns(BidiRunList<BidiRun>* bidi_runs,
                     HashMap<LineLayoutItem, FragmentPosition>* positions_out) {
   for (const auto& child : children) {
     if (child->Type() == NGPhysicalFragment::kFragmentText) {
-      const auto* physical_fragment = ToNGPhysicalTextFragment(child.Get());
-      const NGInlineItem& item =
-          items[physical_fragment->ItemIndexDeprecated()];
+      const auto& physical_fragment = ToNGPhysicalTextFragment(*child);
+      const NGInlineItem& item = items[physical_fragment.ItemIndexDeprecated()];
       BidiRun* run;
       if (item.Type() == NGInlineItem::kText ||
           item.Type() == NGInlineItem::kControl) {
         LayoutObject* layout_object = item.GetLayoutObject();
         DCHECK(layout_object->IsText());
         unsigned text_offset =
-            text_offsets[physical_fragment->ItemIndexDeprecated()];
-        run = new BidiRun(physical_fragment->StartOffset() - text_offset,
-                          physical_fragment->EndOffset() - text_offset,
+            text_offsets[physical_fragment.ItemIndexDeprecated()];
+        run = new BidiRun(physical_fragment.StartOffset() - text_offset,
+                          physical_fragment.EndOffset() - text_offset,
                           item.BidiLevel(), LineLayoutItem(layout_object));
         layout_object->ClearNeedsLayout();
       } else if (item.Type() == NGInlineItem::kAtomicInline) {
@@ -88,27 +87,26 @@ void CreateBidiRuns(BidiRunList<BidiRun>* bidi_runs,
         continue;
       }
       bidi_runs->AddRun(run);
-      NGTextFragment fragment(constraint_space.WritingMode(),
-                              physical_fragment);
+      NGFragment fragment(constraint_space.WritingMode(), physical_fragment);
       // Store text fragments in a vector in the same order as BidiRunList.
       // One LayoutText may produce multiple text fragments that they can't
       // be set to a map.
       positions_for_bidi_runs_out->push_back(FragmentPosition{
           fragment.Offset() + parent_offset, fragment.InlineSize(),
-          physical_fragment->EndEffect()});
+          physical_fragment.EndEffect()});
     } else {
       DCHECK_EQ(child->Type(), NGPhysicalFragment::kFragmentBox);
-      NGPhysicalBoxFragment* physical_fragment =
-          ToNGPhysicalBoxFragment(child.Get());
-      NGBoxFragment fragment(constraint_space.WritingMode(), physical_fragment);
+      const auto& physical_fragment = ToNGPhysicalBoxFragment(*child);
+
+      NGFragment fragment(constraint_space.WritingMode(), physical_fragment);
       NGLogicalOffset child_offset = fragment.Offset() + parent_offset;
-      if (physical_fragment->Children().size()) {
-        CreateBidiRuns(bidi_runs, physical_fragment->Children(),
+      if (physical_fragment.Children().size()) {
+        CreateBidiRuns(bidi_runs, physical_fragment.Children(),
                        constraint_space, child_offset, items, text_offsets,
                        positions_for_bidi_runs_out, positions_out);
       } else {
         // An empty inline needs a BidiRun for itself.
-        LayoutObject* layout_object = physical_fragment->GetLayoutObject();
+        LayoutObject* layout_object = physical_fragment.GetLayoutObject();
         BidiRun* run = new BidiRun(0, 1, 0, LineLayoutItem(layout_object));
         bidi_runs->AddRun(run);
       }
@@ -640,13 +638,12 @@ void NGInlineNode::CopyFragmentDataToLayoutBox(
     if (!container_child.Get()->IsLineBox())
       continue;
 
-    NGPhysicalLineBoxFragment* physical_line_box =
-        ToNGPhysicalLineBoxFragment(container_child.Get());
-    NGLineBoxFragment line_box(constraint_space.WritingMode(),
-                               physical_line_box);
+    const auto& physical_line_box =
+        ToNGPhysicalLineBoxFragment(*container_child);
+    NGFragment line_box(constraint_space.WritingMode(), physical_line_box);
 
     // Create a BidiRunList for this line.
-    CreateBidiRuns(&bidi_runs, physical_line_box->Children(), constraint_space,
+    CreateBidiRuns(&bidi_runs, physical_line_box.Children(), constraint_space,
                    {line_box.InlineOffset(), LayoutUnit(0)}, items,
                    text_offsets, &positions_for_bidi_runs, &positions);
     // TODO(kojii): bidi needs to find the logical last run.
@@ -678,7 +675,7 @@ void NGInlineNode::CopyFragmentDataToLayoutBox(
     root_line_box->SetLogicalWidth(line_box.InlineSize());
     LayoutUnit line_top = line_box.BlockOffset() + border_padding.block_start;
     NGLineHeightMetrics line_metrics(Style(), baseline_type);
-    const NGLineHeightMetrics& max_with_leading = physical_line_box->Metrics();
+    const NGLineHeightMetrics& max_with_leading = physical_line_box.Metrics();
     LayoutUnit baseline = line_top + max_with_leading.ascent;
     root_line_box->SetLogicalTop(baseline - line_metrics.ascent);
     root_line_box->SetLineTopBottomPositions(

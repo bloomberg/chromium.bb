@@ -20,7 +20,7 @@ struct NGLogicalSize;
 class CORE_EXPORT NGBoxFragment final : public NGFragment {
  public:
   NGBoxFragment(NGWritingMode writing_mode,
-                const NGPhysicalBoxFragment* physical_fragment)
+                const NGPhysicalBoxFragment& physical_fragment)
       : NGFragment(writing_mode, physical_fragment) {}
 
   // Returns the total size, including the contents outside of the border-box.

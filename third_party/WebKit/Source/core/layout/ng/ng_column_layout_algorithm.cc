@@ -56,7 +56,7 @@ RefPtr<NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
     NGLogicalOffset logical_offset(column_inline_offset, LayoutUnit());
     container_builder_.AddChild(column, logical_offset);
 
-    NGLogicalSize size = NGBoxFragment(writing_mode, column.Get()).Size();
+    NGLogicalSize size = NGBoxFragment(writing_mode, *column).Size();
     NGLogicalOffset end_offset =
         logical_offset + NGLogicalOffset(size.inline_size, size.block_size);
 
