@@ -79,6 +79,7 @@ class PythonChecker(object):
             finder.path_from_tools_scripts(),
             finder.path_from_blink_source('build', 'scripts'),
             finder.path_from_tools_scripts('webkitpy', 'thirdparty'),
+            finder.path_from_chromium_base('third_party', 'blink', 'tools'),
             finder.path_from_blink_source('bindings', 'scripts'),
             finder.path_from_chromium_base('build', 'android'),
             finder.path_from_chromium_base('third_party', 'catapult', 'devil'),
