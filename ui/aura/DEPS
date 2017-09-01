@@ -1,6 +1,7 @@
 include_rules = [
   "+cc/base",
   "+cc/output",
+  "+components/viz/client",
   "+components/viz/common",
   "+components/viz/host",
   "+mojo/common",
