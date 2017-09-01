@@ -206,6 +206,7 @@ WebPreferences::WebPreferences()
       embedded_media_experience_enabled(false),
       css_hex_alpha_color_enabled(true),
       enable_media_download_in_product_help(false),
+      scroll_top_left_interop_enabled(true),
 #endif  // defined(OS_ANDROID)
 #if defined(OS_ANDROID)
       default_minimum_page_scale_factor(0.25f),
