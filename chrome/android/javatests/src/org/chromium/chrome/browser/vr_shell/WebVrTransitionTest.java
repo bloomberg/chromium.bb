@@ -25,6 +25,7 @@ import org.chromium.base.test.params.ParameterAnnotations.UseRunnerDelegate;
 import org.chromium.base.test.params.ParameterSet;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -147,6 +148,7 @@ public class WebVrTransitionTest {
     @MediumTest
     @CommandLineFlags.Add("enable-features=WebVrAutopresent")
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
+    @DisabledTest(message = "Doesn't work anymore until autopresent isn't forced into CCT")
     public void testTrustedIntentAllowsAutoPresent() throws InterruptedException {
         VrIntentUtils.setHandlerInstanceForTesting(new MockVrIntentHandler(
                 true /* useMockImplementation */, true /* treatIntentsAsTrusted */));
