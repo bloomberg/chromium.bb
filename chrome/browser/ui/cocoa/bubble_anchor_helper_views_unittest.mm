@@ -18,7 +18,8 @@ namespace {
 constexpr int kHorizOffset = 210;
 constexpr int kVertOffset = 320;
 
-class TestBubbleDialogDelegateView : public views::BubbleDialogDelegateView {
+class TestBubbleDialogDelegateView final
+    : public views::BubbleDialogDelegateView {
  public:
   explicit TestBubbleDialogDelegateView(views::BubbleBorder::Arrow arrow)
       : BubbleDialogDelegateView(nullptr, arrow) {
