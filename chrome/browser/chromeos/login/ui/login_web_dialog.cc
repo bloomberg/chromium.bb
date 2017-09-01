@@ -4,8 +4,7 @@
 
 #include "chrome/browser/chromeos/login/ui/login_web_dialog.h"
 
-#include <deque>
-
+#include "base/containers/circular_deque.h"
 #include "base/lazy_instance.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/helper.h"
@@ -33,7 +32,7 @@ const double kDefaultHeightRatio = 0.6;
 const double kMinimumWidthRatio = 0.25;
 const double kMinimumHeightRatio = 0.25;
 
-base::LazyInstance<std::deque<WebContents*>>::DestructorAtExit
+base::LazyInstance<base::circular_deque<WebContents*>>::DestructorAtExit
     g_web_contents_stack = LAZY_INSTANCE_INITIALIZER;
 
 // Returns the accelerator which is mapped as hangup button on Chrome OS CFM

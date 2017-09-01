@@ -4,9 +4,8 @@
 
 #include "chrome/browser/notifications/notification_permission_context.h"
 
-#include <deque>
-
 #include "base/callback.h"
+#include "base/containers/circular_deque.h"
 #include "base/location.h"
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
@@ -62,6 +61,10 @@ class VisibilityTimerTabHelper
     Task(const PermissionRequestID& id, std::unique_ptr<base::Timer> timer)
         : id(id), timer(std::move(timer)) {}
 
+    // Move-only.
+    Task(Task&&) noexcept = default;
+    Task(const Task&) = delete;
+
     Task& operator=(Task&& other) {
       id = other.id;
       timer = std::move(other.timer);
@@ -70,11 +73,8 @@ class VisibilityTimerTabHelper
 
     PermissionRequestID id;
     std::unique_ptr<base::Timer> timer;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(Task);
   };
-  std::deque<Task> task_queue_;
+  base::circular_deque<Task> task_queue_;
 
   DISALLOW_COPY_AND_ASSIGN(VisibilityTimerTabHelper);
 };

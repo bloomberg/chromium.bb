@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_PRERENDER_PRERENDER_TEST_UTILS_H_
 #define CHROME_BROWSER_PRERENDER_PRERENDER_TEST_UTILS_H_
 
-#include <deque>
 #include <functional>
 #include <memory>
 #include <set>
@@ -13,6 +12,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "base/containers/circular_deque.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
@@ -291,7 +291,7 @@ class TestPrerenderContentsFactory : public PrerenderContents::Factory {
     base::WeakPtr<TestPrerender> handle;
   };
 
-  std::deque<ExpectedContents> expected_contents_queue_;
+  base::circular_deque<ExpectedContents> expected_contents_queue_;
 
   DISALLOW_COPY_AND_ASSIGN(TestPrerenderContentsFactory);
 };

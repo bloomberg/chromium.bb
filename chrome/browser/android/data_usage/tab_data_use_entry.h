@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/containers/circular_deque.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/time/time.h"
@@ -107,11 +108,7 @@ class TabDataUseEntry {
                            ExpiredInactiveTabEntryRemovaltimeHistogram);
   FRIEND_TEST_ALL_PREFIXES(DataUseTabModelTest, TabCloseEvent);
 
-  // This is a std::vector instead of a std::deque because std::deque is
-  // inefficient for small numbers of elements (see crbug/674287). By default,
-  // at most 5 sessions are tracked at a time per tab, so erasing from the front
-  // of the vector is cheap anyways.
-  typedef std::vector<TabDataUseTrackingSession> TabSessions;
+  using TabSessions = base::circular_deque<TabDataUseTrackingSession>;
 
   // Compacts the history of tracking sessions by removing oldest sessions to
   // keep the size of |sessions_| within |kMaxSessionsPerTab| entries.

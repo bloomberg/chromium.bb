@@ -7,9 +7,8 @@
 
 #include <stddef.h>
 
-#include <deque>
-
 #include "base/callback.h"
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/common/resource_usage_reporter.mojom.h"
@@ -82,7 +81,7 @@ class ProcessResourceUsage {
 
   chrome::mojom::ResourceUsageReporterPtr service_;
   bool update_in_progress_;
-  std::deque<base::Closure> refresh_callbacks_;
+  base::circular_deque<base::Closure> refresh_callbacks_;
 
   chrome::mojom::ResourceUsageDataPtr stats_;
 

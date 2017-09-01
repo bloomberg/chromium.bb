@@ -4,6 +4,7 @@
 
 #include <oleacc.h>
 
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/win/scoped_bstr.h"
@@ -70,7 +71,7 @@ class WinAccessibilityEventMonitor {
     LONG child_id;
   };
 
-  std::deque<EventInfo> event_queue_;
+  base::circular_deque<EventInfo> event_queue_;
   scoped_refptr<content::MessageLoopRunner> loop_runner_;
   HWINEVENTHOOK win_event_hook_handle_;
   static WinAccessibilityEventMonitor* instance_;

@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_MEDIA_ROUTER_EVENT_PAGE_REQUEST_MANAGER_H_
 #define CHROME_BROWSER_MEDIA_ROUTER_EVENT_PAGE_REQUEST_MANAGER_H_
 
-#include <deque>
 #include <string>
 
 #include "base/callback.h"
+#include "base/containers/circular_deque.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/media/router/mojo/media_router_mojo_metrics.h"
@@ -117,7 +117,7 @@ class EventPageRequestManager : public KeyedService {
 
   // Pending requests queued to be executed once component extension
   // becomes ready.
-  std::deque<base::OnceClosure> pending_requests_;
+  base::circular_deque<base::OnceClosure> pending_requests_;
 
   // Allows the extension to be monitored for suspend, and woken.
   // This is a reference to a BrowserContext keyed service that outlives this

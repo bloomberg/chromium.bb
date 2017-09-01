@@ -8,6 +8,7 @@
 #include <queue>
 #include <utility>
 
+#include "base/containers/circular_deque.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -137,7 +138,8 @@ void LocalFileChangeTracker::OnRemoveDirectory(const FileSystemURL& url) {
 }
 
 void LocalFileChangeTracker::GetNextChangedURLs(
-    std::deque<FileSystemURL>* urls, int max_urls) {
+    base::circular_deque<FileSystemURL>* urls,
+    int max_urls) {
   DCHECK(file_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(urls);
   urls->clear();
@@ -318,7 +320,7 @@ void LocalFileChangeTracker::UpdateNumChanges() {
 
 void LocalFileChangeTracker::GetAllChangedURLs(FileSystemURLSet* urls) {
   DCHECK(file_task_runner_->RunsTasksInCurrentSequence());
-  std::deque<FileSystemURL> url_deque;
+  base::circular_deque<FileSystemURL> url_deque;
   GetNextChangedURLs(&url_deque, 0);
   urls->clear();
   urls->insert(url_deque.begin(), url_deque.end());

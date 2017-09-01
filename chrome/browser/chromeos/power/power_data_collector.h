@@ -5,9 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POWER_POWER_DATA_COLLECTOR_H_
 #define CHROME_BROWSER_CHROMEOS_POWER_POWER_DATA_COLLECTOR_H_
 
-#include <deque>
-
 #include "base/compiler_specific.h"
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/power/cpu_data_collector.h"
@@ -56,11 +55,11 @@ class CHROMEOS_EXPORT PowerDataCollector : public PowerManagerClient::Observer {
     base::TimeDelta sleep_duration;
   };
 
-  const std::deque<PowerSupplySample>& power_supply_data() const {
+  const base::circular_deque<PowerSupplySample>& power_supply_data() const {
     return power_supply_data_;
   }
 
-  const std::deque<SystemResumedSample>& system_resumed_data() const {
+  const base::circular_deque<SystemResumedSample>& system_resumed_data() const {
     return system_resumed_data_;
   }
 
@@ -94,8 +93,8 @@ class CHROMEOS_EXPORT PowerDataCollector : public PowerManagerClient::Observer {
 
   ~PowerDataCollector() override;
 
-  std::deque<PowerSupplySample> power_supply_data_;
-  std::deque<SystemResumedSample> system_resumed_data_;
+  base::circular_deque<PowerSupplySample> power_supply_data_;
+  base::circular_deque<SystemResumedSample> system_resumed_data_;
   CpuDataCollector cpu_data_collector_;
 
   DISALLOW_COPY_AND_ASSIGN(PowerDataCollector);
@@ -105,7 +104,8 @@ class CHROMEOS_EXPORT PowerDataCollector : public PowerManagerClient::Observer {
 // It dumps samples |PowerDataCollector::kSampleTimeLimitSec| or more older than
 // |sample|.
 template <typename SampleType>
-void AddSample(std::deque<SampleType>* sample_queue, const SampleType& sample) {
+void AddSample(base::circular_deque<SampleType>* sample_queue,
+               const SampleType& sample) {
   while (!sample_queue->empty()) {
     const SampleType& first = sample_queue->front();
     if (sample.time - first.time >

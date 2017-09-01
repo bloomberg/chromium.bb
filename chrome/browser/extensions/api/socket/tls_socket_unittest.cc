@@ -5,10 +5,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <deque>
 #include <memory>
 #include <utility>
 
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "extensions/browser/api/socket/tls_socket.h"
@@ -242,7 +242,7 @@ TEST_F(TLSSocketTest, TestTLSSocketBlockedWriteReentry) {
 
 typedef std::pair<net::CompletionCallback, int> PendingCallback;
 
-class CallbackList : public std::deque<PendingCallback> {
+class CallbackList : public base::circular_deque<PendingCallback> {
  public:
   void append(const net::CompletionCallback& cb, int arg) {
     push_back(std::make_pair(cb, arg));

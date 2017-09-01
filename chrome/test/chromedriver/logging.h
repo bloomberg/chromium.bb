@@ -5,11 +5,11 @@
 #ifndef CHROME_TEST_CHROMEDRIVER_LOGGING_H_
 #define CHROME_TEST_CHROMEDRIVER_LOGGING_H_
 
-#include <deque>
 #include <memory>
 #include <string>
 #include <vector>
 
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/chrome/log.h"
@@ -74,7 +74,7 @@ class WebDriverLog : public Log {
   // A queue of batches of entries. Each batch can have no more than
   // |kMaxReturnedEntries| values in it. This is to avoid HTTP response buffer
   // overflow (crbug.com/681892).
-  std::deque<std::unique_ptr<base::ListValue>> batches_of_entries_;
+  base::circular_deque<std::unique_ptr<base::ListValue>> batches_of_entries_;
 
   DISALLOW_COPY_AND_ASSIGN(WebDriverLog);
 };

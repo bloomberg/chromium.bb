@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/command_line.h"
+#include "base/containers/circular_deque.h"
 #include "base/feature_list.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
@@ -183,7 +184,7 @@ void PermissionRequestManager::AddRequest(PermissionRequest* request) {
 void PermissionRequestManager::CancelRequest(PermissionRequest* request) {
   // First look in the queued requests, where we can simply finish the request
   // and go on.
-  std::deque<PermissionRequest*>::iterator queued_requests_iter;
+  base::circular_deque<PermissionRequest*>::iterator queued_requests_iter;
   for (queued_requests_iter = queued_requests_.begin();
        queued_requests_iter != queued_requests_.end(); queued_requests_iter++) {
     if (*queued_requests_iter == request) {
@@ -435,12 +436,8 @@ void PermissionRequestManager::FinalizeBubble(
 }
 
 void PermissionRequestManager::CleanUpRequests() {
-  std::deque<PermissionRequest*>::iterator requests_iter;
-  for (requests_iter = queued_requests_.begin();
-       requests_iter != queued_requests_.end();
-       requests_iter++) {
-    RequestFinishedIncludingDuplicates(*requests_iter);
-  }
+  for (PermissionRequest* request : queued_requests_)
+    RequestFinishedIncludingDuplicates(request);
   queued_requests_.clear();
 
   if (!requests_.empty())
@@ -449,12 +446,14 @@ void PermissionRequestManager::CleanUpRequests() {
 
 PermissionRequest* PermissionRequestManager::GetExistingRequest(
     PermissionRequest* request) {
-  for (PermissionRequest* existing_request : requests_)
+  for (PermissionRequest* existing_request : requests_) {
     if (IsMessageTextEqual(existing_request, request))
       return existing_request;
-  for (PermissionRequest* existing_request : queued_requests_)
+  }
+  for (PermissionRequest* existing_request : queued_requests_) {
     if (IsMessageTextEqual(existing_request, request))
       return existing_request;
+  }
   return nullptr;
 }
 
