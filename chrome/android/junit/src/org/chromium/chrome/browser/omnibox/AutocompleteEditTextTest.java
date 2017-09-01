@@ -12,6 +12,7 @@ import static org.mockito.Mockito.spy;
 
 import android.app.Activity;
 import android.content.Context;
+import android.text.SpannableString;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
@@ -1090,5 +1091,17 @@ public class AutocompleteEditTextTest {
             assertTrue(mAutocomplete.isCursorVisible());
         }
         mInOrder.verifyNoMoreInteractions();
+    }
+
+    // crbug.com/760013
+    @Test
+    @Features(@Features.Register(
+            value = ChromeFeatureList.SPANNABLE_INLINE_AUTOCOMPLETE, enabled = true))
+    public void testOnSaveInstanceStateDoesNotCrash() {
+        mInputConnection.setComposingText("h", 1);
+        mAutocomplete.setAutocompleteText("h", "ello world");
+        // On Android JB, TextView#onSaveInstanceState() calls new SpannableString(mText). This
+        // should not crash.
+        new SpannableString(mAutocomplete.getText());
     }
 }
