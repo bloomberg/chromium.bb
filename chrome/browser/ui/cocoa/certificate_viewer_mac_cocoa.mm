@@ -18,7 +18,8 @@
 
 namespace {
 
-class SSLCertificateViewerCocoaBridge : public ConstrainedWindowMacDelegate {
+class SSLCertificateViewerCocoaBridge final
+    : public ConstrainedWindowMacDelegate {
  public:
   explicit SSLCertificateViewerCocoaBridge(
       SSLCertificateViewerCocoa* controller)
