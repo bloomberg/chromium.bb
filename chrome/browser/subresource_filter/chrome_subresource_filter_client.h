@@ -111,7 +111,8 @@ class ChromeSubresourceFilterClient
   void ShowNotification() override;
   void OnNewNavigationStarted() override;
   bool OnPageActivationComputed(content::NavigationHandle* navigation_handle,
-                                bool activated) override;
+                                bool activated,
+                                bool suppressing_notifications) override;
   void WhitelistInCurrentWebContents(const GURL& url) override;
   subresource_filter::VerifiedRulesetDealer::Handle* GetRulesetDealer()
       override;

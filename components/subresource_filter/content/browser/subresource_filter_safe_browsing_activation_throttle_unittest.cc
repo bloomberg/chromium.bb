@@ -86,7 +86,8 @@ class MockSubresourceFilterClient : public SubresourceFilterClient {
   }
 
   bool OnPageActivationComputed(content::NavigationHandle* handle,
-                                bool activated) override {
+                                bool activated,
+                                bool suppress_notifications) override {
     DCHECK(handle->IsInMainFrame());
     return whitelisted_hosts_.count(handle->GetURL().host());
   }
