@@ -132,15 +132,17 @@ void ChromeSubresourceFilterClient::OnNewNavigationStarted() {
 
 bool ChromeSubresourceFilterClient::OnPageActivationComputed(
     content::NavigationHandle* navigation_handle,
-    bool activated) {
+    bool activated,
+    bool suppressing_notifications) {
   const GURL& url(navigation_handle->GetURL());
   DCHECK(navigation_handle->IsInMainFrame());
 
   if (url.SchemeIsHTTPOrHTTPS()) {
     // With respect to persistent metadata, do not consider the site activated
-    // if it is forced via devtools.
+    // if it is forced via devtools, or if we are suppressing notifications.
     settings_manager_->ResetSiteMetadataBasedOnActivation(
-        url, activated && !activated_via_devtools_);
+        url,
+        activated && !activated_via_devtools_ && !suppressing_notifications);
   }
 
   // Return whether the activation should be whitelisted.

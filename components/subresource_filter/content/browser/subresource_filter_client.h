@@ -35,7 +35,8 @@ class SubresourceFilterClient {
   // Precondition: The navigation must be a main frame navigation.
   virtual bool OnPageActivationComputed(
       content::NavigationHandle* navigation_handle,
-      bool activated) = 0;
+      bool activated,
+      bool suppressing_notifications) = 0;
 
   // Adds |url| to a per-WebContents whitelist.
   virtual void WhitelistInCurrentWebContents(const GURL& url) = 0;

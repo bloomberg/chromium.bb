@@ -268,3 +268,22 @@ TEST_F(SubresourceFilterTest, UIShown_LogsRappor) {
   // The host is the same as the etld+1 in this case.
   EXPECT_EQ(url.host(), sample_string);
 }
+
+TEST_F(SubresourceFilterTest, AbusiveEnforcement_NoMetadata) {
+  subresource_filter::Configuration config(
+      subresource_filter::ActivationLevel::ENABLED,
+      subresource_filter::ActivationScope::ACTIVATION_LIST,
+      subresource_filter::ActivationList::SUBRESOURCE_FILTER);
+  config.activation_options.should_disable_ruleset_rules = true;
+  config.activation_options.should_strengthen_popup_blocker = true;
+  config.activation_options.should_suppress_notifications = true;
+
+  scoped_configuration().ResetConfiguration(std::move(config));
+
+  GURL url("https://a.test");
+  ConfigureAsSubresourceFilterOnlyURL(url);
+  SimulateNavigateAndCommit(url, main_rfh());
+  EXPECT_TRUE(CreateAndNavigateDisallowedSubframe(main_rfh()));
+  EXPECT_EQ(nullptr, GetSettingsManager()->GetSiteMetadata(url));
+  EXPECT_FALSE(GetClient()->did_show_ui_for_navigation());
+}
