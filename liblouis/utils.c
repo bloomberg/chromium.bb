@@ -197,89 +197,57 @@ _lou_showString (widechar const *chars, int length)
   return scratchBuf;
 }
 
+/**
+ * Translate a sequence of dots to the encoding used in dots operands.
+ */
 char *EXPORT_CALL
-_lou_showDots (widechar const *dots, int length)
-{
-  /* Translate a sequence of dots to the encoding used in dots operands. 
-  */
+_lou_showDots (widechar const *dots, int length) {
   int bufPos = 0;
-  int dotsPos;
   static char scratchBuf[MAXSTRING];
-  for (dotsPos = 0; bufPos < sizeof (scratchBuf) && dotsPos < length;
-       dotsPos++)
-    {
-      if (dots[dotsPos] & B1)
-	scratchBuf[bufPos++] = '1';
-      if (dots[dotsPos] & B2)
-	scratchBuf[bufPos++] = '2';
-      if (dots[dotsPos] & B3)
-	scratchBuf[bufPos++] = '3';
-      if (dots[dotsPos] & B4)
-	scratchBuf[bufPos++] = '4';
-      if (dots[dotsPos] & B5)
-	scratchBuf[bufPos++] = '5';
-      if (dots[dotsPos] & B6)
-	scratchBuf[bufPos++] = '6';
-      if (dots[dotsPos] & B7)
-	scratchBuf[bufPos++] = '7';
-      if (dots[dotsPos] & B8)
-	scratchBuf[bufPos++] = '8';
-      if (dots[dotsPos] & B9)
-	scratchBuf[bufPos++] = '9';
-      if (dots[dotsPos] & B10)
-	scratchBuf[bufPos++] = 'A';
-      if (dots[dotsPos] & B11)
-	scratchBuf[bufPos++] = 'B';
-      if (dots[dotsPos] & B12)
-	scratchBuf[bufPos++] = 'C';
-      if (dots[dotsPos] & B13)
-	scratchBuf[bufPos++] = 'D';
-      if (dots[dotsPos] & B14)
-	scratchBuf[bufPos++] = 'E';
-      if (dots[dotsPos] & B15)
-	scratchBuf[bufPos++] = 'F';
-      if (dots[dotsPos] == B16)
-	scratchBuf[bufPos++] = '0';
-      if (dotsPos != length - 1)
-	scratchBuf[bufPos++] = '-';
+  for (int dotsPos = 0; dotsPos < length && bufPos < (MAXSTRING-1); dotsPos++) {
+    for (int mappingPos = 0; dotMapping[mappingPos].key; mappingPos++) {
+      if ((dots[dotsPos] & dotMapping[mappingPos].key) && bufPos < (MAXSTRING-1))
+	scratchBuf[bufPos++] = dotMapping[mappingPos].value;
     }
+    if ((dotsPos != length - 1) && bufPos < (MAXSTRING-1))
+      scratchBuf[bufPos++] = '-';
+  }
   scratchBuf[bufPos] = 0;
   return scratchBuf;
 }
 
+/**
+ * Mapping between character attribute and textual representation
+ */
+const static intCharTupple attributeMapping[] = {
+  {CTC_Space, 's'},
+  {CTC_Letter, 'l'},
+  {CTC_Digit, 'd'},
+  {CTC_Punctuation, 'p'},
+  {CTC_UpperCase, 'U'},
+  {CTC_LowerCase, 'u'},
+  {CTC_Math, 'm'},
+  {CTC_Sign, 'S'},
+  {CTC_LitDigit, 'D'},
+  {CTC_Class1, 'w'},
+  {CTC_Class2, 'x'},
+  {CTC_Class3, 'y'},
+  {CTC_Class4, 'z'},
+  NULL
+};
+
+/**
+ * Show attributes using the letters used after the $ in multipass
+ * opcodes.
+ */
 char *EXPORT_CALL
-_lou_showAttributes (TranslationTableCharacterAttributes a)
-{
-  /* Show attributes using the letters used after the $ in multipass 
-  * opcodes. */
+_lou_showAttributes (TranslationTableCharacterAttributes a) {
   int bufPos = 0;
   static char scratchBuf[MAXSTRING];
-  if (a & CTC_Space)
-    scratchBuf[bufPos++] = 's';
-  if (a & CTC_Letter)
-    scratchBuf[bufPos++] = 'l';
-  if (a & CTC_Digit)
-    scratchBuf[bufPos++] = 'd';
-  if (a & CTC_Punctuation)
-    scratchBuf[bufPos++] = 'p';
-  if (a & CTC_UpperCase)
-    scratchBuf[bufPos++] = 'U';
-  if (a & CTC_LowerCase)
-    scratchBuf[bufPos++] = 'u';
-  if (a & CTC_Math)
-    scratchBuf[bufPos++] = 'm';
-  if (a & CTC_Sign)
-    scratchBuf[bufPos++] = 'S';
-  if (a & CTC_LitDigit)
-    scratchBuf[bufPos++] = 'D';
-  if (a & CTC_Class1)
-    scratchBuf[bufPos++] = 'w';
-  if (a & CTC_Class2)
-    scratchBuf[bufPos++] = 'x';
-  if (a & CTC_Class3)
-    scratchBuf[bufPos++] = 'y';
-  if (a & CTC_Class4)
-    scratchBuf[bufPos++] = 'z';
+  for (int mappingPos = 0; attributeMapping[mappingPos].key; mappingPos++) {
+    if ((a & attributeMapping[mappingPos].key) && bufPos < (MAXSTRING - 1))
+      scratchBuf[bufPos++] = attributeMapping[mappingPos].value;
+  }
   scratchBuf[bufPos] = 0;
   return scratchBuf;
 }
