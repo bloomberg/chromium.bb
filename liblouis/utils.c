@@ -182,14 +182,14 @@ _lou_showString (widechar const *chars, int length)
 	      leadingZeros = 0;
 	      break;
 	    }
-	  if ((bufPos + leadingZeros + hexLength + 4) < (MAXSTRING-2)) {
-	    scratchBuf[bufPos++] = '\\';
-	    scratchBuf[bufPos++] = escapeLetter;
-	    for (hexPos = 0; hexPos < leadingZeros; hexPos++)
-	      scratchBuf[bufPos++] = '0';
-	    for (hexPos = 0; hexPos < hexLength; hexPos++)
-	      scratchBuf[bufPos++] = hexbuf[hexPos];
-	  }
+	  if ((bufPos + leadingZeros + hexLength + 4) >= (MAXSTRING-2))
+	    break;
+	  scratchBuf[bufPos++] = '\\';
+	  scratchBuf[bufPos++] = escapeLetter;
+	  for (hexPos = 0; hexPos < leadingZeros; hexPos++)
+	    scratchBuf[bufPos++] = '0';
+	  for (hexPos = 0; hexPos < hexLength; hexPos++)
+	    scratchBuf[bufPos++] = hexbuf[hexPos];
 	}
     }
   scratchBuf[bufPos++] = '\'';
