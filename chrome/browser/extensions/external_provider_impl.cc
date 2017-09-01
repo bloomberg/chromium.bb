@@ -54,6 +54,7 @@
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "components/arc/arc_util.h"
 #else
 #include "chrome/browser/extensions/default_apps.h"
 #endif
@@ -65,6 +66,29 @@
 using content::BrowserThread;
 
 namespace extensions {
+
+namespace {
+
+#if defined(OS_CHROMEOS)
+
+// Certain default extensions are no longer needed on ARC devices as they were
+// replaced by their ARC counterparts.
+bool ShouldUninstallExtensionReplacedByArcApp(const std::string& extension_id) {
+  if (arc::IsWebstoreSearchEnabled())
+    return false;
+
+  if (extension_id == extension_misc::kGooglePlayBooksAppId ||
+      extension_id == extension_misc::kGooglePlayMoviesAppId ||
+      extension_id == extension_misc::kGooglePlayMusicAppId) {
+    return true;
+  }
+
+  return false;
+}
+
+#endif  // defined(OS_CHROMEOS)
+
+}  // namespace
 
 // Constants for keeping track of extension preferences in a dictionary.
 const char ExternalProviderImpl::kInstallParam[] = "install_parameter";
@@ -190,6 +214,15 @@ void ExternalProviderImpl::RetrieveExtensionsFromPrefs(
   for (base::DictionaryValue::Iterator i(*prefs_); !i.IsAtEnd(); i.Advance()) {
     const std::string& extension_id = i.key();
     const base::DictionaryValue* extension = NULL;
+
+#if defined(OS_CHROMEOS)
+    if (ShouldUninstallExtensionReplacedByArcApp(extension_id)) {
+      VLOG(1) << "Extension with key: " << extension_id << " was replaced "
+              << "by a default ARC app, and will be uninstalled.";
+      unsupported_extensions.emplace(extension_id);
+      continue;
+    }
+#endif  // defined(OS_CHROMEOS)
 
     if (!crx_file::id_util::IdIsValid(extension_id)) {
       LOG(WARNING) << "Malformed extension dictionary: key "

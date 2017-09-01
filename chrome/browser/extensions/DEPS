@@ -8,6 +8,7 @@ include_rules = [
   "+components/user_manager",
   "+extensions/strings/grit/extensions_strings.h",
   "+ui/base",
+  "+components/arc",
   "+components/vector_icons",
 
   # For access to testing command line switches.

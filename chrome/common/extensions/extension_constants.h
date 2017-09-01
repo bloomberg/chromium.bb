@@ -61,6 +61,12 @@ extern const char kGmailAppId[];
 // The extension id of the Google Doc application.
 extern const char kGoogleDocAppId[];
 
+// The extension id of the Google Play Books application.
+extern const char kGooglePlayBooksAppId[];
+
+// The extension id of the Google Play Movies application.
+extern const char kGooglePlayMoviesAppId[];
+
 // The extension id of the Google Play Music application.
 extern const char kGooglePlayMusicAppId[];
 
