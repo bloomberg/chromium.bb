@@ -545,6 +545,11 @@ bool BookmarkModel::HasBookmarks() {
   return !nodes_ordered_by_url_set_.empty();
 }
 
+bool BookmarkModel::HasNoUserCreatedBookmarksOrFolders() {
+  return bookmark_bar_node_->empty() && other_node_->empty() &&
+         mobile_node_->empty();
+}
+
 bool BookmarkModel::IsBookmarked(const GURL& url) {
   base::AutoLock url_lock(url_lock_);
   return IsBookmarkedNoLock(url);

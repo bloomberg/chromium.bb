@@ -176,6 +176,9 @@ class BookmarkModel : public BookmarkUndoProvider,
   // This method is thread safe.
   bool HasBookmarks();
 
+  // Returns true is there is no user created bookmarks or folders.
+  bool HasNoUserCreatedBookmarksOrFolders();
+
   // Returns true if the specified URL is bookmarked.
   //
   // If not on the main thread you *must* invoke BlockTillLoaded first.

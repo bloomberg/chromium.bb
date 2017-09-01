@@ -500,5 +500,6 @@ id<GREYMatcher> BookmarksDoneButton() {
                  }),
              @"Bookmark model was not loaded");
 }
+// TODO(crbug.com/695749): Add egtest for spinner and empty background
 
 @end
