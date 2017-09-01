@@ -38,7 +38,7 @@ void Rect::NotifyClientColorAnimated(SkColor color,
 void Rect::Render(UiElementRenderer* renderer,
                   const gfx::Transform& view_proj_matrix) const {
   renderer->DrawGradientQuad(view_proj_matrix, edge_color_, center_color_,
-                             opacity(), size(), corner_radius());
+                             computed_opacity(), size(), corner_radius());
 }
 
 }  // namespace vr

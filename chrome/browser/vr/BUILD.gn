@@ -161,6 +161,8 @@ test("vr_common_unittests") {
     "test/animation_utils.cc",
     "test/animation_utils.h",
     "test/constants.h",
+    "test/fake_ui_element_renderer.cc",
+    "test/fake_ui_element_renderer.h",
     "test/mock_browser_interface.cc",
     "test/mock_browser_interface.h",
     "test/mock_content_input_delegate.cc",

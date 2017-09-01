@@ -9,11 +9,15 @@
 #include "base/test/scoped_mock_time_message_loop_task_runner.h"
 #include "cc/base/math_util.h"
 #include "chrome/browser/vr/color_scheme.h"
+#include "chrome/browser/vr/elements/content_element.h"
+#include "chrome/browser/vr/elements/grid.h"
+#include "chrome/browser/vr/elements/rect.h"
 #include "chrome/browser/vr/elements/ui_element.h"
 #include "chrome/browser/vr/elements/ui_element_name.h"
 #include "chrome/browser/vr/target_property.h"
 #include "chrome/browser/vr/test/animation_utils.h"
 #include "chrome/browser/vr/test/constants.h"
+#include "chrome/browser/vr/test/fake_ui_element_renderer.h"
 #include "chrome/browser/vr/test/mock_browser_interface.h"
 #include "chrome/browser/vr/test/ui_scene_manager_test.h"
 #include "chrome/browser/vr/ui_scene.h"
@@ -575,6 +579,51 @@ TEST_F(UiSceneManagerTest, DontPropagateContentBoundsOnNegligibleChange) {
   EXPECT_CALL(*browser_, OnContentScreenBoundsChanged(testing::_)).Times(0);
 
   manager_->OnProjMatrixChanged(kProjMatrix);
+}
+
+TEST_F(UiSceneManagerTest, ApplyParentOpacity) {
+  MakeManager(kNotInCct, kNotInWebVr);
+  FakeUiElementRenderer renderer;
+  auto grid_element = base::MakeUnique<Grid>();
+  grid_element->set_draw_phase(kPhaseForeground);
+  Grid* grid = grid_element.get();
+  scene_->AddUiElement(k2dBrowsingContentGroup, std::move(grid_element));
+  auto rect_element = base::MakeUnique<Rect>();
+  rect_element->set_draw_phase(kPhaseForeground);
+  Rect* rect = rect_element.get();
+  scene_->AddUiElement(k2dBrowsingContentGroup, std::move(rect_element));
+
+  ContentElement* content_quad =
+      static_cast<ContentElement*>(scene_->GetUiElementByName(kContentQuad));
+  content_quad->set_texture_id(1);
+  TexturedElement* textured_element =
+      static_cast<TexturedElement*>(scene_->GetUiElementByName(kExitPrompt));
+  textured_element->SetVisible(true);
+  textured_element->SetInitializedForTesting();
+
+  AnimateBy(MsToDelta(0));
+  content_quad->Render(&renderer, kProjMatrix);
+  EXPECT_FLOAT_EQ(renderer.texture_opacity(), content_quad->computed_opacity());
+  textured_element->Render(&renderer, kProjMatrix);
+  EXPECT_FLOAT_EQ(renderer.texture_opacity(),
+                  textured_element->computed_opacity());
+  grid->Render(&renderer, kProjMatrix);
+  EXPECT_FLOAT_EQ(renderer.grid_opacity(), grid->computed_opacity());
+  rect->Render(&renderer, kProjMatrix);
+  EXPECT_FLOAT_EQ(renderer.grid_opacity(), rect->computed_opacity());
+
+  // Change parent opacity.
+  scene_->GetUiElementByName(k2dBrowsingContentGroup)->SetOpacity(0.2);
+  AnimateBy(MsToDelta(0));
+  content_quad->Render(&renderer, kProjMatrix);
+  EXPECT_FLOAT_EQ(renderer.texture_opacity(), content_quad->computed_opacity());
+  textured_element->Render(&renderer, kProjMatrix);
+  EXPECT_FLOAT_EQ(renderer.texture_opacity(),
+                  textured_element->computed_opacity());
+  grid->Render(&renderer, kProjMatrix);
+  EXPECT_FLOAT_EQ(renderer.grid_opacity(), grid->computed_opacity());
+  rect->Render(&renderer, kProjMatrix);
+  EXPECT_FLOAT_EQ(renderer.grid_opacity(), rect->computed_opacity());
 }
 
 }  // namespace vr
