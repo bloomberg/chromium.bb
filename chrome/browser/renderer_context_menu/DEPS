@@ -1,6 +1,0 @@
-include_rules = [
-  # TODO(mash): Remove. http://crbug.com/724142
-  "+ash/link_handler_model.h",
-  "+ash/link_handler_model_factory.h",
-  "+ash/shell.h",
-]

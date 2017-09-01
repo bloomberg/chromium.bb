@@ -16,7 +16,6 @@
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/audio/arc_audio_bridge.h"
-#include "components/arc/intent_helper/link_handler_model_impl.h"
 #include "ui/base/layout.h"
 #include "url/gurl.h"
 
@@ -73,7 +72,6 @@ ArcIntentHelperBridge::~ArcIntentHelperBridge() {
 
 void ArcIntentHelperBridge::OnInstanceReady() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  ash::Shell::Get()->set_link_handler_model_factory(this);
   auto* instance =
       ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->intent_helper(), Init);
   DCHECK(instance);
@@ -84,7 +82,6 @@ void ArcIntentHelperBridge::OnInstanceReady() {
 
 void ArcIntentHelperBridge::OnInstanceClosed() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  ash::Shell::Get()->set_link_handler_model_factory(nullptr);
 }
 
 void ArcIntentHelperBridge::OnIconInvalidated(const std::string& package_name) {
@@ -118,10 +115,7 @@ void ArcIntentHelperBridge::SetWallpaperDeprecated(
 }
 
 void ArcIntentHelperBridge::OpenVolumeControl() {
-  // TODO(hidehiko): Use browser_context passed to this class's ctor, after
-  // we migrate this into BrowserContextKeyedService.
-  auto* audio = ArcAudioBridge::GetForBrowserContext(
-      ArcServiceManager::Get()->browser_context());
+  auto* audio = ArcAudioBridge::GetForBrowserContext(context_);
   DCHECK(audio);
   audio->ShowVolumeControls();
 }
@@ -159,15 +153,6 @@ void ArcIntentHelperBridge::RemoveObserver(ArcIntentHelperObserver* observer) {
 bool ArcIntentHelperBridge::HasObserver(
     ArcIntentHelperObserver* observer) const {
   return observer_list_.HasObserver(observer);
-}
-
-std::unique_ptr<ash::LinkHandlerModel> ArcIntentHelperBridge::CreateModel(
-    const GURL& url) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  auto impl = base::MakeUnique<LinkHandlerModelImpl>(context_);
-  if (!impl->Init(url))
-    return nullptr;
-  return std::move(impl);
 }
 
 // static

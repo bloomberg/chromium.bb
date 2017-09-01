@@ -2,18 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/chromeos/arc/intent_helper/open_with_menu.h"
+
 #include <unordered_map>
 #include <utility>
 #include <vector>
 
-#include "ash/link_handler_model.h"
 #include "base/format_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/renderer_context_menu/mock_render_view_context_menu.h"
-#include "chrome/browser/renderer_context_menu/open_with_menu_factory_ash.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/arc/intent_helper/link_handler_model.h"
 #include "components/renderer_context_menu/render_view_context_menu_observer.h"
 #include "components/renderer_context_menu/render_view_context_menu_proxy.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -21,7 +22,11 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image_skia.h"
 
+namespace arc {
+
 namespace {
+
+using base::ASCIIToUTF16;
 
 // All tests in this file assume that 4 and 10 IDC command IDs are reserved
 // for the main and sub menus, respectively.
@@ -33,13 +38,13 @@ const int kNumCommandIds =
 static_assert(kNumCommandIds == 14,
               "invalid number of command IDs reserved for open with");
 
-std::vector<ash::LinkHandlerInfo> CreateLinkHandlerInfo(size_t num_apps) {
-  std::vector<ash::LinkHandlerInfo> handlers;
+std::vector<LinkHandlerInfo> CreateLinkHandlerInfo(size_t num_apps) {
+  std::vector<LinkHandlerInfo> handlers;
   for (size_t i = 0; i < num_apps; ++i) {
     gfx::ImageSkia image_skia;
     image_skia.AddRepresentation(gfx::ImageSkiaRep(gfx::Size(1, 1), 1.0f));
-    ash::LinkHandlerInfo info = {
-        base::StringPrintf("App %" PRIuS, i),
+    LinkHandlerInfo info = {
+        base::UTF8ToUTF16(base::StringPrintf("App %" PRIuS, i)),
         // Use an empty image for the first item to test ModelChanged() with
         // both empty and non-empty icons.
         (i == 0) ? gfx::Image() : gfx::Image(image_skia), i};
@@ -48,9 +53,8 @@ std::vector<ash::LinkHandlerInfo> CreateLinkHandlerInfo(size_t num_apps) {
   return handlers;
 }
 
-std::pair<OpenWithMenuObserver::HandlerMap, int> BuildHandlersMap(
-    size_t num_apps) {
-  return OpenWithMenuObserver::BuildHandlersMapForTesting(
+std::pair<OpenWithMenu::HandlerMap, int> BuildHandlersMap(size_t num_apps) {
+  return OpenWithMenu::BuildHandlersMapForTesting(
       CreateLinkHandlerInfo(num_apps));
 }
 
@@ -60,9 +64,7 @@ base::string16 GetTitle(size_t i) {
       base::UTF8ToUTF16(base::StringPrintf("App %" PRIuS, i)));
 }
 
-}  // namespace
-
-TEST(OpenWithMenuObserverTest, TestBuildHandlersMap) {
+TEST(OpenWithMenuTest, TestBuildHandlersMap) {
   auto result = BuildHandlersMap(0);
   EXPECT_EQ(0U, result.first.size());
   EXPECT_EQ(-1, result.second);
@@ -71,15 +73,15 @@ TEST(OpenWithMenuObserverTest, TestBuildHandlersMap) {
   ASSERT_EQ(1U, result.first.size());
   ASSERT_EQ(1U, result.first.count(kFirstMainMenuId));
   EXPECT_EQ(-1, result.second);
-  EXPECT_EQ("App 0", result.first[kFirstMainMenuId].name);
+  EXPECT_EQ(ASCIIToUTF16("App 0"), result.first[kFirstMainMenuId].name);
 
   result = BuildHandlersMap(2);
   EXPECT_EQ(2U, result.first.size());
   ASSERT_EQ(1U, result.first.count(kFirstMainMenuId));
   ASSERT_EQ(1U, result.first.count(kFirstMainMenuId + 1));
   EXPECT_EQ(-1, result.second);
-  EXPECT_EQ("App 0", result.first[kFirstMainMenuId].name);
-  EXPECT_EQ("App 1", result.first[kFirstMainMenuId + 1].name);
+  EXPECT_EQ(ASCIIToUTF16("App 0"), result.first[kFirstMainMenuId].name);
+  EXPECT_EQ(ASCIIToUTF16("App 1"), result.first[kFirstMainMenuId + 1].name);
 
   result = BuildHandlersMap(3);
   EXPECT_EQ(3U, result.first.size());
@@ -87,9 +89,9 @@ TEST(OpenWithMenuObserverTest, TestBuildHandlersMap) {
   ASSERT_EQ(1U, result.first.count(kFirstMainMenuId + 1));
   ASSERT_EQ(1U, result.first.count(kFirstMainMenuId + 2));
   EXPECT_EQ(-1, result.second);
-  EXPECT_EQ("App 0", result.first[kFirstMainMenuId].name);
-  EXPECT_EQ("App 1", result.first[kFirstMainMenuId + 1].name);
-  EXPECT_EQ("App 2", result.first[kFirstMainMenuId + 2].name);
+  EXPECT_EQ(ASCIIToUTF16("App 0"), result.first[kFirstMainMenuId].name);
+  EXPECT_EQ(ASCIIToUTF16("App 1"), result.first[kFirstMainMenuId + 1].name);
+  EXPECT_EQ(ASCIIToUTF16("App 2"), result.first[kFirstMainMenuId + 2].name);
 
   // Test if app names will overflow to the sub menu.
   result = BuildHandlersMap(4);
@@ -100,18 +102,18 @@ TEST(OpenWithMenuObserverTest, TestBuildHandlersMap) {
   EXPECT_EQ(kFirstMainMenuId + 3, result.second);
   ASSERT_EQ(1U, result.first.count(kFirstSubMenuId));
   ASSERT_EQ(1U, result.first.count(kFirstSubMenuId + 1));
-  EXPECT_EQ("App 0", result.first[kFirstMainMenuId].name);
-  EXPECT_EQ("App 1", result.first[kFirstMainMenuId + 1].name);
-  EXPECT_EQ("App 2", result.first[kFirstSubMenuId].name);
-  EXPECT_EQ("App 3", result.first[kFirstSubMenuId + 1].name);
+  EXPECT_EQ(ASCIIToUTF16("App 0"), result.first[kFirstMainMenuId].name);
+  EXPECT_EQ(ASCIIToUTF16("App 1"), result.first[kFirstMainMenuId + 1].name);
+  EXPECT_EQ(ASCIIToUTF16("App 2"), result.first[kFirstSubMenuId].name);
+  EXPECT_EQ(ASCIIToUTF16("App 3"), result.first[kFirstSubMenuId + 1].name);
 
   result = BuildHandlersMap(11);
   EXPECT_EQ(11U, result.first.size());
   ASSERT_EQ(1U, result.first.count(kFirstMainMenuId));
   ASSERT_EQ(1U, result.first.count(kFirstMainMenuId + 1));
   EXPECT_EQ(kFirstMainMenuId + 3, result.second);
-  EXPECT_EQ("App 0", result.first[kFirstMainMenuId].name);
-  EXPECT_EQ("App 1", result.first[kFirstMainMenuId + 1].name);
+  EXPECT_EQ(ASCIIToUTF16("App 0"), result.first[kFirstMainMenuId].name);
+  EXPECT_EQ(ASCIIToUTF16("App 1"), result.first[kFirstMainMenuId + 1].name);
   for (size_t i = 0; i < 9; ++i) {
     ASSERT_EQ(1U, result.first.count(kFirstSubMenuId + i)) << i;
   }
@@ -122,12 +124,14 @@ TEST(OpenWithMenuObserverTest, TestBuildHandlersMap) {
   ASSERT_EQ(1U, result.first.count(kFirstMainMenuId));
   ASSERT_EQ(1U, result.first.count(kFirstMainMenuId + 1));
   EXPECT_EQ(kFirstMainMenuId + 3, result.second);
-  EXPECT_EQ("App 0", result.first[kFirstMainMenuId].name);
-  EXPECT_EQ("App 1", result.first[kFirstMainMenuId + 1].name);
+  EXPECT_EQ(ASCIIToUTF16("App 0"), result.first[kFirstMainMenuId].name);
+  EXPECT_EQ(ASCIIToUTF16("App 1"), result.first[kFirstMainMenuId + 1].name);
   for (size_t i = 0; i < 10; ++i) {
     const int id = kFirstSubMenuId + i;
     ASSERT_EQ(1U, result.first.count(id)) << i;
-    EXPECT_EQ(base::StringPrintf("App %zu", i + 2), result.first[id].name) << i;
+    EXPECT_EQ(ASCIIToUTF16(base::StringPrintf("App %zu", i + 2)),
+              result.first[id].name)
+        << i;
   }
 
   result = BuildHandlersMap(13);
@@ -135,12 +139,14 @@ TEST(OpenWithMenuObserverTest, TestBuildHandlersMap) {
   ASSERT_EQ(1U, result.first.count(kFirstMainMenuId));
   ASSERT_EQ(1U, result.first.count(kFirstMainMenuId + 1));
   EXPECT_EQ(kFirstMainMenuId + 3, result.second);
-  EXPECT_EQ("App 0", result.first[kFirstMainMenuId].name);
-  EXPECT_EQ("App 1", result.first[kFirstMainMenuId + 1].name);
+  EXPECT_EQ(ASCIIToUTF16("App 0"), result.first[kFirstMainMenuId].name);
+  EXPECT_EQ(ASCIIToUTF16("App 1"), result.first[kFirstMainMenuId + 1].name);
   for (size_t i = 0; i < 10; ++i) {  // still 10
     const int id = kFirstSubMenuId + i;
     ASSERT_EQ(1U, result.first.count(id)) << i;
-    EXPECT_EQ(base::StringPrintf("App %zu", i + 2), result.first[id].name) << i;
+    EXPECT_EQ(ASCIIToUTF16(base::StringPrintf("App %zu", i + 2)),
+              result.first[id].name)
+        << i;
   }
 
   result = BuildHandlersMap(1000);
@@ -148,24 +154,26 @@ TEST(OpenWithMenuObserverTest, TestBuildHandlersMap) {
   ASSERT_EQ(1U, result.first.count(kFirstMainMenuId));
   ASSERT_EQ(1U, result.first.count(kFirstMainMenuId + 1));
   EXPECT_EQ(kFirstMainMenuId + 3, result.second);
-  EXPECT_EQ("App 0", result.first[kFirstMainMenuId].name);
-  EXPECT_EQ("App 1", result.first[kFirstMainMenuId + 1].name);
+  EXPECT_EQ(ASCIIToUTF16("App 0"), result.first[kFirstMainMenuId].name);
+  EXPECT_EQ(ASCIIToUTF16("App 1"), result.first[kFirstMainMenuId + 1].name);
   for (size_t i = 0; i < 10; ++i) {  // still 10
     const int id = kFirstSubMenuId + i;
     ASSERT_EQ(1U, result.first.count(id)) << i;
-    EXPECT_EQ(base::StringPrintf("App %zu", i + 2), result.first[id].name) << i;
+    EXPECT_EQ(ASCIIToUTF16(base::StringPrintf("App %zu", i + 2)),
+              result.first[id].name)
+        << i;
   }
 }
 
-TEST(OpenWithMenuObserverTest, TestModelChanged) {
+TEST(OpenWithMenuTest, TestModelChanged) {
   content::TestBrowserThreadBundle thread_bundle;
   MockRenderViewContextMenu mock_menu(false);
-  OpenWithMenuObserver observer(&mock_menu);
+  OpenWithMenu observer(nullptr, &mock_menu);
   mock_menu.SetObserver(&observer);
 
   // Do the initial setup.
   ui::SimpleMenuModel sub_menu(nullptr);
-  OpenWithMenuObserver::AddPlaceholderItemsForTesting(&mock_menu, &sub_menu);
+  OpenWithMenu::AddPlaceholderItemsForTesting(&mock_menu, &sub_menu);
   CHECK_EQ(static_cast<size_t>(kNumCommandIds), mock_menu.GetMenuSize());
 
   // Check that all menu items are hidden when there is no app to show.
@@ -235,3 +243,7 @@ TEST(OpenWithMenuObserverTest, TestModelChanged) {
     EXPECT_TRUE(item.hidden) << i;
   }
 }
+
+}  // namespace
+
+}  // namespace arc

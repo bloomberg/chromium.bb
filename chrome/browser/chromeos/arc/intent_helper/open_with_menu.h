@@ -2,36 +2,42 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_RENDERER_CONTEXT_MENU_OPEN_WITH_MENU_FACTORY_ASH_H_
-#define CHROME_BROWSER_RENDERER_CONTEXT_MENU_OPEN_WITH_MENU_FACTORY_ASH_H_
+#ifndef CHROME_BROWSER_CHROMEOS_ARC_INTENT_HELPER_OPEN_WITH_MENU_H_
+#define CHROME_BROWSER_CHROMEOS_ARC_INTENT_HELPER_OPEN_WITH_MENU_H_
 
 #include <memory>
 #include <unordered_map>
 #include <utility>
 #include <vector>
 
-#include "ash/link_handler_model.h"
 #include "base/macros.h"
+#include "components/arc/intent_helper/link_handler_model.h"
 #include "components/renderer_context_menu/render_view_context_menu_observer.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "url/gurl.h"
 
 class RenderViewContextMenuProxy;
 
+namespace content {
+class BrowserContext;
+}
+
 namespace ui {
 class SimpleMenuModel;
-}  // namespace ui
+}
+
+namespace arc {
 
 // An observer class which populates the "Open with <app>" menu items either
 // synchronously or asynchronously.
-class OpenWithMenuObserver : public RenderViewContextMenuObserver,
-                             public ash::LinkHandlerModel::Observer {
+class OpenWithMenu : public RenderViewContextMenuObserver,
+                     public LinkHandlerModel::Observer {
  public:
-  using HandlerMap = std::unordered_map<int, ash::LinkHandlerInfo>;
+  using HandlerMap = std::unordered_map<int, LinkHandlerInfo>;
 
   class SubMenuDelegate : public ui::SimpleMenuModel::Delegate {
    public:
-    explicit SubMenuDelegate(OpenWithMenuObserver* parent) : parent_(parent) {}
+    explicit SubMenuDelegate(OpenWithMenu* parent) : parent_(parent) {}
     ~SubMenuDelegate() override {}
 
     bool IsCommandIdChecked(int command_id) const override;
@@ -39,13 +45,14 @@ class OpenWithMenuObserver : public RenderViewContextMenuObserver,
     void ExecuteCommand(int command_id, int event_flags) override;
 
    private:
-    OpenWithMenuObserver* const parent_;
+    OpenWithMenu* const parent_;
 
     DISALLOW_COPY_AND_ASSIGN(SubMenuDelegate);
   };
 
-  explicit OpenWithMenuObserver(RenderViewContextMenuProxy* proxy);
-  ~OpenWithMenuObserver() override;
+  OpenWithMenu(content::BrowserContext* context,
+               RenderViewContextMenuProxy* proxy);
+  ~OpenWithMenu() override;
 
   // RenderViewContextMenuObserver overrides:
   void InitMenu(const content::ContextMenuParams& params) override;
@@ -54,13 +61,13 @@ class OpenWithMenuObserver : public RenderViewContextMenuObserver,
   bool IsCommandIdEnabled(int command_id) override;
   void ExecuteCommand(int command_id) override;
 
-  // ash::OpenWithItems::Delegate overrides:
-  void ModelChanged(const std::vector<ash::LinkHandlerInfo>& handlers) override;
+  // LinkHandlerModel::Observer overrides:
+  void ModelChanged(const std::vector<LinkHandlerInfo>& handlers) override;
 
   static void AddPlaceholderItemsForTesting(RenderViewContextMenuProxy* proxy,
                                             ui::SimpleMenuModel* submenu);
   static std::pair<HandlerMap, int> BuildHandlersMapForTesting(
-      const std::vector<ash::LinkHandlerInfo>& handlers);
+      const std::vector<LinkHandlerInfo>& handlers);
 
  private:
   // Adds placeholder items and the |submenu| to the |proxy|.
@@ -71,24 +78,26 @@ class OpenWithMenuObserver : public RenderViewContextMenuObserver,
   // LinkHandlerInfo and returns the map. Also returns a command id for the
   // parent of the submenu. When the submenu is not needed, the function
   // returns |kInvalidCommandId|.
-  static std::pair<OpenWithMenuObserver::HandlerMap, int> BuildHandlersMap(
-      const std::vector<ash::LinkHandlerInfo>& handlers);
+  static std::pair<OpenWithMenu::HandlerMap, int> BuildHandlersMap(
+      const std::vector<LinkHandlerInfo>& handlers);
 
   static const int kNumMainMenuCommands;
   static const int kNumSubMenuCommands;
 
+  content::BrowserContext* context_;
   RenderViewContextMenuProxy* const proxy_;
-  SubMenuDelegate submenu_delegate_;
+  SubMenuDelegate submenu_delegate_{this};
   const base::string16 more_apps_label_;
-  GURL link_url_;
 
   // A menu model received from Ash side.
-  std::unique_ptr<ash::LinkHandlerModel> menu_model_;
-  OpenWithMenuObserver::HandlerMap handlers_;
+  std::unique_ptr<LinkHandlerModel> menu_model_;
+  OpenWithMenu::HandlerMap handlers_;
   // A submenu passed to Chrome side.
   std::unique_ptr<ui::MenuModel> submenu_;
 
-  DISALLOW_COPY_AND_ASSIGN(OpenWithMenuObserver);
+  DISALLOW_COPY_AND_ASSIGN(OpenWithMenu);
 };
 
-#endif  // CHROME_BROWSER_RENDERER_CONTEXT_MENU_OPEN_WITH_MENU_FACTORY_ASH_H_
+}  // namespace arc
+
+#endif  // CHROME_BROWSER_CHROMEOS_ARC_INTENT_HELPER_OPEN_WITH_MENU_H_

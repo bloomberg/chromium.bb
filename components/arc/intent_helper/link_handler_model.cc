@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/arc/intent_helper/link_handler_model_impl.h"
+#include "components/arc/intent_helper/link_handler_model.h"
 
 #include <string>
 #include <utility>
 
 #include "base/bind.h"
+#include "base/strings/utf_string_conversions.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
@@ -47,38 +48,23 @@ bool GetQueryValue(const GURL& url,
 
 }  // namespace
 
-LinkHandlerModelImpl::LinkHandlerModelImpl(content::BrowserContext* context)
-    : context_(context), weak_ptr_factory_(this) {}
-
-LinkHandlerModelImpl::~LinkHandlerModelImpl() = default;
-
-bool LinkHandlerModelImpl::Init(const GURL& url) {
-  auto* arc_service_manager = ArcServiceManager::Get();
-  if (!arc_service_manager)
-    return false;
-  auto* instance = ARC_GET_INSTANCE_FOR_METHOD(
-      arc_service_manager->arc_bridge_service()->intent_helper(),
-      RequestUrlHandlerList);
-  if (!instance)
-    return false;
-
-  // Check if ARC apps can handle the |url|. Since the information is held in
-  // a different (ARC) process, issue a mojo IPC request. Usually, the
-  // callback function, OnUrlHandlerList, is called within a few milliseconds
-  // even on the slowest Chromebook we support.
-  const GURL rewritten(RewriteUrlFromQueryIfAvailable(url));
-  instance->RequestUrlHandlerList(
-      rewritten.spec(), base::Bind(&LinkHandlerModelImpl::OnUrlHandlerList,
-                                   weak_ptr_factory_.GetWeakPtr()));
-  return true;
+// static
+std::unique_ptr<LinkHandlerModel> LinkHandlerModel::Create(
+    content::BrowserContext* context,
+    const GURL& link_url) {
+  auto impl = base::WrapUnique(new LinkHandlerModel());
+  if (!impl->Init(context, link_url))
+    return nullptr;
+  return impl;
 }
 
-void LinkHandlerModelImpl::AddObserver(Observer* observer) {
+LinkHandlerModel::~LinkHandlerModel() = default;
+
+void LinkHandlerModel::AddObserver(Observer* observer) {
   observer_list_.AddObserver(observer);
 }
 
-void LinkHandlerModelImpl::OpenLinkWithHandler(const GURL& url,
-                                               uint32_t handler_id) {
+void LinkHandlerModel::OpenLinkWithHandler(uint32_t handler_id) {
   auto* arc_service_manager = ArcServiceManager::Get();
   if (!arc_service_manager)
     return;
@@ -88,11 +74,36 @@ void LinkHandlerModelImpl::OpenLinkWithHandler(const GURL& url,
     return;
   if (handler_id >= handlers_.size())
     return;
-  const GURL rewritten(RewriteUrlFromQueryIfAvailable(url));
-  instance->HandleUrl(rewritten.spec(), handlers_[handler_id]->package_name);
+  instance->HandleUrl(url_.spec(), handlers_[handler_id]->package_name);
 }
 
-void LinkHandlerModelImpl::OnUrlHandlerList(
+LinkHandlerModel::LinkHandlerModel() = default;
+
+bool LinkHandlerModel::Init(content::BrowserContext* context, const GURL& url) {
+  auto* arc_service_manager = ArcServiceManager::Get();
+  if (!arc_service_manager)
+    return false;
+  auto* instance = ARC_GET_INSTANCE_FOR_METHOD(
+      arc_service_manager->arc_bridge_service()->intent_helper(),
+      RequestUrlHandlerList);
+  if (!instance)
+    return false;
+
+  DCHECK(context);
+  context_ = context;
+
+  // Check if ARC apps can handle the |url|. Since the information is held in
+  // a different (ARC) process, issue a mojo IPC request. Usually, the
+  // callback function, OnUrlHandlerList, is called within a few milliseconds
+  // even on the slowest Chromebook we support.
+  url_ = RewriteUrlFromQueryIfAvailable(url);
+  instance->RequestUrlHandlerList(
+      url_.spec(), base::Bind(&LinkHandlerModel::OnUrlHandlerList,
+                              weak_ptr_factory_.GetWeakPtr()));
+  return true;
+}
+
+void LinkHandlerModel::OnUrlHandlerList(
     std::vector<mojom::IntentHandlerInfoPtr> handlers) {
   handlers_ = ArcIntentHelperBridge::FilterOutIntentHelper(std::move(handlers));
 
@@ -107,7 +118,7 @@ void LinkHandlerModelImpl::OnUrlHandlerList(
     }
     const ArcIntentHelperBridge::GetResult result =
         intent_helper_bridge->GetActivityIcons(
-            activities, base::Bind(&LinkHandlerModelImpl::NotifyObserver,
+            activities, base::Bind(&LinkHandlerModel::NotifyObserver,
                                    weak_ptr_factory_.GetWeakPtr()));
     icon_info_notified =
         internal::ActivityIconLoader::HasIconsReadyCallbackRun(result);
@@ -121,14 +132,14 @@ void LinkHandlerModelImpl::OnUrlHandlerList(
   }
 }
 
-void LinkHandlerModelImpl::NotifyObserver(
+void LinkHandlerModel::NotifyObserver(
     std::unique_ptr<ArcIntentHelperBridge::ActivityToIconsMap> icons) {
   if (icons) {
     icons_.insert(icons->begin(), icons->end());
     icons.reset();
   }
 
-  std::vector<ash::LinkHandlerInfo> handlers;
+  std::vector<LinkHandlerInfo> handlers;
   for (size_t i = 0; i < handlers_.size(); ++i) {
     gfx::Image icon;
     const ArcIntentHelperBridge::ActivityName activity(
@@ -137,7 +148,7 @@ void LinkHandlerModelImpl::NotifyObserver(
     if (it != icons_.end())
       icon = it->second.icon16;
     // Use the handler's index as an ID.
-    ash::LinkHandlerInfo handler = {handlers_[i]->name, icon, i};
+    LinkHandlerInfo handler = {base::UTF8ToUTF16(handlers_[i]->name), icon, i};
     handlers.push_back(handler);
   }
   for (auto& observer : observer_list_)
@@ -145,13 +156,13 @@ void LinkHandlerModelImpl::NotifyObserver(
 }
 
 // static
-GURL LinkHandlerModelImpl::RewriteUrlFromQueryIfAvailableForTesting(
+GURL LinkHandlerModel::RewriteUrlFromQueryIfAvailableForTesting(
     const GURL& url) {
   return RewriteUrlFromQueryIfAvailable(url);
 }
 
 // static
-GURL LinkHandlerModelImpl::RewriteUrlFromQueryIfAvailable(const GURL& url) {
+GURL LinkHandlerModel::RewriteUrlFromQueryIfAvailable(const GURL& url) {
   static const char kPathToFind[] = "/url";
   static const char kKeyToFind[] = "url";
 
