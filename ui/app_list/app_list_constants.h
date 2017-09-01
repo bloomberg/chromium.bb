@@ -113,7 +113,8 @@ APP_LIST_EXPORT extern const int kSearchBoxPreferredHeight;
 APP_LIST_EXPORT extern const int kPeekingAppListHeight;
 APP_LIST_EXPORT extern const int kShelfSize;
 
-APP_LIST_EXPORT extern size_t kMaxFolderItems;
+APP_LIST_EXPORT extern const size_t kMaxFolderItems;
+APP_LIST_EXPORT extern const size_t kMaxFolderItemsFullscreen;
 APP_LIST_EXPORT extern const size_t kNumFolderTopItems;
 APP_LIST_EXPORT extern const size_t kMaxFolderNameChars;
 

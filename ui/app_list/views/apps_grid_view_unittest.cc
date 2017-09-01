@@ -113,11 +113,10 @@ class AppsGridViewTest : public views::ViewsTestBase,
   void SetUp() override {
     views::ViewsTestBase::SetUp();
 
-    // If the current test is parameterized.
-    if (testing::UnitTest::GetInstance()->current_test_info()->value_param()) {
-      test_with_fullscreen_ = GetParam();
-      if (test_with_fullscreen_)
-        EnableFullscreenAppList();
+    test_with_fullscreen_ = GetParam();
+    if (!test_with_fullscreen_) {
+      scoped_feature_list_.InitAndDisableFeature(
+          features::kEnableFullscreenAppList);
     }
 
     gfx::NativeView parent = GetContext();
@@ -245,6 +244,10 @@ class AppsGridViewTest : public views::ViewsTestBase,
     EXPECT_FALSE(expand_arrow_view_->selected());
     EXPECT_EQ(-1, suggestions_container_->selected_index());
     EXPECT_TRUE(apps_grid_view_->IsSelectedView(GetItemViewAt(index)));
+  }
+
+  size_t GetMaxFolderItems() const {
+    return test_with_fullscreen_ ? kMaxFolderItemsFullscreen : kMaxFolderItems;
   }
 
   AppListView* app_list_view_ = nullptr;    // Owned by native widget.
@@ -458,8 +461,8 @@ TEST_P(AppsGridViewTest, MouseDragItemIntoFolder) {
 }
 
 TEST_P(AppsGridViewTest, MouseDragMaxItemsInFolder) {
-  // Create and add a folder with 15 items in it.
-  size_t kTotalItems = kMaxFolderItems - 1;
+  // Create and add a folder with |GetMaxFolderItems() - 1| items.
+  size_t kTotalItems = GetMaxFolderItems() - 1;
   model_->CreateAndPopulateFolderWithApps(kTotalItems);
   EXPECT_EQ(1u, model_->top_level_item_list()->item_count());
   EXPECT_EQ(AppListFolderItem::kItemType,
@@ -473,9 +476,9 @@ TEST_P(AppsGridViewTest, MouseDragMaxItemsInFolder) {
   model_->PopulateAppWithId(kTotalItems + 1);
   EXPECT_EQ(3u, model_->top_level_item_list()->item_count());
   EXPECT_EQ(folder_item->id(), model_->top_level_item_list()->item_at(0)->id());
-  EXPECT_EQ(model_->GetItemName(kMaxFolderItems - 1),
+  EXPECT_EQ(model_->GetItemName(GetMaxFolderItems() - 1),
             model_->top_level_item_list()->item_at(1)->id());
-  EXPECT_EQ(model_->GetItemName(kMaxFolderItems),
+  EXPECT_EQ(model_->GetItemName(GetMaxFolderItems()),
             model_->top_level_item_list()->item_at(2)->id());
 
   gfx::Point from = GetItemTileRectAt(0, 1).CenterPoint();
@@ -486,8 +489,8 @@ TEST_P(AppsGridViewTest, MouseDragMaxItemsInFolder) {
   apps_grid_view_->EndDrag(false);
   EXPECT_EQ(2u, model_->top_level_item_list()->item_count());
   EXPECT_EQ(folder_item->id(), model_->top_level_item_list()->item_at(0)->id());
-  EXPECT_EQ(kMaxFolderItems, folder_item->ChildItemCount());
-  EXPECT_EQ(model_->GetItemName(kMaxFolderItems),
+  EXPECT_EQ(GetMaxFolderItems(), folder_item->ChildItemCount());
+  EXPECT_EQ(model_->GetItemName(GetMaxFolderItems()),
             model_->top_level_item_list()->item_at(1)->id());
   test_api_->LayoutToIdealBounds();
 
@@ -496,20 +499,15 @@ TEST_P(AppsGridViewTest, MouseDragMaxItemsInFolder) {
   SimulateDrag(AppsGridView::MOUSE, from, to);
   apps_grid_view_->EndDrag(false);
   EXPECT_EQ(2u, model_->top_level_item_list()->item_count());
-  EXPECT_EQ(kMaxFolderItems, folder_item->ChildItemCount());
+  EXPECT_EQ(GetMaxFolderItems(), folder_item->ChildItemCount());
   test_api_->LayoutToIdealBounds();
 }
 
 // Check that moving items around doesn't allow a drop to happen into a full
 // folder.
 TEST_P(AppsGridViewTest, MouseDragMaxItemsInFolderWithMovement) {
-  // TODO(newcomer): this test needs to be reevaluated for the fullscreen app
-  // list (http://crbug.com/759779).
-  if (features::IsFullscreenAppListEnabled())
-    return;
-
-  // Create and add a folder with 16 items in it.
-  size_t kTotalItems = kMaxFolderItems;
+  // Create and add a folder with |GetMaxFolderItems()| in it.
+  size_t kTotalItems = GetMaxFolderItems();
   model_->CreateAndPopulateFolderWithApps(kTotalItems);
   EXPECT_EQ(1u, model_->top_level_item_list()->item_count());
   EXPECT_EQ(AppListFolderItem::kItemType,
@@ -522,7 +520,7 @@ TEST_P(AppsGridViewTest, MouseDragMaxItemsInFolderWithMovement) {
   model_->PopulateAppWithId(kTotalItems);
   EXPECT_EQ(2u, model_->top_level_item_list()->item_count());
   EXPECT_EQ(folder_item->id(), model_->top_level_item_list()->item_at(0)->id());
-  EXPECT_EQ(model_->GetItemName(kMaxFolderItems),
+  EXPECT_EQ(model_->GetItemName(GetMaxFolderItems()),
             model_->top_level_item_list()->item_at(1)->id());
 
   AppListItemView* folder_view =
@@ -552,16 +550,11 @@ TEST_P(AppsGridViewTest, MouseDragMaxItemsInFolderWithMovement) {
 
   // The item should not have moved into the folder.
   EXPECT_EQ(2u, model_->top_level_item_list()->item_count());
-  EXPECT_EQ(kMaxFolderItems, folder_item->ChildItemCount());
+  EXPECT_EQ(GetMaxFolderItems(), folder_item->ChildItemCount());
   test_api_->LayoutToIdealBounds();
 }
 
 TEST_P(AppsGridViewTest, MouseDragItemReorder) {
-  // TODO(newcomer): this test needs to be reevaluated for the fullscreen app
-  // list (http://crbug.com/759779).
-  if (features::IsFullscreenAppListEnabled())
-    return;
-
   // Using a simulated 2x2 layout for the test. If fullscreen app list is
   // enabled, rows_per_page passed should be 3 as the first row is occupied by
   // suggested apps.
@@ -685,12 +678,7 @@ TEST_P(AppsGridViewTest, MouseDragWithCancelDeleteAddItem) {
   test_api_->LayoutToIdealBounds();
 }
 
-TEST_F(AppsGridViewTest, MouseDragFlipPage) {
-  // TODO(newcomer): this test needs to be reevaluated for the fullscreen app
-  // list (http://crbug.com/759779).
-  if (features::IsFullscreenAppListEnabled())
-    return;
-
+TEST_P(AppsGridViewTest, MouseDragFlipPage) {
   apps_grid_view_->set_page_flip_delay_in_ms_for_testing(10);
   GetPaginationModel()->SetTransitionDurations(10, 10);
 
@@ -793,12 +781,9 @@ TEST_P(AppsGridViewTest, UpdateFolderBackgroundOnCancelDrag) {
             model_->GetModelContent());
 }
 
+// TODO(warx): This test applies to bubble launcher only. Remove this test once
+// bubble launcher is removed from code base.
 TEST_P(AppsGridViewTest, HighlightWithKeyboard) {
-  // TODO(newcomer): this test needs to be reevaluated for the fullscreen app
-  // list (http://crbug.com/759779).
-  if (features::IsFullscreenAppListEnabled())
-    return;
-
   if (test_with_fullscreen_)
     return;
 
