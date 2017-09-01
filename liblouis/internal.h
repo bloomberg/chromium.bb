@@ -105,7 +105,7 @@ const static intCharTupple dotMapping[] = {
   {B14, 'E'},
   {B15, 'F'},
   {B16, '0'},
-  NULL
+  0
 };
 
 /*HASHNUM must be prime */
