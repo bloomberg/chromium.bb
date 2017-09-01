@@ -147,92 +147,9 @@ const CGFloat kMenuWidth = 264;
 - (void)loadBookmarkViews {
   if (base::FeatureList::IsEnabled(
           bookmark_new_generation::features::kBookmarkNewGeneration)) {
-    // Set up new UI view. TODO(crbug.com/695749): Polish UI according to mocks.
-    _containerView = [[UIView alloc] initWithFrame:self.view.bounds];
-    [_containerView setAutoresizingMask:UIViewAutoresizingFlexibleWidth |
-                                        UIViewAutoresizingFlexibleHeight];
-    [self.view addSubview:_containerView];
-
-    self.bookmarksTableView =
-        [[BookmarkTableView alloc] initWithBrowserState:self.browserState
-                                               delegate:self
-                                               rootNode:_rootNode
-                                                  frame:self.view.bounds];
-
-    [self.bookmarksTableView setTranslatesAutoresizingMaskIntoConstraints:NO];
-    [_containerView addSubview:self.bookmarksTableView];
-
-    // TODO(crbug.com/695749): Hide the context bar when browsing
-    // bookmarkModel->root_node.
-    self.contextBar = [[BookmarkContextBar alloc] initWithFrame:CGRectZero];
-    self.contextBar.delegate = self;
-    [self.contextBar setTranslatesAutoresizingMaskIntoConstraints:NO];
-
-    // TODO(crbug.com/695749): Check if we need to create new strings for the
-    // context bar buttons.
-    [self.contextBar setButtonVisibility:YES forButton:ContextBarLeadingButton];
-    [self.contextBar
-        setButtonTitle:l10n_util::GetNSStringWithFixup(
-                           IDS_IOS_BOOKMARK_NEW_GROUP_EDITOR_CREATE_TITLE)
-             forButton:ContextBarLeadingButton];
-
-    [self.contextBar setButtonVisibility:YES
-                               forButton:ContextBarTrailingButton];
-    [self.contextBar setButtonTitle:l10n_util::GetNSStringWithFixup(
-                                        IDS_IOS_BOOKMARK_ACTION_SELECT)
-                          forButton:ContextBarTrailingButton];
-
-    [_containerView addSubview:self.contextBar];
-
-    // Set up the navigation bar.
-    NSString* doneTitle =
-        l10n_util::GetNSString(IDS_IOS_NAVIGATION_BAR_DONE_BUTTON)
-            .uppercaseString;
-    UIBarButtonItem* doneButton =
-        [[UIBarButtonItem alloc] initWithTitle:doneTitle
-                                         style:UIBarButtonItemStyleDone
-                                        target:self
-                                        action:@selector(navigationBarCancel:)];
-    doneButton.accessibilityIdentifier = @"bookmark_done_button";
-    self.navigationItem.rightBarButtonItem = doneButton;
-    self.navigationItem.backBarButtonItem =
-        [[UIBarButtonItem alloc] initWithTitle:@""
-                                         style:UIBarButtonItemStylePlain
-                                        target:nil
-                                        action:nil];
-    self.navigationItem.title =
-        bookmark_utils_ios::TitleForBookmarkNode(_rootNode);
-    self.navigationController.navigationBar.tintColor = UIColor.blackColor;
-    self.navigationController.navigationBar.backgroundColor =
-        bookmark_utils_ios::mainBackgroundColor();
+    [self loadBookmarkViewsForNewUI];
   } else {
-    // Set up old UI view.
-    LayoutRect menuLayout =
-        LayoutRectMake(0, self.view.bounds.size.width, 0, self.menuWidth,
-                       self.view.bounds.size.height);
-
-    // Create menu view.
-    self.menuView = [[BookmarkMenuView alloc]
-        initWithBrowserState:self.browserState
-                       frame:LayoutRectGetRect(menuLayout)];
-    self.menuView.autoresizingMask =
-        UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-
-    // Create panel view.
-    self.panelView = [[BookmarkPanelView alloc] initWithFrame:CGRectZero
-                                                menuViewWidth:self.menuWidth];
-    self.panelView.autoresizingMask =
-        UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-
-    // Create folder view.
-    BookmarkCollectionView* view =
-        [[BookmarkCollectionView alloc] initWithBrowserState:self.browserState
-                                                       frame:CGRectZero];
-    self.folderView = view;
-    [self.folderView setEditing:self.editing animated:NO];
-    self.folderView.autoresizingMask =
-        UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
-    self.folderView.delegate = self;
+    [self loadBookmarkViewsForOldUI];
   }
 }
 
@@ -862,6 +779,106 @@ const CGFloat kMenuWidth = 264;
 
 #pragma mark - private
 
+// Set up UI views for the old UI.
+- (void)loadBookmarkViewsForOldUI {
+  LayoutRect menuLayout =
+      LayoutRectMake(0, self.view.bounds.size.width, 0, self.menuWidth,
+                     self.view.bounds.size.height);
+
+  // Create menu view.
+  self.menuView = [[BookmarkMenuView alloc]
+      initWithBrowserState:self.browserState
+                     frame:LayoutRectGetRect(menuLayout)];
+  self.menuView.autoresizingMask =
+      UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+
+  // Create panel view.
+  self.panelView = [[BookmarkPanelView alloc] initWithFrame:CGRectZero
+                                              menuViewWidth:self.menuWidth];
+  self.panelView.autoresizingMask =
+      UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+
+  // Create folder view.
+  BookmarkCollectionView* view =
+      [[BookmarkCollectionView alloc] initWithBrowserState:self.browserState
+                                                     frame:CGRectZero];
+  self.folderView = view;
+  [self.folderView setEditing:self.editing animated:NO];
+  self.folderView.autoresizingMask =
+      UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
+  self.folderView.delegate = self;
+}
+
+// Set up UI views for the new UI.
+- (void)loadBookmarkViewsForNewUI {
+  // TODO(crbug.com/695749): Polish UI according to mocks.
+  _containerView = [[UIView alloc] initWithFrame:self.view.bounds];
+  [_containerView setAutoresizingMask:UIViewAutoresizingFlexibleWidth |
+                                      UIViewAutoresizingFlexibleHeight];
+  [self.view addSubview:_containerView];
+
+  self.bookmarksTableView =
+      [[BookmarkTableView alloc] initWithBrowserState:self.browserState
+                                             delegate:self
+                                             rootNode:_rootNode
+                                                frame:self.view.bounds];
+
+  [self.bookmarksTableView setTranslatesAutoresizingMaskIntoConstraints:NO];
+  [_containerView addSubview:self.bookmarksTableView];
+
+  if (_rootNode != self.bookmarks->root_node()) {
+    [self setupContextBar];
+  }
+  [self setupNavigationBar];
+}
+
+// Set up context bar for the new UI.
+- (void)setupContextBar {
+  self.contextBar = [[BookmarkContextBar alloc] initWithFrame:CGRectZero];
+  self.contextBar.delegate = self;
+  [self.contextBar setTranslatesAutoresizingMaskIntoConstraints:NO];
+
+  // TODO(crbug.com/695749): Check if we need to create new strings for the
+  // context bar buttons.
+  [self.contextBar setButtonVisibility:YES forButton:ContextBarLeadingButton];
+  [self.contextBar
+      setButtonTitle:l10n_util::GetNSStringWithFixup(
+                         IDS_IOS_BOOKMARK_NEW_GROUP_EDITOR_CREATE_TITLE)
+           forButton:ContextBarLeadingButton];
+
+  [self.contextBar setButtonVisibility:YES forButton:ContextBarTrailingButton];
+  [self.contextBar setButtonTitle:l10n_util::GetNSStringWithFixup(
+                                      IDS_IOS_BOOKMARK_ACTION_SELECT)
+                        forButton:ContextBarTrailingButton];
+
+  [_containerView addSubview:self.contextBar];
+}
+
+// Set up navigation bar for the new UI.
+- (void)setupNavigationBar {
+  // Set up the navigation bar.
+  NSString* doneTitle =
+      l10n_util::GetNSString(IDS_IOS_NAVIGATION_BAR_DONE_BUTTON)
+          .uppercaseString;
+  UIBarButtonItem* doneButton =
+      [[UIBarButtonItem alloc] initWithTitle:doneTitle
+                                       style:UIBarButtonItemStyleDone
+                                      target:self
+                                      action:@selector(navigationBarCancel:)];
+  doneButton.accessibilityIdentifier = @"bookmark_done_button";
+  self.navigationItem.rightBarButtonItem = doneButton;
+  self.navigationItem.backBarButtonItem =
+      [[UIBarButtonItem alloc] initWithTitle:@""
+                                       style:UIBarButtonItemStylePlain
+                                      target:nil
+                                      action:nil];
+  self.navigationItem.title =
+      bookmark_utils_ios::TitleForBookmarkNode(_rootNode);
+  self.navigationController.navigationBar.tintColor = UIColor.blackColor;
+  self.navigationController.navigationBar.backgroundColor =
+      bookmark_utils_ios::mainBackgroundColor();
+}
+
 // Saves the current position and asks the delegate to open the url, if delegate
 // is set, otherwise opens the URL using loader.
 - (void)dismissWithURL:(const GURL&)url {
@@ -914,7 +931,8 @@ const CGFloat kMenuWidth = 264;
 
 - (void)updateViewConstraints {
   if (base::FeatureList::IsEnabled(
-          bookmark_new_generation::features::kBookmarkNewGeneration)) {
+          bookmark_new_generation::features::kBookmarkNewGeneration) &&
+      self.contextBar) {
     NSDictionary* views = @{
       @"tableView" : self.bookmarksTableView,
       @"contextBar" : self.contextBar,
