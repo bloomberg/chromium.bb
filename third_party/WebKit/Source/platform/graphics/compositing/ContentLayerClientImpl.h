@@ -10,6 +10,7 @@
 #include "platform/PlatformExport.h"
 #include "platform/graphics/GraphicsLayerClient.h"
 #include "platform/graphics/paint/PaintChunk.h"
+#include "platform/wtf/HashMap.h"
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/Vector.h"
 
@@ -46,7 +47,16 @@ class PLATFORM_EXPORT ContentLayerClientImpl : public cc::ContentLayerClient {
 
   void SetTracksRasterInvalidations(bool);
 
-  std::unique_ptr<JSONObject> LayerAsJSON(LayerTreeFlags);
+  struct LayerAsJSONContext {
+    LayerAsJSONContext(LayerTreeFlags flags) : flags(flags) {}
+
+    const LayerTreeFlags flags;
+    int next_transform_id = 1;
+    std::unique_ptr<JSONArray> transforms_json;
+    HashMap<const TransformPaintPropertyNode*, int> transform_id_map;
+    HashMap<int, int> rendering_context_map;
+  };
+  std::unique_ptr<JSONObject> LayerAsJSON(LayerAsJSONContext&) const;
 
   scoped_refptr<cc::PictureLayer> UpdateCcPictureLayer(
       const PaintArtifact&,

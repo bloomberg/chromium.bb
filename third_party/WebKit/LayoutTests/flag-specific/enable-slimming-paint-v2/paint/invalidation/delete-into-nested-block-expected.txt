@@ -4,7 +4,7 @@
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true,
+      "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
           "object": "InlineTextBox 'three'",
@@ -17,13 +17,13 @@
           "reason": "appeared"
         },
         {
-          "object": "InlineTextBox 'two'",
-          "rect": [8, 147, 28, 20],
+          "object": "InlineTextBox 'one'",
+          "rect": [8, 127, 27, 20],
           "reason": "disappeared"
         },
         {
-          "object": "InlineTextBox 'one'",
-          "rect": [8, 127, 27, 20],
+          "object": "InlineTextBox 'two'",
+          "rect": [8, 147, 24, 20],
           "reason": "disappeared"
         },
         {

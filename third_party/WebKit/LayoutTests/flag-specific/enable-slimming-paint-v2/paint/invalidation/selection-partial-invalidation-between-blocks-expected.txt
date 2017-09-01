@@ -4,12 +4,12 @@
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true,
+      "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
           "object": "InlineTextBox 'Second cell'",
-          "rect": [11, 35, 77, 19],
-          "reason": "geometry"
+          "rect": [11, 35, 74, 19],
+          "reason": "selection"
         },
         {
           "object": "InlineTextBox 'First cell'",
@@ -50,11 +50,11 @@
     },
     {
       "object": "LayoutText #text",
-      "reason": "geometry"
+      "reason": "selection"
     },
     {
       "object": "InlineTextBox 'Second cell'",
-      "reason": "geometry"
+      "reason": "selection"
     }
   ]
 }

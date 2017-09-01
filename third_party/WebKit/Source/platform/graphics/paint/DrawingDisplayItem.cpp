@@ -40,8 +40,9 @@ void DrawingDisplayItem::DumpPropertiesAsDebugString(
   DisplayItem::DumpPropertiesAsDebugString(string_builder);
   if (record_) {
     string_builder.Append(String::Format(
-        ", rect: [%f,%f %fx%f]", record_bounds_.X(), record_bounds_.Y(),
-        record_bounds_.Width(), record_bounds_.Height()));
+        ", rect: [%f,%f %fx%f], opaque: %s", record_bounds_.X(),
+        record_bounds_.Y(), record_bounds_.Width(), record_bounds_.Height(),
+        known_to_be_opaque_ ? "true" : "false"));
   }
 }
 #endif
