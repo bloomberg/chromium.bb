@@ -23452,6 +23452,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="-741806604" label="DownloadsUi:disabled"/>
   <int value="-723224470" label="enable-password-force-saving:enabled"/>
   <int value="-722474177" label="browser-side-navigation:disabled"/>
+  <int value="-718626298" label="SysInternals:enabled"/>
   <int value="-716953514" label="disable-password-separated-signin-flow"/>
   <int value="-715733307" label="force-effective-connection-type"/>
   <int value="-714712077" label="ClickToOpenPDFPlaceholder:disabled"/>
@@ -24112,6 +24113,7 @@ from previous Chrome versions.
   <int value="1363136936" label="VrCustomTabBrowsing:enabled"/>
   <int value="1367529437" label="NTPAssetDownloadSuggestions:enabled"/>
   <int value="1367671275" label="enable-proximity-auth-proximity-detection"/>
+  <int value="1369449914" label="SysInternals:disabled"/>
   <int value="1371092708" label="disable-desktop-capture-picker-old-ui"/>
   <int value="1371907429" label="enable-wallet-card-import"/>
   <int value="1372199493" label="windows10-custom-titlebar"/>

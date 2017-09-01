@@ -90,6 +90,7 @@ const char kChromeUISuggestionsURL[] = "chrome://suggestions/";
 const char kChromeUISupervisedUserPassphrasePageURL[] =
     "chrome://managed-user-passphrase/";
 const char kChromeUISyncConfirmationURL[] = "chrome://sync-confirmation/";
+const char kChromeUISysInternalsURL[] = "chrome://sys-internals/";
 const char kChromeUITermsURL[] = "chrome://terms/";
 const char kChromeUIThemeURL[] = "chrome://theme/";
 const char kChromeUIThumbnailURL[] = "chrome://thumb/";
@@ -250,6 +251,7 @@ const char kChromeUISyncHost[] = "sync";
 const char kChromeUISyncFileSystemInternalsHost[] = "syncfs-internals";
 const char kChromeUISyncInternalsHost[] = "sync-internals";
 const char kChromeUISyncResourcesHost[] = "syncresources";
+const char kChromeUISysInternalsHost[] = "sys-internals";
 const char kChromeUISystemInfoHost[] = "system";
 const char kChromeUITaskSchedulerInternalsHost[] = "taskscheduler-internals";
 const char kChromeUITermsHost[] = "terms";

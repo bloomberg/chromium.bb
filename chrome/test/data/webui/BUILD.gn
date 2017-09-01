@@ -105,7 +105,10 @@ js2gtest("browser_tests_js_webui") {
   ]
 
   if (is_chromeos) {
-    sources += [ "settings/easy_unlock_browsertest_chromeos.js" ]
+    sources += [
+      "settings/easy_unlock_browsertest_chromeos.js",
+      "sys_internals/sys_internals_browsertest.js",
+    ]
   }
 
   if (is_chrome_branded) {
