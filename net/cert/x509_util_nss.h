@@ -56,6 +56,11 @@ CreateCERTCertificateListFromBytes(const char* data, size_t length, int format);
 // Increments the refcount of |cert| and returns a handle for that reference.
 NET_EXPORT ScopedCERTCertificate DupCERTCertificate(CERTCertificate* cert);
 
+// Increments the refcount of each element in |cerst| and returns a list of
+// handles for them.
+NET_EXPORT ScopedCERTCertificateList
+DupCERTCertificateList(const ScopedCERTCertificateList& certs);
+
 // Creates an X509Certificate from |cert|, with intermediates from |chain|.
 // Returns NULL on failure.
 NET_EXPORT scoped_refptr<X509Certificate>
@@ -115,6 +120,12 @@ NET_EXPORT std::string GetDefaultUniqueNickname(CERTCertificate* nss_cert,
 // this order: CN, O and OU and returns the first non-empty one found.
 // This mirrors net::CertPrincipal::GetDisplayName.
 NET_EXPORT std::string GetCERTNameDisplayName(CERTName* name);
+
+// Stores the notBefore and notAfter times from |cert| into |*not_before| and
+// |*not_after|, returning true if successful.
+NET_EXPORT bool GetValidityTimes(CERTCertificate* cert,
+                                 base::Time* not_before,
+                                 base::Time* not_after);
 
 // Calculates the SHA-256 fingerprint of the certificate.  Returns an empty
 // (all zero) fingerprint on failure.

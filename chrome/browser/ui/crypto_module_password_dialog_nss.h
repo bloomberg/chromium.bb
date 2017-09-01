@@ -15,9 +15,7 @@
 #include "net/base/host_port_pair.h"
 #include "ui/gfx/native_widget_types.h"
 
-namespace net {
-class X509Certificate;
-}
+typedef struct CERTCertificateStr CERTCertificate;
 
 namespace chrome {
 
@@ -33,7 +31,7 @@ void UnlockSlotsIfNecessary(std::vector<crypto::ScopedPK11Slot> modules,
 // Asynchronously unlock the |cert|'s module, if necessary. |callback| is
 // called when done (regardless if module was successfully unlocked or not).
 // Should only be called on UI thread.
-void UnlockCertSlotIfNecessary(net::X509Certificate* cert,
+void UnlockCertSlotIfNecessary(CERTCertificate* cert,
                                CryptoModulePasswordReason reason,
                                const net::HostPortPair& server,
                                gfx::NativeWindow parent,

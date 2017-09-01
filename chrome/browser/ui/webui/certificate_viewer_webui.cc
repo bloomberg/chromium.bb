@@ -27,6 +27,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/web_contents.h"
+#include "net/cert/x509_util_nss.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -115,7 +116,12 @@ std::unique_ptr<base::DictionaryValue> CertNodeBuilder::Build() {
 void ShowCertificateViewer(WebContents* web_contents,
                            gfx::NativeWindow parent,
                            net::X509Certificate* cert) {
-  CertificateViewerDialog* dialog = new CertificateViewerDialog(cert);
+  net::ScopedCERTCertificateList nss_certs =
+      net::x509_util::CreateCERTCertificateListFromX509Certificate(cert);
+  if (nss_certs.empty())
+    return;
+  CertificateViewerDialog* dialog =
+      new CertificateViewerDialog(std::move(nss_certs));
   dialog->Show(web_contents, parent);
 }
 
@@ -123,13 +129,13 @@ void ShowCertificateViewer(WebContents* web_contents,
 // CertificateViewerDialog
 
 CertificateViewerModalDialog::CertificateViewerModalDialog(
-    net::X509Certificate* cert)
-    : cert_(cert), webui_(NULL), window_(NULL) {
+    net::ScopedCERTCertificateList certs)
+    : nss_certs_(std::move(certs)), webui_(NULL), window_(NULL) {
   // Construct the dialog title from the certificate.
   title_ = l10n_util::GetStringFUTF16(
       IDS_CERT_INFO_DIALOG_TITLE,
       base::UTF8ToUTF16(
-          x509_certificate_model::GetTitle(cert_->os_cert_handle())));
+          x509_certificate_model::GetTitle(nss_certs_.front().get())));
 }
 
 CertificateViewerModalDialog::~CertificateViewerModalDialog() {
@@ -167,7 +173,8 @@ GURL CertificateViewerModalDialog::GetDialogContentURL() const {
 void CertificateViewerModalDialog::GetWebUIMessageHandlers(
     std::vector<WebUIMessageHandler*>* handlers) const {
   handlers->push_back(new CertificateViewerDialogHandler(
-      const_cast<CertificateViewerModalDialog*>(this), cert_.get()));
+      const_cast<CertificateViewerModalDialog*>(this),
+      net::x509_util::DupCERTCertificateList(nss_certs_)));
 }
 
 void CertificateViewerModalDialog::GetDialogSize(gfx::Size* size) const {
@@ -182,14 +189,7 @@ std::string CertificateViewerModalDialog::GetDialogArgs() const {
   // Certificate information. The keys in this dictionary's general key
   // correspond to the IDs in the Html page.
   base::DictionaryValue cert_info;
-  net::X509Certificate::OSCertHandle cert_hnd = cert_->os_cert_handle();
-
-  // Get the certificate chain.
-  net::X509Certificate::OSCertHandles cert_chain;
-  cert_chain.push_back(cert_->os_cert_handle());
-  const net::X509Certificate::OSCertHandles& certs =
-      cert_->GetIntermediateCertificates();
-  cert_chain.insert(cert_chain.end(), certs.begin(), certs.end());
+  CERTCertificate* cert_hnd = nss_certs_.front().get();
 
   // Certificate usage.
   std::vector<std::string> usages;
@@ -207,10 +207,11 @@ std::string CertificateViewerModalDialog::GetDialogArgs() const {
   // Standard certificate details.
   const std::string alternative_text =
       l10n_util::GetStringUTF8(IDS_CERT_INFO_FIELD_NOT_PRESENT);
-  cert_info.SetString("general.title", l10n_util::GetStringFUTF8(
-      IDS_CERT_INFO_DIALOG_TITLE,
-      base::UTF8ToUTF16(x509_certificate_model::GetTitle(
-          cert_chain.front()))));
+  cert_info.SetString(
+      "general.title",
+      l10n_util::GetStringFUTF8(
+          IDS_CERT_INFO_DIALOG_TITLE,
+          base::UTF8ToUTF16(x509_certificate_model::GetTitle(cert_hnd))));
 
   // Issued to information.
   cert_info.SetString("general.issued-cn",
@@ -252,12 +253,13 @@ std::string CertificateViewerModalDialog::GetDialogArgs() const {
   // Certificate hierarchy is constructed from bottom up.
   std::unique_ptr<base::ListValue> children;
   int index = 0;
-  for (net::X509Certificate::OSCertHandles::const_iterator i =
-      cert_chain.begin(); i != cert_chain.end(); ++i, ++index) {
+  for (net::ScopedCERTCertificateList::const_iterator i = nss_certs_.begin();
+       i != nss_certs_.end(); ++i, ++index) {
     std::unique_ptr<base::DictionaryValue> cert_node(
         new base::DictionaryValue());
     base::ListValue cert_details;
-    cert_node->SetString("label", x509_certificate_model::GetTitle(*i).c_str());
+    cert_node->SetString("label",
+                         x509_certificate_model::GetTitle(i->get()).c_str());
     cert_node->SetDouble("payload.index", index);
     // Add the child from the previous iteration.
     if (children)
@@ -297,10 +299,9 @@ bool CertificateViewerModalDialog::ShouldShowDialogTitle() const {
 ////////////////////////////////////////////////////////////////////////////////
 // CertificateViewerDialog
 
-CertificateViewerDialog::CertificateViewerDialog(net::X509Certificate* cert)
-    : CertificateViewerModalDialog(cert),
-      dialog_(NULL) {
-}
+CertificateViewerDialog::CertificateViewerDialog(
+    net::ScopedCERTCertificateList certs)
+    : CertificateViewerModalDialog(std::move(certs)), dialog_(NULL) {}
 
 CertificateViewerDialog::~CertificateViewerDialog() {
 }
@@ -330,13 +331,8 @@ ui::ModalType CertificateViewerDialog::GetDialogModalType() const {
 
 CertificateViewerDialogHandler::CertificateViewerDialogHandler(
     CertificateViewerModalDialog* dialog,
-    net::X509Certificate* cert)
-    : cert_(cert), dialog_(dialog) {
-  cert_chain_.push_back(cert_->os_cert_handle());
-  const net::X509Certificate::OSCertHandles& certs =
-      cert_->GetIntermediateCertificates();
-  cert_chain_.insert(cert_chain_.end(), certs.begin(), certs.end());
-}
+    net::ScopedCERTCertificateList cert_chain)
+    : dialog_(dialog), cert_chain_(std::move(cert_chain)) {}
 
 CertificateViewerDialogHandler::~CertificateViewerDialogHandler() {
 }
@@ -370,7 +366,7 @@ void CertificateViewerDialogHandler::RequestCertificateFields(
   if (cert_index < 0)
     return;
 
-  net::X509Certificate::OSCertHandle cert = cert_chain_[cert_index];
+  CERTCertificate* cert = cert_chain_[cert_index].get();
 
   CertNodeBuilder version_node(IDS_CERT_DETAILS_VERSION);
   std::string version = x509_certificate_model::GetVersion(cert);

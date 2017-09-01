@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "content/public/browser/browser_thread.h"
-#include "net/cert/x509_certificate.h"
 
 using content::BrowserThread;
 
@@ -134,14 +133,13 @@ void UnlockSlotsIfNecessary(std::vector<crypto::ScopedPK11Slot> modules,
   callback.Run();
 }
 
-void UnlockCertSlotIfNecessary(net::X509Certificate* cert,
+void UnlockCertSlotIfNecessary(CERTCertificate* cert,
                                chrome::CryptoModulePasswordReason reason,
                                const net::HostPortPair& server,
                                gfx::NativeWindow parent,
                                const base::Closure& callback) {
   std::vector<crypto::ScopedPK11Slot> modules;
-  modules.push_back(
-      crypto::ScopedPK11Slot(PK11_ReferenceSlot(cert->os_cert_handle()->slot)));
+  modules.push_back(crypto::ScopedPK11Slot(PK11_ReferenceSlot(cert->slot)));
   UnlockSlotsIfNecessary(std::move(modules), reason, server, parent, callback);
 }
 

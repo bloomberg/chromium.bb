@@ -83,7 +83,7 @@ void GetExtensions(const std::string& critical_label,
 std::string HashCertSHA256(CERTCertificate* cert_handle);
 std::string HashCertSHA1(CERTCertificate* cert_handle);
 
-std::string GetCMSString(const std::vector<CERTCertificate*>& cert_chain,
+std::string GetCMSString(const net::ScopedCERTCertificateList& cert_chain,
                          size_t start,
                          size_t end);
 
