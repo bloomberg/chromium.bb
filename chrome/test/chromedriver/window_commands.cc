@@ -582,7 +582,7 @@ Status ExecuteMouseMoveTo(Session* session,
 
   std::list<MouseEvent> events;
   events.push_back(
-      MouseEvent(kMovedMouseEventType, kNoneMouseButton,
+      MouseEvent(kMovedMouseEventType, session->pressed_mouse_button,
                  location.x, location.y, session->sticky_modifiers, 0));
   Status status =
       web_view->DispatchMouseEvents(events, session->GetCurrentFrameId());
@@ -609,6 +609,7 @@ Status ExecuteMouseClick(Session* session,
       MouseEvent(kReleasedMouseEventType, button,
                  session->mouse_position.x, session->mouse_position.y,
                  session->sticky_modifiers, 1));
+  session->pressed_mouse_button = kNoneMouseButton;
   return web_view->DispatchMouseEvents(events, session->GetCurrentFrameId());
 }
 
@@ -626,6 +627,7 @@ Status ExecuteMouseButtonDown(Session* session,
       MouseEvent(kPressedMouseEventType, button,
                  session->mouse_position.x, session->mouse_position.y,
                  session->sticky_modifiers, 1));
+  session->pressed_mouse_button = button;
   return web_view->DispatchMouseEvents(events, session->GetCurrentFrameId());
 }
 
@@ -643,6 +645,7 @@ Status ExecuteMouseButtonUp(Session* session,
       MouseEvent(kReleasedMouseEventType, button,
                  session->mouse_position.x, session->mouse_position.y,
                  session->sticky_modifiers, 1));
+  session->pressed_mouse_button = kNoneMouseButton;
   return web_view->DispatchMouseEvents(events, session->GetCurrentFrameId());
 }
 
@@ -664,6 +667,7 @@ Status ExecuteMouseDoubleClick(Session* session,
       MouseEvent(kReleasedMouseEventType, button,
                  session->mouse_position.x, session->mouse_position.y,
                  session->sticky_modifiers, 2));
+  session->pressed_mouse_button = kNoneMouseButton;
   return web_view->DispatchMouseEvents(events, session->GetCurrentFrameId());
 }
 
