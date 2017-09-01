@@ -13,6 +13,7 @@
 #include "platform/text/TextBreakIterator.h"
 #include "platform/text/TextRun.h"
 #include "platform/wtf/Vector.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -41,6 +42,35 @@ class ShapingLineBreakerTest : public ::testing::Test {
   }
 
   void TearDown() override {}
+
+  // Compute all break positions by |NextBreakOpportunity|.
+  Vector<unsigned> BreakPositionsByNext(const ShapingLineBreaker& breaker,
+                                        const String& string) {
+    Vector<unsigned> break_positions;
+    for (unsigned i = 0; i <= string.length(); i++) {
+      bool is_hyphenated = false;
+      unsigned next = breaker.NextBreakOpportunity(i, 0, &is_hyphenated);
+      if (break_positions.IsEmpty() || break_positions.back() != next)
+        break_positions.push_back(next);
+    }
+    return break_positions;
+  }
+
+  // Compute all break positions by |PreviousBreakOpportunity|.
+  Vector<unsigned> BreakPositionsByPrevious(const ShapingLineBreaker& breaker,
+                                            const String& string) {
+    Vector<unsigned> break_positions;
+    for (unsigned i = string.length(); i; i--) {
+      bool is_hyphenated = false;
+      unsigned previous =
+          breaker.PreviousBreakOpportunity(i, 0, &is_hyphenated);
+      if (previous &&
+          (break_positions.IsEmpty() || break_positions.back() != previous))
+        break_positions.push_back(previous);
+    }
+    break_positions.Reverse();
+    return break_positions;
+  }
 
   FontCachePurgePreventer font_cache_purge_preventer;
   FontDescription font_description;
@@ -257,4 +287,56 @@ TEST_F(ShapingLineBreakerTest, ShapeLineRangeEndMidWord) {
   EXPECT_EQ(2u, break_offset);
   EXPECT_EQ(result->Width(), line->Width());
 }
+
+struct BreakOpportunityTestData {
+  const char16_t* string;
+  Vector<unsigned> break_positions;
+  Vector<unsigned> break_positions_with_soft_hyphen_disabled;
+};
+
+class BreakOpportunityTest
+    : public ShapingLineBreakerTest,
+      public ::testing::WithParamInterface<BreakOpportunityTestData> {};
+
+INSTANTIATE_TEST_CASE_P(
+    ShapingLineBreakerTest,
+    BreakOpportunityTest,
+    ::testing::Values(BreakOpportunityTestData{u"x y z", {1, 3, 5}},
+                      BreakOpportunityTestData{u"y\xADz", {2, 3}, {3}},
+                      BreakOpportunityTestData{u"\xADz", {1, 2}, {2}},
+                      BreakOpportunityTestData{u"y\xAD", {2}, {2}},
+                      BreakOpportunityTestData{u"\xAD\xADz", {2, 3}, {3}}));
+
+TEST_P(BreakOpportunityTest, Next) {
+  const BreakOpportunityTestData& data = GetParam();
+  String string(data.string);
+  LazyLineBreakIterator break_iterator(string);
+  ShapingLineBreaker breaker(nullptr, &font, nullptr, &break_iterator);
+  EXPECT_THAT(BreakPositionsByNext(breaker, string),
+              ::testing::ElementsAreArray(data.break_positions));
+
+  if (!data.break_positions_with_soft_hyphen_disabled.IsEmpty()) {
+    breaker.DisableSoftHyphen();
+    EXPECT_THAT(BreakPositionsByNext(breaker, string),
+                ::testing::ElementsAreArray(
+                    data.break_positions_with_soft_hyphen_disabled));
+  }
+}
+
+TEST_P(BreakOpportunityTest, Previous) {
+  const BreakOpportunityTestData& data = GetParam();
+  String string(data.string);
+  LazyLineBreakIterator break_iterator(string);
+  ShapingLineBreaker breaker(nullptr, &font, nullptr, &break_iterator);
+  EXPECT_THAT(BreakPositionsByPrevious(breaker, string),
+              ::testing::ElementsAreArray(data.break_positions));
+
+  if (!data.break_positions_with_soft_hyphen_disabled.IsEmpty()) {
+    breaker.DisableSoftHyphen();
+    EXPECT_THAT(BreakPositionsByPrevious(breaker, string),
+                ::testing::ElementsAreArray(
+                    data.break_positions_with_soft_hyphen_disabled));
+  }
+}
+
 }  // namespace blink
