@@ -216,8 +216,8 @@ if (NOT MSVC)
       -P "${AOM_ROOT}/build/cmake/pkg_config.cmake"
       COMMENT "Writing aom.pc"
       VERBATIM)
+  add_dependencies(aom_pc aom_version)
 endif ()
-add_dependencies(aom_pc aom_version)
 
 # TODO(tomfinegan): Move rtcd target setup where it belongs for each rtcd
 # source.
