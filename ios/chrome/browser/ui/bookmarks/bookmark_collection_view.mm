@@ -1317,9 +1317,10 @@ CGFloat minFaviconSizePt = 16;
   return NO;
 }
 
-#pragma mark - Exposed to the SyncedSessionsObserver
+#pragma mark - SyncedSessionsObserver
 
 - (void)reloadSessions {
+  // Nothing to do.
 }
 
 - (void)onSyncStateChanged {
