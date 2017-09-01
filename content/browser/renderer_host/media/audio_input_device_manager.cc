@@ -54,10 +54,10 @@ AudioInputDeviceManager::AudioInputDeviceManager(
 AudioInputDeviceManager::~AudioInputDeviceManager() {
 }
 
-const StreamDeviceInfo* AudioInputDeviceManager::GetOpenedDeviceInfoById(
+const MediaStreamDevice* AudioInputDeviceManager::GetOpenedDeviceById(
     int session_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  StreamDeviceList::iterator device = GetDevice(session_id);
+  MediaStreamDevices::iterator device = GetDevice(session_id);
   if (device == devices_.end())
     return nullptr;
 
@@ -117,10 +117,10 @@ int AudioInputDeviceManager::Open(const MediaStreamDevice& device) {
 
 void AudioInputDeviceManager::Close(int session_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  StreamDeviceList::iterator device = GetDevice(session_id);
+  MediaStreamDevices::iterator device = GetDevice(session_id);
   if (device == devices_.end())
     return;
-  const MediaStreamType stream_type = device->device.type;
+  const MediaStreamType stream_type = device->type;
   if (session_id != kFakeOpenSessionId)
     devices_.erase(device);
 
@@ -211,21 +211,22 @@ void AudioInputDeviceManager::OpenedOnIOThread(
   UMA_HISTOGRAM_TIMES("Media.AudioInputDeviceManager.OpenOnDeviceThreadTime",
                       base::TimeTicks::Now() - start_time);
 
-  StreamDeviceInfo info(device.type, device.name, device.id);
-  info.session_id = session_id;
-  info.device.input = input_params.IsValid()
-                          ? input_params
-                          : media::AudioParameters::UnavailableDeviceParams();
-  info.device.matched_output_device_id = matched_output_device_id;
-  info.device.matched_output =
+  MediaStreamDevice media_stream_device(device.type, device.id, device.name);
+  media_stream_device.session_id = session_id;
+  media_stream_device.input =
+      input_params.IsValid()
+          ? input_params
+          : media::AudioParameters::UnavailableDeviceParams();
+  media_stream_device.matched_output_device_id = matched_output_device_id;
+  media_stream_device.matched_output =
       matched_output_params.IsValid()
           ? matched_output_params
           : media::AudioParameters::UnavailableDeviceParams();
 
-  devices_.push_back(info);
+  devices_.push_back(media_stream_device);
 
   for (auto& listener : listeners_)
-    listener.Opened(info.device.type, session_id);
+    listener.Opened(media_stream_device.type, session_id);
 }
 
 void AudioInputDeviceManager::ClosedOnIOThread(MediaStreamType stream_type,
@@ -235,13 +236,12 @@ void AudioInputDeviceManager::ClosedOnIOThread(MediaStreamType stream_type,
     listener.Closed(stream_type, session_id);
 }
 
-
-AudioInputDeviceManager::StreamDeviceList::iterator
-AudioInputDeviceManager::GetDevice(int session_id) {
-  for (StreamDeviceList::iterator i(devices_.begin()); i != devices_.end();
-       ++i) {
-    if (i->session_id == session_id)
-      return i;
+MediaStreamDevices::iterator AudioInputDeviceManager::GetDevice(
+    int session_id) {
+  for (MediaStreamDevices::iterator it = devices_.begin(); it != devices_.end();
+       ++it) {
+    if (it->session_id == session_id)
+      return it;
   }
 
   return devices_.end();

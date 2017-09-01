@@ -28,6 +28,9 @@ bool IsScreenCaptureMediaType(MediaStreamType type) {
           type == MEDIA_DESKTOP_VIDEO_CAPTURE);
 }
 
+// static
+const int MediaStreamDevice::kNoId = -1;
+
 MediaStreamDevice::MediaStreamDevice()
     : type(MEDIA_NO_SERVICE), video_facing(media::MEDIA_VIDEO_FACING_NONE) {}
 
