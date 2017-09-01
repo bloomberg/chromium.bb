@@ -346,20 +346,30 @@ class BuildPackagesStageTest(AllConfigsTestCase,
     """Test that firmware versions are extracted correctly for unibuilds."""
 
     def _HookRunCommand(rc):
-      rc.AddCmdResult(partial_mock.ListRegex('fdtget'), output='reef\npyro')
+      rc.AddCmdResult(partial_mock.ListRegex('fdtget'),
+                      output='reef\npyro\nelectro')
       rc.AddCmdResult(partial_mock.ListRegex('chromeos-firmwareupdate'),
                       output='''
+Model:        reef
 BIOS image:
 BIOS version: Google_Reef.9042.87.1
 BIOS (RW) version: Google_Reef.9042.110.0
 EC version:   reef_v1.1.5900-ab1ee51
 EC (RW) version: reef_v1.1.5909-bd1f0c9
 
+Model:        pyro
 BIOS image:
 BIOS version: Google_Pyro.9042.87.1
 BIOS (RW) version: Google_Pyro.9042.110.0
 EC version:   pyro_v1.1.5900-ab1ee51
 EC (RW) version: pyro_v1.1.5909-bd1f0c9
+
+Model:        electro
+BIOS image:
+BIOS version: Google_Reef.9042.87.1
+BIOS (RW) version: Google_Reef.9042.110.0
+EC version:   reef_v1.1.5900-ab1ee51
+EC (RW) version: reef_v1.1.5909-bd1f0c9
 ''')
 
     self._update_metadata = True
@@ -387,6 +397,10 @@ EC (RW) version: pyro_v1.1.5909-bd1f0c9
                         reef['ec-firmware-version'])
 
       self.assertIn('pyro', board_metadata['models'])
+      self.assertIn('electro', board_metadata['models'])
+      electro = board_metadata['models']['electro']
+      self.assertEquals('Google_Reef.9042.87.1',
+                        electro['main-readonly-firmware-version'])
 
   def testUnifiedBuilds(self):
     """Test that unified builds are marked as such."""

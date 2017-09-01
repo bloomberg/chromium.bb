@@ -523,11 +523,9 @@ def FindFirmwareVersions(cmd_output):
   if match:
     ec_rw = match.group('version')
 
-  ec_match_input = ec or ec_rw
-  if ec_match_input:
-    match = re.search(r'(?P<model>.*)_v\d+\.\d+\..*', ec_match_input)
-    if match:
-      model = match.group('model')
+  match = re.search(r'Model:\s*(?P<model>.*)', cmd_output)
+  if match:
+    model = match.group('model')
 
   return FirmwareVersions(model, main, main_rw, ec, ec_rw)
 
@@ -545,7 +543,9 @@ def GetAllFirmwareVersions(buildroot, board):
   """
   result = {}
   cmd_result = GetFirmwareVersionCmdResult(buildroot, board)
-  firmware_version_payloads = cmd_result.split('BIOS image:')
+
+  # There is a blank line between the version info for each model.
+  firmware_version_payloads = cmd_result.split('\n\n')
   for firmware_version_payload in firmware_version_payloads:
     if 'BIOS' in firmware_version_payload:
       firmware_version = FindFirmwareVersions(firmware_version_payload)
