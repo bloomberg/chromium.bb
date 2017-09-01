@@ -208,6 +208,10 @@ class AutofillProfile : public AutofillDataModel {
   // Returns the bitfield value representing the validity state of this profile.
   int GetValidityBitfieldValue();
 
+  // Sets the validity state of the profile based on the specified
+  // |bitfield_value|.
+  void SetValidityFromBitfieldValue(int bitfield_value);
+
  private:
   typedef std::vector<const FormGroup*> FormGroupList;
 
