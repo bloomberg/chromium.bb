@@ -23,11 +23,11 @@ NetworkStatusListenerImpl::~NetworkStatusListenerImpl() = default;
 void NetworkStatusListenerImpl::Start(
     NetworkStatusListener::Observer* observer) {
   NetworkStatusListener::Start(observer);
-  net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
+  net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
 }
 
 void NetworkStatusListenerImpl::Stop() {
-  net::NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
+  net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
   NetworkStatusListener::Stop();
 }
 
@@ -36,10 +36,10 @@ NetworkStatusListenerImpl::GetConnectionType() {
   return net::NetworkChangeNotifier::GetConnectionType();
 }
 
-void NetworkStatusListenerImpl::OnConnectionTypeChanged(
+void NetworkStatusListenerImpl::OnNetworkChanged(
     net::NetworkChangeNotifier::ConnectionType type) {
   DCHECK(observer_);
-  observer_->OnConnectionTypeChanged(type);
+  observer_->OnNetworkChanged(type);
 }
 
 }  // namespace download
