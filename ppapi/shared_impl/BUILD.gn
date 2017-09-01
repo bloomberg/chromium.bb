@@ -163,12 +163,12 @@ component("shared_impl") {
   ]
 
   public_deps = [
+    "//base",
     "//ppapi/c",
     "//ppapi/thunk",
   ]
 
   deps = [
-    "//base",
     "//gpu/command_buffer/client",
     "//gpu/command_buffer/client:gles2_cmd_helper",
     "//gpu/command_buffer/client:gles2_implementation",
