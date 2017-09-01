@@ -34,8 +34,14 @@ class VoiceInteractionSelectionObserver
     : public ash::HighlighterSelectionObserver {
  public:
   explicit VoiceInteractionSelectionObserver(Profile* profile)
-      : profile_(profile) {}
-  ~VoiceInteractionSelectionObserver() override = default;
+      : profile_(profile) {
+    ash::Shell::Get()->highlighter_controller()->SetObserver(this);
+  }
+
+  ~VoiceInteractionSelectionObserver() override {
+    if (ash::Shell::Get()->highlighter_controller())
+      ash::Shell::Get()->highlighter_controller()->SetObserver(nullptr);
+  };
 
  private:
   void HandleSelection(const gfx::Rect& rect) override {
@@ -74,8 +80,6 @@ PaletteDelegateChromeOS::PaletteDelegateChromeOS() : weak_factory_(this) {
 }
 
 PaletteDelegateChromeOS::~PaletteDelegateChromeOS() {
-  if (highlighter_selection_observer_)
-    ash::Shell::Get()->highlighter_controller()->SetObserver(nullptr);
 }
 
 std::unique_ptr<PaletteDelegateChromeOS::EnableListenerSubscription>
@@ -210,8 +214,6 @@ void PaletteDelegateChromeOS::ShowMetalayer() {
   if (!highlighter_selection_observer_) {
     highlighter_selection_observer_ =
         base::MakeUnique<VoiceInteractionSelectionObserver>(profile_);
-    ash::Shell::Get()->highlighter_controller()->SetObserver(
-        highlighter_selection_observer_.get());
   }
   ash::Shell::Get()->highlighter_controller()->SetEnabled(true);
 }
