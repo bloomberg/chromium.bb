@@ -44,7 +44,7 @@ SearchResourceManager::SearchResourceManager(Profile* profile,
 
   if (is_fullscreen_app_list_enabled_) {
     search_box_->SetAccessibleName(
-        l10n_util::GetStringUTF16(IDS_SEARCH_BOX_HINT_FULLSCREEN));
+        l10n_util::GetStringUTF16(IDS_SEARCH_BOX_ACCESSIBILITY_NAME));
   } else {
     search_box_->SetAccessibleName(
         l10n_util::GetStringUTF16(IDS_SEARCH_BOX_HINT));
