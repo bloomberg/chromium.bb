@@ -1187,13 +1187,15 @@ TEST_F(PartitionAllocTest, MappingCollision) {
   // with the goal of tripping up alignment of the next mapping.
   map1 = AllocPages(pageBase - kPageAllocationGranularity,
                     kPageAllocationGranularity, kPageAllocationGranularity,
-                    PageAccessible);
+                    PageReadWrite);
   EXPECT_TRUE(map1);
   map2 = AllocPages(pageBase + kSuperPageSize, kPageAllocationGranularity,
-                    kPageAllocationGranularity, PageAccessible);
+                    kPageAllocationGranularity, PageReadWrite);
   EXPECT_TRUE(map2);
-  SetSystemPagesInaccessible(map1, kPageAllocationGranularity);
-  SetSystemPagesInaccessible(map2, kPageAllocationGranularity);
+  EXPECT_TRUE(
+      SetSystemPagesAccess(map1, kPageAllocationGranularity, PageInaccessible));
+  EXPECT_TRUE(
+      SetSystemPagesAccess(map2, kPageAllocationGranularity, PageInaccessible));
 
   PartitionPage* pageInThirdSuperPage = GetFullPage(kTestAllocSize);
   FreePages(map1, kPageAllocationGranularity);

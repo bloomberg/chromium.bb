@@ -34,62 +34,64 @@ static const size_t kSystemPageOffsetMask = kSystemPageSize - 1;
 static const size_t kSystemPageBaseMask = ~kSystemPageOffsetMask;
 
 enum PageAccessibilityConfiguration {
-  PageAccessible,
   PageInaccessible,
+  PageReadWrite,
+  PageReadExecute,
+  PageReadWriteExecute,
 };
 
 // Allocate one or more pages.
 // The requested address is just a hint; the actual address returned may
 // differ. The returned address will be aligned at least to align bytes.
-// len is in bytes, and must be a multiple of kPageAllocationGranularity.
+// length is in bytes, and must be a multiple of kPageAllocationGranularity.
 // align is in bytes, and must be a power-of-two multiple of
 // kPageAllocationGranularity.
-// If addr is null, then a suitable and randomized address will be chosen
+// If address is null, then a suitable and randomized address will be chosen
 // automatically.
-// PageAccessibilityConfiguration controls the permission of the
-// allocated pages.
+// page_accessibility controls the permission of the allocated pages.
 // This call will return null if the allocation cannot be satisfied.
 BASE_EXPORT void* AllocPages(void* address,
-                             size_t len,
+                             size_t length,
                              size_t align,
-                             PageAccessibilityConfiguration);
+                             PageAccessibilityConfiguration page_accessibility);
 
 // Free one or more pages.
-// addr and len must match a previous call to allocPages().
+// address and length must match a previous call to allocPages().
 BASE_EXPORT void FreePages(void* address, size_t length);
 
-// Mark one or more system pages as being inaccessible.
-// Subsequently accessing any address in the range will fault, and the
-// addresses will not be re-used by future allocations.
-// len must be a multiple of kSystemPageSize bytes.
-BASE_EXPORT void SetSystemPagesInaccessible(void* address, size_t length);
-
-// Mark one or more system pages as being accessible.
-// The pages will be readable and writeable.
-// len must be a multiple of kSystemPageSize bytes.
-// The result bool value indicates whether the permission
-// change succeeded or not. You must check the result
-// (in most cases you need to CHECK that it is true).
-BASE_EXPORT WARN_UNUSED_RESULT bool SetSystemPagesAccessible(void* address,
-                                                             size_t length);
+// Mark one or more system pages with the given access.
+// length must be a multiple of kSystemPageSize bytes.
+// The result bool value indicates whether the permission change succeeded or
+// not. You must check the result (in most cases you need to CHECK that it is
+// true).
+BASE_EXPORT WARN_UNUSED_RESULT bool SetSystemPagesAccess(
+    void* address,
+    size_t length,
+    PageAccessibilityConfiguration page_accessibility);
 
 // Decommit one or more system pages. Decommitted means that the physical memory
 // is released to the system, but the virtual address space remains reserved.
-// System pages are re-committed by calling recommitSystemPages(). Touching
+// System pages are re-committed by calling RecommitSystemPages(). Touching
 // a decommitted page _may_ fault.
 // Clients should not make any assumptions about the contents of decommitted
 // system pages, before or after they write to the page. The only guarantee
 // provided is that the contents of the system page will be deterministic again
 // after recommitting and writing to it. In particlar note that system pages are
-// not guaranteed to be zero-filled upon re-commit. len must be a multiple of
+// not guaranteed to be zero-filled upon re-commit. length must be a multiple of
 // kSystemPageSize bytes.
 BASE_EXPORT void DecommitSystemPages(void* address, size_t length);
 
-// Recommit one or more system pages. Decommitted system pages must be
-// recommitted before they are read are written again.
-// Note that this operation may be a no-op on some platforms.
-// len must be a multiple of kSystemPageSize bytes.
-BASE_EXPORT void RecommitSystemPages(void* address, size_t length);
+// Recommit one or more system pages with the given access. Decommitted system
+// pages must be recommitted with their original permissions before they are
+// used again. Note that this operation may be a no-op on some platforms.
+// length must be a multiple of kSystemPageSize bytes.
+// The result bool value indicates whether the recommit succeeded or
+// not. You must check the result (in most cases you need to CHECK that it is
+// true).
+BASE_EXPORT WARN_UNUSED_RESULT bool RecommitSystemPages(
+    void* address,
+    size_t length,
+    PageAccessibilityConfiguration page_accessibility);
 
 // Discard one or more system pages. Discarding is a hint to the system that
 // the page is no longer required. The hint may:
@@ -105,7 +107,7 @@ BASE_EXPORT void RecommitSystemPages(void* address, size_t length);
 // that the page is required again. Once written to, the content of the page is
 // guaranteed stable once more. After being written to, the page content may be
 // based on the original page content, or a page of zeroes.
-// len must be a multiple of kSystemPageSize bytes.
+// length must be a multiple of kSystemPageSize bytes.
 BASE_EXPORT void DiscardSystemPages(void* address, size_t length);
 
 ALWAYS_INLINE uintptr_t RoundUpToSystemPage(uintptr_t address) {

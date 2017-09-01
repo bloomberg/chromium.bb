@@ -22,7 +22,7 @@ void CallbackStackMemoryPool::Initialize() {
   free_list_next_[kPooledBlockCount - 1] = -1;
   pooled_memory_ = static_cast<CallbackStack::Item*>(
       WTF::AllocPages(nullptr, kBlockBytes * kPooledBlockCount,
-                      WTF::kPageAllocationGranularity, WTF::PageAccessible));
+                      WTF::kPageAllocationGranularity, WTF::PageReadWrite));
   CHECK(pooled_memory_);
 }
 
