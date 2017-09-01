@@ -58,6 +58,7 @@ class AX_EXPORT AXEventGenerator : public AXTreeDelegate {
     Iterator(const std::map<AXNode*, std::set<Event>>& map,
              const std::map<AXNode*, std::set<Event>>::const_iterator& head);
     Iterator(const Iterator& other);
+    ~Iterator();
 
     bool operator!=(const Iterator& rhs) const;
     Iterator& operator++();
