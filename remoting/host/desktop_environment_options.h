@@ -36,6 +36,9 @@ class DesktopEnvironmentOptions final {
   bool enable_user_interface() const;
   void set_enable_user_interface(bool enabled);
 
+  bool enable_file_transfer() const;
+  void set_enable_file_transfer(bool enabled);
+
   const webrtc::DesktopCaptureOptions* desktop_capture_options() const;
   webrtc::DesktopCaptureOptions* desktop_capture_options();
 
@@ -52,6 +55,9 @@ class DesktopEnvironmentOptions final {
 
   // True if a user-interactive window is showing up in it2me scenario.
   bool enable_user_interface_ = true;
+
+  // True if this host has file transfer enabled.
+  bool enable_file_transfer_ = false;
 
   // The DesktopCaptureOptions to initialize DesktopCapturer.
   webrtc::DesktopCaptureOptions desktop_capture_options_;

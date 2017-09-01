@@ -82,6 +82,14 @@ void DesktopEnvironmentOptions::set_enable_user_interface(bool enabled) {
   enable_user_interface_ = enabled;
 }
 
+bool DesktopEnvironmentOptions::enable_file_transfer() const {
+  return enable_file_transfer_;
+}
+
+void DesktopEnvironmentOptions::set_enable_file_transfer(bool enabled) {
+  enable_file_transfer_ = enabled;
+}
+
 void DesktopEnvironmentOptions::ApplyHostSessionOptions(
     const HostSessionOptions& options) {
 #if defined(OS_WIN)
