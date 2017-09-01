@@ -3421,6 +3421,13 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(base::kSyzyAsanDCheckIsFatalFeature)},
 #endif  // DCHECK_IS_ON() && defined(SYZYASAN)
 
+#if defined(OS_CHROMEOS)
+    {"enable-external-drive-rename",
+     flag_descriptions::kEnableExternalDriveRename,
+     flag_descriptions::kEnableExternalDriveRenameDescription, kOsCrOS,
+     SINGLE_VALUE_TYPE(chromeos::switches::kEnableExternalDriveRename)},
+#endif  // defined(OS_CHROMEOS)
+
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms/enums.xml. See note in
     // enums.xml and don't forget to run AboutFlagsHistogramTest unit test.
