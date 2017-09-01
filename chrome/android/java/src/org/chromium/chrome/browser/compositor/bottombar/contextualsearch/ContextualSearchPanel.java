@@ -591,6 +591,8 @@ public class ContextualSearchPanel extends OverlayPanel {
         mPanelMetrics.onSearchTermResolved();
         getSearchBarControl().setSearchTerm(searchTerm);
         getSearchBarControl().animateSearchTermResolution();
+        if (mActivity == null || mActivity.getToolbarManager() == null) return;
+
         getSearchBarControl().setQuickAction(quickActionUri, quickActionCategory,
                 mActivity.getToolbarManager().getPrimaryColor());
         getImageControl().setThumbnailUrl(thumbnailUrl);
