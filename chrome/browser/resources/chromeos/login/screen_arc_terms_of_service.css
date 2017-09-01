@@ -13,6 +13,14 @@
   padding: unset;
 }
 
+#arc-tos[md-mode] .arc-tos-overlay-close-bottom {
+  display: none;
+}
+
+#arc-tos[md-mode] .popup-overlay {
+  background: rgba(0, 0, 0, .5);
+}
+
 #arc-tos .step-contents {
   -webkit-margin-start: 32px;
   margin-bottom: 49px;
