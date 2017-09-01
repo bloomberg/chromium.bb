@@ -318,7 +318,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
         std::pair<base::OnceClosure, bool>(std::move(task), false));
   }
 
-  void PushNextTaskAsImmediate(base::Closure task) {
+  void PushNextTaskAsImmediate(base::OnceClosure task) {
     task_stack_.push(std::pair<base::OnceClosure, bool>(std::move(task), true));
   }
 
@@ -350,8 +350,8 @@ class AppCacheURLRequestJobTest : public testing::Test {
                      IOBuffer* body, int body_len) {
     DCHECK(body);
     scoped_refptr<IOBuffer> body_ref(body);
-    PushNextTask(base::Bind(&AppCacheURLRequestJobTest::WriteResponseBody,
-                            base::Unretained(this), body_ref, body_len));
+    PushNextTask(base::BindOnce(&AppCacheURLRequestJobTest::WriteResponseBody,
+                                base::Unretained(this), body_ref, body_len));
     WriteResponseHead(head);
   }
 
@@ -614,7 +614,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
     // 2. Use net::URLRequest to retrieve it.
     // 3. Verify we received what we expected to receive.
 
-    PushNextTask(base::Bind(
+    PushNextTask(base::BindOnce(
         &AppCacheURLRequestJobTest::VerifyDeliverSmallAppCachedResponse,
         base::Unretained(this)));
     PushNextTask(
@@ -687,12 +687,12 @@ class AppCacheURLRequestJobTest : public testing::Test {
     // 2. Use net::URLRequest to retrieve it.
     // 3. Verify we received what we expected to receive.
 
-    PushNextTask(base::Bind(
-       &AppCacheURLRequestJobTest::VerifyDeliverLargeAppCachedResponse,
-       base::Unretained(this)));
-    PushNextTask(base::Bind(
-       &AppCacheURLRequestJobTest::RequestAppCachedResource,
-       base::Unretained(this), true));
+    PushNextTask(base::BindOnce(
+        &AppCacheURLRequestJobTest::VerifyDeliverLargeAppCachedResponse,
+        base::Unretained(this)));
+    PushNextTask(
+        base::BindOnce(&AppCacheURLRequestJobTest::RequestAppCachedResource,
+                       base::Unretained(this), true));
 
     writer_.reset(service_->storage()->CreateResponseWriter(GURL()));
     written_response_id_ = writer_->response_id();
@@ -732,11 +732,11 @@ class AppCacheURLRequestJobTest : public testing::Test {
     // 1. Write a small response to response storage.
     // 2. Use net::URLRequest to retrieve it a subset using a range request
     // 3. Verify we received what we expected to receive.
-    PushNextTask(base::Bind(
-       &AppCacheURLRequestJobTest::VerifyDeliverPartialResponse,
-       base::Unretained(this)));
-    PushNextTask(base::Bind(
-       &AppCacheURLRequestJobTest::MakeRangeRequest, base::Unretained(this)));
+    PushNextTask(
+        base::BindOnce(&AppCacheURLRequestJobTest::VerifyDeliverPartialResponse,
+                       base::Unretained(this)));
+    PushNextTask(base::BindOnce(&AppCacheURLRequestJobTest::MakeRangeRequest,
+                                base::Unretained(this)));
     writer_.reset(service_->storage()->CreateResponseWriter(GURL()));
     written_response_id_ = writer_->response_id();
     WriteBasicResponse();
@@ -798,11 +798,11 @@ class AppCacheURLRequestJobTest : public testing::Test {
     // 2. Use net::URLRequest to retrieve it.
     // 3. Cancel the request after data starts coming in.
 
-    PushNextTask(base::Bind(
-       &AppCacheURLRequestJobTest::VerifyCancel, base::Unretained(this)));
-    PushNextTask(base::Bind(
-       &AppCacheURLRequestJobTest::RequestAppCachedResource,
-       base::Unretained(this), true));
+    PushNextTask(base::BindOnce(&AppCacheURLRequestJobTest::VerifyCancel,
+                                base::Unretained(this)));
+    PushNextTask(
+        base::BindOnce(&AppCacheURLRequestJobTest::RequestAppCachedResource,
+                       base::Unretained(this), true));
 
     writer_.reset(service_->storage()->CreateResponseWriter(GURL()));
     written_response_id_ = writer_->response_id();
@@ -826,11 +826,11 @@ class AppCacheURLRequestJobTest : public testing::Test {
     // 2. Use net::URLRequest to retrieve it.
     // 3. Cancel the request after data starts coming in.
 
-    PushNextTask(base::Bind(
-       &AppCacheURLRequestJobTest::VerifyCancel, base::Unretained(this)));
-    PushNextTask(base::Bind(
-       &AppCacheURLRequestJobTest::RequestAppCachedResource,
-       base::Unretained(this), true));
+    PushNextTask(base::BindOnce(&AppCacheURLRequestJobTest::VerifyCancel,
+                                base::Unretained(this)));
+    PushNextTask(
+        base::BindOnce(&AppCacheURLRequestJobTest::RequestAppCachedResource,
+                       base::Unretained(this), true));
 
     writer_.reset(service_->storage()->CreateResponseWriter(GURL()));
     written_response_id_ = writer_->response_id();
