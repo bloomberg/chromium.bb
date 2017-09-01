@@ -138,6 +138,11 @@ IncomingTaskQueue::~IncomingTaskQueue() {
   DCHECK(!message_loop_);
 }
 
+void IncomingTaskQueue::RunTask(PendingTask* pending_task) {
+  SEQUENCE_CHECKER(sequence_checker_);
+  task_annotator_.RunTask("MessageLoop::PostTask", pending_task);
+}
+
 bool IncomingTaskQueue::PostPendingTask(PendingTask* pending_task) {
   // Warning: Don't try to short-circuit, and handle this thread's tasks more
   // directly, as it could starve handling of foreign threads.  Put every task
@@ -165,8 +170,7 @@ bool IncomingTaskQueue::PostPendingTask(PendingTask* pending_task) {
     // delayed_run_time value) and for identifying the task in about:tracing.
     pending_task->sequence_num = next_sequence_num_++;
 
-    message_loop_->task_annotator()->DidQueueTask("MessageLoop::PostTask",
-                                                  *pending_task);
+    task_annotator_.DidQueueTask("MessageLoop::PostTask", *pending_task);
 
     bool was_empty = incoming_queue_.empty();
     incoming_queue_.push(std::move(*pending_task));
