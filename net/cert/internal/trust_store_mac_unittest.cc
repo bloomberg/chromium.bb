@@ -204,8 +204,7 @@ TEST(TrustStoreMacTest, MultiRootNotTrusted) {
 
 // Test against all the certificates in the default keychains. Confirms that
 // the computed trust value matches that of SecTrustEvaluate.
-// Fails on Mac 10.12. See http://crbug.com/757540.
-TEST(TrustStoreMacTest, DISABLED_SystemCerts) {
+TEST(TrustStoreMacTest, SystemCerts) {
   // Get the list of all certificates in the user & system keychains.
   // This may include both trusted and untrusted certificates.
   //
@@ -284,9 +283,9 @@ TEST(TrustStoreMacTest, DISABLED_SystemCerts) {
                 SecTrustCreateWithCertificates(cert_handle, sec_policy,
                                                trust.InitializeInto()));
       ASSERT_EQ(noErr,
-                SecTrustSetOptions(
-                    trust,
-                    kSecTrustOptionLeafIsCA | kSecTrustOptionAllowExpiredRoot));
+                SecTrustSetOptions(trust, kSecTrustOptionLeafIsCA |
+                                              kSecTrustOptionAllowExpired |
+                                              kSecTrustOptionAllowExpiredRoot));
 
       SecTrustResultType trust_result;
       ASSERT_EQ(noErr, SecTrustEvaluate(trust, &trust_result));
