@@ -749,6 +749,28 @@ int AutofillProfile::GetValidityBitfieldValue() {
   return validity_value;
 }
 
+void AutofillProfile::SetValidityFromBitfieldValue(int bitfield_value) {
+  // Compute the bitmask based on the number a bits per type. For example, this
+  // could be the two least significant bits (0b11).
+  const int kBitmask = 2 ^ validity_bits_per_type - 1;
+
+  for (ServerFieldType supported_type : supported_types_for_validation) {
+    // Apply the bitmask to the bitfield value to get the validity value of the
+    // current |supported_type|.
+    int validity_value = bitfield_value & kBitmask;
+    if (validity_value < 0 || validity_value >= UNSUPPORTED) {
+      NOTREACHED();
+      continue;
+    }
+
+    SetValidityState(supported_type,
+                     static_cast<ValidityState>(validity_value));
+
+    // Shift the bitfield value to access the validity of the next field type.
+    bitfield_value = bitfield_value >> validity_bits_per_type;
+  }
+}
+
 base::string16 AutofillProfile::GetInfoImpl(
     const AutofillType& type,
     const std::string& app_locale) const {
