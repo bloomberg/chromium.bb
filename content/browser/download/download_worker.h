@@ -54,7 +54,7 @@ class CONTENT_EXPORT DownloadWorker : public UrlDownloadHandler::Delegate {
   // UrlDownloader::Delegate implementation.
   void OnUrlDownloadStarted(
       std::unique_ptr<DownloadCreateInfo> create_info,
-      std::unique_ptr<UrlDownloadHandler::InputStream> input_stream,
+      std::unique_ptr<DownloadManager::InputStream> input_stream,
       const DownloadUrlParameters::OnStartedCallback& callback) override;
   void OnUrlDownloadStopped(UrlDownloadHandler* downloader) override;
 

@@ -39,20 +39,13 @@ MockDownloadFile::MockDownloadFile() {
 MockDownloadFile::~MockDownloadFile() {
 }
 
-void MockDownloadFile::AddByteStream(
-    std::unique_ptr<ByteStreamReader> stream_reader,
+void MockDownloadFile::AddInputStream(
+    std::unique_ptr<DownloadManager::InputStream> input_stream,
     int64_t offset,
     int64_t length) {
   // Gmock currently can't mock method that takes move-only parameters,
   // delegate the EXPECT_CALL count to |DoAddByteStream|.
-  DoAddByteStream(stream_reader.get(), offset, length);
-}
-
-void MockDownloadFile::AddDataPipeConsumerHandle(
-    mojo::ScopedDataPipeConsumerHandle handle,
-    int64_t offset,
-    int64_t length) {
-  DoAddDataPipeConsumerHandle(handle.get(), offset, length);
+  DoAddInputStream(input_stream.get(), offset, length);
 }
 
 }  // namespace content

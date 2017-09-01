@@ -39,6 +39,8 @@
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_url_parameters.h"
+#include "content/public/common/download_stream.mojom.h"
+#include "content/public/common/url_loader.mojom.h"
 #include "net/base/net_errors.h"
 
 class GURL;
@@ -101,13 +103,26 @@ class CONTENT_EXPORT DownloadManager : public base::SupportsUserData::Data {
   // clearing |downloads| first.
   virtual void GetAllDownloads(DownloadVector* downloads) = 0;
 
+  // InputStream to read after the download starts. Only one of them could be
+  // available at the same time.
+  struct CONTENT_EXPORT InputStream {
+    explicit InputStream(std::unique_ptr<ByteStreamReader> stream_reader);
+    explicit InputStream(mojom::DownloadStreamHandlePtr stream_handle);
+    ~InputStream();
+
+    bool IsEmpty() const;
+
+    std::unique_ptr<ByteStreamReader> stream_reader_;
+    mojom::DownloadStreamHandlePtr stream_handle_;
+  };
+
   // Called by a download source (Currently DownloadResourceHandler)
   // to initiate the non-source portions of a download.
   // Returns the id assigned to the download.  If the DownloadCreateInfo
   // specifies an id, that id will be used.
   virtual void StartDownload(
       std::unique_ptr<DownloadCreateInfo> info,
-      std::unique_ptr<ByteStreamReader> stream,
+      std::unique_ptr<InputStream> stream,
       const DownloadUrlParameters::OnStartedCallback& on_started) = 0;
 
   // Remove downloads whose URLs match the |url_filter| and are within

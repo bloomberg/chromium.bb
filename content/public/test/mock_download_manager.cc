@@ -110,7 +110,7 @@ MockDownloadManager::~MockDownloadManager() {}
 
 void MockDownloadManager::StartDownload(
     std::unique_ptr<DownloadCreateInfo> info,
-    std::unique_ptr<ByteStreamReader> stream,
+    std::unique_ptr<DownloadManager::InputStream> stream,
     const DownloadUrlParameters::OnStartedCallback& callback) {
   MockStartDownload(info.get(), stream.get());
 }

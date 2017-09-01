@@ -39,7 +39,7 @@ class ResourceDownloader : public UrlDownloadHandler,
   // DownloadResponseHandler::Delegate
   void OnResponseStarted(
       std::unique_ptr<DownloadCreateInfo> download_create_info,
-      mojo::ScopedDataPipeConsumerHandle body) override;
+      mojom::DownloadStreamHandlePtr stream_handle) override;
 
  private:
   // Helper method to start the network request.

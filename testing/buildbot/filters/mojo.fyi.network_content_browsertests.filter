@@ -35,6 +35,7 @@
 
 # http://crbug.com/715630
 -DownloadContentTest.*
+-DragDownloadFileTest.DragDownloadFileTest_Complete
 
 # http://crbug.com/721398
 -ClearSiteDataThrottleBrowserTest.*

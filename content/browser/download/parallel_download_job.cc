@@ -119,8 +119,9 @@ void ParallelDownloadJob::BuildParallelRequestAfterDelay() {
 void ParallelDownloadJob::OnByteStreamReady(
     DownloadWorker* worker,
     std::unique_ptr<ByteStreamReader> stream_reader) {
-  bool success = DownloadJob::AddByteStream(std::move(stream_reader),
-                                            worker->offset(), worker->length());
+  bool success = DownloadJob::AddInputStream(
+      base::MakeUnique<DownloadManager::InputStream>(std::move(stream_reader)),
+      worker->offset(), worker->length());
   RecordParallelDownloadAddStreamSuccess(success);
 
   // Destroy the request if the sink is gone.

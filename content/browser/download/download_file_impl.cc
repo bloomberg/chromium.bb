@@ -20,6 +20,7 @@
 #include "content/browser/download/download_interrupt_reasons_impl.h"
 #include "content/browser/download/download_net_log_parameters.h"
 #include "content/browser/download/download_stats.h"
+#include "content/browser/download/download_utils.h"
 #include "content/browser/download/parallel_download_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/secure_hash.h"
@@ -61,41 +62,43 @@ const int kBytesToRead = 4096;
 DownloadFileImpl::SourceStream::SourceStream(
     int64_t offset,
     int64_t length,
-    std::unique_ptr<ByteStreamReader> stream_reader)
+    std::unique_ptr<DownloadManager::InputStream> stream)
     : offset_(offset),
       length_(length),
       bytes_written_(0),
       finished_(false),
       index_(0u),
-      stream_reader_(std::move(stream_reader)),
-      completion_status_(DOWNLOAD_INTERRUPT_REASON_NONE),
-      is_response_completed_(false) {}
-
-DownloadFileImpl::SourceStream::SourceStream(
-    int64_t offset,
-    int64_t length,
-    mojo::ScopedDataPipeConsumerHandle consumer_handle)
-    : offset_(offset),
-      length_(length),
-      bytes_written_(0),
-      finished_(false),
-      index_(0u),
+      stream_reader_(std::move(stream->stream_reader_)),
       completion_status_(DOWNLOAD_INTERRUPT_REASON_NONE),
       is_response_completed_(false),
-      consumer_handle_(std::move(consumer_handle)),
-      handle_watcher_(base::MakeUnique<mojo::SimpleWatcher>(
-          FROM_HERE,
-          mojo::SimpleWatcher::ArmingPolicy::AUTOMATIC)) {}
+      stream_handle_(std::move(stream->stream_handle_)) {}
 
 DownloadFileImpl::SourceStream::~SourceStream() = default;
 
-void DownloadFileImpl::SourceStream::OnResponseCompleted(
-    DownloadInterruptReason status) {
+void DownloadFileImpl::SourceStream::Initialize() {
+  if (stream_handle_.is_null())
+    return;
+  binding_ = base::MakeUnique<mojo::Binding<mojom::DownloadStreamClient>>(
+      this, std::move(stream_handle_->client_request));
+  binding_->set_connection_error_handler(base::Bind(
+      &DownloadFileImpl::SourceStream::OnStreamCompleted,
+      base::Unretained(this), mojom::NetworkRequestStatus::USER_CANCELED));
+  handle_watcher_ = base::MakeUnique<mojo::SimpleWatcher>(
+      FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::AUTOMATIC);
+}
+
+void DownloadFileImpl::SourceStream::OnStreamCompleted(
+    mojom::NetworkRequestStatus status) {
   // This can be called before or after data pipe is completely drained. So we
   // need to pass the |completion_status_| to DownloadFileImpl if the data pipe
   // is already drained.
+  OnResponseCompleted(ConvertMojoNetworkRequestStatusToInterruptReason(status));
+}
+
+void DownloadFileImpl::SourceStream::OnResponseCompleted(
+    DownloadInterruptReason reason) {
   is_response_completed_ = true;
-  completion_status_ = status;
+  completion_status_ = reason;
   if (completion_callback_)
     std::move(completion_callback_).Run(this);
 }
@@ -128,8 +131,8 @@ void DownloadFileImpl::SourceStream::TruncateLengthWithWrittenDataBlock(
 void DownloadFileImpl::SourceStream::RegisterDataReadyCallback(
     const mojo::SimpleWatcher::ReadyCallback& callback) {
   if (handle_watcher_) {
-    handle_watcher_->Watch(consumer_handle_.get(), MOJO_HANDLE_SIGNAL_READABLE,
-                           callback);
+    handle_watcher_->Watch(stream_handle_->stream.get(),
+                           MOJO_HANDLE_SIGNAL_READABLE, callback);
   } else if (stream_reader_) {
     stream_reader_->RegisterCallback(base::Bind(callback, MOJO_RESULT_OK));
   }
@@ -159,7 +162,7 @@ DownloadFileImpl::SourceStream::Read(scoped_refptr<net::IOBuffer>* data,
   if (handle_watcher_) {
     *length = kBytesToRead;
     *data = new net::IOBuffer(kBytesToRead);
-    MojoResult mojo_result = consumer_handle_->ReadData(
+    MojoResult mojo_result = stream_handle_->stream->ReadData(
         (*data)->data(), (uint32_t*)length, MOJO_READ_DATA_FLAG_NONE);
     // TODO(qinmin): figure out when COMPLETE should be returned.
     switch (mojo_result) {
@@ -170,7 +173,7 @@ DownloadFileImpl::SourceStream::Read(scoped_refptr<net::IOBuffer>* data,
       case MOJO_RESULT_FAILED_PRECONDITION:
         if (is_response_completed_)
           return COMPLETE;
-        consumer_handle_.reset();
+        stream_handle_->stream.reset();
         ClearDataReadyCallback();
         return WAIT_FOR_COMPLETION;
       case MOJO_RESULT_INVALID_ARGUMENT:
@@ -196,7 +199,7 @@ DownloadFileImpl::SourceStream::Read(scoped_refptr<net::IOBuffer>* data,
 DownloadFileImpl::DownloadFileImpl(
     std::unique_ptr<DownloadSaveInfo> save_info,
     const base::FilePath& default_download_directory,
-    std::unique_ptr<ByteStreamReader> stream_reader,
+    std::unique_ptr<DownloadManager::InputStream> stream,
     const net::NetLogWithSource& download_item_net_log,
     base::WeakPtr<DownloadDestinationObserver> observer)
     : DownloadFileImpl(std::move(save_info),
@@ -204,21 +207,7 @@ DownloadFileImpl::DownloadFileImpl(
                        download_item_net_log,
                        observer) {
   source_streams_[save_info_->offset] = base::MakeUnique<SourceStream>(
-      save_info_->offset, save_info_->length, std::move(stream_reader));
-}
-
-DownloadFileImpl::DownloadFileImpl(
-    std::unique_ptr<DownloadSaveInfo> save_info,
-    const base::FilePath& default_download_directory,
-    mojo::ScopedDataPipeConsumerHandle consumer_handle,
-    const net::NetLogWithSource& download_item_net_log,
-    base::WeakPtr<DownloadDestinationObserver> observer)
-    : DownloadFileImpl(std::move(save_info),
-                       default_download_directory,
-                       download_item_net_log,
-                       observer) {
-  source_streams_[save_info_->offset] = base::MakeUnique<SourceStream>(
-      save_info_->offset, save_info_->length, std::move(consumer_handle));
+      save_info_->offset, save_info_->length, std::move(stream));
 }
 
 DownloadFileImpl::DownloadFileImpl(
@@ -284,7 +273,6 @@ void DownloadFileImpl::Initialize(
                             base::BindOnce(initialize_callback, result));
     return;
   }
-
   download_start_ = base::TimeTicks::Now();
   last_update_time_ = download_start_;
   record_stream_bandwidth_ = is_parallelizable;
@@ -301,30 +289,19 @@ void DownloadFileImpl::Initialize(
     RegisterAndActivateStream(source_stream.second.get());
 }
 
-void DownloadFileImpl::AddByteStream(
-    std::unique_ptr<ByteStreamReader> stream_reader,
+void DownloadFileImpl::AddInputStream(
+    std::unique_ptr<DownloadManager::InputStream> stream,
     int64_t offset,
     int64_t length) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   source_streams_[offset] =
-      base::MakeUnique<SourceStream>(offset, length, std::move(stream_reader));
-  OnSourceStreamAdded(source_streams_[offset].get());
-}
-
-void DownloadFileImpl::AddDataPipeConsumerHandle(
-    mojo::ScopedDataPipeConsumerHandle consumer_handle,
-    int64_t offset,
-    int64_t length) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  source_streams_[offset] = base::MakeUnique<SourceStream>(
-      offset, length, std::move(consumer_handle));
+      base::MakeUnique<SourceStream>(offset, length, std::move(stream));
   OnSourceStreamAdded(source_streams_[offset].get());
 }
 
 void DownloadFileImpl::OnResponseCompleted(int64_t offset,
-                         DownloadInterruptReason status) {
+                                           DownloadInterruptReason status) {
   auto iter = source_streams_.find(offset);
   if (iter != source_streams_.end())
     iter->second->OnResponseCompleted(status);
@@ -552,7 +529,6 @@ void DownloadFileImpl::StreamActive(SourceStream* source_stream,
   // Take care of any file local activity required.
   do {
     state = source_stream->Read(&incoming_data, &incoming_data_size);
-
     switch (state) {
       case SourceStream::EMPTY:
         should_terminate = (source_stream->length() == kNoBytesToWrite);
@@ -690,6 +666,7 @@ void DownloadFileImpl::NotifyObserver(SourceStream* source_stream,
 void DownloadFileImpl::RegisterAndActivateStream(SourceStream* source_stream) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  source_stream->Initialize();
   source_stream->RegisterDataReadyCallback(
       base::Bind(&DownloadFileImpl::StreamActive, weak_factory_.GetWeakPtr(),
                  source_stream));

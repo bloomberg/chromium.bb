@@ -33,18 +33,12 @@ class MockDownloadFile : public DownloadFile {
                     const CancelRequestCallback&,
                     const DownloadItem::ReceivedSlices& received_slices,
                     bool is_parallelizable));
-  void AddByteStream(std::unique_ptr<ByteStreamReader> stream_reader,
-                     int64_t offset,
-                     int64_t length) override;
-  void AddDataPipeConsumerHandle(mojo::ScopedDataPipeConsumerHandle handle,
-                                 int64_t offset,
-                                 int64_t length) override;
-  MOCK_METHOD3(DoAddDataPipeConsumerHandle,
-               void(const mojo::DataPipeConsumerHandle& handle,
-                    int64_t offset,
-                    int64_t length));
-  MOCK_METHOD3(DoAddByteStream,
-               void(ByteStreamReader* stream_reader,
+  void AddInputStream(
+      std::unique_ptr<DownloadManager::InputStream> input_stream,
+      int64_t offset,
+      int64_t length) override;
+  MOCK_METHOD3(DoAddInputStream,
+               void(DownloadManager::InputStream* input_stream,
                     int64_t offset,
                     int64_t length));
   MOCK_METHOD2(OnResponseCompleted, void(int64_t offset,

@@ -174,7 +174,7 @@ class ParallelDownloadJobTest : public testing::Test {
     create_info->request_handle = std::move(request_handle);
     delegate->OnUrlDownloadStarted(
         std::move(create_info),
-        base::MakeUnique<UrlDownloadHandler::InputStream>(
+        base::MakeUnique<DownloadManager::InputStream>(
             base::MakeUnique<MockByteStreamReader>()),
         DownloadUrlParameters::OnStartedCallback());
   }
@@ -384,8 +384,9 @@ TEST_F(ParallelDownloadJobTest, ParallelRequestNotCreatedUntilFileInitialized) {
       observer.get());
   auto download_file = base::MakeUnique<DownloadFileImpl>(
       std::move(save_info), base::FilePath(),
-      std::unique_ptr<ByteStreamReader>(input_stream), net::NetLogWithSource(),
-      observer_factory.GetWeakPtr());
+      base::MakeUnique<DownloadManager::InputStream>(
+          std::unique_ptr<ByteStreamReader>(input_stream)),
+      net::NetLogWithSource(), observer_factory.GetWeakPtr());
   CreateParallelJob(0, 100, DownloadItem::ReceivedSlices(), 2, 0, 0);
   job_->Start(download_file.get(),
               base::Bind(&ParallelDownloadJobTest::OnFileInitialized,

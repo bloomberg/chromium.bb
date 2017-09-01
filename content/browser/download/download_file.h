@@ -15,13 +15,12 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
+#include "content/public/browser/download_manager.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 
 class GURL;
 
 namespace content {
-
-class ByteStreamReader;
 
 // These objects live exclusively on the download sequence and handle the
 // writing operations for one download. These objects live only for the duration
@@ -57,15 +56,10 @@ class CONTENT_EXPORT DownloadFile {
                           const DownloadItem::ReceivedSlices& received_slices,
                           bool is_parallelizable) = 0;
 
-  // Add a byte stream reader to write into a slice of the file, used for
-  // parallel download. Called on the file thread.
-  virtual void AddByteStream(std::unique_ptr<ByteStreamReader> stream_reader,
-                             int64_t offset,
-                             int64_t length) = 0;
-
-  // Add the consumer handle of a DataPipe to write into a slice of the file.
-  virtual void AddDataPipeConsumerHandle(
-      mojo::ScopedDataPipeConsumerHandle handle,
+  // Add an input stream to write into a slice of the file, used for
+  // parallel download.
+  virtual void AddInputStream(
+      std::unique_ptr<DownloadManager::InputStream> stream,
       int64_t offset,
       int64_t length) = 0;
 
