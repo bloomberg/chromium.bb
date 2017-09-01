@@ -841,12 +841,8 @@ bool V4L2SliceVideoDecodeAccelerator::CreateOutputBuffers() {
             << ", pic size=" << pic_size.ToString()
             << ", coded size=" << coded_size_.ToString();
 
-  // With ALLOCATE mode the client can sample it as RGB and doesn't need to
-  // know the precise format.
   VideoPixelFormat pixel_format =
-      (output_mode_ == Config::OutputMode::IMPORT)
-          ? V4L2Device::V4L2PixFmtToVideoPixelFormat(output_format_fourcc_)
-          : PIXEL_FORMAT_UNKNOWN;
+      V4L2Device::V4L2PixFmtToVideoPixelFormat(output_format_fourcc_);
 
   child_task_runner_->PostTask(
       FROM_HERE,
@@ -3191,7 +3187,8 @@ void V4L2SliceVideoDecodeAccelerator::OutputSurface(
 
   // TODO(hubbe): Insert correct color space. http://crbug.com/647725
   Picture picture(output_record.picture_id, dec_surface->bitstream_id(),
-                  dec_surface->visible_rect(), gfx::ColorSpace(), false);
+                  dec_surface->visible_rect(), gfx::ColorSpace(),
+                  true /* allow_overlay */);
   DVLOGF(4) << dec_surface->ToString()
             << ", bitstream_id: " << picture.bitstream_buffer_id()
             << ", picture_id: " << picture.picture_buffer_id()
