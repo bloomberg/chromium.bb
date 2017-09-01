@@ -424,6 +424,9 @@ void HTMLInputElement::UpdateType() {
     PseudoStateChanged(CSSSelector::kPseudoReadOnly);
     PseudoStateChanged(CSSSelector::kPseudoReadWrite);
   }
+  if (input_type_->IsCheckable() != new_type->IsCheckable()) {
+    PseudoStateChanged(CSSSelector::kPseudoChecked);
+  }
 
   bool placeholder_changed =
       input_type_->SupportsPlaceholder() != new_type->SupportsPlaceholder();
