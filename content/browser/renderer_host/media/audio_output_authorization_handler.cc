@@ -125,16 +125,16 @@ void AudioOutputAuthorizationHandler::RequestDeviceAuthorization(
   // output device is found, reuse the input device permissions.
   if (media::AudioDeviceDescription::UseSessionIdToSelectDevice(session_id,
                                                                 device_id)) {
-    const StreamDeviceInfo* info =
+    const MediaStreamDevice* device =
         media_stream_manager_->audio_input_device_manager()
-            ->GetOpenedDeviceInfoById(session_id);
-    if (info && !info->device.matched_output_device_id.empty()) {
+            ->GetOpenedDeviceById(session_id);
+    if (device && !device->matched_output_device_id.empty()) {
       media::AudioParameters params(
           media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-          info->device.matched_output.channel_layout(),
-          info->device.matched_output.sample_rate(), 16,
-          info->device.matched_output.frames_per_buffer());
-      params.set_effects(info->device.matched_output.effects());
+          device->matched_output.channel_layout(),
+          device->matched_output.sample_rate(), 16,
+          device->matched_output.frames_per_buffer());
+      params.set_effects(device->matched_output.effects());
 
       // We don't need the origin for authorization in this case, but it's used
       // for hashing the device id before sending it back to the renderer.
@@ -144,7 +144,7 @@ void AudioOutputAuthorizationHandler::RequestDeviceAuthorization(
                          render_frame_id),
           base::BindOnce(&AudioOutputAuthorizationHandler::HashDeviceId,
                          weak_factory_.GetWeakPtr(), std::move(cb),
-                         info->device.matched_output_device_id, params));
+                         device->matched_output_device_id, params));
       return;
     }
     // Otherwise, the default device is used.

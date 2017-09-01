@@ -328,19 +328,19 @@ void AudioInputRendererHost::DoCreateStream(
   }
 
   // Check if we have the permission to open the device and which device to use.
-  const StreamDeviceInfo* info =
-      media_stream_manager_->audio_input_device_manager()
-          ->GetOpenedDeviceInfoById(session_id);
-  if (!info) {
+  const MediaStreamDevice* device =
+      media_stream_manager_->audio_input_device_manager()->GetOpenedDeviceById(
+          session_id);
+  if (!device) {
     SendErrorMessage(stream_id, PERMISSION_DENIED);
     DLOG(WARNING) << "No permission has been granted to input stream with "
                   << "session_id=" << session_id;
     return;
   }
 
-  const MediaStreamType& type = info->device.type;
-  const std::string& device_id = info->device.id;
-  const std::string& device_name = info->device.name;
+  const MediaStreamType& type = device->type;
+  const std::string& device_id = device->id;
+  const std::string& device_name = device->name;
   media::AudioParameters audio_params(config.params);
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kUseFakeDeviceForMediaStream)) {

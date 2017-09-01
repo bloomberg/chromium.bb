@@ -82,6 +82,8 @@ CONTENT_EXPORT bool IsScreenCaptureMediaType(MediaStreamType type);
 // TODO(xians): Change the structs to classes.
 // Represents one device in a request for media stream(s).
 struct CONTENT_EXPORT MediaStreamDevice {
+  static const int kNoId;
+
   MediaStreamDevice();
 
   MediaStreamDevice(MediaStreamType type,
@@ -135,6 +137,9 @@ struct CONTENT_EXPORT MediaStreamDevice {
   // zeros.
   media::AudioParameters matched_output =
       media::AudioParameters::UnavailableDeviceParams();
+
+  // Id for this capture session. Unique for all sessions of the same type.
+  int session_id = kNoId;
 
   // This field is optional and available only for some camera models.
   base::Optional<CameraCalibration> camera_calibration;

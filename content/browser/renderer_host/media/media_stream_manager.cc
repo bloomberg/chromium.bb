@@ -1333,10 +1333,10 @@ void MediaStreamManager::Opened(MediaStreamType stream_type,
           // TODO(xians): Handle the tab capture sample rate/channel layout
           // in AudioInputDeviceManager::Open().
           if (device_info.device.type != content::MEDIA_TAB_AUDIO_CAPTURE) {
-            const StreamDeviceInfo* info =
-                audio_input_device_manager_->GetOpenedDeviceInfoById(
+            const MediaStreamDevice* device =
+                audio_input_device_manager_->GetOpenedDeviceById(
                     device_info.session_id);
-            device_info.device.input = info->device.input;
+            device_info.device.input = device->input;
 
             // Since the audio input device manager will set the input
             // parameters to the default settings (including supported effects),
@@ -1347,7 +1347,7 @@ void MediaStreamManager::Opened(MediaStreamType stream_type,
             EnableHotwordEffect(request->controls, &effects);
             device_info.device.input.set_effects(effects);
 
-            device_info.device.matched_output = info->device.matched_output;
+            device_info.device.matched_output = device->matched_output;
           }
         }
         if (RequestDone(*request))
