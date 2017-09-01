@@ -119,7 +119,6 @@ TEST(ValidationSuite, TestDesktop) {
 // Tests that the permissions on the Windowstation does not allow the sandbox
 // to get to the interactive desktop or to make the sbox desktop interactive.
 TEST(ValidationSuite, TestAlternateDesktop) {
-
   TestRunner runner;
   EXPECT_EQ(SBOX_TEST_DENIED, runner.RunTest(L"EnumAlternateWinsta NULL"));
 
@@ -131,6 +130,16 @@ TEST(ValidationSuite, TestAlternateDesktop) {
   desktop_name = desktop_name.substr(desktop_name.find('\\') + 1);
   wsprintf(command, L"OpenAlternateDesktop %lS", desktop_name.c_str());
   EXPECT_EQ(SBOX_TEST_DENIED, runner.RunTest(command));
+}
+
+// Same as TestDesktop, but uses the local winstation, instead of an alternate
+// one.
+TEST(ValidationSuite, TestAlternateDesktopLocalWinstation) {
+  TestRunner runner;
+  runner.GetPolicy()->SetAlternateDesktop(false);
+  runner.GetPolicy()->SetIntegrityLevel(INTEGRITY_LEVEL_LOW);
+  EXPECT_EQ(SBOX_TEST_DENIED, runner.RunTest(L"OpenInteractiveDesktop NULL"));
+  EXPECT_EQ(SBOX_TEST_DENIED, runner.RunTest(L"SwitchToSboxDesktop NULL"));
 }
 
 // Tests if the windows are correctly protected by the sandbox.
@@ -162,7 +171,6 @@ TEST(ValidationSuite, TestProcessDenyLockdown) {
 // Tests that a low-integrity process cannot open a locked-down process (due
 // to the integrity label changing after startup via SetDelayedIntegrityLevel).
 TEST(ValidationSuite, TestProcessDenyLowIntegrity) {
-
   TestRunner runner;
   TestRunner target;
 
@@ -180,7 +188,6 @@ TEST(ValidationSuite, TestProcessDenyLowIntegrity) {
 
 // Tests that a locked-down process cannot open a low-integrity process.
 TEST(ValidationSuite, TestProcessDenyBelowLowIntegrity) {
-
   TestRunner runner;
   TestRunner target;
 

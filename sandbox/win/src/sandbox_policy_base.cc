@@ -116,6 +116,9 @@ HDESK PolicyBase::alternate_desktop_handle_ = nullptr;
 HDESK PolicyBase::alternate_desktop_local_winstation_handle_ = nullptr;
 IntegrityLevel PolicyBase::alternate_desktop_integrity_level_label_ =
     INTEGRITY_LEVEL_SYSTEM;
+IntegrityLevel
+    PolicyBase::alternate_desktop_local_winstation_integrity_level_label_ =
+        INTEGRITY_LEVEL_SYSTEM;
 
 PolicyBase::PolicyBase()
     : ref_count(1),
@@ -447,26 +450,34 @@ ResultCode PolicyBase::MakeTokens(base::win::ScopedHandle* initial,
   // integrity label on the object is no higher than the sandboxed process's
   // integrity level. So, we lower the label on the desktop process if it's
   // not already low enough for our process.
-  if (use_alternate_desktop_ && integrity_level_ != INTEGRITY_LEVEL_LAST &&
-      alternate_desktop_integrity_level_label_ < integrity_level_) {
+  if (use_alternate_desktop_ && integrity_level_ != INTEGRITY_LEVEL_LAST) {
     // Integrity label enum is reversed (higher level is a lower value).
     static_assert(INTEGRITY_LEVEL_SYSTEM < INTEGRITY_LEVEL_UNTRUSTED,
                   "Integrity level ordering reversed.");
     HDESK desktop_handle = nullptr;
+    IntegrityLevel desktop_integrity_level_label;
     if (use_alternate_winstation_) {
       desktop_handle = alternate_desktop_handle_;
+      desktop_integrity_level_label = alternate_desktop_integrity_level_label_;
     } else {
       desktop_handle = alternate_desktop_local_winstation_handle_;
+      desktop_integrity_level_label =
+          alternate_desktop_local_winstation_integrity_level_label_;
     }
     // If the desktop_handle hasn't been created for any reason, skip this.
-    if (desktop_handle) {
+    if (desktop_handle && desktop_integrity_level_label < integrity_level_) {
       result =
           SetObjectIntegrityLabel(desktop_handle, SE_WINDOW_OBJECT, L"",
                                   GetIntegrityLevelString(integrity_level_));
       if (ERROR_SUCCESS != result)
         return SBOX_ERROR_GENERIC;
 
-      alternate_desktop_integrity_level_label_ = integrity_level_;
+      if (use_alternate_winstation_) {
+        alternate_desktop_integrity_level_label_ = integrity_level_;
+      } else {
+        alternate_desktop_local_winstation_integrity_level_label_ =
+            integrity_level_;
+      }
     }
   }
 

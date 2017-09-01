@@ -378,6 +378,16 @@ TEST(PolicyTargetTest, BothLocalAndAlternateWinstationDesktop) {
   result = policy3->SetAlternateDesktop(false);
   EXPECT_EQ(SBOX_ALL_OK, result);
 
+  base::string16 policy1_desktop_name = policy1->GetAlternateDesktop();
+  base::string16 policy2_desktop_name = policy2->GetAlternateDesktop();
+
+  // Extract only the "desktop name" portion of
+  // "{winstation name}\\{desktop name}"
+  EXPECT_NE(policy1_desktop_name.substr(
+                policy1_desktop_name.find_first_of(L'\\') + 1),
+            policy2_desktop_name.substr(
+                policy2_desktop_name.find_first_of(L'\\') + 1));
+
   policy1->DestroyAlternateDesktop();
   policy2->DestroyAlternateDesktop();
   policy3->DestroyAlternateDesktop();
