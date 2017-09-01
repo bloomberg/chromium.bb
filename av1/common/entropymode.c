@@ -5437,6 +5437,9 @@ static void set_default_lf_deltas(struct loopfilter *lf) {
 
   lf->mode_deltas[0] = 0;
   lf->mode_deltas[1] = 0;
+
+  av1_copy(lf->last_ref_deltas, lf->ref_deltas);
+  av1_copy(lf->last_mode_deltas, lf->mode_deltas);
 }
 
 void av1_setup_past_independence(AV1_COMMON *cm) {
