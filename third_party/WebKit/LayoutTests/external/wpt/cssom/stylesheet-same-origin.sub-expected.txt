@@ -3,5 +3,6 @@ FAIL Origin-clean check in cross-origin CSSOM Stylesheets assert_throws: Cross o
                     crossorigin.cssRules;
                 }" did not throw
 PASS Origin-clean check in same-origin CSSOM Stylesheets
+FAIL Origin-clean check in data:css CSSOM Stylesheets Cannot read property 'length' of null
 Harness: the test ran to completion.
 

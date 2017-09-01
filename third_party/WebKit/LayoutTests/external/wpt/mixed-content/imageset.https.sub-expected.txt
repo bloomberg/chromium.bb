@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL Makes sure imageset blockable resources are not downloaded assert_equals: http://web-platform.test:8001/images/smiley.png?img_src expected 1 but got 0
-Harness: the test ran to completion.
-
