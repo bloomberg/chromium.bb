@@ -1,5 +1,5 @@
 set noparent
-file://third_party/WebKit/Source/core/OWNERS
+file://third_party/WebKit/Source/core/css/OWNERS
 
 nainar@chromium.org
 shend@chromium.org
