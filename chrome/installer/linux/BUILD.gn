@@ -17,6 +17,63 @@ if (current_cpu == "x86" || current_cpu == "x64") {
 
 assert(is_linux)
 
+packaging_files_binaries = [
+  "$root_out_dir/chrome",
+  "$root_out_dir/chrome_sandbox",
+]
+
+if (enable_nacl) {
+  packaging_files_binaries += [
+    "$root_out_dir/nacl_helper",
+    "$root_out_dir/nacl_helper_bootstrap",
+  ]
+
+  if (current_cpu == "x86") {
+    packaging_files_binaries += [ "$root_out_dir/nacl_irt_x86_32.nexe" ]
+  } else if (current_cpu == "x64") {
+    packaging_files_binaries += [ "$root_out_dir/nacl_irt_x86_64.nexe" ]
+  } else if (current_cpu == "arm") {
+    packaging_files_binaries += [ "$root_out_dir/nacl_irt_arm.nexe" ]
+  }
+}
+
+# The widevine BUILD.gn only produces shared libraries for x86 and x64
+if (is_chrome_branded && (current_cpu == "x86" || current_cpu == "x64")) {
+  packaging_files_binaries += [
+    "$root_out_dir/$widevine_cdm_path/libwidevinecdmadapter.so",
+    "$root_out_dir/$widevine_cdm_path/libwidevinecdm.so",
+  ]
+}
+
+if (!libcpp_is_static && use_custom_libcxx) {
+  packaging_files_binaries += [ "$root_out_dir/libc++.so" ]
+}
+
+# TODO(mmoss) Any convenient way to get all the relevant build files?
+# (e.g. all locales, resources, etc.)
+packaging_files = packaging_files_binaries + [
+                    "$root_out_dir/xdg-mime",
+                    "$root_out_dir/xdg-settings",
+                    "$root_out_dir/locales/en-US.pak",
+                  ]
+
+action_foreach("check_package_dependencies") {
+  deps = [
+    ":installer_deps",
+  ]
+  script = "debian/check-package-constraints-satisfied.py"
+  sources = packaging_files_binaries
+  outputs = [
+    "$root_out_dir/check_deps_{{source_name_part}}.stamp",
+  ]
+  args = [
+    "{{source}}",
+    rebase_path(sysroot, root_build_dir),
+    target_cpu,
+    "check_deps_{{source_name_part}}.stamp",
+  ]
+}
+
 # This target builds all "normal" Linux installers.
 #
 # The bot setup is to build stable, unstable, and beta packages for the current
@@ -209,39 +266,6 @@ template("linux_package") {
     build_script_arch = current_cpu
   }
 
-  packaging_files_binaries = [
-    # TODO(mmoss) Any convenient way to get all the relevant build
-    # files? (e.g. all locales, resources, etc.)
-    "$root_out_dir/chrome",
-    "$root_out_dir/chrome_sandbox",
-    "$root_out_dir/xdg-mime",
-    "$root_out_dir/xdg-settings",
-    "$root_out_dir/locales/en-US.pak",
-
-    "$root_out_dir/nacl_helper",
-    "$root_out_dir/nacl_helper_bootstrap",
-  ]
-
-  if (current_cpu == "x86") {
-    packaging_files_binaries += [ "$root_out_dir/nacl_irt_x86_32.nexe" ]
-  } else if (current_cpu == "x64") {
-    packaging_files_binaries += [ "$root_out_dir/nacl_irt_x86_64.nexe" ]
-  } else if (current_cpu == "arm") {
-    packaging_files_binaries += [ "$root_out_dir/nacl_irt_arm.nexe" ]
-  }
-
-  # The widevine BUILD.gn only produces shared libraries for x86 and x64
-  if (is_chrome_branded && (current_cpu == "x86" || current_cpu == "x64")) {
-    packaging_files_binaries += [
-      "$root_out_dir/$widevine_cdm_path/libwidevinecdmadapter.so",
-      "$root_out_dir/$widevine_cdm_path/libwidevinecdm.so",
-    ]
-  }
-
-  if (!libcpp_is_static && use_custom_libcxx) {
-    packaging_files_binaries += [ "$root_out_dir/libc++.so" ]
-  }
-
   deb_target_name = "${target_name}_deb"
   action(deb_target_name) {
     visibility = [ ":*" ]
@@ -257,7 +281,7 @@ template("linux_package") {
       assert(false, "Linux installer not configured for this architecture.")
     }
 
-    inputs = packaging_files_binaries
+    inputs = packaging_files
     outputs = [
       "$root_out_dir/google-chrome-${channel}_${chrome_version_full}-1_${deb_arch}.deb",
     ]
@@ -302,7 +326,7 @@ template("linux_package") {
         assert(false, "Linux installer not configured for this architecture.")
       }
 
-      inputs = packaging_files_binaries
+      inputs = packaging_files
       outputs = [
         "$root_out_dir/google-chrome-${channel}-${chrome_version_full}-1.${rpm_arch}.rpm",
       ]
