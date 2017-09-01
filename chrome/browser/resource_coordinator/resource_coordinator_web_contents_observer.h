@@ -61,12 +61,6 @@ class ResourceCoordinatorWebContentsObserver
       tab_resource_coordinator_;
   ukm::SourceId ukm_source_id_;
 
-  // We only want to send signals to GRC 5 minutes after the main frame is
-  // committed. Thus we record the time when navigation of main frame is
-  // finished, when title/favicon is changed, we check whether it's already more
-  // than 5 minutes from the time navigation of main frame is finished.
-  base::TimeTicks navigation_finished_time_;
-
   // Favicon and title are set when a page is loaded, we only want to send
   // signals to GRC about title and favicon update from the previous title and
   // favicon, thus we want to ignore the very first update since it is always

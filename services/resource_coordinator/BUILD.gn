@@ -12,6 +12,7 @@ import("//services/service_manager/public/tools/test/service_test.gni")
 
 source_set("lib") {
   sources = [
+    "coordination_unit/background_metrics_reporter.h",
     "coordination_unit/coordination_unit_graph_observer.cc",
     "coordination_unit/coordination_unit_graph_observer.h",
     "coordination_unit/coordination_unit_impl.cc",
