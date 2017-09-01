@@ -179,13 +179,15 @@ void Preferences::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kLabsMediaplayerEnabled, false);
   registry->RegisterBooleanPref(prefs::kLabsAdvancedFilesystemEnabled, false);
 
-  // TODO(jamescook): Move ownership and registration into ash.
+  // TODO(jamescook): Move ownership and registration into ash. This will need
+  // changes to policy::RecommendationRestorer which requires that prefs are
+  // available immediately during startup.
   registry->RegisterBooleanPref(
       ash::prefs::kAccessibilityStickyKeysEnabled, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterBooleanPref(
       ash::prefs::kAccessibilityLargeCursorEnabled, false,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
   registry->RegisterIntegerPref(ash::prefs::kAccessibilityLargeCursorDipSize,
                                 ash::kDefaultLargeCursorSize);
   registry->RegisterBooleanPref(ash::prefs::kAccessibilitySpokenFeedbackEnabled,

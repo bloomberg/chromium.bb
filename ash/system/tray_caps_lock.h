@@ -24,7 +24,8 @@ class TrayCapsLock : public TrayImageItem, public ImeController::Observer {
   explicit TrayCapsLock(SystemTray* system_tray);
   ~TrayCapsLock() override;
 
-  static void RegisterForeignPrefs(PrefRegistrySimple* registry);
+  // See Shell::RegisterProfilePrefs().
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test);
 
   // Overridden from ImeController::Observer:
   void OnCapsLockChanged(bool enabled) override;

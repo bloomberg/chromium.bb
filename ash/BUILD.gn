@@ -42,6 +42,10 @@ component("ash") {
     "accelerators/magnifier_key_scroller.h",
     "accelerators/spoken_feedback_toggler.cc",
     "accelerators/spoken_feedback_toggler.h",
+    "accessibility/accessibility_controller.cc",
+    "accessibility/accessibility_controller.h",
+
+    # TODO(jamescook): Move these into accessibility/ after M61 stable.
     "accessibility_delegate.h",
     "accessibility_types.h",
     "animation/animation_change_type.h",
@@ -1148,6 +1152,7 @@ source_set("common_unittests") {
     "accelerators/accelerator_filter_unittest.cc",
     "accelerators/accelerator_table_unittest.cc",
     "accelerators/spoken_feedback_toggler_unittest.cc",
+    "accessibility/accessibility_controller_unittest.cc",
     "ash_touch_exploration_manager_chromeos_unittest.cc",
     "autoclick/autoclick_unittest.cc",
     "display/display_configuration_controller_unittest.cc",
@@ -1252,6 +1257,7 @@ source_set("common_unittests") {
     "system/tray/tray_event_filter_unittest.cc",
     "system/tray/tray_info_label_unittest.cc",
     "system/tray/tri_view_unittest.cc",
+    "system/tray_accessibility_unittest.cc",
     "system/tray_caps_lock_unittest.cc",
     "system/tray_tracing_unittest.cc",
     "system/update/tray_update_unittest.cc",

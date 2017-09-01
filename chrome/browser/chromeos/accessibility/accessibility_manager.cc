@@ -437,6 +437,8 @@ void AccessibilityManager::UpdateLargeCursorFromPref() {
   if (GetAshConfig() == ash::Config::MASH)
     return;
 
+  // TODO(crbug.com/594887): Move into ash. This requires moving the prefs
+  // needed by ShouldEnableCursorCompositing().
   ash::Shell::Get()->cursor_manager()->SetCursorSize(
       enabled ? ui::CursorSize::kLarge : ui::CursorSize::kNormal);
   ash::Shell::Get()->SetLargeCursorSizeInDip(large_cursor_size_in_dip);
@@ -1369,8 +1371,11 @@ void AccessibilityManager::NotifyAccessibilityStatusChanged(
   if (GetAshConfig() == ash::Config::MASH)
     return;
 
-  // Update system tray menu visibility.
-  if (details.notification_type != ACCESSIBILITY_MANAGER_SHUTDOWN) {
+  // Update system tray menu visibility. Prefs tracked inside ash handle their
+  // own updates to avoid race conditions (pref updates are asynchronous between
+  // chrome and ash).
+  if (details.notification_type != ACCESSIBILITY_MANAGER_SHUTDOWN &&
+      details.notification_type != ACCESSIBILITY_TOGGLE_LARGE_CURSOR) {
     ash::Shell::Get()->system_tray_notifier()->NotifyAccessibilityStatusChanged(
         details.notify);
   }

@@ -20,6 +20,16 @@ AshPrefConnector::AshPrefConnector() : weak_factory_(this) {
 
 AshPrefConnector::~AshPrefConnector() = default;
 
+void AshPrefConnector::GetPrefStoreConnectorForSigninScreen(
+    prefs::mojom::PrefStoreConnectorRequest request) {
+  // The signin screen profile is incognito and is not associated with a
+  // specific user.
+  Profile* profile = chromeos::ProfileHelper::Get()->GetSigninProfile();
+  DCHECK(profile->IsOffTheRecord());
+  content::BrowserContext::GetConnectorFor(profile)->BindInterface(
+      prefs::mojom::kServiceName, std::move(request));
+}
+
 void AshPrefConnector::GetPrefStoreConnectorForUser(
     const AccountId& account_id,
     prefs::mojom::PrefStoreConnectorRequest request) {
