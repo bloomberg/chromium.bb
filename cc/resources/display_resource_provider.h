@@ -143,6 +143,11 @@ class CC_EXPORT DisplayResourceProvider : public ResourceProvider {
     DISALLOW_COPY_AND_ASSIGN(ScopedBatchReturnResources);
   };
 
+  // Sets the current read fence. If a resource is locked for read
+  // and has read fences enabled, the resource will not allow writes
+  // until this fence has passed.
+  void SetReadLockFence(Fence* fence) { current_read_lock_fence_ = fence; }
+
   // Creates accounting for a child. Returns a child ID.
   int CreateChild(const ReturnCallback& return_callback);
 
@@ -179,8 +184,30 @@ class CC_EXPORT DisplayResourceProvider : public ResourceProvider {
  private:
   friend class ScopedBatchReturnResources;
 
+  const Resource* LockForRead(viz::ResourceId id);
+  void UnlockForRead(viz::ResourceId id);
+
+  struct Child {
+    Child();
+    Child(const Child& other);
+    ~Child();
+
+    ResourceIdMap child_to_parent_map;
+    ReturnCallback return_callback;
+    bool marked_for_deletion;
+    bool needs_sync_tokens;
+  };
+  using ChildMap = std::unordered_map<int, Child>;
+
+  void DeleteAndReturnUnusedResourcesToChild(ChildMap::iterator child_it,
+                                             DeleteStyle style,
+                                             const ResourceIdArray& unused);
+  void DestroyChildInternal(ChildMap::iterator it, DeleteStyle style);
+
   void SetBatchReturnResources(bool aggregate);
 
+  scoped_refptr<Fence> current_read_lock_fence_;
+  ChildMap children_;
   base::flat_map<viz::ResourceId, sk_sp<SkImage>> resource_sk_image_;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayResourceProvider);
