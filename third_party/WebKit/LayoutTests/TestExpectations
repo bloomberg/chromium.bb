@@ -3615,7 +3615,7 @@ crbug.com/757955 [ Win7 Debug ] http/tests/devtools/tracing/frame-model-instrume
 crbug.com/667560 [ Win7 Debug ] virtual/mojo-loading/http/tests/devtools/tracing/frame-model-instrumentation.html [ Pass Timeout ]
 crbug.com/757955 [ Win7 Debug ] storage/indexeddb/mozilla/cursors.html [ Pass Timeout ]
 crbug.com/757955 [ Win7 Debug ] storage/indexeddb/objectstore-cursor.html [ Pass Timeout ]
-crbug.com/757955 [ Win7 Debug ] http/tests/devtools/tracing/timeline-paint/layer-tree.html [ Pass Timeout ]
+crbug.com/757955 [ Win7 Debug ] http/tests/devtools/tracing/timeline-paint/layer-tree.html [ Pass Failure Timeout ]
 crbug.com/757955 [ Win7 Debug ] virtual/threaded/transitions/transition-end-event-transform.html [ Pass Failure ]
 
 # Tests failing on WebKit Win7 (dbg), disable for now
