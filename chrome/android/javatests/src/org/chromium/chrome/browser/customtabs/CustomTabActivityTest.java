@@ -333,6 +333,18 @@ public class CustomTabActivityTest {
         return actualMenuSize;
     }
 
+    /**
+     * @return The number of visible items in the given menu.
+     */
+    private int getVisibleMenuSize(Menu menu) {
+        int visibleMenuSize = 0;
+        for (int i = 0; i < menu.size(); i++) {
+            MenuItem item = menu.getItem(i);
+            if (item.isVisible()) visibleMenuSize++;
+        }
+        return visibleMenuSize;
+    }
+
     private Bitmap createTestBitmap(int widthDp, int heightDp) {
         Resources testRes =
                 InstrumentationRegistry.getInstrumentation().getTargetContext().getResources();
@@ -527,10 +539,10 @@ public class CustomTabActivityTest {
         Menu menu =
                 mCustomTabActivityTestRule.getActivity().getAppMenuHandler().getAppMenu().getMenu();
         final int expectedMenuSize = numMenuEntries + NUM_CHROME_MENU_ITEMS;
-        final int actualMenuSize = getActualMenuSize(menu);
 
         Assert.assertNotNull("App menu is not initialized: ", menu);
-        Assert.assertEquals(expectedMenuSize, actualMenuSize);
+        Assert.assertEquals(expectedMenuSize, getActualMenuSize(menu));
+        Assert.assertEquals(expectedMenuSize, getVisibleMenuSize(menu));
         Assert.assertNotNull(menu.findItem(R.id.forward_menu_id));
         Assert.assertNotNull(menu.findItem(R.id.bookmark_this_page_id));
         Assert.assertNotNull(menu.findItem(R.id.offline_page_id));
@@ -561,14 +573,10 @@ public class CustomTabActivityTest {
         Menu menu =
                 mCustomTabActivityTestRule.getActivity().getAppMenuHandler().getAppMenu().getMenu();
         final int expectedMenuSize = 0;
-        final int actualMenuSize = getActualMenuSize(menu);
 
         Assert.assertNotNull("App menu is not initialized: ", menu);
-        Assert.assertEquals(expectedMenuSize, actualMenuSize);
-        Assert.assertFalse(menu.findItem(R.id.find_in_page_id).isVisible());
-        Assert.assertFalse(menu.findItem(R.id.add_to_homescreen_id).isVisible());
-        Assert.assertFalse(menu.findItem(R.id.request_desktop_site_row_menu_id).isVisible());
-        Assert.assertFalse(menu.findItem(R.id.open_in_browser_id).isVisible());
+        Assert.assertEquals(expectedMenuSize, getActualMenuSize(menu));
+        Assert.assertEquals(expectedMenuSize, getVisibleMenuSize(menu));
     }
 
     /**
@@ -587,10 +595,10 @@ public class CustomTabActivityTest {
         Menu menu =
                 mCustomTabActivityTestRule.getActivity().getAppMenuHandler().getAppMenu().getMenu();
         final int expectedMenuSize = 2;
-        final int actualMenuSize = getActualMenuSize(menu);
 
         Assert.assertNotNull("App menu is not initialized: ", menu);
-        Assert.assertEquals(expectedMenuSize, actualMenuSize);
+        Assert.assertEquals(expectedMenuSize, getActualMenuSize(menu));
+        Assert.assertEquals(expectedMenuSize, getVisibleMenuSize(menu));
         Assert.assertTrue(menu.findItem(R.id.find_in_page_id).isVisible());
         Assert.assertTrue(menu.findItem(R.id.reader_mode_prefs_id).isVisible());
     }
@@ -623,6 +631,7 @@ public class CustomTabActivityTest {
     public void testMaxMenuItems() throws InterruptedException {
         Intent intent = createMinimalCustomTabIntent();
         int numMenuEntries = 7;
+        Assert.assertTrue(MAX_MENU_CUSTOM_ITEMS < numMenuEntries);
         addMenuEntriesToIntent(intent, numMenuEntries);
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
 
@@ -630,9 +639,9 @@ public class CustomTabActivityTest {
         Menu menu =
                 mCustomTabActivityTestRule.getActivity().getAppMenuHandler().getAppMenu().getMenu();
         final int expectedMenuSize = MAX_MENU_CUSTOM_ITEMS + NUM_CHROME_MENU_ITEMS;
-        final int actualMenuSize = getActualMenuSize(menu);
         Assert.assertNotNull("App menu is not initialized: ", menu);
-        Assert.assertEquals(expectedMenuSize, actualMenuSize);
+        Assert.assertEquals(expectedMenuSize, getActualMenuSize(menu));
+        Assert.assertEquals(expectedMenuSize, getVisibleMenuSize(menu));
     }
 
     /**
