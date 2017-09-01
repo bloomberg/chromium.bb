@@ -175,6 +175,9 @@ public class SnackbarManager implements OnClickListener, InfoBarContainer.InfoBa
     @Override
     public void onInfoBarContainerAttachedToWindow(boolean hasInfobars) {}
 
+    @Override
+    public void onInfoBarContainerShownRatioChanged(InfoBarContainer container, float shownRatio) {}
+
     /**
      * Temporarily changes the parent {@link ViewGroup} of the snackbar. If a snackbar is currently
      * showing, this method removes the snackbar from its original parent, and attaches it to the

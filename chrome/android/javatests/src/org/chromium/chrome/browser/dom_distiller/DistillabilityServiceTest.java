@@ -78,6 +78,10 @@ public class DistillabilityServiceTest {
 
             @Override
             public void onInfoBarContainerAttachedToWindow(boolean hasInfobars) {}
+
+            @Override
+            public void onInfoBarContainerShownRatioChanged(
+                    InfoBarContainer container, float shownRatio) {}
         });
 
         TestWebContentsObserver observer = new TestWebContentsObserver(

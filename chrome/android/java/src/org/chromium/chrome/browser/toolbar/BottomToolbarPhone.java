@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.toolbar;
 
 import android.animation.Animator;
 import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.Resources;
@@ -14,6 +15,7 @@ import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.LayerDrawable;
 import android.os.SystemClock;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.widget.Toolbar;
@@ -28,7 +30,12 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.appmenu.AppMenuButtonHelper;
 import org.chromium.chrome.browser.device.DeviceClassManager;
+import org.chromium.chrome.browser.infobar.InfoBar;
+import org.chromium.chrome.browser.infobar.InfoBarContainer;
+import org.chromium.chrome.browser.infobar.InfoBarContainer.InfoBarContainerObserver;
+import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.MathUtils;
@@ -135,6 +142,9 @@ public class BottomToolbarPhone extends ToolbarPhone {
                 }
             };
 
+    /** The time a transition for the top toolbar shadow should take in ms. */
+    private static final int DURATION_SHADOW_TRANSITION_MS = 250;
+
     /** The background alpha for the tab switcher. */
     private static final float TAB_SWITCHER_TOOLBAR_ALPHA = 0.7f;
 
@@ -218,6 +228,18 @@ public class BottomToolbarPhone extends ToolbarPhone {
      */
     private int mLocationBarExtraFocusedLeftMargin;
 
+    /** The top shadow drawable of the bottom toolbar if it exists. */
+    private LayerDrawable mBottomToolbarTopShadowDrawable;
+
+    /** Observer of the infobar container to change the toolbar shadow. */
+    private InfoBarContainerObserver mInfoBarContainerObserver;
+
+    /**
+     * A tab observer to attach/detach the {@link InfoBarContainerObserver} for the bottom toolbar
+     * top shadow.
+     */
+    private TabObserver mTopShadowTabObserver;
+
     /**
      * Constructs a BottomToolbarPhone object.
      * @param context The Context in which this View object is created.
@@ -240,6 +262,67 @@ public class BottomToolbarPhone extends ToolbarPhone {
         mUseModernDesign = true;
         mToolbarShadowPermanentlyHidden = true;
         mToolbarButtonVisibilityPercent = 1.f;
+
+        mInfoBarContainerObserver = new InfoBarContainerObserver() {
+            @Override
+            public void onAddInfoBar(InfoBarContainer c, InfoBar infoBar, boolean isFirst) {
+                if (!mUseModernDesign || !isFirst) return;
+                createShadowTransitionAnimator(1, 0).start();
+            }
+
+            @Override
+            public void onRemoveInfoBar(InfoBarContainer c, InfoBar infoBar, boolean isLast) {
+                if (!mUseModernDesign || !isLast) return;
+                createShadowTransitionAnimator(0, 1).start();
+            }
+
+            @Override
+            public void onInfoBarContainerAttachedToWindow(boolean hasInfobars) {}
+
+            @Override
+            public void onInfoBarContainerShownRatioChanged(InfoBarContainer c, float shownRatio) {
+                if (!mUseModernDesign || c.isAnimating()) return;
+                mBottomToolbarTopShadowDrawable.getDrawable(0).setAlpha(
+                        (int) (255 * (1 - shownRatio)));
+                mBottomToolbarTopShadowDrawable.getDrawable(1).setAlpha((int) (255 * shownRatio));
+            }
+        };
+
+        mTopShadowTabObserver = new EmptyTabObserver() {
+            @Override
+            public void onShown(Tab tab) {
+                if (!mUseModernDesign || tab.getInfoBarContainer() == null) return;
+                tab.getInfoBarContainer().addObserver(mInfoBarContainerObserver);
+            }
+
+            @Override
+            public void onHidden(Tab tab) {
+                if (!mUseModernDesign || tab.getInfoBarContainer() == null) return;
+                tab.getInfoBarContainer().removeObserver(mInfoBarContainerObserver);
+            }
+
+            @Override
+            public void onContentChanged(Tab tab) {
+                if (!mUseModernDesign || tab.getInfoBarContainer() == null) return;
+                tab.getInfoBarContainer().addObserver(mInfoBarContainerObserver);
+            }
+        };
+    }
+
+    /**
+     * Get the view and drawable for the bottom toolbar's top shadow and initialized the drawable
+     * state.
+     */
+    private void initBottomToolbarTopShadow() {
+        mBottomToolbarTopShadow =
+                (ImageView) getRootView().findViewById(R.id.bottom_toolbar_shadow);
+        mBottomToolbarTopShadowDrawable =
+                (LayerDrawable) getResources().getDrawable(R.drawable.bottom_toolbar_shadow);
+
+        mBottomToolbarTopShadowDrawable.getDrawable(0).setAlpha(255);
+        mBottomToolbarTopShadowDrawable.getDrawable(1).setAlpha(0);
+
+        mBottomToolbarTopShadow.setImageDrawable(mBottomToolbarTopShadowDrawable);
     }
 
     /**
@@ -303,12 +386,65 @@ public class BottomToolbarPhone extends ToolbarPhone {
         super.setTabSwitcherMode(inTabSwitcherMode, showToolbar, delayAnimation, animate);
         if (!mUseToolbarHandle) mExpandButton.setClickable(!inTabSwitcherMode);
         updateContentDescription();
+
+        // Reset top shadow drawable state.
+        if (mUseModernDesign && inTabSwitcherMode) {
+            mBottomToolbarTopShadowDrawable.getDrawable(0).setAlpha(255);
+            mBottomToolbarTopShadowDrawable.getDrawable(1).setAlpha(0);
+        }
     }
 
     @Override
     protected void onTabSwitcherTransitionFinished() {
         super.onTabSwitcherTransitionFinished();
         updateContentDescription();
+    }
+
+    @Override
+    protected void onTabOrModelChanged() {
+        super.onTabOrModelChanged();
+        attachShadowTabObserverToCurrentTab();
+    }
+
+    @Override
+    public void onStateRestored() {
+        super.onStateRestored();
+        attachShadowTabObserverToCurrentTab();
+    }
+
+    /**
+     * Attempt to attach the tab observer that controls the top shadow to the current tab.
+     */
+    private void attachShadowTabObserverToCurrentTab() {
+        if (!mUseModernDesign) return;
+
+        Tab currentTab = getToolbarDataProvider().getTab();
+        if (currentTab == null) return;
+
+        currentTab.addObserver(mTopShadowTabObserver);
+
+        if (currentTab.getInfoBarContainer() == null) return;
+        currentTab.getInfoBarContainer().addObserver(mInfoBarContainerObserver);
+    }
+
+    /**
+     * Create a transition animation for the top shadow.
+     * @param start The start opacity of the primary drawable (the shadow rather than the line).
+     * @param end The end opacity of the primary drawable.
+     * @return An {@link Animator} that runs the transition.
+     */
+    private Animator createShadowTransitionAnimator(float start, float end) {
+        ValueAnimator transition = ValueAnimator.ofFloat(start, end);
+        transition.setDuration(DURATION_SHADOW_TRANSITION_MS);
+        transition.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator valueAnimator) {
+                float value = (float) valueAnimator.getAnimatedValue();
+                mBottomToolbarTopShadowDrawable.getDrawable(0).setAlpha((int) (value * 255));
+                mBottomToolbarTopShadowDrawable.getDrawable(1).setAlpha((int) ((1 - value) * 255));
+            }
+        });
+        return transition;
     }
 
     @Override
@@ -620,8 +756,8 @@ public class BottomToolbarPhone extends ToolbarPhone {
         // own. Get the root view and search for the handle.
         mToolbarHandleView = (ImageView) getRootView().findViewById(R.id.toolbar_handle);
         mToolbarHandleView.setImageDrawable(mHandleDark);
-        mBottomToolbarTopShadow =
-                (ImageView) getRootView().findViewById(R.id.bottom_toolbar_shadow);
+
+        initBottomToolbarTopShadow();
 
         if (mToolbarShadowPermanentlyHidden) mToolbarShadow.setVisibility(View.GONE);
     }
@@ -661,6 +797,9 @@ public class BottomToolbarPhone extends ToolbarPhone {
         updateVisualsForToolbarState();
 
         mBottomToolbarTopShadow.setImageResource(R.drawable.toolbar_shadow);
+        if (mBottomToolbarTopShadowDrawable != null) {
+            mBottomToolbarTopShadowDrawable.setAlpha(0);
+        }
 
         invalidate();
         requestLayout();
