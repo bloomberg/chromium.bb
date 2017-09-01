@@ -336,6 +336,8 @@ void NGLineBreaker::BreakText(NGInlineItemResult* item_result,
   ShapingLineBreaker breaker(&shaper_, &item.Style()->GetFont(),
                              item.TextShapeResult(), &break_iterator_,
                              &spacing_, hyphenation_);
+  if (!enable_soft_hyphen_)
+    breaker.DisableSoftHyphen();
   available_width = std::max(LayoutUnit(0), available_width);
   ShapingLineBreaker::Result result;
   RefPtr<ShapeResult> shape_result =
@@ -768,7 +770,7 @@ void NGLineBreaker::SetCurrentStyle(const ComputedStyle& style) {
     }
     break_iterator_.SetBreakAfterSpace(style.BreakOnlyAfterWhiteSpace());
 
-    // TODO(kojii): Implement 'hyphens: none'.
+    enable_soft_hyphen_ = style.GetHyphens() != Hyphens::kNone;
     hyphenation_ = style.GetHyphenation();
   }
 
