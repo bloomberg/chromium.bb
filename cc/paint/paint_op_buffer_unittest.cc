@@ -1280,7 +1280,11 @@ std::vector<uint8_t> test_uint8s = {
 std::vector<SkRect> test_rects = {
     SkRect::MakeXYWH(1, 2.5, 3, 4), SkRect::MakeXYWH(0, 0, 0, 0),
     SkRect::MakeLargest(),          SkRect::MakeXYWH(0.5f, 0.5f, 8.2f, 8.2f),
-    SkRect::MakeXYWH(-1, -1, 0, 0), SkRect::MakeXYWH(-100, -101, -102, -103)};
+    SkRect::MakeXYWH(-1, -1, 0, 0), SkRect::MakeXYWH(-100, -101, -102, -103),
+    SkRect::MakeXYWH(0, 0, 0, 0),   SkRect::MakeXYWH(0, 0, 0, 0),
+    SkRect::MakeXYWH(0, 0, 0, 0),   SkRect::MakeXYWH(0, 0, 0, 0),
+    SkRect::MakeXYWH(0, 0, 0, 0),   SkRect::MakeXYWH(0, 0, 0, 0),
+};
 
 std::vector<SkRRect> test_rrects = {
     SkRRect::MakeEmpty(), SkRRect::MakeOval(SkRect::MakeXYWH(1, 2, 3, 4)),
@@ -1421,7 +1425,15 @@ std::vector<PaintFlags> test_flags = {
 
       return flags;
     }(),
-    PaintFlags(),
+    [] {
+      PaintFlags flags;
+      SkColor colors[3] = {SkColorSetARGB(1, 2, 3, 4),
+                           SkColorSetARGB(4, 3, 2, 1),
+                           SkColorSetARGB(0, 10, 20, 30)};
+      flags.setShader(PaintShader::MakeSweepGradient(
+          0.2f, -0.8f, colors, nullptr, 3, SkShader::kMirror_TileMode, 10, 20));
+      return flags;
+    }(),
     PaintFlags(),
     PaintFlags(),
 };
