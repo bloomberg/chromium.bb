@@ -183,9 +183,6 @@ int WKBasedNavigationManagerImpl::GetIndexForOffset(int offset) const {
     offset++;
   }
   result += offset;
-  if (result > GetItemCount() /* overflow */) {
-    result = INT_MIN;
-  }
   return result;
 }
 

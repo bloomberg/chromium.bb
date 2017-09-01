@@ -6,6 +6,7 @@
 
 #import <WebKit/WebKit.h>
 
+#include "base/logging.h"
 #include "third_party/ocmock/OCMock/OCMock.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -49,6 +50,33 @@
   self.currentItem = [CRWTestBackForwardList itemWithURLString:currentItemURL];
   self.backList = [self mockSublistWithURLArray:backListURLs];
   self.forwardList = [self mockSublistWithURLArray:forwardListURLs];
+}
+
+- (void)moveCurrentToIndex:(NSUInteger)index {
+  NSMutableArray* logicalList = [[NSMutableArray alloc] init];
+  if (self.backList)
+    [logicalList addObjectsFromArray:self.backList];
+  if (self.currentItem)
+    [logicalList addObject:self.currentItem];
+  if (self.forwardList)
+    [logicalList addObjectsFromArray:self.forwardList];
+
+  NSUInteger count = logicalList.count;
+  CHECK(index < count);
+
+  self.currentItem = logicalList[index];
+  if (index == 0) {
+    self.backList = nil;
+  } else {
+    NSRange range = NSMakeRange(0, index);
+    self.backList = [logicalList subarrayWithRange:range];
+  }
+  if (index + 1 == count) {
+    self.forwardList = nil;
+  } else {
+    NSRange range = NSMakeRange(index + 1, count - index - 1);
+    self.forwardList = [logicalList subarrayWithRange:range];
+  }
 }
 
 - (NSArray*)mockSublistWithURLArray:(NSArray<NSString*>*)URLs {

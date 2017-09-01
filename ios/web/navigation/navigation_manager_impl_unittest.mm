@@ -148,7 +148,7 @@ class NavigationManagerTest
     if (GetParam() == TEST_LEGACY_NAVIGATION_MANAGER) {
       [session_controller() goToItemAtIndex:index discardNonCommittedItems:NO];
     } else {
-      ASSERT_TRUE(false) << "Not yet implemented.";
+      [mock_wk_list_ moveCurrentToIndex:index];
     }
   }
 
@@ -321,20 +321,15 @@ TEST_P(NavigationManagerTest, CanGoBackWithMultipleCommitedItems) {
   EXPECT_TRUE(navigation_manager()->CanGoBack());
   EXPECT_TRUE(navigation_manager()->CanGoToOffset(-1));
 
-  if (GetParam() == TEST_WK_BASED_NAVIGATION_MANAGER) {
-    // TODO(crbug.com/734150): Enable this test once |GoToIndex| is
-    // implemented in WKBasedNavigationManager.
-    return;
-  }
-  navigation_manager()->GoToIndex(1);
+  SimulateGoToIndex(1);
   EXPECT_TRUE(navigation_manager()->CanGoBack());
   EXPECT_TRUE(navigation_manager()->CanGoToOffset(-1));
 
-  navigation_manager()->GoToIndex(0);
+  SimulateGoToIndex(0);
   EXPECT_FALSE(navigation_manager()->CanGoBack());
   EXPECT_FALSE(navigation_manager()->CanGoToOffset(-1));
 
-  navigation_manager()->GoToIndex(1);
+  SimulateGoToIndex(1);
   EXPECT_TRUE(navigation_manager()->CanGoBack());
   EXPECT_TRUE(navigation_manager()->CanGoToOffset(-1));
 }
@@ -394,24 +389,19 @@ TEST_P(NavigationManagerTest, CanGoForwardWithMultipleCommitedEntries) {
   EXPECT_FALSE(navigation_manager()->CanGoForward());
   EXPECT_FALSE(navigation_manager()->CanGoToOffset(1));
 
-  if (GetParam() == TEST_WK_BASED_NAVIGATION_MANAGER) {
-    // TODO(crbug.com/734150): Enable this test once |GoToIndex| is
-    // implemented in WKBasedNavigationManager.
-    return;
-  }
-  navigation_manager()->GoToIndex(1);
+  SimulateGoToIndex(1);
   EXPECT_TRUE(navigation_manager()->CanGoForward());
   EXPECT_TRUE(navigation_manager()->CanGoToOffset(1));
 
-  navigation_manager()->GoToIndex(0);
+  SimulateGoToIndex(0);
   EXPECT_TRUE(navigation_manager()->CanGoForward());
   EXPECT_TRUE(navigation_manager()->CanGoToOffset(1));
 
-  navigation_manager()->GoToIndex(1);
+  SimulateGoToIndex(1);
   EXPECT_TRUE(navigation_manager()->CanGoForward());
   EXPECT_TRUE(navigation_manager()->CanGoToOffset(1));
 
-  navigation_manager()->GoToIndex(2);
+  SimulateGoToIndex(2);
   EXPECT_FALSE(navigation_manager()->CanGoForward());
   EXPECT_FALSE(navigation_manager()->CanGoToOffset(1));
 }
@@ -482,10 +472,12 @@ TEST_P(NavigationManagerTest, OffsetsWithoutPendingIndex) {
   ASSERT_EQ(4, navigation_manager()->GetLastCommittedItemIndex());
 
   if (GetParam() == TEST_WK_BASED_NAVIGATION_MANAGER) {
-    // TODO(crbug.com/734150): Enable this test once |GoToIndex| is
-    // implemented in WKBasedNavigationManager.
+    // WKBasedNavigationManagerImpl doesn't treat redirect specially because it
+    // relies on WKWebView to handle that. See WKBasedNavigationManagerTest for
+    // an similar test case of the CanGoToOffset API without redirects.
     return;
   }
+
   // Go to entry at index 1 and test API from that state.
   SimulateGoToIndex(1);
   ASSERT_EQ(1, navigation_manager()->GetLastCommittedItemIndex());
@@ -687,7 +679,7 @@ TEST_P(NavigationManagerTest, OffsetsWithoutPendingIndex) {
   EXPECT_EQ(1000000004, navigation_manager()->GetIndexForOffset(1000000000));
 }
 
-// Tests offsets with pending transient entries (specifically gong back and
+// Tests offsets with pending transient entries (specifically going back and
 // forward from a pending navigation entry that is added to the middle of the
 // navigation stack).
 TEST_P(NavigationManagerTest, OffsetsWithPendingTransientEntry) {
@@ -756,8 +748,8 @@ TEST_P(NavigationManagerTest, OffsetsWithPendingTransientEntry) {
   EXPECT_EQ(0, navigation_manager()->GetIndexForOffset(-1));
 
   if (GetParam() == TEST_WK_BASED_NAVIGATION_MANAGER) {
-    // TODO(crbug.com/734150): Enable this test once |GoToIndex| is
-    // implemented in WKBasedNavigationManager.
+    // TODO(crbug.com/734150): Investigate why this test still fails for the new
+    // navigation manager.
     return;
   }
 
@@ -767,9 +759,9 @@ TEST_P(NavigationManagerTest, OffsetsWithPendingTransientEntry) {
   if (GetParam() == TEST_LEGACY_NAVIGATION_MANAGER) {
     [session_controller() setPendingItemIndex:1];
   }
-  ASSERT_EQ(3, navigation_manager()->GetItemCount());
-  ASSERT_EQ(0, navigation_manager()->GetLastCommittedItemIndex());
-  ASSERT_EQ(1, navigation_manager()->GetPendingItemIndex());
+  EXPECT_EQ(3, navigation_manager()->GetItemCount());
+  EXPECT_EQ(0, navigation_manager()->GetLastCommittedItemIndex());
+  EXPECT_EQ(1, navigation_manager()->GetPendingItemIndex());
   EXPECT_EQ(2, navigation_manager()->GetIndexForOffset(1));
   EXPECT_EQ(0, navigation_manager()->GetIndexForOffset(-1));
 }
@@ -1566,12 +1558,6 @@ TEST_P(NavigationManagerTest,
       forwardListURLs:nil];
   navigation_manager()->CommitPendingItem();
 
-  if (GetParam() == TEST_WK_BASED_NAVIGATION_MANAGER) {
-    // TODO(crbug.com/734150): Enable this test once |GoToIndex| is
-    // implemented in WKBasedNavigationManager.
-    return;
-  }
-
   SimulateGoToIndex(1);
   EXPECT_EQ(1, navigation_manager()->GetLastCommittedItemIndex());
 
@@ -1717,12 +1703,6 @@ TEST_P(NavigationManagerTest,
                   ]
                forwardListURLs:nil];
   navigation_manager()->CommitPendingItem();
-
-  if (GetParam() == TEST_WK_BASED_NAVIGATION_MANAGER) {
-    // TODO(crbug.com/734150): Enable this test once |GoToIndex| is
-    // implemented in WKBasedNavigationManager.
-    return;
-  }
 
   SimulateGoToIndex(1);
   EXPECT_EQ(1, navigation_manager()->GetLastCommittedItemIndex());
@@ -1882,12 +1862,6 @@ TEST_P(NavigationManagerTest, TestBackwardForwardItems) {
   EXPECT_EQ("http://www.url.com/1", back_items[0]->GetURL().spec());
   EXPECT_EQ("http://www.url.com/0", back_items[1]->GetURL().spec());
   EXPECT_TRUE(navigation_manager()->GetForwardItems().empty());
-
-  if (GetParam() == TEST_WK_BASED_NAVIGATION_MANAGER) {
-    // TODO(crbug.com/734150): Enable this test once |GoToIndex| is
-    // implemented in WKBasedNavigationManager.
-    return;
-  }
 
   SimulateGoToIndex(1);
   EXPECT_EQ(1, navigation_manager()->GetLastCommittedItemIndex());
