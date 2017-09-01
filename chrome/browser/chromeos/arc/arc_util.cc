@@ -9,6 +9,7 @@
 #include <set>
 
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
@@ -22,6 +23,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/chromeos_switches.h"
 #include "components/arc/arc_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/known_user.h"
@@ -153,7 +155,7 @@ bool IsArcAllowedForProfile(const Profile* profile) {
   }
 
   if (!IsArcCompatibleFileSystemUsedForProfile(profile) &&
-      !IsArcMigrationAllowedForProfile(profile)) {
+      !IsArcMigrationAllowedByPolicyForProfile(profile)) {
     VLOG_IF(1, IsReportingFirstTimeForProfile(profile))
         << "Incompatible encryption and migration forbidden.";
     return false;
@@ -184,13 +186,38 @@ bool IsArcAllowedForProfile(const Profile* profile) {
   return true;
 }
 
-bool IsArcMigrationAllowedForProfile(const Profile* profile) {
+bool IsArcMigrationAllowedByPolicyForProfile(const Profile* profile) {
   if (!profile || !profile->GetPrefs()->IsManagedPreference(
                       prefs::kEcryptfsMigrationStrategy)) {
     return true;
   }
 
-  return profile->GetPrefs()->GetInteger(prefs::kEcryptfsMigrationStrategy) !=
+  int migration_strategy =
+      profile->GetPrefs()->GetInteger(prefs::kEcryptfsMigrationStrategy);
+  // |kAskForEcryptfsArcUsers| value is received only if the device is in EDU
+  // and admin left the migration policy unset. Note that when enabling ARC on
+  // the admin console, it is mandatory for the administrator to also choose a
+  // migration policy.
+  // In this default case, only a group of devices that had ARC M enabled are
+  // allowed to migrate, provided that ARC is enabled by policy.
+  // TODO(pmarko): Remove the special kAskForEcryptfsArcUsers handling when we
+  // assess that it's not necessary anymore: crbug.com/761348.
+  if (migration_strategy ==
+      static_cast<int>(
+          arc::policy_util::EcryptfsMigrationAction::kAskForEcryptfsArcUsers)) {
+    // Note that ARC enablement is controlled by policy for managed users (as
+    // it's marked 'default_for_enterprise_users': False in
+    // policy_templates.json).
+    DCHECK(profile->GetPrefs()->IsManagedPreference(prefs::kArcEnabled));
+    // We can't reuse IsArcPlayStoreEnabledForProfile here because this would
+    // lead to a circular dependency: It ends up calling this function for some
+    // cases.
+    return profile->GetPrefs()->GetBoolean(prefs::kArcEnabled) &&
+           base::CommandLine::ForCurrentProcess()->HasSwitch(
+               chromeos::switches::kArcTransitionMigrationRequired);
+  }
+
+  return migration_strategy !=
          static_cast<int>(
              arc::policy_util::EcryptfsMigrationAction::kDisallowMigration);
 }
