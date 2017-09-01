@@ -36,8 +36,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
-#include "chrome/browser/search/search.h"
-#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/signin/chrome_signin_helper.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/login/login_handler.h"
@@ -57,7 +55,6 @@
 #include "components/previews/core/previews_io_data.h"
 #include "components/rappor/public/rappor_utils.h"
 #include "components/rappor/rappor_service_impl.h"
-#include "components/search_engines/template_url_service.h"
 #include "components/variations/net/variations_http_headers.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_data.h"
@@ -297,64 +294,6 @@ void AppendComponentUpdaterThrottles(
 }
 #endif  // !defined(DISABLE_NACL)
 
-// This function is called in NotifyUIThreadOfRequestComplete to log metrics
-// about main frame resources.
-void LogMainFrameMetricsOnUIThread(const GURL& url,
-                                   int net_error,
-                                   base::TimeDelta request_loading_time,
-                                   content::WebContents* web_contents) {
-  DCHECK(web_contents);
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-
-  // The rest of the function is only concerned about NTP metrics.
-  if (!profile || !search::IsNTPURL(url, profile))
-    return;
-
-  // A http/s scheme implies that the new tab page is remote. The local NTP is
-  // served from chrome-search://. To segment out remote NTPs, use the
-  // TemplateURLService to find the default search engine. Note that if the
-  // default search engine does not have a remote NTP, then the local NTP will
-  // be shown. As of April 2016, only Bing and Google have remote NTPs.
-  if (url.SchemeIsHTTPOrHTTPS()) {
-    TemplateURLService* template_url_service =
-        TemplateURLServiceFactory::GetForProfile(profile);
-    if (!template_url_service)
-      return;
-    const TemplateURL* default_provider =
-        template_url_service->GetDefaultSearchProvider();
-    if (!default_provider)
-      return;
-    if (default_provider->GetEngineType(
-            template_url_service->search_terms_data()) ==
-        SearchEngineType::SEARCH_ENGINE_GOOGLE) {
-      if (net_error == net::OK) {
-        UMA_HISTOGRAM_LONG_TIMES("Net.NTP.Google.RequestTime2.Success",
-                                 request_loading_time);
-      } else if (net_error == net::ERR_ABORTED) {
-        UMA_HISTOGRAM_LONG_TIMES("Net.NTP.Google.RequestTime2.ErrAborted",
-                                 request_loading_time);
-      }
-    } else {
-      if (net_error == net::OK) {
-        UMA_HISTOGRAM_LONG_TIMES("Net.NTP.ThirdParty.RequestTime2.Success",
-                                 request_loading_time);
-      } else if (net_error == net::ERR_ABORTED) {
-        UMA_HISTOGRAM_LONG_TIMES("Net.NTP.ThirdParty.RequestTime2.ErrAborted",
-                                 request_loading_time);
-      }
-    }
-  } else {
-    if (net_error == net::OK) {
-      UMA_HISTOGRAM_LONG_TIMES("Net.NTP.Local.RequestTime2.Success",
-                               request_loading_time);
-    } else if (net_error == net::ERR_ABORTED) {
-      UMA_HISTOGRAM_LONG_TIMES("Net.NTP.Local.RequestTime2.ErrAborted",
-                               request_loading_time);
-    }
-  }
-}
-
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
 // Translate content::ResourceType to a type to use for Offliners.
 offline_pages::ResourceLoadingObserver::ResourceDataType
@@ -416,17 +355,11 @@ void NotifyUIThreadOfRequestComplete(
     int64_t raw_body_bytes,
     int64_t original_content_length,
     base::TimeTicks request_creation_time,
-    base::TimeDelta request_loading_time,
     std::unique_ptr<net::LoadTimingInfo> load_timing_info) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   content::WebContents* web_contents = web_contents_getter.Run();
   if (!web_contents)
     return;
-
-  if (resource_type == content::RESOURCE_TYPE_MAIN_FRAME) {
-    LogMainFrameMetricsOnUIThread(url, net_error, request_loading_time,
-                                  web_contents);
-  }
 
   if (!was_cached) {
     UpdatePrerenderNetworkBytesCallback(web_contents, total_received_bytes);
@@ -949,7 +882,6 @@ void ChromeResourceDispatcherHostDelegate::RequestComplete(
           net_error, url_request->GetTotalReceivedBytes(),
           url_request->GetRawBodyBytes(), original_content_length,
           url_request->creation_time(),
-          base::TimeTicks::Now() - url_request->creation_time(),
           std::move(load_timing_info)));
 }
 

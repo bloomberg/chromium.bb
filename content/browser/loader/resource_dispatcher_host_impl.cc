@@ -700,71 +700,18 @@ void ResourceDispatcherHostImpl::DidFinishLoading(ResourceLoader* loader) {
     // the aggregate remainder errors.
     base::TimeDelta request_loading_time(
         base::TimeTicks::Now() - loader->request()->creation_time());
-    switch (loader->request()->status().error()) {
-      case net::OK:
-        UMA_HISTOGRAM_LONG_TIMES(
-            "Net.RequestTime2.Success", request_loading_time);
-        break;
-      case net::ERR_ABORTED:
-        UMA_HISTOGRAM_CUSTOM_COUNTS("Net.ErrAborted.SentBytes",
-                                    loader->request()->GetTotalSentBytes(), 1,
-                                    50000000, 50);
-        UMA_HISTOGRAM_CUSTOM_COUNTS("Net.ErrAborted.ReceivedBytes",
-                                    loader->request()->GetTotalReceivedBytes(),
-                                    1, 50000000, 50);
-        UMA_HISTOGRAM_LONG_TIMES(
-            "Net.RequestTime2.ErrAborted", request_loading_time);
+    if (loader->request()->status().error() == net::ERR_ABORTED) {
+      UMA_HISTOGRAM_CUSTOM_COUNTS("Net.ErrAborted.SentBytes",
+                                  loader->request()->GetTotalSentBytes(), 1,
+                                  50000000, 50);
+      UMA_HISTOGRAM_CUSTOM_COUNTS("Net.ErrAborted.ReceivedBytes",
+                                  loader->request()->GetTotalReceivedBytes(), 1,
+                                  50000000, 50);
 
-        if (loader->request()->url().SchemeIsHTTPOrHTTPS()) {
-          UMA_HISTOGRAM_LONG_TIMES("Net.RequestTime2.ErrAborted.HttpScheme",
-                                   request_loading_time);
-        } else {
-          UMA_HISTOGRAM_LONG_TIMES("Net.RequestTime2.ErrAborted.NonHttpScheme",
-                                   request_loading_time);
-        }
-
-        if (loader->request()->GetTotalReceivedBytes() > 0) {
-          UMA_HISTOGRAM_LONG_TIMES("Net.RequestTime2.ErrAborted.NetworkContent",
-                                   request_loading_time);
-        } else if (loader->request()->received_response_content_length() > 0) {
-          UMA_HISTOGRAM_LONG_TIMES(
-              "Net.RequestTime2.ErrAborted.NoNetworkContent.CachedContent",
-              request_loading_time);
-        } else {
-          UMA_HISTOGRAM_LONG_TIMES(
-              "Net.RequestTime2.ErrAborted.NoBytesRead",
-              request_loading_time);
-        }
-
-        if (delegate_) {
-          delegate_->OnAbortedFrameLoad(loader->request()->url(),
-                                        request_loading_time);
-        }
-        break;
-      case net::ERR_CONNECTION_RESET:
-        UMA_HISTOGRAM_LONG_TIMES(
-            "Net.RequestTime2.ErrConnectionReset", request_loading_time);
-        break;
-      case net::ERR_CONNECTION_TIMED_OUT:
-        UMA_HISTOGRAM_LONG_TIMES(
-            "Net.RequestTime2.ErrConnectionTimedOut", request_loading_time);
-        break;
-      case net::ERR_INTERNET_DISCONNECTED:
-        UMA_HISTOGRAM_LONG_TIMES(
-            "Net.RequestTime2.ErrInternetDisconnected", request_loading_time);
-        break;
-      case net::ERR_NAME_NOT_RESOLVED:
-        UMA_HISTOGRAM_LONG_TIMES(
-            "Net.RequestTime2.ErrNameNotResolved", request_loading_time);
-        break;
-      case net::ERR_TIMED_OUT:
-        UMA_HISTOGRAM_LONG_TIMES(
-            "Net.RequestTime2.ErrTimedOut", request_loading_time);
-        break;
-      default:
-        UMA_HISTOGRAM_LONG_TIMES(
-            "Net.RequestTime2.MiscError", request_loading_time);
-        break;
+      if (delegate_) {
+        delegate_->OnAbortedFrameLoad(loader->request()->url(),
+                                      request_loading_time);
+      }
     }
 
     if (loader->request()->url().SchemeIsCryptographic()) {
