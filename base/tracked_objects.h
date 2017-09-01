@@ -553,7 +553,7 @@ class BASE_EXPORT ThreadData {
     STATUS_LAST = PROFILING_ACTIVE
   };
 
-  typedef std::unordered_map<Location, Births*, Location::Hash> BirthMap;
+  typedef std::unordered_map<Location, Births*> BirthMap;
   typedef std::map<const Births*, DeathData> DeathMap;
 
   // Initialize the current thread context with a new instance of ThreadData.
