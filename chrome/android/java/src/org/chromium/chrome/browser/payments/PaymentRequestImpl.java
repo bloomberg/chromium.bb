@@ -746,8 +746,9 @@ public class PaymentRequestImpl
         if (disconnectIfNoPaymentMethodsSupported()) return;
 
         for (Map.Entry<PaymentApp, Map<String, PaymentMethodData>> q : queryApps.entrySet()) {
-            q.getKey().getInstruments(
-                    q.getValue(), mTopLevelOrigin, mPaymentRequestOrigin, mCertificateChain, this);
+            q.getKey().getInstruments(q.getValue(), mTopLevelOrigin, mPaymentRequestOrigin,
+                    mCertificateChain,
+                    mModifiers == null ? null : Collections.unmodifiableMap(mModifiers), this);
         }
     }
 

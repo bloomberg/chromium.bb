@@ -25,14 +25,16 @@ using ::base::android::JavaRef;
 using ::base::android::ScopedJavaGlobalRef;
 using ::base::android::ScopedJavaLocalRef;
 using ::base::android::ToJavaArrayOfStrings;
-using ::payments::mojom::PaymentRequestEventData;
-using ::payments::mojom::PaymentRequestEventDataPtr;
+using ::payments::mojom::CanMakePaymentEventData;
+using ::payments::mojom::CanMakePaymentEventDataPtr;
 using ::payments::mojom::PaymentCurrencyAmount;
 using ::payments::mojom::PaymentDetailsModifier;
 using ::payments::mojom::PaymentDetailsModifierPtr;
 using ::payments::mojom::PaymentItem;
 using ::payments::mojom::PaymentMethodData;
 using ::payments::mojom::PaymentMethodDataPtr;
+using ::payments::mojom::PaymentRequestEventData;
+using ::payments::mojom::PaymentRequestEventDataPtr;
 
 void OnGotAllPaymentApps(const JavaRef<jobject>& jweb_contents,
                          const JavaRef<jobject>& jcallback,
@@ -73,6 +75,14 @@ void OnGotAllPaymentApps(const JavaRef<jobject>& jweb_contents,
   Java_ServiceWorkerPaymentAppBridge_onAllPaymentAppsCreated(env, jcallback);
 }
 
+void OnCanMakePayment(const JavaRef<jobject>& jweb_contents,
+                      const JavaRef<jobject>& jcallback,
+                      bool can_make_payment) {
+  JNIEnv* env = AttachCurrentThread();
+  Java_ServiceWorkerPaymentAppBridge_onCanMakePayment(env, jcallback,
+                                                      can_make_payment);
+}
+
 void OnPaymentAppInvoked(
     const JavaRef<jobject>& jweb_contents,
     const JavaRef<jobject>& jcallback,
@@ -110,6 +120,90 @@ static void GetAllPaymentApps(JNIEnv* env,
       base::Bind(&OnGotAllPaymentApps,
                  ScopedJavaGlobalRef<jobject>(env, jweb_contents),
                  ScopedJavaGlobalRef<jobject>(env, jcallback)));
+}
+
+static void CanMakePayment(JNIEnv* env,
+                           const JavaParamRef<jclass>& jcaller,
+                           const JavaParamRef<jobject>& jweb_contents,
+                           jlong registration_id,
+                           const JavaParamRef<jstring>& jtop_level_origin,
+                           const JavaParamRef<jstring>& jpayment_request_origin,
+                           const JavaParamRef<jobjectArray>& jmethod_data,
+                           const JavaParamRef<jobjectArray>& jmodifiers,
+                           const JavaParamRef<jobject>& jcallback) {
+  content::WebContents* web_contents =
+      content::WebContents::FromJavaWebContents(jweb_contents);
+
+  CanMakePaymentEventDataPtr event_data = CanMakePaymentEventData::New();
+
+  event_data->top_level_origin =
+      GURL(ConvertJavaStringToUTF8(env, jtop_level_origin));
+  event_data->payment_request_origin =
+      GURL(ConvertJavaStringToUTF8(env, jpayment_request_origin));
+
+  for (jsize i = 0; i < env->GetArrayLength(jmethod_data); i++) {
+    ScopedJavaLocalRef<jobject> element(
+        env, env->GetObjectArrayElement(jmethod_data, i));
+    PaymentMethodDataPtr methodData = PaymentMethodData::New();
+    base::android::AppendJavaStringArrayToStringVector(
+        env,
+        Java_ServiceWorkerPaymentAppBridge_getSupportedMethodsFromMethodData(
+            env, element)
+            .obj(),
+        &methodData->supported_methods);
+    methodData->stringified_data = ConvertJavaStringToUTF8(
+        env,
+        Java_ServiceWorkerPaymentAppBridge_getStringifiedDataFromMethodData(
+            env, element));
+    event_data->method_data.push_back(std::move(methodData));
+  }
+
+  for (jsize i = 0; i < env->GetArrayLength(jmodifiers); i++) {
+    ScopedJavaLocalRef<jobject> jmodifier(
+        env, env->GetObjectArrayElement(jmodifiers, i));
+    PaymentDetailsModifierPtr modifier = PaymentDetailsModifier::New();
+
+    ScopedJavaLocalRef<jobject> jmodifier_total =
+        Java_ServiceWorkerPaymentAppBridge_getTotalFromModifier(env, jmodifier);
+    modifier->total = PaymentItem::New();
+    modifier->total->label = ConvertJavaStringToUTF8(
+        env, Java_ServiceWorkerPaymentAppBridge_getLabelFromPaymentItem(
+                 env, jmodifier_total));
+    modifier->total->amount = PaymentCurrencyAmount::New();
+    modifier->total->amount->currency = ConvertJavaStringToUTF8(
+        env, Java_ServiceWorkerPaymentAppBridge_getCurrencyFromPaymentItem(
+                 env, jmodifier_total));
+    modifier->total->amount->value = ConvertJavaStringToUTF8(
+        env, Java_ServiceWorkerPaymentAppBridge_getValueFromPaymentItem(
+                 env, jmodifier_total));
+    modifier->total->amount->currency_system = ConvertJavaStringToUTF8(
+        env,
+        Java_ServiceWorkerPaymentAppBridge_getCurrencySystemFromPaymentItem(
+            env, jmodifier_total));
+
+    ScopedJavaLocalRef<jobject> jmodifier_method_data =
+        Java_ServiceWorkerPaymentAppBridge_getMethodDataFromModifier(env,
+                                                                     jmodifier);
+    modifier->method_data = PaymentMethodData::New();
+    base::android::AppendJavaStringArrayToStringVector(
+        env,
+        Java_ServiceWorkerPaymentAppBridge_getSupportedMethodsFromMethodData(
+            env, jmodifier_method_data)
+            .obj(),
+        &modifier->method_data->supported_methods);
+    modifier->method_data->stringified_data = ConvertJavaStringToUTF8(
+        env,
+        Java_ServiceWorkerPaymentAppBridge_getStringifiedDataFromMethodData(
+            env, jmodifier_method_data));
+
+    event_data->modifiers.push_back(std::move(modifier));
+  }
+
+  content::PaymentAppProvider::GetInstance()->CanMakePayment(
+      web_contents->GetBrowserContext(), registration_id, std::move(event_data),
+      base::BindOnce(&OnCanMakePayment,
+                     ScopedJavaGlobalRef<jobject>(env, jweb_contents),
+                     ScopedJavaGlobalRef<jobject>(env, jcallback)));
 }
 
 static void InvokePaymentApp(

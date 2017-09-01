@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.payments;
 
+import org.chromium.payments.mojom.PaymentDetailsModifier;
 import org.chromium.payments.mojom.PaymentMethodData;
 
 import java.net.URI;
@@ -44,10 +45,12 @@ public interface PaymentApp {
      *                         if PaymentRequest was not invoked from inside an iframe.
      * @param certificateChain The site certificate chain of the merchant. Null for localhost and
      *                         file on disk, which are secure origins without SSL.
+     * @param modifiers        The relevant payment details modifiers.
      * @param callback         The object that will receive the list of instruments.
      */
     void getInstruments(Map<String, PaymentMethodData> methodDataMap, String origin,
-            String iframeOrigin, @Nullable byte[][] certificateChain, InstrumentsCallback callback);
+            String iframeOrigin, @Nullable byte[][] certificateChain,
+            Map<String, PaymentDetailsModifier> modifiers, InstrumentsCallback callback);
 
     /**
      * Returns a list of all payment method names that this app supports. For example, ["visa",
