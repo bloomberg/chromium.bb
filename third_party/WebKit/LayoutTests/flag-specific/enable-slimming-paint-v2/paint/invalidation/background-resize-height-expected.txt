@@ -4,14 +4,14 @@
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='test image'",
       "position": [8, 8],
       "bounds": [560, 144],
-      "contentsOpaque": false,
-      "drawsContent": true,
+      "backfaceVisibility": "hidden",
+      "backgroundColor": "#000000",
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow (positioned) DIV class='test generated repeat-round'",

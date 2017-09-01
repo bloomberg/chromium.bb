@@ -36,6 +36,7 @@
 #include "platform/bindings/RuntimeCallStats.h"
 #include "platform/bindings/V8PerIsolateData.h"
 #include "platform/geometry/FloatRect.h"
+#include "platform/geometry/GeometryAsJSON.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/geometry/Region.h"
 #include "platform/graphics/BitmapImage.h"
@@ -533,64 +534,6 @@ void GraphicsLayer::TrackRasterInvalidation(const DisplayItemClient& client,
   }
 }
 
-template <typename T>
-static std::unique_ptr<JSONArray> PointAsJSONArray(const T& point) {
-  std::unique_ptr<JSONArray> array = JSONArray::Create();
-  array->PushDouble(point.X());
-  array->PushDouble(point.Y());
-  return array;
-}
-
-template <typename T>
-static std::unique_ptr<JSONArray> SizeAsJSONArray(const T& size) {
-  std::unique_ptr<JSONArray> array = JSONArray::Create();
-  array->PushDouble(size.Width());
-  array->PushDouble(size.Height());
-  return array;
-}
-
-static double RoundCloseToZero(double number) {
-  return std::abs(number) < 1e-7 ? 0 : number;
-}
-
-static std::unique_ptr<JSONArray> TransformAsJSONArray(
-    const TransformationMatrix& t) {
-  std::unique_ptr<JSONArray> array = JSONArray::Create();
-  {
-    std::unique_ptr<JSONArray> row = JSONArray::Create();
-    row->PushDouble(RoundCloseToZero(t.M11()));
-    row->PushDouble(RoundCloseToZero(t.M12()));
-    row->PushDouble(RoundCloseToZero(t.M13()));
-    row->PushDouble(RoundCloseToZero(t.M14()));
-    array->PushArray(std::move(row));
-  }
-  {
-    std::unique_ptr<JSONArray> row = JSONArray::Create();
-    row->PushDouble(RoundCloseToZero(t.M21()));
-    row->PushDouble(RoundCloseToZero(t.M22()));
-    row->PushDouble(RoundCloseToZero(t.M23()));
-    row->PushDouble(RoundCloseToZero(t.M24()));
-    array->PushArray(std::move(row));
-  }
-  {
-    std::unique_ptr<JSONArray> row = JSONArray::Create();
-    row->PushDouble(RoundCloseToZero(t.M31()));
-    row->PushDouble(RoundCloseToZero(t.M32()));
-    row->PushDouble(RoundCloseToZero(t.M33()));
-    row->PushDouble(RoundCloseToZero(t.M34()));
-    array->PushArray(std::move(row));
-  }
-  {
-    std::unique_ptr<JSONArray> row = JSONArray::Create();
-    row->PushDouble(RoundCloseToZero(t.M41()));
-    row->PushDouble(RoundCloseToZero(t.M42()));
-    row->PushDouble(RoundCloseToZero(t.M43()));
-    row->PushDouble(RoundCloseToZero(t.M44()));
-    array->PushArray(std::move(row));
-  }
-  return array;
-}
-
 static String PointerAsString(const void* ptr) {
   TextStream ts;
   ts << ptr;
@@ -663,6 +606,7 @@ std::unique_ptr<JSONObject> GraphicsLayer::LayerTreeAsJSON(
   return LayersAsJSONArray(flags)(*this);
 }
 
+// This is the SPv1 version of ContentLayerClientImpl::LayerAsJSON().
 std::unique_ptr<JSONObject> GraphicsLayer::LayerAsJSONInternal(
     LayerTreeFlags flags,
     RenderingContextMap& rendering_context_map,

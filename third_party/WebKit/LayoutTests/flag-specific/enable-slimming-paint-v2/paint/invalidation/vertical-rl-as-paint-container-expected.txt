@@ -4,14 +4,13 @@
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutBlockFlow DIV id='target'",
       "position": [528, 8],
       "bounds": [80, 340],
-      "contentsOpaque": false,
-      "drawsContent": true,
+      "backfaceVisibility": "hidden",
       "paintInvalidations": [
         {
           "object": "InlineTextBox 'Lorem ipsum dolor'",

@@ -86,12 +86,15 @@ void PaintArtifactCompositor::RemoveChildLayers() {
 
 std::unique_ptr<JSONObject> PaintArtifactCompositor::LayersAsJSON(
     LayerTreeFlags flags) const {
+  ContentLayerClientImpl::LayerAsJSONContext context(flags);
   std::unique_ptr<JSONArray> layers_json = JSONArray::Create();
   for (const auto& client : content_layer_clients_) {
-    layers_json->PushObject(client->LayerAsJSON(flags));
+    layers_json->PushObject(client->LayerAsJSON(context));
   }
   std::unique_ptr<JSONObject> json = JSONObject::Create();
   json->SetArray("layers", std::move(layers_json));
+  if (context.transforms_json)
+    json->SetArray("transforms", std::move(context.transforms_json));
   return json;
 }
 
@@ -713,6 +716,7 @@ void PaintArtifactCompositor::Update(
     layer->SetEffectTreeIndex(effect_id);
 
     layer->SetContentsOpaque(pending_layer.known_to_be_opaque);
+    layer->SetDoubleSided(!pending_layer.backface_hidden);
     layer->SetShouldCheckBackfaceVisibility(pending_layer.backface_hidden);
   }
   property_tree_manager.Finalize();

@@ -4,7 +4,7 @@
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true,
+      "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow DIV class='outer'",
@@ -472,8 +472,7 @@
       "name": "LayoutBlockFlow (floating) DIV",
       "position": [59, 426],
       "bounds": [64, 97],
-      "contentsOpaque": false,
-      "drawsContent": true,
+      "backgroundColor": "#ADD8E6",
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow (floating) DIV",

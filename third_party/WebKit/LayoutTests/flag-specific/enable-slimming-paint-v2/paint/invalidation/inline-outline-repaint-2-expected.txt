@@ -4,8 +4,7 @@
       "name": "LayoutView #document",
       "position": [0, -5],
       "bounds": [800, 605],
-      "contentsOpaque": false,
-      "drawsContent": true,
+      "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
           "object": "LayoutInline SPAN",

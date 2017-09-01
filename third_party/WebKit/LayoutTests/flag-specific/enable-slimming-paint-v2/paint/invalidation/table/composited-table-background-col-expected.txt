@@ -4,7 +4,7 @@
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true,
+      "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
           "object": "LayoutTableSection TBODY",
@@ -16,9 +16,7 @@
     {
       "name": "LayoutTableCell TD",
       "position": [96, 118],
-      "bounds": [10, 19],
-      "contentsOpaque": false,
-      "drawsContent": true
+      "bounds": [10, 19]
     }
   ],
   "objectPaintInvalidations": [

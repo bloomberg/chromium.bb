@@ -833,6 +833,8 @@ component("platform") {
     "geometry/FloatRoundedRect.h",
     "geometry/FloatSize.cpp",
     "geometry/FloatSize.h",
+    "geometry/GeometryAsJSON.cpp",
+    "geometry/GeometryAsJSON.h",
     "geometry/IntPoint.cpp",
     "geometry/IntPoint.h",
     "geometry/IntRect.cpp",
