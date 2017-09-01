@@ -977,7 +977,24 @@ function assertSelection(
     `\t sameupto ${commonPrefixOf(expectedText, actualText)}`);
 }
 
+/**
+ * @param {string} inputText
+ * @param {function(!Selection)|string} tester
+ * @param {string} expectedText
+ * @param {Object=} opt_options
+ * @param {string=} opt_description
+ */
+function selectionTest(inputText, tester, expectedText, opt_options,
+                       opt_description) {
+  const description = typeof(opt_options) === 'string' ? opt_options
+                                                       : opt_description;
+  const options = typeof(opt_options) === 'string' ? undefined : opt_options;
+  test(() => assertSelection(inputText, tester, expectedText, options),
+       description);
+}
+
 // Export symbols
 window.Sample = Sample;
 window.assert_selection = assertSelection;
+window.selection_test = selectionTest;
 })();
