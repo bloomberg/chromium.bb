@@ -137,6 +137,9 @@ class IPHInfoBarSupport implements OnDismissListener, InfoBarContainer.InfoBarAn
     @Override
     public void onInfoBarContainerAttachedToWindow(boolean hasInfobars) {}
 
+    @Override
+    public void onInfoBarContainerShownRatioChanged(InfoBarContainer container, float shownRatio) {}
+
     // PopupWindow.OnDismissListener implementation.
     @Override
     public void onDismiss() {
