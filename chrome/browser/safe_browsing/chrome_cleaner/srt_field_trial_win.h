@@ -56,6 +56,8 @@ enum PromptTypeHistogramValue {
 // within Chrome.
 extern const base::Feature kInBrowserCleanerUIFeature;
 
+extern const char kSRTPromptTrial[];
+
 // Returns true if this Chrome is in a field trial group which shows the SRT
 // prompt.
 bool IsInSRTPromptFieldTrialGroups();
