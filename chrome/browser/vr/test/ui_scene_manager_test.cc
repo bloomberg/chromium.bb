@@ -12,6 +12,21 @@
 
 namespace vr {
 
+namespace {
+
+bool IsElementFacingCamera(const UiElement* element) {
+  // Element might become invisible due to incorrect rotation, i.e when rotation
+  // cause the visible side of the element flip.
+  // Here we calculate the dot product of (origin - center) and normal. If the
+  // result is greater than 0, it means the visible side of this element is
+  // facing camera.
+  gfx::Point3F center = element->GetCenter();
+  return gfx::DotProduct(-gfx::Vector3dF(center.x(), center.y(), center.z()),
+                         element->GetNormal()) > 0.f;
+}
+
+}  // namespace
+
 UiSceneManagerTest::UiSceneManagerTest() {}
 UiSceneManagerTest::~UiSceneManagerTest() {}
 
@@ -36,7 +51,10 @@ void UiSceneManagerTest::MakeAutoPresentedManager() {
 bool UiSceneManagerTest::IsVisible(UiElementName name) const {
   scene_->root_element().UpdateInheritedProperties();
   UiElement* element = scene_->GetUiElementByName(name);
-  return element ? element->IsVisible() : false;
+  if (!element)
+    return false;
+
+  return element->IsVisible() && IsElementFacingCamera(element);
 }
 
 void UiSceneManagerTest::VerifyElementsVisible(
@@ -48,7 +66,7 @@ void UiSceneManagerTest::VerifyElementsVisible(
     SCOPED_TRACE(name);
     auto* element = scene_->GetUiElementByName(name);
     EXPECT_NE(nullptr, element);
-    EXPECT_TRUE(element->IsVisible());
+    EXPECT_TRUE(element->IsVisible() && IsElementFacingCamera(element));
   }
 }
 

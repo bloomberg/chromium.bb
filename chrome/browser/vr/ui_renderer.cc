@@ -207,7 +207,7 @@ void UiRenderer::DrawReticle(const gfx::Transform& render_matrix,
     // Make the reticle planar to the element it's hitting.
     rotation =
         gfx::Quaternion(gfx::Vector3dF(0.0f, 0.0f, -1.0f),
-                        controller_info.reticle_render_target->GetNormal());
+                        -controller_info.reticle_render_target->GetNormal());
   } else {
     // Rotate the reticle to directly face the eyes.
     rotation = gfx::Quaternion(gfx::Vector3dF(0.0f, 0.0f, -1.0f),
