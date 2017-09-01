@@ -12,41 +12,44 @@
 #include "components/crash/content/app/crash_export_thunks.h"
 #include "components/crash/content/app/crashpad.h"
 
-void RequestSingleCrashUploadThunk(const char* local_id) {}
+void RequestSingleCrashUpload_ExportThunk(const char* local_id) {}
 
-size_t GetCrashReportsImpl(crash_reporter::Report* reports,
-                           size_t reports_size) {
+size_t GetCrashReports_ExportThunk(crash_reporter::Report* reports,
+                                   size_t reports_size) {
   return 0;
 }
 
-int CrashForException(EXCEPTION_POINTERS* info) {
+int CrashForException_ExportThunk(EXCEPTION_POINTERS* info) {
   // Make sure to properly crash the process by dispatching directly to the
   // Windows unhandled exception filter.
   return UnhandledExceptionFilter(info);
 }
 
-void SetUploadConsentImpl(bool consent) {}
+void SetUploadConsent_ExportThunk(bool consent) {}
 
-void SetCrashKeyValueImpl(const wchar_t* key, const wchar_t* value) {}
+void SetCrashKeyValue_ExportThunk(const wchar_t* key, const wchar_t* value) {}
 
-void ClearCrashKeyValueImpl(const wchar_t* key) {}
+void ClearCrashKeyValue_ExportThunk(const wchar_t* key) {}
 
-void SetCrashKeyValueImplEx(const char* key, const char* value) {}
+void SetCrashKeyValueEx_ExportThunk(const char* key, const char* value) {}
 
-void ClearCrashKeyValueImplEx(const char* key) {}
+void ClearCrashKeyValueEx_ExportThunk(const char* key) {}
 
-HANDLE InjectDumpForHungInput(HANDLE process, void* serialized_crash_keys) {
+HANDLE InjectDumpForHungInput_ExportThunk(HANDLE process,
+                                          void* serialized_crash_keys) {
   return nullptr;
 }
 
-HANDLE InjectDumpForHungInputNoCrashKeys(HANDLE process, int reason) {
+HANDLE InjectDumpForHungInputNoCrashKeys_ExportThunk(HANDLE process,
+                                                     int reason) {
   return nullptr;
 }
 
 #if defined(ARCH_CPU_X86_64)
 
-void RegisterNonABICompliantCodeRange(void* start, size_t size_in_bytes) {}
+void RegisterNonABICompliantCodeRange_ExportThunk(void* start,
+                                                  size_t size_in_bytes) {}
 
-void UnregisterNonABICompliantCodeRange(void* start) {}
+void UnregisterNonABICompliantCodeRange_ExportThunk(void* start) {}
 
 #endif  // defined(ARCH_CPU_X86_64)

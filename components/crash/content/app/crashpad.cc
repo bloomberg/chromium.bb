@@ -261,7 +261,7 @@ void GetReports(std::vector<Report>* reports) {
   reports->resize(25);
   while (true) {
     size_t available_reports =
-        GetCrashReportsImpl(&reports->at(0), reports->size());
+        GetCrashReports_ExportThunk(&reports->at(0), reports->size());
     if (available_reports <= reports->size()) {
       // The input size was large enough to capture all available crashes.
       // Trim the vector to the actual number of reports returned and return.
@@ -283,7 +283,7 @@ void RequestSingleCrashUpload(const std::string& local_id) {
 #if defined(OS_WIN)
   // On Windows, crash reporting may be implemented in another module, which is
   // why this can't call crash_reporter::RequestSingleCrashUpload directly.
-  RequestSingleCrashUploadImpl(local_id);
+  RequestSingleCrashUpload_ExportThunk(local_id.c_str());
 #else
   crash_reporter::RequestSingleCrashUploadImpl(local_id);
 #endif

@@ -265,7 +265,7 @@ void ChromeMetricsServicesManagerClient::UpdateRunningServices(
   // Crashpad will use the kRegUsageStatsInSample registry value to apply
   // sampling correctly, but may_record already reflects the sampling state.
   // This isn't a problem though, since they will be consistent.
-  SetUploadConsentImpl(may_record && may_upload);
+  SetUploadConsent_ExportThunk(may_record && may_upload);
 }
 #endif  // defined(OS_WIN)
 
