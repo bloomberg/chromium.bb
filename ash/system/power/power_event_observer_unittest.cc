@@ -171,9 +171,9 @@ TEST_F(PowerEventObserverTest, DelayResuspendForLockAnimations) {
   EXPECT_EQ(0, GetNumVisibleCompositors());
 }
 
-// Tests that for suspend imminent induced locking screen, we have immediate
-// pre-lock animation (crbug.com/751908).
-TEST_F(PowerEventObserverTest, ImmediatePreLockAnimation) {
+// Tests that for suspend imminent induced locking screen, locking animations
+// are immediate.
+TEST_F(PowerEventObserverTest, ImmediateLockAnimations) {
   TestSessionStateAnimator* test_animator = new TestSessionStateAnimator;
   LockStateController* lock_state_controller =
       Shell::Get()->lock_state_controller();
@@ -184,15 +184,35 @@ TEST_F(PowerEventObserverTest, ImmediatePreLockAnimation) {
   ASSERT_FALSE(GetLockedState());
 
   observer_->SuspendImminent();
-  EXPECT_TRUE(test_animator->AreContainersAnimated(
-      LockStateController::kPreLockContainersMask,
-      SessionStateAnimator::ANIMATION_HIDE_IMMEDIATELY));
+  // Tests that locking animation starts.
   EXPECT_TRUE(lock_state_test_api.is_animating_lock());
 
-  EXPECT_TRUE(GetLockedState());
-  // Advance post lock animation to check animating lock gets reset.
+  // Tests that we have two active animation containers for pre-lock animation,
+  // which are non lock screen containers and shelf container.
+  EXPECT_EQ(2u, test_animator->GetAnimationCount());
+  test_animator->AreContainersAnimated(
+      LockStateController::kPreLockContainersMask,
+      SessionStateAnimator::ANIMATION_HIDE_IMMEDIATELY);
+  // Tests that after finishing immediate animation, we have no active
+  // animations left.
   test_animator->Advance(test_animator->GetDuration(
-      SessionStateAnimator::ANIMATION_SPEED_MOVE_WINDOWS));
+      SessionStateAnimator::ANIMATION_SPEED_IMMEDIATE));
+  EXPECT_EQ(0u, test_animator->GetAnimationCount());
+
+  // Flushes locking screen async request to start post-lock animation.
+  EXPECT_TRUE(GetLockedState());
+  EXPECT_TRUE(lock_state_test_api.is_animating_lock());
+  // Tests that we have one active animation container for post-lock animation,
+  // which is lock screen containers.
+  EXPECT_EQ(1u, test_animator->GetAnimationCount());
+  test_animator->AreContainersAnimated(
+      SessionStateAnimator::LOCK_SCREEN_CONTAINERS,
+      SessionStateAnimator::ANIMATION_RAISE_TO_SCREEN);
+  // Tests that after finishing immediate animation, we have no active
+  // animations left. Also checks that animation ends.
+  test_animator->Advance(test_animator->GetDuration(
+      SessionStateAnimator::ANIMATION_SPEED_IMMEDIATE));
+  EXPECT_EQ(0u, test_animator->GetAnimationCount());
   EXPECT_FALSE(lock_state_test_api.is_animating_lock());
 }
 

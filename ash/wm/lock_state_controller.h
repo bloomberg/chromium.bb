@@ -207,6 +207,9 @@ class ASH_EXPORT LockStateController : public aura::WindowTreeHostObserver,
   // Indicates that lock animation can be undone.
   bool can_cancel_lock_animation_ = false;
 
+  // Indicates whether post lock animation should be immediate.
+  bool post_lock_immediate_animation_ = false;
+
   std::unique_ptr<UnlockedStateProperties> unlocked_properties_;
 
   // How long has it been since the request to lock the screen?
