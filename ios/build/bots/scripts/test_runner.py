@@ -51,6 +51,10 @@ class DeviceDetectionError(TestRunnerError):
     super(DeviceDetectionError, self).__init__(
       'Expected one device, found %s:\n%s' % (len(udids), '\n'.join(udids)))
 
+class DeviceRestartError(TestRunnerError):
+  """Error restarting a device."""
+  def __init__(self):
+    super(DeviceRestartError, self).__init__('Error restarting a device')
 
 class PlugInsNotFoundError(TestRunnerError):
   """The PlugIns directory was not found."""
@@ -220,6 +224,10 @@ class TestRunner(object):
     """
     return os.environ.copy()
 
+  def restart(self):
+    """Restart a device or relaunch a simulator."""
+    pass
+
   def set_up(self):
     """Performs setup actions which must occur prior to every test launch."""
     raise NotImplementedError
@@ -319,6 +327,7 @@ class TestRunner(object):
       if result.crashed and not result.crashed_test:
         # If the app crashed but not during any particular test case, assume
         # it crashed on startup. Try one more time.
+        self.restart()
         print 'Crashed on startup, retrying...'
         print
         result = self._run(cmd)
@@ -621,6 +630,7 @@ class DeviceTestRunner(TestRunner):
     xcode_version,
     out_dir,
     env_vars=None,
+    restart=False,
     retries=None,
     test_args=None,
     xctest=False,
@@ -632,6 +642,7 @@ class DeviceTestRunner(TestRunner):
       xcode_version: Version of Xcode to use when running the test.
       out_dir: Directory to emit test data into.
       env_vars: List of environment variables to pass to the test itself.
+      restart: Whether or not restart device when test app crashes on startup.
       retries: Number of times to retry failed test cases.
       test_args: List of strings to pass as arguments to the test when
         launching.
@@ -676,6 +687,8 @@ class DeviceTestRunner(TestRunner):
         }
       }
 
+    self.restart = restart
+
   def uninstall_apps(self):
     """Uninstalls all apps found on the device."""
     for app in subprocess.check_output(
@@ -706,6 +719,20 @@ class DeviceTestRunner(TestRunner):
       ])
     except subprocess.CalledProcessError:
       raise TestDataExtractionError()
+
+  def restart(self):
+    """Restart the device, wait for two minutes."""
+    # TODO(crbug.com/760399): swarming bot ios 11 devices turn to be unavailable
+    # in a few hours unexpectedly, which is assumed as an ios beta issue. Should
+    # remove this method once the bug is fixed.
+    if self.restart:
+      print 'Restarting device, wait for two minutes.'
+      try:
+        subprocess.check_call(
+          ['idevicediagnostics', 'restart', '--udid', self.udid])
+      except subprocess.CalledProcessError:
+        raise DeviceRestartError()
+      time.sleep(120)
 
   def retrieve_crash_reports(self):
     """Retrieves crash reports produced by the test."""
