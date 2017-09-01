@@ -141,6 +141,7 @@ NSString* const kXCallbackURLHost = @"x-callback-url";
       animateAlongsideTransition:^(
           id<UIViewControllerTransitionCoordinatorContext> _Nonnull context) {
         [self.widgetView showMode:isCompact];
+        [self.widgetView layoutIfNeeded];
       }
                       completion:nil];
 }

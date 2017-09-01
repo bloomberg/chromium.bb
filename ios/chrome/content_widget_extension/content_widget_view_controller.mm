@@ -117,6 +117,7 @@ const CGFloat widgetCompactHeightIOS9 = 110;
       animateAlongsideTransition:^(
           id<UIViewControllerTransitionCoordinatorContext> _Nonnull context) {
         [self.widgetView showMode:self.isCompact];
+        [self.widgetView layoutIfNeeded];
       }
                       completion:nil];
 }
