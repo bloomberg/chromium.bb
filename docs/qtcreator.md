@@ -1,9 +1,9 @@
 # Use Qt Creator as IDE or GUI Debugger
 
 [Qt Creator](https://www.qt.io/ide/)
-([Wiki](https://en.wikipedia.org/wiki/Qt_Creator)) is a cross-platform C++ IDE. 
+([Wiki](https://en.wikipedia.org/wiki/Qt_Creator)) is a cross-platform C++ IDE.
 
-You can use Qt Creator as a daily IDE or just as a GDB frontend and that does 
+You can use Qt Creator as a daily IDE or just as a GDB frontend and that does
 not require project configuration.
 
 [TOC]
@@ -24,15 +24,16 @@ not require project configuration.
 1. Install latest Qt Creator
 2. under chromium/src `gn gen out/Default --ide=qtcreator`
 3. qtcreator out/Default/qtcreator_project/all.creator
+4. Help - Plugins - check ClangCodeModel to enable std completion
 
-It takes 3 minutes to parsing C++ files in my workstation!!! And It will not 
+It takes 3 minutes to parsing C++ files in my workstation!!! And It will not
 block you while parsing.
 
 #### Code Style
 
 1. Help - About Plugins enable Beautifier.
-2. Tools - Options - Beautifier - Clang Format, 
-   change Clang format command: `$depot_tools_dir/clang-format`, select use 
+2. Tools - Options - Beautifier - Clang Format,
+   change Clang format command: `$depot_tools_dir/clang-format`, select use
    predefined style: file. You can also set a keyboard shortcut for it.
 3. Tools - Options - Code Style import this xml file
 
@@ -50,7 +51,7 @@ block you while parsing.
    <value type="bool" key="BindStarToLeftSpecifier">false</value>
    <value type="bool" key="BindStarToRightSpecifier">false</value>
    <value type="bool" key="BindStarToTypeName">true</value>
-   <value type="bool" 
+   <value type="bool"
      key="ExtraPaddingForConditionsIfConfusingAlign">true</value>
    <value type="bool" key="IndentAccessSpecifiers">true</value>
    <value type="bool" key="IndentBlockBody">true</value>
@@ -83,19 +84,19 @@ block you while parsing.
 
 #### Build & Run
 
-In left panel, projects - setup the ninja command in build and clean step and   
+In left panel, projects - setup the ninja command in build and clean step and
 executable chrome path in run.
 
 ## Debugger
 
-**You can skip the project settings and use QtCreator as a single file 
+**You can skip the project settings and use QtCreator as a single file
 standalone GDB frontend. **
 
 1. Tools - Options - Build & Run - Debuggers, make sure GDB is set.
-2. Tools - Options - Kits, change the Desktop kit to GDB(LLDB doesnot work in 
+2. Tools - Options - Kits, change the Desktop kit to GDB(LLDB doesnot work in
   Linux).
 3. Open file you want to debug.
-4. Debug - Start Debugging - Attach to running Application, you may need to 
+4. Debug - Start Debugging - Attach to running Application, you may need to
   open chrome's task manager to find the process number.
 
 ### Tips, tricks, and troubleshooting
@@ -114,5 +115,5 @@ Ensure you are using GDB not LLDB in Linux.
 
 #### More
 
-See 
+See
 https://chromium.googlesource.com/chromium/src/+/master/docs/linux_debugging.md
