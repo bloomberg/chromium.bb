@@ -124,8 +124,7 @@ void LockStateController::LockWithoutAnimation() {
   if (animating_lock_)
     return;
   animating_lock_ = true;
-  // TODO(warx): consider incorporating immediate post lock animation
-  // (crbug.com/746657).
+  post_lock_immediate_animation_ = true;
   animator_->StartAnimation(kPreLockContainersMask,
                             SessionStateAnimator::ANIMATION_HIDE_IMMEDIATELY,
                             SessionStateAnimator::ANIMATION_SPEED_IMMEDIATE);
@@ -441,7 +440,9 @@ void LockStateController::StartPostLockAnimation() {
   animation_sequence->StartAnimation(
       SessionStateAnimator::LOCK_SCREEN_CONTAINERS,
       SessionStateAnimator::ANIMATION_RAISE_TO_SCREEN,
-      SessionStateAnimator::ANIMATION_SPEED_MOVE_WINDOWS);
+      post_lock_immediate_animation_
+          ? SessionStateAnimator::ANIMATION_SPEED_IMMEDIATE
+          : SessionStateAnimator::ANIMATION_SPEED_MOVE_WINDOWS);
   animation_sequence->EndSequence();
 }
 
@@ -518,6 +519,7 @@ void LockStateController::PreLockAnimationFinished(bool request_lock) {
 
 void LockStateController::PostLockAnimationFinished() {
   animating_lock_ = false;
+  post_lock_immediate_animation_ = false;
   VLOG(1) << "PostLockAnimationFinished";
   ShellPort::Get()->OnLockStateEvent(
       LockStateObserver::EVENT_LOCK_ANIMATION_FINISHED);
