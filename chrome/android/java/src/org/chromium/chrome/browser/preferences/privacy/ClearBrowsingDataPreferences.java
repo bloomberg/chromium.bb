@@ -191,8 +191,7 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
      * The various data types that can be cleared via this screen.
      */
     public enum DialogOption {
-        CLEAR_HISTORY(
-                BrowsingDataType.HISTORY, PREF_HISTORY, R.drawable.ic_watch_later_black_24dp, true),
+        CLEAR_HISTORY(BrowsingDataType.HISTORY, PREF_HISTORY, R.drawable.ic_watch_later_24dp, true),
         CLEAR_COOKIES_AND_SITE_DATA(
                 BrowsingDataType.COOKIES, PREF_COOKIES, R.drawable.permission_cookie, true),
         CLEAR_CACHE(BrowsingDataType.CACHE, PREF_CACHE, R.drawable.ic_collections_grey, false),
