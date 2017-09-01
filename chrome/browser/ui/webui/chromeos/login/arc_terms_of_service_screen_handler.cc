@@ -206,6 +206,8 @@ void ArcTermsOfServiceScreenHandler::DoShow() {
   // ToS then prefs::kArcEnabled is automatically reset in ArcSessionManager.
   profile->GetPrefs()->SetBoolean(prefs::kArcEnabled, true);
 
+  action_taken_ = false;
+
   ShowScreen(kScreenId);
 
   MaybeLoadPlayStoreToS(true);
@@ -217,7 +219,17 @@ void ArcTermsOfServiceScreenHandler::DoShow() {
 
 }
 
+bool ArcTermsOfServiceScreenHandler::NeedDispatchEventOnAction() {
+  if (action_taken_)
+    return false;
+  action_taken_ = true;
+  return true;
+}
+
 void ArcTermsOfServiceScreenHandler::HandleSkip() {
+  if (!NeedDispatchEventOnAction())
+    return;
+
   for (auto& observer : observer_list_)
     observer.OnSkip();
 }
@@ -225,6 +237,9 @@ void ArcTermsOfServiceScreenHandler::HandleSkip() {
 void ArcTermsOfServiceScreenHandler::HandleAccept(
     bool enable_backup_restore,
     bool enable_location_services) {
+  if (!NeedDispatchEventOnAction())
+    return;
+
   pref_handler_->EnableBackupRestore(enable_backup_restore);
   pref_handler_->EnableLocationService(enable_location_services);
   for (auto& observer : observer_list_)
