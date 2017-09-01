@@ -265,19 +265,22 @@ template("linux_package") {
     args = [
       rebase_path("$root_out_dir/linux_package.lock", root_build_dir),
       rebase_path("$root_out_dir/installer/debian/build.sh", root_build_dir),
-      "-o",
-      rebase_path(root_out_dir, root_build_dir),
-      "-b",
-      rebase_path(root_out_dir, root_build_dir),
       "-a",
       build_script_arch,
+      "-b",
+      rebase_path(root_out_dir, root_build_dir),
       "-c",
       invoker.channel,
       "-d",
       branding_path_component,
+      "-o",
+      rebase_path(root_out_dir, root_build_dir),
       "-s",
       rebase_path(sysroot),
     ]
+    if (is_official_build) {
+      args += [ "-f" ]
+    }
     deps = [
       ":installer_deps",
     ]
@@ -307,17 +310,20 @@ template("linux_package") {
       args = [
         rebase_path("$root_out_dir/linux_package.lock", root_build_dir),
         rebase_path("$root_out_dir/installer/rpm/build.sh", root_build_dir),
-        "-o",
-        rebase_path(root_out_dir, root_build_dir),
-        "-b",
-        rebase_path(root_out_dir, root_build_dir),
         "-a",
         build_script_arch,
+        "-b",
+        rebase_path(root_out_dir, root_build_dir),
         "-c",
         invoker.channel,
         "-d",
         branding_path_component,
+        "-o",
+        rebase_path(root_out_dir, root_build_dir),
       ]
+      if (is_official_build) {
+        args += [ "-f" ]
+      }
       deps = [
         ":installer_deps",
       ]

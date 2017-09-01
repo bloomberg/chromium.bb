@@ -118,7 +118,12 @@ do_package() {
   if [ -f "${DEB_CONTROL}" ]; then
     gen_control
   fi
-  fakeroot dpkg-deb -Zxz -z9 -b "${STAGEDIR}" .
+  if [ ${IS_OFFICIAL_BUILD} -ne 0 ]; then
+    local COMPRESSION_OPTS="-Zxz -z9"
+  else
+    local COMPRESSION_OPTS="-Znone"
+  fi
+  fakeroot dpkg-deb ${COMPRESSION_OPTS} -b "${STAGEDIR}" .
   verify_package "$DEPENDS"
 }
 
@@ -130,15 +135,16 @@ cleanup() {
 }
 
 usage() {
-  echo "usage: $(basename $0) [-c channel] [-a target_arch] [-o 'dir'] "
-  echo "                      [-b 'dir'] -d branding"
-  echo "-c channel the package channel (trunk, asan, unstable, beta, stable)"
-  echo "-a arch    package architecture (ia32 or x64)"
-  echo "-o dir     package output directory [${OUTPUTDIR}]"
-  echo "-b dir     build input directory    [${BUILDDIR}]"
-  echo "-d brand   either chromium or google_chrome"
-  echo "-s dir     /path/to/sysroot"
-  echo "-h         this help message"
+  echo "usage: $(basename $0) [-a target_arch] [-b 'dir'] [-c channel]"
+  echo "                      -d branding [-f] [-o 'dir'] -s 'dir'"
+  echo "-a arch     package architecture (ia32 or x64)"
+  echo "-b dir      build input directory    [${BUILDDIR}]"
+  echo "-c channel  the package channel (trunk, asan, unstable, beta, stable)"
+  echo "-d brand    either chromium or google_chrome"
+  echo "-f          indicates that this is an official build"
+  echo "-h          this help message"
+  echo "-o dir      package output directory [${OUTPUTDIR}]"
+  echo "-s dir      /path/to/sysroot"
 }
 
 # Check that the channel name is one of the allowable ones.
@@ -172,12 +178,11 @@ verify_channel() {
 }
 
 process_opts() {
-  while getopts ":s:o:b:c:a:d:h" OPTNAME
+  while getopts ":a:b:c:d:fho:s:" OPTNAME
   do
     case $OPTNAME in
-      o )
-        OUTPUTDIR=$(readlink -f "${OPTARG}")
-        mkdir -p "${OUTPUTDIR}"
+      a )
+        TARGETARCH="$OPTARG"
         ;;
       b )
         BUILDDIR=$(readlink -f "${OPTARG}")
@@ -185,20 +190,24 @@ process_opts() {
       c )
         CHANNEL="$OPTARG"
         ;;
-      a )
-        TARGETARCH="$OPTARG"
-        ;;
       d )
         BRANDING="$OPTARG"
         ;;
-      s )
-        SYSROOT="$OPTARG"
+      f )
+        IS_OFFICIAL_BUILD=1
         ;;
       h )
         usage
         exit 0
         ;;
-      \: )
+      o )
+        OUTPUTDIR=$(readlink -f "${OPTARG}")
+        mkdir -p "${OUTPUTDIR}"
+        ;;
+      s )
+        SYSROOT="$OPTARG"
+        ;;
+     \: )
         echo "'-$OPTARG' needs an argument."
         usage
         exit 1
@@ -230,6 +239,7 @@ fi
 trap cleanup 0
 process_opts "$@"
 BUILDDIR=${BUILDDIR:=$(readlink -f "${SCRIPTDIR}/../../../../out/Release")}
+IS_OFFICIAL_BUILD=${IS_OFFICIAL_BUILD:=0}
 
 STAGEDIR="${BUILDDIR}/deb-staging-${CHANNEL}"
 mkdir -p "${STAGEDIR}"
