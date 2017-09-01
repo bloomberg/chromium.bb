@@ -302,7 +302,7 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
         // Context has changed, so we want to remove any old suggestions from the carousel.
         mSuggestionsCarousel.clearSuggestions();
 
-        String text = String.format(Locale.US, "Fetching contextual suggestions...");
+        String text = "Fetching contextual suggestions...";
         Toast.makeText(mRecyclerView.getContext(), text, Toast.LENGTH_SHORT).show();
         mSuggestionsUiDelegate.getSuggestionsSource().fetchContextualSuggestions(
                 url, new Callback<List<SnippetArticle>>() {
@@ -310,6 +310,9 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
                     public void onResult(List<SnippetArticle> contextualSuggestions) {
                         mSuggestionsCarousel.newContextualSuggestionsAvailable(
                                 url, contextualSuggestions);
+                        String text = String.format(Locale.US, "Fetched %d contextual suggestions.",
+                                contextualSuggestions.size());
+                        Toast.makeText(mRecyclerView.getContext(), text, Toast.LENGTH_SHORT).show();
                     }
                 });
     }
