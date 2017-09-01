@@ -1317,30 +1317,6 @@ class InvalidExternalEstimateProvider : public ExternalEstimateProvider {
   InvalidExternalEstimateProvider() : update_count_(0) {}
   ~InvalidExternalEstimateProvider() override {}
 
-  bool GetRTT(base::TimeDelta* rtt) const override {
-    DCHECK(rtt);
-    return false;
-  }
-
-  bool GetDownstreamThroughputKbps(
-      int32_t* downstream_throughput_kbps) const override {
-    DCHECK(downstream_throughput_kbps);
-    return false;
-  }
-
-  bool GetUpstreamThroughputKbps(
-      int32_t* upstream_throughput_kbps) const override {
-    // NetworkQualityEstimator does not support upstream throughput.
-    ADD_FAILURE();
-    return false;
-  }
-
-  bool GetTimeSinceLastUpdate(
-      base::TimeDelta* time_since_last_update) const override {
-    NOTREACHED();
-    return false;
-  }
-
   void SetUpdatedEstimateDelegate(UpdatedEstimateDelegate* delegate) override {}
 
   void Update() const override { update_count_++; }
@@ -1397,29 +1373,6 @@ class TestExternalEstimateProvider : public ExternalEstimateProvider {
         update_count_(0) {}
   ~TestExternalEstimateProvider() override {}
 
-  bool GetRTT(base::TimeDelta* rtt) const override {
-    NOTREACHED();
-    return true;
-  }
-
-  bool GetDownstreamThroughputKbps(
-      int32_t* downstream_throughput_kbps) const override {
-    NOTREACHED();
-    return true;
-  }
-
-  bool GetUpstreamThroughputKbps(
-      int32_t* upstream_throughput_kbps) const override {
-    NOTREACHED();
-    return false;
-  }
-
-  bool GetTimeSinceLastUpdate(
-      base::TimeDelta* time_since_last_update) const override {
-    NOTREACHED();
-    return true;
-  }
-
   void SetUpdatedEstimateDelegate(UpdatedEstimateDelegate* delegate) override {
     delegate_ = delegate;
   }
@@ -1432,8 +1385,7 @@ class TestExternalEstimateProvider : public ExternalEstimateProvider {
     update_count_++;
     if (!should_notify_delegate_)
       return;
-    delegate_->OnUpdatedEstimateAvailable(rtt_, downstream_throughput_kbps_,
-                                          -1);
+    delegate_->OnUpdatedEstimateAvailable(rtt_, downstream_throughput_kbps_);
   }
 
   size_t update_count() const { return update_count_; }

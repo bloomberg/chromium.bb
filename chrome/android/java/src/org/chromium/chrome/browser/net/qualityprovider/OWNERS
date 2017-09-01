@@ -1,15 +1,4 @@
-battre@chromium.org
-cbentzel@chromium.org
-eroman@chromium.org
-mattm@chromium.org
-mef@chromium.org
-mmenke@chromium.org
-pauljensen@chromium.org 
-rdsmith@chromium.org
-rsleevi@chromium.org
-rtenneti@chromium.org
+file://net/nqe/OWNERS
 
-per-file NetworkQuality*=bengr@chromium.org
-per-file ExternalEstimate*=bengr@chromium.org
-
-# COMPONENT: Internals>Network>Connectivity
+# TEAM: nqe-dev@chromium.org
+# COMPONENT: Internals>Network>NetworkQuality

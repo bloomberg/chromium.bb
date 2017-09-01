@@ -231,8 +231,7 @@ class NET_EXPORT NetworkQualityEstimator
 
   // ExternalEstimateProvider::UpdatedEstimateObserver implementation.
   void OnUpdatedEstimateAvailable(const base::TimeDelta& rtt,
-                                  int32_t downstream_throughput_kbps,
-                                  int32_t upstream_throughput_kbps) override;
+                                  int32_t downstream_throughput_kbps) override;
 
   // Returns true if median RTT at the HTTP layer is available and sets |rtt|
   // to the median of RTT observations since |start_time|.

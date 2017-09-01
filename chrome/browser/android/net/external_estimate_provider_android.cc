@@ -28,77 +28,47 @@ ExternalEstimateProviderAndroid::ExternalEstimateProviderAndroid()
           env, reinterpret_cast<intptr_t>(this)));
   DCHECK(!j_external_estimate_provider_.is_null());
   no_value_ = Java_ExternalEstimateProviderAndroid_getNoValue(env);
+  DCHECK_GE(-1, no_value_);
 }
 
 ExternalEstimateProviderAndroid::~ExternalEstimateProviderAndroid() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  Java_ExternalEstimateProviderAndroid_destroy(
-      base::android::AttachCurrentThread(), j_external_estimate_provider_);
+  if (!j_external_estimate_provider_.is_null()) {
+    Java_ExternalEstimateProviderAndroid_destroy(
+        base::android::AttachCurrentThread(), j_external_estimate_provider_);
+  }
 }
 
-bool ExternalEstimateProviderAndroid::GetRTT(base::TimeDelta* rtt) const {
+base::TimeDelta ExternalEstimateProviderAndroid::GetRTT() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   JNIEnv* env = base::android::AttachCurrentThread();
   int32_t milliseconds =
       Java_ExternalEstimateProviderAndroid_getRTTMilliseconds(
           env, j_external_estimate_provider_);
   DCHECK_GE(milliseconds, no_value_);
-  if (milliseconds == no_value_)
-    return false;
-  *rtt = base::TimeDelta::FromMilliseconds(milliseconds);
-  return true;
+  return base::TimeDelta::FromMilliseconds(milliseconds);
 }
 
-bool ExternalEstimateProviderAndroid::GetDownstreamThroughputKbps(
-    int32_t* downstream_throughput_kbps) const {
+int32_t ExternalEstimateProviderAndroid::GetDownstreamThroughputKbps() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   JNIEnv* env = base::android::AttachCurrentThread();
   int32_t kbps =
       Java_ExternalEstimateProviderAndroid_getDownstreamThroughputKbps(
           env, j_external_estimate_provider_);
   DCHECK_GE(kbps, no_value_);
-  if (kbps == no_value_)
-    return false;
-  *downstream_throughput_kbps = kbps;
-  return true;
-}
-
-bool ExternalEstimateProviderAndroid::GetUpstreamThroughputKbps(
-    int32_t* upstream_throughput_kbps) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  JNIEnv* env = base::android::AttachCurrentThread();
-  int32_t kbps = Java_ExternalEstimateProviderAndroid_getUpstreamThroughputKbps(
-      env, j_external_estimate_provider_);
-  DCHECK_GE(kbps, no_value_);
-  if (kbps == no_value_)
-    return false;
-  *upstream_throughput_kbps = kbps;
-  return true;
-}
-
-bool ExternalEstimateProviderAndroid::GetTimeSinceLastUpdate(
-    base::TimeDelta* time_since_last_update) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  JNIEnv* env = base::android::AttachCurrentThread();
-  int32_t seconds =
-      Java_ExternalEstimateProviderAndroid_getTimeSinceLastUpdateSeconds(
-          env, j_external_estimate_provider_);
-  DCHECK_GE(seconds, no_value_);
-  if (seconds == no_value_) {
-    *time_since_last_update = base::TimeDelta::Max();
-    return false;
-  }
-  *time_since_last_update = base::TimeDelta::FromMilliseconds(seconds);
-  return true;
+  return kbps;
 }
 
 void ExternalEstimateProviderAndroid::SetUpdatedEstimateDelegate(
     net::ExternalEstimateProvider::UpdatedEstimateDelegate* delegate) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   delegate_ = delegate;
 }
 
 void ExternalEstimateProviderAndroid::Update() const {
   DCHECK(thread_checker_.CalledOnValidThread());
+  if (j_external_estimate_provider_.is_null())
+    return;
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_ExternalEstimateProviderAndroid_requestUpdate(
       env, j_external_estimate_provider_);
@@ -127,19 +97,11 @@ void ExternalEstimateProviderAndroid::
 
 void ExternalEstimateProviderAndroid::NotifyUpdatedEstimateAvailable() const {
   DCHECK(thread_checker_.CalledOnValidThread());
-
-  base::TimeDelta rtt;
-  GetRTT(&rtt);
-
-  int32_t downstream_throughput_kbps = -1;
-  GetDownstreamThroughputKbps(&downstream_throughput_kbps);
-
-  int32_t upstream_throughput_kbps = -1;
-  GetUpstreamThroughputKbps(&upstream_throughput_kbps);
+  DCHECK(!j_external_estimate_provider_.is_null());
 
   if (delegate_) {
-    delegate_->OnUpdatedEstimateAvailable(rtt, downstream_throughput_kbps,
-                                          upstream_throughput_kbps);
+    delegate_->OnUpdatedEstimateAvailable(GetRTT(),
+                                          GetDownstreamThroughputKbps());
   }
 }
 

@@ -1565,8 +1565,7 @@ bool NetworkQualityEstimator::ReadCachedNetworkQualityEstimate() {
 
 void NetworkQualityEstimator::OnUpdatedEstimateAvailable(
     const base::TimeDelta& rtt,
-    int32_t downstream_throughput_kbps,
-    int32_t upstream_throughput_kbps) {
+    int32_t downstream_throughput_kbps) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(external_estimate_provider_);
 

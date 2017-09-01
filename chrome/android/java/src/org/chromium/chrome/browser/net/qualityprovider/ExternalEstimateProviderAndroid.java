@@ -77,17 +77,7 @@ public class ExternalEstimateProviderAndroid {
      * @return The expected upstream throughput in Kbps (Kilobits per second) or
      *         {@link #NO_VALUE} if the estimate is unavailable.
      */
-    @CalledByNative
     protected long getUpstreamThroughputKbps() {
-        assert mThreadCheck.calledOnValidThread();
-        return NO_VALUE;
-    }
-
-    /**
-     * @return Time (in seconds) since the network quality estimate was last updated.
-     */
-    @CalledByNative
-    protected long getTimeSinceLastUpdateSeconds() {
         assert mThreadCheck.calledOnValidThread();
         return NO_VALUE;
     }
