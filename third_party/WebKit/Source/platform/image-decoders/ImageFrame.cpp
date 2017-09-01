@@ -36,7 +36,6 @@ ImageFrame::ImageFrame()
     : allocator_(0),
       has_alpha_(true),
       status_(kFrameEmpty),
-      duration_(0),
       disposal_method_(kDisposeNotSpecified),
       alpha_blend_source_(kBlendAtopPreviousFrame),
       premultiply_alpha_(true),

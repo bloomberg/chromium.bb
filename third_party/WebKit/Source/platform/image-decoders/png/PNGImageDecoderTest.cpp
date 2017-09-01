@@ -6,6 +6,7 @@
 
 #include <memory>
 #include "platform/image-decoders/ImageDecoderTestHelpers.h"
+#include "platform/wtf/Time.h"
 #include "png.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -101,7 +102,7 @@ void TestRepetitionCount(const char* png_file, int expected_repetition_count) {
 }
 
 struct PublicFrameInfo {
-  size_t duration;
+  TimeDelta duration;
   IntRect frame_rect;
   ImageFrame::AlphaBlendSource alpha_blend;
   ImageFrame::DisposalMethod disposal_method;
@@ -110,19 +111,19 @@ struct PublicFrameInfo {
 // This is the frame data for the following PNG image:
 // /LayoutTests/images/resources/png-animated-idat-part-of-animation.png
 static PublicFrameInfo g_png_animated_frame_info[] = {
-    {500,
+    {TimeDelta::FromMilliseconds(500),
      {IntPoint(0, 0), IntSize(5, 5)},
      ImageFrame::kBlendAtopBgcolor,
      ImageFrame::kDisposeKeep},
-    {900,
+    {TimeDelta::FromMilliseconds(900),
      {IntPoint(1, 1), IntSize(3, 1)},
      ImageFrame::kBlendAtopBgcolor,
      ImageFrame::kDisposeOverwriteBgcolor},
-    {2000,
+    {TimeDelta::FromMilliseconds(2000),
      {IntPoint(1, 2), IntSize(3, 2)},
      ImageFrame::kBlendAtopPreviousFrame,
      ImageFrame::kDisposeKeep},
-    {1500,
+    {TimeDelta::FromMilliseconds(1500),
      {IntPoint(1, 2), IntSize(3, 1)},
      ImageFrame::kBlendAtopBgcolor,
      ImageFrame::kDisposeKeep},
@@ -953,7 +954,7 @@ TEST(StaticPNGTests, sizeTest) {
 
 TEST(StaticPNGTests, MetaDataTest) {
   const size_t kExpectedFrameCount = 1;
-  const size_t kExpectedDuration = 0;
+  const TimeDelta kExpectedDuration;
   auto decoder = CreatePNGDecoderWithPngData(
       "/LayoutTests/images/resources/png-simple.png");
   EXPECT_EQ(kExpectedFrameCount, decoder->FrameCount());

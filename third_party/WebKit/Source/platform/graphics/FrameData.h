@@ -33,6 +33,7 @@
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/RefPtr.h"
+#include "platform/wtf/Time.h"
 #include "platform/wtf/VectorTraits.h"
 
 namespace blink {
@@ -50,7 +51,7 @@ struct FrameData {
   void Clear(bool clear_metadata);
 
   ImageOrientation orientation_;
-  float duration_;
+  TimeDelta duration_;
   bool have_metadata_ : 1;
   bool is_complete_ : 1;
   bool has_alpha_ : 1;

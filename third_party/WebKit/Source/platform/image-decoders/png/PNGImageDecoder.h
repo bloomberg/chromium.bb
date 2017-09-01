@@ -29,6 +29,7 @@
 #include <memory>
 #include "platform/image-decoders/ImageDecoder.h"
 #include "platform/image-decoders/png/PNGImageReader.h"
+#include "platform/wtf/Time.h"
 
 namespace blink {
 
@@ -47,7 +48,7 @@ class PLATFORM_EXPORT PNGImageDecoder final : public ImageDecoder {
   bool SetSize(unsigned, unsigned) override;
   int RepetitionCount() const override;
   bool FrameIsReceivedAtIndex(size_t) const override;
-  float FrameDurationAtIndex(size_t) const override;
+  TimeDelta FrameDurationAtIndex(size_t) const override;
   bool SetFailed() override;
 
   // Callbacks from libpng

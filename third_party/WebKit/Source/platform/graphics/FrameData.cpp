@@ -31,7 +31,6 @@ namespace blink {
 
 FrameData::FrameData()
     : orientation_(kDefaultImageOrientation),
-      duration_(0),
       have_metadata_(false),
       is_complete_(false),
       has_alpha_(true),

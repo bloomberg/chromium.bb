@@ -30,6 +30,7 @@
 #include "platform/image-decoders/ImageDecoder.h"
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/RefPtr.h"
+#include "platform/wtf/Time.h"
 #include "third_party/skia/include/codec/SkCodec.h"
 
 namespace blink {
@@ -49,7 +50,7 @@ class PLATFORM_EXPORT GIFImageDecoder final : public ImageDecoder {
   void OnSetData(SegmentReader* data) override;
   int RepetitionCount() const override;
   bool FrameIsReceivedAtIndex(size_t) const override;
-  float FrameDurationAtIndex(size_t) const override;
+  TimeDelta FrameDurationAtIndex(size_t) const override;
   // CAUTION: SetFailed() deletes |codec_|. Be careful to avoid
   // accessing deleted memory.
   bool SetFailed() override;

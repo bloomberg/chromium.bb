@@ -31,6 +31,7 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Assertions.h"
+#include "platform/wtf/Time.h"
 #include "public/platform/WebVector.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
@@ -127,7 +128,7 @@ class PLATFORM_EXPORT ImageFrame final {
   bool HasAlpha() const;
   const IntRect& OriginalFrameRect() const { return original_frame_rect_; }
   Status GetStatus() const { return status_; }
-  unsigned Duration() const { return duration_; }
+  TimeDelta Duration() const { return duration_; }
   DisposalMethod GetDisposalMethod() const { return disposal_method_; }
   AlphaBlendSource GetAlphaBlendSource() const { return alpha_blend_source_; }
   bool PremultiplyAlpha() const { return premultiply_alpha_; }
@@ -150,7 +151,7 @@ class PLATFORM_EXPORT ImageFrame final {
   void SetHasAlpha(bool alpha);
   void SetOriginalFrameRect(const IntRect& r) { original_frame_rect_ = r; }
   void SetStatus(Status);
-  void SetDuration(unsigned duration) { duration_ = duration; }
+  void SetDuration(TimeDelta duration) { duration_ = duration; }
   void SetDisposalMethod(DisposalMethod disposal_method) {
     disposal_method_ = disposal_method;
   }
@@ -284,7 +285,7 @@ class PLATFORM_EXPORT ImageFrame final {
   // frames whose original rect was smaller than the overall image size.
   IntRect original_frame_rect_;
   Status status_;
-  unsigned duration_;
+  TimeDelta duration_;
   DisposalMethod disposal_method_;
   AlphaBlendSource alpha_blend_source_;
   bool premultiply_alpha_;
