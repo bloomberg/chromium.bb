@@ -794,8 +794,6 @@ void RenderWidgetHostViewMac::SetSize(const gfx::Size& size) {
 void RenderWidgetHostViewMac::SetBounds(const gfx::Rect& rect) {
   // |rect.size()| is view coordinates, |rect.origin| is screen coordinates,
   // TODO(thakis): fix, http://crbug.com/73362
-  if (render_widget_host_->is_hidden())
-    return;
 
   // During the initial creation of the RenderWidgetHostView in
   // WebContentsImpl::CreateRenderViewForRenderManager, SetSize is called with
