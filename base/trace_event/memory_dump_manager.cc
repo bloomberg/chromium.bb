@@ -92,6 +92,11 @@ struct SessionStateConvertableProxy : public ConvertableToTraceFormat {
   GetterFunctPtr const getter_function;
 };
 
+inline bool IsHeapProfilingModeEnabled(HeapProfilingMode mode) {
+  return mode != kHeapProfilingModeDisabled &&
+         mode != kHeapProfilingModeInvalid;
+}
+
 }  // namespace
 
 // static
@@ -134,7 +139,7 @@ MemoryDumpManager::MemoryDumpManager()
     : is_coordinator_(false),
       tracing_process_id_(kInvalidTracingProcessId),
       dumper_registrations_ignored_for_testing_(false),
-      heap_profiling_state_(HeapProfilingState::DISABLED) {
+      heap_profiling_mode_(kHeapProfilingModeDisabled) {
   // At this point the command line may not be initialized but we try to
   // enable the heap profiler to capture allocations as soon as possible.
   EnableHeapProfilingIfNeeded();
@@ -178,65 +183,102 @@ HeapProfilingMode MemoryDumpManager::GetHeapProfilingModeFromCommandLine() {
 }
 
 void MemoryDumpManager::EnableHeapProfilingIfNeeded() {
-  {
-    AutoLock lock(lock_);
-    if (heap_profiling_state_ != HeapProfilingState::DISABLED)
-      return;
-  }
+#if BUILDFLAG(USE_ALLOCATOR_SHIM) && !defined(OS_NACL)
   HeapProfilingMode profiling_mode = GetHeapProfilingModeFromCommandLine();
-  if (profiling_mode != kHeapProfilingModeDisabled &&
-      profiling_mode != kHeapProfilingModeInvalid) {
+  if (IsHeapProfilingModeEnabled(profiling_mode)) {
     EnableHeapProfiling(profiling_mode);
+  } else {
+    if (profiling_mode == kHeapProfilingModeInvalid) {
+      // Heap profiling is misconfigured, disable it permanently.
+      EnableHeapProfiling(kHeapProfilingModeDisabled);
+    }
   }
+#else
+  // Heap profiling is unsupported, disable it permanently.
+  EnableHeapProfiling(kHeapProfilingModeDisabled);
+#endif  // BUILDFLAG(USE_ALLOCATOR_SHIM) && !defined(OS_NACL)
 }
 
-void MemoryDumpManager::EnableHeapProfiling(HeapProfilingMode profiling_mode) {
-#if BUILDFLAG(USE_ALLOCATOR_SHIM) && !defined(OS_NACL)
+bool MemoryDumpManager::EnableHeapProfiling(HeapProfilingMode profiling_mode) {
   AutoLock lock(lock_);
-  // Should we not enable heap profiling if tracing is enabled, since
-  // session_state_ will not be initialized.
-  if (heap_profiling_state_ == HeapProfilingState::DISABLED_PERMANENTLY)
-    return;
+#if BUILDFLAG(USE_ALLOCATOR_SHIM) && !defined(OS_NACL)
+  bool notify_mdps = true;
 
-  if (heap_profiling_state_ == HeapProfilingState::DISABLED) {
-    switch (profiling_mode) {
-      case kHeapProfilingModePseudo:
-        AllocationContextTracker::SetCaptureMode(
-            AllocationContextTracker::CaptureMode::PSEUDO_STACK);
-        break;
-      case kHeapProfilingModeNative:
-        // If we don't have frame pointers then native tracing falls-back to
-        // using base::debug::StackTrace, which may be slow.
-        AllocationContextTracker::SetCaptureMode(
-            AllocationContextTracker::CaptureMode::NATIVE_STACK);
-        break;
-      case kHeapProfilingModeNoStack:
-        AllocationContextTracker::SetCaptureMode(
-            AllocationContextTracker::CaptureMode::NO_STACK);
-        break;
-      case kHeapProfilingModeTaskProfiler:
-        if (!base::debug::ThreadHeapUsageTracker::IsHeapTrackingEnabled())
-          base::debug::ThreadHeapUsageTracker::EnableHeapTracking();
-        return;  // Do not notify dump providers.
-      default:
-        return;  // Do not notify dump providers.
+  // TODO(kraynov, ssid): Remove this when heap profiler will be capable to
+  // get enabled when tracing had already started.
+  if (heap_profiler_serialization_state_) {
+    LOG(ERROR) << "EnableHeapProfiling can't be used when tracing is enabled.";
+    return false;
+  }
+
+  if (heap_profiling_mode_ == kHeapProfilingModeInvalid)
+    return false;  // Disabled permanently.
+
+  if (IsHeapProfilingModeEnabled(heap_profiling_mode_) ==
+      IsHeapProfilingModeEnabled(profiling_mode)) {
+    if (profiling_mode == kHeapProfilingModeDisabled)
+      heap_profiling_mode_ = kHeapProfilingModeInvalid;  // Disable permanently.
+    return false;
+  }
+
+  switch (profiling_mode) {
+    case kHeapProfilingModePseudo:
+      AllocationContextTracker::SetCaptureMode(
+          AllocationContextTracker::CaptureMode::PSEUDO_STACK);
+      break;
+
+    case kHeapProfilingModeNative:
+      // If we don't have frame pointers then native tracing falls-back to
+      // using base::debug::StackTrace, which may be slow.
+      AllocationContextTracker::SetCaptureMode(
+          AllocationContextTracker::CaptureMode::NATIVE_STACK);
+      break;
+
+    case kHeapProfilingModeNoStack:
+      AllocationContextTracker::SetCaptureMode(
+          AllocationContextTracker::CaptureMode::NO_STACK);
+      break;
+
+    case kHeapProfilingModeTaskProfiler:
+      if (!base::debug::ThreadHeapUsageTracker::IsHeapTrackingEnabled())
+        base::debug::ThreadHeapUsageTracker::EnableHeapTracking();
+      notify_mdps = false;
+      break;
+
+    case kHeapProfilingModeDisabled:
+      if (heap_profiling_mode_ == kHeapProfilingModeTaskProfiler) {
+        LOG(ERROR) << "ThreadHeapUsageTracker cannot be disabled.";
+        return false;
+      }
+      AllocationContextTracker::SetCaptureMode(
+          AllocationContextTracker::CaptureMode::DISABLED);
+      heap_profiling_mode_ = kHeapProfilingModeInvalid;  // Disable permanently.
+      break;
+
+    default:
+      NOTREACHED() << "Incorrect heap profiling mode " << profiling_mode;
+      return false;
+  }
+
+  if (heap_profiling_mode_ != kHeapProfilingModeInvalid)
+    heap_profiling_mode_ = profiling_mode;
+
+  if (notify_mdps) {
+    for (auto mdp : dump_providers_) {
+      mdp->dump_provider->OnHeapProfilingEnabled(
+          IsHeapProfilingModeEnabled(heap_profiling_mode_));
     }
-    heap_profiling_state_ = HeapProfilingState::ENABLED;
-  } else if (profiling_mode == kHeapProfilingModeDisabled) {
-    heap_profiling_state_ = HeapProfilingState::DISABLED_PERMANENTLY;
-    AllocationContextTracker::SetCaptureMode(
-        AllocationContextTracker::CaptureMode::DISABLED);
-    DCHECK(!base::debug::ThreadHeapUsageTracker::IsHeapTrackingEnabled())
-        << "ThreadHeapUsageTracker cannot be disabled";
-  } else {
-    return;
   }
-
-  for (auto mdp : dump_providers_) {
-    mdp->dump_provider->OnHeapProfilingEnabled(heap_profiling_state_ ==
-                                               HeapProfilingState::ENABLED);
-  }
+  return true;
+#else
+  heap_profiling_mode_ = kHeapProfilingModeInvalid;
+  return false;
 #endif  // BUILDFLAG(USE_ALLOCATOR_SHIM) && !defined(OS_NACL)
+}
+
+HeapProfilingMode MemoryDumpManager::GetHeapProfilingMode() {
+  AutoLock lock(lock_);
+  return heap_profiling_mode_;
 }
 
 void MemoryDumpManager::Initialize(
@@ -360,8 +402,7 @@ void MemoryDumpManager::RegisterDumpProviderInternal(
     if (options.is_fast_polling_supported)
       MemoryPeakDetector::GetInstance()->NotifyMemoryDumpProvidersChanged();
 
-    heap_profiling_enabled =
-        heap_profiling_state_ == HeapProfilingState::ENABLED;
+    heap_profiling_enabled = IsHeapProfilingModeEnabled(heap_profiling_mode_);
   }
 
   if (heap_profiling_enabled)
@@ -496,7 +537,7 @@ void MemoryDumpManager::CreateProcessDump(
     // require session state so if heap profiling is on and session state is
     // absent we fail the dump immediately.
     if (args.dump_type != MemoryDumpType::SUMMARY_ONLY &&
-        heap_profiling_state_ == HeapProfilingState::ENABLED &&
+        IsHeapProfilingModeEnabled(heap_profiling_mode_) &&
         !heap_profiler_serialization_state_) {
       callback.Run(false /* success */, args.dump_guid, nullptr);
       return;
@@ -705,7 +746,7 @@ void MemoryDumpManager::SetupForTracing(
   heap_profiler_serialization_state
       ->set_heap_profiler_breakdown_threshold_bytes(
           memory_dump_config.heap_profiler_options.breakdown_threshold_bytes);
-  if (heap_profiling_state_ == HeapProfilingState::ENABLED) {
+  if (IsHeapProfilingModeEnabled(heap_profiling_mode_)) {
     // If heap profiling is enabled, the stack frame deduplicator and type name
     // deduplicator will be in use. Add a metadata events to write the frames
     // and type IDs.
