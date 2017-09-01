@@ -15,9 +15,19 @@
 @synthesize baseViewController;
 
 - (void)start {
-  UIViewController* bottomToolbarTabViewController =
-      [[BottomToolbarTabViewController alloc] init];
+  TabContainerViewController* bottomToolbarTabViewController =
+      [[TabContainerViewController alloc] init];
+  bottomToolbarTabViewController.usesBottomToolbar = YES;
   bottomToolbarTabViewController.title = @"Bottom toolbar tab";
+
+  UIViewController* toolbar = [[UIViewController alloc] init];
+  toolbar.view.backgroundColor = [UIColor greenColor];
+  bottomToolbarTabViewController.toolbarViewController = toolbar;
+
+  UIViewController* content = [[UIViewController alloc] init];
+  content.view.backgroundColor = [UIColor whiteColor];
+  bottomToolbarTabViewController.contentViewController = content;
+
   [self.baseViewController pushViewController:bottomToolbarTabViewController
                                      animated:YES];
 }

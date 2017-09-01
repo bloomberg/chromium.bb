@@ -46,6 +46,11 @@
 
 @property(nonatomic, strong) UIViewController* locationBarViewController;
 
+// By default, this view controller does not interact with the tab strip. When
+// |usesTabStrip| is YES, the tab switcher button first displays the tab strip.
+// A second tap on the tab switcher displays the tab grid.
+@property(nonatomic, assign) BOOL usesTabStrip;
+
 @end
 
 #endif  // IOS_CLEAN_CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_VIEW_CONTROLLER_H_

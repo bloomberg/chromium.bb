@@ -27,6 +27,8 @@
 #import "ios/clean/chrome/browser/ui/overlays/overlay_service_observer_bridge.h"
 #import "ios/clean/chrome/browser/ui/settings/settings_coordinator.h"
 #import "ios/clean/chrome/browser/ui/tab/tab_coordinator.h"
+#include "ios/clean/chrome/browser/ui/tab/tab_features.h"
+#import "ios/clean/chrome/browser/ui/tab/tab_strip_tab_coordinator.h"
 #import "ios/clean/chrome/browser/ui/tab_grid/tab_grid_mediator.h"
 #import "ios/clean/chrome/browser/ui/tab_grid/tab_grid_view_controller.h"
 #import "ios/clean/chrome/browser/ui/tools/tools_coordinator.h"
@@ -87,6 +89,8 @@
 #pragma mark - BrowserCoordinator
 
 - (void)start {
+  if (self.started)
+    return;
   self.mediator = [[TabGridMediator alloc] init];
   self.mediator.webStateList = &self.webStateList;
 
@@ -199,7 +203,7 @@
   // on its own.
   [self.activeTabCoordinator stop];
   [self removeChildCoordinator:self.activeTabCoordinator];
-  TabCoordinator* tabCoordinator = [[TabCoordinator alloc] init];
+  TabCoordinator* tabCoordinator = [self newTabCoordinator];
   self.activeTabCoordinator = tabCoordinator;
   tabCoordinator.webState = self.webStateList.GetWebStateAt(index);
   tabCoordinator.presentationKey =
@@ -258,18 +262,16 @@
 #pragma mark - URLOpening
 
 - (void)openURL:(NSURL*)URL {
-  if (self.webStateList.active_index() == WebStateList::kInvalidIndex) {
+  if (self.webStateList.active_index() == WebStateList::kInvalidIndex)
     return;
-  }
   [self.overlayCoordinator stop];
   [self removeOverlayCoordinator];
   web::WebState* activeWebState = self.webStateList.GetActiveWebState();
   web::NavigationManager::WebLoadParams params(net::GURLWithNSURL(URL));
   params.transition_type = ui::PAGE_TRANSITION_LINK;
   activeWebState->GetNavigationManager()->LoadURLWithParams(params);
-  if (!self.children.count) {
+  if (!self.children.count)
     [self showTabGridTabAtIndex:self.webStateList.active_index()];
-  }
 }
 
 #pragma mark - PrivateMethods
@@ -320,6 +322,14 @@
       stopDispatchingForSelector:@selector(showToolsMenu)];
   [self.browser->dispatcher()
       stopDispatchingForSelector:@selector(closeToolsMenu)];
+}
+
+// Creates and returns a tab coordinator based on whether the tap strip is
+// enabled.
+- (TabCoordinator*)newTabCoordinator {
+  return base::FeatureList::IsEnabled(kTabFeaturesTabStrip)
+             ? [[TabStripTabCoordinator alloc] init]
+             : [[TabCoordinator alloc] init];
 }
 
 @end
