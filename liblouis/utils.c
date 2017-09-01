@@ -206,10 +206,12 @@ _lou_showDots (widechar const *dots, int length) {
   static char scratchBuf[MAXSTRING];
   for (int dotsPos = 0; dotsPos < length && bufPos < (MAXSTRING-1); dotsPos++) {
     for (int mappingPos = 0; dotMapping[mappingPos].key; mappingPos++) {
-      if ((dots[dotsPos] & dotMapping[mappingPos].key) && bufPos < (MAXSTRING-1))
+      if ((dots[dotsPos] & dotMapping[mappingPos].key) && (bufPos < (MAXSTRING-1)))
 	scratchBuf[bufPos++] = dotMapping[mappingPos].value;
     }
-    if ((dotsPos != length - 1) && bufPos < (MAXSTRING-1))
+    if ((dots[dotsPos] == B16) && (bufPos < (MAXSTRING-1)))
+      scratchBuf[bufPos++] = '0';
+    if ((dotsPos != length - 1) && (bufPos < (MAXSTRING-1)))
       scratchBuf[bufPos++] = '-';
   }
   scratchBuf[bufPos] = 0;
