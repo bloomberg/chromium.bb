@@ -28,23 +28,29 @@ using payments::JourneyLogger;
   autofill::AutofillProfile _profile1;
   autofill::AutofillProfile _profile2;
   autofill::CreditCard _creditCard1;
+  autofill::CreditCard _creditCard2;
 }
 
-#pragma mark - XCTestCase
+#pragma mark - Helper methods
 
-// Set up called once before each test.
-- (void)setUp {
-  [super setUp];
-
+- (void)addProfiles {
   _profile1 = autofill::test::GetFullProfile();
   [self addAutofillProfile:_profile1];
 
   _profile2 = autofill::test::GetFullProfile2();
   [self addAutofillProfile:_profile2];
+}
 
+- (void)addCard1 {
   _creditCard1 = autofill::test::GetCreditCard();
   _creditCard1.set_billing_address_id(_profile1.guid());
   [self addCreditCard:_creditCard1];
+}
+
+- (void)addCard2 {
+  _creditCard2 = autofill::test::GetCreditCard2();
+  _creditCard2.set_billing_address_id(_profile1.guid());
+  [self addCreditCard:_creditCard2];
 }
 
 #pragma mark - Tests
@@ -53,6 +59,9 @@ using payments::JourneyLogger;
 // Payment Request is completed with a credit card.
 - (void)testSelectedPaymentMethod {
   chrome_test_util::HistogramTester histogramTester;
+
+  [self addProfiles];
+  [self addCard1];
 
   [self loadTestPage:"payment_request_no_shipping_test.html"];
   [ChromeEarlGrey tapWebViewElementWithID:@"buy"];
@@ -106,6 +115,9 @@ using payments::JourneyLogger;
   }
 
   chrome_test_util::HistogramTester histogramTester;
+
+  [self addProfiles];
+  [self addCard1];
 
   [self loadTestPage:"payment_request_bobpay_test.html"];
   [ChromeEarlGrey tapWebViewElementWithID:@"buy"];
@@ -161,6 +173,9 @@ using payments::JourneyLogger;
 
 - (void)testShowSameRequest {
   chrome_test_util::HistogramTester histogramTester;
+
+  [self addProfiles];
+  [self addCard1];
 
   [self loadTestPage:"payment_request_multiple_show_test.html"];
   [ChromeEarlGrey tapWebViewElementWithID:@"buy"];
@@ -223,6 +238,9 @@ using payments::JourneyLogger;
 // when a Payment Request is completed.
 - (void)testAllSectionStats_NumberOfSuggestionsShown_Completed {
   chrome_test_util::HistogramTester histogramTester;
+
+  [self addProfiles];
+  [self addCard1];
 
   [self loadTestPage:
             "payment_request_contact_details_and_free_shipping_test.html"];
@@ -287,6 +305,9 @@ using payments::JourneyLogger;
 // when a Payment Request is aborted by the user.
 - (void)testAllSectionStats_NumberOfSuggestionsShown_UserAborted {
   chrome_test_util::HistogramTester histogramTester;
+
+  [self addProfiles];
+  [self addCard1];
 
   [self loadTestPage:
             "payment_request_contact_details_and_free_shipping_test.html"];
@@ -354,6 +375,9 @@ using payments::JourneyLogger;
 - (void)testNoShippingSectionStats_NumberOfSuggestionsShown_Completed {
   chrome_test_util::HistogramTester histogramTester;
 
+  [self addProfiles];
+  [self addCard1];
+
   [self loadTestPage:"payment_request_contact_details_test.html"];
   [ChromeEarlGrey tapWebViewElementWithID:@"buy"];
   [self payWithCreditCardUsingCVC:@"123"];
@@ -418,6 +442,9 @@ using payments::JourneyLogger;
 // when a Payment Request is aborted by the user.
 - (void)testNoShippingSectionStats_NumberOfSuggestionsShown_UserAborted {
   chrome_test_util::HistogramTester histogramTester;
+
+  [self addProfiles];
+  [self addCard1];
 
   [self loadTestPage:"payment_request_contact_details_test.html"];
   [ChromeEarlGrey tapWebViewElementWithID:@"buy"];
@@ -486,6 +513,9 @@ using payments::JourneyLogger;
 - (void)testNoContactDetailSectionStats_NumberOfSuggestionsShown_Completed {
   chrome_test_util::HistogramTester histogramTester;
 
+  [self addProfiles];
+  [self addCard1];
+
   [self loadTestPage:"payment_request_free_shipping_test.html"];
   [ChromeEarlGrey tapWebViewElementWithID:@"buy"];
   [self payWithCreditCardUsingCVC:@"123"];
@@ -552,6 +582,9 @@ using payments::JourneyLogger;
 - (void)testNoContactDetailSectionStats_NumberOfSuggestionsShown_UserAborted {
   chrome_test_util::HistogramTester histogramTester;
 
+  [self addProfiles];
+  [self addCard1];
+
   [self loadTestPage:"payment_request_free_shipping_test.html"];
   [ChromeEarlGrey tapWebViewElementWithID:@"buy"];
   [[EarlGrey
@@ -613,6 +646,206 @@ using payments::JourneyLogger;
                   @"");
   GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_REQUEST_METHOD_OTHER,
                   @"");
+  GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_SELECTED_CREDIT_CARD,
+                  @"");
+  GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_SELECTED_GOOGLE, @"");
+  GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_SELECTED_OTHER, @"");
+}
+
+// Tests that the correct number of suggestions shown for each section is logged
+// when a Payment Request is aborted by the user.
+- (void)testNotShown_OnlyNotShownMetricsLogged {
+  chrome_test_util::HistogramTester histogramTester;
+
+  [self loadTestPage:"payment_request_can_make_payment_metrics_test.html"];
+  [ChromeEarlGrey tapWebViewElementWithID:@"queryNoShow"];
+
+  // Navigate away to abort the Payment Request and trigger the logs.
+  [self loadTestPage:"payment_request_email_test.html"];
+
+  FailureBlock failureBlock = ^(NSString* error) {
+    GREYFail(error);
+  };
+
+  // Abort should not be logged.
+  histogramTester.ExpectTotalCount("PaymentRequest.CheckoutFunnel.Aborted", 0,
+                                   failureBlock);
+
+  // Some events should be logged.
+  std::vector<chrome_test_util::Bucket> buckets =
+      histogramTester.GetAllSamples("PaymentRequest.Events");
+  GREYAssertEqual(1U, buckets.size(), @"Exactly one bucket");
+
+  // Only USER_ABORTED and CAN_MAKE_PAYMENT_FALSE should be logged.
+  GREYAssertEqual(JourneyLogger::EVENT_USER_ABORTED |
+                      JourneyLogger::EVENT_CAN_MAKE_PAYMENT_FALSE |
+                      JourneyLogger::EVENT_REQUEST_METHOD_OTHER |
+                      JourneyLogger::EVENT_REQUEST_METHOD_BASIC_CARD,
+                  buckets[0].min, @"");
+
+  // Make sure that the metrics that required the Payment Request to be shown
+  // are not logged.
+  histogramTester.ExpectTotalCount("PaymentRequest.SelectedPaymentMethod", 0,
+                                   failureBlock);
+  histogramTester.ExpectTotalCount("PaymentRequest.NumberOfSelectionAdds", 0,
+                                   failureBlock);
+  histogramTester.ExpectTotalCount("PaymentRequest.NumberOfSelectionChanges", 0,
+                                   failureBlock);
+  histogramTester.ExpectTotalCount("PaymentRequest.NumberOfSelectionEdits", 0,
+                                   failureBlock);
+  histogramTester.ExpectTotalCount("PaymentRequest.NumberOfSuggestionsShown", 0,
+                                   failureBlock);
+}
+
+- (void)testUserHadCompleteSuggestionsForEverything {
+  chrome_test_util::HistogramTester histogramTester;
+
+  [self addProfiles];
+  [self addCard1];
+
+  [self loadTestPage:"payment_request_email_test.html"];
+  [ChromeEarlGrey tapWebViewElementWithID:@"buy"];
+
+  // Navigate away to abort the Payment Request and trigger the logs.
+  [self loadTestPage:"payment_request_email_test.html"];
+
+  // Make sure the correct events were logged.
+  std::vector<chrome_test_util::Bucket> buckets =
+      histogramTester.GetAllSamples("PaymentRequest.Events");
+  GREYAssertEqual(1U, buckets.size(), @"Exactly one bucket");
+  GREYAssertTrue(buckets[0].min & JourneyLogger::EVENT_SHOWN, @"");
+  GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_PAY_CLICKED, @"");
+  GREYAssertFalse(
+      buckets[0].min & JourneyLogger::EVENT_RECEIVED_INSTRUMENT_DETAILS, @"");
+  GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_SKIPPED_SHOW, @"");
+  GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_COMPLETED, @"");
+  GREYAssertTrue(buckets[0].min & JourneyLogger::EVENT_USER_ABORTED, @"");
+  GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_OTHER_ABORTED, @"");
+  GREYAssertTrue(
+      buckets[0].min & JourneyLogger::EVENT_HAD_INITIAL_FORM_OF_PAYMENT, @"");
+  GREYAssertTrue(
+      buckets[0].min & JourneyLogger::EVENT_HAD_NECESSARY_COMPLETE_SUGGESTIONS,
+      @"");
+  GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_REQUEST_SHIPPING, @"");
+  GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_REQUEST_PAYER_NAME,
+                  @"");
+  GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_REQUEST_PAYER_PHONE,
+                  @"");
+  GREYAssertTrue(buckets[0].min & JourneyLogger::EVENT_REQUEST_PAYER_EMAIL,
+                 @"");
+  GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_CAN_MAKE_PAYMENT_FALSE,
+                  @"");
+  GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_CAN_MAKE_PAYMENT_TRUE,
+                  @"");
+  GREYAssertTrue(
+      buckets[0].min & JourneyLogger::EVENT_REQUEST_METHOD_BASIC_CARD, @"");
+  GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_REQUEST_METHOD_GOOGLE,
+                  @"");
+  GREYAssertTrue(buckets[0].min & JourneyLogger::EVENT_REQUEST_METHOD_OTHER,
+                 @"");
+  GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_SELECTED_CREDIT_CARD,
+                  @"");
+  GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_SELECTED_GOOGLE, @"");
+  GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_SELECTED_OTHER, @"");
+}
+
+- (void)testUserHadIncompleteSuggestionsForEverything_NoCard {
+  chrome_test_util::HistogramTester histogramTester;
+
+  [self addProfiles];  // The user has no form of payment on file.
+
+  [self loadTestPage:"payment_request_email_test.html"];
+  [ChromeEarlGrey tapWebViewElementWithID:@"buy"];
+
+  // Navigate away to abort the Payment Request and trigger the logs.
+  [self loadTestPage:"payment_request_email_test.html"];
+
+  // Make sure the correct events were logged.
+  std::vector<chrome_test_util::Bucket> buckets =
+      histogramTester.GetAllSamples("PaymentRequest.Events");
+  GREYAssertEqual(1U, buckets.size(), @"Exactly one bucket");
+  GREYAssertTrue(buckets[0].min & JourneyLogger::EVENT_SHOWN, @"");
+  GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_PAY_CLICKED, @"");
+  GREYAssertFalse(
+      buckets[0].min & JourneyLogger::EVENT_RECEIVED_INSTRUMENT_DETAILS, @"");
+  GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_SKIPPED_SHOW, @"");
+  GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_COMPLETED, @"");
+  GREYAssertTrue(buckets[0].min & JourneyLogger::EVENT_USER_ABORTED, @"");
+  GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_OTHER_ABORTED, @"");
+  GREYAssertFalse(
+      buckets[0].min & JourneyLogger::EVENT_HAD_INITIAL_FORM_OF_PAYMENT, @"");
+  GREYAssertFalse(
+      buckets[0].min & JourneyLogger::EVENT_HAD_NECESSARY_COMPLETE_SUGGESTIONS,
+      @"");
+  GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_REQUEST_SHIPPING, @"");
+  GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_REQUEST_PAYER_NAME,
+                  @"");
+  GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_REQUEST_PAYER_PHONE,
+                  @"");
+  GREYAssertTrue(buckets[0].min & JourneyLogger::EVENT_REQUEST_PAYER_EMAIL,
+                 @"");
+  GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_CAN_MAKE_PAYMENT_FALSE,
+                  @"");
+  GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_CAN_MAKE_PAYMENT_TRUE,
+                  @"");
+  GREYAssertTrue(
+      buckets[0].min & JourneyLogger::EVENT_REQUEST_METHOD_BASIC_CARD, @"");
+  GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_REQUEST_METHOD_GOOGLE,
+                  @"");
+  GREYAssertTrue(buckets[0].min & JourneyLogger::EVENT_REQUEST_METHOD_OTHER,
+                 @"");
+  GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_SELECTED_CREDIT_CARD,
+                  @"");
+  GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_SELECTED_GOOGLE, @"");
+  GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_SELECTED_OTHER, @"");
+}
+
+- (void)testUserHadIncompleteSuggestionsForEverything_CardNetworkNotSupported {
+  chrome_test_util::HistogramTester histogramTester;
+
+  [self addProfiles];
+  [self addCard2];  // AMEX is not supported by the merchant.
+
+  [self loadTestPage:"payment_request_email_test.html"];
+  [ChromeEarlGrey tapWebViewElementWithID:@"buy"];
+
+  // Navigate away to abort the Payment Request and trigger the logs.
+  [self loadTestPage:"payment_request_email_test.html"];
+
+  // Make sure the correct events were logged.
+  std::vector<chrome_test_util::Bucket> buckets =
+      histogramTester.GetAllSamples("PaymentRequest.Events");
+  GREYAssertEqual(1U, buckets.size(), @"Exactly one bucket");
+  GREYAssertTrue(buckets[0].min & JourneyLogger::EVENT_SHOWN, @"");
+  GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_PAY_CLICKED, @"");
+  GREYAssertFalse(
+      buckets[0].min & JourneyLogger::EVENT_RECEIVED_INSTRUMENT_DETAILS, @"");
+  GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_SKIPPED_SHOW, @"");
+  GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_COMPLETED, @"");
+  GREYAssertTrue(buckets[0].min & JourneyLogger::EVENT_USER_ABORTED, @"");
+  GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_OTHER_ABORTED, @"");
+  GREYAssertFalse(
+      buckets[0].min & JourneyLogger::EVENT_HAD_INITIAL_FORM_OF_PAYMENT, @"");
+  GREYAssertFalse(
+      buckets[0].min & JourneyLogger::EVENT_HAD_NECESSARY_COMPLETE_SUGGESTIONS,
+      @"");
+  GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_REQUEST_SHIPPING, @"");
+  GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_REQUEST_PAYER_NAME,
+                  @"");
+  GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_REQUEST_PAYER_PHONE,
+                  @"");
+  GREYAssertTrue(buckets[0].min & JourneyLogger::EVENT_REQUEST_PAYER_EMAIL,
+                 @"");
+  GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_CAN_MAKE_PAYMENT_FALSE,
+                  @"");
+  GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_CAN_MAKE_PAYMENT_TRUE,
+                  @"");
+  GREYAssertTrue(
+      buckets[0].min & JourneyLogger::EVENT_REQUEST_METHOD_BASIC_CARD, @"");
+  GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_REQUEST_METHOD_GOOGLE,
+                  @"");
+  GREYAssertTrue(buckets[0].min & JourneyLogger::EVENT_REQUEST_METHOD_OTHER,
+                 @"");
   GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_SELECTED_CREDIT_CARD,
                   @"");
   GREYAssertFalse(buckets[0].min & JourneyLogger::EVENT_SELECTED_GOOGLE, @"");
