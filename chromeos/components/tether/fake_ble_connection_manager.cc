@@ -61,6 +61,11 @@ void FakeBleConnectionManager::SetMessageSent(int sequence_number) {
   SendMessageSentEvent(sequence_number);
 }
 
+bool FakeBleConnectionManager::IsRegistered(
+    const cryptauth::RemoteDevice& remote_device) {
+  return base::ContainsKey(device_map_, remote_device);
+}
+
 void FakeBleConnectionManager::RegisterRemoteDevice(
     const cryptauth::RemoteDevice& remote_device,
     const MessageType& connection_reason) {

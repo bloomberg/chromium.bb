@@ -45,11 +45,24 @@ MessageTransferOperation::MessageTransferOperation(
     : remote_devices_(RemoveDuplicatesFromVector(devices_to_connect)),
       connection_manager_(connection_manager),
       timer_factory_(base::MakeUnique<TimerFactory>()),
-      initialized_(false),
       weak_ptr_factory_(this) {}
 
 MessageTransferOperation::~MessageTransferOperation() {
   connection_manager_->RemoveObserver(this);
+
+  // If initialization never occurred, devices were never registered.
+  if (!initialized_)
+    return;
+
+  shutting_down_ = true;
+
+  // Unregister any devices that are still registered; otherwise, Bluetooth
+  // connections will continue to stay alive until the Tether component is shut
+  // down (see crbug.com/761106). Note that a copy of |remote_devices_| is used
+  // here because UnregisterDevice() will modify |remote_devices_| internally.
+  std::vector<cryptauth::RemoteDevice> remote_devices_copy = remote_devices_;
+  for (const auto& remote_device : remote_devices_copy)
+    UnregisterDevice(remote_device);
 }
 
 void MessageTransferOperation::Initialize() {
@@ -58,13 +71,19 @@ void MessageTransferOperation::Initialize() {
   }
   initialized_ = true;
 
+  // Store the message type for this connection as a private field. This is
+  // necessary because when UnregisterDevice() is called in the destructor, the
+  // derived class has already been destroyed, so invoking
+  // GetMessageTypeForConnection() will fail due to it being a pure virtual
+  // function at that time.
+  message_type_for_connection_ = GetMessageTypeForConnection();
+
   connection_manager_->AddObserver(this);
   OnOperationStarted();
 
-  MessageType message_type_for_connection = GetMessageTypeForConnection();
   for (const auto& remote_device : remote_devices_) {
     connection_manager_->RegisterRemoteDevice(remote_device,
-                                              message_type_for_connection);
+                                              message_type_for_connection_);
 
     cryptauth::SecureChannel::Status status;
     if (connection_manager_->GetStatusForDevice(remote_device, &status) &&
@@ -143,6 +162,9 @@ void MessageTransferOperation::OnMessageReceived(
 
 void MessageTransferOperation::UnregisterDevice(
     const cryptauth::RemoteDevice& remote_device) {
+  // Note: This function may be called from the destructor. It is invalid to
+  // invoke any virtual methods if |shutting_down_| is true.
+
   remote_device_to_num_attempts_map_.erase(remote_device);
   remote_devices_.erase(std::remove(remote_devices_.begin(),
                                     remote_devices_.end(), remote_device),
@@ -150,9 +172,9 @@ void MessageTransferOperation::UnregisterDevice(
   StopTimerForDeviceIfRunning(remote_device);
 
   connection_manager_->UnregisterRemoteDevice(remote_device,
-                                              GetMessageTypeForConnection());
+                                              message_type_for_connection_);
 
-  if (remote_devices_.empty()) {
+  if (!shutting_down_ && remote_devices_.empty()) {
     OnOperationFinished();
   }
 }
@@ -176,7 +198,7 @@ void MessageTransferOperation::SetTimerFactoryForTest(
 void MessageTransferOperation::StartTimerForDevice(
     const cryptauth::RemoteDevice& remote_device) {
   PA_LOG(INFO) << "Starting timer for operation with message type "
-               << GetMessageTypeForConnection() << " from device with ID "
+               << message_type_for_connection_ << " from device with ID "
                << remote_device.GetTruncatedDeviceIdForLogs() << ".";
 
   remote_device_to_timer_map_.emplace(remote_device,
@@ -199,7 +221,7 @@ void MessageTransferOperation::StopTimerForDeviceIfRunning(
 void MessageTransferOperation::OnTimeout(
     const cryptauth::RemoteDevice& remote_device) {
   PA_LOG(WARNING) << "Timed out operation for message type "
-                  << GetMessageTypeForConnection() << " from device with ID "
+                  << message_type_for_connection_ << " from device with ID "
                   << remote_device.GetTruncatedDeviceIdForLogs() << ".";
 
   remote_device_to_timer_map_.erase(remote_device);

@@ -109,7 +109,9 @@ class MessageTransferOperation : public BleConnectionManager::Observer {
   BleConnectionManager* connection_manager_;
   std::unique_ptr<TimerFactory> timer_factory_;
 
-  bool initialized_;
+  bool initialized_ = false;
+  bool shutting_down_ = false;
+  MessageType message_type_for_connection_;
   std::map<cryptauth::RemoteDevice, uint32_t>
       remote_device_to_num_attempts_map_;
   std::map<cryptauth::RemoteDevice, std::unique_ptr<base::Timer>>

@@ -37,6 +37,8 @@ class FakeBleConnectionManager : public BleConnectionManager {
   // Returns -1 if no sequence numbers have been used yet.
   int last_sequence_number() { return next_sequence_number_ - 1; }
 
+  bool IsRegistered(const cryptauth::RemoteDevice& remote_device);
+
   // BleConnectionManager:
   void RegisterRemoteDevice(const cryptauth::RemoteDevice& remote_device,
                             const MessageType& connection_reason) override;

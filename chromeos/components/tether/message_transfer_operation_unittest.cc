@@ -172,13 +172,6 @@ class MessageTransferOperationTest : public testing::Test {
                                       false /* has_finished */);
   }
 
-  bool IsDeviceRegistered(const cryptauth::RemoteDevice& remote_device) const {
-    DCHECK(operation_);
-    return std::find(operation_->remote_devices_.begin(),
-                     operation_->remote_devices_.end(),
-                     remote_device) != operation_->remote_devices_.end();
-  }
-
   void InitializeOperation() {
     VerifyOperationStartedAndFinished(false /* has_started */,
                                       false /* has_finished */);
@@ -238,21 +231,21 @@ class MessageTransferOperationTest : public testing::Test {
 TEST_F(MessageTransferOperationTest, TestCannotConnectAndReachesRetryLimit) {
   ConstructOperation(std::vector<cryptauth::RemoteDevice>{test_devices_[0]});
   InitializeOperation();
-  EXPECT_TRUE(IsDeviceRegistered(test_devices_[0]));
+  EXPECT_TRUE(fake_ble_connection_manager_->IsRegistered(test_devices_[0]));
 
   // Try to connect and fail. The device should still be registered.
   fake_ble_connection_manager_->SetDeviceStatus(
       test_devices_[0], cryptauth::SecureChannel::Status::CONNECTING);
   fake_ble_connection_manager_->SetDeviceStatus(
       test_devices_[0], cryptauth::SecureChannel::Status::DISCONNECTED);
-  EXPECT_TRUE(IsDeviceRegistered(test_devices_[0]));
+  EXPECT_TRUE(fake_ble_connection_manager_->IsRegistered(test_devices_[0]));
 
   // Try and fail again. The device should still be registered.
   fake_ble_connection_manager_->SetDeviceStatus(
       test_devices_[0], cryptauth::SecureChannel::Status::CONNECTING);
   fake_ble_connection_manager_->SetDeviceStatus(
       test_devices_[0], cryptauth::SecureChannel::Status::DISCONNECTED);
-  EXPECT_TRUE(IsDeviceRegistered(test_devices_[0]));
+  EXPECT_TRUE(fake_ble_connection_manager_->IsRegistered(test_devices_[0]));
 
   // Try and fail a third time. The maximum number of failures has been reached,
   // so the device should be unregistered.
@@ -260,7 +253,7 @@ TEST_F(MessageTransferOperationTest, TestCannotConnectAndReachesRetryLimit) {
       test_devices_[0], cryptauth::SecureChannel::Status::CONNECTING);
   fake_ble_connection_manager_->SetDeviceStatus(
       test_devices_[0], cryptauth::SecureChannel::Status::DISCONNECTED);
-  EXPECT_FALSE(IsDeviceRegistered(test_devices_[0]));
+  EXPECT_FALSE(fake_ble_connection_manager_->IsRegistered(test_devices_[0]));
   VerifyOperationStartedAndFinished(true /* has_started */,
                                     true /* has_finished */);
 
@@ -271,18 +264,18 @@ TEST_F(MessageTransferOperationTest, TestCannotConnectAndReachesRetryLimit) {
 TEST_F(MessageTransferOperationTest, TestFailsThenConnects) {
   ConstructOperation(std::vector<cryptauth::RemoteDevice>{test_devices_[0]});
   InitializeOperation();
-  EXPECT_TRUE(IsDeviceRegistered(test_devices_[0]));
+  EXPECT_TRUE(fake_ble_connection_manager_->IsRegistered(test_devices_[0]));
 
   // Try to connect and fail. The device should still be registered.
   fake_ble_connection_manager_->SetDeviceStatus(
       test_devices_[0], cryptauth::SecureChannel::Status::CONNECTING);
   fake_ble_connection_manager_->SetDeviceStatus(
       test_devices_[0], cryptauth::SecureChannel::Status::DISCONNECTED);
-  EXPECT_TRUE(IsDeviceRegistered(test_devices_[0]));
+  EXPECT_TRUE(fake_ble_connection_manager_->IsRegistered(test_devices_[0]));
 
   // Try again and succeed.
   TransitionDeviceStatusFromDisconnectedToAuthenticated(test_devices_[0]);
-  EXPECT_TRUE(IsDeviceRegistered(test_devices_[0]));
+  EXPECT_TRUE(fake_ble_connection_manager_->IsRegistered(test_devices_[0]));
   EXPECT_TRUE(operation_->HasDeviceAuthenticated(test_devices_[0]));
   VerifyDefaultTimerCreatedForDevice(test_devices_[0]);
 
@@ -293,14 +286,14 @@ TEST_F(MessageTransferOperationTest,
        TestSuccessfulConnectionAndReceiveMessage) {
   ConstructOperation(std::vector<cryptauth::RemoteDevice>{test_devices_[0]});
   InitializeOperation();
-  EXPECT_TRUE(IsDeviceRegistered(test_devices_[0]));
+  EXPECT_TRUE(fake_ble_connection_manager_->IsRegistered(test_devices_[0]));
 
   // Simulate how subclasses behave after a successful response: unregister the
   // device.
   operation_->set_should_unregister_device_on_message_received(true);
 
   TransitionDeviceStatusFromDisconnectedToAuthenticated(test_devices_[0]);
-  EXPECT_TRUE(IsDeviceRegistered(test_devices_[0]));
+  EXPECT_TRUE(fake_ble_connection_manager_->IsRegistered(test_devices_[0]));
   EXPECT_TRUE(operation_->HasDeviceAuthenticated(test_devices_[0]));
   VerifyDefaultTimerCreatedForDevice(test_devices_[0]);
 
@@ -317,18 +310,34 @@ TEST_F(MessageTransferOperationTest,
             message->GetProto()->SerializeAsString());
 }
 
+TEST_F(MessageTransferOperationTest, TestDevicesUnregisteredAfterDeletion) {
+  ConstructOperation(test_devices_);
+  InitializeOperation();
+  EXPECT_TRUE(fake_ble_connection_manager_->IsRegistered(test_devices_[0]));
+  EXPECT_TRUE(fake_ble_connection_manager_->IsRegistered(test_devices_[1]));
+  EXPECT_TRUE(fake_ble_connection_manager_->IsRegistered(test_devices_[2]));
+  EXPECT_TRUE(fake_ble_connection_manager_->IsRegistered(test_devices_[3]));
+
+  // Delete the operation. All registered devices should be unregistered.
+  operation_.reset();
+  EXPECT_FALSE(fake_ble_connection_manager_->IsRegistered(test_devices_[0]));
+  EXPECT_FALSE(fake_ble_connection_manager_->IsRegistered(test_devices_[1]));
+  EXPECT_FALSE(fake_ble_connection_manager_->IsRegistered(test_devices_[2]));
+  EXPECT_FALSE(fake_ble_connection_manager_->IsRegistered(test_devices_[3]));
+}
+
 TEST_F(MessageTransferOperationTest,
        TestSuccessfulConnectionAndReceiveMessage_TimeoutSeconds) {
   const uint32_t timeout_seconds = 90;
 
   ConstructOperation(std::vector<cryptauth::RemoteDevice>{test_devices_[0]});
   InitializeOperation();
-  EXPECT_TRUE(IsDeviceRegistered(test_devices_[0]));
+  EXPECT_TRUE(fake_ble_connection_manager_->IsRegistered(test_devices_[0]));
 
   operation_->set_timeout_seconds(timeout_seconds);
 
   TransitionDeviceStatusFromDisconnectedToAuthenticated(test_devices_[0]);
-  EXPECT_TRUE(IsDeviceRegistered(test_devices_[0]));
+  EXPECT_TRUE(fake_ble_connection_manager_->IsRegistered(test_devices_[0]));
   EXPECT_TRUE(operation_->HasDeviceAuthenticated(test_devices_[0]));
   VerifyTimerCreatedForDevice(test_devices_[0], timeout_seconds);
 
@@ -351,16 +360,16 @@ TEST_F(MessageTransferOperationTest,
 TEST_F(MessageTransferOperationTest, TestAuthenticatesButTimesOut) {
   ConstructOperation(std::vector<cryptauth::RemoteDevice>{test_devices_[0]});
   InitializeOperation();
-  EXPECT_TRUE(IsDeviceRegistered(test_devices_[0]));
+  EXPECT_TRUE(fake_ble_connection_manager_->IsRegistered(test_devices_[0]));
 
   TransitionDeviceStatusFromDisconnectedToAuthenticated(test_devices_[0]);
-  EXPECT_TRUE(IsDeviceRegistered(test_devices_[0]));
+  EXPECT_TRUE(fake_ble_connection_manager_->IsRegistered(test_devices_[0]));
   EXPECT_TRUE(operation_->HasDeviceAuthenticated(test_devices_[0]));
   VerifyDefaultTimerCreatedForDevice(test_devices_[0]);
 
   GetTimerForDevice(test_devices_[0])->Fire();
 
-  EXPECT_FALSE(IsDeviceRegistered(test_devices_[0]));
+  EXPECT_FALSE(fake_ble_connection_manager_->IsRegistered(test_devices_[0]));
   EXPECT_TRUE(operation_->has_operation_finished());
 }
 
@@ -369,10 +378,10 @@ TEST_F(MessageTransferOperationTest, TestRepeatedInputDevice) {
   ConstructOperation(
       std::vector<cryptauth::RemoteDevice>{test_devices_[0], test_devices_[0]});
   InitializeOperation();
-  EXPECT_TRUE(IsDeviceRegistered(test_devices_[0]));
+  EXPECT_TRUE(fake_ble_connection_manager_->IsRegistered(test_devices_[0]));
 
   TransitionDeviceStatusFromDisconnectedToAuthenticated(test_devices_[0]);
-  EXPECT_TRUE(IsDeviceRegistered(test_devices_[0]));
+  EXPECT_TRUE(fake_ble_connection_manager_->IsRegistered(test_devices_[0]));
   EXPECT_TRUE(operation_->HasDeviceAuthenticated(test_devices_[0]));
   VerifyDefaultTimerCreatedForDevice(test_devices_[0]);
 
@@ -394,7 +403,7 @@ TEST_F(MessageTransferOperationTest, TestRepeatedInputDevice) {
 TEST_F(MessageTransferOperationTest, TestReceiveEventForOtherDevice) {
   ConstructOperation(std::vector<cryptauth::RemoteDevice>{test_devices_[0]});
   InitializeOperation();
-  EXPECT_TRUE(IsDeviceRegistered(test_devices_[0]));
+  EXPECT_TRUE(fake_ble_connection_manager_->IsRegistered(test_devices_[0]));
 
   // Simulate the authentication of |test_devices_[1]|'s channel. Since the
   // operation was only constructed with |test_devices_[0]|, this operation
@@ -402,8 +411,8 @@ TEST_F(MessageTransferOperationTest, TestReceiveEventForOtherDevice) {
   fake_ble_connection_manager_->RegisterRemoteDevice(
       test_devices_[1], MessageType::CONNECT_TETHERING_REQUEST);
   TransitionDeviceStatusFromDisconnectedToAuthenticated(test_devices_[1]);
-  EXPECT_TRUE(IsDeviceRegistered(test_devices_[0]));
-  EXPECT_FALSE(IsDeviceRegistered(test_devices_[1]));
+  EXPECT_TRUE(fake_ble_connection_manager_->IsRegistered(test_devices_[0]));
+  EXPECT_TRUE(fake_ble_connection_manager_->IsRegistered(test_devices_[1]));
   EXPECT_FALSE(operation_->HasDeviceAuthenticated(test_devices_[0]));
   EXPECT_FALSE(operation_->HasDeviceAuthenticated(test_devices_[1]));
 
@@ -428,7 +437,7 @@ TEST_F(MessageTransferOperationTest,
 
   // Now initialize; the authentication handler should have been invoked.
   InitializeOperation();
-  EXPECT_TRUE(IsDeviceRegistered(test_devices_[0]));
+  EXPECT_TRUE(fake_ble_connection_manager_->IsRegistered(test_devices_[0]));
   EXPECT_TRUE(operation_->HasDeviceAuthenticated(test_devices_[0]));
   VerifyDefaultTimerCreatedForDevice(test_devices_[0]);
 
@@ -458,30 +467,32 @@ TEST_F(MessageTransferOperationTest,
 
   // Now initialize; the authentication handler should have been invoked.
   InitializeOperation();
-  EXPECT_TRUE(IsDeviceRegistered(test_devices_[0]));
+  EXPECT_TRUE(fake_ble_connection_manager_->IsRegistered(test_devices_[0]));
   EXPECT_TRUE(operation_->HasDeviceAuthenticated(test_devices_[0]));
   VerifyDefaultTimerCreatedForDevice(test_devices_[0]);
 
   GetTimerForDevice(test_devices_[0])->Fire();
-
-  EXPECT_FALSE(IsDeviceRegistered(test_devices_[0]));
   EXPECT_TRUE(operation_->has_operation_finished());
+
+  // Should still be registered since it was also registered for the
+  // CONNECT_TETHERING_REQUEST MessageType.
+  EXPECT_TRUE(fake_ble_connection_manager_->IsRegistered(test_devices_[0]));
 }
 
 TEST_F(MessageTransferOperationTest, MultipleDevices) {
   ConstructOperation(test_devices_);
   InitializeOperation();
-  EXPECT_TRUE(IsDeviceRegistered(test_devices_[0]));
-  EXPECT_TRUE(IsDeviceRegistered(test_devices_[1]));
-  EXPECT_TRUE(IsDeviceRegistered(test_devices_[2]));
-  EXPECT_TRUE(IsDeviceRegistered(test_devices_[3]));
+  EXPECT_TRUE(fake_ble_connection_manager_->IsRegistered(test_devices_[0]));
+  EXPECT_TRUE(fake_ble_connection_manager_->IsRegistered(test_devices_[1]));
+  EXPECT_TRUE(fake_ble_connection_manager_->IsRegistered(test_devices_[2]));
+  EXPECT_TRUE(fake_ble_connection_manager_->IsRegistered(test_devices_[3]));
 
   // Authenticate |test_devices_[0]|'s channel.
   fake_ble_connection_manager_->RegisterRemoteDevice(
       test_devices_[0], MessageType::CONNECT_TETHERING_REQUEST);
   TransitionDeviceStatusFromDisconnectedToAuthenticated(test_devices_[0]);
   EXPECT_TRUE(operation_->HasDeviceAuthenticated(test_devices_[0]));
-  EXPECT_TRUE(IsDeviceRegistered(test_devices_[0]));
+  EXPECT_TRUE(fake_ble_connection_manager_->IsRegistered(test_devices_[0]));
   VerifyDefaultTimerCreatedForDevice(test_devices_[0]);
 
   // Fail 3 times to connect to |test_devices_[1]|.
@@ -500,7 +511,7 @@ TEST_F(MessageTransferOperationTest, MultipleDevices) {
   fake_ble_connection_manager_->SetDeviceStatus(
       test_devices_[1], cryptauth::SecureChannel::Status::DISCONNECTED);
   EXPECT_FALSE(operation_->HasDeviceAuthenticated(test_devices_[1]));
-  EXPECT_FALSE(IsDeviceRegistered(test_devices_[1]));
+  EXPECT_FALSE(fake_ble_connection_manager_->IsRegistered(test_devices_[1]));
   EXPECT_FALSE(GetTimerForDevice(test_devices_[1]));
 
   // Authenticate |test_devices_[2]|'s channel.
@@ -508,7 +519,7 @@ TEST_F(MessageTransferOperationTest, MultipleDevices) {
       test_devices_[2], MessageType::CONNECT_TETHERING_REQUEST);
   TransitionDeviceStatusFromDisconnectedToAuthenticated(test_devices_[2]);
   EXPECT_TRUE(operation_->HasDeviceAuthenticated(test_devices_[2]));
-  EXPECT_TRUE(IsDeviceRegistered(test_devices_[2]));
+  EXPECT_TRUE(fake_ble_connection_manager_->IsRegistered(test_devices_[2]));
   VerifyDefaultTimerCreatedForDevice(test_devices_[2]);
 
   // Fail 3 times to connect to |test_devices_[3]|.
@@ -527,7 +538,7 @@ TEST_F(MessageTransferOperationTest, MultipleDevices) {
   fake_ble_connection_manager_->SetDeviceStatus(
       test_devices_[3], cryptauth::SecureChannel::Status::DISCONNECTED);
   EXPECT_FALSE(operation_->HasDeviceAuthenticated(test_devices_[3]));
-  EXPECT_FALSE(IsDeviceRegistered(test_devices_[3]));
+  EXPECT_FALSE(fake_ble_connection_manager_->IsRegistered(test_devices_[3]));
   EXPECT_FALSE(GetTimerForDevice(test_devices_[3]));
 }
 
