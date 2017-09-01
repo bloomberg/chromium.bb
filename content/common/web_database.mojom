@@ -1,0 +1,19 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module content.mojom;
+
+import "mojo/common/string16.mojom";
+import "url/mojo/origin.mojom";
+
+// WebDatabase messages sent from the browser to the renderer.
+interface WebDatabase {
+  // Notifies the renderer process of the new database size.
+  UpdateSize(url.mojom.Origin origin,
+             mojo.common.mojom.String16 name,
+             int64 size);
+
+  // Asks the renderer process to close a database immediately.
+  CloseImmediately(url.mojom.Origin origin, mojo.common.mojom.String16 name);
+};

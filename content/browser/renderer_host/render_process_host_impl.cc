@@ -1715,8 +1715,8 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       GetID(), blob_storage_context,
       make_scoped_refptr(storage_partition_impl_->GetFileSystemContext())));
   AddFilter(new FileUtilitiesMessageFilter(GetID()));
-  AddFilter(
-      new DatabaseMessageFilter(storage_partition_impl_->GetDatabaseTracker()));
+  AddFilter(new DatabaseMessageFilter(
+      GetID(), storage_partition_impl_->GetDatabaseTracker()));
 #if defined(OS_MACOSX)
   AddFilter(new TextInputClientMessageFilter());
 #elif defined(OS_WIN)
