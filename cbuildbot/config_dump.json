@@ -4947,6 +4947,78 @@
             "caroline-arc64"
         ]
     },
+    "caroline-bertha-chromium-pfq": {
+        "_template": "chromium_pfq",
+        "boards": [
+            "caroline-bertha"
+        ],
+        "buildslave_type": "baremetal",
+        "important": false,
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "caroline-bertha-compile-only-pre-cq": {
+        "_template": "compile_only_pre_cq",
+        "boards": [
+            "caroline-bertha"
+        ]
+    },
+    "caroline-bertha-full": {
+        "_template": "full",
+        "boards": [
+            "caroline-bertha"
+        ],
+        "buildslave_type": "baremetal",
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "caroline-bertha-no-vmtest-pre-cq": {
+        "_template": "no_vmtest_pre_cq",
+        "boards": [
+            "caroline-bertha"
+        ]
+    },
+    "caroline-bertha-paladin": {
+        "_template": "paladin",
+        "boards": [
+            "caroline-bertha"
+        ],
+        "important": false,
+        "vm_tests": []
+    },
+    "caroline-bertha-pre-cq": {
+        "_template": "pre_cq",
+        "boards": [
+            "caroline-bertha"
+        ]
+    },
+    "caroline-bertha-release": {
+        "_template": "release",
+        "active_waterfall": "chromeos",
+        "boards": [
+            "caroline-bertha"
+        ],
+        "buildslave_type": "baremetal"
+    },
+    "caroline-bertha-tot-chromium-pfq-informational": {
+        "_template": "chromium_pfq_informational",
+        "boards": [
+            "caroline-bertha"
+        ],
+        "buildslave_type": "baremetal",
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "caroline-bertha-unittest-stress": {
+        "_template": "unittest_stress",
+        "boards": [
+            "caroline-bertha"
+        ]
+    },
     "caroline-chrome-pfq": {
         "_template": "chrome_pfq",
         "active_waterfall": "chromeos",
@@ -15389,6 +15461,7 @@
             "butterfly-release",
             "candy-release",
             "caroline-arc64-release",
+            "caroline-bertha-release",
             "caroline-release",
             "caroline-userdebug-release",
             "cave-release",
