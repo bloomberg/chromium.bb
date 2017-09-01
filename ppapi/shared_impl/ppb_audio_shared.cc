@@ -103,7 +103,9 @@ void PPB_Audio_Shared::SetStreamInfo(
     int sample_frame_count) {
   socket_.reset(new base::CancelableSyncSocket(socket_handle));
   shared_memory_.reset(new base::SharedMemory(shared_memory_handle, false));
-  shared_memory_size_ = shared_memory_size;
+  shared_memory_size_ = media::ComputeAudioOutputBufferSize(
+      kAudioOutputChannels, sample_frame_count);
+  DCHECK_GE(shared_memory_size, shared_memory_size_);
   bytes_per_second_ =
       kAudioOutputChannels * (kBitsPerAudioOutputSample / 8) * sample_rate;
   buffer_index_ = 0;
@@ -115,10 +117,6 @@ void PPB_Audio_Shared::SetStreamInfo(
         std::string(),
         "Failed to map shared memory for PPB_Audio_Shared.");
   } else {
-    DCHECK_EQ(shared_memory_size_,
-              sizeof(media::AudioOutputBufferParameters) +
-                  media::AudioBus::CalculateMemorySize(kAudioOutputChannels,
-                                                       sample_frame_count));
     media::AudioOutputBuffer* buffer =
         reinterpret_cast<media::AudioOutputBuffer*>(shared_memory_->memory());
     audio_bus_ = media::AudioBus::WrapMemory(kAudioOutputChannels,

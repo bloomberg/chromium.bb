@@ -29,8 +29,6 @@ class MEDIA_EXPORT AudioInputIPCDelegate {
   // and process the shared memory whenever data is read from the socket.
   virtual void OnStreamCreated(base::SharedMemoryHandle handle,
                                base::SyncSocket::Handle socket_handle,
-                               int length,
-                               int total_segments,
                                bool initially_muted) = 0;
 
   // Called when state of an audio stream has changed.

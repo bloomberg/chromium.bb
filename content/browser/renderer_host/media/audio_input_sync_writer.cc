@@ -126,12 +126,9 @@ std::unique_ptr<AudioInputSyncWriter> AudioInputSyncWriter::Create(
   if (shared_memory_segment_count == 0)
     return nullptr;
 
-  base::CheckedNumeric<size_t> segment_size =
-      sizeof(media::AudioInputBufferParameters);
-  segment_size += media::AudioBus::CalculateMemorySize(params);
-
-  base::CheckedNumeric<size_t> requested_memory_size =
-      segment_size * shared_memory_segment_count;
+  base::CheckedNumeric<uint32_t> requested_memory_size =
+      media::ComputeAudioInputBufferSizeChecked(params,
+                                                shared_memory_segment_count);
 
   auto shared_memory = base::MakeUnique<base::SharedMemory>();
   if (!requested_memory_size.IsValid() ||

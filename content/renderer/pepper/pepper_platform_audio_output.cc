@@ -90,25 +90,24 @@ void PepperPlatformAudioOutput::OnDeviceAuthorized(
 
 void PepperPlatformAudioOutput::OnStreamCreated(
     base::SharedMemoryHandle handle,
-    base::SyncSocket::Handle socket_handle,
-    int length) {
+    base::SyncSocket::Handle socket_handle) {
   DCHECK(handle.IsValid());
 #if defined(OS_WIN)
   DCHECK(socket_handle);
 #else
   DCHECK_NE(-1, socket_handle);
 #endif
-  DCHECK(length);
+  DCHECK(handle.GetSize());
 
   if (base::ThreadTaskRunnerHandle::Get().get() == main_task_runner_.get()) {
     // Must dereference the client only on the main thread. Shutdown may have
     // occurred while the request was in-flight, so we need to NULL check.
     if (client_)
-      client_->StreamCreated(handle, length, socket_handle);
+      client_->StreamCreated(handle, handle.GetSize(), socket_handle);
   } else {
     main_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&PepperPlatformAudioOutput::OnStreamCreated,
-                                  this, handle, socket_handle, length));
+                                  this, handle, socket_handle));
   }
 }
 

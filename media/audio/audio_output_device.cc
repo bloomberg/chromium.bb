@@ -31,7 +31,6 @@ class AudioOutputDevice::AudioThreadCallback
  public:
   AudioThreadCallback(const AudioParameters& audio_parameters,
                       base::SharedMemoryHandle memory,
-                      int memory_length,
                       AudioRendererSink::RenderCallback* render_callback);
   ~AudioThreadCallback() override;
 
@@ -385,8 +384,7 @@ void AudioOutputDevice::OnDeviceAuthorized(
 
 void AudioOutputDevice::OnStreamCreated(
     base::SharedMemoryHandle handle,
-    base::SyncSocket::Handle socket_handle,
-    int length) {
+    base::SyncSocket::Handle socket_handle) {
   DCHECK(task_runner()->BelongsToCurrentThread());
   DCHECK(base::SharedMemory::IsHandleValid(handle));
 #if defined(OS_WIN)
@@ -394,7 +392,7 @@ void AudioOutputDevice::OnStreamCreated(
 #else
   DCHECK_GE(socket_handle, 0);
 #endif
-  DCHECK_GT(length, 0);
+  DCHECK_GT(handle.GetSize(), 0u);
 
   if (state_ != CREATING_STREAM)
     return;
@@ -420,7 +418,7 @@ void AudioOutputDevice::OnStreamCreated(
     DCHECK(!audio_callback_);
 
     audio_callback_.reset(new AudioOutputDevice::AudioThreadCallback(
-        audio_parameters_, handle, length, callback_));
+        audio_parameters_, handle, callback_));
     audio_thread_.reset(new AudioDeviceThread(
         audio_callback_.get(), socket_handle, "AudioOutputDevice"));
     state_ = PAUSED;
@@ -451,9 +449,12 @@ void AudioOutputDevice::WillDestroyCurrentMessageLoop() {
 AudioOutputDevice::AudioThreadCallback::AudioThreadCallback(
     const AudioParameters& audio_parameters,
     base::SharedMemoryHandle memory,
-    int memory_length,
     AudioRendererSink::RenderCallback* render_callback)
-    : AudioDeviceThread::Callback(audio_parameters, memory, memory_length, 1),
+    : AudioDeviceThread::Callback(
+          audio_parameters,
+          memory,
+          ComputeAudioOutputBufferSize(audio_parameters),
+          1),
       render_callback_(render_callback),
       callback_num_(0) {}
 
@@ -461,11 +462,8 @@ AudioOutputDevice::AudioThreadCallback::~AudioThreadCallback() {
 }
 
 void AudioOutputDevice::AudioThreadCallback::MapSharedMemory() {
-  CHECK_EQ(total_segments_, 1);
+  CHECK_EQ(total_segments_, 1u);
   CHECK(shared_memory_.Map(memory_length_));
-  DCHECK_EQ(static_cast<size_t>(memory_length_),
-            sizeof(AudioOutputBufferParameters) +
-                AudioBus::CalculateMemorySize(audio_parameters_));
 
   AudioOutputBuffer* buffer =
       reinterpret_cast<AudioOutputBuffer*>(shared_memory_.memory());

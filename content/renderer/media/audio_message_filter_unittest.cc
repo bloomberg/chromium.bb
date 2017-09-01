@@ -42,11 +42,9 @@ class MockAudioDelegate : public media::AudioOutputIPCDelegate {
   }
 
   void OnStreamCreated(base::SharedMemoryHandle handle,
-                       base::SyncSocket::Handle,
-                       int length) override {
+                       base::SyncSocket::Handle) override {
     created_received_ = true;
     handle_ = handle;
-    length_ = length;
   }
 
   void OnIPCClosed() override {}
@@ -62,7 +60,6 @@ class MockAudioDelegate : public media::AudioOutputIPCDelegate {
     if (handle_.IsValid())
       handle_.Close();
     handle_ = base::SharedMemoryHandle();
-    length_ = 0;
 
     volume_received_ = false;
     volume_ = 0;
@@ -76,7 +73,6 @@ class MockAudioDelegate : public media::AudioOutputIPCDelegate {
 
   bool created_received() { return created_received_; }
   base::SharedMemoryHandle handle() { return handle_; }
-  uint32_t length() { return length_; }
 
  private:
   bool error_received_;
@@ -88,7 +84,6 @@ class MockAudioDelegate : public media::AudioOutputIPCDelegate {
 
   bool created_received_;
   base::SharedMemoryHandle handle_;
-  int length_;
 
   bool volume_received_;
   double volume_;
@@ -134,13 +129,11 @@ TEST(AudioMessageFilterTest, Basic) {
 
   // AudioMsg_NotifyStreamCreated
   base::SyncSocket::TransitDescriptor socket_descriptor;
-  const uint32_t kLength = 1024;
   EXPECT_FALSE(delegate.created_received());
   filter->OnMessageReceived(AudioMsg_NotifyStreamCreated(
-      kStreamId, base::SharedMemoryHandle(), socket_descriptor, kLength));
+      kStreamId, base::SharedMemoryHandle(), socket_descriptor));
   EXPECT_TRUE(delegate.created_received());
   EXPECT_FALSE(base::SharedMemory::IsHandleValid(delegate.handle()));
-  EXPECT_EQ(kLength, delegate.length());
   delegate.Reset();
 
   // AudioMsg_NotifyStreamStateChanged

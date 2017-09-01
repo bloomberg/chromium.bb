@@ -122,9 +122,8 @@ class AudioInputSyncWriterTest : public testing::Test {
     const AudioParameters audio_params(
         AudioParameters::AUDIO_FAKE, media::CHANNEL_LAYOUT_MONO,
         sampling_frequency_hz, bits_per_sample, frames);
-    const uint32_t segment_size = sizeof(media::AudioInputBufferParameters) +
-                                  AudioBus::CalculateMemorySize(audio_params);
-    const size_t data_size = kSegments * segment_size;
+    const uint32_t data_size =
+        media::ComputeAudioInputBufferSize(audio_params, kSegments);
 
     auto shared_memory = base::MakeUnique<base::SharedMemory>();
     EXPECT_TRUE(shared_memory->CreateAndMapAnonymous(data_size));

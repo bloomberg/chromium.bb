@@ -54,7 +54,6 @@ AudioSyncReader::AudioSyncReader(
           switches::kMuteAudio)),
       had_socket_error_(false),
       socket_(std::move(socket)),
-      packet_size_(shared_memory_->requested_size()),
       renderer_callback_count_(0),
       renderer_missed_callback_count_(0),
       trailing_renderer_missed_callback_count_(0),
@@ -65,9 +64,8 @@ AudioSyncReader::AudioSyncReader(
       maximum_wait_time_(base::TimeDelta::FromMilliseconds(20)),
 #endif
       buffer_index_(0) {
-  DCHECK_EQ(static_cast<size_t>(packet_size_),
-            sizeof(media::AudioOutputBufferParameters) +
-                AudioBus::CalculateMemorySize(params));
+  DCHECK_EQ(base::checked_cast<uint32_t>(shared_memory_->requested_size()),
+            media::ComputeAudioOutputBufferSize(params));
   AudioOutputBuffer* buffer =
       reinterpret_cast<AudioOutputBuffer*>(shared_memory_->memory());
   output_bus_ = AudioBus::WrapMemory(params, buffer->audio);
@@ -122,8 +120,7 @@ std::unique_ptr<AudioSyncReader> AudioSyncReader::Create(
     const media::AudioParameters& params,
     base::CancelableSyncSocket* foreign_socket) {
   base::CheckedNumeric<size_t> memory_size =
-      sizeof(media::AudioOutputBufferParameters);
-  memory_size += AudioBus::CalculateMemorySize(params);
+      media::ComputeAudioOutputBufferSizeChecked(params);
 
   std::unique_ptr<base::SharedMemory> shared_memory(new base::SharedMemory());
   std::unique_ptr<base::CancelableSyncSocket> socket(

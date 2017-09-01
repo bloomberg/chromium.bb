@@ -7,8 +7,10 @@
 
 #include <stdint.h>
 #include <string>
+#include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/numerics/checked_math.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "media/base/audio_bus.h"
@@ -70,6 +72,34 @@ struct MEDIA_SHMEM_EXPORT AudioOutputBuffer {
   AudioOutputBufferParameters params;
   int8_t audio[1];
 };
+
+// These convenience function safely computes the size required for
+// |shared_memory_count| AudioInputBuffers, with enough memory for AudioBus
+// data, using |paremeters| (or alternatively |channels| and |frames|). The
+// functions not returning a CheckedNumeric will CHECK on overflow.
+MEDIA_SHMEM_EXPORT base::CheckedNumeric<uint32_t>
+ComputeAudioInputBufferSizeChecked(const AudioParameters& parameters,
+                                   uint32_t audio_bus_count);
+
+MEDIA_SHMEM_EXPORT uint32_t
+ComputeAudioInputBufferSize(const AudioParameters& parameters,
+                            uint32_t audio_bus_count);
+
+MEDIA_SHMEM_EXPORT uint32_t
+ComputeAudioInputBufferSize(int channels, int frames, uint32_t audio_bus_count);
+
+// These convenience functions safely computes the size required for an
+// AudioOutputBuffer with enough memory for AudioBus data using |parameters| (or
+// alternatively |channels| and |frames|). The functions not returning a
+// CheckedNumeric will CHECK on overflow.
+MEDIA_SHMEM_EXPORT base::CheckedNumeric<uint32_t>
+ComputeAudioOutputBufferSizeChecked(const AudioParameters& parameters);
+
+MEDIA_SHMEM_EXPORT uint32_t
+ComputeAudioOutputBufferSize(const AudioParameters& parameters);
+
+MEDIA_SHMEM_EXPORT uint32_t ComputeAudioOutputBufferSize(int channels,
+                                                         int frames);
 
 class MEDIA_SHMEM_EXPORT AudioParameters {
  public:

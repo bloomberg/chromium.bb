@@ -48,23 +48,18 @@ IPC_MESSAGE_CONTROL4(AudioMsg_NotifyDeviceAuthorized,
 // buffer it shares with the browser process. It is also given a SyncSocket that
 // it uses to communicate with the browser process about the state of the
 // buffered audio data.
-IPC_MESSAGE_CONTROL4(
-    AudioMsg_NotifyStreamCreated,
-    int /* stream id */,
-    base::SharedMemoryHandle /* handle */,
-    base::SyncSocket::TransitDescriptor /* socket descriptor */,
-    uint32_t /* length */)
+IPC_MESSAGE_CONTROL(AudioMsg_NotifyStreamCreated,
+                    int /* stream id */,
+                    base::SharedMemoryHandle /* handle */,
+                    base::SyncSocket::TransitDescriptor /* socket descriptor */)
 
 // Tell the renderer process that an audio input stream has been created.
 // The renderer process would be given a SyncSocket that it should read from
-// from then on. It is also given number of segments in shared memory and
-// whether the stream initially is muted.
+// from then on. It is also given whether the stream initially is muted.
 IPC_MESSAGE_CONTROL(AudioInputMsg_NotifyStreamCreated,
                     int /* stream id */,
                     base::SharedMemoryHandle /* handle */,
                     base::SyncSocket::TransitDescriptor /* socket descriptor */,
-                    uint32_t /* length */,
-                    uint32_t /* segment count */,
                     bool /* initially muted */)
 
 // Notification message sent from AudioRendererHost to renderer for state

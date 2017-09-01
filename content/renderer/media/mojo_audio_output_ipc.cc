@@ -191,7 +191,7 @@ void MojoAudioOutputIPC::StreamCreated(
   DCHECK_EQ(result, MOJO_RESULT_OK);
   DCHECK(!read_only);
 
-  delegate_->OnStreamCreated(memory_handle, socket_handle, memory_length);
+  delegate_->OnStreamCreated(memory_handle, socket_handle);
 }
 
 }  // namespace content

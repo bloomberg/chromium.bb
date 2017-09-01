@@ -117,7 +117,7 @@ class MockAudioRendererHost : public AudioRendererHost {
                     media::OutputDeviceStatus device_status,
                     const media::AudioParameters& output_params,
                     const std::string& matched_device_id));
-  MOCK_METHOD2(WasNotifiedOfCreation, void(int stream_id, int length));
+  MOCK_METHOD1(WasNotifiedOfCreation, void(int stream_id));
   MOCK_METHOD1(WasNotifiedOfError, void(int stream_id));
 
   void ShutdownForBadMessage() override { bad_msg_count++; }
@@ -171,13 +171,12 @@ class MockAudioRendererHost : public AudioRendererHost {
   void OnNotifyStreamCreated(
       int stream_id,
       base::SharedMemoryHandle handle,
-      base::SyncSocket::TransitDescriptor socket_descriptor,
-      uint32_t length) {
+      base::SyncSocket::TransitDescriptor socket_descriptor) {
     // Maps the shared memory.
+    shared_memory_length_ = handle.GetSize();
     shared_memory_.reset(new base::SharedMemory(handle, false));
-    CHECK(shared_memory_->Map(length));
+    CHECK(shared_memory_->Map(shared_memory_length_));
     CHECK(shared_memory_->memory());
-    shared_memory_length_ = length;
 
     // Create the SyncSocket using the handle.
     base::SyncSocket::Handle sync_socket_handle =
@@ -185,7 +184,7 @@ class MockAudioRendererHost : public AudioRendererHost {
     sync_socket_.reset(new base::SyncSocket(sync_socket_handle));
 
     // And then delegate the call to the mock method.
-    WasNotifiedOfCreation(stream_id, length);
+    WasNotifiedOfCreation(stream_id);
   }
 
   void OnNotifyStreamError(int stream_id) { WasNotifiedOfError(stream_id); }
@@ -322,7 +321,7 @@ class AudioRendererHostTest : public RenderViewHostTestHarness {
                   OnDeviceAuthorized(kStreamId, expected_device_status, _, _));
 
     if (expected_device_status == media::OUTPUT_DEVICE_STATUS_OK) {
-      EXPECT_CALL(*host_.get(), WasNotifiedOfCreation(kStreamId, _));
+      EXPECT_CALL(*host_.get(), WasNotifiedOfCreation(kStreamId));
       EXPECT_CALL(mirroring_manager_,
                   AddDiverter(process()->GetID(), main_rfh()->GetRoutingID(),
                               NotNull()))
@@ -365,7 +364,7 @@ class AudioRendererHostTest : public RenderViewHostTestHarness {
 
     // However, validation does not block stream creation, so these method calls
     // might be made:
-    EXPECT_CALL(*host_, WasNotifiedOfCreation(kStreamId, _)).Times(AtLeast(0));
+    EXPECT_CALL(*host_, WasNotifiedOfCreation(kStreamId)).Times(AtLeast(0));
     EXPECT_CALL(mirroring_manager_, AddDiverter(_, _, _)).Times(AtLeast(0));
     EXPECT_CALL(mirroring_manager_, RemoveDiverter(_)).Times(AtLeast(0));
 
@@ -404,7 +403,7 @@ class AudioRendererHostTest : public RenderViewHostTestHarness {
                 OnDeviceAuthorized(kStreamId, media::OUTPUT_DEVICE_STATUS_OK, _,
                                    hashed_output_id))
         .Times(1);
-    EXPECT_CALL(*host_.get(), WasNotifiedOfCreation(kStreamId, _));
+    EXPECT_CALL(*host_.get(), WasNotifiedOfCreation(kStreamId));
     EXPECT_CALL(
         mirroring_manager_,
         AddDiverter(process()->GetID(), main_rfh()->GetRoutingID(), NotNull()))

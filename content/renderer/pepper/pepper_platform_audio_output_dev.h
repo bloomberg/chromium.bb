@@ -64,8 +64,7 @@ class PepperPlatformAudioOutputDev
                           const media::AudioParameters& output_params,
                           const std::string& matched_device_id) override;
   void OnStreamCreated(base::SharedMemoryHandle handle,
-                       base::SyncSocket::Handle socket_handle,
-                       int length) override;
+                       base::SyncSocket::Handle socket_handle) override;
   void OnIPCClosed() override;
 
  protected:
