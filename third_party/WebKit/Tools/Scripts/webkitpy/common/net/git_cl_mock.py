@@ -10,7 +10,7 @@ class MockGitCL(object):
 
     def __init__(self, host, results=None, issue_number='1234'):
         self._host = host
-        self._results = results or {}
+        self._results = results
         self._issue_number = issue_number
         self.calls = []
 

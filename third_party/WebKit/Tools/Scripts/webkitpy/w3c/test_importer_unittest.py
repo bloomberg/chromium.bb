@@ -136,6 +136,22 @@ class TestImporterTest(LoggingTestCase):
             ['git', 'cl', 'set-commit'],
         ])
 
+    def test_run_commit_queue_for_cl_timeout(self):
+        host = MockHost()
+        importer = TestImporter(host)
+        # The simulates the case where importer.git_cl.wait_for_try_jobs returns
+        # None, which would normally happen if we time out waiting for results.
+        importer.git_cl = MockGitCL(host, results=None)
+        success = importer.run_commit_queue_for_cl()
+        self.assertFalse(success)
+        self.assertLog([
+            'INFO: Triggering CQ try jobs.\n',
+            'ERROR: Timed out waiting for CQ; aborting.\n'
+        ])
+        self.assertEqual(
+            importer.git_cl.calls,
+            [['git', 'cl', 'try'], ['git', 'cl', 'set-close']])
+
     def test_apply_exportable_commits_locally(self):
         host = MockHost()
         importer = TestImporter(host, wpt_github=MockWPTGitHub(pull_requests=[]))
