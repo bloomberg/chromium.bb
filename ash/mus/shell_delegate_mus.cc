@@ -6,17 +6,17 @@
 
 #include <utility>
 
+#include "ash/default_accessibility_delegate.h"
 #include "ash/gpu_support_stub.h"
-#include "ash/mus/accessibility_delegate_mus.h"
 #include "ash/mus/wallpaper_delegate_mus.h"
 #include "ash/palette_delegate.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "components/user_manager/user_info_impl.h"
+#include "services/ui/public/cpp/input_devices/input_device_controller_client.h"
 #include "ui/gfx/image/image.h"
 #include "ui/keyboard/keyboard_ui.h"
-#include "services/ui/public/cpp/input_devices/input_device_controller_client.h"
 
 namespace ash {
 
@@ -95,7 +95,7 @@ std::unique_ptr<WallpaperDelegate> ShellDelegateMus::CreateWallpaperDelegate() {
 }
 
 AccessibilityDelegate* ShellDelegateMus::CreateAccessibilityDelegate() {
-  return new AccessibilityDelegateMus(connector_);
+  return new DefaultAccessibilityDelegate;
 }
 
 std::unique_ptr<PaletteDelegate> ShellDelegateMus::CreatePaletteDelegate() {

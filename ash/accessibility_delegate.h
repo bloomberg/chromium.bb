@@ -28,12 +28,6 @@ class ASH_EXPORT AccessibilityDelegate {
   // Returns true if spoken feedback is enabled.
   virtual bool IsSpokenFeedbackEnabled() const = 0;
 
-  // Invoked to toggle high contrast mode for accessibility.
-  virtual void ToggleHighContrast() = 0;
-
-  // Returns true if high contrast mode is enabled.
-  virtual bool IsHighContrastEnabled() const = 0;
-
   // Invoked to enable the screen magnifier.
   virtual void SetMagnifierEnabled(bool enabled) = 0;
 

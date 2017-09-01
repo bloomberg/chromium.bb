@@ -4,7 +4,9 @@
 
 #include "ash/accessibility/accessibility_controller.h"
 
+#include "ash/high_contrast/high_contrast_controller.h"
 #include "ash/public/cpp/ash_pref_names.h"
+#include "ash/public/cpp/config.h"
 #include "ash/session/session_controller.h"
 #include "ash/session/session_observer.h"
 #include "ash/shell.h"
@@ -14,6 +16,9 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "services/service_manager/public/cpp/connector.h"
+#include "services/ui/public/interfaces/accessibility_manager.mojom.h"
+#include "services/ui/public/interfaces/constants.mojom.h"
 #include "ui/base/cursor/cursor_type.h"
 
 namespace ash {
@@ -26,7 +31,9 @@ void NotifyAccessibilityStatusChanged() {
 
 }  // namespace
 
-AccessibilityController::AccessibilityController() {
+AccessibilityController::AccessibilityController(
+    service_manager::Connector* connector)
+    : connector_(connector) {
   Shell::Get()->session_controller()->AddObserver(this);
 }
 
@@ -60,16 +67,26 @@ void AccessibilityController::RegisterProfilePrefs(PrefRegistrySimple* registry,
 
 void AccessibilityController::SetLargeCursorEnabled(bool enabled) {
   PrefService* prefs = GetActivePrefService();
-  // Null early in startup.
   if (!prefs)
     return;
-
   prefs->SetBoolean(prefs::kAccessibilityLargeCursorEnabled, enabled);
   prefs->CommitPendingWrite();
 }
 
 bool AccessibilityController::IsLargeCursorEnabled() const {
   return large_cursor_enabled_;
+}
+
+void AccessibilityController::SetHighContrastEnabled(bool enabled) {
+  PrefService* prefs = GetActivePrefService();
+  if (!prefs)
+    return;
+  prefs->SetBoolean(prefs::kAccessibilityHighContrastEnabled, enabled);
+  prefs->CommitPendingWrite();
+}
+
+bool AccessibilityController::IsHighContrastEnabled() const {
+  return high_contrast_enabled_;
 }
 
 // static
@@ -92,8 +109,13 @@ void AccessibilityController::OnActiveUserPrefServiceChanged(
       prefs::kAccessibilityLargeCursorDipSize,
       base::Bind(&AccessibilityController::UpdateLargeCursorFromPref,
                  base::Unretained(this)));
+  pref_change_registrar_->Add(
+      prefs::kAccessibilityHighContrastEnabled,
+      base::Bind(&AccessibilityController::UpdateHighContrastFromPref,
+                 base::Unretained(this)));
 
   UpdateLargeCursorFromPref();
+  UpdateHighContrastFromPref();
 }
 
 void AccessibilityController::SetPrefServiceForTest(PrefService* prefs) {
@@ -128,6 +150,33 @@ void AccessibilityController::UpdateLargeCursorFromPref() {
   ShellPort::Get()->SetCursorSize(
       large_cursor_enabled_ ? ui::CursorSize::kLarge : ui::CursorSize::kNormal);
   Shell::Get()->SetLargeCursorSizeInDip(large_cursor_size_in_dip_);
+  Shell::Get()->SetCursorCompositingEnabled(RequiresCursorCompositing(prefs));
+}
+
+void AccessibilityController::UpdateHighContrastFromPref() {
+  PrefService* prefs = GetActivePrefService();
+  const bool enabled =
+      prefs->GetBoolean(prefs::kAccessibilityHighContrastEnabled);
+
+  if (high_contrast_enabled_ == enabled)
+    return;
+
+  high_contrast_enabled_ = enabled;
+
+  NotifyAccessibilityStatusChanged();
+
+  // Under mash the UI service (window server) handles high contrast mode.
+  if (Shell::GetAshConfig() == Config::MASH) {
+    if (!connector_)  // Null in tests.
+      return;
+    ui::mojom::AccessibilityManagerPtr accessibility_ptr;
+    connector_->BindInterface(ui::mojom::kServiceName, &accessibility_ptr);
+    accessibility_ptr->SetHighContrastMode(enabled);
+    return;
+  }
+
+  // Under classic ash high contrast mode is handled internally.
+  Shell::Get()->high_contrast_controller()->SetEnabled(enabled);
   Shell::Get()->SetCursorCompositingEnabled(RequiresCursorCompositing(prefs));
 }
 

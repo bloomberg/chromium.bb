@@ -13,7 +13,6 @@
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/autoclick/autoclick_controller.h"
 #include "ash/autoclick/mus/public/interfaces/autoclick.mojom.h"
-#include "ash/high_contrast/high_contrast_controller.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
@@ -247,7 +246,6 @@ AccessibilityManager::AccessibilityManager()
           ash::prefs::kAccessibilitySwitchAccessEnabled),
       sticky_keys_enabled_(false),
       spoken_feedback_enabled_(false),
-      high_contrast_enabled_(false),
       autoclick_enabled_(false),
       autoclick_delay_ms_(ash::AutoclickController::GetDefaultAutoclickDelay()),
       virtual_keyboard_enabled_(false),
@@ -517,32 +515,16 @@ void AccessibilityManager::EnableHighContrast(bool enabled) {
   pref_service->CommitPendingWrite();
 }
 
-void AccessibilityManager::UpdateHighContrastFromPref() {
-  if (!profile_)
-    return;
+bool AccessibilityManager::IsHighContrastEnabled() const {
+  return profile_ && profile_->GetPrefs()->GetBoolean(
+                         ash::prefs::kAccessibilityHighContrastEnabled);
+}
 
-  PrefService* prefs = profile_->GetPrefs();
-  const bool enabled =
-      prefs->GetBoolean(ash::prefs::kAccessibilityHighContrastEnabled);
-
-  if (high_contrast_enabled_ == enabled)
-    return;
-
-  high_contrast_enabled_ = enabled;
-
+void AccessibilityManager::OnHighContrastChanged() {
   AccessibilityStatusEventDetails details(
-      ACCESSIBILITY_TOGGLE_HIGH_CONTRAST_MODE, enabled,
+      ACCESSIBILITY_TOGGLE_HIGH_CONTRAST_MODE, IsHighContrastEnabled(),
       ash::A11Y_NOTIFICATION_NONE);
-
   NotifyAccessibilityStatusChanged(details);
-
-  // TODO(crbug.com/594887): Fix for mash by moving pref into ash.
-  if (GetAshConfig() == ash::Config::MASH)
-    return;
-
-  ash::Shell::Get()->high_contrast_controller()->SetEnabled(enabled);
-  ash::Shell::Get()->SetCursorCompositingEnabled(
-      ash::AccessibilityController::RequiresCursorCompositing(prefs));
 }
 
 void AccessibilityManager::OnLocaleChanged() {
@@ -663,10 +645,6 @@ void AccessibilityManager::SetTouchAccessibilityAnchorPoint(
     const gfx::Point& anchor_point) {
   for (auto* rwc : ash::RootWindowController::root_window_controllers())
     rwc->SetTouchAccessibilityAnchorPoint(anchor_point);
-}
-
-bool AccessibilityManager::IsHighContrastEnabled() const {
-  return high_contrast_enabled_;
 }
 
 void AccessibilityManager::EnableAutoclick(bool enabled) {
@@ -1178,7 +1156,7 @@ void AccessibilityManager::SetProfile(Profile* profile) {
                    base::Unretained(this)));
     pref_change_registrar_->Add(
         ash::prefs::kAccessibilityHighContrastEnabled,
-        base::Bind(&AccessibilityManager::UpdateHighContrastFromPref,
+        base::Bind(&AccessibilityManager::OnHighContrastChanged,
                    base::Unretained(this)));
     pref_change_registrar_->Add(
         ash::prefs::kAccessibilityAutoclickEnabled,
@@ -1264,7 +1242,6 @@ void AccessibilityManager::SetProfile(Profile* profile) {
   UpdateAlwaysShowMenuFromPref();
   UpdateStickyKeysFromPref();
   UpdateSpokenFeedbackFromPref();
-  UpdateHighContrastFromPref();
   UpdateAutoclickFromPref();
   UpdateAutoclickDelayFromPref();
   UpdateVirtualKeyboardFromPref();

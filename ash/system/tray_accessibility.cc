@@ -63,7 +63,7 @@ uint32_t GetAccessibilityState() {
   uint32_t state = A11Y_NONE;
   if (delegate->IsSpokenFeedbackEnabled())
     state |= A11Y_SPOKEN_FEEDBACK;
-  if (delegate->IsHighContrastEnabled())
+  if (controller->IsHighContrastEnabled())
     state |= A11Y_HIGH_CONTRAST;
   if (delegate->IsMagnifierEnabled())
     state |= A11Y_SCREEN_MAGNIFIER;
@@ -164,7 +164,7 @@ void AccessibilityDetailedView::AppendAccessibilityList() {
           IDS_ASH_STATUS_TRAY_ACCESSIBILITY_SPOKEN_FEEDBACK),
       spoken_feedback_enabled_);
 
-  high_contrast_enabled_ = delegate->IsHighContrastEnabled();
+  high_contrast_enabled_ = controller->IsHighContrastEnabled();
   high_contrast_view_ = AddScrollListCheckableItem(
       kSystemMenuAccessibilityContrastIcon,
       l10n_util::GetStringUTF16(
@@ -251,10 +251,11 @@ void AccessibilityDetailedView::HandleViewClicked(views::View* view) {
                      : UserMetricsAction("StatusArea_SpokenFeedbackEnabled"));
     delegate->ToggleSpokenFeedback(A11Y_NOTIFICATION_NONE);
   } else if (view == high_contrast_view_) {
-    RecordAction(delegate->IsHighContrastEnabled()
-                     ? UserMetricsAction("StatusArea_HighContrastDisabled")
-                     : UserMetricsAction("StatusArea_HighContrastEnabled"));
-    delegate->ToggleHighContrast();
+    bool new_state = !controller->IsHighContrastEnabled();
+    RecordAction(new_state
+                     ? UserMetricsAction("StatusArea_HighContrastEnabled")
+                     : UserMetricsAction("StatusArea_HighContrastDisabled"));
+    controller->SetHighContrastEnabled(new_state);
   } else if (view == screen_magnifier_view_) {
     RecordAction(delegate->IsMagnifierEnabled()
                      ? UserMetricsAction("StatusArea_MagnifierDisabled")

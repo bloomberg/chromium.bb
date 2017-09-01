@@ -902,7 +902,8 @@ void Shell::Init(const ShellInitParams& init_params) {
   // Some delegates access ShellPort during their construction. Create them here
   // instead of the ShellPort constructor.
   accessibility_delegate_.reset(shell_delegate_->CreateAccessibilityDelegate());
-  accessibility_controller_ = base::MakeUnique<AccessibilityController>();
+  accessibility_controller_ = base::MakeUnique<AccessibilityController>(
+      shell_delegate_->GetShellConnector());
   palette_delegate_ = shell_delegate_->CreatePaletteDelegate();
   toast_manager_ = base::MakeUnique<ToastManager>();
 
