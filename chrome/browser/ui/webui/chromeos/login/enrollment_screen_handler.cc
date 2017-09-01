@@ -678,6 +678,10 @@ void EnrollmentScreenHandler::DoShow() {
   screen_data.SetBoolean("attestationBased", config_.is_mode_attestation());
   screen_data.SetString("management_domain", config_.management_domain);
 
+  const std::string app_locale = g_browser_process->GetApplicationLocale();
+  if (!app_locale.empty())
+    screen_data.SetString("hl", app_locale);
+
   policy::DeviceCloudPolicyManagerChromeOS* policy_manager =
       g_browser_process->platform_part()
           ->browser_policy_connector_chromeos()
