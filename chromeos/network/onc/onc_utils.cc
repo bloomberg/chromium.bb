@@ -48,6 +48,7 @@
 #include "net/base/host_port_pair.h"
 #include "net/cert/pem_tokenizer.h"
 #include "net/cert/x509_certificate.h"
+#include "net/cert/x509_util_nss.h"
 #include "net/proxy/proxy_bypass_rules.h"
 #include "net/proxy/proxy_config.h"
 #include "net/proxy/proxy_server.h"
@@ -548,11 +549,12 @@ bool ParseAndValidateOncForImport(const std::string& onc_blob,
   return success;
 }
 
-scoped_refptr<net::X509Certificate> DecodePEMCertificate(
+net::ScopedCERTCertificate DecodePEMCertificate(
     const std::string& pem_encoded) {
   std::string decoded = DecodePEM(pem_encoded);
-  scoped_refptr<net::X509Certificate> cert =
-      net::X509Certificate::CreateFromBytes(decoded.data(), decoded.size());
+  net::ScopedCERTCertificate cert =
+      net::x509_util::CreateCERTCertificateFromBytes(
+          reinterpret_cast<const uint8_t*>(decoded.data()), decoded.size());
   LOG_IF(ERROR, !cert.get()) << "Couldn't create certificate from X509 data: "
                              << decoded;
   return cert;

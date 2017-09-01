@@ -21,6 +21,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_source.h"
 #include "net/cert/x509_certificate.h"
+#include "net/cert/x509_util_nss.h"
 
 namespace policy {
 
@@ -87,10 +88,13 @@ void UserNetworkConfigurationUpdater::GetWebTrustedCertificates(
 
 void UserNetworkConfigurationUpdater::OnCertificatesImported(
     bool /* unused success */,
-    const net::CertificateList& onc_trusted_certificates) {
+    net::ScopedCERTCertificateList onc_trusted_certificates) {
   web_trust_certs_.clear();
-  if (allow_trusted_certificates_from_policy_)
-    web_trust_certs_ = onc_trusted_certificates;
+  if (allow_trusted_certificates_from_policy_) {
+    web_trust_certs_ =
+        net::x509_util::CreateX509CertificateListFromCERTCertificates(
+            onc_trusted_certificates);
+  }
   NotifyTrustAnchorsChanged();
 }
 

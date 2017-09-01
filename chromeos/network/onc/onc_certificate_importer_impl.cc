@@ -24,7 +24,7 @@
 #include "crypto/scoped_nss_types.h"
 #include "net/base/net_errors.h"
 #include "net/cert/nss_cert_database.h"
-#include "net/cert/x509_certificate.h"
+#include "net/cert/x509_util_nss.h"
 
 namespace chromeos {
 namespace onc {
@@ -35,9 +35,10 @@ void CallBackOnOriginLoop(
     const scoped_refptr<base::SingleThreadTaskRunner>& origin_loop,
     const CertificateImporter::DoneCallback& callback,
     bool success,
-    const net::CertificateList& onc_trusted_certificates) {
+    net::ScopedCERTCertificateList onc_trusted_certificates) {
   origin_loop->PostTask(
-      FROM_HERE, base::Bind(callback, success, onc_trusted_certificates));
+      FROM_HERE,
+      base::BindOnce(callback, success, std::move(onc_trusted_certificates)));
 }
 
 }  // namespace
@@ -93,7 +94,7 @@ void CertificateImporterImpl::ParseAndStoreCertificates(
     net::NSSCertDatabase* nssdb) {
   // Web trust is only granted to certificates imported by the user.
   bool allow_trust_imports = source == ::onc::ONC_SOURCE_USER_IMPORT;
-  net::CertificateList onc_trusted_certificates;
+  net::ScopedCERTCertificateList onc_trusted_certificates;
   bool success = true;
   for (size_t i = 0; i < certificates->GetSize(); ++i) {
     const base::DictionaryValue* certificate = NULL;
@@ -111,16 +112,16 @@ void CertificateImporterImpl::ParseAndStoreCertificates(
     }
   }
 
-  done_callback.Run(success, onc_trusted_certificates);
+  done_callback.Run(success, std::move(onc_trusted_certificates));
 }
 
 void CertificateImporterImpl::RunDoneCallback(
     const CertificateImporter::DoneCallback& callback,
     bool success,
-    const net::CertificateList& onc_trusted_certificates) {
+    net::ScopedCERTCertificateList onc_trusted_certificates) {
   if (!success)
     NET_LOG_ERROR("ONC Certificate Import Error", "");
-  callback.Run(success, onc_trusted_certificates);
+  callback.Run(success, std::move(onc_trusted_certificates));
 }
 
 bool CertificateImporterImpl::ParseAndStoreCertificate(
@@ -128,7 +129,7 @@ bool CertificateImporterImpl::ParseAndStoreCertificate(
     bool allow_trust_imports,
     const base::DictionaryValue& certificate,
     net::NSSCertDatabase* nssdb,
-    net::CertificateList* onc_trusted_certificates) {
+    net::ScopedCERTCertificateList* onc_trusted_certificates) {
   std::string guid;
   certificate.GetStringWithoutPathExpansion(::onc::certificate::kGUID, &guid);
   DCHECK(!guid.empty());
@@ -156,7 +157,7 @@ bool CertificateImporterImpl::ParseServerOrCaCertificate(
     const std::string& guid,
     const base::DictionaryValue& certificate,
     net::NSSCertDatabase* nssdb,
-    net::CertificateList* onc_trusted_certificates) {
+    net::ScopedCERTCertificateList* onc_trusted_certificates) {
   // Device policy can't import certificates.
   if (source == ::onc::ONC_SOURCE_DEVICE_POLICY) {
     // This isn't a parsing error.
@@ -205,8 +206,7 @@ bool CertificateImporterImpl::ParseServerOrCaCertificate(
     return false;
   }
 
-  scoped_refptr<net::X509Certificate> x509_cert =
-      DecodePEMCertificate(x509_data);
+  net::ScopedCERTCertificate x509_cert = DecodePEMCertificate(x509_data);
   if (!x509_cert.get()) {
     LOG(ERROR) << "Unable to create certificate from PEM encoding, type: "
                << cert_type;
@@ -217,7 +217,7 @@ bool CertificateImporterImpl::ParseServerOrCaCertificate(
                                            net::NSSCertDatabase::TRUSTED_SSL :
                                            net::NSSCertDatabase::TRUST_DEFAULT);
 
-  if (x509_cert->os_cert_handle()->isperm) {
+  if (x509_cert.get()->isperm) {
     net::CertType net_cert_type =
         cert_type == ::onc::certificate::kServer ? net::SERVER_CERT
                                                  : net::CA_CERT;
@@ -239,8 +239,8 @@ bool CertificateImporterImpl::ParseServerOrCaCertificate(
       }
     }
   } else {
-    net::CertificateList cert_list;
-    cert_list.push_back(x509_cert);
+    net::ScopedCERTCertificateList cert_list;
+    cert_list.push_back(net::x509_util::DupCERTCertificate(x509_cert.get()));
     net::NSSCertDatabase::ImportCertFailureList failures;
     bool success = false;
     if (cert_type == ::onc::certificate::kServer)
@@ -262,7 +262,7 @@ bool CertificateImporterImpl::ParseServerOrCaCertificate(
   }
 
   if (web_trust_flag && onc_trusted_certificates)
-    onc_trusted_certificates->push_back(x509_cert);
+    onc_trusted_certificates->push_back(std::move(x509_cert));
 
   return true;
 }
@@ -291,7 +291,7 @@ bool CertificateImporterImpl::ParseClientCertificate(
   if (!private_slot)
     return false;
 
-  net::CertificateList imported_certs;
+  net::ScopedCERTCertificateList imported_certs;
 
   int import_result =
       nssdb->ImportFromPKCS12(private_slot.get(), decoded_pkcs12,
@@ -313,14 +313,12 @@ bool CertificateImporterImpl::ParseClientCertificate(
                     "Only the first one will be imported.";
   }
 
-  scoped_refptr<net::X509Certificate> cert_result = imported_certs[0];
+  CERTCertificate* cert_result = imported_certs[0].get();
 
   // Find the private key associated with this certificate, and set the
   // nickname on it.
   SECKEYPrivateKey* private_key = PK11_FindPrivateKeyFromCert(
-      cert_result->os_cert_handle()->slot,
-      cert_result->os_cert_handle(),
-      NULL);  // wincx
+      cert_result->slot, cert_result, nullptr /* wincx */);
   if (private_key) {
     PK11_SetPrivateKeyNickname(private_key, const_cast<char*>(guid.c_str()));
     SECKEY_DestroyPrivateKey(private_key);

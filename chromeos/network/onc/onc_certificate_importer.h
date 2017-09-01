@@ -9,7 +9,7 @@
 #include "base/macros.h"
 #include "chromeos/chromeos_export.h"
 #include "components/onc/onc_constants.h"
-#include "net/cert/x509_certificate.h"
+#include "net/cert/scoped_nss_types.h"
 
 namespace base {
 class ListValue;
@@ -20,8 +20,9 @@ namespace onc {
 
 class CHROMEOS_EXPORT CertificateImporter {
  public:
-  typedef base::Callback<
-      void(bool success, const net::CertificateList& onc_trusted_certificates)>
+  typedef base::Callback<void(
+      bool success,
+      net::ScopedCERTCertificateList onc_trusted_certificates)>
       DoneCallback;
 
   CertificateImporter() {}

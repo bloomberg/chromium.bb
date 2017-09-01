@@ -22,6 +22,7 @@
 #include "net/cert/cert_verify_result.h"
 #include "net/cert/nss_cert_database_chromeos.h"
 #include "net/cert/x509_certificate.h"
+#include "net/cert/x509_util_nss.h"
 #include "net/log/net_log_with_source.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
@@ -54,10 +55,17 @@ class PolicyCertVerifierTest : public testing::Test {
         crypto::GetPublicSlotForChromeOSUser(test_nss_user_.username_hash())));
 
     test_ca_cert_ = LoadCertificate("root_ca_cert.pem", net::CA_CERT);
-    ASSERT_TRUE(test_ca_cert_.get());
-    test_server_cert_ = LoadCertificate("ok_cert.pem", net::SERVER_CERT);
-    ASSERT_TRUE(test_server_cert_.get());
-    test_ca_cert_list_.push_back(test_ca_cert_);
+    ASSERT_TRUE(test_ca_cert_);
+    test_ca_cert_list_.push_back(
+        net::x509_util::DupCERTCertificate(test_ca_cert_.get()));
+
+    net::ScopedCERTCertificate test_server_cert =
+        LoadCertificate("ok_cert.pem", net::SERVER_CERT);
+    ASSERT_TRUE(test_server_cert);
+    test_server_cert_ =
+        net::x509_util::CreateX509CertificateFromCERTCertificate(
+            test_server_cert.get());
+    ASSERT_TRUE(test_server_cert_);
   }
 
   void TearDown() override {
@@ -96,9 +104,9 @@ class PolicyCertVerifierTest : public testing::Test {
   }
 
   // |test_ca_cert_| is the issuer of |test_server_cert_|.
-  scoped_refptr<net::X509Certificate> test_ca_cert_;
+  net::ScopedCERTCertificate test_ca_cert_;
   scoped_refptr<net::X509Certificate> test_server_cert_;
-  net::CertificateList test_ca_cert_list_;
+  net::ScopedCERTCertificateList test_ca_cert_list_;
   std::unique_ptr<net::NSSCertDatabaseChromeOS> test_cert_db_;
   std::unique_ptr<PolicyCertVerifier> cert_verifier_;
 
@@ -107,10 +115,12 @@ class PolicyCertVerifierTest : public testing::Test {
     trust_anchor_used_ = true;
   }
 
-  scoped_refptr<net::X509Certificate> LoadCertificate(const std::string& name,
-                                                      net::CertType type) {
-    scoped_refptr<net::X509Certificate> cert =
-        net::ImportCertFromFile(net::GetTestCertsDirectory(), name);
+  net::ScopedCERTCertificate LoadCertificate(const std::string& name,
+                                             net::CertType type) {
+    net::ScopedCERTCertificate cert =
+        net::ImportCERTCertificateFromFile(net::GetTestCertsDirectory(), name);
+    if (!cert)
+      return cert;
 
     // No certificate is trusted right after it's loaded.
     net::NSSCertDatabase::TrustBits trust =
@@ -194,8 +204,13 @@ TEST_F(PolicyCertVerifierTest, VerifyUsingAdditionalTrustAnchor) {
   }
   EXPECT_FALSE(WasTrustAnchorUsedAndReset());
 
+  net::CertificateList test_ca_x509cert_list =
+      net::x509_util::CreateX509CertificateListFromCERTCertificates(
+          test_ca_cert_list_);
+  ASSERT_FALSE(test_ca_x509cert_list.empty());
+
   // Verify() again with the additional trust anchors.
-  cert_verifier_->SetTrustAnchors(test_ca_cert_list_);
+  cert_verifier_->SetTrustAnchors(test_ca_x509cert_list);
   {
     net::CertVerifyResult verify_result;
     net::TestCompletionCallback callback;
@@ -209,7 +224,7 @@ TEST_F(PolicyCertVerifierTest, VerifyUsingAdditionalTrustAnchor) {
   EXPECT_TRUE(WasTrustAnchorUsedAndReset());
 
   // Verify() again with the additional trust anchors will hit the cache.
-  cert_verifier_->SetTrustAnchors(test_ca_cert_list_);
+  cert_verifier_->SetTrustAnchors(test_ca_x509cert_list);
   {
     net::CertVerifyResult verify_result;
     net::TestCompletionCallback callback;
