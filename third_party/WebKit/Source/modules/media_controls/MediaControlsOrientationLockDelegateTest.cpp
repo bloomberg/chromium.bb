@@ -374,6 +374,12 @@ class MediaControlsOrientationLockAndRotateToFullscreenDelegateTest
     // Set video size.
     EXPECT_CALL(MockWebMediaPlayer(), NaturalSize())
         .WillRepeatedly(Return(WebSize(video_width, video_height)));
+
+    // Dispatch an arbitrary Device Orientation event to satisfy
+    // MediaControlsRotateToFullscreenDelegate's requirement that the device
+    // supports the API and can provide beta and gamma values. The orientation
+    // will be ignored.
+    RotateDeviceTo(0);
   }
 
   void PlayVideo() {

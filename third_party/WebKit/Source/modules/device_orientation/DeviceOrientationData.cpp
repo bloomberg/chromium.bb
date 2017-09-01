@@ -70,7 +70,7 @@ DeviceOrientationData* DeviceOrientationData::Create(
   return DeviceOrientationData::Create(alpha, beta, gamma, data.absolute);
 }
 
-DeviceOrientationData::DeviceOrientationData() {}
+DeviceOrientationData::DeviceOrientationData() : absolute_(false) {}
 
 DeviceOrientationData::DeviceOrientationData(const Nullable<double>& alpha,
                                              const Nullable<double>& beta,

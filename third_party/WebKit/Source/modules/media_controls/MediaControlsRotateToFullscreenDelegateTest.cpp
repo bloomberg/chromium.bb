@@ -17,6 +17,8 @@
 #include "core/html/HTMLVideoElement.h"
 #include "core/loader/EmptyClients.h"
 #include "core/testing/DummyPageHolder.h"
+#include "modules/device_orientation/DeviceOrientationController.h"
+#include "modules/device_orientation/DeviceOrientationData.h"
 #include "modules/media_controls/MediaControlsImpl.h"
 #include "modules/screen_orientation/ScreenOrientationControllerImpl.h"
 #include "platform/testing/EmptyWebMediaPlayer.h"
@@ -164,7 +166,8 @@ class MediaControlsRotateToFullscreenDelegateTest : public ::testing::Test {
   }
 
   void InitScreenAndVideo(WebScreenOrientationType initial_screen_orientation,
-                          WebSize video_size);
+                          WebSize video_size,
+                          bool with_device_orientation = true);
 
   void PlayVideo();
 
@@ -198,7 +201,8 @@ class MediaControlsRotateToFullscreenDelegateTest : public ::testing::Test {
 
 void MediaControlsRotateToFullscreenDelegateTest::InitScreenAndVideo(
     WebScreenOrientationType initial_screen_orientation,
-    WebSize video_size) {
+    WebSize video_size,
+    bool with_device_orientation /* = true */) {
   // Set initial screen orientation (called by `Attach` during `AppendChild`).
   WebScreenInfo screen_info;
   screen_info.orientation_type = initial_screen_orientation;
@@ -215,6 +219,18 @@ void MediaControlsRotateToFullscreenDelegateTest::InitScreenAndVideo(
   // Set video size.
   EXPECT_CALL(GetWebMediaPlayer(), NaturalSize())
       .WillRepeatedly(Return(video_size));
+
+  if (with_device_orientation) {
+    // Dispatch an arbitrary Device Orientation event to satisfy
+    // MediaControlsRotateToFullscreenDelegate's requirement that the device
+    // supports the API and can provide beta and gamma values. The orientation
+    // will be ignored.
+    DeviceOrientationController::From(GetDocument())
+        .SetOverride(DeviceOrientationData::Create(
+            0.0 /* alpha */, 90.0 /* beta */, 0.0 /* gamma */,
+            false /* absolute */));
+    testing::RunPendingTasks();
+  }
 }
 
 void MediaControlsRotateToFullscreenDelegateTest::PlayVideo() {
@@ -464,6 +480,33 @@ TEST_F(MediaControlsRotateToFullscreenDelegateTest, EnterFailNoControls) {
   RotateTo(kWebScreenOrientationLandscapePrimary);
 
   // Should not enter fullscreen since video has no controls.
+  EXPECT_FALSE(GetVideo().IsFullscreen());
+}
+
+TEST_F(MediaControlsRotateToFullscreenDelegateTest,
+       EnterFailNoDeviceOrientation) {
+  // Portrait screen, landscape video.
+  InitScreenAndVideo(kWebScreenOrientationPortraitPrimary, WebSize(640, 480),
+                     false /* with_device_orientation */);
+  EXPECT_EQ(SimpleOrientation::kPortrait, ObservedScreenOrientation());
+  EXPECT_EQ(SimpleOrientation::kLandscape, ComputeVideoOrientation());
+
+  // Dispatch an null Device Orientation event, as happens when the device lacks
+  // the necessary hardware to support the Device Orientation API.
+  DeviceOrientationController::From(GetDocument())
+      .SetOverride(DeviceOrientationData::Create());
+  testing::RunPendingTasks();
+
+  // Play video.
+  PlayVideo();
+  UpdateVisibilityObserver();
+
+  EXPECT_TRUE(ObservedVisibility());
+
+  // Rotate screen to landscape.
+  RotateTo(kWebScreenOrientationLandscapePrimary);
+
+  // Should not enter fullscreen since Device Orientation is not available.
   EXPECT_FALSE(GetVideo().IsFullscreen());
 }
 
