@@ -40,7 +40,7 @@ class PaymentsProfileComparator : public autofill::AutofillProfileComparator {
 
   PaymentsProfileComparator(const std::string& app_locale,
                             const PaymentOptionsProvider& options);
-  ~PaymentsProfileComparator();
+  virtual ~PaymentsProfileComparator();
 
   // Returns a bitmask indicating which fields (or groups of fields) on this
   // profile are not complete and valid.

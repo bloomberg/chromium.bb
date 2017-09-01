@@ -12,7 +12,8 @@
 @class AlertCoordinator;
 @class DialogPresenter;
 
-class JavaScriptDialogPresenterImpl : public web::JavaScriptDialogPresenter {
+class JavaScriptDialogPresenterImpl final
+    : public web::JavaScriptDialogPresenter {
  public:
   explicit JavaScriptDialogPresenterImpl(DialogPresenter* dialogPresenter);
   ~JavaScriptDialogPresenterImpl();
