@@ -16,7 +16,7 @@
 #import "ios/clean/chrome/browser/ui/dialogs/dialog_text_field_configuration.h"
 #import "ios/clean/chrome/browser/ui/dialogs/dialog_view_controller.h"
 #import "ios/clean/chrome/browser/ui/dialogs/test_helpers/test_dialog_mediator.h"
-#import "ios/clean/chrome/browser/ui/overlays/test_helpers/test_overlay_queue.h"
+#import "ios/clean/chrome/browser/ui/overlays/test_helpers/overlay_coordinator_test.h"
 #include "ios/web/public/test/fakes/test_browser_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
@@ -56,24 +56,16 @@
 @end
 
 // A test fixture for DialogCoordinators.
-class DialogCoordinatorTest : public PlatformTest {
+class DialogCoordinatorTest : public OverlayCoordinatorTest {
  public:
   DialogCoordinatorTest()
-      : PlatformTest(),
-        coordinator_([[TestDialogCoordinator alloc] init]),
-        browser_(ios::ChromeBrowserState::FromBrowserState(&browser_state_)) {
+      : OverlayCoordinatorTest(),
+        coordinator_([[TestDialogCoordinator alloc] init]) {
     // DialogConsumers require at least one button.
     coordinator_.testMediator.buttonConfigs = @[ [DialogButtonConfiguration
         configWithText:@"OK"
                  style:DialogButtonStyle::DEFAULT] ];
-    // Add the coordinator to the queue.
-    queue_.SetBrowser(&browser_);
-    queue_.AddOverlay(coordinator_);
   }
-
-  ~DialogCoordinatorTest() override { queue_.CancelOverlays(); }
-
-  void StartCoordinator() { queue_.StartNextOverlay(); }
 
   DialogViewController* alert_controller() {
     return base::mac::ObjCCastStrict<DialogViewController>(
@@ -82,14 +74,13 @@ class DialogCoordinatorTest : public PlatformTest {
 
  protected:
   __strong TestDialogCoordinator* coordinator_;
-  web::TestBrowserState browser_state_;
-  Browser browser_;
-  TestOverlayQueue queue_;
+
+  OverlayCoordinator* GetOverlay() override { return coordinator_; }
 };
 
 // Tests that the alert style is used by default.
 TEST_F(DialogCoordinatorTest, DefaultStyle) {
-  StartCoordinator();
+  StartOverlay();
   ASSERT_TRUE(alert_controller());
   EXPECT_EQ(UIAlertControllerStyleAlert, alert_controller().preferredStyle);
 }
@@ -97,7 +88,7 @@ TEST_F(DialogCoordinatorTest, DefaultStyle) {
 // Tests that the action sheet style is used if specified.
 TEST_F(DialogCoordinatorTest, ActionSheetStyle) {
   coordinator_.alertStyle = UIAlertControllerStyleActionSheet;
-  StartCoordinator();
+  StartOverlay();
   ASSERT_TRUE(alert_controller());
   EXPECT_EQ(UIAlertControllerStyleActionSheet,
             alert_controller().preferredStyle);
