@@ -15,5 +15,5 @@
          android:icon="@drawable/btn_star_filled" />
     <item android:id="@+id/action_history"
          android:title="@string/menu_history"
-         android:icon="@drawable/ic_watch_later_black_24dp" />
+         android:icon="@drawable/ic_watch_later_24dp" />
 </menu>
