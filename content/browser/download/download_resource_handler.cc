@@ -79,8 +79,10 @@ static void StartOnUIThread(
   info->tab_referrer_url = tab_info->tab_referrer_url;
   info->site_url = frame_host->GetSiteInstance()->GetSiteURL();
 
-  download_manager->StartDownload(std::move(info), std::move(stream),
-                                  started_cb);
+  download_manager->StartDownload(
+      std::move(info),
+      base::MakeUnique<DownloadManager::InputStream>(std::move(stream)),
+      started_cb);
 }
 
 void InitializeDownloadTabInfoOnUIThread(

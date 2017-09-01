@@ -97,7 +97,7 @@ void DownloadWorker::Cancel(bool user_cancel) {
 
 void DownloadWorker::OnUrlDownloadStarted(
     std::unique_ptr<DownloadCreateInfo> create_info,
-    std::unique_ptr<UrlDownloadHandler::InputStream> input_stream,
+    std::unique_ptr<DownloadManager::InputStream> input_stream,
     const DownloadUrlParameters::OnStartedCallback& callback) {
   // |callback| is not used in subsequent requests.
   DCHECK(callback.is_null());

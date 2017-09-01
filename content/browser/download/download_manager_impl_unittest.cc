@@ -291,15 +291,16 @@ class MockDownloadFileFactory
 
   // Overridden method from DownloadFileFactory
   MOCK_METHOD2(MockCreateFile,
-               MockDownloadFile*(const DownloadSaveInfo&, ByteStreamReader*));
+               MockDownloadFile*(const DownloadSaveInfo&,
+                                 DownloadManager::InputStream*));
 
   DownloadFile* CreateFile(
       std::unique_ptr<DownloadSaveInfo> save_info,
       const base::FilePath& default_download_directory,
-      std::unique_ptr<ByteStreamReader> byte_stream,
+      std::unique_ptr<DownloadManager::InputStream> stream,
       const net::NetLogWithSource& net_log,
       base::WeakPtr<DownloadDestinationObserver> observer) override {
-    return MockCreateFile(*save_info, byte_stream.get());
+    return MockCreateFile(*save_info, stream.get());
   }
 };
 
@@ -555,11 +556,13 @@ TEST_F(DownloadManagerTest, StartDownload) {
               ApplicationClientIdForFileScanning())
       .WillRepeatedly(Return("client-id"));
   MockDownloadFile* mock_file = new MockDownloadFile;
+  auto input_stream =
+      base::MakeUnique<DownloadManager::InputStream>(std::move(stream));
   EXPECT_CALL(*mock_download_file_factory_.get(),
-              MockCreateFile(Ref(*info->save_info.get()), stream.get()))
+              MockCreateFile(Ref(*info->save_info.get()), input_stream.get()))
       .WillOnce(Return(mock_file));
 
-  download_manager_->StartDownload(std::move(info), std::move(stream),
+  download_manager_->StartDownload(std::move(info), std::move(input_stream),
                                    DownloadUrlParameters::OnStartedCallback());
   EXPECT_TRUE(download_manager_->GetDownload(local_id));
 }

@@ -102,11 +102,11 @@ class MockDownloadManager : public DownloadManager {
   // Gasket for handling scoped_ptr arguments.
   void StartDownload(
       std::unique_ptr<DownloadCreateInfo> info,
-      std::unique_ptr<ByteStreamReader> stream,
+      std::unique_ptr<DownloadManager::InputStream> stream,
       const DownloadUrlParameters::OnStartedCallback& callback) override;
 
   MOCK_METHOD2(MockStartDownload,
-               void(DownloadCreateInfo*, ByteStreamReader*));
+               void(DownloadCreateInfo*, DownloadManager::InputStream*));
   MOCK_METHOD3(RemoveDownloadsByURLAndTime,
                int(const base::Callback<bool(const GURL&)>& url_filter,
                    base::Time remove_begin,

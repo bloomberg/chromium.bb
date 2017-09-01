@@ -712,7 +712,6 @@ source_set("browser") {
     "download/save_package_download_job.h",
     "download/save_types.cc",
     "download/save_types.h",
-    "download/url_download_handler.cc",
     "download/url_download_handler.h",
     "download/url_downloader.cc",
     "download/url_downloader.h",

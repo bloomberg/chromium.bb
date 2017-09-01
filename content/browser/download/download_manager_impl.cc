@@ -129,8 +129,10 @@ std::unique_ptr<UrlDownloader, BrowserThread::DeleteOnIOThread> BeginDownload(
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::BindOnce(&DownloadManager::StartDownload, download_manager,
-                       base::Passed(&failed_created_info),
-                       base::Passed(&empty_byte_stream), params->callback()));
+                       std::move(failed_created_info),
+                       base::MakeUnique<DownloadManager::InputStream>(
+                           std::move(empty_byte_stream)),
+                       params->callback()));
     return nullptr;
   }
 
@@ -356,13 +358,15 @@ void DownloadManagerImpl::Shutdown() {
 
 void DownloadManagerImpl::StartDownload(
     std::unique_ptr<DownloadCreateInfo> info,
-    std::unique_ptr<ByteStreamReader> stream,
+    std::unique_ptr<DownloadManager::InputStream> stream,
     const DownloadUrlParameters::OnStartedCallback& on_started) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(info);
+
   // |stream| is only non-nil if the download request was successful.
-  DCHECK((info->result == DOWNLOAD_INTERRUPT_REASON_NONE && stream.get()) ||
-         (info->result != DOWNLOAD_INTERRUPT_REASON_NONE && !stream.get()));
+  DCHECK(
+      (info->result == DOWNLOAD_INTERRUPT_REASON_NONE && !stream->IsEmpty()) ||
+      (info->result != DOWNLOAD_INTERRUPT_REASON_NONE && stream->IsEmpty()));
   DVLOG(20) << __func__
             << "() result=" << DownloadInterruptReasonToString(info->result);
   uint32_t download_id = info->download_id;
@@ -381,7 +385,7 @@ void DownloadManagerImpl::StartDownload(
 
 void DownloadManagerImpl::StartDownloadWithId(
     std::unique_ptr<DownloadCreateInfo> info,
-    std::unique_ptr<ByteStreamReader> stream,
+    std::unique_ptr<DownloadManager::InputStream> stream,
     const DownloadUrlParameters::OnStartedCallback& on_started,
     bool new_download,
     uint32_t id) {
@@ -669,7 +673,7 @@ void DownloadManagerImpl::DownloadUrl(
   // TODO(qinmin): remove false from the if statement once download works when
   // network service is enabled, or once we disable the tests that are currently
   // passing with the URLRequest code path.
-  if (base::FeatureList::IsEnabled(features::kNetworkService) && false) {
+  if (base::FeatureList::IsEnabled(features::kNetworkService)) {
     std::unique_ptr<ResourceRequest> request = CreateResourceRequest(
         params.get());
     BrowserThread::PostTaskAndReplyWithResult(
@@ -797,12 +801,9 @@ DownloadItem* DownloadManagerImpl::GetDownloadByGuid(const std::string& guid) {
 
 void DownloadManagerImpl::OnUrlDownloadStarted(
     std::unique_ptr<DownloadCreateInfo> download_create_info,
-    std::unique_ptr<UrlDownloadHandler::InputStream> input_stream,
+    std::unique_ptr<DownloadManager::InputStream> stream,
     const DownloadUrlParameters::OnStartedCallback& callback) {
-  if (!base::FeatureList::IsEnabled(features::kNetworkService)) {
-    StartDownload(std::move(download_create_info),
-                  std::move(input_stream->stream_reader_), callback);
-  }
+  StartDownload(std::move(download_create_info), std::move(stream), callback);
 }
 
 void DownloadManagerImpl::OnUrlDownloadStopped(UrlDownloadHandler* downloader) {

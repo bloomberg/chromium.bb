@@ -145,13 +145,12 @@ static DownloadManagerImpl* DownloadManagerForShell(Shell* shell) {
 
 class DownloadFileWithDelay : public DownloadFileImpl {
  public:
-  DownloadFileWithDelay(
-      std::unique_ptr<DownloadSaveInfo> save_info,
-      const base::FilePath& default_download_directory,
-      std::unique_ptr<ByteStreamReader> stream,
-      const net::NetLogWithSource& net_log,
-      base::WeakPtr<DownloadDestinationObserver> observer,
-      base::WeakPtr<DownloadFileWithDelayFactory> owner);
+  DownloadFileWithDelay(std::unique_ptr<DownloadSaveInfo> save_info,
+                        const base::FilePath& default_download_directory,
+                        std::unique_ptr<DownloadManager::InputStream> stream,
+                        const net::NetLogWithSource& net_log,
+                        base::WeakPtr<DownloadDestinationObserver> observer,
+                        base::WeakPtr<DownloadFileWithDelayFactory> owner);
 
   ~DownloadFileWithDelay() override;
 
@@ -193,7 +192,7 @@ class DownloadFileWithDelayFactory : public DownloadFileFactory {
   DownloadFile* CreateFile(
       std::unique_ptr<DownloadSaveInfo> save_info,
       const base::FilePath& default_download_directory,
-      std::unique_ptr<ByteStreamReader> stream,
+      std::unique_ptr<DownloadManager::InputStream> stream,
       const net::NetLogWithSource& net_log,
       base::WeakPtr<DownloadDestinationObserver> observer) override;
 
@@ -214,7 +213,7 @@ class DownloadFileWithDelayFactory : public DownloadFileFactory {
 DownloadFileWithDelay::DownloadFileWithDelay(
     std::unique_ptr<DownloadSaveInfo> save_info,
     const base::FilePath& default_download_directory,
-    std::unique_ptr<ByteStreamReader> stream,
+    std::unique_ptr<DownloadManager::InputStream> stream,
     const net::NetLogWithSource& net_log,
     base::WeakPtr<DownloadDestinationObserver> observer,
     base::WeakPtr<DownloadFileWithDelayFactory> owner)
@@ -273,7 +272,7 @@ DownloadFileWithDelayFactory::~DownloadFileWithDelayFactory() {}
 DownloadFile* DownloadFileWithDelayFactory::CreateFile(
     std::unique_ptr<DownloadSaveInfo> save_info,
     const base::FilePath& default_download_directory,
-    std::unique_ptr<ByteStreamReader> stream,
+    std::unique_ptr<DownloadManager::InputStream> stream,
     const net::NetLogWithSource& net_log,
     base::WeakPtr<DownloadDestinationObserver> observer) {
   return new DownloadFileWithDelay(std::move(save_info),
@@ -309,12 +308,11 @@ void DownloadFileWithDelayFactory::WaitForSomeCallback() {
 
 class CountingDownloadFile : public DownloadFileImpl {
  public:
-  CountingDownloadFile(
-      std::unique_ptr<DownloadSaveInfo> save_info,
-      const base::FilePath& default_downloads_directory,
-      std::unique_ptr<ByteStreamReader> stream,
-      const net::NetLogWithSource& net_log,
-      base::WeakPtr<DownloadDestinationObserver> observer)
+  CountingDownloadFile(std::unique_ptr<DownloadSaveInfo> save_info,
+                       const base::FilePath& default_downloads_directory,
+                       std::unique_ptr<DownloadManager::InputStream> stream,
+                       const net::NetLogWithSource& net_log,
+                       base::WeakPtr<DownloadDestinationObserver> observer)
       : DownloadFileImpl(std::move(save_info),
                          default_downloads_directory,
                          std::move(stream),
@@ -370,7 +368,7 @@ class CountingDownloadFileFactory : public DownloadFileFactory {
   DownloadFile* CreateFile(
       std::unique_ptr<DownloadSaveInfo> save_info,
       const base::FilePath& default_downloads_directory,
-      std::unique_ptr<ByteStreamReader> stream,
+      std::unique_ptr<DownloadManager::InputStream> stream,
       const net::NetLogWithSource& net_log,
       base::WeakPtr<DownloadDestinationObserver> observer) override {
     return new CountingDownloadFile(std::move(save_info),

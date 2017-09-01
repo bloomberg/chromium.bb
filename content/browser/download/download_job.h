@@ -66,11 +66,11 @@ class CONTENT_EXPORT DownloadJob {
       const DownloadFile::InitializeCallback& callback,
       DownloadInterruptReason result);
 
-  // Add a byte stream to the download sink. Return false if we start to
+  // Add an input stream to the download sink. Return false if we start to
   // destroy download file.
-  bool AddByteStream(std::unique_ptr<ByteStreamReader> stream_reader,
-                     int64_t offset,
-                     int64_t length);
+  bool AddInputStream(std::unique_ptr<DownloadManager::InputStream> stream,
+                      int64_t offset,
+                      int64_t length);
 
   DownloadItemImpl* download_item_;
 

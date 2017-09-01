@@ -31,15 +31,14 @@ namespace {
 // A class that performs file operations and injects errors.
 class DownloadFileWithError: public DownloadFileImpl {
  public:
-  DownloadFileWithError(
-      std::unique_ptr<DownloadSaveInfo> save_info,
-      const base::FilePath& default_download_directory,
-      std::unique_ptr<ByteStreamReader> byte_stream,
-      const net::NetLogWithSource& net_log,
-      base::WeakPtr<DownloadDestinationObserver> observer,
-      const TestFileErrorInjector::FileErrorInfo& error_info,
-      const base::Closure& ctor_callback,
-      const base::Closure& dtor_callback);
+  DownloadFileWithError(std::unique_ptr<DownloadSaveInfo> save_info,
+                        const base::FilePath& default_download_directory,
+                        std::unique_ptr<DownloadManager::InputStream> stream,
+                        const net::NetLogWithSource& net_log,
+                        base::WeakPtr<DownloadDestinationObserver> observer,
+                        const TestFileErrorInjector::FileErrorInfo& error_info,
+                        const base::Closure& ctor_callback,
+                        const base::Closure& dtor_callback);
 
   ~DownloadFileWithError() override;
 
@@ -108,7 +107,7 @@ static void RenameErrorCallback(
 DownloadFileWithError::DownloadFileWithError(
     std::unique_ptr<DownloadSaveInfo> save_info,
     const base::FilePath& default_download_directory,
-    std::unique_ptr<ByteStreamReader> byte_stream,
+    std::unique_ptr<DownloadManager::InputStream> stream,
     const net::NetLogWithSource& net_log,
     base::WeakPtr<DownloadDestinationObserver> observer,
     const TestFileErrorInjector::FileErrorInfo& error_info,
@@ -116,7 +115,7 @@ DownloadFileWithError::DownloadFileWithError(
     const base::Closure& dtor_callback)
     : DownloadFileImpl(std::move(save_info),
                        default_download_directory,
-                       std::move(byte_stream),
+                       std::move(stream),
                        net_log,
                        observer),
       error_info_(error_info),
@@ -268,7 +267,7 @@ class DownloadFileWithErrorFactory : public DownloadFileFactory {
   DownloadFile* CreateFile(
       std::unique_ptr<DownloadSaveInfo> save_info,
       const base::FilePath& default_download_directory,
-      std::unique_ptr<ByteStreamReader> byte_stream,
+      std::unique_ptr<DownloadManager::InputStream> stream,
       const net::NetLogWithSource& net_log,
       base::WeakPtr<DownloadDestinationObserver> observer) override;
 
@@ -298,11 +297,11 @@ DownloadFileWithErrorFactory::~DownloadFileWithErrorFactory() {}
 DownloadFile* DownloadFileWithErrorFactory::CreateFile(
     std::unique_ptr<DownloadSaveInfo> save_info,
     const base::FilePath& default_download_directory,
-    std::unique_ptr<ByteStreamReader> byte_stream,
+    std::unique_ptr<DownloadManager::InputStream> stream,
     const net::NetLogWithSource& net_log,
     base::WeakPtr<DownloadDestinationObserver> observer) {
   return new DownloadFileWithError(
-      std::move(save_info), default_download_directory, std::move(byte_stream),
+      std::move(save_info), default_download_directory, std::move(stream),
       net_log, observer, injected_error_, construction_callback_,
       destruction_callback_);
 }
