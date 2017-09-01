@@ -13,6 +13,7 @@
 #include "content/public/common/resource_request_body.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/service_worker_modes.h"
+#include "net/http/http_request_headers.h"
 #include "third_party/WebKit/public/platform/WebMixedContentContextType.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 
@@ -28,7 +29,11 @@ ResourceType WebURLRequestContextToResourceType(
 CONTENT_EXPORT ResourceType WebURLRequestToResourceType(
     const blink::WebURLRequest& request);
 
-std::string GetWebURLRequestHeaders(const blink::WebURLRequest& request);
+net::HttpRequestHeaders GetWebURLRequestHeaders(
+    const blink::WebURLRequest& request);
+
+std::string GetWebURLRequestHeadersAsString(
+    const blink::WebURLRequest& request);
 
 int GetLoadFlagsForWebURLRequest(const blink::WebURLRequest& request);
 

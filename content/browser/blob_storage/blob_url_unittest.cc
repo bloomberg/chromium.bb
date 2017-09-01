@@ -277,8 +277,7 @@ class BlobURLRequestJobTest : public testing::TestWithParam<bool> {
       ResourceRequest request;
       request.url = url;
       request.method = method;
-      if (!extra_headers.IsEmpty())
-        request.headers = extra_headers.ToString();
+      request.headers = extra_headers;
 
       mojom::URLLoaderPtr url_loader;
       TestURLLoaderClient url_loader_client;

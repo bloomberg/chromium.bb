@@ -279,7 +279,7 @@ void ResourceFetcherImpl::SetHeader(const std::string& header,
     DCHECK(request_.referrer.is_valid());
     request_.referrer_policy = blink::kWebReferrerPolicyDefault;
   } else {
-    headers_.SetHeader(header, value);
+    request_.headers.SetHeader(header, value);
   }
 }
 
@@ -344,9 +344,6 @@ void ResourceFetcherImpl::Start(
     SetHeader(kAccessControlAllowOriginHeader,
               blink::WebSecurityOrigin::CreateUnique().ToString().Ascii());
   }
-  if (!headers_.IsEmpty())
-    request_.headers = headers_.ToString();
-
   request_.resource_type = WebURLRequestContextToResourceType(request_context);
 
   client_ = base::MakeUnique<ClientImpl>(this, callback, maximum_download_size);

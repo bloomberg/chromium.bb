@@ -212,8 +212,7 @@ std::unique_ptr<ResourceRequest> CreateResourceRequest(
   // Add additional request headers.
   std::unique_ptr<net::HttpRequestHeaders> headers =
       GetAdditionalRequestHeaders(params);
-  if (!headers->IsEmpty())
-    request->headers = headers->ToString();
+  request->headers.Swap(headers.get());
 
   return request;
 }

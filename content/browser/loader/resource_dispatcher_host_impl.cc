@@ -1166,12 +1166,9 @@ void ResourceDispatcherHostImpl::BeginRequest(
 
   // Parse the headers before calling ShouldServiceRequest, so that they are
   // available to be validated.
-  net::HttpRequestHeaders headers;
-  headers.AddHeadersFromString(request_data.headers);
-
   if (is_shutdown_ ||
-      !ShouldServiceRequest(child_id, request_data, headers, requester_info,
-                            resource_context)) {
+      !ShouldServiceRequest(child_id, request_data, request_data.headers,
+                            requester_info, resource_context)) {
     AbortRequestBeforeItStarts(requester_info->filter(), sync_result_handler,
                                request_id, std::move(url_loader_client));
     return;
@@ -1204,7 +1201,8 @@ void ResourceDispatcherHostImpl::BeginRequest(
     // yes then we need to mark the current request as pending and wait for the
     // interceptor to invoke the callback with a status code indicating whether
     // the request needs to be aborted or continued.
-    for (net::HttpRequestHeaders::Iterator it(headers); it.GetNext();) {
+    for (net::HttpRequestHeaders::Iterator it(request_data.headers);
+         it.GetNext();) {
       HeaderInterceptorMap::iterator index =
           http_header_interceptor_map_.find(it.name());
       if (index != http_header_interceptor_map_.end()) {
@@ -1223,7 +1221,8 @@ void ResourceDispatcherHostImpl::BeginRequest(
                   &ResourceDispatcherHostImpl::ContinuePendingBeginRequest,
                   base::Unretained(this), make_scoped_refptr(requester_info),
                   request_id, request_data, is_sync_load, sync_result_handler,
-                  route_id, headers, base::Passed(std::move(mojo_request)),
+                  route_id, request_data.headers,
+                  base::Passed(std::move(mojo_request)),
                   base::Passed(std::move(url_loader_client)),
                   base::Passed(std::move(blob_handles)), traffic_annotation));
           return;
@@ -1231,11 +1230,12 @@ void ResourceDispatcherHostImpl::BeginRequest(
       }
     }
   }
-  ContinuePendingBeginRequest(
-      requester_info, request_id, request_data, is_sync_load,
-      sync_result_handler, route_id, headers, std::move(mojo_request),
-      std::move(url_loader_client), std::move(blob_handles), traffic_annotation,
-      HeaderInterceptorResult::CONTINUE);
+  ContinuePendingBeginRequest(requester_info, request_id, request_data,
+                              is_sync_load, sync_result_handler, route_id,
+                              request_data.headers, std::move(mojo_request),
+                              std::move(url_loader_client),
+                              std::move(blob_handles), traffic_annotation,
+                              HeaderInterceptorResult::CONTINUE);
 }
 
 void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(

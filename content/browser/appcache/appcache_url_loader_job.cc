@@ -59,9 +59,7 @@ void AppCacheURLLoaderJob::DeliverAppCachedResponse(const GURL& manifest_url,
   is_fallback_ = is_fallback;
 
   // Handle range requests.
-  net::HttpRequestHeaders headers;
-  headers.AddHeadersFromString(request_.headers);
-  InitializeRangeRequestInfo(headers);
+  InitializeRangeRequestInfo(request_.headers);
 
   // TODO(ananta)
   // Implement the AppCacheServiceImpl::Observer interface or add weak pointer

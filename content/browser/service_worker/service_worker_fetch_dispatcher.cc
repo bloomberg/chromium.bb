@@ -654,9 +654,9 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
       version_->navigation_preload_state().header));
   ServiceWorkerMetrics::RecordNavigationPreloadRequestHeaderSize(
       version_->navigation_preload_state().header.length());
-  request.headers = "Service-Worker-Navigation-Preload: " +
-                    version_->navigation_preload_state().header + "\r\n" +
-                    original_request->extra_request_headers().ToString();
+  request.headers.CopyFrom(original_request->extra_request_headers());
+  request.headers.SetHeader("Service-Worker-Navigation-Preload",
+                            version_->navigation_preload_state().header);
 
   const int request_id = ResourceDispatcherHostImpl::Get()->MakeRequestID();
   DCHECK_LT(request_id, -1);

@@ -37,7 +37,7 @@ SafeBrowsingUrlCheckerImpl::UrlInfo::UrlInfo(UrlInfo&& other) = default;
 SafeBrowsingUrlCheckerImpl::UrlInfo::~UrlInfo() = default;
 
 SafeBrowsingUrlCheckerImpl::SafeBrowsingUrlCheckerImpl(
-    const std::string& headers,
+    const net::HttpRequestHeaders& headers,
     int load_flags,
     content::ResourceType resource_type,
     bool has_user_gesture,
@@ -142,12 +142,9 @@ void SafeBrowsingUrlCheckerImpl::OnCheckBrowseUrlResult(
   resource.web_contents_getter = web_contents_getter_;
   resource.threat_source = database_manager_->GetThreatSource();
 
-  net::HttpRequestHeaders headers;
-  headers.AddHeadersFromString(headers_);
-
   state_ = STATE_DISPLAYING_BLOCKING_PAGE;
   url_checker_delegate_->StartDisplayingBlockingPageHelper(
-      resource, urls_[next_index_].method, headers,
+      resource, urls_[next_index_].method, headers_,
       resource_type_ == content::RESOURCE_TYPE_MAIN_FRAME, has_user_gesture_);
 }
 

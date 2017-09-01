@@ -30,7 +30,7 @@ void AppCacheUpdateJob::UpdateURLLoaderRequest::Start() {
 
 void AppCacheUpdateJob::UpdateURLLoaderRequest::SetExtraRequestHeaders(
     const net::HttpRequestHeaders& headers) {
-  request_.headers = headers.ToString();
+  request_.headers = headers;
 }
 
 GURL AppCacheUpdateJob::UpdateURLLoaderRequest::GetURL() const {

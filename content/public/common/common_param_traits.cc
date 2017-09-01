@@ -13,6 +13,8 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
+#include "net/http/http_request_headers.h"
+#include "net/http/http_util.h"
 
 namespace IPC {
 
@@ -91,6 +93,43 @@ bool ParamTraits<net::HostPortPair>::Read(const base::Pickle* m,
 }
 
 void ParamTraits<net::HostPortPair>::Log(const param_type& p, std::string* l) {
+  l->append(p.ToString());
+}
+
+void ParamTraits<net::HttpRequestHeaders>::GetSize(base::PickleSizer* s,
+                                                   const param_type& p) {
+  GetParamSize(s, static_cast<int>(p.GetHeaderVector().size()));
+  for (size_t i = 0; i < p.GetHeaderVector().size(); ++i)
+    GetParamSize(s, p.GetHeaderVector()[i]);
+}
+
+void ParamTraits<net::HttpRequestHeaders>::Write(base::Pickle* m,
+                                                 const param_type& p) {
+  WriteParam(m, static_cast<int>(p.GetHeaderVector().size()));
+  for (size_t i = 0; i < p.GetHeaderVector().size(); ++i)
+    WriteParam(m, p.GetHeaderVector()[i]);
+}
+
+bool ParamTraits<net::HttpRequestHeaders>::Read(const base::Pickle* m,
+                                                base::PickleIterator* iter,
+                                                param_type* r) {
+  // Sanity check.
+  int size;
+  if (!iter->ReadLength(&size))
+    return false;
+  for (int i = 0; i < size; ++i) {
+    net::HttpRequestHeaders::HeaderKeyValuePair pair;
+    if (!ReadParam(m, iter, &pair) ||
+        !net::HttpUtil::IsValidHeaderName(pair.key) ||
+        !net::HttpUtil::IsValidHeaderValue(pair.value))
+      return false;
+    r->SetHeader(pair.key, pair.value);
+  }
+  return true;
+}
+
+void ParamTraits<net::HttpRequestHeaders>::Log(const param_type& p,
+                                               std::string* l) {
   l->append(p.ToString());
 }
 

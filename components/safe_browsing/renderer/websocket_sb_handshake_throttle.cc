@@ -15,6 +15,7 @@
 #include "content/public/renderer/render_frame.h"
 #include "ipc/ipc_message.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "net/http/http_request_headers.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 
@@ -60,7 +61,8 @@ void WebSocketSBHandshakeThrottle::ThrottleHandshake(
   start_time_ = base::TimeTicks::Now();
   safe_browsing_->CreateCheckerAndCheck(
       render_frame_id, mojo::MakeRequest(&url_checker_), url, "GET",
-      std::string(), load_flags, content::RESOURCE_TYPE_SUB_RESOURCE, false,
+      net::HttpRequestHeaders(), load_flags,
+      content::RESOURCE_TYPE_SUB_RESOURCE, false,
       base::BindOnce(&WebSocketSBHandshakeThrottle::OnCheckResult,
                      weak_factory_.GetWeakPtr()));
 

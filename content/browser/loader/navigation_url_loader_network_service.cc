@@ -436,7 +436,7 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
   new_request->request_initiator = request_info->begin_params.initiator_origin;
   new_request->referrer = request_info->common_params.referrer.url;
   new_request->referrer_policy = request_info->common_params.referrer.policy;
-  new_request->headers = request_info->begin_params.headers;
+  new_request->headers.AddHeadersFromString(request_info->begin_params.headers);
 
   int load_flags = request_info->begin_params.load_flags;
   load_flags |= net::LOAD_VERIFY_EV_CERT;

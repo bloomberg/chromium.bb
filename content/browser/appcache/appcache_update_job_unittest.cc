@@ -608,9 +608,7 @@ class MockURLLoaderFactory : public mojom::URLLoaderFactory {
       return;
     }
 
-    net::HttpRequestHeaders request_headers;
-    request_headers.AddHeadersFromString(url_request.headers);
-    HttpHeadersRequestTestJob::ValidateExtraHeaders(request_headers);
+    HttpHeadersRequestTestJob::ValidateExtraHeaders(url_request.headers);
 
     std::string headers;
     std::string body;
