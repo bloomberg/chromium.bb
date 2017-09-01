@@ -896,9 +896,6 @@ static void set_tile_info(AV1_COMP *cpi) {
         clamp(cpi->oxcf.tile_columns, min_log2_tile_cols, max_log2_tile_cols);
     cm->log2_tile_rows = cpi->oxcf.tile_rows;
 
-    cm->tile_cols = 1 << cm->log2_tile_cols;
-    cm->tile_rows = 1 << cm->log2_tile_rows;
-
     cm->tile_width = ALIGN_POWER_OF_TWO(cm->mi_cols, MAX_MIB_SIZE_LOG2);
     cm->tile_width >>= cm->log2_tile_cols;
     cm->tile_height = ALIGN_POWER_OF_TWO(cm->mi_rows, MAX_MIB_SIZE_LOG2);
@@ -907,6 +904,12 @@ static void set_tile_info(AV1_COMP *cpi) {
     // round to integer multiples of max superblock size
     cm->tile_width = ALIGN_POWER_OF_TWO(cm->tile_width, MAX_MIB_SIZE_LOG2);
     cm->tile_height = ALIGN_POWER_OF_TWO(cm->tile_height, MAX_MIB_SIZE_LOG2);
+
+    const int max_cols = (cm->mi_cols + cm->tile_width - 1) / cm->tile_width;
+    const int max_rows = (cm->mi_rows + cm->tile_height - 1) / cm->tile_height;
+
+    cm->tile_cols = AOMMIN(1 << cm->log2_tile_cols, max_cols);
+    cm->tile_rows = AOMMIN(1 << cm->log2_tile_rows, max_rows);
 #if CONFIG_EXT_TILE
   }
 #endif  // CONFIG_EXT_TILE
