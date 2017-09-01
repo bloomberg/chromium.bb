@@ -1,1 +1,63 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF",
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow DIV id='target'",
+          "rect": [8, 8, 600, 400],
+          "reason": "geometry"
+        }
+      ]
+    },
+    {
+      "name": "LayoutSVGRoot svg",
+      "position": [8, 8],
+      "bounds": [600, 400],
+      "paintInvalidations": [
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [50, 0, 500, 400],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutSVGRoot svg",
+          "rect": [50, 0, 500, 400],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [0, 120, 200, 160],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutSVGRoot svg",
+          "rect": [0, 120, 200, 160],
+          "reason": "geometry"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow DIV id='target'",
+      "reason": "geometry"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutSVGRoot svg",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutSVGRect rect",
+      "reason": "geometry"
+    }
+  ]
+}
 

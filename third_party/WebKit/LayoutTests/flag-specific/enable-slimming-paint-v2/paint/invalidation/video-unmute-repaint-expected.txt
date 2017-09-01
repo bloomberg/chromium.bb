@@ -1,0 +1,73 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "LayoutFlexibleBox (relative positioned) DIV",
+      "position": [8, 501],
+      "bounds": [700, 32],
+      "backgroundColor": "#FAFAFA",
+      "paintInvalidations": [
+        {
+          "object": "LayoutSlider INPUT",
+          "rect": [580, 15, 70, 2],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='thumb'",
+          "rect": [597, 0, 36, 32],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='thumb'",
+          "rect": [562, 0, 36, 32],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutButton INPUT",
+          "rect": [530, 0, 32, 32],
+          "reason": "full"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (anonymous)",
+      "reason": "geometry"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutVideo VIDEO id='v'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutFlexibleBox (relative positioned) DIV",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutButton INPUT",
+      "reason": "full"
+    },
+    {
+      "object": "LayoutSlider INPUT",
+      "reason": "full"
+    },
+    {
+      "object": "LayoutFlexibleBox DIV",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='thumb'",
+      "reason": "full"
+    }
+  ]
+}
+
