@@ -57,6 +57,9 @@ void HTMLStyleElement::ParseAttribute(
              GetDocument().IsActive() && sheet_) {
     sheet_->SetMediaQueries(MediaQuerySet::Create(params.new_value));
     GetDocument().GetStyleEngine().MediaQueriesChangedInScope(GetTreeScope());
+  } else if (params.name == typeAttr) {
+    HTMLElement::ParseAttribute(params);
+    StyleElement::ChildrenChanged(*this);
   } else {
     HTMLElement::ParseAttribute(params);
   }
