@@ -107,7 +107,8 @@ void ReceiverMojoToMediaAdapter::OnNewBufferHandle(
     std::unique_ptr<media::VideoCaptureDevice::Client::Buffer::HandleProvider>
         handle_provider) {
   receiver_->OnNewBufferHandle(
-      buffer_id, handle_provider->GetHandleForInterProcessTransit());
+      buffer_id,
+      handle_provider->GetHandleForInterProcessTransit(true /* read-only */));
 }
 
 void ReceiverMojoToMediaAdapter::OnFrameReadyInBuffer(
