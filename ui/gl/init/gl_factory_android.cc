@@ -109,7 +109,8 @@ scoped_refptr<GLContext> CreateGLContext(GLShareGroup* share_group,
       return InitializeGLContext(new GLContextOSMesa(share_group),
                                  compatible_surface, attribs);
     default:
-      if (compatible_surface->GetHandle()) {
+      if (compatible_surface->GetHandle() ||
+          compatible_surface->IsSurfaceless()) {
         return InitializeGLContext(new GLContextEGL(share_group),
                                    compatible_surface, attribs);
       } else {
