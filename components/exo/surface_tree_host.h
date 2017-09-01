@@ -104,7 +104,7 @@ class SurfaceTreeHost : public SurfaceDelegate,
   void OnLostResources() override;
 
  private:
-  void SubmitCompositorFrame(Surface::FrameType frame_type);
+  void SubmitCompositorFrame();
 
   Surface* root_surface_ = nullptr;
   std::unique_ptr<aura::Window> host_window_;

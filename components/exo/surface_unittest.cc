@@ -5,6 +5,8 @@
 #include "components/exo/surface.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
+#include "base/strings/stringprintf.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/quads/texture_draw_quad.h"
 #include "components/exo/buffer.h"
@@ -20,19 +22,53 @@
 #include "third_party/khronos/GLES2/gl2.h"
 #include "ui/aura/env.h"
 #include "ui/compositor/layer_tree_owner.h"
+#include "ui/display/display.h"
+#include "ui/display/display_switches.h"
+#include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/wm/core/window_util.h"
 
 namespace exo {
 namespace {
 
-using SurfaceTest = test::ExoTestBase;
+class SurfaceTest : public test::ExoTestBase,
+                    public ::testing::WithParamInterface<float> {
+ public:
+  SurfaceTest() = default;
+  ~SurfaceTest() override = default;
+  void SetUp() override {
+    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+    // Set the device scale factor.
+    command_line->AppendSwitchASCII(
+        switches::kForceDeviceScaleFactor,
+        base::StringPrintf("%f", device_scale_factor()));
+    test::ExoTestBase::SetUp();
+  }
+
+  void TearDown() override {
+    test::ExoTestBase::TearDown();
+    display::Display::ResetForceDeviceScaleFactorForTesting();
+  }
+
+  float device_scale_factor() const { return GetParam(); }
+
+  gfx::Rect ToPixel(const gfx::Rect rect) {
+    return gfx::ConvertRectToPixel(device_scale_factor(), rect);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SurfaceTest);
+};
 
 void ReleaseBuffer(int* release_buffer_call_count) {
   (*release_buffer_call_count)++;
 }
 
-TEST_F(SurfaceTest, Attach) {
+// Instantiate the Boolean which is used to toggle mouse and touch events in
+// the parameterized tests.
+INSTANTIATE_TEST_CASE_P(, SurfaceTest, testing::Values(1.0f, 1.25f, 2.0f));
+
+TEST_P(SurfaceTest, Attach) {
   gfx::Size buffer_size(256, 256);
   std::unique_ptr<Buffer> buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
@@ -64,7 +100,7 @@ TEST_F(SurfaceTest, Attach) {
   ASSERT_EQ(1, release_buffer_call_count);
 }
 
-TEST_F(SurfaceTest, Damage) {
+TEST_P(SurfaceTest, Damage) {
   gfx::Size buffer_size(256, 256);
   std::unique_ptr<Buffer> buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
@@ -91,7 +127,7 @@ void SetFrameTime(base::TimeTicks* result, base::TimeTicks frame_time) {
   *result = frame_time;
 }
 
-TEST_F(SurfaceTest, RequestFrameCallback) {
+TEST_P(SurfaceTest, RequestFrameCallback) {
   std::unique_ptr<Surface> surface(new Surface);
 
   base::TimeTicks frame_time;
@@ -114,7 +150,7 @@ const cc::CompositorFrame& GetFrameFromSurface(ShellSurface* shell_surface) {
   return frame;
 }
 
-TEST_F(SurfaceTest, SetOpaqueRegion) {
+TEST_P(SurfaceTest, SetOpaqueRegion) {
   gfx::Size buffer_size(1, 1);
   auto buffer = base::MakeUnique<Buffer>(
       exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
@@ -137,7 +173,7 @@ TEST_F(SurfaceTest, SetOpaqueRegion) {
     EXPECT_FALSE(frame.render_pass_list.back()
                      ->quad_list.back()
                      ->ShouldDrawWithBlending());
-    EXPECT_EQ(gfx::Rect(0, 0, 1, 1),
+    EXPECT_EQ(ToPixel(gfx::Rect(0, 0, 1, 1)),
               frame.render_pass_list.back()->damage_rect);
   }
 
@@ -153,7 +189,7 @@ TEST_F(SurfaceTest, SetOpaqueRegion) {
     EXPECT_TRUE(frame.render_pass_list.back()
                     ->quad_list.back()
                     ->ShouldDrawWithBlending());
-    EXPECT_EQ(gfx::Rect(0, 0, 1, 1),
+    EXPECT_EQ(ToPixel(gfx::Rect(0, 0, 1, 1)),
               frame.render_pass_list.back()->damage_rect);
   }
 
@@ -174,12 +210,12 @@ TEST_F(SurfaceTest, SetOpaqueRegion) {
     EXPECT_FALSE(frame.render_pass_list.back()
                      ->quad_list.back()
                      ->ShouldDrawWithBlending());
-    EXPECT_EQ(gfx::Rect(0, 0, 0, 0),
+    EXPECT_EQ(ToPixel(gfx::Rect(0, 0, 0, 0)),
               frame.render_pass_list.back()->damage_rect);
   }
 }
 
-TEST_F(SurfaceTest, SetInputRegion) {
+TEST_P(SurfaceTest, SetInputRegion) {
   std::unique_ptr<Surface> surface(new Surface);
 
   // Setting a non-empty input region should succeed.
@@ -189,7 +225,7 @@ TEST_F(SurfaceTest, SetInputRegion) {
   surface->SetInputRegion(SkRegion(SkIRect::MakeEmpty()));
 }
 
-TEST_F(SurfaceTest, SetBufferScale) {
+TEST_P(SurfaceTest, SetBufferScale) {
   gfx::Size buffer_size(512, 512);
   auto buffer = base::MakeUnique<Buffer>(
       exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
@@ -213,11 +249,11 @@ TEST_F(SurfaceTest, SetBufferScale) {
 
   const cc::CompositorFrame& frame = GetFrameFromSurface(shell_surface.get());
   ASSERT_EQ(1u, frame.render_pass_list.size());
-  EXPECT_EQ(gfx::Rect(0, 0, 256, 256),
+  EXPECT_EQ(ToPixel(gfx::Rect(0, 0, 256, 256)),
             frame.render_pass_list.back()->damage_rect);
 }
 
-TEST_F(SurfaceTest, SetBufferTransform) {
+TEST_P(SurfaceTest, SetBufferTransform) {
   gfx::Size buffer_size(256, 512);
   auto buffer = base::MakeUnique<Buffer>(
       exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
@@ -239,12 +275,13 @@ TEST_F(SurfaceTest, SetBufferTransform) {
   {
     const cc::CompositorFrame& frame = GetFrameFromSurface(shell_surface.get());
     ASSERT_EQ(1u, frame.render_pass_list.size());
-    EXPECT_EQ(gfx::Rect(0, 0, buffer_size.height(), buffer_size.width()),
-              frame.render_pass_list.back()->damage_rect);
+    EXPECT_EQ(
+        ToPixel(gfx::Rect(0, 0, buffer_size.height(), buffer_size.width())),
+        frame.render_pass_list.back()->damage_rect);
     const cc::QuadList& quad_list = frame.render_pass_list[0]->quad_list;
     ASSERT_EQ(1u, quad_list.size());
     EXPECT_EQ(
-        gfx::Rect(0, 0, 512, 256),
+        ToPixel(gfx::Rect(0, 0, 512, 256)),
         cc::MathUtil::MapEnclosingClippedRect(
             quad_list.front()->shared_quad_state->quad_to_target_transform,
             quad_list.front()->rect));
@@ -282,16 +319,16 @@ TEST_F(SurfaceTest, SetBufferTransform) {
     const cc::QuadList& quad_list = frame.render_pass_list[0]->quad_list;
     ASSERT_EQ(2u, quad_list.size());
     EXPECT_EQ(
-        gfx::Rect(child_position,
-                  gfx::ScaleToRoundedSize(child_buffer_size,
-                                          1.0f / kChildBufferScale)),
+        ToPixel(gfx::Rect(child_position,
+                          gfx::ScaleToRoundedSize(child_buffer_size,
+                                                  1.0f / kChildBufferScale))),
         cc::MathUtil::MapEnclosingClippedRect(
             quad_list.front()->shared_quad_state->quad_to_target_transform,
             quad_list.front()->rect));
   }
 }
 
-TEST_F(SurfaceTest, MirrorLayers) {
+TEST_P(SurfaceTest, MirrorLayers) {
   gfx::Size buffer_size(512, 512);
   auto buffer = base::MakeUnique<Buffer>(
       exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
@@ -312,7 +349,7 @@ TEST_F(SurfaceTest, MirrorLayers) {
   EXPECT_TRUE(old_layer_owner->root()->has_external_content());
 }
 
-TEST_F(SurfaceTest, SetViewport) {
+TEST_P(SurfaceTest, SetViewport) {
   gfx::Size buffer_size(1, 1);
   auto buffer = base::MakeUnique<Buffer>(
       exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
@@ -340,11 +377,11 @@ TEST_F(SurfaceTest, SetViewport) {
 
   const cc::CompositorFrame& frame = GetFrameFromSurface(shell_surface.get());
   ASSERT_EQ(1u, frame.render_pass_list.size());
-  EXPECT_EQ(gfx::Rect(0, 0, 512, 512),
+  EXPECT_EQ(ToPixel(gfx::Rect(0, 0, 512, 512)),
             frame.render_pass_list.back()->damage_rect);
 }
 
-TEST_F(SurfaceTest, SetCrop) {
+TEST_P(SurfaceTest, SetCrop) {
   gfx::Size buffer_size(16, 16);
   auto buffer = base::MakeUnique<Buffer>(
       exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
@@ -363,11 +400,11 @@ TEST_F(SurfaceTest, SetCrop) {
 
   const cc::CompositorFrame& frame = GetFrameFromSurface(shell_surface.get());
   ASSERT_EQ(1u, frame.render_pass_list.size());
-  EXPECT_EQ(gfx::Rect(0, 0, 12, 12),
+  EXPECT_EQ(ToPixel(gfx::Rect(0, 0, 12, 12)),
             frame.render_pass_list.back()->damage_rect);
 }
 
-TEST_F(SurfaceTest, SetBlendMode) {
+TEST_P(SurfaceTest, SetBlendMode) {
   gfx::Size buffer_size(1, 1);
   auto buffer = base::MakeUnique<Buffer>(
       exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
@@ -387,7 +424,7 @@ TEST_F(SurfaceTest, SetBlendMode) {
                    ->ShouldDrawWithBlending());
 }
 
-TEST_F(SurfaceTest, OverlayCandidate) {
+TEST_P(SurfaceTest, OverlayCandidate) {
   gfx::Size buffer_size(1, 1);
   auto buffer = base::MakeUnique<Buffer>(
       exo_test_helper()->CreateGpuMemoryBuffer(buffer_size), GL_TEXTURE_2D, 0,
@@ -410,7 +447,7 @@ TEST_F(SurfaceTest, OverlayCandidate) {
   EXPECT_FALSE(texture_quad->resource_size_in_pixels().IsEmpty());
 }
 
-TEST_F(SurfaceTest, SetAlpha) {
+TEST_P(SurfaceTest, SetAlpha) {
   gfx::Size buffer_size(1, 1);
   auto buffer = base::MakeUnique<Buffer>(
       exo_test_helper()->CreateGpuMemoryBuffer(buffer_size), GL_TEXTURE_2D, 0,
@@ -425,17 +462,18 @@ TEST_F(SurfaceTest, SetAlpha) {
 
   const cc::CompositorFrame& frame = GetFrameFromSurface(shell_surface.get());
   ASSERT_EQ(1u, frame.render_pass_list.size());
-  EXPECT_EQ(gfx::Rect(0, 0, 1, 1), frame.render_pass_list.back()->damage_rect);
+  EXPECT_EQ(ToPixel(gfx::Rect(0, 0, 1, 1)),
+            frame.render_pass_list.back()->damage_rect);
 }
 
-TEST_F(SurfaceTest, Commit) {
+TEST_P(SurfaceTest, Commit) {
   std::unique_ptr<Surface> surface(new Surface);
 
   // Calling commit without a buffer should succeed.
   surface->Commit();
 }
 
-TEST_F(SurfaceTest, SendsBeginFrameAcks) {
+TEST_P(SurfaceTest, SendsBeginFrameAcks) {
   viz::FakeExternalBeginFrameSource source(0.f, false);
   gfx::Size buffer_size(1, 1);
   auto buffer = base::MakeUnique<Buffer>(
