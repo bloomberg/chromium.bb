@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/views/harmony/textfield_layout.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/grid_layout.h"
@@ -48,9 +49,11 @@ LoginView::LoginView(const base::string16& authority,
   // to textfield_layout.h to decide.
   constexpr int kMessageWidth = 320;
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
+  SetBorder(views::CreateEmptyBorder(
+      provider->GetInsetsMetric(views::INSETS_DIALOG_CONTENTS)));
 
   // Initialize the Grid Layout Manager used for this dialog box.
-  GridLayout* layout = GridLayout::CreatePanel(this);
+  GridLayout* layout = GridLayout::CreateAndInstall(this);
   views::ColumnSet* column_set = layout->AddColumnSet(kHeaderColumnSetId);
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, kStretchy,
                         GridLayout::FIXED, kMessageWidth, 0);

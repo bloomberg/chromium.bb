@@ -118,8 +118,7 @@ void MultiprofilesSessionAbortedView::InitDialog(
   constexpr int kTopInset = 10;
   constexpr int kOtherInset = 40;
   // Create the views and layout manager and set them up.
-  views::GridLayout* grid_layout = new views::GridLayout(this);
-  SetLayoutManager(grid_layout);
+  views::GridLayout* grid_layout = views::GridLayout::CreateAndInstall(this);
   SetBorder(views::CreateEmptyBorder(kTopInset, kOtherInset, kOtherInset,
                                      kOtherInset));
 
@@ -148,7 +147,6 @@ void MultiprofilesSessionAbortedView::InitDialog(
   grid_layout->StartRow(0, 0);
   grid_layout->AddView(label);
 
-  SetLayoutManager(grid_layout);
   Layout();
 }
 

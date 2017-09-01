@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/strings/string16.h"
 #include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/harmony/chrome_typography.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -156,7 +157,10 @@ TryChromeDialog::Result TryChromeDialog::ShowDialog(
 
   views::View* root_view = popup_->GetRootView();
   root_view->SetBackground(views::CreateSolidBackground(kBackgroundColor));
-  views::GridLayout* layout = views::GridLayout::CreatePanel(root_view);
+  views::GridLayout* layout = views::GridLayout::CreateAndInstall(root_view);
+  root_view->SetBorder(
+      views::CreateEmptyBorder(ChromeLayoutProvider::Get()->GetInsetsMetric(
+          views::INSETS_DIALOG_CONTENTS)));
   layout->set_minimum_size(gfx::Size(kToastWidth, 0));
   views::ColumnSet* columns;
 

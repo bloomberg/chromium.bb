@@ -17,8 +17,7 @@
 ChosenObjectRow::ChosenObjectRow(
     std::unique_ptr<PageInfoUI::ChosenObjectInfo> info)
     : info_(std::move(info)) {
-  views::GridLayout* layout = new views::GridLayout(this);
-  SetLayoutManager(layout);
+  views::GridLayout* layout = views::GridLayout::CreateAndInstall(this);
   const int column_set_id = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(column_set_id);
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,

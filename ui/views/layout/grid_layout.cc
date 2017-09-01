@@ -632,27 +632,14 @@ void ColumnSet::Resize(int delta) {
 
 // GridLayout -------------------------------------------------------------
 
-GridLayout::GridLayout(View* host)
-    : host_(host),
-      calculated_master_columns_(false),
-      remaining_row_span_(0),
-      current_row_(-1),
-      next_column_(0),
-      current_row_col_set_(nullptr),
-      adding_view_(false) {
-  DCHECK(host);
+// static
+GridLayout* GridLayout::CreateAndInstall(View* host) {
+  GridLayout* result = new GridLayout(host);
+  host->SetLayoutManager(result);
+  return result;
 }
 
 GridLayout::~GridLayout() {
-}
-
-// static
-GridLayout* GridLayout::CreatePanel(View* host) {
-  GridLayout* layout = new GridLayout(host);
-  host->SetBorder(CreateEmptyBorder(
-      LayoutProvider::Get()->GetInsetsMetric(INSETS_DIALOG_CONTENTS)));
-  host->SetLayoutManager(layout);
-  return layout;
 }
 
 ColumnSet* GridLayout::AddColumnSet(int id) {
@@ -808,6 +795,17 @@ int GridLayout::GetPreferredHeightForWidth(const View* host, int width) const {
   gfx::Size pref;
   SizeRowsAndColumns(false, width, 0, &pref);
   return pref.height();
+}
+
+GridLayout::GridLayout(View* host)
+    : host_(host),
+      calculated_master_columns_(false),
+      remaining_row_span_(0),
+      current_row_(-1),
+      next_column_(0),
+      current_row_col_set_(nullptr),
+      adding_view_(false) {
+  DCHECK(host);
 }
 
 void GridLayout::SizeRowsAndColumns(bool layout, int width, int height,

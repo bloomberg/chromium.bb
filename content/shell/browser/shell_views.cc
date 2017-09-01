@@ -115,8 +115,7 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
   void InitShellWindow() {
     SetBackground(views::CreateStandardPanelBackground());
 
-    views::GridLayout* layout = new views::GridLayout(this);
-    SetLayoutManager(layout);
+    views::GridLayout* layout = views::GridLayout::CreateAndInstall(this);
 
     views::ColumnSet* column_set = layout->AddColumnSet(0);
     column_set->AddPaddingColumn(0, 2);
@@ -129,8 +128,8 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
     // Add toolbar buttons and URL text field
     {
       layout->StartRow(0, 0);
-      views::GridLayout* toolbar_layout = new views::GridLayout(toolbar_view_);
-      toolbar_view_->SetLayoutManager(toolbar_layout);
+      views::GridLayout* toolbar_layout =
+          views::GridLayout::CreateAndInstall(toolbar_view_);
 
       views::ColumnSet* toolbar_column_set =
           toolbar_layout->AddColumnSet(0);

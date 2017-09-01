@@ -11,28 +11,25 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chooser_controller/mock_chooser_controller.h"
 #include "chrome/browser/ui/views/device_chooser_content_view.h"
-#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/test/views/chrome_views_test_base.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/controls/table/table_view.h"
 #include "ui/views/test/native_widget_factory.h"
-#include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_client_view.h"
 
-class ChooserDialogViewTest : public views::ViewsTestBase {
+class ChooserDialogViewTest : public ChromeViewsTestBase {
  public:
   ChooserDialogViewTest() {}
   ~ChooserDialogViewTest() override {}
 
-  // views::ViewsTestBase:
+  // ChromeViewsTestBase:
   void SetUp() override {
-    views::ViewsTestBase::SetUp();
-    test_views_delegate()->set_layout_provider(
-        ChromeLayoutProvider::CreateLayoutProvider());
+    ChromeViewsTestBase::SetUp();
     auto mock_chooser_controller = base::MakeUnique<MockChooserController>();
     mock_chooser_controller_ = mock_chooser_controller.get();
     std::unique_ptr<ChooserDialogView> chooser_dialog_view(
@@ -62,11 +59,11 @@ class ChooserDialogViewTest : public views::ViewsTestBase {
     ASSERT_TRUE(cancel_button_);
   }
 
-  // views::ViewsTestBase:
+  // ChromeViewsTestBase:
   void TearDown() override {
     dialog_->CloseNow();
     parent_widget_->CloseNow();
-    views::ViewsTestBase::TearDown();
+    ChromeViewsTestBase::TearDown();
   }
 
  protected:

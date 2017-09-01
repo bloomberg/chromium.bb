@@ -36,6 +36,7 @@
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/event.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/combobox/combobox.h"
@@ -904,6 +905,10 @@ void WifiConfigView::Cancel() {
 }
 
 void WifiConfigView::Init(bool show_8021x) {
+  views::LayoutProvider* provider = views::LayoutProvider::Get();
+  SetBorder(views::CreateEmptyBorder(
+      provider->GetInsetsMetric(views::INSETS_DIALOG_CONTENTS)));
+
   const NetworkState* network = GetNetworkState();
   if (network) {
     if (network->type() == shill::kTypeWifi) {
@@ -938,8 +943,7 @@ void WifiConfigView::Init(bool show_8021x) {
       ParseUIProperty(&passphrase_ui_data_, network, ::onc::wifi::kPassphrase);
   }
 
-  views::GridLayout* layout = views::GridLayout::CreatePanel(this);
-  views::LayoutProvider* provider = views::LayoutProvider::Get();
+  views::GridLayout* layout = views::GridLayout::CreateAndInstall(this);
 
   const int column_view_set_id = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(column_view_set_id);

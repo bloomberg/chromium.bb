@@ -9,14 +9,14 @@
 #include "chrome/browser/ui/confirm_bubble.h"
 #include "chrome/browser/ui/test/test_confirm_bubble_model.h"
 #include "chrome/browser/ui/views/chrome_constrained_window_views_client.h"
+#include "chrome/test/views/chrome_views_test_base.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
 
 using views::Widget;
 
-typedef views::ViewsTestBase ConfirmBubbleViewsTest;
+typedef ChromeViewsTestBase ConfirmBubbleViewsTest;
 
 TEST_F(ConfirmBubbleViewsTest, CreateAndClose) {
   SetConstrainedWindowViewsClient(CreateChromeConstrainedWindowViewsClient());

@@ -8,6 +8,7 @@
 #include "chrome/browser/download/download_stats.h"
 #include "chrome/browser/extensions/api/experience_sampling_private/experience_sampling.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
@@ -95,7 +96,10 @@ DownloadDangerPromptViews::DownloadDangerPromptViews(
 
   contents_view_ = new views::View;
 
-  views::GridLayout* layout = views::GridLayout::CreatePanel(contents_view_);
+  set_margins(ChromeLayoutProvider::Get()->GetInsetsMetric(
+      views::INSETS_DIALOG_CONTENTS));
+  views::GridLayout* layout =
+      views::GridLayout::CreateAndInstall(contents_view_);
 
   views::ColumnSet* column_set = layout->AddColumnSet(0);
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,

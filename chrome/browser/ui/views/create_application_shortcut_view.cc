@@ -51,6 +51,8 @@ CreateChromeApplicationShortcutView::CreateChromeApplicationShortcutView(
       menu_check_box_(nullptr),
       quick_launch_check_box_(nullptr),
       weak_ptr_factory_(this) {
+  set_margins(ChromeLayoutProvider::Get()->GetInsetsMetric(
+      views::INSETS_DIALOG_CONTENTS));
   InitControls();
 
   // Get shortcut and icon information; needed for creating the shortcut.
@@ -106,7 +108,7 @@ void CreateChromeApplicationShortcutView::InitControls() {
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
 
   // Layout controls
-  views::GridLayout* layout = views::GridLayout::CreatePanel(this);
+  views::GridLayout* layout = views::GridLayout::CreateAndInstall(this);
 
   static const int kHeaderColumnSetId = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(kHeaderColumnSetId);
