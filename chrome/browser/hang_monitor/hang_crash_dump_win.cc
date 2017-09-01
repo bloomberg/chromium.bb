@@ -65,10 +65,10 @@ void CrashDumpAndTerminateHungChildProcess(
 
   HANDLE remote_thread = nullptr;
   if (send_remote_memory) {
-    remote_thread = InjectDumpForHungInput(hprocess, remote_memory);
+    remote_thread = InjectDumpForHungInput_ExportThunk(hprocess, remote_memory);
   } else {
-    remote_thread =
-        InjectDumpForHungInputNoCrashKeys(hprocess, crash_key_failure);
+    remote_thread = InjectDumpForHungInputNoCrashKeys_ExportThunk(
+        hprocess, crash_key_failure);
   }
   DCHECK(remote_thread) << "Failed creating remote thread: error "
                         << GetLastError();

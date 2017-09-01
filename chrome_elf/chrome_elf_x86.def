@@ -1,28 +1,29 @@
 ; Copyright 2013 The Chromium Authors. All rights reserved.
 ; Use of this source code is governed by a BSD-style license that can be
 ; found in the LICENSE file.
-
 LIBRARY  "chrome_elf.dll"
 
 EXPORTS
   ; When functions are added to this file, they must also be added to
-  ; chrome_elf_x64.def
+  ; chrome_elf_x86.def
 
-  ; From components/crash/content/app/crashpad.cc
-  ClearCrashKeyValueImpl
-  ClearCrashKeyValueImplEx
-  RequestSingleCrashUploadImpl
-  SetCrashKeyValueImpl
-  SetCrashKeyValueImplEx
-  SetUploadConsentImpl
+  ; From components/crash/content/app/crash_export_stubs.cc
+  ClearCrashKeyValueEx_ExportThunk
+  ClearCrashKeyValue_ExportThunk
+  CrashForException_ExportThunk
+  GetCrashReports_ExportThunk
+  InjectDumpForHungInputNoCrashKeys_ExportThunk
+  InjectDumpForHungInput_ExportThunk
+  RequestSingleCrashUpload_ExportThunk
+  SetCrashKeyValueEx_ExportThunk
+  SetCrashKeyValue_ExportThunk
+  SetUploadConsent_ExportThunk
 
-  ; From components/crash/content/app/crashpad_win.cc
-  CrashForException
-  InjectDumpForHungInput
-  InjectDumpForHungInputNoCrashKeys
+  ; This export is used by SyzyASAN, do not rename or remove without talking
+  ; to syzygy-team@chromium.org first.
+  SetCrashKeyValue = SetCrashKeyValue_ExportThunk
 
   ; From chrome_elf/crash_helper.cc
-  GetCrashReportsImpl
   SetMetricsClientId
 
   ; From chrome_elf_main.cc
