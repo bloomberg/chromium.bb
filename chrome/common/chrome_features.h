@@ -169,6 +169,8 @@ extern const base::Feature kOfflinePageDownloadSuggestionsFeature;
 extern const base::Feature kOneGoogleBarOnLocalNtp;
 #endif
 
+extern const base::Feature kUseNewAcceptLanguageHeader;
+
 extern const base::Feature kPermissionsBlacklist;
 
 #if defined(OS_WIN)
