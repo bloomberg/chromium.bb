@@ -32,6 +32,7 @@
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/display.h"
+#include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/shadow.h"
@@ -83,9 +84,13 @@ class ShellSurfaceBoundsModeTest
   }
 
   std::unique_ptr<ShellSurface> CreateDefaultShellSurface(Surface* surface) {
-    return base::MakeUnique<ShellSurface>(surface, nullptr, GetParam(),
-                                          gfx::Point(), true, false,
-                                          ash::kShellWindowId_DefaultContainer);
+    if (IsClientBoundsMode()) {
+      return Display().CreateRemoteShellSurface(
+          surface, ash::kShellWindowId_DefaultContainer,
+          true /* scale_by_default_scale_factor */);
+    } else {
+      return Display().CreateShellSurface(surface);
+    }
   }
 
  private:
@@ -374,20 +379,73 @@ TEST_F(ShellSurfaceTest, SetGeometry) {
             shell_surface->host_window()->bounds().ToString());
 }
 
-TEST_F(ShellSurfaceTest, SetScale) {
+TEST_P(ShellSurfaceBoundsModeTest, DefaultDeviceScaleFactorForcedScaleFactor) {
+  double scale = 1.5;
+  display::Display::SetForceDeviceScaleFactor(scale);
+
+  int64_t display_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
+  display::Display::SetInternalDisplayId(display_id);
+
   gfx::Size buffer_size(64, 64);
   std::unique_ptr<Buffer> buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
   std::unique_ptr<Surface> surface(new Surface);
-  std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
+  std::unique_ptr<ShellSurface> shell_surface(
+      CreateDefaultShellSurface(surface.get()));
+  surface->Attach(buffer.get());
+  surface->Commit();
+  gfx::Transform transform;
+  if (IsClientBoundsMode())
+    transform.Scale(1.0 / scale, 1.0 / scale);
 
-  double scale = 1.5;
-  shell_surface->SetScale(scale);
+  EXPECT_EQ(
+      transform.ToString(),
+      shell_surface->host_window()->layer()->GetTargetTransform().ToString());
+}
+
+TEST_P(ShellSurfaceBoundsModeTest, DefaultDeviceScaleFactorFromDisplayManager) {
+  int64_t display_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
+  display::Display::SetInternalDisplayId(display_id);
+  gfx::Size size(1920, 1080);
+
+  display::DisplayManager* display_manager =
+      ash::Shell::Get()->display_manager();
+
+  double scale = 1.25;
+  scoped_refptr<display::ManagedDisplayMode> mode(
+      new display::ManagedDisplayMode(size, 60.f, false /* overscan */,
+                                      true /*native*/, 1.0, scale));
+  mode->set_is_default(true);
+
+  display::ManagedDisplayInfo::ManagedDisplayModeList mode_list;
+  mode_list.push_back(mode);
+
+  display::ManagedDisplayInfo native_display_info(display_id, "test", false);
+  native_display_info.SetManagedDisplayModes(mode_list);
+
+  native_display_info.SetBounds(gfx::Rect(size));
+  native_display_info.set_device_scale_factor(scale);
+
+  std::vector<display::ManagedDisplayInfo> display_info_list;
+  display_info_list.push_back(native_display_info);
+
+  display_manager->OnNativeDisplaysChanged(display_info_list);
+  display_manager->UpdateInternalManagedDisplayModeListForTest();
+
+  gfx::Size buffer_size(64, 64);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  std::unique_ptr<Surface> surface(new Surface);
+  std::unique_ptr<ShellSurface> shell_surface(
+      CreateDefaultShellSurface(surface.get()));
+
   surface->Attach(buffer.get());
   surface->Commit();
 
   gfx::Transform transform;
-  transform.Scale(1.0 / scale, 1.0 / scale);
+  if (IsClientBoundsMode())
+    transform.Scale(1.0 / scale, 1.0 / scale);
+
   EXPECT_EQ(
       transform.ToString(),
       shell_surface->host_window()->layer()->GetTargetTransform().ToString());

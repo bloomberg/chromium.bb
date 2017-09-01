@@ -42,6 +42,7 @@ class WMHelperAsh : public WMHelper,
   void AddPostTargetHandler(ui::EventHandler* handler) override;
   void RemovePostTargetHandler(ui::EventHandler* handler) override;
   bool IsTabletModeWindowManagerEnabled() const override;
+  double GetDefaultDeviceScaleFactor() const override;
 
   // Overridden from wm::ActivationChangeObserver:
   void OnWindowActivated(wm::ActivationChangeObserver::ActivationReason reason,

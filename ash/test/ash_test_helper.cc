@@ -250,6 +250,8 @@ void AshTestHelper::TearDown() {
 
   command_line_.reset();
 
+  display::Display::ResetForceDeviceScaleFactorForTesting();
+
   // WindowManager owns the CaptureController for mus/mash.
   CHECK(config_ != Config::CLASSIC || !::wm::CaptureController::Get());
 }

@@ -95,6 +95,11 @@ bool WMHelperMus::IsTabletModeWindowManagerEnabled() const {
   return false;
 }
 
+double WMHelperMus::GetDefaultDeviceScaleFactor() const {
+  NOTIMPLEMENTED();
+  return 1.0;
+}
+
 void WMHelperMus::OnActiveFocusClientChanged(
     aura::client::FocusClient* focus_client,
     aura::Window* focus_client_root) {
