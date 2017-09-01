@@ -44,7 +44,8 @@ void WebContentsViewDelegate::OverrideDisplayColorSpace(
     gfx::ColorSpace* color_space) {}
 
 void* WebContentsViewDelegate::CreateRenderWidgetHostViewDelegate(
-    RenderWidgetHost* render_widget_host) {
+    RenderWidgetHost* render_widget_host,
+    bool is_popup) {
   return nullptr;
 }
 

@@ -35,7 +35,12 @@ gfx::NativeWindow ChromeWebContentsViewDelegateMac::GetNativeWindow() {
 
 NSObject<RenderWidgetHostViewMacDelegate>*
 ChromeWebContentsViewDelegateMac::CreateRenderWidgetHostViewDelegate(
-    content::RenderWidgetHost* render_widget_host) {
+    content::RenderWidgetHost* render_widget_host,
+    bool is_popup) {
+  // We don't need a delegate for popups since they don't have
+  // overscroll.
+  if (is_popup)
+    return nil;
   return [[ChromeRenderWidgetHostViewMacDelegate alloc]
       initWithRenderWidgetHost:render_widget_host];
 }
