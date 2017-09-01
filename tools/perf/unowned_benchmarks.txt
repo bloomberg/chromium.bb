@@ -1,4 +1,3 @@
-blob_storage.blob_storage
 load_library_perf_tests
 power.idle_platform
 power.steady_state
