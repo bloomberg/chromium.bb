@@ -467,6 +467,9 @@ void AwSettings::PopulateWebPreferencesLocked(JNIEnv* env,
   // attribute is explicitly specified. This "opt-in" behavior is for backward
   // consistency in apps that use WebView (see crbug.com/652314).
   web_prefs->spellcheck_enabled_by_default = false;
+
+  web_prefs->scroll_top_left_interop_enabled =
+      Java_AwSettings_getScrollTopLeftInteropEnabledLocked(env, obj);
 }
 
 static jlong Init(JNIEnv* env,

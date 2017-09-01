@@ -86,6 +86,7 @@ public class AwSettings {
     private boolean mEnableSupportedHardwareAcceleratedFeatures;
     private int mMixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW;
     private boolean mCSSHexAlphaColorEnabled = false;
+    private boolean mScrollTopLeftInteropEnabled = false;
 
     private boolean mOffscreenPreRaster;
     private int mDisabledMenuItems = WebSettings.MENU_ITEM_NONE;
@@ -1261,6 +1262,21 @@ public class AwSettings {
         synchronized (mAwSettingsLock) {
             if (mCSSHexAlphaColorEnabled != enabled) {
                 mCSSHexAlphaColorEnabled = enabled;
+                mEventHandler.updateWebkitPreferencesLocked();
+            }
+        }
+    }
+
+    @CalledByNative
+    private boolean getScrollTopLeftInteropEnabledLocked() {
+        assert Thread.holdsLock(mAwSettingsLock);
+        return mScrollTopLeftInteropEnabled;
+    }
+
+    public void setScrollTopLeftInteropEnabled(boolean enabled) {
+        synchronized (mAwSettingsLock) {
+            if (mScrollTopLeftInteropEnabled != enabled) {
+                mScrollTopLeftInteropEnabled = enabled;
                 mEventHandler.updateWebkitPreferencesLocked();
             }
         }

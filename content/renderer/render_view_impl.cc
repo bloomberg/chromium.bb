@@ -975,6 +975,8 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   settings->SetDoNotUpdateSelectionOnMutatingSelectionRange(
       prefs.do_not_update_selection_on_mutating_selection_range);
   WebRuntimeFeatures::EnableCSSHexAlphaColor(prefs.css_hex_alpha_color_enabled);
+  WebRuntimeFeatures::EnableScrollTopLeftInterop(
+      prefs.scroll_top_left_interop_enabled);
 #endif  // defined(OS_ANDROID)
 
   switch (prefs.autoplay_policy) {

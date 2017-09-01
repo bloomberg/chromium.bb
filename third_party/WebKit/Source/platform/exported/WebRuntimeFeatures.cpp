@@ -104,6 +104,10 @@ void WebRuntimeFeatures::EnableCSSHexAlphaColor(bool enable) {
   RuntimeEnabledFeatures::SetCSSHexAlphaColorEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableScrollTopLeftInterop(bool enable) {
+  RuntimeEnabledFeatures::SetScrollTopLeftInteropEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableDatabase(bool enable) {
   RuntimeEnabledFeatures::SetDatabaseEnabled(enable);
 }
