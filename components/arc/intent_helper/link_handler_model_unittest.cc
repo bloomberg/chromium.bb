@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/arc/intent_helper/link_handler_model_impl.h"
+#include "components/arc/intent_helper/link_handler_model.h"
 
 #include <string>
 
@@ -14,12 +14,12 @@ namespace arc {
 namespace {
 
 GURL Rewrite(const GURL& url) {
-  return LinkHandlerModelImpl::RewriteUrlFromQueryIfAvailableForTesting(url);
+  return LinkHandlerModel::RewriteUrlFromQueryIfAvailableForTesting(url);
 }
 
 }  // namespace
 
-TEST(LinkHandlerModelImplTest, TestRewriteUrlNoOp) {
+TEST(LinkHandlerModelTest, TestRewriteUrlNoOp) {
   // Test an empty URL.
   GURL original("");
   EXPECT_EQ(original, Rewrite(original));
@@ -77,7 +77,7 @@ TEST(LinkHandlerModelImplTest, TestRewriteUrlNoOp) {
   EXPECT_EQ(original, Rewrite(original));
 }
 
-TEST(LinkHandlerModelImplTest, TestRewriteUrl) {
+TEST(LinkHandlerModelTest, TestRewriteUrl) {
   // Test valid URLs.
   GURL original(
       "https://www.google.com/url?"
@@ -109,7 +109,7 @@ TEST(LinkHandlerModelImplTest, TestRewriteUrl) {
   EXPECT_EQ("k=v", rewritten.query());
 }
 
-TEST(LinkHandlerModelImplTest, TestRewriteUrlTooLong) {
+TEST(LinkHandlerModelTest, TestRewriteUrlTooLong) {
   const std::string base =
       "https://www.google.com/url?url="
       "https%3A%2F%2Fwww.chromium.org%2F";  // 33 characters

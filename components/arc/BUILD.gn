@@ -35,8 +35,8 @@ static_library("arc") {
     "intent_helper/intent_constants.h",
     "intent_helper/intent_filter.cc",
     "intent_helper/intent_filter.h",
-    "intent_helper/link_handler_model_impl.cc",
-    "intent_helper/link_handler_model_impl.h",
+    "intent_helper/link_handler_model.cc",
+    "intent_helper/link_handler_model.h",
     "intent_helper/page_transition_util.cc",
     "intent_helper/page_transition_util.h",
     "metrics/arc_metrics_service.cc",
@@ -220,7 +220,7 @@ source_set("unit_tests") {
     "intent_helper/arc_intent_helper_bridge_unittest.cc",
     "intent_helper/font_size_util_unittest.cc",
     "intent_helper/intent_filter_unittest.cc",
-    "intent_helper/link_handler_model_impl_unittest.cc",
+    "intent_helper/link_handler_model_unittest.cc",
     "intent_helper/page_transition_util_unittest.cc",
   ]
 

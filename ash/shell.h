@@ -113,7 +113,6 @@ class ImmersiveHandlerFactoryAsh;
 class KeyboardBrightnessControlDelegate;
 class KeyboardUI;
 class LaserPointerController;
-class LinkHandlerModelFactory;
 class LocaleNotificationController;
 class LockStateController;
 class LogoutConfirmationController;
@@ -367,13 +366,6 @@ class ASH_EXPORT Shell : public SessionObserver,
     return window_selector_controller_.get();
   }
   OverlayEventFilter* overlay_filter() { return overlay_filter_.get(); }
-  LinkHandlerModelFactory* link_handler_model_factory() {
-    return link_handler_model_factory_;
-  }
-  void set_link_handler_model_factory(
-      LinkHandlerModelFactory* link_handler_model_factory) {
-    link_handler_model_factory_ = link_handler_model_factory;
-  }
   PowerButtonController* power_button_controller() {
     return power_button_controller_.get();
   }
@@ -744,7 +736,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<app_list::AppList> app_list_;
   std::unique_ptr<PrefService> local_state_;
   std::unique_ptr<views::corewm::TooltipController> tooltip_controller_;
-  LinkHandlerModelFactory* link_handler_model_factory_;
   std::unique_ptr<PowerButtonController> power_button_controller_;
   std::unique_ptr<LockStateController> lock_state_controller_;
   std::unique_ptr<ui::UserActivityDetector> user_activity_detector_;

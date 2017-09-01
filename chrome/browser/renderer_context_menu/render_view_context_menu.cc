@@ -46,7 +46,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/renderer_context_menu/context_menu_content_type_factory.h"
-#include "chrome/browser/renderer_context_menu/open_with_menu_factory.h"
 #include "chrome/browser/renderer_context_menu/spelling_menu_observer.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -151,6 +150,10 @@
 #if defined(GOOGLE_CHROME_BUILD)
 #include "chrome/grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
+#endif
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/arc/intent_helper/open_with_menu.h"
 #endif
 
 using base::UserMetricsAction;
@@ -1077,11 +1080,12 @@ void RenderViewContextMenu::AppendLinkItems() {
 }
 
 void RenderViewContextMenu::AppendOpenWithLinkItems() {
-  open_with_menu_observer_.reset(OpenWithMenuFactory::CreateMenu(this));
-  if (open_with_menu_observer_) {
-    observers_.AddObserver(open_with_menu_observer_.get());
-    open_with_menu_observer_->InitMenu(params_);
-  }
+#if defined(OS_CHROMEOS)
+  open_with_menu_observer_ =
+      std::make_unique<arc::OpenWithMenu>(browser_context_, this);
+  observers_.AddObserver(open_with_menu_observer_.get());
+  open_with_menu_observer_->InitMenu(params_);
+#endif
 }
 
 void RenderViewContextMenu::AppendImageItems() {

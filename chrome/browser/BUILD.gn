@@ -2441,8 +2441,6 @@ split_static_library("browser") {
     sources += [
       "media/webrtc/desktop_media_list_ash.cc",
       "media/webrtc/desktop_media_list_ash.h",
-      "renderer_context_menu/open_with_menu_factory_ash.cc",
-      "renderer_context_menu/open_with_menu_factory_ash.h",
       "signin/signin_error_notifier_ash.cc",
       "signin/signin_error_notifier_ash.h",
       "signin/signin_error_notifier_factory_ash.cc",
@@ -3429,8 +3427,6 @@ split_static_library("browser") {
       "profiles/profile_shortcut_manager.h",
       "profiles/profile_window.cc",
       "profiles/profile_window.h",
-      "renderer_context_menu/open_with_menu_factory.cc",
-      "renderer_context_menu/open_with_menu_factory.h",
       "renderer_context_menu/render_view_context_menu.cc",
       "renderer_context_menu/render_view_context_menu.h",
       "renderer_context_menu/spelling_bubble_model.cc",

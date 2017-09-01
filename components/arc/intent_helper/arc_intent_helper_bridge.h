@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "ash/link_handler_model_factory.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
@@ -21,10 +20,6 @@
 #include "mojo/public/cpp/bindings/binding.h"
 
 class KeyedServiceBaseFactory;
-
-namespace ash {
-class LinkHandlerModel;
-}  // namespace ash
 
 namespace content {
 class BrowserContext;
@@ -39,8 +34,7 @@ class IntentFilter;
 class ArcIntentHelperBridge
     : public KeyedService,
       public InstanceHolder<mojom::IntentHelperInstance>::Observer,
-      public mojom::IntentHelperHost,
-      public ash::LinkHandlerModelFactory {
+      public mojom::IntentHelperHost {
  public:
   // Returns singleton instance for the given BrowserContext,
   // or nullptr if the browser |context| is not allowed to use ARC.
@@ -90,9 +84,6 @@ class ArcIntentHelperBridge
   // scheme is neither http nor https, the function immediately returns true
   // without checking the filters.
   bool ShouldChromeHandleUrl(const GURL& url);
-
-  // ash::LinkHandlerModelFactory
-  std::unique_ptr<ash::LinkHandlerModel> CreateModel(const GURL& url) override;
 
   // Returns false if |package_name| is for the intent_helper apk.
   static bool IsIntentHelperPackage(const std::string& package_name);
