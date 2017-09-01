@@ -174,7 +174,7 @@ void WebsiteSettingsRegistry::Init() {
            DESKTOP | PLATFORM_ANDROID,
            WebsiteSettingsInfo::INHERIT_IN_INCOGNITO);
   Register(CONTENT_SETTINGS_TYPE_MEDIA_ENGAGEMENT, "media-engagement", nullptr,
-           WebsiteSettingsInfo::SYNCABLE, WebsiteSettingsInfo::LOSSY,
+           WebsiteSettingsInfo::UNSYNCABLE, WebsiteSettingsInfo::LOSSY,
            WebsiteSettingsInfo::REQUESTING_ORIGIN_ONLY_SCOPE,
            DESKTOP | PLATFORM_ANDROID,
            WebsiteSettingsInfo::INHERIT_IN_INCOGNITO);
