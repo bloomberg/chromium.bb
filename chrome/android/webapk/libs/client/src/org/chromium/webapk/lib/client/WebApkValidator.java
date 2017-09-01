@@ -43,6 +43,7 @@ public class WebApkValidator {
     private static byte[] sExpectedSignature;
     private static byte[] sCommentSignedPublicKeyBytes;
     private static PublicKey sCommentSignedPublicKey;
+    private static boolean sOverrideValidationForTesting;
 
     /**
      * Queries the PackageManager to determine whether a WebAPK can handle the URL. Ignores whether
@@ -176,6 +177,10 @@ public class WebApkValidator {
         if (isNotWebApkQuick(packageInfo)) {
             return false;
         }
+        if (sOverrideValidationForTesting) {
+            Log.d(TAG, "Ok! Looks like a WebApk (has start url) and validation is disabled.");
+            return true;
+        }
         if (verifyV1WebApk(packageInfo, webappPackageName)) {
             return true;
         }
@@ -284,6 +289,14 @@ public class WebApkValidator {
         if (sCommentSignedPublicKeyBytes == null) {
             sCommentSignedPublicKeyBytes = v2PublicKeyBytes;
         }
+    }
+
+    /**
+     * Disables all verification performed by this class. This is meant only for development with
+     * unsigned WebApks and should never be enabled in a real build.
+     */
+    public static void disableValidationForTesting() {
+        sOverrideValidationForTesting = true;
     }
 
     /**

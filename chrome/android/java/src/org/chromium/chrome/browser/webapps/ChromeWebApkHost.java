@@ -4,12 +4,16 @@
 
 package org.chromium.chrome.browser.webapps;
 
+import static org.chromium.chrome.browser.ChromeSwitches.SKIP_WEBAPK_VERIFICATION;
+
 import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.LibraryLoader;
+import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.webapk.lib.client.WebApkIdentityServiceClient;
 import org.chromium.webapk.lib.client.WebApkValidator;
 
@@ -22,6 +26,11 @@ public class ChromeWebApkHost {
     public static void init() {
         WebApkValidator.init(
                 ChromeWebApkHostSignature.EXPECTED_SIGNATURE, ChromeWebApkHostSignature.PUBLIC_KEY);
+        if (ChromeVersionInfo.isLocalBuild()
+                && CommandLine.getInstance().hasSwitch(SKIP_WEBAPK_VERIFICATION)) {
+            // Tell the WebApkValidator to work for all WebAPKs.
+            WebApkValidator.disableValidationForTesting();
+        }
     }
 
     /* Returns whether launching renderer in WebAPK process is enabled by Chrome. */
