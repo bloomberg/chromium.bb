@@ -255,10 +255,6 @@ extern const char kChromeUIWorkersHost[];
 extern const char kChromeUIPrintHost[];
 #endif  // ENABLE_PRINT_PREVIEW
 
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-extern const char kChromeUISigninDiceInternalsHost[];
-#endif
-
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 extern const char kChromeUIDiscardsHost[];
 #endif
