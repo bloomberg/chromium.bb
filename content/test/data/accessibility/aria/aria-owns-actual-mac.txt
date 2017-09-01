@@ -1,7 +1,0 @@
-AXWebArea
-++AXList
-++++AXGroup AXTitle='Birds'
-++++++AXGroup
-++++++++AXListMarker AXValue='•'
-++++++++AXStaticText AXValue='Birds'
-<-- End-of-file -->
