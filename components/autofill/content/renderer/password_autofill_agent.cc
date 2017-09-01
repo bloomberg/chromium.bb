@@ -664,7 +664,7 @@ bool ShouldShowStandaloneManuallFallback(const blink::WebInputElement& element,
       !base::StartsWith(url.scheme(), "chrome", base::CompareCase::SENSITIVE) &&
       !url.SchemeIs(url::kAboutScheme) &&
       base::FeatureList::IsEnabled(
-          password_manager::features::kEnableManualFallbacksFilling));
+          password_manager::features::kEnableManualFallbacksFillingStandalone));
 }
 
 }  // namespace

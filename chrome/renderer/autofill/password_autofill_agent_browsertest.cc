@@ -358,9 +358,9 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
         password_manager::features::kFillOnAccountSelect);
   }
 
-  void SetManualFallbacks() {
+  void SetManualFallbacksStandalone() {
     scoped_feature_list_.InitAndEnableFeature(
-        password_manager::features::kEnableManualFallbacksFilling);
+        password_manager::features::kEnableManualFallbacksFillingStandalone);
   }
 
   void EnableShowAutofillSignatures() {
@@ -3146,7 +3146,7 @@ TEST_F(PasswordAutofillAgentTest, GaiaReauthenticationFormIgnored) {
 
 // Tests that "Show all saved passwords" option is shown on a password field.
 TEST_F(PasswordAutofillAgentTest, ShowAllSavedPasswordsTest) {
-  SetManualFallbacks();
+  SetManualFallbacksStandalone();
   LoadHTML(kFormHTML);
   SetFocused(username_element_);
   SimulateElementClick("username");
@@ -3160,7 +3160,7 @@ TEST_F(PasswordAutofillAgentTest, ShowAllSavedPasswordsTest) {
 // field.
 TEST_F(PasswordAutofillAgentTest,
        NotShowAllSavedPasswordsOnCreditCardFormTest) {
-  SetManualFallbacks();
+  SetManualFallbacksStandalone();
   LoadHTML(kCreditCardFormHTML);
   SetFocused(username_element_);
   SimulateElementClick("username");
@@ -3171,7 +3171,7 @@ TEST_F(PasswordAutofillAgentTest,
 }
 
 TEST_F(PasswordAutofillAgentTest, NotShowShowAllSavedPasswordsTest) {
-  SetManualFallbacks();
+  SetManualFallbacksStandalone();
   LoadHTML(kFormHTML);
   SetFocused(password_element_);
   SimulateElementClick("password");
@@ -3183,7 +3183,7 @@ TEST_F(PasswordAutofillAgentTest, NotShowShowAllSavedPasswordsTest) {
 }
 
 TEST_F(PasswordAutofillAgentTest, NotShowShowAllSavedPasswordsTestBlacklisted) {
-  SetManualFallbacks();
+  SetManualFallbacksStandalone();
   LoadHTML(kFormHTML);
   password_autofill_agent_->BlacklistedFormFound();
   SetFocused(password_element_);

@@ -154,6 +154,16 @@ class PasswordAutofillManagerTest : public testing::Test {
     }
   }
 
+  void SetManualFallbacksForFillingStandalone(bool enabled) {
+    if (enabled) {
+      scoped_feature_list_.InitAndEnableFeature(
+          password_manager::features::kEnableManualFallbacksFillingStandalone);
+    } else {
+      scoped_feature_list_.InitAndDisableFeature(
+          password_manager::features::kEnableManualFallbacksFillingStandalone);
+    }
+  }
+
   static bool IsManualFallbackForFillingEnabled() {
     return base::FeatureList::IsEnabled(
                password_manager::features::kEnableManualFallbacksFilling) &&
@@ -1105,7 +1115,7 @@ TEST_F(PasswordAutofillManagerTest, ShowStandaloneShowAllPasswords) {
   base::string16 show_all_saved_row_text =
       l10n_util::GetStringUTF16(IDS_AUTOFILL_SHOW_ALL_SAVED_FALLBACK);
 
-  SetManualFallbacksForFilling(true);
+  SetManualFallbacksForFillingStandalone(true);
 
   EXPECT_CALL(
       *autofill_client,
@@ -1198,7 +1208,7 @@ TEST_F(PasswordAutofillManagerTest, ShowAllPasswordsWithoutAutofillClient) {
   auto client = base::MakeUnique<TestPasswordManagerClient>();
   InitializePasswordAutofillManager(client.get(), nullptr);
 
-  SetManualFallbacksForFilling(true);
+  SetManualFallbacksForFillingStandalone(true);
 
   password_autofill_manager_->OnShowManualFallbackSuggestion(
       base::i18n::RIGHT_TO_LEFT, gfx::RectF());
