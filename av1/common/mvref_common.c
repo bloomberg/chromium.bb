@@ -1431,14 +1431,13 @@ void av1_setup_motion_field(AV1_COMMON *cm) {
     int gld_offset = AOMMAX(1, alt_frame_index - gld_frame_idx);
     int cur_to_alt = alt_frame_index - cur_frame_index;
     int cur_to_lst = cur_frame_index - lst_frame_index;
-
+    int cur_to_gld = cur_frame_index - gld_frame_index;
 #if CONFIG_EXT_REFS
     int bwd_offset = AOMMAX(1, alt_frame_index - bwd_frame_idx);
     int lst2_offset = AOMMAX(1, alt_frame_index - lst2_frame_idx);
     int lst3_offset = AOMMAX(1, alt_frame_index - lst3_frame_idx);
     int cur_to_lst2 = cur_frame_index - lst2_frame_index;
     int cur_to_lst3 = cur_frame_index - lst3_frame_index;
-    int cur_to_gld = cur_frame_index - gld_frame_index;
     int cur_to_bwd = bwd_frame_index - cur_frame_index;
 #endif
     const int ref_stamp = FWD_RF_OFFSET(ALTREF_FRAME);
