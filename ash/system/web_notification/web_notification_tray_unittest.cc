@@ -17,6 +17,7 @@
 #include "ash/system/status_area_widget_test_helper.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_item.h"
+#include "ash/system/tray/tray_container.h"
 #include "ash/system/web_notification/ash_popup_alignment_delegate.h"
 #include "ash/system/web_notification/message_center_bubble.h"
 #include "ash/test/ash_test_base.h"
@@ -30,6 +31,7 @@
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/image/image_unittest_util.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_style.h"
 #include "ui/message_center/message_center_tray.h"
@@ -88,12 +90,6 @@ class WebNotificationTrayTest : public AshTestBase {
  public:
   WebNotificationTrayTest() {}
   ~WebNotificationTrayTest() override {}
-
-  void TearDown() override {
-    GetMessageCenter()->RemoveAllNotifications(
-        false /* by_user */, message_center::MessageCenter::RemoveType::ALL);
-    AshTestBase::TearDown();
-  }
 
  protected:
   void AddNotification(const std::string& id) {
@@ -389,6 +385,26 @@ TEST_F(WebNotificationTrayTest, PopupAndSystemTrayMultiDisplay) {
   GetSystemTray()->ShowDefaultView(BUBBLE_CREATE_NEW);
   EXPECT_GT(bottom, GetPopupWorkAreaBottom());
   EXPECT_EQ(bottom_second, GetPopupWorkAreaBottomForTray(GetSecondaryTray()));
+}
+
+TEST_F(WebNotificationTrayTest, VisibleSmallIcon) {
+  EXPECT_EQ(0u, GetTray()->visible_small_icons_.size());
+  EXPECT_EQ(2, GetTray()->tray_container()->child_count());
+  std::unique_ptr<message_center::Notification> notification =
+      std::make_unique<message_center::Notification>(
+          message_center::NOTIFICATION_TYPE_SIMPLE, "test",
+          base::ASCIIToUTF16("Test System Notification"),
+          base::ASCIIToUTF16("Notification message body."), gfx::Image(),
+          base::ASCIIToUTF16("system"), GURL(),
+          message_center::NotifierId(
+              message_center::NotifierId::NotifierType::SYSTEM_COMPONENT,
+              "test"),
+          message_center::RichNotificationData(), nullptr /* delegate */);
+  notification->set_small_image(gfx::test::CreateImage(18, 18));
+  GetMessageCenter()->AddNotification(std::move(notification));
+  RunAllPendingInMessageLoop();
+  EXPECT_EQ(1u, GetTray()->visible_small_icons_.size());
+  EXPECT_EQ(3, GetTray()->tray_container()->child_count());
 }
 
 }  // namespace ash
