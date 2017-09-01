@@ -217,68 +217,41 @@ class ProcessMemoryMetricsEmitterTest : public ExtensionBrowserTest {
   void CheckAllUkmSources(size_t metric_count = 1u) {
     const std::map<ukm::SourceId, std::unique_ptr<ukm::UkmSource>>& sources =
         test_ukm_recorder_->GetSources();
-    ASSERT_NE(0U, test_ukm_recorder_->entries_count());
-    ASSERT_NE(0U, test_ukm_recorder_->sources_count());
-    size_t browser_count = 0;
-    size_t renderer_count = 0;
     for (auto& pair : sources) {
       const ukm::UkmSource* source = pair.second.get();
       if (ProcessHasTypeForSource(source, ProcessType::BROWSER)) {
-        CheckUkmBrowserSource(source, 1);
-        ++browser_count;
+        CheckUkmBrowserSource(source, metric_count);
       } else if (ProcessHasTypeForSource(source, ProcessType::RENDERER)) {
         CheckUkmRendererSource(source, metric_count);
-        ++renderer_count;
-      } else if (ProcessHasTypeForSource(source, ProcessType::GPU)) {
-        CheckMemoryMetricWithName(source, "Malloc", false, 1);
-        CheckMemoryMetricWithName(source, "PrivateMemoryFootprint", false, 1);
       } else {
         // This must be Total2.
         CheckMemoryMetricWithName(source, "Total2.PrivateMemoryFootprint",
-                                  false, 1);
+                                  false, metric_count);
       }
     }
-
-    // Each browser process is given a new source, so we expect |metric_count|
-    // of them.
-    ASSERT_EQ(browser_count, metric_count);
-
-    // Each renderer should be navigated to the same URL, so we expect exactly
-    // one source. However, temporary renderers might cause there to be multiple
-    // sources.
-    ASSERT_GE(renderer_count, 1u);
   }
 
   void CheckMemoryMetricWithName(const ukm::UkmSource* source,
                                  const char* name,
                                  bool can_be_zero,
-                                 size_t metric_count = 1u,
-                                 bool metric_count_can_double = false) {
+                                 size_t metric_count = 1u) {
     std::vector<int64_t> metrics =
         test_ukm_recorder_->GetMetrics(*source, UkmEventName, name);
-    if (metric_count_can_double) {
-      ASSERT_TRUE(metrics.size() >= metric_count &&
-                  metrics.size() <= 2 * metric_count)
-          << name << " " << metrics.size();
-    } else {
-      ASSERT_EQ(metric_count, metrics.size()) << name;
-    }
+    EXPECT_EQ(metric_count, metrics.size());
     EXPECT_GE(metrics[0], can_be_zero ? 0 : 1) << name;
     EXPECT_LE(metrics[0], 4000) << name;
   }
 
   void CheckUkmRendererSource(const ukm::UkmSource* source,
                               size_t metric_count = 1u) {
-    CheckMemoryMetricWithName(source, "Malloc", false, metric_count, true);
-    CheckMemoryMetricWithName(source, "Resident", false, metric_count, true);
+    CheckMemoryMetricWithName(source, "Malloc", false, metric_count);
+    CheckMemoryMetricWithName(source, "Resident", false, metric_count);
     CheckMemoryMetricWithName(source, "PrivateMemoryFootprint", false,
-                              metric_count, true);
-    CheckMemoryMetricWithName(source, "BlinkGC", true, metric_count, true);
-    CheckMemoryMetricWithName(source, "PartitionAlloc", true, metric_count,
-                              true);
-    CheckMemoryMetricWithName(source, "V8", true, metric_count, true);
-    CheckMemoryMetricWithName(source, "NumberOfExtensions", true, metric_count,
-                              true);
+                              metric_count);
+    CheckMemoryMetricWithName(source, "BlinkGC", true, metric_count);
+    CheckMemoryMetricWithName(source, "PartitionAlloc", true, metric_count);
+    CheckMemoryMetricWithName(source, "V8", true, metric_count);
+    CheckMemoryMetricWithName(source, "NumberOfExtensions", true, metric_count);
   }
 
   void CheckUkmBrowserSource(const ukm::UkmSource* source,
