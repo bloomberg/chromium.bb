@@ -377,7 +377,7 @@ MediaControls.prototype.initTimeControls = function(opt_parent) {
   this.progressSlider_.setAttribute('aria-label',
       str('MEDIA_PLAYER_SEEK_SLIDER_LABEL'));
   this.progressSlider_.addEventListener('change', function(event) {
-    this.onProgressChange_(this.progressSlider_.ratio);
+    this.onProgressChange_(this.progressSlider_.ratio / 100);
   }.bind(this));
   this.progressSlider_.addEventListener(
       'immediate-value-change',
@@ -452,7 +452,7 @@ MediaControls.prototype.skip_ = function(sec) {
     this.progressSlider_.value = Math.max(Math.min(
         this.progressSlider_.value + stepsToSkip,
         this.progressSlider_.max), 0);
-    this.onProgressChange_(this.progressSlider_.ratio);
+    this.onProgressChange_(this.progressSlider_.ratio / 100);
   }
 };
 
@@ -582,7 +582,7 @@ MediaControls.prototype.initVolumeControls = function(opt_parent) {
   this.volume_.setAttribute('aria-label',
       str('MEDIA_PLAYER_VOLUME_SLIDER_LABEL'));
   this.volume_.addEventListener('change', function(event) {
-    this.onVolumeChange_(this.volume_.ratio);
+    this.onVolumeChange_(this.volume_.ratio / 100);
   }.bind(this));
   this.volume_.addEventListener('immediate-value-change', function(event) {
     this.onVolumeDrag_();
