@@ -40,8 +40,7 @@ class MEDIA_EXPORT AudioOutputIPCDelegate {
   // must read from this socket and provide audio whenever data (search for
   // "pending_bytes") is received.
   virtual void OnStreamCreated(base::SharedMemoryHandle handle,
-                               base::SyncSocket::Handle socket_handle,
-                               int length) = 0;
+                               base::SyncSocket::Handle socket_handle) = 0;
 
   // Called when the AudioOutputIPC object is going away and/or when the IPC
   // channel has been closed and no more ipc requests can be made.

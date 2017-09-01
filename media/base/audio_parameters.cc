@@ -9,6 +9,52 @@
 
 namespace media {
 
+base::CheckedNumeric<uint32_t> ComputeAudioInputBufferSizeChecked(
+    const AudioParameters& parameters,
+    uint32_t shared_memory_count) {
+  base::CheckedNumeric<uint32_t> result = AudioBus::CalculateMemorySize(
+      parameters.channels(), parameters.frames_per_buffer());
+  result += sizeof(media::AudioInputBufferParameters);
+  result *= shared_memory_count;
+  return result;
+}
+
+uint32_t ComputeAudioInputBufferSize(const AudioParameters& parameters,
+                                     uint32_t shared_memory_count) {
+  return ComputeAudioInputBufferSizeChecked(parameters, shared_memory_count)
+      .ValueOrDie();
+}
+
+uint32_t ComputeAudioInputBufferSize(int channels,
+                                     int frames,
+                                     uint32_t shared_memory_count) {
+  base::CheckedNumeric<uint32_t> result =
+      AudioBus::CalculateMemorySize(channels, frames);
+  result += sizeof(media::AudioInputBufferParameters);
+  result *= shared_memory_count;
+  return result.ValueOrDie();
+}
+
+base::CheckedNumeric<uint32_t> ComputeAudioOutputBufferSizeChecked(
+    const AudioParameters& parameters) {
+  base::CheckedNumeric<uint32_t> result = AudioBus::CalculateMemorySize(
+      parameters.channels(), parameters.frames_per_buffer());
+  result += sizeof(media::AudioOutputBufferParameters);
+  return result;
+}
+
+uint32_t ComputeAudioOutputBufferSize(const AudioParameters& parameters) {
+  return ComputeAudioOutputBufferSize(parameters.channels(),
+                                      parameters.frames_per_buffer());
+}
+
+uint32_t ComputeAudioOutputBufferSize(int channels, int frames) {
+  base::CheckedNumeric<uint32_t> result =
+      AudioBus::CalculateMemorySize(channels, frames);
+  result += sizeof(media::AudioOutputBufferParameters);
+  return result.ValueOrDie();
+}
+
 AudioParameters::AudioParameters()
     : AudioParameters(AUDIO_PCM_LINEAR, CHANNEL_LAYOUT_NONE, 0, 0, 0) {}
 

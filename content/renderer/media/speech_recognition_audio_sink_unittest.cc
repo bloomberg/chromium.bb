@@ -124,8 +124,7 @@ class FakeSpeechRecognizer {
       base::SharedMemoryHandle* foreign_memory_handle) {
     // Shared memory is allocated, mapped and shared.
     const uint32_t kSharedMemorySize =
-        sizeof(media::AudioInputBufferParameters) +
-        media::AudioBus::CalculateMemorySize(sink_params);
+        media::ComputeAudioInputBufferSize(sink_params, 1u);
     shared_memory_.reset(new base::SharedMemory());
     ASSERT_TRUE(shared_memory_->CreateAndMapAnonymous(kSharedMemorySize));
     memset(shared_memory_->memory(), 0, kSharedMemorySize);

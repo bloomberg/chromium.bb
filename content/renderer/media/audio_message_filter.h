@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <string>
 
 #include "base/containers/id_map.h"
 #include "base/gtest_prod_util.h"
@@ -80,8 +81,7 @@ class CONTENT_EXPORT AudioMessageFilter : public IPC::MessageFilter {
   // Received when browser process has created an audio output stream.
   void OnStreamCreated(int stream_id,
                        base::SharedMemoryHandle handle,
-                       base::SyncSocket::TransitDescriptor socket_descriptor,
-                       uint32_t length);
+                       base::SyncSocket::TransitDescriptor socket_descriptor);
 
   // Received when internal state of browser process' audio output device has
   // changed.

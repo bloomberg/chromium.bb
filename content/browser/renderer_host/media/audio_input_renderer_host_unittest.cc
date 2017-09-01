@@ -77,12 +77,10 @@ AudioInputHostMsg_CreateStream_Config DefaultConfig() {
 
 class MockRenderer {
  public:
-  MOCK_METHOD6(NotifyStreamCreated,
+  MOCK_METHOD4(NotifyStreamCreated,
                void(int /*stream_id*/,
                     base::SharedMemoryHandle /*handle*/,
                     base::SyncSocket::TransitDescriptor /*socket_desriptor*/,
-                    uint32_t /*length*/,
-                    uint32_t /*total_segments*/,
                     bool initially_muted));
   MOCK_METHOD1(NotifyStreamError, void(int /*stream_id*/));
   MOCK_METHOD0(WasShutDown, void());
@@ -137,17 +135,16 @@ class AudioInputRendererHostWithInterception : public AudioInputRendererHost {
       int stream_id,
       base::SharedMemoryHandle handle,
       base::SyncSocket::TransitDescriptor socket_descriptor,
-      uint32_t length,
-      uint32_t total_segments,
       bool initially_muted) {
     // It's difficult to check that the sync socket and shared memory is
     // valid in the gmock macros, so we check them here.
     EXPECT_NE(base::SyncSocket::UnwrapHandle(socket_descriptor),
               base::SyncSocket::kInvalidHandle);
+    size_t length = handle.GetSize();
     base::SharedMemory memory(handle, /*read_only*/ true);
     EXPECT_TRUE(memory.Map(length));
-    renderer_->NotifyStreamCreated(stream_id, handle, socket_descriptor, length,
-                                   total_segments, initially_muted);
+    renderer_->NotifyStreamCreated(stream_id, handle, socket_descriptor,
+                                   initially_muted);
     EXPECT_TRUE(memory.Unmap());
     memory.Close();
   }
@@ -334,8 +331,7 @@ TEST_F(AudioInputRendererHostTest, CreateWithDefaultDevice) {
   int session_id =
       Open("Default device", media::AudioDeviceDescription::kDefaultDeviceId);
 
-  EXPECT_CALL(renderer_,
-              NotifyStreamCreated(kStreamId, _, _, _, kSharedMemoryCount, _));
+  EXPECT_CALL(renderer_, NotifyStreamCreated(kStreamId, _, _, _));
   EXPECT_CALL(controller_factory_, ControllerCreated());
 
   airh_->OnMessageReceived(AudioInputHostMsg_CreateStream(
@@ -360,8 +356,7 @@ TEST_F(AudioInputRendererHostTest, CreateWithoutAuthorization_Error) {
 TEST_F(AudioInputRendererHostTest, CreateWithNonDefaultDevice) {
   int session_id = Open("Nondefault device", GetRawNondefaultId());
 
-  EXPECT_CALL(renderer_,
-              NotifyStreamCreated(kStreamId, _, _, _, kSharedMemoryCount, _));
+  EXPECT_CALL(renderer_, NotifyStreamCreated(kStreamId, _, _, _));
   EXPECT_CALL(controller_factory_, ControllerCreated());
 
   airh_->OnMessageReceived(AudioInputHostMsg_CreateStream(
@@ -376,8 +371,7 @@ TEST_F(AudioInputRendererHostTest, CreateRecordClose) {
   int session_id =
       Open("Default device", media::AudioDeviceDescription::kDefaultDeviceId);
 
-  EXPECT_CALL(renderer_,
-              NotifyStreamCreated(kStreamId, _, _, _, kSharedMemoryCount, _));
+  EXPECT_CALL(renderer_, NotifyStreamCreated(kStreamId, _, _, _));
   EXPECT_CALL(controller_factory_, ControllerCreated());
 
   airh_->OnMessageReceived(AudioInputHostMsg_CreateStream(
@@ -399,8 +393,7 @@ TEST_F(AudioInputRendererHostTest, CreateSetVolumeRecordClose) {
   int session_id =
       Open("Default device", media::AudioDeviceDescription::kDefaultDeviceId);
 
-  EXPECT_CALL(renderer_,
-              NotifyStreamCreated(kStreamId, _, _, _, kSharedMemoryCount, _));
+  EXPECT_CALL(renderer_, NotifyStreamCreated(kStreamId, _, _, _));
   EXPECT_CALL(controller_factory_, ControllerCreated());
 
   airh_->OnMessageReceived(AudioInputHostMsg_CreateStream(
@@ -424,8 +417,7 @@ TEST_F(AudioInputRendererHostTest, SetVolumeTooLarge_BadMessage) {
   int session_id =
       Open("Default device", media::AudioDeviceDescription::kDefaultDeviceId);
 
-  EXPECT_CALL(renderer_,
-              NotifyStreamCreated(kStreamId, _, _, _, kSharedMemoryCount, _));
+  EXPECT_CALL(renderer_, NotifyStreamCreated(kStreamId, _, _, _));
   EXPECT_CALL(controller_factory_, ControllerCreated());
 
   airh_->OnMessageReceived(AudioInputHostMsg_CreateStream(
@@ -445,8 +437,7 @@ TEST_F(AudioInputRendererHostTest, SetVolumeNegative_BadMessage) {
   int session_id =
       Open("Default device", media::AudioDeviceDescription::kDefaultDeviceId);
 
-  EXPECT_CALL(renderer_,
-              NotifyStreamCreated(kStreamId, _, _, _, kSharedMemoryCount, _));
+  EXPECT_CALL(renderer_, NotifyStreamCreated(kStreamId, _, _, _));
   EXPECT_CALL(controller_factory_, ControllerCreated());
 
   airh_->OnMessageReceived(AudioInputHostMsg_CreateStream(
@@ -466,8 +457,7 @@ TEST_F(AudioInputRendererHostTest, CreateTwice_Error) {
   int session_id =
       Open("Default device", media::AudioDeviceDescription::kDefaultDeviceId);
 
-  EXPECT_CALL(renderer_,
-              NotifyStreamCreated(kStreamId, _, _, _, kSharedMemoryCount, _));
+  EXPECT_CALL(renderer_, NotifyStreamCreated(kStreamId, _, _, _));
   EXPECT_CALL(renderer_, NotifyStreamError(kStreamId));
   EXPECT_CALL(controller_factory_, ControllerCreated());
 
@@ -487,10 +477,8 @@ TEST_F(AudioInputRendererHostTest, TwoStreams) {
   int session_id =
       Open("Default device", media::AudioDeviceDescription::kDefaultDeviceId);
 
-  EXPECT_CALL(renderer_,
-              NotifyStreamCreated(kStreamId, _, _, _, kSharedMemoryCount, _));
-  EXPECT_CALL(renderer_, NotifyStreamCreated(kStreamId + 1, _, _, _,
-                                             kSharedMemoryCount, _));
+  EXPECT_CALL(renderer_, NotifyStreamCreated(kStreamId, _, _, _));
+  EXPECT_CALL(renderer_, NotifyStreamCreated(kStreamId + 1, _, _, _));
   EXPECT_CALL(controller_factory_, ControllerCreated()).Times(2);
 
   airh_->OnMessageReceived(AudioInputHostMsg_CreateStream(
@@ -524,8 +512,7 @@ TEST_F(AudioInputRendererHostTest, Error_ClosesController) {
   int session_id =
       Open("Default device", media::AudioDeviceDescription::kDefaultDeviceId);
 
-  EXPECT_CALL(renderer_,
-              NotifyStreamCreated(kStreamId, _, _, _, kSharedMemoryCount, _));
+  EXPECT_CALL(renderer_, NotifyStreamCreated(kStreamId, _, _, _));
   EXPECT_CALL(controller_factory_, ControllerCreated());
 
   airh_->OnMessageReceived(AudioInputHostMsg_CreateStream(
@@ -556,8 +543,7 @@ TEST_F(AudioInputRendererHostTest, TabCaptureStream) {
   base::RunLoop().RunUntilIdle();
   int session_id = Open("Tab capture", controls.audio.device_id);
 
-  EXPECT_CALL(renderer_,
-              NotifyStreamCreated(kStreamId, _, _, _, kSharedMemoryCount, _));
+  EXPECT_CALL(renderer_, NotifyStreamCreated(kStreamId, _, _, _));
   EXPECT_CALL(controller_factory_, ControllerCreated());
 
   airh_->OnMessageReceived(AudioInputHostMsg_CreateStream(

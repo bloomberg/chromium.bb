@@ -225,8 +225,7 @@ void AudioInputRendererHost::DoCompleteCreation(
 
   Send(new AudioInputMsg_NotifyStreamCreated(
       entry->stream_id, foreign_memory_handle, socket_transit_descriptor,
-      writer->shared_memory()->requested_size(),
-      writer->shared_memory_segment_count(), initially_muted));
+      initially_muted));
 
   // Free the foreign socket on here since it isn't needed anymore in this
   // process.

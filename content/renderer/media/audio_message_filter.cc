@@ -4,8 +4,6 @@
 
 #include "content/renderer/media/audio_message_filter.h"
 
-#include <string>
-
 #include "base/bind.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
@@ -199,8 +197,7 @@ void AudioMessageFilter::OnDeviceAuthorized(
 void AudioMessageFilter::OnStreamCreated(
     int stream_id,
     base::SharedMemoryHandle handle,
-    base::SyncSocket::TransitDescriptor socket_descriptor,
-    uint32_t length) {
+    base::SyncSocket::TransitDescriptor socket_descriptor) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
 
   WebRtcLogMessage(base::StringPrintf(
@@ -218,7 +215,7 @@ void AudioMessageFilter::OnStreamCreated(
     base::SyncSocket socket(socket_handle);
     return;
   }
-  delegate->OnStreamCreated(handle, socket_handle, length);
+  delegate->OnStreamCreated(handle, socket_handle);
 }
 
 void AudioMessageFilter::OnStreamError(int stream_id) {

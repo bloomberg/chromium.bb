@@ -169,12 +169,11 @@ class MockDelegate : public media::AudioOutputIPCDelegate {
   ~MockDelegate() override {}
 
   void OnStreamCreated(base::SharedMemoryHandle mem_handle,
-                       base::SyncSocket::Handle socket_handle,
-                       int length) {
+                       base::SyncSocket::Handle socket_handle) {
     base::SharedMemory sh_mem(
         mem_handle, /*read_only*/ false);  // Releases the shared memory handle.
     base::SyncSocket socket(socket_handle);  // Releases the socket descriptor.
-    GotOnStreamCreated(length);
+    GotOnStreamCreated();
   }
 
   MOCK_METHOD0(OnError, void());
@@ -182,7 +181,7 @@ class MockDelegate : public media::AudioOutputIPCDelegate {
                void(media::OutputDeviceStatus device_status,
                     const media::AudioParameters& output_params,
                     const std::string& matched_device_id));
-  MOCK_METHOD1(GotOnStreamCreated, void(int length));
+  MOCK_METHOD0(GotOnStreamCreated, void());
   MOCK_METHOD0(OnIPCClosed, void());
 };
 
@@ -245,7 +244,7 @@ TEST(MojoAudioOutputIPC, OnDeviceCreated_Propagates) {
   EXPECT_CALL(delegate, OnDeviceAuthorized(
                             media::OutputDeviceStatus::OUTPUT_DEVICE_STATUS_OK,
                             _, std::string(kReturnedDeviceId)));
-  EXPECT_CALL(delegate, GotOnStreamCreated(kMemoryLength));
+  EXPECT_CALL(delegate, GotOnStreamCreated());
   base::RunLoop().RunUntilIdle();
 
   ipc->CloseStream();
@@ -271,7 +270,7 @@ TEST(MojoAudioOutputIPC,
 
   ipc->CreateStream(&delegate, Params());
 
-  EXPECT_CALL(delegate, GotOnStreamCreated(kMemoryLength));
+  EXPECT_CALL(delegate, GotOnStreamCreated());
   base::RunLoop().RunUntilIdle();
 
   ipc->CloseStream();
@@ -298,7 +297,7 @@ TEST(MojoAudioOutputIPC, IsReusable) {
         delegate,
         OnDeviceAuthorized(media::OutputDeviceStatus::OUTPUT_DEVICE_STATUS_OK,
                            _, std::string(kReturnedDeviceId)));
-    EXPECT_CALL(delegate, GotOnStreamCreated(kMemoryLength));
+    EXPECT_CALL(delegate, GotOnStreamCreated());
     base::RunLoop().RunUntilIdle();
     Mock::VerifyAndClearExpectations(&delegate);
 
@@ -345,7 +344,7 @@ TEST(MojoAudioOutputIPC, IsReusableAfterError) {
         delegate,
         OnDeviceAuthorized(media::OutputDeviceStatus::OUTPUT_DEVICE_STATUS_OK,
                            _, std::string(kReturnedDeviceId)));
-    EXPECT_CALL(delegate, GotOnStreamCreated(kMemoryLength));
+    EXPECT_CALL(delegate, GotOnStreamCreated());
     base::RunLoop().RunUntilIdle();
     Mock::VerifyAndClearExpectations(&delegate);
 
@@ -492,7 +491,7 @@ TEST(MojoAudioOutputIPC, Play_Plays) {
   EXPECT_CALL(delegate, OnDeviceAuthorized(
                             media::OutputDeviceStatus::OUTPUT_DEVICE_STATUS_OK,
                             _, std::string(kReturnedDeviceId)));
-  EXPECT_CALL(delegate, GotOnStreamCreated(kMemoryLength));
+  EXPECT_CALL(delegate, GotOnStreamCreated());
   EXPECT_CALL(stream, Play());
   base::RunLoop().RunUntilIdle();
 
@@ -518,7 +517,7 @@ TEST(MojoAudioOutputIPC, Pause_Pauses) {
   EXPECT_CALL(delegate, OnDeviceAuthorized(
                             media::OutputDeviceStatus::OUTPUT_DEVICE_STATUS_OK,
                             _, std::string(kReturnedDeviceId)));
-  EXPECT_CALL(delegate, GotOnStreamCreated(kMemoryLength));
+  EXPECT_CALL(delegate, GotOnStreamCreated());
   EXPECT_CALL(stream, Pause());
   base::RunLoop().RunUntilIdle();
 
@@ -544,7 +543,7 @@ TEST(MojoAudioOutputIPC, SetVolume_SetsVolume) {
   EXPECT_CALL(delegate, OnDeviceAuthorized(
                             media::OutputDeviceStatus::OUTPUT_DEVICE_STATUS_OK,
                             _, std::string(kReturnedDeviceId)));
-  EXPECT_CALL(delegate, GotOnStreamCreated(kMemoryLength));
+  EXPECT_CALL(delegate, GotOnStreamCreated());
   EXPECT_CALL(stream, SetVolume(kNewVolume));
   base::RunLoop().RunUntilIdle();
 

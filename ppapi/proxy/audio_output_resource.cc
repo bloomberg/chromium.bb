@@ -168,8 +168,16 @@ void AudioOutputResource::SetStreamInfo(
     base::SyncSocket::Handle socket_handle) {
   socket_.reset(new base::CancelableSyncSocket(socket_handle));
   shared_memory_.reset(new base::SharedMemory(shared_memory_handle, false));
-  shared_memory_size_ = shared_memory_size;
   DCHECK(!shared_memory_->memory());
+
+  // Ensure that the allocated memory is enough for the audio bus and buffer
+  // parameters. Note that there might be slightly more allocated memory as
+  // some shared memory implementations round up to the closest 2^n when
+  // allocating.
+  // Example: DCHECK_GE(8208, 8192 + 16) for |sample_frame_count_| = 2048.
+  shared_memory_size_ = media::ComputeAudioOutputBufferSize(
+      kAudioOutputChannels, sample_frame_count_);
+  DCHECK_GE(shared_memory_size, shared_memory_size_);
 
   // If we fail to map the shared memory into the caller's address space we
   // might as well fail here since nothing will work if this is the case.
@@ -180,14 +188,6 @@ void AudioOutputResource::SetStreamInfo(
       static_cast<media::AudioOutputBuffer*>(shared_memory_->memory());
   audio_bus_ = media::AudioBus::WrapMemory(kAudioOutputChannels,
                                            sample_frame_count_, buffer->audio);
-
-  // Ensure that the size of the created audio bus matches the allocated
-  // size in shared memory.
-  // Example: DCHECK_EQ(8208 - 16, 8192) for |sample_frame_count_| = 2048.
-  const uint32_t audio_bus_size_bytes = media::AudioBus::CalculateMemorySize(
-      audio_bus_->channels(), audio_bus_->frames());
-  DCHECK_EQ(shared_memory_size_ - sizeof(media::AudioOutputBufferParameters),
-            audio_bus_size_bytes);
 
   // Setup integer audio buffer for user audio data
   client_buffer_size_bytes_ = audio_bus_->frames() * audio_bus_->channels() *
