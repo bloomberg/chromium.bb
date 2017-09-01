@@ -171,9 +171,9 @@ using bookmarks::BookmarkNode;
 
   if (base::FeatureList::IsEnabled(
           bookmark_new_generation::features::kBookmarkNewGeneration)) {
+    [self.bookmarkBrowser setRootNode:self.bookmarkModel->root_node()];
     UINavigationController* navController = [[UINavigationController alloc]
         initWithRootViewController:self.bookmarkBrowser];
-    [self.bookmarkBrowser setRootNode:self.bookmarkModel->root_node()];
     [navController setModalPresentationStyle:UIModalPresentationFormSheet];
     [_parentController presentViewController:navController
                                     animated:YES
