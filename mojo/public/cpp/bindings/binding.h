@@ -229,6 +229,11 @@ class Binding {
     return internal_state_.RouterForTesting();
   }
 
+  // Allows test code to swap the interface implementation.
+  ImplPointerType SwapImplForTesting(ImplPointerType new_impl) {
+    return internal_state_.SwapImplForTesting(new_impl);
+  }
+
  private:
   internal::BindingState<Interface, ImplRefTraits> internal_state_;
 

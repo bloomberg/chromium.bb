@@ -508,28 +508,42 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest, IsolatedOriginWithSubdomain) {
 // This class allows intercepting the OpenLocalStorage method and changing
 // the parameters to the real implementation of it.
 class StoragePartitonInterceptor
-    : public mojom::StoragePartitionServiceInterceptorForTesting {
+    : public mojom::StoragePartitionServiceInterceptorForTesting,
+      public RenderProcessHostObserver {
  public:
-  StoragePartitonInterceptor(RenderProcessHostImpl* rph) {
-    // Install a custom callback for handling errors during interface calls.
-    // This is needed because the passthrough calls that this object makes
-    // to the real implementaion of the service don't have the correct
-    // context to invoke the real error callback.
-    mojo::edk::SetDefaultProcessErrorCallback(base::Bind(
-        [](int process_id, const std::string& s) {
-          bad_message::ReceivedBadMessage(process_id,
-                                          bad_message::DSMF_LOAD_STORAGE);
-        },
-        rph->GetID()));
+  StoragePartitonInterceptor(RenderProcessHostImpl* rph,
+                             mojom::StoragePartitionServiceRequest request) {
+    StoragePartitionImpl* storage_partition =
+        static_cast<StoragePartitionImpl*>(rph->GetStoragePartition());
 
-    static_cast<StoragePartitionImpl*>(rph->GetStoragePartition())
-        ->Bind(rph->GetID(), mojo::MakeRequest(&storage_partition_service_));
+    // Bind the real StoragePartitionService implementation.
+    mojo::BindingId binding_id =
+        storage_partition->Bind(rph->GetID(), std::move(request));
+
+    // Now replace it with this object and keep a pointer to the real
+    // implementation.
+    storage_partition_service_ =
+        storage_partition->bindings_for_testing().SwapImplForTesting(binding_id,
+                                                                     this);
+
+    // Register the |this| as a RenderProcessHostObserver, so it can be
+    // correctly cleaned up when the process exits.
+    rph->AddObserver(this);
+  }
+
+  // Ensure this object is cleaned up when the process goes away, since it
+  // is not owned by anyone else.
+  void RenderProcessExited(RenderProcessHost* host,
+                           base::TerminationStatus status,
+                           int exit_code) override {
+    host->RemoveObserver(this);
+    delete this;
   }
 
   // Allow all methods that aren't explicitly overriden to pass through
   // unmodified.
   mojom::StoragePartitionService* GetForwardingInterface() override {
-    return storage_partition_service_.get();
+    return storage_partition_service_;
   }
 
   // Override this method to allow changing the origin. It simulates a
@@ -545,17 +559,15 @@ class StoragePartitonInterceptor
  private:
   // Keep a pointer to the original implementation of the service, so all
   // calls can be forwarded to it.
-  // Note: When making calls through this object, they are in-process calls,
-  // so state on the receiving side of the call will be missing the real
-  // information of which process has made the real method call.
-  mojom::StoragePartitionServicePtr storage_partition_service_;
+  mojom::StoragePartitionService* storage_partition_service_;
 };
 
 void CreateTestStoragePartitionService(
     RenderProcessHostImpl* rph,
     mojom::StoragePartitionServiceRequest request) {
-  mojo::MakeStrongBinding(base::MakeUnique<StoragePartitonInterceptor>(rph),
-                          std::move(request));
+  // This object will register as RenderProcessHostObserver, so it will
+  // clean itself automatically on process exit.
+  new StoragePartitonInterceptor(rph, std::move(request));
 }
 
 // Verify that an isolated renderer process cannot read localStorage of an

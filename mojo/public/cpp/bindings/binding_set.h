@@ -123,6 +123,18 @@ class BindingSetBase {
     return true;
   }
 
+  // Swaps the interface implementation with a different one, to allow tests
+  // to modify behavior.
+  //
+  // Returns the existing interface implementation to the caller.
+  ImplPointerType SwapImplForTesting(BindingId id, ImplPointerType new_impl) {
+    auto it = bindings_.find(id);
+    if (it == bindings_.end())
+      return nullptr;
+
+    return it->second->SwapImplForTesting(new_impl);
+  }
+
   void CloseAllBindings() { bindings_.clear(); }
 
   bool empty() const { return bindings_.empty(); }
@@ -215,6 +227,10 @@ class BindingSetBase {
     }
 
     void FlushForTesting() { binding_.FlushForTesting(); }
+
+    ImplPointerType SwapImplForTesting(ImplPointerType new_impl) {
+      return binding_.SwapImplForTesting(new_impl);
+    }
 
    private:
     class DispatchFilter : public MessageReceiver {

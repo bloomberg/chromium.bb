@@ -69,6 +69,6 @@ class {{export_attribute}} {{interface.name}}InterceptorForTesting : public {{in
   virtual {{interface.name}}* GetForwardingInterface() = 0;
 
 {%- for method in interface.methods %}
-  void {{method.name}}({{interface_macros.declare_request_params("", method, use_once_callback)}});
+  void {{method.name}}({{interface_macros.declare_request_params("", method, use_once_callback)}}) override;
 {%- endfor %}
 };

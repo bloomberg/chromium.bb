@@ -689,7 +689,7 @@ void StoragePartitionImpl::OpenLocalStorage(
   int process_id = bindings_.dispatch_context();
   if (!ChildProcessSecurityPolicy::GetInstance()->CanAccessDataForOrigin(
           process_id, origin.GetURL())) {
-    mojo::ReportBadMessage("Access denied for localStorage request");
+    bindings_.ReportBadMessage("Access denied for localStorage request");
     return;
   }
   dom_storage_context_->OpenLocalStorage(origin, std::move(request));
@@ -1003,10 +1003,10 @@ BrowserContext* StoragePartitionImpl::browser_context() const {
   return browser_context_;
 }
 
-void StoragePartitionImpl::Bind(
+mojo::BindingId StoragePartitionImpl::Bind(
     int process_id,
     mojo::InterfaceRequest<mojom::StoragePartitionService> request) {
-  bindings_.AddBinding(this, std::move(request), process_id);
+  return bindings_.AddBinding(this, std::move(request), process_id);
 }
 
 void StoragePartitionImpl::OverrideQuotaManagerForTesting(
