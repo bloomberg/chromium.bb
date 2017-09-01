@@ -3867,6 +3867,11 @@
           "enumerant" : "PostDepthCoverage",
           "value" : 4446,
           "capabilities" : [ "SampleMaskPostDepthCoverage" ]
+        },
+        {
+          "enumerant" : "StencilRefReplacingEXT",
+          "value" : 5027,
+          "capabilities" : [ "StencilExportEXT" ]
         }
       ]
     },
@@ -5617,9 +5622,10 @@
           "capabilities" : [ "VariablePointersStorageBuffer" ],
           "extensions" : [ "SPV_KHR_variable_pointers" ]
         },
-        {          "enumerant" : "AtomicStorageOps",
-          "value" : 4445,
-          "extensions" : [ "SPV_KHR_shader_atomic_counter_ops" ]
+        {
+            "enumerant": "AtomicStorageOps",
+            "value": 4445,
+            "extensions": [ "SPV_KHR_shader_atomic_counter_ops" ]
         },
         {
           "enumerant" : "SampleMaskPostDepthCoverage",
@@ -5639,6 +5645,12 @@
           "extensions" : [ "SPV_EXT_shader_stencil_export" ]
         },
         {
+          "enumerant" : "ImageReadWriteLodAMD",
+          "value" : 5015,
+          "capabilities" : [ "Shader" ],
+          "extensions" : [ "SPV_AMD_shader_image_load_store_lod" ]
+        },
+        {
           "enumerant" : "SampleMaskOverrideCoverageNV",
           "value" : 5249,
           "capabilities" : [ "SampleRateShading" ],
@@ -5651,16 +5663,16 @@
           "extensions" : [ "SPV_NV_geometry_shader_passthrough" ]
         },
         {
-          "enumerant" : "ShaderViewportIndexLayerNV",
-          "value" : 5254,
-          "capabilities" : [ "MultiViewport" ],
-          "extensions" : [ "SPV_NV_viewport_array2" ]
-        },
-        {
           "enumerant" : "ShaderViewportIndexLayerEXT",
           "value" : 5254,
           "capabilities" : [ "MultiViewport" ],
           "extensions" : [ "SPV_EXT_shader_viewport_index_layer" ]
+        },
+        {
+          "enumerant" : "ShaderViewportIndexLayerNV",
+          "value" : 5254,
+          "capabilities" : [ "MultiViewport" ],
+          "extensions" : [ "SPV_NV_viewport_array2" ]
         },
         {
           "enumerant" : "ShaderViewportMaskNV",

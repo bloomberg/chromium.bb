@@ -110,6 +110,7 @@ spv = {
         'VecTypeHint' : 30,
         'ContractionOff' : 31,
         'PostDepthCoverage' : 4446,
+        'StencilRefReplacingEXT' : 5027,
     },
 
     'StorageClass' : {
@@ -604,6 +605,7 @@ spv = {
         'SampleMaskPostDepthCoverage' : 4447,
         'ImageGatherBiasLodAMD' : 5009,
         'StencilExportEXT' : 5013,
+        'ImageReadWriteLodAMD' : 5015,
         'SampleMaskOverrideCoverageNV' : 5249,
         'GeometryShaderPassthroughNV' : 5251,
         'ShaderViewportIndexLayerEXT' : 5254,

@@ -123,6 +123,7 @@ enum ExecutionMode {
     ExecutionModeVecTypeHint = 30,
     ExecutionModeContractionOff = 31,
     ExecutionModePostDepthCoverage = 4446,
+    ExecutionModeStencilRefReplacingEXT = 5027,
     ExecutionModeMax = 0x7fffffff,
 };
 
@@ -642,6 +643,7 @@ enum Capability {
     CapabilitySampleMaskPostDepthCoverage = 4447,
     CapabilityImageGatherBiasLodAMD = 5009,
     CapabilityStencilExportEXT = 5013,
+    CapabilityImageReadWriteLodAMD = 5015,
     CapabilitySampleMaskOverrideCoverageNV = 5249,
     CapabilityGeometryShaderPassthroughNV = 5251,
     CapabilityShaderViewportIndexLayerEXT = 5254,
