@@ -72,6 +72,8 @@ class ArcTermsOfServiceScreenHandler
 
   void StartNetworkAndTimeZoneObserving();
 
+  bool NeedDispatchEventOnAction();
+
   // arc::ArcOptInPreferenceHandlerObserver:
   void OnMetricsModeChanged(bool enabled, bool managed) override;
   void OnBackupAndRestoreModeChanged(bool enabled, bool managed) override;
@@ -84,6 +86,9 @@ class ArcTermsOfServiceScreenHandler
 
   // Indicates that we already started network and time zone observing.
   bool network_time_zone_observing_ = false;
+
+  // To filter out duplicate notifications from html.
+  bool action_taken_ = false;
 
   std::unique_ptr<arc::ArcOptInPreferenceHandler> pref_handler_;
 
