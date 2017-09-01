@@ -3455,6 +3455,9 @@ static void get_tile_buffers(
       const int is_last = (r == tile_rows - 1) && (c == tile_cols - 1);
       const size_t hdr_offset = (tc && tc == first_tile_in_tg) ? hdr_size : 0;
 
+      if (data + hdr_offset >= data_end)
+        aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
+                           "Data ended before all tiles were read.");
       buf->col = c;
       if (hdr_offset) {
         init_read_bit_buffer(pbi, &rb_tg_hdr, data, data_end, clear_data);
