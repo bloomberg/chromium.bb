@@ -33,6 +33,7 @@
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/crypto_module_password_dialog_nss.h"
 #include "chrome/browser/ui/webui/certificate_viewer_webui.h"
+#include "chrome/common/net/x509_certificate_model_nss.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/net_errors.h"
@@ -1117,8 +1118,8 @@ void CertificatesHandler::RejectCallbackWithImportError(
   for (size_t i = 0; i < not_imported.size(); ++i) {
     const net::NSSCertDatabase::ImportCertFailure& failure = not_imported[i];
     std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
-    dict->SetString(kNameField,
-                    failure.certificate->subject().GetDisplayName());
+    dict->SetString(kNameField, x509_certificate_model::GetSubjectDisplayName(
+                                    failure.certificate.get()));
     dict->SetString(kErrorField, NetErrorToString(failure.net_error));
     cert_error_list->Append(std::move(dict));
   }

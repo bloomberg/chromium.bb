@@ -320,7 +320,7 @@ TEST_P(CertVerifyProcChromeOSOrderingTest, DISABLED_TrustThenVerify) {
     EXPECT_EQ(0U, failed.size());
     for (size_t i = 0; i < failed.size(); ++i) {
       LOG(ERROR) << "import fail " << failed[i].net_error << " for "
-                 << failed[i].certificate->subject().GetDisplayName();
+                 << failed[i].certificate->subjectName;
     }
   }
 
@@ -333,7 +333,7 @@ TEST_P(CertVerifyProcChromeOSOrderingTest, DISABLED_TrustThenVerify) {
     EXPECT_EQ(0U, failed.size());
     for (size_t i = 0; i < failed.size(); ++i) {
       LOG(ERROR) << "import fail " << failed[i].net_error << " for "
-                 << failed[i].certificate->subject().GetDisplayName();
+                 << failed[i].certificate->subjectName;
     }
   }
 
