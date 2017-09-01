@@ -1680,7 +1680,9 @@ bool AppsGridView::CalculateFolderDropTarget(const gfx::Point& point,
   // Items can only be dropped into non-folders (which have no children) or
   // folders that have fewer than the max allowed items.
   // The OEM folder does not allow drag/drop of other items into it.
-  if (target_item->ChildItemCount() >= kMaxFolderItems ||
+  if (target_item->ChildItemCount() >= (is_fullscreen_app_list_enabled_
+                                            ? kMaxFolderItemsFullscreen
+                                            : kMaxFolderItems) ||
       IsOEMFolderItem(target_item)) {
     return false;
   }
