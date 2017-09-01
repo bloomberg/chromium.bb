@@ -17,6 +17,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/win/registry.h"
 #include "third_party/re2/src/re2/re2.h"
 
@@ -166,6 +167,8 @@ SerialDeviceEnumeratorWin::~SerialDeviceEnumeratorWin() {}
 
 std::vector<mojom::SerialDeviceInfoPtr>
 SerialDeviceEnumeratorWin::GetDevices() {
+  base::ThreadRestrictions::AssertIOAllowed();
+
   std::vector<mojom::SerialDeviceInfoPtr> devices = GetDevicesNew();
   std::vector<mojom::SerialDeviceInfoPtr> old_devices = GetDevicesOld();
 
