@@ -1915,14 +1915,15 @@ bool PDFiumEngine::OnRightMouseDown(const pp::MouseInputEvent& event) {
 
   bool is_form_text_area = IsFormTextArea(area, form_type);
   bool is_editable_form_text_area = false;
+
+  double page_x = -1;
+  double page_y = -1;
+  FPDF_PAGE page = nullptr;
   if (is_form_text_area) {
     DCHECK_NE(page_index, -1);
 
-    double page_x;
-    double page_y;
     DeviceToPage(page_index, point.x(), point.y(), &page_x, &page_y);
-
-    FPDF_PAGE page = pages_[page_index]->GetPage();
+    page = pages_[page_index]->GetPage();
     is_editable_form_text_area =
         IsPointInEditableFormTextArea(page, page_x, page_y, form_type);
   }
@@ -1930,17 +1931,12 @@ bool PDFiumEngine::OnRightMouseDown(const pp::MouseInputEvent& event) {
   // Handle the case when focus starts inside a form text area.
   if (in_form_text_area_) {
     if (is_form_text_area) {
-      // TODO(bug_754594): Right now this is a no-op, but what needs to happen
-      // here is a check to see if this right click occurred in the same text
-      // area as the currently focused text area. If they are not the same,
-      // refocus. This requires more state tracking, and a new PDFium API to
-      // set focus.
-      return true;
+      FORM_OnFocus(form_, page, 0, page_x, page_y);
+    } else {
+      // Transition out of a form text area.
+      FORM_ForceToKillFocus(form_);
+      SetInFormTextArea(false);
     }
-
-    // Transition out of a form text area.
-    FORM_ForceToKillFocus(form_);
-    SetInFormTextArea(false);
     return true;
   }
 
@@ -1952,10 +1948,9 @@ bool PDFiumEngine::OnRightMouseDown(const pp::MouseInputEvent& event) {
       selection_.clear();
     }
 
-    // TODO(bug_754594): This does not actually set focus inside the form area.
-    // To do so requires a new PDFium API.
     SetInFormTextArea(true);
     editable_form_text_area_ = is_editable_form_text_area;
+    FORM_OnFocus(form_, page, 0, page_x, page_y);
     return true;
   }
 
