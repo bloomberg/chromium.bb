@@ -143,7 +143,7 @@ void ResourceCoordinatorWebContentsObserver::DidFinishNavigation(
   }
 
   if (navigation_handle->IsInMainFrame()) {
-    UpdateUkmRecorder(navigation_handle);
+    UpdateUkmRecorder(navigation_handle->GetNavigationId());
     ResetFlag();
     tab_resource_coordinator_->SendEvent(
         resource_coordinator::mojom::Event::kNavigationCommitted);
@@ -183,16 +183,13 @@ void ResourceCoordinatorWebContentsObserver::DidUpdateFaviconURL(
 }
 
 void ResourceCoordinatorWebContentsObserver::UpdateUkmRecorder(
-    content::NavigationHandle* handle) {
+    int64_t navigation_id) {
   if (!base::FeatureList::IsEnabled(ukm::kUkmFeature)) {
     return;
   }
 
-  ukm_source_id_ = ukm::ConvertToSourceId(handle->GetNavigationId(),
-                                          ukm::SourceIdType::NAVIGATION_ID);
-  ukm::UkmRecorder* ukm_recorder = ukm::UkmRecorder::Get();
-  if (ukm_recorder)
-    ukm_recorder->UpdateSourceURL(ukm_source_id_, handle->GetURL());
+  ukm_source_id_ =
+      ukm::ConvertToSourceId(navigation_id, ukm::SourceIdType::NAVIGATION_ID);
   tab_resource_coordinator_->SetProperty(
       resource_coordinator::mojom::PropertyType::kUKMSourceId, ukm_source_id_);
 }
