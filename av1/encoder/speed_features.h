@@ -200,6 +200,10 @@ typedef struct {
   TX_TYPE_PRUNE_MODE prune_mode;
   int fast_intra_tx_type_search;
   int fast_inter_tx_type_search;
+
+  // Use a skip flag prediction model to detect blocks with skip = 1 early
+  // and avoid doing full TX type search for such blocks.
+  int use_skip_flag_prediction;
 } TX_TYPE_SEARCH;
 
 typedef enum {
