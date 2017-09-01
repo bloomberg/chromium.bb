@@ -13,34 +13,32 @@
 namespace chromeos {
 
 TEST(CertificateHelperTest, GetCertNameOrNickname) {
-  scoped_refptr<net::X509Certificate> cert(net::ImportCertFromFile(
+  net::ScopedCERTCertificate cert(net::ImportCERTCertificateFromFile(
       net::GetTestCertsDirectory(), "root_ca_cert.pem"));
   ASSERT_TRUE(cert.get());
-  EXPECT_EQ("Test Root CA",
-            certificate::GetCertNameOrNickname(cert->os_cert_handle()));
+  EXPECT_EQ("Test Root CA", certificate::GetCertNameOrNickname(cert.get()));
 
-  scoped_refptr<net::X509Certificate> punycode_cert(net::ImportCertFromFile(
+  net::ScopedCERTCertificate punycode_cert(net::ImportCERTCertificateFromFile(
       net::GetTestCertsDirectory(), "punycodetest.pem"));
   ASSERT_TRUE(punycode_cert.get());
-  EXPECT_EQ("xn--wgv71a119e.com", certificate::GetCertAsciiNameOrNickname(
-                                      punycode_cert->os_cert_handle()));
-  EXPECT_EQ("日本語.com", certificate::GetCertNameOrNickname(
-                              punycode_cert->os_cert_handle()));
+  EXPECT_EQ("xn--wgv71a119e.com",
+            certificate::GetCertAsciiNameOrNickname(punycode_cert.get()));
+  EXPECT_EQ("日本語.com",
+            certificate::GetCertNameOrNickname(punycode_cert.get()));
 
-  scoped_refptr<net::X509Certificate> no_cn_cert(net::ImportCertFromFile(
+  net::ScopedCERTCertificate no_cn_cert(net::ImportCERTCertificateFromFile(
       net::GetTestCertsDirectory(), "no_subject_common_name_cert.pem"));
   ASSERT_TRUE(no_cn_cert.get());
   // Temp cert has no nickname.
-  EXPECT_EQ("",
-            certificate::GetCertNameOrNickname(no_cn_cert->os_cert_handle()));
+  EXPECT_EQ("", certificate::GetCertNameOrNickname(no_cn_cert.get()));
 }
 
 TEST(CertificateHelperTest, GetTypeCA) {
-  scoped_refptr<net::X509Certificate> cert(net::ImportCertFromFile(
+  net::ScopedCERTCertificate cert(net::ImportCERTCertificateFromFile(
       net::GetTestCertsDirectory(), "root_ca_cert.pem"));
   ASSERT_TRUE(cert.get());
 
-  EXPECT_EQ(net::CA_CERT, certificate::GetCertType(cert->os_cert_handle()));
+  EXPECT_EQ(net::CA_CERT, certificate::GetCertType(cert.get()));
 
   crypto::ScopedTestNSSDB test_nssdb;
   net::NSSCertDatabase db(crypto::ScopedPK11Slot(PK11_ReferenceSlot(
@@ -53,11 +51,11 @@ TEST(CertificateHelperTest, GetTypeCA) {
   EXPECT_TRUE(db.SetCertTrust(cert.get(), net::CA_CERT,
                               net::NSSCertDatabase::DISTRUSTED_SSL));
 
-  EXPECT_EQ(net::CA_CERT, certificate::GetCertType(cert->os_cert_handle()));
+  EXPECT_EQ(net::CA_CERT, certificate::GetCertType(cert.get()));
 }
 
 TEST(CertificateHelperTest, GetTypeServer) {
-  scoped_refptr<net::X509Certificate> cert(net::ImportCertFromFile(
+  net::ScopedCERTCertificate cert(net::ImportCERTCertificateFromFile(
       net::GetTestCertsDirectory(), "google.single.der"));
   ASSERT_TRUE(cert.get());
 
@@ -65,7 +63,7 @@ TEST(CertificateHelperTest, GetTypeServer) {
   // trust.  Currently this doesn't work.
   // TODO(mattm): make mozilla_security_manager::GetCertType smarter so we can
   // tell server certs even if they have no trust bits set.
-  EXPECT_EQ(net::OTHER_CERT, certificate::GetCertType(cert->os_cert_handle()));
+  EXPECT_EQ(net::OTHER_CERT, certificate::GetCertType(cert.get()));
 
   crypto::ScopedTestNSSDB test_nssdb;
   net::NSSCertDatabase db(crypto::ScopedPK11Slot(PK11_ReferenceSlot(
@@ -77,13 +75,13 @@ TEST(CertificateHelperTest, GetTypeServer) {
   EXPECT_TRUE(db.SetCertTrust(cert.get(), net::SERVER_CERT,
                               net::NSSCertDatabase::TRUSTED_SSL));
 
-  EXPECT_EQ(net::SERVER_CERT, certificate::GetCertType(cert->os_cert_handle()));
+  EXPECT_EQ(net::SERVER_CERT, certificate::GetCertType(cert.get()));
 
   // Test GetCertType with server certs and explicit distrust.
   EXPECT_TRUE(db.SetCertTrust(cert.get(), net::SERVER_CERT,
                               net::NSSCertDatabase::DISTRUSTED_SSL));
 
-  EXPECT_EQ(net::SERVER_CERT, certificate::GetCertType(cert->os_cert_handle()));
+  EXPECT_EQ(net::SERVER_CERT, certificate::GetCertType(cert.get()));
 }
 
 }  // namespace chromeos
