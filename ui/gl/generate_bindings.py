@@ -760,7 +760,8 @@ GL_FUNCTIONS = [
   'arguments':
       'GLenum pname, GLsizei bufSize, GLsizei* length, GLint* data', },
 { 'return_type': 'void',
-  'versions': [{ 'name': 'glGetInternalformativ' }],
+  'versions': [{'name': 'glGetInternalformativ',
+                'extensions': ['GL_ARB_internalformat_query']}],
   'arguments': 'GLenum target, GLenum internalformat, GLenum pname, '
                'GLsizei bufSize, GLint* params', },
 { 'return_type': 'void',
@@ -769,6 +770,10 @@ GL_FUNCTIONS = [
   'arguments':
       'GLenum target, GLenum internalformat, GLenum pname, GLsizei bufSize, '
       'GLsizei* length, GLint* params', },
+{ 'return_type': 'void',
+  'versions': [{'name': 'glGetMultisamplefv',
+                'extensions': ['GL_ARB_texture_multisample']}],
+  'arguments': 'GLenum pname, GLuint index, GLfloat* val', },
 { 'return_type': 'void',
   'versions': [{'name': 'glGetMultisamplefvRobustANGLE',
                 'extensions': ['GL_ANGLE_robust_client_memory']}],
@@ -1273,6 +1278,9 @@ GL_FUNCTIONS = [
   'names': ['glPointParameteri'],
   'arguments': 'GLenum pname, GLint param', },
 { 'return_type': 'void',
+  'names': ['glPolygonMode'],
+  'arguments': 'GLenum face, GLenum mode', },
+{ 'return_type': 'void',
   'names': ['glPolygonOffset'],
   'arguments': 'GLfloat factor, GLfloat units', },
 { 'return_type': 'void',
@@ -1505,6 +1513,14 @@ GL_FUNCTIONS = [
 { 'return_type': 'GLboolean',
   'names': ['glTestFenceNV'],
   'arguments': 'GLuint fence', },
+{ 'return_type': 'void',
+  'names': ['glTexBuffer', 'glTexBufferOES', 'glTexBufferEXT'],
+  'arguments': 'GLenum target, GLenum internalformat, GLuint buffer', } ,
+{ 'return_type': 'void',
+  'names': ['glTexBufferRange', 'glTexBufferRangeOES', 'glTexBufferRangeEXT'],
+  'arguments':
+      'GLenum target, GLenum internalformat, GLuint buffer, '
+      'GLintptr offset, GLsizeiptr size', },
 { 'return_type': 'void',
   'names': ['glTexImage2D'],
   'arguments':
@@ -1757,7 +1773,7 @@ GL_FUNCTIONS = [
 { 'return_type': 'void',
   'known_as': 'glVertexAttribDivisorANGLE',
   'names': ['glVertexAttribDivisorARB', 'glVertexAttribDivisorANGLE',
-            'glVertexAttribDivisor'],
+            'glVertexAttribDivisorEXT', 'glVertexAttribDivisor'],
   'arguments':
       'GLuint index, GLuint divisor', },
 { 'return_type': 'void',

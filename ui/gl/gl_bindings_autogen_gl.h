@@ -613,6 +613,9 @@ typedef void(GL_BINDING_CALL* glGetInternalformativRobustANGLEProc)(
     GLsizei bufSize,
     GLsizei* length,
     GLint* params);
+typedef void(GL_BINDING_CALL* glGetMultisamplefvProc)(GLenum pname,
+                                                      GLuint index,
+                                                      GLfloat* val);
 typedef void(GL_BINDING_CALL* glGetMultisamplefvRobustANGLEProc)(
     GLenum pname,
     GLuint index,
@@ -1016,6 +1019,7 @@ typedef void(GL_BINDING_CALL* glPathStencilFuncNVProc)(GLenum func,
 typedef void(GL_BINDING_CALL* glPauseTransformFeedbackProc)(void);
 typedef void(GL_BINDING_CALL* glPixelStoreiProc)(GLenum pname, GLint param);
 typedef void(GL_BINDING_CALL* glPointParameteriProc)(GLenum pname, GLint param);
+typedef void(GL_BINDING_CALL* glPolygonModeProc)(GLenum face, GLenum mode);
 typedef void(GL_BINDING_CALL* glPolygonOffsetProc)(GLfloat factor,
                                                    GLfloat units);
 typedef void(GL_BINDING_CALL* glPopDebugGroupProc)();
@@ -1225,6 +1229,14 @@ typedef void(GL_BINDING_CALL* glStencilThenCoverStrokePathNVProc)(
     GLenum coverMode);
 typedef GLboolean(GL_BINDING_CALL* glTestFenceAPPLEProc)(GLuint fence);
 typedef GLboolean(GL_BINDING_CALL* glTestFenceNVProc)(GLuint fence);
+typedef void(GL_BINDING_CALL* glTexBufferProc)(GLenum target,
+                                               GLenum internalformat,
+                                               GLuint buffer);
+typedef void(GL_BINDING_CALL* glTexBufferRangeProc)(GLenum target,
+                                                    GLenum internalformat,
+                                                    GLuint buffer,
+                                                    GLintptr offset,
+                                                    GLsizeiptr size);
 typedef void(GL_BINDING_CALL* glTexImage2DProc)(GLenum target,
                                                 GLint level,
                                                 GLint internalformat,
@@ -1545,6 +1557,7 @@ struct ExtensionsGL {
   bool b_GL_ARB_draw_instanced;
   bool b_GL_ARB_get_program_binary;
   bool b_GL_ARB_instanced_arrays;
+  bool b_GL_ARB_internalformat_query;
   bool b_GL_ARB_map_buffer_range;
   bool b_GL_ARB_occlusion_query;
   bool b_GL_ARB_program_interface_query;
@@ -1552,6 +1565,7 @@ struct ExtensionsGL {
   bool b_GL_ARB_sampler_objects;
   bool b_GL_ARB_shader_image_load_store;
   bool b_GL_ARB_sync;
+  bool b_GL_ARB_texture_multisample;
   bool b_GL_ARB_texture_storage;
   bool b_GL_ARB_timer_query;
   bool b_GL_ARB_transform_feedback2;
@@ -1572,11 +1586,14 @@ struct ExtensionsGL {
   bool b_GL_EXT_framebuffer_multisample;
   bool b_GL_EXT_framebuffer_object;
   bool b_GL_EXT_gpu_shader4;
+  bool b_GL_EXT_instanced_arrays;
   bool b_GL_EXT_map_buffer_range;
   bool b_GL_EXT_multisampled_render_to_texture;
   bool b_GL_EXT_occlusion_query_boolean;
   bool b_GL_EXT_robustness;
   bool b_GL_EXT_shader_image_load_store;
+  bool b_GL_EXT_texture_buffer;
+  bool b_GL_EXT_texture_buffer_object;
   bool b_GL_EXT_texture_storage;
   bool b_GL_EXT_timer_query;
   bool b_GL_EXT_transform_feedback;
@@ -1593,6 +1610,7 @@ struct ExtensionsGL {
   bool b_GL_OES_EGL_image;
   bool b_GL_OES_get_program_binary;
   bool b_GL_OES_mapbuffer;
+  bool b_GL_OES_texture_buffer;
   bool b_GL_OES_vertex_array_object;
 };
 
@@ -1771,6 +1789,7 @@ struct ProcsGL {
   glGetIntegervRobustANGLEProc glGetIntegervRobustANGLEFn;
   glGetInternalformativProc glGetInternalformativFn;
   glGetInternalformativRobustANGLEProc glGetInternalformativRobustANGLEFn;
+  glGetMultisamplefvProc glGetMultisamplefvFn;
   glGetMultisamplefvRobustANGLEProc glGetMultisamplefvRobustANGLEFn;
   glGetnUniformfvRobustANGLEProc glGetnUniformfvRobustANGLEFn;
   glGetnUniformivRobustANGLEProc glGetnUniformivRobustANGLEFn;
@@ -1881,6 +1900,7 @@ struct ProcsGL {
   glPauseTransformFeedbackProc glPauseTransformFeedbackFn;
   glPixelStoreiProc glPixelStoreiFn;
   glPointParameteriProc glPointParameteriFn;
+  glPolygonModeProc glPolygonModeFn;
   glPolygonOffsetProc glPolygonOffsetFn;
   glPopDebugGroupProc glPopDebugGroupFn;
   glPopGroupMarkerEXTProc glPopGroupMarkerEXTFn;
@@ -1936,6 +1956,8 @@ struct ProcsGL {
   glStencilThenCoverStrokePathNVProc glStencilThenCoverStrokePathNVFn;
   glTestFenceAPPLEProc glTestFenceAPPLEFn;
   glTestFenceNVProc glTestFenceNVFn;
+  glTexBufferProc glTexBufferFn;
+  glTexBufferRangeProc glTexBufferRangeFn;
   glTexImage2DProc glTexImage2DFn;
   glTexImage2DRobustANGLEProc glTexImage2DRobustANGLEFn;
   glTexImage3DProc glTexImage3DFn;
@@ -2547,6 +2569,9 @@ class GL_EXPORT GLApi {
                                                   GLsizei bufSize,
                                                   GLsizei* length,
                                                   GLint* params) = 0;
+  virtual void glGetMultisamplefvFn(GLenum pname,
+                                    GLuint index,
+                                    GLfloat* val) = 0;
   virtual void glGetMultisamplefvRobustANGLEFn(GLenum pname,
                                                GLuint index,
                                                GLsizei bufSize,
@@ -2900,6 +2925,7 @@ class GL_EXPORT GLApi {
   virtual void glPauseTransformFeedbackFn(void) = 0;
   virtual void glPixelStoreiFn(GLenum pname, GLint param) = 0;
   virtual void glPointParameteriFn(GLenum pname, GLint param) = 0;
+  virtual void glPolygonModeFn(GLenum face, GLenum mode) = 0;
   virtual void glPolygonOffsetFn(GLfloat factor, GLfloat units) = 0;
   virtual void glPopDebugGroupFn() = 0;
   virtual void glPopGroupMarkerEXTFn(void) = 0;
@@ -3086,6 +3112,14 @@ class GL_EXPORT GLApi {
                                                 GLenum coverMode) = 0;
   virtual GLboolean glTestFenceAPPLEFn(GLuint fence) = 0;
   virtual GLboolean glTestFenceNVFn(GLuint fence) = 0;
+  virtual void glTexBufferFn(GLenum target,
+                             GLenum internalformat,
+                             GLuint buffer) = 0;
+  virtual void glTexBufferRangeFn(GLenum target,
+                                  GLenum internalformat,
+                                  GLuint buffer,
+                                  GLintptr offset,
+                                  GLsizeiptr size) = 0;
   virtual void glTexImage2DFn(GLenum target,
                               GLint level,
                               GLint internalformat,
@@ -3600,6 +3634,7 @@ class GL_EXPORT GLApi {
   ::gl::g_current_gl_context->glGetInternalformativFn
 #define glGetInternalformativRobustANGLE \
   ::gl::g_current_gl_context->glGetInternalformativRobustANGLEFn
+#define glGetMultisamplefv ::gl::g_current_gl_context->glGetMultisamplefvFn
 #define glGetMultisamplefvRobustANGLE \
   ::gl::g_current_gl_context->glGetMultisamplefvRobustANGLEFn
 #define glGetnUniformfvRobustANGLE \
@@ -3760,6 +3795,7 @@ class GL_EXPORT GLApi {
   ::gl::g_current_gl_context->glPauseTransformFeedbackFn
 #define glPixelStorei ::gl::g_current_gl_context->glPixelStoreiFn
 #define glPointParameteri ::gl::g_current_gl_context->glPointParameteriFn
+#define glPolygonMode ::gl::g_current_gl_context->glPolygonModeFn
 #define glPolygonOffset ::gl::g_current_gl_context->glPolygonOffsetFn
 #define glPopDebugGroup ::gl::g_current_gl_context->glPopDebugGroupFn
 #define glPopGroupMarkerEXT ::gl::g_current_gl_context->glPopGroupMarkerEXTFn
@@ -3837,6 +3873,8 @@ class GL_EXPORT GLApi {
   ::gl::g_current_gl_context->glStencilThenCoverStrokePathNVFn
 #define glTestFenceAPPLE ::gl::g_current_gl_context->glTestFenceAPPLEFn
 #define glTestFenceNV ::gl::g_current_gl_context->glTestFenceNVFn
+#define glTexBuffer ::gl::g_current_gl_context->glTexBufferFn
+#define glTexBufferRange ::gl::g_current_gl_context->glTexBufferRangeFn
 #define glTexImage2D ::gl::g_current_gl_context->glTexImage2DFn
 #define glTexImage2DRobustANGLE \
   ::gl::g_current_gl_context->glTexImage2DRobustANGLEFn

@@ -531,6 +531,7 @@ void glGetInternalformativRobustANGLEFn(GLenum target,
                                         GLsizei bufSize,
                                         GLsizei* length,
                                         GLint* params) override {}
+void glGetMultisamplefvFn(GLenum pname, GLuint index, GLfloat* val) override {}
 void glGetMultisamplefvRobustANGLEFn(GLenum pname,
                                      GLuint index,
                                      GLsizei bufSize,
@@ -873,6 +874,7 @@ void glPathStencilFuncNVFn(GLenum func, GLint ref, GLuint mask) override {}
 void glPauseTransformFeedbackFn() override {}
 void glPixelStoreiFn(GLenum pname, GLint param) override {}
 void glPointParameteriFn(GLenum pname, GLint param) override {}
+void glPolygonModeFn(GLenum face, GLenum mode) override {}
 void glPolygonOffsetFn(GLfloat factor, GLfloat units) override {}
 void glPopDebugGroupFn() override {}
 void glPopGroupMarkerEXTFn() override {}
@@ -1055,6 +1057,14 @@ void glStencilThenCoverStrokePathNVFn(GLuint path,
                                       GLenum coverMode) override {}
 GLboolean glTestFenceAPPLEFn(GLuint fence) override;
 GLboolean glTestFenceNVFn(GLuint fence) override;
+void glTexBufferFn(GLenum target,
+                   GLenum internalformat,
+                   GLuint buffer) override {}
+void glTexBufferRangeFn(GLenum target,
+                        GLenum internalformat,
+                        GLuint buffer,
+                        GLintptr offset,
+                        GLsizeiptr size) override {}
 void glTexImage2DFn(GLenum target,
                     GLint level,
                     GLint internalformat,
