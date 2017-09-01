@@ -135,9 +135,13 @@ class CONTENT_EXPORT StoragePartitionImpl
   // Can return nullptr while |this| is being destroyed.
   BrowserContext* browser_context() const;
 
-  // Called by each renderer process once.
-  void Bind(int process_id,
-            mojo::InterfaceRequest<mojom::StoragePartitionService> request);
+  // Called by each renderer process once. Returns the id of the created
+  // binding.
+  mojo::BindingId Bind(
+      int process_id,
+      mojo::InterfaceRequest<mojom::StoragePartitionService> request);
+
+  auto& bindings_for_testing() { return bindings_; }
 
   struct DataDeletionHelper;
   struct QuotaManagedDataDeletionHelper;
