@@ -52,6 +52,8 @@ class StringWrapper : public base::trace_event::ConvertableToTraceFormat {
 
 namespace profiling {
 
+bool ProfilingProcessHost::has_started_ = false;
+
 namespace {
 
 const size_t kMaxTraceSizeUploadInBytes = 10 * 1024 * 1024;
@@ -251,10 +253,12 @@ ProfilingProcessHost::Mode ProfilingProcessHost::GetCurrentMode() {
 }
 
 // static
-ProfilingProcessHost* ProfilingProcessHost::EnsureStarted(
+ProfilingProcessHost* ProfilingProcessHost::Start(
     content::ServiceManagerConnection* connection,
     Mode mode) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  CHECK(!has_started_);
+  has_started_ = true;
   ProfilingProcessHost* host = GetInstance();
   host->SetMode(mode);
   host->MakeConnector(connection);
