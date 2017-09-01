@@ -79,17 +79,14 @@ class WebContentsModalDialogManager
   struct DialogState {
     DialogState(gfx::NativeWindow dialog,
                 std::unique_ptr<SingleWebContentsDialogManager> manager);
+    DialogState(DialogState&& state);
     ~DialogState();
 
     gfx::NativeWindow dialog;
     std::unique_ptr<SingleWebContentsDialogManager> manager;
   };
 
-  typedef base::circular_deque<DialogState*> WebContentsModalDialogList;
-
-  // Utility function to get the dialog state for a dialog.
-  WebContentsModalDialogList::iterator FindDialogState(
-      gfx::NativeWindow dialog);
+  using WebContentsModalDialogList = base::circular_deque<DialogState>;
 
   // Blocks/unblocks interaction with renderer process.
   void BlockWebContentsInteraction(bool blocked);
