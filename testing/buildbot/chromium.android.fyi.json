@@ -253,6 +253,9 @@
           "cronet-armv6/sizes"
         ],
         "name": "sizes",
+        "override_compile_targets": [
+          "cronet"
+        ],
         "script": "sizes.py"
       }
     ]
@@ -796,6 +799,9 @@
           "cronet-arm/sizes"
         ],
         "name": "sizes",
+        "override_compile_targets": [
+          "cronet"
+        ],
         "script": "sizes.py"
       }
     ]
