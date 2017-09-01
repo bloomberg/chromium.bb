@@ -331,8 +331,8 @@ String Deprecation::DeprecationMessage(WebFeature feature) {
              "For more help, check https://xhr.spec.whatwg.org/.";
 
     case WebFeature::kGetMatchedCSSRules:
-      return "'getMatchedCSSRules()' is deprecated. For more help, check "
-             "https://code.google.com/p/chromium/issues/detail?id=437569#c2";
+      return willBeRemoved("document.getMatchedCSSRules()", M63,
+                           "4606972603138048");
 
     case WebFeature::kPrefixedWindowURL:
       return replacedBy("'webkitURL'", "'URL'");
