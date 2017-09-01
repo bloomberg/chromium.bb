@@ -152,9 +152,6 @@ crbug.com/246571 external/wpt/css/css-values-3/attr-px-valid.html [ WontFix ]
 # Failing WPT using ch unit in vertical orientation
 crbug.com/759914 external/wpt/css/css-values-3/ch-unit-002.html [ WontFix ]
 
-# Failing CSS values WPT needs waitUntilDone
-crbug.com/759921 external/wpt/css/css-values-3/vh_not_refreshing_on_chrome.html [ WontFix ]
-
 # Media queries do not support calc() for internal CSS length values
 crbug.com/421909 external/wpt/css/css-values-3/calc-in-media-queries-001.html [ WontFix ]
 crbug.com/421909 external/wpt/css/css-values-3/calc-in-media-queries-002.html [ WontFix ]
