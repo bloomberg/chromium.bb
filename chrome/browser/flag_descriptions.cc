@@ -942,6 +942,12 @@ const char kOverlayScrollbarsFlashWhenMouseEnterDescription[] =
     "Flash Overlay Scrollbars When Mouse Enter a scrollable area. You must also"
     " enable Overlay Scrollbars.";
 
+const char kUseNewAcceptLanguageHeaderName[] = "Use new Accept-Language header";
+const char kUseNewAcceptLanguageHeaderDescription[] =
+    "Adds the base language code after other corresponding language+region "
+    "codes. This ensures that users receive content in their preferred "
+    "language.";
+
 const char kOverscrollHistoryNavigationName[] = "Overscroll history navigation";
 const char kOverscrollHistoryNavigationDescription[] =
     "Experimental history navigation in response to horizontal overscroll.";

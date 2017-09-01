@@ -3200,6 +3200,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCaptureThumbnailOnLoadFinishedDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kCaptureThumbnailOnLoadFinished)},
 
+    {"use-new-accept-language-header",
+     flag_descriptions::kUseNewAcceptLanguageHeaderName,
+     flag_descriptions::kUseNewAcceptLanguageHeaderDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kUseNewAcceptLanguageHeader)},
+
 #if defined(OS_WIN)
     {"enable-d3d-vsync", flag_descriptions::kEnableD3DVsync,
      flag_descriptions::kEnableD3DVsyncDescription, kOsWin,

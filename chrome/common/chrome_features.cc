@@ -326,6 +326,12 @@ const base::Feature kOneGoogleBarOnLocalNtp{"OneGoogleBarOnLocalNtp",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
+// Adds the base language code to the Language-Accept headers if at least one
+// corresponding language+region code is present in the user preferences.
+// For example: "en-US, fr-FR" --> "en-US, en, fr-FR, fr".
+const base::Feature kUseNewAcceptLanguageHeader{
+    "UseNewAcceptLanguageHeader", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables Permissions Blacklisting via Safe Browsing.
 const base::Feature kPermissionsBlacklist{
     "PermissionsBlacklist", base::FEATURE_DISABLED_BY_DEFAULT};
