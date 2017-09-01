@@ -30,6 +30,7 @@ class URLRequest;
 namespace content {
 class AppCacheJob;
 class AppCacheNavigationHandleCore;
+class AppCacheSubresourceURLFactory;
 class AppCacheRequest;
 class AppCacheRequestHandlerTest;
 class AppCacheURLRequestJob;
@@ -78,9 +79,12 @@ class CONTENT_EXPORT AppCacheRequestHandler
   // The |loader_factory_getter| parameter points to the URLLoaderFactoryGetter
   // instance which provides functionality to return the default network
   // URLLoader interface.
+  // The |subresource_factory| parameter points to the AppCache URLLoader
+  // factory which serves subresources to the client.
   AppCacheJob* MaybeCreateSubresourceLoader(
       std::unique_ptr<SubresourceLoadInfo> subresource_load_info,
-      URLLoaderFactoryGetter* loader_factory_getter);
+      URLLoaderFactoryGetter* loader_factory_getter,
+      AppCacheSubresourceURLFactory* subresource_factory);
 
   static bool IsMainResourceType(ResourceType type) {
     return IsResourceTypeFrame(type) ||

@@ -53,4 +53,11 @@ void AppCacheFrontendProxy::OnContentBlocked(int host_id,
   sender_->Send(new AppCacheMsg_ContentBlocked(host_id, manifest_url));
 }
 
+void AppCacheFrontendProxy::OnSetSubresourceFactory(
+    int host_id,
+    mojo::MessagePipeHandle loader_factory_pipe_handle) {
+  sender_->Send(new AppCacheMsg_SetSubresourceFactory(
+      host_id, loader_factory_pipe_handle));
+}
+
 }  // namespace content

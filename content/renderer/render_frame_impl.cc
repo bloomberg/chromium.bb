@@ -2994,7 +2994,7 @@ RenderFrameImpl::CreateApplicationCacheHost(
   return base::MakeUnique<RendererWebApplicationCacheHostImpl>(
       RenderViewImpl::FromWebView(frame_->View()), client,
       RenderThreadImpl::current()->appcache_dispatcher()->backend_proxy(),
-      navigation_state->request_params().appcache_host_id);
+      navigation_state->request_params().appcache_host_id, routing_id_);
 }
 
 std::unique_ptr<blink::WebContentSettingsClient>
@@ -5250,11 +5250,7 @@ void RenderFrameImpl::OnCommitNavigation(
       },
       weak_factory_.GetWeakPtr());
 
-  // Chrome doesn't use interface versioning.
-  mojom::URLLoaderFactoryPtr url_loader_factory;
-  url_loader_factory.Bind(mojom::URLLoaderFactoryPtrInfo(
-      mojo::ScopedMessagePipeHandle(commit_data.url_loader_factory), 0u));
-  custom_url_loader_factory_ = std::move(url_loader_factory);
+  SetCustomURLLoadeFactory(commit_data.url_loader_factory);
 
   // If the request was initiated in the context of a user gesture then make
   // sure that the navigation also executes in the context of a user gesture.
@@ -6356,6 +6352,15 @@ void RenderFrameImpl::SyncSelectionIfRequired() {
     SetSelectedText(text, offset, range);
   }
   GetRenderWidget()->UpdateSelectionBounds();
+}
+
+void RenderFrameImpl::SetCustomURLLoadeFactory(
+    mojo::MessagePipeHandle custom_loader_factory_handle) {
+  // Chrome doesn't use interface versioning.
+  mojom::URLLoaderFactoryPtr url_loader_factory;
+  url_loader_factory.Bind(mojom::URLLoaderFactoryPtrInfo(
+      mojo::ScopedMessagePipeHandle(custom_loader_factory_handle), 0u));
+  custom_url_loader_factory_ = std::move(url_loader_factory);
 }
 
 void RenderFrameImpl::InitializeUserMediaClient() {

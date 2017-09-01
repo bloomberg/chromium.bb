@@ -5,6 +5,7 @@
 #include "content/renderer/renderer_webapplicationcachehost_impl.h"
 
 #include "content/common/view_messages.h"
+#include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
@@ -20,9 +21,11 @@ RendererWebApplicationCacheHostImpl::RendererWebApplicationCacheHostImpl(
     RenderViewImpl* render_view,
     WebApplicationCacheHostClient* client,
     AppCacheBackend* backend,
-    int appcache_host_id)
+    int appcache_host_id,
+    int frame_routing_id)
     : WebApplicationCacheHostImpl(client, backend, appcache_host_id),
-      routing_id_(render_view->GetRoutingID()) {}
+      routing_id_(render_view->GetRoutingID()),
+      frame_routing_id_(frame_routing_id) {}
 
 void RendererWebApplicationCacheHostImpl::OnLogMessage(
     AppCacheLogLevel log_level, const std::string& message) {
@@ -57,6 +60,14 @@ void RendererWebApplicationCacheHostImpl::OnCacheSelected(
         routing_id_, info.manifest_url, false));
   }
   WebApplicationCacheHostImpl::OnCacheSelected(info);
+}
+
+void RendererWebApplicationCacheHostImpl::SetSubresourceFactory(
+    mojo::MessagePipeHandle loader_factory_pipe_handle) {
+  RenderFrameImpl* render_frame =
+      RenderFrameImpl::FromRoutingID(frame_routing_id_);
+  if (render_frame)
+    render_frame->SetCustomURLLoadeFactory(loader_factory_pipe_handle);
 }
 
 RenderViewImpl* RendererWebApplicationCacheHostImpl::GetRenderView() {

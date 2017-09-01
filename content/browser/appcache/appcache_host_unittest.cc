@@ -75,6 +75,10 @@ class AppCacheHostTest : public testing::Test {
       content_blocked_ = true;
     }
 
+    void OnSetSubresourceFactory(
+        int host_id,
+        mojo::MessagePipeHandle loader_factory_pipe_handle) override {}
+
     int last_host_id_;
     int64_t last_cache_id_;
     AppCacheStatus last_status_;

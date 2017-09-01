@@ -16,8 +16,20 @@
 
 namespace content {
 
+namespace {
+
+// Max number of http redirects to follow.  Same number as gecko.
+// TODO(ananta/michaeln). Avoid duplicating logic from the n/w stack and figure
+// out a way to use FollowRedirect() mechanism in the network URL loader.
+const int kMaxRedirects = 20;
+
+}  // namespace
+
 SubresourceLoadInfo::SubresourceLoadInfo()
-    : routing_id(-1), request_id(-1), options(0) {}
+    : routing_id(-1),
+      request_id(-1),
+      options(0),
+      redirect_limit(kMaxRedirects) {}
 
 SubresourceLoadInfo::~SubresourceLoadInfo() {}
 
@@ -132,6 +144,32 @@ AppCacheURLLoaderJob* AppCacheURLLoaderJob::AsURLLoaderJob() {
 }
 
 void AppCacheURLLoaderJob::FollowRedirect() {
+  if (subresource_factory_.get()) {
+    if (storage_->usage_map()->find(
+            last_subresource_redirect_info_.new_url.GetOrigin()) !=
+        storage_->usage_map()->end()) {
+      // If we hit the redirect limit then attempt to load a fallback here.
+      // If that succeeds we are good. If not notify the client about the
+      // failure.
+      // TODO(ananta/michaeln)
+      // Avoid this logic and figure out a way to reuse the network loader's
+      // FollowRedirect mechanism.
+      subresource_load_info_->redirect_limit--;
+
+      if (subresource_load_info_->redirect_limit <= 0) {
+        HandleRedirectLimitHit();
+        return;
+      }
+      subresource_load_info_->client = std::move(client_);
+      subresource_load_info_->url_loader_request = binding_.Unbind();
+      subresource_factory_->Restart(last_subresource_redirect_info_,
+                                    std::move(sub_resource_handler_),
+                                    std::move(subresource_load_info_));
+      base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
+      return;
+    }
+  }
+
   if (network_loader_)
     network_loader_->FollowRedirect();
 }
@@ -168,18 +206,21 @@ void AppCacheURLLoaderJob::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
     const ResourceResponseHead& response_head) {
   appcache_request_->set_response(response_head);
+
   // The MaybeLoadFallbackForRedirect() call below can pass a fallback
   // response to us. Reset the delivery_type_ to ensure that we can
   // receive it
   delivery_type_ = AWAITING_DELIVERY_ORDERS;
-  if (!sub_resource_handler_->MaybeLoadFallbackForRedirect(
+  if (sub_resource_handler_->MaybeLoadFallbackForRedirect(
           nullptr, redirect_info.new_url)) {
-    client_->OnReceiveRedirect(redirect_info, response_head);
-  } else {
     // Disconnect from the network loader as we are delivering a fallback
     // response to the client.
     DisconnectFromNetworkLoader();
+    return;
   }
+
+  last_subresource_redirect_info_ = redirect_info;
+  client_->OnReceiveRedirect(redirect_info, response_head);
 }
 
 void AppCacheURLLoaderJob::OnDataDownloaded(int64_t data_len,
@@ -223,6 +264,13 @@ void AppCacheURLLoaderJob::OnComplete(
   client_->OnComplete(status);
 }
 
+void AppCacheURLLoaderJob::SetRequestHandlerAndFactory(
+    std::unique_ptr<AppCacheRequestHandler> handler,
+    AppCacheSubresourceURLFactory* subresource_factory) {
+  sub_resource_handler_ = std::move(handler);
+  subresource_factory_ = subresource_factory->GetWeakPtr();
+}
+
 void AppCacheURLLoaderJob::BindRequest(mojom::URLLoaderClientPtr client,
                                        mojom::URLLoaderRequest request) {
   DCHECK(!binding_.is_bound());
@@ -262,6 +310,7 @@ AppCacheURLLoaderJob::AppCacheURLLoaderJob(
   if (subresource_load_info.get()) {
     DCHECK(loader_factory_getter);
     subresource_load_info_ = std::move(subresource_load_info);
+    request_ = subresource_load_info_->request;
 
     binding_.Bind(std::move(subresource_load_info_->url_loader_request));
     binding_.set_connection_error_handler(base::BindOnce(
@@ -429,8 +478,11 @@ void AppCacheURLLoaderJob::ReadMore() {
   auto buffer =
       base::MakeRefCounted<network::NetToMojoIOBuffer>(pending_write_.get());
 
+  uint32_t bytes_to_read =
+      std::min<uint32_t>(num_bytes, info_->response_data_size());
+
   reader_->ReadData(
-      buffer.get(), info_->response_data_size(),
+      buffer.get(), bytes_to_read,
       base::Bind(&AppCacheURLLoaderJob::OnReadComplete, StaticAsWeakPtr(this)));
 }
 
@@ -478,6 +530,21 @@ void AppCacheURLLoaderJob::DisconnectFromNetworkLoader() {
   // response to the client.
   network_loader_client_binding_.Close();
   network_loader_ = nullptr;
+}
+
+void AppCacheURLLoaderJob::HandleRedirectLimitHit() {
+  DCHECK(sub_resource_handler_.get());
+  // TODO(ananta/michaeln)
+  // Fix the IsSuccess() function in the AppCacheURLLoaderRequest class.
+  // Currently presence of headers in the response is treated as success.
+  appcache_request_->set_response(ResourceResponseHead());
+  if (sub_resource_handler_->MaybeLoadFallbackForResponse(nullptr)) {
+    DisconnectFromNetworkLoader();
+  } else {
+    ResourceRequestCompletionStatus result;
+    result.error_code = net::ERR_FAILED;
+    client_->OnComplete(result);
+  }
 }
 
 }  // namespace content

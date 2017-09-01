@@ -87,6 +87,14 @@ void AppCacheFrontendImpl::OnContentBlocked(int host_id,
     host->OnContentBlocked(manifest_url);
 }
 
+void AppCacheFrontendImpl::OnSetSubresourceFactory(
+    int host_id,
+    mojo::MessagePipeHandle loader_factory_pipe_handle) {
+  WebApplicationCacheHostImpl* host = GetHost(host_id);
+  if (host)
+    host->SetSubresourceFactory(loader_factory_pipe_handle);
+}
+
 // Ensure that enum values never get out of sync with the
 // ones declared for use within the WebKit api
 

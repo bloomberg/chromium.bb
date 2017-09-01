@@ -28,6 +28,7 @@ class NetToMojoPendingBuffer;
 
 namespace content {
 
+class AppCacheSubresourceURLFactory;
 class AppCacheRequest;
 class AppCacheURLLoaderRequest;
 class URLLoaderFactoryGetter;
@@ -45,6 +46,10 @@ struct SubresourceLoadInfo {
   ResourceRequest request;
   mojom::URLLoaderClientPtr client;
   net::MutableNetworkTrafficAnnotationTag traffic_annotation;
+  // TODO(ananta/michaeln)
+  // Avoid duplicating the redirect limit logic in the n/w stack and figure
+  // out a way to use the FollowRedirect() mechanism in the network loader.
+  int redirect_limit;
 };
 
 // AppCacheJob wrapper for a mojom::URLLoader implementation which returns
@@ -100,10 +105,11 @@ class CONTENT_EXPORT AppCacheURLLoaderJob : public AppCacheJob,
   }
 
   // Ownership of the |handler| is transferred to us via this call. This is
-  // only for subresource requests.
-  void set_request_handler(std::unique_ptr<AppCacheRequestHandler> handler) {
-    sub_resource_handler_ = std::move(handler);
-  }
+  // only for subresource requests. The subresource_factory is maintained as
+  // a weak pointer.
+  void SetRequestHandlerAndFactory(
+      std::unique_ptr<AppCacheRequestHandler> handler,
+      AppCacheSubresourceURLFactory* subresource_factory);
 
   // Binds to the URLLoaderRequest instance passed in the |request| parameter.
   // The URLLoaderClient instance is passed in the |client| parameter. This
@@ -147,6 +153,10 @@ class CONTENT_EXPORT AppCacheURLLoaderJob : public AppCacheJob,
   // Disconnects the mojo pipe to the network loader and releases related
   // resources.
   void DisconnectFromNetworkLoader();
+
+  // If we hit the redirect limit for a subresource then we need to try a
+  // fallback or return a failure to the client. This function does that.
+  void HandleRedirectLimitHit();
 
   // The current request.
   ResourceRequest request_;
@@ -213,6 +223,12 @@ class CONTENT_EXPORT AppCacheURLLoaderJob : public AppCacheJob,
   // Set to true when we receive a response from the network URL loader.
   // Please see OnReceiveResponse()
   bool received_response_;
+
+  // The last redirect seen for a subresource.
+  net::RedirectInfo last_subresource_redirect_info_;
+
+  // Used to restart the subresource request in case of a redirect.
+  base::WeakPtr<AppCacheSubresourceURLFactory> subresource_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AppCacheURLLoaderJob);
 };

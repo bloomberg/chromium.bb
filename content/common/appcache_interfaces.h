@@ -11,6 +11,7 @@
 
 #include "base/files/file_path.h"
 #include "content/public/common/appcache_info.h"
+#include "mojo/public/cpp/system/message_pipe.h"
 
 namespace net {
 class URLRequest;
@@ -132,6 +133,13 @@ class CONTENT_EXPORT AppCacheFrontend {
                                 const GURL& manifest_url) = 0;
   virtual void OnLogMessage(int host_id, AppCacheLogLevel log_level,
                             const std::string& message) = 0;
+  // In the network service world, we pass the URLLoaderFactory instance to be
+  // used to issue subresource requeste in the |loader_factory_pipe_handle|
+  // parameter.
+  virtual void OnSetSubresourceFactory(
+      int host_id,
+      mojo::MessagePipeHandle loader_factory_pipe_handle) = 0;
+
   virtual ~AppCacheFrontend() {}
 };
 

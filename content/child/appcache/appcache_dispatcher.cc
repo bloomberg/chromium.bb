@@ -26,6 +26,8 @@ bool AppCacheDispatcher::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(AppCacheMsg_ErrorEventRaised, OnErrorEventRaised)
     IPC_MESSAGE_HANDLER(AppCacheMsg_LogMessage, OnLogMessage)
     IPC_MESSAGE_HANDLER(AppCacheMsg_ContentBlocked, OnContentBlocked)
+    IPC_MESSAGE_HANDLER(AppCacheMsg_SetSubresourceFactory,
+                        OnSetSubresourceFactory)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -67,6 +69,12 @@ void AppCacheDispatcher::OnLogMessage(
 void AppCacheDispatcher::OnContentBlocked(int host_id,
                                           const GURL& manifest_url) {
   frontend_->OnContentBlocked(host_id, manifest_url);
+}
+
+void AppCacheDispatcher::OnSetSubresourceFactory(
+    int host_id,
+    mojo::MessagePipeHandle loader_factory_pipe) {
+  frontend_->OnSetSubresourceFactory(host_id, loader_factory_pipe);
 }
 
 }  // namespace content
