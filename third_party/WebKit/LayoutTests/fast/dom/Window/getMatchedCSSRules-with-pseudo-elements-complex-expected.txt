@@ -1,4 +1,4 @@
-CONSOLE WARNING: line 83: 'getMatchedCSSRules()' is deprecated. For more help, check https://code.google.com/p/chromium/issues/detail?id=437569#c2
+CONSOLE WARNING: line 83: document.getMatchedCSSRules() is deprecated and will be removed in M63, around December 2017. See https://www.chromestatus.com/features/4606972603138048 for more details.
 Test for WebKit bug 78595: CollectingRules and QueryingRules modes of SelectorChecker miss some complex selectors with pseudo elements
 
 

@@ -1,4 +1,4 @@
-CONSOLE WARNING: line 1: 'getMatchedCSSRules()' is deprecated. For more help, check https://code.google.com/p/chromium/issues/detail?id=437569#c2
+CONSOLE WARNING: line 1: document.getMatchedCSSRules() is deprecated and will be removed in M63, around December 2017. See https://www.chromestatus.com/features/4606972603138048 for more details.
 Test that detached CSSOM subtrees keeps a reference to CSS stylesheets lacking wrappers.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

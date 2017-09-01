@@ -1,4 +1,4 @@
-CONSOLE WARNING: line 32: 'getMatchedCSSRules()' is deprecated. For more help, check https://code.google.com/p/chromium/issues/detail?id=437569#c2
+CONSOLE WARNING: line 32: document.getMatchedCSSRules() is deprecated and will be removed in M63, around December 2017. See https://www.chromestatus.com/features/4606972603138048 for more details.
 This test whether a script can read the rules from a cross-origin style sheet using getMatchedCSSRules.
 
 Test begins.
