@@ -134,10 +134,11 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
         ios::BookmarkModelFactory::GetForBrowserState(browserState);
 
     // Set up observers.
-    _modelBridge.reset(
-        new bookmarks::BookmarkModelBridge(self, _bookmarkModel));
-    _syncedSessionsObserver.reset(
-        new synced_sessions::SyncedSessionsObserverBridge(self, _browserState));
+    _modelBridge =
+        std::make_unique<bookmarks::BookmarkModelBridge>(self, _bookmarkModel);
+    _syncedSessionsObserver =
+        std::make_unique<synced_sessions::SyncedSessionsObserverBridge>(
+            self, _browserState);
 
     [self computeBookmarkTableViewData];
 
@@ -536,7 +537,7 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
         _syncedSessionsObserver->IsSyncing()) {
       [self showLoadingSpinnerBackground];
     } else {
-      [self hideLoadingSpinner];
+      [self hideLoadingSpinnerBackground];
     }
     return;
   }
@@ -561,7 +562,7 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
 }
 
 // Hide the loading spinner if it is showing.
-- (void)hideLoadingSpinner {
+- (void)hideLoadingSpinnerBackground {
   if (self.spinnerView) {
     [self.spinnerView stopWaitingWithCompletion:^{
       [UIView animateWithDuration:0.2
@@ -692,9 +693,10 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
   _faviconLoadTasks[IntegerPair(indexPath.section, indexPath.item)] = taskId;
 }
 
-#pragma mark - Exposed to the SyncedSessionsObserver
+#pragma mark - SyncedSessionsObserver
 
 - (void)reloadSessions {
+  // Nothing to do.
 }
 
 - (void)onSyncStateChanged {
