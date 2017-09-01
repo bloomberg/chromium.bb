@@ -102,6 +102,10 @@ static struct av1_token ncobmc_mode_encodings[MAX_NCOBMC_MODES];
 #endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
 #if CONFIG_LOOP_RESTORATION
 static struct av1_token switchable_restore_encodings[RESTORE_SWITCHABLE_TYPES];
+static void loop_restoration_write_sb_coeffs(const AV1_COMMON *const cm,
+                                             MACROBLOCKD *xd,
+                                             aom_writer *const w, int plane,
+                                             int rtile_idx);
 #endif  // CONFIG_LOOP_RESTORATION
 static void write_uncompressed_header(AV1_COMP *cpi,
                                       struct aom_write_bit_buffer *wb);
@@ -3126,6 +3130,21 @@ static void write_modes_sb(AV1_COMP *const cpi, const TileInfo *const tile,
     }
   }
 #endif
+#if CONFIG_LOOP_RESTORATION
+  for (int plane = 0; plane < MAX_MB_PLANE; ++plane) {
+    int rcol0, rcol1, rrow0, rrow1, nhtiles;
+    if (av1_loop_restoration_corners_in_sb(cm, plane, mi_row, mi_col, bsize,
+                                           &rcol0, &rcol1, &rrow0, &rrow1,
+                                           &nhtiles)) {
+      for (int rrow = rrow0; rrow < rrow1; ++rrow) {
+        for (int rcol = rcol0; rcol < rcol1; ++rcol) {
+          int rtile_idx = rcol + rrow * nhtiles;
+          loop_restoration_write_sb_coeffs(cm, xd, w, plane, rtile_idx);
+        }
+      }
+    }
+  }
+#endif
 }
 
 static void write_modes(AV1_COMP *const cpi, const TileInfo *const tile,
@@ -3307,98 +3326,44 @@ static void write_sgrproj_filter(SgrprojInfo *sgrproj_info,
   memcpy(ref_sgrproj_info, sgrproj_info, sizeof(*sgrproj_info));
 }
 
-static void encode_restoration_for_tile(AV1_COMMON *cm, aom_writer *wb,
-                                        int tile_row, int tile_col,
-                                        const int nrtiles_x[2],
-                                        const int nrtiles_y[2]) {
-  for (int p = 0; p < MAX_MB_PLANE; ++p) {
-    RestorationInfo *rsi = &cm->rst_info[p];
-    if (rsi->frame_restoration_type == RESTORE_NONE) continue;
+static void loop_restoration_write_sb_coeffs(const AV1_COMMON *const cm,
+                                             MACROBLOCKD *xd,
+                                             aom_writer *const w, int plane,
+                                             int rtile_idx) {
+  const RestorationInfo *rsi = cm->rst_info + plane;
+  if (rsi->frame_restoration_type == RESTORE_NONE) return;
 
-    const int tile_width =
-        (p > 0) ? ROUND_POWER_OF_TWO(cm->tile_width, cm->subsampling_x)
-                : cm->tile_width;
-    const int tile_height =
-        (p > 0) ? ROUND_POWER_OF_TWO(cm->tile_height, cm->subsampling_y)
-                : cm->tile_height;
-    const int rtile_size = rsi->restoration_tilesize;
-    const int rtiles_per_tile_x = tile_width * MI_SIZE / rtile_size;
-    const int rtiles_per_tile_y = tile_height * MI_SIZE / rtile_size;
+  const int wiener_win = (plane > 0) ? WIENER_WIN_CHROMA : WIENER_WIN;
+  WienerInfo *wiener_info = xd->wiener_info + plane;
+  SgrprojInfo *sgrproj_info = xd->sgrproj_info + plane;
 
-    const int rtile_row0 = rtiles_per_tile_y * tile_row;
-    const int rtile_row1 =
-        AOMMIN(rtile_row0 + rtiles_per_tile_y, nrtiles_y[p > 0]);
-
-    const int rtile_col0 = rtiles_per_tile_x * tile_col;
-    const int rtile_col1 =
-        AOMMIN(rtile_col0 + rtiles_per_tile_x, nrtiles_x[p > 0]);
-
-    WienerInfo wiener_info;
-    SgrprojInfo sgrproj_info;
-    set_default_wiener(&wiener_info);
-    set_default_sgrproj(&sgrproj_info);
-
-    const int wiener_win = (p > 0) ? WIENER_WIN_CHROMA : WIENER_WIN;
-
-    for (int rtile_row = rtile_row0; rtile_row < rtile_row1; ++rtile_row) {
-      for (int rtile_col = rtile_col0; rtile_col < rtile_col1; ++rtile_col) {
-        const int rtile_idx = rtile_row * nrtiles_x[p > 0] + rtile_col;
-        if (rsi->frame_restoration_type == RESTORE_SWITCHABLE) {
-          assert(p == 0);
-          av1_write_token(
-              wb, av1_switchable_restore_tree, cm->fc->switchable_restore_prob,
-              &switchable_restore_encodings[rsi->restoration_type[rtile_idx]]);
-          if (rsi->restoration_type[rtile_idx] == RESTORE_WIENER) {
-            write_wiener_filter(wiener_win, &rsi->wiener_info[rtile_idx],
-                                &wiener_info, wb);
-          } else if (rsi->restoration_type[rtile_idx] == RESTORE_SGRPROJ) {
-            write_sgrproj_filter(&rsi->sgrproj_info[rtile_idx], &sgrproj_info,
-                                 wb);
-          }
-        } else if (rsi->frame_restoration_type == RESTORE_WIENER) {
-          aom_write(wb, rsi->restoration_type[rtile_idx] != RESTORE_NONE,
-                    RESTORE_NONE_WIENER_PROB);
-          if (rsi->restoration_type[rtile_idx] != RESTORE_NONE) {
-            write_wiener_filter(wiener_win, &rsi->wiener_info[rtile_idx],
-                                &wiener_info, wb);
-          }
-        } else if (rsi->frame_restoration_type == RESTORE_SGRPROJ) {
-          aom_write(wb, rsi->restoration_type[rtile_idx] != RESTORE_NONE,
-                    RESTORE_NONE_SGRPROJ_PROB);
-          if (rsi->restoration_type[rtile_idx] != RESTORE_NONE) {
-            write_sgrproj_filter(&rsi->sgrproj_info[rtile_idx], &sgrproj_info,
-                                 wb);
-          }
-        }
-      }
+  if (rsi->frame_restoration_type == RESTORE_SWITCHABLE) {
+    assert(plane == 0);
+    av1_write_token(
+        w, av1_switchable_restore_tree, cm->fc->switchable_restore_prob,
+        &switchable_restore_encodings[rsi->restoration_type[rtile_idx]]);
+    if (rsi->restoration_type[rtile_idx] == RESTORE_WIENER) {
+      write_wiener_filter(wiener_win, &rsi->wiener_info[rtile_idx], wiener_info,
+                          w);
+    } else if (rsi->restoration_type[rtile_idx] == RESTORE_SGRPROJ) {
+      write_sgrproj_filter(&rsi->sgrproj_info[rtile_idx], sgrproj_info, w);
+    }
+  } else if (rsi->frame_restoration_type == RESTORE_WIENER) {
+    aom_write(w, rsi->restoration_type[rtile_idx] != RESTORE_NONE,
+              RESTORE_NONE_WIENER_PROB);
+    if (rsi->restoration_type[rtile_idx] != RESTORE_NONE) {
+      write_wiener_filter(wiener_win, &rsi->wiener_info[rtile_idx], wiener_info,
+                          w);
+    }
+  } else if (rsi->frame_restoration_type == RESTORE_SGRPROJ) {
+    aom_write(w, rsi->restoration_type[rtile_idx] != RESTORE_NONE,
+              RESTORE_NONE_SGRPROJ_PROB);
+    if (rsi->restoration_type[rtile_idx] != RESTORE_NONE) {
+      write_sgrproj_filter(&rsi->sgrproj_info[rtile_idx], sgrproj_info, w);
     }
   }
 }
 
-static void encode_restoration(AV1_COMMON *cm, aom_writer *wb) {
-#if CONFIG_FRAME_SUPERRES
-  const int width = cm->superres_upscaled_width;
-  const int height = cm->superres_upscaled_height;
-#else
-  const int width = cm->width;
-  const int height = cm->height;
-#endif  // CONFIG_FRAME_SUPERRES
-
-  int nrtiles_x[2], nrtiles_y[2];
-  av1_get_rest_ntiles(width, height, cm->rst_info[0].restoration_tilesize, NULL,
-                      NULL, &nrtiles_x[0], &nrtiles_y[0]);
-  av1_get_rest_ntiles(ROUND_POWER_OF_TWO(width, cm->subsampling_x),
-                      ROUND_POWER_OF_TWO(height, cm->subsampling_y),
-                      cm->rst_info[1].restoration_tilesize, NULL, NULL,
-                      &nrtiles_x[1], &nrtiles_y[1]);
-
-  for (int tile_row = 0; tile_row < cm->tile_rows; ++tile_row) {
-    for (int tile_col = 0; tile_col < cm->tile_cols; ++tile_col) {
-      encode_restoration_for_tile(cm, wb, tile_row, tile_col, nrtiles_x,
-                                  nrtiles_y);
-    }
-  }
-}
 #endif  // CONFIG_LOOP_RESTORATION
 
 static void encode_loopfilter(AV1_COMMON *cm, struct aom_write_bit_buffer *wb) {
@@ -4009,6 +3974,13 @@ static uint32_t write_tiles(AV1_COMP *const cpi, uint8_t *const dst,
 #if CONFIG_ANS
         mode_bc.size = 1 << cpi->common.ans_window_size_log2;
 #endif  // CONFIG_ANS
+#if CONFIG_LOOP_RESTORATION
+        for (int p = 0; p < MAX_MB_PLANE; ++p) {
+          set_default_wiener(cpi->td.mb.e_mbd.wiener_info + p);
+          set_default_sgrproj(cpi->td.mb.e_mbd.sgrproj_info + p);
+        }
+#endif  // CONFIG_LOOP_RESTORATION
+
         aom_start_encode(&mode_bc, dst + total_size);
         write_modes(cpi, &tile_info, &mode_bc, &tok, tok_end);
 #if !CONFIG_LV_MAP
@@ -4640,9 +4612,6 @@ static uint32_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
 #endif
   aom_start_encode(header_bc, data);
 
-#if CONFIG_LOOP_RESTORATION
-  encode_restoration(cm, header_bc);
-#endif  // CONFIG_LOOP_RESTORATION
 #if CONFIG_RECT_TX_EXT && (CONFIG_EXT_TX || CONFIG_VAR_TX)
   if (cm->tx_mode == TX_MODE_SELECT)
     av1_cond_prob_diff_update(header_bc, &cm->fc->quarter_tx_size_prob,

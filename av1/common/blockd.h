@@ -670,6 +670,18 @@ typedef struct RefBuffer {
 typedef int16_t EobThresholdMD[TX_TYPES][EOB_THRESHOLD_NUM];
 #endif
 
+#if CONFIG_LOOP_RESTORATION
+typedef struct {
+  DECLARE_ALIGNED(16, InterpKernel, vfilter);
+  DECLARE_ALIGNED(16, InterpKernel, hfilter);
+} WienerInfo;
+
+typedef struct {
+  int ep;
+  int xqd[2];
+} SgrprojInfo;
+#endif  // CONFIG_LOOP_RESTORATION
+
 typedef struct macroblockd {
   struct macroblockd_plane plane[MAX_MB_PLANE];
   uint8_t bmode_blocks_wl;
@@ -730,6 +742,11 @@ typedef struct macroblockd {
   TX_SIZE supertx_size;
 #endif
 #endif
+
+#if CONFIG_LOOP_RESTORATION
+  WienerInfo wiener_info[MAX_MB_PLANE];
+  SgrprojInfo sgrproj_info[MAX_MB_PLANE];
+#endif  // CONFIG_LOOP_RESTORATION
 
   // block dimension in the unit of mode_info.
   uint8_t n8_w, n8_h;

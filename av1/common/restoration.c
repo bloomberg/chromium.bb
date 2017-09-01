@@ -1426,3 +1426,67 @@ void av1_loop_restoration_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
   loop_restoration_rows(frame, cm, start_mi_row, end_mi_row, components_pattern,
                         rsi, dst);
 }
+
+int av1_loop_restoration_corners_in_sb(const struct AV1Common *cm, int plane,
+                                       int mi_row, int mi_col, BLOCK_SIZE bsize,
+                                       int *rcol0, int *rcol1, int *rrow0,
+                                       int *rrow1, int *nhtiles) {
+  assert(rcol0 && rcol1 && rrow0 && rrow1 && nhtiles);
+
+  if (bsize != cm->sb_size) return 0;
+
+#if CONFIG_FRAME_SUPERRES
+  const int frame_w = cm->superres_upscaled_width;
+  const int frame_h = cm->superres_upscaled_height;
+  const int mi_to_px = MI_SIZE * cm->superres_scale_numerator;
+  const int denom = SCALE_DENOMINATOR;
+#else
+  const int frame_w = cm->width;
+  const int frame_h = cm->height;
+  const int mi_to_px = MI_SIZE;
+  const int denom = 1;
+#endif  // CONFIG_FRAME_SUPERRES
+
+  const int ss_frame_w = frame_w >> (plane > 0 && cm->subsampling_x != 0);
+  const int ss_frame_h = frame_h >> (plane > 0 && cm->subsampling_y != 0);
+
+  int rtile_w, rtile_h, nvtiles;
+  av1_get_rest_ntiles(ss_frame_w, ss_frame_h,
+                      cm->rst_info[0].restoration_tilesize, &rtile_w, &rtile_h,
+                      nhtiles, &nvtiles);
+
+  const int rnd_w = rtile_w * denom - 1;
+  const int rnd_h = rtile_h * denom - 1;
+
+  // rcol0/rrow0 should be the first column/row of rtiles that doesn't start
+  // left/below of mi_col/mi_row. For this calculation, we need to round up the
+  // division (if the sb starts at rtile column 10.1, the first matching rtile
+  // has column index 11)
+  *rcol0 = (mi_col * mi_to_px + rnd_w) / (rtile_w * denom);
+  *rrow0 = (mi_row * mi_to_px + rnd_h) / (rtile_h * denom);
+
+  // rcol1/rrow1 is the equivalent calculation, but for the superblock
+  // below-right. There are some slightly strange boundary effects. First, we
+  // need to clamp to nhtiles/nvtiles for the case where it appears there are,
+  // say, 2.4 restoration tiles horizontally. There we need a maximum mi_row1
+  // of 2 because tile 1 gets extended.
+  //
+  // Second, if mi_col1 >= cm->mi_cols then we must manually set *rcol1 to
+  // nhtiles. This is needed whenever the frame's width rounded up to the next
+  // toplevel superblock is smaller than nhtiles * rtile_w. The same logic is
+  // needed for rows.
+  const int mi_row1 = mi_row + mi_size_high[bsize];
+  const int mi_col1 = mi_col + mi_size_wide[bsize];
+
+  if (mi_col1 >= cm->mi_cols)
+    *rcol1 = *nhtiles;
+  else
+    *rcol1 = AOMMIN(*nhtiles, (mi_col1 * mi_to_px + rnd_w) / (rtile_w * denom));
+
+  if (mi_row1 >= cm->mi_rows)
+    *rrow1 = nvtiles;
+  else
+    *rrow1 = AOMMIN(nvtiles, (mi_row1 * mi_to_px + rnd_h) / (rtile_h * denom));
+
+  return *rcol0 < *rcol1 && *rrow0 < *rrow1;
+}

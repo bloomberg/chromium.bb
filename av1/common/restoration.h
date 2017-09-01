@@ -135,10 +135,6 @@ extern "C" {
 #if WIENER_FILT_PREC_BITS != 7
 #error "Wiener filter currently only works if WIENER_FILT_PREC_BITS == 7"
 #endif
-typedef struct {
-  DECLARE_ALIGNED(16, InterpKernel, vfilter);
-  DECLARE_ALIGNED(16, InterpKernel, hfilter);
-} WienerInfo;
 
 typedef struct {
 #if USE_HIGHPASS_IN_SGRPROJ
@@ -151,11 +147,6 @@ typedef struct {
   int r2;
   int e2;
 } sgr_params_type;
-
-typedef struct {
-  int ep;
-  int xqd[2];
-} SgrprojInfo;
 
 typedef struct {
   int restoration_tilesize;
@@ -261,6 +252,20 @@ void av1_loop_restoration_frame(YV12_BUFFER_CONFIG *frame, struct AV1Common *cm,
                                 RestorationInfo *rsi, int components_pattern,
                                 int partial_frame, YV12_BUFFER_CONFIG *dst);
 void av1_loop_restoration_precal();
+
+// Return 1 iff the block at mi_row, mi_col with size bsize is a
+// top-level superblock containing the top-left corner of at least one
+// loop restoration tile.
+//
+// If the block is a top-level superblock, the function writes to
+// *rcol0, *rcol1, *rrow0, *rrow1. The rectangle of indices given by
+// [*rcol0, *rcol1) x [*rrow0, *rrow1) will point at the set of rtiles
+// whose top left corners lie in the superblock. Note that the set is
+// only nonempty if *rcol0 < *rcol1 and *rrow0 < *rrow1.
+int av1_loop_restoration_corners_in_sb(const struct AV1Common *cm, int plane,
+                                       int mi_row, int mi_col, BLOCK_SIZE bsize,
+                                       int *rcol0, int *rcol1, int *rrow0,
+                                       int *rrow1, int *nhtiles);
 #ifdef __cplusplus
 }  // extern "C"
 #endif

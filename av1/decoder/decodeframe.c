@@ -86,6 +86,13 @@
 #include "av1/common/cfl.h"
 #endif
 
+#if CONFIG_LOOP_RESTORATION
+static void loop_restoration_read_sb_coeffs(const AV1_COMMON *const cm,
+                                            MACROBLOCKD *xd,
+                                            aom_reader *const r, int plane,
+                                            int rtile_idx);
+#endif
+
 static struct aom_read_bit_buffer *init_read_bit_buffer(
     AV1Decoder *pbi, struct aom_read_bit_buffer *rb, const uint8_t *data,
     const uint8_t *data_end, uint8_t clear_data[MAX_AV1_HEADER_SIZE]);
@@ -2549,6 +2556,21 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
     }
   }
 #endif  // CONFIG_CDEF
+#if CONFIG_LOOP_RESTORATION
+  for (int plane = 0; plane < MAX_MB_PLANE; ++plane) {
+    int rcol0, rcol1, rrow0, rrow1, nhtiles;
+    if (av1_loop_restoration_corners_in_sb(cm, plane, mi_row, mi_col, bsize,
+                                           &rcol0, &rcol1, &rrow0, &rrow1,
+                                           &nhtiles)) {
+      for (int rrow = rrow0; rrow < rrow1; ++rrow) {
+        for (int rcol = rcol0; rcol < rcol1; ++rcol) {
+          int rtile_idx = rcol + rrow * nhtiles;
+          loop_restoration_read_sb_coeffs(cm, xd, r, plane, rtile_idx);
+        }
+      }
+    }
+  }
+#endif
 }
 
 static void setup_bool_decoder(const uint8_t *data, const uint8_t *data_end,
@@ -2739,97 +2761,43 @@ static void read_sgrproj_filter(SgrprojInfo *sgrproj_info,
   memcpy(ref_sgrproj_info, sgrproj_info, sizeof(*sgrproj_info));
 }
 
-static void decode_restoration_for_tile(AV1_COMMON *cm, aom_reader *rb,
-                                        int tile_row, int tile_col,
-                                        const int nrtiles_x[2],
-                                        const int nrtiles_y[2]) {
-  for (int p = 0; p < MAX_MB_PLANE; ++p) {
-    RestorationInfo *rsi = &cm->rst_info[p];
-    if (rsi->frame_restoration_type == RESTORE_NONE) continue;
+static void loop_restoration_read_sb_coeffs(const AV1_COMMON *const cm,
+                                            MACROBLOCKD *xd,
+                                            aom_reader *const r, int plane,
+                                            int rtile_idx) {
+  const RestorationInfo *rsi = cm->rst_info + plane;
+  if (rsi->frame_restoration_type == RESTORE_NONE) return;
 
-    const int tile_width =
-        (p > 0) ? ROUND_POWER_OF_TWO(cm->tile_width, cm->subsampling_x)
-                : cm->tile_width;
-    const int tile_height =
-        (p > 0) ? ROUND_POWER_OF_TWO(cm->tile_height, cm->subsampling_y)
-                : cm->tile_height;
-    const int rtile_size = rsi->restoration_tilesize;
-    const int rtiles_per_tile_x = tile_width * MI_SIZE / rtile_size;
-    const int rtiles_per_tile_y = tile_height * MI_SIZE / rtile_size;
+  const int wiener_win = (plane > 0) ? WIENER_WIN_CHROMA : WIENER_WIN;
+  WienerInfo *wiener_info = xd->wiener_info + plane;
+  SgrprojInfo *sgrproj_info = xd->sgrproj_info + plane;
 
-    const int rtile_row0 = rtiles_per_tile_y * tile_row;
-    const int rtile_row1 =
-        AOMMIN(rtile_row0 + rtiles_per_tile_y, nrtiles_y[p > 0]);
+  if (rsi->frame_restoration_type == RESTORE_SWITCHABLE) {
+    assert(plane == 0);
+    rsi->restoration_type[rtile_idx] =
+        aom_read_tree(r, av1_switchable_restore_tree,
+                      cm->fc->switchable_restore_prob, ACCT_STR);
 
-    const int rtile_col0 = rtiles_per_tile_x * tile_col;
-    const int rtile_col1 =
-        AOMMIN(rtile_col0 + rtiles_per_tile_x, nrtiles_x[p > 0]);
-
-    WienerInfo wiener_info;
-    SgrprojInfo sgrproj_info;
-    set_default_wiener(&wiener_info);
-    set_default_sgrproj(&sgrproj_info);
-
-    const int wiener_win = (p > 0) ? WIENER_WIN_CHROMA : WIENER_WIN;
-
-    for (int rtile_row = rtile_row0; rtile_row < rtile_row1; ++rtile_row) {
-      for (int rtile_col = rtile_col0; rtile_col < rtile_col1; ++rtile_col) {
-        const int rtile_idx = rtile_row * nrtiles_x[p > 0] + rtile_col;
-        if (rsi->frame_restoration_type == RESTORE_SWITCHABLE) {
-          assert(p == 0);
-          rsi->restoration_type[rtile_idx] =
-              aom_read_tree(rb, av1_switchable_restore_tree,
-                            cm->fc->switchable_restore_prob, ACCT_STR);
-          if (rsi->restoration_type[rtile_idx] == RESTORE_WIENER) {
-            read_wiener_filter(wiener_win, &rsi->wiener_info[rtile_idx],
-                               &wiener_info, rb);
-          } else if (rsi->restoration_type[rtile_idx] == RESTORE_SGRPROJ) {
-            read_sgrproj_filter(&rsi->sgrproj_info[rtile_idx], &sgrproj_info,
-                                rb);
-          }
-        } else if (rsi->frame_restoration_type == RESTORE_WIENER) {
-          if (aom_read(rb, RESTORE_NONE_WIENER_PROB, ACCT_STR)) {
-            rsi->restoration_type[rtile_idx] = RESTORE_WIENER;
-            read_wiener_filter(wiener_win, &rsi->wiener_info[rtile_idx],
-                               &wiener_info, rb);
-          } else {
-            rsi->restoration_type[rtile_idx] = RESTORE_NONE;
-          }
-        } else if (rsi->frame_restoration_type == RESTORE_SGRPROJ) {
-          if (aom_read(rb, RESTORE_NONE_SGRPROJ_PROB, ACCT_STR)) {
-            rsi->restoration_type[rtile_idx] = RESTORE_SGRPROJ;
-            read_sgrproj_filter(&rsi->sgrproj_info[rtile_idx], &sgrproj_info,
-                                rb);
-          } else {
-            rsi->restoration_type[rtile_idx] = RESTORE_NONE;
-          }
-        }
-      }
+    if (rsi->restoration_type[rtile_idx] == RESTORE_WIENER) {
+      read_wiener_filter(wiener_win, &rsi->wiener_info[rtile_idx], wiener_info,
+                         r);
+    } else if (rsi->restoration_type[rtile_idx] == RESTORE_SGRPROJ) {
+      read_sgrproj_filter(&rsi->sgrproj_info[rtile_idx], sgrproj_info, r);
     }
-  }
-}
-
-static void decode_restoration(AV1_COMMON *cm, aom_reader *rb) {
-#if CONFIG_FRAME_SUPERRES
-  const int width = cm->superres_upscaled_width;
-  const int height = cm->superres_upscaled_height;
-#else
-  const int width = cm->width;
-  const int height = cm->height;
-#endif  // CONFIG_FRAME_SUPERRES
-
-  int nrtiles_x[2], nrtiles_y[2];
-  av1_get_rest_ntiles(width, height, cm->rst_info[0].restoration_tilesize, NULL,
-                      NULL, &nrtiles_x[0], &nrtiles_y[0]);
-  av1_get_rest_ntiles(ROUND_POWER_OF_TWO(width, cm->subsampling_x),
-                      ROUND_POWER_OF_TWO(height, cm->subsampling_y),
-                      cm->rst_info[1].restoration_tilesize, NULL, NULL,
-                      &nrtiles_x[1], &nrtiles_y[1]);
-
-  for (int tile_row = 0; tile_row < cm->tile_rows; ++tile_row) {
-    for (int tile_col = 0; tile_col < cm->tile_cols; ++tile_col) {
-      decode_restoration_for_tile(cm, rb, tile_row, tile_col, nrtiles_x,
-                                  nrtiles_y);
+  } else if (rsi->frame_restoration_type == RESTORE_WIENER) {
+    if (aom_read(r, RESTORE_NONE_WIENER_PROB, ACCT_STR)) {
+      rsi->restoration_type[rtile_idx] = RESTORE_WIENER;
+      read_wiener_filter(wiener_win, &rsi->wiener_info[rtile_idx], wiener_info,
+                         r);
+    } else {
+      rsi->restoration_type[rtile_idx] = RESTORE_NONE;
+    }
+  } else if (rsi->frame_restoration_type == RESTORE_SGRPROJ) {
+    if (aom_read(r, RESTORE_NONE_SGRPROJ_PROB, ACCT_STR)) {
+      rsi->restoration_type[rtile_idx] = RESTORE_SGRPROJ;
+      read_sgrproj_filter(&rsi->sgrproj_info[rtile_idx], sgrproj_info, r);
+    } else {
+      rsi->restoration_type[rtile_idx] = RESTORE_NONE;
     }
   }
 }
@@ -3740,6 +3708,12 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
 #else
       av1_zero_above_context(cm, tile_info.mi_col_start, tile_info.mi_col_end);
 #endif
+#if CONFIG_LOOP_RESTORATION
+      for (int p = 0; p < MAX_MB_PLANE; ++p) {
+        set_default_wiener(td->xd.wiener_info + p);
+        set_default_sgrproj(td->xd.sgrproj_info + p);
+      }
+#endif  // CONFIG_LOOP_RESTORATION
 
 #if CONFIG_LOOPFILTERING_ACROSS_TILES
       dec_setup_across_tile_boundary_info(cm, &tile_info);
@@ -4902,15 +4876,6 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
     aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate bool decoder 0");
 
-#if CONFIG_LOOP_RESTORATION
-  if (cm->rst_info[0].frame_restoration_type != RESTORE_NONE ||
-      cm->rst_info[1].frame_restoration_type != RESTORE_NONE ||
-      cm->rst_info[2].frame_restoration_type != RESTORE_NONE) {
-    av1_alloc_restoration_buffers(cm);
-    decode_restoration(cm, &r);
-  }
-#endif
-
 #if CONFIG_RECT_TX_EXT && (CONFIG_EXT_TX || CONFIG_VAR_TX)
   if (cm->tx_mode == TX_MODE_SELECT)
     av1_diff_update_prob(&r, &fc->quarter_tx_size_prob, ACCT_STR);
@@ -5302,6 +5267,14 @@ void av1_decode_frame(AV1Decoder *pbi, const uint8_t *data,
   if (new_fb->corrupted)
     aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
                        "Decode failed. Frame data header is corrupted.");
+
+#if CONFIG_LOOP_RESTORATION
+  if (cm->rst_info[0].frame_restoration_type != RESTORE_NONE ||
+      cm->rst_info[1].frame_restoration_type != RESTORE_NONE ||
+      cm->rst_info[2].frame_restoration_type != RESTORE_NONE) {
+    av1_alloc_restoration_buffers(cm);
+  }
+#endif
 
 #if CONFIG_LOOPFILTER_LEVEL
   if ((cm->lf.filter_level[0] || cm->lf.filter_level[1]) &&
