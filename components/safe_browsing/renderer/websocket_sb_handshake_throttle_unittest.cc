@@ -55,6 +55,8 @@ class FakeSafeBrowsing : public mojom::SafeBrowsing {
     run_loop_.Quit();
   }
 
+  void Clone(mojom::SafeBrowsingRequest request) override { NOTREACHED(); }
+
   void RunUntilCalled() { run_loop_.Run(); }
 
   int32_t render_frame_id_;

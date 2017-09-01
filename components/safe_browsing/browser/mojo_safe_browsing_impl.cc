@@ -55,7 +55,12 @@ class CheckUrlCallbackWrapper {
 MojoSafeBrowsingImpl::MojoSafeBrowsingImpl(
     scoped_refptr<UrlCheckerDelegate> delegate,
     int render_process_id)
-    : delegate_(std::move(delegate)), render_process_id_(render_process_id) {}
+    : delegate_(std::move(delegate)), render_process_id_(render_process_id) {
+  // It is safe to bind |this| as Unretained because |bindings_| is owned by
+  // |this| and will not call this callback after it is destroyed.
+  bindings_.set_connection_error_handler(base::Bind(
+      &MojoSafeBrowsingImpl::OnConnectionError, base::Unretained(this)));
+}
 
 MojoSafeBrowsingImpl::~MojoSafeBrowsingImpl() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
@@ -73,9 +78,9 @@ void MojoSafeBrowsingImpl::MaybeCreate(
   if (!delegate || !delegate->GetDatabaseManager()->IsSupported())
     return;
 
-  mojo::MakeStrongBinding(base::WrapUnique(new MojoSafeBrowsingImpl(
-                              std::move(delegate), render_process_id)),
-                          std::move(request));
+  auto* impl = new MojoSafeBrowsingImpl(std::move(delegate), render_process_id);
+  impl->Clone(std::move(request));
+  // |impl| will be freed when there are no more pipes bound to it.
 }
 
 void MojoSafeBrowsingImpl::CreateCheckerAndCheck(
@@ -101,6 +106,15 @@ void MojoSafeBrowsingImpl::CreateCheckerAndCheck(
           &CheckUrlCallbackWrapper::Run,
           base::Owned(new CheckUrlCallbackWrapper(std::move(callback)))));
   mojo::MakeStrongBinding(std::move(checker_impl), std::move(request));
+}
+
+void MojoSafeBrowsingImpl::Clone(mojom::SafeBrowsingRequest request) {
+  bindings_.AddBinding(this, std::move(request));
+}
+
+void MojoSafeBrowsingImpl::OnConnectionError() {
+  if (bindings_.empty())
+    delete this;
 }
 
 }  // namespace safe_browsing

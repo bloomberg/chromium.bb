@@ -10,6 +10,7 @@
 #include "components/safe_browsing/browser/url_checker_delegate.h"
 #include "components/safe_browsing/common/safe_browsing.mojom.h"
 #include "ipc/ipc_message.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 
 namespace safe_browsing {
 
@@ -38,7 +39,11 @@ class MojoSafeBrowsingImpl : public mojom::SafeBrowsing {
                              content::ResourceType resource_type,
                              bool has_user_gesture,
                              CreateCheckerAndCheckCallback callback) override;
+  void Clone(mojom::SafeBrowsingRequest request) override;
 
+  void OnConnectionError();
+
+  mojo::BindingSet<mojom::SafeBrowsing> bindings_;
   scoped_refptr<UrlCheckerDelegate> delegate_;
   int render_process_id_ = MSG_ROUTING_NONE;
 

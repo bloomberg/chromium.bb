@@ -25,6 +25,7 @@ class RendererURLLoaderThrottle : public content::URLLoaderThrottle {
   ~RendererURLLoaderThrottle() override;
 
   // content::URLLoaderThrottle implementation.
+  void DetachFromCurrentSequence() override;
   void WillStartRequest(const content::ResourceRequest& request,
                         bool* defer) override;
   void WillRedirectRequest(const net::RedirectInfo& redirect_info,
@@ -38,6 +39,11 @@ class RendererURLLoaderThrottle : public content::URLLoaderThrottle {
 
   mojom::SafeBrowsing* safe_browsing_;
   const int render_frame_id_;
+
+  // These fields hold the connection to this instance's private connection to
+  // the Safe Browsing service if DetachFromCurrentThread has been called.
+  mojom::SafeBrowsingPtrInfo safe_browsing_ptr_info_;
+  mojom::SafeBrowsingPtr safe_browsing_ptr_;
 
   mojom::SafeBrowsingUrlCheckerPtr url_checker_;
 

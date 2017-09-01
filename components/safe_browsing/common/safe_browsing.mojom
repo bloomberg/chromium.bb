@@ -37,6 +37,9 @@ interface SafeBrowsing {
       int32 load_flags,
       content.mojom.ResourceType resource_type,
       bool has_user_gesture) => (bool proceed, bool showed_interstitial);
+
+  // Bind an additional pipe to this instance of the SafeBrowsing interface.
+  Clone(SafeBrowsing& request);
 };
 
 interface SafeBrowsingUrlChecker {

@@ -593,8 +593,9 @@ void ResourceDispatcher::StartSync(
     base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
                               base::WaitableEvent::InitialState::NOT_SIGNALED);
 
-    // TODO(reillyg): Support passing URLLoaderThrottles to this task.
-    DCHECK_EQ(0u, throttles.size());
+    // Prepare the configured throttles for use on a separate thread.
+    for (const auto& throttle : throttles)
+      throttle->DetachFromCurrentSequence();
 
     // A task is posted to a separate thread to execute the request so that
     // this thread may block on a waitable event. It is safe to pass raw
@@ -604,7 +605,7 @@ void ResourceDispatcher::StartSync(
         FROM_HERE,
         base::BindOnce(&SyncLoadContext::StartAsyncWithWaitableEvent,
                        std::move(request), routing_id, frame_origin,
-                       std::move(url_loader_factory_copy),
+                       std::move(url_loader_factory_copy), std::move(throttles),
                        base::Unretained(response), base::Unretained(&event)));
 
     event.Wait();
