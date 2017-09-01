@@ -70,6 +70,7 @@ const char kUsage[] =
     "\n"
     "Switches: \n"
     "  --battor-path=<path> Uses the specified BattOr path.\n"
+    "  --interactive Enables interactive power profiling."
     "\n"
     "Once in the shell, you can issue the following commands:\n"
     "\n"
@@ -81,6 +82,10 @@ const char kUsage[] =
     "  Exit\n"
     "  Help\n"
     "\n";
+
+// The command line switch used to enable interactive mode where starting and
+// stopping is easily toggled.
+const char kInteractiveSwitch[] = "interactive";
 
 void PrintSupportsExplicitClockSync() {
   std::cout << BattOrAgent::SupportsExplicitClockSync() << endl;
@@ -133,6 +138,13 @@ class BattOrAgentBin : public BattOrAgent::Listener {
 
     SetUp(path);
 
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(kInteractiveSwitch)) {
+      interactive_ = true;
+      std::cout << "Type <Enter> to toggle tracing, type Exit or Ctrl+C "
+                   "to quit, or Help for help."
+                << endl;
+    }
+
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&BattOrAgentBin::RunNextCommand, base::Unretained(this)));
@@ -178,6 +190,14 @@ class BattOrAgentBin : public BattOrAgent::Listener {
     std::string cmd;
     std::getline(std::cin, cmd);
 
+    if (interactive_) {
+      if (cmd == "") {
+        cmd = is_tracing_ ? "StopTracing" : "StartTracing";
+        std::cout << cmd << endl;
+        is_tracing_ = !is_tracing_;
+      }
+    }
+
     if (cmd == "StartTracing") {
       StartTracing();
     } else if (cmd.find("StopTracing") != std::string::npos) {
@@ -196,6 +216,9 @@ class BattOrAgentBin : public BattOrAgent::Listener {
           tokens.size() == 2 ? tokens[1] : std::string();
 
       StopTracing(trace_output_file);
+      if (interactive_) {
+        PostRunNextCommand();
+      }
     } else if (cmd == "SupportsExplicitClockSync") {
       PrintSupportsExplicitClockSync();
       PostRunNextCommand();
@@ -270,7 +293,12 @@ class BattOrAgentBin : public BattOrAgent::Listener {
                              BattOrError error) override {
     if (error == BATTOR_ERROR_NONE) {
       if (trace_output_file_.empty()) {
-        std::cout << trace;
+        if (interactive_) {
+          // Printing of summary statistics will happen here.
+          std::cout << trace.size() << " bytes of output collected." << endl;
+        } else {
+          std::cout << trace;
+        }
       } else {
         std::ofstream trace_stream(trace_output_file_);
         if (!trace_stream.is_open()) {
@@ -285,8 +313,10 @@ class BattOrAgentBin : public BattOrAgent::Listener {
       HandleError(error);
     }
 
-    ui_thread_message_loop_.task_runner()->PostTask(
-        FROM_HERE, ui_thread_run_loop_.QuitClosure());
+    if (!interactive_) {
+      ui_thread_message_loop_.task_runner()->PostTask(
+          FROM_HERE, ui_thread_run_loop_.QuitClosure());
+    }
   }
 
   void RecordClockSyncMarker(const std::string& marker) {
@@ -336,6 +366,11 @@ class BattOrAgentBin : public BattOrAgent::Listener {
   std::unique_ptr<BattOrAgent> agent_;
 
   std::string trace_output_file_;
+
+  // When true user can Start/Stop tracing by typing Enter.
+  bool interactive_ = false;
+  // Toggle to support alternating starting/stopping tracing.
+  bool is_tracing_ = false;
 };
 
 }  // namespace battor
