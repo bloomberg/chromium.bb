@@ -233,7 +233,7 @@ const static intCharTupple attributeMapping[] = {
   {CTC_Class2, 'x'},
   {CTC_Class3, 'y'},
   {CTC_Class4, 'z'},
-  NULL
+  0
 };
 
 /**
