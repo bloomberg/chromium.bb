@@ -6,6 +6,7 @@ import common
 from common import TestDriver
 from common import IntegrationTest
 from decorators import ChromeVersionEqualOrAfterM
+from decorators import NotAndroid
 import json
 
 
@@ -33,7 +34,9 @@ class ClientConfig(IntegrationTest):
 
   # Ensure client config is fetched at the start of the Chrome session, and the
   # variations ID is set in the request.
+  # Disabled on android because the net log is not copied yet. crbug.com/761507
   @ChromeVersionEqualOrAfterM(62)
+  @NotAndroid
   def testClientConfigVariationsHeader(self):
     with TestDriver() as t:
       t.AddChromeArg('--log-net-log=chrome.netlog.json')
@@ -64,7 +67,9 @@ class ClientConfig(IntegrationTest):
 
   # Ensure client config is fetched at the start of the Chrome session, and the
   # variations ID is not set in the request.
+  # Disabled on android because the net log is not copied yet. crbug.com/761507
   @ChromeVersionEqualOrAfterM(62)
+  @NotAndroid
   def testClientConfigNoVariationsHeader(self):
     with TestDriver() as t:
       t.AddChromeArg('--log-net-log=chrome.netlog.json')
