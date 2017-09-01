@@ -213,6 +213,34 @@ TEST(X509UtilNSSTest, CreateX509CertificateFromCERTCertificate_WithChain) {
             BytesForNSSCert(nss_cert2.get()));
 }
 
+TEST(X509UtilNSSTest, CreateX509CertificateListFromCERTCertificates) {
+  ScopedCERTCertificate nss_cert(x509_util::CreateCERTCertificateFromBytes(
+      google_der, arraysize(google_der)));
+  ASSERT_TRUE(nss_cert);
+  ScopedCERTCertificate nss_cert2(x509_util::CreateCERTCertificateFromBytes(
+      webkit_der, arraysize(webkit_der)));
+  ASSERT_TRUE(nss_cert2);
+  ScopedCERTCertificateList nss_certs;
+  nss_certs.push_back(std::move(nss_cert));
+  nss_certs.push_back(std::move(nss_cert2));
+
+  CertificateList x509_certs =
+      x509_util::CreateX509CertificateListFromCERTCertificates(nss_certs);
+  ASSERT_EQ(2U, x509_certs.size());
+
+  EXPECT_EQ(BytesForNSSCert(nss_certs[0].get()),
+            BytesForX509Cert(x509_certs[0].get()));
+  EXPECT_EQ(BytesForNSSCert(nss_certs[1].get()),
+            BytesForX509Cert(x509_certs[1].get()));
+}
+
+TEST(X509UtilNSSTest, CreateX509CertificateListFromCERTCertificates_EmptyList) {
+  ScopedCERTCertificateList nss_certs;
+  CertificateList x509_certs =
+      x509_util::CreateX509CertificateListFromCERTCertificates(nss_certs);
+  ASSERT_EQ(0U, x509_certs.size());
+}
+
 TEST(X509UtilNSSTest, GetDEREncoded) {
   ScopedCERTCertificate google_cert(x509_util::CreateCERTCertificateFromBytes(
       google_der, arraysize(google_der)));
@@ -291,6 +319,20 @@ TEST(X509UtilNSSTest, ParseClientSubjectAltNames) {
   x509_util::GetUPNSubjectAltNames(san_cert->os_cert_handle(), &upn_names);
   ASSERT_EQ(1U, upn_names.size());
   EXPECT_EQ("santest@ad.corp.example.com", upn_names[0]);
+}
+
+TEST(X509UtilNSSTest, CalculateFingerprint256) {
+  static const SHA256HashValue google_fingerprint = {
+      {0x21, 0xaf, 0x58, 0x74, 0xea, 0x6b, 0xad, 0xbd, 0xe4, 0xb3, 0xb1,
+       0xaa, 0x53, 0x32, 0x80, 0x8f, 0xbf, 0x8a, 0x24, 0x7d, 0x98, 0xec,
+       0x7f, 0x77, 0x49, 0x38, 0x42, 0x81, 0x26, 0x7f, 0xed, 0x38}};
+
+  ScopedCERTCertificate google_cert(x509_util::CreateCERTCertificateFromBytes(
+      google_der, arraysize(google_der)));
+  ASSERT_TRUE(google_cert);
+
+  EXPECT_EQ(google_fingerprint,
+            x509_util::CalculateFingerprint256(google_cert.get()));
 }
 
 }  // namespace net

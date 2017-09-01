@@ -220,8 +220,8 @@ int CertificateManagerModel::ImportFromPKCS12(PK11SlotInfo* slot_info,
                                               const std::string& data,
                                               const base::string16& password,
                                               bool is_extractable) {
-  int result = cert_db_->ImportFromPKCS12(slot_info, data,
-                                          password, is_extractable, NULL);
+  int result = cert_db_->ImportFromPKCS12(slot_info, data, password,
+                                          is_extractable, nullptr);
   if (result == net::OK)
     Refresh();
   return result;

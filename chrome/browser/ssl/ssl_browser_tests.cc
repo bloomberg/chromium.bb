@@ -1647,8 +1647,9 @@ IN_PROC_BROWSER_TEST_F(SSLUITestWithClientCert, TestWSSClientCert) {
     base::ThreadRestrictions::ScopedAllowIO allow_io;
     EXPECT_TRUE(base::ReadFileToString(cert_path, &pkcs12_data));
   }
-  EXPECT_EQ(net::OK, cert_db_->ImportFromPKCS12(public_slot.get(), pkcs12_data,
-                                                base::string16(), true, NULL));
+  EXPECT_EQ(net::OK,
+            cert_db_->ImportFromPKCS12(public_slot.get(), pkcs12_data,
+                                       base::string16(), true, nullptr));
 
   // Start WebSocket test server with TLS and client cert authentication.
   net::SpawnedTestServer::SSLOptions options(

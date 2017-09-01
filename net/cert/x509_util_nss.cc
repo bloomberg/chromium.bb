@@ -11,6 +11,7 @@
 #include <pk11pub.h>
 #include <prerror.h>
 #include <secder.h>
+#include <sechash.h>
 #include <secmod.h>
 #include <secport.h>
 #include <string.h>
@@ -274,6 +275,20 @@ scoped_refptr<X509Certificate> CreateX509CertificateFromCERTCertificate(
       cert, std::vector<CERTCertificate*>());
 }
 
+CertificateList CreateX509CertificateListFromCERTCertificates(
+    const ScopedCERTCertificateList& certs) {
+  CertificateList result;
+  result.reserve(certs.size());
+  for (const ScopedCERTCertificate& cert : certs) {
+    scoped_refptr<X509Certificate> x509_cert(
+        CreateX509CertificateFromCERTCertificate(cert.get()));
+    if (!x509_cert)
+      return {};
+    result.push_back(std::move(x509_cert));
+  }
+  return result;
+}
+
 bool GetDEREncoded(CERTCertificate* cert, std::string* der_encoded) {
   if (!cert || !cert->derCert.len)
     return false;
@@ -383,6 +398,20 @@ std::string GetCERTNameDisplayName(CERTName* name) {
   if (ou_ava)
     return DecodeAVAValue(ou_ava);
   return std::string();
+}
+
+SHA256HashValue CalculateFingerprint256(CERTCertificate* cert) {
+  SHA256HashValue sha256;
+  memset(sha256.data, 0, sizeof(sha256.data));
+
+  DCHECK(cert->derCert.data);
+  DCHECK_NE(0U, cert->derCert.len);
+
+  SECStatus rv = HASH_HashBuf(HASH_AlgSHA256, sha256.data, cert->derCert.data,
+                              cert->derCert.len);
+  DCHECK_EQ(SECSuccess, rv);
+
+  return sha256;
 }
 
 }  // namespace x509_util
