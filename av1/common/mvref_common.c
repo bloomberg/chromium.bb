@@ -1218,20 +1218,19 @@ INLINE void get_mv_projection(MV *output, MV ref, int num, int den) {
   output->col = (int16_t)(ref.col * (double)num / den);
 }
 
-INLINE void get_block_position(AV1_COMMON *cm, int *mi_r, int *mi_c,
-                               int blk_row, int blk_col, MV mv, int sign_bias) {
+INLINE int get_block_position(AV1_COMMON *cm, int *mi_r, int *mi_c, int blk_row,
+                              int blk_col, MV mv, int sign_bias) {
   int row = (sign_bias == 1) ? blk_row - (mv.row >> (3 + MI_SIZE_LOG2))
                              : blk_row + (mv.row >> (3 + MI_SIZE_LOG2));
   int col = (sign_bias == 1) ? blk_col - (mv.col >> (3 + MI_SIZE_LOG2))
                              : blk_col + (mv.col >> (3 + MI_SIZE_LOG2));
 
-  row = AOMMIN(row, cm->mi_rows);
-  row = AOMMAX(row, 0);
-  col = AOMMIN(col, cm->mi_cols);
-  col = AOMMAX(col, 0);
+  if (row < 0 || row >= cm->mi_rows || col < 0 || col >= cm->mi_cols) return 0;
 
   *mi_r = row;
   *mi_c = col;
+
+  return 1;
 }
 
 INLINE uint32_t mv_sign_reverse(int_mv ref) {
@@ -1355,27 +1354,30 @@ void av1_setup_motion_field(AV1_COMMON *cm) {
 
           get_mv_projection(&this_mv.as_mv, fwd_mv, cur_to_lst,
                             ref_frame_offset);
-          get_block_position(cm, &mi_r, &mi_c, blk_row, blk_col, this_mv.as_mv,
-                             1);
-          int mi_offset = mi_r * cm->mi_stride + mi_c;
-          tpl_mvs_base[mi_offset].mfmv[FWD_RF_OFFSET(LAST_FRAME)][0].as_int =
-              this_mv.as_int;
+          int pos_valid = get_block_position(cm, &mi_r, &mi_c, blk_row, blk_col,
+                                             this_mv.as_mv, 1);
+
+          if (pos_valid) {
+            int mi_offset = mi_r * cm->mi_stride + mi_c;
+            tpl_mvs_base[mi_offset].mfmv[FWD_RF_OFFSET(LAST_FRAME)][0].as_int =
+                this_mv.as_int;
 
 #if CONFIG_EXT_REFS
-          get_mv_projection(&this_mv.as_mv, fwd_mv, cur_to_lst2,
-                            ref_frame_offset);
-          tpl_mvs_base[mi_offset].mfmv[FWD_RF_OFFSET(LAST2_FRAME)][0].as_int =
-              this_mv.as_int;
+            get_mv_projection(&this_mv.as_mv, fwd_mv, cur_to_lst2,
+                              ref_frame_offset);
+            tpl_mvs_base[mi_offset].mfmv[FWD_RF_OFFSET(LAST2_FRAME)][0].as_int =
+                this_mv.as_int;
 
-          get_mv_projection(&this_mv.as_mv, fwd_mv, cur_to_lst3,
-                            ref_frame_offset);
-          tpl_mvs_base[mi_offset].mfmv[FWD_RF_OFFSET(LAST3_FRAME)][0].as_int =
-              this_mv.as_int;
+            get_mv_projection(&this_mv.as_mv, fwd_mv, cur_to_lst3,
+                              ref_frame_offset);
+            tpl_mvs_base[mi_offset].mfmv[FWD_RF_OFFSET(LAST3_FRAME)][0].as_int =
+                this_mv.as_int;
 #endif
-          get_mv_projection(&this_mv.as_mv, fwd_mv, cur_to_gld,
-                            ref_frame_offset);
-          tpl_mvs_base[mi_offset].mfmv[FWD_RF_OFFSET(GOLDEN_FRAME)][0].as_int =
-              this_mv.as_int;
+            get_mv_projection(&this_mv.as_mv, fwd_mv, cur_to_gld,
+                              ref_frame_offset);
+            tpl_mvs_base[mi_offset].mfmv[FWD_RF_OFFSET(GOLDEN_FRAME)]
+                                        [0].as_int = this_mv.as_int;
+          }
         }
 
         for (int idx = 0; idx < 2; ++idx) {
@@ -1389,21 +1391,23 @@ void av1_setup_motion_field(AV1_COMMON *cm) {
 
           get_mv_projection(&this_mv.as_mv, fwd_mv, cur_to_lst,
                             ref_frame_offset);
-          get_block_position(cm, &mi_r, &mi_c, blk_row, blk_col, this_mv.as_mv,
-                             0);
+          int pos_valid = get_block_position(cm, &mi_r, &mi_c, blk_row, blk_col,
+                                             this_mv.as_mv, 0);
 
-          int mi_offset = mi_r * cm->mi_stride + mi_c;
-          get_mv_projection(&this_mv.as_mv, fwd_mv, cur_to_alt,
-                            ref_frame_offset);
-          tpl_mvs_base[mi_offset].mfmv[FWD_RF_OFFSET(ALTREF_FRAME)][0].as_int =
-              this_mv.as_int;
+          if (pos_valid) {
+            int mi_offset = mi_r * cm->mi_stride + mi_c;
+            get_mv_projection(&this_mv.as_mv, fwd_mv, cur_to_alt,
+                              ref_frame_offset);
+            tpl_mvs_base[mi_offset].mfmv[FWD_RF_OFFSET(ALTREF_FRAME)]
+                                        [0].as_int = this_mv.as_int;
 
 #if CONFIG_EXT_REFS
-          get_mv_projection(&this_mv.as_mv, fwd_mv, cur_to_bwd,
-                            ref_frame_offset);
-          tpl_mvs_base[mi_offset].mfmv[FWD_RF_OFFSET(BWDREF_FRAME)][0].as_int =
-              this_mv.as_int;
+            get_mv_projection(&this_mv.as_mv, fwd_mv, cur_to_bwd,
+                              ref_frame_offset);
+            tpl_mvs_base[mi_offset].mfmv[FWD_RF_OFFSET(BWDREF_FRAME)]
+                                        [0].as_int = this_mv.as_int;
 #endif
+          }
         }
       }
     }
@@ -1467,49 +1471,51 @@ void av1_setup_motion_field(AV1_COMMON *cm) {
 
           get_mv_projection(&this_mv.as_mv, fwd_mv, cur_to_alt,
                             ref_frame_offset);
-          get_block_position(cm, &mi_r, &mi_c, blk_row, blk_col, this_mv.as_mv,
-                             0);
+          int pos_valid = get_block_position(cm, &mi_r, &mi_c, blk_row, blk_col,
+                                             this_mv.as_mv, 0);
 
-          int mi_offset = mi_r * cm->mi_stride + mi_c;
-          tpl_mvs_base[mi_offset]
-              .mfmv[FWD_RF_OFFSET(ALTREF_FRAME)][ref_stamp]
-              .as_int = mv_sign_reverse(this_mv);
+          if (pos_valid) {
+            int mi_offset = mi_r * cm->mi_stride + mi_c;
+            tpl_mvs_base[mi_offset]
+                .mfmv[FWD_RF_OFFSET(ALTREF_FRAME)][ref_stamp]
+                .as_int = mv_sign_reverse(this_mv);
 
-          get_mv_projection(&this_mv.as_mv, fwd_mv, cur_to_lst,
-                            ref_frame_offset);
-          tpl_mvs_base[mi_offset]
-              .mfmv[FWD_RF_OFFSET(LAST_FRAME)][ref_stamp]
-              .as_int = this_mv.as_int;
+            get_mv_projection(&this_mv.as_mv, fwd_mv, cur_to_lst,
+                              ref_frame_offset);
+            tpl_mvs_base[mi_offset]
+                .mfmv[FWD_RF_OFFSET(LAST_FRAME)][ref_stamp]
+                .as_int = this_mv.as_int;
 
 #if CONFIG_EXT_REFS
-          get_mv_projection(&this_mv.as_mv, fwd_mv, cur_to_bwd,
-                            ref_frame_offset);
-          tpl_mvs_base[mi_offset]
-              .mfmv[FWD_RF_OFFSET(BWDREF_FRAME)][ref_stamp]
-              .as_int = mv_sign_reverse(this_mv);
-
-          if (ref_frame[0] >= LAST2_FRAME) {
-            get_mv_projection(&this_mv.as_mv, fwd_mv, cur_to_lst2,
+            get_mv_projection(&this_mv.as_mv, fwd_mv, cur_to_bwd,
                               ref_frame_offset);
             tpl_mvs_base[mi_offset]
-                .mfmv[FWD_RF_OFFSET(LAST2_FRAME)][ref_stamp]
-                .as_int = this_mv.as_int;
-          }
+                .mfmv[FWD_RF_OFFSET(BWDREF_FRAME)][ref_stamp]
+                .as_int = mv_sign_reverse(this_mv);
 
-          if (ref_frame[0] >= LAST3_FRAME) {
-            get_mv_projection(&this_mv.as_mv, fwd_mv, cur_to_lst3,
-                              ref_frame_offset);
-            tpl_mvs_base[mi_offset]
-                .mfmv[FWD_RF_OFFSET(LAST3_FRAME)][ref_stamp]
-                .as_int = this_mv.as_int;
-          }
+            if (ref_frame[0] >= LAST2_FRAME) {
+              get_mv_projection(&this_mv.as_mv, fwd_mv, cur_to_lst2,
+                                ref_frame_offset);
+              tpl_mvs_base[mi_offset]
+                  .mfmv[FWD_RF_OFFSET(LAST2_FRAME)][ref_stamp]
+                  .as_int = this_mv.as_int;
+            }
+
+            if (ref_frame[0] >= LAST3_FRAME) {
+              get_mv_projection(&this_mv.as_mv, fwd_mv, cur_to_lst3,
+                                ref_frame_offset);
+              tpl_mvs_base[mi_offset]
+                  .mfmv[FWD_RF_OFFSET(LAST3_FRAME)][ref_stamp]
+                  .as_int = this_mv.as_int;
+            }
 #endif
-          if (ref_frame[0] >= GOLDEN_FRAME) {
-            get_mv_projection(&this_mv.as_mv, fwd_mv, cur_to_gld,
-                              ref_frame_offset);
-            tpl_mvs_base[mi_offset]
-                .mfmv[FWD_RF_OFFSET(GOLDEN_FRAME)][ref_stamp]
-                .as_int = this_mv.as_int;
+            if (ref_frame[0] >= GOLDEN_FRAME) {
+              get_mv_projection(&this_mv.as_mv, fwd_mv, cur_to_gld,
+                                ref_frame_offset);
+              tpl_mvs_base[mi_offset]
+                  .mfmv[FWD_RF_OFFSET(GOLDEN_FRAME)][ref_stamp]
+                  .as_int = this_mv.as_int;
+            }
           }
         }
       }
@@ -1569,43 +1575,46 @@ void av1_setup_motion_field(AV1_COMMON *cm) {
 
           get_mv_projection(&this_mv.as_mv, fwd_mv, cur_to_bwd,
                             ref_frame_offset);
-          get_block_position(cm, &mi_r, &mi_c, blk_row, blk_col, this_mv.as_mv,
-                             0);
-          int mi_offset = mi_r * cm->mi_stride + mi_c;
+          int pos_valid = get_block_position(cm, &mi_r, &mi_c, blk_row, blk_col,
+                                             this_mv.as_mv, 0);
 
-          tpl_mvs_base[mi_offset]
-              .mfmv[FWD_RF_OFFSET(BWDREF_FRAME)][ref_stamp]
-              .as_int = mv_sign_reverse(this_mv);
+          if (pos_valid) {
+            int mi_offset = mi_r * cm->mi_stride + mi_c;
 
-          // Project the motion vector onto last reference frame
-          get_mv_projection(&this_mv.as_mv, fwd_mv, cur_to_lst,
-                            ref_frame_offset);
-          tpl_mvs_base[mi_offset]
-              .mfmv[FWD_RF_OFFSET(LAST_FRAME)][ref_stamp]
-              .as_int = this_mv.as_int;
+            tpl_mvs_base[mi_offset]
+                .mfmv[FWD_RF_OFFSET(BWDREF_FRAME)][ref_stamp]
+                .as_int = mv_sign_reverse(this_mv);
 
-          if (ref_frame[0] >= LAST2_FRAME) {
-            get_mv_projection(&this_mv.as_mv, fwd_mv, cur_to_lst2,
+            // Project the motion vector onto last reference frame
+            get_mv_projection(&this_mv.as_mv, fwd_mv, cur_to_lst,
                               ref_frame_offset);
             tpl_mvs_base[mi_offset]
-                .mfmv[FWD_RF_OFFSET(LAST2_FRAME)][ref_stamp]
+                .mfmv[FWD_RF_OFFSET(LAST_FRAME)][ref_stamp]
                 .as_int = this_mv.as_int;
-          }
 
-          if (ref_frame[0] >= LAST3_FRAME) {
-            get_mv_projection(&this_mv.as_mv, fwd_mv, cur_to_lst3,
-                              ref_frame_offset);
-            tpl_mvs_base[mi_offset]
-                .mfmv[FWD_RF_OFFSET(LAST3_FRAME)][ref_stamp]
-                .as_int = this_mv.as_int;
-          }
+            if (ref_frame[0] >= LAST2_FRAME) {
+              get_mv_projection(&this_mv.as_mv, fwd_mv, cur_to_lst2,
+                                ref_frame_offset);
+              tpl_mvs_base[mi_offset]
+                  .mfmv[FWD_RF_OFFSET(LAST2_FRAME)][ref_stamp]
+                  .as_int = this_mv.as_int;
+            }
 
-          if (ref_frame[0] >= GOLDEN_FRAME) {
-            get_mv_projection(&this_mv.as_mv, fwd_mv, cur_to_gld,
-                              ref_frame_offset);
-            tpl_mvs_base[mi_offset]
-                .mfmv[FWD_RF_OFFSET(GOLDEN_FRAME)][ref_stamp]
-                .as_int = this_mv.as_int;
+            if (ref_frame[0] >= LAST3_FRAME) {
+              get_mv_projection(&this_mv.as_mv, fwd_mv, cur_to_lst3,
+                                ref_frame_offset);
+              tpl_mvs_base[mi_offset]
+                  .mfmv[FWD_RF_OFFSET(LAST3_FRAME)][ref_stamp]
+                  .as_int = this_mv.as_int;
+            }
+
+            if (ref_frame[0] >= GOLDEN_FRAME) {
+              get_mv_projection(&this_mv.as_mv, fwd_mv, cur_to_gld,
+                                ref_frame_offset);
+              tpl_mvs_base[mi_offset]
+                  .mfmv[FWD_RF_OFFSET(GOLDEN_FRAME)][ref_stamp]
+                  .as_int = this_mv.as_int;
+            }
           }
         }
       }
