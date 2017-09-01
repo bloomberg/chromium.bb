@@ -43,6 +43,9 @@
 #include "net/base/network_change_notifier.h"
 #endif
 
+#if defined(USE_X11)
+#include "ui/base/x/x11_util.h"  // nogncheck
+#endif
 #if defined(USE_AURA) && defined(USE_X11)
 #include "ui/events/devices/x11/touch_factory_x11.h"  // nogncheck
 #endif
@@ -142,6 +145,9 @@ void ShellBrowserMainParts::PostMainMessageLoopStart() {
 }
 
 void ShellBrowserMainParts::PreEarlyInitialization() {
+#if defined(USE_X11)
+  ui::SetDefaultX11ErrorHandlers();
+#endif
 #if !defined(OS_CHROMEOS) && defined(USE_AURA) && defined(OS_LINUX)
   ui::InitializeInputMethodForTesting();
 #endif
