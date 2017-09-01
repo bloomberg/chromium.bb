@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef CONTENT_COMMON_MEDIA_AEC_DUMP_MESSAGES_H_
+#define CONTENT_COMMON_MEDIA_AEC_DUMP_MESSAGES_H_
+
 // IPC messages for the AEC dump.
-// Multiply-included message file, hence no include guard.
 
 #include "content/common/content_export.h"
 #include "ipc/ipc_message_macros.h"
@@ -39,3 +41,5 @@ IPC_MESSAGE_CONTROL1(AecDumpMsg_UnregisterAecDumpConsumer,
 IPC_MESSAGE_CONTROL2(AudioProcessingMsg_EnableAec3,
                      int /* id */,
                      bool /* enable */)
+
+#endif  // CONTENT_COMMON_MEDIA_AEC_DUMP_MESSAGES_H_

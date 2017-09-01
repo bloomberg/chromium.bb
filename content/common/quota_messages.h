@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Multiply-included message file, hence no include guard.
+#ifndef CONTENT_COMMON_QUOTA_MESSAGES_H_
+#define CONTENT_COMMON_QUOTA_MESSAGES_H_
 
 #include <stdint.h>
 
@@ -50,3 +51,5 @@ IPC_MESSAGE_CONTROL3(QuotaHostMsg_QueryStorageUsageAndQuota,
 
 IPC_MESSAGE_CONTROL1(QuotaHostMsg_RequestStorageQuota,
                      content::StorageQuotaParams)
+
+#endif  // CONTENT_COMMON_QUOTA_MESSAGES_H_

@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Multiply-included message file, no include guard.
+#ifndef CONTENT_COMMON_DATABASE_MESSAGES_H_
+#define CONTENT_COMMON_DATABASE_MESSAGES_H_
 
 #include <stdint.h>
 
@@ -83,3 +84,5 @@ IPC_MESSAGE_CONTROL3(DatabaseHostMsg_HandleSqliteError,
                      url::Origin /* origin */,
                      base::string16 /* database name */,
                      int /* error */)
+
+#endif  // CONTENT_COMMON_DATABASE_MESSAGES_H_

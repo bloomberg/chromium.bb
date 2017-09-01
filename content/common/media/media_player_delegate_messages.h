@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef CONTENT_COMMON_MEDIA_MEDIA_PLAYER_DELEGATE_MESSAGES_H_
+#define CONTENT_COMMON_MEDIA_MEDIA_PLAYER_DELEGATE_MESSAGES_H_
+
 // IPC messages for interactions between the WebMediaPlayerDelegate in the
 // renderer process and MediaWebContentsObserver in the browser process.
-// Multiply-included message file, hence no include guard.
 
 #include <stdint.h>
 
@@ -69,3 +71,5 @@ IPC_MESSAGE_ROUTED2(
 IPC_MESSAGE_ROUTED2(MediaPlayerDelegateHostMsg_OnMediaSizeChanged,
                     int /* delegate_id, distinguishes instances */,
                     gfx::Size /* new size of video */)
+
+#endif  // CONTENT_COMMON_MEDIA_MEDIA_PLAYER_DELEGATE_MESSAGES_H_

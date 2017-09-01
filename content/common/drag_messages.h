@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef CONTENT_COMMON_DRAG_MESSAGES_H_
+#define CONTENT_COMMON_DRAG_MESSAGES_H_
+
 // IPC messages for drag and drop.
-// Multiply-included message file, hence no include guard.
 
 #include <vector>
 
@@ -68,3 +70,5 @@ IPC_MESSAGE_ROUTED5(DragHostMsg_StartDragging,
 // |is_drop_target| is true if the mouse is over a valid drop target.
 IPC_MESSAGE_ROUTED1(DragHostMsg_UpdateDragCursor,
                     blink::WebDragOperation /* drag_operation */)
+
+#endif  // CONTENT_COMMON_DRAG_MESSAGES_H_

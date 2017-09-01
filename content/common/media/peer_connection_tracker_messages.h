@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef CONTENT_COMMON_MEDIA_PEER_CONNECTION_TRACKER_MESSAGES_H_
+#define CONTENT_COMMON_MEDIA_PEER_CONNECTION_TRACKER_MESSAGES_H_
+
 #include "base/values.h"
 #include "content/common/content_export.h"
 #include "ipc/ipc_message_macros.h"
@@ -47,3 +50,5 @@ IPC_MESSAGE_CONTROL2(PeerConnectionTracker_StartEventLog,
                      IPC::PlatformFileForTransit /* file */)
 IPC_MESSAGE_CONTROL1(PeerConnectionTracker_StopEventLog,
                      int /* peer_connection_local_id */)
+
+#endif  // CONTENT_COMMON_MEDIA_PEER_CONNECTION_TRACKER_MESSAGES_H_

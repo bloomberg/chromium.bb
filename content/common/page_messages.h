@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef CONTENT_COMMON_PAGE_MESSAGES_H_
+#define CONTENT_COMMON_PAGE_MESSAGES_H_
+
 #include "content/common/page_message_enums.h"
 #include "content/public/common/screen_info.h"
 #include "ipc/ipc_message_macros.h"
 #include "ui/gfx/geometry/rect.h"
 
 // IPC messages for page-level actions.
-// Multiply-included message file, hence no include guard.
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
@@ -56,3 +58,5 @@ IPC_MESSAGE_ROUTED1(PageMsg_UpdateScreenInfo,
 // Adding a new message? Stick to the sort order above: first platform
 // independent PageMsg, then ifdefs for platform specific PageMsg, then platform
 // independent PageHostMsg, then ifdefs for platform specific PageHostMsg.
+
+#endif  // CONTENT_COMMON_PAGE_MESSAGES_H_

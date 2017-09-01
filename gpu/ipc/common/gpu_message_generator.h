@@ -5,4 +5,8 @@
 // Multiply-included file, hence no include guard.
 
 #include "build/build_config.h"
+#undef GPU_IPC_COMMON_GPU_MESSAGES_H_
 #include "gpu/ipc/common/gpu_messages.h"
+#ifndef GPU_IPC_COMMON_GPU_MESSAGES_H_
+#error "Failed to include gpu/ipc/common/gpu_messages.h"
+#endif

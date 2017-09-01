@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Multiply-included message file, hence no include guard.
+#ifndef CONTENT_COMMON_APPCACHE_MESSAGES_H_
+#define CONTENT_COMMON_APPCACHE_MESSAGES_H_
 
 #include "ipc/ipc_message_macros.h"
 
@@ -160,3 +161,5 @@ IPC_MESSAGE_CONTROL3(AppCacheMsg_LogMessage,
 IPC_MESSAGE_CONTROL2(AppCacheMsg_ContentBlocked,
                      int /* host_id */,
                      GURL /* manifest_url */)
+
+#endif  // CONTENT_COMMON_APPCACHE_MESSAGES_H_

@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Multiply-included message header, no traditional include guard.
+#ifndef COMPONENTS_TRACING_COMMON_TRACING_MESSAGES_H_
+#define COMPONENTS_TRACING_COMMON_TRACING_MESSAGES_H_
 
 #include <stdint.h>
 
@@ -72,3 +73,5 @@ IPC_MESSAGE_CONTROL1(TracingHostMsg_TriggerBackgroundTrace,
                      std::string /* name */)
 
 IPC_MESSAGE_CONTROL0(TracingHostMsg_AbortBackgroundTrace)
+
+#endif  // COMPONENTS_TRACING_COMMON_TRACING_MESSAGES_H_

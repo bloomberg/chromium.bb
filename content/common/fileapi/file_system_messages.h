@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef CONTENT_COMMON_FILEAPI_FILE_SYSTEM_MESSAGES_H_
+#define CONTENT_COMMON_FILEAPI_FILE_SYSTEM_MESSAGES_H_
+
 // IPC messages for the file system.
-// Multiply-included message file, hence no include guard.
 
 #include <stdint.h>
 
@@ -163,3 +165,5 @@ IPC_MESSAGE_CONTROL1(FileSystemHostMsg_DidReceiveSnapshotFile,
 IPC_SYNC_MESSAGE_CONTROL1_1(FileSystemHostMsg_SyncGetPlatformPath,
                             GURL /* file path */,
                             base::FilePath /* platform_path */)
+
+#endif  // CONTENT_COMMON_FILEAPI_FILE_SYSTEM_MESSAGES_H_

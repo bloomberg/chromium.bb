@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef CONTENT_COMMON_WORKER_MESSAGES_H_
+#define CONTENT_COMMON_WORKER_MESSAGES_H_
+
 // Defines messages between the browser and worker process, as well as between
 // the renderer and worker process.
-
-// Multiply-included message file, hence no include guard.
 
 #include <string>
 #include <utility>
@@ -102,3 +103,5 @@ IPC_MESSAGE_CONTROL1(WorkerHostMsg_WorkerScriptLoadFailed,
 IPC_MESSAGE_CONTROL2(WorkerHostMsg_WorkerConnected,
                      int /* connection_request_id */,
                      int /* worker_route_id */)
+
+#endif  // CONTENT_COMMON_WORKER_MESSAGES_H_

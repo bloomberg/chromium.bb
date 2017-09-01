@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef CONTENT_COMMON_VIEW_MESSAGES_H_
+#define CONTENT_COMMON_VIEW_MESSAGES_H_
+
 // IPC messages for page rendering.
-// Multiply-included message file, hence no include guard.
 
 #include <stddef.h>
 #include <stdint.h>
@@ -869,3 +871,5 @@ IPC_MESSAGE_ROUTED1(ViewMsg_GetRenderedTextCompleted, std::string)
 // Adding a new message? Stick to the sort order above: first platform
 // independent ViewMsg, then ifdefs for platform specific ViewMsg, then platform
 // independent ViewHostMsg, then ifdefs for platform specific ViewHostMsg.
+
+#endif  // CONTENT_COMMON_VIEW_MESSAGES_H_
