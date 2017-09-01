@@ -36,9 +36,6 @@ class ReportingServiceProxyImpl : public mojom::ReportingServiceProxy {
                    const std::string& group,
                    const std::string& type,
                    std::unique_ptr<base::Value> body) override {
-    std::unique_ptr<const base::Value> const_body =
-        base::WrapUnique(body.release());
-
     net::URLRequestContext* request_context =
         request_context_getter_->GetURLRequestContext();
     if (!request_context) {
@@ -53,7 +50,7 @@ class ReportingServiceProxyImpl : public mojom::ReportingServiceProxy {
       return;
     }
 
-    reporting_service->QueueReport(url, group, type, std::move(const_body));
+    reporting_service->QueueReport(url, group, type, std::move(body));
   }
 
  private:
