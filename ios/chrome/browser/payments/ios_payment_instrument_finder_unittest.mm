@@ -16,7 +16,7 @@
 
 namespace payments {
 
-class TestIOSPaymentInstrumentFinder : public IOSPaymentInstrumentFinder {
+class TestIOSPaymentInstrumentFinder final : public IOSPaymentInstrumentFinder {
  public:
   TestIOSPaymentInstrumentFinder(
       net::TestURLRequestContextGetter* context_getter)
