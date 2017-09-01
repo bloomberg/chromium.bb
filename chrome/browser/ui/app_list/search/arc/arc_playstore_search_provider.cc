@@ -18,6 +18,9 @@
 
 namespace {
 constexpr int kHistogramBuckets = 13;
+constexpr char kAppListPlayStoreQueryStateHistogram[] =
+    "Apps.AppListPlayStoreQueryState";
+constexpr int kAppListPlayStoreQueryStateNum = 3;
 
 // Skips Play Store apps that have equivalent extensions installed.
 // Do not skip recent instant apps since they should be treated like
@@ -76,6 +79,8 @@ void ArcPlayStoreSearchProvider::OnResults(
     base::TimeTicks query_start_time,
     arc::mojom::AppDiscoveryRequestState state,
     std::vector<arc::mojom::AppDiscoveryResultPtr> results) {
+  UMA_HISTOGRAM_ENUMERATION(kAppListPlayStoreQueryStateHistogram, state,
+                            kAppListPlayStoreQueryStateNum);
   if (state != arc::mojom::AppDiscoveryRequestState::SUCCESS) {
     DCHECK(results.empty());
     ClearResults();

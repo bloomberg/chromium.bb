@@ -1719,6 +1719,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Apps.AppListPlayStoreQueryState"
+    enum="AppListPlayStoreQueryState">
+  <owner>hejq@chromium.org</owner>
+  <summary>The state of a Play Store app search request.</summary>
+</histogram>
+
 <histogram name="Apps.AppListSearchCommenced" units="searches">
   <owner>tapted@chromium.org</owner>
   <summary>
