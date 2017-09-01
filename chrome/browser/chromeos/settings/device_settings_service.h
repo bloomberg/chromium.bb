@@ -5,13 +5,13 @@
 #ifndef CHROME_BROWSER_CHROMEOS_SETTINGS_DEVICE_SETTINGS_SERVICE_H_
 #define CHROME_BROWSER_CHROMEOS_SETTINGS_DEVICE_SETTINGS_SERVICE_H_
 
-#include <deque>
 #include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
@@ -251,7 +251,7 @@ class DeviceSettingsService : public SessionManagerClient::Observer {
 
   // The queue of pending operations. The first operation on the queue is
   // currently active; it gets removed and destroyed once it completes.
-  std::deque<linked_ptr<SessionManagerOperation>> pending_operations_;
+  base::circular_deque<linked_ptr<SessionManagerOperation>> pending_operations_;
 
   base::ObserverList<Observer> observers_;
 

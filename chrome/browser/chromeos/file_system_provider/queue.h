@@ -7,10 +7,10 @@
 
 #include <stddef.h>
 
-#include <deque>
 #include <map>
 
 #include "base/callback.h"
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -84,7 +84,7 @@ class Queue {
 
   const size_t max_in_parallel_;
   size_t next_token_;
-  std::deque<Task> pending_;
+  base::circular_deque<Task> pending_;
   std::map<int, Task> executed_;
 
   base::WeakPtrFactory<Queue> weak_ptr_factory_;

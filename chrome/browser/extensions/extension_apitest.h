@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_APITEST_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_APITEST_H_
 
-#include <deque>
 #include <string>
 
 #include "base/compiler_specific.h"

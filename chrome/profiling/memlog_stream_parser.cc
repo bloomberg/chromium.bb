@@ -23,7 +23,9 @@ using AddressVector = base::StackVector<Address, kMaxStackEntries>;
 MemlogStreamParser::Block::Block(std::unique_ptr<char[]> d, size_t s)
     : data(std::move(d)), size(s) {}
 
-MemlogStreamParser::Block::~Block() {}
+MemlogStreamParser::Block::Block(Block&& other) noexcept = default;
+
+MemlogStreamParser::Block::~Block() = default;
 
 MemlogStreamParser::MemlogStreamParser(MemlogReceiver* receiver)
     : receiver_(receiver) {}

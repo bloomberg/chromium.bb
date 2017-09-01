@@ -7,12 +7,12 @@
 
 #include <stddef.h>
 
-#include <deque>
 #include <map>
 #include <memory>
 #include <string>
 
 #include "base/callback.h"
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_get_keys_operation.h"
@@ -102,9 +102,10 @@ class EasyUnlockKeyManager {
                      bool fetch_success,
                      const EasyUnlockDeviceKeyDataList& fetched_data);
 
-  std::deque<std::unique_ptr<EasyUnlockRefreshKeysOperation>>
+  base::circular_deque<std::unique_ptr<EasyUnlockRefreshKeysOperation>>
       write_operation_queue_;
-  std::deque<std::unique_ptr<EasyUnlockGetKeysOperation>> read_operation_queue_;
+  base::circular_deque<std::unique_ptr<EasyUnlockGetKeysOperation>>
+      read_operation_queue_;
 
   // Stores the current operation in progress. At most one of these variables
   // can be non-null at any time.

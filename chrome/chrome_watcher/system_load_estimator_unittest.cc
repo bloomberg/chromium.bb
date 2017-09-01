@@ -4,10 +4,10 @@
 
 #include "chrome/chrome_watcher/system_load_estimator.h"
 
-#include <deque>
 #include <memory>
 #include <utility>
 
+#include "base/containers/circular_deque.h"
 #include "base/logging.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -16,7 +16,7 @@ namespace {
 
 using SystemLoadEstimator = chrome_watcher::SystemLoadEstimator;
 using TimePair = std::pair<uint64_t, uint64_t>;
-using TimePairQueue = std::deque<TimePair>;
+using TimePairQueue = base::circular_deque<TimePair>;
 
 class SystemLoadEstimatorForTest : public SystemLoadEstimator {
  public:

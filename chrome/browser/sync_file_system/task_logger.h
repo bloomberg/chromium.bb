@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_TASK_LOGGER_H_
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_TASK_LOGGER_H_
 
-#include <deque>
 #include <memory>
 #include <string>
 #include <vector>
 
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -31,7 +31,7 @@ class TaskLogger : public base::SupportsWeakPtr<TaskLogger> {
     ~TaskLog();
   };
 
-  using LogList = std::deque<std::unique_ptr<TaskLog>>;
+  using LogList = base::circular_deque<std::unique_ptr<TaskLog>>;
 
   class Observer {
    public:

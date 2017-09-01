@@ -10,6 +10,7 @@
 
 #include <algorithm>
 
+#include "base/containers/circular_deque.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/guid.h"
@@ -237,7 +238,7 @@ class DownloadsEventsListener : public content::NotificationObserver {
   base::Time last_wait_;
   std::unique_ptr<Event> waiting_for_;
   content::NotificationRegistrar registrar_;
-  std::deque<std::unique_ptr<Event>> events_;
+  base::circular_deque<std::unique_ptr<Event>> events_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadsEventsListener);
 };

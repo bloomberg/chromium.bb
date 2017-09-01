@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/test/integration/bookmarks_helper.h"
@@ -42,7 +43,7 @@ syncer::ModelTypeSet MakeSet(syncer::ModelType type1,
 
 // An ordered list of model types sets to migrate.  Used by
 // RunMigrationTest().
-using MigrationList = std::deque<syncer::ModelTypeSet>;
+using MigrationList = base::circular_deque<syncer::ModelTypeSet>;
 
 // Utility functions to make a MigrationList out of a small number of
 // model types / model type sets.

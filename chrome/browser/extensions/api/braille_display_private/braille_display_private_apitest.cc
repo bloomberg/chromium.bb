@@ -4,9 +4,8 @@
 
 #include <stddef.h>
 
-#include <deque>
-
 #include "base/bind.h"
+#include "base/containers/circular_deque.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
@@ -57,7 +56,7 @@ struct MockBrlapiConnectionData {
   std::vector<std::string> written_content;
   // List of brlapi key codes.  A negative number makes the connection mock
   // return an error from ReadKey.
-  std::deque<brlapi_keyCode_t> pending_keys;
+  base::circular_deque<brlapi_keyCode_t> pending_keys;
   // Causes a new display to appear to appear on disconnect, that is the
   // display size doubles and the controller gets notified of a brltty
   // restart.

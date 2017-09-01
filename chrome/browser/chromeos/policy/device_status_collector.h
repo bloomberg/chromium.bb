@@ -7,7 +7,6 @@
 
 #include <stdint.h>
 
-#include <deque>
 #include <memory>
 #include <string>
 #include <vector>
@@ -15,6 +14,7 @@
 #include "base/callback_forward.h"
 #include "base/callback_list.h"
 #include "base/compiler_specific.h"
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -244,7 +244,7 @@ class DeviceStatusCollector {
 
   // Samples of resource usage (contains multiple samples taken
   // periodically every kHardwareStatusSampleIntervalSeconds).
-  std::deque<ResourceUsage> resource_usage_;
+  base::circular_deque<ResourceUsage> resource_usage_;
 
   // Callback invoked to fetch information about the mounted disk volumes.
   VolumeInfoFetcher volume_info_fetcher_;

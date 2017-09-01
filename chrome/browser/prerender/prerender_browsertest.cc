@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include <stddef.h>
-#include <deque>
 #include <set>
 #include <string>
 #include <unordered_map>

@@ -7,11 +7,11 @@
 
 #include <stdint.h>
 
-#include <deque>
 #include <set>
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/containers/circular_deque.h"
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/time/time.h"
@@ -61,7 +61,7 @@ struct SBAddPrefix {
 
 // TODO(shess): Measure the performance impact of switching this back to
 // std::vector<> once the v8 file format dominates.  Also SBSubPrefixes.
-typedef std::deque<SBAddPrefix> SBAddPrefixes;
+using SBAddPrefixes = base::circular_deque<SBAddPrefix>;
 
 struct SBSubPrefix {
   int32_t chunk_id;
@@ -76,7 +76,7 @@ struct SBSubPrefix {
   SBPrefix GetAddPrefix() const { return add_prefix; }
 };
 
-typedef std::deque<SBSubPrefix> SBSubPrefixes;
+using SBSubPrefixes = base::circular_deque<SBSubPrefix>;
 
 struct SBAddFullHash {
   int32_t chunk_id;

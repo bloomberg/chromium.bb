@@ -16,12 +16,12 @@
 #include <stddef.h>
 
 #include <algorithm>
-#include <deque>
 #include <memory>
 #include <set>
 #include <string>
 #include <vector>
 
+#include "base/containers/circular_deque.h"
 #include "base/containers/hash_tables.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -332,7 +332,7 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate {
   base::OneShotTimer timeout_timer_;
 
   // All chunk requests that need to be made.
-  std::deque<ChunkUrl> chunk_request_urls_;
+  base::circular_deque<ChunkUrl> chunk_request_urls_;
 
   std::map<const net::URLFetcher*,
            std::pair<std::unique_ptr<net::URLFetcher>, FullHashDetails>>

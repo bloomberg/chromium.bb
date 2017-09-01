@@ -6,7 +6,6 @@
 
 #include <stdlib.h>
 
-#include <deque>
 #include <utility>
 
 #include "ash/shell.h"

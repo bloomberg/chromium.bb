@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_LOCAL_LOCAL_FILE_SYNC_CONTEXT_H_
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_LOCAL_LOCAL_FILE_SYNC_CONTEXT_H_
 
-#include <deque>
 #include <map>
 #include <memory>
 #include <set>
@@ -13,6 +12,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/circular_deque.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
@@ -210,9 +210,9 @@ class LocalFileSyncContext
   void OnWriteEnabled(const storage::FileSystemURL& url) override;
 
  private:
-  typedef base::Callback<void(base::File::Error result)> StatusCallback;
-  typedef std::deque<SyncStatusCallback> StatusCallbackQueue;
-  typedef std::deque<storage::FileSystemURL> FileSystemURLQueue;
+  using StatusCallback = base::Callback<void(base::File::Error result)>;
+  using StatusCallbackQueue = base::circular_deque<SyncStatusCallback>;
+  using FileSystemURLQueue = base::circular_deque<storage::FileSystemURL>;
   friend class base::RefCountedThreadSafe<LocalFileSyncContext>;
   friend class CannedSyncableFileSystem;
 

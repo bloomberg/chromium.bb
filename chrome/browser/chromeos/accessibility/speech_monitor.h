@@ -5,8 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_ACCESSIBILITY_SPEECH_MONITOR_H_
 #define CHROME_BROWSER_CHROMEOS_ACCESSIBILITY_SPEECH_MONITOR_H_
 
-#include <deque>
-
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/speech/tts_platform.h"
@@ -53,7 +52,7 @@ class SpeechMonitor : public TtsPlatformImpl {
                                    const VoiceData& voice_data) override;
 
   scoped_refptr<content::MessageLoopRunner> loop_runner_;
-  std::deque<std::string> utterance_queue_;
+  base::circular_deque<std::string> utterance_queue_;
   bool did_stop_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(SpeechMonitor);

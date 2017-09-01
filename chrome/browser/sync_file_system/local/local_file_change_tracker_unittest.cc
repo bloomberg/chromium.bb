@@ -6,10 +6,10 @@
 
 #include <stdint.h>
 
-#include <deque>
 #include <memory>
 #include <set>
 
+#include "base/containers/circular_deque.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -187,7 +187,7 @@ TEST_F(LocalFileChangeTrackerTest, GetChanges) {
   EXPECT_FALSE(base::ContainsKey(urls, URL(kPath0)));
 
   // GetNextChangedURLs only returns up to max_urls (i.e. 3) urls.
-  std::deque<FileSystemURL> urls_to_process;
+  base::circular_deque<FileSystemURL> urls_to_process;
   change_tracker()->GetNextChangedURLs(&urls_to_process, 3);
   ASSERT_EQ(3U, urls_to_process.size());
 
@@ -618,7 +618,7 @@ TEST_F(LocalFileChangeTrackerTest, NextChangedURLsWithRecursiveCopy) {
   EXPECT_EQ(base::File::FILE_OK,
             file_system_.Copy(URL(kPath0), URL(kPath0Copy)));
 
-  std::deque<FileSystemURL> urls_to_process;
+  base::circular_deque<FileSystemURL> urls_to_process;
   change_tracker()->GetNextChangedURLs(&urls_to_process, 0);
   ASSERT_EQ(6U, urls_to_process.size());
 

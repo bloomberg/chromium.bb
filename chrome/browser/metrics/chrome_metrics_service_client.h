@@ -7,12 +7,12 @@
 
 #include <stdint.h>
 
-#include <deque>
 #include <memory>
 #include <queue>
 #include <string>
 
 #include "base/callback.h"
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
@@ -182,7 +182,7 @@ class ChromeMetricsServiceClient : public metrics::MetricsServiceClient,
 
   // A queue of tasks for initial metrics gathering. These may be asynchronous
   // or synchronous.
-  std::deque<base::Closure> initialize_task_queue_;
+  base::circular_deque<base::Closure> initialize_task_queue_;
 
   // Saved callback received from CollectFinalMetricsForLog().
   base::Closure collect_final_metrics_done_callback_;

@@ -6,8 +6,7 @@
 
 #include <stddef.h>
 
-#include <deque>
-
+#include "base/containers/circular_deque.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_value_converter.h"
 #include "base/json/json_writer.h"
@@ -251,7 +250,7 @@ class FileManagerTestListener : public content::NotificationObserver {
   }
 
  private:
-  std::deque<Message> messages_;
+  base::circular_deque<Message> messages_;
   content::NotificationRegistrar registrar_;
 };
 

@@ -5,11 +5,11 @@
 #include "chrome/browser/sync_file_system/drive_backend/sync_task_manager.h"
 
 #include <stdint.h>
-#include <deque>
 #include <string>
 #include <utility>
 
 #include "base/bind.h"
+#include "base/containers/circular_deque.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -278,7 +278,7 @@ class BlockerUpdateTestHelper : public SyncTask {
 
   std::string name_;
   std::string app_id_;
-  std::deque<std::string> paths_;
+  base::circular_deque<std::string> paths_;
   Log* log_;
 
   base::WeakPtrFactory<BlockerUpdateTestHelper> weak_ptr_factory_;

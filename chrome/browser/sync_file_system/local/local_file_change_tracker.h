@@ -7,12 +7,12 @@
 
 #include <stdint.h>
 
-#include <deque>
 #include <map>
 #include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/containers/circular_deque.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -70,7 +70,7 @@ class LocalFileChangeTracker : public storage::FileUpdateObserver,
   // If |max_urls| is non-zero (recommended in production code) this
   // returns URLs up to the number from the ones that have smallest
   // change_seq numbers (i.e. older changes).
-  void GetNextChangedURLs(std::deque<storage::FileSystemURL>* urls,
+  void GetNextChangedURLs(base::circular_deque<storage::FileSystemURL>* urls,
                           int max_urls);
 
   // Returns all changes recorded for the given |url|.

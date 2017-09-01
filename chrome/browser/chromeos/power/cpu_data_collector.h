@@ -7,11 +7,11 @@
 
 #include <stdint.h>
 
-#include <deque>
 #include <map>
 #include <string>
 #include <vector>
 
+#include "base/containers/circular_deque.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -47,7 +47,7 @@ class CpuDataCollector {
     std::vector<base::TimeDelta> time_in_state;
   };
 
-  typedef std::deque<StateOccupancySample> StateOccupancySampleDeque;
+  using StateOccupancySampleDeque = base::circular_deque<StateOccupancySample>;
 
   const std::vector<std::string>& cpu_idle_state_names() const {
     return cpu_idle_state_names_;

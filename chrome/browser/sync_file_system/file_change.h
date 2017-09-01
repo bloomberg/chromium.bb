@@ -7,9 +7,9 @@
 
 #include <stddef.h>
 
-#include <deque>
 #include <string>
 
+#include "base/containers/circular_deque.h"
 #include "base/files/file_path.h"
 #include "chrome/browser/sync_file_system/sync_file_type.h"
 #include "storage/browser/fileapi/file_system_url.h"
@@ -49,7 +49,7 @@ class FileChange {
 
 class FileChangeList {
  public:
-  typedef std::deque<FileChange> List;
+  using List = base::circular_deque<FileChange>;
 
   FileChangeList();
   FileChangeList(const FileChangeList& other);

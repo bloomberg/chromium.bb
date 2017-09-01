@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_USER_SCRIPT_LISTENER_H_
 #define CHROME_BROWSER_EXTENSIONS_USER_SCRIPT_LISTENER_H_
 
-#include <deque>
 #include <list>
 #include <map>
 
 #include "base/compiler_specific.h"
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -87,8 +87,8 @@ class UserScriptListener : public base::RefCountedThreadSafe<
 
   // Stores a throttle per URL request that we have delayed.
   class Throttle;
-  typedef base::WeakPtr<Throttle> WeakThrottle;
-  typedef std::deque<WeakThrottle> WeakThrottleList;
+  using WeakThrottle = base::WeakPtr<Throttle>;
+  using WeakThrottleList = base::circular_deque<WeakThrottle>;
   WeakThrottleList throttles_;
 
   // Per-profile bookkeeping so we know when all user scripts are ready.

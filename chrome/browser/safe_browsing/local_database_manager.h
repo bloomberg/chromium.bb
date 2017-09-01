@@ -10,7 +10,6 @@
 
 #include <stddef.h>
 
-#include <deque>
 #include <map>
 #include <memory>
 #include <set>
@@ -18,6 +17,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/circular_deque.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -376,7 +376,7 @@ class LocalSafeBrowsingDatabaseManager
   // is true, nothing on the IO thread should access the database.
   bool closing_database_;
 
-  std::deque<QueuedCheck> queued_checks_;
+  base::circular_deque<QueuedCheck> queued_checks_;
 
   // Timeout to use for safe browsing checks.
   base::TimeDelta check_timeout_;

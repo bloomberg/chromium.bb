@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/containers/circular_deque.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -48,7 +49,8 @@ struct AfterStartupTask {
 base::LazyInstance<base::AtomicFlag>::Leaky g_startup_complete_flag;
 
 // The queue may only be accessed on the UI thread.
-base::LazyInstance<std::deque<AfterStartupTask*>>::Leaky g_after_startup_tasks;
+base::LazyInstance<base::circular_deque<AfterStartupTask*>>::Leaky
+    g_after_startup_tasks;
 
 bool IsBrowserStartupComplete() {
   // Be sure to initialize the LazyInstance on the main thread since the flag
@@ -117,7 +119,7 @@ void SetBrowserStartupIsComplete() {
   g_after_startup_tasks.Get().clear();
 
   // The shrink_to_fit() method is not available for all of our build targets.
-  std::deque<AfterStartupTask*>(g_after_startup_tasks.Get())
+  base::circular_deque<AfterStartupTask*>(g_after_startup_tasks.Get())
       .swap(g_after_startup_tasks.Get());
 }
 

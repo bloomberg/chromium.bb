@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/containers/circular_deque.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -1580,7 +1581,7 @@ void MTPDeviceDelegateImplLinux::OnDidReadDirectory(
   MTPFileNode* dir_node = it->second;
 
   // Traverse the MTPFileNode tree to reconstuct the full path for |dir_id|.
-  std::deque<std::string> dir_path_parts;
+  base::circular_deque<std::string> dir_path_parts;
   MTPFileNode* parent_node = dir_node;
   while (parent_node->parent()) {
     dir_path_parts.push_front(parent_node->file_name());

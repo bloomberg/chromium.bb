@@ -5,9 +5,9 @@
 #ifndef CHROME_BROWSER_MEDIA_WEBRTC_PERMISSION_BUBBLE_MEDIA_ACCESS_HANDLER_H_
 #define CHROME_BROWSER_MEDIA_WEBRTC_PERMISSION_BUBBLE_MEDIA_ACCESS_HANDLER_H_
 
-#include <deque>
 #include <map>
 
+#include "base/containers/circular_deque.h"
 #include "chrome/browser/media/media_access_handler.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -41,8 +41,8 @@ class PermissionBubbleMediaAccessHandler
 
  private:
   struct PendingAccessRequest;
-  typedef std::deque<PendingAccessRequest> RequestsQueue;
-  typedef std::map<content::WebContents*, RequestsQueue> RequestsQueues;
+  using RequestsQueue = base::circular_deque<PendingAccessRequest>;
+  using RequestsQueues = std::map<content::WebContents*, RequestsQueue>;
 
   void ProcessQueuedAccessRequest(content::WebContents* web_contents);
   void OnAccessRequestResponse(content::WebContents* web_contents,
