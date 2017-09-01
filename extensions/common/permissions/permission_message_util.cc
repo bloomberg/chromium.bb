@@ -8,8 +8,12 @@
 #include <vector>
 
 #include "base/strings/string_split.h"
+#include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
+#include "components/url_formatter/elide_url.h"
 #include "extensions/common/url_pattern_set.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "url/gurl.h"
 #include "url/url_constants.h"
 
 using extensions::URLPatternSet;
@@ -45,6 +49,14 @@ std::set<std::string> GetDistinctHosts(const URLPatternSet& host_patterns,
       continue;
 
     std::string host = pattern.host();
+    if (!host.empty()) {
+      // Convert the host into a secure format. For example, an IDN domain is
+      // converted to punycode.
+      host = base::UTF16ToUTF8(url_formatter::FormatUrlForSecurityDisplay(
+          GURL(base::StringPrintf("%s%s%s", url::kHttpScheme,
+                                  url::kStandardSchemeSeparator, host.c_str())),
+          url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS));
+    }
 
     // Add the subdomain wildcard back to the host, if necessary.
     if (pattern.match_subdomains())
