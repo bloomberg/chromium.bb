@@ -28,16 +28,21 @@ class CORE_EXPORT CSSPropertyAPI {
   constexpr CSSPropertyAPI() {}
 #endif
 
+  // Parses and consumes a longhand property value from the token range.
+  // Returns nullptr if the input is invalid.
   virtual const CSSValue* ParseSingleValue(CSSPropertyID,
                                            CSSParserTokenRange&,
                                            const CSSParserContext&,
                                            const CSSParserLocalContext&) const;
+  // Parses and consumes entire shorthand value from the token range and adds
+  // all constituent parsed longhand properties to the 'properties' set.
+  // Returns false if the input is invalid.
   virtual bool ParseShorthand(CSSPropertyID,
                               bool important,
                               CSSParserTokenRange&,
                               const CSSParserContext&,
                               const CSSParserLocalContext&,
-                              HeapVector<CSSProperty, 256>&) const;
+                              HeapVector<CSSProperty, 256>& properties) const;
 
   virtual bool IsInterpolable() const { return false; }
   virtual bool IsInherited() const { return false; }
