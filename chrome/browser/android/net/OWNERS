@@ -1,6 +1,4 @@
-file://net/OWNERS
+file://net/nqe/OWNERS
 
-per-file network_quality*=bengr@chromium.org
-per-file external_estimate*=bengr@chromium.org
-
-# COMPONENT: Internals>Network
+# TEAM: nqe-dev@chromium.org
+# COMPONENT: Internals>Network>NetworkQuality

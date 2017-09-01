@@ -9,6 +9,7 @@
 
 #include "base/at_exit.h"
 #include "base/memory/ptr_util.h"
+#include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
 #include "base/time/time.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -19,22 +20,12 @@
 
 namespace {
 
-// Tests if the |ExternalEstimateProviderAndroid| APIs return false without the
+// Check that |ExternalEstimateProviderAndroid|  does not crash without the
 // downstream implementation.
 TEST(ExternalEstimateProviderAndroidTest, BasicsTest) {
   base::ShadowingAtExitManager at_exit_manager;
   chrome::android::ExternalEstimateProviderAndroid external_estimate_provider;
-
-  base::TimeDelta rtt;
-  EXPECT_FALSE(external_estimate_provider.GetRTT(&rtt));
-
-  int32_t kbps;
-  EXPECT_FALSE(external_estimate_provider.GetDownstreamThroughputKbps(&kbps));
-  EXPECT_FALSE(external_estimate_provider.GetUpstreamThroughputKbps(&kbps));
-
-  base::TimeDelta time_since_last_update;
-  EXPECT_FALSE(external_estimate_provider.GetTimeSinceLastUpdate(
-      &time_since_last_update));
+  external_estimate_provider.Update();
 }
 
 class TestNetworkQualityEstimator : public net::NetworkQualityEstimator {
@@ -54,14 +45,12 @@ class TestNetworkQualityEstimator : public net::NetworkQualityEstimator {
   ~TestNetworkQualityEstimator() override {}
 
   void OnUpdatedEstimateAvailable(const base::TimeDelta& rtt,
-                                  int32_t downstream_throughput_kbps,
-                                  int32_t upstream_throughput_kbps) override {
-    EXPECT_EQ(base::TimeDelta(), rtt);
+                                  int32_t downstream_throughput_kbps) override {
+    EXPECT_GT(base::TimeDelta(), rtt);
     EXPECT_EQ(-1, downstream_throughput_kbps);
-    EXPECT_EQ(-1, upstream_throughput_kbps);
     notified_ = true;
     net::NetworkQualityEstimator::OnUpdatedEstimateAvailable(
-        rtt, downstream_throughput_kbps, upstream_throughput_kbps);
+        rtt, downstream_throughput_kbps);
   }
 
   bool notified() const { return notified_; }
@@ -77,12 +66,6 @@ class TestExternalEstimateProviderAndroid
       : chrome::android::ExternalEstimateProviderAndroid() {}
   ~TestExternalEstimateProviderAndroid() override {}
   using ExternalEstimateProviderAndroid::NotifyUpdatedEstimateAvailable;
-
-  bool GetTimeSinceLastUpdate(
-      base::TimeDelta* time_since_last_update) const override {
-    *time_since_last_update = base::TimeDelta::FromMilliseconds(0);
-    return true;
-  }
 };
 
 // Tests if the |ExternalEstimateProviderAndroid| notifies
