@@ -76,7 +76,7 @@ bool IsEmptyBlock(const NGLayoutInputNode child,
   // assume that its in the same writing mode as its parent, as a different
   // writing mode child will be caught by the CreatesNewFormattingContext check.
   NGFragment fragment(FromPlatformWritingMode(child.Style().GetWritingMode()),
-                      layout_result.PhysicalFragment().Get());
+                      *layout_result.PhysicalFragment());
   DCHECK_EQ(LayoutUnit(), fragment.BlockSize());
 #endif
 
@@ -660,11 +660,10 @@ bool NGBlockLayoutAlgorithm::HandleInflow(
   }
 
   // We must have an actual fragment at this stage.
-  DCHECK(layout_result->PhysicalFragment().Get());
+  DCHECK(layout_result->PhysicalFragment());
 
-  NGBoxFragment fragment(
-      ConstraintSpace().WritingMode(),
-      ToNGPhysicalBoxFragment(layout_result->PhysicalFragment().Get()));
+  NGFragment fragment(ConstraintSpace().WritingMode(),
+                      *layout_result->PhysicalFragment());
 
   NGLogicalOffset logical_offset =
       CalculateLogicalOffset(fragment, child_data.margins, child_bfc_offset);
@@ -802,9 +801,9 @@ bool NGBlockLayoutAlgorithm::PositionNewFc(
     WTF::Optional<NGBfcOffset>* child_bfc_offset) {
   const EClear child_clear = child.Style().Clear();
 
-  NGBoxFragment fragment(
-      ConstraintSpace().WritingMode(),
-      ToNGPhysicalBoxFragment(layout_result.PhysicalFragment().Get()));
+  DCHECK(layout_result.PhysicalFragment());
+  NGFragment fragment(ConstraintSpace().WritingMode(),
+                      *layout_result.PhysicalFragment());
 
   LayoutUnit child_bfc_offset_estimate =
       child_data.bfc_offset_estimate.block_offset;

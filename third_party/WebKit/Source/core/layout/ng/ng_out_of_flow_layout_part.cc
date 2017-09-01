@@ -129,9 +129,9 @@ RefPtr<NGLayoutResult> NGOutOfFlowLayoutPart::LayoutDescendant(
   if (AbsoluteNeedsChildBlockSize(descendant.Style())) {
     layout_result = GenerateFragment(descendant, block_estimate, node_position);
 
-    NGBoxFragment fragment(
-        descendant_writing_mode,
-        ToNGPhysicalBoxFragment(layout_result->PhysicalFragment().Get()));
+    DCHECK(layout_result->PhysicalFragment().Get());
+    NGFragment fragment(descendant_writing_mode,
+                        *layout_result->PhysicalFragment());
 
     block_estimate = fragment.BlockSize();
   }

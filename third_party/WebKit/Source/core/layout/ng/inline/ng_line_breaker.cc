@@ -458,10 +458,10 @@ NGLineBreaker::LineBreakState NGLineBreaker::HandleAtomicInline(
           .ToConstraintSpace(FromPlatformWritingMode(style.GetWritingMode()));
   item_result->layout_result = node.Layout(*constraint_space);
 
+  DCHECK(item_result->layout_result->PhysicalFragment());
   item_result->inline_size =
-      NGBoxFragment(constraint_space_.WritingMode(),
-                    ToNGPhysicalBoxFragment(
-                        item_result->layout_result->PhysicalFragment().Get()))
+      NGFragment(constraint_space_.WritingMode(),
+                 *item_result->layout_result->PhysicalFragment())
           .InlineSize();
 
   item_result->margins =

@@ -296,8 +296,7 @@ NGInlineBoxState* NGInlineLayoutAlgorithm::PlaceAtomicInline(
 
   NGBoxFragment fragment(
       ConstraintSpace().WritingMode(),
-      ToNGPhysicalBoxFragment(
-          item_result->layout_result->PhysicalFragment().Get()));
+      ToNGPhysicalBoxFragment(*item_result->layout_result->PhysicalFragment()));
   NGLineHeightMetrics metrics = fragment.BaselineMetrics(
       {line_info.UseFirstLineStyle()
            ? NGBaselineAlgorithmType::kAtomicInlineForFirstLine

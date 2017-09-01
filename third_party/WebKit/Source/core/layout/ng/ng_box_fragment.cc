@@ -12,18 +12,18 @@
 namespace blink {
 
 NGLogicalSize NGBoxFragment::OverflowSize() const {
-  auto* physical_fragment = ToNGPhysicalBoxFragment(physical_fragment_);
-  return physical_fragment->OverflowSize().ConvertToLogical(WritingMode());
+  const auto& physical_fragment = ToNGPhysicalBoxFragment(physical_fragment_);
+  return physical_fragment.OverflowSize().ConvertToLogical(WritingMode());
 }
 
 NGLineHeightMetrics NGBoxFragment::BaselineMetrics(
     const NGBaselineRequest& request) const {
-  LayoutBox* layout_box = ToLayoutBox(physical_fragment_->GetLayoutObject());
+  const auto& physical_fragment = ToNGPhysicalBoxFragment(physical_fragment_);
+
+  LayoutBox* layout_box = ToLayoutBox(physical_fragment_.GetLayoutObject());
 
   // Find the baseline from the computed results.
-  const NGPhysicalBoxFragment* physical_fragment =
-      ToNGPhysicalBoxFragment(physical_fragment_);
-  if (const NGBaseline* baseline = physical_fragment->Baseline(request)) {
+  if (const NGBaseline* baseline = physical_fragment.Baseline(request)) {
     LayoutUnit ascent = baseline->offset;
     LayoutUnit descent = BlockSize() - ascent;
 
