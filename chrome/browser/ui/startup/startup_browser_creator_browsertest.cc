@@ -39,6 +39,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/startup/startup_browser_creator_impl.h"
+#include "chrome/browser/ui/startup/startup_tab_provider.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"

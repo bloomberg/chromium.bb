@@ -6,18 +6,15 @@
 
 #include <stddef.h>
 
-#include <algorithm>  // For max().
 #include <limits>
-#include <memory>
 #include <set>
+#include <string>
 
 #include "apps/switches.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
-#include "base/compiler_specific.h"
 #include "base/debug/alias.h"
-#include "base/environment.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
@@ -25,12 +22,8 @@
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/statistics_recorder.h"
-#include "base/metrics/user_metrics_action.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/string_split.h"
+#include "base/strings/string16.h"
 #include "base/strings/string_tokenizer.h"
-#include "base/strings/string_util.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/trace_event/trace_event.h"
@@ -39,9 +32,7 @@
 #include "chrome/browser/apps/app_load_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/extensions/startup_helper.h"
-#include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
@@ -50,24 +41,17 @@
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/startup/startup_browser_creator_impl.h"
-#include "chrome/browser/ui/startup/startup_features.h"
 #include "chrome/browser/ui/user_manager.h"
-#include "chrome/browser/ui/webui/settings/reset_settings_handler.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "components/google/core/browser/google_util.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/util.h"
@@ -75,6 +59,10 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/common/content_switches.h"
 #include "extensions/common/switches.h"
 #include "net/base/port_util.h"
@@ -103,13 +91,11 @@
 #endif
 
 #if defined(OS_WIN)
-#include "base/win/windows_version.h"
 #include "chrome/browser/metrics/jumplist_metrics_win.h"
+#include "chrome/browser/ui/webui/settings/reset_settings_handler.h"
 #endif
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-#include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
-#include "chrome/browser/printing/cloud_print/cloud_print_proxy_service_factory.h"
 #include "chrome/browser/printing/print_dialog_cloud.h"
 #endif
 
@@ -490,15 +476,6 @@ void StartupBrowserCreator::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   // ProfileManager handles setting this to false for new profiles upon
   // creation.
   registry->RegisterBooleanPref(prefs::kHasSeenWelcomePage, true);
-}
-
-// static
-bool StartupBrowserCreator::UseConsolidatedFlow() {
-#if defined(OS_WIN)
-  if (base::win::GetVersion() >= base::win::VERSION_WIN10)
-    return base::FeatureList::IsEnabled(features::kEnableWelcomeWin10);
-#endif  // defined(OS_WIN)
-  return base::FeatureList::IsEnabled(features::kUseConsolidatedStartupFlow);
 }
 
 // static

@@ -202,11 +202,6 @@
         50
       </message>
 
-      <!-- The URL for the the Welcome to Chrome page shown on first run. -->
-      <message name="IDS_WELCOME_PAGE_URL" translateable="false">
-        https://www.google.com/intl/[GRITLANGCODE]/chrome/browser/welcome.html
-      </message>
-
       <!-- The language dependent download view size. -->
       <message name="IDS_DOWNLOAD_BIG_PROGRESS_SIZE" use_name_for_id="true">
         52
