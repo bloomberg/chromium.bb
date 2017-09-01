@@ -6,7 +6,6 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-list/iron-list.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-toggle-button/paper-toggle-button.html">
-<link rel="import" href="../controls/settings_toggle_button.html">
 <link rel="import" href="../i18n_setup.html">
 <link rel="import" href="../icons.html">
 <link rel="import" href="../settings_shared_css.html">
@@ -41,27 +40,28 @@
     </style>
 
     <div class="settings-box first">
-      <div id="onOff" class="start" on$="[[adapterState.powered]]">
-        [[getOnOffString_(adapterState.powered,
+      <div id="onOff" class="start" on$="[[bluetoothToggleState]]">
+        [[getOnOffString_(bluetoothToggleState,
           '$i18nPolymer{deviceOn}', '$i18nPolymer{deviceOff}')]]
       </div>
-      <settings-toggle-button id="enableBluetooth"
-          pref="{{prefs.ash.user.bluetooth.adapter_enabled}}"
-          label="$i18n{bluetoothToggleA11yLabel}">
-      </settings-toggle-button>
+      <paper-toggle-button id="enableBluetooth"
+          checked="{{bluetoothToggleState}}"
+          disabled$="[[bluetoothToggleDisabled]]"
+          aria-label="$i18n{bluetoothToggleA11yLabel}">
+      </paper-toggle-button>
     </div>
 
     <!-- Paired device list -->
-    <div class="settings-box first header" hidden="[[!adapterState.powered]]">
+    <div class="settings-box first header" hidden="[[!bluetoothToggleState]]">
       <div class="start">$i18n{bluetoothDeviceListPaired}</div>
     </div>
     <div id="noPairedDevices" class="list-frame"
-        hidden="[[!showNoDevices_(adapterState.powered, pairedDeviceList_)]]">
+        hidden="[[!showNoDevices_(bluetoothToggleState, pairedDeviceList_)]]">
       $i18n{bluetoothNoDevices}
     </div>
     <div id="pairedContainer" class="container"
         scrollable on-device-event="onDeviceEvent_"
-        hidden="[[!showDevices_(adapterState.powered, pairedDeviceList_)]]">
+        hidden="[[!showDevices_(bluetoothToggleState, pairedDeviceList_)]]">
       <iron-list id="pairedDevices" class="vertical-list" preserve-focus
           items="[[pairedDeviceList_]]"
           selection-enabled selected-item="{{selectedPairedItem_}}"
@@ -75,18 +75,18 @@
     </div>
 
     <!-- Unpaired device list -->
-    <div class="settings-box first header" hidden="[[!adapterState.powered]]">
+    <div class="settings-box first header" hidden="[[!bluetoothToggleState]]">
       <div class="start">$i18n{bluetoothDeviceListUnpaired}</div>
       <paper-spinner active="[[showSpinner_]]">
       </paper-spinner>
     </div>
     <div id="noUnpairedDevices" class="list-frame"
-        hidden="[[!showNoDevices_(adapterState.powered, unpairedDeviceList_)]]">
+        hidden="[[!showNoDevices_(bluetoothToggleState, unpairedDeviceList_)]]">
       $i18n{bluetoothNoDevicesFound}
     </div>
     <div id="unpairedContainer" class="container"
         scrollable on-device-event="onDeviceEvent_"
-        hidden="[[!showDevices_(adapterState.powered, unpairedDeviceList_)]]">
+        hidden="[[!showDevices_(bluetoothToggleState, unpairedDeviceList_)]]">
       <iron-list id="unpairedDevices" class="vertical-list" preserve-focus
           items="[[unpairedDeviceList_]]"
           selection-enabled selected-item="{{selectedUnpairedItem_}}"
