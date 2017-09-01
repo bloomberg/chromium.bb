@@ -12,6 +12,9 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner_helpers.h"
+#include "components/viz/common/surfaces/frame_sink_id.h"
+#include "components/viz/common/surfaces/local_surface_id.h"
+#include "components/viz/common/surfaces/local_surface_id_allocator.h"
 #include "content/renderer/mouse_lock_dispatcher.h"
 #include "content/renderer/render_view_impl.h"
 #include "third_party/WebKit/public/web/WebDragStatus.h"
@@ -54,9 +57,6 @@ class CONTENT_EXPORT BrowserPlugin : public blink::WebPlugin,
 
   // Indicates whether the guest should be focused.
   bool ShouldGuestBeFocused() const;
-
-  // A request to enable hardware compositing.
-  void EnableCompositing(bool enable);
 
   // Called by CompositingHelper to send current SurfaceSequence to browser.
   void SendSatisfySequence(const viz::SurfaceSequence& sequence);
@@ -149,11 +149,13 @@ class CONTENT_EXPORT BrowserPlugin : public blink::WebPlugin,
 
   void UpdateInternalInstanceId();
 
+  void ViewRectsChanged(const gfx::Rect& view_rect);
+
   // IPC message handlers.
   // Please keep in alphabetical order.
   void OnAdvanceFocus(int instance_id, bool reverse);
   void OnGuestGone(int instance_id);
-  void OnGuestReady(int instance_id);
+  void OnGuestReady(int instance_id, const viz::FrameSinkId& frame_sink_id);
   void OnSetChildFrameSurface(int instance_id,
                               const viz::SurfaceInfo& surface_info,
                               const viz::SurfaceSequence& sequence);
@@ -195,6 +197,11 @@ class CONTENT_EXPORT BrowserPlugin : public blink::WebPlugin,
 
   std::vector<EditCommand> edit_commands_;
 
+  viz::FrameSinkId frame_sink_id_;
+  viz::LocalSurfaceId local_surface_id_;
+  viz::LocalSurfaceIdAllocator local_surface_id_allocator_;
+
+  bool enable_surface_synchronization_ = false;
   // We call lifetime managing methods on |delegate_|, but we do not directly
   // own this. The delegate destroys itself.
   base::WeakPtr<BrowserPluginDelegate> delegate_;
