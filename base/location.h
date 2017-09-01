@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/base_export.h"
+#include "base/debug/debugging_flags.h"
 #include "base/hash.h"
 
 namespace tracked_objects {
@@ -19,6 +20,14 @@ namespace tracked_objects {
 // significantly brought to life.
 class BASE_EXPORT Location {
  public:
+  Location();
+  Location(const Location& other);
+
+  // Only initializes the file name and program counter, the source information
+  // will be null for the strings, and -1 for the line number.
+  // TODO(http://crbug.com/760702) remove file name from this constructor.
+  Location(const char* file_name, const void* program_counter);
+
   // Constructor should be called with a long-lived char*, such as __FILE__.
   // It assumes the provided value will persist as a global constant, and it
   // will not make a copy of it.
@@ -27,58 +36,52 @@ class BASE_EXPORT Location {
            int line_number,
            const void* program_counter);
 
-  // Provide a default constructor for easy of debugging.
-  Location();
-
-  // Copy constructor.
-  Location(const Location& other);
-
-  // Comparator for hash map insertion.
-  // No need to use |function_name_| since the other two fields uniquely
-  // identify this location.
+  // Comparator for hash map insertion. The program counter should uniquely
+  // identify a location.
   bool operator==(const Location& other) const {
-    return line_number_ == other.line_number_ &&
-           file_name_ == other.file_name_;
+    return program_counter_ == other.program_counter_;
   }
 
-  const char* function_name()   const { return function_name_; }
-  const char* file_name()       const { return file_name_; }
-  int line_number()             const { return line_number_; }
+  // Returns true if there is source code location info. If this is false,
+  // the Location object only contains a program counter or is
+  // default-initialized (the program counter is also null).
+  bool has_source_info() const { return function_name_ && file_name_; }
+
+  // Will be nullptr for default initialized Location objects and when source
+  // names are disabled.
+  const char* function_name() const { return function_name_; }
+
+  // Will be nullptr for default initialized Location objects and when source
+  // names are disabled.
+  const char* file_name() const { return file_name_; }
+
+  // Will be -1 for default initialized Location objects and when source names
+  // are disabled.
+  int line_number() const { return line_number_; }
+
+  // The address of the code generating this Location object. Should always be
+  // valid except for default initialized Location objects, which will be
+  // nullptr.
   const void* program_counter() const { return program_counter_; }
 
+  // See Write().
   std::string ToString() const;
-
-  // Hash operator for hash maps.
-  struct Hash {
-    size_t operator()(const Location& location) const {
-      // Compute the hash value using file name pointer and line number.
-      // No need to use |function_name_| since the other two fields uniquely
-      // identify this location.
-
-      // The file name will always be uniquely identified by its pointer since
-      // it comes from __FILE__, so no need to check the contents of the string.
-      // See the definition of FROM_HERE in location.h, and how it is used
-      // elsewhere.
-      return base::HashInts(reinterpret_cast<uintptr_t>(location.file_name()),
-                            location.line_number());
-    }
-  };
 
   // Translate the some of the state in this instance into a human readable
   // string with HTML characters in the function names escaped, and append that
-  // string to |output|.  Inclusion of the file_name_ and function_name_ are
+  // string to |output|. Inclusion of the file_name_ and function_name_ are
   // optional, and controlled by the boolean arguments.
+  //
+  // If the function and file names are null, the program counter will be
+  // written.
   void Write(bool display_filename, bool display_function_name,
              std::string* output) const;
 
-  // Write function_name_ in HTML with '<' and '>' properly encoded.
-  void WriteFunctionName(std::string* output) const;
-
  private:
-  const char* function_name_;
-  const char* file_name_;
-  int line_number_;
-  const void* program_counter_;
+  const char* function_name_ = nullptr;
+  const char* file_name_ = nullptr;
+  int line_number_ = -1;
+  const void* program_counter_ = nullptr;
 };
 
 // A "snapshotted" representation of the Location class that can safely be
@@ -91,20 +94,44 @@ struct BASE_EXPORT LocationSnapshot {
 
   std::string file_name;
   std::string function_name;
-  int line_number;
+  int line_number = -1;
 };
 
 BASE_EXPORT const void* GetProgramCounter();
 
-// Define a macro to record the current source location.
-#define FROM_HERE FROM_HERE_WITH_EXPLICIT_FUNCTION(__func__)
+// The macros defined here will expand to the current function.
+#if BUILDFLAG(ENABLE_LOCATION_SOURCE)
 
-#define FROM_HERE_WITH_EXPLICIT_FUNCTION(function_name)                        \
-    ::tracked_objects::Location(function_name,                                 \
-                                __FILE__,                                      \
-                                __LINE__,                                      \
-                                ::tracked_objects::GetProgramCounter())
+// Full source information should be included.
+#define FROM_HERE FROM_HERE_WITH_EXPLICIT_FUNCTION(__func__)
+#define FROM_HERE_WITH_EXPLICIT_FUNCTION(function_name)          \
+  ::tracked_objects::Location(function_name, __FILE__, __LINE__, \
+                              ::tracked_objects::GetProgramCounter())
+
+#else
+
+// TODO(http://crbug.com/760702) remove the __FILE__ argument from these calls.
+#define FROM_HERE \
+  ::tracked_objects::Location(__FILE__, ::tracked_objects::GetProgramCounter())
+#define FROM_HERE_WITH_EXPLICIT_FUNCTION(function_name)    \
+  ::tracked_objects::Location(function_name, __FILE__, -1, \
+                              ::tracked_objects::GetProgramCounter())
+
+#endif
 
 }  // namespace tracked_objects
+
+namespace std {
+
+// Specialization for using Location in hash tables.
+template <>
+struct hash<::tracked_objects::Location> {
+  std::size_t operator()(const ::tracked_objects::Location& loc) const {
+    const void* program_counter = loc.program_counter();
+    return base::Hash(reinterpret_cast<char*>(&program_counter), sizeof(void*));
+  }
+};
+
+}  // namespace std
 
 #endif  // BASE_LOCATION_H_
