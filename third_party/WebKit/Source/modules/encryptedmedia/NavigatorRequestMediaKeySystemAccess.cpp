@@ -250,11 +250,14 @@ void MediaKeySystemAccessInitializer::CheckVideoCapabilityRobustness() const {
   }
 
   if (has_empty_robustness) {
+    // TODO(xhwang): Write a best practice doc explaining details about risks of
+    // using an empty robustness here, and provide the link to the doc in this
+    // message. See http://crbug.com/720013
     resolver_->GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
         kJSMessageSource, kWarningMessageLevel,
         "It is recommended that a robustness level be specified. Not "
-        "specifying the robustness level could result in unexpected behavior, "
-        "potentially including failure to play."));
+        "specifying the robustness level could result in unexpected "
+        "behavior."));
   }
 }
 
