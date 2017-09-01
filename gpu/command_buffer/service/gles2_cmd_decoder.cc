@@ -36,6 +36,7 @@
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/context_state.h"
+#include "gpu/command_buffer/service/create_gr_gl_interface.h"
 #include "gpu/command_buffer/service/error_state.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/framebuffer_manager.h"
@@ -75,8 +76,6 @@
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
-#include "third_party/skia/include/gpu/gl/GrGLAssembleInterface.h"
-#include "third_party/skia/include/gpu/gl/GrGLInterface.h"
 #include "third_party/smhasher/src/City.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/color_space.h"
@@ -109,11 +108,6 @@ namespace gpu {
 namespace gles2 {
 
 namespace {
-
-static GrGLFuncPtr get_gl_proc(void* ctx, const char name[]) {
-  DCHECK(!ctx);
-  return static_cast<GrGLFuncPtr>(gl::GetGLProcAddress(name));
-}
 
 const char kOESDerivativeExtension[] = "GL_OES_standard_derivatives";
 const char kEXTFragDepthExtension[] = "GL_EXT_frag_depth";
@@ -3719,17 +3713,20 @@ bool GLES2DecoderImpl::Initialize(
     if (!features().chromium_raster_transport)
       return false;
     sk_sp<const GrGLInterface> interface(
-        GrGLAssembleInterface(nullptr, get_gl_proc));
+        CreateGrGLInterface(gl_version_info()));
     // TODO(enne): if this or gr_context creation below fails in practice for
     // different reasons than the ones the renderer would fail on for gpu
     // raster, expose this in gpu::Capabilities so the renderer can handle it.
     if (!interface)
       return false;
+
     gr_context_ = sk_sp<GrContext>(
         GrContext::Create(kOpenGL_GrBackend,
                           reinterpret_cast<GrBackendContext>(interface.get())));
-    if (!gr_context_)
+    if (!gr_context_) {
+      LOG(ERROR) << "Could not create GrContext";
       return false;
+    }
 
     // TODO(enne): this cache is for this decoder only and each decoder has
     // its own cache.  This is pretty unfortunate.  This really needs to be

@@ -515,6 +515,7 @@ MOCK_METHOD6(GetInternalformativRobustANGLE,
                   GLsizei bufSize,
                   GLsizei* length,
                   GLint* params));
+MOCK_METHOD3(GetMultisamplefv, void(GLenum pname, GLuint index, GLfloat* val));
 MOCK_METHOD5(GetMultisamplefvRobustANGLE,
              void(GLenum pname,
                   GLuint index,
@@ -876,6 +877,7 @@ MOCK_METHOD3(PathStencilFuncNV, void(GLenum func, GLint ref, GLuint mask));
 MOCK_METHOD0(PauseTransformFeedback, void());
 MOCK_METHOD2(PixelStorei, void(GLenum pname, GLint param));
 MOCK_METHOD2(PointParameteri, void(GLenum pname, GLint param));
+MOCK_METHOD2(PolygonMode, void(GLenum face, GLenum mode));
 MOCK_METHOD2(PolygonOffset, void(GLfloat factor, GLfloat units));
 MOCK_METHOD0(PopDebugGroup, void());
 MOCK_METHOD0(PopGroupMarkerEXT, void());
@@ -1032,6 +1034,14 @@ MOCK_METHOD4(StencilThenCoverStrokePathNV,
              void(GLuint path, GLint reference, GLuint mask, GLenum coverMode));
 MOCK_METHOD1(TestFenceAPPLE, GLboolean(GLuint fence));
 MOCK_METHOD1(TestFenceNV, GLboolean(GLuint fence));
+MOCK_METHOD3(TexBuffer,
+             void(GLenum target, GLenum internalformat, GLuint buffer));
+MOCK_METHOD5(TexBufferRange,
+             void(GLenum target,
+                  GLenum internalformat,
+                  GLuint buffer,
+                  GLintptr offset,
+                  GLsizeiptr size));
 MOCK_METHOD9(TexImage2D,
              void(GLenum target,
                   GLint level,

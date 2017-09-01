@@ -237,6 +237,7 @@ void DriverGL::InitializeStaticBindings() {
   fn.glGetIntegervRobustANGLEFn = 0;
   fn.glGetInternalformativFn = 0;
   fn.glGetInternalformativRobustANGLEFn = 0;
+  fn.glGetMultisamplefvFn = 0;
   fn.glGetMultisamplefvRobustANGLEFn = 0;
   fn.glGetnUniformfvRobustANGLEFn = 0;
   fn.glGetnUniformivRobustANGLEFn = 0;
@@ -368,6 +369,7 @@ void DriverGL::InitializeStaticBindings() {
   fn.glPixelStoreiFn =
       reinterpret_cast<glPixelStoreiProc>(GetGLProcAddress("glPixelStorei"));
   fn.glPointParameteriFn = 0;
+  fn.glPolygonModeFn = 0;
   fn.glPolygonOffsetFn = reinterpret_cast<glPolygonOffsetProc>(
       GetGLProcAddress("glPolygonOffset"));
   fn.glPopDebugGroupFn = 0;
@@ -431,6 +433,8 @@ void DriverGL::InitializeStaticBindings() {
   fn.glStencilThenCoverStrokePathNVFn = 0;
   fn.glTestFenceAPPLEFn = 0;
   fn.glTestFenceNVFn = 0;
+  fn.glTexBufferFn = 0;
+  fn.glTexBufferRangeFn = 0;
   fn.glTexImage2DFn =
       reinterpret_cast<glTexImage2DProc>(GetGLProcAddress("glTexImage2D"));
   fn.glTexImage2DRobustANGLEFn = 0;
@@ -576,6 +580,8 @@ void DriverGL::InitializeDynamicBindings(
       extensions.find("GL_ARB_get_program_binary ") != std::string::npos;
   ext.b_GL_ARB_instanced_arrays =
       extensions.find("GL_ARB_instanced_arrays ") != std::string::npos;
+  ext.b_GL_ARB_internalformat_query =
+      extensions.find("GL_ARB_internalformat_query ") != std::string::npos;
   ext.b_GL_ARB_map_buffer_range =
       extensions.find("GL_ARB_map_buffer_range ") != std::string::npos;
   ext.b_GL_ARB_occlusion_query =
@@ -589,6 +595,8 @@ void DriverGL::InitializeDynamicBindings(
   ext.b_GL_ARB_shader_image_load_store =
       extensions.find("GL_ARB_shader_image_load_store ") != std::string::npos;
   ext.b_GL_ARB_sync = extensions.find("GL_ARB_sync ") != std::string::npos;
+  ext.b_GL_ARB_texture_multisample =
+      extensions.find("GL_ARB_texture_multisample ") != std::string::npos;
   ext.b_GL_ARB_texture_storage =
       extensions.find("GL_ARB_texture_storage ") != std::string::npos;
   ext.b_GL_ARB_timer_query =
@@ -633,6 +641,8 @@ void DriverGL::InitializeDynamicBindings(
       extensions.find("GL_EXT_framebuffer_object ") != std::string::npos;
   ext.b_GL_EXT_gpu_shader4 =
       extensions.find("GL_EXT_gpu_shader4 ") != std::string::npos;
+  ext.b_GL_EXT_instanced_arrays =
+      extensions.find("GL_EXT_instanced_arrays ") != std::string::npos;
   ext.b_GL_EXT_map_buffer_range =
       extensions.find("GL_EXT_map_buffer_range ") != std::string::npos;
   ext.b_GL_EXT_multisampled_render_to_texture =
@@ -644,6 +654,10 @@ void DriverGL::InitializeDynamicBindings(
       extensions.find("GL_EXT_robustness ") != std::string::npos;
   ext.b_GL_EXT_shader_image_load_store =
       extensions.find("GL_EXT_shader_image_load_store ") != std::string::npos;
+  ext.b_GL_EXT_texture_buffer =
+      extensions.find("GL_EXT_texture_buffer ") != std::string::npos;
+  ext.b_GL_EXT_texture_buffer_object =
+      extensions.find("GL_EXT_texture_buffer_object ") != std::string::npos;
   ext.b_GL_EXT_texture_storage =
       extensions.find("GL_EXT_texture_storage ") != std::string::npos;
   ext.b_GL_EXT_timer_query =
@@ -675,6 +689,8 @@ void DriverGL::InitializeDynamicBindings(
       extensions.find("GL_OES_get_program_binary ") != std::string::npos;
   ext.b_GL_OES_mapbuffer =
       extensions.find("GL_OES_mapbuffer ") != std::string::npos;
+  ext.b_GL_OES_texture_buffer =
+      extensions.find("GL_OES_texture_buffer ") != std::string::npos;
   ext.b_GL_OES_vertex_array_object =
       extensions.find("GL_OES_vertex_array_object ") != std::string::npos;
 
@@ -1453,7 +1469,8 @@ void DriverGL::InitializeDynamicBindings(
             GetGLProcAddress("glGetIntegervRobustANGLE"));
   }
 
-  if (ver->IsAtLeastGL(4u, 2u) || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGL(4u, 2u) || ver->IsAtLeastGLES(3u, 0u) ||
+      ext.b_GL_ARB_internalformat_query) {
     fn.glGetInternalformativFn = reinterpret_cast<glGetInternalformativProc>(
         GetGLProcAddress("glGetInternalformativ"));
   }
@@ -1462,6 +1479,12 @@ void DriverGL::InitializeDynamicBindings(
     fn.glGetInternalformativRobustANGLEFn =
         reinterpret_cast<glGetInternalformativRobustANGLEProc>(
             GetGLProcAddress("glGetInternalformativRobustANGLE"));
+  }
+
+  if (ver->IsAtLeastGL(3u, 2u) || ver->IsAtLeastGLES(3u, 1u) ||
+      ext.b_GL_ARB_texture_multisample) {
+    fn.glGetMultisamplefvFn = reinterpret_cast<glGetMultisamplefvProc>(
+        GetGLProcAddress("glGetMultisamplefv"));
   }
 
   if (ext.b_GL_ANGLE_robust_client_memory) {
@@ -2020,6 +2043,11 @@ void DriverGL::InitializeDynamicBindings(
         GetGLProcAddress("glPointParameteri"));
   }
 
+  if (!ver->is_es) {
+    fn.glPolygonModeFn =
+        reinterpret_cast<glPolygonModeProc>(GetGLProcAddress("glPolygonMode"));
+  }
+
   if (ver->IsAtLeastGL(4u, 3u) || ver->IsAtLeastGLES(3u, 2u)) {
     fn.glPopDebugGroupFn = reinterpret_cast<glPopDebugGroupProc>(
         GetGLProcAddress("glPopDebugGroup"));
@@ -2271,6 +2299,29 @@ void DriverGL::InitializeDynamicBindings(
         reinterpret_cast<glTestFenceNVProc>(GetGLProcAddress("glTestFenceNV"));
   }
 
+  if (ver->IsAtLeastGLES(3u, 2u) || ver->IsAtLeastGL(3u, 1u)) {
+    fn.glTexBufferFn =
+        reinterpret_cast<glTexBufferProc>(GetGLProcAddress("glTexBuffer"));
+  } else if (ext.b_GL_OES_texture_buffer) {
+    fn.glTexBufferFn =
+        reinterpret_cast<glTexBufferProc>(GetGLProcAddress("glTexBufferOES"));
+  } else if (ext.b_GL_EXT_texture_buffer_object ||
+             ext.b_GL_EXT_texture_buffer) {
+    fn.glTexBufferFn =
+        reinterpret_cast<glTexBufferProc>(GetGLProcAddress("glTexBufferEXT"));
+  }
+
+  if (ver->IsAtLeastGL(4u, 3u) || ver->IsAtLeastGLES(3u, 2u)) {
+    fn.glTexBufferRangeFn = reinterpret_cast<glTexBufferRangeProc>(
+        GetGLProcAddress("glTexBufferRange"));
+  } else if (ext.b_GL_OES_texture_buffer) {
+    fn.glTexBufferRangeFn = reinterpret_cast<glTexBufferRangeProc>(
+        GetGLProcAddress("glTexBufferRangeOES"));
+  } else if (ext.b_GL_EXT_texture_buffer) {
+    fn.glTexBufferRangeFn = reinterpret_cast<glTexBufferRangeProc>(
+        GetGLProcAddress("glTexBufferRangeEXT"));
+  }
+
   if (ext.b_GL_ANGLE_robust_client_memory) {
     fn.glTexImage2DRobustANGLEFn =
         reinterpret_cast<glTexImage2DRobustANGLEProc>(
@@ -2449,6 +2500,10 @@ void DriverGL::InitializeDynamicBindings(
     fn.glVertexAttribDivisorANGLEFn =
         reinterpret_cast<glVertexAttribDivisorANGLEProc>(
             GetGLProcAddress("glVertexAttribDivisorANGLE"));
+  } else if (ext.b_GL_EXT_instanced_arrays) {
+    fn.glVertexAttribDivisorANGLEFn =
+        reinterpret_cast<glVertexAttribDivisorANGLEProc>(
+            GetGLProcAddress("glVertexAttribDivisorEXT"));
   }
 
   if (ver->IsAtLeastGL(3u, 0u) || ver->IsAtLeastGLES(3u, 0u)) {
@@ -3560,6 +3615,10 @@ void GLApiBase::glGetInternalformativRobustANGLEFn(GLenum target,
                                                  bufSize, length, params);
 }
 
+void GLApiBase::glGetMultisamplefvFn(GLenum pname, GLuint index, GLfloat* val) {
+  driver_->fn.glGetMultisamplefvFn(pname, index, val);
+}
+
 void GLApiBase::glGetMultisamplefvRobustANGLEFn(GLenum pname,
                                                 GLuint index,
                                                 GLsizei bufSize,
@@ -4271,6 +4330,10 @@ void GLApiBase::glPointParameteriFn(GLenum pname, GLint param) {
   driver_->fn.glPointParameteriFn(pname, param);
 }
 
+void GLApiBase::glPolygonModeFn(GLenum face, GLenum mode) {
+  driver_->fn.glPolygonModeFn(face, mode);
+}
+
 void GLApiBase::glPolygonOffsetFn(GLfloat factor, GLfloat units) {
   driver_->fn.glPolygonOffsetFn(factor, units);
 }
@@ -4628,6 +4691,20 @@ GLboolean GLApiBase::glTestFenceAPPLEFn(GLuint fence) {
 
 GLboolean GLApiBase::glTestFenceNVFn(GLuint fence) {
   return driver_->fn.glTestFenceNVFn(fence);
+}
+
+void GLApiBase::glTexBufferFn(GLenum target,
+                              GLenum internalformat,
+                              GLuint buffer) {
+  driver_->fn.glTexBufferFn(target, internalformat, buffer);
+}
+
+void GLApiBase::glTexBufferRangeFn(GLenum target,
+                                   GLenum internalformat,
+                                   GLuint buffer,
+                                   GLintptr offset,
+                                   GLsizeiptr size) {
+  driver_->fn.glTexBufferRangeFn(target, internalformat, buffer, offset, size);
 }
 
 void GLApiBase::glTexImage2DFn(GLenum target,
@@ -6388,6 +6465,13 @@ void TraceGLApi::glGetInternalformativRobustANGLEFn(GLenum target,
                                               bufSize, length, params);
 }
 
+void TraceGLApi::glGetMultisamplefvFn(GLenum pname,
+                                      GLuint index,
+                                      GLfloat* val) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glGetMultisamplefv")
+  gl_api_->glGetMultisamplefvFn(pname, index, val);
+}
+
 void TraceGLApi::glGetMultisamplefvRobustANGLEFn(GLenum pname,
                                                  GLuint index,
                                                  GLsizei bufSize,
@@ -7229,6 +7313,11 @@ void TraceGLApi::glPointParameteriFn(GLenum pname, GLint param) {
   gl_api_->glPointParameteriFn(pname, param);
 }
 
+void TraceGLApi::glPolygonModeFn(GLenum face, GLenum mode) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glPolygonMode")
+  gl_api_->glPolygonModeFn(face, mode);
+}
+
 void TraceGLApi::glPolygonOffsetFn(GLfloat factor, GLfloat units) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glPolygonOffset")
   gl_api_->glPolygonOffsetFn(factor, units);
@@ -7651,6 +7740,22 @@ GLboolean TraceGLApi::glTestFenceAPPLEFn(GLuint fence) {
 GLboolean TraceGLApi::glTestFenceNVFn(GLuint fence) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glTestFenceNV")
   return gl_api_->glTestFenceNVFn(fence);
+}
+
+void TraceGLApi::glTexBufferFn(GLenum target,
+                               GLenum internalformat,
+                               GLuint buffer) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glTexBuffer")
+  gl_api_->glTexBufferFn(target, internalformat, buffer);
+}
+
+void TraceGLApi::glTexBufferRangeFn(GLenum target,
+                                    GLenum internalformat,
+                                    GLuint buffer,
+                                    GLintptr offset,
+                                    GLsizeiptr size) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glTexBufferRange")
+  gl_api_->glTexBufferRangeFn(target, internalformat, buffer, offset, size);
 }
 
 void TraceGLApi::glTexImage2DFn(GLenum target,
@@ -9887,6 +9992,15 @@ void DebugGLApi::glGetInternalformativRobustANGLEFn(GLenum target,
                                               bufSize, length, params);
 }
 
+void DebugGLApi::glGetMultisamplefvFn(GLenum pname,
+                                      GLuint index,
+                                      GLfloat* val) {
+  GL_SERVICE_LOG("glGetMultisamplefv"
+                 << "(" << GLEnums::GetStringEnum(pname) << ", " << index
+                 << ", " << static_cast<const void*>(val) << ")");
+  gl_api_->glGetMultisamplefvFn(pname, index, val);
+}
+
 void DebugGLApi::glGetMultisamplefvRobustANGLEFn(GLenum pname,
                                                  GLuint index,
                                                  GLsizei bufSize,
@@ -11011,6 +11125,13 @@ void DebugGLApi::glPointParameteriFn(GLenum pname, GLint param) {
   gl_api_->glPointParameteriFn(pname, param);
 }
 
+void DebugGLApi::glPolygonModeFn(GLenum face, GLenum mode) {
+  GL_SERVICE_LOG("glPolygonMode"
+                 << "(" << GLEnums::GetStringEnum(face) << ", "
+                 << GLEnums::GetStringEnum(mode) << ")");
+  gl_api_->glPolygonModeFn(face, mode);
+}
+
 void DebugGLApi::glPolygonOffsetFn(GLfloat factor, GLfloat units) {
   GL_SERVICE_LOG("glPolygonOffset"
                  << "(" << factor << ", " << units << ")");
@@ -11575,6 +11696,28 @@ GLboolean DebugGLApi::glTestFenceNVFn(GLuint fence) {
   GLboolean result = gl_api_->glTestFenceNVFn(fence);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
+}
+
+void DebugGLApi::glTexBufferFn(GLenum target,
+                               GLenum internalformat,
+                               GLuint buffer) {
+  GL_SERVICE_LOG("glTexBuffer"
+                 << "(" << GLEnums::GetStringEnum(target) << ", "
+                 << GLEnums::GetStringEnum(internalformat) << ", " << buffer
+                 << ")");
+  gl_api_->glTexBufferFn(target, internalformat, buffer);
+}
+
+void DebugGLApi::glTexBufferRangeFn(GLenum target,
+                                    GLenum internalformat,
+                                    GLuint buffer,
+                                    GLintptr offset,
+                                    GLsizeiptr size) {
+  GL_SERVICE_LOG("glTexBufferRange"
+                 << "(" << GLEnums::GetStringEnum(target) << ", "
+                 << GLEnums::GetStringEnum(internalformat) << ", " << buffer
+                 << ", " << offset << ", " << size << ")");
+  gl_api_->glTexBufferRangeFn(target, internalformat, buffer, offset, size);
 }
 
 void DebugGLApi::glTexImage2DFn(GLenum target,
@@ -13735,6 +13878,15 @@ void NoContextGLApi::glGetInternalformativRobustANGLEFn(GLenum target,
                 "current GL context";
 }
 
+void NoContextGLApi::glGetMultisamplefvFn(GLenum pname,
+                                          GLuint index,
+                                          GLfloat* val) {
+  NOTREACHED()
+      << "Trying to call glGetMultisamplefv() without current GL context";
+  LOG(ERROR)
+      << "Trying to call glGetMultisamplefv() without current GL context";
+}
+
 void NoContextGLApi::glGetMultisamplefvRobustANGLEFn(GLenum pname,
                                                      GLuint index,
                                                      GLsizei bufSize,
@@ -14703,6 +14855,11 @@ void NoContextGLApi::glPointParameteriFn(GLenum pname, GLint param) {
   LOG(ERROR) << "Trying to call glPointParameteri() without current GL context";
 }
 
+void NoContextGLApi::glPolygonModeFn(GLenum face, GLenum mode) {
+  NOTREACHED() << "Trying to call glPolygonMode() without current GL context";
+  LOG(ERROR) << "Trying to call glPolygonMode() without current GL context";
+}
+
 void NoContextGLApi::glPolygonOffsetFn(GLfloat factor, GLfloat units) {
   NOTREACHED() << "Trying to call glPolygonOffset() without current GL context";
   LOG(ERROR) << "Trying to call glPolygonOffset() without current GL context";
@@ -15175,6 +15332,23 @@ GLboolean NoContextGLApi::glTestFenceNVFn(GLuint fence) {
   NOTREACHED() << "Trying to call glTestFenceNV() without current GL context";
   LOG(ERROR) << "Trying to call glTestFenceNV() without current GL context";
   return GL_FALSE;
+}
+
+void NoContextGLApi::glTexBufferFn(GLenum target,
+                                   GLenum internalformat,
+                                   GLuint buffer) {
+  NOTREACHED() << "Trying to call glTexBuffer() without current GL context";
+  LOG(ERROR) << "Trying to call glTexBuffer() without current GL context";
+}
+
+void NoContextGLApi::glTexBufferRangeFn(GLenum target,
+                                        GLenum internalformat,
+                                        GLuint buffer,
+                                        GLintptr offset,
+                                        GLsizeiptr size) {
+  NOTREACHED()
+      << "Trying to call glTexBufferRange() without current GL context";
+  LOG(ERROR) << "Trying to call glTexBufferRange() without current GL context";
 }
 
 void NoContextGLApi::glTexImage2DFn(GLenum target,
