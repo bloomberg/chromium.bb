@@ -220,3 +220,112 @@ source_set("perftests") {
     "//testing/perf",
   ]
 }
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "audio_clock_unittest.cc",
+    "audio_decoder_selector_unittest.cc",
+    "audio_renderer_algorithm_unittest.cc",
+    "audio_timestamp_validator_unittest.cc",
+    "chunk_demuxer_unittest.cc",
+    "decrypting_audio_decoder_unittest.cc",
+    "decrypting_demuxer_stream_unittest.cc",
+    "decrypting_video_decoder_unittest.cc",
+    "fake_video_decoder.cc",
+    "fake_video_decoder.h",
+    "fake_video_decoder_unittest.cc",
+    "file_data_source_unittest.cc",
+    "frame_processor_unittest.cc",
+    "ivf_parser_unittest.cc",
+    "jpeg_parser_unittest.cc",
+    "memory_data_source_unittest.cc",
+    "pipeline_controller_unittest.cc",
+    "source_buffer_state_unittest.cc",
+    "source_buffer_stream_unittest.cc",
+    "video_cadence_estimator_unittest.cc",
+    "video_decoder_selector_unittest.cc",
+    "video_frame_stream_unittest.cc",
+    "video_renderer_algorithm_unittest.cc",
+    "vp8_bool_decoder_unittest.cc",
+    "vp8_parser_unittest.cc",
+    "vp9_parser_unittest.cc",
+    "vp9_raw_bits_reader_unittest.cc",
+  ]
+
+  deps = [
+    "//base/test:test_support",
+    "//media:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//ui/gfx:test_support",
+  ]
+
+  configs += [
+    # TODO(crbug.com/167187): Fix size_t to int truncations.
+    "//build/config/compiler:no_size_t_to_int_warning",
+  ]
+
+  if (is_android) {
+    sources -= [
+      "decrypting_audio_decoder_unittest.cc",
+      "decrypting_video_decoder_unittest.cc",
+    ]
+
+    deps += [ "//ui/gl" ]
+  }
+
+  if (media_use_ffmpeg) {
+    sources += [
+      "audio_decoder_unittest.cc",
+      "audio_file_reader_unittest.cc",
+      "blocking_url_protocol_unittest.cc",
+      "ffmpeg_demuxer_unittest.cc",
+      "ffmpeg_glue_unittest.cc",
+      "in_memory_url_protocol_unittest.cc",
+    ]
+
+    deps += [
+      # Direct dependency needed for the config
+      "//third_party/opus",
+    ]
+
+    # Even if FFmpeg is enabled on Android we don't want these.
+    # TODO(watk): Refactor tests that could be made to run on Android.
+    if (!is_android) {
+      sources += [
+        "audio_video_metadata_extractor_unittest.cc",
+        "media_file_checker_unittest.cc",
+      ]
+    }
+
+    if (!disable_ffmpeg_video_decoders) {
+      # FFmpeg on Android does not include video decoders.
+      sources += [ "ffmpeg_video_decoder_unittest.cc" ]
+    }
+  }
+
+  if (media_use_libvpx) {
+    sources += [ "vpx_video_decoder_unittest.cc" ]
+  }
+
+  if (current_cpu != "arm" && is_chromeos) {
+    sources += [ "h264_bitstream_buffer_unittest.cc" ]
+  }
+
+  if (proprietary_codecs) {
+    sources += [ "h264_to_annex_b_bitstream_converter_unittest.cc" ]
+
+    if (media_use_ffmpeg) {
+      sources += [
+        "ffmpeg_aac_bitstream_converter_unittest.cc",
+        "ffmpeg_h264_to_annex_b_bitstream_converter_unittest.cc",
+      ]
+    }
+  }
+
+  if (media_use_ffmpeg) {
+    # Direct dependency required to inherit config.
+    deps += [ "//third_party/ffmpeg" ]
+  }
+}

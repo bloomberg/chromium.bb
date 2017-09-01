@@ -133,33 +133,6 @@ component("media") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "filters/audio_clock_unittest.cc",
-    "filters/audio_decoder_selector_unittest.cc",
-    "filters/audio_renderer_algorithm_unittest.cc",
-    "filters/audio_timestamp_validator_unittest.cc",
-    "filters/chunk_demuxer_unittest.cc",
-    "filters/decrypting_audio_decoder_unittest.cc",
-    "filters/decrypting_demuxer_stream_unittest.cc",
-    "filters/decrypting_video_decoder_unittest.cc",
-    "filters/fake_video_decoder.cc",
-    "filters/fake_video_decoder.h",
-    "filters/fake_video_decoder_unittest.cc",
-    "filters/file_data_source_unittest.cc",
-    "filters/frame_processor_unittest.cc",
-    "filters/ivf_parser_unittest.cc",
-    "filters/jpeg_parser_unittest.cc",
-    "filters/memory_data_source_unittest.cc",
-    "filters/pipeline_controller_unittest.cc",
-    "filters/source_buffer_state_unittest.cc",
-    "filters/source_buffer_stream_unittest.cc",
-    "filters/video_cadence_estimator_unittest.cc",
-    "filters/video_decoder_selector_unittest.cc",
-    "filters/video_frame_stream_unittest.cc",
-    "filters/video_renderer_algorithm_unittest.cc",
-    "filters/vp8_bool_decoder_unittest.cc",
-    "filters/vp8_parser_unittest.cc",
-    "filters/vp9_parser_unittest.cc",
-    "filters/vp9_raw_bits_reader_unittest.cc",
     "muxers/webm_muxer_unittest.cc",
   ]
 
@@ -193,61 +166,7 @@ source_set("unit_tests") {
 
   data_deps = []
 
-  if (is_android) {
-    sources -= [
-      "filters/decrypting_audio_decoder_unittest.cc",
-      "filters/decrypting_video_decoder_unittest.cc",
-    ]
-
-    deps += [ "//ui/gl" ]
-  }
-
-  if (media_use_ffmpeg) {
-    sources += [
-      "filters/audio_decoder_unittest.cc",
-      "filters/audio_file_reader_unittest.cc",
-      "filters/blocking_url_protocol_unittest.cc",
-      "filters/ffmpeg_demuxer_unittest.cc",
-      "filters/ffmpeg_glue_unittest.cc",
-      "filters/in_memory_url_protocol_unittest.cc",
-    ]
-
-    deps += [
-      # Direct dependency needed for the config
-      "//third_party/opus",
-    ]
-
-    # Even if FFmpeg is enabled on Android we don't want these.
-    # TODO(watk): Refactor tests that could be made to run on Android.
-    if (!is_android) {
-      sources += [
-        "filters/audio_video_metadata_extractor_unittest.cc",
-        "filters/media_file_checker_unittest.cc",
-      ]
-    }
-
-    if (!disable_ffmpeg_video_decoders) {
-      # FFmpeg on Android does not include video decoders.
-      sources += [ "filters/ffmpeg_video_decoder_unittest.cc" ]
-    }
-  }
-
-  if (media_use_libvpx) {
-    sources += [ "filters/vpx_video_decoder_unittest.cc" ]
-  }
-
-  if (current_cpu != "arm" && is_chromeos) {
-    sources += [ "filters/h264_bitstream_buffer_unittest.cc" ]
-  }
-
   if (proprietary_codecs) {
-    sources += [ "filters/h264_to_annex_b_bitstream_converter_unittest.cc" ]
-    if (media_use_ffmpeg) {
-      sources += [
-        "filters/ffmpeg_aac_bitstream_converter_unittest.cc",
-        "filters/ffmpeg_h264_to_annex_b_bitstream_converter_unittest.cc",
-      ]
-    }
     if (enable_hls_sample_aes) {
       deps += [ "//third_party/boringssl" ]
     }
@@ -288,6 +207,7 @@ test("media_unittests") {
     "//media/base:unit_tests",
     "//media/cdm:unit_tests",
     "//media/device_monitors:unit_tests",
+    "//media/filters:unit_tests",
     "//media/formats:unit_tests",
     "//media/gpu:unit_tests",
     "//media/mojo:unit_tests",
