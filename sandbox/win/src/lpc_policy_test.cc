@@ -177,17 +177,16 @@ SBOX_TESTS_COMMAND int Lpc_TestValidProcessHeaps(int argc, wchar_t** argv) {
   // in Chrome, the heaps tend to be created at startup only.
   std::unique_ptr<HANDLE[]> all_heaps(new HANDLE[number_of_heaps]);
   if (::GetProcessHeaps(number_of_heaps, all_heaps.get()) != number_of_heaps)
-    return SBOX_TEST_FAILED;
+    return SBOX_TEST_FIRST_ERROR;
 
   for (size_t i = 0; i < number_of_heaps; ++i) {
     HANDLE handle = all_heaps[i];
-    if (!HeapLock(handle)) {
-      return SBOX_TEST_FAILED;
-    }
-
-    if (!HeapUnlock(handle)) {
-      return SBOX_TEST_FAILED;
-    }
+    ULONG HeapInformation;
+    BOOL result =
+        HeapQueryInformation(handle, HeapCompatibilityInformation,
+                             &HeapInformation, sizeof(HeapInformation), NULL);
+    if (!result)
+      return SBOX_TEST_SECOND_ERROR;
   }
   return SBOX_TEST_SUCCEEDED;
 }
