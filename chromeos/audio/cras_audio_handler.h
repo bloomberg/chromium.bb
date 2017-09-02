@@ -27,6 +27,8 @@ namespace chromeos {
 
 class AudioDevicesPrefHandler;
 
+// This class is not thread safe. The public functions should be called on
+// browser main thread.
 class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
                                          public AudioPrefObserver,
                                          public SessionManagerClient::Observer,
@@ -158,8 +160,6 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   uint64_t GetPrimaryActiveInputNode() const;
 
   // Gets the audio devices back in |device_list|.
-  // This call can be invoked from I/O thread or UI thread because
-  // it does not need to access CrasAudioClient on DBus.
   void GetAudioDevices(AudioDeviceList* device_list) const;
 
   bool GetPrimaryActiveOutputDevice(AudioDevice* device) const;
@@ -480,6 +480,9 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   // Handle dbus callback for GetDefaultOutputBufferSize.
   void HandleGetDefaultOutputBufferSize(int buffer_size, bool success);
 
+  void OnVideoCaptureStartedOnMainThread(media::VideoFacingMode facing);
+  void OnVideoCaptureStoppedOnMainThread(media::VideoFacingMode facing);
+
   scoped_refptr<AudioDevicesPrefHandler> audio_pref_handler_;
   base::ObserverList<AudioObserver> observers_;
 
@@ -527,10 +530,12 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   bool front_camera_on_ = false;
   bool rear_camera_on_ = false;
 
-  mutable base::Lock default_output_buffer_size_lock_;
-
   // Default output buffer size in frames.
   int32_t default_output_buffer_size_;
+
+  // Task runner of browser main thread. All member variables should be accessed
+  // on this thread.
+  scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
 
   base::WeakPtrFactory<CrasAudioHandler> weak_ptr_factory_;
 
