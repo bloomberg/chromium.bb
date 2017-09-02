@@ -196,31 +196,6 @@ void ElementAnimations::NotifyAnimationAborted(const AnimationEvent& event) {
   UpdateClientAnimationState();
 }
 
-bool ElementAnimations::HasTransformAnimationThatInflatesBounds() const {
-  for (auto& player : players_list_) {
-    if (player.HasTransformAnimationThatInflatesBounds())
-      return true;
-  }
-  return false;
-}
-
-bool ElementAnimations::TransformAnimationBoundsForBox(
-    const gfx::BoxF& box,
-    gfx::BoxF* bounds) const {
-  *bounds = gfx::BoxF();
-
-  for (auto& player : players_list_) {
-    if (!player.HasTransformAnimationThatInflatesBounds())
-      continue;
-    gfx::BoxF player_bounds;
-    bool success = player.TransformAnimationBoundsForBox(box, &player_bounds);
-    if (!success)
-      return false;
-    bounds->Union(player_bounds);
-  }
-  return true;
-}
-
 bool ElementAnimations::HasOnlyTranslationTransforms(
     ElementListType list_type) const {
   for (auto& player : players_list_) {
