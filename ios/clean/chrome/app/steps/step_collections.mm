@@ -11,6 +11,7 @@
 #import "ios/clean/chrome/app/steps/foregrounder.h"
 #import "ios/clean/chrome/app/steps/provider_initializer.h"
 #import "ios/clean/chrome/app/steps/root_coordinator_initializer.h"
+#import "ios/clean/chrome/app/steps/scheduled_tasks.h"
 #import "ios/clean/chrome/app/steps/ui_initializer.h"
 
 @implementation StepCollections
@@ -20,7 +21,8 @@
     [[BrowserStateSetter alloc] init],
     [[BundleAndDefaultsConfigurator alloc] init], [[ChromeMain alloc] init],
     [[Foregrounder alloc] init], [[ProviderInitializer alloc] init],
-    [[UIInitializer alloc] init], [[RootCoordinatorInitializer alloc] init],
+    [[UIInitializer alloc] init], [[ScheduledTasks alloc] init],
+    [[RootCoordinatorInitializer alloc] init],
     [[BreakpadInitializer alloc] init]
   ];
 }

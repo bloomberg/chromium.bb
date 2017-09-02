@@ -14,6 +14,7 @@ NSString* const kForeground = @"foreground";
 NSString* const kBrowserState = @"browserState";
 NSString* const kBrowserStateInitialized = @"browserStateInit";
 NSString* const kMainWindow = @"mainWindow";
+NSString* const kScheduledTasks = @"scheduledTasks";
 NSString* const kRootCoordinatorStarted = @"rootCoordinatorStarted";
 NSString* const kBreakpad = @"breakpad";
 

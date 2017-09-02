@@ -11,10 +11,18 @@ source_set("bookmarks") {
   configs += [ "//build/config/compiler:enable_arc" ]
 
   deps = [
+    "//components/bookmarks/browser",
+    "//ios/chrome/browser",
+    "//ios/chrome/browser/bookmarks",
+    "//ios/chrome/browser/bookmarks:features",
+    "//ios/chrome/browser/metrics:metrics_internal",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/bookmarks",
     "//ios/chrome/browser/ui/browser_list",
     "//ios/chrome/browser/ui/coordinators",
+    "//ios/clean/chrome/browser/ui",
+    "//ios/clean/chrome/browser/ui/commands",
+    "//ios/web",
   ]
 }
 
