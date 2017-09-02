@@ -899,14 +899,12 @@ config("compiler_codegen") {
 #   configs -= [ "//build/config/compiler:clang_stackrealign" ]
 # See https://crbug.com/556393 for details of where it must be avoided.
 config("clang_stackrealign") {
-  if (is_clang && current_cpu == "x86" && (is_android || is_linux)) {
-    # Android needs -mstackrealign due to a bug on ia32 Jelly Bean.
-    # See crbug.com/521527
-    cflags = [ "-mstackrealign" ]
-    if (is_linux) {
+  if (is_clang && current_cpu == "x86" && is_linux) {
+    cflags = [
       # Align the stack on 16-byte boundaries, http://crbug.com/418554.
-      cflags += [ "-mstack-alignment=16" ]
-    }
+      "-mstack-alignment=16",
+      "-mstackrealign",
+    ]
   }
 }
 
