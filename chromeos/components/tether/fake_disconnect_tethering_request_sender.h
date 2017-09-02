@@ -5,6 +5,9 @@
 #ifndef CHROMEOS_COMPONENTS_TETHER_FAKE_DISCONNECT_TETHERING_REQUEST_SENDER_H_
 #define CHROMEOS_COMPONENTS_TETHER_FAKE_DISCONNECT_TETHERING_REQUEST_SENDER_H_
 
+#include <string>
+#include <vector>
+
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "chromeos/components/tether/disconnect_tethering_request_sender.h"
@@ -20,13 +23,24 @@ class FakeDisconnectTetheringRequestSender
   FakeDisconnectTetheringRequestSender();
   ~FakeDisconnectTetheringRequestSender() override;
 
+  void NotifyPendingDisconnectRequestsComplete();
+
+  void set_has_pending_requests(bool has_pending_requests) {
+    has_pending_requests_ = has_pending_requests;
+  }
+
+  const std::vector<std::string>& device_ids_sent_requests() {
+    return device_ids_sent_requests_;
+  }
+
   // DisconnectTetheringRequestSender:
   void SendDisconnectRequestToDevice(const std::string& device_id) override;
   bool HasPendingRequests() override;
 
-  void NotifyPendingDisconnectRequestsComplete();
-
  private:
+  bool has_pending_requests_ = false;
+  std::vector<std::string> device_ids_sent_requests_;
+
   DISALLOW_COPY_AND_ASSIGN(FakeDisconnectTetheringRequestSender);
 };
 

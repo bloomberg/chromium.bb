@@ -9,6 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "chromeos/components/tether/fake_active_host.h"
+#include "chromeos/components/tether/fake_disconnect_tethering_request_sender.h"
 #include "chromeos/components/tether/network_configuration_remover.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/network/network_state.h"
@@ -64,12 +65,15 @@ class TetherNetworkDisconnectionHandlerTest : public NetworkStateTest {
         ConfigureService(CreateConnectedWifiConfigurationJsonString());
 
     fake_active_host_ = base::MakeUnique<FakeActiveHost>();
+    fake_disconnect_tethering_request_sender_ =
+        base::MakeUnique<FakeDisconnectTetheringRequestSender>();
     mock_network_configuration_remover_ =
         base::WrapUnique(new NiceMock<MockNetworkConfigurationRemover>);
 
     handler_ = base::WrapUnique(new TetherNetworkDisconnectionHandler(
         fake_active_host_.get(), network_state_handler(),
-        mock_network_configuration_remover_.get()));
+        mock_network_configuration_remover_.get(),
+        fake_disconnect_tethering_request_sender_.get()));
   }
 
   void TearDown() override {
@@ -89,6 +93,8 @@ class TetherNetworkDisconnectionHandlerTest : public NetworkStateTest {
   std::string wifi_service_path_;
 
   std::unique_ptr<FakeActiveHost> fake_active_host_;
+  std::unique_ptr<FakeDisconnectTetheringRequestSender>
+      fake_disconnect_tethering_request_sender_;
   std::unique_ptr<MockNetworkConfigurationRemover>
       mock_network_configuration_remover_;
 
@@ -100,8 +106,7 @@ class TetherNetworkDisconnectionHandlerTest : public NetworkStateTest {
 
 TEST_F(TetherNetworkDisconnectionHandlerTest, TestConnectAndDisconnect) {
   EXPECT_CALL(*mock_network_configuration_remover_,
-              RemoveNetworkConfiguration(kWifiNetworkGuid))
-      .Times(1);
+              RemoveNetworkConfiguration(kWifiNetworkGuid));
 
   // Connect to the network. |handler_| should start tracking the connection.
   fake_active_host_->SetActiveHostConnecting(kDeviceId, kTetherNetworkGuid);
@@ -111,6 +116,11 @@ TEST_F(TetherNetworkDisconnectionHandlerTest, TestConnectAndDisconnect) {
   // Now, disconnect the Wi-Fi network. This should result in
   // |fake_active_host_| becoming disconnected.
   NotifyDisconnected();
+
+  EXPECT_EQ(
+      std::vector<std::string>{kDeviceId},
+      fake_disconnect_tethering_request_sender_->device_ids_sent_requests());
+
   EXPECT_EQ(ActiveHost::ActiveHostStatus::DISCONNECTED,
             fake_active_host_->GetActiveHostStatus());
 }
