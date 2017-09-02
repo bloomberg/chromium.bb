@@ -74,6 +74,29 @@ action_foreach("check_package_dependencies") {
   ]
 }
 
+action("strip_chrome_binary") {
+  prog_name = "$root_out_dir/chrome"
+  debug_file = prog_name + ".debug"
+  stripped_file = prog_name + ".stripped"
+  deps = [
+    "//chrome",
+  ]
+  script = "strip-chrome-binary.py"
+  sources = [
+    prog_name,
+  ]
+  outputs = [
+    debug_file,
+    stripped_file,
+  ]
+  args = [
+    rebase_path("//third_party/eu-strip/bin/eu-strip", root_build_dir),
+    rebase_path(prog_name, root_build_dir),
+    rebase_path(debug_file, root_build_dir),
+    rebase_path(stripped_file, root_build_dir),
+  ]
+}
+
 # This target builds all "normal" Linux installers.
 #
 # The bot setup is to build stable, unstable, and beta packages for the current
@@ -221,6 +244,7 @@ group("installer_deps") {
     ":common_packaging_files",
     ":deb_packaging_files",
     ":save_build_info",
+    ":strip_chrome_binary",
     ":theme_files",
     "//chrome",
     "//chrome:packed_resources",
