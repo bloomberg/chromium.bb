@@ -16,12 +16,18 @@ namespace sql {
 class Connection;
 class Statement;
 
+// Creates and manages a table to store generic metadata. The features provided
+// are:
+// * An interface for storing multi-typed key-value data.
+// * Helper methods to assist in database schema version control.
+// * Historical data on past attempts to mmap the database to make it possible
+//   to avoid unconditionally retrying to load broken databases.
 class SQL_EXPORT MetaTable {
  public:
   MetaTable();
   ~MetaTable();
 
-  // Values for Get/SetMmapStatus().  |kMmapFailure| indicates that there was at
+  // Values for Get/SetMmapStatus(). |kMmapFailure| indicates that there was at
   // some point a read error and the database should not be memory-mapped, while
   // |kMmapSuccess| indicates that the entire file was read at some point and
   // can be memory-mapped without constraint.
@@ -32,31 +38,31 @@ class SQL_EXPORT MetaTable {
   static bool DoesTableExist(Connection* db);
 
   // If the current version of the database is less than or equal to
-  // |deprecated_version|, raze the database.  Must be called outside
-  // of a transaction.
-  // TODO(shess): At this time the database is razed IFF meta exists
-  // and contains a version row with value <= deprecated_version.  It
-  // may make sense to also raze if meta exists but has no version
-  // row, or if meta doesn't exist.  In those cases if the database is
-  // not already empty, it probably resulted from a broken
-  // initialization.
+  // |deprecated_version|, raze the database. Must be called outside of a
+  // transaction.
+  // TODO(shess): At this time the database is razed IFF meta exists and
+  // contains a version row with value <= deprecated_version. It may make sense
+  // to also raze if meta exists but has no version row, or if meta doesn't
+  // exist. In those cases if the database is not already empty, it probably
+  // resulted from a broken initialization.
   // TODO(shess): Folding this into Init() would allow enforcing
-  // |deprecated_version|<|version|.  But Init() is often called in a
+  // |deprecated_version|<|version|. But Init() is often called in a
   // transaction.
   static void RazeIfDeprecated(Connection* db, int deprecated_version);
 
-  // Used to tuck some data into the meta table about mmap status.  The value
+  // Used to tuck some data into the meta table about mmap status. The value
   // represents how much data in bytes has successfully been read from the
   // database, or |kMmapFailure| or |kMmapSuccess|.
   static bool GetMmapStatus(Connection* db, int64_t* status);
   static bool SetMmapStatus(Connection* db, int64_t status);
 
-  // Initializes the MetaTableHelper, creating the meta table if necessary. For
-  // new tables, it will initialize the version number to |version| and the
-  // compatible version number to |compatible_version|.  Versions must be
-  // greater than 0 to distinguish missing versions (see GetVersionNumber()).
-  // If there was no meta table (proxy for a fresh database), mmap status is set
-  // to |kMmapSuccess|.
+  // Initializes the MetaTableHelper, providing the |Connection| pointer and
+  // creating the meta table if necessary. Must be called before any other
+  // non-static methods. For new tables, it will initialize the version number
+  // to |version| and the compatible version number to |compatible_version|.
+  // Versions must be greater than 0 to distinguish missing versions (see
+  // GetVersionNumber()). If there was no meta table (proxy for a fresh
+  // database), mmap status is set to |kMmapSuccess|.
   bool Init(Connection* db, int version, int compatible_version);
 
   // Resets this MetaTable object, making another call to Init() possible.
