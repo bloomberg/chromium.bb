@@ -78,7 +78,8 @@ const char kUsageMessage[] =
     "Remote Desktop, please install the app from the Chrome Web Store:\n"
     "https://chrome.google.com/remotedesktop\n";
 
-// A list of variable to pass through to the child environment.
+// A list of variable to pass through to the child environment. Should be kept
+// in sync with remoting_user_session_wrapper.sh for testing.
 const char* const kPassthroughVariables[] = {
     "GOOGLE_CLIENT_ID_REMOTING", "GOOGLE_CLIENT_ID_REMOTING_HOST",
     "GOOGLE_CLIENT_SECRET_REMOTING", "GOOGLE_CLIENT_SECRET_REMOTING_HOST",
@@ -624,7 +625,16 @@ void WaitForMessagesAndExit(int read_fd, const std::string& log_name) {
 // cannot be created, the parent will immediately exit. When executed by a
 // user, the parent process will drop privileges and wait for the host to
 // start, relaying any start-up messages to stdout.
+//
+// TODO(lambroslambrou): Having stdout/stderr redirected to a log file is not
+// ideal - it could create a filesystem DoS if the daemon or a child process
+// were to write excessive amounts to stdout/stderr.  Ideally, stdout/stderr
+// should be redirected to a pipe or socket, and a process at the other end
+// should consume the data and write it to a logging facility which can do
+// data-capping or log-rotation. The 'logger' command-line utility could be
+// used for this, but it might cause too much syslog spam.
 void Daemonize() {
+  // Open file descriptors before forking so errors can be reported.
   LogFile log_file = OpenLogFile();
   int devnull_fd = open("/dev/null", O_RDONLY);
   PCHECK(devnull_fd != -1) << "Failed to open /dev/null";
