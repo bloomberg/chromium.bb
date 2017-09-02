@@ -119,6 +119,23 @@ bool IsInternalDevice(const ui::TouchscreenDevice* device) {
   return device->type == ui::InputDeviceType::INPUT_DEVICE_INTERNAL;
 }
 
+void AssociateSingleDisplayAndSingleDevice(DisplayInfoList* displays,
+                                           DeviceList* devices) {
+  if (displays->size() != 1 || devices->size() != 1)
+    return;
+  // If there is only one display and only one touch device, just associate
+  // them. This fixes the issue that usb tablet input device doesn't work
+  // with chromebook.
+  DisplayInfoList::iterator display_it = displays->begin();
+  DeviceList::iterator device_it = devices->begin();
+  Associate(*display_it, *device_it);
+  VLOG(2) << "=> Matched single device " << (*device_it)->name
+          << " to single display " << (*display_it)->name();
+  displays->erase(display_it);
+  devices->erase(device_it);
+  return;
+}
+
 void AssociateInternalDevices(DisplayInfoList* displays, DeviceList* devices) {
   VLOG(2) << "Trying to match internal devices (" << displays->size()
           << " displays and " << devices->size() << " devices to match)";
@@ -270,6 +287,7 @@ void AssociateTouchscreens(
             << ", sys_path: " << device->sys_path.LossyDisplayName() << ")";
   }
 
+  AssociateSingleDisplayAndSingleDevice(&displays, &devices);
   AssociateInternalDevices(&displays, &devices);
   AssociateUdlDevices(&displays, &devices);
   AssociateSameSizeDevices(&displays, &devices);
