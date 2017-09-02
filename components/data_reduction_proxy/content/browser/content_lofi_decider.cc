@@ -13,12 +13,14 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
+#include "components/previews/core/previews_decider.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/resource_type.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
 #include "net/url_request/url_request.h"
+#include "url/gurl.h"
 
 namespace data_reduction_proxy {
 
@@ -168,4 +170,24 @@ bool ContentLoFiDecider::IsClientLoFiAutoReloadRequest(
   return request_info &&
          (request_info->GetPreviewsState() & content::CLIENT_LOFI_AUTO_RELOAD);
 }
+
+void ContentLoFiDecider::MaybeApplyAMPPreview(
+    net::URLRequest* request,
+    GURL* new_url,
+    previews::PreviewsDecider* previews_decider) const {
+  const content::ResourceRequestInfo* request_info =
+      content::ResourceRequestInfo::ForRequest(request);
+  if (!request_info ||
+      request_info->GetResourceType() != content::RESOURCE_TYPE_MAIN_FRAME ||
+      !previews::params::IsAMPRedirectionPreviewEnabled() ||
+      !request->url().has_host() ||
+      !previews_decider->ShouldAllowPreview(
+          *request, previews::PreviewsType::AMP_REDIRECTION)) {
+    return;
+  }
+
+  // TODO(rajendrant): Apply the matching logic for |request| and update
+  // |new_url| to its AMP version.
+}
+
 }  // namespace data_reduction_proxy
