@@ -8,12 +8,13 @@
 #include "ash/ash_export.h"
 #include "ash/session/session_observer.h"
 #include "ash/shell_observer.h"
-#include "base/containers/queue.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/user_manager/user_manager.h"
 #include "device/bluetooth/bluetooth_adapter.h"
+
+#include <queue>
 
 class PrefRegistrySimple;
 class PrefService;
@@ -128,7 +129,7 @@ class ASH_EXPORT BluetoothPowerController
 
   // Contains pending tasks which depend on the availability of bluetooth
   // adapter.
-  base::queue<BluetoothTask> pending_bluetooth_tasks_;
+  std::queue<BluetoothTask> pending_bluetooth_tasks_;
 
   // The registrar used to watch prefs changes in the above
   // |active_user_pref_service_| from outside ash.
