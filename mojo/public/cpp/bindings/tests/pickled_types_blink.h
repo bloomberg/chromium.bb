@@ -17,7 +17,6 @@
 namespace base {
 class Pickle;
 class PickleIterator;
-class PickleSizer;
 }
 
 namespace mojo {
@@ -72,7 +71,6 @@ template <>
 struct ParamTraits<mojo::test::PickledStructBlink> {
   using param_type = mojo::test::PickledStructBlink;
 
-  static void GetSize(base::PickleSizer* sizer, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,

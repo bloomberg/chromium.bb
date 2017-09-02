@@ -49,7 +49,6 @@ namespace IPC {
 template<>
 struct PPAPI_PROXY_EXPORT ParamTraits<PP_Bool> {
   typedef PP_Bool param_type;
-  static void GetSize(base::PickleSizer* s, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
@@ -60,7 +59,6 @@ struct PPAPI_PROXY_EXPORT ParamTraits<PP_Bool> {
 template <>
 struct PPAPI_PROXY_EXPORT ParamTraits<PP_NetAddress_Private> {
   typedef PP_NetAddress_Private param_type;
-  static void GetSize(base::PickleSizer* s, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
@@ -144,7 +142,6 @@ struct PPAPI_PROXY_EXPORT ParamTraits<ppapi::proxy::SerializedHandle> {
 template<>
 struct PPAPI_PROXY_EXPORT ParamTraits<ppapi::HostResource> {
   typedef ppapi::HostResource param_type;
-  static void GetSize(base::PickleSizer* s, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
@@ -176,7 +173,6 @@ struct PPAPI_PROXY_EXPORT ParamTraits<
 template<>
 struct PPAPI_PROXY_EXPORT ParamTraits<ppapi::PpapiPermissions> {
   typedef ppapi::PpapiPermissions param_type;
-  static void GetSize(base::PickleSizer* s, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,

@@ -26,16 +26,6 @@
 #error "Failed to include components/tracing/common/tracing_messages.h"
 #endif
 
-// Generate param traits size methods.
-#include "ipc/param_traits_size_macros.h"
-namespace IPC {
-#undef COMPONENTS_TRACING_COMMON_TRACING_MESSAGES_H_
-#include "components/tracing/common/tracing_messages.h"
-#ifndef COMPONENTS_TRACING_COMMON_TRACING_MESSAGES_H_
-#error "Failed to include components/tracing/common/tracing_messages.h"
-#endif
-}
-
 // Generate param traits write methods.
 #include "ipc/param_traits_write_macros.h"
 namespace IPC {

@@ -24,9 +24,6 @@ namespace IPC {
 template <>
 struct ParamTraits<ipc_message_utils_test::TestMessage1> {
   typedef ipc_message_utils_test::TestMessage1 param_type;
-  static void GetSize(base::PickleSizer* sizer, const param_type& p) {
-    GetParamSize(sizer, p.number());
-  }
   static void Write(base::Pickle* m, const param_type& p) {
     WriteParam(m, p.number());
   }
@@ -44,11 +41,6 @@ struct ParamTraits<ipc_message_utils_test::TestMessage1> {
 template <>
 struct ParamTraits<ipc_message_utils_test::TestMessage2> {
   typedef ipc_message_utils_test::TestMessage2 param_type;
-  static void GetSize(base::PickleSizer* sizer, const param_type& p) {
-    GetParamSize(sizer, p.numbers());
-    GetParamSize(sizer, p.strings());
-    GetParamSize(sizer, p.messages());
-  }
   static void Write(base::Pickle* m, const param_type& p) {
     WriteParam(m, p.numbers());
     WriteParam(m, p.strings());
@@ -99,11 +91,6 @@ TEST(IPCMessageRepeatedFieldUtilsTest, RepeatedFieldShouldBeSerialized) {
   base::Pickle pickle;
   IPC::WriteParam(&pickle, message);
 
-  base::PickleSizer sizer;
-  IPC::GetParamSize(&sizer, message);
-
-  ASSERT_EQ(sizer.payload_size(), pickle.payload_size());
-
   base::PickleIterator iter(pickle);
   ipc_message_utils_test::TestMessage2 output;
   ASSERT_TRUE(IPC::ReadParam(&pickle, &iter, &output));
@@ -124,11 +111,6 @@ TEST(IPCMessageRepeatedFieldUtilsTest,
   base::Pickle pickle;
   IPC::WriteParam(&pickle, message);
 
-  base::PickleSizer sizer;
-  IPC::GetParamSize(&sizer, message);
-
-  ASSERT_EQ(sizer.payload_size(), pickle.payload_size());
-
   base::PickleIterator iter(pickle);
   ipc_message_utils_test::TestMessage2 output;
   ASSERT_TRUE(IPC::ReadParam(&pickle, &iter, &output));
@@ -143,11 +125,6 @@ TEST(IPCMessageRepeatedFieldUtilsTest, EmptyRepeatedFieldShouldBeSerialized) {
 
   base::Pickle pickle;
   IPC::WriteParam(&pickle, message);
-
-  base::PickleSizer sizer;
-  IPC::GetParamSize(&sizer, message);
-
-  ASSERT_EQ(sizer.payload_size(), pickle.payload_size());
 
   base::PickleIterator iter(pickle);
   ipc_message_utils_test::TestMessage2 output;

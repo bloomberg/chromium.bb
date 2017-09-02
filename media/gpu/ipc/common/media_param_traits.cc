@@ -12,20 +12,6 @@
 
 namespace IPC {
 
-void ParamTraits<media::BitstreamBuffer>::GetSize(base::PickleSizer* s,
-                                                  const param_type& p) {
-  GetParamSize(s, p.id());
-  GetParamSize(s, static_cast<uint64_t>(p.size()));
-  GetParamSize(s, static_cast<uint64_t>(p.offset()));
-  GetParamSize(s, p.presentation_timestamp());
-  GetParamSize(s, p.key_id());
-  if (!p.key_id().empty()) {
-    GetParamSize(s, p.iv());
-    GetParamSize(s, p.subsamples());
-  }
-  GetParamSize(s, p.handle());
-}
-
 void ParamTraits<media::BitstreamBuffer>::Write(base::Pickle* m,
                                                 const param_type& p) {
   WriteParam(m, p.id());
@@ -84,13 +70,6 @@ void ParamTraits<media::BitstreamBuffer>::Log(const param_type& p,
 }
 
 }  // namespace IPC
-
-// Generate param traits size methods.
-#include "ipc/param_traits_size_macros.h"
-namespace IPC {
-#undef MEDIA_GPU_IPC_COMMON_MEDIA_PARAM_TRAITS_MACROS_H_
-#include "media/gpu/ipc/common/media_param_traits_macros.h"
-}
 
 // Generate param traits write methods.
 #include "ipc/param_traits_write_macros.h"

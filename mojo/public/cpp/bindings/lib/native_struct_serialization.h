@@ -37,12 +37,6 @@ struct NativeStructSerializerImpl {
     base::Pickle pickle;
     Traits::Write(&pickle, value);
 
-#if DCHECK_IS_ON()
-    base::PickleSizer sizer;
-    Traits::GetSize(&sizer, value);
-    DCHECK_EQ(sizer.payload_size(), pickle.payload_size());
-#endif
-
     // Allocate a uint8 array, initialize its header, and copy the Pickle in.
     writer->Allocate(pickle.payload_size(), buffer);
     memcpy(writer->array_writer()->storage(), pickle.payload(),

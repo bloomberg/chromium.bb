@@ -23,11 +23,6 @@ namespace IPC {
 template <class RepeatedFieldLike, class StorageType>
 struct RepeatedFieldParamTraits {
   typedef RepeatedFieldLike param_type;
-  static void GetSize(base::PickleSizer* sizer, const param_type& p) {
-    GetParamSize(sizer, p.size());
-    for (int i = 0; i < p.size(); i++)
-      GetParamSize(sizer, p.Get(i));
-  }
   static void Write(base::Pickle* m, const param_type& p) {
     WriteParam(m, p.size());
     for (int i = 0; i < p.size(); i++)

@@ -96,58 +96,12 @@ TEST(IPCMessageUtilsTest, StackVector) {
     EXPECT_EQ(stack_vector[i], output[i]);
 }
 
-// Tests that PickleSizer and Pickle agree on the size of a complex base::Value.
-TEST(IPCMessageUtilsTest, ValueSize) {
-  std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue);
-  value->SetKey("foo", base::Value(42));
-  value->SetKey("bar", base::Value(3.14));
-  value->SetKey("baz", base::Value("hello"));
-  value->SetWithoutPathExpansion("qux", std::make_unique<base::Value>());
-
-  std::unique_ptr<base::DictionaryValue> nested_dict(new base::DictionaryValue);
-  nested_dict->SetKey("foobar", base::Value(5));
-  value->SetWithoutPathExpansion("nested", std::move(nested_dict));
-
-  std::unique_ptr<base::ListValue> list_value(new base::ListValue);
-  list_value->AppendString("im a string");
-  list_value->AppendString("im another string");
-  value->SetWithoutPathExpansion("awesome-list", std::move(list_value));
-
-  base::Pickle pickle;
-  IPC::WriteParam(&pickle, *value);
-
-  base::PickleSizer sizer;
-  IPC::GetParamSize(&sizer, *value);
-
-  EXPECT_EQ(sizer.payload_size(), pickle.payload_size());
-}
-
-TEST(IPCMessageUtilsTest, JsonValueSize) {
-  const char kJson[] = "[ { \"foo\": \"bar\", \"baz\": 1234.0 } ]";
-  std::unique_ptr<base::Value> json_value = base::JSONReader::Read(kJson);
-  EXPECT_NE(nullptr, json_value);
-  base::ListValue value;
-  value.Append(std::move(json_value));
-
-  base::Pickle pickle;
-  IPC::WriteParam(&pickle, value);
-
-  base::PickleSizer sizer;
-  IPC::GetParamSize(&sizer, value);
-
-  EXPECT_EQ(sizer.payload_size(), pickle.payload_size());
-}
-
 TEST(IPCMessageUtilsTest, MojoChannelHandle) {
   mojo::MessagePipe message_pipe;
   IPC::ChannelHandle channel_handle(message_pipe.handle0.release());
 
   IPC::Message message;
   IPC::WriteParam(&message, channel_handle);
-
-  base::PickleSizer sizer;
-  IPC::GetParamSize(&sizer, channel_handle);
-  EXPECT_EQ(sizer.payload_size(), message.payload_size());
 
   base::PickleIterator iter(message);
   IPC::ChannelHandle result_handle;
@@ -159,11 +113,6 @@ TEST(IPCMessageUtilsTest, OptionalUnset) {
   base::Optional<int> opt;
   base::Pickle pickle;
   IPC::WriteParam(&pickle, opt);
-
-  base::PickleSizer sizer;
-  IPC::GetParamSize(&sizer, opt);
-
-  EXPECT_EQ(sizer.payload_size(), pickle.payload_size());
 
   std::string log;
   IPC::LogParam(opt, &log);
@@ -179,11 +128,6 @@ TEST(IPCMessageUtilsTest, OptionalSet) {
   base::Optional<int> opt(10);
   base::Pickle pickle;
   IPC::WriteParam(&pickle, opt);
-
-  base::PickleSizer sizer;
-  IPC::GetParamSize(&sizer, opt);
-
-  EXPECT_EQ(sizer.payload_size(), pickle.payload_size());
 
   std::string log;
   IPC::LogParam(opt, &log);
@@ -220,11 +164,6 @@ TEST(IPCMessageUtilsTest, UnguessableTokenTest) {
   base::Pickle pickle;
   IPC::WriteParam(&pickle, token);
 
-  base::PickleSizer sizer;
-  IPC::GetParamSize(&sizer, token);
-
-  EXPECT_EQ(sizer.payload_size(), pickle.payload_size());
-
   std::string log;
   IPC::LogParam(token, &log);
   EXPECT_EQ(token.ToString(), log);
@@ -242,11 +181,6 @@ TEST(IPCMessageUtilsTest, FlatMap) {
 
   base::Pickle pickle;
   IPC::WriteParam(&pickle, input);
-
-  base::PickleSizer sizer;
-  IPC::GetParamSize(&sizer, input);
-
-  EXPECT_EQ(sizer.payload_size(), pickle.payload_size());
 
   base::PickleIterator iter(pickle);
   base::flat_map<std::string, int> output;

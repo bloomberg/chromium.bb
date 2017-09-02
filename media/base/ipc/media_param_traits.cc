@@ -20,19 +20,6 @@ using media::ChannelLayout;
 
 namespace IPC {
 
-void ParamTraits<AudioParameters>::GetSize(base::PickleSizer* s,
-                                           const AudioParameters& p) {
-  GetParamSize(s, p.format());
-  GetParamSize(s, p.channel_layout());
-  GetParamSize(s, p.sample_rate());
-  GetParamSize(s, p.bits_per_sample());
-  GetParamSize(s, p.frames_per_buffer());
-  GetParamSize(s, p.channels());
-  GetParamSize(s, p.effects());
-  GetParamSize(s, p.mic_positions());
-  GetParamSize(s, p.latency_tag());
-}
-
 void ParamTraits<AudioParameters>::Write(base::Pickle* m,
                                          const AudioParameters& p) {
   WriteParam(m, p.format());
@@ -84,19 +71,12 @@ void ParamTraits<AudioParameters>::Log(const AudioParameters& p,
 template <>
 struct ParamTraits<media::EncryptionScheme::Pattern> {
   typedef media::EncryptionScheme::Pattern param_type;
-  static void GetSize(base::PickleSizer* s, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
                    param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
-
-void ParamTraits<media::EncryptionScheme>::GetSize(base::PickleSizer* s,
-                                                   const param_type& p) {
-  GetParamSize(s, p.mode());
-  GetParamSize(s, p.pattern());
-}
 
 void ParamTraits<media::EncryptionScheme>::Write(base::Pickle* m,
                                                  const param_type& p) {
@@ -118,13 +98,6 @@ bool ParamTraits<media::EncryptionScheme>::Read(const base::Pickle* m,
 void ParamTraits<media::EncryptionScheme>::Log(const param_type& p,
                                                std::string* l) {
   l->append(base::StringPrintf("<EncryptionScheme>"));
-}
-
-void ParamTraits<media::EncryptionScheme::Pattern>::GetSize(
-    base::PickleSizer* s,
-    const param_type& p) {
-  GetParamSize(s, p.encrypt_blocks());
-  GetParamSize(s, p.skip_blocks());
 }
 
 void ParamTraits<media::EncryptionScheme::Pattern>::Write(base::Pickle* m,
@@ -150,13 +123,6 @@ void ParamTraits<media::EncryptionScheme::Pattern>::Log(const param_type& p,
 }
 
 }  // namespace IPC
-
-// Generate param traits size methods.
-#include "ipc/param_traits_size_macros.h"
-namespace IPC {
-#undef MEDIA_BASE_IPC_MEDIA_PARAM_TRAITS_MACROS_H_
-#include "media/base/ipc/media_param_traits_macros.h"
-}
 
 // Generate param traits write methods.
 #include "ipc/param_traits_write_macros.h"

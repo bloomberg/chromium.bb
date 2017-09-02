@@ -39,7 +39,6 @@ source_set("safe_browsing") {
       "pe_image_reader_win.h",
       "protobuf_message_log_macros.h",
       "protobuf_message_read_macros.h",
-      "protobuf_message_size_macros.h",
       "protobuf_message_write_macros.h",
       "safe_archive_analyzer_param_traits.h",
       "zip_analyzer.cc",

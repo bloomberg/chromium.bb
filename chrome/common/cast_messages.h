@@ -21,7 +21,6 @@ namespace IPC {
 template<>
 struct ParamTraits<media::cast::RtpTimeTicks> {
   using param_type = media::cast::RtpTimeTicks;
-  static void GetSize(base::PickleSizer* s, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
@@ -32,7 +31,6 @@ struct ParamTraits<media::cast::RtpTimeTicks> {
 template<>
 struct ParamTraits<media::cast::FrameId> {
   using param_type = media::cast::FrameId;
-  static void GetSize(base::PickleSizer* s, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,

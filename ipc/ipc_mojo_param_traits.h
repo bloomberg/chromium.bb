@@ -15,7 +15,6 @@
 namespace base {
 class Pickle;
 class PickleIterator;
-class PickleSizer;
 }
 
 namespace IPC {
@@ -23,7 +22,6 @@ namespace IPC {
 template <>
 struct IPC_EXPORT ParamTraits<mojo::MessagePipeHandle> {
   typedef mojo::MessagePipeHandle param_type;
-  static void GetSize(base::PickleSizer* sizer, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m, base::PickleIterator* iter,
                    param_type* r);
@@ -33,7 +31,6 @@ struct IPC_EXPORT ParamTraits<mojo::MessagePipeHandle> {
 template <>
 struct IPC_EXPORT ParamTraits<mojo::DataPipeConsumerHandle> {
   typedef mojo::DataPipeConsumerHandle param_type;
-  static void GetSize(base::PickleSizer* sizer, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,

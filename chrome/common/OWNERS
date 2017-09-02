@@ -18,6 +18,9 @@ per-file nacl_loader.sb=rsesek@chromium.org
 per-file *_messages*.h=set noparent
 per-file *_messages*.h=file://ipc/SECURITY_OWNERS
 
+per-file *_messages.cc=set noparent
+per-file *_messages.cc=file://ipc/SECURITY_OWNERS
+
 per-file *_param_traits*.*=set noparent
 per-file *_param_traits*.*=file://ipc/SECURITY_OWNERS
 

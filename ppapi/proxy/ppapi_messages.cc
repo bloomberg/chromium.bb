@@ -26,16 +26,6 @@
 #error "Failed to include ppapi/proxy/ppapi_messages.h"
 #endif
 
-// Generate param traits size methods.
-#include "ipc/param_traits_size_macros.h"
-namespace IPC {
-#undef PPAPI_PROXY_PPAPI_MESSAGES_H_
-#include "ppapi/proxy/ppapi_messages.h"
-#ifndef PPAPI_PROXY_PPAPI_MESSAGES_H_
-#error "Failed to include ppapi/proxy/ppapi_messages.h"
-#endif
-}
-
 // Generate param traits write methods.
 #include "ipc/param_traits_write_macros.h"
 namespace IPC {

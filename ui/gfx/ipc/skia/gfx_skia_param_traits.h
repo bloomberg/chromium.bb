@@ -27,7 +27,6 @@ namespace IPC {
 template <>
 struct GFX_SKIA_IPC_EXPORT ParamTraits<SkBitmap> {
   using param_type = SkBitmap;
-  static void GetSize(base::PickleSizer* s, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
@@ -38,7 +37,6 @@ struct GFX_SKIA_IPC_EXPORT ParamTraits<SkBitmap> {
 template <>
 struct GFX_SKIA_IPC_EXPORT ParamTraits<gfx::Transform> {
   using param_type = gfx::Transform;
-  static void GetSize(base::PickleSizer* s, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,

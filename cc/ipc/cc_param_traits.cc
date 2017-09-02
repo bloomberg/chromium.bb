@@ -32,49 +32,6 @@
 
 namespace IPC {
 
-void ParamTraits<cc::FilterOperation>::GetSize(base::PickleSizer* s,
-                                               const param_type& p) {
-  GetParamSize(s, p.type());
-  switch (p.type()) {
-    case cc::FilterOperation::GRAYSCALE:
-    case cc::FilterOperation::SEPIA:
-    case cc::FilterOperation::SATURATE:
-    case cc::FilterOperation::HUE_ROTATE:
-    case cc::FilterOperation::INVERT:
-    case cc::FilterOperation::BRIGHTNESS:
-    case cc::FilterOperation::SATURATING_BRIGHTNESS:
-    case cc::FilterOperation::CONTRAST:
-    case cc::FilterOperation::OPACITY:
-      GetParamSize(s, p.amount());
-      break;
-    case cc::FilterOperation::BLUR:
-      GetParamSize(s, p.amount());
-      GetParamSize(s, p.blur_tile_mode());
-      break;
-    case cc::FilterOperation::DROP_SHADOW:
-      GetParamSize(s, p.drop_shadow_offset());
-      GetParamSize(s, p.amount());
-      GetParamSize(s, p.drop_shadow_color());
-      break;
-    case cc::FilterOperation::COLOR_MATRIX:
-      for (int i = 0; i < 20; ++i)
-        GetParamSize(s, p.matrix()[i]);
-      break;
-    case cc::FilterOperation::ZOOM:
-      GetParamSize(s, p.amount());
-      GetParamSize(s, p.zoom_inset());
-      break;
-    case cc::FilterOperation::REFERENCE:
-      GetParamSize(s, p.image_filter());
-      break;
-    case cc::FilterOperation::ALPHA_THRESHOLD:
-      GetParamSize(s, p.amount());
-      GetParamSize(s, p.outer_threshold());
-      GetParamSize(s, p.shape());
-      break;
-  }
-}
-
 void ParamTraits<cc::FilterOperation>::Write(base::Pickle* m,
                                              const param_type& p) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug.ipc"),
@@ -272,14 +229,6 @@ void ParamTraits<cc::FilterOperation>::Log(const param_type& p,
   l->append(")");
 }
 
-void ParamTraits<cc::FilterOperations>::GetSize(base::PickleSizer* s,
-                                                const param_type& p) {
-  GetParamSize(s, base::checked_cast<uint32_t>(p.size()));
-  for (std::size_t i = 0; i < p.size(); ++i) {
-    GetParamSize(s, p.at(i));
-  }
-}
-
 void ParamTraits<cc::FilterOperations>::Write(base::Pickle* m,
                                               const param_type& p) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug.ipc"),
@@ -317,17 +266,6 @@ void ParamTraits<cc::FilterOperations>::Log(const param_type& p,
     LogParam(p.at(i), l);
   }
   l->append(")");
-}
-
-void ParamTraits<sk_sp<SkImageFilter>>::GetSize(base::PickleSizer* s,
-                                                const param_type& p) {
-  SkImageFilter* filter = p.get();
-  if (filter) {
-    sk_sp<SkData> data(SkValidatingSerializeFlattenable(filter));
-    s->AddData(base::checked_cast<int>(data->size()));
-  } else {
-    s->AddData(0);
-  }
 }
 
 void ParamTraits<sk_sp<SkImageFilter>>::Write(base::Pickle* m,
@@ -461,10 +399,10 @@ static size_t ReserveSizeForRenderPassWrite(const cc::RenderPass& p) {
   // The largest quad type, verified by a unit test.
   to_reserve += p.quad_list.size() * cc::LargestDrawQuadSize();
 
-  base::PickleSizer sizer;
-  GetParamSize(&sizer, p.filters);
-  GetParamSize(&sizer, p.background_filters);
-  to_reserve += sizer.payload_size();
+  to_reserve +=
+      sizeof(uint32_t) + p.filters.size() * sizeof(cc::FilterOperation);
+  to_reserve += sizeof(uint32_t) +
+                p.background_filters.size() * sizeof(cc::FilterOperation);
 
   return to_reserve;
 }
@@ -671,12 +609,6 @@ void ParamTraits<cc::RenderPass>::Log(const param_type& p, std::string* l) {
   l->append("])");
 }
 
-void ParamTraits<viz::FrameSinkId>::GetSize(base::PickleSizer* s,
-                                            const param_type& p) {
-  GetParamSize(s, p.client_id());
-  GetParamSize(s, p.sink_id());
-}
-
 void ParamTraits<viz::FrameSinkId>::Write(base::Pickle* m,
                                           const param_type& p) {
   WriteParam(m, p.client_id());
@@ -704,12 +636,6 @@ void ParamTraits<viz::FrameSinkId>::Log(const param_type& p, std::string* l) {
   l->append(", ");
   LogParam(p.sink_id(), l);
   l->append(")");
-}
-
-void ParamTraits<viz::LocalSurfaceId>::GetSize(base::PickleSizer* s,
-                                               const param_type& p) {
-  GetParamSize(s, p.local_id());
-  GetParamSize(s, p.nonce());
 }
 
 void ParamTraits<viz::LocalSurfaceId>::Write(base::Pickle* m,
@@ -742,12 +668,6 @@ void ParamTraits<viz::LocalSurfaceId>::Log(const param_type& p,
   l->append(")");
 }
 
-void ParamTraits<viz::SurfaceId>::GetSize(base::PickleSizer* s,
-                                          const param_type& p) {
-  GetParamSize(s, p.frame_sink_id());
-  GetParamSize(s, p.local_surface_id());
-}
-
 void ParamTraits<viz::SurfaceId>::Write(base::Pickle* m, const param_type& p) {
   WriteParam(m, p.frame_sink_id());
   WriteParam(m, p.local_surface_id());
@@ -774,13 +694,6 @@ void ParamTraits<viz::SurfaceId>::Log(const param_type& p, std::string* l) {
   l->append(", ");
   LogParam(p.local_surface_id(), l);
   l->append(")");
-}
-
-void ParamTraits<viz::SurfaceInfo>::GetSize(base::PickleSizer* s,
-                                            const param_type& p) {
-  GetParamSize(s, p.id());
-  GetParamSize(s, p.device_scale_factor());
-  GetParamSize(s, p.size_in_pixels());
 }
 
 void ParamTraits<viz::SurfaceInfo>::Write(base::Pickle* m,
@@ -906,13 +819,6 @@ void ParamTraits<cc::CompositorFrame>::Log(const param_type& p,
   l->append("])");
 }
 
-void ParamTraits<cc::DrawQuad::Resources>::GetSize(base::PickleSizer* s,
-                                                   const param_type& p) {
-  GetParamSize(s, p.count);
-  for (size_t i = 0; i < p.count; ++i)
-    GetParamSize(s, p.ids[i]);
-}
-
 void ParamTraits<cc::DrawQuad::Resources>::Write(base::Pickle* m,
                                                  const param_type& p) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug.ipc"),
@@ -955,20 +861,6 @@ void ParamTraits<cc::DrawQuad::Resources>::Log(const param_type& p,
       l->append(", ");
   }
   l->append("])");
-}
-
-void ParamTraits<cc::YUVVideoDrawQuad>::GetSize(base::PickleSizer* s,
-                                                const param_type& p) {
-  ParamTraits<cc::DrawQuad>::GetSize(s, p);
-  GetParamSize(s, p.ya_tex_coord_rect);
-  GetParamSize(s, p.uv_tex_coord_rect);
-  GetParamSize(s, p.ya_tex_size);
-  GetParamSize(s, p.uv_tex_size);
-  GetParamSize(s, p.color_space);
-  GetParamSize(s, p.video_color_space);
-  GetParamSize(s, p.resource_offset);
-  GetParamSize(s, p.resource_multiplier);
-  GetParamSize(s, p.bits_per_channel);
 }
 
 void ParamTraits<cc::YUVVideoDrawQuad>::Write(base::Pickle* m,
@@ -1027,12 +919,6 @@ void ParamTraits<cc::YUVVideoDrawQuad>::Log(const param_type& p,
   l->append("])");
 }
 
-void ParamTraits<viz::BeginFrameAck>::GetSize(base::PickleSizer* s,
-                                              const param_type& p) {
-  GetParamSize(s, p.sequence_number);
-  GetParamSize(s, p.source_id);
-}
-
 void ParamTraits<viz::BeginFrameAck>::Write(base::Pickle* m,
                                             const param_type& p) {
   m->WriteUInt64(p.sequence_number);
@@ -1057,13 +943,6 @@ void ParamTraits<viz::BeginFrameAck>::Log(const param_type& p, std::string* l) {
 }
 
 }  // namespace IPC
-
-// Generate param traits size methods.
-#include "ipc/param_traits_size_macros.h"
-namespace IPC {
-#undef CC_IPC_CC_PARAM_TRAITS_MACROS_H_
-#include "cc/ipc/cc_param_traits_macros.h"
-}
 
 // Generate param traits write methods.
 #include "ipc/param_traits_write_macros.h"

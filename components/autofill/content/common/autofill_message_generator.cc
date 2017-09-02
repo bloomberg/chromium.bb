@@ -14,13 +14,6 @@
 #include "ipc/struct_destructor_macros.h"
 #include "components/autofill/content/common/autofill_param_traits_macros.h"
 
-// Generate param traits size methods.
-#include "ipc/param_traits_size_macros.h"
-namespace IPC {
-#undef COMPONENTS_AUTOFILL_CONTENT_COMMON_AUTOFILL_PARAM_TRAITS_MACROS_H_
-#include "components/autofill/content/common/autofill_param_traits_macros.h"
-}  // namespace IPC
-
 // Generate param traits write methods.
 #include "ipc/param_traits_write_macros.h"
 namespace IPC {
