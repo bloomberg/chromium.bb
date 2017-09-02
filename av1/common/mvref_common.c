@@ -1218,8 +1218,15 @@ INLINE void get_mv_projection(MV *output, MV ref, int num, int den) {
   output->col = (int16_t)(ref.col * (double)num / den);
 }
 
+#define MAX_OFFSET_WIDTH 64
+#define MAX_OFFSET_HEIGHT 32
+
 INLINE int get_block_position(AV1_COMMON *cm, int *mi_r, int *mi_c, int blk_row,
                               int blk_col, MV mv, int sign_bias) {
+  if ((abs(mv.row) >> 3) > MAX_OFFSET_HEIGHT ||
+      (abs(mv.col) >> 3) > MAX_OFFSET_WIDTH)
+    return 0;
+
   int row = (sign_bias == 1) ? blk_row - (mv.row >> (3 + MI_SIZE_LOG2))
                              : blk_row + (mv.row >> (3 + MI_SIZE_LOG2));
   int col = (sign_bias == 1) ? blk_col - (mv.col >> (3 + MI_SIZE_LOG2))
