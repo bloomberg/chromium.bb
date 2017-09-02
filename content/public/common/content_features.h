@@ -118,6 +118,8 @@ CONTENT_EXPORT extern const base::Feature kDeviceMonitorMac;
 CONTENT_EXPORT extern const base::Feature kMacV2Sandbox;
 #endif  // defined(OS_MACOSX)
 
+CONTENT_EXPORT bool IsMojoBlobsEnabled();
+
 // DON'T ADD RANDOM STUFF HERE. Put it in the main section above in
 // alphabetical order, or in one of the ifdefs (also in order in each section).
 

@@ -1063,8 +1063,7 @@ void CacheStorageCache::Put(const CacheStorageBatchOperation& operation,
   std::unique_ptr<storage::BlobDataHandle> blob_data_handle;
 
   if (!response->blob_uuid.empty()) {
-    DCHECK_EQ(response->blob != nullptr,
-              base::FeatureList::IsEnabled(features::kMojoBlobs));
+    DCHECK_EQ(response->blob != nullptr, features::IsMojoBlobsEnabled());
     if (!blob_storage_context_) {
       std::move(callback).Run(CACHE_STORAGE_ERROR_STORAGE);
       return;
@@ -1552,7 +1551,7 @@ CacheStorageCache::PopulateResponseBody(disk_cache::ScopedEntryPtr entry,
       temp_entry, INDEX_RESPONSE_BODY, INDEX_SIDE_DATA);
   auto result = blob_storage_context_->AddFinishedBlob(&blob_data);
 
-  if (base::FeatureList::IsEnabled(features::kMojoBlobs)) {
+  if (features::IsMojoBlobsEnabled()) {
     storage::mojom::BlobPtr blob_ptr;
     storage::BlobImpl::Create(
         base::MakeUnique<storage::BlobDataHandle>(*result),

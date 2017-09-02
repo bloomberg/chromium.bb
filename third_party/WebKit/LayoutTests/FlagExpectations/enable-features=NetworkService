@@ -454,6 +454,7 @@ Bug(none) plugins/iframe-plugin-bgcolor.html [ Timeout ]
 
 Bug(none) virtual [ Crash Failure Timeout ]
 
+# Blob support for request bodies.
 crbug.com/761117 external/wpt/XMLHttpRequest/formdata-blob.htm [ Failure ]
 crbug.com/761117 external/wpt/XMLHttpRequest/formdata.htm [ Failure ]
 crbug.com/761117 external/wpt/XMLHttpRequest/send-blob-with-no-mime-type.html [ Failure ]
@@ -465,6 +466,10 @@ crbug.com/761117 http/tests/local/blob/send-sliced-data-blob.html [ Failure ]
 crbug.com/761117 http/tests/local/formdata/formdata-methods.html [ Failure ]
 crbug.com/761117 http/tests/xmlhttprequest/post-formdata.html [ Failure ]
 crbug.com/761117 http/tests/xmlhttprequest/workers/post-formdata.html [ Failure ]
+
+# Tests failed when turning on Blob service for network service config.
+crbug.com/611935 external/wpt/IndexedDB/nested-cloning-large-multiple.html [ Failure ]
+crbug.com/611935 external/wpt/IndexedDB/nested-cloning-small.html [ Failure ]
 
 # The next three sections are blocked by converting to new Mojo JS APIs.
 

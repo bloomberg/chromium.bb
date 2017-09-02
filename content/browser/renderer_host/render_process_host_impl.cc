@@ -1927,7 +1927,7 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
                    base::Unretained(this)));
   }
 
-  if (base::FeatureList::IsEnabled(features::kMojoBlobs)) {
+  if (features::IsMojoBlobsEnabled()) {
     registry->AddInterface(
         base::Bind(&BlobRegistryWrapper::Bind,
                    storage_partition_impl_->GetBlobRegistry(), GetID()));
