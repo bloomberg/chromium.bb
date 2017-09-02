@@ -10,7 +10,9 @@
 
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
+#include "content/browser/compositor/test/no_transport_image_transport_factory.h"
 #include "content/public/browser/desktop_media_id.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "media/capture/video_capture_types.h"
@@ -20,7 +22,6 @@
 #include "ui/aura/test/aura_test_helper.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
-#include "ui/compositor/test/context_factories_for_test.h"
 #include "ui/wm/core/default_activation_client.h"
 
 using ::testing::_;
@@ -105,14 +106,12 @@ class DesktopCaptureDeviceAuraTest : public testing::Test {
  protected:
   void SetUp() override {
     // The ContextFactory must exist before any Compositors are created.
-
-    bool enable_pixel_output = false;
-    ui::ContextFactory* context_factory = nullptr;
-    ui::ContextFactoryPrivate* context_factory_private = nullptr;
-    ui::InitializeContextFactoryForTests(enable_pixel_output, &context_factory,
-                                         &context_factory_private);
+    ImageTransportFactory::InitializeForUnitTests(
+        std::make_unique<NoTransportImageTransportFactory>());
     helper_.reset(new aura::test::AuraTestHelper());
-    helper_->SetUp(context_factory, context_factory_private);
+    helper_->SetUp(
+        ImageTransportFactory::GetInstance()->GetContextFactory(),
+        ImageTransportFactory::GetInstance()->GetContextFactoryPrivate());
     new wm::DefaultActivationClient(helper_->root_window());
     // We need a window to cover desktop area so that DesktopCaptureDeviceAura
     // can use gfx::NativeWindow::GetWindowAtScreenPoint() to locate the
@@ -133,7 +132,8 @@ class DesktopCaptureDeviceAuraTest : public testing::Test {
     desktop_window_.reset();
     window_delegate_.reset();
     helper_->TearDown();
-    ui::TerminateContextFactoryForTests();
+    base::RunLoop().RunUntilIdle();
+    ImageTransportFactory::Terminate();
   }
 
   aura::Window* root_window() { return helper_->root_window(); }
