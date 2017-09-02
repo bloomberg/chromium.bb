@@ -8,7 +8,9 @@
 #include "core/CoreExport.h"
 #include "core/layout/ng/inline/ng_text_end_effect.h"
 #include "core/layout/ng/ng_physical_fragment.h"
+#include "platform/fonts/NGTextFragmentPaintInfo.h"
 #include "platform/fonts/shaping/ShapeResult.h"
+#include "platform/wtf/text/StringView.h"
 
 namespace blink {
 
@@ -83,6 +85,11 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
     return AdoptRef(new NGPhysicalTextFragment(
         layout_object_, Style(), text_, item_index_, start_offset_, end_offset_,
         size_, LineOrientation(), EndEffect(), shape_result_));
+  }
+
+  NGTextFragmentPaintInfo PaintInfo() const {
+    return NGTextFragmentPaintInfo{Text(), StartOffset(), EndOffset(),
+                                   TextShapeResult()};
   }
 
  private:

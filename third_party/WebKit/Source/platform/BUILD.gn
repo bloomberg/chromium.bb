@@ -732,6 +732,7 @@ component("platform") {
     "fonts/GenericFontFamilySettings.cpp",
     "fonts/GenericFontFamilySettings.h",
     "fonts/GlyphMetricsMap.h",
+    "fonts/NGTextFragmentPaintInfo.h",
     "fonts/OrientationIterator.cpp",
     "fonts/OrientationIterator.h",
     "fonts/ScriptRunIterator.cpp",

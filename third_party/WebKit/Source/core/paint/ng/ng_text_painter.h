@@ -11,7 +11,7 @@
 namespace blink {
 
 class NGPhysicalTextFragment;
-struct TextFragmentPaintInfo;
+struct NGTextFragmentPaintInfo;
 
 // Text painter for LayoutNG, logic shared between legacy layout and LayoutNG
 // is implemented in the TextPainterBase base class.
@@ -50,7 +50,7 @@ class CORE_EXPORT NGTextPainter : public TextPainterBase {
 
  private:
   template <PaintInternalStep step>
-  void PaintInternalFragment(TextFragmentPaintInfo&,
+  void PaintInternalFragment(NGTextFragmentPaintInfo&,
                              unsigned from,
                              unsigned to);
 
