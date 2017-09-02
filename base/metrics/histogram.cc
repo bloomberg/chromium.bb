@@ -589,7 +589,7 @@ bool Histogram::ValidateHistogramContents(bool crash_if_invalid,
   // Temporary for https://crbug.com/736675.
   base::debug::ScopedCrashKey crash_key("bad_histogram", debug_string);
 #endif
-  // CHECK(false) << debug_string;
+  CHECK(false) << debug_string;
   debug::Alias(&bad_fields);
   return false;
 }
