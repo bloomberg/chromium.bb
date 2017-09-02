@@ -860,6 +860,40 @@ message DeviceOffHoursProto {
   repeated string ignored_policies = 3;
 }
 
+// The url and hash that specified in JSON format that can be used to retrieve
+// the device-level printers configuration file.
+message DeviceNativePrintersProto {
+  // External policy blob encoded as JSON.
+  optional string external_policy = 1;
+}
+
+// The policy which determines the type of access restriction that is applied to
+// the devicel-level printers list.
+message DeviceNativePrintersAccessModeProto {
+  enum AccessMode {
+    ACCESS_MODE_BLACKLIST = 0;  // Use NatvePrintersBlacklistProto.
+    ACCESS_MODE_WHITELIST = 1;  // Use NaviePrintersWhitelistProto.
+    ACCESS_MODE_ALL = 2;        // Allow access to all specified printers.
+  }
+
+  // The type of access which is applied to the device-level printer list.
+  optional AccessMode access_mode = 1;
+}
+
+// A collection of ids defining the printers which are explicitly disallowed for
+// the device.
+message DeviceNativePrintersBlacklistProto {
+  // A collection of ids for which are explicitly disallowed.
+  repeated string blacklist = 1;
+}
+
+// A collection of ids defining the printers which are explicitly allowed for
+// the device.
+message DeviceNativePrintersWhitelistProto {
+  // A collection of ids for the list of printers which are accessible.
+  repeated string whitelist = 1;
+}
+
 message ChromeDeviceSettingsProto {
   optional DevicePolicyRefreshRateProto device_policy_refresh_rate = 1;
   optional UserWhitelistProto user_whitelist = 2;
@@ -924,4 +958,11 @@ message ChromeDeviceSettingsProto {
       device_second_factor_authentication = 52;
   optional CastReceiverNameProto cast_receiver_name = 53;
   optional DeviceOffHoursProto device_off_hours = 54;
+  optional DeviceNativePrintersProto native_device_printers = 55;
+  optional DeviceNativePrintersAccessModeProto
+      native_device_printers_access_mode = 56;
+  optional DeviceNativePrintersBlacklistProto native_device_printers_blacklist =
+      57;
+  optional DeviceNativePrintersWhitelistProto native_device_printers_whitelist =
+      58;
 }

@@ -11337,6 +11337,10 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="383" label="NativePrintersBulkAccessMode"/>
   <int value="384" label="NativePrintersBulkBlacklist"/>
   <int value="385" label="NativePrintersBulkWhitelist"/>
+  <int value="386" label="DeviceNativePrinters"/>
+  <int value="387" label="DeviceNativePrintersAccessMode"/>
+  <int value="388" label="DeviceNativePrintersBlacklist"/>
+  <int value="389" label="DeviceNativePrintersWhitelist"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">

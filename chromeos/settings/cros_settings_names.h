@@ -123,6 +123,11 @@ CHROMEOS_EXPORT extern const char kPerUserTimezoneEnabled[];
 
 CHROMEOS_EXPORT extern const char kDeviceOffHours[];
 
+CHROMEOS_EXPORT extern const char kDevicePrintersConfigurations[];
+CHROMEOS_EXPORT extern const char kDevicePrintersAccessMode[];
+CHROMEOS_EXPORT extern const char kDevicePrintersBlacklist[];
+CHROMEOS_EXPORT extern const char kDevicePrintersWhitelist[];
+
 }  // namespace chromeos
 
 #endif  // CHROMEOS_SETTINGS_CROS_SETTINGS_NAMES_H_
