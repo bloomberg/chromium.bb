@@ -4,29 +4,28 @@
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 <script src="../resources/gc.js"></script>
-<script src="../resources/mojo-helpers.js"></script>
+<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+<script src="file:///gen/third_party/WebKit/public/platform/modules/presentation/presentation.mojom.js"></script>
 <script src="resources/presentation-service-mock.js"></script>
 <button>click me</button>
 <script>
 
 async_test(t => {
-  presentationServiceMock.then(mockService => {
-    var button = document.querySelector('button');
-    var connection = null;
-    var request = new PresentationRequest('https://example.com');
+  var button = document.querySelector('button');
+  var connection = null;
+  var request = new PresentationRequest('https://example.com');
 
-    waitForClick(_ => {
-      request.start().then(conn => {
-        connection = conn;
-        assert_not_equals(connection, null);
+  waitForClick(_ => {
+    request.start().then(conn => {
+      connection = conn;
+      assert_not_equals(connection, null);
 
-        request.reconnect(connection.id).then(
-          t.step_func_done(conn => {
-            assert_true(connection === conn);
-        }));
-      });
-    }, button);
-  });
+      request.reconnect(connection.id).then(
+        t.step_func_done(conn => {
+          assert_true(connection === conn);
+      }));
+    });
+  }, button);
 }, "Test that Presentation.reconnect() resolves with existing presentation connection.");
 
 </script>
