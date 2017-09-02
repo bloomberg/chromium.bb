@@ -6,11 +6,6 @@
 
 namespace IPC {
 
-void ParamTraits<media::cast::RtpTimeTicks>::GetSize(base::PickleSizer* s,
-                                                     const param_type& p) {
-  ParamTraits<uint64_t>::GetSize(s, p.SerializeForIPC());
-}
-
 void ParamTraits<media::cast::RtpTimeTicks>::Write(base::Pickle* m,
                                                    const param_type& p) {
   ParamTraits<uint64_t>::Write(m, p.SerializeForIPC());
@@ -32,11 +27,6 @@ void ParamTraits<media::cast::RtpTimeTicks>::Log(const param_type& p,
   std::ostringstream oss;
   oss << p;
   l->append(oss.str());
-}
-
-void ParamTraits<media::cast::FrameId>::GetSize(base::PickleSizer* s,
-                                                const param_type& p) {
-  ParamTraits<uint64_t>::GetSize(s, p.SerializeForIPC());
 }
 
 void ParamTraits<media::cast::FrameId>::Write(base::Pickle* m,

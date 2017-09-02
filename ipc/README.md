@@ -548,19 +548,7 @@ the wire format used is defined entirely by `IPC::ParamTraits<T>` for whatever
 `foo::mojom::MyGiganticStructure` to `foo::MyGiganticStructure`, your typemap
 must point to some header which defines
 `IPC::ParamTraits<foo::MyGiganticStructure>`.
-
-Note that if your `ParamTraits` are defined manually (*i.e.* not by invocation
-of `IPC_STRUCT_TRAITS*` macros) you must also ensure that they define the new
-`GetSize` method:
-
-``` cpp
-static void GetSize(base::PickleSizer* sizer, const param_type& p) {
-  // ...
-}
 ```
-
-`base::PickleSizer` has an interface analogous to `base::Pickle`, except that it
-merely accumulates a byte count rather than accumulating serialized data.
 
 There are several examples of this traits implementation in common IPC traits
 defined [here](https://code.google.com/p/chromium/codesearch#chromium/src/ipc/ipc_message_utils.h).

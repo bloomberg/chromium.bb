@@ -113,12 +113,6 @@ scoped_refptr<Extension> ExtensionMsg_Loaded_Params::ConvertToExtension(
 
 namespace IPC {
 
-void ParamTraits<URLPattern>::GetSize(base::PickleSizer* s,
-                                      const param_type& p) {
-  GetParamSize(s, p.valid_schemes());
-  GetParamSize(s, p.GetAsString());
-}
-
 void ParamTraits<URLPattern>::Write(base::Pickle* m, const param_type& p) {
   WriteParam(m, p.valid_schemes());
   WriteParam(m, p.GetAsString());
@@ -151,11 +145,6 @@ void ParamTraits<URLPattern>::Log(const param_type& p, std::string* l) {
   LogParam(p.GetAsString(), l);
 }
 
-void ParamTraits<URLPatternSet>::GetSize(base::PickleSizer* s,
-                                         const param_type& p) {
-  GetParamSize(s, p.patterns());
-}
-
 void ParamTraits<URLPatternSet>::Write(base::Pickle* m, const param_type& p) {
   WriteParam(m, p.patterns());
 }
@@ -177,11 +166,6 @@ void ParamTraits<URLPatternSet>::Log(const param_type& p, std::string* l) {
   LogParam(p.patterns(), l);
 }
 
-void ParamTraits<APIPermission::ID>::GetSize(base::PickleSizer* s,
-                                             const param_type& p) {
-  GetParamSize(s, static_cast<int>(p));
-}
-
 void ParamTraits<APIPermission::ID>::Write(base::Pickle* m,
                                            const param_type& p) {
   WriteParam(m, static_cast<int>(p));
@@ -201,17 +185,6 @@ bool ParamTraits<APIPermission::ID>::Read(const base::Pickle* m,
 void ParamTraits<APIPermission::ID>::Log(
     const param_type& p, std::string* l) {
   LogParam(static_cast<int>(p), l);
-}
-
-void ParamTraits<APIPermissionSet>::GetSize(base::PickleSizer* s,
-                                            const param_type& p) {
-  APIPermissionSet::const_iterator it = p.begin();
-  const APIPermissionSet::const_iterator end = p.end();
-  GetParamSize(s, static_cast<uint32_t>(p.size()));
-  for (; it != end; ++it) {
-    GetParamSize(s, it->id());
-    it->GetSize(s);
-  }
 }
 
 void ParamTraits<APIPermissionSet>::Write(base::Pickle* m,
@@ -252,17 +225,6 @@ void ParamTraits<APIPermissionSet>::Log(
   LogParam(p.map(), l);
 }
 
-void ParamTraits<ManifestPermissionSet>::GetSize(base::PickleSizer* s,
-                                                 const param_type& p) {
-  ManifestPermissionSet::const_iterator it = p.begin();
-  const ManifestPermissionSet::const_iterator end = p.end();
-  GetParamSize(s, static_cast<uint32_t>(p.size()));
-  for (; it != end; ++it) {
-    GetParamSize(s, it->name());
-    it->GetSize(s);
-  }
-}
-
 void ParamTraits<ManifestPermissionSet>::Write(base::Pickle* m,
                                                const param_type& p) {
   ManifestPermissionSet::const_iterator it = p.begin();
@@ -300,11 +262,6 @@ void ParamTraits<ManifestPermissionSet>::Log(
   LogParam(p.map(), l);
 }
 
-void ParamTraits<HostID>::GetSize(base::PickleSizer* s, const param_type& p) {
-  GetParamSize(s, p.type());
-  GetParamSize(s, p.id());
-}
-
 void ParamTraits<HostID>::Write(base::Pickle* m, const param_type& p) {
   WriteParam(m, p.type());
   WriteParam(m, p.id());
@@ -327,14 +284,6 @@ void ParamTraits<HostID>::Log(
     const param_type& p, std::string* l) {
   LogParam(p.type(), l);
   LogParam(p.id(), l);
-}
-
-void ParamTraits<ExtensionMsg_PermissionSetStruct>::GetSize(
-    base::PickleSizer* s, const param_type& p) {
-  GetParamSize(s, p.apis);
-  GetParamSize(s, p.manifest_permissions);
-  GetParamSize(s, p.explicit_hosts);
-  GetParamSize(s, p.scriptable_hosts);
 }
 
 void ParamTraits<ExtensionMsg_PermissionSetStruct>::Write(base::Pickle* m,

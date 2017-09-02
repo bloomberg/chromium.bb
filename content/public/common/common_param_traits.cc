@@ -18,15 +18,6 @@
 
 namespace IPC {
 
-void ParamTraits<url::Origin>::GetSize(base::PickleSizer* s,
-                                       const param_type& p) {
-  GetParamSize(s, p.unique());
-  GetParamSize(s, p.scheme());
-  GetParamSize(s, p.host());
-  GetParamSize(s, p.port());
-  GetParamSize(s, p.suborigin());
-}
-
 void ParamTraits<url::Origin>::Write(base::Pickle* m, const url::Origin& p) {
   WriteParam(m, p.unique());
   WriteParam(m, p.scheme());
@@ -67,12 +58,6 @@ void ParamTraits<url::Origin>::Log(const url::Origin& p, std::string* l) {
   l->append(p.Serialize());
 }
 
-void ParamTraits<net::HostPortPair>::GetSize(base::PickleSizer* s,
-                                             const param_type& p) {
-  GetParamSize(s, p.host());
-  GetParamSize(s, p.port());
-}
-
 void ParamTraits<net::HostPortPair>::Write(base::Pickle* m,
                                            const param_type& p) {
   WriteParam(m, p.host());
@@ -94,13 +79,6 @@ bool ParamTraits<net::HostPortPair>::Read(const base::Pickle* m,
 
 void ParamTraits<net::HostPortPair>::Log(const param_type& p, std::string* l) {
   l->append(p.ToString());
-}
-
-void ParamTraits<net::HttpRequestHeaders>::GetSize(base::PickleSizer* s,
-                                                   const param_type& p) {
-  GetParamSize(s, static_cast<int>(p.GetHeaderVector().size()));
-  for (size_t i = 0; i < p.GetHeaderVector().size(); ++i)
-    GetParamSize(s, p.GetHeaderVector()[i]);
 }
 
 void ParamTraits<net::HttpRequestHeaders>::Write(base::Pickle* m,
@@ -133,12 +111,6 @@ void ParamTraits<net::HttpRequestHeaders>::Log(const param_type& p,
   l->append(p.ToString());
 }
 
-void ParamTraits<net::IPEndPoint>::GetSize(base::PickleSizer* s,
-                                           const param_type& p) {
-  GetParamSize(s, p.address());
-  GetParamSize(s, p.port());
-}
-
 void ParamTraits<net::IPEndPoint>::Write(base::Pickle* m, const param_type& p) {
   WriteParam(m, p.address());
   WriteParam(m, p.port());
@@ -160,14 +132,6 @@ bool ParamTraits<net::IPEndPoint>::Read(const base::Pickle* m,
 
 void ParamTraits<net::IPEndPoint>::Log(const param_type& p, std::string* l) {
   LogParam("IPEndPoint:" + p.ToString(), l);
-}
-
-void ParamTraits<net::IPAddress>::GetSize(base::PickleSizer* s,
-                                          const param_type& p) {
-  base::StackVector<uint8_t, 16> bytes;
-  for (uint8_t byte : p.bytes())
-    bytes->push_back(byte);
-  GetParamSize(s, bytes);
 }
 
 void ParamTraits<net::IPAddress>::Write(base::Pickle* m, const param_type& p) {
@@ -195,11 +159,6 @@ void ParamTraits<net::IPAddress>::Log(const param_type& p, std::string* l) {
     LogParam("IPAddress:" + (p.empty() ? "(empty)" : p.ToString()), l);
 }
 
-void ParamTraits<content::PageState>::GetSize(base::PickleSizer* s,
-                                              const param_type& p) {
-  GetParamSize(s, p.ToEncodedData());
-}
-
 void ParamTraits<content::PageState>::Write(base::Pickle* m,
                                             const param_type& p) {
   WriteParam(m, p.ToEncodedData());
@@ -223,13 +182,6 @@ void ParamTraits<content::PageState>::Log(
 }
 
 }  // namespace IPC
-
-// Generate param traits size methods.
-#include "ipc/param_traits_size_macros.h"
-namespace IPC {
-#undef CONTENT_PUBLIC_COMMON_COMMON_PARAM_TRAITS_MACROS_H_
-#include "content/public/common/common_param_traits_macros.h"
-}
 
 // Generate param traits write methods.
 #include "ipc/param_traits_write_macros.h"

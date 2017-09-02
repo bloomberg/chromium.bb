@@ -87,8 +87,6 @@ APIPermission* SettingsOverrideAPIPermission::Intersect(
   return new SettingsOverrideAPIPermission(info(), setting_value_);
 }
 
-void SettingsOverrideAPIPermission::GetSize(base::PickleSizer* s) const {}
-
 void SettingsOverrideAPIPermission::Write(base::Pickle* m) const {}
 
 bool SettingsOverrideAPIPermission::Read(const base::Pickle* m,

@@ -25,13 +25,6 @@ PickledStructBlink::~PickledStructBlink() {}
 
 namespace IPC {
 
-void ParamTraits<mojo::test::PickledStructBlink>::GetSize(
-    base::PickleSizer* sizer,
-    const param_type& p) {
-  sizer->AddInt();
-  sizer->AddInt();
-}
-
 void ParamTraits<mojo::test::PickledStructBlink>::Write(base::Pickle* m,
                                                         const param_type& p) {
   m->WriteInt(p.foo());
@@ -51,9 +44,6 @@ bool ParamTraits<mojo::test::PickledStructBlink>::Read(
   return true;
 }
 
-#include "ipc/param_traits_size_macros.h"
-IPC_ENUM_TRAITS_MAX_VALUE(mojo::test::PickledEnumBlink,
-                          mojo::test::PickledEnumBlink::VALUE_1)
 #include "ipc/param_traits_write_macros.h"
 IPC_ENUM_TRAITS_MAX_VALUE(mojo::test::PickledEnumBlink,
                           mojo::test::PickledEnumBlink::VALUE_1)

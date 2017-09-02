@@ -16,11 +16,6 @@
 
 namespace IPC {
 
-void ParamTraits<WebInputEventPointer>::GetSize(base::PickleSizer* s,
-                                                const param_type& p) {
-  s->AddData(p->size());
-}
-
 void ParamTraits<WebInputEventPointer>::Write(base::Pickle* m,
                                               const param_type& p) {
   m->WriteData(reinterpret_cast<const char*>(p), p->size());
@@ -66,11 +61,6 @@ void ParamTraits<WebInputEventPointer>::Log(const param_type& p,
   l->append(")");
 }
 
-void ParamTraits<content::MessagePort>::GetSize(base::PickleSizer* s,
-                                                const param_type& p) {
-  ParamTraits<mojo::MessagePipeHandle>::GetSize(s, p.GetHandle().get());
-}
-
 void ParamTraits<content::MessagePort>::Write(base::Pickle* m,
                                               const param_type& p) {
   ParamTraits<mojo::MessagePipeHandle>::Write(m, p.ReleaseHandle().release());
@@ -91,11 +81,6 @@ void ParamTraits<content::MessagePort>::Log(const param_type& p,
                                             std::string* l) {
 }
 
-void ParamTraits<ui::AXMode>::GetSize(base::PickleSizer* s,
-                                      const param_type& p) {
-  IPC::GetParamSize(s, p.mode());
-}
-
 void ParamTraits<ui::AXMode>::Write(base::Pickle* m, const param_type& p) {
   IPC::WriteParam(m, p.mode());
 }
@@ -111,16 +96,6 @@ bool ParamTraits<ui::AXMode>::Read(const base::Pickle* m,
 }
 
 void ParamTraits<ui::AXMode>::Log(const param_type& p, std::string* l) {}
-
-void ParamTraits<scoped_refptr<storage::BlobHandle>>::GetSize(
-    base::PickleSizer* s,
-    const param_type& p) {
-  s->AddBool();
-  if (p) {
-    s->AddUInt32();
-    s->AddAttachment();
-  }
-}
 
 void ParamTraits<scoped_refptr<storage::BlobHandle>>::Write(
     base::Pickle* m,
@@ -162,13 +137,6 @@ void ParamTraits<scoped_refptr<storage::BlobHandle>>::Log(const param_type& p,
 }
 
 }  // namespace IPC
-
-// Generate param traits size methods.
-#include "ipc/param_traits_size_macros.h"
-namespace IPC {
-#undef CONTENT_COMMON_CONTENT_PARAM_TRAITS_MACROS_H_
-#include "content/common/content_param_traits_macros.h"
-}
 
 // Generate param traits write methods.
 #include "ipc/param_traits_write_macros.h"

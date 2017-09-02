@@ -17,14 +17,6 @@ using media::VideoCaptureFormat;
 
 namespace IPC {
 
-void ParamTraits<VideoCaptureFormat>::GetSize(base::PickleSizer* s,
-                                              const VideoCaptureFormat& p) {
-  GetParamSize(s, p.frame_size);
-  GetParamSize(s, p.frame_rate);
-  GetParamSize(s, p.pixel_format);
-  GetParamSize(s, p.pixel_storage);
-}
-
 void ParamTraits<VideoCaptureFormat>::Write(base::Pickle* m,
                                             const VideoCaptureFormat& p) {
   WriteParam(m, p.frame_size);
@@ -52,13 +44,6 @@ void ParamTraits<VideoCaptureFormat>::Log(const VideoCaptureFormat& p,
 }
 
 }  // namespace IPC
-
-// Generate param traits size methods.
-#include "ipc/param_traits_size_macros.h"
-namespace IPC {
-#undef MEDIA_CAPTURE_IPC_CAPTURE_PARAM_TRAITS_MACROS_H_
-#include "media/capture/ipc/capture_param_traits_macros.h"
-}
 
 // Generate param traits write methods.
 #include "ipc/param_traits_write_macros.h"

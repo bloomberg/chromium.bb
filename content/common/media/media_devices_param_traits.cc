@@ -4,12 +4,6 @@
 
 #include "content/common/media/media_devices_param_traits.h"
 
-// Generate param traits size methods.
-#include "ipc/param_traits_size_macros.h"
-namespace IPC {
-#include "content/common/media/media_devices_param_traits.h"
-}  // namespace IPC
-
 // Generate param traits write methods.
 #include "ipc/param_traits_write_macros.h"
 namespace IPC {

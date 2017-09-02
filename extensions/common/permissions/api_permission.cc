@@ -69,8 +69,6 @@ class SimpleAPIPermission : public APIPermission {
     return new SimpleAPIPermission(info());
   }
 
-  void GetSize(base::PickleSizer* s) const override {}
-
   void Write(base::Pickle* m) const override {}
 
   bool Read(const base::Pickle* m, base::PickleIterator* iter) override {

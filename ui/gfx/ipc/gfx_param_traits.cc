@@ -18,12 +18,6 @@
 
 namespace IPC {
 
-void ParamTraits<gfx::Range>::GetSize(base::PickleSizer* s,
-                                      const gfx::Range& r) {
-  GetParamSize(s, r.start());
-  GetParamSize(s, r.end());
-}
-
 void ParamTraits<gfx::Range>::Write(base::Pickle* m, const gfx::Range& r) {
   m->WriteUInt32(r.start());
   m->WriteUInt32(r.end());
@@ -45,12 +39,6 @@ void ParamTraits<gfx::Range>::Log(const gfx::Range& r, std::string* l) {
 }
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
-void ParamTraits<gfx::ScopedRefCountedIOSurfaceMachPort>::GetSize(
-    base::PickleSizer* s, const param_type& p) {
-  MachPortMac mach_port_mac(p.get());
-  GetParamSize(s, mach_port_mac);
-}
-
 void ParamTraits<gfx::ScopedRefCountedIOSurfaceMachPort>::Write(
     base::Pickle* m,
     const param_type p) {
@@ -76,14 +64,6 @@ void ParamTraits<gfx::ScopedRefCountedIOSurfaceMachPort>::Log(
   LogParam(p.get(), l);
 }
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)
-
-void ParamTraits<gfx::SelectionBound>::GetSize(base::PickleSizer* s,
-                                               const param_type& p) {
-  GetParamSize(s, static_cast<uint32_t>(p.type()));
-  GetParamSize(s, p.edge_top());
-  GetParamSize(s, p.edge_bottom());
-  GetParamSize(s, p.visible());
-}
 
 void ParamTraits<gfx::SelectionBound>::Write(base::Pickle* m,
                                              const param_type& p) {
@@ -127,13 +107,6 @@ void ParamTraits<gfx::SelectionBound>::Log(const param_type& p,
 }
 
 }  // namespace IPC
-
-// Generate param traits size methods.
-#include "ipc/param_traits_size_macros.h"
-namespace IPC {
-#undef UI_GFX_IPC_GFX_PARAM_TRAITS_MACROS_H_
-#include "ui/gfx/ipc/gfx_param_traits_macros.h"
-}
 
 // Generate param traits write methods.
 #include "ipc/param_traits_write_macros.h"

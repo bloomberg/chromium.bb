@@ -27,7 +27,6 @@ namespace IPC {
 template <>
 struct GFX_IPC_EXPORT ParamTraits<gfx::Range> {
   typedef gfx::Range param_type;
-  static void GetSize(base::PickleSizer* s, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
@@ -39,7 +38,6 @@ struct GFX_IPC_EXPORT ParamTraits<gfx::Range> {
 template <>
 struct GFX_IPC_EXPORT ParamTraits<gfx::ScopedRefCountedIOSurfaceMachPort> {
   typedef gfx::ScopedRefCountedIOSurfaceMachPort param_type;
-  static void GetSize(base::PickleSizer* s, const param_type& p);
   static void Write(base::Pickle* m, const param_type p);
   // Note: Read() passes ownership of the Mach send right from the IPC message
   // to the ScopedRefCountedIOSurfaceMachPort. Therefore, Read() may only be
@@ -55,7 +53,6 @@ struct GFX_IPC_EXPORT ParamTraits<gfx::ScopedRefCountedIOSurfaceMachPort> {
 template <>
 struct GFX_IPC_EXPORT ParamTraits<gfx::SelectionBound> {
   typedef gfx::SelectionBound param_type;
-  static void GetSize(base::PickleSizer* s, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,

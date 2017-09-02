@@ -10,13 +10,6 @@
 
 namespace IPC {
 
-void ParamTraits<mojo::MessagePipeHandle>::GetSize(base::PickleSizer* sizer,
-                                                   const param_type& p) {
-  GetParamSize(sizer, p.is_valid());
-  if (p.is_valid())
-    sizer->AddAttachment();
-}
-
 void ParamTraits<mojo::MessagePipeHandle>::Write(base::Pickle* m,
                                                  const param_type& p) {
   WriteParam(m, p.is_valid());
@@ -46,14 +39,6 @@ void ParamTraits<mojo::MessagePipeHandle>::Log(const param_type& p,
   l->append("mojo::MessagePipeHandle(");
   LogParam(p.value(), l);
   l->append(")");
-}
-
-void ParamTraits<mojo::DataPipeConsumerHandle>::GetSize(
-    base::PickleSizer* sizer,
-    const param_type& p) {
-  GetParamSize(sizer, p.is_valid());
-  if (p.is_valid())
-    sizer->AddAttachment();
 }
 
 void ParamTraits<mojo::DataPipeConsumerHandle>::Write(base::Pickle* m,

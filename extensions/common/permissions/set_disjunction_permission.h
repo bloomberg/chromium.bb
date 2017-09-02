@@ -153,10 +153,6 @@ class SetDisjunctionPermission : public APIPermission {
     return std::unique_ptr<base::Value>(list);
   }
 
-  void GetSize(base::PickleSizer* s) const override {
-    IPC::GetParamSize(s, data_set_);
-  }
-
   void Write(base::Pickle* m) const override { IPC::WriteParam(m, data_set_); }
 
   bool Read(const base::Pickle* m, base::PickleIterator* iter) override {

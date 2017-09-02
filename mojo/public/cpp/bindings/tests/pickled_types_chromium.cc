@@ -26,13 +26,6 @@ bool operator==(const PickledStructChromium& a,
 
 namespace IPC {
 
-void ParamTraits<mojo::test::PickledStructChromium>::GetSize(
-    base::PickleSizer* sizer,
-    const param_type& p) {
-  sizer->AddInt();
-  sizer->AddInt();
-}
-
 void ParamTraits<mojo::test::PickledStructChromium>::Write(
     base::Pickle* m,
     const param_type& p) {
@@ -53,9 +46,6 @@ bool ParamTraits<mojo::test::PickledStructChromium>::Read(
   return true;
 }
 
-#include "ipc/param_traits_size_macros.h"
-IPC_ENUM_TRAITS_MAX_VALUE(mojo::test::PickledEnumChromium,
-                          mojo::test::PickledEnumChromium::VALUE_2)
 #include "ipc/param_traits_write_macros.h"
 IPC_ENUM_TRAITS_MAX_VALUE(mojo::test::PickledEnumChromium,
                           mojo::test::PickledEnumChromium::VALUE_2)
