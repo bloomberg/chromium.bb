@@ -5240,8 +5240,13 @@ void WebContentsImpl::SetAsFocusedWebContentsIfNecessary() {
 
   GetOutermostWebContents()->node_.SetFocusedWebContents(this);
 
-  if (!GuestMode::IsCrossProcessFrameGuest(this) && browser_plugin_guest_)
+  if (!GuestMode::IsCrossProcessFrameGuest(this) && browser_plugin_guest_) {
+    // A BrowserPlugin based-guest needs to focus its embedder to be told about
+    // focus state.
+    GetOuterWebContents()->GetMainFrame()->GetRenderWidgetHost()->SetPageFocus(
+        true);
     return;
+  }
 
   // Send a page level blur to the old contents so that it displays inactive UI
   // and focus this contents to activate it.
