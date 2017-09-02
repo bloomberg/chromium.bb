@@ -40,23 +40,6 @@ import threading
 import time
 import uuid
 
-LOG_FILE_ENV_VAR = "CHROME_REMOTE_DESKTOP_LOG_FILE"
-
-ENV_VARS_FORWARDED_TO_CHILD_ENV = [
-    "HOME",
-    "LANG",
-    "LOGNAME",
-    "PATH",
-    "SHELL",
-    "USER",
-    "USERNAME",
-    LOG_FILE_ENV_VAR,
-    "GOOGLE_CLIENT_ID_REMOTING",
-    "GOOGLE_CLIENT_ID_REMOTING_HOST",
-    "GOOGLE_CLIENT_SECRET_REMOTING",
-    "GOOGLE_CLIENT_SECRET_REMOTING_HOST"
-]
-
 # If this env var is defined, extra host params will be loaded from this env var
 # as a list of strings separated by space (\s+). Note that param that contains
 # space is currently NOT supported and will be broken down into two params at
@@ -108,6 +91,8 @@ if (os.path.basename(sys.argv[0]) == 'linux_me2me_host.py'):
 else:
   HOST_BINARY_PATH = os.path.join(SCRIPT_DIR, "chrome-remote-desktop-host")
 
+USER_SESSION_PATH = os.path.join(SCRIPT_DIR, "user-session")
+
 CHROME_REMOTING_GROUP_NAME = "chrome-remote-desktop"
 
 HOME_DIR = os.environ["HOME"]
@@ -140,9 +125,16 @@ SESSION_OUTPUT_TIME_LIMIT_SECONDS = 30
 USER_SESSION_MESSAGE_FD = 202
 
 # This is the exit code used to signal to wrapper that it should restart instead
-# of exiting. It must be kept in sync with kRestartExitCode in
+# of exiting. It must be kept in sync with kRelaunchExitCode in
 # remoting_user_session.cc.
 RELAUNCH_EXIT_CODE = 41
+
+# This exit code is returned when a needed binary such as user-session or sg
+# cannot be found.
+COMMAND_NOT_FOUND_EXIT_CODE = 127
+
+# This exit code is returned when a needed binary exists but cannot be executed.
+COMMAND_NOT_EXECUTABLE_EXIT_CODE = 126
 
 # Globals needed by the atexit cleanup() handler.
 g_desktop = None
@@ -435,41 +427,8 @@ class Desktop:
       display += 1
     return display
 
-  def _init_child_env(self, keep_env):
-    if keep_env:
-      self.child_env = dict(os.environ)
-    else:
-      # Create clean environment for new session, so it is cleanly separated
-      # from the user's console X session.
-      self.child_env = {}
-
-      for key in ENV_VARS_FORWARDED_TO_CHILD_ENV:
-        if key in os.environ:
-          self.child_env[key] = os.environ[key]
-
-      # Initialize the environment from files that would normally be read in a
-      # PAM-authenticated session.
-      for env_filename in [
-        "/etc/environment",
-        "/etc/default/locale",
-        os.path.expanduser("~/.pam_environment")]:
-        if not os.path.exists(env_filename):
-          continue
-        try:
-          with open(env_filename, "r") as env_file:
-            for line in env_file:
-              line = line.rstrip("\n")
-              # Split at the first "=", leaving any further instances in the
-              # value.
-              key_value_pair = line.split("=", 1)
-              if len(key_value_pair) == 2:
-                key, value = tuple(key_value_pair)
-                # The file stores key=value assignments, but the value may be
-                # quoted, so strip leading & trailing quotes from it.
-                value = value.strip("'\"")
-                self.child_env[key] = value
-        except IOError:
-          logging.error("Failed to read file: %s" % env_filename)
+  def _init_child_env(self):
+    self.child_env = dict(os.environ)
 
     # Ensure that the software-rendering GL drivers are loaded by the desktop
     # session, instead of any hardware GL drivers installed on the system.
@@ -744,8 +703,8 @@ class Desktop:
     if not self.session_proc.pid:
       raise Exception("Could not start X session")
 
-  def launch_session(self, keep_env, x_args):
-    self._init_child_env(keep_env)
+  def launch_session(self, x_args):
+    self._init_child_env()
     self._setup_pulseaudio()
     self._setup_gnubby()
     self._launch_x_server(x_args)
@@ -768,9 +727,7 @@ class Desktop:
       _ = signum, frame
       logging.info("Host ready to receive connections.")
       self.host_ready = True
-      if (ParentProcessLogger.instance() and g_desktop is not None and
-          g_desktop.host_ready):
-        ParentProcessLogger.instance().release_parent(True)
+      ParentProcessLogger.release_parent_if_connected(True)
 
     signal.signal(signal.SIGUSR1, sigusr1_handler)
     args.append("--signal-parent")
@@ -861,8 +818,9 @@ def get_daemon_proc(config_file):
       cmdline = psget(process.cmdline)
       if len(cmdline) < 2:
         continue
-      if (os.path.basename(cmdline[0]).startswith('python')
-          and os.path.basename(cmdline[1]) == os.path.basename(sys.argv[0])):
+      if (os.path.basename(cmdline[0]).startswith('python') and
+          os.path.basename(cmdline[1]) == os.path.basename(sys.argv[0]) and
+          "--start" in cmdline and "--child-process" in cmdline):
         process_config = parse_config_arg(cmdline[2:])[0]
         if process_config is None:
           # Fall back to old behavior if there is no --config argument
@@ -935,69 +893,50 @@ class ParentProcessLogger(object):
   This class creates a pipe to allow logging from the daemon process to be
   copied to the parent process. The daemon process adds a log-handler that
   directs logging output to the pipe. The parent process reads from this pipe
-  until and writes the content to stderr.  When the pipe is no longer needed
-  (for example, the host signals successful launch or permanent failure), the
-  daemon removes the log-handler and closes the pipe, causing the the parent
-  process to reach end-of-file while reading the pipe and exit.
+  and writes the content to stderr. When the pipe is no longer needed (for
+  example, the host signals successful launch or permanent failure), the daemon
+  removes the log-handler and closes the pipe, causing the the parent process
+  to reach end-of-file while reading the pipe and exit.
 
-  When daemonizing, the (singleton) logger should be instantiated before
-  forking. The parent process should call wait_for_logs() before exiting. When
-  running via user-session, the file descriptor for the pipe to the parent
-  process should be passed to the constructor. In the latter case, wait_for_logs
-  may not be used.
-
-  In either case, the (grand-)child process should call start_logging() when it
-  starts, and then use logging.* to issue log statements, as usual. When the
+  The file descriptor for the pipe to the parent process should be passed to
+  the constructor. The (grand-)child process should call start_logging() when
+  it starts, and then use logging.* to issue log statements, as usual. When the
   child has either succesfully started the host or terminated, it must call
   release_parent() to allow the parent to exit.
   """
 
   __instance = None
 
-  def __init__(self, write_fd=None):
-    """Constructor. When daemonizing, must be called before forking.
+  def __init__(self, write_fd):
+    """Constructor.
 
     Constructs the singleton instance of ParentProcessLogger. This should be
     called at most once.
 
-    write_fd: If specified, the logger will use the file descriptor provided
-              for sending log messages instead of creating a new pipe. It is
-              assumed that this is the write end of a pipe created by an
-              already-existing parent process, such as user-session. If
+    write_fd: The write end of the pipe created by the parent process. If
               write_fd is not a valid file descriptor, the constructor will
               throw either IOError or OSError.
     """
-    if write_fd is None:
-      read_pipe, write_pipe = os.pipe()
-    else:
-      read_pipe = None
-      write_pipe = write_fd
     # Ensure write_pipe is closed on exec, otherwise it will be kept open by
     # child processes (X, host), preventing the read pipe from EOF'ing.
-    old_flags = fcntl.fcntl(write_pipe, fcntl.F_GETFD)
-    fcntl.fcntl(write_pipe, fcntl.F_SETFD, old_flags | fcntl.FD_CLOEXEC)
-    if read_pipe is not None:
-      self._read_file = os.fdopen(read_pipe, 'r')
-    else:
-      self._read_file = None
-    self._write_file = os.fdopen(write_pipe, 'w')
+    old_flags = fcntl.fcntl(write_fd, fcntl.F_GETFD)
+    fcntl.fcntl(write_fd, fcntl.F_SETFD, old_flags | fcntl.FD_CLOEXEC)
+    self._write_file = os.fdopen(write_fd, 'w')
     self._logging_handler = None
     ParentProcessLogger.__instance = self
 
-  def start_logging(self):
+  def _start_logging(self):
     """Installs a logging handler that sends log entries to a pipe, prefixed
     with the string 'MSG:'. This allows them to be distinguished by the parent
     process from commands sent over the same pipe.
 
     Must be called by the child process.
     """
-    if self._read_file is not None:
-      self._read_file.close()
     self._logging_handler = logging.StreamHandler(self._write_file)
     self._logging_handler.setFormatter(logging.Formatter(fmt='MSG:%(message)s'))
     logging.getLogger().addHandler(self._logging_handler)
 
-  def release_parent(self, success):
+  def _release_parent(self, success):
     """Uninstalls logging handler and closes the pipe, releasing the parent.
 
     Must be called by the child process.
@@ -1014,132 +953,151 @@ class ParentProcessLogger(object):
         self._write_file.flush()
       self._write_file.close()
 
-  def wait_for_logs(self):
-    """Waits and prints log lines from the daemon until the pipe is closed.
+  @staticmethod
+  def try_start_logging(write_fd):
+    """Attempt to initialize ParentProcessLogger and start forwarding log
+    messages.
 
-    Must be called by the parent process.
-
-    Returns:
-      True if the host started and successfully registered with the directory;
-      false otherwise.
+    Returns False if the file descriptor was invalid (safe to ignore).
     """
-    # If Ctrl-C is pressed, inform the user that the daemon is still running.
-    def sigint_handler(signum, frame):
-      _ = signum, frame
-      print("Interrupted. The daemon is still running in the background.",
-            file=sys.stderr)
-      sys.exit(1)
-
-    signal.signal(signal.SIGINT, sigint_handler)
-
-    # Install a fallback timeout to release the parent process, in case the
-    # daemon never responds (e.g. host crash-looping, daemon killed).
-    # This signal will cause the read loop below to stop with an EINTR IOError.
-    #
-    # The value of 120s is chosen to match the heartbeat retry timeout in
-    # hearbeat_sender.cc.
-    def sigalrm_handler(signum, frame):
-      _ = signum, frame
-      print("No response from daemon. It may have crashed, or may still be "
-            "running in the background.", file=sys.stderr)
-
-    signal.signal(signal.SIGALRM, sigalrm_handler)
-    signal.alarm(120)
-
-    self._write_file.close()
-
-    # Print lines as they're logged to the pipe until EOF is reached or readline
-    # is interrupted by one of the signal handlers above.
-    host_ready = False
-    for line in iter(self._read_file.readline, ''):
-      if line[:4] == "MSG:":
-        sys.stderr.write(line[4:])
-      elif line == "READY\n":
-        host_ready = True
-      else:
-        sys.stderr.write("Unrecognized command: " + line)
-    print("Log file: %s" % os.environ[LOG_FILE_ENV_VAR], file=sys.stderr)
-    return host_ready
+    try:
+      ParentProcessLogger(USER_SESSION_MESSAGE_FD)._start_logging()
+      return True
+    except (IOError, OSError):
+      # One of these will be thrown if the file descriptor is invalid, such as
+      # if the the fd got closed by the login shell. In that case, just continue
+      # without sending log messages.
+      return False
 
   @staticmethod
-  def instance():
-    """Returns the singleton instance, if it exists."""
-    return ParentProcessLogger.__instance
+  def release_parent_if_connected(success):
+    """If ParentProcessLogger is active, stop logging and release the parent.
+
+    success: If true, signal to the parent that the script was successful.
+    """
+    instance = ParentProcessLogger.__instance
+    if instance is not None:
+      instance._release_parent(success)
 
 
-def daemonize():
-  """Background this process and detach from controlling terminal, redirecting
-  stdout/stderr to a log file."""
+def run_command_with_group(command, group):
+  """Run a command with a different primary group."""
 
-  # TODO(lambroslambrou): Having stdout/stderr redirected to a log file is not
-  # ideal - it could create a filesystem DoS if the daemon or a child process
-  # were to write excessive amounts to stdout/stderr.  Ideally, stdout/stderr
-  # should be redirected to a pipe or socket, and a process at the other end
-  # should consume the data and write it to a logging facility which can do
-  # data-capping or log-rotation. The 'logger' command-line utility could be
-  # used for this, but it might cause too much syslog spam.
+  # This is implemented using sg, which is an odd character and will try to
+  # prompt for a password if it can't verify the user is a member of the given
+  # group, along with in a few other corner cases. (It will prompt in the
+  # non-member case even if the group doesn't have a password set.)
+  #
+  # To prevent sg from prompting the user for a password that doesn't exist,
+  # redirect stdin and detach sg from the TTY. It will still print something
+  # like "Password: crypt: Invalid argument", so redirect stdout and stderr, as
+  # well. Finally, have the shell unredirect them when executing user-session.
+  #
+  # It is also desirable to have some way to tell whether any errors are
+  # from sg or the command, which is done using a pipe.
 
-  # Create new (temporary) file-descriptors before forking, so any errors get
-  # reported to the main process and set the correct exit-code.
-  # The mode is provided, since Python otherwise sets a default mode of 0777,
-  # which would result in the new file having permissions of 0777 & ~umask,
-  # possibly leaving the executable bits set.
-  if not LOG_FILE_ENV_VAR in os.environ:
-    log_file_prefix = "chrome_remote_desktop_%s_" % time.strftime(
-        '%Y%m%d_%H%M%S', time.localtime(time.time()))
-    log_file = tempfile.NamedTemporaryFile(prefix=log_file_prefix, delete=False)
-    os.environ[LOG_FILE_ENV_VAR] = log_file.name
+  def pre_exec(read_fd, write_fd):
+    os.close(read_fd)
 
-    # The file-descriptor in this case is owned by the tempfile object.
-    log_fd = os.dup(log_file.file.fileno())
-  else:
-    log_fd = os.open(os.environ[LOG_FILE_ENV_VAR],
-                     os.O_WRONLY | os.O_CREAT | os.O_APPEND, 0o600)
+    # /bin/sh may be dash, which only allows redirecting file descriptors 0-9,
+    # the minimum required by POSIX. Since there may be files open elsewhere,
+    # move the relevant file descriptors to specific numbers under that limit.
+    # Because this runs in the child process, it doesn't matter if existing file
+    # descriptors are closed in the process. After, stdio will be redirected to
+    # /dev/null, write_fd will be moved to 6, and the old stdio will be moved
+    # to 7, 8, and 9.
+    if (write_fd != 6):
+      os.dup2(write_fd, 6)
+      os.close(write_fd)
+    os.dup2(0, 7)
+    os.dup2(1, 8)
+    os.dup2(2, 9)
+    devnull = os.open(os.devnull, os.O_RDWR)
+    os.dup2(devnull, 0)
+    os.dup2(devnull, 1)
+    os.dup2(devnull, 2)
+    os.close(devnull)
 
-  devnull_fd = os.open(os.devnull, os.O_RDONLY)
-
-  parent_logger = ParentProcessLogger()
-
-  pid = os.fork()
-
-  if pid == 0:
-    # Child process
+    # os.setsid will detach subprocess from the TTY
     os.setsid()
 
-    # The second fork ensures that the daemon isn't a session leader, so that
-    # it doesn't acquire a controlling terminal.
-    pid = os.fork()
-
-    if pid == 0:
-      # Grandchild process
-      pass
+  # Pipe to check whether sg successfully ran our command.
+  read_fd, write_fd = os.pipe()
+  try:
+    # sg invokes the provided argument using /bin/sh. In that shell, first write
+    # "success\n" to the pipe, which is checked later to determine whether sg
+    # itself succeeded, and then restore stdio, close the extra file
+    # descriptors, and exec the provided command.
+    process = subprocess.Popen(
+        ["sg", group,
+         "echo success >&6; exec {command} "
+           # Restore original stdio
+           "0<&7 1>&8 2>&9 "
+           # Close no-longer-needed file descriptors
+           "6>&- 7<&- 8>&- 9>&-"
+           .format(command=" ".join(map(pipes.quote, command)))],
+        preexec_fn=lambda: pre_exec(read_fd, write_fd))
+    result = process.wait()
+  except OSError as e:
+    logging.error("Failed to execute sg: {}".format(e.strerror))
+    if e.errno == errno.ENOENT:
+      result = COMMAND_NOT_FOUND_EXIT_CODE
     else:
-      # Child process
-      os._exit(0)  # pylint: disable=W0212
-  else:
-    # Parent process
-    if parent_logger.wait_for_logs():
-      os._exit(0)  # pylint: disable=W0212
+      result = COMMAND_NOT_EXECUTABLE_EXIT_CODE
+    # Skip pipe check, since sg was never executed.
+    os.close(read_fd)
+    return result
+  except KeyboardInterrupt:
+    # Because sg is in its own session, it won't have gotten the interrupt.
+    try:
+      os.killpg(os.getpgid(process.pid), signal.SIGINT)
+      result = process.wait()
+    except OSError:
+      logging.warning("Command may still be running")
+      result = 1
+  finally:
+    os.close(write_fd)
+
+  with os.fdopen(read_fd) as read_file:
+    contents = read_file.read()
+  if contents != "success\n":
+    # No success message means sg didn't execute the command. (Maybe the user
+    # is not a member of the group?)
+    logging.error("Failed to access {} group. Is the user a member?"
+                  .format(group))
+    result = COMMAND_NOT_EXECUTABLE_EXIT_CODE
+
+  return result
+
+
+def start_via_user_session(foreground):
+  # We need to invoke user-session
+  command = [USER_SESSION_PATH, "start"]
+  if foreground:
+    command += ["--foreground"]
+  command += ["--"] + sys.argv[1:]
+  try:
+    process = subprocess.Popen(command)
+    result = process.wait()
+  except OSError as e:
+    if e.errno == errno.EACCES:
+      # User may have just been added to the CRD group, in which case they
+      # won't be able to execute user-session directly until they log out and
+      # back in. In the mean time, we can try to switch to the CRD group and
+      # execute user-session.
+      result = run_command_with_group(command, CHROME_REMOTING_GROUP_NAME)
     else:
-      os._exit(1)  # pylint: disable=W0212
+      logging.error("Could not execute {}: {}"
+                    .format(USER_SESSION_PATH, e.strerror))
+      if e.errno == errno.ENOENT:
+        result = COMMAND_NOT_FOUND_EXIT_CODE
+      else:
+        result = COMMAND_NOT_EXECUTABLE_EXIT_CODE
+  except KeyboardInterrupt:
+    # Child will have also gotten the interrupt. Wait for it to exit.
+    result = process.wait()
 
-  logging.info("Daemon process started in the background, logging to '%s'" %
-               os.environ[LOG_FILE_ENV_VAR])
-
-  os.chdir(HOME_DIR)
-
-  parent_logger.start_logging()
-
-  # Copy the file-descriptors to create new stdin, stdout and stderr.  Note
-  # that dup2(oldfd, newfd) closes newfd first, so this will close the current
-  # stdin, stdout and stderr, detaching from the terminal.
-  os.dup2(devnull_fd, sys.stdin.fileno())
-  os.dup2(log_fd, sys.stdout.fileno())
-  os.dup2(log_fd, sys.stderr.fileno())
-
-  # Close the temporary file-descriptors.
-  os.close(devnull_fd)
-  os.close(log_fd)
+  return result
 
 
 def cleanup():
@@ -1168,8 +1126,7 @@ def cleanup():
       os.remove(g_desktop.xorg_conf)
 
   g_desktop = None
-  if ParentProcessLogger.instance():
-    ParentProcessLogger.instance().release_parent(False)
+  ParentProcessLogger.release_parent_if_connected(False)
 
 class SignalHandler:
   """Reload the config file on SIGHUP. Since we pass the configuration to the
@@ -1240,18 +1197,14 @@ class RelaunchInhibitor:
     logging.info("Failure count for '%s' is now %d", self.label, self.failures)
 
 
-def relaunch_self(child_process):
+def relaunch_self():
   """Relaunches the session to pick up any changes to the session logic in case
-  Chrome Remote Desktop has been upgraded. If this script is running standalone,
-  just relaunch the script. If running under user-session, bubble the relaunch
-  request up so it can relaunch as well.
+  Chrome Remote Desktop has been upgraded. We return a special exit code to
+  inform user-session that it should relaunch.
   """
-  if child_process:
-    # cleanup run via atexit
-    sys.exit(RELAUNCH_EXIT_CODE)
-  else:
-    cleanup()
-    os.execvp(SCRIPT_PATH, sys.argv)
+
+  # cleanup run via atexit
+  sys.exit(RELAUNCH_EXIT_CODE)
 
 
 def waitpid_with_timeout(pid, deadline):
@@ -1519,18 +1472,29 @@ Web Store: https://chrome.google.com/remotedesktop"""
 
   # Determine whether a desktop is already active for the specified host
   # configuration.
-  proc = get_daemon_proc(config_file)
-  if proc is not None:
+  if get_daemon_proc(config_file) is not None:
     # Debian policy requires that services should "start" cleanly and return 0
     # if they are already running.
-    print("Service already running.")
+    if options.child_process:
+      # If the script is running under user-session, try to relay the message.
+      ParentProcessLogger.try_start_logging(USER_SESSION_MESSAGE_FD)
+    logging.info("Service already running.")
+    ParentProcessLogger.release_parent_if_connected(True)
     return 0
 
   if config_file != options.config:
-    # Canonicalize config flag so get_daemon_proc can find us.
-    exec_args = [sys.argv[0], "--config=" + config_file]
-    exec_args += parse_config_arg(sys.argv[1:])[1]
-    os.execvp(SCRIPT_PATH, exec_args)
+    # --config was either not specified or isn't a canonical absolute path.
+    # Replace it with the canonical path so get_daemon_proc can find us.
+    sys.argv = ([sys.argv[0], "--config=" + config_file] +
+                parse_config_arg(sys.argv[1:])[1])
+    if options.child_process:
+      os.execvp(sys.argv[0], sys.argv)
+
+  if not options.child_process:
+    return start_via_user_session(options.foreground)
+
+  # Start logging to user-session messaging pipe if it exists.
+  ParentProcessLogger.try_start_logging(USER_SESSION_MESSAGE_FD)
 
   # If a RANDR-supporting Xvfb is not available, limit the default size to
   # something more sensible.
@@ -1587,21 +1551,6 @@ Web Store: https://chrome.google.com/remotedesktop"""
   if not host_config_valid or not auth_config_valid:
     logging.error("Failed to load host configuration.")
     return 1
-
-  # If we're running under user-session, try to open the messaging pipe.
-  if options.child_process:
-    # Log to existing messaging pipe if it exists.
-    try:
-      ParentProcessLogger(USER_SESSION_MESSAGE_FD).start_logging()
-    except (IOError, OSError):
-      # One of these will be thrown if the file descriptor is invalid, such as
-      # if the the fd got closed by the login shell. In that case, just continue
-      # without sending log messages.
-      pass
-  # Otherwise, detach a separate "daemon" process to run the session, unless
-  # specifically requested to run in the foreground.
-  elif not options.foreground:
-    daemonize()
 
   if host.host_id:
     logging.info("Using host_id: " + host.host_id)
@@ -1662,7 +1611,7 @@ Web Store: https://chrome.google.com/remotedesktop"""
           relaunch_times.append(x_server_inhibitor.earliest_relaunch_time)
         else:
           logging.info("Launching X server and X session.")
-          desktop.launch_session(options.child_process, options.args)
+          desktop.launch_session(options.args)
           x_server_inhibitor.record_started(MINIMUM_PROCESS_LIFETIME,
                                             backoff_time)
           allow_relaunch_self = True
