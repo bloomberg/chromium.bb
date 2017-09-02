@@ -835,7 +835,9 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, OneScrollNode) {
 
   auto* scroll_layer = ScrollHitTestLayerAt(0);
   EXPECT_TRUE(scroll_layer->scrollable());
-  // The scroll layer should be sized to the container bounds beca
+  // The scroll layer should be sized to the container bounds.
+  // TODO(pdr): The container bounds will not include scrollbars but the scroll
+  // layer should extend below scrollbars.
   EXPECT_EQ(gfx::Size(11, 13), scroll_layer->bounds());
   EXPECT_EQ(gfx::Vector2dF(3, 5), scroll_layer->offset_to_transform_parent());
   EXPECT_EQ(scroll_layer->scroll_tree_index(), scroll_node.id);

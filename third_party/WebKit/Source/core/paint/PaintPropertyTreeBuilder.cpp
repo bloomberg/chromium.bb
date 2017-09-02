@@ -89,9 +89,7 @@ static bool UpdateScroll(
     bool user_scrollable_vertical,
     MainThreadScrollingReasons main_thread_scrolling_reasons) {
   DCHECK(!RuntimeEnabledFeatures::RootLayerScrollingEnabled());
-  auto element_id = CompositorElementIdFromUniqueObjectId(
-      frame_view.GetLayoutView()->UniqueId(),
-      CompositorElementIdNamespace::kScroll);
+  auto element_id = frame_view.GetCompositorElementId();
   if (auto* existing_scroll = frame_view.ScrollNode()) {
     auto existing_reasons = existing_scroll->GetMainThreadScrollingReasons();
     existing_scroll->Update(

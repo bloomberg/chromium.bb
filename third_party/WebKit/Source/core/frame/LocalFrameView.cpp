@@ -2823,7 +2823,8 @@ void LocalFrameView::NotifyPageThatContentAreaWillPaint() const {
 
 CompositorElementId LocalFrameView::GetCompositorElementId() const {
   if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
-    return CompositorElementIdFromUniqueObjectId(unique_id_);
+    return CompositorElementIdFromUniqueObjectId(
+        unique_id_, CompositorElementIdNamespace::kScroll);
   } else {
     return PaintInvalidationCapableScrollableArea::GetCompositorElementId();
   }
@@ -4434,8 +4435,11 @@ void LocalFrameView::AdjustScrollOffsetFromUpdateScrollbars() {
 
 ScrollableArea* LocalFrameView::ScrollableAreaWithElementId(
     const CompositorElementId& id) {
-  if (id == GetCompositorElementId())
+  // With root layer scrolling the LocalFrameView does not scroll.
+  if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled() &&
+      id == GetCompositorElementId()) {
     return this;
+  }
   if (scrollable_areas_) {
     // This requires iterating over all scrollable areas. We may want to store a
     // map of ElementId to ScrollableArea if this is an issue for performance.

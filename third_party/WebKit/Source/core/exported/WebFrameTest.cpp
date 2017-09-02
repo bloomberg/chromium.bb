@@ -11883,6 +11883,10 @@ class SlimmingPaintWebFrameTest
 
   WebLocalFrame* LocalMainFrame() { return web_view_helper_->LocalMainFrame(); }
 
+  LocalFrameView* LocalFrameView() {
+    return web_view_helper_->LocalMainFrame()->GetFrameView();
+  }
+
   WebViewImpl* WebView() { return web_view_helper_->WebView(); }
 
   size_t ContentLayerCount() {
@@ -11911,8 +11915,7 @@ class SlimmingPaintWebFrameTest
 
  private:
   PaintArtifactCompositor* paint_artifact_compositor() {
-    auto* frame_view = web_view_helper_->LocalMainFrame()->GetFrameView();
-    return frame_view->GetPaintArtifactCompositorForTesting();
+    return LocalFrameView()->GetPaintArtifactCompositorForTesting();
   }
   FrameTestHelpers::TestWebViewClient web_view_client_;
   std::unique_ptr<FrameTestHelpers::WebViewHelper> web_view_helper_;
@@ -11977,6 +11980,34 @@ TEST_P(SlimmingPaintWebFrameTest, DidScrollCallbackAfterScrollableAreaChanges) {
   WebView()->UpdateAllLifecyclePhases();
   EXPECT_EQ(ContentLayerCount(), 1u);
   EXPECT_EQ(ScrollHitTestLayerCount(), 0u);
+}
+
+TEST_P(SlimmingPaintWebFrameTest, FrameViewScroll) {
+  DCHECK(RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
+
+  InitializeWithHTML(*WebView()->MainFrameImpl()->GetFrame(),
+                     "<style>"
+                     "  #forceScroll {"
+                     "    height: 2000px;"
+                     "    width: 100px;"
+                     "  }"
+                     "</style>"
+                     "<div id='forceScroll'></div>");
+
+  WebView()->UpdateAllLifecyclePhases();
+
+  auto* scrollable_area = LocalFrameView()->LayoutViewportScrollableArea();
+  EXPECT_NE(nullptr, scrollable_area);
+
+  EXPECT_EQ(ScrollHitTestLayerCount(), 1u);
+
+  // Ensure a synthetic impl-side scroll offset propagates to the scrollable
+  // area using the DidScroll callback.
+  EXPECT_EQ(ScrollOffset(), scrollable_area->GetScrollOffset());
+  ScrollHitTestLayerAt(0)->SetScrollOffsetFromImplSideForTesting(
+      gfx::ScrollOffset(0, 1));
+  WebView()->UpdateAllLifecyclePhases();
+  EXPECT_EQ(ScrollOffset(0, 1), scrollable_area->GetScrollOffset());
 }
 
 }  // namespace blink
