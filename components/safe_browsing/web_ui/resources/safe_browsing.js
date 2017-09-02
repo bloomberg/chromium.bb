@@ -19,8 +19,14 @@ cr.define('safe_browsing', function() {
         var fullHashCacheState = databaseState.splice(-1,1);
         addDatabaseManagerInfo(databaseState);
         addFullHashCacheInfo(fullHashCacheState);
-  });
-}
+    });
+    cr.sendWithPromise('getSentThreatDetails', []).then((threatDetails) =>
+        addThreatDetailsInfo(threatDetails));
+    cr.addWebUIListener('threat-details-update', function(result) {
+      addThreatDetailsInfo(result);
+    });
+  }
+
   function addExperiments(result) {
     var resLength = result.length;
     var experimentsListFormatted = "";
@@ -58,7 +64,17 @@ cr.define('safe_browsing', function() {
       $('full-hash-cache-info').innerHTML = result;
   }
 
+  function addThreatDetailsInfo(result) {
+      var logDiv = $('threat-details-list');
+      if (!logDiv)
+        return;
+      var textDiv = document.createElement('div');
+      textDiv.innerText = result;
+      logDiv.appendChild(textDiv);
+  }
+
   return {
+    addThreatDetailsInfo: addThreatDetailsInfo,
     initialize: initialize,
   };
 });

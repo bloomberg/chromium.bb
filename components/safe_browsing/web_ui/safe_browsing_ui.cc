@@ -10,8 +10,11 @@
 #include <vector>
 
 #include "base/base64url.h"
+#include "base/callback.h"
 #include "base/i18n/time_formatting.h"
 #include "base/json/json_string_value_serializer.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/singleton.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -31,6 +34,39 @@
 using base::Time;
 
 namespace safe_browsing {
+WebUIInfoSingleton::WebUIInfoSingleton() = default;
+
+WebUIInfoSingleton::~WebUIInfoSingleton() = default;
+
+// static
+WebUIInfoSingleton* WebUIInfoSingleton::GetInstance() {
+  return base::Singleton<WebUIInfoSingleton>::get();
+}
+
+void WebUIInfoSingleton::AddToReportsSent(
+    std::unique_ptr<ClientSafeBrowsingReportRequest> report_request) {
+  for (auto* webui_listener : webui_instances_)
+    webui_listener->NotifyThreatDetailsJsListener(report_request.get());
+  reports_sent_.push_back(std::move(report_request));
+}
+
+void WebUIInfoSingleton::ClearReportsSent() {
+  std::vector<std::unique_ptr<ClientSafeBrowsingReportRequest>>().swap(
+      reports_sent_);
+}
+
+void WebUIInfoSingleton::RegisterWebUIInstance(SafeBrowsingUIHandler* webui) {
+  webui_instances_.push_back(webui);
+}
+
+void WebUIInfoSingleton::UnregisterWebUIInstance(SafeBrowsingUIHandler* webui) {
+  webui_instances_.erase(
+      std::remove(webui_instances_.begin(), webui_instances_.end(), webui),
+      webui_instances_.end());
+  if (webui_instances_.empty())
+    ClearReportsSent();
+}
+
 namespace {
 #if SAFE_BROWSING_DB_LOCAL
 
@@ -196,6 +232,38 @@ std::string AddFullHashCacheInfo(
 
 #endif
 
+std::string ParseThreatDetailsInfo(
+    ClientSafeBrowsingReportRequest* client_safe_browsing_report_request) {
+  std::string report_request_parsed;
+  base::DictionaryValue report_request;
+  if (client_safe_browsing_report_request->has_type()) {
+    report_request.SetInteger(
+        "type", static_cast<int>(client_safe_browsing_report_request->type()));
+  }
+  if (client_safe_browsing_report_request->has_page_url())
+    report_request.SetString("page_url",
+                             client_safe_browsing_report_request->page_url());
+  if (client_safe_browsing_report_request->has_client_country()) {
+    report_request.SetString(
+        "client_country",
+        client_safe_browsing_report_request->client_country());
+  }
+  if (client_safe_browsing_report_request->has_repeat_visit()) {
+    report_request.SetInteger(
+        "repeat_visit", client_safe_browsing_report_request->repeat_visit());
+  }
+  if (client_safe_browsing_report_request->has_did_proceed()) {
+    report_request.SetInteger(
+        "did_proceed", client_safe_browsing_report_request->did_proceed());
+  }
+
+  base::Value* report_request_tree = &report_request;
+  JSONStringValueSerializer serializer(&report_request_parsed);
+  serializer.set_pretty_print(true);
+  serializer.Serialize(*report_request_tree);
+  return report_request_parsed;
+}
+
 }  // namespace
 
 SafeBrowsingUI::SafeBrowsingUI(content::WebUI* web_ui)
@@ -228,9 +296,13 @@ SafeBrowsingUI::SafeBrowsingUI(content::WebUI* web_ui)
 SafeBrowsingUI::~SafeBrowsingUI() {}
 
 SafeBrowsingUIHandler::SafeBrowsingUIHandler(content::BrowserContext* context)
-    : browser_context_(context) {}
+    : browser_context_(context) {
+  WebUIInfoSingleton::GetInstance()->RegisterWebUIInstance(this);
+}
 
-SafeBrowsingUIHandler::~SafeBrowsingUIHandler() = default;
+SafeBrowsingUIHandler::~SafeBrowsingUIHandler() {
+  WebUIInfoSingleton::GetInstance()->UnregisterWebUIInstance(this);
+}
 
 void SafeBrowsingUIHandler::GetExperiments(const base::ListValue* args) {
   AllowJavascript();
@@ -283,6 +355,30 @@ void SafeBrowsingUIHandler::GetDatabaseManagerInfo(
   ResolveJavascriptCallback(base::Value(callback_id), database_manager_info);
 }
 
+void SafeBrowsingUIHandler::GetSentThreatDetails(const base::ListValue* args) {
+  const std::vector<std::unique_ptr<ClientSafeBrowsingReportRequest>>& reports =
+      WebUIInfoSingleton::GetInstance()->reports_sent();
+
+  base::ListValue sent_reports;
+
+  for (const auto& report : reports) {
+    sent_reports.GetList().push_back(
+        base::Value(ParseThreatDetailsInfo(report.get())));
+
+    AllowJavascript();
+    std::string callback_id;
+    args->GetString(0, &callback_id);
+    ResolveJavascriptCallback(base::Value(callback_id), sent_reports);
+  }
+}
+
+void SafeBrowsingUIHandler::NotifyThreatDetailsJsListener(
+    ClientSafeBrowsingReportRequest* threat_detail) {
+  AllowJavascript();
+  FireWebUIListener("threat-details-update",
+                    base::Value(ParseThreatDetailsInfo(threat_detail)));
+}
+
 void SafeBrowsingUIHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "getExperiments", base::Bind(&SafeBrowsingUIHandler::GetExperiments,
@@ -293,6 +389,10 @@ void SafeBrowsingUIHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "getDatabaseManagerInfo",
       base::Bind(&SafeBrowsingUIHandler::GetDatabaseManagerInfo,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getSentThreatDetails",
+      base::Bind(&SafeBrowsingUIHandler::GetSentThreatDetails,
                  base::Unretained(this)));
 }
 
