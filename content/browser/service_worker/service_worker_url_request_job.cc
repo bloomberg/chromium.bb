@@ -612,7 +612,7 @@ void ServiceWorkerURLRequestJob::CreateRequestBodyBlob(std::string* blob_uuid,
   *blob_uuid = blob_builder.uuid();
   *blob_size = request_body_blob_data_handle_->size();
 
-  if (base::FeatureList::IsEnabled(features::kMojoBlobs)) {
+  if (features::IsMojoBlobsEnabled()) {
     storage::mojom::BlobPtr blob_ptr;
     storage::BlobImpl::Create(base::MakeUnique<storage::BlobDataHandle>(
                                   *request_body_blob_data_handle_),

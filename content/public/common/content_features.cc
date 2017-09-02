@@ -446,4 +446,9 @@ const base::Feature kMacV2Sandbox{"MacV2Sandbox",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_MACOSX)
 
+bool IsMojoBlobsEnabled() {
+  return base::FeatureList::IsEnabled(features::kMojoBlobs) ||
+         base::FeatureList::IsEnabled(features::kNetworkService);
+}
+
 }  // namespace features

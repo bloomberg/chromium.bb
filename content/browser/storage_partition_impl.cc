@@ -562,7 +562,7 @@ std::unique_ptr<StoragePartitionImpl> StoragePartitionImpl::Create(
       path, quota_manager_proxy.get(), context->GetSpecialStoragePolicy(),
       blob_context.get(), partition->url_loader_factory_getter_.get());
 
-  if (base::FeatureList::IsEnabled(features::kMojoBlobs)) {
+  if (features::IsMojoBlobsEnabled()) {
     partition->blob_registry_ = BlobRegistryWrapper::Create(
         blob_context, partition->filesystem_context_);
   }
