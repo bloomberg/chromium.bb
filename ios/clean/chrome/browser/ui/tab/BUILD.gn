@@ -8,11 +8,14 @@ source_set("tab") {
     "tab_coordinator.mm",
     "tab_navigation_controller.h",
     "tab_navigation_controller.mm",
+    "tab_strip_tab_coordinator.h",
+    "tab_strip_tab_coordinator.mm",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 
   deps = [
+    ":features",
     ":tab_ui",
     "//base",
     "//ios/chrome/browser",
@@ -33,11 +36,30 @@ source_set("tab") {
   ]
 }
 
+source_set("features") {
+  sources = [
+    "tab_features.cc",
+    "tab_features.h",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+
+  deps = [
+    "//base",
+  ]
+}
+
 source_set("tab_ui") {
   sources = [
+    "tab_container_view_controller+internal.h",
     "tab_container_view_controller.h",
     "tab_container_view_controller.mm",
+    "tab_strip_tab_container_view_controller.h",
+    "tab_strip_tab_container_view_controller.mm",
   ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+
   deps = [
     "//base",
     "//ios/chrome/browser/ui",
@@ -47,8 +69,8 @@ source_set("tab_ui") {
     "//ios/clean/chrome/browser/ui/transitions/animators",
     "//ios/clean/chrome/browser/ui/transitions/presenters",
   ]
+
   libs = [ "UIKit.framework" ]
-  configs += [ "//build/config/compiler:enable_arc" ]
 }
 
 source_set("unit_tests") {
@@ -64,10 +86,12 @@ source_set("unit_tests") {
     ":tab",
     ":tab_ui",
     "//base",
+    "//base/test:test_support",
     "//ios/chrome/browser/ui/browser_list",
     "//ios/chrome/browser/ui/coordinators",
     "//ios/chrome/browser/ui/coordinators:test_support",
     "//ios/chrome/browser/ui/toolbar/test",
+    "//ios/clean/chrome/browser/ui/tab:features",
     "//ios/web/public/test",
     "//ios/web/public/test/fakes",
     "//testing/gtest",

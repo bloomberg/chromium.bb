@@ -45,6 +45,7 @@
 @synthesize viewController = _viewController;
 @synthesize webState = _webState;
 @synthesize mediator = _mediator;
+@synthesize usesTabStrip = _usesTabStrip;
 
 - (instancetype)init {
   if ((self = [super init])) {
@@ -58,12 +59,20 @@
   self.mediator.webState = self.webState;
 }
 
+- (void)setUsesTabStrip:(BOOL)usesTabStrip {
+  DCHECK(!self.started);
+  _usesTabStrip = usesTabStrip;
+}
+
+#pragma mark - BrowserCoordinator
+
 - (void)start {
   if (self.started)
     return;
 
   self.viewController = [[ToolbarViewController alloc]
       initWithDispatcher:static_cast<id>(self.browser->dispatcher())];
+  self.viewController.usesTabStrip = self.usesTabStrip;
 
   CommandDispatcher* dispatcher = self.browser->dispatcher();
   [dispatcher startDispatchingToTarget:self
@@ -76,23 +85,26 @@
   self.mediator.consumer = self.viewController;
   self.mediator.webStateList = &self.browser->web_state_list();
 
-  [self.browser->broadcaster()
-      addObserver:self.mediator
-      forSelector:@selector(broadcastTabStripVisible:)];
+  if (self.usesTabStrip) {
+    [self.browser->broadcaster()
+        addObserver:self.mediator
+        forSelector:@selector(broadcastTabStripVisible:)];
+  }
   LocationBarCoordinator* locationBarCoordinator =
       [[LocationBarCoordinator alloc] init];
   self.locationBarCoordinator = locationBarCoordinator;
   [self addChildCoordinator:locationBarCoordinator];
   [locationBarCoordinator start];
-
   [super start];
 }
 
 - (void)stop {
   [super stop];
-  [self.browser->broadcaster()
-      removeObserver:self.mediator
-         forSelector:@selector(broadcastTabStripVisible:)];
+  if (self.usesTabStrip) {
+    [self.browser->broadcaster()
+        removeObserver:self.mediator
+           forSelector:@selector(broadcastTabStripVisible:)];
+  }
   [self.browser->dispatcher() stopDispatchingToTarget:self];
 }
 

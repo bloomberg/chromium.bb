@@ -28,14 +28,6 @@
 // width of the tab.
 @property(nonatomic, strong) UIViewController* toolbarViewController;
 
-// View controller showing the tab strip. It will be of a fixed
-// height (determined internally by the tab container), but will span the
-// width of the tab.
-@property(nonatomic, strong) UIViewController* tabStripViewController;
-
-// YES if |tabStripViewController| is currently visible.
-@property(nonatomic, getter=isTabStripVisible) BOOL tabStripVisible;
-
 // View controller showing the find bar.  The location of this controller's view
 // is determined by size class and device type.  May be nil if the find bar is
 // currently closed.
@@ -46,14 +38,12 @@
 @property(nonatomic, weak) id<ContainmentTransitioningDelegate>
     containmentTransitioningDelegate;
 
-@end
+// By default, this view controller displays a toolbar at the top of the screen.
+// When |usesBottomToolbar| is set to YES, the toolbar is shown at the bottom
+// of the screen. This property cannot be changed after the view has been
+// loaded.
+@property(nonatomic, assign) BOOL usesBottomToolbar;
 
-// Tab container which positions the toolbar at the top.
-@interface TopToolbarTabViewController : TabContainerViewController
-@end
-
-// Tab container which positions the toolbar at the bottom.
-@interface BottomToolbarTabViewController : TabContainerViewController
 @end
 
 #endif  // IOS_CLEAN_CHROME_BROWSER_UI_TAB_TAB_CONTAINER_VIEW_CONTROLLER_H_

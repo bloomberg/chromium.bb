@@ -49,6 +49,7 @@ CGFloat kToolbarHeight = 50.0f;
                      ToolsMenuCommands>>(self.alerter);
   ToolbarViewController* toolbarViewController =
       [[ToolbarViewController alloc] initWithDispatcher:dispatcher];
+  toolbarViewController.usesTabStrip = YES;
   [containerViewController addChildViewController:toolbarViewController];
   toolbarViewController.view.frame = containerView.frame;
   [containerView addSubview:toolbarViewController.view];
