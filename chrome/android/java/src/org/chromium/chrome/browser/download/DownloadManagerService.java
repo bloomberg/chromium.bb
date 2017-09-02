@@ -1372,7 +1372,7 @@ public class DownloadManagerService
         Intent intent = DownloadNotificationService.buildActionIntent(mContext, action,
                 LegacyHelpers.buildLegacyContentId(false, downloadItem.getId()),
                 downloadItem.getDownloadInfo().isOffTheRecord());
-        mContext.startService(intent);
+        mContext.sendBroadcast(intent);
     }
 
     /**
