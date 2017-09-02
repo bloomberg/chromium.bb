@@ -1642,15 +1642,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Interactions with the App Launcher promo dialog.</summary>
 </histogram>
 
-<histogram name="Apps.AppListAppLaunched" enum="BooleanEnabled">
+<histogram name="Apps.AppListAppLaunched" enum="SuggestedAppListAppLaunched">
   <owner>newcomer@chromium.org</owner>
   <summary>
     The number of apps launched from the launcher. This is logged each time an
-    app is launched. The bucket denotes whether the app is suggested.
+    app is launched.
   </summary>
 </histogram>
 
-<histogram name="Apps.AppListAppLaunchedFullscreen" enum="BooleanEnabled">
+<histogram name="Apps.AppListAppLaunchedFullscreen"
+    enum="SuggestedAppListAppLaunched">
   <owner>newcomer@chromium.org</owner>
   <summary>
     The number of apps launched from the fullscreen launcher. This is logged
@@ -1707,6 +1708,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     The source used to switch pages in the app list's app grid. Logged when the
     page switch succeeds.
+  </summary>
+</histogram>
+
+<histogram name="Apps.AppListPeekingToFullscreen"
+    enum="AppListPeekingToFullscreenSource">
+  <owner/>
+  <summary>
+    Replaced with Apps.AppListPeekingToFullscreenSource on 9/2017.
   </summary>
 </histogram>
 

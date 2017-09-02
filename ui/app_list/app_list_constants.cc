@@ -208,7 +208,7 @@ const char kAppListFolderOpenedHistogram[] = "Apps.AppListFolderOpened";
 // The UMA histogram that logs how the app list transitions from peeking to
 // fullscreen.
 const char kAppListPeekingToFullscreenHistogram[] =
-    "Apps.AppListPeekingToFullscreen";
+    "Apps.AppListPeekingToFullscreenSource";
 
 // The UMA histogram that logs how the app list is shown.
 const char kAppListToggleMethodHistogram[] = "Apps.AppListShowSource";
