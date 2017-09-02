@@ -261,11 +261,11 @@ static bool NeedsPaintOffsetTranslation(const LayoutObject& object) {
   return false;
 }
 
-void PaintPropertyTreeBuilder::UpdatePaintOffsetTranslation(
-    const LayoutBoxModelObject& object,
+Optional<IntPoint> PaintPropertyTreeBuilder::UpdateForPaintOffsetTranslation(
+    const LayoutObject& object,
     PaintPropertyTreeBuilderFragmentContext& context,
-    ObjectPaintProperties& properties,
-    bool& force_subtree_update) {
+    ObjectPaintProperties& properties) {
+  Optional<IntPoint> paint_offset_translation;
   if (NeedsPaintOffsetTranslation(object) &&
       // As an optimization, skip these paint offset translation nodes when
       // the offset is an identity. An exception is the layout view because root
@@ -280,10 +280,9 @@ void PaintPropertyTreeBuilder::UpdatePaintOffsetTranslation(
     // called "subpixel accumulation". For more information, see
     // PaintLayer::subpixelAccumulation() and
     // PaintLayerPainter::paintFragmentByApplyingTransform.
-    IntPoint rounded_paint_offset =
-        RoundedIntPoint(context.current.paint_offset);
+    paint_offset_translation = RoundedIntPoint(context.current.paint_offset);
     LayoutPoint fractional_paint_offset =
-        LayoutPoint(context.current.paint_offset - rounded_paint_offset);
+        LayoutPoint(context.current.paint_offset - *paint_offset_translation);
     if (fractional_paint_offset != LayoutPoint()) {
       // If the object has a non-translation transform, discard the fractional
       // paint offset which can't be transformed by the transform.
@@ -296,23 +295,37 @@ void PaintPropertyTreeBuilder::UpdatePaintOffsetTranslation(
         fractional_paint_offset = LayoutPoint();
     }
 
+    context.current.paint_offset = fractional_paint_offset;
+    if (RuntimeEnabledFeatures::RootLayerScrollingEnabled() &&
+        object.IsLayoutView()) {
+      context.absolute_position.paint_offset = fractional_paint_offset;
+      context.fixed_position.paint_offset = fractional_paint_offset;
+    }
+  }
+  return paint_offset_translation;
+}
+
+void PaintPropertyTreeBuilder::UpdatePaintOffsetTranslation(
+    const LayoutObject& object,
+    const Optional<IntPoint>& paint_offset_translation,
+    PaintPropertyTreeBuilderFragmentContext& context,
+    ObjectPaintProperties& properties,
+    bool& force_subtree_update) {
+  if (paint_offset_translation) {
     auto result = properties.UpdatePaintOffsetTranslation(
         context.current.transform,
-        TransformationMatrix().Translate(rounded_paint_offset.X(),
-                                         rounded_paint_offset.Y()),
+        TransformationMatrix().Translate(paint_offset_translation->X(),
+                                         paint_offset_translation->Y()),
         FloatPoint3D(), context.current.should_flatten_inherited_transform,
         context.current.rendering_context_id);
-    force_subtree_update |= result.NewNodeCreated();
-
     context.current.transform = properties.PaintOffsetTranslation();
-    context.current.paint_offset = fractional_paint_offset;
     if (RuntimeEnabledFeatures::RootLayerScrollingEnabled() &&
         object.IsLayoutView()) {
       context.absolute_position.transform = properties.PaintOffsetTranslation();
       context.fixed_position.transform = properties.PaintOffsetTranslation();
-      context.absolute_position.paint_offset = fractional_paint_offset;
-      context.fixed_position.paint_offset = fractional_paint_offset;
     }
+
+    force_subtree_update |= result.NewNodeCreated();
   } else {
     force_subtree_update |= properties.ClearPaintOffsetTranslation();
   }
@@ -1184,7 +1197,8 @@ void PaintPropertyTreeBuilder::UpdateForObjectLocationAndSize(
     ObjectPaintProperties* paint_properties,
     bool& is_actually_needed,
     PaintPropertyTreeBuilderFragmentContext& context,
-    bool& force_subtree_update) {
+    bool& force_subtree_update,
+    Optional<IntPoint>& paint_offset_translation) {
 #if DCHECK_IS_ON()
   FindPaintOffsetNeedingUpdateScope check_scope(object, is_actually_needed);
 #endif
@@ -1193,8 +1207,8 @@ void PaintPropertyTreeBuilder::UpdateForObjectLocationAndSize(
     UpdatePaintOffset(ToLayoutBoxModelObject(object), context,
                       container_for_absolute_position);
     if (paint_properties) {
-      UpdatePaintOffsetTranslation(ToLayoutBoxModelObject(object), context,
-                                   *paint_properties, force_subtree_update);
+      paint_offset_translation =
+          UpdateForPaintOffsetTranslation(object, context, *paint_properties);
     }
   }
 
@@ -1288,11 +1302,21 @@ void PaintPropertyTreeBuilder::UpdatePropertiesForSelf(
 #endif
   // This is not in FindObjectPropertiesNeedingUpdateScope because paint offset
   // can change without needsPaintPropertyUpdate.
+  Optional<IntPoint> paint_offset_translation;
   UpdateForObjectLocationAndSize(
       object, full_context.container_for_absolute_position,
       object.FirstFragment() ? object.FirstFragment()->PaintProperties()
                              : nullptr,
-      is_actually_needed, context, full_context.force_subtree_update);
+      is_actually_needed, context, full_context.force_subtree_update,
+      paint_offset_translation);
+
+  if (object.FirstFragment() && object.FirstFragment()->PaintProperties()) {
+    ObjectPaintProperties* properties =
+        object.GetMutableForPainting().FirstFragment()->PaintProperties();
+    UpdatePaintOffsetTranslation(object, paint_offset_translation, context,
+                                 *properties,
+                                 full_context.force_subtree_update);
+  }
 
 #if DCHECK_IS_ON()
   FindObjectPropertiesNeedingUpdateScope check_needs_update_scope(

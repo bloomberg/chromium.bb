@@ -10,6 +10,7 @@
 #include "platform/graphics/paint/EffectPaintPropertyNode.h"
 #include "platform/graphics/paint/ScrollPaintPropertyNode.h"
 #include "platform/graphics/paint/TransformPaintPropertyNode.h"
+#include "platform/wtf/Optional.h"
 #include "platform/wtf/RefPtr.h"
 
 namespace blink {
@@ -144,8 +145,16 @@ class PaintPropertyTreeBuilder {
       const LayoutBoxModelObject&,
       PaintPropertyTreeBuilderFragmentContext&,
       const LayoutObject* container_for_absolute_position);
+  // Decides whether there should be a paint offset translation transform,
+  // and if so updates paint offset as appropriate and returns the translation
+  // offset.
+  ALWAYS_INLINE static Optional<IntPoint> UpdateForPaintOffsetTranslation(
+      const LayoutObject&,
+      PaintPropertyTreeBuilderFragmentContext&,
+      ObjectPaintProperties&);
   ALWAYS_INLINE static void UpdatePaintOffsetTranslation(
-      const LayoutBoxModelObject&,
+      const LayoutObject&,
+      const Optional<IntPoint>& paint_offset_translation,
       PaintPropertyTreeBuilderFragmentContext&,
       ObjectPaintProperties&,
       bool& force_subtree_update);
@@ -155,7 +164,8 @@ class PaintPropertyTreeBuilder {
       ObjectPaintProperties*,
       bool& is_actually_needed,
       PaintPropertyTreeBuilderFragmentContext&,
-      bool& force_subtree_update);
+      bool& force_subtree_update,
+      Optional<IntPoint>& paint_offset_translation);
   ALWAYS_INLINE static void UpdateTransform(
       const LayoutObject&,
       ObjectPaintProperties&,
