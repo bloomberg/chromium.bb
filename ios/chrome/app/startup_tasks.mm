@@ -34,7 +34,7 @@ NSString* const kStartProfileStartupTaskRunners =
 
 // Performs browser state initialization tasks that don't need to happen
 // synchronously at startup.
-- (void)performDeferredInitializationForBrowserState:
++ (void)performDeferredInitializationForBrowserState:
     (ios::ChromeBrowserState*)browserState;
 // Called when UIApplicationWillResignActiveNotification is received.
 - (void)applicationWillResignActiveNotification:(NSNotification*)notification;
@@ -45,7 +45,7 @@ NSString* const kStartProfileStartupTaskRunners =
 
 #pragma mark - Public methods.
 
-- (void)scheduleDeferredBrowserStateInitialization:
++ (void)scheduleDeferredBrowserStateInitialization:
     (ios::ChromeBrowserState*)browserState {
   DCHECK(browserState);
   // Schedule the start of the profile deferred task runners.
@@ -82,7 +82,7 @@ NSString* const kStartProfileStartupTaskRunners =
 
 #pragma mark - Private methods.
 
-- (void)performDeferredInitializationForBrowserState:
++ (void)performDeferredInitializationForBrowserState:
     (ios::ChromeBrowserState*)browserState {
   ios::StartupTaskRunnerServiceFactory::GetForBrowserState(browserState)
       ->StartDeferredTaskRunners();

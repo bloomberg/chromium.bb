@@ -12,6 +12,10 @@
 // A coordinator for the bookmarks UI, which can be presented modally on its
 // own or inside the NTP.
 @interface BookmarksCoordinator : BrowserCoordinator
+
+// Whether the ViewController created by this coordinator will be contained.
+@property(nonatomic, assign) BOOL contained;
+
 @end
 
 #endif  // IOS_CLEAN_CHROME_BROWSER_UI_BOOKMARKS_BOOKMARKS_COORDINATOR_H_

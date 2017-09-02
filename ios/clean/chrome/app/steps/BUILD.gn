@@ -33,6 +33,8 @@ source_set("steps") {
     "provider_initializer.mm",
     "root_coordinator_initializer.h",
     "root_coordinator_initializer.mm",
+    "scheduled_tasks.h",
+    "scheduled_tasks.mm",
     "simple_application_step.h",
     "simple_application_step.mm",
     "step_collections.h",

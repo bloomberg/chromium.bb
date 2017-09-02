@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/clean/chrome/app/steps/ui_initializer.h"
+#import "ios/clean/chrome/app/steps/scheduled_tasks.h"
 
-#import "base/logging.h"
+#import "ios/chrome/app/startup_tasks.h"
 #import "ios/clean/chrome/app/steps/step_context.h"
 #import "ios/clean/chrome/app/steps/step_features.h"
 
@@ -12,23 +12,19 @@
 #error "This file requires ARC support."
 #endif
 
-@implementation UIInitializer
+@implementation ScheduledTasks
 
 - (instancetype)init {
   if ((self = [super init])) {
-    self.providedFeature = step_features::kMainWindow;
-    self.requiredFeatures =
-        @[ step_features::kForeground, step_features::kScheduledTasks ];
+    self.providedFeature = step_features::kScheduledTasks;
+    self.requiredFeatures = @[ step_features::kForeground ];
   }
   return self;
 }
 
 - (void)runFeature:(NSString*)feature withContext:(id<StepContext>)context {
-  DCHECK([context respondsToSelector:@selector(setWindow:)]);
-  DCHECK([context respondsToSelector:@selector(window)]);
-  context.window =
-      [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
-  [context.window makeKeyWindow];
+  [StartupTasks
+      scheduleDeferredBrowserStateInitialization:context.browserState];
 }
 
 @end
