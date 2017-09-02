@@ -106,12 +106,18 @@ StyleSelfAlignmentData LayoutGrid::SelfAlignmentForChild(
                               : AlignSelfForChild(child, style);
 }
 
-StyleSelfAlignmentData LayoutGrid::DefaultAlignmentForChild(
+StyleSelfAlignmentData LayoutGrid::DefaultAlignment(
     GridAxis axis,
     const ComputedStyle& style) const {
-  return axis == kGridRowAxis
-             ? style.ResolvedJustifyItems(SelfAlignmentNormalBehavior(this))
-             : style.ResolvedAlignItems(SelfAlignmentNormalBehavior(this));
+  return axis == kGridRowAxis ? style.ResolvedJustifyItems(kItemPositionNormal)
+                              : style.ResolvedAlignItems(kItemPositionNormal);
+}
+
+bool LayoutGrid::DefaultAlignmentIsStretchOrNormal(
+    GridAxis axis,
+    const ComputedStyle& style) const {
+  ItemPosition alignment = DefaultAlignment(axis, style).GetPosition();
+  return alignment == kItemPositionStretch || alignment == kItemPositionNormal;
 }
 
 bool LayoutGrid::SelfAlignmentChangedSize(GridAxis axis,
@@ -130,12 +136,10 @@ bool LayoutGrid::DefaultAlignmentChangedSize(
     GridAxis axis,
     const ComputedStyle& old_style,
     const ComputedStyle& new_style) const {
-  return DefaultAlignmentForChild(axis, old_style).GetPosition() ==
-                 kItemPositionStretch
-             ? DefaultAlignmentForChild(axis, new_style).GetPosition() !=
-                   kItemPositionStretch
-             : DefaultAlignmentForChild(axis, new_style).GetPosition() ==
-                   kItemPositionStretch;
+  return DefaultAlignmentIsStretchOrNormal(axis, old_style)
+             ? DefaultAlignment(axis, old_style).GetPosition() !=
+                   DefaultAlignment(axis, new_style).GetPosition()
+             : DefaultAlignmentIsStretchOrNormal(axis, new_style);
 }
 
 void LayoutGrid::StyleDidChange(StyleDifference diff,
