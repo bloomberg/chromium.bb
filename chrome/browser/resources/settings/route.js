@@ -431,6 +431,8 @@ cr.define('settings', function() {
      * @param {boolean} isPopstate
      */
     setCurrentRoute(route, queryParameters, isPopstate) {
+      this.recordMetrics(route.path);
+
       var oldRoute = this.currentRoute;
       this.currentRoute = route;
       this.currentQueryParameters_ = queryParameters;
@@ -528,6 +530,8 @@ cr.define('settings', function() {
      * Initialize the route and query params from the URL.
      */
     initializeRouteFromUrl() {
+      this.recordMetrics(window.location.pathname);
+
       assert(!this.initializeRouteFromUrlCalled_);
       this.initializeRouteFromUrlCalled_ = true;
 
@@ -540,6 +544,18 @@ cr.define('settings', function() {
       } else {
         window.history.replaceState(undefined, '', this.routes_.BASIC.path);
       }
+    }
+
+    /**
+     * Make a UMA note about visiting this URL path.
+     * @param {string} urlPath The url path (only).
+     */
+    recordMetrics(urlPath) {
+      assert(!urlPath.startsWith('chrome://'));
+      assert(!urlPath.startsWith('settings'));
+      assert(urlPath.startsWith('/'));
+      chrome.metricsPrivate.recordSparseHashable(
+          'WebUI.Settings.PathVisited', urlPath);
     }
 
     resetRouteForTesting() {

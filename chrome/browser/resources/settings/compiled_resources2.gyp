@@ -48,6 +48,7 @@
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
+        '<(EXTERNS_GYP):metrics_private',
         'page_visibility'
       ],
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],

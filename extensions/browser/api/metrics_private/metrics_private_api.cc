@@ -7,7 +7,10 @@
 #include <limits.h>
 
 #include <algorithm>
+#include <memory>
+#include <utility>
 
+#include "base/hash.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
@@ -23,6 +26,7 @@ namespace extensions {
 namespace GetVariationParams = api::metrics_private::GetVariationParams;
 namespace RecordUserAction = api::metrics_private::RecordUserAction;
 namespace RecordValue = api::metrics_private::RecordValue;
+namespace RecordSparseHashable = api::metrics_private::RecordSparseHashable;
 namespace RecordSparseValue = api::metrics_private::RecordSparseValue;
 namespace RecordPercentage = api::metrics_private::RecordPercentage;
 namespace RecordCount = api::metrics_private::RecordCount;
@@ -129,6 +133,15 @@ ExtensionFunction::ResponseAction MetricsPrivateRecordValueFunction::Run() {
       type == "histogram-linear" ? base::LINEAR_HISTOGRAM : base::HISTOGRAM);
   RecordValue(params->metric.metric_name, histogram_type, params->metric.min,
               params->metric.max, params->metric.buckets, params->value);
+  return RespondNow(NoArguments());
+}
+
+ExtensionFunction::ResponseAction
+MetricsPrivateRecordSparseHashableFunction::Run() {
+  auto params = RecordSparseHashable::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params);
+  // This UMA_HISTOGRAM_ macro is okay for non-runtime-constant strings.
+  UMA_HISTOGRAM_SPARSE_SLOWLY(params->metric_name, base::Hash(params->value));
   return RespondNow(NoArguments());
 }
 

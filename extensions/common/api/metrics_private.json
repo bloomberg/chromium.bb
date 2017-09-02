@@ -153,6 +153,15 @@
         ]
       },
       {
+        "name": "recordSparseHashable",
+        "type": "function",
+        "description": "Increments the count associated with the hash of |value| in the sparse histogram defined by the |metricName|.",
+        "parameters": [
+          {"name": "metricName", "type": "string"},
+          {"name": "value", "type": "string"}
+        ]
+      },
+      {
         "name": "recordSparseValue",
         "type": "function",
         "description": "Increments the count associated with |value| in the sparse histogram defined by the |metricName|.",
