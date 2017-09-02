@@ -39,12 +39,14 @@ namespace safe_browsing {
 class SafeBrowsingDatabaseManager;
 class PasswordProtectionRequest;
 
-extern const char kPasswordOnFocusRequestOutcomeHistogramName[];
-extern const char kPasswordEntryRequestOutcomeHistogramName[];
-extern const char kSyncPasswordEntryRequestOutcomeHistogramName[];
-extern const char kSyncPasswordWarningDialogHistogramName[];
-extern const char kSyncPasswordPageInfoHistogramName[];
-extern const char kSyncPasswordChromeSettingsHistogramName[];
+// UMA metrics
+extern const char kPasswordOnFocusRequestOutcomeHistogram[];
+extern const char kAnyPasswordEntryRequestOutcomeHistogram[];
+extern const char kSyncPasswordEntryRequestOutcomeHistogram[];
+extern const char kProtectedPasswordEntryRequestOutcomeHistogram[];
+extern const char kSyncPasswordWarningDialogHistogram[];
+extern const char kSyncPasswordPageInfoHistogram[];
+extern const char kSyncPasswordChromeSettingsHistogram[];
 
 // Manage password protection pings and verdicts. There is one instance of this
 // class per profile. Therefore, every PasswordProtectionService instance is
@@ -206,6 +208,11 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   virtual void UpdateSecurityState(safe_browsing::SBThreatType threat_type,
                                    content::WebContents* web_contents) {}
 
+  // Log the |reason| to several UMA metrics, depending on the value
+  // of |matches_sync_password|.
+  static void LogPasswordEntryRequestOutcome(RequestOutcome reason,
+                                             bool matches_sync_password);
+
  protected:
   friend class PasswordProtectionRequest;
   FRIEND_TEST_ALL_PREFIXES(PasswordProtectionServiceTest, VerifyCanSendPing);
@@ -213,10 +220,10 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   // Chrome can send password protection ping if it is allowed by Finch config
   // and if Safe Browsing can compute reputation of |main_frame_url| (e.g.
   // Safe Browsing is not able to compute reputation of a private IP or
-  // a local host). |is_sync_password| is used for UMA metric recording.
+  // a local host). |matches_sync_password| is used for UMA metric recording.
   bool CanSendPing(const base::Feature& feature,
                    const GURL& main_frame_url,
-                   bool is_sync_password);
+                   bool matches_sync_password);
 
   // Called by a PasswordProtectionRequest instance when it finishes to remove
   // itself from |requests_|.
@@ -345,7 +352,7 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
 
   static void RecordNoPingingReason(const base::Feature& feature,
                                     RequestOutcome reason,
-                                    bool is_sync_password);
+                                    bool matches_sync_password);
   // Number of verdict stored for this profile for password on focus pings.
   int stored_verdict_count_password_on_focus_;
 

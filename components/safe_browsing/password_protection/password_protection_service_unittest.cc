@@ -603,18 +603,18 @@ TEST_P(PasswordProtectionServiceTest, VerifyCanGetReputationOfURL) {
 }
 
 TEST_P(PasswordProtectionServiceTest, TestNoRequestSentForWhitelistedURL) {
-  histograms_.ExpectTotalCount(kPasswordOnFocusRequestOutcomeHistogramName, 0);
+  histograms_.ExpectTotalCount(kPasswordOnFocusRequestOutcomeHistogram, 0);
   InitializeAndStartPasswordOnFocusRequest(true /* match whitelist */,
                                            10000 /* timeout in ms*/);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(nullptr, password_protection_service_->latest_response());
   EXPECT_THAT(
-      histograms_.GetAllSamples(kPasswordOnFocusRequestOutcomeHistogramName),
+      histograms_.GetAllSamples(kPasswordOnFocusRequestOutcomeHistogram),
       ElementsAre(base::Bucket(4 /* MATCHED_WHITELIST */, 1)));
 }
 
 TEST_P(PasswordProtectionServiceTest, TestNoRequestSentIfVerdictAlreadyCached) {
-  histograms_.ExpectTotalCount(kPasswordOnFocusRequestOutcomeHistogramName, 0);
+  histograms_.ExpectTotalCount(kPasswordOnFocusRequestOutcomeHistogram, 0);
   CacheVerdict(GURL(kTargetUrl),
                LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
                LoginReputationClientResponse::LOW_REPUTATION, 600,
@@ -623,14 +623,14 @@ TEST_P(PasswordProtectionServiceTest, TestNoRequestSentIfVerdictAlreadyCached) {
                                            10000 /* timeout in ms*/);
   base::RunLoop().RunUntilIdle();
   EXPECT_THAT(
-      histograms_.GetAllSamples(kPasswordOnFocusRequestOutcomeHistogramName),
+      histograms_.GetAllSamples(kPasswordOnFocusRequestOutcomeHistogram),
       ElementsAre(base::Bucket(5 /* RESPONSE_ALREADY_CACHED */, 1)));
   EXPECT_EQ(LoginReputationClientResponse::LOW_REPUTATION,
             password_protection_service_->latest_response()->verdict_type());
 }
 
 TEST_P(PasswordProtectionServiceTest, TestResponseFetchFailed) {
-  histograms_.ExpectTotalCount(kPasswordOnFocusRequestOutcomeHistogramName, 0);
+  histograms_.ExpectTotalCount(kPasswordOnFocusRequestOutcomeHistogram, 0);
   net::TestURLFetcher failed_fetcher(0, GURL("http://bar.com"), nullptr);
   // Set up failed response.
   failed_fetcher.set_status(
@@ -642,12 +642,12 @@ TEST_P(PasswordProtectionServiceTest, TestResponseFetchFailed) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(nullptr, password_protection_service_->latest_response());
   EXPECT_THAT(
-      histograms_.GetAllSamples(kPasswordOnFocusRequestOutcomeHistogramName),
+      histograms_.GetAllSamples(kPasswordOnFocusRequestOutcomeHistogram),
       ElementsAre(base::Bucket(9 /* FETCH_FAILED */, 1)));
 }
 
 TEST_P(PasswordProtectionServiceTest, TestMalformedResponse) {
-  histograms_.ExpectTotalCount(kPasswordOnFocusRequestOutcomeHistogramName, 0);
+  histograms_.ExpectTotalCount(kPasswordOnFocusRequestOutcomeHistogram, 0);
   // Set up malformed response.
   net::TestURLFetcher fetcher(0, GURL("http://bar.com"), nullptr);
   fetcher.set_status(
@@ -661,24 +661,24 @@ TEST_P(PasswordProtectionServiceTest, TestMalformedResponse) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(nullptr, password_protection_service_->latest_response());
   EXPECT_THAT(
-      histograms_.GetAllSamples(kPasswordOnFocusRequestOutcomeHistogramName),
+      histograms_.GetAllSamples(kPasswordOnFocusRequestOutcomeHistogram),
       ElementsAre(base::Bucket(10 /* RESPONSE_MALFORMED */, 1)));
 }
 
 TEST_P(PasswordProtectionServiceTest, TestRequestTimedout) {
-  histograms_.ExpectTotalCount(kPasswordOnFocusRequestOutcomeHistogramName, 0);
+  histograms_.ExpectTotalCount(kPasswordOnFocusRequestOutcomeHistogram, 0);
   InitializeAndStartPasswordOnFocusRequest(false /* match whitelist */,
                                            0 /* timeout immediately */);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(nullptr, password_protection_service_->latest_response());
   EXPECT_THAT(
-      histograms_.GetAllSamples(kPasswordOnFocusRequestOutcomeHistogramName),
+      histograms_.GetAllSamples(kPasswordOnFocusRequestOutcomeHistogram),
       ElementsAre(base::Bucket(3 /* TIMEDOUT */, 1)));
 }
 
 TEST_P(PasswordProtectionServiceTest,
        TestPasswordOnFocusRequestAndResponseSuccessfull) {
-  histograms_.ExpectTotalCount(kPasswordOnFocusRequestOutcomeHistogramName, 0);
+  histograms_.ExpectTotalCount(kPasswordOnFocusRequestOutcomeHistogram, 0);
   // Set up valid response.
   net::TestURLFetcher fetcher(0, GURL("http://bar.com"), nullptr);
   fetcher.set_status(
@@ -693,10 +693,9 @@ TEST_P(PasswordProtectionServiceTest,
   request_->OnURLFetchComplete(&fetcher);
   base::RunLoop().RunUntilIdle();
   EXPECT_THAT(
-      histograms_.GetAllSamples(kPasswordOnFocusRequestOutcomeHistogramName),
+      histograms_.GetAllSamples(kPasswordOnFocusRequestOutcomeHistogram),
       ElementsAre(base::Bucket(1 /* SUCCEEDED */, 1)));
-  EXPECT_THAT(histograms_.GetAllSamples(
-                  "PasswordProtection.Verdict.PasswordFieldOnFocus"),
+  EXPECT_THAT(histograms_.GetAllSamples(kPasswordOnFocusVerdictHistogram),
               ElementsAre(base::Bucket(3 /* PHISHING */, 1)));
   LoginReputationClientResponse* actual_response =
       password_protection_service_->latest_response();
@@ -708,9 +707,10 @@ TEST_P(PasswordProtectionServiceTest,
 }
 
 TEST_P(PasswordProtectionServiceTest,
-       TestPasswordEntryRequestAndResponseSuccessfull) {
-  histograms_.ExpectTotalCount(kPasswordEntryRequestOutcomeHistogramName, 0);
-  histograms_.ExpectTotalCount(kSyncPasswordEntryRequestOutcomeHistogramName,
+       TestProtectedPasswordEntryRequestAndResponseSuccessfull) {
+  histograms_.ExpectTotalCount(kAnyPasswordEntryRequestOutcomeHistogram, 0);
+  histograms_.ExpectTotalCount(kSyncPasswordEntryRequestOutcomeHistogram, 0);
+  histograms_.ExpectTotalCount(kProtectedPasswordEntryRequestOutcomeHistogram,
                                0);
   // Set up valid response.
   net::TestURLFetcher fetcher(0, GURL("http://bar.com"), nullptr);
@@ -727,14 +727,42 @@ TEST_P(PasswordProtectionServiceTest,
       false /* match whitelist */, 10000 /* timeout in ms*/);
   request_->OnURLFetchComplete(&fetcher);
   base::RunLoop().RunUntilIdle();
+
+  // UMA: request outcomes
   EXPECT_THAT(
-      histograms_.GetAllSamples(kPasswordEntryRequestOutcomeHistogramName),
+      histograms_.GetAllSamples(kAnyPasswordEntryRequestOutcomeHistogram),
       ElementsAre(base::Bucket(1 /* SUCCEEDED */, 1)));
-  EXPECT_THAT(histograms_.GetAllSamples(
-                  "PasswordProtection.Verdict.ProtectedPasswordEntry"),
+  histograms_.ExpectTotalCount(kSyncPasswordEntryRequestOutcomeHistogram, 0);
+  EXPECT_THAT(
+      histograms_.GetAllSamples(kProtectedPasswordEntryRequestOutcomeHistogram),
+      ElementsAre(base::Bucket(1 /* SUCCEEDED */, 1)));
+  EXPECT_THAT(
+      histograms_.GetAllSamples(kProtectedPasswordEntryVerdictHistogram),
+      ElementsAre(base::Bucket(3 /* PHISHING */, 1)));
+
+  // UMA: verdicts
+  EXPECT_THAT(histograms_.GetAllSamples(kAnyPasswordEntryVerdictHistogram),
               ElementsAre(base::Bucket(3 /* PHISHING */, 1)));
-  histograms_.ExpectTotalCount(kSyncPasswordEntryRequestOutcomeHistogramName,
+  histograms_.ExpectTotalCount(kSyncPasswordEntryVerdictHistogram, 0);
+  EXPECT_THAT(
+      histograms_.GetAllSamples(kProtectedPasswordEntryVerdictHistogram),
+      ElementsAre(base::Bucket(3 /* PHISHING */, 1)));
+}
+
+TEST_P(PasswordProtectionServiceTest,
+       TestSyncPasswordEntryRequestAndResponseSuccessfull) {
+  histograms_.ExpectTotalCount(kAnyPasswordEntryRequestOutcomeHistogram, 0);
+  histograms_.ExpectTotalCount(kSyncPasswordEntryRequestOutcomeHistogram, 0);
+  histograms_.ExpectTotalCount(kProtectedPasswordEntryRequestOutcomeHistogram,
                                0);
+  // Set up valid response.
+  net::TestURLFetcher fetcher(0, GURL("http://bar.com"), nullptr);
+  fetcher.set_status(
+      net::URLRequestStatus(net::URLRequestStatus::SUCCESS, net::OK));
+  fetcher.set_response_code(200);
+  LoginReputationClientResponse expected_response = CreateVerdictProto(
+      LoginReputationClientResponse::PHISHING, 600, GURL(kTargetUrl).host());
+  fetcher.SetResponseString(expected_response.SerializeAsString());
 
   // Initiate a sync password entry request (w/ no saved password).
   InitializeAndStartPasswordEntryRequest(true /* matches_sync_password */, {},
@@ -742,22 +770,27 @@ TEST_P(PasswordProtectionServiceTest,
                                          10000 /* timeout in ms*/);
   request_->OnURLFetchComplete(&fetcher);
   base::RunLoop().RunUntilIdle();
+
+  // UMA: request outcomes
   EXPECT_THAT(
-      histograms_.GetAllSamples(kSyncPasswordEntryRequestOutcomeHistogramName),
+      histograms_.GetAllSamples(kAnyPasswordEntryRequestOutcomeHistogram),
       ElementsAre(base::Bucket(1 /* SUCCEEDED */, 1)));
   EXPECT_THAT(
-      histograms_.GetAllSamples(kPasswordEntryRequestOutcomeHistogramName),
+      histograms_.GetAllSamples(kSyncPasswordEntryRequestOutcomeHistogram),
       ElementsAre(base::Bucket(1 /* SUCCEEDED */, 1)));
-  EXPECT_THAT(histograms_.GetAllSamples(
-                  "PasswordProtection.Verdict.SyncProtectedPasswordEntry"),
+  histograms_.ExpectTotalCount(kProtectedPasswordEntryRequestOutcomeHistogram,
+                               0);
+
+  // UMA: verdicts
+  EXPECT_THAT(histograms_.GetAllSamples(kAnyPasswordEntryVerdictHistogram),
               ElementsAre(base::Bucket(3 /* PHISHING */, 1)));
-  EXPECT_THAT(histograms_.GetAllSamples(
-                  "PasswordProtection.Verdict.ProtectedPasswordEntry"),
+  EXPECT_THAT(histograms_.GetAllSamples(kSyncPasswordEntryVerdictHistogram),
               ElementsAre(base::Bucket(3 /* PHISHING */, 1)));
+  histograms_.ExpectTotalCount(kProtectedPasswordEntryVerdictHistogram, 0);
 }
 
 TEST_P(PasswordProtectionServiceTest, TestTearDownWithPendingRequests) {
-  histograms_.ExpectTotalCount(kPasswordOnFocusRequestOutcomeHistogramName, 0);
+  histograms_.ExpectTotalCount(kPasswordOnFocusRequestOutcomeHistogram, 0);
   GURL target_url(kTargetUrl);
   EXPECT_CALL(*database_manager_.get(), CheckCsdWhitelistUrl(target_url, _))
       .WillRepeatedly(Return(AsyncMatch::NO_MATCH));
@@ -771,7 +804,7 @@ TEST_P(PasswordProtectionServiceTest, TestTearDownWithPendingRequests) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_THAT(
-      histograms_.GetAllSamples(kPasswordOnFocusRequestOutcomeHistogramName),
+      histograms_.GetAllSamples(kPasswordOnFocusRequestOutcomeHistogram),
       ElementsAre(base::Bucket(2 /* CANCELED */, 1)));
 }
 

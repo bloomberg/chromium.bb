@@ -31,6 +31,15 @@ const int kMaxReusedDomains = 200;
 
 }  // namespace
 
+const char kPasswordOnFocusVerdictHistogram[] =
+    "PasswordProtection.Verdict.PasswordFieldOnFocus";
+const char kAnyPasswordEntryVerdictHistogram[] =
+    "PasswordProtection.Verdict.AnyPasswordEntry";
+const char kSyncPasswordEntryVerdictHistogram[] =
+    "PasswordProtection.Verdict.SyncPasswordEntry";
+const char kProtectedPasswordEntryVerdictHistogram[] =
+    "PasswordProtection.Verdict.ProtectedPasswordEntry";
+
 PasswordProtectionRequest::PasswordProtectionRequest(
     WebContents* web_contents,
     const GURL& main_frame_url,
@@ -55,10 +64,6 @@ PasswordProtectionRequest::PasswordProtectionRequest(
       request_proto_(base::MakeUnique<LoginReputationClientRequest>()),
       weakptr_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // TODO(nparker): Add support for setting matching_domains &&
-  // matches_sync_password at the same time, then remove the following check.
-  // Need to change how the UMA metrics are logged first.
-  DCHECK(!matches_sync_password_ || matching_domains_.size() == 0);
 
   DCHECK(trigger_type_ == LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE ||
          trigger_type_ == LoginReputationClientRequest::PASSWORD_REUSE_EVENT);
@@ -297,36 +302,35 @@ void PasswordProtectionRequest::Finish(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   tracker_.TryCancelAll();
   if (trigger_type_ == LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE) {
-    UMA_HISTOGRAM_ENUMERATION(kPasswordOnFocusRequestOutcomeHistogramName,
-                              outcome, PasswordProtectionService::MAX_OUTCOME);
-  } else if (matches_sync_password_) {
-    UMA_HISTOGRAM_ENUMERATION(kSyncPasswordEntryRequestOutcomeHistogramName,
-                              outcome, PasswordProtectionService::MAX_OUTCOME);
-    password_protection_service_->MaybeLogPasswordReuseLookupEvent(
-        web_contents_, outcome, response.get());
+    UMA_HISTOGRAM_ENUMERATION(kPasswordOnFocusRequestOutcomeHistogram, outcome,
+                              PasswordProtectionService::MAX_OUTCOME);
   } else {
-    UMA_HISTOGRAM_ENUMERATION(kPasswordEntryRequestOutcomeHistogramName,
-                              outcome, PasswordProtectionService::MAX_OUTCOME);
+    PasswordProtectionService::LogPasswordEntryRequestOutcome(
+        outcome, matches_sync_password_);
+    if (matches_sync_password_) {
+      password_protection_service_->MaybeLogPasswordReuseLookupEvent(
+          web_contents_, outcome, response.get());
+    }
   }
 
   if (outcome == PasswordProtectionService::SUCCEEDED && response) {
     switch (trigger_type_) {
       case LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE:
         UMA_HISTOGRAM_ENUMERATION(
-            "PasswordProtection.Verdict.PasswordFieldOnFocus",
-            response->verdict_type(),
+            kPasswordOnFocusVerdictHistogram, response->verdict_type(),
             LoginReputationClientResponse_VerdictType_VerdictType_MAX + 1);
         break;
       case LoginReputationClientRequest::PASSWORD_REUSE_EVENT:
+        UMA_HISTOGRAM_ENUMERATION(
+            kAnyPasswordEntryVerdictHistogram, response->verdict_type(),
+            LoginReputationClientResponse_VerdictType_VerdictType_MAX + 1);
         if (matches_sync_password_) {
           UMA_HISTOGRAM_ENUMERATION(
-              "PasswordProtection.Verdict.SyncProtectedPasswordEntry",
-              response->verdict_type(),
+              kSyncPasswordEntryVerdictHistogram, response->verdict_type(),
               LoginReputationClientResponse_VerdictType_VerdictType_MAX + 1);
         } else {
           UMA_HISTOGRAM_ENUMERATION(
-              "PasswordProtection.Verdict.ProtectedPasswordEntry",
-              response->verdict_type(),
+              kProtectedPasswordEntryVerdictHistogram, response->verdict_type(),
               LoginReputationClientResponse_VerdictType_VerdictType_MAX + 1);
         }
         break;
