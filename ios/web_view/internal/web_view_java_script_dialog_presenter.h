@@ -15,7 +15,8 @@ namespace ios_web_view {
 
 // WebView implementation of JavaScriptDialogPresenter. Passes JavaScript alert
 // handling to |ui_delegate_|.
-class WebViewJavaScriptDialogPresenter : public web::JavaScriptDialogPresenter {
+class WebViewJavaScriptDialogPresenter final
+    : public web::JavaScriptDialogPresenter {
  public:
   WebViewJavaScriptDialogPresenter(CWVWebView* web_view,
                                    id<CWVUIDelegate> ui_delegate);
