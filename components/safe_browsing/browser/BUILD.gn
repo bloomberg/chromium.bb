@@ -24,7 +24,6 @@ source_set("browser") {
     "threat_details_history.h",
     "url_checker_delegate.h",
   ]
-
   deps = [
     "//components/data_use_measurement/core:core",
     "//components/history/core/browser:browser",
@@ -32,6 +31,7 @@ source_set("browser") {
     "//components/safe_browsing:safe_browsing",
     "//components/safe_browsing/common:common",
     "//components/safe_browsing/web_ui:constants",
+    "//components/safe_browsing/web_ui:web_ui",
     "//components/safe_browsing_db:database_manager",
     "//components/security_interstitials/content:security_interstitial_page",
     "//content/public/browser:browser",
