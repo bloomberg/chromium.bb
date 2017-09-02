@@ -559,22 +559,10 @@ bool Histogram::ValidateHistogramContents(bool crash_if_invalid,
   };
 
   uint32_t bad_fields = 0;
-  if (!unlogged_samples_)
-    bad_fields |= 1 << kUnloggedSamplesField;
-  else if (!unlogged_samples_->bucket_ranges())
-    bad_fields |= 1 << kUnloggedBucketRangesField;
-  if (!logged_samples_)
-    bad_fields |= 1 << kLoggedSamplesField;
-  else if (!logged_samples_->bucket_ranges())
-    bad_fields |= 1 << kLoggedBucketRangesField;
-  else if (logged_samples_->id() == 0)
-    bad_fields |= 1 << kIdField;
-  else if (histogram_name().length() > 20 && histogram_name().at(20) == '\0')
+  if (histogram_name().length() > 20 && histogram_name().at(20) == '\0')
     bad_fields |= 1 << kHistogramNameField;
   else if (histogram_name().length() > 40 && histogram_name().at(40) == '\0')
     bad_fields |= 1 << kHistogramNameField;
-  if (flags() == 0)
-    bad_fields |= 1 << kFlagsField;
   if (dummy_ != kDummyValue)
     bad_fields |= 1 << kDummyField;
 

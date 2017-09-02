@@ -38,6 +38,7 @@ static jint Init(JNIEnv* env, const base::android::JavaParamRef<jobject>&
 
 JNI_GENERATOR_EXPORT jint Java_org_chromium_TestJni_nativeInit(JNIEnv* env,
     jobject jcaller) {
+  HistogramValidator validator;
   return Init(env, base::android::JavaParamRef<jobject>(env, jcaller));
 }
 
@@ -47,6 +48,7 @@ JNI_GENERATOR_EXPORT void Java_org_chromium_TestJni_nativeDestroy(JNIEnv* env,
   ChromeBrowserProvider* native =
       reinterpret_cast<ChromeBrowserProvider*>(nativeChromeBrowserProvider);
   CHECK_NATIVE_PTR(env, jcaller, native, "Destroy");
+  HistogramValidator validator;
   return native->Destroy(env, base::android::JavaParamRef<jobject>(env,
       jcaller));
 }
@@ -61,6 +63,7 @@ JNI_GENERATOR_EXPORT jlong Java_org_chromium_TestJni_nativeAddBookmark(JNIEnv*
   ChromeBrowserProvider* native =
       reinterpret_cast<ChromeBrowserProvider*>(nativeChromeBrowserProvider);
   CHECK_NATIVE_PTR(env, jcaller, native, "AddBookmark", 0);
+  HistogramValidator validator;
   return native->AddBookmark(env, base::android::JavaParamRef<jobject>(env,
       jcaller), base::android::JavaParamRef<jstring>(env, url),
       base::android::JavaParamRef<jstring>(env, title), isFolder, parentId);
@@ -74,6 +77,7 @@ JNI_GENERATOR_EXPORT jstring
     Java_org_chromium_TestJni_nativeGetDomainAndRegistry(JNIEnv* env, jclass
     jcaller,
     jstring url) {
+  HistogramValidator validator;
   return GetDomainAndRegistry(env, base::android::JavaParamRef<jclass>(env,
       jcaller), base::android::JavaParamRef<jstring>(env, url)).Release();
 }
@@ -88,6 +92,7 @@ JNI_GENERATOR_EXPORT void
     jclass jcaller,
     jbyteArray state,
     jint tab_index) {
+  HistogramValidator validator;
   return CreateHistoricalTabFromState(env,
       base::android::JavaParamRef<jclass>(env, jcaller),
       base::android::JavaParamRef<jbyteArray>(env, state), tab_index);
@@ -101,6 +106,7 @@ JNI_GENERATOR_EXPORT jbyteArray
     Java_org_chromium_TestJni_nativeGetStateAsByteArray(JNIEnv* env, jobject
     jcaller,
     jobject view) {
+  HistogramValidator validator;
   return GetStateAsByteArray(env, base::android::JavaParamRef<jobject>(env,
       jcaller), base::android::JavaParamRef<jobject>(env, view)).Release();
 }
@@ -112,6 +118,7 @@ static base::android::ScopedJavaLocalRef<jobjectArray>
 JNI_GENERATOR_EXPORT jobjectArray
     Java_org_chromium_TestJni_nativeGetAutofillProfileGUIDs(JNIEnv* env, jclass
     jcaller) {
+  HistogramValidator validator;
   return GetAutofillProfileGUIDs(env, base::android::JavaParamRef<jclass>(env,
       jcaller)).Release();
 }
@@ -126,6 +133,7 @@ JNI_GENERATOR_EXPORT void
     jcaller,
     jint sessionId,
     jobjectArray results) {
+  HistogramValidator validator;
   return SetRecognitionResults(env, base::android::JavaParamRef<jobject>(env,
       jcaller), sessionId, base::android::JavaParamRef<jobjectArray>(env,
       results));
@@ -145,6 +153,7 @@ JNI_GENERATOR_EXPORT jlong
   ChromeBrowserProvider* native =
       reinterpret_cast<ChromeBrowserProvider*>(nativeChromeBrowserProvider);
   CHECK_NATIVE_PTR(env, jcaller, native, "AddBookmarkFromAPI", 0);
+  HistogramValidator validator;
   return native->AddBookmarkFromAPI(env,
       base::android::JavaParamRef<jobject>(env, jcaller),
       base::android::JavaParamRef<jstring>(env, url),
@@ -163,6 +172,7 @@ static jint FindAll(JNIEnv* env, const base::android::JavaParamRef<jobject>&
 JNI_GENERATOR_EXPORT jint Java_org_chromium_TestJni_nativeFindAll(JNIEnv* env,
     jobject jcaller,
     jstring find) {
+  HistogramValidator validator;
   return FindAll(env, base::android::JavaParamRef<jobject>(env, jcaller),
       base::android::JavaParamRef<jstring>(env, find));
 }
@@ -172,6 +182,7 @@ static base::android::ScopedJavaLocalRef<jobject> GetInnerClass(JNIEnv* env,
 
 JNI_GENERATOR_EXPORT jobject
     Java_org_chromium_TestJni_nativeGetInnerClass(JNIEnv* env, jclass jcaller) {
+  HistogramValidator validator;
   return GetInnerClass(env, base::android::JavaParamRef<jclass>(env,
       jcaller)).Release();
 }
@@ -186,6 +197,7 @@ JNI_GENERATOR_EXPORT jobject Java_org_chromium_TestJni_nativeQueryBitmap(JNIEnv*
   ChromeBrowserProvider* native =
       reinterpret_cast<ChromeBrowserProvider*>(nativeChromeBrowserProvider);
   CHECK_NATIVE_PTR(env, jcaller, native, "QueryBitmap", NULL);
+  HistogramValidator validator;
   return native->QueryBitmap(env, base::android::JavaParamRef<jobject>(env,
       jcaller), base::android::JavaParamRef<jobjectArray>(env, projection),
       base::android::JavaParamRef<jstring>(env, selection),
@@ -202,6 +214,7 @@ JNI_GENERATOR_EXPORT void Java_org_chromium_TestJni_nativeGotOrientation(JNIEnv*
   DataFetcherImplAndroid* native =
       reinterpret_cast<DataFetcherImplAndroid*>(nativeDataFetcherImplAndroid);
   CHECK_NATIVE_PTR(env, jcaller, native, "GotOrientation");
+  HistogramValidator validator;
   return native->GotOrientation(env, base::android::JavaParamRef<jobject>(env,
       jcaller), alpha, beta, gamma);
 }
@@ -215,6 +228,7 @@ JNI_GENERATOR_EXPORT jthrowable
     Java_org_chromium_TestJni_nativeMessWithJavaException(JNIEnv* env, jclass
     jcaller,
     jthrowable e) {
+  HistogramValidator validator;
   return MessWithJavaException(env, base::android::JavaParamRef<jclass>(env,
       jcaller), base::android::JavaParamRef<jthrowable>(env, e)).Release();
 }
