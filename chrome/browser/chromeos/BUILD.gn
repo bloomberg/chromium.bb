@@ -87,6 +87,7 @@ source_set("chromeos") {
     "//components/guest_view/browser",
     "//components/image_fetcher/core",
     "//components/invalidation/impl",
+    "//components/keep_alive_registry",
     "//components/keyed_service/content",
     "//components/keyed_service/core",
     "//components/login",

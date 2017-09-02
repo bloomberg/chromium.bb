@@ -3267,13 +3267,6 @@ split_static_library("browser") {
       "importer/profile_writer.h",
       "lifetime/browser_close_manager.cc",
       "lifetime/browser_close_manager.h",
-      "lifetime/keep_alive_registry.cc",
-      "lifetime/keep_alive_registry.h",
-      "lifetime/keep_alive_state_observer.h",
-      "lifetime/keep_alive_types.cc",
-      "lifetime/keep_alive_types.h",
-      "lifetime/scoped_keep_alive.cc",
-      "lifetime/scoped_keep_alive.h",
       "lifetime/termination_notification.cc",
       "lifetime/termination_notification.h",
       "media/webrtc/tab_desktop_media_list.cc",
@@ -3583,6 +3576,7 @@ split_static_library("browser") {
       "//components/cryptauth",
       "//components/cryptauth/proto",
       "//components/feedback",
+      "//components/keep_alive_registry",
       "//components/web_modal",
     ]
   }

@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/lifetime/keep_alive_registry.h"
+#include "components/keep_alive_registry/keep_alive_registry.h"
 
+#include "base/logging.h"
 #include "build/build_config.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/lifetime/application_lifetime.h"
-#include "chrome/browser/lifetime/keep_alive_state_observer.h"
-#include "chrome/browser/lifetime/keep_alive_types.h"
+#include "components/keep_alive_registry/keep_alive_state_observer.h"
+#include "components/keep_alive_registry/keep_alive_types.h"
 
 #if defined(OS_WIN)
 #include "components/browser_watcher/stability_data_names.h"
@@ -73,6 +72,12 @@ bool KeepAliveRegistry::WouldRestartWithout(
   return registered_count == restart_allowed_count;
 }
 
+void KeepAliveRegistry::SetIsShuttingDown(bool value) {
+#if DCHECK_IS_ON()
+  is_shutting_down_ = value;
+#endif
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Private methods
 
@@ -86,7 +91,9 @@ KeepAliveRegistry::~KeepAliveRegistry() {
 
 void KeepAliveRegistry::Register(KeepAliveOrigin origin,
                                  KeepAliveRestartOption restart) {
-  DCHECK(!g_browser_process->IsShuttingDown());
+#if DCHECK_IS_ON()
+  DCHECK(!is_shutting_down_);
+#endif
 
   bool old_keeping_alive = IsKeepingAlive();
   bool old_restart_allowed = IsRestartAllowed();

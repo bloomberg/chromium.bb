@@ -267,6 +267,8 @@ test("components_unittests") {
       "//ui/gfx",
       "//v8:v8_external_startup_data_assets",
     ]
+  } else {  # !is_android
+    deps += [ "//components/keep_alive_registry:unit_tests" ]
   }
 
   # Desktop-only deps.
