@@ -31,13 +31,13 @@ std::string StripLambda(const char (&shader)[size]) {
 // handling them correctly. StipLambda removes this.
 #define SHADER0(Src) StripLambda(#Src)
 
-#define HDR(x)                       \
-  do {                               \
-    header += x + std::string("\n"); \
+#define HDR(x)        \
+  do {                \
+    header += x "\n"; \
   } while (0)
-#define SRC(x)                                           \
-  do {                                                   \
-    source += std::string("  ") + x + std::string("\n"); \
+#define SRC(x)             \
+  do {                     \
+    source += "  " x "\n"; \
   } while (0)
 
 using gpu::gles2::GLES2Interface;
