@@ -19,14 +19,13 @@
 
 namespace content {
 
-class PaymentInstrumentIconFetcher
-    : public base::RefCountedThreadSafe<PaymentInstrumentIconFetcher>,
-      private net::URLFetcherDelegate {
+class PaymentInstrumentIconFetcher final : private net::URLFetcherDelegate {
  public:
   using PaymentInstrumentIconFetcherCallback =
       base::OnceCallback<void(const std::string&)>;
 
   PaymentInstrumentIconFetcher();
+  ~PaymentInstrumentIconFetcher() override;
 
   // Starts fetching and decoding payment instrument icon from online. The
   // result will be send back through |callback|.
@@ -38,9 +37,6 @@ class PaymentInstrumentIconFetcher
              PaymentInstrumentIconFetcherCallback callback);
 
  private:
-  friend class base::RefCountedThreadSafe<PaymentInstrumentIconFetcher>;
-  ~PaymentInstrumentIconFetcher() override;
-
   void StartFromUIThread(
       scoped_refptr<ServiceWorkerContextWrapper> service_worker_context);
   void PostCallbackToIOThread(const std::string& decoded_data);
@@ -67,6 +63,8 @@ class PaymentInstrumentIconFetcher
 
   // The url fetcher to fetch raw icon from online.
   std::unique_ptr<net::URLFetcher> fetcher_;
+
+  base::WeakPtrFactory<PaymentInstrumentIconFetcher> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentInstrumentIconFetcher);
 };

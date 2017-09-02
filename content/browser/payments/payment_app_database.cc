@@ -193,14 +193,15 @@ void PaymentAppDatabase::WritePaymentInstrument(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (instrument->icons.size() > 0) {
-    instrument_icon_fetcher_ =
-        base::MakeRefCounted<PaymentInstrumentIconFetcher>();
-    instrument_icon_fetcher_->Start(
+    std::unique_ptr<PaymentInstrumentIconFetcher> icon_fetcher =
+        base::MakeUnique<PaymentInstrumentIconFetcher>();
+    icon_fetcher->Start(
         instrument->icons, service_worker_context_,
         base::BindOnce(&PaymentAppDatabase::DidFetchedPaymentInstrumentIcon,
                        weak_ptr_factory_.GetWeakPtr(), scope, instrument_key,
                        base::Passed(std::move(instrument)),
-                       base::Passed(std::move(callback))));
+                       base::Passed(std::move(callback)),
+                       base::Passed(std::move(icon_fetcher))));
   } else {
     service_worker_context_->FindReadyRegistrationForPattern(
         scope,
@@ -217,10 +218,11 @@ void PaymentAppDatabase::DidFetchedPaymentInstrumentIcon(
     const std::string& instrument_key,
     payments::mojom::PaymentInstrumentPtr instrument,
     WritePaymentInstrumentCallback callback,
+    std::unique_ptr<PaymentInstrumentIconFetcher> icon_fetcher,
     const std::string& icon) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  instrument_icon_fetcher_ = nullptr;
+  icon_fetcher.reset();
   if (icon.empty()) {
     std::move(callback).Run(PaymentHandlerStatus::FETCH_INSTRUMENT_ICON_FAILED);
     return;
