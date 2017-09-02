@@ -20,6 +20,7 @@
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
+#import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
 #import "ios/chrome/browser/ui/first_run/first_run_chrome_signin_view_controller.h"
 #include "ios/chrome/browser/ui/first_run/welcome_to_chrome_view_controller.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
@@ -44,13 +45,6 @@ using chrome_test_util::SettingsMenuBackButton;
 
 namespace {
 
-// Returns a fake identity.
-ChromeIdentity* GetFakeIdentity() {
-  return [FakeChromeIdentity identityWithEmail:@"foo@gmail.com"
-                                        gaiaID:@"fooID"
-                                          name:@"Fake Foo"];
-}
-
 // Returns matcher for the opt in accept button.
 id<GREYMatcher> FirstRunOptInAcceptButton() {
   return ButtonWithAccessibilityLabel(
@@ -72,22 +66,6 @@ id<GREYMatcher> FirstRunAccountConsistencySkipButton() {
 id<GREYMatcher> UndoAccountConsistencyButton() {
   return ButtonWithAccessibilityLabelId(
       IDS_IOS_ACCOUNT_CONSISTENCY_CONFIRMATION_UNDO_BUTTON);
-}
-
-// Asserts that |identity| is actually signed in to the active profile.
-void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
-
-  ios::ChromeBrowserState* browser_state =
-      chrome_test_util::GetOriginalBrowserState();
-  AccountInfo info =
-      ios::SigninManagerFactory::GetForBrowserState(browser_state)
-          ->GetAuthenticatedAccountInfo();
-
-  GREYAssertEqual(base::SysNSStringToUTF8(identity.gaiaID), info.gaia,
-                  @"Unexpected Gaia ID of the signed in user [expected = "
-                  @"\"%@\", actual = \"%s\"]",
-                  identity.gaiaID, info.gaia.c_str());
 }
 
 // Wait until |matcher| is accessible (not nil)
@@ -206,7 +184,7 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
 
 // Signs in to an account and then taps the Undo button to sign out.
 - (void)testSignInAndUndo {
-  ChromeIdentity* identity = GetFakeIdentity();
+  ChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
   ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
       identity);
 
@@ -219,7 +197,7 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
   [[EarlGrey selectElementWithMatcher:AccountConsistencySetupSigninButton()]
       performAction:grey_tap()];
 
-  AssertAuthenticatedIdentityInActiveProfile(identity);
+  [SigninEarlGreyUtils assertSignedInWithIdentity:identity];
 
   // Undo the sign-in and dismiss the Sign In screen.
   [[EarlGrey selectElementWithMatcher:UndoAccountConsistencyButton()]
@@ -228,12 +206,12 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
       performAction:grey_tap()];
 
   // |identity| shouldn't be signed in.
-  AssertAuthenticatedIdentityInActiveProfile(nil);
+  [SigninEarlGreyUtils assertSignedOut];
 }
 
 // Signs in to an account and then taps the Advanced link to go to settings.
 - (void)testSignInAndTapSettingsLink {
-  ChromeIdentity* identity = GetFakeIdentity();
+  ChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
   ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
       identity);
 
@@ -245,7 +223,7 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
   // Sign In |identity|.
   [[EarlGrey selectElementWithMatcher:AccountConsistencySetupSigninButton()]
       performAction:grey_tap()];
-  AssertAuthenticatedIdentityInActiveProfile(identity);
+  [SigninEarlGreyUtils assertSignedInWithIdentity:identity];
 
   // Tap Settings link.
   id<GREYMatcher> settings_link_matcher = grey_allOf(
@@ -263,7 +241,7 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
   // Close Settings, user is still signed in and sync is now starting.
   [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
       performAction:grey_tap()];
-  AssertAuthenticatedIdentityInActiveProfile(identity);
+  [SigninEarlGreyUtils assertSignedInWithIdentity:identity];
   GREYAssertTrue(sync_service->HasFinishedInitialSetup(),
                  @"Sync should have finished its original setup");
 }

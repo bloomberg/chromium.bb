@@ -156,6 +156,7 @@ source_set("eg_tests") {
     "signin_interaction_controller_egtest.mm",
   ]
   deps = [
+    ":eg_test_support",
     "//base",
     "//base/test:test_support",
     "//components/signin/core/browser",
@@ -184,12 +185,18 @@ source_set("eg_test_support") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
-    "signin_promo_view_earlgrey_utils.h",
-    "signin_promo_view_earlgrey_utils.mm",
+    "signin_earlgrey_utils.h",
+    "signin_earlgrey_utils.mm",
   ]
   deps = [
     ":authentication_ui",
+    "//components/signin/core/browser:browser",
+    "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/signin",
+    "//ios/chrome/test/app:test_support",
     "//ios/chrome/test/earl_grey:test_support",
+    "//ios/public/provider/chrome/browser/signin",
+    "//ios/public/provider/chrome/browser/signin:test_support",
     "//ios/third_party/earl_grey",
   ]
 }

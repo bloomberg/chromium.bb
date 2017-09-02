@@ -16,8 +16,8 @@
 #include "ios/chrome/browser/bookmarks/bookmark_new_generation_features.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/pref_names.h"
+#import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view.h"
-#import "ios/chrome/browser/ui/authentication/signin_promo_view_earlgrey_utils.h"
 #include "ios/chrome/browser/ui/tools_menu/tools_menu_constants.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -163,14 +163,14 @@ id<GREYMatcher> BookmarksDoneButton() {
   }];
   // Check that sign-in promo view is visible.
   [BookmarksNewGenTestCase verifyPromoAlreadySeen:NO];
-  [SignPromoViewEarlgreyUtils
+  [SigninEarlGreyUtils
       checkSigninPromoVisibleWithMode:SigninPromoViewModeColdState];
 
   // Go to child node.
   [BookmarksNewGenTestCase openMobileBookmarks];
 
   // Wait until promo is gone.
-  [SignPromoViewEarlgreyUtils checkSigninPromoNotVisible];
+  [SigninEarlGreyUtils checkSigninPromoNotVisible];
 
   // Check that the promo already seen state is not updated.
   [BookmarksNewGenTestCase verifyPromoAlreadySeen:NO];
@@ -202,7 +202,7 @@ id<GREYMatcher> BookmarksDoneButton() {
   }];
   // Check that sign-in promo view is visible.
   [BookmarksNewGenTestCase verifyPromoAlreadySeen:NO];
-  [SignPromoViewEarlgreyUtils
+  [SigninEarlGreyUtils
       checkSigninPromoVisibleWithMode:SigninPromoViewModeColdState];
 
   // Tap the dismiss button.
@@ -211,7 +211,7 @@ id<GREYMatcher> BookmarksDoneButton() {
       performAction:grey_tap()];
 
   // Wait until promo is gone.
-  [SignPromoViewEarlgreyUtils checkSigninPromoNotVisible];
+  [SigninEarlGreyUtils checkSigninPromoNotVisible];
 
   // Check that the promo already seen state is updated.
   [BookmarksNewGenTestCase verifyPromoAlreadySeen:YES];
@@ -231,7 +231,7 @@ id<GREYMatcher> BookmarksDoneButton() {
 
   // Check that sign-in promo view are visible.
   [BookmarksNewGenTestCase verifyPromoAlreadySeen:NO];
-  [SignPromoViewEarlgreyUtils
+  [SigninEarlGreyUtils
       checkSigninPromoVisibleWithMode:SigninPromoViewModeColdState];
 
   // Tap the primary button.
@@ -244,7 +244,7 @@ id<GREYMatcher> BookmarksDoneButton() {
 
   // Check that the bookmarks UI reappeared and the cell is still here.
   [BookmarksNewGenTestCase verifyPromoAlreadySeen:NO];
-  [SignPromoViewEarlgreyUtils
+  [SigninEarlGreyUtils
       checkSigninPromoVisibleWithMode:SigninPromoViewModeColdState];
 }
 
@@ -262,10 +262,7 @@ id<GREYMatcher> BookmarksDoneButton() {
   [BookmarksNewGenTestCase openBookmarks];
 
   // Set up a fake identity.
-  ChromeIdentity* identity =
-      [FakeChromeIdentity identityWithEmail:@"fakefoo@gmail.com"
-                                     gaiaID:@"fakefoopassword"
-                                       name:@"Fake Foo"];
+  ChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
   ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
       identity);
 
@@ -311,16 +308,13 @@ id<GREYMatcher> BookmarksDoneButton() {
   [BookmarksNewGenTestCase setupStandardBookmarks];
   [BookmarksNewGenTestCase openBookmarks];
   // Set up a fake identity.
-  ChromeIdentity* identity =
-      [FakeChromeIdentity identityWithEmail:@"fakefoo@egmail.com"
-                                     gaiaID:@"fakefoopassword"
-                                       name:@"Fake Foo"];
+  ChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
   ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
       identity);
 
   // Check that sign-in promo view are visible.
   [BookmarksNewGenTestCase verifyPromoAlreadySeen:NO];
-  [SignPromoViewEarlgreyUtils
+  [SigninEarlGreyUtils
       checkSigninPromoVisibleWithMode:SigninPromoViewModeWarmState];
 
   // Tap the secondary button.
@@ -337,7 +331,7 @@ id<GREYMatcher> BookmarksDoneButton() {
 
   // Check that the bookmarks UI reappeared and the cell is still here.
   [BookmarksNewGenTestCase verifyPromoAlreadySeen:NO];
-  [SignPromoViewEarlgreyUtils
+  [SigninEarlGreyUtils
       checkSigninPromoVisibleWithMode:SigninPromoViewModeWarmState];
 }
 
@@ -358,7 +352,7 @@ id<GREYMatcher> BookmarksDoneButton() {
   prefs->SetInteger(prefs::kIosBookmarkSigninPromoDisplayedCount, 19);
   [BookmarksNewGenTestCase openBookmarks];
   // Check the sign-in promo view is visible.
-  [SignPromoViewEarlgreyUtils
+  [SigninEarlGreyUtils
       checkSigninPromoVisibleWithMode:SigninPromoViewModeColdState];
   // Check the sign-in promo will not be shown anymore.
   [BookmarksNewGenTestCase verifyPromoAlreadySeen:YES];
@@ -371,7 +365,7 @@ id<GREYMatcher> BookmarksDoneButton() {
   [BookmarksNewGenTestCase openBookmarks];
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
   // Check that the sign-in promo is not visible anymore.
-  [SignPromoViewEarlgreyUtils checkSigninPromoNotVisible];
+  [SigninEarlGreyUtils checkSigninPromoNotVisible];
 }
 
 #pragma mark - Helpers
