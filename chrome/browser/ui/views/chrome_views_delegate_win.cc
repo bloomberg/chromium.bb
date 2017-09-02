@@ -10,9 +10,9 @@
 #include "base/profiler/scoped_tracker.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/win/windows_version.h"
-#include "chrome/browser/lifetime/scoped_keep_alive.h"
 #include "chrome/browser/ui/views/native_widget_factory.h"
 #include "chrome/browser/win/app_icon.h"
+#include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "ui/base/win/shell.h"
 
 namespace {

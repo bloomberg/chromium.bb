@@ -50,6 +50,10 @@
 #include "chrome/browser/printing/print_preview_dialog_controller.h"
 #endif
 
+#if !defined(OS_ANDROID)
+#include "components/keep_alive_registry/keep_alive_registry.h"
+#endif
+
 // static
 TestingBrowserProcess* TestingBrowserProcess::GetGlobal() {
   return static_cast<TestingBrowserProcess*>(g_browser_process);
@@ -84,6 +88,10 @@ TestingBrowserProcess::TestingBrowserProcess()
       new extensions::ChromeExtensionsBrowserClient);
   extensions::AppWindowClient::Set(ChromeAppWindowClient::GetInstance());
   extensions::ExtensionsBrowserClient::Set(extensions_browser_client_.get());
+#endif
+
+#if !defined(OS_ANDROID)
+  KeepAliveRegistry::GetInstance()->SetIsShuttingDown(false);
 #endif
 }
 

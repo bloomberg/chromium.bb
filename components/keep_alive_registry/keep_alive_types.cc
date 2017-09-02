@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/lifetime/keep_alive_types.h"
+#include "components/keep_alive_registry/keep_alive_types.h"
 #include "base/logging.h"
 
 std::ostream& operator<<(std::ostream& out, const KeepAliveOrigin& origin) {

@@ -51,8 +51,8 @@
 #include "url/url_constants.h"
 
 #if BUILDFLAG(ENABLE_BACKGROUND)
-#include "chrome/browser/lifetime/keep_alive_types.h"
-#include "chrome/browser/lifetime/scoped_keep_alive.h"
+#include "components/keep_alive_registry/keep_alive_types.h"
+#include "components/keep_alive_registry/scoped_keep_alive.h"
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)

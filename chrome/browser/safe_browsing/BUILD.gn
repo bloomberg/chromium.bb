@@ -66,6 +66,7 @@ static_library("safe_browsing") {
       "settings_reset_prompt/settings_reset_prompt_prefs_manager.cc",
       "settings_reset_prompt/settings_reset_prompt_prefs_manager.h",
     ]
+    deps += [ "//components/keep_alive_registry" ]
   }
 
   if (safe_browsing_mode != 0) {

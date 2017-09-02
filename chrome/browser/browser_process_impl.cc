@@ -143,10 +143,10 @@
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/gcm/gcm_product_util.h"
-#include "chrome/browser/lifetime/keep_alive_registry.h"
 #include "chrome/browser/ui/user_manager.h"
 #include "components/gcm_driver/gcm_client_factory.h"
 #include "components/gcm_driver/gcm_desktop_utils.h"
+#include "components/keep_alive_registry/keep_alive_registry.h"
 #endif
 
 #if BUILDFLAG(ENABLE_BACKGROUND)
@@ -277,6 +277,7 @@ BrowserProcessImpl::BrowserProcessImpl(
       ChromeUpdateQueryParamsDelegate::GetInstance());
 
 #if !defined(OS_ANDROID)
+  KeepAliveRegistry::GetInstance()->SetIsShuttingDown(false);
   KeepAliveRegistry::GetInstance()->AddObserver(this);
 #endif  // !defined(OS_ANDROID)
 }
@@ -304,6 +305,11 @@ void BrowserProcessImpl::StartTearDown() {
   // |tearing_down_| necessary in IsShuttingDown().
   tearing_down_ = true;
   DCHECK(IsShuttingDown());
+
+#if !defined(OS_ANDROID)
+  KeepAliveRegistry::GetInstance()->SetIsShuttingDown();
+#endif  // !defined(OS_ANDROID)
+
   // We need to destroy the MetricsServicesManager, IntranetRedirectDetector,
   // NetworkTimeTracker, and SafeBrowsing ClientSideDetectionService
   // (owned by the SafeBrowsingService) before the io_thread_ gets destroyed,

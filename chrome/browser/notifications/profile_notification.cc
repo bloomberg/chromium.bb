@@ -6,9 +6,9 @@
 
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
-#include "chrome/browser/lifetime/keep_alive_types.h"
-#include "chrome/browser/lifetime/scoped_keep_alive.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
+#include "components/keep_alive_registry/keep_alive_types.h"
+#include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "components/signin/core/account_id/account_id.h"
 
 // static

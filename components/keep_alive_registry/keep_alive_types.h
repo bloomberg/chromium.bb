@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_LIFETIME_KEEP_ALIVE_TYPES_H_
-#define CHROME_BROWSER_LIFETIME_KEEP_ALIVE_TYPES_H_
+#ifndef COMPONENTS_KEEP_ALIVE_REGISTRY_KEEP_ALIVE_TYPES_H_
+#define COMPONENTS_KEEP_ALIVE_REGISTRY_KEEP_ALIVE_TYPES_H_
 
 #include <ostream>
 
@@ -55,4 +55,4 @@ std::ostream& operator<<(std::ostream& out, const KeepAliveOrigin& origin);
 std::ostream& operator<<(std::ostream& out,
                          const KeepAliveRestartOption& restart);
 
-#endif  // CHROME_BROWSER_LIFETIME_KEEP_ALIVE_TYPES_H_
+#endif  // COMPONENTS_KEEP_ALIVE_REGISTRY_KEEP_ALIVE_TYPES_H_

@@ -12,10 +12,10 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
-#include "chrome/browser/lifetime/keep_alive_registry.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
+#include "components/keep_alive_registry/keep_alive_registry.h"
 
 BackgroundModeOptimizer::~BackgroundModeOptimizer() {
   KeepAliveRegistry::GetInstance()->RemoveObserver(this);

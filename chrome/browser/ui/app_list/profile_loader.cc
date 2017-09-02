@@ -6,10 +6,10 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
-#include "chrome/browser/lifetime/keep_alive_types.h"
-#include "chrome/browser/lifetime/scoped_keep_alive.h"
 #include "chrome/browser/ui/app_list/profile_store.h"
 #include "chrome/browser/ui/user_manager.h"
+#include "components/keep_alive_registry/keep_alive_types.h"
+#include "components/keep_alive_registry/scoped_keep_alive.h"
 
 ProfileLoader::ProfileLoader(ProfileStore* profile_store)
     : profile_store_(profile_store),
