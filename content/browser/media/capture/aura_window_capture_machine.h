@@ -25,10 +25,10 @@ class ReadbackYUVInterface;
 
 namespace content {
 
-class AuraWindowCaptureMachine
-    : public media::VideoCaptureMachine,
-      public aura::WindowObserver,
-      public ui::CompositorAnimationObserver {
+class AuraWindowCaptureMachine : public media::VideoCaptureMachine,
+                                 public aura::WindowObserver,
+                                 public ui::ContextFactoryObserver,
+                                 public ui::CompositorAnimationObserver {
  public:
   AuraWindowCaptureMachine();
   ~AuraWindowCaptureMachine() override;
@@ -91,6 +91,9 @@ class AuraWindowCaptureMachine
                                  base::TimeTicks event_time,
                                  const CaptureFrameCallback& capture_frame_cb,
                                  std::unique_ptr<viz::CopyOutputResult> result);
+
+  // ui::ContextFactoryObserver implementation.
+  void OnLostResources() override;
 
   // Renders the cursor if needed and then delivers the captured frame.
   static void CopyOutputFinishedForVideo(
