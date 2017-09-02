@@ -38,6 +38,7 @@ JNI_GENERATOR_EXPORT void Java_org_chromium_TestJni_nativeDestroy(JNIEnv* env,
   ChromeBrowserProvider* native =
       reinterpret_cast<ChromeBrowserProvider*>(nativeChromeBrowserProvider);
   CHECK_NATIVE_PTR(env, jcaller, native, "Destroy");
+  HistogramValidator validator;
   return native->Destroy(env, base::android::JavaParamRef<jobject>(env,
       jcaller));
 }

@@ -73,6 +73,7 @@ static jint Init(JNIEnv* env, const base::android::JavaParamRef<jobject>&
 JNI_GENERATOR_EXPORT jint
     Java_org_chromium_TestJni_00024MyInnerClass_nativeInit(JNIEnv* env, jobject
     jcaller) {
+  HistogramValidator validator;
   return Init(env, base::android::JavaParamRef<jobject>(env, jcaller));
 }
 
@@ -82,6 +83,7 @@ static jint Init(JNIEnv* env, const base::android::JavaParamRef<jobject>&
 JNI_GENERATOR_EXPORT jint
     Java_org_chromium_TestJni_00024MyOtherInnerClass_nativeInit(JNIEnv* env,
     jobject jcaller) {
+  HistogramValidator validator;
   return Init(env, base::android::JavaParamRef<jobject>(env, jcaller));
 }
 
