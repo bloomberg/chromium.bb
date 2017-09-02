@@ -117,6 +117,11 @@ ProfileAttributesStorage::GetAllProfilesAttributes() {
 
 std::vector<ProfileAttributesEntry*>
 ProfileAttributesStorage::GetAllProfilesAttributesSortedByName() {
+  std::vector<ProfileAttributesEntry*> ret = GetAllProfilesAttributes();
+  // Do not allocate the collator and sort if it is not necessary.
+  if (ret.size() < 2)
+    return ret;
+
   UErrorCode error_code = U_ZERO_ERROR;
   // Use the default collator. The default locale should have been properly
   // set by the time this constructor is called.
@@ -124,7 +129,6 @@ ProfileAttributesStorage::GetAllProfilesAttributesSortedByName() {
       icu::Collator::createInstance(error_code));
   DCHECK(U_SUCCESS(error_code));
 
-  std::vector<ProfileAttributesEntry*> ret = GetAllProfilesAttributes();
   std::sort(ret.begin(), ret.end(),
             ProfileAttributesSortComparator(collator.get()));
   return ret;
