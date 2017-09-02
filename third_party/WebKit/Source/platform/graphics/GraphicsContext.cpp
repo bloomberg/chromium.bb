@@ -669,7 +669,7 @@ void GraphicsContext::DrawText(const Font& font,
 }
 
 void GraphicsContext::DrawText(const Font& font,
-                               const TextFragmentPaintInfo& text_info,
+                               const NGTextFragmentPaintInfo& text_info,
                                const FloatPoint& point,
                                const PaintFlags& flags) {
   DrawTextInternal(font, text_info, point, flags);
@@ -715,7 +715,7 @@ void GraphicsContext::DrawText(const Font& font,
 }
 
 void GraphicsContext::DrawText(const Font& font,
-                               const TextFragmentPaintInfo& text_info,
+                               const NGTextFragmentPaintInfo& text_info,
                                const FloatPoint& point) {
   DrawTextInternal(font, text_info, point);
 }
@@ -743,10 +743,11 @@ void GraphicsContext::DrawEmphasisMarks(const Font& font,
   DrawEmphasisMarksInternal(font, text_info, mark, point);
 }
 
-void GraphicsContext::DrawEmphasisMarks(const Font& font,
-                                        const TextFragmentPaintInfo& text_info,
-                                        const AtomicString& mark,
-                                        const FloatPoint& point) {
+void GraphicsContext::DrawEmphasisMarks(
+    const Font& font,
+    const NGTextFragmentPaintInfo& text_info,
+    const AtomicString& mark,
+    const FloatPoint& point) {
   DrawEmphasisMarksInternal(font, text_info, mark, point);
 }
 

@@ -31,6 +31,7 @@
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/FontFallbackIterator.h"
 #include "platform/fonts/FontFallbackList.h"
+#include "platform/fonts/NGTextFragmentPaintInfo.h"
 #include "platform/fonts/SimpleFontData.h"
 #include "platform/fonts/shaping/CachingWordShaper.h"
 #include "platform/fonts/shaping/ShapeResultBloberizer.h"
@@ -148,7 +149,7 @@ bool Font::DrawText(PaintCanvas* canvas,
 }
 
 bool Font::DrawText(PaintCanvas* canvas,
-                    const TextFragmentPaintInfo& text_info,
+                    const NGTextFragmentPaintInfo& text_info,
                     const FloatPoint& point,
                     float device_scale_factor,
                     const PaintFlags& flags) const {
@@ -244,7 +245,7 @@ void Font::DrawEmphasisMarks(PaintCanvas* canvas,
 }
 
 void Font::DrawEmphasisMarks(PaintCanvas* canvas,
-                             const TextFragmentPaintInfo& text_info,
+                             const NGTextFragmentPaintInfo& text_info,
                              const AtomicString& mark,
                              const FloatPoint& point,
                              float device_scale_factor,
@@ -258,8 +259,10 @@ void Font::DrawEmphasisMarks(PaintCanvas* canvas,
     return;
 
   ShapeResultBloberizer bloberizer(*this, device_scale_factor);
+  // TODO(layout-dev): This should either not take a direction argument or we
+  // need to plumb the proper one through. I don't think we need it.
   bloberizer.FillTextEmphasisGlyphs(
-      text_info.text, text_info.direction, text_info.from, text_info.to,
+      text_info.text, TextDirection::kLtr, text_info.from, text_info.to,
       emphasis_glyph_data, text_info.shape_result);
   DrawBlobs(canvas, flags, bloberizer.Blobs(), point);
 }
@@ -338,7 +341,7 @@ void Font::GetTextIntercepts(const TextRunPaintInfo& run_info,
   GetTextInterceptsInternal(bloberizer.Blobs(), flags, bounds, intercepts);
 }
 
-void Font::GetTextIntercepts(const TextFragmentPaintInfo& text_info,
+void Font::GetTextIntercepts(const NGTextFragmentPaintInfo& text_info,
                              float device_scale_factor,
                              const PaintFlags& flags,
                              const std::tuple<float, float>& bounds,

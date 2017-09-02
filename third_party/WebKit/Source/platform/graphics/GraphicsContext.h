@@ -253,14 +253,14 @@ class PLATFORM_EXPORT GraphicsContext {
                 SkClipOp = SkClipOp::kIntersect);
 
   void DrawText(const Font&, const TextRunPaintInfo&, const FloatPoint&);
-  void DrawText(const Font&, const TextFragmentPaintInfo&, const FloatPoint&);
+  void DrawText(const Font&, const NGTextFragmentPaintInfo&, const FloatPoint&);
 
   void DrawText(const Font&,
                 const TextRunPaintInfo&,
                 const FloatPoint&,
                 const PaintFlags&);
   void DrawText(const Font&,
-                const TextFragmentPaintInfo&,
+                const NGTextFragmentPaintInfo&,
                 const FloatPoint&,
                 const PaintFlags&);
 
@@ -269,7 +269,7 @@ class PLATFORM_EXPORT GraphicsContext {
                          const AtomicString& mark,
                          const FloatPoint&);
   void DrawEmphasisMarks(const Font&,
-                         const TextFragmentPaintInfo&,
+                         const NGTextFragmentPaintInfo&,
                          const AtomicString& mark,
                          const FloatPoint&);
 

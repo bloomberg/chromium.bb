@@ -55,16 +55,7 @@ class FontSelector;
 class ShapeCache;
 class TextRun;
 struct TextRunPaintInfo;
-
-// Represents text content of a NGPhysicalTextFragment for painting.
-// TODO(eae): Move to a separate file?
-struct PLATFORM_EXPORT TextFragmentPaintInfo {
-  const StringView text;
-  TextDirection direction;
-  unsigned from;
-  unsigned to;
-  const ShapeResult* shape_result;
-};
+struct NGTextFragmentPaintInfo;
 
 class PLATFORM_EXPORT Font {
   DISALLOW_NEW();
@@ -96,7 +87,7 @@ class PLATFORM_EXPORT Font {
                 float device_scale_factor,
                 const PaintFlags&) const;
   bool DrawText(PaintCanvas*,
-                const TextFragmentPaintInfo&,
+                const NGTextFragmentPaintInfo&,
                 const FloatPoint&,
                 float device_scale_factor,
                 const PaintFlags&) const;
@@ -113,7 +104,7 @@ class PLATFORM_EXPORT Font {
                          float device_scale_factor,
                          const PaintFlags&) const;
   void DrawEmphasisMarks(PaintCanvas*,
-                         const TextFragmentPaintInfo&,
+                         const NGTextFragmentPaintInfo&,
                          const AtomicString& mark,
                          const FloatPoint&,
                          float device_scale_factor,
@@ -135,7 +126,7 @@ class PLATFORM_EXPORT Font {
                          const PaintFlags&,
                          const std::tuple<float, float>& bounds,
                          Vector<TextIntercept>&) const;
-  void GetTextIntercepts(const TextFragmentPaintInfo&,
+  void GetTextIntercepts(const NGTextFragmentPaintInfo&,
                          float device_scale_factor,
                          const PaintFlags&,
                          const std::tuple<float, float>& bounds,
