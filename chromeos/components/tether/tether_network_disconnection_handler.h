@@ -15,21 +15,23 @@ class NetworkStateHandler;
 
 namespace tether {
 
+class DisconnectTetheringRequestSender;
 class NetworkConfigurationRemover;
 
 class ActiveHost;
 
 // Handles lost Wi-Fi connections for ongoing tether sessions. When a tether
 // connection is in progress, the device is connected to an underlying Wi-Fi
-// network. If the Wi-Fi connection is disrupted (e.g., by the tether host going
-// out of Wi-Fi range), tether metadata must be updated accordingly. This class
-// tracks ongoing connections and updates this metadata when necessary.
+// network. If the tether network is disconnected, tether metadata is
+// updated accordingly, and a message is sent to the host to disable its
+// Wi-Fi hotspot.
 class TetherNetworkDisconnectionHandler : public NetworkStateHandlerObserver {
  public:
   TetherNetworkDisconnectionHandler(
       ActiveHost* active_host,
       NetworkStateHandler* network_state_handler,
-      NetworkConfigurationRemover* network_configuration_remover);
+      NetworkConfigurationRemover* network_configuration_remover,
+      DisconnectTetheringRequestSender* disconnect_tethering_request_sender);
   ~TetherNetworkDisconnectionHandler() override;
 
   // NetworkStateHandlerObserver:
@@ -41,6 +43,7 @@ class TetherNetworkDisconnectionHandler : public NetworkStateHandlerObserver {
   ActiveHost* active_host_;
   NetworkStateHandler* network_state_handler_;
   NetworkConfigurationRemover* network_configuration_remover_;
+  DisconnectTetheringRequestSender* disconnect_tethering_request_sender_;
 
   DISALLOW_COPY_AND_ASSIGN(TetherNetworkDisconnectionHandler);
 };

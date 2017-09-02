@@ -8,7 +8,9 @@
 #include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "chromeos/components/tether/disconnect_tethering_request_sender.h"
 #include "chromeos/components/tether/network_configuration_remover.h"
+#include "chromeos/components/tether/tether_host_fetcher.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -21,10 +23,13 @@ namespace tether {
 TetherNetworkDisconnectionHandler::TetherNetworkDisconnectionHandler(
     ActiveHost* active_host,
     NetworkStateHandler* network_state_handler,
-    NetworkConfigurationRemover* network_configuration_remover)
+    NetworkConfigurationRemover* network_configuration_remover,
+    DisconnectTetheringRequestSender* disconnect_tethering_request_sender)
     : active_host_(active_host),
       network_state_handler_(network_state_handler),
-      network_configuration_remover_(network_configuration_remover) {
+      network_configuration_remover_(network_configuration_remover),
+      disconnect_tethering_request_sender_(
+          disconnect_tethering_request_sender) {
   network_state_handler_->AddObserver(this, FROM_HERE);
 }
 
@@ -43,6 +48,11 @@ void TetherNetworkDisconnectionHandler::NetworkConnectionStateChanged(
 
     network_configuration_remover_->RemoveNetworkConfiguration(
         active_host_->GetWifiNetworkGuid());
+
+    // Send a DisconnectTetheringRequest to the tether host so that it can shut
+    // down its Wi-Fi hotspot if it is no longer in use.
+    disconnect_tethering_request_sender_->SendDisconnectRequestToDevice(
+        active_host_->GetActiveHostDeviceId());
 
     active_host_->SetActiveHostDisconnected();
   }

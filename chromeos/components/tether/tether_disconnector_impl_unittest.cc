@@ -9,7 +9,7 @@
 #include "chromeos/components/tether/connect_tethering_operation.h"
 #include "chromeos/components/tether/device_id_tether_network_guid_map.h"
 #include "chromeos/components/tether/fake_active_host.h"
-#include "chromeos/components/tether/fake_ble_connection_manager.h"
+#include "chromeos/components/tether/fake_disconnect_tethering_request_sender.h"
 #include "chromeos/components/tether/fake_network_configuration_remover.h"
 #include "chromeos/components/tether/fake_tether_connector.h"
 #include "chromeos/components/tether/fake_tether_host_fetcher.h"
@@ -100,51 +100,6 @@ class TestNetworkConnectionHandler : public NetworkConnectionHandler {
   network_handler::ErrorCallback last_disconnect_error_callback_;
 };
 
-class FakeDisconnectTetheringOperation : public DisconnectTetheringOperation {
- public:
-  FakeDisconnectTetheringOperation(
-      const cryptauth::RemoteDevice& device_to_connect,
-      BleConnectionManager* connection_manager)
-      : DisconnectTetheringOperation(device_to_connect, connection_manager) {}
-
-  ~FakeDisconnectTetheringOperation() override {}
-
-  void NotifyFinished(bool success) {
-    NotifyObserversOperationFinished(success);
-  }
-
-  cryptauth::RemoteDevice GetRemoteDevice() {
-    EXPECT_EQ(1u, remote_devices().size());
-    return remote_devices()[0];
-  }
-};
-
-class FakeDisconnectTetheringOperationFactory
-    : public DisconnectTetheringOperation::Factory {
- public:
-  FakeDisconnectTetheringOperationFactory() {}
-  virtual ~FakeDisconnectTetheringOperationFactory() {}
-
-  std::vector<FakeDisconnectTetheringOperation*>& created_operations() {
-    return created_operations_;
-  }
-
- protected:
-  // DisconnectTetheringOperation::Factory:
-  std::unique_ptr<DisconnectTetheringOperation> BuildInstance(
-      const cryptauth::RemoteDevice& device_to_connect,
-      BleConnectionManager* connection_manager) override {
-    FakeDisconnectTetheringOperation* operation =
-        new FakeDisconnectTetheringOperation(device_to_connect,
-                                             connection_manager);
-    created_operations_.push_back(operation);
-    return base::WrapUnique(operation);
-  }
-
- private:
-  std::vector<FakeDisconnectTetheringOperation*> created_operations_;
-};
-
 }  // namespace
 
 class TetherDisconnectorImplTest : public NetworkStateTest {
@@ -165,30 +120,25 @@ class TetherDisconnectorImplTest : public NetworkStateTest {
             &TetherDisconnectorImplTest::OnNetworkConnectionManagerDisconnect,
             base::Unretained(this))));
     fake_active_host_ = base::MakeUnique<FakeActiveHost>();
-    fake_ble_connection_manager_ = base::MakeUnique<FakeBleConnectionManager>();
     fake_network_configuration_remover_ =
         base::MakeUnique<FakeNetworkConfigurationRemover>();
     fake_tether_connector_ = base::MakeUnique<FakeTetherConnector>();
     device_id_tether_network_guid_map_ =
         base::MakeUnique<DeviceIdTetherNetworkGuidMap>();
-    fake_tether_host_fetcher_ = base::MakeUnique<FakeTetherHostFetcher>(
-        test_devices_, true /* synchronously_reply_with_results */);
     test_pref_service_ = base::MakeUnique<TestingPrefServiceSimple>();
 
-    fake_operation_factory_ =
-        base::WrapUnique(new FakeDisconnectTetheringOperationFactory());
-    DisconnectTetheringOperation::Factory::SetInstanceForTesting(
-        fake_operation_factory_.get());
+    fake_disconnect_tethering_request_sender_ =
+        base::MakeUnique<FakeDisconnectTetheringRequestSender>();
 
     SetUpTetherNetworks();
 
     TetherDisconnectorImpl::RegisterPrefs(test_pref_service_->registry());
     tether_disconnector_ = base::MakeUnique<TetherDisconnectorImpl>(
         test_network_connection_handler_.get(), network_state_handler(),
-        fake_active_host_.get(), fake_ble_connection_manager_.get(),
+        fake_active_host_.get(),
+        fake_disconnect_tethering_request_sender_.get(),
         fake_network_configuration_remover_.get(), fake_tether_connector_.get(),
-        device_id_tether_network_guid_map_.get(),
-        fake_tether_host_fetcher_.get(), test_pref_service_.get());
+        device_id_tether_network_guid_map_.get(), test_pref_service_.get());
   }
 
   void TearDown() override {
@@ -299,24 +249,28 @@ class TetherDisconnectorImplTest : public NetworkStateTest {
     return test_pref_service_->GetString(prefs::kDisconnectingWifiNetworkGuid);
   }
 
+  void VerifyNoDisconnectTetheringRequestSent() {
+    EXPECT_TRUE(
+        fake_disconnect_tethering_request_sender_->device_ids_sent_requests()
+            .empty());
+  }
+
   const std::vector<cryptauth::RemoteDevice> test_devices_;
   const base::MessageLoop message_loop_;
 
   std::unique_ptr<TestNetworkConnectionHandler>
       test_network_connection_handler_;
   std::unique_ptr<FakeActiveHost> fake_active_host_;
-  std::unique_ptr<FakeBleConnectionManager> fake_ble_connection_manager_;
   std::unique_ptr<FakeNetworkConfigurationRemover>
       fake_network_configuration_remover_;
   std::unique_ptr<FakeTetherConnector> fake_tether_connector_;
   // TODO(hansberry): Use a fake for this when a real mapping scheme is created.
   std::unique_ptr<DeviceIdTetherNetworkGuidMap>
       device_id_tether_network_guid_map_;
-  std::unique_ptr<FakeTetherHostFetcher> fake_tether_host_fetcher_;
   std::unique_ptr<TestingPrefServiceSimple> test_pref_service_;
 
-  std::unique_ptr<FakeDisconnectTetheringOperationFactory>
-      fake_operation_factory_;
+  std::unique_ptr<FakeDisconnectTetheringRequestSender>
+      fake_disconnect_tethering_request_sender_;
 
   std::string wifi_service_path_;
   std::string disconnection_result_;
@@ -333,6 +287,9 @@ TEST_F(TetherDisconnectorImplTest, DisconnectWhenAlreadyDisconnected) {
   CallDisconnect(GetTetherNetworkGuid(test_devices_[0].GetDeviceId()));
   EXPECT_EQ(NetworkConnectionHandler::kErrorNotConnected, GetResultAndReset());
 
+  // No DisconnectTetheringRequest should be sent.
+  VerifyNoDisconnectTetheringRequestSent();
+
   // Should still be disconnected.
   EXPECT_EQ(ActiveHost::ActiveHostStatus::DISCONNECTED,
             fake_active_host_->GetActiveHostStatus());
@@ -348,6 +305,9 @@ TEST_F(TetherDisconnectorImplTest, DisconnectWhenOtherDeviceConnected) {
 
   CallDisconnect(GetTetherNetworkGuid(test_devices_[0].GetDeviceId()));
   EXPECT_EQ(NetworkConnectionHandler::kErrorNotConnected, GetResultAndReset());
+
+  // No DisconnectTetheringRequest should be sent.
+  VerifyNoDisconnectTetheringRequestSent();
 
   // Should still be connected to the other host.
   EXPECT_EQ(ActiveHost::ActiveHostStatus::CONNECTED,
@@ -383,6 +343,9 @@ TEST_F(TetherDisconnectorImplTest, DisconnectWhenConnecting_CancelSucceeds) {
   EXPECT_EQ(GetTetherNetworkGuid(test_devices_[0].GetDeviceId()),
             fake_tether_connector_->last_canceled_tether_network_guid());
 
+  // No DisconnectTetheringRequest should be sent.
+  VerifyNoDisconnectTetheringRequestSent();
+
   // Note: This test does not check the active host's status because it will be
   // changed by TetherConnector.
 }
@@ -398,36 +361,9 @@ TEST_F(TetherDisconnectorImplTest,
   EXPECT_EQ(NetworkConnectionHandler::kErrorDisconnectFailed,
             GetResultAndReset());
 
-  // Should be disconnected.
-  EXPECT_EQ(ActiveHost::ActiveHostStatus::DISCONNECTED,
-            fake_active_host_->GetActiveHostStatus());
-}
-
-TEST_F(TetherDisconnectorImplTest,
-       DisconnectWhenConnected_WifiDisconnectionFails_CannotFetchHost) {
-  fake_active_host_->SetActiveHostConnected(
-      test_devices_[0].GetDeviceId(),
-      GetTetherNetworkGuid(test_devices_[0].GetDeviceId()), kWifiNetworkGuid);
-  SimulateConnectionToWifiNetwork();
-
-  // Remove hosts from |fake_tether_host_fetcher_|; this will cause the fetcher
-  // to return a null RemoteDevice.
-  fake_tether_host_fetcher_->SetTetherHosts(
-      std::vector<cryptauth::RemoteDevice>());
-
-  should_disconnect_successfully_ = false;
-
-  CallDisconnect(GetTetherNetworkGuid(test_devices_[0].GetDeviceId()));
-  EXPECT_EQ(NetworkConnectionHandler::kErrorDisconnectFailed,
-            GetResultAndReset());
-
-  // The Wi-Fi network should still be connected since disconnection failed.
   EXPECT_EQ(
-      shill::kStateOnline,
-      GetServiceStringProperty(wifi_service_path_, shill::kStateProperty));
-
-  // Should not have created any operations since the fetch failed.
-  EXPECT_TRUE(fake_operation_factory_->created_operations().empty());
+      std::vector<std::string>{test_devices_[0].GetDeviceId()},
+      fake_disconnect_tethering_request_sender_->device_ids_sent_requests());
 
   // Should be disconnected.
   EXPECT_EQ(ActiveHost::ActiveHostStatus::DISCONNECTED,
@@ -435,34 +371,7 @@ TEST_F(TetherDisconnectorImplTest,
 }
 
 TEST_F(TetherDisconnectorImplTest,
-       DisconnectWhenConnected_WifiDisconnectionSucceeds_CannotFetchHost) {
-  fake_active_host_->SetActiveHostConnected(
-      test_devices_[0].GetDeviceId(),
-      GetTetherNetworkGuid(test_devices_[0].GetDeviceId()), kWifiNetworkGuid);
-  SimulateConnectionToWifiNetwork();
-
-  // Remove hosts from |fake_tether_host_fetcher_|; this will cause the fetcher
-  // to return a null RemoteDevice.
-  fake_tether_host_fetcher_->SetTetherHosts(
-      std::vector<cryptauth::RemoteDevice>());
-
-  CallDisconnect(GetTetherNetworkGuid(test_devices_[0].GetDeviceId()));
-  EXPECT_EQ(kSuccessResult, GetResultAndReset());
-
-  // The Wi-Fi network should be disconnected.
-  EXPECT_EQ(shill::kStateIdle, GetServiceStringProperty(wifi_service_path_,
-                                                        shill::kStateProperty));
-
-  // Should not have created any operations since the fetch failed.
-  EXPECT_TRUE(fake_operation_factory_->created_operations().empty());
-
-  // Should be disconnected.
-  EXPECT_EQ(ActiveHost::ActiveHostStatus::DISCONNECTED,
-            fake_active_host_->GetActiveHostStatus());
-}
-
-TEST_F(TetherDisconnectorImplTest,
-       DisconnectWhenConnected_WifiDisconnectionFails_OperationFails) {
+       DisconnectWhenConnected_WifiDisconnectionFails) {
   fake_active_host_->SetActiveHostConnected(
       test_devices_[0].GetDeviceId(),
       GetTetherNetworkGuid(test_devices_[0].GetDeviceId()), kWifiNetworkGuid);
@@ -479,13 +388,9 @@ TEST_F(TetherDisconnectorImplTest,
       shill::kStateOnline,
       GetServiceStringProperty(wifi_service_path_, shill::kStateProperty));
 
-  // Fail the operation.
-  ASSERT_EQ(1u, fake_operation_factory_->created_operations().size());
   EXPECT_EQ(
-      test_devices_[0],
-      fake_operation_factory_->created_operations()[0]->GetRemoteDevice());
-  fake_operation_factory_->created_operations()[0]->NotifyFinished(
-      false /* success */);
+      std::vector<std::string>{test_devices_[0].GetDeviceId()},
+      fake_disconnect_tethering_request_sender_->device_ids_sent_requests());
 
   // Should be disconnected.
   EXPECT_EQ(ActiveHost::ActiveHostStatus::DISCONNECTED,
@@ -493,7 +398,7 @@ TEST_F(TetherDisconnectorImplTest,
 }
 
 TEST_F(TetherDisconnectorImplTest,
-       DisconnectWhenConnected_WifiDisconnectionSucceeds_OperationFails) {
+       DisconnectWhenConnected_WifiDisconnectionSucceeds) {
   fake_active_host_->SetActiveHostConnected(
       test_devices_[0].GetDeviceId(),
       GetTetherNetworkGuid(test_devices_[0].GetDeviceId()), kWifiNetworkGuid);
@@ -506,69 +411,9 @@ TEST_F(TetherDisconnectorImplTest,
   EXPECT_EQ(shill::kStateIdle, GetServiceStringProperty(wifi_service_path_,
                                                         shill::kStateProperty));
 
-  ASSERT_EQ(1u, fake_operation_factory_->created_operations().size());
   EXPECT_EQ(
-      test_devices_[0],
-      fake_operation_factory_->created_operations()[0]->GetRemoteDevice());
-  fake_operation_factory_->created_operations()[0]->NotifyFinished(
-      false /* success */);
-
-  // Should be disconnected.
-  EXPECT_EQ(ActiveHost::ActiveHostStatus::DISCONNECTED,
-            fake_active_host_->GetActiveHostStatus());
-}
-
-TEST_F(TetherDisconnectorImplTest,
-       DisconnectWhenConnected_WifiDisconnectionFails_OperationSucceeds) {
-  fake_active_host_->SetActiveHostConnected(
-      test_devices_[0].GetDeviceId(),
-      GetTetherNetworkGuid(test_devices_[0].GetDeviceId()), kWifiNetworkGuid);
-  SimulateConnectionToWifiNetwork();
-
-  should_disconnect_successfully_ = false;
-
-  CallDisconnect(GetTetherNetworkGuid(test_devices_[0].GetDeviceId()));
-  EXPECT_EQ(NetworkConnectionHandler::kErrorDisconnectFailed,
-            GetResultAndReset());
-
-  // The Wi-Fi network should still be connected since disconnection failed.
-  EXPECT_EQ(
-      shill::kStateOnline,
-      GetServiceStringProperty(wifi_service_path_, shill::kStateProperty));
-
-  // Fail the operation.
-  ASSERT_EQ(1u, fake_operation_factory_->created_operations().size());
-  EXPECT_EQ(
-      test_devices_[0],
-      fake_operation_factory_->created_operations()[0]->GetRemoteDevice());
-  fake_operation_factory_->created_operations()[0]->NotifyFinished(
-      true /* success */);
-
-  // Should be disconnected.
-  EXPECT_EQ(ActiveHost::ActiveHostStatus::DISCONNECTED,
-            fake_active_host_->GetActiveHostStatus());
-}
-
-TEST_F(TetherDisconnectorImplTest,
-       DisconnectWhenConnected_WifiDisconnectionSucceeds_OperationSucceeds) {
-  fake_active_host_->SetActiveHostConnected(
-      test_devices_[0].GetDeviceId(),
-      GetTetherNetworkGuid(test_devices_[0].GetDeviceId()), kWifiNetworkGuid);
-  SimulateConnectionToWifiNetwork();
-
-  CallDisconnect(GetTetherNetworkGuid(test_devices_[0].GetDeviceId()));
-  EXPECT_EQ(kSuccessResult, GetResultAndReset());
-
-  // The Wi-Fi network should be disconnected.
-  EXPECT_EQ(shill::kStateIdle, GetServiceStringProperty(wifi_service_path_,
-                                                        shill::kStateProperty));
-
-  ASSERT_EQ(1u, fake_operation_factory_->created_operations().size());
-  EXPECT_EQ(
-      test_devices_[0],
-      fake_operation_factory_->created_operations()[0]->GetRemoteDevice());
-  fake_operation_factory_->created_operations()[0]->NotifyFinished(
-      true /* success */);
+      std::vector<std::string>{test_devices_[0].GetDeviceId()},
+      fake_disconnect_tethering_request_sender_->device_ids_sent_requests());
 
   // Should be disconnected.
   EXPECT_EQ(ActiveHost::ActiveHostStatus::DISCONNECTED,
@@ -585,6 +430,10 @@ TEST_F(TetherDisconnectorImplTest,
   CallDisconnect(GetTetherNetworkGuid(test_devices_[0].GetDeviceId()));
   EXPECT_EQ(kSuccessResult, GetResultAndReset());
 
+  EXPECT_EQ(
+      std::vector<std::string>{test_devices_[0].GetDeviceId()},
+      fake_disconnect_tethering_request_sender_->device_ids_sent_requests());
+
   // Stop the test here, before the operation responds in any way. This test
   // ensures that TetherDisconnectorImpl properly removes existing listeners
   // if it is destroyed while there are still active operations.
@@ -594,7 +443,6 @@ TEST_F(TetherDisconnectorImplTest, DisconnectsWhenDestructorCalled) {
   // For this test, do not synchronously reply with results. This echos what
   // actually happens when a TetherDisconnectorImpl is deleted.
   should_run_disconnect_callbacks_synchronously_ = false;
-  fake_tether_host_fetcher_->set_synchronously_reply_with_results(false);
 
   fake_active_host_->SetActiveHostConnected(
       test_devices_[0].GetDeviceId(),
@@ -612,10 +460,9 @@ TEST_F(TetherDisconnectorImplTest, DisconnectsWhenDestructorCalled) {
   EXPECT_EQ(shill::kStateIdle, GetServiceStringProperty(wifi_service_path_,
                                                         shill::kStateProperty));
 
-  // Because the fetcher does not synchronously reply with results,
-  // |tether_disconnector_| should be deleted before any operations can be
-  // created.
-  EXPECT_TRUE(fake_operation_factory_->created_operations().empty());
+  EXPECT_EQ(
+      std::vector<std::string>{test_devices_[0].GetDeviceId()},
+      fake_disconnect_tethering_request_sender_->device_ids_sent_requests());
 
   // Should be disconnected.
   EXPECT_EQ(ActiveHost::ActiveHostStatus::DISCONNECTED,
@@ -633,10 +480,9 @@ TEST_F(TetherDisconnectorImplTest, DisconnectsWhenDestructorCalled) {
   // the previous disconnection attempt.
   tether_disconnector_ = base::MakeUnique<TetherDisconnectorImpl>(
       test_network_connection_handler_.get(), network_state_handler(),
-      fake_active_host_.get(), fake_ble_connection_manager_.get(),
+      fake_active_host_.get(), fake_disconnect_tethering_request_sender_.get(),
       fake_network_configuration_remover_.get(), fake_tether_connector_.get(),
-      device_id_tether_network_guid_map_.get(), fake_tether_host_fetcher_.get(),
-      test_pref_service_.get());
+      device_id_tether_network_guid_map_.get(), test_pref_service_.get());
   EXPECT_EQ(
       kWifiNetworkGuid,
       fake_network_configuration_remover_->last_removed_wifi_network_guid());

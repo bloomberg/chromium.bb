@@ -11,6 +11,7 @@
 #include "chromeos/components/tether/crash_recovery_manager.h"
 #include "chromeos/components/tether/device_id_tether_network_guid_map.h"
 #include "chromeos/components/tether/disconnect_tethering_request_sender.h"
+#include "chromeos/components/tether/disconnect_tethering_request_sender_impl.h"
 #include "chromeos/components/tether/host_connection_metrics_logger.h"
 #include "chromeos/components/tether/host_scan_device_prioritizer_impl.h"
 #include "chromeos/components/tether/host_scan_scheduler.h"
@@ -44,23 +45,6 @@
 namespace chromeos {
 
 namespace tether {
-
-namespace {
-
-// TODO(lesliewatkins): Remove this and use the actual
-// DisconnectTetheringRequestSender.
-class DummyDisconnectTetheringRequestSender
-    : public DisconnectTetheringRequestSender {
- public:
-  DummyDisconnectTetheringRequestSender() {}
-  ~DummyDisconnectTetheringRequestSender() override {}
-
-  // DisconnectTetheringRequestSender:
-  void SendDisconnectRequestToDevice(const std::string& device_id) override {}
-  bool HasPendingRequests() override { return false; }
-};
-
-}  // namespace
 
 // static
 InitializerImpl::Factory* InitializerImpl::Factory::factory_instance_ = nullptr;
@@ -158,6 +142,9 @@ InitializerImpl::~InitializerImpl() {
 void InitializerImpl::RequestShutdown() {
   DCHECK(status() == Initializer::Status::ACTIVE);
 
+  // Trigger a disconnect on any active Tether connections.
+  tether_disconnector_.reset();
+
   if (!disconnect_tethering_request_sender_ ||
       !disconnect_tethering_request_sender_->HasPendingRequests()) {
     TransitionToStatus(Initializer::Status::SHUT_DOWN);
@@ -213,9 +200,9 @@ void InitializerImpl::CreateComponent() {
   ble_connection_manager_ = base::MakeUnique<BleConnectionManager>(
       cryptauth_service_, adapter_, local_device_data_provider_.get(),
       remote_beacon_seed_fetcher_.get());
-  // TODO(lesliewatkins): Use actual DisconnectTetheringRequestSender.
   disconnect_tethering_request_sender_ =
-      base::MakeUnique<DummyDisconnectTetheringRequestSender>();
+      base::MakeUnique<DisconnectTetheringRequestSenderImpl>(
+          ble_connection_manager_.get(), tether_host_fetcher_.get());
   tether_host_response_recorder_ =
       base::MakeUnique<TetherHostResponseRecorder>(pref_service_);
   device_id_tether_network_guid_map_ =
@@ -266,13 +253,14 @@ void InitializerImpl::CreateComponent() {
           network_state_handler_, managed_network_configuration_handler_);
   tether_disconnector_ = base::MakeUnique<TetherDisconnectorImpl>(
       network_connection_handler_, network_state_handler_, active_host_.get(),
-      ble_connection_manager_.get(), network_configuration_remover_.get(),
-      tether_connector_.get(), device_id_tether_network_guid_map_.get(),
-      tether_host_fetcher_.get(), pref_service_);
+      disconnect_tethering_request_sender_.get(),
+      network_configuration_remover_.get(), tether_connector_.get(),
+      device_id_tether_network_guid_map_.get(), pref_service_);
   tether_network_disconnection_handler_ =
       base::MakeUnique<TetherNetworkDisconnectionHandler>(
           active_host_.get(), network_state_handler_,
-          network_configuration_remover_.get());
+          network_configuration_remover_.get(),
+          disconnect_tethering_request_sender_.get());
   network_connection_handler_tether_delegate_ =
       base::MakeUnique<NetworkConnectionHandlerTetherDelegate>(
           network_connection_handler_, active_host_.get(),
@@ -309,7 +297,6 @@ void InitializerImpl::StartAsynchronousShutdown() {
   crash_recovery_manager_.reset();
   network_connection_handler_tether_delegate_.reset();
   tether_network_disconnection_handler_.reset();
-  tether_disconnector_.reset();
   network_configuration_remover_.reset();
   tether_connector_.reset();
   host_connection_metrics_logger_.reset();
