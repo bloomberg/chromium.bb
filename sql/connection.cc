@@ -1170,17 +1170,6 @@ bool Connection::Raze() {
   return true;
 }
 
-bool Connection::RazeWithTimout(base::TimeDelta timeout) {
-  if (!db_) {
-    DLOG_IF(FATAL, !poisoned_) << "Cannot raze null db";
-    return false;
-  }
-
-  ScopedBusyTimeout busy_timeout(db_);
-  busy_timeout.SetTimeout(timeout);
-  return Raze();
-}
-
 bool Connection::RazeAndClose() {
   if (!db_) {
     DLOG_IF(FATAL, !poisoned_) << "Cannot raze null db";
