@@ -486,8 +486,8 @@ Status MakeIOError(Slice filename,
                    const std::string& message,
                    MethodID method) {
   char buf[512];
-  base::snprintf(buf, sizeof(buf), "%s (ChromeMethodOnly: %d::%s)", message.c_str(),
-           method, MethodIDToString(method));
+  base::snprintf(buf, sizeof(buf), "%s (ChromeMethodOnly: %d::%s)",
+                 message.c_str(), method, MethodIDToString(method));
   return Status::IOError(filename, buf);
 }
 
