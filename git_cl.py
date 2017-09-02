@@ -5752,11 +5752,15 @@ def CMDdiff(parser, args):
 
 
 def CMDowners(parser, args):
-  """Interactively finds potential owners for reviewing."""
+  """Finds potential owners for reviewing."""
   parser.add_option(
       '--no-color',
       action='store_true',
       help='Use this option to disable color output')
+  parser.add_option(
+      '--batch',
+      action='store_true',
+      help='Do not run interactively, just suggest some')
   auth.add_auth_options(parser)
   options, args = parser.parse_args(args)
   auth_config = auth.extract_auth_config_from_options(options)
@@ -5774,9 +5778,15 @@ def CMDowners(parser, args):
     base_branch = cl.GetCommonAncestorWithUpstream()
 
   change = cl.GetChange(base_branch, None)
+  affected_files = [f.LocalPath() for f in change.AffectedFiles()]
+
+  if options.batch:
+    db = owners.Database(change.RepositoryRoot(), file, os.path)
+    print('\n'.join(db.reviewers_for(affected_files, author)))
+    return 0
+
   return owners_finder.OwnersFinder(
-      [f.LocalPath() for f in
-          cl.GetChange(base_branch, None).AffectedFiles()],
+      affected_files,
       change.RepositoryRoot(),
       author, fopen=file, os_path=os.path,
       disable_color=options.no_color,
