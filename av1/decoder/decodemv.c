@@ -2929,7 +2929,10 @@ void av1_read_mode_info(AV1Decoder *const pbi, MACROBLOCKD *xd,
                         int y_mis) {
   AV1_COMMON *const cm = &pbi->common;
   MODE_INFO *const mi = xd->mi[0];
-  MV_REF *frame_mvs = cm->cur_frame->mvs + mi_row * cm->mi_cols + mi_col;
+  MV_REF *frame_mvs =
+      cm->cur_frame->mvs + (mi_row & 0xfffe) * cm->mi_cols + (mi_col & 0xfffe);
+  x_mis = AOMMAX(x_mis, 2);
+  y_mis = AOMMAX(y_mis, 2);
   int w, h;
 
 #if CONFIG_INTRABC
