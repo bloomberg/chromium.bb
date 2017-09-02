@@ -106,7 +106,6 @@ source_set("api") {
     "//device/base",
     "//device/bluetooth",
     "//device/hid",
-    "//device/serial",
   ]
 
   if (is_chromeos) {
@@ -152,7 +151,6 @@ json_schema_api("api_registration") {
 
   deps = [
     ":api",
-    "//device/serial",
     "//extensions/common/api",
     "//skia",
   ]
