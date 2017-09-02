@@ -251,9 +251,6 @@ crbug.com/670246 [ Linux Android Win Mac10.9 Mac10.10 ] fast/text/variable-fonts
 crbug.com/381840 virtual/prefer_compositing_to_lcd_text/compositing/overflow/overflow-scroll-background-opaque-to-transparent.html [ WontFix ]
 crbug.com/381840 virtual/prefer_compositing_to_lcd_text/compositing/overflow/overflow-scroll-background-transparent-to-opaque.html [ WontFix ]
 
-# Stack overflow crashes on Win
-crbug.com/601669 [ Win ] svg/as-image/svg-nested.html [ WontFix ]
-
 # GPU rasterization antialiases differently.
 crbug.com/665014 virtual/gpu-rasterization/images/cross-fade-svg-size-diff.html [ WontFix ]
 crbug.com/665014 virtual/gpu-rasterization/images/cross-fade-svg-size.html [ WontFix ]
