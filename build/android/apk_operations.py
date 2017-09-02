@@ -447,16 +447,20 @@ def _RunCompileDex(devices, package_name, compilation_filter):
       print line
 
 
-# TODO(agrieve):add "--all" in the MultipleDevicesError message and use it here.
-def _GenerateMissingAllFlagMessage(devices):
+def _GenerateAvailableDevicesMessage(devices):
   devices_obj = device_utils.DeviceUtils.parallel(devices)
   descriptions = devices_obj.pMap(lambda d: d.build_description).pGet(None)
-  msg = ('More than one device available. Use --all to select all devices, '
-         'or use --device to select a device by serial.\n\nAvailable '
-         'devices:\n')
+  msg = 'Available devices:\n'
   for d, desc in zip(devices, descriptions):
     msg += '  %s (%s)\n' % (d, desc)
   return msg
+
+
+# TODO(agrieve):add "--all" in the MultipleDevicesError message and use it here.
+def _GenerateMissingAllFlagMessage(devices):
+  return ('More than one device available. Use --all to select all devices, ' +
+          'or use --device to select a device by serial.\n\n' +
+          _GenerateAvailableDevicesMessage(devices))
 
 
 def _DisplayArgs(devices, device_args_file):
@@ -605,6 +609,10 @@ class _Command(object):
     # TODO(agrieve): Device cache should not depend on output directory.
     #     Maybe put int /tmp?
     _LoadDeviceCaches(devices, args.output_directory)
+    # Ensure these keys always exist. They are set by wrapper scripts, but not
+    # always added when not using wrapper scripts.
+    args.__dict__.setdefault('apk_path', None)
+    args.__dict__.setdefault('incremental_json', None)
 
     try:
       if len(devices) > 1:
@@ -662,6 +670,15 @@ class _Command(object):
     except:
       _SaveDeviceCaches(devices, args.output_directory)
       raise
+
+
+class _DevicesCommand(_Command):
+  name = 'devices'
+  description = 'Describe attached devices.'
+  all_devices_by_default = True
+
+  def Run(self):
+    print _GenerateAvailableDevicesMessage(self.devices)
 
 
 class _InstallCommand(_Command):
@@ -847,6 +864,7 @@ class _CompileDexCommand(_Command):
 
 
 _COMMANDS = [
+    _DevicesCommand,
     _InstallCommand,
     _UninstallCommand,
     _LaunchCommand,
