@@ -49,6 +49,7 @@ bool IsPreviewFieldTrialEnabled(PreviewsType type) {
   switch (type) {
     case PreviewsType::OFFLINE:
     case PreviewsType::LITE_PAGE:
+    case PreviewsType::AMP_REDIRECTION:
       return params::IsOfflinePreviewsEnabled();
     case PreviewsType::LOFI:
       return params::IsClientLoFiEnabled();

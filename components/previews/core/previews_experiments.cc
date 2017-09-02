@@ -120,10 +120,29 @@ base::TimeDelta OfflinePreviewFreshnessDuration() {
                          "offline_preview_freshness_duration_in_days", 7));
 }
 
-net::EffectiveConnectionType DefaultEffectiveConnectionTypeThreshold() {
-  return GetParamValueAsECT(kClientSidePreviewsFieldTrial,
-                            kEffectiveConnectionTypeThreshold,
-                            net::EFFECTIVE_CONNECTION_TYPE_2G);
+net::EffectiveConnectionType GetECTThresholdForPreview(
+    previews::PreviewsType type) {
+  switch (type) {
+    case PreviewsType::OFFLINE:
+      return GetParamValueAsECT(kClientSidePreviewsFieldTrial,
+                                kEffectiveConnectionTypeThreshold,
+                                net::EFFECTIVE_CONNECTION_TYPE_2G);
+    case PreviewsType::LOFI:
+      return GetParamValueAsECT(kClientLoFiExperimentName,
+                                kEffectiveConnectionTypeThreshold,
+                                net::EFFECTIVE_CONNECTION_TYPE_2G);
+    case PreviewsType::LITE_PAGE:
+      NOTREACHED();
+      break;
+    case PreviewsType::AMP_REDIRECTION:
+      return net::EFFECTIVE_CONNECTION_TYPE_LAST;  // Trigger irrespective of
+                                                   // ECT.
+    case PreviewsType::NONE:
+    case PreviewsType::LAST:
+      break;
+  }
+  NOTREACHED();
+  return net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
 }
 
 bool IsOfflinePreviewsEnabled() {
@@ -158,9 +177,20 @@ std::vector<std::string> GetBlackListedHostsForClientLoFiFieldTrial() {
       ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
 }
 
+bool IsAMPRedirectionPreviewEnabled() {
+  return base::FeatureList::IsEnabled(features::kAMPRedirection);
+}
+
+int AMPRedirectionPreviewsVersion() {
+  return GetFieldTrialParamByFeatureAsInt(features::kAMPRedirection, kVersion,
+                                          0);
+}
+
 }  // namespace params
 
 std::string GetStringNameForType(PreviewsType type) {
+  // The returned string is used to record histograms for the new preview type.
+  // Also add the string to Previews.Types histogram suffix in histograms.xml.
   switch (type) {
     case PreviewsType::OFFLINE:
       return "Offline";
@@ -168,6 +198,8 @@ std::string GetStringNameForType(PreviewsType type) {
       return "LoFi";
     case PreviewsType::LITE_PAGE:
       return "LitePage";
+    case PreviewsType::AMP_REDIRECTION:
+      return "AMPRedirection";
     case PreviewsType::NONE:
     case PreviewsType::LAST:
       break;

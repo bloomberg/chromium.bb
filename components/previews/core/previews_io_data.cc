@@ -45,6 +45,7 @@ bool AllowedOnReload(PreviewsType type) {
     // These types return new content on refresh.
     case PreviewsType::LITE_PAGE:
     case PreviewsType::LOFI:
+    case PreviewsType::AMP_REDIRECTION:
       return true;
     // Loading these types will always be stale when refreshed.
     case PreviewsType::OFFLINE:
@@ -109,9 +110,9 @@ void PreviewsIOData::ClearBlackList(base::Time begin_time,
 
 bool PreviewsIOData::ShouldAllowPreview(const net::URLRequest& request,
                                         PreviewsType type) const {
-  return ShouldAllowPreviewAtECT(
-      request, type, params::DefaultEffectiveConnectionTypeThreshold(),
-      std::vector<std::string>());
+  return ShouldAllowPreviewAtECT(request, type,
+                                 params::GetECTThresholdForPreview(type),
+                                 std::vector<std::string>());
 }
 
 bool PreviewsIOData::ShouldAllowPreviewAtECT(
@@ -136,22 +137,26 @@ bool PreviewsIOData::ShouldAllowPreviewAtECT(
     return false;
   }
 
-  net::NetworkQualityEstimator* network_quality_estimator =
-      request.context()->network_quality_estimator();
-  if (!network_quality_estimator ||
-      network_quality_estimator->GetEffectiveConnectionType() <
-          net::EFFECTIVE_CONNECTION_TYPE_OFFLINE) {
-    LogPreviewsEligibilityReason(
-        PreviewsEligibilityReason::NETWORK_QUALITY_UNAVAILABLE, type);
-    return false;
+  if (effective_connection_type_threshold !=
+      net::EFFECTIVE_CONNECTION_TYPE_LAST) {
+    net::NetworkQualityEstimator* network_quality_estimator =
+        request.context()->network_quality_estimator();
+    if (!network_quality_estimator ||
+        network_quality_estimator->GetEffectiveConnectionType() <
+            net::EFFECTIVE_CONNECTION_TYPE_OFFLINE) {
+      LogPreviewsEligibilityReason(
+          PreviewsEligibilityReason::NETWORK_QUALITY_UNAVAILABLE, type);
+      return false;
+    }
+
+    if (network_quality_estimator->GetEffectiveConnectionType() >
+        effective_connection_type_threshold) {
+      LogPreviewsEligibilityReason(PreviewsEligibilityReason::NETWORK_NOT_SLOW,
+                                   type);
+      return false;
+    }
   }
 
-  if (network_quality_estimator->GetEffectiveConnectionType() >
-      effective_connection_type_threshold) {
-    LogPreviewsEligibilityReason(PreviewsEligibilityReason::NETWORK_NOT_SLOW,
-                                 type);
-    return false;
-  }
   // LOAD_VALIDATE_CACHE or LOAD_BYPASS_CACHE mean the user reloaded the page.
   // If this is a query for offline previews, reloads should be disallowed.
   if (!AllowedOnReload(type) &&

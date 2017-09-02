@@ -7,9 +7,15 @@
 
 #include "base/macros.h"
 
+class GURL;
+
 namespace net {
 class HttpRequestHeaders;
 class URLRequest;
+}
+
+namespace previews {
+class PreviewsDecider;
 }
 
 namespace data_reduction_proxy {
@@ -59,6 +65,12 @@ class LoFiDecider {
   // automatically reloaded because of a decoding error.
   virtual bool IsClientLoFiAutoReloadRequest(
       const net::URLRequest& request) const = 0;
+
+  // Applies the AMP redirection preview by changing the |new_url|.
+  virtual void MaybeApplyAMPPreview(
+      net::URLRequest* request,
+      GURL* new_url,
+      previews::PreviewsDecider* previews_decider) const = 0;
 };
 
 }  // namespace data_reduction_proxy

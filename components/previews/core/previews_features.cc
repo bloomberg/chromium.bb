@@ -19,5 +19,8 @@ const base::Feature kClientLoFi{"ClientLoFi",
 const base::Feature kStalePreviewsTimestamp{"StalePreviewsTimestamp",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kAMPRedirection{"AMPRedirectionPreviews",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace previews

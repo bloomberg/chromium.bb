@@ -16,6 +16,7 @@ static_library("browser") {
     "//base",
     "//components/data_reduction_proxy/core/browser",
     "//components/data_reduction_proxy/core/common",
+    "//components/previews/core:core",
     "//content/public/browser",
     "//content/public/common",
     "//net",

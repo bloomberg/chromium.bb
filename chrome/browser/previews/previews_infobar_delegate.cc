@@ -73,6 +73,7 @@ void ReloadWithoutPreviews(previews::PreviewsType previews_type,
   switch (previews_type) {
     case previews::PreviewsType::LITE_PAGE:
     case previews::PreviewsType::OFFLINE:
+    case previews::PreviewsType::AMP_REDIRECTION:
       // Prevent LoFi and lite page modes from showing after reload.
       // TODO(ryansturm): rename DISABLE_LOFI_MODE to DISABLE_PREVIEWS.
       // crbug.com/707272
