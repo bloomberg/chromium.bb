@@ -842,6 +842,16 @@ void GpuProcessHost::DidInitialize(
     const gpu::GpuFeatureInfo& gpu_feature_info) {
   UMA_HISTOGRAM_BOOLEAN("GPU.GPUProcessInitialized", true);
   status_ = SUCCESS;
+
+  // Set GPU driver bug workaround flags that are checked on the browser side.
+  if (gpu_feature_info.IsWorkaroundEnabled(gpu::WAKE_UP_GPU_BEFORE_DRAWING)) {
+    wake_up_gpu_before_drawing_ = true;
+  }
+  if (gpu_feature_info.IsWorkaroundEnabled(
+          gpu::DONT_DISABLE_WEBGL_WHEN_COMPOSITOR_CONTEXT_LOST)) {
+    dont_disable_webgl_when_compositor_context_lost_ = true;
+  }
+
   GpuDataManagerImpl* gpu_data_manager = GpuDataManagerImpl::GetInstance();
   if (!gpu_data_manager->ShouldUseSwiftShader()) {
     gpu_data_manager->UpdateGpuInfo(gpu_info);
@@ -886,8 +896,7 @@ void GpuProcessHost::DidLoseContext(bool offscreen,
     // offscreen context. However, situations have been seen where the
     // compositor's context can be lost due to driver bugs (as of this
     // writing, on Android), so allow that possibility.
-    if (!GpuDataManagerImpl::GetInstance()->IsDriverBugWorkaroundActive(
-            gpu::DONT_DISABLE_WEBGL_WHEN_COMPOSITOR_CONTEXT_LOST)) {
+    if (!dont_disable_webgl_when_compositor_context_lost_) {
       BlockLiveOffscreenContexts();
     }
     return;

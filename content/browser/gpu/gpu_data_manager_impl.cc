@@ -81,11 +81,6 @@ bool GpuDataManagerImpl::IsWebGLEnabled() const {
   return private_->IsWebGLEnabled();
 }
 
-bool GpuDataManagerImpl::IsDriverBugWorkaroundActive(int feature) const {
-  base::AutoLock auto_lock(lock_);
-  return private_->IsDriverBugWorkaroundActive(feature);
-}
-
 gpu::GPUInfo GpuDataManagerImpl::GetGPUInfo() const {
   base::AutoLock auto_lock(lock_);
   return private_->GetGPUInfo();

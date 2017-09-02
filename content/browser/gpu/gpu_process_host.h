@@ -165,6 +165,10 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
 
   CONTENT_EXPORT viz::mojom::GpuService* gpu_service();
 
+  bool wake_up_gpu_before_drawing() const {
+    return wake_up_gpu_before_drawing_;
+  }
+
  private:
   class ConnectionFilterImpl;
 
@@ -293,6 +297,12 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   ClientIdToShaderCacheMap client_id_to_shader_cache_;
 
   std::string shader_prefix_key_;
+
+  // The following are a list of driver bug workarounds that will only be
+  // set to true in DidInitialize(), where GPU process has started and GPU
+  // driver bug workarounds have been computed and sent back.
+  bool wake_up_gpu_before_drawing_ = false;
+  bool dont_disable_webgl_when_compositor_context_lost_ = false;
 
   ui::mojom::GpuMainAssociatedPtr gpu_main_ptr_;
   viz::mojom::GpuServicePtr gpu_service_ptr_;

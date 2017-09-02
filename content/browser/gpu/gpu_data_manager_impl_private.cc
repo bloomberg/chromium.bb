@@ -355,19 +355,6 @@ bool GpuDataManagerImplPrivate::IsWebGLEnabled() const {
          !blacklisted_features_.count(gpu::GPU_FEATURE_TYPE_ACCELERATED_WEBGL);
 }
 
-bool GpuDataManagerImplPrivate::IsDriverBugWorkaroundActive(int feature) const {
-  switch (feature) {
-    // TODO(zmo): Remove these use cases and obsolete this function.
-    case gpu::DISABLE_OVERLAY_CA_LAYERS:
-    case gpu::DONT_DISABLE_WEBGL_WHEN_COMPOSITOR_CONTEXT_LOST:
-    case gpu::WAKE_UP_GPU_BEFORE_DRAWING:
-      return gpu_feature_info_.IsWorkaroundEnabled(feature);
-    default:
-      NOTREACHED();
-      return false;
-  }
-}
-
 size_t GpuDataManagerImplPrivate::GetBlacklistedFeatureCount() const {
   // SwiftShader blacklists all features
   return use_swiftshader_ ? gpu::NUMBER_OF_GPU_FEATURE_TYPES
