@@ -79,9 +79,8 @@ class BufferPoolBufferHandleProvider
       : buffer_pool_(std::move(buffer_pool)), buffer_id_(buffer_id) {}
 
   // Implementation of HandleProvider:
-  mojo::ScopedSharedBufferHandle GetHandleForInterProcessTransit(
-      bool read_only) override {
-    return buffer_pool_->GetHandleForInterProcessTransit(buffer_id_, read_only);
+  mojo::ScopedSharedBufferHandle GetHandleForInterProcessTransit() override {
+    return buffer_pool_->GetHandleForInterProcessTransit(buffer_id_);
   }
   base::SharedMemoryHandle GetNonOwnedSharedMemoryHandleForLegacyIPC()
       override {

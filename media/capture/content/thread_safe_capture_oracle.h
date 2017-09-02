@@ -12,7 +12,6 @@
 #include "media/base/video_frame.h"
 #include "media/capture/capture_export.h"
 #include "media/capture/content/video_capture_oracle.h"
-#include "media/capture/video/video_capture_buffer_handle.h"
 #include "media/capture/video/video_capture_device.h"
 
 namespace tracked_objects {
@@ -104,7 +103,6 @@ class CAPTURE_EXPORT ThreadSafeCaptureOracle
   // Callback invoked on completion of all captures.
   void DidCaptureFrame(int frame_number,
                        VideoCaptureDevice::Client::Buffer buffer,
-                       std::unique_ptr<VideoCaptureBufferHandle> buffer_access,
                        base::TimeTicks capture_begin_time,
                        base::TimeDelta estimated_frame_duration,
                        scoped_refptr<VideoFrame> frame,
