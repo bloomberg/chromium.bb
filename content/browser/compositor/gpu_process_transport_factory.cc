@@ -91,7 +91,6 @@
 #include "components/viz/service/display_embedder/compositor_overlay_candidate_validator_mac.h"
 #include "content/browser/compositor/gpu_output_surface_mac.h"
 #include "content/browser/compositor/software_output_device_mac.h"
-#include "gpu/config/gpu_driver_bug_workaround_type.h"
 #include "ui/base/cocoa/remote_layer_api.h"
 #include "ui/base/ui_base_switches.h"
 #elif defined(OS_ANDROID)
@@ -303,7 +302,13 @@ GpuProcessTransportFactory::CreateSoftwareOutputDevice(
 }
 
 std::unique_ptr<viz::CompositorOverlayCandidateValidator>
-CreateOverlayCandidateValidator(gfx::AcceleratedWidget widget) {
+CreateOverlayCandidateValidator(
+#if defined(OS_MACOSX)
+    gfx::AcceleratedWidget widget,
+    bool disable_overlay_ca_layers) {
+#else
+    gfx::AcceleratedWidget widget) {
+#endif
   std::unique_ptr<viz::CompositorOverlayCandidateValidator> validator;
 #if defined(USE_OZONE)
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -323,9 +328,7 @@ CreateOverlayCandidateValidator(gfx::AcceleratedWidget widget) {
     static bool overlays_disabled_at_command_line =
         IsCALayersDisabledFromCommandLine();
     const bool ca_layers_disabled =
-        overlays_disabled_at_command_line ||
-        GpuDataManagerImpl::GetInstance()->IsDriverBugWorkaroundActive(
-            gpu::DISABLE_OVERLAY_CA_LAYERS);
+        overlays_disabled_at_command_line || disable_overlay_ca_layers;
     validator.reset(
         new viz::CompositorOverlayCandidateValidatorMac(ca_layers_disabled));
   }
@@ -555,7 +558,8 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
         display_output_surface = base::MakeUnique<GpuOutputSurfaceMac>(
             compositor->widget(), context_provider, data->surface_handle,
             vsync_callback,
-            CreateOverlayCandidateValidator(compositor->widget()),
+            CreateOverlayCandidateValidator(
+                compositor->widget(), capabilities.disable_overlay_ca_layers),
             GetGpuMemoryBufferManager());
 #else
         auto gpu_output_surface =

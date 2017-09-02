@@ -3942,6 +3942,9 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
       group_->gpu_preferences().enable_threaded_texture_mailboxes) {
     caps.disable_2d_canvas_copy_on_write = true;
   }
+  if (workarounds().disable_overlay_ca_layers) {
+    caps.disable_overlay_ca_layers = true;
+  }
 
   return caps;
 }

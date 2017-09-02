@@ -45,7 +45,6 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   bool IsFeatureBlacklisted(int feature) const;
   bool IsFeatureEnabled(int feature) const;
   bool IsWebGLEnabled() const;
-  bool IsDriverBugWorkaroundActive(int feature) const;
   gpu::GPUInfo GetGPUInfo() const;
   bool GpuAccessAllowed(std::string* reason) const;
   void RequestCompleteGpuInfoIfNeeded();
