@@ -125,7 +125,6 @@ test("device_unittests") {
       "//device/hid",
       "//device/hid:mocks",
       "//device/serial",
-      "//device/serial:test_support",
       "//device/u2f",
       "//device/u2f:mocks",
     ]

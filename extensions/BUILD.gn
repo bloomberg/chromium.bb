@@ -287,7 +287,6 @@ source_set("chrome_extensions_browsertests") {
     "//crypto:platform",
     "//crypto:test_support",
     "//device/bluetooth:mocks",
-    "//device/serial:test_support",
     "//extensions/common/api",
     "//google_apis:test_support",
     "//media:test_support",

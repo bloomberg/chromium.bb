@@ -10,8 +10,6 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "content/public/browser/browser_thread.h"
-#include "device/serial/buffer.h"
-#include "device/serial/test_serial_io_handler.h"
 #include "extensions/browser/api/serial/serial_api.h"
 #include "extensions/browser/api/serial/serial_connection.h"
 #include "extensions/browser/extension_function.h"
@@ -55,11 +53,13 @@ class FakeSerialDeviceEnumerator
 
 class FakeSerialIoHandler : public device::mojom::SerialIoHandler {
  public:
-  FakeSerialIoHandler() : test_io_handler_(new device::TestSerialIoHandler()) {
-    test_io_handler_->device_control_signals()->dcd = true;
-    test_io_handler_->device_control_signals()->cts = true;
-    test_io_handler_->device_control_signals()->ri = true;
-    test_io_handler_->device_control_signals()->dsr = true;
+  FakeSerialIoHandler() {
+    options_.bitrate = 9600;
+    options_.data_bits = device::mojom::SerialDataBits::EIGHT;
+    options_.parity_bit = device::mojom::SerialParityBit::NO_PARITY;
+    options_.stop_bits = device::mojom::SerialStopBits::ONE;
+    options_.cts_flow_control = false;
+    options_.has_cts_flow_control = true;
   }
   ~FakeSerialIoHandler() override = default;
 
@@ -68,65 +68,103 @@ class FakeSerialIoHandler : public device::mojom::SerialIoHandler {
   void Open(const std::string& port,
             device::mojom::SerialConnectionOptionsPtr options,
             OpenCallback callback) override {
-    test_io_handler_->Open(port, *options, std::move(callback));
+    DoConfigurePort(*options);
+    std::move(callback).Run(true);
   }
   void Read(uint32_t bytes, ReadCallback callback) override {
-    auto buffer =
-        base::MakeRefCounted<net::IOBuffer>(static_cast<size_t>(bytes));
-    test_io_handler_->Read(std::make_unique<device::ReceiveBuffer>(
-        buffer, bytes,
-        base::BindOnce(
-            [](ReadCallback callback, scoped_refptr<net::IOBuffer> buffer,
-               int bytes_read, device::mojom::SerialReceiveError error) {
-              std::move(callback).Run(
-                  std::vector<uint8_t>(buffer->data(),
-                                       buffer->data() + bytes_read),
-                  error);
-            },
-            std::move(callback), buffer)));
+    DCHECK(!pending_read_callback_);
+    pending_read_callback_ = std::move(callback);
+    pending_read_bytes_ = bytes;
+    if (buffer_.empty())
+      return;
+
+    DoRead();
   }
   void Write(const std::vector<uint8_t>& data,
              WriteCallback callback) override {
-    test_io_handler_->Write(std::make_unique<device::SendBuffer>(
-        data, base::BindOnce(
-                  [](WriteCallback callback, int bytes_sent,
-                     device::mojom::SerialSendError error) {
-                    std::move(callback).Run(bytes_sent, error);
-                  },
-                  std::move(callback))));
+    buffer_.insert(buffer_.end(), data.cbegin(), data.cend());
+    std::move(callback).Run(data.size(), device::mojom::SerialSendError::NONE);
+    DoRead();
   }
   void CancelRead(device::mojom::SerialReceiveError reason) override {
-    test_io_handler_->CancelRead(reason);
+    if (pending_read_callback_) {
+      std::move(pending_read_callback_).Run(std::vector<uint8_t>(), reason);
+    }
   }
   void CancelWrite(device::mojom::SerialSendError reason) override {
-    test_io_handler_->CancelWrite(reason);
   }
-  void Flush(FlushCallback callback) override {
-    std::move(callback).Run(test_io_handler_->Flush());
-  }
+  void Flush(FlushCallback callback) override { std::move(callback).Run(true); }
   void GetControlSignals(GetControlSignalsCallback callback) override {
-    std::move(callback).Run(test_io_handler_->GetControlSignals());
+    auto signals = device::mojom::SerialDeviceControlSignals::New();
+    signals->dcd = true;
+    signals->cts = true;
+    signals->ri = true;
+    signals->dsr = true;
+    std::move(callback).Run(std::move(signals));
   }
   void SetControlSignals(device::mojom::SerialHostControlSignalsPtr signals,
                          SetControlSignalsCallback callback) override {
-    std::move(callback).Run(test_io_handler_->SetControlSignals(*signals));
+    std::move(callback).Run(true);
   }
   void ConfigurePort(device::mojom::SerialConnectionOptionsPtr options,
                      ConfigurePortCallback callback) override {
-    std::move(callback).Run(test_io_handler_->ConfigurePort(*options));
+    DoConfigurePort(*options);
+    std::move(callback).Run(true);
   }
   void GetPortInfo(GetPortInfoCallback callback) override {
-    std::move(callback).Run(test_io_handler_->GetPortInfo());
+    auto info = device::mojom::SerialConnectionInfo::New();
+    info->bitrate = options_.bitrate;
+    info->data_bits = options_.data_bits;
+    info->parity_bit = options_.parity_bit;
+    info->stop_bits = options_.stop_bits;
+    info->cts_flow_control = options_.cts_flow_control;
+    std::move(callback).Run(std::move(info));
   }
   void SetBreak(SetBreakCallback callback) override {
-    std::move(callback).Run(test_io_handler_->SetBreak());
+    std::move(callback).Run(true);
   }
   void ClearBreak(ClearBreakCallback callback) override {
-    std::move(callback).Run(test_io_handler_->ClearBreak());
+    std::move(callback).Run(true);
   }
 
-  // TODO(leonhsl): Eliminate this dependency on device/serial.
-  scoped_refptr<device::TestSerialIoHandler> test_io_handler_;
+  void DoRead() {
+    if (!pending_read_callback_) {
+      return;
+    }
+    size_t num_bytes =
+        std::min(buffer_.size(), static_cast<size_t>(pending_read_bytes_));
+    std::move(pending_read_callback_)
+        .Run(std::vector<uint8_t>(buffer_.data(), buffer_.data() + num_bytes),
+             device::mojom::SerialReceiveError::NONE);
+    buffer_.erase(buffer_.begin(), buffer_.begin() + num_bytes);
+    pending_read_bytes_ = 0;
+  }
+
+  void DoConfigurePort(const device::mojom::SerialConnectionOptions& options) {
+    // Merge options.
+    if (options.bitrate) {
+      options_.bitrate = options.bitrate;
+    }
+    if (options.data_bits != device::mojom::SerialDataBits::NONE) {
+      options_.data_bits = options.data_bits;
+    }
+    if (options.parity_bit != device::mojom::SerialParityBit::NONE) {
+      options_.parity_bit = options.parity_bit;
+    }
+    if (options.stop_bits != device::mojom::SerialStopBits::NONE) {
+      options_.stop_bits = options.stop_bits;
+    }
+    if (options.has_cts_flow_control) {
+      DCHECK(options_.has_cts_flow_control);
+      options_.cts_flow_control = options.cts_flow_control;
+    }
+  }
+
+  // Currently applied connection options.
+  device::mojom::SerialConnectionOptions options_;
+  std::vector<uint8_t> buffer_;
+  FakeSerialIoHandler::ReadCallback pending_read_callback_;
+  uint32_t pending_read_bytes_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(FakeSerialIoHandler);
 };
