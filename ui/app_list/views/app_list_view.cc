@@ -714,7 +714,13 @@ void AppListView::EndDrag(const gfx::Point& location) {
         break;
       case PEEKING:
         if (std::abs(drag_delta) > app_list_threshold) {
-          SetState(drag_delta > 0 ? FULLSCREEN_ALL_APPS : CLOSED);
+          if (drag_delta > 0) {
+            SetState(FULLSCREEN_ALL_APPS);
+            UMA_HISTOGRAM_ENUMERATION(kAppListPeekingToFullscreenHistogram,
+                                      kSwipe, kMaxPeekingToFullscreen);
+          } else {
+            SetState(CLOSED);
+          }
         } else {
           SetState(app_list_state_);
         }
