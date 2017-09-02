@@ -744,11 +744,22 @@ TEST_F(ProfileInfoCacheTest, MigrateLegacyProfileNamesWithNewAvatarMenu) {
   ResetCache();
 
   // Legacy profile names like "Default Profile" and "First user" should be
-  // migrated to "Person %n" type names.
-  EXPECT_EQ(ASCIIToUTF16("Person 1"), GetCache()->GetNameOfProfileAtIndex(
-      GetCache()->GetIndexOfProfileWithPath(path_1)));
-  EXPECT_EQ(ASCIIToUTF16("Person 3"), GetCache()->GetNameOfProfileAtIndex(
-      GetCache()->GetIndexOfProfileWithPath(path_2)));
+  // migrated to "Person %n" type names, i.e. any permutation of "Person 1" and
+  // "Person 3".
+  if (ASCIIToUTF16("Person 1") ==
+      GetCache()->GetNameOfProfileAtIndex(
+          GetCache()->GetIndexOfProfileWithPath(path_1))) {
+    EXPECT_EQ(ASCIIToUTF16("Person 3"),
+              GetCache()->GetNameOfProfileAtIndex(
+                  GetCache()->GetIndexOfProfileWithPath(path_2)));
+  } else {
+    EXPECT_EQ(ASCIIToUTF16("Person 3"),
+              GetCache()->GetNameOfProfileAtIndex(
+                  GetCache()->GetIndexOfProfileWithPath(path_1)));
+    EXPECT_EQ(ASCIIToUTF16("Person 1"),
+              GetCache()->GetNameOfProfileAtIndex(
+                  GetCache()->GetIndexOfProfileWithPath(path_2)));
+  }
 
   // Other profile names should not be migrated even if they're the old
   // default cartoon profile names.

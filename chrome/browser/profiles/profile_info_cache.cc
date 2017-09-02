@@ -220,12 +220,12 @@ void ProfileInfoCache::AddProfileToCache(
 
 void ProfileInfoCache::DeleteProfileFromCache(
     const base::FilePath& profile_path) {
-  size_t profile_index = GetIndexOfProfileWithPath(profile_path);
-  if (profile_index == std::string::npos) {
+  ProfileAttributesEntry* entry;
+  if (!GetProfileAttributesWithPath(profile_path, &entry)) {
     NOTREACHED();
     return;
   }
-  base::string16 name = GetNameOfProfileAtIndex(profile_index);
+  base::string16 name = entry->GetName();
 
   for (auto& observer : observer_list_)
     observer.OnProfileWillBeRemoved(profile_path);
@@ -944,38 +944,24 @@ void ProfileInfoCache::OnAvatarPictureSaved(
 void ProfileInfoCache::MigrateLegacyProfileNamesAndDownloadAvatars() {
   // Only do this on desktop platforms.
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
-  // Migrate any legacy profile names ("First user", "Default Profile") to
-  // new style default names ("Person 1"). The problem here is that every
-  // time you rename a profile, the ProfileInfoCache sorts itself, so
-  // whatever you were iterating through is no longer valid. We need to
-  // save a list of the profile paths (which thankfully do not change) that
-  // need to be renamed. We also can't pre-compute the new names, as they
-  // depend on the names of all the other profiles in the info cache, so they
-  // need to be re-computed after each rename.
-  std::vector<base::FilePath> profiles_to_rename;
-
+  // Migrate any legacy default profile names ("First user", "Default Profile")
+  // to new style default names ("Person 1").
   const base::string16 default_profile_name = base::i18n::ToLower(
       l10n_util::GetStringUTF16(IDS_DEFAULT_PROFILE_NAME));
   const base::string16 default_legacy_profile_name = base::i18n::ToLower(
       l10n_util::GetStringUTF16(IDS_LEGACY_DEFAULT_PROFILE_NAME));
 
-  for (size_t i = 0; i < GetNumberOfProfiles(); i++) {
-    DownloadHighResAvatarIfNeeded(GetAvatarIconIndexOfProfileAtIndex(i),
-                                  GetPathOfProfileAtIndex(i));
+  std::vector<ProfileAttributesEntry*> entries = GetAllProfilesAttributes();
+  for (ProfileAttributesEntry* entry : entries) {
+    DownloadHighResAvatarIfNeeded(entry->GetAvatarIconIndex(),
+                                  entry->GetPath());
 
-    base::string16 name = base::i18n::ToLower(GetNameOfProfileAtIndex(i));
-    if (name == default_profile_name || name == default_legacy_profile_name)
-      profiles_to_rename.push_back(GetPathOfProfileAtIndex(i));
-  }
-
-  // Rename the necessary profiles.
-  std::vector<base::FilePath>::const_iterator it;
-  for (it = profiles_to_rename.begin(); it != profiles_to_rename.end(); ++it) {
-    size_t profile_index = GetIndexOfProfileWithPath(*it);
-    SetProfileIsUsingDefaultNameAtIndex(profile_index, true);
-    // This will assign a new "Person %d" type name and re-sort the cache.
-    SetNameOfProfileAtIndex(profile_index, ChooseNameForNewProfile(
-        GetAvatarIconIndexOfProfileAtIndex(profile_index)));
+    // Rename the necessary profiles.
+    base::string16 name = base::i18n::ToLower(entry->GetName());
+    if (name == default_profile_name || name == default_legacy_profile_name) {
+      entry->SetIsUsingDefaultName(true);
+      entry->SetName(ChooseNameForNewProfile(entry->GetAvatarIconIndex()));
+    }
   }
 #endif
 }
