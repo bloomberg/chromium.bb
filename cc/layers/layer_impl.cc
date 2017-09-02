@@ -24,7 +24,6 @@
 #include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/input/scroll_state.h"
 #include "cc/layers/layer.h"
-#include "cc/layers/layer_utils.h"
 #include "cc/quads/debug_border_draw_quad.h"
 #include "cc/quads/render_pass.h"
 #include "cc/trees/clip_node.h"
@@ -40,7 +39,6 @@
 #include "cc/trees/transform_node.h"
 #include "components/viz/common/quads/copy_output_request.h"
 #include "components/viz/common/traced_value.h"
-#include "ui/gfx/geometry/box_f.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/quad_f.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -780,10 +778,6 @@ void LayerImpl::AsValueInto(base::trace_event::TracedValue* state) const {
 
   state->SetBoolean("has_will_change_transform_hint",
                     has_will_change_transform_hint());
-
-  gfx::BoxF box;
-  if (LayerUtils::GetAnimationBounds(*this, &box))
-    MathUtil::AddToTracedValue("animation_bounds", box, state);
 
   if (debug_info_) {
     std::string str;

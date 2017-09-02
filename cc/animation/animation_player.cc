@@ -829,43 +829,6 @@ void AnimationPlayer::ActivateAnimations() {
   UpdateTickingState(UpdateTickingType::NORMAL);
 }
 
-bool AnimationPlayer::HasTransformAnimationThatInflatesBounds() const {
-  return IsCurrentlyAnimatingProperty(TargetProperty::TRANSFORM,
-                                      ElementListType::ACTIVE) ||
-         IsCurrentlyAnimatingProperty(TargetProperty::TRANSFORM,
-                                      ElementListType::PENDING);
-}
-
-bool AnimationPlayer::TransformAnimationBoundsForBox(const gfx::BoxF& box,
-                                                     gfx::BoxF* bounds) const {
-  DCHECK(HasTransformAnimationThatInflatesBounds())
-      << "TransformAnimationBoundsForBox will give incorrect results if there "
-      << "are no transform animations affecting bounds, non-animated transform "
-      << "is not known";
-
-  // Compute bounds based on animations for which is_finished() is false.
-  // Do nothing if there are no such animations; in this case, it is assumed
-  // that callers will take care of computing bounds based on the owning layer's
-  // actual transform.
-  *bounds = gfx::BoxF();
-  for (size_t i = 0; i < animations_.size(); ++i) {
-    if (animations_[i]->is_finished() ||
-        animations_[i]->target_property_id() != TargetProperty::TRANSFORM)
-      continue;
-
-    const TransformAnimationCurve* transform_animation_curve =
-        animations_[i]->curve()->ToTransformAnimationCurve();
-    gfx::BoxF animation_bounds;
-    bool success =
-        transform_animation_curve->AnimatedBoundsForBox(box, &animation_bounds);
-    if (!success)
-      return false;
-    bounds->Union(animation_bounds);
-  }
-
-  return true;
-}
-
 bool AnimationPlayer::HasOnlyTranslationTransforms(
     ElementListType list_type) const {
   for (size_t i = 0; i < animations_.size(); ++i) {

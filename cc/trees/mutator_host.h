@@ -103,13 +103,6 @@ class MutatorHost {
       ElementId element_id,
       TargetProperty::Type property) const = 0;
 
-  virtual bool HasTransformAnimationThatInflatesBounds(
-      ElementId element_id) const = 0;
-
-  virtual bool TransformAnimationBoundsForBox(ElementId element_id,
-                                              const gfx::BoxF& box,
-                                              gfx::BoxF* bounds) const = 0;
-
   virtual bool HasOnlyTranslationTransforms(
       ElementId element_id,
       ElementListType list_type) const = 0;

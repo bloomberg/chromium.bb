@@ -133,13 +133,6 @@ class CC_ANIMATION_EXPORT AnimationHost : public MutatorHost,
       ElementId element_id,
       TargetProperty::Type property) const override;
 
-  bool HasTransformAnimationThatInflatesBounds(
-      ElementId element_id) const override;
-
-  bool TransformAnimationBoundsForBox(ElementId element_id,
-                                      const gfx::BoxF& box,
-                                      gfx::BoxF* bounds) const override;
-
   bool HasOnlyTranslationTransforms(ElementId element_id,
                                     ElementListType list_type) const override;
   bool AnimationsPreserveAxisAlignment(ElementId element_id) const override;
