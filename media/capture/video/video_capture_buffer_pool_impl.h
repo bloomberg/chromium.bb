@@ -36,8 +36,7 @@ class CAPTURE_EXPORT VideoCaptureBufferPoolImpl
 
   // VideoCaptureBufferPool implementation.
   mojo::ScopedSharedBufferHandle GetHandleForInterProcessTransit(
-      int buffer_id,
-      bool read_only) override;
+      int buffer_id) override;
   base::SharedMemoryHandle GetNonOwnedSharedMemoryHandleForLegacyIPC(
       int buffer_id) override;
   std::unique_ptr<VideoCaptureBufferHandle> GetHandleForInProcessAccess(

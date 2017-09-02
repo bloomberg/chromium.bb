@@ -5,10 +5,11 @@
 #ifndef MEDIA_CAPTURE_VIDEO_VIDEO_CAPTURE_BUFFER_HANDLE_H_
 #define MEDIA_CAPTURE_VIDEO_VIDEO_CAPTURE_BUFFER_HANDLE_H_
 
-#include <stddef.h>
-#include <stdint.h>
-
+#include "base/files/file.h"
+#include "media/base/video_frame.h"
 #include "media/capture/capture_export.h"
+#include "ui/gfx/geometry/size.h"
+#include "ui/gfx/gpu_memory_buffer.h"
 
 namespace media {
 
