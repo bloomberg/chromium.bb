@@ -2432,9 +2432,7 @@ bool CompositedLayerMapping::UpdateScrollingLayers(
           CreateGraphicsLayer(kCompositingReasonLayerForScrollingContents);
       scrolling_contents_layer_->SetShouldHitTest(true);
 
-      CompositorElementId element_id = CompositorElementIdFromUniqueObjectId(
-          owning_layer_.GetLayoutObject().UniqueId(),
-          CompositorElementIdNamespace::kScroll);
+      auto element_id = scrollable_area->GetCompositorElementId();
       scrolling_contents_layer_->SetElementId(element_id);
 
       scrolling_layer_->AddChild(scrolling_contents_layer_.get());
