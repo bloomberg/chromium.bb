@@ -45,7 +45,7 @@ net::NetworkTrafficAnnotationTag g_traffic_annotation =
 }  // namespace
 
 PaymentInstrumentIconFetcher::PaymentInstrumentIconFetcher()
-    : checking_image_object_index_(0) {}
+    : checking_image_object_index_(0), weak_ptr_factory_(this) {}
 PaymentInstrumentIconFetcher::~PaymentInstrumentIconFetcher() {}
 
 void PaymentInstrumentIconFetcher::Start(
@@ -63,7 +63,8 @@ void PaymentInstrumentIconFetcher::Start(
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&PaymentInstrumentIconFetcher::StartFromUIThread, this,
+      base::BindOnce(&PaymentInstrumentIconFetcher::StartFromUIThread,
+                     weak_ptr_factory_.GetWeakPtr(),
                      std::move(service_worker_context)));
 }
 
@@ -132,7 +133,8 @@ void PaymentInstrumentIconFetcher::OnURLFetchComplete(
   data_decoder::DecodeImage(
       connector.get(), image_data, data_decoder::mojom::ImageCodec::DEFAULT,
       false, data_decoder::kDefaultMaxSizeInBytes, gfx::Size(),
-      base::BindOnce(&PaymentInstrumentIconFetcher::DecodeImageCallback, this));
+      base::BindOnce(&PaymentInstrumentIconFetcher::DecodeImageCallback,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void PaymentInstrumentIconFetcher::DecodeImageCallback(const SkBitmap& bitmap) {

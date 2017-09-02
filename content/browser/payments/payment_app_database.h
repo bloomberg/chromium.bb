@@ -161,6 +161,7 @@ class CONTENT_EXPORT PaymentAppDatabase {
       const std::string& instrument_key,
       payments::mojom::PaymentInstrumentPtr instrument,
       WritePaymentInstrumentCallback callback,
+      std::unique_ptr<PaymentInstrumentIconFetcher> fetcher,
       const std::string& icon);
 
   // ClearPaymentInstruments callbacks
@@ -178,7 +179,6 @@ class CONTENT_EXPORT PaymentAppDatabase {
                                   ServiceWorkerStatusCode status);
 
   scoped_refptr<PaymentAppInfoFetcher> payment_app_info_fetcher_;
-  scoped_refptr<PaymentInstrumentIconFetcher> instrument_icon_fetcher_;
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
   base::WeakPtrFactory<PaymentAppDatabase> weak_ptr_factory_;
 
