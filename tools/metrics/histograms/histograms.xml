@@ -99806,9 +99806,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="PasswordFieldOnFocus"
       label="Password protection triggered by password field on focus event."/>
   <suffix name="ProtectedPasswordEntry"
-      label="Password protection triggered by saved password reuse event."/>
+      label="Password protection triggered by entering a saved password that
+             does NOT match the sync password. (TODO(nparker): Rename this to
+             NonSyncPasswordEntry)"/>
   <suffix name="SyncPasswordEntry"
-      label="Password protectiontriggered by sync password reuse event."/>
+      label="Password protection triggered by entering the sync password,
+             which may or may not also match a saved password."/>
+  <suffix name="AnyPasswordEntry"
+      label="Password protection triggered by entering a password that
+             matches either/both the sync password or a saved password This
+             is a superset (and should be equal to or larger than)
+             SyncPasswordEntry and ProtectedPasswordEntry"/>
   <affected-histogram name="PasswordProtection.ModalWarningDialogAction"/>
   <affected-histogram
       name="PasswordProtection.NumberOfCachedVerdictBeforeShutdown"/>

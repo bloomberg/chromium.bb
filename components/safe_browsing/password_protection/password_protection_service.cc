@@ -76,17 +76,22 @@ GURL GetHostNameWithHTTPScheme(const GURL& url) {
 
 }  // namespace
 
-const char kPasswordOnFocusRequestOutcomeHistogramName[] =
+const char kPasswordOnFocusRequestOutcomeHistogram[] =
     "PasswordProtection.RequestOutcome.PasswordFieldOnFocus";
-const char kPasswordEntryRequestOutcomeHistogramName[] =
-    "PasswordProtection.RequestOutcome.ProtectedPasswordEntry";
-const char kSyncPasswordEntryRequestOutcomeHistogramName[] =
+// Matches sync and/or saved password
+const char kAnyPasswordEntryRequestOutcomeHistogram[] =
+    "PasswordProtection.RequestOutcome.AnyPasswordEntry";
+// Matches sync and maybe also saved password
+const char kSyncPasswordEntryRequestOutcomeHistogram[] =
     "PasswordProtection.RequestOutcome.SyncPasswordEntry";
-const char kSyncPasswordWarningDialogHistogramName[] =
+// Matches saved but NOT sync password
+const char kProtectedPasswordEntryRequestOutcomeHistogram[] =
+    "PasswordProtection.RequestOutcome.ProtectedPasswordEntry";
+const char kSyncPasswordWarningDialogHistogram[] =
     "PasswordProtection.ModalWarningDialogAction.SyncPasswordEntry";
-const char kSyncPasswordPageInfoHistogramName[] =
+const char kSyncPasswordPageInfoHistogram[] =
     "PasswordProtection.PageInfoAction.SyncPasswordEntry";
-const char kSyncPasswordChromeSettingsHistogramName[] =
+const char kSyncPasswordChromeSettingsHistogram[] =
     "PasswordProtection.ChromeSettingsAction.SyncPasswordEntry";
 
 PasswordProtectionService::PasswordProtectionService(
@@ -126,16 +131,16 @@ void PasswordProtectionService::RecordWarningAction(WarningUIType ui_type,
                                                     WarningAction action) {
   switch (ui_type) {
     case PAGE_INFO:
-      UMA_HISTOGRAM_ENUMERATION(kSyncPasswordPageInfoHistogramName, action,
+      UMA_HISTOGRAM_ENUMERATION(kSyncPasswordPageInfoHistogram, action,
                                 MAX_ACTION);
       break;
     case MODAL_DIALOG:
-      UMA_HISTOGRAM_ENUMERATION(kSyncPasswordWarningDialogHistogramName, action,
+      UMA_HISTOGRAM_ENUMERATION(kSyncPasswordWarningDialogHistogram, action,
                                 MAX_ACTION);
       break;
     case CHROME_SETTINGS:
-      UMA_HISTOGRAM_ENUMERATION(kSyncPasswordChromeSettingsHistogramName,
-                                action, MAX_ACTION);
+      UMA_HISTOGRAM_ENUMERATION(kSyncPasswordChromeSettingsHistogram, action,
+                                MAX_ACTION);
       break;
     case NOT_USED:
     case MAX_UI_TYPE:
@@ -412,13 +417,13 @@ void PasswordProtectionService::MaybeStartProtectedPasswordEntryRequest(
 
 bool PasswordProtectionService::CanSendPing(const base::Feature& feature,
                                             const GURL& main_frame_url,
-                                            bool is_sync_password) {
+                                            bool matches_sync_password) {
   RequestOutcome request_outcome = URL_NOT_VALID_FOR_REPUTATION_COMPUTING;
   if (IsPingingEnabled(feature, &request_outcome) &&
       CanGetReputationOfURL(main_frame_url)) {
     return true;
   }
-  RecordNoPingingReason(feature, request_outcome, is_sync_password);
+  RecordNoPingingReason(feature, request_outcome, matches_sync_password);
   return false;
 }
 
@@ -776,23 +781,30 @@ PasswordProtectionService::CreateDictionaryFromVerdict(
 void PasswordProtectionService::RecordNoPingingReason(
     const base::Feature& feature,
     RequestOutcome reason,
-    bool is_sync_password) {
+    bool matches_sync_password) {
   DCHECK(feature.name == kProtectedPasswordEntryPinging.name ||
          feature.name == kPasswordFieldOnFocusPinging.name);
 
-  bool is_password_entry_ping =
-      feature.name == kProtectedPasswordEntryPinging.name;
+  if (feature.name == kPasswordFieldOnFocusPinging.name) {
+    UMA_HISTOGRAM_ENUMERATION(kPasswordOnFocusRequestOutcomeHistogram, reason,
+                              MAX_OUTCOME);
+    return;
+  }
 
-  if (is_password_entry_ping) {
-    if (is_sync_password) {
-      UMA_HISTOGRAM_ENUMERATION(kSyncPasswordEntryRequestOutcomeHistogramName,
-                                reason, MAX_OUTCOME);
-    } else {
-      UMA_HISTOGRAM_ENUMERATION(kPasswordEntryRequestOutcomeHistogramName,
-                                reason, MAX_OUTCOME);
-    }
+  LogPasswordEntryRequestOutcome(reason, matches_sync_password);
+}
+
+// static
+void PasswordProtectionService::LogPasswordEntryRequestOutcome(
+    RequestOutcome reason,
+    bool matches_sync_password) {
+  UMA_HISTOGRAM_ENUMERATION(kAnyPasswordEntryRequestOutcomeHistogram, reason,
+                            MAX_OUTCOME);
+  if (matches_sync_password) {
+    UMA_HISTOGRAM_ENUMERATION(kSyncPasswordEntryRequestOutcomeHistogram, reason,
+                              MAX_OUTCOME);
   } else {
-    UMA_HISTOGRAM_ENUMERATION(kPasswordOnFocusRequestOutcomeHistogramName,
+    UMA_HISTOGRAM_ENUMERATION(kProtectedPasswordEntryRequestOutcomeHistogram,
                               reason, MAX_OUTCOME);
   }
 }

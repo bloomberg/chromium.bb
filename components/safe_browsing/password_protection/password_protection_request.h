@@ -20,6 +20,12 @@ class GURL;
 
 namespace safe_browsing {
 
+// UMA metrics
+extern const char kPasswordOnFocusVerdictHistogram[];
+extern const char kAnyPasswordEntryVerdictHistogram[];
+extern const char kSyncPasswordEntryVerdictHistogram[];
+extern const char kProtectedPasswordEntryVerdictHistogram[];
+
 // A request for checking if an unfamiliar login form or a password reuse event
 // is safe. PasswordProtectionRequest objects are owned by
 // PasswordProtectionService indicated by |password_protection_service_|.
@@ -132,7 +138,8 @@ class PasswordProtectionRequest : public base::RefCountedThreadSafe<
   const bool matches_sync_password_;
 
   // Domains from the Password Manager that match this password.
-  // Can be empty iff |matches_sync_password_| == true
+  // Should be non-empty if |matches_sync_password_| == false. Otherwise,
+  // may or may not be empty.
   const std::vector<std::string> matching_domains_;
 
   // If this request is for unfamiliar login page or for a password reuse event.
