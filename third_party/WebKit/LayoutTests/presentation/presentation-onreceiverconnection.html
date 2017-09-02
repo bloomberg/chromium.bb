@@ -3,7 +3,8 @@
 <body>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="../resources/mojo-helpers.js"></script>
+<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+<script src="file:///gen/third_party/WebKit/public/platform/modules/presentation/presentation.mojom.js"></script>
 <script src="resources/presentation-service-mock.js"></script>
 <script>
 
@@ -11,21 +12,19 @@ async_test(t => {
   internals.settings.setPresentationReceiver(true);
   t.add_cleanup(_ => { internals.settings.setPresentationReceiver(false); });
 
-  presentationServiceMock.then(mockService => {
-    const url = 'http://example.com/a.html';
-    const id = 'fakePresentationId';
+  const url = 'http://example.com/a.html';
+  const id = 'fakePresentationId';
 
-    mockService.onSetClient = () => {
-      mockService.onReceiverConnectionAvailable(url, id);
-    };
+  presentationServiceMock.onSetClient = () => {
+    presentationServiceMock.onReceiverConnectionAvailable(url, id);
+  };
 
-    navigator.presentation.receiver.connectionList.then(
-      t.step_func_done(list => {
-        assert_equals(list.connections.length, 1);
-        assert_equals(list.connections[0].url, url);
-        assert_equals(list.connections[0].id, id);
-      }));
-  });
+  navigator.presentation.receiver.connectionList.then(
+    t.step_func_done(list => {
+      assert_equals(list.connections.length, 1);
+      assert_equals(list.connections[0].url, url);
+      assert_equals(list.connections[0].id, id);
+    }));
 }, "Test presentation.receiver.connectionList resolves with incoming connection.");
 
 </script>

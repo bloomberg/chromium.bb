@@ -3,7 +3,8 @@
 <body>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="../resources/mojo-helpers.js"></script>
+<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+<script src="file:///gen/third_party/WebKit/public/platform/modules/presentation/presentation.mojom.js"></script>
 <script src="resources/presentation-service-mock.js"></script>
 <button>click me</button>
 <script>
@@ -12,26 +13,24 @@ var button = document.querySelector('button');
 var controllerConnectionTerminated = false;
 
 async_test(t => {
-  presentationServiceMock.then(service => {
-    // This is receiving the user gesture and runs the callback.
-    waitForClick(() => {
-      new PresentationRequest("https://example.com/").start().then(
-        connection => {
-          connection.onterminate = () => {
-            assert_equals(connection.state, "terminated");
-            controllerConnectionTerminated = true;
-          };
-          connection.onconnect = () => {
-            // Open a receiver page and pass controller connection's
-            // controllerConnectionPtr and receiverConnectionRequest to it.
-            var w = window.open(
-                "resources/presentation-receiver-postmessage.html");
-            w.controllerConnectionPtr = service.getControllerConnectionPtr();
-            w.receiverConnectionRequest = service.getReceiverConnectionRequest();
-          };
-        });
-    }, button);
-  });
+  // This is receiving the user gesture and runs the callback.
+  waitForClick(() => {
+    new PresentationRequest("https://example.com/").start().then(
+      connection => {
+        connection.onterminate = () => {
+          assert_equals(connection.state, "terminated");
+          controllerConnectionTerminated = true;
+        };
+        connection.onconnect = () => {
+          // Open a receiver page and pass controller connection's
+          // controllerConnectionPtr and receiverConnectionRequest to it.
+          var w = window.open(
+              "resources/presentation-receiver-postmessage.html");
+          w.controllerConnectionPtr = presentationServiceMock.getControllerConnectionPtr();
+          w.receiverConnectionRequest = presentationServiceMock.getReceiverConnectionRequest();
+        };
+      });
+  }, button);
 
   window.addEventListener("message", t.step_func(e => {
     if (e.data == "passed" || e.data == "failed") {

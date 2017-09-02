@@ -3,25 +3,24 @@
 <body>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="../resources/mojo-helpers.js"></script>
+<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+<script src="file:///gen/third_party/WebKit/public/platform/modules/presentation/presentation.mojom.js"></script>
 <script src="resources/presentation-service-mock.js"></script>
 <button>click me</button>
 <script>
 
 async_test(t => {
-  presentationServiceMock.then(t.step_func(mockService => {
-    var button = document.querySelector('button');
-    // This is receiving the user gesture and runs the callback.
-    waitForClick(t.step_func(_ => {
-      new PresentationRequest('https://example.com').start().then(
-      t.step_func_done(result => {
-        var e = new PresentationConnectionAvailableEvent(
-            'connectionavailable', { connection: result });
-        assert_not_equals(e, null);
-        assert_equals(e.connection, result);
-      }));
-    }), button);
-  }));
+  var button = document.querySelector('button');
+  // This is receiving the user gesture and runs the callback.
+  waitForClick(t.step_func(_ => {
+    new PresentationRequest('https://example.com').start().then(
+    t.step_func_done(result => {
+      var e = new PresentationConnectionAvailableEvent(
+          'connectionavailable', { connection: result });
+      assert_not_equals(e, null);
+      assert_equals(e.connection, result);
+    }));
+  }), button);
 }, "Test that the PresentationConnectionAvailableEvent ctor can take a valid PresentationConnection.")
 
 </script>

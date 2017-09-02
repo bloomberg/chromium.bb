@@ -3,25 +3,24 @@
 <body>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="../resources/mojo-helpers.js"></script>
+<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+<script src="file:///gen/third_party/WebKit/public/platform/modules/presentation/presentation.mojom.js"></script>
 <script src="resources/presentation-service-mock.js"></script>
 <button>click me</button>
 <script>
 
 async_test(t => {
-    presentationServiceMock.then(mockService => {
-    const button = document.querySelector('button');
-    // This is receiving the user gesture and runs the callback.
-    waitForClick(() => {
-      new PresentationRequest('https://example.com').start().then(
-        connection => {
-          connection.onterminate = t.step_func_done();
-          connection.onconnect = () => {
-            connection.terminate();
-          };
-        });
-    }, button);
-  });
+  const button = document.querySelector('button');
+  // This is receiving the user gesture and runs the callback.
+  waitForClick(() => {
+    new PresentationRequest('https://example.com').start().then(
+      connection => {
+        connection.onterminate = t.step_func_done();
+        connection.onconnect = () => {
+          connection.terminate();
+        };
+      });
+  }, button);
 }, "Test that controller connection.terminate() fires onterminate event handler.");
 
 </script>

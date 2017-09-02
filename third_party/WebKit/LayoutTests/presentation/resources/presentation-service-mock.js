@@ -4,105 +4,99 @@
 
 "use strict";
 
-let presentationServiceMock = loadMojoModules(
-    'presentationServiceMock',
-    [
-      'third_party/WebKit/public/platform/modules/presentation/presentation.mojom',
-      'url/mojo/url.mojom',
-      'mojo/public/js/bindings',
-    ]).then(mojo => {
-      let [ presentationService, url, bindings ] = mojo.modules;
+class MockPresentationConnection {
+};
 
-      class MockPresentationConnection {
-      };
+class PresentationServiceMock {
+  constructor() {
+    this.pendingResponse_ = null;
+    this.bindingSet_ = new mojo.BindingSet(blink.mojom.PresentationService);
+    this.controllerConnectionPtr_ = null;
+    this.receiverConnectionRequest_ = null;
 
-      class PresentationServiceMock {
-        constructor(interfaceProvider) {
-          interfaceProvider.addInterfaceOverrideForTesting(
-              presentationService.PresentationService.name,
-              handle => this.bindingSet_.addBinding(this, handle));
-          this.interfaceProvider_ = interfaceProvider;
-          this.pendingResponse_ = null;
-          this.bindingSet_ = new bindings.BindingSet(
-              presentationService.PresentationService);
-          this.controllerConnectionPtr_ = null;
-          this.receiverConnectionRequest_ = null;
+    this.interceptor_ = new MojoInterfaceInterceptor(
+        blink.mojom.PresentationService.name);
+    this.interceptor_.oninterfacerequest =
+        e => this.bindingSet_.addBinding(this, e.handle);
+    this.interceptor_.start();
 
-          this.onSetClient = null;
-        }
+    this.onSetClient = null;
+  }
 
-        setClient(client) {
-          this.client_ = client;
+  reset() {
+    this.bindingSet_.closeAllBindings();
+    this.interceptor_.stop();
+  }
 
-          if (this.onSetClient)
-            this.onSetClient();
-        }
+  setClient(client) {
+    this.client_ = client;
 
-        startPresentation(urls) {
-          return Promise.resolve({
-              presentation_info: { url: urls[0], id: 'fakePresentationId' },
-              error: null,
-          });
-        }
+    if (this.onSetClient)
+      this.onSetClient();
+  }
 
-        reconnectPresentation(urls) {
-          return Promise.resolve({
-              presentation_info: { url: urls[0], id: 'fakePresentationId' },
-              error: null,
-          });
-        }
+  async startPresentation(urls) {
+    return {
+        presentationInfo: { url: urls[0], id: 'fakePresentationId' },
+        error: null,
+    };
+  }
 
-        terminate(presentationUrl, presentationId) {
-          this.client_.onConnectionStateChanged(
-              { url: presentationUrl, id: presentationId },
-              presentationService.PresentationConnectionState.TERMINATED);
-        }
+  async reconnectPresentation(urls) {
+    return {
+        presentationInfo: { url: urls[0], id: 'fakePresentationId' },
+        error: null,
+    };
+  }
 
-        setPresentationConnection(
-            presentation_info, controllerConnectionPtr,
-            receiverConnectionRequest) {
-          this.controllerConnectionPtr_ = controllerConnectionPtr;
-          this.receiverConnectionRequest_ = receiverConnectionRequest;
-          this.client_.onConnectionStateChanged(
-              presentation_info,
-              presentationService.PresentationConnectionState.CONNECTED);
-        }
+  terminate(presentationUrl, presentationId) {
+    this.client_.onConnectionStateChanged(
+        { url: presentationUrl, id: presentationId },
+        blink.mojom.PresentationConnectionState.TERMINATED);
+  }
 
-        onReceiverConnectionAvailable(
-            strUrl, id, opt_controllerConnectionPtr, opt_receiverConnectionRequest) {
-          const mojoUrl = new url.Url();
-          mojoUrl.url = strUrl;
-          var controllerConnectionPtr = opt_controllerConnectionPtr;
-          if (!controllerConnectionPtr) {
-            controllerConnectionPtr = new presentationService.PresentationConnectionPtr();
-            const connectionBinding = new bindings.Binding(
-                presentationService.PresentationConnection,
-                new MockPresentationConnection(),
-                bindings.makeRequest(controllerConnectionPtr));
-          }
+  setPresentationConnection(
+      presentation_info, controllerConnectionPtr,
+      receiverConnectionRequest) {
+    this.controllerConnectionPtr_ = controllerConnectionPtr;
+    this.receiverConnectionRequest_ = receiverConnectionRequest;
+    this.client_.onConnectionStateChanged(
+        presentation_info,
+        blink.mojom.PresentationConnectionState.CONNECTED);
+  }
 
-          var receiverConnectionRequest = opt_receiverConnectionRequest;
-          if (!receiverConnectionRequest) {
-            receiverConnectionRequest = bindings.makeRequest(
-                new presentationService.PresentationConnectionPtr());
-          }
+  onReceiverConnectionAvailable(
+      strUrl, id, opt_controllerConnectionPtr, opt_receiverConnectionRequest) {
+    const mojoUrl = new url.mojom.Url();
+    mojoUrl.url = strUrl;
+    var controllerConnectionPtr = opt_controllerConnectionPtr;
+    if (!controllerConnectionPtr) {
+      controllerConnectionPtr = new blink.mojom.PresentationConnectionPtr();
+      const connectionBinding = new mojo.Binding(
+          blink.mojom.PresentationConnection,
+          new MockPresentationConnection(),
+          mojo.makeRequest(controllerConnectionPtr));
+    }
 
-          this.client_.onReceiverConnectionAvailable(
-              { url: mojoUrl, id: id },
-              controllerConnectionPtr, receiverConnectionRequest);
-        }
+    var receiverConnectionRequest = opt_receiverConnectionRequest;
+    if (!receiverConnectionRequest) {
+      receiverConnectionRequest = mojo.makeRequest(
+          new blink.mojom.PresentationConnectionPtr());
+    }
 
-        getControllerConnectionPtr() {
-          return this.controllerConnectionPtr_;
-        }
+    this.client_.onReceiverConnectionAvailable(
+        { url: mojoUrl, id: id },
+        controllerConnectionPtr, receiverConnectionRequest);
+  }
 
-        getReceiverConnectionRequest() {
-          return this.receiverConnectionRequest_;
-        }
-      }
+  getControllerConnectionPtr() {
+    return this.controllerConnectionPtr_;
+  }
 
-      return new PresentationServiceMock(mojo.frameInterfaces);
-    });
+  getReceiverConnectionRequest() {
+    return this.receiverConnectionRequest_;
+  }
+}
 
 function waitForClick(callback, button) {
   button.addEventListener('click', callback, { once: true });
@@ -118,3 +112,5 @@ function waitForClick(callback, button) {
   eventSender.mouseDown();
   eventSender.mouseUp();
 }
+
+let presentationServiceMock = new PresentationServiceMock();

@@ -3,7 +3,8 @@
 <body>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="../resources/mojo-helpers.js"></script>
+<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+<script src="file:///gen/third_party/WebKit/public/platform/modules/presentation/presentation.mojom.js"></script>
 <script src="resources/presentation-service-mock.js"></script>
 <button>click me</button>
 <script>
@@ -11,16 +12,14 @@
 var button = document.querySelector('button');
 
 var testPresentationRequestStart = function(t, requestArgument, connectionUrl) {
-  presentationServiceMock.then(service => {
-    // This is receiving the user gesture and runs the callback.
-    waitForClick(() => {
-      new PresentationRequest(requestArgument).start().then(
-      t.step_func_done(connection => {
-        assert_equals(connection.url, connectionUrl);
-        assert_equals(connection.state, 'connecting');
-      }));
-    }, button);
-  });
+  // This is receiving the user gesture and runs the callback.
+  waitForClick(() => {
+    new PresentationRequest(requestArgument).start().then(
+    t.step_func_done(connection => {
+      assert_equals(connection.url, connectionUrl);
+      assert_equals(connection.state, 'connecting');
+    }));
+  }, button);
 };
 
 async_test(t => {

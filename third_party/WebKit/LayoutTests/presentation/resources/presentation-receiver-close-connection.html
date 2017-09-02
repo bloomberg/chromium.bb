@@ -2,43 +2,40 @@
 <html>
 <body>
 <script src="../../resources/testharness.js"></script>
-<script src="../../resources/mojo-helpers.js"></script>
+<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+<script src="file:///gen/third_party/WebKit/public/platform/modules/presentation/presentation.mojom.js"></script>
 <script src="presentation-service-mock.js"></script>
 <script>
 
 // Parent window sets parameter for this page.
-assert_not_equals(controllerConnectionPtr, null);
-assert_not_equals(receiverConnectionRequest, null);
 assert_not_equals(shouldCallClose, null);
 
 internals.settings.setPresentationReceiver(true);
 
-presentationServiceMock.then(mockService => {
-  const url = 'http://example.com/a.html';
-  const id = 'fakeSessionId';
+const pageUrl = 'http://example.com/a.html';
+const id = 'fakeSessionId';
 
-  mockService.onSetClient = () => {
-    mockService.onReceiverConnectionAvailable(
-        url, id, controllerConnectionPtr, receiverConnectionRequest);
+presentationServiceMock.onSetClient = () => {
+  presentationServiceMock.onReceiverConnectionAvailable(
+      pageUrl, id, controllerConnectionPtr, receiverConnectionRequest);
+};
+
+navigator.presentation.receiver.connectionList.then(list => {
+  assert_equals(list.connections.length, 1);
+  const connection = list.connections[0];
+  connection.onclose = () => {
+    assert_equals(connection.state, 'closed');
+    setTimeout(() => {
+      assert_equals(list.connections.length, 0);
+      opener.postMessage('receiver connection closed', '*');
+    } ,0);
   };
-
-  navigator.presentation.receiver.connectionList.then(list => {
-    assert_equals(list.connections.length, 1);
-    const connection = list.connections[0];
-    connection.onclose = () => {
-      assert_equals(connection.state, 'closed');
-      setTimeout(() => {
-        assert_equals(list.connections.length, 0);
-        opener.postMessage('receiver connection closed', '*');
-      } ,0);
-    };
-    opener.postMessage('receiver connection ready', '*');
-    if (shouldCallClose) {
-      list.connections.forEach(theConnection => {
-        theConnection.close();
-      });
-    }
-  });
+  opener.postMessage('receiver connection ready', '*');
+  if (shouldCallClose) {
+    list.connections.forEach(theConnection => {
+      theConnection.close();
+    });
+  }
 });
 
 window.onunload = () => {
