@@ -228,8 +228,8 @@ class LayoutGrid final : public LayoutBlock {
       GridAxis,
       const LayoutBox& child,
       const ComputedStyle* = nullptr) const;
-  StyleSelfAlignmentData DefaultAlignmentForChild(GridAxis,
-                                                  const ComputedStyle&) const;
+  StyleSelfAlignmentData DefaultAlignment(GridAxis, const ComputedStyle&) const;
+  bool DefaultAlignmentIsStretchOrNormal(GridAxis, const ComputedStyle&) const;
   void ApplyStretchAlignmentToChildIfNeeded(LayoutBox&);
   bool HasAutoSizeInColumnAxis(const LayoutBox& child) const {
     return IsHorizontalWritingMode() ? child.StyleRef().Height().IsAuto()
