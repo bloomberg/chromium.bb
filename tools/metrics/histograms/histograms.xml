@@ -92049,6 +92049,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>URLs for which Chrome creates WebUIControllers.</summary>
 </histogram>
 
+<histogram name="WebUI.Settings.PathVisited" enum="WebUISettingsPathHashes">
+  <owner>dschuyler@chromium.org</owner>
+  <owner>tbuckley@chromium.org</owner>
+  <owner>bettes@chromium.org</owner>
+  <summary>
+    Paths within chrome://settings visited. For evaluating popularity and
+    priorities for chrome://settings GUI.
+  </summary>
+</histogram>
+
 <histogram name="WebUsb.ChooserClosed" enum="WebUsbChooserClosed">
   <owner>reillyg@chromium.org</owner>
   <owner>juncai@chromium.org</owner>
