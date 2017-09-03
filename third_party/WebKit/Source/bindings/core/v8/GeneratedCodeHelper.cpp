@@ -11,17 +11,16 @@ namespace blink {
 
 void V8ConstructorAttributeGetter(
     v8::Local<v8::Name> property_name,
-    const v8::PropertyCallbackInfo<v8::Value>& info) {
+    const v8::PropertyCallbackInfo<v8::Value>& info,
+    const WrapperTypeInfo* wrapper_type_info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(
       info.GetIsolate(), "Blink_V8ConstructorAttributeGetter");
-  v8::Local<v8::Value> data = info.Data();
-  DCHECK(data->IsExternal());
   V8PerContextData* per_context_data =
       V8PerContextData::From(info.Holder()->CreationContext());
   if (!per_context_data)
     return;
-  V8SetReturnValue(info, per_context_data->ConstructorForType(
-                             WrapperTypeInfo::Unwrap(data)));
+  V8SetReturnValue(info,
+                   per_context_data->ConstructorForType(wrapper_type_info));
 }
 
 v8::Local<v8::Value> V8Deserialize(v8::Isolate* isolate,

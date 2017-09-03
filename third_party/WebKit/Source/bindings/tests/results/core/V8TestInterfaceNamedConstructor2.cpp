@@ -140,8 +140,6 @@ v8::Local<v8::FunctionTemplate> V8TestInterfaceNamedConstructor2Constructor::dom
 void V8TestInterfaceNamedConstructor2Constructor::NamedConstructorAttributeGetter(
     v8::Local<v8::Name> propertyName,
     const v8::PropertyCallbackInfo<v8::Value>& info) {
-  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceNamedConstructor2_NamedConstructorAttributeGetter");
-
   v8::Local<v8::Context> creationContext = info.Holder()->CreationContext();
   V8PerContextData* perContextData = V8PerContextData::From(creationContext);
   if (!perContextData) {

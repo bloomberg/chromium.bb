@@ -27,10 +27,8 @@ intptr_t* {{class}}::GetTable() {
     {%-    for world_suffix in attribute.world_suffixes %}
     {%      if not attribute.constructor_type %}
     reinterpret_cast<intptr_t>({{v8_class}}::{{attribute.name}}AttributeGetterCallback{{world_suffix}}),
-    {%      elif attribute.needs_constructor_getter_callback %}
+    {%      else %}
     reinterpret_cast<intptr_t>({{v8_class}}::{{attribute.name}}ConstructorGetterCallback{{world_suffix}}),
-    {%      elif attribute.is_named_constructor %}
-    reinterpret_cast<intptr_t>(V8{{attribute.constructor_type}}::NamedConstructorAttributeGetter{{world_suffix}}),
     {%      endif %}
     {%      if attribute.has_setter %}
     reinterpret_cast<intptr_t>({{v8_class}}::{{attribute.name}}AttributeSetterCallback{{world_suffix}}),
@@ -73,6 +71,7 @@ intptr_t* {{class}}::GetTable() {
     {%  endif %}
     {%  if interface.has_security_check %}
     reinterpret_cast<intptr_t>({{v8_class}}::securityCheck),
+    reinterpret_cast<intptr_t>(&{{v8_class}}::wrapperTypeInfo),
     {%  endif %}
 
     {# Other properties #}
@@ -107,17 +106,9 @@ intptr_t* {{class}}::GetTable() {
     reinterpret_cast<intptr_t>({{v8_class}}::securityCheck),
     {%-  endif %}
     {% endif %}{# not is_array_buffer_or_view #}
-
-    {% if not interface.is_partial or is_snapshotted %}
-    reinterpret_cast<intptr_t>(&{{interface.v8_name}}::wrapperTypeInfo),
-    {% endif %}
-    {% if interface.named_constructor %}
-    reinterpret_cast<intptr_t>(&{{interface.v8_name}}Constructor::wrapperTypeInfo),
-    {% endif %}
     {% endfor %}{# interfaces #}
 
     reinterpret_cast<intptr_t>(V8ObjectConstructor::IsValidConstructorMode),
-    reinterpret_cast<intptr_t>(V8ConstructorAttributeGetter),
 #endif  // OS_ANDROID
     0  // terminate with a null
   };

@@ -255,7 +255,7 @@ void V8TestCallbackFunctions::customElementCallbacksMethodMethodCallback(const v
 }
 
 static const V8DOMConfiguration::AccessorConfiguration V8TestCallbackFunctionsAccessors[] = {
-    { "customElementsCallbacksReadonlyAttribute", V8TestCallbackFunctions::customElementsCallbacksReadonlyAttributeAttributeGetterCallback, nullptr, nullptr, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kAllWorlds },
+    { "customElementsCallbacksReadonlyAttribute", V8TestCallbackFunctions::customElementsCallbacksReadonlyAttributeAttributeGetterCallback, nullptr, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kAllWorlds },
 };
 
 static const V8DOMConfiguration::MethodConfiguration V8TestCallbackFunctionsMethods[] = {

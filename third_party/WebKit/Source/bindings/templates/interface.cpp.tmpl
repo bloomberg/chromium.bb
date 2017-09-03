@@ -689,7 +689,6 @@ v8::Local<v8::FunctionTemplate> {{v8_class}}Constructor::domTemplate(v8::Isolate
 void {{v8_class}}Constructor::NamedConstructorAttributeGetter(
     v8::Local<v8::Name> propertyName,
     const v8::PropertyCallbackInfo<v8::Value>& info) {
-  {{ runtime_timer_scope_disabled_by_default(runtime_call_stats.named_constructor_attribute_getter_counter) }}
   v8::Local<v8::Context> creationContext = info.Holder()->CreationContext();
   V8PerContextData* perContextData = V8PerContextData::From(creationContext);
   if (!perContextData) {
@@ -812,10 +811,10 @@ static const V8DOMConfiguration::AttributeConfiguration {{method.name}}OriginSaf
 {% set getter_callback_for_main_world = '%sForMainWorld' % getter_callback %}
 {% set setter_callback_for_main_world = '%sForMainWorld' % setter_callback
        if not method.is_unforgeable else 'nullptr' %}
-    {"{{method.name}}", {{getter_callback_for_main_world}}, {{setter_callback_for_main_world}}, &{{v8_class}}::wrapperTypeInfo, {{property_attribute}}, {{property_location(method)}}, {{holder_check}}, V8DOMConfiguration::MainWorld},
-    {"{{method.name}}", {{getter_callback}}, {{setter_callback}}, &{{v8_class}}::wrapperTypeInfo, {{property_attribute}}, {{property_location(method)}}, {{holder_check}}, V8DOMConfiguration::NonMainWorlds}}
+    {"{{method.name}}", {{getter_callback_for_main_world}}, {{setter_callback_for_main_world}}, {{property_attribute}}, {{property_location(method)}}, {{holder_check}}, V8DOMConfiguration::MainWorld},
+    {"{{method.name}}", {{getter_callback}}, {{setter_callback}}, {{property_attribute}}, {{property_location(method)}}, {{holder_check}}, V8DOMConfiguration::NonMainWorlds}}
 {% else %}
-    {"{{method.name}}", {{getter_callback}}, {{setter_callback}}, &{{v8_class}}::wrapperTypeInfo, {{property_attribute}}, {{property_location(method)}}, {{holder_check}}, V8DOMConfiguration::kAllWorlds}
+    {"{{method.name}}", {{getter_callback}}, {{setter_callback}}, {{property_attribute}}, {{property_location(method)}}, {{holder_check}}, V8DOMConfiguration::kAllWorlds}
 {% endif %}
 };
 for (const auto& attributeConfig : {{method.name}}OriginSafeAttributeConfiguration)

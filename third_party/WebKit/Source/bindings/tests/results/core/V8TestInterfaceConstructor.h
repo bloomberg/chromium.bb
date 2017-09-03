@@ -30,8 +30,8 @@ class V8TestInterfaceConstructorConstructor {
   STATIC_ONLY(V8TestInterfaceConstructorConstructor);
  public:
   static v8::Local<v8::FunctionTemplate> domTemplate(v8::Isolate*, const DOMWrapperWorld&);
-  CORE_EXPORT static void NamedConstructorAttributeGetter(v8::Local<v8::Name> propertyName, const v8::PropertyCallbackInfo<v8::Value>& info);
-  CORE_EXPORT static const WrapperTypeInfo wrapperTypeInfo;
+  static void NamedConstructorAttributeGetter(v8::Local<v8::Name> propertyName, const v8::PropertyCallbackInfo<v8::Value>& info);
+  static const WrapperTypeInfo wrapperTypeInfo;
 };
 
 class V8TestInterfaceConstructor {

@@ -153,7 +153,7 @@ void V8TestInheritedLegacyUnenumerableNamedProperties::indexedPropertyGetterCall
 }
 
 static const V8DOMConfiguration::AccessorConfiguration V8TestInheritedLegacyUnenumerableNamedPropertiesAccessors[] = {
-    { "longAttribute", V8TestInheritedLegacyUnenumerableNamedProperties::longAttributeAttributeGetterCallback, nullptr, nullptr, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kAllWorlds },
+    { "longAttribute", V8TestInheritedLegacyUnenumerableNamedProperties::longAttributeAttributeGetterCallback, nullptr, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kAllWorlds },
 };
 
 static void installV8TestInheritedLegacyUnenumerableNamedPropertiesTemplate(
