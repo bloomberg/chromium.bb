@@ -83,7 +83,8 @@ remoting_locales_with_underscores += [
   "zh_TW",
 ]
 
-if (!is_official_build) {
+# The fake-bidi locale isn't accepted by the app store.
+if (!is_ios || !is_official_build) {
   remoting_locales += [ "fake-bidi" ]
   remoting_locales_with_underscores += [ "fake_bidi" ]
 }

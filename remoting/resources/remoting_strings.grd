@@ -31,8 +31,8 @@
     <output filename="remoting/resources/es.pak" lang="es" type="data_package"/>
     <output filename="remoting/resources/et.pak" lang="et" type="data_package"/>
     <output filename="remoting/resources/fa.pak" lang="fa" type="data_package"/>
-    <if expr="not _official_build">
-      <!-- We don't need to generate the fake-bidi locale for official builds. -->
+    <if expr="not is_ios or not _official_build">
+      <!-- The fake-bidi locale isn't accepted by the app store. -->
       <output filename="remoting/resources/fake-bidi.pak" lang="fake-bidi" type="data_package"/>
     </if>
     <output filename="remoting/resources/fi.pak" lang="fi" type="data_package"/>
@@ -90,8 +90,8 @@
     <output filename="remoting/webapp/_locales/da/messages.json" lang="da" type="chrome_messages_json"/>
     <output filename="remoting/webapp/_locales/de/messages.json" lang="de" type="chrome_messages_json"/>
     <output filename="remoting/webapp/_locales/fa/messages.json" lang="fa" type="chrome_messages_json"/>
-    <if expr="not _official_build">
-      <!-- We don't need to generate the fake-bidi locale for official builds. -->
+    <if expr="not is_ios or not _official_build">
+      <!-- The fake-bidi locale isn't accepted by the app store. -->
       <output filename="remoting/webapp/_locales/fake_bidi/messages.json" lang="fake-bidi" type="chrome_messages_json"/>
     </if>
     <output filename="remoting/webapp/_locales/el/messages.json" lang="el" type="chrome_messages_json"/>
