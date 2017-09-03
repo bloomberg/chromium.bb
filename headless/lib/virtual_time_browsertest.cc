@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include <memory>
-#include "base/strings/stringprintf.h"
 #include "content/public/test/browser_test.h"
 #include "headless/public/devtools/domains/emulation.h"
 #include "headless/public/devtools/domains/page.h"
@@ -52,26 +51,20 @@ class VirtualTimeBrowserTest : public HeadlessAsyncDevTooledBrowserTest,
     std::string message;
     if (args.size() == 1u && args[0]->HasValue() &&
         args[0]->GetValue()->GetAsString(&message)) {
-      log_.push_back(message);
+      console_logs_.push_back(message);
     }
   }
 
   // emulation::Observer implementation:
   void OnVirtualTimeBudgetExpired(
       const emulation::VirtualTimeBudgetExpiredParams& params) override {
-    EXPECT_THAT(log_,
-                ElementsAre("Paused @ 0ms", "step1", "step2", "Paused @ 100ms",
-                            "step3", "Paused @ 200ms", "step4", "pass"));
+    EXPECT_THAT(console_logs_,
+                ElementsAre("step1", "step2", "step3", "step4", "pass"));
+
     FinishAsynchronousTest();
   }
 
-  void OnVirtualTimePaused(
-      const emulation::VirtualTimePausedParams& params) override {
-    log_.push_back(
-        base::StringPrintf("Paused @ %dms", params.GetVirtualTimeElapsed()));
-  }
-
-  std::vector<std::string> log_;
+  std::vector<std::string> console_logs_;
 };
 
 HEADLESS_ASYNC_DEVTOOLED_TEST_F(VirtualTimeBrowserTest);

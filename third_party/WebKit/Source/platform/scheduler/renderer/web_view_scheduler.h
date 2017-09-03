@@ -78,22 +78,6 @@ class PLATFORM_EXPORT WebViewScheduler {
   // WebFrameSchedulers.
   virtual void SetVirtualTimePolicy(VirtualTimePolicy) = 0;
 
-  class VirtualTimeObserver {
-   public:
-    virtual ~VirtualTimeObserver() {}
-
-    // Called the next microtask after virtual time pauses for any reason.
-    // |virtual_time_offset| is the offset between the current virtual time and
-    // the initial virtual time when EnableVirtualTime() was called.
-    virtual void OnVirtualTimePaused(base::TimeDelta virtual_time_offset) = 0;
-  };
-
-  // Adds a VirtualTimeObserver instance to be notified when virtual time has
-  // been paused. Note the observer will fire in the microtask after the policy
-  // decision was made.
-  virtual void AddVirtualTimeObserver(VirtualTimeObserver*) = 0;
-  virtual void RemoveVirtualTimeObserver(VirtualTimeObserver*) = 0;
-
   // Set the remaining virtual time budget to |budget|. Once the budget runs
   // out, |budget_exhausted_callback| is called. Note that the virtual time
   // policy is not affected when the budget expires.

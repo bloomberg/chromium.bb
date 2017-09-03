@@ -42,8 +42,6 @@ const char* MainThreadTaskQueue::NameForQueueType(
       return "test_tq";
     case MainThreadTaskQueue::QueueType::FRAME_LOADING_CONTROL:
       return "frame_loading_control_tq";
-    case MainThreadTaskQueue::QueueType::BEST_EFFORT:
-      return "best_effort";
     case MainThreadTaskQueue::QueueType::COUNT:
       NOTREACHED();
       return nullptr;
@@ -59,7 +57,6 @@ MainThreadTaskQueue::QueueClass MainThreadTaskQueue::QueueClassForQueueType(
     case QueueType::DEFAULT:
     case QueueType::IDLE:
     case QueueType::TEST:
-    case QueueType::BEST_EFFORT:
       return QueueClass::NONE;
     case QueueType::DEFAULT_LOADING:
     case QueueType::FRAME_LOADING:

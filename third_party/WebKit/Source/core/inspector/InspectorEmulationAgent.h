@@ -8,8 +8,6 @@
 #include "core/CoreExport.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/protocol/Emulation.h"
-#include "platform/scheduler/renderer/web_view_scheduler.h"
-#include "platform/wtf/Time.h"
 
 namespace blink {
 
@@ -23,8 +21,7 @@ class RGBA;
 }  // namespace protocol
 
 class CORE_EXPORT InspectorEmulationAgent final
-    : public InspectorBaseAgent<protocol::Emulation::Metainfo>,
-      public WebViewScheduler::VirtualTimeObserver {
+    : public InspectorBaseAgent<protocol::Emulation::Metainfo> {
   WTF_MAKE_NONCOPYABLE(InspectorEmulationAgent);
 
  public:
@@ -57,9 +54,6 @@ class CORE_EXPORT InspectorEmulationAgent final
   protocol::Response disable() override;
   void Restore() override;
 
-  // scheduler::WebViewScheduler::VirtualTimeObserver implementation.
-  void OnVirtualTimePaused(WTF::TimeDelta virtual_time_offset) override;
-
   DECLARE_VIRTUAL_TRACE();
 
  private:
@@ -69,7 +63,6 @@ class CORE_EXPORT InspectorEmulationAgent final
 
   Member<WebLocalFrameImpl> web_local_frame_;
   Client* client_;
-  bool virtual_time_observer_registered_;
 };
 
 }  // namespace blink

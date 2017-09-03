@@ -40,9 +40,8 @@ class PLATFORM_EXPORT MainThreadTaskQueue : public TaskQueue {
     FRAME_DEFERRABLE = 13,
     FRAME_PAUSABLE = 14,
     FRAME_UNPAUSABLE = 15,
-    BEST_EFFORT = 16,
 
-    COUNT = 17
+    COUNT = 16
   };
 
   // Returns name of the given queue type. Returned string has application
