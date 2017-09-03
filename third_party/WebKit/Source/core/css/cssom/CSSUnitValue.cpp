@@ -108,6 +108,8 @@ double CSSUnitValue::ConvertFixedLength(
           return value_ / kCssPixelsPerCentimeter;
         case CSSPrimitiveValue::UnitType::kMillimeters:
           return value_ / kCssPixelsPerMillimeter;
+        case CSSPrimitiveValue::UnitType::kQuarterMillimeters:
+          return value_ / kCssPixelsPerQuarterMillimeter;
         case CSSPrimitiveValue::UnitType::kInches:
           return value_ / kCssPixelsPerInch;
         case CSSPrimitiveValue::UnitType::kPoints:
@@ -124,6 +126,8 @@ double CSSUnitValue::ConvertFixedLength(
           return value_ * kCssPixelsPerCentimeter;
         case CSSPrimitiveValue::UnitType::kMillimeters:
           return value_ * kMillimetersPerCentimeter;
+        case CSSPrimitiveValue::UnitType::kQuarterMillimeters:
+          return value_ * kQuarterMillimetersPerCentimeter;
         case CSSPrimitiveValue::UnitType::kInches:
           return value_ / kCentimetersPerInch;
         case CSSPrimitiveValue::UnitType::kPoints:
@@ -140,6 +144,9 @@ double CSSUnitValue::ConvertFixedLength(
           return value_ * kCssPixelsPerMillimeter;
         case CSSPrimitiveValue::UnitType::kCentimeters:
           return value_ / kMillimetersPerCentimeter;
+        case CSSPrimitiveValue::UnitType::kQuarterMillimeters:
+          return value_ *
+                 (kQuarterMillimetersPerCentimeter / kMillimetersPerCentimeter);
         case CSSPrimitiveValue::UnitType::kInches:
           return value_ / (kMillimetersPerCentimeter * kCentimetersPerInch);
         case CSSPrimitiveValue::UnitType::kPoints:
@@ -150,12 +157,35 @@ double CSSUnitValue::ConvertFixedLength(
           NOTREACHED();
           return 0;
       }
+    case CSSPrimitiveValue::UnitType::kQuarterMillimeters:
+      switch (unit) {
+        case CSSPrimitiveValue::UnitType::kPixels:
+          return value_ * kCssPixelsPerQuarterMillimeter;
+        case CSSPrimitiveValue::UnitType::kCentimeters:
+          return value_ / kQuarterMillimetersPerCentimeter;
+        case CSSPrimitiveValue::UnitType::kMillimeters:
+          return value_ /
+                 (kQuarterMillimetersPerCentimeter / kMillimetersPerCentimeter);
+        case CSSPrimitiveValue::UnitType::kInches:
+          return value_ /
+                 (kQuarterMillimetersPerCentimeter * kCentimetersPerInch);
+        case CSSPrimitiveValue::UnitType::kPoints:
+          return value_ * (kPointsPerInch / kQuarterMillimetersPerInch);
+        case CSSPrimitiveValue::UnitType::kPicas:
+          return value_ * (kPicasPerInch / kQuarterMillimetersPerInch);
+        default:
+          NOTREACHED();
+          return 0;
+      }
     case CSSPrimitiveValue::UnitType::kInches:
       switch (unit) {
         case CSSPrimitiveValue::UnitType::kPixels:
           return value_ * kCssPixelsPerInch;
         case CSSPrimitiveValue::UnitType::kMillimeters:
           return value_ * kCentimetersPerInch * kMillimetersPerCentimeter;
+        case CSSPrimitiveValue::UnitType::kQuarterMillimeters:
+          return value_ * kCentimetersPerInch *
+                 kQuarterMillimetersPerCentimeter;
         case CSSPrimitiveValue::UnitType::kCentimeters:
           return value_ * kCentimetersPerInch;
         case CSSPrimitiveValue::UnitType::kPoints:
@@ -172,6 +202,8 @@ double CSSUnitValue::ConvertFixedLength(
           return value_ * kCssPixelsPerPoint;
         case CSSPrimitiveValue::UnitType::kMillimeters:
           return value_ * (kMillimetersPerInch / kPointsPerInch);
+        case CSSPrimitiveValue::UnitType::kQuarterMillimeters:
+          return value_ * (kQuarterMillimetersPerInch / kPointsPerInch);
         case CSSPrimitiveValue::UnitType::kCentimeters:
           return value_ * (kCentimetersPerInch / kPointsPerInch);
         case CSSPrimitiveValue::UnitType::kInches:
@@ -188,6 +220,8 @@ double CSSUnitValue::ConvertFixedLength(
           return value_ * kCssPixelsPerPica;
         case CSSPrimitiveValue::UnitType::kMillimeters:
           return value_ * (kMillimetersPerInch / kPicasPerInch);
+        case CSSPrimitiveValue::UnitType::kQuarterMillimeters:
+          return value_ * (kQuarterMillimetersPerInch / kPicasPerInch);
         case CSSPrimitiveValue::UnitType::kCentimeters:
           return value_ * (kCentimetersPerInch / kPicasPerInch);
         case CSSPrimitiveValue::UnitType::kInches:

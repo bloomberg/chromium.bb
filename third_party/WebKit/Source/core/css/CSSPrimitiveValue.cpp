@@ -63,6 +63,7 @@ CSSPrimitiveValue::UnitCategory CSSPrimitiveValue::UnitTypeToUnitCategory(
     case UnitType::kPixels:
     case UnitType::kCentimeters:
     case UnitType::kMillimeters:
+    case UnitType::kQuarterMillimeters:
     case UnitType::kInches:
     case UnitType::kPoints:
     case UnitType::kPicas:
@@ -363,6 +364,9 @@ double CSSPrimitiveValue::ConversionToCanonicalUnitsScaleFactor(
     case UnitType::kMillimeters:
       factor = kCssPixelsPerMillimeter;
       break;
+    case UnitType::kQuarterMillimeters:
+      factor = kCssPixelsPerQuarterMillimeter;
+      break;
     case UnitType::kInches:
       factor = kCssPixelsPerInch;
       break;
@@ -440,6 +444,7 @@ bool CSSPrimitiveValue::UnitTypeToLengthUnitType(UnitType unit_type,
     case CSSPrimitiveValue::UnitType::kPixels:
     case CSSPrimitiveValue::UnitType::kCentimeters:
     case CSSPrimitiveValue::UnitType::kMillimeters:
+    case CSSPrimitiveValue::UnitType::kQuarterMillimeters:
     case CSSPrimitiveValue::UnitType::kInches:
     case CSSPrimitiveValue::UnitType::kPoints:
     case CSSPrimitiveValue::UnitType::kPicas:
@@ -549,6 +554,8 @@ const char* CSSPrimitiveValue::UnitTypeToString(UnitType type) {
       return "dpcm";
     case UnitType::kMillimeters:
       return "mm";
+    case UnitType::kQuarterMillimeters:
+      return "q";
     case UnitType::kInches:
       return "in";
     case UnitType::kPoints:
@@ -615,6 +622,7 @@ String CSSPrimitiveValue::CustomCSSText() const {
     case UnitType::kDotsPerInch:
     case UnitType::kDotsPerCentimeter:
     case UnitType::kMillimeters:
+    case UnitType::kQuarterMillimeters:
     case UnitType::kInches:
     case UnitType::kPoints:
     case UnitType::kPicas:
@@ -667,6 +675,7 @@ bool CSSPrimitiveValue::Equals(const CSSPrimitiveValue& other) const {
     case UnitType::kDotsPerInch:
     case UnitType::kDotsPerCentimeter:
     case UnitType::kMillimeters:
+    case UnitType::kQuarterMillimeters:
     case UnitType::kInches:
     case UnitType::kPoints:
     case UnitType::kPicas:

@@ -219,6 +219,9 @@ bool MediaValues::ComputeLengthImpl(double value,
     case CSSPrimitiveValue::UnitType::kMillimeters:
       result = value * kCssPixelsPerMillimeter;
       return true;
+    case CSSPrimitiveValue::UnitType::kQuarterMillimeters:
+      result = value * kCssPixelsPerQuarterMillimeter;
+      return true;
     case CSSPrimitiveValue::UnitType::kInches:
       result = value * kCssPixelsPerInch;
       return true;

@@ -69,6 +69,11 @@ class CSSUnitValues {
                                 CSSPrimitiveValue::UnitType::kMillimeters);
   }
 
+  static CSSUnitValue* q(double value) {
+    return CSSUnitValue::Create(
+        value, CSSPrimitiveValue::UnitType::kQuarterMillimeters);
+  }
+
   static CSSUnitValue* in(double value) {
     return CSSUnitValue::Create(value, CSSPrimitiveValue::UnitType::kInches);
   }

@@ -1310,6 +1310,7 @@ jumbo_source_set("unit_tests") {
     "css/cssom/CSSResourceValueTest.cpp",
     "css/cssom/CSSStyleImageValueTest.cpp",
     "css/cssom/CSSURLImageValueTest.cpp",
+    "css/cssom/CSSUnitValueTest.cpp",
     "css/cssom/CSSUnparsedValueTest.cpp",
     "css/cssom/CSSVariableReferenceValueTest.cpp",
     "css/cssom/FilteredComputedStylePropertyMapTest.cpp",

@@ -184,6 +184,29 @@ assertInterpolation({
   {at: 1, is: '150px'},
   {at: 1.5, is: '0px'}, // line-height must not be less than 0.
 ]);
+assertNoInterpolation({
+  property: 'line-height',
+  from: '4',
+  to: '14q',
+});
+assertInterpolation({
+  property: 'line-height',
+  from: '4q',
+  to: '14q',
+}, [
+  {at: -1, is: '0q'},
+  {at: -0.3, is: '1q'},
+  {at: 0, is: '4q'},
+  {at: 0.3, is: '7q'},
+  {at: 0.6, is: '10q'},
+  {at: 1, is: '14q'},
+  {at: 1.5, is: '19q'},
+]);
+assertNoInterpolation({
+  property: 'line-height',
+  from: '14q',
+  to: 'normal',
+});
 </script>
 </body>
 

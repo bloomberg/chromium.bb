@@ -144,6 +144,9 @@ double CSSToLengthConversionData::ZoomedComputedPixels(
     case CSSPrimitiveValue::UnitType::kMillimeters:
       return value * kCssPixelsPerMillimeter * Zoom();
 
+    case CSSPrimitiveValue::UnitType::kQuarterMillimeters:
+      return value * kCssPixelsPerQuarterMillimeter * Zoom();
+
     case CSSPrimitiveValue::UnitType::kInches:
       return value * kCssPixelsPerInch * Zoom();
 
