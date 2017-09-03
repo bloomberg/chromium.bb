@@ -21,6 +21,9 @@ Rules from the stylesheet:
 #o { font-size: 16px; }
 #p { font-size: 1pc; }
 #q { font-size: 100%; }
+#r { font-size: 40q; }
+#s { font-size: 40q; }
+#t { font-size: 40q; }
 Expected result:
 
 #a { font-size: 1em; }
@@ -40,5 +43,8 @@ Expected result:
 #o { font-size: 16px; }
 #p { font-size: 1pc; }
 #q { font-size: 100%; }
+#r { font-size: 40q; }
+#s { font-size: 40q; }
+#t { font-size: 40q; }
 
 

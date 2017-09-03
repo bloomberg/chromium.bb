@@ -27,6 +27,10 @@
       unit_type: "kMillimeters",
     },
     {
+      name: "q",
+      unit_type: "kQuarterMillimeters",
+    },
+    {
       name: "in",
       unit_type: "kInches",
     },

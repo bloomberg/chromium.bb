@@ -53,6 +53,7 @@ static CalculationCategory UnitCategory(CSSPrimitiveValue::UnitType type) {
     case CSSPrimitiveValue::UnitType::kPixels:
     case CSSPrimitiveValue::UnitType::kCentimeters:
     case CSSPrimitiveValue::UnitType::kMillimeters:
+    case CSSPrimitiveValue::UnitType::kQuarterMillimeters:
     case CSSPrimitiveValue::UnitType::kInches:
     case CSSPrimitiveValue::UnitType::kPoints:
     case CSSPrimitiveValue::UnitType::kPicas:
@@ -91,6 +92,7 @@ static bool HasDoubleValue(CSSPrimitiveValue::UnitType type) {
     case CSSPrimitiveValue::UnitType::kPixels:
     case CSSPrimitiveValue::UnitType::kCentimeters:
     case CSSPrimitiveValue::UnitType::kMillimeters:
+    case CSSPrimitiveValue::UnitType::kQuarterMillimeters:
     case CSSPrimitiveValue::UnitType::kInches:
     case CSSPrimitiveValue::UnitType::kPoints:
     case CSSPrimitiveValue::UnitType::kPicas:
