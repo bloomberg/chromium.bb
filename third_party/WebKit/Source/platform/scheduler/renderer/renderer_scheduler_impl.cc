@@ -299,12 +299,6 @@ scoped_refptr<MainThreadTaskQueue> RendererSchedulerImpl::ControlTaskQueue() {
 }
 
 scoped_refptr<MainThreadTaskQueue>
-RendererSchedulerImpl::BestEffortTaskQueue() {
-  helper_.CheckOnValidThread();
-  return helper_.BestEffortMainThreadTaskQueue();
-}
-
-scoped_refptr<MainThreadTaskQueue>
 RendererSchedulerImpl::VirtualTimeControlTaskQueue() {
   helper_.CheckOnValidThread();
   return virtual_time_control_task_queue_;

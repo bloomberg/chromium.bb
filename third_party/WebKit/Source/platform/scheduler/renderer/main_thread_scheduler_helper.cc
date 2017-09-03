@@ -46,18 +46,6 @@ scoped_refptr<TaskQueue> MainThreadSchedulerHelper::ControlTaskQueue() {
   return control_task_queue_;
 }
 
-scoped_refptr<MainThreadTaskQueue>
-MainThreadSchedulerHelper::BestEffortMainThreadTaskQueue() {
-  if (!best_effort_task_queue_) {
-    best_effort_task_queue_ =
-        NewTaskQueue(MainThreadTaskQueue::QueueCreationParams(
-                         MainThreadTaskQueue::QueueType::BEST_EFFORT)
-                         .SetShouldMonitorQuiescence(true));
-    best_effort_task_queue_->SetQueuePriority(TaskQueue::BEST_EFFORT_PRIORITY);
-  }
-  return best_effort_task_queue_;
-}
-
 scoped_refptr<MainThreadTaskQueue> MainThreadSchedulerHelper::NewTaskQueue(
     const MainThreadTaskQueue::QueueCreationParams& params) {
   return task_queue_manager_->CreateTaskQueue<MainThreadTaskQueue>(

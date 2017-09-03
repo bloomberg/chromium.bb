@@ -26,7 +26,6 @@ class PLATFORM_EXPORT MainThreadSchedulerHelper : public SchedulerHelper {
 
   scoped_refptr<MainThreadTaskQueue> DefaultMainThreadTaskQueue();
   scoped_refptr<MainThreadTaskQueue> ControlMainThreadTaskQueue();
-  scoped_refptr<MainThreadTaskQueue> BestEffortMainThreadTaskQueue();
 
  protected:
   scoped_refptr<TaskQueue> DefaultTaskQueue() override;
@@ -37,7 +36,6 @@ class PLATFORM_EXPORT MainThreadSchedulerHelper : public SchedulerHelper {
 
   const scoped_refptr<MainThreadTaskQueue> default_task_queue_;
   const scoped_refptr<MainThreadTaskQueue> control_task_queue_;
-  scoped_refptr<MainThreadTaskQueue> best_effort_task_queue_;
 
   DISALLOW_COPY_AND_ASSIGN(MainThreadSchedulerHelper);
 };
