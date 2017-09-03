@@ -28,32 +28,35 @@ idl_lexer_parser_files = get_path_info([
                                          "blink_idl_parser.py",
                                        ],
                                        "abspath")
-idl_compiler_files = get_path_info([
-                                     "idl_compiler.py",
+idl_compiler_files =
+    get_path_info(
+        [
+          "idl_compiler.py",
 
-                                     # Blink IDL front end (ex-lexer/parser)
-                                     "idl_definitions.py",
-                                     "idl_reader.py",
-                                     "idl_types.py",
-                                     "idl_validator.py",
-                                     "interface_dependency_resolver.py",
+          # Blink IDL front end (ex-lexer/parser)
+          "idl_definitions.py",
+          "idl_reader.py",
+          "idl_types.py",
+          "idl_validator.py",
+          "interface_dependency_resolver.py",
 
-                                     # V8 code generator
-                                     "code_generator.py",
-                                     "code_generator_v8.py",
-                                     "code_generator_web_agent_api.py",
-                                     "v8_attributes.py",
-                                     "v8_callback_function.py",
-                                     "v8_callback_interface.py",
-                                     "v8_dictionary.py",
-                                     "v8_globals.py",
-                                     "v8_interface.py",
-                                     "v8_methods.py",
-                                     "v8_types.py",
-                                     "v8_union.py",
-                                     "v8_utilities.py",
-                                   ],
-                                   "abspath")
+          # V8 code generator
+          "code_generator.py",
+          "code_generator_v8.py",
+          "code_generator_web_agent_api.py",
+          "v8_attributes.py",
+          "v8_callback_function.py",
+          "v8_callback_interface.py",
+          "v8_dictionary.py",
+          "v8_globals.py",
+          "v8_interface.py",
+          "v8_methods.py",
+          "v8_types.py",
+          "v8_union.py",
+          "v8_utilities.py",
+          "//third_party/blink/tools/blinkpy/common/name_style_converter.py",
+        ],
+        "abspath")
 
 # Calls the compute_interfaces_info_individual script.
 #
