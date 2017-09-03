@@ -57,7 +57,8 @@ class StubBufferHandleProvider
 
   ~StubBufferHandleProvider() override {}
 
-  mojo::ScopedSharedBufferHandle GetHandleForInterProcessTransit() override {
+  mojo::ScopedSharedBufferHandle GetHandleForInterProcessTransit(
+      bool read_only) override {
     NOTREACHED();
     return mojo::ScopedSharedBufferHandle();
   }

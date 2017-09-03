@@ -95,8 +95,8 @@ class CAPTURE_EXPORT VideoCaptureDevice
       class CAPTURE_EXPORT HandleProvider {
        public:
         virtual ~HandleProvider() {}
-        virtual mojo::ScopedSharedBufferHandle
-        GetHandleForInterProcessTransit() = 0;
+        virtual mojo::ScopedSharedBufferHandle GetHandleForInterProcessTransit(
+            bool read_only) = 0;
         virtual base::SharedMemoryHandle
         GetNonOwnedSharedMemoryHandleForLegacyIPC() = 0;
         virtual std::unique_ptr<VideoCaptureBufferHandle>

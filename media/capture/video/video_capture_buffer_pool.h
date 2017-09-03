@@ -41,9 +41,11 @@ class CAPTURE_EXPORT VideoCaptureBufferPool
  public:
   static constexpr int kInvalidId = -1;
 
-  // One-time (per client/per-buffer) call to allow sharing |buffer_id|.
+  // Provides a duplicate handle to the buffer. Destruction of this scoped Mojo
+  // handle does not result in releasing the shared memory held by the pool.
   virtual mojo::ScopedSharedBufferHandle GetHandleForInterProcessTransit(
-      int buffer_id) = 0;
+      int buffer_id,
+      bool read_only) = 0;
 
   virtual base::SharedMemoryHandle GetNonOwnedSharedMemoryHandleForLegacyIPC(
       int buffer_id) = 0;

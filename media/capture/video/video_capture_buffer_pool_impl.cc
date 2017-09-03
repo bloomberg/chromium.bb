@@ -28,7 +28,8 @@ VideoCaptureBufferPoolImpl::VideoCaptureBufferPoolImpl(
 VideoCaptureBufferPoolImpl::~VideoCaptureBufferPoolImpl() {}
 
 mojo::ScopedSharedBufferHandle
-VideoCaptureBufferPoolImpl::GetHandleForInterProcessTransit(int buffer_id) {
+VideoCaptureBufferPoolImpl::GetHandleForInterProcessTransit(int buffer_id,
+                                                            bool read_only) {
   base::AutoLock lock(lock_);
 
   VideoCaptureBufferTracker* tracker = GetTracker(buffer_id);
@@ -36,7 +37,7 @@ VideoCaptureBufferPoolImpl::GetHandleForInterProcessTransit(int buffer_id) {
     NOTREACHED() << "Invalid buffer_id.";
     return mojo::ScopedSharedBufferHandle();
   }
-  return tracker->GetHandleForTransit();
+  return tracker->GetHandleForTransit(read_only);
 }
 
 base::SharedMemoryHandle
@@ -227,9 +228,7 @@ int VideoCaptureBufferPoolImpl::ReserveForProducerInternal(
 
   std::unique_ptr<VideoCaptureBufferTracker> tracker =
       buffer_tracker_factory_->CreateTracker(storage_type);
-  // TODO(emircan): We pass the lock here to solve GMB allocation issue, see
-  // crbug.com/545238.
-  if (!tracker->Init(dimensions, pixel_format, storage_type, &lock_)) {
+  if (!tracker->Init(dimensions, pixel_format, storage_type)) {
     DLOG(ERROR) << "Error initializing VideoCaptureBufferTracker";
     return kInvalidId;
   }
