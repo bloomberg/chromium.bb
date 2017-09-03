@@ -15,6 +15,11 @@ struct CORE_EXPORT NGMarginStrut {
   LayoutUnit positive_margin;
   LayoutUnit negative_margin;
 
+  // Store quirky margins separately, quirky containers need to ignore
+  // quirky end margins.  Quirky margins are always default margins,
+  // which are always positive.
+  LayoutUnit quirky_positive_margin;
+
   // If this flag is set, we only Append non-quirky margins to this strut.
   // See comment inside NGBlockLayoutAlgorithm for when this occurs.
   bool is_quirky_container_start = false;
@@ -24,6 +29,10 @@ struct CORE_EXPORT NGMarginStrut {
 
   // Sum up negative and positive margins of this strut.
   LayoutUnit Sum() const;
+
+  // Sum up non-quirky margins of this strut, used by quirky
+  // containers to sum up the last margin.
+  LayoutUnit QuirkyContainerSum() const;
 
   bool operator==(const NGMarginStrut& other) const;
   bool operator!=(const NGMarginStrut& other) const {

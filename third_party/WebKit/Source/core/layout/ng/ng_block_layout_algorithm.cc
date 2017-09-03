@@ -246,19 +246,6 @@ RefPtr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
 
   NGMarginStrut input_margin_strut = ConstraintSpace().MarginStrut();
 
-  // If this node is a quirky container, (we are in quirks mode and either a
-  // table cell or body), we set our margin strut to a mode where it only
-  // considers non-quirky margins. E.g.
-  // <body>
-  //   <p></p>
-  //   <div style="margin-top: 10px"></div>
-  //   <h1>Hello</h1>
-  // </body>
-  // In the above example <p>'s & <h1>'s margins are ignored as they are
-  // quirky, and we only consider <div>'s 10px margin.
-  if (node_.IsQuirkyContainer())
-    input_margin_strut.is_quirky_container_start = true;
-
   LayoutUnit input_bfc_block_offset =
       ConstraintSpace().BfcOffset().block_offset;
 
@@ -279,6 +266,19 @@ RefPtr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
     input_bfc_block_offset = ContainerBfcOffset().block_offset;
     input_margin_strut = NGMarginStrut();
   }
+
+  // If this node is a quirky container, (we are in quirks mode and either a
+  // table cell or body), we set our margin strut to a mode where it only
+  // considers non-quirky margins. E.g.
+  // <body>
+  //   <p></p>
+  //   <div style="margin-top: 10px"></div>
+  //   <h1>Hello</h1>
+  // </body>
+  // In the above example <p>'s & <h1>'s margins are ignored as they are
+  // quirky, and we only consider <div>'s 10px margin.
+  if (node_.IsQuirkyContainer())
+    input_margin_strut.is_quirky_container_start = true;
 
   // If a new formatting context hits the margin collapsing if-branch above
   // then the BFC offset is still {} as the margin strut from the constraint
@@ -335,12 +335,17 @@ RefPtr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
   if (border_scrollbar_padding_.block_end ||
       previous_inflow_position.empty_block_affected_by_clearance ||
       ConstraintSpace().IsNewFormattingContext()) {
-    // TODO(ikilpatrick): If we are a quirky container and our last child had a
-    // quirky block end margin, we need to use the margin strut without the
-    // quirky margin appended. - http://jsbin.com/yizinagupo/edit?html,output
+    // If we are a quirky container, we ignore any quirky margins and
+    // just consider normal margins to extend our size.  Other UAs
+    // perform this calculation differently, e.g. by just ignoring the
+    // *last* quirky margin.
+    // TODO: revisit previous implementation to avoid changing behavior and
+    // https://html.spec.whatwg.org/multipage/rendering.html#margin-collapsing-quirks
     content_size_ =
         std::max(content_size_, previous_inflow_position.logical_block_offset +
-                                    end_margin_strut.Sum());
+                                    (node_.IsQuirkyContainer()
+                                         ? end_margin_strut.QuirkyContainerSum()
+                                         : end_margin_strut.Sum()));
     end_margin_strut = NGMarginStrut();
   }
 
