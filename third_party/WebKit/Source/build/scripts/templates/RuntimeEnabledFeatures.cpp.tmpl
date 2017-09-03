@@ -40,12 +40,20 @@ void RuntimeEnabledFeatures::SetOriginTrialControlledFeaturesEnabled(bool enable
 
 void RuntimeEnabledFeatures::SetFeatureEnabledFromString(
     const std::string& name, bool enable) {
+  static const struct {
+    const char* name;
+    bool* setting;
+  } kFeatures[] = {
   {% for feature in standard_features %}
-  if (name == "{{feature.name}}") {
-    Set{{feature.name}}Enabled(enable);
-    return;
-  }
+    {"{{feature.name}}", &is{{feature.name}}Enabled},
   {% endfor %}
+  };
+  for (const auto& feature : kFeatures) {
+    if (name == feature.name) {
+      *feature.setting = enable;
+      return;
+    }
+  }
   DLOG(ERROR) << "RuntimeEnabledFeature not recognized: " << name;
 }
 
