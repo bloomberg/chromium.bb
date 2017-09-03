@@ -376,7 +376,7 @@ void VideoCaptureController::OnNewBufferHandle(
          buffer_contexts_.end());
   buffer_contexts_.emplace_back(
       next_buffer_context_id_++, buffer_id, launched_device_.get(),
-      handle_provider->GetHandleForInterProcessTransit());
+      handle_provider->GetHandleForInterProcessTransit(true /* read only */));
 }
 
 void VideoCaptureController::OnFrameReadyInBuffer(

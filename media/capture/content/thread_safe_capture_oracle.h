@@ -12,6 +12,7 @@
 #include "media/base/video_frame.h"
 #include "media/capture/capture_export.h"
 #include "media/capture/content/video_capture_oracle.h"
+#include "media/capture/video/video_capture_buffer_handle.h"
 #include "media/capture/video/video_capture_device.h"
 
 namespace tracked_objects {
@@ -97,14 +98,16 @@ class CAPTURE_EXPORT ThreadSafeCaptureOracle
   void OnConsumerReportingUtilization(int frame_number, double utilization);
 
  private:
+  // Helper struct to hold the many arguments needed by DidCaptureFrame(), and
+  // also ensure that teardown of these objects happens in the correct order if
+  // bound to an aborted callback.
+  struct InFlightFrameCapture;
+
   friend class base::RefCountedThreadSafe<ThreadSafeCaptureOracle>;
   virtual ~ThreadSafeCaptureOracle();
 
   // Callback invoked on completion of all captures.
-  void DidCaptureFrame(int frame_number,
-                       VideoCaptureDevice::Client::Buffer buffer,
-                       base::TimeTicks capture_begin_time,
-                       base::TimeDelta estimated_frame_duration,
+  void DidCaptureFrame(std::unique_ptr<InFlightFrameCapture> capture,
                        scoped_refptr<VideoFrame> frame,
                        base::TimeTicks reference_time,
                        bool success);
