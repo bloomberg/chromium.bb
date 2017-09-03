@@ -1213,7 +1213,7 @@ void av1_setup_frame_buf_refs(AV1_COMMON *cm) {
 #endif
 }
 
-INLINE void get_mv_projection(MV *output, MV ref, int num, int den) {
+static void get_mv_projection(MV *output, MV ref, int num, int den) {
   output->row = (int16_t)(ref.row * (double)num / den);
   output->col = (int16_t)(ref.col * (double)num / den);
 }
@@ -1221,7 +1221,7 @@ INLINE void get_mv_projection(MV *output, MV ref, int num, int den) {
 #define MAX_OFFSET_WIDTH 64
 #define MAX_OFFSET_HEIGHT 32
 
-INLINE int get_block_position(AV1_COMMON *cm, int *mi_r, int *mi_c, int blk_row,
+static int get_block_position(AV1_COMMON *cm, int *mi_r, int *mi_c, int blk_row,
                               int blk_col, MV mv, int sign_bias) {
   if ((abs(mv.row) >> 3) > MAX_OFFSET_HEIGHT ||
       (abs(mv.col) >> 3) > MAX_OFFSET_WIDTH)
@@ -1240,7 +1240,7 @@ INLINE int get_block_position(AV1_COMMON *cm, int *mi_r, int *mi_c, int blk_row,
   return 1;
 }
 
-INLINE uint32_t mv_sign_reverse(int_mv ref) {
+static uint32_t mv_sign_reverse(int_mv ref) {
   int_mv this_mv;
   this_mv.as_mv.row = -ref.as_mv.row;
   this_mv.as_mv.col = -ref.as_mv.col;
