@@ -64,21 +64,19 @@ void InstallAttributeInternal(
   v8::Local<v8::Name> name = V8AtomicString(isolate, attribute.name);
   v8::AccessorNameGetterCallback getter = attribute.getter;
   v8::AccessorNameSetterCallback setter = attribute.setter;
-  v8::Local<v8::Value> data =
-      v8::External::New(isolate, const_cast<WrapperTypeInfo*>(attribute.data));
 
   DCHECK(attribute.property_location_configuration);
   if (attribute.property_location_configuration &
       V8DOMConfiguration::kOnInstance) {
     instance_template->SetNativeDataProperty(
-        name, getter, setter, data,
+        name, getter, setter, v8::Local<v8::Value>(),
         static_cast<v8::PropertyAttribute>(attribute.attribute),
         v8::Local<v8::AccessorSignature>());
   }
   if (attribute.property_location_configuration &
       V8DOMConfiguration::kOnPrototype) {
     prototype_template->SetNativeDataProperty(
-        name, getter, setter, data,
+        name, getter, setter, v8::Local<v8::Value>(),
         static_cast<v8::PropertyAttribute>(attribute.attribute),
         v8::Local<v8::AccessorSignature>());
   }
@@ -100,8 +98,6 @@ void InstallAttributeInternal(
   v8::Local<v8::Name> name = V8AtomicString(isolate, config.name);
   v8::AccessorNameGetterCallback getter = config.getter;
   v8::AccessorNameSetterCallback setter = config.setter;
-  v8::Local<v8::Value> data =
-      v8::External::New(isolate, const_cast<WrapperTypeInfo*>(config.data));
   v8::PropertyAttribute attribute =
       static_cast<v8::PropertyAttribute>(config.attribute);
   const unsigned location = config.property_location_configuration;
@@ -110,12 +106,14 @@ void InstallAttributeInternal(
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
   if (location & V8DOMConfiguration::kOnInstance && !instance.IsEmpty()) {
     instance
-        ->SetNativeDataProperty(context, name, getter, setter, data, attribute)
+        ->SetNativeDataProperty(context, name, getter, setter,
+                                v8::Local<v8::Value>(), attribute)
         .ToChecked();
   }
   if (location & V8DOMConfiguration::kOnPrototype && !prototype.IsEmpty()) {
     prototype
-        ->SetNativeDataProperty(context, name, getter, setter, data, attribute)
+        ->SetNativeDataProperty(context, name, getter, setter,
+                                v8::Local<v8::Value>(), attribute)
         .ToChecked();
   }
   if (location & V8DOMConfiguration::kOnInterface)
@@ -132,20 +130,18 @@ void InstallLazyDataAttributeInternal(
   v8::AccessorNameGetterCallback getter = attribute.getter;
   DCHECK(!attribute.setter);
   DCHECK_EQ(attribute.world_configuration, V8DOMConfiguration::kAllWorlds);
-  v8::Local<v8::Value> data =
-      v8::External::New(isolate, const_cast<WrapperTypeInfo*>(attribute.data));
 
   DCHECK(attribute.property_location_configuration);
   if (attribute.property_location_configuration &
       V8DOMConfiguration::kOnInstance) {
     instance_template->SetLazyDataProperty(
-        name, getter, data,
+        name, getter, v8::Local<v8::Value>(),
         static_cast<v8::PropertyAttribute>(attribute.attribute));
   }
   if (attribute.property_location_configuration &
       V8DOMConfiguration::kOnPrototype) {
     prototype_template->SetLazyDataProperty(
-        name, getter, data,
+        name, getter, v8::Local<v8::Value>(),
         static_cast<v8::PropertyAttribute>(attribute.attribute));
   }
   if (attribute.property_location_configuration &
@@ -265,8 +261,6 @@ void InstallAccessorInternal(
   if (config.holder_check_configuration ==
       V8DOMConfiguration::kDoNotCheckHolder)
     signature = v8::Local<v8::Signature>();
-  v8::Local<v8::Value> data =
-      v8::External::New(isolate, const_cast<WrapperTypeInfo*>(config.data));
 
   const unsigned location = config.property_location_configuration;
   DCHECK(location);
@@ -274,11 +268,12 @@ void InstallAccessorInternal(
       (V8DOMConfiguration::kOnInstance | V8DOMConfiguration::kOnPrototype)) {
     v8::Local<FunctionOrTemplate> getter =
         CreateAccessorFunctionOrTemplate<FunctionOrTemplate>(
-            isolate, getter_callback, cached_property_key, data, signature, 0);
+            isolate, getter_callback, cached_property_key,
+            v8::Local<v8::Value>(), signature, 0);
     v8::Local<FunctionOrTemplate> setter =
         CreateAccessorFunctionOrTemplate<FunctionOrTemplate>(
             isolate, setter_callback, V8PrivateProperty::kNoCachedAccessor,
-            data, signature, 1);
+            v8::Local<v8::Value>(), signature, 1);
     if (location & V8DOMConfiguration::kOnInstance &&
         !IsObjectAndEmpty(instance_or_template)) {
       instance_or_template->SetAccessorProperty(
@@ -300,11 +295,11 @@ void InstallAccessorInternal(
     v8::Local<FunctionOrTemplate> getter =
         CreateAccessorFunctionOrTemplate<FunctionOrTemplate>(
             isolate, getter_callback, V8PrivateProperty::kNoCachedAccessor,
-            data, v8::Local<v8::Signature>(), 0);
+            v8::Local<v8::Value>(), v8::Local<v8::Signature>(), 0);
     v8::Local<FunctionOrTemplate> setter =
         CreateAccessorFunctionOrTemplate<FunctionOrTemplate>(
             isolate, setter_callback, V8PrivateProperty::kNoCachedAccessor,
-            data, v8::Local<v8::Signature>(), 1);
+            v8::Local<v8::Value>(), v8::Local<v8::Signature>(), 1);
     interface_or_template->SetAccessorProperty(
         name, getter, setter,
         static_cast<v8::PropertyAttribute>(config.attribute));

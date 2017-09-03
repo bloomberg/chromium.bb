@@ -24,7 +24,8 @@ class SerializedScriptValue;
 
 CORE_EXPORT void V8ConstructorAttributeGetter(
     v8::Local<v8::Name> property_name,
-    const v8::PropertyCallbackInfo<v8::Value>&);
+    const v8::PropertyCallbackInfo<v8::Value>&,
+    const WrapperTypeInfo*);
 
 CORE_EXPORT v8::Local<v8::Value> V8Deserialize(
     v8::Isolate*,

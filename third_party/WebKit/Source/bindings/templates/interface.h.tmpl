@@ -18,8 +18,8 @@ class {{v8_class}}Constructor {
   STATIC_ONLY({{v8_class}}Constructor);
  public:
   static v8::Local<v8::FunctionTemplate> domTemplate(v8::Isolate*, const DOMWrapperWorld&);
-  {{exported}}static void NamedConstructorAttributeGetter(v8::Local<v8::Name> propertyName, const v8::PropertyCallbackInfo<v8::Value>& info);
-  {{exported}}static const WrapperTypeInfo wrapperTypeInfo;
+  static void NamedConstructorAttributeGetter(v8::Local<v8::Name> propertyName, const v8::PropertyCallbackInfo<v8::Value>& info);
+  static const WrapperTypeInfo wrapperTypeInfo;
 };
 
 {% endif %}
@@ -169,7 +169,7 @@ class {{v8_class}} {
     {%- else -%}
     const v8::FunctionCallbackInfo<v8::Value>&
     {%- endif -%});
-  {% elif attribute.needs_constructor_getter_callback %}
+  {% else %}
   {{exported}}static void {{attribute.name}}ConstructorGetterCallback{{world_suffix}}(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>&);
   {% endif %}
   {% if attribute.has_setter %}

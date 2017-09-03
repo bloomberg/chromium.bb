@@ -190,8 +190,6 @@ def attribute_context(interface, attribute, interfaces):
             else ['']),  # [PerWorldBindings]
     }
 
-    if is_constructor_attribute(attribute):
-        update_constructor_attribute_context(interface, attribute, context)
     if not has_custom_getter(attribute):
         getter_context(interface, attribute, context)
     if not has_custom_setter(attribute) and has_setter(interface, attribute):
@@ -252,7 +250,8 @@ def is_data_attribute(attribute):
 
 
 def is_lazy_data_attribute(attribute):
-    return ((attribute['constructor_type'] and not attribute['needs_constructor_getter_callback']) or
+    return ((attribute['constructor_type'] and not
+             (attribute['measure_as'] or attribute['deprecate_as'])) or
             (attribute['idl_type'] == 'Window' and attribute['name'] == 'frames') or
             (attribute['idl_type'] == 'Window' and attribute['name'] == 'self') or
             (attribute['idl_type'] == 'Window' and attribute['name'] == 'window'))
@@ -604,7 +603,3 @@ def is_constructor_attribute(attribute):
 
 def is_named_constructor_attribute(attribute):
     return attribute.idl_type.name.endswith('ConstructorConstructor')
-
-
-def update_constructor_attribute_context(interface, attribute, context):
-    context['needs_constructor_getter_callback'] = context['measure_as'] or context['deprecate_as']

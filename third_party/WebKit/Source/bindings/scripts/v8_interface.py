@@ -179,7 +179,6 @@ def runtime_call_stats_context(interface):
         'cross_origin_named_getter_counter': counter_prefix + 'CrossOriginNamedGetter',
         'cross_origin_named_setter_counter': counter_prefix + 'CrossOriginNamedSetter',
         'indexed_property_getter_counter': counter_prefix + 'IndexedPropertyGetter',
-        'named_constructor_attribute_getter_counter': counter_prefix + 'NamedConstructorAttributeGetter',
         'named_property_getter_counter': counter_prefix + 'NamedPropertyGetter',
         'named_property_query_counter': counter_prefix + 'NamedPropertyQuery',
         'named_property_setter_counter': counter_prefix + 'NamedPropertySetter',

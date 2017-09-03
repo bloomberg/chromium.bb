@@ -274,7 +274,11 @@ void {{v8_class_or_partial}}::{{attribute.name}}ConstructorGetterCallback{{world
   UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::k{{attribute.measure_as('ConstructorGetter')}});
   {% endif %}
 
-  V8ConstructorAttributeGetter(property, info);
+  {% if attribute.is_named_constructor %}
+  V8{{attribute.constructor_type}}::NamedConstructorAttributeGetter(property, info);
+  {% else %}
+  V8ConstructorAttributeGetter(property, info, &V8{{attribute.constructor_type}}::wrapperTypeInfo);
+  {% endif %}
 }
 {% endmacro %}
 
@@ -498,12 +502,7 @@ const v8::FunctionCallbackInfo<v8::Value>& info
 {% macro build_attribute_or_accessor_configuration(attribute, config_type) %}
 {% from 'utilities.cpp.tmpl' import property_location %}
 {% if attribute.constructor_type %}
-  {% if attribute.needs_constructor_getter_callback %}
-    {% set getter_callback = '%s::%sConstructorGetterCallback' % (v8_class_or_partial, attribute.name) %}
-  {% else %}
-    {% set getter_callback = 'V8%s::NamedConstructorAttributeGetter' % (attribute.constructor_type)
-        if attribute.is_named_constructor else 'V8ConstructorAttributeGetter' %}
-  {% endif %}
+  {% set getter_callback = '%s::%sConstructorGetterCallback' % (v8_class_or_partial, attribute.name) %}
   {% set setter_callback = 'nullptr' %}
 {% else %}{# regular attributes #}
   {% set getter_callback = '%s::%sAttributeGetterCallback' % (v8_class_or_partial, attribute.name) %}
@@ -511,9 +510,6 @@ const v8::FunctionCallbackInfo<v8::Value>& info
       if attribute.has_setter else 'nullptr' %}
 {% endif %}
 
-{% set wrapper_type_info =
-    'const_cast<WrapperTypeInfo*>(&V8%s::wrapperTypeInfo)' % attribute.constructor_type
-    if attribute.constructor_type else 'nullptr' %}
 {% set property_attribute = 'static_cast<v8::PropertyAttribute>(%s)' %
                             ' | '.join(attribute.property_attributes) %}
 {% set cached_property_key = 'V8PrivateProperty::k' +
@@ -531,13 +527,11 @@ const v8::FunctionCallbackInfo<v8::Value>& info
         '"%s"' % attribute.name,
         getter_callback_for_main_world,
         setter_callback_for_main_world,
-        wrapper_type_info,
     ],
     'non_main' : [
         '"%s"' % attribute.name,
         getter_callback,
         setter_callback,
-        wrapper_type_info,
     ],
 } %}
 {% set accessor_only_fields = [] if config_type == 'attribute' else [cached_property_key] %}

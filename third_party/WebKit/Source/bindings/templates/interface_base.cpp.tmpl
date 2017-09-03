@@ -196,7 +196,7 @@ static const struct {
 {% for world_suffix in attribute.world_suffixes %}
 {% if not attribute.constructor_type %}
 {{attribute_getter_callback(attribute, world_suffix)}}
-{% elif attribute.needs_constructor_getter_callback %}
+{% else %}
 {{constructor_getter_callback(attribute, world_suffix)}}
 {% endif %}
 {% if attribute.has_setter %}
