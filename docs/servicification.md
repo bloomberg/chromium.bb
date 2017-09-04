@@ -155,13 +155,31 @@ Finally, it is possible that your feature will have coupling to UI process state
 issue, see the section on [Coupling to UI](#Coupling-to-UI).
 
 ### iOS
-The high-level [servicification design doc](https://docs.google.com/document/d/15I7sQyQo6zsqXVNAlVd520tdGaS8FCicZHrN0yRu-oU/edit) gives the motivations and 
-vision for supporting services on iOS (in particular, search for the mentions 
-of iOS within the doc).
 
-Services are not *yet* supported, but this support is being actively being 
-worked on; see [this bug](crbug.com/705982) for the current status. If you have 
-a use case or need for services on iOS, contact blundell@chromium.org.
+Services are supported on iOS, with the usage model in //ios/web being very
+close to the usage model in //content. More specifically:
+
+* To embed a global service in the browser service, override
+  [WebClient::RegisterServices](https://cs.chromium.org/chromium/src/ios/web/public/web_client.h?q=WebClient::Register&sq=package:chromium&l=136). For an
+  example usage, see
+  [ShellWebClient](https://cs.chromium.org/chromium/src/ios/web/shell/shell_web_client.mm?q=ShellWebClient::RegisterS&sq=package:chromium&l=91)
+  and the related integration test that [connects to the embedded service](https://cs.chromium.org/chromium/src/ios/web/shell/test/service_manager_egtest.mm?q=service_manager_eg&sq=package:chromium&l=89).
+* To embed a per-BrowserState service, override
+  [BrowserState::RegisterServices](https://cs.chromium.org/chromium/src/ios/web/public/browser_state.h?q=BrowserState::RegisterServices&sq=package:chromium&l=89). For an
+  example usage, see
+  [ShellBrowserState](https://cs.chromium.org/chromium/src/ios/web/shell/shell_browser_state.mm?q=ShellBrowserState::RegisterServices&sq=package:chromium&l=48)
+  and the related integration test that [connects to the embedded service](https://cs.chromium.org/chromium/src/ios/web/shell/test/service_manager_egtest.mm?q=service_manager_eg&sq=package:chromium&l=110).
+* To register a per-frame Mojo interface, override
+  [WebClient::BindInterfaceRequestFromMainFrame](https://cs.chromium.org/chromium/src/ios/web/public/web_client.h?q=WebClient::BindInterfaceRequestFromMainFrame&sq=package:chromium&l=148). For an
+  example usage, see
+  [ShellWebClient](https://cs.chromium.org/chromium/src/ios/web/shell/shell_web_client.mm?type=cs&q=ShellWebClient::BindInterfaceRequestFromMainFrame&sq=package:chromium&l=115)
+  and the related integration test that [connects to the interface](https://cs.chromium.org/chromium/src/ios/web/shell/test/service_manager_egtest.mm?q=service_manager_eg&sq=package:chromium&l=130). Note that this is the
+  equivalent of [ContentBrowserClient::BindInterfaceRequestFromFrame()](https://cs.chromium.org/chromium/src/content/public/browser/content_browser_client.h?type=cs&q=ContentBrowserClient::BindInterfaceRequestFromFrame&sq=package:chromium&l=667), as on iOS all operation "in the content area" is implicitly
+  operating in the context of the page's main frame.
+
+If you have a use case or need for services on iOS, contact
+blundell@chromium.org. For general information on the motivations and vision for supporting services on iOS, see the high-level [servicification design doc](https://docs.google.com/document/d/15I7sQyQo6zsqXVNAlVd520tdGaS8FCicZHrN0yRu-oU/edit) (in particular, search for the mentions
+of iOS within the doc).
 
 ## Client-Specific Issues
 
