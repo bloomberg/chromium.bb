@@ -1,0 +1,15 @@
+This is a testharness.js-based test.
+PASS https: fetch should register ok
+FAIL loopback IPv4 http: fetch should register ok promise_test: Unhandled rejection with value: object "TypeError: Refused to fetch 'http://127.0.0.1/' because CORS preflights are not yet supported by this browser."
+FAIL loopback IPv6 http: fetch should register ok promise_test: Unhandled rejection with value: object "TypeError: Refused to fetch 'http://[::1]/' because CORS preflights are not yet supported by this browser."
+PASS non-loopback http: fetch should reject
+PASS non-loopback IPv4 http: fetch should reject
+PASS non-loopback IPv6 http: fetch should reject
+PASS https: and non-loopback http: fetch should reject
+PASS non-loopback http: and https: fetch should reject
+PASS wss: fetch should reject
+PASS file: fetch should reject
+PASS data: fetch should reject
+PASS unknown scheme fetch should reject
+Harness: the test ran to completion.
+

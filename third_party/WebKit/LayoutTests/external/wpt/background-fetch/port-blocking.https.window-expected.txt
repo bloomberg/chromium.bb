@@ -1,0 +1,9 @@
+This is a testharness.js-based test.
+PASS fetch to default https port should register ok
+FAIL fetch to default http port should register ok promise_test: Unhandled rejection with value: object "TypeError: Refused to fetch 'http://127.0.0.1/' because CORS preflights are not yet supported by this browser."
+PASS fetch to port 443 should register ok
+PASS fetch to port 80 should register ok, even over https
+PASS fetch to non-default non-bad port (8080) should register ok
+PASS fetch to bad port (SMTP) should reject
+Harness: the test ran to completion.
+

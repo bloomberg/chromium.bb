@@ -31,6 +31,10 @@ void BackgroundFetchRequestInfo::PopulateWithResponse(
 
   url_chain_ = response->url_chain;
 
+  // |headers| can be null when the request fails.
+  if (!response->headers)
+    return;
+
   // The response code, text and headers all are stored in the
   // net::HttpResponseHeaders object, shared by the |download_item|.
   response_code_ = response->headers->response_code();
@@ -38,7 +42,6 @@ void BackgroundFetchRequestInfo::PopulateWithResponse(
 
   size_t iter = 0;
   std::string name, value;
-
   while (response->headers->EnumerateHeaderLines(&iter, &name, &value))
     response_headers_[base::ToLowerASCII(name)] = value;
 }
