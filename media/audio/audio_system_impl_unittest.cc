@@ -31,6 +31,8 @@ bool operator==(const media::AudioDeviceDescription& lhs,
          lhs.group_id == rhs.group_id;
 }
 
+// TODO(olka): These are the only tests for AudioSystemHelper. Make sure that
+// AudioSystemHelper is tested if AudioSystemImpl goes away.
 class AudioSystemImplTest : public testing::TestWithParam<bool> {
  public:
   AudioSystemImplTest()
