@@ -17,15 +17,19 @@ CSSParserToken CSSParserTokenStream::ConsumeIncludingWhitespace() {
   return result;
 }
 
-void CSSParserTokenStream::UncheckedConsumeComponentValue() {
-  unsigned nesting_level = 0;
+void CSSParserTokenStream::UncheckedConsumeComponentValue(
+    unsigned nesting_level) {
+  DCHECK(HasLookAhead());
+
+  // Have to use internal consume/peek in here because they can read past
+  // start/end of blocks
   do {
-    const CSSParserToken& token = UncheckedConsume();
+    const CSSParserToken& token = UncheckedConsumeInternal();
     if (token.GetBlockType() == CSSParserToken::kBlockStart)
       nesting_level++;
     else if (token.GetBlockType() == CSSParserToken::kBlockEnd)
       nesting_level--;
-  } while (nesting_level && !AtEnd());
+  } while (nesting_level && !PeekInternal().IsEOF());
 }
 
 }  // namespace blink
