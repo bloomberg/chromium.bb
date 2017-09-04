@@ -30,30 +30,31 @@
 
 #include "core/html/track/vtt/VTTTokenizer.h"
 
+#include "core/html/parser/HTMLEntityParser.h"
 #include "core/html/parser/MarkupTokenizerInlines.h"
-#include "platform/wtf/text/CharacterNames.h"
 #include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
 
-#define WEBVTT_BEGIN_STATE(stateName) \
-  case stateName:                     \
-  stateName:
-#define WEBVTT_ADVANCE_TO(stateName)                      \
+#define WEBVTT_BEGIN_STATE(state_name) \
+  case state_name:                     \
+  state_name:
+#define WEBVTT_ADVANCE_TO(state_name)                     \
   do {                                                    \
-    state = stateName;                                    \
+    state = state_name;                                   \
     DCHECK(!input_.IsEmpty());                            \
     input_stream_preprocessor_.Advance(input_);           \
     cc = input_stream_preprocessor_.NextInputCharacter(); \
-    goto stateName;                                       \
+    goto state_name;                                      \
   } while (false)
-
-template <unsigned charactersCount>
-ALWAYS_INLINE bool EqualLiteral(const StringBuilder& s,
-                                const char (&characters)[charactersCount]) {
-  return WTF::Equal(s, reinterpret_cast<const LChar*>(characters),
-                    charactersCount - 1);
-}
+#define WEBVTT_SWITCH_TO(state_name)                      \
+  do {                                                    \
+    state = state_name;                                   \
+    DCHECK(!input_.IsEmpty());                            \
+    input_stream_preprocessor_.Peek(input_);              \
+    cc = input_stream_preprocessor_.NextInputCharacter(); \
+    goto state_name;                                      \
+  } while (false)
 
 static void AddNewClass(StringBuilder& classes,
                         const StringBuilder& new_class) {
@@ -72,6 +73,25 @@ inline bool AdvanceAndEmitToken(SegmentedString& source,
                                 const VTTToken& token) {
   source.AdvanceAndUpdateLineNumber();
   return EmitToken(result_token, token);
+}
+
+static void ProcessEntity(SegmentedString& source,
+                          StringBuilder& result,
+                          UChar additional_allowed_character = '\0') {
+  bool not_enough_characters = false;
+  DecodedHTMLEntity decoded_entity;
+  bool success =
+      ConsumeHTMLEntity(source, decoded_entity, not_enough_characters,
+                        additional_allowed_character);
+  if (not_enough_characters) {
+    result.Append('&');
+  } else if (!success) {
+    DCHECK(decoded_entity.IsEmpty());
+    result.Append('&');
+  } else {
+    for (unsigned i = 0; i < decoded_entity.length; ++i)
+      result.Append(decoded_entity.data[i]);
+  }
 }
 
 VTTTokenizer::VTTTokenizer(const String& input)
@@ -97,11 +117,12 @@ bool VTTTokenizer::NextToken(VTTToken& token) {
   StringBuilder classes;
   enum {
     kDataState,
-    kEscapeState,
+    kHTMLCharacterReferenceInDataState,
     kTagState,
     kStartTagState,
     kStartTagClassState,
     kStartTagAnnotationState,
+    kHTMLCharacterReferenceInAnnotationState,
     kEndTagState,
     kTimestampTagState,
   } state = kDataState;
@@ -110,8 +131,7 @@ bool VTTTokenizer::NextToken(VTTToken& token) {
   switch (state) {
     WEBVTT_BEGIN_STATE(kDataState) {
       if (cc == '&') {
-        buffer.Append(static_cast<LChar>(cc));
-        WEBVTT_ADVANCE_TO(kEscapeState);
+        WEBVTT_ADVANCE_TO(kHTMLCharacterReferenceInDataState);
       } else if (cc == '<') {
         if (result.IsEmpty()) {
           WEBVTT_ADVANCE_TO(kTagState);
@@ -131,47 +151,9 @@ bool VTTTokenizer::NextToken(VTTToken& token) {
     }
     END_STATE()
 
-    WEBVTT_BEGIN_STATE(kEscapeState) {
-      if (cc == ';') {
-        if (EqualLiteral(buffer, "&amp")) {
-          result.Append('&');
-        } else if (EqualLiteral(buffer, "&lt")) {
-          result.Append('<');
-        } else if (EqualLiteral(buffer, "&gt")) {
-          result.Append('>');
-        } else if (EqualLiteral(buffer, "&lrm")) {
-          result.Append(kLeftToRightMarkCharacter);
-        } else if (EqualLiteral(buffer, "&rlm")) {
-          result.Append(kRightToLeftMarkCharacter);
-        } else if (EqualLiteral(buffer, "&nbsp")) {
-          result.Append(kNoBreakSpaceCharacter);
-        } else {
-          buffer.Append(static_cast<LChar>(cc));
-          result.Append(buffer);
-        }
-        buffer.Clear();
-        WEBVTT_ADVANCE_TO(kDataState);
-      } else if (IsASCIIAlphanumeric(cc)) {
-        buffer.Append(static_cast<LChar>(cc));
-        WEBVTT_ADVANCE_TO(kEscapeState);
-      } else if (cc == '<') {
-        result.Append(buffer);
-        return EmitToken(token, VTTToken::StringToken(result.ToString()));
-      } else if (cc == kEndOfFileMarker) {
-        result.Append(buffer);
-        return AdvanceAndEmitToken(input_, token,
-                                   VTTToken::StringToken(result.ToString()));
-      } else {
-        result.Append(buffer);
-        buffer.Clear();
-
-        if (cc == '&') {
-          buffer.Append(static_cast<LChar>(cc));
-          WEBVTT_ADVANCE_TO(kEscapeState);
-        }
-        result.Append(cc);
-        WEBVTT_ADVANCE_TO(kDataState);
-      }
+    WEBVTT_BEGIN_STATE(kHTMLCharacterReferenceInDataState) {
+      ProcessEntity(input_, result);
+      WEBVTT_SWITCH_TO(kDataState);
     }
     END_STATE()
 
@@ -236,6 +218,9 @@ bool VTTTokenizer::NextToken(VTTToken& token) {
     END_STATE()
 
     WEBVTT_BEGIN_STATE(kStartTagAnnotationState) {
+      if (cc == '&') {
+        WEBVTT_ADVANCE_TO(kHTMLCharacterReferenceInAnnotationState);
+      }
       if (cc == '>' || cc == kEndOfFileMarker) {
         return AdvanceAndEmitToken(
             input_, token,
@@ -244,6 +229,12 @@ bool VTTTokenizer::NextToken(VTTToken& token) {
       }
       buffer.Append(cc);
       WEBVTT_ADVANCE_TO(kStartTagAnnotationState);
+    }
+    END_STATE()
+
+    WEBVTT_BEGIN_STATE(kHTMLCharacterReferenceInAnnotationState) {
+      ProcessEntity(input_, buffer, '>');
+      WEBVTT_SWITCH_TO(kStartTagAnnotationState);
     }
     END_STATE()
 
