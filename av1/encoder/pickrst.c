@@ -394,8 +394,8 @@ static void search_selfguided_restoration(uint8_t *dat8, int width, int height,
     aom_clear_system_state();
     encode_xq(exq, exqd);
     err = finer_search_pixel_proj_error(src8, width, height, src_stride, dat8,
-                                        dat_stride, bit_depth, flt1, width,
-                                        flt2, width, 2, exqd);
+                                        dat_stride, use_highbitdepth, flt1,
+                                        width, flt2, width, 2, exqd);
     if (besterr == -1 || err < besterr) {
       bestep = ep;
       besterr = err;
