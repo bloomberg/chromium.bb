@@ -70,6 +70,9 @@ initWithCollectionController:
     _headerController = headerController;
     _collectionController = collectionController;
 
+    _headerController.collectionSynchronizer = self;
+    _collectionController.headerSynchronizer = self;
+
     _collectionShiftingOffset = 0;
   }
   return self;

@@ -159,12 +159,6 @@
       [[ContentSuggestionsHeaderSynchronizer alloc]
           initWithCollectionController:self.viewController
                       headerController:self.headerCoordinator.headerController];
-
-  self.viewController.headerSynchronizer =
-      self.headerCollectionInteractionHandler;
-  self.headerCoordinator.collectionSynchronizer =
-      self.headerCollectionInteractionHandler;
-
 }
 
 - (void)stop {

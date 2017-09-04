@@ -197,11 +197,6 @@ const char kRateThisAppCommand[] = "ratethisapp";
       [[ContentSuggestionsHeaderSynchronizer alloc]
           initWithCollectionController:self.suggestionsViewController
                       headerController:self.headerController];
-
-  self.suggestionsViewController.headerSynchronizer =
-      self.headerCollectionInteractionHandler;
-  self.headerController.collectionSynchronizer =
-      self.headerCollectionInteractionHandler;
 }
 
 - (void)stop {
