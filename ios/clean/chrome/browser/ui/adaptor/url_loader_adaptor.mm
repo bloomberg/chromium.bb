@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/clean/chrome/browser/ui/url_loader_adaptor.h"
+#import "ios/clean/chrome/browser/ui/adaptor/url_loader_adaptor.h"
 
 #include "base/strings/sys_string_conversions.h"
 #include "ios/web/public/referrer.h"

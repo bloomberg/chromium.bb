@@ -20,7 +20,7 @@ source_set("bookmarks") {
     "//ios/chrome/browser/ui/bookmarks",
     "//ios/chrome/browser/ui/browser_list",
     "//ios/chrome/browser/ui/coordinators",
-    "//ios/clean/chrome/browser/ui",
+    "//ios/clean/chrome/browser/ui/adaptor",
     "//ios/clean/chrome/browser/ui/commands",
     "//ios/web",
   ]

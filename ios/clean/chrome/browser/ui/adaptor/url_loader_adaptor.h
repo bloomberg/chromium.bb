@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CLEAN_CHROME_BROWSER_UI_URL_LOADER_ADAPTOR_H_
-#define IOS_CLEAN_CHROME_BROWSER_UI_URL_LOADER_ADAPTOR_H_
+#ifndef IOS_CLEAN_CHROME_BROWSER_UI_ADAPTOR_URL_LOADER_ADAPTOR_H_
+#define IOS_CLEAN_CHROME_BROWSER_UI_ADAPTOR_URL_LOADER_ADAPTOR_H_
 
 #import "ios/chrome/browser/ui/url_loader.h"
 
@@ -17,4 +17,4 @@
 
 @end
 
-#endif  // IOS_CLEAN_CHROME_BROWSER_UI_URL_LOADER_ADAPTOR_H_
+#endif  // IOS_CLEAN_CHROME_BROWSER_UI_ADAPTOR_URL_LOADER_ADAPTOR_H_

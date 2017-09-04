@@ -18,7 +18,7 @@
 #import "ios/chrome/browser/ui/browser_list/browser.h"
 #import "ios/chrome/browser/ui/coordinators/browser_coordinator+internal.h"
 #include "ios/chrome/browser/ui/ui_util.h"
-#import "ios/clean/chrome/browser/ui/url_loader_adaptor.h"
+#import "ios/clean/chrome/browser/ui/adaptor/url_loader_adaptor.h"
 #include "ios/web/public/referrer.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
