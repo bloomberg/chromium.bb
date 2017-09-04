@@ -76,7 +76,7 @@ void OnConnect(
     scoped_refptr<PrefRegistry> pref_registry,
     ConnectCallback callback,
     mojom::PersistentPrefStoreConnectionPtr persistent_pref_store_connection,
-    mojom::PersistentPrefStoreConnectionPtr incognito_connection,
+    mojom::IncognitoPersistentPrefStoreConnectionPtr incognito_connection,
     std::vector<mojom::PrefRegistrationPtr> defaults,
     std::unordered_map<PrefValueStore::PrefStoreType,
                        mojom::PrefStoreConnectionPtr> connections) {
@@ -94,22 +94,27 @@ void OnConnect(
   scoped_refptr<PersistentPrefStore> persistent_pref_store(
       new PersistentPrefStoreClient(
           std::move(persistent_pref_store_connection)));
-  // If in incognito mode, |persistent_pref_store| above will be a connection to
-  // an in-memory pref store and |incognito_connection| will refer to the
-  // underlying profile's user pref store.
-  scoped_refptr<PersistentPrefStore> user_pref_store =
-      incognito_connection
-          ? new OverlayUserPrefStore(
-                persistent_pref_store.get(),
-                new PersistentPrefStoreClient(std::move(incognito_connection)))
-          : persistent_pref_store;
+  if (incognito_connection) {
+    // If in incognito mode, |persistent_pref_store| above will be a connection
+    // to an in-memory pref store and |incognito_connection| will refer to the
+    // underlying profile's user pref store.
+    auto overlay_pref_store = base::MakeRefCounted<OverlayUserPrefStore>(
+        persistent_pref_store.get(),
+        new PersistentPrefStoreClient(
+            std::move(incognito_connection->pref_store_connection)));
+    for (const auto& overlay_pref_name :
+         incognito_connection->overlay_pref_names) {
+      overlay_pref_store->RegisterOverlayPref(overlay_pref_name);
+    }
+    persistent_pref_store = overlay_pref_store;
+  }
   PrefNotifierImpl* pref_notifier = new PrefNotifierImpl();
   auto* pref_value_store = new PrefValueStore(
       managed_prefs.get(), supervised_user_prefs.get(), extension_prefs.get(),
-      command_line_prefs.get(), user_pref_store.get(), recommended_prefs.get(),
-      pref_registry->defaults().get(), pref_notifier);
+      command_line_prefs.get(), persistent_pref_store.get(),
+      recommended_prefs.get(), pref_registry->defaults().get(), pref_notifier);
   auto pref_service = base::MakeUnique<PrefService>(
-      pref_notifier, pref_value_store, user_pref_store.get(),
+      pref_notifier, pref_value_store, persistent_pref_store.get(),
       pref_registry.get(), base::Bind(&DoNothingHandleReadError), true);
   switch (pref_service->GetAllPrefStoresInitializationStatus()) {
     case PrefService::INITIALIZATION_STATUS_WAITING:

@@ -38,7 +38,8 @@ class ScopedPrefConnectionBuilder
       PersistentPrefStoreImpl* persistent_pref_store);
 
   void ProvideIncognitoPersistentPrefStoreUnderlay(
-      PersistentPrefStoreImpl* persistent_pref_store);
+      PersistentPrefStoreImpl* persistent_pref_store,
+      const std::vector<const char*>& overlay_pref_names);
 
   void ProvideDefaults(std::vector<mojom::PrefRegistrationPtr> defaults);
 
@@ -56,7 +57,7 @@ class ScopedPrefConnectionBuilder
   std::vector<mojom::PrefRegistrationPtr> defaults_;
 
   mojom::PersistentPrefStoreConnectionPtr persistent_pref_store_connection_;
-  mojom::PersistentPrefStoreConnectionPtr incognito_connection_;
+  mojom::IncognitoPersistentPrefStoreConnectionPtr incognito_connection_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedPrefConnectionBuilder);
 };

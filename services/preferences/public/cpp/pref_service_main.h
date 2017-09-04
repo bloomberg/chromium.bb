@@ -29,7 +29,8 @@ CreatePrefService(PrefStore* managed_prefs,
                   PersistentPrefStore* user_prefs,
                   PersistentPrefStore* incognito_user_prefs_underlay,
                   PrefStore* recommended_prefs,
-                  PrefRegistry* pref_registry);
+                  PrefRegistry* pref_registry,
+                  std::vector<const char*> overlay_pref_names);
 
 }  // namespace prefs
 

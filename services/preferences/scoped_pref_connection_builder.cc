@@ -41,10 +41,18 @@ void ScopedPrefConnectionBuilder::ProvidePersistentPrefStore(
 }
 
 void ScopedPrefConnectionBuilder::ProvideIncognitoPersistentPrefStoreUnderlay(
-    PersistentPrefStoreImpl* persistent_pref_store) {
-  incognito_connection_ = persistent_pref_store->CreateConnection(
-      PersistentPrefStoreImpl::ObservedPrefs(observed_prefs_.begin(),
-                                             observed_prefs_.end()));
+    PersistentPrefStoreImpl* persistent_pref_store,
+    const std::vector<const char*>& overlay_pref_names) {
+  PersistentPrefStoreImpl::ObservedPrefs observed_prefs(observed_prefs_.begin(),
+                                                        observed_prefs_.end());
+  std::vector<std::string> filtered_overlay_pref_names;
+  for (const char* overlay_pref_name : overlay_pref_names) {
+    if (base::ContainsKey(observed_prefs, overlay_pref_name))
+      filtered_overlay_pref_names.emplace_back(overlay_pref_name);
+  }
+  incognito_connection_ = mojom::IncognitoPersistentPrefStoreConnection::New(
+      persistent_pref_store->CreateConnection(std::move(observed_prefs)),
+      std::move(filtered_overlay_pref_names));
 }
 
 void ScopedPrefConnectionBuilder::ProvideDefaults(

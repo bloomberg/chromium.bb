@@ -44,7 +44,8 @@ class PrefStoreManagerImpl::ConnectorConnection
     if (owner_->incognito_persistent_pref_store_underlay_) {
       if (owner_->incognito_persistent_pref_store_underlay_->initialized()) {
         connection->ProvideIncognitoPersistentPrefStoreUnderlay(
-            owner_->incognito_persistent_pref_store_underlay_.get());
+            owner_->incognito_persistent_pref_store_underlay_.get(),
+            owner_->overlay_pref_names_);
       } else {
         owner_->pending_persistent_incognito_connections_.push_back(connection);
       }
@@ -65,7 +66,8 @@ PrefStoreManagerImpl::PrefStoreManagerImpl(
     PersistentPrefStore* user_prefs,
     PersistentPrefStore* incognito_user_prefs_underlay,
     PrefStore* recommended_prefs,
-    PrefRegistry* pref_registry)
+    PrefRegistry* pref_registry,
+    std::vector<const char*> overlay_pref_names)
     : shared_pref_registry_(base::MakeUnique<SharedPrefRegistry>(
           make_scoped_refptr(pref_registry))),
       weak_factory_(this) {
@@ -80,10 +82,13 @@ PrefStoreManagerImpl::PrefStoreManagerImpl(
   if (incognito_user_prefs_underlay) {
     incognito_persistent_pref_store_underlay_ =
         base::MakeUnique<PersistentPrefStoreImpl>(
-            make_scoped_refptr(user_prefs),
+            make_scoped_refptr(incognito_user_prefs_underlay),
             base::BindOnce(
                 &PrefStoreManagerImpl::OnIncognitoPersistentPrefStoreReady,
                 base::Unretained(this)));
+    overlay_pref_names_ = std::move(overlay_pref_names);
+  } else {
+    DCHECK(overlay_pref_names.empty());
   }
   RegisterPrefStore(PrefValueStore::MANAGED_STORE, managed_prefs);
   RegisterPrefStore(PrefValueStore::SUPERVISED_USER_STORE,
@@ -129,7 +134,7 @@ void PrefStoreManagerImpl::OnIncognitoPersistentPrefStoreReady() {
   DVLOG(1) << "Incognito PersistentPrefStore ready";
   for (const auto& connection : pending_persistent_connections_)
     connection->ProvideIncognitoPersistentPrefStoreUnderlay(
-        incognito_persistent_pref_store_underlay_.get());
+        incognito_persistent_pref_store_underlay_.get(), overlay_pref_names_);
   pending_persistent_incognito_connections_.clear();
 }
 
