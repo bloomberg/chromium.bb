@@ -417,6 +417,21 @@ class ServiceWorkerStorageTest : public testing::Test {
     return result;
   }
 
+  ServiceWorkerStatusCode GetUserDataByKeyPrefix(
+      int64_t registration_id,
+      const std::string& key_prefix,
+      std::vector<std::string>* data) {
+    bool was_called = false;
+    ServiceWorkerStatusCode result = SERVICE_WORKER_ERROR_MAX_VALUE;
+    storage()->GetUserDataByKeyPrefix(
+        registration_id, key_prefix,
+        base::Bind(&GetUserDataCallback, &was_called, data, &result));
+    EXPECT_FALSE(was_called);  // always async
+    base::RunLoop().RunUntilIdle();
+    EXPECT_TRUE(was_called);
+    return result;
+  }
+
   ServiceWorkerStatusCode StoreUserData(
       int64_t registration_id,
       const GURL& origin,
@@ -437,6 +452,20 @@ class ServiceWorkerStorageTest : public testing::Test {
     ServiceWorkerStatusCode result = SERVICE_WORKER_ERROR_MAX_VALUE;
     storage()->ClearUserData(registration_id, keys,
                              MakeStatusCallback(&was_called, &result));
+    EXPECT_FALSE(was_called);  // always async
+    base::RunLoop().RunUntilIdle();
+    EXPECT_TRUE(was_called);
+    return result;
+  }
+
+  ServiceWorkerStatusCode ClearUserDataByKeyPrefixes(
+      int64_t registration_id,
+      const std::vector<std::string>& key_prefixes) {
+    bool was_called = false;
+    ServiceWorkerStatusCode result = SERVICE_WORKER_ERROR_MAX_VALUE;
+    storage()->ClearUserDataByKeyPrefixes(
+        registration_id, key_prefixes,
+        MakeStatusCallback(&was_called, &result));
     EXPECT_FALSE(was_called);  // always async
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(was_called);
@@ -608,10 +637,14 @@ TEST_F(ServiceWorkerStorageTest, DisabledStorage) {
   EXPECT_EQ(SERVICE_WORKER_ERROR_ABORT,
             GetUserData(kRegistrationId, {kUserDataKey}, &user_data_out));
   EXPECT_EQ(SERVICE_WORKER_ERROR_ABORT,
+            GetUserDataByKeyPrefix(kRegistrationId, "prefix", &user_data_out));
+  EXPECT_EQ(SERVICE_WORKER_ERROR_ABORT,
             StoreUserData(kRegistrationId, kScope.GetOrigin(),
                           {{kUserDataKey, "foo"}}));
   EXPECT_EQ(SERVICE_WORKER_ERROR_ABORT,
             ClearUserData(kRegistrationId, {kUserDataKey}));
+  EXPECT_EQ(SERVICE_WORKER_ERROR_ABORT,
+            ClearUserDataByKeyPrefixes(kRegistrationId, {"prefix"}));
   std::vector<std::pair<int64_t, std::string>> data_list_out;
   EXPECT_EQ(SERVICE_WORKER_ERROR_ABORT,
             GetUserDataForAllRegistrations(kUserDataKey, &data_list_out));
@@ -1045,6 +1078,27 @@ TEST_F(ServiceWorkerStorageTest, StoreUserData) {
   ASSERT_EQ(1u, data_out.size());
   EXPECT_EQ("data4", data_out[0]);
 
+  // Get/delete multiple user data keys by prefixes.
+  EXPECT_EQ(SERVICE_WORKER_OK,
+            StoreUserData(kRegistrationId, kScope.GetOrigin(),
+                          {{"prefixA", "data1"},
+                           {"prefixA2", "data2"},
+                           {"prefixB", "data3"},
+                           {"prefixC", "data4"}}));
+  EXPECT_EQ(SERVICE_WORKER_OK,
+            GetUserDataByKeyPrefix(kRegistrationId, "prefix", &data_out));
+  ASSERT_EQ(4u, data_out.size());
+  EXPECT_EQ("data1", data_out[0]);
+  EXPECT_EQ("data2", data_out[1]);
+  EXPECT_EQ("data3", data_out[2]);
+  EXPECT_EQ("data4", data_out[3]);
+  EXPECT_EQ(SERVICE_WORKER_OK, ClearUserDataByKeyPrefixes(
+                                   kRegistrationId, {"prefixA", "prefixC"}));
+  EXPECT_EQ(SERVICE_WORKER_OK,
+            GetUserDataByKeyPrefix(kRegistrationId, "prefix", &data_out));
+  ASSERT_EQ(1u, data_out.size());
+  EXPECT_EQ("data3", data_out[0]);
+
   // User data should be deleted when the associated registration is deleted.
   ASSERT_EQ(
       SERVICE_WORKER_OK,
@@ -1071,7 +1125,13 @@ TEST_F(ServiceWorkerStorageTest, StoreUserData) {
       SERVICE_WORKER_ERROR_FAILED,
       GetUserData(kInvalidServiceWorkerRegistrationId, {"key"}, &data_out));
   EXPECT_EQ(SERVICE_WORKER_ERROR_FAILED,
+            GetUserDataByKeyPrefix(kInvalidServiceWorkerRegistrationId,
+                                   "prefix", &data_out));
+  EXPECT_EQ(SERVICE_WORKER_ERROR_FAILED,
             ClearUserData(kInvalidServiceWorkerRegistrationId, {"key"}));
+  EXPECT_EQ(SERVICE_WORKER_ERROR_FAILED,
+            ClearUserDataByKeyPrefixes(kInvalidServiceWorkerRegistrationId,
+                                       {"prefix"}));
 
   // Data access with an empty key should be failed.
   EXPECT_EQ(SERVICE_WORKER_ERROR_FAILED,
@@ -1087,6 +1147,8 @@ TEST_F(ServiceWorkerStorageTest, StoreUserData) {
       SERVICE_WORKER_ERROR_FAILED,
       GetUserData(kRegistrationId, std::vector<std::string>(), &data_out));
   EXPECT_EQ(SERVICE_WORKER_ERROR_FAILED,
+            GetUserDataByKeyPrefix(kRegistrationId, std::string(), &data_out));
+  EXPECT_EQ(SERVICE_WORKER_ERROR_FAILED,
             GetUserData(kRegistrationId, {std::string()}, &data_out));
   EXPECT_EQ(SERVICE_WORKER_ERROR_FAILED,
             GetUserData(kRegistrationId, {std::string(), "key"}, &data_out));
@@ -1096,6 +1158,10 @@ TEST_F(ServiceWorkerStorageTest, StoreUserData) {
             ClearUserData(kRegistrationId, {std::string()}));
   EXPECT_EQ(SERVICE_WORKER_ERROR_FAILED,
             ClearUserData(kRegistrationId, {std::string(), "key"}));
+  EXPECT_EQ(SERVICE_WORKER_ERROR_FAILED,
+            ClearUserDataByKeyPrefixes(kRegistrationId, {}));
+  EXPECT_EQ(SERVICE_WORKER_ERROR_FAILED,
+            ClearUserDataByKeyPrefixes(kRegistrationId, {std::string()}));
   data_list_out.clear();
   EXPECT_EQ(SERVICE_WORKER_ERROR_FAILED,
             GetUserDataForAllRegistrations(std::string(), &data_list_out));
@@ -1115,11 +1181,15 @@ TEST_F(ServiceWorkerStorageTest, GetUserData_BeforeInitialize) {
   std::vector<std::string> data_out;
   EXPECT_EQ(SERVICE_WORKER_ERROR_NOT_FOUND,
             GetUserData(kRegistrationId, {"key"}, &data_out));
+  EXPECT_EQ(SERVICE_WORKER_ERROR_NOT_FOUND,
+            GetUserDataByKeyPrefix(kRegistrationId, "prefix", &data_out));
 }
 
 TEST_F(ServiceWorkerStorageTest, ClearUserData_BeforeInitialize) {
   const int kRegistrationId = 0;
   EXPECT_EQ(SERVICE_WORKER_OK, ClearUserData(kRegistrationId, {"key"}));
+  EXPECT_EQ(SERVICE_WORKER_OK,
+            ClearUserDataByKeyPrefixes(kRegistrationId, {"prefix"}));
 }
 
 TEST_F(ServiceWorkerStorageTest,

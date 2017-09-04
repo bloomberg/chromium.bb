@@ -882,7 +882,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::ReadUserData(
 
 ServiceWorkerDatabase::Status ServiceWorkerDatabase::ReadUserDataByKeyPrefix(
     int64_t registration_id,
-    const std::string key_prefix,
+    const std::string& user_data_name_prefix,
     std::vector<std::string>* user_data_values) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
   DCHECK_NE(kInvalidServiceWorkerRegistrationId, registration_id);
@@ -894,7 +894,8 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::ReadUserDataByKeyPrefix(
   if (status != STATUS_OK)
     return status;
 
-  std::string prefix = CreateUserDataKey(registration_id, key_prefix);
+  std::string prefix =
+      CreateUserDataKey(registration_id, user_data_name_prefix);
   {
     std::unique_ptr<leveldb::Iterator> itr(
         db_->NewIterator(leveldb::ReadOptions()));
@@ -972,6 +973,60 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::DeleteUserData(
     batch.Delete(CreateUserDataKey(registration_id, name));
     batch.Delete(CreateHasUserDataKey(registration_id, name));
   }
+  return WriteBatch(&batch);
+}
+
+ServiceWorkerDatabase::Status
+ServiceWorkerDatabase::DeleteUserDataByKeyPrefixes(
+    int64_t registration_id,
+    const std::vector<std::string>& user_data_name_prefixes) {
+  // Example |user_data_name_prefixes| is {"abc", "xyz"}.
+  DCHECK(sequence_checker_.CalledOnValidSequence());
+  DCHECK_NE(kInvalidServiceWorkerRegistrationId, registration_id);
+
+  Status status = LazyOpen(false);
+  if (IsNewOrNonexistentDatabase(status))
+    return STATUS_OK;
+  if (status != STATUS_OK)
+    return status;
+
+  // Example |key_prefix_without_user_data_name_prefix| is
+  // "REG_USER_DATA:123456\x00".
+  std::string key_prefix_without_user_data_name_prefix =
+      CreateUserDataKeyPrefix(registration_id);
+
+  leveldb::WriteBatch batch;
+
+  for (const std::string& user_data_name_prefix : user_data_name_prefixes) {
+    // Example |key_prefix| is "REG_USER_DATA:123456\x00abc".
+    std::string key_prefix =
+        CreateUserDataKey(registration_id, user_data_name_prefix);
+    std::unique_ptr<leveldb::Iterator> itr(
+        db_->NewIterator(leveldb::ReadOptions()));
+    for (itr->Seek(key_prefix); itr->Valid(); itr->Next()) {
+      status = LevelDBStatusToStatus(itr->status());
+      if (status != STATUS_OK)
+        return status;
+
+      // Example |itr->key()| is "REG_USER_DATA:123456\x00abcdef".
+      if (!itr->key().starts_with(key_prefix)) {
+        // |itr| reached the end of the range of keys prefixed by |key_prefix|.
+        break;
+      }
+
+      // Example |user_data_name| is "abcdef".
+      std::string user_data_name;
+      bool did_remove_prefix = RemovePrefix(
+          itr->key().ToString(), key_prefix_without_user_data_name_prefix,
+          &user_data_name);
+      DCHECK(did_remove_prefix) << "starts_with already matched longer prefix";
+
+      batch.Delete(itr->key());
+      // Example |CreateHasUserDataKey| is "REG_HAS_USER_DATA:abcdef\x00123456".
+      batch.Delete(CreateHasUserDataKey(registration_id, user_data_name));
+    }
+  }
+
   return WriteBatch(&batch);
 }
 

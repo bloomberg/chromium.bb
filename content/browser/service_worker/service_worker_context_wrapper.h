@@ -223,6 +223,10 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   void ClearRegistrationUserData(int64_t registration_id,
                                  const std::vector<std::string>& keys,
                                  const StatusCallback& callback);
+  void ClearRegistrationUserDataByKeyPrefixes(
+      int64_t registration_id,
+      const std::vector<std::string>& key_prefixes,
+      const StatusCallback& callback);
   void GetUserDataForAllRegistrations(
       const std::string& key,
       const GetUserDataForAllRegistrationsCallback& callback);

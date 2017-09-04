@@ -795,6 +795,19 @@ void ServiceWorkerContextWrapper::ClearRegistrationUserData(
   context_core_->storage()->ClearUserData(registration_id, keys, callback);
 }
 
+void ServiceWorkerContextWrapper::ClearRegistrationUserDataByKeyPrefixes(
+    int64_t registration_id,
+    const std::vector<std::string>& key_prefixes,
+    const StatusCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (!context_core_) {
+    RunSoon(base::Bind(callback, SERVICE_WORKER_ERROR_ABORT));
+    return;
+  }
+  context_core_->storage()->ClearUserDataByKeyPrefixes(registration_id,
+                                                       key_prefixes, callback);
+}
+
 void ServiceWorkerContextWrapper::GetUserDataForAllRegistrations(
     const std::string& key,
     const GetUserDataForAllRegistrationsCallback& callback) {
