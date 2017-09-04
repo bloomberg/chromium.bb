@@ -183,6 +183,11 @@ struct PasswordForm {
   // When parsing an HTML form, this is typically empty.
   PossibleUsernamesVector other_possible_usernames;
 
+  // This member is populated in cases where we there are multiple posssible
+  // password values. Used in pending password state, to populate a dropdown
+  // for possible passwords. Optional.
+  std::vector<base::string16> other_possible_passwords;
+
   // The name of the input element corresponding to the current password.
   // Optional (improves scoring).
   //
