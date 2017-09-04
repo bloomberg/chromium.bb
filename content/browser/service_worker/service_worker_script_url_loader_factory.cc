@@ -22,7 +22,9 @@ ServiceWorkerScriptURLLoaderFactory::ServiceWorkerScriptURLLoaderFactory(
     scoped_refptr<URLLoaderFactoryGetter> loader_factory_getter)
     : context_(context),
       provider_host_(provider_host),
-      loader_factory_getter_(loader_factory_getter) {}
+      loader_factory_getter_(loader_factory_getter) {
+  DCHECK(provider_host_->IsHostToRunningServiceWorker());
+}
 
 ServiceWorkerScriptURLLoaderFactory::~ServiceWorkerScriptURLLoaderFactory() =
     default;
@@ -50,7 +52,8 @@ void ServiceWorkerScriptURLLoaderFactory::CreateLoaderAndStart(
   mojo::MakeStrongBinding(
       base::MakeUnique<ServiceWorkerScriptURLLoader>(
           routing_id, request_id, options, resource_request, std::move(client),
-          context_, provider_host_, loader_factory_getter_, traffic_annotation),
+          provider_host_->running_hosted_version(), loader_factory_getter_,
+          traffic_annotation),
       std::move(request));
 }
 
