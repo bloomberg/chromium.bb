@@ -11,14 +11,15 @@ import os
 import unittest
 
 from chromite.cbuildbot import commands
-from chromite.lib import constants
-from chromite.cbuildbot.stages import sdk_stages
 from chromite.cbuildbot.stages import generic_stages_unittest
+from chromite.cbuildbot.stages import sdk_stages
+from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import osutils
 from chromite.lib import perf_uploader
 from chromite.lib import portage_util
 from chromite.lib import toolchain
+from chromite.scripts import upload_prebuilts
 
 
 class SDKBuildToolchainsStageTest(
@@ -275,3 +276,36 @@ class SDKTestStageTest(generic_stages_unittest.AbstractStageTestCase):
     """Basic run through the main code."""
     self._Prepare('chromiumos-sdk')
     self.RunStage()
+
+
+class SDKUprevStageTest(generic_stages_unittest.AbstractStageTestCase):
+  """Tests SDK Uprev stage."""
+
+  _VERSION = '2017.09.01.155318'
+
+  def ConstructStage(self):
+    return sdk_stages.SDKUprevStage(self._run, version=self._VERSION)
+
+  def testUprev(self):
+    recorded_args = []
+    self.PatchObject(upload_prebuilts, 'RevGitFile',
+                     lambda *args, **kwargs: recorded_args.append(args))
+
+    out_dir = os.path.join(self.build_root, 'chroot', 'tmp', 'toolchain-pkgs')
+    osutils.SafeMakedirs(out_dir)
+    osutils.Touch(os.path.join(out_dir, 'fake_sdk.tar.xz'))
+
+    self._Prepare('chromiumos-sdk')
+
+    self.RunStage()
+    # upload_prebuilts.RevGitFile should be called exact once.
+    self.assertEqual(1, len(recorded_args))
+    sdk_conf, sdk_settings = recorded_args[0]
+    self.assertEqual(sdk_conf,
+                     os.path.join(self.build_root, 'src', 'third_party',
+                                  'chromiumos-overlay', 'chromeos',
+                                  'binhost', 'host', 'sdk_version.conf'))
+    self.assertEqual(
+        sdk_settings,
+        {'SDK_LATEST_VERSION': self._VERSION,
+         'TC_PATH': '2017/09/%(target)s-2017.09.01.155318.tar.xz'})

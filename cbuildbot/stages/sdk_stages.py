@@ -326,11 +326,11 @@ class SDKUprevStage(generic_stages.BuilderStage):
     sdk_conf = os.path.join(
         self._build_root, binhost_conf_dir, 'host', 'sdk_version.conf')
 
-    tc_path = prebuilts.GetToolchainSdkUploadFormat(
+    tc_path_format = prebuilts.GetToolchainSdkUploadFormat(
         self._version, prebuilts.GetToolchainSdkPaths(self._build_root)[0][1])
     sdk_settings = {
         'SDK_LATEST_VERSION': self._version,
-        'TC_PATH': tc_path,
+        'TC_PATH': tc_path_format % {'version': self._version},
     }
     upload_prebuilts.RevGitFile(
         sdk_conf, sdk_settings, dryrun=self._run.options.debug)
