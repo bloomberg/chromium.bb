@@ -220,9 +220,14 @@ def ExtractSpecialComment(comment):
 # the Web IDL spec, such as allowing string list in extended attributes.
 class IDLParser(object):
   def p_Definitions(self, p):
-    """Definitions : ExtendedAttributeList Definition Definitions
+    """Definitions : SpecialComments ExtendedAttributeList Definition Definitions
+                   | ExtendedAttributeList Definition Definitions
                    | """
-    if len(p) > 1:
+    if len(p) > 4:
+      special_comments_and_attribs = ListFromConcat(p[1], p[2])
+      p[3].AddChildren(special_comments_and_attribs)
+      p[0] = ListFromConcat(p[3], p[4])
+    elif len(p) > 1:
       p[2].AddChildren(p[1])
       p[0] = ListFromConcat(p[2], p[3])
 
@@ -716,19 +721,11 @@ class IDLParser(object):
 
   # This rule has custom additions (i.e. SpecialComments).
   def p_ExtendedAttributeList(self, p):
-    """ExtendedAttributeList : SpecialComments '[' ExtendedAttribute ExtendedAttributes ']'
-                             | '[' ExtendedAttribute ExtendedAttributes ']'
-                             | SpecialComments
+    """ExtendedAttributeList : '[' ExtendedAttribute ExtendedAttributes ']'
                              | """
-    if len(p) > 5:
-      items = ListFromConcat(p[3], p[4])
-      attribs = self.BuildProduction('ExtAttributes', p, 2, items)
-      p[0] = ListFromConcat(p[1], attribs)
-    elif len(p) > 4:
+    if len(p) > 4:
       items = ListFromConcat(p[2], p[3])
       p[0] = self.BuildProduction('ExtAttributes', p, 1, items)
-    elif len(p) > 1:
-      p[0] = p[1]
 
   # Error recovery for ExtendedAttributeList
   def p_ExtendedAttributeListError(self, p):
