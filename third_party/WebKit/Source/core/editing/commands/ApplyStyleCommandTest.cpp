@@ -49,4 +49,32 @@ TEST_F(ApplyStyleCommandTest, RemoveRedundantBlocksWithStarEditableStyle) {
   // Shouldn't crash.
 }
 
+// This is a regression test for https://crbug.com/761280
+TEST_F(ApplyStyleCommandTest, JustifyRightDetachesDestination) {
+  SetBodyContent(
+      "<style>"
+      ".CLASS1{visibility:visible;}"
+      "*:last-child{visibility:collapse;display:list-item;}"
+      "</style>"
+      "<input class=CLASS1>"
+      "<ruby>"
+      "<button class=CLASS1></button>"
+      "<button></button>"
+      "</ruby");
+  Element* body = GetDocument().body();
+  // The bug does't reproduce with a contenteditable <div> as container.
+  body->setAttribute(HTMLNames::contenteditableAttr, "true");
+  GetDocument().UpdateStyleAndLayout();
+  Selection().SelectAll();
+
+  MutableStylePropertySet* style =
+      MutableStylePropertySet::Create(kHTMLQuirksMode);
+  style->SetProperty(CSSPropertyTextAlign, "right");
+  ApplyStyleCommand::Create(GetDocument(), EditingStyle::Create(style),
+                            InputEvent::InputType::kFormatJustifyCenter,
+                            ApplyStyleCommand::kForceBlockProperties)
+      ->Apply();
+  // Shouldn't crash.
+}
+
 }  // namespace blink

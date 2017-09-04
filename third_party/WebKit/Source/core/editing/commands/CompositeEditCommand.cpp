@@ -1381,11 +1381,12 @@ void CompositeEditCommand::MoveParagraphs(
     return;
 
   // Can't move the range to a destination inside itself.
-  if (destination.DeepEquivalent() >
+  if (destination.DeepEquivalent() >=
           start_of_paragraph_to_move.DeepEquivalent() &&
-      destination.DeepEquivalent() <
+      destination.DeepEquivalent() <=
           end_of_paragraph_to_move.DeepEquivalent()) {
     // Reached by unit test TypingCommandTest.insertLineBreakWithIllFormedHTML
+    // and ApplyStyleCommandTest.JustifyRightDetachesDestination
     editing_state->Abort();
     return;
   }
