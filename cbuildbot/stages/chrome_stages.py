@@ -9,6 +9,7 @@ from __future__ import print_function
 import glob
 import multiprocessing
 import os
+import shutil
 
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import goma_util
@@ -251,15 +252,40 @@ class TestSimpleChromeWorkflowStage(generic_stages.BoardSpecificBuilderStage,
 
     self._VerifySDKEnvironment()
 
-    # Build chromium.
     if goma:
+      # If goma is enabled, start goma compiler_proxy here, and record
+      # several information just before building Chrome is started.
       goma.Start()
+      extra_env = goma.GetExtraEnv()
+      ninja_env_path = os.path.join(goma.goma_log_dir, 'ninja_env')
+      sdk_cmd.Run(['env', '--null'],
+                  run_args={'extra_env': extra_env,
+                            'log_stdout_to_file': ninja_env_path})
+      osutils.WriteFile(os.path.join(goma.goma_log_dir, 'ninja_cwd'),
+                        sdk_cmd.cwd)
+      osutils.WriteFile(os.path.join(goma.goma_log_dir, 'ninja_command'),
+                        cros_build_lib.CmdToStr(sdk_cmd.GetNinjaCommand()))
+    else:
+      extra_env = None
+
+    result = None
     try:
-      sdk_cmd.Ninja(
-          run_args={'extra_env': goma.GetExtraEnv() if goma else None})
+      # Build chromium.
+      result = sdk_cmd.Ninja(run_args={'extra_env': extra_env})
     finally:
+      # In teardown, if goma is enabled, stop the goma compiler proxy,
+      # and record/copy some information to log directory, which will be
+      # uploaded to the goma's server in a later stage.
       if goma:
         goma.Stop()
+        ninja_log_path = os.path.join(self.chrome_src,
+                                      sdk_cmd.GetNinjaLogPath())
+        if os.path.exists(ninja_log_path):
+          shutil.copy2(ninja_log_path,
+                       os.path.join(goma.goma_log_dir, 'ninja_log'))
+        if result:
+          osutils.WriteFile(os.path.join(goma.goma_log_dir, 'ninja_exit'),
+                            str(result.returncode))
 
   def _TestDeploy(self, sdk_cmd):
     """Test SDK deployment."""

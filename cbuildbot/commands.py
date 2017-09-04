@@ -2856,6 +2856,9 @@ class ChromeSDK(object):
       cmd: Command (list) to run inside 'cros chrome-sdk'.
       extra_args: Extra arguments for 'cros chorme-sdk'.
       run_args: If set (dict), pass to RunCommand as kwargs.
+
+    Returns:
+      A CommandResult object.
     """
     if run_args is None:
       run_args = {}
@@ -2870,7 +2873,7 @@ class ChromeSDK(object):
       self.extra_args += ['--toolchain-url', self.toolchain_url]
     cros_cmd += ['chrome-sdk', '--board', self.board] + self.extra_args
     cros_cmd += (extra_args or []) + ['--'] + cmd
-    cros_build_lib.RunCommand(cros_cmd, cwd=self.cwd, **run_args)
+    return cros_build_lib.RunCommand(cros_cmd, cwd=self.cwd, **run_args)
 
   def Ninja(self, jobs=None, debug=False, targets=None, run_args=None):
     """Run 'ninja' inside a chrome-sdk context.
@@ -2880,11 +2883,51 @@ class ChromeSDK(object):
       debug: Whether to do a Debug build (defaults to Release).
       targets: The targets to compile.
       run_args: If set (dict), pass to RunCommand as kwargs.
+
+    Returns:
+      A CommandResult object.
+    """
+    cmd = self.GetNinjaCommand(jobs=jobs, debug=debug, targets=targets)
+    return self.Run(cmd, run_args=run_args)
+
+  def GetNinjaCommand(self, jobs=None, debug=False, targets=None):
+    """Returns a command line to run "ninja".
+
+    Args:
+      jobs: The number of -j jobs to run.
+      debug: Whether to do a Debug build (defaults to Release).
+      targets: The  targets to compile.
+
+    Returns:
+      Command line to run "ninja".
     """
     if jobs is None:
       jobs = self.DEFAULT_JOBS_GOMA if self.goma else self.DEFAULT_JOBS
     if targets is None:
       targets = self._GetDefaultTargets()
+    return ['ninja',
+            '-C', self._GetOutDirectory(debug=debug),
+            '-j', str(jobs)] + list(targets)
+
+  def _GetOutDirectory(self, debug=False):
+    """Returns the path to the output directory.
+
+    Args:
+      debug: Whether to do a Debug build (defaults to Release).
+
+    Returns:
+      Path to the output directory.
+    """
     flavor = 'Debug' if debug else 'Release'
-    cmd = ['ninja', '-C', 'out_%s/%s' % (self.board, flavor), '-j', str(jobs)]
-    self.Run(cmd + list(targets), run_args=run_args)
+    return 'out_%s/%s' % (self.board, flavor)
+
+  def GetNinjaLogPath(self, debug=False):
+    """Returns the path to the .ninja_log file.
+
+    Args:
+      debug: Whether to do a Debug build (defaults to Release).
+
+    Returns:
+      Path to the .ninja_log file.
+    """
+    return os.path.join(self._GetOutDirectory(debug=debug), '.ninja_log')
