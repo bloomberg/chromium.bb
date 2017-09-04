@@ -941,8 +941,8 @@ const CGFloat kSpacer = 50;
     NSFontAttributeName : [MDCTypography buttonFont]
   };
   [doneButton setTitleTextAttributes:attributes forState:UIControlStateNormal];
-  doneButton.accessibilityLabel = doneButton.title;
-  doneButton.accessibilityIdentifier = @"bookmark_done_button";
+  doneButton.accessibilityLabel =
+      l10n_util::GetNSString(IDS_IOS_NAVIGATION_BAR_DONE_BUTTON);
   return doneButton;
 }
 
