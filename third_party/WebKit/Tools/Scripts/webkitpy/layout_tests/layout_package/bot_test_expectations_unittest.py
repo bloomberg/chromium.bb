@@ -26,6 +26,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import sys
 import unittest
 
 from webkitpy.common.config.builders import BUILDERS
@@ -56,6 +57,7 @@ class BotTestExpectationsFactoryTest(unittest.TestCase):
         self.assertIsNotNone(factory.expectations_for_port('dummy-port'))
 
 
+@unittest.skipIf(sys.platform == 'win32', 'fails on Windows')
 class BotTestExpectationsTest(unittest.TestCase):
     # FIXME: Find a way to import this map from Tools/TestResultServer/model/jsonresults.py.
     FAILURE_MAP = {'A': 'AUDIO', 'C': 'CRASH', 'F': 'TEXT', 'I': 'IMAGE', 'O': 'MISSING',

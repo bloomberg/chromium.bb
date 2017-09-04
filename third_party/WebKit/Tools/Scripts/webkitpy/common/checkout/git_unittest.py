@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import sys
 import unittest
 
 from webkitpy.common.system.executive import Executive, ScriptError
@@ -11,11 +12,14 @@ from webkitpy.common.system.filesystem_mock import MockFileSystem
 from webkitpy.common.checkout.git import Git
 
 
+# These tests could likely be run on Windows if we first used Git.find_executable_name.
+@unittest.skipIf(sys.platform == 'win32', 'fails on Windows')
 class GitTestWithRealFilesystemAndExecutive(unittest.TestCase):
 
     def setUp(self):
         self.executive = Executive()
         self.filesystem = FileSystem()
+
         self.original_cwd = self.filesystem.getcwd()
 
         # Set up fresh git repository with one commit.

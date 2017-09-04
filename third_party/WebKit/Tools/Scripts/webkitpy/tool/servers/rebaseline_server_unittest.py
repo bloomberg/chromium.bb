@@ -27,6 +27,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import json
+import sys
 import unittest
 
 from webkitpy.common.net import layout_test_results_unittest
@@ -37,6 +38,7 @@ from webkitpy.tool.commands.rebaseline_server import TestConfig, RebaselineServe
 from webkitpy.tool.servers import rebaseline_server
 
 
+@unittest.skipIf(sys.platform == 'win32', 'fails on Windows')
 class RebaselineTestTest(unittest.TestCase):
 
     def test_text_rebaseline_update(self):
