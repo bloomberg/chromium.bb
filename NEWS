@@ -16,7 +16,10 @@ issues]].
     thanks to James Teh.
 *** Security
 - Fix a number of CVEs (illegal address access, buffer overflow and
-  use-after-free) thanks to Mike Gorse.
+  use-after-free or in terms of CVEs: CVE-2017-13738, CVE-2017-13739,
+  CVE-2017-13740, CVE-2017-13741, CVE-2017-13742 and CVE-2017-13744)
+  thanks to Mike Gorse.
+- Fix CVE-2017-13743 thanks to Christian Egli.
 ** Other changes
 ** Braille table improvements
 - New table for Croatian grade 1 Braille thanks to Zlatko Sobočan.
