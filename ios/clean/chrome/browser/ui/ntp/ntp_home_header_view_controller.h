@@ -7,12 +7,31 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/clean/chrome/browser/ui/ntp/ntp_home_header_consumer.h"
-#import "ios/clean/chrome/browser/ui/ntp/ntp_home_header_provider.h"
+#import "ios/chrome/browser/ui/broadcaster/chrome_broadcast_observer.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_controlling.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_provider.h"
+#import "ios/chrome/browser/ui/ntp/google_landing_consumer.h"
+
+@protocol ContentSuggestionsCollectionSynchronizing;
+@protocol ContentSuggestionsHeaderViewControllerCommandHandler;
+@protocol ContentSuggestionsHeaderViewControllerDelegate;
 
 // Coordinator handling the header of the NTP home panel.
 @interface NTPHomeHeaderViewController
-    : UIViewController<NTPHomeHeaderConsumer, NTPHomeHeaderProvider>
+    : UIViewController<ChromeBroadcastObserver,
+                       ContentSuggestionsHeaderControlling,
+                       ContentSuggestionsHeaderProvider,
+                       GoogleLandingConsumer>
+
+@property(nonatomic, weak)
+    id<ContentSuggestionsHeaderViewControllerCommandHandler>
+        commandHandler;
+@property(nonatomic, weak) id<ContentSuggestionsHeaderViewControllerDelegate>
+    delegate;
+
+// Synchronize the interaction with the collection.
+@property(nonatomic, weak) id<ContentSuggestionsCollectionSynchronizing>
+    collectionSynchronizer;
 
 @end
 
