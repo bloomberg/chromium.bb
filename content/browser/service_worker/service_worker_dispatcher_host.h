@@ -115,6 +115,8 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
       base::WeakPtr<ServiceWorkerProviderHost> provider_host,
       ServiceWorkerRegistration* registration);
 
+  ResourceContext* resource_context() { return resource_context_; }
+
   base::WeakPtr<ServiceWorkerDispatcherHost> AsWeakPtr();
 
  protected:
@@ -141,11 +143,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
   void OnProviderCreated(ServiceWorkerProviderHostInfo info) override;
 
   // IPC Message handlers
-  void OnRegisterServiceWorker(int thread_id,
-                               int request_id,
-                               int provider_id,
-                               const GURL& script_url,
-                               const ServiceWorkerRegistrationOptions& options);
   void OnUpdateServiceWorker(int thread_id,
                              int request_id,
                              int provider_id,
@@ -228,12 +225,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
       int64_t registration_handle_id);
 
   // Callbacks from ServiceWorkerContextCore
-  void RegistrationComplete(int thread_id,
-                            int provider_id,
-                            int request_id,
-                            ServiceWorkerStatusCode status,
-                            const std::string& status_message,
-                            int64_t registration_id);
   void UpdateComplete(int thread_id,
                       int provider_id,
                       int request_id,

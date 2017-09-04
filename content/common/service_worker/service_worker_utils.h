@@ -13,6 +13,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/service_worker_modes.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_error_type.mojom.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -60,6 +61,9 @@ class ServiceWorkerUtils {
   static bool IsBrowserAssignedProviderId(int provider_id) {
     return provider_id < kInvalidServiceWorkerProviderId;
   }
+
+  static std::string ErrorTypeToString(
+      blink::mojom::ServiceWorkerErrorType error);
 };
 
 class CONTENT_EXPORT LongestScopeMatcher {

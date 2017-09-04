@@ -17,5 +17,6 @@ sources = [
 type_mappings = [
   "content.mojom.ServiceWorkerProviderType=::content::ServiceWorkerProviderType",
   "content.mojom.ServiceWorkerRegistrationObjectInfo=::content::ServiceWorkerRegistrationObjectInfo",
+  "content.mojom.ServiceWorkerRegistrationOptions=::content::ServiceWorkerRegistrationOptions",
   "content.mojom.ServiceWorkerVersionAttributes=::content::ServiceWorkerVersionAttributes",
 ]

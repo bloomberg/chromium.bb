@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerProvider.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_error_type.mojom.h"
 
 namespace blink {
 class WebURL;
@@ -23,6 +24,9 @@ class ServiceWorkerDispatcher;
 class ServiceWorkerProviderContext;
 class ThreadSafeSender;
 
+struct ServiceWorkerRegistrationObjectInfo;
+struct ServiceWorkerVersionAttributes;
+
 // This class corresponds to one ServiceWorkerContainer interface in
 // JS context (i.e. navigator.serviceWorker).
 class WebServiceWorkerProviderImpl : public blink::WebServiceWorkerProvider {
@@ -33,6 +37,7 @@ class WebServiceWorkerProviderImpl : public blink::WebServiceWorkerProvider {
 
   void SetClient(blink::WebServiceWorkerProviderClient* client) override;
 
+  // Corresponds to navigator.serviceWorker.register().
   void RegisterServiceWorker(
       const blink::WebURL& pattern,
       const blink::WebURL& script_url,
@@ -54,6 +59,13 @@ class WebServiceWorkerProviderImpl : public blink::WebServiceWorkerProvider {
  private:
   void RemoveProviderClient();
   ServiceWorkerDispatcher* GetDispatcher();
+
+  void OnRegistered(
+      std::unique_ptr<WebServiceWorkerRegistrationCallbacks> callbacks,
+      blink::mojom::ServiceWorkerErrorType error,
+      const base::Optional<std::string>& error_msg,
+      const base::Optional<ServiceWorkerRegistrationObjectInfo>& registration,
+      const base::Optional<ServiceWorkerVersionAttributes>& attributes);
 
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
   scoped_refptr<ServiceWorkerProviderContext> context_;

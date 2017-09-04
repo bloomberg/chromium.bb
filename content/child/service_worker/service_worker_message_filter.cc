@@ -67,8 +67,6 @@ void ServiceWorkerMessageFilter::OnStaleMessageReceived(
   // Specifically handle some messages in case we failed to post task
   // to the thread (meaning that the context on the thread is now gone).
   IPC_BEGIN_MESSAGE_MAP(ServiceWorkerMessageFilter, msg)
-    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_ServiceWorkerRegistered,
-                        OnStaleGetRegistration)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_DidGetRegistration,
                         OnStaleGetRegistration)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_DidGetRegistrations,

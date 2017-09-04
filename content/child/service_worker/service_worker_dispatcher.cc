@@ -69,7 +69,6 @@ void ServiceWorkerDispatcher::OnMessageReceived(const IPC::Message& msg) {
   // handler in ServiceWorkerMessageFilter to release references passed from
   // the browser process in case we fail to post task to the thread.
   IPC_BEGIN_MESSAGE_MAP(ServiceWorkerDispatcher, msg)
-    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_ServiceWorkerRegistered, OnRegistered)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_ServiceWorkerUpdated, OnUpdated)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_ServiceWorkerUnregistered,
                         OnUnregistered)
@@ -85,8 +84,6 @@ void ServiceWorkerDispatcher::OnMessageReceived(const IPC::Message& msg) {
                         OnDidGetNavigationPreloadState)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_DidSetNavigationPreloadHeader,
                         OnDidSetNavigationPreloadHeader)
-    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_ServiceWorkerRegistrationError,
-                        OnRegistrationError)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_ServiceWorkerUpdateError,
                         OnUpdateError)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_ServiceWorkerUnregistrationError,
@@ -115,35 +112,6 @@ void ServiceWorkerDispatcher::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   DCHECK(handled) << "Unhandled message:" << msg.type();
-}
-
-void ServiceWorkerDispatcher::RegisterServiceWorker(
-    int provider_id,
-    const GURL& pattern,
-    const GURL& script_url,
-    std::unique_ptr<WebServiceWorkerRegistrationCallbacks> callbacks) {
-  DCHECK(callbacks);
-
-  if (pattern.possibly_invalid_spec().size() > url::kMaxURLChars ||
-      script_url.possibly_invalid_spec().size() > url::kMaxURLChars) {
-    std::string error_message(kServiceWorkerRegisterErrorPrefix);
-    error_message += "The provided scriptURL or scope is too long.";
-    callbacks->OnError(
-        WebServiceWorkerError(blink::mojom::ServiceWorkerErrorType::kSecurity,
-                              blink::WebString::FromASCII(error_message)));
-    return;
-  }
-
-  int request_id = pending_registration_callbacks_.Add(std::move(callbacks));
-  ServiceWorkerRegistrationOptions options(pattern);
-
-  TRACE_EVENT_ASYNC_BEGIN2("ServiceWorker",
-                           "ServiceWorkerDispatcher::RegisterServiceWorker",
-                           request_id,
-                           "Scope", pattern.spec(),
-                           "Script URL", script_url.spec());
-  thread_safe_sender_->Send(new ServiceWorkerHostMsg_RegisterServiceWorker(
-      CurrentWorkerId(), request_id, provider_id, script_url, options));
 }
 
 void ServiceWorkerDispatcher::UpdateServiceWorker(
@@ -387,29 +355,6 @@ ServiceWorkerDispatcher::GetOrAdoptRegistration(
   return registration;
 }
 
-void ServiceWorkerDispatcher::OnRegistered(
-    int thread_id,
-    int request_id,
-    const ServiceWorkerRegistrationObjectInfo& info,
-    const ServiceWorkerVersionAttributes& attrs) {
-  TRACE_EVENT_ASYNC_STEP_INTO0("ServiceWorker",
-                               "ServiceWorkerDispatcher::RegisterServiceWorker",
-                               request_id,
-                               "OnRegistered");
-  TRACE_EVENT_ASYNC_END0("ServiceWorker",
-                         "ServiceWorkerDispatcher::RegisterServiceWorker",
-                         request_id);
-  WebServiceWorkerRegistrationCallbacks* callbacks =
-      pending_registration_callbacks_.Lookup(request_id);
-  DCHECK(callbacks);
-  if (!callbacks)
-    return;
-
-  callbacks->OnSuccess(WebServiceWorkerRegistrationImpl::CreateHandle(
-      GetOrAdoptRegistration(info, attrs)));
-  pending_registration_callbacks_.Remove(request_id);
-}
-
 void ServiceWorkerDispatcher::OnUpdated(int thread_id, int request_id) {
   TRACE_EVENT_ASYNC_STEP_INTO0("ServiceWorker",
                                "ServiceWorkerDispatcher::UpdateServiceWorker",
@@ -568,29 +513,6 @@ void ServiceWorkerDispatcher::OnDidSetNavigationPreloadHeader(int thread_id,
     return;
   callbacks->OnSuccess();
   set_navigation_preload_header_callbacks_.Remove(request_id);
-}
-
-void ServiceWorkerDispatcher::OnRegistrationError(
-    int thread_id,
-    int request_id,
-    blink::mojom::ServiceWorkerErrorType error_type,
-    const base::string16& message) {
-  TRACE_EVENT_ASYNC_STEP_INTO0("ServiceWorker",
-                               "ServiceWorkerDispatcher::RegisterServiceWorker",
-                               request_id,
-                               "OnRegistrationError");
-  TRACE_EVENT_ASYNC_END0("ServiceWorker",
-                         "ServiceWorkerDispatcher::RegisterServiceWorker",
-                         request_id);
-  WebServiceWorkerRegistrationCallbacks* callbacks =
-      pending_registration_callbacks_.Lookup(request_id);
-  DCHECK(callbacks);
-  if (!callbacks)
-    return;
-
-  callbacks->OnError(
-      WebServiceWorkerError(error_type, blink::WebString::FromUTF16(message)));
-  pending_registration_callbacks_.Remove(request_id);
 }
 
 void ServiceWorkerDispatcher::OnUpdateError(

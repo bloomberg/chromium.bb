@@ -402,6 +402,21 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   void SendSetControllerServiceWorker(ServiceWorkerVersion* version,
                                       bool notify_controllerchange);
 
+  // Implements mojom::ServiceWorkerContainerHost.
+  void Register(const GURL& script_url,
+                const ServiceWorkerRegistrationOptions& options,
+                RegisterCallback callback) override;
+
+  // Callback for ServiceWorkerContextCore::RegisterServiceWorker().
+  void RegistrationComplete(RegisterCallback callback,
+                            ServiceWorkerStatusCode status,
+                            const std::string& status_message,
+                            int64_t registration_id);
+
+  bool IsValidRegisterMessage(const GURL& script_url,
+                              const ServiceWorkerRegistrationOptions& options,
+                              std::string* out_error) const;
+
   const std::string client_uuid_;
   const base::TimeTicks create_time_;
   int render_process_id_;
