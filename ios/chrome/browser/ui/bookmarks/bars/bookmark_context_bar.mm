@@ -66,7 +66,11 @@ CGFloat kHorizontalMargin = 8.0f;
   UIColor* textColor = style == ContextBarButtonStyleDelete
                            ? [[MDCPalette redPalette] tint500]
                            : [[MDCPalette bluePalette] tint500];
+  UIColor* disabledColor = style == ContextBarButtonStyleDelete
+                               ? [[MDCPalette redPalette] tint200]
+                               : [[MDCPalette bluePalette] tint200];
   [button setTitleColor:textColor forState:UIControlStateNormal];
+  [button setTitleColor:disabledColor forState:UIControlStateDisabled];
 }
 
 - (void)initStyleForButton:(UIButton*)button {
@@ -85,7 +89,7 @@ CGFloat kHorizontalMargin = 8.0f;
 - (instancetype)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
   if (self) {
-    self.accessibilityIdentifier = @"Context Bar";
+    self.accessibilityIdentifier = @"context_bar";
     _leadingButton = [UIButton buttonWithType:UIButtonTypeCustom];
     [self initStyleForButton:_leadingButton];
     _leadingButton.contentHorizontalAlignment =
@@ -94,7 +98,7 @@ CGFloat kHorizontalMargin = 8.0f;
     [_leadingButton addTarget:self
                        action:@selector(leadingButtonClicked:)
              forControlEvents:UIControlEventTouchUpInside];
-    _leadingButton.accessibilityIdentifier = @"Context Bar Leading Button";
+    _leadingButton.accessibilityIdentifier = @"context_bar_leading_button";
 
     _centerButton = [UIButton buttonWithType:UIButtonTypeCustom];
     [self initStyleForButton:_centerButton];
@@ -103,7 +107,7 @@ CGFloat kHorizontalMargin = 8.0f;
     [_centerButton addTarget:self
                       action:@selector(centerButtonClicked:)
             forControlEvents:UIControlEventTouchUpInside];
-    _centerButton.accessibilityIdentifier = @"Context Bar Center Button";
+    _centerButton.accessibilityIdentifier = @"context_bar_center_button";
 
     _trailingButton = [UIButton buttonWithType:UIButtonTypeCustom];
     [self initStyleForButton:_trailingButton];
@@ -113,7 +117,7 @@ CGFloat kHorizontalMargin = 8.0f;
     [_trailingButton addTarget:self
                         action:@selector(trailingButtonClicked:)
               forControlEvents:UIControlEventTouchUpInside];
-    _trailingButton.accessibilityIdentifier = @"Context Bar Trailing Button";
+    _trailingButton.accessibilityIdentifier = @"context_bar_trailing_button";
 
     _stackView = [[UIStackView alloc] initWithArrangedSubviews:@[
       _leadingButton, _centerButton, _trailingButton
@@ -144,7 +148,6 @@ CGFloat kHorizontalMargin = 8.0f;
 
 - (void)setButtonTitle:(NSString*)title forButton:(ContextBarButton)button {
   [[self getButton:button] setTitle:title forState:UIControlStateNormal];
-  [[self getButton:button] setTitle:title forState:UIControlStateNormal];
 }
 
 - (void)setButtonStyle:(ContextBarButtonStyle)style
@@ -156,6 +159,9 @@ CGFloat kHorizontalMargin = 8.0f;
   [self getButton:button].hidden = !visible;
 }
 
+- (void)setButtonEnabled:(BOOL)enabled forButton:(ContextBarButton)button {
+  [[self getButton:button] setEnabled:enabled];
+}
 - (void)leadingButtonClicked:(UIButton*)button {
   if (!self.delegate) {
     NOTREACHED();

@@ -80,6 +80,9 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
 
   // True if the promo is visible.
   BOOL _promoVisible;
+
+  // Set of nodes being editing currently.
+  std::set<const bookmarks::BookmarkNode*> _editNodes;
 }
 
 // The UITableView to show bookmarks.
@@ -150,17 +153,16 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
         [[UITableView alloc] initWithFrame:frame style:UITableViewStylePlain];
     self.tableView.dataSource = self;
     self.tableView.delegate = self;
-
     // Use iOS8's self sizing feature to compute row height. However,
     // this reduces the row height of bookmarks section from 56 to 45
     // TODO(crbug.com/695749): Fix the bookmark section row height to 56.
     self.tableView.estimatedRowHeight = kCellHeightPt;
     self.tableView.rowHeight = UITableViewAutomaticDimension;
-
     // Remove extra rows.
     self.tableView.tableFooterView = [[UIView alloc] initWithFrame:CGRectZero];
     self.tableView.autoresizingMask =
         UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    self.tableView.allowsMultipleSelectionDuringEditing = YES;
     [self addSubview:self.tableView];
     [self bringSubviewToFront:self.tableView];
 
@@ -209,6 +211,20 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
     }
   }
   [self.tableView reloadData];
+}
+
+- (void)setEditing:(BOOL)editing {
+  // Reset edit nodes.
+  _editNodes = std::set<const BookmarkNode*>();
+  [self.tableView setEditing:editing animated:YES];
+}
+
+- (BOOL)editing {
+  return self.tableView.editing;
+}
+
+- (const std::set<const bookmarks::BookmarkNode*>&)editNodes {
+  return _editNodes;
 }
 
 #pragma mark - UITableViewDataSource
@@ -314,6 +330,12 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
   if (indexPath.section == self.bookmarksSection) {
     const BookmarkNode* node = [self nodeAtIndexPath:indexPath];
     DCHECK(node);
+    // If table is in edit mode, record all the nodes added to edit set.
+    if (self.tableView.editing) {
+      _editNodes.insert(node);
+      [self.delegate bookmarkTableView:self selectedEditNodes:_editNodes];
+      return;
+    }
     if (node->is_folder()) {
       [self.delegate bookmarkTableView:self selectedFolderForNavigation:node];
     } else {
@@ -324,6 +346,16 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
   }
   // Deselect row.
   [tableView deselectRowAtIndexPath:indexPath animated:YES];
+}
+
+- (void)tableView:(UITableView*)tableView
+    didDeselectRowAtIndexPath:(NSIndexPath*)indexPath {
+  if (indexPath.section == self.bookmarksSection && self.tableView.editing) {
+    const BookmarkNode* node = [self nodeAtIndexPath:indexPath];
+    DCHECK(node);
+    _editNodes.erase(node);
+    [self.delegate bookmarkTableView:self selectedEditNodes:_editNodes];
+  }
 }
 
 #pragma mark - BookmarkTablePromoCellDelegate

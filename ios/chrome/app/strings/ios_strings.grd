@@ -1585,6 +1585,21 @@ Your data was encrypted with your sync passphrase on <ph name="TIME">$2<ex>Sept 
       <message name="IDS_IOS_CHOOSE_EMAIL_ASK_TOGGLE" desc="Title for toggle switch to set whether to ask user which Mail client app to use every time a mailto:// URL is tapped. [Length: 50]">
         Ask me which app to use every time
       </message>
-    </messages>
+      <message name="IDS_IOS_BOOKMARK_CONTEXT_BAR_NEW_FOLDER" desc="Text on the bookmarks context bar to create new folder">
+        New Folder
+      </message>
+      <message name="IDS_IOS_BOOKMARK_CONTEXT_BAR_DELETE" desc="Text on the bookmarks context bar for delete action">
+       Delete
+      </message>
+      <message name="IDS_IOS_BOOKMARK_CONTEXT_BAR_SELECT" desc="Text on the bookmarks context bar for select action">
+        Select
+      </message>
+      <message name="IDS_IOS_BOOKMARK_CONTEXT_BAR_EDIT" desc="Text on the bookmarks context bar for edit action">
+        Edit
+      </message>
+      <message name="IDS_IOS_BOOKMARK_CONTEXT_BAR_MORE" desc="Text on the bookmarks context bar to show more context menu">
+        More...
+      </message>
+   </messages>
   </release>
 </grit>

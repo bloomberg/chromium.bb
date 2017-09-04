@@ -48,6 +48,10 @@ class PrefRegistrySyncable;
 // Dismisses the promo.
 - (void)bookmarkTableViewDismissPromo:(BookmarkTableView*)view;
 
+// Tells the delegate that nodes were selected in edit mode.
+- (void)bookmarkTableView:(BookmarkTableView*)view
+        selectedEditNodes:
+            (const std::set<const bookmarks::BookmarkNode*>&)nodes;
 @end
 
 @interface BookmarkTableView : UIView
@@ -74,6 +78,14 @@ class PrefRegistrySyncable;
 // Called when something outside the view causes the promo state to change.
 - (void)promoStateChangedAnimated:(BOOL)animated;
 
+// Sets if the table view is in edit mode.
+- (void)setEditing:(BOOL)editing;
+
+// Returns if the table is in edit mode.
+- (BOOL)editing;
+
+// Returns the currently selected edit nodes.
+- (const std::set<const bookmarks::BookmarkNode*>&)editNodes;
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_BOOKMARKS_BOOKMARK_TABLE_VIEW_H_
