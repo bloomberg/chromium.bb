@@ -156,19 +156,17 @@
     return;
 
   NewTabPageBarItem* item = self.NTPView.tabBar.items[index];
-  if (item.identifier == ntp_home::BOOKMARKS_PANEL) {
-    self.selectedNTPPanel = ntp_home::BOOKMARKS_PANEL;
-    if (!self.bookmarksViewController)
-      [self.dispatcher showNTPBookmarksPanel];
-  } else if (item.identifier == ntp_home::HOME_PANEL) {
-    self.selectedNTPPanel = ntp_home::HOME_PANEL;
-    if (!self.homeViewController)
-      [self.dispatcher showNTPHomePanel];
-  } else if (item.identifier == ntp_home::RECENT_TABS_PANEL) {
-    self.selectedNTPPanel = ntp_home::RECENT_TABS_PANEL;
-    if (!self.recentTabsViewController)
-      [self.dispatcher showNTPRecentTabsPanel];
+  if (item.identifier == ntp_home::BOOKMARKS_PANEL &&
+      !self.bookmarksViewController) {
+    [self.dispatcher showNTPBookmarksPanel];
+  } else if (item.identifier == ntp_home::HOME_PANEL &&
+             !self.homeViewController) {
+    [self.dispatcher showNTPHomePanel];
+  } else if (item.identifier == ntp_home::RECENT_TABS_PANEL &&
+             !self.recentTabsViewController) {
+    [self.dispatcher showNTPRecentTabsPanel];
   }
+  self.selectedNTPPanel = item.identifier;
 
   // If index changed, follow same path as if a tab bar item was pressed.  When
   // |index| == |position|, the panel is completely in view.
