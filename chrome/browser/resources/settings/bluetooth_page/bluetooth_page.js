@@ -25,8 +25,6 @@ var bluetoothApis = bluetoothApis || {
 Polymer({
   is: 'settings-bluetooth-page',
 
-  behaviors: [PrefsBehavior],
-
   properties: {
     /** Preferences state. */
     prefs: {
@@ -168,7 +166,6 @@ Polymer({
     this.adapterState_ = state;
     this.bluetoothToggleState_ = state.powered;
     this.bluetoothToggleDisabled_ = !state.available;
-    this.setPrefValue('ash.user.bluetooth.adapter_enabled', state.powered);
   },
 
   /** @private */
