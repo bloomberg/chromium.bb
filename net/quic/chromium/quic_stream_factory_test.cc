@@ -38,6 +38,7 @@
 #include "net/quic/core/crypto/quic_decrypter.h"
 #include "net/quic/core/crypto/quic_encrypter.h"
 #include "net/quic/core/quic_client_promised_info.h"
+#include "net/quic/platform/impl/quic_test_impl.h"
 #include "net/quic/test_tools/mock_clock.h"
 #include "net/quic/test_tools/mock_random.h"
 #include "net/quic/test_tools/quic_config_peer.h"
@@ -693,6 +694,7 @@ class QuicStreamFactoryTestBase {
       IoMode write_error_mode,
       bool disconnected);
 
+  QuicFlagSaver flags_;  // Save/restore all QUIC flag values.
   MockHostResolver host_resolver_;
   scoped_refptr<SSLConfigService> ssl_config_service_;
   MockClientSocketFactory socket_factory_;
@@ -4786,6 +4788,7 @@ TEST_P(QuicStreamFactoryTest, PoolByOrigin) {
 }
 
 TEST_P(QuicStreamFactoryTest, ForceHolBlockingEnabled) {
+  FLAGS_quic_reloadable_flag_quic_use_stream_notifier2 = false;
   force_hol_blocking_ = true;
   Initialize();
 

@@ -53,8 +53,7 @@ class MockQuicSession : public QuicSession {
       // WritevData does not pass down a iovec, data is saved in stream before
       // data is consumed. Retrieve data from stream.
       char* buf = new char[len];
-      QuicDataWriter writer(len, buf, Perspective::IS_CLIENT,
-                            NETWORK_BYTE_ORDER);
+      QuicDataWriter writer(len, buf, NETWORK_BYTE_ORDER);
       QuicStream* stream = GetOrCreateStream(kStreamId);
       DCHECK(stream);
       if (len > 0) {
