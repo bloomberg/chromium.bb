@@ -5,12 +5,6 @@
 source_set("ui") {
   sources = [
     "ui_types.h",
-    "url_loader_adaptor.h",
-    "url_loader_adaptor.mm",
-  ]
-  deps = [
-    "//ios/chrome/browser/ui",
-    "//ios/web",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
