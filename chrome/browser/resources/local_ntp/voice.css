@@ -216,7 +216,6 @@
 /* TEXT */
 /* Classes:
  *   - voice-text - Text area style class
- *   - voice-text-area - Link style class
  *   - voice-text-2l - 2 line style class
  *   - voice-text-3l - 3 line style class
  *   - voice-text-4l - 4 line style class
@@ -279,7 +278,7 @@
 }
 
 /* Text area links. */
-#voice-text-area {
+.voice-text-link {
   color: var(--text_link_color);
   cursor: pointer;
   font-size: 18px;
