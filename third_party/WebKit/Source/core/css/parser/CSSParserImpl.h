@@ -129,6 +129,9 @@ class CSSParserImpl {
   StyleRuleViewport* ConsumeViewportRule(CSSParserTokenRange prelude,
                                          CSSParserTokenRange block);
   StyleRuleFontFace* ConsumeFontFaceRule(CSSParserTokenRange prelude,
+                                         CSSParserTokenStream& block);
+  // TODO(shend): Remove this overload once we switch over to streams.
+  StyleRuleFontFace* ConsumeFontFaceRule(CSSParserTokenRange prelude,
                                          CSSParserTokenRange block);
   StyleRuleKeyframes* ConsumeKeyframesRule(bool webkit_prefixed,
                                            CSSParserTokenRange prelude,
