@@ -30,9 +30,6 @@
 #include "platform/wtf/text/CharacterNames.h"
 #include "platform/wtf/text/StringImpl.h"
 
-using namespace WTF;
-using namespace Unicode;
-
 namespace blink {
 
 int EndOfFirstWordBoundaryContext(const UChar* characters, int length) {
@@ -68,8 +65,9 @@ int FindNextWordFromIndex(const UChar* chars,
     while (position != kTextBreakDone) {
       // We stop searching when the character preceeding the break
       // is alphanumeric or underscore.
-      if (position < len && (IsAlphanumeric(chars[position - 1]) ||
-                             chars[position - 1] == kLowLineCharacter))
+      if (position < len &&
+          (WTF::Unicode::IsAlphanumeric(chars[position - 1]) ||
+           chars[position - 1] == kLowLineCharacter))
         return position;
 
       position = it->following(position);
@@ -81,7 +79,7 @@ int FindNextWordFromIndex(const UChar* chars,
     while (position != kTextBreakDone) {
       // We stop searching when the character following the break
       // is alphanumeric or underscore.
-      if (position > 0 && (IsAlphanumeric(chars[position]) ||
+      if (position > 0 && (WTF::Unicode::IsAlphanumeric(chars[position]) ||
                            chars[position] == kLowLineCharacter))
         return position;
 
