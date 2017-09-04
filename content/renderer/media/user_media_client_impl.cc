@@ -184,10 +184,9 @@ void CopyHotwordAndLocalEchoToStreamControls(
   }
 }
 
-bool IsSameDevice(const StreamDeviceInfo& device,
-                  const StreamDeviceInfo& other_device) {
-  return device.device.id == other_device.device.id &&
-         device.device.type == other_device.device.type &&
+bool IsSameDevice(const MediaStreamDevice& device,
+                  const MediaStreamDevice& other_device) {
+  return device.id == other_device.id && device.type == other_device.type &&
          device.session_id == other_device.session_id;
 }
 
@@ -195,11 +194,11 @@ bool IsSameSource(const blink::WebMediaStreamSource& source,
                   const blink::WebMediaStreamSource& other_source) {
   MediaStreamSource* const source_extra_data =
       static_cast<MediaStreamSource*>(source.GetExtraData());
-  const StreamDeviceInfo& device = source_extra_data->device_info();
+  const MediaStreamDevice& device = source_extra_data->device();
 
   MediaStreamSource* const other_source_extra_data =
       static_cast<MediaStreamSource*>(other_source.GetExtraData());
-  const StreamDeviceInfo& other_device = other_source_extra_data->device_info();
+  const MediaStreamDevice& other_device = other_source_extra_data->device();
 
   return IsSameDevice(device, other_device);
 }
@@ -1009,27 +1008,33 @@ MediaStreamAudioSource* UserMediaClientImpl::CreateAudioSource(
     bool* has_sw_echo_cancellation) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(current_request_info_);
+
+  // TODO(c.padhi): Remove this when |device|'s type is changed to
+  // MediaStreamDevice, see https://crbug.com/760493.
+  MediaStreamDevice audio_device = device.device;
+  audio_device.session_id = device.session_id;
+
   // If the audio device is a loopback device (for screen capture), or if the
   // constraints/effects parameters indicate no audio processing is needed,
   // create an efficient, direct-path MediaStreamAudioSource instance.
   AudioProcessingProperties audio_processing_properties =
       IsOldAudioConstraints() ? AudioProcessingProperties::FromConstraints(
-                                    constraints, device.device.input)
+                                    constraints, audio_device.input)
                               : current_request_info_->audio_capture_settings()
                                     .audio_processing_properties();
-  if (IsScreenCaptureMediaType(device.device.type) ||
+  if (IsScreenCaptureMediaType(audio_device.type) ||
       !MediaStreamAudioProcessor::WouldModifyAudio(
           audio_processing_properties)) {
     *has_sw_echo_cancellation = false;
     return new LocalMediaStreamAudioSource(RenderFrameObserver::routing_id(),
-                                           device, source_ready);
+                                           audio_device, source_ready);
   }
 
   // The audio device is not associated with screen capture and also requires
   // processing.
   ProcessedLocalAudioSource* source = new ProcessedLocalAudioSource(
-      RenderFrameObserver::routing_id(), device, audio_processing_properties,
-      source_ready, dependency_factory_);
+      RenderFrameObserver::routing_id(), audio_device,
+      audio_processing_properties, source_ready, dependency_factory_);
   *has_sw_echo_cancellation =
       audio_processing_properties.enable_sw_echo_cancellation;
   return source;
@@ -1041,8 +1046,14 @@ MediaStreamVideoSource* UserMediaClientImpl::CreateVideoSource(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(current_request_info_);
   DCHECK(current_request_info_->video_capture_settings().HasValue());
+
+  // TODO(c.padhi): Remove this when |device|'s type is changed to
+  // MediaStreamDevice, see https://crbug.com/760493.
+  MediaStreamDevice video_device = device.device;
+  video_device.session_id = device.session_id;
+
   return new MediaStreamVideoCapturerSource(
-      stop_callback, device,
+      stop_callback, video_device,
       current_request_info_->video_capture_settings().capture_params(),
       render_frame());
 }
@@ -1265,11 +1276,16 @@ void UserMediaClientImpl::EnumerateDevicesSucceded(
 const blink::WebMediaStreamSource* UserMediaClientImpl::FindLocalSource(
     const LocalStreamSources& sources,
     const StreamDeviceInfo& device) const {
+  // TODO(c.padhi): Remove this when |device|'s type is changed to
+  // MediaStreamDevice, see https://crbug.com/760493.
+  MediaStreamDevice media_stream_device = device.device;
+  media_stream_device.session_id = device.session_id;
+
   for (const auto& local_source : sources) {
     MediaStreamSource* const source =
         static_cast<MediaStreamSource*>(local_source.GetExtraData());
-    const StreamDeviceInfo& active_device = source->device_info();
-    if (IsSameDevice(active_device, device))
+    const MediaStreamDevice& active_device = source->device();
+    if (IsSameDevice(active_device, media_stream_device))
       return &local_source;
   }
   return nullptr;
@@ -1419,7 +1435,8 @@ void UserMediaClientImpl::OnLocalSourceStopped(
 
   MediaStreamSource* source_impl =
       static_cast<MediaStreamSource*>(source.GetExtraData());
-  media_stream_dispatcher_->StopStreamDevice(source_impl->device_info());
+  media_stream_dispatcher_->StopStreamDevice(
+      StreamDeviceInfo(source_impl->device()));
 }
 
 void UserMediaClientImpl::StopLocalSource(
@@ -1428,10 +1445,12 @@ void UserMediaClientImpl::StopLocalSource(
   MediaStreamSource* source_impl =
       static_cast<MediaStreamSource*>(source.GetExtraData());
   DVLOG(1) << "UserMediaClientImpl::StopLocalSource("
-           << "{device_id = " << source_impl->device_info().device.id << "})";
+           << "{device_id = " << source_impl->device().id << "})";
 
-  if (notify_dispatcher)
-    media_stream_dispatcher_->StopStreamDevice(source_impl->device_info());
+  if (notify_dispatcher) {
+    media_stream_dispatcher_->StopStreamDevice(
+        StreamDeviceInfo(source_impl->device()));
+  }
 
   source_impl->ResetSourceStoppedCallback();
   source_impl->StopSource();

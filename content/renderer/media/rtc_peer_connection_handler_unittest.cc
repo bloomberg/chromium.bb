@@ -304,11 +304,11 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
     ProcessedLocalAudioSource* const audio_source =
         new ProcessedLocalAudioSource(
             -1 /* consumer_render_frame_id is N/A for non-browser tests */,
-            StreamDeviceInfo(MEDIA_DEVICE_AUDIO_CAPTURE, "Mock device",
-                             "mock_device_id",
-                             media::AudioParameters::kAudioCDSampleRate,
-                             media::CHANNEL_LAYOUT_STEREO,
-                             media::AudioParameters::kAudioCDSampleRate / 100),
+            MediaStreamDevice(MEDIA_DEVICE_AUDIO_CAPTURE, "mock_device_id",
+                              "Mock device",
+                              media::AudioParameters::kAudioCDSampleRate,
+                              media::CHANNEL_LAYOUT_STEREO,
+                              media::AudioParameters::kAudioCDSampleRate / 100),
             AudioProcessingProperties(),
             base::Bind(&RTCPeerConnectionHandlerTest::OnAudioSourceStarted),
             mock_dependency_factory_.get());

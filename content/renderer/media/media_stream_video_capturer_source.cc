@@ -35,7 +35,7 @@ namespace {
 // implementation. This is a main Render thread only object.
 class LocalVideoCapturerSource final : public media::VideoCapturerSource {
  public:
-  explicit LocalVideoCapturerSource(const StreamDeviceInfo& device_info);
+  explicit LocalVideoCapturerSource(int session_id);
   ~LocalVideoCapturerSource() override;
 
   // VideoCaptureDelegate Implementation.
@@ -72,9 +72,8 @@ class LocalVideoCapturerSource final : public media::VideoCapturerSource {
   DISALLOW_COPY_AND_ASSIGN(LocalVideoCapturerSource);
 };
 
-LocalVideoCapturerSource::LocalVideoCapturerSource(
-    const StreamDeviceInfo& device_info)
-    : session_id_(device_info.session_id),
+LocalVideoCapturerSource::LocalVideoCapturerSource(int session_id)
+    : session_id_(session_id),
       manager_(RenderThreadImpl::current()->video_capture_impl_manager()),
       release_device_cb_(manager_->UseDevice(session_id_)),
       weak_factory_(this) {
@@ -172,15 +171,15 @@ MediaStreamVideoCapturerSource::MediaStreamVideoCapturerSource(
 
 MediaStreamVideoCapturerSource::MediaStreamVideoCapturerSource(
     const SourceStoppedCallback& stop_callback,
-    const StreamDeviceInfo& device_info,
+    const MediaStreamDevice& device,
     const media::VideoCaptureParams& capture_params,
     RenderFrame* render_frame)
     : RenderFrameObserver(render_frame),
       dispatcher_host_(nullptr),
-      source_(new LocalVideoCapturerSource(device_info)),
+      source_(new LocalVideoCapturerSource(device.session_id)),
       capture_params_(capture_params) {
   SetStopCallback(stop_callback);
-  SetDeviceInfo(device_info);
+  SetDevice(device);
 }
 
 MediaStreamVideoCapturerSource::~MediaStreamVideoCapturerSource() {
@@ -199,7 +198,7 @@ void MediaStreamVideoCapturerSource::OnHasConsumers(bool has_consumers) {
 
 void MediaStreamVideoCapturerSource::OnCapturingLinkSecured(bool is_secure) {
   GetMediaStreamDispatcherHost()->SetCapturingLinkSecured(
-      device_info().session_id, device_info().device.type, is_secure);
+      device().session_id, device().type, is_secure);
 }
 
 void MediaStreamVideoCapturerSource::StartSourceImpl(

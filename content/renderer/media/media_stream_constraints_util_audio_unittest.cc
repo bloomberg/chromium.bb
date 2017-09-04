@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "content/common/media/media_devices.mojom.h"
+#include "content/common/media/media_stream_options.h"
 #include "content/renderer/media/mock_constraint_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebMediaConstraints.h"

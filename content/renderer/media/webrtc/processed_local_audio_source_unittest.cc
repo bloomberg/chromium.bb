@@ -99,9 +99,9 @@ class ProcessedLocalAudioSourceTest : public testing::Test {
       const AudioProcessingProperties& properties) {
     ProcessedLocalAudioSource* const source = new ProcessedLocalAudioSource(
         -1 /* consumer_render_frame_id is N/A for non-browser tests */,
-        StreamDeviceInfo(MEDIA_DEVICE_AUDIO_CAPTURE, "Mock audio device",
-                         "mock_audio_device_id", kSampleRate, kChannelLayout,
-                         kRequestedBufferSize),
+        MediaStreamDevice(MEDIA_DEVICE_AUDIO_CAPTURE, "mock_audio_device_id",
+                          "Mock audio device", kSampleRate, kChannelLayout,
+                          kRequestedBufferSize),
         properties,
         base::Bind(&ProcessedLocalAudioSourceTest::OnAudioSourceStarted,
                    base::Unretained(this)),

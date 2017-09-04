@@ -369,7 +369,7 @@ void MediaStreamVideoTrack::GetSettings(
       settings.frame_rate = format->frame_rate;
     settings.video_kind = GetVideoKindForFormat(*format);
   }
-  switch (source_->device_info().device.video_facing) {
+  switch (source_->device().video_facing) {
     case media::MEDIA_VIDEO_FACING_NONE:
       settings.facing_mode = blink::WebMediaStreamTrack::FacingMode::kNone;
       break;
@@ -389,16 +389,15 @@ void MediaStreamVideoTrack::GetSettings(
   // but is available as part of the label.
   // TODO(guidou): Remove this code once the |video_facing| field is supported
   // on Android. See http://crbug.com/672856.
-  if (source_->device_info().device.name.find("front") != std::string::npos) {
+  if (source_->device().name.find("front") != std::string::npos) {
     settings.facing_mode = blink::WebMediaStreamTrack::FacingMode::kUser;
-  } else if (source_->device_info().device.name.find("back") !=
-             std::string::npos) {
+  } else if (source_->device().name.find("back") != std::string::npos) {
     settings.facing_mode = blink::WebMediaStreamTrack::FacingMode::kEnvironment;
   }
 #endif
 
   const base::Optional<CameraCalibration> calibration =
-      source_->device_info().device.camera_calibration;
+      source_->device().camera_calibration;
   if (calibration) {
     settings.depth_near = calibration->depth_near;
     settings.depth_far = calibration->depth_far;

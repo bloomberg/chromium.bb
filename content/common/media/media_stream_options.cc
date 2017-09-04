@@ -62,6 +62,9 @@ StreamDeviceInfo::StreamDeviceInfo(MediaStreamType service_param,
              frames_per_buffer),
       session_id(kNoId) {}
 
+StreamDeviceInfo::StreamDeviceInfo(MediaStreamDevice media_stream_device)
+    : device(media_stream_device), session_id(media_stream_device.session_id) {}
+
 // static
 bool StreamDeviceInfo::IsEqual(const StreamDeviceInfo& first,
                                const StreamDeviceInfo& second) {

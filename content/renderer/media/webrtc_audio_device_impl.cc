@@ -438,7 +438,7 @@ void WebRtcAudioDeviceImpl::AddAudioCapturer(
   DCHECK(main_thread_checker_.CalledOnValidThread());
   DVLOG(1) << "WebRtcAudioDeviceImpl::AddAudioCapturer()";
   DCHECK(capturer);
-  DCHECK(!capturer->device_info().device.id.empty());
+  DCHECK(!capturer->device().id.empty());
 
   base::AutoLock auto_lock(lock_);
   DCHECK(std::find(capturers_.begin(), capturers_.end(), capturer) ==
@@ -485,17 +485,15 @@ bool WebRtcAudioDeviceImpl::GetAuthorizedDeviceInfoForAudioRenderer(
     return false;
 
   // Don't set output parameters unless all of them are valid.
-  const StreamDeviceInfo& device_info = capturers_.back()->device_info();
-  if (device_info.session_id <= 0 ||
-      !device_info.device.matched_output.sample_rate() ||
-      !device_info.device.matched_output.frames_per_buffer()) {
+  const MediaStreamDevice& device = capturers_.back()->device();
+  if (device.session_id <= 0 || !device.matched_output.sample_rate() ||
+      !device.matched_output.frames_per_buffer()) {
     return false;
   }
 
-  *session_id = device_info.session_id;
-  *output_sample_rate = device_info.device.matched_output.sample_rate();
-  *output_frames_per_buffer =
-      device_info.device.matched_output.frames_per_buffer();
+  *session_id = device.session_id;
+  *output_sample_rate = device.matched_output.sample_rate();
+  *output_frames_per_buffer = device.matched_output.frames_per_buffer();
 
   return true;
 }

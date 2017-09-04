@@ -70,6 +70,7 @@ struct CONTENT_EXPORT StreamDeviceInfo {
                    int sample_rate,
                    int channel_layout,
                    int frames_per_buffer);
+  explicit StreamDeviceInfo(MediaStreamDevice media_stream_device);
   static bool IsEqual(const StreamDeviceInfo& first,
                       const StreamDeviceInfo& second);
 

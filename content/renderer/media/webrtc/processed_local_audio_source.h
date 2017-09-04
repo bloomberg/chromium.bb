@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
-#include "content/common/media/media_stream_options.h"
 #include "content/renderer/media/media_stream_audio_level_calculator.h"
 #include "content/renderer/media/media_stream_audio_processor.h"
 #include "content/renderer/media/media_stream_audio_source.h"
@@ -40,7 +39,7 @@ class CONTENT_EXPORT ProcessedLocalAudioSource final
   // ID are derived from |device_info|. |factory| must outlive this instance.
   ProcessedLocalAudioSource(
       int consumer_render_frame_id,
-      const StreamDeviceInfo& device_info,
+      const MediaStreamDevice& device,
       const AudioProcessingProperties& audio_processing_properties,
       const ConstraintsCallback& started_callback,
       PeerConnectionDependencyFactory* factory);

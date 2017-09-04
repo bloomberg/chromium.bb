@@ -25,14 +25,13 @@ const char kTestStreamLabel[] = "stream_label";
 class MockCDQualityAudioSource : public MediaStreamAudioSource {
  public:
   MockCDQualityAudioSource() : MediaStreamAudioSource(true) {
-    MediaStreamAudioSource::SetFormat(media::AudioParameters(
+    SetFormat(media::AudioParameters(
         media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
         media::CHANNEL_LAYOUT_STEREO,
-        media::AudioParameters::kAudioCDSampleRate,
-        16,
+        media::AudioParameters::kAudioCDSampleRate, 16,
         media::AudioParameters::kAudioCDSampleRate / 100));
-    MediaStreamAudioSource::SetDeviceInfo(StreamDeviceInfo(
-        MEDIA_DEVICE_AUDIO_CAPTURE, "Mock audio device", "mock_audio_device_id",
+    SetDevice(MediaStreamDevice(
+        MEDIA_DEVICE_AUDIO_CAPTURE, "mock_audio_device_id", "Mock audio device",
         media::AudioParameters::kAudioCDSampleRate,
         media::CHANNEL_LAYOUT_STEREO,
         media::AudioParameters::kAudioCDSampleRate / 100));

@@ -6,12 +6,10 @@
 #define CONTENT_RENDERER_MEDIA_MEDIA_STREAM_SOURCE_H_
 
 #include "base/callback.h"
-#include "base/compiler_specific.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
-#include "content/common/media/media_stream_options.h"
+#include "content/public/common/media_stream_request.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
 
 namespace content {
@@ -36,9 +34,7 @@ class CONTENT_EXPORT MediaStreamSource
 
   // Returns device information about a source that has been created by a
   // JavaScript call to GetUserMedia, e.g., a camera or microphone.
-  const StreamDeviceInfo& device_info() const {
-    return device_info_;
-  }
+  const MediaStreamDevice& device() const { return device_; }
 
   // Stops the source (by calling DoStopSource()). This runs the
   // |stop_callback_| (if set), and then sets the
@@ -50,7 +46,7 @@ class CONTENT_EXPORT MediaStreamSource
 
   // Sets device information about a source that has been created by a
   // JavaScript call to GetUserMedia. F.E a camera or microphone.
-  void SetDeviceInfo(const StreamDeviceInfo& device_info);
+  void SetDevice(const MediaStreamDevice& device);
 
   // Sets a callback that will be triggered when StopSource is called.
   void SetStopCallback(const SourceStoppedCallback& stop_callback);
@@ -65,7 +61,7 @@ class CONTENT_EXPORT MediaStreamSource
   virtual void DoStopSource() = 0;
 
  private:
-  StreamDeviceInfo device_info_;
+  MediaStreamDevice device_;
   SourceStoppedCallback stop_callback_;
 
   // In debug builds, check that all methods are being called on the main
