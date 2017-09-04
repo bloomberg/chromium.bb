@@ -407,6 +407,8 @@ struct drm_head {
 	struct drm_backend *backend;
 
 	struct drm_output *output; /* XXX: temporary */
+
+	struct backlight *backlight;
 };
 
 struct drm_output {
@@ -422,8 +424,6 @@ struct drm_output {
 	struct drm_property_info props_conn[WDRM_CONNECTOR__COUNT];
 	/* Holds the properties for the CRTC */
 	struct drm_property_info props_crtc[WDRM_CRTC__COUNT];
-
-	struct backlight *backlight;
 
 	int vblank_pending;
 	int page_flip_pending;
@@ -3808,12 +3808,12 @@ drm_subpixel_to_wayland(int drm_value)
 
 /* returns a value between 0-255 range, where higher is brighter */
 static uint32_t
-drm_get_backlight(struct drm_output *output)
+drm_get_backlight(struct drm_head *head)
 {
 	long brightness, max_brightness, norm;
 
-	brightness = backlight_get_brightness(output->backlight);
-	max_brightness = backlight_get_max_brightness(output->backlight);
+	brightness = backlight_get_brightness(head->backlight);
+	max_brightness = backlight_get_max_brightness(head->backlight);
 
 	/* convert it on a scale of 0 to 255 */
 	norm = (brightness * 255)/(max_brightness);
@@ -3825,21 +3825,21 @@ drm_get_backlight(struct drm_output *output)
 static void
 drm_set_backlight(struct weston_output *output_base, uint32_t value)
 {
-	struct drm_output *output = to_drm_output(output_base);
+	struct drm_head *head = to_drm_head(weston_output_get_first_head(output_base));
 	long max_brightness, new_brightness;
 
-	if (!output->backlight)
+	if (!head->backlight)
 		return;
 
 	if (value > 255)
 		return;
 
-	max_brightness = backlight_get_max_brightness(output->backlight);
+	max_brightness = backlight_get_max_brightness(head->backlight);
 
 	/* get denormalized value */
 	new_brightness = (value * max_brightness) / 255;
 
-	backlight_set_brightness(output->backlight, new_brightness);
+	backlight_set_brightness(head->backlight, new_brightness);
 }
 
 /**
@@ -4745,6 +4745,7 @@ drm_output_enable(struct weston_output *base)
 {
 	struct drm_output *output = to_drm_output(base);
 	struct drm_backend *b = to_drm_backend(base->compositor);
+	struct drm_head *head = to_drm_head(weston_output_get_first_head(base));
 	struct weston_mode *m;
 
 	if (b->pageflip_timeout)
@@ -4760,11 +4761,11 @@ drm_output_enable(struct weston_output *base)
 		goto err;
 	}
 
-	if (output->backlight) {
+	if (head->backlight) {
 		weston_log("Initialized backlight, device %s\n",
-			   output->backlight->path);
+			   head->backlight->path);
 		output->base.set_backlight = drm_set_backlight;
-		output->base.backlight_current = drm_get_backlight(output);
+		output->base.backlight_current = drm_get_backlight(head);
 	} else {
 		weston_log("Failed to initialize backlight\n");
 	}
@@ -4876,9 +4877,6 @@ drm_output_destroy(struct weston_output *base)
 
 	drm_property_info_free(output->props_conn, WDRM_CONNECTOR__COUNT);
 	drmModeFreeConnector(output->connector);
-
-	if (output->backlight)
-		backlight_destroy(output->backlight);
 
 	assert(!output->state_last);
 	drm_output_state_free(output->state_cur);
@@ -5005,6 +5003,8 @@ drm_head_create(struct drm_backend *backend, uint32_t connector_id,
 
 	head->backend = backend;
 
+	head->backlight = backlight_init(drm_device, connector->connector_type);
+
 	/* Unknown connection status is assumed disconnected. */
 	weston_head_set_connection_status(&head->base,
 				connector->connection == DRM_MODE_CONNECTED);
@@ -5031,6 +5031,10 @@ static void
 drm_head_destroy(struct drm_head *head)
 {
 	weston_head_release(&head->base);
+
+	if (head->backlight)
+		backlight_destroy(head->backlight);
+
 	free(head);
 }
 
@@ -5069,9 +5073,6 @@ create_output_for_connector(struct drm_backend *b,
 
 	output->connector = connector;
 	output->connector_id = connector->connector_id;
-
-	output->backlight = backlight_init(drm_device,
-					   connector->connector_type);
 
 	name = make_connector_name(connector);
 	weston_output_init(&output->base, b->compositor, name);
