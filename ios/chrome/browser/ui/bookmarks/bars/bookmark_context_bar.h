@@ -25,7 +25,7 @@ typedef NS_ENUM(NSInteger, ContextBarButton) {
 
 typedef NS_ENUM(NSInteger, ContextBarButtonStyle) {
   ContextBarButtonStyleDefault,
-  ContextBarButtonStyleDelete
+  ContextBarButtonStyleDelete,
 };
 
 // View with 3 customizable buttons in a row.
@@ -38,6 +38,7 @@ typedef NS_ENUM(NSInteger, ContextBarButtonStyle) {
 - (void)setButtonStyle:(ContextBarButtonStyle)style
              forButton:(ContextBarButton)button;
 - (void)setButtonVisibility:(BOOL)visible forButton:(ContextBarButton)button;
+- (void)setButtonEnabled:(BOOL)enabled forButton:(ContextBarButton)button;
 
 @end
 #endif  // IOS_CHROME_BROWSER_UI_BOOKMARKS_BARS_BOOKMARK_CONTEXT_BAR_H_

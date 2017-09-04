@@ -44,14 +44,16 @@ using chrome_test_util::ButtonWithAccessibilityLabelId;
 using chrome_test_util::PrimarySignInButton;
 using chrome_test_util::SecondarySignInButton;
 
+namespace {
 // Matcher for the Delete button on the bookmarks UI.
 id<GREYMatcher> BookmarksDeleteSwipeButton() {
-  return ButtonWithAccessibilityLabel(@"Delete");
+  return ButtonWithAccessibilityLabelId(IDS_IOS_BOOKMARK_ACTION_DELETE);
 }
 
 // Matcher for the Back button on the bookmarks UI.
 id<GREYMatcher> BookmarksBackButton() {
-  return grey_accessibilityLabel(@"Back");
+  return grey_accessibilityLabel(
+      l10n_util::GetNSString(IDS_IOS_BOOKMARK_NEW_BACK_LABEL));
 }
 
 // Matcher for the DONE button on the bookmarks UI.
@@ -60,6 +62,31 @@ id<GREYMatcher> BookmarksDoneButton() {
       ButtonWithAccessibilityLabelId(IDS_IOS_NAVIGATION_BAR_DONE_BUTTON),
       grey_not(grey_accessibilityTrait(UIAccessibilityTraitKeyboardKey)), nil);
 }
+
+// Matcher for context bar leading button.
+id<GREYMatcher> ContextBarLeadingButtonWithLabel(NSString* label) {
+  return grey_allOf(grey_accessibilityID(@"context_bar_leading_button"),
+                    grey_accessibilityLabel(label),
+                    grey_accessibilityTrait(UIAccessibilityTraitButton),
+                    grey_sufficientlyVisible(), nil);
+}
+
+// Matcher for context bar center button.
+id<GREYMatcher> ContextBarCenterButtonWithLabel(NSString* label) {
+  return grey_allOf(grey_accessibilityID(@"context_bar_center_button"),
+                    grey_accessibilityLabel(label),
+                    grey_accessibilityTrait(UIAccessibilityTraitButton),
+                    grey_sufficientlyVisible(), nil);
+}
+
+// Matcher for context bar trailing button.
+id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
+  return grey_allOf(grey_accessibilityID(@"context_bar_trailing_button"),
+                    grey_accessibilityLabel(label),
+                    grey_accessibilityTrait(UIAccessibilityTraitButton),
+                    grey_sufficientlyVisible(), nil);
+}
+}  // namespace
 
 // Bookmark integration tests for Chrome.
 @interface BookmarksNewGenTestCase : ChromeTestCase
@@ -134,16 +161,249 @@ id<GREYMatcher> BookmarksDoneButton() {
   [BookmarksNewGenTestCase openMobileBookmarks];
 
   // Verify the context bar is shown.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Context Bar")]
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"context_bar")]
       assertWithMatcher:grey_notNil()];
 
   // Verify the context bar's leading and trailing buttons are shown.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          @"Context Bar Leading Button")]
+                                          @"context_bar_leading_button")]
       assertWithMatcher:grey_notNil()];
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          @"Context Bar Trailing Button")]
+                                          @"context_bar_trailing_button")]
       assertWithMatcher:grey_notNil()];
+}
+
+- (void)testBookmarkContextBarInVariousSelectionModes {
+  if (IsIPadIdiom()) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
+  }
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
+
+  [BookmarksNewGenTestCase setupStandardBookmarks];
+  [BookmarksNewGenTestCase openBookmarks];
+  [BookmarksNewGenTestCase openMobileBookmarks];
+
+  // Verify the context bar is shown.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"context_bar")]
+      assertWithMatcher:grey_notNil()];
+
+  // Change to edit mode
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          @"context_bar_trailing_button")]
+      performAction:grey_tap()];
+
+  // Verify context bar shows disabled "Delete" disabled "More" enabled
+  // "Cancel".
+  [[EarlGrey selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
+                                          [BookmarksNewGenTestCase
+                                              contextBarDeleteString])]
+      assertWithMatcher:grey_allOf(grey_notNil(),
+                                   grey_accessibilityTrait(
+                                       UIAccessibilityTraitNotEnabled),
+                                   nil)];
+  [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                          [BookmarksNewGenTestCase
+                                              contextBarMoreString])]
+      assertWithMatcher:grey_allOf(grey_notNil(),
+                                   grey_accessibilityTrait(
+                                       UIAccessibilityTraitNotEnabled),
+                                   nil)];
+  [[EarlGrey selectElementWithMatcher:ContextBarTrailingButtonWithLabel(
+                                          [BookmarksNewGenTestCase
+                                              contextBarCancelString])]
+      assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
+
+  // Select single URL.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Second URL")]
+      performAction:grey_tap()];
+
+  // Verify context bar shows enabled "Delete" enabled "More" enabled "Cancel".
+  [[EarlGrey selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
+                                          [BookmarksNewGenTestCase
+                                              contextBarDeleteString])]
+      assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
+  [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                          [BookmarksNewGenTestCase
+                                              contextBarMoreString])]
+      assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
+  [[EarlGrey selectElementWithMatcher:ContextBarTrailingButtonWithLabel(
+                                          [BookmarksNewGenTestCase
+                                              contextBarCancelString])]
+      assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
+
+  // Unselect all.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Second URL")]
+      performAction:grey_tap()];
+
+  // Verify context bar shows disabled "Delete" disabled "More" enabled
+  // "Cancel".
+  [[EarlGrey selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
+                                          [BookmarksNewGenTestCase
+                                              contextBarDeleteString])]
+      assertWithMatcher:grey_allOf(grey_notNil(),
+                                   grey_accessibilityTrait(
+                                       UIAccessibilityTraitNotEnabled),
+                                   nil)];
+  [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                          [BookmarksNewGenTestCase
+                                              contextBarMoreString])]
+      assertWithMatcher:grey_allOf(grey_notNil(),
+                                   grey_accessibilityTrait(
+                                       UIAccessibilityTraitNotEnabled),
+                                   nil)];
+  [[EarlGrey selectElementWithMatcher:ContextBarTrailingButtonWithLabel(
+                                          [BookmarksNewGenTestCase
+                                              contextBarCancelString])]
+      assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
+
+  // Select single Folder.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Folder 1")]
+      performAction:grey_tap()];
+
+  // Verify context bar shows enabled "Delete" enabled "Edit" enabled "Cancel".
+  [[EarlGrey selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
+                                          [BookmarksNewGenTestCase
+                                              contextBarDeleteString])]
+      assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
+  [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                          [BookmarksNewGenTestCase
+                                              contextBarEditString])]
+      assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
+  [[EarlGrey selectElementWithMatcher:ContextBarTrailingButtonWithLabel(
+                                          [BookmarksNewGenTestCase
+                                              contextBarCancelString])]
+      assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
+
+  // Unselect all.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Folder 1")]
+      performAction:grey_tap()];
+
+  // Verify context bar shows disabled "Delete" disabled "More" enabled
+  // "Cancel".
+  [[EarlGrey selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
+                                          [BookmarksNewGenTestCase
+                                              contextBarDeleteString])]
+      assertWithMatcher:grey_allOf(grey_notNil(),
+                                   grey_accessibilityTrait(
+                                       UIAccessibilityTraitNotEnabled),
+                                   nil)];
+  [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                          [BookmarksNewGenTestCase
+                                              contextBarMoreString])]
+      assertWithMatcher:grey_allOf(grey_notNil(),
+                                   grey_accessibilityTrait(
+                                       UIAccessibilityTraitNotEnabled),
+                                   nil)];
+  [[EarlGrey selectElementWithMatcher:ContextBarTrailingButtonWithLabel(
+                                          [BookmarksNewGenTestCase
+                                              contextBarCancelString])]
+      assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
+
+  // Multi select URL and folders.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Folder 1")]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Second URL")]
+      performAction:grey_tap()];
+
+  // Verify context bar shows enabled "Delete" enabled "More" enabled "Cancel".
+  [[EarlGrey selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
+                                          [BookmarksNewGenTestCase
+                                              contextBarDeleteString])]
+      assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
+  [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                          [BookmarksNewGenTestCase
+                                              contextBarMoreString])]
+      assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
+  [[EarlGrey selectElementWithMatcher:ContextBarTrailingButtonWithLabel(
+                                          [BookmarksNewGenTestCase
+                                              contextBarCancelString])]
+      assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
+
+  // Unselect Folder 1, so that Second URL is selected.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Folder 1")]
+      performAction:grey_tap()];
+
+  // Verify context bar shows enabled "Delete" enabled "More" enabled
+  // "Cancel".
+  [[EarlGrey selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
+                                          [BookmarksNewGenTestCase
+                                              contextBarDeleteString])]
+      assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
+  [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                          [BookmarksNewGenTestCase
+                                              contextBarMoreString])]
+      assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
+  [[EarlGrey selectElementWithMatcher:ContextBarTrailingButtonWithLabel(
+                                          [BookmarksNewGenTestCase
+                                              contextBarCancelString])]
+      assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
+
+  // Unselect all, but one Folder - Folder 1 is selected.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Folder 1")]
+      performAction:grey_tap()];
+  // Unselect URL.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Second URL")]
+      performAction:grey_tap()];
+
+  // Verify context bar shows enabled "Delete" enabled "Edit" enabled "Cancel".
+  [[EarlGrey selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
+                                          [BookmarksNewGenTestCase
+                                              contextBarDeleteString])]
+      assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
+  [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                          [BookmarksNewGenTestCase
+                                              contextBarEditString])]
+      assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
+  [[EarlGrey selectElementWithMatcher:ContextBarTrailingButtonWithLabel(
+                                          [BookmarksNewGenTestCase
+                                              contextBarCancelString])]
+      assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
+
+  // Unselect all.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Folder 1")]
+      performAction:grey_tap()];
+
+  // Verify context bar shows disabled "Delete" disabled "More" enabled
+  // "Cancel".
+  [[EarlGrey selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
+                                          [BookmarksNewGenTestCase
+                                              contextBarDeleteString])]
+      assertWithMatcher:grey_allOf(grey_notNil(),
+                                   grey_accessibilityTrait(
+                                       UIAccessibilityTraitNotEnabled),
+                                   nil)];
+  [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                          [BookmarksNewGenTestCase
+                                              contextBarMoreString])]
+      assertWithMatcher:grey_allOf(grey_notNil(),
+                                   grey_accessibilityTrait(
+                                       UIAccessibilityTraitNotEnabled),
+                                   nil)];
+  [[EarlGrey selectElementWithMatcher:ContextBarTrailingButtonWithLabel(
+                                          [BookmarksNewGenTestCase
+                                              contextBarCancelString])]
+      assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
+
+  // Cancel edit mode
+  [[EarlGrey selectElementWithMatcher:ContextBarTrailingButtonWithLabel(
+                                          [BookmarksNewGenTestCase
+                                              contextBarCancelString])]
+      performAction:grey_tap()];
+
+  // Verify context bar shows enabled "New Folder" and enabled "Select".
+  [[EarlGrey selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
+                                          [BookmarksNewGenTestCase
+                                              contextBarNewFolderString])]
+      assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
+  [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                          [BookmarksNewGenTestCase
+                                              contextBarMoreString])]
+      assertWithMatcher:grey_nil()];
+  [[EarlGrey selectElementWithMatcher:ContextBarTrailingButtonWithLabel(
+                                          [BookmarksNewGenTestCase
+                                              contextBarSelectString])]
+      assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
 }
 
 // Tests that the promo view is only seen at root level and not in any of the
@@ -485,6 +745,31 @@ id<GREYMatcher> BookmarksDoneButton() {
                    return bookmarkModel->loaded() == loaded;
                  }),
              @"Bookmark model was not loaded");
+}
+
+// Context bar strings.
++ (NSString*)contextBarNewFolderString {
+  return l10n_util::GetNSString(IDS_IOS_BOOKMARK_CONTEXT_BAR_NEW_FOLDER);
+}
+
++ (NSString*)contextBarDeleteString {
+  return l10n_util::GetNSString(IDS_IOS_BOOKMARK_CONTEXT_BAR_DELETE);
+}
+
++ (NSString*)contextBarCancelString {
+  return l10n_util::GetNSString(IDS_CANCEL);
+}
+
++ (NSString*)contextBarSelectString {
+  return l10n_util::GetNSString(IDS_IOS_BOOKMARK_CONTEXT_BAR_SELECT);
+}
+
++ (NSString*)contextBarEditString {
+  return l10n_util::GetNSString(IDS_IOS_BOOKMARK_CONTEXT_BAR_EDIT);
+}
+
++ (NSString*)contextBarMoreString {
+  return l10n_util::GetNSString(IDS_IOS_BOOKMARK_CONTEXT_BAR_MORE);
 }
 // TODO(crbug.com/695749): Add egtest for spinner and empty background
 
