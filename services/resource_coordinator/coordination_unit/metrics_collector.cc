@@ -12,14 +12,6 @@
 #include "services/resource_coordinator/public/cpp/coordination_unit_id.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 
-// Tabs can be kept in the background for a long time, metrics show 75th
-// percentile of time spent in background is 2.5 hours, and the 95th is 24 hour.
-// In order to guide the selection of an appropriate observation window we are
-// proposing using a CUSTOM_TIMES histogram from 1s to 48h, with 100 buckets.
-#define HEURISTICS_HISTOGRAM(name, sample)                                  \
-  UMA_HISTOGRAM_CUSTOM_TIMES(name, sample, base::TimeDelta::FromSeconds(1), \
-                             base::TimeDelta::FromHours(48), 100)
-
 namespace resource_coordinator {
 
 const size_t kDefaultMaxCPUUsageMeasurements = 30u;
