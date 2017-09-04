@@ -62,6 +62,7 @@ aggregate_vector_icons("chrome_vector_icons") {
     "navigate_home.icon",
     "navigate_stop.1x.icon",
     "navigate_stop.icon",
+    "notification_download.icon",
     "notification_end_of_support.icon",
     "notification_image.1x.icon",
     "notification_image.icon",

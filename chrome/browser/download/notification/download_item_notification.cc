@@ -50,6 +50,7 @@
 #endif  // defined(OS_CHROMEOS)
 
 using base::UserMetricsAction;
+using message_center::MessageCenter;
 
 namespace {
 
@@ -502,9 +503,19 @@ void DownloadItemNotification::UpdateNotificationIcon() {
                             ? IDR_DOWNLOAD_NOTIFICATION_WARNING_BAD
                             : IDR_DOWNLOAD_NOTIFICATION_WARNING_UNWANTED);
 #else
-    SetNotificationVectorIcon(
-        vector_icons::kWarningIcon,
-        model.MightBeMalicious() ? gfx::kGoogleRed700 : gfx::kGoogleYellow700);
+    if (MessageCenter::IsNewStyleNotificationEnabled()) {
+      SetNotificationVectorIcon(
+          kNotificationDownloadIcon,
+          model.MightBeMalicious()
+              ? message_center::kSystemNotificationColorCriticalWarning
+              : message_center::kSystemNotificationColorWarning);
+
+    } else {
+      SetNotificationVectorIcon(vector_icons::kWarningIcon,
+                                model.MightBeMalicious()
+                                    ? gfx::kGoogleRed700
+                                    : gfx::kGoogleYellow700);
+    }
 #endif
     return;
   }
@@ -514,15 +525,21 @@ void DownloadItemNotification::UpdateNotificationIcon() {
   switch (item_->GetState()) {
     case content::DownloadItem::IN_PROGRESS:
     case content::DownloadItem::COMPLETE:
-      if (is_off_the_record) {
-#if defined(OS_MACOSX)
-        SetNotificationIcon(IDR_DOWNLOAD_NOTIFICATION_INCOGNITO);
-#else
-        SetNotificationVectorIcon(kFileDownloadIncognitoIcon,
-                                  gfx::kChromeIconGrey);
-#endif
+      if (MessageCenter::IsNewStyleNotificationEnabled()) {
+        SetNotificationVectorIcon(
+            kNotificationDownloadIcon,
+            message_center::kSystemNotificationColorNormal);
       } else {
-        SetNotificationVectorIcon(kFileDownloadIcon, gfx::kGoogleBlue500);
+        if (is_off_the_record) {
+#if defined(OS_MACOSX)
+          SetNotificationIcon(IDR_DOWNLOAD_NOTIFICATION_INCOGNITO);
+#else
+          SetNotificationVectorIcon(kFileDownloadIncognitoIcon,
+                                    gfx::kChromeIconGrey);
+#endif
+        } else {
+          SetNotificationVectorIcon(kFileDownloadIcon, gfx::kGoogleBlue500);
+        }
       }
       break;
 
@@ -530,8 +547,14 @@ void DownloadItemNotification::UpdateNotificationIcon() {
 #if defined(OS_MACOSX)
       SetNotificationIcon(IDR_DOWNLOAD_NOTIFICATION_ERROR);
 #else
-      SetNotificationVectorIcon(vector_icons::kErrorCircleIcon,
-                                gfx::kGoogleRed700);
+      if (MessageCenter::IsNewStyleNotificationEnabled()) {
+        SetNotificationVectorIcon(
+            kNotificationDownloadIcon,
+            message_center::kSystemNotificationColorCriticalWarning);
+      } else {
+        SetNotificationVectorIcon(vector_icons::kErrorCircleIcon,
+                                  gfx::kGoogleRed700);
+      }
 #endif
       break;
 
@@ -565,7 +588,14 @@ void DownloadItemNotification::SetNotificationIcon(int resource_id) {
 void DownloadItemNotification::SetNotificationVectorIcon(
     const gfx::VectorIcon& icon,
     SkColor color) {
-  notification_->set_icon(gfx::Image(gfx::CreateVectorIcon(icon, 40, color)));
+  if (MessageCenter::IsNewStyleNotificationEnabled()) {
+    notification_->set_accent_color(color);
+    notification_->set_small_image(gfx::Image(
+        gfx::CreateVectorIcon(icon, message_center::kSmallImageSizeMD, color)));
+    notification_->set_vector_small_image(icon);
+  } else {
+    notification_->set_icon(gfx::Image(gfx::CreateVectorIcon(icon, 40, color)));
+  }
 }
 
 void DownloadItemNotification::DisablePopup() {
