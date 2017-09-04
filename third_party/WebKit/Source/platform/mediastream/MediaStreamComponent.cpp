@@ -42,13 +42,13 @@ namespace blink {
 
 namespace {
 
-static int g_unique_id = 0;
+static int g_unique_media_stream_component_id = 0;
 
 }  // namespace
 
 // static
 int MediaStreamComponent::GenerateUniqueId() {
-  return ++g_unique_id;
+  return ++g_unique_media_stream_component_id;
 }
 
 MediaStreamComponent* MediaStreamComponent::Create(MediaStreamSource* source) {

@@ -38,13 +38,13 @@ namespace blink {
 
 namespace {
 
-static int g_unique_id = 0;
+static int g_unique_media_stream_descriptor_id = 0;
 
 }  // namespace
 
 // static
 int MediaStreamDescriptor::GenerateUniqueId() {
-  return ++g_unique_id;
+  return ++g_unique_media_stream_descriptor_id;
 }
 
 MediaStreamDescriptor* MediaStreamDescriptor::Create(
