@@ -607,10 +607,12 @@ enum {
         _googleLandingController = [[GoogleLandingViewController alloc] init];
         [_googleLandingController setDispatcher:self.dispatcher];
         _googleLandingMediator = [[GoogleLandingMediator alloc]
-            initWithConsumer:_googleLandingController
-                browserState:_browserState
-                  dispatcher:self.dispatcher
-                webStateList:[_tabModel webStateList]];
+            initWithBrowserState:_browserState
+                    webStateList:[_tabModel webStateList]];
+        _googleLandingMediator.consumer = _googleLandingController;
+        _googleLandingMediator.dispatcher = self.dispatcher;
+        [_googleLandingMediator setUp];
+
         [_googleLandingController setDataSource:_googleLandingMediator];
         self.headerController = _googleLandingController;
       }
