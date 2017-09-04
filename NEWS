@@ -1,8 +1,11 @@
 liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 
 * Noteworthy changes in release 3.3.0 (2017-09-04)
-For a detailed list of all the changes refer to [[https://github.com/liblouis/liblouis/milestone/13?closed=1][the list of closed
-issues]].
+This release brings a slew of Braille table improvements, fixes a
+number of security related bugs and introduces a new tool to generate
+liblouis Braille tables based on a corpus of know good Braille
+translations. For a detailed list of all the changes refer to [[https://github.com/liblouis/liblouis/milestone/13?closed=1][the list
+of closed issues]].
 
 ** New features
 *** maketable tool
