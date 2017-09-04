@@ -864,7 +864,7 @@ void OfflinePageModelImpl::RetryDbInitialization(
 
 void OfflinePageModelImpl::OnInitialGetOfflinePagesDone(
     const base::TimeTicks& start_time,
-    const std::vector<OfflinePageItem>& offline_pages) {
+    std::vector<OfflinePageItem> offline_pages) {
   DCHECK(!is_loaded_);
 
   UMA_HISTOGRAM_TIMES("OfflinePages.Model.ConstructionToLoadedEventTime",

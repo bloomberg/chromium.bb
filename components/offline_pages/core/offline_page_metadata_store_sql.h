@@ -10,8 +10,11 @@
 #include <memory>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/files/file_path.h"
+#include "base/location.h"
 #include "base/memory/weak_ptr.h"
+#include "base/task_runner_util.h"
 #include "components/offline_pages/core/offline_page_metadata_store.h"
 
 namespace base {
@@ -59,6 +62,16 @@ namespace offline_pages {
 //   move data from old table (prefixed by temp_) to the new one.
 class OfflinePageMetadataStoreSQL : public OfflinePageMetadataStore {
  public:
+  // Definition of the callback that is going to run the core of the command in
+  // the |Execute| method.
+  template <typename T>
+  using RunCallback = base::OnceCallback<T(sql::Connection*)>;
+
+  // Definition of the callback used to pass the result back to the caller of
+  // |Execute| method.
+  template <typename T>
+  using ResultCallback = base::OnceCallback<void(T)>;
+
   OfflinePageMetadataStoreSQL(
       scoped_refptr<base::SequencedTaskRunner> background_task_runner,
       const base::FilePath& database_dir);
@@ -76,15 +89,44 @@ class OfflinePageMetadataStoreSQL : public OfflinePageMetadataStore {
   void Reset(const ResetCallback& callback) override;
   StoreState state() const override;
 
+  // Executes a |run_callback| on SQL store on the blocking thread, and posts
+  // its result back to calling thread through |result_callback|.
+  // Calling |Execute| when store is NOT_LOADED will cause the store
+  // initialization to start.
+  // Store state needs to be LOADED for test task to run, or FAILURE, in which
+  // case the |db| pointer passed to |run_callback| will be null and such case
+  // should be gracefully handled.
+  template <typename T>
+  void Execute(RunCallback<T> run_callback, ResultCallback<T> result_callback) {
+    // TODO(fgorski): Add a proper state indicating in progress initialization
+    // and CHECK that state.
+
+    if (state_ == StoreState::NOT_LOADED) {
+      InitializeInternal(
+          base::BindOnce(&OfflinePageMetadataStoreSQL::Execute<T>,
+                         weak_ptr_factory_.GetWeakPtr(),
+                         std::move(run_callback), std::move(result_callback)));
+      return;
+    }
+
+    sql::Connection* db = state_ == StoreState::LOADED ? db_.get() : nullptr;
+
+    base::PostTaskAndReplyWithResult(
+        background_task_runner_.get(), FROM_HERE,
+        base::BindOnce(std::move(run_callback), db),
+        std::move(result_callback));
+  }
+
   // Helper function used to force incorrect state for testing purposes.
   void SetStateForTesting(StoreState state, bool reset_db);
 
  private:
-  // Used as callback to set state from open / initial read operations.
-  void SetState(StoreState state);
+  // Initializes database and calls callback.
+  void InitializeInternal(base::OnceClosure pending_command);
 
-  // Checks whether a valid DB connection is present and store state is LOADED.
-  bool CheckDb() const;
+  // Used to conclude opening/resetting DB connection.
+  void OnInitializeInternalDone(base::OnceClosure pending_command,
+                                bool success);
 
   // Background thread where all SQL access should be run.
   scoped_refptr<base::SequencedTaskRunner> background_task_runner_;

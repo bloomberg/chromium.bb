@@ -160,9 +160,8 @@ class OfflinePageModelImpl : public OfflinePageModel, public KeyedService {
                           bool success);
   void RetryDbInitialization(const base::TimeTicks& start_time,
                              int init_attempts_spent);
-  void OnInitialGetOfflinePagesDone(
-      const base::TimeTicks& start_time,
-      const std::vector<OfflinePageItem>& offline_pages);
+  void OnInitialGetOfflinePagesDone(const base::TimeTicks& start_time,
+                                    std::vector<OfflinePageItem> offline_pages);
   void FinalizeModelLoad();
 
   // Steps for saving a page offline.
