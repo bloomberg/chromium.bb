@@ -3,6 +3,7 @@
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 <script src="../http/tests/resources/permissions-helper.js"></script>
+<script src="resources/aom-helper.js"></script>
 
 <!--
 
@@ -20,19 +21,6 @@ test(function(t) {
 <button id="target1">Target</button>
 
 <script>
-function enableAccessibilityEventsPermission() {
-  return new Promise(function(resolve, reject) {
-    PermissionsHelper.setPermission(
-        'accessibility-events', 'granted').then(function() {
-      // Make sure AXObjectCacheImpl gets the notification too, its
-      // listener may fire after this one.
-      window.setTimeout(function() {
-        resolve();
-      }, 0);
-    });
-  });
-}
-
 async_test(function(t) {
   enableAccessibilityEventsPermission().then(function() {
     var target1 = document.getElementById("target1");

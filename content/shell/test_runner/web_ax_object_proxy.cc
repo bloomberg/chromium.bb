@@ -656,10 +656,6 @@ gin::ObjectTemplateBuilder WebAXObjectProxy::GetObjectTemplateBuilder(
       .SetMethod("isAttributeSettable", &WebAXObjectProxy::IsAttributeSettable)
       .SetMethod("isPressActionSupported",
                  &WebAXObjectProxy::IsPressActionSupported)
-      .SetMethod("isIncrementActionSupported",
-                 &WebAXObjectProxy::IsIncrementActionSupported)
-      .SetMethod("isDecrementActionSupported",
-                 &WebAXObjectProxy::IsDecrementActionSupported)
       .SetMethod("parentElement", &WebAXObjectProxy::ParentElement)
       .SetMethod("increment", &WebAXObjectProxy::Increment)
       .SetMethod("decrement", &WebAXObjectProxy::Decrement)
@@ -1464,8 +1460,9 @@ v8::Local<v8::Object> WebAXObjectProxy::CellForColumnAndRow(int column,
 
 void WebAXObjectProxy::SetSelectedTextRange(int selection_start, int length) {
   accessibility_object_.UpdateLayoutAndCheckValidity();
-  accessibility_object_.SetSelectedTextRange(selection_start,
-                                             selection_start + length);
+  accessibility_object_.SetSelection(accessibility_object_, selection_start,
+                                     accessibility_object_,
+                                     selection_start + length);
 }
 
 void WebAXObjectProxy::SetSelection(v8::Local<v8::Value> anchor_object,
@@ -1511,16 +1508,6 @@ bool WebAXObjectProxy::IsPressActionSupported() {
   return accessibility_object_.CanPress();
 }
 
-bool WebAXObjectProxy::IsIncrementActionSupported() {
-  accessibility_object_.UpdateLayoutAndCheckValidity();
-  return accessibility_object_.CanIncrement();
-}
-
-bool WebAXObjectProxy::IsDecrementActionSupported() {
-  accessibility_object_.UpdateLayoutAndCheckValidity();
-  return accessibility_object_.CanDecrement();
-}
-
 v8::Local<v8::Object> WebAXObjectProxy::ParentElement() {
   accessibility_object_.UpdateLayoutAndCheckValidity();
   blink::WebAXObject parent_object = accessibility_object_.ParentObject();
@@ -1545,7 +1532,7 @@ void WebAXObjectProxy::ShowMenu() {
 
 void WebAXObjectProxy::Press() {
   accessibility_object_.UpdateLayoutAndCheckValidity();
-  accessibility_object_.Press();
+  accessibility_object_.Click();
 }
 
 bool WebAXObjectProxy::SetValue(const std::string& value) {
@@ -1577,7 +1564,7 @@ void WebAXObjectProxy::UnsetNotificationListener() {
 
 void WebAXObjectProxy::TakeFocus() {
   accessibility_object_.UpdateLayoutAndCheckValidity();
-  accessibility_object_.SetFocused(true);
+  accessibility_object_.Focus();
 }
 
 void WebAXObjectProxy::ScrollToMakeVisible() {

@@ -136,19 +136,20 @@ String AXListBoxOption::TextAlternative(bool recursive,
   return text_alternative;
 }
 
-void AXListBoxOption::SetSelected(bool selected) {
+bool AXListBoxOption::OnNativeSetSelectedAction(bool selected) {
   HTMLSelectElement* select_element = ListBoxOptionParentNode();
   if (!select_element)
-    return;
+    return false;
 
   if (!CanSetSelectedAttribute())
-    return;
+    return false;
 
   bool is_option_selected = IsSelected();
   if ((is_option_selected && selected) || (!is_option_selected && !selected))
-    return;
+    return false;
 
   select_element->SelectOptionByAccessKey(toHTMLOptionElement(GetNode()));
+  return true;
 }
 
 HTMLSelectElement* AXListBoxOption::ListBoxOptionParentNode() const {
