@@ -20,7 +20,6 @@
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_frame_observer_tracker.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
-#include "ui/base/window_open_disposition.h"
 #include "url/gurl.h"
 
 class SearchBox : public content::RenderFrameObserver,
@@ -107,7 +106,6 @@ class SearchBox : public content::RenderFrameObserver,
   void Paste(const base::string16& text);
 
   const ThemeBackgroundInfo& GetThemeBackgroundInfo();
-  const EmbeddedSearchRequestParams& GetEmbeddedSearchRequestParams();
 
   // Sends ChromeViewHostMsg_StartCapturingKeyStrokes to the browser.
   void StartCapturingKeyStrokes();
@@ -124,7 +122,6 @@ class SearchBox : public content::RenderFrameObserver,
   bool is_focused() const { return is_focused_; }
   bool is_input_in_progress() const { return is_input_in_progress_; }
   bool is_key_capture_enabled() const { return is_key_capture_enabled_; }
-  const InstantSuggestion& suggestion() const { return suggestion_; }
 
  private:
   // Overridden from content::RenderFrameObserver:
@@ -140,12 +137,7 @@ class SearchBox : public content::RenderFrameObserver,
   void MostVisitedChanged(
       const std::vector<InstantMostVisitedItem>& items) override;
   void SetInputInProgress(bool input_in_progress) override;
-  void SetSuggestionToPrefetch(const InstantSuggestion& suggestion) override;
-  void Submit(const EmbeddedSearchRequestParams& params) override;
   void ThemeChanged(const ThemeBackgroundInfo& theme_info) override;
-
-  // Returns the current zoom factor of the render view or 1 on failure.
-  double GetZoom() const;
 
   // Sets the searchbox values to their initial value.
   void Reset();
@@ -161,8 +153,6 @@ class SearchBox : public content::RenderFrameObserver,
   bool is_key_capture_enabled_;
   InstantRestrictedIDCache<InstantMostVisitedItem> most_visited_items_cache_;
   ThemeBackgroundInfo theme_info_;
-  EmbeddedSearchRequestParams embedded_search_request_params_;
-  InstantSuggestion suggestion_;
   chrome::mojom::EmbeddedSearchAssociatedPtr embedded_search_service_;
   mojo::AssociatedBinding<chrome::mojom::EmbeddedSearchClient> binding_;
 

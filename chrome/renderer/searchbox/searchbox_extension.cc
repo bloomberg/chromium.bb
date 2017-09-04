@@ -306,28 +306,6 @@ static const char kDispatchMostVisitedChangedScript[] =
     "  true;"
     "}";
 
-static const char kDispatchSubmitEventScript[] =
-    "if (window.chrome &&"
-    "    window.chrome.embeddedSearch &&"
-    "    window.chrome.embeddedSearch.searchBox &&"
-    "    window.chrome.embeddedSearch.searchBox.onsubmit &&"
-    "    typeof window.chrome.embeddedSearch.searchBox.onsubmit =="
-    "        'function') {"
-    "  window.chrome.embeddedSearch.searchBox.onsubmit();"
-    "  true;"
-    "}";
-
-static const char kDispatchSuggestionChangeEventScript[] =
-    "if (window.chrome &&"
-    "    window.chrome.embeddedSearch &&"
-    "    window.chrome.embeddedSearch.searchBox &&"
-    "    window.chrome.embeddedSearch.searchBox.onsuggestionchange &&"
-    "    typeof window.chrome.embeddedSearch.searchBox.onsuggestionchange =="
-    "        'function') {"
-    "  window.chrome.embeddedSearch.searchBox.onsuggestionchange();"
-    "  true;"
-    "}";
-
 static const char kDispatchThemeChangeEventScript[] =
     "if (window.chrome &&"
     "    window.chrome.embeddedSearch &&"
@@ -488,16 +466,6 @@ void SearchBoxExtension::DispatchKeyCaptureChange(blink::WebLocalFrame* frame) {
 void SearchBoxExtension::DispatchMostVisitedChanged(
     blink::WebLocalFrame* frame) {
   Dispatch(frame, kDispatchMostVisitedChangedScript);
-}
-
-// static
-void SearchBoxExtension::DispatchSubmit(blink::WebLocalFrame* frame) {
-  Dispatch(frame, kDispatchSubmitEventScript);
-}
-
-// static
-void SearchBoxExtension::DispatchSuggestionChange(blink::WebLocalFrame* frame) {
-  Dispatch(frame, kDispatchSuggestionChangeEventScript);
 }
 
 // static
@@ -683,52 +651,30 @@ void SearchBoxExtensionWrapper::GetRightToLeft(
 // static
 void SearchBoxExtensionWrapper::GetSearchRequestParams(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
+  // TODO(treib): Remove this method.
   content::RenderFrame* render_frame = GetRenderFrame();
   if (!render_frame)
     return;
 
-  const EmbeddedSearchRequestParams& params =
-      SearchBox::Get(render_frame)->GetEmbeddedSearchRequestParams();
   v8::Isolate* isolate = args.GetIsolate();
   v8::Local<v8::Object> data = v8::Object::New(isolate);
-  if (!params.search_query.empty()) {
-    data->Set(v8::String::NewFromUtf8(isolate, kSearchQueryKey),
-              UTF16ToV8String(isolate, params.search_query));
-  }
-  if (!params.original_query.empty()) {
-    data->Set(v8::String::NewFromUtf8(isolate, kOriginalQueryKey),
-              UTF16ToV8String(isolate, params.original_query));
-  }
-  if (!params.rlz_parameter_value.empty()) {
-    data->Set(v8::String::NewFromUtf8(isolate, kRLZParameterKey),
-              UTF16ToV8String(isolate, params.rlz_parameter_value));
-  }
-  if (!params.input_encoding.empty()) {
-    data->Set(v8::String::NewFromUtf8(isolate, kInputEncodingKey),
-              UTF16ToV8String(isolate, params.input_encoding));
-  }
-  if (!params.assisted_query_stats.empty()) {
-    data->Set(v8::String::NewFromUtf8(isolate, kAssistedQueryStatsKey),
-              UTF16ToV8String(isolate, params.assisted_query_stats));
-  }
   args.GetReturnValue().Set(data);
 }
 
 // static
 void SearchBoxExtensionWrapper::GetSuggestionToPrefetch(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
+  // TODO(treib): Remove this method.
   content::RenderFrame* render_frame = GetRenderFrame();
   if (!render_frame)
     return;
 
-  const InstantSuggestion& suggestion =
-      SearchBox::Get(render_frame)->suggestion();
   v8::Isolate* isolate = args.GetIsolate();
   v8::Local<v8::Object> data = v8::Object::New(isolate);
   data->Set(v8::String::NewFromUtf8(isolate, "text"),
-            UTF16ToV8String(isolate, suggestion.text));
+            v8::String::NewFromUtf8(isolate, ""));
   data->Set(v8::String::NewFromUtf8(isolate, "metadata"),
-            UTF8ToV8String(isolate, suggestion.metadata));
+            v8::String::NewFromUtf8(isolate, ""));
   args.GetReturnValue().Set(data);
 }
 

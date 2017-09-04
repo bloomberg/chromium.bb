@@ -18,21 +18,6 @@
 // Visited items) that the Instant page needs access to.
 typedef int InstantRestrictedID;
 
-// A wrapper to hold Instant suggested text and its metadata. Used to tell the
-// server what suggestion to prefetch.
-struct InstantSuggestion {
-  InstantSuggestion();
-  InstantSuggestion(const base::string16& in_text,
-                    const std::string& in_metadata);
-  ~InstantSuggestion();
-
-  // Full suggested text.
-  base::string16 text;
-
-  // JSON metadata from the server response which produced this suggestion.
-  std::string metadata;
-};
-
 // The alignment of the theme background image.
 enum ThemeBackgroundImageAlignment {
   THEME_BKGRND_IMAGE_ALIGN_CENTER,
@@ -150,40 +135,4 @@ struct InstantMostVisitedItem {
 typedef std::pair<InstantRestrictedID, InstantMostVisitedItem>
     InstantMostVisitedItemIDPair;
 
-// Embedded search request logging stats params.
-extern const char kSearchQueryKey[];
-extern const char kOriginalQueryKey[];
-extern const char kRLZParameterKey[];
-extern const char kInputEncodingKey[];
-extern const char kAssistedQueryStatsKey[];
-
-// A wrapper to hold embedded search request params. Used to tell the server
-// about the search query logging stats at the query submission time.
-struct EmbeddedSearchRequestParams {
-  EmbeddedSearchRequestParams();
-  // Extracts the request params from the |url| and initializes the member
-  // variables.
-  explicit EmbeddedSearchRequestParams(const GURL& url);
-  ~EmbeddedSearchRequestParams();
-
-  // Submitted search query.
-  base::string16 search_query;
-
-  // User typed query.
-  base::string16 original_query;
-
-  // RLZ parameter.
-  base::string16 rlz_parameter_value;
-
-  // Character input encoding type.
-  base::string16 input_encoding;
-
-  // The optional assisted query stats, aka AQS, used for logging purposes.
-  // This string contains impressions of all autocomplete matches shown
-  // at the query submission time.  For privacy reasons, we require the
-  // search provider to support HTTPS protocol in order to receive the AQS
-  // param.
-  // For more details, see http://goto.google.com/binary-clients-logging.
-  base::string16 assisted_query_stats;
-};
 #endif  // CHROME_COMMON_SEARCH_INSTANT_TYPES_H_

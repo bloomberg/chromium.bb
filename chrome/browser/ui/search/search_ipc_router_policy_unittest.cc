@@ -136,30 +136,16 @@ TEST_F(SearchIPCRouterPolicyTest, DoNotProcessMessagesForInactiveTab) {
   EXPECT_FALSE(router_policy->ShouldSendSetInputInProgress(false));
 }
 
-TEST_F(SearchIPCRouterPolicyTest, SendSetSuggestionToPrefetch) {
-  NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
-  EXPECT_TRUE(GetSearchIPCRouterPolicy()->ShouldSendSetSuggestionToPrefetch());
-}
-
 TEST_F(SearchIPCRouterPolicyTest,
        DoNotSendSetMessagesForIncognitoPage) {
   NavigateAndCommitActiveTab(GURL(chrome::kChromeSearchLocalNtpUrl));
   SetIncognitoProfile();
 
   SearchIPCRouter::Policy* router_policy = GetSearchIPCRouterPolicy();
-  EXPECT_FALSE(router_policy->ShouldSendSetSuggestionToPrefetch());
   EXPECT_FALSE(router_policy->ShouldSendThemeBackgroundInfo());
   EXPECT_FALSE(router_policy->ShouldSendMostVisitedItems());
   EXPECT_FALSE(router_policy->ShouldSendSetInputInProgress(true));
   EXPECT_FALSE(router_policy->ShouldSendOmniboxFocusChanged());
-}
-
-TEST_F(SearchIPCRouterPolicyTest,
-       AppropriateMessagesSentToIncognitoPages) {
-  NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
-  SetIncognitoProfile();
-
-  EXPECT_TRUE(GetSearchIPCRouterPolicy()->ShouldSubmitQuery());
 }
 
 TEST_F(SearchIPCRouterPolicyTest, SendMostVisitedItems) {
@@ -183,9 +169,4 @@ TEST_F(SearchIPCRouterPolicyTest, DoNotSendThemeBackgroundInfo) {
   // Instant NTP.
   NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
   EXPECT_FALSE(GetSearchIPCRouterPolicy()->ShouldSendThemeBackgroundInfo());
-}
-
-TEST_F(SearchIPCRouterPolicyTest, SubmitQuery) {
-  NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
-  EXPECT_TRUE(GetSearchIPCRouterPolicy()->ShouldSubmitQuery());
 }

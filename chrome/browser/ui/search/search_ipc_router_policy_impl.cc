@@ -55,10 +55,6 @@ bool SearchIPCRouterPolicyImpl::ShouldProcessHistorySyncCheck() {
   return !is_incognito_ && search::IsInstantNTP(web_contents_);
 }
 
-bool SearchIPCRouterPolicyImpl::ShouldSendSetSuggestionToPrefetch() {
-  return !is_incognito_;
-}
-
 bool SearchIPCRouterPolicyImpl::ShouldSendSetInputInProgress(
     bool is_active_tab) {
   return is_active_tab && !is_incognito_;
@@ -74,8 +70,4 @@ bool SearchIPCRouterPolicyImpl::ShouldSendMostVisitedItems() {
 
 bool SearchIPCRouterPolicyImpl::ShouldSendThemeBackgroundInfo() {
   return !is_incognito_ && search::IsInstantNTP(web_contents_);
-}
-
-bool SearchIPCRouterPolicyImpl::ShouldSubmitQuery() {
-  return true;
 }

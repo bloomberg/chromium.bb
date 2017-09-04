@@ -103,12 +103,10 @@ class SearchIPCRouter : public content::WebContentsObserver,
     virtual bool ShouldProcessPasteIntoOmnibox(bool is_active_tab) = 0;
     virtual bool ShouldProcessChromeIdentityCheck() = 0;
     virtual bool ShouldProcessHistorySyncCheck() = 0;
-    virtual bool ShouldSendSetSuggestionToPrefetch() = 0;
     virtual bool ShouldSendSetInputInProgress(bool is_active_tab) = 0;
     virtual bool ShouldSendOmniboxFocusChanged() = 0;
     virtual bool ShouldSendMostVisitedItems() = 0;
     virtual bool ShouldSendThemeBackgroundInfo() = 0;
-    virtual bool ShouldSubmitQuery() = 0;
   };
 
   // Creates chrome::mojom::EmbeddedSearchClient connections on request.
@@ -139,9 +137,6 @@ class SearchIPCRouter : public content::WebContentsObserver,
   // Tells the renderer whether the user syncs history.
   void SendHistorySyncCheckResult(bool sync_history);
 
-  // Tells the page the suggestion to be prefetched if any.
-  void SetSuggestionToPrefetch(const InstantSuggestion& suggestion);
-
   // Tells the page that user input started or stopped.
   void SetInputInProgress(bool input_in_progress);
 
@@ -154,9 +149,6 @@ class SearchIPCRouter : public content::WebContentsObserver,
 
   // Tells the renderer about the current theme background.
   void SendThemeBackgroundInfo(const ThemeBackgroundInfo& theme_info);
-
-  // Tells the page that the user pressed Enter in the omnibox.
-  void Submit(const EmbeddedSearchRequestParams& params);
 
   // Called when the tab corresponding to |this| instance is activated.
   void OnTabActivated();
