@@ -206,6 +206,7 @@ dist_yaml_TESTS =				\
 	yaml/nocross_harness.yaml		\
 	yaml/noletsignafter.yaml		\
 	yaml/pl-pl-comp8_harness.yaml		\
+	yaml/sk-g1_harness.yaml			\
 	yaml/sr-g1_harness.yaml			\
 	yaml/syllable.yaml			\
 	yaml/ta-ta-g1_harness.yaml		\

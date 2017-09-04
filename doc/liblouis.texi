@@ -1267,7 +1267,7 @@ Not properly defined
 @end table
 
 The opcodes which define and use character classes are shown below.
-For examples see @file{fr-abrege.ctb}.
+For examples see @file{el.ctb}.
 
 @table @code
 

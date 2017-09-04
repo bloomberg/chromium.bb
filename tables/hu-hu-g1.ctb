@@ -35,15 +35,12 @@ begcapsword 46-46
 emphclass italic
 emphclass underline
 emphclass bold
-begemphphrase italic 46-46
-endemphphrase italic before 46
-lenemphphrase italic 4
-begemphword italic 46-3
-endemphword italic 46-36
-emphletter italic 46-25
-begemphphrase bold 456-456
-endemphphrase bold before 456
-lenemphphrase bold 4
+begemph italic 356
+endemph italic  236
+begemph bold 356
+endemph bold 236
+begemph underline 356
+endemph underline 236
 begcomp 456-346
 endcomp 456-156
 midnum : 3
@@ -52,8 +49,15 @@ hyphen - 36
 decpoint , 2
 midnum . 3-3456
 endnum . 3
-
+endnum – 36-36
 #Following part implementing the new braille standard changes
+#When some punctuation character have after end of numbers, need add a dot6 prefix before the punctuation character dots
+endnum : 6-25
+endnum ? 6-26
+endnum ; 6-23
+endnum ! 6-235
+endnum " 6-236
+
 always . 3
 always ' 6-3
 postpunc . 256
@@ -122,10 +126,10 @@ always < 5-13
 always > 46-2
 always / 5-2
 always | 45
-always { 12345
-always } 12456
-always [ 12356
-always ] 23456
+always { 5-2346
+always } 5-1356
+always [ 46-2346
+always ] 46-1356
 always \\ 16
 always ^ 2346
 always ` 4
@@ -136,4 +140,8 @@ space \x000c 0
 space \x001b 1b
 space \e 1b
 space \f 0
+always ä 5-1
+noback context $l$p["–"] @36-36
+noback context $l["–"] @36-36
+noback always \\_ 6 letter sign before Roman page numbers
 undefined 26

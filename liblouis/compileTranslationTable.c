@@ -39,7 +39,6 @@ License along with liblouis. If not, see <http://www.gnu.org/licenses/>.
 #include <sys/stat.h>
 
 #include "internal.h"
-#include "findTable.h"
 #include "config.h"
 
 #define QUOTESUB 28		/*Stand-in for double quotes in strings */
@@ -336,6 +335,7 @@ _lou_getALine (FileInfo * nested)
       if (pch == '\\' && ch == 10)
 	{
 	  nested->linelen--;
+	  pch = ch;
 	  continue;
 	}
       if (ch == 10 || nested->linelen >= MAXSTRING-1)
@@ -698,43 +698,22 @@ putCharAndDots (FileInfo * nested, widechar c, widechar d)
   return 1;
 }
 
+/**
+ * Print out dot numbers
+ *
+ * @return a string containing the dot numbers. The longest possible
+ * output is "\123456789ABCDEF0/"
+ */
 static char *
 unknownDots (widechar dots)
 {
-/*Print out dot numbers */
   static char buffer[20];
   int k = 1;
   buffer[0] = '\\';
-  if ((dots & B1))
-    buffer[k++] = '1';
-  if ((dots & B2))
-    buffer[k++] = '2';
-  if ((dots & B3))
-    buffer[k++] = '3';
-  if ((dots & B4))
-    buffer[k++] = '4';
-  if ((dots & B5))
-    buffer[k++] = '5';
-  if ((dots & B6))
-    buffer[k++] = '6';
-  if ((dots & B7))
-    buffer[k++] = '7';
-  if ((dots & B8))
-    buffer[k++] = '8';
-  if ((dots & B9))
-    buffer[k++] = '9';
-  if ((dots & B10))
-    buffer[k++] = 'A';
-  if ((dots & B11))
-    buffer[k++] = 'B';
-  if ((dots & B12))
-    buffer[k++] = 'C';
-  if ((dots & B13))
-    buffer[k++] = 'D';
-  if ((dots & B14))
-    buffer[k++] = 'E';
-  if ((dots & B15))
-    buffer[k++] = 'F';
+  for (int mappingPos = 0; dotMapping[mappingPos].key; mappingPos++) {
+    if (dots & dotMapping[mappingPos].key)
+      buffer[k++] = dotMapping[mappingPos].value;
+  }
   buffer[k++] = '/';
   buffer[k] = 0;
   return buffer;
@@ -3811,6 +3790,7 @@ compileRule (FileInfo * nested,
   int k, i;
   int noback, nofor;
   noback = nofor = 0;
+  TranslationTableOffset tmp_offset;
 doOpcode:
   if (!getToken (nested, &token, NULL, &lastToken))
     return 1;			/*blank line */
@@ -3842,9 +3822,11 @@ doOpcode:
     case CTO_Locale:
       break;
     case CTO_Undefined:
+      tmp_offset = table->undefined;
       ok =
 	compileBrailleIndicator (nested, "undefined character opcode",
-				 CTO_Undefined, &table->undefined, &lastToken, newRuleOffset, newRule, noback, nofor);
+				 CTO_Undefined, &tmp_offset, &lastToken, newRuleOffset, newRule, noback, nofor);
+      table->undefined = tmp_offset;
       break;
 
     case CTO_Match:
@@ -3966,9 +3948,11 @@ doOpcode:
       }
 
     case CTO_BegCapsPhrase:
+      tmp_offset = table->emphRules[capsRule][begPhraseOffset];
       ok =
 	compileBrailleIndicator (nested, "first word capital sign",
-				 CTO_BegCapsPhraseRule, &table->emphRules[capsRule][begPhraseOffset], &lastToken, newRuleOffset, newRule, noback, nofor);
+				 CTO_BegCapsPhraseRule, &tmp_offset, &lastToken, newRuleOffset, newRule, noback, nofor);
+      table->emphRules[capsRule][begPhraseOffset] = tmp_offset;
       break;
     case CTO_EndCapsPhrase:
 		switch (compileBeforeAfter(nested, &lastToken)) {
@@ -3978,10 +3962,12 @@ doOpcode:
 					ok = 0;
 					break;
 				}
+				tmp_offset = table->emphRules[capsRule][endPhraseBeforeOffset];
 				ok =
 					compileBrailleIndicator (nested, "capital sign before last word",
-						CTO_EndCapsPhraseBeforeRule, &table->emphRules[capsRule][endPhraseBeforeOffset],
+						CTO_EndCapsPhraseBeforeRule, &tmp_offset,
 						&lastToken, newRuleOffset, newRule, noback, nofor);
+				table->emphRules[capsRule][endPhraseBeforeOffset] = tmp_offset;
 				break;
 			case 2: // after
 				if (table->emphRules[capsRule][endPhraseBeforeOffset]) {
@@ -3989,10 +3975,12 @@ doOpcode:
 					ok = 0;
 					break;
 				}
+				tmp_offset = table->emphRules[capsRule][endPhraseAfterOffset];
 				ok =
 					compileBrailleIndicator (nested, "capital sign after last word",
-						CTO_EndCapsPhraseAfterRule, &table->emphRules[capsRule][endPhraseAfterOffset],
+						CTO_EndCapsPhraseAfterRule, &tmp_offset,
 						&lastToken, newRuleOffset, newRule, noback, nofor);
+				table->emphRules[capsRule][endPhraseAfterOffset] = tmp_offset;
 				break;
 			default: // error
 				compileError (nested, "Invalid lastword indicator location.");
@@ -4001,28 +3989,38 @@ doOpcode:
 		}
       break;
 	  case CTO_BegCaps:
+	tmp_offset = table->emphRules[capsRule][begOffset];
       ok =
 	compileBrailleIndicator (nested, "first letter capital sign",
-				 CTO_BegCapsRule, &table->emphRules[capsRule][begOffset], &lastToken, newRuleOffset, newRule, noback, nofor);
+				 CTO_BegCapsRule, &tmp_offset, &lastToken, newRuleOffset, newRule, noback, nofor);
+	table->emphRules[capsRule][begOffset] = tmp_offset;
 		break;
 	  case CTO_EndCaps:
+	tmp_offset = table->emphRules[capsRule][endOffset];
       ok =
 	compileBrailleIndicator (nested, "last letter capital sign",
-				 CTO_EndCapsRule, &table->emphRules[capsRule][endOffset], &lastToken, newRuleOffset, newRule, noback, nofor);
+				 CTO_EndCapsRule, &tmp_offset, &lastToken, newRuleOffset, newRule, noback, nofor);
+	table->emphRules[capsRule][endOffset] = tmp_offset;
       break;
 	  case CTO_CapsLetter:
+	tmp_offset = table->emphRules[capsRule][letterOffset];
       ok =
 	compileBrailleIndicator (nested, "single letter capital sign",
-				 CTO_CapsLetterRule, &table->emphRules[capsRule][letterOffset], &lastToken, newRuleOffset, newRule, noback, nofor);
+				 CTO_CapsLetterRule, &tmp_offset, &lastToken, newRuleOffset, newRule, noback, nofor);
+	table->emphRules[capsRule][letterOffset] = tmp_offset;
       break;
     case CTO_BegCapsWord:
+	tmp_offset = table->emphRules[capsRule][begWordOffset];
       ok =
 	compileBrailleIndicator (nested, "capital word", CTO_BegCapsWordRule,
-				 &table->emphRules[capsRule][begWordOffset], &lastToken, newRuleOffset, newRule, noback, nofor);
+				 &tmp_offset, &lastToken, newRuleOffset, newRule, noback, nofor);
+	table->emphRules[capsRule][begWordOffset] = tmp_offset;
       break;
 	case CTO_EndCapsWord:
+	tmp_offset = table->emphRules[capsRule][endWordOffset];
 		ok = compileBrailleIndicator(nested, "capital word stop",
-				 CTO_EndCapsWordRule, &table->emphRules[capsRule][endWordOffset], &lastToken, newRuleOffset, newRule, noback, nofor);
+				 CTO_EndCapsWordRule, &tmp_offset, &lastToken, newRuleOffset, newRule, noback, nofor);
+	table->emphRules[capsRule][endWordOffset] = tmp_offset;
       break;
     case CTO_LenCapsPhrase:
       ok = table->emphRules[capsRule][lenPhraseOffset] = compileNumber (nested, &lastToken);
@@ -4147,19 +4145,25 @@ doOpcode:
 	      }
 		i++; // in table->emphRules the first index is used for caps
 		if (opcode == CTO_EmphLetter) {
+			tmp_offset = table->emphRules[i][letterOffset];
 			ok = compileBrailleIndicator (nested, "single letter",
 				CTO_Emph1LetterRule + letterOffset + (8 * i),
-				&table->emphRules[i][letterOffset], &lastToken, newRuleOffset, newRule, noback, nofor);
+				&tmp_offset, &lastToken, newRuleOffset, newRule, noback, nofor);
+			table->emphRules[i][letterOffset] = tmp_offset;
 		}
 		else if (opcode == CTO_BegEmphWord) {
+			tmp_offset = table->emphRules[i][begWordOffset];
 			ok = compileBrailleIndicator (nested, "word",
 				CTO_Emph1LetterRule + begWordOffset + (8 * i),
-				&table->emphRules[i][begWordOffset], &lastToken, newRuleOffset, newRule, noback, nofor);
+				&tmp_offset, &lastToken, newRuleOffset, newRule, noback, nofor);
+			table->emphRules[i][begWordOffset] = tmp_offset;
 		}
 		else if (opcode == CTO_EndEmphWord) {
+			tmp_offset = table->emphRules[i][endWordOffset];
 			ok = compileBrailleIndicator(nested, "word stop",
 				CTO_Emph1LetterRule + endWordOffset + (8 * i),
-				&table->emphRules[i][endWordOffset], &lastToken, newRuleOffset, newRule, noback, nofor);
+				&tmp_offset, &lastToken, newRuleOffset, newRule, noback, nofor);
+			table->emphRules[i][endWordOffset] = tmp_offset;
 		}
 		else if (opcode == CTO_BegEmph) {
 		  /* fail if both begemph and any of begemphphrase or begemphword are defined */
@@ -4168,9 +4172,11 @@ doOpcode:
 		    ok = 0;
 		    break;
 		  }
+			tmp_offset = table->emphRules[i][begOffset];
 			ok = compileBrailleIndicator (nested, "first letter",
 				CTO_Emph1LetterRule + begOffset + (8 * i),
-				&table->emphRules[i][begOffset], &lastToken, newRuleOffset, newRule, noback, nofor);
+				&tmp_offset, &lastToken, newRuleOffset, newRule, noback, nofor);
+			table->emphRules[i][begOffset] = tmp_offset;
 		}
 		else if (opcode == CTO_EndEmph) {
 		  if (table->emphRules[i][endWordOffset] || table->emphRules[i][endPhraseBeforeOffset] || table->emphRules[i][endPhraseAfterOffset]) {
@@ -4178,14 +4184,18 @@ doOpcode:
 		    ok = 0;
 		    break;
 		  }
+			tmp_offset = table->emphRules[i][endOffset];
 			ok = compileBrailleIndicator (nested, "last letter",
 				CTO_Emph1LetterRule + endOffset + (8 * i),
-				&table->emphRules[i][endOffset], &lastToken, newRuleOffset, newRule, noback, nofor);
+				&tmp_offset, &lastToken, newRuleOffset, newRule, noback, nofor);
+			table->emphRules[i][endOffset] = tmp_offset;
 		}
 		else if (opcode == CTO_BegEmphPhrase) {
+			tmp_offset = table->emphRules[i][begPhraseOffset];
 			ok = compileBrailleIndicator (nested, "first word",
 				CTO_Emph1LetterRule + begPhraseOffset + (8 * i),
-				&table->emphRules[i][begPhraseOffset], &lastToken, newRuleOffset, newRule, noback, nofor);
+				&tmp_offset, &lastToken, newRuleOffset, newRule, noback, nofor);
+			table->emphRules[i][begPhraseOffset] = tmp_offset;
 		}
 		else if (opcode == CTO_EndEmphPhrase)
 			switch (compileBeforeAfter(nested, &lastToken)) {
@@ -4195,9 +4205,11 @@ doOpcode:
 						ok = 0;
 						break;
 					}
+					tmp_offset = table->emphRules[i][endPhraseBeforeOffset];
 					ok = compileBrailleIndicator (nested, "last word before",
 						CTO_Emph1LetterRule + endPhraseBeforeOffset + (8 * i),
-						&table->emphRules[i][endPhraseBeforeOffset], &lastToken, newRuleOffset, newRule, noback, nofor);
+						&tmp_offset, &lastToken, newRuleOffset, newRule, noback, nofor);
+					table->emphRules[i][endPhraseBeforeOffset] = tmp_offset;
 					break;
 				case 2: // after
 					if (table->emphRules[i][endPhraseBeforeOffset]) {
@@ -4205,9 +4217,11 @@ doOpcode:
 						ok = 0;
 						break;
 					}
+					tmp_offset = table->emphRules[i][endPhraseAfterOffset];
 					ok = compileBrailleIndicator (nested, "last word after",
 						CTO_Emph1LetterRule + endPhraseAfterOffset + (8 * i),
-						&table->emphRules[i][endPhraseAfterOffset], &lastToken, newRuleOffset, newRule, noback, nofor);
+						&tmp_offset, &lastToken, newRuleOffset, newRule, noback, nofor);
+					table->emphRules[i][endPhraseAfterOffset] = tmp_offset;
 					break;
 				default: // error
 					compileError (nested, "Invalid lastword indicator location.");
@@ -4221,9 +4235,11 @@ doOpcode:
 	break;
 
     case CTO_LetterSign:
+      tmp_offset = table->letterSign;
       ok =
 	compileBrailleIndicator (nested, "letter sign", CTO_LetterRule,
-				 &table->letterSign, &lastToken, newRuleOffset, newRule, noback, nofor);
+				 &tmp_offset, &lastToken, newRuleOffset, newRule, noback, nofor);
+       table->letterSign = tmp_offset;
       break;
     case CTO_NoLetsignBefore:
       if (getRuleCharsText (nested, &ruleChars, &lastToken))
@@ -4267,9 +4283,11 @@ doOpcode:
 	}
       break;
     case CTO_NumberSign:
+      tmp_offset = table->numberSign;
       ok =
 	compileBrailleIndicator (nested, "number sign", CTO_NumberRule,
-				 &table->numberSign, &lastToken, newRuleOffset, newRule, noback, nofor);
+				 &tmp_offset, &lastToken, newRuleOffset, newRule, noback, nofor);
+      table->numberSign = tmp_offset;
       break;
 
 	case CTO_Attribute:
@@ -4365,8 +4383,10 @@ doOpcode:
 		
 	case CTO_NoContractSign:
 	
+      tmp_offset = table->noContractSign;
 		ok = compileBrailleIndicator
-			(nested, "no contractions sign", CTO_NoContractRule, &table->noContractSign, &lastToken, newRuleOffset, newRule, noback, nofor);
+			(nested, "no contractions sign", CTO_NoContractRule, &tmp_offset, &lastToken, newRuleOffset, newRule, noback, nofor);
+      table->noContractSign = tmp_offset;
 		break;
 	  
 	case CTO_SeqDelimiter:
@@ -4481,14 +4501,18 @@ doOpcode:
 		break;
 	
     case CTO_BegComp:
+      tmp_offset = table->begComp;
       ok =
 	compileBrailleIndicator (nested, "begin computer braille",
-				 CTO_BegCompRule, &table->begComp, &lastToken, newRuleOffset, newRule, noback, nofor);
+				 CTO_BegCompRule, &tmp_offset, &lastToken, newRuleOffset, newRule, noback, nofor);
+      table->begComp = tmp_offset;
       break;
     case CTO_EndComp:
+      tmp_offset = table->endComp;
       ok =
 	compileBrailleIndicator (nested, "end computer braslle",
-				 CTO_EndCompRule, &table->endComp, &lastToken, newRuleOffset, newRule, noback, nofor);
+				 CTO_EndCompRule, &tmp_offset, &lastToken, newRuleOffset, newRule, noback, nofor);
+      table->endComp = tmp_offset;
       break;
     case CTO_Syllable:
       table->syllables = 1;
@@ -4979,7 +5003,7 @@ resolveSubtable (const char *table, const char *base, const char *searchPath)
 
   if (table == NULL || table[0] == '\0')
     return NULL;
-  tableFile = (char *) malloc (MAXSTRING * sizeof(char));
+  tableFile = (char *) malloc (MAXSTRING * sizeof(char) * 2);
   
   //
   // First try to resolve against base
@@ -5018,7 +5042,7 @@ resolveSubtable (const char *table, const char *base, const char *searchPath)
       char *dir;
       int last;
       char *cp;
-      char *searchPath_copy = strdup (searchPath + 1);
+      char *searchPath_copy = strdup (searchPath);
       for (dir = searchPath_copy; ; dir = cp + 1)
 	{
 	  for (cp = dir; *cp != '\0' && *cp != ','; cp++)
@@ -5076,7 +5100,10 @@ _lou_getTablePath(void)
 #else
   cp += sprintf (cp, ",%s", TABLESDIR);
 #endif
-  return strdup(searchPath);
+  if (searchPath[0] != '\0')
+    return strdup(&searchPath[1]);
+  else
+    return strdup(".");
 }
 
 /**
@@ -5124,7 +5151,11 @@ _lou_defaultTableResolver (const char *tableList, const char *base)
       *cp = '\0';
       if (!(tableFiles[k++] = resolveSubtable (subTable, base, searchPath)))
 	{
+	  char *path;
 	  _lou_logMessage (LOG_ERROR, "Cannot resolve table '%s'", subTable);
+	  path = getenv ("LOUIS_TABLEPATH");
+	  if (path != NULL && path[0] != '\0')
+	    _lou_logMessage (LOG_ERROR, "LOUIS_TABLEPATH=%s", path);
 	  free(searchPath);
 	  free(tableList_copy);
 	  free (tableFiles);
