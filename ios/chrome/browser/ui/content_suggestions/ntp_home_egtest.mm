@@ -20,6 +20,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_provider_test_singleton.h"
+#import "ios/chrome/browser/ui/content_suggestions/ntp_home_test_utils.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
@@ -43,63 +44,6 @@ const char kPrefPromoFirstViewTime[] = "first_view_time";
 const char kPrefPromoViews[] = "views";
 const char kPrefPromoClosed[] = "closed";
 
-// Returns a matcher, which is true if the view has its width equals to |width|.
-id<GREYMatcher> OmniboxWidth(CGFloat width) {
-  MatchesBlock matches = ^BOOL(UIView* view) {
-    return view.bounds.size.width == width;
-  };
-  DescribeToBlock describe = ^void(id<GREYDescription> description) {
-    [description
-        appendText:[NSString stringWithFormat:@"Omnibox has correct width: %g",
-                                              width]];
-  };
-
-  return [[GREYElementMatcherBlock alloc] initWithMatchesBlock:matches
-                                              descriptionBlock:describe];
-}
-
-// Returns a matcher, which is true if the view has its width equals to |width|
-// plus or minus |margin|.
-id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
-  MatchesBlock matches = ^BOOL(UIView* view) {
-    return view.bounds.size.width >= width - margin &&
-           view.bounds.size.width <= width + margin;
-  };
-  DescribeToBlock describe = ^void(id<GREYDescription> description) {
-    [description
-        appendText:[NSString
-                       stringWithFormat:
-                           @"Omnibox has correct width: %g with margin: %g",
-                           width, margin]];
-  };
-
-  return [[GREYElementMatcherBlock alloc] initWithMatchesBlock:matches
-                                              descriptionBlock:describe];
-}
-
-// Returns the subview of |parentView| corresponding to the
-// ContentSuggestionsViewController. Returns nil if it is not in its subviews.
-UIView* SubviewWithCollectionViewIdentifier(UIView* parentView) {
-  if (parentView.accessibilityIdentifier ==
-      [ContentSuggestionsViewController collectionAccessibilityIdentifier]) {
-    return parentView;
-  }
-  if (parentView.subviews.count == 0)
-    return nil;
-  for (UIView* view in parentView.subviews) {
-    UIView* resultView = SubviewWithCollectionViewIdentifier(view);
-    if (resultView)
-      return resultView;
-  }
-  return nil;
-}
-
-// Returns the view corresponding to the ContentSuggestionsViewController.
-// Returns nil if it is not in the view hierarchy.
-UIView* CollectionView() {
-  return SubviewWithCollectionViewIdentifier(
-      [[UIApplication sharedApplication] keyWindow]);
-}
 }  // namespace
 
 // Test case for the NTP home UI. More precisely, this tests the positions of

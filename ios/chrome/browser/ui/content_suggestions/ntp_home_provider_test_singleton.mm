@@ -5,15 +5,15 @@
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_provider_test_singleton.h"
 
 #include "base/memory/ptr_util.h"
+#include "components/ntp_snippets/content_suggestion.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-using namespace ntp_snippets;
 
 @implementation ContentSuggestionsTestSingleton {
-  MockContentSuggestionsProvider* _provider;
+  ntp_snippets::MockContentSuggestionsProvider* _provider;
 }
 
 + (instancetype)sharedInstance {
@@ -25,15 +25,17 @@ using namespace ntp_snippets;
   return sharedInstance;
 }
 
-- (MockContentSuggestionsProvider*)provider {
+- (ntp_snippets::MockContentSuggestionsProvider*)provider {
   return _provider;
 }
 
-- (void)registerArticleProvider:(ContentSuggestionsService*)service {
-  Category articles = Category::FromKnownCategory(KnownCategories::ARTICLES);
-  std::unique_ptr<MockContentSuggestionsProvider> provider =
-      base::MakeUnique<MockContentSuggestionsProvider>(
-          service, std::vector<Category>{articles});
+- (void)registerArticleProvider:
+    (ntp_snippets::ContentSuggestionsService*)service {
+  std::unique_ptr<ntp_snippets::MockContentSuggestionsProvider> provider =
+      base::MakeUnique<ntp_snippets::MockContentSuggestionsProvider>(
+          service, std::vector<ntp_snippets::Category>{
+                       ntp_snippets::Category::FromKnownCategory(
+                           ntp_snippets::KnownCategories::ARTICLES)});
   _provider = provider.get();
   service->RegisterProvider(std::move(provider));
 }

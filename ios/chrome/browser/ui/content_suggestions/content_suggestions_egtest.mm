@@ -26,7 +26,9 @@
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_learn_more_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
+#import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_provider_test_singleton.h"
+#import "ios/chrome/browser/ui/content_suggestions/ntp_home_test_utils.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
@@ -47,6 +49,9 @@
 #endif
 
 using namespace ntp_snippets;
+using testing::_;
+using testing::Invoke;
+using testing::WithArg;
 
 namespace {
 
@@ -374,6 +379,76 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
 
   [CellWithMatcher(chrome_test_util::StaticTextWithAccessibilityLabelId(
       IDS_NTP_READING_LIST_SUGGESTIONS_SECTION_HEADER))
+      assertWithMatcher:grey_sufficientlyVisible()];
+}
+
+// Tests that when tapping a suggestion, it is opened. When going back, the
+// disposition of the collection takes into account the previous scroll, even
+// when more is tapped.
+- (void)testOpenPageAndGoBackWithMoreContent {
+  // Set server up.
+  self.testServer->RegisterRequestHandler(base::Bind(&StandardResponse));
+  GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
+  const GURL pageURL = self.testServer->GetURL(kPageURL);
+
+  // Add 3 suggestions, persisted accross page loads.
+  std::vector<ContentSuggestion> suggestions;
+  suggestions.emplace_back(
+      Suggestion(self.category, "chromium1", GURL("http://chromium.org/1")));
+  suggestions.emplace_back(
+      Suggestion(self.category, "chromium2", GURL("http://chromium.org/2")));
+  suggestions.emplace_back(
+      Suggestion(self.category, "chromium3", GURL("http://chromium.org/3")));
+  self.provider->FireSuggestionsChanged(self.category, std::move(suggestions));
+
+  // Set up the action when "More" is tapped.
+  AdditionalSuggestionsHelper helper(pageURL);
+  EXPECT_CALL(*self.provider, FetchMock(_, _, _))
+      .WillOnce(WithArg<2>(Invoke(
+          &helper, &AdditionalSuggestionsHelper::SendAdditionalSuggestions)));
+
+  // Tap on more, which adds 10 elements.
+  [CellWithMatcher(chrome_test_util::ButtonWithAccessibilityLabelId(
+      IDS_IOS_CONTENT_SUGGESTIONS_FOOTER_TITLE)) performAction:grey_tap()];
+
+  // Make sure to scroll to the bottom.
+  [CellWithMatcher(grey_accessibilityID(
+      [ContentSuggestionsLearnMoreItem accessibilityIdentifier]))
+      assertWithMatcher:grey_notNil()];
+
+  // Open the last item.
+  [CellWithMatcher(grey_accessibilityID(@"AdditionalSuggestion9"))
+      performAction:grey_tap()];
+
+  // Check that the page has been opened.
+  [ChromeEarlGrey waitForWebViewContainingText:kPageLoadedString];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
+                                          pageURL.GetContent())]
+      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForMainTabCount:1];
+  [ChromeEarlGrey waitForIncognitoTabCount:0];
+
+  // Go back.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::BackButton()]
+      performAction:grey_tap()];
+
+  // Test that the omnibox is visible and taking full width, before any scroll
+  // happen on iPhone.
+  if (!IsIPadIdiom()) {
+    CGFloat collectionWidth = ntp_home::CollectionView().bounds.size.width;
+    [[EarlGrey
+        selectElementWithMatcher:grey_accessibilityID(
+                                     ntp_home::FakeOmniboxAccessibilityID())]
+        assertWithMatcher:grey_allOf(grey_sufficientlyVisible(),
+                                     ntp_home::OmniboxWidthBetween(
+                                         collectionWidth + 1, 1),
+                                     nil)];
+  }
+
+  // Check that the first items are visible as the collection should be
+  // scrolled.
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(@"http://chromium.org/3")]
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 

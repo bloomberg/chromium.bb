@@ -46,7 +46,7 @@ CategoryInfo MockContentSuggestionsProvider::GetCategoryInfo(
 void MockContentSuggestionsProvider::Fetch(const Category& category,
                                            const std::set<std::string>& set,
                                            FetchDoneCallback callback) {
-  FetchMock(category, set, callback);
+  FetchMock(category, set, &callback);
 }
 
 void MockContentSuggestionsProvider::FetchSuggestionImage(

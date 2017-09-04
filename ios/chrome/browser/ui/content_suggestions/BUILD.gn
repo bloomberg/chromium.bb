@@ -107,6 +107,8 @@ source_set("eg_tests") {
     "ntp_home_egtest.mm",
     "ntp_home_provider_test_singleton.h",
     "ntp_home_provider_test_singleton.mm",
+    "ntp_home_test_utils.h",
+    "ntp_home_test_utils.mm",
   ]
   deps = [
     ":content_suggestions",
