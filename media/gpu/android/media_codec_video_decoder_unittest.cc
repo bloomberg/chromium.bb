@@ -315,15 +315,14 @@ TEST_F(MediaCodecVideoDecoderTest, CodecIsCreatedWithChosenOverlay) {
 }
 
 TEST_F(MediaCodecVideoDecoderTest,
-       SurfaceDestroyedBeforeCodecCreationDropsCodec) {
+       CodecCreationWeakPtrIsInvalidatedBySurfaceDestroyed) {
   auto* overlay = InitializeWithOverlay_OneDecodePending();
   overlay->OnSurfaceDestroyed();
 
-  // The codec is dropped as soon as it's ready.
-  EXPECT_CALL(*codec_allocator_, MockReleaseMediaCodec(_, _, _));
-  codec_allocator_->ProvideMockCodecAsync();
-  // Verify expectations before we delete the MCVD.
-  testing::Mock::VerifyAndClearExpectations(codec_allocator_.get());
+  // MCVD should invalidate its CodecAllocatorClient WeakPtr so that it doesn't
+  // receive the codec after surface destroyed. FakeCodecAllocator returns
+  // nullptr if the client pointer was invalidated.
+  ASSERT_FALSE(codec_allocator_->ProvideMockCodecAsync());
 }
 
 TEST_F(MediaCodecVideoDecoderTest, SurfaceDestroyedDoesSyncSurfaceTransition) {

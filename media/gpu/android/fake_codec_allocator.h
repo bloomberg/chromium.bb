@@ -48,7 +48,7 @@ class FakeCodecAllocator : public testing::NiceMock<AVDACodecAllocator> {
       scoped_refptr<AVDASurfaceBundle> surface_bundle) override;
 
   // Satisfies the pending codec creation with a mock codec and returns a raw
-  // pointer to it.
+  // pointer to it. Returns nullptr if the client WeakPtr was invalidated.
   MockMediaCodecBridge* ProvideMockCodecAsync();
 
   // Satisfies the pending codec creation with a null codec.
@@ -94,6 +94,9 @@ class FakeCodecAllocator : public testing::NiceMock<AVDACodecAllocator> {
   // get modified by the client.
   void CopyCodecAllocParams(scoped_refptr<CodecConfig> config);
 
+  // Whether CreateMediaCodecAsync() has been called but a codec hasn't been
+  // provided yet.
+  bool codec_creation_pending_ = false;
   base::WeakPtr<AVDACodecAllocatorClient> client_;
   scoped_refptr<CodecConfig> config_;
 

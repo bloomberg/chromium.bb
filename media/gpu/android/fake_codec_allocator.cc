@@ -56,6 +56,7 @@ void FakeCodecAllocator::CreateMediaCodecAsync(
   most_recent_codec_destruction_observer_ = nullptr;
   CopyCodecAllocParams(config);
   client_ = client;
+  codec_creation_pending_ = true;
 
   MockCreateMediaCodecAsync(most_recent_overlay(),
                             most_recent_surface_texture());
@@ -69,8 +70,11 @@ void FakeCodecAllocator::ReleaseMediaCodec(
 }
 
 MockMediaCodecBridge* FakeCodecAllocator::ProvideMockCodecAsync() {
-  // There must be a pending codec creation.
-  DCHECK(client_);
+  DCHECK(codec_creation_pending_);
+  codec_creation_pending_ = false;
+
+  if (!client_)
+    return nullptr;
 
   std::unique_ptr<MockMediaCodecBridge> codec =
       base::MakeUnique<NiceMock<MockMediaCodecBridge>>();
@@ -82,10 +86,11 @@ MockMediaCodecBridge* FakeCodecAllocator::ProvideMockCodecAsync() {
 }
 
 void FakeCodecAllocator::ProvideNullCodecAsync() {
-  // There must be a pending codec creation.
-  DCHECK(client_);
+  DCHECK(codec_creation_pending_);
+  codec_creation_pending_ = false;
   most_recent_codec_ = nullptr;
-  client_->OnCodecConfigured(nullptr);
+  if (client_)
+    client_->OnCodecConfigured(nullptr);
 }
 
 void FakeCodecAllocator::CopyCodecAllocParams(

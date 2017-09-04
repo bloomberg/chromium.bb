@@ -38,9 +38,7 @@ struct PendingDecode {
 };
 
 // TODO(watk): Simplify the interface to AVDACodecAllocator.
-struct CodecAllocatorAdapter
-    : public AVDACodecAllocatorClient,
-      public base::SupportsWeakPtr<CodecAllocatorAdapter> {
+struct CodecAllocatorAdapter : public AVDACodecAllocatorClient {
   using CodecCreatedCb =
       base::Callback<void(std::unique_ptr<MediaCodecBridge>)>;
 
@@ -50,6 +48,7 @@ struct CodecAllocatorAdapter
       std::unique_ptr<MediaCodecBridge> media_codec) override;
 
   CodecCreatedCb codec_created_cb;
+  base::WeakPtrFactory<CodecAllocatorAdapter> weak_factory;
 };
 
 // An Android VideoDecoder that delegates to MediaCodec.
@@ -155,8 +154,9 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder : public VideoDecoder {
 
   void ClearPendingDecodes(DecodeStatus status);
 
-  // Sets |state_| and runs pending callbacks.
-  void HandleError();
+  // Sets |state_| and does common teardown for the terminal states. |state_|
+  // must be either kSurfaceDestroyed or kError.
+  void EnterTerminalState(State state);
 
   // Releases |codec_| if it's not null.
   void ReleaseCodec();
@@ -189,8 +189,8 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder : public VideoDecoder {
   VideoFrameFactory::OutputWithReleaseMailboxCB output_cb_;
   VideoDecoderConfig decoder_config_;
 
-  // The surface bundle that we're transitioning to, if any.
-  base::Optional<scoped_refptr<AVDASurfaceBundle>> incoming_surface_;
+  // The surface bundle that we should transition to if a transition is pending.
+  scoped_refptr<AVDASurfaceBundle> incoming_surface_;
 
   // |codec_config_| must not be modified while |state_| is kWaitingForCodec.
   scoped_refptr<CodecConfig> codec_config_;
@@ -205,14 +205,14 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder : public VideoDecoder {
   CodecAllocatorAdapter codec_allocator_adapter_;
   AVDACodecAllocator* codec_allocator_;
 
-  // A SurfaceTexture that is kept for the lifetime of MCVD so that if we have
-  // to synchronously switch surfaces we always have one available.
+  // A SurfaceTexture bundle that is kept for the lifetime of MCVD so that if we
+  // have to synchronously switch surfaces we always have one available.
   // TODO: Remove this once onSurfaceDestroyed() callbacks are not delivered
   // via the gpu thread. We can't post a task to the gpu thread to
   // create a SurfaceTexture inside the onSurfaceDestroyed() handler without
   // deadlocking currently, because the gpu thread might be blocked waiting
   // for the SurfaceDestroyed to be handled.
-  scoped_refptr<SurfaceTextureGLOwner> surface_texture_;
+  scoped_refptr<AVDASurfaceBundle> surface_texture_bundle_;
 
   // The current overlay info, which possibly specifies an overlay to render to.
   OverlayInfo overlay_info_;
