@@ -406,6 +406,143 @@ id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label) {
       assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
 }
 
+- (void)testDeleteSingleURLNode {
+  if (IsIPadIdiom()) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
+  }
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
+
+  [BookmarksNewGenTestCase setupStandardBookmarks];
+  [BookmarksNewGenTestCase openBookmarks];
+  [BookmarksNewGenTestCase openMobileBookmarks];
+
+  // Change to edit mode
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          @"context_bar_trailing_button")]
+      performAction:grey_tap()];
+
+  // Select single URL.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Second URL")]
+      performAction:grey_tap()];
+
+  // Delete it.
+  [[EarlGrey selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
+                                          [BookmarksNewGenTestCase
+                                              contextBarDeleteString])]
+      performAction:grey_tap()];
+
+  // Wait until it's gone.
+  [BookmarksNewGenTestCase waitForDeletionOfBookmarkWithTitle:@"Second URL"];
+
+  // Press undo
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Undo")]
+      performAction:grey_tap()];
+
+  // Verify it's back.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Second URL")]
+      assertWithMatcher:grey_notNil()];
+
+  // Cancel edit mode.
+  [[EarlGrey selectElementWithMatcher:ContextBarTrailingButtonWithLabel(
+                                          [BookmarksNewGenTestCase
+                                              contextBarCancelString])]
+      performAction:grey_tap()];
+}
+
+- (void)testDeleteSingleFolderNode {
+  if (IsIPadIdiom()) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
+  }
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
+
+  [BookmarksNewGenTestCase setupStandardBookmarks];
+  [BookmarksNewGenTestCase openBookmarks];
+  [BookmarksNewGenTestCase openMobileBookmarks];
+
+  // Change to edit mode
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          @"context_bar_trailing_button")]
+      performAction:grey_tap()];
+
+  // Select single URL.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Folder 1")]
+      performAction:grey_tap()];
+
+  // Delete it.
+  [[EarlGrey selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
+                                          [BookmarksNewGenTestCase
+                                              contextBarDeleteString])]
+      performAction:grey_tap()];
+
+  // Wait until it's gone.
+  [BookmarksNewGenTestCase waitForDeletionOfBookmarkWithTitle:@"Folder 1"];
+
+  // Press undo
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Undo")]
+      performAction:grey_tap()];
+
+  // Verify it's back.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
+      assertWithMatcher:grey_notNil()];
+
+  // Cancel edit mode.
+  [[EarlGrey selectElementWithMatcher:ContextBarTrailingButtonWithLabel(
+                                          [BookmarksNewGenTestCase
+                                              contextBarCancelString])]
+      performAction:grey_tap()];
+}
+
+- (void)testDeleteMultipleNodes {
+  if (IsIPadIdiom()) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
+  }
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
+
+  [BookmarksNewGenTestCase setupStandardBookmarks];
+  [BookmarksNewGenTestCase openBookmarks];
+  [BookmarksNewGenTestCase openMobileBookmarks];
+
+  // Change to edit mode
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          @"context_bar_trailing_button")]
+      performAction:grey_tap()];
+
+  // Select Folder and URL.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Second URL")]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Folder 1")]
+      performAction:grey_tap()];
+
+  // Delete it.
+  [[EarlGrey selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
+                                          [BookmarksNewGenTestCase
+                                              contextBarDeleteString])]
+      performAction:grey_tap()];
+
+  // Wait until it's gone.
+  [BookmarksNewGenTestCase waitForDeletionOfBookmarkWithTitle:@"Second URL"];
+  [BookmarksNewGenTestCase waitForDeletionOfBookmarkWithTitle:@"Folder 1"];
+
+  // Press undo
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Undo")]
+      performAction:grey_tap()];
+
+  // Verify it's back.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Second URL")]
+      assertWithMatcher:grey_notNil()];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
+      assertWithMatcher:grey_notNil()];
+
+  // Cancel edit mode.
+  [[EarlGrey selectElementWithMatcher:ContextBarTrailingButtonWithLabel(
+                                          [BookmarksNewGenTestCase
+                                              contextBarCancelString])]
+      performAction:grey_tap()];
+}
+
 // Tests that the promo view is only seen at root level and not in any of the
 // child nodes.
 - (void)testPromoViewIsSeenOnlyInRootNode {
