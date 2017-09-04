@@ -190,7 +190,6 @@ RefPtr<NGLayoutResult> NGFragmentBuilder::ToBoxFragment() {
     if (last_inline_break_token_) {
       DCHECK(!last_inline_break_token_->IsFinished());
       child_break_tokens_.push_back(std::move(last_inline_break_token_));
-      did_break_ = true;
     }
     if (did_break_) {
       break_token = NGBlockBreakToken::Create(node_, used_block_size_,

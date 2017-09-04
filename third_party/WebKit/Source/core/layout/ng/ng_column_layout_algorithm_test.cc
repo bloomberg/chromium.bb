@@ -461,11 +461,11 @@ TEST_F(NGColumnLayoutAlgorithmTest, TwoBlocksInTwoColumns) {
   EXPECT_FALSE(iterator.NextChild());
 }
 
-TEST_F(NGColumnLayoutAlgorithmTest, DISABLED_OverflowedBlock) {
+TEST_F(NGColumnLayoutAlgorithmTest, OverflowedBlock) {
   SetBodyInnerHTML(R"HTML(
     <style>
       #parent {
-        columns: 2;
+        columns: 3;
         column-fill: auto;
         column-gap: 10px;
         height: 100px;
@@ -497,6 +497,19 @@ TEST_F(NGColumnLayoutAlgorithmTest, DISABLED_OverflowedBlock) {
   EXPECT_FALSE(iterator.NextChild());
 
   iterator.SetParent(fragment);
+
+  // first column fragment
+  fragment = iterator.NextChild();
+  ASSERT_TRUE(fragment);
+  EXPECT_EQ(NGPhysicalOffset(LayoutUnit(), LayoutUnit()), fragment->Offset());
+
+  // second column fragment
+  const auto* column2 = iterator.NextChild();
+  ASSERT_TRUE(column2);
+  EXPECT_EQ(NGPhysicalOffset(LayoutUnit(110), LayoutUnit()), column2->Offset());
+  EXPECT_FALSE(iterator.NextChild());
+
+  iterator.SetParent(fragment);
   // #child1 fragment in first column
   fragment = iterator.NextChild();
   ASSERT_TRUE(fragment);
@@ -516,11 +529,11 @@ TEST_F(NGColumnLayoutAlgorithmTest, DISABLED_OverflowedBlock) {
   EXPECT_EQ(NGPhysicalSize(LayoutUnit(85), LayoutUnit(10)), fragment->Size());
   EXPECT_EQ(0UL, fragment->Children().size());
 
+  iterator.SetParent(column2);
   // #child1 fragment in second column
   fragment = iterator.NextChild();
   ASSERT_TRUE(fragment);
-  EXPECT_EQ(NGPhysicalOffset(LayoutUnit(110), LayoutUnit()),
-            fragment->Offset());
+  EXPECT_EQ(NGPhysicalOffset(LayoutUnit(), LayoutUnit()), fragment->Offset());
   EXPECT_EQ(NGPhysicalSize(LayoutUnit(75), LayoutUnit()), fragment->Size());
   grandchild_iterator.SetParent(fragment);
   // #grandchild1 fragment in second column
