@@ -69,7 +69,8 @@ content::WebUIDataSource* CreateMdBookmarksUIHTMLSource(Profile* profile) {
   AddLocalizedString(source, "menuEdit", IDS_EDIT);
   AddLocalizedString(source, "menuExport", IDS_MD_BOOKMARK_MANAGER_MENU_EXPORT);
   AddLocalizedString(source, "menuImport", IDS_MD_BOOKMARK_MANAGER_MENU_IMPORT);
-  AddLocalizedString(source, "menuOpenAllNewTab", IDS_BOOKMARK_BAR_OPEN_ALL);
+  AddLocalizedString(source, "menuOpenAllNewTab",
+                     IDS_MD_BOOKMARK_MANAGER_MENU_OPEN_ALL);
   AddLocalizedString(source, "menuOpenAllNewWindow",
                      IDS_MD_BOOKMARK_MANAGER_MENU_OPEN_ALL_NEW_WINDOW);
   AddLocalizedString(source, "menuOpenAllIncognito",
