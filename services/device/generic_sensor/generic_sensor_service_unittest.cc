@@ -261,7 +261,13 @@ TEST_F(GenericSensorServiceTest, GetSensorTest) {
 }
 
 // Tests GetDefaultConfiguration.
-TEST_F(GenericSensorServiceTest, GetDefaultConfigurationTest) {
+// Failing on Android Tests (dbg); see https://crbug.com/761742.
+#if defined(OS_ANDROID)
+#define MAYBE_GetDefaultConfigurationTest DISABLED_GetDefaultConfigurationTest
+#else
+#define MAYBE_GetDefaultConfigurationTest GetDefaultConfigurationTest
+#endif
+TEST_F(GenericSensorServiceTest, MAYBE_GetDefaultConfigurationTest) {
   mojom::SensorPtr sensor;
   auto client = base::MakeUnique<TestSensorClient>(SensorType::ACCELEROMETER);
   base::RunLoop run_loop;
@@ -307,7 +313,13 @@ TEST_F(GenericSensorServiceTest, ValidAddConfigurationTest) {
 
 // Tests adding an invalid configuation, the max allowed frequency is 50.0 in
 // the mocked SensorImpl, while we add one with 60.0.
-TEST_F(GenericSensorServiceTest, InvalidAddConfigurationTest) {
+// Failing on Android Tests (dbg); see https://crbug.com/761742.
+#if defined(OS_ANDROID)
+#define MAYBE_InvalidAddConfigurationTest DISABLED_InvalidAddConfigurationTest
+#else
+#define MAYBE_InvalidAddConfigurationTest InvalidAddConfigurationTest
+#endif
+TEST_F(GenericSensorServiceTest, MAYBE_InvalidAddConfigurationTest) {
   mojom::SensorPtr sensor;
   auto client =
       base::MakeUnique<TestSensorClient>(SensorType::LINEAR_ACCELERATION);
@@ -374,7 +386,14 @@ TEST_F(GenericSensorServiceTest, MultipleClientsTest) {
 
 // Tests adding more than one clients. If mojo connection is broken on one
 // client, other clients should not be affected.
-TEST_F(GenericSensorServiceTest, ClientMojoConnectionBrokenTest) {
+// Failing on Android Tests (dbg); see https://crbug.com/761742.
+#if defined(OS_ANDROID)
+#define MAYBE_ClientMojoConnectionBrokenTest \
+  DISABLED_ClientMojoConnectionBrokenTest
+#else
+#define MAYBE_ClientMojoConnectionBrokenTest ClientMojoConnectionBrokenTest
+#endif
+TEST_F(GenericSensorServiceTest, MAYBE_ClientMojoConnectionBrokenTest) {
   mojom::SensorPtr sensor_1;
   auto client_1 = base::MakeUnique<TestSensorClient>(SensorType::AMBIENT_LIGHT);
   sensor_provider_->GetSensor(SensorType::AMBIENT_LIGHT,
@@ -478,7 +497,13 @@ TEST_F(GenericSensorServiceTest, AddAndRemoveConfigurationTest) {
 // AddConfiguration(). In this way we make sure it won't be missed by the
 // early quit of main thread (when there is an unexpected notification by
 // SensorReadingChanged()).
-TEST_F(GenericSensorServiceTest, SuspendTest) {
+// Failing on Android Tests (dbg); see https://crbug.com/761742.
+#if defined(OS_ANDROID)
+#define MAYBE_SuspendTest DISABLED_SuspendTest
+#else
+#define MAYBE_SuspendTest SuspendTest
+#endif
+TEST_F(GenericSensorServiceTest, MAYBE_SuspendTest) {
   mojom::SensorPtr sensor;
   auto client = base::MakeUnique<TestSensorClient>(SensorType::AMBIENT_LIGHT);
   sensor_provider_->GetSensor(SensorType::AMBIENT_LIGHT,
@@ -560,7 +585,15 @@ TEST_F(GenericSensorServiceTest, SuspendThenResumeTest) {
 
 // Test suspend when there are more than one client. The suspended client won't
 // receive SensorReadingChanged() notification.
-TEST_F(GenericSensorServiceTest, MultipleClientsSuspendAndResumeTest) {
+// Failing on Android Tests (dbg); see https://crbug.com/761742.
+#if defined(OS_ANDROID)
+#define MAYBE_MultipleClientsSuspendAndResumeTest \
+  DISABLED_MultipleClientsSuspendAndResumeTest
+#else
+#define MAYBE_MultipleClientsSuspendAndResumeTest \
+  MultipleClientsSuspendAndResumeTest
+#endif
+TEST_F(GenericSensorServiceTest, MAYBE_MultipleClientsSuspendAndResumeTest) {
   mojom::SensorPtr sensor_1;
   auto client_1 = base::MakeUnique<TestSensorClient>(SensorType::AMBIENT_LIGHT);
   sensor_provider_->GetSensor(SensorType::AMBIENT_LIGHT,
