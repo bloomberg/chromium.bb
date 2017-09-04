@@ -38,28 +38,13 @@ import typ
 
 
 def main():
-    skip = []
-    if sys.platform == 'win32':
-        # These test fail on win32. We could annotate some of these in
-        # class-level skips, but we don't support package/module-level skips.
-        # bugs.webkit.org/show_bug.cgi?id=54526 .
-        skip = [
-            'webkitpy.common.checkout.*',
-            'webkitpy.common.config.*',
-            'webkitpy.tool.*',
-            'webkitpy.w3c.*',
-            'webkitpy.layout_tests.layout_package.bot_test_expectations_unittest.*',
-        ]
-
     ret = typ.main(top_level_dir=path_finder.get_scripts_dir(),
-                   skip=skip,
                    path=[path_finder.get_webkitpy_thirdparty_dir()],
                    win_multiprocessing='spawn')
     if ret:
         sys.exit(ret)
     path_finder.add_blink_tools_dir_to_sys_path()
     sys.exit(typ.main(top_level_dir=path_finder.get_blink_tools_dir(),
-                      skip=[],
                       path=[],
                       win_multiprocessing='spawn'))
 
