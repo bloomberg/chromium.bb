@@ -196,6 +196,51 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
 
 #pragma mark - Tests
 
+// Tests that the additional items (when more is pressed) are kept when
+// switching tabs.
+- (void)testAdditionalItemsKept {
+  // Set server up.
+  self.testServer->RegisterRequestHandler(base::Bind(&StandardResponse));
+  GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
+  const GURL pageURL = self.testServer->GetURL(kPageURL);
+
+  // Add 3 suggestions, persisted accross page loads.
+  std::vector<ContentSuggestion> suggestions;
+  suggestions.emplace_back(
+      Suggestion(self.category, "chromium1", GURL("http://chromium.org/1")));
+  suggestions.emplace_back(
+      Suggestion(self.category, "chromium2", GURL("http://chromium.org/2")));
+  suggestions.emplace_back(
+      Suggestion(self.category, "chromium3", GURL("http://chromium.org/3")));
+  self.provider->FireSuggestionsChanged(self.category, std::move(suggestions));
+
+  // Set up the action when "More" is tapped.
+  AdditionalSuggestionsHelper helper(pageURL);
+  EXPECT_CALL(*self.provider, FetchMock(_, _, _))
+      .WillOnce(WithArg<2>(Invoke(
+          &helper, &AdditionalSuggestionsHelper::SendAdditionalSuggestions)));
+
+  // Tap on more, which adds 10 elements.
+  [CellWithMatcher(chrome_test_util::ButtonWithAccessibilityLabelId(
+      IDS_IOS_CONTENT_SUGGESTIONS_FOOTER_TITLE)) performAction:grey_tap()];
+
+  // Make sure some items are loaded.
+  [CellWithMatcher(grey_accessibilityID(@"AdditionalSuggestion2"))
+      assertWithMatcher:grey_notNil()];
+
+  // Open a new Tab.
+  ScrollUp();
+  [ChromeEarlGreyUI openNewTab];
+  [ChromeEarlGrey waitForMainTabCount:2];
+
+  // Go back to the previous tab.
+  chrome_test_util::SelectTabAtIndexInCurrentMode(0);
+
+  // Make sure the additional items are still displayed.
+  [CellWithMatcher(grey_accessibilityID(@"AdditionalSuggestion2"))
+      assertWithMatcher:grey_notNil()];
+}
+
 // Tests that after dismissing a ReadingList item, it is not displayed on the
 // NTP. But it is still unread in the Reading List surface.
 - (void)testSwipeToDismissReadingListItem {
