@@ -480,7 +480,7 @@ WebURLLoaderImpl::Context::Context(
 #if DCHECK_IS_ON()
   const bool mojo_loading_enabled =
       base::FeatureList::IsEnabled(features::kLoadingWithMojo);
-  DCHECK(url_loader_factory_ || !mojo_loading_enabled);
+  DCHECK(url_loader_factory_ || !mojo_loading_enabled || !resource_dispatcher);
 #endif
 }
 
