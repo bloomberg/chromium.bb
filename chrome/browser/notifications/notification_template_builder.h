@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/strings/string16.h"
 
 class GURL;
 class XmlWriter;
@@ -25,6 +26,9 @@ class Notification;
 //
 // The current builder is a best-effort implementation that supports the title
 // body text and attribution of a notification.
+//
+// libXml was preferred (over WinXml, which the samples tend to use) because it
+// is used frequently in Chrome, is nicer to use and has already been vetted.
 class NotificationTemplateBuilder {
  public:
   // Builds the notification template for the given |notification|. The given
@@ -36,7 +40,7 @@ class NotificationTemplateBuilder {
   ~NotificationTemplateBuilder();
 
   // Gets the XML template that was created by this builder.
-  std::string GetNotificationTemplate();
+  base::string16 GetNotificationTemplate() const;
 
  private:
   NotificationTemplateBuilder();
