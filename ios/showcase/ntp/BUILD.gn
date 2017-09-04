@@ -8,6 +8,7 @@ source_set("ntp") {
     "sc_ntp_coordinator.mm",
   ]
   deps = [
+    "//ios/chrome/browser/ui/content_suggestions:content_suggestions_constant",
     "//ios/chrome/browser/ui/ntp:ntp_internal",
     "//ios/clean/chrome/browser/ui/commands",
     "//ios/clean/chrome/browser/ui/ntp:ntp_ui",

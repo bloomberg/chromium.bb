@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/ntp/new_tab_page_bar.h"
+#import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_bar_item.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -32,19 +33,19 @@ class NewTabPageBarTest : public PlatformTest {
 
 TEST_F(NewTabPageBarTest, SetItems) {
   NewTabPageBarItem* firstItem = [NewTabPageBarItem
-      newTabPageBarItemWithTitle:@"First"
-                      identifier:1
+      newTabPageBarItemWithTitle:@"Home"
+                      identifier:ntp_home::HOME_PANEL
                            image:[UIImage imageNamed:@"ntp_bookmarks"]];
   // Tests that identifier test function can return both true and false.
-  EXPECT_TRUE(firstItem.identifier == 1U);
+  EXPECT_TRUE(firstItem.identifier == ntp_home::HOME_PANEL);
 
   NewTabPageBarItem* secondItem = [NewTabPageBarItem
-      newTabPageBarItemWithTitle:@"Second"
-                      identifier:2
+      newTabPageBarItemWithTitle:@"Bookmarks"
+                      identifier:ntp_home::BOOKMARKS_PANEL
                            image:[UIImage imageNamed:@"ntp_bookmarks"]];
   NewTabPageBarItem* thirdItem = [NewTabPageBarItem
-      newTabPageBarItemWithTitle:@"Third"
-                      identifier:3
+      newTabPageBarItemWithTitle:@"RecentTabs"
+                      identifier:ntp_home::RECENT_TABS_PANEL
                            image:[UIImage imageNamed:@"ntp_bookmarks"]];
 
   [bar_ setItems:[NSArray arrayWithObject:firstItem]];
@@ -65,17 +66,16 @@ TEST_F(NewTabPageBarTest, SetSelectedIndex_iPadOnly) {
   }
 
   NewTabPageBarItem* firstItem = [NewTabPageBarItem
-      newTabPageBarItemWithTitle:@"First"
-                      identifier:1
+      newTabPageBarItemWithTitle:@"Home"
+                      identifier:ntp_home::HOME_PANEL
                            image:[UIImage imageNamed:@"ntp_bookmarks"]];
   NewTabPageBarItem* secondItem = [NewTabPageBarItem
-      newTabPageBarItemWithTitle:@"Second"
-                      identifier:2
+      newTabPageBarItemWithTitle:@"Bookmarks"
+                      identifier:ntp_home::BOOKMARKS_PANEL
                            image:[UIImage imageNamed:@"ntp_bookmarks"]];
-
   NewTabPageBarItem* thirdItem = [NewTabPageBarItem
-      newTabPageBarItemWithTitle:@"Third"
-                      identifier:3
+      newTabPageBarItemWithTitle:@"RecentTabs"
+                      identifier:ntp_home::RECENT_TABS_PANEL
                            image:[UIImage imageNamed:@"ntp_bookmarks"]];
 
   [bar_ setItems:[NSArray

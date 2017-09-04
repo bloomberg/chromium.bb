@@ -8,17 +8,20 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
+#import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
+
 // Represents an item on the new tab page bar, similar to a UITabBarItem.
 @interface NewTabPageBarItem : NSObject
 
 // Convenience method for creating a tab bar choice.
 + (NewTabPageBarItem*)newTabPageBarItemWithTitle:(NSString*)title
-                                      identifier:(NSUInteger)identifier
+                                      identifier:
+                                          (ntp_home::PanelIdentifier)identifier
                                            image:(UIImage*)imageName
     NS_RETURNS_NOT_RETAINED;
 
 @property(nonatomic, copy) NSString* title;
-@property(nonatomic, assign) NSUInteger identifier;
+@property(nonatomic, assign) ntp_home::PanelIdentifier identifier;
 @property(nonatomic, strong) UIImage* image;
 @property(nonatomic, weak) UIView* view;
 @end

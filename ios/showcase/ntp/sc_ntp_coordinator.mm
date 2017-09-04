@@ -4,6 +4,7 @@
 
 #import "ios/showcase/ntp/sc_ntp_coordinator.h"
 
+#import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_bar_item.h"
 #import "ios/clean/chrome/browser/ui/commands/ntp_commands.h"
 #import "ios/clean/chrome/browser/ui/ntp/ntp_view_controller.h"
@@ -32,11 +33,11 @@
 
   NewTabPageBarItem* item1 = [NewTabPageBarItem
       newTabPageBarItemWithTitle:@"Item 1"
-                      identifier:0
+                      identifier:ntp_home::HOME_PANEL
                            image:[UIImage imageNamed:@"ntp_mv_search"]];
   NewTabPageBarItem* item2 = [NewTabPageBarItem
       newTabPageBarItemWithTitle:@"Item 2"
-                      identifier:0
+                      identifier:ntp_home::BOOKMARKS_PANEL
                            image:[UIImage imageNamed:@"ntp_bookmarks"]];
   [ntp setBarItems:@[ item1, item2 ]];
 

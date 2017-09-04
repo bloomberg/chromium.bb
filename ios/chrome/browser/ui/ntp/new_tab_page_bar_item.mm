@@ -15,7 +15,8 @@
 @synthesize view = view_;
 
 + (NewTabPageBarItem*)newTabPageBarItemWithTitle:(NSString*)title
-                                      identifier:(NSUInteger)identifier
+                                      identifier:
+                                          (ntp_home::PanelIdentifier)identifier
                                            image:(UIImage*)image {
   NewTabPageBarItem* item = [[NewTabPageBarItem alloc] init];
   if (item) {

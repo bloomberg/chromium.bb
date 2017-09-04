@@ -706,7 +706,7 @@ enum {
     NSUInteger index = self.ntpView.tabBar.selectedIndex;
     DCHECK(index != NSNotFound);
     NewTabPageBarItem* item = self.ntpView.tabBar.items[index];
-    return static_cast<ntp_home::PanelIdentifier>(item.identifier);
+    return item.identifier;
   }
   return ntp_home::HOME_PANEL;
 }
