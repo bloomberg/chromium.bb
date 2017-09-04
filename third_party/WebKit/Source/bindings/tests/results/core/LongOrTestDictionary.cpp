@@ -17,17 +17,17 @@
 
 namespace blink {
 
-LongOrTestDictionary::LongOrTestDictionary() : m_type(SpecificTypeNone) {}
+LongOrTestDictionary::LongOrTestDictionary() : type_(SpecificTypeNone) {}
 
 int32_t LongOrTestDictionary::getAsLong() const {
   DCHECK(isLong());
-  return m_long;
+  return long_;
 }
 
 void LongOrTestDictionary::setLong(int32_t value) {
   DCHECK(isNull());
-  m_long = value;
-  m_type = SpecificTypeLong;
+  long_ = value;
+  type_ = SpecificTypeLong;
 }
 
 LongOrTestDictionary LongOrTestDictionary::fromLong(int32_t value) {
@@ -38,13 +38,13 @@ LongOrTestDictionary LongOrTestDictionary::fromLong(int32_t value) {
 
 const TestDictionary& LongOrTestDictionary::getAsTestDictionary() const {
   DCHECK(isTestDictionary());
-  return m_testDictionary;
+  return test_dictionary_;
 }
 
 void LongOrTestDictionary::setTestDictionary(const TestDictionary& value) {
   DCHECK(isNull());
-  m_testDictionary = value;
-  m_type = SpecificTypeTestDictionary;
+  test_dictionary_ = value;
+  type_ = SpecificTypeTestDictionary;
 }
 
 LongOrTestDictionary LongOrTestDictionary::fromTestDictionary(const TestDictionary& value) {
@@ -58,7 +58,7 @@ LongOrTestDictionary::~LongOrTestDictionary() = default;
 LongOrTestDictionary& LongOrTestDictionary::operator=(const LongOrTestDictionary&) = default;
 
 DEFINE_TRACE(LongOrTestDictionary) {
-  visitor->Trace(m_testDictionary);
+  visitor->Trace(test_dictionary_);
 }
 
 void V8LongOrTestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, LongOrTestDictionary& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
@@ -104,7 +104,7 @@ void V8LongOrTestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v
 }
 
 v8::Local<v8::Value> ToV8(const LongOrTestDictionary& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
-  switch (impl.m_type) {
+  switch (impl.type_) {
     case LongOrTestDictionary::SpecificTypeNone:
       return v8::Null(isolate);
     case LongOrTestDictionary::SpecificTypeLong:

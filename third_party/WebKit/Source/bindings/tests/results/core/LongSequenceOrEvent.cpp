@@ -18,17 +18,17 @@
 
 namespace blink {
 
-LongSequenceOrEvent::LongSequenceOrEvent() : m_type(SpecificTypeNone) {}
+LongSequenceOrEvent::LongSequenceOrEvent() : type_(SpecificTypeNone) {}
 
 Event* LongSequenceOrEvent::getAsEvent() const {
   DCHECK(isEvent());
-  return m_event;
+  return event_;
 }
 
 void LongSequenceOrEvent::setEvent(Event* value) {
   DCHECK(isNull());
-  m_event = value;
-  m_type = SpecificTypeEvent;
+  event_ = value;
+  type_ = SpecificTypeEvent;
 }
 
 LongSequenceOrEvent LongSequenceOrEvent::fromEvent(Event* value) {
@@ -39,13 +39,13 @@ LongSequenceOrEvent LongSequenceOrEvent::fromEvent(Event* value) {
 
 const Vector<int32_t>& LongSequenceOrEvent::getAsLongSequence() const {
   DCHECK(isLongSequence());
-  return m_longSequence;
+  return long_sequence_;
 }
 
 void LongSequenceOrEvent::setLongSequence(const Vector<int32_t>& value) {
   DCHECK(isNull());
-  m_longSequence = value;
-  m_type = SpecificTypeLongSequence;
+  long_sequence_ = value;
+  type_ = SpecificTypeLongSequence;
 }
 
 LongSequenceOrEvent LongSequenceOrEvent::fromLongSequence(const Vector<int32_t>& value) {
@@ -59,7 +59,7 @@ LongSequenceOrEvent::~LongSequenceOrEvent() = default;
 LongSequenceOrEvent& LongSequenceOrEvent::operator=(const LongSequenceOrEvent&) = default;
 
 DEFINE_TRACE(LongSequenceOrEvent) {
-  visitor->Trace(m_event);
+  visitor->Trace(event_);
 }
 
 void V8LongSequenceOrEvent::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, LongSequenceOrEvent& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
@@ -87,7 +87,7 @@ void V8LongSequenceOrEvent::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8
 }
 
 v8::Local<v8::Value> ToV8(const LongSequenceOrEvent& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
-  switch (impl.m_type) {
+  switch (impl.type_) {
     case LongSequenceOrEvent::SpecificTypeNone:
       return v8::Null(isolate);
     case LongSequenceOrEvent::SpecificTypeEvent:

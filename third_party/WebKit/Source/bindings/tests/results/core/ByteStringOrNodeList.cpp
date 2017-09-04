@@ -22,17 +22,17 @@
 
 namespace blink {
 
-ByteStringOrNodeList::ByteStringOrNodeList() : m_type(SpecificTypeNone) {}
+ByteStringOrNodeList::ByteStringOrNodeList() : type_(SpecificTypeNone) {}
 
 const String& ByteStringOrNodeList::getAsByteString() const {
   DCHECK(isByteString());
-  return m_byteString;
+  return byte_string_;
 }
 
 void ByteStringOrNodeList::setByteString(const String& value) {
   DCHECK(isNull());
-  m_byteString = value;
-  m_type = SpecificTypeByteString;
+  byte_string_ = value;
+  type_ = SpecificTypeByteString;
 }
 
 ByteStringOrNodeList ByteStringOrNodeList::fromByteString(const String& value) {
@@ -43,13 +43,13 @@ ByteStringOrNodeList ByteStringOrNodeList::fromByteString(const String& value) {
 
 NodeList* ByteStringOrNodeList::getAsNodeList() const {
   DCHECK(isNodeList());
-  return m_nodeList;
+  return node_list_;
 }
 
 void ByteStringOrNodeList::setNodeList(NodeList* value) {
   DCHECK(isNull());
-  m_nodeList = value;
-  m_type = SpecificTypeNodeList;
+  node_list_ = value;
+  type_ = SpecificTypeNodeList;
 }
 
 ByteStringOrNodeList ByteStringOrNodeList::fromNodeList(NodeList* value) {
@@ -63,7 +63,7 @@ ByteStringOrNodeList::~ByteStringOrNodeList() = default;
 ByteStringOrNodeList& ByteStringOrNodeList::operator=(const ByteStringOrNodeList&) = default;
 
 DEFINE_TRACE(ByteStringOrNodeList) {
-  visitor->Trace(m_nodeList);
+  visitor->Trace(node_list_);
 }
 
 void V8ByteStringOrNodeList::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, ByteStringOrNodeList& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
@@ -89,7 +89,7 @@ void V8ByteStringOrNodeList::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v
 }
 
 v8::Local<v8::Value> ToV8(const ByteStringOrNodeList& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
-  switch (impl.m_type) {
+  switch (impl.type_) {
     case ByteStringOrNodeList::SpecificTypeNone:
       return v8::Null(isolate);
     case ByteStringOrNodeList::SpecificTypeByteString:

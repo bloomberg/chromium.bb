@@ -28,14 +28,14 @@ class CORE_EXPORT TestInterfaceOrTestInterfaceEmpty final {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
  public:
   TestInterfaceOrTestInterfaceEmpty();
-  bool isNull() const { return m_type == SpecificTypeNone; }
+  bool isNull() const { return type_ == SpecificTypeNone; }
 
-  bool isTestInterface() const { return m_type == SpecificTypeTestInterface; }
+  bool isTestInterface() const { return type_ == SpecificTypeTestInterface; }
   TestInterfaceImplementation* getAsTestInterface() const;
   void setTestInterface(TestInterfaceImplementation*);
   static TestInterfaceOrTestInterfaceEmpty fromTestInterface(TestInterfaceImplementation*);
 
-  bool isTestInterfaceEmpty() const { return m_type == SpecificTypeTestInterfaceEmpty; }
+  bool isTestInterfaceEmpty() const { return type_ == SpecificTypeTestInterfaceEmpty; }
   TestInterfaceEmpty* getAsTestInterfaceEmpty() const;
   void setTestInterfaceEmpty(TestInterfaceEmpty*);
   static TestInterfaceOrTestInterfaceEmpty fromTestInterfaceEmpty(TestInterfaceEmpty*);
@@ -51,10 +51,10 @@ class CORE_EXPORT TestInterfaceOrTestInterfaceEmpty final {
     SpecificTypeTestInterface,
     SpecificTypeTestInterfaceEmpty,
   };
-  SpecificTypes m_type;
+  SpecificTypes type_;
 
-  Member<TestInterfaceImplementation> m_testInterface;
-  Member<TestInterfaceEmpty> m_testInterfaceEmpty;
+  Member<TestInterfaceImplementation> test_interface_;
+  Member<TestInterfaceEmpty> test_interface_empty_;
 
   friend CORE_EXPORT v8::Local<v8::Value> ToV8(const TestInterfaceOrTestInterfaceEmpty&, v8::Local<v8::Object>, v8::Isolate*);
 };

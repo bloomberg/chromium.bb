@@ -25,14 +25,14 @@ class CORE_EXPORT StringOrStringSequence final {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
  public:
   StringOrStringSequence();
-  bool isNull() const { return m_type == SpecificTypeNone; }
+  bool isNull() const { return type_ == SpecificTypeNone; }
 
-  bool isString() const { return m_type == SpecificTypeString; }
+  bool isString() const { return type_ == SpecificTypeString; }
   const String& getAsString() const;
   void setString(const String&);
   static StringOrStringSequence fromString(const String&);
 
-  bool isStringSequence() const { return m_type == SpecificTypeStringSequence; }
+  bool isStringSequence() const { return type_ == SpecificTypeStringSequence; }
   const Vector<String>& getAsStringSequence() const;
   void setStringSequence(const Vector<String>&);
   static StringOrStringSequence fromStringSequence(const Vector<String>&);
@@ -48,10 +48,10 @@ class CORE_EXPORT StringOrStringSequence final {
     SpecificTypeString,
     SpecificTypeStringSequence,
   };
-  SpecificTypes m_type;
+  SpecificTypes type_;
 
-  String m_string;
-  Vector<String> m_stringSequence;
+  String string_;
+  Vector<String> string_sequence_;
 
   friend CORE_EXPORT v8::Local<v8::Value> ToV8(const StringOrStringSequence&, v8::Local<v8::Object>, v8::Isolate*);
 };

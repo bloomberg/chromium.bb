@@ -40,423 +40,423 @@ TestDictionary::TestDictionary(const TestDictionary&) = default;
 TestDictionary& TestDictionary::operator=(const TestDictionary&) = default;
 
 bool TestDictionary::hasAnyInRecordMember() const {
-  return m_hasAnyInRecordMember;
+  return has_any_in_record_member_;
 }
 const Vector<std::pair<String, ScriptValue>>& TestDictionary::anyInRecordMember() const {
-  DCHECK(m_hasAnyInRecordMember);
-  return m_anyInRecordMember;
+  DCHECK(has_any_in_record_member_);
+  return any_in_record_member_;
 }
 void TestDictionary::setAnyInRecordMember(const Vector<std::pair<String, ScriptValue>>& value) {
-  m_anyInRecordMember = value;
-  m_hasAnyInRecordMember = true;
+  any_in_record_member_ = value;
+  has_any_in_record_member_ = true;
 }
 bool TestDictionary::hasAnyMember() const {
-  return !(m_anyMember.IsEmpty() || m_anyMember.IsNull() || m_anyMember.IsUndefined());
+  return !(any_member_.IsEmpty() || any_member_.IsNull() || any_member_.IsUndefined());
 }
 ScriptValue TestDictionary::anyMember() const {
-  return m_anyMember;
+  return any_member_;
 }
 void TestDictionary::setAnyMember(ScriptValue value) {
-  m_anyMember = value;
+  any_member_ = value;
 }
 bool TestDictionary::hasBooleanMember() const {
-  return m_hasBooleanMember;
+  return has_boolean_member_;
 }
 bool TestDictionary::booleanMember() const {
-  DCHECK(m_hasBooleanMember);
-  return m_booleanMember;
+  DCHECK(has_boolean_member_);
+  return boolean_member_;
 }
 void TestDictionary::setBooleanMember(bool value) {
-  m_booleanMember = value;
-  m_hasBooleanMember = true;
+  boolean_member_ = value;
+  has_boolean_member_ = true;
 }
 bool TestDictionary::hasCreateMember() const {
-  return m_hasCreateMember;
+  return has_create_member_;
 }
 bool TestDictionary::createMember() const {
-  DCHECK(m_hasCreateMember);
-  return m_createMember;
+  DCHECK(has_create_member_);
+  return create_member_;
 }
 void TestDictionary::setCreateMember(bool value) {
-  m_createMember = value;
-  m_hasCreateMember = true;
+  create_member_ = value;
+  has_create_member_ = true;
 }
 bool TestDictionary::hasDictionaryMember() const {
-  return !m_dictionaryMember.IsUndefinedOrNull();
+  return !dictionary_member_.IsUndefinedOrNull();
 }
 Dictionary TestDictionary::dictionaryMember() const {
-  return m_dictionaryMember;
+  return dictionary_member_;
 }
 void TestDictionary::setDictionaryMember(Dictionary value) {
-  m_dictionaryMember = value;
+  dictionary_member_ = value;
 }
 bool TestDictionary::hasDoubleOrNullMember() const {
-  return m_hasDoubleOrNullMember;
+  return has_double_or_null_member_;
 }
 double TestDictionary::doubleOrNullMember() const {
-  DCHECK(m_hasDoubleOrNullMember);
-  return m_doubleOrNullMember;
+  DCHECK(has_double_or_null_member_);
+  return double_or_null_member_;
 }
 void TestDictionary::setDoubleOrNullMember(double value) {
-  m_doubleOrNullMember = value;
-  m_hasDoubleOrNullMember = true;
+  double_or_null_member_ = value;
+  has_double_or_null_member_ = true;
 }
 void TestDictionary::setDoubleOrNullMemberToNull() {
-  m_hasDoubleOrNullMember = false;
+  has_double_or_null_member_ = false;
 }
 bool TestDictionary::hasDoubleOrStringMember() const {
-  return !m_doubleOrStringMember.isNull();
+  return !double_or_string_member_.isNull();
 }
 const DoubleOrString& TestDictionary::doubleOrStringMember() const {
-  return m_doubleOrStringMember;
+  return double_or_string_member_;
 }
 void TestDictionary::setDoubleOrStringMember(const DoubleOrString& value) {
-  m_doubleOrStringMember = value;
+  double_or_string_member_ = value;
 }
 bool TestDictionary::hasDoubleOrStringSequenceMember() const {
-  return m_hasDoubleOrStringSequenceMember;
+  return has_double_or_string_sequence_member_;
 }
 const HeapVector<DoubleOrString>& TestDictionary::doubleOrStringSequenceMember() const {
-  DCHECK(m_hasDoubleOrStringSequenceMember);
-  return m_doubleOrStringSequenceMember;
+  DCHECK(has_double_or_string_sequence_member_);
+  return double_or_string_sequence_member_;
 }
 void TestDictionary::setDoubleOrStringSequenceMember(const HeapVector<DoubleOrString>& value) {
-  m_doubleOrStringSequenceMember = value;
-  m_hasDoubleOrStringSequenceMember = true;
+  double_or_string_sequence_member_ = value;
+  has_double_or_string_sequence_member_ = true;
 }
 bool TestDictionary::hasElementOrNullMember() const {
-  return m_elementOrNullMember;
+  return element_or_null_member_;
 }
 Element* TestDictionary::elementOrNullMember() const {
-  return m_elementOrNullMember;
+  return element_or_null_member_;
 }
 void TestDictionary::setElementOrNullMember(Element* value) {
-  m_elementOrNullMember = value;
+  element_or_null_member_ = value;
 }
 void TestDictionary::setElementOrNullMemberToNull() {
-  m_elementOrNullMember = Member<Element>();
+  element_or_null_member_ = Member<Element>();
 }
 bool TestDictionary::hasEnumMember() const {
-  return !m_enumMember.IsNull();
+  return !enum_member_.IsNull();
 }
 const String& TestDictionary::enumMember() const {
-  return m_enumMember;
+  return enum_member_;
 }
 void TestDictionary::setEnumMember(const String& value) {
-  m_enumMember = value;
+  enum_member_ = value;
 }
 bool TestDictionary::hasEnumSequenceMember() const {
-  return m_hasEnumSequenceMember;
+  return has_enum_sequence_member_;
 }
 const Vector<String>& TestDictionary::enumSequenceMember() const {
-  DCHECK(m_hasEnumSequenceMember);
-  return m_enumSequenceMember;
+  DCHECK(has_enum_sequence_member_);
+  return enum_sequence_member_;
 }
 void TestDictionary::setEnumSequenceMember(const Vector<String>& value) {
-  m_enumSequenceMember = value;
-  m_hasEnumSequenceMember = true;
+  enum_sequence_member_ = value;
+  has_enum_sequence_member_ = true;
 }
 bool TestDictionary::hasEventTargetMember() const {
-  return m_eventTargetMember;
+  return event_target_member_;
 }
 EventTarget* TestDictionary::eventTargetMember() const {
-  return m_eventTargetMember;
+  return event_target_member_;
 }
 void TestDictionary::setEventTargetMember(EventTarget* value) {
-  m_eventTargetMember = value;
+  event_target_member_ = value;
 }
 bool TestDictionary::hasGarbageCollectedRecordMember() const {
-  return m_hasGarbageCollectedRecordMember;
+  return has_garbage_collected_record_member_;
 }
 const HeapVector<std::pair<String, Member<TestObject>>>& TestDictionary::garbageCollectedRecordMember() const {
-  DCHECK(m_hasGarbageCollectedRecordMember);
-  return m_garbageCollectedRecordMember;
+  DCHECK(has_garbage_collected_record_member_);
+  return garbage_collected_record_member_;
 }
 void TestDictionary::setGarbageCollectedRecordMember(const HeapVector<std::pair<String, Member<TestObject>>>& value) {
-  m_garbageCollectedRecordMember = value;
-  m_hasGarbageCollectedRecordMember = true;
+  garbage_collected_record_member_ = value;
+  has_garbage_collected_record_member_ = true;
 }
 bool TestDictionary::hasInternalDictionarySequenceMember() const {
-  return m_hasInternalDictionarySequenceMember;
+  return has_internal_dictionary_sequence_member_;
 }
 const HeapVector<InternalDictionary>& TestDictionary::internalDictionarySequenceMember() const {
-  DCHECK(m_hasInternalDictionarySequenceMember);
-  return m_internalDictionarySequenceMember;
+  DCHECK(has_internal_dictionary_sequence_member_);
+  return internal_dictionary_sequence_member_;
 }
 void TestDictionary::setInternalDictionarySequenceMember(const HeapVector<InternalDictionary>& value) {
-  m_internalDictionarySequenceMember = value;
-  m_hasInternalDictionarySequenceMember = true;
+  internal_dictionary_sequence_member_ = value;
+  has_internal_dictionary_sequence_member_ = true;
 }
 bool TestDictionary::hasIsPublic() const {
-  return m_hasIsPublic;
+  return has_is_public_;
 }
 bool TestDictionary::isPublic() const {
-  DCHECK(m_hasIsPublic);
-  return m_isPublic;
+  DCHECK(has_is_public_);
+  return is_public_;
 }
 void TestDictionary::setIsPublic(bool value) {
-  m_isPublic = value;
-  m_hasIsPublic = true;
+  is_public_ = value;
+  has_is_public_ = true;
 }
 bool TestDictionary::hasLongMember() const {
-  return m_hasLongMember;
+  return has_long_member_;
 }
 int32_t TestDictionary::longMember() const {
-  DCHECK(m_hasLongMember);
-  return m_longMember;
+  DCHECK(has_long_member_);
+  return long_member_;
 }
 void TestDictionary::setLongMember(int32_t value) {
-  m_longMember = value;
-  m_hasLongMember = true;
+  long_member_ = value;
+  has_long_member_ = true;
 }
 bool TestDictionary::hasObjectMember() const {
-  return !(m_objectMember.IsEmpty() || m_objectMember.IsNull() || m_objectMember.IsUndefined());
+  return !(object_member_.IsEmpty() || object_member_.IsNull() || object_member_.IsUndefined());
 }
 ScriptValue TestDictionary::objectMember() const {
-  return m_objectMember;
+  return object_member_;
 }
 void TestDictionary::setObjectMember(ScriptValue value) {
-  m_objectMember = value;
+  object_member_ = value;
 }
 bool TestDictionary::hasObjectOrNullMember() const {
-  return !(m_objectOrNullMember.IsEmpty() || m_objectOrNullMember.IsNull() || m_objectOrNullMember.IsUndefined());
+  return !(object_or_null_member_.IsEmpty() || object_or_null_member_.IsNull() || object_or_null_member_.IsUndefined());
 }
 ScriptValue TestDictionary::objectOrNullMember() const {
-  return m_objectOrNullMember;
+  return object_or_null_member_;
 }
 void TestDictionary::setObjectOrNullMember(ScriptValue value) {
-  m_objectOrNullMember = value;
+  object_or_null_member_ = value;
 }
 void TestDictionary::setObjectOrNullMemberToNull() {
-  m_objectOrNullMember = ScriptValue();
+  object_or_null_member_ = ScriptValue();
 }
 bool TestDictionary::hasOtherDoubleOrStringMember() const {
-  return !m_otherDoubleOrStringMember.isNull();
+  return !other_double_or_string_member_.isNull();
 }
 const DoubleOrString& TestDictionary::otherDoubleOrStringMember() const {
-  return m_otherDoubleOrStringMember;
+  return other_double_or_string_member_;
 }
 void TestDictionary::setOtherDoubleOrStringMember(const DoubleOrString& value) {
-  m_otherDoubleOrStringMember = value;
+  other_double_or_string_member_ = value;
 }
 bool TestDictionary::hasPrefixGetMember() const {
-  return !(m_prefixGetMember.IsEmpty() || m_prefixGetMember.IsNull() || m_prefixGetMember.IsUndefined());
+  return !(prefix_get_member_.IsEmpty() || prefix_get_member_.IsNull() || prefix_get_member_.IsUndefined());
 }
 ScriptValue TestDictionary::getPrefixGetMember() const {
-  return m_prefixGetMember;
+  return prefix_get_member_;
 }
 void TestDictionary::setPrefixGetMember(ScriptValue value) {
-  m_prefixGetMember = value;
+  prefix_get_member_ = value;
 }
 bool TestDictionary::hasRecordMember() const {
-  return m_hasRecordMember;
+  return has_record_member_;
 }
 const Vector<std::pair<String, int8_t>>& TestDictionary::recordMember() const {
-  DCHECK(m_hasRecordMember);
-  return m_recordMember;
+  DCHECK(has_record_member_);
+  return record_member_;
 }
 void TestDictionary::setRecordMember(const Vector<std::pair<String, int8_t>>& value) {
-  m_recordMember = value;
-  m_hasRecordMember = true;
+  record_member_ = value;
+  has_record_member_ = true;
 }
 bool TestDictionary::hasRestrictedDoubleMember() const {
-  return m_hasRestrictedDoubleMember;
+  return has_restricted_double_member_;
 }
 double TestDictionary::restrictedDoubleMember() const {
-  DCHECK(m_hasRestrictedDoubleMember);
-  return m_restrictedDoubleMember;
+  DCHECK(has_restricted_double_member_);
+  return restricted_double_member_;
 }
 void TestDictionary::setRestrictedDoubleMember(double value) {
-  m_restrictedDoubleMember = value;
-  m_hasRestrictedDoubleMember = true;
+  restricted_double_member_ = value;
+  has_restricted_double_member_ = true;
 }
 bool TestDictionary::hasRuntimeMember() const {
-  return m_hasRuntimeMember;
+  return has_runtime_member_;
 }
 bool TestDictionary::runtimeMember() const {
-  DCHECK(m_hasRuntimeMember);
-  return m_runtimeMember;
+  DCHECK(has_runtime_member_);
+  return runtime_member_;
 }
 void TestDictionary::setRuntimeMember(bool value) {
-  m_runtimeMember = value;
-  m_hasRuntimeMember = true;
+  runtime_member_ = value;
+  has_runtime_member_ = true;
 }
 bool TestDictionary::hasStringMember() const {
-  return !m_stringMember.IsNull();
+  return !string_member_.IsNull();
 }
 const String& TestDictionary::stringMember() const {
-  return m_stringMember;
+  return string_member_;
 }
 void TestDictionary::setStringMember(const String& value) {
-  m_stringMember = value;
+  string_member_ = value;
 }
 bool TestDictionary::hasStringOrNullMember() const {
-  return !m_stringOrNullMember.IsNull();
+  return !string_or_null_member_.IsNull();
 }
 const String& TestDictionary::stringOrNullMember() const {
-  return m_stringOrNullMember;
+  return string_or_null_member_;
 }
 void TestDictionary::setStringOrNullMember(const String& value) {
-  m_stringOrNullMember = value;
+  string_or_null_member_ = value;
 }
 void TestDictionary::setStringOrNullMemberToNull() {
-  m_stringOrNullMember = String();
+  string_or_null_member_ = String();
 }
 bool TestDictionary::hasStringSequenceMember() const {
-  return m_hasStringSequenceMember;
+  return has_string_sequence_member_;
 }
 const Vector<String>& TestDictionary::stringSequenceMember() const {
-  DCHECK(m_hasStringSequenceMember);
-  return m_stringSequenceMember;
+  DCHECK(has_string_sequence_member_);
+  return string_sequence_member_;
 }
 void TestDictionary::setStringSequenceMember(const Vector<String>& value) {
-  m_stringSequenceMember = value;
-  m_hasStringSequenceMember = true;
+  string_sequence_member_ = value;
+  has_string_sequence_member_ = true;
 }
 bool TestDictionary::hasTestInterface2OrUint8ArrayMember() const {
-  return !m_testInterface2OrUint8ArrayMember.isNull();
+  return !test_interface_2_or_uint8_array_member_.isNull();
 }
 const TestInterface2OrUint8Array& TestDictionary::testInterface2OrUint8ArrayMember() const {
-  return m_testInterface2OrUint8ArrayMember;
+  return test_interface_2_or_uint8_array_member_;
 }
 void TestDictionary::setTestInterface2OrUint8ArrayMember(const TestInterface2OrUint8Array& value) {
-  m_testInterface2OrUint8ArrayMember = value;
+  test_interface_2_or_uint8_array_member_ = value;
 }
 bool TestDictionary::hasTestInterfaceGarbageCollectedMember() const {
-  return m_testInterfaceGarbageCollectedMember;
+  return test_interface_garbage_collected_member_;
 }
 TestInterfaceGarbageCollected* TestDictionary::testInterfaceGarbageCollectedMember() const {
-  return m_testInterfaceGarbageCollectedMember;
+  return test_interface_garbage_collected_member_;
 }
 void TestDictionary::setTestInterfaceGarbageCollectedMember(TestInterfaceGarbageCollected* value) {
-  m_testInterfaceGarbageCollectedMember = value;
+  test_interface_garbage_collected_member_ = value;
 }
 bool TestDictionary::hasTestInterfaceGarbageCollectedOrNullMember() const {
-  return m_testInterfaceGarbageCollectedOrNullMember;
+  return test_interface_garbage_collected_or_null_member_;
 }
 TestInterfaceGarbageCollected* TestDictionary::testInterfaceGarbageCollectedOrNullMember() const {
-  return m_testInterfaceGarbageCollectedOrNullMember;
+  return test_interface_garbage_collected_or_null_member_;
 }
 void TestDictionary::setTestInterfaceGarbageCollectedOrNullMember(TestInterfaceGarbageCollected* value) {
-  m_testInterfaceGarbageCollectedOrNullMember = value;
+  test_interface_garbage_collected_or_null_member_ = value;
 }
 void TestDictionary::setTestInterfaceGarbageCollectedOrNullMemberToNull() {
-  m_testInterfaceGarbageCollectedOrNullMember = Member<TestInterfaceGarbageCollected>();
+  test_interface_garbage_collected_or_null_member_ = Member<TestInterfaceGarbageCollected>();
 }
 bool TestDictionary::hasTestInterfaceGarbageCollectedSequenceMember() const {
-  return m_hasTestInterfaceGarbageCollectedSequenceMember;
+  return has_test_interface_garbage_collected_sequence_member_;
 }
 const HeapVector<Member<TestInterfaceGarbageCollected>>& TestDictionary::testInterfaceGarbageCollectedSequenceMember() const {
-  DCHECK(m_hasTestInterfaceGarbageCollectedSequenceMember);
-  return m_testInterfaceGarbageCollectedSequenceMember;
+  DCHECK(has_test_interface_garbage_collected_sequence_member_);
+  return test_interface_garbage_collected_sequence_member_;
 }
 void TestDictionary::setTestInterfaceGarbageCollectedSequenceMember(const HeapVector<Member<TestInterfaceGarbageCollected>>& value) {
-  m_testInterfaceGarbageCollectedSequenceMember = value;
-  m_hasTestInterfaceGarbageCollectedSequenceMember = true;
+  test_interface_garbage_collected_sequence_member_ = value;
+  has_test_interface_garbage_collected_sequence_member_ = true;
 }
 bool TestDictionary::hasTestInterfaceMember() const {
-  return m_testInterfaceMember;
+  return test_interface_member_;
 }
 TestInterfaceImplementation* TestDictionary::testInterfaceMember() const {
-  return m_testInterfaceMember;
+  return test_interface_member_;
 }
 void TestDictionary::setTestInterfaceMember(TestInterfaceImplementation* value) {
-  m_testInterfaceMember = value;
+  test_interface_member_ = value;
 }
 bool TestDictionary::hasTestInterfaceOrNullMember() const {
-  return m_testInterfaceOrNullMember;
+  return test_interface_or_null_member_;
 }
 TestInterfaceImplementation* TestDictionary::testInterfaceOrNullMember() const {
-  return m_testInterfaceOrNullMember;
+  return test_interface_or_null_member_;
 }
 void TestDictionary::setTestInterfaceOrNullMember(TestInterfaceImplementation* value) {
-  m_testInterfaceOrNullMember = value;
+  test_interface_or_null_member_ = value;
 }
 void TestDictionary::setTestInterfaceOrNullMemberToNull() {
-  m_testInterfaceOrNullMember = Member<TestInterfaceImplementation>();
+  test_interface_or_null_member_ = Member<TestInterfaceImplementation>();
 }
 bool TestDictionary::hasTestInterfaceSequenceMember() const {
-  return m_hasTestInterfaceSequenceMember;
+  return has_test_interface_sequence_member_;
 }
 const HeapVector<Member<TestInterfaceImplementation>>& TestDictionary::testInterfaceSequenceMember() const {
-  DCHECK(m_hasTestInterfaceSequenceMember);
-  return m_testInterfaceSequenceMember;
+  DCHECK(has_test_interface_sequence_member_);
+  return test_interface_sequence_member_;
 }
 void TestDictionary::setTestInterfaceSequenceMember(const HeapVector<Member<TestInterfaceImplementation>>& value) {
-  m_testInterfaceSequenceMember = value;
-  m_hasTestInterfaceSequenceMember = true;
+  test_interface_sequence_member_ = value;
+  has_test_interface_sequence_member_ = true;
 }
 bool TestDictionary::hasTestObjectSequenceMember() const {
-  return m_hasTestObjectSequenceMember;
+  return has_test_object_sequence_member_;
 }
 const HeapVector<Member<TestObject>>& TestDictionary::testObjectSequenceMember() const {
-  DCHECK(m_hasTestObjectSequenceMember);
-  return m_testObjectSequenceMember;
+  DCHECK(has_test_object_sequence_member_);
+  return test_object_sequence_member_;
 }
 void TestDictionary::setTestObjectSequenceMember(const HeapVector<Member<TestObject>>& value) {
-  m_testObjectSequenceMember = value;
-  m_hasTestObjectSequenceMember = true;
+  test_object_sequence_member_ = value;
+  has_test_object_sequence_member_ = true;
 }
 bool TestDictionary::hasUint8ArrayMember() const {
-  return m_uint8ArrayMember;
+  return uint8_array_member_;
 }
 NotShared<DOMUint8Array> TestDictionary::uint8ArrayMember() const {
-  return m_uint8ArrayMember;
+  return uint8_array_member_;
 }
 void TestDictionary::setUint8ArrayMember(NotShared<DOMUint8Array> value) {
-  m_uint8ArrayMember = value.View();
+  uint8_array_member_ = value.View();
 }
 bool TestDictionary::hasUnionInRecordMember() const {
-  return m_hasUnionInRecordMember;
+  return has_union_in_record_member_;
 }
 const HeapVector<std::pair<String, LongOrBoolean>>& TestDictionary::unionInRecordMember() const {
-  DCHECK(m_hasUnionInRecordMember);
-  return m_unionInRecordMember;
+  DCHECK(has_union_in_record_member_);
+  return union_in_record_member_;
 }
 void TestDictionary::setUnionInRecordMember(const HeapVector<std::pair<String, LongOrBoolean>>& value) {
-  m_unionInRecordMember = value;
-  m_hasUnionInRecordMember = true;
+  union_in_record_member_ = value;
+  has_union_in_record_member_ = true;
 }
 bool TestDictionary::hasUnionWithTypedefs() const {
-  return !m_unionWithTypedefs.isNull();
+  return !union_with_typedefs_.isNull();
 }
 const FloatOrBoolean& TestDictionary::unionWithTypedefs() const {
-  return m_unionWithTypedefs;
+  return union_with_typedefs_;
 }
 void TestDictionary::setUnionWithTypedefs(const FloatOrBoolean& value) {
-  m_unionWithTypedefs = value;
+  union_with_typedefs_ = value;
 }
 bool TestDictionary::hasUnrestrictedDoubleMember() const {
-  return m_hasUnrestrictedDoubleMember;
+  return has_unrestricted_double_member_;
 }
 double TestDictionary::unrestrictedDoubleMember() const {
-  DCHECK(m_hasUnrestrictedDoubleMember);
-  return m_unrestrictedDoubleMember;
+  DCHECK(has_unrestricted_double_member_);
+  return unrestricted_double_member_;
 }
 void TestDictionary::setUnrestrictedDoubleMember(double value) {
-  m_unrestrictedDoubleMember = value;
-  m_hasUnrestrictedDoubleMember = true;
+  unrestricted_double_member_ = value;
+  has_unrestricted_double_member_ = true;
 }
 
 DEFINE_TRACE(TestDictionary) {
-  visitor->Trace(m_doubleOrStringMember);
-  visitor->Trace(m_doubleOrStringSequenceMember);
-  visitor->Trace(m_elementOrNullMember);
-  visitor->Trace(m_eventTargetMember);
-  visitor->Trace(m_garbageCollectedRecordMember);
-  visitor->Trace(m_internalDictionarySequenceMember);
-  visitor->Trace(m_otherDoubleOrStringMember);
-  visitor->Trace(m_testInterface2OrUint8ArrayMember);
-  visitor->Trace(m_testInterfaceGarbageCollectedMember);
-  visitor->Trace(m_testInterfaceGarbageCollectedOrNullMember);
-  visitor->Trace(m_testInterfaceGarbageCollectedSequenceMember);
-  visitor->Trace(m_testInterfaceMember);
-  visitor->Trace(m_testInterfaceOrNullMember);
-  visitor->Trace(m_testInterfaceSequenceMember);
-  visitor->Trace(m_testObjectSequenceMember);
-  visitor->Trace(m_uint8ArrayMember);
-  visitor->Trace(m_unionInRecordMember);
-  visitor->Trace(m_unionWithTypedefs);
+  visitor->Trace(double_or_string_member_);
+  visitor->Trace(double_or_string_sequence_member_);
+  visitor->Trace(element_or_null_member_);
+  visitor->Trace(event_target_member_);
+  visitor->Trace(garbage_collected_record_member_);
+  visitor->Trace(internal_dictionary_sequence_member_);
+  visitor->Trace(other_double_or_string_member_);
+  visitor->Trace(test_interface_2_or_uint8_array_member_);
+  visitor->Trace(test_interface_garbage_collected_member_);
+  visitor->Trace(test_interface_garbage_collected_or_null_member_);
+  visitor->Trace(test_interface_garbage_collected_sequence_member_);
+  visitor->Trace(test_interface_member_);
+  visitor->Trace(test_interface_or_null_member_);
+  visitor->Trace(test_interface_sequence_member_);
+  visitor->Trace(test_object_sequence_member_);
+  visitor->Trace(uint8_array_member_);
+  visitor->Trace(union_in_record_member_);
+  visitor->Trace(union_with_typedefs_);
   IDLDictionaryBase::Trace(visitor);
 }
 

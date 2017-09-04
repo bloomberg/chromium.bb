@@ -23,15 +23,15 @@ TestPermissiveDictionary::TestPermissiveDictionary(const TestPermissiveDictionar
 TestPermissiveDictionary& TestPermissiveDictionary::operator=(const TestPermissiveDictionary&) = default;
 
 bool TestPermissiveDictionary::hasBooleanMember() const {
-  return m_hasBooleanMember;
+  return has_boolean_member_;
 }
 bool TestPermissiveDictionary::booleanMember() const {
-  DCHECK(m_hasBooleanMember);
-  return m_booleanMember;
+  DCHECK(has_boolean_member_);
+  return boolean_member_;
 }
 void TestPermissiveDictionary::setBooleanMember(bool value) {
-  m_booleanMember = value;
-  m_hasBooleanMember = true;
+  boolean_member_ = value;
+  has_boolean_member_ = true;
 }
 
 DEFINE_TRACE(TestPermissiveDictionary) {

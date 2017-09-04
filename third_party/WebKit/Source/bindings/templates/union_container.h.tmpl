@@ -18,10 +18,10 @@ class {{exported}}{{cpp_class}} final {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
  public:
   {{cpp_class}}();
-  bool isNull() const { return m_type == SpecificTypeNone; }
+  bool isNull() const { return type_ == SpecificTypeNone; }
 
   {% for member in members %}
-  bool is{{member.type_name}}() const { return m_type == {{member.specific_type_enum}}; }
+  bool is{{member.type_name}}() const { return type_ == {{member.specific_type_enum}}; }
   {{member.rvalue_cpp_type}} getAs{{member.type_name}}() const;
   void set{{member.type_name}}({{member.rvalue_cpp_type}});
   static {{cpp_class}} from{{member.type_name}}({{member.rvalue_cpp_type}});
@@ -39,10 +39,10 @@ class {{exported}}{{cpp_class}} final {
     {{member.specific_type_enum}},
     {% endfor %}
   };
-  SpecificTypes m_type;
+  SpecificTypes type_;
 
   {% for member in members %}
-  {{member.cpp_type}} m_{{member.cpp_name}};
+  {{member.cpp_type}} {{member.cpp_name}}_;
   {% endfor %}
 
   friend {{exported}}v8::Local<v8::Value> ToV8(const {{cpp_class}}&, v8::Local<v8::Object>, v8::Isolate*);

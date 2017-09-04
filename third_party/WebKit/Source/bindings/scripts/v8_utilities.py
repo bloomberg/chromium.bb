@@ -31,12 +31,18 @@
 Design doc: http://www.chromium.org/developers/design-documents/idl-compiler
 """
 
+import os
 import re
+import sys
 
 from idl_types import IdlTypeBase
 import idl_types
 from idl_definitions import Exposure, IdlInterface, IdlAttribute
 from v8_globals import includes
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..', '..', '..',
+                             'third_party', 'blink', 'tools'))
+from blinkpy.common.name_style_converter import NameStyleConverter
 
 ACRONYMS = [
     'CSSOM',  # must come *before* CSS to match full acronym
@@ -111,6 +117,10 @@ def uncapitalize(name):
         if name.startswith(acronym):
             return name.replace(acronym, acronym.lower())
     return name[0].lower() + name[1:]
+
+
+def to_snake_case(name):
+    return NameStyleConverter(name).to_snake_case()
 
 
 def runtime_enabled_function(name):
@@ -341,9 +351,9 @@ def secure_context(member, interface):
 # [ImplementedAs]
 def cpp_name(definition_or_member):
     extended_attributes = definition_or_member.extended_attributes
-    if 'ImplementedAs' not in extended_attributes:
-        return definition_or_member.name
-    return extended_attributes['ImplementedAs']
+    if extended_attributes and 'ImplementedAs' in extended_attributes:
+        return extended_attributes['ImplementedAs']
+    return definition_or_member.name
 
 
 def cpp_name_from_interfaces_info(name, interfaces_info):

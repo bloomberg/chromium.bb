@@ -17,17 +17,17 @@
 
 namespace blink {
 
-ArrayBufferOrArrayBufferViewOrDictionary::ArrayBufferOrArrayBufferViewOrDictionary() : m_type(SpecificTypeNone) {}
+ArrayBufferOrArrayBufferViewOrDictionary::ArrayBufferOrArrayBufferViewOrDictionary() : type_(SpecificTypeNone) {}
 
 TestArrayBuffer* ArrayBufferOrArrayBufferViewOrDictionary::getAsArrayBuffer() const {
   DCHECK(isArrayBuffer());
-  return m_arrayBuffer;
+  return array_buffer_;
 }
 
 void ArrayBufferOrArrayBufferViewOrDictionary::setArrayBuffer(TestArrayBuffer* value) {
   DCHECK(isNull());
-  m_arrayBuffer = value;
-  m_type = SpecificTypeArrayBuffer;
+  array_buffer_ = value;
+  type_ = SpecificTypeArrayBuffer;
 }
 
 ArrayBufferOrArrayBufferViewOrDictionary ArrayBufferOrArrayBufferViewOrDictionary::fromArrayBuffer(TestArrayBuffer* value) {
@@ -38,13 +38,13 @@ ArrayBufferOrArrayBufferViewOrDictionary ArrayBufferOrArrayBufferViewOrDictionar
 
 NotShared<TestArrayBufferView> ArrayBufferOrArrayBufferViewOrDictionary::getAsArrayBufferView() const {
   DCHECK(isArrayBufferView());
-  return m_arrayBufferView;
+  return array_buffer_view_;
 }
 
 void ArrayBufferOrArrayBufferViewOrDictionary::setArrayBufferView(NotShared<TestArrayBufferView> value) {
   DCHECK(isNull());
-  m_arrayBufferView = Member<TestArrayBufferView>(value.View());
-  m_type = SpecificTypeArrayBufferView;
+  array_buffer_view_ = Member<TestArrayBufferView>(value.View());
+  type_ = SpecificTypeArrayBufferView;
 }
 
 ArrayBufferOrArrayBufferViewOrDictionary ArrayBufferOrArrayBufferViewOrDictionary::fromArrayBufferView(NotShared<TestArrayBufferView> value) {
@@ -55,13 +55,13 @@ ArrayBufferOrArrayBufferViewOrDictionary ArrayBufferOrArrayBufferViewOrDictionar
 
 Dictionary ArrayBufferOrArrayBufferViewOrDictionary::getAsDictionary() const {
   DCHECK(isDictionary());
-  return m_dictionary;
+  return dictionary_;
 }
 
 void ArrayBufferOrArrayBufferViewOrDictionary::setDictionary(Dictionary value) {
   DCHECK(isNull());
-  m_dictionary = value;
-  m_type = SpecificTypeDictionary;
+  dictionary_ = value;
+  type_ = SpecificTypeDictionary;
 }
 
 ArrayBufferOrArrayBufferViewOrDictionary ArrayBufferOrArrayBufferViewOrDictionary::fromDictionary(Dictionary value) {
@@ -75,8 +75,8 @@ ArrayBufferOrArrayBufferViewOrDictionary::~ArrayBufferOrArrayBufferViewOrDiction
 ArrayBufferOrArrayBufferViewOrDictionary& ArrayBufferOrArrayBufferViewOrDictionary::operator=(const ArrayBufferOrArrayBufferViewOrDictionary&) = default;
 
 DEFINE_TRACE(ArrayBufferOrArrayBufferViewOrDictionary) {
-  visitor->Trace(m_arrayBuffer);
-  visitor->Trace(m_arrayBufferView);
+  visitor->Trace(array_buffer_);
+  visitor->Trace(array_buffer_view_);
 }
 
 void V8ArrayBufferOrArrayBufferViewOrDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, ArrayBufferOrArrayBufferViewOrDictionary& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
@@ -112,7 +112,7 @@ void V8ArrayBufferOrArrayBufferViewOrDictionary::toImpl(v8::Isolate* isolate, v8
 }
 
 v8::Local<v8::Value> ToV8(const ArrayBufferOrArrayBufferViewOrDictionary& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
-  switch (impl.m_type) {
+  switch (impl.type_) {
     case ArrayBufferOrArrayBufferViewOrDictionary::SpecificTypeNone:
       return v8::Null(isolate);
     case ArrayBufferOrArrayBufferViewOrDictionary::SpecificTypeArrayBuffer:

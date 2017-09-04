@@ -17,17 +17,17 @@
 
 namespace blink {
 
-UnrestrictedDoubleOrString::UnrestrictedDoubleOrString() : m_type(SpecificTypeNone) {}
+UnrestrictedDoubleOrString::UnrestrictedDoubleOrString() : type_(SpecificTypeNone) {}
 
 const String& UnrestrictedDoubleOrString::getAsString() const {
   DCHECK(isString());
-  return m_string;
+  return string_;
 }
 
 void UnrestrictedDoubleOrString::setString(const String& value) {
   DCHECK(isNull());
-  m_string = value;
-  m_type = SpecificTypeString;
+  string_ = value;
+  type_ = SpecificTypeString;
 }
 
 UnrestrictedDoubleOrString UnrestrictedDoubleOrString::fromString(const String& value) {
@@ -38,13 +38,13 @@ UnrestrictedDoubleOrString UnrestrictedDoubleOrString::fromString(const String& 
 
 double UnrestrictedDoubleOrString::getAsUnrestrictedDouble() const {
   DCHECK(isUnrestrictedDouble());
-  return m_unrestrictedDouble;
+  return unrestricted_double_;
 }
 
 void UnrestrictedDoubleOrString::setUnrestrictedDouble(double value) {
   DCHECK(isNull());
-  m_unrestrictedDouble = value;
-  m_type = SpecificTypeUnrestrictedDouble;
+  unrestricted_double_ = value;
+  type_ = SpecificTypeUnrestrictedDouble;
 }
 
 UnrestrictedDoubleOrString UnrestrictedDoubleOrString::fromUnrestrictedDouble(double value) {
@@ -85,7 +85,7 @@ void V8UnrestrictedDoubleOrString::toImpl(v8::Isolate* isolate, v8::Local<v8::Va
 }
 
 v8::Local<v8::Value> ToV8(const UnrestrictedDoubleOrString& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
-  switch (impl.m_type) {
+  switch (impl.type_) {
     case UnrestrictedDoubleOrString::SpecificTypeNone:
       return v8::Null(isolate);
     case UnrestrictedDoubleOrString::SpecificTypeString:

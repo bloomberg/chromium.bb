@@ -18,17 +18,17 @@
 
 namespace blink {
 
-BooleanOrTestCallbackInterface::BooleanOrTestCallbackInterface() : m_type(SpecificTypeNone) {}
+BooleanOrTestCallbackInterface::BooleanOrTestCallbackInterface() : type_(SpecificTypeNone) {}
 
 bool BooleanOrTestCallbackInterface::getAsBoolean() const {
   DCHECK(isBoolean());
-  return m_boolean;
+  return boolean_;
 }
 
 void BooleanOrTestCallbackInterface::setBoolean(bool value) {
   DCHECK(isNull());
-  m_boolean = value;
-  m_type = SpecificTypeBoolean;
+  boolean_ = value;
+  type_ = SpecificTypeBoolean;
 }
 
 BooleanOrTestCallbackInterface BooleanOrTestCallbackInterface::fromBoolean(bool value) {
@@ -39,13 +39,13 @@ BooleanOrTestCallbackInterface BooleanOrTestCallbackInterface::fromBoolean(bool 
 
 TestCallbackInterface* BooleanOrTestCallbackInterface::getAsTestCallbackInterface() const {
   DCHECK(isTestCallbackInterface());
-  return m_testCallbackInterface;
+  return test_callback_interface_;
 }
 
 void BooleanOrTestCallbackInterface::setTestCallbackInterface(TestCallbackInterface* value) {
   DCHECK(isNull());
-  m_testCallbackInterface = value;
-  m_type = SpecificTypeTestCallbackInterface;
+  test_callback_interface_ = value;
+  type_ = SpecificTypeTestCallbackInterface;
 }
 
 BooleanOrTestCallbackInterface BooleanOrTestCallbackInterface::fromTestCallbackInterface(TestCallbackInterface* value) {
@@ -59,7 +59,7 @@ BooleanOrTestCallbackInterface::~BooleanOrTestCallbackInterface() = default;
 BooleanOrTestCallbackInterface& BooleanOrTestCallbackInterface::operator=(const BooleanOrTestCallbackInterface&) = default;
 
 DEFINE_TRACE(BooleanOrTestCallbackInterface) {
-  visitor->Trace(m_testCallbackInterface);
+  visitor->Trace(test_callback_interface_);
 }
 
 void V8BooleanOrTestCallbackInterface::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, BooleanOrTestCallbackInterface& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
@@ -87,7 +87,7 @@ void V8BooleanOrTestCallbackInterface::toImpl(v8::Isolate* isolate, v8::Local<v8
 }
 
 v8::Local<v8::Value> ToV8(const BooleanOrTestCallbackInterface& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
-  switch (impl.m_type) {
+  switch (impl.type_) {
     case BooleanOrTestCallbackInterface::SpecificTypeNone:
       return v8::Null(isolate);
     case BooleanOrTestCallbackInterface::SpecificTypeBoolean:

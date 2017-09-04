@@ -17,17 +17,17 @@
 
 namespace blink {
 
-BooleanOrString::BooleanOrString() : m_type(SpecificTypeNone) {}
+BooleanOrString::BooleanOrString() : type_(SpecificTypeNone) {}
 
 bool BooleanOrString::getAsBoolean() const {
   DCHECK(isBoolean());
-  return m_boolean;
+  return boolean_;
 }
 
 void BooleanOrString::setBoolean(bool value) {
   DCHECK(isNull());
-  m_boolean = value;
-  m_type = SpecificTypeBoolean;
+  boolean_ = value;
+  type_ = SpecificTypeBoolean;
 }
 
 BooleanOrString BooleanOrString::fromBoolean(bool value) {
@@ -38,13 +38,13 @@ BooleanOrString BooleanOrString::fromBoolean(bool value) {
 
 const String& BooleanOrString::getAsString() const {
   DCHECK(isString());
-  return m_string;
+  return string_;
 }
 
 void BooleanOrString::setString(const String& value) {
   DCHECK(isNull());
-  m_string = value;
-  m_type = SpecificTypeString;
+  string_ = value;
+  type_ = SpecificTypeString;
 }
 
 BooleanOrString BooleanOrString::fromString(const String& value) {
@@ -82,7 +82,7 @@ void V8BooleanOrString::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Valu
 }
 
 v8::Local<v8::Value> ToV8(const BooleanOrString& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
-  switch (impl.m_type) {
+  switch (impl.type_) {
     case BooleanOrString::SpecificTypeNone:
       return v8::Null(isolate);
     case BooleanOrString::SpecificTypeBoolean:

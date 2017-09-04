@@ -30,19 +30,19 @@ class CORE_EXPORT ArrayBufferOrArrayBufferViewOrDictionary final {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
  public:
   ArrayBufferOrArrayBufferViewOrDictionary();
-  bool isNull() const { return m_type == SpecificTypeNone; }
+  bool isNull() const { return type_ == SpecificTypeNone; }
 
-  bool isArrayBuffer() const { return m_type == SpecificTypeArrayBuffer; }
+  bool isArrayBuffer() const { return type_ == SpecificTypeArrayBuffer; }
   TestArrayBuffer* getAsArrayBuffer() const;
   void setArrayBuffer(TestArrayBuffer*);
   static ArrayBufferOrArrayBufferViewOrDictionary fromArrayBuffer(TestArrayBuffer*);
 
-  bool isArrayBufferView() const { return m_type == SpecificTypeArrayBufferView; }
+  bool isArrayBufferView() const { return type_ == SpecificTypeArrayBufferView; }
   NotShared<TestArrayBufferView> getAsArrayBufferView() const;
   void setArrayBufferView(NotShared<TestArrayBufferView>);
   static ArrayBufferOrArrayBufferViewOrDictionary fromArrayBufferView(NotShared<TestArrayBufferView>);
 
-  bool isDictionary() const { return m_type == SpecificTypeDictionary; }
+  bool isDictionary() const { return type_ == SpecificTypeDictionary; }
   Dictionary getAsDictionary() const;
   void setDictionary(Dictionary);
   static ArrayBufferOrArrayBufferViewOrDictionary fromDictionary(Dictionary);
@@ -59,11 +59,11 @@ class CORE_EXPORT ArrayBufferOrArrayBufferViewOrDictionary final {
     SpecificTypeArrayBufferView,
     SpecificTypeDictionary,
   };
-  SpecificTypes m_type;
+  SpecificTypes type_;
 
-  Member<TestArrayBuffer> m_arrayBuffer;
-  Member<TestArrayBufferView> m_arrayBufferView;
-  Dictionary m_dictionary;
+  Member<TestArrayBuffer> array_buffer_;
+  Member<TestArrayBufferView> array_buffer_view_;
+  Dictionary dictionary_;
 
   friend CORE_EXPORT v8::Local<v8::Value> ToV8(const ArrayBufferOrArrayBufferViewOrDictionary&, v8::Local<v8::Object>, v8::Isolate*);
 };

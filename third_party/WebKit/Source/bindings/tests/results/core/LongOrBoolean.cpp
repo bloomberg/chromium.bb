@@ -17,17 +17,17 @@
 
 namespace blink {
 
-LongOrBoolean::LongOrBoolean() : m_type(SpecificTypeNone) {}
+LongOrBoolean::LongOrBoolean() : type_(SpecificTypeNone) {}
 
 bool LongOrBoolean::getAsBoolean() const {
   DCHECK(isBoolean());
-  return m_boolean;
+  return boolean_;
 }
 
 void LongOrBoolean::setBoolean(bool value) {
   DCHECK(isNull());
-  m_boolean = value;
-  m_type = SpecificTypeBoolean;
+  boolean_ = value;
+  type_ = SpecificTypeBoolean;
 }
 
 LongOrBoolean LongOrBoolean::fromBoolean(bool value) {
@@ -38,13 +38,13 @@ LongOrBoolean LongOrBoolean::fromBoolean(bool value) {
 
 int32_t LongOrBoolean::getAsLong() const {
   DCHECK(isLong());
-  return m_long;
+  return long_;
 }
 
 void LongOrBoolean::setLong(int32_t value) {
   DCHECK(isNull());
-  m_long = value;
-  m_type = SpecificTypeLong;
+  long_ = value;
+  type_ = SpecificTypeLong;
 }
 
 LongOrBoolean LongOrBoolean::fromLong(int32_t value) {
@@ -90,7 +90,7 @@ void V8LongOrBoolean::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value,
 }
 
 v8::Local<v8::Value> ToV8(const LongOrBoolean& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
-  switch (impl.m_type) {
+  switch (impl.type_) {
     case LongOrBoolean::SpecificTypeNone:
       return v8::Null(isolate);
     case LongOrBoolean::SpecificTypeBoolean:

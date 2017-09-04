@@ -34,9 +34,9 @@ class CORE_EXPORT TestPermissiveDictionary : public IDLDictionaryBase {
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  bool m_hasBooleanMember = false;
+  bool has_boolean_member_ = false;
 
-  bool m_booleanMember;
+  bool boolean_member_;
 
   friend class V8TestPermissiveDictionary;
 };

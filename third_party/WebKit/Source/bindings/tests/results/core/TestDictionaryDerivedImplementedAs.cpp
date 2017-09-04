@@ -24,48 +24,48 @@ TestDictionaryDerivedImplementedAs::TestDictionaryDerivedImplementedAs(const Tes
 TestDictionaryDerivedImplementedAs& TestDictionaryDerivedImplementedAs::operator=(const TestDictionaryDerivedImplementedAs&) = default;
 
 bool TestDictionaryDerivedImplementedAs::hasDerivedStringMember() const {
-  return !m_derivedStringMember.IsNull();
+  return !derived_string_member_.IsNull();
 }
 const String& TestDictionaryDerivedImplementedAs::derivedStringMember() const {
-  return m_derivedStringMember;
+  return derived_string_member_;
 }
 void TestDictionaryDerivedImplementedAs::setDerivedStringMember(const String& value) {
-  m_derivedStringMember = value;
+  derived_string_member_ = value;
 }
 bool TestDictionaryDerivedImplementedAs::hasDerivedStringMemberWithDefault() const {
-  return !m_derivedStringMemberWithDefault.IsNull();
+  return !derived_string_member_with_default_.IsNull();
 }
 const String& TestDictionaryDerivedImplementedAs::derivedStringMemberWithDefault() const {
-  return m_derivedStringMemberWithDefault;
+  return derived_string_member_with_default_;
 }
 void TestDictionaryDerivedImplementedAs::setDerivedStringMemberWithDefault(const String& value) {
-  m_derivedStringMemberWithDefault = value;
+  derived_string_member_with_default_ = value;
 }
 bool TestDictionaryDerivedImplementedAs::hasRequiredLongMember() const {
-  return m_hasRequiredLongMember;
+  return has_required_long_member_;
 }
 int32_t TestDictionaryDerivedImplementedAs::requiredLongMember() const {
-  DCHECK(m_hasRequiredLongMember);
-  return m_requiredLongMember;
+  DCHECK(has_required_long_member_);
+  return required_long_member_;
 }
 void TestDictionaryDerivedImplementedAs::setRequiredLongMember(int32_t value) {
-  m_requiredLongMember = value;
-  m_hasRequiredLongMember = true;
+  required_long_member_ = value;
+  has_required_long_member_ = true;
 }
 bool TestDictionaryDerivedImplementedAs::hasStringOrDoubleSequenceMember() const {
-  return m_hasStringOrDoubleSequenceMember;
+  return has_string_or_double_sequence_member_;
 }
 const HeapVector<StringOrDouble>& TestDictionaryDerivedImplementedAs::stringOrDoubleSequenceMember() const {
-  DCHECK(m_hasStringOrDoubleSequenceMember);
-  return m_stringOrDoubleSequenceMember;
+  DCHECK(has_string_or_double_sequence_member_);
+  return string_or_double_sequence_member_;
 }
 void TestDictionaryDerivedImplementedAs::setStringOrDoubleSequenceMember(const HeapVector<StringOrDouble>& value) {
-  m_stringOrDoubleSequenceMember = value;
-  m_hasStringOrDoubleSequenceMember = true;
+  string_or_double_sequence_member_ = value;
+  has_string_or_double_sequence_member_ = true;
 }
 
 DEFINE_TRACE(TestDictionaryDerivedImplementedAs) {
-  visitor->Trace(m_stringOrDoubleSequenceMember);
+  visitor->Trace(string_or_double_sequence_member_);
   TestDictionary::Trace(visitor);
 }
 

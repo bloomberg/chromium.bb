@@ -29,12 +29,12 @@ if (V8{{member.type_name}}::hasInstance(v8Value, isolate)) {
 
 namespace blink {
 
-{{cpp_class}}::{{cpp_class}}() : m_type(SpecificTypeNone) {}
+{{cpp_class}}::{{cpp_class}}() : type_(SpecificTypeNone) {}
 
 {% for member in members %}
 {{member.rvalue_cpp_type}} {{cpp_class}}::getAs{{member.type_name}}() const {
   DCHECK(is{{member.type_name}}());
-  return m_{{member.cpp_name}};
+  return {{member.cpp_name}}_;
 }
 
 void {{cpp_class}}::set{{member.type_name}}({{member.rvalue_cpp_type}} value) {
@@ -48,11 +48,11 @@ void {{cpp_class}}::set{{member.type_name}}({{member.rvalue_cpp_type}} value) {
   }
   {% endif %}
   {% if member.is_array_buffer_view_or_typed_array %}
-  m_{{member.cpp_name}} = {{member.cpp_type}}(value.View());
+  {{member.cpp_name}}_ = {{member.cpp_type}}(value.View());
   {% else %}
-  m_{{member.cpp_name}} = value;
+  {{member.cpp_name}}_ = value;
   {% endif %}
-  m_type = {{member.specific_type_enum}};
+  type_ = {{member.specific_type_enum}};
 }
 
 {{cpp_class}} {{cpp_class}}::from{{member.type_name}}({{member.rvalue_cpp_type}} value) {
@@ -68,7 +68,7 @@ void {{cpp_class}}::set{{member.type_name}}({{member.rvalue_cpp_type}} value) {
 
 DEFINE_TRACE({{cpp_class}}) {
   {% for member in members if member.is_traceable %}
-  visitor->Trace(m_{{member.cpp_name}});
+  visitor->Trace({{member.cpp_name}}_);
   {% endfor %}
 }
 
@@ -198,7 +198,7 @@ void {{v8_class}}::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, {{
 }
 
 v8::Local<v8::Value> ToV8(const {{cpp_class}}& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
-  switch (impl.m_type) {
+  switch (impl.type_) {
     case {{cpp_class}}::SpecificTypeNone:
       {# FIXME: We might want to return undefined in some cases #}
       return v8::Null(isolate);

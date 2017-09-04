@@ -41,7 +41,7 @@ class {{exported}}{{cpp_class}}{% if parent_cpp_class %} : public {{parent_cpp_c
   {% endfor %}
 
   {% for member in members %}
-  {{member.member_cpp_type}} m_{{member.cpp_name}};
+  {{member.member_cpp_type}} {{member.cpp_name}}_;
   {% endfor %}
 
   friend class V8{{cpp_class}};

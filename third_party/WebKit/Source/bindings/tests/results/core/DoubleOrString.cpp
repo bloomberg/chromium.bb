@@ -17,17 +17,17 @@
 
 namespace blink {
 
-DoubleOrString::DoubleOrString() : m_type(SpecificTypeNone) {}
+DoubleOrString::DoubleOrString() : type_(SpecificTypeNone) {}
 
 double DoubleOrString::getAsDouble() const {
   DCHECK(isDouble());
-  return m_double;
+  return double_;
 }
 
 void DoubleOrString::setDouble(double value) {
   DCHECK(isNull());
-  m_double = value;
-  m_type = SpecificTypeDouble;
+  double_ = value;
+  type_ = SpecificTypeDouble;
 }
 
 DoubleOrString DoubleOrString::fromDouble(double value) {
@@ -38,13 +38,13 @@ DoubleOrString DoubleOrString::fromDouble(double value) {
 
 const String& DoubleOrString::getAsString() const {
   DCHECK(isString());
-  return m_string;
+  return string_;
 }
 
 void DoubleOrString::setString(const String& value) {
   DCHECK(isNull());
-  m_string = value;
-  m_type = SpecificTypeString;
+  string_ = value;
+  type_ = SpecificTypeString;
 }
 
 DoubleOrString DoubleOrString::fromString(const String& value) {
@@ -85,7 +85,7 @@ void V8DoubleOrString::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
 }
 
 v8::Local<v8::Value> ToV8(const DoubleOrString& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
-  switch (impl.m_type) {
+  switch (impl.type_) {
     case DoubleOrString::SpecificTypeNone:
       return v8::Null(isolate);
     case DoubleOrString::SpecificTypeDouble:

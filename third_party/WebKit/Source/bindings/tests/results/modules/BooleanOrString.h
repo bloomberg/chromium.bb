@@ -25,14 +25,14 @@ class MODULES_EXPORT BooleanOrString final {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
  public:
   BooleanOrString();
-  bool isNull() const { return m_type == SpecificTypeNone; }
+  bool isNull() const { return type_ == SpecificTypeNone; }
 
-  bool isBoolean() const { return m_type == SpecificTypeBoolean; }
+  bool isBoolean() const { return type_ == SpecificTypeBoolean; }
   bool getAsBoolean() const;
   void setBoolean(bool);
   static BooleanOrString fromBoolean(bool);
 
-  bool isString() const { return m_type == SpecificTypeString; }
+  bool isString() const { return type_ == SpecificTypeString; }
   const String& getAsString() const;
   void setString(const String&);
   static BooleanOrString fromString(const String&);
@@ -48,10 +48,10 @@ class MODULES_EXPORT BooleanOrString final {
     SpecificTypeBoolean,
     SpecificTypeString,
   };
-  SpecificTypes m_type;
+  SpecificTypes type_;
 
-  bool m_boolean;
-  String m_string;
+  bool boolean_;
+  String string_;
 
   friend MODULES_EXPORT v8::Local<v8::Value> ToV8(const BooleanOrString&, v8::Local<v8::Object>, v8::Isolate*);
 };

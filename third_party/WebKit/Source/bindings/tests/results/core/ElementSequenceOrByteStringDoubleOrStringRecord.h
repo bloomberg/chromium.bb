@@ -28,14 +28,14 @@ class CORE_EXPORT ElementSequenceOrByteStringDoubleOrStringRecord final {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
  public:
   ElementSequenceOrByteStringDoubleOrStringRecord();
-  bool isNull() const { return m_type == SpecificTypeNone; }
+  bool isNull() const { return type_ == SpecificTypeNone; }
 
-  bool isByteStringDoubleOrStringRecord() const { return m_type == SpecificTypeByteStringDoubleOrStringRecord; }
+  bool isByteStringDoubleOrStringRecord() const { return type_ == SpecificTypeByteStringDoubleOrStringRecord; }
   const HeapVector<std::pair<String, DoubleOrString>>& getAsByteStringDoubleOrStringRecord() const;
   void setByteStringDoubleOrStringRecord(const HeapVector<std::pair<String, DoubleOrString>>&);
   static ElementSequenceOrByteStringDoubleOrStringRecord fromByteStringDoubleOrStringRecord(const HeapVector<std::pair<String, DoubleOrString>>&);
 
-  bool isElementSequence() const { return m_type == SpecificTypeElementSequence; }
+  bool isElementSequence() const { return type_ == SpecificTypeElementSequence; }
   const HeapVector<Member<Element>>& getAsElementSequence() const;
   void setElementSequence(const HeapVector<Member<Element>>&);
   static ElementSequenceOrByteStringDoubleOrStringRecord fromElementSequence(const HeapVector<Member<Element>>&);
@@ -51,10 +51,10 @@ class CORE_EXPORT ElementSequenceOrByteStringDoubleOrStringRecord final {
     SpecificTypeByteStringDoubleOrStringRecord,
     SpecificTypeElementSequence,
   };
-  SpecificTypes m_type;
+  SpecificTypes type_;
 
-  HeapVector<std::pair<String, DoubleOrString>> m_byteStringDoubleOrStringRecord;
-  HeapVector<Member<Element>> m_elementSequence;
+  HeapVector<std::pair<String, DoubleOrString>> byte_string_double_or_string_record_;
+  HeapVector<Member<Element>> element_sequence_;
 
   friend CORE_EXPORT v8::Local<v8::Value> ToV8(const ElementSequenceOrByteStringDoubleOrStringRecord&, v8::Local<v8::Object>, v8::Isolate*);
 };

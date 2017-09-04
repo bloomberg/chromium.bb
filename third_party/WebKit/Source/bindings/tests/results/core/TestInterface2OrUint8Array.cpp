@@ -16,17 +16,17 @@
 
 namespace blink {
 
-TestInterface2OrUint8Array::TestInterface2OrUint8Array() : m_type(SpecificTypeNone) {}
+TestInterface2OrUint8Array::TestInterface2OrUint8Array() : type_(SpecificTypeNone) {}
 
 TestInterface2* TestInterface2OrUint8Array::getAsTestInterface2() const {
   DCHECK(isTestInterface2());
-  return m_testInterface2;
+  return test_interface_2_;
 }
 
 void TestInterface2OrUint8Array::setTestInterface2(TestInterface2* value) {
   DCHECK(isNull());
-  m_testInterface2 = value;
-  m_type = SpecificTypeTestInterface2;
+  test_interface_2_ = value;
+  type_ = SpecificTypeTestInterface2;
 }
 
 TestInterface2OrUint8Array TestInterface2OrUint8Array::fromTestInterface2(TestInterface2* value) {
@@ -37,13 +37,13 @@ TestInterface2OrUint8Array TestInterface2OrUint8Array::fromTestInterface2(TestIn
 
 NotShared<DOMUint8Array> TestInterface2OrUint8Array::getAsUint8Array() const {
   DCHECK(isUint8Array());
-  return m_uint8Array;
+  return uint8_array_;
 }
 
 void TestInterface2OrUint8Array::setUint8Array(NotShared<DOMUint8Array> value) {
   DCHECK(isNull());
-  m_uint8Array = Member<DOMUint8Array>(value.View());
-  m_type = SpecificTypeUint8Array;
+  uint8_array_ = Member<DOMUint8Array>(value.View());
+  type_ = SpecificTypeUint8Array;
 }
 
 TestInterface2OrUint8Array TestInterface2OrUint8Array::fromUint8Array(NotShared<DOMUint8Array> value) {
@@ -57,8 +57,8 @@ TestInterface2OrUint8Array::~TestInterface2OrUint8Array() = default;
 TestInterface2OrUint8Array& TestInterface2OrUint8Array::operator=(const TestInterface2OrUint8Array&) = default;
 
 DEFINE_TRACE(TestInterface2OrUint8Array) {
-  visitor->Trace(m_testInterface2);
-  visitor->Trace(m_uint8Array);
+  visitor->Trace(test_interface_2_);
+  visitor->Trace(uint8_array_);
 }
 
 void V8TestInterface2OrUint8Array::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, TestInterface2OrUint8Array& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
@@ -86,7 +86,7 @@ void V8TestInterface2OrUint8Array::toImpl(v8::Isolate* isolate, v8::Local<v8::Va
 }
 
 v8::Local<v8::Value> ToV8(const TestInterface2OrUint8Array& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
-  switch (impl.m_type) {
+  switch (impl.type_) {
     case TestInterface2OrUint8Array::SpecificTypeNone:
       return v8::Null(isolate);
     case TestInterface2OrUint8Array::SpecificTypeTestInterface2:

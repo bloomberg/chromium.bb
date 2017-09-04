@@ -30,19 +30,19 @@ class CORE_EXPORT StringOrArrayBufferOrArrayBufferView final {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
  public:
   StringOrArrayBufferOrArrayBufferView();
-  bool isNull() const { return m_type == SpecificTypeNone; }
+  bool isNull() const { return type_ == SpecificTypeNone; }
 
-  bool isArrayBuffer() const { return m_type == SpecificTypeArrayBuffer; }
+  bool isArrayBuffer() const { return type_ == SpecificTypeArrayBuffer; }
   TestArrayBuffer* getAsArrayBuffer() const;
   void setArrayBuffer(TestArrayBuffer*);
   static StringOrArrayBufferOrArrayBufferView fromArrayBuffer(TestArrayBuffer*);
 
-  bool isArrayBufferView() const { return m_type == SpecificTypeArrayBufferView; }
+  bool isArrayBufferView() const { return type_ == SpecificTypeArrayBufferView; }
   NotShared<TestArrayBufferView> getAsArrayBufferView() const;
   void setArrayBufferView(NotShared<TestArrayBufferView>);
   static StringOrArrayBufferOrArrayBufferView fromArrayBufferView(NotShared<TestArrayBufferView>);
 
-  bool isString() const { return m_type == SpecificTypeString; }
+  bool isString() const { return type_ == SpecificTypeString; }
   const String& getAsString() const;
   void setString(const String&);
   static StringOrArrayBufferOrArrayBufferView fromString(const String&);
@@ -59,11 +59,11 @@ class CORE_EXPORT StringOrArrayBufferOrArrayBufferView final {
     SpecificTypeArrayBufferView,
     SpecificTypeString,
   };
-  SpecificTypes m_type;
+  SpecificTypes type_;
 
-  Member<TestArrayBuffer> m_arrayBuffer;
-  Member<TestArrayBufferView> m_arrayBufferView;
-  String m_string;
+  Member<TestArrayBuffer> array_buffer_;
+  Member<TestArrayBufferView> array_buffer_view_;
+  String string_;
 
   friend CORE_EXPORT v8::Local<v8::Value> ToV8(const StringOrArrayBufferOrArrayBufferView&, v8::Local<v8::Object>, v8::Isolate*);
 };

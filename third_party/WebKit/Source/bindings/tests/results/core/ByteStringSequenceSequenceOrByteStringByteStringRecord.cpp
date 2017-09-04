@@ -17,17 +17,17 @@
 
 namespace blink {
 
-ByteStringSequenceSequenceOrByteStringByteStringRecord::ByteStringSequenceSequenceOrByteStringByteStringRecord() : m_type(SpecificTypeNone) {}
+ByteStringSequenceSequenceOrByteStringByteStringRecord::ByteStringSequenceSequenceOrByteStringByteStringRecord() : type_(SpecificTypeNone) {}
 
 const Vector<std::pair<String, String>>& ByteStringSequenceSequenceOrByteStringByteStringRecord::getAsByteStringByteStringRecord() const {
   DCHECK(isByteStringByteStringRecord());
-  return m_byteStringByteStringRecord;
+  return byte_string_byte_string_record_;
 }
 
 void ByteStringSequenceSequenceOrByteStringByteStringRecord::setByteStringByteStringRecord(const Vector<std::pair<String, String>>& value) {
   DCHECK(isNull());
-  m_byteStringByteStringRecord = value;
-  m_type = SpecificTypeByteStringByteStringRecord;
+  byte_string_byte_string_record_ = value;
+  type_ = SpecificTypeByteStringByteStringRecord;
 }
 
 ByteStringSequenceSequenceOrByteStringByteStringRecord ByteStringSequenceSequenceOrByteStringByteStringRecord::fromByteStringByteStringRecord(const Vector<std::pair<String, String>>& value) {
@@ -38,13 +38,13 @@ ByteStringSequenceSequenceOrByteStringByteStringRecord ByteStringSequenceSequenc
 
 const Vector<Vector<String>>& ByteStringSequenceSequenceOrByteStringByteStringRecord::getAsByteStringSequenceSequence() const {
   DCHECK(isByteStringSequenceSequence());
-  return m_byteStringSequenceSequence;
+  return byte_string_sequence_sequence_;
 }
 
 void ByteStringSequenceSequenceOrByteStringByteStringRecord::setByteStringSequenceSequence(const Vector<Vector<String>>& value) {
   DCHECK(isNull());
-  m_byteStringSequenceSequence = value;
-  m_type = SpecificTypeByteStringSequenceSequence;
+  byte_string_sequence_sequence_ = value;
+  type_ = SpecificTypeByteStringSequenceSequence;
 }
 
 ByteStringSequenceSequenceOrByteStringByteStringRecord ByteStringSequenceSequenceOrByteStringByteStringRecord::fromByteStringSequenceSequence(const Vector<Vector<String>>& value) {
@@ -87,7 +87,7 @@ void V8ByteStringSequenceSequenceOrByteStringByteStringRecord::toImpl(v8::Isolat
 }
 
 v8::Local<v8::Value> ToV8(const ByteStringSequenceSequenceOrByteStringByteStringRecord& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
-  switch (impl.m_type) {
+  switch (impl.type_) {
     case ByteStringSequenceSequenceOrByteStringByteStringRecord::SpecificTypeNone:
       return v8::Null(isolate);
     case ByteStringSequenceSequenceOrByteStringByteStringRecord::SpecificTypeByteStringByteStringRecord:

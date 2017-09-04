@@ -27,14 +27,14 @@ class CORE_EXPORT TestInterfaceOrLong final {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
  public:
   TestInterfaceOrLong();
-  bool isNull() const { return m_type == SpecificTypeNone; }
+  bool isNull() const { return type_ == SpecificTypeNone; }
 
-  bool isLong() const { return m_type == SpecificTypeLong; }
+  bool isLong() const { return type_ == SpecificTypeLong; }
   int32_t getAsLong() const;
   void setLong(int32_t);
   static TestInterfaceOrLong fromLong(int32_t);
 
-  bool isTestInterface() const { return m_type == SpecificTypeTestInterface; }
+  bool isTestInterface() const { return type_ == SpecificTypeTestInterface; }
   TestInterfaceImplementation* getAsTestInterface() const;
   void setTestInterface(TestInterfaceImplementation*);
   static TestInterfaceOrLong fromTestInterface(TestInterfaceImplementation*);
@@ -50,10 +50,10 @@ class CORE_EXPORT TestInterfaceOrLong final {
     SpecificTypeLong,
     SpecificTypeTestInterface,
   };
-  SpecificTypes m_type;
+  SpecificTypes type_;
 
-  int32_t m_long;
-  Member<TestInterfaceImplementation> m_testInterface;
+  int32_t long_;
+  Member<TestInterfaceImplementation> test_interface_;
 
   friend CORE_EXPORT v8::Local<v8::Value> ToV8(const TestInterfaceOrLong&, v8::Local<v8::Object>, v8::Isolate*);
 };

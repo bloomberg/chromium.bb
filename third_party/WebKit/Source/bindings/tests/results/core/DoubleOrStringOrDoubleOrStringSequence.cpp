@@ -18,17 +18,17 @@
 
 namespace blink {
 
-DoubleOrStringOrDoubleOrStringSequence::DoubleOrStringOrDoubleOrStringSequence() : m_type(SpecificTypeNone) {}
+DoubleOrStringOrDoubleOrStringSequence::DoubleOrStringOrDoubleOrStringSequence() : type_(SpecificTypeNone) {}
 
 double DoubleOrStringOrDoubleOrStringSequence::getAsDouble() const {
   DCHECK(isDouble());
-  return m_double;
+  return double_;
 }
 
 void DoubleOrStringOrDoubleOrStringSequence::setDouble(double value) {
   DCHECK(isNull());
-  m_double = value;
-  m_type = SpecificTypeDouble;
+  double_ = value;
+  type_ = SpecificTypeDouble;
 }
 
 DoubleOrStringOrDoubleOrStringSequence DoubleOrStringOrDoubleOrStringSequence::fromDouble(double value) {
@@ -39,13 +39,13 @@ DoubleOrStringOrDoubleOrStringSequence DoubleOrStringOrDoubleOrStringSequence::f
 
 const HeapVector<DoubleOrString>& DoubleOrStringOrDoubleOrStringSequence::getAsDoubleOrStringSequence() const {
   DCHECK(isDoubleOrStringSequence());
-  return m_doubleOrStringSequence;
+  return double_or_string_sequence_;
 }
 
 void DoubleOrStringOrDoubleOrStringSequence::setDoubleOrStringSequence(const HeapVector<DoubleOrString>& value) {
   DCHECK(isNull());
-  m_doubleOrStringSequence = value;
-  m_type = SpecificTypeDoubleOrStringSequence;
+  double_or_string_sequence_ = value;
+  type_ = SpecificTypeDoubleOrStringSequence;
 }
 
 DoubleOrStringOrDoubleOrStringSequence DoubleOrStringOrDoubleOrStringSequence::fromDoubleOrStringSequence(const HeapVector<DoubleOrString>& value) {
@@ -56,13 +56,13 @@ DoubleOrStringOrDoubleOrStringSequence DoubleOrStringOrDoubleOrStringSequence::f
 
 const String& DoubleOrStringOrDoubleOrStringSequence::getAsString() const {
   DCHECK(isString());
-  return m_string;
+  return string_;
 }
 
 void DoubleOrStringOrDoubleOrStringSequence::setString(const String& value) {
   DCHECK(isNull());
-  m_string = value;
-  m_type = SpecificTypeString;
+  string_ = value;
+  type_ = SpecificTypeString;
 }
 
 DoubleOrStringOrDoubleOrStringSequence DoubleOrStringOrDoubleOrStringSequence::fromString(const String& value) {
@@ -76,7 +76,7 @@ DoubleOrStringOrDoubleOrStringSequence::~DoubleOrStringOrDoubleOrStringSequence(
 DoubleOrStringOrDoubleOrStringSequence& DoubleOrStringOrDoubleOrStringSequence::operator=(const DoubleOrStringOrDoubleOrStringSequence&) = default;
 
 DEFINE_TRACE(DoubleOrStringOrDoubleOrStringSequence) {
-  visitor->Trace(m_doubleOrStringSequence);
+  visitor->Trace(double_or_string_sequence_);
 }
 
 void V8DoubleOrStringOrDoubleOrStringSequence::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, DoubleOrStringOrDoubleOrStringSequence& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
@@ -112,7 +112,7 @@ void V8DoubleOrStringOrDoubleOrStringSequence::toImpl(v8::Isolate* isolate, v8::
 }
 
 v8::Local<v8::Value> ToV8(const DoubleOrStringOrDoubleOrStringSequence& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
-  switch (impl.m_type) {
+  switch (impl.type_) {
     case DoubleOrStringOrDoubleOrStringSequence::SpecificTypeNone:
       return v8::Null(isolate);
     case DoubleOrStringOrDoubleOrStringSequence::SpecificTypeDouble:

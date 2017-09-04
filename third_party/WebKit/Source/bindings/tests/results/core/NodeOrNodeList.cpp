@@ -21,17 +21,17 @@
 
 namespace blink {
 
-NodeOrNodeList::NodeOrNodeList() : m_type(SpecificTypeNone) {}
+NodeOrNodeList::NodeOrNodeList() : type_(SpecificTypeNone) {}
 
 Node* NodeOrNodeList::getAsNode() const {
   DCHECK(isNode());
-  return m_node;
+  return node_;
 }
 
 void NodeOrNodeList::setNode(Node* value) {
   DCHECK(isNull());
-  m_node = value;
-  m_type = SpecificTypeNode;
+  node_ = value;
+  type_ = SpecificTypeNode;
 }
 
 NodeOrNodeList NodeOrNodeList::fromNode(Node* value) {
@@ -42,13 +42,13 @@ NodeOrNodeList NodeOrNodeList::fromNode(Node* value) {
 
 NodeList* NodeOrNodeList::getAsNodeList() const {
   DCHECK(isNodeList());
-  return m_nodeList;
+  return node_list_;
 }
 
 void NodeOrNodeList::setNodeList(NodeList* value) {
   DCHECK(isNull());
-  m_nodeList = value;
-  m_type = SpecificTypeNodeList;
+  node_list_ = value;
+  type_ = SpecificTypeNodeList;
 }
 
 NodeOrNodeList NodeOrNodeList::fromNodeList(NodeList* value) {
@@ -62,8 +62,8 @@ NodeOrNodeList::~NodeOrNodeList() = default;
 NodeOrNodeList& NodeOrNodeList::operator=(const NodeOrNodeList&) = default;
 
 DEFINE_TRACE(NodeOrNodeList) {
-  visitor->Trace(m_node);
-  visitor->Trace(m_nodeList);
+  visitor->Trace(node_);
+  visitor->Trace(node_list_);
 }
 
 void V8NodeOrNodeList::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, NodeOrNodeList& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
@@ -89,7 +89,7 @@ void V8NodeOrNodeList::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
 }
 
 v8::Local<v8::Value> ToV8(const NodeOrNodeList& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
-  switch (impl.m_type) {
+  switch (impl.type_) {
     case NodeOrNodeList::SpecificTypeNone:
       return v8::Null(isolate);
     case NodeOrNodeList::SpecificTypeNode:

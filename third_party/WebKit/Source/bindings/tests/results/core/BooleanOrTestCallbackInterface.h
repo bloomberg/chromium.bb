@@ -27,14 +27,14 @@ class CORE_EXPORT BooleanOrTestCallbackInterface final {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
  public:
   BooleanOrTestCallbackInterface();
-  bool isNull() const { return m_type == SpecificTypeNone; }
+  bool isNull() const { return type_ == SpecificTypeNone; }
 
-  bool isBoolean() const { return m_type == SpecificTypeBoolean; }
+  bool isBoolean() const { return type_ == SpecificTypeBoolean; }
   bool getAsBoolean() const;
   void setBoolean(bool);
   static BooleanOrTestCallbackInterface fromBoolean(bool);
 
-  bool isTestCallbackInterface() const { return m_type == SpecificTypeTestCallbackInterface; }
+  bool isTestCallbackInterface() const { return type_ == SpecificTypeTestCallbackInterface; }
   TestCallbackInterface* getAsTestCallbackInterface() const;
   void setTestCallbackInterface(TestCallbackInterface*);
   static BooleanOrTestCallbackInterface fromTestCallbackInterface(TestCallbackInterface*);
@@ -50,10 +50,10 @@ class CORE_EXPORT BooleanOrTestCallbackInterface final {
     SpecificTypeBoolean,
     SpecificTypeTestCallbackInterface,
   };
-  SpecificTypes m_type;
+  SpecificTypes type_;
 
-  bool m_boolean;
-  Member<TestCallbackInterface> m_testCallbackInterface;
+  bool boolean_;
+  Member<TestCallbackInterface> test_callback_interface_;
 
   friend CORE_EXPORT v8::Local<v8::Value> ToV8(const BooleanOrTestCallbackInterface&, v8::Local<v8::Object>, v8::Isolate*);
 };
