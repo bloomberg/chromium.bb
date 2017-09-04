@@ -104,15 +104,21 @@ public class PermissionDialogController implements AndroidPermissionRequester.Re
 
     @Override
     public void onAndroidPermissionAccepted() {
-        mDialogDelegate.onAccept(mSwitchView.isChecked());
-        destroyDelegate();
+        // If the tab navigated or was closed behind the prompt, the delegate will be null.
+        if (mDialogDelegate != null) {
+            mDialogDelegate.onAccept(mSwitchView.isChecked());
+            destroyDelegate();
+        }
         scheduleDisplay();
     }
 
     @Override
     public void onAndroidPermissionCanceled() {
-        mDialogDelegate.onDismiss();
-        destroyDelegate();
+        // If the tab navigated or was closed behind the prompt, the delegate will be null.
+        if (mDialogDelegate != null) {
+            mDialogDelegate.onDismiss();
+            destroyDelegate();
+        }
         scheduleDisplay();
     }
 
@@ -259,7 +265,13 @@ public class PermissionDialogController implements AndroidPermissionRequester.Re
             mDialogDelegate = null;
             AlertDialog dialog = mDialog;
             mDialog = null;
-            dialog.dismiss();
+            if (dialog != null) {
+                dialog.dismiss();
+            } else {
+                // The prompt was accepted but the tab navigated or was closed while the Android
+                // permission prompt was active.
+                assert mDecision == ACCEPTED;
+            }
         } else {
             assert mRequestQueue.contains(delegate);
             mRequestQueue.remove(delegate);
