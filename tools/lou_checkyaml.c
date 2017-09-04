@@ -117,6 +117,35 @@ yaml_error(yaml_event_type_t expected, yaml_event_t *event) {
 }
 
 char *
+read_table_query(yaml_parser_t *parser) {
+	yaml_event_t event;
+	int parse_error = 1;
+	char *query_as_string = malloc(sizeof(char) * MAXSTRING);
+	char *p = query_as_string;
+	query_as_string[0] = '\0';
+	while (1) {
+		if (!yaml_parser_parse(parser, &event)) yaml_error(YAML_SCALAR_EVENT, &event);
+		if (event.type == YAML_SCALAR_EVENT) {
+			if (query_as_string != p) strcat(p++, " ");
+			strcat(p, (const char *)event.data.scalar.value);
+			p += event.data.scalar.length;
+			strcat(p++, ":");
+			yaml_event_delete(&event);
+			if (!yaml_parser_parse(parser, &event) || (event.type != YAML_SCALAR_EVENT))
+				yaml_error(YAML_SCALAR_EVENT, &event);
+			strcat(p, (const char *)event.data.scalar.value);
+			p += event.data.scalar.length;
+			yaml_event_delete(&event);
+		} else if (event.type == YAML_MAPPING_END_EVENT) {
+			yaml_event_delete(&event);
+			break;
+		} else
+			yaml_error(YAML_SCALAR_EVENT, &event);
+	}
+	return query_as_string;
+}
+
+char *
 read_table(yaml_event_t *start_event, yaml_parser_t *parser) {
 	char *table = NULL;
 	if (start_event->type != YAML_SCALAR_EVENT ||
@@ -127,11 +156,13 @@ read_table(yaml_event_t *start_event, yaml_parser_t *parser) {
 	table[0] = '\0';
 	yaml_event_t event;
 	if (!yaml_parser_parse(parser, &event) ||
-			!(event.type == YAML_SEQUENCE_START_EVENT || event.type == YAML_SCALAR_EVENT))
+			!(event.type == YAML_SEQUENCE_START_EVENT ||
+					event.type == YAML_SCALAR_EVENT ||
+					event.type == YAML_MAPPING_START_EVENT))
 		error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line + 1,
-				"Expected %s or %s (actual %s)", event_names[YAML_SEQUENCE_START_EVENT],
-				event_names[YAML_SCALAR_EVENT], event_names[event.type]);
-
+				"Expected %s or %s or %s (actual %s)",
+				event_names[YAML_SEQUENCE_START_EVENT], event_names[YAML_SCALAR_EVENT],
+				event_names[YAML_MAPPING_START_EVENT], event_names[event.type]);
 	if (event.type == YAML_SEQUENCE_START_EVENT) {
 		yaml_event_delete(&event);
 		int done = 0;
@@ -152,7 +183,7 @@ read_table(yaml_event_t *start_event, yaml_parser_t *parser) {
 		if (!lou_getTable(table))
 			error_at_line(EXIT_FAILURE, 0, file_name, start_event->start_mark.line + 1,
 					"Table %s not valid", table);
-	} else {  // YAML_SCALAR_EVENT
+	} else if (event.type == YAML_SCALAR_EVENT) {
 		yaml_char_t *p = event.data.scalar.value;
 		if (*p)
 			while (p[1]) p++;
@@ -180,6 +211,13 @@ read_table(yaml_event_t *start_event, yaml_parser_t *parser) {
 			strcat(table, (const char *)event.data.scalar.value);
 		}
 		yaml_event_delete(&event);
+	} else {  // event.type == YAML_MAPPING_START_EVENT
+		char *query;
+		yaml_event_delete(&event);
+		query = read_table_query(parser);
+		table = lou_findTable(query);
+		free(query);
+		if (!table) exit(EXIT_FAILURE);
 	}
 	emph_classes = lou_getEmphClasses(table);  // get declared emphasis classes
 	return table;
