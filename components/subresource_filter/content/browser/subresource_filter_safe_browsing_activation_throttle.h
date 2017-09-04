@@ -51,7 +51,6 @@ class SubresourceFilterSafeBrowsingActivationThrottle
   static bool NavigationIsPageReload(content::NavigationHandle* handle);
 
   // content::NavigationThrottle:
-  content::NavigationThrottle::ThrottleCheckResult WillStartRequest() override;
   content::NavigationThrottle::ThrottleCheckResult WillRedirectRequest()
       override;
   content::NavigationThrottle::ThrottleCheckResult WillProcessResponse()
@@ -94,9 +93,6 @@ class SubresourceFilterSafeBrowsingActivationThrottle
   // Whether this throttle is deferring the navigation. Only set to true in
   // WillProcessResponse if there are ongoing safe browsing checks.
   bool deferring_ = false;
-
-  // Added to investigate crbug.com/733099.
-  bool will_start_request_called_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(SubresourceFilterSafeBrowsingActivationThrottle);
 };
