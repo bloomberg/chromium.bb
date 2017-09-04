@@ -19,8 +19,8 @@
 
 #include "core/layout/line/RootInlineBox.h"
 
+#include "core/css/StyleEngine.h"
 #include "core/dom/Document.h"
-#include "core/dom/StyleEngine.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/VerticalPositionCache.h"

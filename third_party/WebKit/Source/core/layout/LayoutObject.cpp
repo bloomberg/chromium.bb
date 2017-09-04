@@ -32,13 +32,13 @@
 #include <memory>
 
 #include "core/animation/ElementAnimations.h"
+#include "core/css/StyleChangeReason.h"
+#include "core/css/StyleEngine.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/AXObjectCache.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/FirstLetterPseudoElement.h"
 #include "core/dom/ShadowRoot.h"
-#include "core/dom/StyleChangeReason.h"
-#include "core/dom/StyleEngine.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/TextAffinity.h"

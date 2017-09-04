@@ -23,10 +23,10 @@
 #include <memory>
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/MediaList.h"
+#include "core/css/StyleEngine.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/dom/Document.h"
 #include "core/dom/IncrementLoadEventDelayCount.h"
-#include "core/dom/StyleEngine.h"
 #include "core/loader/resource/CSSStyleSheetResource.h"
 #include "core/loader/resource/XSLStyleSheetResource.h"
 #include "core/xml/DocumentXSLT.h"

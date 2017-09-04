@@ -26,16 +26,16 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/dom/TreeScopeStyleSheetCollection.h"
+#include "core/css/TreeScopeStyleSheetCollection.h"
 
 #include "core/css/ActiveStyleSheets.h"
 #include "core/css/CSSStyleSheet.h"
+#include "core/css/StyleEngine.h"
 #include "core/css/StyleRuleImport.h"
+#include "core/css/StyleSheetCandidate.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Element.h"
-#include "core/dom/StyleEngine.h"
-#include "core/dom/StyleSheetCandidate.h"
 #include "core/html/HTMLLinkElement.h"
 #include "core/html/HTMLStyleElement.h"
 

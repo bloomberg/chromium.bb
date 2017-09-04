@@ -9,10 +9,10 @@
 
 #include "build/build_config.h"
 #include "core/HTMLNames.h"
+#include "core/css/StyleEngine.h"
 #include "core/css/StylePropertySet.h"
 #include "core/dom/Document.h"
 #include "core/dom/ElementTraversal.h"
-#include "core/dom/StyleEngine.h"
 #include "core/dom/events/Event.h"
 #include "core/frame/Settings.h"
 #include "core/geometry/DOMRect.h"

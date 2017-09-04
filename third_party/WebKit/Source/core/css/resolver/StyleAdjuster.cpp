@@ -32,11 +32,11 @@
 
 #include "core/HTMLNames.h"
 #include "core/SVGNames.h"
+#include "core/css/StyleChangeReason.h"
 #include "core/dom/ContainerNode.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/NodeComputedStyle.h"
-#include "core/dom/StyleChangeReason.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"

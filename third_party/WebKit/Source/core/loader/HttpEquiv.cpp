@@ -4,9 +4,9 @@
 
 #include "core/loader/HttpEquiv.h"
 
+#include "core/css/StyleEngine.h"
 #include "core/dom/Document.h"
 #include "core/dom/ScriptableDocumentParser.h"
-#include "core/dom/StyleEngine.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"

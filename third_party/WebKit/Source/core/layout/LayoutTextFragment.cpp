@@ -22,9 +22,9 @@
 
 #include "core/layout/LayoutTextFragment.h"
 
+#include "core/css/StyleChangeReason.h"
 #include "core/dom/FirstLetterPseudoElement.h"
 #include "core/dom/PseudoElement.h"
-#include "core/dom/StyleChangeReason.h"
 #include "core/dom/Text.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/layout/HitTestResult.h"

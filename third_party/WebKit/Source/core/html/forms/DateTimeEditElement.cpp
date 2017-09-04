@@ -27,8 +27,8 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/HTMLNames.h"
+#include "core/css/StyleChangeReason.h"
 #include "core/dom/Document.h"
-#include "core/dom/StyleChangeReason.h"
 #include "core/dom/Text.h"
 #include "core/events/MouseEvent.h"
 #include "core/html/forms/DateTimeFieldElements.h"

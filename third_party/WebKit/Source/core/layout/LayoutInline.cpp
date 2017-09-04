@@ -23,7 +23,7 @@
 
 #include "core/layout/LayoutInline.h"
 
-#include "core/dom/StyleEngine.h"
+#include "core/css/StyleEngine.h"
 #include "core/fullscreen/Fullscreen.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutBlock.h"

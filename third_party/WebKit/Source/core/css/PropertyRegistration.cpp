@@ -11,6 +11,8 @@
 #include "core/css/CSSVariableReferenceValue.h"
 #include "core/css/PropertyDescriptor.h"
 #include "core/css/PropertyRegistry.h"
+#include "core/css/StyleChangeReason.h"
+#include "core/css/StyleEngine.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/parser/CSSTokenizer.h"
@@ -18,8 +20,6 @@
 #include "core/css/resolver/StyleBuilderConverter.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/StyleChangeReason.h"
-#include "core/dom/StyleEngine.h"
 
 namespace blink {
 

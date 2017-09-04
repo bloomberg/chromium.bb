@@ -22,9 +22,9 @@
 #include "core/page/Page.h"
 
 #include "bindings/core/v8/ScriptController.h"
+#include "core/css/StyleChangeReason.h"
+#include "core/css/StyleEngine.h"
 #include "core/css/resolver/ViewportStyleResolver.h"
-#include "core/dom/StyleChangeReason.h"
-#include "core/dom/StyleEngine.h"
 #include "core/dom/VisitedLinkState.h"
 #include "core/dom/events/Event.h"
 #include "core/editing/DragCaret.h"

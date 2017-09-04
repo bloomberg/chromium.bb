@@ -22,7 +22,7 @@
 #define StyleElement_h
 
 #include "core/css/CSSStyleSheet.h"
-#include "core/dom/StyleEngineContext.h"
+#include "core/css/StyleEngineContext.h"
 #include "platform/wtf/text/TextPosition.h"
 
 namespace blink {

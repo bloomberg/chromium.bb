@@ -22,6 +22,7 @@
 
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/CSSTiming.h"
+#include "core/css/StyleEngine.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/StyleRule.h"
 #include "core/css/StyleRuleImport.h"
@@ -29,7 +30,6 @@
 #include "core/css/parser/CSSParser.h"
 #include "core/dom/Document.h"
 #include "core/dom/Node.h"
-#include "core/dom/StyleEngine.h"
 #include "core/frame/UseCounter.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/loader/resource/CSSStyleSheetResource.h"

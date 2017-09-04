@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/dom/StyleEngineContext.h"
+#include "core/css/StyleEngineContext.h"
 
 #include "core/frame/UseCounter.h"
 

@@ -31,6 +31,7 @@
 
 #include "core/HTMLNames.h"
 #include "core/css/CSSSelectorList.h"
+#include "core/css/StyleEngine.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/ElementTraversal.h"
@@ -38,7 +39,6 @@
 #include "core/dom/NodeComputedStyle.h"
 #include "core/dom/NthIndexCache.h"
 #include "core/dom/ShadowRoot.h"
-#include "core/dom/StyleEngine.h"
 #include "core/dom/Text.h"
 #include "core/dom/V0InsertionPoint.h"
 #include "core/editing/FrameSelection.h"

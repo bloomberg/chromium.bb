@@ -24,10 +24,10 @@
 
 #include "core/XLinkNames.h"
 #include "core/css/CSSComputedStyleDeclaration.h"
+#include "core/css/StyleChangeReason.h"
 #include "core/css/StylePropertySet.h"
 #include "core/dom/Document.h"
 #include "core/dom/QualifiedName.h"
-#include "core/dom/StyleChangeReason.h"
 #include "core/svg/SVGAnimatedColor.h"
 #include "core/svg/SVGLength.h"
 #include "core/svg/SVGLengthList.h"

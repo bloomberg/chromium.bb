@@ -6,9 +6,9 @@
 
 #include "core/css/CSSDefaultStyleSheets.h"
 #include "core/css/RuleSet.h"
+#include "core/css/StyleEngine.h"
 #include "core/dom/CSSSelectorWatch.h"
 #include "core/dom/Document.h"
-#include "core/dom/StyleEngine.h"
 
 namespace blink {
 

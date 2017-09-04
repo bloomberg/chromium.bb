@@ -24,8 +24,8 @@
 
 #include "core/dom/FirstLetterPseudoElement.h"
 
+#include "core/css/StyleChangeReason.h"
 #include "core/dom/Element.h"
-#include "core/dom/StyleChangeReason.h"
 #include "core/layout/GeneratedChildren.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutObjectInlines.h"

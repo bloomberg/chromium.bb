@@ -8,7 +8,7 @@
  * Copyright (C) 2008, 2009 Torch Mobile Inc. All rights reserved.
  * (http://www.torchmobile.com/)
  * Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies)
- * Copyright (C) 2013 Google Inc. All rights reserved.
+ * Copyright (C) 2011 Google Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -27,39 +27,51 @@
  *
  */
 
-#ifndef ShadowTreeStyleSheetCollection_h
-#define ShadowTreeStyleSheetCollection_h
+#ifndef TreeScopeStyleSheetCollection_h
+#define TreeScopeStyleSheetCollection_h
 
-#include "core/dom/TreeScopeStyleSheetCollection.h"
+#include "core/CoreExport.h"
+#include "core/css/StyleSheetCollection.h"
+#include "core/dom/TreeOrderedList.h"
+#include "core/dom/TreeScope.h"
 
 namespace blink {
 
-class ShadowRoot;
-class StyleEngine;
-class StyleSheetCollection;
+class Document;
+class Node;
 
-class ShadowTreeStyleSheetCollection final
-    : public TreeScopeStyleSheetCollection {
-  WTF_MAKE_NONCOPYABLE(ShadowTreeStyleSheetCollection);
-
+class CORE_EXPORT TreeScopeStyleSheetCollection : public StyleSheetCollection {
  public:
-  explicit ShadowTreeStyleSheetCollection(ShadowRoot&);
-  void UpdateActiveStyleSheets(StyleEngine& master_engine);
-  bool IsShadowTreeStyleSheetCollection() const final { return true; }
-
-  DEFINE_INLINE_VIRTUAL_TRACE() {
-    TreeScopeStyleSheetCollection::Trace(visitor);
+  void AddStyleSheetCandidateNode(Node&);
+  void RemoveStyleSheetCandidateNode(Node& node) {
+    style_sheet_candidate_nodes_.Remove(&node);
   }
+  bool HasStyleSheetCandidateNodes() const {
+    return !style_sheet_candidate_nodes_.IsEmpty();
+  }
+  bool HasStyleSheets() const;
+
+  bool MediaQueryAffectingValueChanged();
+
+  virtual bool IsShadowTreeStyleSheetCollection() const { return false; }
+  void UpdateStyleSheetList();
+
+  DECLARE_VIRTUAL_TRACE();
+
+ protected:
+  explicit TreeScopeStyleSheetCollection(TreeScope&);
+
+  Document& GetDocument() const { return GetTreeScope().GetDocument(); }
+  TreeScope& GetTreeScope() const { return *tree_scope_; }
+
+  void ApplyActiveStyleSheetChanges(StyleSheetCollection&);
+
+  Member<TreeScope> tree_scope_;
+  TreeOrderedList style_sheet_candidate_nodes_;
 
  private:
-  void CollectStyleSheets(StyleEngine& master_engine, StyleSheetCollection&);
+  friend class TreeScopeStyleSheetCollectionTest;
 };
-
-DEFINE_TYPE_CASTS(ShadowTreeStyleSheetCollection,
-                  TreeScopeStyleSheetCollection,
-                  value,
-                  value->IsShadowTreeStyleSheetCollection(),
-                  value.IsShadowTreeStyleSheetCollection());
 
 }  // namespace blink
 

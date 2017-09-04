@@ -24,12 +24,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/dom/StyleSheetCandidate.h"
+#include "core/css/StyleSheetCandidate.h"
 
 #include "core/HTMLNames.h"
+#include "core/css/StyleEngine.h"
 #include "core/dom/Element.h"
 #include "core/dom/ProcessingInstruction.h"
-#include "core/dom/StyleEngine.h"
 #include "core/html/HTMLLinkElement.h"
 #include "core/html/HTMLStyleElement.h"
 #include "core/html/imports/HTMLImport.h"
