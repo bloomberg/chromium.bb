@@ -13,9 +13,6 @@
 #include <unicode/uchar.h>
 #endif
 
-using namespace WTF;
-using namespace Unicode;
-
 namespace blink {
 
 // ICU 57 or earlier does not have up to date Emoji properties, so we're

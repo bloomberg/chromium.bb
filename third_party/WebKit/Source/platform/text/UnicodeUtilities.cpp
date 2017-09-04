@@ -31,8 +31,6 @@
 #include "platform/wtf/text/CharacterNames.h"
 #include "platform/wtf/text/StringBuffer.h"
 
-using namespace WTF::Unicode;
-
 namespace blink {
 
 enum VoicedSoundMarkType {
