@@ -1,7 +1,7 @@
-liblouis 3.2.0 has been released
+liblouis 3.3.0 has been released
 
 The liblouis developer team is proud to announce the liblouis release
-3.2.0. The release is available for download at:
+3.3.0. The release is available for download at:
 
     https://github.com/liblouis/liblouis/releases
 
@@ -18,102 +18,78 @@ project liblouisutdml[2] deals with formatting of braille.
 Changes in this release
 =======================
 
-Aside from the usual improvements to Braille tables this release
-focuses on improving the internal infrastructure. Numerous bugs have
-been fixed, the CI infrastructure also checks mingw builds now and
-MSVC compatibility has been massively improved. For a detailed list of
-all the changes refer to
+This release brings a slew of Braille table improvements, fixes a
+number of security related bugs and introduces a new tool to generate
+liblouis Braille tables based on a corpus of know good Braille
+translations. For a detailed list of all the changes refer to
 
-    https://github.com/liblouis/liblouis/milestone/10?closed=1
+    https://github.com/liblouis/liblouis/milestone/13?closed=1
+
+New features
+~~~~~~~~~~~~
+
+maketable tool
+--------------
+  A new tool `lou_maketable' enables the creation of tables based on a
+  corpus of known good Braille translations. This has huge potential to
+  simplify table maintenance for tables that have so far been dominated
+  by large exception lists. Thanks to Bert Frees.
+
+
+Meta data query API
+-------------------
+  A new API and a corresponding command line tool to query table meta
+  data thanks to Bert Frees
 
 Bug fixes
 ~~~~~~~~~
 
-  - Fix capsnocont opcode. Also mark capital letters with capsletter
-    symbol when capsnocont is defined but no begcapsword indicator is
-    defined. Thanks to Bue Vester-Andersen.
-  - Fix the syllable opcode. It had been broken under some circumstances
-    since 3.0. Thanks to Bert Frees and Christian Egli.
+Back translation
+----------------
+  - UEB grade 2
+    - Fix back-translation of whole word contractions followed by other
+      contractions thanks to James Teh.
+    - Fix back-translation for contractions followed by punctuation
+      thanks to James Teh.
 
-Other changes
-~~~~~~~~~~~~~
-
-  - Fix building of Python bindings when cross-compiling. Thanks to
-    Chris Brannon
-  - lou_checkyaml is now only installed if libyaml is available. Thanks
-    to Christian Egli
-  - Major internal changes to improve MSVC compatibility. Thanks to Davy
-    Kager
-  - Enhance documentation on usage of display tables in particular in
-    conjunction with Unicode dot patterns. Thanks to Bert Frees
+Security
+--------
+  - Fix a number of CVEs (illegal address access, buffer overflow and
+    use-after-free or in terms of CVEs: CVE-2017-13738, CVE-2017-13739,
+    CVE-2017-13740, CVE-2017-13741, CVE-2017-13742 and CVE-2017-13744)
+    thanks to Mike Gorse.
+  - Fix CVE-2017-13743 thanks to Christian Egli.
 
 Braille table improvements
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-  - Improvements to the Swedish 8-dots table (`se-se.ctb') thanks to
-    Kevin Derome
-  - Improvements to the Simplified-Chinese Braille table thanks to
-    Roshanson
-  - Fixes for the International Phonetic Alphabet Braille table thanks
-    to Ludovic Oger
-  - Added more Unicode symbols (fractions and not equal) to the UEB
-    tables. Thanks to Paul Wood and James Bowden.
-  - Fixes to UEB grade 2 (en-ueb-g2.ctb) thanks to Mike Gray.
-  - Vastly improved Danish tables thanks to Bue Vester-Andersen.
-    - New literary tables for 6 dots, mainly for embossing (no
-      back-translation).
-    - Improved back-translation in 6 dots tables, all grades.
-    - New support for many Unicode characters in all 6 dots tables.
-    - Strengthened internal tests to prevent breaking of tables due to
-      changes in the code.
-    - Fixed 8 dots tables which were broken in the previous version.
-  - New Braille tables for Sinhala script thanks to Ashoka Bandula
-    Weerawardhana.
-  - New Hungarian grade 2 Braille table thanks to Attila Hammer.
-  - Improvements to UEB in particular to symbols specified mostly on the
-    Appendix 3 (Symbols List) from the Rules of Unified English Braille
-    Second Edition 2013 document thanks to Victor Montalvão.
-  - Improvements to Persian 8 dot computer Braille table thanks to
-    Mohammadreza Rashad.
-
-Backwards incompatible changes
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-  - The old Greek table gr-gr-g1.utb is gone. Use el.ctb instead
-  - The doctests are gone. They have been superseded by the YAML tests.
+  - New table for Croatian grade 1 Braille thanks to Zlatko Sobočan.
+  - Fixes and tests for Slovak Braille thanks to Simon Aittamaa
+  - Numerous fixes in the character definitions of the Spanish tables
+    thanks to Simon Aittamaa
+  - Unified French 6 dots and 8 dots improvements for back-translation
+    thanks to Michel Such
+  - Updates to the Chinese braille table thanks to Coscell Kao
+  - Updates to Nemeth character definitions thanks to Attila Hammer
+  - The Hungarian tables now conform to the new 2017 standard thanks to
+    Attila Hammer
 
 New, renamed or removed tables
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 New
 ---
-  - sin.cti
-  - sin.utb
-  - hu-hu-g2.ctb (new)
-  - da-dk-6miscChars.cti (new)
-  - da-dk-g16-lit.ctb (new)
-  - da-dk-g26-lit.ctb (new)
-  - da-dk-g26l-lit.ctb (new)
-
+  - hr-g1.ctb
+  - hr-g1.tbl
 
 Renamed
 -------
-  - gr-gr-g1.utb (removed and replaced by el.ctb)
-
-
-Removed
--------
-  - da-chardefs6.cti
-  - da-dk-common6.uti
-  - da-dk-g26-patches.cti
-  - da-dk-g2core.cti
-  - da-dk-nocaps.uti
-
+  - hr.ctb -> hr-comp8.utb
+  - hr.tbl -> hr-comp8.tbl
 
 Next release
 ============
 
-The next release will be published on September 4 2017 so please keep
+The next release will be published on December 4, 2017 so please keep
 up the excellent work and keep those improvements coming.
 
 Share and Enjoy!
@@ -125,5 +101,3 @@ Footnotes
 
 [1]  See https://github.com/liblouis/liblouis/tree/master/tables
 [2]  See https://github.com/liblouis/liblouisutdml
-[3]  See https://github.com/liblouis/liblouis/wiki/Emphasis-Opcodes#upgrade-from-previous-versions
-[4]  See https://github.com/liblouis/liblouis/wiki/Licensing-of-liblouis-tables
