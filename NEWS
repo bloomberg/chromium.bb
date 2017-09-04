@@ -13,6 +13,7 @@ by large exception lists. Thanks to Bert Frees.
 *** Meta data query API
 A new API and a corresponding command line tool to query table meta
 data thanks to Bert Frees
+
 ** Bug fixes
 *** Back translation
 - UEB grade 2
@@ -26,7 +27,7 @@ data thanks to Bert Frees
   CVE-2017-13740, CVE-2017-13741, CVE-2017-13742 and CVE-2017-13744)
   thanks to Mike Gorse.
 - Fix CVE-2017-13743 thanks to Christian Egli.
-** Other changes
+
 ** Braille table improvements
 - New table for Croatian grade 1 Braille thanks to Zlatko Sobočan.
 - Fixes and tests for Slovak Braille thanks to Simon Aittamaa
@@ -38,8 +39,7 @@ data thanks to Bert Frees
 - Updates to Nemeth character definitions thanks to Attila Hammer
 - The Hungarian tables now conform to the new 2017 standard thanks to
   Attila Hammer
-** License changes
-** Backwards incompatible changes
+
 ** New, renamed or removed tables
 *** New
 - hr-g1.ctb
@@ -48,6 +48,7 @@ data thanks to Bert Frees
 - hr.ctb -> hr-comp8.utb
 - hr.tbl -> hr-comp8.tbl
 *** Removed
+
 * Noteworthy changes in release 3.2.0 (2017-06-06)
 Aside from the usual improvements to Braille tables this release
 focuses on improving the internal infrastructure. Numerous bugs have
