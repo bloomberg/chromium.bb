@@ -13,12 +13,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "base/strings/utf_string_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/time/time.h"
-#include "chrome/common/chrome_switches.h"
-#include "chrome/common/render_messages.h"
-#include "chrome/common/search.mojom.h"
-#include "chrome/common/url_constants.h"
 #include "chrome/renderer/searchbox/searchbox_extension.h"
 #include "components/favicon_base/favicon_types.h"
 #include "components/favicon_base/favicon_url_parser.h"
@@ -27,7 +23,6 @@
 #include "content/public/common/associated_interface_registry.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
-#include "net/base/escape.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
@@ -213,11 +208,9 @@ bool TranslateIconRestrictedUrl(const GURL& transient_url,
 
 }  // namespace internal
 
-SearchBox::IconURLHelper::IconURLHelper() {
-}
+SearchBox::IconURLHelper::IconURLHelper() = default;
 
-SearchBox::IconURLHelper::~IconURLHelper() {
-}
+SearchBox::IconURLHelper::~IconURLHelper() = default;
 
 SearchBox::SearchBox(content::RenderFrame* render_frame)
     : content::RenderFrameObserver(render_frame),
@@ -301,10 +294,6 @@ bool SearchBox::GetMostVisitedItemWithID(
 
 const ThemeBackgroundInfo& SearchBox::GetThemeBackgroundInfo() {
   return theme_info_;
-}
-
-const EmbeddedSearchRequestParams& SearchBox::GetEmbeddedSearchRequestParams() {
-  return embedded_search_request_params_;
 }
 
 void SearchBox::Paste(const base::string16& text) {
@@ -402,21 +391,6 @@ void SearchBox::SetInputInProgress(bool is_input_in_progress) {
   }
 }
 
-void SearchBox::SetSuggestionToPrefetch(const InstantSuggestion& suggestion) {
-  suggestion_ = suggestion;
-  DVLOG(1) << render_frame() << " SetSuggestionToPrefetch";
-  extensions_v8::SearchBoxExtension::DispatchSuggestionChange(
-      render_frame()->GetWebFrame());
-}
-
-void SearchBox::Submit(const EmbeddedSearchRequestParams& params) {
-  embedded_search_request_params_ = params;
-  DVLOG(1) << render_frame() << " Submit";
-  extensions_v8::SearchBoxExtension::DispatchSubmit(
-      render_frame()->GetWebFrame());
-  Reset();
-}
-
 void SearchBox::ThemeChanged(const ThemeBackgroundInfo& theme_info) {
   // Do not send duplicate notifications.
   if (theme_info_ == theme_info)
@@ -438,8 +412,6 @@ void SearchBox::Bind(
 }
 
 void SearchBox::Reset() {
-  embedded_search_request_params_ = EmbeddedSearchRequestParams();
-  suggestion_ = InstantSuggestion();
   is_focused_ = false;
   is_key_capture_enabled_ = false;
   theme_info_ = ThemeBackgroundInfo();

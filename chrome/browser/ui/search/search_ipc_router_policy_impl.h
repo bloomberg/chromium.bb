@@ -30,12 +30,10 @@ class SearchIPCRouterPolicyImpl : public SearchIPCRouter::Policy {
   bool ShouldProcessPasteIntoOmnibox(bool is_active_tab) override;
   bool ShouldProcessChromeIdentityCheck() override;
   bool ShouldProcessHistorySyncCheck() override;
-  bool ShouldSendSetSuggestionToPrefetch() override;
   bool ShouldSendSetInputInProgress(bool is_active_tab) override;
   bool ShouldSendOmniboxFocusChanged() override;
   bool ShouldSendMostVisitedItems() override;
   bool ShouldSendThemeBackgroundInfo() override;
-  bool ShouldSubmitQuery() override;
 
   // Used by unit tests.
   void set_is_incognito(bool is_incognito) {

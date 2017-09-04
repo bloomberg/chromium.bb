@@ -124,14 +124,6 @@ void SearchIPCRouter::SendHistorySyncCheckResult(bool sync_history) {
   embedded_search_client()->HistorySyncCheckResult(sync_history);
 }
 
-void SearchIPCRouter::SetSuggestionToPrefetch(
-    const InstantSuggestion& suggestion) {
-  if (!policy_->ShouldSendSetSuggestionToPrefetch())
-    return;
-
-  embedded_search_client()->SetSuggestionToPrefetch(suggestion);
-}
-
 void SearchIPCRouter::SetInputInProgress(bool input_in_progress) {
   if (!policy_->ShouldSendSetInputInProgress(is_active_tab_))
     return;
@@ -161,13 +153,6 @@ void SearchIPCRouter::SendThemeBackgroundInfo(
     return;
 
   embedded_search_client()->ThemeChanged(theme_info);
-}
-
-void SearchIPCRouter::Submit(const EmbeddedSearchRequestParams& params) {
-  if (!policy_->ShouldSubmitQuery())
-    return;
-
-  embedded_search_client()->Submit(params);
 }
 
 void SearchIPCRouter::OnTabActivated() {

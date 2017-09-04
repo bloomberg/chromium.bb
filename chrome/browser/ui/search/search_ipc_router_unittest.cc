@@ -473,33 +473,6 @@ TEST_F(SearchIPCRouterTest, IgnorePasteAndOpenDropdownMsg) {
   GetSearchIPCRouter().PasteAndOpenDropdown(GetSearchIPCRouterSeqNo(), text);
 }
 
-TEST_F(SearchIPCRouterTest, SendSetSuggestionToPrefetch) {
-  NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
-  SetupMockDelegateAndPolicy();
-  MockSearchIPCRouterPolicy* policy = GetSearchIPCRouterPolicy();
-  EXPECT_CALL(*policy, ShouldSendSetSuggestionToPrefetch())
-      .Times(1)
-      .WillOnce(Return(true));
-
-  content::WebContents* contents = web_contents();
-  EXPECT_CALL(*mock_embedded_search_client(), SetSuggestionToPrefetch(_));
-  GetSearchTabHelper(contents)->SetSuggestionToPrefetch(InstantSuggestion());
-}
-
-TEST_F(SearchIPCRouterTest, DoNotSendSetSuggestionToPrefetch) {
-  NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
-  SetupMockDelegateAndPolicy();
-  MockSearchIPCRouterPolicy* policy = GetSearchIPCRouterPolicy();
-  EXPECT_CALL(*policy, ShouldSendSetSuggestionToPrefetch())
-      .Times(1)
-      .WillOnce(Return(false));
-
-  content::WebContents* contents = web_contents();
-  EXPECT_CALL(*mock_embedded_search_client(), SetSuggestionToPrefetch(_))
-      .Times(0);
-  GetSearchTabHelper(contents)->SetSuggestionToPrefetch(InstantSuggestion());
-}
-
 TEST_F(SearchIPCRouterTest, SendOmniboxFocusChange) {
   NavigateAndCommitActiveTab(GURL(chrome::kChromeSearchLocalNtpUrl));
   SetupMockDelegateAndPolicy();
@@ -598,24 +571,4 @@ TEST_F(SearchIPCRouterTest, DoNotSendThemeBackgroundInfoMsg) {
 
   EXPECT_CALL(*mock_embedded_search_client(), ThemeChanged(_)).Times(0);
   GetSearchIPCRouter().SendThemeBackgroundInfo(ThemeBackgroundInfo());
-}
-
-TEST_F(SearchIPCRouterTest, SendSubmitMsg) {
-  NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
-  SetupMockDelegateAndPolicy();
-  MockSearchIPCRouterPolicy* policy = GetSearchIPCRouterPolicy();
-  EXPECT_CALL(*policy, ShouldSubmitQuery()).Times(1).WillOnce(Return(true));
-
-  EXPECT_CALL(*mock_embedded_search_client(), Submit(_));
-  GetSearchIPCRouter().Submit(EmbeddedSearchRequestParams());
-}
-
-TEST_F(SearchIPCRouterTest, DoNotSendSubmitMsg) {
-  NavigateAndCommitActiveTab(GURL(chrome::kChromeSearchLocalNtpUrl));
-  SetupMockDelegateAndPolicy();
-  MockSearchIPCRouterPolicy* policy = GetSearchIPCRouterPolicy();
-  EXPECT_CALL(*policy, ShouldSubmitQuery()).Times(1).WillOnce(Return(false));
-
-  EXPECT_CALL(*mock_embedded_search_client(), Submit(_)).Times(0);
-  GetSearchIPCRouter().Submit(EmbeddedSearchRequestParams());
 }

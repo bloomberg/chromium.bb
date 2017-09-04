@@ -85,12 +85,6 @@ enum OmniboxFocusChangeReason;
 struct InstantMostVisitedItem;
 
 [Native]
-struct InstantSuggestion;
-
-[Native]
-struct EmbeddedSearchRequestParams;
-
-[Native]
 struct ThemeBackgroundInfo;
 
 // Renderer interface used by the browser to push updates to the client. For
@@ -104,10 +98,6 @@ interface EmbeddedSearchClient {
   MostVisitedChanged(array<InstantMostVisitedItem> items);
 
   SetInputInProgress(bool input_in_progress);
-
-  SetSuggestionToPrefetch(InstantSuggestion suggestion);
-
-  Submit(EmbeddedSearchRequestParams params);
 
   ThemeChanged(ThemeBackgroundInfo value);
 

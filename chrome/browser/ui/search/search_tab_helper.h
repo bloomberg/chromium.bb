@@ -60,12 +60,6 @@ class SearchTabHelper : public content::WebContentsObserver,
   void OmniboxFocusChanged(OmniboxFocusState state,
                            OmniboxFocusChangeReason reason);
 
-  // Sends the current SearchProvider suggestion to the Instant page if any.
-  void SetSuggestionToPrefetch(const InstantSuggestion& suggestion);
-
-  // Tells the page that the user pressed Enter in the omnibox.
-  void Submit(const EmbeddedSearchRequestParams& params);
-
   // Called when the tab corresponding to |this| instance is activated.
   void OnTabActivated();
 
