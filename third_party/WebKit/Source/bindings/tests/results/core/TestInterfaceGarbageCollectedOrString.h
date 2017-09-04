@@ -27,14 +27,14 @@ class CORE_EXPORT TestInterfaceGarbageCollectedOrString final {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
  public:
   TestInterfaceGarbageCollectedOrString();
-  bool isNull() const { return m_type == SpecificTypeNone; }
+  bool isNull() const { return type_ == SpecificTypeNone; }
 
-  bool isString() const { return m_type == SpecificTypeString; }
+  bool isString() const { return type_ == SpecificTypeString; }
   const String& getAsString() const;
   void setString(const String&);
   static TestInterfaceGarbageCollectedOrString fromString(const String&);
 
-  bool isTestInterfaceGarbageCollected() const { return m_type == SpecificTypeTestInterfaceGarbageCollected; }
+  bool isTestInterfaceGarbageCollected() const { return type_ == SpecificTypeTestInterfaceGarbageCollected; }
   TestInterfaceGarbageCollected* getAsTestInterfaceGarbageCollected() const;
   void setTestInterfaceGarbageCollected(TestInterfaceGarbageCollected*);
   static TestInterfaceGarbageCollectedOrString fromTestInterfaceGarbageCollected(TestInterfaceGarbageCollected*);
@@ -50,10 +50,10 @@ class CORE_EXPORT TestInterfaceGarbageCollectedOrString final {
     SpecificTypeString,
     SpecificTypeTestInterfaceGarbageCollected,
   };
-  SpecificTypes m_type;
+  SpecificTypes type_;
 
-  String m_string;
-  Member<TestInterfaceGarbageCollected> m_testInterfaceGarbageCollected;
+  String string_;
+  Member<TestInterfaceGarbageCollected> test_interface_garbage_collected_;
 
   friend CORE_EXPORT v8::Local<v8::Value> ToV8(const TestInterfaceGarbageCollectedOrString&, v8::Local<v8::Object>, v8::Isolate*);
 };

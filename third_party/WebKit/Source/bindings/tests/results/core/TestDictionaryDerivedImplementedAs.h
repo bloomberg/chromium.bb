@@ -49,13 +49,13 @@ class CORE_EXPORT TestDictionaryDerivedImplementedAs : public TestDictionary {
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  bool m_hasRequiredLongMember = false;
-  bool m_hasStringOrDoubleSequenceMember = false;
+  bool has_required_long_member_ = false;
+  bool has_string_or_double_sequence_member_ = false;
 
-  String m_derivedStringMember;
-  String m_derivedStringMemberWithDefault;
-  int32_t m_requiredLongMember;
-  HeapVector<StringOrDouble> m_stringOrDoubleSequenceMember;
+  String derived_string_member_;
+  String derived_string_member_with_default_;
+  int32_t required_long_member_;
+  HeapVector<StringOrDouble> string_or_double_sequence_member_;
 
   friend class V8TestDictionaryDerivedImplementedAs;
 };

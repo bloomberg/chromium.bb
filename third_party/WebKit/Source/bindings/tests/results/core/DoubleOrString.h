@@ -25,14 +25,14 @@ class CORE_EXPORT DoubleOrString final {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
  public:
   DoubleOrString();
-  bool isNull() const { return m_type == SpecificTypeNone; }
+  bool isNull() const { return type_ == SpecificTypeNone; }
 
-  bool isDouble() const { return m_type == SpecificTypeDouble; }
+  bool isDouble() const { return type_ == SpecificTypeDouble; }
   double getAsDouble() const;
   void setDouble(double);
   static DoubleOrString fromDouble(double);
 
-  bool isString() const { return m_type == SpecificTypeString; }
+  bool isString() const { return type_ == SpecificTypeString; }
   const String& getAsString() const;
   void setString(const String&);
   static DoubleOrString fromString(const String&);
@@ -48,10 +48,10 @@ class CORE_EXPORT DoubleOrString final {
     SpecificTypeDouble,
     SpecificTypeString,
   };
-  SpecificTypes m_type;
+  SpecificTypes type_;
 
-  double m_double;
-  String m_string;
+  double double_;
+  String string_;
 
   friend CORE_EXPORT v8::Local<v8::Value> ToV8(const DoubleOrString&, v8::Local<v8::Object>, v8::Isolate*);
 };

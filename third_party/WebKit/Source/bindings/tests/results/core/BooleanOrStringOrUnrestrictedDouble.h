@@ -25,19 +25,19 @@ class CORE_EXPORT BooleanOrStringOrUnrestrictedDouble final {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
  public:
   BooleanOrStringOrUnrestrictedDouble();
-  bool isNull() const { return m_type == SpecificTypeNone; }
+  bool isNull() const { return type_ == SpecificTypeNone; }
 
-  bool isBoolean() const { return m_type == SpecificTypeBoolean; }
+  bool isBoolean() const { return type_ == SpecificTypeBoolean; }
   bool getAsBoolean() const;
   void setBoolean(bool);
   static BooleanOrStringOrUnrestrictedDouble fromBoolean(bool);
 
-  bool isString() const { return m_type == SpecificTypeString; }
+  bool isString() const { return type_ == SpecificTypeString; }
   const String& getAsString() const;
   void setString(const String&);
   static BooleanOrStringOrUnrestrictedDouble fromString(const String&);
 
-  bool isUnrestrictedDouble() const { return m_type == SpecificTypeUnrestrictedDouble; }
+  bool isUnrestrictedDouble() const { return type_ == SpecificTypeUnrestrictedDouble; }
   double getAsUnrestrictedDouble() const;
   void setUnrestrictedDouble(double);
   static BooleanOrStringOrUnrestrictedDouble fromUnrestrictedDouble(double);
@@ -54,11 +54,11 @@ class CORE_EXPORT BooleanOrStringOrUnrestrictedDouble final {
     SpecificTypeString,
     SpecificTypeUnrestrictedDouble,
   };
-  SpecificTypes m_type;
+  SpecificTypes type_;
 
-  bool m_boolean;
-  String m_string;
-  double m_unrestrictedDouble;
+  bool boolean_;
+  String string_;
+  double unrestricted_double_;
 
   friend CORE_EXPORT v8::Local<v8::Value> ToV8(const BooleanOrStringOrUnrestrictedDouble&, v8::Local<v8::Object>, v8::Isolate*);
 };

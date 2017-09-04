@@ -36,7 +36,7 @@ class CORE_EXPORT TestInterfaceEventInit : public EventInit {
 
  private:
 
-  String m_stringMember;
+  String string_member_;
 
   friend class V8TestInterfaceEventInit;
 };

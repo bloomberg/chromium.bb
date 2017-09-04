@@ -153,7 +153,7 @@ def member_context(member, info_provider):
     if member.is_nullable:
         member = member.inner_type
     return {
-        'cpp_name': v8_utilities.uncapitalize(member.name),
+        'cpp_name': v8_utilities.to_snake_case(v8_utilities.cpp_name(member)),
         'cpp_type': member.cpp_type_args(used_in_cpp_sequence=True),
         'cpp_local_type': member.cpp_type,
         'cpp_value_to_v8_value': member.cpp_value_to_v8_value(

@@ -31,14 +31,14 @@ class CORE_EXPORT TestInterface2OrUint8Array final {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
  public:
   TestInterface2OrUint8Array();
-  bool isNull() const { return m_type == SpecificTypeNone; }
+  bool isNull() const { return type_ == SpecificTypeNone; }
 
-  bool isTestInterface2() const { return m_type == SpecificTypeTestInterface2; }
+  bool isTestInterface2() const { return type_ == SpecificTypeTestInterface2; }
   TestInterface2* getAsTestInterface2() const;
   void setTestInterface2(TestInterface2*);
   static TestInterface2OrUint8Array fromTestInterface2(TestInterface2*);
 
-  bool isUint8Array() const { return m_type == SpecificTypeUint8Array; }
+  bool isUint8Array() const { return type_ == SpecificTypeUint8Array; }
   NotShared<DOMUint8Array> getAsUint8Array() const;
   void setUint8Array(NotShared<DOMUint8Array>);
   static TestInterface2OrUint8Array fromUint8Array(NotShared<DOMUint8Array>);
@@ -54,10 +54,10 @@ class CORE_EXPORT TestInterface2OrUint8Array final {
     SpecificTypeTestInterface2,
     SpecificTypeUint8Array,
   };
-  SpecificTypes m_type;
+  SpecificTypes type_;
 
-  Member<TestInterface2> m_testInterface2;
-  Member<DOMUint8Array> m_uint8Array;
+  Member<TestInterface2> test_interface_2_;
+  Member<DOMUint8Array> uint8_array_;
 
   friend CORE_EXPORT v8::Local<v8::Value> ToV8(const TestInterface2OrUint8Array&, v8::Local<v8::Object>, v8::Isolate*);
 };

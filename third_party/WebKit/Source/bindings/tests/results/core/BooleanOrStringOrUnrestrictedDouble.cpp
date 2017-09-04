@@ -17,17 +17,17 @@
 
 namespace blink {
 
-BooleanOrStringOrUnrestrictedDouble::BooleanOrStringOrUnrestrictedDouble() : m_type(SpecificTypeNone) {}
+BooleanOrStringOrUnrestrictedDouble::BooleanOrStringOrUnrestrictedDouble() : type_(SpecificTypeNone) {}
 
 bool BooleanOrStringOrUnrestrictedDouble::getAsBoolean() const {
   DCHECK(isBoolean());
-  return m_boolean;
+  return boolean_;
 }
 
 void BooleanOrStringOrUnrestrictedDouble::setBoolean(bool value) {
   DCHECK(isNull());
-  m_boolean = value;
-  m_type = SpecificTypeBoolean;
+  boolean_ = value;
+  type_ = SpecificTypeBoolean;
 }
 
 BooleanOrStringOrUnrestrictedDouble BooleanOrStringOrUnrestrictedDouble::fromBoolean(bool value) {
@@ -38,13 +38,13 @@ BooleanOrStringOrUnrestrictedDouble BooleanOrStringOrUnrestrictedDouble::fromBoo
 
 const String& BooleanOrStringOrUnrestrictedDouble::getAsString() const {
   DCHECK(isString());
-  return m_string;
+  return string_;
 }
 
 void BooleanOrStringOrUnrestrictedDouble::setString(const String& value) {
   DCHECK(isNull());
-  m_string = value;
-  m_type = SpecificTypeString;
+  string_ = value;
+  type_ = SpecificTypeString;
 }
 
 BooleanOrStringOrUnrestrictedDouble BooleanOrStringOrUnrestrictedDouble::fromString(const String& value) {
@@ -55,13 +55,13 @@ BooleanOrStringOrUnrestrictedDouble BooleanOrStringOrUnrestrictedDouble::fromStr
 
 double BooleanOrStringOrUnrestrictedDouble::getAsUnrestrictedDouble() const {
   DCHECK(isUnrestrictedDouble());
-  return m_unrestrictedDouble;
+  return unrestricted_double_;
 }
 
 void BooleanOrStringOrUnrestrictedDouble::setUnrestrictedDouble(double value) {
   DCHECK(isNull());
-  m_unrestrictedDouble = value;
-  m_type = SpecificTypeUnrestrictedDouble;
+  unrestricted_double_ = value;
+  type_ = SpecificTypeUnrestrictedDouble;
 }
 
 BooleanOrStringOrUnrestrictedDouble BooleanOrStringOrUnrestrictedDouble::fromUnrestrictedDouble(double value) {
@@ -107,7 +107,7 @@ void V8BooleanOrStringOrUnrestrictedDouble::toImpl(v8::Isolate* isolate, v8::Loc
 }
 
 v8::Local<v8::Value> ToV8(const BooleanOrStringOrUnrestrictedDouble& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
-  switch (impl.m_type) {
+  switch (impl.type_) {
     case BooleanOrStringOrUnrestrictedDouble::SpecificTypeNone:
       return v8::Null(isolate);
     case BooleanOrStringOrUnrestrictedDouble::SpecificTypeBoolean:

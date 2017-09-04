@@ -27,14 +27,14 @@ class CORE_EXPORT ByteStringOrNodeList final {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
  public:
   ByteStringOrNodeList();
-  bool isNull() const { return m_type == SpecificTypeNone; }
+  bool isNull() const { return type_ == SpecificTypeNone; }
 
-  bool isByteString() const { return m_type == SpecificTypeByteString; }
+  bool isByteString() const { return type_ == SpecificTypeByteString; }
   const String& getAsByteString() const;
   void setByteString(const String&);
   static ByteStringOrNodeList fromByteString(const String&);
 
-  bool isNodeList() const { return m_type == SpecificTypeNodeList; }
+  bool isNodeList() const { return type_ == SpecificTypeNodeList; }
   NodeList* getAsNodeList() const;
   void setNodeList(NodeList*);
   static ByteStringOrNodeList fromNodeList(NodeList*);
@@ -50,10 +50,10 @@ class CORE_EXPORT ByteStringOrNodeList final {
     SpecificTypeByteString,
     SpecificTypeNodeList,
   };
-  SpecificTypes m_type;
+  SpecificTypes type_;
 
-  String m_byteString;
-  Member<NodeList> m_nodeList;
+  String byte_string_;
+  Member<NodeList> node_list_;
 
   friend CORE_EXPORT v8::Local<v8::Value> ToV8(const ByteStringOrNodeList&, v8::Local<v8::Object>, v8::Isolate*);
 };

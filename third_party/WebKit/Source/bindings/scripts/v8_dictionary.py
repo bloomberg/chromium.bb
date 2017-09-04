@@ -121,7 +121,7 @@ def member_context(dictionary, member):
         return cpp_default_value, v8_default_value
 
     cpp_default_value, v8_default_value = default_values()
-    cpp_name = v8_utilities.cpp_name(member)
+    cpp_name = v8_utilities.to_snake_case(v8_utilities.cpp_name(member))
     getter_name = getter_name_for_dictionary_member(member)
     is_deprecated_dictionary = unwrapped_idl_type.name == 'Dictionary'
 
@@ -200,25 +200,25 @@ def dictionary_impl_context(dictionary, interfaces_info):
 def member_impl_context(member, interfaces_info, header_includes,
                         header_forward_decls):
     idl_type = unwrap_nullable_if_needed(member.idl_type)
-    cpp_name = v8_utilities.cpp_name(member)
+    cpp_name = v8_utilities.to_snake_case(v8_utilities.cpp_name(member))
 
     nullable_indicator_name = None
     if not idl_type.cpp_type_has_null_value:
-        nullable_indicator_name = 'm_has' + cpp_name[0].upper() + cpp_name[1:]
+        nullable_indicator_name = 'has_' + cpp_name + '_'
 
     def has_method_expression():
         if nullable_indicator_name:
             return nullable_indicator_name
         elif idl_type.is_union_type:
-            return '!m_%s.isNull()' % cpp_name
+            return '!%s_.isNull()' % cpp_name
         elif idl_type.is_enum or idl_type.is_string_type:
-            return '!m_%s.IsNull()' % cpp_name
+            return '!%s_.IsNull()' % cpp_name
         elif idl_type.name in ['Any', 'Object']:
-            return '!(m_{0}.IsEmpty() || m_{0}.IsNull() || m_{0}.IsUndefined())'.format(cpp_name)
+            return '!({0}_.IsEmpty() || {0}_.IsNull() || {0}_.IsUndefined())'.format(cpp_name)
         elif idl_type.name == 'Dictionary':
-            return '!m_%s.IsUndefinedOrNull()' % cpp_name
+            return '!%s_.IsUndefinedOrNull()' % cpp_name
         else:
-            return 'm_%s' % cpp_name
+            return '%s_' % cpp_name
 
     cpp_default_value = None
     if member.default_value and not member.default_value.is_null:
@@ -238,7 +238,7 @@ def member_impl_context(member, interfaces_info, header_includes,
     return {
         'cpp_default_value': cpp_default_value,
         'cpp_name': cpp_name,
-        'getter_expression': 'm_' + cpp_name,
+        'getter_expression': cpp_name + '_',
         'getter_name': getter_name_for_dictionary_member(member),
         'has_method_expression': has_method_expression(),
         'has_method_name': has_method_name_for_dictionary_member(member),

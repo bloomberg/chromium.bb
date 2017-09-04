@@ -18,17 +18,17 @@
 
 namespace blink {
 
-StringOrArrayBufferOrArrayBufferView::StringOrArrayBufferOrArrayBufferView() : m_type(SpecificTypeNone) {}
+StringOrArrayBufferOrArrayBufferView::StringOrArrayBufferOrArrayBufferView() : type_(SpecificTypeNone) {}
 
 TestArrayBuffer* StringOrArrayBufferOrArrayBufferView::getAsArrayBuffer() const {
   DCHECK(isArrayBuffer());
-  return m_arrayBuffer;
+  return array_buffer_;
 }
 
 void StringOrArrayBufferOrArrayBufferView::setArrayBuffer(TestArrayBuffer* value) {
   DCHECK(isNull());
-  m_arrayBuffer = value;
-  m_type = SpecificTypeArrayBuffer;
+  array_buffer_ = value;
+  type_ = SpecificTypeArrayBuffer;
 }
 
 StringOrArrayBufferOrArrayBufferView StringOrArrayBufferOrArrayBufferView::fromArrayBuffer(TestArrayBuffer* value) {
@@ -39,13 +39,13 @@ StringOrArrayBufferOrArrayBufferView StringOrArrayBufferOrArrayBufferView::fromA
 
 NotShared<TestArrayBufferView> StringOrArrayBufferOrArrayBufferView::getAsArrayBufferView() const {
   DCHECK(isArrayBufferView());
-  return m_arrayBufferView;
+  return array_buffer_view_;
 }
 
 void StringOrArrayBufferOrArrayBufferView::setArrayBufferView(NotShared<TestArrayBufferView> value) {
   DCHECK(isNull());
-  m_arrayBufferView = Member<TestArrayBufferView>(value.View());
-  m_type = SpecificTypeArrayBufferView;
+  array_buffer_view_ = Member<TestArrayBufferView>(value.View());
+  type_ = SpecificTypeArrayBufferView;
 }
 
 StringOrArrayBufferOrArrayBufferView StringOrArrayBufferOrArrayBufferView::fromArrayBufferView(NotShared<TestArrayBufferView> value) {
@@ -56,13 +56,13 @@ StringOrArrayBufferOrArrayBufferView StringOrArrayBufferOrArrayBufferView::fromA
 
 const String& StringOrArrayBufferOrArrayBufferView::getAsString() const {
   DCHECK(isString());
-  return m_string;
+  return string_;
 }
 
 void StringOrArrayBufferOrArrayBufferView::setString(const String& value) {
   DCHECK(isNull());
-  m_string = value;
-  m_type = SpecificTypeString;
+  string_ = value;
+  type_ = SpecificTypeString;
 }
 
 StringOrArrayBufferOrArrayBufferView StringOrArrayBufferOrArrayBufferView::fromString(const String& value) {
@@ -76,8 +76,8 @@ StringOrArrayBufferOrArrayBufferView::~StringOrArrayBufferOrArrayBufferView() = 
 StringOrArrayBufferOrArrayBufferView& StringOrArrayBufferOrArrayBufferView::operator=(const StringOrArrayBufferOrArrayBufferView&) = default;
 
 DEFINE_TRACE(StringOrArrayBufferOrArrayBufferView) {
-  visitor->Trace(m_arrayBuffer);
-  visitor->Trace(m_arrayBufferView);
+  visitor->Trace(array_buffer_);
+  visitor->Trace(array_buffer_view_);
 }
 
 void V8StringOrArrayBufferOrArrayBufferView::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, StringOrArrayBufferOrArrayBufferView& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
@@ -111,7 +111,7 @@ void V8StringOrArrayBufferOrArrayBufferView::toImpl(v8::Isolate* isolate, v8::Lo
 }
 
 v8::Local<v8::Value> ToV8(const StringOrArrayBufferOrArrayBufferView& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
-  switch (impl.m_type) {
+  switch (impl.type_) {
     case StringOrArrayBufferOrArrayBufferView::SpecificTypeNone:
       return v8::Null(isolate);
     case StringOrArrayBufferOrArrayBufferView::SpecificTypeArrayBuffer:

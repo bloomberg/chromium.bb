@@ -28,14 +28,14 @@ class CORE_EXPORT NodeOrNodeList final {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
  public:
   NodeOrNodeList();
-  bool isNull() const { return m_type == SpecificTypeNone; }
+  bool isNull() const { return type_ == SpecificTypeNone; }
 
-  bool isNode() const { return m_type == SpecificTypeNode; }
+  bool isNode() const { return type_ == SpecificTypeNode; }
   Node* getAsNode() const;
   void setNode(Node*);
   static NodeOrNodeList fromNode(Node*);
 
-  bool isNodeList() const { return m_type == SpecificTypeNodeList; }
+  bool isNodeList() const { return type_ == SpecificTypeNodeList; }
   NodeList* getAsNodeList() const;
   void setNodeList(NodeList*);
   static NodeOrNodeList fromNodeList(NodeList*);
@@ -51,10 +51,10 @@ class CORE_EXPORT NodeOrNodeList final {
     SpecificTypeNode,
     SpecificTypeNodeList,
   };
-  SpecificTypes m_type;
+  SpecificTypes type_;
 
-  Member<Node> m_node;
-  Member<NodeList> m_nodeList;
+  Member<Node> node_;
+  Member<NodeList> node_list_;
 
   friend CORE_EXPORT v8::Local<v8::Value> ToV8(const NodeOrNodeList&, v8::Local<v8::Object>, v8::Isolate*);
 };

@@ -27,19 +27,19 @@ class CORE_EXPORT DoubleOrStringOrDoubleOrStringSequence final {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
  public:
   DoubleOrStringOrDoubleOrStringSequence();
-  bool isNull() const { return m_type == SpecificTypeNone; }
+  bool isNull() const { return type_ == SpecificTypeNone; }
 
-  bool isDouble() const { return m_type == SpecificTypeDouble; }
+  bool isDouble() const { return type_ == SpecificTypeDouble; }
   double getAsDouble() const;
   void setDouble(double);
   static DoubleOrStringOrDoubleOrStringSequence fromDouble(double);
 
-  bool isDoubleOrStringSequence() const { return m_type == SpecificTypeDoubleOrStringSequence; }
+  bool isDoubleOrStringSequence() const { return type_ == SpecificTypeDoubleOrStringSequence; }
   const HeapVector<DoubleOrString>& getAsDoubleOrStringSequence() const;
   void setDoubleOrStringSequence(const HeapVector<DoubleOrString>&);
   static DoubleOrStringOrDoubleOrStringSequence fromDoubleOrStringSequence(const HeapVector<DoubleOrString>&);
 
-  bool isString() const { return m_type == SpecificTypeString; }
+  bool isString() const { return type_ == SpecificTypeString; }
   const String& getAsString() const;
   void setString(const String&);
   static DoubleOrStringOrDoubleOrStringSequence fromString(const String&);
@@ -56,11 +56,11 @@ class CORE_EXPORT DoubleOrStringOrDoubleOrStringSequence final {
     SpecificTypeDoubleOrStringSequence,
     SpecificTypeString,
   };
-  SpecificTypes m_type;
+  SpecificTypes type_;
 
-  double m_double;
-  HeapVector<DoubleOrString> m_doubleOrStringSequence;
-  String m_string;
+  double double_;
+  HeapVector<DoubleOrString> double_or_string_sequence_;
+  String string_;
 
   friend CORE_EXPORT v8::Local<v8::Value> ToV8(const DoubleOrStringOrDoubleOrStringSequence&, v8::Local<v8::Object>, v8::Isolate*);
 };

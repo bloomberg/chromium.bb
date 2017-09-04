@@ -25,14 +25,14 @@ class CORE_EXPORT LongOrBoolean final {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
  public:
   LongOrBoolean();
-  bool isNull() const { return m_type == SpecificTypeNone; }
+  bool isNull() const { return type_ == SpecificTypeNone; }
 
-  bool isBoolean() const { return m_type == SpecificTypeBoolean; }
+  bool isBoolean() const { return type_ == SpecificTypeBoolean; }
   bool getAsBoolean() const;
   void setBoolean(bool);
   static LongOrBoolean fromBoolean(bool);
 
-  bool isLong() const { return m_type == SpecificTypeLong; }
+  bool isLong() const { return type_ == SpecificTypeLong; }
   int32_t getAsLong() const;
   void setLong(int32_t);
   static LongOrBoolean fromLong(int32_t);
@@ -48,10 +48,10 @@ class CORE_EXPORT LongOrBoolean final {
     SpecificTypeBoolean,
     SpecificTypeLong,
   };
-  SpecificTypes m_type;
+  SpecificTypes type_;
 
-  bool m_boolean;
-  int32_t m_long;
+  bool boolean_;
+  int32_t long_;
 
   friend CORE_EXPORT v8::Local<v8::Value> ToV8(const LongOrBoolean&, v8::Local<v8::Object>, v8::Isolate*);
 };

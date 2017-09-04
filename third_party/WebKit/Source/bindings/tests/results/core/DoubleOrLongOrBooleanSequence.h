@@ -27,14 +27,14 @@ class CORE_EXPORT DoubleOrLongOrBooleanSequence final {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
  public:
   DoubleOrLongOrBooleanSequence();
-  bool isNull() const { return m_type == SpecificTypeNone; }
+  bool isNull() const { return type_ == SpecificTypeNone; }
 
-  bool isDouble() const { return m_type == SpecificTypeDouble; }
+  bool isDouble() const { return type_ == SpecificTypeDouble; }
   double getAsDouble() const;
   void setDouble(double);
   static DoubleOrLongOrBooleanSequence fromDouble(double);
 
-  bool isLongOrBooleanSequence() const { return m_type == SpecificTypeLongOrBooleanSequence; }
+  bool isLongOrBooleanSequence() const { return type_ == SpecificTypeLongOrBooleanSequence; }
   const HeapVector<LongOrBoolean>& getAsLongOrBooleanSequence() const;
   void setLongOrBooleanSequence(const HeapVector<LongOrBoolean>&);
   static DoubleOrLongOrBooleanSequence fromLongOrBooleanSequence(const HeapVector<LongOrBoolean>&);
@@ -50,10 +50,10 @@ class CORE_EXPORT DoubleOrLongOrBooleanSequence final {
     SpecificTypeDouble,
     SpecificTypeLongOrBooleanSequence,
   };
-  SpecificTypes m_type;
+  SpecificTypes type_;
 
-  double m_double;
-  HeapVector<LongOrBoolean> m_longOrBooleanSequence;
+  double double_;
+  HeapVector<LongOrBoolean> long_or_boolean_sequence_;
 
   friend CORE_EXPORT v8::Local<v8::Value> ToV8(const DoubleOrLongOrBooleanSequence&, v8::Local<v8::Object>, v8::Isolate*);
 };

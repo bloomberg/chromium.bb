@@ -33,7 +33,7 @@ bool {{cpp_class}}::{{member.has_method_name}}() const {
   return {{member.getter_expression}};
 }
 void {{cpp_class}}::{{member.setter_name}}({{member.rvalue_cpp_type}} value) {
-  m_{{member.cpp_name}} = {{member.setter_value}};
+  {{member.cpp_name}}_ = {{member.setter_value}};
   {% if member.nullable_indicator_name %}
   {{member.nullable_indicator_name}} = true;
   {% endif %}
@@ -43,7 +43,7 @@ void {{cpp_class}}::{{member.null_setter_name}}() {
   {% if member.nullable_indicator_name %}
   {{member.nullable_indicator_name}} = false;
   {% else %}
-  m_{{member.cpp_name}} = {{member.member_cpp_type}}();
+  {{member.cpp_name}}_ = {{member.member_cpp_type}}();
   {% endif %}
 }
 {% endif %}
@@ -51,7 +51,7 @@ void {{cpp_class}}::{{member.null_setter_name}}() {
 
 DEFINE_TRACE({{cpp_class}}) {
   {% for member in members if member.is_traceable %}
-  visitor->Trace(m_{{member.cpp_name}});
+  visitor->Trace({{member.cpp_name}}_);
   {% endfor %}
   {% if parent_cpp_class %}
   {{parent_cpp_class}}::Trace(visitor);

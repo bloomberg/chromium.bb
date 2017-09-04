@@ -24,17 +24,17 @@
 
 namespace blink {
 
-ElementSequenceOrByteStringDoubleOrStringRecord::ElementSequenceOrByteStringDoubleOrStringRecord() : m_type(SpecificTypeNone) {}
+ElementSequenceOrByteStringDoubleOrStringRecord::ElementSequenceOrByteStringDoubleOrStringRecord() : type_(SpecificTypeNone) {}
 
 const HeapVector<std::pair<String, DoubleOrString>>& ElementSequenceOrByteStringDoubleOrStringRecord::getAsByteStringDoubleOrStringRecord() const {
   DCHECK(isByteStringDoubleOrStringRecord());
-  return m_byteStringDoubleOrStringRecord;
+  return byte_string_double_or_string_record_;
 }
 
 void ElementSequenceOrByteStringDoubleOrStringRecord::setByteStringDoubleOrStringRecord(const HeapVector<std::pair<String, DoubleOrString>>& value) {
   DCHECK(isNull());
-  m_byteStringDoubleOrStringRecord = value;
-  m_type = SpecificTypeByteStringDoubleOrStringRecord;
+  byte_string_double_or_string_record_ = value;
+  type_ = SpecificTypeByteStringDoubleOrStringRecord;
 }
 
 ElementSequenceOrByteStringDoubleOrStringRecord ElementSequenceOrByteStringDoubleOrStringRecord::fromByteStringDoubleOrStringRecord(const HeapVector<std::pair<String, DoubleOrString>>& value) {
@@ -45,13 +45,13 @@ ElementSequenceOrByteStringDoubleOrStringRecord ElementSequenceOrByteStringDoubl
 
 const HeapVector<Member<Element>>& ElementSequenceOrByteStringDoubleOrStringRecord::getAsElementSequence() const {
   DCHECK(isElementSequence());
-  return m_elementSequence;
+  return element_sequence_;
 }
 
 void ElementSequenceOrByteStringDoubleOrStringRecord::setElementSequence(const HeapVector<Member<Element>>& value) {
   DCHECK(isNull());
-  m_elementSequence = value;
-  m_type = SpecificTypeElementSequence;
+  element_sequence_ = value;
+  type_ = SpecificTypeElementSequence;
 }
 
 ElementSequenceOrByteStringDoubleOrStringRecord ElementSequenceOrByteStringDoubleOrStringRecord::fromElementSequence(const HeapVector<Member<Element>>& value) {
@@ -65,8 +65,8 @@ ElementSequenceOrByteStringDoubleOrStringRecord::~ElementSequenceOrByteStringDou
 ElementSequenceOrByteStringDoubleOrStringRecord& ElementSequenceOrByteStringDoubleOrStringRecord::operator=(const ElementSequenceOrByteStringDoubleOrStringRecord&) = default;
 
 DEFINE_TRACE(ElementSequenceOrByteStringDoubleOrStringRecord) {
-  visitor->Trace(m_byteStringDoubleOrStringRecord);
-  visitor->Trace(m_elementSequence);
+  visitor->Trace(byte_string_double_or_string_record_);
+  visitor->Trace(element_sequence_);
 }
 
 void V8ElementSequenceOrByteStringDoubleOrStringRecord::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, ElementSequenceOrByteStringDoubleOrStringRecord& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
@@ -96,7 +96,7 @@ void V8ElementSequenceOrByteStringDoubleOrStringRecord::toImpl(v8::Isolate* isol
 }
 
 v8::Local<v8::Value> ToV8(const ElementSequenceOrByteStringDoubleOrStringRecord& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
-  switch (impl.m_type) {
+  switch (impl.type_) {
     case ElementSequenceOrByteStringDoubleOrStringRecord::SpecificTypeNone:
       return v8::Null(isolate);
     case ElementSequenceOrByteStringDoubleOrStringRecord::SpecificTypeByteStringDoubleOrStringRecord:

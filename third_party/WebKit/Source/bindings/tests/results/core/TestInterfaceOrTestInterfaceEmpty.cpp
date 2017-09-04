@@ -22,17 +22,17 @@
 
 namespace blink {
 
-TestInterfaceOrTestInterfaceEmpty::TestInterfaceOrTestInterfaceEmpty() : m_type(SpecificTypeNone) {}
+TestInterfaceOrTestInterfaceEmpty::TestInterfaceOrTestInterfaceEmpty() : type_(SpecificTypeNone) {}
 
 TestInterfaceImplementation* TestInterfaceOrTestInterfaceEmpty::getAsTestInterface() const {
   DCHECK(isTestInterface());
-  return m_testInterface;
+  return test_interface_;
 }
 
 void TestInterfaceOrTestInterfaceEmpty::setTestInterface(TestInterfaceImplementation* value) {
   DCHECK(isNull());
-  m_testInterface = value;
-  m_type = SpecificTypeTestInterface;
+  test_interface_ = value;
+  type_ = SpecificTypeTestInterface;
 }
 
 TestInterfaceOrTestInterfaceEmpty TestInterfaceOrTestInterfaceEmpty::fromTestInterface(TestInterfaceImplementation* value) {
@@ -43,13 +43,13 @@ TestInterfaceOrTestInterfaceEmpty TestInterfaceOrTestInterfaceEmpty::fromTestInt
 
 TestInterfaceEmpty* TestInterfaceOrTestInterfaceEmpty::getAsTestInterfaceEmpty() const {
   DCHECK(isTestInterfaceEmpty());
-  return m_testInterfaceEmpty;
+  return test_interface_empty_;
 }
 
 void TestInterfaceOrTestInterfaceEmpty::setTestInterfaceEmpty(TestInterfaceEmpty* value) {
   DCHECK(isNull());
-  m_testInterfaceEmpty = value;
-  m_type = SpecificTypeTestInterfaceEmpty;
+  test_interface_empty_ = value;
+  type_ = SpecificTypeTestInterfaceEmpty;
 }
 
 TestInterfaceOrTestInterfaceEmpty TestInterfaceOrTestInterfaceEmpty::fromTestInterfaceEmpty(TestInterfaceEmpty* value) {
@@ -63,8 +63,8 @@ TestInterfaceOrTestInterfaceEmpty::~TestInterfaceOrTestInterfaceEmpty() = defaul
 TestInterfaceOrTestInterfaceEmpty& TestInterfaceOrTestInterfaceEmpty::operator=(const TestInterfaceOrTestInterfaceEmpty&) = default;
 
 DEFINE_TRACE(TestInterfaceOrTestInterfaceEmpty) {
-  visitor->Trace(m_testInterface);
-  visitor->Trace(m_testInterfaceEmpty);
+  visitor->Trace(test_interface_);
+  visitor->Trace(test_interface_empty_);
 }
 
 void V8TestInterfaceOrTestInterfaceEmpty::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, TestInterfaceOrTestInterfaceEmpty& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
@@ -90,7 +90,7 @@ void V8TestInterfaceOrTestInterfaceEmpty::toImpl(v8::Isolate* isolate, v8::Local
 }
 
 v8::Local<v8::Value> ToV8(const TestInterfaceOrTestInterfaceEmpty& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
-  switch (impl.m_type) {
+  switch (impl.type_) {
     case TestInterfaceOrTestInterfaceEmpty::SpecificTypeNone:
       return v8::Null(isolate);
     case TestInterfaceOrTestInterfaceEmpty::SpecificTypeTestInterface:

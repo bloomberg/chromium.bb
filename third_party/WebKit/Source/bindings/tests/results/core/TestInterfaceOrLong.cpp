@@ -23,17 +23,17 @@
 
 namespace blink {
 
-TestInterfaceOrLong::TestInterfaceOrLong() : m_type(SpecificTypeNone) {}
+TestInterfaceOrLong::TestInterfaceOrLong() : type_(SpecificTypeNone) {}
 
 int32_t TestInterfaceOrLong::getAsLong() const {
   DCHECK(isLong());
-  return m_long;
+  return long_;
 }
 
 void TestInterfaceOrLong::setLong(int32_t value) {
   DCHECK(isNull());
-  m_long = value;
-  m_type = SpecificTypeLong;
+  long_ = value;
+  type_ = SpecificTypeLong;
 }
 
 TestInterfaceOrLong TestInterfaceOrLong::fromLong(int32_t value) {
@@ -44,13 +44,13 @@ TestInterfaceOrLong TestInterfaceOrLong::fromLong(int32_t value) {
 
 TestInterfaceImplementation* TestInterfaceOrLong::getAsTestInterface() const {
   DCHECK(isTestInterface());
-  return m_testInterface;
+  return test_interface_;
 }
 
 void TestInterfaceOrLong::setTestInterface(TestInterfaceImplementation* value) {
   DCHECK(isNull());
-  m_testInterface = value;
-  m_type = SpecificTypeTestInterface;
+  test_interface_ = value;
+  type_ = SpecificTypeTestInterface;
 }
 
 TestInterfaceOrLong TestInterfaceOrLong::fromTestInterface(TestInterfaceImplementation* value) {
@@ -64,7 +64,7 @@ TestInterfaceOrLong::~TestInterfaceOrLong() = default;
 TestInterfaceOrLong& TestInterfaceOrLong::operator=(const TestInterfaceOrLong&) = default;
 
 DEFINE_TRACE(TestInterfaceOrLong) {
-  visitor->Trace(m_testInterface);
+  visitor->Trace(test_interface_);
 }
 
 void V8TestInterfaceOrLong::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, TestInterfaceOrLong& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
@@ -98,7 +98,7 @@ void V8TestInterfaceOrLong::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8
 }
 
 v8::Local<v8::Value> ToV8(const TestInterfaceOrLong& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
-  switch (impl.m_type) {
+  switch (impl.type_) {
     case TestInterfaceOrLong::SpecificTypeNone:
       return v8::Null(isolate);
     case TestInterfaceOrLong::SpecificTypeLong:

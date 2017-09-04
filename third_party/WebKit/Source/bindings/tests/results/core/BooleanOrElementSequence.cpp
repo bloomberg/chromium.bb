@@ -23,17 +23,17 @@
 
 namespace blink {
 
-BooleanOrElementSequence::BooleanOrElementSequence() : m_type(SpecificTypeNone) {}
+BooleanOrElementSequence::BooleanOrElementSequence() : type_(SpecificTypeNone) {}
 
 bool BooleanOrElementSequence::getAsBoolean() const {
   DCHECK(isBoolean());
-  return m_boolean;
+  return boolean_;
 }
 
 void BooleanOrElementSequence::setBoolean(bool value) {
   DCHECK(isNull());
-  m_boolean = value;
-  m_type = SpecificTypeBoolean;
+  boolean_ = value;
+  type_ = SpecificTypeBoolean;
 }
 
 BooleanOrElementSequence BooleanOrElementSequence::fromBoolean(bool value) {
@@ -44,13 +44,13 @@ BooleanOrElementSequence BooleanOrElementSequence::fromBoolean(bool value) {
 
 const HeapVector<Member<Element>>& BooleanOrElementSequence::getAsElementSequence() const {
   DCHECK(isElementSequence());
-  return m_elementSequence;
+  return element_sequence_;
 }
 
 void BooleanOrElementSequence::setElementSequence(const HeapVector<Member<Element>>& value) {
   DCHECK(isNull());
-  m_elementSequence = value;
-  m_type = SpecificTypeElementSequence;
+  element_sequence_ = value;
+  type_ = SpecificTypeElementSequence;
 }
 
 BooleanOrElementSequence BooleanOrElementSequence::fromElementSequence(const HeapVector<Member<Element>>& value) {
@@ -64,7 +64,7 @@ BooleanOrElementSequence::~BooleanOrElementSequence() = default;
 BooleanOrElementSequence& BooleanOrElementSequence::operator=(const BooleanOrElementSequence&) = default;
 
 DEFINE_TRACE(BooleanOrElementSequence) {
-  visitor->Trace(m_elementSequence);
+  visitor->Trace(element_sequence_);
 }
 
 void V8BooleanOrElementSequence::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, BooleanOrElementSequence& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
@@ -94,7 +94,7 @@ void V8BooleanOrElementSequence::toImpl(v8::Isolate* isolate, v8::Local<v8::Valu
 }
 
 v8::Local<v8::Value> ToV8(const BooleanOrElementSequence& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
-  switch (impl.m_type) {
+  switch (impl.type_) {
     case BooleanOrElementSequence::SpecificTypeNone:
       return v8::Null(isolate);
     case BooleanOrElementSequence::SpecificTypeBoolean:

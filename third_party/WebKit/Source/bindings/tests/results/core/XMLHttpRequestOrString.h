@@ -27,14 +27,14 @@ class CORE_EXPORT XMLHttpRequestOrString final {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
  public:
   XMLHttpRequestOrString();
-  bool isNull() const { return m_type == SpecificTypeNone; }
+  bool isNull() const { return type_ == SpecificTypeNone; }
 
-  bool isString() const { return m_type == SpecificTypeString; }
+  bool isString() const { return type_ == SpecificTypeString; }
   const String& getAsString() const;
   void setString(const String&);
   static XMLHttpRequestOrString fromString(const String&);
 
-  bool isXMLHttpRequest() const { return m_type == SpecificTypeXMLHttpRequest; }
+  bool isXMLHttpRequest() const { return type_ == SpecificTypeXMLHttpRequest; }
   XMLHttpRequest* getAsXMLHttpRequest() const;
   void setXMLHttpRequest(XMLHttpRequest*);
   static XMLHttpRequestOrString fromXMLHttpRequest(XMLHttpRequest*);
@@ -50,10 +50,10 @@ class CORE_EXPORT XMLHttpRequestOrString final {
     SpecificTypeString,
     SpecificTypeXMLHttpRequest,
   };
-  SpecificTypes m_type;
+  SpecificTypes type_;
 
-  String m_string;
-  Member<XMLHttpRequest> m_xmlHttpRequest;
+  String string_;
+  Member<XMLHttpRequest> xml_http_request_;
 
   friend CORE_EXPORT v8::Local<v8::Value> ToV8(const XMLHttpRequestOrString&, v8::Local<v8::Object>, v8::Isolate*);
 };

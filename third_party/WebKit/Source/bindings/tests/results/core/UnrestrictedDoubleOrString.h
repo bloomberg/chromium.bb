@@ -25,14 +25,14 @@ class CORE_EXPORT UnrestrictedDoubleOrString final {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
  public:
   UnrestrictedDoubleOrString();
-  bool isNull() const { return m_type == SpecificTypeNone; }
+  bool isNull() const { return type_ == SpecificTypeNone; }
 
-  bool isString() const { return m_type == SpecificTypeString; }
+  bool isString() const { return type_ == SpecificTypeString; }
   const String& getAsString() const;
   void setString(const String&);
   static UnrestrictedDoubleOrString fromString(const String&);
 
-  bool isUnrestrictedDouble() const { return m_type == SpecificTypeUnrestrictedDouble; }
+  bool isUnrestrictedDouble() const { return type_ == SpecificTypeUnrestrictedDouble; }
   double getAsUnrestrictedDouble() const;
   void setUnrestrictedDouble(double);
   static UnrestrictedDoubleOrString fromUnrestrictedDouble(double);
@@ -48,10 +48,10 @@ class CORE_EXPORT UnrestrictedDoubleOrString final {
     SpecificTypeString,
     SpecificTypeUnrestrictedDouble,
   };
-  SpecificTypes m_type;
+  SpecificTypes type_;
 
-  String m_string;
-  double m_unrestrictedDouble;
+  String string_;
+  double unrestricted_double_;
 
   friend CORE_EXPORT v8::Local<v8::Value> ToV8(const UnrestrictedDoubleOrString&, v8::Local<v8::Object>, v8::Isolate*);
 };

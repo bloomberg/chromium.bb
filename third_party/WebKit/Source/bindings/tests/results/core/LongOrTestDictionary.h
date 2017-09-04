@@ -26,14 +26,14 @@ class CORE_EXPORT LongOrTestDictionary final {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
  public:
   LongOrTestDictionary();
-  bool isNull() const { return m_type == SpecificTypeNone; }
+  bool isNull() const { return type_ == SpecificTypeNone; }
 
-  bool isLong() const { return m_type == SpecificTypeLong; }
+  bool isLong() const { return type_ == SpecificTypeLong; }
   int32_t getAsLong() const;
   void setLong(int32_t);
   static LongOrTestDictionary fromLong(int32_t);
 
-  bool isTestDictionary() const { return m_type == SpecificTypeTestDictionary; }
+  bool isTestDictionary() const { return type_ == SpecificTypeTestDictionary; }
   const TestDictionary& getAsTestDictionary() const;
   void setTestDictionary(const TestDictionary&);
   static LongOrTestDictionary fromTestDictionary(const TestDictionary&);
@@ -49,10 +49,10 @@ class CORE_EXPORT LongOrTestDictionary final {
     SpecificTypeLong,
     SpecificTypeTestDictionary,
   };
-  SpecificTypes m_type;
+  SpecificTypes type_;
 
-  int32_t m_long;
-  TestDictionary m_testDictionary;
+  int32_t long_;
+  TestDictionary test_dictionary_;
 
   friend CORE_EXPORT v8::Local<v8::Value> ToV8(const LongOrTestDictionary&, v8::Local<v8::Object>, v8::Isolate*);
 };

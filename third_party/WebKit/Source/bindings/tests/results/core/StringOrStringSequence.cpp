@@ -17,17 +17,17 @@
 
 namespace blink {
 
-StringOrStringSequence::StringOrStringSequence() : m_type(SpecificTypeNone) {}
+StringOrStringSequence::StringOrStringSequence() : type_(SpecificTypeNone) {}
 
 const String& StringOrStringSequence::getAsString() const {
   DCHECK(isString());
-  return m_string;
+  return string_;
 }
 
 void StringOrStringSequence::setString(const String& value) {
   DCHECK(isNull());
-  m_string = value;
-  m_type = SpecificTypeString;
+  string_ = value;
+  type_ = SpecificTypeString;
 }
 
 StringOrStringSequence StringOrStringSequence::fromString(const String& value) {
@@ -38,13 +38,13 @@ StringOrStringSequence StringOrStringSequence::fromString(const String& value) {
 
 const Vector<String>& StringOrStringSequence::getAsStringSequence() const {
   DCHECK(isStringSequence());
-  return m_stringSequence;
+  return string_sequence_;
 }
 
 void StringOrStringSequence::setStringSequence(const Vector<String>& value) {
   DCHECK(isNull());
-  m_stringSequence = value;
-  m_type = SpecificTypeStringSequence;
+  string_sequence_ = value;
+  type_ = SpecificTypeStringSequence;
 }
 
 StringOrStringSequence StringOrStringSequence::fromStringSequence(const Vector<String>& value) {
@@ -85,7 +85,7 @@ void V8StringOrStringSequence::toImpl(v8::Isolate* isolate, v8::Local<v8::Value>
 }
 
 v8::Local<v8::Value> ToV8(const StringOrStringSequence& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
-  switch (impl.m_type) {
+  switch (impl.type_) {
     case StringOrStringSequence::SpecificTypeNone:
       return v8::Null(isolate);
     case StringOrStringSequence::SpecificTypeString:

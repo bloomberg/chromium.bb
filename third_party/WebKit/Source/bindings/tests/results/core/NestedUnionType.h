@@ -30,34 +30,34 @@ class CORE_EXPORT NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteS
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
  public:
   NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord();
-  bool isNull() const { return m_type == SpecificTypeNone; }
+  bool isNull() const { return type_ == SpecificTypeNone; }
 
-  bool isEvent() const { return m_type == SpecificTypeEvent; }
+  bool isEvent() const { return type_ == SpecificTypeEvent; }
   Event* getAsEvent() const;
   void setEvent(Event*);
   static NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord fromEvent(Event*);
 
-  bool isLongSequence() const { return m_type == SpecificTypeLongSequence; }
+  bool isLongSequence() const { return type_ == SpecificTypeLongSequence; }
   const Vector<int32_t>& getAsLongSequence() const;
   void setLongSequence(const Vector<int32_t>&);
   static NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord fromLongSequence(const Vector<int32_t>&);
 
-  bool isNode() const { return m_type == SpecificTypeNode; }
+  bool isNode() const { return type_ == SpecificTypeNode; }
   Node* getAsNode() const;
   void setNode(Node*);
   static NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord fromNode(Node*);
 
-  bool isString() const { return m_type == SpecificTypeString; }
+  bool isString() const { return type_ == SpecificTypeString; }
   const String& getAsString() const;
   void setString(const String&);
   static NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord fromString(const String&);
 
-  bool isStringByteStringOrNodeListRecord() const { return m_type == SpecificTypeStringByteStringOrNodeListRecord; }
+  bool isStringByteStringOrNodeListRecord() const { return type_ == SpecificTypeStringByteStringOrNodeListRecord; }
   const HeapVector<std::pair<String, ByteStringOrNodeList>>& getAsStringByteStringOrNodeListRecord() const;
   void setStringByteStringOrNodeListRecord(const HeapVector<std::pair<String, ByteStringOrNodeList>>&);
   static NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord fromStringByteStringOrNodeListRecord(const HeapVector<std::pair<String, ByteStringOrNodeList>>&);
 
-  bool isXMLHttpRequest() const { return m_type == SpecificTypeXMLHttpRequest; }
+  bool isXMLHttpRequest() const { return type_ == SpecificTypeXMLHttpRequest; }
   XMLHttpRequest* getAsXMLHttpRequest() const;
   void setXMLHttpRequest(XMLHttpRequest*);
   static NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord fromXMLHttpRequest(XMLHttpRequest*);
@@ -77,14 +77,14 @@ class CORE_EXPORT NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteS
     SpecificTypeStringByteStringOrNodeListRecord,
     SpecificTypeXMLHttpRequest,
   };
-  SpecificTypes m_type;
+  SpecificTypes type_;
 
-  Member<Event> m_event;
-  Vector<int32_t> m_longSequence;
-  Member<Node> m_node;
-  String m_string;
-  HeapVector<std::pair<String, ByteStringOrNodeList>> m_stringByteStringOrNodeListRecord;
-  Member<XMLHttpRequest> m_xmlHttpRequest;
+  Member<Event> event_;
+  Vector<int32_t> long_sequence_;
+  Member<Node> node_;
+  String string_;
+  HeapVector<std::pair<String, ByteStringOrNodeList>> string_byte_string_or_node_list_record_;
+  Member<XMLHttpRequest> xml_http_request_;
 
   friend CORE_EXPORT v8::Local<v8::Value> ToV8(const NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord&, v8::Local<v8::Object>, v8::Isolate*);
 };

@@ -27,14 +27,14 @@ class CORE_EXPORT LongSequenceOrEvent final {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
  public:
   LongSequenceOrEvent();
-  bool isNull() const { return m_type == SpecificTypeNone; }
+  bool isNull() const { return type_ == SpecificTypeNone; }
 
-  bool isEvent() const { return m_type == SpecificTypeEvent; }
+  bool isEvent() const { return type_ == SpecificTypeEvent; }
   Event* getAsEvent() const;
   void setEvent(Event*);
   static LongSequenceOrEvent fromEvent(Event*);
 
-  bool isLongSequence() const { return m_type == SpecificTypeLongSequence; }
+  bool isLongSequence() const { return type_ == SpecificTypeLongSequence; }
   const Vector<int32_t>& getAsLongSequence() const;
   void setLongSequence(const Vector<int32_t>&);
   static LongSequenceOrEvent fromLongSequence(const Vector<int32_t>&);
@@ -50,10 +50,10 @@ class CORE_EXPORT LongSequenceOrEvent final {
     SpecificTypeEvent,
     SpecificTypeLongSequence,
   };
-  SpecificTypes m_type;
+  SpecificTypes type_;
 
-  Member<Event> m_event;
-  Vector<int32_t> m_longSequence;
+  Member<Event> event_;
+  Vector<int32_t> long_sequence_;
 
   friend CORE_EXPORT v8::Local<v8::Value> ToV8(const LongSequenceOrEvent&, v8::Local<v8::Object>, v8::Isolate*);
 };

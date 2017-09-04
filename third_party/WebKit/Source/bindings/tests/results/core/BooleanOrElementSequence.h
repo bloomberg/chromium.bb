@@ -27,14 +27,14 @@ class CORE_EXPORT BooleanOrElementSequence final {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
  public:
   BooleanOrElementSequence();
-  bool isNull() const { return m_type == SpecificTypeNone; }
+  bool isNull() const { return type_ == SpecificTypeNone; }
 
-  bool isBoolean() const { return m_type == SpecificTypeBoolean; }
+  bool isBoolean() const { return type_ == SpecificTypeBoolean; }
   bool getAsBoolean() const;
   void setBoolean(bool);
   static BooleanOrElementSequence fromBoolean(bool);
 
-  bool isElementSequence() const { return m_type == SpecificTypeElementSequence; }
+  bool isElementSequence() const { return type_ == SpecificTypeElementSequence; }
   const HeapVector<Member<Element>>& getAsElementSequence() const;
   void setElementSequence(const HeapVector<Member<Element>>&);
   static BooleanOrElementSequence fromElementSequence(const HeapVector<Member<Element>>&);
@@ -50,10 +50,10 @@ class CORE_EXPORT BooleanOrElementSequence final {
     SpecificTypeBoolean,
     SpecificTypeElementSequence,
   };
-  SpecificTypes m_type;
+  SpecificTypes type_;
 
-  bool m_boolean;
-  HeapVector<Member<Element>> m_elementSequence;
+  bool boolean_;
+  HeapVector<Member<Element>> element_sequence_;
 
   friend CORE_EXPORT v8::Local<v8::Value> ToV8(const BooleanOrElementSequence&, v8::Local<v8::Object>, v8::Isolate*);
 };

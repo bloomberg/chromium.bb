@@ -18,17 +18,17 @@
 
 namespace blink {
 
-DoubleOrLongOrBooleanSequence::DoubleOrLongOrBooleanSequence() : m_type(SpecificTypeNone) {}
+DoubleOrLongOrBooleanSequence::DoubleOrLongOrBooleanSequence() : type_(SpecificTypeNone) {}
 
 double DoubleOrLongOrBooleanSequence::getAsDouble() const {
   DCHECK(isDouble());
-  return m_double;
+  return double_;
 }
 
 void DoubleOrLongOrBooleanSequence::setDouble(double value) {
   DCHECK(isNull());
-  m_double = value;
-  m_type = SpecificTypeDouble;
+  double_ = value;
+  type_ = SpecificTypeDouble;
 }
 
 DoubleOrLongOrBooleanSequence DoubleOrLongOrBooleanSequence::fromDouble(double value) {
@@ -39,13 +39,13 @@ DoubleOrLongOrBooleanSequence DoubleOrLongOrBooleanSequence::fromDouble(double v
 
 const HeapVector<LongOrBoolean>& DoubleOrLongOrBooleanSequence::getAsLongOrBooleanSequence() const {
   DCHECK(isLongOrBooleanSequence());
-  return m_longOrBooleanSequence;
+  return long_or_boolean_sequence_;
 }
 
 void DoubleOrLongOrBooleanSequence::setLongOrBooleanSequence(const HeapVector<LongOrBoolean>& value) {
   DCHECK(isNull());
-  m_longOrBooleanSequence = value;
-  m_type = SpecificTypeLongOrBooleanSequence;
+  long_or_boolean_sequence_ = value;
+  type_ = SpecificTypeLongOrBooleanSequence;
 }
 
 DoubleOrLongOrBooleanSequence DoubleOrLongOrBooleanSequence::fromLongOrBooleanSequence(const HeapVector<LongOrBoolean>& value) {
@@ -59,7 +59,7 @@ DoubleOrLongOrBooleanSequence::~DoubleOrLongOrBooleanSequence() = default;
 DoubleOrLongOrBooleanSequence& DoubleOrLongOrBooleanSequence::operator=(const DoubleOrLongOrBooleanSequence&) = default;
 
 DEFINE_TRACE(DoubleOrLongOrBooleanSequence) {
-  visitor->Trace(m_longOrBooleanSequence);
+  visitor->Trace(long_or_boolean_sequence_);
 }
 
 void V8DoubleOrLongOrBooleanSequence::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, DoubleOrLongOrBooleanSequence& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
@@ -95,7 +95,7 @@ void V8DoubleOrLongOrBooleanSequence::toImpl(v8::Isolate* isolate, v8::Local<v8:
 }
 
 v8::Local<v8::Value> ToV8(const DoubleOrLongOrBooleanSequence& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
-  switch (impl.m_type) {
+  switch (impl.type_) {
     case DoubleOrLongOrBooleanSequence::SpecificTypeNone:
       return v8::Null(isolate);
     case DoubleOrLongOrBooleanSequence::SpecificTypeDouble:

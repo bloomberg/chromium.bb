@@ -18,17 +18,17 @@
 
 namespace blink {
 
-XMLHttpRequestOrString::XMLHttpRequestOrString() : m_type(SpecificTypeNone) {}
+XMLHttpRequestOrString::XMLHttpRequestOrString() : type_(SpecificTypeNone) {}
 
 const String& XMLHttpRequestOrString::getAsString() const {
   DCHECK(isString());
-  return m_string;
+  return string_;
 }
 
 void XMLHttpRequestOrString::setString(const String& value) {
   DCHECK(isNull());
-  m_string = value;
-  m_type = SpecificTypeString;
+  string_ = value;
+  type_ = SpecificTypeString;
 }
 
 XMLHttpRequestOrString XMLHttpRequestOrString::fromString(const String& value) {
@@ -39,13 +39,13 @@ XMLHttpRequestOrString XMLHttpRequestOrString::fromString(const String& value) {
 
 XMLHttpRequest* XMLHttpRequestOrString::getAsXMLHttpRequest() const {
   DCHECK(isXMLHttpRequest());
-  return m_xmlHttpRequest;
+  return xml_http_request_;
 }
 
 void XMLHttpRequestOrString::setXMLHttpRequest(XMLHttpRequest* value) {
   DCHECK(isNull());
-  m_xmlHttpRequest = value;
-  m_type = SpecificTypeXMLHttpRequest;
+  xml_http_request_ = value;
+  type_ = SpecificTypeXMLHttpRequest;
 }
 
 XMLHttpRequestOrString XMLHttpRequestOrString::fromXMLHttpRequest(XMLHttpRequest* value) {
@@ -59,7 +59,7 @@ XMLHttpRequestOrString::~XMLHttpRequestOrString() = default;
 XMLHttpRequestOrString& XMLHttpRequestOrString::operator=(const XMLHttpRequestOrString&) = default;
 
 DEFINE_TRACE(XMLHttpRequestOrString) {
-  visitor->Trace(m_xmlHttpRequest);
+  visitor->Trace(xml_http_request_);
 }
 
 void V8XMLHttpRequestOrString::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, XMLHttpRequestOrString& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
@@ -85,7 +85,7 @@ void V8XMLHttpRequestOrString::toImpl(v8::Isolate* isolate, v8::Local<v8::Value>
 }
 
 v8::Local<v8::Value> ToV8(const XMLHttpRequestOrString& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
-  switch (impl.m_type) {
+  switch (impl.type_) {
     case XMLHttpRequestOrString::SpecificTypeNone:
       return v8::Null(isolate);
     case XMLHttpRequestOrString::SpecificTypeString:

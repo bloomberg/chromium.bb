@@ -25,14 +25,14 @@ class CORE_EXPORT TestEnumOrDouble final {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
  public:
   TestEnumOrDouble();
-  bool isNull() const { return m_type == SpecificTypeNone; }
+  bool isNull() const { return type_ == SpecificTypeNone; }
 
-  bool isDouble() const { return m_type == SpecificTypeDouble; }
+  bool isDouble() const { return type_ == SpecificTypeDouble; }
   double getAsDouble() const;
   void setDouble(double);
   static TestEnumOrDouble fromDouble(double);
 
-  bool isTestEnum() const { return m_type == SpecificTypeTestEnum; }
+  bool isTestEnum() const { return type_ == SpecificTypeTestEnum; }
   const String& getAsTestEnum() const;
   void setTestEnum(const String&);
   static TestEnumOrDouble fromTestEnum(const String&);
@@ -48,10 +48,10 @@ class CORE_EXPORT TestEnumOrDouble final {
     SpecificTypeDouble,
     SpecificTypeTestEnum,
   };
-  SpecificTypes m_type;
+  SpecificTypes type_;
 
-  double m_double;
-  String m_testEnum;
+  double double_;
+  String test_enum_;
 
   friend CORE_EXPORT v8::Local<v8::Value> ToV8(const TestEnumOrDouble&, v8::Local<v8::Object>, v8::Isolate*);
 };

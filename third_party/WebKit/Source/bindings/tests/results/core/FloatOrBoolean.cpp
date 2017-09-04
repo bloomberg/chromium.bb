@@ -17,17 +17,17 @@
 
 namespace blink {
 
-FloatOrBoolean::FloatOrBoolean() : m_type(SpecificTypeNone) {}
+FloatOrBoolean::FloatOrBoolean() : type_(SpecificTypeNone) {}
 
 bool FloatOrBoolean::getAsBoolean() const {
   DCHECK(isBoolean());
-  return m_boolean;
+  return boolean_;
 }
 
 void FloatOrBoolean::setBoolean(bool value) {
   DCHECK(isNull());
-  m_boolean = value;
-  m_type = SpecificTypeBoolean;
+  boolean_ = value;
+  type_ = SpecificTypeBoolean;
 }
 
 FloatOrBoolean FloatOrBoolean::fromBoolean(bool value) {
@@ -38,13 +38,13 @@ FloatOrBoolean FloatOrBoolean::fromBoolean(bool value) {
 
 float FloatOrBoolean::getAsFloat() const {
   DCHECK(isFloat());
-  return m_float;
+  return float_;
 }
 
 void FloatOrBoolean::setFloat(float value) {
   DCHECK(isNull());
-  m_float = value;
-  m_type = SpecificTypeFloat;
+  float_ = value;
+  type_ = SpecificTypeFloat;
 }
 
 FloatOrBoolean FloatOrBoolean::fromFloat(float value) {
@@ -90,7 +90,7 @@ void V8FloatOrBoolean::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
 }
 
 v8::Local<v8::Value> ToV8(const FloatOrBoolean& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
-  switch (impl.m_type) {
+  switch (impl.type_) {
     case FloatOrBoolean::SpecificTypeNone:
       return v8::Null(isolate);
     case FloatOrBoolean::SpecificTypeBoolean:

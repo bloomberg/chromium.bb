@@ -27,19 +27,19 @@ class CORE_EXPORT UnsignedLongLongOrBooleanOrTestCallbackInterface final {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
  public:
   UnsignedLongLongOrBooleanOrTestCallbackInterface();
-  bool isNull() const { return m_type == SpecificTypeNone; }
+  bool isNull() const { return type_ == SpecificTypeNone; }
 
-  bool isBoolean() const { return m_type == SpecificTypeBoolean; }
+  bool isBoolean() const { return type_ == SpecificTypeBoolean; }
   bool getAsBoolean() const;
   void setBoolean(bool);
   static UnsignedLongLongOrBooleanOrTestCallbackInterface fromBoolean(bool);
 
-  bool isTestCallbackInterface() const { return m_type == SpecificTypeTestCallbackInterface; }
+  bool isTestCallbackInterface() const { return type_ == SpecificTypeTestCallbackInterface; }
   TestCallbackInterface* getAsTestCallbackInterface() const;
   void setTestCallbackInterface(TestCallbackInterface*);
   static UnsignedLongLongOrBooleanOrTestCallbackInterface fromTestCallbackInterface(TestCallbackInterface*);
 
-  bool isUnsignedLongLong() const { return m_type == SpecificTypeUnsignedLongLong; }
+  bool isUnsignedLongLong() const { return type_ == SpecificTypeUnsignedLongLong; }
   uint64_t getAsUnsignedLongLong() const;
   void setUnsignedLongLong(uint64_t);
   static UnsignedLongLongOrBooleanOrTestCallbackInterface fromUnsignedLongLong(uint64_t);
@@ -56,11 +56,11 @@ class CORE_EXPORT UnsignedLongLongOrBooleanOrTestCallbackInterface final {
     SpecificTypeTestCallbackInterface,
     SpecificTypeUnsignedLongLong,
   };
-  SpecificTypes m_type;
+  SpecificTypes type_;
 
-  bool m_boolean;
-  Member<TestCallbackInterface> m_testCallbackInterface;
-  uint64_t m_unsignedLongLong;
+  bool boolean_;
+  Member<TestCallbackInterface> test_callback_interface_;
+  uint64_t unsigned_long_long_;
 
   friend CORE_EXPORT v8::Local<v8::Value> ToV8(const UnsignedLongLongOrBooleanOrTestCallbackInterface&, v8::Local<v8::Object>, v8::Isolate*);
 };

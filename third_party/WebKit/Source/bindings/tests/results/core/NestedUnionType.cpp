@@ -26,17 +26,17 @@
 
 namespace blink {
 
-NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord() : m_type(SpecificTypeNone) {}
+NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord() : type_(SpecificTypeNone) {}
 
 Event* NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::getAsEvent() const {
   DCHECK(isEvent());
-  return m_event;
+  return event_;
 }
 
 void NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::setEvent(Event* value) {
   DCHECK(isNull());
-  m_event = value;
-  m_type = SpecificTypeEvent;
+  event_ = value;
+  type_ = SpecificTypeEvent;
 }
 
 NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::fromEvent(Event* value) {
@@ -47,13 +47,13 @@ NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRec
 
 const Vector<int32_t>& NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::getAsLongSequence() const {
   DCHECK(isLongSequence());
-  return m_longSequence;
+  return long_sequence_;
 }
 
 void NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::setLongSequence(const Vector<int32_t>& value) {
   DCHECK(isNull());
-  m_longSequence = value;
-  m_type = SpecificTypeLongSequence;
+  long_sequence_ = value;
+  type_ = SpecificTypeLongSequence;
 }
 
 NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::fromLongSequence(const Vector<int32_t>& value) {
@@ -64,13 +64,13 @@ NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRec
 
 Node* NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::getAsNode() const {
   DCHECK(isNode());
-  return m_node;
+  return node_;
 }
 
 void NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::setNode(Node* value) {
   DCHECK(isNull());
-  m_node = value;
-  m_type = SpecificTypeNode;
+  node_ = value;
+  type_ = SpecificTypeNode;
 }
 
 NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::fromNode(Node* value) {
@@ -81,13 +81,13 @@ NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRec
 
 const String& NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::getAsString() const {
   DCHECK(isString());
-  return m_string;
+  return string_;
 }
 
 void NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::setString(const String& value) {
   DCHECK(isNull());
-  m_string = value;
-  m_type = SpecificTypeString;
+  string_ = value;
+  type_ = SpecificTypeString;
 }
 
 NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::fromString(const String& value) {
@@ -98,13 +98,13 @@ NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRec
 
 const HeapVector<std::pair<String, ByteStringOrNodeList>>& NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::getAsStringByteStringOrNodeListRecord() const {
   DCHECK(isStringByteStringOrNodeListRecord());
-  return m_stringByteStringOrNodeListRecord;
+  return string_byte_string_or_node_list_record_;
 }
 
 void NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::setStringByteStringOrNodeListRecord(const HeapVector<std::pair<String, ByteStringOrNodeList>>& value) {
   DCHECK(isNull());
-  m_stringByteStringOrNodeListRecord = value;
-  m_type = SpecificTypeStringByteStringOrNodeListRecord;
+  string_byte_string_or_node_list_record_ = value;
+  type_ = SpecificTypeStringByteStringOrNodeListRecord;
 }
 
 NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::fromStringByteStringOrNodeListRecord(const HeapVector<std::pair<String, ByteStringOrNodeList>>& value) {
@@ -115,13 +115,13 @@ NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRec
 
 XMLHttpRequest* NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::getAsXMLHttpRequest() const {
   DCHECK(isXMLHttpRequest());
-  return m_xmlHttpRequest;
+  return xml_http_request_;
 }
 
 void NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::setXMLHttpRequest(XMLHttpRequest* value) {
   DCHECK(isNull());
-  m_xmlHttpRequest = value;
-  m_type = SpecificTypeXMLHttpRequest;
+  xml_http_request_ = value;
+  type_ = SpecificTypeXMLHttpRequest;
 }
 
 NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::fromXMLHttpRequest(XMLHttpRequest* value) {
@@ -135,10 +135,10 @@ NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRec
 NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord& NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::operator=(const NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord&) = default;
 
 DEFINE_TRACE(NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord) {
-  visitor->Trace(m_event);
-  visitor->Trace(m_node);
-  visitor->Trace(m_stringByteStringOrNodeListRecord);
-  visitor->Trace(m_xmlHttpRequest);
+  visitor->Trace(event_);
+  visitor->Trace(node_);
+  visitor->Trace(string_byte_string_or_node_list_record_);
+  visitor->Trace(xml_http_request_);
 }
 
 void V8NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
@@ -192,7 +192,7 @@ void V8NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNode
 }
 
 v8::Local<v8::Value> ToV8(const NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
-  switch (impl.m_type) {
+  switch (impl.type_) {
     case NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::SpecificTypeNone:
       return v8::Null(isolate);
     case NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord::SpecificTypeEvent:

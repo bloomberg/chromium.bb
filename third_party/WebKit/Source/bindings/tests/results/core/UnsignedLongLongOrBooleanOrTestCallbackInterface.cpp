@@ -18,17 +18,17 @@
 
 namespace blink {
 
-UnsignedLongLongOrBooleanOrTestCallbackInterface::UnsignedLongLongOrBooleanOrTestCallbackInterface() : m_type(SpecificTypeNone) {}
+UnsignedLongLongOrBooleanOrTestCallbackInterface::UnsignedLongLongOrBooleanOrTestCallbackInterface() : type_(SpecificTypeNone) {}
 
 bool UnsignedLongLongOrBooleanOrTestCallbackInterface::getAsBoolean() const {
   DCHECK(isBoolean());
-  return m_boolean;
+  return boolean_;
 }
 
 void UnsignedLongLongOrBooleanOrTestCallbackInterface::setBoolean(bool value) {
   DCHECK(isNull());
-  m_boolean = value;
-  m_type = SpecificTypeBoolean;
+  boolean_ = value;
+  type_ = SpecificTypeBoolean;
 }
 
 UnsignedLongLongOrBooleanOrTestCallbackInterface UnsignedLongLongOrBooleanOrTestCallbackInterface::fromBoolean(bool value) {
@@ -39,13 +39,13 @@ UnsignedLongLongOrBooleanOrTestCallbackInterface UnsignedLongLongOrBooleanOrTest
 
 TestCallbackInterface* UnsignedLongLongOrBooleanOrTestCallbackInterface::getAsTestCallbackInterface() const {
   DCHECK(isTestCallbackInterface());
-  return m_testCallbackInterface;
+  return test_callback_interface_;
 }
 
 void UnsignedLongLongOrBooleanOrTestCallbackInterface::setTestCallbackInterface(TestCallbackInterface* value) {
   DCHECK(isNull());
-  m_testCallbackInterface = value;
-  m_type = SpecificTypeTestCallbackInterface;
+  test_callback_interface_ = value;
+  type_ = SpecificTypeTestCallbackInterface;
 }
 
 UnsignedLongLongOrBooleanOrTestCallbackInterface UnsignedLongLongOrBooleanOrTestCallbackInterface::fromTestCallbackInterface(TestCallbackInterface* value) {
@@ -56,13 +56,13 @@ UnsignedLongLongOrBooleanOrTestCallbackInterface UnsignedLongLongOrBooleanOrTest
 
 uint64_t UnsignedLongLongOrBooleanOrTestCallbackInterface::getAsUnsignedLongLong() const {
   DCHECK(isUnsignedLongLong());
-  return m_unsignedLongLong;
+  return unsigned_long_long_;
 }
 
 void UnsignedLongLongOrBooleanOrTestCallbackInterface::setUnsignedLongLong(uint64_t value) {
   DCHECK(isNull());
-  m_unsignedLongLong = value;
-  m_type = SpecificTypeUnsignedLongLong;
+  unsigned_long_long_ = value;
+  type_ = SpecificTypeUnsignedLongLong;
 }
 
 UnsignedLongLongOrBooleanOrTestCallbackInterface UnsignedLongLongOrBooleanOrTestCallbackInterface::fromUnsignedLongLong(uint64_t value) {
@@ -76,7 +76,7 @@ UnsignedLongLongOrBooleanOrTestCallbackInterface::~UnsignedLongLongOrBooleanOrTe
 UnsignedLongLongOrBooleanOrTestCallbackInterface& UnsignedLongLongOrBooleanOrTestCallbackInterface::operator=(const UnsignedLongLongOrBooleanOrTestCallbackInterface&) = default;
 
 DEFINE_TRACE(UnsignedLongLongOrBooleanOrTestCallbackInterface) {
-  visitor->Trace(m_testCallbackInterface);
+  visitor->Trace(test_callback_interface_);
 }
 
 void V8UnsignedLongLongOrBooleanOrTestCallbackInterface::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, UnsignedLongLongOrBooleanOrTestCallbackInterface& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {
@@ -115,7 +115,7 @@ void V8UnsignedLongLongOrBooleanOrTestCallbackInterface::toImpl(v8::Isolate* iso
 }
 
 v8::Local<v8::Value> ToV8(const UnsignedLongLongOrBooleanOrTestCallbackInterface& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
-  switch (impl.m_type) {
+  switch (impl.type_) {
     case UnsignedLongLongOrBooleanOrTestCallbackInterface::SpecificTypeNone:
       return v8::Null(isolate);
     case UnsignedLongLongOrBooleanOrTestCallbackInterface::SpecificTypeBoolean:

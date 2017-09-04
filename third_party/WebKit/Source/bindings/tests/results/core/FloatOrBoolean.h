@@ -25,14 +25,14 @@ class CORE_EXPORT FloatOrBoolean final {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
  public:
   FloatOrBoolean();
-  bool isNull() const { return m_type == SpecificTypeNone; }
+  bool isNull() const { return type_ == SpecificTypeNone; }
 
-  bool isBoolean() const { return m_type == SpecificTypeBoolean; }
+  bool isBoolean() const { return type_ == SpecificTypeBoolean; }
   bool getAsBoolean() const;
   void setBoolean(bool);
   static FloatOrBoolean fromBoolean(bool);
 
-  bool isFloat() const { return m_type == SpecificTypeFloat; }
+  bool isFloat() const { return type_ == SpecificTypeFloat; }
   float getAsFloat() const;
   void setFloat(float);
   static FloatOrBoolean fromFloat(float);
@@ -48,10 +48,10 @@ class CORE_EXPORT FloatOrBoolean final {
     SpecificTypeBoolean,
     SpecificTypeFloat,
   };
-  SpecificTypes m_type;
+  SpecificTypes type_;
 
-  bool m_boolean;
-  float m_float;
+  bool boolean_;
+  float float_;
 
   friend CORE_EXPORT v8::Local<v8::Value> ToV8(const FloatOrBoolean&, v8::Local<v8::Object>, v8::Isolate*);
 };
