@@ -10,12 +10,10 @@
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/android/search_geolocation/search_geolocation_disclosure_tab_helper.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker.h"
 #include "chrome/browser/permissions/permission_result.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -72,9 +70,6 @@ class TestSearchEngineDelegate
 class SearchGeolocationServiceTest : public testing::Test {
  public:
   void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kConsistentOmniboxGeolocation);
-
     profile_.reset(new TestingProfile);
 
     auto test_delegate = base::MakeUnique<TestSearchEngineDelegate>();
@@ -131,7 +126,6 @@ class SearchGeolocationServiceTest : public testing::Test {
   }
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<TestingProfile> profile_;
   content::TestBrowserThreadBundle thread_bundle_;
 
@@ -244,16 +238,8 @@ TEST_F(SearchGeolocationServiceTest, UseDSEGeolocationSetting) {
   EXPECT_FALSE(
       GetService()->UseDSEGeolocationSetting(ToOrigin(kGoogleHTTPURL)));
 
-  // False if the feature is disabled.
-  test_delegate()->SetDSEOrigin(kGoogleURL);
-  {
-    base::test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.InitAndDisableFeature(
-        features::kConsistentOmniboxGeolocation);
-    EXPECT_FALSE(GetService()->UseDSEGeolocationSetting(ToOrigin(kGoogleURL)));
-  }
-
   // False if the content setting is enterprise ask.
+  test_delegate()->SetDSEOrigin(kGoogleURL);
   profile()->GetTestingPrefService()->SetManagedPref(
       prefs::kManagedDefaultGeolocationSetting,
       base::MakeUnique<base::Value>(CONTENT_SETTING_ASK));

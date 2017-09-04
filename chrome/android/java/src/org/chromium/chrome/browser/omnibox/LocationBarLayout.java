@@ -68,12 +68,10 @@ import org.chromium.chrome.browser.omnibox.OmniboxResultsAdapter.OmniboxResultIt
 import org.chromium.chrome.browser.omnibox.OmniboxResultsAdapter.OmniboxSuggestionDelegate;
 import org.chromium.chrome.browser.omnibox.VoiceSuggestionProvider.VoiceResult;
 import org.chromium.chrome.browser.omnibox.geo.GeolocationHeader;
-import org.chromium.chrome.browser.omnibox.geo.GeolocationSnackbarController;
 import org.chromium.chrome.browser.page_info.PageInfoPopup;
 import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
-import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarManageable;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.ToolbarActionModeCallback;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
@@ -1104,15 +1102,6 @@ public class LocationBarLayout extends FrameLayout
         if (!hasFocus) {
             mHasStartedNewOmniboxEditSession = false;
             mNewOmniboxEditSessionTimestamp = -1;
-        }
-
-        if (hasFocus && mToolbarDataProvider.hasTab()) {
-            SnackbarManageable activity = (SnackbarManageable) mWindowAndroid.getActivity().get();
-            if (activity != null) {
-                GeolocationSnackbarController.maybeShowSnackbar(activity.getSnackbarManager(),
-                        LocationBarLayout.this, mToolbarDataProvider.isIncognito(),
-                        GEOLOCATION_SNACKBAR_SHOW_DELAY_MS);
-            }
         }
     }
 

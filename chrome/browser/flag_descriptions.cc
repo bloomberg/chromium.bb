@@ -1581,12 +1581,6 @@ const char kEnableAndroidSpellcheckerDescription[] =
     "Enables use of the Android spellchecker.";
 const char kEnableAndroidSpellcheckerName[] = "Enable spell checking";
 
-const char kEnableConsistentOmniboxGeolocationName[] =
-    "Have consistent omnibox geolocation access.";
-const char kEnableConsistentOmniboxGeolocationDescription[] =
-    "Have consistent geolocation access between the omnibox and default search "
-    "engine.";
-
 const char kEnableContentSuggestionsNewFaviconServerName[] =
     "Get favicons for content suggestions from a new server.";
 const char kEnableContentSuggestionsNewFaviconServerDescription[] =

@@ -35,7 +35,6 @@ public class GeolocationHeaderTest extends ChromeActivityTestCaseBase<ChromeActi
     private static final String DISABLE_FEATURES = "disable-features=";
     private static final String ENABLE_FEATURES = "enable-features=";
     private static final String FEATURE_SEPARATOR = ",";
-    private static final String CONSISTENT_GEOLOCATION_FEATURE = "ConsistentOmniboxGeolocation";
     private static final String XGEO_VISIBLE_NETWORKS_FEATURE = "XGEOVisibleNetworks";
     private static final String GOOGLE_BASE_URL_SWITCH = "google-base-url=https://www.google.com";
     private static final double LOCATION_LAT = 20.3;
@@ -50,33 +49,8 @@ public class GeolocationHeaderTest extends ChromeActivityTestCaseBase<ChromeActi
 
     @SmallTest
     @Feature({"Location"})
-    @CommandLineFlags.Add({DISABLE_FEATURES + CONSISTENT_GEOLOCATION_FEATURE + FEATURE_SEPARATOR
-            + XGEO_VISIBLE_NETWORKS_FEATURE})
-    public void testGeolocationHeader() throws ProcessInitException {
-        long now = setMockLocationNow();
-
-        // X-Geo should be sent for Google search results page URLs.
-        assertNonNullHeader(SEARCH_URL_1, false, now, ENCODING_ASCII);
-        assertNonNullHeader(SEARCH_URL_2, false, now, ENCODING_ASCII);
-
-        // X-Geo shouldn't be sent in incognito mode.
-        assertNullHeader(SEARCH_URL_1, true);
-        assertNullHeader(SEARCH_URL_2, true);
-
-        // X-Geo shouldn't be sent with URLs that aren't the Google search results page.
-        assertNullHeader("invalid$url", false);
-        assertNullHeader("https://www.chrome.fr/", false);
-        assertNullHeader("https://www.google.com/", false);
-
-        // X-Geo shouldn't be sent over HTTP.
-        assertNullHeader("http://www.google.com/search?q=potatoes", false);
-        assertNullHeader("http://www.google.com/webhp?#q=dinosaurs", false);
-    }
-
-    @SmallTest
-    @Feature({"Location"})
-    @CommandLineFlags.Add({ENABLE_FEATURES + CONSISTENT_GEOLOCATION_FEATURE, GOOGLE_BASE_URL_SWITCH,
-            DISABLE_FEATURES + XGEO_VISIBLE_NETWORKS_FEATURE})
+    @CommandLineFlags
+            .Add({GOOGLE_BASE_URL_SWITCH, DISABLE_FEATURES + XGEO_VISIBLE_NETWORKS_FEATURE})
     public void testConsistentHeader() throws ProcessInitException {
         long now = setMockLocationNow();
 
@@ -102,21 +76,8 @@ public class GeolocationHeaderTest extends ChromeActivityTestCaseBase<ChromeActi
 
     @SmallTest
     @Feature({"Location"})
-    @CommandLineFlags.Add(DISABLE_FEATURES + CONSISTENT_GEOLOCATION_FEATURE + FEATURE_SEPARATOR
-            + XGEO_VISIBLE_NETWORKS_FEATURE)
-    public void testPermissions() throws ProcessInitException {
-        long now = setMockLocationNow();
-
-        // X-Geo shouldn't be sent when location is disallowed for https origin.
-        checkHeaderWithPermissions(ContentSetting.ALLOW, now, false);
-        checkHeaderWithPermissions(ContentSetting.DEFAULT, now, false);
-        checkHeaderWithPermissions(ContentSetting.BLOCK, now, true);
-    }
-
-    @SmallTest
-    @Feature({"Location"})
-    @CommandLineFlags.Add({ENABLE_FEATURES + CONSISTENT_GEOLOCATION_FEATURE, GOOGLE_BASE_URL_SWITCH,
-            DISABLE_FEATURES + XGEO_VISIBLE_NETWORKS_FEATURE})
+    @CommandLineFlags
+            .Add({GOOGLE_BASE_URL_SWITCH, DISABLE_FEATURES + XGEO_VISIBLE_NETWORKS_FEATURE})
     public void testPermissionAndSetting() throws ProcessInitException {
         long now = setMockLocationNow();
 
@@ -126,24 +87,6 @@ public class GeolocationHeaderTest extends ChromeActivityTestCaseBase<ChromeActi
         checkHeaderWithPermissionAndSetting(ContentSetting.DEFAULT, true, now, false);
         checkHeaderWithPermissionAndSetting(ContentSetting.DEFAULT, false, now, true);
         checkHeaderWithPermissionAndSetting(ContentSetting.BLOCK, false, now, true);
-    }
-
-    @SmallTest
-    @Feature({"Location"})
-    @CommandLineFlags.Add({DISABLE_FEATURES + CONSISTENT_GEOLOCATION_FEATURE + FEATURE_SEPARATOR
-            + XGEO_VISIBLE_NETWORKS_FEATURE})
-    public void testOnlyNonStale() throws ProcessInitException {
-        // X-Geo should be sent only with non-stale locations.
-        long now = System.currentTimeMillis();
-        long oneHour = 60 * 60 * 1000;
-        long oneWeek = 7 * 24 * 60 * 60 * 1000;
-        setMockLocation(now);
-
-        checkHeaderWithLocation(now, false);
-        checkHeaderWithLocation(now - oneHour, false);
-        checkHeaderWithLocation(now - oneWeek, true);
-        GeolocationTracker.setLocationForTesting(null, null);
-        assertNullHeader(SEARCH_URL_1, false);
     }
 
     @SmallTest

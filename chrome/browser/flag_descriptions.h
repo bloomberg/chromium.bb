@@ -975,9 +975,6 @@ extern const char kEnableAndroidPayIntegrationV2Description[];
 extern const char kEnableAndroidSpellcheckerDescription[];
 extern const char kEnableAndroidSpellcheckerName[];
 
-extern const char kEnableConsistentOmniboxGeolocationName[];
-extern const char kEnableConsistentOmniboxGeolocationDescription[];
-
 extern const char kEnableContentSuggestionsNewFaviconServerName[];
 extern const char kEnableContentSuggestionsNewFaviconServerDescription[];
 

@@ -73,10 +73,6 @@ extern const base::Feature kCheckInstallabilityForBannerOnLoad;
 
 extern const base::Feature kClickToOpenPDFPlaceholder;
 
-#if defined(OS_ANDROID)
-extern const base::Feature kConsistentOmniboxGeolocation;
-#endif
-
 #if defined(OS_MACOSX)
 extern const base::Feature kContentFullscreen;
 #endif

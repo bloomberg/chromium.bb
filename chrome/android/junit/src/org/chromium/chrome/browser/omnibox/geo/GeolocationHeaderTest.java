@@ -182,8 +182,7 @@ public class GeolocationHeaderTest {
     }
 
     @Test
-    @Features({@Features.Register(ChromeFeatureList.CONSISTENT_OMNIBOX_GEOLOCATION),
-            @Features.Register(ChromeFeatureList.XGEO_VISIBLE_NETWORKS)})
+    @Features({ @Features.Register(ChromeFeatureList.XGEO_VISIBLE_NETWORKS) })
     public void testGetGeoHeaderFreshLocation() throws ProcessInitException {
         VisibleNetworks visibleNetworks = VisibleNetworks.create(VISIBLE_WIFI1, VISIBLE_CELL1,
                 new HashSet(Arrays.asList(VISIBLE_WIFI3)),
@@ -198,8 +197,7 @@ public class GeolocationHeaderTest {
     }
 
     @Test
-    @Features({@Features.Register(ChromeFeatureList.CONSISTENT_OMNIBOX_GEOLOCATION),
-            @Features.Register(ChromeFeatureList.XGEO_VISIBLE_NETWORKS)})
+    @Features({ @Features.Register(ChromeFeatureList.XGEO_VISIBLE_NETWORKS) })
     public void testGetGeoHeaderLocationMissing() throws ProcessInitException {
         VisibleNetworks visibleNetworks = VisibleNetworks.create(VISIBLE_WIFI1, VISIBLE_CELL1,
                 new HashSet(Arrays.asList(VISIBLE_WIFI3)),
@@ -211,8 +209,7 @@ public class GeolocationHeaderTest {
     }
 
     @Test
-    @Features({@Features.Register(ChromeFeatureList.CONSISTENT_OMNIBOX_GEOLOCATION),
-            @Features.Register(ChromeFeatureList.XGEO_VISIBLE_NETWORKS)})
+    @Features({ @Features.Register(ChromeFeatureList.XGEO_VISIBLE_NETWORKS) })
     public void testGetGeoHeaderOldLocationHighAccuracy() throws ProcessInitException {
         GeolocationHeader.setLocationSourceForTesting(
                 GeolocationHeader.LOCATION_SOURCE_HIGH_ACCURACY);
@@ -222,8 +219,7 @@ public class GeolocationHeaderTest {
     }
 
     @Test
-    @Features({@Features.Register(ChromeFeatureList.CONSISTENT_OMNIBOX_GEOLOCATION),
-            @Features.Register(ChromeFeatureList.XGEO_VISIBLE_NETWORKS)})
+    @Features({ @Features.Register(ChromeFeatureList.XGEO_VISIBLE_NETWORKS) })
     public void testGetGeoHeaderOldLocationBatterySaving() throws ProcessInitException {
         GeolocationHeader.setLocationSourceForTesting(
                 GeolocationHeader.LOCATION_SOURCE_BATTERY_SAVING);
@@ -232,8 +228,7 @@ public class GeolocationHeaderTest {
     }
 
     @Test
-    @Features({@Features.Register(ChromeFeatureList.CONSISTENT_OMNIBOX_GEOLOCATION),
-            @Features.Register(ChromeFeatureList.XGEO_VISIBLE_NETWORKS)})
+    @Features({ @Features.Register(ChromeFeatureList.XGEO_VISIBLE_NETWORKS) })
     public void testGetGeoHeaderOldLocationGpsOnly() throws ProcessInitException {
         GeolocationHeader.setLocationSourceForTesting(GeolocationHeader.LOCATION_SOURCE_GPS_ONLY);
         // In GPS only mode, networks should never be included.
@@ -241,8 +236,7 @@ public class GeolocationHeaderTest {
     }
 
     @Test
-    @Features({@Features.Register(ChromeFeatureList.XGEO_VISIBLE_NETWORKS),
-            @Features.Register(ChromeFeatureList.CONSISTENT_OMNIBOX_GEOLOCATION)})
+    @Features({ @Features.Register(ChromeFeatureList.XGEO_VISIBLE_NETWORKS) })
     public void testGetGeoHeaderOldLocationLocationOff() throws ProcessInitException {
         GeolocationHeader.setLocationSourceForTesting(GeolocationHeader.LOCATION_SOURCE_MASTER_OFF);
         // If the master switch is off, networks should never be included (old location might).
@@ -250,8 +244,7 @@ public class GeolocationHeaderTest {
     }
 
     @Test
-    @Features({@Features.Register(ChromeFeatureList.CONSISTENT_OMNIBOX_GEOLOCATION),
-            @Features.Register(ChromeFeatureList.XGEO_VISIBLE_NETWORKS)})
+    @Features({ @Features.Register(ChromeFeatureList.XGEO_VISIBLE_NETWORKS) })
     public void testGetGeoHeaderOldLocationAppPermissionDenied() throws ProcessInitException {
         GeolocationHeader.setLocationSourceForTesting(
                 GeolocationHeader.LOCATION_SOURCE_HIGH_ACCURACY);
@@ -261,8 +254,9 @@ public class GeolocationHeaderTest {
     }
 
     @Test
-    @Features({@Features.Register(ChromeFeatureList.CONSISTENT_OMNIBOX_GEOLOCATION),
-            @Features.Register(value = ChromeFeatureList.XGEO_VISIBLE_NETWORKS, enabled = false)})
+    @Features({
+            @Features.Register(value = ChromeFeatureList.XGEO_VISIBLE_NETWORKS, enabled = false)
+    })
     public void testGetGeoHeaderOldLocationFeatureOff() throws ProcessInitException {
         long timestamp = LOCATION_TIME * 1000;
         int latitudeE7 = (int) (LOCATION_LAT * 10000000);

@@ -2746,21 +2746,6 @@
             ]
         }
     ],
-    "SearchGeolocationConsistency": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "EnableExperiment",
-                    "enable_features": [
-                        "ConsistentOmniboxGeolocation"
-                    ]
-                }
-            ]
-        }
-    ],
     "SecurityChip": [
         {
             "platforms": [

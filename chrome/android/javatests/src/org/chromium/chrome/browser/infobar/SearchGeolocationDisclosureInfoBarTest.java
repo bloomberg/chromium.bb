@@ -34,10 +34,6 @@ import java.util.concurrent.TimeoutException;
         ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
 public class SearchGeolocationDisclosureInfoBarTest {
     private static final String SEARCH_PAGE = "/chrome/test/data/android/google.html";
-    private static final String ENABLE_NEW_DISCLOSURE_FEATURE =
-            "enable-features=ConsistentOmniboxGeolocation";
-    private static final String DISABLE_NEW_DISCLOSURE_FEATURE =
-            "disable-features=ConsistentOmniboxGeolocation";
 
     private EmbeddedTestServer mTestServer;
 
@@ -61,7 +57,6 @@ public class SearchGeolocationDisclosureInfoBarTest {
     @Test
     @SmallTest
     @Feature({"Browser", "Main"})
-    @CommandLineFlags.Add(ENABLE_NEW_DISCLOSURE_FEATURE)
     public void testInfoBarAppears() throws InterruptedException, TimeoutException {
         SearchGeolocationDisclosureTabHelper.setIgnoreUrlChecksForTesting();
         Assert.assertEquals(
@@ -139,7 +134,6 @@ public class SearchGeolocationDisclosureInfoBarTest {
     @Test
     @SmallTest
     @Feature({"Browser", "Main"})
-    @CommandLineFlags.Add(ENABLE_NEW_DISCLOSURE_FEATURE)
     public void testInfoBarDismiss() throws InterruptedException, TimeoutException {
         SearchGeolocationDisclosureTabHelper.setIgnoreUrlChecksForTesting();
         Assert.assertEquals(
@@ -174,7 +168,6 @@ public class SearchGeolocationDisclosureInfoBarTest {
     @Test
     @SmallTest
     @Feature({"Browser", "Main"})
-    @CommandLineFlags.Add(ENABLE_NEW_DISCLOSURE_FEATURE)
     public void testNoInfoBarForRandomUrl() throws InterruptedException, TimeoutException {
         Assert.assertEquals(
                 "Wrong starting infobar count", 0, mActivityTestRule.getInfoBars().size());
@@ -187,25 +180,9 @@ public class SearchGeolocationDisclosureInfoBarTest {
     @Test
     @SmallTest
     @Feature({"Browser", "Main"})
-    @CommandLineFlags.Add(ENABLE_NEW_DISCLOSURE_FEATURE)
     public void testNoInfoBarInIncognito() throws InterruptedException, TimeoutException {
         SearchGeolocationDisclosureTabHelper.setIgnoreUrlChecksForTesting();
         mActivityTestRule.newIncognitoTabFromMenu();
-        Assert.assertEquals(
-                "Wrong starting infobar count", 0, mActivityTestRule.getInfoBars().size());
-
-        mActivityTestRule.loadUrl(mTestServer.getURL(SEARCH_PAGE));
-        Assert.assertEquals(
-                "Wrong infobar count after search", 0, mActivityTestRule.getInfoBars().size());
-    }
-
-    @Test
-    @SmallTest
-    @Feature({"Browser", "Main"})
-    @CommandLineFlags.Add(DISABLE_NEW_DISCLOSURE_FEATURE)
-    public void testInfoBarAppearsDoesntAppearWithoutFeature()
-            throws InterruptedException, TimeoutException {
-        SearchGeolocationDisclosureTabHelper.setIgnoreUrlChecksForTesting();
         Assert.assertEquals(
                 "Wrong starting infobar count", 0, mActivityTestRule.getInfoBars().size());
 
