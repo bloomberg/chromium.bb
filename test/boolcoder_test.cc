@@ -116,8 +116,8 @@ TEST(AV1, TestTell) {
       aom_read(&br, p, NULL);
       uint32_t tell = aom_reader_tell(&br);
       uint32_t tell_frac = aom_reader_tell_frac(&br);
-      GTEST_ASSERT_GE(tell, last_tell) << "tell: " << tell
-                                       << ", last_tell: " << last_tell;
+      GTEST_ASSERT_GE(tell, last_tell)
+          << "tell: " << tell << ", last_tell: " << last_tell;
       GTEST_ASSERT_GE(tell_frac, last_tell_frac)
           << "tell_frac: " << tell_frac
           << ", last_tell_frac: " << last_tell_frac;

@@ -482,8 +482,8 @@ static const struct arg_enum_list color_space_enum[] = {
 };
 
 static const arg_def_t input_color_space =
-    ARG_DEF_ENUM(NULL, "color-space", 1, "The color space of input content:",
-                 color_space_enum);
+    ARG_DEF_ENUM(NULL, "color-space", 1,
+                 "The color space of input content:", color_space_enum);
 
 static const struct arg_enum_list transfer_function_enum[] = {
   { "unknown", AOM_TF_UNKNOWN },
@@ -494,8 +494,8 @@ static const struct arg_enum_list transfer_function_enum[] = {
 };
 
 static const arg_def_t input_transfer_function = ARG_DEF_ENUM(
-    NULL, "transfer-function", 1, "The transfer function of input content:",
-    transfer_function_enum);
+    NULL, "transfer-function", 1,
+    "The transfer function of input content:", transfer_function_enum);
 
 static const struct arg_enum_list chroma_sample_position_enum[] = {
   { "unknown", AOM_CSP_UNKNOWN },

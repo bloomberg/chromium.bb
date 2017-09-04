@@ -1168,10 +1168,11 @@ PVQ_SKIP_TYPE av1_pvq_encode_helper(MACROBLOCK *x, tran_low_t *const coeff,
   // DC quantizer for PVQ
   if (use_activity_masking)
     pvq_dc_quant =
-        OD_MAXI(1, (quant[0] << (OD_COEFF_SHIFT - 3) >> hbd_downshift) *
-                           daala_enc->state
-                               .pvq_qm_q4[plane][od_qm_get_index(tx_size, 0)] >>
-                       4);
+        OD_MAXI(1,
+                (quant[0] << (OD_COEFF_SHIFT - 3) >> hbd_downshift) *
+                        daala_enc->state
+                            .pvq_qm_q4[plane][od_qm_get_index(tx_size, 0)] >>
+                    4);
   else
     pvq_dc_quant =
         OD_MAXI(1, quant[0] << (OD_COEFF_SHIFT - 3) >> hbd_downshift);
@@ -1205,18 +1206,19 @@ PVQ_SKIP_TYPE av1_pvq_encode_helper(MACROBLOCK *x, tran_low_t *const coeff,
     out_int32[0] = OD_DIV_R0(in_int32[0] - ref_int32[0], pvq_dc_quant);
   }
 
-  ac_dc_coded =
-      od_pvq_encode(daala_enc, ref_int32, in_int32, out_int32,
-                    OD_MAXI(1, quant[0] << (OD_COEFF_SHIFT - 3) >>
-                                   hbd_downshift),  // scale/quantizer
-                    OD_MAXI(1, quant[1] << (OD_COEFF_SHIFT - 3) >>
-                                   hbd_downshift),  // scale/quantizer
-                    plane,
-                    tx_size, OD_PVQ_BETA[use_activity_masking][plane][tx_size],
-                    0,  // is_keyframe,
-                    daala_enc->state.qm + off, daala_enc->state.qm_inv + off,
-                    speed,  // speed
-                    pvq_info);
+  ac_dc_coded = od_pvq_encode(
+      daala_enc, ref_int32, in_int32, out_int32,
+      OD_MAXI(1,
+              quant[0] << (OD_COEFF_SHIFT - 3) >>
+                  hbd_downshift),  // scale/quantizer
+      OD_MAXI(1,
+              quant[1] << (OD_COEFF_SHIFT - 3) >>
+                  hbd_downshift),  // scale/quantizer
+      plane, tx_size, OD_PVQ_BETA[use_activity_masking][plane][tx_size],
+      0,  // is_keyframe,
+      daala_enc->state.qm + off, daala_enc->state.qm_inv + off,
+      speed,  // speed
+      pvq_info);
 
   // Encode residue of DC coeff, if required.
   if (!has_dc_skip || out_int32[0]) {

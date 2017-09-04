@@ -1650,11 +1650,11 @@ static INLINE void build_inter_predictors(
     if (conv_params.do_post_rounding) {
 #if CONFIG_HIGHBITDEPTH
       if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
-        av1_highbd_convolve_rounding(tmp_dst, MAX_SB_SIZE, dst, dst_buf->stride,
-                                     w, h, FILTER_BITS * 2 + is_compound -
-                                               conv_params.round_0 -
-                                               conv_params.round_1,
-                                     xd->bd);
+        av1_highbd_convolve_rounding(
+            tmp_dst, MAX_SB_SIZE, dst, dst_buf->stride, w, h,
+            FILTER_BITS * 2 + is_compound - conv_params.round_0 -
+                conv_params.round_1,
+            xd->bd);
       else
 #endif  // CONFIG_HIGHBITDEPTH
 #if CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF

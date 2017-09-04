@@ -99,8 +99,8 @@ class AV1QuantizeTest : public ::testing::TestWithParam<QuantizeFuncParams> {
       for (int j = 0; j < count; ++j) {
         err_count += (ref_qcoeff_ptr[j] != qcoeff_ptr[j]) |
                      (ref_dqcoeff_ptr[j] != dqcoeff_ptr[j]);
-        EXPECT_EQ(ref_qcoeff_ptr[j], qcoeff_ptr[j]) << "qcoeff error: i = " << i
-                                                    << " j = " << j << "\n";
+        EXPECT_EQ(ref_qcoeff_ptr[j], qcoeff_ptr[j])
+            << "qcoeff error: i = " << i << " j = " << j << "\n";
         EXPECT_EQ(ref_dqcoeff_ptr[j], dqcoeff_ptr[j])
             << "dqcoeff error: i = " << i << " j = " << j << "\n";
       }

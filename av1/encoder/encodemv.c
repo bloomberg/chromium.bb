@@ -70,9 +70,10 @@ static void encode_mv_component(aom_writer *w, int comp, nmv_component *mvcomp,
   if (precision > MV_SUBPEL_NONE)
 #endif  // CONFIG_INTRABC
   {
-    aom_write_symbol(w, fr, mv_class == MV_CLASS_0 ? mvcomp->class0_fp_cdf[d]
-                                                   : mvcomp->fp_cdf,
-                     MV_FP_SIZE);
+    aom_write_symbol(
+        w, fr,
+        mv_class == MV_CLASS_0 ? mvcomp->class0_fp_cdf[d] : mvcomp->fp_cdf,
+        MV_FP_SIZE);
   }
 
   // High precision bit

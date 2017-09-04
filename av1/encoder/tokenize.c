@@ -464,7 +464,7 @@ static void tokenize_pvq(int plane, int block, int blk_row, int blk_col,
 
   assert(block < MAX_PVQ_BLOCKS_IN_SB);
   pvq_info = &x->pvq[block][plane];
-  add_pvq_block((AV1_COMMON * const)cm, x, pvq_info);
+  add_pvq_block((AV1_COMMON * const) cm, x, pvq_info);
 }
 #endif  // CONFIG_PVQ
 

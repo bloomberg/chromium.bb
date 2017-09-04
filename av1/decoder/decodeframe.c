@@ -341,10 +341,11 @@ static int av1_pvq_decode_helper(MACROBLOCKD *xd, tran_low_t *ref_coeff,
     pvq_dc_quant = 1;
   else {
     if (use_activity_masking)
-      pvq_dc_quant = OD_MAXI(
-          1, (quant[0] << (OD_COEFF_SHIFT - 3) >> hbd_downshift) *
-                     dec->state.pvq_qm_q4[pli][od_qm_get_index(bs, 0)] >>
-                 4);
+      pvq_dc_quant =
+          OD_MAXI(1,
+                  (quant[0] << (OD_COEFF_SHIFT - 3) >> hbd_downshift) *
+                          dec->state.pvq_qm_q4[pli][od_qm_get_index(bs, 0)] >>
+                      4);
     else
       pvq_dc_quant =
           OD_MAXI(1, quant[0] << (OD_COEFF_SHIFT - 3) >> hbd_downshift);

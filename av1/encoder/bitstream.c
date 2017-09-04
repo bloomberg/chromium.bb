@@ -3122,9 +3122,10 @@ static void write_modes_sb(AV1_COMP *const cpi, const TileInfo *const tile,
            width += width_step) {
         if (!sb_all_skip(cm, mi_row + height, mi_col + width))
           aom_write_literal(
-              w, cm->mi_grid_visible[(mi_row + height) * cm->mi_stride +
-                                     (mi_col + width)]
-                     ->mbmi.cdef_strength,
+              w,
+              cm->mi_grid_visible[(mi_row + height) * cm->mi_stride +
+                                  (mi_col + width)]
+                  ->mbmi.cdef_strength,
               cm->cdef_bits);
       }
     }
@@ -3252,8 +3253,9 @@ static void encode_restoration_mode(AV1_COMMON *cm,
   int s = AOMMIN(cm->subsampling_x, cm->subsampling_y);
   if (s && (cm->rst_info[1].frame_restoration_type != RESTORE_NONE ||
             cm->rst_info[2].frame_restoration_type != RESTORE_NONE)) {
-    aom_wb_write_bit(wb, cm->rst_info[1].restoration_tilesize !=
-                             cm->rst_info[0].restoration_tilesize);
+    aom_wb_write_bit(wb,
+                     cm->rst_info[1].restoration_tilesize !=
+                         cm->rst_info[0].restoration_tilesize);
     assert(cm->rst_info[1].restoration_tilesize ==
                cm->rst_info[0].restoration_tilesize ||
            cm->rst_info[1].restoration_tilesize ==

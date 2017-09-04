@@ -510,8 +510,8 @@ class Trans16x16TestBase {
         const int diff = dst[j] - src[j];
 #endif  // CONFIG_HIGHBITDEPTH
         const uint32_t error = diff * diff;
-        EXPECT_GE(1u, error) << "Error: 16x16 IDCT has error " << error
-                             << " at index " << j;
+        EXPECT_GE(1u, error)
+            << "Error: 16x16 IDCT has error " << error << " at index " << j;
       }
     }
   }

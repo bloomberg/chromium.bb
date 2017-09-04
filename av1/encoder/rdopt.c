@@ -6240,9 +6240,9 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
     assert(frame_comp_mv);
   }
   assert(has_second_ref(mbmi) || is_inter_singleref_comp_mode(mbmi->mode));
-  const int refs[2] = { mbmi->ref_frame[0], has_second_ref(mbmi)
-                                                ? mbmi->ref_frame[1]
-                                                : mbmi->ref_frame[0] };
+  const int refs[2] = { mbmi->ref_frame[0],
+                        has_second_ref(mbmi) ? mbmi->ref_frame[1]
+                                             : mbmi->ref_frame[0] };
 #else
   assert(has_second_ref(mbmi));
   const int refs[2] = { mbmi->ref_frame[0], mbmi->ref_frame[1] };
@@ -11101,10 +11101,11 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
                 x->rdmult, rate2 + av1_cost_bit(av1_get_skip_prob(cm, xd), 0),
                 distortion2);
           else
-            tmp_ref_rd = RDCOST(
-                x->rdmult, rate2 + av1_cost_bit(av1_get_skip_prob(cm, xd), 1) -
-                               rate_y - rate_uv,
-                total_sse);
+            tmp_ref_rd =
+                RDCOST(x->rdmult,
+                       rate2 + av1_cost_bit(av1_get_skip_prob(cm, xd), 1) -
+                           rate_y - rate_uv,
+                       total_sse);
         }
 #if CONFIG_VAR_TX
         for (i = 0; i < MAX_MB_PLANE; ++i)
@@ -11277,16 +11278,18 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
             if (RDCOST(x->rdmult, tmp_rd_stats_y.rate + tmp_rd_stats_uv.rate,
                        tmp_rd_stats.dist) <
                 RDCOST(x->rdmult, 0, tmp_rd_stats.sse))
-              tmp_alt_rd = RDCOST(
-                  x->rdmult, tmp_rd_stats.rate +
-                                 av1_cost_bit(av1_get_skip_prob(cm, xd), 0),
-                  tmp_rd_stats.dist);
+              tmp_alt_rd =
+                  RDCOST(x->rdmult,
+                         tmp_rd_stats.rate +
+                             av1_cost_bit(av1_get_skip_prob(cm, xd), 0),
+                         tmp_rd_stats.dist);
             else
-              tmp_alt_rd = RDCOST(
-                  x->rdmult, tmp_rd_stats.rate +
-                                 av1_cost_bit(av1_get_skip_prob(cm, xd), 1) -
-                                 tmp_rd_stats_y.rate - tmp_rd_stats_uv.rate,
-                  tmp_rd_stats.sse);
+              tmp_alt_rd =
+                  RDCOST(x->rdmult,
+                         tmp_rd_stats.rate +
+                             av1_cost_bit(av1_get_skip_prob(cm, xd), 1) -
+                             tmp_rd_stats_y.rate - tmp_rd_stats_uv.rate,
+                         tmp_rd_stats.sse);
 #endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
           }
 
@@ -12573,8 +12576,9 @@ void av1_check_ncobmc_rd(const struct AV1_COMP *cpi, struct macroblock *x,
   }
 
   if (rd_causal >
-      RDCOST(x->rdmult, rd_stats_y.rate + rd_stats_uv.rate +
-                            av1_cost_bit(cm->fc->motion_mode_prob[bsize][0], 1),
+      RDCOST(x->rdmult,
+             rd_stats_y.rate + rd_stats_uv.rate +
+                 av1_cost_bit(cm->fc->motion_mode_prob[bsize][0], 1),
              (rd_stats_y.dist + rd_stats_uv.dist))) {
     x->skip = skip_blk;
   } else {

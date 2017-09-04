@@ -27,9 +27,9 @@ static INLINE int sign(int i) { return i < 0 ? -1 : 1; }
 static INLINE int constrain(int diff, int threshold, unsigned int damping) {
   return threshold
              ? sign(diff) *
-                   AOMMIN(
-                       abs(diff),
-                       AOMMAX(0, threshold - (abs(diff) >>
+                   AOMMIN(abs(diff),
+                          AOMMAX(0,
+                                 threshold - (abs(diff) >>
                                               (damping - get_msb(threshold)))))
              : 0;
 }

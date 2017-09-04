@@ -2574,12 +2574,14 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
 #endif
   CHECK_MEM_ERROR(
       cm, cpi->td.mb.above_pred_buf,
-      (uint8_t *)aom_memalign(16, buf_scaler * MAX_MB_PLANE * MAX_SB_SQUARE *
-                                      sizeof(*cpi->td.mb.above_pred_buf)));
+      (uint8_t *)aom_memalign(16,
+                              buf_scaler * MAX_MB_PLANE * MAX_SB_SQUARE *
+                                  sizeof(*cpi->td.mb.above_pred_buf)));
   CHECK_MEM_ERROR(
       cm, cpi->td.mb.left_pred_buf,
-      (uint8_t *)aom_memalign(16, buf_scaler * MAX_MB_PLANE * MAX_SB_SQUARE *
-                                      sizeof(*cpi->td.mb.left_pred_buf)));
+      (uint8_t *)aom_memalign(16,
+                              buf_scaler * MAX_MB_PLANE * MAX_SB_SQUARE *
+                                  sizeof(*cpi->td.mb.left_pred_buf)));
 
   CHECK_MEM_ERROR(cm, cpi->td.mb.wsrc_buf,
                   (int32_t *)aom_memalign(

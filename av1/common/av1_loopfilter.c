@@ -3344,8 +3344,8 @@ void av1_loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer, AV1_COMMON *cm,
     MODE_INFO **mi = cm->mi_grid_visible + mi_row * cm->mi_stride;
 #if CONFIG_VAR_TX
     for (int i = 0; i < MAX_MB_PLANE; ++i)
-      memset(cm->left_txfm_context[i], TX_32X32, MAX_MIB_SIZE
-                                                     << TX_UNIT_HIGH_LOG2);
+      memset(cm->left_txfm_context[i], TX_32X32,
+             MAX_MIB_SIZE << TX_UNIT_HIGH_LOG2);
 #endif  // CONFIG_VAR_TX
     for (mi_col = 0; mi_col < cm->mi_cols; mi_col += cm->mib_size) {
       av1_setup_dst_planes(planes, cm->sb_size, frame_buffer, mi_row, mi_col);

@@ -572,8 +572,9 @@ void cdef_filter_fb(uint8_t *dst8, uint16_t *dst16, int dstride, uint16_t *in,
           pri_damping, sec_damping, bsize, (256 << coeff_shift) - 1);
     else
       cdef_filter_block(
-          NULL, &dst16[dirinit ? bi << (bsizex + bsizey)
-                               : (by << bsizey) * dstride + (bx << bsizex)],
+          NULL,
+          &dst16[dirinit ? bi << (bsizex + bsizey)
+                         : (by << bsizey) * dstride + (bx << bsizex)],
           dirinit ? 1 << bsizex : dstride,
           &in[(by * CDEF_BSTRIDE << bsizey) + (bx << bsizex)],
           (pli ? t : adjust_strength(t, var[by][bx])), s, t ? dir[by][bx] : 0,
