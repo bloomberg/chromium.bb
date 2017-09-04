@@ -4,29 +4,13 @@
 
 #include "chrome/browser/search/instant_service.h"
 
-#include <memory>
 #include <string>
-#include <tuple>
 #include <vector>
 
-#include "base/memory/ptr_util.h"
-#include "base/metrics/field_trial.h"
-#include "base/strings/string_util.h"
-#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/search/instant_service_observer.h"
 #include "chrome/browser/search/instant_unittest_base.h"
 #include "chrome/browser/search/search.h"
-#include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/search/instant_search_prerenderer.h"
-#include "chrome/common/render_messages.h"
-#include "components/variations/entropy_provider.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_types.h"
-#include "content/public/test/mock_render_process_host.h"
-#include "ipc/ipc_message.h"
-#include "ipc/ipc_test_sink.h"
+#include "chrome/common/search/instant_types.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "url/gurl.h"
 
@@ -49,27 +33,10 @@ class InstantServiceTest : public InstantUnitTestBase {
     InstantUnitTestBase::TearDown();
   }
 
-  InstantSearchPrerenderer* GetInstantSearchPrerenderer() {
-    return instant_service_->GetInstantSearchPrerenderer();
-  }
-
-  std::vector<InstantMostVisitedItem>& most_visited_items() {
-    return instant_service_->most_visited_items_;
-  }
-
   std::unique_ptr<MockInstantServiceObserver> instant_service_observer_;
 };
 
-class InstantServiceEnabledTest : public InstantServiceTest {
- protected:
-  void SetUp() override {
-    ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-        "EmbeddedSearch", "Group1 use_cacheable_ntp:1"));
-    InstantServiceTest::SetUp();
-  }
-};
-
-TEST_F(InstantServiceEnabledTest, DispatchDefaultSearchProviderChanged) {
+TEST_F(InstantServiceTest, DispatchDefaultSearchProviderChanged) {
   EXPECT_CALL(*instant_service_observer_.get(),
               DefaultSearchProviderChanged(false)).Times(1);
 
@@ -96,62 +63,6 @@ TEST_F(InstantServiceTest, DispatchGoogleURLUpdated) {
 
   const std::string new_base_url = "https://www.google.es/";
   NotifyGoogleBaseURLUpdate(new_base_url);
-}
-
-TEST_F(InstantServiceTest, InstantSearchEnabled) {
-  EXPECT_NE(nullptr, GetInstantSearchPrerenderer());
-}
-
-TEST_F(InstantServiceEnabledTest,
-       ResetInstantSearchPrerenderer_DefaultProviderChanged) {
-  EXPECT_CALL(*instant_service_observer_.get(),
-              DefaultSearchProviderChanged(false)).Times(2);
-
-  // Set a default search provider that doesn't support Instant.
-  TemplateURLData data;
-  data.SetShortName(base::ASCIIToUTF16("foobar.com"));
-  data.SetURL("https://foobar.com/url?bar={searchTerms}");
-  TemplateURL* template_url =
-      template_url_service_->Add(base::MakeUnique<TemplateURL>(data));
-  template_url_service_->SetUserSelectedDefaultSearchProvider(template_url);
-
-  EXPECT_EQ(nullptr, GetInstantSearchPrerenderer());
-
-  // Set a default search provider that supports Instant and make sure
-  // InstantSearchPrerenderer is valid.
-  SetUserSelectedDefaultSearchProvider("https://google.com/");
-  EXPECT_NE(nullptr, GetInstantSearchPrerenderer());
-}
-
-TEST_F(InstantServiceEnabledTest,
-       ResetInstantSearchPrerenderer_GoogleBaseURLUpdated) {
-  EXPECT_CALL(*instant_service_observer_.get(),
-              DefaultSearchProviderChanged(true)).Times(1);
-
-  InstantSearchPrerenderer* old_prerenderer = GetInstantSearchPrerenderer();
-  ASSERT_NE(nullptr, old_prerenderer);
-
-  const std::string new_base_url = "https://www.google.es/";
-  NotifyGoogleBaseURLUpdate(new_base_url);
-  EXPECT_NE(old_prerenderer, GetInstantSearchPrerenderer());
-}
-
-TEST_F(InstantServiceEnabledTest,
-       ResetInstantSearchPrerenderer_InstantURLUpdated) {
-  InstantSearchPrerenderer* old_prerenderer = GetInstantSearchPrerenderer();
-  ASSERT_NE(nullptr, old_prerenderer);
-
-  // Change the Instant URL *without* notifying the InstantService. That can
-  // happen when some parameter (from UIThreadSearchTermsData) that goes into
-  // the Instant URL is changed, e.g. the RLZ value (see crbug.com/660923). The
-  // prerenderer should automatically get reset on the next access.
-  const std::string new_base_url = "https://www.google.es/";
-  UIThreadSearchTermsData::SetGoogleBaseURL(new_base_url);
-  InstantSearchPrerenderer* new_prerenderer = GetInstantSearchPrerenderer();
-  EXPECT_NE(old_prerenderer, new_prerenderer);
-
-  // Make sure the next access does *not* reset the prerenderer again.
-  EXPECT_EQ(new_prerenderer, GetInstantSearchPrerenderer());
 }
 
 TEST_F(InstantServiceTest, GetSuggestionFromClientSide) {

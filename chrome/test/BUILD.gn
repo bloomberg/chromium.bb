@@ -3744,7 +3744,6 @@ test("unit_tests") {
       "../browser/ui/page_info/permission_menu_model_unittest.cc",
       "../browser/ui/passwords/manage_passwords_bubble_model_unittest.cc",
       "../browser/ui/passwords/password_dialog_controller_impl_unittest.cc",
-      "../browser/ui/search/instant_search_prerenderer_unittest.cc",
       "../browser/ui/search/ntp_user_data_logger_unittest.cc",
       "../browser/ui/search/search_delegate_unittest.cc",
       "../browser/ui/search/search_ipc_router_policy_unittest.cc",

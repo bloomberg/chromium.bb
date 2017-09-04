@@ -146,8 +146,6 @@ split_static_library("ui") {
     "protocol_dialog_delegate.h",
     "proximity_auth/proximity_auth_error_bubble.h",
     "screen_capture_notification_ui.h",
-    "search/instant_search_prerenderer.cc",
-    "search/instant_search_prerenderer.h",
     "search/instant_tab.cc",
     "search/instant_tab.h",
     "search/new_tab_page_interceptor_service.cc",

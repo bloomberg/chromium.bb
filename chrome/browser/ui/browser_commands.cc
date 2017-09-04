@@ -32,7 +32,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_dialogs.h"
-#include "chrome/browser/ui/browser_instant_controller.h"
 #include "chrome/browser/ui/browser_live_tab_context.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
@@ -520,26 +519,8 @@ void OpenCurrentURL(Browser* browser) {
 
   GURL url(location_bar->GetDestinationURL());
 
-  ui::PageTransition page_transition = location_bar->GetPageTransition();
-  WindowOpenDisposition open_disposition =
-      location_bar->GetWindowOpenDisposition();
-  // A PAGE_TRANSITION_TYPED means the user has typed a URL. We do not want to
-  // open URLs with instant_controller since in some cases it disregards it
-  // and performs a search instead. For example, when using CTRL-Enter, the
-  // location_bar is aware of the URL but instant is not.
-  // Instant should also not handle PAGE_TRANSITION_RELOAD because its knowledge
-  // of the omnibox text may be stale if the user focuses in the omnibox and
-  // presses enter without typing anything.
-  if (!ui::PageTransitionCoreTypeIs(page_transition,
-                                    ui::PAGE_TRANSITION_TYPED) &&
-      !ui::PageTransitionCoreTypeIs(page_transition,
-                                    ui::PAGE_TRANSITION_RELOAD) &&
-      browser->instant_controller()) {
-    browser->instant_controller()->OpenInstant(open_disposition, url);
-  }
-
-  NavigateParams params(browser, url, page_transition);
-  params.disposition = open_disposition;
+  NavigateParams params(browser, url, location_bar->GetPageTransition());
+  params.disposition = location_bar->GetWindowOpenDisposition();
   // Use ADD_INHERIT_OPENER so that all pages opened by the omnibox at least
   // inherit the opener. In some cases the tabstrip will determine the group
   // should be inherited, in which case the group is inherited instead of the

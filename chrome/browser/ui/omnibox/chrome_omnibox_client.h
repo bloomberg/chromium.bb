@@ -67,7 +67,6 @@ class ChromeOmniboxClient : public OmniboxClient {
                      const AutocompleteResult& result,
                      bool is_popup_open,
                      bool has_focus) override;
-  void OnInputAccepted(const AutocompleteMatch& match) override;
   void OnRevert() override;
   void OnURLOpenedFromOmnibox(OmniboxLog* log) override;
   void OnBookmarkLaunched() override;
@@ -79,9 +78,6 @@ class ChromeOmniboxClient : public OmniboxClient {
 
   // Performs preconnection for |match|.
   void DoPreconnect(const AutocompleteMatch& match);
-
-  // Sends the current SearchProvider suggestion to the Instant page if any.
-  void SetSuggestionToPrefetch(const InstantSuggestion& suggestion);
 
   void OnBitmapFetched(const BitmapFetchedCallback& callback,
                        const SkBitmap& bitmap);

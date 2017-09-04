@@ -27,15 +27,12 @@
 #include "chrome/browser/predictors/autocomplete_action_predictor.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor_factory.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
-#include "chrome/browser/prerender/prerender_manager.h"
-#include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/omnibox/chrome_omnibox_edit_controller.h"
 #include "chrome/browser/ui/omnibox/chrome_omnibox_navigation_observer.h"
-#include "chrome/browser/ui/search/instant_search_prerenderer.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/search/instant_types.h"
@@ -67,33 +64,6 @@
 using predictors::AutocompleteActionPredictor;
 
 namespace {
-
-// Returns the AutocompleteMatch that the InstantController should prefetch, if
-// any.
-//
-// The SearchProvider may mark some suggestions to be prefetched based on
-// instructions from the suggest server. If such a match ranks sufficiently
-// highly, we'll return it.
-//
-// We only care about matches that are the default or the second entry in the
-// dropdown (which can happen for non-default matches when a top verbatim match
-// is shown); for other matches, we think the likelihood of the user selecting
-// them is low enough that prefetching isn't worth doing.
-const AutocompleteMatch* GetMatchToPrefetch(const AutocompleteResult& result) {
-  // If the default match should be prefetched, do that.
-  const auto default_match = result.default_match();
-  if ((default_match != result.end()) &&
-      SearchProvider::ShouldPrefetch(*default_match))
-    return &(*default_match);
-
-  // Otherwise, if the top match is a verbatim match and the very next match
-  // is prefetchable, fetch that.
-  if (result.TopMatchIsStandaloneVerbatimMatch() && (result.size() > 1) &&
-      SearchProvider::ShouldPrefetch(result.match_at(1)))
-    return &result.match_at(1);
-
-  return NULL;
-}
 
 // Calls the specified callback when the requested image is downloaded.  This
 // is a separate class instead of being implemented on ChromeOmniboxClient
@@ -284,21 +254,6 @@ void ChromeOmniboxClient::OnResultChanged(
     const AutocompleteResult& result,
     bool default_match_changed,
     const BitmapFetchedCallback& on_bitmap_fetched) {
-  if (search::IsInstantExtendedAPIEnabled() &&
-      (default_match_changed && result.default_match() != result.end())) {
-    InstantSuggestion prefetch_suggestion;
-    const AutocompleteMatch* match_to_prefetch = GetMatchToPrefetch(result);
-    if (match_to_prefetch) {
-      prefetch_suggestion.text = match_to_prefetch->contents;
-      prefetch_suggestion.metadata =
-          SearchProvider::GetSuggestMetadata(*match_to_prefetch);
-    }
-    // Send the prefetch suggestion unconditionally to the InstantPage. If
-    // there is no suggestion to prefetch, we need to send a blank query to
-    // clear the prefetched results.
-    SetSuggestionToPrefetch(prefetch_suggestion);
-  }
-
   const auto match = std::find_if(
       result.begin(), result.end(),
       [](const AutocompleteMatch& current) { return !!current.answer; });
@@ -389,26 +344,17 @@ void ChromeOmniboxClient::OnTextChanged(const AutocompleteMatch& current_match,
   AutocompleteActionPredictor::Action recommended_action =
       AutocompleteActionPredictor::ACTION_NONE;
   if (user_input_in_progress) {
-    InstantSearchPrerenderer* prerenderer =
-        InstantSearchPrerenderer::GetForProfile(profile_);
-    if (prerenderer &&
-        prerenderer->IsAllowed(current_match, controller_->GetWebContents()) &&
-        is_popup_open && has_focus) {
-      recommended_action = AutocompleteActionPredictor::ACTION_PRERENDER;
-    } else {
-      AutocompleteActionPredictor* action_predictor =
-          predictors::AutocompleteActionPredictorFactory::GetForProfile(
-              profile_);
-      action_predictor->RegisterTransitionalMatches(user_text, result);
-      // Confer with the AutocompleteActionPredictor to determine what action,
-      // if any, we should take. Get the recommended action here even if we
-      // don't need it so we can get stats for anyone who is opted in to UMA,
-      // but only get it if the user has actually typed something to avoid
-      // constructing it before it's needed. Note: This event is triggered as
-      // part of startup when the initial tab transitions to the start page.
-      recommended_action =
-          action_predictor->RecommendAction(user_text, current_match);
-    }
+    AutocompleteActionPredictor* action_predictor =
+        predictors::AutocompleteActionPredictorFactory::GetForProfile(profile_);
+    action_predictor->RegisterTransitionalMatches(user_text, result);
+    // Confer with the AutocompleteActionPredictor to determine what action,
+    // if any, we should take. Get the recommended action here even if we
+    // don't need it so we can get stats for anyone who is opted in to UMA,
+    // but only get it if the user has actually typed something to avoid
+    // constructing it before it's needed. Note: This event is triggered as
+    // part of startup when the initial tab transitions to the start page.
+    recommended_action =
+        action_predictor->RecommendAction(user_text, current_match);
   }
 
   UMA_HISTOGRAM_ENUMERATION("AutocompleteActionPredictor.Action",
@@ -433,35 +379,6 @@ void ChromeOmniboxClient::OnTextChanged(const AutocompleteMatch& current_match,
     case AutocompleteActionPredictor::ACTION_NONE:
       break;
   }
-}
-
-void ChromeOmniboxClient::OnInputAccepted(const AutocompleteMatch& match) {
-  // While the user is typing, the instant search base page may be prerendered
-  // in the background. Even though certain inputs may not be eligible for
-  // prerendering, the prerender isn't automatically cancelled as the user
-  // continues typing, in hopes the final input will end up making use of the
-  // prerenderer. Intermediate inputs that are legal for prerendering will be
-  // sent to the prerendered page to keep it up to date; then once the user
-  // commits a navigation, it will trigger code in chrome::Navigate() to swap in
-  // the prerenderer.
-  //
-  // Unfortunately, that swap code only has the navigated URL, so it doesn't
-  // actually know whether the prerenderer has been sent the relevant input
-  // already, or whether instead the user manually navigated to something that
-  // looks like a search URL (which won't have been sent to the prerenderer).
-  // In this case, we need to ensure the prerenderer is cancelled here so that
-  // code can't attempt to wrongly swap-in, or it could swap in an empty page in
-  // place of the correct navigation.
-  //
-  // This would be clearer if we could swap in the prerenderer here instead of
-  // over in chrome::Navigate(), but we have to wait until then because the
-  // final decision about whether to use the prerendered page depends on other
-  // parts of the chrome::NavigateParams struct not available until then.
-  InstantSearchPrerenderer* prerenderer =
-      InstantSearchPrerenderer::GetForProfile(profile_);
-  if (prerenderer &&
-      !prerenderer->IsAllowed(match, controller_->GetWebContents()))
-    prerenderer->Cancel();
 }
 
 void ChromeOmniboxClient::OnRevert() {
@@ -503,15 +420,6 @@ void ChromeOmniboxClient::DoPrerender(
   content::WebContents* web_contents = controller_->GetWebContents();
   gfx::Rect container_bounds = web_contents->GetContainerBounds();
 
-  InstantSearchPrerenderer* prerenderer =
-      InstantSearchPrerenderer::GetForProfile(profile_);
-  if (prerenderer && prerenderer->IsAllowed(match, web_contents)) {
-    prerenderer->Init(
-        web_contents->GetController().GetDefaultSessionStorageNamespace(),
-        container_bounds.size());
-    return;
-  }
-
   predictors::AutocompleteActionPredictorFactory::GetForProfile(profile_)->
       StartPrerendering(
           match.destination_url,
@@ -534,15 +442,6 @@ void ChromeOmniboxClient::DoPreconnect(const AutocompleteMatch& match) {
   // We could prefetch the alternate nav URL, if any, but because there
   // can be many of these as a user types an initial series of characters,
   // the OS DNS cache could suffer eviction problems for minimal gain.
-}
-
-void ChromeOmniboxClient::SetSuggestionToPrefetch(
-      const InstantSuggestion& suggestion) {
-  DCHECK(search::IsInstantExtendedAPIEnabled());
-  InstantSearchPrerenderer* prerenderer =
-      InstantSearchPrerenderer::GetForProfile(profile_);
-  if (prerenderer)
-    prerenderer->Prerender(suggestion);
 }
 
 void ChromeOmniboxClient::OnBitmapFetched(const BitmapFetchedCallback& callback,

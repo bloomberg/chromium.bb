@@ -24,9 +24,6 @@ class BrowserInstantController : public SearchModelObserver,
   explicit BrowserInstantController(Browser* browser);
   ~BrowserInstantController() override;
 
-  // Commits the current Instant. This is intended for use from OpenCurrentURL.
-  void OpenInstant(WindowOpenDisposition disposition, const GURL& url);
-
   // Returns the Profile associated with the Browser that owns this object.
   Profile* profile() const;
 
@@ -37,9 +34,6 @@ class BrowserInstantController : public SearchModelObserver,
 
   // Invoked by |browser_| when the active tab changes.
   void ActiveTabChanged();
-
-  // Invoked by |browser_| when the active tab is about to be deactivated.
-  void TabDeactivated(content::WebContents* contents);
 
  private:
   // SearchModelObserver:
