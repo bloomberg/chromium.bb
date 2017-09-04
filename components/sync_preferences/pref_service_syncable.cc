@@ -11,6 +11,7 @@
 #include "base/value_conversions.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/default_pref_store.h"
+#include "components/prefs/in_memory_pref_store.h"
 #include "components/prefs/overlay_user_pref_store.h"
 #include "components/prefs/pref_notifier_impl.h"
 #include "components/prefs/pref_registry.h"
@@ -83,12 +84,14 @@ PrefServiceSyncable* PrefServiceSyncable::CreateIncognitoPrefService(
       static_cast<user_prefs::PrefRegistrySyncable*>(pref_registry_.get())
           ->ForkForIncognito();
 
+  auto overlay = base::MakeRefCounted<InMemoryPrefStore>();
   if (delegate) {
-    delegate->InitIncognitoUnderlay(user_pref_store_.get());
+    delegate->InitIncognitoUserPrefs(overlay, user_pref_store_,
+                                     overlay_pref_names);
     delegate->InitPrefRegistry(forked_registry.get());
   }
-  auto incognito_pref_store =
-      base::MakeRefCounted<OverlayUserPrefStore>(user_pref_store_.get());
+  auto incognito_pref_store = base::MakeRefCounted<OverlayUserPrefStore>(
+      overlay.get(), user_pref_store_.get());
 
   for (const char* overlay_pref_name : overlay_pref_names)
     incognito_pref_store->RegisterOverlayPref(overlay_pref_name);

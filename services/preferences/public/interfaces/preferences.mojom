@@ -77,6 +77,11 @@ struct PersistentPrefStoreConnection {
   bool read_only;
 };
 
+struct IncognitoPersistentPrefStoreConnection {
+  PersistentPrefStoreConnection pref_store_connection;
+  array<string> overlay_pref_names;
+};
+
 // Allows connections to pref stores registered with |PrefStoreRegistry|.
 interface PrefStoreConnector {
   // Connect to all registered pref stores, retrieving the current values of all
@@ -90,7 +95,7 @@ interface PrefStoreConnector {
   // queue and connect once |Init| has been called.
   Connect(PrefRegistry pref_registry) =>
       (PersistentPrefStoreConnection connection,
-       PersistentPrefStoreConnection? underlay,
+       IncognitoPersistentPrefStoreConnection? underlay,
        array<PrefRegistration> remote_defaults,
        map<PrefStoreType, PrefStoreConnection> connections);
 };

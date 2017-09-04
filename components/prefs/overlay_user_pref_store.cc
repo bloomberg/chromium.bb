@@ -74,9 +74,7 @@ bool OverlayUserPrefStore::GetValue(const std::string& key,
                                     const base::Value** result) const {
   // If the |key| shall NOT be stored in the overlay store, there must not
   // be an entry.
-  // TODO(crbug.com/761123): Put back this DCHECK. It should be fixed by:
-  // https://chromium-review.googlesource.com/c/chromium/src/+/624772
-  // DCHECK(ShallBeStoredInOverlay(key) || !overlay_->GetValue(key, NULL));
+  DCHECK(ShallBeStoredInOverlay(key) || !overlay_->GetValue(key, NULL));
 
   if (overlay_->GetValue(key, result))
     return true;
