@@ -85,6 +85,11 @@ bool MediaStreamDevice::IsEqual(const MediaStreamDevice& second) const {
          input.channel_layout() == input_second.channel_layout();
 }
 
+bool MediaStreamDevice::IsSameDevice(
+    const MediaStreamDevice& other_device) const {
+  return IsEqual(other_device) && session_id == other_device.session_id;
+}
+
 MediaStreamDevices::MediaStreamDevices() {}
 
 MediaStreamDevices::MediaStreamDevices(size_t count,

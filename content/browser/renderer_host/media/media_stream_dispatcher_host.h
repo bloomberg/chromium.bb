@@ -41,18 +41,18 @@ class CONTENT_EXPORT MediaStreamDispatcherHost
   void StreamGenerated(int render_frame_id,
                        int page_request_id,
                        const std::string& label,
-                       const StreamDeviceInfoArray& audio_devices,
-                       const StreamDeviceInfoArray& video_devices) override;
+                       const MediaStreamDevices& audio_devices,
+                       const MediaStreamDevices& video_devices) override;
   void StreamGenerationFailed(int render_frame_id,
                               int page_request_id,
                               MediaStreamRequestResult result) override;
   void DeviceStopped(int render_frame_id,
                      const std::string& label,
-                     const StreamDeviceInfo& device) override;
+                     const MediaStreamDevice& device) override;
   void DeviceOpened(int render_frame_id,
                     int page_request_id,
                     const std::string& label,
-                    const StreamDeviceInfo& video_device) override;
+                    const MediaStreamDevice& device) override;
 
   void SetMediaStreamDispatcherForTesting(
       int render_frame_id,

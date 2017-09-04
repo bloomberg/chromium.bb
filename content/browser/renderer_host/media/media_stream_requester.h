@@ -8,7 +8,7 @@
 #include <string>
 
 #include "content/common/content_export.h"
-#include "content/common/media/media_stream_options.h"
+#include "content/public/common/media_stream_request.h"
 
 namespace content {
 
@@ -21,24 +21,23 @@ class CONTENT_EXPORT MediaStreamRequester {
   virtual void StreamGenerated(int render_frame_id,
                                int page_request_id,
                                const std::string& label,
-                               const StreamDeviceInfoArray& audio_devices,
-                               const StreamDeviceInfoArray& video_devices) = 0;
+                               const MediaStreamDevices& audio_devices,
+                               const MediaStreamDevices& video_devices) = 0;
   // Called if GenerateStream failed.
-  virtual void StreamGenerationFailed(
-      int render_frame_id,
-      int page_request_id,
-      content::MediaStreamRequestResult result) = 0;
+  virtual void StreamGenerationFailed(int render_frame_id,
+                                      int page_request_id,
+                                      MediaStreamRequestResult result) = 0;
   // Called if a device has been stopped by a user from UI or the device
   // has become unavailable.  |render_frame_id| is the render frame that
   // requested the device and |label| is the label of the request.
   virtual void DeviceStopped(int render_frame_id,
                              const std::string& label,
-                             const StreamDeviceInfo& device) = 0;
+                             const MediaStreamDevice& device) = 0;
   // Called as a reply of a successful call to OpenDevice.
   virtual void DeviceOpened(int render_frame_id,
                             int page_request_id,
                             const std::string& label,
-                            const StreamDeviceInfo& device_info) = 0;
+                            const MediaStreamDevice& device) = 0;
 
  protected:
   virtual ~MediaStreamRequester() {
