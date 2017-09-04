@@ -5899,7 +5899,7 @@
         'dynamic_refresh': True,
         'per_profile': False,
       },
-      'example_value': '*@domain.com',
+      'example_value': '.*@example.com',
       'id': 147,
       'caption': '''Restrict which users are allowed to sign in to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>''',
       'tags': [],
