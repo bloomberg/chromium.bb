@@ -6,6 +6,8 @@
 
 #include "base/command_line.h"
 #include "base/memory/singleton.h"
+#include "base/win/windows_version.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/message_center_display_service.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
@@ -45,11 +47,21 @@ NotificationDisplayServiceFactory::NotificationDisplayServiceFactory()
 //   - Linux uses MessageCenterDisplayService by default but can switch
 //     to NativeNotificationDisplayService via
 //     chrome://flags#enable-native-notifications
+//   - Windows 10 update 2016/07 and above use MessageCenterDisplayService by
+//     default but can switch to NativeNotificationDisplayService via
+//     chrome://flags#enable-native-notifications
 //   - All other platforms always use the MessageCenterDisplayService.
 KeyedService* NotificationDisplayServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
 #if BUILDFLAG(ENABLE_NATIVE_NOTIFICATIONS)
-#if defined(OS_ANDROID)
+#if defined(OS_WIN)
+  if (base::win::GetVersion() >= base::win::VERSION_WIN10_RS1 &&
+      base::FeatureList::IsEnabled(features::kNativeNotifications)) {
+    return new NativeNotificationDisplayService(
+        Profile::FromBrowserContext(context),
+        g_browser_process->notification_platform_bridge());
+  }
+#elif defined(OS_ANDROID)
   DCHECK(base::FeatureList::IsEnabled(features::kNativeNotifications));
   return new NativeNotificationDisplayService(
       Profile::FromBrowserContext(context),

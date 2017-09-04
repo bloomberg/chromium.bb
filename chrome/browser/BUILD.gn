@@ -3669,6 +3669,13 @@ split_static_library("browser") {
 
     all_dependent_configs = [ ":browser_win_linker_flags" ]
 
+    if (enable_native_notifications) {
+      sources += [
+        "notifications/notification_platform_bridge_win.cc",
+        "notifications/notification_platform_bridge_win.h",
+      ]
+    }
+
     if (!is_chrome_branded) {
       deps -= [ "//google_update" ]
       sources -= [
