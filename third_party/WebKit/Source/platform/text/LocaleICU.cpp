@@ -40,8 +40,6 @@
 #include "platform/wtf/text/StringBuffer.h"
 #include "platform/wtf/text/StringBuilder.h"
 
-using namespace icu;
-
 namespace blink {
 
 std::unique_ptr<Locale> Locale::Create(const String& locale) {
