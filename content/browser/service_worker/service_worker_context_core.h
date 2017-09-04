@@ -33,7 +33,6 @@ class FilePath;
 }
 
 namespace storage {
-class BlobStorageContext;
 class QuotaManagerProxy;
 class SpecialStoragePolicy;
 }
@@ -110,14 +109,13 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   // ServiceWorkerContextWrapper. When Notify() of |observer_list| is called in
   // ServiceWorkerContextCore, the methods of ServiceWorkerContextCoreObserver
   // will be called on the thread which called AddObserver() of |observer_list|.
-  // |blob_context| and |url_loader_factory_getter| are used only
-  // when IsServicificationEnabled is true.
+  // |url_loader_factory_getter| is used only when IsServicificationEnabled is
+  // true.
   ServiceWorkerContextCore(
       const base::FilePath& user_data_directory,
       scoped_refptr<base::SequencedTaskRunner> database_task_runner,
       storage::QuotaManagerProxy* quota_manager_proxy,
       storage::SpecialStoragePolicy* special_storage_policy,
-      base::WeakPtr<storage::BlobStorageContext> blob_context,
       URLLoaderFactoryGetter* url_loader_factory_getter,
       base::ObserverListThreadSafe<ServiceWorkerContextCoreObserver>*
           observer_list,
@@ -298,10 +296,6 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   // version. The count resets to zero when the worker successfully starts.
   int GetVersionFailureCount(int64_t version_id);
 
-  base::WeakPtr<storage::BlobStorageContext> blob_storage_context() {
-    return blob_storage_context_;
-  }
-
   URLLoaderFactoryGetter* loader_factory_getter() {
     return loader_factory_getter_.get();
   }
@@ -378,7 +372,6 @@ class CONTENT_EXPORT ServiceWorkerContextCore
       navigation_handle_cores_map_;
 
   // IsServicificationEnabled
-  base::WeakPtr<storage::BlobStorageContext> blob_storage_context_;
   scoped_refptr<URLLoaderFactoryGetter> loader_factory_getter_;
 
   bool force_update_on_page_load_;

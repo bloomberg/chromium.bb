@@ -10,7 +10,6 @@
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/public/common/resource_response.h"
-#include "storage/browser/blob/blob_storage_context.h"
 
 namespace content {
 
@@ -22,7 +21,6 @@ ServiceWorkerScriptURLLoader::ServiceWorkerScriptURLLoader(
     mojom::URLLoaderClientPtr client,
     base::WeakPtr<ServiceWorkerContextCore> context,
     base::WeakPtr<ServiceWorkerProviderHost> provider_host,
-    base::WeakPtr<storage::BlobStorageContext> blob_storage_context,
     scoped_refptr<URLLoaderFactoryGetter> loader_factory_getter,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
     : network_client_binding_(this),

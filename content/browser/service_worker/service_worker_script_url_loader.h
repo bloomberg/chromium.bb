@@ -12,10 +12,6 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
-namespace storage {
-class BlobStorageContext;
-}  // namespace storage
-
 namespace content {
 
 class ServiceWorkerContextCore;
@@ -39,7 +35,6 @@ class ServiceWorkerScriptURLLoader : public mojom::URLLoader,
       mojom::URLLoaderClientPtr client,
       base::WeakPtr<ServiceWorkerContextCore> context,
       base::WeakPtr<ServiceWorkerProviderHost> provider_host,
-      base::WeakPtr<storage::BlobStorageContext> blob_storage_context,
       scoped_refptr<URLLoaderFactoryGetter> loader_factory_getter,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation);
   ~ServiceWorkerScriptURLLoader() override;
