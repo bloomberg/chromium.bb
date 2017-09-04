@@ -160,7 +160,6 @@ public abstract class ChromeFeatureList {
     public static final String CHROME_HOME_DOODLE = "ChromeHomeDoodle";
     public static final String CHROME_HOME_EXPAND_BUTTON = "ChromeHomeExpandButton";
     public static final String CHROME_HOME_MODERN_LAYOUT = "ChromeHomeModernLayout";
-    public static final String CONSISTENT_OMNIBOX_GEOLOCATION = "ConsistentOmniboxGeolocation";
     public static final String CONTENT_SUGGESTIONS_FAVICONS_FROM_NEW_SERVER =
             "ContentSuggestionsFaviconsFromNewServer";
     public static final String CONTENT_SUGGESTIONS_NOTIFICATIONS =

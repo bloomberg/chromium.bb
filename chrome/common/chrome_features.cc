@@ -141,13 +141,6 @@ const base::Feature kCheckInstallabilityForBannerOnLoad{
 const base::Feature kClickToOpenPDFPlaceholder{
     "ClickToOpenPDFPlaceholder", base::FEATURE_DISABLED_BY_DEFAULT};
 
-#if defined(OS_ANDROID)
-// Experiment to make Geolocation permissions in the omnibox and the default
-// search engine's search page consistent.
-const base::Feature kConsistentOmniboxGeolocation{
-    "ConsistentOmniboxGeolocation", base::FEATURE_ENABLED_BY_DEFAULT};
-#endif
-
 #if defined(OS_MACOSX)
 const base::Feature kContentFullscreen{"ContentFullscreen",
                                        base::FEATURE_DISABLED_BY_DEFAULT};

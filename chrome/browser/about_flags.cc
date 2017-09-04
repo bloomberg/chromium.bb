@@ -2817,10 +2817,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kPrintPdfAsImage)},
 #endif
 #if defined(OS_ANDROID)
-    {"enable-consistent-omnibox-geolocation",
-     flag_descriptions::kEnableConsistentOmniboxGeolocationName,
-     flag_descriptions::kEnableConsistentOmniboxGeolocationDescription,
-     kOsAndroid, FEATURE_VALUE_TYPE(features::kConsistentOmniboxGeolocation)},
     {"concurrent-background-loading-on-svelte",
      flag_descriptions::kOfflinePagesSvelteConcurrentLoadingName,
      flag_descriptions::kOfflinePagesSvelteConcurrentLoadingDescription,

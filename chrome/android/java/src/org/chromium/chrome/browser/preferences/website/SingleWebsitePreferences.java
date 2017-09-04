@@ -28,10 +28,8 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ContentSettingsType;
 import org.chromium.chrome.browser.notifications.channels.SiteChannelsManager;
-import org.chromium.chrome.browser.omnibox.geo.GeolocationHeader;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PreferenceUtils;
-import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.WebContents;
 
@@ -584,18 +582,12 @@ public class SingleWebsitePreferences extends PreferenceFragment
 
     private void setUpLocationPreference(Preference preference) {
         ContentSetting permission = mSite.getGeolocationPermission();
-        Context context = preference.getContext();
         Object locationAllowed = getArguments().getSerializable(EXTRA_LOCATION);
         if (shouldUseDSEGeolocationSetting()) {
             String origin = mSite.getAddress().getOrigin();
             mSite.setGeolocationInfo(new GeolocationInfo(origin, origin, false));
             setUpListPreference(preference, ContentSetting.ALLOW);
             updateLocationPreferenceForDSESetting(preference);
-        } else if (permission == null && hasXGeoLocationPermission(context)) {
-            String origin = mSite.getAddress().getOrigin();
-            mSite.setGeolocationInfo(new GeolocationInfo(origin, origin, false));
-            setUpListPreference(preference, ContentSetting.ALLOW);
-            updateLocationPreferenceForXGeo(preference);
         } else if (permission == null && locationAllowed != null) {
             String origin = mSite.getAddress().getOrigin();
             mSite.setGeolocationInfo(new GeolocationInfo(origin, origin, false));
@@ -653,21 +645,6 @@ public class SingleWebsitePreferences extends PreferenceFragment
     }
 
     /**
-     * Returns true if the current host matches the default search engine host and location for the
-     * default search engine is being granted via x-geo.
-     * @param context The current context.
-     */
-    private boolean hasXGeoLocationPermission(Context context) {
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CONSISTENT_OMNIBOX_GEOLOCATION)) {
-            return false;
-        }
-
-        String searchUrl = TemplateUrlService.getInstance().getUrlForSearchQuery("foo");
-        return mSite.getAddress().matches(searchUrl)
-                && GeolocationHeader.isGeoHeaderEnabledForUrl(searchUrl, false);
-    }
-
-    /**
      * Returns true if the DSE (default search engine) geolocation setting should be used for the
      * current host. This will be the case when the host is the CCTLD (Country Code Top Level
      * Domain) of the DSE, and the DSE supports the X-Geo header.
@@ -675,25 +652,6 @@ public class SingleWebsitePreferences extends PreferenceFragment
     private boolean shouldUseDSEGeolocationSetting() {
         return WebsitePreferenceBridge.shouldUseDSEGeolocationSetting(
                 mSite.getAddress().getOrigin(), false);
-    }
-
-    /**
-     * Updates the location preference to indicate that the site has access to location (via X-Geo)
-     * for searches that happen from the omnibox.
-     * @param preference The Location preference to modify.
-     */
-    private void updateLocationPreferenceForXGeo(Preference preference) {
-        ListPreference listPreference = (ListPreference) preference;
-        Resources res = getResources();
-        listPreference.setEntries(new String[] {
-                res.getString(R.string.website_settings_permissions_allow_dse_address_bar),
-                res.getString(ContentSettingsResources.getSiteSummary(ContentSetting.BLOCK)),
-        });
-        listPreference.setEntryValues(new String[] {
-                ContentSetting.DEFAULT.toString(),
-                ContentSetting.BLOCK.toString(),
-        });
-        listPreference.setValueIndex(0);
     }
 
     /**

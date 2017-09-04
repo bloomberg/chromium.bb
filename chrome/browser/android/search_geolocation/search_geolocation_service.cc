@@ -5,7 +5,6 @@
 #include "chrome/browser/android/search_geolocation/search_geolocation_service.h"
 
 #include "base/callback.h"
-#include "base/feature_list.h"
 #include "base/values.h"
 #include "chrome/browser/android/search_geolocation/search_geolocation_disclosure_tab_helper.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -13,7 +12,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -149,9 +147,6 @@ SearchGeolocationService::SearchGeolocationService(Profile* profile)
   // This class should never be constructed in incognito.
   DCHECK(!profile_->IsOffTheRecord());
 
-  if (!UseConsistentSearchGeolocation())
-    return;
-
   delegate_.reset(new SearchEngineDelegateImpl(profile_));
   delegate_->SetDSEChangedCallback(base::Bind(
       &SearchGeolocationService::OnDSEChanged, base::Unretained(this)));
@@ -166,9 +161,6 @@ SearchGeolocationService::SearchGeolocationService(Profile* profile)
 
 bool SearchGeolocationService::UseDSEGeolocationSetting(
     const url::Origin& requesting_origin) {
-  if (!UseConsistentSearchGeolocation())
-    return false;
-
   if (requesting_origin.scheme() != url::kHttpsScheme)
     return false;
 
@@ -350,10 +342,6 @@ bool SearchGeolocationService::IsContentSettingUserSettable() {
           origin.GetURL(), origin.GetURL(), CONTENT_SETTINGS_TYPE_GEOLOCATION,
           std::string(), &info);
   return info.source == content_settings::SETTING_SOURCE_USER;
-}
-
-bool SearchGeolocationService::UseConsistentSearchGeolocation() {
-  return base::FeatureList::IsEnabled(features::kConsistentOmniboxGeolocation);
 }
 
 void SearchGeolocationService::SetSearchEngineDelegateForTest(

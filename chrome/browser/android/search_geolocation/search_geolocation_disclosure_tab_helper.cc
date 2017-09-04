@@ -7,7 +7,6 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/command_line.h"
-#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
@@ -18,7 +17,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -37,33 +35,11 @@
 
 namespace {
 
-const int kDefaultMaxShowCount = 3;
-const int kDefaultDaysPerShow = 1;
-const char kMaxShowCountVariation[] = "MaxShowCount";
-const char kDaysPerShowVariation[] = "DaysPerShow";
+const int kMaxShowCount = 3;
+const int kDaysPerShow = 1;
 
 bool gIgnoreUrlChecksForTesting = false;
 int gDayOffsetForTesting = 0;
-
-int GetMaxShowCount() {
-  std::string variation = variations::GetVariationParamValueByFeature(
-      features::kConsistentOmniboxGeolocation, kMaxShowCountVariation);
-  int max_show;
-  if (!variation.empty() && base::StringToInt(variation, &max_show))
-    return max_show;
-
-  return kDefaultMaxShowCount;
-}
-
-int GetDaysPerShow() {
-  std::string variation = variations::GetVariationParamValueByFeature(
-      features::kConsistentOmniboxGeolocation, kDaysPerShowVariation);
-  int days_per_show;
-  if (!variation.empty() && base::StringToInt(variation, &days_per_show))
-    return days_per_show;
-
-  return kDefaultDaysPerShow;
-}
 
 base::Time GetTimeNow() {
   return base::Time::Now() + base::TimeDelta::FromDays(gDayOffsetForTesting);
@@ -75,12 +51,7 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(SearchGeolocationDisclosureTabHelper);
 
 SearchGeolocationDisclosureTabHelper::SearchGeolocationDisclosureTabHelper(
     content::WebContents* contents)
-    : content::WebContentsObserver(contents) {
-  consistent_geolocation_disclosure_enabled_ =
-      base::FeatureList::IsEnabled(features::kConsistentOmniboxGeolocation) &&
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableSearchGeolocationDisclosure);
-}
+    : content::WebContentsObserver(contents) {}
 
 SearchGeolocationDisclosureTabHelper::~SearchGeolocationDisclosureTabHelper() {}
 
@@ -91,9 +62,6 @@ void SearchGeolocationDisclosureTabHelper::NavigationEntryCommitted(
 
 void SearchGeolocationDisclosureTabHelper::MaybeShowDisclosureForAPIAccess(
     const GURL& gurl) {
-  if (!consistent_geolocation_disclosure_enabled_)
-    return;
-
   if (!ShouldShowDisclosureForAPIAccess(gurl))
     return;
 
@@ -139,9 +107,6 @@ void SearchGeolocationDisclosureTabHelper::RegisterProfilePrefs(
 
 void SearchGeolocationDisclosureTabHelper::MaybeShowDisclosureForNavigation(
     const GURL& gurl) {
-  if (!consistent_geolocation_disclosure_enabled_)
-    return;
-
   if (!ShouldShowDisclosureForNavigation(gurl))
     return;
 
@@ -157,7 +122,7 @@ void SearchGeolocationDisclosureTabHelper::MaybeShowDisclosureForValidUrl(
       prefs->GetBoolean(prefs::kSearchGeolocationDisclosureDismissed);
   int shown_count =
       prefs->GetInteger(prefs::kSearchGeolocationDisclosureShownCount);
-  if (dismissed_already || shown_count >= GetMaxShowCount()) {
+  if (dismissed_already || shown_count >= kMaxShowCount) {
     // Record metrics for the state of permissions after the disclosure has been
     // shown. This is not done immediately after showing the last disclosure
     // (i.e. at the end of this function), but on the next omnibox search, to
@@ -170,7 +135,7 @@ void SearchGeolocationDisclosureTabHelper::MaybeShowDisclosureForValidUrl(
   // Or if it has been shown too recently.
   base::Time last_shown = base::Time::FromInternalValue(
       prefs->GetInt64(prefs::kSearchGeolocationDisclosureLastShowDate));
-  if (GetTimeNow() - last_shown < base::TimeDelta::FromDays(GetDaysPerShow())) {
+  if (GetTimeNow() - last_shown < base::TimeDelta::FromDays(kDaysPerShow)) {
     return;
   }
 
