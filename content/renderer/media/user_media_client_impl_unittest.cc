@@ -98,11 +98,11 @@ blink::WebMediaConstraints CreateFacingModeConstraints(
 
 class MockMediaStreamVideoCapturerSource : public MockMediaStreamVideoSource {
  public:
-  MockMediaStreamVideoCapturerSource(const StreamDeviceInfo& device,
+  MockMediaStreamVideoCapturerSource(const MediaStreamDevice& device,
                                      const SourceStoppedCallback& stop_callback,
                                      PeerConnectionDependencyFactory* factory)
       : MockMediaStreamVideoSource() {
-    SetDeviceInfo(device);
+    SetDevice(device);
     SetStopCallback(stop_callback);
   }
 };
@@ -300,7 +300,12 @@ class UserMediaClientImplUnderTest : public UserMediaClientImpl {
     } else {
       source = new MediaStreamAudioSource(true);
     }
-    source->SetDeviceInfo(device);
+    // TODO(c.padhi): Remove this when |device|'s type is changed to
+    // MediaStreamDevice, see https://crbug.com/760493.
+    MediaStreamDevice audio_device = device.device;
+    audio_device.session_id = device.session_id;
+
+    source->SetDevice(audio_device);
 
     if (!create_source_that_fails_) {
       // RunUntilIdle is required for this task to complete.
@@ -317,9 +322,13 @@ class UserMediaClientImplUnderTest : public UserMediaClientImpl {
   MediaStreamVideoSource* CreateVideoSource(
       const StreamDeviceInfo& device,
       const MediaStreamSource::SourceStoppedCallback& stop_callback) override {
-    video_source_ = new MockMediaStreamVideoCapturerSource(device,
-                                                           stop_callback,
-                                                           factory_);
+    // TODO(c.padhi): Remove this when |device|'s type is changed to
+    // MediaStreamDevice, see https://crbug.com/760493.
+    MediaStreamDevice video_device = device.device;
+    video_device.session_id = device.session_id;
+
+    video_source_ = new MockMediaStreamVideoCapturerSource(
+        video_device, stop_callback, factory_);
     return video_source_;
   }
 

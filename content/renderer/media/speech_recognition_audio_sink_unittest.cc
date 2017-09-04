@@ -293,8 +293,8 @@ class SpeechRecognitionAudioSinkTest : public testing::Test {
                             blink::WebString::FromUTF8("dummy_source_name"),
                             false /* remote */);
     TestDrivenAudioSource* const audio_source = new TestDrivenAudioSource();
-    audio_source->SetDeviceInfo(
-        StreamDeviceInfo(device_type, "Mock device", "mock_device_id"));
+    audio_source->SetDevice(
+        MediaStreamDevice(device_type, "mock_device_id", "Mock device"));
     blink_source.SetExtraData(audio_source);  // Takes ownership.
 
     blink_track->Initialize(blink::WebString::FromUTF8("dummy_track"),

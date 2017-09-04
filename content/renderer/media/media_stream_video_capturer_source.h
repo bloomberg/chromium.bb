@@ -35,7 +35,7 @@ class CONTENT_EXPORT MediaStreamVideoCapturerSource
       std::unique_ptr<media::VideoCapturerSource> source);
   MediaStreamVideoCapturerSource(
       const SourceStoppedCallback& stop_callback,
-      const StreamDeviceInfo& device_info,
+      const MediaStreamDevice& device,
       const media::VideoCaptureParams& capture_params,
       RenderFrame* render_frame);
   ~MediaStreamVideoCapturerSource() override;

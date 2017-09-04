@@ -66,9 +66,9 @@ bool SpeechRecognitionAudioSink::IsSupportedTrack(
   if (!native_source)
     return false;
 
-  const StreamDeviceInfo& device_info = native_source->device_info();
+  const MediaStreamDevice& device = native_source->device();
   // Purposely only support tracks from an audio device. Dissallow WebAudio.
-  return (device_info.device.type == content::MEDIA_DEVICE_AUDIO_CAPTURE);
+  return (device.type == content::MEDIA_DEVICE_AUDIO_CAPTURE);
 }
 
 void SpeechRecognitionAudioSink::OnSetFormat(

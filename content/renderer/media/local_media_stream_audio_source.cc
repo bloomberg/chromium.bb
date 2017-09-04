@@ -4,7 +4,6 @@
 
 #include "content/renderer/media/local_media_stream_audio_source.h"
 
-#include "content/common/media/media_stream_options.h"
 #include "content/renderer/media/audio_device_factory.h"
 #include "content/renderer/media/webrtc_logging.h"
 #include "content/renderer/render_frame_impl.h"
@@ -13,32 +12,31 @@ namespace content {
 
 LocalMediaStreamAudioSource::LocalMediaStreamAudioSource(
     int consumer_render_frame_id,
-    const StreamDeviceInfo& device_info,
+    const MediaStreamDevice& device,
     const ConstraintsCallback& started_callback)
     : MediaStreamAudioSource(true /* is_local_source */),
       consumer_render_frame_id_(consumer_render_frame_id),
       started_callback_(started_callback) {
   DVLOG(1) << "LocalMediaStreamAudioSource::LocalMediaStreamAudioSource()";
-  MediaStreamSource::SetDeviceInfo(device_info);
+  SetDevice(device);
 
   // If the device buffer size was not provided, use a default.
-  int frames_per_buffer = device_info.device.input.frames_per_buffer();
+  int frames_per_buffer = device.input.frames_per_buffer();
   if (frames_per_buffer <= 0) {
-    // TODO(miu): Like in ProcessedLocalAudioSource::GetBufferSize(), we should
-    // re-evaluate whether Android needs special treatment here. Or, perhaps we
-    // should just DCHECK_GT(device_info...frames_per_buffer, 0)?
-    // http://crbug.com/638081
+// TODO(miu): Like in ProcessedLocalAudioSource::GetBufferSize(), we should
+// re-evaluate whether Android needs special treatment here. Or, perhaps we
+// should just DCHECK_GT(device...frames_per_buffer, 0)?
+// http://crbug.com/638081
 #if defined(OS_ANDROID)
-    frames_per_buffer = device_info.device.input.sample_rate() / 50;  // 20 ms
+    frames_per_buffer = device.input.sample_rate() / 50;  // 20 ms
 #else
-    frames_per_buffer = device_info.device.input.sample_rate() / 100;  // 10 ms
+    frames_per_buffer = device.input.sample_rate() / 100;  // 10 ms
 #endif
   }
 
-  MediaStreamAudioSource::SetFormat(media::AudioParameters(
+  SetFormat(media::AudioParameters(
       media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-      device_info.device.input.channel_layout(),
-      device_info.device.input.sample_rate(),
+      device.input.channel_layout(), device.input.sample_rate(),
       16,  // Legacy parameter (data is always in 32-bit float format).
       frames_per_buffer));
 }
@@ -60,13 +58,13 @@ bool LocalMediaStreamAudioSource::EnsureSourceIsStarted() {
     return false;
 
   VLOG(1) << "Starting local audio input device (session_id="
-          << device_info().session_id << ") for render frame "
+          << device().session_id << ") for render frame "
           << consumer_render_frame_id_ << " with audio parameters={"
           << GetAudioParameters().AsHumanReadableString() << "}.";
 
   source_ =
       AudioDeviceFactory::NewAudioCapturerSource(consumer_render_frame_id_);
-  source_->Initialize(GetAudioParameters(), this, device_info().session_id);
+  source_->Initialize(GetAudioParameters(), this, device().session_id);
   source_->Start();
   return true;
 }
@@ -81,7 +79,7 @@ void LocalMediaStreamAudioSource::EnsureSourceIsStopped() {
   source_ = nullptr;
 
   VLOG(1) << "Stopped local audio input device (session_id="
-          << device_info().session_id << ") for render frame "
+          << device().session_id << ") for render frame "
           << consumer_render_frame_id_ << " with audio parameters={"
           << GetAudioParameters().AsHumanReadableString() << "}.";
 }
@@ -98,10 +96,9 @@ void LocalMediaStreamAudioSource::Capture(const media::AudioBus* audio_bus,
   // TODO(miu): Plumbing is needed to determine the actual capture timestamp
   // of the audio, instead of just snapshotting TimeTicks::Now(), for proper
   // audio/video sync. http://crbug.com/335335
-  MediaStreamAudioSource::DeliverDataToTracks(
-      *audio_bus,
-      base::TimeTicks::Now() -
-      base::TimeDelta::FromMilliseconds(audio_delay_milliseconds));
+  DeliverDataToTracks(
+      *audio_bus, base::TimeTicks::Now() - base::TimeDelta::FromMilliseconds(
+                                               audio_delay_milliseconds));
 }
 
 void LocalMediaStreamAudioSource::OnCaptureError(const std::string& why) {
