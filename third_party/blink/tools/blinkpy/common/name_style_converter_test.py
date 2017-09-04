@@ -53,6 +53,75 @@ class SmartTokenizerTest(unittest.TestCase):
         tokenizer = SmartTokenizer('SVGSVGElement')
         self.assertEqual(tokenizer.tokenize(), ['SVG', 'SVG', 'Element'])
 
+        tokenizer = SmartTokenizer('CanvasRenderingContext2D')
+        self.assertEqual(tokenizer.tokenize(), ['Canvas', 'Rendering', 'Context', '2D'])
+
+        tokenizer = SmartTokenizer('CSSURLImageValue')
+        self.assertEqual(tokenizer.tokenize(), ['CSS', 'URL', 'Image', 'Value'])
+
+        tokenizer = SmartTokenizer('CDATASection')
+        self.assertEqual(tokenizer.tokenize(), ['CDATA', 'Section'])
+
+        tokenizer = SmartTokenizer('HTMLDListElement')
+        self.assertEqual(tokenizer.tokenize(), ['HTML', 'DList', 'Element'])
+
+        tokenizer = SmartTokenizer('HTMLIFrameElement')
+        self.assertEqual(tokenizer.tokenize(), ['HTML', 'IFrame', 'Element'])
+
+        # No special handling for OptGroup, FieldSet, and TextArea.
+        tokenizer = SmartTokenizer('HTMLOptGroupElement')
+        self.assertEqual(tokenizer.tokenize(), ['HTML', 'Opt', 'Group', 'Element'])
+        tokenizer = SmartTokenizer('HTMLFieldSetElement')
+        self.assertEqual(tokenizer.tokenize(), ['HTML', 'Field', 'Set', 'Element'])
+        tokenizer = SmartTokenizer('HTMLTextAreaElement')
+        self.assertEqual(tokenizer.tokenize(), ['HTML', 'Text', 'Area', 'Element'])
+
+        tokenizer = SmartTokenizer('Path2D')
+        self.assertEqual(tokenizer.tokenize(), ['Path', '2D'])
+        tokenizer = SmartTokenizer('Point2D')
+        self.assertEqual(tokenizer.tokenize(), ['Point', '2D'])
+        tokenizer = SmartTokenizer('CanvasRenderingContext2DState')
+        self.assertEqual(tokenizer.tokenize(), ['Canvas', 'Rendering', 'Context', '2D', 'State'])
+
+        tokenizer = SmartTokenizer('RTCDTMFSender')
+        self.assertEqual(tokenizer.tokenize(), ['RTC', 'DTMF', 'Sender'])
+
+        tokenizer = SmartTokenizer('WebGLCompressedTextureS3TCsRGB')
+        self.assertEqual(tokenizer.tokenize(), ['WebGL', 'Compressed', 'Texture', 'S3TC', 'sRGB'])
+        tokenizer = SmartTokenizer('WebGL2CompressedTextureETC1')
+        self.assertEqual(tokenizer.tokenize(), ['WebGL2', 'Compressed', 'Texture', 'ETC1'])
+        tokenizer = SmartTokenizer('EXTsRGB')
+        self.assertEqual(tokenizer.tokenize(), ['EXT', 'sRGB'])
+
+        tokenizer = SmartTokenizer('SVGFEBlendElement')
+        self.assertEqual(tokenizer.tokenize(), ['SVG', 'FE', 'Blend', 'Element'])
+        tokenizer = SmartTokenizer('SVGMPathElement')
+        self.assertEqual(tokenizer.tokenize(), ['SVG', 'MPath', 'Element'])
+        tokenizer = SmartTokenizer('SVGTSpanElement')
+        self.assertEqual(tokenizer.tokenize(), ['SVG', 'TSpan', 'Element'])
+        tokenizer = SmartTokenizer('SVGURIReference')
+        self.assertEqual(tokenizer.tokenize(), ['SVG', 'URI', 'Reference'])
+
+        tokenizer = SmartTokenizer('UTF16TextIterator')
+        self.assertEqual(tokenizer.tokenize(), ['UTF16', 'Text', 'Iterator'])
+        tokenizer = SmartTokenizer('UTF8Decoder')
+        self.assertEqual(tokenizer.tokenize(), ['UTF8', 'Decoder'])
+        tokenizer = SmartTokenizer('Uint8Array')
+        self.assertEqual(tokenizer.tokenize(), ['Uint8', 'Array'])
+        tokenizer = SmartTokenizer('V8BindingForCore')
+        self.assertEqual(tokenizer.tokenize(), ['V8', 'Binding', 'For', 'Core'])
+        tokenizer = SmartTokenizer('V8DOMRect')
+        self.assertEqual(tokenizer.tokenize(), ['V8', 'DOM', 'Rect'])
+
+        tokenizer = SmartTokenizer('XPathEvaluator')
+        self.assertEqual(tokenizer.tokenize(), ['XPath', 'Evaluator'])
+
+        tokenizer = SmartTokenizer('IsXHTMLDocument')
+        self.assertEqual(tokenizer.tokenize(), ['Is', 'XHTML', 'Document'])
+
+        tokenizer = SmartTokenizer('Animation.idl')
+        self.assertEqual(tokenizer.tokenize(), ['Animation', '.idl'])
+
 
 class NameStyleConverterTest(unittest.TestCase):
     def test_snake_case(self):

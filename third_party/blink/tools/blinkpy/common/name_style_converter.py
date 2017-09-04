@@ -6,9 +6,34 @@
 
 import re
 
-SPECIAL_PREFIXES = [
+SPECIAL_TOKENS = [
+    # This list should be sorted by length.
+    'Float32',
+    'Float64',
+    'IFrame',
+    'Uint16',
+    'Uint32',
+    'WebGL2',
+    'DList',
+    'Int16',
+    'Int32',
+    'MPath',
+    'TSpan',
+    'UList',
+    'UTF16',
+    'Uint8',
     'WebGL',
+    'XPath',
+    'ETC1',
+    'HTML',
+    'Int8',
+    'S3TC',
+    'UTF8',
+    'CSS',
+    'EXT',
+    'RTC',
     'SVG',
+    'V8',
 ]
 
 MATCHING_EXPRESSION = '((?:[A-Z][a-z]+)|[0-9]D?$)'
@@ -22,22 +47,30 @@ class SmartTokenizer(object):
     def __init__(self, name):
         self.remaining = name
 
-    def detect_special_prefix(self):
-        for prefix in SPECIAL_PREFIXES:
-            if self.remaining.startswith(prefix):
-                result = self.remaining[:len(prefix)]
-                self.remaining = self.remaining[len(prefix):]
-                return result
-        return None
-
     def tokenize(self):
-        prefix = self.detect_special_prefix()
-        return filter(None,
-                      [prefix] + re.split(MATCHING_EXPRESSION, self.remaining))
+        name = self.remaining
+        tokens = []
+        while len(name) > 0:
+            matched_token = None
+            for token in SPECIAL_TOKENS:
+                if name.startswith(token):
+                    matched_token = token
+                    break
+            if not matched_token:
+                match = re.search(MATCHING_EXPRESSION, name)
+                if not match:
+                    matched_token = name
+                elif match.start(0) != 0:
+                    matched_token = name[:match.start(0)]
+                else:
+                    matched_token = match.group(0)
+            tokens.append(name[:len(matched_token)])
+            name = name[len(matched_token):]
+        return tokens
 
 
 class NameStyleConverter(object):
-    """Converts names from camelCase and other styles to various other styles.
+    """Converts names from camelCase to various other styles.
     """
 
     def __init__(self, name):
