@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/waitable_event_watcher.h"
 #include "base/task/cancelable_task_tracker.h"
+#include "build/build_config.h"
 #include "chrome/common/features.h"
 #include "components/browsing_data/core/browsing_data_utils.h"
 #include "components/keyed_service/core/keyed_service.h"

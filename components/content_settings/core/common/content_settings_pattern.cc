@@ -575,6 +575,10 @@ ContentSettingsPattern::SchemeType ContentSettingsPattern::GetScheme() const {
   return SCHEME_OTHER;
 }
 
+const std::string& ContentSettingsPattern::GetHost() const {
+  return parts_.host;
+}
+
 bool ContentSettingsPattern::HasPath() const {
   DCHECK_EQ(GetScheme(), SCHEME_FILE);
   return !parts_.is_path_wildcard && !parts_.path.empty();
