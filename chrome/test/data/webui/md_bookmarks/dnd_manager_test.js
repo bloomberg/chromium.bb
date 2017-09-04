@@ -431,14 +431,18 @@ suite('drag and drop', function() {
   });
 
   test('auto expander', function() {
+    var timerProxy = new bookmarks.TestTimerProxy();
+    timerProxy.immediatelyResolveTimeouts = false;
+
     var autoExpander = dndManager.autoExpander_;
+    autoExpander.debouncer_.timerProxy_ = timerProxy;
+
     store.data.folderOpenState.set('11', false);
     store.notifyObservers();
     Polymer.dom.flush();
 
     var dragElement = getFolderNode('14');
     var dragTarget = getFolderNode('15');
-    autoExpander.testTimestamp_ = 500;
 
     startInternalDrag(dragElement);
 
@@ -454,11 +458,9 @@ suite('drag and drop', function() {
     // Dragging onto a closed folder with children updates the auto expander.
     dragTarget = getFolderNode('11');
     move(dragTarget);
-    assertEquals(500, autoExpander.lastTimestamp_);
     assertEquals(dragTarget, autoExpander.lastElement_);
 
     // Dragging onto another item resets the auto expander.
-    autoExpander.testTimestamp_ = 700;
     dragTarget = getFolderNode('1');
     move(dragTarget);
     assertEquals(null, autoExpander.lastElement_);
@@ -466,23 +468,25 @@ suite('drag and drop', function() {
     // Dragging onto the list resets the auto expander.
     dragTarget = getFolderNode('11');
     move(dragTarget);
-    assertEquals(700, autoExpander.lastTimestamp_);
     assertEquals(dragTarget, autoExpander.lastElement_);
 
     dragTarget = list;
     move(dragTarget);
     assertEquals(null, autoExpander.lastElement_);
 
-    // Auto expands after expand delay.
+    // Moving the mouse resets the delay.
     dragTarget = getFolderNode('11');
     move(dragTarget);
-    assertEquals(700, autoExpander.lastTimestamp_);
+    assertEquals(dragTarget, autoExpander.lastElement_);
+    var oldTimer = autoExpander.debouncer_.timer_;
 
-    autoExpander.testTimestamp_ += autoExpander.EXPAND_FOLDER_DELAY;
     move(dragTarget);
+    assertNotEquals(oldTimer, autoExpander.debouncer_.timer_);
+
+    // Auto expands after expand delay.
+    timerProxy.runTimeoutFn(autoExpander.debouncer_.timer_);
     assertDeepEquals(
         bookmarks.actions.changeFolderOpen('11', true), store.lastAction);
-    assertEquals(0, autoExpander.lastTimestamp_);
     assertEquals(null, autoExpander.lastElement_);
   });
 

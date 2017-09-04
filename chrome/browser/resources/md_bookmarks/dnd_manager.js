@@ -166,14 +166,16 @@ cr.define('bookmarks', function() {
     /** @const {number} */
     this.EXPAND_FOLDER_DELAY = 400;
 
-    /** @private {number} */
-    this.lastTimestamp_ = 0;
-
-    /** @private {BookmarkElement|null} */
+    /** @private {?BookmarkElement} */
     this.lastElement_ = null;
 
-    /** @private {number} */
-    this.testTimestamp_ = 0;
+    /** @type {!bookmarks.Debouncer} */
+    this.debouncer_ = new bookmarks.Debouncer(() => {
+      var store = bookmarks.Store.getInstance();
+      store.dispatch(
+          bookmarks.actions.changeFolderOpen(this.lastElement_.itemId, true));
+      this.reset();
+    });
   }
 
   AutoExpander.prototype = {
@@ -182,31 +184,30 @@ cr.define('bookmarks', function() {
      * @param {?BookmarkElement} overElement
      */
     update: function(e, overElement) {
-      var eventTimestamp = this.testTimestamp_ || e.timeStamp;
       var itemId = overElement ? overElement.itemId : null;
       var store = bookmarks.Store.getInstance();
 
-      // If hovering over the same folder as last update, open the folder after
-      // the delay has passed.
-      if (overElement && overElement == this.lastElement_) {
-        if (eventTimestamp - this.lastTimestamp_ < this.EXPAND_FOLDER_DELAY)
-          return;
-
-        var action = bookmarks.actions.changeFolderOpen(itemId, true);
-        store.dispatch(action);
-      } else if (
-          overElement && isClosedBookmarkFolderNode(overElement) &&
+      // If dragging over a new closed folder node with children reset the
+      // expander. Falls through to reset the expander delay.
+      if (overElement && overElement != this.lastElement_ &&
+          isClosedBookmarkFolderNode(overElement) &&
           bookmarks.util.hasChildFolders(itemId, store.data.nodes)) {
-        // Since this is a closed folder node that has children, set the auto
-        // expander to this element.
-        this.lastTimestamp_ = eventTimestamp;
+        this.reset();
         this.lastElement_ = overElement;
+      }
+
+      // If dragging over the same node, reset the expander delay.
+      if (overElement && overElement == this.lastElement_) {
+        this.debouncer_.restartTimeout(this.EXPAND_FOLDER_DELAY);
         return;
       }
 
-      // If the folder has been expanded or we have moved to a different
-      // element, reset the auto expander.
-      this.lastTimestamp_ = 0;
+      // Otherwise, cancel the expander.
+      this.reset();
+    },
+
+    reset: function() {
+      this.debouncer_.reset();
       this.lastElement_ = null;
     },
   };
@@ -494,10 +495,12 @@ cr.define('bookmarks', function() {
 
         var movePromises = this.dragInfo_.dragData.elements.map((item) => {
           return new Promise((resolve) => {
-            chrome.bookmarks.move(item.id, {
-              parentId: dropInfo.parentId,
-              index: dropInfo.index == -1 ? undefined : dropInfo.index
-            }, resolve);
+            chrome.bookmarks.move(
+                item.id, {
+                  parentId: dropInfo.parentId,
+                  index: dropInfo.index == -1 ? undefined : dropInfo.index
+                },
+                resolve);
           });
         });
 
@@ -625,6 +628,7 @@ cr.define('bookmarks', function() {
       this.dndChip.hide();
       this.internalDragElement_ = null;
       this.mouseDownPos_ = null;
+      this.autoExpander_.reset();
 
       // Defer the clearing of the data so that the bookmark manager API's drop
       // event doesn't clear the drop data before the web drop event has a
