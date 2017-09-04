@@ -45,6 +45,11 @@
 @property(nonatomic, weak) id<ContentSuggestionsMetricsRecording>
     metricsRecorder;
 
+// TODO(crbug.com/761817): Remove this code once the transition to the new
+// architecture is completed.
+// Whether this collection contains a toolbar.
+@property(nonatomic, assign) BOOL containsToolbar;
+
 - (void)setDataSource:(id<ContentSuggestionsDataSource>)dataSource;
 
 // Removes the entry at |indexPath|, from the collection and its model.

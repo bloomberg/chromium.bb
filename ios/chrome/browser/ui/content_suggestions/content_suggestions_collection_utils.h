@@ -31,6 +31,8 @@ CGFloat doodleTopMargin(BOOL toolbarPresent);
 CGFloat searchFieldTopMargin();
 // Returns the proper width for the search field inside a view with a |width|.
 CGFloat searchFieldWidth(CGFloat superviewWidth);
+// TODO(crbug.com/761817): Remove |toolbarPresent| once the transition to the
+// new architecture is completed.
 // Returns the expected height of the header. |logoIsShowing| refers to the
 // Google logo or the doodle. |promoCanShow| represents whether a what's new
 // promo can be displayed.  |toolbarPresent| represent whether the height should
