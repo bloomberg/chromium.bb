@@ -3648,3 +3648,5 @@ crbug.com/760543 [ Linux Release ] virtual/mojo-loading/http/tests/devtools/trac
 # Tests failing on WebKit Mac10.11, WebKit Mac10.10, WebKit Mac10.9
 crbug.com/760967 [ Mac ] external/wpt/payment-request/payment-request-constructor.https.html [ Pass Failure ]
 crbug.com/760967 [ Mac ] external/wpt/payment-request/payment-request-ctor-pmi-handling.https.html [ Pass Failure ]
+
+crbug.com/760405 shadow-dom/crashes/css-focus-recalc.html [ Crash ]
