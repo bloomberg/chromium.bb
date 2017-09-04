@@ -22,14 +22,6 @@
 
 #include "aom_ports/mem.h"
 
-#define USE_SIMPLER_SGR 1
-
-#define MAX_RADIUS 3  // Only 1, 2, 3 allowed
-#define MAX_EPS 80    // Max value of eps
-#define MAX_NELEM ((2 * MAX_RADIUS + 1) * (2 * MAX_RADIUS + 1))
-#define SGRPROJ_MTABLE_BITS 20
-#define SGRPROJ_RECIP_BITS 12
-
 const sgr_params_type sgr_params[SGRPROJ_PARAMS] = {
 #if USE_HIGHPASS_IN_SGRPROJ
   // corner, edge, r2, eps2
@@ -39,7 +31,7 @@ const sgr_params_type sgr_params[SGRPROJ_PARAMS] = {
   { -3, 4, 1, 5 }, { -3, 4, 1, 6 }, { -3, 4, 1, 7 }, { -3, 4, 1, 8 }
 #else
 // r1, eps1, r2, eps2
-#if USE_SIMPLER_SGR
+#if MAX_RADIUS == 2
   { 2, 12, 1, 4 },  { 2, 15, 1, 6 },  { 2, 18, 1, 8 },  { 2, 20, 1, 9 },
   { 2, 22, 1, 10 }, { 2, 25, 1, 11 }, { 2, 35, 1, 12 }, { 2, 45, 1, 13 },
   { 2, 55, 1, 14 }, { 2, 65, 1, 15 }, { 2, 75, 1, 16 }, { 2, 30, 1, 2 },
@@ -49,7 +41,7 @@ const sgr_params_type sgr_params[SGRPROJ_PARAMS] = {
   { 2, 22, 1, 10 }, { 2, 25, 1, 11 }, { 2, 35, 1, 12 }, { 2, 45, 1, 13 },
   { 2, 55, 1, 14 }, { 2, 65, 1, 15 }, { 2, 75, 1, 16 }, { 3, 30, 1, 10 },
   { 3, 50, 1, 12 }, { 3, 50, 2, 25 }, { 3, 60, 2, 35 }, { 3, 70, 2, 45 },
-#endif  // USE_SIMPLER_SGR
+#endif  // MAX_RADIUS == 2
 #endif
 };
 
@@ -112,21 +104,22 @@ static void loop_restoration_init(RestorationInternal *rst, int kf) {
   rst->keyframe = kf;
 }
 
-void extend_frame(uint8_t *data, int width, int height, int stride) {
+void extend_frame(uint8_t *data, int width, int height, int stride,
+                  int border_horz, int border_vert) {
   uint8_t *data_p;
   int i;
   for (i = 0; i < height; ++i) {
     data_p = data + i * stride;
-    memset(data_p - WIENER_HALFWIN, data_p[0], WIENER_HALFWIN);
-    memset(data_p + width, data_p[width - 1], WIENER_HALFWIN);
+    memset(data_p - border_horz, data_p[0], border_horz);
+    memset(data_p + width, data_p[width - 1], border_horz);
   }
-  data_p = data - WIENER_HALFWIN;
-  for (i = -WIENER_HALFWIN; i < 0; ++i) {
-    memcpy(data_p + i * stride, data_p, width + 2 * WIENER_HALFWIN);
+  data_p = data - border_horz;
+  for (i = -border_vert; i < 0; ++i) {
+    memcpy(data_p + i * stride, data_p, width + 2 * border_horz);
   }
-  for (i = height; i < height + WIENER_HALFWIN; ++i) {
+  for (i = height; i < height + border_vert; ++i) {
     memcpy(data_p + i * stride, data_p + (height - 1) * stride,
-           width + 2 * WIENER_HALFWIN);
+           width + 2 * border_horz);
   }
 }
 
@@ -256,7 +249,8 @@ static void loop_wiener_filter(uint8_t *data, int width, int height, int stride,
                                RestorationInternal *rst, uint8_t *dst,
                                int dst_stride) {
   int tile_idx;
-  extend_frame(data, width, height, stride);
+  extend_frame(data, width, height, stride, WIENER_BORDER_HORZ,
+               WIENER_BORDER_VERT);
   for (tile_idx = 0; tile_idx < rst->ntiles; ++tile_idx) {
     loop_wiener_filter_tile(data, tile_idx, width, height, stride, rst, dst,
                             dst_stride);
@@ -639,16 +633,17 @@ const int32_t x_by_xplus1[256] = {
 
 const int32_t one_by_x[MAX_NELEM] = {
   4096, 2048, 1365, 1024, 819, 683, 585, 512, 455, 410, 372, 341, 315,
-  293,  273,  256,  241,  228, 216, 205, 195, 186, 178, 171, 164, 158,
-  152,  146,  141,  137,  132, 128, 124, 120, 117, 114, 111, 108, 105,
-  102,  100,  98,   95,   93,  91,  89,  87,  85,  84
+  293,  273,  256,  241,  228, 216, 205, 195, 186, 178, 171, 164,
+#if MAX_RADIUS > 2
+  158,  152,  146,  141,  137, 132, 128, 124, 120, 117, 114, 111, 108,
+  105,  102,  100,  98,   95,  93,  91,  89,  87,  85,  84
+#endif  // MAX_RADIUS > 2
 };
 
 static void av1_selfguided_restoration_internal(int32_t *dgd, int width,
                                                 int height, int dgd_stride,
                                                 int32_t *dst, int dst_stride,
-                                                int bit_depth, int r, int eps,
-                                                int32_t *tmpbuf) {
+                                                int bit_depth, int r, int eps) {
   const int width_ext = width + 2 * SGRPROJ_BORDER_HORZ;
   const int height_ext = height + 2 * SGRPROJ_BORDER_VERT;
   const int num_stride = width_ext;
@@ -657,10 +652,11 @@ static void av1_selfguided_restoration_internal(int32_t *dgd, int width,
   // We also align the stride to a multiple of 16 bytes, for consistency
   // with the SIMD version of this function.
   int buf_stride = ((width_ext + 3) & ~3) + 16;
-
-  int32_t *A = tmpbuf;
-  int32_t *B = tmpbuf + SGRPROJ_OUTBUF_SIZE;
-  int8_t num_[RESTORATION_TILEPELS_MAX];
+  int32_t A_[RESTORATION_PROC_UNIT_PELS];
+  int32_t B_[RESTORATION_PROC_UNIT_PELS];
+  int32_t *A = A_;
+  int32_t *B = B_;
+  int8_t num_[RESTORATION_PROC_UNIT_PELS];
   int8_t *num = num_ + SGRPROJ_BORDER_VERT * num_stride + SGRPROJ_BORDER_HORZ;
   int i, j;
 
@@ -844,10 +840,11 @@ static void av1_selfguided_restoration_internal(int32_t *dgd, int width,
 
 void av1_selfguided_restoration_c(uint8_t *dgd, int width, int height,
                                   int stride, int32_t *dst, int dst_stride,
-                                  int r, int eps, int32_t *tmpbuf) {
+                                  int r, int eps) {
+  int32_t dgd32_[RESTORATION_PROC_UNIT_PELS];
   const int dgd32_stride = width + 2 * SGRPROJ_BORDER_HORZ;
   int32_t *dgd32 =
-      tmpbuf + dgd32_stride * SGRPROJ_BORDER_VERT + SGRPROJ_BORDER_HORZ;
+      dgd32_ + dgd32_stride * SGRPROJ_BORDER_VERT + SGRPROJ_BORDER_HORZ;
   int i, j;
   for (i = -SGRPROJ_BORDER_VERT; i < height + SGRPROJ_BORDER_VERT; ++i) {
     for (j = -SGRPROJ_BORDER_HORZ; j < width + SGRPROJ_BORDER_HORZ; ++j) {
@@ -855,8 +852,7 @@ void av1_selfguided_restoration_c(uint8_t *dgd, int width, int height,
     }
   }
   av1_selfguided_restoration_internal(dgd32, width, height, dgd32_stride, dst,
-                                      dst_stride, 8, r, eps,
-                                      tmpbuf + RESTORATION_TILEPELS_MAX);
+                                      dst_stride, 8, r, eps);
 }
 
 void av1_highpass_filter_c(uint8_t *dgd, int width, int height, int stride,
@@ -955,7 +951,6 @@ void apply_selfguided_restoration_c(uint8_t *dat, int width, int height,
   int xq[2];
   int32_t *flt1 = tmpbuf;
   int32_t *flt2 = flt1 + RESTORATION_TILEPELS_MAX;
-  int32_t *tmpbuf2 = flt2 + RESTORATION_TILEPELS_MAX;
   int i, j;
   assert(width * height <= RESTORATION_TILEPELS_MAX);
 #if USE_HIGHPASS_IN_SGRPROJ
@@ -963,10 +958,10 @@ void apply_selfguided_restoration_c(uint8_t *dat, int width, int height,
                         sgr_params[eps].corner, sgr_params[eps].edge);
 #else
   av1_selfguided_restoration_c(dat, width, height, stride, flt1, width,
-                               sgr_params[eps].r1, sgr_params[eps].e1, tmpbuf2);
+                               sgr_params[eps].r1, sgr_params[eps].e1);
 #endif  // USE_HIGHPASS_IN_SGRPROJ
   av1_selfguided_restoration_c(dat, width, height, stride, flt2, width,
-                               sgr_params[eps].r2, sgr_params[eps].e2, tmpbuf2);
+                               sgr_params[eps].r2, sgr_params[eps].e2);
   decode_xq(xqd, xq);
   for (i = 0; i < height; ++i) {
     for (j = 0; j < width; ++j) {
@@ -1009,7 +1004,7 @@ static void loop_sgrproj_filter_tile(uint8_t *data, int tile_idx, int width,
       int h = AOMMIN(procunit_height, v_end - i);
       uint8_t *data_p = data + i * stride + j;
       uint8_t *dst_p = dst + i * dst_stride + j;
-      apply_selfguided_restoration_c(
+      apply_selfguided_restoration(
           data_p, w, h, stride, rst->rsi->sgrproj_info[tile_idx].ep,
           rst->rsi->sgrproj_info[tile_idx].xqd, dst_p, dst_stride, rst->tmpbuf);
     }
@@ -1019,7 +1014,8 @@ static void loop_sgrproj_filter(uint8_t *data, int width, int height,
                                 int stride, RestorationInternal *rst,
                                 uint8_t *dst, int dst_stride) {
   int tile_idx;
-  extend_frame(data, width, height, stride);
+  extend_frame(data, width, height, stride, SGRPROJ_BORDER_HORZ,
+               SGRPROJ_BORDER_VERT);
   for (tile_idx = 0; tile_idx < rst->ntiles; ++tile_idx) {
     loop_sgrproj_filter_tile(data, tile_idx, width, height, stride, rst, dst,
                              dst_stride);
@@ -1030,7 +1026,8 @@ static void loop_switchable_filter(uint8_t *data, int width, int height,
                                    int stride, RestorationInternal *rst,
                                    uint8_t *dst, int dst_stride) {
   int tile_idx;
-  extend_frame(data, width, height, stride);
+  extend_frame(data, width, height, stride, RESTORATION_BORDER_HORZ,
+               RESTORATION_BORDER_VERT);
   for (tile_idx = 0; tile_idx < rst->ntiles; ++tile_idx) {
     if (rst->rsi->restoration_type[tile_idx] == RESTORE_NONE) {
       loop_copy_tile(data, tile_idx, 0, 0, width, height, stride, rst, dst,
@@ -1046,23 +1043,23 @@ static void loop_switchable_filter(uint8_t *data, int width, int height,
 }
 
 #if CONFIG_HIGHBITDEPTH
-void extend_frame_highbd(uint16_t *data, int width, int height, int stride) {
+void extend_frame_highbd(uint16_t *data, int width, int height, int stride,
+                         int border_horz, int border_vert) {
   uint16_t *data_p;
   int i, j;
   for (i = 0; i < height; ++i) {
     data_p = data + i * stride;
-    for (j = -WIENER_HALFWIN; j < 0; ++j) data_p[j] = data_p[0];
-    for (j = width; j < width + WIENER_HALFWIN; ++j)
-      data_p[j] = data_p[width - 1];
+    for (j = -border_horz; j < 0; ++j) data_p[j] = data_p[0];
+    for (j = width; j < width + border_horz; ++j) data_p[j] = data_p[width - 1];
   }
-  data_p = data - WIENER_HALFWIN;
-  for (i = -WIENER_HALFWIN; i < 0; ++i) {
+  data_p = data - border_horz;
+  for (i = -border_vert; i < 0; ++i) {
     memcpy(data_p + i * stride, data_p,
-           (width + 2 * WIENER_HALFWIN) * sizeof(uint16_t));
+           (width + 2 * border_horz) * sizeof(uint16_t));
   }
-  for (i = height; i < height + WIENER_HALFWIN; ++i) {
+  for (i = height; i < height + border_vert; ++i) {
     memcpy(data_p + i * stride, data_p + (height - 1) * stride,
-           (width + 2 * WIENER_HALFWIN) * sizeof(uint16_t));
+           (width + 2 * border_horz) * sizeof(uint16_t));
   }
 }
 
@@ -1171,7 +1168,8 @@ static void loop_wiener_filter_highbd(uint8_t *data8, int width, int height,
   uint16_t *data = CONVERT_TO_SHORTPTR(data8);
   uint16_t *dst = CONVERT_TO_SHORTPTR(dst8);
   int tile_idx;
-  extend_frame_highbd(data, width, height, stride);
+  extend_frame_highbd(data, width, height, stride, WIENER_BORDER_HORZ,
+                      WIENER_BORDER_VERT);
   for (tile_idx = 0; tile_idx < rst->ntiles; ++tile_idx) {
     loop_wiener_filter_tile_highbd(data, tile_idx, width, height, stride, rst,
                                    bit_depth, dst, dst_stride);
@@ -1181,10 +1179,11 @@ static void loop_wiener_filter_highbd(uint8_t *data8, int width, int height,
 void av1_selfguided_restoration_highbd_c(uint16_t *dgd, int width, int height,
                                          int stride, int32_t *dst,
                                          int dst_stride, int bit_depth, int r,
-                                         int eps, int32_t *tmpbuf) {
+                                         int eps) {
+  int32_t dgd32_[RESTORATION_PROC_UNIT_PELS];
   const int dgd32_stride = width + 2 * SGRPROJ_BORDER_HORZ;
   int32_t *dgd32 =
-      tmpbuf + dgd32_stride * SGRPROJ_BORDER_VERT + SGRPROJ_BORDER_HORZ;
+      dgd32_ + dgd32_stride * SGRPROJ_BORDER_VERT + SGRPROJ_BORDER_HORZ;
   int i, j;
   for (i = -SGRPROJ_BORDER_VERT; i < height + SGRPROJ_BORDER_VERT; ++i) {
     for (j = -SGRPROJ_BORDER_HORZ; j < width + SGRPROJ_BORDER_HORZ; ++j) {
@@ -1192,8 +1191,7 @@ void av1_selfguided_restoration_highbd_c(uint16_t *dgd, int width, int height,
     }
   }
   av1_selfguided_restoration_internal(dgd32, width, height, dgd32_stride, dst,
-                                      dst_stride, bit_depth, r, eps,
-                                      tmpbuf + RESTORATION_TILEPELS_MAX);
+                                      dst_stride, bit_depth, r, eps);
 }
 
 void av1_highpass_filter_highbd_c(uint16_t *dgd, int width, int height,
@@ -1294,7 +1292,6 @@ void apply_selfguided_restoration_highbd_c(uint16_t *dat, int width, int height,
   int xq[2];
   int32_t *flt1 = tmpbuf;
   int32_t *flt2 = flt1 + RESTORATION_TILEPELS_MAX;
-  int32_t *tmpbuf2 = flt2 + RESTORATION_TILEPELS_MAX;
   int i, j;
   assert(width * height <= RESTORATION_TILEPELS_MAX);
 #if USE_HIGHPASS_IN_SGRPROJ
@@ -1303,11 +1300,11 @@ void apply_selfguided_restoration_highbd_c(uint16_t *dat, int width, int height,
 #else
   av1_selfguided_restoration_highbd_c(dat, width, height, stride, flt1, width,
                                       bit_depth, sgr_params[eps].r1,
-                                      sgr_params[eps].e1, tmpbuf2);
+                                      sgr_params[eps].e1);
 #endif  // USE_HIGHPASS_IN_SGRPROJ
   av1_selfguided_restoration_highbd_c(dat, width, height, stride, flt2, width,
                                       bit_depth, sgr_params[eps].r2,
-                                      sgr_params[eps].e2, tmpbuf2);
+                                      sgr_params[eps].e2);
   decode_xq(xqd, xq);
   for (i = 0; i < height; ++i) {
     for (j = 0; j < width; ++j) {
@@ -1351,7 +1348,7 @@ static void loop_sgrproj_filter_tile_highbd(uint16_t *data, int tile_idx,
       int h = AOMMIN(procunit_height, v_end - i);
       uint16_t *data_p = data + i * stride + j;
       uint16_t *dst_p = dst + i * dst_stride + j;
-      apply_selfguided_restoration_highbd_c(
+      apply_selfguided_restoration_highbd(
           data_p, w, h, stride, bit_depth, rst->rsi->sgrproj_info[tile_idx].ep,
           rst->rsi->sgrproj_info[tile_idx].xqd, dst_p, dst_stride, rst->tmpbuf);
     }
@@ -1364,7 +1361,8 @@ static void loop_sgrproj_filter_highbd(uint8_t *data8, int width, int height,
   int tile_idx;
   uint16_t *data = CONVERT_TO_SHORTPTR(data8);
   uint16_t *dst = CONVERT_TO_SHORTPTR(dst8);
-  extend_frame_highbd(data, width, height, stride);
+  extend_frame_highbd(data, width, height, stride, SGRPROJ_BORDER_HORZ,
+                      SGRPROJ_BORDER_VERT);
   for (tile_idx = 0; tile_idx < rst->ntiles; ++tile_idx) {
     loop_sgrproj_filter_tile_highbd(data, tile_idx, width, height, stride, rst,
                                     bit_depth, dst, dst_stride);
@@ -1378,7 +1376,8 @@ static void loop_switchable_filter_highbd(uint8_t *data8, int width, int height,
   uint16_t *data = CONVERT_TO_SHORTPTR(data8);
   uint16_t *dst = CONVERT_TO_SHORTPTR(dst8);
   int tile_idx;
-  extend_frame_highbd(data, width, height, stride);
+  extend_frame_highbd(data, width, height, stride, RESTORATION_BORDER_HORZ,
+                      RESTORATION_BORDER_VERT);
   for (tile_idx = 0; tile_idx < rst->ntiles; ++tile_idx) {
     if (rst->rsi->restoration_type[tile_idx] == RESTORE_NONE) {
       loop_copy_tile_highbd(data, tile_idx, 0, 0, width, height, stride, rst,

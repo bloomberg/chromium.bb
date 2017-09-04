@@ -40,9 +40,11 @@ class AV1SelfguidedFilterTest
 
  protected:
   void RunSpeedTest() {
+    const int pu_width = RESTORATION_PROC_UNIT_SIZE;
+    const int pu_height = RESTORATION_PROC_UNIT_SIZE;
     const int width = 256, height = 256, stride = 288, out_stride = 288;
     const int NUM_ITERS = 2000;
-    int i, j;
+    int i, j, k;
 
     uint8_t *input_ =
         (uint8_t *)aom_memalign(16, stride * (height + 32) * sizeof(uint8_t));
@@ -72,8 +74,15 @@ class AV1SelfguidedFilterTest
 
     std::clock_t start = std::clock();
     for (i = 0; i < NUM_ITERS; ++i) {
-      apply_selfguided_restoration(input, width, height, stride, eps, xqd,
-                                   output, out_stride, tmpbuf);
+      for (k = 0; k < height; k += pu_height)
+        for (j = 0; j < width; j += pu_width) {
+          int w = AOMMIN(pu_width, width - j);
+          int h = AOMMIN(pu_height, height - k);
+          uint8_t *input_p = input + k * stride + j;
+          uint8_t *output_p = output + k * out_stride + j;
+          apply_selfguided_restoration(input_p, w, h, stride, eps, xqd,
+                                       output_p, out_stride, tmpbuf);
+        }
     }
     std::clock_t end = std::clock();
     double elapsed = ((end - start) / (double)CLOCKS_PER_SEC);
@@ -87,6 +96,8 @@ class AV1SelfguidedFilterTest
   }
 
   void RunCorrectnessTest() {
+    const int pu_width = RESTORATION_PROC_UNIT_SIZE;
+    const int pu_height = RESTORATION_PROC_UNIT_SIZE;
     // Set the maximum width/height to test here. We actually test a small
     // range of sizes *up to* this size, so that we can check, eg.,
     // the behaviour on tiles which are not a multiple of 4 wide.
@@ -127,10 +138,24 @@ class AV1SelfguidedFilterTest
       int test_w = max_w - (i / 9);
       int test_h = max_h - (i % 9);
 
+      for (k = 0; k < test_h; k += pu_height)
+        for (j = 0; j < test_w; j += pu_width) {
+          int w = AOMMIN(pu_width, test_w - j);
+          int h = AOMMIN(pu_height, test_h - k);
+          uint8_t *input_p = input + k * stride + j;
+          uint8_t *output_p = output + k * out_stride + j;
+          uint8_t *output2_p = output2 + k * out_stride + j;
+          apply_selfguided_restoration(input_p, w, h, stride, eps, xqd,
+                                       output_p, out_stride, tmpbuf);
+          apply_selfguided_restoration_c(input_p, w, h, stride, eps, xqd,
+                                         output2_p, out_stride, tmpbuf);
+        }
+      /*
       apply_selfguided_restoration(input, test_w, test_h, stride, eps, xqd,
                                    output, out_stride, tmpbuf);
       apply_selfguided_restoration_c(input, test_w, test_h, stride, eps, xqd,
                                      output2, out_stride, tmpbuf);
+                                     */
       for (j = 0; j < test_h; ++j)
         for (k = 0; k < test_w; ++k) {
           ASSERT_EQ(output[j * out_stride + k], output2[j * out_stride + k]);
@@ -167,9 +192,11 @@ class AV1HighbdSelfguidedFilterTest
 
  protected:
   void RunSpeedTest() {
+    const int pu_width = RESTORATION_PROC_UNIT_SIZE;
+    const int pu_height = RESTORATION_PROC_UNIT_SIZE;
     const int width = 256, height = 256, stride = 288, out_stride = 288;
     const int NUM_ITERS = 2000;
-    int i, j;
+    int i, j, k;
     int bit_depth = GET_PARAM(0);
     int mask = (1 << bit_depth) - 1;
 
@@ -201,9 +228,16 @@ class AV1HighbdSelfguidedFilterTest
 
     std::clock_t start = std::clock();
     for (i = 0; i < NUM_ITERS; ++i) {
-      apply_selfguided_restoration_highbd(input, width, height, stride,
-                                          bit_depth, eps, xqd, output,
-                                          out_stride, tmpbuf);
+      for (k = 0; k < height; k += pu_height)
+        for (j = 0; j < width; j += pu_width) {
+          int w = AOMMIN(pu_width, width - j);
+          int h = AOMMIN(pu_height, height - k);
+          uint16_t *input_p = input + k * stride + j;
+          uint16_t *output_p = output + k * out_stride + j;
+          apply_selfguided_restoration_highbd(input_p, w, h, stride, bit_depth,
+                                              eps, xqd, output_p, out_stride,
+                                              tmpbuf);
+        }
     }
     std::clock_t end = std::clock();
     double elapsed = ((end - start) / (double)CLOCKS_PER_SEC);
@@ -217,6 +251,8 @@ class AV1HighbdSelfguidedFilterTest
   }
 
   void RunCorrectnessTest() {
+    const int pu_width = RESTORATION_PROC_UNIT_SIZE;
+    const int pu_height = RESTORATION_PROC_UNIT_SIZE;
     // Set the maximum width/height to test here. We actually test a small
     // range of sizes *up to* this size, so that we can check, eg.,
     // the behaviour on tiles which are not a multiple of 4 wide.
@@ -259,12 +295,29 @@ class AV1HighbdSelfguidedFilterTest
       int test_w = max_w - (i / 9);
       int test_h = max_h - (i % 9);
 
+      for (k = 0; k < test_h; k += pu_height)
+        for (j = 0; j < test_w; j += pu_width) {
+          int w = AOMMIN(pu_width, test_w - j);
+          int h = AOMMIN(pu_height, test_h - k);
+          uint16_t *input_p = input + k * stride + j;
+          uint16_t *output_p = output + k * out_stride + j;
+          uint16_t *output2_p = output2 + k * out_stride + j;
+          apply_selfguided_restoration_highbd(input_p, w, h, stride, bit_depth,
+                                              eps, xqd, output_p, out_stride,
+                                              tmpbuf);
+          apply_selfguided_restoration_highbd_c(input_p, w, h, stride,
+                                                bit_depth, eps, xqd, output2_p,
+                                                out_stride, tmpbuf);
+        }
+
+      /*
       apply_selfguided_restoration_highbd(input, test_w, test_h, stride,
                                           bit_depth, eps, xqd, output,
                                           out_stride, tmpbuf);
       apply_selfguided_restoration_highbd_c(input, test_w, test_h, stride,
                                             bit_depth, eps, xqd, output2,
                                             out_stride, tmpbuf);
+                                            */
       for (j = 0; j < test_h; ++j)
         for (k = 0; k < test_w; ++k)
           ASSERT_EQ(output[j * out_stride + k], output2[j * out_stride + k]);

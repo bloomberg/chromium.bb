@@ -664,17 +664,18 @@ static void selfguided_restoration_3_h(int32_t *A, int32_t *B, int width,
 
 void av1_selfguided_restoration_sse4_1(uint8_t *dgd, int width, int height,
                                        int dgd_stride, int32_t *dst,
-                                       int dst_stride, int r, int eps,
-                                       int32_t *tmpbuf) {
+                                       int dst_stride, int r, int eps) {
   const int width_ext = width + 2 * SGRPROJ_BORDER_HORZ;
   const int height_ext = height + 2 * SGRPROJ_BORDER_VERT;
-  int32_t *A = tmpbuf;
-  int32_t *B = A + SGRPROJ_OUTBUF_SIZE;
+  int32_t A_[RESTORATION_PROC_UNIT_PELS];
+  int32_t B_[RESTORATION_PROC_UNIT_PELS];
+  int32_t *A = A_;
+  int32_t *B = B_;
   int i, j;
   // Adjusting the stride of A and B here appears to avoid bad cache effects,
   // leading to a significant speed improvement.
   // We also align the stride to a multiple of 16 bytes for efficiency.
-  int buf_stride = ((width + 3) & ~3) + 16;
+  int buf_stride = ((width_ext + 3) & ~3) + 16;
 
   // Don't filter tiles with dimensions < 5 on any axis
   if ((width < 5) || (height < 5)) return;
@@ -1059,7 +1060,6 @@ void apply_selfguided_restoration_sse4_1(uint8_t *dat, int width, int height,
   int xq[2];
   int32_t *flt1 = tmpbuf;
   int32_t *flt2 = flt1 + RESTORATION_TILEPELS_MAX;
-  int32_t *tmpbuf2 = flt2 + RESTORATION_TILEPELS_MAX;
   int i, j;
   assert(width * height <= RESTORATION_TILEPELS_MAX);
 #if USE_HIGHPASS_IN_SGRPROJ
@@ -1067,12 +1067,10 @@ void apply_selfguided_restoration_sse4_1(uint8_t *dat, int width, int height,
                              sgr_params[eps].corner, sgr_params[eps].edge);
 #else
     av1_selfguided_restoration_sse4_1(dat, width, height, stride, flt1, width,
-                                      sgr_params[eps].r1, sgr_params[eps].e1,
-                                      tmpbuf2);
+                                      sgr_params[eps].r1, sgr_params[eps].e1);
 #endif  // USE_HIGHPASS_IN_SGRPROJ
   av1_selfguided_restoration_sse4_1(dat, width, height, stride, flt2, width,
-                                    sgr_params[eps].r2, sgr_params[eps].e2,
-                                    tmpbuf2);
+                                    sgr_params[eps].r2, sgr_params[eps].e2);
   decode_xq(xqd, xq);
 
   __m128i xq0 = _mm_set1_epi32(xq[0]);
@@ -1374,17 +1372,18 @@ static void highbd_selfguided_restoration_3_v(uint16_t *src, int width,
 void av1_selfguided_restoration_highbd_sse4_1(uint16_t *dgd, int width,
                                               int height, int dgd_stride,
                                               int32_t *dst, int dst_stride,
-                                              int bit_depth, int r, int eps,
-                                              int32_t *tmpbuf) {
+                                              int bit_depth, int r, int eps) {
   const int width_ext = width + 2 * SGRPROJ_BORDER_HORZ;
   const int height_ext = height + 2 * SGRPROJ_BORDER_VERT;
-  int32_t *A = tmpbuf;
-  int32_t *B = A + SGRPROJ_OUTBUF_SIZE;
+  int32_t A_[RESTORATION_PROC_UNIT_PELS];
+  int32_t B_[RESTORATION_PROC_UNIT_PELS];
+  int32_t *A = A_;
+  int32_t *B = B_;
   int i, j;
   // Adjusting the stride of A and B here appears to avoid bad cache effects,
   // leading to a significant speed improvement.
   // We also align the stride to a multiple of 16 bytes for efficiency.
-  int buf_stride = ((width + 3) & ~3) + 16;
+  int buf_stride = ((width_ext + 3) & ~3) + 16;
 
   // Don't filter tiles with dimensions < 5 on any axis
   if ((width < 5) || (height < 5)) return;
@@ -1741,7 +1740,6 @@ void apply_selfguided_restoration_highbd_sse4_1(
   int xq[2];
   int32_t *flt1 = tmpbuf;
   int32_t *flt2 = flt1 + RESTORATION_TILEPELS_MAX;
-  int32_t *tmpbuf2 = flt2 + RESTORATION_TILEPELS_MAX;
   int i, j;
   assert(width * height <= RESTORATION_TILEPELS_MAX);
 #if USE_HIGHPASS_IN_SGRPROJ
@@ -1751,11 +1749,11 @@ void apply_selfguided_restoration_highbd_sse4_1(
 #else
   av1_selfguided_restoration_highbd_sse4_1(dat, width, height, stride, flt1,
                                            width, bit_depth, sgr_params[eps].r1,
-                                           sgr_params[eps].e1, tmpbuf2);
+                                           sgr_params[eps].e1);
 #endif  // USE_HIGHPASS_IN_SGRPROJ
   av1_selfguided_restoration_highbd_sse4_1(dat, width, height, stride, flt2,
                                            width, bit_depth, sgr_params[eps].r2,
-                                           sgr_params[eps].e2, tmpbuf2);
+                                           sgr_params[eps].e2);
   decode_xq(xqd, xq);
 
   __m128i xq0 = _mm_set1_epi32(xq[0]);
