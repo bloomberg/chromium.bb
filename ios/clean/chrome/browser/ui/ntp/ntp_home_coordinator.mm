@@ -36,7 +36,6 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller_audience.h"
-#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/coordinators/browser_coordinator+internal.h"
 #import "ios/chrome/browser/ui/ntp/google_landing_mediator.h"
@@ -148,8 +147,6 @@
 
   [self.viewController setDataSource:self.suggestionsMediator];
   self.viewController.suggestionCommandHandler = self;
-  self.viewController.suggestionsDelegate =
-      self.headerCoordinator.collectionDelegate;
   self.viewController.audience = self;
   self.viewController.metricsRecorder = self.metricsRecorder;
 
@@ -163,7 +160,7 @@
           initWithCollectionController:self.viewController
                       headerController:self.headerCoordinator.headerController];
 
-  self.viewController.headerCommandHandler =
+  self.viewController.headerSynchronizer =
       self.headerCollectionInteractionHandler;
   self.headerCoordinator.collectionSynchronizer =
       self.headerCollectionInteractionHandler;

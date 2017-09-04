@@ -15,7 +15,6 @@
 @protocol ContentSuggestionsCollectionSynchronizing;
 @protocol ContentSuggestionsHeaderViewControllerCommandHandler;
 @protocol ContentSuggestionsHeaderViewControllerDelegate;
-@protocol ContentSuggestionsViewControllerDelegate;
 
 // Coordinator that runs the header containing the logo of the NTP.
 @interface NTPHomeHeaderCoordinator : BrowserCoordinator
@@ -38,9 +37,6 @@
         headerProvider;
 @property(nonatomic, strong, readonly, nullable) id<GoogleLandingConsumer>
     consumer;
-@property(nonatomic, strong, readonly, nullable)
-    id<ContentSuggestionsViewControllerDelegate>
-        collectionDelegate;
 
 @end
 

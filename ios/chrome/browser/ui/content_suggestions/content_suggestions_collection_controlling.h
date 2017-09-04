@@ -7,12 +7,8 @@
 
 #import <UIKit/UIKit.h>
 
-@protocol ContentSuggestionsViewControllerDelegate;
-
+// Controller for the ContentSuggestions collection.
 @protocol ContentSuggestionsCollectionControlling
-
-@property(nonatomic, weak) id<ContentSuggestionsViewControllerDelegate>
-    suggestionsDelegate;
 
 // |YES| if the collection scrollView is scrolled all the way to the top. Used
 // to lock this position in place on various frame changes.

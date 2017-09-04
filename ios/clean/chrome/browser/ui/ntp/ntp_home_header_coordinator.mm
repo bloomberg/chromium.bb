@@ -7,16 +7,14 @@
 #import "ios/chrome/browser/ui/broadcaster/chrome_broadcaster.h"
 #import "ios/chrome/browser/ui/browser_list/browser.h"
 #import "ios/chrome/browser/ui/coordinators/browser_coordinator+internal.h"
-#import "ios/clean/chrome/browser/ui/ntp/ntp_home_header_mediator.h"
 #import "ios/clean/chrome/browser/ui/ntp/ntp_home_header_view_controller.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-@interface NTPHomeHeaderCoordinator ()<NTPHomeHeaderMediatorAlerter>
+@interface NTPHomeHeaderCoordinator ()
 
-@property(nonatomic, strong) NTPHomeHeaderMediator* mediator;
 @property(nonatomic, strong) NTPHomeHeaderViewController* viewController;
 
 @end
@@ -26,31 +24,26 @@
 @synthesize delegate = _delegate;
 @synthesize commandHandler = _commandHandler;
 @synthesize collectionSynchronizer = _collectionSynchronizer;
-@synthesize mediator = _mediator;
 @synthesize viewController = _viewController;
 
 #pragma mark - Properties
 
 - (id<ContentSuggestionsHeaderControlling>)headerController {
-  return self.mediator;
+  return self.viewController;
 }
 
 - (id<ContentSuggestionsHeaderProvider>)headerProvider {
-  return self.mediator;
+  return self.viewController;
 }
 
 - (id<GoogleLandingConsumer>)consumer {
-  return self.mediator;
-}
-
-- (id<ContentSuggestionsViewControllerDelegate>)collectionDelegate {
-  return self.mediator;
+  return self.viewController;
 }
 
 - (void)setCollectionSynchronizer:
     (id<ContentSuggestionsCollectionSynchronizing>)collectionSynchronizer {
   _collectionSynchronizer = collectionSynchronizer;
-  self.mediator.collectionSynchronizer = collectionSynchronizer;
+  self.viewController.collectionSynchronizer = collectionSynchronizer;
 }
 
 #pragma mark - BrowserCoordinator
@@ -61,16 +54,8 @@
 
   self.viewController = [[NTPHomeHeaderViewController alloc] init];
 
-  self.mediator = [[NTPHomeHeaderMediator alloc] init];
-  self.mediator.delegate = self.delegate;
-  self.mediator.commandHandler = self.commandHandler;
-  self.mediator.collectionSynchronizer = self.collectionSynchronizer;
-  self.mediator.headerProvider = self.viewController;
-  self.mediator.headerConsumer = self.viewController;
-  self.mediator.alerter = self;
-
   [self.browser->broadcaster()
-      addObserver:self.mediator
+      addObserver:self.viewController
       forSelector:@selector(broadcastSelectedNTPPanel:)];
 
   [super start];
@@ -79,27 +64,9 @@
 - (void)stop {
   [super stop];
   [self.browser->broadcaster()
-      removeObserver:self.mediator
+      removeObserver:self.viewController
          forSelector:@selector(broadcastSelectedNTPPanel:)];
-  self.mediator = nil;
   self.viewController = nil;
-}
-
-#pragma mark - NTPHomeHeaderMediatorAlerter
-
-- (void)showAlert:(NSString*)title {
-  UIAlertController* alertController =
-      [UIAlertController alertControllerWithTitle:title
-                                          message:nil
-                                   preferredStyle:UIAlertControllerStyleAlert];
-  UIAlertAction* action =
-      [UIAlertAction actionWithTitle:@"Done"
-                               style:UIAlertActionStyleCancel
-                             handler:nil];
-  [alertController addAction:action];
-  [self.viewController presentViewController:alertController
-                                    animated:YES
-                                  completion:nil];
 }
 
 @end
