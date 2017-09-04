@@ -12,6 +12,8 @@
 #ifndef AV1_ENCODER_FIRSTPASS_H_
 #define AV1_ENCODER_FIRSTPASS_H_
 
+#include "av1/common/enums.h"
+#include "av1/common/onyxc_int.h"
 #include "av1/encoder/lookahead.h"
 #include "av1/encoder/ratectrl.h"
 
@@ -45,10 +47,10 @@ typedef struct {
 // NOTE: Currently each BFG contains one backward ref (BWF) frame plus a certain
 //       number of bi-predictive frames.
 #define BFG_INTERVAL 2
-// The maximum number of extra ALT_REF's
-// NOTE: This number cannot be greater than 2 or the reference frame buffer will
-//       overflow.
-#define MAX_EXT_ARFS 2
+// The maximum number of extra ALTREF's except ALTREF_FRAME
+// NOTE: REF_FRAMES indicates the maximum number of frames that may be buffered
+//       to serve as references. Currently REF_FRAMES == 8.
+#define MAX_EXT_ARFS (REF_FRAMES - BWDREF_FRAME - 1)
 #define MIN_EXT_ARF_INTERVAL 4
 
 #define MIN_ZERO_MOTION 0.95
