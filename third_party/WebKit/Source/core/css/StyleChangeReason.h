@@ -61,7 +61,7 @@ extern const AtomicString& g_past;
 extern const AtomicString& g_unresolved;
 
 void Init();
-}
+}  // namespace StyleChangeExtraData
 
 // |StyleChangeReasonForTracing| is used to trace the reason a
 // |Node::setNeedsStyleRecalc| call was made to show it in DevTools or in

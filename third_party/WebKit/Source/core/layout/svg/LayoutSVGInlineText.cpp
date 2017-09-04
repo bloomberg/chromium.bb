@@ -25,7 +25,7 @@
 
 #include "core/css/CSSFontSelector.h"
 #include "core/css/FontSize.h"
-#include "core/dom/StyleEngine.h"
+#include "core/css/StyleEngine.h"
 #include "core/editing/TextAffinity.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/frame/LocalFrameView.h"

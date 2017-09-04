@@ -30,9 +30,9 @@
 
 #include "core/html/imports/HTMLImportChild.h"
 
+#include "core/css/StyleEngine.h"
 #include "core/css/StyleSheetList.h"
 #include "core/dom/Document.h"
-#include "core/dom/StyleEngine.h"
 #include "core/frame/Deprecation.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/custom/V0CustomElement.h"

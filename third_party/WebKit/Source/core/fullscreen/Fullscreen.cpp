@@ -30,9 +30,9 @@
 #include "core/fullscreen/Fullscreen.h"
 
 #include "core/HTMLElementTypeHelpers.h"
+#include "core/css/StyleEngine.h"
 #include "core/dom/Document.h"
 #include "core/dom/ElementTraversal.h"
-#include "core/dom/StyleEngine.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/dom/UserGestureIndicator.h"
 #include "core/dom/events/Event.h"

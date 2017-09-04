@@ -5,8 +5,8 @@
 #ifndef LinkStyle_h
 #define LinkStyle_h
 
+#include "core/css/StyleEngine.h"
 #include "core/dom/Node.h"
-#include "core/dom/StyleEngine.h"
 #include "core/html/LinkResource.h"
 #include "core/loader/resource/StyleSheetResource.h"
 #include "core/loader/resource/StyleSheetResourceClient.h"

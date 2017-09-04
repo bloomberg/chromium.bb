@@ -8,8 +8,8 @@
 
 #include "core/CSSPropertyNames.h"
 #include "core/HTMLNames.h"
+#include "core/css/StyleEngine.h"
 #include "core/dom/NodeComputedStyle.h"
-#include "core/dom/StyleEngine.h"
 #include "core/frame/FrameTestHelpers.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/WebLocalFrameImpl.h"

@@ -21,8 +21,8 @@
 
 #include "core/layout/LayoutBR.h"
 
+#include "core/css/StyleEngine.h"
 #include "core/dom/Document.h"
-#include "core/dom/StyleEngine.h"
 #include "core/editing/PositionWithAffinity.h"
 #include "core/layout/LayoutObjectInlines.h"
 

@@ -22,7 +22,7 @@
 
 #include "core/layout/LayoutTextControl.h"
 
-#include "core/dom/StyleChangeReason.h"
+#include "core/css/StyleChangeReason.h"
 #include "core/html/TextControlElement.h"
 #include "core/layout/HitTestResult.h"
 #include "platform/scroll/ScrollbarTheme.h"

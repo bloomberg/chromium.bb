@@ -4,8 +4,8 @@
 
 #include "core/html/imports/HTMLImportTreeRoot.h"
 
+#include "core/css/StyleEngine.h"
 #include "core/dom/Document.h"
-#include "core/dom/StyleEngine.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/imports/HTMLImportChild.h"
 

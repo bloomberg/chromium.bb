@@ -23,7 +23,7 @@
 #include "core/html/HTMLQuoteElement.h"
 
 #include "core/HTMLNames.h"
-#include "core/dom/StyleEngine.h"
+#include "core/css/StyleEngine.h"
 
 namespace blink {
 

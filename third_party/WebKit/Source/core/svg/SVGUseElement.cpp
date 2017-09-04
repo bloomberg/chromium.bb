@@ -27,12 +27,12 @@
 
 #include "core/SVGNames.h"
 #include "core/XLinkNames.h"
+#include "core/css/StyleChangeReason.h"
 #include "core/dom/Document.h"
 #include "core/dom/ElementShadow.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/IdTargetObserver.h"
 #include "core/dom/ShadowRoot.h"
-#include "core/dom/StyleChangeReason.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/dom/events/Event.h"
 #include "core/layout/svg/LayoutSVGTransformableContainer.h"

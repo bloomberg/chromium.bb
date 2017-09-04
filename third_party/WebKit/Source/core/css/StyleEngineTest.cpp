@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/dom/StyleEngine.h"
+#include "core/css/StyleEngine.h"
 
 #include <memory>
 #include "bindings/core/v8/V8BindingForCore.h"

@@ -20,7 +20,7 @@
 
 #include "core/svg/SVGRectElement.h"
 
-#include "core/dom/StyleChangeReason.h"
+#include "core/css/StyleChangeReason.h"
 #include "core/layout/svg/LayoutSVGRect.h"
 #include "core/svg/SVGLength.h"
 

@@ -22,7 +22,7 @@
 #include "core/svg/SVGGraphicsElement.h"
 
 #include "core/SVGNames.h"
-#include "core/dom/StyleChangeReason.h"
+#include "core/css/StyleChangeReason.h"
 #include "core/layout/LayoutObject.h"
 #include "core/svg/SVGElementRareData.h"
 #include "core/svg/SVGMatrixTearOff.h"

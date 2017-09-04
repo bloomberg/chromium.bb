@@ -20,7 +20,7 @@
 
 #include "core/svg/SVGForeignObjectElement.h"
 
-#include "core/dom/StyleChangeReason.h"
+#include "core/css/StyleChangeReason.h"
 #include "core/frame/UseCounter.h"
 #include "core/layout/svg/LayoutSVGForeignObject.h"
 #include "core/svg/SVGLength.h"
