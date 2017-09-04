@@ -85,15 +85,24 @@ void UpdateLegacyMultiColumnFlowThread(
   flow_thread->ClearNeedsLayout();
 }
 
+// Return the total amount of block space spent on a node by fragments
+// preceding this one (but not including this one).
+LayoutUnit PreviouslyUsedBlockSpace(const NGConstraintSpace& constraint_space,
+                                    const NGPhysicalBoxFragment& fragment) {
+  if (!constraint_space.HasBlockFragmentation())
+    return LayoutUnit();
+  const auto* break_token = ToNGBlockBreakToken(fragment.BreakToken());
+  if (!break_token)
+    return LayoutUnit();
+  NGBoxFragment logical_fragment(constraint_space.WritingMode(), fragment);
+  return break_token->UsedBlockSize() - logical_fragment.BlockSize();
+}
+
 // Return true if the specified fragment is the first generated fragment of
 // some node.
 bool IsFirstFragment(const NGConstraintSpace& constraint_space,
                      const NGPhysicalBoxFragment& fragment) {
-  const auto* break_token = ToNGBlockBreakToken(fragment.BreakToken());
-  if (!break_token)
-    return true;
-  NGFragment logical_fragment(constraint_space.WritingMode(), fragment);
-  return break_token->UsedBlockSize() <= logical_fragment.BlockSize();
+  return PreviouslyUsedBlockSpace(constraint_space, fragment) <= LayoutUnit();
 }
 
 // Return true if the specified fragment is the final fragment of some node.
@@ -305,13 +314,15 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
     }
   }
 
-  if (box_->IsLayoutBlock()) {
-    ToLayoutBlock(box_)->LayoutPositionedObjects(true);
-    NGWritingMode writing_mode =
-        FromPlatformWritingMode(Style().GetWritingMode());
+  if (box_->IsLayoutBlock() && IsLastFragment(physical_fragment)) {
+    LayoutBlock* block = ToLayoutBlock(box_);
+    NGWritingMode writing_mode = constraint_space.WritingMode();
     NGBoxFragment fragment(writing_mode, physical_fragment);
-    ToLayoutBlock(box_)->ComputeOverflow(fragment.OverflowSize().block_size -
-                                         border_scrollbar_padding.block_end);
+    LayoutUnit overflow_size = fragment.OverflowSize().block_size;
+    overflow_size +=
+        PreviouslyUsedBlockSpace(constraint_space, physical_fragment);
+    block->LayoutPositionedObjects(true);
+    block->ComputeOverflow(overflow_size - border_scrollbar_padding.block_end);
   }
 
   box_->UpdateAfterLayout();

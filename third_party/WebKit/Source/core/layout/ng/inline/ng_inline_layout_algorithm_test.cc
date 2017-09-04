@@ -58,11 +58,6 @@ TEST_F(NGInlineLayoutAlgorithmTest, BreakToken) {
   auto* line2 = ToNGPhysicalLineBoxFragment(wrapper->Children()[1].Get());
   EXPECT_FALSE(line2->BreakToken()->IsFinished());
 
-  // Test that the wrapper has the break token from the last line as its child.
-  auto* wrapper_break_token = ToNGBlockBreakToken(wrapper->BreakToken());
-  EXPECT_EQ(wrapper_break_token->ChildBreakTokens()[0], line2->BreakToken());
-  EXPECT_FALSE(wrapper_break_token->IsFinished());
-
   // Perform 2nd layout with the break token from the 2nd line.
   RefPtr<NGLayoutResult> layout_result2 =
       inline_node.Layout(*constraint_space, line2->BreakToken());
