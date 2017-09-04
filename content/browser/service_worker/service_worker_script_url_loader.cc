@@ -6,8 +6,6 @@
 
 #include <memory>
 #include "content/browser/service_worker/service_worker_context_core.h"
-#include "content/browser/service_worker/service_worker_provider_host.h"
-#include "content/browser/service_worker/service_worker_version.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/public/common/resource_response.h"
 
@@ -19,13 +17,12 @@ ServiceWorkerScriptURLLoader::ServiceWorkerScriptURLLoader(
     uint32_t options,
     const ResourceRequest& resource_request,
     mojom::URLLoaderClientPtr client,
-    base::WeakPtr<ServiceWorkerContextCore> context,
-    base::WeakPtr<ServiceWorkerProviderHost> provider_host,
+    scoped_refptr<ServiceWorkerVersion> version,
     scoped_refptr<URLLoaderFactoryGetter> loader_factory_getter,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
     : network_client_binding_(this),
       forwarding_client_(std::move(client)),
-      provider_host_(provider_host) {
+      version_(version) {
   mojom::URLLoaderClientPtr network_client;
   network_client_binding_.Bind(mojo::MakeRequest(&network_client));
   loader_factory_getter->GetNetworkFactory()->get()->CreateLoaderAndStart(
@@ -48,7 +45,7 @@ void ServiceWorkerScriptURLLoader::OnReceiveResponse(
     const ResourceResponseHead& response_head,
     const base::Optional<net::SSLInfo>& ssl_info,
     mojom::DownloadedTempFilePtr downloaded_file) {
-  if (provider_host_) {
+  if (version_->context() && !version_->is_redundant()) {
     // We don't have complete info here, but fill in what we have now.
     // At least we need headers and SSL info.
     net::HttpResponseInfo response_info;
@@ -62,9 +59,7 @@ void ServiceWorkerScriptURLLoader::OnReceiveResponse(
     response_info.connection_info = response_head.connection_info;
     response_info.socket_address = response_head.socket_address;
 
-    DCHECK(provider_host_->IsHostToRunningServiceWorker());
-    provider_host_->running_hosted_version()->SetMainScriptHttpResponseInfo(
-        response_info);
+    version_->SetMainScriptHttpResponseInfo(response_info);
   }
   forwarding_client_->OnReceiveResponse(response_head, ssl_info,
                                         std::move(downloaded_file));

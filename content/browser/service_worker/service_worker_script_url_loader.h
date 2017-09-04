@@ -6,7 +6,7 @@
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_SCRIPT_URL_LOADER_H_
 
 #include "base/macros.h"
-#include "content/browser/service_worker/service_worker_provider_host.h"
+#include "content/browser/service_worker/service_worker_version.h"
 #include "content/public/common/resource_request.h"
 #include "content/public/common/url_loader.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -14,8 +14,6 @@
 
 namespace content {
 
-class ServiceWorkerContextCore;
-class ServiceWorkerProviderHost;
 class URLLoaderFactoryGetter;
 
 // S13nServiceWorker:
@@ -33,8 +31,7 @@ class ServiceWorkerScriptURLLoader : public mojom::URLLoader,
       uint32_t options,
       const ResourceRequest& resource_request,
       mojom::URLLoaderClientPtr client,
-      base::WeakPtr<ServiceWorkerContextCore> context,
-      base::WeakPtr<ServiceWorkerProviderHost> provider_host,
+      scoped_refptr<ServiceWorkerVersion> version,
       scoped_refptr<URLLoaderFactoryGetter> loader_factory_getter,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation);
   ~ServiceWorkerScriptURLLoader() override;
@@ -64,7 +61,7 @@ class ServiceWorkerScriptURLLoader : public mojom::URLLoader,
   mojom::URLLoaderPtr network_loader_;
   mojo::Binding<mojom::URLLoaderClient> network_client_binding_;
   mojom::URLLoaderClientPtr forwarding_client_;
-  base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
+  scoped_refptr<ServiceWorkerVersion> version_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerScriptURLLoader);
 };
