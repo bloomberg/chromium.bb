@@ -32,7 +32,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/service_worker_context_observer.h"
 #include "net/base/url_util.h"
-#include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/browser/quota/special_storage_policy.h"
 
@@ -866,14 +865,10 @@ void ServiceWorkerContextWrapper::InitInternal(
     quota_manager_proxy->RegisterClient(new ServiceWorkerQuotaClient(this));
   }
 
-  base::WeakPtr<storage::BlobStorageContext> blob_storage_context =
-      (blob_context && blob_context->context())
-          ? blob_context->context()->AsWeakPtr()
-          : nullptr;
   context_core_.reset(new ServiceWorkerContextCore(
       user_data_directory, std::move(database_task_runner), quota_manager_proxy,
-      special_storage_policy, blob_storage_context, loader_factory_getter,
-      core_observer_list_.get(), this));
+      special_storage_policy, loader_factory_getter, core_observer_list_.get(),
+      this));
 }
 
 void ServiceWorkerContextWrapper::ShutdownOnIO() {

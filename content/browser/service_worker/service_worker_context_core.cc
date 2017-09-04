@@ -38,7 +38,6 @@
 #include "ipc/ipc_message.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
-#include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "url/gurl.h"
 
@@ -239,7 +238,6 @@ ServiceWorkerContextCore::ServiceWorkerContextCore(
     scoped_refptr<base::SequencedTaskRunner> database_task_runner,
     storage::QuotaManagerProxy* quota_manager_proxy,
     storage::SpecialStoragePolicy* special_storage_policy,
-    base::WeakPtr<storage::BlobStorageContext> blob_storage_context,
     URLLoaderFactoryGetter* url_loader_factory_getter,
     base::ObserverListThreadSafe<ServiceWorkerContextCoreObserver>*
         observer_list,
@@ -247,7 +245,6 @@ ServiceWorkerContextCore::ServiceWorkerContextCore(
     : wrapper_(wrapper),
       providers_(base::MakeUnique<ProcessToProviderMap>()),
       provider_by_uuid_(base::MakeUnique<ProviderByClientUUIDMap>()),
-      blob_storage_context_(std::move(blob_storage_context)),
       loader_factory_getter_(url_loader_factory_getter),
       force_update_on_page_load_(false),
       next_handle_id_(0),

@@ -8,10 +8,6 @@
 #include "base/macros.h"
 #include "content/public/common/url_loader_factory.mojom.h"
 
-namespace storage {
-class BlobStorageContext;
-}  // namespace storage
-
 namespace content {
 
 class ServiceWorkerContextCore;
@@ -28,7 +24,6 @@ class ServiceWorkerScriptURLLoaderFactory : public mojom::URLLoaderFactory {
   ServiceWorkerScriptURLLoaderFactory(
       base::WeakPtr<ServiceWorkerContextCore> context,
       base::WeakPtr<ServiceWorkerProviderHost> provider_host,
-      base::WeakPtr<storage::BlobStorageContext> blob_storage_context,
       scoped_refptr<URLLoaderFactoryGetter> loader_factory_getter);
   ~ServiceWorkerScriptURLLoaderFactory() override;
 
@@ -48,7 +43,6 @@ class ServiceWorkerScriptURLLoaderFactory : public mojom::URLLoaderFactory {
 
   base::WeakPtr<ServiceWorkerContextCore> context_;
   base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
-  base::WeakPtr<storage::BlobStorageContext> blob_storage_context_;
   scoped_refptr<URLLoaderFactoryGetter> loader_factory_getter_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerScriptURLLoaderFactory);

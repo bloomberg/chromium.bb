@@ -13,18 +13,15 @@
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/resource_response.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "storage/browser/blob/blob_storage_context.h"
 
 namespace content {
 
 ServiceWorkerScriptURLLoaderFactory::ServiceWorkerScriptURLLoaderFactory(
     base::WeakPtr<ServiceWorkerContextCore> context,
     base::WeakPtr<ServiceWorkerProviderHost> provider_host,
-    base::WeakPtr<storage::BlobStorageContext> blob_storage_context,
     scoped_refptr<URLLoaderFactoryGetter> loader_factory_getter)
     : context_(context),
       provider_host_(provider_host),
-      blob_storage_context_(blob_storage_context),
       loader_factory_getter_(loader_factory_getter) {}
 
 ServiceWorkerScriptURLLoaderFactory::~ServiceWorkerScriptURLLoaderFactory() =
@@ -53,8 +50,7 @@ void ServiceWorkerScriptURLLoaderFactory::CreateLoaderAndStart(
   mojo::MakeStrongBinding(
       base::MakeUnique<ServiceWorkerScriptURLLoader>(
           routing_id, request_id, options, resource_request, std::move(client),
-          context_, provider_host_, blob_storage_context_,
-          loader_factory_getter_, traffic_annotation),
+          context_, provider_host_, loader_factory_getter_, traffic_annotation),
       std::move(request));
 }
 
