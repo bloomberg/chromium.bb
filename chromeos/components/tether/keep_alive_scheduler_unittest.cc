@@ -53,8 +53,8 @@ class FakeKeepAliveOperation : public KeepAliveOperation {
   const cryptauth::RemoteDevice remote_device_;
 };
 
-class FakeKeepAliveOperationFactory : public KeepAliveOperation::Factory,
-                                      public OperationDeletedHandler {
+class FakeKeepAliveOperationFactory final : public KeepAliveOperation::Factory,
+                                            public OperationDeletedHandler {
  public:
   FakeKeepAliveOperationFactory()
       : num_created_(0), num_deleted_(0), last_created_(nullptr) {}

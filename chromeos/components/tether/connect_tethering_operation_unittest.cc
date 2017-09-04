@@ -35,7 +35,7 @@ const char kTestPassword[] = "testPassword";
 constexpr base::TimeDelta kConnectTetheringResponseTime =
     base::TimeDelta::FromSeconds(15);
 
-class TestObserver : public ConnectTetheringOperation::Observer {
+class TestObserver final : public ConnectTetheringOperation::Observer {
  public:
   TestObserver() : has_received_failure(false) {}
 

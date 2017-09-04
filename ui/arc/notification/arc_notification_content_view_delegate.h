@@ -16,6 +16,7 @@ namespace arc {
 // directly without delegate.
 class ArcNotificationContentViewDelegate {
  public:
+  virtual ~ArcNotificationContentViewDelegate() = default;
   virtual bool IsCloseButtonFocused() const = 0;
   virtual void RequestFocusOnCloseButton() = 0;
   virtual void UpdateControlButtonsVisibility() = 0;

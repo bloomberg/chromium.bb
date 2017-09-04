@@ -145,7 +145,7 @@ class BleConnectionManager : public BleScanner::Observer {
   // the |ConnectionMetadata| is removed when the device is unregistered. A
   // |ConnectionMetadata| stores the associated |SecureChannel| for registered
   // devices which have an active connection.
-  class ConnectionMetadata : public cryptauth::SecureChannel::Observer {
+  class ConnectionMetadata final : public cryptauth::SecureChannel::Observer {
    public:
     ConnectionMetadata(const cryptauth::RemoteDevice remote_device,
                        std::unique_ptr<base::Timer> timer,

@@ -43,7 +43,7 @@ struct GetActiveHostResult {
   }
 };
 
-class TestObserver : public ActiveHost::Observer {
+class TestObserver final : public ActiveHost::Observer {
  public:
   void OnActiveHostChanged(
       const ActiveHost::ActiveHostChangeInfo& change_info) override {

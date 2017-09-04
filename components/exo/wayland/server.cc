@@ -2639,7 +2639,7 @@ void bind_remote_shell(wl_client* client,
 
 // Implements VSync timing interface by monitoring a compositor for updates
 // to VSync parameters.
-class VSyncTiming : public ui::CompositorVSyncManager::Observer {
+class VSyncTiming final : public ui::CompositorVSyncManager::Observer {
  public:
   ~VSyncTiming() { vsync_manager_->RemoveObserver(this); }
 

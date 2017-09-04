@@ -17,7 +17,7 @@ namespace tether {
 
 namespace {
 
-class TestObserver : public HostScanCache::Observer {
+class TestObserver final : public HostScanCache::Observer {
  public:
   TestObserver() : empty_cache_count_(0) {}
 

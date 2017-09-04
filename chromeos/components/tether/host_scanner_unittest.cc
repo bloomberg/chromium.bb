@@ -37,7 +37,7 @@ namespace tether {
 
 namespace {
 
-class TestObserver : public HostScanner::Observer {
+class TestObserver final : public HostScanner::Observer {
  public:
   void ScanFinished() override { scan_finished_count_++; }
 
