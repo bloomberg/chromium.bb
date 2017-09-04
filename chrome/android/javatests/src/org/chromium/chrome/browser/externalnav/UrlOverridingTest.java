@@ -26,7 +26,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.Restriction;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -43,7 +43,6 @@ import org.chromium.content.browser.test.util.TouchCommon;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.base.PageTransition;
-import org.chromium.ui.test.util.UiRestriction;
 
 import java.io.UnsupportedEncodingException;
 import java.util.concurrent.Callable;
@@ -358,10 +357,11 @@ public class UrlOverridingTest {
         loadUrlAndWaitForIntentUrl(originalUrl, true, false, false);
     }
 
+    // @SmallTest
+    // @Restriction(UiRestriction.RESTRICTION_TYPE_TABLET)
+    // @RetryOnFailure
     @Test
-    @SmallTest
-    @Restriction(UiRestriction.RESTRICTION_TYPE_TABLET)
-    @RetryOnFailure
+    @DisabledTest(message = "https://crbug.com/742430")
     public void testOpenWindowFromUserGesture() throws InterruptedException {
         loadUrlAndWaitForIntentUrl(mTestServer.getURL(OPEN_WINDOW_FROM_USER_GESTURE_PAGE),
                 true, 1, true, null, true);
