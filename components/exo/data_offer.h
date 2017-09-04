@@ -32,7 +32,7 @@ class FileHelper;
 enum class DndAction;
 
 // Object representing transferred data offered to a client.
-class DataOffer : public ui::PropertyHandler {
+class DataOffer final : public ui::PropertyHandler {
  public:
   explicit DataOffer(DataOfferDelegate* delegate);
   ~DataOffer();

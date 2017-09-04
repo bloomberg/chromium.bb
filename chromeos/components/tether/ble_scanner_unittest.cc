@@ -29,7 +29,7 @@ namespace tether {
 
 namespace {
 
-class MockBleScannerObserver : public BleScanner::Observer {
+class MockBleScannerObserver final : public BleScanner::Observer {
  public:
   MockBleScannerObserver() {}
 

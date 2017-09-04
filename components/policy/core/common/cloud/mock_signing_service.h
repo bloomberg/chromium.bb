@@ -15,7 +15,7 @@ namespace policy {
 class FakeSigningService : public SigningService {
  public:
   FakeSigningService();
-  virtual ~FakeSigningService();
+  ~FakeSigningService() override;
 
   void SignData(const std::string& data, const SigningCallback& callback)
       override;

@@ -59,7 +59,7 @@ class TestHostScanDevicePrioritizer : public HostScanDevicePrioritizer {
   }
 };
 
-class TestObserver : public HostScannerOperation::Observer {
+class TestObserver final : public HostScannerOperation::Observer {
  public:
   TestObserver()
       : has_received_update(false), has_final_scan_result_been_sent(false) {}

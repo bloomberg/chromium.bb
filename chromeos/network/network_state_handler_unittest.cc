@@ -71,7 +71,7 @@ using chromeos::DeviceState;
 using chromeos::NetworkState;
 using chromeos::NetworkStateHandler;
 
-class TestObserver : public chromeos::NetworkStateHandlerObserver {
+class TestObserver final : public chromeos::NetworkStateHandlerObserver {
  public:
   explicit TestObserver(NetworkStateHandler* handler)
       : handler_(handler),

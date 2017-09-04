@@ -76,7 +76,7 @@ class MockTimerFactory : public TimerFactory {
 
 // Observer used in all tests except for ObserverUnregisters() which tracks all
 // status changes and messages received.
-class TestObserver : public BleConnectionManager::Observer {
+class TestObserver final : public BleConnectionManager::Observer {
  public:
   TestObserver() {}
 
@@ -187,7 +187,7 @@ class FakeConnectionWithAddress : public cryptauth::FakeConnection {
   const std::string device_address_;
 };
 
-class FakeConnectionFactory
+class FakeConnectionFactory final
     : public cryptauth::weave::BluetoothLowEnergyWeaveClientConnection::
           Factory {
  public:
@@ -247,7 +247,8 @@ class BleConnectionManagerTest : public testing::Test {
     }
   };
 
-  class FakeSecureChannelFactory : public cryptauth::SecureChannel::Factory {
+  class FakeSecureChannelFactory final
+      : public cryptauth::SecureChannel::Factory {
    public:
     FakeSecureChannelFactory() {}
 

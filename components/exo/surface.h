@@ -58,7 +58,7 @@ using CursorProvider = Pointer;
 
 // This class represents a rectangular area that is displayed on the screen.
 // It has a location, size and pixel contents.
-class Surface : public ui::PropertyHandler {
+class Surface final : public ui::PropertyHandler {
  public:
   using PropertyDeallocator = void (*)(int64_t value);
 

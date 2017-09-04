@@ -630,7 +630,7 @@ TEST_F(NetworkConfigurationHandlerTest,
 
 namespace {
 
-class TestObserver : public chromeos::NetworkStateHandlerObserver {
+class TestObserver final : public chromeos::NetworkStateHandlerObserver {
  public:
   TestObserver() : network_list_changed_count_(0) {}
   ~TestObserver() override {}

@@ -17,7 +17,7 @@ namespace tether {
 
 // Observes changes to the status of the active host, and relays these updates
 // to the networking stack.
-class ActiveHostNetworkStateUpdater : public ActiveHost::Observer {
+class ActiveHostNetworkStateUpdater final : public ActiveHost::Observer {
  public:
   ActiveHostNetworkStateUpdater(ActiveHost* active_host,
                                 NetworkStateHandler* network_state_handler);

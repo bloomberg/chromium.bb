@@ -24,7 +24,7 @@ namespace {
 constexpr base::TimeDelta kDisconnectTetheringRequestTime =
     base::TimeDelta::FromSeconds(3);
 
-class TestObserver : public DisconnectTetheringOperation::Observer {
+class TestObserver final : public DisconnectTetheringOperation::Observer {
  public:
   TestObserver() : success_(false) {}
 

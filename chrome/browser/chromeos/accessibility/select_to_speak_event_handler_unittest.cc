@@ -50,7 +50,7 @@ class EventCapturer : public ui::EventHandler {
   DISALLOW_COPY_AND_ASSIGN(EventCapturer);
 };
 
-class SelectToSpeakMouseEventDelegate
+class SelectToSpeakMouseEventDelegate final
     : public chromeos::SelectToSpeakForwardedEventDelegateForTesting {
  public:
   SelectToSpeakMouseEventDelegate() {}

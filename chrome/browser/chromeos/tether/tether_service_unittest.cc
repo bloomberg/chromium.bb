@@ -141,7 +141,7 @@ class FakeInitializerWithDestructorCallback
   base::Closure destructor_callback_;
 };
 
-class TestInitializerFactory
+class TestInitializerFactory final
     : public chromeos::tether::InitializerImpl::Factory {
  public:
   TestInitializerFactory() {}

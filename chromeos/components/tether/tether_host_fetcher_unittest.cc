@@ -114,7 +114,7 @@ CreateTetherExternalDeviceInfosForRemoteDevices(
 
 class TetherHostFetcherTest : public testing::Test {
  public:
-  class TestRemoteDeviceLoaderFactory
+  class TestRemoteDeviceLoaderFactory final
       : public cryptauth::RemoteDeviceLoader::Factory {
    public:
     explicit TestRemoteDeviceLoaderFactory(TetherHostFetcherTest* test)

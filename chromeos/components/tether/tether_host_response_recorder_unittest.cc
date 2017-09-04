@@ -14,7 +14,7 @@ namespace tether {
 
 namespace {
 
-class TestObserver : public TetherHostResponseRecorder::Observer {
+class TestObserver final : public TetherHostResponseRecorder::Observer {
  public:
   TestObserver() : num_callbacks_(0) {}
   ~TestObserver() {}
