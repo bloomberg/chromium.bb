@@ -1,0 +1,52 @@
+table: |
+  display , 6
+  display # 3456
+  display ; 56
+  include tables/latinLetterDef8Dots.uti
+  include tables/digits6Dots.uti
+  include tables/litDigits6Dots.uti
+  include tables/braille-patterns.cti
+  capsletter 6
+  numsign 3456
+  nocontractsign 56
+  numericnocontchars abcdefghij
+
+flags: {testmode: backward}
+tests:
+  # "c" is in numericnocontchars and requires nocontractsign to cancel numeric mode
+  - - "#b;cooler"
+    - "2cooler"
+  # "s" is not in numericnocontchars so does not require contractsign to cancel numeric mode
+  - - "#bscooler"
+    - "2scooler"
+    - {xfail: true}
+  # whitespace cancels numeric mode
+  - - "#b ,for me"
+    - "2 For me"
+  # capsletter cancels numeric mode
+  - - "#b,scooler"
+    - "2Scooler"
+    - {xfail: true}
+  - - "#b,cooler"
+    - "2Cooler"
+    - {xfail: true}
+
+  # FIXME: the following tests are only relevant if capsletter fails to cancel numeric mode
+  # once stuck, numeric mode may not be canceled even by nocontractsign
+  - - "#b,scooler;cooler"
+    - "2Scoolercooler" # FIXME: undefined behavior?
+    - {xfail: true}
+  - - "#b,scooler#;cooler"
+    - "2Scoolercooler" # FIXME: undefined behavior?
+    - {xfail: true}
+  # ... but it may be canceled by a numcontractsign if it directly follows a numericnocontchar
+  - - "#b,scooler#a;cooler"
+    - "2Scooler1cooler"
+    - {xfail: true} # capsletter fails, numcontractsign works
+  - - "#b,scoolera;cooler"
+    - "2Scooleracooler" # FIXME: undefined behavior?
+    - {xfail: true} # capsletter fails, numcontractsign works
+  # ... it may also be canceled by whitespace
+  - - "#b,scool ,for me"
+    - "2Scool For me"
+    - {xfail: true} # capsletter fails, space works
