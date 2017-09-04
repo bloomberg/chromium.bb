@@ -174,14 +174,14 @@ static int64_t try_restoration_frame(const YV12_BUFFER_CONFIG *src,
 
 static int64_t get_pixel_proj_error(const uint8_t *src8, int width, int height,
                                     int src_stride, const uint8_t *dat8,
-                                    int dat_stride, int bit_depth,
+                                    int dat_stride, int use_highbitdepth,
                                     int32_t *flt1, int flt1_stride,
                                     int32_t *flt2, int flt2_stride, int *xqd) {
   int i, j;
   int64_t err = 0;
   int xq[2];
   decode_xq(xqd, xq);
-  if (bit_depth == 8) {
+  if (!use_highbitdepth) {
     const uint8_t *src = src8;
     const uint8_t *dat = dat8;
     for (i = 0; i < height; ++i) {
@@ -220,11 +220,11 @@ static int64_t get_pixel_proj_error(const uint8_t *src8, int width, int height,
 #define USE_SGRPROJ_REFINEMENT_SEARCH 1
 static int64_t finer_search_pixel_proj_error(
     const uint8_t *src8, int width, int height, int src_stride,
-    const uint8_t *dat8, int dat_stride, int bit_depth, int32_t *flt1,
+    const uint8_t *dat8, int dat_stride, int use_highbitdepth, int32_t *flt1,
     int flt1_stride, int32_t *flt2, int flt2_stride, int start_step, int *xqd) {
   int64_t err = get_pixel_proj_error(src8, width, height, src_stride, dat8,
-                                     dat_stride, bit_depth, flt1, flt1_stride,
-                                     flt2, flt2_stride, xqd);
+                                     dat_stride, use_highbitdepth, flt1,
+                                     flt1_stride, flt2, flt2_stride, xqd);
   (void)start_step;
 #if USE_SGRPROJ_REFINEMENT_SEARCH
   int64_t err2;
@@ -237,8 +237,8 @@ static int64_t finer_search_pixel_proj_error(
         if (xqd[p] - s >= tap_min[p]) {
           xqd[p] -= s;
           err2 = get_pixel_proj_error(src8, width, height, src_stride, dat8,
-                                      dat_stride, bit_depth, flt1, flt1_stride,
-                                      flt2, flt2_stride, xqd);
+                                      dat_stride, use_highbitdepth, flt1,
+                                      flt1_stride, flt2, flt2_stride, xqd);
           if (err2 > err) {
             xqd[p] += s;
           } else {
@@ -255,8 +255,8 @@ static int64_t finer_search_pixel_proj_error(
         if (xqd[p] + s <= tap_max[p]) {
           xqd[p] += s;
           err2 = get_pixel_proj_error(src8, width, height, src_stride, dat8,
-                                      dat_stride, bit_depth, flt1, flt1_stride,
-                                      flt2, flt2_stride, xqd);
+                                      dat_stride, use_highbitdepth, flt1,
+                                      flt1_stride, flt2, flt2_stride, xqd);
           if (err2 > err) {
             xqd[p] -= s;
           } else {
@@ -275,8 +275,9 @@ static int64_t finer_search_pixel_proj_error(
 
 static void get_proj_subspace(const uint8_t *src8, int width, int height,
                               int src_stride, uint8_t *dat8, int dat_stride,
-                              int bit_depth, int32_t *flt1, int flt1_stride,
-                              int32_t *flt2, int flt2_stride, int *xq) {
+                              int use_highbitdepth, int32_t *flt1,
+                              int flt1_stride, int32_t *flt2, int flt2_stride,
+                              int *xq) {
   int i, j;
   double H[2][2] = { { 0, 0 }, { 0, 0 } };
   double C[2] = { 0, 0 };
@@ -289,7 +290,7 @@ static void get_proj_subspace(const uint8_t *src8, int width, int height,
   // Default
   xq[0] = 0;
   xq[1] = 0;
-  if (bit_depth == 8) {
+  if (!use_highbitdepth) {
     const uint8_t *src = src8;
     const uint8_t *dat = dat8;
     for (i = 0; i < height; ++i) {
@@ -347,8 +348,9 @@ void encode_xq(int *xq, int *xqd) {
 
 static void search_selfguided_restoration(uint8_t *dat8, int width, int height,
                                           int dat_stride, const uint8_t *src8,
-                                          int src_stride, int bit_depth,
-                                          int *eps, int *xqd, int32_t *rstbuf) {
+                                          int src_stride, int use_highbitdepth,
+                                          int bit_depth, int *eps, int *xqd,
+                                          int32_t *rstbuf) {
   int32_t *flt1 = rstbuf;
   int32_t *flt2 = flt1 + RESTORATION_TILEPELS_MAX;
   int32_t *tmpbuf2 = flt2 + RESTORATION_TILEPELS_MAX;
@@ -359,7 +361,7 @@ static void search_selfguided_restoration(uint8_t *dat8, int width, int height,
   for (ep = 0; ep < SGRPROJ_PARAMS; ep++) {
     int exq[2];
 #if CONFIG_HIGHBITDEPTH
-    if (bit_depth > 8) {
+    if (use_highbitdepth) {
       uint16_t *dat = CONVERT_TO_SHORTPTR(dat8);
 #if USE_HIGHPASS_IN_SGRPROJ
       av1_highpass_filter_highbd(dat, width, height, dat_stride, flt1, width,
@@ -388,7 +390,7 @@ static void search_selfguided_restoration(uint8_t *dat8, int width, int height,
 #endif
     aom_clear_system_state();
     get_proj_subspace(src8, width, height, src_stride, dat8, dat_stride,
-                      bit_depth, flt1, width, flt2, width, exq);
+                      use_highbitdepth, flt1, width, flt2, width, exq);
     aom_clear_system_state();
     encode_xq(exq, exqd);
     err = finer_search_pixel_proj_error(src8, width, height, src_stride, dat8,
@@ -558,9 +560,9 @@ static void search_sgrproj_for_rtile(const struct rest_search_ctxt *ctxt,
   search_selfguided_restoration(dgd_start, h_end - h_start, v_end - v_start,
                                 ctxt->dgd_stride, src_start, ctxt->src_stride,
 #if CONFIG_HIGHBITDEPTH
-                                cm->bit_depth,
+                                cm->use_highbitdepth, cm->bit_depth,
 #else
-                                8,
+                                0, 8,
 #endif  // CONFIG_HIGHBITDEPTH
                                 &rtile_sgrproj_info->ep,
                                 rtile_sgrproj_info->xqd,
