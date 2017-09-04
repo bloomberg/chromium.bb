@@ -113,6 +113,8 @@ source_set("audio") {
     "audio_source_diverter.h",
     "audio_system.cc",
     "audio_system.h",
+    "audio_system_helper.cc",
+    "audio_system_helper.h",
     "audio_system_impl.cc",
     "audio_system_impl.h",
     "audio_thread.h",

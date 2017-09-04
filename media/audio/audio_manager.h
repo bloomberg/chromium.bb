@@ -260,7 +260,7 @@ class MEDIA_EXPORT AudioManager {
       const std::string& input_device_id) = 0;
 
  private:
-  friend class AudioSystemImpl;
+  friend class AudioSystemHelper;
 
   std::unique_ptr<AudioThread> audio_thread_;
   bool shutdown_ = false;  // True after |this| has been shutdown.

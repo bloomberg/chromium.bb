@@ -13,7 +13,6 @@
 #include "media/base/media_export.h"
 
 namespace media {
-class AudioManager;
 
 // Provides asynchronous interface to access audio device information
 class MEDIA_EXPORT AudioSystem {
