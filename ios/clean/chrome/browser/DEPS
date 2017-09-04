@@ -1,7 +1,10 @@
 include_rules = [
   "+components/bookmarks",
+  "+components/browser_sync",
   "+components/ntp_snippets",
   "+components/ntp_tiles",
   "+components/reading_list",
+  "+components/sessions",
+  "+components/sync_sessions",
   "+ios/public/provider/chrome",
 ]

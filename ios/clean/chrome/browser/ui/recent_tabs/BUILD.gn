@@ -11,10 +11,18 @@ source_set("recent_tabs") {
   configs += [ "//build/config/compiler:enable_arc" ]
 
   deps = [
+    "//components/browser_sync",
+    "//components/sessions",
+    "//components/sync_sessions",
+    "//ios/chrome/browser/sessions",
+    "//ios/chrome/browser/sync",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/browser_list",
     "//ios/chrome/browser/ui/coordinators",
     "//ios/chrome/browser/ui/ntp/recent_tabs",
+    "//ios/chrome/browser/ui/sync",
+    "//ios/clean/chrome/browser/ui",
+    "//ios/clean/chrome/browser/ui/commands",
   ]
 }
 
