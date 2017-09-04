@@ -38,7 +38,8 @@ liblouis_la_SOURCES =				\
 	metadata.c 				\
 	pattern.c				\
 	logging.c				\
-	utils.c
+	utils.c				\
+	maketable.c
 
 # Don't include liblouis.h in dist, this will break subdir builds
 # when dist is configured with a different ucs-option than the build,

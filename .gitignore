@@ -199,6 +199,7 @@ TAGS
 /tests/resolve_table
 /tests/resolve_table.h
 /tests/squash_space
+/tests/suggestChunks
 /tests/typeform
 /tests/typeform_for_emphclass
 /tests/uplow_with_unicode
@@ -281,6 +282,11 @@ TAGS
 /tools/gnulib/unistr/*.o
 /tools/gnulib/unistr/*.la
 /tools/gnulib/unistr/*.lo
+
+# /tools/lou_maketable.d
+/tools/lou_maketable.d/lou_maketable
+/tools/lou_maketable.d/Makefile
+/tools/lou_maketable.d/Makefile.in
 
 # stuff used with /tools/lou_compare
 input.txt
