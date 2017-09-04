@@ -219,13 +219,37 @@ void ManagePasswordItemsView::PasswordFormRow::AddCredentialsRow(
   ResetControls();
   BuildColumnSetIfNeeded(layout, THREE_COLUMN_SET);
   layout->StartRow(0, THREE_COLUMN_SET);
-  layout->AddView(GenerateUsernameLabel(*password_form_).release(), 1, 1,
-                  views::GridLayout::FILL, views::GridLayout::FILL,
-                  0, fixed_height_);
-  layout->AddView(GeneratePasswordLabel(*password_form_).release(), 1, 1,
-                  views::GridLayout::FILL, views::GridLayout::FILL,
-                  0, fixed_height_);
+  std::unique_ptr<views::Label> username_label(
+      GenerateUsernameLabel(*password_form_));
+  std::unique_ptr<views::Label> password_label(
+      GeneratePasswordLabel(*password_form_));
   delete_button_ = GenerateDeleteButton(this).release();
+  // TODO(https://crbug.com/761767): Remove this workaround once the grid layout
+  // bug is fixed.
+  const int username_width = username_label->CalculatePreferredSize().width();
+  const int password_width = password_label->CalculatePreferredSize().width();
+  const int available_width =
+      host_->bubble_width_ - delete_button_->CalculatePreferredSize().width() -
+      2 * ChromeLayoutProvider::Get()->GetDistanceMetric(
+              views::DISTANCE_RELATED_CONTROL_HORIZONTAL);
+  if (username_width > available_width && password_width < available_width) {
+    layout->AddView(username_label.release(), 1, 1, views::GridLayout::FILL,
+                    views::GridLayout::FILL, available_width, fixed_height_);
+    layout->AddView(password_label.release(), 1, 1, views::GridLayout::FILL,
+                    views::GridLayout::FILL, 0, fixed_height_);
+  } else if (username_width < available_width &&
+             password_width > available_width) {
+    layout->AddView(username_label.release(), 1, 1, views::GridLayout::FILL,
+                    views::GridLayout::FILL, username_width, fixed_height_);
+    layout->AddView(password_label.release(), 1, 1, views::GridLayout::FILL,
+                    views::GridLayout::FILL, available_width - username_width,
+                    fixed_height_);
+  } else {
+    layout->AddView(username_label.release(), 1, 1, views::GridLayout::FILL,
+                    views::GridLayout::FILL, 0, fixed_height_);
+    layout->AddView(password_label.release(), 1, 1, views::GridLayout::FILL,
+                    views::GridLayout::FILL, 0, fixed_height_);
+  }
   layout->AddView(delete_button_, 1, 1, views::GridLayout::TRAILING,
                   views::GridLayout::FILL, 0, fixed_height_);
 }
@@ -268,8 +292,9 @@ void ManagePasswordItemsView::PasswordFormRow::ResetControls() {
 // ManagePasswordItemsView
 ManagePasswordItemsView::ManagePasswordItemsView(
     ManagePasswordsBubbleModel* manage_passwords_bubble_model,
-    const std::vector<autofill::PasswordForm>* password_forms)
-    : model_(manage_passwords_bubble_model) {
+    const std::vector<autofill::PasswordForm>* password_forms,
+    int bubble_width)
+    : model_(manage_passwords_bubble_model), bubble_width_(bubble_width) {
   DCHECK_EQ(password_manager::ui::MANAGE_STATE, model_->state());
   int fixed_height = PasswordFormRow::GetFixedHeight(model_->state());
   for (const auto& password_form : *password_forms) {

@@ -566,7 +566,8 @@ ManagePasswordsBubbleView::ManageView::ManageView(
   // this site" message.
   if (!parent_->model()->local_credentials().empty()) {
     ManagePasswordItemsView* item = new ManagePasswordItemsView(
-        parent_->model(), &parent_->model()->local_credentials());
+        parent_->model(), &parent_->model()->local_credentials(),
+        kDesiredBubbleWidth);
     layout->AddView(item);
   } else {
     views::Label* empty_label = new views::Label(
