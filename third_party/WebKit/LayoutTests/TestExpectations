@@ -1748,6 +1748,9 @@ crbug.com/751952 virtual/service-worker-script-streaming/external/wpt/service-wo
 crbug.com/761952 virtual/outofblink-cors/external/wpt/service-workers/service-worker/link-element-register-security-error.https.html [ Failure Pass ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/payment-request/PaymentRequestUpdateEvent/updateWith-duplicate-shipping-options-manual.https.html [ Skip ]
+crbug.com/626703 external/wpt/payment-request/algorithms-manual.https.html [ Skip ]
+crbug.com/626703 external/wpt/payment-request/user-abort-algorithm-manual.https.html [ Skip ]
 crbug.com/626703 external/wpt/payment-request/updateWith-method-pmi-handling-manual.https.html [ Skip ]
 crbug.com/626703 external/wpt/audio-output/setSinkId-manual.https.html [ Skip ]
 crbug.com/626703 external/wpt/payment-request/payment-response/complete-method-manual.https.html [ Skip ]
@@ -3647,7 +3650,6 @@ crbug.com/760543 [ Linux Release ] virtual/mojo-loading/http/tests/devtools/trac
 crbug.com/760543 [ Linux Release ] virtual/mojo-loading/http/tests/devtools/tracing/timeline-paint/timeline-paint.html [ Pass Timeout ]
 
 # Tests failing on WebKit Mac10.11, WebKit Mac10.10, WebKit Mac10.9
-crbug.com/760967 [ Mac ] external/wpt/payment-request/payment-request-constructor.https.html [ Pass Failure ]
 crbug.com/760967 [ Mac ] external/wpt/payment-request/payment-request-ctor-pmi-handling.https.html [ Pass Failure ]
 
 crbug.com/760405 shadow-dom/crashes/css-focus-recalc.html [ Crash ]
