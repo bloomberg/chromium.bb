@@ -17,7 +17,6 @@
 #include "build/build_config.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
-#include "content/browser/renderer_host/media/media_stream_requester.h"
 #include "content/browser/renderer_host/media/media_stream_ui_proxy.h"
 #include "content/common/media/media_stream_options.h"
 #include "content/public/common/content_switches.h"
@@ -129,35 +128,6 @@ class MockAudioManager : public AudioManagerPlatform {
   size_t num_output_devices_;
   size_t num_input_devices_;
   DISALLOW_COPY_AND_ASSIGN(MockAudioManager);
-};
-
-class MockMediaStreamRequester : public MediaStreamRequester {
- public:
-  virtual ~MockMediaStreamRequester() {}
-
-  // MediaStreamRequester implementation.
-  MOCK_METHOD5(StreamGenerated,
-               void(int render_frame_id,
-                    int page_request_id,
-                    const std::string& label,
-                    const StreamDeviceInfoArray& audio_devices,
-                    const StreamDeviceInfoArray& video_devices));
-  MOCK_METHOD3(StreamGenerationFailed,
-               void(int render_frame_id,
-                    int page_request_id,
-                    content::MediaStreamRequestResult result));
-  MOCK_METHOD3(DeviceStopped,
-               void(int render_frame_id,
-                    const std::string& label,
-                    const StreamDeviceInfo& device));
-  MOCK_METHOD4(DeviceOpened,
-               void(int render_frame_id,
-                    int page_request_id,
-                    const std::string& label,
-                    const StreamDeviceInfo& device_info));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockMediaStreamRequester);
 };
 
 }  // namespace

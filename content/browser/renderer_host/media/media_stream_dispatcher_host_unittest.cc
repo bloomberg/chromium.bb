@@ -744,19 +744,17 @@ TEST_F(MediaStreamDispatcherHostTest, StopDeviceInStreamAndRestart) {
   GenerateStreamAndWaitForResult(kRenderId, kPageRequestId, controls);
   std::string request_label2 = host_->label_;
 
-  StreamDeviceInfoArray request1_devices =
+  MediaStreamDevices request1_devices =
       media_stream_manager_->GetDevicesOpenedByRequest(request_label1);
-  StreamDeviceInfoArray request2_devices =
+  MediaStreamDevices request2_devices =
       media_stream_manager_->GetDevicesOpenedByRequest(request_label2);
 
   ASSERT_EQ(1u, request1_devices.size());
   ASSERT_EQ(2u, request2_devices.size());
 
   // Test that the same audio device has been opened in both streams.
-  EXPECT_TRUE(StreamDeviceInfo::IsEqual(request1_devices[0],
-                                        request2_devices[0]) ||
-              StreamDeviceInfo::IsEqual(request1_devices[0],
-                                        request2_devices[1]));
+  EXPECT_TRUE(request1_devices[0].IsSameDevice(request2_devices[0]) ||
+              request1_devices[0].IsSameDevice(request2_devices[1]));
 }
 
 TEST_F(MediaStreamDispatcherHostTest,

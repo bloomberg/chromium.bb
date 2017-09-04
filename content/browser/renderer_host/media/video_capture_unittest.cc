@@ -80,24 +80,21 @@ class MockMediaStreamRequester : public MediaStreamRequester {
                void(int render_frame_id,
                     int page_request_id,
                     const std::string& label,
-                    const StreamDeviceInfoArray& audio_devices,
-                    const StreamDeviceInfoArray& video_devices));
+                    const MediaStreamDevices& audio_devices,
+                    const MediaStreamDevices& video_devices));
   MOCK_METHOD3(StreamGenerationFailed,
       void(int render_frame_id,
            int page_request_id,
            content::MediaStreamRequestResult result));
-  MOCK_METHOD3(DeviceStopped, void(int render_frame_id,
-                                   const std::string& label,
-                                   const StreamDeviceInfo& device));
-  MOCK_METHOD4(DevicesEnumerated, void(int render_frame_id,
-                                       int page_request_id,
-                                       const std::string& label,
-                                       const StreamDeviceInfoArray& devices));
-  MOCK_METHOD4(DeviceOpened, void(int render_frame_id,
-                                  int page_request_id,
-                                  const std::string& label,
-                                  const StreamDeviceInfo& device_info));
-  MOCK_METHOD1(DevicesChanged, void(MediaStreamType type));
+  MOCK_METHOD3(DeviceStopped,
+               void(int render_frame_id,
+                    const std::string& label,
+                    const MediaStreamDevice& device));
+  MOCK_METHOD4(DeviceOpened,
+               void(int render_frame_id,
+                    int page_request_id,
+                    const std::string& label,
+                    const MediaStreamDevice& device));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockMediaStreamRequester);
@@ -177,7 +174,7 @@ class VideoCaptureTest : public testing::Test,
     // Open the first device.
     {
       base::RunLoop run_loop;
-      StreamDeviceInfo opened_device;
+      MediaStreamDevice opened_device;
       media_stream_manager_->OpenDevice(
           &stream_requester_, render_process_id, render_frame_id,
           browser_context_.GetMediaDeviceIDSalt(), page_request_id,
@@ -191,7 +188,7 @@ class VideoCaptureTest : public testing::Test,
                           SaveArg<3>(&opened_device)));
       run_loop.Run();
       Mock::VerifyAndClearExpectations(&stream_requester_);
-      ASSERT_NE(StreamDeviceInfo::kNoId, opened_device.session_id);
+      ASSERT_NE(MediaStreamDevice::kNoId, opened_device.session_id);
       opened_session_id_ = opened_device.session_id;
     }
   }

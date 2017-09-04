@@ -187,7 +187,7 @@ class CONTENT_EXPORT MediaStreamManager
                                    std::string* device_id) const;
 
   // Find |device_id| in the list of |requests_|, and returns its session id,
-  // or StreamDeviceInfo::kNoId if not found.
+  // or MediaStreamDevice::kNoId if not found.
   int VideoDeviceIdToSessionId(const std::string& device_id) const;
 
   // Called by UI to make sure the device monitor is started so that UI receive
@@ -201,8 +201,7 @@ class CONTENT_EXPORT MediaStreamManager
 
   // Returns all devices currently opened by a request with label |label|.
   // If no request with |label| exist, an empty array is returned.
-  StreamDeviceInfoArray GetDevicesOpenedByRequest(
-      const std::string& label) const;
+  MediaStreamDevices GetDevicesOpenedByRequest(const std::string& label) const;
 
   // This object gets deleted on the UI thread after the IO thread has been
   // destroyed. So we need to know when IO thread is being destroyed so that
@@ -267,7 +266,8 @@ class CONTENT_EXPORT MediaStreamManager
   // This method is called when an audio or video device is removed. It makes
   // sure all MediaStreams that use a removed device are stopped and that the
   // render process is notified.
-  void StopRemovedDevice(MediaDeviceType type, const MediaDeviceInfo& device);
+  void StopRemovedDevice(MediaDeviceType type,
+                         const MediaDeviceInfo& media_device_info);
 
   void SetGenerateStreamCallbackForTesting(
       GenerateStreamTestCallback test_callback);
@@ -347,10 +347,10 @@ class CONTENT_EXPORT MediaStreamManager
   // a render procecss_id and render_frame_id and type equal to the the values
   // in |request|. If it has been requested, |device_info| contain information
   // about the device.
-  bool FindExistingRequestedDeviceInfo(
+  bool FindExistingRequestedDevice(
       const DeviceRequest& new_request,
-      const MediaStreamDevice& new_device_info,
-      StreamDeviceInfo* existing_device_info,
+      const MediaStreamDevice& new_device,
+      MediaStreamDevice* existing_device,
       MediaRequestState* existing_request_state) const;
 
   void FinalizeGenerateStream(const std::string& label, DeviceRequest* request);
@@ -389,7 +389,7 @@ class CONTENT_EXPORT MediaStreamManager
   // Handles the callback from MediaStreamUIProxy to receive the UI window id,
   // used for excluding the notification window in desktop capturing.
   void OnMediaStreamUIWindowId(MediaStreamType video_type,
-                               StreamDeviceInfoArray devices,
+                               const MediaStreamDevices& devices,
                                gfx::NativeViewId window_id);
 
   // Runs on the IO thread and does the actual [un]registration of callbacks.
