@@ -4940,6 +4940,9 @@ All users must sign out to continue.
   <message name="IDS_ARC_NOTIFICATION_TITLE" desc="Title of the first-run notification that enables Android apps.">
     Google Play on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
   </message>
+  <message name="IDS_ARC_NOTIFICATION_DISPLAY_SOURCE" desc="Context title of the first-run notification that enables Android apps.">
+    Google Play
+  </message>
   <message name="IDS_ARC_NOTIFICATION_MESSAGE" desc="Description message of the first-run notification that enables Android apps.">
     Install apps and games from Google Play
   </message>
