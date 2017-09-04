@@ -8482,12 +8482,26 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="ChromeGeneratedCustomTab.IntentToFirstCommitNavigationTime2"
     units="ms">
+  <obsolete>
+    Deprecated 2017-08 in favor of
+    ChromeGeneratedCustomTab.IntentToFirstNavigationStartTime.
+  </obsolete>
   <owner>lizeb@chromium.org</owner>
   <summary>
     In &quot;Herb&quot; mode shows the time between the intent arrival in a
     Chrome generated custom tab and the first navigation start (note: not the
     navigation commit, as the name suggests). Recorded when the page has
     finished loading.
+  </summary>
+</histogram>
+
+<histogram name="ChromeGeneratedCustomTab.IntentToFirstNavigationStartTime"
+    units="ms">
+  <owner>lizeb@chromium.org</owner>
+  <summary>
+    In &quot;Herb&quot; mode shows the time between the intent arrival in a
+    Chrome generated custom tab and the first navigation start. Recorded when
+    the page has finished loading.
   </summary>
 </histogram>
 
@@ -11286,6 +11300,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="CustomTabs.IntentToFirstCommitNavigationTime2" units="ms">
+  <obsolete>
+    Deprecated 2017-08 in favor of CustomTabs.IntentToFirstNavigationStartTime.
+  </obsolete>
   <owner>lizeb@chromium.org</owner>
   <summary>
     Time between the intent arrival to a Custom Tab and the navigation start
@@ -11300,6 +11317,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     Time between the intent arrival to a Custom Tab and the first navigation
     commit. Recorded for every custom tabs intent when the page has finished
     loading.
+  </summary>
+</histogram>
+
+<histogram name="CustomTabs.IntentToFirstNavigationStartTime" units="ms">
+  <owner>lizeb@chromium.org</owner>
+  <summary>
+    Time between the intent arrival to a Custom Tab and the navigation start.
+    Recorded when the page has finished loading. Non-&quot;Herb&quot; mode.
   </summary>
 </histogram>
 
@@ -95817,8 +95842,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
       label="Zoomed out view: longer time range, less buckets."/>
   <affected-histogram
       name="ChromeGeneratedCustomTab.IntentToFirstCommitNavigationTime2"/>
+  <affected-histogram
+      name="ChromeGeneratedCustomTab.IntentToFirstNavigationStartTime"/>
   <affected-histogram name="CustomTabs.IntentToFirstCommitNavigationTime2"/>
   <affected-histogram name="CustomTabs.IntentToFirstCommitNavigationTime3"/>
+  <affected-histogram name="CustomTabs.IntentToFirstNavigationStartTime"/>
   <affected-histogram name="Startup.FirstCommitNavigationTime2"/>
   <affected-histogram name="Startup.FirstCommitNavigationTime3"/>
 </histogram_suffixes>

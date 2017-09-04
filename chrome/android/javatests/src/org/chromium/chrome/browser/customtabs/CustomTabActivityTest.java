@@ -1234,19 +1234,25 @@ public class CustomTabActivityTest {
         }
     }
 
+    private static void assertSuffixedHistogramTotalCount(long expected, String histogramPrefix) {
+        for (String suffix : new String[] {".ZoomedIn", ".ZoomedOut"}) {
+            Assert.assertEquals(expected,
+                    RecordHistogram.getHistogramTotalCountForTesting(histogramPrefix + suffix));
+        }
+    }
+
     /**
      * Tests that one navigation in a custom tab records the histograms reflecting time from
-     * intent to first navigation commit.
+     * intent to first navigation start/commit.
      */
     @Test
     @SmallTest
-    public void testNavigationCommitUmaRecorded() {
-        String zoomedOutHistogramName = "CustomTabs.IntentToFirstCommitNavigationTime3.ZoomedOut";
-        String zoomedInHistogramName = "CustomTabs.IntentToFirstCommitNavigationTime3.ZoomedIn";
-        Assert.assertEquals(
-                0, RecordHistogram.getHistogramTotalCountForTesting(zoomedOutHistogramName));
-        Assert.assertEquals(
-                0, RecordHistogram.getHistogramTotalCountForTesting(zoomedInHistogramName));
+    public void testNavigationHistogramsRecorded() {
+        String startHistogramPrefix = "CustomTabs.IntentToFirstNavigationStartTime";
+        String commitHistogramPrefix = "CustomTabs.IntentToFirstCommitNavigationTime3";
+        assertSuffixedHistogramTotalCount(0, startHistogramPrefix);
+        assertSuffixedHistogramTotalCount(0, commitHistogramPrefix);
+
         final Semaphore semaphore = new Semaphore(0);
         CustomTabsSession session = bindWithCallback(new CustomTabsCallback() {
             @Override
@@ -1260,17 +1266,15 @@ public class CustomTabActivityTest {
                 new ComponentName(InstrumentationRegistry.getInstrumentation().getTargetContext(),
                         ChromeLauncherActivity.class));
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-
         try {
             mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
             Assert.assertTrue(semaphore.tryAcquire(TIMEOUT_PAGE_LOAD_SECONDS, TimeUnit.SECONDS));
         } catch (InterruptedException e) {
             Assert.fail();
         }
-        Assert.assertEquals(
-                1, RecordHistogram.getHistogramTotalCountForTesting(zoomedOutHistogramName));
-        Assert.assertEquals(
-                1, RecordHistogram.getHistogramTotalCountForTesting(zoomedInHistogramName));
+
+        assertSuffixedHistogramTotalCount(1, startHistogramPrefix);
+        assertSuffixedHistogramTotalCount(1, commitHistogramPrefix);
     }
 
     /**
