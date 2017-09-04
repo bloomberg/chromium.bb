@@ -46,11 +46,8 @@ import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 import org.chromium.chrome.browser.toolbar.ToolbarControlContainer;
 import org.chromium.chrome.browser.util.ColorUtils;
-import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.ScreenOrientationProvider;
 import org.chromium.content_public.browser.LoadUrlParams;
-import org.chromium.content_public.browser.WebContents;
-import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.ui.base.PageTransition;
 
@@ -81,9 +78,6 @@ public class WebappActivity extends SingleTabActivity {
 
     private final WebappActionsNotificationManager mNotificationManager;
     private final WebappDirectoryManager mDirectoryManager;
-
-    private WebContents mWebContents;
-    private WebContentsObserver mWebContentsObserver;
 
     protected WebappInfo mWebappInfo;
 
@@ -500,13 +494,6 @@ public class WebappActivity extends SingleTabActivity {
         };
     }
 
-    @Override
-    protected Tab createTab() {
-        Tab tab = super.createTab();
-        handleTabContentChanged(tab);
-        return tab;
-    }
-
     protected TabObserver createTabObserver() {
         return new EmptyTabObserver() {
 
@@ -518,6 +505,11 @@ public class WebappActivity extends SingleTabActivity {
                 if (hasCommitted && isInMainFrame) {
                     // Updates the URL.
                     mNotificationManager.maybeShowNotification();
+
+                    // Notify the renderer to permanently hide the top controls since they do
+                    // not apply to fullscreen content views.
+                    tab.updateBrowserControlsState(tab.getBrowserControlsStateConstraints(), true);
+
                     RecordHistogram.recordBooleanHistogram(
                             HISTOGRAM_NAVIGATION_STATUS, !isErrorPage);
                 }
@@ -573,46 +565,6 @@ public class WebappActivity extends SingleTabActivity {
                         }
                     }
                 }, MS_BEFORE_NAVIGATING_BACK_FROM_INTERSTITIAL);
-            }
-
-            // TODO(piotrs): Remove this and clean up handleTabContentChanged() once pre-rendering
-            //               is disabled and WebContents swapping can no longer happen
-            //               (crbug.com/678332).
-            @Override
-            public void onContentChanged(Tab tab) {
-                assert tab == getActivityTab();
-                handleTabContentChanged(tab);
-            }
-        };
-    }
-
-    private void handleTabContentChanged(final Tab tab) {
-        assert tab != null;
-
-        WebContents webContents = tab.getWebContents();
-        if (mWebContents == webContents) return;
-
-        // Clean up any old references to the previous WebContents.
-        if (mWebContentsObserver != null) {
-            mWebContentsObserver.destroy();
-            mWebContentsObserver = null;
-        }
-
-        mWebContents = webContents;
-        if (mWebContents == null) return;
-
-        ContentViewCore.fromWebContents(webContents).setFullscreenRequiredForOrientationLock(false);
-        mWebContentsObserver = new WebContentsObserver(webContents) {
-            @Override
-            public void didFinishNavigation(String url, boolean isInMainFrame, boolean isErrorPage,
-                    boolean hasCommitted, boolean isSameDocument, boolean isFragmentNavigation,
-                    Integer pageTransition, int errorCode, String errorDescription,
-                    int httpStatusCode) {
-                if (hasCommitted && isInMainFrame) {
-                    // Notify the renderer to permanently hide the top controls since they do
-                    // not apply to fullscreen content views.
-                    tab.updateBrowserControlsState(tab.getBrowserControlsStateConstraints(), true);
-                }
             }
         };
     }
