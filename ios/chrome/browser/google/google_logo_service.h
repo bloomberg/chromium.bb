@@ -29,10 +29,10 @@ class GoogleLogoService : public search_provider_logos::LogoService {
 
   using LogoService::GetLogo;
 
-  // |LogoTracker| does everything on callbacks, and iOS needs to load the logo
-  // immediately on page load. This caches the SkBitmap so we can immediately
-  // load. This prevents showing the google logo on every new tab page and
-  // immediately animating to the logo. Only one SkBitmap is cached per
+  // |LogoService::GetLogo| does everything on callbacks, and iOS needs to load
+  // the logo immediately on page load. This caches the SkBitmap so we can
+  // immediately load. This prevents showing the google logo on every new tab
+  // page and immediately animating to the logo. Only one SkBitmap is cached per
   // BrowserState.
   void SetCachedLogo(const search_provider_logos::Logo* logo);
   search_provider_logos::Logo GetCachedLogo();
