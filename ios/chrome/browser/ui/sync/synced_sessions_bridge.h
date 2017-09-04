@@ -19,6 +19,7 @@ class ChromeBrowserState;
 class SigninManager;
 
 @protocol SyncedSessionsObserver<SyncObserverModelBridge>
+// Reloads the session data.
 - (void)reloadSessions;
 @end
 

@@ -5,8 +5,8 @@
 source_set("recent_tabs") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    "recent_tabs_bridges.h",
-    "recent_tabs_bridges.mm",
+    "closed_tabs_observer_bridge.h",
+    "closed_tabs_observer_bridge.mm",
     "recent_tabs_handset_coordinator.h",
     "recent_tabs_handset_coordinator.mm",
     "recent_tabs_handset_view_controller.h",
