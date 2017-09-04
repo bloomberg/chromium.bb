@@ -40,8 +40,6 @@ class ReadingListModel;
 @property(nonatomic, weak)
     id<ContentSuggestionsHeaderViewControllerCommandHandler>
         commandHandler;
-@property(nonatomic, weak) id<ContentSuggestionsCollectionSynchronizing>
-    collectionSynchronizer;
 @property(nonatomic, assign) ReadingListModel* readingListModel;
 
 // Whether the Google logo or doodle is being shown.

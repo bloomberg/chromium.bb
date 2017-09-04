@@ -7,8 +7,15 @@
 
 #import <UIKit/UIKit.h>
 
+@protocol ContentSuggestionsCollectionSynchronizing;
+
 // Controller for the ContentSuggestions header.
 @protocol ContentSuggestionsHeaderControlling
+
+// Synchronizer for the header controller, allowing it to synchronize with its
+// collection.
+@property(nonatomic, weak) id<ContentSuggestionsCollectionSynchronizing>
+    collectionSynchronizer;
 
 // Updates the iPhone fakebox's frame based on the current scroll view |offset|
 // and |width|. |width| can be 0 to use the current view width.

@@ -33,8 +33,6 @@
 // Handler for the commands sent by the ContentSuggestionsViewController.
 @property(nonatomic, weak) id<ContentSuggestionsCommands>
     suggestionCommandHandler;
-@property(nonatomic, weak) id<ContentSuggestionsHeaderSynchronizing>
-    headerSynchronizer;
 @property(nonatomic, weak) id<ContentSuggestionsViewControllerAudience>
     audience;
 // Override from superclass to have a more specific type.
