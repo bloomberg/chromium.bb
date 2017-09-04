@@ -47,8 +47,7 @@ SubresourceFilterSafeBrowsingActivationThrottle::
   DCHECK(handle->IsInMainFrame());
 
   CheckCurrentUrl();
-  // Check added to investigate crbug.com/733099.
-  CHECK(!database_client_ || !check_results_.empty());
+  DCHECK(!database_client_ || !check_results_.empty());
 }
 
 SubresourceFilterSafeBrowsingActivationThrottle::
@@ -116,25 +115,15 @@ bool SubresourceFilterSafeBrowsingActivationThrottle::NavigationIsPageReload(
 }
 
 content::NavigationThrottle::ThrottleCheckResult
-SubresourceFilterSafeBrowsingActivationThrottle::WillStartRequest() {
-  will_start_request_called_ = true;
-  return content::NavigationThrottle::ThrottleCheckResult::PROCEED;
-}
-
-content::NavigationThrottle::ThrottleCheckResult
 SubresourceFilterSafeBrowsingActivationThrottle::WillRedirectRequest() {
   CheckCurrentUrl();
-  // Check added to investigate crbug.com/733099.
-  CHECK(!database_client_ || !check_results_.empty());
+  DCHECK(!database_client_ || !check_results_.empty());
   return content::NavigationThrottle::ThrottleCheckResult::PROCEED;
 }
 
 content::NavigationThrottle::ThrottleCheckResult
 SubresourceFilterSafeBrowsingActivationThrottle::WillProcessResponse() {
-  // Checks added to investigate crbug.com/733099.
-  CHECK(will_start_request_called_);
-  CHECK(!database_client_ || !check_results_.empty());
-
+  DCHECK(!database_client_ || !check_results_.empty());
   // No need to defer the navigation if the check already happened.
   if (!database_client_ || check_results_.back().finished) {
     NotifyResult();
