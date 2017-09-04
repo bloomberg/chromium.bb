@@ -56,7 +56,7 @@ class QuicStreamSendBufferTest : public QuicTest {
 
 TEST_F(QuicStreamSendBufferTest, CopyDataToBuffer) {
   char buf[4000];
-  QuicDataWriter writer(4000, buf, Perspective::IS_CLIENT, HOST_BYTE_ORDER);
+  QuicDataWriter writer(4000, buf, HOST_BYTE_ORDER);
   string copy1(1024, 'a');
   string copy2 = string(512, 'a') + string(256, 'b') + string(256, 'c');
   string copy3(1024, 'c');
@@ -72,7 +72,7 @@ TEST_F(QuicStreamSendBufferTest, CopyDataToBuffer) {
   EXPECT_EQ(copy4, QuicStringPiece(buf + 3072, 768));
 
   // Test data piece across boundries.
-  QuicDataWriter writer2(4000, buf, Perspective::IS_CLIENT, HOST_BYTE_ORDER);
+  QuicDataWriter writer2(4000, buf, HOST_BYTE_ORDER);
   string copy5 = string(536, 'a') + string(256, 'b') + string(232, 'c');
   ASSERT_TRUE(send_buffer_.WriteStreamData(1000, 1024, &writer2));
   EXPECT_EQ(copy5, QuicStringPiece(buf, 1024));
@@ -80,7 +80,7 @@ TEST_F(QuicStreamSendBufferTest, CopyDataToBuffer) {
   EXPECT_EQ(copy3, QuicStringPiece(buf + 1024, 1024));
 
   // Invalid data copy.
-  QuicDataWriter writer3(4000, buf, Perspective::IS_CLIENT, HOST_BYTE_ORDER);
+  QuicDataWriter writer3(4000, buf, HOST_BYTE_ORDER);
   EXPECT_FALSE(send_buffer_.WriteStreamData(3000, 1024, &writer3));
   EXPECT_FALSE(send_buffer_.WriteStreamData(0, 4000, &writer3));
 }

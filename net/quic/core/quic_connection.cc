@@ -286,10 +286,7 @@ QuicConnection::QuicConnection(QuicConnectionId connection_id,
   SetMaxPacketLength(perspective_ == Perspective::IS_SERVER
                          ? kDefaultServerMaxPacketSize
                          : kDefaultMaxPacketSize);
-  if (packet_generator_.latched_flag_no_stop_waiting_frames()) {
-    QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_no_stop_waiting_frames, 1, 2);
-    received_packet_manager_.set_max_ack_ranges(255);
-  }
+  received_packet_manager_.set_max_ack_ranges(255);
 }
 
 QuicConnection::~QuicConnection() {
@@ -369,10 +366,8 @@ void QuicConnection::SetFromConfig(const QuicConfig& config) {
     QUIC_FLAG_COUNT(quic_reloadable_flag_quic_enable_3rtos);
     close_connection_after_three_rtos_ = true;
   }
-  if (packet_generator_.latched_flag_no_stop_waiting_frames() &&
-      version() > QUIC_VERSION_37 &&
+  if (version() > QUIC_VERSION_37 &&
       config.HasClientSentConnectionOption(kNSTP, perspective_)) {
-    QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_no_stop_waiting_frames, 2, 2);
     no_stop_waiting_frames_ = true;
   }
 }
