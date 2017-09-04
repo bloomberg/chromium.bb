@@ -204,6 +204,16 @@ class BASE_EXPORT Value {
   // This overload is necessary to avoid ambiguity for const char* arguments.
   Value* SetKey(const char* key, Value value);
 
+  // This attemps to remove the value associated with |key|. In case of failure,
+  // e.g. the key does not exist, |false| is returned and the underlying
+  // dictionary is not changed. In case of success, |key| is deleted from the
+  // dictionary and the method returns |true|.
+  // Note: This fatally asserts if type() is not Type::DICTIONARY.
+  //
+  // Example:
+  //   bool success = RemoveKey("foo");
+  bool RemoveKey(StringPiece key);
+
   // Searches a hierarchy of dictionary values for a given value. If a path
   // of dictionaries exist, returns the item at that path. If any of the path
   // components do not exist or if any but the last path components are not
@@ -235,11 +245,12 @@ class BASE_EXPORT Value {
 
   // Sets the given path, expanding and creating dictionary keys as necessary.
   //
-  // The current value must be a dictionary. If path components do not exist,
-  // they will be created. If any but the last components matches a value that
-  // is not a dictionary, the function will fail (it will not overwrite the
-  // value) and return nullptr. The last path component will be unconditionally
-  // overwritten if it exists, and created if it doesn't.
+  // If the current value is not a dictionary, the function returns nullptr. If
+  // path components do not exist, they will be created. If any but the last
+  // components matches a value that is not a dictionary, the function will fail
+  // (it will not overwrite the value) and return nullptr. The last path
+  // component will be unconditionally overwritten if it exists, and created if
+  // it doesn't.
   //
   // Example:
   //   value.SetPath({"foo", "bar"}, std::move(myvalue));
@@ -248,6 +259,21 @@ class BASE_EXPORT Value {
   //   value.SetPath(components, std::move(myvalue));
   Value* SetPath(std::initializer_list<StringPiece> path, Value value);
   Value* SetPath(span<const StringPiece> path, Value value);
+
+  // Tries to remove a Value at the given path.
+  //
+  // If the current value is not a dictionary or any path components does not
+  // exist, this operation fails, leaves underlying Values untouched and returns
+  // |false|. In case intermediate dictionaries become empty as a result of this
+  // path removal, they will be removed as well.
+  //
+  // Example:
+  //   bool success = value.RemovePath({"foo", "bar"});
+  //
+  //   std::vector<StringPiece> components = ...
+  //   bool success = value.RemovePath(components);
+  bool RemovePath(std::initializer_list<StringPiece> path);
+  bool RemovePath(span<const StringPiece> path);
 
   using dict_iterator_proxy = detail::dict_iterator_proxy;
   using const_dict_iterator_proxy = detail::const_dict_iterator_proxy;
@@ -485,16 +511,21 @@ class BASE_EXPORT DictionaryValue : public Value {
   // |out_value|.  If |out_value| is NULL, the removed value will be deleted.
   // This method returns true if |path| is a valid path; otherwise it will
   // return false and the DictionaryValue object will be unchanged.
+  // DEPRECATED, use Value::RemovePath(path) instead.
   bool Remove(StringPiece path, std::unique_ptr<Value>* out_value);
 
   // Like Remove(), but without special treatment of '.'.  This allows e.g. URLs
   // to be used as paths.
+  // DEPRECATED, use Value::RemoveKey(key) instead.
   bool RemoveWithoutPathExpansion(StringPiece key,
                                   std::unique_ptr<Value>* out_value);
 
   // Removes a path, clearing out all dictionaries on |path| that remain empty
   // after removing the value at |path|.
+  // DEPRECATED, use Value::RemovePath(path) instead.
   bool RemovePath(StringPiece path, std::unique_ptr<Value>* out_value);
+
+  using Value::RemovePath;  // DictionaryValue::RemovePath shadows otherwise.
 
   // Makes a copy of |this| but doesn't include empty dictionaries and lists in
   // the copy.  This never returns NULL, even if |this| itself is empty.

@@ -661,6 +661,46 @@ TEST(ValuesTest, SetPath) {
   EXPECT_FALSE(found);
 }
 
+TEST(ValuesTest, RemoveKey) {
+  Value root(Value::Type::DICTIONARY);
+  root.SetKey("one", Value(123));
+
+  // Removal of missing key should fail.
+  EXPECT_FALSE(root.RemoveKey("two"));
+
+  // Removal of existing key should succeed.
+  EXPECT_TRUE(root.RemoveKey("one"));
+
+  // Second removal of previously existing key should fail.
+  EXPECT_FALSE(root.RemoveKey("one"));
+}
+
+TEST(ValuesTest, RemovePath) {
+  Value root(Value::Type::DICTIONARY);
+  root.SetPath({"one", "two", "three"}, Value(123));
+
+  // Removal of missing key should fail.
+  EXPECT_FALSE(root.RemovePath({"one", "two", "four"}));
+
+  // Removal of existing key should succeed.
+  EXPECT_TRUE(root.RemovePath({"one", "two", "three"}));
+
+  // Second removal of previously existing key should fail.
+  EXPECT_FALSE(root.RemovePath({"one", "two", "three"}));
+
+  // Intermediate empty dictionaries should be cleared.
+  EXPECT_FALSE(root.FindPath({"one"}));
+
+  root.SetPath({"one", "two", "three"}, Value(123));
+  root.SetPath({"one", "two", "four"}, Value(124));
+
+  EXPECT_TRUE(root.RemovePath(std::vector<StringPiece>{"one", "two", "three"}));
+  // Intermediate non-empty dictionaries should be kept.
+  EXPECT_TRUE(root.FindPath({"one"}));
+  EXPECT_TRUE(root.FindPath({"one", "two"}));
+  EXPECT_TRUE(root.FindPath({"one", "two", "four"}));
+}
+
 TEST(ValuesTest, Basic) {
   // Test basic dictionary getting/setting
   DictionaryValue settings;
