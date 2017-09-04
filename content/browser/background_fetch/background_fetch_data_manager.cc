@@ -9,6 +9,8 @@
 
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
+#include "base/numerics/checked_math.h"
+#include "base/strings/string_number_conversions.h"
 #include "content/browser/background_fetch/background_fetch_constants.h"
 #include "content/browser/background_fetch/background_fetch_context.h"
 #include "content/browser/background_fetch/background_fetch_cross_origin_filter.h"
@@ -22,9 +24,45 @@
 #include "content/public/common/content_switches.h"
 #include "services/network/public/interfaces/fetch_api.mojom.h"
 
+// Service Worker DB UserData schema
+// =================================
+// - Each key will be stored twice by the Service Worker DB, once as a
+//   "REG_HAS_USER_DATA:", and once as a "REG_USER_DATA:" - see
+//   content/browser/service_worker/service_worker_database.cc for details.
+// - Integer values are serialized as a string by base::Int*ToString().
+//
+// key: "bgfetch_registration_" + <std::string 'registration_id'>
+// value: <TODO: BackgroundFetchOptions serialized as a string>
+//
+// key: "bgfetch_request_" + <std::string 'registration_id'>
+//          + "_" + <int 'request_index'>
+// value: <TODO: FetchAPIRequest serialized as a string>
+
 namespace content {
 
 namespace {
+
+const char kSeparator[] = "_";  // Warning: registration IDs may contain these.
+const char kRegistrationKeyPrefix[] = "bgfetch_registration_";
+const char kRequestKeyPrefix[] = "bgfetch_request_";
+
+std::string RegistrationKey(
+    const BackgroundFetchRegistrationId& registration_id) {
+  // Allows looking up a registration by ID.
+  return kRegistrationKeyPrefix + registration_id.id();
+}
+
+std::string RequestKeyPrefix(
+    const BackgroundFetchRegistrationId& registration_id) {
+  // Allows looking up all requests within a registration.
+  return kRequestKeyPrefix + registration_id.id() + kSeparator;
+}
+
+std::string RequestKey(const BackgroundFetchRegistrationId& registration_id,
+                       int request_index) {
+  // Allows looking up a request by registration ID and index within that.
+  return RequestKeyPrefix(registration_id) + base::IntToString(request_index);
+}
 
 enum class DatabaseStatus { kOk, kFailed, kNotFound };
 
@@ -70,13 +108,6 @@ DatabaseStatus ToDatabaseStatus(ServiceWorkerStatusCode status) {
 bool IsOK(const BackgroundFetchRequestInfo& request) {
   int status = request.GetResponseCode();
   return status >= 200 && status < 300;
-}
-
-const char kRegistrationKeyPrefix[] = "bgf_registration_";
-
-std::string RegistrationKey(
-    const BackgroundFetchRegistrationId& registration_id) {
-  return kRegistrationKeyPrefix + registration_id.id();
 }
 
 }  // namespace
@@ -164,15 +195,7 @@ class CreateRegistrationTask : public BackgroundFetchDataManager::DatabaseTask {
                           ServiceWorkerStatusCode status) {
     switch (ToDatabaseStatus(status)) {
       case DatabaseStatus::kNotFound:
-        service_worker_context()->StoreRegistrationUserData(
-            registration_id_.service_worker_registration_id(),
-            registration_id_.origin().GetURL(),
-            {
-                {RegistrationKey(registration_id_), "TODO VALUE"}
-                // TODO(crbug.com/757760): Store requests as well.
-            },
-            base::Bind(&CreateRegistrationTask::DidStoreRegistration,
-                       weak_factory_.GetWeakPtr()));
+        StoreRegistration();
         return;
       case DatabaseStatus::kOk:
         std::move(callback_).Run(
@@ -185,6 +208,25 @@ class CreateRegistrationTask : public BackgroundFetchDataManager::DatabaseTask {
         Finished();  // Destroys |this|.
         return;
     }
+  }
+
+  void StoreRegistration() {
+    // TODO(crbug.com/757760): Serialize actual values for these entries.
+    std::vector<std::pair<std::string, std::string>> entries;
+    entries.reserve(requests_.size() + 1);
+    entries.emplace_back(RegistrationKey(registration_id_),
+                         "TODO: Serialize BackgroundFetchOptions as value");
+    // Signed integers are used for request indexes to avoid unsigned gotchas.
+    for (int i = 0; i < base::checked_cast<int>(requests_.size()); i++) {
+      entries.emplace_back(RequestKey(registration_id_, i),
+                           "TODO: Serialize FetchAPIRequest as value");
+    }
+
+    service_worker_context()->StoreRegistrationUserData(
+        registration_id_.service_worker_registration_id(),
+        registration_id_.origin().GetURL(), entries,
+        base::Bind(&CreateRegistrationTask::DidStoreRegistration,
+                   weak_factory_.GetWeakPtr()));
   }
 
   void DidStoreRegistration(ServiceWorkerStatusCode status) {
@@ -224,12 +266,9 @@ class DeleteRegistrationTask : public BackgroundFetchDataManager::DatabaseTask {
         weak_factory_(this) {}
 
   void Start() override {
-    service_worker_context()->ClearRegistrationUserData(
+    service_worker_context()->ClearRegistrationUserDataByKeyPrefixes(
         registration_id_.service_worker_registration_id(),
-        {
-            RegistrationKey(registration_id_)
-            // TODO(crbug.com/757760): Delete requests as well.
-        },
+        {RegistrationKey(registration_id_), RequestKeyPrefix(registration_id_)},
         base::Bind(&DeleteRegistrationTask::DidDeleteRegistration,
                    weak_factory_.GetWeakPtr()));
   }

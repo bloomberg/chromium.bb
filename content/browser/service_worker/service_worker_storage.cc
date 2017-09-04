@@ -736,6 +736,46 @@ void ServiceWorkerStorage::ClearUserData(int64_t registration_id,
                  weak_factory_.GetWeakPtr(), callback));
 }
 
+void ServiceWorkerStorage::ClearUserDataByKeyPrefixes(
+    int64_t registration_id,
+    const std::vector<std::string>& key_prefixes,
+    const StatusCallback& callback) {
+  if (!LazyInitialize(
+          base::Bind(&ServiceWorkerStorage::ClearUserDataByKeyPrefixes,
+                     weak_factory_.GetWeakPtr(), registration_id, key_prefixes,
+                     callback))) {
+    if (state_ != INITIALIZING)
+      RunSoon(FROM_HERE, base::Bind(callback, SERVICE_WORKER_ERROR_ABORT));
+    return;
+  }
+  DCHECK_EQ(INITIALIZED, state_);
+
+  if (IsDisabled()) {
+    RunSoon(FROM_HERE, base::Bind(callback, SERVICE_WORKER_ERROR_ABORT));
+    return;
+  }
+
+  if (registration_id == kInvalidServiceWorkerRegistrationId ||
+      key_prefixes.empty()) {
+    RunSoon(FROM_HERE, base::Bind(callback, SERVICE_WORKER_ERROR_FAILED));
+    return;
+  }
+  for (const std::string& key_prefix : key_prefixes) {
+    if (key_prefix.empty()) {
+      RunSoon(FROM_HERE, base::Bind(callback, SERVICE_WORKER_ERROR_FAILED));
+      return;
+    }
+  }
+
+  base::PostTaskAndReplyWithResult(
+      database_task_runner_.get(), FROM_HERE,
+      base::BindOnce(&ServiceWorkerDatabase::DeleteUserDataByKeyPrefixes,
+                     base::Unretained(database_.get()), registration_id,
+                     key_prefixes),
+      base::BindOnce(&ServiceWorkerStorage::DidDeleteUserData,
+                     weak_factory_.GetWeakPtr(), callback));
+}
+
 void ServiceWorkerStorage::GetUserDataForAllRegistrations(
     const std::string& key,
     const ServiceWorkerStorage::GetUserDataForAllRegistrationsCallback&

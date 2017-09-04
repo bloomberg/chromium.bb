@@ -198,11 +198,11 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
                       const std::vector<std::string>& user_data_names,
                       std::vector<std::string>* user_data_values);
 
-  // Reads user data for |registration_id| and |key_prefix| from the database.
-  // Returns OK only if keys matched to |key_prefix| are found; otherwise
-  // NOT_FOUND, and |user_data_values| will be empty.
+  // Reads user data for |registration_id| and |user_data_name_prefix| from the
+  // database. Returns OK only if keys matched to |user_data_name_prefix| are
+  // found; otherwise NOT_FOUND, and |user_data_values| will be empty.
   Status ReadUserDataByKeyPrefix(int64_t registration_id,
-                                 const std::string key_prefix,
+                                 const std::string& user_data_name_prefix,
                                  std::vector<std::string>* user_data_values);
 
   // Writes |name_value_pairs| into the database. Returns NOT_FOUND if the
@@ -217,6 +217,13 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
   // database.
   Status DeleteUserData(int64_t registration_id,
                         const std::vector<std::string>& user_data_names);
+
+  // Deletes user data for |registration_id| and |user_data_name_prefixes| from
+  // the database. Returns OK if all are successfully deleted or not found in
+  // the database.
+  Status DeleteUserDataByKeyPrefixes(
+      int64_t registration_id,
+      const std::vector<std::string>& user_data_name_prefixes);
 
   // Reads user data for all registrations that have data with |user_data_name|
   // from the database. Returns OK if they are successfully read or not found.
