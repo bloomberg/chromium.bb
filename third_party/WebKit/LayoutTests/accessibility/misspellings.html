@@ -118,7 +118,7 @@
 
     currentTest.action();
 
-    if (window.internals && internals.runtimeFlags.idleTimeSpellCheckingEnabled)
+    if (window.internals)
       internals.runIdleTimeSpellChecker(document);
   }
 

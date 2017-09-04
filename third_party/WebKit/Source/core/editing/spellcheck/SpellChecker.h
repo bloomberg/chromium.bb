@@ -27,26 +27,21 @@
 #define SpellChecker_h
 
 #include "core/CoreExport.h"
-#include "core/editing/VisibleSelection.h"
+#include "core/editing/EphemeralRange.h"
 #include "core/editing/markers/DocumentMarker.h"
 #include "platform/heap/Handle.h"
 #include "platform/text/TextChecking.h"
 
 namespace blink {
 
-class CompositeEditCommand;
 class IdleSpellCheckCallback;
 class LocalFrame;
-class ReplaceSelectionCommand;
 class SpellCheckerClient;
 class SpellCheckMarker;
 class SpellCheckRequest;
 class SpellCheckRequester;
 class TextCheckerClient;
-class TextCheckingParagraph;
 struct TextCheckingResult;
-class TypingCommand;
-enum class TypingContinuation;
 class WebSpellCheckPanelHostClient;
 
 class CORE_EXPORT SpellChecker final : public GarbageCollected<SpellChecker> {
@@ -66,15 +61,11 @@ class CORE_EXPORT SpellChecker final : public GarbageCollected<SpellChecker> {
   void ToggleSpellCheckingEnabled();
   void IgnoreSpelling();
   bool IsSpellCheckingEnabledInFocusedNode() const;
-  void MarkMisspellingsAfterApplyingCommand(const CompositeEditCommand&);
   void MarkAndReplaceFor(SpellCheckRequest*, const Vector<TextCheckingResult>&);
   void AdvanceToNextMisspelling(bool start_before_selection);
   void ShowSpellingGuessPanel();
-  void DidBeginEditing(Element*);
-  void MarkMisspellingsForMovingParagraphs(const VisibleSelection&);
   void RespondToChangedContents();
-  void RespondToChangedSelection(const Position& old_selection_start,
-                                 TypingContinuation);
+  void RespondToChangedSelection();
   std::pair<Node*, SpellCheckMarker*> GetSpellCheckMarkerUnderSelection() const;
   // The first String returned in the pair is the selected text.
   // The second String is the marker's description.
@@ -85,14 +76,11 @@ class CORE_EXPORT SpellChecker final : public GarbageCollected<SpellChecker> {
   enum class ElementsType { kAll, kOnlyNonEditable };
   void RemoveSpellingAndGrammarMarkers(const HTMLElement&,
                                        ElementsType = ElementsType::kAll);
-  void SpellCheckAfterBlur();
 
   void DidEndEditingOnTextField(Element*);
   bool SelectionStartHasMarkerFor(DocumentMarker::MarkerType,
                                   int from,
                                   int length) const;
-  void UpdateMarkersForWordsAffectedByEditing(
-      bool only_handle_words_containing_selection);
   void CancelCheck();
 
   // Exposed for testing and idle time spell checker
@@ -125,19 +113,7 @@ class CORE_EXPORT SpellChecker final : public GarbageCollected<SpellChecker> {
   Vector<TextCheckingResult> FindMisspellings(const String&);
   std::pair<String, int> FindFirstMisspelling(const Position&, const Position&);
 
-  void MarkMisspellingsAfterLineBreak(const VisibleSelection& word_selection);
-  void MarkMisspellingsAfterTypingToWord(const VisiblePosition& word_start);
-  void MarkMisspellingsAfterTypingCommand(const TypingCommand&);
-  void MarkMisspellingsAfterReplaceSelectionCommand(
-      const ReplaceSelectionCommand&);
-
   void RemoveMarkers(const EphemeralRange&, DocumentMarker::MarkerTypes);
-
-  void MarkMisspellingsInternal(const VisibleSelection&);
-  void ChunkAndMarkAllMisspellings(
-      const TextCheckingParagraph& full_paragraph_to_check);
-  void SpellCheckOldSelection(const Position& old_selection_start,
-                              const VisibleSelection& new_adjacent_words);
 
   Member<LocalFrame> frame_;
 

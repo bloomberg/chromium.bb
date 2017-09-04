@@ -90,8 +90,7 @@ TEST_F(SpellCheckerTest, SpellCheckDoesNotCauseUpdateLayout) {
   EXPECT_TRUE(GetSpellChecker().IsSpellCheckingEnabled());
   ForceLayout();
   int start_count = LayoutCount();
-  GetSpellChecker().RespondToChangedSelection(old_selection.Start(),
-                                              TypingContinuation::kEnd);
+  GetSpellChecker().RespondToChangedSelection();
   EXPECT_EQ(start_count, LayoutCount());
 }
 

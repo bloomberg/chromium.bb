@@ -323,17 +323,6 @@ void HTMLInputElement::UpdateFocusAppearance(
   }
 }
 
-void HTMLInputElement::BeginEditing() {
-  DCHECK(GetDocument().IsActive());
-  if (!GetDocument().IsActive())
-    return;
-
-  if (!IsTextField())
-    return;
-
-  GetDocument().GetFrame()->GetSpellChecker().DidBeginEditing(this);
-}
-
 void HTMLInputElement::EndEditing() {
   DCHECK(GetDocument().IsActive());
   if (!GetDocument().IsActive())

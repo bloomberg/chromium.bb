@@ -165,7 +165,6 @@ void IdleSpellCheckCallback::HotModeInvocation(IdleDeadline* deadline) {
 }
 
 void IdleSpellCheckCallback::handleEvent(IdleDeadline* deadline) {
-  DCHECK(RuntimeEnabledFeatures::IdleTimeSpellCheckingEnabled());
   DCHECK(GetFrame().GetDocument());
   DCHECK(GetFrame().GetDocument()->IsActive());
   DCHECK_NE(idle_callback_handle_, kInvalidHandle);

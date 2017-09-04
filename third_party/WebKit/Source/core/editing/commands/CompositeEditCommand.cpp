@@ -63,7 +63,6 @@
 #include "core/editing/iterators/TextIterator.h"
 #include "core/editing/markers/DocumentMarkerController.h"
 #include "core/editing/serializers/Serialization.h"
-#include "core/editing/spellcheck/SpellChecker.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLBRElement.h"
 #include "core/html/HTMLDivElement.h"
@@ -1553,11 +1552,6 @@ void CompositeEditCommand::MoveParagraphs(
     return;
 
   GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
-
-  GetDocument()
-      .GetFrame()
-      ->GetSpellChecker()
-      .MarkMisspellingsForMovingParagraphs(EndingVisibleSelection());
 
   // If the selection is in an empty paragraph, restore styles from the old
   // empty paragraph to the new empty paragraph.

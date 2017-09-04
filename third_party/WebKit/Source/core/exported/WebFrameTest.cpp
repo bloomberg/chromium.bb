@@ -6644,12 +6644,10 @@ TEST_P(ParameterizedWebFrameTest, ReplaceMisspelledRange) {
   document->execCommand("InsertText", false, "_wellcome_.", exception_state);
   EXPECT_FALSE(exception_state.HadException());
 
-  if (RuntimeEnabledFeatures::IdleTimeSpellCheckingEnabled()) {
-    document->GetFrame()
-        ->GetSpellChecker()
-        .GetIdleSpellCheckCallback()
-        .ForceInvocationForTesting();
-  }
+  document->GetFrame()
+      ->GetSpellChecker()
+      .GetIdleSpellCheckCallback()
+      .ForceInvocationForTesting();
 
   const int kAllTextBeginOffset = 0;
   const int kAllTextLength = 11;
@@ -6690,12 +6688,10 @@ TEST_P(ParameterizedWebFrameTest, RemoveSpellingMarkers) {
   document->execCommand("InsertText", false, "_wellcome_.", exception_state);
   EXPECT_FALSE(exception_state.HadException());
 
-  if (RuntimeEnabledFeatures::IdleTimeSpellCheckingEnabled()) {
-    document->GetFrame()
-        ->GetSpellChecker()
-        .GetIdleSpellCheckCallback()
-        .ForceInvocationForTesting();
-  }
+  document->GetFrame()
+      ->GetSpellChecker()
+      .GetIdleSpellCheckCallback()
+      .ForceInvocationForTesting();
 
   frame->RemoveSpellingMarkers();
 
@@ -6741,11 +6737,10 @@ TEST_P(ParameterizedWebFrameTest, RemoveSpellingMarkersUnderWords) {
   document->execCommand("InsertText", false, " wellcome ", exception_state);
   EXPECT_FALSE(exception_state.HadException());
 
-  if (RuntimeEnabledFeatures::IdleTimeSpellCheckingEnabled()) {
-    frame->GetSpellChecker()
-        .GetIdleSpellCheckCallback()
-        .ForceInvocationForTesting();
-  }
+  frame->GetSpellChecker()
+      .GetIdleSpellCheckCallback()
+      .ForceInvocationForTesting();
+
   WebVector<unsigned> offsets1;
   GetSpellingMarkerOffsets(&offsets1, *frame->GetDocument());
   EXPECT_EQ(1U, offsets1.size());
@@ -6822,44 +6817,16 @@ TEST_P(ParameterizedWebFrameTest, SlowSpellcheckMarkerPosition) {
   document->execCommand("InsertText", false, "he", exception_state);
   EXPECT_FALSE(exception_state.HadException());
 
-  if (RuntimeEnabledFeatures::IdleTimeSpellCheckingEnabled()) {
-    document->GetFrame()
-        ->GetSpellChecker()
-        .GetIdleSpellCheckCallback()
-        .ForceInvocationForTesting();
-  }
+  document->GetFrame()
+      ->GetSpellChecker()
+      .GetIdleSpellCheckCallback()
+      .ForceInvocationForTesting();
 
   textcheck.Kick();
 
   WebVector<unsigned> offsets;
   GetSpellingMarkerOffsets(&offsets, *frame->GetFrame()->GetDocument());
   EXPECT_EQ(0U, offsets.size());
-}
-
-// This test verifies that cancelling spelling request does not cause a
-// write-after-free when there's no spellcheck client set.
-TEST_P(ParameterizedWebFrameTest, CancelSpellingRequestCrash) {
-  // The relevant code paths are obsolete with idle time spell checker.
-  if (RuntimeEnabledFeatures::IdleTimeSpellCheckingEnabled())
-    return;
-
-  RegisterMockedHttpURLLoad("spell.html");
-  FrameTestHelpers::WebViewHelper web_view_helper;
-  web_view_helper.InitializeAndLoad(base_url_ + "spell.html");
-
-  WebLocalFrameImpl* frame = web_view_helper.LocalMainFrame();
-  frame->SetTextCheckClient(0);
-
-  Document* document = frame->GetFrame()->GetDocument();
-  Element* element = document->getElementById("data");
-
-  web_view_helper.WebView()->GetSettings()->SetEditingBehavior(
-      WebSettings::kEditingBehaviorWin);
-
-  element->focus();
-  frame->GetFrame()->GetEditor().ReplaceSelectionWithText(
-      "A", false, false, InputEvent::InputType::kInsertReplacementText);
-  frame->GetFrame()->GetSpellChecker().CancelCheck();
 }
 
 TEST_P(ParameterizedWebFrameTest, SpellcheckResultErasesMarkers) {
@@ -6881,12 +6848,10 @@ TEST_P(ParameterizedWebFrameTest, SpellcheckResultErasesMarkers) {
   NonThrowableExceptionState exception_state;
   document->execCommand("InsertText", false, "welcome ", exception_state);
 
-  if (RuntimeEnabledFeatures::IdleTimeSpellCheckingEnabled()) {
-    document->GetFrame()
-        ->GetSpellChecker()
-        .GetIdleSpellCheckCallback()
-        .ForceInvocationForTesting();
-  }
+  document->GetFrame()
+      ->GetSpellChecker()
+      .GetIdleSpellCheckCallback()
+      .ForceInvocationForTesting();
 
   document->UpdateStyleAndLayout();
 
@@ -6920,12 +6885,10 @@ TEST_P(ParameterizedWebFrameTest, SpellcheckResultsSavedInDocument) {
   document->execCommand("InsertText", false, "wellcome ", exception_state);
   EXPECT_FALSE(exception_state.HadException());
 
-  if (RuntimeEnabledFeatures::IdleTimeSpellCheckingEnabled()) {
-    document->GetFrame()
-        ->GetSpellChecker()
-        .GetIdleSpellCheckCallback()
-        .ForceInvocationForTesting();
-  }
+  document->GetFrame()
+      ->GetSpellChecker()
+      .GetIdleSpellCheckCallback()
+      .ForceInvocationForTesting();
 
   textcheck.Kick();
   ASSERT_EQ(1U, document->Markers().Markers().size());
@@ -6936,12 +6899,10 @@ TEST_P(ParameterizedWebFrameTest, SpellcheckResultsSavedInDocument) {
   document->execCommand("InsertText", false, "wellcome ", exception_state);
   EXPECT_FALSE(exception_state.HadException());
 
-  if (RuntimeEnabledFeatures::IdleTimeSpellCheckingEnabled()) {
-    document->GetFrame()
-        ->GetSpellChecker()
-        .GetIdleSpellCheckCallback()
-        .ForceInvocationForTesting();
-  }
+  document->GetFrame()
+      ->GetSpellChecker()
+      .GetIdleSpellCheckCallback()
+      .ForceInvocationForTesting();
 
   textcheck.KickGrammar();
   ASSERT_EQ(1U, document->Markers().Markers().size());

@@ -924,9 +924,6 @@ void Editor::AppliedEditing(CompositeEditCommand* cmd) {
   DCHECK(!cmd->IsCommandGroupWrapper());
   EventQueueScope scope;
 
-  // Request spell checking before any further DOM change.
-  GetSpellChecker().MarkMisspellingsAfterApplyingCommand(*cmd);
-
   UndoStep* undo_step = cmd->GetUndoStep();
   DCHECK(undo_step);
   DispatchEditableContentChangedEvents(undo_step->StartingRootEditableElement(),
@@ -1056,9 +1053,6 @@ bool Editor::InsertTextWithoutSendingTextEvent(
   if (!selection.IsContentEditable())
     return false;
 
-  GetSpellChecker().UpdateMarkersForWordsAffectedByEditing(
-      !text.IsEmpty() && IsSpaceOrNewline(text[0]));
-
   // Insert the text
   TypingCommand::InsertText(
       *selection.Start().GetDocument(), text, selection.AsSelection(),
@@ -1137,7 +1131,6 @@ void Editor::Cut(EditorCommandSource source) {
 
   // TODO(yosin) We should use early return style here.
   if (CanDeleteRange(SelectedRange())) {
-    GetSpellChecker().UpdateMarkersForWordsAffectedByEditing(true);
     if (EnclosingTextControl(GetFrame()
                                  .Selection()
                                  .ComputeVisibleSelectionInDOMTree()
@@ -1216,7 +1209,6 @@ void Editor::Paste(EditorCommandSource source) {
       !GetFrame().Selection().SelectionHasFocus())
     return;
 
-  GetSpellChecker().UpdateMarkersForWordsAffectedByEditing(false);
   ResourceFetcher* loader = GetFrame().GetDocument()->Fetcher();
   ResourceCacheValidationSuppressor validation_suppressor(loader);
 
@@ -1259,7 +1251,6 @@ void Editor::PasteAsPlainText(EditorCommandSource source) {
       !GetFrame().Selection().SelectionHasFocus())
     return;
 
-  GetSpellChecker().UpdateMarkersForWordsAffectedByEditing(false);
   PasteAsPlainTextWithPasteboard(Pasteboard::GeneralPasteboard());
 }
 
@@ -1754,10 +1745,8 @@ void Editor::SetMarkedTextMatchesAreHighlighted(bool flag) {
       DocumentMarker::kTextMatch);
 }
 
-void Editor::RespondToChangedSelection(const Position& old_selection_start,
-                                       TypingContinuation typing_continuation) {
-  GetSpellChecker().RespondToChangedSelection(old_selection_start,
-                                              typing_continuation);
+void Editor::RespondToChangedSelection() {
+  GetSpellChecker().RespondToChangedSelection();
   Client().RespondToChangedSelection(
       &GetFrame(), GetFrame().Selection().GetSelectionInDOMTree().Type());
   SetStartNewKillRingSequence(true);

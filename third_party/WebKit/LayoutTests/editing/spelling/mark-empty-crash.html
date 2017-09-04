@@ -13,7 +13,6 @@ test(function() {
     window.getSelection().selectAllChildren(document.getElementById('foo'));
     document.execCommand('insertParagraph');
 
-    if (internals.runtimeFlags.idleTimeSpellCheckingEnabled)
-      internals.runIdleTimeSpellChecker(document);
+    internals.runIdleTimeSpellChecker(document);
 }, 'spelling');
 </script>

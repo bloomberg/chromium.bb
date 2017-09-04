@@ -248,8 +248,7 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
   // |firstRectForRange| requires up-to-date layout.
   IntRect FirstRectForRange(const EphemeralRange&) const;
 
-  void RespondToChangedSelection(const Position& old_selection_start,
-                                 TypingContinuation);
+  void RespondToChangedSelection();
 
   bool MarkedTextMatchesAreHighlighted() const;
   void SetMarkedTextMatchesAreHighlighted(bool);
