@@ -24,7 +24,7 @@ struct CONTENT_EXPORT BackgroundFetchResponse {
   ~BackgroundFetchResponse();
 
   const std::vector<GURL> url_chain;
-  const scoped_refptr<const net::HttpResponseHeaders> headers;
+  const scoped_refptr<const net::HttpResponseHeaders> headers;  // May be null.
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BackgroundFetchResponse);
