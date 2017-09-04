@@ -189,6 +189,7 @@ const char kRateThisAppCommand[] = "ratethisapp";
   self.suggestionsViewController.audience = self;
   self.suggestionsViewController.overscrollDelegate = self;
   self.suggestionsViewController.metricsRecorder = self.metricsRecorder;
+  self.suggestionsViewController.containsToolbar = YES;
 
   [self.suggestionsViewController addChildViewController:self.headerController];
   [self.headerController

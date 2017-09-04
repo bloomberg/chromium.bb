@@ -133,6 +133,7 @@
   self.viewController.suggestionCommandHandler = self;
   self.viewController.audience = self;
   self.viewController.metricsRecorder = self.metricsRecorder;
+  self.viewController.containsToolbar = NO;
 
   self.headerCoordinator = [[NTPHomeHeaderCoordinator alloc] init];
   self.headerCoordinator.delegate = self;

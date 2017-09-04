@@ -62,6 +62,7 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
 @synthesize overscrollDelegate = _overscrollDelegate;
 @synthesize scrolledToTop = _scrolledToTop;
 @synthesize metricsRecorder = _metricsRecorder;
+@synthesize containsToolbar = _containsToolbar;
 @dynamic collectionViewModel;
 
 #pragma mark - Lifecycle
@@ -566,7 +567,8 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
   CGFloat toolbarHeight = ntp_header::kToolbarHeight;
   CGFloat targetY = targetContentOffset->y;
 
-  if (IsIPadIdiom() || targetY <= 0 || targetY >= toolbarHeight)
+  if (IsIPadIdiom() || targetY <= 0 || targetY >= toolbarHeight ||
+      !self.containsToolbar)
     return;
 
   // Adjust the toolbar to be all the way on or off screen.
