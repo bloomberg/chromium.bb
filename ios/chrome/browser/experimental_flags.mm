@@ -36,7 +36,6 @@ NSString* const kEnableViewCopyPasswords = @"EnableViewCopyPasswords";
 NSString* const kFirstRunForceEnabled = @"FirstRunForceEnabled";
 NSString* const kGaiaEnvironment = @"GAIAEnvironment";
 NSString* const kOriginServerHost = @"AlternateOriginServerHost";
-NSString* const kSafariVCSignInDisabled = @"SafariVCSignInDisabled";
 NSString* const kWhatsNewPromoStatus = @"WhatsNewPromoStatus";
 const base::Feature kEnableSlimNavigationManager{
     "EnableSlimNavigationManager", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -131,11 +130,6 @@ bool IsPhysicalWebEnabled() {
   // TODO(crbug.com/760104): Remove this function and its associated code.
   // Either by replacing it with a base::Feature or by removing all its uses.
   return false;
-}
-
-bool IsSafariVCSignInEnabled() {
-  return ![[NSUserDefaults standardUserDefaults]
-      boolForKey:kSafariVCSignInDisabled];
 }
 
 bool IsStartupCrashEnabled() {
