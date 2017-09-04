@@ -27,6 +27,17 @@ class BookmarkNode;
 @class BookmarkPromoController;
 @class BookmarkTableView;
 
+typedef NS_ENUM(NSInteger, BookmarksContextBarState) {
+  BookmarksContextBarNone,            // No state.
+  BookmarksContextBarDefault,         // No selection is possible in this state.
+  BookmarksContextBarBeginSelection,  // This is the clean start state,
+                                      // selection is possible, but nothing is
+                                      // selected yet.
+  BookmarksContextBarSingleSelection,        // Single URL selected state.
+  BookmarksContextBarMultipleSelection,      // Multiple URL /Folders selected.
+  BookmarksContextBarSingleFolderSelection,  // Single folder selected.
+};
+
 // BookmarkHomeViewController class extension for protected read/write
 // properties and methods for subclasses.
 @interface BookmarkHomeViewController ()
@@ -101,6 +112,9 @@ class BookmarkNode;
 
 // The action sheet coordinator used when trying to edit a single bookmark.
 @property(nonatomic, strong) ActionSheetCoordinator* actionSheetCoordinator;
+
+// The current state of the context bar UI.
+@property(nonatomic, assign) BookmarksContextBarState contextBarState;
 
 // This method should be called at most once in the life-cycle of the class.
 // It should be called at the soonest possible time after the view has been

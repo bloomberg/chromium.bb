@@ -214,8 +214,7 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
 }
 
 - (void)setEditing:(BOOL)editing {
-  // Reset edit nodes.
-  _editNodes = std::set<const BookmarkNode*>();
+  [self resetEditNodes];
   [self.tableView setEditing:editing animated:YES];
 }
 
@@ -491,6 +490,10 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
 
 #pragma mark - Private
 
+- (void)resetEditNodes {
+  _editNodes.clear();
+}
+
 // Removes the sign-in promo view.
 - (void)signinPromoCloseButtonAction {
   [_signinPromoViewMediator signinPromoViewClosed];
@@ -505,6 +508,7 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
   [self computeBookmarkTableViewData];
   [self showEmptyOrLoadingSpinnerBackgroundIfNeeded];
   [self cancelAllFaviconLoads];
+  [self resetEditNodes];
   [self.tableView reloadData];
 }
 

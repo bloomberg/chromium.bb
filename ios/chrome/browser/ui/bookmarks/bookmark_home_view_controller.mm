@@ -51,16 +51,6 @@ const CGFloat kMenuWidth = 264;
 
 // The spacer between title and done button on the navigation bar.
 const CGFloat kSpacer = 50;
-
-typedef NS_ENUM(NSInteger, BookmarksContextBarState) {
-  BookmarksContextBarDefault,         // No selection is possible in this state.
-  BookmarksContextBarBeginSelection,  // This is the clean start state,
-                                      // selection is possible, but nothing is
-                                      // selected yet.
-  BookmarksContextBarSingleSelection,        // Single URL selected state.
-  BookmarksContextBarMultipleSelection,      // Multiple URL /Folders selected.
-  BookmarksContextBarSingleFolderSelection,  // Single folder selected.
-};
 }
 
 @interface BookmarkHomeViewController ()<
@@ -99,6 +89,7 @@ typedef NS_ENUM(NSInteger, BookmarksContextBarState) {
 @synthesize homeDelegate = _homeDelegate;
 @synthesize bookmarksTableView = _bookmarksTableView;
 @synthesize contextBar = _contextBar;
+@synthesize contextBarState = _contextBarState;
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -1056,7 +1047,28 @@ typedef NS_ENUM(NSInteger, BookmarksContextBarState) {
 
 // Called when the leading button is clicked.
 - (void)leadingButtonClicked {
-  // TODO(crbug.com/695749): Implement the button action here.
+  const std::set<const bookmarks::BookmarkNode*> nodes =
+      [self.bookmarksTableView editNodes];
+  switch (self.contextBarState) {
+    case BookmarksContextBarDefault:
+      // New Folder clicked.
+      // TODO(crbug.com/695749): Implement the button action here.
+      break;
+    case BookmarksContextBarBeginSelection:
+      // This must never happen, as the leading button is disabled at this
+      // point.
+      NOTREACHED();
+      break;
+    case BookmarksContextBarSingleSelection:
+    case BookmarksContextBarMultipleSelection:
+    case BookmarksContextBarSingleFolderSelection:
+      // Delete clicked.
+      [self deleteNodes:nodes];
+      break;
+    case BookmarksContextBarNone:
+    default:
+      NOTREACHED();
+  }
 }
 // Called when the center button is clicked.
 - (void)centerButtonClicked {
@@ -1073,6 +1085,7 @@ typedef NS_ENUM(NSInteger, BookmarksContextBarState) {
 
 // Customizes the context bar buttons based the |state| passed in.
 - (void)setContextBarState:(BookmarksContextBarState)state {
+  _contextBarState = state;
   switch (state) {
     case BookmarksContextBarDefault:
       [self setBookmarksContextBarButtonsDefaultState];
@@ -1099,6 +1112,8 @@ typedef NS_ENUM(NSInteger, BookmarksContextBarState) {
                             forButton:ContextBarCenterButton];
       [self.contextBar setButtonEnabled:YES forButton:ContextBarCenterButton];
       [self.contextBar setButtonEnabled:YES forButton:ContextBarLeadingButton];
+      break;
+    case BookmarksContextBarNone:
     default:
       break;
   }
