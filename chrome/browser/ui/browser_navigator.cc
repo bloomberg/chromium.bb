@@ -20,11 +20,9 @@
 #include "chrome/browser/task_manager/web_contents_tags.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_instant_controller.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
-#include "chrome/browser/ui/search/instant_search_prerenderer.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/status_bubble.h"
 #include "chrome/browser/ui/tab_helpers.h"
@@ -396,11 +394,6 @@ content::WebContents* CreateTargetContents(const chrome::NavigateParams& params,
 bool SwapInPrerender(const GURL& url, chrome::NavigateParams* params) {
   Profile* profile =
       Profile::FromBrowserContext(params->target_contents->GetBrowserContext());
-  InstantSearchPrerenderer* prerenderer =
-      InstantSearchPrerenderer::GetForProfile(profile);
-  if (prerenderer && prerenderer->UsePrerenderedPage(url, params))
-    return true;
-
   prerender::PrerenderManager* prerender_manager =
       prerender::PrerenderManagerFactory::GetForBrowserContext(profile);
   return prerender_manager &&
