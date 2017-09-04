@@ -57,7 +57,7 @@ class AXSlider : public AXLayoutObject {
 
   void AddChildren() final;
 
-  void SetValue(const String&) final;
+  bool OnNativeSetValueAction(const String&) final;
   AccessibilityOrientation Orientation() const final;
 };
 
