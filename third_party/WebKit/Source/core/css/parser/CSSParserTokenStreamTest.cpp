@@ -241,6 +241,31 @@ TEST_P(CSSParserTokenStreamTest, BlockErrorRecoveryConsumeComponentValue) {
   EXPECT_EQ(kNumberToken, stream.Consume().GetType());
 }
 
+TEST_F(CSSParserTokenStreamTest, OffsetAfterPeek) {
+  CSSTokenizer tokenizer("ABC");
+  CSSParserTokenStream stream(tokenizer);
+
+  EXPECT_EQ(0U, stream.Offset());
+  EXPECT_EQ(kIdentToken, stream.Peek().GetType());
+  EXPECT_EQ(0U, stream.Offset());
+}
+
+TEST_F(CSSParserTokenStreamTest, OffsetAfterConsumes) {
+  CSSTokenizer tokenizer("ABC 1 {23 }");
+  CSSParserTokenStream stream(tokenizer);
+
+  EXPECT_EQ(0U, stream.Offset());
+  EXPECT_EQ(kIdentToken, stream.Consume().GetType());
+  EXPECT_EQ(3U, stream.Offset());
+  EXPECT_EQ(kWhitespaceToken, stream.Consume().GetType());
+  EXPECT_EQ(4U, stream.Offset());
+  EXPECT_EQ(kNumberToken, stream.ConsumeIncludingWhitespace().GetType());
+  EXPECT_EQ(6U, stream.Offset());
+  stream.EnsureLookAhead();
+  stream.UncheckedConsumeComponentValue();
+  EXPECT_EQ(11U, stream.Offset());
+}
+
 INSTANTIATE_TEST_CASE_P(ShouldTokenizeToEnd,
                         CSSParserTokenStreamTest,
                         ::testing::Bool());
