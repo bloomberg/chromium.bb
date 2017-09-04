@@ -56,7 +56,9 @@ id<GREYMatcher> BookmarksBackButton() {
 
 // Matcher for the DONE button on the bookmarks UI.
 id<GREYMatcher> BookmarksDoneButton() {
-  return grey_accessibilityID(@"bookmark_done_button");
+  return grey_allOf(
+      ButtonWithAccessibilityLabelId(IDS_IOS_NAVIGATION_BAR_DONE_BUTTON),
+      grey_not(grey_accessibilityTrait(UIAccessibilityTraitKeyboardKey)), nil);
 }
 
 // Bookmark integration tests for Chrome.
@@ -339,9 +341,6 @@ id<GREYMatcher> BookmarksDoneButton() {
 - (void)testAutomaticSigninPromoDismiss {
   if (IsIPadIdiom()) {
     EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
-  } else {
-    // TODO(crbug.com/761349): Fix test.
-    EARL_GREY_TEST_DISABLED(@"Test temporarily disabled on iPhone.");
   }
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
