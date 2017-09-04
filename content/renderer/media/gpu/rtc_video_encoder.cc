@@ -22,6 +22,8 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "content/public/common/content_features.h"
+#include "content/public/common/content_switches.h"
 #include "content/renderer/media/webrtc/webrtc_video_frame_adapter.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/bitstream_buffer.h"
@@ -32,6 +34,7 @@
 #include "media/video/video_encode_accelerator.h"
 #include "third_party/libyuv/include/libyuv.h"
 #include "third_party/webrtc/modules/video_coding/codecs/h264/include/h264.h"
+#include "third_party/webrtc/modules/video_coding/include/video_error_codes.h"
 #include "third_party/webrtc/rtc_base/timeutils.h"
 
 namespace content {
@@ -820,6 +823,21 @@ int32_t RTCVideoEncoder::InitEncode(const webrtc::VideoCodec* codec_settings,
            << ", startBitrate=" << codec_settings->startBitrate;
   if (impl_)
     Release();
+
+  if (codec_settings->codecType == webrtc::kVideoCodecVP8 &&
+      codec_settings->mode == webrtc::kScreensharing &&
+      codec_settings->VP8().numberOfTemporalLayers > 1) {
+    // This is a VP8 stream with screensharing using temporal layers for
+    // temporal scalability. Since this implementation does not yet implement
+    // temporal layers, fall back to software codec, if cfm and board is known
+    // to have a CPU that can handle it.
+    if (base::FeatureList::IsEnabled(features::kWebRtcScreenshareSwEncoding)) {
+      // TODO(sprang): Add support for temporal layers so we don't need
+      // fallback. See eg http://crbug.com/702017
+      DVLOG(1) << "Falling back to software encoder.";
+      return WEBRTC_VIDEO_CODEC_FALLBACK_SOFTWARE;
+    }
+  }
 
   impl_ = new Impl(gpu_factories_, ProfileToWebRtcVideoCodecType(profile_));
 

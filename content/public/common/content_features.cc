@@ -380,6 +380,11 @@ const base::Feature kWebRtcHWVP8Encoding {
 #endif
 };
 
+// Fallback from hardware encoder (if available) to software, for WebRTC
+// screensharing that uses temporal scalability.
+const base::Feature kWebRtcScreenshareSwEncoding{
+    "WebRtcScreenshareSwEncoding", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables the WebRTC Echo Canceller version 3 (AEC3). Feature for
 // http://crbug.com/688388. This value is sent to WebRTC's echo canceller to
 // toggle which echo canceller should be used.
