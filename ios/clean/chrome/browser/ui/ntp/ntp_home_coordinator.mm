@@ -104,26 +104,12 @@
   self.viewController = [[ContentSuggestionsViewController alloc]
       initWithStyle:CollectionViewControllerStyleDefault];
 
-  self.headerCoordinator = [[NTPHomeHeaderCoordinator alloc] init];
-  self.headerCoordinator.delegate = self;
-  self.headerCoordinator.commandHandler = self;
-  [self addChildCoordinator:self.headerCoordinator];
-  [self.headerCoordinator start];
-
-  [super start];
-}
-
-- (void)childCoordinatorDidStart:(BrowserCoordinator*)childCoordinator {
-  DCHECK([childCoordinator isKindOfClass:[NTPHomeHeaderCoordinator class]]);
-  ntp_snippets::ContentSuggestionsService* contentSuggestionsService =
-      IOSChromeContentSuggestionsServiceFactory::GetForBrowserState(
-          self.browser->browser_state());
-
   self.googleLandingMediator = [[GoogleLandingMediator alloc]
-      initWithConsumer:self.headerCoordinator.consumer
-          browserState:self.browser->browser_state()
-            dispatcher:static_cast<id>(self.browser->dispatcher())
-          webStateList:&self.browser->web_state_list()];
+      initWithBrowserState:self.browser->browser_state()
+              webStateList:&self.browser->web_state_list()];
+  self.googleLandingMediator.dispatcher =
+      static_cast<id<BrowserCommands, ChromeExecuteCommand, UrlLoader>>(
+          self.browser->dispatcher());
 
   favicon::LargeIconService* largeIconService =
       IOSChromeLargeIconServiceFactory::GetForBrowserState(
@@ -139,8 +125,6 @@
               largeIconCache:cache
              mostVisitedSite:std::move(mostVisitedFactory)];
   self.suggestionsMediator.commandHandler = self;
-  self.suggestionsMediator.headerProvider =
-      self.headerCoordinator.headerProvider;
 
   self.metricsRecorder = [[ContentSuggestionsMetricsRecorder alloc] init];
   self.metricsRecorder.delegate = self.suggestionsMediator;
@@ -149,6 +133,24 @@
   self.viewController.suggestionCommandHandler = self;
   self.viewController.audience = self;
   self.viewController.metricsRecorder = self.metricsRecorder;
+
+  self.headerCoordinator = [[NTPHomeHeaderCoordinator alloc] init];
+  self.headerCoordinator.delegate = self;
+  self.headerCoordinator.commandHandler = self;
+  [self addChildCoordinator:self.headerCoordinator];
+  [self.headerCoordinator start];
+
+  self.googleLandingMediator.consumer = self.headerCoordinator.consumer;
+  [self.googleLandingMediator setUp];
+
+  self.suggestionsMediator.headerProvider =
+      self.headerCoordinator.headerProvider;
+
+  [super start];
+}
+
+- (void)childCoordinatorDidStart:(BrowserCoordinator*)childCoordinator {
+  DCHECK(childCoordinator == self.headerCoordinator);
 
   [self.viewController
       addChildViewController:self.headerCoordinator.viewController];

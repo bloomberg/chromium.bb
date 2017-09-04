@@ -146,18 +146,8 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
   base::CancelableTaskTracker _cancelable_task_tracker;
 }
 
-// Consumer to handle google landing update notifications.
-@property(nonatomic, weak) id<GoogleLandingConsumer> consumer;
-
 // The WebStateList that is being observed by this mediator.
 @property(nonatomic, assign, readonly) WebStateList* webStateList;
-
-// The dispatcher for this mediator.
-@property(nonatomic, weak) id<BrowserCommands, ChromeExecuteCommand, UrlLoader>
-    dispatcher;
-
-// Perform initial setup.
-- (void)setUp;
 
 @end
 
@@ -167,23 +157,15 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
 @synthesize consumer = _consumer;
 @synthesize dispatcher = _dispatcher;
 
-- (instancetype)initWithConsumer:(id<GoogleLandingConsumer>)consumer
-                    browserState:(ios::ChromeBrowserState*)browserState
-                      dispatcher:
-                          (id<BrowserCommands, ChromeExecuteCommand, UrlLoader>)
-                              dispatcher
-                    webStateList:(WebStateList*)webStateList {
+- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
+                        webStateList:(WebStateList*)webStateList {
   self = [super init];
   if (self) {
-    _consumer = consumer;
     _browserState = browserState;
-    _dispatcher = dispatcher;
     _webStateList = webStateList;
 
     _webStateListObserver = base::MakeUnique<WebStateListObserverBridge>(self);
     _webStateList->AddObserver(_webStateListObserver.get());
-
-    [self setUp];
   }
   return self;
 }
