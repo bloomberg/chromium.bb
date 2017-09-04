@@ -14,7 +14,7 @@
 #include "base/task_runner_util.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/time/default_clock.h"
+#include "base/time/clock.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/search_provider_logos/switches.h"
 #include "net/http/http_response_headers.h"
@@ -64,18 +64,19 @@ std::unique_ptr<EncodedLogo> GetLogoFromCacheOnFileThread(LogoCache* logo_cache,
 }  // namespace
 
 LogoTracker::LogoTracker(
-    base::FilePath cached_logo_directory,
     scoped_refptr<net::URLRequestContextGetter> request_context_getter,
-    std::unique_ptr<LogoDelegate> delegate)
+    std::unique_ptr<LogoDelegate> delegate,
+    std::unique_ptr<LogoCache> logo_cache,
+    std::unique_ptr<base::Clock> clock)
     : is_idle_(true),
       is_cached_logo_valid_(false),
       logo_delegate_(std::move(delegate)),
       cache_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
-      logo_cache_(new LogoCache(cached_logo_directory),
+      logo_cache_(logo_cache.release(),
                   base::OnTaskRunnerDeleter(cache_task_runner_)),
-      clock_(base::MakeUnique<base::DefaultClock>()),
+      clock_(std::move(clock)),
       request_context_getter_(request_context_getter),
       weak_ptr_factory_(this) {}
 
@@ -117,17 +118,6 @@ void LogoTracker::GetLogo(LogoObserver* observer) {
 
 void LogoTracker::RemoveObserver(LogoObserver* observer) {
   logo_observers_.RemoveObserver(observer);
-}
-
-void LogoTracker::SetLogoCacheForTests(std::unique_ptr<LogoCache> cache) {
-  DCHECK(cache);
-  // Call reset() and release() to keep the deleter of the |logo_cache_| member
-  // and run it on the old value.
-  logo_cache_.reset(cache.release());
-}
-
-void LogoTracker::SetClockForTests(std::unique_ptr<base::Clock> clock) {
-  clock_ = std::move(clock);
 }
 
 void LogoTracker::ReturnToIdle(int outcome) {

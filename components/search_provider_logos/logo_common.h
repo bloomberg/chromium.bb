@@ -40,7 +40,7 @@ struct LogoMetadata {
   // to action image.
   GURL animated_url;
 
-  // For use by LogoTracker ---------------------------------------------------
+  // For use by LogoService ---------------------------------------------------
 
   // The URL from which the logo was downloaded (without the fingerprint param).
   GURL source_url;

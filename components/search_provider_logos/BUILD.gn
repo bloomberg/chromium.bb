@@ -84,12 +84,14 @@ source_set("unit_tests") {
   sources = [
     "google_logo_api_unittest.cc",
     "logo_cache_unittest.cc",
-    "logo_tracker_unittest.cc",
+    "logo_service_unittest.cc",
   ]
   deps = [
     ":search_provider_logos",
     ":unit_tests_bundle_data",
     "//base/test:test_support",
+    "//components/image_fetcher/core",
+    "//components/search_engines",
     "//net:test_support",
     "//testing/gmock",
     "//testing/gtest",
