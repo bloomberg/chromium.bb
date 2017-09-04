@@ -208,6 +208,9 @@ class ContentSettingsPattern {
   // Returns scheme type of pattern.
   ContentSettingsPattern::SchemeType GetScheme() const;
 
+  // Returns the host of a pattern.
+  const std::string& GetHost() const;
+
   // True if this pattern has a non-empty path.  Can only be used for patterns
   // with file: schemes.
   bool HasPath() const;

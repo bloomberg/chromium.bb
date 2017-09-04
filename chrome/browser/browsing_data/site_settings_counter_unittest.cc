@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/browsing_data/core/counters/site_settings_counter.h"
+#include "components/browsing_data/content/counters/site_settings_counter.h"
 
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
+#include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/testing_profile.h"
@@ -14,6 +15,10 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if !defined(OS_ANDROID)
+#include "content/public/browser/host_zoom_map.h"
+#endif
 
 namespace {
 
@@ -25,11 +30,18 @@ class SiteSettingsCounterTest : public testing::Test {
     feature_list.InitAndEnableFeature(features::kTabsInCbd);
     profile_ = base::MakeUnique<TestingProfile>();
     map_ = HostContentSettingsMapFactory::GetForProfile(profile());
+#if !defined(OS_ANDROID)
+    zoom_map_ = content::HostZoomMap::GetDefaultForBrowserContext(profile());
+#else
+    zoom_map_ = nullptr;
+#endif
   }
 
   Profile* profile() { return profile_.get(); }
 
   HostContentSettingsMap* map() { return map_.get(); }
+
+  content::HostZoomMap* zoom_map() { return zoom_map_; }
 
   void SetSiteSettingsDeletionPref(bool value) {
     profile()->GetPrefs()->SetBoolean(browsing_data::prefs::kDeleteSiteSettings,
@@ -61,6 +73,7 @@ class SiteSettingsCounterTest : public testing::Test {
   std::unique_ptr<TestingProfile> profile_;
 
   scoped_refptr<HostContentSettingsMap> map_;
+  content::HostZoomMap* zoom_map_;
   bool finished_;
   browsing_data::BrowsingDataCounter::ResultInt result_;
 };
@@ -74,7 +87,7 @@ TEST_F(SiteSettingsCounterTest, Count) {
       GURL("http://maps.google.com"), GURL("http://maps.google.com"),
       CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string(), CONTENT_SETTING_ALLOW);
 
-  browsing_data::SiteSettingsCounter counter(map());
+  browsing_data::SiteSettingsCounter counter(map(), zoom_map());
   counter.Init(
       profile()->GetPrefs(), browsing_data::ClearBrowsingDataTab::ADVANCED,
       base::Bind(&SiteSettingsCounterTest::Callback, base::Unretained(this)));
@@ -102,7 +115,7 @@ TEST_F(SiteSettingsCounterTest, CountWithTimePeriod) {
       CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string(), CONTENT_SETTING_ALLOW);
 
   clock->SetNow(base::Time::Now());
-  browsing_data::SiteSettingsCounter counter(map());
+  browsing_data::SiteSettingsCounter counter(map(), zoom_map());
   counter.Init(
       profile()->GetPrefs(), browsing_data::ClearBrowsingDataTab::ADVANCED,
       base::Bind(&SiteSettingsCounterTest::Callback, base::Unretained(this)));
@@ -124,7 +137,7 @@ TEST_F(SiteSettingsCounterTest, OnlyCountContentSettings) {
       CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT, std::string(),
       base::MakeUnique<base::DictionaryValue>());
 
-  browsing_data::SiteSettingsCounter counter(map());
+  browsing_data::SiteSettingsCounter counter(map(), zoom_map());
   counter.Init(
       profile()->GetPrefs(), browsing_data::ClearBrowsingDataTab::ADVANCED,
       base::Bind(&SiteSettingsCounterTest::Callback, base::Unretained(this)));
@@ -143,7 +156,7 @@ TEST_F(SiteSettingsCounterTest, OnlyCountPatternOnce) {
       GURL("http://www.google.com"), GURL("http://www.google.com"),
       CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string(), CONTENT_SETTING_ALLOW);
 
-  browsing_data::SiteSettingsCounter counter(map());
+  browsing_data::SiteSettingsCounter counter(map(), zoom_map());
   counter.Init(
       profile()->GetPrefs(), browsing_data::ClearBrowsingDataTab::ADVANCED,
       base::Bind(&SiteSettingsCounterTest::Callback, base::Unretained(this)));
@@ -160,7 +173,7 @@ TEST_F(SiteSettingsCounterTest, PrefChanged) {
       GURL("http://www.google.com"), GURL("http://www.google.com"),
       CONTENT_SETTINGS_TYPE_POPUPS, std::string(), CONTENT_SETTING_ALLOW);
 
-  browsing_data::SiteSettingsCounter counter(map());
+  browsing_data::SiteSettingsCounter counter(map(), zoom_map());
   counter.Init(
       profile()->GetPrefs(), browsing_data::ClearBrowsingDataTab::ADVANCED,
       base::Bind(&SiteSettingsCounterTest::Callback, base::Unretained(this)));
@@ -174,7 +187,7 @@ TEST_F(SiteSettingsCounterTest, PeriodChanged) {
       GURL("http://www.google.com"), GURL("http://www.google.com"),
       CONTENT_SETTINGS_TYPE_POPUPS, std::string(), CONTENT_SETTING_ALLOW);
 
-  browsing_data::SiteSettingsCounter counter(map());
+  browsing_data::SiteSettingsCounter counter(map(), zoom_map());
   counter.Init(
       profile()->GetPrefs(), browsing_data::ClearBrowsingDataTab::ADVANCED,
       base::Bind(&SiteSettingsCounterTest::Callback, base::Unretained(this)));
@@ -182,5 +195,39 @@ TEST_F(SiteSettingsCounterTest, PeriodChanged) {
   SetDeletionPeriodPref(browsing_data::TimePeriod::LAST_HOUR);
   EXPECT_EQ(1, GetResult());
 }
+
+#if !defined(OS_ANDROID)
+TEST_F(SiteSettingsCounterTest, ZoomLevel) {
+  zoom_map()->SetZoomLevelForHost("google.com", 1.5);
+  zoom_map()->SetZoomLevelForHost("www.google.com", 1.5);
+
+  browsing_data::SiteSettingsCounter counter(map(), zoom_map());
+  counter.Init(
+      profile()->GetPrefs(), browsing_data::ClearBrowsingDataTab::ADVANCED,
+      base::Bind(&SiteSettingsCounterTest::Callback, base::Unretained(this)));
+  counter.Restart();
+
+  EXPECT_EQ(2, GetResult());
+}
+
+TEST_F(SiteSettingsCounterTest, ZoomAndContentSettingCounting) {
+  zoom_map()->SetZoomLevelForHost("google.com", 1.5);
+  zoom_map()->SetZoomLevelForHost("www.google.com", 1.5);
+  map()->SetContentSettingDefaultScope(
+      GURL("https://www.google.com"), GURL("https://www.google.com"),
+      CONTENT_SETTINGS_TYPE_POPUPS, std::string(), CONTENT_SETTING_ALLOW);
+  map()->SetContentSettingDefaultScope(
+      GURL("https://maps.google.com"), GURL("https://maps.google.com"),
+      CONTENT_SETTINGS_TYPE_POPUPS, std::string(), CONTENT_SETTING_ALLOW);
+
+  browsing_data::SiteSettingsCounter counter(map(), zoom_map());
+  counter.Init(
+      profile()->GetPrefs(), browsing_data::ClearBrowsingDataTab::ADVANCED,
+      base::Bind(&SiteSettingsCounterTest::Callback, base::Unretained(this)));
+  counter.Restart();
+
+  EXPECT_EQ(3, GetResult());
+}
+#endif
 
 }  // namespace

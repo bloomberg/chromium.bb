@@ -18,7 +18,9 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
@@ -86,6 +88,8 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/webapps/webapp_registry.h"
+#else
+#include "content/public/browser/host_zoom_map.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -1855,6 +1859,60 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemoveAllClientHints) {
 
   ASSERT_EQ(0u, host_settings.size());
 }
+
+#if !defined(OS_ANDROID)
+TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemoveZoomLevel) {
+  content::HostZoomMap* zoom_map =
+      content::HostZoomMap::GetDefaultForBrowserContext(GetProfile());
+  zoom_map->SetStoreLastModified(true);
+
+  EXPECT_EQ(0u, zoom_map->GetAllZoomLevels().size());
+
+  auto test_clock = base::MakeUnique<base::SimpleTestClock>();
+  base::SimpleTestClock* clock = test_clock.get();
+  zoom_map->SetClockForTesting(std::move(test_clock));
+
+  base::Time now = base::Time::Now();
+  zoom_map->InitializeZoomLevelForHost(kTestRegisterableDomain1, 1.5,
+                                       now - base::TimeDelta::FromHours(5));
+  clock->SetNow(now - base::TimeDelta::FromHours(2));
+  zoom_map->SetZoomLevelForHost(kTestRegisterableDomain3, 2.0);
+  EXPECT_EQ(2u, zoom_map->GetAllZoomLevels().size());
+
+  // Remove everything created during the last hour.
+  BlockUntilBrowsingDataRemoved(
+      now - base::TimeDelta::FromHours(1), base::Time::Max(),
+      ChromeBrowsingDataRemoverDelegate::DATA_TYPE_CONTENT_SETTINGS, false);
+
+  // Nothing should be deleted as the zoomlevels were created earlier.
+  EXPECT_EQ(2u, zoom_map->GetAllZoomLevels().size());
+
+  clock->SetNow(now);
+  zoom_map->SetZoomLevelForHost(kTestRegisterableDomain3, 2.0);
+
+  // Remove everything changed during the last hour (domain3).
+  BlockUntilBrowsingDataRemoved(
+      now - base::TimeDelta::FromHours(1), base::Time::Max(),
+      ChromeBrowsingDataRemoverDelegate::DATA_TYPE_CONTENT_SETTINGS, false);
+
+  // Verify we still have the zoom_level for domain1.
+  auto levels = zoom_map->GetAllZoomLevels();
+  EXPECT_EQ(1u, levels.size());
+  EXPECT_EQ(kTestRegisterableDomain1, levels[0].host);
+
+  zoom_map->SetZoomLevelForHostAndScheme("chrome", "print", 4.0);
+  // Remove everything.
+  BlockUntilBrowsingDataRemoved(
+      base::Time(), base::Time::Max(),
+      ChromeBrowsingDataRemoverDelegate::DATA_TYPE_CONTENT_SETTINGS, false);
+
+  // Host and scheme zoomlevels should not be affected.
+  levels = zoom_map->GetAllZoomLevels();
+  EXPECT_EQ(1u, levels.size());
+  EXPECT_EQ("chrome", levels[0].scheme);
+  EXPECT_EQ("print", levels[0].host);
+}
+#endif
 
 TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemoveDurablePermission) {
   // Add our settings.
