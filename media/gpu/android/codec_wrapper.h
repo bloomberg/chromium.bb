@@ -86,12 +86,11 @@ class MEDIA_GPU_EXPORT CodecWrapper {
   // Whether an EOS has been dequeued but the codec hasn't been flushed yet.
   bool IsDrained() const;
 
-  // Whether there are any valid CodecOutputBuffers that have not been released.
-  bool HasValidCodecOutputBuffers() const;
+  // Whether there are any dequeued output buffers that have not been released.
+  bool HasUnreleasedOutputBuffers() const;
 
-  // Releases currently dequeued codec buffers back to the codec without
-  // rendering.
-  void DiscardCodecOutputBuffers();
+  // Releases all dequeued output buffers back to the codec without rendering.
+  void DiscardOutputBuffers();
 
   // Whether the codec supports Flush().
   bool SupportsFlush(DeviceInfo* device_info) const;

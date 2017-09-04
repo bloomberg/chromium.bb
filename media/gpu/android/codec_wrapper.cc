@@ -26,8 +26,8 @@ class CodecWrapperImpl : public base::RefCountedThreadSafe<CodecWrapperImpl> {
                    base::Closure output_buffer_release_cb);
 
   std::unique_ptr<MediaCodecBridge> TakeCodec();
-  bool HasValidCodecOutputBuffers() const;
-  void DiscardCodecOutputBuffers();
+  bool HasUnreleasedOutputBuffers() const;
+  void DiscardOutputBuffers();
   bool IsFlushed() const;
   bool IsDraining() const;
   bool IsDrained() const;
@@ -71,7 +71,7 @@ class CodecWrapperImpl : public base::RefCountedThreadSafe<CodecWrapperImpl> {
   friend base::RefCountedThreadSafe<CodecWrapperImpl>;
   ~CodecWrapperImpl();
 
-  void DiscardCodecOutputBuffers_Locked();
+  void DiscardOutputBuffers_Locked();
 
   // |lock_| protects access to all member variables.
   mutable base::Lock lock_;
@@ -123,7 +123,7 @@ std::unique_ptr<MediaCodecBridge> CodecWrapperImpl::TakeCodec() {
   base::AutoLock l(lock_);
   if (!codec_)
     return nullptr;
-  DiscardCodecOutputBuffers_Locked();
+  DiscardOutputBuffers_Locked();
   return std::move(codec_);
 }
 
@@ -142,18 +142,18 @@ bool CodecWrapperImpl::IsDrained() const {
   return state_ == State::kDrained;
 }
 
-bool CodecWrapperImpl::HasValidCodecOutputBuffers() const {
+bool CodecWrapperImpl::HasUnreleasedOutputBuffers() const {
   base::AutoLock l(lock_);
   return !buffer_ids_.empty();
 }
 
-void CodecWrapperImpl::DiscardCodecOutputBuffers() {
+void CodecWrapperImpl::DiscardOutputBuffers() {
   DVLOG(2) << __func__;
   base::AutoLock l(lock_);
-  DiscardCodecOutputBuffers_Locked();
+  DiscardOutputBuffers_Locked();
 }
 
-void CodecWrapperImpl::DiscardCodecOutputBuffers_Locked() {
+void CodecWrapperImpl::DiscardOutputBuffers_Locked() {
   DVLOG(2) << __func__;
   lock_.AssertAcquired();
   for (auto& kv : buffer_ids_)
@@ -252,8 +252,8 @@ MediaCodecStatus CodecWrapperImpl::DequeueOutputBuffer(
   DVLOG(4) << __func__;
   base::AutoLock l(lock_);
   DCHECK(codec_ && state_ != State::kError);
-  // If |*codec_buffer| were not null, deleting it may deadlock when it
-  // tries to release itself.
+  // If |*codec_buffer| were not null, deleting it would deadlock when its
+  // destructor calls ReleaseCodecOutputBuffer().
   DCHECK(!*codec_buffer);
 
   // Dequeue in a loop so we can avoid propagating the uninteresting
@@ -334,7 +334,8 @@ bool CodecWrapperImpl::ReleaseCodecOutputBuffer(int64_t id, bool render) {
   if (!valid)
     return false;
 
-  // Discard the buffers preceding the one we're releasing.
+  // Discard the buffers preceding the one we're releasing. The buffers are in
+  // presentation order because the ids are generated in presentation order.
   for (auto it = buffer_ids_.begin(); it < buffer_it; ++it) {
     int index = it->second;
     codec_->ReleaseOutputBuffer(index, false);
@@ -363,12 +364,12 @@ std::unique_ptr<MediaCodecBridge> CodecWrapper::TakeCodec() {
   return impl_->TakeCodec();
 }
 
-bool CodecWrapper::HasValidCodecOutputBuffers() const {
-  return impl_->HasValidCodecOutputBuffers();
+bool CodecWrapper::HasUnreleasedOutputBuffers() const {
+  return impl_->HasUnreleasedOutputBuffers();
 }
 
-void CodecWrapper::DiscardCodecOutputBuffers() {
-  impl_->DiscardCodecOutputBuffers();
+void CodecWrapper::DiscardOutputBuffers() {
+  impl_->DiscardOutputBuffers();
 }
 
 bool CodecWrapper::SupportsFlush(DeviceInfo* device_info) const {

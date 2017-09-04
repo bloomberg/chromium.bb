@@ -67,7 +67,7 @@ TEST_F(CodecWrapperTest, NoCodecOutputBufferReturnedIfDequeueFails) {
 }
 
 TEST_F(CodecWrapperTest, InitiallyThereAreNoValidCodecOutputBuffers) {
-  ASSERT_FALSE(wrapper_->HasValidCodecOutputBuffers());
+  ASSERT_FALSE(wrapper_->HasUnreleasedOutputBuffers());
 }
 
 TEST_F(CodecWrapperTest, FlushInvalidatesCodecOutputBuffers) {
@@ -94,7 +94,7 @@ TEST_F(CodecWrapperTest, CodecOutputBuffersAreAllInvalidatedTogether) {
   wrapper_->Flush();
   ASSERT_FALSE(codec_buffer1->ReleaseToSurface());
   ASSERT_FALSE(codec_buffer2->ReleaseToSurface());
-  ASSERT_FALSE(wrapper_->HasValidCodecOutputBuffers());
+  ASSERT_FALSE(wrapper_->HasUnreleasedOutputBuffers());
 }
 
 TEST_F(CodecWrapperTest, CodecOutputBuffersAfterFlushAreValid) {
