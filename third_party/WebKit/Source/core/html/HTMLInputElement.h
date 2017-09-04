@@ -258,7 +258,6 @@ class CORE_EXPORT HTMLInputElement
 
   const AtomicString& GetName() const final;
 
-  void BeginEditing();
   void EndEditing();
 
   static Vector<FileChooserFileInfo> FilesFromFileInputFormControlState(

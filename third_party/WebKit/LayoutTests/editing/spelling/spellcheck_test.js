@@ -359,13 +359,11 @@ function invokeSpellcheckTest(testObject, input, tester, expectedText) {
       });
     };
 
-    if (internals.runtimeFlags.idleTimeSpellCheckingEnabled) {
-      if (internals.idleTimeSpellCheckerState(sample.document) === 'HotModeRequested')
+    if (internals.idleTimeSpellCheckerState(sample.document) === 'HotModeRequested')
+      internals.runIdleTimeSpellChecker(sample.document);
+    if (testObject.properties[kNeedsFullCheck]) {
+      while (internals.idleTimeSpellCheckerState(sample.document) !== 'Inactive')
         internals.runIdleTimeSpellChecker(sample.document);
-      if (testObject.properties[kNeedsFullCheck]) {
-        while (internals.idleTimeSpellCheckerState(sample.document) !== 'Inactive')
-          internals.runIdleTimeSpellChecker(sample.document);
-      }
     }
 
     // For a test that does not create new spell check request, a synchronous

@@ -53,7 +53,6 @@
 #include "core/editing/commands/TypingCommand.h"
 #include "core/editing/iterators/TextIterator.h"
 #include "core/editing/serializers/Serialization.h"
-#include "core/editing/spellcheck/SpellChecker.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
@@ -228,14 +227,7 @@ bool FrameSelection::SetSelectionDeprecated(
   ScheduleVisualUpdateForPaintInvalidationIfNeeded();
 
   const Document& current_document = GetDocument();
-  // TODO(yosin): We should get rid of unsued |options| for
-  // |Editor::respondToChangedSelection()|.
-  // Note: Since, setting focus can modify DOM tree, we should use
-  // |oldSelection| before setting focus
-  frame_->GetEditor().RespondToChangedSelection(
-      old_selection_in_dom_tree.ComputeStartPosition(),
-      options.ShouldCloseTyping() ? TypingContinuation::kEnd
-                                  : TypingContinuation::kContinue);
+  frame_->GetEditor().RespondToChangedSelection();
   DCHECK_EQ(current_document, GetDocument());
   return true;
 }
@@ -756,8 +748,6 @@ void FrameSelection::FocusedOrActiveStateChanged() {
   // Caret appears in the active frame.
   if (active_and_focused)
     SetSelectionFromNone();
-  else
-    frame_->GetSpellChecker().SpellCheckAfterBlur();
   frame_caret_->SetCaretVisibility(active_and_focused
                                        ? CaretVisibility::kVisible
                                        : CaretVisibility::kHidden);

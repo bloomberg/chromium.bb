@@ -117,7 +117,6 @@
 #include "core/editing/FrameSelection.h"
 #include "core/editing/markers/DocumentMarkerController.h"
 #include "core/editing/serializers/Serialization.h"
-#include "core/editing/spellcheck/SpellChecker.h"
 #include "core/events/BeforeUnloadEvent.h"
 #include "core/events/EventFactory.h"
 #include "core/events/HashChangeEvent.h"
@@ -4476,9 +4475,6 @@ bool Document::SetFocusedElement(Element* new_focused_element,
         goto SetFocusedElementDone;
       }
     }
-
-    if (IsRootEditableElement(*focused_element_))
-      GetFrame()->GetSpellChecker().DidBeginEditing(focused_element_.Get());
   }
 
   if (!focus_change_blocked && focused_element_) {

@@ -15,7 +15,7 @@ test(function() {
     // Trigger spell checking
     selection.modify('move', 'right', 'character');
 
-    if (window.internals && internals.runtimeFlags.idleTimeSpellCheckingEnabled)
+    if (window.internals)
       internals.runIdleTimeSpellChecker(document);
 });
 </script>

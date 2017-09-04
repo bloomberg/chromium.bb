@@ -42,7 +42,6 @@
 #include "core/editing/commands/InsertLineBreakCommand.h"
 #include "core/editing/commands/InsertParagraphSeparatorCommand.h"
 #include "core/editing/commands/InsertTextCommand.h"
-#include "core/editing/spellcheck/SpellChecker.h"
 #include "core/events/BeforeTextInsertedEvent.h"
 #include "core/events/TextEvent.h"
 #include "core/frame/LocalFrame.h"
@@ -268,11 +267,6 @@ void TypingCommand::InsertText(Document& document,
                                const bool is_incremental_insertion) {
   LocalFrame* frame = document.GetFrame();
   DCHECK(frame);
-
-  if (!text.IsEmpty())
-    document.GetFrame()
-        ->GetSpellChecker()
-        .UpdateMarkersForWordsAffectedByEditing(IsSpaceOrNewline(text[0]));
 
   InsertText(document, text, frame->Selection().GetSelectionInDOMTree(),
              options, composition, is_incremental_insertion);
@@ -722,8 +716,6 @@ void TypingCommand::DeleteKeyPressed(TextGranularity granularity,
   if (!frame)
     return;
 
-  frame->GetSpellChecker().UpdateMarkersForWordsAffectedByEditing(false);
-
   if (EndingSelection().IsRange()) {
     DeleteKeyPressedInternal(EndingVisibleSelection(), EndingSelection(),
                              kill_ring, editing_state);
@@ -903,8 +895,6 @@ void TypingCommand::ForwardDeleteKeyPressed(TextGranularity granularity,
   LocalFrame* frame = GetDocument().GetFrame();
   if (!frame)
     return;
-
-  frame->GetSpellChecker().UpdateMarkersForWordsAffectedByEditing(false);
 
   if (EndingSelection().IsRange()) {
     ForwardDeleteKeyPressedInternal(EndingVisibleSelection(), EndingSelection(),

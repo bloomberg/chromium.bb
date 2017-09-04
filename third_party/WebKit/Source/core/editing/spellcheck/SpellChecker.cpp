@@ -55,7 +55,6 @@
 #include "core/layout/LayoutTextControl.h"
 #include "core/loader/EmptyClients.h"
 #include "core/page/Page.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/text/TextBreakIterator.h"
 #include "platform/text/TextCheckerClient.h"
 #include "platform/wtf/Assertions.h"
@@ -68,28 +67,6 @@ namespace blink {
 using namespace HTMLNames;
 
 namespace {
-
-bool IsPositionInTextField(const Position& selection_start) {
-  TextControlElement* text_control = EnclosingTextControl(selection_start);
-  return isHTMLInputElement(text_control) &&
-         toHTMLInputElement(text_control)->IsTextField();
-}
-
-bool IsPositionInTextArea(const Position& position) {
-  TextControlElement* text_control = EnclosingTextControl(position);
-  return isHTMLTextAreaElement(text_control);
-}
-
-SelectionInDOMTree SelectWord(const VisiblePosition& position) {
-  // TODO(yosin): We should fix |startOfWord()| and |endOfWord()| not to return
-  // null position.
-  const VisiblePosition& start = StartOfWord(position, kLeftWordIfOnBoundary);
-  const VisiblePosition& end = EndOfWord(position, kRightWordIfOnBoundary);
-  return SelectionInDOMTree::Builder()
-      .SetBaseAndExtentDeprecated(start.DeepEquivalent(), end.DeepEquivalent())
-      .SetAffinity(start.Affinity())
-      .Build();
-}
 
 static bool IsWhiteSpaceOrPunctuation(UChar c) {
   return IsSpaceOrNewline(c) || WTF::Unicode::IsPunct(c);
@@ -142,64 +119,6 @@ void SpellChecker::ToggleSpellCheckingEnabled() {
   GetSpellCheckerClient().ToggleSpellCheckingEnabled();
   if (IsSpellCheckingEnabled())
     return;
-  for (Frame* frame = this->GetFrame().GetPage()->MainFrame(); frame;
-       frame = frame->Tree().TraverseNext()) {
-    if (!frame->IsLocalFrame())
-      continue;
-    for (Node& node : NodeTraversal::StartsAt(
-             ToLocalFrame(frame)->GetDocument()->RootNode())) {
-      if (node.IsElementNode())
-        ToElement(node).SetAlreadySpellChecked(false);
-    }
-  }
-}
-
-void SpellChecker::DidBeginEditing(Element* element) {
-  if (RuntimeEnabledFeatures::IdleTimeSpellCheckingEnabled())
-    return;
-
-  if (!IsSpellCheckingEnabled())
-    return;
-
-  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
-  // needs to be audited.  See http://crbug.com/590369 for more details.
-  // In the long term we should use idle time spell checker to prevent
-  // synchronous layout caused by spell checking (see crbug.com/517298).
-  GetFrame().GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
-
-  DocumentLifecycle::DisallowTransitionScope disallow_transition(
-      GetFrame().GetDocument()->Lifecycle());
-
-  bool is_text_field = false;
-  TextControlElement* enclosing_text_control_element = nullptr;
-  if (!IsTextControlElement(*element)) {
-    enclosing_text_control_element =
-        EnclosingTextControl(Position::FirstPositionInNode(*element));
-  }
-  element =
-      enclosing_text_control_element ? enclosing_text_control_element : element;
-  Element* parent = element;
-  if (IsTextControlElement(*element)) {
-    TextControlElement* text_control = ToTextControlElement(element);
-    parent = text_control;
-    element = text_control->InnerEditorElement();
-    if (!element)
-      return;
-    is_text_field = isHTMLInputElement(*text_control) &&
-                    toHTMLInputElement(*text_control).IsTextField();
-  }
-
-  if (is_text_field || !parent->IsAlreadySpellChecked()) {
-    if (EditingIgnoresContent(*element))
-      return;
-    // We always recheck textfields because markers are removed from them on
-    // blur.
-    const VisibleSelection selection = CreateVisibleSelection(
-        SelectionInDOMTree::Builder().SelectAllChildren(*element).Build());
-    MarkMisspellingsInternal(selection);
-    if (!is_text_field)
-      parent->SetAlreadySpellChecked(true);
-  }
 }
 
 void SpellChecker::IgnoreSpelling() {
@@ -337,134 +256,6 @@ void SpellChecker::ShowSpellingGuessPanel() {
   SpellCheckPanelHostClient().ShowSpellingUI(true);
 }
 
-void SpellChecker::MarkMisspellingsForMovingParagraphs(
-    const VisibleSelection& moving_selection) {
-  if (RuntimeEnabledFeatures::IdleTimeSpellCheckingEnabled())
-    return;
-
-  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
-  // needs to be audited.  See http://crbug.com/590369 for more details.
-  // In the long term we should use idle time spell checker to prevent
-  // synchronous layout caused by spell checking (see crbug.com/517298).
-  GetFrame().GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
-
-  DocumentLifecycle::DisallowTransitionScope disallow_transition(
-      GetFrame().GetDocument()->Lifecycle());
-
-  MarkMisspellingsInternal(moving_selection);
-}
-
-void SpellChecker::MarkMisspellingsInternal(const VisibleSelection& selection) {
-  if (!IsSpellCheckingEnabled() || !IsSpellCheckingEnabledAt(selection.Start()))
-    return;
-
-  const EphemeralRange& range = selection.ToNormalizedEphemeralRange();
-  if (range.IsNull())
-    return;
-
-  // If we're not in an editable node, bail.
-  Node* editable_node = range.StartPosition().ComputeContainerNode();
-  if (!editable_node || !HasEditableStyle(*editable_node))
-    return;
-
-  TextCheckingParagraph full_paragraph_to_check(
-      ExpandRangeToSentenceBoundary(range));
-  ChunkAndMarkAllMisspellings(full_paragraph_to_check);
-}
-
-void SpellChecker::MarkMisspellingsAfterApplyingCommand(
-    const CompositeEditCommand& cmd) {
-  if (RuntimeEnabledFeatures::IdleTimeSpellCheckingEnabled())
-    return;
-
-  if (!IsSpellCheckingEnabled())
-    return;
-
-  if (!IsSpellCheckingEnabledAt(cmd.EndingSelection().Base()))
-    return;
-
-  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
-  // needs to be audited.  See http://crbug.com/590369 for more details.
-  // In the long term we should use idle time spell checker to prevent
-  // synchronous layout caused by spell checking (see crbug.com/517298).
-  GetFrame().GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
-
-  // Use type-based conditioning instead of polymorphism so that all spell
-  // checking code can be encapsulated in SpellChecker.
-
-  if (cmd.IsTypingCommand()) {
-    MarkMisspellingsAfterTypingCommand(ToTypingCommand(cmd));
-    return;
-  }
-
-  if (!cmd.IsReplaceSelectionCommand())
-    return;
-
-  // Note: Request spell checking for and only for |ReplaceSelectionCommand|s
-  // created in |Editor::replaceSelectionWithFragment()|.
-  // TODO(xiaochengh): May also need to do this after dragging crbug.com/298046.
-  if (cmd.GetInputType() != InputEvent::InputType::kInsertFromPaste)
-    return;
-
-  MarkMisspellingsAfterReplaceSelectionCommand(ToReplaceSelectionCommand(cmd));
-}
-
-void SpellChecker::MarkMisspellingsAfterTypingCommand(
-    const TypingCommand& cmd) {
-  spell_check_requester_->CancelCheck();
-
-  // Take a look at the selection that results after typing and determine
-  // whether we need to spellcheck.  Since the word containing the current
-  // selection is never marked, this does a check to see if typing made a new
-  // word that is not in the current selection.  Basically, you get this by
-  // being at the end of a word and typing a space.
-  const VisiblePosition start = CreateVisiblePosition(
-      cmd.EndingSelection().Start(), cmd.EndingSelection().Affinity());
-  VisiblePosition previous = PreviousPositionOf(start);
-
-  VisiblePosition word_start_of_previous =
-      StartOfWord(previous, kLeftWordIfOnBoundary);
-
-  if (cmd.CommandTypeOfOpenCommand() ==
-      TypingCommand::kInsertParagraphSeparator) {
-    VisiblePosition next_word = NextWordPosition(start);
-    // TODO(yosin): We should make |endOfWord()| not to return null position.
-    VisibleSelection words = CreateVisibleSelection(
-        SelectionInDOMTree::Builder()
-            .SetBaseAndExtentDeprecated(word_start_of_previous.DeepEquivalent(),
-                                        EndOfWord(next_word).DeepEquivalent())
-            .SetAffinity(word_start_of_previous.Affinity())
-            .Build());
-    MarkMisspellingsAfterLineBreak(words);
-    return;
-  }
-
-  if (previous.IsNull())
-    return;
-  VisiblePosition current_word_start =
-      StartOfWord(start, kLeftWordIfOnBoundary);
-  if (word_start_of_previous.DeepEquivalent() ==
-      current_word_start.DeepEquivalent())
-    return;
-  MarkMisspellingsAfterTypingToWord(word_start_of_previous);
-}
-
-void SpellChecker::MarkMisspellingsAfterLineBreak(
-    const VisibleSelection& word_selection) {
-  TRACE_EVENT0("blink", "SpellChecker::markMisspellingsAfterLineBreak");
-
-  MarkMisspellingsInternal(word_selection);
-}
-
-void SpellChecker::MarkMisspellingsAfterTypingToWord(
-    const VisiblePosition& word_start) {
-  TRACE_EVENT0("blink", "SpellChecker::markMisspellingsAfterTypingToWord");
-
-  VisibleSelection adjacent_words =
-      CreateVisibleSelection(SelectWord(word_start));
-  MarkMisspellingsInternal(adjacent_words);
-}
-
 bool SpellChecker::IsSpellCheckingEnabledInFocusedNode() const {
   // To avoid regression on speedometer benchmark[1] test, we should not
   // update layout tree in this code block.
@@ -485,69 +276,6 @@ bool SpellChecker::IsSpellCheckingEnabledInFocusedNode() const {
   if (!focused_element)
     return false;
   return focused_element->IsSpellCheckingEnabled();
-}
-
-void SpellChecker::MarkMisspellingsAfterReplaceSelectionCommand(
-    const ReplaceSelectionCommand& cmd) {
-  TRACE_EVENT0("blink",
-               "SpellChecker::markMisspellingsAfterReplaceSelectionCommand");
-
-  const EphemeralRange& inserted_range = cmd.InsertedRange();
-  if (inserted_range.IsNull())
-    return;
-
-  Node* node = RootEditableElementOf(cmd.EndingSelection().Base());
-  if (!node)
-    return;
-
-  EphemeralRange paragraph_range(Position::FirstPositionInNode(*node),
-                                 Position::LastPositionInNode(*node));
-  TextCheckingParagraph text_to_check(inserted_range, paragraph_range);
-  ChunkAndMarkAllMisspellings(text_to_check);
-}
-
-void SpellChecker::ChunkAndMarkAllMisspellings(
-    const TextCheckingParagraph& full_paragraph_to_check) {
-  if (full_paragraph_to_check.IsEmpty())
-    return;
-  const EphemeralRange& paragraph_range =
-      full_paragraph_to_check.ParagraphRange();
-
-  // Since the text may be quite big chunk it up and adjust to the sentence
-  // boundary.
-  const int kChunkSize = 16 * 1024;
-
-  // Check the full paragraph instead if the paragraph is short, which saves
-  // the cost on sentence boundary finding.
-  if (full_paragraph_to_check.RangeLength() <= kChunkSize) {
-    spell_check_requester_->RequestCheckingFor(paragraph_range);
-    return;
-  }
-
-  CharacterIterator check_range_iterator(
-      full_paragraph_to_check.CheckingRange(),
-      TextIteratorBehavior::Builder()
-          .SetEmitsObjectReplacementCharacter(true)
-          .Build());
-  for (int request_num = 0; !check_range_iterator.AtEnd(); request_num++) {
-    EphemeralRange chunk_range =
-        check_range_iterator.CalculateCharacterSubrange(0, kChunkSize);
-    EphemeralRange check_range =
-        request_num ? ExpandEndToSentenceBoundary(chunk_range)
-                    : ExpandRangeToSentenceBoundary(chunk_range);
-
-    spell_check_requester_->RequestCheckingFor(check_range, request_num);
-
-    if (!check_range_iterator.AtEnd()) {
-      check_range_iterator.Advance(1);
-      // The layout should be already update due to the initialization of
-      // checkRangeIterator, so comparePositions can be directly called.
-      if (ComparePositions(chunk_range.EndPosition(),
-                           check_range.EndPosition()) < 0)
-        check_range_iterator.Advance(TextIterator::RangeLength(
-            chunk_range.EndPosition(), check_range.EndPosition()));
-    }
-  }
 }
 
 static void AddMarker(Document* document,
@@ -693,123 +421,11 @@ void SpellChecker::MarkAndReplaceFor(
   }
 }
 
-void SpellChecker::UpdateMarkersForWordsAffectedByEditing(
-    bool do_not_remove_if_selection_at_word_boundary) {
-  if (RuntimeEnabledFeatures::IdleTimeSpellCheckingEnabled())
-    return;
-
-  DCHECK(GetFrame().Selection().IsAvailable());
-  TRACE_EVENT0("blink", "SpellChecker::updateMarkersForWordsAffectedByEditing");
-  // TODO(editing-dev): We should hoist
-  // updateStyleAndLayoutIgnorePendingStylesheets to caller. See
-  // http://crbug.com/590369 for more details.
-  GetFrame().GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
-  const VisibleSelection& visible_selection =
-      GetFrame().Selection().ComputeVisibleSelectionInDOMTree();
-  if (!IsSpellCheckingEnabledAt(visible_selection.Base()))
-    return;
-
-  Document* document = GetFrame().GetDocument();
-  DCHECK(document);
-
-  // We want to remove the markers from a word if an editing command will change
-  // the word. This can happen in one of several scenarios:
-  // 1. Insert in the middle of a word.
-  // 2. Appending non whitespace at the beginning of word.
-  // 3. Appending non whitespace at the end of word.
-  // Note that, appending only whitespaces at the beginning or end of word won't
-  // change the word, so we don't need to remove the markers on that word. Of
-  // course, if current selection is a range, we potentially will edit two words
-  // that fall on the boundaries of selection, and remove words between the
-  // selection boundaries.
-  VisiblePosition start_of_selection =
-      GetFrame().Selection().ComputeVisibleSelectionInDOMTree().VisibleStart();
-  VisiblePosition end_of_selection =
-      GetFrame().Selection().ComputeVisibleSelectionInDOMTree().VisibleEnd();
-  if (start_of_selection.IsNull())
-    return;
-  // First word is the word that ends after or on the start of selection.
-  VisiblePosition start_of_first_word =
-      StartOfWord(start_of_selection, kLeftWordIfOnBoundary);
-  VisiblePosition end_of_first_word =
-      EndOfWord(start_of_selection, kLeftWordIfOnBoundary);
-  // Last word is the word that begins before or on the end of selection
-  VisiblePosition start_of_last_word =
-      StartOfWord(end_of_selection, kRightWordIfOnBoundary);
-  VisiblePosition end_of_last_word =
-      EndOfWord(end_of_selection, kRightWordIfOnBoundary);
-
-  if (start_of_first_word.IsNull()) {
-    start_of_first_word =
-        StartOfWord(start_of_selection, kRightWordIfOnBoundary);
-    end_of_first_word = EndOfWord(start_of_selection, kRightWordIfOnBoundary);
-  }
-
-  if (end_of_last_word.IsNull()) {
-    start_of_last_word = StartOfWord(end_of_selection, kLeftWordIfOnBoundary);
-    end_of_last_word = EndOfWord(end_of_selection, kLeftWordIfOnBoundary);
-  }
-
-  // If doNotRemoveIfSelectionAtWordBoundary is true, and first word ends at the
-  // start of selection, we choose next word as the first word.
-  if (do_not_remove_if_selection_at_word_boundary &&
-      end_of_first_word.DeepEquivalent() ==
-          start_of_selection.DeepEquivalent()) {
-    start_of_first_word = NextWordPosition(start_of_first_word);
-    end_of_first_word = EndOfWord(start_of_first_word, kRightWordIfOnBoundary);
-    if (start_of_first_word.DeepEquivalent() ==
-        end_of_selection.DeepEquivalent())
-      return;
-  }
-
-  // If doNotRemoveIfSelectionAtWordBoundary is true, and last word begins at
-  // the end of selection, we choose previous word as the last word.
-  if (do_not_remove_if_selection_at_word_boundary &&
-      start_of_last_word.DeepEquivalent() ==
-          end_of_selection.DeepEquivalent()) {
-    start_of_last_word = PreviousWordPosition(start_of_last_word);
-    end_of_last_word = EndOfWord(start_of_last_word, kRightWordIfOnBoundary);
-    if (end_of_last_word.DeepEquivalent() ==
-        start_of_selection.DeepEquivalent())
-      return;
-  }
-
-  if (start_of_first_word.IsNull() || end_of_first_word.IsNull() ||
-      start_of_last_word.IsNull() || end_of_last_word.IsNull())
-    return;
-
-  const Position& remove_marker_start = start_of_first_word.DeepEquivalent();
-  const Position& remove_marker_end = end_of_last_word.DeepEquivalent();
-  if (remove_marker_start > remove_marker_end) {
-    // editing/inserting/insert-br-008.html and more reach here.
-    // TODO(yosin): To avoid |DCHECK(removeMarkerStart <= removeMarkerEnd)|
-    // in |EphemeralRange| constructor, we have this if-statement. Once we
-    // fix |startOfWord()| and |endOfWord()|, we should remove this
-    // if-statement.
-    return;
-  }
-
-  // Now we remove markers on everything between startOfFirstWord and
-  // endOfLastWord. However, if an autocorrection change a single word to
-  // multiple words, we want to remove correction mark from all the resulted
-  // words even we only edit one of them. For example, assuming autocorrection
-  // changes "avantgarde" to "avant garde", we will have CorrectionIndicator
-  // marker on both words and on the whitespace between them. If we then edit
-  // garde, we would like to remove the marker from word "avant" and whitespace
-  // as well. So we need to get the continous range of of marker that contains
-  // the word in question, and remove marker on that whole range.
-  const EphemeralRange word_range(remove_marker_start, remove_marker_end);
-  document->Markers().RemoveMarkersInRange(
-      word_range, DocumentMarker::MisspellingMarkers());
-}
-
 void SpellChecker::DidEndEditingOnTextField(Element* e) {
   TRACE_EVENT0("blink", "SpellChecker::didEndEditingOnTextField");
 
   // Remove markers when deactivating a selection in an <input type="text"/>.
   // Prevent new ones from appearing too.
-  if (!RuntimeEnabledFeatures::IdleTimeSpellCheckingEnabled())
-    spell_check_requester_->CancelCheck();
   TextControlElement* text_control_element = ToTextControlElement(e);
   HTMLElement* inner_editor = text_control_element->InnerEditorElement();
   RemoveSpellingAndGrammarMarkers(*inner_editor);
@@ -938,80 +554,12 @@ void SpellChecker::ReplaceMisspelledRange(const String& text) {
       text, false, false, InputEvent::InputType::kInsertReplacementText);
 }
 
-static bool ShouldCheckOldSelection(const Position& old_selection_start) {
-  if (!old_selection_start.IsConnected())
-    return false;
-  if (IsPositionInTextField(old_selection_start))
-    return false;
-  if (IsPositionInTextArea(old_selection_start))
-    return true;
-
-  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
-  // needs to be audited.  See http://crbug.com/590369 for more details.
-  // In the long term we should use idle time spell checker to prevent
-  // synchronous layout caused by spell checking (see crbug.com/517298).
-  old_selection_start.GetDocument()
-      ->UpdateStyleAndLayoutIgnorePendingStylesheets();
-
-  return IsEditablePosition(old_selection_start);
-}
-
-void SpellChecker::RespondToChangedSelection(
-    const Position& old_selection_start,
-    TypingContinuation typing_continuation) {
-  if (RuntimeEnabledFeatures::IdleTimeSpellCheckingEnabled()) {
-    idle_spell_check_callback_->SetNeedsInvocation();
-    return;
-  }
-
-  TRACE_EVENT0("blink", "SpellChecker::respondToChangedSelection");
-  if (!IsSpellCheckingEnabledAt(old_selection_start))
-    return;
-
-  // When spell checking is off, existing markers disappear after the selection
-  // changes.
-  if (!IsSpellCheckingEnabled()) {
-    GetFrame().GetDocument()->Markers().RemoveMarkersOfTypes(
-        DocumentMarker::kSpelling);
-    GetFrame().GetDocument()->Markers().RemoveMarkersOfTypes(
-        DocumentMarker::kGrammar);
-    return;
-  }
-
-  if (typing_continuation == TypingContinuation::kContinue)
-    return;
-  if (!ShouldCheckOldSelection(old_selection_start))
-    return;
-
-  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
-  // needs to be audited.  See http://crbug.com/590369 for more details.
-  // In the long term we should use idle time spell checker to prevent
-  // synchronous layout caused by spell checking (see crbug.com/517298).
-  GetFrame().GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
-
-  DocumentLifecycle::DisallowTransitionScope disallow_transition(
-      GetFrame().GetDocument()->Lifecycle());
-
-  VisibleSelection new_adjacent_words;
-  const VisibleSelection new_selection =
-      GetFrame().Selection().ComputeVisibleSelectionInDOMTree();
-  if (new_selection.IsContentEditable()) {
-    new_adjacent_words =
-        CreateVisibleSelection(SelectWord(new_selection.VisibleStart()));
-  }
-
-  // When typing we check spelling elsewhere, so don't redo it here.
-  // If this is a change in selection resulting from a delete operation,
-  // oldSelection may no longer be in the document.
-  // FIXME(http://crbug.com/382809): if oldSelection is on a textarea
-  // element, we cause synchronous layout.
-  SpellCheckOldSelection(old_selection_start, new_adjacent_words);
+void SpellChecker::RespondToChangedSelection() {
+  idle_spell_check_callback_->SetNeedsInvocation();
 }
 
 void SpellChecker::RespondToChangedContents() {
-  UpdateMarkersForWordsAffectedByEditing(true);
-  if (RuntimeEnabledFeatures::IdleTimeSpellCheckingEnabled())
-    idle_spell_check_callback_->SetNeedsInvocation();
+  idle_spell_check_callback_->SetNeedsInvocation();
 }
 
 void SpellChecker::RemoveSpellingMarkers() {
@@ -1025,46 +573,6 @@ void SpellChecker::RemoveSpellingMarkersUnderWords(
       GetFrame().GetDocument()->Markers();
   marker_controller.RemoveSpellingMarkersUnderWords(words);
   marker_controller.RepaintMarkers();
-}
-
-void SpellChecker::SpellCheckAfterBlur() {
-  if (RuntimeEnabledFeatures::IdleTimeSpellCheckingEnabled())
-    return;
-
-  // TODO(editing-dev): Hoist updateStyleAndLayoutIgnorePendingStylesheets
-  // to caller. See http://crbug.com/590369 for more details.
-  // In the long term we should use idle time spell checker to
-  // prevent synchronous layout caused by spell checking (see crbug.com/517298).
-  GetFrame().GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
-  DocumentLifecycle::DisallowTransitionScope disallow_transition(
-      GetFrame().GetDocument()->Lifecycle());
-  const VisibleSelection& selection =
-      GetFrame().Selection().ComputeVisibleSelectionInDOMTree();
-  if (!selection.IsContentEditable())
-    return;
-
-  if (IsPositionInTextField(selection.Start())) {
-    // textFieldDidEndEditing() and textFieldDidBeginEditing() handle this.
-    return;
-  }
-
-  SpellCheckOldSelection(selection.Start(), VisibleSelection());
-}
-
-void SpellChecker::SpellCheckOldSelection(
-    const Position& old_selection_start,
-    const VisibleSelection& new_adjacent_words) {
-  if (!IsSpellCheckingEnabled())
-    return;
-
-  TRACE_EVENT0("blink", "SpellChecker::spellCheckOldSelection");
-
-  VisiblePosition old_start = CreateVisiblePosition(old_selection_start);
-  VisibleSelection old_adjacent_words =
-      CreateVisibleSelection(SelectWord(old_start));
-  if (old_adjacent_words == new_adjacent_words)
-    return;
-  MarkMisspellingsInternal(old_adjacent_words);
 }
 
 static Node* FindFirstMarkable(Node* node) {
@@ -1129,8 +637,7 @@ void SpellChecker::CancelCheck() {
 }
 
 void SpellChecker::DocumentAttached(Document* document) {
-  if (RuntimeEnabledFeatures::IdleTimeSpellCheckingEnabled())
-    idle_spell_check_callback_->DocumentAttached(document);
+  idle_spell_check_callback_->DocumentAttached(document);
 }
 
 DEFINE_TRACE(SpellChecker) {
@@ -1141,8 +648,7 @@ DEFINE_TRACE(SpellChecker) {
 
 void SpellChecker::PrepareForLeakDetection() {
   spell_check_requester_->PrepareForLeakDetection();
-  if (RuntimeEnabledFeatures::IdleTimeSpellCheckingEnabled())
-    idle_spell_check_callback_->Deactivate();
+  idle_spell_check_callback_->Deactivate();
 }
 
 Vector<TextCheckingResult> SpellChecker::FindMisspellings(const String& text) {

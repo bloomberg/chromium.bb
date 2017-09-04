@@ -91,10 +91,9 @@ enum ElementFlags {
   kContainsFullScreenElement = 1 << 3,
   kIsInTopLayer = 1 << 4,
   kHasPendingResources = 1 << 5,
-  kAlreadySpellChecked = 1 << 6,
-  kContainsPersistentVideo = 1 << 7,
+  kContainsPersistentVideo = 1 << 6,
 
-  kNumberOfElementFlags = 8,  // Size of bitfield used to store the flags.
+  kNumberOfElementFlags = 7,  // Size of bitfield used to store the flags.
 };
 
 enum class ShadowRootType;
@@ -717,13 +716,6 @@ class CORE_EXPORT Element : public ContainerNode {
   void SetHasPendingResources() { SetElementFlag(kHasPendingResources); }
   void ClearHasPendingResources() { ClearElementFlag(kHasPendingResources); }
   virtual void BuildPendingResource() {}
-
-  bool IsAlreadySpellChecked() const {
-    return HasElementFlag(kAlreadySpellChecked);
-  }
-  void SetAlreadySpellChecked(bool value) {
-    SetElementFlag(kAlreadySpellChecked, value);
-  }
 
   void V0SetCustomElementDefinition(V0CustomElementDefinition*);
   V0CustomElementDefinition* GetV0CustomElementDefinition() const;

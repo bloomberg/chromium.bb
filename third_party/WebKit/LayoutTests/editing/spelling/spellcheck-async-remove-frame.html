@@ -13,7 +13,7 @@ spellcheck_test(
       document.documentElement.focus();
       document.execCommand('insertText', false, 'zz.');
 
-      if (window.internals && internals.runtimeFlags.idleTimeSpellCheckingEnabled)
+      if (window.internals)
         internals.runIdleTimeSpellChecker(document);
 
       // Remove frame after sending the spellcheck request and before its response.
