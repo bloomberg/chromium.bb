@@ -10,11 +10,13 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "components/autofill/content/renderer/form_autofill_util.h"
 #include "components/autofill/content/renderer/password_form_conversion_utils.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "content/public/test/render_view_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -1127,6 +1129,35 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest,
   std::unique_ptr<PasswordForm> password_form =
       LoadHTMLAndConvertForm(html, nullptr, false);
   EXPECT_FALSE(password_form);
+}
+
+TEST_F(MAYBE_PasswordFormConversionUtilsTest,
+       AcceptMultiplePasswordFieldsIfPasswordSelectionIsEnabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      password_manager::features::kEnablePasswordSelection);
+
+  PasswordFormBuilder builder(kTestFormActionURL);
+  builder.AddTextField("username1", "John", nullptr);
+  builder.AddPasswordField("password1", "alpha1", nullptr);
+  builder.AddPasswordField("password2", "alpha2", nullptr);
+  builder.AddPasswordField("password3", "alpha3", nullptr);
+  builder.AddPasswordField("password4", "alpha4", nullptr);
+  builder.AddSubmitButton("submit");
+  std::string html = builder.ProduceHTML();
+
+  std::unique_ptr<PasswordForm> password_form =
+      LoadHTMLAndConvertForm(html, nullptr, false);
+  EXPECT_TRUE(password_form);
+
+  // Make sure we have all possible passwords along with the username info.
+  EXPECT_EQ(base::ASCIIToUTF16("username1"), password_form->username_element);
+  EXPECT_EQ(base::ASCIIToUTF16("John"), password_form->username_value);
+  EXPECT_EQ(base::ASCIIToUTF16("alpha1"), password_form->password_value);
+  EXPECT_THAT(password_form->other_possible_passwords,
+              testing::UnorderedElementsAre(base::ASCIIToUTF16("alpha2"),
+                                            base::ASCIIToUTF16("alpha3"),
+                                            base::ASCIIToUTF16("alpha4")));
 }
 
 TEST_F(MAYBE_PasswordFormConversionUtilsTest, LayoutClassificationLogin) {
