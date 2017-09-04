@@ -100,7 +100,10 @@ void MediaControlsRotateToFullscreenDelegate::handleEvent(
     return;
   }
   if (event->type() == EventTypeNames::deviceorientation) {
-    OnDeviceOrientationAvailable(ToDeviceOrientationEvent(event));
+    if (event->isTrusted() &&
+        event->InterfaceName() == EventNames::DeviceOrientationEvent) {
+      OnDeviceOrientationAvailable(ToDeviceOrientationEvent(event));
+    }
     return;
   }
   if (event->type() == EventTypeNames::orientationchange) {
