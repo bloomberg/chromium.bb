@@ -29,6 +29,7 @@
 #import "ios/chrome/browser/autofill/form_suggestion_controller.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/passwords/js_password_manager.h"
+#import "ios/chrome/browser/passwords/password_form_filler.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/ssl_status.h"
@@ -923,13 +924,14 @@ TEST_F(PasswordControllerTest, FindAndFillOnePasswordForm) {
             "<input id='pw' type='password' name='p'></form>");
   __block int call_counter = 0;
   __block int success_counter = 0;
-  [passwordController_ findAndFillPasswordForms:@"john.doe@gmail.com"
-                                       password:@"super!secret"
-                              completionHandler:^(BOOL complete) {
-                                ++call_counter;
-                                if (complete)
-                                  ++success_counter;
-                              }];
+  [passwordController_.passwordFormFiller
+      findAndFillPasswordForms:@"john.doe@gmail.com"
+                      password:@"super!secret"
+             completionHandler:^(BOOL complete) {
+               ++call_counter;
+               if (complete)
+                 ++success_counter;
+             }];
   base::test::ios::WaitUntilCondition(^{
     return call_counter == 1;
   });
@@ -952,15 +954,16 @@ TEST_F(PasswordControllerTest, FindAndFillMultiplePasswordForms) {
             "<input id='p3' type='password' name='pw3'></form>");
   __block int call_counter = 0;
   __block int success_counter = 0;
-  [passwordController_ findAndFillPasswordForms:@"john.doe@gmail.com"
-                                       password:@"super!secret"
-                              completionHandler:^(BOOL complete) {
-                                ++call_counter;
-                                if (complete)
-                                  ++success_counter;
-                                LOG(INFO) << "HANDLER call " << call_counter
-                                          << " success " << success_counter;
-                              }];
+  [passwordController_.passwordFormFiller
+      findAndFillPasswordForms:@"john.doe@gmail.com"
+                      password:@"super!secret"
+             completionHandler:^(BOOL complete) {
+               ++call_counter;
+               if (complete)
+                 ++success_counter;
+               LOG(INFO) << "HANDLER call " << call_counter << " success "
+                         << success_counter;
+             }];
   // There should be 3 password forms and only 2 successfully filled forms.
   base::test::ios::WaitUntilCondition(^{
     return call_counter == 3;

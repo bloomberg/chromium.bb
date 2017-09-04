@@ -15,8 +15,9 @@
 
 @protocol ApplicationCommands;
 @protocol FormInputAccessoryViewProvider;
-@protocol PasswordsUiDelegate;
+@protocol PasswordFormFiller;
 @class PasswordGenerationAgent;
+@protocol PasswordsUiDelegate;
 
 namespace password_manager {
 class PasswordGenerationManager;
@@ -49,6 +50,9 @@ class PasswordManagerDriver;
 @property(nonatomic, readonly)
     password_manager::PasswordManagerDriver* passwordManagerDriver;
 
+// The PasswordFormFiller owned by this PasswordController.
+@property(nonatomic, readonly) id<PasswordFormFiller> passwordFormFiller;
+
 // The dispatcher used for the PasswordController. This property can return nil
 // even after being set to a non-nil object.
 @property(nonatomic, weak) id<ApplicationCommands> dispatcher;
@@ -69,13 +73,6 @@ passwordsUiDelegate:(id<PasswordsUiDelegate>)delegate
 // Releases all tab-specific members. Must be called when the Tab is closing,
 // otherwise invalid memory might be accessed during destruction.
 - (void)detach;
-
-// Uses JavaScript to find password forms using the |webState_| and fills
-// them with the |username| and |password|. |completionHandler|, if not nil,
-// is called once per form filled.
-- (void)findAndFillPasswordForms:(NSString*)username
-                        password:(NSString*)password
-               completionHandler:(void (^)(BOOL))completionHandler;
 
 @end
 

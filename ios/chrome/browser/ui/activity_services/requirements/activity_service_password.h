@@ -5,13 +5,13 @@
 #ifndef IOS_CHROME_BROWSER_UI_ACTIVITY_SERVICES_REQUIREMENTS_ACTIVITY_SERVICE_PASSWORD_H_
 #define IOS_CHROME_BROWSER_UI_ACTIVITY_SERVICES_REQUIREMENTS_ACTIVITY_SERVICE_PASSWORD_H_
 
-@class PasswordController;
+@protocol PasswordFormFiller;
 
 // ActivityServicePassword contains methods related to password autofill.
 @protocol ActivityServicePassword
 
-// Returns the PasswordController for the current active WebState.
-- (PasswordController*)currentPasswordController;
+// Returns the PasswordFormFiller for the current active WebState.
+- (id<PasswordFormFiller>)currentPasswordFormFiller;
 
 @end
 

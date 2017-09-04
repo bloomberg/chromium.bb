@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/activity_services/activity_service_legacy_coordinator.h"
 
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/passwords/password_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/activity_services/activity_service_controller.h"
@@ -85,8 +86,11 @@
 
 #pragma mark - Providers
 
-- (PasswordController*)currentPasswordController {
-  return [self.tabModel.currentTab passwordController];
+- (id<PasswordFormFiller>)currentPasswordFormFiller {
+  web::WebState* webState = self.tabModel.currentTab.webState;
+  return webState ? PasswordTabHelper::FromWebState(webState)
+                        ->GetPasswordFormFiller()
+                  : nil;
 }
 
 @end
