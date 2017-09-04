@@ -7,11 +7,15 @@
 #include <memory>
 #include <utility>
 
+#include "base/strings/utf_string_conversions.h"
+#include "base/trace_event/trace_event.h"
 #include "content/child/service_worker/service_worker_dispatcher.h"
 #include "content/child/service_worker/service_worker_handle_reference.h"
 #include "content/child/service_worker/service_worker_provider_context.h"
 #include "content/child/service_worker/web_service_worker_impl.h"
+#include "content/child/service_worker/web_service_worker_registration_impl.h"
 #include "content/child/thread_safe_sender.h"
+#include "content/common/service_worker/service_worker_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerProviderClient.h"
@@ -63,11 +67,43 @@ void WebServiceWorkerProviderImpl::SetClient(
 }
 
 void WebServiceWorkerProviderImpl::RegisterServiceWorker(
-    const WebURL& pattern,
-    const WebURL& script_url,
+    const WebURL& web_pattern,
+    const WebURL& web_script_url,
     std::unique_ptr<WebServiceWorkerRegistrationCallbacks> callbacks) {
-  GetDispatcher()->RegisterServiceWorker(context_->provider_id(), pattern,
-                                         script_url, std::move(callbacks));
+  DCHECK(callbacks);
+
+  GURL pattern(web_pattern);
+  GURL script_url(web_script_url);
+  if (pattern.possibly_invalid_spec().size() > url::kMaxURLChars ||
+      script_url.possibly_invalid_spec().size() > url::kMaxURLChars) {
+    std::string error_message(kServiceWorkerRegisterErrorPrefix);
+    error_message += "The provided scriptURL or scope is too long.";
+    callbacks->OnError(blink::WebServiceWorkerError(
+        blink::mojom::ServiceWorkerErrorType::kSecurity,
+        blink::WebString::FromASCII(error_message)));
+    return;
+  }
+
+  if (!context_->container_host()) {
+    std::string error_message(kServiceWorkerRegisterErrorPrefix);
+    error_message += "Lost connection to the service worker system.";
+    callbacks->OnError(blink::WebServiceWorkerError(
+        blink::mojom::ServiceWorkerErrorType::kAbort,
+        blink::WebString::FromASCII(error_message)));
+    return;
+  }
+
+  TRACE_EVENT_ASYNC_BEGIN2(
+      "ServiceWorker", "WebServiceWorkerProviderImpl::RegisterServiceWorker",
+      this, "Scope", pattern.spec(), "Script URL", script_url.spec());
+  ServiceWorkerRegistrationOptions options(pattern);
+  // As |this| owns |context_| which owns the
+  // mojom::ServiceWorkerContainerHostAssociatedPtr, using Unretained() here
+  // should be guaranteed safe.
+  context_->container_host()->Register(
+      script_url, options,
+      base::BindOnce(&WebServiceWorkerProviderImpl::OnRegistered,
+                     base::Unretained(this), std::move(callbacks)));
 }
 
 void WebServiceWorkerProviderImpl::GetRegistration(
@@ -117,6 +153,31 @@ void WebServiceWorkerProviderImpl::RemoveProviderClient() {
 
 ServiceWorkerDispatcher* WebServiceWorkerProviderImpl::GetDispatcher() {
   return ServiceWorkerDispatcher::GetThreadSpecificInstance();
+}
+
+void WebServiceWorkerProviderImpl::OnRegistered(
+    std::unique_ptr<WebServiceWorkerRegistrationCallbacks> callbacks,
+    blink::mojom::ServiceWorkerErrorType error,
+    const base::Optional<std::string>& error_msg,
+    const base::Optional<ServiceWorkerRegistrationObjectInfo>& registration,
+    const base::Optional<ServiceWorkerVersionAttributes>& attributes) {
+  TRACE_EVENT_ASYNC_END2(
+      "ServiceWorker", "WebServiceWorkerProviderImpl::RegisterServiceWorker",
+      this, "Error", ServiceWorkerUtils::ErrorTypeToString(error), "Message",
+      error_msg ? *error_msg : "Success");
+  if (error == blink::mojom::ServiceWorkerErrorType::kNone) {
+    DCHECK(!error_msg);
+    DCHECK(registration);
+    DCHECK(attributes);
+    callbacks->OnSuccess(WebServiceWorkerRegistrationImpl::CreateHandle(
+        GetDispatcher()->GetOrAdoptRegistration(*registration, *attributes)));
+  } else {
+    DCHECK(error_msg);
+    DCHECK(!registration);
+    DCHECK(!attributes);
+    callbacks->OnError(blink::WebServiceWorkerError(
+        error, blink::WebString::FromASCII(*error_msg)));
+  }
 }
 
 }  // namespace content

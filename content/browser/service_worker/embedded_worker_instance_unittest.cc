@@ -62,6 +62,13 @@ class ProviderHostEndpoints : public mojom::ServiceWorkerContainerHost {
   }
 
  private:
+  // Implements mojom::ServiceWorkerContainerHost.
+  void Register(const GURL& script_url,
+                const ServiceWorkerRegistrationOptions& options,
+                RegisterCallback callback) override {
+    NOTIMPLEMENTED();
+  }
+
   mojom::ServiceWorkerContainerAssociatedPtr client_;
   mojo::AssociatedBinding<mojom::ServiceWorkerContainerHost> binding_;
 

@@ -171,13 +171,6 @@ IPC_STRUCT_END()
 //---------------------------------------------------------------------------
 // Messages sent from the child process to the browser.
 
-IPC_MESSAGE_CONTROL5(ServiceWorkerHostMsg_RegisterServiceWorker,
-                     int /* thread_id */,
-                     int /* request_id */,
-                     int /* provider_id */,
-                     GURL /* script_url */,
-                     content::ServiceWorkerRegistrationOptions)
-
 IPC_MESSAGE_CONTROL4(ServiceWorkerHostMsg_UpdateServiceWorker,
                      int /* thread_id */,
                      int /* request_id */,
@@ -324,13 +317,6 @@ IPC_MESSAGE_ROUTED1(ServiceWorkerHostMsg_ClaimClients,
 // extract it and dispatch the message to the correct ServiceWorkerDispatcher
 // on the correct thread.
 
-// Response to ServiceWorkerHostMsg_RegisterServiceWorker.
-IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_ServiceWorkerRegistered,
-                     int /* thread_id */,
-                     int /* request_id */,
-                     content::ServiceWorkerRegistrationObjectInfo,
-                     content::ServiceWorkerVersionAttributes)
-
 // Response to ServiceWorkerHostMsg_UpdateServiceWorker.
 IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_ServiceWorkerUpdated,
                      int /* thread_id */,
@@ -362,14 +348,6 @@ IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_DidGetRegistrationForReady,
                      int /* request_id */,
                      content::ServiceWorkerRegistrationObjectInfo,
                      content::ServiceWorkerVersionAttributes)
-
-// Sent when any kind of registration error occurs during a
-// RegisterServiceWorker handler above.
-IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_ServiceWorkerRegistrationError,
-                     int /* thread_id */,
-                     int /* request_id */,
-                     blink::mojom::ServiceWorkerErrorType,
-                     base::string16 /* message */)
 
 // Sent when any kind of update error occurs during a
 // UpdateServiceWorker handler above.
