@@ -57,6 +57,7 @@ source_set("coordinator") {
     ":activity_services",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/passwords",
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/ui/activity_services/requirements",
     "//ios/chrome/browser/ui/commands",

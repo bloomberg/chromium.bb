@@ -36,6 +36,7 @@
 #import "ios/chrome/browser/passwords/ios_chrome_save_password_infobar_delegate.h"
 #import "ios/chrome/browser/passwords/ios_chrome_update_password_infobar_delegate.h"
 #import "ios/chrome/browser/passwords/js_password_manager.h"
+#import "ios/chrome/browser/passwords/password_form_filler.h"
 #import "ios/chrome/browser/passwords/password_generation_agent.h"
 #include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
@@ -70,7 +71,7 @@ enum class PasswordInfoBarType { SAVE, UPDATE };
 
 @end
 
-@interface PasswordController ()<FormSuggestionProvider>
+@interface PasswordController ()<FormSuggestionProvider, PasswordFormFiller>
 
 // Parses the |jsonString| which contatins the password forms found on a web
 // page to populate the |forms| vector.
@@ -355,6 +356,24 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
   passwordManagerClient_.reset();
 }
 
+#pragma mark -
+#pragma mark Properties
+
+- (id<PasswordFormFiller>)passwordFormFiller {
+  return self;
+}
+
+- (id<ApplicationCommands>)dispatcher {
+  return passwordGenerationAgent_.dispatcher;
+}
+
+- (void)setDispatcher:(id<ApplicationCommands>)dispatcher {
+  passwordGenerationAgent_.dispatcher = dispatcher;
+}
+
+#pragma mark -
+#pragma mark PasswordFormFiller
+
 - (void)findAndFillPasswordForms:(NSString*)username
                         password:(NSString*)password
                completionHandler:(void (^)(BOOL))completionHandler {
@@ -375,14 +394,6 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
            completionHandler:completionHandler];
     }
   }];
-}
-
-- (id<ApplicationCommands>)dispatcher {
-  return passwordGenerationAgent_.dispatcher;
-}
-
-- (void)setDispatcher:(id<ApplicationCommands>)dispatcher {
-  passwordGenerationAgent_.dispatcher = dispatcher;
 }
 
 #pragma mark -

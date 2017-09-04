@@ -119,8 +119,6 @@ extern NSString* const kProxyPassthroughHeaderValue;
 // The Webstate associated with this Tab.
 @property(nonatomic, readonly) web::WebState* webState;
 
-// Handles saving and autofill of passwords.
-@property(nonatomic, readonly) PasswordController* passwordController;
 @property(nonatomic, readonly) BOOL canGoBack;
 @property(nonatomic, readonly) BOOL canGoForward;
 @property(nonatomic, weak) id<TabDelegate> delegate;

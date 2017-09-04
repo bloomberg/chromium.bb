@@ -20,6 +20,8 @@
 #include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/chrome/browser/history/top_sites_factory.h"
 #import "ios/chrome/browser/infobars/infobar_manager_impl.h"
+#import "ios/chrome/browser/passwords/password_tab_helper.h"
+#import "ios/chrome/browser/passwords/passwords_ui_delegate_impl.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #import "ios/chrome/browser/reading_list/reading_list_web_state_observer.h"
 #import "ios/chrome/browser/sessions/ios_chrome_session_tab_helper.h"
@@ -91,6 +93,9 @@ void AttachTabHelpers(web::WebState* web_state) {
   history::WebStateTopSitesObserver::CreateForWebState(
       web_state,
       ios::TopSitesFactory::GetForBrowserState(original_browser_state).get());
+
+  PasswordTabHelper::CreateForWebState(web_state,
+                                       [[PasswordsUiDelegateImpl alloc] init]);
 
   // Allow the embedder to attach tab helpers.
   ios::GetChromeBrowserProvider()->AttachTabHelpers(web_state, tab);

@@ -8,7 +8,7 @@
 
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
-#import "ios/chrome/browser/passwords/password_controller.h"
+#import "ios/chrome/browser/passwords/password_form_filler.h"
 #import "ios/chrome/browser/ui/activity_services/activity_type_util.h"
 #import "ios/chrome/browser/ui/activity_services/appex_constants.h"
 #import "ios/chrome/browser/ui/activity_services/chrome_activity_item_source.h"
@@ -326,14 +326,14 @@
              completionMessage:(NSString*)message {
   switch (shareStatus) {
     case ShareTo::SHARE_SUCCESS: {
-      PasswordController* passwordController =
-          [passwordProvider_ currentPasswordController];
       // Captures this provider for use in the asynchronously executed
       // completion block.
       __weak id<ActivityServiceSnackbar> snackbarProvider = snackbarProvider_;
       // Flag to limit user feedback after form filled to just once.
       __block BOOL shown = NO;
-      [passwordController findAndFillPasswordForms:username
+      id<PasswordFormFiller> passwordFormFiller =
+          [passwordProvider_ currentPasswordFormFiller];
+      [passwordFormFiller findAndFillPasswordForms:username
                                           password:password
                                  completionHandler:^(BOOL completed) {
                                    if (shown || !completed || ![message length])
