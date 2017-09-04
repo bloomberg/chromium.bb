@@ -14,7 +14,7 @@ class Dart(config_util.Config):
 
   @staticmethod
   def fetch_spec(props):
-    url = 'https://github.com/dart-lang/sdk.git'
+    url = 'https://dart.googlesource.com/sdk.git'
     solution = {
       'name'   :'sdk',
       'url'    : url,
