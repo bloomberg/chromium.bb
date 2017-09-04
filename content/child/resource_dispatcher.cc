@@ -12,14 +12,12 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/debug/alias.h"
-#include "base/debug/dump_without_crashing.h"
 #include "base/debug/stack_trace.h"
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/shared_memory.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/rand_util.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task_scheduler/post_task.h"
@@ -426,31 +424,9 @@ void ResourceDispatcher::Cancel(int request_id) {
     return;
   }
 
-  // |completion_time.is_null()| is a proxy for OnRequestComplete never being
-  // called.
-  // TODO(csharrison): Remove this code when crbug.com/557430 is resolved.
-  // Sample this enough that this won't dump much more than a hundred times a
-  // day even without the static guard. The guard ensures this dumps much less
-  // frequently, because these aborts frequently come in quick succession.
-  const PendingRequestInfo& info = *it->second;
-  int64_t request_time =
-      (base::TimeTicks::Now() - info.request_start).InMilliseconds();
-  if (info.resource_type == ResourceType::RESOURCE_TYPE_MAIN_FRAME &&
-      info.completion_time.is_null() && request_time < 100 &&
-      base::RandDouble() < .000001) {
-    static bool should_dump = true;
-    if (should_dump) {
-      char url_copy[256] = {0};
-      strncpy(url_copy, info.response_url.spec().c_str(),
-              sizeof(url_copy));
-      base::debug::Alias(&url_copy);
-      base::debug::Alias(&request_time);
-      base::debug::DumpWithoutCrashing();
-      should_dump = false;
-    }
-  }
   // Cancel the request if it didn't complete, and clean it up so the bridge
   // will receive no more messages.
+  const PendingRequestInfo& info = *it->second;
   if (info.completion_time.is_null() && !info.url_loader)
     message_sender_->Send(new ResourceHostMsg_CancelRequest(request_id));
   RemovePendingRequest(request_id);
