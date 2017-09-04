@@ -25,7 +25,8 @@ def CheckChange(input_api, output_api):
     cwd = input_api.PresubmitLocalPath()
 
     exit_code = input_api.subprocess.call(
-        ['python', 'pretty_print.py', '--presubmit', '--non-interactive'],
+        [input_api.python_executable, 'pretty_print.py', '--presubmit',
+         '--non-interactive'],
         cwd=cwd)
     if exit_code != 0:
       results.append(output_api.PresubmitError(
@@ -33,7 +34,7 @@ def CheckChange(input_api, output_api):
           'git cl format %s to fix.' % cwd))
 
     exit_code = input_api.subprocess.call(
-        ['python', 'validate_format.py'], cwd=cwd)
+        [input_api.python_executable, 'validate_format.py'], cwd=cwd)
     if exit_code != 0:
       results.append(output_api.PresubmitError(
           'histograms.xml is not well formatted; run %s/validate_format.py '
