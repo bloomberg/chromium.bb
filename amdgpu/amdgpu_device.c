@@ -191,6 +191,8 @@ int amdgpu_device_initialize(int fd,
 		fd_tab = util_hash_table_create(fd_hash, fd_compare);
 	r = amdgpu_get_auth(fd, &flag_auth);
 	if (r) {
+		fprintf(stderr, "%s: amdgpu_get_auth (1) failed (%i)\n",
+			__func__, r);
 		pthread_mutex_unlock(&fd_mutex);
 		return r;
 	}
@@ -198,6 +200,8 @@ int amdgpu_device_initialize(int fd,
 	if (dev) {
 		r = amdgpu_get_auth(dev->fd, &flag_authexist);
 		if (r) {
+			fprintf(stderr, "%s: amdgpu_get_auth (2) failed (%i)\n",
+				__func__, r);
 			pthread_mutex_unlock(&fd_mutex);
 			return r;
 		}
@@ -213,6 +217,7 @@ int amdgpu_device_initialize(int fd,
 
 	dev = calloc(1, sizeof(struct amdgpu_device));
 	if (!dev) {
+		fprintf(stderr, "%s: calloc failed\n", __func__);
 		pthread_mutex_unlock(&fd_mutex);
 		return -ENOMEM;
 	}
@@ -248,16 +253,22 @@ int amdgpu_device_initialize(int fd,
 
 	/* Check if acceleration is working. */
 	r = amdgpu_query_info(dev, AMDGPU_INFO_ACCEL_WORKING, 4, &accel_working);
-	if (r)
+	if (r) {
+		fprintf(stderr, "%s: amdgpu_query_info(ACCEL_WORKING) failed (%i)\n",
+			__func__, r);
 		goto cleanup;
+	}
 	if (!accel_working) {
+		fprintf(stderr, "%s: AMDGPU_INFO_ACCEL_WORKING = 0\n", __func__);
 		r = -EBADF;
 		goto cleanup;
 	}
 
 	r = amdgpu_query_gpu_info_init(dev);
-	if (r)
+	if (r) {
+		fprintf(stderr, "%s: amdgpu_query_gpu_info_init failed\n", __func__);
 		goto cleanup;
+	}
 
 	amdgpu_vamgr_init(&dev->vamgr, dev->dev_info.virtual_address_offset,
 			  dev->dev_info.virtual_address_max,
@@ -267,8 +278,10 @@ int amdgpu_device_initialize(int fd,
 	start = amdgpu_vamgr_find_va(&dev->vamgr,
 				     max - dev->dev_info.virtual_address_offset,
 				     dev->dev_info.virtual_address_alignment, 0);
-	if (start > 0xffffffff)
+	if (start > 0xffffffff) {
+		fprintf(stderr, "%s: amdgpu_vamgr_find_va failed\n", __func__);
 		goto free_va; /* shouldn't get here */
+	}
 
 	amdgpu_vamgr_init(&dev->vamgr_32, start, max,
 			  dev->dev_info.virtual_address_alignment);
