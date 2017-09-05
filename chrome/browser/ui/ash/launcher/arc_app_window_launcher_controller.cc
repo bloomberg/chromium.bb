@@ -293,6 +293,8 @@ void ArcAppWindowLauncherController::AttachControllerToWindowIfNeeded(
   if (GetAppWindowForTask(task_id))
     return;
 
+  // TODO(msw): Set shelf item types earlier to avoid ShelfWindowWatcher races.
+  // (maybe use Widget::InitParams::mus_properties in cash too crbug.com/750334)
   window->SetProperty<int>(ash::kShelfItemTypeKey, ash::TYPE_APP);
   window->SetProperty(aura::client::kAppType,
                       static_cast<int>(ash::AppType::ARC_APP));

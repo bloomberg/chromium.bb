@@ -180,6 +180,10 @@ void ChromeNativeAppWindowViewsAuraAsh::OnBeforeWidgetInit(
   init_params->mus_properties
       [ui::mojom::WindowManager::kRemoveStandardFrame_InitProperty] =
       mojo::ConvertTo<std::vector<uint8_t>>(init_params->remove_standard_frame);
+  init_params
+      ->mus_properties[ui::mojom::WindowManager::kShelfItemType_Property] =
+      mojo::ConvertTo<std::vector<uint8_t>>(
+          static_cast<int64_t>(ash::TYPE_APP));
 }
 
 void ChromeNativeAppWindowViewsAuraAsh::OnBeforePanelWidgetInit(
@@ -194,6 +198,10 @@ void ChromeNativeAppWindowViewsAuraAsh::OnBeforePanelWidgetInit(
     wm::ConvertRectToScreen(ash::Shell::GetRootWindowForNewWindows(),
                             &init_params->bounds);
   }
+  init_params
+      ->mus_properties[ui::mojom::WindowManager::kShelfItemType_Property] =
+      mojo::ConvertTo<std::vector<uint8_t>>(
+          static_cast<int64_t>(ash::TYPE_APP_PANEL));
 }
 
 views::NonClientFrameView*
