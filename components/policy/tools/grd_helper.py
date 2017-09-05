@@ -24,6 +24,7 @@ def add_options(parser):
   The following options are optional:
     -D <define1> ... -D <defineN>: List of grit defines.
     -E <env1> ... -D <envN>:       List of grit build environment variables.
+    -t <platfrom>:                 Target OS.
 
   Args:
     parser: Option parser (from optparse.OptionParser()).
@@ -33,6 +34,7 @@ def add_options(parser):
   parser.add_option("--grd_strip_path_prefix", dest="grd_strip_path_prefix")
   parser.add_option("-D", action="append", dest="grit_defines", default=[])
   parser.add_option("-E", action="append", dest="grit_build_env", default=[])
+  parser.add_option("-t", dest="target_platform", default=None)
 
 
 def get_grd_outputs(options):
@@ -52,7 +54,8 @@ def get_grd_outputs(options):
   sys.path.insert(1, grit_path)
   import grit_info
   outputs = grit_info.Outputs(options.grd_input, grit_defines,
-                              'GRIT_DIR/../gritsettings/resource_ids')
+                              'GRIT_DIR/../gritsettings/resource_ids',
+                               options.target_platform)
 
   # Strip the path prefix from the filenames.
   result = []
