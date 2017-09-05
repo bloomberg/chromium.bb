@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 5323 tests; 5125 PASS, 198 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 5323 tests; 5126 PASS, 197 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Test driver
 PASS Document interface: attribute domain
 PASS Document interface: attribute referrer
@@ -4877,7 +4877,7 @@ PASS PromiseRejectionEvent interface object length
 PASS PromiseRejectionEvent interface object name
 PASS PromiseRejectionEvent interface: existence and properties of interface prototype object
 PASS PromiseRejectionEvent interface: existence and properties of interface prototype object's "constructor" property
-FAIL PromiseRejectionEvent interface: attribute promise Illegal invocation
+PASS PromiseRejectionEvent interface: attribute promise
 PASS PromiseRejectionEvent interface: attribute reason
 PASS Navigator interface: existence and properties of interface object
 PASS Navigator interface object length

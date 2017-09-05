@@ -12,8 +12,8 @@ PASS Animation interface: attribute startTime
 PASS Animation interface: attribute currentTime
 PASS Animation interface: attribute playbackRate
 PASS Animation interface: attribute playState
-FAIL Animation interface: attribute ready Illegal invocation
-FAIL Animation interface: attribute finished Illegal invocation
+PASS Animation interface: attribute ready
+PASS Animation interface: attribute finished
 PASS Animation interface: attribute onfinish
 PASS Animation interface: attribute oncancel
 PASS Animation interface: operation cancel()
