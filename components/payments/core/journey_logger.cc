@@ -8,17 +8,10 @@
 
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "services/metrics/public/cpp/ukm_entry_builder.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 
 namespace payments {
-
-namespace internal {
-extern const char kUKMCheckoutEventsEntryName[] =
-    "PaymentRequest.CheckoutEvents";
-extern const char kUKMCompletionStatusMetricName[] = "CompletionStatus";
-extern const char kUKMEventsMetricName[] = "Events";
-}  // namespace internal
 
 namespace {
 
@@ -254,12 +247,10 @@ void JourneyLogger::RecordUrlKeyedMetrics(CompletionStatus completion_status) {
   // Record the Checkout Funnel UKM.
   ukm::SourceId source_id = ukm_recorder_->GetNewSourceID();
   ukm_recorder_->UpdateSourceURL(source_id, url_);
-  std::unique_ptr<ukm::UkmEntryBuilder> builder =
-      ukm_recorder_->GetEntryBuilder(source_id,
-                                     internal::kUKMCheckoutEventsEntryName);
-  builder->AddMetric(internal::kUKMCompletionStatusMetricName,
-                     completion_status);
-  builder->AddMetric(internal::kUKMEventsMetricName, events_);
+  ukm::builders::PaymentRequest_CheckoutEvents(source_id)
+      .SetCompletionStatus(completion_status)
+      .SetEvents(events_)
+      .Record(ukm_recorder_);
 }
 
 bool JourneyLogger::WasPaymentRequestTriggered() {
