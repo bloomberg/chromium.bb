@@ -472,9 +472,6 @@ TEST_F(DiskCacheTest, CreateBackend) {
 
   {
     ASSERT_TRUE(CleanupCacheDir());
-    base::Thread cache_thread("CacheThread");
-    ASSERT_TRUE(cache_thread.StartWithOptions(
-        base::Thread::Options(base::MessageLoop::TYPE_IO, 0)));
 
     // Test the private factory method(s).
     std::unique_ptr<disk_cache::Backend> cache;
@@ -484,31 +481,15 @@ TEST_F(DiskCacheTest, CreateBackend) {
 
     // Now test the public API.
     int rv = disk_cache::CreateCacheBackend(net::DISK_CACHE,
-                                            net::CACHE_BACKEND_DEFAULT,
-                                            cache_path_,
-                                            0,
-                                            false,
-                                            cache_thread.task_runner(),
-                                            NULL,
-                                            &cache,
-                                            cb.callback());
-    ASSERT_THAT(cb.GetResult(rv), IsOk());
-    ASSERT_TRUE(cache.get());
-    cache.reset();
-
-    // Variant without the explicit thread, too!
-    rv = disk_cache::CreateCacheBackend(net::DISK_CACHE,
                                         net::CACHE_BACKEND_DEFAULT, cache_path_,
                                         0, false, NULL, &cache, cb.callback());
     ASSERT_THAT(cb.GetResult(rv), IsOk());
     ASSERT_TRUE(cache.get());
     cache.reset();
 
-    rv = disk_cache::CreateCacheBackend(net::MEMORY_CACHE,
-                                        net::CACHE_BACKEND_DEFAULT,
-                                        base::FilePath(), 0,
-                                        false, NULL, NULL, &cache,
-                                        cb.callback());
+    rv = disk_cache::CreateCacheBackend(
+        net::MEMORY_CACHE, net::CACHE_BACKEND_DEFAULT, base::FilePath(), 0,
+        false, NULL, &cache, cb.callback());
     ASSERT_THAT(cb.GetResult(rv), IsOk());
     ASSERT_TRUE(cache.get());
     cache.reset();
@@ -829,7 +810,7 @@ TEST_F(DiskCacheBackendTest, MultipleInstancesWithPendingFileIO) {
   std::unique_ptr<disk_cache::Backend> extra_cache;
   int rv = disk_cache::CreateCacheBackend(
       net::DISK_CACHE, net::CACHE_BACKEND_DEFAULT, store.GetPath(), 0, false,
-      base::ThreadTaskRunnerHandle::Get(), NULL, &extra_cache, cb.callback());
+      /* net_log = */ nullptr, &extra_cache, cb.callback());
   ASSERT_THAT(cb.GetResult(rv), IsOk());
   ASSERT_TRUE(extra_cache.get() != NULL);
 
@@ -846,6 +827,7 @@ TEST_F(DiskCacheBackendTest, MultipleInstancesWithPendingFileIO) {
   if (rv == net::ERR_IO_PENDING)
     EXPECT_FALSE(cb.have_result());
 
+  disk_cache::FlushCacheThreadForTesting();
   base::RunLoop().RunUntilIdle();
 
   // Wait for the actual operation to complete, or we'll keep a file handle that
