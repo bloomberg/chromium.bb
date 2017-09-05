@@ -219,6 +219,9 @@ public class WebappSplashScreenTest {
 
         // DURATION and HIDES UMA should not have been recorded yet.
         Assert.assertFalse(hasHistogramEntry(WebappUma.HISTOGRAM_SPLASHSCREEN_DURATION, 3000));
+        Assert.assertEquals(0,
+                getHistogramTotalCountFor(WebappUma.HISTOGRAM_SPLASHSCREEN_HIDES,
+                        WebappUma.SPLASHSCREEN_HIDES_REASON_MAX));
     }
 
     @Test

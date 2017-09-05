@@ -5,18 +5,6 @@
 #ifndef BASE_ANDROID_JNI_INT_WRAPPER_H_
 #define BASE_ANDROID_JNI_INT_WRAPPER_H_
 
-// This isn't really the proper place for such a definition but it's only a
-// temporary CL for testing and will be reverted after a single build.
-// Placing it here is simply easier that creating a new header file for
-// this.
-#include "base/metrics/statistics_recorder.h"  // crbug/744734
-
-class HistogramValidator {
- public:
-  HistogramValidator() { base::StatisticsRecorder::ValidateAllHistograms(-1); }
-  ~HistogramValidator() { base::StatisticsRecorder::ValidateAllHistograms(-2); }
-};
-
 // Wrapper used to receive int when calling Java from native.
 // The wrapper disallows automatic conversion of long to int.
 // This is to avoid a common anti-pattern where a Java int is used
