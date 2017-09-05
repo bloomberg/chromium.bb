@@ -1,3 +1,0 @@
-Test for bug 452391: Header names in Access-Control-Request-Headers must be sorted.
-
-PASS
