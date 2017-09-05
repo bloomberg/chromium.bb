@@ -6,6 +6,8 @@
 
 #include <shellapi.h>
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/strings/string16.h"
 #include "chrome/app/vector_icons/vector_icons.h"
@@ -15,7 +17,6 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "chrome/installer/util/experiment.h"
-#include "chrome/installer/util/experiment_metrics.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image.h"
@@ -119,7 +120,7 @@ std::unique_ptr<views::LabelButton> CreateWin10StyleButton(
 // static
 TryChromeDialog::Result TryChromeDialog::Show(
     size_t group,
-    const ActiveModalDialogListener& listener) {
+    ActiveModalDialogListener listener) {
   if (group >= arraysize(kExperiments)) {
     // This is a test value. We want to make sure we exercise
     // returning this early. See TryChromeDialogBrowserTest test.
@@ -127,7 +128,8 @@ TryChromeDialog::Result TryChromeDialog::Show(
   }
 
   TryChromeDialog dialog(group);
-  return dialog.ShowDialog(listener, DialogType::MODAL, UsageType::FOR_CHROME);
+  return dialog.ShowDialog(std::move(listener), DialogType::MODAL,
+                           UsageType::FOR_CHROME);
 }
 
 TryChromeDialog::TryChromeDialog(size_t group)
@@ -139,7 +141,7 @@ TryChromeDialog::TryChromeDialog(size_t group)
 TryChromeDialog::~TryChromeDialog() {}
 
 TryChromeDialog::Result TryChromeDialog::ShowDialog(
-    const ActiveModalDialogListener& listener,
+    ActiveModalDialogListener listener,
     DialogType dialog_type,
     UsageType usage_type) {
   usage_type_ = usage_type;
@@ -277,16 +279,51 @@ TryChromeDialog::Result TryChromeDialog::ShowDialog(
   }
 
   popup_->Show();
-  if (!listener.is_null())
-    listener.Run(popup_->GetNativeView());
 
   if (dialog_type == DialogType::MODAL) {
+    if (listener) {
+      listener.Run(base::Bind(&TryChromeDialog::OnProcessNotification,
+                              base::Unretained(this)));
+    }
     run_loop_.reset(new base::RunLoop);
     run_loop_->Run();
-    if (!listener.is_null())
-      listener.Run(nullptr);
+    if (listener)
+      listener.Run(base::Closure());
   }
+
   return result_;
+}
+
+void TryChromeDialog::CloseDialog(Result result,
+                                  installer::ExperimentMetrics::State state) {
+  // Exit early if somehow a second notification arrives.
+  if (!popup_)
+    return;
+
+  // Record the result of the toast.
+  result_ = result;
+
+  // Update post-action stats.
+  if (usage_type_ == UsageType::FOR_CHROME) {
+    auto lock = storage_.AcquireLock();
+    installer::Experiment experiment;
+    if (lock->LoadExperiment(&experiment)) {
+      base::TimeDelta action_delay = (base::TimeTicks::Now() - time_shown_);
+      experiment.SetActionDelay(action_delay);
+      experiment.SetState(state);
+      lock->StoreExperiment(experiment);
+    }
+  }
+
+  // Close the dialog and quit the loop.
+  popup_->Close();
+  popup_ = nullptr;
+  if (run_loop_)
+    run_loop_->QuitWhenIdle();
+}
+
+void TryChromeDialog::OnProcessNotification() {
+  CloseDialog(OPEN_CHROME_DEFER, installer::ExperimentMetrics::kOtherLaunch);
 }
 
 gfx::Rect TryChromeDialog::ComputePopupBounds(const gfx::Size& size,
@@ -302,37 +339,25 @@ gfx::Rect TryChromeDialog::ComputePopupBounds(const gfx::Size& size,
 
 void TryChromeDialog::ButtonPressed(views::Button* sender,
                                     const ui::Event& event) {
-  if (sender->tag() == static_cast<int>(ButtonTag::CLOSE_BUTTON) ||
-      sender->tag() == static_cast<int>(ButtonTag::NO_THANKS_BUTTON)) {
-    result_ = NOT_NOW;
-  } else if (sender->tag() == static_cast<int>(ButtonTag::OK_BUTTON)) {
-    result_ = kExperiments[group_].result;
-  } else {
-    NOTREACHED() << "Unknown button selected.";
+  Result result = NOT_NOW;
+  installer::ExperimentMetrics::State state =
+      installer::ExperimentMetrics::kUninitialized;
+
+  switch (sender->tag()) {
+    case static_cast<int>(ButtonTag::CLOSE_BUTTON):
+      state = installer::ExperimentMetrics::kSelectedClose;
+      break;
+    case static_cast<int>(ButtonTag::OK_BUTTON):
+      result = kExperiments[group_].result;
+      state = installer::ExperimentMetrics::kSelectedOpenChromeAndNoCrash;
+      break;
+    case static_cast<int>(ButtonTag::NO_THANKS_BUTTON):
+      state = installer::ExperimentMetrics::kSelectedNoThanks;
+      break;
+    default:
+      NOTREACHED();
+      break;
   }
 
-  // Update post-action stats.
-  if (usage_type_ == UsageType::FOR_CHROME) {
-    auto lock = storage_.AcquireLock();
-    installer::Experiment experiment;
-    if (lock->LoadExperiment(&experiment)) {
-      base::TimeDelta action_delay = (base::TimeTicks::Now() - time_shown_);
-      experiment.SetActionDelay(action_delay);
-      if (sender->tag() == static_cast<int>(ButtonTag::CLOSE_BUTTON)) {
-        experiment.SetState(installer::ExperimentMetrics::kSelectedClose);
-      } else if (sender->tag() ==
-                 static_cast<int>(ButtonTag::NO_THANKS_BUTTON)) {
-        experiment.SetState(installer::ExperimentMetrics::kSelectedNoThanks);
-      } else {
-        // TODO(skare): Differentiate crash/no-crash/logoff cases.
-        experiment.SetState(
-            installer::ExperimentMetrics::kSelectedOpenChromeAndNoCrash);
-      }
-      lock->StoreExperiment(experiment);
-    }
-  }
-
-  popup_->Close();
-  popup_ = nullptr;
-  run_loop_->QuitWhenIdle();
+  CloseDialog(result, state);
 }

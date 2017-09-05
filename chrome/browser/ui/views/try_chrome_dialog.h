@@ -7,15 +7,16 @@
 
 #include <stddef.h>
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
+#include "chrome/installer/util/experiment_metrics.h"
 #include "chrome/installer/util/experiment_storage.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/gfx/native_widget_types.h"
 #include "ui/views/controls/button/button.h"
 
 namespace views {
@@ -38,27 +39,29 @@ class Widget;
 // Some variants do not have body text, or only have one button.
 class TryChromeDialog : public views::ButtonListener {
  public:
-  // Receives a handle to the active modal dialog, or NULL when the active
-  // dialog is dismissed.
-  typedef base::Callback<void(gfx::NativeWindow active_dialog)>
-      ActiveModalDialogListener;
+  // Receives a closure to run upon process singleton notification when the
+  // modal dialog is open, or a null closure when the active dialog is
+  // dismissed.
+  typedef base::Callback<void(base::Closure)> ActiveModalDialogListener;
 
   enum Result {
     NOT_NOW,                    // Don't launch chrome. Exit now.
     OPEN_CHROME_WELCOME,        // Launch Chrome to the standard Welcome page.
     OPEN_CHROME_WELCOME_WIN10,  // Launch Chrome to the Win10 Welcome page.
     OPEN_CHROME_DEFAULT,        // Launch Chrome to the default page.
+    OPEN_CHROME_DEFER,          // Launch Chrome on account of a rendezvous,
+                                // deferring to the caller's command line.
   };
 
   // Shows a modal dialog asking the user to give Chrome another try. See
   // above for the possible outcomes of the function.
   // |group| selects what strings to present and what controls are shown.
-  // |listener| will be notified when the dialog becomes active and when it is
-  // dismissed.
+  // |listener| will be provided with a closure when the dialog becomes active
+  // and when it is dismissed.
   // Note that the dialog has no parent and it will position itself in a lower
   // corner of the screen or near the Chrome taskbar button.
   // The dialog does not steal focus and does not have an entry in the taskbar.
-  static Result Show(size_t group, const ActiveModalDialogListener& listener);
+  static Result Show(size_t group, ActiveModalDialogListener listener);
 
  private:
   // Indicates whether the dialog is modal
@@ -86,9 +89,17 @@ class TryChromeDialog : public views::ButtonListener {
   // selection, and is used in testing. This case will always return NOT_NOW.
   // The |usage_type| parameter indicates whether this is being invoked by
   // Chrome or a test.
-  Result ShowDialog(const ActiveModalDialogListener& listener,
+  Result ShowDialog(ActiveModalDialogListener listener,
                     DialogType dialog_type,
                     UsageType usage_type);
+
+  // Concludes the modal interaction by recording |result| and |state|, then
+  // closing the dialog.
+  void CloseDialog(Result result, installer::ExperimentMetrics::State state);
+
+  // Invoked upon notification from another process by way of the process
+  // singleton. Closes the dialog, allowing Chrome startup to resume.
+  void OnProcessNotification();
 
   // Returns a screen rectangle that is fit to show the window. In particular
   // it has the following properties: a) is visible and b) is attached to the

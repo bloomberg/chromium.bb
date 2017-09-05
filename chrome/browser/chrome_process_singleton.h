@@ -5,38 +5,30 @@
 #ifndef CHROME_BROWSER_CHROME_PROCESS_SINGLETON_H_
 #define CHROME_BROWSER_CHROME_PROCESS_SINGLETON_H_
 
+#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "chrome/browser/process_singleton.h"
 #include "chrome/browser/process_singleton_modal_dialog_lock.h"
 #include "chrome/browser/process_singleton_startup_lock.h"
-#include "ui/gfx/native_widget_types.h"
 
 // Composes a basic ProcessSingleton with ProcessSingletonStartupLock and
 // ProcessSingletonModalDialogLock.
 //
-// Notifications from ProcessSingleton will be discarded if a modal dialog is
-// active. Otherwise, until |Unlock()| is called, they will be queued up.
-// Once unlocked, notifications will be passed to the client-supplied
+// Notifications from ProcessSingleton will first close a modal dialog if
+// active. Otherwise, until |Unlock()| is called, they will be queued up. Once
+// unlocked, notifications will be passed to the client-supplied
 // NotificationCallback.
 //
-// The client must ensure that SetActiveModalDialog is called appropriately when
-// dialogs are displayed or dismissed during startup. While a dialog is active:
-// 1. Neither this process nor the invoking process will handle the command
-//    line.
-// 2. The active dialog is brought to the foreground and/or the taskbar icon
-//    flashed (using ::SetForegroundWindow on Windows).
+// The client must ensure that SetModalDialogNotificationHandler is called
+// appropriately when dialogs are displayed or dismissed during startup. If a
+// dialog is active, it is closed (via the provided handler) and then the
+// notification is processed as normal.
 class ChromeProcessSingleton {
  public:
   ChromeProcessSingleton(
       const base::FilePath& user_data_dir,
       const ProcessSingleton::NotificationCallback& notification_callback);
-
-  ChromeProcessSingleton(
-      const base::FilePath& user_data_dir,
-      const ProcessSingleton::NotificationCallback& notification_callback,
-      const ProcessSingletonModalDialogLock::SetForegroundWindowHandler&
-          set_foreground_window_handler);
 
   ~ChromeProcessSingleton();
 
@@ -50,9 +42,9 @@ class ChromeProcessSingleton {
   // Clear any lock state during shutdown.
   void Cleanup();
 
-  // Receives a handle to the active modal dialog, or NULL if the active dialog
-  // is dismissed.
-  void SetActiveModalDialog(gfx::NativeWindow active_dialog);
+  // Receives a callback to be run to close the active modal dialog, or an empty
+  // closure if the active dialog is dismissed.
+  void SetModalDialogNotificationHandler(base::Closure notification_handler);
 
   // Executes previously queued command-line invocations and allows future
   // invocations to be executed immediately.

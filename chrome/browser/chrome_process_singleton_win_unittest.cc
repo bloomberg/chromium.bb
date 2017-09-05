@@ -85,8 +85,7 @@ TEST(ChromeProcessSingletonTest, Lock) {
 #if defined(OS_WIN) && !defined(USE_AURA)
 namespace {
 
-void SetForegroundWindowHandler(bool* flag,
-                                gfx::NativeWindow /* target_window */) {
+void ModalNotificationHandler(bool* flag) {
   *flag = true;
 }
 
@@ -97,14 +96,14 @@ TEST(ChromeProcessSingletonTest, LockWithModalDialog) {
   ASSERT_TRUE(profile_dir.CreateUniqueTempDir());
 
   int callback_count = 0;
-  bool called_set_foreground_window = false;
+  bool called_modal_notification_handler = false;
 
   ChromeProcessSingleton ps1(
       profile_dir.GetPath(),
-      base::Bind(&ServerCallback, base::Unretained(&callback_count)),
-      base::Bind(&SetForegroundWindowHandler,
-                 base::Unretained(&called_set_foreground_window)));
-  ps1.SetActiveModalDialog(::GetShellWindow());
+      base::Bind(&ServerCallback, base::Unretained(&callback_count)));
+  ps1.SetModalDialogNotificationHandler(
+      base::Bind(&ModalNotificationHandler,
+                 base::Unretained(&called_modal_notification_handler)));
 
   ChromeProcessSingleton ps2(profile_dir.GetPath(),
                              base::Bind(&ClientCallback));
@@ -115,21 +114,21 @@ TEST(ChromeProcessSingletonTest, LockWithModalDialog) {
   ASSERT_EQ(ProcessSingleton::PROCESS_NONE, result);
   ASSERT_EQ(0, callback_count);
 
-  ASSERT_FALSE(called_set_foreground_window);
+  ASSERT_FALSE(called_modal_notification_handler);
   result = ps2.NotifyOtherProcessOrCreate();
   ASSERT_EQ(ProcessSingleton::PROCESS_NOTIFIED, result);
-  ASSERT_TRUE(called_set_foreground_window);
+  ASSERT_TRUE(called_modal_notification_handler);
 
   ASSERT_EQ(0, callback_count);
-  ps1.SetActiveModalDialog(NULL);
+  ps1.SetModalDialogNotificationHandler(base::Closure());
   ps1.Unlock();
-  // The notification sent while a modal dialog was present was silently
-  // dropped.
-  ASSERT_EQ(0, callback_count);
+  // The notifications sent while a modal dialog was open were processed after
+  // unlock.
+  ASSERT_EQ(2, callback_count);
 
-  // But now that the active modal dialog is NULL notifications will be handled.
+  // And now that the handler was cleared notifications will still be handled.
   result = ps2.NotifyOtherProcessOrCreate();
   ASSERT_EQ(ProcessSingleton::PROCESS_NOTIFIED, result);
-  ASSERT_EQ(1, callback_count);
+  ASSERT_EQ(3, callback_count);
 }
 #endif  // defined(OS_WIN) && !defined(USE_AURA)
