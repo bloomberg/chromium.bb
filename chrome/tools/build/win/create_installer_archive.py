@@ -120,6 +120,7 @@ def CopySectionFilesToStagingDir(config, section, staging_dir, src_dir):
       continue
 
     dst_dir = os.path.join(staging_dir, config.get(section, option))
+    dst_dir = dst_dir.replace('\\', os.sep)
     src_paths = glob.glob(os.path.join(src_dir, option))
     if src_paths and not os.path.exists(dst_dir):
       os.makedirs(dst_dir)
@@ -139,8 +140,11 @@ def GenerateDiffPatch(options, orig_file, new_file, patch_file):
   RunSystemCommand(cmd, options.verbose)
 
 def GetLZMAExec(build_dir):
-  lzma_exec = os.path.join(build_dir, "..", "..", "third_party",
-                           "lzma_sdk", "Executable", "7za.exe")
+  if sys.platform == 'win32':
+    lzma_exec = os.path.join(build_dir, "..", "..", "third_party",
+                             "lzma_sdk", "Executable", "7za.exe")
+  else:
+    lzma_exec = '7za'  # Use system 7za.
   return lzma_exec
 
 def GetPrevVersion(build_dir, temp_dir, last_chrome_installer, output_name):
@@ -159,7 +163,7 @@ def GetPrevVersion(build_dir, temp_dir, last_chrome_installer, output_name):
   dll_path = glob.glob(os.path.join(temp_dir, 'Chrome-bin', '*', 'chrome.dll'))
   return os.path.split(os.path.split(dll_path[0])[0])[1]
 
-def MakeStagingDirectories(staging_dir):
+def MakeStagingDirectory(staging_dir):
   """Creates a staging path for installer archive. If directory exists already,
   deletes the existing directory.
   """
@@ -167,12 +171,7 @@ def MakeStagingDirectories(staging_dir):
   if os.path.exists(file_path):
     shutil.rmtree(file_path)
   os.makedirs(file_path)
-
-  temp_file_path = os.path.join(staging_dir, TEMP_ARCHIVE_DIR)
-  if os.path.exists(temp_file_path):
-    shutil.rmtree(temp_file_path)
-  os.makedirs(temp_file_path)
-  return (file_path, temp_file_path)
+  return file_path
 
 def Readconfig(input_file, current_version):
   """Reads config information from input file after setting default value of
@@ -532,9 +531,9 @@ def main(options):
 
   config = Readconfig(options.input_file, current_version)
 
-  (staging_dir, temp_dir) = MakeStagingDirectories(options.staging_dir)
+  staging_dir = MakeStagingDirectory(options.staging_dir)
 
-  prev_version = GetPrevVersion(options.build_dir, temp_dir,
+  prev_version = GetPrevVersion(options.build_dir, staging_dir,
                                 options.last_chrome_installer,
                                 options.output_name)
 
