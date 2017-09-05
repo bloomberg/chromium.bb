@@ -115,11 +115,6 @@ RefPtr<WebTaskRunner> TimerBase::GetTimerTaskRunner() {
   return Platform::Current()->CurrentThread()->Scheduler()->TimerTaskRunner();
 }
 
-// static
-RefPtr<WebTaskRunner> TimerBase::GetUnthrottledTaskRunner() {
-  return Platform::Current()->CurrentThread()->GetWebTaskRunner();
-}
-
 RefPtr<WebTaskRunner> TimerBase::TimerTaskRunner() const {
   return web_task_runner_;
 }

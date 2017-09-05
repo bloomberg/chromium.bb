@@ -82,8 +82,8 @@ CanvasCaptureMediaStreamTrack::CanvasCaptureMediaStreamTrack(
   if (frame_rate == 0) {
     draw_listener_ = OnRequestCanvasDrawListener::Create(std::move(handler));
   } else {
-    draw_listener_ =
-        TimedCanvasDrawListener::Create(std::move(handler), frame_rate);
+    draw_listener_ = TimedCanvasDrawListener::Create(
+        std::move(handler), frame_rate, element->GetExecutionContext());
   }
   canvas_element_->AddListener(draw_listener_.Get());
 }
