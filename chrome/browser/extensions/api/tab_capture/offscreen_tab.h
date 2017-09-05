@@ -44,6 +44,10 @@ class OffscreenTabsOwner
   // background page's WebContents.  Never returns nullptr.
   static OffscreenTabsOwner* Get(content::WebContents* extension_web_contents);
 
+  // Returns |true| if |profile| is associated with an offscreen tab, false
+  // otherwise.
+  static bool IsOffscreenProfile(const Profile* profile);
+
   // Instantiate a new offscreen tab and navigate it to |start_url|.  The new
   // tab's main frame will start out with the given |initial_size| in DIP
   // coordinates.  If too many offscreen tabs are already running, nothing

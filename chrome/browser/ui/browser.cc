@@ -50,6 +50,7 @@
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/download/download_core_service.h"
 #include "chrome/browser/download/download_core_service_factory.h"
+#include "chrome/browser/extensions/api/tab_capture/offscreen_tab.h"
 #include "chrome/browser/extensions/api/tabs/tabs_event_router.h"
 #include "chrome/browser/extensions/api/tabs/tabs_windows_api.h"
 #include "chrome/browser/extensions/browser_extension_window_controller.h"
@@ -552,9 +553,14 @@ Browser::~Browser() {
   // This cannot be fixed in ProfileDestroyer::DestroyProfileWhenAppropriate(),
   // because the ProfileManager needs to be able to destroy all profiles when
   // it is destroyed. See crbug.com/527035
+  //
+  // A profile used to render an offscreen tab should not be destroyed while
+  // that tab is still alive.  The offscreen tab is not associated with a
+  // browser (similar to the user manager window case). See crbug.com/664351
   if (profile_->IsOffTheRecord() &&
       !BrowserList::IsIncognitoSessionActiveForProfile(profile_) &&
-      !profile_->GetOriginalProfile()->IsSystemProfile()) {
+      !profile_->GetOriginalProfile()->IsSystemProfile() &&
+      !extensions::OffscreenTabsOwner::IsOffscreenProfile(profile_)) {
     if (profile_->IsGuestSession()) {
 // ChromeOS handles guest data independently.
 #if !defined(OS_CHROMEOS)

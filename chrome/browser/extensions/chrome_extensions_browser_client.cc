@@ -109,8 +109,15 @@ bool ChromeExtensionsBrowserClient::IsValidContext(
 bool ChromeExtensionsBrowserClient::IsSameContext(
     content::BrowserContext* first,
     content::BrowserContext* second) {
-  return static_cast<Profile*>(first)->IsSameProfile(
-      static_cast<Profile*>(second));
+  Profile* first_profile = Profile::FromBrowserContext(first);
+  Profile* second_profile = Profile::FromBrowserContext(second);
+  // TODO(crbug.com/727487): We need to check both ways because of offscreen
+  // presentation profiles, which are not registered with the original profile.
+  // This can be reverted to check just first->IsSameProfile(second) when Bug
+  // 727487 is fixed and presentations have a proper profile type.  See Bug
+  // 664351 for background.
+  return first_profile->IsSameProfile(second_profile) ||
+         second_profile->IsSameProfile(first_profile);
 }
 
 bool ChromeExtensionsBrowserClient::HasOffTheRecordContext(
