@@ -36,17 +36,18 @@ enum VREye {
     long requestAnimationFrame(FrameRequestCallback callback);
     void cancelAnimationFrame(long handle);
 
-    // Begin presenting to the VRDisplay. Must be called in response to a user gesture.
-    // Repeat calls while already presenting will update the VRLayer being displayed.
-    [CallWith=ScriptState] Promise requestPresent(sequence<VRLayer> layers);
+    // Begin presenting to the VRDisplay. Must be called in response to a user
+    // gesture. Repeat calls while already presenting will update the layer
+    // being displayed.
+    [CallWith=ScriptState] Promise requestPresent(sequence<VRLayerInit> layers);
 
     // Stops presenting to the VRDisplay.
     [CallWith=ScriptState] Promise exitPresent();
 
     // Get the sources currently being presented.
-    sequence<VRLayer> getLayers();
+    sequence<VRLayerInit> getLayers();
 
-    // The VRLayer provided to the `VRDisplay` will be captured and presented
+    // The layer provided to the `VRDisplay` will be captured and presented
     // in the HMD. Calling this function has the same effect on the source
     // canvas as any other operation that uses its source image, and canvases
     // created without preserveDrawingBuffer set to true will be cleared.

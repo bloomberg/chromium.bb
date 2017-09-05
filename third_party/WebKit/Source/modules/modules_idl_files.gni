@@ -544,7 +544,7 @@ modules_dictionary_idl_files =
                     "speech/SpeechRecognitionEventInit.idl",
                     "storage/StorageEventInit.idl",
                     "vr/VRDisplayEventInit.idl",
-                    "vr/VRLayer.idl",
+                    "vr/VRLayerInit.idl",
                     "webaudio/AnalyserOptions.idl",
                     "webaudio/AudioBufferOptions.idl",
                     "webaudio/AudioBufferSourceOptions.idl",
