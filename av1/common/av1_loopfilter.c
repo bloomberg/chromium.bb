@@ -679,6 +679,27 @@ void av1_loop_filter_init(AV1_COMMON *cm) {
     memset(lfi->lfthr[lvl].hev_thr, (lvl >> 4), SIMD_WIDTH);
 }
 
+#if CONFIG_LPF_SB
+void av1_loop_filter_sb_level_init(AV1_COMMON *cm, int mi_row, int mi_col,
+                                   int lvl) {
+  const int mi_row_start = AOMMAX(0, mi_row - FILT_BOUNDARY_MI_OFFSET);
+  const int mi_col_start = AOMMAX(0, mi_col - FILT_BOUNDARY_MI_OFFSET);
+  const int mi_row_range = mi_row - FILT_BOUNDARY_MI_OFFSET + MAX_MIB_SIZE;
+  const int mi_col_range = mi_col - FILT_BOUNDARY_MI_OFFSET + MAX_MIB_SIZE;
+  const int mi_row_end = AOMMIN(mi_row_range, cm->mi_rows);
+  const int mi_col_end = AOMMIN(mi_col_range, cm->mi_cols);
+
+  int row, col;
+  for (row = mi_row_start; row < mi_row_end; ++row) {
+    for (col = mi_col_start; col < mi_col_end; ++col) {
+      // Note: can't use cm->mi_grid_visible. Because for each partition,
+      // all visible pointers will point to the first of the partition.
+      cm->mi[row * cm->mi_stride + col].mbmi.filt_lvl = lvl;
+    }
+  }
+}
+#endif  // CONFIG_LPF_SB
+
 void av1_loop_filter_frame_init(AV1_COMMON *cm, int default_filt_lvl,
                                 int default_filt_lvl_r) {
   int seg_id;
@@ -2958,9 +2979,21 @@ static void av1_filter_block_plane_vert(
   const uint32_t scale_vert = plane_ptr->subsampling_y;
   uint8_t *const dst_ptr = plane_ptr->dst.buf;
   const int dst_stride = plane_ptr->dst.stride;
-  for (int y = 0; y < (MAX_MIB_SIZE >> scale_vert); y += row_step) {
+#if CONFIG_LPF_SB
+  int y_range = mi_row ? MAX_MIB_SIZE : MAX_MIB_SIZE - FILT_BOUNDARY_MI_OFFSET;
+  y_range = AOMMIN(y_range, cm->mi_rows);
+  y_range >>= scale_vert;
+
+  int x_range = mi_col ? MAX_MIB_SIZE : MAX_MIB_SIZE - FILT_BOUNDARY_MI_OFFSET;
+  x_range = AOMMIN(x_range, cm->mi_cols);
+  x_range >>= scale_horz;
+#else
+  const int y_range = (MAX_MIB_SIZE >> scale_vert);
+  const int x_range = (MAX_MIB_SIZE >> scale_horz);
+#endif  // CONFIG_LPF_SB
+  for (int y = 0; y < y_range; y += row_step) {
     uint8_t *p = dst_ptr + y * MI_SIZE * dst_stride;
-    for (int x = 0; x < (MAX_MIB_SIZE >> scale_horz); x += col_step) {
+    for (int x = 0; x < x_range; x += col_step) {
       // inner loop always filter vertical edges in a MI block. If MI size
       // is 8x8, it will filter the vertical edge aligned with a 8x8 block.
       // If 4x4 trasnform is used, it will then filter the internal edge
@@ -3144,9 +3177,21 @@ static void av1_filter_block_plane_horz(
   const uint32_t scale_vert = plane_ptr->subsampling_y;
   uint8_t *const dst_ptr = plane_ptr->dst.buf;
   const int dst_stride = plane_ptr->dst.stride;
-  for (int y = 0; y < (MAX_MIB_SIZE >> scale_vert); y += row_step) {
+#if CONFIG_LPF_SB
+  int y_range = mi_row ? MAX_MIB_SIZE : MAX_MIB_SIZE - FILT_BOUNDARY_MI_OFFSET;
+  y_range = AOMMIN(y_range, cm->mi_rows);
+  y_range >>= scale_vert;
+
+  int x_range = mi_col ? MAX_MIB_SIZE : MAX_MIB_SIZE - FILT_BOUNDARY_MI_OFFSET;
+  x_range = AOMMIN(x_range, cm->mi_cols);
+  x_range >>= scale_horz;
+#else
+  const int y_range = (MAX_MIB_SIZE >> scale_vert);
+  const int x_range = (MAX_MIB_SIZE >> scale_horz);
+#endif  // CONFIG_LPF_SB
+  for (int y = 0; y < y_range; y += row_step) {
     uint8_t *p = dst_ptr + y * MI_SIZE * dst_stride;
-    for (int x = 0; x < (MAX_MIB_SIZE >> scale_horz); x += col_step) {
+    for (int x = 0; x < x_range; x += col_step) {
       // inner loop always filter vertical edges in a MI block. If MI size
       // is 8x8, it will first filter the vertical edge aligned with a 8x8
       // block. If 4x4 trasnform is used, it will then filter the internal
@@ -3503,19 +3548,14 @@ void av1_loop_filter_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
   // for superblock, no longer for the whole frame.
   // When partial_frame is 0, it's in the actual filtering stage for the frame
   if (partial_frame) {
-    start_mi_row = mi_row;
-    end_mi_row = mi_row + cm->mib_size;
-    start_mi_col = mi_col;
-    end_mi_col = mi_col + cm->mib_size;
-    int row, col;
-    for (row = mi_row; row < mi_row + MAX_MIB_SIZE && row < cm->mi_rows;
-         ++row) {
-      for (col = mi_col; col < mi_col + MAX_MIB_SIZE && col < cm->mi_cols;
-           ++col) {
-        cm->mi_grid_visible[row * cm->mi_stride + col]->mbmi.filt_lvl =
-            frame_filter_level;
-      }
-    }
+    start_mi_row = AOMMAX(0, mi_row - FILT_BOUNDARY_MI_OFFSET);
+    start_mi_col = AOMMAX(0, mi_col - FILT_BOUNDARY_MI_OFFSET);
+    const int mi_row_range = mi_row - FILT_BOUNDARY_MI_OFFSET + MAX_MIB_SIZE;
+    const int mi_col_range = mi_col - FILT_BOUNDARY_MI_OFFSET + MAX_MIB_SIZE;
+    end_mi_row = AOMMIN(mi_row_range, cm->mi_rows);
+    end_mi_col = AOMMIN(mi_col_range, cm->mi_cols);
+
+    av1_loop_filter_sb_level_init(cm, mi_row, mi_col, frame_filter_level);
   } else {
     start_mi_row = 0;
     mi_rows_to_filter = cm->mi_rows;

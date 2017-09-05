@@ -85,6 +85,10 @@ extern "C" {
 #if CONFIG_LPF_SB
 #define LPF_DELTA_BITS 3
 #define MAX_LPF_OFFSET ((1 << LPF_DELTA_BITS) - 1)
+
+// Half of maximum loop filter length (15-tap)
+#define FILT_BOUNDARY_OFFSET 8
+#define FILT_BOUNDARY_MI_OFFSET (FILT_BOUNDARY_OFFSET >> MI_SIZE_LOG2)
 #endif  // CONFIG_LPF_SB
 
 // Bitstream profiles indicated by 2-3 bits in the uncompressed header.

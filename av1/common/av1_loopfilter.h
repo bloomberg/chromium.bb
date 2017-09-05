@@ -152,6 +152,9 @@ void av1_loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer,
                           struct macroblockd_plane planes[MAX_MB_PLANE],
                           int start, int stop, int col_start, int col_end,
                           int y_only);
+
+void av1_loop_filter_sb_level_init(struct AV1Common *cm, int mi_row, int mi_col,
+                                   int lvl);
 #else
 void av1_loop_filter_frame(YV12_BUFFER_CONFIG *frame, struct AV1Common *cm,
                            struct macroblockd *mbd, int filter_level,

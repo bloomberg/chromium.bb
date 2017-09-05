@@ -2570,16 +2570,8 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
         }
       }
     }
-    int row, col;
-    // set filter level for each mbmi
-    for (row = mi_row; row < mi_row + MAX_MIB_SIZE && row < cm->mi_rows;
-         ++row) {
-      for (col = mi_col; col < mi_col + MAX_MIB_SIZE && col < cm->mi_cols;
-           ++col) {
-        cm->mi_grid_visible[row * cm->mi_stride + col]->mbmi.filt_lvl =
-            filt_lvl;
-      }
-    }
+
+    av1_loop_filter_sb_level_init(cm, mi_row, mi_col, filt_lvl);
   }
 #endif
 

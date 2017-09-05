@@ -31,17 +31,28 @@
 #if CONFIG_HIGHBITDEPTH
 static int64_t compute_sb_y_sse_highbd(const YV12_BUFFER_CONFIG *src,
                                        const YV12_BUFFER_CONFIG *frame,
-                                       int mi_row, int mi_col) {
+                                       AV1_COMMON *const cm, int mi_row,
+                                       int mi_col) {
   int64_t sse = 0;
-  const int row = mi_row * MI_SIZE;
-  const int col = mi_col * MI_SIZE;
+  const int mi_row_start = AOMMAX(0, mi_row - FILT_BOUNDARY_MI_OFFSET);
+  const int mi_col_start = AOMMAX(0, mi_col - FILT_BOUNDARY_MI_OFFSET);
+  const int mi_row_range = mi_row - FILT_BOUNDARY_MI_OFFSET + MAX_MIB_SIZE;
+  const int mi_col_range = mi_col - FILT_BOUNDARY_MI_OFFSET + MAX_MIB_SIZE;
+  const int mi_row_end = AOMMIN(mi_row_range, cm->mi_rows);
+  const int mi_col_end = AOMMIN(mi_col_range, cm->mi_cols);
+
+  const int row = mi_row_start * MI_SIZE;
+  const int col = mi_col_start * MI_SIZE;
   const uint16_t *src_y =
       CONVERT_TO_SHORTPTR(src->y_buffer) + row * src->y_stride + col;
   const uint16_t *frame_y =
       CONVERT_TO_SHORTPTR(frame->y_buffer) + row * frame->y_stride + col;
+  const int row_end = (mi_row_end - mi_row_start) * MI_SIZE;
+  const int col_end = (mi_col_end - mi_col_start) * MI_SIZE;
+
   int x, y;
-  for (y = 0; y < MAX_MIB_SIZE * MI_SIZE; ++y) {
-    for (x = 0; x < MAX_MIB_SIZE * MI_SIZE; ++x) {
+  for (y = 0; y < row_end; ++y) {
+    for (x = 0; x < col_end; ++x) {
       const int diff = src_y[x] - frame_y[x];
       sse += diff * diff;
     }
@@ -53,16 +64,26 @@ static int64_t compute_sb_y_sse_highbd(const YV12_BUFFER_CONFIG *src,
 #endif
 
 static int64_t compute_sb_y_sse(const YV12_BUFFER_CONFIG *src,
-                                const YV12_BUFFER_CONFIG *frame, int mi_row,
-                                int mi_col) {
+                                const YV12_BUFFER_CONFIG *frame,
+                                AV1_COMMON *const cm, int mi_row, int mi_col) {
   int64_t sse = 0;
-  const int row = mi_row * MI_SIZE;
-  const int col = mi_col * MI_SIZE;
+  const int mi_row_start = AOMMAX(0, mi_row - FILT_BOUNDARY_MI_OFFSET);
+  const int mi_col_start = AOMMAX(0, mi_col - FILT_BOUNDARY_MI_OFFSET);
+  const int mi_row_range = mi_row - FILT_BOUNDARY_MI_OFFSET + MAX_MIB_SIZE;
+  const int mi_col_range = mi_col - FILT_BOUNDARY_MI_OFFSET + MAX_MIB_SIZE;
+  const int mi_row_end = AOMMIN(mi_row_range, cm->mi_rows);
+  const int mi_col_end = AOMMIN(mi_col_range, cm->mi_cols);
+
+  const int row = mi_row_start * MI_SIZE;
+  const int col = mi_col_start * MI_SIZE;
   const uint8_t *src_y = src->y_buffer + row * src->y_stride + col;
   const uint8_t *frame_y = frame->y_buffer + row * frame->y_stride + col;
+  const int row_end = (mi_row_end - mi_row_start) * MI_SIZE;
+  const int col_end = (mi_col_end - mi_col_start) * MI_SIZE;
+
   int x, y;
-  for (y = 0; y < MAX_MIB_SIZE * MI_SIZE; ++y) {
-    for (x = 0; x < MAX_MIB_SIZE * MI_SIZE; ++x) {
+  for (y = 0; y < row_end; ++y) {
+    for (x = 0; x < col_end; ++x) {
       const int diff = src_y[x] - frame_y[x];
       sse += diff * diff;
     }
@@ -96,9 +117,10 @@ int av1_get_max_filter_level(const AV1_COMP *cpi) {
 
 #if CONFIG_LPF_SB
 // TODO(chengchen): reduce memory usage by copy superblock instead of frame
-static int64_t try_filter_frame(const YV12_BUFFER_CONFIG *sd,
-                                AV1_COMP *const cpi, int filt_level,
-                                int partial_frame, int mi_row, int mi_col) {
+static int64_t try_filter_superblock(const YV12_BUFFER_CONFIG *sd,
+                                     AV1_COMP *const cpi, int filt_level,
+                                     int partial_frame, int mi_row,
+                                     int mi_col) {
   AV1_COMMON *const cm = &cpi->common;
   int64_t filt_err;
 
@@ -117,12 +139,13 @@ static int64_t try_filter_frame(const YV12_BUFFER_CONFIG *sd,
 
 #if CONFIG_HIGHBITDEPTH
   if (cm->use_highbitdepth) {
-    filt_err = compute_sb_y_sse_highbd(sd, cm->frame_to_show, mi_row, mi_col);
+    filt_err =
+        compute_sb_y_sse_highbd(sd, cm->frame_to_show, cm, mi_row, mi_col);
   } else {
-    filt_err = compute_sb_y_sse(sd, cm->frame_to_show, mi_row, mi_col);
+    filt_err = compute_sb_y_sse(sd, cm->frame_to_show, cm, mi_row, mi_col);
   }
 #else
-  filt_err = compute_sb_y_sse(sd, cm->frame_to_show, mi_row, mi_col);
+  filt_err = compute_sb_y_sse(sd, cm->frame_to_show, cm, mi_row, mi_col);
 #endif  // CONFIG_HIGHBITDEPTH
 
   // TODO(chengchen): Copy the superblock only
@@ -135,6 +158,9 @@ static int64_t try_filter_frame(const YV12_BUFFER_CONFIG *sd,
 static int search_filter_level(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi,
                                int partial_frame, double *best_cost_ret,
                                int mi_row, int mi_col, int last_lvl) {
+  assert(partial_frame == 1);
+  assert(last_lvl >= 0);
+
   const AV1_COMMON *const cm = &cpi->common;
   const int min_filter_level = AOMMAX(0, last_lvl - MAX_LPF_OFFSET);
   const int max_filter_level =
@@ -143,18 +169,20 @@ static int search_filter_level(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi,
   int filt_best = last_lvl;
   MACROBLOCK *x = &cpi->td.mb;
 
+  // TODO(chengchen): Copy for superblock only
   // Make a copy of the unfiltered / processed recon buffer
   aom_yv12_copy_y(cm->frame_to_show, &cpi->last_frame_uf);
 
   int64_t estimate_err =
-      try_filter_frame(sd, cpi, last_lvl, partial_frame, mi_row, mi_col);
+      try_filter_superblock(sd, cpi, last_lvl, partial_frame, mi_row, mi_col);
 
   int i;
   for (i = min_filter_level; i <= max_filter_level; ++i) {
     if (i == last_lvl) continue;
 
     int64_t filt_err =
-        try_filter_frame(sd, cpi, i, partial_frame, mi_row, mi_col);
+        try_filter_superblock(sd, cpi, i, partial_frame, mi_row, mi_col);
+
     if (filt_err < best_err) {
       best_err = filt_err;
       filt_best = i;
@@ -164,7 +192,27 @@ static int search_filter_level(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi,
   // If previous sb filter level has similar filtering performance as current
   // best filter level, use previous level such that we can only send one bit
   // to indicate current filter level is the same as the previous.
-  const int64_t threshold = 700;
+  int64_t threshold = 700;
+
+  // ratio = the filtering area / a superblock size
+  int64_t ratio = 1;
+  if (mi_row + MAX_MIB_SIZE > cm->mi_rows) {
+    ratio *= (cm->mi_rows - mi_row);
+  } else {
+    if (mi_row == 0) {
+      ratio *= (MAX_MIB_SIZE - FILT_BOUNDARY_MI_OFFSET);
+    }
+  }
+  if (mi_col + MAX_MIB_SIZE > cm->mi_cols) {
+    ratio *= (cm->mi_cols - mi_col);
+  } else {
+    if (mi_col == 0) {
+      ratio *= (MAX_MIB_SIZE - FILT_BOUNDARY_MI_OFFSET);
+    }
+  }
+  threshold = threshold * ratio / (MAX_MIB_SIZE * MAX_MIB_SIZE);
+
+  // TODO(chengchen): shall the first superblock always send full filter level?
   if ((mi_row > 0 || mi_col > 0) && abs(estimate_err - best_err) < threshold) {
     best_err = estimate_err;
     filt_best = last_lvl;
@@ -402,19 +450,18 @@ void av1_pick_filter_level(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi,
   } else {
 #if CONFIG_LPF_SB
     int mi_row, mi_col;
+    // TODO(chengchen): init last_lvl using previous frame's info?
     int last_lvl = 0;
+    // TODO(chengchen): if the frame size makes the last superblock very small,
+    // consider merge it to the previous superblock to save bits.
+    // Example, if frame size 1080x720, then in the last row of superblock,
+    // there're (FILT_BOUNDAR_OFFSET + 16) pixels.
     for (mi_row = 0; mi_row < cm->mi_rows; mi_row += MAX_MIB_SIZE) {
       for (mi_col = 0; mi_col < cm->mi_cols; mi_col += MAX_MIB_SIZE) {
         int lvl =
             search_filter_level(sd, cpi, 1, NULL, mi_row, mi_col, last_lvl);
-        int row, col;
-        for (row = mi_row; row < mi_row + MAX_MIB_SIZE && row < cm->mi_rows;
-             ++row) {
-          for (col = mi_col; col < mi_col + MAX_MIB_SIZE && col < cm->mi_cols;
-               ++col) {
-            cm->mi_grid_visible[row * cm->mi_stride + col]->mbmi.filt_lvl = lvl;
-          }
-        }
+
+        av1_loop_filter_sb_level_init(cm, mi_row, mi_col, lvl);
 
         // For the superblock at row start, its previous filter level should be
         // the one above it, not the one at the end of last row
@@ -425,7 +472,7 @@ void av1_pick_filter_level(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi,
         }
       }
     }
-#else
+#else  // CONFIG_LPF_SB
 #if CONFIG_LOOPFILTER_LEVEL
     lf->filter_level[0] = lf->filter_level[1] = search_filter_level(
         sd, cpi, method == LPF_PICK_FROM_SUBIMAGE, NULL, 0, 2);
