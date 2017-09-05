@@ -696,7 +696,6 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
 • Redesigned user interface.
 • Improved performance, responsiveness and reliability.
 • Support for playing audio from Windows or Linux computers.
-• Enhanced keyboard support.
         </message>
       </if>  <!-- is_android or is_ios -->
 
