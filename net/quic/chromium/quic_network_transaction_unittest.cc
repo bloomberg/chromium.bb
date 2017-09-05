@@ -4860,7 +4860,8 @@ TEST_P(QuicNetworkTransactionTest, QuicForceHolBlocking) {
       GetRequestHeaders("POST", "https", "/"), &offset));
 
   std::unique_ptr<QuicEncryptedPacket> packet;
-  if (version_ == QUIC_VERSION_36) {
+  if (version_ == QUIC_VERSION_36 &&
+      !FLAGS_quic_reloadable_flag_quic_use_stream_notifier2) {
     packet = ConstructClientForceHolDataPacket(
         3, GetNthClientInitiatedStreamId(0), true, true, &offset, "1");
   } else {
