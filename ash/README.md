@@ -38,6 +38,36 @@ Out-of-process Ash is referred to as "mash" (mojo ash). In-process ash is
 referred to as "classic ash". Ash can run in either mode depending on the
 --mash command line flag.
 
+Prefs
+-----
+Ash supports both per-user prefs and device-wide prefs. These are called
+"profile prefs" and "local state" to match the naming conventions in chrome. Ash
+also supports "signin screen" prefs, bound to a special profile that allows
+users to toggle features like spoken feedback at the login screen.
+
+Local state prefs are loaded asynchronously during startup. User prefs are
+loaded asynchronously after login, and after adding a multiprofile user. Code
+that wants to observe prefs must wait until they are loaded. See
+ShellObserver::OnLocalStatePrefServiceInitialized() and
+SessionObserver::OnActiveUserPrefServiceChanged(). All PrefService objects exist
+for the lifetime of the login session, including the signin prefs.
+
+Pref names are in //ash/public/cpp so that code in chrome can also use the
+names. Prefs are registered in the classes that use them because those classes
+have the best knowledge of default values.
+
+All PrefService instances in ash are backed by the mojo preferences service.
+This means an update to a pref is asynchronous between code in ash and code in
+chrome. For example, if code in chrome changes a pref value then immediately
+calls a C++ function in ash, that ash function may not see the new value yet.
+(This pattern only happens in the classic ash configuration; code in chrome
+cannot call directly into the ash process in the mash config.)
+
+Prefs are either "owned" by ash or by chrome browser. New prefs used by ash
+should be owned by ash. See NightLightController and LogoutButtonTray for
+examples of ash-owned prefs. See //services/preferences/README.md for details of
+pref ownership and "foreign" prefs.
+
 Historical notes
 ----------------
 Ash shipped on Windows for a couple years to support Windows 8 Metro mode.
