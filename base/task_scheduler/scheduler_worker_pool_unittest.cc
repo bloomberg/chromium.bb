@@ -129,8 +129,10 @@ class TaskSchedulerWorkerPoolTest
       case PoolType::GENERIC: {
         SchedulerWorkerPoolImpl* scheduler_worker_pool_impl =
             static_cast<SchedulerWorkerPoolImpl*>(worker_pool_.get());
-        scheduler_worker_pool_impl->Start(SchedulerWorkerPoolParams(
-            kNumWorkersInWorkerPool, TimeDelta::Max()));
+        scheduler_worker_pool_impl->Start(
+            SchedulerWorkerPoolParams(kNumWorkersInWorkerPool,
+                                      TimeDelta::Max()),
+            service_thread_.task_runner());
         break;
       }
 #if defined(OS_WIN)

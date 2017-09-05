@@ -18,6 +18,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/atomic_flag.h"
 #include "base/synchronization/condition_variable.h"
+#include "base/task_runner.h"
 #include "base/task_scheduler/priority_queue.h"
 #include "base/task_scheduler/scheduler_lock.h"
 #include "base/task_scheduler/scheduler_worker.h"
@@ -60,8 +61,10 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
       DelayedTaskManager* delayed_task_manager);
 
   // Creates workers following the |params| specification, allowing existing and
-  // future tasks to run. Can only be called once. CHECKs on failure.
-  void Start(const SchedulerWorkerPoolParams& params);
+  // future tasks to run. Uses |service_thread_task_runner| to monitor for
+  // blocked threads in the pool. Can only be called once. CHECKs on failure.
+  void Start(const SchedulerWorkerPoolParams& params,
+             scoped_refptr<TaskRunner> service_thread_task_runner);
 
   // Destroying a SchedulerWorkerPoolImpl returned by Create() is not allowed in
   // production; it is always leaked. In tests, it can only be destroyed after
@@ -108,8 +111,22 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   // Returns the number of workers that are idle (i.e. not running tasks).
   size_t NumberOfIdleWorkersForTesting();
 
+  // Sets the MayBlock waiting threshold to TimeDelta::Max().
+  void MaximizeMayBlockThresholdForTesting();
+
  private:
   class SchedulerWorkerDelegateImpl;
+
+  // Friend tests so that they can access |kBlockedWorkersPollPeriod| and
+  // BlockedThreshold().
+  friend class TaskSchedulerWorkerPoolBlockingEnterExitTest;
+  friend class TaskSchedulerWorkerPoolMayBlockTest;
+
+  // The period between calls to AdjustWorkerCapacity() when the pool is at
+  // capacity. This value was set unscientifically based on intuition and may be
+  // adjusted in the future.
+  static constexpr TimeDelta kBlockedWorkersPollPeriod =
+      TimeDelta::FromMilliseconds(50);
 
   SchedulerWorkerPoolImpl(const SchedulerWorkerPoolParams& params,
                           TaskTracker* task_tracker,
@@ -154,6 +171,26 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   // the pool being over worker capacity.
   size_t NumberOfExcessWorkersLockRequired() const;
 
+  // Examines the list of SchedulerWorkers and increments |worker_capacity_| for
+  // each worker that has been within the scope of a MAY_BLOCK
+  // ScopedBlockingCall for more than BlockedThreshold().
+  void AdjustWorkerCapacity();
+
+  // Returns the threshold after which the worker capacity is increased to
+  // compensate for a worker that is within a MAY_BLOCK ScopedBlockingCall.
+  TimeDelta MayBlockThreshold() const;
+
+  // Starts calling AdjustWorkerCapacity() periodically on
+  // |service_thread_task_runner_|.
+  void PostAdjustWorkerCapacityTaskLockRequired();
+
+  // Returns true if AdjustWorkerCapacity() should periodically be called on
+  // |service_thread_task_runner_|.
+  bool ShouldPeriodicallyAdjustWorkerCapacityLockRequired();
+
+  void DecrementWorkerCapacityLockRequired();
+  void IncrementWorkerCapacityLockRequired();
+
   const std::string name_;
   const ThreadPriority priority_hint_;
 
@@ -167,12 +204,14 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   SchedulerBackwardCompatibility backward_compatibility_;
 
   // Synchronizes accesses to |workers_|, |worker_capacity_|,
-  // |idle_workers_stack_|, |idle_workers_stack_cv_for_testing_|,
-  // |num_wake_ups_before_start_|, |cleanup_timestamps_|,
-  // |SchedulerWorkerDelegateImpl::is_on_idle_workers_stack_|, and
-  // |SchedulerWorkerDelegateImpl::increased_worker_capacity_since_blocked_|.
-  // Has |shared_priority_queue_|'s lock as its predecessor so that a worker can
-  // be pushed to |idle_workers_stack_| within the scope of a Transaction (more
+  // |num_pending_may_block_workers_|, |idle_workers_stack_|,
+  // |idle_workers_stack_cv_for_testing_|, |num_wake_ups_before_start_|,
+  // |cleanup_timestamps_|, |polling_worker_capacity_|,
+  // |SchedulerWorkerDelegateImpl::is_on_idle_workers_stack_|,
+  // |SchedulerWorkerDelegateImpl::incremented_worker_capacity_since_blocked_|
+  // and |SchedulerWorkerDelegateImpl::may_block_start_time_|. Has
+  // |shared_priority_queue_|'s lock as its predecessor so that a worker can be
+  // pushed to |idle_workers_stack_| within the scope of a Transaction (more
   // details in GetWork()).
   mutable SchedulerLock lock_;
 
@@ -185,6 +224,10 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
 
   // Initial value of |worker_capacity_| as set in Start().
   size_t initial_worker_capacity_ = 0;
+
+  // Number workers that are within the scope of a MAY_BLOCK ScopedBlockingCall
+  // but haven't caused a worker capacity increase yet.
+  int num_pending_may_block_workers_ = 0;
 
   // Stack of idle workers. Initially, all workers are on this stack. A worker
   // is removed from the stack before its WakeUp() function is called and when
@@ -203,6 +246,14 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   // Stack that contains the timestamps of when workers get cleaned up.
   // Timestamps get popped off the stack as new workers are added.
   std::stack<TimeTicks, std::vector<TimeTicks>> cleanup_timestamps_;
+
+  // Whether we are currently polling for necessary adjustments to
+  // |worker_capacity_|.
+  bool polling_worker_capacity_ = false;
+
+  // Used for testing and makes MayBlockThreshold() return the maximum
+  // TimeDelta.
+  AtomicFlag maximum_blocked_threshold_for_testing_;
 
   // Signaled once JoinForTesting() has returned.
   WaitableEvent join_for_testing_returned_;
@@ -226,6 +277,8 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   // TaskScheduler.NumTasksBetweenWaits.[worker pool name] histogram.
   // Intentionally leaked.
   HistogramBase* const num_tasks_between_waits_histogram_;
+
+  scoped_refptr<TaskRunner> service_thread_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(SchedulerWorkerPoolImpl);
 };
