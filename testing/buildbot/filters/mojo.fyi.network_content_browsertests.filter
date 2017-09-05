@@ -134,10 +134,6 @@
 -WebContentsImplBrowserTest.UserAgentOverride
 -WorkerFetchTest.*
 
-# crbug.com/760581
--ResourceFetcherTests.ResourceFetcherTimeout
--ResourceFetcherTests.ResourceFetcherDeletedInCallback
-
 # content/network/url_loader_impl.cc should handle failure in
 # URLLoaderImpl::OnResponseBodyStreamRead(). Note this is flaky, so it will pass
 # sometimes.

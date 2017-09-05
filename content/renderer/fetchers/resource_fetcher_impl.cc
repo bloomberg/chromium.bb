@@ -57,7 +57,10 @@ class ResourceFetcherImpl::ClientImpl : public mojom::URLLoaderClient {
         maximum_download_size_(maximum_download_size),
         callback_(std::move(callback)) {}
 
-  ~ClientImpl() override {}
+  ~ClientImpl() override {
+    callback_ = Callback();
+    Cancel();
+  }
 
   void Start(const ResourceRequest& request,
              mojom::URLLoaderFactory* url_loader_factory,
@@ -78,12 +81,8 @@ class ResourceFetcherImpl::ClientImpl : public mojom::URLLoaderClient {
 
   void Cancel() {
     ClearReceivedDataToFail();
-
-    // Close will invoke OnComplete() eventually.
+    completed_ = true;
     Close();
-
-    // Reset |loader_| to avoid unexpected other callbacks invocations.
-    loader_.reset();
   }
 
   bool IsActive() const {
@@ -209,6 +208,10 @@ class ResourceFetcherImpl::ClientImpl : public mojom::URLLoaderClient {
     ReadDataPipe();
   }
   void OnComplete(const ResourceRequestCompletionStatus& status) override {
+    // When Cancel() sets |complete_|, OnComplete() may be called.
+    if (completed_)
+      return;
+
     DCHECK(IsActive()) << "status: " << static_cast<int>(status_);
     if (status.error_code != net::OK) {
       ClearReceivedDataToFail();
@@ -253,8 +256,7 @@ ResourceFetcherImpl::ResourceFetcherImpl(const GURL& url) {
 }
 
 ResourceFetcherImpl::~ResourceFetcherImpl() {
-  if (client_->IsActive())
-    client_->Cancel();
+  client_.reset();
 }
 
 void ResourceFetcherImpl::SetMethod(const std::string& method) {
