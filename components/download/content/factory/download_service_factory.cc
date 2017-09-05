@@ -4,6 +4,7 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
+#include "components/download/content/factory/navigation_monitor_factory.h"
 #include "components/download/content/internal/download_driver_impl.h"
 #include "components/download/internal/client_set.h"
 #include "components/download/internal/config.h"
@@ -44,14 +45,18 @@ DownloadService* CreateDownloadService(
   auto model = base::MakeUnique<ModelImpl>(std::move(store));
   auto device_status_listener =
       base::MakeUnique<DeviceStatusListener>(config->network_change_delay);
+  NavigationMonitor* navigation_monitor =
+      NavigationMonitorFactory::GetForBrowserContext(
+          download_manager->GetBrowserContext());
   auto scheduler = base::MakeUnique<SchedulerImpl>(
       task_scheduler.get(), config.get(), client_set.get());
   auto file_monitor = base::MakeUnique<FileMonitorImpl>(
       files_storage_dir, background_task_runner, config->file_keep_alive_time);
   auto controller = base::MakeUnique<ControllerImpl>(
       config.get(), std::move(client_set), std::move(driver), std::move(model),
-      std::move(device_status_listener), std::move(scheduler),
-      std::move(task_scheduler), std::move(file_monitor), files_storage_dir);
+      std::move(device_status_listener), navigation_monitor,
+      std::move(scheduler), std::move(task_scheduler), std::move(file_monitor),
+      files_storage_dir);
   return new DownloadServiceImpl(std::move(config), std::move(controller));
 }
 

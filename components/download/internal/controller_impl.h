@@ -30,6 +30,7 @@ class ClientSet;
 class DownloadDriver;
 class FileMonitor;
 class Model;
+class NavigationMonitor;
 class Scheduler;
 
 struct Configuration;
@@ -49,6 +50,7 @@ class ControllerImpl : public Controller,
                  std::unique_ptr<DownloadDriver> driver,
                  std::unique_ptr<Model> model,
                  std::unique_ptr<DeviceStatusListener> device_status_listener,
+                 NavigationMonitor* navigation_monitor,
                  std::unique_ptr<Scheduler> scheduler,
                  std::unique_ptr<TaskScheduler> task_scheduler,
                  std::unique_ptr<FileMonitor> file_monitor,
