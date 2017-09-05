@@ -21,7 +21,7 @@
 
 #if defined(OS_WIN)
 #include "ui/platform_window/win/win_window.h"
-#elif defined(USE_X11) && !defined(OS_CHROMEOS)
+#elif defined(USE_X11)
 #include "ui/platform_window/x11/x11_window.h"
 #elif defined(OS_ANDROID)
 #include "ui/platform_window/android/platform_window_android.h"
@@ -74,7 +74,7 @@ void PlatformDisplayDefault::Init(PlatformDisplayDelegate* delegate) {
 
 #if defined(OS_WIN)
   platform_window_ = base::MakeUnique<ui::WinWindow>(this, bounds);
-#elif defined(USE_X11) && !defined(OS_CHROMEOS)
+#elif defined(USE_X11)
   platform_window_ = base::MakeUnique<ui::X11Window>(this, bounds);
 #elif defined(OS_ANDROID)
   platform_window_ = base::MakeUnique<ui::PlatformWindowAndroid>(this);

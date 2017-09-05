@@ -2379,18 +2379,16 @@ split_static_library("browser") {
       "task_manager/providers/arc/arc_process_task_provider.cc",
       "task_manager/providers/arc/arc_process_task_provider.h",
     ]
-    deps += [ "//chrome/browser/chromeos" ]
+    deps += [
+      "//chrome/browser/chromeos",
+      "//services/ui/public/cpp/input_devices",
+      "//services/ui/public/cpp/input_devices:input_device_controller",
+      "//ui/ozone",
+    ]
     public_deps += [
       "//components/metrics/leak_detector:interfaces",
       "//components/metrics/leak_detector:leak_detector",
     ]
-    if (use_ozone) {
-      deps += [
-        "//services/ui/public/cpp/input_devices",
-        "//services/ui/public/cpp/input_devices:input_device_controller",
-        "//ui/ozone",
-      ]
-    }
     allow_circular_includes_from += [ "//chrome/browser/chromeos" ]
   } else {  # Non-ChromeOS.
     sources += [
