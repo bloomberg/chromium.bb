@@ -12,6 +12,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/open_url_util.h"
+#import "ios/chrome/browser/ui/ui_util.h"
 #include "ios/chrome/browser/web/features.h"
 #import "ios/chrome/browser/web/legacy_mailto_url_rewriter.h"
 #import "ios/chrome/browser/web/mailto_handler.h"
@@ -120,11 +121,18 @@ void LaunchMailClientApp(const GURL& URL, MailtoURLRewriter* rewriter) {
 - (void)promptForMailClientWithURL:(const GURL)URL
                        URLRewriter:(MailtoURLRewriter*)rewriter {
   // No user chosen default. Prompt user now.
-  NSString* prompt = l10n_util::GetNSString(IDS_IOS_CHOOSE_EMAIL_CLIENT_APP);
-  UIAlertController* alertController = [UIAlertController
-      alertControllerWithTitle:nil
-                       message:prompt
-                preferredStyle:UIAlertControllerStyleActionSheet];
+  NSString* title =
+      l10n_util::GetNSString(IDS_IOS_CHOOSE_DEFAULT_EMAIL_CLIENT_APP);
+  NSString* subtitle =
+      l10n_util::GetNSString(IDS_IOS_CHOOSE_EMAIL_APP_HOW_TO_CHANGE);
+  // TODO(crbug.com/761519): Use Action Sheet style for iPad as well.
+  UIAlertControllerStyle style = IsIPadIdiom()
+                                     ? UIAlertControllerStyleAlert
+                                     : UIAlertControllerStyleActionSheet;
+  UIAlertController* alertController =
+      [UIAlertController alertControllerWithTitle:title
+                                          message:subtitle
+                                   preferredStyle:style];
   // There must be more than one available handlers to present a prompt to user.
   DCHECK([[rewriter defaultHandlers] count] > 1U);
   for (MailtoHandler* handler in [rewriter defaultHandlers]) {
@@ -140,6 +148,13 @@ void LaunchMailClientApp(const GURL& URL, MailtoURLRewriter* rewriter) {
                 }];
     [alertController addAction:action];
   }
+
+  UIAlertAction* cancelAction =
+      [UIAlertAction actionWithTitle:l10n_util::GetNSString(IDS_CANCEL)
+                               style:UIAlertActionStyleCancel
+                             handler:nil];
+  [alertController addAction:cancelAction];
+
   [[[[UIApplication sharedApplication] keyWindow] rootViewController]
       presentViewController:alertController
                    animated:YES
