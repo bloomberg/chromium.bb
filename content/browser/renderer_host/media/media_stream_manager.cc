@@ -213,6 +213,10 @@ MediaDeviceType ConvertToMediaDeviceType(MediaStreamType stream_type) {
   return NUM_MEDIA_DEVICE_TYPES;
 }
 
+void SendVideoCaptureLogMessage(const std::string& message) {
+  MediaStreamManager::SendMessageToNativeLog("video capture: " + message);
+}
+
 }  // namespace
 
 
@@ -428,9 +432,11 @@ MediaStreamManager::MediaStreamManager(
 #endif
     if (base::FeatureList::IsEnabled(video_capture::kMojoVideoCapture)) {
       video_capture_provider = base::MakeUnique<VideoCaptureProviderSwitcher>(
-          base::MakeUnique<ServiceVideoCaptureProvider>(),
+          base::MakeUnique<ServiceVideoCaptureProvider>(
+              base::BindRepeating(&SendVideoCaptureLogMessage)),
           InProcessVideoCaptureProvider::CreateInstanceForNonDeviceCapture(
-              std::move(device_task_runner)));
+              std::move(device_task_runner),
+              base::BindRepeating(&SendVideoCaptureLogMessage)));
     } else {
       video_capture::uma::LogVideoCaptureServiceEvent(
           video_capture::uma::BROWSER_USING_LEGACY_CAPTURE);
@@ -439,7 +445,8 @@ MediaStreamManager::MediaStreamManager(
               media::VideoCaptureDeviceFactory::CreateFactory(
                   BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
                   BrowserGpuMemoryBufferManager::current())),
-          std::move(device_task_runner));
+          std::move(device_task_runner),
+          base::BindRepeating(&SendVideoCaptureLogMessage));
     }
   }
   InitializeMaybeAsync(std::move(video_capture_provider));
@@ -1295,7 +1302,8 @@ void MediaStreamManager::InitializeMaybeAsync(
           "457525 MediaStreamManager::InitializeDeviceManagersOnIOThread 4"));
 
   video_capture_manager_ =
-      new VideoCaptureManager(std::move(video_capture_provider));
+      new VideoCaptureManager(std::move(video_capture_provider),
+                              base::BindRepeating(&SendVideoCaptureLogMessage));
   video_capture_manager_->RegisterListener(this);
 
   media_devices_manager_.reset(

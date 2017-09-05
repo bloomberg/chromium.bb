@@ -167,12 +167,14 @@ VideoCaptureController::VideoCaptureController(
     const std::string& device_id,
     MediaStreamType stream_type,
     const media::VideoCaptureParams& params,
-    std::unique_ptr<VideoCaptureDeviceLauncher> device_launcher)
+    std::unique_ptr<VideoCaptureDeviceLauncher> device_launcher,
+    base::RepeatingCallback<void(const std::string&)> emit_log_message_cb)
     : serial_id_(g_device_start_id++),
       device_id_(device_id),
       stream_type_(stream_type),
       parameters_(params),
       device_launcher_(std::move(device_launcher)),
+      emit_log_message_cb_(std::move(emit_log_message_cb)),
       device_launch_observer_(nullptr),
       state_(VIDEO_CAPTURE_STATE_STARTING),
       has_received_frames_(false),
@@ -193,9 +195,12 @@ void VideoCaptureController::AddClient(
     media::VideoCaptureSessionId session_id,
     const media::VideoCaptureParams& params) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DVLOG(1) << "VideoCaptureController::AddClient() -- id=" << id
-           << ", session_id=" << session_id << ", params.requested_format="
-           << media::VideoCaptureFormat::ToString(params.requested_format);
+  std::ostringstream string_stream;
+  string_stream << "VideoCaptureController::AddClient(): id = " << id
+                << ", session_id = " << session_id
+                << ", params.requested_format = "
+                << media::VideoCaptureFormat::ToString(params.requested_format);
+  EmitLogMessage(string_stream.str(), 1);
 
   // Check that requested VideoCaptureParams are valid and supported.  If not,
   // report an error immediately and punt.
@@ -242,7 +247,9 @@ int VideoCaptureController::RemoveClient(
     VideoCaptureControllerID id,
     VideoCaptureControllerEventHandler* event_handler) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DVLOG(1) << "VideoCaptureController::RemoveClient, id " << id;
+  std::ostringstream string_stream;
+  string_stream << "VideoCaptureController::RemoveClient: id = " << id;
+  EmitLogMessage(string_stream.str(), 1);
 
   ControllerClient* client = FindClient(id, event_handler, controller_clients_);
   if (!client)
@@ -268,7 +275,7 @@ void VideoCaptureController::PauseClient(
     VideoCaptureControllerID id,
     VideoCaptureControllerEventHandler* event_handler) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DVLOG(1) << "VideoCaptureController::PauseClient, id " << id;
+  DVLOG(1) << "VideoCaptureController::PauseClient: id = " << id;
 
   ControllerClient* client = FindClient(id, event_handler, controller_clients_);
   if (!client)
@@ -283,7 +290,7 @@ bool VideoCaptureController::ResumeClient(
     VideoCaptureControllerID id,
     VideoCaptureControllerEventHandler* event_handler) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DVLOG(1) << "VideoCaptureController::ResumeClient, id " << id;
+  DVLOG(1) << "VideoCaptureController::ResumeClient: id = " << id;
 
   ControllerClient* client = FindClient(id, event_handler, controller_clients_);
   if (!client)
@@ -323,7 +330,10 @@ bool VideoCaptureController::HasPausedClient() const {
 
 void VideoCaptureController::StopSession(int session_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DVLOG(1) << "VideoCaptureController::StopSession, id " << session_id;
+  std::ostringstream string_stream;
+  string_stream << "VideoCaptureController::StopSession: session_id = "
+                << session_id;
+  EmitLogMessage(string_stream.str(), 1);
 
   ControllerClient* client = FindClient(session_id, controller_clients_);
 
@@ -477,7 +487,7 @@ void VideoCaptureController::OnError() {
 
 void VideoCaptureController::OnLog(const std::string& message) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  MediaStreamManager::SendMessageToNativeLog("Video capture: " + message);
+  EmitLogMessage(message, 3);
 }
 
 void VideoCaptureController::OnStarted() {
@@ -532,6 +542,11 @@ void VideoCaptureController::CreateAndStartDeviceAsync(
     VideoCaptureDeviceLaunchObserver* observer,
     base::OnceClosure done_cb) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  std::ostringstream string_stream;
+  string_stream
+      << "VideoCaptureController::CreateAndStartDeviceAsync: serial_id = "
+      << serial_id() << ", device_id = " << device_id();
+  EmitLogMessage(string_stream.str(), 1);
   time_of_start_request_ = base::TimeTicks::Now();
   device_launch_observer_ = observer;
   device_launcher_->LaunchDeviceAsync(
@@ -543,6 +558,10 @@ void VideoCaptureController::CreateAndStartDeviceAsync(
 
 void VideoCaptureController::ReleaseDeviceAsync(base::OnceClosure done_cb) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  std::ostringstream string_stream;
+  string_stream << "VideoCaptureController::ReleaseDeviceAsync: serial_id = "
+                << serial_id() << ", device_id = " << device_id();
+  EmitLogMessage(string_stream.str(), 1);
   if (!launched_device_) {
     device_launcher_->AbortLaunch();
     return;
@@ -684,6 +703,12 @@ void VideoCaptureController::PerformForClientsWithOpenSession(
       continue;
     action.Run(client->event_handler, client->controller_id);
   }
+}
+
+void VideoCaptureController::EmitLogMessage(const std::string& message,
+                                            int verbose_log_level) {
+  DVLOG(verbose_log_level) << message;
+  emit_log_message_cb_.Run(message);
 }
 
 }  // namespace content

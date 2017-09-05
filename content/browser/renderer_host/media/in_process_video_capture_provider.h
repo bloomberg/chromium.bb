@@ -18,17 +18,20 @@ class CONTENT_EXPORT InProcessVideoCaptureProvider
  public:
   InProcessVideoCaptureProvider(
       std::unique_ptr<media::VideoCaptureSystem> video_capture_system,
-      scoped_refptr<base::SingleThreadTaskRunner> device_task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> device_task_runner,
+      base::RepeatingCallback<void(const std::string&)> emit_log_message_cb);
 
   ~InProcessVideoCaptureProvider() override;
 
   static std::unique_ptr<VideoCaptureProvider>
   CreateInstanceForNonDeviceCapture(
-      scoped_refptr<base::SingleThreadTaskRunner> device_task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> device_task_runner,
+      base::RepeatingCallback<void(const std::string&)> emit_log_message_cb);
 
   static std::unique_ptr<VideoCaptureProvider> CreateInstance(
       std::unique_ptr<media::VideoCaptureSystem> video_capture_system,
-      scoped_refptr<base::SingleThreadTaskRunner> device_task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> device_task_runner,
+      base::RepeatingCallback<void(const std::string&)> emit_log_message_cb);
 
   void GetDeviceInfosAsync(GetDeviceInfosCallback result_callback) override;
 
@@ -39,6 +42,7 @@ class CONTENT_EXPORT InProcessVideoCaptureProvider
   const std::unique_ptr<media::VideoCaptureSystem> video_capture_system_;
   // The message loop of media stream device thread, where VCD's live.
   const scoped_refptr<base::SingleThreadTaskRunner> device_task_runner_;
+  base::RepeatingCallback<void(const std::string&)> emit_log_message_cb_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 };

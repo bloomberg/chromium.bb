@@ -30,10 +30,12 @@ class CONTENT_EXPORT ServiceVideoCaptureProvider : public VideoCaptureProvider {
   // The parameterless constructor creates a default ServiceConnector which
   // uses the ServiceManager associated with the current process to connect
   // to the video capture service.
-  ServiceVideoCaptureProvider();
-  // Lets clients provide a custom ServiceConnector.
   explicit ServiceVideoCaptureProvider(
-      std::unique_ptr<ServiceConnector> service_connector);
+      base::RepeatingCallback<void(const std::string&)> emit_log_message_cb);
+  // Lets clients provide a custom ServiceConnector.
+  ServiceVideoCaptureProvider(
+      std::unique_ptr<ServiceConnector> service_connector,
+      base::RepeatingCallback<void(const std::string&)> emit_log_message_cb);
   ~ServiceVideoCaptureProvider() override;
 
   // VideoCaptureProvider implementation.
@@ -54,6 +56,7 @@ class CONTENT_EXPORT ServiceVideoCaptureProvider : public VideoCaptureProvider {
   void UninitializeInternal(ReasonForUninitialize reason);
 
   std::unique_ptr<ServiceConnector> service_connector_;
+  base::RepeatingCallback<void(const std::string&)> emit_log_message_cb_;
   // We must hold on to |device_factory_provider_| because it holds the
   // service-side binding for |device_factory_|.
   video_capture::mojom::DeviceFactoryProviderPtr device_factory_provider_;
