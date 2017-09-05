@@ -245,7 +245,8 @@ TEST_F(ShaderTranslatorTest, GetAttributes) {
   // There should be one attribute with following characteristics:
   // name:vPosition type:GL_FLOAT_VEC4 size:0.
   EXPECT_EQ(1u, attrib_map.size());
-  AttributeMap::const_iterator iter = attrib_map.find("vPosition");
+  // The shader translator adds a "_u" prefix to user-defined names.
+  AttributeMap::const_iterator iter = attrib_map.find("_uvPosition");
   EXPECT_TRUE(iter != attrib_map.end());
   EXPECT_EQ(static_cast<GLenum>(GL_FLOAT_VEC4), iter->second.type);
   EXPECT_EQ(0u, iter->second.arraySize);
@@ -289,20 +290,21 @@ TEST_F(ShaderTranslatorTest, GetUniforms) {
   // 2. name:bar[1].foo.color[0] type:GL_FLOAT_VEC4 size:1
   // However, there will be only one entry "bar" in the map.
   EXPECT_EQ(1u, uniform_map.size());
-  UniformMap::const_iterator iter = uniform_map.find("bar");
+  // The shader translator adds a "_u" prefix to user-defined names.
+  UniformMap::const_iterator iter = uniform_map.find("_ubar");
   EXPECT_TRUE(iter != uniform_map.end());
   // First uniform.
   const sh::ShaderVariable* info;
   std::string original_name;
-  EXPECT_TRUE(iter->second.findInfoByMappedName(
-      "bar[0].foo.color[0]", &info, &original_name));
+  EXPECT_TRUE(iter->second.findInfoByMappedName("_ubar[0]._ufoo._ucolor[0]",
+                                                &info, &original_name));
   EXPECT_EQ(static_cast<GLenum>(GL_FLOAT_VEC4), info->type);
   EXPECT_EQ(1u, info->arraySize);
   EXPECT_STREQ("color", info->name.c_str());
   EXPECT_STREQ("bar[0].foo.color[0]", original_name.c_str());
   // Second uniform.
-  EXPECT_TRUE(iter->second.findInfoByMappedName(
-      "bar[1].foo.color[0]", &info, &original_name));
+  EXPECT_TRUE(iter->second.findInfoByMappedName("_ubar[1]._ufoo._ucolor[0]",
+                                                &info, &original_name));
   EXPECT_EQ(static_cast<GLenum>(GL_FLOAT_VEC4), info->type);
   EXPECT_EQ(1u, info->arraySize);
   EXPECT_STREQ("color", info->name.c_str());
