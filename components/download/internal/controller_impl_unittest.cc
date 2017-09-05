@@ -21,6 +21,7 @@
 #include "components/download/internal/entry_utils.h"
 #include "components/download/internal/file_monitor.h"
 #include "components/download/internal/model_impl.h"
+#include "components/download/internal/navigation_monitor_impl.h"
 #include "components/download/internal/scheduler/scheduler.h"
 #include "components/download/internal/stats.h"
 #include "components/download/internal/test/empty_client.h"
@@ -179,7 +180,7 @@ class DownloadServiceControllerImplTest : public testing::Test {
     controller_ = base::MakeUnique<ControllerImpl>(
         config_.get(), std::move(client_set), std::move(driver),
         std::move(model), std::move(device_status_listener),
-        std::move(scheduler), std::move(task_scheduler),
+        &navigation_monitor, std::move(scheduler), std::move(task_scheduler),
         std::move(file_monitor), download_file_dir);
   }
 
@@ -212,6 +213,7 @@ class DownloadServiceControllerImplTest : public testing::Test {
 
   std::unique_ptr<ControllerImpl> controller_;
   std::unique_ptr<Configuration> config_;
+  NavigationMonitorImpl navigation_monitor;
   test::MockClient* client_;
   test::TestDownloadDriver* driver_;
   test::TestStore* store_;

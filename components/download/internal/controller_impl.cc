@@ -21,6 +21,7 @@
 #include "components/download/internal/stats.h"
 #include "components/download/public/client.h"
 #include "components/download/public/download_metadata.h"
+#include "components/download/public/navigation_monitor.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace download {
@@ -78,6 +79,7 @@ ControllerImpl::ControllerImpl(
     std::unique_ptr<DownloadDriver> driver,
     std::unique_ptr<Model> model,
     std::unique_ptr<DeviceStatusListener> device_status_listener,
+    NavigationMonitor* navigation_monitor,
     std::unique_ptr<Scheduler> scheduler,
     std::unique_ptr<TaskScheduler> task_scheduler,
     std::unique_ptr<FileMonitor> file_monitor,
