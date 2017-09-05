@@ -10457,6 +10457,78 @@
             "-chrome_internal"
         ]
     },
+    "guado-macrophage-chromium-pfq": {
+        "_template": "chromium_pfq",
+        "boards": [
+            "guado-macrophage"
+        ],
+        "buildslave_type": "baremetal",
+        "important": false,
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "guado-macrophage-compile-only-pre-cq": {
+        "_template": "compile_only_pre_cq",
+        "boards": [
+            "guado-macrophage"
+        ]
+    },
+    "guado-macrophage-full": {
+        "_template": "full",
+        "boards": [
+            "guado-macrophage"
+        ],
+        "buildslave_type": "baremetal",
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "guado-macrophage-no-vmtest-pre-cq": {
+        "_template": "no_vmtest_pre_cq",
+        "boards": [
+            "guado-macrophage"
+        ]
+    },
+    "guado-macrophage-paladin": {
+        "_template": "paladin",
+        "boards": [
+            "guado-macrophage"
+        ],
+        "important": false,
+        "vm_tests": []
+    },
+    "guado-macrophage-pre-cq": {
+        "_template": "pre_cq",
+        "boards": [
+            "guado-macrophage"
+        ]
+    },
+    "guado-macrophage-release": {
+        "_template": "release",
+        "active_waterfall": "chromeos",
+        "boards": [
+            "guado-macrophage"
+        ],
+        "buildslave_type": "baremetal"
+    },
+    "guado-macrophage-tot-chromium-pfq-informational": {
+        "_template": "chromium_pfq_informational",
+        "boards": [
+            "guado-macrophage"
+        ],
+        "buildslave_type": "baremetal",
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "guado-macrophage-unittest-stress": {
+        "_template": "unittest_stress",
+        "boards": [
+            "guado-macrophage"
+        ]
+    },
     "guado-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -15486,6 +15558,7 @@
             "glimmer-release",
             "gnawty-release",
             "gru-release",
+            "guado-macrophage-release",
             "guado-release",
             "guado_labstation-release",
             "guado_moblab-release",
