@@ -874,6 +874,19 @@ static INLINE int check_br_neighbor(tran_low_t qc) {
   return abs(qc) > BR_MAG_OFFSET;
 }
 
+#define FAST_OPTIMIZE_TXB 1
+
+#if FAST_OPTIMIZE_TXB
+#define ALNB_REF_OFFSET_NUM 2
+static int alnb_ref_offset[ALNB_REF_OFFSET_NUM][2] = {
+  { -1, 0 }, { 0, -1 },
+};
+#define NB_REF_OFFSET_NUM 4
+static int nb_ref_offset[NB_REF_OFFSET_NUM][2] = {
+  { -1, 0 }, { 0, -1 }, { 1, 0 }, { 0, 1 },
+};
+#endif  // FAST_OPTIMIZE_TXB
+
 // TODO(angiebird): add static to this function once it's called
 int try_level_down(int coeff_idx, const TxbCache *txb_cache,
                    const LV_MAP_COEFF_COST *txb_costs, TxbInfo *txb_info,
@@ -901,9 +914,16 @@ int try_level_down(int coeff_idx, const TxbCache *txb_cache,
   const int row = coeff_idx >> txb_info->bwl;
   const int col = coeff_idx - (row << txb_info->bwl);
   if (check_nz_neighbor(qc)) {
-    for (int i = 0; i < SIG_REF_OFFSET_NUM; ++i) {
-      const int nb_row = row - sig_ref_offset[i][0];
-      const int nb_col = col - sig_ref_offset[i][1];
+#if FAST_OPTIMIZE_TXB
+    int(*ref_offset)[2] = alnb_ref_offset;
+    const int ref_num = ALNB_REF_OFFSET_NUM;
+#else
+    int(*ref_offset)[2] = sig_ref_offset;
+    const int ref_num = SIG_REF_OFFSET_NUM;
+#endif
+    for (int i = 0; i < ref_num; ++i) {
+      const int nb_row = row - ref_offset[i][0];
+      const int nb_col = col - ref_offset[i][1];
       const int nb_coeff_idx = nb_row * txb_info->stride + nb_col;
 
       if (nb_row < 0 || nb_col < 0 || nb_row >= txb_info->height ||
@@ -923,9 +943,16 @@ int try_level_down(int coeff_idx, const TxbCache *txb_cache,
   }
 
   if (check_base_neighbor(qc)) {
-    for (int i = 0; i < BASE_CONTEXT_POSITION_NUM; ++i) {
-      const int nb_row = row - base_ref_offset[i][0];
-      const int nb_col = col - base_ref_offset[i][1];
+#if FAST_OPTIMIZE_TXB
+    int(*ref_offset)[2] = nb_ref_offset;
+    const int ref_num = NB_REF_OFFSET_NUM;
+#else
+    int(*ref_offset)[2] = base_ref_offset;
+    const int ref_num = BASE_CONTEXT_POSITION_NUM;
+#endif
+    for (int i = 0; i < ref_num; ++i) {
+      const int nb_row = row - ref_offset[i][0];
+      const int nb_col = col - ref_offset[i][1];
       const int nb_coeff_idx = nb_row * txb_info->stride + nb_col;
 
       if (nb_row < 0 || nb_col < 0 || nb_row >= txb_info->height ||
@@ -945,9 +972,16 @@ int try_level_down(int coeff_idx, const TxbCache *txb_cache,
   }
 
   if (check_br_neighbor(qc)) {
-    for (int i = 0; i < BR_CONTEXT_POSITION_NUM; ++i) {
-      const int nb_row = row - br_ref_offset[i][0];
-      const int nb_col = col - br_ref_offset[i][1];
+#if FAST_OPTIMIZE_TXB
+    int(*ref_offset)[2] = nb_ref_offset;
+    const int ref_num = NB_REF_OFFSET_NUM;
+#else
+    int(*ref_offset)[2] = br_ref_offset;
+    const int ref_num = BR_CONTEXT_POSITION_NUM;
+#endif
+    for (int i = 0; i < ref_num; ++i) {
+      const int nb_row = row - ref_offset[i][0];
+      const int nb_col = col - ref_offset[i][1];
       const int nb_coeff_idx = nb_row * txb_info->stride + nb_col;
 
       if (nb_row < 0 || nb_col < 0 || nb_row >= txb_info->height ||
