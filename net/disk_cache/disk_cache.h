@@ -44,8 +44,9 @@ class Backend;
 // Returns an instance of a Backend of the given |type|. |path| points to a
 // folder where the cached data will be stored (if appropriate). This cache
 // instance must be the only object that will be reading or writing files to
-// that folder (if another one exists, this operation will not complete until
-// the previous duplicate gets destroyed and finishes all I/O).
+// that folder (if another one exists, and |type| is not net::DISK_CACHE or
+// net::MEDIA_CACHE, this operation will not complete until the previous
+// duplicate gets destroyed and finishes all I/O).
 //
 // The returned object should be deleted when not needed anymore.
 // If |force| is true, and there is a problem with the cache initialization, the
@@ -70,6 +71,9 @@ NET_EXPORT int CreateCacheBackend(net::CacheType type,
 // that was in flight has completed post-destruction. |post_cleanup_callback|
 // will get invoked even if the creation fails. The invocation will always be
 // via the event loop, and never direct.
+//
+// This is currently unsupported for |type| == net::DISK_CACHE or
+// net::MEDIA_CACHE.
 //
 // Note that this will not wait for |post_cleanup_callback| of a previous
 // instance for |path| to run.
