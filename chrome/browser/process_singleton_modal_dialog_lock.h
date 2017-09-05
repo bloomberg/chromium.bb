@@ -5,44 +5,33 @@
 #ifndef CHROME_BROWSER_PROCESS_SINGLETON_MODAL_DIALOG_LOCK_H_
 #define CHROME_BROWSER_PROCESS_SINGLETON_MODAL_DIALOG_LOCK_H_
 
-#include "base/callback_forward.h"
+#include "base/callback.h"
 #include "base/macros.h"
 #include "chrome/browser/process_singleton.h"
-#include "ui/gfx/native_widget_types.h"
 
 namespace base {
 class CommandLine;
 class FilePath;
 }
 
-// Provides a ProcessSingleton::NotificationCallback that prevents
-// command-line handling when a modal dialog is active during startup. The
-// client must ensure that SetActiveModalDialog is called appropriately when
-// such dialogs are displayed or dismissed.
+// Provides a ProcessSingleton::NotificationCallback that allows for closing a
+// modal dialog that is active during startup. The client must ensure that
+// SetModalDialogCallback is called appropriately when such dialogs are
+// displayed or dismissed.
 //
-// While a dialog is active, the ProcessSingleton notification
-// callback will handle but ignore notifications:
-// 1. Neither this process nor the invoking process will handle the command
-//    line.
-// 2. The active dialog is brought to the foreground and/or the taskbar icon
-//    flashed (using ::SetForegroundWindow on Windows).
-//
-// Otherwise, the notification is forwarded to a wrapped NotificationCallback.
+// After invoking the modal dialog's callback, this process will continue normal
+// processing of the command line by forwarding the notification to a wrapped
+// NotificationCallback.
 class ProcessSingletonModalDialogLock {
  public:
-  typedef base::Callback<void(gfx::NativeWindow)> SetForegroundWindowHandler;
   explicit ProcessSingletonModalDialogLock(
       const ProcessSingleton::NotificationCallback& original_callback);
 
-  ProcessSingletonModalDialogLock(
-      const ProcessSingleton::NotificationCallback& original_callback,
-      const SetForegroundWindowHandler& set_foreground_window_handler);
-
   ~ProcessSingletonModalDialogLock();
 
-  // Receives a handle to the active modal dialog, or NULL if the active dialog
-  // is dismissed.
-  void SetActiveModalDialog(gfx::NativeWindow active_dialog);
+  // Receives a callback to be run to close the active modal dialog, or an empty
+  // closure if the active dialog is dismissed.
+  void SetModalDialogNotificationHandler(base::Closure notification_handler);
 
   // Returns the ProcessSingleton::NotificationCallback.
   // The callback is only valid during the lifetime of the
@@ -53,9 +42,8 @@ class ProcessSingletonModalDialogLock {
   bool NotificationCallbackImpl(const base::CommandLine& command_line,
                                 const base::FilePath& current_directory);
 
-  gfx::NativeWindow active_dialog_;
+  base::Closure notification_handler_;
   ProcessSingleton::NotificationCallback original_callback_;
-  SetForegroundWindowHandler set_foreground_window_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(ProcessSingletonModalDialogLock);
 };
