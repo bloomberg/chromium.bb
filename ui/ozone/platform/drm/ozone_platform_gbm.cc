@@ -294,6 +294,18 @@ class OzonePlatformGbm : public OzonePlatform {
   std::vector<ozone::mojom::DeviceCursorRequest> pending_cursor_requests_;
   std::vector<ozone::mojom::DrmDeviceRequest> pending_gpu_adapter_requests_;
 
+  // gpu_platform_support_host_ is the IPC bridge to the GPU process while
+  // host_drm_device_ is the mojo bridge to the Viz process. Only one can be in
+  // use at any time.
+  // TODO(rjkroege): Remove gpu_platform_support_host_ once ozone/drm with mojo
+  // has reached the stable channel.
+  // A raw pointer to either |gpu_platform_support_host_| or |host_drm_device_|
+  // is passed to |display_manager_| and |overlay_manager_| in IntializeUI.
+  // To avoid a use after free, the following two members should be declared
+  // before the two managers, so that they're deleted after them.
+  std::unique_ptr<DrmGpuPlatformSupportHost> gpu_platform_support_host_;
+  std::unique_ptr<HostDrmDevice> host_drm_device_;
+
   // Objects in the Browser process.
   std::unique_ptr<DeviceManager> device_manager_;
   std::unique_ptr<BitmapCursorFactoryOzone> cursor_factory_ozone_;
@@ -302,14 +314,6 @@ class OzonePlatformGbm : public OzonePlatform {
   std::unique_ptr<EventFactoryEvdev> event_factory_ozone_;
   std::unique_ptr<DrmDisplayHostManager> display_manager_;
   std::unique_ptr<DrmOverlayManager> overlay_manager_;
-
-  // gpu_platform_support_host_ is the IPC bridge to the GPU process while
-  // host_drm_device_ is the mojo bridge to the Viz process. Only one can be in
-  // use at any time.
-  // TODO(rjkroege): Remove gpu_platform_support_host_ once ozone/drm with mojo
-  // has reached the stable channel.
-  std::unique_ptr<DrmGpuPlatformSupportHost> gpu_platform_support_host_;
-  std::unique_ptr<HostDrmDevice> host_drm_device_;
 
 #if BUILDFLAG(USE_XKBCOMMON)
   XkbEvdevCodes xkb_evdev_code_converter_;
