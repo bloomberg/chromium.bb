@@ -102,8 +102,7 @@ action("strip_chrome_binary") {
 # The bot setup is to build stable, unstable, and beta packages for the current
 # build. Then a later step picks up the package corresponding to what the
 # current build is supposed to be. This is wasteful since one build will only
-# be one of these. This build file also has targets for trunk and possibly asan
-# installers.
+# be one of these.
 #
 # TODO it would be much nicer to have a build variable so the bot can tell us
 # what the current build should be, so we only have to make one .deb/.rpm pair.
@@ -397,15 +396,4 @@ linux_package("beta") {
 }
 linux_package("unstable") {
   channel = "unstable"
-}
-
-# Other packages that we support that aren't included in the default "linux"
-# target.
-linux_package("trunk") {
-  channel = "trunk"
-}
-if (is_asan) {
-  linux_package("asan") {
-    channel = "asan"
-  }
 }

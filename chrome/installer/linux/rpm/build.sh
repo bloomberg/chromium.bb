@@ -15,8 +15,8 @@ set -u
 
 gen_spec() {
   rm -f "${SPEC}"
-  # Trunk packages need to install to a custom path so they don't conflict with
-  # release channel packages.
+  # Different channels need to install to different locations so they
+  # don't conflict with each other.
   local PACKAGE_FILENAME="${PACKAGE}-${CHANNEL}"
   if [ "$CHANNEL" != "stable" ]; then
     local INSTALLDIR="${INSTALLDIR}-${CHANNEL}"
@@ -218,11 +218,11 @@ cleanup() {
 }
 
 usage() {
-  echo "usage: $(basename $0) [-a target_arch] [-b 'dir'] [-c channel]"
+  echo "usage: $(basename $0) [-a target_arch] [-b 'dir'] -c channel"
   echo "                      -d branding [-f] [-o 'dir']"
   echo "-a arch     package architecture (ia32 or x64)"
   echo "-b dir      build input directory    [${BUILDDIR}]"
-  echo "-c channel  the package channel (trunk, asan, unstable, beta, stable)"
+  echo "-c channel  the package channel (unstable, beta, stable)"
   echo "-d brand    either chromium or google_chrome"
   echo "-f          indicates that this is an official build"
   echo "-h          this help message"
@@ -246,15 +246,6 @@ verify_channel() {
       CHANNEL=beta
       # TODO(phajdan.jr): Remove REPLACES completely.
       REPLACES="dummy"
-      ;;
-    trunk|asan )
-      # This is a special package, mostly for development testing, so don't make
-      # it replace any installed release packages.
-      # TODO(phajdan.jr): Remove REPLACES completely.
-      REPLACES="dummy"
-      # Setting this to empty will prevent it from updating any existing configs
-      # from release packages.
-      REPOCONFIG=""
       ;;
     * )
       echo
@@ -313,7 +304,6 @@ process_opts() {
 
 SCRIPTDIR=$(readlink -f "$(dirname "$0")")
 OUTPUTDIR="${PWD}"
-CHANNEL="trunk"
 # Default target architecture to same as build host.
 if [ "$(uname -m)" = "x86_64" ]; then
   TARGETARCH="x64"
