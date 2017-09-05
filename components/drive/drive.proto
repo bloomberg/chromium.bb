@@ -153,9 +153,9 @@ message ResourceMetadataHeader {
   optional int32 version = 1;
   optional int64 largest_changestamp = 2;
 
-  // True if resources already have been updated after 'starred' property added.
-  // Otherwise, we have to load them from server.
-  optional bool starred_property_initialized = 3;
+  // The argument with ID 3 (starred_property_initialized) had been used, but
+  // got deleted.
+  reserved 3;
 }
 
 // Message to store information of an existing cache file.
