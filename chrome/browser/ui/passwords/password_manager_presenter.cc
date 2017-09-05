@@ -381,7 +381,7 @@ PasswordManagerPresenter::PasswordListPopulater::PasswordListPopulater(
 void PasswordManagerPresenter::PasswordListPopulater::Populate() {
   PasswordStore* store = page_->GetPasswordStore();
   if (store != NULL) {
-    cancelable_task_tracker()->TryCancelAll();
+    CancelAllRequests();
     store->GetAutofillableLoginsWithAffiliationAndBrandingInformation(this);
   } else {
     LOG(ERROR) << "No password store! Cannot display passwords.";
@@ -405,7 +405,7 @@ PasswordManagerPresenter::PasswordExceptionListPopulater::
 void PasswordManagerPresenter::PasswordExceptionListPopulater::Populate() {
   PasswordStore* store = page_->GetPasswordStore();
   if (store != NULL) {
-    cancelable_task_tracker()->TryCancelAll();
+    CancelAllRequests();
     store->GetBlacklistLoginsWithAffiliationAndBrandingInformation(this);
   } else {
     LOG(ERROR) << "No password store! Cannot display exceptions.";
