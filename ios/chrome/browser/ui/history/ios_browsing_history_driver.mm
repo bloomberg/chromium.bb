@@ -37,9 +37,11 @@ IOSBrowsingHistoryDriver::~IOSBrowsingHistoryDriver() {
 
 void IOSBrowsingHistoryDriver::OnQueryComplete(
     const std::vector<BrowsingHistoryService::HistoryEntry>& results,
-    const BrowsingHistoryService::QueryResultsInfo& query_results_info) {
+    const BrowsingHistoryService::QueryResultsInfo& query_results_info,
+    base::OnceClosure continuation_closure) {
   [delegate_ onQueryCompleteWithResults:results
-                       queryResultsInfo:query_results_info];
+                       queryResultsInfo:query_results_info
+                    continuationClosure:std::move(continuation_closure)];
 }
 
 void IOSBrowsingHistoryDriver::OnRemoveVisitsComplete() {

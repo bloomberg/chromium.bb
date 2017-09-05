@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/callback.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #import "base/test/ios/wait_util.h"
@@ -102,10 +103,11 @@ class HistoryCollectionViewControllerTest : public BlockCleanupTest {
     std::vector<BrowsingHistoryService::HistoryEntry> results =
         QueryResultWithVisits(visits);
     BrowsingHistoryService::QueryResultsInfo query_results_info;
-    query_results_info.reached_beginning_of_local = true;
+    query_results_info.reached_beginning = true;
     [history_collection_view_controller_
         onQueryCompleteWithResults:results
-                  queryResultsInfo:query_results_info];
+                  queryResultsInfo:query_results_info
+               continuationClosure:base::OnceClosure()];
   }
 
  protected:

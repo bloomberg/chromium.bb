@@ -4,7 +4,7 @@
 
 // Send the history query immediately. This allows the query to process during
 // the initial page startup.
-chrome.send('queryHistory', ['', 0, RESULTS_PER_PAGE]);
+chrome.send('queryHistory', ['', RESULTS_PER_PAGE]);
 chrome.send('getForeignSessions');
 
 /** @type {Promise} */

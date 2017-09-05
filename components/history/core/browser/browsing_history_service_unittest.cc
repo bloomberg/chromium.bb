@@ -13,6 +13,7 @@
 #include "base/run_loop.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/test/scoped_task_environment.h"
+#include "base/timer/mock_timer.h"
 #include "base/values.h"
 #include "components/history/core/browser/browsing_history_driver.h"
 #include "components/history/core/browser/history_db_task.h"
@@ -39,6 +40,9 @@ const char kUrl1[] = "http://www.one.com";
 const char kUrl2[] = "http://www.two.com";
 const char kUrl3[] = "http://www.three.com";
 const char kUrl4[] = "http://www.four.com";
+const char kUrl5[] = "http://www.five.com";
+const char kUrl6[] = "http://www.six.com";
+const char kUrl7[] = "http://www.seven.com";
 
 const HistoryEntry::EntryType kLocal = HistoryEntry::LOCAL_ENTRY;
 const HistoryEntry::EntryType kRemote = HistoryEntry::REMOTE_ENTRY;
@@ -100,12 +104,19 @@ class TestBrowsingHistoryDriver : public BrowsingHistoryDriver {
 
   int GetHistoryDeletedCount() { return history_deleted_count_; }
 
+  void RunContinuation() {
+    EXPECT_TRUE(continuation_closure_);
+    std::move(continuation_closure_).Run();
+  }
+
  private:
   // BrowsingHistoryDriver implementation.
-  void OnQueryComplete(const std::vector<HistoryEntry>& results,
-                       const BrowsingHistoryService::QueryResultsInfo&
-                           query_results_info) override {
+  void OnQueryComplete(
+      const std::vector<HistoryEntry>& results,
+      const BrowsingHistoryService::QueryResultsInfo& query_results_info,
+      base::OnceClosure continuation_closure) override {
     query_results_.push_back(QueryResult(results, query_results_info));
+    continuation_closure_ = std::move(continuation_closure);
   }
   void OnRemoveVisitsComplete() override {}
   void OnRemoveVisitsFailed() override {}
@@ -124,6 +135,7 @@ class TestBrowsingHistoryDriver : public BrowsingHistoryDriver {
 
   int history_deleted_count_ = 0;
   std::vector<QueryResult> query_results_;
+  base::OnceClosure continuation_closure_;
   WebHistoryService* web_history_;
 };
 
@@ -139,7 +151,7 @@ class TestWebHistoryService : public FakeWebHistoryService {
     ExpireHistoryCompletionCallback(base::Bind(&DoNothing), &request, true);
   }
 
- private:
+ protected:
   class TestRequest : public WebHistoryService::Request {
    private:
     // WebHistoryService::Request implementation.
@@ -156,6 +168,29 @@ class TestWebHistoryService : public FakeWebHistoryService {
   };
 };
 
+class TimeoutWebHistoryService : public TestWebHistoryService {
+ private:
+  // WebHistoryService implementation.
+  Request* CreateRequest(const GURL& url,
+                         const CompletionCallback& callback,
+                         const net::PartialNetworkTrafficAnnotationTag&
+                             partial_traffic_annotation) override {
+    return new TestWebHistoryService::TestRequest();
+  }
+};
+
+class TestBrowsingHistoryService : public BrowsingHistoryService {
+ public:
+  TestBrowsingHistoryService(BrowsingHistoryDriver* driver,
+                             HistoryService* local_history,
+                             syncer::SyncService* sync_service,
+                             std::unique_ptr<base::Timer> timer)
+      : BrowsingHistoryService(driver,
+                               local_history,
+                               sync_service,
+                               std::move(timer)) {}
+};
+
 class BrowsingHistoryServiceTest : public ::testing::Test {
  protected:
   // WebHistory API is to pass time ranges as the number of microseconds since
@@ -169,17 +204,17 @@ class BrowsingHistoryServiceTest : public ::testing::Test {
         driver_(&web_history_) {
     EXPECT_TRUE(history_dir_.CreateUniqueTempDir());
     local_history_ = CreateHistoryService(history_dir_.GetPath(), true);
-
-    // Default initialization, tests can override with ResetService().
-    browsing_history_service_ = std::make_unique<BrowsingHistoryService>(
-        driver(), local_history(), sync());
+    ResetService(driver(), local_history(), sync());
   }
 
   void ResetService(BrowsingHistoryDriver* driver,
                     HistoryService* local_history,
                     syncer::SyncService* sync_service) {
-    browsing_history_service_ = std::make_unique<BrowsingHistoryService>(
-        driver, local_history, sync_service);
+    std::unique_ptr<base::MockTimer> timer =
+        std::make_unique<base::MockTimer>(false, false);
+    timer_ = timer.get();
+    browsing_history_service_ = std::make_unique<TestBrowsingHistoryService>(
+        driver, local_history, sync_service, std::move(timer));
   }
 
   void BlockUntilHistoryProcessesPendingRequests() {
@@ -193,20 +228,6 @@ class BrowsingHistoryServiceTest : public ::testing::Test {
 
   Time OffsetToTime(int64_t hour_offset) {
     return baseline_time_ + TimeDelta::FromHours(hour_offset);
-  }
-
-  // For each item in |test_results|, create a new HistoryEntry representing the
-  // and insert it into |results|.
-  void AddQueryResults(const std::vector<TestResult>& test_results,
-                       std::vector<HistoryEntry>* results) {
-    for (const TestResult& result : test_results) {
-      HistoryEntry entry;
-      entry.time = OffsetToTime(result.hour_offset);
-      entry.url = GURL(result.url);
-      entry.all_timestamps.insert(entry.time.ToInternalValue());
-      entry.entry_type = result.type;
-      results->push_back(entry);
-    }
   }
 
   void AddHistory(const std::vector<TestResult>& data) {
@@ -231,6 +252,12 @@ class BrowsingHistoryServiceTest : public ::testing::Test {
               static_cast<int>(actual.entry_type));
   }
 
+  TestBrowsingHistoryDriver::QueryResult QueryHistory(size_t max_count = 0) {
+    QueryOptions options;
+    options.max_count = max_count;
+    return QueryHistory(options);
+  }
+
   TestBrowsingHistoryDriver::QueryResult QueryHistory(
       const QueryOptions& options) {
     size_t previous_results_count = driver()->GetQueryResults().size();
@@ -242,40 +269,37 @@ class BrowsingHistoryServiceTest : public ::testing::Test {
     return *all_results.rbegin();
   }
 
-  void VerifyQueryResult(bool reached_beginning_of_local,
+  TestBrowsingHistoryDriver::QueryResult ContinueQuery() {
+    size_t previous_results_count = driver()->GetQueryResults().size();
+    driver()->RunContinuation();
+    BlockUntilHistoryProcessesPendingRequests();
+    const std::vector<TestBrowsingHistoryDriver::QueryResult> all_results =
+        driver()->GetQueryResults();
+    EXPECT_EQ(previous_results_count + 1, all_results.size());
+    return *all_results.rbegin();
+  }
+
+  void VerifyQueryResult(bool reached_beginning,
                          bool has_synced_results,
-                         bool reached_beginning_of_sync,
                          const std::vector<TestResult>& expected_entries,
                          TestBrowsingHistoryDriver::QueryResult result) {
-    EXPECT_EQ(reached_beginning_of_local,
-              result.second.reached_beginning_of_local);
+    EXPECT_EQ(reached_beginning, result.second.reached_beginning);
     EXPECT_EQ(has_synced_results, result.second.has_synced_results);
     EXPECT_FALSE(result.second.sync_timed_out);
-    EXPECT_EQ(reached_beginning_of_sync,
-              result.second.reached_beginning_of_sync);
     EXPECT_EQ(expected_entries.size(), result.first.size());
     for (size_t i = 0; i < expected_entries.size(); ++i) {
       VerifyEntry(expected_entries[i], result.first[i]);
     }
   }
 
-  void QueryAndVerifySingleQueryResult(
-      bool reached_beginning_of_local,
-      bool has_synced_results,
-      bool reached_beginning_of_sync,
-      const std::vector<TestResult>& expected_entries) {
-    EXPECT_EQ(0U, driver()->GetQueryResults().size());
-    TestBrowsingHistoryDriver::QueryResult result =
-        QueryHistory(QueryOptions());
-    VerifyQueryResult(reached_beginning_of_local, has_synced_results,
-                      reached_beginning_of_sync, expected_entries, result);
-  }
-
   HistoryService* local_history() { return local_history_.get(); }
   TestWebHistoryService* web_history() { return &web_history_; }
   TestSyncService* sync() { return &sync_service_; }
   TestBrowsingHistoryDriver* driver() { return &driver_; }
-  BrowsingHistoryService* service() { return browsing_history_service_.get(); }
+  base::MockTimer* timer() { return timer_; }
+  TestBrowsingHistoryService* service() {
+    return browsing_history_service_.get();
+  }
 
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
@@ -289,152 +313,59 @@ class BrowsingHistoryServiceTest : public ::testing::Test {
   TestWebHistoryService web_history_;
   TestSyncService sync_service_;
   TestBrowsingHistoryDriver driver_;
-  std::unique_ptr<BrowsingHistoryService> browsing_history_service_;
+  base::MockTimer* timer_;
+  std::unique_ptr<TestBrowsingHistoryService> browsing_history_service_;
 };
-
-// Tests that the MergeDuplicateResults method correctly removes duplicate
-// visits to the same URL on the same day.
-TEST_F(BrowsingHistoryServiceTest, MergeDuplicateResults) {
-  {
-    // Basic test that duplicates on the same day are removed.
-    const std::vector<TestResult> test_data{
-        {kUrl1, 0, kLocal},
-        {kUrl2, 1, kLocal},
-        {kUrl1, 2, kLocal},
-        {kUrl1, 3, kLocal}  // Most recent.
-    };
-    std::vector<HistoryEntry> results;
-    AddQueryResults(test_data, &results);
-    BrowsingHistoryService::MergeDuplicateResults(&results);
-
-    ASSERT_EQ(2U, results.size());
-    VerifyEntry(test_data[3], results[0]);
-    VerifyEntry(test_data[1], results[1]);
-  }
-
-  {
-    // Test that a duplicate URL on the next day is not removed.
-    const std::vector<TestResult> test_data{
-        {kUrl1, 0, kLocal},
-        {kUrl1, 23, kLocal},
-        {kUrl1, 24, kLocal},  // Most recent.
-    };
-    std::vector<HistoryEntry> results;
-    AddQueryResults(test_data, &results);
-    BrowsingHistoryService::MergeDuplicateResults(&results);
-
-    ASSERT_EQ(2U, results.size());
-    VerifyEntry(test_data[2], results[0]);
-    VerifyEntry(test_data[1], results[1]);
-  }
-
-  {
-    // Test multiple duplicates across multiple days.
-    const std::vector<TestResult> test_data{
-        // First day.
-        {kUrl2, 0, kLocal},
-        {kUrl1, 1, kLocal},
-        {kUrl2, 2, kLocal},
-        {kUrl1, 3, kLocal},
-
-        // Second day.
-        {kUrl2, 24, kLocal},
-        {kUrl1, 25, kLocal},
-        {kUrl2, 26, kLocal},
-        {kUrl1, 27, kLocal},  // Most recent.
-    };
-    std::vector<HistoryEntry> results;
-    AddQueryResults(test_data, &results);
-    BrowsingHistoryService::MergeDuplicateResults(&results);
-
-    ASSERT_EQ(4U, results.size());
-    VerifyEntry(test_data[7], results[0]);
-    VerifyEntry(test_data[6], results[1]);
-    VerifyEntry(test_data[3], results[2]);
-    VerifyEntry(test_data[2], results[3]);
-  }
-
-  {
-    // Test that timestamps for duplicates are properly saved.
-    const std::vector<TestResult> test_data{
-        {kUrl1, 0, kLocal},
-        {kUrl2, 1, kLocal},
-        {kUrl1, 2, kLocal},
-        {kUrl1, 3, kLocal}  // Most recent.
-    };
-    std::vector<HistoryEntry> results;
-    AddQueryResults(test_data, &results);
-    BrowsingHistoryService::MergeDuplicateResults(&results);
-
-    ASSERT_EQ(2U, results.size());
-    VerifyEntry(test_data[3], results[0]);
-    VerifyEntry(test_data[1], results[1]);
-    EXPECT_EQ(3u, results[0].all_timestamps.size());
-    EXPECT_EQ(1u, results[1].all_timestamps.size());
-  }
-}
 
 TEST_F(BrowsingHistoryServiceTest, QueryHistoryNoSources) {
   driver()->SetWebHistory(nullptr);
   ResetService(driver(), nullptr, nullptr);
-
-  // TODO(skym): Fix service to return results when neither local or web
-  // history dependencies are given. Right now it never attempts to invoke
-  // callback.
-  // QueryAndVerifySingleQueryResult(false, false, {});
-  service()->QueryHistory(base::string16(), QueryOptions());
-  BlockUntilHistoryProcessesPendingRequests();
+  VerifyQueryResult(/*reached_beginning*/ true,
+                    /*has_synced_results*/ false, {}, QueryHistory());
 }
 
 TEST_F(BrowsingHistoryServiceTest, EmptyQueryHistoryJustLocal) {
   driver()->SetWebHistory(nullptr);
   ResetService(driver(), local_history(), nullptr);
-  QueryAndVerifySingleQueryResult(/*reached_beginning_of_local*/ true,
-                                  /*has_synced_results*/ false,
-                                  /*reached_beginning_of_sync*/ false, {});
+  VerifyQueryResult(/*reached_beginning*/ true,
+                    /*has_synced_results*/ false, {}, QueryHistory());
 }
 
 TEST_F(BrowsingHistoryServiceTest, QueryHistoryJustLocal) {
   driver()->SetWebHistory(nullptr);
   ResetService(driver(), local_history(), nullptr);
-
   AddHistory({{kUrl1, 1, kLocal}});
-  QueryAndVerifySingleQueryResult(/*reached_beginning_of_local*/ true,
-                                  /*has_synced_results*/ false,
-                                  /*reached_beginning_of_sync*/ false,
-                                  {{kUrl1, 1, kLocal}});
+  VerifyQueryResult(/*reached_beginning*/ true,
+                    /*has_synced_results*/ false, {{kUrl1, 1, kLocal}},
+                    QueryHistory());
 }
 
 TEST_F(BrowsingHistoryServiceTest, EmptyQueryHistoryJustWeb) {
   ResetService(driver(), nullptr, nullptr);
-  QueryAndVerifySingleQueryResult(/*reached_beginning_of_local*/ false,
-                                  /*has_synced_results*/ true,
-                                  /*reached_beginning_of_sync*/ true, {});
+  VerifyQueryResult(/*reached_beginning*/ true,
+                    /*has_synced_results*/ true, {}, QueryHistory());
 }
 
 TEST_F(BrowsingHistoryServiceTest, EmptyQueryHistoryDelayedWeb) {
   driver()->SetWebHistory(nullptr);
   ResetService(driver(), nullptr, sync());
   driver()->SetWebHistory(web_history());
-  QueryAndVerifySingleQueryResult(/*reached_beginning_of_local*/ false,
-                                  /*has_synced_results*/ true,
-                                  /*reached_beginning_of_sync*/ true, {});
+  VerifyQueryResult(/*reached_beginning*/ true,
+                    /*has_synced_results*/ true, {}, QueryHistory());
 }
 
 TEST_F(BrowsingHistoryServiceTest, QueryHistoryJustWeb) {
   ResetService(driver(), nullptr, sync());
   AddHistory({{kUrl1, 1, kRemote}});
-  QueryAndVerifySingleQueryResult(/*reached_beginning_of_local*/ false,
-                                  /*has_synced_results*/ true,
-                                  /*reached_beginning_of_sync*/ true,
-                                  {{kUrl1, 1, kRemote}});
+  VerifyQueryResult(/*reached_beginning*/ true,
+                    /*has_synced_results*/ true, {{kUrl1, 1, kRemote}},
+                    QueryHistory());
 }
 
 TEST_F(BrowsingHistoryServiceTest, EmptyQueryHistoryBothSources) {
   ResetService(driver(), local_history(), sync());
-  QueryAndVerifySingleQueryResult(/*reached_beginning_of_local*/ true,
-                                  /*has_synced_results*/ true,
-                                  /*reached_beginning_of_sync*/ true, {});
+  VerifyQueryResult(/*reached_beginning*/ true,
+                    /*has_synced_results*/ true, {}, QueryHistory());
 }
 
 TEST_F(BrowsingHistoryServiceTest, QueryHistoryAllSources) {
@@ -443,10 +374,10 @@ TEST_F(BrowsingHistoryServiceTest, QueryHistoryAllSources) {
               {kUrl2, 2, kLocal},
               {kUrl3, 3, kRemote},
               {kUrl1, 4, kRemote}});
-  QueryAndVerifySingleQueryResult(
-      /*reached_beginning_of_local*/ true, /*has_synced_results*/ true,
-      /*reached_beginning_of_sync*/ true,
-      {{kUrl1, 4, kBoth}, {kUrl3, 3, kRemote}, {kUrl2, 2, kLocal}});
+  VerifyQueryResult(
+      /*reached_beginning*/ true, /*has_synced_results*/ true,
+      {{kUrl1, 4, kBoth}, {kUrl3, 3, kRemote}, {kUrl2, 2, kLocal}},
+      QueryHistory());
 }
 
 TEST_F(BrowsingHistoryServiceTest, QueryHistoryLocalTimeRanges) {
@@ -457,14 +388,13 @@ TEST_F(BrowsingHistoryServiceTest, QueryHistoryLocalTimeRanges) {
   QueryOptions options;
   options.begin_time = OffsetToTime(2);
   options.end_time = OffsetToTime(4);
-  // Having a |reached_beginning_of_local| value of false here seems
+  // Having a |reached_beginning| value of false here seems
   // counterintuitive. Seems to be for paging by |begin_time| instead of
   // |count|. If the local history implementation changes, feel free to update
   // this value, all this test cares about is that BrowsingHistoryService passes
   // the values through correctly.
-  VerifyQueryResult(/*reached_beginning_of_local*/ false,
+  VerifyQueryResult(/*reached_beginning*/ false,
                     /*has_synced_results*/ true,
-                    /*reached_beginning_of_sync*/ true,
                     {{kUrl3, 3, kLocal}, {kUrl2, 2, kLocal}},
                     QueryHistory(options));
 }
@@ -478,75 +408,252 @@ TEST_F(BrowsingHistoryServiceTest, QueryHistoryRemoteTimeRanges) {
   options.begin_time = OffsetToTime(2);
   options.end_time = OffsetToTime(4);
   VerifyQueryResult(
-      /*reached_beginning_of_local*/ true, /*has_synced_results*/ true,
-      /*reached_beginning_of_sync*/ true,
+      /*reached_beginning*/ true, /*has_synced_results*/ true,
       {{kUrl3, 3, kRemote}, {kUrl2, 2, kRemote}}, QueryHistory(options));
 }
 
-TEST_F(BrowsingHistoryServiceTest, QueryHistoryLocalPaging) {
+TEST_F(BrowsingHistoryServiceTest, QueryHistoryLocalPagingPartial) {
   AddHistory({{kUrl1, 1, kLocal}, {kUrl2, 2, kLocal}, {kUrl3, 3, kLocal}});
-
-  QueryOptions options;
-  options.max_count = 2;
-  VerifyQueryResult(/*reached_beginning_of_local*/ false,
+  VerifyQueryResult(/*reached_beginning*/ false,
                     /*has_synced_results*/ true,
-                    /*reached_beginning_of_sync*/ true,
-                    {{kUrl3, 3, kLocal}, {kUrl2, 2, kLocal}},
-                    QueryHistory(options));
-
-  options.end_time = OffsetToTime(2);
+                    {{kUrl3, 3, kLocal}, {kUrl2, 2, kLocal}}, QueryHistory(2));
   VerifyQueryResult(
-      /*reached_beginning_of_local*/ true, /*has_synced_results*/ true,
-      /*reached_beginning_of_sync*/ true, {{kUrl1, 1, kLocal}},
-      QueryHistory(options));
+      /*reached_beginning*/ true, /*has_synced_results*/ true,
+      {{kUrl1, 1, kLocal}}, ContinueQuery());
+}
 
-  options.end_time = Time();
-  options.max_count = 3;
+TEST_F(BrowsingHistoryServiceTest, QueryHistoryLocalPagingFull) {
+  AddHistory({{kUrl1, 1, kLocal}, {kUrl2, 2, kLocal}, {kUrl3, 3, kLocal}});
   VerifyQueryResult(
-      /*reached_beginning_of_local*/ true, /*has_synced_results*/ true,
-      /*reached_beginning_of_sync*/ true,
+      /*reached_beginning*/ true, /*has_synced_results*/ true,
       {{kUrl3, 3, kLocal}, {kUrl2, 2, kLocal}, {kUrl1, 1, kLocal}},
-      QueryHistory(options));
-
-  options.end_time = OffsetToTime(1);
+      QueryHistory(3));
   VerifyQueryResult(
-      /*reached_beginning_of_local*/ true, /*has_synced_results*/ true,
-      /*reached_beginning_of_sync*/ true, {}, QueryHistory(options));
+      /*reached_beginning*/ true, /*has_synced_results*/ true, {},
+      ContinueQuery());
 }
 
-TEST_F(BrowsingHistoryServiceTest, QueryHistoryRemotePaging) {
+TEST_F(BrowsingHistoryServiceTest, QueryHistoryRemotePagingPartial) {
   AddHistory({{kUrl1, 1, kRemote}, {kUrl2, 2, kRemote}, {kUrl3, 3, kRemote}});
-
-  QueryOptions options;
-  options.max_count = 2;
-  VerifyQueryResult(/*reached_beginning_of_local*/ true,
+  VerifyQueryResult(/*reached_beginning*/ false,
                     /*has_synced_results*/ true,
-                    /*reached_beginning_of_sync*/ false,
                     {{kUrl3, 3, kRemote}, {kUrl2, 2, kRemote}},
-                    QueryHistory(options));
-
-  options.end_time = OffsetToTime(2);
+                    QueryHistory(2));
   VerifyQueryResult(
-      /*reached_beginning_of_local*/ true, /*has_synced_results*/ true,
-      /*reached_beginning_of_sync*/ true, {{kUrl1, 1, kRemote}},
-      QueryHistory(options));
-
-  options.end_time = Time();
-  options.max_count = 3;
-  VerifyQueryResult(
-      /*reached_beginning_of_local*/ true, /*has_synced_results*/ true,
-      /*reached_beginning_of_sync*/ true,
-      {{kUrl3, 3, kRemote}, {kUrl2, 2, kRemote}, {kUrl1, 1, kRemote}},
-      QueryHistory(options));
-
-  options.end_time = OffsetToTime(1);
-  VerifyQueryResult(
-      /*reached_beginning_of_local*/ true, /*has_synced_results*/ true,
-      /*reached_beginning_of_sync*/ true, {}, QueryHistory(options));
+      /*reached_beginning*/ true, /*has_synced_results*/ true,
+      {{kUrl1, 1, kRemote}}, ContinueQuery());
 }
 
-// TODO(skym, crbug.com/728727): Add more test cases, particularly when
-// QueryHistory returns partial results and sequential calls are made.
+TEST_F(BrowsingHistoryServiceTest, QueryHistoryRemotePagingFull) {
+  AddHistory({{kUrl1, 1, kRemote}, {kUrl2, 2, kRemote}, {kUrl3, 3, kRemote}});
+  VerifyQueryResult(
+      /*reached_beginning*/ true, /*has_synced_results*/ true,
+      {{kUrl3, 3, kRemote}, {kUrl2, 2, kRemote}, {kUrl1, 1, kRemote}},
+      QueryHistory(3));
+  VerifyQueryResult(
+      /*reached_beginning*/ true, /*has_synced_results*/ true, {},
+      ContinueQuery());
+}
+
+TEST_F(BrowsingHistoryServiceTest, MergeDuplicatesSameDay) {
+  AddHistory({{kUrl1, 0, kRemote},
+              {kUrl2, 1, kRemote},
+              {kUrl1, 2, kRemote},
+              {kUrl1, 3, kRemote}});
+  VerifyQueryResult(/*reached_beginning*/ true, /*has_synced_results*/ true,
+                    {{kUrl1, 3, kRemote}, {kUrl2, 1, kRemote}}, QueryHistory());
+}
+
+TEST_F(BrowsingHistoryServiceTest, MergeDuplicatesNextDayNotRemoved) {
+  AddHistory({{kUrl1, 0, kRemote}, {kUrl1, 23, kRemote}, {kUrl1, 24, kRemote}});
+  VerifyQueryResult(/*reached_beginning*/ true, /*has_synced_results*/ true,
+                    {{kUrl1, 24, kRemote}, {kUrl1, 23, kRemote}},
+                    QueryHistory());
+}
+
+TEST_F(BrowsingHistoryServiceTest, MergeDuplicatesMultipleDays) {
+  AddHistory({{kUrl2, 0, kRemote},
+              {kUrl1, 1, kRemote},
+              {kUrl2, 2, kRemote},
+              {kUrl1, 3, kRemote},
+              {kUrl2, 24, kRemote},
+              {kUrl1, 25, kRemote},
+              {kUrl2, 26, kRemote},
+              {kUrl1, 27, kRemote}});
+  VerifyQueryResult(/*reached_beginning*/ true, /*has_synced_results*/ true,
+                    {{kUrl1, 27, kRemote},
+                     {kUrl2, 26, kRemote},
+                     {kUrl1, 3, kRemote},
+                     {kUrl2, 2, kRemote}},
+                    QueryHistory());
+}
+
+TEST_F(BrowsingHistoryServiceTest, MergeDuplicatesVerifyTimestamps) {
+  AddHistory({{kUrl1, 0, kRemote},
+              {kUrl2, 1, kRemote},
+              {kUrl1, 2, kRemote},
+              {kUrl1, 3, kRemote}});
+  auto results = QueryHistory();
+  VerifyQueryResult(/*reached_beginning*/ true, /*has_synced_results*/ true,
+                    {{kUrl1, 3, kRemote}, {kUrl2, 1, kRemote}}, results);
+  EXPECT_EQ(3U, results.first[0].all_timestamps.size());
+  EXPECT_EQ(1U, results.first[1].all_timestamps.size());
+}
+
+TEST_F(BrowsingHistoryServiceTest, QueryHistoryMerge) {
+  AddHistory({{kUrl1, 1, kRemote},
+              {kUrl2, 2, kRemote},
+              {kUrl3, 3, kLocal},
+              {kUrl1, 4, kLocal}});
+  VerifyQueryResult(
+      /*reached_beginning*/ true, /*has_synced_results*/ true,
+      {{kUrl1, 4, kBoth}, {kUrl3, 3, kLocal}, {kUrl2, 2, kRemote}},
+      QueryHistory());
+}
+
+TEST_F(BrowsingHistoryServiceTest, QueryHistoryPending) {
+  AddHistory({{kUrl1, 1, kRemote},
+              {kUrl2, 2, kRemote},
+              {kUrl3, 3, kLocal},
+              {kUrl4, 4, kLocal}});
+  VerifyQueryResult(
+      /*reached_beginning*/ false, /*has_synced_results*/ true,
+      {{kUrl4, 4, kLocal}}, QueryHistory(1));
+  VerifyQueryResult(
+      /*reached_beginning*/ false, /*has_synced_results*/ true,
+      {{kUrl3, 3, kLocal}, {kUrl2, 2, kRemote}}, ContinueQuery());
+  VerifyQueryResult(
+      /*reached_beginning*/ true, /*has_synced_results*/ true,
+      {{kUrl1, 1, kRemote}}, ContinueQuery());
+}
+
+// A full request worth of local results will sit in pending, resulting in us
+// being able to delete local history before our next query and we should still
+// see the local entry.
+TEST_F(BrowsingHistoryServiceTest, QueryHistoryFullLocalPending) {
+  AddHistory({{kUrl1, 1, kLocal}, {kUrl2, 2, kRemote}, {kUrl3, 3, kRemote}});
+  VerifyQueryResult(
+      /*reached_beginning*/ false, /*has_synced_results*/ true,
+      {{kUrl3, 3, kRemote}}, QueryHistory(1));
+
+  local_history()->DeleteURL(GURL(kUrl1));
+  VerifyQueryResult(
+      /*reached_beginning*/ true, /*has_synced_results*/ true,
+      {{kUrl2, 2, kRemote}, {kUrl1, 1, kLocal}}, ContinueQuery());
+}
+
+// Part of a request worth of local results will sit in pending, resulting in us
+// seeing extra local results on our next request.
+TEST_F(BrowsingHistoryServiceTest, QueryHistoryPartialLocalPending) {
+  AddHistory({{kUrl1, 1, kLocal},
+              {kUrl2, 2, kLocal},
+              {kUrl3, 3, kRemote},
+              {kUrl4, 4, kLocal},
+              {kUrl5, 5, kRemote},
+              {kUrl6, 6, kRemote},
+              {kUrl7, 7, kLocal}});
+  VerifyQueryResult(
+      /*reached_beginning*/ false, /*has_synced_results*/ true,
+      {{kUrl7, 7, kLocal}, {kUrl6, 6, kRemote}, {kUrl5, 5, kRemote}},
+      QueryHistory(2));
+  VerifyQueryResult(/*reached_beginning*/ true, /*has_synced_results*/ true,
+                    {{kUrl4, 4, kLocal},
+                     {kUrl3, 3, kRemote},
+                     {kUrl2, 2, kLocal},
+                     {kUrl1, 1, kLocal}},
+                    ContinueQuery());
+}
+
+// A full request worth of remote results will sit in pending, resulting in us
+// being able to delete remote history before our next query and we should still
+// see the remote entry.
+TEST_F(BrowsingHistoryServiceTest, QueryHistoryFullRemotePending) {
+  AddHistory({{kUrl1, 1, kRemote}, {kUrl2, 2, kLocal}, {kUrl3, 3, kLocal}});
+  VerifyQueryResult(/*reached_beginning*/ false, /*has_synced_results*/ true,
+                    {{kUrl3, 3, kLocal}}, QueryHistory(1));
+
+  web_history()->ClearSyncedVisits();
+  VerifyQueryResult(/*reached_beginning*/ true, /*has_synced_results*/ true,
+                    {{kUrl2, 2, kLocal}, {kUrl1, 1, kRemote}}, ContinueQuery());
+}
+
+// Part of a request worth of remote results will sit in pending, resulting in
+// us seeing extra remote results on our next request.
+TEST_F(BrowsingHistoryServiceTest, QueryHistoryPartialRemotePending) {
+  AddHistory({{kUrl1, 1, kRemote},
+              {kUrl2, 2, kRemote},
+              {kUrl3, 3, kLocal},
+              {kUrl4, 4, kRemote},
+              {kUrl5, 5, kLocal},
+              {kUrl6, 6, kLocal},
+              {kUrl7, 7, kRemote}});
+  VerifyQueryResult(
+      /*reached_beginning*/ false, /*has_synced_results*/ true,
+      {{kUrl7, 7, kRemote}, {kUrl6, 6, kLocal}, {kUrl5, 5, kLocal}},
+      QueryHistory(2));
+  VerifyQueryResult(/*reached_beginning*/ true, /*has_synced_results*/ true,
+                    {{kUrl4, 4, kRemote},
+                     {kUrl3, 3, kLocal},
+                     {kUrl2, 2, kRemote},
+                     {kUrl1, 1, kRemote}},
+                    ContinueQuery());
+}
+
+TEST_F(BrowsingHistoryServiceTest, RetryOnRemoteFailureEmpty) {
+  web_history()->SetupFakeResponse(false, 0);
+  VerifyQueryResult(/*reached_beginning*/ false, /*has_synced_results*/ false,
+                    {}, QueryHistory());
+  web_history()->SetupFakeResponse(true, net::HTTP_OK);
+  VerifyQueryResult(/*reached_beginning*/ true, /*has_synced_results*/ true, {},
+                    ContinueQuery());
+}
+
+TEST_F(BrowsingHistoryServiceTest, RetryOnRemoteFailurePagingRemote) {
+  AddHistory({{kUrl1, 1, kRemote}, {kUrl2, 2, kRemote}, {kUrl3, 3, kRemote}});
+  VerifyQueryResult(/*reached_beginning*/ false, /*has_synced_results*/ true,
+                    {{kUrl3, 3, kRemote}, {kUrl2, 2, kRemote}},
+                    QueryHistory(2));
+
+  web_history()->SetupFakeResponse(false, 0);
+  VerifyQueryResult(/*reached_beginning*/ false, /*has_synced_results*/ false,
+                    {}, ContinueQuery());
+
+  web_history()->SetupFakeResponse(true, net::HTTP_OK);
+  VerifyQueryResult(/*reached_beginning*/ true, /*has_synced_results*/ true,
+                    {{kUrl1, 1, kRemote}}, ContinueQuery());
+}
+
+TEST_F(BrowsingHistoryServiceTest, RetryOnRemoteFailurePagingLocal) {
+  AddHistory({{kUrl1, 1, kLocal}, {kUrl2, 2, kLocal}, {kUrl3, 3, kLocal}});
+  web_history()->SetupFakeResponse(false, 0);
+  VerifyQueryResult(/*reached_beginning*/ false, /*has_synced_results*/ false,
+                    {{kUrl3, 3, kLocal}, {kUrl2, 2, kLocal}}, QueryHistory(2));
+
+  web_history()->SetupFakeResponse(true, net::HTTP_OK);
+  VerifyQueryResult(/*reached_beginning*/ true, /*has_synced_results*/ true,
+                    {{kUrl1, 1, kLocal}}, ContinueQuery());
+}
+
+TEST_F(BrowsingHistoryServiceTest, WebHistoryTimeout) {
+  TimeoutWebHistoryService timeout;
+  driver()->SetWebHistory(&timeout);
+  ResetService(driver(), local_history(), sync());
+  EXPECT_EQ(0U, driver()->GetQueryResults().size());
+  service()->QueryHistory(base::string16(), QueryOptions());
+  EXPECT_EQ(0U, driver()->GetQueryResults().size());
+  BlockUntilHistoryProcessesPendingRequests();
+  timer()->Fire();
+  EXPECT_EQ(1U, driver()->GetQueryResults().size());
+  EXPECT_FALSE(driver()->GetQueryResults()[0].second.reached_beginning);
+  EXPECT_FALSE(driver()->GetQueryResults()[0].second.has_synced_results);
+  EXPECT_TRUE(driver()->GetQueryResults()[0].second.sync_timed_out);
+
+  // WebHistoryService will DCHECK if we destroy it before the observer in
+  // BrowsingHistoryService is removed, so reset our first
+  // BrowsingHistoryService before |timeout| goes out of scope.
+  driver()->SetWebHistory(nullptr);
+  ResetService(driver(), nullptr, nullptr);
+}
 
 TEST_F(BrowsingHistoryServiceTest, ObservingWebHistory) {
   ResetService(driver(), nullptr, sync());

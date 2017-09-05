@@ -7,19 +7,20 @@
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/history/core/browser/web_history_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "components/sync/driver/sync_service.h"
 #include "net/url_request/url_request_context_getter.h"
 
 namespace {
 // Returns true if the user is signed in and full history sync is enabled,
 // and false otherwise.
 bool IsHistorySyncEnabled(Profile* profile) {
-  browser_sync::ProfileSyncService* sync =
-      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
+  syncer::SyncService* sync =
+      ProfileSyncServiceFactory::GetInstance()->GetSyncServiceForBrowserContext(
+          profile);
   return sync && sync->IsSyncActive() && !sync->IsLocalSyncEnabled() &&
          sync->GetActiveDataTypes().Has(syncer::HISTORY_DELETE_DIRECTIVES);
 }

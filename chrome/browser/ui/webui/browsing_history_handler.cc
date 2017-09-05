@@ -231,8 +231,7 @@ std::unique_ptr<base::DictionaryValue> HistoryEntryToValue(
 }  // namespace
 
 BrowsingHistoryHandler::BrowsingHistoryHandler()
-    : clock_(new base::DefaultClock()),
-      browsing_history_service_(nullptr) {}
+    : clock_(new base::DefaultClock()), browsing_history_service_(nullptr) {}
 
 BrowsingHistoryHandler::~BrowsingHistoryHandler() {}
 
@@ -251,6 +250,10 @@ void BrowsingHistoryHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("queryHistory",
       base::Bind(&BrowsingHistoryHandler::HandleQueryHistory,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "queryHistoryContinuation",
+      base::Bind(&BrowsingHistoryHandler::HandleQueryHistoryContinuation,
+                 base::Unretained(this)));
   web_ui()->RegisterMessageCallback("removeVisits",
       base::Bind(&BrowsingHistoryHandler::HandleRemoveVisits,
                  base::Unretained(this)));
@@ -263,31 +266,29 @@ void BrowsingHistoryHandler::RegisterMessages() {
 }
 
 void BrowsingHistoryHandler::HandleQueryHistory(const base::ListValue* args) {
-  history::QueryOptions options;
+  query_history_continuation_.Reset();
 
-  // Parse the arguments from JavaScript. There are five required arguments:
+  // Parse the arguments from JavaScript. There are two required arguments:
   // - the text to search for (may be empty)
-  // - the end time for the query. Only results older than this time will be
-  //   returned.
   // - the maximum number of results to return (may be 0, meaning that there
   //   is no maximum).
   base::string16 search_text = ExtractStringValue(args);
 
-  double end_time;
-  if (!args->GetDouble(1, &end_time)) {
-    NOTREACHED() << "Failed to convert argument 1. ";
-    return;
-  }
-  if (end_time)
-    options.end_time = base::Time::FromJsTime(end_time);
-
-  if (!args->GetInteger(2, &options.max_count)) {
+  history::QueryOptions options;
+  if (!args->GetInteger(1, &options.max_count)) {
     NOTREACHED() << "Failed to convert argument 2.";
     return;
   }
 
   options.duplicate_policy = history::QueryOptions::REMOVE_DUPLICATES_PER_DAY;
   browsing_history_service_->QueryHistory(search_text, options);
+}
+
+void BrowsingHistoryHandler::HandleQueryHistoryContinuation(
+    const base::ListValue* args) {
+  DCHECK(args->empty());
+  DCHECK(query_history_continuation_);
+  std::move(query_history_continuation_).Run();
 }
 
 void BrowsingHistoryHandler::HandleRemoveVisits(const base::ListValue* args) {
@@ -345,7 +346,9 @@ void BrowsingHistoryHandler::HandleRemoveBookmark(const base::ListValue* args) {
 
 void BrowsingHistoryHandler::OnQueryComplete(
     const std::vector<BrowsingHistoryService::HistoryEntry>& results,
-    const BrowsingHistoryService::QueryResultsInfo& query_results_info) {
+    const BrowsingHistoryService::QueryResultsInfo& query_results_info,
+    base::OnceClosure continuation_closure) {
+  query_history_continuation_ = std::move(continuation_closure);
   Profile* profile = Profile::FromWebUI(web_ui());
   BookmarkModel* bookmark_model =
       BookmarkModelFactory::GetForBrowserContext(profile);
@@ -373,8 +376,7 @@ void BrowsingHistoryHandler::OnQueryComplete(
   // HistoryQuery. Please update it whenever you add or remove any keys in
   // results_info_value_.
   results_info.SetString("term", query_results_info.search_text);
-  results_info.SetBoolean("finished",
-                          query_results_info.reached_beginning_of_local);
+  results_info.SetBoolean("finished", query_results_info.reached_beginning);
   results_info.SetBoolean("hasSyncedResults",
                           query_results_info.has_synced_results);
 

@@ -8,7 +8,6 @@
 
 #include <algorithm>
 #include <map>
-#include <set>
 #include <utility>
 
 #include "base/bind_helpers.h"
@@ -41,18 +40,62 @@ enum WebHistoryQueryBuckets {
   NUM_WEB_HISTORY_QUERY_BUCKETS
 };
 
-// Returns true if |entry| represents a local visit that had no corresponding
-// visit on the server.
-bool IsLocalOnlyResult(const BrowsingHistoryService::HistoryEntry& entry) {
-  return entry.entry_type == BrowsingHistoryService::HistoryEntry::LOCAL_ENTRY;
-}
-
 void RecordMetricsForNoticeAboutOtherFormsOfBrowsingHistory(bool shown) {
   UMA_HISTOGRAM_BOOLEAN("History.ShownHeaderAboutOtherFormsOfBrowsingHistory",
                         shown);
 }
 
+QueryOptions OptionsWithEndTime(QueryOptions original_options,
+                                base::Time end_time) {
+  QueryOptions options(original_options);
+  options.end_time = end_time;
+  return options;
+}
+
+// The status of the result from a particular history source.
+enum QuerySourceStatus {
+  // Not a continuation and no response yet.
+  UNINITIALIZED,
+  // Could not query the particular source.
+  NO_DEPENDENCY,
+  // Only used for web, when we stop waiting for a response due to timeout.
+  TIMED_OUT,
+  // Only used for remote, response was error or empty.
+  FAILURE,
+  // Successfully retrieved results, but there are more left.
+  MORE_RESULTS,
+  // Successfully retrieved results and we reached the end of results.
+  REACHED_BEGINNING,
+};
+
+bool CanRetry(QuerySourceStatus status) {
+  // TODO(skym): Should we be retrying on FAILURE?
+  return status == MORE_RESULTS || status == FAILURE || status == TIMED_OUT;
+}
+
 }  // namespace
+
+struct BrowsingHistoryService::QueryHistoryState
+    : public base::RefCounted<BrowsingHistoryService::QueryHistoryState> {
+  QueryHistoryState() = default;
+
+  base::string16 search_text;
+  QueryOptions original_options;
+
+  QuerySourceStatus local_status = UNINITIALIZED;
+  // Should always be sorted in reverse chronological order.
+  std::vector<HistoryEntry> local_results;
+  base::Time local_end_time_for_continuation;
+
+  QuerySourceStatus remote_status = UNINITIALIZED;
+  // Should always be sorted in reverse chronological order.
+  std::vector<HistoryEntry> remote_results;
+  base::Time remote_end_time_for_continuation;
+
+ private:
+  friend class base::RefCounted<BrowsingHistoryService::QueryHistoryState>;
+  ~QueryHistoryState() = default;
+};
 
 BrowsingHistoryService::HistoryEntry::HistoryEntry(
     BrowsingHistoryService::HistoryEntry::EntryType entry_type,
@@ -94,12 +137,20 @@ BrowsingHistoryService::BrowsingHistoryService(
     BrowsingHistoryDriver* driver,
     HistoryService* local_history,
     syncer::SyncService* sync_service)
-    : has_pending_delete_request_(false),
+    : BrowsingHistoryService(driver,
+                             local_history,
+                             sync_service,
+                             std::make_unique<base::OneShotTimer>()) {}
+
+BrowsingHistoryService::BrowsingHistoryService(
+    BrowsingHistoryDriver* driver,
+    HistoryService* local_history,
+    syncer::SyncService* sync_service,
+    std::unique_ptr<base::Timer> web_history_timer)
+    : web_history_timer_(std::move(web_history_timer)),
       history_service_observer_(this),
       web_history_service_observer_(this),
       sync_service_observer_(this),
-      has_synced_results_(false),
-      has_other_forms_of_browsing_history_(false),
       driver_(driver),
       local_history_(local_history),
       sync_service_(sync_service),
@@ -143,13 +194,14 @@ void BrowsingHistoryService::OnStateChanged(syncer::SyncService* sync) {
   }
 }
 
-void BrowsingHistoryService::WebHistoryTimeout() {
-  has_synced_results_ = false;
-  query_results_info_.sync_timed_out = true;
+void BrowsingHistoryService::WebHistoryTimeout(
+    scoped_refptr<QueryHistoryState> state) {
+  state->remote_status = TIMED_OUT;
 
+  // Don't reset |web_history_request_| so we can still record histogram.
   // TODO(dubroy): Communicate the failure to the front end.
   if (!query_task_tracker_.HasTrackedTasks())
-    ReturnResultsToDriver();
+    ReturnResultsToDriver(std::move(state));
 
   UMA_HISTOGRAM_ENUMERATION("WebHistory.QueryCompletion",
                             WEB_HISTORY_QUERY_TIMED_OUT,
@@ -158,82 +210,108 @@ void BrowsingHistoryService::WebHistoryTimeout() {
 
 void BrowsingHistoryService::QueryHistory(const base::string16& search_text,
                                           const QueryOptions& options) {
+  scoped_refptr<QueryHistoryState> state =
+      base::MakeRefCounted<QueryHistoryState>();
+  state->search_text = search_text;
+  state->original_options = options;
+  state->local_end_time_for_continuation = options.end_time;
+  state->remote_end_time_for_continuation = options.end_time;
+  QueryHistoryInternal(std::move(state));
+}
+
+void BrowsingHistoryService::QueryHistoryInternal(
+    scoped_refptr<QueryHistoryState> state) {
   // Anything in-flight is invalid.
   query_task_tracker_.TryCancelAll();
   web_history_request_.reset();
-  query_results_.clear();
 
-  // TODO(skym): Should |query_results_info_| be reset to default values
-  // instead?
-  // Set this to false until the results actually arrive.
-  query_results_info_.has_synced_results = false;
+  bool should_return_results_immediately = true;
+  size_t desired_count =
+      static_cast<size_t>(state->original_options.EffectiveMaxCount());
 
   if (local_history_) {
-    local_history_->QueryHistory(
-        search_text, options,
-        base::Bind(&BrowsingHistoryService::QueryComplete,
-                   weak_factory_.GetWeakPtr(), search_text, options),
-        &query_task_tracker_);
+    if (state->local_results.size() < desired_count &&
+        state->local_status != REACHED_BEGINNING) {
+      should_return_results_immediately = false;
+      local_history_->QueryHistory(
+          state->search_text,
+          OptionsWithEndTime(state->original_options,
+                             state->local_end_time_for_continuation),
+          base::Bind(&BrowsingHistoryService::QueryComplete,
+                     weak_factory_.GetWeakPtr(), state),
+          &query_task_tracker_);
+    }
+  } else {
+    state->local_status = NO_DEPENDENCY;
   }
-
-  // Set this to false until the results actually arrive.
-  query_results_info_.has_synced_results = false;
 
   WebHistoryService* web_history = driver_->GetWebHistoryService();
   if (web_history) {
-    web_history_query_results_.clear();
+    if (state->remote_results.size() < desired_count &&
+        state->remote_status != REACHED_BEGINNING) {
+      // Start a timer with timeout before we make the actual query, otherwise
+      // tests get confused when completion callback is run synchronously.
+      web_history_timer_->Start(
+          FROM_HERE, base::TimeDelta::FromSeconds(kWebHistoryTimeoutSeconds),
+          base::Bind(&BrowsingHistoryService::WebHistoryTimeout,
+                     weak_factory_.GetWeakPtr(), state));
 
-    // Start a timer with timeout before we make the actual query, otherwise
-    // tests get confused when completion callback is run synchronously.
-    web_history_timer_.Start(
-        FROM_HERE, base::TimeDelta::FromSeconds(kWebHistoryTimeoutSeconds),
-        this, &BrowsingHistoryService::WebHistoryTimeout);
-
-    net::PartialNetworkTrafficAnnotationTag partial_traffic_annotation =
-        net::DefinePartialNetworkTrafficAnnotation("web_history_query",
-                                                   "web_history_service",
-                                                   R"(
-          semantics {
-            description:
-              "If history sync is enabled, this downloads the synced history "
-              "from history.google.com."
-            trigger:
-              "Synced history is downloaded when user opens the history page, "
-              "searches on the history page, or scrolls down the history page "
-              "to see more results. This is only the case if the user is "
-              "signed in and history sync is enabled."
-            data:
-              "The history query text (or empty strings if all results are to "
-              "be fetched), the begin and end timestamps, and the maximum "
-              "number of results to be fetched. The request also includes a "
-              "version info token to resolve transaction conflicts, and an "
-              "OAuth2 token authenticating the user."
-          }
-          policy {
-            chrome_policy {
-              SyncDisabled {
-                SyncDisabled: true
-              }
+      net::PartialNetworkTrafficAnnotationTag partial_traffic_annotation =
+          net::DefinePartialNetworkTrafficAnnotation("web_history_query",
+                                                     "web_history_service",
+                                                     R"(
+            semantics {
+              description:
+                "If history sync is enabled, this downloads the synced "
+                "history from history.google.com."
+              trigger:
+                "Synced history is downloaded when user opens the history "
+                "page, searches on the history page, or scrolls down the "
+                "history page to see more results. This is only the case if "
+                "the user is signed in and history sync is enabled."
+              data:
+                "The history query text (or empty strings if all results are "
+                "to be fetched), the begin and end timestamps, and the maximum "
+                "number of results to be fetched. The request also includes a "
+                "version info token to resolve transaction conflicts, and an "
+                "OAuth2 token authenticating the user."
             }
-          })");
-    web_history_request_ = web_history->QueryHistory(
-        search_text, options,
-        base::Bind(&BrowsingHistoryService::WebHistoryQueryComplete,
-                   weak_factory_.GetWeakPtr(), search_text, options,
-                   clock_->Now()),
-        partial_traffic_annotation);
+            policy {
+              chrome_policy {
+                SyncDisabled {
+                  SyncDisabled: true
+                }
+              }
+            })");
+      should_return_results_immediately = false;
+      web_history_request_ = web_history->QueryHistory(
+          state->search_text,
+          OptionsWithEndTime(state->original_options,
+                             state->remote_end_time_for_continuation),
+          base::Bind(&BrowsingHistoryService::WebHistoryQueryComplete,
+                     weak_factory_.GetWeakPtr(), state, clock_->Now()),
+          partial_traffic_annotation);
 
-    // Test the existence of other forms of browsing history.
-    driver_->ShouldShowNoticeAboutOtherFormsOfBrowsingHistory(
-        sync_service_, web_history,
-        base::Bind(
-            &BrowsingHistoryService::OtherFormsOfBrowsingHistoryQueryComplete,
-            weak_factory_.GetWeakPtr()));
+      // Test the existence of other forms of browsing history.
+      driver_->ShouldShowNoticeAboutOtherFormsOfBrowsingHistory(
+          sync_service_, web_history,
+          base::Bind(
+              &BrowsingHistoryService::OtherFormsOfBrowsingHistoryQueryComplete,
+              weak_factory_.GetWeakPtr()));
+    }
   } else {
+    state->remote_status = NO_DEPENDENCY;
     // The notice could not have been shown, because there is no web history.
     RecordMetricsForNoticeAboutOtherFormsOfBrowsingHistory(false);
     has_synced_results_ = false;
     has_other_forms_of_browsing_history_ = false;
+  }
+
+  // If we avoid assuming delegated queries are returning asynchronous, then we
+  // cannot check tracker/timer, and instead have to rely on local logic for
+  // this choice. Note that in unit tests Web History returns synchronously.
+  if (should_return_results_immediately) {
+    ReturnResultsToDriver(std::move(state));
   }
 }
 
@@ -337,193 +415,278 @@ void BrowsingHistoryService::RemoveVisits(
 
 // static
 void BrowsingHistoryService::MergeDuplicateResults(
-    std::vector<BrowsingHistoryService::HistoryEntry>* results) {
-  std::vector<BrowsingHistoryService::HistoryEntry> new_results;
+    QueryHistoryState* state,
+    std::vector<HistoryEntry>* results) {
+  DCHECK(state);
+  DCHECK(results);
+  DCHECK(results->empty());
+
+  // Will be used later to decide if we need to hold back results. This requires
+  // results to be sorted.
+  base::Time youngest_local = state->local_results.empty()
+                                  ? base::Time()
+                                  : state->local_results.rbegin()->time;
+  base::Time youngest_remote = state->remote_results.empty()
+                                   ? base::Time()
+                                   : state->remote_results.rbegin()->time;
+
+  std::vector<HistoryEntry> sorted;
+  sorted.assign(std::make_move_iterator(state->local_results.begin()),
+                std::make_move_iterator(state->local_results.end()));
+  state->local_results.clear();
+  sorted.insert(sorted.end(),
+                std::make_move_iterator(state->remote_results.begin()),
+                std::make_move_iterator(state->remote_results.end()));
+  state->remote_results.clear();
+  std::sort(sorted.begin(), sorted.end(), HistoryEntry::SortByTimeDescending);
+
   // Pre-reserve the size of the new vector. Since we're working with pointers
   // later on not doing this could lead to the vector being resized and to
   // pointers to invalid locations.
-  new_results.reserve(results->size());
+  std::vector<HistoryEntry> deduped;
+  deduped.reserve(sorted.size());
+
   // Maps a URL to the most recent entry on a particular day.
-  std::map<GURL, BrowsingHistoryService::HistoryEntry*> current_day_entries;
+  std::map<GURL, HistoryEntry*> current_day_entries;
 
   // Keeps track of the day that |current_day_urls| is holding the URLs for,
   // in order to handle removing per-day duplicates.
   base::Time current_day_midnight;
 
-  std::sort(results->begin(), results->end(),
-            HistoryEntry::SortByTimeDescending);
-
-  for (std::vector<BrowsingHistoryService::HistoryEntry>::const_iterator it =
-           results->begin();
-       it != results->end(); ++it) {
+  for (HistoryEntry& entry : sorted) {
     // Reset the list of found URLs when a visit from a new day is encountered.
-    if (current_day_midnight != it->time.LocalMidnight()) {
+    if (current_day_midnight != entry.time.LocalMidnight()) {
       current_day_entries.clear();
-      current_day_midnight = it->time.LocalMidnight();
+      current_day_midnight = entry.time.LocalMidnight();
     }
 
     // Keep this visit if it's the first visit to this URL on the current day.
-    if (current_day_entries.count(it->url) == 0) {
-      new_results.push_back(*it);
-      current_day_entries[it->url] = &new_results.back();
+    if (current_day_entries.count(entry.url) == 0) {
+      deduped.push_back(std::move(entry));
+      current_day_entries[entry.url] = &deduped.back();
     } else {
       // Keep track of the timestamps of all visits to the URL on the same day.
-      BrowsingHistoryService::HistoryEntry* entry =
-          current_day_entries[it->url];
-      entry->all_timestamps.insert(it->all_timestamps.begin(),
-                                   it->all_timestamps.end());
+      HistoryEntry* matching_entry = current_day_entries[entry.url];
+      matching_entry->all_timestamps.insert(entry.all_timestamps.begin(),
+                                            entry.all_timestamps.end());
 
-      if (entry->entry_type != it->entry_type) {
-        entry->entry_type =
-            BrowsingHistoryService::HistoryEntry::COMBINED_ENTRY;
+      if (matching_entry->entry_type != entry.entry_type) {
+        matching_entry->entry_type = HistoryEntry::COMBINED_ENTRY;
       }
     }
   }
-  results->swap(new_results);
+
+  // If the beginning of either source was not reached, that means there are
+  // more results from that source, and then other source needs to have its data
+  // held back until the former source catches up. This only send the UI history
+  // entries in the correct order. Subsequent continuation requests will get the
+  // delayed entries.
+  base::Time youngest_allowed = base::Time();
+  if (state->local_status == MORE_RESULTS) {
+    youngest_allowed = std::max(youngest_allowed, youngest_local);
+    state->local_end_time_for_continuation = youngest_local;
+  }
+  if (state->remote_status == MORE_RESULTS) {
+    youngest_allowed = std::max(youngest_allowed, youngest_remote);
+    state->remote_end_time_for_continuation = youngest_remote;
+  } else if (CanRetry(state->remote_status)) {
+    // TODO(skym): It is unclear if this is the best behavior. The UI is going
+    // to behave incorrectly if out of order results are received. So to
+    // guarantee that doesn't happen, use |youngest_local| for continuation
+    // calls. This will result in missing history entries for the failed calls.
+    // crbug.com/685866 is related to this problem.
+    state->remote_end_time_for_continuation = youngest_local;
+  }
+
+  HistoryEntry search_entry;
+  search_entry.time = youngest_allowed;
+  auto threshold_iter =
+      std::upper_bound(deduped.begin(), deduped.end(), search_entry,
+                       HistoryEntry::SortByTimeDescending);
+
+  // Everything from threshold_iter to deduped.end() should either be all local
+  // or all remote, never a mix.
+  if (threshold_iter != deduped.end()) {
+    if (threshold_iter->entry_type == HistoryEntry::LOCAL_ENTRY) {
+      state->local_results.assign(std::make_move_iterator(threshold_iter),
+                                  std::make_move_iterator(deduped.end()));
+    } else if (threshold_iter->entry_type == HistoryEntry::REMOTE_ENTRY) {
+      state->remote_results.assign(std::make_move_iterator(threshold_iter),
+                                   std::make_move_iterator(deduped.end()));
+    } else {
+      NOTREACHED();
+    }
+    deduped.erase(threshold_iter, deduped.end());
+  }
+  *results = std::move(deduped);
 }
 
-void BrowsingHistoryService::QueryComplete(const base::string16& search_text,
-                                           const QueryOptions& options,
-                                           QueryResults* results) {
-  DCHECK_EQ(0U, query_results_.size());
-  query_results_.reserve(results->size());
+void BrowsingHistoryService::QueryComplete(
+    scoped_refptr<QueryHistoryState> state,
+    QueryResults* results) {
+  std::vector<HistoryEntry>& output = state->local_results;
+  output.reserve(output.size() + results->size());
 
   for (size_t i = 0; i < results->size(); ++i) {
     URLResult const& page = (*results)[i];
     // TODO(dubroy): Use sane time (crbug.com/146090) here when it's ready.
-    query_results_.push_back(
-        HistoryEntry(HistoryEntry::LOCAL_ENTRY, page.url(), page.title(),
-                     page.visit_time(), std::string(), !search_text.empty(),
-                     page.snippet().text(), page.blocked_visit()));
+    output.push_back(HistoryEntry(HistoryEntry::LOCAL_ENTRY, page.url(),
+                                  page.title(), page.visit_time(),
+                                  std::string(), !state->search_text.empty(),
+                                  page.snippet().text(), page.blocked_visit()));
   }
 
-  query_results_info_.search_text = search_text;
-  query_results_info_.reached_beginning_of_local = results->reached_beginning();
+  state->local_status =
+      results->reached_beginning() ? REACHED_BEGINNING : MORE_RESULTS;
 
-  if (!web_history_timer_.IsRunning())
-    ReturnResultsToDriver();
+  if (!web_history_timer_->IsRunning())
+    ReturnResultsToDriver(std::move(state));
 }
 
-void BrowsingHistoryService::ReturnResultsToDriver() {
-  // Combine the local and remote results into |query_results_|, and remove
-  // any duplicates.
-  if (!web_history_query_results_.empty()) {
-    int local_result_count = query_results_.size();
-    query_results_.insert(query_results_.end(),
-                          web_history_query_results_.begin(),
-                          web_history_query_results_.end());
-    MergeDuplicateResults(&query_results_);
+void BrowsingHistoryService::ReturnResultsToDriver(
+    scoped_refptr<QueryHistoryState> state) {
+  std::vector<HistoryEntry> results;
+
+  // Always merge remote results, because Web History does not deduplicate .
+  // Local history should be using per-query deduplication, but if we are in a
+  // continuation, it's possible that we have carried over pending entries along
+  // with new results, and these two sets may contain duplicates. Assuming every
+  // call to Web History is successful, we shouldn't be able to have empty sync
+  // results at the same time as we have pending local.
+  if (state->remote_results.size()) {
+    int local_result_count = state->local_results.size();
+    MergeDuplicateResults(state.get(), &results);
 
     if (local_result_count) {
       // In the best case, we expect that all local results are duplicated on
       // the server. Keep track of how many are missing.
-      int missing_count = std::count_if(
-          query_results_.begin(), query_results_.end(), IsLocalOnlyResult);
+      int missing_count = 0;
+      for (const HistoryEntry& entry : results) {
+        missing_count +=
+            entry.entry_type ==
+                    BrowsingHistoryService::HistoryEntry::LOCAL_ENTRY
+                ? entry.all_timestamps.size()
+                : 0;
+      }
+      DCHECK_GE(local_result_count, missing_count);
       UMA_HISTOGRAM_PERCENTAGE("WebHistory.LocalResultMissingOnServer",
                                missing_count * 100.0 / local_result_count);
     }
+  } else {
+    // TODO(skym): Is the optimization to skip merge on local only results worth
+    // the complexity increase here?
+    if (state->local_status == MORE_RESULTS && !state->local_results.empty()) {
+      state->local_end_time_for_continuation =
+          state->local_results.rbegin()->time;
+    }
+    results = std::move(state->local_results);
   }
 
-  driver_->OnQueryComplete(query_results_, query_results_info_);
+  QueryResultsInfo info;
+  info.search_text = state->search_text;
+  info.reached_beginning =
+      !CanRetry(state->local_status) && !CanRetry(state->remote_status);
+  info.sync_timed_out = state->remote_status == TIMED_OUT;
+  info.has_synced_results = state->remote_status == MORE_RESULTS ||
+                            state->remote_status == REACHED_BEGINNING;
+  base::OnceClosure continuation =
+      base::Bind(&BrowsingHistoryService::QueryHistoryInternal,
+                 weak_factory_.GetWeakPtr(), std::move(state));
+  driver_->OnQueryComplete(results, info, std::move(continuation));
   driver_->HasOtherFormsOfBrowsingHistory(has_other_forms_of_browsing_history_,
                                           has_synced_results_);
-
-  query_results_.clear();
-  web_history_query_results_.clear();
 }
 
 void BrowsingHistoryService::WebHistoryQueryComplete(
-    const base::string16& search_text,
-    const history::QueryOptions& options,
+    scoped_refptr<QueryHistoryState> state,
     base::Time start_time,
     WebHistoryService::Request* request,
     const base::DictionaryValue* results_value) {
   base::TimeDelta delta = clock_->Now() - start_time;
   UMA_HISTOGRAM_TIMES("WebHistory.ResponseTime", delta);
 
-  // TODO(skym): Compare |request| to |web_history_request_| instead of checking
-  // the timer, which is susceptible to races.
   // If the response came in too late, do nothing.
   // TODO(dubroy): Maybe show a banner, and prompt the user to reload?
-  if (!web_history_timer_.IsRunning())
+  if (!web_history_timer_->IsRunning())
     return;
-  web_history_timer_.Stop();
+  web_history_timer_->Stop();
+  web_history_request_.reset();
 
   UMA_HISTOGRAM_ENUMERATION(
       "WebHistory.QueryCompletion",
       results_value ? WEB_HISTORY_QUERY_SUCCEEDED : WEB_HISTORY_QUERY_FAILED,
       NUM_WEB_HISTORY_QUERY_BUCKETS);
 
-  DCHECK_EQ(0U, web_history_query_results_.size());
-  const base::ListValue* events = nullptr;
-  if (results_value && results_value->GetList("event", &events)) {
-    web_history_query_results_.reserve(events->GetSize());
-    for (unsigned int i = 0; i < events->GetSize(); ++i) {
-      const base::DictionaryValue* event = nullptr;
-      const base::DictionaryValue* result = nullptr;
-      const base::ListValue* results = nullptr;
-      const base::ListValue* ids = nullptr;
-      base::string16 url;
-      base::string16 title;
-      base::Time visit_time;
+  if (results_value) {
+    has_synced_results_ = true;
+    const base::ListValue* events = nullptr;
+    if (results_value->GetList("event", &events)) {
+      state->remote_results.reserve(state->remote_results.size() +
+                                    events->GetSize());
+      for (unsigned int i = 0; i < events->GetSize(); ++i) {
+        const base::DictionaryValue* event = nullptr;
+        const base::DictionaryValue* result = nullptr;
+        const base::ListValue* results = nullptr;
+        const base::ListValue* ids = nullptr;
+        base::string16 url;
+        base::string16 title;
+        base::Time visit_time;
 
-      if (!(events->GetDictionary(i, &event) &&
-            event->GetList("result", &results) &&
-            results->GetDictionary(0, &result) &&
-            result->GetString("url", &url) && result->GetList("id", &ids) &&
-            ids->GetSize() > 0)) {
-        continue;
-      }
-
-      // Ignore any URLs that should not be shown in the history page.
-      GURL gurl(url);
-      if (driver_->ShouldHideWebHistoryUrl(gurl))
-        continue;
-
-      // Title is optional, so the return value is ignored here.
-      result->GetString("title", &title);
-
-      // Extract the timestamps of all the visits to this URL.
-      // They are referred to as "IDs" by the server.
-      for (int j = 0; j < static_cast<int>(ids->GetSize()); ++j) {
-        const base::DictionaryValue* id = nullptr;
-        std::string timestamp_string;
-        int64_t timestamp_usec = 0;
-
-        if (!ids->GetDictionary(j, &id) ||
-            !id->GetString("timestamp_usec", &timestamp_string) ||
-            !base::StringToInt64(timestamp_string, &timestamp_usec)) {
-          NOTREACHED() << "Unable to extract timestamp.";
+        if (!(events->GetDictionary(i, &event) &&
+              event->GetList("result", &results) &&
+              results->GetDictionary(0, &result) &&
+              result->GetString("url", &url) && result->GetList("id", &ids) &&
+              ids->GetSize() > 0)) {
           continue;
         }
-        // The timestamp on the server is a Unix time.
-        base::Time time = base::Time::UnixEpoch() +
-                          base::TimeDelta::FromMicroseconds(timestamp_usec);
 
-        // Get the ID of the client that this visit came from.
-        std::string client_id;
-        id->GetString("client_id", &client_id);
+        // Ignore any URLs that should not be shown in the history page.
+        GURL gurl(url);
+        if (driver_->ShouldHideWebHistoryUrl(gurl))
+          continue;
 
-        web_history_query_results_.push_back(
-            HistoryEntry(HistoryEntry::REMOTE_ENTRY, gurl, title, time,
-                         client_id, !search_text.empty(), base::string16(),
-                         /* blocked_visit */ false));
+        // Title is optional, so the return value is ignored here.
+        result->GetString("title", &title);
+
+        // Extract the timestamps of all the visits to this URL.
+        // They are referred to as "IDs" by the server.
+        for (int j = 0; j < static_cast<int>(ids->GetSize()); ++j) {
+          const base::DictionaryValue* id = nullptr;
+          std::string timestamp_string;
+          int64_t timestamp_usec = 0;
+
+          if (!ids->GetDictionary(j, &id) ||
+              !id->GetString("timestamp_usec", &timestamp_string) ||
+              !base::StringToInt64(timestamp_string, &timestamp_usec)) {
+            NOTREACHED() << "Unable to extract timestamp.";
+            continue;
+          }
+          // The timestamp on the server is a Unix time.
+          base::Time time = base::Time::UnixEpoch() +
+                            base::TimeDelta::FromMicroseconds(timestamp_usec);
+
+          // Get the ID of the client that this visit came from.
+          std::string client_id;
+          id->GetString("client_id", &client_id);
+
+          state->remote_results.push_back(HistoryEntry(
+              HistoryEntry::REMOTE_ENTRY, gurl, title, time, client_id,
+              !state->search_text.empty(), base::string16(),
+              /* blocked_visit */ false));
+        }
       }
     }
-  }
-
-  query_results_info_.sync_timed_out = false;
-  has_synced_results_ = results_value != nullptr;
-  query_results_info_.has_synced_results = has_synced_results_;
-
-  if (results_value) {
     std::string continuation_token;
     results_value->GetString("continuation_token", &continuation_token);
-    query_results_info_.reached_beginning_of_sync = continuation_token.empty();
+    state->remote_status =
+        continuation_token.empty() ? REACHED_BEGINNING : MORE_RESULTS;
+  } else {
+    has_synced_results_ = false;
+    state->remote_status = FAILURE;
   }
 
   if (!query_task_tracker_.HasTrackedTasks())
-    ReturnResultsToDriver();
+    ReturnResultsToDriver(std::move(state));
 }
 
 void BrowsingHistoryService::OtherFormsOfBrowsingHistoryQueryComplete(

@@ -31,7 +31,8 @@ class ChromeBrowserState;
                 results
                   queryResultsInfo:
                       (const history::BrowsingHistoryService::QueryResultsInfo&)
-                          queryResultsInfo;
+                          queryResultsInfo
+               continuationClosure:(base::OnceClosure)continuationClosure;
 
 // Notifies the delegate that history entries have been deleted by a different
 // client and that the UI should be updated.
@@ -56,7 +57,8 @@ class IOSBrowsingHistoryDriver : public history::BrowsingHistoryDriver {
   void OnQueryComplete(
       const std::vector<history::BrowsingHistoryService::HistoryEntry>& results,
       const history::BrowsingHistoryService::QueryResultsInfo&
-          query_results_info) override;
+          query_results_info,
+      base::OnceClosure continuation_closure) override;
   void OnRemoveVisitsComplete() override;
   void OnRemoveVisitsFailed() override;
   void OnRemoveVisits(

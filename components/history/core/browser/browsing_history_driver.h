@@ -29,7 +29,8 @@ class BrowsingHistoryDriver {
   // Callback for QueryHistory().
   virtual void OnQueryComplete(
       const std::vector<BrowsingHistoryService::HistoryEntry>& results,
-      const BrowsingHistoryService::QueryResultsInfo& query_results_info) = 0;
+      const BrowsingHistoryService::QueryResultsInfo& query_results_info,
+      base::OnceClosure continuation_closure) = 0;
 
   // Callback for RemoveVisits().
   virtual void OnRemoveVisitsComplete() = 0;

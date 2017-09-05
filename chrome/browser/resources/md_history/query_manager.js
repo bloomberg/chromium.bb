@@ -64,17 +64,14 @@ Polymer({
     this.set('queryState.querying', true);
     this.set('queryState.incremental', incremental);
 
-    var lastVisitTime = 0;
     if (incremental) {
-      var lastVisit = this.queryResult.results.slice(-1)[0];
-      lastVisitTime = lastVisit ? Math.floor(lastVisit.time) : 0;
+      chrome.send('queryHistoryContinuation');
+    } else {
+      chrome.send('queryHistory', [
+        queryState.searchTerm,
+        RESULTS_PER_PAGE,
+      ]);
     }
-
-    chrome.send('queryHistory', [
-      queryState.searchTerm,
-      lastVisitTime,
-      RESULTS_PER_PAGE,
-    ]);
   },
 
   /**
