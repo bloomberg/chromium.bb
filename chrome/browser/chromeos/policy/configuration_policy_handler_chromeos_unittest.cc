@@ -60,8 +60,6 @@ TEST_F(ScreenMagnifierPolicyHandlerTest, Default) {
   handler_.ApplyPolicySettings(policy_, &prefs_);
   EXPECT_FALSE(
       prefs_.GetValue(ash::prefs::kAccessibilityScreenMagnifierEnabled, NULL));
-  EXPECT_FALSE(
-      prefs_.GetValue(ash::prefs::kAccessibilityScreenMagnifierType, NULL));
 }
 
 TEST_F(ScreenMagnifierPolicyHandlerTest, Disabled) {
@@ -75,12 +73,6 @@ TEST_F(ScreenMagnifierPolicyHandlerTest, Disabled) {
                               &enabled));
   ASSERT_TRUE(enabled);
   EXPECT_TRUE(base::Value(false).Equals(enabled));
-
-  const base::Value* type = NULL;
-  EXPECT_TRUE(
-      prefs_.GetValue(ash::prefs::kAccessibilityScreenMagnifierType, &type));
-  ASSERT_TRUE(type);
-  EXPECT_TRUE(base::Value(0).Equals(type));
 }
 
 TEST_F(ScreenMagnifierPolicyHandlerTest, Enabled) {
@@ -94,12 +86,6 @@ TEST_F(ScreenMagnifierPolicyHandlerTest, Enabled) {
                               &enabled));
   ASSERT_TRUE(enabled);
   EXPECT_TRUE(base::Value(true).Equals(enabled));
-
-  const base::Value* type = NULL;
-  EXPECT_TRUE(
-      prefs_.GetValue(ash::prefs::kAccessibilityScreenMagnifierType, &type));
-  ASSERT_TRUE(type);
-  EXPECT_TRUE(base::Value(1).Equals(type));
 }
 
 TEST(ExternalDataPolicyHandlerTest, Empty) {

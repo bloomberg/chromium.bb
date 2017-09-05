@@ -2547,7 +2547,7 @@
           { "policy": { "ScreenMagnifierType": 1 } }
         ]
       },
-      { "pref": "settings.a11y.screen_magnifier_type2" }
+      { "pref": "settings.a11y.screen_magnifier" }
     ]
   },
 

@@ -6,7 +6,6 @@
 
 #include <vector>
 
-#include "ash/accessibility_types.h"
 #include "ash/ash_constants.h"
 #include "ash/autoclick/autoclick_controller.h"
 #include "ash/public/cpp/ash_pref_names.h"
@@ -202,9 +201,6 @@ void Preferences::RegisterProfilePrefs(
   registry->RegisterBooleanPref(
       ash::prefs::kAccessibilityScreenMagnifierEnabled, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
-  registry->RegisterIntegerPref(
-      ash::prefs::kAccessibilityScreenMagnifierType, ash::MAGNIFIER_FULL,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterDoublePref(ash::prefs::kAccessibilityScreenMagnifierScale,
                                std::numeric_limits<double>::min());
   registry->RegisterBooleanPref(
