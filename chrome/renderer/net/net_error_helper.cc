@@ -23,6 +23,7 @@
 #include "components/error_page/common/localized_error.h"
 #include "components/error_page/common/net_error_info.h"
 #include "components/grit/components_resources.h"
+#include "content/public/child/child_url_loader_factory_getter.h"
 #include "content/public/common/associated_interface_provider.h"
 #include "content/public/common/associated_interface_registry.h"
 #include "content/public/common/content_client.h"
@@ -35,6 +36,7 @@
 #include "content/public/renderer/resource_fetcher.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "third_party/WebKit/public/platform/WebCachePolicy.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
@@ -77,6 +79,36 @@ NetErrorHelperCore::FrameType GetFrameType(RenderFrame* render_frame) {
   if (render_frame->IsMainFrame())
     return NetErrorHelperCore::MAIN_FRAME;
   return NetErrorHelperCore::SUB_FRAME;
+}
+
+const net::NetworkTrafficAnnotationTag& GetNetworkTrafficAnnotationTag() {
+  static const net::NetworkTrafficAnnotationTag network_traffic_annotation_tag =
+      net::DefineNetworkTrafficAnnotation("net_error_helper", R"(
+    semantics {
+      sender: "NetErrorHelper"
+      description:
+        "Chrome asks Link Doctor service when a navigating page returns an "
+        "error to investigate details about what is wrong."
+      trigger:
+        "When Chrome navigates to a page, and the page returns an error."
+      data:
+        "Failed page information including the URL will be sent to the service."
+      destination: GOOGLE_OWNED_SERVICE
+    }
+    policy {
+      cookies_allowed: NO
+      setting:
+        "You can enable or disable this feature via 'Use a web service to help "
+        "resolve navigation errors' in Chrome's settings under Advanced. The "
+        "feature is enabled by default."
+      chrome_policy {
+        AlternateErrorPagesEnabled {
+          policy_options {mode: MANDATORY}
+          AlternateErrorPagesEnabled: false
+        }
+      }
+    })");
+  return network_traffic_annotation_tag;
 }
 
 }  // namespace
@@ -271,6 +303,10 @@ void NetErrorHelper::FetchNavigationCorrections(
   correction_fetcher_->Start(
       render_frame()->GetWebFrame(),
       blink::WebURLRequest::kRequestContextInternal,
+      render_frame()
+          ->GetDefaultURLLoaderFactoryGetter()
+          ->GetNetworkLoaderFactory(),
+      GetNetworkTrafficAnnotationTag(),
       base::BindOnce(&NetErrorHelper::OnNavigationCorrectionsFetched,
                      base::Unretained(this)));
 
@@ -294,6 +330,10 @@ void NetErrorHelper::SendTrackingRequest(
   tracking_fetcher_->Start(
       render_frame()->GetWebFrame(),
       blink::WebURLRequest::kRequestContextInternal,
+      render_frame()
+          ->GetDefaultURLLoaderFactoryGetter()
+          ->GetNetworkLoaderFactory(),
+      GetNetworkTrafficAnnotationTag(),
       base::BindOnce(&NetErrorHelper::OnTrackingRequestComplete,
                      base::Unretained(this)));
 }
