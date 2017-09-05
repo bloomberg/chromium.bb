@@ -4,11 +4,11 @@
 
 module viz.mojom;
 
-import "cc/ipc/frame_sink_id.mojom";
 import "cc/ipc/local_surface_id.mojom";
 import "gpu/ipc/common/surface_handle.mojom";
 import "mojo/common/time.mojom";
 import "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom";
+import "services/viz/public/interfaces/compositing/frame_sink_id.mojom";
 import "services/viz/public/interfaces/compositing/surface_id.mojom";
 import "services/viz/public/interfaces/compositing/surface_info.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
@@ -42,19 +42,19 @@ interface DisplayPrivate {
 interface FrameSinkManager {
   // Registers |frame_sink_id| will be used. This must be called before
   // Create(Root)CompositorFrameSink() is called.
-  RegisterFrameSinkId(cc.mojom.FrameSinkId frame_sink_id);
+  RegisterFrameSinkId(FrameSinkId frame_sink_id);
 
   // Invalidates |frame_sink_id| which cleans up any unsatisified surface
   // sequences or dangling temporary references assigned to it. If there is a
   // CompositorFrameSink for |frame_sink_id| then it will be destroyed and the
   // message pipe to the client will be closed.
-  InvalidateFrameSinkId(cc.mojom.FrameSinkId frame_sink_id);
+  InvalidateFrameSinkId(FrameSinkId frame_sink_id);
 
   // Create a CompositorFrameSink for a privileged client (e.g. WindowServer).
   // This is only used by privileged clients. The client can call methods that
   // talks to the Display (e.g. ResizeDisplay(), SetDisplayVisible(), etc)
   CreateRootCompositorFrameSink(
-      cc.mojom.FrameSinkId frame_sink_id,
+      FrameSinkId frame_sink_id,
       gpu.mojom.SurfaceHandle widget,
       RendererSettings renderer_settings,
       associated CompositorFrameSink& compositor_frame_sink,
@@ -65,25 +65,25 @@ interface FrameSinkManager {
   // CompositorFrameSink is not a root, and has to be parented by another
   // CompositorFrameSink in order to appear on screen.
   CreateCompositorFrameSink(
-      cc.mojom.FrameSinkId frame_sink_id,
+      FrameSinkId frame_sink_id,
       CompositorFrameSink& compositor_frame_sink,
       CompositorFrameSinkClient compositor_frame_sink_client);
 
   // Set up a BeginFrame relationship between two FrameSinkIds. In this case,
   // the child inherits the viz::BeginFrameSource from the parent if it doesn't
   // already have a viz::BeginFrameSource.
-  RegisterFrameSinkHierarchy(cc.mojom.FrameSinkId parent_frame_sink_id,
-                             cc.mojom.FrameSinkId child_frame_sink_id);
+  RegisterFrameSinkHierarchy(FrameSinkId parent_frame_sink_id,
+                             FrameSinkId child_frame_sink_id);
 
   // Removes a BeginFrame relationship between two FrameSinkIds.
-  UnregisterFrameSinkHierarchy(cc.mojom.FrameSinkId parent_frame_sink_id,
-                               cc.mojom.FrameSinkId child_frame_sink_id);
+  UnregisterFrameSinkHierarchy(FrameSinkId parent_frame_sink_id,
+                               FrameSinkId child_frame_sink_id);
 
   // Assigns the temporary reference for |surface_id| to FrameSinkId |owner|.
   // If |owner| is invalidated before it converts the temporary reference to a
   // surface reference then the temporary reference will be dropped.
   AssignTemporaryReference(SurfaceId surface_id,
-                           cc.mojom.FrameSinkId owner);
+                           FrameSinkId owner);
 
   // Drops the temporary reference for |surface_id|. This will get called when
   // the FrameSinkManagerClient doesn't think |surface_id| will be embedded.
@@ -101,17 +101,17 @@ interface FrameSinkManagerClient {
 
   // The CompositorFrameSink pipe for |frame_sink_id| was closed. The client
   // cannot submit any CompositorFrames to viz after this occurs.
-  OnClientConnectionClosed(cc.mojom.FrameSinkId frame_sink_id);
+  OnClientConnectionClosed(FrameSinkId frame_sink_id);
 
   // Sends |active_handle| and |idle_handle| along with their sizes to the
   // client when they are allocated or resized.
-  OnAggregatedHitTestRegionListUpdated(cc.mojom.FrameSinkId frame_sink_id,
+  OnAggregatedHitTestRegionListUpdated(FrameSinkId frame_sink_id,
                                        handle<shared_buffer> active_handle,
                                        uint32 active_handle_size,
                                        handle<shared_buffer> idle_handle,
                                        uint32 idle_handle_size);
 
   // Tells the client to update the currently active handle.
-  SwitchActiveAggregatedHitTestRegionList(cc.mojom.FrameSinkId frame_sink_id,
+  SwitchActiveAggregatedHitTestRegionList(FrameSinkId frame_sink_id,
                                           uint8 active_handle_index);
 };
