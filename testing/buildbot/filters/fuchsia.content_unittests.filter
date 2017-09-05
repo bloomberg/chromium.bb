@@ -1,6 +1,5 @@
 # Being ported, https://crbug.com/754861.
 
--ChildMemoryCoordinatorImplTest.MultipleClients
 -LegacyInputRouterImplTest.AckedTouchEventState
 -MediaStreamManagerTest.MakeAndCancelMultipleRequests
 -MediaStreamManagerTest.MakeMediaAccessRequest

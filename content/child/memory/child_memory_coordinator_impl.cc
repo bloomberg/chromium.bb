@@ -57,6 +57,7 @@ ChildMemoryCoordinatorImpl::ChildMemoryCoordinatorImpl(
 
 ChildMemoryCoordinatorImpl::~ChildMemoryCoordinatorImpl() {
   base::AutoLock lock(*g_lock.Pointer());
+  base::MemoryCoordinatorProxy::SetMemoryCoordinator(nullptr);
   DCHECK(g_child_memory_coordinator == this);
   g_child_memory_coordinator = nullptr;
 }
