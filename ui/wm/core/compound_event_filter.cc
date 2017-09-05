@@ -17,10 +17,6 @@
 #include "ui/events/event.h"
 #include "ui/wm/public/activation_client.h"
 
-#if defined(OS_CHROMEOS) && defined(USE_X11)
-#include "ui/events/devices/x11/touch_factory_x11.h"  // nogncheck
-#endif
-
 namespace wm {
 
 namespace {
@@ -28,18 +24,7 @@ namespace {
 // Returns true if the cursor should be hidden on touch events.
 // TODO(tdanderson|rsadam): Move this function into CursorClient.
 bool ShouldHideCursorOnTouch(const ui::TouchEvent& event) {
-#if defined(OS_WIN)
-  return true;
-#elif defined(OS_CHROMEOS)
-#if defined(USE_X11)
-  int device_id = event.source_device_id();
-  if (device_id >= 0 &&
-      !ui::TouchFactory::GetInstance()->IsMultiTouchDevice(device_id)) {
-    // If the touch event is coming from a mouse-device (i.e. not a real
-    // touch-device), then do not hide the cursor.
-    return false;
-  }
-#endif  // defined(USE_X11)
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
   return true;
 #else
   // Linux Aura does not hide the cursor on touch by default.

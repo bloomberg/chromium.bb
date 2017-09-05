@@ -244,9 +244,7 @@ source_set("lib") {
     "key_converter.h",
     "keycode_text_conversion.h",
     "keycode_text_conversion_mac.mm",
-    "keycode_text_conversion_ozone.cc",
     "keycode_text_conversion_win.cc",
-    "keycode_text_conversion_x.cc",
     "logging.cc",
     "logging.h",
     "performance_logger.cc",
@@ -270,12 +268,13 @@ source_set("lib") {
   # Also compile the generated version files.
   sources += get_target_outputs(":embed_version_in_cpp")
 
-  # These aren't automatically filtered out.
-  if (!use_x11) {
-    sources -= [ "keycode_text_conversion_x.cc" ]
+  if (use_x11) {
+    sources += [ "keycode_text_conversion_x.cc" ]
   }
-  if (!use_ozone && !use_x11) {
-    sources -= [ "keycode_text_conversion_ozone.cc" ]
+
+  # The X11 implementation uses part of Ozone implementation.
+  if (use_ozone || use_x11) {
+    sources += [ "keycode_text_conversion_ozone.cc" ]
   }
 
   deps = [
