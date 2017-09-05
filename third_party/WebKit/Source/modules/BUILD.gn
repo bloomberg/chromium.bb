@@ -178,7 +178,7 @@ target("jumbo_" + modules_target_type, "modules") {
   }
 }
 
-source_set("modules_testing") {
+jumbo_source_set("modules_testing") {
   sources = [
     "$bindings_modules_v8_output_dir/V8InternalsPartial.cpp",
     "$bindings_modules_v8_output_dir/V8InternalsPartial.h",
@@ -230,7 +230,7 @@ group("make_modules_generated") {
   ]
 }
 
-source_set("unit_tests") {
+jumbo_source_set("unit_tests") {
   testonly = true
 
   sources = [
