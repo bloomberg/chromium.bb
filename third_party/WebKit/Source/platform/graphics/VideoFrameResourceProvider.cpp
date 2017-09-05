@@ -14,10 +14,12 @@ VideoFrameResourceProvider::VideoFrameResourceProvider() = default;
 void VideoFrameResourceProvider::AppendQuads(cc::RenderPass& render_pass) {
   gfx::Rect rect(0, 0, 10000, 10000);
   gfx::Rect visible_rect(0, 0, 10000, 10000);
+  bool is_clipped = false;
+  bool are_contents_opaque = true;
   viz::SharedQuadState* shared_state =
       render_pass.CreateAndAppendSharedQuadState();
-  shared_state->SetAll(gfx::Transform(), rect, rect, rect, false, 1,
-                       SkBlendMode::kSrcOver, 0);
+  shared_state->SetAll(gfx::Transform(), rect, rect, rect, is_clipped,
+                       are_contents_opaque, 1, SkBlendMode::kSrcOver, 0);
   cc::SolidColorDrawQuad* solid_color_quad =
       render_pass.CreateAndAppendDrawQuad<cc::SolidColorDrawQuad>();
   // Fluxuate colors for placeholder testing.

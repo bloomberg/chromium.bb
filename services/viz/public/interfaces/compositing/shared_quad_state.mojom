@@ -22,6 +22,10 @@ struct SharedQuadState {
   gfx.mojom.Rect clip_rect;
 
   bool is_clipped;
+
+  // Indicates whether the quads share this sqs contains opaque content.
+  bool are_contents_opaque;
+
   float opacity;
   // TODO(fsamuel): Change this to an SkXfermode enum once native enums are
   // supported.

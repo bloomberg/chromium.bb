@@ -134,6 +134,9 @@ void OffscreenCanvasFrameDispatcherImpl::DispatchFrame(
 
   const gfx::Rect bounds(width_, height_);
   const int kRenderPassId = 1;
+  bool is_clipped = false;
+  // TODO(crbug.com/705019): optimize for contexts that have {alpha: false}
+  bool are_contents_opaque = false;
   std::unique_ptr<cc::RenderPass> pass = cc::RenderPass::Create();
   pass->SetNew(kRenderPassId, bounds,
                gfx::Rect(damage_rect.x(), damage_rect.y(), damage_rect.width(),
@@ -141,8 +144,8 @@ void OffscreenCanvasFrameDispatcherImpl::DispatchFrame(
                gfx::Transform());
 
   viz::SharedQuadState* sqs = pass->CreateAndAppendSharedQuadState();
-  sqs->SetAll(gfx::Transform(), bounds, bounds, bounds, false, 1.f,
-              SkBlendMode::kSrcOver, 0);
+  sqs->SetAll(gfx::Transform(), bounds, bounds, bounds, is_clipped,
+              are_contents_opaque, 1.f, SkBlendMode::kSrcOver, 0);
 
   viz::TransferableResource resource;
   offscreen_canvas_resource_provider_->TransferResource(&resource);

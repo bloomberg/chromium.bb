@@ -40,13 +40,15 @@ TEST(DrawQuadTest, CopySharedQuadState) {
   gfx::Rect visible_layer_rect(10, 12, 14, 16);
   gfx::Rect clip_rect(19, 21, 23, 25);
   bool is_clipped = true;
+  bool are_contents_opaque = true;
   float opacity = 0.25f;
   SkBlendMode blend_mode = SkBlendMode::kMultiply;
   int sorting_context_id = 65536;
 
   auto state = std::make_unique<viz::SharedQuadState>();
   state->SetAll(quad_transform, layer_rect, visible_layer_rect, clip_rect,
-                is_clipped, opacity, blend_mode, sorting_context_id);
+                is_clipped, are_contents_opaque, opacity, blend_mode,
+                sorting_context_id);
 
   auto copy = std::make_unique<viz::SharedQuadState>(*state);
   EXPECT_EQ(quad_transform, copy->quad_to_target_transform);
@@ -54,6 +56,7 @@ TEST(DrawQuadTest, CopySharedQuadState) {
   EXPECT_EQ(opacity, copy->opacity);
   EXPECT_EQ(clip_rect, copy->clip_rect);
   EXPECT_EQ(is_clipped, copy->is_clipped);
+  EXPECT_EQ(are_contents_opaque, copy->are_contents_opaque);
   EXPECT_EQ(blend_mode, copy->blend_mode);
 }
 
@@ -63,13 +66,15 @@ viz::SharedQuadState* CreateSharedQuadState(RenderPass* render_pass) {
   gfx::Rect visible_layer_rect(10, 12, 14, 16);
   gfx::Rect clip_rect(19, 21, 23, 25);
   bool is_clipped = false;
+  bool are_contents_opaque = true;
   float opacity = 1.f;
   int sorting_context_id = 65536;
   SkBlendMode blend_mode = SkBlendMode::kSrcOver;
 
   viz::SharedQuadState* state = render_pass->CreateAndAppendSharedQuadState();
   state->SetAll(quad_transform, layer_rect, visible_layer_rect, clip_rect,
-                is_clipped, opacity, blend_mode, sorting_context_id);
+                is_clipped, are_contents_opaque, opacity, blend_mode,
+                sorting_context_id);
   return state;
 }
 

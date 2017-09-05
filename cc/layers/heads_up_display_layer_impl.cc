@@ -137,7 +137,7 @@ void HeadsUpDisplayLayerImpl::AppendQuads(
   viz::SharedQuadState* shared_quad_state =
       render_pass->CreateAndAppendSharedQuadState();
   PopulateScaledSharedQuadState(shared_quad_state, internal_contents_scale_,
-                                internal_contents_scale_);
+                                internal_contents_scale_, contents_opaque());
 
   gfx::Rect quad_rect(internal_content_bounds_);
   bool needs_blending = contents_opaque() ? false : true;

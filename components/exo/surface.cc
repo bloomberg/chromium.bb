@@ -752,13 +752,17 @@ void Surface::AppendContentsToFrame(const gfx::Point& origin,
   buffer_to_target_matrix.postTranslate(origin.x(), origin.y());
   buffer_to_target_matrix.postScale(device_scale_factor, device_scale_factor);
 
+  bool are_contents_opaque =
+      !current_resource_has_alpha_ || state_.blend_mode == SkBlendMode::kSrc ||
+      state_.opaque_region.contains(gfx::RectToSkIRect(output_rect));
+
   viz::SharedQuadState* quad_state =
       render_pass->CreateAndAppendSharedQuadState();
   quad_state->SetAll(
       gfx::Transform(buffer_to_target_matrix),
       gfx::Rect(content_size_) /* quad_layer_rect */,
       output_rect /* visible_quad_layer_rect */, gfx::Rect() /* clip_rect */,
-      false /* is_clipped */, state_.alpha /* opacity */,
+      false /* is_clipped */, are_contents_opaque, state_.alpha /* opacity */,
       SkBlendMode::kSrcOver /* blend_mode */, 0 /* sorting_context_id */);
 
   if (current_resource_.id) {
@@ -779,13 +783,9 @@ void Surface::AppendContentsToFrame(const gfx::Point& origin,
       cc::TextureDrawQuad* texture_quad =
           render_pass->CreateAndAppendDrawQuad<cc::TextureDrawQuad>();
       float vertex_opacity[4] = {1.0, 1.0, 1.0, 1.0};
-      bool needs_blending =
-          current_resource_has_alpha_ &&
-          state_.blend_mode != SkBlendMode::kSrc &&
-          !state_.opaque_region.contains(gfx::RectToSkIRect(output_rect));
 
       texture_quad->SetNew(
-          quad_state, quad_rect, quad_rect, needs_blending,
+          quad_state, quad_rect, quad_rect, !are_contents_opaque,
           current_resource_.id, true /* premultiplied_alpha */, uv_top_left,
           uv_bottom_right, SK_ColorTRANSPARENT /* background_color */,
           vertex_opacity, false /* y_flipped */, false /* nearest_neighbor */,

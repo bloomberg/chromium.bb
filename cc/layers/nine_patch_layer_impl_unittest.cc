@@ -83,6 +83,8 @@ void NinePatchLayerLayoutTest(const gfx::Size& bitmap_size,
 
     EXPECT_TRUE(visible_layer_rect.Contains(quad_rect)) << iter.index();
     EXPECT_TRUE(layer_remaining.Contains(quad_rect)) << iter.index();
+    EXPECT_EQ(iter->needs_blending,
+              !iter->shared_quad_state->are_contents_opaque);
     layer_remaining.Subtract(Region(quad_rect));
   }
 
@@ -191,6 +193,8 @@ void NinePatchLayerLayoutTestWithOcclusion(const gfx::Size& bitmap_size,
 
     EXPECT_TRUE(visible_layer_rect.Contains(quad_rect)) << iter.index();
     EXPECT_TRUE(layer_remaining.Contains(quad_rect)) << iter.index();
+    EXPECT_EQ(iter->needs_blending,
+              !iter->shared_quad_state->are_contents_opaque);
     layer_remaining.Subtract(Region(quad_rect));
   }
 

@@ -142,17 +142,19 @@ void LayerImpl::SetScrollTreeIndex(int index) {
   scroll_tree_index_ = index;
 }
 
-void LayerImpl::PopulateSharedQuadState(viz::SharedQuadState* state) const {
+void LayerImpl::PopulateSharedQuadState(viz::SharedQuadState* state,
+                                        bool contents_opaque) const {
   state->SetAll(draw_properties_.target_space_transform, gfx::Rect(bounds()),
                 draw_properties_.visible_layer_rect, draw_properties_.clip_rect,
-                draw_properties_.is_clipped, draw_properties_.opacity,
-                SkBlendMode::kSrcOver, GetSortingContextId());
+                draw_properties_.is_clipped, contents_opaque,
+                draw_properties_.opacity, SkBlendMode::kSrcOver,
+                GetSortingContextId());
 }
 
-void LayerImpl::PopulateScaledSharedQuadState(
-    viz::SharedQuadState* state,
-    float layer_to_content_scale_x,
-    float layer_to_content_scale_y) const {
+void LayerImpl::PopulateScaledSharedQuadState(viz::SharedQuadState* state,
+                                              float layer_to_content_scale_x,
+                                              float layer_to_content_scale_y,
+                                              bool contents_opaque) const {
   gfx::Transform scaled_draw_transform =
       draw_properties_.target_space_transform;
   scaled_draw_transform.Scale(SK_MScalar1 / layer_to_content_scale_x,
@@ -165,8 +167,9 @@ void LayerImpl::PopulateScaledSharedQuadState(
 
   state->SetAll(scaled_draw_transform, gfx::Rect(scaled_bounds),
                 scaled_visible_layer_rect, draw_properties().clip_rect,
-                draw_properties().is_clipped, draw_properties().opacity,
-                SkBlendMode::kSrcOver, GetSortingContextId());
+                draw_properties().is_clipped, contents_opaque,
+                draw_properties().opacity, SkBlendMode::kSrcOver,
+                GetSortingContextId());
 }
 
 bool LayerImpl::WillDraw(DrawMode draw_mode,

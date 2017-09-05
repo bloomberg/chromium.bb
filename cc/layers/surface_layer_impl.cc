@@ -133,7 +133,7 @@ SurfaceDrawQuad* SurfaceLayerImpl::CreateSurfaceDrawQuad(
   if (!shared_quad_state) {
     shared_quad_state = render_pass->CreateAndAppendSharedQuadState();
     PopulateScaledSharedQuadState(shared_quad_state, layer_to_content_scale_x,
-                                  layer_to_content_scale_y);
+                                  layer_to_content_scale_y, contents_opaque());
   }
   if (common_shared_quad_state)
     *common_shared_quad_state = shared_quad_state;
@@ -159,7 +159,7 @@ void SurfaceLayerImpl::AppendRainbowDebugBorder(RenderPass* render_pass) {
 
   viz::SharedQuadState* shared_quad_state =
       render_pass->CreateAndAppendSharedQuadState();
-  PopulateSharedQuadState(shared_quad_state);
+  PopulateSharedQuadState(shared_quad_state, contents_opaque());
 
   SkColor color;
   float border_width;

@@ -125,10 +125,12 @@ class CC_EXPORT LayerImpl {
 
   LayerTreeImpl* layer_tree_impl() const { return layer_tree_impl_; }
 
-  void PopulateSharedQuadState(viz::SharedQuadState* state) const;
+  void PopulateSharedQuadState(viz::SharedQuadState* state,
+                               bool contents_opaque) const;
   void PopulateScaledSharedQuadState(viz::SharedQuadState* state,
                                      float layer_to_content_scale_x,
-                                     float layer_to_content_scale_y) const;
+                                     float layer_to_content_scale_y,
+                                     bool contents_opaque) const;
   // WillDraw must be called before AppendQuads. If WillDraw returns false,
   // AppendQuads and DidDraw will not be called. If WillDraw returns true,
   // DidDraw is guaranteed to be called before another WillDraw or before

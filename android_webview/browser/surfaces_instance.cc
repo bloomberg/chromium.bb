@@ -184,12 +184,14 @@ void SurfacesInstance::RemoveChildId(const viz::SurfaceId& child_id) {
 void SurfacesInstance::SetSolidColorRootFrame() {
   DCHECK(!surface_size_.IsEmpty());
   gfx::Rect rect(surface_size_);
+  bool is_clipped = false;
+  bool are_contents_opaque = true;
   std::unique_ptr<cc::RenderPass> render_pass = cc::RenderPass::Create();
   render_pass->SetNew(1, rect, rect, gfx::Transform());
   viz::SharedQuadState* quad_state =
       render_pass->CreateAndAppendSharedQuadState();
-  quad_state->SetAll(gfx::Transform(), rect, rect, rect, false, 1.f,
-                     SkBlendMode::kSrcOver, 0);
+  quad_state->SetAll(gfx::Transform(), rect, rect, rect, is_clipped,
+                     are_contents_opaque, 1.f, SkBlendMode::kSrcOver, 0);
   cc::SolidColorDrawQuad* solid_quad =
       render_pass->CreateAndAppendDrawQuad<cc::SolidColorDrawQuad>();
   solid_quad->SetNew(quad_state, rect, rect, SK_ColorBLACK, false);

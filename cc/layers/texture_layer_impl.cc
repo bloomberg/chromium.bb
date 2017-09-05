@@ -63,7 +63,6 @@ bool TextureLayerImpl::IsSnapped() {
 
 void TextureLayerImpl::PushPropertiesTo(LayerImpl* layer) {
   LayerImpl::PushPropertiesTo(layer);
-
   TextureLayerImpl* texture_layer = static_cast<TextureLayerImpl*>(layer);
   texture_layer->SetFlipped(flipped_);
   texture_layer->SetUVTopLeft(uv_top_left_);
@@ -148,22 +147,23 @@ void TextureLayerImpl::AppendQuads(RenderPass* render_pass,
                                    AppendQuadsData* append_quads_data) {
   DCHECK(external_texture_resource_ || valid_texture_copy_);
 
+  SkColor bg_color =
+      blend_background_color_ ? background_color() : SK_ColorTRANSPARENT;
+  bool are_contents_opaque =
+      contents_opaque() || (SkColorGetA(bg_color) == 0xFF);
+
   viz::SharedQuadState* shared_quad_state =
       render_pass->CreateAndAppendSharedQuadState();
-  PopulateSharedQuadState(shared_quad_state);
+  PopulateSharedQuadState(shared_quad_state, are_contents_opaque);
 
   AppendDebugBorderQuad(render_pass, bounds(), shared_quad_state,
                         append_quads_data);
-
-  SkColor bg_color = blend_background_color_ ?
-      background_color() : SK_ColorTRANSPARENT;
-  bool opaque = contents_opaque() || (SkColorGetA(bg_color) == 0xFF);
 
   gfx::Rect quad_rect(bounds());
   gfx::Rect visible_quad_rect =
       draw_properties().occlusion_in_content_space.GetUnoccludedContentRect(
           quad_rect);
-  bool needs_blending = !opaque;
+  bool needs_blending = !are_contents_opaque;
   if (visible_quad_rect.IsEmpty())
     return;
 

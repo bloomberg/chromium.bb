@@ -383,11 +383,12 @@ void RenderSurfaceImpl::AppendQuads(DrawMode draw_mode,
   int sorting_context_id =
       property_trees->transform_tree.Node(TransformTreeIndex())
           ->sorting_context_id;
+  bool contents_opaque = false;
   viz::SharedQuadState* shared_quad_state =
       render_pass->CreateAndAppendSharedQuadState();
   shared_quad_state->SetAll(
       draw_transform(), content_rect(), content_rect(),
-      draw_properties_.clip_rect, draw_properties_.is_clipped,
+      draw_properties_.clip_rect, draw_properties_.is_clipped, contents_opaque,
       draw_properties_.draw_opacity, BlendMode(), sorting_context_id);
 
   if (layer_tree_impl_->debug_state().show_debug_borders.test(

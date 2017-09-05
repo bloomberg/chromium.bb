@@ -63,7 +63,7 @@ class FakePictureLayerImplForRenderSurfaceTest : public FakePictureLayerImpl {
         render_pass->CreateAndAppendSharedQuadState();
     float max_contents_scale = 1.f;
     PopulateScaledSharedQuadState(shared_quad_state, max_contents_scale,
-                                  max_contents_scale);
+                                  max_contents_scale, contents_opaque());
     bool needs_blending = false;
     for (const auto& rect : quad_rects_) {
       TileDrawQuad* quad = render_pass->CreateAndAppendDrawQuad<TileDrawQuad>();
