@@ -231,10 +231,11 @@ PlayerUtils.registerEMEEventListeners = function(player) {
   }
 
   // The File IO test requires persistent state support.
-  if (player.testConfig.keySystem ==
-      'org.chromium.externalclearkey.fileiotest') {
+  if (player.testConfig.keySystem == FILE_IO_TEST_KEYSYSTEM) {
     config.persistentState = 'required';
-  } else if (player.testConfig.sessionToLoad) {
+  } else if (
+      player.testConfig.sessionToLoad ||
+      player.testConfig.keySystem == STORAGE_ID_TEST_KEYSYSTEM) {
     config.persistentState = 'required';
     config.sessionTypes = ['temporary', 'persistent-license'];
   }

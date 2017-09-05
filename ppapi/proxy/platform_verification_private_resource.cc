@@ -88,12 +88,14 @@ void PlatformVerificationPrivateResource::OnChallengePlatformReply(
   if (params.result() == PP_OK) {
     *(output_params.signed_data) =
         (PpapiGlobals::Get()->GetVarTracker()->MakeArrayBufferVar(
-            static_cast<uint32_t>(raw_signed_data.size()),
-            &raw_signed_data.front()))->GetPPVar();
+             static_cast<uint32_t>(raw_signed_data.size()),
+             raw_signed_data.data()))
+            ->GetPPVar();
     *(output_params.signed_data_signature) =
         (PpapiGlobals::Get()->GetVarTracker()->MakeArrayBufferVar(
-            static_cast<uint32_t>(raw_signed_data_signature.size()),
-            &raw_signed_data_signature.front()))->GetPPVar();
+             static_cast<uint32_t>(raw_signed_data_signature.size()),
+             raw_signed_data_signature.data()))
+            ->GetPPVar();
     *(output_params.platform_key_certificate) =
         (new StringVar(raw_platform_key_certificate))->GetPPVar();
   }
@@ -121,14 +123,17 @@ int32_t PlatformVerificationPrivateResource::GetStorageId(
 void PlatformVerificationPrivateResource::OnGetStorageIdReply(
     GetStorageIdParams output_params,
     const ResourceMessageReplyParams& params,
-    const std::string& storage_id) {
+    const std::vector<uint8_t>& storage_id) {
   if (!TrackedCallback::IsPending(output_params.callback) ||
       TrackedCallback::IsScheduledToRun(output_params.callback)) {
     return;
   }
 
   if (params.result() == PP_OK) {
-    *(output_params.storage_id) = (new StringVar(storage_id))->GetPPVar();
+    *(output_params.storage_id) =
+        (PpapiGlobals::Get()->GetVarTracker()->MakeArrayBufferVar(
+             static_cast<uint32_t>(storage_id.size()), storage_id.data()))
+            ->GetPPVar();
   }
   output_params.callback->Run(params.result());
 }
