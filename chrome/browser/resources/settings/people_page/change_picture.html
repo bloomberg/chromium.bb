@@ -15,9 +15,10 @@
   <template>
     <style>
       :host {
-        /* 56px cr_toolbar + 72px #headerLine */
-        --cr-settings-change-picture-top: 128px;
-        --title-height: 30px;
+        --cr-toolbar-height: 56px;
+        /* #headerLine height + padding */
+        --cr-settings-header-height: calc(62px + 1.34em);
+        --title-height: 2em;
         --title-padding: 16px;
         display: block;
         min-height: 328px;
@@ -34,6 +35,9 @@
         align-items: flex-start;
         display: flex;
         position: absolute;
+        top: calc(var(--cr-settings-header-height) +
+                  var(--title-padding) +
+                  var(--title-height));
       }
 
       #picturePane {
@@ -58,7 +62,8 @@
         /* TODO(reveman): Find a way to have height align to viewport
            without using fixed position. */
         height: calc(100vh -
-            var(--cr-settings-change-picture-top) -
+            var(--cr-toolbar-height) -
+            var(--cr-settings-header-height) -
             var(--title-padding) -
             var(--title-height));
         margin-top: 0;
