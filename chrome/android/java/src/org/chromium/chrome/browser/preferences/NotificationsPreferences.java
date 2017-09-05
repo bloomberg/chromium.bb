@@ -39,7 +39,7 @@ public class NotificationsPreferences extends PreferenceFragment {
 
         mSnippetsBridge = new SnippetsBridge(Profile.getLastUsedProfile());
 
-        addPreferencesFromResource(R.xml.notifications_preferences);
+        PreferenceUtils.addPreferencesFromResource(this, R.xml.notifications_preferences);
         getActivity().setTitle(R.string.prefs_notifications);
 
         mSuggestionsPref = (ChromeSwitchPreference) findPreference(PREF_SUGGESTIONS);

@@ -3,14 +3,12 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:chrome="http://schemas.android.com/apk/res-auto" >
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
     <org.chromium.chrome.browser.preferences.ChromeSwitchPreference
         android:key="content_suggestions"
         android:title="@string/notifications_content_suggestions_title"
-        android:summary="@string/notifications_content_suggestions_summary"
-        chrome:drawDivider="true" />
+        android:summary="@string/notifications_content_suggestions_summary" />
 
     <Preference
         android:fragment="org.chromium.chrome.browser.preferences.website.SingleCategoryPreferences"
