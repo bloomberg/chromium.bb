@@ -4,16 +4,31 @@
 
 package org.chromium.webview_shell.page_cycler;
 
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
-import android.test.ActivityInstrumentationTestCase2;
+import android.support.test.rule.ActivityTestRule;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import org.chromium.base.test.params.BaseJUnit4RunnerDelegate;
+import org.chromium.base.test.params.ParameterAnnotations.MethodParameter;
+import org.chromium.base.test.params.ParameterAnnotations.UseMethodParameter;
+import org.chromium.base.test.params.ParameterAnnotations.UseRunnerDelegate;
+import org.chromium.base.test.params.ParameterSet;
+import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.webview_shell.PageCyclerTestActivity;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -21,70 +36,52 @@ import java.util.concurrent.TimeoutException;
  * Tests running on bots with internet connection to load popular urls,
  * making sure webview doesn't crash
  */
-public class PageCyclerTest
-        extends ActivityInstrumentationTestCase2<PageCyclerTestActivity> {
-
+@RunWith(ParameterizedRunner.class)
+@UseRunnerDelegate(BaseJUnit4RunnerDelegate.class)
+public class PageCyclerTest {
     private static final long TIMEOUT_IN_SECS = 20;
 
-    private PageCyclerTestActivity mTestActivity;
+    @MethodParameter("A")
+    private static List<ParameterSet> sMethodParameter = new ArrayList<>();
 
-    public PageCyclerTest() {
-        super(PageCyclerTestActivity.class);
+    static {
+        sMethodParameter.add(new ParameterSet().value("http://google.com").name("Google"));
+        sMethodParameter.add(new ParameterSet().value("http://facebook.com").name("Facebook"));
+        sMethodParameter.add(new ParameterSet().value("http://wikipedia.org").name("Wikipedia"));
+        sMethodParameter.add(new ParameterSet().value("http://amazon.com").name("Amazon"));
+        sMethodParameter.add(new ParameterSet().value("http://youtube.com").name("Youtube"));
+        sMethodParameter.add(new ParameterSet().value("http://yahoo.com").name("Yahoo"));
+        sMethodParameter.add(new ParameterSet().value("http://ebay.com").name("Ebay"));
+        sMethodParameter.add(new ParameterSet().value("http://reddit.com").name("reddit"));
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        mTestActivity = getActivity();
+    @Rule
+    public ActivityTestRule<PageCyclerTestActivity> mRule =
+            new ActivityTestRule<>(PageCyclerTestActivity.class);
+
+    @Before
+    public void setUp() throws Exception {
+        mRule.launchActivity(null);
     }
 
+    @Test
     @LargeTest
+    @UseMethodParameter("A")
     @Restriction(Restriction.RESTRICTION_TYPE_INTERNET)
-    public void testVisitGoogleCom() throws Throwable {
-        //TODO(yolandyan@): verify the page
-        visitUrlSync("http://google.com");
-    }
-
-    @LargeTest
-    @Restriction(Restriction.RESTRICTION_TYPE_INTERNET)
-    public void testVisitFacebookCom() throws Throwable {
-        visitUrlSync("http://facebook.com");
-    }
-
-    @LargeTest
-    @Restriction(Restriction.RESTRICTION_TYPE_INTERNET)
-    public void testVisitWikipediaOrg() throws Throwable {
-        visitUrlSync("http://wikipedia.org");
-    }
-
-    @LargeTest
-    @Restriction(Restriction.RESTRICTION_TYPE_INTERNET)
-    public void testVisitAmazonCom() throws Throwable {
-        visitUrlSync("http://amazon.com");
-    }
-
-    @LargeTest
-    @Restriction(Restriction.RESTRICTION_TYPE_INTERNET)
-    public void testVisitYoutubeCom() throws Throwable {
-        visitUrlSync("http://youtube.com");
-    }
-
-    @LargeTest
-    @Restriction(Restriction.RESTRICTION_TYPE_INTERNET)
-    public void testVisitYahooCom() throws Throwable {
-        visitUrlSync("http://yahoo.com");
-    }
-
-    @LargeTest
-    @Restriction(Restriction.RESTRICTION_TYPE_INTERNET)
-    public void testVisitEbayCom() throws Throwable {
-        visitUrlSync("http://ebay.com");
-    }
-
-    @LargeTest
-    @Restriction(Restriction.RESTRICTION_TYPE_INTERNET)
-    public void testVisitRedditCom() throws Throwable {
-        visitUrlSync("http://reddit.com");
+    public void testVisitPage(String url) throws Throwable {
+        final PageCyclerWebViewClient pageCyclerWebViewClient = new PageCyclerWebViewClient();
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+            @Override
+            public void run() {
+                final WebView view = mRule.getActivity().getWebView();
+                WebSettings settings = view.getSettings();
+                settings.setJavaScriptEnabled(true);
+                view.setWebViewClient(pageCyclerWebViewClient);
+            }
+        });
+        CallbackHelper pageFinishedCallback = pageCyclerWebViewClient.getPageFinishedCallback();
+        CallbackHelper errorCallback = pageCyclerWebViewClient.getErrorCallback();
+        loadUrlSync(url, pageFinishedCallback, errorCallback);
     }
 
     private static class PageCyclerWebViewClient extends WebViewClient {
@@ -118,22 +115,6 @@ public class PageCyclerTest
         }
     }
 
-    private void visitUrlSync(final String url) throws Throwable {
-        final PageCyclerWebViewClient pageCyclerWebViewClient = new PageCyclerWebViewClient();
-        getInstrumentation().runOnMainSync(new Runnable() {
-            @Override
-            public void run() {
-                final WebView view = mTestActivity.getWebView();
-                WebSettings settings = view.getSettings();
-                settings.setJavaScriptEnabled(true);
-                view.setWebViewClient(pageCyclerWebViewClient);
-            }
-        });
-        CallbackHelper pageFinishedCallback = pageCyclerWebViewClient.getPageFinishedCallback();
-        CallbackHelper errorCallback = pageCyclerWebViewClient.getErrorCallback();
-        loadUrlSync(url, pageFinishedCallback, errorCallback);
-    }
-
     private void loadUrlSync(final String url, final CallbackHelper pageFinishedCallback,
             final CallbackHelper errorCallback) throws InterruptedException {
         boolean timeout = false;
@@ -146,16 +127,16 @@ public class PageCyclerTest
         } catch (TimeoutException ex) {
             timeout = true;
         }
-        assertEquals(String.format("Network error while accessing %s", url), errorCount,
+        Assert.assertEquals(String.format("Network error while accessing %s", url), errorCount,
                 errorCallback.getCallCount());
-        assertFalse(String.format("Timeout error while accessing %s", url), timeout);
+        Assert.assertFalse(String.format("Timeout error while accessing %s", url), timeout);
     }
 
     private void loadUrlAsync(final String url) {
-        getInstrumentation().runOnMainSync(new Runnable() {
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                WebView view = mTestActivity.getWebView();
+                WebView view = mRule.getActivity().getWebView();
                 view.loadUrl(url);
             }
         });
