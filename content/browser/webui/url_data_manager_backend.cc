@@ -209,18 +209,17 @@ void URLRequestChromeJob::Start() {
   // https://crbug.com/616641.
   if (url.SchemeIs(kChromeDevToolsScheme)) {
     BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&URLRequestChromeJob::DelayStartForDevTools,
-                   weak_factory_.GetWeakPtr()));
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&URLRequestChromeJob::DelayStartForDevTools,
+                       weak_factory_.GetWeakPtr()));
     return;
   }
 
   // Start reading asynchronously so that all error reporting and data
   // callbacks happen as they would for network requests.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&URLRequestChromeJob::StartAsync, weak_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&URLRequestChromeJob::StartAsync,
+                                weak_factory_.GetWeakPtr()));
 
   TRACE_EVENT_ASYNC_BEGIN1("browser", "DataManager:Request", this, "URL",
       url.possibly_invalid_spec());
@@ -319,10 +318,10 @@ int URLRequestChromeJob::PostReadTask(scoped_refptr<net::IOBuffer> buf,
 
   base::PostTaskWithTraitsAndReply(
       FROM_HERE, {base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      base::Bind(&CopyData, base::RetainedRef(buf), buf_size, data_,
-                 data_offset_),
-      base::Bind(&URLRequestChromeJob::ReadRawDataComplete,
-                 weak_factory_.GetWeakPtr(), buf_size));
+      base::BindOnce(&CopyData, base::RetainedRef(buf), buf_size, data_,
+                     data_offset_),
+      base::BindOnce(&URLRequestChromeJob::ReadRawDataComplete,
+                     weak_factory_.GetWeakPtr(), buf_size));
   data_offset_ += buf_size;
 
   return net::ERR_IO_PENDING;
@@ -331,9 +330,8 @@ int URLRequestChromeJob::PostReadTask(scoped_refptr<net::IOBuffer> buf,
 void URLRequestChromeJob::DelayStartForDevTools(
     const base::WeakPtr<URLRequestChromeJob>& job) {
   BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&URLRequestChromeJob::StartAsync, job));
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&URLRequestChromeJob::StartAsync, job));
 }
 
 void URLRequestChromeJob::StartAsync() {
@@ -540,8 +538,8 @@ bool URLDataManagerBackend::StartRequest(const net::URLRequest* request,
     // usually the UI thread, for this path.
     target_runner->PostTask(
         FROM_HERE,
-        base::Bind(&URLDataManagerBackend::CallStartRequest,
-                   base::RetainedRef(source), path, wc_getter, request_id));
+        base::BindOnce(&URLDataManagerBackend::CallStartRequest,
+                       base::RetainedRef(source), path, wc_getter, request_id));
   }
   return true;
 }

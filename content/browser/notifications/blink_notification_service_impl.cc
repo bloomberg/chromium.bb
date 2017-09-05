@@ -37,9 +37,9 @@ BlinkNotificationServiceImpl::BlinkNotificationServiceImpl(
   DCHECK(notification_context_);
   DCHECK(resource_context_);
 
-  binding_.set_connection_error_handler(
-      base::Bind(&BlinkNotificationServiceImpl::OnConnectionError,
-                 base::Unretained(this) /* the channel is owned by this */));
+  binding_.set_connection_error_handler(base::BindOnce(
+      &BlinkNotificationServiceImpl::OnConnectionError,
+      base::Unretained(this) /* the channel is owned by this */));
 }
 
 BlinkNotificationServiceImpl::~BlinkNotificationServiceImpl() {

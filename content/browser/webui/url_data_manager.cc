@@ -71,11 +71,10 @@ URLDataManager::~URLDataManager() {
 
 void URLDataManager::AddDataSource(URLDataSourceImpl* source) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&AddDataSourceOnIOThread,
-                 browser_context_->GetResourceContext(),
-                 make_scoped_refptr(source)));
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::BindOnce(&AddDataSourceOnIOThread,
+                                         browser_context_->GetResourceContext(),
+                                         make_scoped_refptr(source)));
 }
 
 void URLDataManager::UpdateWebUIDataSource(
@@ -84,9 +83,9 @@ void URLDataManager::UpdateWebUIDataSource(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&UpdateWebUIDataSourceOnIOThread,
-                 browser_context_->GetResourceContext(), source_name,
-                 base::Owned(update.release())));
+      base::BindOnce(&UpdateWebUIDataSourceOnIOThread,
+                     browser_context_->GetResourceContext(), source_name,
+                     base::Owned(update.release())));
 }
 
 // static
@@ -124,9 +123,8 @@ void URLDataManager::DeleteDataSource(const URLDataSourceImpl* data_source) {
   }
   if (schedule_delete) {
     // Schedule a task to delete the DataSource back on the UI thread.
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&URLDataManager::DeleteDataSources));
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::BindOnce(&URLDataManager::DeleteDataSources));
   }
 }
 

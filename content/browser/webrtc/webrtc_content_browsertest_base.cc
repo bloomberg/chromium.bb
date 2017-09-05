@@ -113,7 +113,7 @@ void WebRtcContentBrowserTestBase::ExecuteJavascriptAndWaitForOk(
 bool WebRtcContentBrowserTestBase::HasAudioOutputDevices() {
   bool has_devices = false;
   base::RunLoop run_loop;
-  media::AudioSystem::Get()->HasOutputDevices(base::Bind(
+  media::AudioSystem::Get()->HasOutputDevices(base::BindOnce(
       [](base::Closure finished_callback, bool* result, bool received) {
         *result = received;
         finished_callback.Run();

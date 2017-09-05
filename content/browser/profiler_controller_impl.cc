@@ -45,11 +45,9 @@ void ProfilerControllerImpl::OnProfilerDataCollected(
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&ProfilerControllerImpl::OnProfilerDataCollected,
-                   base::Unretained(this),
-                   sequence_number,
-                   profiler_data,
-                   process_type));
+        base::BindOnce(&ProfilerControllerImpl::OnProfilerDataCollected,
+                       base::Unretained(this), sequence_number, profiler_data,
+                       process_type));
     return;
   }
 
@@ -93,14 +91,10 @@ void ProfilerControllerImpl::GetProfilerDataFromChildProcesses(
   }
 
   BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(
-          &ProfilerControllerImpl::OnPendingProcesses,
-          base::Unretained(this),
-          sequence_number,
-          pending_processes,
-          true));
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&ProfilerControllerImpl::OnPendingProcesses,
+                     base::Unretained(this), sequence_number, pending_processes,
+                     true));
 }
 
 // static
@@ -141,9 +135,9 @@ void ProfilerControllerImpl::GetProfilerData(int sequence_number,
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&ProfilerControllerImpl::GetProfilerDataFromChildProcesses,
-                 base::Unretained(this), sequence_number,
-                 current_profiling_phase));
+      base::BindOnce(&ProfilerControllerImpl::GetProfilerDataFromChildProcesses,
+                     base::Unretained(this), sequence_number,
+                     current_profiling_phase));
 }
 
 void ProfilerControllerImpl::OnProfilingPhaseCompleted(int profiling_phase) {
@@ -160,9 +154,9 @@ void ProfilerControllerImpl::OnProfilingPhaseCompleted(int profiling_phase) {
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&ProfilerControllerImpl::
-                     NotifyChildProcessesOfProfilingPhaseCompletion,
-                 profiling_phase));
+      base::BindOnce(&ProfilerControllerImpl::
+                         NotifyChildProcessesOfProfilingPhaseCompletion,
+                     profiling_phase));
 }
 
 }  // namespace content

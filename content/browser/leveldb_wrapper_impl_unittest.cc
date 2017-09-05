@@ -145,8 +145,8 @@ class LevelDBWrapperImplTest : public testing::Test,
   bool GetSync(const std::vector<uint8_t>& key, std::vector<uint8_t>* result) {
     base::RunLoop run_loop;
     bool success = false;
-    wrapper()->Get(key, base::Bind(&GetCallback, run_loop.QuitClosure(),
-                                   &success, result));
+    wrapper()->Get(key, base::BindOnce(&GetCallback, run_loop.QuitClosure(),
+                                       &success, result));
     run_loop.Run();
     return success;
   }
@@ -158,7 +158,7 @@ class LevelDBWrapperImplTest : public testing::Test,
     bool success = false;
     wrapper()->Put(
         key, value, source,
-        base::Bind(&SuccessCallback, run_loop.QuitClosure(), &success));
+        base::BindOnce(&SuccessCallback, run_loop.QuitClosure(), &success));
     run_loop.Run();
     return success;
   }
@@ -168,7 +168,7 @@ class LevelDBWrapperImplTest : public testing::Test,
     bool success = false;
     wrapper()->Delete(
         key, kTestSource,
-        base::Bind(&SuccessCallback, run_loop.QuitClosure(), &success));
+        base::BindOnce(&SuccessCallback, run_loop.QuitClosure(), &success));
     run_loop.Run();
     return success;
   }
@@ -178,7 +178,7 @@ class LevelDBWrapperImplTest : public testing::Test,
     bool success = false;
     wrapper()->DeleteAll(
         kTestSource,
-        base::Bind(&SuccessCallback, run_loop.QuitClosure(), &success));
+        base::BindOnce(&SuccessCallback, run_loop.QuitClosure(), &success));
     run_loop.Run();
     return success;
   }
@@ -401,7 +401,7 @@ TEST_F(LevelDBWrapperImplTest, DeleteAllWithPendingMapLoad) {
   set_mock_data(dummy_key, value);
 
   wrapper()->Put(StdStringToUint8Vector(key), StdStringToUint8Vector(value),
-                 kTestSource, base::Bind(&NoOpSuccessCallback));
+                 kTestSource, base::BindOnce(&NoOpSuccessCallback));
 
   EXPECT_TRUE(DeleteAllSync());
   ASSERT_EQ(2u, observations().size());

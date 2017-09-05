@@ -191,7 +191,7 @@ void HistogramSynchronizer::FetchHistograms() {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&HistogramSynchronizer::FetchHistograms));
+        base::BindOnce(&HistogramSynchronizer::FetchHistograms));
     return;
   }
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -251,8 +251,7 @@ void HistogramSynchronizer::RegisterAndNotifyAllProcesses(
   // as a watchdog, to cancel the requests for non-responsive processes.
   BrowserThread::PostDelayedTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&RequestContext::Unregister, sequence_number),
-      wait_time);
+      base::BindOnce(&RequestContext::Unregister, sequence_number), wait_time);
 }
 
 void HistogramSynchronizer::OnPendingProcesses(int sequence_number,

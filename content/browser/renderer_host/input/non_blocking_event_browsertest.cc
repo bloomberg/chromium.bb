@@ -164,8 +164,9 @@ class NonBlockingEventBrowserTest : public ContentBrowserTest {
         new SyntheticSmoothScrollGesture(params));
     GetWidgetHost()->QueueSyntheticGesture(
         std::move(gesture),
-        base::Bind(&NonBlockingEventBrowserTest::OnSyntheticGestureCompleted,
-                   base::Unretained(this)));
+        base::BindOnce(
+            &NonBlockingEventBrowserTest::OnSyntheticGestureCompleted,
+            base::Unretained(this)));
 
     // Expect that the compositor scrolled at least one pixel while the
     // main thread was in a busy loop.

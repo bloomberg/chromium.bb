@@ -151,8 +151,8 @@ class TouchActionBrowserTest : public ContentBrowserTest {
         new SyntheticSmoothScrollGesture(params));
     GetWidgetHost()->QueueSyntheticGesture(
         std::move(gesture),
-        base::Bind(&TouchActionBrowserTest::OnSyntheticGestureCompleted,
-                   base::Unretained(this)));
+        base::BindOnce(&TouchActionBrowserTest::OnSyntheticGestureCompleted,
+                       base::Unretained(this)));
 
     // Runs until we get the OnSyntheticGestureCompleted callback
     runner_->Run();

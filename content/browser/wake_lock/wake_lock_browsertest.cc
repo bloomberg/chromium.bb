@@ -77,7 +77,7 @@ class WakeLockTest : public ContentBrowserTest {
     base::RunLoop run_loop;
 
     GetRendererWakeLock()->HasWakeLockForTests(
-        base::Bind(&OnHasWakeLock, &has_wakelock));
+        base::BindOnce(&OnHasWakeLock, &has_wakelock));
     run_loop.Run();
     return has_wakelock;
   }

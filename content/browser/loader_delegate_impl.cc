@@ -70,8 +70,8 @@ void LoaderDelegateImpl::DidGetResourceResponseStart(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&DidGetResourceResponseStartOnUI, web_contents_getter,
-                 base::Passed(std::move(details))));
+      base::BindOnce(&DidGetResourceResponseStartOnUI, web_contents_getter,
+                     base::Passed(std::move(details))));
 }
 
 void LoaderDelegateImpl::DidGetRedirectForResourceRequest(
@@ -80,8 +80,8 @@ void LoaderDelegateImpl::DidGetRedirectForResourceRequest(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&DidGetRedirectForResourceRequestOnUI, web_contents_getter,
-                 base::Passed(std::move(details))));
+      base::BindOnce(&DidGetRedirectForResourceRequestOnUI, web_contents_getter,
+                     base::Passed(std::move(details))));
 }
 
 void LoaderDelegateImpl::LogResourceRequestTime(base::TimeTicks timestamp,
@@ -91,8 +91,8 @@ void LoaderDelegateImpl::LogResourceRequestTime(base::TimeTicks timestamp,
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&DidGetLogResourceRequestTimeOnUI, timestamp,
-                 render_process_id, render_frame_id, url));
+      base::BindOnce(&DidGetLogResourceRequestTimeOnUI, timestamp,
+                     render_process_id, render_frame_id, url));
 }
 
 }  // namespace content

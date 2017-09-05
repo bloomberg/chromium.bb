@@ -101,7 +101,7 @@ class ScreenOrientationProviderTest : public RenderViewHostImplTestHarness {
       blink::WebScreenOrientationLockType orientation,
       base::Optional<ScreenOrientationLockResult>* out_result) {
     contents()->GetScreenOrientationProviderForTesting()->LockOrientation(
-        orientation, base::Bind(&LockResultCallback, out_result));
+        orientation, base::BindOnce(&LockResultCallback, out_result));
 
     base::RunLoop().RunUntilIdle();
   }

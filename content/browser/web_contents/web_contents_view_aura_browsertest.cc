@@ -156,9 +156,10 @@ class InputEventMessageFilterWaitsForAcks : public BrowserMessageFilter {
       InputHostMsg_HandleInputEvent_ACK::Read(&message, &params);
       blink::WebInputEvent::Type type = std::get<0>(params).type;
       InputEventAckState ack = std::get<0>(params).state;
-      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-          base::Bind(&InputEventMessageFilterWaitsForAcks::ReceivedEventAck,
-                     this, type, ack));
+      BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE,
+          base::BindOnce(&InputEventMessageFilterWaitsForAcks::ReceivedEventAck,
+                         this, type, ack));
     }
     return false;
   }

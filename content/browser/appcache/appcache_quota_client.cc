@@ -74,8 +74,8 @@ void AppCacheQuotaClient::GetOriginUsage(const GURL& origin,
 
   if (!appcache_is_ready_) {
     pending_batch_requests_.push_back(
-        base::Bind(&AppCacheQuotaClient::GetOriginUsage,
-                   base::Unretained(this), origin, type, callback));
+        base::BindOnce(&AppCacheQuotaClient::GetOriginUsage,
+                       base::Unretained(this), origin, type, callback));
     return;
   }
 
@@ -123,8 +123,8 @@ void AppCacheQuotaClient::DeleteOriginData(const GURL& origin,
 
   if (!appcache_is_ready_ || !current_delete_request_callback_.is_null()) {
     pending_serial_requests_.push_back(
-        base::Bind(&AppCacheQuotaClient::DeleteOriginData,
-                   base::Unretained(this), origin, type, callback));
+        base::BindOnce(&AppCacheQuotaClient::DeleteOriginData,
+                       base::Unretained(this), origin, type, callback));
     return;
   }
 
@@ -170,8 +170,8 @@ void AppCacheQuotaClient::GetOriginsHelper(storage::StorageType type,
 
   if (!appcache_is_ready_) {
     pending_batch_requests_.push_back(
-        base::Bind(&AppCacheQuotaClient::GetOriginsHelper,
-                   base::Unretained(this), type, opt_host, callback));
+        base::BindOnce(&AppCacheQuotaClient::GetOriginsHelper,
+                       base::Unretained(this), type, opt_host, callback));
     return;
   }
 

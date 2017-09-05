@@ -3623,16 +3623,16 @@ int WebContentsImpl::DownloadImage(
     // respond with a 400 HTTP error code to indicate that something went wrong.
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&WebContentsImpl::OnDidDownloadImage,
-                   weak_factory_.GetWeakPtr(), callback, download_id, url, 400,
-                   std::vector<SkBitmap>(), std::vector<gfx::Size>()));
+        base::BindOnce(&WebContentsImpl::OnDidDownloadImage,
+                       weak_factory_.GetWeakPtr(), callback, download_id, url,
+                       400, std::vector<SkBitmap>(), std::vector<gfx::Size>()));
     return download_id;
   }
 
   mojo_image_downloader->DownloadImage(
       url, is_favicon, max_bitmap_size, bypass_cache,
-      base::Bind(&WebContentsImpl::OnDidDownloadImage,
-                 weak_factory_.GetWeakPtr(), callback, download_id, url));
+      base::BindOnce(&WebContentsImpl::OnDidDownloadImage,
+                     weak_factory_.GetWeakPtr(), callback, download_id, url));
   return download_id;
 }
 
@@ -3916,7 +3916,7 @@ void WebContentsImpl::OnDidLoadResourceFromMemoryCache(
             : partition->GetURLRequestContext());
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&NotifyCacheOnIO, request_context, url, http_method));
+        base::BindOnce(&NotifyCacheOnIO, request_context, url, http_method));
   }
 }
 
@@ -5039,8 +5039,9 @@ void WebContentsImpl::DidChangeLoadProgress() {
     return;
 
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::Bind(&WebContentsImpl::SendChangeLoadProgress,
-                            loading_weak_factory_.GetWeakPtr()),
+      FROM_HERE,
+      base::BindOnce(&WebContentsImpl::SendChangeLoadProgress,
+                     loading_weak_factory_.GetWeakPtr()),
       min_delay);
 }
 

@@ -29,8 +29,8 @@ class MojoSandboxTest : public ContentBrowserTest {
     base::RunLoop run_loop;
     BrowserThread::PostTaskAndReply(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&MojoSandboxTest::StartUtilityProcessOnIoThread,
-                   base::Unretained(this)),
+        base::BindOnce(&MojoSandboxTest::StartUtilityProcessOnIoThread,
+                       base::Unretained(this)),
         run_loop.QuitClosure());
     run_loop.Run();
   }
@@ -39,8 +39,8 @@ class MojoSandboxTest : public ContentBrowserTest {
     base::RunLoop run_loop;
     BrowserThread::PostTaskAndReply(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&MojoSandboxTest::StopUtilityProcessOnIoThread,
-                   base::Unretained(this)),
+        base::BindOnce(&MojoSandboxTest::StopUtilityProcessOnIoThread,
+                       base::Unretained(this)),
         run_loop.QuitClosure());
     run_loop.Run();
   }
@@ -70,7 +70,7 @@ IN_PROC_BROWSER_TEST_F(MojoSandboxTest, SubprocessSharedBuffer) {
   test_service.set_connection_error_handler(run_loop.QuitClosure());
   test_service->CreateSharedBuffer(
       kTestMessage,
-      base::Bind(
+      base::BindOnce(
           [](const base::Closure& quit_closure, bool* got_response,
              mojo::ScopedSharedBufferHandle buffer) {
             ASSERT_TRUE(buffer.is_valid());

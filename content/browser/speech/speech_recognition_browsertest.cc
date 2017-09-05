@@ -182,9 +182,10 @@ class SpeechRecognitionBrowserTest :
     for (int i = 0; i < n_buffers; ++i) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
-          base::Bind(&FeedSingleBufferToAudioController,
-                     scoped_refptr<media::TestAudioInputController>(controller),
-                     buffer_size, feed_with_noise));
+          base::BindOnce(
+              &FeedSingleBufferToAudioController,
+              scoped_refptr<media::TestAudioInputController>(controller),
+              buffer_size, feed_with_noise));
     }
   }
 

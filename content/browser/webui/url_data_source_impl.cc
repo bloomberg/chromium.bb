@@ -39,9 +39,10 @@ void URLDataSourceImpl::SendResponse(
     // when the object is deleted.
     return;
   }
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(&URLDataSourceImpl::SendResponseOnIOThread,
-                                     this, request_id, std::move(bytes)));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&URLDataSourceImpl::SendResponseOnIOThread, this,
+                     request_id, std::move(bytes)));
 }
 
 bool URLDataSourceImpl::IsWebUIDataSourceImpl() const {

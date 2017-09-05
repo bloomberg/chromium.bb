@@ -148,8 +148,8 @@ void SSLManager::OnSSLCertificateError(
   // on the UI thread for processing.
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&HandleSSLErrorOnUI, web_contents_getter, delegate,
-                 resource_type, url, ssl_info, fatal));
+      base::BindOnce(&HandleSSLErrorOnUI, web_contents_getter, delegate,
+                     resource_type, url, ssl_info, fatal));
 }
 
 // static

@@ -32,7 +32,7 @@ namespace {
 void VerifyPowerStateInChildProcess(mojom::PowerMonitorTest* power_monitor_test,
                                     bool expected_state) {
   base::RunLoop run_loop;
-  power_monitor_test->QueryNextState(base::Bind(
+  power_monitor_test->QueryNextState(base::BindOnce(
       [](const base::Closure& quit, bool expected_state,
          bool on_battery_power) {
         EXPECT_EQ(expected_state, on_battery_power);

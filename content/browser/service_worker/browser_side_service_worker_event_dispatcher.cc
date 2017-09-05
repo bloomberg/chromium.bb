@@ -193,7 +193,7 @@ void BrowserSideServiceWorkerEventDispatcher::DispatchFetchEvent(
 
   receiver_version_->RunAfterStartWorker(
       ServiceWorkerMetrics::EventType::FETCH_SUB_RESOURCE,
-      base::Bind(
+      base::BindOnce(
           &BrowserSideServiceWorkerEventDispatcher::DispatchFetchEventInternal,
           weak_factory_.GetWeakPtr(), incoming_fetch_event_id, request,
           base::Passed(&preload_handle), base::Passed(&response_callback)),

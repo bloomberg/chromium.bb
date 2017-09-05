@@ -41,10 +41,9 @@ void HistogramController::OnHistogramDataCollected(
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&HistogramController::OnHistogramDataCollected,
-                   base::Unretained(this),
-                   sequence_number,
-                   pickled_histograms));
+        base::BindOnce(&HistogramController::OnHistogramDataCollected,
+                       base::Unretained(this), sequence_number,
+                       pickled_histograms));
     return;
   }
 
@@ -95,14 +94,10 @@ void HistogramController::GetHistogramDataFromChildProcesses(
   }
 
   BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(
-          &HistogramController::OnPendingProcesses,
-          base::Unretained(this),
-          sequence_number,
-          pending_processes,
-          true));
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&HistogramController::OnPendingProcesses,
+                     base::Unretained(this), sequence_number, pending_processes,
+                     true));
 }
 
 void HistogramController::GetHistogramData(int sequence_number) {
@@ -121,11 +116,9 @@ void HistogramController::GetHistogramData(int sequence_number) {
   OnPendingProcesses(sequence_number, pending_processes, false);
 
   BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&HistogramController::GetHistogramDataFromChildProcesses,
-                 base::Unretained(this),
-                 sequence_number));
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&HistogramController::GetHistogramDataFromChildProcesses,
+                     base::Unretained(this), sequence_number));
 }
 
 }  // namespace content

@@ -174,8 +174,8 @@ void MemoryCoordinatorImpl::CreateHandle(
       new MemoryCoordinatorHandleImpl(std::move(request), this,
                                       render_process_id));
   handle->binding().set_connection_error_handler(
-      base::Bind(&MemoryCoordinatorImpl::OnConnectionError,
-                 base::Unretained(this), render_process_id));
+      base::BindOnce(&MemoryCoordinatorImpl::OnConnectionError,
+                     base::Unretained(this), render_process_id));
   CreateChildInfoMapEntry(render_process_id, std::move(handle));
 }
 
@@ -244,7 +244,7 @@ bool MemoryCoordinatorImpl::TryToPurgeMemoryFromBrowser() {
   auto metrics = base::ProcessMetrics::CreateCurrentProcessMetrics();
   size_t before = metrics->GetWorkingSetSize();
   task_runner_->PostDelayedTask(FROM_HERE,
-                                base::Bind(&RecordBrowserPurge, before),
+                                base::BindOnce(&RecordBrowserPurge, before),
                                 base::TimeDelta::FromSeconds(2));
 
   // Suppress purging in the browser process until a certain period of time is

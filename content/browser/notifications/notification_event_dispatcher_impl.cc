@@ -41,7 +41,7 @@ void NotificationEventFinished(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(dispatch_complete_callback, status));
+                          base::BindOnce(dispatch_complete_callback, status));
 }
 
 // To be called when a notification event has finished with a
@@ -146,7 +146,7 @@ void DispatchNotificationEventOnRegistration(
   }
 
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(dispatch_error_callback, status));
+                          base::BindOnce(dispatch_error_callback, status));
 }
 
 // Finds the ServiceWorkerRegistration associated with the |origin| and
@@ -170,8 +170,8 @@ void FindServiceWorkerRegistration(
   if (!success) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(dispatch_error_callback,
-                   PERSISTENT_NOTIFICATION_STATUS_DATABASE_ERROR));
+        base::BindOnce(dispatch_error_callback,
+                       PERSISTENT_NOTIFICATION_STATUS_DATABASE_ERROR));
     return;
   }
 
@@ -341,10 +341,11 @@ void DispatchNotificationEvent(
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&ReadNotificationDatabaseData, notification_id, origin,
-                 service_worker_context, notification_context,
-                 base::Bind(notification_action_callback, notification_context),
-                 notification_error_callback));
+      base::BindOnce(
+          &ReadNotificationDatabaseData, notification_id, origin,
+          service_worker_context, notification_context,
+          base::Bind(notification_action_callback, notification_context),
+          notification_error_callback));
 }
 
 }  // namespace

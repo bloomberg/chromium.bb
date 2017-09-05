@@ -129,15 +129,10 @@ void SpeechRecognitionDispatcherHost::OnStartRequest(
       render_view_host->GetMainFrame()->GetRoutingID() : MSG_ROUTING_NONE;
 
   BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&SpeechRecognitionDispatcherHost::OnStartRequestOnIO,
-                 this,
-                 embedder_render_process_id,
-                 embedder_render_view_id,
-                 input_params,
-                 params_render_frame_id,
-                 filter_profanities));
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&SpeechRecognitionDispatcherHost::OnStartRequestOnIO, this,
+                     embedder_render_process_id, embedder_render_view_id,
+                     input_params, params_render_frame_id, filter_profanities));
 }
 
 void SpeechRecognitionDispatcherHost::OnStartRequestOnIO(

@@ -320,8 +320,9 @@ void LevelDBWrapperImpl::LoadMap(const base::Closure& completion_callback) {
     return;
   }
 
-  database_->GetPrefixed(prefix_, base::Bind(&LevelDBWrapperImpl::OnMapLoaded,
-                                             weak_ptr_factory_.GetWeakPtr()));
+  database_->GetPrefixed(prefix_,
+                         base::BindOnce(&LevelDBWrapperImpl::OnMapLoaded,
+                                        weak_ptr_factory_.GetWeakPtr()));
 }
 
 void LevelDBWrapperImpl::OnMapLoaded(
@@ -389,8 +390,8 @@ void LevelDBWrapperImpl::CreateCommitBatchIfNeeded() {
   commit_batch_.reset(new CommitBatch());
   BrowserThread::PostAfterStartupTask(
       FROM_HERE, base::ThreadTaskRunnerHandle::Get(),
-      base::Bind(&LevelDBWrapperImpl::StartCommitTimer,
-                  weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&LevelDBWrapperImpl::StartCommitTimer,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void LevelDBWrapperImpl::StartCommitTimer() {
@@ -404,8 +405,9 @@ void LevelDBWrapperImpl::StartCommitTimer() {
     return;
 
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::Bind(&LevelDBWrapperImpl::CommitChanges,
-                            weak_ptr_factory_.GetWeakPtr()),
+      FROM_HERE,
+      base::BindOnce(&LevelDBWrapperImpl::CommitChanges,
+                     weak_ptr_factory_.GetWeakPtr()),
       ComputeCommitDelay());
 }
 
@@ -467,8 +469,8 @@ void LevelDBWrapperImpl::CommitChanges() {
   // TODO(michaeln): Currently there is no guarantee LevelDBDatabaseImp::Write
   // will run during a clean shutdown. We need that to avoid dataloss.
   database_->Write(std::move(operations),
-                   base::Bind(&LevelDBWrapperImpl::OnCommitComplete,
-                              weak_ptr_factory_.GetWeakPtr()));
+                   base::BindOnce(&LevelDBWrapperImpl::OnCommitComplete,
+                                  weak_ptr_factory_.GetWeakPtr()));
 }
 
 void LevelDBWrapperImpl::OnCommitComplete(leveldb::mojom::DatabaseError error) {

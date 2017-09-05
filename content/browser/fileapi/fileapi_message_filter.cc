@@ -186,8 +186,8 @@ void FileAPIMessageFilter::OnResolveURL(
     return;
   }
 
-  context_->ResolveURL(url, base::Bind(
-      &FileAPIMessageFilter::DidResolveURL, this, request_id));
+  context_->ResolveURL(url, base::BindOnce(&FileAPIMessageFilter::DidResolveURL,
+                                           this, request_id));
 }
 
 void FileAPIMessageFilter::OnMove(

@@ -60,21 +60,22 @@ SSLErrorHandler::~SSLErrorHandler() {}
 void SSLErrorHandler::CancelRequest() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(&CompleteCancelRequest, delegate_,
-                                     ssl_info(), net::ERR_ABORTED));
+                          base::BindOnce(&CompleteCancelRequest, delegate_,
+                                         ssl_info(), net::ERR_ABORTED));
 }
 
 void SSLErrorHandler::DenyRequest() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(&CompleteCancelRequest, delegate_,
-                                     ssl_info(), net::ERR_INSECURE_RESPONSE));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&CompleteCancelRequest, delegate_, ssl_info(),
+                     net::ERR_INSECURE_RESPONSE));
 }
 
 void SSLErrorHandler::ContinueRequest() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(&CompleteContinueRequest, delegate_));
+                          base::BindOnce(&CompleteContinueRequest, delegate_));
 }
 
 }  // namespace content

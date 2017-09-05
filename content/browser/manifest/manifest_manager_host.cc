@@ -34,8 +34,8 @@ void ManifestManagerHost::GetManifest(const GetManifestCallback& callback) {
   int request_id =
       callbacks_.Add(base::MakeUnique<GetManifestCallback>(callback));
   manifest_manager.RequestManifest(
-      base::Bind(&ManifestManagerHost::OnRequestManifestResponse,
-                 base::Unretained(this), request_id));
+      base::BindOnce(&ManifestManagerHost::OnRequestManifestResponse,
+                     base::Unretained(this), request_id));
 }
 
 blink::mojom::ManifestManager& ManifestManagerHost::GetManifestManager() {
@@ -46,7 +46,7 @@ blink::mojom::ManifestManager& ManifestManagerHost::GetManifestManager() {
     manifest_manager_frame_ = web_contents()->GetMainFrame();
     manifest_manager_frame_->GetRemoteAssociatedInterfaces()->GetInterface(
         &manifest_manager_);
-    manifest_manager_.set_connection_error_handler(base::Bind(
+    manifest_manager_.set_connection_error_handler(base::BindOnce(
         &ManifestManagerHost::OnConnectionError, base::Unretained(this)));
   }
   return *manifest_manager_;

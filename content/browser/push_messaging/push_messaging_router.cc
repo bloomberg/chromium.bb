@@ -33,7 +33,7 @@ void RunDeliverCallback(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(deliver_message_callback, delivery_status));
+      base::BindOnce(deliver_message_callback, delivery_status));
 }
 
 }  // namespace
@@ -53,9 +53,9 @@ void PushMessagingRouter::DeliverMessage(
           partition->GetServiceWorkerContext());
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&PushMessagingRouter::FindServiceWorkerRegistration, origin,
-                 service_worker_registration_id, payload,
-                 deliver_message_callback, service_worker_context));
+      base::BindOnce(&PushMessagingRouter::FindServiceWorkerRegistration,
+                     origin, service_worker_registration_id, payload,
+                     deliver_message_callback, service_worker_context));
 }
 
 // static

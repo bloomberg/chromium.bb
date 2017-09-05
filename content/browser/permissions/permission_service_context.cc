@@ -23,7 +23,7 @@ class PermissionServiceContext::PermissionSubscription {
   PermissionSubscription(PermissionServiceContext* context,
                          PermissionObserverPtr observer)
       : context_(context), observer_(std::move(observer)) {
-    observer_.set_connection_error_handler(base::Bind(
+    observer_.set_connection_error_handler(base::BindOnce(
         &PermissionSubscription::OnConnectionError, base::Unretained(this)));
   }
 

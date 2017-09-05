@@ -551,7 +551,8 @@ TEST_F(PresentationServiceImplTest, StartPresentationInProgress) {
   EXPECT_CALL(mock_delegate_, StartPresentationInternal(_, _, _)).Times(1);
   // Uninvoked callbacks must outlive |service_impl_| since they get invoked
   // at |service_impl_|'s destruction.
-  service_impl_->StartPresentation(presentation_urls_, base::Bind(&DoNothing));
+  service_impl_->StartPresentation(presentation_urls_,
+                                   base::BindOnce(&DoNothing));
 
   // This request should fail immediately, since there is already a
   // StartPresentation in progress.
@@ -602,8 +603,9 @@ TEST_F(PresentationServiceImplTest, MaxPendingReconnectPresentationRequests) {
     std::vector<GURL> urls = {GURL(base::StringPrintf(presentation_url, i))};
     // Uninvoked callbacks must outlive |service_impl_| since they get invoked
     // at |service_impl_|'s destruction.
-    service_impl_->ReconnectPresentation(
-        urls, base::StringPrintf(presentation_id, i), base::Bind(&DoNothing));
+    service_impl_->ReconnectPresentation(urls,
+                                         base::StringPrintf(presentation_id, i),
+                                         base::BindOnce(&DoNothing));
   }
 
   std::vector<GURL> urls = {GURL(base::StringPrintf(presentation_url, i))};

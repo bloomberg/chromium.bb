@@ -318,10 +318,9 @@ bool UtilityProcessHostImpl::OnMessageReceived(const IPC::Message& message) {
 
   client_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           base::IgnoreResult(&UtilityProcessHostClient::OnMessageReceived),
-          client_.get(),
-          message));
+          client_.get(), message));
 
   return true;
 }
@@ -332,9 +331,8 @@ void UtilityProcessHostImpl::OnProcessLaunchFailed(int error_code) {
 
   client_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&UtilityProcessHostClient::OnProcessLaunchFailed,
-                 client_,
-                 error_code));
+      base::BindOnce(&UtilityProcessHostClient::OnProcessLaunchFailed, client_,
+                     error_code));
 }
 
 void UtilityProcessHostImpl::OnProcessCrashed(int exit_code) {
@@ -342,17 +340,15 @@ void UtilityProcessHostImpl::OnProcessCrashed(int exit_code) {
     return;
 
   client_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&UtilityProcessHostClient::OnProcessCrashed, client_,
-            exit_code));
+      FROM_HERE, base::BindOnce(&UtilityProcessHostClient::OnProcessCrashed,
+                                client_, exit_code));
 }
 
 void UtilityProcessHostImpl::NotifyAndDelete(int error_code) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&UtilityProcessHostImpl::NotifyLaunchFailedAndDelete,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 error_code));
+      base::BindOnce(&UtilityProcessHostImpl::NotifyLaunchFailedAndDelete,
+                     weak_ptr_factory_.GetWeakPtr(), error_code));
 }
 
 // static
