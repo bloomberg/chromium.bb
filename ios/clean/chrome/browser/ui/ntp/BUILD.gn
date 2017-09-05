@@ -44,6 +44,7 @@ source_set("ntp") {
     "//ios/chrome/browser/ui/ntp:ntp_controller",
     "//ios/chrome/browser/ui/ntp:ntp_internal",
     "//ios/chrome/browser/ui/toolbar",
+    "//ios/clean/chrome/browser/ui/adaptor",
     "//ios/clean/chrome/browser/ui/bookmarks",
     "//ios/clean/chrome/browser/ui/commands",
     "//ios/clean/chrome/browser/ui/recent_tabs",

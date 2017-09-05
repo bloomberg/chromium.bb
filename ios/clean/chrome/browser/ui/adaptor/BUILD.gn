@@ -6,6 +6,8 @@ source_set("adaptor") {
   sources = [
     "application_commands_adaptor.h",
     "application_commands_adaptor.mm",
+    "browser_commands_adaptor.h",
+    "browser_commands_adaptor.mm",
     "url_loader_adaptor.h",
     "url_loader_adaptor.mm",
   ]

@@ -44,6 +44,8 @@
 #import "ios/chrome/browser/ui/ntp/notification_promo_whats_new.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
+#import "ios/clean/chrome/browser/ui/adaptor/browser_commands_adaptor.h"
+#import "ios/clean/chrome/browser/ui/adaptor/url_loader_adaptor.h"
 #import "ios/clean/chrome/browser/ui/ntp/ntp_home_header_coordinator.h"
 #import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -69,6 +71,10 @@
     ContentSuggestionsHeaderSynchronizer* headerCollectionInteractionHandler;
 @property(nonatomic, strong) ContentSuggestionsMetricsRecorder* metricsRecorder;
 
+@property(nonatomic, strong) CommandDispatcher* router;
+@property(nonatomic, strong) URLLoaderAdaptor* URLAdaptor;
+@property(nonatomic, strong) BrowserCommandsAdaptor* browserCommandAdaptor;
+
 @end
 
 @implementation NTPHomeCoordinator
@@ -81,6 +87,10 @@
 @synthesize headerCollectionInteractionHandler =
     _headerCollectionInteractionHandler;
 @synthesize metricsRecorder = _metricsRecorder;
+
+@synthesize router = _router;
+@synthesize URLAdaptor = _URLAdaptor;
+@synthesize browserCommandAdaptor = _browserCommandAdaptor;
 
 #pragma mark - BrowserCoordinator
 
@@ -104,12 +114,22 @@
   self.viewController = [[ContentSuggestionsViewController alloc]
       initWithStyle:CollectionViewControllerStyleDefault];
 
+  self.URLAdaptor = [[URLLoaderAdaptor alloc] init];
+  self.URLAdaptor.viewControllerForAlert = self.viewController;
+  self.browserCommandAdaptor = [[BrowserCommandsAdaptor alloc] init];
+  self.browserCommandAdaptor.viewControllerForAlert = self.viewController;
+  self.router = [[CommandDispatcher alloc] init];
+  [self.router startDispatchingToTarget:self.URLAdaptor
+                            forProtocol:@protocol(UrlLoader)];
+  [self.router startDispatchingToTarget:self.browserCommandAdaptor
+                            forProtocol:@protocol(BrowserCommands)];
+
   self.googleLandingMediator = [[GoogleLandingMediator alloc]
       initWithBrowserState:self.browser->browser_state()
               webStateList:&self.browser->web_state_list()];
   self.googleLandingMediator.dispatcher =
       static_cast<id<BrowserCommands, ChromeExecuteCommand, UrlLoader>>(
-          self.browser->dispatcher());
+          self.router);
 
   favicon::LargeIconService* largeIconService =
       IOSChromeLargeIconServiceFactory::GetForBrowserState(
@@ -172,6 +192,11 @@
   self.suggestionsMediator = nil;
   self.googleLandingMediator = nil;
   self.headerCoordinator = nil;
+  [self.router stopDispatchingToTarget:self.URLAdaptor];
+  [self.router stopDispatchingToTarget:self.browserCommandAdaptor];
+  self.router = nil;
+  self.URLAdaptor = nil;
+  self.browserCommandAdaptor = nil;
 }
 
 #pragma mark - ContentSuggestionsCommands
