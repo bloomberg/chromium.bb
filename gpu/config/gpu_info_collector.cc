@@ -123,6 +123,7 @@ CollectInfoResult CollectGraphicsInfoGL(GPUInfo* gpu_info) {
   gpu_info->gl_renderer = GetGLString(GL_RENDERER);
   gpu_info->gl_vendor = GetGLString(GL_VENDOR);
   gpu_info->gl_version = GetGLString(GL_VERSION);
+  std::string glsl_version_string = GetGLString(GL_SHADING_LANGUAGE_VERSION);
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kGpuTestingGLVendor)) {
@@ -139,23 +140,19 @@ CollectInfoResult CollectGraphicsInfoGL(GPUInfo* gpu_info) {
   }
 
   gpu_info->gl_extensions = gl::GetGLExtensionsFromCurrentContext();
-  std::string glsl_version_string = GetGLString(GL_SHADING_LANGUAGE_VERSION);
+  gl::ExtensionSet extension_set =
+      gl::MakeExtensionSet(gpu_info->gl_extensions);
 
   gl::GLVersionInfo gl_info(gpu_info->gl_version.c_str(),
-                            gpu_info->gl_renderer.c_str(),
-                            gpu_info->gl_extensions.c_str());
+                            gpu_info->gl_renderer.c_str(), extension_set);
   GLint max_samples = 0;
   if (gl_info.IsAtLeastGL(3, 0) || gl_info.IsAtLeastGLES(3, 0) ||
-      gpu_info->gl_extensions.find("GL_ANGLE_framebuffer_multisample") !=
-          std::string::npos ||
-      gpu_info->gl_extensions.find("GL_APPLE_framebuffer_multisample") !=
-          std::string::npos ||
-      gpu_info->gl_extensions.find("GL_EXT_framebuffer_multisample") !=
-          std::string::npos ||
-      gpu_info->gl_extensions.find("GL_EXT_multisampled_render_to_texture") !=
-          std::string::npos ||
-      gpu_info->gl_extensions.find("GL_NV_framebuffer_multisample") !=
-          std::string::npos) {
+      gl::HasExtension(extension_set, "GL_ANGLE_framebuffer_multisample") ||
+      gl::HasExtension(extension_set, "GL_APPLE_framebuffer_multisample") ||
+      gl::HasExtension(extension_set, "GL_EXT_framebuffer_multisample") ||
+      gl::HasExtension(extension_set,
+                       "GL_EXT_multisampled_render_to_texture") ||
+      gl::HasExtension(extension_set, "GL_NV_framebuffer_multisample")) {
     glGetIntegerv(GL_MAX_SAMPLES, &max_samples);
   }
   gpu_info->max_msaa_samples = base::IntToString(max_samples);
@@ -170,9 +167,9 @@ CollectInfoResult CollectGraphicsInfoGL(GPUInfo* gpu_info) {
   }
 
   bool supports_robustness =
-      gpu_info->gl_extensions.find("GL_EXT_robustness") != std::string::npos ||
-      gpu_info->gl_extensions.find("GL_KHR_robustness") != std::string::npos ||
-      gpu_info->gl_extensions.find("GL_ARB_robustness") != std::string::npos;
+      gl::HasExtension(extension_set, "GL_EXT_robustness") ||
+      gl::HasExtension(extension_set, "GL_KHR_robustness") ||
+      gl::HasExtension(extension_set, "GL_ARB_robustness");
   if (supports_robustness) {
     glGetIntegerv(GL_RESET_NOTIFICATION_STRATEGY_ARB,
         reinterpret_cast<GLint*>(&gpu_info->gl_reset_notification_strategy));

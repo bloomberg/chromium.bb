@@ -13,8 +13,9 @@ GLContextStub::GLContextStub() : GLContextStub(nullptr) {}
 GLContextStub::GLContextStub(GLShareGroup* share_group)
     : GLContextReal(share_group),
       use_stub_api_(false),
-      version_str_("OpenGL ES 3.0"),
-      extensions_("GL_EXT_framebuffer_object") {}
+      version_str_("OpenGL ES 3.0") {
+  SetExtensionsString("GL_EXT_framebuffer_object");
+}
 
 bool GLContextStub::Initialize(GLSurface* compatible_surface,
                                const GLContextAttribs& attribs) {
@@ -56,16 +57,12 @@ bool GLContextStub::WasAllocatedUsingRobustnessExtension() {
          HasExtension("GL_KHR_robustness") || HasExtension("GL_EXT_robustness");
 }
 
-std::string GLContextStub::GetExtensions() {
-  return extensions_;
-}
-
 void GLContextStub::SetUseStubApi(bool stub_api) {
   use_stub_api_ = stub_api;
 }
 
 void GLContextStub::SetExtensionsString(const char* extensions) {
-  extensions_ = extensions;
+  SetExtensionsFromString(extensions);
 }
 
 void GLContextStub::SetGLVersionString(const char* version_str) {
@@ -80,8 +77,8 @@ GLApi* GLContextStub::CreateGLApi(DriverGL* driver) {
     if (!version_str_.empty()) {
       stub_api->set_version(version_str_);
     }
-    if (!extensions_.empty()) {
-      stub_api->set_extensions(extensions_);
+    if (!extension_string().empty()) {
+      stub_api->set_extensions(extension_string());
     }
     return stub_api;
   }

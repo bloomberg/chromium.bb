@@ -14,6 +14,7 @@
 #include "gpu/command_buffer/service/gles2_cmd_validation.h"
 #include "gpu/config/gpu_driver_bug_workarounds.h"
 #include "gpu/gpu_export.h"
+#include "ui/gl/extension_set.h"
 
 namespace base {
 class CommandLine;
@@ -189,14 +190,13 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
  private:
   friend class base::RefCounted<FeatureInfo>;
   friend class BufferManagerClientSideArraysTest;
-  class StringSet;
 
   ~FeatureInfo();
 
   void AddExtensionString(const char* s);
   void InitializeBasicState(const base::CommandLine* command_line);
   void InitializeFeatures();
-  void InitializeFloatAndHalfFloatFeatures(const StringSet& extensions);
+  void InitializeFloatAndHalfFloatFeatures(const gl::ExtensionSet& extensions);
 
   Validators validators_;
 

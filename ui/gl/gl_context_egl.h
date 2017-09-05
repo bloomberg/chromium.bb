@@ -33,7 +33,6 @@ class GL_EXPORT GLContextEGL : public GLContextReal {
   bool IsCurrent(GLSurface* surface) override;
   void* GetHandle() override;
   void OnSetSwapInterval(int interval) override;
-  std::string GetExtensions() override;
   bool WasAllocatedUsingRobustnessExtension() override;
   void SetUnbindFboOnMakeCurrent() override;
 

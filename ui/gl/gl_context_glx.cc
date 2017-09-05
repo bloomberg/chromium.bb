@@ -297,16 +297,6 @@ void GLContextGLX::OnSetSwapInterval(int interval) {
   }
 }
 
-std::string GLContextGLX::GetExtensions() {
-  DCHECK(IsCurrent(nullptr));
-  const char* extensions = GLSurfaceGLX::GetGLXExtensions();
-  if (extensions) {
-    return GLContext::GetExtensions() + " " + extensions;
-  }
-
-  return GLContext::GetExtensions();
-}
-
 bool GLContextGLX::WasAllocatedUsingRobustnessExtension() {
   return GLSurfaceGLX::IsCreateContextRobustnessSupported();
 }

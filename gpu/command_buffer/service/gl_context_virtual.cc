@@ -77,7 +77,7 @@ std::string GLContextVirtual::GetGLRenderer() {
   return shared_context_->GetGLRenderer();
 }
 
-std::string GLContextVirtual::GetExtensions() {
+const gl::ExtensionSet& GLContextVirtual::GetExtensions() {
   return shared_context_->GetExtensions();
 }
 
@@ -107,6 +107,10 @@ void GLContextVirtual::ForceReleaseVirtuallyCurrent() {
 
 GLContextVirtual::~GLContextVirtual() {
   Destroy();
+}
+
+void GLContextVirtual::ResetExtensions() {
+  shared_context_->ResetExtensions();
 }
 
 }  // namespace gpu

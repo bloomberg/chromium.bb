@@ -7,13 +7,13 @@
 
 #include <memory>
 #include <string>
-#include <vector>
 
 #include "base/atomicops.h"
 #include "base/cancelable_callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/cancellation_flag.h"
+#include "ui/gl/extension_set.h"
 #include "ui/gl/gl_export.h"
 #include "ui/gl/gl_share_group.h"
 #include "ui/gl/gl_state_restorer.h"
@@ -133,8 +133,8 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
   // passed to SetSwapInterval.
   void ForceSwapIntervalZero(bool force);
 
-  // Returns space separated list of extensions. The context must be current.
-  virtual std::string GetExtensions();
+  // Returns set of extensions. The context must be current.
+  virtual const ExtensionSet& GetExtensions() = 0;
 
   // Indicate that it is safe to force this context to switch GPUs, since
   // transitioning can cause corruption and hangs (OS X only).
@@ -239,6 +239,9 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
   static GLContext* GetRealCurrent();
 
   virtual void OnSetSwapInterval(int interval) = 0;
+  virtual void ResetExtensions() = 0;
+
+  GLApi* gl_api() { return gl_api_.get(); }
 
  private:
   friend class base::RefCounted<GLContext>;
@@ -285,14 +288,22 @@ class GL_EXPORT GLContextReal : public GLContext {
  public:
   explicit GLContextReal(GLShareGroup* share_group);
   scoped_refptr<GPUTimingClient> CreateGPUTimingClient() override;
+  const ExtensionSet& GetExtensions() override;
 
  protected:
   ~GLContextReal() override;
 
+  void ResetExtensions() override;
+
   void SetCurrent(GLSurface* surface) override;
+  void SetExtensionsFromString(std::string extensions);
+  const std::string& extension_string() { return extensions_string_; }
 
  private:
   std::unique_ptr<GPUTiming> gpu_timing_;
+  std::string extensions_string_;
+  ExtensionSet extensions_;
+  bool extensions_initialized_ = false;
   DISALLOW_COPY_AND_ASSIGN(GLContextReal);
 };
 

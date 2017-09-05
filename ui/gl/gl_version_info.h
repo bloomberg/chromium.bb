@@ -9,16 +9,15 @@
 #include <string>
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "ui/gl/extension_set.h"
 #include "ui/gl/gl_export.h"
 
 namespace gl {
 
 struct GL_EXPORT GLVersionInfo {
-  GLVersionInfo(const char* version_str, const char* renderer_str,
-                const char* extensions_str);
-
-  GLVersionInfo(const char* version_str, const char* renderer_str,
-                const std::set<std::string>& exts);
+  GLVersionInfo(const char* version_str,
+                const char* renderer_str,
+                const ExtensionSet& exts);
 
   bool IsAtLeastGL(unsigned major, unsigned minor) const {
     return !is_es && (major_version > major ||
@@ -62,11 +61,10 @@ struct GL_EXPORT GLVersionInfo {
   bool is_es3_capable;
 
  private:
-  GLVersionInfo();
   void Initialize(const char* version_str,
                   const char* renderer_str,
-                  const std::set<std::string>& extensions);
-  bool IsES3Capable(const std::set<std::string>& extensions) const;
+                  const ExtensionSet& extensions);
+  bool IsES3Capable(const ExtensionSet& extensions) const;
 
   DISALLOW_COPY_AND_ASSIGN(GLVersionInfo);
 };

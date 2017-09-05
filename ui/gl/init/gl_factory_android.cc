@@ -39,7 +39,6 @@ class GLNonOwnedContext : public GLContextReal {
   bool IsCurrent(GLSurface* surface) override { return true; }
   void* GetHandle() override { return nullptr; }
   void OnSetSwapInterval(int interval) override {}
-  std::string GetExtensions() override;
 
  protected:
   ~GLNonOwnedContext() override {}
@@ -64,14 +63,6 @@ bool GLNonOwnedContext::MakeCurrent(GLSurface* surface) {
   SetCurrent(surface);
   InitializeDynamicBindings();
   return true;
-}
-
-std::string GLNonOwnedContext::GetExtensions() {
-  const char* extensions = eglQueryString(display_, EGL_EXTENSIONS);
-  if (!extensions)
-    return GLContext::GetExtensions();
-
-  return GLContext::GetExtensions() + " " + extensions;
 }
 
 }  // namespace
