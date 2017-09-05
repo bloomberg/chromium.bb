@@ -13,16 +13,25 @@
     },
     {
       "name": "LayoutBlockFlow DIV class='compositing box'",
-      "position": [22, 22],
       "bounds": [100, 100],
       "contentsOpaque": true,
       "backgroundColor": "#FF0000",
-      "transform": 1
+      "transform": 2
     }
   ],
   "transforms": [
     {
       "id": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [30, 30, 0, 1]
+      ]
+    },
+    {
+      "id": 2,
+      "parent": 1,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],

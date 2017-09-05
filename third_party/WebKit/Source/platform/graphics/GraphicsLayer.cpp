@@ -559,33 +559,78 @@ class GraphicsLayer::LayersAsJSONArray {
     return json;
   }
 
-  void Walk(const GraphicsLayer& layer,
-            int parent_transform_id,
-            const FloatPoint& parent_offset) {
-    FloatPoint offset = parent_offset;
-    int transform_id = parent_transform_id;
-    std::unique_ptr<JSONObject> transform_json;
-    if (!layer.transform_.IsIdentity() || layer.rendering_context3d_) {
-      transform_json = JSONObject::Create();
-      transform_id = next_transform_id_++;
-      transform_json->SetInteger("id", transform_id);
-      if (parent_transform_id)
-        transform_json->SetInteger("parent", parent_transform_id);
-      layer.AddTransformJSONProperties(*transform_json, rendering_context_map_);
-      transforms_json_->PushObject(std::move(transform_json));
+  JSONObject* AddTransformJSON(int& transform_id) {
+    auto transform_json = JSONObject::Create();
+    int parent_transform_id = transform_id;
+    transform_id = next_transform_id_++;
+    transform_json->SetInteger("id", transform_id);
+    if (parent_transform_id)
+      transform_json->SetInteger("parent", parent_transform_id);
+    auto* result = transform_json.get();
+    transforms_json_->PushObject(std::move(transform_json));
+    return result;
+  }
 
-      offset = FloatPoint();
+  static FloatPoint ScrollPosition(const GraphicsLayer& layer) {
+    const auto* scrollable_area = layer.GetScrollableArea();
+    if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
+      // The LayoutView layer's scrollable area is on the "Frame Scrolling
+      // Layer" ancestor.
+      if (layer.DebugName() == "LayoutView #document")
+        scrollable_area = layer.Parent()->Parent()->GetScrollableArea();
+      else if (layer.DebugName() == "Frame Scrolling Layer")
+        scrollable_area = nullptr;
+    }
+    return scrollable_area ? scrollable_area->ScrollPosition() : FloatPoint();
+  }
+
+  void AddLayer(const GraphicsLayer& layer,
+                int& transform_id,
+                FloatPoint& position) {
+    FloatPoint scroll_position = ScrollPosition(layer);
+    if (scroll_position != FloatPoint()) {
+      // Output scroll position as a transform.
+      auto* scroll_translate_json = AddTransformJSON(transform_id);
+      scroll_translate_json->SetArray(
+          "transform", TransformAsJSONArray(TransformationMatrix().Translate(
+                           -scroll_position.X(), -scroll_position.Y())));
+      layer.AddFlattenInheritedTransformJSON(*scroll_translate_json);
+    }
+
+    if (!layer.transform_.IsIdentity() || layer.rendering_context3d_) {
+      if (position != FloatPoint()) {
+        // Output position offset as a transform.
+        auto* position_translate_json = AddTransformJSON(transform_id);
+        position_translate_json->SetArray(
+            "transform", TransformAsJSONArray(TransformationMatrix().Translate(
+                             position.X(), position.Y())));
+        layer.AddFlattenInheritedTransformJSON(*position_translate_json);
+        if (layer.Parent() && !layer.Parent()->should_flatten_transform_) {
+          position_translate_json->SetBoolean("flattenInheritedTransform",
+                                              false);
+        }
+      }
+
+      auto* transform_json = AddTransformJSON(transform_id);
+      layer.AddTransformJSONProperties(*transform_json, rendering_context_map_);
+      position = FloatPoint();
     }
 
     auto json =
-        layer.LayerAsJSONInternal(flags_, rendering_context_map_, offset);
+        layer.LayerAsJSONInternal(flags_, rendering_context_map_, position);
     if (transform_id)
       json->SetInteger("transform", transform_id);
     layers_json_->PushObject(std::move(json));
+  }
 
-    offset += layer.position_;
+  void Walk(const GraphicsLayer& layer,
+            int parent_transform_id,
+            const FloatPoint& parent_position) {
+    FloatPoint position = parent_position + layer.position_;
+    int transform_id = parent_transform_id;
+    AddLayer(layer, transform_id, position);
     for (auto& child : layer.children_)
-      Walk(*child, transform_id, offset);
+      Walk(*child, transform_id, position);
   }
 
  private:
@@ -610,7 +655,7 @@ std::unique_ptr<JSONObject> GraphicsLayer::LayerTreeAsJSON(
 std::unique_ptr<JSONObject> GraphicsLayer::LayerAsJSONInternal(
     LayerTreeFlags flags,
     RenderingContextMap& rendering_context_map,
-    const FloatPoint& offset) const {
+    const FloatPoint& position) const {
   std::unique_ptr<JSONObject> json = JSONObject::Create();
 
   if (flags & kLayerTreeIncludesDebugInfo)
@@ -618,7 +663,6 @@ std::unique_ptr<JSONObject> GraphicsLayer::LayerAsJSONInternal(
 
   json->SetString("name", DebugName());
 
-  FloatPoint position = offset + position_;
   if (position != FloatPoint())
     json->SetArray("position", PointAsJSONArray(position));
 
@@ -662,8 +706,16 @@ std::unique_ptr<JSONObject> GraphicsLayer::LayerAsJSONInternal(
                     background_color_.NameForLayoutTreeAsText());
   }
 
-  if (flags & kOutputAsLayerTree)
+  if (flags & kOutputAsLayerTree) {
     AddTransformJSONProperties(*json, rendering_context_map);
+    if (!should_flatten_transform_)
+      json->SetBoolean("shouldFlattenTransform", false);
+    if (scrollable_area_ &&
+        scrollable_area_->ScrollPosition() != FloatPoint()) {
+      json->SetArray("scrollPosition",
+                     PointAsJSONArray(scrollable_area_->ScrollPosition()));
+    }
+  }
 
   if (flags & kLayerTreeIncludesPaintInvalidations)
     GetRasterInvalidationTrackingMap().AsJSON(this, json.get());
@@ -727,8 +779,8 @@ std::unique_ptr<JSONObject> GraphicsLayer::LayerAsJSONInternal(
 
   if (mask_layer_) {
     std::unique_ptr<JSONArray> mask_layer_json = JSONArray::Create();
-    mask_layer_json->PushObject(
-        mask_layer_->LayerAsJSONInternal(flags, rendering_context_map));
+    mask_layer_json->PushObject(mask_layer_->LayerAsJSONInternal(
+        flags, rendering_context_map, mask_layer_->position_));
     json->SetArray("maskLayer", std::move(mask_layer_json));
   }
 
@@ -737,7 +789,8 @@ std::unique_ptr<JSONObject> GraphicsLayer::LayerAsJSONInternal(
         JSONArray::Create();
     contents_clipping_mask_layer_json->PushObject(
         contents_clipping_mask_layer_->LayerAsJSONInternal(
-            flags, rendering_context_map));
+            flags, rendering_context_map,
+            contents_clipping_mask_layer_->position_));
     json->SetArray("contentsClippingMaskLayer",
                    std::move(contents_clipping_mask_layer_json));
   }
@@ -749,7 +802,7 @@ std::unique_ptr<JSONObject> GraphicsLayer::LayerTreeAsJSONInternal(
     LayerTreeFlags flags,
     RenderingContextMap& rendering_context_map) const {
   std::unique_ptr<JSONObject> json =
-      LayerAsJSONInternal(flags, rendering_context_map);
+      LayerAsJSONInternal(flags, rendering_context_map, position_);
 
   if (children_.size()) {
     std::unique_ptr<JSONArray> children_json = JSONArray::Create();
@@ -772,8 +825,7 @@ void GraphicsLayer::AddTransformJSONProperties(
   if (!transform_.IsIdentityOrTranslation())
     json.SetArray("origin", PointAsJSONArray(transform_origin_));
 
-  if (!should_flatten_transform_)
-    json.SetBoolean("flattenInheritedTransform", false);
+  AddFlattenInheritedTransformJSON(json);
 
   if (rendering_context3d_) {
     auto it = rendering_context_map.find(rendering_context3d_);
@@ -785,6 +837,11 @@ void GraphicsLayer::AddTransformJSONProperties(
 
     json.SetInteger("renderingContext", context_id);
   }
+}
+
+void GraphicsLayer::AddFlattenInheritedTransformJSON(JSONObject& json) const {
+  if (Parent() && !Parent()->should_flatten_transform_)
+    json.SetBoolean("flattenInheritedTransform", false);
 }
 
 String GraphicsLayer::GetLayerTreeAsTextForTesting(LayerTreeFlags flags) const {
