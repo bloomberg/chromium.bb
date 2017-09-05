@@ -3,7 +3,7 @@ Test that window.onerror and "error" event listeners from main world are not inv
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-Handling 'error' event (phase 2): "Uncaught Error: Error in isolated world inline script." at :11
+Handling 'error' event (phase 2): "Uncaught Error: Error in isolated world inline script." at window-onerror-isolatedworld-01.html:11
 No stack trace.
 PASS eventPassedToTheErrorListener is window.event
 PASS eventCurrentTarget is window
@@ -33,7 +33,7 @@ Calling e.preventDefault(): the error should not be reported in the console as a
 
 
 
-Handling 'error' event (phase 2): "Uncaught Error: Error in isolated world load handler." at :8
+Handling 'error' event (phase 2): "Uncaught Error: Error in isolated world load handler." at window-onerror-isolatedworld-01.html:8
 No stack trace.
 PASS eventPassedToTheErrorListener is window.event
 PASS eventCurrentTarget is window
@@ -62,7 +62,7 @@ Calling e.preventDefault(): the error should not be reported in the console as a
 
 
 FAIL Only main-world exceptions should be caught by ErrorEvent listeners.
-Handling 'error' event (phase 2): "Uncaught Error: Error in isolated world setTimeout callback." at :6
+Handling 'error' event (phase 2): "Uncaught Error: Error in isolated world setTimeout callback." at window-onerror-isolatedworld-01.html:6
 No stack trace.
 PASS eventPassedToTheErrorListener is window.event
 PASS eventCurrentTarget is window
