@@ -17,7 +17,6 @@
 #import "ios/clean/chrome/browser/ui/dialogs/test_helpers/test_dialog_mediator.h"
 #import "ios/clean/chrome/browser/ui/dialogs/test_helpers/test_dialog_view_controller.h"
 #import "ios/clean/chrome/browser/ui/overlays/test_helpers/test_overlay_queue.h"
-#include "ios/web/public/test/fakes/test_browser_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"

@@ -101,7 +101,6 @@ include_rules = [
   "+ios/public/provider/chrome",
   "+ios/public/provider/components",
   "+ios/shared/chrome/browser",
-  "+ios/web/public",
   "+libxml/xmlwriter.h",
   "+net",
   "+rlz/features",

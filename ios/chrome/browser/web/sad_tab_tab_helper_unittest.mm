@@ -6,10 +6,11 @@
 
 #include <memory>
 
+#include "base/test/scoped_task_environment.h"
+#include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
 #import "ios/chrome/browser/web/page_placeholder_tab_helper_delegate.h"
 #import "ios/chrome/browser/web/sad_tab_tab_helper_delegate.h"
-#include "ios/web/public/test/fakes/test_browser_state.h"
 #import "ios/web/public/test/fakes/test_navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #import "ios/web/public/web_state/ui/crw_generic_content_view.h"
@@ -48,6 +49,8 @@ class SadTabTabHelperTest : public PlatformTest {
         sad_tab_delegate_([[SadTabTabHelperTestDelegate alloc] init]),
         page_placeholder_delegate_([OCMockObject
             mockForProtocol:@protocol(PagePlaceholderTabHelperDelegate)]) {
+    browser_state_ = TestChromeBrowserState::Builder().Build();
+
     SadTabTabHelper::CreateForWebState(&web_state_, sad_tab_delegate_);
     PagePlaceholderTabHelper::CreateForWebState(&web_state_,
                                                 page_placeholder_delegate_);
@@ -56,13 +59,15 @@ class SadTabTabHelperTest : public PlatformTest {
     // Setup navigation manager.
     std::unique_ptr<web::TestNavigationManager> navigation_manager =
         base::MakeUnique<web::TestNavigationManager>();
-    navigation_manager->SetBrowserState(&browser_state_);
+    navigation_manager->SetBrowserState(browser_state_.get());
     navigation_manager_ = navigation_manager.get();
     web_state_.SetNavigationManager(std::move(navigation_manager));
   }
 
   ~SadTabTabHelperTest() override { [application_ stopMocking]; }
-  web::TestBrowserState browser_state_;
+
+  base::test::ScopedTaskEnvironment environment_;
+  std::unique_ptr<ios::ChromeBrowserState> browser_state_;
   web::TestWebState web_state_;
   web::TestNavigationManager* navigation_manager_;
   id application_;
