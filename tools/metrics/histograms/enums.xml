@@ -16273,6 +16273,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="2143" label="WebkitBoxLineClampManyChildren"/>
   <int value="2144" label="WebkitBoxLineClampDoesSomething"/>
   <int value="2145" label="FeaturePolicyAllowAttributeDeprecatedSyntax"/>
+  <int value="2146" label="SuppressHistoryEntryWithoutUserGesture"/>
 </enum>
 
 <enum name="FeedbackSource">

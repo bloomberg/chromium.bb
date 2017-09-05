@@ -291,8 +291,10 @@ void DocumentLoader::UpdateForSameDocumentNavigation(
     HistoryScrollRestorationType scroll_restoration_type,
     FrameLoadType type,
     Document* initiating_document) {
-  if (initiating_document && !initiating_document->CanCreateHistoryEntry())
+  if (type == kFrameLoadTypeStandard && initiating_document &&
+      !initiating_document->CanCreateHistoryEntry()) {
     type = kFrameLoadTypeReplaceCurrentItem;
+  }
 
   KURL old_url = request_.Url();
   original_request_.SetURL(new_url);
