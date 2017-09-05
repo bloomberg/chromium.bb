@@ -394,10 +394,15 @@ class RemoteDeviceUpdater(object):
     elif os.path.isfile(self.image):
       # The given path is an image.
       logging.info('Using image %s', self.image)
-      ds_wrapper.GetUpdatePayloadsFromLocalPath(
-          self.image, payload_dir,
-          src_image_to_delta=self.src_image_to_delta,
-          static_dir=DEVSERVER_STATIC_DIR)
+      try:
+        ds_wrapper.GetUpdatePayloadsFromLocalPath(
+            self.image, payload_dir,
+            src_image_to_delta=self.src_image_to_delta,
+            static_dir=DEVSERVER_STATIC_DIR)
+      except:
+        logging.error('Unable to get payloads from local path: %s', payload_dir)
+        raise
+
     else:
       self.board = cros_build_lib.GetBoard(device_board=device.board,
                                            override_board=self.board,
@@ -439,37 +444,40 @@ class RemoteDeviceUpdater(object):
     4. After auto-update, all temp files and dir will be cleaned up.
     """
     try:
-      device_connected = False
-
       with remote_access.ChromiumOSDeviceHandler(
           self.ssh_hostname, port=self.ssh_port, base_dir=self.DEVICE_BASE_DIR,
           private_key=self.ssh_private_key, ping=self.ping) as device:
-        device_connected = True
 
-        # Get payload directory
-        payload_dir = self.GetPayloadDir(device)
+        try:
+          # Get payload directory
+          payload_dir = self.GetPayloadDir(device)
 
-        # Do auto-update
-        chromeos_AU = auto_updater.ChromiumOSFlashUpdater(
-            device, payload_dir, self.tempdir,
-            do_rootfs_update=self.do_rootfs_update,
-            do_stateful_update=self.do_stateful_update,
-            reboot=self.reboot,
-            disable_verification=self.disable_verification,
-            clobber_stateful=self.clobber_stateful,
-            yes=self.yes)
-        chromeos_AU.CheckPayloads()
-        chromeos_AU.RunUpdate()
+          # Do auto-update
+          chromeos_AU = auto_updater.ChromiumOSFlashUpdater(
+              device, payload_dir, self.tempdir,
+              do_rootfs_update=self.do_rootfs_update,
+              do_stateful_update=self.do_stateful_update,
+              reboot=self.reboot,
+              disable_verification=self.disable_verification,
+              clobber_stateful=self.clobber_stateful,
+              yes=self.yes)
+          chromeos_AU.CheckPayloads()
+          chromeos_AU.RunUpdate()
 
-    except Exception:
-      logging.error('Device update failed.')
-      if device_connected and device.lsb_release:
-        lsb_entries = sorted(device.lsb_release.items())
-        logging.info('Following are the LSB version details of the device:\n%s',
-                     '\n'.join('%s=%s' % (k, v) for k, v in lsb_entries))
+        except Exception:
+          logging.error('Device update failed.')
+          lsb_entries = sorted(device.lsb_release.items())
+          logging.info(
+              'Following are the LSB version details of the device:\n%s',
+              '\n'.join('%s=%s' % (k, v) for k, v in lsb_entries))
+          raise
+
+        logging.notice('Update performed successfully.')
+
+    except remote_access.RemoteAccessException:
+      logging.error('Remote device failed to initialize.')
       raise
-    else:
-      logging.notice('Update performed successfully.')
+
     finally:
       self.Cleanup()
 
