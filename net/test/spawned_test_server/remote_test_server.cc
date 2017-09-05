@@ -17,19 +17,20 @@
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "net/base/host_port_pair.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
-#include "net/test/spawned_test_server/remote_test_server_config.h"
 #include "net/test/spawned_test_server/remote_test_server_proxy.h"
-#include "net/test/spawned_test_server/spawner_communicator.h"
+#include "net/test/spawned_test_server/remote_test_server_spawner_request.h"
 #include "url/gurl.h"
 
 namespace net {
 
 namespace {
 
-// Please keep it sync with dictionary SERVER_TYPES in testserver.py
+// Please keep in sync with dictionary SERVER_TYPES in testserver.py
 std::string GetServerTypeString(BaseTestServer::Type type) {
   switch (type) {
     case BaseTestServer::TYPE_FTP:
@@ -72,13 +73,9 @@ RemoteTestServer::~RemoteTestServer() {
   Stop();
 }
 
-bool RemoteTestServer::Start() {
-  if (spawner_communicator_.get())
-    return true;
-
-  RemoteTestServerConfig config = RemoteTestServerConfig::Load();
-
-  spawner_communicator_ = std::make_unique<SpawnerCommunicator>(config);
+bool RemoteTestServer::StartInBackground() {
+  DCHECK(!started());
+  DCHECK(!start_request_);
 
   base::DictionaryValue arguments_dict;
   if (!GenerateArguments(&arguments_dict))
@@ -96,56 +93,62 @@ bool RemoteTestServer::Start() {
   if (arguments_string.empty())
     return false;
 
-  // Start the Python test server on the remote machine.
+  start_request_ = std::make_unique<RemoteTestServerSpawnerRequest>(
+      io_thread_.task_runner(), config_.GetSpawnerUrl("start"),
+      arguments_string);
+
+  return true;
+}
+
+bool RemoteTestServer::BlockUntilStarted() {
+  DCHECK(start_request_);
+
   std::string server_data;
-  if (!spawner_communicator_->StartServer(arguments_string, &server_data))
+  bool request_result = start_request_->WaitForCompletion(&server_data);
+  start_request_.reset();
+  if (!request_result)
     return false;
 
   // Parse server_data.
-  int server_port;
   if (server_data.empty() ||
-      !SetAndParseServerData(server_data, &server_port)) {
+      !SetAndParseServerData(server_data, &remote_port_)) {
     LOG(ERROR) << "Could not parse server_data: " << server_data;
     return false;
   }
 
   // If the server is not on localhost then start a proxy on localhost to
   // forward connections to the server.
-  if (config.address() != IPAddress::IPv4Localhost()) {
+  if (config_.address() != IPAddress::IPv4Localhost()) {
     test_server_proxy_ = std::make_unique<RemoteTestServerProxy>(
-        IPEndPoint(config.address(), server_port), io_thread_.task_runner());
+        IPEndPoint(config_.address(), remote_port_), io_thread_.task_runner());
     SetPort(test_server_proxy_->local_port());
   } else {
-    SetPort(server_port);
+    SetPort(remote_port_);
   }
 
   return SetupWhenServerStarted();
 }
 
-bool RemoteTestServer::StartInBackground() {
-  NOTIMPLEMENTED();
-  return false;
-}
-
-bool RemoteTestServer::BlockUntilStarted() {
-  NOTIMPLEMENTED();
-  return false;
-}
-
 bool RemoteTestServer::Stop() {
-  if (!spawner_communicator_)
-    return true;
+  DCHECK(!start_request_);
 
-  uint16_t port = GetPort();
+  if (remote_port_) {
+    std::unique_ptr<RemoteTestServerSpawnerRequest> kill_request =
+        std::make_unique<RemoteTestServerSpawnerRequest>(
+            io_thread_.task_runner(),
+            config_.GetSpawnerUrl(
+                base::StringPrintf("kill?port=%d", remote_port_)),
+            std::string());
+
+    if (!kill_request->WaitForCompletion(nullptr))
+      LOG(ERROR) << "Failed stopping RemoteTestServer";
+
+    remote_port_ = 0;
+  }
+
   CleanUpWhenStoppingServer();
-  bool stopped = spawner_communicator_->StopServer(port);
 
-  if (!stopped)
-    LOG(ERROR) << "Failed stopping RemoteTestServer";
-
-  // Explicitly reset |spawner_communicator_| to avoid reusing the stopped one.
-  spawner_communicator_.reset();
-  return stopped;
+  return true;
 }
 
 // On Android, the document root in the device is not the same as the document
@@ -161,6 +164,8 @@ base::FilePath RemoteTestServer::GetDocumentRoot() const {
 bool RemoteTestServer::Init(const base::FilePath& document_root) {
   if (document_root.IsAbsolute())
     return false;
+
+  config_ = RemoteTestServerConfig::Load();
 
   bool thread_started = io_thread_.StartWithOptions(
       base::Thread::Options(base::MessageLoop::TYPE_IO, 0));

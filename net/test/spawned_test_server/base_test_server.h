@@ -304,6 +304,29 @@ class BaseTestServer {
   // Initialize a TestServer with a specific set of SSLOptions for HTTPS or WSS.
   BaseTestServer(Type type, const SSLOptions& ssl_options);
 
+  // Starts the server blocking until the server is ready.
+  bool Start() WARN_UNUSED_RESULT;
+
+  // Start the test server without blocking. Use this if you need multiple test
+  // servers (such as WebSockets and HTTP, or HTTP and HTTPS). You must call
+  // BlockUntilStarted on all servers your test requires before executing the
+  // test. For example:
+  //
+  //   // Start the servers in parallel.
+  //   ASSERT_TRUE(http_server.StartInBackground());
+  //   ASSERT_TRUE(websocket_server.StartInBackground());
+  //   // Wait for both servers to be ready.
+  //   ASSERT_TRUE(http_server.BlockUntilStarted());
+  //   ASSERT_TRUE(websocket_server.BlockUntilStarted());
+  //   RunMyTest();
+  //
+  // Returns true on success.
+  virtual bool StartInBackground() WARN_UNUSED_RESULT = 0;
+
+  // Block until the test server is ready. Returns true on success. See
+  // StartInBackground() documentation for more information.
+  virtual bool BlockUntilStarted() WARN_UNUSED_RESULT = 0;
+
   // Returns the host port pair used by current Python based test server only
   // if the server is started.
   const HostPortPair& host_port_pair() const;
@@ -353,6 +376,8 @@ class BaseTestServer {
  protected:
   virtual ~BaseTestServer();
   Type type() const { return type_; }
+
+  bool started() const { return started_; }
 
   // Gets port currently assigned to host_port_pair_ without checking
   // whether it's available (server started) or not.

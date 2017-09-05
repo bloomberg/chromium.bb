@@ -2675,8 +2675,8 @@ static_library("test_support") {
       "test/spawned_test_server/remote_test_server_config.h",
       "test/spawned_test_server/remote_test_server_proxy.cc",
       "test/spawned_test_server/remote_test_server_proxy.h",
-      "test/spawned_test_server/spawner_communicator.cc",
-      "test/spawned_test_server/spawner_communicator.h",
+      "test/spawned_test_server/remote_test_server_spawner_request.cc",
+      "test/spawned_test_server/remote_test_server_spawner_request.h",
     ]
   }
 
