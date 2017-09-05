@@ -64,8 +64,10 @@ void ArcPlayStoreSearchProvider::Start(bool is_voice_query,
                 GetRecentAndSuggestedAppsFromPlayStore)
           : nullptr;
 
-  if (app_instance == nullptr || query.empty())
+  if (app_instance == nullptr || query.empty()) {
+    ClearResults();
     return;
+  }
 
   app_instance->GetRecentAndSuggestedAppsFromPlayStore(
       base::UTF16ToUTF8(query), max_results_,
