@@ -22,14 +22,14 @@ class TestIOBuffer : public IOBuffer {
 class QuicTestMemSliceVectorImpl {
  public:
   explicit QuicTestMemSliceVectorImpl(
-      std::vector<std::pair<char*, size_t>> buffers);
+      std::vector<std::pair<char*, int>> buffers);
   ~QuicTestMemSliceVectorImpl();
 
   QuicMemSliceSpanImpl span();
 
  private:
   std::vector<scoped_refptr<IOBuffer>> buffers_;
-  std::vector<size_t> lengths_;
+  std::vector<int> lengths_;
 };
 
 }  // namespace test

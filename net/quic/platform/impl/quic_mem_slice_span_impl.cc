@@ -11,7 +11,7 @@ namespace net {
 
 QuicMemSliceSpanImpl::QuicMemSliceSpanImpl(
     const std::vector<scoped_refptr<IOBuffer>>* buffers,
-    const std::vector<size_t>* lengths)
+    const std::vector<int>* lengths)
     : buffers_(buffers), lengths_(lengths) {
   QUIC_BUG_IF(buffers->size() != lengths->size())
       << " buffers size and lengths size are not equal";
