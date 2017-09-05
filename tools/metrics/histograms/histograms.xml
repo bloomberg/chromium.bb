@@ -83414,6 +83414,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="ThirdPartyModules.TimeDateStampObtained" enum="BooleanSuccess">
+  <owner>pmonette@chromium.org</owner>
+  <summary>
+    Indicates whether the TimeDateStamp for a loaded module was successfully
+    obtained.
+  </summary>
+</histogram>
+
 <histogram name="ThirdPartyModules.Uninstallable" enum="BooleanUninstallable">
   <owner>pmonette@chromium.org</owner>
   <summary>

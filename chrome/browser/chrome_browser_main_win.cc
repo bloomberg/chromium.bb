@@ -170,11 +170,143 @@ void DetectFaultTolerantHeap() {
   UMA_HISTOGRAM_ENUMERATION("FaultTolerantHeap", detected, FTH_FLAGS_COUNT);
 }
 
+// Notes on the OnModuleEvent() callback.
+//
+// The ModuleDatabase uses the TimeDateStamp value of the DLL to uniquely
+// identify modules as they are discovered. Unlike the SizeOfImage, this value
+// isn't provided via LdrDllNotification events or CreateToolhelp32Snapshot().
+//
+// The easiest way to obtain the TimeDateStamp is to read the mapped module in
+// memory. Unfortunately, this could cause an ACCESS_VIOLATION_EXCEPTION if the
+// module is unloaded before being accessed. This can occur when enumerating
+// already loaded modules with CreateToolhelp32Snapshot(). Note that this
+// problem doesn't affect LdrDllNotification events, where it is guaranteed that
+// the module stays in memory for the duration of the callback.
+//
+// To get around this, there are multiple solutions:
+// (1) Read the file on disk instead.
+//     Sidesteps the problem altogether. The drawback is that it must be done on
+//     a sequence that allow blocking IO, and it is way slower. We don't want to
+//     pay that price for each module in the process. This can fail if the file
+//     can not be found when attemping to read it.
+//
+// (2) Increase the reference count of the module.
+//     Calling ::LoadLibraryEx() or ::GetModuleHandleEx() lets us ensure that
+//     the module won't go away while we hold the extra handle. It's still
+//     possible that the module was unloaded before we have a chance to increase
+//     the reference count, which would mean either reloading the DLL, or
+//     failing to get a new handle.
+//
+//     This isn't ideal but the worst that can happen is that we hold the last
+//     reference to the module. The DLL would be unloaded on our thread when
+//     ::FreeLibrary() is called. This could go horribly wrong if the DLL's
+//     creator didn't consider this possibility.
+//
+// (3) Do it in a Structured Exception Handler (SEH)
+//     Make the read inside a __try/__except handler and handle the possible
+//     ACCESS_VIOLATION_EXCEPTION if it happens.
+//
+// The current solution is (3) with a fallback that uses (1). In the rare case
+// that both fail to get the TimeDateStamp, the module load event is dropped
+// altogether, as our best effort was unsuccessful.
+
+// Gets the TimeDateStamp from the file on disk and, if successful, sends the
+// load event to the ModuleDatabase.
+void HandleModuleLoadEventWithoutTimeDateStamp(
+    const base::FilePath& module_path,
+    size_t module_size,
+    uintptr_t load_address) {
+  uint32_t size_of_image = 0;
+  uint32_t time_date_stamp = 0;
+  bool got_time_date_stamp = GetModuleImageSizeAndTimeDateStamp(
+      module_path, &size_of_image, &time_date_stamp);
+
+  // Simple sanity check.
+  got_time_date_stamp = got_time_date_stamp && size_of_image == module_size;
+  UMA_HISTOGRAM_BOOLEAN("ThirdPartyModules.TimeDateStampObtained",
+                        got_time_date_stamp);
+
+  // Drop the load event if it's not possible to get the time date stamp.
+  if (!got_time_date_stamp)
+    return;
+
+  ModuleDatabase::GetInstance()->OnModuleLoad(content::PROCESS_TYPE_BROWSER,
+                                              module_path, module_size,
+                                              time_date_stamp, load_address);
+}
+
+// Helper function for getting the module size associated with a module in this
+// process based on its load address.
+uint32_t GetModuleSizeOfImage(const void* module_load_address) {
+  base::win::PEImage pe_image(module_load_address);
+  return pe_image.GetNTHeaders()->OptionalHeader.SizeOfImage;
+}
+
 // Helper function for getting the time date stamp associated with a module in
-// this process.
+// this process based on its load address.
 uint32_t GetModuleTimeDateStamp(const void* module_load_address) {
   base::win::PEImage pe_image(module_load_address);
   return pe_image.GetNTHeaders()->FileHeader.TimeDateStamp;
+}
+
+// An exception filter for handling Access Violation exceptions within the
+// memory range [module_load_address, module_load_address + size_of_image).
+DWORD FilterAccessViolation(DWORD exception_code,
+                            const EXCEPTION_POINTERS* exception_information,
+                            void* module_load_address,
+                            uint32_t size_of_image) {
+  if (exception_code != EXCEPTION_ACCESS_VIOLATION)
+    return EXCEPTION_CONTINUE_SEARCH;
+
+  // To make sure an unrelated exception is not swallowed by the exception
+  // handler, the address where the exception happened is verified.
+  const EXCEPTION_RECORD* exception_record =
+      exception_information->ExceptionRecord;
+  const DWORD access_violation_address =
+      exception_record->ExceptionInformation[1];
+
+  uintptr_t range_start = reinterpret_cast<uintptr_t>(module_load_address);
+  uintptr_t range_end = range_start + size_of_image;
+  if (range_start > access_violation_address ||
+      range_end <= access_violation_address) {
+    return EXCEPTION_CONTINUE_SEARCH;
+  }
+
+  return EXCEPTION_EXECUTE_HANDLER;
+}
+
+// Wrapper around GetModuleTimeDateStamp that handles a potential
+// EXCEPTION_ACCESS_VIOLATION that can happen if the |module_load_address| is
+// accessed after the module is unloaded. Also ensures that the expected module
+// is loaded at this address.
+bool TryGetModuleTimeDateStamp(void* module_load_address,
+                               const base::FilePath& module_path,
+                               uint32_t size_of_image,
+                               uint32_t* time_date_stamp) {
+  __try {
+    // Make sure it's the correct module, to protect against a potential race
+    // where a new module was loaded at the same address. This is safe because
+    // the only possibles races are either there was a module loaded at
+    // |module_load_address| and it was unloaded, or there was no module loaded
+    // at |module_load_address| and a new one took its place.
+    wchar_t module_file_name[MAX_PATH];
+    DWORD size =
+        ::GetModuleFileName(reinterpret_cast<HMODULE>(module_load_address),
+                            module_file_name, ARRAYSIZE(module_file_name));
+    if (!size || !base::FilePath::CompareEqualIgnoreCase(module_path.value(),
+                                                         module_file_name)) {
+      return false;
+    }
+    if (size_of_image != GetModuleSizeOfImage(module_load_address))
+      return false;
+
+    *time_date_stamp = GetModuleTimeDateStamp(module_load_address);
+  } __except (FilterAccessViolation(GetExceptionCode(),
+                                    GetExceptionInformation(),
+                                    module_load_address, size_of_image)) {
+    return false;
+  }
+  return true;
 }
 
 // Used as the callback for ModuleWatcher events in this process. Dispatches
@@ -185,7 +317,29 @@ void OnModuleEvent(const ModuleWatcher::ModuleEvent& event) {
       reinterpret_cast<uintptr_t>(event.module_load_address);
 
   switch (event.event_type) {
-    case mojom::ModuleEventType::MODULE_ALREADY_LOADED:
+    case mojom::ModuleEventType::MODULE_ALREADY_LOADED: {
+      // MODULE_ALREADY_LOADED comes from the enumeration of loaded modules
+      // using CreateToolhelp32Snapshot().
+      uint32_t time_date_stamp = 0;
+      if (TryGetModuleTimeDateStamp(event.module_load_address,
+                                    event.module_path, event.module_size,
+                                    &time_date_stamp)) {
+        module_database->OnModuleLoad(content::PROCESS_TYPE_BROWSER,
+                                      event.module_path, event.module_size,
+                                      time_date_stamp, load_address);
+      } else {
+        // Failed to get the TimeDateStamp directly from memory. The next step
+        // to try is to read the file on disk. This must be done in a blocking
+        // task.
+        base::PostTaskWithTraits(
+            FROM_HERE,
+            {base::MayBlock(),
+             base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+            base::Bind(&HandleModuleLoadEventWithoutTimeDateStamp,
+                       event.module_path, event.module_size, load_address));
+      }
+      return;
+    }
     case mojom::ModuleEventType::MODULE_LOADED: {
       module_database->OnModuleLoad(
           content::PROCESS_TYPE_BROWSER, event.module_path, event.module_size,
