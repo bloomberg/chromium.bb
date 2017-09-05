@@ -46,7 +46,7 @@ ResourceFetcher* ResourceFetcher::Create(const GURL& url) {
 class ResourceFetcherImpl::ClientImpl : public mojom::URLLoaderClient {
  public:
   ClientImpl(ResourceFetcherImpl* parent,
-             const Callback& callback,
+             Callback callback,
              size_t maximum_download_size)
       : parent_(parent),
         client_binding_(this),
@@ -55,7 +55,7 @@ class ResourceFetcherImpl::ClientImpl : public mojom::URLLoaderClient {
         status_(Status::kNotStarted),
         completed_(false),
         maximum_download_size_(maximum_download_size),
-        callback_(callback) {}
+        callback_(std::move(callback)) {}
 
   ~ClientImpl() override {}
 
@@ -115,10 +115,7 @@ class ResourceFetcherImpl::ClientImpl : public mojom::URLLoaderClient {
     if (callback_.is_null())
       return;
 
-    // Take a reference to the callback as running the callback may lead to our
-    // destruction.
-    Callback callback = callback_;
-    callback.Run(response_, data_);
+    std::move(callback_).Run(response_, data_);
   }
 
   void ClearReceivedDataToFail() {
@@ -286,7 +283,7 @@ void ResourceFetcherImpl::SetHeader(const std::string& header,
 void ResourceFetcherImpl::Start(
     blink::WebLocalFrame* frame,
     blink::WebURLRequest::RequestContext request_context,
-    const Callback& callback) {
+    Callback callback) {
   static const net::NetworkTrafficAnnotationTag annotation_tag =
       net::DefineNetworkTrafficAnnotation("content_resource_fetcher", R"(
     semantics {
@@ -313,8 +310,8 @@ void ResourceFetcherImpl::Start(
           ->GetNetworkLoaderFactory();
   DCHECK(url_loader_factory);
 
-  Start(frame, request_context, url_loader_factory, annotation_tag, callback,
-        kDefaultMaximumDownloadSize);
+  Start(frame, request_context, url_loader_factory, annotation_tag,
+        std::move(callback), kDefaultMaximumDownloadSize);
 }
 
 void ResourceFetcherImpl::Start(
@@ -322,7 +319,7 @@ void ResourceFetcherImpl::Start(
     blink::WebURLRequest::RequestContext request_context,
     mojom::URLLoaderFactory* url_loader_factory,
     const net::NetworkTrafficAnnotationTag& annotation_tag,
-    const Callback& callback,
+    Callback callback,
     size_t maximum_download_size) {
   DCHECK(!client_);
   DCHECK(frame);
@@ -346,7 +343,8 @@ void ResourceFetcherImpl::Start(
   }
   request_.resource_type = WebURLRequestContextToResourceType(request_context);
 
-  client_ = base::MakeUnique<ClientImpl>(this, callback, maximum_download_size);
+  client_ = base::MakeUnique<ClientImpl>(this, std::move(callback),
+                                         maximum_download_size);
   client_->Start(request_, url_loader_factory, annotation_tag,
                  frame->LoadingTaskRunner());
 

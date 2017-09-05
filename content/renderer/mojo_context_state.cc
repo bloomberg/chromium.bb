@@ -220,8 +220,8 @@ void MojoContextState::FetchModule(const std::string& id) {
                      ->GetDefaultURLLoaderFactoryGetter()
                      ->GetNetworkLoaderFactory(),
                  network_traffic_annotation_tag,
-                 base::Bind(&MojoContextState::OnFetchModuleComplete,
-                            base::Unretained(this), fetcher, id));
+                 base::BindOnce(&MojoContextState::OnFetchModuleComplete,
+                                base::Unretained(this), fetcher, id));
 }
 
 void MojoContextState::OnFetchModuleComplete(
