@@ -103,7 +103,7 @@ NGLogicalOffset& NGLogicalOffset::operator-=(const NGLogicalOffset& other) {
 }
 
 String NGLogicalOffset::ToString() const {
-  return String::Format("%dx%d", inline_offset.ToInt(), block_offset.ToInt());
+  return String::Format("%d,%d", inline_offset.ToInt(), block_offset.ToInt());
 }
 
 std::ostream& operator<<(std::ostream& os, const NGLogicalOffset& value) {
