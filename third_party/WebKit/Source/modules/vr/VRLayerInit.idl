@@ -4,9 +4,9 @@
 
 typedef (HTMLCanvasElement or OffscreenCanvas) VRSource;
 
-// https://w3c.github.io/webvr/#interface-vrlayer
+// https://w3c.github.io/webvr/#interface-vrlayerinit
 
-dictionary VRLayer {
+dictionary VRLayerInit {
   // The canvas to be presented to the VRDisplay
   VRSource? source = null;
 

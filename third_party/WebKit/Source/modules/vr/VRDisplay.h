@@ -11,7 +11,7 @@
 #include "core/dom/events/EventTarget.h"
 #include "device/vr/vr_service.mojom-blink.h"
 #include "modules/vr/VRDisplayCapabilities.h"
-#include "modules/vr/VRLayer.h"
+#include "modules/vr/VRLayerInit.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
@@ -71,10 +71,11 @@ class VRDisplay final : public EventTargetWithInlineData,
   int requestAnimationFrame(FrameRequestCallback*);
   void cancelAnimationFrame(int id);
 
-  ScriptPromise requestPresent(ScriptState*, const HeapVector<VRLayer>& layers);
+  ScriptPromise requestPresent(ScriptState*,
+                               const HeapVector<VRLayerInit>& layers);
   ScriptPromise exitPresent(ScriptState*);
 
-  HeapVector<VRLayer> getLayers();
+  HeapVector<VRLayerInit> getLayers();
 
   void submitFrame();
 
@@ -180,7 +181,7 @@ class VRDisplay final : public EventTargetWithInlineData,
   // VR compositor so that it knows which poses to use, when to apply bounds
   // updates, etc.
   int16_t vr_frame_id_ = -1;
-  VRLayer layer_;
+  VRLayerInit layer_;
   double depth_near_ = 0.01;
   double depth_far_ = 10000.0;
 
