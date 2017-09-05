@@ -2903,10 +2903,11 @@ public class ContextualSearchManagerTest {
      * Tests that Contextual Search is fully disabled when offline.
      */
     @Test
-    @SmallTest
-    @Feature({"ContextualSearch"})
-    // NOTE: Remove the flag so we will run just this test with onLine detection enabled.
-    @CommandLineFlags.Remove(ContextualSearchFieldTrial.ONLINE_DETECTION_DISABLED)
+    @DisabledTest(message = "https://crbug.com/761946")
+    // @SmallTest
+    // @Feature({"ContextualSearch"})
+    // // NOTE: Remove the flag so we will run just this test with onLine detection enabled.
+    // @CommandLineFlags.Remove(ContextualSearchFieldTrial.ONLINE_DETECTION_DISABLED)
     public void testNetworkDisconnectedDeactivatesSearch()
             throws InterruptedException, TimeoutException {
         setOnlineStatusAndReload(false);
