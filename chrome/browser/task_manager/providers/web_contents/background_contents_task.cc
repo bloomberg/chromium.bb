@@ -4,6 +4,8 @@
 
 #include "chrome/browser/task_manager/providers/web_contents/background_contents_task.h"
 
+#include <string>
+
 #include "base/i18n/rtl.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/background/background_contents_service.h"
@@ -12,8 +14,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
-#include "content/public/browser/render_process_host.h"
-#include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/extension_set.h"
@@ -59,11 +59,9 @@ BackgroundContentsTask::BackgroundContentsTask(
     const base::string16& title,
     BackgroundContents* background_contents)
     : RendererTask(
-        AdjustAndLocalizeTitle(title, background_contents->GetURL().spec()),
-        GetDefaultIcon(),
-        background_contents->web_contents(),
-        background_contents->web_contents()->GetRenderProcessHost()) {
-}
+          AdjustAndLocalizeTitle(title, background_contents->GetURL().spec()),
+          GetDefaultIcon(),
+          background_contents->web_contents()) {}
 
 BackgroundContentsTask::~BackgroundContentsTask() {
 }

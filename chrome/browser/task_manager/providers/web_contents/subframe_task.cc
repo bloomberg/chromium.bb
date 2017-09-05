@@ -4,13 +4,14 @@
 
 #include "chrome/browser/task_manager/providers/web_contents/subframe_task.h"
 
+#include <string>
+
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/site_instance.h"
-#include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -22,10 +23,7 @@ namespace task_manager {
 SubframeTask::SubframeTask(content::RenderFrameHost* render_frame_host,
                            content::WebContents* web_contents,
                            RendererTask* main_task)
-    : RendererTask(base::string16(),
-                   nullptr,
-                   web_contents,
-                   render_frame_host->GetProcess()),
+    : RendererTask(base::string16(), nullptr, render_frame_host),
       site_instance_(render_frame_host->GetSiteInstance()),
       main_task_(main_task) {
   set_title(GetTitle());
