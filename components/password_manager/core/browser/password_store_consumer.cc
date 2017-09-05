@@ -17,4 +17,9 @@ PasswordStoreConsumer::~PasswordStoreConsumer() {
 void PasswordStoreConsumer::OnGetSiteStatistics(
     std::vector<InteractionsStats> stats) {}
 
+void PasswordStoreConsumer::CancelAllRequests() {
+  cancelable_task_tracker_.TryCancelAll();
+  weak_ptr_factory_.InvalidateWeakPtrs();
+}
+
 }  // namespace password_manager
