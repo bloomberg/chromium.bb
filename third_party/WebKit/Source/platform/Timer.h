@@ -91,7 +91,6 @@ class PLATFORM_EXPORT TimerBase {
 
  protected:
   static RefPtr<WebTaskRunner> GetTimerTaskRunner();
-  static RefPtr<WebTaskRunner> GetUnthrottledTaskRunner();
 
  private:
   virtual void Fired() = 0;
@@ -182,26 +181,6 @@ class Timer : public TaskRunnerTimer<TimerFiredClass> {
   Timer(TimerFiredClass* timer_fired_class,
         TimerFiredFunction timer_fired_function)
       : TaskRunnerTimer<TimerFiredClass>(TimerBase::GetTimerTaskRunner(),
-                                         timer_fired_class,
-                                         timer_fired_function) {}
-};
-
-// This subclass of Timer posts its tasks on the current thread's default task
-// runner.  Tasks posted on there are not throttled when the tab is in the
-// background.
-//
-// DEPRECATED: Use TaskRunnerHelper::get with TaskType::Unthrottled.
-template <typename TimerFiredClass>
-class UnthrottledThreadTimer : public TaskRunnerTimer<TimerFiredClass> {
- public:
-  using TimerFiredFunction =
-      typename TaskRunnerTimer<TimerFiredClass>::TimerFiredFunction;
-
-  ~UnthrottledThreadTimer() override {}
-
-  UnthrottledThreadTimer(TimerFiredClass* timer_fired_class,
-                         TimerFiredFunction timer_fired_function)
-      : TaskRunnerTimer<TimerFiredClass>(TimerBase::GetUnthrottledTaskRunner(),
                                          timer_fired_class,
                                          timer_fired_function) {}
 };

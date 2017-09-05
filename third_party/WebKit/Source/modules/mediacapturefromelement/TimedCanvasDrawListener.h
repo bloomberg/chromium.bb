@@ -13,6 +13,7 @@
 #include <memory>
 
 namespace blink {
+class ExecutionContext;
 
 class TimedCanvasDrawListener final
     : public GarbageCollectedFinalized<TimedCanvasDrawListener>,
@@ -23,19 +24,21 @@ class TimedCanvasDrawListener final
   ~TimedCanvasDrawListener();
   static TimedCanvasDrawListener* Create(
       std::unique_ptr<WebCanvasCaptureHandler>,
-      double frame_rate);
+      double frame_rate,
+      ExecutionContext*);
   void SendNewFrame(sk_sp<SkImage>) override;
 
   DEFINE_INLINE_TRACE() {}
 
  private:
   TimedCanvasDrawListener(std::unique_ptr<WebCanvasCaptureHandler>,
-                          double frame_rate);
+                          double frame_rate,
+                          ExecutionContext*);
   // Implementation of TimerFiredFunction.
   void RequestFrameTimerFired(TimerBase*);
 
   double frame_interval_;
-  UnthrottledThreadTimer<TimedCanvasDrawListener> request_frame_timer_;
+  TaskRunnerTimer<TimedCanvasDrawListener> request_frame_timer_;
 };
 
 }  // namespace blink
