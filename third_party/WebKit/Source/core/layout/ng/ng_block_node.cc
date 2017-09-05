@@ -89,8 +89,6 @@ void UpdateLegacyMultiColumnFlowThread(
 // preceding this one (but not including this one).
 LayoutUnit PreviouslyUsedBlockSpace(const NGConstraintSpace& constraint_space,
                                     const NGPhysicalBoxFragment& fragment) {
-  if (!constraint_space.HasBlockFragmentation())
-    return LayoutUnit();
   const auto* break_token = ToNGBlockBreakToken(fragment.BreakToken());
   if (!break_token)
     return LayoutUnit();
@@ -285,42 +283,17 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
     box_->SetMarginEnd(margins.inline_end);
   }
 
-  for (const auto& child_fragment : physical_fragment.Children()) {
-    DCHECK(child_fragment->IsPlaced());
-
-    // At the moment "anonymous" fragments for inline layout will have the same
-    // layout object as ourselves, we need to copy its floats across.
-    if (child_fragment->GetLayoutObject() == box_) {
-      for (const auto& maybe_float_fragment :
-           ToNGPhysicalBoxFragment(child_fragment.Get())->Children()) {
-        // The child of the anonymous fragment might be just a line-box
-        // fragment - ignore.
-        if (IsFloatFragment(*maybe_float_fragment)) {
-          // We need to include the anonymous fragments offset here for the
-          // correct position.
-          CopyChildFragmentPosition(
-              ToNGPhysicalBoxFragment(*maybe_float_fragment),
-              child_fragment->Offset());
-        }
-      }
-    } else {
-      const auto& box_fragment = *ToNGPhysicalBoxFragment(child_fragment.Get());
-      if (IsFirstFragment(constraint_space, box_fragment))
-        CopyChildFragmentPosition(box_fragment);
-
-      if (child_fragment->GetLayoutObject()->IsLayoutBlockFlow())
-        ToLayoutBlockFlow(child_fragment->GetLayoutObject())
-            ->AddOverflowFromFloats();
-    }
-  }
+  PlaceChildrenInLayoutBox(constraint_space, physical_fragment);
 
   if (box_->IsLayoutBlock() && IsLastFragment(physical_fragment)) {
     LayoutBlock* block = ToLayoutBlock(box_);
     NGWritingMode writing_mode = constraint_space.WritingMode();
     NGBoxFragment fragment(writing_mode, physical_fragment);
     LayoutUnit overflow_size = fragment.OverflowSize().block_size;
-    overflow_size +=
-        PreviouslyUsedBlockSpace(constraint_space, physical_fragment);
+    if (constraint_space.HasBlockFragmentation()) {
+      overflow_size +=
+          PreviouslyUsedBlockSpace(constraint_space, physical_fragment);
+    }
     block->LayoutPositionedObjects(true);
     block->ComputeOverflow(overflow_size - border_scrollbar_padding.block_end);
   }
@@ -337,6 +310,82 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
   }
 }
 
+void NGBlockNode::PlaceChildrenInLayoutBox(
+    const NGConstraintSpace& constraint_space,
+    const NGPhysicalBoxFragment& physical_fragment) {
+  if (box_->IsLayoutBlockFlow() &&
+      ToLayoutBlockFlow(box_)->MultiColumnFlowThread()) {
+    PlaceChildrenInFlowThread(constraint_space, physical_fragment);
+    return;
+  }
+
+  NGPhysicalOffset offset_from_start;
+  if (constraint_space.HasBlockFragmentation()) {
+    // Need to include any block space that this container has used in previous
+    // fragmentainers. The offset of children will be relative to the
+    // container, in flow thread coordinates, i.e. the model where everything
+    // is represented as one single strip, rather than being sliced and
+    // translated into columns.
+
+    // TODO(mstensho): writing modes
+    offset_from_start.top =
+        PreviouslyUsedBlockSpace(constraint_space, physical_fragment);
+  }
+
+  for (const auto& child_fragment : physical_fragment.Children()) {
+    auto* child_object = child_fragment->GetLayoutObject();
+    DCHECK(child_fragment->IsPlaced());
+
+    // At the moment "anonymous" fragments for inline layout will have the same
+    // layout object as ourselves, we need to copy its floats across.
+    if (child_object == box_) {
+      for (const auto& maybe_float_fragment :
+           ToNGPhysicalBoxFragment(child_fragment.Get())->Children()) {
+        // The child of the anonymous fragment might be just a line-box
+        // fragment - ignore.
+        if (IsFloatFragment(*maybe_float_fragment)) {
+          // We need to include the anonymous fragments offset here for the
+          // correct position.
+          CopyChildFragmentPosition(
+              ToNGPhysicalBoxFragment(*maybe_float_fragment),
+              offset_from_start + child_fragment->Offset());
+        }
+      }
+      continue;
+    }
+    const auto& box_fragment = *ToNGPhysicalBoxFragment(child_fragment.Get());
+    if (IsFirstFragment(constraint_space, box_fragment))
+      CopyChildFragmentPosition(box_fragment, offset_from_start);
+
+    if (child_object->IsLayoutBlockFlow())
+      ToLayoutBlockFlow(child_object)->AddOverflowFromFloats();
+  }
+}
+
+void NGBlockNode::PlaceChildrenInFlowThread(
+    const NGConstraintSpace& constraint_space,
+    const NGPhysicalBoxFragment& physical_fragment) {
+  LayoutUnit flowthread_offset;
+  for (const auto& child : physical_fragment.Children()) {
+    // Each anonymous child of a multicol container constitutes one column.
+    DCHECK(child->IsPlaced());
+    DCHECK(child->GetLayoutObject() == box_);
+    const auto* column = ToNGPhysicalBoxFragment(child.Get());
+    for (const auto& actual_child : column->Children()) {
+      // Position each child node in the first column that they occur,
+      // relatively to the block-start of the flow thread.
+      const auto& box_fragment = *ToNGPhysicalBoxFragment(actual_child.Get());
+      if (!IsFirstFragment(constraint_space, box_fragment))
+        continue;
+      // TODO(mstensho): writing modes
+      NGPhysicalOffset offset(LayoutUnit(), flowthread_offset);
+      CopyChildFragmentPosition(box_fragment, offset);
+    }
+    const auto* token = ToNGBlockBreakToken(column->BreakToken());
+    flowthread_offset = token->UsedBlockSize();
+  }
+}
+
 // Copies data back to the legacy layout tree for a given child fragment.
 void NGBlockNode::CopyChildFragmentPosition(
     const NGPhysicalFragment& fragment,
@@ -348,7 +397,11 @@ void NGBlockNode::CopyChildFragmentPosition(
   DCHECK(layout_box->Parent()) << "Should be called on children only.";
 
   // We should only be positioning children which are relative to ourselves.
-  DCHECK_EQ(box_, layout_box->ContainingBlock());
+  // The flow thread, however, is invisible to LayoutNG, so we need to make
+  // an exception there.
+  DCHECK(box_ == layout_box->ContainingBlock() ||
+         (layout_box->ContainingBlock()->IsLayoutFlowThread() &&
+          box_ == layout_box->ContainingBlock()->ContainingBlock()));
 
   // LegacyLayout flips vertical-rl horizontal coordinates before paint.
   // NGLayout flips X location for LegacyLayout compatibility.

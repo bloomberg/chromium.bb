@@ -550,7 +550,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, OverflowedBlock) {
   EXPECT_FALSE(iterator.NextChild());
 }
 
-TEST_F(NGColumnLayoutAlgorithmTest, DISABLED_FloatInOneColumn) {
+TEST_F(NGColumnLayoutAlgorithmTest, FloatInOneColumn) {
   SetBodyInnerHTML(R"HTML(
     <style>
       #parent {
@@ -582,6 +582,14 @@ TEST_F(NGColumnLayoutAlgorithmTest, DISABLED_FloatInOneColumn) {
   EXPECT_FALSE(iterator.NextChild());
 
   iterator.SetParent(fragment);
+
+  // first column fragment
+  fragment = iterator.NextChild();
+  ASSERT_TRUE(fragment);
+  EXPECT_EQ(NGPhysicalOffset(LayoutUnit(), LayoutUnit()), fragment->Offset());
+  EXPECT_FALSE(iterator.NextChild());
+
+  iterator.SetParent(fragment);
   // #child fragment in first column
   fragment = iterator.NextChild();
   ASSERT_TRUE(fragment);
@@ -591,7 +599,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, DISABLED_FloatInOneColumn) {
   EXPECT_FALSE(iterator.NextChild());
 }
 
-TEST_F(NGColumnLayoutAlgorithmTest, DISABLED_TwoFloatsInOneColumn) {
+TEST_F(NGColumnLayoutAlgorithmTest, TwoFloatsInOneColumn) {
   SetBodyInnerHTML(R"HTML(
     <style>
       #parent {
@@ -624,6 +632,14 @@ TEST_F(NGColumnLayoutAlgorithmTest, DISABLED_TwoFloatsInOneColumn) {
   EXPECT_FALSE(iterator.NextChild());
 
   iterator.SetParent(fragment);
+
+  // first column fragment
+  fragment = iterator.NextChild();
+  ASSERT_TRUE(fragment);
+  EXPECT_EQ(NGPhysicalOffset(LayoutUnit(), LayoutUnit()), fragment->Offset());
+  EXPECT_FALSE(iterator.NextChild());
+
+  iterator.SetParent(fragment);
   // #child1 fragment in first column
   fragment = iterator.NextChild();
   ASSERT_TRUE(fragment);
@@ -639,7 +655,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, DISABLED_TwoFloatsInOneColumn) {
   EXPECT_FALSE(iterator.NextChild());
 }
 
-TEST_F(NGColumnLayoutAlgorithmTest, DISABLED_TwoFloatsInTwoColumns) {
+TEST_F(NGColumnLayoutAlgorithmTest, TwoFloatsInTwoColumns) {
   SetBodyInnerHTML(R"HTML(
     <style>
       #parent {
@@ -672,6 +688,19 @@ TEST_F(NGColumnLayoutAlgorithmTest, DISABLED_TwoFloatsInTwoColumns) {
   EXPECT_FALSE(iterator.NextChild());
 
   iterator.SetParent(fragment);
+
+  // first column fragment
+  fragment = iterator.NextChild();
+  ASSERT_TRUE(fragment);
+  EXPECT_EQ(NGPhysicalOffset(LayoutUnit(), LayoutUnit()), fragment->Offset());
+
+  // second column fragment
+  const auto* column2 = iterator.NextChild();
+  ASSERT_TRUE(column2);
+  EXPECT_EQ(NGPhysicalOffset(LayoutUnit(110), LayoutUnit()), column2->Offset());
+  EXPECT_FALSE(iterator.NextChild());
+
+  iterator.SetParent(fragment);
   // #child1 fragment in first column
   fragment = iterator.NextChild();
   ASSERT_TRUE(fragment);
@@ -685,18 +714,17 @@ TEST_F(NGColumnLayoutAlgorithmTest, DISABLED_TwoFloatsInTwoColumns) {
   EXPECT_EQ(NGPhysicalSize(LayoutUnit(16), LayoutUnit(100)), fragment->Size());
   EXPECT_EQ(0UL, fragment->Children().size());
 
+  iterator.SetParent(column2);
   // #child1 fragment in second column
   fragment = iterator.NextChild();
   ASSERT_TRUE(fragment);
-  EXPECT_EQ(NGPhysicalOffset(LayoutUnit(110), LayoutUnit()),
-            fragment->Offset());
+  EXPECT_EQ(NGPhysicalOffset(LayoutUnit(), LayoutUnit()), fragment->Offset());
   EXPECT_EQ(NGPhysicalSize(LayoutUnit(15), LayoutUnit(50)), fragment->Size());
   EXPECT_EQ(0UL, fragment->Children().size());
   // #child2 fragment in second column
   fragment = iterator.NextChild();
   ASSERT_TRUE(fragment);
-  EXPECT_EQ(NGPhysicalOffset(LayoutUnit(194), LayoutUnit()),
-            fragment->Offset());
+  EXPECT_EQ(NGPhysicalOffset(LayoutUnit(84), LayoutUnit()), fragment->Offset());
   EXPECT_EQ(NGPhysicalSize(LayoutUnit(16), LayoutUnit(50)), fragment->Size());
   EXPECT_EQ(0UL, fragment->Children().size());
   EXPECT_FALSE(iterator.NextChild());
