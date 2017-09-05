@@ -28,7 +28,7 @@
 __gCrWeb.credentialManager = {
 
   /**
-   * Used to apply unique requestId fields to messages sent to host.
+   * Used to apply unique promiseId fields to messages sent to host.
    * Those IDs can be later used to call a corresponding resolver/rejecter.
    * @private {number}
    */
@@ -37,7 +37,7 @@ __gCrWeb.credentialManager = {
   /**
    * Stores the functions for resolving Promises returned by
    * navigator.credentials method calls. A resolver for a call with
-   * requestId: |id| is stored at resolvers_[id].
+   * promiseId: |id| is stored at resolvers_[id].
    * @type {!Object<number, function(?Credential)|function()>}
    * @private
    */
@@ -46,7 +46,7 @@ __gCrWeb.credentialManager = {
   /**
    * Stores the functions for rejecting Promises returned by
    * navigator.credentials method calls. A rejecter for a call with
-   * requestId: |id| is stored at rejecters_[id].
+   * promiseId: |id| is stored at rejecters_[id].
    * @type {!Object<number, function(?Error)>}
    * @private
    */
@@ -56,19 +56,19 @@ __gCrWeb.credentialManager = {
 __gCrWeb['credentialManager'] = __gCrWeb.credentialManager;
 
 /**
- * Creates and returns a Promise with given |requestId|. The Promise's executor
+ * Creates and returns a Promise with given |promiseId|. The Promise's executor
  * function stores resolver and rejecter functions in
- * __gCrWeb['credentialManager'] under the key |requestId| so they can be called
+ * __gCrWeb['credentialManager'] under the key |promiseId| so they can be called
  * from the host after executing app side code.
- * @param {number} requestId The number assigned to newly created Promise.
+ * @param {number} promiseId The number assigned to newly created Promise.
  * @return {!Promise<?Credential>|!Promise<!Credential>|!Promise<void>}
  *     The created Promise.
  * @private
  */
-__gCrWeb.credentialManager.createPromise_ = function(requestId) {
+__gCrWeb.credentialManager.createPromise_ = function(promiseId) {
   return new Promise(function(resolve, reject) {
-    __gCrWeb.credentialManager.resolvers_[requestId] = resolve;
-    __gCrWeb.credentialManager.rejecters_[requestId] = reject;
+    __gCrWeb.credentialManager.resolvers_[promiseId] = resolve;
+    __gCrWeb.credentialManager.rejecters_[promiseId] = reject;
   });
 };
 
@@ -82,16 +82,16 @@ __gCrWeb.credentialManager.createPromise_ = function(requestId) {
  * @private
  */
 __gCrWeb.credentialManager.invokeOnHost_ = function(command, options) {
-  var requestId = __gCrWeb.credentialManager.nextId_++;
+  var promiseId = __gCrWeb.credentialManager.nextId_++;
   var message = {
     'command': command,
-    'requestId': requestId
+    'promiseId': promiseId
   };
   if (options) {
     Object.assign(message, options);
   }
   __gCrWeb.message.invokeOnHost(message);
-  return __gCrWeb.credentialManager.createPromise_(requestId);
+  return __gCrWeb.credentialManager.createPromise_(promiseId);
 };
 
 /**

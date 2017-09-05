@@ -37,9 +37,9 @@ bool CredentialManager::HandleScriptCommand(const base::DictionaryValue& json,
     return false;
   }
 
-  int request_id;
-  if (!json.GetInteger("requestId", &request_id)) {
-    DLOG(ERROR) << "RECEIVED BAD json - NO VALID 'requestId' FIELD";
+  int promise_id;
+  if (!json.GetInteger("promiseId", &promise_id)) {
+    DLOG(ERROR) << "RECEIVED BAD json - NO VALID 'promiseId' FIELD";
     return false;
   }
 
@@ -61,7 +61,7 @@ bool CredentialManager::HandleScriptCommand(const base::DictionaryValue& json,
     }
     impl_.Get(mediation, include_passwords, federations,
               base::BindOnce(&CredentialManager::SendGetResponse,
-                             base::Unretained(this), request_id));
+                             base::Unretained(this), promise_id));
     return true;
   }
   if (command == "credentials.store") {
@@ -72,25 +72,25 @@ bool CredentialManager::HandleScriptCommand(const base::DictionaryValue& json,
     }
     impl_.Store(credential,
                 base::BindOnce(&CredentialManager::SendStoreResponse,
-                               base::Unretained(this), request_id));
+                               base::Unretained(this), promise_id));
     return true;
   }
   if (command == "credentials.preventSilentAccess") {
     impl_.PreventSilentAccess(
         base::BindOnce(&CredentialManager::SendPreventSilentAccessResponse,
-                       base::Unretained(this), request_id));
+                       base::Unretained(this), promise_id));
     return true;
   }
   return false;
 }
 
 void CredentialManager::SendGetResponse(
-    int request_id,
+    int promise_id,
     CredentialManagerError error,
     const base::Optional<CredentialInfo>& info) {}
 
-void CredentialManager::SendPreventSilentAccessResponse(int request_id) {}
+void CredentialManager::SendPreventSilentAccessResponse(int promise_id) {}
 
-void CredentialManager::SendStoreResponse(int request_id) {}
+void CredentialManager::SendStoreResponse(int promise_id) {}
 
 }  // namespace credential_manager
