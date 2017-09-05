@@ -190,7 +190,7 @@ class PLATFORM_EXPORT FontCache {
                                    int32_t font_height);
   static int32_t MenuFontHeight() { return menu_font_height_; }
   static const AtomicString& MenuFontFamily() {
-    return *small_caption_font_family_name_;
+    return *menu_font_family_name_;
   }
   static int32_t SmallCaptionFontHeight() { return small_caption_font_height_; }
   static const AtomicString& SmallCaptionFontFamily() {
