@@ -45,12 +45,13 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
                             aom_reader *r, int blk_row, int blk_col, int block,
                             int plane, tran_low_t *tcoeffs, TXB_CTX *txb_ctx,
                             TX_SIZE tx_size, int16_t *max_scan_line, int *eob) {
+  FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
   FRAME_COUNTS *counts = xd->counts;
   TX_SIZE txs_ctx = get_txsize_context(tx_size);
   PLANE_TYPE plane_type = get_plane_type(plane);
 #if !LV_MAP_PROB
-  aom_prob *nz_map = cm->fc->nz_map[txs_ctx][plane_type];
-  aom_prob *eob_flag = cm->fc->eob_flag[txs_ctx][plane_type];
+  aom_prob *nz_map = ec_ctx->nz_map[txs_ctx][plane_type];
+  aom_prob *eob_flag = ec_ctx->eob_flag[txs_ctx][plane_type];
 #endif
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
   const int seg_eob = tx_size_2d[tx_size];
@@ -69,10 +70,10 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
 
 #if LV_MAP_PROB
   int all_zero = aom_read_symbol(
-      r, cm->fc->txb_skip_cdf[txs_ctx][txb_ctx->txb_skip_ctx], 2, ACCT_STR);
+      r, ec_ctx->txb_skip_cdf[txs_ctx][txb_ctx->txb_skip_ctx], 2, ACCT_STR);
 #else
   int all_zero =
-      aom_read(r, cm->fc->txb_skip[txs_ctx][txb_ctx->txb_skip_ctx], ACCT_STR);
+      aom_read(r, ec_ctx->txb_skip[txs_ctx][txb_ctx->txb_skip_ctx], ACCT_STR);
 #endif
   if (xd->counts)
     ++xd->counts->txb_skip[txs_ctx][txb_ctx->txb_skip_ctx][all_zero];
@@ -105,7 +106,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
     if (c < seg_eob - 1) {
 #if LV_MAP_PROB
       is_nz = aom_read_symbol(
-          r, cm->fc->nz_map_cdf[txs_ctx][plane_type][coeff_ctx], 2, ACCT_STR);
+          r, ec_ctx->nz_map_cdf[txs_ctx][plane_type][coeff_ctx], 2, ACCT_STR);
 #else
       is_nz = aom_read(r, nz_map[coeff_ctx], ACCT_STR);
 #endif
@@ -126,7 +127,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
     if (is_nz) {
 #if LV_MAP_PROB
       int is_eob = aom_read_symbol(
-          r, cm->fc->eob_flag_cdf[txs_ctx][plane_type][eob_ctx], 2, ACCT_STR);
+          r, ec_ctx->eob_flag_cdf[txs_ctx][plane_type][eob_ctx], 2, ACCT_STR);
 #else
       int is_eob = aom_read(r, eob_flag[eob_ctx], ACCT_STR);
 #endif
@@ -141,7 +142,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
   int i;
   for (i = 0; i < NUM_BASE_LEVELS; ++i) {
 #if !LV_MAP_PROB
-    aom_prob *coeff_base = cm->fc->coeff_base[txs_ctx][plane_type][i];
+    aom_prob *coeff_base = ec_ctx->coeff_base[txs_ctx][plane_type][i];
 #endif
     update_eob = 0;
     for (c = *eob - 1; c >= 0; --c) {
@@ -155,7 +156,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
 
 #if LV_MAP_PROB
       if (aom_read_symbol(r,
-                          cm->fc->coeff_base_cdf[txs_ctx][plane_type][i][ctx],
+                          ec_ctx->coeff_base_cdf[txs_ctx][plane_type][i][ctx],
                           2, ACCT_STR))
 #else
       if (aom_read(r, coeff_base[ctx], ACCT_STR))
@@ -170,10 +171,10 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
           int dc_sign_ctx = txb_ctx->dc_sign_ctx;
 #if LV_MAP_PROB
           sign = aom_read_symbol(
-              r, cm->fc->dc_sign_cdf[plane_type][dc_sign_ctx], 2, ACCT_STR);
+              r, ec_ctx->dc_sign_cdf[plane_type][dc_sign_ctx], 2, ACCT_STR);
 #else
           sign =
-              aom_read(r, cm->fc->dc_sign[plane_type][dc_sign_ctx], ACCT_STR);
+              aom_read(r, ec_ctx->dc_sign[plane_type][dc_sign_ctx], ACCT_STR);
 #endif
           if (counts) ++counts->dc_sign[plane_type][dc_sign_ctx][sign];
         } else {
@@ -201,10 +202,10 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
     if (c == 0) {
       int dc_sign_ctx = txb_ctx->dc_sign_ctx;
 #if LV_MAP_PROB
-      sign = aom_read_symbol(r, cm->fc->dc_sign_cdf[plane_type][dc_sign_ctx], 2,
+      sign = aom_read_symbol(r, ec_ctx->dc_sign_cdf[plane_type][dc_sign_ctx], 2,
                              ACCT_STR);
 #else
-      sign = aom_read(r, cm->fc->dc_sign[plane_type][dc_sign_ctx], ACCT_STR);
+      sign = aom_read(r, ec_ctx->dc_sign[plane_type][dc_sign_ctx], ACCT_STR);
 #endif
       if (counts) ++counts->dc_sign[plane_type][dc_sign_ctx][sign];
     } else {
@@ -213,14 +214,14 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
 
     ctx = get_br_ctx(tcoeffs, scan[c], bwl, height);
 
-    if (cm->fc->coeff_lps[txs_ctx][plane_type][ctx] == 0) exit(0);
+    if (ec_ctx->coeff_lps[txs_ctx][plane_type][ctx] == 0) exit(0);
 
     for (idx = 0; idx < COEFF_BASE_RANGE; ++idx) {
 #if LV_MAP_PROB
-      if (aom_read_symbol(r, cm->fc->coeff_lps_cdf[txs_ctx][plane_type][ctx], 2,
+      if (aom_read_symbol(r, ec_ctx->coeff_lps_cdf[txs_ctx][plane_type][ctx], 2,
                           ACCT_STR))
 #else
-      if (aom_read(r, cm->fc->coeff_lps[txs_ctx][plane_type][ctx], ACCT_STR))
+      if (aom_read(r, ec_ctx->coeff_lps[txs_ctx][plane_type][ctx], ACCT_STR))
 #endif
       {
         *v = (idx + 1 + NUM_BASE_LEVELS);

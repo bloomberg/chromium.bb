@@ -4969,7 +4969,7 @@ void av1_encode_tile(AV1_COMP *cpi, ThreadData *td, int tile_row,
 #endif
 
 #if CONFIG_LV_MAP
-  av1_fill_coeff_costs(&td->mb, cm->fc);
+  av1_fill_coeff_costs(&td->mb, td->mb.e_mbd.tile_ctx);
 #endif
 
   for (mi_row = tile_info->mi_row_start; mi_row < tile_info->mi_row_end;
