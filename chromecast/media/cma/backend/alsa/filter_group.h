@@ -98,11 +98,18 @@ class FilterGroup {
   void SetPostProcessorConfig(const std::string& name,
                               const std::string& config);
 
+  // Toggles the mono mixer.
+  void SetMixToMono(bool mix_to_mono);
+
+  // Sets the active channel.
+  void UpdatePlayoutChannel(int playout_channel);
+
  private:
   void ResizeBuffersIfNecessary(int chunk_size);
 
   const int num_channels_;
   bool mix_to_mono_;
+  int playout_channel_;
   const std::string name_;
   const std::unordered_set<std::string> device_ids_;
   std::vector<FilterGroup*> mixed_inputs_;

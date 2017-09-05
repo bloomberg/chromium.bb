@@ -52,6 +52,7 @@ class StreamMixerAlsaInput {
   // exist.
   StreamMixerAlsaInput(Delegate* delegate,
                        int samples_per_second,
+                       int playout_channel,
                        bool primary,
                        const std::string& device_id,
                        AudioContentType content_type);
