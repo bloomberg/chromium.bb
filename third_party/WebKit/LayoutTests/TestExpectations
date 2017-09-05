@@ -2258,6 +2258,7 @@ crbug.com/626703 external/wpt/css/css-ui-3/text-overflow-011.html [ Failure Cras
 crbug.com/626703 external/wpt/workers/opaque-origin.html [ Failure Crash Timeout ]
 crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/margin-collapsing-quirks/multicol-quirks-mode.html [ Pass Crash ]
 crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/margin-collapsing-quirks/multicol-standards-mode.html [ Pass Crash Failure ]
+crbug.com/762017 external/wpt/html/semantics/embedded-content/media-elements/video_loop_base.html [ Pass Crash ]
 
 # Other untriaged test failures, timeouts and crashes from newly-imported WPT tests.
 crbug.com/666703 external/wpt/html/browsers/sandboxing/sandbox-disallow-same-origin.html [ Timeout ]
