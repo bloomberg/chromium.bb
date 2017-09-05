@@ -4,36 +4,22 @@
 
 #import "ios/clean/chrome/browser/ui/dialogs/java_script_dialogs/java_script_dialog_overlay_presenter.h"
 
+#import "ios/chrome/browser/ui/browser_list/browser.h"
 #import "ios/clean/chrome/browser/ui/dialogs/java_script_dialogs/java_script_dialog_coordinator.h"
 #import "ios/clean/chrome/browser/ui/dialogs/java_script_dialogs/java_script_dialog_request.h"
 #import "ios/clean/chrome/browser/ui/overlays/overlay_service.h"
+#import "ios/clean/chrome/browser/ui/overlays/overlay_service_factory.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-DEFINE_WEB_STATE_USER_DATA_KEY(JavaScriptDialogOverlayPresenter);
-
-// static
-void JavaScriptDialogOverlayPresenter::CreateForWebState(
-    web::WebState* web_state,
-    OverlayService* overlay_service) {
-  DCHECK(web_state);
-  if (!FromWebState(web_state)) {
-    std::unique_ptr<JavaScriptDialogOverlayPresenter> presenter =
-        base::WrapUnique(
-            new JavaScriptDialogOverlayPresenter(web_state, overlay_service));
-    web_state->SetUserData(UserDataKey(), std::move(presenter));
-  }
-}
+DEFINE_BROWSER_USER_DATA_KEY(JavaScriptDialogOverlayPresenter);
 
 JavaScriptDialogOverlayPresenter::JavaScriptDialogOverlayPresenter(
-    web::WebState* web_state,
-    OverlayService* overlay_service)
-    : web_state_(web_state), overlay_service_(overlay_service) {
-  DCHECK(web_state_);
-  DCHECK(overlay_service_);
-}
+    Browser* browser)
+    : overlay_service_(OverlayServiceFactory::GetInstance()->GetForBrowserState(
+          browser->browser_state())) {}
 
 JavaScriptDialogOverlayPresenter::~JavaScriptDialogOverlayPresenter() {}
 
@@ -44,9 +30,6 @@ void JavaScriptDialogOverlayPresenter::RunJavaScriptDialog(
     NSString* message_text,
     NSString* default_prompt_text,
     const web::DialogClosedCallback& callback) {
-  // This presenter should only attempt to present dialogs from its associated
-  // WebState.
-  DCHECK_EQ(web_state_, web_state);
   // Create a new coordinator and add it to the overlay queue.
   JavaScriptDialogRequest* request =
       [JavaScriptDialogRequest requestWithWebState:web_state

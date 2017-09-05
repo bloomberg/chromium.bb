@@ -7,30 +7,24 @@
 
 #import <Foundation/Foundation.h>
 
+#import "ios/chrome/browser/ui/browser_list/browser_user_data.h"
 #include "ios/web/public/java_script_dialog_presenter.h"
-#import "ios/web/public/web_state/web_state_user_data.h"
 
 class OverlayService;
 
 // A concrete subclass of web::JavaScriptDialogPresenter that is associated with
-// a WebState via its UserData.  It uses OverlayService to present dialogs.
+// a Browser via its UserData.  It uses OverlayService to present dialogs.
 class JavaScriptDialogOverlayPresenter
-    : public web::JavaScriptDialogPresenter,
-      public web::WebStateUserData<JavaScriptDialogOverlayPresenter> {
+    : public BrowserUserData<JavaScriptDialogOverlayPresenter>,
+      public web::JavaScriptDialogPresenter {
  public:
-  // Factory method for a presenter that uses |overlay_service| to show dialogs.
-  static void CreateForWebState(web::WebState* web_state,
-                                OverlayService* overlay_service);
-
   ~JavaScriptDialogOverlayPresenter() override;
 
  private:
-  friend class web::WebStateUserData<JavaScriptDialogOverlayPresenter>;
+  friend class BrowserUserData<JavaScriptDialogOverlayPresenter>;
 
-  // Private constructor.  New instances should be created via
-  // CreateForWebState() and accessed via FromWebState().
-  explicit JavaScriptDialogOverlayPresenter(web::WebState* web_state,
-                                            OverlayService* overlay_service);
+  // Private constructor used by factory method.
+  explicit JavaScriptDialogOverlayPresenter(Browser* browser);
 
   // JavaScriptDialogPresenter:
   void RunJavaScriptDialog(web::WebState* web_state,
@@ -41,8 +35,6 @@ class JavaScriptDialogOverlayPresenter
                            const web::DialogClosedCallback& callback) override;
   void CancelDialogs(web::WebState* web_state) override;
 
-  // The WebState with which this presenter is associated.
-  web::WebState* web_state_;
   // The OverlayService to use for the dialogs.
   OverlayService* overlay_service_;
 
