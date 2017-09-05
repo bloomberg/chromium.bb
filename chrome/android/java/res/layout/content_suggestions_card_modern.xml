@@ -32,6 +32,7 @@
         android:layout_marginStart="@dimen/content_suggestions_card_modern_offline_badge_overlay_margin_start"
         android:layout_marginTop="@dimen/content_suggestions_card_modern_offline_badge_overlay_margin_top"
         android:contentDescription="@null"
+        android:visibility="gone"
         app:srcCompat="@drawable/ic_offline_pin_white"
         tools:src="@drawable/ic_offline_pin_white"/>
 

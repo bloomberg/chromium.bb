@@ -10,7 +10,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginStart="@dimen/contextual_carousel_space_between_cards"
     android:background="@drawable/card_single"
     android:foreground="@drawable/button_borderless_compat">
 
