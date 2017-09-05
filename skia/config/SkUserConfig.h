@@ -220,10 +220,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #define SK_SUPPORT_LEGACY_TILED_BITMAPS
 #endif
 
-#ifndef SK_JUMPER_LEGACY_X86_8BIT
-#define SK_JUMPER_LEGACY_X86_8BIT
-#endif
-
 #ifndef SK_LEGACY_SUPPORT_INTEGER_SMALL_RADII
 #define SK_LEGACY_SUPPORT_INTEGER_SMALL_RADII
 #endif
