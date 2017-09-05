@@ -224,7 +224,7 @@ class TestRunner(object):
     """
     return os.environ.copy()
 
-  def restart(self):
+  def shutdown_and_restart(self):
     """Restart a device or relaunch a simulator."""
     pass
 
@@ -327,7 +327,7 @@ class TestRunner(object):
       if result.crashed and not result.crashed_test:
         # If the app crashed but not during any particular test case, assume
         # it crashed on startup. Try one more time.
-        self.restart()
+        self.shutdown_and_restart()
         print 'Crashed on startup, retrying...'
         print
         result = self._run(cmd)
@@ -720,7 +720,7 @@ class DeviceTestRunner(TestRunner):
     except subprocess.CalledProcessError:
       raise TestDataExtractionError()
 
-  def restart(self):
+  def shutdown_and_restart(self):
     """Restart the device, wait for two minutes."""
     # TODO(crbug.com/760399): swarming bot ios 11 devices turn to be unavailable
     # in a few hours unexpectedly, which is assumed as an ios beta issue. Should
