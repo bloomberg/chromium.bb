@@ -1739,7 +1739,6 @@ crbug.com/626703 virtual/mojo-loading/http/tests/inspector/network/network-colum
 crbug.com/626703 http/tests/inspector/persistence/persistence-tabbed-editor-opens-filesystem-uisourcecode.html [ Pass Failure ]
 crbug.com/626703 virtual/mojo-loading/http/tests/inspector/persistence/persistence-tabbed-editor-opens-filesystem-uisourcecode.html [ Pass Failure ]
 crbug.com/626703 virtual/threaded/transitions/transition-end-event-multiple-03.html [ Pass Failure ]
-crbug.com/626703 virtual/mojo-loading/http/tests/inspector/indexeddb/database-data.html [ Pass Failure ]
 
 crbug.com/761952 external/wpt/editing/run/forwarddelete.html [ Failure Pass Timeout ]
 crbug.com/761952 external/wpt/beacon/headers/header-content-type.html [ Failure Pass Timeout ]
