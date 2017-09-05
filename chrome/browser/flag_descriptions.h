@@ -501,6 +501,9 @@ extern const char kMojoVideoEncodeAcceleratorDescription[];
 extern const char kModuleScriptsName[];
 extern const char kModuleScriptsDescription[];
 
+extern const char kModuleScriptsDynamicImportName[];
+extern const char kModuleScriptsDynamicImportDescription[];
+
 extern const char kNewAudioRenderingMixingStrategyName[];
 extern const char kNewAudioRenderingMixingStrategyDescription[];
 

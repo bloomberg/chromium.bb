@@ -3432,8 +3432,13 @@ const FeatureEntry kFeatureEntries[] = {
 #if defined(OS_CHROMEOS)
     {"sys-internals", flag_descriptions::kSysInternalsName,
      flag_descriptions::kSysInternalsDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kSysInternals)}
+     FEATURE_VALUE_TYPE(features::kSysInternals)},
 #endif  // defined(OS_CHROMEOS)
+
+    {"enable-module-scripts-dynamic-import",
+     flag_descriptions::kModuleScriptsDynamicImportName,
+     flag_descriptions::kModuleScriptsDynamicImportDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kModuleScriptsDynamicImport)},
 
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms/enums.xml. See note in

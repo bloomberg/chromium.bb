@@ -23927,6 +23927,7 @@ from previous Chrome versions.
   <int value="752194066" label="enable-app-window-cycling"/>
   <int value="752939691" label="disable-tab-for-desktop-share"/>
   <int value="762700519" label="enable-checker-imaging"/>
+  <int value="765306424" label="ModuleScriptsDynamicImport:disabled"/>
   <int value="773919225" label="disable-office-editing-component-extension"/>
   <int value="779086132" label="enable-data-reduction-proxy-alt"/>
   <int value="782167080" label="enable-new-qp-input-view"/>
@@ -24330,6 +24331,7 @@ from previous Chrome versions.
   <int value="1988506961" label="EnableManualSaving:enabled"/>
   <int value="1989051182" label="view-passwords:enabled"/>
   <int value="1989877708" label="PostScriptPrinting:enabled"/>
+  <int value="1991912338" label="ModuleScriptsDynamicImport:enabled"/>
   <int value="1992466116" label="enable-passive-event-listeners-due-to-fling"/>
   <int value="1993258379" label="enable-icon-ntp"/>
   <int value="1994431722" label="MaterialDesignUserMenu:disabled"/>

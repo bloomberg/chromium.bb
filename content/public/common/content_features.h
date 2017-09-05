@@ -54,6 +54,7 @@ CONTENT_EXPORT extern const base::Feature kMojoBlobs;
 CONTENT_EXPORT extern const base::Feature kMojoInputMessages;
 CONTENT_EXPORT extern const base::Feature kMojoVideoEncodeAccelerator;
 CONTENT_EXPORT extern const base::Feature kModuleScripts;
+CONTENT_EXPORT extern const base::Feature kModuleScriptsDynamicImport;
 CONTENT_EXPORT extern const base::Feature kOffMainThreadFetch;
 CONTENT_EXPORT extern const base::Feature kOriginTrials;
 CONTENT_EXPORT extern const base::Feature kOutOfBlinkCORS;

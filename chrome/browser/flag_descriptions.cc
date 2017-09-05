@@ -797,6 +797,12 @@ const char kModuleScriptsName[] = "Enable ECMAScript 6 modules";
 const char kModuleScriptsDescription[] =
     "Enables ECMAScript 6 modules support in Blink.";
 
+const char kModuleScriptsDynamicImportName[] =
+    "Enable ECMAScript 6 modules dynamic import";
+const char kModuleScriptsDynamicImportDescription[] =
+    "Enables ECMAScript 6 modules dynamic \"import\" syntax support in V8 and "
+    "Blink.";
+
 const char kNewAudioRenderingMixingStrategyName[] =
     "New audio rendering mixing strategy";
 const char kNewAudioRenderingMixingStrategyDescription[] =
