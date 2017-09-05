@@ -320,4 +320,37 @@ function (require_linker_flag flag)
   endif ()
 endfunction ()
 
+# Appends flags in $AOM_EXTRA_<TYPE>_FLAGS variables to the flags used at build
+# time.
+function (set_user_flags)
+  # Linker flags are handled first because some C/CXX flags require that a
+  # linker flag is present at link time.
+  if (AOM_EXTRA_EXE_LINKER_FLAGS)
+    is_flag_present(AOM_EXE_LINKER_FLAGS "${AOM_EXTRA_EXE_LINKER_FLAGS}"
+                    extra_present)
+    if (NOT ${extra_present})
+      require_linker_flag("${AOM_EXTRA_EXE_LINKER_FLAGS}")
+    endif ()
+  endif ()
+  if (AOM_EXTRA_AS_FLAGS)
+    # TODO(tomfinegan): assembler flag testing would be a good thing to have.
+    is_flag_present(AOM_AS_FLAGS "${AOM_EXTRA_AS_FLAGS}" extra_present)
+    if (NOT ${extra_present})
+      append_flag(AOM_AS_FLAGS "${AOM_EXTRA_AS_FLAGS}")
+    endif ()
+  endif ()
+  if (AOM_EXTRA_C_FLAGS)
+    is_flag_present(AOM_C_FLAGS "${AOM_EXTRA_C_FLAGS}" extra_present)
+    if (NOT ${extra_present})
+      require_c_flag("${AOM_EXTRA_C_FLAGS}" YES)
+    endif ()
+  endif ()
+  if (AOM_EXTRA_CXX_FLAGS)
+    is_flag_present(AOM_CXX_FLAGS "${AOM_EXTRA_CXX_FLAGS}" extra_present)
+    if (NOT ${extra_present})
+      require_cxx_flag("${AOM_EXTRA_CXX_FLAGS}" YES)
+    endif ()
+  endif ()
+endfunction ()
+
 endif ()  # AOM_BUILD_CMAKE_COMPILER_FLAGS_CMAKE_

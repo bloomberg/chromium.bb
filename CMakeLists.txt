@@ -454,6 +454,9 @@ if (BUILD_SHARED_LIBS)
   set_target_properties(aom PROPERTIES SOVERSION 0)
 endif ()
 
+# Handle user supplied compile and link flags last to ensure they're obeyed.
+set_user_flags()
+
 # Aomedia documentation rule.
 if (ENABLE_DOCS)
   include(FindDoxygen)
