@@ -13,8 +13,12 @@ import android.provider.Settings;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.chrome.browser.preferences.website.SiteSettingsCategory;
+import org.chromium.chrome.browser.preferences.website.Website;
+import org.chromium.chrome.browser.preferences.website.WebsitePermissionsFetcher;
 import org.chromium.webapk.lib.common.WebApkConstants;
 
+import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -198,6 +202,13 @@ public class WebApkUma {
         }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
+    public static void logUnimportantStorageSizeInUMA() {
+        WebsitePermissionsFetcher fetcher =
+                new WebsitePermissionsFetcher(new UnimportantStorageSizeCalculator());
+        fetcher.fetchPreferencesForCategory(
+                SiteSettingsCategory.fromString(SiteSettingsCategory.CATEGORY_USE_STORAGE));
+    }
+
     /**
      * Mirror the system-derived calculation of reserved bytes and return that value.
      */
@@ -231,5 +242,28 @@ public class WebApkUma {
         long minFreePercentInBytes = (partitionTotalBytes * minFreePercent) / 100;
 
         return Math.min(minFreeBytes, minFreePercentInBytes);
+    }
+
+    private static class UnimportantStorageSizeCalculator
+            implements WebsitePermissionsFetcher.WebsitePermissionsCallback {
+        @Override
+        public void onWebsitePermissionsAvailable(Collection<Website> sites) {
+            long siteStorageSize = 0;
+            long importantSiteStorageTotal = 0;
+            for (Website site : sites) {
+                siteStorageSize += site.getTotalUsage();
+                if (site.getLocalStorageInfo() != null
+                        && site.getLocalStorageInfo().isDomainImportant()) {
+                    importantSiteStorageTotal += site.getTotalUsage();
+                }
+            }
+            long unimportantSiteStorageTotal = siteStorageSize - importantSiteStorageTotal;
+            int unimportantSiteStorageTotalMb =
+                    (int) (unimportantSiteStorageTotal / 1024L / 1024L / 10L * 10L);
+            unimportantSiteStorageTotalMb = Math.min(unimportantSiteStorageTotalMb, 1000);
+
+            RecordHistogram.recordSparseSlowlyHistogram(
+                    "WebApk.Install.ChromeUnimportantStorage.Fail", unimportantSiteStorageTotalMb);
+        }
     }
 }
