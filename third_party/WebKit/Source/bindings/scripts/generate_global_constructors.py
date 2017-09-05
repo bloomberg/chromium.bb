@@ -27,9 +27,9 @@ import sys
 
 from collections import defaultdict
 from utilities import get_file_contents
+from utilities import get_first_interface_name_from_idl
 from utilities import get_interface_exposed_arguments
 from utilities import get_interface_extended_attributes_from_idl
-from utilities import idl_filename_to_interface_name
 from utilities import is_non_legacy_callback_interface_from_idl
 from utilities import read_file_to_list
 from utilities import read_pickle_file
@@ -72,10 +72,10 @@ def interface_name_to_constructors(interface_name):
 
 
 def record_global_constructors(idl_filename):
-    interface_name = idl_filename_to_interface_name(idl_filename)
     full_path = os.path.realpath(idl_filename)
     idl_file_contents = get_file_contents(full_path)
     extended_attributes = get_interface_extended_attributes_from_idl(idl_file_contents)
+    interface_name = get_first_interface_name_from_idl(idl_file_contents)
 
     # An interface property is produced for every non-callback interface
     # that does not have [NoInterfaceObject].

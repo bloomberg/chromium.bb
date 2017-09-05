@@ -47,11 +47,10 @@ import os
 import posixpath
 import sys
 
-from idl_compiler import idl_filename_to_interface_name
 from idl_definitions import Visitor
 from idl_reader import IdlReader
 from utilities import idl_filename_to_component
-from utilities import idl_filename_to_interface_name
+from utilities import idl_filename_to_basename
 from utilities import merge_dict_recursively
 from utilities import read_idl_files_list_from_file
 from utilities import shorten_union_name
@@ -107,9 +106,8 @@ def include_path(idl_filename, implemented_as=None):
         relative_dir = relative_dir_posix(idl_filename, source_path)
 
     # IDL file basename is used even if only a partial interface file
-    cpp_class_name = implemented_as or idl_filename_to_interface_name(idl_filename)
-
-    return posixpath.join(relative_dir, cpp_class_name + '.h')
+    output_file_basename = implemented_as or idl_filename_to_basename(idl_filename)
+    return posixpath.join(relative_dir, output_file_basename + '.h')
 
 
 def get_implements_from_definitions(definitions, definition_name):

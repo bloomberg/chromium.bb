@@ -19,8 +19,8 @@ KNOWN_COMPONENTS = frozenset(['core', 'modules'])
 KNOWN_COMPONENTS_WITH_TESTING = frozenset(['core', 'modules', 'testing'])
 
 
-def idl_filename_to_interface_name(idl_filename):
-    # interface name is the root of the basename: InterfaceName.idl
+def idl_filename_to_basename(idl_filename):
+    """Returns the basename without the extension."""
     return os.path.splitext(os.path.basename(idl_filename))[0]
 
 
@@ -360,7 +360,7 @@ def should_generate_impl_file_from_idl(file_contents):
     return bool(match)
 
 
-def match_interface_extended_attributes_from_idl(file_contents):
+def match_interface_extended_attributes_and_name_from_idl(file_contents):
     # Strip comments
     # re.compile needed b/c Python 2.6 doesn't support flags in re.sub
     single_line_comment_re = re.compile(r'//.*$', flags=re.MULTILINE)
@@ -369,17 +369,17 @@ def match_interface_extended_attributes_from_idl(file_contents):
     file_contents = re.sub(block_comment_re, '', file_contents)
 
     match = re.search(
-        r'\[([^[]*)\]\s*'
+        r'(?:\[([^[]*)\]\s*)?'
         r'(interface|callback\s+interface|partial\s+interface)\s+'
-        r'\w+\s*'
+        r'(\w+)\s*'
         r'(:\s*\w+\s*)?'
         r'{',
         file_contents, flags=re.DOTALL)
     return match
 
 def get_interface_extended_attributes_from_idl(file_contents):
-    match = match_interface_extended_attributes_from_idl(file_contents)
-    if not match:
+    match = match_interface_extended_attributes_and_name_from_idl(file_contents)
+    if not match or not match.group(1):
         return {}
 
     extended_attributes_string = match.group(1)
@@ -397,8 +397,8 @@ def get_interface_extended_attributes_from_idl(file_contents):
 
 
 def get_interface_exposed_arguments(file_contents):
-    match = match_interface_extended_attributes_from_idl(file_contents)
-    if not match:
+    match = match_interface_extended_attributes_and_name_from_idl(file_contents)
+    if not match or not match.group(1):
         return None
 
     extended_attributes_string = match.group(1)
@@ -411,6 +411,13 @@ def get_interface_exposed_arguments(file_contents):
         arguments.append({'exposed': exposed, 'runtime_enabled': runtime_enabled})
 
     return arguments
+
+
+def get_first_interface_name_from_idl(file_contents):
+    match = match_interface_extended_attributes_and_name_from_idl(file_contents)
+    if match:
+        return match.group(3)
+    return None
 
 
 # Workaround for crbug.com/611437 and crbug.com/711464

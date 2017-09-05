@@ -100,6 +100,7 @@ class IdlDefinitions(object):
         self.enumerations = {}
         self.implements = []
         self.interfaces = {}
+        self.first_name = None
         self.typedefs = {}
 
         node_class = node.GetClass()
@@ -112,6 +113,8 @@ class IdlDefinitions(object):
             if child_class == 'Interface':
                 interface = IdlInterface(child)
                 self.interfaces[interface.name] = interface
+                if not self.first_name:
+                    self.first_name = interface.name
             elif child_class == 'Typedef':
                 typedef = IdlTypedef(child)
                 self.typedefs[typedef.name] = typedef
@@ -126,6 +129,8 @@ class IdlDefinitions(object):
             elif child_class == 'Dictionary':
                 dictionary = IdlDictionary(child)
                 self.dictionaries[dictionary.name] = dictionary
+                if not self.first_name:
+                    self.first_name = dictionary.name
             else:
                 raise ValueError('Unrecognized node class: %s' % child_class)
 
