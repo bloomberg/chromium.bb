@@ -666,14 +666,14 @@ FrameLoadType FrameLoader::DetermineFrameLoadType(
       document_loader_->LoadType() == kFrameLoadTypeReload)
     return kFrameLoadTypeReload;
 
-  if (request.OriginDocument() &&
-      !request.OriginDocument()->CanCreateHistoryEntry())
-    return kFrameLoadTypeReplaceCurrentItem;
-
   if (request.GetResourceRequest().Url().IsEmpty() &&
       request.GetSubstituteData().FailingURL().IsEmpty()) {
     return kFrameLoadTypeReplaceCurrentItem;
   }
+
+  if (request.OriginDocument() &&
+      !request.OriginDocument()->CanCreateHistoryEntry())
+    return kFrameLoadTypeReplaceCurrentItem;
 
   return kFrameLoadTypeStandard;
 }

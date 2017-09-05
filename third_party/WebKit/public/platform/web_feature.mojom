@@ -1678,6 +1678,7 @@ enum WebFeature {
   kWebkitBoxLineClampManyChildren = 2143,
   kWebkitBoxLineClampDoesSomething = 2144,
   kFeaturePolicyAllowAttributeDeprecatedSyntax = 2145,
+  kSuppressHistoryEntryWithoutUserGesture = 2146,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
