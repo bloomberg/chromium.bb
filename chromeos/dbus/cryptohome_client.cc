@@ -190,7 +190,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
 
   // CryptohomeClient override,
   void GetSanitizedUsername(const cryptohome::Identification& cryptohome_id,
-                            const StringDBusMethodCallback& callback) override {
+                            StringDBusMethodCallback callback) override {
     dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
                                  cryptohome::kCryptohomeGetSanitizedUsername);
     dbus::MessageWriter writer(&method_call);
@@ -198,7 +198,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
     proxy_->CallMethod(
         &method_call, kTpmDBusTimeoutMs,
         base::BindOnce(&CryptohomeClientImpl::OnStringMethod,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   // CryptohomeClient override.
@@ -307,13 +307,13 @@ class CryptohomeClientImpl : public CryptohomeClient {
   }
 
   // CryptohomeClient override.
-  void TpmGetPassword(const StringDBusMethodCallback& callback) override {
+  void TpmGetPassword(StringDBusMethodCallback callback) override {
     dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
                                  cryptohome::kCryptohomeTpmGetPassword);
     proxy_->CallMethod(
         &method_call, kTpmDBusTimeoutMs,
         base::BindOnce(&CryptohomeClientImpl::OnStringMethod,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   // CryptohomeClient override.
@@ -756,13 +756,13 @@ class CryptohomeClientImpl : public CryptohomeClient {
   }
 
   // CryptohomeClient override.
-  void TpmGetVersion(const StringDBusMethodCallback& callback) override {
+  void TpmGetVersion(StringDBusMethodCallback callback) override {
     dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
                                  cryptohome::kCryptohomeTpmGetVersion);
     proxy_->CallMethod(
         &method_call, kTpmDBusTimeoutMs,
         base::BindOnce(&CryptohomeClientImpl::OnStringMethod,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   void GetKeyDataEx(const cryptohome::Identification& id,
@@ -1093,19 +1093,19 @@ class CryptohomeClientImpl : public CryptohomeClient {
   }
 
   // Handles responses for methods with a string value result.
-  void OnStringMethod(const StringDBusMethodCallback& callback,
+  void OnStringMethod(StringDBusMethodCallback callback,
                       dbus::Response* response) {
     if (!response) {
-      callback.Run(DBUS_METHOD_CALL_FAILURE, std::string());
+      std::move(callback).Run(DBUS_METHOD_CALL_FAILURE, std::string());
       return;
     }
     dbus::MessageReader reader(response);
     std::string result;
     if (!reader.PopString(&result)) {
-      callback.Run(DBUS_METHOD_CALL_FAILURE, std::string());
+      std::move(callback).Run(DBUS_METHOD_CALL_FAILURE, std::string());
       return;
     }
-    callback.Run(DBUS_METHOD_CALL_SUCCESS, result);
+    std::move(callback).Run(DBUS_METHOD_CALL_SUCCESS, result);
   }
 
   // Handles responses for methods with a bool result and data.

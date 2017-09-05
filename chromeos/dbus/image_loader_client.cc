@@ -38,26 +38,25 @@ class ImageLoaderClientImpl : public ImageLoaderClient {
   }
 
   void LoadComponent(const std::string& name,
-                     const StringDBusMethodCallback& callback) override {
+                     StringDBusMethodCallback callback) override {
     dbus::MethodCall method_call(imageloader::kImageLoaderServiceInterface,
                                  imageloader::kLoadComponent);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(name);
-    proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(&ImageLoaderClientImpl::OnStringMethod, callback));
+    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                       base::BindOnce(&ImageLoaderClientImpl::OnStringMethod,
+                                      std::move(callback)));
   }
 
-  void RequestComponentVersion(
-      const std::string& name,
-      const StringDBusMethodCallback& callback) override {
+  void RequestComponentVersion(const std::string& name,
+                               StringDBusMethodCallback callback) override {
     dbus::MethodCall method_call(imageloader::kImageLoaderServiceInterface,
                                  imageloader::kGetComponentVersion);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(name);
-    proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(&ImageLoaderClientImpl::OnStringMethod, callback));
+    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                       base::BindOnce(&ImageLoaderClientImpl::OnStringMethod,
+                                      std::move(callback)));
   }
 
  protected:
@@ -85,20 +84,20 @@ class ImageLoaderClientImpl : public ImageLoaderClient {
     callback.Run(DBUS_METHOD_CALL_SUCCESS, result);
   }
 
-  static void OnStringMethod(const StringDBusMethodCallback& callback,
+  static void OnStringMethod(StringDBusMethodCallback callback,
                              dbus::Response* response) {
     if (!response) {
-      callback.Run(DBUS_METHOD_CALL_FAILURE, "");
+      std::move(callback).Run(DBUS_METHOD_CALL_FAILURE, std::string());
       return;
     }
     dbus::MessageReader reader(response);
     std::string result;
     if (!reader.PopString(&result)) {
-      callback.Run(DBUS_METHOD_CALL_FAILURE, "");
+      std::move(callback).Run(DBUS_METHOD_CALL_FAILURE, std::string());
       LOG(ERROR) << "Invalid response: " << response->ToString();
       return;
     }
-    callback.Run(DBUS_METHOD_CALL_SUCCESS, result);
+    std::move(callback).Run(DBUS_METHOD_CALL_SUCCESS, result);
   }
 
   dbus::ObjectProxy* proxy_ = nullptr;

@@ -35,9 +35,9 @@ typedef base::Callback<void(DBusMethodCallStatus call_status,
                             bool result)> BoolDBusMethodCallback;
 
 // A callback to handle responses of methods returning a string value.
-typedef base::Callback<void(
-    DBusMethodCallStatus call_status,
-    const std::string& result)> StringDBusMethodCallback;
+using StringDBusMethodCallback =
+    base::OnceCallback<void(DBusMethodCallStatus call_status,
+                            const std::string& result)>;
 
 // A callback to handle responses of methods returning a boolean value.
 typedef base::Callback<void(
