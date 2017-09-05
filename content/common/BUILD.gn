@@ -320,6 +320,8 @@ source_set("common") {
     "service_worker/embedded_worker_start_params.h",
     "service_worker/service_worker_client_info.cc",
     "service_worker/service_worker_client_info.h",
+    "service_worker/service_worker_loader_helpers.cc",
+    "service_worker/service_worker_loader_helpers.h",
     "service_worker/service_worker_messages.h",
     "service_worker/service_worker_provider_host_info.cc",
     "service_worker/service_worker_provider_host_info.h",
