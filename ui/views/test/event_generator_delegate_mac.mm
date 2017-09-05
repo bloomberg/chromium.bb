@@ -272,6 +272,9 @@ class EventGeneratorDelegateMac : public ui::EventTarget,
   ui::EventSink* GetEventSink() override { return this; }
 
   // Overridden from ui::EventProcessor:
+  ui::EventTarget* GetInitialEventTarget(ui::Event* event) override {
+    return nullptr;
+  }
   ui::EventTarget* GetRootForEvent(ui::Event* event) override { return this; }
   ui::EventTargeter* GetDefaultEventTargeter() override {
     return this->GetEventTargeter();

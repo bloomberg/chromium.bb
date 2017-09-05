@@ -47,8 +47,9 @@ WindowTargeter::GetExtraHitTestShapeRects(Window* target) const {
   return nullptr;
 }
 
-Window* WindowTargeter::FindTargetInRootWindow(Window* root_window,
-                                               const ui::LocatedEvent& event) {
+Window* WindowTargeter::GetPriorityTargetInRootWindow(
+    Window* root_window,
+    const ui::LocatedEvent& event) {
   DCHECK_EQ(root_window, root_window->GetRootWindow());
 
   // Mouse events should be dispatched to the window that processed the
@@ -71,8 +72,27 @@ Window* WindowTargeter::FindTargetInRootWindow(Window* root_window,
         ui::GestureRecognizer::Get()->GetTouchLockedTarget(touch);
     if (consumer)
       return static_cast<Window*>(consumer);
-    consumer = ui::GestureRecognizer::Get()->GetTargetForLocation(
-        event.location_f(), touch.source_device_id());
+  }
+
+  return nullptr;
+}
+
+Window* WindowTargeter::FindTargetInRootWindow(Window* root_window,
+                                               const ui::LocatedEvent& event) {
+  DCHECK_EQ(root_window, root_window->GetRootWindow());
+
+  Window* priority_target = GetPriorityTargetInRootWindow(root_window, event);
+  if (priority_target)
+    return priority_target;
+
+  if (event.IsTouchEvent()) {
+    // Query the gesture-recognizer to find targets for touch events.
+    const ui::TouchEvent& touch = *event.AsTouchEvent();
+    // GetTouchLockedTarget() is handled in GetPriorityTargetInRootWindow().
+    DCHECK(!ui::GestureRecognizer::Get()->GetTouchLockedTarget(touch));
+    ui::GestureConsumer* consumer =
+        ui::GestureRecognizer::Get()->GetTargetForLocation(
+            event.location_f(), touch.source_device_id());
     if (consumer)
       return static_cast<Window*>(consumer);
 
@@ -84,34 +104,44 @@ Window* WindowTargeter::FindTargetInRootWindow(Window* root_window,
   return nullptr;
 }
 
+bool WindowTargeter::ProcessEventIfTargetsDifferentRootWindow(
+    Window* root_window,
+    Window* target,
+    ui::Event* event) {
+  if (root_window->Contains(target))
+    return false;
+
+  // |window| is the root window, but |target| is not a descendent of
+  // |window|. So do not allow dispatching from here. Instead, dispatch the
+  // event through the WindowEventDispatcher that owns |target|.
+  Window* new_root = target->GetRootWindow();
+  DCHECK(new_root);
+  if (event->IsLocatedEvent()) {
+    // The event has been transformed to be in |target|'s coordinate system.
+    // But dispatching the event through the EventProcessor requires the event
+    // to be in the host's coordinate system. So, convert the event to be in
+    // the root's coordinate space, and then to the host's coordinate space by
+    // applying the host's transform.
+    ui::LocatedEvent* located_event = event->AsLocatedEvent();
+    located_event->ConvertLocationToTarget(target, new_root);
+    WindowTreeHost* window_tree_host = new_root->GetHost();
+    located_event->UpdateForRootTransform(
+        window_tree_host->GetRootTransform(),
+        window_tree_host->GetRootTransformForLocalEventCoordinates());
+  }
+  ignore_result(new_root->GetHost()->event_sink()->OnEventFromSource(event));
+  return true;
+}
+
 ui::EventTarget* WindowTargeter::FindTargetForEvent(ui::EventTarget* root,
                                                     ui::Event* event) {
   Window* window = static_cast<Window*>(root);
   Window* target = event->IsKeyEvent()
                        ? FindTargetForKeyEvent(window, *event->AsKeyEvent())
                        : FindTargetForNonKeyEvent(window, event);
-  if (target && !window->parent() && !window->Contains(target)) {
-    // |window| is the root window, but |target| is not a descendent of
-    // |window|. So do not allow dispatching from here. Instead, dispatch the
-    // event through the WindowEventDispatcher that owns |target|.
-    Window* new_root = target->GetRootWindow();
-    DCHECK(new_root);
-    if (event->IsLocatedEvent()) {
-      // The event has been transformed to be in |target|'s coordinate system.
-      // But dispatching the event through the EventProcessor requires the event
-      // to be in the host's coordinate system. So, convert the event to be in
-      // the root's coordinate space, and then to the host's coordinate space by
-      // applying the host's transform.
-      ui::LocatedEvent* located_event = static_cast<ui::LocatedEvent*>(event);
-      located_event->ConvertLocationToTarget(target, new_root);
-      WindowTreeHost* window_tree_host = new_root->GetHost();
-      located_event->UpdateForRootTransform(
-          window_tree_host->GetRootTransform(),
-          window_tree_host->GetRootTransformForLocalEventCoordinates());
-    }
-    ignore_result(new_root->GetHost()->event_sink()->OnEventFromSource(event));
-
-    target = nullptr;
+  if (target && !window->parent() &&
+      ProcessEventIfTargetsDifferentRootWindow(window, target, event)) {
+    return nullptr;
   }
   return target;
 }

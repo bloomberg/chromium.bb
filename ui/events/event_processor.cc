@@ -22,45 +22,54 @@ EventDispatchDetails EventProcessor::OnEventFromSource(Event* event) {
     event_to_dispatch = event_copy.get();
   }
 
-  OnEventProcessingStarted(event_to_dispatch);
-  EventTarget* target = nullptr;
-  EventTargeter* targeter = nullptr;
-  if (!event_to_dispatch->handled()) {
-    EventTarget* root = GetRootForEvent(event_to_dispatch);
-    DCHECK(root);
-    targeter = root->GetEventTargeter();
-    if (targeter) {
-      target = targeter->FindTargetForEvent(root, event_to_dispatch);
-    } else {
-      targeter = GetDefaultEventTargeter();
-      if (event_to_dispatch->target())
-        target = root;
-      else
-        target = targeter->FindTargetForEvent(root, event_to_dispatch);
-    }
-    DCHECK(targeter);
-  }
-
   EventDispatchDetails details;
-  while (target) {
-    details = DispatchEvent(target, event_to_dispatch);
+  OnEventProcessingStarted(event_to_dispatch);
+  // GetInitialEventTarget() may handle the event.
+  EventTarget* initial_target = event_to_dispatch->handled()
+                                    ? nullptr
+                                    : GetInitialEventTarget(event_to_dispatch);
+  if (!event_to_dispatch->handled()) {
+    EventTarget* target = initial_target;
+    EventTargeter* targeter = nullptr;
 
-    if (!dispatch_original_event) {
-      if (event_to_dispatch->stopped_propagation())
-        event->StopPropagation();
-      else if (event_to_dispatch->handled())
-        event->SetHandled();
+    if (!target) {
+      EventTarget* root = GetRootForEvent(event_to_dispatch);
+      DCHECK(root);
+      targeter = root->GetEventTargeter();
+      if (targeter) {
+        target = targeter->FindTargetForEvent(root, event_to_dispatch);
+      } else {
+        targeter = GetDefaultEventTargeter();
+        if (event_to_dispatch->target())
+          target = root;
+        else
+          target = targeter->FindTargetForEvent(root, event_to_dispatch);
+      }
+      DCHECK(targeter);
     }
 
-    if (details.dispatcher_destroyed)
-      return details;
+    while (target) {
+      details = DispatchEvent(target, event_to_dispatch);
 
-    if (details.target_destroyed || event->handled())
-      break;
+      if (!dispatch_original_event) {
+        if (event_to_dispatch->stopped_propagation())
+          event->StopPropagation();
+        else if (event_to_dispatch->handled())
+          event->SetHandled();
+      }
 
-    target = targeter->FindNextBestTarget(target, event_to_dispatch);
+      if (details.dispatcher_destroyed)
+        return details;
+
+      if (details.target_destroyed || event->handled() ||
+          target == initial_target) {
+        break;
+      }
+
+      DCHECK(targeter);
+      target = targeter->FindNextBestTarget(target, event_to_dispatch);
+    }
   }
-
   OnEventProcessingFinished(event);
   return details;
 }

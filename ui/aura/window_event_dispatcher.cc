@@ -443,6 +443,45 @@ void WindowEventDispatcher::ReleaseNativeCapture() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // WindowEventDispatcher, ui::EventProcessor implementation:
+
+ui::EventTarget* WindowEventDispatcher::GetInitialEventTarget(
+    ui::Event* event) {
+  if (Env::GetInstance()->mode() == Env::Mode::LOCAL ||
+      !event->IsLocatedEvent() || !event->target()) {
+    return nullptr;
+  }
+
+  ui::LocatedEvent* located_event = event->AsLocatedEvent();
+
+  Window* priority_target = static_cast<Window*>(
+      event_targeter_->GetPriorityTargetInRootWindow(window(), *located_event));
+  if (!priority_target)
+    return nullptr;
+
+  Window* original_target = static_cast<Window*>(event->target());
+
+  // The event has a target but we need to dispatch it using the normal path.
+  // Reset the target and location so the normal flow is used.
+  const gfx::PointF original_location = located_event->location_f();
+  ui::Event::DispatcherApi(event).set_target(nullptr);
+  located_event->set_location_f(located_event->root_location_f());
+  if (event_targeter_->ProcessEventIfTargetsDifferentRootWindow(
+          window(), static_cast<Window*>(priority_target), event)) {
+    // Make sure the event was marked handled so that EventProcessor doesn't
+    // attempt to process the event as well.
+    event->SetHandled();
+    return nullptr;
+  }
+  located_event->set_location_f(original_location);
+  if (original_target != priority_target) {
+    // Don't convert from the root as it may be offset by the bounds of the
+    // root's host.
+    located_event->ConvertLocationToTarget(original_target, window());
+    located_event->ConvertLocationToTarget(window(), priority_target);
+  }
+  return priority_target;
+}
+
 ui::EventTarget* WindowEventDispatcher::GetRootForEvent(ui::Event* event) {
   if (Env::GetInstance()->mode() == Env::Mode::LOCAL)
     return window();
