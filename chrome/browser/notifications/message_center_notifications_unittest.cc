@@ -134,9 +134,7 @@ TEST_F(MessageCenterNotificationManagerTest, MultiUserUpdates) {
   chrome::MultiUserWindowManagerChromeOS* multi_user_window_manager =
       new chrome::MultiUserWindowManagerChromeOS(active_user_id);
   multi_user_window_manager->Init();
-  chrome::MultiUserWindowManager::SetInstanceForTest(
-      multi_user_window_manager,
-      chrome::MultiUserWindowManager::MULTI_PROFILE_MODE_SEPARATED);
+  chrome::MultiUserWindowManager::SetInstanceForTest(multi_user_window_manager);
   std::unique_ptr<MultiUserNotificationBlockerChromeOS> blocker(
       new MultiUserNotificationBlockerChromeOS(
           message_center::MessageCenter::Get(), active_user_id));

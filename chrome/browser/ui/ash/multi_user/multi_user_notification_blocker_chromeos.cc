@@ -4,8 +4,9 @@
 
 #include "chrome/browser/ui/ash/multi_user/multi_user_notification_blocker_chromeos.h"
 
+#include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "ash/system/system_notifier.h"
-#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notifier_settings.h"
@@ -21,7 +22,8 @@ MultiUserNotificationBlockerChromeOS::~MultiUserNotificationBlockerChromeOS() {
 
 bool MultiUserNotificationBlockerChromeOS::ShouldShowNotification(
     const message_center::Notification& notification) const {
-  if (!IsActive())
+  if (!ash::Shell::HasInstance() ||
+      !ash::Shell::Get()->shell_delegate()->IsMultiProfilesEnabled())
     return true;
 
   if (ash::system_notifier::IsAshSystemNotifier(notification.notifier_id()))
@@ -50,9 +52,4 @@ void MultiUserNotificationBlockerChromeOS::ActiveUserChanged(
     message_center()->SetQuietMode(iter->second);
   }
   NotifyBlockingStateChanged();
-}
-
-bool MultiUserNotificationBlockerChromeOS::IsActive() const {
-  return chrome::MultiUserWindowManager::GetMultiProfileMode() ==
-      chrome::MultiUserWindowManager::MULTI_PROFILE_MODE_SEPARATED;
 }

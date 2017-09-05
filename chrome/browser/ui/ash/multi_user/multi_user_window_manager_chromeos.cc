@@ -529,8 +529,8 @@ bool MultiUserWindowManagerChromeOS::ShowWindowForUserIntern(
   WindowToEntryMap::iterator it = window_to_entry_.find(window);
   it->second->set_show_for_user(account_id);
 
-  // Show avatar icon on the teleported window for separated mode.
-  if (GetMultiProfileMode() == MULTI_PROFILE_MODE_SEPARATED) {
+  // Show avatar icon on the teleported window.
+  if (GetMultiProfileMode() == MULTI_PROFILE_MODE_ON) {
     // Tests could either not have a UserManager or the UserManager does not
     // know the window owner.
     const user_manager::User* const window_owner =

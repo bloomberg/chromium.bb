@@ -11,11 +11,6 @@ namespace extensions {
 class Extension;
 }
 
-class Browser;
-
-// Returns true if |browser| is owned by the active user.
-bool IsBrowserFromActiveUser(Browser* browser);
-
 // Returns the extension identified by |app_id|.
 const extensions::Extension* GetExtensionForAppID(const std::string& app_id,
                                                   Profile* profile);

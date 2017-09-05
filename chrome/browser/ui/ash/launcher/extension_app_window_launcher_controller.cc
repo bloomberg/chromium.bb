@@ -46,34 +46,28 @@ ash::ShelfID GetShelfId(AppWindow* app_window) {
 
 ExtensionAppWindowLauncherController::ExtensionAppWindowLauncherController(
     ChromeLauncherController* owner)
-    : AppWindowLauncherController(owner) {
-  AppWindowRegistry* registry = AppWindowRegistry::Get(owner->profile());
-  registry_.insert(registry);
-  registry->AddObserver(this);
+    : AppWindowLauncherController(owner),
+      registry_(AppWindowRegistry::Get(owner->profile())) {
+  registry_->AddObserver(this);
 }
 
 ExtensionAppWindowLauncherController::~ExtensionAppWindowLauncherController() {
-  for (extensions::AppWindowRegistry* iter : registry_)
-    iter->RemoveObserver(this);
+  registry_->RemoveObserver(this);
 
   for (const auto& iter : window_to_shelf_id_map_)
     iter.first->RemoveObserver(this);
 }
 
-void ExtensionAppWindowLauncherController::AdditionalUserAddedToSession(
-    Profile* profile) {
-  // TODO(skuhne): This was added for the legacy side by side mode in M32. If
-  // this mode gets no longer pursued this special case can be removed.
-  if (chrome::MultiUserWindowManager::GetMultiProfileMode() !=
-      chrome::MultiUserWindowManager::MULTI_PROFILE_MODE_MIXED)
-    return;
-
-  AppWindowRegistry* registry = AppWindowRegistry::Get(profile);
-  if (registry_.find(registry) != registry_.end())
-    return;
-
-  registry->AddObserver(this);
-  registry_.insert(registry);
+AppWindowLauncherItemController*
+ExtensionAppWindowLauncherController::ControllerForWindow(
+    aura::Window* window) {
+  const auto window_iter = window_to_shelf_id_map_.find(window);
+  if (window_iter == window_to_shelf_id_map_.end())
+    return nullptr;
+  const auto controller_iter = app_controller_map_.find(window_iter->second);
+  if (controller_iter == app_controller_map_.end())
+    return nullptr;
+  return controller_iter->second;
 }
 
 void ExtensionAppWindowLauncherController::OnAppWindowAdded(
@@ -183,18 +177,4 @@ void ExtensionAppWindowLauncherController::UnregisterApp(aura::Window* window) {
 bool ExtensionAppWindowLauncherController::IsRegisteredApp(
     aura::Window* window) {
   return window_to_shelf_id_map_.find(window) != window_to_shelf_id_map_.end();
-}
-
-// Private Methods
-
-AppWindowLauncherItemController*
-ExtensionAppWindowLauncherController::ControllerForWindow(
-    aura::Window* window) {
-  const auto window_iter = window_to_shelf_id_map_.find(window);
-  if (window_iter == window_to_shelf_id_map_.end())
-    return nullptr;
-  const auto controller_iter = app_controller_map_.find(window_iter->second);
-  if (controller_iter == app_controller_map_.end())
-    return nullptr;
-  return controller_iter->second;
 }

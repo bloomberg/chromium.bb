@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/ash/launcher/browser_shortcut_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_util.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -110,7 +111,7 @@ void BrowserStatusMonitor::UpdateAppItemState(
   // processed.
   Browser* browser = chrome::FindBrowserWithWebContents(contents);
   if (app_state == ChromeLauncherController::APP_STATE_REMOVED ||
-      (browser && IsBrowserFromActiveUser(browser)))
+      (browser && multi_user_util::IsProfileFromActiveUser(browser->profile())))
     launcher_controller_->UpdateAppState(contents, app_state);
 }
 

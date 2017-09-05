@@ -167,7 +167,8 @@ void BrowserShortcutLauncherItemController::SetShelfIDForBrowserWindowContents(
   // content which might change and as such change the application type.
   // The browser window may not exist in unit tests.
   if (!browser || !browser->window() || !browser->window()->GetNativeWindow() ||
-      !IsBrowserFromActiveUser(browser) || IsSettingsBrowser(browser)) {
+      !multi_user_util::IsProfileFromActiveUser(browser->profile()) ||
+      IsSettingsBrowser(browser)) {
     return;
   }
 
@@ -368,7 +369,7 @@ BrowserShortcutLauncherItemController::ActivateOrAdvanceToNextBrowser() {
 bool BrowserShortcutLauncherItemController::IsBrowserRepresentedInBrowserList(
     Browser* browser) {
   // Only Ash desktop browser windows for the active user are represented.
-  if (!browser || !IsBrowserFromActiveUser(browser))
+  if (!browser || !multi_user_util::IsProfileFromActiveUser(browser->profile()))
     return false;
 
   // V1 App popup windows may have their own item.
@@ -389,7 +390,7 @@ BrowserShortcutLauncherItemController::GetListOfActiveBrowsers() {
   for (auto* browser : *BrowserList::GetInstance()) {
     // Make sure that the browser is from the current user, has a proper window,
     // and the window was already shown.
-    if (!IsBrowserFromActiveUser(browser))
+    if (!multi_user_util::IsProfileFromActiveUser(browser->profile()))
       continue;
     if (!browser->window()->GetNativeWindow()->IsVisible() &&
         !browser->window()->IsMinimized()) {

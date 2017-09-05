@@ -174,9 +174,7 @@ void ChromeLauncherControllerUserSwitchObserver::OnUserProfileReadyToSwitch(
 }
 
 void ChromeLauncherControllerUserSwitchObserver::AddUser(Profile* profile) {
-  if (chrome::MultiUserWindowManager::GetMultiProfileMode() ==
-      chrome::MultiUserWindowManager::MULTI_PROFILE_MODE_SEPARATED)
-    chrome::MultiUserWindowManager::GetInstance()->AddUser(profile);
+  chrome::MultiUserWindowManager::GetInstance()->AddUser(profile);
   controller_->AdditionalUserAddedToSession(profile->GetOriginalProfile());
 }
 
@@ -230,7 +228,7 @@ ChromeLauncherController::ChromeLauncherController(Profile* profile,
   // Create our v1/v2 application / browser monitors which will inform the
   // launcher of status changes.
   if (chrome::MultiUserWindowManager::GetMultiProfileMode() ==
-      chrome::MultiUserWindowManager::MULTI_PROFILE_MODE_SEPARATED) {
+      chrome::MultiUserWindowManager::MULTI_PROFILE_MODE_ON) {
     // If running in separated destkop mode, we create the multi profile version
     // of status monitor.
     browser_status_monitor_.reset(new MultiProfileBrowserStatusMonitor(this));
@@ -504,22 +502,18 @@ void ChromeLauncherController::SetRefocusURLPatternForTest(
 ash::ShelfAction ChromeLauncherController::ActivateWindowOrMinimizeIfActive(
     ui::BaseWindow* window,
     bool allow_minimize) {
-  // In separated desktop mode we might have to teleport a window back to the
-  // current user.
-  if (chrome::MultiUserWindowManager::GetMultiProfileMode() ==
-      chrome::MultiUserWindowManager::MULTI_PROFILE_MODE_SEPARATED) {
-    aura::Window* native_window = window->GetNativeWindow();
-    const AccountId& current_account_id =
-        multi_user_util::GetAccountIdFromProfile(profile());
-    chrome::MultiUserWindowManager* manager =
-        chrome::MultiUserWindowManager::GetInstance();
-    if (!manager->IsWindowOnDesktopOfUser(native_window, current_account_id)) {
-      ash::MultiProfileUMA::RecordTeleportAction(
-          ash::MultiProfileUMA::TELEPORT_WINDOW_RETURN_BY_LAUNCHER);
-      manager->ShowWindowForUser(native_window, current_account_id);
-      window->Activate();
-      return ash::SHELF_ACTION_WINDOW_ACTIVATED;
-    }
+  // We might have to teleport a window back to the current user.
+  aura::Window* native_window = window->GetNativeWindow();
+  const AccountId& current_account_id =
+      multi_user_util::GetAccountIdFromProfile(profile());
+  chrome::MultiUserWindowManager* manager =
+      chrome::MultiUserWindowManager::GetInstance();
+  if (!manager->IsWindowOnDesktopOfUser(native_window, current_account_id)) {
+    ash::MultiProfileUMA::RecordTeleportAction(
+        ash::MultiProfileUMA::TELEPORT_WINDOW_RETURN_BY_LAUNCHER);
+    manager->ShowWindowForUser(native_window, current_account_id);
+    window->Activate();
+    return ash::SHELF_ACTION_WINDOW_ACTIVATED;
   }
 
   const app_list::AppListPresenterImpl* app_list_presenter =

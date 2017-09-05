@@ -52,8 +52,7 @@ class BrowserFinderChromeOSTest : public BrowserWithTestWindowTest {
           new chrome::MultiUserWindowManagerChromeOS(test_account_id1_);
       multi_user_window_manager_->Init();
       chrome::MultiUserWindowManager::SetInstanceForTest(
-          multi_user_window_manager_,
-          chrome::MultiUserWindowManager::MULTI_PROFILE_MODE_SEPARATED);
+          multi_user_window_manager_);
     }
     return multi_user_window_manager_;
   }

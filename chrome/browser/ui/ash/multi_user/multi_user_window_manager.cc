@@ -41,21 +41,13 @@ MultiUserWindowManager* MultiUserWindowManager::CreateInstance() {
   // TODO(crbug.com/557406): Enable this component in Mash.
   if (!ash_util::IsRunningInMash() &&
       ash::Shell::Get()->shell_delegate()->IsMultiProfilesEnabled()) {
-    if (!g_instance) {
-      MultiUserWindowManagerChromeOS* manager =
-          new MultiUserWindowManagerChromeOS(user_manager::UserManager::Get()
-                                                 ->GetActiveUser()
-                                                 ->GetAccountId());
-      g_instance = manager;
-      manager->Init();
-      multi_user_mode_ = MULTI_PROFILE_MODE_SEPARATED;
-      mode = ash::MultiProfileUMA::SESSION_SEPARATE_DESKTOP_MODE;
-    } else {
-      // The side by side mode is using the Single user window manager since all
-      // windows are unmanaged side by side.
-      multi_user_mode_ = MULTI_PROFILE_MODE_MIXED;
-      mode = ash::MultiProfileUMA::SESSION_SIDE_BY_SIDE_MODE;
-    }
+    MultiUserWindowManagerChromeOS* manager =
+        new MultiUserWindowManagerChromeOS(
+            user_manager::UserManager::Get()->GetActiveUser()->GetAccountId());
+    g_instance = manager;
+    manager->Init();
+    multi_user_mode_ = MULTI_PROFILE_MODE_ON;
+    mode = ash::MultiProfileUMA::SESSION_SEPARATE_DESKTOP_MODE;
   }
   ash::MultiProfileUMA::RecordSessionMode(mode);
 
@@ -75,7 +67,7 @@ MultiUserWindowManager::GetMultiProfileMode() {
 // satic
 bool MultiUserWindowManager::ShouldShowAvatar(aura::Window* window) {
   // Note: In case of the M-31 mode the window manager won't exist.
-  if (GetMultiProfileMode() == MULTI_PROFILE_MODE_SEPARATED) {
+  if (GetMultiProfileMode() == MULTI_PROFILE_MODE_ON) {
     // If the window is shown on a different desktop than the user, it should
     // have the avatar icon
     MultiUserWindowManager* instance = GetInstance();
@@ -94,12 +86,11 @@ void MultiUserWindowManager::DeleteInstance() {
 }
 
 void MultiUserWindowManager::SetInstanceForTest(
-    MultiUserWindowManager* instance,
-    MultiProfileMode mode) {
+    MultiUserWindowManager* instance) {
   if (g_instance)
     DeleteInstance();
   g_instance = instance;
-  multi_user_mode_ = mode;
+  multi_user_mode_ = MULTI_PROFILE_MODE_ON;
 }
 
 }  // namespace chrome
