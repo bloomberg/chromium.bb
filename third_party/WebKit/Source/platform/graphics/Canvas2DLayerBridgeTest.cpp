@@ -25,12 +25,14 @@
 
 #include "platform/graphics/Canvas2DLayerBridge.h"
 
+#include "build/build_config.h"
 #include "components/viz/common/quads/single_release_callback.h"
 #include "components/viz/common/quads/texture_mailbox.h"
 #include "components/viz/test/test_gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/capabilities.h"
 #include "platform/CrossThreadFunctional.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/WaitableEvent.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/graphics/ImageBuffer.h"
@@ -1088,12 +1090,10 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_PrepareMailboxWhileBackgroundRendering)
   EXPECT_TRUE(bridge->IsValid());
 }
 
-#if USE_IOSURFACE_FOR_2D_CANVAS
-TEST_F(Canvas2DLayerBridgeTest, DeleteIOSurfaceAfterTeardown)
-#else
-TEST_F(Canvas2DLayerBridgeTest, DISABLED_DeleteIOSurfaceAfterTeardown)
+TEST_F(Canvas2DLayerBridgeTest, DeleteGpuMemoryBufferAfterTeardown) {
+#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
+  RuntimeEnabledFeatures::SetCanvas2dImageChromiumEnabled(true);
 #endif
-{
   ScopedTestingPlatformSupport<FakePlatformSupport> platform;
 
   viz::TextureMailbox texture_mailbox;
@@ -1109,9 +1109,13 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_DeleteIOSurfaceAfterTeardown)
 
   bool lost_resource = false;
   release_callback->Run(gpu::SyncToken(), lost_resource);
-
+#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
   EXPECT_EQ(1u, gl_.CreateImageCount());
   EXPECT_EQ(1u, gl_.DestroyImageCount());
+#else
+  EXPECT_EQ(0u, gl_.CreateImageCount());
+  EXPECT_EQ(0u, gl_.DestroyImageCount());
+#endif
 }
 
 TEST_F(Canvas2DLayerBridgeTest, NoUnnecessaryFlushes) {

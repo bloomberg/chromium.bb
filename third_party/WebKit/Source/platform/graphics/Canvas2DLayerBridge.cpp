@@ -303,7 +303,7 @@ GLenum Canvas2DLayerBridge::GetGLFilter() {
   return filter_quality_ == kNone_SkFilterQuality ? GL_NEAREST : GL_LINEAR;
 }
 
-bool Canvas2DLayerBridge::PrepareIOSurfaceMailboxFromImage(
+bool Canvas2DLayerBridge::PrepareGpuMemoryBufferMailboxFromImage(
     SkImage* image,
     MailboxInfo* info,
     viz::TextureMailbox* out_mailbox) {
@@ -313,7 +313,7 @@ bool Canvas2DLayerBridge::PrepareIOSurfaceMailboxFromImage(
       context_provider_wrapper_->ContextProvider()->GetGrContext();
   gr_context->flush();
 
-  RefPtr<ImageInfo> image_info = CreateIOSurfaceBackedTexture();
+  RefPtr<ImageInfo> image_info = CreateGpuMemoryBufferBackedTexture();
   if (!image_info)
     return false;
 
@@ -362,7 +362,7 @@ bool Canvas2DLayerBridge::PrepareIOSurfaceMailboxFromImage(
 }
 
 RefPtr<Canvas2DLayerBridge::ImageInfo>
-Canvas2DLayerBridge::CreateIOSurfaceBackedTexture() {
+Canvas2DLayerBridge::CreateGpuMemoryBufferBackedTexture() {
   if (!image_info_cache_.IsEmpty()) {
     RefPtr<Canvas2DLayerBridge::ImageInfo> info = image_info_cache_.back();
     image_info_cache_.pop_back();
@@ -434,11 +434,11 @@ bool Canvas2DLayerBridge::PrepareMailboxFromImage(
   sk_sp<SkImage> skia_image = image->PaintImageForCurrentFrame().GetSkImage();
 
   if (RuntimeEnabledFeatures::Canvas2dImageChromiumEnabled()) {
-    if (PrepareIOSurfaceMailboxFromImage(skia_image.get(), mailbox_info,
-                                         out_mailbox))
+    if (PrepareGpuMemoryBufferMailboxFromImage(skia_image.get(), mailbox_info,
+                                               out_mailbox))
       return true;
-    // Note: if IOSurface backed texture creation failed we fall back to the
-    // non-IOSurface path.
+    // Note: if GpuMemoryBuffer-backed texture creation failed we fall back to
+    // the non-GpuMemoryBuffer path.
   }
 
   mailbox_info->image_ = std::move(image);

@@ -175,7 +175,7 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient,
   struct MailboxInfo {
     RefPtr<StaticBitmapImage> image_;
 
-    // If this mailbox wraps an IOSurface-backed texture, the ids of the
+    // If this mailbox wraps an GpuMemoryBuffer-backed texture, the ids of the
     // CHROMIUM image and the texture.
     RefPtr<ImageInfo> image_info_;
 
@@ -204,18 +204,19 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient,
   // Returns the GL filter associated with |m_filterQuality|.
   GLenum GetGLFilter();
 
-  // Creates an IOSurface-backed texture. Copies |image| into the texture.
+  // Creates an GpuMemoryBuffer-backed texture. Copies |image| into the texture.
   // Prepares a mailbox from the texture. The caller must have created a new
   // MailboxInfo, and prepended it to |m_mailboxs|. Returns whether the
   // mailbox was successfully prepared. |mailbox| is an out parameter only
   // populated on success.
-  bool PrepareIOSurfaceMailboxFromImage(SkImage*,
-                                        MailboxInfo*,
-                                        viz::TextureMailbox*);
+  bool PrepareGpuMemoryBufferMailboxFromImage(SkImage*,
+                                              MailboxInfo*,
+                                              viz::TextureMailbox*);
 
-  // Creates an IOSurface-backed texture. Returns an ImageInfo, which is empty
-  // on failure. The caller takes ownership of both the texture and the image.
-  RefPtr<ImageInfo> CreateIOSurfaceBackedTexture();
+  // Creates an GpuMemoryBuffer-backed texture. Returns an ImageInfo, which is
+  // empty on failure. The caller takes ownership of both the texture and the
+  // image.
+  RefPtr<ImageInfo> CreateGpuMemoryBufferBackedTexture();
 
   // Releases all resources in the CHROMIUM image cache.
   void ClearCHROMIUMImageCache();
@@ -270,8 +271,8 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient,
   CanvasColorParams color_params_;
   int recording_pixel_count_;
 
-  // Each element in this vector represents an IOSurface backed texture that
-  // is ready to be reused.
+  // Each element in this vector represents an GpuMemoryBuffer-backed texture
+  // that is ready to be reused.
   // Elements in this vector can safely be purged in low memory conditions.
   Vector<RefPtr<ImageInfo>> image_info_cache_;
 };
