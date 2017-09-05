@@ -10,8 +10,7 @@
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_cell.h"
 #import "chrome/browser/ui/cocoa/location_bar/keyword_hint_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_decoration.h"
-#import "chrome/browser/ui/cocoa/location_bar/location_icon_decoration.h"
-#import "chrome/browser/ui/cocoa/location_bar/security_state_bubble_decoration.h"
+#import "chrome/browser/ui/cocoa/location_bar/page_info_bubble_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/selected_keyword_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/star_decoration.h"
 #import "chrome/browser/ui/cocoa/test/cocoa_test_helper.h"
@@ -108,21 +107,13 @@ TEST_F(AutocompleteTextFieldCellTest, FocusedDisplay) {
   // TODO(shess): This really wants a |LocationBarViewMac|, but only a
   // few methods reference it, so this works well enough.  But
   // something better would be nice.
-  LocationIconDecoration location_icon_decoration(NULL);
-  location_icon_decoration.SetVisible(true);
-  location_icon_decoration.SetImage([NSImage imageNamed:@"NSApplicationIcon"]);
-  [cell addLeadingDecoration:&location_icon_decoration];
-  EXPECT_NE(location_icon_decoration.GetWidthForSpace(kVeryWide),
-            LocationBarDecoration::kOmittedWidth);
-
-  SecurityStateBubbleDecoration security_state_bubble_decoration(
-      &location_icon_decoration, nullptr);
-  security_state_bubble_decoration.SetVisible(true);
-  security_state_bubble_decoration.SetImage(
+  PageInfoBubbleDecoration page_info_bubble_decoration(nullptr);
+  page_info_bubble_decoration.SetVisible(true);
+  page_info_bubble_decoration.SetImage(
       [NSImage imageNamed:@"NSApplicationIcon"]);
-  security_state_bubble_decoration.SetLabel(@"Application");
-  [cell addLeadingDecoration:&security_state_bubble_decoration];
-  EXPECT_NE(security_state_bubble_decoration.GetWidthForSpace(kVeryWide),
+  page_info_bubble_decoration.SetLabel(@"Application");
+  [cell addLeadingDecoration:&page_info_bubble_decoration];
+  EXPECT_NE(page_info_bubble_decoration.GetWidthForSpace(kVeryWide),
             LocationBarDecoration::kOmittedWidth);
 
   StarDecoration star_decoration(NULL);

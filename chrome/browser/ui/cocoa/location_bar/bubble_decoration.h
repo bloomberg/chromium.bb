@@ -47,6 +47,9 @@ class BubbleDecoration : public LocationBarDecoration {
   // Returns the text color when the theme is dark.
   virtual NSColor* GetDarkModeTextColor();
 
+  // Returns false if the |label_| is nil or empty.
+  bool HasLabel() const;
+
   // Image drawn in the left side of the bubble.
   base::scoped_nsobject<NSImage> image_;
 

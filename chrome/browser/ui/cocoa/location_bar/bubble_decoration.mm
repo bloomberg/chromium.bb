@@ -23,6 +23,8 @@ const CGFloat kLeftSidePadding = 5.0;
 // Padding between the icon/label and bubble edges.
 const CGFloat kBubblePadding = 7.0;
 
+const CGFloat kImageOnlyPadding = 10.0;
+
 // Padding between the icon and label.
 const CGFloat kIconLabelPadding = 4.0;
 
@@ -32,8 +34,8 @@ const CGFloat kImageFrameYInset = 4.0;
 // Inset for the background frame.
 const CGFloat kBackgroundFrameYInset = 2.0;
 
-// Left margin for the background frame.
-const CGFloat kBackgroundFrameLeftMargin = 1.0;
+// Margin for the background frame.
+const CGFloat kBackgroundFrameXMargin = 1.0;
 
 }  // namespace
 
@@ -48,12 +50,13 @@ BubbleDecoration::~BubbleDecoration() {
 
 CGFloat BubbleDecoration::GetWidthForImageAndLabel(NSImage* image,
                                                    NSString* label) {
-  if (!image && !label)
+  bool has_label = label && label.length;
+  if (!image && !has_label)
     return kOmittedWidth;
 
   const CGFloat image_width = image ? [image size].width : 0.0;
-  if (!label)
-    return kBubblePadding + image_width;
+  if (!has_label)
+    return kImageOnlyPadding + image_width;
 
   // The bubble needs to take up an integral number of pixels.
   // Generally -sizeWithAttributes: seems to overestimate rather than
@@ -100,13 +103,13 @@ CGFloat BubbleDecoration::GetWidthForSpace(CGFloat width) {
 
 NSRect BubbleDecoration::GetBackgroundFrame(NSRect frame) {
   NSRect background_frame = NSInsetRect(frame, 0.0, kBackgroundFrameYInset);
-  const CGFloat divider_padding = DividerPadding();
+  const CGFloat divider_padding = HasLabel() ? DividerPadding() : 0.0;
   if (cocoa_l10n_util::ShouldDoExperimentalRTLLayout()) {
-    background_frame.origin.x += divider_padding;
-    background_frame.size.width -= divider_padding + kBackgroundFrameLeftMargin;
+    background_frame.origin.x += divider_padding - kBackgroundFrameXMargin;
+    background_frame.size.width -= divider_padding + kBackgroundFrameXMargin;
   } else {
-    background_frame.origin.x += kBackgroundFrameLeftMargin;
-    background_frame.size.width -= divider_padding;
+    background_frame.origin.x += kBackgroundFrameXMargin;
+    background_frame.size.width -= divider_padding + kBackgroundFrameXMargin;
   }
   return background_frame;
 }
@@ -131,16 +134,16 @@ void BubbleDecoration::DrawInFrame(NSRect frame, NSView* control_view) {
       text_left_offset = NSMaxX(image_rect) + kIconLabelPadding;
   }
 
-  // Draw the divider.
-  DrawDivider(control_view, decoration_frame, 1.0);
+  if (HasLabel()) {
+    // Draw the divider.
+    DrawDivider(control_view, decoration_frame, 1.0);
 
-  // Set the text color.
-  bool in_dark_mode = [[control_view window] inIncognitoModeWithSystemTheme];
-  NSColor* text_color =
-      in_dark_mode ? GetDarkModeTextColor() : GetBackgroundBorderColor();
-  SetTextColor(text_color);
+    // Set the text color.
+    bool in_dark_mode = [[control_view window] inIncognitoModeWithSystemTheme];
+    NSColor* text_color =
+        in_dark_mode ? GetDarkModeTextColor() : GetBackgroundBorderColor();
+    SetTextColor(text_color);
 
-  if (label_) {
     NSRect text_rect = frame;
     text_rect.origin.x = text_left_offset;
     text_rect.size.width = text_right_offset - text_left_offset;
@@ -187,4 +190,8 @@ void BubbleDecoration::SetFont(NSFont* font) {
 
 void BubbleDecoration::SetRetinaBaselineOffset(CGFloat offset) {
   retina_baseline_offset_ = offset;
+}
+
+bool BubbleDecoration::HasLabel() const {
+  return label_ && [label_ length];
 }

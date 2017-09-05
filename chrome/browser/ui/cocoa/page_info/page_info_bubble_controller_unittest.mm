@@ -12,7 +12,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
-#import "chrome/browser/ui/cocoa/location_bar/location_icon_decoration.h"
+#import "chrome/browser/ui/cocoa/location_bar/page_info_bubble_decoration.h"
 #import "chrome/browser/ui/cocoa/test/cocoa_profile_test.h"
 #include "content/public/test/test_web_contents_factory.h"
 #include "net/test/test_certificate_data.h"
@@ -330,7 +330,7 @@ TEST_F(PageInfoBubbleControllerTest, PageIconDecorationActiveState) {
   BrowserWindowController* controller =
       [BrowserWindowController browserWindowControllerForWindow:window];
   LocationBarDecoration* decoration =
-      [controller locationBarBridge]->GetPageInfoDecoration();
+      [controller locationBarBridge]->page_info_decoration();
 
   CreateBubble();
   EXPECT_TRUE([[controller_ window] isVisible]);

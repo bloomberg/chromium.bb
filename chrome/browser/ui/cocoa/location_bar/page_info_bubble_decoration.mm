@@ -2,18 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/location_bar/security_state_bubble_decoration.h"
+#import "chrome/browser/ui/cocoa/location_bar/page_info_bubble_decoration.h"
 
 #include <cmath>
 
 #import "base/mac/mac_util.h"
 #include "base/strings/sys_string_conversions.h"
+#import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
+#import "chrome/browser/ui/cocoa/drag_util.h"
 #include "chrome/browser/ui/cocoa/l10n_util.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
-#import "chrome/browser/ui/cocoa/location_bar/location_icon_decoration.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
+#include "chrome/browser/ui/page_info/page_info_dialog.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/favicon/content/content_favicon_driver.h"
 #include "skia/ext/skia_utils_mac.h"
+#import "third_party/mozilla/NSPasteboard+Utils.h"
 #import "ui/base/cocoa/nsview_additions.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/material_design/material_design_controller.h"
@@ -60,13 +64,10 @@ const CGFloat kStartx_offset = 15.0;
 }  // namespace
 
 //////////////////////////////////////////////////////////////////
-// SecurityStateBubbleDecoration, public:
+// PageInfoBubbleDecoration, public:
 
-SecurityStateBubbleDecoration::SecurityStateBubbleDecoration(
-    LocationIconDecoration* location_icon,
-    LocationBarViewMac* owner)
-    : location_icon_(location_icon),
-      label_color_(gfx::kGoogleGreen700),
+PageInfoBubbleDecoration::PageInfoBubbleDecoration(LocationBarViewMac* owner)
+    : label_color_(gfx::kGoogleGreen700),
       image_fade_(true),
       animation_(this),
       owner_(owner),
@@ -85,21 +86,21 @@ SecurityStateBubbleDecoration::SecurityStateBubbleDecoration(
   animation_.SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
 }
 
-SecurityStateBubbleDecoration::~SecurityStateBubbleDecoration() {
+PageInfoBubbleDecoration::~PageInfoBubbleDecoration() {
   // Just in case the timer is still holding onto the animation object, force
   // cleanup so it can't get back to |this|.
 }
 
-void SecurityStateBubbleDecoration::SetFullLabel(NSString* label) {
+void PageInfoBubbleDecoration::SetFullLabel(NSString* label) {
   full_label_.reset([label copy]);
   SetLabel(full_label_);
 }
 
-void SecurityStateBubbleDecoration::SetLabelColor(SkColor color) {
+void PageInfoBubbleDecoration::SetLabelColor(SkColor color) {
   label_color_ = color;
 }
 
-void SecurityStateBubbleDecoration::AnimateIn(bool image_fade) {
+void PageInfoBubbleDecoration::AnimateIn(bool image_fade) {
   image_fade_ = image_fade;
   if (HasAnimatedIn())
     animation_.Reset();
@@ -108,7 +109,7 @@ void SecurityStateBubbleDecoration::AnimateIn(bool image_fade) {
   animation_.Show();
 }
 
-void SecurityStateBubbleDecoration::AnimateOut() {
+void PageInfoBubbleDecoration::AnimateOut() {
   if (!HasAnimatedIn())
     return;
 
@@ -116,37 +117,36 @@ void SecurityStateBubbleDecoration::AnimateOut() {
   animation_.Hide();
 }
 
-void SecurityStateBubbleDecoration::ShowWithoutAnimation() {
+void PageInfoBubbleDecoration::ShowWithoutAnimation() {
   animation_.Reset(1.0);
 }
 
-bool SecurityStateBubbleDecoration::HasAnimatedIn() const {
+bool PageInfoBubbleDecoration::HasAnimatedIn() const {
   return animation_.IsShowing() && animation_.GetCurrentValue() == 1.0;
 }
 
-bool SecurityStateBubbleDecoration::HasAnimatedOut() const {
+bool PageInfoBubbleDecoration::HasAnimatedOut() const {
   return !animation_.IsShowing() && animation_.GetCurrentValue() == 0.0;
 }
 
-bool SecurityStateBubbleDecoration::AnimatingOut() const {
+bool PageInfoBubbleDecoration::AnimatingOut() const {
   return !animation_.IsShowing() && animation_.GetCurrentValue() != 0.0;
 }
 
-void SecurityStateBubbleDecoration::ResetAnimation() {
+void PageInfoBubbleDecoration::ResetAnimation() {
   animation_.Reset();
 }
 
 //////////////////////////////////////////////////////////////////
-// SecurityStateBubbleDecoration::LocationBarDecoration:
+// PageInfoBubbleDecoration::LocationBarDecoration:
 
-CGFloat SecurityStateBubbleDecoration::GetWidthForSpace(CGFloat width) {
-  CGFloat location_icon_width = location_icon_->GetWidthForSpace(width);
-  CGFloat text_width = GetWidthForText(width) - location_icon_width;
-  return (text_width * GetAnimationProgress()) + location_icon_width;
+CGFloat PageInfoBubbleDecoration::GetWidthForSpace(CGFloat width) {
+  CGFloat icon_width = GetWidthForImageAndLabel(image_, nil);
+  CGFloat text_width = GetWidthForText(width) - icon_width;
+  return (text_width * GetAnimationProgress()) + icon_width;
 }
 
-void SecurityStateBubbleDecoration::DrawInFrame(NSRect frame,
-                                                NSView* control_view) {
+void PageInfoBubbleDecoration::DrawInFrame(NSRect frame, NSView* control_view) {
   const NSRect decoration_frame = NSInsetRect(frame, 0.0, kBackgroundYInset);
   CGFloat text_left_offset = NSMinX(decoration_frame);
   CGFloat text_right_offset = NSMaxX(decoration_frame);
@@ -174,7 +174,7 @@ void SecurityStateBubbleDecoration::DrawInFrame(NSRect frame,
   }
 
   // Set the text color and draw the text.
-  if (label_) {
+  if (HasLabel()) {
     bool in_dark_mode = [[control_view window] inIncognitoModeWithSystemTheme];
     NSColor* text_color =
         in_dark_mode ? skia::SkColorToSRGBNSColor(kMaterialDarkModeTextColor)
@@ -242,43 +242,80 @@ void SecurityStateBubbleDecoration::DrawInFrame(NSRect frame,
   }
 }
 
-// Pass mouse operations through to location icon.
-bool SecurityStateBubbleDecoration::IsDraggable() {
-  return location_icon_->IsDraggable();
+bool PageInfoBubbleDecoration::IsDraggable() {
+  // Without a tab it will be impossible to get the information needed
+  // to perform a drag.
+  if (!owner_->GetWebContents())
+    return false;
+
+  // Do not drag if the user has been editing the location bar, or the
+  // location bar is at the NTP.
+  return (!owner_->GetOmniboxView()->IsEditingOrEmpty());
 }
 
-NSPasteboard* SecurityStateBubbleDecoration::GetDragPasteboard() {
-  return location_icon_->GetDragPasteboard();
+NSPasteboard* PageInfoBubbleDecoration::GetDragPasteboard() {
+  content::WebContents* tab = owner_->GetWebContents();
+  DCHECK(tab);  // See |IsDraggable()|.
+
+  NSString* url = base::SysUTF8ToNSString(tab->GetURL().spec());
+  NSString* title = base::SysUTF16ToNSString(tab->GetTitle());
+
+  NSPasteboard* pboard = [NSPasteboard pasteboardWithName:NSDragPboard];
+  [pboard declareURLPasteboardWithAdditionalTypes:@[ NSFilesPromisePboardType ]
+                                            owner:nil];
+  [pboard setDataForURL:url title:title];
+
+  [pboard setPropertyList:@[ @"webloc" ] forType:NSFilesPromisePboardType];
+
+  return pboard;
 }
 
-NSImage* SecurityStateBubbleDecoration::GetDragImage() {
-  return location_icon_->GetDragImage();
+NSImage* PageInfoBubbleDecoration::GetDragImage() {
+  content::WebContents* web_contents = owner_->GetWebContents();
+  NSImage* favicon =
+      favicon::ContentFaviconDriver::FromWebContents(web_contents)
+          ->GetFavicon()
+          .AsNSImage();
+  NSImage* icon_image = favicon ? favicon : GetImage();
+
+  NSImage* image = drag_util::DragImageForBookmark(
+      icon_image, web_contents->GetTitle(), bookmarks::kDefaultBookmarkWidth);
+  NSSize image_size = [image size];
+  drag_frame_ = NSMakeRect(0, 0, image_size.width, image_size.height);
+  return image;
 }
 
-NSRect SecurityStateBubbleDecoration::GetDragImageFrame(NSRect frame) {
-  return GetImageRectInFrame(frame);
+NSRect PageInfoBubbleDecoration::GetDragImageFrame(NSRect frame) {
+  // If GetDragImage has never been called, drag_frame_ has not been calculated.
+  if (NSIsEmptyRect(drag_frame_))
+    GetDragImage();
+  return drag_frame_;
 }
 
-bool SecurityStateBubbleDecoration::OnMousePressed(NSRect frame,
-                                                   NSPoint location) {
-  return location_icon_->OnMousePressed(frame, location);
+bool PageInfoBubbleDecoration::OnMousePressed(NSRect frame, NSPoint location) {
+  // Do not show page info if the user has been editing the location
+  // bar, or the location bar is at the NTP.
+  if (owner_->GetOmniboxView()->IsEditingOrEmpty())
+    return true;
+
+  return ShowPageInfoDialog(owner_->GetWebContents());
 }
 
-bool SecurityStateBubbleDecoration::AcceptsMousePress() {
-  return true;
+bool PageInfoBubbleDecoration::AcceptsMousePress() {
+  return !owner_->GetOmniboxView()->IsEditingOrEmpty();
 }
 
-NSPoint SecurityStateBubbleDecoration::GetBubblePointInFrame(NSRect frame) {
+NSPoint PageInfoBubbleDecoration::GetBubblePointInFrame(NSRect frame) {
   NSRect image_rect = GetImageRectInFrame(frame);
   return NSMakePoint(NSMidX(image_rect),
                      NSMaxY(image_rect) - kPageInfoBubblePointYOffset);
 }
 
-NSString* SecurityStateBubbleDecoration::GetToolTip() {
+NSString* PageInfoBubbleDecoration::GetToolTip() {
   return l10n_util::GetNSStringWithFixup(IDS_TOOLTIP_LOCATION_ICON);
 }
 
-NSString* SecurityStateBubbleDecoration::GetAccessibilityLabel() {
+NSString* PageInfoBubbleDecoration::GetAccessibilityLabel() {
   NSString* tooltip_icon_text =
       l10n_util::GetNSStringWithFixup(IDS_TOOLTIP_LOCATION_ICON);
   if ([full_label_ length] == 0)
@@ -287,43 +324,42 @@ NSString* SecurityStateBubbleDecoration::GetAccessibilityLabel() {
       stringWithFormat:@"%@. %@", full_label_.get(), tooltip_icon_text];
 }
 
-NSRect SecurityStateBubbleDecoration::GetRealFocusRingBounds(
-    NSRect bounds) const {
+NSRect PageInfoBubbleDecoration::GetRealFocusRingBounds(NSRect bounds) const {
   bounds.size.width -= focus_ring_right_inset_;
   return bounds;
 }
 
 //////////////////////////////////////////////////////////////////
-// SecurityStateBubbleDecoration::BubbleDecoration:
+// PageInfoBubbleDecoration::BubbleDecoration:
 
-NSColor* SecurityStateBubbleDecoration::GetBackgroundBorderColor() {
+NSColor* PageInfoBubbleDecoration::GetBackgroundBorderColor() {
   return skia::SkColorToSRGBNSColor(
       SkColorSetA(label_color_, 255.0 * GetAnimationProgress()));
 }
 
-NSColor* SecurityStateBubbleDecoration::GetDarkModeTextColor() {
+NSColor* PageInfoBubbleDecoration::GetDarkModeTextColor() {
   return [NSColor whiteColor];
 }
 
 //////////////////////////////////////////////////////////////////
-// SecurityStateBubbleDecoration::AnimationDelegate:
+// PageInfoBubbleDecoration::AnimationDelegate:
 
-void SecurityStateBubbleDecoration::AnimationProgressed(
+void PageInfoBubbleDecoration::AnimationProgressed(
     const gfx::Animation* animation) {
   owner_->Layout();
 }
 
 //////////////////////////////////////////////////////////////////
-// SecurityStateBubbleDecoration, private:
+// PageInfoBubbleDecoration, private:
 
-CGFloat SecurityStateBubbleDecoration::GetAnimationProgress() const {
+CGFloat PageInfoBubbleDecoration::GetAnimationProgress() const {
   if (disable_animations_during_testing_)
     return 1.0;
 
   return animation_.GetCurrentValue();
 }
 
-CGFloat SecurityStateBubbleDecoration::GetWidthForText(CGFloat width) {
+CGFloat PageInfoBubbleDecoration::GetWidthForText(CGFloat width) {
   // Limit with to not take up too much of the available width, but
   // also don't let it shrink too much.
   width = std::max(width * kMaxBubbleFraction, kMinElidedBubbleWidth);

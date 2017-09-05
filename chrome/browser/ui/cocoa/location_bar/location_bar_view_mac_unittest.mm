@@ -11,12 +11,33 @@
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
-#import "chrome/browser/ui/cocoa/location_bar/security_state_bubble_decoration.h"
+#import "chrome/browser/ui/cocoa/location_bar/page_info_bubble_decoration.h"
 #include "chrome/browser/ui/cocoa/test/cocoa_profile_test.h"
 #include "components/toolbar/test_toolbar_model.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
+
+class LocationBarViewMacToolbarModel : public TestToolbarModel {
+  base::string16 GetSecureVerboseText() const override {
+    if (IsOfflinePage())
+      return base::ASCIIToUTF16("test");
+
+    switch (GetSecurityLevel(false)) {
+      case security_state::HTTP_SHOW_WARNING:
+      case security_state::EV_SECURE:
+      case security_state::SECURE:
+      case security_state::DANGEROUS:
+        return base::ASCIIToUTF16("test");
+      default:
+        return base::string16();
+    }
+  }
+
+  base::string16 GetEVCertName() const override {
+    return base::ASCIIToUTF16("test cert");
+  }
+};
 
 // Mocks the OmniboxView so that we can set if the omnibox is empty or not.
 class MockOmniboxView : public OmniboxViewMac {
@@ -67,48 +88,49 @@ class TestingLocationBarViewMac : public LocationBarViewMac {
 
  private:
   // The toolbar model used for testing.
-  TestToolbarModel toolbar_model_;
+  LocationBarViewMacToolbarModel toolbar_model_;
 
   DISALLOW_COPY_AND_ASSIGN(TestingLocationBarViewMac);
 };
 
-// Testing class for TestingSecurityStateBubbleDecoration.
-class TestingSecurityStateBubbleDecoration
-    : public SecurityStateBubbleDecoration {
+// Testing class for TestingPageInfoBubbleDecoration.
+class TestingPageInfoBubbleDecoration : public PageInfoBubbleDecoration {
  public:
-  TestingSecurityStateBubbleDecoration(LocationIconDecoration* location_icon,
-                                       LocationBarViewMac* owner)
-      : SecurityStateBubbleDecoration(location_icon, owner) {}
+  explicit TestingPageInfoBubbleDecoration(LocationBarViewMac* owner)
+      : PageInfoBubbleDecoration(owner) {}
 
   void AnimateIn(bool image_fade = true) override {
     has_animated_ = true;
     is_showing_ = true;
-    SecurityStateBubbleDecoration::AnimateIn(image_fade);
+    PageInfoBubbleDecoration::AnimateIn(image_fade);
   }
 
   void AnimateOut() override {
     has_animated_ = true;
     is_showing_ = false;
-    SecurityStateBubbleDecoration::AnimateOut();
+    PageInfoBubbleDecoration::AnimateOut();
   }
 
   void ShowWithoutAnimation() override {
-    is_showing_ = true;
     has_animated_ = false;
-    SecurityStateBubbleDecoration::ShowWithoutAnimation();
+    is_showing_ = true;
+    PageInfoBubbleDecoration::ShowWithoutAnimation();
   }
 
+  bool HasAnimatedOut() const override { return !is_showing_; }
+
+  bool AnimatingOut() const override { return false; }
+
   void ResetAnimation() override {
-    is_showing_ = false;
     has_animated_ = false;
-    SecurityStateBubbleDecoration::ResetAnimation();
+    PageInfoBubbleDecoration::ResetAnimation();
   }
 
   bool has_animated() const { return has_animated_; };
 
-  bool is_showing() const { return is_showing_; };
-
   void ResetAnimationFlag() { has_animated_ = false; }
+
+  void ResetIsShowing() { is_showing_ = false; }
 
  private:
   // True if the decoration has animated.
@@ -117,7 +139,7 @@ class TestingSecurityStateBubbleDecoration
   // True if the decoration is showing.
   bool is_showing_ = false;
 
-  DISALLOW_COPY_AND_ASSIGN(TestingSecurityStateBubbleDecoration);
+  DISALLOW_COPY_AND_ASSIGN(TestingPageInfoBubbleDecoration);
 };
 
 class LocationBarViewMacTest : public CocoaProfileTest {
@@ -135,10 +157,8 @@ class LocationBarViewMacTest : public CocoaProfileTest {
         field_.get(), browser()->command_controller()->command_updater(),
         browser()->profile(), browser()));
 
-    location_bar_->security_state_bubble_decoration_.reset(
-        new TestingSecurityStateBubbleDecoration(
-            location_bar_->location_icon_decoration_.get(),
-            location_bar_.get()));
+    location_bar_->page_info_decoration_.reset(
+        new TestingPageInfoBubbleDecoration(location_bar_.get()));
     decoration()->disable_animations_during_testing_ = true;
 
     omnibox_view_ = new MockOmniboxView(
@@ -153,12 +173,16 @@ class LocationBarViewMacTest : public CocoaProfileTest {
     CocoaProfileTest::TearDown();
   }
 
-  TestingSecurityStateBubbleDecoration* decoration() const {
-    TestingSecurityStateBubbleDecoration* decoration =
-        static_cast<TestingSecurityStateBubbleDecoration*>(
-            location_bar_->security_state_bubble_decoration_.get());
+  TestingPageInfoBubbleDecoration* decoration() const {
+    TestingPageInfoBubbleDecoration* decoration =
+        static_cast<TestingPageInfoBubbleDecoration*>(
+            location_bar_->page_info_decoration_.get());
 
     return decoration;
+  }
+
+  bool IsDecorationLabelEmpty() const {
+    return !decoration()->full_label_ || ![decoration()->full_label_ length];
   }
 
   TestingLocationBarViewMac* location_bar() const {
@@ -173,9 +197,9 @@ class LocationBarViewMacTest : public CocoaProfileTest {
 
   AutocompleteTextField* field() const { return field_.get(); }
 
-  void UpdateSecurityState(bool tab_changed) {
+  void AnimatePageInfoIfPossible(bool tab_changed) {
     location_bar_->Layout();
-    location_bar_->UpdateSecurityState(tab_changed);
+    location_bar_->AnimatePageInfoIfPossible(tab_changed);
   }
 
  protected:
@@ -196,159 +220,157 @@ class LocationBarViewMacTest : public CocoaProfileTest {
 
 // Tests the security decoration's visibility and animation without any tab or
 // width changes.
-TEST_F(LocationBarViewMacTest, ShowAndAnimateSecurityDecoration) {
+TEST_F(LocationBarViewMacTest, ShowAndAnimatePageInfoDecoration) {
   // Set the security level to DANGEROUS. The decoration should animate in.
   location_bar()->SetSecurityLevel(security_state::DANGEROUS);
-  UpdateSecurityState(false);
-  EXPECT_TRUE(decoration()->is_showing());
+  AnimatePageInfoIfPossible(false);
   EXPECT_TRUE(decoration()->has_animated());
+  EXPECT_FALSE(IsDecorationLabelEmpty());
 
   decoration()->ResetAnimationFlag();
 
   // Set the security level to NONE. The decoration should animate out.
   location_bar()->SetSecurityLevel(security_state::NONE);
-  UpdateSecurityState(false);
-  EXPECT_FALSE(decoration()->is_showing());
-  EXPECT_TRUE(decoration()->has_animated());
+  AnimatePageInfoIfPossible(false);
+  EXPECT_FALSE(decoration()->has_animated());
+  EXPECT_TRUE(IsDecorationLabelEmpty());
 
   decoration()->ResetAnimationFlag();
 
   // Set the security level to SECURE. The decoration should show, but not
   // animate.
   location_bar()->SetSecurityLevel(security_state::SECURE);
-  UpdateSecurityState(false);
-  EXPECT_TRUE(decoration()->is_showing());
+  AnimatePageInfoIfPossible(false);
   EXPECT_FALSE(decoration()->has_animated());
+  EXPECT_FALSE(IsDecorationLabelEmpty());
 
   decoration()->ResetAnimationFlag();
 
   // Set the security level to EV_SECURE. The decoration should still show,
   // but not animate.
   location_bar()->SetSecurityLevel(security_state::EV_SECURE);
-  UpdateSecurityState(false);
-  EXPECT_TRUE(decoration()->is_showing());
+  AnimatePageInfoIfPossible(false);
   EXPECT_FALSE(decoration()->has_animated());
+  EXPECT_FALSE(IsDecorationLabelEmpty());
 
   decoration()->ResetAnimationFlag();
 
   // Set the security level to NONE. The decoration should still hide without
   // animating out.
   location_bar()->SetSecurityLevel(security_state::NONE);
-  UpdateSecurityState(false);
-  EXPECT_FALSE(decoration()->is_showing());
+  AnimatePageInfoIfPossible(false);
   EXPECT_FALSE(decoration()->has_animated());
+  EXPECT_TRUE(IsDecorationLabelEmpty());
 }
 
 // Tests the security decoration's visibility and animation when the omnibox
 // is updated from a switched tab.
-TEST_F(LocationBarViewMacTest, SecurityDecorationWithTabChanges) {
+TEST_F(LocationBarViewMacTest, PageInfoDecorationWithTabChanges) {
   // Show nonsecure decoration.
   location_bar()->SetSecurityLevel(security_state::HTTP_SHOW_WARNING);
-  UpdateSecurityState(false);
-  EXPECT_TRUE(decoration()->is_showing());
+  AnimatePageInfoIfPossible(false);
   EXPECT_TRUE(decoration()->has_animated());
 
   decoration()->ResetAnimationFlag();
 
   // Switch to a tab with no decoration.
   location_bar()->SetSecurityLevel(security_state::NONE);
-  UpdateSecurityState(true);
-  EXPECT_FALSE(decoration()->is_showing());
+  AnimatePageInfoIfPossible(true);
   EXPECT_FALSE(decoration()->has_animated());
+  EXPECT_TRUE(IsDecorationLabelEmpty());
 
   decoration()->ResetAnimationFlag();
 
   // Switch back to the tab with the nonsecure decoration.
   location_bar()->SetSecurityLevel(security_state::HTTP_SHOW_WARNING);
-  UpdateSecurityState(true);
-  EXPECT_TRUE(decoration()->is_showing());
+  AnimatePageInfoIfPossible(true);
   EXPECT_FALSE(decoration()->has_animated());
 
   decoration()->ResetAnimationFlag();
 
   // Show the secure decoration.
   location_bar()->SetSecurityLevel(security_state::SECURE);
-  UpdateSecurityState(false);
-  EXPECT_TRUE(decoration()->is_showing());
+  AnimatePageInfoIfPossible(false);
   EXPECT_FALSE(decoration()->has_animated());
 
   decoration()->ResetAnimationFlag();
 
   // Switch to a tab with no decoration.
   location_bar()->SetSecurityLevel(security_state::NONE);
-  UpdateSecurityState(true);
-  EXPECT_FALSE(decoration()->is_showing());
+  AnimatePageInfoIfPossible(true);
   EXPECT_FALSE(decoration()->has_animated());
+  EXPECT_TRUE(IsDecorationLabelEmpty());
 }
 
 // Tests the security decoration's visibility and animation when the omnibox
 // is empty.
-TEST_F(LocationBarViewMacTest, SecurityDecorationWithEmptyOmnibox) {
+TEST_F(LocationBarViewMacTest, PageInfoDecorationWithEmptyOmnibox) {
   // Set the omnibox to empty and then set the security level to nonsecure.
   // The decoration should not appear.
   omnibox_view()->set_is_empty(true);
-  location_bar()->SetSecurityLevel(security_state::HTTP_SHOW_WARNING);
-  UpdateSecurityState(false);
-  EXPECT_FALSE(decoration()->is_showing());
+  location_bar()->SetSecurityLevel(security_state::DANGEROUS);
+  AnimatePageInfoIfPossible(false);
   EXPECT_FALSE(decoration()->has_animated());
+  EXPECT_TRUE(IsDecorationLabelEmpty());
 
   decoration()->ResetAnimationFlag();
 
   // Set the omnibox to nonempty. The decoration should now appear.
   omnibox_view()->set_is_empty(false);
-  UpdateSecurityState(false);
-  EXPECT_TRUE(decoration()->is_showing());
+  decoration()->ResetIsShowing();
+  AnimatePageInfoIfPossible(false);
   EXPECT_TRUE(decoration()->has_animated());
+  EXPECT_FALSE(IsDecorationLabelEmpty());
 }
 
 // Tests to see that the security decoration animates out when the omnibox's
 // width becomes narrow.
-TEST_F(LocationBarViewMacTest, SecurityDecorationWidthChanges) {
+TEST_F(LocationBarViewMacTest, PageInfoDecorationWidthChanges) {
   // Show the nonsecure decoration.
   location_bar()->SetSecurityLevel(security_state::HTTP_SHOW_WARNING);
-  UpdateSecurityState(false);
-  EXPECT_TRUE(decoration()->is_showing());
+  AnimatePageInfoIfPossible(false);
   EXPECT_TRUE(decoration()->has_animated());
+  EXPECT_FALSE(IsDecorationLabelEmpty());
 
   decoration()->ResetAnimationFlag();
 
   // Make the omnibox narrow.
   [field() setFrame:NSMakeRect(0, 0, 119, 30)];
-  UpdateSecurityState(false);
-  EXPECT_FALSE(decoration()->is_showing());
+  AnimatePageInfoIfPossible(false);
   EXPECT_TRUE(decoration()->has_animated());
+  EXPECT_TRUE(IsDecorationLabelEmpty());
 
   decoration()->ResetAnimationFlag();
 
   // Make the omnibox wide again.
   [field() setFrame:NSMakeRect(0, 0, 500, 30)];
-  UpdateSecurityState(false);
-  EXPECT_TRUE(decoration()->is_showing());
+  AnimatePageInfoIfPossible(false);
   EXPECT_TRUE(decoration()->has_animated());
+  EXPECT_FALSE(IsDecorationLabelEmpty());
 
   decoration()->ResetAnimationFlag();
 
   // Show secure decoration.
   location_bar()->SetSecurityLevel(security_state::SECURE);
-  UpdateSecurityState(false);
-  EXPECT_TRUE(decoration()->is_showing());
+  AnimatePageInfoIfPossible(false);
   EXPECT_FALSE(decoration()->has_animated());
+  EXPECT_FALSE(IsDecorationLabelEmpty());
 
   decoration()->ResetAnimationFlag();
 
   // Make the omnibox narrow.
   [field() setFrame:NSMakeRect(0, 0, 119, 30)];
-  UpdateSecurityState(false);
-  EXPECT_FALSE(decoration()->is_showing());
+  AnimatePageInfoIfPossible(false);
   EXPECT_TRUE(decoration()->has_animated());
+  EXPECT_TRUE(IsDecorationLabelEmpty());
 
   decoration()->ResetAnimationFlag();
 
   // Make the omnibox wide again.
-  [field() setFrame:NSMakeRect(0, 0, 500, 30)];
-  UpdateSecurityState(false);
-  EXPECT_TRUE(decoration()->is_showing());
+  [field() setFrame:NSMakeRect(0, 0, 600, 30)];
+  AnimatePageInfoIfPossible(false);
   EXPECT_TRUE(decoration()->has_animated());
+  EXPECT_FALSE(IsDecorationLabelEmpty());
 }
 
 }  // namespace
