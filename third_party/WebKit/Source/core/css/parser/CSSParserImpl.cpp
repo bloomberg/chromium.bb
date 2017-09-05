@@ -233,17 +233,13 @@ void CSSParserImpl::ParseStyleSheet(const String& string,
                      context->Mode());
 
   TRACE_EVENT_BEGIN0("blink,blink_style",
-                     "CSSParserImpl::parseStyleSheet.tokenize");
+                     "CSSParserImpl::parseStyleSheet.parse");
   CSSTokenizer tokenizer(string);
   CSSParserTokenStream stream(tokenizer);
   // TODO(shend): Use streams instead of ranges. Streams will ruin
   // tokenize/parse metrics as we will be tokenizing on demand.
   const CSSParserTokenRange range = stream.MakeRangeToEOF();
-  TRACE_EVENT_END0("blink,blink_style",
-                   "CSSParserImpl::parseStyleSheet.tokenize");
 
-  TRACE_EVENT_BEGIN0("blink,blink_style",
-                     "CSSParserImpl::parseStyleSheet.parse");
   CSSParserImpl parser(context, style_sheet);
   if (defer_property_parsing) {
     parser.lazy_state_ = new CSSLazyParsingState(
