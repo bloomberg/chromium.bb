@@ -43,6 +43,13 @@ void GLOzoneOSMesa::InitializeDebugGLBindings() {
   gl::InitializeDebugGLBindingsOSMESA();
 }
 
+void GLOzoneOSMesa::SetDisabledExtensionsPlatform(
+    const std::string& disabled_extensions) {}
+
+bool GLOzoneOSMesa::InitializeExtensionSettingsOneOffPlatform() {
+  return true;
+}
+
 void GLOzoneOSMesa::ShutdownGL() {
   gl::ClearBindingsGL();
   gl::ClearBindingsOSMESA();

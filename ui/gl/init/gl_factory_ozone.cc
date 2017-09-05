@@ -106,18 +106,12 @@ scoped_refptr<GLSurface> CreateOffscreenGLSurfaceWithFormat(
 }
 
 void SetDisabledExtensionsPlatform(const std::string& disabled_extensions) {
-  GLImplementation implementation = GetGLImplementation();
-  DCHECK_NE(kGLImplementationNone, implementation);
-  switch (implementation) {
-    case kGLImplementationEGLGLES2:
-      SetDisabledExtensionsEGL(disabled_extensions);
-      break;
-    case kGLImplementationDesktopGL:
-      // TODO(zmo): I don't think ozone goes down this path except for testing.
-      // This might change in the future though.
-      break;
-    case kGLImplementationSwiftShaderGL:
-    case kGLImplementationOSMesaGL:
+  if (HasGLOzone()) {
+    GetGLOzone()->SetDisabledExtensionsPlatform(disabled_extensions);
+    return;
+  }
+
+  switch (GetGLImplementation()) {
     case kGLImplementationMockGL:
     case kGLImplementationStubGL:
       break;
@@ -127,17 +121,10 @@ void SetDisabledExtensionsPlatform(const std::string& disabled_extensions) {
 }
 
 bool InitializeExtensionSettingsOneOffPlatform() {
-  GLImplementation implementation = GetGLImplementation();
-  DCHECK_NE(kGLImplementationNone, implementation);
-  switch (implementation) {
-    case kGLImplementationEGLGLES2:
-      return InitializeExtensionSettingsOneOffEGL();
-    case kGLImplementationDesktopGL:
-      // TODO(zmo): I don't think ozone goes down this path except for testing.
-      // This might change in the future though.
-      return true;
-    case kGLImplementationSwiftShaderGL:
-    case kGLImplementationOSMesaGL:
+  if (HasGLOzone())
+    return GetGLOzone()->InitializeExtensionSettingsOneOffPlatform();
+
+  switch (GetGLImplementation()) {
     case kGLImplementationMockGL:
     case kGLImplementationStubGL:
       return true;
