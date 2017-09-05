@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/synchronization/waitable_event.h"
 #include "content/child/child_process.h"
 #include "content/renderer/media/media_stream_video_source.h"
 #include "content/renderer/media/media_stream_video_track.h"
@@ -62,7 +63,54 @@ class WebRtcMediaStreamAdapterMapTest : public ::testing::Test {
     return web_stream;
   }
 
+  scoped_refptr<webrtc::MediaStreamInterface> CreateRemoteStream(
+      const std::string& id) {
+    scoped_refptr<webrtc::MediaStreamInterface> stream(
+        new rtc::RefCountedObject<MockMediaStream>(id));
+    stream->AddTrack(MockWebRtcAudioTrack::Create("remote_audio_track").get());
+    stream->AddTrack(MockWebRtcVideoTrack::Create("remote_video_track").get());
+    return stream;
+  }
+
+  std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef>
+  GetOrCreateRemoteStreamAdapter(webrtc::MediaStreamInterface* webrtc_stream) {
+    std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef> adapter_ref;
+    dependency_factory_->GetWebRtcSignalingThread()->PostTask(
+        FROM_HERE,
+        base::Bind(&WebRtcMediaStreamAdapterMapTest::
+                       GetOrCreateRemoteStreamAdapterOnSignalingThread,
+                   base::Unretained(this), base::Unretained(webrtc_stream),
+                   base::Unretained(&adapter_ref)));
+    RunMessageLoopsUntilIdle();
+    DCHECK(adapter_ref);
+    return adapter_ref;
+  }
+
  protected:
+  void GetOrCreateRemoteStreamAdapterOnSignalingThread(
+      webrtc::MediaStreamInterface* webrtc_stream,
+      std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef>* adapter_ref) {
+    *adapter_ref = map_->GetOrCreateRemoteStreamAdapter(webrtc_stream);
+    EXPECT_TRUE(*adapter_ref);
+  }
+
+  // Runs message loops on the webrtc signaling thread and the main thread until
+  // idle.
+  void RunMessageLoopsUntilIdle() {
+    base::WaitableEvent waitable_event(
+        base::WaitableEvent::ResetPolicy::MANUAL,
+        base::WaitableEvent::InitialState::NOT_SIGNALED);
+    dependency_factory_->GetWebRtcSignalingThread()->PostTask(
+        FROM_HERE, base::Bind(&WebRtcMediaStreamAdapterMapTest::SignalEvent,
+                              base::Unretained(this), &waitable_event));
+    waitable_event.Wait();
+    base::RunLoop().RunUntilIdle();
+  }
+
+  void SignalEvent(base::WaitableEvent* waitable_event) {
+    waitable_event->Signal();
+  }
+
   // Message loop and child processes is needed for task queues and threading to
   // work, as is necessary to create tracks and adapters.
   base::MessageLoop message_loop_;
@@ -95,6 +143,30 @@ TEST_F(WebRtcMediaStreamAdapterMapTest, AddAndRemoveLocalStreamAdapter) {
 
 TEST_F(WebRtcMediaStreamAdapterMapTest, GetLocalStreamAdapterInvalidID) {
   EXPECT_FALSE(map_->GetLocalStreamAdapter("invalid"));
+}
+
+TEST_F(WebRtcMediaStreamAdapterMapTest, AddAndRemoveRemoteStreamAdapter) {
+  scoped_refptr<webrtc::MediaStreamInterface> webrtc_stream =
+      CreateRemoteStream("remote_stream");
+  std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef> adapter_ref =
+      GetOrCreateRemoteStreamAdapter(webrtc_stream.get());
+  EXPECT_EQ(webrtc_stream, adapter_ref->adapter().webrtc_stream());
+  EXPECT_EQ(1u, map_->GetRemoteStreamCount());
+
+  std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef> adapter_ref2 =
+      map_->GetRemoteStreamAdapter("remote_stream");
+  EXPECT_TRUE(adapter_ref2);
+  EXPECT_EQ(&adapter_ref2->adapter(), &adapter_ref->adapter());
+  EXPECT_EQ(1u, map_->GetRemoteStreamCount());
+
+  adapter_ref.reset();
+  EXPECT_EQ(1u, map_->GetRemoteStreamCount());
+  adapter_ref2.reset();
+  EXPECT_EQ(0u, map_->GetRemoteStreamCount());
+}
+
+TEST_F(WebRtcMediaStreamAdapterMapTest, GetRemoteStreamAdapterInvalidID) {
+  EXPECT_FALSE(map_->GetRemoteStreamAdapter("invalid"));
 }
 
 }  // namespace content
