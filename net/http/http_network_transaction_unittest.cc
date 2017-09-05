@@ -805,7 +805,7 @@ bool CheckNTLMServerAuth(const AuthChallengeInfo* auth_challenge) {
   if (!auth_challenge)
     return false;
   EXPECT_FALSE(auth_challenge->is_proxy);
-  EXPECT_EQ("http://172.22.68.17", auth_challenge->challenger.Serialize());
+  EXPECT_EQ("https://172.22.68.17", auth_challenge->challenger.Serialize());
   EXPECT_EQ(std::string(), auth_challenge->realm);
   EXPECT_EQ(kNtlmAuthScheme, auth_challenge->scheme);
   return true;
@@ -5950,7 +5950,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthProxyThenServer) {
 TEST_F(HttpNetworkTransactionTest, NTLMAuth1) {
   HttpRequestInfo request;
   request.method = "GET";
-  request.url = GURL("http://172.22.68.17/kids/login.aspx");
+  request.url = GURL("https://172.22.68.17/kids/login.aspx");
 
   // Ensure load is not disrupted by flags which suppress behaviour specific
   // to other auth schemes.
@@ -6032,6 +6032,11 @@ TEST_F(HttpNetworkTransactionTest, NTLMAuth1) {
   session_deps_.socket_factory->AddSocketDataProvider(&data1);
   session_deps_.socket_factory->AddSocketDataProvider(&data2);
 
+  SSLSocketDataProvider ssl1(ASYNC, OK);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl1);
+  SSLSocketDataProvider ssl2(ASYNC, OK);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl2);
+
   TestCompletionCallback callback1;
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
@@ -6081,7 +6086,7 @@ TEST_F(HttpNetworkTransactionTest, NTLMAuth1) {
 TEST_F(HttpNetworkTransactionTest, NTLMAuth2) {
   HttpRequestInfo request;
   request.method = "GET";
-  request.url = GURL("http://172.22.68.17/kids/login.aspx");
+  request.url = GURL("https://172.22.68.17/kids/login.aspx");
 
   HttpAuthHandlerNTLM::ScopedProcSetter proc_setter(MockGenerateRandom2,
                                                     MockGetHostName);
@@ -6210,6 +6215,13 @@ TEST_F(HttpNetworkTransactionTest, NTLMAuth2) {
   session_deps_.socket_factory->AddSocketDataProvider(&data2);
   session_deps_.socket_factory->AddSocketDataProvider(&data3);
 
+  SSLSocketDataProvider ssl1(ASYNC, OK);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl1);
+  SSLSocketDataProvider ssl2(ASYNC, OK);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl2);
+  SSLSocketDataProvider ssl3(ASYNC, OK);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl3);
+
   TestCompletionCallback callback1;
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
@@ -6270,6 +6282,150 @@ TEST_F(HttpNetworkTransactionTest, NTLMAuth2) {
   EXPECT_THAT(rv, IsOk());
 
   response = trans.GetResponseInfo();
+  EXPECT_FALSE(response->auth_challenge);
+  EXPECT_EQ(13, response->headers->GetContentLength());
+}
+
+// NTLM is not supported over HTTP/2, therefore the server requests a downgrade,
+// and the request is retried on an HTTP/1.1 connection.
+TEST_F(HttpNetworkTransactionTest, NTLMOverHttp2) {
+  HttpAuthHandlerNTLM::ScopedProcSetter proc_setter(MockGenerateRandom1,
+                                                    MockGetHostName);
+
+  const char* kUrl = "https://172.22.68.17/kids/login.aspx";
+
+  HttpRequestInfo request;
+  request.method = "GET";
+  request.url = GURL(kUrl);
+
+  // First request without credentials.
+  SpdyHeaderBlock request_headers0(spdy_util_.ConstructGetHeaderBlock(kUrl));
+  SpdySerializedFrame request0(spdy_util_.ConstructSpdyHeaders(
+      1, std::move(request_headers0), LOWEST, true));
+
+  SpdyHeaderBlock response_headers0;
+  response_headers0[spdy_util_.GetStatusKey()] = "401";
+  response_headers0["www-authenticate"] = "NTLM";
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyResponseHeaders(
+      1, std::move(response_headers0), true));
+
+  // Stream 1 is closed.
+  spdy_util_.UpdateWithStreamDestruction(1);
+
+  // Retry with authorization header.
+  SpdyHeaderBlock request_headers1(spdy_util_.ConstructGetHeaderBlock(kUrl));
+  request_headers1["authorization"] =
+      "NTLM TlRMTVNTUAABAAAAB4IIAAAAAAAAAAAAAAAAAAAAAAA=";
+  SpdySerializedFrame request1(spdy_util_.ConstructSpdyHeaders(
+      3, std::move(request_headers1), LOWEST, true));
+
+  SpdySerializedFrame go_away(spdy_util_.ConstructSpdyGoAway(
+      0, ERROR_CODE_HTTP_1_1_REQUIRED, "NTLM not supported over HTTP/2."));
+
+  MockWrite writes0[] = {
+      CreateMockWrite(request0, 0), CreateMockWrite(request1, 2),
+  };
+  MockRead reads0[] = {CreateMockRead(resp, 1), CreateMockRead(go_away, 3)};
+
+  // Retry yet again using HTTP/1.1.
+  MockWrite writes1[] = {
+      // After restarting with a null identity, this is the
+      // request we should be issuing -- the final header line contains a Type
+      // 1 message.
+      MockWrite("GET /kids/login.aspx HTTP/1.1\r\n"
+                "Host: 172.22.68.17\r\n"
+                "Connection: keep-alive\r\n"
+                "Authorization: NTLM "
+                "TlRMTVNTUAABAAAAB4IIAAAAAAAAAAAAAAAAAAAAAAA=\r\n\r\n"),
+
+      // After calling trans.RestartWithAuth(), we should send a Type 3 message
+      // (the credentials for the origin server).  The second request continues
+      // on the same connection.
+      MockWrite("GET /kids/login.aspx HTTP/1.1\r\n"
+                "Host: 172.22.68.17\r\n"
+                "Connection: keep-alive\r\n"
+                "Authorization: NTLM TlRMTVNTUAADAAAAGAAYAGgAAAAYABgAgA"
+                "AAAAAAAABAAAAAGAAYAEAAAAAQABAAWAAAAAAAAAAAAAAABYIIAHQA"
+                "ZQBzAHQAaQBuAGcALQBuAHQAbABtAFcAVABDAC0AVwBJAE4ANwBVKW"
+                "Yma5xzVAAAAAAAAAAAAAAAAAAAAACH+gWcm+YsP9Tqb9zCR3WAeZZX"
+                "ahlhx5I=\r\n\r\n"),
+  };
+
+  MockRead reads1[] = {
+      // The origin server responds with a Type 2 message.
+      MockRead("HTTP/1.1 401 Access Denied\r\n"),
+      MockRead("WWW-Authenticate: NTLM "
+               "TlRMTVNTUAACAAAADAAMADgAAAAFgokCjGpMpPGlYKkAAAAAAAAAALo"
+               "AugBEAAAABQEoCgAAAA9HAE8ATwBHAEwARQACAAwARwBPAE8ARwBMAE"
+               "UAAQAaAEEASwBFAEUAUwBBAFIAQQAtAEMATwBSAFAABAAeAGMAbwByA"
+               "HAALgBnAG8AbwBnAGwAZQAuAGMAbwBtAAMAQABhAGsAZQBlAHMAYQBy"
+               "AGEALQBjAG8AcgBwAC4AYQBkAC4AYwBvAHIAcAAuAGcAbwBvAGcAbAB"
+               "lAC4AYwBvAG0ABQAeAGMAbwByAHAALgBnAG8AbwBnAGwAZQAuAGMAbw"
+               "BtAAAAAAA=\r\n"),
+      MockRead("Content-Length: 42\r\n"),
+      MockRead("Content-Type: text/html\r\n\r\n"),
+      MockRead("You are not authorized to view this page\r\n"),
+
+      // Lastly we get the desired content.
+      MockRead("HTTP/1.1 200 OK\r\n"),
+      MockRead("Content-Type: text/html; charset=utf-8\r\n"),
+      MockRead("Content-Length: 13\r\n\r\n"), MockRead("Please Login\r\n"),
+      MockRead(SYNCHRONOUS, OK),
+  };
+  SequencedSocketData data0(reads0, arraysize(reads0), writes0,
+                            arraysize(writes0));
+  StaticSocketDataProvider data1(reads1, arraysize(reads1), writes1,
+                                 arraysize(writes1));
+  session_deps_.socket_factory->AddSocketDataProvider(&data0);
+  session_deps_.socket_factory->AddSocketDataProvider(&data1);
+
+  SSLSocketDataProvider ssl0(ASYNC, OK);
+  ssl0.next_proto = kProtoHTTP2;
+  SSLSocketDataProvider ssl1(ASYNC, OK);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl0);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl1);
+
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
+
+  TestCompletionCallback callback1;
+  int rv = trans.Start(&request, callback1.callback(), NetLogWithSource());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+
+  rv = callback1.WaitForResult();
+  EXPECT_THAT(rv, IsOk());
+
+  EXPECT_FALSE(trans.IsReadyToRestartForAuth());
+
+  const HttpResponseInfo* response = trans.GetResponseInfo();
+  ASSERT_TRUE(response);
+  EXPECT_TRUE(CheckNTLMServerAuth(response->auth_challenge.get()));
+
+  TestCompletionCallback callback2;
+
+  rv = trans.RestartWithAuth(AuthCredentials(kTestingNTLM, kTestingNTLM),
+                             callback2.callback());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+
+  rv = callback2.WaitForResult();
+  EXPECT_THAT(rv, IsOk());
+
+  EXPECT_TRUE(trans.IsReadyToRestartForAuth());
+
+  response = trans.GetResponseInfo();
+  ASSERT_TRUE(response);
+  EXPECT_FALSE(response->auth_challenge);
+
+  TestCompletionCallback callback3;
+
+  rv = trans.RestartWithAuth(AuthCredentials(), callback3.callback());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+
+  rv = callback3.WaitForResult();
+  EXPECT_THAT(rv, IsOk());
+
+  response = trans.GetResponseInfo();
+  ASSERT_TRUE(response);
   EXPECT_FALSE(response->auth_challenge);
   EXPECT_EQ(13, response->headers->GetContentLength());
 }
