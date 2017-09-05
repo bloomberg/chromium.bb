@@ -377,7 +377,10 @@ void ProfilingProcessHost::OnProcessDumpComplete(base::FilePath file_path,
   if (!success) {
     DLOG(ERROR) << "Cannot dump process.";
     // On any errors, the requested trace output file is deleted.
-    base::DeleteFile(file_path, false);
+    base::PostTaskWithTraits(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+        base::BindOnce(base::IgnoreResult(&base::DeleteFile), file_path,
+                       false));
     return;
   }
 
@@ -385,7 +388,10 @@ void ProfilingProcessHost::OnProcessDumpComplete(base::FilePath file_path,
     UploadTraceToCrashServer(file_path);
 
     // Uploaded file is a temporary file and must be deleted.
-    base::DeleteFile(file_path, false);
+    base::PostTaskWithTraits(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+        base::BindOnce(base::IgnoreResult(&base::DeleteFile), file_path,
+                       false));
   }
 }
 
