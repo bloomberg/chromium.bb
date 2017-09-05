@@ -105,7 +105,7 @@ std::unique_ptr<SourceLocation> SourceLocation::FromMessage(
 
   String url = ToCoreStringWithUndefinedOrNullCheck(
       message->GetScriptOrigin().ResourceName());
-  if (url.IsNull())
+  if (url.IsEmpty())
     url = execution_context->Url();
   return SourceLocation::Create(url, line_number, column_number,
                                 std::move(stack_trace), script_id);
