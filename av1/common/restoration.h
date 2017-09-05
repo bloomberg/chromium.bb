@@ -194,6 +194,8 @@ static INLINE int av1_get_rest_ntiles(int width, int height, int tilesize,
   int tile_width_, tile_height_;
   tile_width_ = (tilesize < 0) ? width : AOMMIN(tilesize, width);
   tile_height_ = (tilesize < 0) ? height : AOMMIN(tilesize, height);
+  assert(tile_width_ > 0 && tile_height_ > 0);
+
   nhtiles_ = (width + (tile_width_ >> 1)) / tile_width_;
   nvtiles_ = (height + (tile_height_ >> 1)) / tile_height_;
   if (tile_width) *tile_width = tile_width_;

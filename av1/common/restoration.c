@@ -1463,8 +1463,11 @@ int av1_loop_restoration_corners_in_sb(const struct AV1Common *cm, int plane,
   const int denom = 1;
 #endif  // CONFIG_FRAME_SUPERRES
 
-  const int ss_frame_w = frame_w >> (plane > 0 && cm->subsampling_x != 0);
-  const int ss_frame_h = frame_h >> (plane > 0 && cm->subsampling_y != 0);
+  const int ss_x = plane > 0 && cm->subsampling_x != 0;
+  const int ss_y = plane > 0 && cm->subsampling_y != 0;
+
+  const int ss_frame_w = (frame_w + ss_x) >> ss_x;
+  const int ss_frame_h = (frame_h + ss_y) >> ss_y;
 
   int rtile_w, rtile_h, nvtiles;
   av1_get_rest_ntiles(ss_frame_w, ss_frame_h,
