@@ -10,6 +10,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "components/url_formatter/url_formatter.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/feature_switch.h"
@@ -27,8 +28,6 @@ using extensions::api::manifest_types::ChromeSettingsOverrides;
 
 namespace extensions {
 namespace {
-
-const char kWwwPrefix[] = "www.";
 
 std::unique_ptr<GURL> CreateManifestURL(const std::string& url) {
   std::unique_ptr<GURL> manifest_url(new GURL(url));
@@ -105,11 +104,9 @@ std::string FormatUrlForDisplay(const GURL& url) {
   base::StringPiece host = url.host_piece();
   // A www. prefix is not informative and thus not worth the limited real estate
   // in the permissions UI.
-  base::StringPiece formatted_host =
-      base::StartsWith(host, kWwwPrefix, base::CompareCase::INSENSITIVE_ASCII)
-          ? host.substr(strlen(kWwwPrefix))
-          : host;
-  return formatted_host.as_string();
+  // TODO(catmullings): Ideally, we wouldn't be using custom code to format URLs
+  // here, since we have a number of methods that do that more universally.
+  return base::UTF16ToUTF8(url_formatter::StripWWW(base::UTF8ToUTF16(host)));
 }
 
 }  // namespace
