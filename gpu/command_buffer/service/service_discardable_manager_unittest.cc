@@ -200,8 +200,11 @@ TEST_F(ServiceDiscardableManagerTest, UnlockInvalid) {
 
 TEST_F(ServiceDiscardableManagerTest, Limits) {
   // Size textures so that four fit in the discardable manager.
-  const size_t texture_size = ServiceDiscardableManager::kMaxSize / 4;
+  const size_t cache_size_limit = 4 * 1024 * 1024;
+  const size_t texture_size = cache_size_limit / 4;
   const size_t large_texture_size = 3 * texture_size;
+
+  discardable_manager_.SetCacheSizeLimitForTesting(cache_size_limit);
 
   // Create 4 textures, this should fill up the discardable cache.
   for (int i = 1; i < 5; ++i) {
