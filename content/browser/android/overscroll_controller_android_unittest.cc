@@ -9,10 +9,13 @@
 #include "cc/layers/layer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/WebGestureEvent.h"
+#include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "ui/android/overscroll_glow.h"
 #include "ui/android/overscroll_refresh.h"
 #include "ui/android/resources/resource_manager_impl.h"
 #include "ui/android/window_android_compositor.h"
+#include "ui/events/base_event_utils.h"
 #include "ui/events/blink/did_overscroll_params.h"
 
 using ui::EdgeEffectBase;
@@ -176,6 +179,30 @@ TEST_F(OverscrollControllerAndroidUnitTest,
   controller_->OnOverscrolled(params);
   testing::Mock::VerifyAndClearExpectations(refresh_);
   testing::Mock::VerifyAndClearExpectations(glow_);
+}
+
+TEST_F(OverscrollControllerAndroidUnitTest,
+       ConsumedUpdateDoesNotResetEnabledRefresh) {
+  ui::DidOverscrollParams params = CreateVerticalOverscrollParams();
+  params.scroll_boundary_behavior.y = cc::ScrollBoundaryBehavior::
+      ScrollBoundaryBehaviorType::kScrollBoundaryBehaviorTypeAuto;
+
+  EXPECT_CALL(*refresh_, OnOverscrolled());
+  EXPECT_CALL(*refresh_, IsActive()).WillOnce(Return(true));
+  EXPECT_CALL(*refresh_, IsAwaitingScrollUpdateAck()).WillOnce(Return(false));
+  EXPECT_CALL(*refresh_, Reset()).Times(0);
+
+  // Enable the refresh effect.
+  controller_->OnOverscrolled(params);
+
+  // Generate a consumed scroll update.
+  blink::WebGestureEvent event(
+      blink::WebInputEvent::kGestureScrollUpdate,
+      blink::WebInputEvent::kNoModifiers,
+      ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
+  controller_->OnGestureEventAck(event, INPUT_EVENT_ACK_STATE_CONSUMED);
+
+  testing::Mock::VerifyAndClearExpectations(&refresh_);
 }
 
 }  // namespace

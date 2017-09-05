@@ -214,8 +214,9 @@ void OverscrollControllerAndroid::OnGestureEventAck(
       refresh_effect_) {
     // The effect should only be allowed if both the causal touch events go
     // unconsumed and the generated scroll events go unconsumed.
-    if (ack_result == INPUT_EVENT_ACK_STATE_CONSUMED ||
-        event.data.scroll_update.previous_update_in_sequence_prevented) {
+    if (refresh_effect_->IsAwaitingScrollUpdateAck() &&
+        (ack_result == INPUT_EVENT_ACK_STATE_CONSUMED ||
+         event.data.scroll_update.previous_update_in_sequence_prevented)) {
       refresh_effect_->Reset();
     }
   }
