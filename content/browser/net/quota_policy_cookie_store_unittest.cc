@@ -63,8 +63,8 @@ class QuotaPolicyCookieStoreTest : public testing::Test {
 
   void DestroyStoreOnBackgroundThread() {
     background_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&QuotaPolicyCookieStoreTest::ReleaseStore,
-                              base::Unretained(this)));
+        FROM_HERE, base::BindOnce(&QuotaPolicyCookieStoreTest::ReleaseStore,
+                                  base::Unretained(this)));
     destroy_event_.Wait();
     DestroyStore();
   }

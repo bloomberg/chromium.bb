@@ -535,8 +535,8 @@ class AppCacheURLRequestJobTest : public testing::Test {
   void DeliverNetworkResponse() {
     // This test has async steps.
     PushNextTask(
-        base::Bind(&AppCacheURLRequestJobTest::VerifyDeliverNetworkResponse,
-                   base::Unretained(this)));
+        base::BindOnce(&AppCacheURLRequestJobTest::VerifyDeliverNetworkResponse,
+                       base::Unretained(this)));
 
     AppCacheStorage* storage = service_->storage();
     request_ = empty_context_->CreateRequest(
@@ -573,8 +573,8 @@ class AppCacheURLRequestJobTest : public testing::Test {
   void DeliverErrorResponse() {
     // This test has async steps.
     PushNextTask(
-        base::Bind(&AppCacheURLRequestJobTest::VerifyDeliverErrorResponse,
-                   base::Unretained(this)));
+        base::BindOnce(&AppCacheURLRequestJobTest::VerifyDeliverErrorResponse,
+                       base::Unretained(this)));
 
     AppCacheStorage* storage = service_->storage();
     request_ = empty_context_->CreateRequest(
@@ -618,8 +618,8 @@ class AppCacheURLRequestJobTest : public testing::Test {
         &AppCacheURLRequestJobTest::VerifyDeliverSmallAppCachedResponse,
         base::Unretained(this)));
     PushNextTask(
-        base::Bind(&AppCacheURLRequestJobTest::RequestAppCachedResource,
-                   base::Unretained(this), false));
+        base::BindOnce(&AppCacheURLRequestJobTest::RequestAppCachedResource,
+                       base::Unretained(this), false));
 
     writer_.reset(service_->storage()->CreateResponseWriter(GURL()));
     written_response_id_ = writer_->response_id();

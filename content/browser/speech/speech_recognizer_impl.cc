@@ -231,20 +231,21 @@ void SpeechRecognizerImpl::StartRecognition(const std::string& device_id) {
   device_id_ = device_id;
 
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(&SpeechRecognizerImpl::DispatchEvent, this,
-                                     FSMEventArgs(EVENT_PREPARE)));
+                          base::BindOnce(&SpeechRecognizerImpl::DispatchEvent,
+                                         this, FSMEventArgs(EVENT_PREPARE)));
 }
 
 void SpeechRecognizerImpl::AbortRecognition() {
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(&SpeechRecognizerImpl::DispatchEvent,
-                                     this, FSMEventArgs(EVENT_ABORT)));
+                          base::BindOnce(&SpeechRecognizerImpl::DispatchEvent,
+                                         this, FSMEventArgs(EVENT_ABORT)));
 }
 
 void SpeechRecognizerImpl::StopAudioCapture() {
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(&SpeechRecognizerImpl::DispatchEvent,
-                                     this, FSMEventArgs(EVENT_STOP_CAPTURE)));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&SpeechRecognizerImpl::DispatchEvent, this,
+                     FSMEventArgs(EVENT_STOP_CAPTURE)));
 }
 
 bool SpeechRecognizerImpl::IsActive() const {
@@ -272,8 +273,8 @@ SpeechRecognizerImpl::~SpeechRecognizerImpl() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   endpointer_.EndSession();
   if (audio_controller_.get()) {
-    audio_controller_->Close(
-        base::Bind(&KeepAudioControllerRefcountedForDtor, audio_controller_));
+    audio_controller_->Close(base::BindOnce(
+        &KeepAudioControllerRefcountedForDtor, audio_controller_));
     audio_log_->OnClosed(0);
   }
 }
@@ -282,9 +283,9 @@ SpeechRecognizerImpl::~SpeechRecognizerImpl() {
 void SpeechRecognizerImpl::OnError(AudioInputController* controller,
     media::AudioInputController::ErrorCode error_code) {
   FSMEventArgs event_args(EVENT_AUDIO_ERROR);
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(&SpeechRecognizerImpl::DispatchEvent,
-                                     this, event_args));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&SpeechRecognizerImpl::DispatchEvent, this, event_args));
 }
 
 void SpeechRecognizerImpl::Write(const AudioBus* data,
@@ -294,16 +295,16 @@ void SpeechRecognizerImpl::Write(const AudioBus* data,
   // Convert audio from native format to fixed format used by WebSpeech.
   FSMEventArgs event_args(EVENT_AUDIO_DATA);
   event_args.audio_data = audio_converter_->Convert(data);
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(&SpeechRecognizerImpl::DispatchEvent,
-                                     this, event_args));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&SpeechRecognizerImpl::DispatchEvent, this, event_args));
   // See http://crbug.com/506051 regarding why one extra convert call can
   // sometimes be required. It should be a rare case.
   if (!audio_converter_->data_was_converted()) {
     event_args.audio_data = audio_converter_->Convert(data);
-    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                            base::Bind(&SpeechRecognizerImpl::DispatchEvent,
-                                       this, event_args));
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::BindOnce(&SpeechRecognizerImpl::DispatchEvent, this, event_args));
   }
   // Something is seriously wrong here and we are most likely missing some
   // audio segments.
@@ -318,9 +319,9 @@ void SpeechRecognizerImpl::OnSpeechRecognitionEngineResults(
     const SpeechRecognitionResults& results) {
   FSMEventArgs event_args(EVENT_ENGINE_RESULT);
   event_args.engine_results = results;
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(&SpeechRecognizerImpl::DispatchEvent,
-                                     this, event_args));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&SpeechRecognizerImpl::DispatchEvent, this, event_args));
 }
 
 void SpeechRecognizerImpl::OnSpeechRecognitionEngineEndOfUtterance() {
@@ -332,9 +333,9 @@ void SpeechRecognizerImpl::OnSpeechRecognitionEngineError(
     const SpeechRecognitionError& error) {
   FSMEventArgs event_args(EVENT_ENGINE_ERROR);
   event_args.engine_error = error;
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(&SpeechRecognizerImpl::DispatchEvent,
-                                     this, event_args));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&SpeechRecognizerImpl::DispatchEvent, this, event_args));
 }
 
 // -----------------------  Core FSM implementation ---------------------------
@@ -851,9 +852,9 @@ void SpeechRecognizerImpl::CloseAudioControllerAsynchronously() {
   // purpose of such callback is to keep the audio controller refcounted until
   // Close has completed (in the audio thread) and automatically destroy it
   // afterwards (upon return from OnAudioClosed).
-  audio_controller_->Close(base::Bind(&SpeechRecognizerImpl::OnAudioClosed,
-                                      this,
-                                      base::RetainedRef(audio_controller_)));
+  audio_controller_->Close(
+      base::BindOnce(&SpeechRecognizerImpl::OnAudioClosed, this,
+                     base::RetainedRef(audio_controller_)));
   audio_controller_ = NULL;  // The controller is still refcounted by Bind.
   audio_log_->OnClosed(0);
 }

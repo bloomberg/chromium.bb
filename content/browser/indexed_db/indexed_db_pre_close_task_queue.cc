@@ -55,8 +55,8 @@ void IndexedDBPreCloseTaskQueue::Start(
   }
   tasks_.front()->SetMetadata(&metadata_);
   task_runner_->PostTask(FROM_HERE,
-                         base::Bind(&IndexedDBPreCloseTaskQueue::RunLoop,
-                                    ptr_factory_.GetWeakPtr()));
+                         base::BindOnce(&IndexedDBPreCloseTaskQueue::RunLoop,
+                                        ptr_factory_.GetWeakPtr()));
 }
 
 void IndexedDBPreCloseTaskQueue::OnComplete() {
@@ -114,8 +114,8 @@ void IndexedDBPreCloseTaskQueue::RunLoop() {
     tasks_.front()->SetMetadata(&metadata_);
   }
   task_runner_->PostTask(FROM_HERE,
-                         base::Bind(&IndexedDBPreCloseTaskQueue::RunLoop,
-                                    ptr_factory_.GetWeakPtr()));
+                         base::BindOnce(&IndexedDBPreCloseTaskQueue::RunLoop,
+                                        ptr_factory_.GetWeakPtr()));
 }
 
 }  // namespace content

@@ -264,10 +264,11 @@ void NotificationMessageFilter::DidFindServiceWorkerRegistration(
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&PlatformNotificationService::DisplayPersistentNotification,
-                 base::Unretained(service),  // The service is a singleton.
-                 browser_context_, notification_id, registration->pattern(),
-                 origin, notification_data, notification_resources));
+      base::BindOnce(
+          &PlatformNotificationService::DisplayPersistentNotification,
+          base::Unretained(service),  // The service is a singleton.
+          browser_context_, notification_id, registration->pattern(), origin,
+          notification_data, notification_resources));
 
   Send(new PlatformNotificationMsg_DidShowPersistent(request_id, true));
 }
@@ -352,9 +353,9 @@ void NotificationMessageFilter::OnClosePersistentNotification(
   // closing the notification presented to the user. Post that task immediately.
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&PlatformNotificationService::ClosePersistentNotification,
-                 base::Unretained(service),  // The service is a singleton.
-                 browser_context_, notification_id));
+      base::BindOnce(&PlatformNotificationService::ClosePersistentNotification,
+                     base::Unretained(service),  // The service is a singleton.
+                     browser_context_, notification_id));
 
   notification_context_->DeleteNotificationData(
       notification_id, origin,

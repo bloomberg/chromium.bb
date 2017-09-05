@@ -125,8 +125,8 @@ void PluginPrivateDataByOriginChecker::CheckFilesOnIOThread() {
   filesystem_context_->OpenPluginPrivateFileSystem(
       origin_, storage::kFileSystemTypePluginPrivate, fsid_, plugin_name_,
       storage::OPEN_FILE_SYSTEM_FAIL_IF_NONEXISTENT,
-      base::Bind(&PluginPrivateDataByOriginChecker::OnFileSystemOpened,
-                 base::Unretained(this)));
+      base::BindOnce(&PluginPrivateDataByOriginChecker::OnFileSystemOpened,
+                     base::Unretained(this)));
 }
 
 void PluginPrivateDataByOriginChecker::OnFileSystemOpened(
@@ -242,7 +242,7 @@ void PluginPrivateDataByOriginChecker::DecrementTaskCount() {
   // If there are no more tasks in progress, then run |callback_| on the
   // proper thread.
   filesystem_context_->default_file_task_runner()->PostTask(
-      FROM_HERE, base::Bind(callback_, delete_this_origin_data_, origin_));
+      FROM_HERE, base::BindOnce(callback_, delete_this_origin_data_, origin_));
   delete this;
 }
 
@@ -323,8 +323,9 @@ void PluginPrivateDataDeletionHelper::CheckOriginsOnFileTaskRunner(
               decrement_callback);
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
-          base::Bind(&PluginPrivateDataByOriginChecker::CheckFilesOnIOThread,
-                     base::Unretained(helper)));
+          base::BindOnce(
+              &PluginPrivateDataByOriginChecker::CheckFilesOnIOThread,
+              base::Unretained(helper)));
 
       // |helper| will delete itself when it is done.
     }

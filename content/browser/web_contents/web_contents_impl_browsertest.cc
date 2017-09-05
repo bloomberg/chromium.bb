@@ -1498,9 +1498,9 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, UserAgentOverride) {
       ResourceDispatcherHostImpl::Get()->delegate();
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&ResourceDispatcherHost::SetDelegate,
-                 base::Unretained(ResourceDispatcherHostImpl::Get()),
-                 &new_delegate));
+      base::BindOnce(&ResourceDispatcherHost::SetDelegate,
+                     base::Unretained(ResourceDispatcherHostImpl::Get()),
+                     &new_delegate));
 
   ASSERT_TRUE(embedded_test_server()->Start());
   const GURL kUrl(embedded_test_server()->GetURL("/simple_page.html"));
@@ -1523,9 +1523,9 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, UserAgentOverride) {
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&ResourceDispatcherHost::SetDelegate,
-                 base::Unretained(ResourceDispatcherHostImpl::Get()),
-                 old_delegate));
+      base::BindOnce(&ResourceDispatcherHost::SetDelegate,
+                     base::Unretained(ResourceDispatcherHostImpl::Get()),
+                     old_delegate));
 }
 
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,

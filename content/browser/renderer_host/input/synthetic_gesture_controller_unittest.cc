@@ -695,7 +695,7 @@ class SyntheticGestureControllerTestBase {
   void QueueSyntheticGesture(std::unique_ptr<SyntheticGesture> gesture) {
     controller_->QueueSyntheticGesture(
         std::move(gesture),
-        base::Bind(
+        base::BindOnce(
             &SyntheticGestureControllerTestBase::OnSyntheticGestureCompleted,
             base::Unretained(this)));
   }

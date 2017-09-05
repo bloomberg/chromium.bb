@@ -102,8 +102,8 @@ class ViewHttpCacheJob : public net::URLRequestJob {
 
 void ViewHttpCacheJob::Start() {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&ViewHttpCacheJob::StartAsync, weak_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&ViewHttpCacheJob::StartAsync,
+                                weak_factory_.GetWeakPtr()));
 }
 
 void ViewHttpCacheJob::Kill() {

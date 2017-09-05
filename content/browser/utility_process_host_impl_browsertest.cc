@@ -21,7 +21,7 @@ class UtilityProcessHostImplBrowserTest : public ContentBrowserTest {
     done_closure_ = run_loop.QuitClosure();
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(
+        base::BindOnce(
             &UtilityProcessHostImplBrowserTest::RunUtilityProcessOnIOThread,
             base::Unretained(this), elevated));
     run_loop.Run();
@@ -38,9 +38,9 @@ class UtilityProcessHostImplBrowserTest : public ContentBrowserTest {
     EXPECT_TRUE(host->Start());
 
     BindInterface(host, &service_);
-    service_->DoSomething(base::Bind(
-        &UtilityProcessHostImplBrowserTest::OnSomething,
-        base::Unretained(this)));
+    service_->DoSomething(
+        base::BindOnce(&UtilityProcessHostImplBrowserTest::OnSomething,
+                       base::Unretained(this)));
   }
 
   void OnSomething() {

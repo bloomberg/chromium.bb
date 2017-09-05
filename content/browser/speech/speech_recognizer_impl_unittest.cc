@@ -203,7 +203,7 @@ class SpeechRecognizerImplTest : public SpeechRecognitionEventListener,
   void WaitForAudioThreadToPostDeviceInfo() {
     media::WaitableMessageLoopEvent event;
     audio_manager_->GetTaskRunner()->PostTaskAndReply(
-        FROM_HERE, base::Bind(&base::DoNothing), event.GetClosure());
+        FROM_HERE, base::BindOnce(&base::DoNothing), event.GetClosure());
     // Runs the loop and waits for the audio thread to call event's closure,
     // which means AudioSystem reply containing device parameters is already
     // queued on the main thread.
@@ -256,7 +256,7 @@ TEST_F(SpeechRecognizerImplTest, StopBeforeDeviceInfoReceived) {
   // Block audio thread.
   audio_manager_->GetTaskRunner()->PostTask(
       FROM_HERE,
-      base::Bind(&base::WaitableEvent::Wait, base::Unretained(&event)));
+      base::BindOnce(&base::WaitableEvent::Wait, base::Unretained(&event)));
 
   recognizer_->StartRecognition(
       media::AudioDeviceDescription::kDefaultDeviceId);
@@ -284,7 +284,7 @@ TEST_F(SpeechRecognizerImplTest, CancelBeforeDeviceInfoReceived) {
   // Block audio thread.
   audio_manager_->GetTaskRunner()->PostTask(
       FROM_HERE,
-      base::Bind(&base::WaitableEvent::Wait, base::Unretained(&event)));
+      base::BindOnce(&base::WaitableEvent::Wait, base::Unretained(&event)));
 
   recognizer_->StartRecognition(
       media::AudioDeviceDescription::kDefaultDeviceId);

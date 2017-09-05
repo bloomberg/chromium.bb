@@ -95,8 +95,8 @@ class MouseLatencyBrowserTest : public ContentBrowserTest {
 
     GetWidgetHost()->QueueSyntheticGesture(
         std::move(gesture),
-        base::Bind(&MouseLatencyBrowserTest::OnSyntheticGestureCompleted,
-                   base::Unretained(this)));
+        base::BindOnce(&MouseLatencyBrowserTest::OnSyntheticGestureCompleted,
+                       base::Unretained(this)));
 
     // Runs until we get the OnSyntheticGestureCompleted callback
     runner_ = base::MakeUnique<base::RunLoop>();

@@ -84,8 +84,8 @@ IN_PROC_BROWSER_TEST_F(UtilityProcessMojoClientBrowserTest, CallService) {
   StartMojoService();
 
   mojo_client_->service()->DoSomething(
-      base::Bind(&UtilityProcessMojoClientBrowserTest::OnResponseReceived,
-                 base::Unretained(this)));
+      base::BindOnce(&UtilityProcessMojoClientBrowserTest::OnResponseReceived,
+                     base::Unretained(this)));
 
   run_loop.Run();
   EXPECT_TRUE(response_received_);
@@ -101,8 +101,8 @@ IN_PROC_BROWSER_TEST_F(UtilityProcessMojoClientBrowserTest, ConnectionError) {
   StartMojoService();
 
   mojo_client_->service()->DoTerminateProcess(
-      base::Bind(&UtilityProcessMojoClientBrowserTest::OnResponseReceived,
-                 base::Unretained(this)));
+      base::BindOnce(&UtilityProcessMojoClientBrowserTest::OnResponseReceived,
+                     base::Unretained(this)));
 
   run_loop.Run();
   EXPECT_FALSE(response_received_);
@@ -118,9 +118,9 @@ IN_PROC_BROWSER_TEST_F(UtilityProcessMojoClientBrowserTest, SandboxFailure) {
 
   StartMojoService();
 
-  mojo_client_->service()->CreateFolder(
-      base::Bind(&UtilityProcessMojoClientBrowserTest::OnCreateFolderFinished,
-                 base::Unretained(this)));
+  mojo_client_->service()->CreateFolder(base::BindOnce(
+      &UtilityProcessMojoClientBrowserTest::OnCreateFolderFinished,
+      base::Unretained(this)));
 
   run_loop.Run();
   EXPECT_TRUE(response_received_);
@@ -137,9 +137,9 @@ IN_PROC_BROWSER_TEST_F(UtilityProcessMojoClientBrowserTest, SandboxSuccess) {
 
   StartMojoService(UNSANDBOXED);
 
-  mojo_client_->service()->CreateFolder(
-      base::Bind(&UtilityProcessMojoClientBrowserTest::OnCreateFolderFinished,
-                 base::Unretained(this)));
+  mojo_client_->service()->CreateFolder(base::BindOnce(
+      &UtilityProcessMojoClientBrowserTest::OnCreateFolderFinished,
+      base::Unretained(this)));
 
   run_loop.Run();
   EXPECT_TRUE(response_received_);

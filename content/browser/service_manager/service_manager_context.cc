@@ -189,16 +189,19 @@ class ServiceManagerContext::InProcessServiceManagerContext
       service_manager::mojom::ServicePtrInfo packaged_services_service_info,
       std::unique_ptr<BuiltinManifestProvider> manifest_provider) {
     BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)
-        ->PostTask(FROM_HERE,
-                   base::Bind(&InProcessServiceManagerContext::StartOnIOThread,
-                              this, base::Passed(&manifest_provider),
-                              base::Passed(&packaged_services_service_info)));
+        ->PostTask(
+            FROM_HERE,
+            base::BindOnce(&InProcessServiceManagerContext::StartOnIOThread,
+                           this, base::Passed(&manifest_provider),
+                           base::Passed(&packaged_services_service_info)));
   }
 
   void ShutDown() {
-    BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)->PostTask(
-        FROM_HERE,
-        base::Bind(&InProcessServiceManagerContext::ShutDownOnIOThread, this));
+    BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)
+        ->PostTask(
+            FROM_HERE,
+            base::BindOnce(&InProcessServiceManagerContext::ShutDownOnIOThread,
+                           this));
   }
 
  private:
@@ -417,7 +420,7 @@ ServiceManagerContext::~ServiceManagerContext() {
   if (ServiceManagerConnection::GetForProcess())
     ServiceManagerConnection::DestroyForProcess();
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(&DestroyConnectorOnIOThread));
+                          base::BindOnce(&DestroyConnectorOnIOThread));
 }
 
 // static

@@ -306,8 +306,8 @@ class AppCacheRequestHandlerTest
 
   void MainResource_Miss() {
     PushNextTask(
-        base::Bind(&AppCacheRequestHandlerTest::Verify_MainResource_Miss,
-                   base::Unretained(this)));
+        base::BindOnce(&AppCacheRequestHandlerTest::Verify_MainResource_Miss,
+                       base::Unretained(this)));
 
     EXPECT_TRUE(CreateRequestAndHandler(GURL("http://blah"), host_,
                                         RESOURCE_TYPE_MAIN_FRAME));
@@ -348,8 +348,8 @@ class AppCacheRequestHandlerTest
 
   void MainResource_Hit() {
     PushNextTask(
-        base::Bind(&AppCacheRequestHandlerTest::Verify_MainResource_Hit,
-                   base::Unretained(this)));
+        base::BindOnce(&AppCacheRequestHandlerTest::Verify_MainResource_Hit,
+                       base::Unretained(this)));
 
     EXPECT_TRUE(CreateRequestAndHandler(GURL("http://blah"), host_,
                                         RESOURCE_TYPE_MAIN_FRAME));
@@ -392,9 +392,9 @@ class AppCacheRequestHandlerTest
   // MainResource_Fallback --------------------------------------------------
 
   void MainResource_Fallback() {
-    PushNextTask(
-        base::Bind(&AppCacheRequestHandlerTest::Verify_MainResource_Fallback,
-                   base::Unretained(this)));
+    PushNextTask(base::BindOnce(
+        &AppCacheRequestHandlerTest::Verify_MainResource_Fallback,
+        base::Unretained(this)));
 
     EXPECT_TRUE(CreateRequestAndHandler(GURL("http://blah"), host_,
                                         RESOURCE_TYPE_MAIN_FRAME));
@@ -486,7 +486,7 @@ class AppCacheRequestHandlerTest
   // MainResource_FallbackOverride --------------------------------------------
 
   void MainResource_FallbackOverride() {
-    PushNextTask(base::Bind(
+    PushNextTask(base::BindOnce(
         &AppCacheRequestHandlerTest::Verify_MainResource_FallbackOverride,
         base::Unretained(this)));
 
@@ -958,8 +958,8 @@ class AppCacheRequestHandlerTest
 
   void MainResource_Blocked() {
     PushNextTask(
-        base::Bind(&AppCacheRequestHandlerTest::Verify_MainResource_Blocked,
-                   base::Unretained(this)));
+        base::BindOnce(&AppCacheRequestHandlerTest::Verify_MainResource_Blocked,
+                       base::Unretained(this)));
 
     EXPECT_TRUE(CreateRequestAndHandler(GURL("http://blah/"), host_,
                                         RESOURCE_TYPE_MAIN_FRAME));

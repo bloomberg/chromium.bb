@@ -187,10 +187,12 @@ void PresentationServiceImpl::StartPresentation(
                               render_frame_host_->GetLastCommittedOrigin());
   controller_delegate_->StartPresentation(
       request,
-      base::Bind(&PresentationServiceImpl::OnStartPresentationSucceeded,
-                 weak_factory_.GetWeakPtr(), start_presentation_request_id_),
-      base::Bind(&PresentationServiceImpl::OnStartPresentationError,
-                 weak_factory_.GetWeakPtr(), start_presentation_request_id_));
+      base::BindOnce(&PresentationServiceImpl::OnStartPresentationSucceeded,
+                     weak_factory_.GetWeakPtr(),
+                     start_presentation_request_id_),
+      base::BindOnce(&PresentationServiceImpl::OnStartPresentationError,
+                     weak_factory_.GetWeakPtr(),
+                     start_presentation_request_id_));
 }
 
 void PresentationServiceImpl::ReconnectPresentation(
@@ -217,10 +219,10 @@ void PresentationServiceImpl::ReconnectPresentation(
                               render_frame_host_->GetLastCommittedOrigin());
   controller_delegate_->ReconnectPresentation(
       request, presentation_id,
-      base::Bind(&PresentationServiceImpl::OnReconnectPresentationSucceeded,
-                 weak_factory_.GetWeakPtr(), request_id),
-      base::Bind(&PresentationServiceImpl::OnReconnectPresentationError,
-                 weak_factory_.GetWeakPtr(), request_id));
+      base::BindOnce(&PresentationServiceImpl::OnReconnectPresentationSucceeded,
+                     weak_factory_.GetWeakPtr(), request_id),
+      base::BindOnce(&PresentationServiceImpl::OnReconnectPresentationError,
+                     weak_factory_.GetWeakPtr(), request_id));
 }
 
 int PresentationServiceImpl::RegisterReconnectPresentationCallback(

@@ -130,8 +130,9 @@ class CompositedScrollingBrowserTest : public ContentBrowserTest {
         new SyntheticSmoothScrollGesture(params));
     GetWidgetHost()->QueueSyntheticGesture(
         std::move(gesture),
-        base::Bind(&CompositedScrollingBrowserTest::OnSyntheticGestureCompleted,
-                   base::Unretained(this)));
+        base::BindOnce(
+            &CompositedScrollingBrowserTest::OnSyntheticGestureCompleted,
+            base::Unretained(this)));
 
     // Runs until we get the OnSyntheticGestureCompleted callback
     runner_->Run();

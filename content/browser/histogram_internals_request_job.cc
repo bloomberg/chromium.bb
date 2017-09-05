@@ -69,9 +69,9 @@ void HistogramInternalsRequestJob::Start() {
   // it ends up re-calling this method, so a small helper method is used.
   content::BrowserThread::PostTaskAndReply(
       content::BrowserThread::UI, FROM_HERE,
-      base::Bind(&base::StatisticsRecorder::ImportProvidedHistograms),
-      base::Bind(&HistogramInternalsRequestJob::StartUrlRequest,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&base::StatisticsRecorder::ImportProvidedHistograms),
+      base::BindOnce(&HistogramInternalsRequestJob::StartUrlRequest,
+                     weak_factory_.GetWeakPtr()));
 }
 
 int HistogramInternalsRequestJob::GetData(

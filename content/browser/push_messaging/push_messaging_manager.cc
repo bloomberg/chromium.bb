@@ -382,12 +382,12 @@ void PushMessagingManager::DidCheckForExistingRegistration(
     int64_t registration_id = data.service_worker_registration_id;
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&Core::GetSubscriptionInfoOnUI,
-                   base::Unretained(ui_core_.get()), requesting_origin,
-                   registration_id, fixed_sender_id, push_subscription_id,
-                   base::Bind(&Core::SubscribeDidGetInfoOnUI, ui_core_weak_ptr_,
-                              base::Passed(&data), push_subscription_id,
-                              fixed_sender_id)));
+        base::BindOnce(&Core::GetSubscriptionInfoOnUI,
+                       base::Unretained(ui_core_.get()), requesting_origin,
+                       registration_id, fixed_sender_id, push_subscription_id,
+                       base::Bind(&Core::SubscribeDidGetInfoOnUI,
+                                  ui_core_weak_ptr_, base::Passed(&data),
+                                  push_subscription_id, fixed_sender_id)));
     return;
   }
   // TODO(johnme): The spec allows the register algorithm to reject with an
@@ -398,8 +398,8 @@ void PushMessagingManager::DidCheckForExistingRegistration(
   if (!data.options.sender_info.empty()) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&Core::RegisterOnUI, base::Unretained(ui_core_.get()),
-                   base::Passed(&data)));
+        base::BindOnce(&Core::RegisterOnUI, base::Unretained(ui_core_.get()),
+                       base::Passed(&data)));
   } else {
     // There is no existing registration and the sender_info passed in was
     // empty, but perhaps there is a stored sender id we can use.
@@ -422,10 +422,10 @@ void PushMessagingManager::Core::SubscribeDidGetInfoOnUI(
   if (is_valid) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&PushMessagingManager::SendSubscriptionSuccess, io_parent_,
-                   base::Passed(&data),
-                   mojom::PushRegistrationStatus::SUCCESS_FROM_CACHE,
-                   push_subscription_id, p256dh, auth));
+        base::BindOnce(&PushMessagingManager::SendSubscriptionSuccess,
+                       io_parent_, base::Passed(&data),
+                       mojom::PushRegistrationStatus::SUCCESS_FROM_CACHE,
+                       push_subscription_id, p256dh, auth));
   } else {
     PushMessagingService* push_service = service();
     if (!push_service) {
@@ -434,9 +434,9 @@ void PushMessagingManager::Core::SubscribeDidGetInfoOnUI(
       // shutting down.
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
-          base::Bind(&PushMessagingManager::SendSubscriptionError, io_parent_,
-                     base::Passed(&data),
-                     mojom::PushRegistrationStatus::RENDERER_SHUTDOWN));
+          base::BindOnce(&PushMessagingManager::SendSubscriptionError,
+                         io_parent_, base::Passed(&data),
+                         mojom::PushRegistrationStatus::RENDERER_SHUTDOWN));
       return;
     }
 
@@ -488,8 +488,8 @@ void PushMessagingManager::DidGetSenderIdFromStorage(
   data.options.sender_info = fixed_sender_id;
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&Core::RegisterOnUI, base::Unretained(ui_core_.get()),
-                 base::Passed(&data)));
+      base::BindOnce(&Core::RegisterOnUI, base::Unretained(ui_core_.get()),
+                     base::Passed(&data)));
 }
 
 void PushMessagingManager::Core::RegisterOnUI(
@@ -503,9 +503,9 @@ void PushMessagingManager::Core::RegisterOnUI(
       // TODO(johnme): Might be better not to expose the API in this case.
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
-          base::Bind(&PushMessagingManager::SendSubscriptionError, io_parent_,
-                     base::Passed(&data),
-                     mojom::PushRegistrationStatus::SERVICE_NOT_AVAILABLE));
+          base::BindOnce(&PushMessagingManager::SendSubscriptionError,
+                         io_parent_, base::Passed(&data),
+                         mojom::PushRegistrationStatus::SERVICE_NOT_AVAILABLE));
     } else {
       // Prevent websites from detecting incognito mode, by emulating what would
       // have happened if we had a PushMessagingService available.
@@ -513,7 +513,7 @@ void PushMessagingManager::Core::RegisterOnUI(
         // Throw a permission denied error under the same circumstances.
         BrowserThread::PostTask(
             BrowserThread::IO, FROM_HERE,
-            base::Bind(
+            base::BindOnce(
                 &PushMessagingManager::SendSubscriptionError, io_parent_,
                 base::Passed(&data),
                 mojom::PushRegistrationStatus::INCOGNITO_PERMISSION_DENIED));
@@ -533,10 +533,10 @@ void PushMessagingManager::Core::RegisterOnUI(
           if (!browser_context->GetPermissionManager()) {
             BrowserThread::PostTask(
                 BrowserThread::IO, FROM_HERE,
-                base::Bind(&PushMessagingManager::SendSubscriptionError,
-                           io_parent_, base::Passed(&data),
-                           mojom::PushRegistrationStatus::
-                               INCOGNITO_PERMISSION_DENIED));
+                base::BindOnce(&PushMessagingManager::SendSubscriptionError,
+                               io_parent_, base::Passed(&data),
+                               mojom::PushRegistrationStatus::
+                                   INCOGNITO_PERMISSION_DENIED));
 
             return;
           }
@@ -583,9 +583,10 @@ void PushMessagingManager::Core::DidRequestPermissionInIncognito(
   DCHECK_EQ(blink::mojom::PermissionStatus::DENIED, status);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&PushMessagingManager::SendSubscriptionError, io_parent_,
-                 base::Passed(&data),
-                 mojom::PushRegistrationStatus::INCOGNITO_PERMISSION_DENIED));
+      base::BindOnce(
+          &PushMessagingManager::SendSubscriptionError, io_parent_,
+          base::Passed(&data),
+          mojom::PushRegistrationStatus::INCOGNITO_PERMISSION_DENIED));
 }
 
 void PushMessagingManager::Core::DidRegister(
@@ -598,13 +599,14 @@ void PushMessagingManager::Core::DidRegister(
   if (status == mojom::PushRegistrationStatus::SUCCESS_FROM_PUSH_SERVICE) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&PushMessagingManager::PersistRegistrationOnIO, io_parent_,
-                   base::Passed(&data), push_registration_id, p256dh, auth));
+        base::BindOnce(&PushMessagingManager::PersistRegistrationOnIO,
+                       io_parent_, base::Passed(&data), push_registration_id,
+                       p256dh, auth));
   } else {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&PushMessagingManager::SendSubscriptionError, io_parent_,
-                   base::Passed(&data), status));
+        base::BindOnce(&PushMessagingManager::SendSubscriptionError, io_parent_,
+                       base::Passed(&data), status));
   }
 }
 
@@ -718,9 +720,10 @@ void PushMessagingManager::UnsubscribeHavingGottenSenderId(
   }
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&Core::UnregisterFromService, base::Unretained(ui_core_.get()),
-                 base::Passed(&callback), service_worker_registration_id,
-                 requesting_origin, sender_id));
+      base::BindOnce(&Core::UnregisterFromService,
+                     base::Unretained(ui_core_.get()), base::Passed(&callback),
+                     service_worker_registration_id, requesting_origin,
+                     sender_id));
 }
 
 void PushMessagingManager::Core::UnregisterFromService(
@@ -736,9 +739,9 @@ void PushMessagingManager::Core::UnregisterFromService(
     DCHECK(!is_incognito());
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&PushMessagingManager::DidUnregister, io_parent_,
-                   base::Passed(&callback),
-                   mojom::PushUnregistrationStatus::SERVICE_NOT_AVAILABLE));
+        base::BindOnce(&PushMessagingManager::DidUnregister, io_parent_,
+                       base::Passed(&callback),
+                       mojom::PushUnregistrationStatus::SERVICE_NOT_AVAILABLE));
     return;
   }
 
@@ -758,8 +761,8 @@ void PushMessagingManager::Core::DidUnregisterFromService(
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&PushMessagingManager::DidUnregister, io_parent_,
-                 base::Passed(&callback), unregistration_status));
+      base::BindOnce(&PushMessagingManager::DidUnregister, io_parent_,
+                     base::Passed(&callback), unregistration_status));
 }
 
 void PushMessagingManager::DidUnregister(
@@ -852,14 +855,14 @@ void PushMessagingManager::DidGetSubscription(
 
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
-          base::Bind(&Core::GetSubscriptionInfoOnUI,
-                     base::Unretained(ui_core_.get()), origin,
-                     service_worker_registration_id, sender_info,
-                     push_subscription_id,
-                     base::Bind(&Core::GetSubscriptionDidGetInfoOnUI,
-                                ui_core_weak_ptr_, base::Passed(&callback),
-                                origin, service_worker_registration_id,
-                                endpoint, sender_info)));
+          base::BindOnce(&Core::GetSubscriptionInfoOnUI,
+                         base::Unretained(ui_core_.get()), origin,
+                         service_worker_registration_id, sender_info,
+                         push_subscription_id,
+                         base::Bind(&Core::GetSubscriptionDidGetInfoOnUI,
+                                    ui_core_weak_ptr_, base::Passed(&callback),
+                                    origin, service_worker_registration_id,
+                                    endpoint, sender_info)));
 
       return;
     }
@@ -994,10 +997,10 @@ void PushMessagingManager::GetPermissionStatus(
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&Core::GetPermissionStatusOnUI,
-                 base::Unretained(ui_core_.get()), base::Passed(&callback),
-                 service_worker_registration->pattern().GetOrigin(),
-                 user_visible));
+      base::BindOnce(&Core::GetPermissionStatusOnUI,
+                     base::Unretained(ui_core_.get()), base::Passed(&callback),
+                     service_worker_registration->pattern().GetOrigin(),
+                     user_visible));
 }
 
 void PushMessagingManager::Core::GetPermissionStatusOnUI(

@@ -31,8 +31,8 @@ class ClientCertificateDelegateImpl : public ClientCertificateDelegate {
     if (!continue_called_) {
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
-          base::Bind(&SSLClientAuthHandler::CancelCertificateSelection,
-                     handler_));
+          base::BindOnce(&SSLClientAuthHandler::CancelCertificateSelection,
+                         handler_));
     }
   }
 
@@ -43,8 +43,8 @@ class ClientCertificateDelegateImpl : public ClientCertificateDelegate {
     continue_called_ = true;
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&SSLClientAuthHandler::ContinueWithCertificate, handler_,
-                   std::move(cert), std::move(key)));
+        base::BindOnce(&SSLClientAuthHandler::ContinueWithCertificate, handler_,
+                       std::move(cert), std::move(key)));
   }
 
  private:
@@ -177,8 +177,8 @@ void SSLClientAuthHandler::DidGetClientCerts(
     // this doesn't work on Android (https://crbug.com/345641).
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&SSLClientAuthHandler::ContinueWithCertificate,
-                   weak_factory_.GetWeakPtr(), nullptr, nullptr));
+        base::BindOnce(&SSLClientAuthHandler::ContinueWithCertificate,
+                       weak_factory_.GetWeakPtr(), nullptr, nullptr));
     return;
   }
 
