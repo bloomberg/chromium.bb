@@ -26,8 +26,6 @@ namespace profiling {
 namespace {
 const size_t kMinSizeThreshold = 16 * 1024;
 const size_t kMinCountThreshold = 1024;
-const size_t kMinSizeThresholdForTracing = 0;
-const size_t kMinCountThresholdForTracing = 0;
 }  // namespace
 
 struct MemlogConnectionManager::Connection {
@@ -177,8 +175,8 @@ void MemlogConnectionManager::DumpProcessForTracing(
   Connection* connection = it->second.get();
   std::ostringstream oss;
   ExportMemoryMapsAndV2StackTraceToJSON(connection->tracker.live_allocs(), maps,
-                                        oss, kMinSizeThresholdForTracing,
-                                        kMinCountThresholdForTracing);
+                                        oss, kMinSizeThreshold,
+                                        kMinCountThreshold);
   std::string reply = oss.str();
 
   mojo::ScopedSharedBufferHandle buffer =
