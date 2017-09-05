@@ -11,16 +11,18 @@ namespace content {
 SessionStorageDatabaseAdapter::SessionStorageDatabaseAdapter(
     SessionStorageDatabase* db,
     const std::string& permanent_namespace_id,
+    const std::vector<std::string>& original_permanent_namespace_ids,
     const GURL& origin)
     : db_(db),
       permanent_namespace_id_(permanent_namespace_id),
-      origin_(origin) {
-}
+      original_permanent_namespace_ids_(original_permanent_namespace_ids),
+      origin_(origin) {}
 
 SessionStorageDatabaseAdapter::~SessionStorageDatabaseAdapter() { }
 
 void SessionStorageDatabaseAdapter::ReadAllValues(DOMStorageValuesMap* result) {
-  db_->ReadAreaValues(permanent_namespace_id_, origin_, result);
+  db_->ReadAreaValues(permanent_namespace_id_,
+                      original_permanent_namespace_ids_, origin_, result);
 }
 
 bool SessionStorageDatabaseAdapter::CommitChanges(

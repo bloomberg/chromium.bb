@@ -39,10 +39,11 @@ class CONTENT_EXPORT LocalStorageDatabaseAdapter :
 
  private:
   FRIEND_TEST_ALL_PREFIXES(DOMStorageAreaTest, BackingDatabaseOpened);
-  FRIEND_TEST_ALL_PREFIXES(DOMStorageAreaTest, CommitChangesAtShutdown);
-  FRIEND_TEST_ALL_PREFIXES(DOMStorageAreaTest, CommitTasks);
-  FRIEND_TEST_ALL_PREFIXES(DOMStorageAreaTest, DeleteOrigin);
-  FRIEND_TEST_ALL_PREFIXES(DOMStorageAreaTest, PurgeMemory);
+  FRIEND_TEST_ALL_PREFIXES(DOMStorageAreaTest, SetCacheOnlyKeysWithBacking);
+  FRIEND_TEST_ALL_PREFIXES(DOMStorageAreaParamTest, CommitChangesAtShutdown);
+  FRIEND_TEST_ALL_PREFIXES(DOMStorageAreaParamTest, CommitTasks);
+  FRIEND_TEST_ALL_PREFIXES(DOMStorageAreaParamTest, DeleteOrigin);
+  FRIEND_TEST_ALL_PREFIXES(DOMStorageAreaParamTest, PurgeMemory);
 
   std::unique_ptr<DOMStorageDatabase> db_;
 

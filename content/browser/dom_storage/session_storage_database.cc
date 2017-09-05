@@ -110,9 +110,11 @@ SessionStorageDatabase::SessionStorageDatabase(const base::FilePath& file_path)
 SessionStorageDatabase::~SessionStorageDatabase() {
 }
 
-void SessionStorageDatabase::ReadAreaValues(const std::string& namespace_id,
-                                            const GURL& origin,
-                                            DOMStorageValuesMap* result) {
+void SessionStorageDatabase::ReadAreaValues(
+    const std::string& namespace_id,
+    const std::vector<std::string>& original_permanent_namespace_ids,
+    const GURL& origin,
+    DOMStorageValuesMap* result) {
   // We don't create a database if it doesn't exist. In that case, there is
   // nothing to be added to the result.
   if (!LazyOpen(false))
@@ -131,6 +133,26 @@ void SessionStorageDatabase::ReadAreaValues(const std::string& namespace_id,
   if (GetMapForArea(namespace_id, origin.spec(), options, &exists, &map_id) &&
       exists)
     ReadMap(map_id, options, result, false);
+
+  if (exists) {
+    db_->ReleaseSnapshot(options.snapshot);
+    return;
+  }
+
+  // If the area does not exist, |namespace_id| might refer to a clone that
+  // is not yet created. Reading from the original database is expected to be
+  // consistent because tasks posted on commit sequence after clone did not
+  // before capturing the snapshot.
+  for (const auto& original_db_id : original_permanent_namespace_ids) {
+    map_id.clear();
+    if (GetMapForArea(original_db_id, origin.spec(), options, &exists,
+                      &map_id) &&
+        exists) {
+      ReadMap(map_id, options, result, false);
+    }
+    if (exists)
+      break;
+  }
   db_->ReleaseSnapshot(options.snapshot);
 }
 
@@ -187,7 +209,8 @@ bool SessionStorageDatabase::CommitAreaChanges(
 }
 
 bool SessionStorageDatabase::CloneNamespace(
-    const std::string& namespace_id, const std::string& new_namespace_id) {
+    const std::string& namespace_id,
+    const std::string& new_namespace_id) {
   // Go through all origins in the namespace |namespace_id|, create placeholders
   // for them in |new_namespace_id|, and associate them with the existing maps.
 

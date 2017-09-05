@@ -322,7 +322,8 @@ void SessionStorageDatabaseTest::CheckAreaData(
     const std::string& namespace_id, const GURL& origin,
     const DOMStorageValuesMap& reference) const {
   DOMStorageValuesMap values;
-  db_->ReadAreaValues(namespace_id, origin, &values);
+  db_->ReadAreaValues(namespace_id, std::vector<std::string>(), origin,
+                      &values);
   CompareValuesMaps(values, reference);
 }
 
@@ -486,6 +487,19 @@ TEST_F(SessionStorageDatabaseTest, ShallowCopy) {
   data2[kKey1] = kValue2;
   data2[kKey3] = kValue1;
   ASSERT_TRUE(db_->CommitAreaChanges(kNamespace1, kOrigin2, false, data2));
+
+  // Check if passing original id before cloning returns the original's data.
+  DOMStorageValuesMap values;
+  std::vector<std::string> original_ids;
+  original_ids.push_back(kNamespace1);
+  db_->ReadAreaValues(kNamespaceClone, original_ids, kOrigin1, &values);
+  CompareValuesMaps(values, data1);
+
+  original_ids.insert(original_ids.begin(), kNamespace2);
+  values.clear();
+  db_->ReadAreaValues(kNamespaceClone, original_ids, kOrigin1, &values);
+  CompareValuesMaps(values, data1);
+
   // Make a shallow copy.
   EXPECT_TRUE(db_->CloneNamespace(kNamespace1, kNamespaceClone));
   // Now both namespaces should have the same data.
@@ -708,7 +722,8 @@ TEST_F(SessionStorageDatabaseTest, WriteRawBytes) {
   EXPECT_TRUE(db_->CommitAreaChanges(kNamespace1, kOrigin1, false, changes));
   CheckDatabaseConsistency();
   DOMStorageValuesMap values;
-  db_->ReadAreaValues(kNamespace1, kOrigin1, &values);
+  db_->ReadAreaValues(kNamespace1, std::vector<std::string>(), kOrigin1,
+                      &values);
   const unsigned char* data =
       reinterpret_cast<const unsigned char*>(values[kKey1].string().data());
   for (int i = 0; i < 10; ++i)

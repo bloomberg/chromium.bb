@@ -52,14 +52,15 @@ class CONTENT_EXPORT DOMStorageMap
 
   // Stores the keys and sizes of values from |map| to |keys_only_|. Use only
   // when |has_only_keys| is true. This method does not do quota checking.
-  void TakeKeysFrom(const DOMStorageValuesMap* map);
+  void TakeKeysFrom(const DOMStorageValuesMap& map);
 
   // Creates a new instance of DOMStorageMap containing
   // a deep copy of the map.
   DOMStorageMap* DeepCopy() const;
 
-  size_t bytes_used() const { return bytes_used_; }
-  size_t memory_usage() const { return memory_usage_; }
+  const DOMStorageValuesMap& keys_values() const { return keys_values_; }
+  size_t storage_used() const { return storage_used_; }
+  size_t memory_used() const { return memory_used_; }
   size_t quota() const { return quota_; }
   void set_quota(size_t quota) { quota_ = quota; }
   bool has_only_keys() const { return has_only_keys_; }
@@ -94,8 +95,8 @@ class CONTENT_EXPORT DOMStorageMap
   DOMStorageValuesMap::const_iterator keys_values_iterator_;
   KeysMap::const_iterator keys_only_iterator_;
   unsigned last_key_index_;
-  size_t bytes_used_;
-  size_t memory_usage_;
+  size_t storage_used_;
+  size_t memory_used_;
   size_t quota_;
   const bool has_only_keys_;
 };
