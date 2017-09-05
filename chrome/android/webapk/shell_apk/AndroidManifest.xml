@@ -32,6 +32,7 @@
                 <data android:scheme="{{{scope_url_scheme}}}" android:host="{{{scope_url_host}}}" {{{scope_url_path_type}}}="{{{scope_url_path}}}"></data>
             </intent-filter>
             {{/intent_filters}}
+            {{{raw_intent_filters}}}
         </activity>
         <meta-data android:name="org.chromium.webapk.shell_apk.shellApkVersion" android:value="{{{shell_apk_version}}}" />
         {{#bound_webapk}}
