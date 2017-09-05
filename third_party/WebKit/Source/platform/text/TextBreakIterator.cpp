@@ -53,17 +53,6 @@ unsigned NumGraphemeClusters(const String& string) {
   return num;
 }
 
-static inline bool IsBreakableSpace(UChar ch) {
-  switch (ch) {
-    case ' ':
-    case '\n':
-    case '\t':
-      return true;
-    default:
-      return false;
-  }
-}
-
 static const UChar kAsciiLineBreakTableFirstChar = '!';
 static const UChar kAsciiLineBreakTableLastChar = 127;
 
