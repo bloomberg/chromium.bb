@@ -128,8 +128,7 @@
       initWithBrowserState:self.browser->browser_state()
               webStateList:&self.browser->web_state_list()];
   self.googleLandingMediator.dispatcher =
-      static_cast<id<BrowserCommands, ChromeExecuteCommand, UrlLoader>>(
-          self.router);
+      static_cast<id<BrowserCommands, UrlLoader>>(self.router);
 
   favicon::LargeIconService* largeIconService =
       IOSChromeLargeIconServiceFactory::GetForBrowserState(

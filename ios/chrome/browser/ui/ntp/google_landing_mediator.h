@@ -10,7 +10,6 @@
 #import "ios/chrome/browser/ui/ntp/google_landing_data_source.h"
 #import "ios/chrome/browser/ui/toolbar/web_toolbar_controller.h"
 
-@protocol ChromeExecuteCommand;
 @protocol GoogleLandingConsumer;
 @protocol OmniboxFocuser;
 @protocol UrlLoader;
@@ -33,9 +32,7 @@ initWithBrowserState:(nonnull ios::ChromeBrowserState*)browserState
 @property(nonatomic, weak, nullable) id<GoogleLandingConsumer> consumer;
 
 // The dispatcher for this mediator.
-@property(nonatomic, weak, nullable)
-    id<BrowserCommands, ChromeExecuteCommand, UrlLoader>
-        dispatcher;
+@property(nonatomic, weak, nullable) id<BrowserCommands, UrlLoader> dispatcher;
 
 // Perform initial setup. Needs to be called before using this object.
 - (void)setUp;
