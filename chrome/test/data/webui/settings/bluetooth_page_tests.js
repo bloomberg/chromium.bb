@@ -2,6 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+function getFakePrefs() {
+  return {
+    ash: {
+      user: {
+        bluetooth: {
+          adapter_enabled: {
+            key: 'ash.user.bluetooth.adapter_enabled',
+            type: chrome.settingsPrivate.PrefType.BOOLEAN,
+            value: false,
+          }
+        }
+      }
+    }
+  };
+}
+
 suite('Bluetooth', function() {
   var bluetoothPage = null;
 
@@ -60,6 +76,7 @@ suite('Bluetooth', function() {
   setup(function() {
     PolymerTest.clearBody();
     bluetoothPage = document.createElement('settings-bluetooth-page');
+    bluetoothPage.prefs = getFakePrefs();
     assertTrue(!!bluetoothPage);
 
     bluetoothApi_.setDevicesForTest([]);
