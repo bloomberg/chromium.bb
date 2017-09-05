@@ -83,9 +83,10 @@ void FakeSigninManager::FailSignin(const GoogleServiceAuthError& error) {
     observer.GoogleSigninFailed(error);
 }
 
-void FakeSigninManager::SignOut(
+void FakeSigninManager::DoSignOut(
     signin_metrics::ProfileSignout signout_source_metric,
-    signin_metrics::SignoutDelete signout_delete_metric) {
+    signin_metrics::SignoutDelete signout_delete_metric,
+    bool remove_all_accounts) {
   if (IsSignoutProhibited())
     return;
   set_auth_in_progress(std::string());
@@ -93,7 +94,7 @@ void FakeSigninManager::SignOut(
   const std::string account_id = GetAuthenticatedAccountId();
   const std::string username = GetAuthenticatedAccountInfo().email;
   authenticated_account_id_.clear();
-  if (token_service_)
+  if (token_service_ && remove_all_accounts)
     token_service_->RevokeAllCredentials();
 
   for (auto& observer : observer_list_)

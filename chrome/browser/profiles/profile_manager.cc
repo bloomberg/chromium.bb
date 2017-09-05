@@ -339,7 +339,7 @@ bool IsProfileEphemeral(ProfileAttributesStorage* storage,
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 void SignOut(SigninManager* signin_manager) {
-  signin_manager->SignOut(
+  signin_manager->SignOutAndRemoveAllAccounts(
       signin_metrics::AUTHENTICATION_FAILED_WITH_FORCE_SIGNIN,
       signin_metrics::SignoutDelete::IGNORE_METRIC);
 }

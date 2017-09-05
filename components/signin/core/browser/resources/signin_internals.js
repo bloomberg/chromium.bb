@@ -168,6 +168,9 @@ cr.define('chrome.signin.dice', function() {
     $('enableSyncButton').addEventListener('click', function(e) {
         chrome.send("enableSync");
     });
+    $('disableSyncButton').addEventListener('click', function(e) {
+        chrome.send("disableSync");
+    });
   }
 
   function refreshUI(signinInfo) {

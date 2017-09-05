@@ -154,7 +154,7 @@ void ForceSigninVerifier::CloseAllBrowserWindows() {
   // signin process should take care of the signout.
   if (signin_manager_->AuthInProgress())
     return;
-  signin_manager_->SignOut(
+  signin_manager_->SignOutAndRemoveAllAccounts(
       signin_metrics::AUTHENTICATION_FAILED_WITH_FORCE_SIGNIN,
       signin_metrics::SignoutDelete::IGNORE_METRIC);
 }
