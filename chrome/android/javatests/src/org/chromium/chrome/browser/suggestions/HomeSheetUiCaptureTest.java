@@ -25,12 +25,12 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.ScreenShooter;
+import org.chromium.base.test.util.parameter.CommandLineParameter;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ntp.NtpUiCaptureTestData;
 import org.chromium.chrome.browser.ntp.cards.ItemViewType;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageAdapter;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.test.BottomSheetTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -75,10 +75,9 @@ public class HomeSheetUiCaptureTest {
     @Test
     @MediumTest
     @Feature({"UiCatalogue"})
-    // TODO(bauerb): Parameterize this test to test without the modern layout.
-    @CommandLineFlags.Add({
-            "enable-features=" + ChromeFeatureList.CHROME_HOME_MODERN_LAYOUT + ","
-            + ChromeFeatureList.CHROME_HOME})
+    @CommandLineParameter({ENABLE_CHROME_HOME,
+            "enable-features=" + ChromeFeatureList.CHROME_HOME + ","
+                    + ChromeFeatureList.ANDROID_SIGNIN_PROMOS})
     @ScreenShooter.Directory("SignInPromo")
     public void testSignInPromo() {
         // Needs to be "Full" to for this to work on small screens in landscape.
@@ -86,17 +85,15 @@ public class HomeSheetUiCaptureTest {
 
         scrollToFirstItemOfType(ItemViewType.PROMO);
 
-        mScreenShooter.shoot(
-                "SignInPromo" + (FeatureUtilities.isChromeHomeModernEnabled() ? "_modern" : ""));
+        boolean newSigninPromo =
+                ChromeFeatureList.isEnabled(ChromeFeatureList.ANDROID_SIGNIN_PROMOS);
+        mScreenShooter.shoot("SignInPromo" + (newSigninPromo ? "_new" : ""));
     }
 
     @Test
     @MediumTest
     @Feature({"UiCatalogue"})
-    // TODO(bauerb): Parameterize this test to test without the modern layout.
-    @CommandLineFlags.Add({
-            "enable-features=" + ChromeFeatureList.CHROME_HOME_MODERN_LAYOUT + ","
-            + ChromeFeatureList.CHROME_HOME})
+    @CommandLineFlags.Add(ENABLE_CHROME_HOME)
     @ScreenShooter.Directory("AllDismissed")
     public void testAllDismissed() {
         final SuggestionsRecyclerView recyclerView = getRecyclerView();
@@ -117,8 +114,7 @@ public class HomeSheetUiCaptureTest {
 
         scrollToFirstItemOfType(ItemViewType.ALL_DISMISSED);
 
-        mScreenShooter.shoot(
-                "All_dismissed" + (FeatureUtilities.isChromeHomeModernEnabled() ? "_modern" : ""));
+        mScreenShooter.shoot("All_dismissed");
     }
 
     private void scrollToFirstItemOfType(@ItemViewType int itemViewType) {
