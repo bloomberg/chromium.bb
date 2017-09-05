@@ -2312,8 +2312,8 @@ crbug.com/435547 virtual/mojo-loading/http/tests/cachestorage/serviceworker/igno
 
 crbug.com/697971 [ Mac10.12 ] fast/text/flexbox-selection-nested.html [ Skip ]
 crbug.com/697971 [ Mac10.12 ] fast/text/flexbox-selection.html [ Skip ]
-crbug.com/678481 http/tests/inspector/appcache/appcache-manifest-with-non-existing-file.html [ Skip ]
-crbug.com/678481 virtual/mojo-loading/http/tests/inspector/appcache/appcache-iframe-manifests.html [ Skip ]
+crbug.com/678481 http/tests/inspector/appcache/appcache-manifest-with-non-existing-file.html [ Timeout Failure Pass ]
+crbug.com/678481 virtual/mojo-loading/http/tests/inspector/appcache/appcache-iframe-manifests.html [ Timeout Failure Pass ]
 
 crbug.com/701047 [ Mac10.12 ] editing/caret/caret-color.html [ Failure ]
 crbug.com/701047 [ Mac10.12 ] editing/deleting/delete-at-paragraph-boundaries-011.html [ Failure ]
