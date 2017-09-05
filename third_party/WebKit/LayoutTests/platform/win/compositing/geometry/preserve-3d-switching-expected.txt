@@ -18,24 +18,22 @@ transform: translateZ(-100px) rotateY(45deg);
       "name": "Child Transform Layer",
       "bounds": [304, 304],
       "drawsContent": false,
-      "transform": 1
-    },
-    {
-      "name": "LayoutBlockFlow DIV id='parent'",
-      "position": [12, 12],
-      "bounds": [280, 280],
-      "contentsOpaque": true,
-      "backgroundColor": "#FFFF00",
       "transform": 2
     },
     {
+      "name": "LayoutBlockFlow DIV id='parent'",
+      "bounds": [280, 280],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFF00",
+      "transform": 4
+    },
+    {
       "name": "LayoutBlockFlow (positioned) DIV",
-      "position": [40, 40],
       "bounds": [200, 200],
       "opacity": 0.699999988079071,
       "contentsOpaque": true,
       "backgroundColor": "#008000",
-      "transform": 3
+      "transform": 6
     }
   ],
   "transforms": [
@@ -44,15 +42,35 @@ transform: translateZ(-100px) rotateY(45deg);
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],
-        [0, 0, 1, -0.002],
-        [0, 0, 0, 1]
-      ],
-      "origin": [152, 152],
-      "flattenInheritedTransform": false
+        [0, 0, 1, 0],
+        [108, 72, 0, 1]
+      ]
     },
     {
       "id": 2,
       "parent": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, -0.002],
+        [0, 0, 0, 1]
+      ],
+      "origin": [152, 152]
+    },
+    {
+      "id": 3,
+      "parent": 2,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [12, 12, 0, 1]
+      ],
+      "flattenInheritedTransform": false
+    },
+    {
+      "id": 4,
+      "parent": 3,
       "transform": [
         [0.766044443118978, -0.556670399226419, -0.32139380484327, 0],
         [0, 0.5, -0.866025403784439, 0],
@@ -64,8 +82,19 @@ transform: translateZ(-100px) rotateY(45deg);
       "renderingContext": 1
     },
     {
-      "id": 3,
-      "parent": 2,
+      "id": 5,
+      "parent": 4,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [40, 40, 0, 1]
+      ],
+      "flattenInheritedTransform": false
+    },
+    {
+      "id": 6,
+      "parent": 5,
       "transform": [
         [0.766044443118978, 0, 0.642787609686539, 0],
         [0, 1, 0, 0],
@@ -73,6 +102,7 @@ transform: translateZ(-100px) rotateY(45deg);
         [0, 0, 50, 1]
       ],
       "origin": [100, 100],
+      "flattenInheritedTransform": false,
       "renderingContext": 1
     }
   ]

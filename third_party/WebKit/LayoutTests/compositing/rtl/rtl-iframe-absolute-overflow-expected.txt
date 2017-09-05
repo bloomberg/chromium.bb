@@ -33,14 +33,16 @@
     {
       "name": "LayoutView #document",
       "bounds": [1000, 1000],
-      "backgroundColor": "#FF0000"
+      "backgroundColor": "#FF0000",
+      "transform": 1
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='positioned layer'",
       "position": [665, 50],
       "bounds": [100, 100],
       "contentsOpaque": true,
-      "backgroundColor": "#008000"
+      "backgroundColor": "#008000",
+      "transform": 1
     },
     {
       "name": "Frame Horizontal Scrollbar Layer",
@@ -58,6 +60,17 @@
       "name": "Frame Scroll Corner Layer",
       "position": [385, 385],
       "bounds": [15, 15]
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [-615, 0, 0, 1]
+      ]
     }
   ]
 }

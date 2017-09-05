@@ -49,10 +49,10 @@
 
         window.setTimeout(function() {
             window.scrollTo(offset, 0);
-            if (window.testRunner) {
+            if (window.testRunner && window.internals) {
                 runAfterLayoutAndPaint(function() {
                     if (top == self)
-                        document.getElementById('layertree').innerText = window.internals.layerTreeAsText(document);
+                        testRunner.setCustomTextOutput(internals.layerTreeAsText(document));
                     testRunner.notifyDone();
                 });
             }
@@ -64,7 +64,5 @@
     <div id="root"></div>
     <div class="positioned indicator"></div>
     <div class="positioned layer"></div>
-
-    <pre id="layertree"></pre>
 </body>
 </html>

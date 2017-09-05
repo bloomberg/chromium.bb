@@ -37,7 +37,8 @@
           "rect": [0, 0, 185, 552],
           "reason": "background on scrolling contents layer"
         }
-      ]
+      ],
+      "transform": 1
     },
     {
       "name": "Overflow Controls Host Layer",
@@ -80,6 +81,18 @@
       "name": "Scroll Corner Layer",
       "position": [193, 193],
       "bounds": [15, 15]
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [0, -367, 0, 1]
+      ],
+      "flattenInheritedTransform": false
     }
   ],
   "objectPaintInvalidations": [

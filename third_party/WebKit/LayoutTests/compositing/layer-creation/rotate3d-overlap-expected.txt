@@ -20,10 +20,9 @@
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV class='composited box rotate15'",
-      "position": [167, 23],
       "bounds": [110, 110],
       "backgroundColor": "#0000FF",
-      "transform": 1
+      "transform": 2
     },
     {
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (relative positioned) DIV class='box')",
@@ -36,10 +35,9 @@
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV class='composited box rotate45'",
-      "position": [311, 23],
       "bounds": [110, 110],
       "backgroundColor": "#0000FF",
-      "transform": 2
+      "transform": 4
     },
     {
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (relative positioned) DIV class='box')",
@@ -51,22 +49,46 @@
     {
       "id": 1,
       "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [167, 23, 0, 1]
+      ],
+      "flattenInheritedTransform": false
+    },
+    {
+      "id": 2,
+      "parent": 1,
+      "transform": [
         [0.965925826289068, 0.258819045102521, 0, 0],
         [-0.258819045102521, 0.965925826289068, 0, 0],
         [0, 0, 1, 0],
         [0, 0, 0, 1]
       ],
-      "origin": [55, 55]
+      "origin": [55, 55],
+      "flattenInheritedTransform": false
     },
     {
-      "id": 2,
+      "id": 3,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [311, 23, 0, 1]
+      ],
+      "flattenInheritedTransform": false
+    },
+    {
+      "id": 4,
+      "parent": 3,
       "transform": [
         [0.707106781186548, 0.707106781186548, 0, 0],
         [-0.707106781186548, 0.707106781186548, 0, 0],
         [0, 0, 1, 0],
         [0, 0, 0, 1]
       ],
-      "origin": [55, 55]
+      "origin": [55, 55],
+      "flattenInheritedTransform": false
     }
   ]
 }
