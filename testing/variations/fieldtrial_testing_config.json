@@ -1507,7 +1507,7 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled-ChromeReader-ReducedPersistent",
+                    "name": "ReducedPersistent",
                     "enable_features": [
                         "NTPArticleSuggestions"
                     ]
