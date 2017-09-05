@@ -181,6 +181,8 @@ void WebViewSchedulerImpl::EnableVirtualTime() {
   virtual_time_control_task_queue_ = WebTaskRunnerImpl::Create(
       renderer_scheduler_->VirtualTimeControlTaskQueue());
   ApplyVirtualTimePolicyToTimers();
+
+  initial_virtual_time_ = renderer_scheduler_->GetVirtualTimeDomain()->Now();
 }
 
 void WebViewSchedulerImpl::DisableVirtualTimeForTesting() {
@@ -214,6 +216,9 @@ void WebViewSchedulerImpl::SetAllowVirtualTimeToAdvance(
 
   if (!virtual_time_)
     return;
+
+  if (!allow_virtual_time_to_advance)
+    NotifyVirtualTimePaused();
 
   renderer_scheduler_->GetVirtualTimeDomain()->SetCanAdvanceVirtualTime(
       allow_virtual_time_to_advance);
@@ -295,6 +300,26 @@ void WebViewSchedulerImpl::GrantVirtualTimeBudget(
   virtual_time_budget_expired_task_handle_ =
       virtual_time_control_task_queue_->PostDelayedCancellableTask(
           BLINK_FROM_HERE, std::move(budget_exhausted_callback), budget);
+}
+
+void WebViewSchedulerImpl::AddVirtualTimeObserver(
+    VirtualTimeObserver* observer) {
+  virtual_time_observers_.AddObserver(observer);
+}
+
+void WebViewSchedulerImpl::RemoveVirtualTimeObserver(
+    VirtualTimeObserver* observer) {
+  virtual_time_observers_.RemoveObserver(observer);
+}
+
+void WebViewSchedulerImpl::NotifyVirtualTimePaused() {
+  DCHECK(!allow_virtual_time_to_advance_);
+
+  for (auto& observer : virtual_time_observers_) {
+    observer.OnVirtualTimePaused(
+        renderer_scheduler_->GetVirtualTimeDomain()->Now() -
+        initial_virtual_time_);
+  }
 }
 
 void WebViewSchedulerImpl::AudioStateChanged(bool is_audio_playing) {
