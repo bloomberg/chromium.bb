@@ -59,8 +59,14 @@ void MultiProfileAppWindowLauncherController::ActiveUserChanged(
     if (multi_user_util::IsProfileFromActiveUser(profile) &&
         !IsRegisteredApp(app_window->GetNativeWindow()) &&
         (app_window->GetBaseWindow()->IsMinimized() ||
-         app_window->GetNativeWindow()->IsVisible()))
+         app_window->GetNativeWindow()->IsVisible())) {
+      if (app_window->window_type_is_panel()) {
+        // Panels are not registered; show by restoring the shelf item type.
+        app_window->GetNativeWindow()->SetProperty<int>(ash::kShelfItemTypeKey,
+                                                        ash::TYPE_APP_PANEL);
+      }
       RegisterApp(app_window);
+    }
   }
 }
 
