@@ -77,9 +77,6 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
   LayoutUnit max_inline_size_;
   FontBaseline baseline_type_ = FontBaseline::kAlphabeticBaseline;
 
-  NGLogicalOffset bfc_offset_;
-  NGBfcRect current_opportunity_;
-
   unsigned is_horizontal_writing_mode_ : 1;
 
   std::unique_ptr<NGExclusionSpace> exclusion_space_;
