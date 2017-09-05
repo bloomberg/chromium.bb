@@ -1186,6 +1186,11 @@ TEST_P(QuicChromiumClientSessionTest, MigrateToSocket) {
   struct iovec iov[1];
   iov[0].iov_base = data;
   iov[0].iov_len = 4;
+  if (session_->save_data_before_consumption()) {
+    QuicStreamPeer::SendBuffer(stream).SaveStreamData(
+        QuicIOVector(iov, arraysize(iov), 4), 0, 4);
+    QuicStreamPeer::SetStreamBytesWritten(4, stream);
+  }
   session_->WritevData(stream, stream->id(),
                        QuicIOVector(iov, arraysize(iov), 4), 0, NO_FIN,
                        nullptr);
