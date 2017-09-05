@@ -331,8 +331,9 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   std::unique_ptr<JSONObject> LayerAsJSONInternal(
       LayerTreeFlags,
       RenderingContextMap&,
-      const FloatPoint& = FloatPoint()) const;
+      const FloatPoint& position) const;
   void AddTransformJSONProperties(JSONObject&, RenderingContextMap&) const;
+  void AddFlattenInheritedTransformJSON(JSONObject&) const;
   class LayersAsJSONArray;
 
   sk_sp<PaintRecord> CaptureRecord();

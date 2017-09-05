@@ -8,14 +8,23 @@
     },
     {
       "name": "LayoutBlockFlow DIV class='container'",
-      "position": [58, 8],
       "bounds": [200, 100],
-      "transform": 1
+      "transform": 2
     }
   ],
   "transforms": [
     {
       "id": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [58, 8, 0, 1]
+      ]
+    },
+    {
+      "id": 2,
+      "parent": 1,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],

@@ -32,7 +32,8 @@
           "rect": [50, 200, 120, 50],
           "reason": "geometry"
         }
-      ]
+      ],
+      "transform": 1
     },
     {
       "name": "Overflow Controls Host Layer",
@@ -63,6 +64,18 @@
       "name": "Scroll Corner Layer",
       "position": [695, 445],
       "bounds": [15, 15]
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [0, -100, 0, 1]
+      ],
+      "flattenInheritedTransform": false
     }
   ],
   "objectPaintInvalidations": [

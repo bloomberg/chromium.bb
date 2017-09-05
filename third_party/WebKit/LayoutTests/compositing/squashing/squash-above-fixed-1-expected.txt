@@ -70,18 +70,21 @@ CASE 2, scrolling y to 80, new layers will be squashed, so things repaint:
           "rect": [0, 0, 200, 100],
           "reason": "subtree"
         }
-      ]
+      ],
+      "transform": 1
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='composited background'",
       "position": [100, 230],
       "bounds": [300, 300],
       "contentsOpaque": true,
-      "backgroundColor": "#D3D3D3"
+      "backgroundColor": "#D3D3D3",
+      "transform": 1
     },
     {
       "name": "Squashing Containment Layer",
-      "drawsContent": false
+      "drawsContent": false,
+      "transform": 1
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV id='paragraph-c' class='overlapping cyan'",
@@ -100,7 +103,8 @@ CASE 2, scrolling y to 80, new layers will be squashed, so things repaint:
           "rect": [0, 0, 200, 100],
           "reason": "compositing update"
         }
-      ]
+      ],
+      "transform": 1
     },
     {
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (relative positioned) DIV id='paragraph-d' class='overlapping lime')",
@@ -122,6 +126,18 @@ CASE 2, scrolling y to 80, new layers will be squashed, so things repaint:
           "rect": [0, 0, 200, 100],
           "reason": "compositing update"
         }
+      ],
+      "transform": 1
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [0, -80, 0, 1]
       ]
     }
   ],
@@ -171,30 +187,46 @@ CASE 3, scrolling y to 120, no repaints expected:
       "name": "LayoutView #document",
       "bounds": [785, 1400],
       "contentsOpaque": true,
-      "backgroundColor": "#FFFFFF"
+      "backgroundColor": "#FFFFFF",
+      "transform": 1
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='composited background'",
       "position": [100, 270],
       "bounds": [300, 300],
       "contentsOpaque": true,
-      "backgroundColor": "#D3D3D3"
+      "backgroundColor": "#D3D3D3",
+      "transform": 1
     },
     {
       "name": "Squashing Containment Layer",
-      "drawsContent": false
+      "drawsContent": false,
+      "transform": 1
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV id='paragraph-c' class='overlapping cyan'",
       "position": [0, 200],
       "bounds": [200, 100],
       "contentsOpaque": true,
-      "backgroundColor": "#00FFFF"
+      "backgroundColor": "#00FFFF",
+      "transform": 1
     },
     {
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (relative positioned) DIV id='paragraph-d' class='overlapping lime')",
       "position": [0, 300],
-      "bounds": [200, 300]
+      "bounds": [200, 300],
+      "transform": 1
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [0, -120, 0, 1]
+      ]
     }
   ]
 }
@@ -232,18 +264,21 @@ CASE 4, scrolling y to 170 new layers will be squashed, so things repaint:
           "rect": [0, 0, 200, 100],
           "reason": "subtree"
         }
-      ]
+      ],
+      "transform": 1
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='composited background'",
       "position": [100, 320],
       "bounds": [300, 300],
       "contentsOpaque": true,
-      "backgroundColor": "#D3D3D3"
+      "backgroundColor": "#D3D3D3",
+      "transform": 1
     },
     {
       "name": "Squashing Containment Layer",
-      "drawsContent": false
+      "drawsContent": false,
+      "transform": 1
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV id='paragraph-d' class='overlapping lime'",
@@ -262,7 +297,8 @@ CASE 4, scrolling y to 170 new layers will be squashed, so things repaint:
           "rect": [0, 0, 200, 100],
           "reason": "compositing update"
         }
-      ]
+      ],
+      "transform": 1
     },
     {
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (relative positioned) DIV id='paragraph-e' class='overlapping cyan')",
@@ -284,6 +320,18 @@ CASE 4, scrolling y to 170 new layers will be squashed, so things repaint:
           "rect": [0, 0, 200, 100],
           "reason": "compositing update"
         }
+      ],
+      "transform": 1
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [0, -170, 0, 1]
       ]
     }
   ],
