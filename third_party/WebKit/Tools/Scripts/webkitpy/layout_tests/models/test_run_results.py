@@ -257,6 +257,12 @@ def summarize_results(port_obj, expectations, initial_results,
         if len(crash_sites) > 0:
             test_dict['crash_site'] = crash_sites[0]
 
+        if test_failures.has_failure_type(test_failures.FailureTextMismatch, result.failures):
+            for failure in result.failures:
+                if isinstance(failure, test_failures.FailureTextMismatch):
+                    test_dict['text_mismatch'] = failure.text_mismatch_category()
+                    break
+
         def is_expected(actual_result):
             return expectations.matches_an_expected_result(test_name, actual_result,
                                                            port_obj.get_option('pixel_tests') or result.reftest_type,
