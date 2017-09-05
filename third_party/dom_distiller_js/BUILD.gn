@@ -22,7 +22,7 @@ protoc_plugin_files = [
   "protoc_plugins/util/writer.py",
 ]
 
-if (is_win) {
+if (host_os == "win") {
   json_converter_plugin_script = "protoc_plugins/json_values_converter.bat"
 } else {
   json_converter_plugin_script = "protoc_plugins/json_values_converter.py"
