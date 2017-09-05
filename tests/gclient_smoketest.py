@@ -439,6 +439,36 @@ class GClientSmokeGIT(GClientSmokeBase):
     ])
     self.assertTree(tree)
 
+  def testSyncFetch(self):
+    if not self.enabled:
+      return
+    self.gclient(['config', self.git_base + 'repo_13', '--name', 'src'])
+    _out, _err, rc = self.gclient(['sync', '-v', '-v', '-v'])
+    self.assertEquals(0, rc)
+
+  def testSyncFetchUpdate(self):
+    if not self.enabled:
+      return
+    self.gclient(['config', self.git_base + 'repo_13', '--name', 'src'])
+
+    # Sync to an earlier revision first, one that doesn't refer to
+    # non-standard refs.
+    _out, _err, rc = self.gclient(
+        ['sync', '-v', '-v', '-v', '--revision', self.githash('repo_13', 1)])
+    self.assertEquals(0, rc)
+
+    # Make sure update that pulls a non-standard ref works.
+    _out, _err, rc = self.gclient(['sync', '-v', '-v', '-v'])
+    self.assertEquals(0, rc)
+
+  def testSyncDirect(self):
+    if not self.enabled:
+      return
+    self.gclient(['config', self.git_base + 'repo_12', '--name', 'src'])
+    _out, _err, rc = self.gclient(
+        ['sync', '-v', '-v', '-v', '--revision', 'refs/changes/1212'])
+    self.assertEquals(0, rc)
+
   def testRunHooks(self):
     if not self.enabled:
       return

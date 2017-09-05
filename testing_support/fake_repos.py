@@ -281,6 +281,12 @@ class FakeReposBase(object):
       new_tree = tree.copy()
     self.git_hashes[repo].append((commit_hash, new_tree))
 
+  def _fast_import_git(self, repo, data):
+    repo_root = join(self.git_root, repo)
+    logging.debug('%s: fast-import %s', repo, data)
+    subprocess2.check_call(
+        ['git', 'fast-import', '--quiet'], cwd=repo_root, stdin=data)
+
   def check_port_is_free(self, port):
     sock = socket.socket()
     try:
@@ -298,7 +304,7 @@ class FakeReposBase(object):
 
 class FakeRepos(FakeReposBase):
   """Implements populateGit()."""
-  NB_GIT_REPOS = 12
+  NB_GIT_REPOS = 13
 
   def populateGit(self):
     # Testing:
@@ -618,6 +624,43 @@ deps = {
 
     self._commit_git('repo_12', {
       'origin': 'git/repo_12@1\n',
+    })
+
+    self._fast_import_git('repo_12', """blob
+mark :1
+data 6
+Hello
+
+blob
+mark :2
+data 4
+Bye
+
+reset refs/changes/1212
+commit refs/changes/1212
+mark :3
+author Bob <bob@example.com> 1253744361 -0700
+committer Bob <bob@example.com> 1253744361 -0700
+data 8
+A and B
+M 100644 :1 a
+M 100644 :2 b
+""")
+
+    self._commit_git('repo_13', {
+      'DEPS': """
+deps = {
+  'src/repo12': '/repo_12',
+}""",
+      'origin': 'git/repo_13@1\n',
+    })
+
+    self._commit_git('repo_13', {
+      'DEPS': """
+deps = {
+  'src/repo12': '/repo_12@refs/changes/1212',
+}""",
+      'origin': 'git/repo_13@2\n',
     })
 
 

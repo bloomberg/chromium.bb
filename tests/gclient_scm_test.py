@@ -792,8 +792,11 @@ class UnmanagedGitWrapperTestCase(BaseGitWrapperTestCase):
     self.assertEquals(file_list, expected_file_list)
     self.assertEquals(scm.revinfo(options, (), None),
                       '9a51244740b25fa2ded5252ca00a3178d3f665a9')
-    self.assertEquals(self.getCurrentBranch(), 'feature')
-    self.checkNotInStdout('Checked out feature to a detached HEAD')
+    # indicates detached HEAD
+    self.assertEquals(self.getCurrentBranch(), None)
+    self.checkInStdout(
+        'Checked out 9a51244740b25fa2ded5252ca00a3178d3f665a9 '
+        'to a detached HEAD')
 
     rmtree(origin_root_dir)
 

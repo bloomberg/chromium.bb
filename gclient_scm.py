@@ -543,6 +543,8 @@ class GitWrapper(SCMWrapper):
 
     self._UpdateBranchHeads(options, fetch=True)
 
+    revision = self._AutoFetchRef(options, revision)
+
     # This is a big hammer, debatable if it should even be here...
     if options.force or options.reset:
       target = 'HEAD'
@@ -919,6 +921,7 @@ class GitWrapper(SCMWrapper):
       if template_dir:
         gclient_utils.rmtree(template_dir)
     self._UpdateBranchHeads(options, fetch=True)
+    revision = self._AutoFetchRef(options, revision)
     remote_ref = scm.GIT.RefToRemoteRef(revision, self.remote)
     self._Checkout(options, ''.join(remote_ref or revision), quiet=True)
     if self._GetCurrentBranch() is None:
@@ -1148,12 +1151,15 @@ class GitWrapper(SCMWrapper):
     checkout_args.append(ref)
     return self._Capture(checkout_args)
 
-  def _Fetch(self, options, remote=None, prune=False, quiet=False):
+  def _Fetch(self, options, remote=None, prune=False, quiet=False,
+             refspec=None):
     cfg = gclient_utils.DefaultIndexPackConfig(self.url)
     fetch_cmd =  cfg + [
         'fetch',
         remote or self.remote,
     ]
+    if refspec:
+      fetch_cmd.append(refspec)
 
     if prune:
       fetch_cmd.append('--prune')
@@ -1184,6 +1190,17 @@ class GitWrapper(SCMWrapper):
       need_fetch = True
     if fetch and need_fetch:
       self._Fetch(options, prune=options.force)
+
+  def _AutoFetchRef(self, options, revision):
+    """Attempts to fetch |revision| if not available in local repo.
+
+    Returns possibly updated revision."""
+    try:
+      self._Capture(['rev-parse', revision])
+    except subprocess2.CalledProcessError:
+      self._Fetch(options, refspec=revision)
+      revision = self._Capture(['rev-parse', 'FETCH_HEAD'])
+    return revision
 
   def _Run(self, args, options, show_header=True, **kwargs):
     # Disable 'unused options' warning | pylint: disable=unused-argument
