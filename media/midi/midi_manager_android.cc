@@ -33,6 +33,11 @@ bool IsMidiManagerAndroidEnabled() {
     return false;
 
   auto sdk_version = base::android::BuildInfo::GetInstance()->sdk_int();
+  if (sdk_version < base::android::SDK_VERSION_MARSHMALLOW)
+    return false;
+
+  bool has_midi = Java_MidiManagerAndroid_hasSystemFeatureMidi(
+      base::android::AttachCurrentThread());
 
   // If the feature is enabled, check the RequredAndroidVersion param. If the
   // param is provided and the value is "NOUGAT", use MidiManagerAndroid on N
@@ -41,11 +46,11 @@ bool IsMidiManagerAndroidEnabled() {
   if (base::GetFieldTrialParamValueByFeature(features::kMidiManagerAndroid,
                                              "RequiredAndroidVersion") ==
       "NOUGAT") {
-    return sdk_version >= base::android::SDK_VERSION_NOUGAT;
+    return has_midi && sdk_version >= base::android::SDK_VERSION_NOUGAT;
   }
 
   // Otherwise, allow to use MidiManagerAndroid on M and later versions.
-  return sdk_version >= base::android::SDK_VERSION_MARSHMALLOW;
+  return has_midi && sdk_version >= base::android::SDK_VERSION_MARSHMALLOW;
 }
 
 }  // namespace
