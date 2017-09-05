@@ -328,14 +328,6 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
   if (extra_cfg->tuning == AOM_TUNE_SSIM)
     ERROR("Option --tune=ssim is not currently supported in AV1.");
 
-#if CONFIG_DIST_8X8
-  if (extra_cfg->tuning == AOM_TUNE_CDEF_DIST)
-    ERROR("Option --tune=cdef-dist is not currently supported in AV1.");
-
-  if (extra_cfg->tuning == AOM_TUNE_DAALA_DIST)
-    ERROR("Option --tune=daala-dist is not currently supported in AV1.");
-#endif  // CONFIG_DIST_8X8
-
   if (cfg->g_pass == AOM_RC_LAST_PASS) {
 #if !CONFIG_XIPHRC
     const size_t packet_sz = sizeof(FIRSTPASS_STATS);
