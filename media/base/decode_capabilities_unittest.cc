@@ -56,6 +56,16 @@ TEST(DecodeCapabilitiesTest, IsSupportedVideoConfig_VP9TransferFunctions) {
       media::VideoColorSpace::TransferID::BT2020_10,
       media::VideoColorSpace::TransferID::BT2020_12,
       media::VideoColorSpace::TransferID::IEC61966_2_1,
+      media::VideoColorSpace::TransferID::GAMMA28,
+      media::VideoColorSpace::TransferID::SMPTE240M,
+      media::VideoColorSpace::TransferID::LINEAR,
+      media::VideoColorSpace::TransferID::LOG,
+      media::VideoColorSpace::TransferID::LOG_SQRT,
+      media::VideoColorSpace::TransferID::BT1361_ECG,
+      media::VideoColorSpace::TransferID::SMPTEST2084,
+      media::VideoColorSpace::TransferID::IEC61966_2_4,
+      media::VideoColorSpace::TransferID::SMPTEST428_1,
+      media::VideoColorSpace::TransferID::ARIB_STD_B67,
   };
 
   for (int i = 0; i <= (1 << (8 * sizeof(media::VideoColorSpace::TransferID)));
@@ -82,6 +92,12 @@ TEST(DecodeCapabilitiesTest, IsSupportedVideoConfig_VP9Primaries) {
       media::VideoColorSpace::PrimaryID::BT470M,
       media::VideoColorSpace::PrimaryID::BT470BG,
       media::VideoColorSpace::PrimaryID::SMPTE170M,
+      media::VideoColorSpace::PrimaryID::SMPTE240M,
+      media::VideoColorSpace::PrimaryID::FILM,
+      media::VideoColorSpace::PrimaryID::BT2020,
+      media::VideoColorSpace::PrimaryID::SMPTEST428_1,
+      media::VideoColorSpace::PrimaryID::SMPTEST431_2,
+      media::VideoColorSpace::PrimaryID::SMPTEST432_1,
   };
 
   for (int i = 0; i <= (1 << (8 * sizeof(media::VideoColorSpace::PrimaryID)));
@@ -108,6 +124,12 @@ TEST(DecodeCapabilitiesTest, IsSupportedVideoConfig_VP9Matrix) {
       media::VideoColorSpace::MatrixID::BT470BG,
       media::VideoColorSpace::MatrixID::SMPTE170M,
       media::VideoColorSpace::MatrixID::BT2020_NCL,
+      media::VideoColorSpace::MatrixID::RGB,
+      media::VideoColorSpace::MatrixID::FCC,
+      media::VideoColorSpace::MatrixID::SMPTE240M,
+      media::VideoColorSpace::MatrixID::YCOCG,
+      media::VideoColorSpace::MatrixID::YDZDX,
+      media::VideoColorSpace::MatrixID::BT2020_CL,
   };
 
   for (int i = 0; i <= (1 << (8 * sizeof(media::VideoColorSpace::MatrixID)));

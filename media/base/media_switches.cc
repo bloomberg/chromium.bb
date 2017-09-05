@@ -248,7 +248,7 @@ const base::Feature kUseNewMediaCache{"use-new-media-cache",
 
 // Correct video colors based on output display?
 const base::Feature kVideoColorManagement{"video-color-management",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Use SurfaceLayer instead of VideoLayer.
 const base::Feature kUseSurfaceLayerForVideo{"UseSurfaceLayerForVideo",
