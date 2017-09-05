@@ -442,11 +442,12 @@ String Deprecation::DeprecationMessage(WebFeature feature) {
           M63, "4668884095336448");
 
     case WebFeature::kCSSDeepCombinator:
-      return willBeRemoved("/deep/ combinator in CSS", M63, "4964279606312960");
-
-    case WebFeature::kCSSSelectorPseudoShadow:
-      return willBeRemoved("::shadow pseudo-element in CSS", M63,
-                           "6750456638341120");
+      return "/deep/ combinator is no longer supported in CSS dynamic profile."
+             "It is now effectively no-op, acting as if it were a descendant "
+             "combinator. /deep/ combinator will be removed, and will be "
+             "invalid at M65. You should remove it. See "
+             "https://www.chromestatus.com/features/4964279606312960 for more "
+             "details.";
 
     case WebFeature::kVREyeParametersOffset:
       return replacedBy("VREyeParameters.offset",
