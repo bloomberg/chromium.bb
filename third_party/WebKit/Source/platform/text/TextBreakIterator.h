@@ -24,6 +24,7 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/wtf/text/AtomicString.h"
+#include "platform/wtf/text/CharacterNames.h"
 #include "platform/wtf/text/Unicode.h"
 
 #include <unicode/brkiter.h>
@@ -245,6 +246,11 @@ class PLATFORM_EXPORT LazyLineBreakIterator final {
 
   // Returns the break opportunity at or before |offset|.
   unsigned PreviousBreakOpportunity(unsigned offset, unsigned min = 0) const;
+
+  static bool IsBreakableSpace(UChar ch) {
+    return ch == kSpaceCharacter || ch == kTabulationCharacter ||
+           ch == kNewlineCharacter;
+  }
 
  private:
   void ReleaseIterator() const {

@@ -80,6 +80,19 @@ LayoutUnit SnapEnd(float value, TextDirection direction) {
                           : LayoutUnit::FromFloatFloor(value);
 }
 
+bool IsAllSpaces(const String& text, unsigned start, unsigned end) {
+  return StringView(text, start, end - start)
+      .IsAllSpecialCharacters<LazyLineBreakIterator::IsBreakableSpace>();
+}
+
+bool ShouldHyphenate(const String& text, unsigned start, unsigned end) {
+  // Do not hyphenate the last word in a paragraph, except when it's a single
+  // word paragraph.
+  if (IsAllSpaces(text, end, text.length()))
+    return IsAllSpaces(text, 0, start);
+  return true;
+}
+
 }  // namespace
 
 inline const String& ShapingLineBreaker::GetText() const {
@@ -98,15 +111,23 @@ unsigned ShapingLineBreaker::Hyphenate(unsigned offset,
   if (word_len <= Hyphenation::kMinimumSuffixLength)
     return 0;
 
-  // TODO(kojii): Check min-width?
-
   const String& text = GetText();
   if (backwards) {
-    return hyphenation_->LastHyphenLocation(
-        StringView(text, word_start, word_len), offset - word_start);
+    unsigned before_index = offset - word_start;
+    if (before_index <= Hyphenation::kMinimumPrefixLength)
+      return 0;
+    unsigned prefix_length = hyphenation_->LastHyphenLocation(
+        StringView(text, word_start, word_len), before_index);
+    DCHECK(!prefix_length || prefix_length < before_index);
+    return prefix_length;
   } else {
-    return hyphenation_->FirstHyphenLocation(
-        StringView(text, word_start, word_len), offset - word_start);
+    unsigned after_index = offset - word_start;
+    if (word_len <= after_index + Hyphenation::kMinimumSuffixLength)
+      return 0;
+    unsigned prefix_length = hyphenation_->FirstHyphenLocation(
+        StringView(text, word_start, word_len), after_index);
+    DCHECK(!prefix_length || prefix_length > after_index);
+    return prefix_length;
   }
 }
 
@@ -115,23 +136,30 @@ unsigned ShapingLineBreaker::Hyphenate(unsigned offset,
                                        bool backwards,
                                        bool* is_hyphenated) const {
   const String& text = GetText();
+  unsigned word_end = break_iterator_->NextBreakOpportunity(offset);
+  if (word_end == offset) {
+    DCHECK_EQ(offset, break_iterator_->PreviousBreakOpportunity(offset, start));
+    *is_hyphenated = false;
+    return word_end;
+  }
   unsigned previous_break_opportunity =
       break_iterator_->PreviousBreakOpportunity(offset, start);
   unsigned word_start = previous_break_opportunity;
   if (!break_iterator_->BreakAfterSpace()) {
-    while (word_start < text.length() && text[word_start] == kSpaceCharacter)
+    while (word_start < text.length() &&
+           LazyLineBreakIterator::IsBreakableSpace(text[word_start]))
       word_start++;
   }
-  unsigned word_end = break_iterator_->NextBreakOpportunity(offset + 1);
-
-  unsigned prefix_length = Hyphenate(offset, word_start, word_end, backwards);
-  if (!prefix_length) {
-    *is_hyphenated = false;
-    return backwards ? previous_break_opportunity : word_end;
+  if (offset >= word_start &&
+      ShouldHyphenate(text, previous_break_opportunity, word_end)) {
+    unsigned prefix_length = Hyphenate(offset, word_start, word_end, backwards);
+    if (prefix_length) {
+      *is_hyphenated = true;
+      return word_start + prefix_length;
+    }
   }
-
-  *is_hyphenated = true;
-  return word_start + prefix_length;
+  *is_hyphenated = false;
+  return backwards ? previous_break_opportunity : word_end;
 }
 
 unsigned ShapingLineBreaker::PreviousBreakOpportunity(
