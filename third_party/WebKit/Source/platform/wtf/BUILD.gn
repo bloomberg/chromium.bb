@@ -149,6 +149,7 @@ component("wtf") {
     "allocator/Partitions.h",
     "debug/Alias.h",
     "debug/CrashLogging.h",
+    "debug/DumpWithoutCrashing.h",
     "debug/StackTrace.h",
     "dtoa.cpp",
     "dtoa.h",
