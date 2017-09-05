@@ -17,7 +17,7 @@ namespace credential_manager {
 // 1. A command is sent from JavaScript to the browser.
 // 2. HandleScriptCommand is called, it parses the message and constructs a
 //     OnceCallback to be passed as parameter to proper CredentialManagerImpl
-//     method. |requestId| field from received JS message is bound to
+//     method. |promiseId| field from received JS message is bound to
 //     constructed OnceCallback.
 // 3. CredentialManagerImpl method is invoked, performs some logic with
 //     PasswordStore, calls passed OnceCallback with result.
@@ -37,13 +37,13 @@ class CredentialManager {
 
   // Passed as callback to CredentialManagerImpl::Get.
   void SendGetResponse(
-      int request_id,
+      int promise_id,
       password_manager::CredentialManagerError error,
       const base::Optional<password_manager::CredentialInfo>& info);
   // Passed as callback to CredentialManagerImpl::PreventSilentAccess.
-  void SendPreventSilentAccessResponse(int request_id);
+  void SendPreventSilentAccessResponse(int promise_id);
   // Passed as callback to CredentialManagerImpl::Store.
-  void SendStoreResponse(int request_id);
+  void SendStoreResponse(int promise_id);
 
   password_manager::CredentialManagerImpl impl_;
 
