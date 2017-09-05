@@ -8,6 +8,7 @@
 #include "core/dom/Modulator.h"
 #include "core/dom/ModuleScript.h"
 #include "core/inspector/ConsoleMessage.h"
+#include "core/loader/modulescript/DocumentModuleScriptFetcher.h"
 #include "core/loader/modulescript/ModuleScriptLoaderClient.h"
 #include "core/loader/modulescript/ModuleScriptLoaderRegistry.h"
 #include "core/loader/modulescript/WorkletModuleScriptFetcher.h"
@@ -149,11 +150,11 @@ void ModuleScriptLoader::Fetch(const ModuleScriptFetchRequest& module_request,
     MainThreadWorkletGlobalScope* global_scope =
         ToMainThreadWorkletGlobalScope(execution_context);
     module_fetcher_ = new WorkletModuleScriptFetcher(
-        fetch_params, fetcher, this, global_scope->ModuleResponsesMapProxy());
+        this, global_scope->ModuleResponsesMapProxy());
   } else {
-    module_fetcher_ = new ModuleScriptFetcher(fetch_params, fetcher, this);
+    module_fetcher_ = new DocumentModuleScriptFetcher(fetcher, this);
   }
-  module_fetcher_->Fetch();
+  module_fetcher_->Fetch(fetch_params);
 }
 
 void ModuleScriptLoader::NotifyFetchFinished(

@@ -4,7 +4,7 @@
 
 #include "core/workers/WorkletModuleResponsesMap.h"
 
-#include "core/loader/modulescript/ModuleScriptFetcher.h"
+#include "core/loader/modulescript/DocumentModuleScriptFetcher.h"
 #include "platform/wtf/Optional.h"
 
 namespace blink {
@@ -28,10 +28,10 @@ class WorkletModuleResponsesMap::Entry final
   Entry() = default;
   ~Entry() = default;
 
-  void Fetch(const FetchParameters fetch_params, ResourceFetcher* fetcher) {
+  void Fetch(FetchParameters& fetch_params, ResourceFetcher* fetcher) {
     AdvanceState(State::kFetching);
-    module_fetcher_ = new ModuleScriptFetcher(fetch_params, fetcher, this);
-    module_fetcher_->Fetch();
+    module_fetcher_ = new DocumentModuleScriptFetcher(fetcher, this);
+    module_fetcher_->Fetch(fetch_params);
   }
 
   State GetState() const { return state_; }
@@ -106,7 +106,7 @@ class WorkletModuleResponsesMap::Entry final
 
   State state_ = State::kInitial;
 
-  Member<ModuleScriptFetcher> module_fetcher_;
+  Member<DocumentModuleScriptFetcher> module_fetcher_;
 
   WTF::Optional<ModuleScriptCreationParams> params_;
   HeapVector<Member<WorkletModuleResponsesMap::Client>> clients_;
@@ -122,7 +122,7 @@ WorkletModuleResponsesMap::WorkletModuleResponsesMap(ResourceFetcher* fetcher)
 // "To perform the fetch given request, perform the following steps:"
 // Step 1: "Let cache be the moduleResponsesMap."
 // Step 2: "Let url be request's url."
-void WorkletModuleResponsesMap::ReadEntry(const FetchParameters& fetch_params,
+void WorkletModuleResponsesMap::ReadEntry(FetchParameters& fetch_params,
                                           Client* client) {
   DCHECK(IsMainThread());
   if (!is_available_ || !IsValidURL(fetch_params.Url())) {

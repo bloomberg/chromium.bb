@@ -97,13 +97,13 @@ WorkletModuleResponsesMapProxy::WorkletModuleResponsesMapProxy(
 }
 
 void WorkletModuleResponsesMapProxy::ReadEntryOnMainThread(
-    std::unique_ptr<CrossThreadFetchParametersData> fetch_params,
+    std::unique_ptr<CrossThreadFetchParametersData> cross_thread_fetch_params,
     Client* client) {
   DCHECK(IsMainThread());
+  FetchParameters fetch_params(std::move(cross_thread_fetch_params));
   ClientAdapter* wrapper =
       ClientAdapter::Create(client, inside_settings_task_runner_);
-  module_responses_map_->ReadEntry(FetchParameters(std::move(fetch_params)),
-                                   wrapper);
+  module_responses_map_->ReadEntry(fetch_params, wrapper);
 }
 
 }  // namespace blink
