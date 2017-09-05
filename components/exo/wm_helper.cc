@@ -104,6 +104,16 @@ void WMHelper::ResetDragDropDelegate(aura::Window* window) {
   aura::client::SetDragDropDelegate(window, nullptr);
 }
 
+void WMHelper::AddVSyncObserver(VSyncObserver* observer) {
+  vsync_observers_.AddObserver(observer);
+  // Mimic CompositorVSyncManager::AddObserver's notification on addition.
+  observer->OnUpdateVSyncParameters(vsync_timebase_, vsync_interval_);
+}
+
+void WMHelper::RemoveVSyncObserver(VSyncObserver* observer) {
+  vsync_observers_.RemoveObserver(observer);
+}
+
 void WMHelper::NotifyWindowActivated(aura::Window* gained_active,
                                      aura::Window* lost_active) {
   for (ActivationObserver& observer : activation_observers_)
@@ -154,6 +164,14 @@ void WMHelper::NotifyKeyboardDeviceConfigurationChanged() {
 void WMHelper::NotifyDisplayConfigurationChanged() {
   for (DisplayConfigurationObserver& observer : display_config_observers_)
     observer.OnDisplayConfigurationChanged();
+}
+
+void WMHelper::NotifyUpdateVSyncParameters(base::TimeTicks timebase,
+                                           base::TimeDelta interval) {
+  vsync_timebase_ = timebase;
+  vsync_interval_ = interval;
+  for (VSyncObserver& observer : vsync_observers_)
+    observer.OnUpdateVSyncParameters(timebase, interval);
 }
 
 void WMHelper::OnDragEntered(const ui::DropTargetEvent& event) {

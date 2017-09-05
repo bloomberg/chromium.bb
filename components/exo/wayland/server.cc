@@ -79,7 +79,6 @@
 #include "ui/base/class_property.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ui_features.h"
-#include "ui/compositor/compositor_vsync_manager.h"
 #include "ui/display/display_observer.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/display/screen.h"
@@ -2637,22 +2636,21 @@ void bind_remote_shell(wl_client* client,
 ////////////////////////////////////////////////////////////////////////////////
 // vsync_timing_interface:
 
-// Implements VSync timing interface by monitoring a compositor for updates
-// to VSync parameters.
-class VSyncTiming final : public ui::CompositorVSyncManager::Observer {
+// Implements VSync timing interface by monitoring updates to VSync parameters.
+class VSyncTiming final : public WMHelper::VSyncObserver {
  public:
-  ~VSyncTiming() { vsync_manager_->RemoveObserver(this); }
+  ~VSyncTiming() override {
+    WMHelper::GetInstance()->RemoveVSyncObserver(this);
+  }
 
-  static std::unique_ptr<VSyncTiming> Create(ui::Compositor* compositor,
-                                             wl_resource* timing_resource) {
-    std::unique_ptr<VSyncTiming> vsync_timing(
-        new VSyncTiming(compositor, timing_resource));
+  static std::unique_ptr<VSyncTiming> Create(wl_resource* timing_resource) {
+    std::unique_ptr<VSyncTiming> vsync_timing(new VSyncTiming(timing_resource));
     // Note: AddObserver() will call OnUpdateVSyncParameters.
-    vsync_timing->vsync_manager_->AddObserver(vsync_timing.get());
+    WMHelper::GetInstance()->AddVSyncObserver(vsync_timing.get());
     return vsync_timing;
   }
 
-  // Overridden from ui::CompositorVSyncManager::Observer:
+  // Overridden from WMHelper::VSyncObserver:
   void OnUpdateVSyncParameters(base::TimeTicks timebase,
                                base::TimeDelta interval) override {
     uint64_t timebase_us = timebase.ToInternalValue();
@@ -2687,12 +2685,8 @@ class VSyncTiming final : public ui::CompositorVSyncManager::Observer {
   }
 
  private:
-  VSyncTiming(ui::Compositor* compositor, wl_resource* timing_resource)
-      : vsync_manager_(compositor->vsync_manager()),
-        timing_resource_(timing_resource) {}
-
-  // The VSync manager being observed.
-  scoped_refptr<ui::CompositorVSyncManager> vsync_manager_;
+  explicit VSyncTiming(wl_resource* timing_resource)
+      : timing_resource_(timing_resource) {}
 
   // The VSync timing resource.
   wl_resource* const timing_resource_;
@@ -2723,13 +2717,8 @@ void vsync_feedback_get_vsync_timing(wl_client* client,
                                      wl_resource* output) {
   wl_resource* timing_resource =
       wl_resource_create(client, &zcr_vsync_timing_v1_interface, 1, id);
-
-  // TODO(reveman): Multi-display support.
-  ui::Compositor* compositor =
-      ash::Shell::GetPrimaryRootWindow()->layer()->GetCompositor();
-
   SetImplementation(timing_resource, &vsync_timing_implementation,
-                    VSyncTiming::Create(compositor, timing_resource));
+                    VSyncTiming::Create(timing_resource));
 }
 
 const struct zcr_vsync_feedback_v1_interface vsync_feedback_implementation = {

@@ -11,6 +11,7 @@
 #include "components/exo/wm_helper.h"
 #include "ui/aura/client/cursor_client_observer.h"
 #include "ui/aura/client/focus_change_observer.h"
+#include "ui/compositor/compositor_vsync_manager.h"
 #include "ui/events/devices/input_device_event_observer.h"
 #include "ui/wm/public/activation_change_observer.h"
 
@@ -23,7 +24,8 @@ class WMHelperAsh : public WMHelper,
                     public aura::client::CursorClientObserver,
                     public ash::TabletModeObserver,
                     public ash::WindowTreeHostManager::Observer,
-                    public ui::InputDeviceEventObserver {
+                    public ui::InputDeviceEventObserver,
+                    public ui::CompositorVSyncManager::Observer {
  public:
   WMHelperAsh();
   ~WMHelperAsh() override;
@@ -69,7 +71,14 @@ class WMHelperAsh : public WMHelper,
   // Overridden from ui::InputDeviceEventObserver:
   void OnKeyboardDeviceConfigurationChanged() override;
 
+  // ui::CompositorVSyncManager::Observer:
+  void OnUpdateVSyncParameters(base::TimeTicks timebase,
+                               base::TimeDelta interval) override;
+
  private:
+  // The VSync manager being observed.
+  scoped_refptr<ui::CompositorVSyncManager> vsync_manager_;
+
   DISALLOW_COPY_AND_ASSIGN(WMHelperAsh);
 };
 
