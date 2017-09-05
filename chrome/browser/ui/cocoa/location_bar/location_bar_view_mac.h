@@ -26,20 +26,29 @@ class CommandUpdater;
 class ContentSettingDecoration;
 class KeywordHintDecoration;
 class LocationBarDecoration;
-class LocationIconDecoration;
 class ManagePasswordsDecoration;
 class Profile;
 class SaveCreditCardDecoration;
 class SelectedKeywordDecoration;
 class StarDecoration;
 class TranslateDecoration;
-class SecurityStateBubbleDecoration;
+class PageInfoBubbleDecoration;
 class ZoomDecoration;
 class ZoomDecorationTest;
 
 namespace {
 class LocationBarViewMacTest;
 }
+
+// Enumeration of the type of verbose that is displayed on the page info
+// decoration.
+enum class PageInfoVerboseType {
+  kNone = 0,
+  kSecurity,
+  kEVCert,
+  kChrome,
+  kExtension
+};
 
 // A C++ bridge class that represents the location bar UI element to
 // the portable code.  Wires up an OmniboxViewMac instance to
@@ -110,7 +119,7 @@ class LocationBarViewMac : public LocationBar,
   // Get the point in window coordinates for the page info bubble anchor.
   NSPoint GetPageInfoBubblePoint() const;
 
-  // Get the point in window coordinates in the security icon at which infobar
+  // Get the point in window coordinates in the page info icon at which infobar
   // arrows should point.
   NSPoint GetInfoBarAnchorPoint() const;
 
@@ -154,19 +163,11 @@ class LocationBarViewMac : public LocationBar,
   const ToolbarModel* GetToolbarModel() const override;
   content::WebContents* GetWebContents() override;
 
-  bool ShouldShowEVBubble() const;
+  PageInfoVerboseType GetPageInfoVerboseType() const;
 
-  // Returns true if the URL is an extension URL and the extension bubble should
-  // be shown.
-  bool ShouldShowExtensionBubble() const;
-
-  // Returns true if the the URL is a chrome:// URL and the Chrome bubble should
-  // be shown.
-  bool ShouldShowChromeBubble() const;
-
-  // Returns true if the security state decoration should be displayed. The
-  // security state should only be shown for valid and invalid HTTPS states.
-  bool ShouldShowSecurityState() const;
+  // Returns true if the page info decoration should display security verbose.
+  // The verbose should only be shown for valid and invalid HTTPS states.
+  bool HasSecurityVerboseText() const;
 
   NSImage* GetKeywordImage(const base::string16& keyword);
 
@@ -178,8 +179,9 @@ class LocationBarViewMac : public LocationBar,
   // Returns true if the location bar is dark.
   bool IsLocationBarDark() const;
 
-  // Returns the decoration for the page info bubble.
-  LocationBarDecoration* GetPageInfoDecoration() const;
+  PageInfoBubbleDecoration* page_info_decoration() const {
+    return page_info_decoration_.get();
+  }
 
   ManagePasswordsDecoration* manage_passwords_decoration() {
     return manage_passwords_decoration_.get();
@@ -213,6 +215,8 @@ class LocationBarViewMac : public LocationBar,
 
   void OnEditBookmarksEnabledChanged();
 
+  void UpdatePageInfoText();
+
   // Updates visibility of the content settings icons based on the current
   // tab contents state.
   bool RefreshContentSettingsDecorations();
@@ -225,14 +229,12 @@ class LocationBarViewMac : public LocationBar,
   // Returns whether any updates were made.
   bool UpdateZoomDecoration(bool default_zoom_changed);
 
-  // Updates the security state bubble decoration.
-  void UpdateSecurityState(bool tab_changed);
+  // Animates |page_info_decoration_| in or out if applicable. Otherwise,
+  // show it without animation.
+  void AnimatePageInfoIfPossible(bool tab_changed);
 
-  // Returns true if the security state can animate for the |level|.
+  // Returns true if the |page_info_decoration_| can animate for the |level|.
   bool CanAnimateSecurityLevel(security_state::SecurityLevel level) const;
-
-  // Returns true if |level| is SECURE or EV_SECURE.
-  bool IsSecureConnection(security_state::SecurityLevel level) const;
 
   // Returns pointers to all of the LocationBarDecorations owned by this
   // LocationBarViewMac. This helper function is used for positioning and
@@ -248,16 +250,12 @@ class LocationBarViewMac : public LocationBar,
 
   AutocompleteTextField* field_;  // owned by tab controller
 
-  // A decoration that shows an icon to the left of the address.
-  std::unique_ptr<LocationIconDecoration> location_icon_decoration_;
-
   // A decoration that shows the keyword-search bubble on the left.
   std::unique_ptr<SelectedKeywordDecoration> selected_keyword_decoration_;
 
-  // A decoration that shows a security icon and the security state in a
-  // bubble on the left.
-  std::unique_ptr<SecurityStateBubbleDecoration>
-      security_state_bubble_decoration_;
+  // A decoration that shows an icon to the left of the address. If applicable,
+  // it'll also show information about the current page.
+  std::unique_ptr<PageInfoBubbleDecoration> page_info_decoration_;
 
   // Save credit card icon on the right side of the omnibox.
   std::unique_ptr<SaveCreditCardDecoration> save_credit_card_decoration_;
@@ -291,10 +289,9 @@ class LocationBarViewMac : public LocationBar,
   bool location_bar_visible_;
 
   // True if there's enough room for the omnibox to show the security verbose.
-  // If the verbose is displaying the EV cert, then this should always be true.
   bool is_width_available_for_security_verbose_;
 
-  // The security level of the location bar icon.
+  // The security level that's displayed on |page_info_decoration_|.
   security_state::SecurityLevel security_level_;
 
   DISALLOW_COPY_AND_ASSIGN(LocationBarViewMac);

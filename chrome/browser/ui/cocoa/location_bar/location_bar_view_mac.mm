@@ -31,10 +31,9 @@
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_cell.h"
 #import "chrome/browser/ui/cocoa/location_bar/content_setting_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/keyword_hint_decoration.h"
-#import "chrome/browser/ui/cocoa/location_bar/location_icon_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/manage_passwords_decoration.h"
+#import "chrome/browser/ui/cocoa/location_bar/page_info_bubble_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/save_credit_card_decoration.h"
-#import "chrome/browser/ui/cocoa/location_bar/security_state_bubble_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/selected_keyword_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/star_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/translate_decoration.h"
@@ -62,6 +61,7 @@
 #include "content/public/common/url_constants.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "ui/base/cocoa/cocoa_base_utils.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/color_palette.h"
@@ -96,11 +96,8 @@ LocationBarViewMac::LocationBarViewMac(AutocompleteTextField* field,
       ChromeOmniboxEditController(command_updater),
       omnibox_view_(new OmniboxViewMac(this, profile, command_updater, field)),
       field_(field),
-      location_icon_decoration_(new LocationIconDecoration(this)),
       selected_keyword_decoration_(new SelectedKeywordDecoration()),
-      security_state_bubble_decoration_(
-          new SecurityStateBubbleDecoration(location_icon_decoration_.get(),
-                                            this)),
+      page_info_decoration_(new PageInfoBubbleDecoration(this)),
       save_credit_card_decoration_(
           new SaveCreditCardDecoration(command_updater)),
       star_decoration_(new StarDecoration(command_updater)),
@@ -316,11 +313,11 @@ NSPoint LocationBarViewMac::GetSaveCreditCardBubblePoint() const {
 }
 
 NSPoint LocationBarViewMac::GetPageInfoBubblePoint() const {
-  return [field_ bubblePointForDecoration:GetPageInfoDecoration()];
+  return [field_ bubblePointForDecoration:page_info_decoration_.get()];
 }
 
 NSPoint LocationBarViewMac::GetInfoBarAnchorPoint() const {
-  return [field_ arrowAnchorPointForDecoration:GetPageInfoDecoration()];
+  return [field_ arrowAnchorPointForDecoration:page_info_decoration_.get()];
 }
 
 void LocationBarViewMac::OnDecorationsChanged() {
@@ -344,9 +341,8 @@ void LocationBarViewMac::Layout() {
   // the constructor.  I am still wrestling with how best to deal with
   // right-hand decorations, which are not a static set.
   [cell clearDecorations];
-  [cell addLeadingDecoration:location_icon_decoration_.get()];
   [cell addLeadingDecoration:selected_keyword_decoration_.get()];
-  [cell addLeadingDecoration:security_state_bubble_decoration_.get()];
+  [cell addLeadingDecoration:page_info_decoration_.get()];
   [cell addTrailingDecoration:star_decoration_.get()];
   [cell addTrailingDecoration:translate_decoration_.get()];
   [cell addTrailingDecoration:zoom_decoration_.get()];
@@ -360,10 +356,9 @@ void LocationBarViewMac::Layout() {
   [cell addTrailingDecoration:keyword_hint_decoration_.get()];
 
   // By default only the location icon is visible.
-  location_icon_decoration_->SetVisible(true);
   selected_keyword_decoration_->SetVisible(false);
   keyword_hint_decoration_->SetVisible(false);
-  security_state_bubble_decoration_->SetVisible(false);
+  page_info_decoration_->SetVisible(true);
 
   // Get the keyword to use for keyword-search and hinting.
   const base::string16 keyword = omnibox_view_->model()->keyword();
@@ -376,18 +371,16 @@ void LocationBarViewMac::Layout() {
 
   const bool is_keyword_hint = omnibox_view_->model()->is_keyword_hint();
 
-  // This is true for EV certificate since the certificate should be
-  // displayed, even if the width is narrow.
+  page_info_decoration_->SetFullLabel(nil);
+
   CGFloat available_width =
       [cell availableWidthInFrame:[[cell controlView] frame]];
-  is_width_available_for_security_verbose_ =
-      available_width >= kMinURLWidth || ShouldShowEVBubble() ||
-      ShouldShowExtensionBubble() || ShouldShowChromeBubble();
+  is_width_available_for_security_verbose_ = available_width >= kMinURLWidth;
 
   if (!keyword.empty() && !is_keyword_hint) {
     // Switch from location icon to keyword mode.
-    location_icon_decoration_->SetVisible(false);
     selected_keyword_decoration_->SetVisible(true);
+    page_info_decoration_->SetVisible(false);
     selected_keyword_decoration_->SetKeyword(short_name, is_extension_keyword);
     // Note: the first time through this code path the
     // |selected_keyword_decoration_| has no image set because under Material
@@ -397,48 +390,12 @@ void LocationBarViewMac::Layout() {
   } else if (!keyword.empty() && is_keyword_hint) {
     keyword_hint_decoration_->SetKeyword(short_name, is_extension_keyword);
     keyword_hint_decoration_->SetVisible(true);
-  } else if (ShouldShowEVBubble()) {
-    // Switch from location icon to show the EV bubble instead.
-    location_icon_decoration_->SetVisible(false);
-    security_state_bubble_decoration_->SetVisible(true);
-
-    base::string16 label(GetToolbarModel()->GetEVCertName());
-    security_state_bubble_decoration_->SetFullLabel(
-        base::SysUTF16ToNSString(label));
-  } else if (ShouldShowExtensionBubble()) {
-    // Switch from location icon to show the extension bubble instead.
-    location_icon_decoration_->SetVisible(false);
-    security_state_bubble_decoration_->SetVisible(true);
-
-    base::string16 label(
-        GetExtensionName(GetToolbarModel()->GetURL(), GetWebContents()));
-    security_state_bubble_decoration_->SetFullLabel(
-        base::SysUTF16ToNSString(label));
-  } else if (ShouldShowChromeBubble()) {
-    // Switch from location icon to show Chrome bubble instead.
-    location_icon_decoration_->SetVisible(false);
-    security_state_bubble_decoration_->SetVisible(true);
-    security_state_bubble_decoration_->SetFullLabel(
-        l10n_util::GetNSString(IDS_SHORT_PRODUCT_NAME));
-  } else if (ShouldShowSecurityState() ||
-             security_state_bubble_decoration_->AnimatingOut()) {
-    bool is_security_state_visible =
-        is_width_available_for_security_verbose_ ||
-        security_state_bubble_decoration_->AnimatingOut();
-    location_icon_decoration_->SetVisible(!is_security_state_visible);
-    security_state_bubble_decoration_->SetVisible(is_security_state_visible);
-
-    // Don't change the label if the bubble is in the process of animating
-    // out the old one.
-    base::string16 label(GetToolbarModel()->GetSecureVerboseText());
-    if (!security_state_bubble_decoration_->AnimatingOut()) {
-      security_state_bubble_decoration_->SetFullLabel(
-          base::SysUTF16ToNSString(label));
-    }
+  } else {
+    UpdatePageInfoText();
   }
 
-  if (!security_state_bubble_decoration_->IsVisible())
-    security_state_bubble_decoration_->ResetAnimation();
+  if (!page_info_decoration_->IsVisible())
+    page_info_decoration_->ResetAnimation();
 
   // These need to change anytime the layout changes.
   // TODO(shess): Anytime the field editor might have changed, the
@@ -468,7 +425,7 @@ void LocationBarViewMac::Update(const WebContents* contents) {
   RefreshContentSettingsDecorations();
   if (contents) {
     omnibox_view_->OnTabChanged(contents);
-    UpdateSecurityState(contents);
+    AnimatePageInfoIfPossible(contents);
   } else {
     omnibox_view_->Update();
   }
@@ -482,17 +439,17 @@ void LocationBarViewMac::UpdateWithoutTabRestore() {
 
 void LocationBarViewMac::UpdateLocationIcon() {
   SkColor vector_icon_color = GetLocationBarIconColor();
-  const gfx::VectorIcon& vector_icon_id = ShouldShowEVBubble()
-                                              ? toolbar::kHttpsValidIcon
-                                              : omnibox_view_->GetVectorIcon();
+  const gfx::VectorIcon& vector_icon_id =
+      GetPageInfoVerboseType() == PageInfoVerboseType::kEVCert
+          ? toolbar::kHttpsValidIcon
+          : omnibox_view_->GetVectorIcon();
 
   NSImage* image = NSImageFromImageSkiaWithColorSpace(
       gfx::CreateVectorIcon(vector_icon_id, kDefaultIconSize,
                             vector_icon_color),
       base::mac::GetSRGBColorSpace());
-  location_icon_decoration_->SetImage(image);
-  security_state_bubble_decoration_->SetImage(image);
-  security_state_bubble_decoration_->SetLabelColor(vector_icon_color);
+  page_info_decoration_->SetImage(image);
+  page_info_decoration_->SetLabelColor(vector_icon_color);
 
   Layout();
 }
@@ -520,7 +477,7 @@ void LocationBarViewMac::OnThemeChanged() {
 }
 
 void LocationBarViewMac::OnChanged() {
-  UpdateSecurityState(false);
+  AnimatePageInfoIfPossible(false);
   UpdateLocationIcon();
 }
 
@@ -536,30 +493,29 @@ WebContents* LocationBarViewMac::GetWebContents() {
   return browser_->tab_strip_model()->GetActiveWebContents();
 }
 
-bool LocationBarViewMac::ShouldShowEVBubble() const {
-  return GetToolbarModel()->GetSecurityLevel(false) ==
-         security_state::EV_SECURE;
-}
-
-bool LocationBarViewMac::ShouldShowExtensionBubble() const {
-  return !GetOmniboxView()->IsEditingOrEmpty() &&
-         GetToolbarModel()->GetURL().SchemeIs(extensions::kExtensionScheme);
-}
-
-bool LocationBarViewMac::ShouldShowChromeBubble() const {
-  return !GetOmniboxView()->IsEditingOrEmpty() &&
-         GetToolbarModel()->GetURL().SchemeIs(content::kChromeUIScheme);
-}
-
-bool LocationBarViewMac::ShouldShowSecurityState() const {
+PageInfoVerboseType LocationBarViewMac::GetPageInfoVerboseType() const {
   if (omnibox_view_->IsEditingOrEmpty() ||
       omnibox_view_->model()->is_keyword_hint()) {
-    return false;
+    return PageInfoVerboseType::kNone;
+  } else if (GetToolbarModel()->GetSecurityLevel(false) ==
+             security_state::EV_SECURE) {
+    return PageInfoVerboseType::kEVCert;
+  } else if (GetToolbarModel()->GetURL().SchemeIs(
+                 extensions::kExtensionScheme)) {
+    return PageInfoVerboseType::kExtension;
+  } else if (GetToolbarModel()->GetURL().SchemeIs(content::kChromeUIScheme)) {
+    return PageInfoVerboseType::kChrome;
+  } else {
+    return PageInfoVerboseType::kSecurity;
   }
+}
+
+bool LocationBarViewMac::HasSecurityVerboseText() const {
+  if (GetPageInfoVerboseType() != PageInfoVerboseType::kSecurity)
+    return false;
 
   security_state::SecurityLevel security =
       GetToolbarModel()->GetSecurityLevel(false);
-
   return security == security_state::EV_SECURE ||
          security == security_state::SECURE ||
          security == security_state::DANGEROUS ||
@@ -568,13 +524,6 @@ bool LocationBarViewMac::ShouldShowSecurityState() const {
 
 bool LocationBarViewMac::IsLocationBarDark() const {
   return [[field_ window] inIncognitoModeWithSystemTheme];
-}
-
-LocationBarDecoration* LocationBarViewMac::GetPageInfoDecoration() const {
-  if (security_state_bubble_decoration_->IsVisible())
-    return security_state_bubble_decoration_.get();
-
-  return location_icon_decoration_.get();
 }
 
 NSImage* LocationBarViewMac::GetKeywordImage(const base::string16& keyword) {
@@ -599,7 +548,7 @@ SkColor LocationBarViewMac::GetLocationBarIconColor() const {
   if (in_dark_mode)
     return kMaterialDarkVectorIconColor;
 
-  if (ShouldShowEVBubble())
+  if (GetPageInfoVerboseType() == PageInfoVerboseType::kEVCert)
     return gfx::kGoogleGreen700;
 
   security_state::SecurityLevel security_level =
@@ -625,6 +574,29 @@ void LocationBarViewMac::PostNotification(NSString* notification) {
 void LocationBarViewMac::OnEditBookmarksEnabledChanged() {
   UpdateBookmarkStarVisibility();
   OnChanged();
+}
+
+void LocationBarViewMac::UpdatePageInfoText() {
+  // Don't change the label if the bubble is in the process of animating
+  // out the old one.
+  if (page_info_decoration_->AnimatingOut())
+    return;
+
+  base::string16 label;
+  PageInfoVerboseType type = GetPageInfoVerboseType();
+  if (type == PageInfoVerboseType::kEVCert) {
+    label = GetToolbarModel()->GetEVCertName();
+  } else if (type == PageInfoVerboseType::kExtension) {
+    label = GetExtensionName(GetToolbarModel()->GetURL(), GetWebContents());
+  } else if (type == PageInfoVerboseType::kChrome) {
+    label = l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME);
+  } else if (type == PageInfoVerboseType::kSecurity &&
+             HasSecurityVerboseText()) {
+    if (is_width_available_for_security_verbose_)
+      label = GetToolbarModel()->GetSecureVerboseText();
+  }
+
+  page_info_decoration_->SetFullLabel(base::SysUTF16ToNSString(label));
 }
 
 bool LocationBarViewMac::RefreshContentSettingsDecorations() {
@@ -663,55 +635,39 @@ bool LocationBarViewMac::UpdateZoomDecoration(bool default_zoom_changed) {
       IsLocationBarDark());
 }
 
-void LocationBarViewMac::UpdateSecurityState(bool tab_changed) {
+void LocationBarViewMac::AnimatePageInfoIfPossible(bool tab_changed) {
   using SecurityLevel = security_state::SecurityLevel;
   SecurityLevel new_security_level = GetToolbarModel()->GetSecurityLevel(false);
+  bool is_new_security_level = security_level_ != new_security_level;
+  security_level_ = new_security_level;
 
   if (tab_changed)
-    security_state_bubble_decoration_->ResetAnimation();
+    page_info_decoration_->ResetAnimation();
 
-  // If there's enough space, but the secure state decoration had animated
-  // out, animate it back in. Otherwise, if the security state has changed,
-  // animate the decoration if animation is enabled and the state changed is
-  // not from a tab switch.
-  if ((ShouldShowSecurityState() || ShouldShowExtensionBubble() ||
-       ShouldShowChromeBubble()) &&
-      is_width_available_for_security_verbose_) {
-    if (tab_changed) {
-      security_state_bubble_decoration_->ShowWithoutAnimation();
-    } else {
-      bool is_secure_to_secure = IsSecureConnection(new_security_level) &&
-                                 IsSecureConnection(security_level_);
-      bool is_new_security_level =
-          security_level_ != new_security_level && !is_secure_to_secure;
-      if (!is_new_security_level &&
-          security_state_bubble_decoration_->HasAnimatedOut()) {
-        security_state_bubble_decoration_->AnimateIn(false);
-      } else if (!CanAnimateSecurityLevel(new_security_level)) {
-        security_state_bubble_decoration_->ShowWithoutAnimation();
-      } else if (is_new_security_level) {
-        security_state_bubble_decoration_->AnimateIn();
-      }
-    }
-  } else if (!is_width_available_for_security_verbose_ ||
-             (!tab_changed && CanAnimateSecurityLevel(security_level_))) {
-    security_state_bubble_decoration_->AnimateOut();
+  // Animation is only applicable for the security verbose and if the icon
+  // isn't updated from a tab switch.
+  if (GetPageInfoVerboseType() != PageInfoVerboseType::kSecurity ||
+      !HasSecurityVerboseText() || tab_changed) {
+    page_info_decoration_->ShowWithoutAnimation();
+    return;
   }
 
-  security_level_ = new_security_level;
+  if (is_width_available_for_security_verbose_) {
+    if (!is_new_security_level && page_info_decoration_->HasAnimatedOut())
+      page_info_decoration_->AnimateIn(false);
+    else if (!CanAnimateSecurityLevel(new_security_level))
+      page_info_decoration_->ShowWithoutAnimation();
+    else if (is_new_security_level)
+      page_info_decoration_->AnimateIn();
+  } else {
+    page_info_decoration_->AnimateOut();
+  }
 }
 
 bool LocationBarViewMac::CanAnimateSecurityLevel(
     security_state::SecurityLevel level) const {
-  return !GetOmniboxView()->IsEditingOrEmpty() &&
-         (level == security_state::DANGEROUS ||
-          level == security_state::HTTP_SHOW_WARNING);
-}
-
-bool LocationBarViewMac::IsSecureConnection(
-    security_state::SecurityLevel level) const {
-  return level == security_state::SECURE ||
-         level == security_state::EV_SECURE;
+  return level == security_state::DANGEROUS ||
+         level == security_state::HTTP_SHOW_WARNING;
 }
 
 void LocationBarViewMac::UpdateAccessibilityView(
@@ -762,9 +718,8 @@ std::vector<LocationBarDecoration*> LocationBarViewMac::GetDecorations() {
   // TODO(ellyjones): page actions and keyword hints are not included right
   // now. Keyword hints have no useful tooltip (issue 752592), and page actions
   // are likewise.
-  decorations.push_back(location_icon_decoration_.get());
   decorations.push_back(selected_keyword_decoration_.get());
-  decorations.push_back(security_state_bubble_decoration_.get());
+  decorations.push_back(page_info_decoration_.get());
   decorations.push_back(save_credit_card_decoration_.get());
   decorations.push_back(star_decoration_.get());
   decorations.push_back(translate_decoration_.get());

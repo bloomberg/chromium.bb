@@ -23,8 +23,8 @@
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #include "chrome/browser/ui/cocoa/key_equivalent_constants.h"
-#import "chrome/browser/ui/cocoa/location_bar/location_bar_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
+#import "chrome/browser/ui/cocoa/location_bar/page_info_bubble_decoration.h"
 #import "chrome/browser/ui/cocoa/page_info/permission_selector_button.h"
 #include "chrome/browser/ui/page_info/page_info_dialog.h"
 #include "chrome/browser/ui/page_info/permission_menu_model.h"
@@ -280,7 +280,7 @@ bool IsInternalURL(const GURL& url) {
   BrowserWindowController* controller = [[self parentWindow] windowController];
   LocationBarViewMac* locationBar = [controller locationBarBridge];
   if (locationBar) {
-    decoration_ = locationBar->GetPageInfoDecoration();
+    decoration_ = locationBar->page_info_decoration();
     decoration_->SetActive(true);
   }
 

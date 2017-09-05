@@ -23,8 +23,8 @@
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #import "chrome/browser/ui/cocoa/l10n_util.h"
-#import "chrome/browser/ui/cocoa/location_bar/location_bar_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
+#import "chrome/browser/ui/cocoa/location_bar/page_info_bubble_decoration.h"
 #include "chrome/browser/ui/cocoa/page_info/page_info_utils_cocoa.h"
 #include "chrome/browser/ui/cocoa/page_info/permission_selector_button.h"
 #include "chrome/browser/ui/cocoa/page_info/split_block_button.h"
@@ -177,7 +177,7 @@ const NSSize kPermissionIconSize = {18, 18};
   LocationBarViewMac* bridge =
       [[self.parentWindow windowController] locationBarBridge];
   if ([self hasVisibleLocationBar] && bridge) {
-    decoration_ = bridge->GetPageInfoDecoration();
+    decoration_ = bridge->page_info_decoration();
     decoration_->SetActive(true);
   }
 

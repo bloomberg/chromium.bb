@@ -22,19 +22,18 @@ class LocationBarViewMac;
 class LocationIconDecoration;
 
 namespace {
-class SecurityStateBubbleDecorationTest;
+class PageInfoBubbleDecorationTest;
 }
 
 namespace {
 class LocationBarViewMacTest;
 }
 
-class SecurityStateBubbleDecoration : public BubbleDecoration,
-                                      public gfx::AnimationDelegate {
+class PageInfoBubbleDecoration : public BubbleDecoration,
+                                 public gfx::AnimationDelegate {
  public:
-  SecurityStateBubbleDecoration(LocationIconDecoration* location_icon,
-                                LocationBarViewMac* owner);
-  ~SecurityStateBubbleDecoration() override;
+  explicit PageInfoBubbleDecoration(LocationBarViewMac* owner);
+  ~PageInfoBubbleDecoration() override;
 
   // |GetWidthForSpace()| will set |full_label| as the label, if it
   // fits, else it will set an elided version.
@@ -53,11 +52,12 @@ class SecurityStateBubbleDecoration : public BubbleDecoration,
   // Returns true if the chip has fully animated in.
   bool HasAnimatedIn() const;
 
-  // Returns true if the chip has fully animated out.
-  bool HasAnimatedOut() const;
+  // Returns true if the chip has fully animated out. Virtual for testing.
+  virtual bool HasAnimatedOut() const;
 
-  // Returns true if the chip is in the process of animating out.
-  bool AnimatingOut() const;
+  // Returns true if the chip is in the process of animating out. Virtual for
+  // testing.
+  virtual bool AnimatingOut() const;
 
   // Resets the animation. Virtual for testing.
   virtual void ResetAnimation();
@@ -87,7 +87,7 @@ class SecurityStateBubbleDecoration : public BubbleDecoration,
 
  private:
   friend class ::LocationBarViewMacTest;
-  friend class ::SecurityStateBubbleDecorationTest;
+  friend class ::PageInfoBubbleDecorationTest;
 
   // Returns the animation progress. If not in MD, the animation progress
   // should always be 1.0.
@@ -121,7 +121,10 @@ class SecurityStateBubbleDecoration : public BubbleDecoration,
   // Used to disable find bar animations when testing.
   bool disable_animations_during_testing_;
 
-  DISALLOW_COPY_AND_ASSIGN(SecurityStateBubbleDecoration);
+  // The frame of the drag-and-drop image.
+  NSRect drag_frame_;
+
+  DISALLOW_COPY_AND_ASSIGN(PageInfoBubbleDecoration);
 };
 
 #endif  // CHROME_BROWSER_UI_COCOA_LOCATION_BAR_SECURITY_STATE_BUBBLE_DECORATION_H_
