@@ -75,30 +75,29 @@ void MultiBufferReader::SetPinRange(int64_t backward, int64_t forward) {
            block_ceil(pos_ + max_buffer_forward_));
 }
 
-int64_t MultiBufferReader::Available() const {
+int64_t MultiBufferReader::AvailableAt(int64_t pos) const {
   int64_t unavailable_byte_pos =
-      static_cast<int64_t>(multibuffer_->FindNextUnavailable(block(pos_)))
+      static_cast<int64_t>(multibuffer_->FindNextUnavailable(block(pos)))
       << multibuffer_->block_size_shift();
-  return std::max<int64_t>(0, unavailable_byte_pos - pos_);
+  return std::max<int64_t>(0, unavailable_byte_pos - pos);
 }
 
-int64_t MultiBufferReader::TryRead(uint8_t* data, int64_t len) {
+int64_t MultiBufferReader::TryReadAt(int64_t pos, uint8_t* data, int64_t len) {
   DCHECK_GT(len, 0);
   current_wait_size_ = 0;
   cb_.Reset();
-  DCHECK_LE(pos_ + len, end_);
+  DCHECK_LE(pos + len, end_);
   const MultiBuffer::DataMap& data_map = multibuffer_->map();
-  MultiBuffer::DataMap::const_iterator i = data_map.find(block(pos_));
-  int64_t p = pos_;
+  MultiBuffer::DataMap::const_iterator i = data_map.find(block(pos));
   int64_t bytes_read = 0;
   while (bytes_read < len) {
     if (i == data_map.end())
       break;
-    if (i->first != block(p))
+    if (i->first != block(pos))
       break;
     if (i->second->end_of_stream())
       break;
-    size_t offset = p & ((1LL << multibuffer_->block_size_shift()) - 1);
+    size_t offset = pos & ((1LL << multibuffer_->block_size_shift()) - 1);
     if (offset > static_cast<size_t>(i->second->data_size()))
       break;
     size_t tocopy =
@@ -106,10 +105,15 @@ int64_t MultiBufferReader::TryRead(uint8_t* data, int64_t len) {
     memcpy(data, i->second->data() + offset, tocopy);
     data += tocopy;
     bytes_read += tocopy;
-    p += tocopy;
+    pos += tocopy;
     ++i;
   }
-  Seek(p);
+  return bytes_read;
+}
+
+int64_t MultiBufferReader::TryRead(uint8_t* data, int64_t len) {
+  int64_t bytes_read = TryReadAt(pos_, data, len);
+  Seek(pos_ + bytes_read);
   return bytes_read;
 }
 

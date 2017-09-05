@@ -379,13 +379,10 @@ void MultibufferDataSource::ReadTask() {
     return;
   DCHECK(read_op_->size());
 
-  if (!reader_) {
+  if (!reader_)
     CreateResourceLoader(read_op_->position(), kPositionNotSpecified);
-  } else {
-    reader_->Seek(read_op_->position());
-  }
 
-  int64_t available = reader_->Available();
+  int64_t available = reader_->AvailableAt(read_op_->position());
   if (available < 0) {
     // A failure has occured.
     ReadOperation::Run(std::move(read_op_), kReadError);
@@ -394,8 +391,12 @@ void MultibufferDataSource::ReadTask() {
   if (available) {
     bytes_read =
         static_cast<int>(std::min<int64_t>(available, read_op_->size()));
-    bytes_read = reader_->TryRead(read_op_->data(), bytes_read);
-    url_data_->AddBytesRead(bytes_read);
+    bytes_read =
+        reader_->TryReadAt(read_op_->position(), read_op_->data(), bytes_read);
+
+    int64_t new_pos = read_op_->position() + bytes_read;
+    if (reader_->AvailableAt(new_pos) <= reader_->Available())
+      reader_->Seek(new_pos);
     if (bytes_read == 0 && total_bytes_ == kPositionNotSpecified) {
       // We've reached the end of the file and we didn't know the total size
       // before. Update the total size so Read()s past the end of the file will
@@ -407,6 +408,7 @@ void MultibufferDataSource::ReadTask() {
 
     ReadOperation::Run(std::move(read_op_), bytes_read);
   } else {
+    reader_->Seek(read_op_->position());
     reader_->Wait(1, base::Bind(&MultibufferDataSource::ReadTask,
                                 weak_factory_.GetWeakPtr()));
   }

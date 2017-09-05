@@ -42,10 +42,14 @@ class MEDIA_BLINK_EXPORT MultiBufferReader : public MultiBuffer::Reader {
 
   ~MultiBufferReader() override;
 
-  // Returns number of bytes available for reading. When the rest of the file
-  // is available, the number returned will be greater than the number
-  // or readable bytes. If an error occurs, -1 is returned.
-  int64_t Available() const;
+  // Returns number of bytes available for reading. At position |pos|
+  // When the rest of the file is available, the number returned will
+  // be greater than the number or readable bytes. If an error occurs,
+  // -1 is returned.
+  int64_t AvailableAt(int64_t pos) const;
+
+  // Returns number of bytes available for reading at the current position.
+  int64_t Available() const { return AvailableAt(pos_); }
 
   // Seek to a different position.
   // If there is a pending Wait(), it will be cancelled.
@@ -54,7 +58,12 @@ class MEDIA_BLINK_EXPORT MultiBufferReader : public MultiBuffer::Reader {
   // Returns the current position.
   int64_t Tell() const { return pos_; }
 
-  // Tries to read |len| bytes and advance position.
+  // Tries to read |len| bytes from position |pos|.
+  // Returns number of bytes read.
+  // If there is a pending Wait(), it will be cancelled.
+  int64_t TryReadAt(int64_t pos, uint8_t* data, int64_t len);
+
+  // Tries to read |len| bytes and update current position.
   // Returns number of bytes read.
   // If there is a pending Wait(), it will be cancelled.
   int64_t TryRead(uint8_t* data, int64_t len);
