@@ -208,6 +208,8 @@ MdBookmarksUI::MdBookmarksUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 
   auto plural_string_handler = base::MakeUnique<PluralStringHandler>();
   plural_string_handler->AddLocalizedString(
+      "listChanged", IDS_MD_BOOKMARK_MANAGER_FOLDER_LIST_CHANGED);
+  plural_string_handler->AddLocalizedString(
       "toastItemsDeleted", IDS_MD_BOOKMARK_MANAGER_TOAST_ITEMS_DELETED);
   plural_string_handler->AddLocalizedString(
       "toastItemsCopied", IDS_MD_BOOKMARK_MANAGER_TOAST_ITEMS_COPIED);
