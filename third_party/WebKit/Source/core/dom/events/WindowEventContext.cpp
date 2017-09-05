@@ -29,7 +29,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/Node.h"
 #include "core/dom/events/Event.h"
-#include "core/events/NodeEventContext.h"
+#include "core/dom/events/NodeEventContext.h"
 #include "core/frame/LocalDOMWindow.h"
 
 namespace blink {

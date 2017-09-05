@@ -28,9 +28,9 @@
 #define EventPath_h
 
 #include "core/CoreExport.h"
+#include "core/dom/events/NodeEventContext.h"
 #include "core/dom/events/TreeScopeEventContext.h"
 #include "core/dom/events/WindowEventContext.h"
-#include "core/events/NodeEventContext.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/Vector.h"
