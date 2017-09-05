@@ -89,6 +89,10 @@ class ServiceManager {
                        mojom::ServicePtr service,
                        mojom::PIDReceiverRequest pid_receiver_request);
 
+  // Determine information about |Identity| from its manifests. Returns
+  // false if the identity does not have a catalog entry.
+  bool QueryCatalog(const Identity& identity, std::string* sandbox_type);
+
   // Completes a connection between a source and target application as defined
   // by |params|. If no existing instance of the target service is running, one
   // will be loaded.

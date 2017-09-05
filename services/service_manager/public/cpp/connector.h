@@ -89,6 +89,11 @@ class SERVICE_MANAGER_PUBLIC_CPP_EXPORT Connector {
                     mojom::ServicePtr service,
                     mojom::PIDReceiverRequest pid_receiver_request);
 
+  // Determines if the service for |Identity| is known, and returns information
+  // about it from the catalog.
+  void QueryService(const Identity& identity,
+                    mojom::Connector::QueryServiceCallback callback);
+
   // Connect to |target| & request to bind |Interface|.
   template <typename Interface>
   void BindInterface(const Identity& target,

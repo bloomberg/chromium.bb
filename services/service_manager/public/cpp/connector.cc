@@ -56,6 +56,11 @@ void Connector::StartService(const Identity& identity,
                  weak_factory_.GetWeakPtr()));
 }
 
+void Connector::QueryService(const Identity& identity,
+                             mojom::Connector::QueryServiceCallback callback) {
+  connector_->QueryService(identity, std::move(callback));
+}
+
 void Connector::BindInterface(const Identity& target,
                               const std::string& interface_name,
                               mojo::ScopedMessagePipeHandle interface_pipe) {

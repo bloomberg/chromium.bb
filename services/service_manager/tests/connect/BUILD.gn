@@ -56,6 +56,11 @@ service_manifest("connect_test_b_manifest") {
   source = "connect_test_app_b_manifest.json"
 }
 
+service_manifest("connect_test_sandboxed_manifest") {
+  name = "connect_test_sandboxed_app"
+  source = "connect_test_sandboxed_app_manifest.json"
+}
+
 service("connect_test_package") {
   testonly = true
   sources = [
@@ -76,6 +81,7 @@ service_manifest("connect_test_package_manifest") {
   packaged_services = [
     ":connect_test_a_manifest",
     ":connect_test_b_manifest",
+    ":connect_test_sandboxed_manifest",
   ]
 }
 

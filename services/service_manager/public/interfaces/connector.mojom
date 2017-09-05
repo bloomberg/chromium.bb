@@ -105,6 +105,28 @@ interface Connector {
                 handle<message_pipe> interface_pipe) =>
       (ConnectResult result, Identity user_id);
 
+  // Asks the service manager whether it knows how to manage a given service,
+  // and how the service is to be sandboxed per the mainifest. No processes are
+  // started as a result. QueryService() is typically used before a call to
+  // StartProcessWithService() so the client can determine how to launch a
+  // process.
+  //
+  // Parameters:
+  //
+  //  target
+  //    The identity of the service to query.
+  //
+  // Response parameters:
+  //
+  //  result
+  //    Indicates the result of the QueryService() operation.
+  //
+  //  sandbox_type
+  //    A string describing the kind of sandboxing the service has declared
+  //    for itself in the manifest.
+  //
+  QueryService(Identity target) => (ConnectResult result, string sandbox_type);
+
   // Asks the service manager to create an instance for a service. No action is
   // taken if an instance is already present. If the service is not yet running,
   // it will be initialized and its OnStart() method will be called. A process

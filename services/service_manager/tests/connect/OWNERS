@@ -24,3 +24,6 @@ per-file connect_test_singleton_app_manifest.json=file://ipc/SECURITY_OWNERS
 
 per-file connect_unittests_manifest.json=set noparent
 per-file connect_unittests_manifest.json=file://ipc/SECURITY_OWNERS
+
+per-file connect_test_sandboxed_app_manifest.json=set noparent
+per-file connect_test_sandboxed_app_manifest.json=file://ipc/SECURITY_OWNERS

@@ -34,6 +34,8 @@ const char kTestPackageName[] = "connect_test_package";
 const char kTestAppName[] = "connect_test_app";
 const char kTestAppAName[] = "connect_test_a";
 const char kTestAppBName[] = "connect_test_b";
+const char kTestNonexistentAppName[] = "connect_test_nonexistent_app";
+const char kTestSandboxedAppName[] = "connect_test_sandboxed_app";
 const char kTestClassAppName[] = "connect_test_class_app";
 const char kTestSingletonAppName[] = "connect_test_singleton_app";
 
@@ -51,6 +53,16 @@ void ReceiveTwoStrings(std::string* out_string_1,
                        const std::string& in_string_2) {
   *out_string_1 = in_string_1;
   *out_string_2 = in_string_2;
+  loop->Quit();
+}
+
+void ReceiveQueryResult(mojom::ConnectResult* out_result,
+                        std::string* out_string,
+                        base::RunLoop* loop,
+                        mojom::ConnectResult in_result,
+                        const std::string& in_string) {
+  *out_result = in_result;
+  *out_string = in_string;
   loop->Quit();
 }
 
@@ -204,6 +216,30 @@ TEST_F(ConnectTest, Instances) {
   }
 
   EXPECT_NE(instance_a1, instance_b);
+}
+
+TEST_F(ConnectTest, QueryService) {
+  mojom::ConnectResult result;
+  std::string sandbox_type;
+  base::RunLoop run_loop;
+  connector()->QueryService(
+      Identity(kTestSandboxedAppName, mojom::kInheritUserID, "A"),
+      base::BindOnce(&ReceiveQueryResult, &result, &sandbox_type, &run_loop));
+  run_loop.Run();
+  EXPECT_EQ(mojom::ConnectResult::SUCCEEDED, result);
+  EXPECT_EQ("superduper", sandbox_type);
+}
+
+TEST_F(ConnectTest, QueryNonexistentService) {
+  mojom::ConnectResult result;
+  std::string sandbox_type;
+  base::RunLoop run_loop;
+  connector()->QueryService(
+      Identity(kTestNonexistentAppName, mojom::kInheritUserID, "A"),
+      base::BindOnce(&ReceiveQueryResult, &result, &sandbox_type, &run_loop));
+  run_loop.Run();
+  EXPECT_EQ(mojom::ConnectResult::INVALID_ARGUMENT, result);
+  EXPECT_EQ("", sandbox_type);
 }
 
 // BlockedInterface should not be exposed to this application because it is not
