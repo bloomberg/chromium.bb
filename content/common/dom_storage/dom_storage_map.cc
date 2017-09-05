@@ -74,12 +74,12 @@ bool DOMStorageMap::SetItem(
     const base::string16& key, const base::string16& value,
     base::NullableString16* old_value) {
   if (has_only_keys_) {
-    size_t unused;
     size_t value_size = value.length() * sizeof(base::char16);
-    return SetItemInternal<KeysMap>(&keys_only_, key, value_size, &unused);
+    return SetItemInternal<KeysMap>(&keys_only_, key, value_size, nullptr);
   } else {
     base::NullableString16 new_value(value, false);
-    *old_value = base::NullableString16();
+    if (old_value)
+      *old_value = base::NullableString16();
     return SetItemInternal<DOMStorageValuesMap>(&keys_values_, key, new_value,
                                                 old_value);
   }
@@ -89,13 +89,12 @@ bool DOMStorageMap::RemoveItem(
     const base::string16& key,
     base::string16* old_value) {
   if (has_only_keys_) {
-    size_t unused;
-    return RemoveItemInternal<KeysMap>(&keys_only_, key, &unused);
+    return RemoveItemInternal<KeysMap>(&keys_only_, key, nullptr);
   } else {
     base::NullableString16 nullable_old;
-    bool success = RemoveItemInternal<DOMStorageValuesMap>(&keys_values_, key,
-                                                           &nullable_old);
-    if (success)
+    bool success = RemoveItemInternal<DOMStorageValuesMap>(
+        &keys_values_, key, old_value ? &nullable_old : nullptr);
+    if (success && old_value)
       *old_value = nullable_old.string();
     return success;
   }
@@ -169,15 +168,16 @@ size_t DOMStorageMap::CountBytes(const DOMStorageValuesMap& values) {
 template <typename MapType>
 bool DOMStorageMap::SetItemInternal(MapType* map_type,
                                     const base::string16& key,
-                                    typename MapType::mapped_type value,
+                                    const typename MapType::mapped_type& value,
                                     typename MapType::mapped_type* old_value) {
   const auto found = map_type->find(key);
   size_t old_item_size = 0;
   size_t old_item_memory = 0;
   if (found != map_type->end()) {
-    *old_value = found->second;
-    old_item_size = size_in_storage(key, *old_value);
-    old_item_memory = size_in_memory(key, *old_value);
+    old_item_size = size_in_storage(key, found->second);
+    old_item_memory = size_in_memory(key, found->second);
+    if (old_value)
+      *old_value = found->second;
   }
   size_t new_item_size = size_in_storage(key, value);
   size_t new_storage_used = storage_used_ - old_item_size + new_item_size;
@@ -202,11 +202,12 @@ bool DOMStorageMap::RemoveItemInternal(
   const auto found = map_type->find(key);
   if (found == map_type->end())
     return false;
-  *old_value = found->second;
+  storage_used_ -= size_in_storage(key, found->second);
+  memory_used_ -= size_in_memory(key, found->second);
+  if (old_value)
+    *old_value = found->second;
   map_type->erase(found);
   ResetKeyIterator();
-  storage_used_ -= size_in_storage(key, *old_value);
-  memory_used_ -= size_in_memory(key, *old_value);
   return true;
 }
 
