@@ -47,9 +47,20 @@ GLGetProcAddressProc g_get_proc_address;
 
 void CleanupNativeLibraries(void* unused) {
   if (g_libraries) {
-    // We do not call base::UnloadNativeLibrary() for these libraries as
-    // unloading libGL without closing X display is not allowed. See
-    // crbug.com/250813 for details.
+    bool unload_libraries = true;
+#if defined(USE_X11)
+    // We do not call base::UnloadNativeLibrary() for kGLImplementationDesktopGL
+    // which use libGL which unloading without closing X display is not allowed.
+    // See crbug.com/250813 for details.
+    // If kGLImplementationDesktopGL is used with switch "test-gl-lib" and ANGLE
+    // implementation then in case of fallback to SwiftShader crash will occur
+    // See crbug.com/760063 for details.
+    unload_libraries = GetGLImplementation() != kGLImplementationDesktopGL;
+#endif
+    if (unload_libraries) {
+      for (auto* library : *g_libraries)
+        base::UnloadNativeLibrary(library);
+    }
     delete g_libraries;
     g_libraries = NULL;
   }
