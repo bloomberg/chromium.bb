@@ -275,6 +275,8 @@ WebCoalescedInputEvent TouchEventManager::GenerateWebCoalescedInputEvent() {
         if (last_coalesced_touch_event_.touches[i].id == web_pointer_event.id) {
           last_coalesced_touch_event_.touches[i] =
               CreateWebTouchPointFromWebPointerEvent(web_pointer_event, false);
+          last_coalesced_touch_event_.SetTimeStampSeconds(
+              web_pointer_event.TimeStampSeconds());
           found_existing_id = true;
           break;
         }
@@ -301,6 +303,8 @@ WebCoalescedInputEvent TouchEventManager::GenerateWebCoalescedInputEvent() {
         if (last_coalesced_touch_event_.touches[i].id == web_pointer_event.id) {
           last_coalesced_touch_event_.touches[i] =
               CreateWebTouchPointFromWebPointerEvent(web_pointer_event, false);
+          last_coalesced_touch_event_.SetTimeStampSeconds(
+              web_pointer_event.TimeStampSeconds());
           result.AddCoalescedEvent(last_coalesced_touch_event_);
 
           // Remove up and canceled points.
