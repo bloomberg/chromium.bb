@@ -132,55 +132,10 @@ void ImageTransportSurfaceOverlayMac::SetLatencyInfo(
                        latency_info.end());
 }
 
-void ImageTransportSurfaceOverlayMac::SendAcceleratedSurfaceBuffersSwapped(
-    CAContextID ca_context_id,
-    bool fullscreen_low_power_ca_context_valid,
-    CAContextID fullscreen_low_power_ca_context_id,
-    const gfx::ScopedRefCountedIOSurfaceMachPort& io_surface,
-    const gfx::Size& size,
-    float scale_factor,
-    std::vector<ui::LatencyInfo> latency_info) {
-  // TRACE_EVENT for gpu tests:
-  TRACE_EVENT_INSTANT2("test_gpu", "SwapBuffers", TRACE_EVENT_SCOPE_THREAD,
-                       "GLImpl", static_cast<int>(gl::GetGLImplementation()),
-                       "width", size.width());
-
-  SwapBuffersCompleteParams params;
-  params.ca_context_id = ca_context_id;
-  params.fullscreen_low_power_ca_context_valid =
-      fullscreen_low_power_ca_context_valid;
-  params.fullscreen_low_power_ca_context_id =
-      fullscreen_low_power_ca_context_id;
-  params.io_surface = io_surface;
-  params.pixel_size = size;
-  params.scale_factor = scale_factor;
-  params.latency_info = std::move(latency_info);
-  params.result = gfx::SwapResult::SWAP_ACK;
-
-  for (auto& query : ca_layer_in_use_queries_) {
-    gpu::TextureInUseResponse response;
-    response.texture = query.texture;
-    bool in_use = false;
-    gl::GLImageIOSurface* io_surface_image =
-        gl::GLImageIOSurface::FromGLImage(query.image.get());
-    if (io_surface_image) {
-      in_use = io_surface_image->CanCheckIOSurfaceIsInUse() &&
-               IOSurfaceIsInUse(io_surface_image->io_surface());
-    }
-    response.in_use = in_use;
-    params.in_use_responses.push_back(std::move(response));
-  }
-  ca_layer_in_use_queries_.clear();
-
-  delegate_->DidSwapBuffersComplete(std::move(params));
-}
-
-gfx::SwapResult ImageTransportSurfaceOverlayMac::SwapBuffersInternal(
-    const gfx::Rect& pixel_damage_rect) {
-  TRACE_EVENT0("gpu", "ImageTransportSurfaceOverlayMac::SwapBuffersInternal");
-
-  base::TimeTicks before_flush_time;
-  base::TimeTicks after_flush_before_commit_time;
+void ImageTransportSurfaceOverlayMac::ApplyBackpressure(
+    base::TimeTicks* before_flush_time,
+    base::TimeTicks* after_flush_before_commit_time) {
+  TRACE_EVENT0("gpu", "ImageTransportSurfaceOverlayMac::ApplyBackpressure");
 
   // If supported, use GLFence to ensure that we haven't gotten more than one
   // frame ahead of GL.
@@ -214,7 +169,7 @@ gfx::SwapResult ImageTransportSurfaceOverlayMac::SwapBuffersInternal(
       }
     }
 
-    before_flush_time = base::TimeTicks::Now();
+    *before_flush_time = base::TimeTicks::Now();
 
     // Create a fence for the current frame's work and save the context.
     previous_frame_fence_.reset(gl::GLFence::Create());
@@ -228,9 +183,9 @@ gfx::SwapResult ImageTransportSurfaceOverlayMac::SwapBuffersInternal(
       CheckGLErrors("After fence/flush");
     }
 
-    after_flush_before_commit_time = base::TimeTicks::Now();
+    *after_flush_before_commit_time = base::TimeTicks::Now();
     UMA_HISTOGRAM_TIMES("GPU.IOSurface.GLFlushTime",
-                        after_flush_before_commit_time - before_flush_time);
+                        *after_flush_before_commit_time - *before_flush_time);
   } else {
     // GLFence isn't supported - issue a glFinish on each frame to ensure
     // there is backpressure from GL.
@@ -238,9 +193,20 @@ gfx::SwapResult ImageTransportSurfaceOverlayMac::SwapBuffersInternal(
     CheckGLErrors("Before finish");
     glFinish();
     CheckGLErrors("After finish");
-    after_flush_before_commit_time = base::TimeTicks::Now();
+    *after_flush_before_commit_time = base::TimeTicks::Now();
   }
+}
 
+gfx::SwapResult ImageTransportSurfaceOverlayMac::SwapBuffersInternal(
+    const gfx::Rect& pixel_damage_rect) {
+  TRACE_EVENT0("gpu", "ImageTransportSurfaceOverlayMac::SwapBuffersInternal");
+
+  // Do a GL fence for flush to apply back-pressure before drawing.
+  base::TimeTicks before_flush_time;
+  base::TimeTicks after_flush_before_commit_time;
+  ApplyBackpressure(&before_flush_time, &after_flush_before_commit_time);
+
+  // Do the CATransaction to update the CALayer tree.
   bool fullscreen_low_power_layer_valid = false;
   {
     TRACE_EVENT0("gpu", "CommitPendingTreesToCA");
@@ -262,27 +228,48 @@ gfx::SwapResult ImageTransportSurfaceOverlayMac::SwapBuffersInternal(
         after_flush_before_commit_time, 1);
   }
 
-  // Send acknowledgement to the browser.
-  CAContextID ca_context_id = 0;
-  CAContextID fullscreen_low_power_ca_context_id = 0;
-  gfx::ScopedRefCountedIOSurfaceMachPort io_surface_mach_port;
-  if (use_remote_layer_api_) {
-    ca_context_id = [ca_context_ contextId];
-    fullscreen_low_power_ca_context_id =
-        [fullscreen_low_power_ca_context_ contextId];
-  } else {
-    IOSurfaceRef io_surface =
-        ca_layer_tree_coordinator_->GetIOSurfaceForDisplay();
-    if (io_surface)
-      io_surface_mach_port.reset(IOSurfaceCreateMachPort(io_surface));
+  // Populate the swap-complete parameters to send to the browser.
+  SwapBuffersCompleteParams params;
+  {
+    TRACE_EVENT_INSTANT2("test_gpu", "SwapBuffers", TRACE_EVENT_SCOPE_THREAD,
+                         "GLImpl", static_cast<int>(gl::GetGLImplementation()),
+                         "width", pixel_size_.width());
+    if (use_remote_layer_api_) {
+      params.ca_context_id = [ca_context_ contextId];
+      params.fullscreen_low_power_ca_context_id =
+          [fullscreen_low_power_ca_context_ contextId];
+      params.fullscreen_low_power_ca_context_valid =
+          fullscreen_low_power_layer_valid;
+    } else {
+      IOSurfaceRef io_surface =
+          ca_layer_tree_coordinator_->GetIOSurfaceForDisplay();
+      if (io_surface) {
+        params.io_surface.reset(IOSurfaceCreateMachPort(io_surface));
+      }
+    }
+    params.pixel_size = pixel_size_;
+    params.scale_factor = scale_factor_;
+    params.latency_info = std::move(latency_info_);
+    params.result = gfx::SwapResult::SWAP_ACK;
+    for (auto& query : ca_layer_in_use_queries_) {
+      gpu::TextureInUseResponse response;
+      response.texture = query.texture;
+      bool in_use = false;
+      gl::GLImageIOSurface* io_surface_image =
+          gl::GLImageIOSurface::FromGLImage(query.image.get());
+      if (io_surface_image) {
+        in_use = io_surface_image->CanCheckIOSurfaceIsInUse() &&
+                 IOSurfaceIsInUse(io_surface_image->io_surface());
+      }
+      response.in_use = in_use;
+      params.in_use_responses.push_back(std::move(response));
+    }
+    ca_layer_in_use_queries_.clear();
   }
-  SendAcceleratedSurfaceBuffersSwapped(
-      ca_context_id, fullscreen_low_power_layer_valid,
-      fullscreen_low_power_ca_context_id, io_surface_mach_port, pixel_size_,
-      scale_factor_, std::move(latency_info_));
 
-  // Reset all state for the next frame.
-  latency_info_.clear();
+  // Send the swap parameters to the browser.
+  delegate_->DidSwapBuffersComplete(std::move(params));
+
   return gfx::SwapResult::SWAP_ACK;
 }
 
