@@ -5,7 +5,7 @@
 #import "ios/clean/chrome/browser/ui/overlays/overlay_scheduler.h"
 
 #include "base/memory/ptr_util.h"
-#import "ios/chrome/browser/ui/coordinators/browser_coordinator_test.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
 #import "ios/clean/chrome/browser/ui/commands/tab_grid_commands.h"
@@ -17,6 +17,7 @@
 #import "ios/clean/chrome/browser/ui/overlays/test_helpers/test_overlay_queue.h"
 #import "ios/clean/chrome/browser/ui/overlays/test_helpers/test_overlay_queue_observer.h"
 #import "ios/clean/chrome/browser/ui/overlays/web_state_overlay_queue.h"
+#include "ios/web/public/test/fakes/test_browser_state.h"
 #include "ios/web/public/test/fakes/test_web_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
@@ -46,44 +47,44 @@ class TestOverlaySchedulerObserver : public OverlaySchedulerObserver {
 };
 
 // Test fixture for OverlayScheduler.
-class OverlaySchedulerTest : public BrowserCoordinatorTest {
+class OverlaySchedulerTest : public PlatformTest {
  public:
-  OverlaySchedulerTest() {
-    observer_ =
-        std::make_unique<TestOverlaySchedulerObserver>(web_state_list());
-
-    OverlayQueueManager::CreateForBrowser(GetBrowser());
-    OverlayScheduler::CreateForBrowser(GetBrowser());
+  OverlaySchedulerTest()
+      : PlatformTest(),
+        browser_(ios::ChromeBrowserState::FromBrowserState(&browser_state_)),
+        observer_(&browser_.web_state_list()) {
+    OverlayQueueManager::CreateForBrowser(&browser_);
+    OverlayScheduler::CreateForBrowser(&browser_);
     scheduler()->SetQueueManager(manager());
-    scheduler()->AddObserver(observer());
+    scheduler()->AddObserver(&observer_);
   }
 
   ~OverlaySchedulerTest() override {
-    scheduler()->RemoveObserver(observer());
+    scheduler()->RemoveObserver(&observer_);
     scheduler()->Disconnect();
   }
 
-  WebStateList* web_state_list() { return &(GetBrowser()->web_state_list()); }
-
-  TestOverlaySchedulerObserver* observer() { return observer_.get(); }
+  Browser* browser() { return &browser_; }
+  WebStateList* web_state_list() { return &browser_.web_state_list(); }
+  TestOverlaySchedulerObserver* observer() { return &observer_; }
   OverlayQueueManager* manager() {
-    return OverlayQueueManager::FromBrowser(GetBrowser());
+    return OverlayQueueManager::FromBrowser(browser());
   }
   OverlayScheduler* scheduler() {
-    return OverlayScheduler::FromBrowser(GetBrowser());
+    return OverlayScheduler::FromBrowser(browser());
   }
 
  private:
-  std::unique_ptr<TestOverlaySchedulerObserver> observer_;
+  web::TestBrowserState browser_state_;
+  Browser browser_;
+  TestOverlaySchedulerObserver observer_;
   TestOverlayQueue queue_;
-
-  DISALLOW_COPY_AND_ASSIGN(OverlaySchedulerTest);
 };
 
 // Tests that adding an overlay to the BrowserOverlayQueue triggers successful
 // presentation.
 TEST_F(OverlaySchedulerTest, AddBrowserOverlay) {
-  BrowserOverlayQueue* queue = BrowserOverlayQueue::FromBrowser(GetBrowser());
+  BrowserOverlayQueue* queue = BrowserOverlayQueue::FromBrowser(browser());
   ASSERT_TRUE(queue);
   TestOverlayParentCoordinator* parent =
       [[TestOverlayParentCoordinator alloc] init];
