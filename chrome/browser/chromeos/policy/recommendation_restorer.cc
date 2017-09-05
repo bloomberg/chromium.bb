@@ -45,9 +45,6 @@ RecommendationRestorer::RecommendationRestorer(Profile* profile)
   pref_change_registrar_.Add(ash::prefs::kAccessibilityScreenMagnifierEnabled,
                              base::Bind(&RecommendationRestorer::Restore,
                                         base::Unretained(this), true));
-  pref_change_registrar_.Add(ash::prefs::kAccessibilityScreenMagnifierType,
-                             base::Bind(&RecommendationRestorer::Restore,
-                                        base::Unretained(this), true));
   pref_change_registrar_.Add(ash::prefs::kAccessibilityVirtualKeyboardEnabled,
                              base::Bind(&RecommendationRestorer::Restore,
                                         base::Unretained(this), true));
@@ -119,7 +116,6 @@ void RecommendationRestorer::RestoreAll() {
   Restore(false, ash::prefs::kAccessibilitySpokenFeedbackEnabled);
   Restore(false, ash::prefs::kAccessibilityHighContrastEnabled);
   Restore(false, ash::prefs::kAccessibilityScreenMagnifierEnabled);
-  Restore(false, ash::prefs::kAccessibilityScreenMagnifierType);
   Restore(false, ash::prefs::kAccessibilityVirtualKeyboardEnabled);
 }
 
