@@ -463,8 +463,12 @@ void PermissionManager::CancelPermissionRequest(int request_id) {
       continue;
     context->CancelPermissionRequest(web_contents, request);
   }
+
   // The request should be automatically removed from |pending_requests_| as a
   // result of it being cancelled but not necessarily immediately.
+  // TODO(timloh): It would be nice to DCHECK that the request is removed, but
+  // currently the PermissionUpdateInfobar (and maybe other places) does this
+  // asynchronously.
 }
 
 void PermissionManager::ResetPermission(PermissionType permission,

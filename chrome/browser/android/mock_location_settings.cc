@@ -4,13 +4,23 @@
 
 #include "chrome/browser/android/mock_location_settings.h"
 
-bool MockLocationSettings::has_android_location_permission_ = false;
-bool MockLocationSettings::is_system_location_setting_enabled_ = false;
-bool MockLocationSettings::can_prompt_for_android_location_permission_ = false;
-bool MockLocationSettings::location_settings_dialog_enabled_ = false;
-LocationSettingsDialogOutcome
-    MockLocationSettings::location_settings_dialog_outcome_ = NO_PROMPT;
-bool MockLocationSettings::has_shown_location_settings_dialog_ = false;
+#include "base/lazy_instance.h"
+
+namespace {
+
+static bool has_android_location_permission_ = false;
+static bool is_system_location_setting_enabled_ = false;
+static bool can_prompt_for_android_location_permission_ = false;
+static bool location_settings_dialog_enabled_ = false;
+static LocationSettingsDialogOutcome location_settings_dialog_outcome_ =
+    NO_PROMPT;
+static bool has_shown_location_settings_dialog_ = false;
+static bool resolve_location_settings_dialog_async_ = false;
+static base::LazyInstance<
+    LocationSettings::LocationSettingsDialogOutcomeCallback>::Leaky
+    location_settings_dialog_callback_ = LAZY_INSTANCE_INITIALIZER;
+
+}  // namespace
 
 MockLocationSettings::MockLocationSettings() : LocationSettings() {
 }
@@ -44,6 +54,16 @@ void MockLocationSettings::ClearHasShownLocationSettingsDialog() {
   has_shown_location_settings_dialog_ = false;
 }
 
+void MockLocationSettings::SetAsyncLocationSettingsDialog() {
+  resolve_location_settings_dialog_async_ = true;
+}
+
+void MockLocationSettings::ResolveAsyncLocationSettingsDialog() {
+  DCHECK(!location_settings_dialog_callback_.Get().is_null());
+  std::move(location_settings_dialog_callback_.Get())
+      .Run(location_settings_dialog_outcome_);
+}
+
 bool MockLocationSettings::HasAndroidLocationPermission() {
   return has_android_location_permission_;
 }
@@ -66,5 +86,10 @@ void MockLocationSettings::PromptToEnableSystemLocationSetting(
     content::WebContents* web_contents,
     LocationSettingsDialogOutcomeCallback callback) {
   has_shown_location_settings_dialog_ = true;
-  std::move(callback).Run(location_settings_dialog_outcome_);
+
+  if (resolve_location_settings_dialog_async_) {
+    location_settings_dialog_callback_.Get() = std::move(callback);
+  } else {
+    std::move(callback).Run(location_settings_dialog_outcome_);
+  }
 }
