@@ -6,7 +6,9 @@
 
 #import "ios/chrome/app/startup/provider_registration.h"
 #include "ios/chrome/browser/application_context.h"
+#import "ios/chrome/browser/ui/webui/chrome_web_ui_ios_controller_factory.h"
 #import "ios/clean/chrome/app/steps/step_features.h"
+#include "ios/web/public/webui/web_ui_ios_controller_factory.h"
 
 @protocol StepContext;
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -21,6 +23,8 @@
 }
 
 - (void)runFeature:(NSString*)feature withContext:(id<StepContext>)context {
+  web::WebUIIOSControllerFactory::RegisterFactory(
+      ChromeWebUIIOSControllerFactory::GetInstance());
   [ProviderRegistration registerProviders];
 }
 
