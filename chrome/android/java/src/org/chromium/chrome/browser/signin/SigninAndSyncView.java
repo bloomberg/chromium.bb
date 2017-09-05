@@ -15,6 +15,7 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.signin.AccountSigninActivity.AccessPoint;
@@ -30,8 +31,8 @@ import javax.annotation.Nullable;
  * A View that shows the user the next step they must complete to start syncing their data (eg.
  * Recent Tabs or Bookmarks). For example, if the user is not signed in, the View will prompt them
  * to do so and link to the AccountSigninActivity.
- * If inflated manually, {@link SigninAndSyncView#init()} must be called before attaching this View
- * to a ViewGroup.
+ * If inflated manually, {@link SigninAndSyncView#init(Listener, int)} must be called before
+ * attaching this View to a ViewGroup.
  */
 public class SigninAndSyncView extends LinearLayout
         implements AndroidSyncSettingsObserver, SignInStateObserver {
@@ -300,6 +301,7 @@ public class SigninAndSyncView extends LinearLayout
     // AndroidSyncStateObserver
     @Override
     public void androidSyncSettingsChanged() {
-        update();
+        // AndroidSyncSettings calls this method from non-UI threads.
+        ThreadUtils.runOnUiThread(() -> update());
     }
 }
