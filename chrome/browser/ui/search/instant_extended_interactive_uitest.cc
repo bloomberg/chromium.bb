@@ -2,29 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <stdint.h>
-
 #include <sstream>
 
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
-#include "base/run_loop.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
-#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
-#include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/search/instant_test_utils.h"
 #include "chrome/browser/ui/search/instant_uitest_base.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -32,19 +20,8 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/history/core/browser/history_db_task.h"
-#include "components/history/core/browser/history_service.h"
-#include "components/history/core/browser/history_types.h"
-#include "components/omnibox/browser/autocomplete_controller.h"
-#include "components/omnibox/browser/autocomplete_match.h"
-#include "components/omnibox/browser/autocomplete_provider.h"
-#include "components/omnibox/browser/autocomplete_result.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
-#include "components/omnibox/browser/search_provider.h"
-#include "components/search/search.h"
-#include "components/search_engines/template_url_service.h"
 #include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/url_data_source.h"
@@ -52,34 +29,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "testing/gmock/include/gmock/gmock.h"
-
-using testing::HasSubstr;
-
-namespace {
-
-// Task used to make sure history has finished processing a request. Intended
-// for use with BlockUntilHistoryProcessesPendingRequests.
-class QuittingHistoryDBTask : public history::HistoryDBTask {
- public:
-  QuittingHistoryDBTask() {}
-
-  bool RunOnDBThread(history::HistoryBackend* backend,
-                     history::HistoryDatabase* db) override {
-    return true;
-  }
-
-  void DoneRunOnMainThread() override {
-    base::RunLoop::QuitCurrentWhenIdleDeprecated();
-  }
-
- private:
-  ~QuittingHistoryDBTask() override {}
-
-  DISALLOW_COPY_AND_ASSIGN(QuittingHistoryDBTask);
-};
-
-}  // namespace
+#include "testing/gtest/include/gtest/gtest.h"
 
 class InstantExtendedTest : public InProcessBrowserTest,
                             public InstantUITestBase {
@@ -115,51 +65,6 @@ class InstantExtendedTest : public InProcessBrowserTest,
                                              &is_focused_);
   }
 
-  const TemplateURL* GetDefaultSearchProviderTemplateURL() {
-    TemplateURLService* template_url_service =
-        TemplateURLServiceFactory::GetForProfile(browser()->profile());
-    if (template_url_service)
-      return template_url_service->GetDefaultSearchProvider();
-    return NULL;
-  }
-
-  bool AddSearchToHistory(base::string16 term, int visit_count) {
-    const TemplateURL* template_url = GetDefaultSearchProviderTemplateURL();
-    if (!template_url)
-      return false;
-
-    history::HistoryService* history = HistoryServiceFactory::GetForProfile(
-        browser()->profile(), ServiceAccessType::EXPLICIT_ACCESS);
-    GURL search(template_url->url_ref().ReplaceSearchTerms(
-        TemplateURLRef::SearchTermsArgs(term),
-        TemplateURLServiceFactory::GetForProfile(
-            browser()->profile())->search_terms_data()));
-    history->AddPageWithDetails(
-        search, base::string16(), visit_count, visit_count,
-        base::Time::Now(), false, history::SOURCE_BROWSED);
-    history->SetKeywordSearchTermsForURL(
-        search, template_url->id(), term);
-    return true;
-  }
-
-  void BlockUntilHistoryProcessesPendingRequests() {
-    history::HistoryService* history = HistoryServiceFactory::GetForProfile(
-        browser()->profile(), ServiceAccessType::EXPLICIT_ACCESS);
-    DCHECK(history);
-    DCHECK(base::MessageLoop::current());
-
-    base::CancelableTaskTracker tracker;
-    history->ScheduleDBTask(
-        std::unique_ptr<history::HistoryDBTask>(new QuittingHistoryDBTask()),
-        &tracker);
-    base::RunLoop().Run();
-  }
-
-  int CountSearchProviderSuggestions() {
-    return omnibox()->model()->autocomplete_controller()->search_provider()->
-        matches().size();
-  }
-
   int on_most_visited_change_calls_;
   int most_visited_items_count_;
   int first_most_visited_item_id_;
@@ -167,13 +72,9 @@ class InstantExtendedTest : public InProcessBrowserTest,
   bool is_focused_;
 };
 
-// Test class used to verify chrome-search: scheme and access policy from the
-// Instant overlay.  This is a subclass of |ExtensionBrowserTest| because it
-// loads a theme that provides a background image.
-class InstantPolicyTest : public ExtensionBrowserTest,
-                          public InstantUITestBase {
+class InstantThemeTest : public ExtensionBrowserTest, public InstantUITestBase {
  public:
-  InstantPolicyTest() {}
+  InstantThemeTest() {}
 
  protected:
   void SetUpInProcessBrowserTestFixture() override {
@@ -208,75 +109,28 @@ class InstantPolicyTest : public ExtensionBrowserTest,
     theme_change_observer.Wait();
     const extensions::Extension* new_theme =
         ThemeServiceFactory::GetThemeForProfile(profile());
-    ASSERT_NE(static_cast<extensions::Extension*>(NULL), new_theme);
+    ASSERT_NE(nullptr, new_theme);
     ASSERT_EQ(new_theme->name(), theme_name);
   }
 
+  // Loads a named image from |image_url| from the given |rvh| host. |loaded|
+  // returns whether the image was able to load without error.
+  // The method returns true if the JavaScript executed cleanly.
+  bool LoadImage(content::RenderViewHost* rvh,
+                 const GURL& image_url,
+                 bool* loaded) {
+    std::string js_chrome =
+        "var img = document.createElement('img');"
+        "img.onerror = function() { domAutomationController.send(false); };"
+        "img.onload  = function() { domAutomationController.send(true); };"
+        "img.src = '" +
+        image_url.spec() + "';";
+    return content::ExecuteScriptAndExtractBool(rvh, js_chrome, loaded);
+  }
+
  private:
-  DISALLOW_COPY_AND_ASSIGN(InstantPolicyTest);
+  DISALLOW_COPY_AND_ASSIGN(InstantThemeTest);
 };
-
-// TODO(https://crbug.com/678975): Flaky on memory bot (all platforms).
-IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
-                       DISABLED_SearchDoesntReuseInstantTab) {
-  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
-  FocusOmnibox();
-
-  SetOmniboxText("flowers");
-  PressEnterAndWaitForFrameLoad();
-
-  // Just did a regular search.
-  content::WebContents* active_tab =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  ASSERT_THAT(active_tab->GetURL().spec(), HasSubstr("q=flowers"));
-
-  SetOmniboxText("puppies");
-  PressEnterAndWaitForNavigation();
-
-  // Should not have reused the tab.
-  active_tab = browser()->tab_strip_model()->GetActiveWebContents();
-  ASSERT_THAT(active_tab->GetURL().spec(), HasSubstr("q=puppies"));
-}
-
-IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
-                       SearchDoesntReuseInstantTabWithoutSupport) {
-  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
-  FocusOmnibox();
-
-  // Don't wait for the navigation to complete.
-  SetOmniboxText("flowers");
-  browser()->window()->GetLocationBar()->AcceptInput();
-
-  SetOmniboxText("puppies");
-  browser()->window()->GetLocationBar()->AcceptInput();
-
-  // Should not have reused the tab.
-  ASSERT_THAT(
-      browser()->tab_strip_model()->GetActiveWebContents()->GetURL().spec(),
-      HasSubstr("q=puppies"));
-}
-
-IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
-                       TypedSearchURLDoesntReuseInstantTab) {
-  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
-  FocusOmnibox();
-
-  SetOmniboxText("flowers");
-  PressEnterAndWaitForFrameLoad();
-
-  // Just did a regular search.
-  content::WebContents* active_tab =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  ASSERT_THAT(active_tab->GetURL().spec(), HasSubstr("q=flowers"));
-
-  // Typed in a search URL "by hand".
-  SetOmniboxText(instant_url().Resolve("#q=puppies").spec());
-  PressEnterAndWaitForNavigation();
-
-  // Should not have reused the tab.
-  active_tab = browser()->tab_strip_model()->GetActiveWebContents();
-  ASSERT_THAT(active_tab->GetURL().spec(), HasSubstr("q=puppies"));
-}
 
 // Test to verify that switching tabs should not dispatch onmostvisitedchanged
 // events.
@@ -310,25 +164,23 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, NoMostVisitedChangedOnTabSwitch) {
   EXPECT_EQ(1, on_most_visited_change_calls_);
 }
 
-IN_PROC_BROWSER_TEST_F(InstantPolicyTest, ThemeBackgroundAccess) {
+IN_PROC_BROWSER_TEST_F(InstantThemeTest, ThemeBackgroundAccess) {
   InstallThemeSource();
   ASSERT_NO_FATAL_FAILURE(InstallThemeAndVerify("theme", "camo theme"));
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
 
-  // The "Instant" New Tab should have access to chrome-search: scheme but not
-  // chrome: scheme.
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), GURL(chrome::kChromeUINewTabURL),
       WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB |
           ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 
+  // The "Instant" New Tab should have access to chrome-search: scheme but not
+  // chrome: scheme.
+  const GURL chrome_url("chrome://theme/IDR_THEME_NTP_BACKGROUND");
+  const GURL search_url("chrome-search://theme/IDR_THEME_NTP_BACKGROUND");
   content::RenderViewHost* rvh =
       browser()->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost();
-
-  const std::string chrome_url("chrome://theme/IDR_THEME_NTP_BACKGROUND");
-  const std::string search_url(
-      "chrome-search://theme/IDR_THEME_NTP_BACKGROUND");
   bool loaded = false;
   ASSERT_TRUE(LoadImage(rvh, chrome_url, &loaded));
   EXPECT_FALSE(loaded) << chrome_url;
@@ -337,7 +189,7 @@ IN_PROC_BROWSER_TEST_F(InstantPolicyTest, ThemeBackgroundAccess) {
 }
 
 // Flaky on all bots. http://crbug.com/335297.
-IN_PROC_BROWSER_TEST_F(InstantPolicyTest,
+IN_PROC_BROWSER_TEST_F(InstantThemeTest,
                        DISABLED_NoThemeBackgroundChangeEventOnTabSwitch) {
   InstallThemeSource();
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
@@ -379,7 +231,7 @@ IN_PROC_BROWSER_TEST_F(InstantPolicyTest,
 }
 
 // Flaky on all bots. http://crbug.com/335297, http://crbug.com/265971.
-IN_PROC_BROWSER_TEST_F(InstantPolicyTest,
+IN_PROC_BROWSER_TEST_F(InstantThemeTest,
                        DISABLED_SendThemeBackgroundChangedEvent) {
   InstallThemeSource();
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));

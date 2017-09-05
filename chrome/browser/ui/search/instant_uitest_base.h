@@ -12,10 +12,6 @@
 
 class OmniboxView;
 
-namespace content {
-class RenderViewHost;
-}  // namespace content
-
 // This utility class is meant to be used in a "mix-in" fashion, giving the
 // derived test class additional Instant-related UI test functionality.
 class InstantUITestBase : public InstantTestBase {
@@ -34,13 +30,6 @@ class InstantUITestBase : public InstantTestBase {
   void PressEnterAndWaitForFrameLoad();
 
   std::string GetOmniboxText();
-
-  // Loads a named image from url |image| from the given |rvh| host.  |loaded|
-  // returns whether the image was able to load without error.
-  // The method returns true if the JavaScript executed cleanly.
-  bool LoadImage(content::RenderViewHost* rvh,
-                 const std::string& image,
-                 bool* loaded);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InstantUITestBase);
