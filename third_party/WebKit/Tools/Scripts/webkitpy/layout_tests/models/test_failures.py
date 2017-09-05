@@ -41,6 +41,11 @@ def is_reftest_failure(failure_list):
     }
     return bool(input_failure_types & reftest_failure_types)
 
+
+def has_failure_type(failure_type, failure_list):
+    return any(isinstance(failure, failure_type) for failure in failure_list)
+
+
 # FIXME: This is backwards.  Each TestFailure subclass should know what
 # test_expectation type it corresponds too.  Then this method just
 # collects them all from the failure list and returns the worst one.
@@ -57,27 +62,26 @@ def determine_result_type(failure_list):
     if not failure_list or len(failure_list) == 0:
         return test_expectations.PASS
 
-    failure_types = [type(f) for f in failure_list]
-    if FailureCrash in failure_types:
+    if has_failure_type(FailureCrash, failure_list):
         return test_expectations.CRASH
-    elif FailureLeak in failure_types:
+    elif has_failure_type(FailureLeak, failure_list):
         return test_expectations.LEAK
-    elif FailureTimeout in failure_types:
+    elif has_failure_type(FailureTimeout, failure_list):
         return test_expectations.TIMEOUT
-    elif FailureEarlyExit in failure_types:
+    elif has_failure_type(FailureEarlyExit, failure_list):
         return test_expectations.SKIP
-    elif (FailureMissingResult in failure_types or
-          FailureMissingImage in failure_types or
-          FailureMissingImageHash in failure_types or
-          FailureMissingAudio in failure_types):
+    elif (has_failure_type(FailureMissingResult, failure_list) or
+          has_failure_type(FailureMissingImage, failure_list) or
+          has_failure_type(FailureMissingImageHash, failure_list) or
+          has_failure_type(FailureMissingAudio, failure_list)):
         return test_expectations.MISSING
     else:
-        is_text_failure = (FailureTextMismatch in failure_types or
-                           FailureTestHarnessAssertion in failure_types)
-        is_image_failure = (FailureImageHashIncorrect in failure_types or
-                            FailureImageHashMismatch in failure_types or
+        is_text_failure = (has_failure_type(FailureTextMismatch, failure_list) or
+                           has_failure_type(FailureTestHarnessAssertion, failure_list))
+        is_image_failure = (has_failure_type(FailureImageHashIncorrect, failure_list) or
+                            has_failure_type(FailureImageHashMismatch, failure_list) or
                             is_reftest_failure(failure_list))
-        is_audio_failure = (FailureAudioMismatch in failure_types)
+        is_audio_failure = has_failure_type(FailureAudioMismatch, failure_list)
         if is_text_failure and is_image_failure:
             return test_expectations.IMAGE_PLUS_TEXT
         elif is_text_failure:
@@ -87,6 +91,7 @@ def determine_result_type(failure_list):
         elif is_audio_failure:
             return test_expectations.AUDIO
         else:
+            failure_types = [type(failure) for failure in failure_list]
             raise ValueError('unclassifiable set of failures: '
                              + str(failure_types))
 
@@ -180,6 +185,36 @@ class FailureTextMismatch(TestFailure):
     def message(self):
         return 'text diff'
 
+    def text_mismatch_category(self):
+        return 'general text mismatch'
+
+
+class FailureSpacesAndTabsTextMismatch(FailureTextMismatch):
+
+    def message(self):
+        return 'text diff by spaces and tabs only'
+
+    def text_mismatch_category(self):
+        return 'spaces and tabs only'
+
+
+class FailureLineBreaksTextMismatch(FailureTextMismatch):
+
+    def message(self):
+        return 'text diff by newlines only'
+
+    def text_mismatch_category(self):
+        return 'newlines only'
+
+
+class FailureSpaceTabLineBreakTextMismatch(FailureTextMismatch):
+
+    def message(self):
+        return 'text diff by spaces, tabs and newlines only'
+
+    def text_mismatch_category(self):
+        return 'spaces, tabs and newlines only'
+
 
 class FailureMissingImageHash(TestFailure):
 
@@ -267,7 +302,9 @@ class FailureEarlyExit(TestFailure):
 # need to enumerate over them all.
 ALL_FAILURE_CLASSES = (FailureTimeout, FailureCrash, FailureMissingResult,
                        FailureTestHarnessAssertion,
-                       FailureTextMismatch, FailureMissingImageHash,
+                       FailureTextMismatch, FailureSpacesAndTabsTextMismatch,
+                       FailureLineBreaksTextMismatch, FailureSpaceTabLineBreakTextMismatch,
+                       FailureMissingImageHash,
                        FailureMissingImage, FailureImageHashMismatch,
                        FailureImageHashIncorrect, FailureReftestMismatch,
                        FailureReftestMismatchDidNotOccur,

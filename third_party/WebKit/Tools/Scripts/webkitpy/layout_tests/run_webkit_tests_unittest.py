@@ -582,7 +582,10 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         self.assertEqual(details.exit_code, 2)
         json_string = host.filesystem.read_text_file('/tmp/layout-test-results/full_results.json')
         self.assertTrue(json_string.find(
-            '"text-image-checksum.html":{"expected":"PASS","actual":"IMAGE+TEXT","is_unexpected":true') != -1)
+            '"text-image-checksum.html":{'
+            '"expected":"PASS",'
+            '"text_mismatch":"general text mismatch",'
+            '"actual":"IMAGE+TEXT","is_unexpected":true') != -1)
         self.assertTrue(json_string.find(
             '"missing_text.html":{"expected":"PASS","is_missing_text":true,"actual":"MISSING","is_unexpected":true') != -1)
         self.assertTrue(json_string.find('"num_regressions":2') != -1)
@@ -801,7 +804,10 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         json_string = host.filesystem.read_text_file('/tmp/layout-test-results/full_results.json')
         results = parse_full_results(json_string)
         self.assertEqual(results['tests']['failures']['unexpected']['text-image-checksum.html'],
-                         {'expected': 'PASS', 'actual': 'TEXT IMAGE+TEXT IMAGE+TEXT IMAGE+TEXT', 'is_unexpected': True})
+                         {'expected': 'PASS',
+                          'actual': 'TEXT IMAGE+TEXT IMAGE+TEXT IMAGE+TEXT',
+                          'is_unexpected': True,
+                          'text_mismatch': 'general text mismatch'})
         self.assertFalse(results['pixel_tests_enabled'])
         self.assertTrue(details.enabled_pixel_tests_in_retry)
 

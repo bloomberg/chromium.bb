@@ -314,14 +314,43 @@ class SingleTestRunner(object):
         return text and 'layer at (0,0) size 800x600' in text
 
     def _compare_text(self, expected_text, actual_text):
-        failures = []
-        if (expected_text and actual_text and
-                # Assuming expected_text is already normalized.
-                self._port.do_text_results_differ(expected_text, self._get_normalized_output_text(actual_text))):
-            failures.append(test_failures.FailureTextMismatch())
-        elif actual_text and not expected_text:
-            failures.append(test_failures.FailureMissingResult())
-        return failures
+        if not actual_text:
+            return []
+        if not expected_text:
+            return [test_failures.FailureMissingResult()]
+
+        normalized_actual_text = self._get_normalized_output_text(actual_text)
+        # Assuming expected_text is already normalized.
+        if not self._port.do_text_results_differ(expected_text, normalized_actual_text):
+            return []
+
+        # Determine the text mismatch type
+
+        def remove_chars(text, chars):
+            for char in chars:
+                text = text.replace(char, '')
+            return text
+
+        # General text mismatch
+        if self._port.do_text_results_differ(
+                remove_chars(expected_text, ' \t\n'),
+                remove_chars(normalized_actual_text, ' \t\n')):
+            return [test_failures.FailureTextMismatch()]
+
+        # Space-only mismatch
+        if not self._port.do_text_results_differ(
+                remove_chars(expected_text, ' \t'),
+                remove_chars(normalized_actual_text, ' \t')):
+            return [test_failures.FailureSpacesAndTabsTextMismatch()]
+
+        # Newline-only mismatch
+        if not self._port.do_text_results_differ(
+                remove_chars(expected_text, '\n'),
+                remove_chars(normalized_actual_text, '\n')):
+            return [test_failures.FailureLineBreaksTextMismatch()]
+
+        # Spaces and newlines
+        return [test_failures.FailureSpaceTabLineBreakTextMismatch()]
 
     def _compare_audio(self, expected_audio, actual_audio):
         failures = []
