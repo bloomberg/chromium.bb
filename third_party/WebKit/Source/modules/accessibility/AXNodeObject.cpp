@@ -1673,10 +1673,6 @@ AXNodeObject::FindAllRadioButtonsWithSameName(HTMLInputElement* radio_button) {
 }
 
 String AXNodeObject::GetText() const {
-  // If this is a user defined static text, use the accessible name computation.
-  if (AriaRoleAttribute() == kStaticTextRole)
-    return ComputedName();
-
   if (!IsTextControl())
     return String();
 
