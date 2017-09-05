@@ -24,7 +24,7 @@
  *
  */
 
-#include "core/events/NodeEventContext.h"
+#include "core/dom/events/NodeEventContext.h"
 
 #include "core/dom/TouchList.h"
 #include "core/dom/events/Event.h"

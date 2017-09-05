@@ -335,6 +335,8 @@ blink_core_sources("dom") {
     "events/EventTarget.h",
     "events/MediaElementEventQueue.cpp",
     "events/MediaElementEventQueue.h",
+    "events/NodeEventContext.cpp",
+    "events/NodeEventContext.h",
     "events/ScopedEventQueue.cpp",
     "events/ScopedEventQueue.h",
     "events/TreeScopeEventContext.cpp",

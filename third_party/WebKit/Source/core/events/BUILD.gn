@@ -44,8 +44,6 @@ blink_core_sources("events") {
     "MutationEvent.h",
     "NavigatorEvents.cpp",
     "NavigatorEvents.h",
-    "NodeEventContext.cpp",
-    "NodeEventContext.h",
     "PageTransitionEvent.cpp",
     "PageTransitionEvent.h",
     "PointerEvent.cpp",
