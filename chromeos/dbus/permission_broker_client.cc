@@ -40,9 +40,10 @@ class PermissionBrokerClientImpl : public PermissionBrokerClient {
     dbus::MethodCall method_call(kPermissionBrokerInterface, kCheckPathAccess);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(path);
-    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-                       base::Bind(&PermissionBrokerClientImpl::OnResponse,
-                                  weak_ptr_factory_.GetWeakPtr(), callback));
+    proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&PermissionBrokerClientImpl::OnResponse,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   void OpenPath(const std::string& path,
@@ -53,10 +54,10 @@ class PermissionBrokerClientImpl : public PermissionBrokerClient {
     writer.AppendString(path);
     proxy_->CallMethodWithErrorCallback(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&PermissionBrokerClientImpl::OnOpenPathResponse,
-                   weak_ptr_factory_.GetWeakPtr(), callback),
-        base::Bind(&PermissionBrokerClientImpl::OnError,
-                   weak_ptr_factory_.GetWeakPtr(), error_callback));
+        base::BindOnce(&PermissionBrokerClientImpl::OnOpenPathResponse,
+                       weak_ptr_factory_.GetWeakPtr(), callback),
+        base::BindOnce(&PermissionBrokerClientImpl::OnError,
+                       weak_ptr_factory_.GetWeakPtr(), error_callback));
   }
 
   void RequestTcpPortAccess(uint16_t port,
@@ -69,9 +70,10 @@ class PermissionBrokerClientImpl : public PermissionBrokerClient {
     writer.AppendUint16(port);
     writer.AppendString(interface);
     writer.AppendFileDescriptor(lifeline_fd);
-    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-                       base::Bind(&PermissionBrokerClientImpl::OnResponse,
-                                  weak_ptr_factory_.GetWeakPtr(), callback));
+    proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&PermissionBrokerClientImpl::OnResponse,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   void RequestUdpPortAccess(uint16_t port,
@@ -84,9 +86,10 @@ class PermissionBrokerClientImpl : public PermissionBrokerClient {
     writer.AppendUint16(port);
     writer.AppendString(interface);
     writer.AppendFileDescriptor(lifeline_fd);
-    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-                       base::Bind(&PermissionBrokerClientImpl::OnResponse,
-                                  weak_ptr_factory_.GetWeakPtr(), callback));
+    proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&PermissionBrokerClientImpl::OnResponse,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   void ReleaseTcpPort(uint16_t port,
@@ -108,9 +111,10 @@ class PermissionBrokerClientImpl : public PermissionBrokerClient {
     dbus::MessageWriter writer(&method_call);
     writer.AppendUint16(port);
     writer.AppendString(interface);
-    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-                       base::Bind(&PermissionBrokerClientImpl::OnResponse,
-                                  weak_ptr_factory_.GetWeakPtr(), callback));
+    proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&PermissionBrokerClientImpl::OnResponse,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
  protected:

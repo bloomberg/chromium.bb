@@ -52,10 +52,10 @@ class EasyUnlockClientImpl : public EasyUnlockClient {
     dbus::MethodCall method_call(
         easy_unlock::kEasyUnlockServiceInterface,
         easy_unlock::kGenerateEcP256KeyPairMethod);
-    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-                       base::Bind(&EasyUnlockClientImpl::OnKeyPair,
-                                  weak_ptr_factory_.GetWeakPtr(),
-                                  callback));
+    proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&EasyUnlockClientImpl::OnKeyPair,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   // EasyUnlockClient override.
@@ -68,10 +68,10 @@ class EasyUnlockClientImpl : public EasyUnlockClient {
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(key_algorithm);
     AppendStringAsByteArray(public_key, &writer);
-    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-                       base::Bind(&EasyUnlockClientImpl::OnData,
-                                  weak_ptr_factory_.GetWeakPtr(),
-                                  callback));
+    proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&EasyUnlockClientImpl::OnData,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   // EasyUnlockClient override.
@@ -86,10 +86,10 @@ class EasyUnlockClientImpl : public EasyUnlockClient {
     //     not guaranteed here, so the method uses byte arrays.
     AppendStringAsByteArray(private_key, &writer);
     AppendStringAsByteArray(public_key, &writer);
-    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-                       base::Bind(&EasyUnlockClientImpl::OnData,
-                                  weak_ptr_factory_.GetWeakPtr(),
-                                  callback));
+    proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&EasyUnlockClientImpl::OnData,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   // EasyUnlockClient override.
@@ -110,10 +110,10 @@ class EasyUnlockClientImpl : public EasyUnlockClient {
     AppendStringAsByteArray(options.decryption_key_id, &writer);
     writer.AppendString(options.encryption_type);
     writer.AppendString(options.signature_type);
-    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-                       base::Bind(&EasyUnlockClientImpl::OnData,
-                                  weak_ptr_factory_.GetWeakPtr(),
-                                  callback));
+    proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&EasyUnlockClientImpl::OnData,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   // EasyUnlockClient override.
@@ -131,10 +131,10 @@ class EasyUnlockClientImpl : public EasyUnlockClient {
     AppendStringAsByteArray(options.associated_data, &writer);
     writer.AppendString(options.encryption_type);
     writer.AppendString(options.signature_type);
-    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-                       base::Bind(&EasyUnlockClientImpl::OnData,
-                                  weak_ptr_factory_.GetWeakPtr(),
-                                  callback));
+    proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&EasyUnlockClientImpl::OnData,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
  protected:

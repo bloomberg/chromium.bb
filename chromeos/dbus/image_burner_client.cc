@@ -35,10 +35,10 @@ class ImageBurnerClientImpl : public ImageBurnerClient {
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(from_path);
     writer.AppendString(to_path);
-    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-                       base::Bind(&ImageBurnerClientImpl::OnBurnImage,
-                                  weak_ptr_factory_.GetWeakPtr(),
-                                  error_callback));
+    proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&ImageBurnerClientImpl::OnBurnImage,
+                       weak_ptr_factory_.GetWeakPtr(), error_callback));
   }
 
   // ImageBurnerClient override.
