@@ -31,13 +31,14 @@ constexpr base::TimeDelta ModuleDatabase::kIdleTimeout;
 
 ModuleDatabase::ModuleDatabase(
     scoped_refptr<base::SequencedTaskRunner> task_runner)
-    : task_runner_(std::move(task_runner)),
+    : task_runner_(task_runner),
       shell_extensions_enumerated_(false),
       ime_enumerated_(false),
       // ModuleDatabase owns |module_inspector_|, so it is safe to use
       // base::Unretained().
       module_inspector_(base::Bind(&ModuleDatabase::OnModuleInspected,
                                    base::Unretained(this))),
+      module_list_manager_(std::move(task_runner)),
       third_party_metrics_(this),
       has_started_processing_(false),
       idle_timer_(
@@ -45,7 +46,9 @@ ModuleDatabase::ModuleDatabase(
           kIdleTimeout,
           base::Bind(&ModuleDatabase::OnDelayExpired, base::Unretained(this)),
           false),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this) {
+  // TODO(pmonette): Wire up the module list manager observer.
+}
 
 ModuleDatabase::~ModuleDatabase() {
   if (this == g_instance)
