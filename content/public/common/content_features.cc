@@ -168,8 +168,14 @@ const base::Feature kMojoInputMessages{"MojoInputMessages",
 
 // Enables/disables hardware video encode acceleration using Mojo (falls back).
 // TODO(mcasas): remove after https://crbug.com/736517 is closed.
-const base::Feature kMojoVideoEncodeAccelerator{
-    "MojoVideoEncodeAccelerator", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kMojoVideoEncodeAccelerator {
+  "MojoVideoEncodeAccelerator",
+#if defined(OS_MACOSX)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 
 // ES6 Modules.
 const base::Feature kModuleScripts{"ModuleScripts",
