@@ -66,6 +66,7 @@ class CORE_EXPORT InspectorPerformanceAgent final
   double layout_duration_ = 0;
   double recalc_style_duration_ = 0;
   double script_duration_ = 0;
+  double script_start_time_ = 0;
   double task_duration_ = 0;
   double task_start_time_ = 0;
   unsigned long long layout_count_ = 0;
