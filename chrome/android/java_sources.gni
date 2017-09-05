@@ -1184,7 +1184,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/util/ViewUtils.java",
   "java/src/org/chromium/chrome/browser/vr_shell/SeparateTaskCustomTabVrActivity.java",
   "java/src/org/chromium/chrome/browser/vr_shell/VrCancelAnimationActivity.java",
-  "java/src/org/chromium/chrome/browser/vr_shell/NonPresentingGvrContext.java",
   "java/src/org/chromium/chrome/browser/vr_shell/VrClassesWrapper.java",
   "java/src/org/chromium/chrome/browser/vr_shell/VrCoreVersionChecker.java",
   "java/src/org/chromium/chrome/browser/vr_shell/VrDaydreamApi.java",
@@ -1330,7 +1329,6 @@ chrome_java_sources = [
 chrome_vr_java_sources = [
   "java/src/org/chromium/chrome/browser/vr_shell/AndroidUiGestureTarget.java",
   "java/src/org/chromium/chrome/browser/vr_shell/AndroidVSyncHelper.java",
-  "java/src/org/chromium/chrome/browser/vr_shell/NonPresentingGvrContextImpl.java",
   "java/src/org/chromium/chrome/browser/vr_shell/VrClassesWrapperImpl.java",
   "java/src/org/chromium/chrome/browser/vr_shell/VrCoreInfo.java",
   "java/src/org/chromium/chrome/browser/vr_shell/VrCoreVersionCheckerImpl.java",

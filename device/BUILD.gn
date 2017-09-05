@@ -248,6 +248,7 @@ test("device_unittests") {
     deps += [
       "//device/vr",
       "//device/vr:fakes",
+      "//device/vr:java",
       "//device/vr:mojo_bindings",
     ]
   }

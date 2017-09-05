@@ -10,6 +10,10 @@
 #include "device/vr/vr_export.h"
 #include "device/vr/vr_service.mojom.h"
 
+namespace gvr {
+class GvrApi;
+}
+
 namespace device {
 
 class VRDisplayImpl;
@@ -26,10 +30,13 @@ class DEVICE_VR_EXPORT GvrDelegateProvider {
   virtual void OnDisplayAdded(VRDisplayImpl* display) = 0;
   virtual void OnDisplayRemoved(VRDisplayImpl* display) = 0;
   virtual void OnListeningForActivateChanged(VRDisplayImpl* display) = 0;
+  // TODO(mthiesse): Remove the GvrApi from these calls.
   virtual void CreateVRDisplayInfo(
+      gvr::GvrApi* gvr_api,
       const base::Callback<void(mojom::VRDisplayInfoPtr)>& callback,
       uint32_t device_id) = 0;
   virtual void GetNextMagicWindowPose(
+      gvr::GvrApi* gvr_api,
       VRDisplayImpl* display,
       mojom::VRDisplay::GetNextMagicWindowPoseCallback callback) = 0;
 

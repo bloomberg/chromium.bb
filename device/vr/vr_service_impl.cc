@@ -18,10 +18,7 @@ namespace device {
 
 VRServiceImpl::VRServiceImpl(int render_frame_process_id,
                              int render_frame_routing_id)
-    : in_set_client_(false),
-      connected_devices_(0),
-      handled_devices_(0),
-      render_frame_process_id_(render_frame_process_id),
+    : render_frame_process_id_(render_frame_process_id),
       render_frame_routing_id_(render_frame_routing_id),
       weak_ptr_factory_(this) {}
 

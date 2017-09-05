@@ -43,11 +43,14 @@ class DEVICE_VR_EXPORT VRDevice {
   void RemoveDisplay(VRDisplayImpl* display);
   virtual void OnDisplayAdded(VRDisplayImpl* display) {}
   virtual void OnDisplayRemoved(VRDisplayImpl* display) {}
-  virtual void OnListeningForActivateChanged(VRDisplayImpl* display){};
+  virtual void OnListeningForActivateChanged(VRDisplayImpl* display) {}
 
   bool IsAccessAllowed(VRDisplayImpl* display);
   bool CheckPresentingDisplay(VRDisplayImpl* display);
   VRDisplayImpl* GetPresentingDisplay() { return presenting_display_; }
+
+  virtual void PauseTracking() {}
+  virtual void ResumeTracking() {}
 
   void OnChanged();
   void OnExitPresent();

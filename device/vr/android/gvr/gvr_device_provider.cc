@@ -14,11 +14,12 @@ GvrDeviceProvider::GvrDeviceProvider() = default;
 GvrDeviceProvider::~GvrDeviceProvider() = default;
 
 void GvrDeviceProvider::GetDevices(std::vector<VRDevice*>* devices) {
-  devices->push_back(vr_device_.get());
+  if (vr_device_.get())
+    devices->push_back(vr_device_.get());
 }
 
 void GvrDeviceProvider::Initialize() {
-  vr_device_ = std::make_unique<GvrDevice>();
+  vr_device_ = GvrDevice::Create();
 }
 
 }  // namespace device

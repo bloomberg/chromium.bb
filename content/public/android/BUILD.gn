@@ -4,6 +4,7 @@
 
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
+import("//device/vr/features/features.gni")
 
 android_aidl("common_aidl") {
   interface_file = "java/src/org/chromium/content/common/common.aidl"
@@ -62,6 +63,10 @@ android_library("content_java") {
     "//ui/android:ui_java",
     "//ui/gfx/geometry/mojo:mojo_java",
   ]
+
+  if (enable_vr) {
+    deps += [ "//device/vr:java" ]
+  }
 
   srcjar_deps = [
     ":common_aidl",
