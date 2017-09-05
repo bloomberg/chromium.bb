@@ -463,4 +463,51 @@ int AXPlatformNodeBase::GetTableRowSpan() const {
   return 1;
 }
 
+bool AXPlatformNodeBase::IsLeaf() {
+  if (GetChildCount() == 0)
+    return true;
+
+  // These types of objects may have children that we use as internal
+  // implementation details, but we want to expose them as leaves to platform
+  // accessibility APIs because screen readers might be confused if they find
+  // any children.
+  // Note that if a combo box, search box or text field are not native, they
+  // might present a menu of choices using aria-owns which should not be hidden
+  // from tree.
+  if (IsNativeTextControl() || IsTextOnlyObject())
+    return true;
+
+  // Roles whose children are only presentational according to the ARIA and
+  // HTML5 Specs should be hidden from screen readers.
+  // (Note that whilst ARIA buttons can have only presentational children, HTML5
+  // buttons are allowed to have content.)
+  switch (GetData().role) {
+    case ui::AX_ROLE_IMAGE:
+    case ui::AX_ROLE_METER:
+    case ui::AX_ROLE_SCROLL_BAR:
+    case ui::AX_ROLE_SLIDER:
+    case ui::AX_ROLE_SPLITTER:
+    case ui::AX_ROLE_PROGRESS_INDICATOR:
+      return true;
+    default:
+      return false;
+  }
+}
+
+bool AXPlatformNodeBase::IsChildOfLeaf() {
+  AXPlatformNodeBase* ancestor = FromNativeViewAccessible(GetParent());
+
+  while (ancestor) {
+    if (ancestor->IsLeaf())
+      return true;
+    ancestor = FromNativeViewAccessible(ancestor->GetParent());
+  }
+
+  return false;
+}
+
+base::string16 AXPlatformNodeBase::GetText() {
+  return GetInnerText();
+}
+
 }  // namespace ui

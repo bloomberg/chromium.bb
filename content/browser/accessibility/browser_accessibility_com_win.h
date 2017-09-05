@@ -442,13 +442,6 @@ class __declspec(uuid("562072fe-3390-43b1-9e2c-dd4118f5ac79"))
   base::string16 description() const { return win_attributes_->description; }
   base::string16 value() const { return win_attributes_->value; }
 
-  std::map<int32_t, int32_t>& hyperlink_offset_to_index() const {
-    return win_attributes_->hyperlink_offset_to_index;
-  }
-  std::vector<int32_t>& hyperlinks() const {
-    return win_attributes_->hyperlinks;
-  }
-
   // Setter and getter for the browser accessibility owner
   BrowserAccessibilityWin* owner() const { return owner_; }
   void SetOwner(BrowserAccessibilityWin* owner) { owner_ = owner; }
@@ -509,7 +502,7 @@ class __declspec(uuid("562072fe-3390-43b1-9e2c-dd4118f5ac79"))
   bool IsHyperlink() const;
   // Returns the hyperlink at the given text position, or nullptr if no
   // hyperlink can be found.
-  BrowserAccessibilityComWin* GetHyperlinkFromHypertextOffset(int offset) const;
+  BrowserAccessibilityComWin* GetHyperlinkFromHypertextOffset(int offset);
 
   // Functions for retrieving offsets for hyperlinks and hypertext.
   // Return -1 in case of failure.
@@ -518,7 +511,7 @@ class __declspec(uuid("562072fe-3390-43b1-9e2c-dd4118f5ac79"))
   int32_t GetHypertextOffsetFromHyperlinkIndex(int32_t hyperlink_index) const;
   int32_t GetHypertextOffsetFromChild(BrowserAccessibilityComWin& child);
   int32_t GetHypertextOffsetFromDescendant(
-      const BrowserAccessibilityComWin& descendant) const;
+      const BrowserAccessibilityComWin& descendant);
 
   // If the selection endpoint is either equal to or an ancestor of this object,
   // returns endpoint_offset.
@@ -529,7 +522,7 @@ class __declspec(uuid("562072fe-3390-43b1-9e2c-dd4118f5ac79"))
   // cannot be found in the accessibility tree.
   int GetHypertextOffsetFromEndpoint(
       const BrowserAccessibilityComWin& endpoint_object,
-      int endpoint_offset) const;
+      int endpoint_offset);
 
   //
   // Selection helper functions.
@@ -538,15 +531,14 @@ class __declspec(uuid("562072fe-3390-43b1-9e2c-dd4118f5ac79"))
   // First they check for a local selection found on the current control, e.g.
   // when querying the selection on a textarea.
   // If not found they retrieve the global selection found on the current frame.
-  int GetSelectionAnchor() const;
-  int GetSelectionFocus() const;
+  int GetSelectionAnchor();
+  int GetSelectionFocus();
   // Retrieves the selection offsets in the way required by the IA2 APIs.
   // selection_start and selection_end are -1 when there is no selection active
   // on this object.
   // The greatest of the two offsets is one past the last character of the
   // selection.)
-  void GetSelectionOffsets(int* selection_start, int* selection_end) const;
-
+  void GetSelectionOffsets(int* selection_start, int* selection_end);
 
   bool IsSameHypertextCharacter(size_t old_char_index, size_t new_char_index);
   void ComputeHypertextRemovedAndInserted(int* start,
@@ -570,8 +562,7 @@ class __declspec(uuid("562072fe-3390-43b1-9e2c-dd4118f5ac79"))
   // Searches forward from the given offset until the start of the next style
   // is found, or searches backward from the given offset until the start of the
   // current style is found.
-  LONG FindStartOfStyle(LONG start_offset,
-                        ui::TextBoundaryDirection direction) const;
+  LONG FindStartOfStyle(LONG start_offset, ui::TextBoundaryDirection direction);
 
   // ID refers to the node ID in the current tree, not the globally unique ID.
   // TODO(nektar): Could we use globally unique IDs everywhere?
@@ -605,21 +596,8 @@ class __declspec(uuid("562072fe-3390-43b1-9e2c-dd4118f5ac79"))
     // IAccessible2 attributes.
     std::vector<base::string16> ia2_attributes;
 
-    // Hypertext.
-    base::string16 hypertext;
-
     // Maps each style span to its start offset in hypertext.
     std::map<int, std::vector<base::string16>> offset_to_text_attributes;
-
-    // Maps an embedded character offset in |hypertext_| to an index in
-    // |hyperlinks_|.
-    std::map<int32_t, int32_t> hyperlink_offset_to_index;
-
-    // The unique id of a BrowserAccessibilityComWin for each hyperlink.
-    // TODO(nektar): Replace object IDs with child indices if we decide that
-    // we are not implementing IA2 hyperlinks for anything other than IA2
-    // Hypertext.
-    std::vector<int32_t> hyperlinks;
   };
 
   BrowserAccessibilityWin* owner_;

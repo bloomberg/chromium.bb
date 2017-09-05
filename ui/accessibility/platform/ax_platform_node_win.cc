@@ -610,8 +610,13 @@ int AXPlatformNodeWin::GetIndexInParent() {
         return index - 1;
     }
   }
-
   return -1;
+}
+
+base::string16 AXPlatformNodeWin::GetText() {
+  if (IsChildOfLeaf())
+    return AXPlatformNodeBase::GetText();
+  return hypertext_;
 }
 
 //

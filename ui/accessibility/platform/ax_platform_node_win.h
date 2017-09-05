@@ -286,6 +286,7 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   // AXPlatformNodeBase overrides.
   void Destroy() override;
   int GetIndexInParent() override;
+  base::string16 GetText() override;
 
   //
   // IAccessible methods.
@@ -649,6 +650,22 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
 
   // AXPlatformNodeBase overrides.
   void Dispose() override;
+
+  // Maps an embedded character offset in |hypertext_| to an index in
+  // |hyperlinks_|.
+  std::map<int32_t, int32_t> old_hyperlink_offset_to_index_;
+  std::map<int32_t, int32_t> hyperlink_offset_to_index_;
+
+  // The unique id of a AXPlatformNodes for each hyperlink.
+  // TODO(nektar): Replace object IDs with child indices if we decide that
+  // we are not implementing IA2 hyperlinks for anything other than IA2
+  // Hypertext.
+  std::vector<int32_t> old_hyperlinks_;
+  std::vector<int32_t> hyperlinks_;
+
+  // Hypertext.
+  base::string16 old_hypertext_;
+  base::string16 hypertext_;
 
  private:
   int32_t unique_id_;
