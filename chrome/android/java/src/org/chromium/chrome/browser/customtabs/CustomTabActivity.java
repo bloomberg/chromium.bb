@@ -18,7 +18,6 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.IBinder;
 import android.os.StrictMode;
 import android.provider.Browser;
@@ -1212,15 +1211,12 @@ public class CustomTabActivity extends ChromeActivity {
             public void didFirstVisuallyNonEmptyPaint(final Tab tab) {
                 tab.removeObserver(this);
 
-                // Blink has rendered the page by this point, but Android asynchronously shows it.
-                // Introduce a small delay, then actually show the page.
-                new Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (!tab.isInitialized() || isActivityDestroyed()) return;
-                        tab.getView().setBackgroundResource(0);
-                    }
-                }, 50);
+                // Blink has rendered the page by this point, but we need to wait for the compositor
+                // frame swap to avoid flash of white content.
+                getCompositorViewHolder().getCompositorView().surfaceRedrawNeededAsync(null, () -> {
+                    if (!tab.isInitialized() || isActivityDestroyed()) return;
+                    tab.getView().setBackgroundResource(0);
+                });
             }
         };
 
