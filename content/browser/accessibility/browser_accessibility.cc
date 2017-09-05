@@ -310,10 +310,6 @@ BrowserAccessibility* BrowserAccessibility::InternalGetParent() const {
   return nullptr;
 }
 
-int32_t BrowserAccessibility::GetIndexInParent() const {
-  return node_ ? node_->index_in_parent() : -1;
-}
-
 int32_t BrowserAccessibility::GetId() const {
   return node_ ? node_->id() : -1;
 }
@@ -969,6 +965,10 @@ ui::AXPlatformNode* BrowserAccessibility::GetFromNodeID(int32_t id) {
   // Not all BrowserAccessibility subclasses can return an AXPlatformNode yet.
   // So, here we just return nullptr.
   return nullptr;
+}
+
+int BrowserAccessibility::GetIndexInParent() const {
+  return node_ ? node_->index_in_parent() : -1;
 }
 
 gfx::AcceleratedWidget
