@@ -116,8 +116,8 @@ void AudioInputDevice::Initialize(const AudioParameters& params,
 void AudioInputDevice::Start() {
   DCHECK(callback_) << "Initialize hasn't been called";
   DVLOG(1) << "Start()";
-  task_runner()->PostTask(FROM_HERE,
-      base::Bind(&AudioInputDevice::StartUpOnIOThread, this));
+  task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&AudioInputDevice::StartUpOnIOThread, this));
 }
 
 void AudioInputDevice::Stop() {
@@ -129,8 +129,8 @@ void AudioInputDevice::Stop() {
     stopping_hack_ = true;
   }
 
-  task_runner()->PostTask(FROM_HERE,
-      base::Bind(&AudioInputDevice::ShutDownOnIOThread, this));
+  task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&AudioInputDevice::ShutDownOnIOThread, this));
 }
 
 void AudioInputDevice::SetVolume(double volume) {
@@ -139,15 +139,17 @@ void AudioInputDevice::SetVolume(double volume) {
     return;
   }
 
-  task_runner()->PostTask(FROM_HERE,
-      base::Bind(&AudioInputDevice::SetVolumeOnIOThread, this, volume));
+  task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&AudioInputDevice::SetVolumeOnIOThread, this, volume));
 }
 
 void AudioInputDevice::SetAutomaticGainControl(bool enabled) {
   DVLOG(1) << "SetAutomaticGainControl(enabled=" << enabled << ")";
-  task_runner()->PostTask(FROM_HERE,
-      base::Bind(&AudioInputDevice::SetAutomaticGainControlOnIOThread,
-          this, enabled));
+  task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&AudioInputDevice::SetAutomaticGainControlOnIOThread, this,
+                     enabled));
 }
 
 void AudioInputDevice::OnStreamCreated(base::SharedMemoryHandle handle,
@@ -178,11 +180,11 @@ void AudioInputDevice::OnStreamCreated(base::SharedMemoryHandle handle,
   if (initially_muted)
     callback_->OnCaptureMuted(true);
 
-  audio_callback_.reset(new AudioInputDevice::AudioThreadCallback(
+  audio_callback_ = std::make_unique<AudioInputDevice::AudioThreadCallback>(
       audio_parameters_, handle, kRequestedSharedMemoryCount, callback_,
-      base::BindRepeating(&AudioInputDevice::SetLastCallbackTimeToNow, this)));
-  audio_thread_.reset(new AudioDeviceThread(audio_callback_.get(),
-                                            socket_handle, "AudioInputDevice"));
+      base::BindRepeating(&AudioInputDevice::SetLastCallbackTimeToNow, this));
+  audio_thread_ = std::make_unique<AudioDeviceThread>(
+      audio_callback_.get(), socket_handle, "AudioInputDevice");
 
   state_ = RECORDING;
   ipc_->RecordStream();
@@ -190,7 +192,7 @@ void AudioInputDevice::OnStreamCreated(base::SharedMemoryHandle handle,
   // Start detecting missing callbacks.
   SetLastCallbackTimeToNowOnIOThread();
   DCHECK(!check_alive_timer_);
-  check_alive_timer_ = base::MakeUnique<base::RepeatingTimer>();
+  check_alive_timer_ = std::make_unique<base::RepeatingTimer>();
   check_alive_timer_->Start(
       FROM_HERE,
       base::TimeDelta::FromSeconds(kCheckMissingCallbacksIntervalSeconds), this,
@@ -341,7 +343,8 @@ void AudioInputDevice::CheckIfInputStreamIsAlive() {
 void AudioInputDevice::SetLastCallbackTimeToNow() {
   task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&AudioInputDevice::SetLastCallbackTimeToNowOnIOThread, this));
+      base::BindOnce(&AudioInputDevice::SetLastCallbackTimeToNowOnIOThread,
+                     this));
 }
 
 void AudioInputDevice::SetLastCallbackTimeToNowOnIOThread() {

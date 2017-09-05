@@ -94,8 +94,20 @@ class MEDIA_EXPORT AudioInputDevice : public AudioCapturerSource,
   void SetVolume(double volume) override;
   void SetAutomaticGainControl(bool enabled) override;
 
- protected:
+ private:
   friend class base::RefCountedThreadSafe<AudioInputDevice>;
+
+  // Our audio thread callback class.  See source file for details.
+  class AudioThreadCallback;
+
+  // Note: The ordering of members in this enum is critical to correct behavior!
+  enum State {
+    IPC_CLOSED,       // No more IPCs can take place.
+    IDLE,             // Not started.
+    CREATING_STREAM,  // Waiting for OnStreamCreated() to be called back.
+    RECORDING,        // Receiving audio data.
+  };
+
   ~AudioInputDevice() override;
 
   // Methods called on IO thread ----------------------------------------------
@@ -106,15 +118,6 @@ class MEDIA_EXPORT AudioInputDevice : public AudioCapturerSource,
   void OnError() override;
   void OnMuted(bool is_muted) override;
   void OnIPCClosed() override;
-
- private:
-  // Note: The ordering of members in this enum is critical to correct behavior!
-  enum State {
-    IPC_CLOSED,  // No more IPCs can take place.
-    IDLE,  // Not started.
-    CREATING_STREAM,  // Waiting for OnStreamCreated() to be called back.
-    RECORDING,  // Receiving audio data.
-  };
 
   // Methods called on IO thread ----------------------------------------------
   // The following methods are tasks posted on the IO thread that needs to
@@ -162,9 +165,6 @@ class MEDIA_EXPORT AudioInputDevice : public AudioCapturerSource,
   // Stores the Automatic Gain Control state. Default is false.
   // Only modified on the IO thread.
   bool agc_is_enabled_;
-
-  // Our audio thread callback class.  See source file for details.
-  class AudioThreadCallback;
 
   // In order to avoid a race between OnStreamCreated and Stop(), we use this
   // guard to control stopping and starting the audio thread.
