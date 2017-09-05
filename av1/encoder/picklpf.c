@@ -100,13 +100,13 @@ static int64_t try_filter_frame(const YV12_BUFFER_CONFIG *sd,
   return filt_err;
 }
 
-int av1_search_filter_level(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi,
-                            int partial_frame, double *best_cost_ret
+static int search_filter_level(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi,
+                               int partial_frame, double *best_cost_ret
 #if CONFIG_LOOPFILTER_LEVEL
-                            ,
-                            int plane, int dir
+                               ,
+                               int plane, int dir
 #endif
-                            ) {
+                               ) {
   const AV1_COMMON *const cm = &cpi->common;
   const struct loopfilter *const lf = &cm->lf;
   const int min_filter_level = 0;
@@ -271,20 +271,20 @@ void av1_pick_filter_level(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi,
 #endif
   } else {
 #if CONFIG_LOOPFILTER_LEVEL
-    lf->filter_level[0] = lf->filter_level[1] = av1_search_filter_level(
+    lf->filter_level[0] = lf->filter_level[1] = search_filter_level(
         sd, cpi, method == LPF_PICK_FROM_SUBIMAGE, NULL, 0, 2);
-    lf->filter_level[0] = av1_search_filter_level(
+    lf->filter_level[0] = search_filter_level(
         sd, cpi, method == LPF_PICK_FROM_SUBIMAGE, NULL, 0, 0);
-    lf->filter_level[1] = av1_search_filter_level(
+    lf->filter_level[1] = search_filter_level(
         sd, cpi, method == LPF_PICK_FROM_SUBIMAGE, NULL, 0, 1);
 
-    lf->filter_level_u = av1_search_filter_level(
+    lf->filter_level_u = search_filter_level(
         sd, cpi, method == LPF_PICK_FROM_SUBIMAGE, NULL, 1, 0);
-    lf->filter_level_v = av1_search_filter_level(
+    lf->filter_level_v = search_filter_level(
         sd, cpi, method == LPF_PICK_FROM_SUBIMAGE, NULL, 2, 0);
 #else
-    lf->filter_level = av1_search_filter_level(
-        sd, cpi, method == LPF_PICK_FROM_SUBIMAGE, NULL);
+    lf->filter_level =
+        search_filter_level(sd, cpi, method == LPF_PICK_FROM_SUBIMAGE, NULL);
 #endif  // CONFIG_LOOPFILTER_LEVEL
   }
 }
