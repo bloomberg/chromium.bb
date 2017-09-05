@@ -164,6 +164,9 @@ weston_desktop_surface_set_size(struct weston_desktop_surface *surface,
 				int32_t width, int32_t height);
 void
 weston_desktop_surface_close(struct weston_desktop_surface *surface);
+void
+weston_desktop_surface_add_metadata_listener(struct weston_desktop_surface *surface,
+					     struct wl_listener *listener);
 
 void *
 weston_desktop_surface_get_user_data(struct weston_desktop_surface *surface);

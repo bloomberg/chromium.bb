@@ -64,6 +64,7 @@ struct weston_desktop_surface {
 		char *title;
 		char *app_id;
 		pid_t pid;
+		struct wl_signal metadata_signal;
 	};
 	struct {
 		struct weston_desktop_surface *parent;
@@ -286,6 +287,8 @@ weston_desktop_surface_create(struct weston_desktop *desktop,
 	wl_list_init(&surface->children_link);
 	wl_list_init(&surface->view_list);
 	wl_list_init(&surface->grab_link);
+
+	wl_signal_init(&surface->metadata_signal);
 
 	return surface;
 }
@@ -511,6 +514,13 @@ weston_desktop_surface_close(struct weston_desktop_surface *surface)
 					       surface->implementation_data);
 }
 
+WL_EXPORT void
+weston_desktop_surface_add_metadata_listener(struct weston_desktop_surface *surface,
+					     struct wl_listener *listener)
+{
+	wl_signal_add(&surface->metadata_signal, listener);
+}
+
 struct weston_desktop_surface *
 weston_desktop_surface_from_client_link(struct wl_list *link)
 {
@@ -679,28 +689,32 @@ void
 weston_desktop_surface_set_title(struct weston_desktop_surface *surface,
 				 const char *title)
 {
-	char *tmp;
+	char *tmp, *old;
 
 	tmp = strdup(title);
 	if (tmp == NULL)
 		return;
 
-	free(surface->title);
+	old = surface->title;
 	surface->title = tmp;
+	wl_signal_emit(&surface->metadata_signal, surface);
+	free(old);
 }
 
 void
 weston_desktop_surface_set_app_id(struct weston_desktop_surface *surface,
 				  const char *app_id)
 {
-	char *tmp;
+	char *tmp, *old;
 
 	tmp = strdup(app_id);
 	if (tmp == NULL)
 		return;
 
-	free(surface->app_id);
+	old = surface->app_id;
 	surface->app_id = tmp;
+	wl_signal_emit(&surface->metadata_signal, surface);
+	free(old);
 }
 
 void
