@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <sys/ioctl.h>
+#include <termios.h>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -197,6 +198,20 @@ bool ProcessProxy::CreatePseudoTerminalPair(int *pt_pair) {
     pt_pair_[PT_SLAVE_FD] = HANDLE_EINTR(open(slave_name, O_RDWR | O_NOCTTY));
 
   if (pt_pair_[PT_SLAVE_FD] == -1) {
+    CloseFdPair(pt_pair);
+    return false;
+  }
+
+  // Get the current tty settings so we can overlay our updates.
+  struct termios termios;
+  if (tcgetattr(pt_pair_[PT_SLAVE_FD], &termios) != 0) {
+    CloseFdPair(pt_pair);
+    return false;
+  }
+
+  // Set the IUTF8 bit on the tty as we should be UTF-8 clean everywhere.
+  termios.c_iflag |= IUTF8;
+  if (tcsetattr(pt_pair_[PT_SLAVE_FD], TCSANOW, &termios) != 0) {
     CloseFdPair(pt_pair);
     return false;
   }
