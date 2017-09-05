@@ -8,7 +8,18 @@
 #import "ios/chrome/browser/ui/coordinators/browser_coordinator.h"
 
 // Internal API for subclasses and categories of BrowserCoordinator.
-//
+
+// Enum for defining the "mode" of the coordinator -- the way that its view
+// controller is positioned in the view controller hierarchy. There's no
+// property in the base class for this value, but subclasses may define a 'mode'
+// property if they need to vary behavior or configuration based on the mode. In
+// that case, the default should always be UNDEFINED.
+typedef NS_ENUM(NSInteger, BrowserCoordinatorMode) {
+  UNDEFINED = 0,
+  PRESENTED,  // The view controller is presented.
+  CONTAINED   // The view controller is contained.
+};
+
 // This API can be used to create and manage 'overlay coordinators'.
 // Overlay coordinators are intended to be used for UI elements that
 // sit on top of the regular UI, and which may need to be dismissed
