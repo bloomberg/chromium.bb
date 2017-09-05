@@ -16,6 +16,7 @@ include_rules = [
   "+base/metrics/field_trial.h",
   "+base/metrics/field_trial_params.h",
   "+base/metrics/histogram_macros.h",
+  "+base/observer_list.h",
   "+base/optional.h",
   "+base/pending_task.h",
   "+base/run_loop.h",
