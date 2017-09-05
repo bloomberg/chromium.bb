@@ -16,6 +16,7 @@ IOSCanMakePaymentQueryFactory* IOSCanMakePaymentQueryFactory::GetInstance() {
   return base::Singleton<IOSCanMakePaymentQueryFactory>::get();
 }
 
+// static
 payments::CanMakePaymentQuery*
 IOSCanMakePaymentQueryFactory::GetForBrowserState(
     ios::ChromeBrowserState* browser_state) {
