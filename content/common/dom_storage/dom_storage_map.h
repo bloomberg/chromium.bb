@@ -30,9 +30,9 @@ class CONTENT_EXPORT DOMStorageMap
   unsigned Length() const;
   base::NullableString16 Key(unsigned index);
 
-  // Sets and removes items from the storage. |old_value| is only valid if
-  // |has_only_keys| is false. |old_value| is not accessed or modified when
-  // |has_only_keys|.
+  // Sets and removes items from the storage. Old value is wriiten into
+  // |old_value| if it's not null and |has_only_keys| is false. |old_value| is
+  // not accessed or modified when |has_only_keys|.
   bool SetItem(const base::string16& key, const base::string16& value,
                base::NullableString16* old_value);
   bool RemoveItem(const base::string16& key, base::string16* old_value);
@@ -78,7 +78,7 @@ class CONTENT_EXPORT DOMStorageMap
   template <typename MapType>
   bool SetItemInternal(MapType* map_type,
                        const base::string16& key,
-                       typename MapType::mapped_type value,
+                       const typename MapType::mapped_type& value,
                        typename MapType::mapped_type* old_value);
   template <typename MapType>
   bool RemoveItemInternal(MapType* map_type,

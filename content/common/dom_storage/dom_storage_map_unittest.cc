@@ -47,7 +47,7 @@ TEST_P(DOMStorageMapParamTest, DOMStorageMapBasics) {
   EXPECT_TRUE(map->Key(100).is_null());
   if (!has_only_keys)
     EXPECT_TRUE(map->GetItem(kKey).is_null());
-  EXPECT_FALSE(map->RemoveItem(kKey, &old_value));
+  EXPECT_FALSE(map->RemoveItem(kKey, nullptr));
   EXPECT_EQ(0u, map->storage_used());
   copy = map->DeepCopy();
   EXPECT_EQ(0u, copy->Length());
@@ -76,8 +76,8 @@ TEST_P(DOMStorageMapParamTest, DOMStorageMapBasics) {
   old_value.clear();
   EXPECT_EQ(0u, map->storage_used());
 
-  EXPECT_TRUE(map->SetItem(kKey, kValue, &old_nullable_value));
-  EXPECT_TRUE(map->SetItem(kKey2, kValue, &old_nullable_value));
+  EXPECT_TRUE(map->SetItem(kKey, kValue, nullptr));
+  EXPECT_TRUE(map->SetItem(kKey2, kValue, nullptr));
   EXPECT_EQ(kItemBytes + kKey2Bytes + kValueBytes, map->storage_used());
   EXPECT_TRUE(map->SetItem(kKey2, kValue2, &old_nullable_value));
   if (!has_only_keys)
@@ -122,17 +122,17 @@ TEST_P(DOMStorageMapParamTest, EnforcesQuota) {
   const size_t kQuota = 50;
 
   scoped_refptr<DOMStorageMap> map(new DOMStorageMap(kQuota, has_only_keys));
-  EXPECT_TRUE(map->SetItem(kKey, kValue, &old_nullable_value));
-  EXPECT_FALSE(map->SetItem(kKey2, kValue, &old_nullable_value));
+  EXPECT_TRUE(map->SetItem(kKey, kValue, nullptr));
+  EXPECT_FALSE(map->SetItem(kKey2, kValue, nullptr));
   if (has_only_keys)
     EXPECT_EQ(kValueSize, map->keys_only_[kKey]);
   else
     EXPECT_EQ(kValue, map->keys_values_[kKey].string());
   EXPECT_EQ(1u, map->Length());
 
-  EXPECT_TRUE(map->RemoveItem(kKey, &old_value));
+  EXPECT_TRUE(map->RemoveItem(kKey, nullptr));
   EXPECT_EQ(0u, map->Length());
-  EXPECT_TRUE(map->SetItem(kKey2, kValue, &old_nullable_value));
+  EXPECT_TRUE(map->SetItem(kKey2, kValue, nullptr));
   EXPECT_EQ(1u, map->Length());
 
   // Verify that the TakeKeysFrom method does not do quota checking.
@@ -147,10 +147,9 @@ TEST_P(DOMStorageMapParamTest, EnforcesQuota) {
 
   // When overbudget, a new value of greater size than the existing value can
   // not be set, but a new value of lesser or equal size can be set.
-  EXPECT_TRUE(map->SetItem(kKey, kValue, &old_nullable_value));
-  EXPECT_FALSE(
-      map->SetItem(kKey, base::string16(kValue + kValue), &old_nullable_value));
-  EXPECT_TRUE(map->SetItem(kKey, base::string16(), &old_nullable_value));
+  EXPECT_TRUE(map->SetItem(kKey, kValue, nullptr));
+  EXPECT_FALSE(map->SetItem(kKey, base::string16(kValue + kValue), nullptr));
+  EXPECT_TRUE(map->SetItem(kKey, base::string16(), nullptr));
   if (has_only_keys)
     EXPECT_EQ(0u, map->keys_only_[kKey]);
   else
@@ -171,15 +170,15 @@ TEST_P(DOMStorageMapParamTest, MemoryUsage) {
   scoped_refptr<DOMStorageMap> map(
       new DOMStorageMap(1024 /* quota */, has_only_keys));
 
-  EXPECT_TRUE(map->SetItem(kKey, kValue, &old_nullable_value));
-  EXPECT_TRUE(map->SetItem(kKey2, kValue, &old_nullable_value));
+  EXPECT_TRUE(map->SetItem(kKey, kValue, nullptr));
+  EXPECT_TRUE(map->SetItem(kKey2, kValue, nullptr));
   if (has_only_keys) {
     EXPECT_EQ(kKeySize + kKey2Size + 2 * kValueSize, map->memory_used());
   } else {
     EXPECT_EQ(map->storage_used(), map->memory_used());
   }
 
-  EXPECT_TRUE(map->RemoveItem(kKey, &old_value));
+  EXPECT_TRUE(map->RemoveItem(kKey, nullptr));
   if (has_only_keys) {
     EXPECT_EQ(kKey2Size + kValueSize, map->memory_used());
   } else {
