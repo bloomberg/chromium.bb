@@ -1155,7 +1155,7 @@ crbug.com/528062 [ Win ] http/tests/security/contentSecurityPolicy/cached-frame-
 crbug.com/528062 [ Win ] http/tests/security/xssAuditor/cached-frame.html [ Failure ]
 crbug.com/528062 [ Win ] http/tests/security/xssAuditor/chunked-big-script.html [ Failure ]
 crbug.com/528062 [ Win ] virtual/mojo-loading/http/tests/css/missing-repaint-after-slow-style-sheet.pl [ Failure ]
-crbug.com/528062 [ Win ] virtual/mojo-loading/http/tests/local/blob/send-data-blob.html [ Failure ]
+crbug.com/528062 [ Win ] virtual/mojo-loading/http/tests/local/blob/send-data-blob.html [ Failure Timeout ]
 crbug.com/528062 [ Win ] virtual/mojo-loading/http/tests/local/blob/send-hybrid-blob.html [ Failure Timeout ]
 crbug.com/528062 [ Win ] virtual/mojo-loading/http/tests/security/XFrameOptions/x-frame-options-cached.html [ Failure ]
 crbug.com/528062 [ Win ] virtual/mojo-loading/http/tests/security/contentSecurityPolicy/cached-frame-csp.html [ Failure ]
