@@ -84091,6 +84091,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Translate.LanguageSettingsIsShown" enum="BooleanShown">
+  <owner>renjieliu@chromium.org</owner>
+  <summary>
+    Log everytime the language settings page is shown. This can be either user
+    visits chrome://settings/languages or user visits the advanced languages
+    card in chrome://settings. With this stat, we will be able to understand how
+    well the language model is doing by looking into how the number changes over
+    time. In additiona to that, we are also interested in how many users ever
+    visit the languages settings card.
+  </summary>
+</histogram>
+
 <histogram name="Translate.LanguageVerification"
     enum="TranslateLanguageVerification">
   <owner>yyushkina@chromium.org</owner>
