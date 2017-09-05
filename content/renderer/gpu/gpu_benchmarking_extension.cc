@@ -558,12 +558,17 @@ void GpuBenchmarking::Install(RenderFrameImpl* frame) {
   chrome->Set(gin::StringToV8(isolate, "gpuBenchmarking"), controller.ToV8());
 }
 
-GpuBenchmarking::GpuBenchmarking(RenderFrameImpl* frame) {
-  frame->GetRemoteInterfaces()->GetInterface(
-      mojo::MakeRequest(&input_injector_));
-}
+GpuBenchmarking::GpuBenchmarking(RenderFrameImpl* frame)
+    : render_frame_(frame) {}
 
 GpuBenchmarking::~GpuBenchmarking() {
+}
+
+void GpuBenchmarking::EnsureRemoteInterface() {
+  if (!input_injector_) {
+    render_frame_->GetRemoteInterfaces()->GetInterface(
+        mojo::MakeRequest(&input_injector_));
+  }
 }
 
 gin::ObjectTemplateBuilder GpuBenchmarking::GetObjectTemplateBuilder(
@@ -698,6 +703,7 @@ bool GpuBenchmarking::SmoothScrollBy(gin::Arguments* args) {
     return false;
   }
 
+  EnsureRemoteInterface();
   return BeginSmoothScroll(args->isolate(), input_injector_, pixels_to_scroll,
                            callback, gesture_source_type, direction,
                            speed_in_pixels_s, true, start_x, start_y);
@@ -726,6 +732,7 @@ bool GpuBenchmarking::SmoothDrag(gin::Arguments* args) {
     return false;
   }
 
+  EnsureRemoteInterface();
   return BeginSmoothDrag(args->isolate(), input_injector_, start_x, start_y,
                          end_x, end_y, callback, gesture_source_type,
                          speed_in_pixels_s);
@@ -755,6 +762,7 @@ bool GpuBenchmarking::Swipe(gin::Arguments* args) {
     return false;
   }
 
+  EnsureRemoteInterface();
   return BeginSmoothScroll(
       args->isolate(), input_injector_, -pixels_to_scroll, callback,
       1,  // TOUCH_INPUT
@@ -824,6 +832,7 @@ bool GpuBenchmarking::ScrollBounce(gin::Arguments* args) {
     gesture_params.distances.push_back(distance);
     gesture_params.distances.push_back(-distance + overscroll);
   }
+  EnsureRemoteInterface();
   input_injector_->QueueSyntheticSmoothScroll(
       gesture_params, base::BindOnce(&OnSyntheticGestureCompleted,
                                      base::RetainedRef(callback_and_context)));
@@ -866,6 +875,7 @@ bool GpuBenchmarking::PinchBy(gin::Arguments* args) {
   scoped_refptr<CallbackAndContext> callback_and_context =
       new CallbackAndContext(args->isolate(), callback,
                              context.web_frame()->MainWorldScriptContext());
+  EnsureRemoteInterface();
   input_injector_->QueueSyntheticPinch(
       gesture_params, base::BindOnce(&OnSyntheticGestureCompleted,
                                      base::RetainedRef(callback_and_context)));
@@ -966,6 +976,7 @@ bool GpuBenchmarking::Tap(gin::Arguments* args) {
   scoped_refptr<CallbackAndContext> callback_and_context =
       new CallbackAndContext(args->isolate(), callback,
                              context.web_frame()->MainWorldScriptContext());
+  EnsureRemoteInterface();
   input_injector_->QueueSyntheticTap(
       gesture_params, base::BindOnce(&OnSyntheticGestureCompleted,
                                      base::RetainedRef(callback_and_context)));
@@ -1006,6 +1017,7 @@ bool GpuBenchmarking::PointerActionSequence(gin::Arguments* args) {
   scoped_refptr<CallbackAndContext> callback_and_context =
       new CallbackAndContext(args->isolate(), callback,
                              context.web_frame()->MainWorldScriptContext());
+  EnsureRemoteInterface();
   input_injector_->QueueSyntheticPointerAction(
       actions_parser.gesture_params(),
       base::BindOnce(&OnSyntheticGestureCompleted,
