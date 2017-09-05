@@ -210,6 +210,7 @@
 #include "base/win/win_util.h"
 #include "chrome/browser/chrome_browser_main_win.h"
 #include "chrome/browser/component_updater/sw_reporter_installer_win.h"
+#include "chrome/browser/component_updater/third_party_module_list_component_installer_win.h"
 #include "chrome/browser/downgrade/user_data_downgrade.h"
 #include "chrome/browser/first_run/upgrade_util_win.h"
 #include "chrome/browser/ui/network_profile_bubble.h"
@@ -537,6 +538,7 @@ void RegisterComponentsForUpdate() {
 #if defined(OS_WIN)
 #if defined(GOOGLE_CHROME_BUILD)
   RegisterSwReporterComponent(cus);
+  RegisterThirdPartyModuleListComponent(cus);
 #endif  // defined(GOOGLE_CHROME_BUILD)
 #endif  // defined(OS_WIN)
 }

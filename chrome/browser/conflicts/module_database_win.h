@@ -16,6 +16,7 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/conflicts/module_info_win.h"
 #include "chrome/browser/conflicts/module_inspector_win.h"
+#include "chrome/browser/conflicts/module_list_manager_win.h"
 #include "chrome/browser/conflicts/third_party_metrics_recorder_win.h"
 #include "content/public/common/process_type.h"
 
@@ -106,6 +107,10 @@ class ModuleDatabase {
   // ModuleDatabase becomes idle ASAP.
   void IncreaseInspectionPriority();
 
+  // Accessor for the module list manager. This is exposed so that the manager
+  // can be wired up to the ThirdPartyModuleListComponentInstaller.
+  ModuleListManager& module_list_manager() { return module_list_manager_; }
+
  private:
   friend class TestModuleDatabase;
   friend class ModuleDatabaseTest;
@@ -168,6 +173,9 @@ class ModuleDatabase {
   // Inspects new modules on a blocking task runner.
   ModuleInspector module_inspector_;
 
+  // Keeps track of where the most recent module list is located on disk, and
+  // provides notifications when this changes.
+  ModuleListManager module_list_manager_;
   base::ObserverList<ModuleDatabaseObserver> observer_list_;
 
   ThirdPartyMetricsRecorder third_party_metrics_;
