@@ -21,12 +21,9 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.NtpUiCaptureTestData;
 import org.chromium.chrome.browser.ntp.cards.ItemViewType;
-import org.chromium.chrome.test.BottomSheetTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.util.browser.RecyclerViewTestUtils;
 import org.chromium.chrome.test.util.browser.suggestions.SuggestionsDependenciesRule;
 import org.chromium.content.browser.test.util.TestTouchUtils;
 import org.chromium.ui.test.util.UiRestriction;
@@ -38,7 +35,7 @@ import org.chromium.ui.test.util.UiRestriction;
 @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE) // ChromeHome is only enabled on phones
 public class SuggestionsBottomSheetTest {
     @Rule
-    public BottomSheetTestRule mActivityRule = new BottomSheetTestRule();
+    public SuggestionsBottomSheetTestRule mActivityRule = new SuggestionsBottomSheetTestRule();
 
     @Rule
     public SuggestionsDependenciesRule createSuggestions() {
@@ -54,15 +51,8 @@ public class SuggestionsBottomSheetTest {
     @RetryOnFailure
     @MediumTest
     public void testContextMenu() throws InterruptedException {
-        SuggestionsRecyclerView recyclerView =
-                mActivityRule.getBottomSheetContent().getContentView().findViewById(
-                        R.id.recycler_view);
-
-        int suggestionPosition =
-                recyclerView.getNewTabPageAdapter().getFirstPositionForType(ItemViewType.SNIPPET);
         ViewHolder suggestionViewHolder =
-                RecyclerViewTestUtils.scrollToView(recyclerView, suggestionPosition);
-
+                mActivityRule.scrollToFirstItemOfType(ItemViewType.SNIPPET);
         assertFalse(mActivityRule.getBottomSheet().onInterceptTouchEvent(createTapEvent()));
 
         TestTouchUtils.longClickView(

@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.suggestions;
 
 import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
 
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 import static org.chromium.chrome.test.BottomSheetTestRule.ENABLE_CHROME_HOME;
@@ -26,16 +25,12 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.ScreenShooter;
 import org.chromium.base.test.util.parameter.CommandLineParameter;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ntp.NtpUiCaptureTestData;
 import org.chromium.chrome.browser.ntp.cards.ItemViewType;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageAdapter;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
-import org.chromium.chrome.test.BottomSheetTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.util.browser.RecyclerViewTestUtils;
-import org.chromium.chrome.test.util.browser.suggestions.ContentSuggestionsTestUtils;
 import org.chromium.chrome.test.util.browser.suggestions.FakeSuggestionsSource;
 import org.chromium.chrome.test.util.browser.suggestions.SuggestionsDependenciesRule;
 import org.chromium.ui.test.util.UiRestriction;
@@ -51,7 +46,7 @@ import org.chromium.ui.test.util.UiRestriction;
 @ScreenShooter.Directory("HomeSheetStates")
 public class HomeSheetUiCaptureTest {
     @Rule
-    public BottomSheetTestRule mActivityTestRule = new BottomSheetTestRule();
+    public SuggestionsBottomSheetTestRule mActivityRule = new SuggestionsBottomSheetTestRule();
 
     private FakeSuggestionsSource mSuggestionsSource;
 
@@ -69,7 +64,7 @@ public class HomeSheetUiCaptureTest {
 
     @Before
     public void setup() throws InterruptedException {
-        mActivityTestRule.startMainActivityOnBlankPage();
+        mActivityRule.startMainActivityOnBlankPage();
     }
 
     @Test
@@ -83,7 +78,7 @@ public class HomeSheetUiCaptureTest {
         // Needs to be "Full" to for this to work on small screens in landscape.
         setSheetState(BottomSheet.SHEET_STATE_FULL);
 
-        scrollToFirstItemOfType(ItemViewType.PROMO);
+        mActivityRule.scrollToFirstItemOfType(ItemViewType.PROMO);
 
         boolean newSigninPromo =
                 ChromeFeatureList.isEnabled(ChromeFeatureList.ANDROID_SIGNIN_PROMOS);
@@ -96,52 +91,28 @@ public class HomeSheetUiCaptureTest {
     @CommandLineFlags.Add(ENABLE_CHROME_HOME)
     @ScreenShooter.Directory("AllDismissed")
     public void testAllDismissed() {
-        final SuggestionsRecyclerView recyclerView = getRecyclerView();
+        NewTabPageAdapter adapter = mActivityRule.getAdapter();
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            NewTabPageAdapter newTabPageAdapter = recyclerView.getNewTabPageAdapter();
-            int signInPromoPosition = newTabPageAdapter.getFirstPositionForType(ItemViewType.PROMO);
+            int signInPromoPosition = adapter.getFirstPositionForType(ItemViewType.PROMO);
             assertNotEquals(signInPromoPosition, RecyclerView.NO_POSITION);
-            newTabPageAdapter.dismissItem(signInPromoPosition, ignored -> { });
+            adapter.dismissItem(signInPromoPosition, ignored -> { });
 
             // Dismiss all articles.
             while (true) {
-                int articlePosition =
-                        newTabPageAdapter.getFirstPositionForType(ItemViewType.SNIPPET);
+                int articlePosition = adapter.getFirstPositionForType(ItemViewType.SNIPPET);
                 if (articlePosition == RecyclerView.NO_POSITION) break;
-                newTabPageAdapter.dismissItem(articlePosition, ignored -> { });
+                adapter.dismissItem(articlePosition, ignored -> { });
             }
         });
 
-        scrollToFirstItemOfType(ItemViewType.ALL_DISMISSED);
+        mActivityRule.scrollToFirstItemOfType(ItemViewType.ALL_DISMISSED);
 
         mScreenShooter.shoot("All_dismissed");
     }
 
-    private void scrollToFirstItemOfType(@ItemViewType int itemViewType) {
-        SuggestionsRecyclerView recyclerView = getRecyclerView();
-        NewTabPageAdapter newTabPageAdapter = recyclerView.getNewTabPageAdapter();
-        int position = newTabPageAdapter.getFirstPositionForType(itemViewType);
-        assertNotEquals("Scroll target of type " + itemViewType + " not found\n"
-                        + ContentSuggestionsTestUtils.stringify(
-                                  newTabPageAdapter.getRootForTesting()),
-                RecyclerView.NO_POSITION, position);
-
-        ThreadUtils.runOnUiThreadBlocking(
-                () -> recyclerView.getLinearLayoutManager().scrollToPosition(position));
-        RecyclerViewTestUtils.waitForView(recyclerView, position);
-    }
-
     private void setSheetState(final int position) {
-        mActivityTestRule.setSheetState(position, false);
+        mActivityRule.setSheetState(position, false);
         waitForWindowUpdates();
-    }
-
-    private SuggestionsRecyclerView getRecyclerView() {
-        SuggestionsRecyclerView recyclerView =
-                mActivityTestRule.getBottomSheetContent().getContentView().findViewById(
-                        R.id.recycler_view);
-        assertNotNull(recyclerView);
-        return recyclerView;
     }
 
     /** Wait for update to start and finish. */
