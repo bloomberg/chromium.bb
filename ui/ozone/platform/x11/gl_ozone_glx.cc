@@ -72,6 +72,15 @@ void GLOzoneGLX::InitializeDebugGLBindings() {
   gl::InitializeDebugGLBindingsGLX();
 }
 
+void GLOzoneGLX::SetDisabledExtensionsPlatform(
+    const std::string& disabled_extensions) {
+  gl::SetDisabledExtensionsGLX(disabled_extensions);
+}
+
+bool GLOzoneGLX::InitializeExtensionSettingsOneOffPlatform() {
+  return gl::InitializeExtensionSettingsOneOffGLX();
+}
+
 void GLOzoneGLX::ShutdownGL() {
   gl::ClearBindingsGL();
   gl::ClearBindingsGLX();
