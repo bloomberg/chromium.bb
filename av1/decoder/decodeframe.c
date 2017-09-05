@@ -19,9 +19,9 @@
 
 #include "aom/aom_codec.h"
 #include "aom_dsp/aom_dsp_common.h"
+#include "aom_dsp/binary_codes_reader.h"
 #include "aom_dsp/bitreader.h"
 #include "aom_dsp/bitreader_buffer.h"
-#include "aom_dsp/binary_codes_reader.h"
 #include "aom_mem/aom_mem.h"
 #include "aom_ports/mem.h"
 #include "aom_ports/mem_ops.h"
@@ -2550,16 +2550,24 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
         prev_mi_row = mi_row;
         prev_mi_col = mi_col - MAX_MIB_SIZE;
       }
+
       const uint8_t prev_lvl =
           cm->mi_grid_visible[prev_mi_row * cm->mi_stride + prev_mi_col]
               ->mbmi.filt_lvl;
 
-      const unsigned int delta = aom_read_literal(r, LPF_DELTA_BITS, ACCT_STR);
-      if (delta) {
-        const int sign = aom_read_literal(r, 1, ACCT_STR);
-        filt_lvl = sign ? prev_lvl + delta : prev_lvl - delta;
-      } else {
+      const int reuse_prev_lvl = aom_read_literal(r, 1, ACCT_STR);
+      if (reuse_prev_lvl) {
         filt_lvl = prev_lvl;
+      } else {
+        const unsigned int delta =
+            aom_read_literal(r, LPF_DELTA_BITS, ACCT_STR);
+
+        if (delta) {
+          const int sign = aom_read_literal(r, 1, ACCT_STR);
+          filt_lvl = sign ? prev_lvl + delta : prev_lvl - delta;
+        } else {
+          filt_lvl = prev_lvl;
+        }
       }
     }
     int row, col;

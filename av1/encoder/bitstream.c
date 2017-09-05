@@ -14,9 +14,9 @@
 #include <stdio.h>
 
 #include "aom/aom_encoder.h"
-#include "aom_dsp/bitwriter_buffer.h"
 #include "aom_dsp/aom_dsp_common.h"
 #include "aom_dsp/binary_codes_writer.h"
+#include "aom_dsp/bitwriter_buffer.h"
 #include "aom_mem/aom_mem.h"
 #include "aom_ports/mem_ops.h"
 #include "aom_ports/system_state.h"
@@ -3153,11 +3153,15 @@ static void write_modes_sb(AV1_COMP *const cpi, const TileInfo *const tile,
 
       const uint8_t curr_lvl = curr_mbmi->filt_lvl;
       const uint8_t prev_lvl = prev_mbmi->filt_lvl;
-      const int sign = curr_lvl > prev_lvl;
-      const unsigned int delta = abs(curr_lvl - prev_lvl);
 
-      aom_write_literal(w, delta, LPF_DELTA_BITS);
-      if (delta) aom_write_literal(w, sign, 1);
+      aom_write_literal(w, curr_lvl == prev_lvl, 1);
+      if (curr_lvl != prev_lvl) {
+        const int sign = curr_lvl > prev_lvl;
+        const unsigned int delta = abs(curr_lvl - prev_lvl);
+
+        aom_write_literal(w, delta, LPF_DELTA_BITS);
+        if (delta) aom_write_literal(w, sign, 1);
+      }
     }
   }
 #endif

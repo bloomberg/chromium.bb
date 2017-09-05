@@ -125,6 +125,7 @@ static int64_t try_filter_frame(const YV12_BUFFER_CONFIG *sd,
   filt_err = compute_sb_y_sse(sd, cm->frame_to_show, mi_row, mi_col);
 #endif  // CONFIG_HIGHBITDEPTH
 
+  // TODO(chengchen): Copy the superblock only
   // Re-instate the unfiltered frame
   aom_yv12_copy_y(&cpi->last_frame_uf, cm->frame_to_show);
 
@@ -142,17 +143,31 @@ static int search_filter_level(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi,
   int filt_best = last_lvl;
   MACROBLOCK *x = &cpi->td.mb;
 
-  //  Make a copy of the unfiltered / processed recon buffer
+  // Make a copy of the unfiltered / processed recon buffer
   aom_yv12_copy_y(cm->frame_to_show, &cpi->last_frame_uf);
+
+  int64_t estimate_err =
+      try_filter_frame(sd, cpi, last_lvl, partial_frame, mi_row, mi_col);
 
   int i;
   for (i = min_filter_level; i <= max_filter_level; ++i) {
+    if (i == last_lvl) continue;
+
     int64_t filt_err =
         try_filter_frame(sd, cpi, i, partial_frame, mi_row, mi_col);
     if (filt_err < best_err) {
       best_err = filt_err;
       filt_best = i;
     }
+  }
+
+  // If previous sb filter level has similar filtering performance as current
+  // best filter level, use previous level such that we can only send one bit
+  // to indicate current filter level is the same as the previous.
+  const int64_t threshold = 700;
+  if ((mi_row > 0 || mi_col > 0) && abs(estimate_err - best_err) < threshold) {
+    best_err = estimate_err;
+    filt_best = last_lvl;
   }
 
   if (best_cost_ret) *best_cost_ret = RDCOST_DBL(x->rdmult, 0, best_err);
