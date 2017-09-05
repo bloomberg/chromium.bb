@@ -28,7 +28,7 @@ class CanMakePaymentQuery;
 class IOSCanMakePaymentQueryFactory : public BrowserStateKeyedServiceFactory {
  public:
   static IOSCanMakePaymentQueryFactory* GetInstance();
-  payments::CanMakePaymentQuery* GetForBrowserState(
+  static payments::CanMakePaymentQuery* GetForBrowserState(
       ios::ChromeBrowserState* browser_state);
 
  private:

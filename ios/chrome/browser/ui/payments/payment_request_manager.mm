@@ -390,8 +390,8 @@ struct PendingPaymentResponse {
 
 - (void)resetIOSPaymentInstrumentLauncherDelegate {
   payments::IOSPaymentInstrumentLauncher* paymentAppLauncher =
-      payments::IOSPaymentInstrumentLauncherFactory::GetInstance()
-          ->GetForBrowserState(_browserState);
+      payments::IOSPaymentInstrumentLauncherFactory::GetForBrowserState(
+          _browserState->GetOriginalChromeBrowserState());
   DCHECK(paymentAppLauncher);
   paymentAppLauncher->set_delegate(nullptr);
 }
@@ -713,8 +713,8 @@ paymentRequestFromMessage:(const base::DictionaryValue&)message
   BOOL canMakePayment = paymentRequest->CanMakePayment();
 
   payments::CanMakePaymentQuery* canMakePaymentQuery =
-      IOSCanMakePaymentQueryFactory::GetInstance()->GetForBrowserState(
-          _browserState);
+      IOSCanMakePaymentQueryFactory::GetForBrowserState(
+          _browserState->GetOriginalChromeBrowserState());
   DCHECK(canMakePaymentQuery);
   // iOS PaymentRequest does not support iframes.
   if (canMakePaymentQuery->CanQuery(
@@ -960,8 +960,8 @@ requestFullCreditCard:(const autofill::CreditCard&)creditCard
   [_paymentRequestCoordinator setCancellable:YES];
 
   payments::IOSPaymentInstrumentLauncher* paymentAppLauncher =
-      payments::IOSPaymentInstrumentLauncherFactory::GetInstance()
-          ->GetForBrowserState(_browserState);
+      payments::IOSPaymentInstrumentLauncherFactory::GetForBrowserState(
+          _browserState->GetOriginalChromeBrowserState());
   DCHECK(paymentAppLauncher);
   if (!paymentAppLauncher->LaunchIOSPaymentInstrument(
           _pendingPaymentRequest, _activeWebState, universalLink, delegate)) {
