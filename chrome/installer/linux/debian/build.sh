@@ -135,11 +135,11 @@ cleanup() {
 }
 
 usage() {
-  echo "usage: $(basename $0) [-a target_arch] [-b 'dir'] [-c channel]"
+  echo "usage: $(basename $0) [-a target_arch] [-b 'dir'] -c channel"
   echo "                      -d branding [-f] [-o 'dir'] -s 'dir'"
   echo "-a arch     package architecture (ia32 or x64)"
   echo "-b dir      build input directory    [${BUILDDIR}]"
-  echo "-c channel  the package channel (trunk, asan, unstable, beta, stable)"
+  echo "-c channel  the package channel (unstable, beta, stable)"
   echo "-d brand    either chromium or google_chrome"
   echo "-f          indicates that this is an official build"
   echo "-h          this help message"
@@ -161,12 +161,6 @@ verify_channel() {
     testing|beta )
       CHANNEL=beta
       RELEASENOTES="http://googlechromereleases.blogspot.com/search/label/Beta%20updates"
-      ;;
-    trunk|asan )
-      # Setting this to empty will prevent it from updating any existing configs
-      # from release packages.
-      REPOCONFIG=""
-      RELEASENOTES="http://googlechromereleases.blogspot.com/"
       ;;
     * )
       echo
@@ -227,7 +221,6 @@ process_opts() {
 
 SCRIPTDIR=$(readlink -f "$(dirname "$0")")
 OUTPUTDIR="${PWD}"
-CHANNEL="trunk"
 # Default target architecture to same as build host.
 if [ "$(uname -m)" = "x86_64" ]; then
   TARGETARCH="x64"
