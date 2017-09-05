@@ -11,6 +11,7 @@
 #include "components/exo/buffer.h"
 #include "components/exo/pointer_delegate.h"
 #include "components/exo/shell_surface.h"
+#include "components/exo/sub_surface.h"
 #include "components/exo/surface.h"
 #include "components/exo/test/exo_test_base.h"
 #include "components/exo/test/exo_test_helper.h"
@@ -152,7 +153,8 @@ TEST_F(PointerTest, OnPointerMotion) {
                         gfx::Vector2d(1, 1));
 
   std::unique_ptr<Surface> sub_surface(new Surface);
-  surface->AddSubSurface(sub_surface.get());
+  std::unique_ptr<SubSurface> sub(
+      new SubSurface(sub_surface.get(), surface.get()));
   surface->SetSubSurfacePosition(sub_surface.get(), gfx::Point(5, 5));
   gfx::Size sub_buffer_size(5, 5);
   std::unique_ptr<Buffer> sub_buffer(

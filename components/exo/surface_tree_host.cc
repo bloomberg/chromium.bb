@@ -107,6 +107,8 @@ void SurfaceTreeHost::SetRootSurface(Surface* root_surface) {
     host_window_->SetBounds(
         gfx::Rect(host_window_->bounds().origin(), gfx::Size()));
     root_surface_->SetSurfaceDelegate(nullptr);
+    // Force recreating resources when the surface is added to a tree again.
+    root_surface_->SurfaceHierarchyResourcesLost();
     root_surface_ = nullptr;
 
     active_frame_callbacks_.splice(active_frame_callbacks_.end(),
@@ -195,9 +197,8 @@ void SurfaceTreeHost::UpdateNeedsBeginFrame() {
 // SurfaceDelegate overrides:
 
 void SurfaceTreeHost::OnSurfaceCommit() {
-  root_surface_->CommitSurfaceHierarchy(
-      gfx::Point(), layer_tree_frame_sink_holder_.get(), &frame_callbacks_,
-      &presentation_callbacks_);
+  root_surface_->CommitSurfaceHierarchy(gfx::Point(), &frame_callbacks_,
+                                        &presentation_callbacks_);
   SubmitCompositorFrame();
 }
 
@@ -270,7 +271,7 @@ void SurfaceTreeHost::OnUpdateVSyncParameters(base::TimeTicks timebase,
 void SurfaceTreeHost::OnLostResources() {
   if (!host_window_->GetSurfaceId().is_valid() || !root_surface_)
     return;
-  root_surface_->RecreateResources(layer_tree_frame_sink_holder_.get());
+  root_surface_->SurfaceHierarchyResourcesLost();
   SubmitCompositorFrame();
 }
 
