@@ -177,6 +177,10 @@ void PrefetchDownloaderImpl::OnStartDownload(
   prefetch_service_->GetLogger()->RecordActivity(
       "Downloader: Download started, download_id=" + download_id +
       ", result=" + std::to_string(static_cast<int>(result)));
+  // Treat the non-accepted request to start a download as an ordinary failure
+  // to simplify the control flow since this situation should rarely happen. The
+  // Download.Service.Request.StartResult.OfflinePage histogram tracks these
+  // cases and would signal the need to revisit this decision.
   if (result != download::DownloadParams::StartResult::ACCEPTED)
     OnDownloadFailed(download_id);
 }

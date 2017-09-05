@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "base/test/histogram_tester.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -31,6 +32,8 @@ const base::FilePath kTestFilePath(FILE_PATH_LITERAL("foo"));
 const int64_t kTestFileSize = 88888;
 }  // namespace
 
+// TODO(carlosk, jianli): Update this test to extend and use the functionality
+// provided by TaskTestBase.
 class DownloadCompletedTaskTest : public testing::Test {
  public:
   DownloadCompletedTaskTest();
@@ -44,12 +47,14 @@ class DownloadCompletedTaskTest : public testing::Test {
   PrefetchStore* store() { return store_test_util_.store(); }
   TestPrefetchDispatcher* dispatcher() { return &dispatcher_; }
   PrefetchStoreTestUtil* store_util() { return &store_test_util_; }
+  base::HistogramTester* histogram_tester() { return histogram_tester_.get(); }
 
  private:
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle task_runner_handle_;
   TestPrefetchDispatcher dispatcher_;
   PrefetchStoreTestUtil store_test_util_;
+  std::unique_ptr<base::HistogramTester> histogram_tester_;
 };
 
 DownloadCompletedTaskTest::DownloadCompletedTaskTest()
@@ -75,6 +80,8 @@ void DownloadCompletedTaskTest::SetUp() {
   item2.creation_time = base::Time::Now();
   item2.freshness_time = item.creation_time;
   EXPECT_TRUE(store_test_util_.InsertPrefetchItem(item2));
+
+  histogram_tester_.reset(new base::HistogramTester());
 }
 
 void DownloadCompletedTaskTest::TearDown() {
@@ -99,6 +106,9 @@ TEST_F(DownloadCompletedTaskTest, UpdateItemOnDownloadSuccess) {
   EXPECT_EQ(kTestGUID, item->guid);
   EXPECT_EQ(kTestFilePath, item->file_path);
   EXPECT_EQ(kTestFileSize, item->file_size);
+
+  histogram_tester()->ExpectUniqueSample(
+      "OfflinePages.Prefetching.DownloadedFileSize", kTestFileSize / 1024, 1);
 }
 
 TEST_F(DownloadCompletedTaskTest, UpdateItemOnDownloadError) {
@@ -116,6 +126,9 @@ TEST_F(DownloadCompletedTaskTest, UpdateItemOnDownloadError) {
   EXPECT_EQ(kTestGUID, item->guid);
   EXPECT_TRUE(item->file_path.empty());
   EXPECT_EQ(-1, item->file_size);
+
+  histogram_tester()->ExpectTotalCount(
+      "OfflinePages.Prefetching.DownloadedFileSize", 0);
 }
 
 TEST_F(DownloadCompletedTaskTest, NoUpdateOnMismatchedDownloadSuccess) {
@@ -133,6 +146,9 @@ TEST_F(DownloadCompletedTaskTest, NoUpdateOnMismatchedDownloadSuccess) {
   std::unique_ptr<PrefetchItem> item2 =
       store_util()->GetPrefetchItem(kTestOfflineID2);
   EXPECT_EQ(PrefetchItemState::NEW_REQUEST, item2->state);
+
+  histogram_tester()->ExpectUniqueSample(
+      "OfflinePages.Prefetching.DownloadedFileSize", kTestFileSize / 1024, 1);
 }
 
 TEST_F(DownloadCompletedTaskTest, NoUpdateOnMismatchedDownloadError) {
@@ -151,6 +167,9 @@ TEST_F(DownloadCompletedTaskTest, NoUpdateOnMismatchedDownloadError) {
   std::unique_ptr<PrefetchItem> item2 =
       store_util()->GetPrefetchItem(kTestOfflineID2);
   EXPECT_EQ(PrefetchItemState::NEW_REQUEST, item2->state);
+
+  histogram_tester()->ExpectTotalCount(
+      "OfflinePages.Prefetching.DownloadedFileSize", 0);
 }
 
 }  // namespace offline_pages

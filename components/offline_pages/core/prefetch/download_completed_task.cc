@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "components/offline_pages/core/prefetch/prefetch_dispatcher.h"
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store.h"
@@ -70,6 +71,9 @@ DownloadCompletedTask::~DownloadCompletedTask() {}
 
 void DownloadCompletedTask::Run() {
   if (download_result_.success) {
+    // Reports downloaded file size in KiB (accepting values up to 100 MiB).
+    UMA_HISTOGRAM_COUNTS_100000("OfflinePages.Prefetching.DownloadedFileSize",
+                                download_result_.file_size / 1024);
     prefetch_store_->Execute(
         base::BindOnce(&UpdatePrefetchItemOnDownloadSuccessSync,
                        download_result_.download_id, download_result_.file_path,

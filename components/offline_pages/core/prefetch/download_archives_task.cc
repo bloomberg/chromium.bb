@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/guid.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "components/offline_pages/core/offline_time_utils.h"
@@ -22,15 +23,10 @@ namespace offline_pages {
 
 namespace {
 
-struct ItemReadyForDownload {
-  int64_t offline_id;
-  std::string archive_body_name;
-  int64_t archive_body_length;
-};
+using DownloadItem = DownloadArchivesTask::DownloadItem;
+using ItemsToDownload = DownloadArchivesTask::ItemsToDownload;
 
-using ItemsReadyForDownload = std::vector<ItemReadyForDownload>;
-
-ItemsReadyForDownload FindItemsReadyForDownload(sql::Connection* db) {
+ItemsToDownload FindItemsReadyForDownload(sql::Connection* db) {
   static const char kSql[] =
       "SELECT offline_id, archive_body_name, archive_body_length"
       " FROM prefetch_items"
@@ -39,11 +35,11 @@ ItemsReadyForDownload FindItemsReadyForDownload(sql::Connection* db) {
   sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt(0, static_cast<int>(PrefetchItemState::RECEIVED_BUNDLE));
 
-  ItemsReadyForDownload items_to_download;
+  ItemsToDownload items_to_download;
   while (statement.Step()) {
     items_to_download.push_back({statement.ColumnInt64(0),
                                  statement.ColumnString(1),
-                                 statement.ColumnInt64(2)});
+                                 statement.ColumnInt64(2), std::string()});
   }
 
   return items_to_download;
@@ -81,8 +77,8 @@ bool MarkItemAsDownloading(sql::Connection* db,
   return statement.Run();
 }
 
-std::unique_ptr<DownloadArchivesTask::ItemsToDownload>
-SelectAndMarkItemsForDownloadSync(sql::Connection* db) {
+std::unique_ptr<ItemsToDownload> SelectAndMarkItemsForDownloadSync(
+    sql::Connection* db) {
   if (!db)
     return nullptr;
 
@@ -109,16 +105,15 @@ SelectAndMarkItemsForDownloadSync(sql::Connection* db) {
   if (available_quota <= 0)
     return nullptr;
 
-  ItemsReadyForDownload ready_items = FindItemsReadyForDownload(db);
+  ItemsToDownload ready_items = FindItemsReadyForDownload(db);
   if (ready_items.empty())
     return nullptr;
 
   // Below implementation is a greedy algorithm that selects the next item we
   // can download without quota violation and maximum concurrent downloads
   // violation, as ordered by the |FindItemsReadyForDownload| function.
-  auto items_to_download =
-      base::MakeUnique<DownloadArchivesTask::ItemsToDownload>();
-  for (const auto& ready_item : ready_items) {
+  auto items_to_download = base::MakeUnique<ItemsToDownload>();
+  for (auto& ready_item : ready_items) {
     // Concurrent downloads check.
     if (*concurrent_downloads >= DownloadArchivesTask::kMaxConcurrentDownloads)
       break;
@@ -133,7 +128,8 @@ SelectAndMarkItemsForDownloadSync(sql::Connection* db) {
     std::string guid = base::GenerateGUID();
     if (!MarkItemAsDownloading(db, ready_item.offline_id, guid))
       return nullptr;
-    items_to_download->push_back({guid, ready_item.archive_body_name});
+    ready_item.guid = guid;
+    items_to_download->emplace_back(ready_item);
     ++(*concurrent_downloads);
   }
 
@@ -177,6 +173,10 @@ void DownloadArchivesTask::SendItemsToPrefetchDownloader(
     for (const auto& download_item : *items_to_download) {
       prefetch_downloader_->StartDownload(download_item.guid,
                                           download_item.archive_body_name);
+      // Reports expected archive size in KiB (accepting values up to 100 MiB).
+      UMA_HISTOGRAM_COUNTS_100000(
+          "OfflinePages.Prefetching.DownloadExpectedFileSize",
+          download_item.archive_body_length / 1024);
     }
   }
 

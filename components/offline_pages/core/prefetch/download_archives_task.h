@@ -26,12 +26,12 @@ class DownloadArchivesTask : public Task {
 
   // Represents item to be downloaded as a result of running the task.
   struct DownloadItem {
-    std::string guid;
+    int64_t offline_id;
     std::string archive_body_name;
+    int64_t archive_body_length;
+    std::string guid;
   };
 
-  // Result of lookup of items ready to be downloaded. First element of the pair
-  // is offline ID, second is archive body name.
   using ItemsToDownload = std::vector<DownloadItem>;
 
   DownloadArchivesTask(PrefetchStore* prefetch_store,
