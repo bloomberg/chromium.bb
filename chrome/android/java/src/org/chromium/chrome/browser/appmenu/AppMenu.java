@@ -255,12 +255,15 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
         ViewGroup contentView =
                 (ViewGroup) LayoutInflater.from(context).inflate(R.layout.app_menu_layout, null);
         mListView = (ListView) contentView.findViewById(R.id.app_menu_list);
-        mListView.setAdapter(mAdapter);
 
         int footerHeight =
                 inflateFooter(footerResourceId, contentView, menuWidth, highlightedItemId);
         int headerHeight =
                 inflateHeader(headerResourceId, headerOnClickListener, context, menuWidth);
+
+        // Set the adapter after the header is added to avoid crashes on JellyBean.
+        // See crbug.com/761726.
+        mListView.setAdapter(mAdapter);
 
         int popupHeight = setMenuHeight(menuItems.size(), visibleDisplayFrame, screenHeight,
                 sizingPadding, footerHeight, headerHeight, anchorView);
