@@ -79,6 +79,8 @@ blink_core_sources("loader") {
     "appcache/ApplicationCache.h",
     "appcache/ApplicationCacheHost.cpp",
     "appcache/ApplicationCacheHost.h",
+    "modulescript/DocumentModuleScriptFetcher.cpp",
+    "modulescript/DocumentModuleScriptFetcher.h",
     "modulescript/ModuleScriptCreationParams.h",
     "modulescript/ModuleScriptFetchRequest.h",
     "modulescript/ModuleScriptFetcher.cpp",

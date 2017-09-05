@@ -25,9 +25,9 @@ namespace blink {
 // scripts, but also performs fetch when needed. The creation params are added
 // and retrieved using ReadEntry(). If a module script for a given URL has
 // already been fetched, ReadEntry() returns the cached creation params.
-// Otherwise, ReadEntry() internally creates ModuleScriptFetcher with the
-// ResourceFetcher that is given to its ctor. Once the module script is fetched,
-// its creation params are cached and ReadEntry() returns it.
+// Otherwise, ReadEntry() internally creates DocumentModuleScriptFetcher with
+// thie ResourceFetcher that is given to its ctor. Once the module script is
+// fetched, its creation params are cached and ReadEntry() returns it.
 class CORE_EXPORT WorkletModuleResponsesMap
     : public GarbageCollectedFinalized<WorkletModuleResponsesMap> {
  public:
@@ -45,7 +45,7 @@ class CORE_EXPORT WorkletModuleResponsesMap
   // Reads an entry for the given URL. If the entry is already fetched,
   // synchronously calls Client::OnRead(). Otherwise, it's called on the
   // completion of the fetch. See also the class-level comment.
-  void ReadEntry(const FetchParameters&, Client*);
+  void ReadEntry(FetchParameters&, Client*);
 
   // Invalidates the entry and calls OnFailed() for waiting clients.
   void InvalidateEntry(const KURL&);
