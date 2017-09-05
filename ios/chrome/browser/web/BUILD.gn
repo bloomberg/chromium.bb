@@ -15,6 +15,8 @@ source_set("web") {
     "mailto_handler.mm",
     "mailto_handler_gmail.h",
     "mailto_handler_gmail.mm",
+    "mailto_handler_inbox.h",
+    "mailto_handler_inbox.mm",
     "mailto_handler_system_mail.h",
     "mailto_handler_system_mail.mm",
     "mailto_url_rewriter.h",
@@ -75,6 +77,7 @@ source_set("unit_tests") {
   sources = [
     "legacy_mailto_url_rewriter_unittest.mm",
     "mailto_handler_gmail_unittest.mm",
+    "mailto_handler_inbox_unittest.mm",
     "mailto_handler_system_mail_unittest.mm",
     "mailto_handler_unittest.mm",
     "navigation_manager_util_unittest.mm",

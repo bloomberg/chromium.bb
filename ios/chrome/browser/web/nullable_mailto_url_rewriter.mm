@@ -9,6 +9,7 @@
 #import "base/logging.h"
 #import "ios/chrome/browser/web/mailto_handler.h"
 #import "ios/chrome/browser/web/mailto_handler_gmail.h"
+#import "ios/chrome/browser/web/mailto_handler_inbox.h"
 #import "ios/chrome/browser/web/mailto_handler_system_mail.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -35,7 +36,8 @@
 + (instancetype)mailtoURLRewriterWithStandardHandlers {
   id result = [[NullableMailtoURLRewriter alloc] init];
   [result setDefaultHandlers:@[
-    [[MailtoHandlerSystemMail alloc] init], [[MailtoHandlerGmail alloc] init]
+    [[MailtoHandlerSystemMail alloc] init], [[MailtoHandlerGmail alloc] init],
+    [[MailtoHandlerInbox alloc] init]
   ]];
   return result;
 }
