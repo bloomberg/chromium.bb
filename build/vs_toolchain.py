@@ -183,12 +183,14 @@ def _CopyRuntimeImpl(target, source, verbose=True):
     if verbose:
       print 'Copying %s to %s...' % (source, target)
     if os.path.exists(target):
-      # Make the file writable so that we can delete it now.
-      os.chmod(target, stat.S_IWRITE)
+      # Make the file writable so that we can delete it now, and keep it
+      # readable.
+      os.chmod(target, stat.S_IWRITE | stat.S_IREAD)
       os.unlink(target)
     shutil.copy2(source, target)
-    # Make the file writable so that we can overwrite or delete it later.
-    os.chmod(target, stat.S_IWRITE)
+    # Make the file writable so that we can overwrite or delete it later,
+    # keep it readable.
+    os.chmod(target, stat.S_IWRITE | stat.S_IREAD)
 
 
 def _CopyUCRTRuntime(target_dir, source_dir, target_cpu, dll_pattern, suffix):
