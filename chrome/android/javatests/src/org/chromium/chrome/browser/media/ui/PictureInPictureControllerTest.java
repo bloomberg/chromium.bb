@@ -1,0 +1,212 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+package org.chromium.chrome.browser.media.ui;
+
+import android.os.Build;
+import android.support.test.filters.MediumTest;
+import android.support.test.rule.UiThreadTestRule;
+
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.MinAndroidSdkLevel;
+import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.content.browser.test.util.Criteria;
+import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content.browser.test.util.DOMUtils;
+import org.chromium.content.browser.test.util.JavaScriptUtils;
+import org.chromium.content_public.browser.WebContents;
+import org.chromium.media.MediaSwitches;
+import org.chromium.net.test.EmbeddedTestServer;
+
+/**
+ * Tests for PictureInPictureController and related methods.
+ */
+@RunWith(ChromeJUnit4ClassRunner.class)
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        MediaSwitches.IGNORE_AUTOPLAY_RESTRICTIONS_FOR_TESTS})
+public class PictureInPictureControllerTest {
+    // TODO(peconn): Add a test for exit on Tab Reparenting.
+    private static final String TEST_PATH = "/chrome/test/data/media/bigbuck-player.html";
+    private static final String VIDEO_ID = "video";
+
+    @Rule
+    public UiThreadTestRule mUiThreadTestRule = new UiThreadTestRule();
+    @Rule
+    public ChromeActivityTestRule<ChromeTabbedActivity> mActivityTestRule =
+            new ChromeActivityTestRule<>(ChromeTabbedActivity.class);
+
+    private EmbeddedTestServer mTestServer;
+    private ChromeTabbedActivity mActivity;
+
+    @Before
+    public void setUp() throws InterruptedException {
+        mTestServer = EmbeddedTestServer.createAndStartServer(
+                mActivityTestRule.getInstrumentation().getContext());
+        mActivityTestRule.startMainActivityWithURL(mTestServer.getURL(TEST_PATH));
+        mActivity = mActivityTestRule.getActivity();
+    }
+
+    @After
+    public void tearDown() {
+        mTestServer.stopAndDestroyServer();
+    }
+
+    /** Tests that we can detect when a video is playing fullscreen, a prerequisite for PiP. */
+    @Test
+    @MediumTest
+    @MinAndroidSdkLevel(Build.VERSION_CODES.O)
+    public void testFullscreenVideoDetected() throws Throwable {
+        enterFullscreen();
+    }
+
+    /** Tests that fullscreen detection only applies to playing videos. */
+    @Test
+    @MediumTest
+    @MinAndroidSdkLevel(Build.VERSION_CODES.O)
+    public void testFullscreenVideoDetectedOnlyWhenPlaying() throws Throwable {
+        enterFullscreen();
+
+        DOMUtils.pauseMedia(getWebContents(), VIDEO_ID);
+        CriteriaHelper.pollUiThread(
+                Criteria.equals(false, getWebContents()::hasActiveEffectivelyFullscreenVideo));
+    }
+
+    /** Tests that we can enter PiP. */
+    @Test
+    @MediumTest
+    @MinAndroidSdkLevel(Build.VERSION_CODES.O)
+    public void testEnterPip() throws Throwable {
+        enterFullscreen();
+        mActivityTestRule.getInstrumentation().callActivityOnUserLeaving(mActivity);
+
+        CriteriaHelper.pollUiThread(Criteria.equals(true, mActivity::isInPictureInPictureMode));
+    }
+
+    /** Tests that PiP is left when we navigate the main page. */
+    @Test
+    @MediumTest
+    @MinAndroidSdkLevel(Build.VERSION_CODES.O)
+    public void testExitPipOnNavigation() throws Throwable {
+        testExitOn(() -> JavaScriptUtils.executeJavaScript(getWebContents(),
+                "window.location.href = 'https://www.example.com/';"));
+    }
+
+    /** Tests that PiP is left when the video leaves fullscreen. */
+    @Test
+    @MediumTest
+    @MinAndroidSdkLevel(Build.VERSION_CODES.O)
+    public void testExitOnLeaveFullscreen() throws Throwable {
+        testExitOn(() -> DOMUtils.exitFullscreen(getWebContents()));
+    }
+
+    /** Tests that PiP is left when the active Tab is closed. */
+    @Test
+    @MediumTest
+    @MinAndroidSdkLevel(Build.VERSION_CODES.O)
+    public void testExitOnCloseTab() throws Throwable {
+        // We want 2 Tabs so we can close the first without any special behaviour.
+        mActivityTestRule.loadUrlInNewTab(mTestServer.getURL(TEST_PATH));
+
+        testExitOn(() -> JavaScriptUtils.executeJavaScript(getWebContents(), "window.close()"));
+    }
+
+    /** Tests that PiP is left when the renderer crashes. */
+    @Test
+    @MediumTest
+    @MinAndroidSdkLevel(Build.VERSION_CODES.O)
+    public void testExitOnCrash() throws Throwable {
+        testExitOn(() -> ThreadUtils.runOnUiThreadBlocking(
+                () -> getWebContents().simulateRendererKilledForTesting(false)));
+    }
+
+    /** Tests that PiP is left when a new Tab is created in the foreground. */
+    @Test
+    @MediumTest
+    @MinAndroidSdkLevel(Build.VERSION_CODES.O)
+    public void testExitOnNewForegroundTab() throws Throwable {
+        testExitOn(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    mActivityTestRule.loadUrlInNewTab("https://www.example.com/");
+                } catch (Exception e) {
+                    throw new RuntimeException();
+                }
+            }
+        });
+    }
+
+    /**
+     * A test to determine if PiP is left when navigation happens on a different frame to the video.
+     * This is the current behaviour, but is a bug. When this is fixed, this test should be updated.
+     * https://crbug.com/718415.
+     */
+    @Test
+    @MediumTest
+    @MinAndroidSdkLevel(Build.VERSION_CODES.O)
+    public void testExitOnIframeNavigation() throws Throwable {
+        testExitOn(() -> JavaScriptUtils.executeJavaScript(getWebContents(),
+                "document.getElementById('iframe').src = 'https://www.example.com/'"));
+    }
+
+    /** Tests that we can resume PiP after it has been cancelled. */
+    @Test
+    @MediumTest
+    @MinAndroidSdkLevel(Build.VERSION_CODES.O)
+    public void testReenterPip() throws Throwable {
+        enterFullscreen();
+        mActivityTestRule.getInstrumentation().callActivityOnUserLeaving(mActivity);
+        CriteriaHelper.pollUiThread(Criteria.equals(true, mActivity::isInPictureInPictureMode));
+
+        mActivityTestRule.startMainActivityFromLauncher();
+        CriteriaHelper.pollUiThread(Criteria.equals(false, mActivity::isInPictureInPictureMode));
+
+        enterFullscreen(false);
+        mActivityTestRule.getInstrumentation().callActivityOnUserLeaving(mActivity);
+        CriteriaHelper.pollUiThread(Criteria.equals(true, mActivity::isInPictureInPictureMode));
+    }
+
+    private WebContents getWebContents() {
+        return mActivity.getCurrentContentViewCore().getWebContents();
+    }
+
+    private void enterFullscreen() throws Throwable {
+        enterFullscreen(true);
+    }
+
+    private void enterFullscreen(boolean firstPlay) throws Throwable {
+        // Start playback to guarantee it's properly loaded.
+        if (firstPlay) Assert.assertTrue(DOMUtils.isMediaPaused(getWebContents(), VIDEO_ID));
+        DOMUtils.playMedia(getWebContents(), VIDEO_ID);
+        DOMUtils.waitForMediaPlay(getWebContents(), VIDEO_ID);
+
+        // Trigger requestFullscreen() via a click on a button.
+        Assert.assertTrue(DOMUtils.clickNode(mActivity.getCurrentContentViewCore(), "fullscreen"));
+
+        // We use the web contents fullscreen heuristic.
+        CriteriaHelper.pollUiThread(
+                Criteria.equals(true, getWebContents()::hasActiveEffectivelyFullscreenVideo));
+    }
+
+    private void testExitOn(Runnable runnable) throws Throwable {
+        enterFullscreen();
+        mActivityTestRule.getInstrumentation().callActivityOnUserLeaving(mActivity);
+        CriteriaHelper.pollUiThread(Criteria.equals(true, mActivity::isInPictureInPictureMode));
+
+        runnable.run();
+
+        CriteriaHelper.pollUiThread(Criteria.equals(false, mActivity::isInPictureInPictureMode));
+    }
+}

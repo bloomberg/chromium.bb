@@ -544,6 +544,7 @@ android_library("chrome_test_java") {
     "//chrome/test/data/geolocation/",
     "//chrome/test/data/google/",
     "//chrome/test/data/image_search/valid.png",
+    "//chrome/test/data/media/",
     "//chrome/test/data/navigation_interception/",
     "//chrome/test/data/notifications/",
     "//chrome/test/data/popup_blocker/",
