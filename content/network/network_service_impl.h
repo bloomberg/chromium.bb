@@ -49,8 +49,10 @@ class CONTENT_EXPORT NetworkServiceImpl : public service_manager::Service,
   void CreateNetworkContext(mojom::NetworkContextRequest request,
                             mojom::NetworkContextParamsPtr params) override;
   void DisableQuic() override;
+  void SetRawHeadersAccess(uint32_t process_id, bool allow) override;
 
   bool quic_disabled() const { return quic_disabled_; }
+  bool HasRawHeadersAccess(uint32_t process_id) const;
 
  private:
   class MojoNetLog;
@@ -75,6 +77,7 @@ class CONTENT_EXPORT NetworkServiceImpl : public service_manager::Service,
   // NetworkContexts share global state with the NetworkService, so must be
   // destroyed first.
   std::set<NetworkContext*> network_contexts_;
+  std::set<uint32_t> processes_with_raw_headers_access_;
 
   bool quic_disabled_ = false;
 

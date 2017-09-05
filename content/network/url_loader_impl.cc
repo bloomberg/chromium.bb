@@ -163,6 +163,7 @@ URLLoaderImpl::URLLoaderImpl(
     mojom::URLLoaderRequest url_loader_request,
     int32_t options,
     const ResourceRequest& request,
+    bool report_raw_headers,
     mojom::URLLoaderClientPtr url_loader_client,
     const net::NetworkTrafficAnnotationTag& traffic_annotation)
     : context_(context),
@@ -174,11 +175,8 @@ URLLoaderImpl::URLLoaderImpl(
                                mojo::SimpleWatcher::ArmingPolicy::MANUAL),
       peer_closed_handle_watcher_(FROM_HERE,
                                   mojo::SimpleWatcher::ArmingPolicy::MANUAL),
-      report_raw_headers_(false),
+      report_raw_headers_(report_raw_headers),
       weak_ptr_factory_(this) {
-  // TODO(caseq): Make sure the client renderer actually has premissions to
-  // get raw headers (i.e. has DevTools attached).
-  report_raw_headers_ = request.report_raw_headers;
   context_->RegisterURLLoader(this);
   binding_.set_connection_error_handler(base::BindOnce(
       &URLLoaderImpl::OnConnectionError, base::Unretained(this)));

@@ -39,6 +39,7 @@ class CONTENT_EXPORT URLLoaderImpl : public mojom::URLLoader,
                 mojom::URLLoaderRequest url_loader_request,
                 int32_t options,
                 const ResourceRequest& request,
+                bool report_raw_headers,
                 mojom::URLLoaderClientPtr url_loader_client,
                 const net::NetworkTrafficAnnotationTag& traffic_annotation);
   ~URLLoaderImpl() override;

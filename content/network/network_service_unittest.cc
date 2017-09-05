@@ -129,31 +129,30 @@ class NetworkServiceTestWithService
     request.url = url;
     request.method = "GET";
     request.request_initiator = url::Origin();
-    StartLoadingURL(request);
-    client_.RunUntilComplete();
+    StartLoadingURL(request, 0);
+    client_->RunUntilComplete();
   }
 
-  void StartLoadingURL(const ResourceRequest& request) {
-    mojom::NetworkServicePtr network_service;
-    connector()->BindInterface(mojom::kNetworkServiceName, &network_service);
-
+  void StartLoadingURL(const ResourceRequest& request, uint32_t process_id) {
+    client_.reset(new TestURLLoaderClient());
     mojom::NetworkContextParamsPtr context_params =
         mojom::NetworkContextParams::New();
-    network_service->CreateNetworkContext(mojo::MakeRequest(&network_context_),
-                                          std::move(context_params));
+    network_service_->CreateNetworkContext(mojo::MakeRequest(&network_context_),
+                                           std::move(context_params));
     mojom::URLLoaderFactoryPtr loader_factory;
     network_context_->CreateURLLoaderFactory(mojo::MakeRequest(&loader_factory),
-                                             0);
+                                             process_id);
 
     loader_factory->CreateLoaderAndStart(
         mojo::MakeRequest(&loader_), 1, 1, mojom::kURLLoadOptionNone, request,
-        client_.CreateInterfacePtr(),
+        client_->CreateInterfacePtr(),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
   }
 
   net::EmbeddedTestServer* test_server() { return &test_server_; }
-  TestURLLoaderClient* client() { return &client_; }
+  TestURLLoaderClient* client() { return client_.get(); }
   mojom::URLLoader* loader() { return loader_.get(); }
+  mojom::NetworkService* service() { return network_service_.get(); }
 
  private:
   std::unique_ptr<service_manager::Service> CreateService() override {
@@ -165,10 +164,12 @@ class NetworkServiceTestWithService
     test_server_.AddDefaultHandlers(content_test_data);
     ASSERT_TRUE(test_server_.Start());
     service_manager::test::ServiceTest::SetUp();
+    connector()->BindInterface(mojom::kNetworkServiceName, &network_service_);
   }
 
   net::EmbeddedTestServer test_server_;
-  TestURLLoaderClient client_;
+  std::unique_ptr<TestURLLoaderClient> client_;
+  mojom::NetworkServicePtr network_service_;
   mojom::NetworkContextPtr network_context_;
   mojom::URLLoaderPtr loader_;
 
@@ -188,7 +189,7 @@ TEST_F(NetworkServiceTestWithService, RawRequestHeadersAbsent) {
   request.url = test_server()->GetURL("/server-redirect?/echo");
   request.method = "GET";
   request.request_initiator = url::Origin();
-  StartLoadingURL(request);
+  StartLoadingURL(request, 0);
   client()->RunUntilRedirectReceived();
   EXPECT_TRUE(client()->has_received_redirect());
   EXPECT_TRUE(!client()->response_head().devtools_info);
@@ -203,7 +204,7 @@ TEST_F(NetworkServiceTestWithService, RawRequestHeadersPresent) {
   request.method = "GET";
   request.report_raw_headers = true;
   request.request_initiator = url::Origin();
-  StartLoadingURL(request);
+  StartLoadingURL(request, 0);
   client()->RunUntilRedirectReceived();
   EXPECT_TRUE(client()->has_received_redirect());
   {
@@ -237,6 +238,34 @@ TEST_F(NetworkServiceTestWithService, RawRequestHeadersPresent) {
                                  "HTTP/1.1 200 OK\r",
                                  base::CompareCase::SENSITIVE));
   }
+}
+
+TEST_F(NetworkServiceTestWithService, RawRequestAccessControl) {
+  const uint32_t process_id = 42;
+  ResourceRequest request;
+  request.url = test_server()->GetURL("/nocache.html");
+  request.method = "GET";
+  request.report_raw_headers = true;
+  request.request_initiator = url::Origin();
+
+  StartLoadingURL(request, process_id);
+  client()->RunUntilComplete();
+  EXPECT_FALSE(client()->response_head().devtools_info);
+  service()->SetRawHeadersAccess(process_id, true);
+  StartLoadingURL(request, process_id);
+  client()->RunUntilComplete();
+  {
+    scoped_refptr<ResourceDevToolsInfo> devtools_info =
+        client()->response_head().devtools_info;
+    ASSERT_TRUE(devtools_info);
+    EXPECT_EQ(200, devtools_info->http_status_code);
+    EXPECT_EQ("OK", devtools_info->http_status_text);
+  }
+
+  service()->SetRawHeadersAccess(process_id, false);
+  StartLoadingURL(request, process_id);
+  client()->RunUntilComplete();
+  EXPECT_FALSE(client()->response_head().devtools_info.get());
 }
 
 }  // namespace

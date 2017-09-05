@@ -126,6 +126,22 @@ void NetworkServiceImpl::DisableQuic() {
   }
 }
 
+void NetworkServiceImpl::SetRawHeadersAccess(uint32_t process_id, bool allow) {
+  DCHECK(process_id);
+  if (allow)
+    processes_with_raw_headers_access_.insert(process_id);
+  else
+    processes_with_raw_headers_access_.erase(process_id);
+}
+
+bool NetworkServiceImpl::HasRawHeadersAccess(uint32_t process_id) const {
+  // Allow raw headers for browser-initiated requests.
+  if (!process_id)
+    return true;
+  return processes_with_raw_headers_access_.find(process_id) !=
+         processes_with_raw_headers_access_.end();
+}
+
 void NetworkServiceImpl::OnBindInterface(
     const service_manager::BindSourceInfo& source_info,
     const std::string& interface_name,
