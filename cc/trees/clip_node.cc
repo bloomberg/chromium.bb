@@ -18,51 +18,16 @@ ClipNode::ClipNode()
       transform_id(TransformTree::kInvalidNodeId) {
 }
 
-ClipNode::ClipNode(const ClipNode& other)
-    : id(other.id),
-      parent_id(other.parent_id),
-      clip_type(other.clip_type),
-      clip(other.clip),
-      transform_id(other.transform_id) {
-  if (other.clip_expander) {
-    DCHECK_EQ(clip_type, ClipType::EXPANDS_CLIP);
-    clip_expander = std::make_unique<ClipExpander>(*other.clip_expander);
-  }
-  cached_clip_rects = other.cached_clip_rects;
-  cached_accumulated_rect_in_screen_space =
-      other.cached_accumulated_rect_in_screen_space;
-}
+ClipNode::ClipNode(const ClipNode& other) = default;
 
-ClipNode& ClipNode::operator=(const ClipNode& other) {
-  id = other.id;
-  parent_id = other.parent_id;
-  clip_type = other.clip_type;
-  clip = other.clip;
-  transform_id = other.transform_id;
-
-  if (other.clip_expander) {
-    DCHECK_EQ(clip_type, ClipType::EXPANDS_CLIP);
-    clip_expander = std::make_unique<ClipExpander>(*other.clip_expander);
-  } else {
-    clip_expander.reset();
-  }
-  cached_clip_rects = other.cached_clip_rects;
-  cached_accumulated_rect_in_screen_space =
-      other.cached_accumulated_rect_in_screen_space;
-  return *this;
-}
+ClipNode& ClipNode::operator=(const ClipNode& other) = default;
 
 ClipNode::~ClipNode() {}
 
 bool ClipNode::operator==(const ClipNode& other) const {
-  if (clip_expander && other.clip_expander &&
-      *clip_expander != *other.clip_expander)
-    return false;
-  if ((clip_expander && !other.clip_expander) ||
-      (!clip_expander && other.clip_expander))
-    return false;
   return id == other.id && parent_id == other.parent_id &&
          clip_type == other.clip_type && clip == other.clip &&
+         clip_expander == other.clip_expander &&
          transform_id == other.transform_id;
 }
 
