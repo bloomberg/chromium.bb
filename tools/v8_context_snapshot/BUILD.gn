@@ -71,10 +71,10 @@ if (use_v8_context_snapshot) {
   # disable it while taking a V8 snapshot.
   config("disable_icf") {
     visibility = [ ":*" ]  # Only targets in this file can depend on this.
-    if (use_gold || use_lld) {
+    if (is_win) {
+      ldflags = [ "/OPT:NOICF" ]  # link.exe, but also lld-link.exe.
+    } else if (use_gold || use_lld) {
       ldflags = [ "-Wl,--icf=none" ]
-    } else if (is_win) {
-      ldflags = [ "/OPT:NOICF" ]
     }
   }
 
