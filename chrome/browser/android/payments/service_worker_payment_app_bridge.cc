@@ -59,7 +59,10 @@ void OnGotAllPaymentApps(const JavaRef<jobject>& jweb_contents,
         env, app_info.second->registration_id,
         ConvertUTF8ToJavaString(env, app_info.second->scope.spec()),
         ConvertUTF8ToJavaString(env, app_info.second->name),
-        // Do not show duplicate information in sublabel as in label.
+        app_info.second->user_hint.empty()
+            ? nullptr
+            : ConvertUTF8ToJavaString(env, app_info.second->user_hint),
+        // Do not show duplicate information in tertiarylabel as in label.
         app_info.second->name.compare(
             app_info.second->scope.GetOrigin().spec()) == 0
             ? nullptr

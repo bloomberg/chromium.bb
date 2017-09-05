@@ -29,6 +29,15 @@ PaymentInstruments* PaymentManager::instruments() {
   return instruments_;
 }
 
+const String& PaymentManager::userHint() {
+  return user_hint_;
+}
+
+void PaymentManager::setUserHint(const String& user_hint) {
+  user_hint_ = user_hint;
+  manager_->SetUserHint(user_hint_);
+}
+
 DEFINE_TRACE(PaymentManager) {
   visitor->Trace(registration_);
   visitor->Trace(instruments_);

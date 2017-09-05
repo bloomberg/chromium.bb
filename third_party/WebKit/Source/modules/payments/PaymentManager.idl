@@ -10,4 +10,5 @@
     DependentLifetime
 ] interface PaymentManager {
     readonly attribute PaymentInstruments instruments;
+    attribute DOMString userHint;
 };

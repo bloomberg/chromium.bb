@@ -55,15 +55,17 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
      *                                       worker.
      * @param label                          The label of the payment app.
      * @param sublabel                       The sublabel of the payment app.
+     * @param tertiarylabel                  The tertiary label of the payment app.
      * @param icon                           The drawable icon of the payment app.
      * @param methodNames                    A set of payment method names supported by the payment
      *                                       app.
      * @param preferredRelatedApplicationIds A set of preferred related application Ids.
      */
     public ServiceWorkerPaymentApp(WebContents webContents, long registrationId, URI scope,
-            String label, @Nullable String sublabel, @Nullable Drawable icon, String[] methodNames,
+            String label, @Nullable String sublabel, @Nullable String tertiarylabel,
+            @Nullable Drawable icon, String[] methodNames,
             String[] preferredRelatedApplicationIds) {
-        super(scope.toString(), label, sublabel, icon);
+        super(scope.toString(), label, sublabel, tertiarylabel, icon);
         mWebContents = webContents;
         mRegistrationId = registrationId;
         mIcon = icon;

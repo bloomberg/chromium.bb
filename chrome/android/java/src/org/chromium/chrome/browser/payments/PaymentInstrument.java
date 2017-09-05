@@ -61,6 +61,11 @@ public abstract class PaymentInstrument extends PaymentOption {
         super(id, label, sublabel, icon);
     }
 
+    protected PaymentInstrument(
+            String id, String label, String sublabel, String tertiarylabel, Drawable icon) {
+        super(id, label, sublabel, tertiarylabel, icon);
+    }
+
     /**
      * Sets the modified total for this payment instrument.
      *

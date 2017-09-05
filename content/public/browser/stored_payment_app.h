@@ -49,6 +49,9 @@ struct CONTENT_EXPORT StoredPaymentApp {
 
   // A list of stored related applications.
   std::vector<StoredRelatedApplication> related_applications;
+
+  // User hint for this payment app.
+  std::string user_hint;
 };
 
 }  // namespace content

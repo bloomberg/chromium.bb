@@ -4820,7 +4820,9 @@ interface PaymentAddress
 interface PaymentManager
     attribute @@toStringTag
     getter instruments
+    getter userHint
     method constructor
+    setter userHint
 interface PaymentRequest : EventTarget
     attribute @@toStringTag
     getter id

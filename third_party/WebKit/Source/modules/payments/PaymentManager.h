@@ -27,6 +27,9 @@ class MODULES_EXPORT PaymentManager final
 
   PaymentInstruments* instruments();
 
+  const String& userHint();
+  void setUserHint(const String&);
+
   DECLARE_TRACE();
 
  private:
@@ -37,6 +40,7 @@ class MODULES_EXPORT PaymentManager final
   Member<ServiceWorkerRegistration> registration_;
   payments::mojom::blink::PaymentManagerPtr manager_;
   Member<PaymentInstruments> instruments_;
+  String user_hint_;
 };
 
 }  // namespace blink
