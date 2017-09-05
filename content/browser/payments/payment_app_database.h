@@ -71,9 +71,11 @@ class CONTENT_EXPORT PaymentAppDatabase {
   void FetchAndWritePaymentAppInfo(
       const GURL& context,
       const GURL& scope,
+      const std::string& user_hint,
       FetchAndWritePaymentAppInfoCallback callback);
   void ClearPaymentInstruments(const GURL& scope,
                                ClearPaymentInstrumentsCallback callback);
+  void SetPaymentAppUserHint(const GURL& scope, const std::string& user_hint);
 
  private:
   // ReadAllPaymentApps callbacks
@@ -144,9 +146,11 @@ class CONTENT_EXPORT PaymentAppDatabase {
   // FetchAndWritePaymentAppInfo callbacks.
   void FetchPaymentAppInfoCallback(
       const GURL& scope,
+      const std::string& user_hint,
       FetchAndWritePaymentAppInfoCallback callback,
       std::unique_ptr<PaymentAppInfoFetcher::PaymentAppInfo> app_info);
   void DidFindRegistrationToWritePaymentAppInfo(
+      const std::string& user_hint,
       FetchAndWritePaymentAppInfoCallback callback,
       std::unique_ptr<PaymentAppInfoFetcher::PaymentAppInfo> app_info,
       ServiceWorkerStatusCode status,
@@ -177,6 +181,18 @@ class CONTENT_EXPORT PaymentAppDatabase {
       payments::mojom::PaymentHandlerStatus status);
   void DidClearPaymentInstruments(ClearPaymentInstrumentsCallback callback,
                                   ServiceWorkerStatusCode status);
+
+  // SetPaymentAppUserHint callbacks.
+  void DidFindRegistrationToSetPaymentAppUserHint(
+      const std::string& user_hint,
+      ServiceWorkerStatusCode status,
+      scoped_refptr<ServiceWorkerRegistration> registration);
+  void DidGetPaymentAppInfoToSetUserHint(const std::string& user_hint,
+                                         int64_t registration_id,
+                                         const GURL& pattern,
+                                         const std::vector<std::string>& data,
+                                         ServiceWorkerStatusCode status);
+  void DidSetPaymentAppUserHint(ServiceWorkerStatusCode status);
 
   scoped_refptr<PaymentAppInfoFetcher> payment_app_info_fetcher_;
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;

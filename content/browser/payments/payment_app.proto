@@ -39,4 +39,5 @@ message StoredPaymentAppProto {
   optional string icon = 4;
   optional bool prefer_related_applications = 5;
   repeated StoredRelatedApplicationProto related_applications = 6;
+  optional string user_hint = 7;
 }

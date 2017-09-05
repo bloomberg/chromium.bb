@@ -45,8 +45,8 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
                     callback.onPaymentAppCreated(
                             new ServiceWorkerPaymentApp(webContents, 0 /* registrationId */,
                                     UriUtils.parseUriFromString("https://bobpay.com") /* scope */,
-                                    "BobPay" /* label */, "https://bobpay.com" /* sublabel */,
-                                    null /* icon */,
+                                    "BobPay" /* label */, null /* sublabel*/,
+                                    "https://bobpay.com" /* tertiarylabel */, null /* icon */,
                                     hasSupportedMethods ? supportedMethodNames
                                                         : new String[0] /* methodNames */,
                                     new String[0] /* preferredRelatedApplicationIds */));

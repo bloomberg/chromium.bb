@@ -150,8 +150,9 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
 
     @CalledByNative
     private static void onPaymentAppCreated(long registrationId, String scope, String label,
-            @Nullable String sublabel, @Nullable Bitmap icon, String[] methodNameArray,
-            String[] preferredRelatedApplications, WebContents webContents, Object callback) {
+            @Nullable String sublabel, @Nullable String tertiarylabel, @Nullable Bitmap icon,
+            String[] methodNameArray, String[] preferredRelatedApplications,
+            WebContents webContents, Object callback) {
         Context context = ChromeActivity.fromWebContents(webContents);
         if (context == null) return;
         URI scopeUri = UriUtils.parseUriFromString(scope);
@@ -161,7 +162,7 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
         }
         ((PaymentAppFactory.PaymentAppCreatedCallback) callback)
                 .onPaymentAppCreated(new ServiceWorkerPaymentApp(webContents, registrationId,
-                        scopeUri, label, sublabel,
+                        scopeUri, label, sublabel, tertiarylabel,
                         icon == null ? null : new BitmapDrawable(context.getResources(), icon),
                         methodNameArray, preferredRelatedApplications));
     }
