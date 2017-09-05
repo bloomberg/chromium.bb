@@ -109,8 +109,8 @@ bool AudioDecoderAlsa::Start(int64_t start_pts) {
   current_pts_ = start_pts;
   DCHECK(IsValidConfig(config_));
   mixer_input_.reset(new StreamMixerAlsaInput(
-      this, config_.samples_per_second, backend_->Primary(),
-      backend_->DeviceId(), backend_->ContentType()));
+      this, config_.samples_per_second, config_.playout_channel,
+      backend_->Primary(), backend_->DeviceId(), backend_->ContentType()));
   mixer_input_->SetVolumeMultiplier(volume_multiplier_);
   // Create decoder_ if necessary. This can happen if Stop() was called, and
   // SetConfig() was not called since then.
@@ -239,8 +239,8 @@ bool AudioDecoderAlsa::SetConfig(const AudioConfig& config) {
     // is updated.
     mixer_input_.reset();
     mixer_input_.reset(new StreamMixerAlsaInput(
-        this, config.samples_per_second, backend_->Primary(),
-        backend_->DeviceId(), backend_->ContentType()));
+        this, config.samples_per_second, config.playout_channel,
+        backend_->Primary(), backend_->DeviceId(), backend_->ContentType()));
     mixer_input_->SetVolumeMultiplier(volume_multiplier_);
     pending_output_frames_ = kNoPendingOutput;
   }

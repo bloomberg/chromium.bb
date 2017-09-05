@@ -202,6 +202,9 @@ class StreamMixerAlsa {
   void SetPostProcessorConfig(const std::string& name,
                               const std::string& config);
 
+  // Sets active channel in multichannel group.
+  void UpdatePlayoutChannel(int playout_channel);
+
   // Sets filter data alignment, required by some processors.
   // Must be called before audio playback starts.
   void SetFilterFrameAlignmentForTest(int filter_frame_alignment);

@@ -24,6 +24,7 @@ FilterGroup::FilterGroup(int num_channels,
                          const std::vector<FilterGroup*>& mixed_inputs)
     : num_channels_(num_channels),
       mix_to_mono_(mix_to_mono),
+      playout_channel_(kChannelAll),
       name_(name),
       device_ids_(device_ids),
       mixed_inputs_(mixed_inputs),
@@ -117,13 +118,26 @@ float FilterGroup::MixAndFilter(int chunk_size) {
   delay_frames_ = post_processing_pipeline_->ProcessFrames(
       interleaved(), chunk_size, last_volume_, is_silence);
 
+  // Copy the active channel to all channels.
+  if (playout_channel_ != kChannelAll) {
+    DCHECK_GE(playout_channel_, 0);
+    DCHECK_LT(playout_channel_, num_channels_);
+
+    for (int frame = 0; frame < chunk_size; ++frame) {
+      float s = interleaved()[frame * num_channels_ + playout_channel_];
+      for (int c = 0; c < num_channels_; ++c)
+        interleaved()[frame * num_channels_ + c] = s;
+    }
+  }
+
   // Mono mixing after all processing if needed.
   if (mix_to_mono_) {
     for (int frame = 0; frame < chunk_size; ++frame) {
       float sum = 0;
       for (int c = 0; c < num_channels_; ++c)
         sum += interleaved()[frame * num_channels_ + c];
-      interleaved()[frame] = sum / num_channels_;
+      for (int c = 0; c < num_channels_; ++c)
+        interleaved()[frame * num_channels_ + c] = sum / num_channels_;
     }
   }
 
@@ -140,7 +154,7 @@ void FilterGroup::ClearActiveInputs() {
 }
 
 int FilterGroup::GetOutputChannelCount() const {
-  return mix_to_mono_ ? 1 : num_channels_;
+  return num_channels_;
 }
 
 void FilterGroup::ResizeBuffersIfNecessary(int chunk_size) {
@@ -156,6 +170,20 @@ void FilterGroup::ResizeBuffersIfNecessary(int chunk_size) {
 void FilterGroup::SetPostProcessorConfig(const std::string& name,
                                          const std::string& config) {
   post_processing_pipeline_->SetPostProcessorConfig(name, config);
+}
+
+void FilterGroup::SetMixToMono(bool mix_to_mono) {
+  mix_to_mono_ = (num_channels_ != 1 && mix_to_mono);
+}
+
+void FilterGroup::UpdatePlayoutChannel(int playout_channel) {
+  LOG(INFO) << __FUNCTION__ << " channel=" << playout_channel;
+  if (playout_channel >= num_channels_) {
+    LOG(ERROR) << "only " << num_channels_ << " present, wanted channel #"
+               << playout_channel;
+    return;
+  }
+  playout_channel_ = playout_channel;
 }
 
 }  // namespace media

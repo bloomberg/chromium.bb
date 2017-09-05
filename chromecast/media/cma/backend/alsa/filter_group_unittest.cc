@@ -165,7 +165,7 @@ TEST_F(FilterGroupTest, MonoMixer) {
   for (int i = 0; i < output_chunk_size; ++i) {
     const float* left_input = input->data()->channel(0);
     const float* right_input = input->data()->channel(1);
-    ASSERT_EQ((left_input[i] + right_input[i]) / 2, interleaved_data[i]);
+    ASSERT_EQ((left_input[i] + right_input[i]) / 2, interleaved_data[i * 2]);
   }
 }
 

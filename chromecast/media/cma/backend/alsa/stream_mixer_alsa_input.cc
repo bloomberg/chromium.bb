@@ -14,6 +14,7 @@ namespace media {
 
 StreamMixerAlsaInput::StreamMixerAlsaInput(Delegate* delegate,
                                            int samples_per_second,
+                                           int playout_channel,
                                            bool primary,
                                            const std::string& device_id,
                                            AudioContentType content_type) {
@@ -22,6 +23,7 @@ StreamMixerAlsaInput::StreamMixerAlsaInput(Delegate* delegate,
       StreamMixerAlsa::Get()));
   impl_ = impl.get();  // Store a pointer to the impl, but the mixer owns it.
   StreamMixerAlsa::Get()->AddInput(std::move(impl));
+  StreamMixerAlsa::Get()->UpdatePlayoutChannel(playout_channel);
 }
 
 StreamMixerAlsaInput::~StreamMixerAlsaInput() {
