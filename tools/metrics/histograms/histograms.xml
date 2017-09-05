@@ -87757,6 +87757,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebApk.Install.ChromeUnimportantStorage.Fail" units="MB">
+  <owner>hanxi@chromium.org</owner>
+  <owner>ranj@chromium.org</owner>
+  <owner>yfriedman@chromium.org</owner>
+  <summary>
+    Records the Chrome unimportant storage size when installing a WebAPK from
+    Google Play fails, with a range between 0 and 1000, round to the nearest
+    10MB.
+  </summary>
+</histogram>
+
 <histogram name="WebApk.Install.GooglePlayBindDuration" units="ms">
   <owner>hanxi@chromium.org</owner>
   <owner>pkotwicz@chromium.org</owner>
