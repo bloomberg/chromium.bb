@@ -85,6 +85,7 @@ class MockTouchExplorationControllerDelegate
   void PlayPassthroughEarcon() override { ++num_times_passthrough_played_; }
   void PlayExitScreenEarcon() override { ++num_times_exit_screen_played_; }
   void PlayEnterScreenEarcon() override { ++num_times_enter_screen_played_; }
+  void PlayTouchTypeEarcon() override { ++num_times_touch_type_sound_played_; }
   void HandleAccessibilityGesture(ui::AXGesture gesture) override {
     last_gesture_ = gesture;
   }
@@ -94,6 +95,9 @@ class MockTouchExplorationControllerDelegate
   size_t NumPassthroughSounds() const { return num_times_passthrough_played_; }
   size_t NumExitScreenSounds() const { return num_times_exit_screen_played_; }
   size_t NumEnterScreenSounds() const { return num_times_enter_screen_played_; }
+  size_t NumTouchTypeSounds() const {
+    return num_times_touch_type_sound_played_;
+  }
   ui::AXGesture GetLastGesture() const { return last_gesture_; }
 
   void ResetCountersToZero() {
@@ -101,6 +105,7 @@ class MockTouchExplorationControllerDelegate
     num_times_passthrough_played_ = 0;
     num_times_exit_screen_played_ = 0;
     num_times_enter_screen_played_ = 0;
+    num_times_touch_type_sound_played_ = 0;
   }
 
  private:
@@ -109,6 +114,7 @@ class MockTouchExplorationControllerDelegate
   size_t num_times_passthrough_played_ = 0;
   size_t num_times_exit_screen_played_ = 0;
   size_t num_times_enter_screen_played_ = 0;
+  size_t num_times_touch_type_sound_played_ = 0;
   ui::AXGesture last_gesture_ = ui::AX_GESTURE_NONE;
 };
 
@@ -2070,6 +2076,7 @@ TEST_F(TouchExplorationTest, TouchExploreLiftInLiftActivationArea) {
   gfx::Point tap_location = lift_activation.CenterPoint();
   EnterTouchExplorationModeAtLocation(tap_location);
   ClearCapturedEvents();
+  ASSERT_EQ(0U, delegate_.NumTouchTypeSounds());
 
   // A touch release should trigger a tap.
   ui::TouchEvent touch_explore_release(
@@ -2083,7 +2090,9 @@ TEST_F(TouchExplorationTest, TouchExploreLiftInLiftActivationArea) {
   EXPECT_EQ(ui::ET_TOUCH_PRESSED, captured_events[0]->type());
   EXPECT_EQ(ui::ET_TOUCH_RELEASED, captured_events[1]->type());
   EXPECT_EQ(ui::ET_MOUSE_MOVED, captured_events[2]->type());
+  ASSERT_EQ(1U, delegate_.NumTouchTypeSounds());
   ClearCapturedEvents();
+  delegate_.ResetCountersToZero();
 
   // Touch explore inside the activation bounds, but lift outside.
   gfx::Point out_tap_location(tap_location.x(), lift_activation.bottom() + 20);
@@ -2099,6 +2108,7 @@ TEST_F(TouchExplorationTest, TouchExploreLiftInLiftActivationArea) {
   const EventList& out_captured_events = GetCapturedEvents();
   ASSERT_EQ(1U, out_captured_events.size());
   EXPECT_EQ(ui::ET_MOUSE_MOVED, out_captured_events[0]->type());
+  ASSERT_EQ(0U, delegate_.NumTouchTypeSounds());
 }
 
 // Ensure that any touch release events received after

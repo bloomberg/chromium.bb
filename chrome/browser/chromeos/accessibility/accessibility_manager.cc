@@ -301,6 +301,8 @@ AccessibilityManager::AccessibilityManager()
   manager->Initialize(SOUND_SPOKEN_FEEDBACK_TOGGLE_COUNTDOWN_LOW,
                       bundle.GetRawDataResource(
                           IDR_SOUND_SPOKEN_FEEDBACK_TOGGLE_COUNTDOWN_LOW_WAV));
+  manager->Initialize(SOUND_TOUCH_TYPE,
+                      bundle.GetRawDataResource(IDR_SOUND_TOUCH_TYPE_WAV));
 
   base::FilePath resources_path;
   if (!PathService::Get(chrome::DIR_RESOURCES, &resources_path))

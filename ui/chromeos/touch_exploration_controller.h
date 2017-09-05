@@ -58,6 +58,10 @@ class TouchExplorationControllerDelegate {
   // played.
   virtual void PlayEnterScreenEarcon() = 0;
 
+  // This function should be called when the touch type earcon should
+  // be played.
+  virtual void PlayTouchTypeEarcon() = 0;
+
   // Called when the user performed an accessibility gesture while in touch
   // accessibility mode, that should be forwarded to ChromeVox.
   virtual void HandleAccessibilityGesture(ui::AXGesture gesture) = 0;
