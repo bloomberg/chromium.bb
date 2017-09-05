@@ -380,11 +380,7 @@ TEST_F(SearchTest, InstantCacheableNTPNavigationEntry) {
   NavigateAndCommitActiveTab(GURL(chrome::kChromeSearchLocalNtpUrl));
   EXPECT_TRUE(NavEntryIsInstantNTP(contents,
                                    controller.GetLastCommittedEntry()));
-  // Instant page is not cacheable NTP.
-  NavigateAndCommitActiveTab(GetInstantURL(profile(), false));
-  EXPECT_FALSE(NavEntryIsInstantNTP(contents,
-                                    controller.GetLastCommittedEntry()));
-  // Test Cacheable NTP
+  // Remote NTP.
   NavigateAndCommitActiveTab(GetNewTabPageURL(profile()));
   EXPECT_TRUE(NavEntryIsInstantNTP(contents,
                                    controller.GetLastCommittedEntry()));
@@ -448,80 +444,8 @@ TEST_F(SearchTest, UseLocalNTPIfNTPURLIsBlockedForSupervisedUser) {
   GURL new_tab_url(chrome::kChromeUINewTabURL);
   EXPECT_TRUE(HandleNewTabURLRewrite(&new_tab_url, profile()));
   EXPECT_EQ(GURL(chrome::kChromeSearchLocalNtpUrl), new_tab_url);
-  EXPECT_EQ(GURL(), GetInstantURL(profile(), false));
 }
 #endif
-
-TEST_F(SearchTest, GetInstantURL) {
-  // No Instant URL because "strk" is missing.
-  SetDefaultInstantTemplateUrl(false);
-  EXPECT_EQ(GURL(), GetInstantURL(profile(), false));
-
-  // Set an Instant URL with a valid search terms replacement key.
-  SetDefaultInstantTemplateUrl(true);
-
-  // Now there should be a valid Instant URL. Note the HTTPS "upgrade".
-  EXPECT_EQ(GURL("https://foo.com/instant?foo=foo#foo=foo&strk"),
-            GetInstantURL(profile(), false));
-
-  // Enable suggest. No difference.
-  profile()->GetPrefs()->SetBoolean(prefs::kSearchSuggestEnabled, true);
-  EXPECT_EQ(GURL("https://foo.com/instant?foo=foo#foo=foo&strk"),
-            GetInstantURL(profile(), false));
-
-  // Disable suggest. No Instant URL.
-  profile()->GetPrefs()->SetBoolean(prefs::kSearchSuggestEnabled, false);
-  EXPECT_EQ(GURL(), GetInstantURL(profile(), false));
-}
-
-TEST_F(SearchTest, InstantSearchEnabledCGI) {
-  // Disable Instant Search.
-  // Make sure {google:forceInstantResults} is not set in the Instant URL.
-  EXPECT_EQ(GURL("https://foo.com/instant?foo=foo#foo=foo&strk"),
-            GetInstantURL(profile(), false));
-
-  // Enable Instant Search.
-  // Make sure {google:forceInstantResults} is set in the Instant URL.
-  EXPECT_EQ(GURL("https://foo.com/instant?ion=1&foo=foo#foo=foo&strk"),
-            GetInstantURL(profile(), true));
-}
-
-TEST_F(SearchTest, CommandLineOverrides) {
-  TemplateURLService* template_url_service =
-      TemplateURLServiceFactory::GetForProfile(profile());
-  TemplateURLData data;
-  data.SetShortName(base::ASCIIToUTF16("Google"));
-  data.SetURL("{google:baseURL}search?q={searchTerms}");
-  data.instant_url = "{google:baseURL}webhp?strk";
-  data.search_terms_replacement_key = "strk";
-  TemplateURL* template_url =
-      template_url_service->Add(base::MakeUnique<TemplateURL>(data));
-  template_url_service->SetUserSelectedDefaultSearchProvider(template_url);
-
-  // By default, Instant Extended forces the instant URL to be HTTPS, so even if
-  // we set a Google base URL that is HTTP, we should get an HTTPS URL.
-  UIThreadSearchTermsData::SetGoogleBaseURL("http://www.foo.com/");
-  GURL instant_url(GetInstantURL(profile(), false));
-  ASSERT_TRUE(instant_url.is_valid());
-  EXPECT_EQ("https://www.foo.com/webhp?strk", instant_url.spec());
-
-  // However, if the Google base URL is specified on the command line, the
-  // instant URL should just use it, even if it's HTTP.
-  UIThreadSearchTermsData::SetGoogleBaseURL(std::string());
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kGoogleBaseURL, "http://www.bar.com/");
-  instant_url = GetInstantURL(profile(), false);
-  ASSERT_TRUE(instant_url.is_valid());
-  EXPECT_EQ("http://www.bar.com/webhp?strk", instant_url.spec());
-
-  // If we specify extra search query params, they should be inserted into the
-  // query portion of the instant URL.
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kExtraSearchQueryParams, "a=b");
-  instant_url = GetInstantURL(profile(), false);
-  ASSERT_TRUE(instant_url.is_valid());
-  EXPECT_EQ("http://www.bar.com/webhp?a=b&strk", instant_url.spec());
-}
 
 TEST_F(SearchTest, IsNTPURL) {
   GURL invalid_url;
@@ -531,7 +455,7 @@ TEST_F(SearchTest, IsNTPURL) {
   EXPECT_FALSE(IsNTPURL(invalid_url, profile()));
   // No margin.
   profile()->GetPrefs()->SetBoolean(prefs::kSearchSuggestEnabled, true);
-  GURL remote_ntp_url(GetInstantURL(profile(), false));
+  GURL remote_ntp_url(GetNewTabPageURL(profile()));
   GURL remote_ntp_service_worker_url("https://foo.com/newtab-serviceworker.js");
   GURL search_url_with_search_terms("https://foo.com/url?strk&bar=abc");
   GURL search_url_without_search_terms("https://foo.com/url?strk&bar");
@@ -556,35 +480,6 @@ TEST_F(SearchTest, GetSearchURLs) {
   EXPECT_EQ(2U, search_urls.size());
   EXPECT_EQ("http://foo.com/alt#quux=", search_urls[0].spec());
   EXPECT_EQ("http://foo.com/url?bar=", search_urls[1].spec());
-}
-
-TEST_F(SearchTest, GetSearchResultPrefetchBaseURL) {
-  EXPECT_EQ(GURL("https://foo.com/instant?ion=1&foo=foo#foo=foo&strk"),
-            GetSearchResultPrefetchBaseURL(profile()));
-}
-
-struct ExtractSearchTermsTestCase {
-  const char* url;
-  const char* expected_result;
-  const char* comment;
-};
-
-TEST_F(SearchTest, ExtractSearchTermsFromURL) {
-  const ExtractSearchTermsTestCase kTestCases[] = {
-    {chrome::kChromeSearchLocalNtpUrl,           "",    "NTP url"},
-    {"https://foo.com/instant?strk",             "",    "Invalid search url"},
-    {"https://foo.com/instant#strk",             "",    "Invalid search url"},
-    {"https://foo.com/alt#quux=foo",             "foo", "Valid search url"},
-    {"https://foo.com/alt#quux=foo&strk",        "foo", "Valid search url"}
-  };
-
-  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
-    const ExtractSearchTermsTestCase& test = kTestCases[i];
-    EXPECT_EQ(test.expected_result,
-              base::UTF16ToASCII(
-                  ExtractSearchTermsFromURL(profile(), GURL(test.url))))
-        << test.url << " " << test.comment;
-  }
 }
 
 // Regression test for https://crbug.com/605720: Set up a search provider backed
