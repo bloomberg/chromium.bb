@@ -199,7 +199,9 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   void OnIceGatheringChange(
       webrtc::PeerConnectionInterface::IceGatheringState new_state);
   void OnRenegotiationNeeded();
-  void OnAddStream(std::unique_ptr<RemoteMediaStreamImpl> stream);
+  void OnAddStream(
+      std::unique_ptr<RemoteMediaStreamImpl> stream,
+      std::vector<std::unique_ptr<blink::WebRTCRtpReceiver>> web_receivers);
   void OnRemoveStream(
       const scoped_refptr<webrtc::MediaStreamInterface>& stream);
   void OnDataChannel(std::unique_ptr<RtcDataChannelHandler> handler);

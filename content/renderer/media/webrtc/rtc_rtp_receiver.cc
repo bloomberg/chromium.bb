@@ -23,7 +23,6 @@ RTCRtpReceiver::RTCRtpReceiver(
       track_adapter_(std::move(track_adapter)) {
   DCHECK(webrtc_rtp_receiver_);
   DCHECK(track_adapter_);
-  DCHECK_EQ(track_adapter_->webrtc_track(), webrtc_rtp_receiver_->track());
 }
 
 RTCRtpReceiver::~RTCRtpReceiver() {}

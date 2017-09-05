@@ -37,20 +37,20 @@ scoped_refptr<WebRtcMediaStreamTrackAdapter>
 WebRtcMediaStreamTrackAdapter::CreateRemoteTrackAdapter(
     PeerConnectionDependencyFactory* factory,
     const scoped_refptr<base::SingleThreadTaskRunner>& main_thread,
-    webrtc::MediaStreamTrackInterface* webrtc_track) {
+    const scoped_refptr<webrtc::MediaStreamTrackInterface>& webrtc_track) {
   DCHECK(factory);
   DCHECK(!main_thread->BelongsToCurrentThread());
   DCHECK(webrtc_track);
   scoped_refptr<WebRtcMediaStreamTrackAdapter> remote_track_adapter(
       new WebRtcMediaStreamTrackAdapter(factory, main_thread));
   if (webrtc_track->kind() == webrtc::MediaStreamTrackInterface::kAudioKind) {
-    remote_track_adapter->InitializeRemoteAudioTrack(
-        static_cast<webrtc::AudioTrackInterface*>(webrtc_track));
+    remote_track_adapter->InitializeRemoteAudioTrack(make_scoped_refptr(
+        static_cast<webrtc::AudioTrackInterface*>(webrtc_track.get())));
   } else {
     DCHECK_EQ(webrtc_track->kind(),
               webrtc::MediaStreamTrackInterface::kVideoKind);
-    remote_track_adapter->InitializeRemoteVideoTrack(
-        static_cast<webrtc::VideoTrackInterface*>(webrtc_track));
+    remote_track_adapter->InitializeRemoteVideoTrack(make_scoped_refptr(
+        static_cast<webrtc::VideoTrackInterface*>(webrtc_track.get())));
   }
   return remote_track_adapter;
 }
@@ -174,7 +174,7 @@ void WebRtcMediaStreamTrackAdapter::InitializeLocalVideoTrack(
 }
 
 void WebRtcMediaStreamTrackAdapter::InitializeRemoteAudioTrack(
-    webrtc::AudioTrackInterface* webrtc_audio_track) {
+    const scoped_refptr<webrtc::AudioTrackInterface>& webrtc_audio_track) {
   DCHECK(!main_thread_->BelongsToCurrentThread());
   DCHECK(!is_initialized_);
   DCHECK(!remote_track_can_complete_initialization_.IsSignaled());
@@ -182,7 +182,7 @@ void WebRtcMediaStreamTrackAdapter::InitializeRemoteAudioTrack(
   DCHECK_EQ(webrtc_audio_track->kind(),
             webrtc::MediaStreamTrackInterface::kAudioKind);
   remote_audio_track_adapter_ =
-      new RemoteAudioTrackAdapter(main_thread_, webrtc_audio_track);
+      new RemoteAudioTrackAdapter(main_thread_, webrtc_audio_track.get());
   webrtc_track_ = webrtc_audio_track;
   remote_track_can_complete_initialization_.Signal();
   main_thread_->PostTask(
@@ -193,13 +193,13 @@ void WebRtcMediaStreamTrackAdapter::InitializeRemoteAudioTrack(
 }
 
 void WebRtcMediaStreamTrackAdapter::InitializeRemoteVideoTrack(
-    webrtc::VideoTrackInterface* webrtc_video_track) {
+    const scoped_refptr<webrtc::VideoTrackInterface>& webrtc_video_track) {
   DCHECK(!main_thread_->BelongsToCurrentThread());
   DCHECK(webrtc_video_track);
   DCHECK_EQ(webrtc_video_track->kind(),
             webrtc::MediaStreamTrackInterface::kVideoKind);
   remote_video_track_adapter_ =
-      new RemoteVideoTrackAdapter(main_thread_, webrtc_video_track);
+      new RemoteVideoTrackAdapter(main_thread_, webrtc_video_track.get());
   webrtc_track_ = webrtc_video_track;
   remote_track_can_complete_initialization_.Signal();
   main_thread_->PostTask(

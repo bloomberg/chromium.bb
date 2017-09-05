@@ -275,6 +275,70 @@ function switchRemoteStreamAndBackAgain() {
     });
 }
 
+function switchRemoteStreamWithoutWaitingForPromisesToResolve() {
+  let pc = new RTCPeerConnection();
+  let trackEventsFired = 0;
+  let streamEventsFired = 0;
+  pc.ontrack = (e) => {
+    ++trackEventsFired;
+    if (trackEventsFired == 1) {
+      if (e.track.id != 'track0')
+        throw failTest('Unexpected track id in first track event.');
+      if (e.receiver.track != e.track)
+        throw failTest('Unexpected receiver.track in first track event.');
+      if (e.streams[0].id != 'stream0')
+        throw failTest('Unexpected stream id in first track event.');
+      // Because we did not wait for promises to resolve before calling
+      // |setRemoteDescription| a second time, it may or may not have had an
+      // effect here. This is inherently racey and we have to check if the
+      // stream contains the track.
+      if (e.streams[0].getTracks().length != 0) {
+        if (e.streams[0].getTracks()[0] != e.track)
+          throw failTest('Unexpected track in stream in first track event.');
+      }
+    } else if (trackEventsFired == 2) {
+      if (e.track.id != 'track1')
+        throw failTest('Unexpected track id in second track event.');
+      if (e.receiver.track != e.track)
+        throw failTest('Unexpected receiver.track in second track event.');
+      if (e.streams[0].id != 'stream1')
+        throw failTest('Unexpected stream id in second track event.');
+      if (e.streams[0].getTracks()[0] != e.track)
+        throw failTest('The track should belong to the stream in the second ' +
+                       'track event.');
+      if (streamEventsFired != trackEventsFired)
+        throw failTest('All stream events should already have fired.');
+      returnToTest('ok');
+    }
+  };
+  pc.onaddstream = (e) => {
+    ++streamEventsFired;
+    if (streamEventsFired == 1) {
+      if (e.stream.id != 'stream0')
+        throw failTest('Unexpected stream id in first stream event.');
+      // Because we did not wait for promises to resolve before calling
+      // |setRemoteDescription| a second time, it may or may not have had an
+      // effect here. This is inherently racey and we have to check if the
+      // stream contains the track.
+      if (e.stream.getTracks().length != 0) {
+        if (e.stream.getTracks()[0].id != 'track0')
+          throw failTest('Unexpected track id in first stream event.');
+      }
+    } else if (streamEventsFired == 2) {
+      if (e.stream.id != 'stream1')
+        throw failTest('Unexpected stream id in second stream event.');
+      if (e.stream.getTracks()[0].id != 'track1')
+        throw failTest('Unexpected track id in second stream event.');
+    }
+  };
+  pc.setRemoteDescription(createOffer('stream0', 'track0'));
+  pc.setRemoteDescription(createOffer('stream1', 'track1'));
+}
+
+// TODO(hbos): Also try switching back again for the case where IDs do match
+// but the objects are in fact different. Verify that they are different objects
+// like in the |switchRemoteStreamAndBackAgain| test.
+
 /**
  * Invokes the GC and returns "ok-gc".
  */

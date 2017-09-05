@@ -32,18 +32,19 @@ class CONTENT_EXPORT WebRtcMediaStreamTrackAdapter
     : public base::RefCountedThreadSafe<WebRtcMediaStreamTrackAdapter> {
  public:
   // Invoke on the main thread. The returned adapter is fully initialized, see
-  // |is_initialized|.
+  // |is_initialized|. The adapter will keep a reference to the |main_thread|.
   static scoped_refptr<WebRtcMediaStreamTrackAdapter> CreateLocalTrackAdapter(
       PeerConnectionDependencyFactory* factory,
       const scoped_refptr<base::SingleThreadTaskRunner>& main_thread,
       const blink::WebMediaStreamTrack& web_track);
   // Invoke on the webrtc signaling thread. Initialization finishes on the main
   // thread in a post, meaning returned adapters are ensured to be initialized
-  // in posts to the main thread, see |is_initialized|.
+  // in posts to the main thread, see |is_initialized|. The adapter will keep
+  // references to the |main_thread| and |webrtc_track|.
   static scoped_refptr<WebRtcMediaStreamTrackAdapter> CreateRemoteTrackAdapter(
       PeerConnectionDependencyFactory* factory,
       const scoped_refptr<base::SingleThreadTaskRunner>& main_thread,
-      webrtc::MediaStreamTrackInterface* webrtc_track);
+      const scoped_refptr<webrtc::MediaStreamTrackInterface>& webrtc_track);
   // Must be called before all external references are released (i.e. before
   // destruction). Invoke on the main thread. Disposing may finish
   // asynchronously using the webrtc signaling thread and the main thread. After
@@ -88,9 +89,9 @@ class CONTENT_EXPORT WebRtcMediaStreamTrackAdapter
   // Initialization of remote tracks starts on the webrtc signaling thread and
   // finishes on the main thread.
   void InitializeRemoteAudioTrack(
-      webrtc::AudioTrackInterface* webrtc_audio_track);
+      const scoped_refptr<webrtc::AudioTrackInterface>& webrtc_audio_track);
   void InitializeRemoteVideoTrack(
-      webrtc::VideoTrackInterface* webrtc_video_track);
+      const scoped_refptr<webrtc::VideoTrackInterface>& webrtc_video_track);
   void FinalizeRemoteTrackInitializationOnMainThread();
   void EnsureTrackIsInitialized();
 
