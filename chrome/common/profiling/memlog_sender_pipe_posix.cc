@@ -26,7 +26,7 @@ bool MemlogSenderPipe::Connect() {
 
 bool MemlogSenderPipe::Send(const void* data, size_t sz) {
   base::AutoLock lock(lock_);
-  return mojo::edk::PlatformChannelWrite(handle_.get(), data, sz);
+  return mojo::edk::PlatformChannelWrite(handle_.get(), data, sz) != -1;
 }
 
 }  // namespace profiling
