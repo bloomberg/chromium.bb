@@ -453,7 +453,15 @@ void NGInlineNode::SegmentText() {
     item_index = NGInlineItem::SetBidiLevel(items, item_index, end, level);
     start = end;
   }
+#if DCHECK_IS_ON()
+  // Check all items have bidi levels, except trailing non-length items.
+  // Items that do not create break opportunities such as kOutOfFlowPositioned
+  // do not have corresponding characters, and that they do not have bidi level
+  // assigned.
+  while (item_index < items.size() && !items[item_index].Length())
+    item_index++;
   DCHECK_EQ(item_index, items.size());
+#endif
 }
 
 void NGInlineNode::ShapeText() {
