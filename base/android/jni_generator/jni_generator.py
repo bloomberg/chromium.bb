@@ -1032,7 +1032,6 @@ JNI_GENERATOR_EXPORT ${RETURN} ${STUB_NAME}(JNIEnv* env, ${PARAMS_IN_STUB}) {
   ${PROFILING_ENTERED_NATIVE}
   ${P0_TYPE}* native = reinterpret_cast<${P0_TYPE}*>(${PARAM0_NAME});
   CHECK_NATIVE_PTR(env, jcaller, native, "${NAME}"${OPTIONAL_ERROR_RETURN});
-  HistogramValidator validator;
   return native->${NAME}(${PARAMS_IN_CALL})${POST_CALL};
 }
 """)
@@ -1042,7 +1041,6 @@ static ${RETURN_DECLARATION} ${NAME}(JNIEnv* env, ${PARAMS});
 
 JNI_GENERATOR_EXPORT ${RETURN} ${STUB_NAME}(JNIEnv* env, ${PARAMS_IN_STUB}) {
   ${PROFILING_ENTERED_NATIVE}
-  HistogramValidator validator;
   return ${NAME}(${PARAMS_IN_CALL})${POST_CALL};
 }
 """)

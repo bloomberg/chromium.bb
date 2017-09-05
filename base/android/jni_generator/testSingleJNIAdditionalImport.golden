@@ -40,7 +40,6 @@ static void DoSomething(JNIEnv* env, const base::android::JavaParamRef<jclass>&
 JNI_GENERATOR_EXPORT void Java_org_chromium_foo_Foo_nativeDoSomething(JNIEnv*
     env, jclass jcaller,
     jobject callback) {
-  HistogramValidator validator;
   return DoSomething(env, base::android::JavaParamRef<jclass>(env, jcaller),
       base::android::JavaParamRef<jobject>(env, callback));
 }

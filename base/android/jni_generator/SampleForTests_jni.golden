@@ -111,7 +111,6 @@ JNI_GENERATOR_EXPORT jlong
     Java_org_chromium_example_jni_1generator_SampleForTests_nativeInit(JNIEnv*
     env, jobject jcaller,
     jstring param) {
-  HistogramValidator validator;
   return Init(env, base::android::JavaParamRef<jobject>(env, jcaller),
       base::android::JavaParamRef<jstring>(env, param));
 }
@@ -122,7 +121,6 @@ JNI_GENERATOR_EXPORT void
     jlong nativeCPPClass) {
   CPPClass* native = reinterpret_cast<CPPClass*>(nativeCPPClass);
   CHECK_NATIVE_PTR(env, jcaller, native, "Destroy");
-  HistogramValidator validator;
   return native->Destroy(env, base::android::JavaParamRef<jobject>(env,
       jcaller));
 }
@@ -133,7 +131,6 @@ static jdouble GetDoubleFunction(JNIEnv* env, const
 JNI_GENERATOR_EXPORT jdouble
     Java_org_chromium_example_jni_1generator_SampleForTests_nativeGetDoubleFunction(JNIEnv*
     env, jobject jcaller) {
-  HistogramValidator validator;
   return GetDoubleFunction(env, base::android::JavaParamRef<jobject>(env,
       jcaller));
 }
@@ -144,7 +141,6 @@ static jfloat GetFloatFunction(JNIEnv* env, const
 JNI_GENERATOR_EXPORT jfloat
     Java_org_chromium_example_jni_1generator_SampleForTests_nativeGetFloatFunction(JNIEnv*
     env, jclass jcaller) {
-  HistogramValidator validator;
   return GetFloatFunction(env, base::android::JavaParamRef<jclass>(env,
       jcaller));
 }
@@ -157,7 +153,6 @@ JNI_GENERATOR_EXPORT void
     Java_org_chromium_example_jni_1generator_SampleForTests_nativeSetNonPODDatatype(JNIEnv*
     env, jobject jcaller,
     jobject rect) {
-  HistogramValidator validator;
   return SetNonPODDatatype(env, base::android::JavaParamRef<jobject>(env,
       jcaller), base::android::JavaParamRef<jobject>(env, rect));
 }
@@ -168,7 +163,6 @@ static base::android::ScopedJavaLocalRef<jobject> GetNonPODDatatype(JNIEnv* env,
 JNI_GENERATOR_EXPORT jobject
     Java_org_chromium_example_jni_1generator_SampleForTests_nativeGetNonPODDatatype(JNIEnv*
     env, jobject jcaller) {
-  HistogramValidator validator;
   return GetNonPODDatatype(env, base::android::JavaParamRef<jobject>(env,
       jcaller)).Release();
 }
@@ -179,7 +173,6 @@ JNI_GENERATOR_EXPORT jint
     jlong nativeCPPClass) {
   CPPClass* native = reinterpret_cast<CPPClass*>(nativeCPPClass);
   CHECK_NATIVE_PTR(env, jcaller, native, "Method", 0);
-  HistogramValidator validator;
   return native->Method(env, base::android::JavaParamRef<jobject>(env,
       jcaller));
 }
@@ -191,7 +184,6 @@ JNI_GENERATOR_EXPORT jdouble
   CPPClass::InnerClass* native =
       reinterpret_cast<CPPClass::InnerClass*>(nativePtr);
   CHECK_NATIVE_PTR(env, jcaller, native, "MethodOtherP0", 0);
-  HistogramValidator validator;
   return native->MethodOtherP0(env, base::android::JavaParamRef<jobject>(env,
       jcaller));
 }
@@ -203,7 +195,6 @@ JNI_GENERATOR_EXPORT void
     jobject b) {
   CPPClass* native = reinterpret_cast<CPPClass*>(nativeCPPClass);
   CHECK_NATIVE_PTR(env, jcaller, native, "AddStructB");
-  HistogramValidator validator;
   return native->AddStructB(env, base::android::JavaParamRef<jobject>(env,
       jcaller), base::android::JavaParamRef<jobject>(env, b));
 }
@@ -214,7 +205,6 @@ JNI_GENERATOR_EXPORT void
     jlong nativeCPPClass) {
   CPPClass* native = reinterpret_cast<CPPClass*>(nativeCPPClass);
   CHECK_NATIVE_PTR(env, jcaller, native, "IterateAndDoSomethingWithStructB");
-  HistogramValidator validator;
   return native->IterateAndDoSomethingWithStructB(env,
       base::android::JavaParamRef<jobject>(env, jcaller));
 }
@@ -225,7 +215,6 @@ JNI_GENERATOR_EXPORT jstring
     jlong nativeCPPClass) {
   CPPClass* native = reinterpret_cast<CPPClass*>(nativeCPPClass);
   CHECK_NATIVE_PTR(env, jcaller, native, "ReturnAString", NULL);
-  HistogramValidator validator;
   return native->ReturnAString(env, base::android::JavaParamRef<jobject>(env,
       jcaller)).Release();
 }
@@ -236,7 +225,6 @@ static jint GetInnerIntFunction(JNIEnv* env, const
 JNI_GENERATOR_EXPORT jint
     Java_org_chromium_example_jni_1generator_SampleForTests_00024InnerClass_nativeGetInnerIntFunction(JNIEnv*
     env, jclass jcaller) {
-  HistogramValidator validator;
   return GetInnerIntFunction(env, base::android::JavaParamRef<jclass>(env,
       jcaller));
 }
