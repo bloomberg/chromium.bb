@@ -17,7 +17,6 @@
 
 namespace content {
 
-struct ServiceWorkerFetchRequest;
 class ServiceWorkerEventDispatcherHolder;
 class ChildURLLoaderFactoryGetter;
 
@@ -51,8 +50,6 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
   void DeleteSoon();
 
   void StartRequest(const ResourceRequest& resource_request);
-  std::unique_ptr<ServiceWorkerFetchRequest> CreateFetchRequest(
-      const ResourceRequest& request);
   void OnFetchEventFinished(ServiceWorkerStatusCode status,
                             base::Time dispatch_event_time);
 
@@ -77,14 +74,7 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
   void SetPriority(net::RequestPriority priority,
                    int intra_priority_value) override;
 
-  // Populates |response_head_| (except for headers) with given |response|.
-  void SaveResponseInfo(const ServiceWorkerResponse& response);
-  // Generates and populates |response_head_.headers|.
-  void SaveResponseHeaders(int status_code,
-                           const std::string& status_text,
-                           const ServiceWorkerHeaderMap& headers);
   // Calls url_loader_client_->OnReceiveResponse() with |response_head_|.
-  // Expected to be called after saving response info/headers.
   void CommitResponseHeaders();
   // Calls url_loader_client_->OnComplete(). Expected to be called after
   // CommitResponseHeaders (i.e. status_ == kSentHeader).

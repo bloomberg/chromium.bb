@@ -6,15 +6,12 @@
 
 #include "base/atomic_sequence_num.h"
 #include "base/callback.h"
-#include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/child/service_worker/service_worker_event_dispatcher_holder.h"
+#include "content/common/service_worker/service_worker_loader_helpers.h"
 #include "content/common/service_worker/service_worker_types.h"
-#include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/child/child_url_loader_factory_getter.h"
 #include "content/public/common/content_features.h"
-#include "net/base/io_buffer.h"
-#include "net/http/http_util.h"
 #include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/platform/WebBlobRegistry.h"
 #include "ui/base/page_transition_types.h"
@@ -75,7 +72,8 @@ void ServiceWorkerSubresourceLoader::DeleteSoon() {
 
 void ServiceWorkerSubresourceLoader::StartRequest(
     const ResourceRequest& resource_request) {
-  auto request = CreateFetchRequest(resource_request);
+  std::unique_ptr<ServiceWorkerFetchRequest> request =
+      ServiceWorkerLoaderHelpers::CreateFetchRequest(resource_request);
   DCHECK_EQ(Status::kNotStarted, status_);
   status_ = Status::kStarted;
 
@@ -87,32 +85,6 @@ void ServiceWorkerSubresourceLoader::StartRequest(
       std::move(response_callback_ptr),
       base::Bind(&ServiceWorkerSubresourceLoader::OnFetchEventFinished,
                  weak_factory_.GetWeakPtr()));
-}
-
-std::unique_ptr<ServiceWorkerFetchRequest>
-ServiceWorkerSubresourceLoader::CreateFetchRequest(
-    const ResourceRequest& request) {
-  std::string blob_uuid;
-  uint64_t blob_size = 0;
-  // TODO(kinuko): Implement request.request_body handling.
-  auto new_request = base::MakeUnique<ServiceWorkerFetchRequest>();
-  new_request->mode = request.fetch_request_mode;
-  new_request->is_main_resource_load =
-      ServiceWorkerUtils::IsMainResourceType(request.resource_type);
-  new_request->request_context_type = request.fetch_request_context_type;
-  new_request->frame_type = request.fetch_frame_type;
-  new_request->url = request.url;
-  new_request->method = request.method;
-  new_request->blob_uuid = blob_uuid;
-  new_request->blob_size = blob_size;
-  new_request->credentials_mode = request.fetch_credentials_mode;
-  new_request->redirect_mode = request.fetch_redirect_mode;
-  new_request->is_reload = ui::PageTransitionCoreTypeIs(
-      request.transition_type, ui::PAGE_TRANSITION_RELOAD);
-  new_request->referrer =
-      Referrer(GURL(request.referrer), request.referrer_policy);
-  new_request->fetch_type = ServiceWorkerFetchType::FETCH;
-  return new_request;
 }
 
 void ServiceWorkerSubresourceLoader::OnFetchEventFinished(
@@ -167,15 +139,18 @@ void ServiceWorkerSubresourceLoader::StartResponse(
     const ServiceWorkerResponse& response,
     storage::mojom::BlobPtr body_as_blob,
     blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream) {
-  SaveResponseInfo(response);
-  SaveResponseHeaders(response.status_code, response.status_text,
-                      response.headers);
+  ServiceWorkerLoaderHelpers::SaveResponseInfo(response, &response_head_);
+  ServiceWorkerLoaderHelpers::SaveResponseHeaders(
+      response.status_code, response.status_text, response.headers,
+      &response_head_);
 
   // Handle a stream response body.
   if (!body_as_stream.is_null() && body_as_stream->stream.is_valid()) {
     CommitResponseHeaders();
     url_loader_client_->OnStartLoadingResponseBody(
         std::move(body_as_stream->stream));
+    // TODO(falken): Call CommitCompleted() when stream finished.
+    // See https://crbug.com/758455
     CommitCompleted(net::OK);
     return;
   }
@@ -218,52 +193,13 @@ void ServiceWorkerSubresourceLoader::StartResponse(
   CommitCompleted(net::OK);
 }
 
-void ServiceWorkerSubresourceLoader::SaveResponseInfo(
-    const ServiceWorkerResponse& response) {
-  response_head_.was_fetched_via_service_worker = true;
-  response_head_.was_fetched_via_foreign_fetch = false;
-  response_head_.was_fallback_required_by_service_worker = false;
-  response_head_.url_list_via_service_worker = response.url_list;
-  response_head_.response_type_via_service_worker = response.response_type;
-  response_head_.is_in_cache_storage = response.is_in_cache_storage;
-  response_head_.cache_storage_cache_name = response.cache_storage_cache_name;
-  response_head_.cors_exposed_header_names = response.cors_exposed_header_names;
-  response_head_.did_service_worker_navigation_preload = false;
-}
-
-void ServiceWorkerSubresourceLoader::SaveResponseHeaders(
-    int status_code,
-    const std::string& status_text,
-    const ServiceWorkerHeaderMap& headers) {
-  // Build a string instead of using HttpResponseHeaders::AddHeader on
-  // each header, since AddHeader has O(n^2) performance.
-  std::string buf(base::StringPrintf("HTTP/1.1 %d %s\r\n", status_code,
-                                     status_text.c_str()));
-  for (const auto& item : headers) {
-    buf.append(item.first);
-    buf.append(": ");
-    buf.append(item.second);
-    buf.append("\r\n");
-  }
-  buf.append("\r\n");
-
-  response_head_.headers = new net::HttpResponseHeaders(
-      net::HttpUtil::AssembleRawHeaders(buf.c_str(), buf.size()));
-  if (response_head_.mime_type.empty()) {
-    std::string mime_type;
-    response_head_.headers->GetMimeType(&mime_type);
-    if (mime_type.empty())
-      mime_type = "text/plain";
-    response_head_.mime_type = mime_type;
-  }
-}
-
 void ServiceWorkerSubresourceLoader::CommitResponseHeaders() {
   DCHECK_EQ(Status::kStarted, status_);
   status_ = Status::kSentHeader;
   // TODO(kinuko): Fill the ssl_info.
   url_loader_client_->OnReceiveResponse(response_head_,
-                                        base::nullopt /* ssl_info */, nullptr);
+                                        base::nullopt /* ssl_info_ */,
+                                        nullptr /* downloaded_file */);
 }
 
 void ServiceWorkerSubresourceLoader::CommitCompleted(int error_code) {
@@ -279,8 +215,9 @@ void ServiceWorkerSubresourceLoader::DeliverErrorResponse() {
   DCHECK_GT(status_, Status::kNotStarted);
   DCHECK_LT(status_, Status::kCompleted);
   if (status_ < Status::kSentHeader) {
-    SaveResponseHeaders(500, "Service Worker Response Error",
-                        ServiceWorkerHeaderMap());
+    ServiceWorkerLoaderHelpers::SaveResponseHeaders(
+        500, "Service Worker Response Error", ServiceWorkerHeaderMap(),
+        &response_head_);
     CommitResponseHeaders();
   }
   CommitCompleted(net::ERR_FAILED);
