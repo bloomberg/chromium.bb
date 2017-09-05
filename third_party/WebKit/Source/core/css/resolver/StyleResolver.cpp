@@ -365,8 +365,8 @@ void StyleResolver::MatchScopedRules(const Element& element,
 
 void StyleResolver::MatchAuthorRules(const Element& element,
                                      ElementRuleCollector& collector) {
-  if (GetDocument().GetShadowCascadeOrder() !=
-      ShadowCascadeOrder::kShadowCascadeV1) {
+  if (GetDocument().GetShadowCascadeOrder() ==
+      ShadowCascadeOrder::kShadowCascadeV0) {
     MatchAuthorRulesV0(element, collector);
     return;
   }
@@ -466,8 +466,8 @@ void StyleResolver::MatchAllRules(StyleResolverState& state,
   if (state.GetElement()->IsStyledElement()) {
     // For Shadow DOM V1, inline style is already collected in
     // matchScopedRules().
-    if (GetDocument().GetShadowCascadeOrder() !=
-            ShadowCascadeOrder::kShadowCascadeV1 &&
+    if (GetDocument().GetShadowCascadeOrder() ==
+            ShadowCascadeOrder::kShadowCascadeV0 &&
         state.GetElement()->InlineStyle()) {
       // Inline style is immutable as long as there is no CSSOM wrapper.
       bool is_inline_style_cacheable =
