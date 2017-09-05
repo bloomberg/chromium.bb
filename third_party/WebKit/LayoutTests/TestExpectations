@@ -659,6 +659,8 @@ crbug.com/761798 [ Mac ] inspector-protocol/emulation/device-emulation-desktop.j
 
 crbug.com/233303 [ Win7 Debug ] http/tests/devtools/sources/debugger-breakpoints/dom-breakpoints.html [ Pass Failure Timeout ]
 crbug.com/667560 [ Win7 Debug ] virtual/mojo-loading/http/tests/devtools/sources/debugger-breakpoints/dom-breakpoints.html [ Pass Failure Timeout ]
+crbug.com/761881 [ Win7 Debug ] http/tests/devtools/sources/debugger-breakpoints/event-listener-breakpoints.html [ Pass Crash ]
+crbug.com/761881 [ Win7 Debug ] virtual/mojo-loading/http/tests/devtools/sources/debugger-breakpoints/event-listener-breakpoints.html [ Pass Crash ]
 
 crbug.com/410974 fast/scroll-behavior/scroll-customization/scrollstate-basic.html [ Pass Failure ]
 crbug.com/410974 fast/scroll-behavior/scroll-customization/scrollstate-consume-deltas.html [ Pass Failure ]
