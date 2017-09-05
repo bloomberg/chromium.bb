@@ -229,14 +229,6 @@ bool WillUseGLGetStringForExtensions(GLApi* api) {
   return is_es || major_version < 3;
 }
 
-std::unique_ptr<GLVersionInfo> GetVersionInfoFromContext(GLApi* api) {
-  std::string extensions = GetGLExtensionsFromCurrentContext(api);
-  return base::MakeUnique<GLVersionInfo>(
-      reinterpret_cast<const char*>(api->glGetStringFn(GL_VERSION)),
-      reinterpret_cast<const char*>(api->glGetStringFn(GL_RENDERER)),
-      extensions.c_str());
-}
-
 base::NativeLibrary LoadLibraryAndPrintError(
     const base::FilePath::CharType* filename) {
   return LoadLibraryAndPrintError(base::FilePath(filename));

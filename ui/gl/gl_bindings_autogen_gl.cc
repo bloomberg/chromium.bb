@@ -547,152 +547,128 @@ void DriverGL::InitializeStaticBindings() {
   fn.glWaitSyncFn = 0;
 }
 
-void DriverGL::InitializeDynamicBindings(
-    const GLVersionInfo* ver,
-    const std::string& context_extensions) {
-  std::string extensions = context_extensions + " ";
-  ALLOW_UNUSED_LOCAL(extensions);
-
+void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
+                                         const ExtensionSet& extensions) {
   ext.b_GL_ANGLE_framebuffer_blit =
-      extensions.find("GL_ANGLE_framebuffer_blit ") != std::string::npos;
+      HasExtension(extensions, "GL_ANGLE_framebuffer_blit");
   ext.b_GL_ANGLE_framebuffer_multisample =
-      extensions.find("GL_ANGLE_framebuffer_multisample ") != std::string::npos;
+      HasExtension(extensions, "GL_ANGLE_framebuffer_multisample");
   ext.b_GL_ANGLE_instanced_arrays =
-      extensions.find("GL_ANGLE_instanced_arrays ") != std::string::npos;
+      HasExtension(extensions, "GL_ANGLE_instanced_arrays");
   ext.b_GL_ANGLE_request_extension =
-      extensions.find("GL_ANGLE_request_extension ") != std::string::npos;
+      HasExtension(extensions, "GL_ANGLE_request_extension");
   ext.b_GL_ANGLE_robust_client_memory =
-      extensions.find("GL_ANGLE_robust_client_memory ") != std::string::npos;
+      HasExtension(extensions, "GL_ANGLE_robust_client_memory");
   ext.b_GL_ANGLE_translated_shader_source =
-      extensions.find("GL_ANGLE_translated_shader_source ") !=
-      std::string::npos;
-  ext.b_GL_APPLE_fence =
-      extensions.find("GL_APPLE_fence ") != std::string::npos;
+      HasExtension(extensions, "GL_ANGLE_translated_shader_source");
+  ext.b_GL_APPLE_fence = HasExtension(extensions, "GL_APPLE_fence");
   ext.b_GL_APPLE_vertex_array_object =
-      extensions.find("GL_APPLE_vertex_array_object ") != std::string::npos;
+      HasExtension(extensions, "GL_APPLE_vertex_array_object");
   ext.b_GL_ARB_blend_func_extended =
-      extensions.find("GL_ARB_blend_func_extended ") != std::string::npos;
-  ext.b_GL_ARB_draw_buffers =
-      extensions.find("GL_ARB_draw_buffers ") != std::string::npos;
+      HasExtension(extensions, "GL_ARB_blend_func_extended");
+  ext.b_GL_ARB_draw_buffers = HasExtension(extensions, "GL_ARB_draw_buffers");
   ext.b_GL_ARB_draw_instanced =
-      extensions.find("GL_ARB_draw_instanced ") != std::string::npos;
+      HasExtension(extensions, "GL_ARB_draw_instanced");
   ext.b_GL_ARB_get_program_binary =
-      extensions.find("GL_ARB_get_program_binary ") != std::string::npos;
+      HasExtension(extensions, "GL_ARB_get_program_binary");
   ext.b_GL_ARB_instanced_arrays =
-      extensions.find("GL_ARB_instanced_arrays ") != std::string::npos;
+      HasExtension(extensions, "GL_ARB_instanced_arrays");
   ext.b_GL_ARB_internalformat_query =
-      extensions.find("GL_ARB_internalformat_query ") != std::string::npos;
+      HasExtension(extensions, "GL_ARB_internalformat_query");
   ext.b_GL_ARB_map_buffer_range =
-      extensions.find("GL_ARB_map_buffer_range ") != std::string::npos;
+      HasExtension(extensions, "GL_ARB_map_buffer_range");
   ext.b_GL_ARB_occlusion_query =
-      extensions.find("GL_ARB_occlusion_query ") != std::string::npos;
+      HasExtension(extensions, "GL_ARB_occlusion_query");
   ext.b_GL_ARB_program_interface_query =
-      extensions.find("GL_ARB_program_interface_query ") != std::string::npos;
-  ext.b_GL_ARB_robustness =
-      extensions.find("GL_ARB_robustness ") != std::string::npos;
+      HasExtension(extensions, "GL_ARB_program_interface_query");
+  ext.b_GL_ARB_robustness = HasExtension(extensions, "GL_ARB_robustness");
   ext.b_GL_ARB_sampler_objects =
-      extensions.find("GL_ARB_sampler_objects ") != std::string::npos;
+      HasExtension(extensions, "GL_ARB_sampler_objects");
   ext.b_GL_ARB_shader_image_load_store =
-      extensions.find("GL_ARB_shader_image_load_store ") != std::string::npos;
-  ext.b_GL_ARB_sync = extensions.find("GL_ARB_sync ") != std::string::npos;
+      HasExtension(extensions, "GL_ARB_shader_image_load_store");
+  ext.b_GL_ARB_sync = HasExtension(extensions, "GL_ARB_sync");
   ext.b_GL_ARB_texture_multisample =
-      extensions.find("GL_ARB_texture_multisample ") != std::string::npos;
+      HasExtension(extensions, "GL_ARB_texture_multisample");
   ext.b_GL_ARB_texture_storage =
-      extensions.find("GL_ARB_texture_storage ") != std::string::npos;
-  ext.b_GL_ARB_timer_query =
-      extensions.find("GL_ARB_timer_query ") != std::string::npos;
+      HasExtension(extensions, "GL_ARB_texture_storage");
+  ext.b_GL_ARB_timer_query = HasExtension(extensions, "GL_ARB_timer_query");
   ext.b_GL_ARB_transform_feedback2 =
-      extensions.find("GL_ARB_transform_feedback2 ") != std::string::npos;
+      HasExtension(extensions, "GL_ARB_transform_feedback2");
   ext.b_GL_ARB_vertex_array_object =
-      extensions.find("GL_ARB_vertex_array_object ") != std::string::npos;
+      HasExtension(extensions, "GL_ARB_vertex_array_object");
   ext.b_GL_CHROMIUM_bind_uniform_location =
-      extensions.find("GL_CHROMIUM_bind_uniform_location ") !=
-      std::string::npos;
+      HasExtension(extensions, "GL_CHROMIUM_bind_uniform_location");
   ext.b_GL_CHROMIUM_compressed_copy_texture =
-      extensions.find("GL_CHROMIUM_compressed_copy_texture ") !=
-      std::string::npos;
+      HasExtension(extensions, "GL_CHROMIUM_compressed_copy_texture");
   ext.b_GL_CHROMIUM_copy_compressed_texture =
-      extensions.find("GL_CHROMIUM_copy_compressed_texture ") !=
-      std::string::npos;
+      HasExtension(extensions, "GL_CHROMIUM_copy_compressed_texture");
   ext.b_GL_CHROMIUM_copy_texture =
-      extensions.find("GL_CHROMIUM_copy_texture ") != std::string::npos;
+      HasExtension(extensions, "GL_CHROMIUM_copy_texture");
   ext.b_GL_CHROMIUM_gles_depth_binding_hack =
-      extensions.find("GL_CHROMIUM_gles_depth_binding_hack ") !=
-      std::string::npos;
+      HasExtension(extensions, "GL_CHROMIUM_gles_depth_binding_hack");
   ext.b_GL_CHROMIUM_glgetstringi_hack =
-      extensions.find("GL_CHROMIUM_glgetstringi_hack ") != std::string::npos;
+      HasExtension(extensions, "GL_CHROMIUM_glgetstringi_hack");
   ext.b_GL_EXT_blend_func_extended =
-      extensions.find("GL_EXT_blend_func_extended ") != std::string::npos;
-  ext.b_GL_EXT_debug_marker =
-      extensions.find("GL_EXT_debug_marker ") != std::string::npos;
+      HasExtension(extensions, "GL_EXT_blend_func_extended");
+  ext.b_GL_EXT_debug_marker = HasExtension(extensions, "GL_EXT_debug_marker");
   ext.b_GL_EXT_direct_state_access =
-      extensions.find("GL_EXT_direct_state_access ") != std::string::npos;
+      HasExtension(extensions, "GL_EXT_direct_state_access");
   ext.b_GL_EXT_discard_framebuffer =
-      extensions.find("GL_EXT_discard_framebuffer ") != std::string::npos;
+      HasExtension(extensions, "GL_EXT_discard_framebuffer");
   ext.b_GL_EXT_disjoint_timer_query =
-      extensions.find("GL_EXT_disjoint_timer_query ") != std::string::npos;
-  ext.b_GL_EXT_draw_buffers =
-      extensions.find("GL_EXT_draw_buffers ") != std::string::npos;
+      HasExtension(extensions, "GL_EXT_disjoint_timer_query");
+  ext.b_GL_EXT_draw_buffers = HasExtension(extensions, "GL_EXT_draw_buffers");
   ext.b_GL_EXT_framebuffer_blit =
-      extensions.find("GL_EXT_framebuffer_blit ") != std::string::npos;
+      HasExtension(extensions, "GL_EXT_framebuffer_blit");
   ext.b_GL_EXT_framebuffer_multisample =
-      extensions.find("GL_EXT_framebuffer_multisample ") != std::string::npos;
+      HasExtension(extensions, "GL_EXT_framebuffer_multisample");
   ext.b_GL_EXT_framebuffer_object =
-      extensions.find("GL_EXT_framebuffer_object ") != std::string::npos;
-  ext.b_GL_EXT_gpu_shader4 =
-      extensions.find("GL_EXT_gpu_shader4 ") != std::string::npos;
+      HasExtension(extensions, "GL_EXT_framebuffer_object");
+  ext.b_GL_EXT_gpu_shader4 = HasExtension(extensions, "GL_EXT_gpu_shader4");
   ext.b_GL_EXT_instanced_arrays =
-      extensions.find("GL_EXT_instanced_arrays ") != std::string::npos;
+      HasExtension(extensions, "GL_EXT_instanced_arrays");
   ext.b_GL_EXT_map_buffer_range =
-      extensions.find("GL_EXT_map_buffer_range ") != std::string::npos;
+      HasExtension(extensions, "GL_EXT_map_buffer_range");
   ext.b_GL_EXT_multisampled_render_to_texture =
-      extensions.find("GL_EXT_multisampled_render_to_texture ") !=
-      std::string::npos;
+      HasExtension(extensions, "GL_EXT_multisampled_render_to_texture");
   ext.b_GL_EXT_occlusion_query_boolean =
-      extensions.find("GL_EXT_occlusion_query_boolean ") != std::string::npos;
-  ext.b_GL_EXT_robustness =
-      extensions.find("GL_EXT_robustness ") != std::string::npos;
+      HasExtension(extensions, "GL_EXT_occlusion_query_boolean");
+  ext.b_GL_EXT_robustness = HasExtension(extensions, "GL_EXT_robustness");
   ext.b_GL_EXT_shader_image_load_store =
-      extensions.find("GL_EXT_shader_image_load_store ") != std::string::npos;
+      HasExtension(extensions, "GL_EXT_shader_image_load_store");
   ext.b_GL_EXT_texture_buffer =
-      extensions.find("GL_EXT_texture_buffer ") != std::string::npos;
+      HasExtension(extensions, "GL_EXT_texture_buffer");
   ext.b_GL_EXT_texture_buffer_object =
-      extensions.find("GL_EXT_texture_buffer_object ") != std::string::npos;
+      HasExtension(extensions, "GL_EXT_texture_buffer_object");
   ext.b_GL_EXT_texture_storage =
-      extensions.find("GL_EXT_texture_storage ") != std::string::npos;
-  ext.b_GL_EXT_timer_query =
-      extensions.find("GL_EXT_timer_query ") != std::string::npos;
+      HasExtension(extensions, "GL_EXT_texture_storage");
+  ext.b_GL_EXT_timer_query = HasExtension(extensions, "GL_EXT_timer_query");
   ext.b_GL_EXT_transform_feedback =
-      extensions.find("GL_EXT_transform_feedback ") != std::string::npos;
+      HasExtension(extensions, "GL_EXT_transform_feedback");
   ext.b_GL_EXT_unpack_subimage =
-      extensions.find("GL_EXT_unpack_subimage ") != std::string::npos;
+      HasExtension(extensions, "GL_EXT_unpack_subimage");
   ext.b_GL_IMG_multisampled_render_to_texture =
-      extensions.find("GL_IMG_multisampled_render_to_texture ") !=
-      std::string::npos;
+      HasExtension(extensions, "GL_IMG_multisampled_render_to_texture");
   ext.b_GL_INTEL_framebuffer_CMAA =
-      extensions.find("GL_INTEL_framebuffer_CMAA ") != std::string::npos;
+      HasExtension(extensions, "GL_INTEL_framebuffer_CMAA");
   ext.b_GL_KHR_blend_equation_advanced =
-      extensions.find("GL_KHR_blend_equation_advanced ") != std::string::npos;
-  ext.b_GL_KHR_debug = extensions.find("GL_KHR_debug ") != std::string::npos;
-  ext.b_GL_KHR_robustness =
-      extensions.find("GL_KHR_robustness ") != std::string::npos;
+      HasExtension(extensions, "GL_KHR_blend_equation_advanced");
+  ext.b_GL_KHR_debug = HasExtension(extensions, "GL_KHR_debug");
+  ext.b_GL_KHR_robustness = HasExtension(extensions, "GL_KHR_robustness");
   ext.b_GL_NV_blend_equation_advanced =
-      extensions.find("GL_NV_blend_equation_advanced ") != std::string::npos;
-  ext.b_GL_NV_fence = extensions.find("GL_NV_fence ") != std::string::npos;
+      HasExtension(extensions, "GL_NV_blend_equation_advanced");
+  ext.b_GL_NV_fence = HasExtension(extensions, "GL_NV_fence");
   ext.b_GL_NV_framebuffer_mixed_samples =
-      extensions.find("GL_NV_framebuffer_mixed_samples ") != std::string::npos;
-  ext.b_GL_NV_path_rendering =
-      extensions.find("GL_NV_path_rendering ") != std::string::npos;
-  ext.b_GL_OES_EGL_image =
-      extensions.find("GL_OES_EGL_image ") != std::string::npos;
+      HasExtension(extensions, "GL_NV_framebuffer_mixed_samples");
+  ext.b_GL_NV_path_rendering = HasExtension(extensions, "GL_NV_path_rendering");
+  ext.b_GL_OES_EGL_image = HasExtension(extensions, "GL_OES_EGL_image");
   ext.b_GL_OES_get_program_binary =
-      extensions.find("GL_OES_get_program_binary ") != std::string::npos;
-  ext.b_GL_OES_mapbuffer =
-      extensions.find("GL_OES_mapbuffer ") != std::string::npos;
+      HasExtension(extensions, "GL_OES_get_program_binary");
+  ext.b_GL_OES_mapbuffer = HasExtension(extensions, "GL_OES_mapbuffer");
   ext.b_GL_OES_texture_buffer =
-      extensions.find("GL_OES_texture_buffer ") != std::string::npos;
+      HasExtension(extensions, "GL_OES_texture_buffer");
   ext.b_GL_OES_vertex_array_object =
-      extensions.find("GL_OES_vertex_array_object ") != std::string::npos;
+      HasExtension(extensions, "GL_OES_vertex_array_object");
 
   if (ext.b_GL_INTEL_framebuffer_CMAA) {
     fn.glApplyFramebufferAttachmentCMAAINTELFn =

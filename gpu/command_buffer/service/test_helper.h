@@ -117,17 +117,18 @@ class TestHelper {
       const char* gl_renderer,
       const char* gl_version,
       ContextType context_type);
-  static void SetupTextureManagerInitExpectations(::gl::MockGLInterface* gl,
-                                                  bool is_es3_enabled,
-                                                  bool is_es3_capable,
-                                                  bool is_desktop_core_profile,
-                                                  const char* extensions,
-                                                  bool use_default_textures);
+  static void SetupTextureManagerInitExpectations(
+      ::gl::MockGLInterface* gl,
+      bool is_es3_enabled,
+      bool is_es3_capable,
+      bool is_desktop_core_profile,
+      const gl::ExtensionSet& extensions,
+      bool use_default_textures);
   static void SetupTextureManagerDestructionExpectations(
       ::gl::MockGLInterface* gl,
       bool is_es3_enabled,
       bool is_desktop_core_profile,
-      const char* extensions,
+      const gl::ExtensionSet& extensions,
       bool use_default_textures);
 
   static void SetupExpectationsForClearingUniforms(::gl::MockGLInterface* gl,

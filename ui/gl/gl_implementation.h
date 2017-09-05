@@ -18,7 +18,6 @@
 namespace gl {
 
 class GLApi;
-struct GLVersionInfo;
 
 // The GL implementation currently in use.
 enum GLImplementation {
@@ -125,8 +124,6 @@ GL_EXPORT std::string GetGLExtensionsFromCurrentContext(GLApi* api);
 // be used in the function above.
 GL_EXPORT bool WillUseGLGetStringForExtensions();
 GL_EXPORT bool WillUseGLGetStringForExtensions(GLApi* api);
-
-GL_EXPORT std::unique_ptr<GLVersionInfo> GetVersionInfoFromContext(GLApi* api);
 
 // Helpers to load a library and log error on failure.
 GL_EXPORT base::NativeLibrary LoadLibraryAndPrintError(

@@ -24,25 +24,7 @@ namespace gl {
 
 GLVersionInfo::GLVersionInfo(const char* version_str,
                              const char* renderer_str,
-                             const char* extensions_str)
-    : GLVersionInfo() {
-  std::set<std::string> extensions;
-  if (extensions_str) {
-    auto split = base::SplitString(extensions_str, " ", base::KEEP_WHITESPACE,
-                                   base::SPLIT_WANT_NONEMPTY);
-    extensions.insert(split.begin(), split.end());
-  }
-  Initialize(version_str, renderer_str, extensions);
-}
-
-GLVersionInfo::GLVersionInfo(const char* version_str,
-                             const char* renderer_str,
-                             const std::set<std::string>& extensions)
-    : GLVersionInfo() {
-  Initialize(version_str, renderer_str, extensions);
-}
-
-GLVersionInfo::GLVersionInfo()
+                             const ExtensionSet& extensions)
     : is_es(false),
       is_angle(false),
       is_mesa(false),
@@ -52,11 +34,13 @@ GLVersionInfo::GLVersionInfo()
       is_es2(false),
       is_es3(false),
       is_desktop_core_profile(false),
-      is_es3_capable(false) {}
+      is_es3_capable(false) {
+  Initialize(version_str, renderer_str, extensions);
+}
 
 void GLVersionInfo::Initialize(const char* version_str,
                                const char* renderer_str,
-                               const std::set<std::string>& extensions) {
+                               const ExtensionSet& extensions) {
   if (version_str) {
     ParseVersionString(version_str, &major_version, &minor_version,
                        &is_es, &is_es2, &is_es3);
@@ -71,16 +55,11 @@ void GLVersionInfo::Initialize(const char* version_str,
   }
   is_desktop_core_profile =
       DesktopCoreCommonCheck(is_es, major_version, minor_version) &&
-      extensions.find("GL_ARB_compatibility") == extensions.end();
+      !HasExtension(extensions, "GL_ARB_compatibility");
   is_es3_capable = IsES3Capable(extensions);
 }
 
-bool GLVersionInfo::IsES3Capable(
-    const std::set<std::string>& extensions) const {
-  auto has_extension = [&extensions](std::string extension) -> bool {
-    return extensions.find(extension) != extensions.end();
-  };
-
+bool GLVersionInfo::IsES3Capable(const ExtensionSet& extensions) const {
   // Version ES3 capable without extensions needed.
   if (IsAtLeastGLES(3, 0) || IsAtLeastGL(4, 2)) {
     return true;
@@ -92,7 +71,8 @@ bool GLVersionInfo::IsES3Capable(
   }
 
   bool has_transform_feedback =
-      (IsAtLeastGL(4, 0) || has_extension("GL_ARB_transform_feedback2"));
+      (IsAtLeastGL(4, 0) ||
+       HasExtension(extensions, "GL_ARB_transform_feedback2"));
 
   // This code used to require the GL_ARB_gpu_shader5 extension in order to
   // have support for dynamic indexing of sampler arrays, which was
@@ -101,7 +81,7 @@ bool GLVersionInfo::IsES3Capable(
   // Mesa/Gallium on AMD GPUs) don't support it, we no longer require it.
 
   // tex storage is available in core spec since GL 4.2.
-  bool has_tex_storage = has_extension("GL_ARB_texture_storage");
+  bool has_tex_storage = HasExtension(extensions, "GL_ARB_texture_storage");
 
   // TODO(cwallez) check for texture related extensions. See crbug.com/623577
 

@@ -125,11 +125,6 @@ void GLContext::SetUnbindFboOnMakeCurrent() {
   NOTIMPLEMENTED();
 }
 
-std::string GLContext::GetExtensions() {
-  DCHECK(IsCurrent(nullptr));
-  return GetGLExtensionsFromCurrentContext(gl_api_.get());
-}
-
 std::string GLContext::GetGLVersion() {
   DCHECK(IsCurrent(nullptr));
   DCHECK(gl_api_ != nullptr);
@@ -184,6 +179,7 @@ CurrentGL* GLContext::GetCurrentGL() {
 void GLContext::ReinitializeDynamicBindings() {
   DCHECK(IsCurrent(nullptr));
   dynamic_bindings_initialized_ = false;
+  ResetExtensions();
   InitializeDynamicBindings();
 }
 
@@ -192,13 +188,7 @@ void GLContext::ForceReleaseVirtuallyCurrent() {
 }
 
 bool GLContext::HasExtension(const char* name) {
-  std::string extensions = GetExtensions();
-  extensions += " ";
-
-  std::string delimited_name(name);
-  delimited_name += " ";
-
-  return extensions.find(delimited_name) != std::string::npos;
+  return gl::HasExtension(GetExtensions(), name);
 }
 
 const GLVersionInfo* GLContext::GetVersionInfo() {
@@ -246,7 +236,7 @@ GLContext* GLContext::GetRealCurrent() {
 
 std::unique_ptr<gl::GLVersionInfo> GLContext::GenerateGLVersionInfo() {
   return base::MakeUnique<GLVersionInfo>(
-      GetGLVersion().c_str(), GetGLRenderer().c_str(), GetExtensions().c_str());
+      GetGLVersion().c_str(), GetGLRenderer().c_str(), GetExtensions());
 }
 
 void GLContext::SetCurrent(GLSurface* surface) {
@@ -393,6 +383,14 @@ scoped_refptr<GPUTimingClient> GLContextReal::CreateGPUTimingClient() {
   return gpu_timing_->CreateGPUTimingClient();
 }
 
+const ExtensionSet& GLContextReal::GetExtensions() {
+  DCHECK(IsCurrent(nullptr));
+  if (!extensions_initialized_) {
+    SetExtensionsFromString(GetGLExtensionsFromCurrentContext(gl_api()));
+  }
+  return extensions_;
+}
+
 GLContextReal::~GLContextReal() {
   if (GetRealCurrent() == this)
     current_real_context_.Pointer()->Set(nullptr);
@@ -409,6 +407,18 @@ scoped_refptr<GLContext> InitializeGLContext(scoped_refptr<GLContext> context,
   if (!context->Initialize(compatible_surface, attribs))
     return nullptr;
   return context;
+}
+
+void GLContextReal::SetExtensionsFromString(std::string extensions) {
+  extensions_string_ = std::move(extensions);
+  extensions_ = MakeExtensionSet(extensions_string_);
+  extensions_initialized_ = true;
+}
+
+void GLContextReal::ResetExtensions() {
+  extensions_.clear();
+  extensions_string_.clear();
+  extensions_initialized_ = false;
 }
 
 }  // namespace gl

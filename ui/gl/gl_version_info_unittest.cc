@@ -15,14 +15,13 @@ TEST(GLVersionInfoTest, MajorMinorVersionTest) {
       "OpenGL ES 2.0 (ANGLE 2.1.0.cd1b12260360)",
       "2.1 INTEL-10.6.33"};
   const char* renderer_str[] = {NULL, NULL, NULL, NULL};
-  const char* extensions_str[] = {"extensions", "extensions",
-                                  "extensions", "extensions"};
+  ExtensionSet extensions = {"extensions"};
   unsigned expected_major[] = {4, 4, 2, 2};
   unsigned expected_minor[] = {3, 5, 0, 1};
   std::unique_ptr<GLVersionInfo> version_info;
   for (unsigned i = 0; i < arraysize(version_str); i++) {
-    version_info.reset(new GLVersionInfo(version_str[i],
-        renderer_str[i], extensions_str[i]));
+    version_info.reset(
+        new GLVersionInfo(version_str[i], renderer_str[i], extensions));
     unsigned major, minor;
     bool is_es, is_es2, is_es3;
     version_info->ParseVersionString(version_str[i], &major, &minor,

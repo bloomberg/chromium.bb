@@ -114,26 +114,22 @@ void DriverGLX::InitializeStaticBindings() {
 }
 
 void DriverGLX::InitializeExtensionBindings() {
-  std::string extensions(GetPlatformExtensions());
-  extensions += " ";
+  std::string platform_extensions(GetPlatformExtensions());
+  ExtensionSet extensions(MakeExtensionSet(platform_extensions));
   ALLOW_UNUSED_LOCAL(extensions);
 
   ext.b_GLX_ARB_create_context =
-      extensions.find("GLX_ARB_create_context ") != std::string::npos;
-  ext.b_GLX_EXT_swap_control =
-      extensions.find("GLX_EXT_swap_control ") != std::string::npos;
+      HasExtension(extensions, "GLX_ARB_create_context");
+  ext.b_GLX_EXT_swap_control = HasExtension(extensions, "GLX_EXT_swap_control");
   ext.b_GLX_EXT_texture_from_pixmap =
-      extensions.find("GLX_EXT_texture_from_pixmap ") != std::string::npos;
+      HasExtension(extensions, "GLX_EXT_texture_from_pixmap");
   ext.b_GLX_MESA_copy_sub_buffer =
-      extensions.find("GLX_MESA_copy_sub_buffer ") != std::string::npos;
+      HasExtension(extensions, "GLX_MESA_copy_sub_buffer");
   ext.b_GLX_MESA_swap_control =
-      extensions.find("GLX_MESA_swap_control ") != std::string::npos;
-  ext.b_GLX_OML_sync_control =
-      extensions.find("GLX_OML_sync_control ") != std::string::npos;
-  ext.b_GLX_SGIX_fbconfig =
-      extensions.find("GLX_SGIX_fbconfig ") != std::string::npos;
-  ext.b_GLX_SGI_video_sync =
-      extensions.find("GLX_SGI_video_sync ") != std::string::npos;
+      HasExtension(extensions, "GLX_MESA_swap_control");
+  ext.b_GLX_OML_sync_control = HasExtension(extensions, "GLX_OML_sync_control");
+  ext.b_GLX_SGIX_fbconfig = HasExtension(extensions, "GLX_SGIX_fbconfig");
+  ext.b_GLX_SGI_video_sync = HasExtension(extensions, "GLX_SGI_video_sync");
 
   if (ext.b_GLX_EXT_texture_from_pixmap) {
     fn.glXBindTexImageEXTFn = reinterpret_cast<glXBindTexImageEXTProc>(

@@ -58,10 +58,16 @@ class GLApiTest : public testing::Test {
     }
     api_->Initialize(driver_.get());
 
-    std::unique_ptr<GLVersionInfo> version =
-        GetVersionInfoFromContext(api_.get());
-    driver_->InitializeDynamicBindings(
-        version.get(), GetGLExtensionsFromCurrentContext(api_.get()));
+    std::string extensions_string =
+        GetGLExtensionsFromCurrentContext(api_.get());
+    ExtensionSet extension_set = MakeExtensionSet(extensions_string);
+
+    auto version = std::make_unique<GLVersionInfo>(
+        reinterpret_cast<const char*>(api_->glGetStringFn(GL_VERSION)),
+        reinterpret_cast<const char*>(api_->glGetStringFn(GL_RENDERER)),
+        extension_set);
+
+    driver_->InitializeDynamicBindings(version.get(), extension_set);
     api_->set_version(std::move(version));
   }
 

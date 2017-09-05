@@ -291,15 +291,6 @@ void GLContextEGL::OnSetSwapInterval(int interval) {
   }
 }
 
-std::string GLContextEGL::GetExtensions() {
-  const char* extensions = eglQueryString(display_,
-                                          EGL_EXTENSIONS);
-  if (!extensions)
-    return GLContext::GetExtensions();
-
-  return GLContext::GetExtensions() + " " + extensions;
-}
-
 bool GLContextEGL::WasAllocatedUsingRobustnessExtension() {
   return GLSurfaceEGL::IsCreateContextRobustnessSupported();
 }

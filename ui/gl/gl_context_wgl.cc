@@ -162,19 +162,6 @@ void GLContextWGL::OnSetSwapInterval(int interval) {
   }
 }
 
-std::string GLContextWGL::GetExtensions() {
-  const char* extensions = nullptr;
-  if (g_driver_wgl.fn.wglGetExtensionsStringARBFn)
-    extensions = wglGetExtensionsStringARB(GLSurfaceWGL::GetDisplayDC());
-  else if (g_driver_wgl.fn.wglGetExtensionsStringEXTFn)
-    extensions = wglGetExtensionsStringEXT();
-
-  if (extensions)
-    return GLContext::GetExtensions() + " " + extensions;
-
-  return GLContext::GetExtensions();
-}
-
 GLContextWGL::~GLContextWGL() {
   Destroy();
 }

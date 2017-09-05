@@ -128,11 +128,11 @@ void DriverEGL::InitializeStaticBindings() {
 
 void DriverEGL::InitializeClientExtensionBindings() {
   std::string client_extensions(GetClientExtensions());
-  client_extensions += " ";
-  ALLOW_UNUSED_LOCAL(client_extensions);
+  ExtensionSet extensions(MakeExtensionSet(client_extensions));
+  ALLOW_UNUSED_LOCAL(extensions);
 
   ext.b_EGL_EXT_platform_base =
-      client_extensions.find("EGL_EXT_platform_base ") != std::string::npos;
+      HasExtension(extensions, "EGL_EXT_platform_base");
 
   if (ext.b_EGL_EXT_platform_base) {
     fn.eglGetPlatformDisplayEXTFn =
@@ -142,51 +142,41 @@ void DriverEGL::InitializeClientExtensionBindings() {
 }
 
 void DriverEGL::InitializeExtensionBindings() {
-  std::string extensions(GetPlatformExtensions());
-  extensions += " ";
+  std::string platform_extensions(GetPlatformExtensions());
+  ExtensionSet extensions(MakeExtensionSet(platform_extensions));
   ALLOW_UNUSED_LOCAL(extensions);
 
   ext.b_EGL_ANGLE_d3d_share_handle_client_buffer =
-      extensions.find("EGL_ANGLE_d3d_share_handle_client_buffer ") !=
-      std::string::npos;
+      HasExtension(extensions, "EGL_ANGLE_d3d_share_handle_client_buffer");
   ext.b_EGL_ANGLE_program_cache_control =
-      extensions.find("EGL_ANGLE_program_cache_control ") != std::string::npos;
+      HasExtension(extensions, "EGL_ANGLE_program_cache_control");
   ext.b_EGL_ANGLE_query_surface_pointer =
-      extensions.find("EGL_ANGLE_query_surface_pointer ") != std::string::npos;
+      HasExtension(extensions, "EGL_ANGLE_query_surface_pointer");
   ext.b_EGL_ANGLE_stream_producer_d3d_texture_nv12 =
-      extensions.find("EGL_ANGLE_stream_producer_d3d_texture_nv12 ") !=
-      std::string::npos;
+      HasExtension(extensions, "EGL_ANGLE_stream_producer_d3d_texture_nv12");
   ext.b_EGL_ANGLE_surface_d3d_texture_2d_share_handle =
-      extensions.find("EGL_ANGLE_surface_d3d_texture_2d_share_handle ") !=
-      std::string::npos;
+      HasExtension(extensions, "EGL_ANGLE_surface_d3d_texture_2d_share_handle");
   ext.b_EGL_CHROMIUM_sync_control =
-      extensions.find("EGL_CHROMIUM_sync_control ") != std::string::npos;
+      HasExtension(extensions, "EGL_CHROMIUM_sync_control");
   ext.b_EGL_EXT_image_flush_external =
-      extensions.find("EGL_EXT_image_flush_external ") != std::string::npos;
-  ext.b_EGL_KHR_fence_sync =
-      extensions.find("EGL_KHR_fence_sync ") != std::string::npos;
+      HasExtension(extensions, "EGL_EXT_image_flush_external");
+  ext.b_EGL_KHR_fence_sync = HasExtension(extensions, "EGL_KHR_fence_sync");
   ext.b_EGL_KHR_gl_texture_2D_image =
-      extensions.find("EGL_KHR_gl_texture_2D_image ") != std::string::npos;
-  ext.b_EGL_KHR_image = extensions.find("EGL_KHR_image ") != std::string::npos;
-  ext.b_EGL_KHR_image_base =
-      extensions.find("EGL_KHR_image_base ") != std::string::npos;
-  ext.b_EGL_KHR_stream =
-      extensions.find("EGL_KHR_stream ") != std::string::npos;
+      HasExtension(extensions, "EGL_KHR_gl_texture_2D_image");
+  ext.b_EGL_KHR_image = HasExtension(extensions, "EGL_KHR_image");
+  ext.b_EGL_KHR_image_base = HasExtension(extensions, "EGL_KHR_image_base");
+  ext.b_EGL_KHR_stream = HasExtension(extensions, "EGL_KHR_stream");
   ext.b_EGL_KHR_stream_consumer_gltexture =
-      extensions.find("EGL_KHR_stream_consumer_gltexture ") !=
-      std::string::npos;
+      HasExtension(extensions, "EGL_KHR_stream_consumer_gltexture");
   ext.b_EGL_KHR_swap_buffers_with_damage =
-      extensions.find("EGL_KHR_swap_buffers_with_damage ") != std::string::npos;
-  ext.b_EGL_KHR_wait_sync =
-      extensions.find("EGL_KHR_wait_sync ") != std::string::npos;
+      HasExtension(extensions, "EGL_KHR_swap_buffers_with_damage");
+  ext.b_EGL_KHR_wait_sync = HasExtension(extensions, "EGL_KHR_wait_sync");
   ext.b_EGL_NV_post_sub_buffer =
-      extensions.find("EGL_NV_post_sub_buffer ") != std::string::npos;
+      HasExtension(extensions, "EGL_NV_post_sub_buffer");
   ext.b_EGL_NV_stream_consumer_gltexture_yuv =
-      extensions.find("EGL_NV_stream_consumer_gltexture_yuv ") !=
-      std::string::npos;
+      HasExtension(extensions, "EGL_NV_stream_consumer_gltexture_yuv");
   ext.b_GL_CHROMIUM_egl_khr_fence_sync_hack =
-      extensions.find("GL_CHROMIUM_egl_khr_fence_sync_hack ") !=
-      std::string::npos;
+      HasExtension(extensions, "GL_CHROMIUM_egl_khr_fence_sync_hack");
 
   if (ext.b_EGL_KHR_image || ext.b_EGL_KHR_image_base ||
       ext.b_EGL_KHR_gl_texture_2D_image) {
