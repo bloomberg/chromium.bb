@@ -4,5 +4,4 @@
 include_rules = [
   "+device/bluetooth/uribeacon",
   "+google_apis",
-  "+ios/web/public",
 ]
