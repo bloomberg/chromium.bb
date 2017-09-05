@@ -3,10 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/mac/bundle_locations.h"
-#include "base/test/scoped_task_environment.h"
 #include "base/timer/elapsed_timer.h"
-#include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/test/base/perf_test_ios.h"
+#include "ios/web/public/test/fakes/test_browser_state.h"
 #import "ios/web/public/test/js_test_util.h"
 #import "ios/web/public/web_view_creation_util.h"
 #import "ios/web/web_state/js/page_script_util.h"
@@ -25,19 +24,16 @@ namespace {
 class EarlyPageScriptPerfTest : public PerfTest {
  protected:
   EarlyPageScriptPerfTest() : PerfTest("Early Page Script for WKWebView") {
-    browser_state_ = TestChromeBrowserState::Builder().Build();
-    web_view_ = web::BuildWKWebView(CGRectZero, browser_state());
+    web_view_ = web::BuildWKWebView(CGRectZero, &browser_state_);
   }
 
   // Injects early script into WKWebView.
   void InjectEarlyScript() {
-    web::ExecuteJavaScript(web_view_, web::GetEarlyPageScript(browser_state()));
+    web::ExecuteJavaScript(web_view_, web::GetEarlyPageScript(&browser_state_));
   }
 
-  ios::ChromeBrowserState* browser_state() { return browser_state_.get(); }
-
   // BrowserState required for web view creation.
-  std::unique_ptr<ios::ChromeBrowserState> browser_state_;
+  web::TestBrowserState browser_state_;
   // WKWebView to test scripts injections.
   WKWebView* web_view_;
 };
@@ -47,7 +43,7 @@ TEST_F(EarlyPageScriptPerfTest, ScriptLoading) {
   RepeatTimedRuns("Loading",
                   ^base::TimeDelta(int) {
                     base::ElapsedTimer timer;
-                    web::GetEarlyPageScript(browser_state());
+                    web::GetEarlyPageScript(&browser_state_);
                     return timer.Elapsed();
                   },
                   nil);
