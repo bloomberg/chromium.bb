@@ -9,10 +9,11 @@ Before:
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV id='to-animate1' class='box animating1'",
+      "position": [18, 120],
       "bounds": [100, 100],
       "contentsOpaque": true,
       "backgroundColor": "#0000FF",
-      "transform": 2
+      "transform": 1
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV class='container'",
@@ -27,10 +28,11 @@ Before:
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV class='box gray force-layer'",
+      "position": [22, 11],
       "bounds": [100, 100],
       "contentsOpaque": true,
       "backgroundColor": "#808080",
-      "transform": 4
+      "transform": 2
     },
     {
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (relative positioned) DIV class='box yellow')",
@@ -50,34 +52,12 @@ Before:
     },
     {
       "id": 2,
-      "parent": 1,
       "transform": [
         [...],
         [...],
         [...],
         [...]
       ]
-    },
-    {
-      "id": 3,
-      "transform": [
-        [...],
-        [...],
-        [...],
-        [...]
-      ],
-      "flattenInheritedTransform": false
-    },
-    {
-      "id": 4,
-      "parent": 3,
-      "transform": [
-        [...],
-        [...],
-        [...],
-        [...]
-      ],
-      "flattenInheritedTransform": false
     }
   ]
 }
@@ -93,10 +73,11 @@ After:
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV id='to-animate1' class='box animating1'",
+      "position": [18, 120],
       "bounds": [100, 100],
       "contentsOpaque": true,
       "backgroundColor": "#0000FF",
-      "transform": 2
+      "transform": 1
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV class='container'",
@@ -107,16 +88,18 @@ After:
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV class='box gray force-layer'",
+      "position": [11, 11],
       "bounds": [100, 100],
       "contentsOpaque": true,
       "backgroundColor": "#808080",
-      "transform": 4
+      "transform": 2
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV id='first-green-box' class='box green rotate-45deg'",
+      "position": [10, 120],
       "bounds": [102, 102],
       "backgroundColor": "#008000",
-      "transform": 6
+      "transform": 3
     },
     {
       "name": "Squashing Containment Layer",
@@ -125,9 +108,10 @@ After:
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV class='box green rotate-45deg'",
+      "position": [10, 230],
       "bounds": [102, 102],
       "backgroundColor": "#008000",
-      "transform": 8
+      "transform": 4
     },
     {
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (relative positioned) DIV class='box green')",
@@ -147,7 +131,6 @@ After:
     },
     {
       "id": 2,
-      "parent": 1,
       "transform": [
         [...],
         [...],
@@ -162,30 +145,11 @@ After:
         [...],
         [...],
         [...]
-      ]
+      ],
+      "origin": [51, 51]
     },
     {
       "id": 4,
-      "parent": 3,
-      "transform": [
-        [...],
-        [...],
-        [...],
-        [...]
-      ]
-    },
-    {
-      "id": 5,
-      "transform": [
-        [...],
-        [...],
-        [...],
-        [...]
-      ]
-    },
-    {
-      "id": 6,
-      "parent": 5,
       "transform": [
         [...],
         [...],
@@ -193,28 +157,6 @@ After:
         [...]
       ],
       "origin": [51, 51]
-    },
-    {
-      "id": 7,
-      "transform": [
-        [...],
-        [...],
-        [...],
-        [...]
-      ],
-      "flattenInheritedTransform": false
-    },
-    {
-      "id": 8,
-      "parent": 7,
-      "transform": [
-        [...],
-        [...],
-        [...],
-        [...]
-      ],
-      "origin": [51, 51],
-      "flattenInheritedTransform": false
     }
   ]
 }

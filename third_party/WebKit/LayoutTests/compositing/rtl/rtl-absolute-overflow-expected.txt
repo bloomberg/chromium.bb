@@ -4,27 +4,14 @@
       "name": "LayoutView #document",
       "bounds": [1000, 1000],
       "contentsOpaque": true,
-      "backgroundColor": "#FF0000",
-      "transform": 1
+      "backgroundColor": "#FF0000"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='positioned layer'",
       "position": [265, 50],
       "bounds": [100, 100],
       "contentsOpaque": true,
-      "backgroundColor": "#008000",
-      "transform": 1
-    }
-  ],
-  "transforms": [
-    {
-      "id": 1,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [-215, 0, 0, 1]
-      ]
+      "backgroundColor": "#008000"
     }
   ]
 }

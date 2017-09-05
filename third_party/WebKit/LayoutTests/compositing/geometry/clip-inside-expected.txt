@@ -10,10 +10,11 @@ Test CSS clip with composited layers. Left and right sides should look the same.
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='composited box'",
+      "position": [25, 35],
       "bounds": [90, 80],
       "contentsOpaque": true,
       "backgroundColor": "#808080",
-      "transform": 2
+      "transform": 1
     },
     {
       "name": "Ancestor Clipping Layer",
@@ -23,9 +24,10 @@ Test CSS clip with composited layers. Left and right sides should look the same.
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV class='composited inner'",
+      "position": [-15, -25],
       "bounds": [120, 120],
       "backgroundColor": "#00000033",
-      "transform": 4
+      "transform": 2
     }
   ],
   "transforms": [
@@ -35,39 +37,17 @@ Test CSS clip with composited layers. Left and right sides should look the same.
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [25, 35, 0, 1]
+        [0, 0, 1, 1]
       ]
     },
     {
       "id": 2,
-      "parent": 1,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
         [0, 0, 1, 1]
       ]
-    },
-    {
-      "id": 3,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [210, 10, 0, 1]
-      ],
-      "flattenInheritedTransform": false
-    },
-    {
-      "id": 4,
-      "parent": 3,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [0, 0, 1, 1]
-      ],
-      "flattenInheritedTransform": false
     }
   ]
 }

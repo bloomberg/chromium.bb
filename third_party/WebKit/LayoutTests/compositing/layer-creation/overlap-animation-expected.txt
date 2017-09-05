@@ -19,10 +19,11 @@
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV id='to-animate' class='animating box'",
+      "position": [10, 10],
       "bounds": [100, 100],
       "contentsOpaque": true,
       "backgroundColor": "#0000FF",
-      "transform": 2
+      "transform": 1
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV class='box'",
@@ -35,16 +36,6 @@
   "transforms": [
     {
       "id": 1,
-      "transform": [
-        [...],
-        [...],
-        [...],
-        [...]
-      ]
-    },
-    {
-      "id": 2,
-      "parent": 1,
       "transform": [
         [...],
         [...],
