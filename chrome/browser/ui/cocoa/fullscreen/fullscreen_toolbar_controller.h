@@ -60,6 +60,11 @@ struct FullscreenToolbarLayout {
   // Whether or not we are in fullscreen mode.
   BOOL inFullscreenMode_;
 
+  // Whether the menu bar is currently locked in the visible position (while
+  // the mouse is over the toolbar). AppKit counts lock/unlock calls, so it's
+  // important that locks/unlocks are balanced.
+  BOOL menubarLocked_;
+
   // Updates the fullscreen toolbar layout for changes in the menubar. This
   // object is only set when the browser is in fullscreen mode.
   base::scoped_nsobject<FullscreenMenubarTracker> menubarTracker_;

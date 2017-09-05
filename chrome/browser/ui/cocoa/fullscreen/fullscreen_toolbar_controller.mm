@@ -17,13 +17,28 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 
+@interface NSMenu (PrivateAPI)
+- (void)_lockMenuPosition;
+- (void)_unlockMenuPosition;
+@end
+
 namespace {
 
 // Visibility fractions for the menubar and toolbar.
 const CGFloat kHideFraction = 0.0;
 const CGFloat kShowFraction = 1.0;
 
-}  // end namespace
+void LockMenu() {
+  if ([NSMenu instancesRespondToSelector:@selector(_lockMenuPosition)])
+    [[NSApp mainMenu] _lockMenuPosition];
+}
+
+void UnlockMenu() {
+  if ([NSMenu instancesRespondToSelector:@selector(_unlockMenuPosition)])
+    [[NSApp mainMenu] _unlockMenuPosition];
+}
+
+}  // namespace
 
 @implementation FullscreenToolbarController
 
@@ -169,6 +184,16 @@ const CGFloat kShowFraction = 1.0;
 }
 
 - (void)updateToolbarLayout {
+  if ([mouseTracker_ mouseInsideTrackingArea]) {
+    if (!menubarLocked_)
+      LockMenu();
+    menubarLocked_ = YES;
+  } else {
+    if (menubarLocked_)
+      UnlockMenu();
+    menubarLocked_ = NO;
+  }
+
   [browserController_ layoutSubviews];
   animationController_->ToolbarDidUpdate();
   [mouseTracker_ updateTrackingArea];
