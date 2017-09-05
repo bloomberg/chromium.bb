@@ -60,21 +60,29 @@ void RenderWidgetScreenMetricsEmulator::Apply() {
   gfx::Rect window_screen_rect;
   if (emulation_params_.screen_position ==
       blink::WebDeviceEmulationParams::kDesktop) {
-    applied_widget_rect_.set_origin(original_view_screen_rect_.origin());
     modified_resize_params.screen_info.rect = original_screen_info().rect;
     modified_resize_params.screen_info.available_rect =
         original_screen_info().available_rect;
     window_screen_rect = original_window_screen_rect_;
-  } else {
-    applied_widget_rect_.set_origin(emulation_params_.view_position);
-    gfx::Rect screen_rect = applied_widget_rect_;
-    if (!emulation_params_.screen_size.IsEmpty()) {
-      screen_rect = gfx::Rect(0, 0, emulation_params_.screen_size.width,
-                              emulation_params_.screen_size.height);
+    if (emulation_params_.view_position) {
+      applied_widget_rect_.set_origin(*emulation_params_.view_position);
+      window_screen_rect.set_origin(*emulation_params_.view_position);
+    } else {
+      applied_widget_rect_.set_origin(original_view_screen_rect_.origin());
     }
+  } else {
+    applied_widget_rect_.set_origin(
+        emulation_params_.view_position.value_or(blink::WebPoint()));
+    modified_resize_params.screen_info.rect = applied_widget_rect_;
+    modified_resize_params.screen_info.available_rect = applied_widget_rect_;
+    window_screen_rect = applied_widget_rect_;
+  }
+
+  if (!emulation_params_.screen_size.IsEmpty()) {
+    gfx::Rect screen_rect = gfx::Rect(0, 0, emulation_params_.screen_size.width,
+                                      emulation_params_.screen_size.height);
     modified_resize_params.screen_info.rect = screen_rect;
     modified_resize_params.screen_info.available_rect = screen_rect;
-    window_screen_rect = applied_widget_rect_;
   }
 
   modified_resize_params.screen_info.device_scale_factor =

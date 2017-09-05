@@ -516,8 +516,8 @@ TEST_F(RenderWidgetPopupUnittest, EmulatingPopupRect) {
 
   // Position of the popup as seen by the emulated widget.
   gfx::Point emulated_position(
-      emulation_params.view_position.x + popup_screen_rect.x,
-      emulation_params.view_position.y + popup_screen_rect.y);
+      emulation_params.view_position->x + popup_screen_rect.x,
+      emulation_params.view_position->y + popup_screen_rect.y);
 
   // Both the window and view rects as read from the accessors should have the
   // emulation parameters applied.
