@@ -18,15 +18,27 @@
 #include "platform/WebTaskRunner.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/wtf/text/StringUTF8Adaptor.h"
+#include "public/platform/Platform.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 
 namespace blink {
 
 // static
 MojoInterfaceInterceptor* MojoInterfaceInterceptor::Create(
-    ScriptState* script_state,
-    const String& interface_name) {
-  return new MojoInterfaceInterceptor(script_state, interface_name);
+    ExecutionContext* context,
+    const String& interface_name,
+    const String& scope,
+    ExceptionState& exception_state) {
+  bool process_scope = scope == "process";
+  if (process_scope && !context->IsDocument()) {
+    exception_state.ThrowDOMException(
+        kNotSupportedError,
+        "\"process\" scope interception is unavailable outside a Document.");
+    return nullptr;
+  }
+
+  return new MojoInterfaceInterceptor(context, interface_name, process_scope);
 }
 
 MojoInterfaceInterceptor::~MojoInterfaceInterceptor() {}
@@ -45,6 +57,27 @@ void MojoInterfaceInterceptor::start(ExceptionState& exception_state) {
 
   std::string interface_name =
       StringUTF8Adaptor(interface_name_).AsStringPiece().as_string();
+
+  if (process_scope_) {
+    std::string browser_service = Platform::Current()->GetBrowserServiceName();
+    service_manager::Connector::TestApi test_api(
+        Platform::Current()->GetConnector());
+    if (test_api.HasBinderOverride(browser_service, interface_name)) {
+      exception_state.ThrowDOMException(
+          kInvalidModificationError,
+          "Interface " + interface_name_ +
+              " is already intercepted by another MojoInterfaceInterceptor.");
+      return;
+    }
+
+    started_ = true;
+    test_api.OverrideBinderForTesting(
+        browser_service, interface_name,
+        ConvertToBaseCallback(
+            WTF::Bind(&MojoInterfaceInterceptor::OnInterfaceRequest,
+                      WrapWeakPersistent(this))));
+    return;
+  }
 
   service_manager::InterfaceProvider::TestApi test_api(interface_provider);
   if (test_api.HasBinderForName(interface_name)) {
@@ -67,11 +100,21 @@ void MojoInterfaceInterceptor::stop() {
     return;
 
   started_ = false;
+  std::string interface_name =
+      StringUTF8Adaptor(interface_name_).AsStringPiece().as_string();
+
+  if (process_scope_) {
+    std::string browser_service = Platform::Current()->GetBrowserServiceName();
+    service_manager::Connector::TestApi test_api(
+        Platform::Current()->GetConnector());
+    DCHECK(test_api.HasBinderOverride(browser_service, interface_name));
+    test_api.ClearBinderOverride(browser_service, interface_name);
+    return;
+  }
+
   // GetInterfaceProvider() is guaranteed not to return nullptr because this
   // method is called when the context is destroyed.
   service_manager::InterfaceProvider::TestApi test_api(GetInterfaceProvider());
-  std::string interface_name =
-      StringUTF8Adaptor(interface_name_).AsStringPiece().as_string();
   DCHECK(test_api.HasBinderForName(interface_name));
   test_api.ClearBinderForName(interface_name);
 }
@@ -97,10 +140,12 @@ void MojoInterfaceInterceptor::ContextDestroyed(ExecutionContext*) {
   stop();
 }
 
-MojoInterfaceInterceptor::MojoInterfaceInterceptor(ScriptState* script_state,
-                                                   const String& interface_name)
-    : ContextLifecycleObserver(ExecutionContext::From(script_state)),
-      interface_name_(interface_name) {}
+MojoInterfaceInterceptor::MojoInterfaceInterceptor(ExecutionContext* context,
+                                                   const String& interface_name,
+                                                   bool process_scope)
+    : ContextLifecycleObserver(context),
+      interface_name_(interface_name),
+      process_scope_(process_scope) {}
 
 service_manager::InterfaceProvider*
 MojoInterfaceInterceptor::GetInterfaceProvider() const {
