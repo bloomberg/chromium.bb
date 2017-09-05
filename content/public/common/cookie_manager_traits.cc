@@ -111,10 +111,17 @@ bool StructTraits<content::mojom::CookieOptionsDataView, net::CookieOptions>::
     cookie_options->set_exclude_httponly();
   else
     cookie_options->set_include_httponly();
+
+  net::CookieOptions::SameSiteCookieMode same_site_cookie_mode;
+  if (!mojo_options.ReadCookieSameSiteFilter(&same_site_cookie_mode))
+    return false;
+  cookie_options->set_same_site_cookie_mode(same_site_cookie_mode);
+
   if (mojo_options.update_access_time())
     cookie_options->set_update_access_time();
   else
     cookie_options->set_do_not_update_access_time();
+
   base::Optional<base::Time> optional_server_time;
   if (!mojo_options.ReadServerTime(&optional_server_time))
     return false;

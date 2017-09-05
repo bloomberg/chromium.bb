@@ -442,9 +442,11 @@ void RenderFrameMessageFilter::SetCookie(int32_t render_frame_id,
     // TODO: merge this with code path below for non-network service.
     std::unique_ptr<net::CanonicalCookie> cc =
         net::CanonicalCookie::Create(url, cookie, base::Time::Now(), options);
-    cookie_manager_->SetCanonicalCookie(*cc, url.SchemeIsCryptographic(),
-                                        !options.exclude_httponly(),
-                                        net::CookieStore::SetCookiesCallback());
+    if (cc) {
+      cookie_manager_->SetCanonicalCookie(
+          *cc, url.SchemeIsCryptographic(), !options.exclude_httponly(),
+          net::CookieStore::SetCookiesCallback());
+    }
     return;
   }
 
