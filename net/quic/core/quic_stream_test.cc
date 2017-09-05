@@ -1016,7 +1016,7 @@ TEST_F(QuicStreamTest, WriteMemSlices) {
     return;
   }
   char data[1024];
-  std::vector<std::pair<char*, size_t>> buffers;
+  std::vector<std::pair<char*, int>> buffers;
   buffers.push_back(std::make_pair(data, arraysize(data)));
   buffers.push_back(std::make_pair(data, arraysize(data)));
   QuicTestMemSliceVector vector1(buffers);
