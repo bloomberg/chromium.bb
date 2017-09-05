@@ -31,6 +31,7 @@ class GpuBenchmarking : public gin::Wrappable<GpuBenchmarking> {
  private:
   explicit GpuBenchmarking(RenderFrameImpl* frame);
   ~GpuBenchmarking() override;
+  void EnsureRemoteInterface();
 
   // gin::Wrappable.
   gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
@@ -64,6 +65,7 @@ class GpuBenchmarking : public gin::Wrappable<GpuBenchmarking> {
   bool HasGpuProcess();
   void GetGpuDriverBugWorkarounds(gin::Arguments* args);
 
+  RenderFrameImpl* render_frame_;
   mojom::InputInjectorPtr input_injector_;
   DISALLOW_COPY_AND_ASSIGN(GpuBenchmarking);
 };
