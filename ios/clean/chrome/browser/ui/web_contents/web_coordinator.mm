@@ -117,12 +117,8 @@
 - (web::JavaScriptDialogPresenter*)javaScriptDialogPresenterForWebState:
     (web::WebState*)webState {
   DCHECK_EQ(self.webState, webState);
-  OverlayService* overlayService =
-      OverlayServiceFactory::GetInstance()->GetForBrowserState(
-          self.browser->browser_state());
-  JavaScriptDialogOverlayPresenter::CreateForWebState(self.webState,
-                                                      overlayService);
-  return JavaScriptDialogOverlayPresenter::FromWebState(self.webState);
+  JavaScriptDialogOverlayPresenter::CreateForBrowser(self.browser);
+  return JavaScriptDialogOverlayPresenter::FromBrowser(self.browser);
 }
 
 - (void)webState:(web::WebState*)webState
