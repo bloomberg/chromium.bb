@@ -10,6 +10,8 @@
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search/search.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/search/search_model.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
@@ -80,17 +82,21 @@ BrowserInstantController::BrowserInstantController(Browser* browser)
       instant_(this) {
   browser_->search_model()->AddObserver(this);
 
-  InstantService* instant_service =
-      InstantServiceFactory::GetForProfile(profile());
-  instant_service->AddObserver(this);
+  TemplateURLService* template_url_service =
+      TemplateURLServiceFactory::GetForProfile(profile());
+  // TemplateURLService can be null in tests.
+  if (template_url_service) {
+    search_engine_base_url_tracker_ =
+        base::MakeUnique<SearchEngineBaseURLTracker>(
+            template_url_service,
+            base::MakeUnique<UIThreadSearchTermsData>(profile()),
+            base::Bind(&BrowserInstantController::OnSearchEngineBaseURLChanged,
+                       base::Unretained(this)));
+  }
 }
 
 BrowserInstantController::~BrowserInstantController() {
   browser_->search_model()->RemoveObserver(this);
-
-  InstantService* instant_service =
-      InstantServiceFactory::GetForProfile(profile());
-  instant_service->RemoveObserver(this);
 }
 
 Profile* BrowserInstantController::profile() const {
@@ -110,8 +116,8 @@ void BrowserInstantController::ModelChanged(SearchModel::Origin old_origin,
   instant_.SearchModeChanged(old_origin, new_origin);
 }
 
-void BrowserInstantController::DefaultSearchProviderChanged(
-    bool google_base_url_domain_changed) {
+void BrowserInstantController::OnSearchEngineBaseURLChanged(
+    SearchEngineBaseURLTracker::ChangeReason change_reason) {
   InstantService* instant_service =
       InstantServiceFactory::GetForProfile(profile());
   if (!instant_service)
@@ -131,6 +137,9 @@ void BrowserInstantController::DefaultSearchProviderChanged(
     if (!instant_service->IsInstantProcess(rph->GetID()))
       continue;
 
+    bool google_base_url_domain_changed =
+        change_reason ==
+        SearchEngineBaseURLTracker::ChangeReason::GOOGLE_BASE_URL;
     SearchModel* model = SearchTabHelper::FromWebContents(contents)->model();
     if (google_base_url_domain_changed &&
         model->origin() == SearchModel::Origin::NTP) {

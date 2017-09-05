@@ -20,12 +20,6 @@ class InstantServiceObserver {
   virtual void MostVisitedItemsChanged(
       const std::vector<InstantMostVisitedItem>&);
 
-  // Indicates that the default search provider changed. Parameter indicates
-  // whether the Google base URL changed (such as when the user migrates from
-  // one google.<TLD> to another TLD).
-  virtual void DefaultSearchProviderChanged(
-      bool google_base_url_domain_changed);
-
  protected:
   virtual ~InstantServiceObserver() {}
 };
