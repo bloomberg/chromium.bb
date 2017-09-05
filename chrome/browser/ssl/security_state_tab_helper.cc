@@ -190,7 +190,6 @@ SecurityStateTabHelper::GetMaliciousContentStatus() const {
         break;
       case safe_browsing::SB_THREAT_TYPE_URL_PHISHING:
       case safe_browsing::SB_THREAT_TYPE_URL_CLIENT_SIDE_PHISHING:
-      case safe_browsing::SB_THREAT_TYPE_URL_PASSWORD_PROTECTION_PHISHING:
         return security_state::MALICIOUS_CONTENT_STATUS_SOCIAL_ENGINEERING;
       case safe_browsing::SB_THREAT_TYPE_URL_MALWARE:
       case safe_browsing::SB_THREAT_TYPE_URL_CLIENT_SIDE_MALWARE:
@@ -208,6 +207,8 @@ SecurityStateTabHelper::GetMaliciousContentStatus() const {
         }
         break;
 #endif
+      case safe_browsing::
+          DEPRECATED_SB_THREAT_TYPE_URL_PASSWORD_PROTECTION_PHISHING:
       case safe_browsing::SB_THREAT_TYPE_URL_BINARY_MALWARE:
       case safe_browsing::SB_THREAT_TYPE_EXTENSION:
       case safe_browsing::SB_THREAT_TYPE_BLACKLISTED_RESOURCE:

@@ -384,30 +384,6 @@ void ChromePasswordProtectionService::MaybeLogPasswordReuseLookupEvent(
   }
 }
 
-void ChromePasswordProtectionService::ShowPhishingInterstitial(
-    const GURL& phishing_url,
-    const std::string& token,
-    content::WebContents* web_contents) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!ui_manager_)
-    return;
-  security_interstitials::UnsafeResource resource;
-  resource.url = phishing_url;
-  resource.original_url = phishing_url;
-  resource.is_subresource = false;
-  resource.threat_type = SB_THREAT_TYPE_URL_PASSWORD_PROTECTION_PHISHING;
-  resource.threat_source = ThreatSource::PASSWORD_PROTECTION_SERVICE;
-  resource.web_contents_getter =
-      SafeBrowsingUIManager::UnsafeResource::GetWebContentsGetter(
-          web_contents->GetRenderProcessHost()->GetID(),
-          web_contents->GetMainFrame()->GetRoutingID());
-  resource.token = token;
-  if (!ui_manager_->IsWhitelisted(resource)) {
-    web_contents->GetController().DiscardNonCommittedEntries();
-  }
-  ui_manager_->DisplayBlockingPage(resource);
-}
-
 void ChromePasswordProtectionService::UpdateSecurityState(
     SBThreatType threat_type,
     content::WebContents* web_contents) {

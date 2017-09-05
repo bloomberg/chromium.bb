@@ -26,7 +26,6 @@ extern const base::Feature kGoogleBrandedPhishingWarning;
 extern const base::Feature kLocalDatabaseManagerEnabled;
 extern const base::Feature kParallelUrlCheck;
 extern const base::Feature kPasswordFieldOnFocusPinging;
-extern const base::Feature kPasswordProtectionInterstitial;
 extern const base::Feature kProtectedPasswordEntryPinging;
 
 // Specifies which non-resource HTML Elements to collect based on their tag and
