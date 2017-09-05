@@ -669,7 +669,8 @@ bool WebDevToolsAgent::ShouldInterruptForMethod(const WebString& method) {
   return method == "Debugger.pause" || method == "Debugger.setBreakpoint" ||
          method == "Debugger.setBreakpointByUrl" ||
          method == "Debugger.removeBreakpoint" ||
-         method == "Debugger.setBreakpointsActive";
+         method == "Debugger.setBreakpointsActive" ||
+         method == "Performance.getMetrics";
 }
 
 }  // namespace blink
