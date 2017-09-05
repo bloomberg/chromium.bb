@@ -489,7 +489,7 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
   MockScheduler* scheduler() { return scheduler_.get(); }
   FakeBreakingNewsListener* fake_breaking_news_listener() {
     return fake_breaking_news_listener_;
-  };
+  }
 
   void FetchTheseSuggestions(
       RemoteSuggestionsProviderImpl* provider,
@@ -2435,6 +2435,105 @@ TEST_F(RemoteSuggestionsProviderImplTest,
 }
 
 TEST_F(RemoteSuggestionsProviderImplTest,
+       ShouldExcludeDismissedFetchedMoreSuggestions) {
+  // This tests verifies that dismissing an article seen in the fetch-more state
+  // (i.e., an article that has been fetched via fetch-more) will be excluded in
+  // future fetches.
+  auto provider = MakeSuggestionsProvider(
+      /*use_mock_prefetched_pages_tracker=*/false,
+      /*use_fake_breaking_news_listener=*/false,
+      /*use_mock_remote_suggestions_status_service=*/false);
+
+  FetchedCategoryBuilder category_builder;
+  category_builder.SetCategory(articles_category());
+  const int kSuggestionsCount = 5;
+  for (int i = 0; i < kSuggestionsCount; ++i) {
+    category_builder.AddSuggestionViaBuilder(RemoteSuggestionBuilder().AddId(
+        base::StringPrintf("http://abc.com/%d", i)));
+  }
+  std::vector<FetchedCategory> fetched_categories;
+  fetched_categories.push_back(category_builder.Build());
+
+  FetchMoreTheseSuggestions(
+      provider.get(), articles_category(),
+      /*known_suggestion_ids=*/std::set<std::string>(),
+      /*fetch_done_callback=*/
+      base::Bind([](Status status, std::vector<ContentSuggestion> suggestions) {
+        ASSERT_THAT(suggestions, SizeIs(5));
+      }),
+      Status::Success(), std::move(fetched_categories));
+
+  // Dismiss them.
+  for (int i = 0; i < kSuggestionsCount; ++i) {
+    provider->DismissSuggestion(
+        MakeArticleID(base::StringPrintf("http://abc.com/%d", i)));
+  }
+
+  EXPECT_CALL(*scheduler(), AcquireQuotaForInteractiveFetch())
+      .WillOnce(Return(true))
+      .RetiresOnSaturation();
+  EXPECT_CALL(
+      *mock_suggestions_fetcher(),
+      FetchSnippets(Field(&RequestParams::excluded_ids,
+                          ElementsAre("http://abc.com/0", "http://abc.com/1",
+                                      "http://abc.com/2", "http://abc.com/3",
+                                      "http://abc.com/4")),
+                    _));
+  provider->Fetch(
+      articles_category(), std::set<std::string>(),
+      base::Bind([](Status status_code,
+                    std::vector<ContentSuggestion> suggestions) {}));
+}
+
+TEST_F(RemoteSuggestionsProviderImplTest, ClearDismissedAfterFetchMore) {
+  auto provider = MakeSuggestionsProvider(
+      /*use_mock_prefetched_pages_tracker=*/false,
+      /*use_fake_breaking_news_listener=*/false,
+      /*use_mock_remote_suggestions_status_service=*/false);
+  FetchedCategoryBuilder category_builder;
+  category_builder.SetCategory(articles_category());
+  category_builder.AddSuggestionViaBuilder(
+      RemoteSuggestionBuilder().AddId(base::StringPrintf("http://abc.com")));
+  std::vector<FetchedCategory> fetched_categories;
+  fetched_categories.push_back(category_builder.Build());
+
+  FetchMoreTheseSuggestions(
+      provider.get(), articles_category(),
+      /*known_suggestion_ids=*/std::set<std::string>(),
+      /*fetch_done_callback=*/
+      base::Bind(
+          [](Status status, std::vector<ContentSuggestion> suggestions) {}),
+      Status::Success(), std::move(fetched_categories));
+
+  provider->DismissSuggestion(MakeArticleID("http://abc.com"));
+
+  EXPECT_CALL(*scheduler(), AcquireQuotaForInteractiveFetch())
+      .WillRepeatedly(Return(true));
+
+  // Make sure the article got marked as dismissed.
+  InSequence s;
+  EXPECT_CALL(*mock_suggestions_fetcher(),
+              FetchSnippets(Field(&RequestParams::excluded_ids,
+                                  ElementsAre("http://abc.com")),
+                            _));
+  provider->Fetch(
+      articles_category(), std::set<std::string>(),
+      base::Bind([](Status status_code,
+                    std::vector<ContentSuggestion> suggestions) {}));
+
+  // Clear dismissals.
+  provider->ClearDismissedSuggestionsForDebugging(articles_category());
+
+  // Fetch and verify the article is not marked as dismissed anymore.
+  EXPECT_CALL(*mock_suggestions_fetcher(),
+              FetchSnippets(Field(&RequestParams::excluded_ids, IsEmpty()), _));
+  provider->Fetch(
+      articles_category(), std::set<std::string>(),
+      base::Bind([](Status status_code,
+                    std::vector<ContentSuggestion> suggestions) {}));
+}
+
+TEST_F(RemoteSuggestionsProviderImplTest,
        ShouldExcludeDismissedSuggestionsFromAllCategoriesWhenFetchingMore) {
   auto provider = MakeSuggestionsProvider(
       /*use_mock_prefetched_pages_tracker=*/false,
@@ -2797,9 +2896,8 @@ TEST_F(RemoteSuggestionsProviderImplTest,
                    MakeArticleID("http://prefetched.com/1"))));
 }
 
-TEST_F(
-    RemoteSuggestionsProviderImplTest,
-    ShouldKeepMostRecentlyFetchedPrefetchedSuggestionsFirstAfterFetchWhenEnabled) {
+TEST_F(RemoteSuggestionsProviderImplTest,
+       KeepMostRecentlyFetchedPrefetchedSuggestionsFirstAfterFetchWhenEnabled) {
   EnableKeepingPrefetchedContentSuggestions(
       kMaxAdditionalPrefetchedSuggestions,
       kMaxAgeForAdditionalPrefetchedSuggestion);

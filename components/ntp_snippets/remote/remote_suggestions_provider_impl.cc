@@ -309,6 +309,21 @@ void AddDismissedIdsToRequest(const RemoteSuggestion::PtrVector& dismissed,
   }
 }
 
+void AddDismissedArchivedIdsToRequest(
+    const base::circular_deque<std::unique_ptr<RemoteSuggestion>>& archived,
+    RequestParams* request_params) {
+  // We add all archived, dismissed IDs to the request (the archive is limited
+  // to kMaxArchivedSuggestionCount suggestions). They don't get persisted,
+  // which means that the user very recently dismissed them and that they are
+  // usually not many.
+  for (auto it = archived.begin(); it != archived.end(); ++it) {
+    const RemoteSuggestion& suggestion = **it;
+    if (suggestion.is_dismissed()) {
+      request_params->excluded_ids.insert(suggestion.id());
+    }
+  }
+}
+
 }  // namespace
 
 RemoteSuggestionsProviderImpl::RemoteSuggestionsProviderImpl(
@@ -494,14 +509,17 @@ RequestParams RemoteSuggestionsProviderImpl::BuildFetchParams(
   // added first to truncate them less.
   if (fetched_category.has_value()) {
     DCHECK(category_contents_.count(*fetched_category));
-    AddDismissedIdsToRequest(
-        category_contents_.find(*fetched_category)->second.dismissed, &result);
+    const CategoryContent& content =
+        category_contents_.find(*fetched_category)->second;
+    AddDismissedIdsToRequest(content.dismissed, &result);
+    AddDismissedArchivedIdsToRequest(content.archived, &result);
   }
   for (const auto& map_entry : category_contents_) {
     if (fetched_category.has_value() && map_entry.first == *fetched_category) {
       continue;
     }
     AddDismissedIdsToRequest(map_entry.second.dismissed, &result);
+    AddDismissedArchivedIdsToRequest(map_entry.second.archived, &result);
   }
   return result;
 }
@@ -606,14 +624,16 @@ void RemoteSuggestionsProviderImpl::ClearDismissedSuggestionsForDebugging(
     return;
   }
 
-  if (content->dismissed.empty()) {
-    return;
+  if (!content->dismissed.empty()) {
+    database_->DeleteSnippets(GetSuggestionIDVector(content->dismissed));
+    // The image got already deleted when the suggestion was dismissed.
+    content->dismissed.clear();
   }
 
-  database_->DeleteSnippets(GetSuggestionIDVector(content->dismissed));
-  // The image got already deleted when the suggestion was dismissed.
-
-  content->dismissed.clear();
+  // Update the archive.
+  for (const auto& suggestion : content->archived) {
+    suggestion->set_dismissed(false);
+  }
 }
 
 // static
@@ -1038,22 +1058,26 @@ void RemoteSuggestionsProviderImpl::PrependArticleSuggestion(
 void RemoteSuggestionsProviderImpl::DismissSuggestionFromCategoryContent(
     CategoryContent* content,
     const std::string& id_within_category) {
-  auto it =
-      std::find_if(content->suggestions.begin(), content->suggestions.end(),
-                   [&id_within_category](
-                       const std::unique_ptr<RemoteSuggestion>& suggestion) {
-                     return suggestion->id() == id_within_category;
-                   });
-  if (it == content->suggestions.end()) {
-    return;
+  auto id_predicate = [&id_within_category](
+                          const std::unique_ptr<RemoteSuggestion>& suggestion) {
+    return suggestion->id() == id_within_category;
+  };
+
+  auto it = std::find_if(content->suggestions.begin(),
+                         content->suggestions.end(), id_predicate);
+  if (it != content->suggestions.end()) {
+    (*it)->set_dismissed(true);
+    database_->SaveSnippet(**it);
+    content->dismissed.push_back(std::move(*it));
+    content->suggestions.erase(it);
+  } else {
+    // Check the archive.
+    auto archive_it = std::find_if(content->archived.begin(),
+                                   content->archived.end(), id_predicate);
+    if (archive_it != content->archived.end()) {
+      (*archive_it)->set_dismissed(true);
+    }
   }
-
-  (*it)->set_dismissed(true);
-
-  database_->SaveSnippet(**it);
-
-  content->dismissed.push_back(std::move(*it));
-  content->suggestions.erase(it);
 }
 
 void RemoteSuggestionsProviderImpl::DeleteCategories(
