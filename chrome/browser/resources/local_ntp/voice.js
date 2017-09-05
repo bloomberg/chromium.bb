@@ -885,7 +885,7 @@ text.SUPPORT_LINK_ID = 'voice-support-link';
 
 /**
  * Class for the links shown in error output.
- * @const
+ * @const @private
  */
 text.ERROR_LINK_CLASS_ = 'voice-text-link';
 
@@ -994,18 +994,16 @@ text.init = function() {
 
 /**
  * Updates the text elements with new recognition results.
- * @param {string} interimText Low confidence speech recognition result text.
- * @param {string} opt_finalText High confidence speech recognition result text,
- *    defaults to an empty string.
+ * @param {!string} interimText Low confidence speech recognition result text.
+ * @param {!string} opt_finalText High confidence speech recognition result
+ *     text, defaults to an empty string.
  */
-text.updateTextArea = function(interimText, opt_finalText) {
-  const finalText = opt_finalText || '';
-
+text.updateTextArea = function(interimText, opt_finalText = '') {
   window.clearTimeout(text.initializingTimer_);
   text.cancelListeningTimeout();
 
   text.interim_.textContent = interimText;
-  text.final_.textContent = finalText;
+  text.final_.textContent = opt_finalText;
 
   text.interim_.className = text.final_.className = text.getTextClassName_();
 };
@@ -1283,7 +1281,7 @@ microphone.init = function() {
 
 
 /**
- * Starts the volume circles animations.
+ * Starts the volume circles animations, if it has not started yet.
  */
 microphone.startInputAnimation = function() {
   if (!microphone.isLevelAnimating_) {
@@ -1438,7 +1436,7 @@ view.show = function() {
 
 /**
  * Sets the output area text to listening. This should only be called when
- * the Web Speech API is receiving audio input (i.e., onaudiostart).
+ * the Web Speech API starts receiving audio input (i.e., onaudiostart).
  */
 view.setReadyForSpeech = function() {
   if (view.isVisible_) {
@@ -1450,8 +1448,10 @@ view.setReadyForSpeech = function() {
 
 /**
  * Shows the pulsing animation emanating from the microphone. This should only
- * be called when the Web Speech API is receiving speech input (i.e.,
- * onspeechstart).
+ * be called when the Web Speech API starts receiving speech input (i.e.,
+ * |onspeechstart|). Do note that this may also be run when the Web Speech API
+ * is receiving speech recognition results (|onresult|), because |onspeechstart|
+ * may not have been called.
  */
 view.setReceivingSpeech = function() {
   if (view.isVisible_) {
@@ -1469,7 +1469,11 @@ view.setReceivingSpeech = function() {
  */
 view.updateSpeechResult = function(interimResultText, finalResultText) {
   if (view.isVisible_) {
-    view.container_.className = view.RECEIVING_SPEECH_CLASS_;
+    // If the Web Speech API is receiving speech recognition results
+    // (|onresult|) and |onspeechstart| has not been called.
+    if (view.container_.className != view.RECEIVING_SPEECH_CLASS_) {
+      view.setReceivingSpeech();
+    }
     text.updateTextArea(interimResultText, finalResultText);
   }
 };
