@@ -38,9 +38,9 @@
 </style>
 <script>
     function doTest() {
-        if (window.testRunner && window.internals) {
+        if (window.testRunner) {
             if (top == self)
-                testRunner.setCustomTextOutput(internals.layerTreeAsText(document));
+                document.getElementById('layertree').innerText = window.internals.layerTreeAsText(document);
             testRunner.dumpAsTextWithPixelResults();
         }
     }
@@ -50,5 +50,7 @@
     <div id="root"></div>
     <div class="positioned indicator"></div>
     <div class="positioned layer"></div>
+
+    <pre id="layertree"></pre>
 </body>
 </html>

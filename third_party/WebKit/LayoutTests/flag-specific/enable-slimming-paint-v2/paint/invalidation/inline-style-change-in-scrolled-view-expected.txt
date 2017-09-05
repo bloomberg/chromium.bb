@@ -1,0 +1,28 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [2000, 2000],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "InlineTextBox 'Text Text Text Text Text Text Text Text Text Text Text Text Text'",
+          "rect": [0, 320, 411, 19],
+          "reason": "style change"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutText #text",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineTextBox 'Text Text Text Text Text Text Text Text Text Text Text Text Text'",
+      "reason": "style change"
+    }
+  ]
+}
+

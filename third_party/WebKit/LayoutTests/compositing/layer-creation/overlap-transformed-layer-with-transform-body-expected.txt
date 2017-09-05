@@ -13,16 +13,17 @@
     },
     {
       "name": "LayoutBlockFlow DIV id='container'",
+      "position": [15, 0],
       "bounds": [256, 256],
       "contentsOpaque": true,
-      "transform": 2
+      "transform": 1
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV id='composited'",
-      "position": [385, 0],
+      "position": [400, 0],
       "contentsOpaque": true,
       "drawsContent": false,
-      "transform": 2
+      "transform": 1
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV id='green'",
@@ -35,16 +36,6 @@
   "transforms": [
     {
       "id": 1,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [23, 8, 0, 1]
-      ]
-    },
-    {
-      "id": 2,
-      "parent": 1,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],

@@ -47,16 +47,16 @@ static int GetTransformId(const TransformPaintPropertyNode* transform,
   if (it != context.transform_id_map.end())
     return it->value;
 
-  int parent_id = GetTransformId(transform->Parent(), context);
-  if (transform->Matrix().IsIdentity() && !transform->RenderingContextId()) {
-    context.transform_id_map.Set(transform, parent_id);
-    return parent_id;
+  if ((transform->Matrix().IsIdentity() && !transform->RenderingContextId()) ||
+      // Don't output scroll translations in transform tree.
+      transform->ScrollNode()) {
+    context.transform_id_map.Set(transform, 0);
+    return 0;
   }
 
-  int transform_id = context.next_transform_id++;
-  context.transform_id_map.Set(transform, transform_id);
-
+  int parent_id = GetTransformId(transform->Parent(), context);
   auto json = JSONObject::Create();
+  int transform_id = context.next_transform_id++;
   json->SetInteger("id", transform_id);
   if (parent_id)
     json->SetInteger("parent", parent_id);

@@ -49,8 +49,7 @@
     {
       "name": "LayoutView #document",
       "bounds": [785, 3700],
-      "backgroundColor": "#FFFFFF",
-      "transform": 1
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "Frame Vertical Scrollbar Layer",
@@ -58,17 +57,6 @@
       "bounds": [15, 600],
       "contentsOpaque": true,
       "drawsContent": false
-    }
-  ],
-  "transforms": [
-    {
-      "id": 1,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [0, -200, 0, 1]
-      ]
     }
   ]
 }

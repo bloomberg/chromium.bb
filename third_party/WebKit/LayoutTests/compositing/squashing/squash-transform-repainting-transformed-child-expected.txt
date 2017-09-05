@@ -20,10 +20,11 @@ CASE 1, original layer tree
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='box middle'",
+      "position": [20, 20],
       "bounds": [100, 100],
       "contentsOpaque": true,
       "backgroundColor": "#00FF00",
-      "transform": 2
+      "transform": 1
     },
     {
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='box top')",
@@ -35,24 +36,12 @@ CASE 1, original layer tree
     {
       "id": 1,
       "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [20, 20, 0, 1]
-      ],
-      "flattenInheritedTransform": false
-    },
-    {
-      "id": 2,
-      "parent": 1,
-      "transform": [
         [0.927183854566787, 0.374606593415912, 0, 0],
         [-0.374606593415912, 0.927183854566787, 0, 0],
         [0, 0, 1, 0],
         [0, 0, 0, 1]
       ],
-      "origin": [50, 50],
-      "flattenInheritedTransform": false
+      "origin": [50, 50]
     }
   ]
 }
@@ -78,6 +67,7 @@ CASE 2, hovering over the outer div
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='box middle'",
+      "position": [20, 20],
       "bounds": [100, 100],
       "contentsOpaque": true,
       "backgroundColor": "#008000",
@@ -88,7 +78,7 @@ CASE 2, hovering over the outer div
           "reason": "style change"
         }
       ],
-      "transform": 2
+      "transform": 1
     },
     {
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='box top')",
@@ -100,24 +90,12 @@ CASE 2, hovering over the outer div
     {
       "id": 1,
       "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [20, 20, 0, 1]
-      ],
-      "flattenInheritedTransform": false
-    },
-    {
-      "id": 2,
-      "parent": 1,
-      "transform": [
         [0.927183854566787, 0.374606593415912, 0, 0],
         [-0.374606593415912, 0.927183854566787, 0, 0],
         [0, 0, 1, 0],
         [0, 0, 0, 1]
       ],
-      "origin": [50, 50],
-      "flattenInheritedTransform": false
+      "origin": [50, 50]
     }
   ],
   "objectPaintInvalidations": [
@@ -149,6 +127,7 @@ CASE 3, hovering over the inner div
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='box middle'",
+      "position": [20, 20],
       "bounds": [100, 100],
       "contentsOpaque": true,
       "backgroundColor": "#008000",
@@ -164,7 +143,7 @@ CASE 3, hovering over the inner div
           "reason": "style change"
         }
       ],
-      "transform": 2
+      "transform": 1
     },
     {
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='box top')",
@@ -176,24 +155,12 @@ CASE 3, hovering over the inner div
     {
       "id": 1,
       "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [20, 20, 0, 1]
-      ],
-      "flattenInheritedTransform": false
-    },
-    {
-      "id": 2,
-      "parent": 1,
-      "transform": [
         [0.927183854566787, 0.374606593415912, 0, 0],
         [-0.374606593415912, 0.927183854566787, 0, 0],
         [0, 0, 1, 0],
         [0, 0, 0, 1]
       ],
-      "origin": [50, 50],
-      "flattenInheritedTransform": false
+      "origin": [50, 50]
     }
   ],
   "objectPaintInvalidations": [

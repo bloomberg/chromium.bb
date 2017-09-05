@@ -14,25 +14,16 @@ BEFORE:
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='positionedAndTransformed fixed'",
+      "position": [20, -80],
       "bounds": [50, 50],
       "contentsOpaque": true,
       "backgroundColor": "#C0C0C0",
-      "transform": 2
+      "transform": 1
     }
   ],
   "transforms": [
     {
       "id": 1,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [20, -80, 0, 1]
-      ]
-    },
-    {
-      "id": 2,
-      "parent": 1,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],
@@ -49,40 +40,20 @@ AFTER:
       "name": "LayoutView #document",
       "bounds": [2008, 2016],
       "contentsOpaque": true,
-      "backgroundColor": "#FFFFFF",
-      "transform": 1
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='positionedAndTransformed fixed'",
+      "position": [20, -70],
       "bounds": [50, 50],
       "contentsOpaque": true,
       "backgroundColor": "#C0C0C0",
-      "transform": 3
+      "transform": 1
     }
   ],
   "transforms": [
     {
       "id": 1,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [0, -10, 0, 1]
-      ]
-    },
-    {
-      "id": 2,
-      "parent": 1,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [20, -70, 0, 1]
-      ]
-    },
-    {
-      "id": 3,
-      "parent": 2,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],

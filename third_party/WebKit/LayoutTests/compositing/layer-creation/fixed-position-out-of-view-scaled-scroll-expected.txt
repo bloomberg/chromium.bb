@@ -5,59 +5,42 @@ Not scaled:
       "name": "LayoutView #document",
       "bounds": [4008, 4016],
       "contentsOpaque": true,
-      "backgroundColor": "#FFFFFF",
-      "transform": 1
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='fixed'",
       "position": [108, 0],
       "bounds": [10, 10],
       "contentsOpaque": true,
-      "backgroundColor": "#C0C0C0",
-      "transform": 1
+      "backgroundColor": "#C0C0C0"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='fixed'",
       "position": [108, 1108],
       "bounds": [10, 10],
       "contentsOpaque": true,
-      "backgroundColor": "#C0C0C0",
-      "transform": 1
+      "backgroundColor": "#C0C0C0"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='fixed'",
       "position": [1100, 100],
       "bounds": [10, 10],
       "contentsOpaque": true,
-      "backgroundColor": "#C0C0C0",
-      "transform": 1
+      "backgroundColor": "#C0C0C0"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='fixed'",
       "position": [700, 100],
       "bounds": [10, 10],
       "contentsOpaque": true,
-      "backgroundColor": "#C0C0C0",
-      "transform": 1
+      "backgroundColor": "#C0C0C0"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='fixed'",
       "position": [100, 100],
       "bounds": [10, 10],
       "contentsOpaque": true,
-      "backgroundColor": "#C0C0C0",
-      "transform": 1
-    }
-  ],
-  "transforms": [
-    {
-      "id": 1,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [-100, -100, 0, 1]
-      ]
+      "backgroundColor": "#C0C0C0"
     }
   ]
 }
@@ -68,59 +51,42 @@ Scale=0.5:
       "name": "LayoutView #document",
       "bounds": [4008, 4016],
       "contentsOpaque": true,
-      "backgroundColor": "#FFFFFF",
-      "transform": 1
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='fixed'",
       "position": [108, 0],
       "bounds": [10, 10],
       "contentsOpaque": true,
-      "backgroundColor": "#C0C0C0",
-      "transform": 1
+      "backgroundColor": "#C0C0C0"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='fixed'",
       "position": [108, 1108],
       "bounds": [10, 10],
       "contentsOpaque": true,
-      "backgroundColor": "#C0C0C0",
-      "transform": 1
+      "backgroundColor": "#C0C0C0"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='fixed'",
       "position": [1100, 100],
       "bounds": [10, 10],
       "contentsOpaque": true,
-      "backgroundColor": "#C0C0C0",
-      "transform": 1
+      "backgroundColor": "#C0C0C0"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='fixed'",
       "position": [700, 100],
       "bounds": [10, 10],
       "contentsOpaque": true,
-      "backgroundColor": "#C0C0C0",
-      "transform": 1
+      "backgroundColor": "#C0C0C0"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='fixed'",
       "position": [100, 100],
       "bounds": [10, 10],
       "contentsOpaque": true,
-      "backgroundColor": "#C0C0C0",
-      "transform": 1
-    }
-  ],
-  "transforms": [
-    {
-      "id": 1,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [-100, -100, 0, 1]
-      ]
+      "backgroundColor": "#C0C0C0"
     }
   ]
 }
@@ -131,59 +97,42 @@ Scale=1.5:
       "name": "LayoutView #document",
       "bounds": [4008, 4016],
       "contentsOpaque": true,
-      "backgroundColor": "#FFFFFF",
-      "transform": 1
+      "backgroundColor": "#FFFFFF"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='fixed'",
       "position": [108, 0],
       "bounds": [10, 10],
       "contentsOpaque": true,
-      "backgroundColor": "#C0C0C0",
-      "transform": 1
+      "backgroundColor": "#C0C0C0"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='fixed'",
       "position": [108, 1108],
       "bounds": [10, 10],
       "contentsOpaque": true,
-      "backgroundColor": "#C0C0C0",
-      "transform": 1
+      "backgroundColor": "#C0C0C0"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='fixed'",
       "position": [1100, 100],
       "bounds": [10, 10],
       "contentsOpaque": true,
-      "backgroundColor": "#C0C0C0",
-      "transform": 1
+      "backgroundColor": "#C0C0C0"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='fixed'",
       "position": [700, 100],
       "bounds": [10, 10],
       "contentsOpaque": true,
-      "backgroundColor": "#C0C0C0",
-      "transform": 1
+      "backgroundColor": "#C0C0C0"
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='fixed'",
       "position": [100, 100],
       "bounds": [10, 10],
       "contentsOpaque": true,
-      "backgroundColor": "#C0C0C0",
-      "transform": 1
-    }
-  ],
-  "transforms": [
-    {
-      "id": 1,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [-100, -100, 0, 1]
-      ]
+      "backgroundColor": "#C0C0C0"
     }
   ]
 }
