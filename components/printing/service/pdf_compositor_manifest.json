@@ -4,7 +4,7 @@
   "interface_provider_specs": {
     "service_manager:connector": {
       "provides": {
-        "composite": [ "printing::mojom::PdfCompositor" ]
+        "compositor": [ "printing::mojom::PdfCompositor" ]
        },
        "requires": {
          "*": [ "app" ],

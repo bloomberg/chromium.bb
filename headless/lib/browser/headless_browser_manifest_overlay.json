@@ -3,7 +3,7 @@
   "interface_provider_specs": {
     "service_manager:connector": {
       "requires": {
-        "pdf_compositor": [ "composite" ]
+        "pdf_compositor": [ "compositor" ]
       }
     },
     "navigation:frame": {
