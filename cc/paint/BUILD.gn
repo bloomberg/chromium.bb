@@ -16,6 +16,7 @@ cc_component("paint") {
     "display_item_list.h",
     "draw_image.cc",
     "draw_image.h",
+    "image_animation_count.h",
     "image_id.h",
     "image_provider.cc",
     "image_provider.h",
