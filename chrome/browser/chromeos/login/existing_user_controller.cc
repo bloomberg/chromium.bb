@@ -1063,15 +1063,19 @@ void ExistingUserController::OnPolicyFetchResult(
     case apu::EcryptfsMigrationAction::kMigrate:
       user_manager::known_user::SetUserHomeMinimalMigrationAttempted(
           user_context.GetAccountId(), false);
-      ShowEncryptionMigrationScreen(user_context,
-                                    EncryptionMigrationMode::START_MIGRATION);
+      user_manager::UserManager::Get()->GetLocalState()->CommitPendingWrite(
+          base::BindOnce(&ExistingUserController::ShowEncryptionMigrationScreen,
+                         weak_factory_.GetWeakPtr(), user_context,
+                         EncryptionMigrationMode::START_MIGRATION));
       break;
 
     case apu::EcryptfsMigrationAction::kAskUser:
       user_manager::known_user::SetUserHomeMinimalMigrationAttempted(
           user_context.GetAccountId(), false);
-      ShowEncryptionMigrationScreen(user_context,
-                                    EncryptionMigrationMode::ASK_USER);
+      user_manager::UserManager::Get()->GetLocalState()->CommitPendingWrite(
+          base::BindOnce(&ExistingUserController::ShowEncryptionMigrationScreen,
+                         weak_factory_.GetWeakPtr(), user_context,
+                         EncryptionMigrationMode::ASK_USER));
       break;
 
     case apu::EcryptfsMigrationAction::kWipe:
@@ -1089,8 +1093,10 @@ void ExistingUserController::OnPolicyFetchResult(
           user_context.GetAccountId());
       user_manager::known_user::SetUserHomeMinimalMigrationAttempted(
           user_context.GetAccountId(), true);
-      ShowEncryptionMigrationScreen(
-          user_context, EncryptionMigrationMode::START_MINIMAL_MIGRATION);
+      user_manager::UserManager::Get()->GetLocalState()->CommitPendingWrite(
+          base::BindOnce(&ExistingUserController::ShowEncryptionMigrationScreen,
+                         weak_factory_.GetWeakPtr(), user_context,
+                         EncryptionMigrationMode::START_MINIMAL_MIGRATION));
       break;
 
     case apu::EcryptfsMigrationAction::kAskForEcryptfsArcUsers:
