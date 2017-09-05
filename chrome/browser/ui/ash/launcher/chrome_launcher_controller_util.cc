@@ -15,15 +15,6 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 
-bool IsBrowserFromActiveUser(Browser* browser) {
-  // If running multi user mode with separate desktops, we have to check if the
-  // browser is from the active user.
-  if (chrome::MultiUserWindowManager::GetMultiProfileMode() !=
-      chrome::MultiUserWindowManager::MULTI_PROFILE_MODE_SEPARATED)
-    return true;
-  return multi_user_util::IsProfileFromActiveUser(browser->profile());
-}
-
 const extensions::Extension* GetExtensionForAppID(const std::string& app_id,
                                                   Profile* profile) {
   return extensions::ExtensionRegistry::Get(profile)->GetExtensionById(

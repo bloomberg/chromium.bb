@@ -43,21 +43,6 @@ namespace {
 // The time delta between clicks in which clicks to launch V2 apps are ignored.
 const int kClickSuppressionInMS = 1000;
 
-// Check if a browser can be used for activation. This addresses a special use
-// case in the M31 multi profile mode where a user activates a V1 app which only
-// exists yet on another users desktop, but they expect to get only their own
-// app items and not the ones from other users through activation.
-// TODO(skuhne): Remove this function and replace the call with
-// ChromeLauncherController::IsBrowserFromActiveUser(browser) once this
-// experiment goes away.
-bool CanBrowserBeUsedForDirectActivation(Browser* browser,
-                                         ChromeLauncherController* launcher) {
-  if (chrome::MultiUserWindowManager::GetMultiProfileMode() ==
-          chrome::MultiUserWindowManager::MULTI_PROFILE_MODE_OFF)
-    return true;
-  return multi_user_util::IsProfileFromActiveUser(browser->profile());
-}
-
 }  // namespace
 
 // static
@@ -192,7 +177,8 @@ void AppShortcutLauncherItemController::Close() {
           app_id());
   for (size_t i = 0; i < content.size(); i++) {
     Browser* browser = chrome::FindBrowserWithWebContents(content[i]);
-    if (!browser || !IsBrowserFromActiveUser(browser))
+    if (!browser ||
+        !multi_user_util::IsProfileFromActiveUser(browser->profile()))
       continue;
     TabStripModel* tab_strip = browser->tab_strip_model();
     int index = tab_strip->GetIndexOfWebContents(content[i]);
@@ -221,7 +207,7 @@ AppShortcutLauncherItemController::GetRunningApplications() {
     return items;
 
   for (auto* browser : *BrowserList::GetInstance()) {
-    if (!IsBrowserFromActiveUser(browser))
+    if (!multi_user_util::IsProfileFromActiveUser(browser->profile()))
       continue;
     TabStripModel* tab_strip = browser->tab_strip_model();
     for (int index = 0; index < tab_strip->count(); index++) {
@@ -256,7 +242,7 @@ content::WebContents* AppShortcutLauncherItemController::GetLRUApplication() {
            browser_list->begin_last_active();
        it != browser_list->end_last_active(); ++it) {
     Browser* browser = *it;
-    if (!CanBrowserBeUsedForDirectActivation(browser, controller))
+    if (!multi_user_util::IsProfileFromActiveUser(browser->profile()))
       continue;
     TabStripModel* tab_strip = browser->tab_strip_model();
     // We start to enumerate from the active index.
@@ -275,8 +261,7 @@ content::WebContents* AppShortcutLauncherItemController::GetLRUApplication() {
   for (BrowserList::const_iterator it = browser_list->begin();
        it != browser_list->end(); ++it) {
     Browser* browser = *it;
-    if (!CanBrowserBeUsedForDirectActivation(
-            browser, ChromeLauncherController::instance()))
+    if (!multi_user_util::IsProfileFromActiveUser(browser->profile()))
       continue;
     TabStripModel* tab_strip = browser->tab_strip_model();
     for (int index = 0; index < tab_strip->count(); index++) {

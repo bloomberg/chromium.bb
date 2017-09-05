@@ -46,8 +46,12 @@ Profile* GetProfileFromWindow(aura::Window* window) {
 }
 
 bool IsProfileFromActiveUser(Profile* profile) {
-  return GetAccountIdFromProfile(profile) ==
-         user_manager::UserManager::Get()->GetActiveUser()->GetAccountId();
+  // There may be no active user in tests.
+  const user_manager::User* active_user =
+      user_manager::UserManager::Get()->GetActiveUser();
+  if (!active_user)
+    return true;
+  return GetAccountIdFromProfile(profile) == active_user->GetAccountId();
 }
 
 const AccountId GetCurrentAccountId() {

@@ -60,8 +60,7 @@ class MultiUserWindowManager {
   enum MultiProfileMode {
     MULTI_PROFILE_MODE_UNINITIALIZED,  // Not initialized yet.
     MULTI_PROFILE_MODE_OFF,            // Single user mode.
-    MULTI_PROFILE_MODE_SEPARATED,      // Each user has their own desktop.
-    MULTI_PROFILE_MODE_MIXED           // All users mix windows freely.
+    MULTI_PROFILE_MODE_ON,             // Each user has their own desktop.
   };
 
   // Creates an instance of the MultiUserWindowManager.
@@ -86,10 +85,8 @@ class MultiUserWindowManager {
   // Removes the instance.
   static void DeleteInstance();
 
-  // A function to set an |instance| of a created MultiUserWinwdowManager object
-  // with a given |mode| for test purposes.
-  static void SetInstanceForTest(MultiUserWindowManager* instance,
-                                 MultiProfileMode mode);
+  // Sets the singleton instance to |instance| and enables multi-user-mode.
+  static void SetInstanceForTest(MultiUserWindowManager* instance);
 
   // Assigns an owner to a passed window. Note that this window's parent should
   // be a direct child of the root window.

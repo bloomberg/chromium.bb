@@ -21,8 +21,7 @@ TestMultiUserWindowManager::TestMultiUserWindowManager(
       current_account_id_(desktop_owner) {
   // Register this object with the system (which will take ownership). It will
   // be deleted by ChromeLauncherController::~ChromeLauncherController().
-  chrome::MultiUserWindowManager::SetInstanceForTest(
-      this, chrome::MultiUserWindowManager::MULTI_PROFILE_MODE_SEPARATED);
+  chrome::MultiUserWindowManager::SetInstanceForTest(this);
 }
 
 TestMultiUserWindowManager::~TestMultiUserWindowManager() {

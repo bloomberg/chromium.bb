@@ -33,9 +33,6 @@ class MultiUserNotificationBlockerChromeOS
       const message_center::Notification& notification) const override;
 
  private:
-  // Returns true if this blocker is actively working.
-  bool IsActive() const;
-
   AccountId active_account_id_;
   std::map<AccountId, bool> quiet_modes_;
 

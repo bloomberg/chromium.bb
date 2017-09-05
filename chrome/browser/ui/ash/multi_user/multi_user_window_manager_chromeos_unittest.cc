@@ -329,8 +329,8 @@ void MultiUserWindowManagerChromeOSTest::SetUpForThisManyWindows(int windows) {
   multi_user_window_manager_->Init();
   multi_user_window_manager_->SetAnimationSpeedForTest(
       chrome::MultiUserWindowManagerChromeOS::ANIMATION_SPEED_DISABLED);
-  chrome::MultiUserWindowManager::SetInstanceForTest(multi_user_window_manager_,
-        chrome::MultiUserWindowManager::MULTI_PROFILE_MODE_SEPARATED);
+  chrome::MultiUserWindowManager::SetInstanceForTest(
+      multi_user_window_manager_);
   EXPECT_TRUE(multi_user_window_manager_);
   chromeos::WallpaperManager::Initialize();
 }

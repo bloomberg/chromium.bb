@@ -94,7 +94,7 @@ class MultiUserNotificationBlockerChromeOSTest
   void SwitchActiveUser(const std::string& name) {
     const AccountId account_id(AccountId::FromUserEmail(name));
     if (chrome::MultiUserWindowManager::GetMultiProfileMode() ==
-        chrome::MultiUserWindowManager::MULTI_PROFILE_MODE_SEPARATED) {
+        chrome::MultiUserWindowManager::MULTI_PROFILE_MODE_ON) {
       static_cast<chrome::MultiUserWindowManagerChromeOS*>(
           chrome::MultiUserWindowManager::GetInstance())
           ->ActiveUserChanged(fake_user_manager_->FindUser(account_id));
@@ -157,7 +157,7 @@ class MultiUserNotificationBlockerChromeOSTest
 };
 
 TEST_F(MultiUserNotificationBlockerChromeOSTest, Basic) {
-  ASSERT_EQ(chrome::MultiUserWindowManager::MULTI_PROFILE_MODE_SEPARATED,
+  ASSERT_EQ(chrome::MultiUserWindowManager::MULTI_PROFILE_MODE_ON,
             chrome::MultiUserWindowManager::GetMultiProfileMode());
 
   message_center::NotifierId notifier_id(
