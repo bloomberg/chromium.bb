@@ -127,6 +127,11 @@ void AshTouchExplorationManager::PlaySpokenFeedbackToggleCountdown(
     delegate->PlaySpokenFeedbackToggleCountdown(tick_count);
 }
 
+void AshTouchExplorationManager::PlayTouchTypeEarcon() {
+  Shell::Get()->accessibility_delegate()->PlayEarcon(
+      chromeos::SOUND_TOUCH_TYPE);
+}
+
 void AshTouchExplorationManager::ToggleSpokenFeedback() {
   AccessibilityDelegate* delegate = Shell::Get()->accessibility_delegate();
   if (delegate->ShouldToggleSpokenFeedbackViaTouch())

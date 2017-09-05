@@ -67,6 +67,7 @@ class ASH_EXPORT AshTouchExplorationManager
   void OnTwoFingerTouchStart() override;
   void OnTwoFingerTouchStop() override;
   void PlaySpokenFeedbackToggleCountdown(int tick_count) override;
+  void PlayTouchTypeEarcon() override;
   void ToggleSpokenFeedback() override;
 
   // wm::ActivationChangeObserver overrides:
