@@ -3444,14 +3444,14 @@
 
   <!-- Multidevice Page -->
   <if expr="chromeos">
-    <message name="IDS_SETTINGS_MULTIDEVICE" desc="Name of the settings page features the user's other devices connected to the Chromebook.">
+    <message name="IDS_SETTINGS_MULTIDEVICE" desc="Title of a section of settings. This section describes settings for devices that are connected to the Chromebook, like phones.">
       Connected devices
     </message>
-    <message name="IDS_SETTINGS_MULTIDEVICE_SMS_CONNECT" desc="Title of the multi-device feature for displaying SMS notifications.">
-      SMS connect
+    <message name="IDS_SETTINGS_MULTIDEVICE_SMS_CONNECT" desc="Name of a feature. This feature lets the user read and reply to text messages from their Chromebook. New text messages will appear as notifications.">
+      SMS Connect
     </message>
-    <message name="IDS_SETTINGS_MULTIDEVICE_SMS_CONNECT_SUMMARY" desc="Summary explaining what the SMS connect feature does.">
-      Get notifications for new text messages on your Chromebook
+    <message name="IDS_SETTINGS_MULTIDEVICE_SMS_CONNECT_SUMMARY" desc="Description of for the 'SMS Connect' setting.  This feature lets the user read and reply to text messages from their Chromebook. New text messages will appear as notifications.">
+      Read and reply to text messages on your Chromebook
     </message>
   </if>
 
