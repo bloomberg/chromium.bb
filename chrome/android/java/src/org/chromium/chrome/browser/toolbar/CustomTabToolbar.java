@@ -580,7 +580,10 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
         int locationBarLayoutChildIndex = -1;
         for (int i = 0; i < getChildCount(); i++) {
             View childView = getChildAt(i);
-            if (childView.getVisibility() != GONE) {
+            if (childView == mCloseButton && childView.getVisibility() == GONE) {
+                startMargin += getResources().getDimensionPixelSize(
+                        R.dimen.custom_tabs_toolbar_horizontal_margin_no_close);
+            } else if (childView.getVisibility() != GONE) {
                 LayoutParams childLayoutParams = (LayoutParams) childView.getLayoutParams();
                 if (ApiCompatibilityUtils.getMarginStart(childLayoutParams) != startMargin) {
                     ApiCompatibilityUtils.setMarginStart(childLayoutParams, startMargin);
