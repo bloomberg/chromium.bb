@@ -3,13 +3,10 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
-#include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
 #include "base/threading/platform_thread.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/attestation/platform_verification_flow.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
@@ -24,16 +21,6 @@
 using chromeos::attestation::PlatformVerificationFlow;
 
 namespace policy {
-
-class CustomFakeCryptohomeClient : public chromeos::FakeCryptohomeClient {
- public:
-  void TpmAttestationIsEnrolled(
-      const chromeos::BoolDBusMethodCallback& callback) override {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(callback, chromeos::DBUS_METHOD_CALL_FAILURE, false));
-  }
-};
 
 class AttestationDevicePolicyTest
     : public DevicePolicyCrosBrowserTest,
@@ -89,7 +76,7 @@ class AttestationDevicePolicyTest
  private:
   bool operation_complete_;
   PlatformVerificationFlow::Result result_;
-  CustomFakeCryptohomeClient fake_cryptohome_client_;
+  chromeos::FakeCryptohomeClient fake_cryptohome_client_;
 
   void WaitForAsyncOperation() {
     while (!operation_complete_) {
@@ -121,4 +108,4 @@ IN_PROC_BROWSER_TEST_F(AttestationDevicePolicyTest, ContentProtectionTest) {
             SyncContentProtectionAttestation());
 }
 
-} // namespace policy
+}  // namespace policy
