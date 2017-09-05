@@ -1065,6 +1065,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         'tex-2d-rgba4-rgba-unsigned_short_4_4_4_4.html',
         ['linux', ('amd', 0x6613)], bug=701138)
     self.Fail('conformance2/textures/image_data/' +
+        'tex-3d-rgb32f-rgb-float.html',
+        ['linux', ('amd', 0x6613)], bug=701138)
+    self.Fail('conformance2/textures/image_data/' +
         'tex-3d-rgb565-rgb-unsigned_byte.html',
         ['linux', ('amd', 0x6613)], bug=701138)
     self.Fail('conformance2/textures/image_data/' +
