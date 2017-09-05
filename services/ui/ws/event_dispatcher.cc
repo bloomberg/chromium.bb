@@ -857,7 +857,6 @@ void EventDispatcher::CancelImplicitCaptureExcept(ServerWindow* window,
 void EventDispatcher::OnWillChangeWindowHierarchy(ServerWindow* window,
                                                   ServerWindow* new_parent,
                                                   ServerWindow* old_parent) {
-  // TODO(sky): moving to a different root likely needs to transfer capture.
   // TODO(sky): this isn't quite right, I think the logic should be (assuming
   // moving in same root and still drawn):
   // . if there is capture and window is still in the same root, continue
@@ -865,10 +864,8 @@ void EventDispatcher::OnWillChangeWindowHierarchy(ServerWindow* window,
   // . if there isn't capture, then reevaluate each of the pointer targets
   //   sending exit as necessary.
   // http://crbug.com/613646 .
-  if (!new_parent || !new_parent->IsDrawn() ||
-      new_parent->GetRootForDrawn() != old_parent->GetRootForDrawn()) {
+  if (!new_parent || !new_parent->IsDrawn())
     CancelPointerEventsToTarget(window);
-  }
 }
 
 void EventDispatcher::OnWindowVisibilityChanged(ServerWindow* window) {

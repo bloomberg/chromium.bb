@@ -2397,6 +2397,21 @@ TEST_P(EventDispatcherTest, ChildModal) {
             test_event_dispatcher_delegate()->window_that_blocked_event());
 }
 
+TEST_P(EventDispatcherTest, DontCancelWhenMovedToSeparateDisplay) {
+  TestServerWindowDelegate window_delegate2;
+  ServerWindow root2(&window_delegate2, WindowId(1, 100));
+  root2.set_is_activation_parent(true);
+  window_delegate2.set_root_window(&root2);
+  root2.SetVisible(true);
+
+  std::unique_ptr<ServerWindow> w1 = CreateChildWindow(WindowId(1, 3));
+  event_dispatcher()->SetCaptureWindow(w1.get(), kClientAreaId);
+  ASSERT_EQ(w1.get(), event_dispatcher()->capture_window());
+  test_event_dispatcher_delegate()->set_root(&root2);
+  root2.Add(w1.get());
+  EXPECT_EQ(w1.get(), event_dispatcher()->capture_window());
+}
+
 // Tests that setting capture to a window unrelated to a modal parent works.
 TEST_P(EventDispatcherTest, MouseCursorSourceWindowChangesWithSystemModal) {
   BlockingContainers blocking_containers;
