@@ -432,6 +432,15 @@ class ServiceManager::Instance
     service_manager_->Connect(std::move(params));
   }
 
+  void QueryService(const Identity& target,
+                    QueryServiceCallback callback) override {
+    std::string sandbox;
+    bool success = service_manager_->QueryCatalog(target, &sandbox);
+    std::move(callback).Run(success ? mojom::ConnectResult::SUCCEEDED
+                                    : mojom::ConnectResult::INVALID_ARGUMENT,
+                            std::move(sandbox));
+  }
+
   void StartService(const Identity& in_target,
                     StartServiceCallback callback) override {
     Identity target = in_target;
@@ -909,6 +918,17 @@ void ServiceManager::StartService(const Identity& identity) {
   params->set_target(target_identity);
 
   Connect(std::move(params));
+}
+
+bool ServiceManager::QueryCatalog(const Identity& identity,
+                                  std::string* sandbox_type) {
+  const catalog::Entry* entry =
+      catalog_.GetInstanceForUserId(identity.user_id())
+          ->Resolve(identity.name());
+  if (!entry)
+    return false;
+  *sandbox_type = entry->sandbox_type();
+  return true;
 }
 
 void ServiceManager::RegisterService(

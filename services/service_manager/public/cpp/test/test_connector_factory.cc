@@ -35,6 +35,11 @@ class TestConnectorImpl : public mojom::Connector {
     NOTREACHED();
   }
 
+  void QueryService(const Identity& target,
+                    QueryServiceCallback callback) override {
+    NOTREACHED();
+  }
+
   void StartServiceWithProcess(
       const Identity& identity,
       mojo::ScopedMessagePipeHandle service,
