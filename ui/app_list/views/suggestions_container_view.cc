@@ -92,6 +92,11 @@ int SuggestionsContainerView::DoUpdate() {
       item = display_results[i];
     search_result_tile_views_[i]->SetSearchResult(item);
     search_result_tile_views_[i]->SetEnabled(true);
+
+    // Notify text change after accessible name is updated and the tile view
+    // is re-enabled, so that ChromeVox will announce the updated text.
+    search_result_tile_views_[i]->NotifyAccessibilityEvent(
+        ui::AX_EVENT_TEXT_CHANGED, true);
   }
 
   parent()->Layout();
