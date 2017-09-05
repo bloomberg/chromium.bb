@@ -124,6 +124,24 @@ void Connector::OverrideBinderForTesting(const std::string& service_name,
   local_binder_overrides_[service_name][interface_name] = binder;
 }
 
+bool Connector::HasBinderOverride(const std::string& service_name,
+                                  const std::string& interface_name) {
+  auto service_overrides = local_binder_overrides_.find(service_name);
+  if (service_overrides == local_binder_overrides_.end())
+    return false;
+
+  return base::ContainsKey(service_overrides->second, interface_name);
+}
+
+void Connector::ClearBinderOverride(const std::string& service_name,
+                                    const std::string& interface_name) {
+  auto service_overrides = local_binder_overrides_.find(service_name);
+  if (service_overrides == local_binder_overrides_.end())
+    return;
+
+  service_overrides->second.erase(interface_name);
+}
+
 void Connector::ClearBinderOverrides() {
   local_binder_overrides_.clear();
 }
