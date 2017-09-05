@@ -61,6 +61,12 @@ by a child template that "extends" this file.
     <uses-feature android:name="android.software.vr.mode" android:required="false"/>
     <!-- Indicates use of VR features that are available only on Daydream-ready devices. -->
     <uses-feature android:name="android.hardware.vr.high_performance" android:required="false"/>
+    <!--
+      Indicates that we don't need Chrome to be available on devices that only support landscape
+      orientation. This is needed because we have VR specific activities that declare the
+      android:orientation attribute.
+    -->
+    <uses-feature android:name="android.hardware.screen.landscape" android:required="false"/>
     {% endif %}
 
     <permission android:name="{{ manifest_package }}.permission.CHILD_SERVICE" android:protectionLevel="signature" />
@@ -356,6 +362,7 @@ by a child template that "extends" this file.
         {% if enable_vr == "true" %}
         <activity android:name="org.chromium.chrome.browser.vr_shell.SeparateTaskCustomTabVrActivity"
             android:theme="@style/VrSupportTheme"
+            android:screenOrientation="landscape"
             android:exported="false"
             android:enableVrMode="@string/gvr_vr_mode_component"
             android:taskAffinity=""
