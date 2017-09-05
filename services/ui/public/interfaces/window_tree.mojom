@@ -4,7 +4,6 @@
 
 module ui.mojom;
 
-import "cc/ipc/frame_sink_id.mojom";
 import "cc/ipc/local_surface_id.mojom";
 import "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom";
 import "services/viz/public/interfaces/compositing/surface_info.mojom";
@@ -14,6 +13,7 @@ import "services/ui/public/interfaces/mus_constants.mojom";
 import "services/ui/public/interfaces/window_manager.mojom";
 import "services/ui/public/interfaces/window_manager_constants.mojom";
 import "services/ui/public/interfaces/window_tree_constants.mojom";
+import "services/viz/public/interfaces/compositing/frame_sink_id.mojom";
 import "skia/public/interfaces/bitmap.mojom";
 import "ui/base/mojo/ui_base_types.mojom";
 import "ui/events/mojo/event.mojom";
@@ -366,7 +366,7 @@ interface WindowTreeClient {
   // This is called on the owner of a window when it embeds a client in it,
   // which includes the window manager creating a new window at the request of
   // another client.
-  OnFrameSinkIdAllocated(uint32 window, cc.mojom.FrameSinkId frame_sink_id);
+  OnFrameSinkIdAllocated(uint32 window, viz.mojom.FrameSinkId frame_sink_id);
 
   // Called in response to NewTopLevelWindow() successfully completing.
   // |parent_drawn| is true if the parent of the window is drawn, see

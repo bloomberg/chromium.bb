@@ -4,7 +4,6 @@
 
 typemaps = [
   "//cc/ipc/copy_output_result.typemap",
-  "//cc/ipc/frame_sink_id.typemap",
   "//cc/ipc/local_surface_id.typemap",
   "//cc/ipc/texture_mailbox.typemap",
 ]

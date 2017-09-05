@@ -4,8 +4,8 @@
 
 module blink.mojom;
 
-import "cc/ipc/frame_sink_id.mojom";
 import "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom";
+import "services/viz/public/interfaces/compositing/frame_sink_id.mojom";
 import "services/viz/public/interfaces/compositing/surface_id.mojom";
 import "services/viz/public/interfaces/compositing/surface_info.mojom";
 import "services/viz/public/interfaces/compositing/surface_sequence.mojom";
@@ -24,14 +24,14 @@ interface OffscreenCanvasSurfaceClient {
 interface OffscreenCanvasProvider {
   // Create an OffscreenCanvasSurface for |frame_sink_id|. |client| will observe
   // any changes to the SurfaceId associated with |frame_sink_id|.
-  CreateOffscreenCanvasSurface(cc.mojom.FrameSinkId parent_frame_sink_id,
-                               cc.mojom.FrameSinkId frame_sink_id,
+  CreateOffscreenCanvasSurface(viz.mojom.FrameSinkId parent_frame_sink_id,
+                               viz.mojom.FrameSinkId frame_sink_id,
                                OffscreenCanvasSurfaceClient client,
                                OffscreenCanvasSurface& surface);
 
   // Create an CompositorFrameSink for |frame_sink_id|. This must happen
   // after creating an OffsreenCanvasSurface for |frame_sink_id|.
-  CreateCompositorFrameSink(cc.mojom.FrameSinkId frame_sink_id,
+  CreateCompositorFrameSink(viz.mojom.FrameSinkId frame_sink_id,
                             viz.mojom.CompositorFrameSinkClient client,
                             viz.mojom.CompositorFrameSink& sink);
 };
