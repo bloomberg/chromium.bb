@@ -90,12 +90,11 @@ bool KernelSupportsSeccompTsync() {
 
   if (rv == -1 && errno == EFAULT) {
     return true;
-  } else {
-    // TODO(jln): turn these into DCHECK after 417888 is considered fixed.
-    CHECK_EQ(-1, rv);
-    CHECK(ENOSYS == errno || EINVAL == errno);
-    return false;
   }
+
+  DCHECK_EQ(-1, rv);
+  DCHECK(ENOSYS == errno || EINVAL == errno);
+  return false;
 }
 
 uint64_t EscapePC() {
