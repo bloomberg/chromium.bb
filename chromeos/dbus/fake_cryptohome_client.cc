@@ -145,14 +145,15 @@ void FakeCryptohomeClient::GetSystemSalt(
 
 void FakeCryptohomeClient::GetSanitizedUsername(
     const cryptohome::Identification& cryptohome_id,
-    const StringDBusMethodCallback& callback) {
+    StringDBusMethodCallback callback) {
   // Even for stub implementation we have to return different values so that
   // multi-profiles would work.
   auto task =
       service_is_available_
-          ? base::BindOnce(callback, DBUS_METHOD_CALL_SUCCESS,
+          ? base::BindOnce(std::move(callback), DBUS_METHOD_CALL_SUCCESS,
                            GetStubSanitizedUsername(cryptohome_id))
-          : base::BindOnce(callback, DBUS_METHOD_CALL_FAILURE, std::string());
+          : base::BindOnce(std::move(callback), DBUS_METHOD_CALL_FAILURE,
+                           std::string());
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(task));
 }
 
@@ -207,12 +208,11 @@ bool FakeCryptohomeClient::CallTpmIsEnabledAndBlock(bool* enabled) {
   return true;
 }
 
-void FakeCryptohomeClient::TpmGetPassword(
-    const StringDBusMethodCallback& callback) {
+void FakeCryptohomeClient::TpmGetPassword(StringDBusMethodCallback callback) {
   const char kStubTpmPassword[] = "Stub-TPM-password";
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS,
-                            std::string(kStubTpmPassword)));
+      FROM_HERE, base::BindOnce(std::move(callback), DBUS_METHOD_CALL_SUCCESS,
+                                std::string(kStubTpmPassword)));
 }
 
 void FakeCryptohomeClient::TpmIsOwned(
@@ -568,10 +568,10 @@ void FakeCryptohomeClient::TpmAttestationDeleteKeys(
       FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, true));
 }
 
-void FakeCryptohomeClient::TpmGetVersion(
-    const StringDBusMethodCallback& callback) {
+void FakeCryptohomeClient::TpmGetVersion(StringDBusMethodCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, std::string()));
+      FROM_HERE, base::BindOnce(std::move(callback), DBUS_METHOD_CALL_SUCCESS,
+                                std::string()));
 }
 
 void FakeCryptohomeClient::GetKeyDataEx(
