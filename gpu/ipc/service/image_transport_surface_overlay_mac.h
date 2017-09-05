@@ -70,15 +70,9 @@ class ImageTransportSurfaceOverlayMac : public gl::GLSurface,
   ~ImageTransportSurfaceOverlayMac() override;
 
   void SetLatencyInfo(const std::vector<ui::LatencyInfo>& latency_info);
-  void SendAcceleratedSurfaceBuffersSwapped(
-      CAContextID ca_context_id,
-      bool fullscreen_low_power_ca_context_valid,
-      CAContextID fullscreen_low_power_ca_context_id,
-      const gfx::ScopedRefCountedIOSurfaceMachPort& io_surface,
-      const gfx::Size& size,
-      float scale_factor,
-      std::vector<ui::LatencyInfo> latency_info);
   gfx::SwapResult SwapBuffersInternal(const gfx::Rect& pixel_damage_rect);
+  void ApplyBackpressure(base::TimeTicks* before_flush_time,
+                         base::TimeTicks* after_flush_before_commit_time);
 
   base::WeakPtr<ImageTransportSurfaceDelegate> delegate_;
   std::vector<ui::LatencyInfo> latency_info_;
