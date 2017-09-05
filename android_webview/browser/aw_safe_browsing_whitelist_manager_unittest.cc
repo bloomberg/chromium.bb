@@ -166,6 +166,14 @@ TEST_F(AwSafeBrowsingWhitelistManagerTest, URLsWithEmbeddedUserNamePassword) {
   EXPECT_TRUE(wm_->IsURLWhitelisted(GURL("http://user1:pass@google.com")));
 }
 
+TEST_F(AwSafeBrowsingWhitelistManagerTest, WhitelistsWithPunycodeWorks) {
+  std::vector<std::string> whitelist;
+  whitelist.push_back("㯙㯜㯙㯟.com");
+  SetWhitelist(std::move(whitelist), true);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(wm_->IsURLWhitelisted(GURL("http://xn--domain.com")));
+}
+
 TEST_F(AwSafeBrowsingWhitelistManagerTest,
        PathQueryAndReferenceWorksWithLeadingDot) {
   std::vector<std::string> whitelist;
