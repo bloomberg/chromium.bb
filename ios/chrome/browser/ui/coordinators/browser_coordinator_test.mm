@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/ui/coordinators/browser_coordinator_test.h"
 
-#include "base/memory/ptr_util.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/ui/browser_list/browser.h"
 
@@ -14,9 +13,8 @@
 
 BrowserCoordinatorTest::BrowserCoordinatorTest() {
   // Initialize the browser.
-  TestChromeBrowserState::Builder builder;
-  chrome_browser_state_ = builder.Build();
-  browser_ = base::MakeUnique<Browser>(chrome_browser_state_.get());
+  chrome_browser_state_ = TestChromeBrowserState::Builder().Build();
+  browser_ = std::make_unique<Browser>(chrome_browser_state_.get());
 }
 
 BrowserCoordinatorTest::~BrowserCoordinatorTest() = default;
