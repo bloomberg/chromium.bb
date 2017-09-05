@@ -24,16 +24,20 @@ public class FlushingReTrace {
     // http://proguard.sourceforge.net/manual/retrace/usage.html.
     // But with the "at" part changed to "(?::|\bat)", to account for lines like:
     //     06-22 13:58:02.895  4674  4674 E THREAD_STATE:     bLA.a(PG:173)
+    // And .*=%c\s* added as the second subpattern to account for lines like:
+    //     INSTRUMENTATION_STATUS: class=bNs
     // Normal stack trace lines look like:
     // java.lang.RuntimeException: Intentional Java Crash
     //     at org.chromium.chrome.browser.tab.Tab.handleJavaCrash(Tab.java:682)
     //     at org.chromium.chrome.browser.tab.Tab.loadUrl(Tab.java:644)
     private static final String LINE_PARSE_REGEX =
-            "(?:.*?(?::|\\bat)\\s+%c\\.%m\\s*\\(%s(?::%l)?\\)\\s*)|(?:(?:.*?[:\"]\\s+)?%c(?::.*)?)";
+            "(?:.*?(?::|\\bat)\\s+%c\\.%m\\s*\\(%s(?::%l)?\\)\\s*)|"
+            + "(?:.*=%c\\s*)|"
+            + "(?:(?:.*?[:\"]\\s+)?%c(?::.*)?)";
 
     public static void main(String[] args) {
         if (args.length != 1) {
-            System.err.println("Usage: retrace Foo.apk.map < foo.log > bar.log");
+            System.err.println("Usage: java_deobfuscate Foo.apk.map < foo.log > bar.log");
             System.exit(1);
         }
 
