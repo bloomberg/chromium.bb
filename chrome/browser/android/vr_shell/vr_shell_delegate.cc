@@ -17,6 +17,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/origin_util.h"
 #include "device/vr/android/gvr/gvr_delegate.h"
+#include "device/vr/android/gvr/gvr_delegate_provider_factory.h"
 #include "device/vr/vr_device.h"
 #include "device/vr/vr_device_manager.h"
 #include "device/vr/vr_display_impl.h"
@@ -45,6 +46,22 @@ bool IsSecureContext(content::RenderFrameHost* host) {
     host = host->GetParent();
   }
   return true;
+}
+
+class VrShellDelegateProviderFactory
+    : public device::GvrDelegateProviderFactory {
+ public:
+  VrShellDelegateProviderFactory() = default;
+  ~VrShellDelegateProviderFactory() override = default;
+  device::GvrDelegateProvider* CreateGvrDelegateProvider() override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(VrShellDelegateProviderFactory);
+};
+
+device::GvrDelegateProvider*
+VrShellDelegateProviderFactory::CreateGvrDelegateProvider() {
+  return VrShellDelegate::CreateVrShellDelegate();
 }
 
 }  // namespace
@@ -384,8 +401,8 @@ jlong Init(JNIEnv* env, const JavaParamRef<jobject>& obj) {
 }
 
 static void OnLibraryAvailable(JNIEnv* env, const JavaParamRef<jclass>& clazz) {
-  device::GvrDelegateProvider::SetInstance(
-      base::Bind(&VrShellDelegate::CreateVrShellDelegate));
+  device::GvrDelegateProviderFactory::Install(
+      new VrShellDelegateProviderFactory);
 }
 
 }  // namespace vr_shell

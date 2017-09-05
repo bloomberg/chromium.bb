@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_VR_ANDROID_GVR_DELEGATE_PROVIDER_H
-#define DEVICE_VR_ANDROID_GVR_DELEGATE_PROVIDER_H
+#ifndef DEVICE_VR_ANDROID_GVR_DELEGATE_PROVIDER_H_
+#define DEVICE_VR_ANDROID_GVR_DELEGATE_PROVIDER_H_
 
+#include "base/macros.h"
 #include "device/vr/android/gvr/gvr_device_provider.h"
 #include "device/vr/vr_export.h"
 #include "device/vr/vr_service.mojom.h"
@@ -15,10 +16,7 @@ class VRDisplayImpl;
 
 class DEVICE_VR_EXPORT GvrDelegateProvider {
  public:
-  static void SetInstance(
-      const base::Callback<GvrDelegateProvider*()>& provider_callback);
-  static GvrDelegateProvider* GetInstance();
-
+  GvrDelegateProvider() = default;
   virtual void SetDeviceId(unsigned int device_id) = 0;
   virtual void RequestWebVRPresent(
       mojom::VRSubmitFrameClientPtr submit_client,
@@ -39,9 +37,9 @@ class DEVICE_VR_EXPORT GvrDelegateProvider {
   virtual ~GvrDelegateProvider() {}
 
  private:
-  static base::Callback<GvrDelegateProvider*()> delegate_provider_;
+  DISALLOW_COPY_AND_ASSIGN(GvrDelegateProvider);
 };
 
 }  // namespace device
 
-#endif  // DEVICE_VR_ANDROID_GVR_DELEGATE_PROVIDER_H
+#endif  // DEVICE_VR_ANDROID_GVR_DELEGATE_PROVIDER_H_
