@@ -2,11 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# Runs the Microsoft Message Compiler (mc.exe). This Python adapter is for the
-# GN build, which can only run Python and not native binaries.
+# Runs the Microsoft Message Compiler (mc.exe).
 #
 # Usage: message_compiler.py <environment_file> [<args to mc.exe>*]
 
+import difflib
 import distutils.dir_util
 import filecmp
 import os
@@ -80,15 +80,27 @@ def main():
     # it generates an ANSI header, and includes broken versions of the message
     # text in the comment before the value. To work around this, for any invalid
     # // comment lines, we simply drop the line in the header after building it.
+    # Also, mc.exe apparently doesn't always write #define lines in
+    # deterministic order, so manually sort each block of #defines.
     if header_dir:
       header_file = os.path.join(
           header_dir, os.path.splitext(os.path.basename(input_file))[0] + '.h')
       header_contents = []
       with open(header_file, 'rb') as f:
+        define_block = []  # The current contiguous block of #defines.
         for line in f.readlines():
           if line.startswith('//') and '?' in line:
             continue
+          if line.startswith('#define '):
+            define_block.append(line)
+            continue
+          # On the first non-#define line, emit the sorted preceding #define
+          # block.
+          header_contents += sorted(define_block, key=lambda s: s.split()[-1])
+          define_block = []
           header_contents.append(line)
+        # If the .h file ends with a #define block, flush the final block.
+        header_contents += sorted(define_block, key=lambda s: s.split()[-1])
       with open(header_file, 'wb') as f:
         f.write(''.join(header_contents))
 
@@ -96,8 +108,16 @@ def main():
     # in tmp_dir to the checked-in outputs.
     diff = filecmp.dircmp(tmp_dir, source)
     if diff.diff_files or set(diff.left_list) != set(diff.right_list):
-      print >>sys.stderr, 'mc.exe output different from files in %s, see %s' % (
-          source, tmp_dir)
+      print 'mc.exe output different from files in %s, see %s' % (source,
+                                                                  tmp_dir)
+      diff.report()
+      for f in diff.diff_files:
+        if f.endswith('.bin'): continue
+        fromfile = os.path.join(source, f)
+        tofile = os.path.join(tmp_dir, f)
+        print ''.join(difflib.unified_diff(open(fromfile, 'U').readlines(),
+                                           open(tofile, 'U').readlines(),
+                                           fromfile, tofile))
       delete_tmp_dir = False
       sys.exit(1)
   except subprocess.CalledProcessError as e:
