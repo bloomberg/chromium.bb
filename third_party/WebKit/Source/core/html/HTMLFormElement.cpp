@@ -361,7 +361,7 @@ void HTMLFormElement::submitFromJavaScript() {
 void HTMLFormElement::SubmitDialog(FormSubmission* form_submission) {
   for (Node* node = this; node; node = node->ParentOrShadowHostNode()) {
     if (auto* dialog = ToHTMLDialogElementOrNull(*node)) {
-      dialog->CloseDialog(form_submission->Result());
+      dialog->close(form_submission->Result());
       return;
     }
   }

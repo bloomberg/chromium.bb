@@ -13,8 +13,8 @@ PASS dialog.returnValue is ''
 PASS dialog.returnValue is 'null'
 PASS dialog.returnValue is 'Should not change because no argument to close()'
 PASS dialog.returnValue is 'Should not change because of undefined argument to close()'
-PASS dialog.close('blah') threw exception InvalidStateError: Failed to execute 'close' on 'HTMLDialogElement': The element does not have an 'open' attribute, and therefore cannot be closed..
-PASS dialog.returnValue is 'Should not change because close() is invalid'
+PASS dialog.close('blah') did not throw exception.
+PASS dialog.returnValue is 'Should not change because of no-op close()'
 PASS successfullyParsed is true
 
 TEST COMPLETE

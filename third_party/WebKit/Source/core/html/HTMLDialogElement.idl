@@ -28,9 +28,7 @@
 interface HTMLDialogElement : HTMLElement {
     [CEReactions, Reflect] attribute boolean open;
     attribute DOMString returnValue;
-    // FIXME: show() and showModal() should take an anchor argument.
     [CEReactions] void show();
     [CEReactions, RaisesException] void showModal();
-    // FIXME: The returnValue argument should have no default value.
-    [CEReactions, RaisesException] void close(optional DOMString returnValue = null);
+    [CEReactions] void close(optional DOMString returnValue);
 };
