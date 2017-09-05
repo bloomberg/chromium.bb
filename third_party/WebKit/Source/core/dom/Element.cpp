@@ -1923,21 +1923,21 @@ void Element::DetachLayoutTree(const AttachContext& context) {
 RefPtr<ComputedStyle> Element::StyleForLayoutObject() {
   DCHECK(GetDocument().InStyleRecalc());
 
-  RefPtr<ComputedStyle> style;
-
   // FIXME: Instead of clearing updates that may have been added from calls to
-  // styleForElement outside recalcStyle, we should just never set them if we're
-  // not inside recalcStyle.
+  // StyleForElement outside RecalcStyle, we should just never set them if we're
+  // not inside RecalcStyle.
   if (ElementAnimations* element_animations = this->GetElementAnimations())
     element_animations->CssAnimations().ClearPendingUpdate();
 
-  if (HasCustomStyleCallbacks())
-    style = CustomStyleForLayoutObject();
-  if (!style)
-    style = OriginalStyleForLayoutObject();
-  DCHECK(style);
+  RefPtr<ComputedStyle> style = HasCustomStyleCallbacks()
+                                    ? CustomStyleForLayoutObject()
+                                    : OriginalStyleForLayoutObject();
+  if (!style) {
+    DCHECK(IsBeforePseudoElement() || IsAfterPseudoElement());
+    return nullptr;
+  }
 
-  // styleForElement() might add active animations so we need to get it again.
+  // StyleForElement() might add active animations so we need to get it again.
   if (ElementAnimations* element_animations = this->GetElementAnimations()) {
     element_animations->CssAnimations().MaybeApplyPendingUpdate(this);
     element_animations->UpdateAnimationFlags(*style);
@@ -2089,7 +2089,8 @@ StyleRecalcChange Element::RecalcOwnStyle(StyleRecalcChange change) {
   RefPtr<ComputedStyle> new_style = PropagateInheritedProperties(change);
   if (!new_style)
     new_style = StyleForLayoutObject();
-  DCHECK(new_style);
+  if (!new_style)
+    return kReattach;
 
   StyleRecalcChange local_change =
       ComputedStyle::StylePropagationDiff(old_style.Get(), new_style.Get());
@@ -3437,10 +3438,10 @@ void Element::UpdatePseudoElement(PseudoId pseudo_id,
     element->RecalcStyle(change == kUpdatePseudoElements ? kForce : change);
 
     // Wait until our parent is not displayed or
-    // pseudoElementLayoutObjectIsNeeded is false, otherwise we could
+    // PseudoElementLayoutObjectIsNeeded is false, otherwise we could
     // continuously create and destroy PseudoElements when
-    // LayoutObject::isChildAllowed on our parent returns false for the
-    // PseudoElement's layoutObject for each style recalc.
+    // LayoutObject::IsChildAllowed on our parent returns false for the
+    // PseudoElement's GetLayoutObject for each style recalc.
     if (!CanGeneratePseudoElement(pseudo_id) ||
         !PseudoElementLayoutObjectIsNeeded(
             PseudoStyle(PseudoStyleRequest(pseudo_id))))
@@ -4075,7 +4076,7 @@ void Element::DidRecalcStyle() {
 
 RefPtr<ComputedStyle> Element::CustomStyleForLayoutObject() {
   DCHECK(HasCustomStyleCallbacks());
-  return nullptr;
+  return OriginalStyleForLayoutObject();
 }
 
 void Element::CloneAttributesFromElement(const Element& other) {
