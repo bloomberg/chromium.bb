@@ -11,6 +11,7 @@
 #include "base/trace_event/trace_event.h"
 #include "device/vr/android/gvr/gvr_delegate.h"
 #include "device/vr/android/gvr/gvr_delegate_provider.h"
+#include "device/vr/android/gvr/gvr_delegate_provider_factory.h"
 #include "device/vr/android/gvr/gvr_device_provider.h"
 #include "device/vr/vr_device_manager.h"
 #include "device/vr/vr_display_impl.h"
@@ -89,9 +90,9 @@ void GvrDevice::OnListeningForActivateChanged(VRDisplayImpl* display) {
 }
 
 GvrDelegateProvider* GvrDevice::GetGvrDelegateProvider() {
-  // GvrDelegateProvider::GetInstance() may fail transiently, so every time we
+  // GvrDelegateProviderFactory::Create() may fail transiently, so every time we
   // try to get it, set the device ID.
-  GvrDelegateProvider* delegate_provider = GvrDelegateProvider::GetInstance();
+  GvrDelegateProvider* delegate_provider = GvrDelegateProviderFactory::Create();
   if (delegate_provider)
     delegate_provider->SetDeviceId(id());
   return delegate_provider;
