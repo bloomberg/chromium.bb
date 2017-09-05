@@ -128,7 +128,15 @@ cr.define('policy', function() {
       this.unset = !value;
 
       // Populate the name column.
-      this.querySelector('.name').textContent = name;
+      this.querySelector('.name-link').textContent = name;
+      this.querySelector('.name-link').href =
+          'https://chromium.org/administrators/policy-list-3#' + name;
+      this.querySelector('.name-link').title =
+          loadTimeData.getStringF('policyLearnMore', name);
+
+      if (unknown) {
+        this.classList.add('no-help-link');
+      }
 
       // Populate the remaining columns with policy scope, level and value if a
       // value has been set. Otherwise, leave them blank.
@@ -479,6 +487,9 @@ cr.define('policy', function() {
     appendNewTable: function(id, label_title, label_content) {
       var newSection =
           this.createPolicyTableSection(id, label_title, label_content);
+      if (id != 'chrome') {
+        newSection.classList.add('no-help-link');
+      }
       this.mainSection.appendChild(newSection);
       return this.policyTables[id];
     },

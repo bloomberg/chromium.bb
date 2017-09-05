@@ -315,6 +315,9 @@
   <message name="IDS_POLICY_HIDE_EXPANDED_VALUE" desc="Text for the link that hides the policy value. Used when the policy value is too long to be always visible.">
     Hide value
   </message>
+  <message name="IDS_POLICY_LEARN_MORE" desc="Help text for learn-more link for known chrome policies.">
+    Learn more about <ph name="POLICY_NAME">$1<ex>AllowDinosaurEasterEgg</ex></ph> policy
+  </message>
   <message name="IDS_POLICY_SCOPE_USER" desc="Text displayed in the Applies to column when a policy applies to the current user only.">
     Current user
   </message>

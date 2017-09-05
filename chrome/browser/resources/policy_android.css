@@ -167,6 +167,12 @@ div.name {
   width: 15%;
 }
 
+.no-help-link .name-link {
+  color: inherit;
+  pointer-events: none;
+  text-decoration: none;
+}
+
 div.elide,
 span.value {
   overflow: hidden;
