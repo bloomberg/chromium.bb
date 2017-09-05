@@ -584,6 +584,8 @@ typedef struct AV1_COMP {
   int is_arf_filter_off[MAX_EXT_ARFS + 1];
   int num_extra_arfs;
   int arf_map[MAX_EXT_ARFS + 1];
+  int arf_pos_in_gf[MAX_EXT_ARFS + 1];
+  int arf_pos_for_ovrly[MAX_EXT_ARFS + 1];
 #endif  // CONFIG_EXT_REFS
 #if CONFIG_GLOBAL_MOTION
   int global_motion_search_done;
