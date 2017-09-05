@@ -357,11 +357,6 @@
     'blink_htmlparser': {
       'filepath': 'third_party/WebKit/Source/core/html/parser/'
     },
-    'blink_image_capture': {
-      'filepath': 'third_party/WebKit/Source/modules/imagecapture' \
-                  '|third_party/WebKit/LayoutTests/fast/imagecapture/' \
-                  '|third_party/WebKit/LayoutTests/imagecapture/'
-    },
     'blink_indexed_db': {
       'filepath': 'third_party/WebKit/Source/modules/indexeddb/' \
                   '|third_party/WebKit/Source/web/.*IDB' \
@@ -1759,8 +1754,7 @@
                       'nhiroki@chromium.org',
                       'tzik@chromium.org'],
     'blink_frames': ['blink-reviews-frames@chromium.org'],
-    'blink_geolocation': ['mcasas+geolocation@chromium.org',
-                          'mlamouri+watch-blink@chromium.org',
+    'blink_geolocation': ['mlamouri+watch-blink@chromium.org',
                           'timvolodine@chromium.org'],
     'blink_heap': ['ager@chromium.org',
                    'haraken@chromium.org',
@@ -1770,7 +1764,6 @@
                    'dglazkov+blink@chromium.org'],
     'blink_htmlparser': ['kinuko+watch@chromium.org',
                          'loading-reviews+parser@chromium.org'],
-    'blink_image_capture': ['mcasas+imagecapture@chromium.org'],
     'blink_indexed_db': ['cmumford@chromium.org',
                          'jsbell+idb@chromium.org'],
     'blink_input': ['dtapuska+blinkwatch@chromium.org',
@@ -2022,8 +2015,7 @@
                        'mikhail.pozdnyakov@intel.com',
                        'timvolodine@chromium.org',
                        'wanming.lin@intel.com'],
-    'geolocation': ['mcasas+geolocation@chromium.org',
-                    'mlamouri+watch-geolocation@chromium.org'],
+    'geolocation': ['mlamouri+watch-geolocation@chromium.org'],
     'gfx_geometry': ['cc-bugs@chromium.org'],
     'gfx_image': ['rsesek+watch@chromium.org'],
     'gn': ['agrieve+watch@chromium.org',
@@ -2086,8 +2078,7 @@
     'md_settings': ['michaelpg+watch-md-settings@chromium.org',
                     'stevenjb+watch-md-settings@chromium.org'],
     'media': ['feature-media-reviews@chromium.org'],
-    'media_capture_from_element': ['emircan+watch+capturefromdom@chromium.org',
-                                   'mcasas+capturefromelement@chromium.org'],
+    'media_capture_from_element': ['emircan+watch+capturefromdom@chromium.org'],
     'media_galleries': ['thestig@chromium.org',
                         'tommycli@chromium.org'],
     'media_mojo': ['alokp+watch@chromium.org'],
