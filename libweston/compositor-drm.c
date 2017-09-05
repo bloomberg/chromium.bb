@@ -4575,6 +4575,25 @@ drm_output_set_seat(struct weston_output *base,
 }
 
 static int
+drm_output_init_gamma_size(struct drm_output *output)
+{
+	struct drm_backend *backend = to_drm_backend(output->base.compositor);
+	drmModeCrtc *crtc;
+
+	assert(output->base.compositor);
+	assert(output->crtc_id != 0);
+	crtc = drmModeGetCrtc(backend->drm.fd, output->crtc_id);
+	if (!crtc)
+		return -1;
+
+	output->base.gamma_size = crtc->gamma_size;
+
+	drmModeFreeCrtc(crtc);
+
+	return 0;
+}
+
+static int
 drm_output_enable(struct weston_output *base)
 {
 	struct drm_output *output = to_drm_output(base);
@@ -4830,7 +4849,6 @@ create_output_for_connector(struct drm_backend *b,
 	const char *make = "unknown";
 	const char *model = "unknown";
 	const char *serial_number = "unknown";
-	drmModeCrtcPtr origcrtc;
 	int i;
 
 	i = find_crtc_for_connector(b, resources, connector);
@@ -4858,13 +4876,6 @@ create_output_for_connector(struct drm_backend *b,
 	output->base.enable = drm_output_enable;
 	output->base.destroy = drm_output_destroy;
 	output->base.disable = drm_output_disable;
-
-	origcrtc = drmModeGetCrtc(b->drm.fd, output->crtc_id);
-	if (origcrtc == NULL)
-		goto err_output;
-
-	output->base.gamma_size = origcrtc->gamma_size;
-	drmModeFreeCrtc(origcrtc);
 
 	output->destroy_pending = 0;
 	output->disable_pending = 0;
@@ -4899,6 +4910,9 @@ create_output_for_connector(struct drm_backend *b,
 	if (output->connector->connector_type == DRM_MODE_CONNECTOR_LVDS ||
 	    output->connector->connector_type == DRM_MODE_CONNECTOR_eDP)
 		output->base.connection_internal = true;
+
+	if (drm_output_init_gamma_size(output) < 0)
+		goto err_output;
 
 	output->state_cur = drm_output_state_alloc(output, NULL);
 
