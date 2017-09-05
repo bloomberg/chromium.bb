@@ -129,8 +129,9 @@ WebRtcMediaStreamTrackAdapterMap::GetRemoteTrackAdapter(
   base::AutoLock scoped_lock(lock_);
   scoped_refptr<WebRtcMediaStreamTrackAdapter>* adapter_ptr =
       remote_track_adapters_.FindBySecondary(web_track.UniqueId());
-  if (!adapter_ptr || !(*adapter_ptr)->is_initialized())
+  if (!adapter_ptr)
     return nullptr;
+  DCHECK((*adapter_ptr)->is_initialized());
   return base::WrapUnique(
       new AdapterRef(this, AdapterRef::Type::kRemote, *adapter_ptr));
 }
@@ -141,7 +142,7 @@ WebRtcMediaStreamTrackAdapterMap::GetRemoteTrackAdapter(
   base::AutoLock scoped_lock(lock_);
   scoped_refptr<WebRtcMediaStreamTrackAdapter>* adapter_ptr =
       remote_track_adapters_.FindByPrimary(webrtc_track);
-  if (!adapter_ptr || !(*adapter_ptr)->is_initialized())
+  if (!adapter_ptr)
     return nullptr;
   return base::WrapUnique(
       new AdapterRef(this, AdapterRef::Type::kRemote, *adapter_ptr));
@@ -149,12 +150,12 @@ WebRtcMediaStreamTrackAdapterMap::GetRemoteTrackAdapter(
 
 std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef>
 WebRtcMediaStreamTrackAdapterMap::GetOrCreateRemoteTrackAdapter(
-    webrtc::MediaStreamTrackInterface* webrtc_track) {
+    scoped_refptr<webrtc::MediaStreamTrackInterface> webrtc_track) {
   DCHECK(webrtc_track);
   DCHECK(!main_thread_->BelongsToCurrentThread());
   base::AutoLock scoped_lock(lock_);
   scoped_refptr<WebRtcMediaStreamTrackAdapter>* adapter_ptr =
-      remote_track_adapters_.FindByPrimary(webrtc_track);
+      remote_track_adapters_.FindByPrimary(webrtc_track.get());
   if (adapter_ptr) {
     return base::WrapUnique(
         new AdapterRef(this, AdapterRef::Type::kRemote, *adapter_ptr));
@@ -162,7 +163,7 @@ WebRtcMediaStreamTrackAdapterMap::GetOrCreateRemoteTrackAdapter(
   scoped_refptr<WebRtcMediaStreamTrackAdapter> new_adapter =
       WebRtcMediaStreamTrackAdapter::CreateRemoteTrackAdapter(
           factory_, main_thread_, webrtc_track);
-  remote_track_adapters_.Insert(webrtc_track, new_adapter);
+  remote_track_adapters_.Insert(webrtc_track.get(), new_adapter);
   // The new adapter is initialized in a post to the main thread. As soon as it
   // is initialized we map its |webrtc_track| to the |remote_track_adapters_|
   // entry as its secondary key. This ensures that there is at least one

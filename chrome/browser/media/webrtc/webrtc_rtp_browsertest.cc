@@ -381,3 +381,11 @@ IN_PROC_BROWSER_TEST_F(WebRtcRtpBrowserTest, SwitchRemoteStreamAndBackAgain) {
   EXPECT_EQ("ok",
             ExecuteJavascript("switchRemoteStreamAndBackAgain()", left_tab_));
 }
+
+IN_PROC_BROWSER_TEST_F(WebRtcRtpBrowserTest,
+                       SwitchRemoteStreamWithoutWaitingForPromisesToResolve) {
+  StartServerAndOpenTabs();
+  EXPECT_EQ("ok", ExecuteJavascript(
+                      "switchRemoteStreamWithoutWaitingForPromisesToResolve()",
+                      left_tab_));
+}
