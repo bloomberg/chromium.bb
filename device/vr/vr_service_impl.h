@@ -52,9 +52,9 @@ class VRServiceImpl : public mojom::VRService {
 
   mojom::VRServiceClientPtr client_;
 
-  bool in_set_client_;
-  unsigned connected_devices_;
-  unsigned handled_devices_;
+  bool in_set_client_ = false;
+  unsigned connected_devices_ = 0;
+  unsigned handled_devices_ = 0;
   const int render_frame_process_id_;
   const int render_frame_routing_id_;
 

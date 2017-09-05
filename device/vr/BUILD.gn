@@ -60,6 +60,7 @@ if (enable_vr) {
       ]
 
       deps += [
+        ":jni_headers",
         "//device/gamepad",
         "//device/gamepad/public/cpp:shared_with_blink",
         "//third_party/WebKit/public:blink_headers",
@@ -112,6 +113,24 @@ if (enable_vr) {
     # compile this when webvr is disabled.
     sources = [
       "empty.cc",
+    ]
+  }
+}
+
+if (is_android && (current_cpu == "arm" || current_cpu == "arm64")) {
+  java_sources_needing_jni =
+      [ "android/java/src/org/chromium/device/vr/NonPresentingGvrContext.java" ]
+
+  generate_jni("jni_headers") {
+    sources = java_sources_needing_jni
+    jni_package = "device"
+  }
+
+  android_library("java") {
+    java_files = java_sources_needing_jni
+    deps = [
+      "//base:base_java",
+      "//third_party/gvr-android-sdk:gvr_common_java",
     ]
   }
 }
