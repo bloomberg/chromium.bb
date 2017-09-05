@@ -26,15 +26,18 @@ WMHelperAsh::WMHelperAsh() {
   if (ash::Shell::GetAshConfig() != ash::Config::MUS)
     ash::Shell::Get()->cursor_manager()->AddObserver(this);
   ash::Shell::Get()->window_tree_host_manager()->AddObserver(this);
-  aura::client::FocusClient* focus_client =
-      aura::client::GetFocusClient(ash::Shell::GetPrimaryRootWindow());
-  focus_client->AddObserver(this);
+  aura::Window* primary_root = ash::Shell::GetPrimaryRootWindow();
+  aura::client::GetFocusClient(primary_root)->AddObserver(this);
   ui::InputDeviceManager::GetInstance()->AddObserver(this);
+  // TODO(reveman): Multi-display support.
+  vsync_manager_ = primary_root->layer()->GetCompositor()->vsync_manager();
+  vsync_manager_->AddObserver(this);
 }
 
 WMHelperAsh::~WMHelperAsh() {
   if (!ash::Shell::HasInstance())
     return;
+  vsync_manager_->RemoveObserver(this);
   aura::client::FocusClient* focus_client =
       aura::client::GetFocusClient(ash::Shell::GetPrimaryRootWindow());
   focus_client->RemoveObserver(this);
@@ -174,6 +177,11 @@ void WMHelperAsh::OnDisplayConfigurationChanged() {
 
 void WMHelperAsh::OnKeyboardDeviceConfigurationChanged() {
   NotifyKeyboardDeviceConfigurationChanged();
+}
+
+void WMHelperAsh::OnUpdateVSyncParameters(base::TimeTicks timebase,
+                                          base::TimeDelta interval) {
+  NotifyUpdateVSyncParameters(timebase, interval);
 }
 
 }  // namespace exo
