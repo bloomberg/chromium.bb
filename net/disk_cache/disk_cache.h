@@ -24,7 +24,6 @@
 
 namespace base {
 class FilePath;
-class SingleThreadTaskRunner;
 
 namespace trace_event {
 class ProcessMemoryDump;
@@ -52,30 +51,12 @@ class Backend;
 // If |force| is true, and there is a problem with the cache initialization, the
 // files will be deleted and a new set will be created. |max_bytes| is the
 // maximum size the cache can grow to. If zero is passed in as |max_bytes|, the
-// cache will determine the value to use. |thread| can be used to perform IO
-// operations if a dedicated thread is required; if you pass in null, the
-// backend will create its own. The returned pointer can be
+// cache will determine the value to use. The returned pointer can be
 // NULL if a fatal error is found. The actual return value of the function is a
 // net error code. If this function returns ERR_IO_PENDING, the |callback| will
 // be invoked when a backend is available or a fatal error condition is reached.
 // The pointer to receive the |backend| must remain valid until the operation
 // completes (the callback is notified).
-//
-// Note: this is in process of being deprecated for the variant below.
-NET_EXPORT int CreateCacheBackend(
-    net::CacheType type,
-    net::BackendType backend_type,
-    const base::FilePath& path,
-    int max_bytes,
-    bool force,
-    const scoped_refptr<base::SingleThreadTaskRunner>& thread,
-    net::NetLog* net_log,
-    std::unique_ptr<Backend>* backend,
-    const net::CompletionCallback& callback);
-
-// Like above, but the backend is responsible for its own thread setup.
-// This is being migrated towards (along with a not-yet existing variant for
-// those with synchronization requirements towards backend's I/O).
 NET_EXPORT int CreateCacheBackend(net::CacheType type,
                                   net::BackendType backend_type,
                                   const base::FilePath& path,
