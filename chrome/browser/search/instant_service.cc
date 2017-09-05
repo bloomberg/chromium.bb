@@ -18,8 +18,6 @@
 #include "chrome/browser/search/most_visited_iframe_source.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search/thumbnail_source.h"
-#include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "chrome/browser/thumbnails/thumbnail_list_source.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/theme_source.h"
@@ -61,18 +59,6 @@ InstantService::InstantService(Profile* profile)
   // This depends on the existence of the typical browser threads. Therefore it
   // is only instantiated here (after the check for a UI thread above).
   instant_io_context_ = new InstantIOContext();
-
-  TemplateURLService* template_url_service =
-      TemplateURLServiceFactory::GetForProfile(profile_);
-  // TemplateURLService can be null in tests.
-  if (template_url_service) {
-    search_engine_base_url_tracker_ =
-        base::MakeUnique<SearchEngineBaseURLTracker>(
-            template_url_service,
-            base::MakeUnique<UIThreadSearchTermsData>(profile_),
-            base::Bind(&InstantService::OnSearchEngineBaseURLChanged,
-                       base::Unretained(this)));
-  }
 
   registrar_.Add(this,
                  content::NOTIFICATION_RENDERER_PROCESS_CREATED,
@@ -437,13 +423,4 @@ void InstantService::TopSitesChanged(history::TopSites* top_sites,
   top_sites_->GetMostVisitedURLs(base::Bind(&InstantService::OnTopSitesReceived,
                                             weak_ptr_factory_.GetWeakPtr()),
                                  false);
-}
-
-void InstantService::OnSearchEngineBaseURLChanged(
-    SearchEngineBaseURLTracker::ChangeReason change_reason) {
-  bool google_base_url_changed =
-      change_reason ==
-      SearchEngineBaseURLTracker::ChangeReason::GOOGLE_BASE_URL;
-  for (InstantServiceObserver& observer : observers_)
-    observer.DefaultSearchProviderChanged(google_base_url_changed);
 }

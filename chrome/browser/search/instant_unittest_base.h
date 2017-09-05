@@ -13,8 +13,6 @@
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "components/search_engines/template_url_service.h"
 
-class InstantServiceObserver;
-
 // This class provides an extension on top of BrowserWithTestWindowTest, and
 // adds some utility methods which can be useful for various unit tests for
 // Embedded Search / Instant implementation classes.
@@ -37,8 +35,6 @@ class InstantUnitTestBase : public BrowserWithTestWindowTest {
   // search-domain-check. Note that the GoogleURLTrackerFactory is disabled for
   // tests, so this is required.
   void NotifyGoogleBaseURLUpdate(const std::string& new_google_base_url);
-
-  bool IsInstantServiceObserver(const InstantServiceObserver* observer) const;
 
   InstantService* instant_service_;
   TemplateURLService* template_url_service_;

@@ -10,7 +10,6 @@
 #include "base/run_loop.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/search/instant_service.h"
-#include "chrome/browser/search/instant_service_observer.h"
 #include "chrome/browser/search/instant_unittest_base.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/browser_instant_controller.h"
@@ -207,22 +206,6 @@ TEST_F(BrowserInstantControllerTest, GoogleBaseURLUpdated) {
       EXPECT_FALSE(observer->can_go_back());
     }
   }
-}
-
-TEST_F(BrowserInstantControllerTest, BrowserWindowLifecycle) {
-  std::unique_ptr<BrowserWindow> window(CreateBrowserWindow());
-  Browser::CreateParams params(profile(), true);
-  params.window = window.get();
-  std::unique_ptr<Browser> browser(new Browser(params));
-  InstantServiceObserver* bic;
-  bic = browser->instant_controller();
-  EXPECT_TRUE(IsInstantServiceObserver(bic))
-    << "New BrowserInstantController should register as InstantServiceObserver";
-
-  browser.reset(NULL);
-  window.reset(NULL);
-  EXPECT_FALSE(IsInstantServiceObserver(bic))
-    << "New BrowserInstantController should register as InstantServiceObserver";
 }
 
 }  // namespace

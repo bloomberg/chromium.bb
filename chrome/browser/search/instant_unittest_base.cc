@@ -77,11 +77,6 @@ void InstantUnitTestBase::NotifyGoogleBaseURLUpdate(
   TemplateURLServiceFactory::GetForProfile(profile())->GoogleBaseURLChanged();
 }
 
-bool InstantUnitTestBase::IsInstantServiceObserver(
-    const InstantServiceObserver* observer) const {
-  return instant_service_->observers_.HasObserver(observer);
-}
-
 TestingProfile* InstantUnitTestBase::CreateProfile() {
   TestingProfile* profile = BrowserWithTestWindowTest::CreateProfile();
   TemplateURLServiceFactory::GetInstance()->SetTestingFactoryAndUse(
