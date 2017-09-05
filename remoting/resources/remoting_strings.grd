@@ -1098,6 +1098,18 @@ After setup is complete, you'll be able to access the computer from this page by
                name="IDS_OFFLINE_REASON_USERNAME_MISMATCH" formatter_data="android_java">
         Invalid host owner.
       </message>
+      <message desc="Error message indicating that the host is offline because the X server keeps dying."
+               name="IDS_OFFLINE_REASON_X_SERVER_RETRIES_EXCEEDED" formatter_data="android_java">
+        X server crashed or failed to start.
+      </message>
+      <message desc="Error message indicating that the host is offline because the session script keeps dying."
+               name="IDS_OFFLINE_REASON_SESSION_RETRIES_EXCEEDED" formatter_data="android_java">
+        Session crashed or failed to start. If ~/.chrome-remote-desktop-session exists on the remote computer, make sure it runs a long-running process such as a desktop environment or window manager.
+      </message>
+      <message desc="Error message indicating that the host is offline because the host keeps dying."
+               name="IDS_OFFLINE_REASON_HOST_RETRIES_EXCEEDED" formatter_data="android_java">
+        Host crashed or failed to start.
+      </message>
       <if expr="is_android">
         <message desc="Description of why host is offline, when client gets a host-offline-reason it doesn't recognize."
                  name="IDS_OFFLINE_REASON_UNKNOWN" formatter_data="android_java">

@@ -393,7 +393,10 @@ function formatHostOfflineReason(hostOfflineReason) {
     /*i18n-content*/'OFFLINE_REASON_POLICY_CHANGE_REQUIRES_RESTART',
     /*i18n-content*/'OFFLINE_REASON_POLICY_READ_ERROR',
     /*i18n-content*/'OFFLINE_REASON_SUCCESS_EXIT',
-    /*i18n-content*/'OFFLINE_REASON_USERNAME_MISMATCH'
+    /*i18n-content*/'OFFLINE_REASON_USERNAME_MISMATCH',
+    /*i18n-content*/'OFFLINE_REASON_X_SERVER_RETRIES_EXCEEDED',
+    /*i18n-content*/'OFFLINE_REASON_SESSION_RETRIES_EXCEEDED',
+    /*i18n-content*/'OFFLINE_REASON_HOST_RETRIES_EXCEEDED'
   ];
   var offlineReasonTag = 'OFFLINE_REASON_' + hostOfflineReason;
   if (knownReasonTags.indexOf(offlineReasonTag) != (-1)) {
