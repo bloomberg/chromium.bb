@@ -164,7 +164,7 @@ class URLLoaderImplTest : public testing::Test {
       options |= mojom::kURLLoadOptionSniffMimeType;
 
     URLLoaderImpl loader_impl(context(), mojo::MakeRequest(&loader), options,
-                              request, client_.CreateInterfacePtr(),
+                              request, false, client_.CreateInterfacePtr(),
                               TRAFFIC_ANNOTATION_FOR_TESTS);
 
     client_.RunUntilComplete();
@@ -375,7 +375,7 @@ TEST_F(URLLoaderImplTest, DestroyContextWithLiveRequest) {
   // don't hold on to a pointer to it.
   base::WeakPtr<URLLoaderImpl> loader_impl =
       (new URLLoaderImpl(context(), mojo::MakeRequest(&loader), 0, request,
-                         client()->CreateInterfacePtr(),
+                         false, client()->CreateInterfacePtr(),
                          TRAFFIC_ANNOTATION_FOR_TESTS))
           ->GetWeakPtrForTests();
 

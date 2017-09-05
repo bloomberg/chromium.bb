@@ -71,4 +71,10 @@ interface NetworkService {
   // Disables QUIC for the NetworkService. Affects all existing NetworkContexts,
   // and all new ones that are created. Once called, QUIC cannot be re-enabled.
   DisableQuic();
+
+  // Specifies whether requests for raw headers coming through URLLoaderFactory
+  // associated with the specified process will be granted. Granting such a
+  // permission increases risks in case the child process becomes compromised,
+  // so this should be done only in specific cases (e.g. DevTools attached).
+  SetRawHeadersAccess(uint32 process_id, bool allow);
 };

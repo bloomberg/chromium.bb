@@ -66,6 +66,8 @@ class CONTENT_EXPORT NetworkContext : public mojom::NetworkContext {
 
   net::URLRequestContext* url_request_context() { return url_request_context_; }
 
+  NetworkServiceImpl* network_service() { return network_service_; }
+
   // These are called by individual url loaders as they are being created and
   // destroyed.
   void RegisterURLLoader(URLLoaderImpl* url_loader);

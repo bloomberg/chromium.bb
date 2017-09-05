@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "content/network/network_context.h"
+#include "content/network/network_service_impl.h"
 #include "content/network/url_loader_impl.h"
 #include "content/public/common/resource_request.h"
 
@@ -29,8 +30,16 @@ void NetworkServiceURLLoaderFactoryImpl::CreateLoaderAndStart(
     const ResourceRequest& url_request,
     mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
+  bool report_raw_headers = false;
+  if (url_request.report_raw_headers) {
+    const NetworkServiceImpl* service = context_->network_service();
+    report_raw_headers = service && service->HasRawHeadersAccess(process_id_);
+    if (!report_raw_headers)
+      DLOG(ERROR) << "Denying raw headers request by process " << process_id_;
+  }
   new URLLoaderImpl(
-      context_, std::move(request), options, url_request, std::move(client),
+      context_, std::move(request), options, url_request, report_raw_headers,
+      std::move(client),
       static_cast<net::NetworkTrafficAnnotationTag>(traffic_annotation));
 }
 
