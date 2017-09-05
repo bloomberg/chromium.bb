@@ -17,6 +17,7 @@
 class ProcessResourceUsage;
 
 namespace content {
+class RenderFrameHost;
 class RenderProcessHost;
 class WebContents;
 }  // namespace content
@@ -30,8 +31,10 @@ class RendererTask : public Task,
  public:
   RendererTask(const base::string16& title,
                const gfx::ImageSkia* icon,
-               content::WebContents* web_contents,
-               content::RenderProcessHost* render_process_host);
+               content::WebContents* web_contents);
+  RendererTask(const base::string16& title,
+               const gfx::ImageSkia* icon,
+               content::RenderFrameHost* subframe);
   ~RendererTask() override;
 
   // An abstract method that will be called when the event
@@ -102,6 +105,11 @@ class RendererTask : public Task,
                                                   bool is_background);
 
  private:
+  RendererTask(const base::string16& title,
+               const gfx::ImageSkia* icon,
+               content::WebContents* web_contents,
+               content::RenderProcessHost* render_process_host);
+
   // The WebContents of the task this object represents.
   content::WebContents* web_contents_;
 

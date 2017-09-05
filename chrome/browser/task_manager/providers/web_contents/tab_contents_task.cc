@@ -22,12 +22,10 @@ bool HostsExtension(content::WebContents* web_contents) {
 
 }  // namespace
 
-
 TabContentsTask::TabContentsTask(content::WebContents* web_contents)
     : RendererTask(base::string16(),
                    RendererTask::GetFaviconFromWebContents(web_contents),
-                   web_contents,
-                   web_contents->GetRenderProcessHost()) {
+                   web_contents) {
   set_title(GetCurrentTitle());
 }
 

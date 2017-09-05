@@ -4,6 +4,7 @@
 
 #include "chrome/browser/task_manager/providers/web_contents/renderer_task.h"
 
+#include <string>
 #include <utility>
 
 #include "base/i18n/rtl.h"
@@ -16,6 +17,7 @@
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/task_manager/task_manager_observer.h"
 #include "chrome/grit/generated_resources.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -54,6 +56,22 @@ std::string GetRapporSampleName(content::WebContents* web_contents) {
 }
 
 }  // namespace
+
+RendererTask::RendererTask(const base::string16& title,
+                           const gfx::ImageSkia* icon,
+                           content::WebContents* web_contents)
+    : RendererTask(title,
+                   icon,
+                   web_contents,
+                   web_contents->GetMainFrame()->GetProcess()) {}
+
+RendererTask::RendererTask(const base::string16& title,
+                           const gfx::ImageSkia* icon,
+                           content::RenderFrameHost* subframe)
+    : RendererTask(title,
+                   icon,
+                   content::WebContents::FromRenderFrameHost(subframe),
+                   subframe->GetProcess()) {}
 
 RendererTask::RendererTask(const base::string16& title,
                            const gfx::ImageSkia* icon,

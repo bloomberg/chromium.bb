@@ -45,8 +45,7 @@ ExtensionTask::ExtensionTask(content::WebContents* web_contents,
                              extensions::ViewType view_type)
     : RendererTask(GetExtensionTitle(web_contents, extension, view_type),
                    GetDefaultIcon(),
-                   web_contents,
-                   web_contents->GetRenderProcessHost()),
+                   web_contents),
       view_type_(view_type) {
   LoadExtensionIcon(extension);
 }
