@@ -52,7 +52,7 @@ import optparse
 import os
 import re
 import sys
-from utilities import idl_filename_to_interface_name
+from utilities import idl_filename_to_basename
 from utilities import read_idl_files_list_from_file
 
 COPYRIGHT_TEMPLATE = """/*
@@ -96,14 +96,14 @@ def parse_options():
     return options, args
 
 
-def generate_content(component, interface_names):
+def generate_content(component, basenames):
     # Add fixed content.
     output = [COPYRIGHT_TEMPLATE,
               '#define NO_IMPLICIT_ATOMICSTRING\n\n']
 
-    interface_names.sort()
-    output.extend('#include "bindings/%s/v8/V8%s.cpp"\n' % (component, interface)
-                  for interface in interface_names)
+    basenames.sort()
+    output.extend('#include "bindings/%s/v8/V8%s.cpp"\n' % (component, basename)
+                  for basename in basenames)
 
     return ''.join(output)
 
@@ -122,9 +122,9 @@ def main():
     component = options.component
     idl_filenames = read_idl_files_list_from_file(filenames[0],
                                                   is_gyp_format=False)
-    interface_names = [idl_filename_to_interface_name(file_path)
-                       for file_path in idl_filenames]
-    file_contents = generate_content(component, interface_names)
+    basenames = [idl_filename_to_basename(file_path)
+                 for file_path in idl_filenames]
+    file_contents = generate_content(component, basenames)
     write_content(file_contents, filenames[1])
 
 

@@ -13,7 +13,7 @@ import posixpath
 import sys
 
 from utilities import get_file_contents
-from utilities import idl_filename_to_interface_name
+from utilities import idl_filename_to_basename
 from utilities import read_idl_files_list_from_file
 from utilities import should_generate_impl_file_from_idl
 from utilities import write_file
@@ -69,10 +69,10 @@ def extract_meta_data(file_paths):
             continue
 
         # Extract interface name from file name
-        interface_name = idl_filename_to_interface_name(file_path)
+        basename = idl_filename_to_basename(file_path)
 
         meta_data = {
-            'name': interface_name,
+            'basename': basename,
         }
         meta_data_list.append(meta_data)
 
@@ -85,7 +85,7 @@ def main():
     idl_file_names = read_idl_files_list_from_file(options.idl_files_list, is_gyp_format=options.gyp_format_list)
 
     meta_data_list = extract_meta_data(idl_file_names)
-    interface_names = ['V8%sPartial' % meta_data['name']
+    interface_names = ['V8%sPartial' % meta_data['basename']
                        for meta_data in meta_data_list]
     interface_names.sort()
 

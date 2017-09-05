@@ -20,7 +20,7 @@ import sys
 
 from utilities import get_file_contents
 from utilities import get_interface_extended_attributes_from_idl
-from utilities import idl_filename_to_interface_name
+from utilities import get_first_interface_name_from_idl
 from utilities import read_file_to_list
 from utilities import read_pickle_files
 from utilities import write_pickle_file
@@ -62,10 +62,10 @@ def idl_file_to_global_names(idl_filename):
     names; otherwise, the interface has a single global name, which is the
     interface's identifier (http://heycam.github.io/webidl/#Global).
     """
-    interface_name = idl_filename_to_interface_name(idl_filename)
     full_path = os.path.realpath(idl_filename)
     idl_file_contents = get_file_contents(full_path)
     extended_attributes = get_interface_extended_attributes_from_idl(idl_file_contents)
+    interface_name = get_first_interface_name_from_idl(idl_file_contents)
 
     global_keys = GLOBAL_EXTENDED_ATTRIBUTES.intersection(
         extended_attributes.iterkeys())
@@ -85,7 +85,7 @@ def idl_file_to_global_names(idl_filename):
 def idl_files_to_interface_name_global_names(idl_files):
     """Yields pairs (interface_name, global_names) found in IDL files."""
     for idl_filename in idl_files:
-        interface_name = idl_filename_to_interface_name(idl_filename)
+        interface_name = get_first_interface_name_from_idl(get_file_contents(idl_filename))
         global_names = idl_file_to_global_names(idl_filename)
         if global_names:
             yield interface_name, global_names
