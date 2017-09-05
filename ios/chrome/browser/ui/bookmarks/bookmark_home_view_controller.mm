@@ -858,11 +858,7 @@ const CGFloat kSpacer = 50;
 // Set up UI views for the new UI.
 - (void)loadBookmarkViewsForNewUI {
   // TODO(crbug.com/695749): Polish UI according to mocks.
-  _containerView = [[UIView alloc] initWithFrame:self.view.bounds];
-  [_containerView setAutoresizingMask:UIViewAutoresizingFlexibleWidth |
-                                      UIViewAutoresizingFlexibleHeight];
-  [self.view addSubview:_containerView];
-
+  self.automaticallyAdjustsScrollViewInsets = NO;
   self.bookmarksTableView =
       [[BookmarkTableView alloc] initWithBrowserState:self.browserState
                                              delegate:self
@@ -872,12 +868,11 @@ const CGFloat kSpacer = 50;
       setAutoresizingMask:UIViewAutoresizingFlexibleWidth |
                           UIViewAutoresizingFlexibleHeight];
   [self.bookmarksTableView setTranslatesAutoresizingMaskIntoConstraints:NO];
-  [_containerView addSubview:self.bookmarksTableView];
+  [self.view addSubview:self.bookmarksTableView];
 
   if (_rootNode != self.bookmarks->root_node()) {
     [self setupContextBar];
   }
-  [self setupNavigationBar];
 }
 
 // Set up context bar for the new UI.
@@ -896,7 +891,7 @@ const CGFloat kSpacer = 50;
       setButtonTitle:l10n_util::GetNSString(IDS_IOS_BOOKMARK_CONTEXT_BAR_SELECT)
            forButton:ContextBarTrailingButton];
 
-  [_containerView addSubview:self.contextBar];
+  [self.view addSubview:self.contextBar];
 }
 
 // Set up navigation bar for the new UI.
@@ -911,8 +906,9 @@ const CGFloat kSpacer = 50;
   self.navigationItem.rightBarButtonItem = [self customizedDoneButton];
 
   self.navigationController.navigationBar.tintColor = UIColor.blackColor;
-  self.navigationController.navigationBar.backgroundColor =
+  self.navigationController.navigationBar.barTintColor =
       bookmark_utils_ios::mainBackgroundColor();
+  self.navigationController.navigationBar.translucent = NO;
 }
 
 - (UIBarButtonItem*)customizedBackButton {
@@ -1018,23 +1014,25 @@ const CGFloat kSpacer = 50;
 
 - (void)updateViewConstraints {
   if (base::FeatureList::IsEnabled(kBookmarkNewGeneration)) {
-    if (self.contextBar) {
+    if (self.contextBar && self.bookmarksTableView) {
       NSDictionary* views = @{
         @"tableView" : self.bookmarksTableView,
         @"contextBar" : self.contextBar,
+        @"topGuide" : self.topLayoutGuide,
       };
       NSArray* constraints = @[
-        @"V:|[tableView][contextBar(==48)]|",
+        @"V:|[topGuide][tableView][contextBar(==48)]|",
         @"H:|[tableView]|",
         @"H:|[contextBar]|",
       ];
       ApplyVisualConstraints(constraints, views);
-    } else {
+    } else if (self.bookmarksTableView) {
       NSDictionary* views = @{
         @"tableView" : self.bookmarksTableView,
+        @"topGuide" : self.topLayoutGuide,
       };
       NSArray* constraints = @[
-        @"V:|[tableView]|",
+        @"V:|[topGuide][tableView]|",
         @"H:|[tableView]|",
       ];
       ApplyVisualConstraints(constraints, views);
