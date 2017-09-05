@@ -499,12 +499,6 @@ std::unique_ptr<gfx::RenderText> OmniboxResultView::CreateClassifiedRenderText(
   return render_text;
 }
 
-int OmniboxResultView::GetMatchContentsWidth() const {
-  InitContentsRenderTextIfNecessary();
-  contents_rendertext_->SetDisplayRect(gfx::Rect(gfx::Size(INT_MAX, 0)));
-  return contents_rendertext_->GetContentWidth();
-}
-
 void OmniboxResultView::SetCustomIcon(const gfx::ImageSkia& icon) {
   custom_icon_ = icon;
   SchedulePaint();
