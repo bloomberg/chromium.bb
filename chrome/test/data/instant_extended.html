@@ -4,13 +4,10 @@
 
 var apiHandle;
 var newTabPageHandle;
-var suggestion;
 var onMostVisitedChangedCalls = 0;
 var mostVisitedItemsCount = 0;
 var firstMostVisitedItemId = 0;
-var submitCount = 0;
 var onFocusChangedCalls = 0;
-var prefetchQuery = '';
 var isFocused = false;
 var onvisibilitycalls = 0;
 var onThemeChangedCalls = 0;
@@ -33,11 +30,6 @@ function getNewTabPageHandle() {
   return null;
 }
 
-function handleSubmit() {
-  location.hash = 'q=' + encodeURIComponent(apiHandle.value);
-  submitCount++;
-}
-
 function handleMostVisitedChange() {
   onMostVisitedChangedCalls++;
   var items = newTabPageHandle.mostVisited;
@@ -56,10 +48,6 @@ function handleFocusChange() {
   isFocused = apiHandle.isFocused;
 }
 
-function handleSuggestionChange() {
-  prefetchQuery = getApiHandle().suggestion.text;
-}
-
 function handleThemeChange() {
   onThemeChangedCalls++;
 }
@@ -69,9 +57,7 @@ function setUp() {
   if (!apiHandle)
     return;
 
-  apiHandle.onsubmit = handleSubmit;
   apiHandle.onfocuschange = handleFocusChange;
-  apiHandle.onsuggestionchange = handleSuggestionChange;
 
   newTabPageHandle = getNewTabPageHandle();
   newTabPageHandle.onmostvisitedchange = handleMostVisitedChange;
