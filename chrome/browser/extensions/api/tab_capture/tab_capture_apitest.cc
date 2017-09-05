@@ -202,6 +202,8 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiPixelTest, OffscreenTabEndToEnd) {
   AddExtensionToCommandLineWhitelist();
   ASSERT_TRUE(RunExtensionSubtest("tab_capture", "offscreen_end_to_end.html"))
       << message_;
+  // Verify that offscreen profile has been destroyed.
+  ASSERT_FALSE(profile()->HasOffTheRecordProfile());
 }
 
 // Tests that off-screen tabs can't do evil things (e.g., access local files).
@@ -213,6 +215,8 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiPixelTest, OffscreenTabEvilTests) {
   AddExtensionToCommandLineWhitelist();
   ASSERT_TRUE(RunExtensionSubtest("tab_capture", "offscreen_evil_tests.html"))
       << message_;
+  // Verify that offscreen profile has been destroyed.
+  ASSERT_FALSE(profile()->HasOffTheRecordProfile());
 }
 
 // http://crbug.com/177163
