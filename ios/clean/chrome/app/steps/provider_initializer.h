@@ -10,6 +10,8 @@
 #import "ios/clean/chrome/app/steps/application_step.h"
 #import "ios/clean/chrome/app/steps/simple_application_step.h"
 
+// Application step to register providers, including the browser provider and
+// the WebUI providers.
 @interface ProviderInitializer : SimpleApplicationStep<ApplicationStep>
 @end
 
