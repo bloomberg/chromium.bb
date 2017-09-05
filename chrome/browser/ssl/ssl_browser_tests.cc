@@ -5419,7 +5419,6 @@ class SSLUIMITMSoftwareTest : public CertVerifierBrowserTest {
             base::RetainedRef(browser()->profile()->GetRequestContext())));
   }
 
- protected:
   // Set up the cert verifier to return the error passed in as the cert_error
   // parameter.
   void SetUpCertVerifier(net::CertStatus cert_error) {
@@ -5531,26 +5530,59 @@ class SSLUIMITMSoftwareTest : public CertVerifierBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(SSLUIMITMSoftwareTest);
 };
 
+// The SSLUIMITMSoftwareEnabled and Disabled test classes exist so that the
+// scoped feature list can be instantiated in the set up method of the class
+// rather than in the test itself. Bug crbug.com/713390 was causing some of the
+// tests in SSLUIMITMSoftwareTest to be flaky. Refactoring these tests so that
+// the scoped feature list initialization is done in the set up method fixes
+// this flakiness.
+
+class SSLUIMITMSoftwareEnabledTest : public SSLUIMITMSoftwareTest {
+ public:
+  SSLUIMITMSoftwareEnabledTest() {}
+  ~SSLUIMITMSoftwareEnabledTest() override {}
+
+  void SetUpOnMainThread() override {
+    SSLUIMITMSoftwareTest::SetUpOnMainThread();
+    scoped_feature_list_.InitFromCommandLine(
+        "MITMSoftwareInterstitial" /* enabled */, std::string() /* disabled */);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(SSLUIMITMSoftwareEnabledTest);
+};
+
+class SSLUIMITMSoftwareDisabledTest : public SSLUIMITMSoftwareTest {
+ public:
+  SSLUIMITMSoftwareDisabledTest() {}
+  ~SSLUIMITMSoftwareDisabledTest() override {}
+
+  void SetUpOnMainThread() override {
+    SSLUIMITMSoftwareTest::SetUpOnMainThread();
+    scoped_feature_list_.InitFromCommandLine(
+        std::string() /* enabled */, "MITMSoftwareInterstitial" /* disabled */);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(SSLUIMITMSoftwareDisabledTest);
+};
+
 }  // namespace
 
 // Tests that the MITM software interstitial is not displayed when the feature
 // is disabled by Finch.
-IN_PROC_BROWSER_TEST_F(SSLUIMITMSoftwareTest, DisabledWithFinch) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitFromCommandLine(
-      std::string() /* enabled */, "MITMSoftwareInterstitial" /* disabled */);
-
+IN_PROC_BROWSER_TEST_F(SSLUIMITMSoftwareDisabledTest, DisabledWithFinch) {
   SetUpCertVerifier(net::CERT_STATUS_AUTHORITY_INVALID);
   TestNoMITMSoftwareInterstitial();
 }
 
 // Tests that the MITM software interstitial is displayed when the feature is
 // enabled by Finch.
-IN_PROC_BROWSER_TEST_F(SSLUIMITMSoftwareTest, EnabledWithFinch) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitFromCommandLine(
-      "MITMSoftwareInterstitial" /* enabled */, std::string() /* disabled */);
-
+IN_PROC_BROWSER_TEST_F(SSLUIMITMSoftwareEnabledTest, EnabledWithFinch) {
   SetUpCertVerifier(net::CERT_STATUS_AUTHORITY_INVALID);
   TestMITMSoftwareInterstitial();
 }
@@ -5559,13 +5591,9 @@ IN_PROC_BROWSER_TEST_F(SSLUIMITMSoftwareTest, EnabledWithFinch) {
 // cert on the list but not the organization name, the MITM software
 // interstitial will not be displayed.
 IN_PROC_BROWSER_TEST_F(
-    SSLUIMITMSoftwareTest,
+    SSLUIMITMSoftwareEnabledTest,
     CertificateCommonNameMatchOnly_NoMITMSoftwareInterstitial) {
   base::HistogramTester histograms;
-
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitFromCommandLine(
-      "MITMSoftwareInterstitial" /* enabled */, std::string() /* disabled */);
 
   SetUpCertVerifier(net::CERT_STATUS_AUTHORITY_INVALID);
   ASSERT_TRUE(https_server()->Start());
@@ -5610,13 +5638,9 @@ IN_PROC_BROWSER_TEST_F(
 // software cert on the list but not the common name, the MITM software
 // interstitial will not be displayed.
 IN_PROC_BROWSER_TEST_F(
-    SSLUIMITMSoftwareTest,
+    SSLUIMITMSoftwareEnabledTest,
     CertificateOrganizationMatchOnly_NoMITMSoftwareInterstitial) {
   base::HistogramTester histograms;
-
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitFromCommandLine(
-      "MITMSoftwareInterstitial" /* enabled */, std::string() /* disabled */);
 
   SetUpCertVerifier(net::CERT_STATUS_AUTHORITY_INVALID);
   ASSERT_TRUE(https_server()->Start());
@@ -5659,13 +5683,9 @@ IN_PROC_BROWSER_TEST_F(
 
 // Tests that if the certificate does not match any entry on the list of known
 // MITM software, the MITM software interstitial will not be displayed.
-IN_PROC_BROWSER_TEST_F(SSLUIMITMSoftwareTest,
+IN_PROC_BROWSER_TEST_F(SSLUIMITMSoftwareEnabledTest,
                        NonMatchingCertificate_NoMITMSoftwareInterstitial) {
   base::HistogramTester histograms;
-
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitFromCommandLine(
-      "MITMSoftwareInterstitial" /* enabled */, std::string() /* disabled */);
 
   SetUpCertVerifier(net::CERT_STATUS_AUTHORITY_INVALID);
   ASSERT_TRUE(https_server()->Start());
@@ -5708,12 +5728,8 @@ IN_PROC_BROWSER_TEST_F(SSLUIMITMSoftwareTest,
 
 // Tests that if there is more than one error on the certificate the MITM
 // software interstitial will not be displayed.
-IN_PROC_BROWSER_TEST_F(SSLUIMITMSoftwareTest,
+IN_PROC_BROWSER_TEST_F(SSLUIMITMSoftwareEnabledTest,
                        TwoCertErrors_NoMITMSoftwareInterstitial) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitFromCommandLine(
-      "MITMSoftwareInterstitial" /* enabled */, std::string() /* disabled */);
-
   SetUpCertVerifier(net::CERT_STATUS_AUTHORITY_INVALID |
                     net::CERT_STATUS_COMMON_NAME_INVALID);
   TestNoMITMSoftwareInterstitial();
@@ -5721,25 +5737,18 @@ IN_PROC_BROWSER_TEST_F(SSLUIMITMSoftwareTest,
 
 // Tests that a certificate error other than |CERT_STATUS_AUTHORITY_INVALID|
 // will not trigger the MITM software interstitial.
-IN_PROC_BROWSER_TEST_F(SSLUIMITMSoftwareTest,
+IN_PROC_BROWSER_TEST_F(SSLUIMITMSoftwareEnabledTest,
                        WrongCertError_NoMITMSoftwareInterstitial) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitFromCommandLine(
-      "MITMSoftwareInterstitial" /* enabled */, std::string() /* disabled */);
-
   SetUpCertVerifier(net::CERT_STATUS_COMMON_NAME_INVALID);
   TestNoMITMSoftwareInterstitial();
 }
 
 // Tests that if the error on the certificate served is overridable the MITM
 // software interstitial will not be displayed.
-IN_PROC_BROWSER_TEST_F(SSLUIMITMSoftwareTest,
+IN_PROC_BROWSER_TEST_F(SSLUIMITMSoftwareEnabledTest,
                        OverridableError_NoMITMSoftwareInterstitial) {
   base::HistogramTester histograms;
 
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitFromCommandLine(
-      "MITMSoftwareInterstitial" /* enabled */, std::string() /* disabled */);
   SetUpCertVerifier(net::CERT_STATUS_AUTHORITY_INVALID);
 
   ASSERT_TRUE(https_server()->Start());
@@ -5772,10 +5781,7 @@ IN_PROC_BROWSER_TEST_F(SSLUIMITMSoftwareTest,
 
 // Tests that the correct strings are displayed on the interstitial in the
 // enterprise managed case.
-IN_PROC_BROWSER_TEST_F(SSLUIMITMSoftwareTest, EnterpriseManaged) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitFromCommandLine(
-      "MITMSoftwareInterstitial" /* enabled */, std::string() /* disabled */);
+IN_PROC_BROWSER_TEST_F(SSLUIMITMSoftwareEnabledTest, EnterpriseManaged) {
   SetUpCertVerifier(net::CERT_STATUS_AUTHORITY_INVALID);
   SSLErrorHandler::SetEnterpriseManagedForTesting(true);
   ASSERT_TRUE(SSLErrorHandler::IsEnterpriseManagedFlagSetForTesting());
@@ -5805,10 +5811,7 @@ IN_PROC_BROWSER_TEST_F(SSLUIMITMSoftwareTest, EnterpriseManaged) {
 
 // Tests that the correct strings are displayed on the interstitial in the
 // non-enterprise managed case.
-IN_PROC_BROWSER_TEST_F(SSLUIMITMSoftwareTest, NotEnterpriseManaged) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitFromCommandLine(
-      "MITMSoftwareInterstitial" /* enabled */, std::string() /* disabled */);
+IN_PROC_BROWSER_TEST_F(SSLUIMITMSoftwareEnabledTest, NotEnterpriseManaged) {
   SetUpCertVerifier(net::CERT_STATUS_AUTHORITY_INVALID);
   SSLErrorHandler::SetEnterpriseManagedForTesting(false);
   ASSERT_TRUE(SSLErrorHandler::IsEnterpriseManagedFlagSetForTesting());
@@ -5837,12 +5840,9 @@ IN_PROC_BROWSER_TEST_F(SSLUIMITMSoftwareTest, NotEnterpriseManaged) {
 
 // Tests that the MITM software interstitial does not render on iOS, where it
 // is disabled by build.
-IN_PROC_BROWSER_TEST_F(SSLUIMITMSoftwareTest,
+IN_PROC_BROWSER_TEST_F(SSLUIMITMSoftwareEnabledTest,
                        DisabledByBuild_NoMITMSoftwareInterstitial) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitFromCommandLine(
-      "MITMSoftwareInterstitial" /* enabled */, std::string() /* disabled */);
-
+  SetUpCertVerifier(net::CERT_STATUS_AUTHORITY_INVALID);
   TestNoMITMSoftwareInterstitial();
 }
 
