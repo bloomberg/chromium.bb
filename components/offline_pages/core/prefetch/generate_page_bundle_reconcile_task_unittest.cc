@@ -83,6 +83,15 @@ PrefetchItem GeneratePageBundleReconcileTaskTest::InsertItem(
   return item;
 }
 
+TEST_F(GeneratePageBundleReconcileTaskTest, StoreFailure) {
+  store_util()->SimulateInitializationError();
+
+  GeneratePageBundleReconcileTask task(store(), request_factory());
+  ExpectTaskCompletes(&task);
+  task.Run();
+  RunUntilIdle();
+}
+
 TEST_F(GeneratePageBundleReconcileTaskTest, Retry) {
   PrefetchItem item = item_generator()->CreateItem(
       PrefetchItemState::SENT_GENERATE_PAGE_BUNDLE);

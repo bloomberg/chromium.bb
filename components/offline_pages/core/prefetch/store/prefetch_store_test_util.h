@@ -76,6 +76,9 @@ class PrefetchStoreTestUtil {
   // Will use |clock_| as time source when writing back quota.
   bool SetPrefetchQuota(int64_t available_quota);
 
+  // Causes the store to behave as if an initialization error occurred.
+  void SimulateInitializationError();
+
   PrefetchStore* store() { return store_.get(); }
 
   base::SimpleTestClock* clock() { return &clock_; }

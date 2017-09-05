@@ -64,6 +64,9 @@ bool UpdateToImportingStateSync(int64_t offline_id, sql::Connection* db) {
 
 std::unique_ptr<std::vector<PrefetchArchiveInfo>>
 GetArchivesAndUpdateToImportingStateSync(sql::Connection* db) {
+  if (!db)
+    return nullptr;
+
   sql::Transaction transaction(db);
   if (!transaction.Begin())
     return nullptr;

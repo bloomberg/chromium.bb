@@ -16,6 +16,7 @@
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store_test_util.h"
+#include "components/offline_pages/core/prefetch/task_test_base.h"
 #include "components/offline_pages/core/prefetch/test_prefetch_dispatcher.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -36,19 +37,10 @@ const base::string16 kTestTitle3 = base::ASCIIToUTF16("Title 3");
 const base::string16 kTestTitle4 = base::ASCIIToUTF16("Title 4");
 }  // namespace
 
-class AddUniqueUrlsTaskTest : public testing::Test {
+class AddUniqueUrlsTaskTest : public TaskTestBase {
  public:
   AddUniqueUrlsTaskTest();
   ~AddUniqueUrlsTaskTest() override = default;
-
-  void SetUp() override;
-  void TearDown() override;
-
-  PrefetchStore* store() { return store_test_util_.store(); }
-
-  PrefetchStoreTestUtil* store_util() { return &store_test_util_; }
-
-  void PumpLoop();
 
   // Returns all items stored in a map keyed with client id.
   std::map<std::string, PrefetchItem> GetAllItems();
@@ -56,29 +48,10 @@ class AddUniqueUrlsTaskTest : public testing::Test {
   TestPrefetchDispatcher* dispatcher() { return &dispatcher_; }
 
  private:
-  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
-  base::ThreadTaskRunnerHandle task_runner_handle_;
-  PrefetchStoreTestUtil store_test_util_;
   TestPrefetchDispatcher dispatcher_;
 };
 
-AddUniqueUrlsTaskTest::AddUniqueUrlsTaskTest()
-    : task_runner_(new base::TestSimpleTaskRunner),
-      task_runner_handle_(task_runner_),
-      store_test_util_(task_runner_) {}
-
-void AddUniqueUrlsTaskTest::SetUp() {
-  store_test_util_.BuildStoreInMemory();
-}
-
-void AddUniqueUrlsTaskTest::TearDown() {
-  store_test_util_.DeleteStore();
-  PumpLoop();
-}
-
-void AddUniqueUrlsTaskTest::PumpLoop() {
-  task_runner_->RunUntilIdle();
-}
+AddUniqueUrlsTaskTest::AddUniqueUrlsTaskTest() {}
 
 std::map<std::string, PrefetchItem> AddUniqueUrlsTaskTest::GetAllItems() {
   std::set<PrefetchItem> set;
@@ -90,13 +63,23 @@ std::map<std::string, PrefetchItem> AddUniqueUrlsTaskTest::GetAllItems() {
   return map;
 }
 
+TEST_F(AddUniqueUrlsTaskTest, StoreFailure) {
+  store_util()->SimulateInitializationError();
+
+  AddUniqueUrlsTask task(dispatcher(), store(), kTestNamespace, {});
+  ExpectTaskCompletes(&task);
+  task.Run();
+  RunUntilIdle();
+}
+
 TEST_F(AddUniqueUrlsTaskTest, AddTaskInEmptyStore) {
   std::vector<PrefetchURL> urls;
   urls.push_back(PrefetchURL{kClientId1, kTestURL1, kTestTitle1});
   urls.push_back(PrefetchURL{kClientId2, kTestURL2, kTestTitle2});
   AddUniqueUrlsTask task(dispatcher(), store(), kTestNamespace, urls);
+  ExpectTaskCompletes(&task);
   task.Run();
-  PumpLoop();
+  RunUntilIdle();
 
   std::map<std::string, PrefetchItem> items = GetAllItems();
   ASSERT_EQ(2u, items.size());
@@ -116,20 +99,23 @@ TEST_F(AddUniqueUrlsTaskTest, SingleDuplicateUrlNotAdded) {
   std::vector<PrefetchURL> urls;
   urls.push_back(PrefetchURL{kClientId1, kTestURL1, kTestTitle1});
   AddUniqueUrlsTask task1(dispatcher(), store(), kTestNamespace, urls);
+  ExpectTaskCompletes(&task1);
   task1.Run();
-  PumpLoop();
+  RunUntilIdle();
   EXPECT_EQ(1, dispatcher()->task_schedule_count);
 
   // AddUniqueUrlsTask with no URLs should not increment task schedule count.
   AddUniqueUrlsTask task2(dispatcher(), store(), kTestNamespace, {});
+  ExpectTaskCompletes(&task2);
   task2.Run();
-  PumpLoop();
+  RunUntilIdle();
   // The task schedule count should not have changed with no new URLs.
   EXPECT_EQ(1, dispatcher()->task_schedule_count);
 
   AddUniqueUrlsTask task3(dispatcher(), store(), kTestNamespace, urls);
+  ExpectTaskCompletes(&task3);
   task3.Run();
-  PumpLoop();
+  RunUntilIdle();
   // The task schedule count should not have changed with no new URLs.
   EXPECT_EQ(1, dispatcher()->task_schedule_count);
 }
@@ -139,8 +125,9 @@ TEST_F(AddUniqueUrlsTaskTest, DontAddURLIfItExists) {
   urls.push_back(PrefetchURL{kClientId1, kTestURL1, kTestTitle1});
   urls.push_back(PrefetchURL{kClientId2, kTestURL2, kTestTitle2});
   AddUniqueUrlsTask task1(dispatcher(), store(), kTestNamespace, urls);
+  ExpectTaskCompletes(&task1);
   task1.Run();
-  PumpLoop();
+  RunUntilIdle();
   EXPECT_EQ(1, dispatcher()->task_schedule_count);
 
   urls.clear();
@@ -149,8 +136,9 @@ TEST_F(AddUniqueUrlsTaskTest, DontAddURLIfItExists) {
   urls.push_back(PrefetchURL{kClientId3, kTestURL3, kTestTitle3});
 
   AddUniqueUrlsTask task2(dispatcher(), store(), kTestNamespace, urls);
+  ExpectTaskCompletes(&task2);
   task2.Run();
-  PumpLoop();
+  RunUntilIdle();
   EXPECT_EQ(2, dispatcher()->task_schedule_count);
 
   std::map<std::string, PrefetchItem> items = GetAllItems();
@@ -175,8 +163,9 @@ TEST_F(AddUniqueUrlsTaskTest, HandleZombiePrefetchItems) {
   urls.push_back(PrefetchURL{kClientId2, kTestURL2, kTestTitle2});
   urls.push_back(PrefetchURL{kClientId3, kTestURL3, kTestTitle3});
   AddUniqueUrlsTask task1(dispatcher(), store(), kTestNamespace, urls);
+  ExpectTaskCompletes(&task1);
   task1.Run();
-  PumpLoop();
+  RunUntilIdle();
   EXPECT_EQ(1, dispatcher()->task_schedule_count);
 
   // ZombifyPrefetchItem returns the number of affected items.
@@ -192,8 +181,9 @@ TEST_F(AddUniqueUrlsTaskTest, HandleZombiePrefetchItems) {
   // ID-3 is still requested, so it is ignored.
   // ID-4 is added.
   AddUniqueUrlsTask task2(dispatcher(), store(), kTestNamespace, urls);
+  ExpectTaskCompletes(&task2);
   task2.Run();
-  PumpLoop();
+  RunUntilIdle();
   EXPECT_EQ(2, dispatcher()->task_schedule_count);
 
   std::map<std::string, PrefetchItem> items = GetAllItems();

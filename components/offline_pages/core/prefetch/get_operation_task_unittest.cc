@@ -34,6 +34,16 @@ class GetOperationTaskTest : public TaskTestBase {
   ~GetOperationTaskTest() override = default;
 };
 
+TEST_F(GetOperationTaskTest, StoreFailure) {
+  store_util()->SimulateInitializationError();
+  base::MockCallback<PrefetchRequestFinishedCallback> callback;
+
+  GetOperationTask task(store(), prefetch_request_factory(), callback.Get());
+  ExpectTaskCompletes(&task);
+  task.Run();
+  RunUntilIdle();
+}
+
 TEST_F(GetOperationTaskTest, NormalOperationTask) {
   base::MockCallback<PrefetchRequestFinishedCallback> callback;
   int64_t id = InsertPrefetchItemInStateWithOperation(

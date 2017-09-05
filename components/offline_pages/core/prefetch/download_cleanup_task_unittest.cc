@@ -50,6 +50,12 @@ class DownloadCleanupTaskTest : public TaskTestBase {
   TestPrefetchDispatcher dispatcher_;
 };
 
+TEST_F(DownloadCleanupTaskTest, StoreFailure) {
+  store_util()->SimulateInitializationError();
+
+  CreateAndRunDownloadCleanupTask(std::string(), std::string());
+}
+
 TEST_F(DownloadCleanupTaskTest, Retry) {
   PrefetchItem item =
       item_generator()->CreateItem(PrefetchItemState::DOWNLOADING);

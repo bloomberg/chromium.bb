@@ -23,6 +23,9 @@ bool UpdatePrefetchItemOnDownloadSuccessSync(const std::string& guid,
                                              const base::FilePath& file_path,
                                              int64_t file_size,
                                              sql::Connection* db) {
+  if (!db)
+    return false;
+
   static const char kSql[] =
       "UPDATE prefetch_items"
       " SET state = ?, file_path = ?, file_size = ?"
@@ -40,6 +43,9 @@ bool UpdatePrefetchItemOnDownloadSuccessSync(const std::string& guid,
 
 bool UpdatePrefetchItemOnDownloadErrorSync(const std::string& guid,
                                            sql::Connection* db) {
+  if (!db)
+    return false;
+
   static const char kSql[] =
       "UPDATE prefetch_items"
       " SET state = ?, error_code = ?"

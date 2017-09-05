@@ -132,6 +132,13 @@ void ImportArchivesTaskTest::PumpLoop() {
   task_runner_->RunUntilIdle();
 }
 
+TEST_F(ImportArchivesTaskTest, NullConnection) {
+  store_util()->SimulateInitializationError();
+  ImportArchivesTask task(store(), importer());
+  task.Run();
+  PumpLoop();
+}
+
 TEST_F(ImportArchivesTaskTest, Importing) {
   ImportArchivesTask task(store(), importer());
   task.Run();
