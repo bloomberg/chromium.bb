@@ -108,19 +108,9 @@ inline HTMLDialogElement::HTMLDialogElement(Document& document)
 
 DEFINE_NODE_FACTORY(HTMLDialogElement)
 
-void HTMLDialogElement::close(const String& return_value,
-                              ExceptionState& exception_state) {
-  if (!FastHasAttribute(openAttr)) {
-    exception_state.ThrowDOMException(kInvalidStateError,
-                                      "The element does not have an 'open' "
-                                      "attribute, and therefore cannot be "
-                                      "closed.");
-    return;
-  }
-  CloseDialog(return_value);
-}
+void HTMLDialogElement::close(const String& return_value) {
+  // https://html.spec.whatwg.org/#close-the-dialog
 
-void HTMLDialogElement::CloseDialog(const String& return_value) {
   if (!FastHasAttribute(openAttr))
     return;
   SetBooleanAttribute(openAttr, false);
@@ -222,7 +212,7 @@ bool HTMLDialogElement::IsPresentationAttribute(
 
 void HTMLDialogElement::DefaultEventHandler(Event* event) {
   if (event->type() == EventTypeNames::cancel) {
-    CloseDialog();
+    close();
     event->SetDefaultHandled();
     return;
   }

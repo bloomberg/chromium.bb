@@ -20,7 +20,7 @@ dialog.close();
 computedStyle = window.getComputedStyle(dialog, null);
 
 shouldBe("computedStyle.getPropertyValue('display')", "'none'");
-shouldThrow('dialog.close();', '"InvalidStateError: Failed to execute \'close\' on \'HTMLDialogElement\': The element does not have an \'open\' attribute, and therefore cannot be closed."');
+shouldNotThrow('dialog.close();');
 </script>
 </body>
 </html>

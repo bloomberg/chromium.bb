@@ -40,8 +40,7 @@ class HTMLDialogElement final : public HTMLElement {
  public:
   DECLARE_NODE_FACTORY(HTMLDialogElement);
 
-  void close(const String& return_value, ExceptionState&);
-  void CloseDialog(const String& return_value = String());
+  void close(const String& return_value = String());
   void show();
   void showModal(ExceptionState&);
   void RemovedFrom(ContainerNode*) override;

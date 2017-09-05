@@ -45,9 +45,9 @@ dialog.show();
 dialog.close(undefined);
 shouldBe("dialog.returnValue", "'Should not change because of undefined argument to close()'");
 
-dialog.returnValue = 'Should not change because close() is invalid';
-shouldThrow("dialog.close('blah')", '"InvalidStateError: Failed to execute \'close\' on \'HTMLDialogElement\': The element does not have an \'open\' attribute, and therefore cannot be closed."');
-shouldBe("dialog.returnValue", "'Should not change because close() is invalid'");
+dialog.returnValue = 'Should not change because of no-op close()';
+shouldNotThrow("dialog.close('blah')");
+shouldBe("dialog.returnValue", "'Should not change because of no-op close()'");
 </script>
 </body>
 </html>
