@@ -298,8 +298,18 @@ const CGFloat kAnimationDuration = 0.2;
 
   // Under MD, dialogs have no arrow and anchor to corner of the location bar
   // frame, not a specific point within it. See http://crbug.com/566115.
+
+  // Inset the omnibox frame by 1 DIP. This is done because the border stroke of
+  // the omnibox is inside its frame, but bubbles have no border stroke. The
+  // bubble border is part of the shadow drawn by the window server; outside the
+  // bubble frame. Here, only the X direction is inset. In the Y direction,
+  // that 1 DIP "gap" must be kept, otherwise the "border" stroke from the
+  // window server shadow would be drawn inside the omnibox.
+  constexpr CGFloat kStrokeInsetX = 1;
+  constexpr CGFloat kStrokeInsetY = 0;
+  const NSRect frame = NSInsetRect([self bounds], kStrokeInsetX, kStrokeInsetY);
+
   BOOL isLeftDecoration = [[self cell] isLeftDecoration:decoration];
-  const NSRect frame = [self bounds];
   NSPoint point = NSMakePoint(isLeftDecoration ? NSMinX(frame) : NSMaxX(frame),
                               NSMaxY(frame));
   return [self convertPoint:point toView:nil];
