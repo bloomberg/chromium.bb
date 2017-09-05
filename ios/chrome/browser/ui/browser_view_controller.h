@@ -20,7 +20,6 @@
 @protocol BrowserCommands;
 @class BrowserContainerView;
 @class BrowserViewControllerDependencyFactory;
-@protocol ChromeExecuteCommand;
 class GURL;
 @class Tab;
 @class TabModel;
@@ -64,7 +63,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
 
 @property(nonatomic, readonly) id<ApplicationCommands,
                                   BrowserCommands,
-                                  ChromeExecuteCommand,
                                   OmniboxFocuser,
                                   UrlLoader,
                                   WebToolbarDelegate>

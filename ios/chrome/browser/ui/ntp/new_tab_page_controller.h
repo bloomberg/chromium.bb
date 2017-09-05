@@ -31,7 +31,6 @@ std::string FragmentFromIdentifier(ntp_home::PanelIdentifier panel);
 @protocol ApplicationCommands;
 @class BookmarkHomeTabletNTPController;
 @protocol BrowserCommands;
-@protocol ChromeExecuteCommand;
 @protocol CRWSwipeRecognizerProvider;
 @class GoogleLandingViewController;
 @protocol NewTabPagePanelProtocol;
@@ -89,7 +88,6 @@ std::string FragmentFromIdentifier(ntp_home::PanelIdentifier panel);
     parentViewController:(UIViewController*)parentViewController
               dispatcher:(id<ApplicationCommands,
                              BrowserCommands,
-                             ChromeExecuteCommand,
                              OmniboxFocuser,
                              UrlLoader>)dispatcher;
 

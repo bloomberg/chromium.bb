@@ -14,7 +14,6 @@ class ChromeBrowserState;
 
 @protocol ApplicationCommands;
 @protocol BrowserCommands;
-@protocol ChromeExecuteCommand;
 @class ContentSuggestionsHeaderViewController;
 @protocol OmniboxFocuser;
 @protocol UrlLoader;
@@ -32,7 +31,6 @@ class WebStateList;
 @property(nonatomic, assign) WebStateList* webStateList;
 @property(nonatomic, weak) id<ApplicationCommands,
                               BrowserCommands,
-                              ChromeExecuteCommand,
                               OmniboxFocuser,
                               UrlLoader>
     dispatcher;

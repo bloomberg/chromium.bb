@@ -18,7 +18,6 @@
 #include "components/infobars/core/infobar_manager.h"
 #include "components/version_info/version_info.h"
 #import "ios/chrome/browser/open_url_util.h"
-#import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/open_url_command.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"

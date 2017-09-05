@@ -973,8 +973,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     [_dispatcher startDispatchingToTarget:self
                               forProtocol:@protocol(WebToolbarDelegate)];
     [_dispatcher startDispatchingToTarget:self
-                              forSelector:@selector(chromeExecuteCommand:)];
-    [_dispatcher startDispatchingToTarget:self
                               forProtocol:@protocol(BrowserCommands)];
     [_dispatcher startDispatchingToTarget:applicationCommandEndpoint
                               forProtocol:@protocol(ApplicationCommands)];
@@ -1032,13 +1030,11 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
 - (id<ApplicationCommands,
       BrowserCommands,
-      ChromeExecuteCommand,
       OmniboxFocuser,
       UrlLoader,
       WebToolbarDelegate>)dispatcher {
-  return static_cast<
-      id<ApplicationCommands, BrowserCommands, ChromeExecuteCommand,
-         OmniboxFocuser, UrlLoader, WebToolbarDelegate>>(_dispatcher);
+  return static_cast<id<ApplicationCommands, BrowserCommands, OmniboxFocuser,
+                        UrlLoader, WebToolbarDelegate>>(_dispatcher);
 }
 
 - (void)setActive:(BOOL)active {

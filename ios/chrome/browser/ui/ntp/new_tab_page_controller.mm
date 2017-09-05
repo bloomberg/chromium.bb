@@ -180,7 +180,6 @@ enum {
 // The command dispatcher.
 @property(nonatomic, weak) id<ApplicationCommands,
                               BrowserCommands,
-                              ChromeExecuteCommand,
                               OmniboxFocuser,
                               UrlLoader>
     dispatcher;
@@ -219,7 +218,6 @@ enum {
     parentViewController:(UIViewController*)parentViewController
               dispatcher:(id<ApplicationCommands,
                              BrowserCommands,
-                             ChromeExecuteCommand,
                              OmniboxFocuser,
                              UrlLoader>)dispatcher {
   self = [super initWithNibName:nil url:url];
