@@ -34,12 +34,12 @@ class ResourceFetcherImpl : public ResourceFetcher {
   void SetHeader(const std::string& header, const std::string& value) override;
   void Start(blink::WebLocalFrame* frame,
              blink::WebURLRequest::RequestContext request_context,
-             const Callback& callback) override;
+             Callback callback) override;
   void Start(blink::WebLocalFrame* frame,
              blink::WebURLRequest::RequestContext request_context,
              mojom::URLLoaderFactory* url_loader_factory,
              const net::NetworkTrafficAnnotationTag& annotation_tag,
-             const Callback& callback,
+             Callback callback,
              size_t maximum_download_size) override;
   void SetTimeout(const base::TimeDelta& timeout) override;
 

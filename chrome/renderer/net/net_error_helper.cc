@@ -271,8 +271,8 @@ void NetErrorHelper::FetchNavigationCorrections(
   correction_fetcher_->Start(
       render_frame()->GetWebFrame(),
       blink::WebURLRequest::kRequestContextInternal,
-      base::Bind(&NetErrorHelper::OnNavigationCorrectionsFetched,
-                 base::Unretained(this)));
+      base::BindOnce(&NetErrorHelper::OnNavigationCorrectionsFetched,
+                     base::Unretained(this)));
 
   correction_fetcher_->SetTimeout(
       base::TimeDelta::FromSeconds(kNavigationCorrectionFetchTimeoutSec));
@@ -294,8 +294,8 @@ void NetErrorHelper::SendTrackingRequest(
   tracking_fetcher_->Start(
       render_frame()->GetWebFrame(),
       blink::WebURLRequest::kRequestContextInternal,
-      base::Bind(&NetErrorHelper::OnTrackingRequestComplete,
-                 base::Unretained(this)));
+      base::BindOnce(&NetErrorHelper::OnTrackingRequestComplete,
+                     base::Unretained(this)));
 }
 
 void NetErrorHelper::ReloadPage(bool bypass_cache) {
