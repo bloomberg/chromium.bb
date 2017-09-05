@@ -123,7 +123,8 @@ PaintImage BitmapImage::CreateAndCacheFrame(size_t index) {
   PaintImageBuilder builder;
   InitPaintImageBuilder(builder);
   builder.set_paint_image_generator(std::move(generator))
-      .set_frame_index(index);
+      .set_frame_index(index)
+      .set_repetition_count(repetition_count_);
 
   // The caching of the decoded image data by the external users of this image
   // is keyed based on the uniqueID of the underlying SkImage for this

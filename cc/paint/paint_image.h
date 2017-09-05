@@ -10,6 +10,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/logging.h"
 #include "cc/paint/frame_metadata.h"
+#include "cc/paint/image_animation_count.h"
 #include "cc/paint/paint_export.h"
 #include "cc/paint/skia_paint_image_generator.h"
 #include "third_party/skia/include/core/SkImage.h"
@@ -161,6 +162,7 @@ class CC_PAINT_EXPORT PaintImage {
   Id id_ = 0;
   AnimationType animation_type_ = AnimationType::STATIC;
   CompletionState completion_state_ = CompletionState::DONE;
+  int repetition_count_ = kAnimationNone;
 
   // If non-empty, holds the subset of this image relative to the original image
   // at the origin.
