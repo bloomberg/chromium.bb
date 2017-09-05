@@ -58,27 +58,33 @@ void BrowsingHistoryBridge::QueryHistory(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jobject>& j_result_obj,
-    jstring j_query,
-    int64_t j_query_end_time) {
+    jstring j_query) {
   j_query_result_obj_.Reset(env, j_result_obj);
+  query_history_continuation_.Reset();
 
   history::QueryOptions options;
   options.max_count = kMaxQueryCount;
-  if (j_query_end_time == 0) {
-    options.end_time = base::Time();
-  } else {
-    options.end_time = base::Time::FromJavaTime(j_query_end_time);
-  }
   options.duplicate_policy = history::QueryOptions::REMOVE_DUPLICATES_PER_DAY;
 
   browsing_history_service_->QueryHistory(
       base::android::ConvertJavaStringToUTF16(env, j_query), options);
 }
 
+void BrowsingHistoryBridge::QueryHistoryContinuation(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& j_result_obj) {
+  DCHECK(query_history_continuation_);
+  j_query_result_obj_.Reset(env, j_result_obj);
+  std::move(query_history_continuation_).Run();
+}
+
 void BrowsingHistoryBridge::OnQueryComplete(
     const std::vector<BrowsingHistoryService::HistoryEntry>& results,
-    const BrowsingHistoryService::QueryResultsInfo& query_results_info) {
+    const BrowsingHistoryService::QueryResultsInfo& query_results_info,
+    base::OnceClosure continuation_closure) {
   JNIEnv* env = base::android::AttachCurrentThread();
+  query_history_continuation_ = std::move(continuation_closure);
 
   for (const BrowsingHistoryService::HistoryEntry& entry : results) {
     // TODO(twellington): Move the domain logic to BrowsingHistoryServce so it
@@ -108,7 +114,7 @@ void BrowsingHistoryBridge::OnQueryComplete(
 
   Java_BrowsingHistoryBridge_onQueryHistoryComplete(
       env, j_history_service_obj_, j_query_result_obj_,
-      !(query_results_info.reached_beginning_of_local));
+      !(query_results_info.reached_beginning));
 }
 
 void BrowsingHistoryBridge::MarkItemForRemoval(

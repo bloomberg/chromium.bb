@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/simple_test_clock.h"
 #include "base/values.h"
@@ -241,27 +242,23 @@ TEST_F(BrowsingHistoryHandlerTest, ObservingWebHistoryDeletions) {
 
 #if !defined(OS_ANDROID)
 TEST_F(BrowsingHistoryHandlerTest, MdTruncatesTitles) {
-  history::URLResult long_result(
-      GURL("http://looooooooooooooooooooooooooooooooooooooooooooooooooooooooooo"
+  history::BrowsingHistoryService::HistoryEntry long_url_entry;
+  long_url_entry.url = GURL(
+      "http://loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo"
       "oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo"
       "oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo"
       "oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo"
       "oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo"
       "oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo"
-      "ngurlislong.com"), base::Time());
-  ASSERT_GT(long_result.url().spec().size(), 300u);
-
-  std::vector<history::URLResult> result_vector;
-  result_vector.push_back(std::move(long_result));
-  history::QueryResults results;
-  results.SetURLResults(std::move(result_vector));
+      "ngurlislong.com");
+  ASSERT_GT(long_url_entry.url.spec().size(), 300U);
 
   BrowsingHistoryHandlerWithWebUIForTesting handler(web_ui());
-  handler.RegisterMessages();  // Needed to create BrowsingHistoryService.
-  web_ui()->ClearTrackedCalls();
+  ASSERT_TRUE(web_ui()->call_data().empty());
 
-  handler.browsing_history_service_->QueryComplete(
-      base::string16(), history::QueryOptions(), &results);
+  handler.OnQueryComplete({long_url_entry},
+                          history::BrowsingHistoryService::QueryResultsInfo(),
+                          base::OnceClosure());
   ASSERT_FALSE(web_ui()->call_data().empty());
 
   const base::ListValue* arg2;

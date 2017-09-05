@@ -73,7 +73,6 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
     private boolean mClearOnNextQueryComplete;
     private boolean mPrivacyDisclaimersVisible;
     private boolean mClearBrowsingDataButtonVisible;
-    private long mNextQueryEndTime;
     private String mQueryText = EMPTY_QUERY;
 
     public HistoryAdapter(SelectionDelegate<HistoryItem> delegate, HistoryManager manager,
@@ -115,9 +114,8 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
     public void initialize() {
         mIsInitialized = false;
         mIsLoadingItems = true;
-        mNextQueryEndTime = 0;
         mClearOnNextQueryComplete = true;
-        mHistoryProvider.queryHistory(mQueryText, mNextQueryEndTime);
+        mHistoryProvider.queryHistory(mQueryText);
     }
 
     @Override
@@ -143,7 +141,7 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
         mIsLoadingItems = true;
         addFooter();
         notifyDataSetChanged();
-        mHistoryProvider.queryHistory(mQueryText, mNextQueryEndTime);
+        mHistoryProvider.queryHistoryContinuation();
     }
 
     /**
@@ -159,10 +157,9 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
      */
     public void search(String query) {
         mQueryText = query;
-        mNextQueryEndTime = 0;
         mIsSearching = true;
         mClearOnNextQueryComplete = true;
-        mHistoryProvider.queryHistory(mQueryText, mNextQueryEndTime);
+        mHistoryProvider.queryHistory(mQueryText);
     }
 
     /**
@@ -267,9 +264,6 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
 
         mIsLoadingItems = false;
         mHasMorePotentialItems = hasMorePotentialMatches;
-        if (items.size() > 0) {
-            mNextQueryEndTime = items.get(items.size() - 1).getTimestamp();
-        }
     }
 
     @Override

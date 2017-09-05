@@ -8,6 +8,7 @@
 
 #include <memory>
 
+#include "base/callback.h"
 #include "base/mac/foundation_util.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
@@ -85,6 +86,8 @@ const CGFloat kSeparatorInset = 10;
   __weak id<HistoryCollectionViewControllerDelegate> _delegate;
   // Backing ivar for URLLoader property.
   __weak id<UrlLoader> _URLLoader;
+  // Closure to request next page of history.
+  base::OnceClosure _query_history_continuation;
 }
 
 // Object to manage insertion of history entries into the collection view model.
@@ -112,10 +115,11 @@ const CGFloat kSeparatorInset = 10;
 // YES if the collection should be filtered by the next received query result.
 @property(nonatomic, assign) BOOL filterQueryResult;
 
-// Fetches history prior to |time| for search text |query|. If |query| is nil or
-// the empty string, all history is fetched.
-- (void)fetchHistoryForQuery:(NSString*)query
-                 priorToTime:(const base::Time&)time;
+// Fetches history for search text |query|. If |query| is nil or the empty
+// string, all history is fetched. If continuation is false, then the most
+// recent results are fetched, otherwise the results more recent than the
+// previous query will be returned.
+- (void)fetchHistoryForQuery:(NSString*)query continuation:(BOOL)continuation;
 // Updates header section to provide relevant information about the currently
 // displayed history entries.
 - (void)updateEntriesStatusMessage;
@@ -224,7 +228,7 @@ const CGFloat kSeparatorInset = 10;
 - (void)showHistoryMatchingQuery:(NSString*)query {
   self.finishedLoading = NO;
   self.currentQuery = query;
-  [self fetchHistoryForQuery:query priorToTime:base::Time::Now()];
+  [self fetchHistoryForQuery:query continuation:false];
 }
 
 - (void)deleteSelectedItemsFromHistory {
@@ -337,8 +341,10 @@ const CGFloat kSeparatorInset = 10;
             (const std::vector<BrowsingHistoryService::HistoryEntry>&)results
                   queryResultsInfo:
                       (const BrowsingHistoryService::QueryResultsInfo&)
-                          queryResultsInfo {
+                          queryResultsInfo
+               continuationClosure:(base::OnceClosure)continuationClosure {
   self.loading = NO;
+  _query_history_continuation = std::move(continuationClosure);
 
   // If history sync is enabled and there hasn't been a response from synced
   // history, try fetching again.
@@ -360,9 +366,7 @@ const CGFloat kSeparatorInset = 10;
     return;
   }
 
-  self.finishedLoading = queryResultsInfo.reached_beginning_of_local &&
-                         (!queryResultsInfo.has_synced_results ||
-                          queryResultsInfo.reached_beginning_of_sync);
+  self.finishedLoading = queryResultsInfo.reached_beginning;
   self.entriesType =
       queryResultsInfo.has_synced_results ? SYNCED_ENTRIES : LOCAL_ENTRIES;
 
@@ -546,36 +550,38 @@ const CGFloat kSeparatorInset = 10;
     if (lastSection == 0 || lastItemIndex < 0) {
       return;
     }
-    NSIndexPath* indexPath =
-        [NSIndexPath indexPathForItem:lastItemIndex inSection:lastSection];
-    HistoryEntryItem* lastItem = base::mac::ObjCCastStrict<HistoryEntryItem>(
-        [self.collectionViewModel itemAtIndexPath:indexPath]);
-    [self fetchHistoryForQuery:_currentQuery priorToTime:lastItem.timestamp];
+
+    [self fetchHistoryForQuery:_currentQuery continuation:true];
   }
 }
 
 #pragma mark - Private methods
 
-- (void)fetchHistoryForQuery:(NSString*)query
-                 priorToTime:(const base::Time&)time {
+- (void)fetchHistoryForQuery:(NSString*)query continuation:(BOOL)continuation {
   self.loading = YES;
   // Add loading indicator if no items are shown.
   if (!self.hasHistoryEntries && !self.isSearching) {
     [self addLoadingIndicator];
   }
 
-  BOOL fetchAllHistory = !query || [query isEqualToString:@""];
-  base::string16 queryString =
-      fetchAllHistory ? base::string16() : base::SysNSStringToUTF16(query);
-  history::QueryOptions options;
-  options.end_time = time;
-  options.duplicate_policy =
-      fetchAllHistory ? history::QueryOptions::REMOVE_DUPLICATES_PER_DAY
-                      : history::QueryOptions::REMOVE_ALL_DUPLICATES;
-  options.max_count = kMaxFetchCount;
-  options.matching_algorithm =
-      query_parser::MatchingAlgorithm::ALWAYS_PREFIX_SEARCH;
-  _browsingHistoryService->QueryHistory(queryString, options);
+  if (continuation) {
+    DCHECK(_query_history_continuation);
+    std::move(_query_history_continuation).Run();
+  } else {
+    _query_history_continuation.Reset();
+
+    BOOL fetchAllHistory = !query || [query isEqualToString:@""];
+    base::string16 queryString =
+        fetchAllHistory ? base::string16() : base::SysNSStringToUTF16(query);
+    history::QueryOptions options;
+    options.duplicate_policy =
+        fetchAllHistory ? history::QueryOptions::REMOVE_DUPLICATES_PER_DAY
+                        : history::QueryOptions::REMOVE_ALL_DUPLICATES;
+    options.max_count = kMaxFetchCount;
+    options.matching_algorithm =
+        query_parser::MatchingAlgorithm::ALWAYS_PREFIX_SEARCH;
+    _browsingHistoryService->QueryHistory(queryString, options);
+  }
 }
 
 - (void)updateEntriesStatusMessage {

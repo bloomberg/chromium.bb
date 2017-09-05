@@ -33,38 +33,33 @@ public class StubbedHistoryProvider implements HistoryProvider {
     }
 
     @Override
-    public void queryHistory(String query, long endQueryTime) {
-        // endQueryTime should be 0 if the query is changing.
-        if (!TextUtils.equals(query, mLastQuery)) assert endQueryTime == 0;
+    public void queryHistory(String query) {
+        mLastQueryEndPosition = 0;
+        mLastQuery = query;
+        queryHistoryContinuation();
+    }
 
-        if (endQueryTime == 0) {
-            mLastQueryEndPosition = 0;
-        } else {
-            // If endQueryTime is not 0, more items are being paged in and endQueryTime should
-            // equal the timestamp of the last HistoryItem returned in the previous query.
-            assert endQueryTime == mItems.get(mLastQueryEndPosition - 1).getTimestamp();
-        }
-
+    @Override
+    public void queryHistoryContinuation() {
         // Simulate basic paging to facilitate testing loading more items.
         // TODO(twellington): support loading more items while searching.
         int queryStartPosition = mLastQueryEndPosition;
         int queryStartPositionPlusFive = mLastQueryEndPosition + 5;
-        boolean hasMoreItems = queryStartPositionPlusFive < mItems.size()
-                && TextUtils.isEmpty(query);
+        boolean hasMoreItems =
+                queryStartPositionPlusFive < mItems.size() && TextUtils.isEmpty(mLastQuery);
         int queryEndPosition = hasMoreItems ? queryStartPositionPlusFive : mItems.size();
 
         mLastQueryEndPosition = queryEndPosition;
-        mLastQuery = query;
 
         List<HistoryItem> items = new ArrayList<>();
-        if (TextUtils.isEmpty(query)) {
+        if (TextUtils.isEmpty(mLastQuery)) {
             items = mItems.subList(queryStartPosition, queryEndPosition);
         } else {
             // Simulate basic search.
-            query = query.toLowerCase(Locale.getDefault());
+            mLastQuery = mLastQuery.toLowerCase(Locale.getDefault());
             for (HistoryItem item : mItems) {
-                if (item.getUrl().toLowerCase(Locale.getDefault()).contains(query)
-                        || item.getTitle().toLowerCase(Locale.getDefault()).contains(query)) {
+                if (item.getUrl().toLowerCase(Locale.getDefault()).contains(mLastQuery)
+                        || item.getTitle().toLowerCase(Locale.getDefault()).contains(mLastQuery)) {
                     items.add(item);
                 }
             }

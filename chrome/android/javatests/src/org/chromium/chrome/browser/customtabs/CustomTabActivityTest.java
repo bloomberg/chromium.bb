@@ -3029,8 +3029,7 @@ public class CustomTabActivityTest {
                 BrowsingHistoryBridge historyService = new BrowsingHistoryBridge(false);
                 historyService.setObserver(historyObserver);
                 String historyQueryFilter = "";
-                int historyQueryTimeout = 0;
-                historyService.queryHistory(historyQueryFilter, historyQueryTimeout);
+                historyService.queryHistory(historyQueryFilter);
             }
         });
         historyObserver.getQueryCallback().waitForCallback(0);

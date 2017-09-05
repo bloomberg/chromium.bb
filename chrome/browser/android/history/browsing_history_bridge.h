@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/android/scoped_java_ref.h"
+#include "base/callback.h"
 #include "base/macros.h"
 #include "chrome/browser/history/profile_based_browsing_history_driver.h"
 
@@ -27,8 +28,11 @@ class BrowsingHistoryBridge : public ProfileBasedBrowsingHistoryDriver {
   void QueryHistory(JNIEnv* env,
                     const JavaParamRef<jobject>& obj,
                     const JavaParamRef<jobject>& j_result_obj,
-                    jstring j_query,
-                    int64_t j_query_end_time);
+                    jstring j_query);
+
+  void QueryHistoryContinuation(JNIEnv* env,
+                                const JavaParamRef<jobject>& obj,
+                                const JavaParamRef<jobject>& j_result_obj);
 
   // Adds a HistoryEntry with the |j_url| and |j_native_timestamps| to the list
   // of items being removed. The removal will not be committed until
@@ -47,7 +51,8 @@ class BrowsingHistoryBridge : public ProfileBasedBrowsingHistoryDriver {
   void OnQueryComplete(
       const std::vector<history::BrowsingHistoryService::HistoryEntry>& results,
       const history::BrowsingHistoryService::QueryResultsInfo&
-          query_results_info) override;
+          query_results_info,
+      base::OnceClosure continuation_closure) override;
   void OnRemoveVisitsComplete() override;
   void OnRemoveVisitsFailed() override;
   void HistoryDeleted() override;
@@ -67,6 +72,8 @@ class BrowsingHistoryBridge : public ProfileBasedBrowsingHistoryDriver {
   std::vector<history::BrowsingHistoryService::HistoryEntry> items_to_remove_;
 
   Profile* profile_;
+
+  base::OnceClosure query_history_continuation_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingHistoryBridge);
 };

@@ -15,6 +15,7 @@
 #include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "base/strings/string16.h"
@@ -82,6 +83,7 @@ class BrowsingHistoryService : public HistoryServiceObserver,
     EntryType entry_type;
 
     GURL url;
+
     base::string16 title;  // Title of the entry. May be empty.
 
     // The time of the entry. Usually this will be the time of the most recent
@@ -112,18 +114,18 @@ class BrowsingHistoryService : public HistoryServiceObserver,
     // The query search text.
     base::string16 search_text;
 
-    // Whether the query reached the beginning of the local database.
-    bool reached_beginning_of_local = false;
+    // Whether this query reached the end of all results, or if there are more
+    // history entries that can be fetched through paging.
+    bool reached_beginning = false;
 
     // Whether the last call to Web History timed out.
     bool sync_timed_out = false;
 
     // Whether the last call to Web History returned successfully with a message
-    // body.
+    // body. During continuation queries we are not guaranteed to always make a
+    // call to WebHistory, and this value could reflect the state from previous
+    // queries.
     bool has_synced_results = false;
-
-    // Whether the query reached the beginning of the synced history results.
-    bool reached_beginning_of_sync = false;
   };
 
   BrowsingHistoryService(BrowsingHistoryDriver* driver,
@@ -131,45 +133,58 @@ class BrowsingHistoryService : public HistoryServiceObserver,
                          syncer::SyncService* sync_service);
   ~BrowsingHistoryService() override;
 
-  // Core implementation of history querying.
+  // Start a new query with the given parameters.
   void QueryHistory(const base::string16& search_text,
                     const QueryOptions& options);
 
   // Removes |items| from history.
-  void RemoveVisits(
-      const std::vector<BrowsingHistoryService::HistoryEntry>& items);
+  void RemoveVisits(const std::vector<HistoryEntry>& items);
 
   // SyncServiceObserver implementation.
   void OnStateChanged(syncer::SyncService* sync) override;
 
-  // Merges duplicate entries from the query results, only retaining the most
-  // recent visit to a URL on a particular day. That visit contains the
-  // timestamps of the other visits.
-  static void MergeDuplicateResults(
-      std::vector<BrowsingHistoryService::HistoryEntry>* results);
-
-  // Callback from the history system when a history query has completed.
-  // Exposed for testing.
-  void QueryComplete(const base::string16& search_text,
-                     const QueryOptions& options,
-                     QueryResults* results);
+ protected:
+  // Constructor that allows specifying more dependencies for unit tests.
+  BrowsingHistoryService(BrowsingHistoryDriver* driver,
+                         HistoryService* local_history,
+                         syncer::SyncService* sync_service,
+                         std::unique_ptr<base::Timer> web_history_timer);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(::BrowsingHistoryHandlerTest,
                            ObservingWebHistoryDeletions);
 
+  // Used to hold and track query state between asynchronous calls.
+  struct QueryHistoryState;
+
+  // Moves results from |state| into |results|, merging both remote and local
+  // results together and maintaining reverse chronological order. Any results
+  // with the same URL will be merged together for each day. Often holds back
+  // some results in |state| from one of the two sources to ensure that they're
+  // always returned to the driver in correct order. This function also updates
+  // the end times in |state| for both sources that the next query should be
+  // made against.
+  static void MergeDuplicateResults(QueryHistoryState* state,
+                                    std::vector<HistoryEntry>* results);
+
+  // Core implementation of history querying.
+  void QueryHistoryInternal(scoped_refptr<QueryHistoryState> state);
+
+  // Callback from the history system when a history query has completed.
+  void QueryComplete(scoped_refptr<QueryHistoryState> state,
+                     QueryResults* results);
+
   // Combines the query results from the local history database and the history
   // server, and sends the combined results to the
   // BrowsingHistoryDriver.
-  void ReturnResultsToDriver();
+  void ReturnResultsToDriver(scoped_refptr<QueryHistoryState> state);
 
   // Callback from |web_history_timer_| when a response from web history has
   // not been received in time.
-  void WebHistoryTimeout();
+  void WebHistoryTimeout(scoped_refptr<QueryHistoryState> state);
 
   // Callback from the WebHistoryService when a query has completed.
-  void WebHistoryQueryComplete(const base::string16& search_text,
-                               const history::QueryOptions& options,
+  void WebHistoryQueryComplete(scoped_refptr<QueryHistoryState> state,
                                base::Time start_time,
                                WebHistoryService::Request* request,
                                const base::DictionaryValue* results_value);
@@ -203,7 +218,7 @@ class BrowsingHistoryService : public HistoryServiceObserver,
   std::unique_ptr<WebHistoryService::Request> web_history_request_;
 
   // True if there is a pending delete requests to the history service.
-  bool has_pending_delete_request_;
+  bool has_pending_delete_request_ = false;
 
   // Tracker for delete requests to the history service.
   base::CancelableTaskTracker delete_task_tracker_;
@@ -211,17 +226,8 @@ class BrowsingHistoryService : public HistoryServiceObserver,
   // The list of URLs that are in the process of being deleted.
   std::set<GURL> urls_to_be_deleted_;
 
-  // The info value that is returned to the driver with the query results.
-  BrowsingHistoryService::QueryResultsInfo query_results_info_;
-
-  // The list of query results received from the history service.
-  std::vector<HistoryEntry> query_results_;
-
-  // The list of query results received from the history server.
-  std::vector<HistoryEntry> web_history_query_results_;
-
   // Timer used to implement a timeout on a Web History response.
-  base::OneShotTimer web_history_timer_;
+  std::unique_ptr<base::Timer> web_history_timer_;
 
   // HistoryService (local history) observer.
   ScopedObserver<HistoryService, HistoryServiceObserver>
@@ -235,13 +241,11 @@ class BrowsingHistoryService : public HistoryServiceObserver,
   ScopedObserver<syncer::SyncService, syncer::SyncServiceObserver>
       sync_service_observer_;
 
-  // TODO(skym): Why is this duplicated between this field and
-  // |query_results_info_.has_synced_results|? Can we simplify?
   // Whether the last call to Web History returned synced results.
-  bool has_synced_results_;
+  bool has_synced_results_ = false;
 
   // Whether there are other forms of browsing history on the history server.
-  bool has_other_forms_of_browsing_history_;
+  bool has_other_forms_of_browsing_history_ = false;
 
   BrowsingHistoryDriver* driver_;
 
