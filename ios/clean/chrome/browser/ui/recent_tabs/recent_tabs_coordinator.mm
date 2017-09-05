@@ -22,6 +22,7 @@
 #import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_table_view_controller.h"
 #import "ios/chrome/browser/ui/sync/synced_sessions_bridge.h"
 #include "ios/chrome/browser/ui/ui_util.h"
+#import "ios/clean/chrome/browser/ui/adaptor/application_commands_adaptor.h"
 #import "ios/clean/chrome/browser/ui/adaptor/url_loader_adaptor.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -40,20 +41,24 @@
 @property(nonatomic, strong) UIViewController* viewController;
 @property(nonatomic, strong) RecentTabsTableViewController* tableViewController;
 @property(nonatomic, strong) URLLoaderAdaptor* loader;
+@property(nonatomic, strong)
+    ApplicationCommandsAdaptor* applicationCommandAdaptor;
 @end
 
 @implementation RecentTabsCoordinator
 @synthesize viewController = _viewController;
 @synthesize tableViewController = _tableViewController;
 @synthesize loader = _loader;
+@synthesize applicationCommandAdaptor = _applicationCommandAdaptor;
 
 - (void)start {
   self.loader = [[URLLoaderAdaptor alloc] init];
+  self.applicationCommandAdaptor = [[ApplicationCommandsAdaptor alloc] init];
   // HACK: Re-using old view controllers for now.
   self.tableViewController = [[RecentTabsTableViewController alloc]
       initWithBrowserState:self.browser->browser_state()
                     loader:self.loader
-                dispatcher:nil];
+                dispatcher:self.applicationCommandAdaptor];
   self.tableViewController.delegate = self;
 
   if (!IsIPadIdiom()) {
@@ -67,6 +72,7 @@
   }
   [self startObservers];
   self.loader.viewControllerForAlert = self.viewController;
+  self.applicationCommandAdaptor.viewControllerForAlert = self.viewController;
 
   [super start];
 }
