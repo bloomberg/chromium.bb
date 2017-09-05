@@ -60,6 +60,15 @@ class PageBundleUpdateTaskTest : public TaskTestBase {
   int body_name_count_ = 0;
 };
 
+TEST_F(PageBundleUpdateTaskTest, StoreFailure) {
+  store_util()->SimulateInitializationError();
+  PageBundleUpdateTask task(store(), &dispatcher, "operation", {});
+  ExpectTaskCompletes(&task);
+
+  task.Run();
+  RunUntilIdle();
+}
+
 TEST_F(PageBundleUpdateTaskTest, EmptyTask) {
   PageBundleUpdateTask task(store(), &dispatcher, "operation", {});
   ExpectTaskCompletes(&task);

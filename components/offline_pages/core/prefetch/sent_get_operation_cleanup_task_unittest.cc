@@ -64,6 +64,15 @@ class SentGetOperationCleanupTaskTest : public TaskTestBase {
   ~SentGetOperationCleanupTaskTest() override = default;
 };
 
+TEST_F(SentGetOperationCleanupTaskTest, StoreFailure) {
+  store_util()->SimulateInitializationError();
+
+  SentGetOperationCleanupTask task(store(), prefetch_request_factory());
+  ExpectTaskCompletes(&task);
+  task.Run();
+  RunUntilIdle();
+}
+
 TEST_F(SentGetOperationCleanupTaskTest, Retry) {
   PrefetchItem item =
       item_generator()->CreateItem(PrefetchItemState::SENT_GET_OPERATION);

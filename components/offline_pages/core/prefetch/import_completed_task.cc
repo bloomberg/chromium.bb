@@ -20,6 +20,9 @@ namespace {
 bool UpdateToFinishedStateSync(int64_t offline_id,
                                bool success,
                                sql::Connection* db) {
+  if (!db)
+    return false;
+
   static const char kSql[] =
       "UPDATE prefetch_items"
       " SET state = ?, error_code = ?"

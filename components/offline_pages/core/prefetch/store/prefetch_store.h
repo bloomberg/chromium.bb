@@ -95,6 +95,8 @@ class PrefetchStore {
   static const char* GetTableCreationSqlForTesting();
 
  private:
+  friend class PrefetchStoreTestUtil;
+
   // Used internally to initialize connection.
   void Initialize(base::OnceClosure pending_command);
 

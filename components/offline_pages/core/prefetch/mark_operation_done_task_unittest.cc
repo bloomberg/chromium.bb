@@ -58,6 +58,16 @@ class MarkOperationDoneTaskTest : public TaskTestBase {
   TestPrefetchDispatcher dispatcher_;
 };
 
+TEST_F(MarkOperationDoneTaskTest, StoreFailure) {
+  store_util()->SimulateInitializationError();
+
+  MarkOperationDoneTask task(dispatcher(), store(), kOperationName);
+  ExpectTaskCompletes(&task);
+
+  task.Run();
+  RunUntilIdle();
+}
+
 TEST_F(MarkOperationDoneTaskTest, NoOpTask) {
   MarkOperationDoneTask task(dispatcher(), store(), kOperationName);
   ExpectTaskCompletes(&task);

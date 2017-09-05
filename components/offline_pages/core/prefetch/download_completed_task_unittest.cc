@@ -93,6 +93,16 @@ void DownloadCompletedTaskTest::PumpLoop() {
   task_runner_->RunUntilIdle();
 }
 
+TEST_F(DownloadCompletedTaskTest, StoreFailure) {
+  store_util()->SimulateInitializationError();
+
+  PrefetchDownloadResult download_result(kTestGUID, kTestFilePath,
+                                         kTestFileSize);
+  DownloadCompletedTask task(dispatcher(), store(), download_result);
+  task.Run();
+  PumpLoop();
+}
+
 TEST_F(DownloadCompletedTaskTest, UpdateItemOnDownloadSuccess) {
   PrefetchDownloadResult download_result(kTestGUID, kTestFilePath,
                                          kTestFileSize);

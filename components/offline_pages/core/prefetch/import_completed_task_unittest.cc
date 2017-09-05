@@ -82,6 +82,14 @@ void ImportCompletedTaskTest::PumpLoop() {
   task_runner_->RunUntilIdle();
 }
 
+TEST_F(ImportCompletedTaskTest, StoreFailure) {
+  store_util()->SimulateInitializationError();
+
+  ImportCompletedTask task(dispatcher(), store(), kTestOfflineID, true);
+  task.Run();
+  PumpLoop();
+}
+
 TEST_F(ImportCompletedTaskTest, ImportSuccess) {
   ImportCompletedTask task(dispatcher(), store(), kTestOfflineID, true);
   task.Run();

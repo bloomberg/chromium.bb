@@ -40,6 +40,15 @@ void MetricsFinalizationTaskTest::TearDown() {
   TaskTestBase::TearDown();
 }
 
+TEST_F(MetricsFinalizationTaskTest, StoreFailure) {
+  store_util()->SimulateInitializationError();
+
+  // Execute the metrics task.
+  ExpectTaskCompletes(metrics_finalization_task_.get());
+  metrics_finalization_task_->Run();
+  RunUntilIdle();
+}
+
 // Tests that the task works correctly with an empty database.
 TEST_F(MetricsFinalizationTaskTest, EmptyRun) {
   EXPECT_EQ(0, store_util()->CountPrefetchItems());

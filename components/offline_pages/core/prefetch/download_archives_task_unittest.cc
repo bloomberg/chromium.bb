@@ -69,6 +69,14 @@ int64_t DownloadArchivesTaskTest::InsertItemToDownload(int64_t archive_size) {
   return item.offline_id;
 }
 
+TEST_F(DownloadArchivesTaskTest, StoreFailure) {
+  store_util()->SimulateInitializationError();
+  DownloadArchivesTask task(store(), prefetch_downloader());
+  ExpectTaskCompletes(&task);
+  task.Run();
+  RunUntilIdle();
+}
+
 TEST_F(DownloadArchivesTaskTest, NoArchivesToDownload) {
   InsertDummyItemInState(PrefetchItemState::NEW_REQUEST);
   InsertDummyItemInState(PrefetchItemState::SENT_GENERATE_PAGE_BUNDLE);

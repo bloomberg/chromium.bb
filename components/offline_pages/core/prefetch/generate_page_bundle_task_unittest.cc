@@ -37,6 +37,17 @@ class GeneratePageBundleTaskTest : public TaskTestBase {
   TestPrefetchGCMHandler gcm_handler_;
 };
 
+TEST_F(GeneratePageBundleTaskTest, StoreFailure) {
+  store_util()->SimulateInitializationError();
+
+  base::MockCallback<PrefetchRequestFinishedCallback> callback;
+  GeneratePageBundleTask task(store(), gcm_handler(),
+                              prefetch_request_factory(), callback.Get());
+  ExpectTaskCompletes(&task);
+  task.Run();
+  RunUntilIdle();
+}
+
 TEST_F(GeneratePageBundleTaskTest, EmptyTask) {
   base::MockCallback<PrefetchRequestFinishedCallback> callback;
   GeneratePageBundleTask task(store(), gcm_handler(),

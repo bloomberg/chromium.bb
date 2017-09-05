@@ -77,6 +77,14 @@ PrefetchItem StaleEntryFinalizerTaskTest::CreateAndInsertItem(
   return item;
 }
 
+TEST_F(StaleEntryFinalizerTaskTest, StoreFailure) {
+  store_util()->SimulateInitializationError();
+
+  // Execute the expiration task.
+  ExpectTaskCompletes(stale_finalizer_task_.get());
+  stale_finalizer_task_->Run();
+  RunUntilIdle();
+}
 // Tests that the task works correctly with an empty database.
 TEST_F(StaleEntryFinalizerTaskTest, EmptyRun) {
   std::set<PrefetchItem> no_items;
