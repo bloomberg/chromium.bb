@@ -591,8 +591,6 @@ static void update_state(const AV1_COMP *const cpi, ThreadData *td,
   const struct segmentation *const seg = &cm->seg;
   const int bw = mi_size_wide[mi->mbmi.sb_type];
   const int bh = mi_size_high[mi->mbmi.sb_type];
-  int x_mis = AOMMIN(bw, cm->mi_cols - mi_col);
-  int y_mis = AOMMIN(bh, cm->mi_rows - mi_row);
   int w, h;
 
   const int mis = cm->mi_stride;
@@ -758,6 +756,8 @@ static void update_state(const AV1_COMP *const cpi, ThreadData *td,
 
   MV_REF *const frame_mvs =
       cm->cur_frame->mvs + (mi_row & 0xfffe) * cm->mi_cols + (mi_col & 0xfffe);
+  int x_mis = AOMMIN(bw, cm->mi_cols - mi_col);
+  int y_mis = AOMMIN(bh, cm->mi_rows - mi_row);
   x_mis = AOMMAX(2, x_mis);
   y_mis = AOMMAX(2, y_mis);
   for (h = 0; h < y_mis; ++h) {
