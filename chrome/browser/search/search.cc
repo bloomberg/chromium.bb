@@ -91,15 +91,6 @@ GURL TemplateURLRefToGURL(const TemplateURLRef& ref,
   return GURL(ref.ReplaceSearchTerms(search_terms_args, search_terms_data));
 }
 
-// |url| should either have a secure scheme or have a non-HTTPS base URL that
-// the user specified using --google-base-url. (This allows testers to use
-// --google-base-url to point at non-HTTPS servers, which eases testing.)
-bool IsSuitableURLForInstant(const GURL& url, const TemplateURL* template_url) {
-  return template_url->HasSearchTermsReplacementKey(url) &&
-         (url.SchemeIsCryptographic() ||
-          google_util::StartsWithCommandLineGoogleBaseURL(url));
-}
-
 // Returns true if |url| can be used as an Instant URL for |profile|.
 bool IsInstantURL(const GURL& url, Profile* profile) {
   if (!IsInstantExtendedAPIEnabled())
@@ -119,8 +110,16 @@ bool IsInstantURL(const GURL& url, Profile* profile) {
   if (!template_url)
     return false;
 
-  if (!IsSuitableURLForInstant(url, template_url))
+  if (!template_url->HasSearchTermsReplacementKey(url))
     return false;
+
+  // |url| should either have a secure scheme or have a non-HTTPS base URL that
+  // the user specified using --google-base-url. (This allows testers to use
+  // --google-base-url to point at non-HTTPS servers, which eases testing.)
+  if (!url.SchemeIsCryptographic() &&
+      !google_util::StartsWithCommandLineGoogleBaseURL(url)) {
+    return false;
+  }
 
   const TemplateURLRef& instant_url_ref = template_url->instant_url_ref();
   UIThreadSearchTermsData search_terms_data(profile);
@@ -222,8 +221,6 @@ struct NewTabURLDetails {
   NewTabURLState state;
 };
 
-}  // namespace
-
 base::string16 ExtractSearchTermsFromURL(Profile* profile, const GURL& url) {
   const TemplateURL* template_url =
       GetDefaultSearchProviderTemplateURL(profile);
@@ -233,6 +230,8 @@ base::string16 ExtractSearchTermsFromURL(Profile* profile, const GURL& url) {
         url, UIThreadSearchTermsData(profile), &search_terms);
   return search_terms;
 }
+
+}  // namespace
 
 bool ShouldAssignURLToInstantRenderer(const GURL& url, Profile* profile) {
   return url.is_valid() &&
@@ -329,38 +328,6 @@ bool IsSuggestPrefEnabled(Profile* profile) {
          profile->GetPrefs()->GetBoolean(prefs::kSearchSuggestEnabled);
 }
 
-GURL GetInstantURL(Profile* profile, bool force_instant_results) {
-  if (!IsInstantExtendedAPIEnabled() || !IsSuggestPrefEnabled(profile))
-    return GURL();
-
-  const TemplateURL* template_url =
-      GetDefaultSearchProviderTemplateURL(profile);
-  if (!template_url)
-    return GURL();
-
-  GURL instant_url = TemplateURLRefToGURL(
-      template_url->instant_url_ref(), UIThreadSearchTermsData(profile),
-      true, force_instant_results);
-  if (!instant_url.is_valid() ||
-      !template_url->HasSearchTermsReplacementKey(instant_url))
-    return GURL();
-
-  // Extended mode requires HTTPS.  Force it unless the base URL was overridden
-  // on the command line, in which case we allow HTTP (see comments on
-  // IsSuitableURLForInstant()).
-  if (!instant_url.SchemeIsCryptographic() &&
-      !google_util::StartsWithCommandLineGoogleBaseURL(instant_url)) {
-    GURL::Replacements replacements;
-    replacements.SetSchemeStr(url::kHttpsScheme);
-    instant_url = instant_url.ReplaceComponents(replacements);
-  }
-
-  if (!IsURLAllowedForSupervisedUser(instant_url, profile))
-    return GURL();
-
-  return instant_url;
-}
-
 // Returns URLs associated with the default search engine for |profile|.
 std::vector<GURL> GetSearchURLs(Profile* profile) {
   std::vector<GURL> result;
@@ -377,10 +344,6 @@ std::vector<GURL> GetSearchURLs(Profile* profile) {
 
 GURL GetNewTabPageURL(Profile* profile) {
   return NewTabURLDetails::ForProfile(profile).url;
-}
-
-GURL GetSearchResultPrefetchBaseURL(Profile* profile) {
-  return GetInstantURL(profile, true);
 }
 
 GURL GetEffectiveURLForInstant(const GURL& url, Profile* profile) {
