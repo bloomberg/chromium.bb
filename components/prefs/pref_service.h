@@ -177,6 +177,11 @@ class COMPONENTS_PREFS_EXPORT PrefService {
   // immediately (basically, during shutdown).
   void CommitPendingWrite();
 
+  // Lands pending writes to disk. This should only be used if we need to save
+  // immediately. |done_callback| will be invoked when changes have been
+  // written.
+  void CommitPendingWrite(base::OnceClosure done_callback);
+
   // Schedule a write if there is any lossy data pending. Unlike
   // CommitPendingWrite() this does not immediately sync to disk, instead it
   // triggers an eventual write if there is lossy data pending and if there

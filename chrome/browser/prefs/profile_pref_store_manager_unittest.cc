@@ -245,11 +245,8 @@ class ProfilePrefStoreManagerTest : public testing::Test,
       ClearResetRecorded();
       // Force everything to be written to disk, triggering the PrefHashFilter
       // while our RegistryVerifier is watching.
-      pref_store_->CommitPendingWrite();
-      base::RunLoop().RunUntilIdle();
       base::RunLoop run_loop;
-      base::ThreadTaskRunnerHandle::Get()->PostTaskAndReply(
-          FROM_HERE, base::BindOnce(&base::DoNothing), run_loop.QuitClosure());
+      pref_store_->CommitPendingWrite(run_loop.QuitClosure());
       run_loop.Run();
 
       pref_store_->RemoveObserver(&registry_verifier_);
@@ -275,11 +272,8 @@ class ProfilePrefStoreManagerTest : public testing::Test,
                          base::MakeUnique<base::Value>(kFoobar),
                          WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
     pref_store->RemoveObserver(&registry_verifier_);
-    pref_store->CommitPendingWrite();
-    base::RunLoop().RunUntilIdle();
     base::RunLoop run_loop;
-    base::ThreadTaskRunnerHandle::Get()->PostTaskAndReply(
-        FROM_HERE, base::BindOnce(&base::DoNothing), run_loop.QuitClosure());
+    pref_store->CommitPendingWrite(run_loop.QuitClosure());
     run_loop.Run();
   }
 

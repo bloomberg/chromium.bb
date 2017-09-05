@@ -8,10 +8,6 @@
 
 #include "base/threading/sequenced_task_runner_handle.h"
 
-void PersistentPrefStore::CommitPendingWrite() {
-  CommitPendingWrite(base::OnceClosure());
-}
-
 void PersistentPrefStore::CommitPendingWrite(base::OnceClosure done_callback) {
   // Default behavior for PersistentPrefStore implementation that don't issue
   // disk operations: schedule the callback immediately.
