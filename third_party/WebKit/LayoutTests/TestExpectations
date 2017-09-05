@@ -597,6 +597,8 @@ crbug.com/728378 virtual/layout_ng/overflow/overflow-position-004.html [ Failure
 
 ### virtual/mojo-loading/http/tests/devtools
 crbug.com/667560 virtual/mojo-loading/http/tests/devtools/console/console-search.js [ Skip ]
+
+crbug.com/667560 http/tests/devtools/elements/styles-3/styles-change-node-while-editing.html [ Pass Failure ]
 crbug.com/667560 virtual/mojo-loading/http/tests/devtools/elements/styles-3/styles-change-node-while-editing.html [ Pass Failure ]
 
 # ====== DevTools test migration failures until here ======
