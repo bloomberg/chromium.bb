@@ -60,8 +60,20 @@ class AURA_EXPORT WindowTargeter : public ui::EventTargeter {
   virtual std::unique_ptr<HitTestRects> GetExtraHitTestShapeRects(
       Window* target) const;
 
+  // If there is a target that takes priority over normal WindowTargeter (such
+  // as a capture window) this returns it.
+  Window* GetPriorityTargetInRootWindow(Window* root_window,
+                                        const ui::LocatedEvent& event);
+
   Window* FindTargetInRootWindow(Window* root_window,
                                  const ui::LocatedEvent& event);
+
+  // If |target| is not a child of |root_window|, then converts |event| to
+  // be relative to |root_window| and dispatches the event to |root_window|.
+  // Returns false if the |target| is a child of |root_window|.
+  bool ProcessEventIfTargetsDifferentRootWindow(Window* root_window,
+                                                Window* target,
+                                                ui::Event* event);
 
   // ui::EventTargeter:
   ui::EventTarget* FindTargetForEvent(ui::EventTarget* root,
