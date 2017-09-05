@@ -354,6 +354,60 @@ class TestCli(test_case.MainTestCase):
                    files=files, cwd='bar', ret=0, err='',
                    out='pass_test.PassingTest.test_pass\n')
 
+    def test_multiple_top_level_dirs(self):
+        files = {
+            'foo/bar/__init__.py': '',
+            'foo/bar/pass_test.py': PASS_TEST_PY,
+            'baz/quux/__init__.py': '',
+            'baz/quux/second_test.py': PASS_TEST_PY,
+        }
+        self.check(['-l', 'foo/bar', 'baz/quux'], files=files,
+                   ret=0, err='',
+                   out=(
+                       'bar.pass_test.PassingTest.test_pass\n'
+                       'quux.second_test.PassingTest.test_pass\n'
+                       ))
+        self.check(['-l', 'foo/bar/pass_test.py', 'baz/quux'], files=files,
+                   ret=0, err='',
+                   out=(
+                       'bar.pass_test.PassingTest.test_pass\n'
+                       'quux.second_test.PassingTest.test_pass\n'
+                       ))
+        self.check(['-l', '--top-level-dirs', 'foo', '--top-level-dirs', 'baz'],
+                   files=files,
+                   ret=0, err='',
+                   out=(
+                       'bar.pass_test.PassingTest.test_pass\n'
+                       'quux.second_test.PassingTest.test_pass\n'
+                       ))
+
+    def test_single_top_level_dir(self):
+        files = {
+            'foo/bar/__init__.py': '',
+            'foo/bar/pass_test.py': PASS_TEST_PY,
+            'baz/quux/__init__.py': '',
+            'baz/quux/second_test.py': PASS_TEST_PY,
+        }
+        self.check(['-l', '--top-level-dir', 'foo'],
+                   files=files,
+                   ret=0, err='',
+                   out=(
+                       'bar.pass_test.PassingTest.test_pass\n'
+                       ))
+
+    def test_can_not_have_both_top_level_flags(self):
+        files = {
+            'foo/bar/__init__.py': '',
+            'foo/bar/pass_test.py': PASS_TEST_PY,
+            'baz/quux/__init__.py': '',
+            'baz/quux/second_test.py': PASS_TEST_PY,
+        }
+        self.check(
+            ['-l', '--top-level-dir', 'foo', '--top-level-dirs', 'bar'],
+            files=files,
+            ret=1, out='',
+            err='Cannot specify both --top-level-dir and --top-level-dirs\n')
+
     def test_help(self):
         self.check(['--help'], ret=0, rout='.*', err='')
 
