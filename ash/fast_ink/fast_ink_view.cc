@@ -367,13 +367,13 @@ void FastInkView::UpdateSurface() {
 
   viz::SharedQuadState* quad_state =
       render_pass->CreateAndAppendSharedQuadState();
-  quad_state->SetAll(buffer_to_target_transform,
-                     /*quad_layer_rect=*/output_rect,
-                     /*visible_quad_layer_rect=*/output_rect,
-                     /*clip_rect=*/gfx::Rect(),
-                     /*is_clipped=*/false, /*opacity=*/1.f,
-                     /*blend_mode=*/SkBlendMode::kSrcOver,
-                     /*sorting_context_id=*/0);
+  quad_state->SetAll(
+      buffer_to_target_transform,
+      /*quad_layer_rect=*/output_rect,
+      /*visible_quad_layer_rect=*/output_rect,
+      /*clip_rect=*/gfx::Rect(),
+      /*is_clipped=*/false, /*are_contents_opaque=*/false, /*opacity=*/1.f,
+      /*blend_mode=*/SkBlendMode::kSrcOver, /*sorting_context_id=*/0);
 
   cc::CompositorFrame frame;
   // TODO(eseckler): FastInkView should use BeginFrames and set the ack

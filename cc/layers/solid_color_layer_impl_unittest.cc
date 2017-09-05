@@ -209,6 +209,8 @@ TEST(SolidColorLayerImplTest, VerifyNeedsBlending) {
 
     ASSERT_EQ(render_pass->quad_list.size(), 1U);
     EXPECT_FALSE(render_pass->quad_list.front()->needs_blending);
+    EXPECT_TRUE(
+        render_pass->quad_list.front()->shared_quad_state->are_contents_opaque);
   }
 
   EXPECT_TRUE(layer->contents_opaque());
@@ -234,6 +236,8 @@ TEST(SolidColorLayerImplTest, VerifyNeedsBlending) {
 
     ASSERT_EQ(render_pass->quad_list.size(), 1U);
     EXPECT_TRUE(render_pass->quad_list.front()->needs_blending);
+    EXPECT_FALSE(
+        render_pass->quad_list.front()->shared_quad_state->are_contents_opaque);
   }
 }
 

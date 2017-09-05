@@ -39,7 +39,7 @@ SolidColorDrawQuad* AddQuad(RenderPass* pass,
                             const gfx::Rect& rect,
                             SkColor color) {
   viz::SharedQuadState* shared_state = pass->CreateAndAppendSharedQuadState();
-  shared_state->SetAll(gfx::Transform(), rect, rect, rect, false, 1,
+  shared_state->SetAll(gfx::Transform(), rect, rect, rect, false, false, 1,
                        SkBlendMode::kSrcOver, 0);
   SolidColorDrawQuad* quad =
       pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
@@ -51,7 +51,7 @@ SolidColorDrawQuad* AddClippedQuad(RenderPass* pass,
                                    const gfx::Rect& rect,
                                    SkColor color) {
   viz::SharedQuadState* shared_state = pass->CreateAndAppendSharedQuadState();
-  shared_state->SetAll(gfx::Transform(), rect, rect, rect, true, 1,
+  shared_state->SetAll(gfx::Transform(), rect, rect, rect, true, false, 1,
                        SkBlendMode::kSrcOver, 0);
   SolidColorDrawQuad* quad =
       pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
@@ -64,7 +64,8 @@ SolidColorDrawQuad* AddTransformedQuad(RenderPass* pass,
                                        SkColor color,
                                        const gfx::Transform& transform) {
   viz::SharedQuadState* shared_state = pass->CreateAndAppendSharedQuadState();
-  shared_state->SetAll(transform, rect, rect, rect, false, 1,
+  shared_state->SetAll(transform, rect, rect, rect, false, false, 1,
+
                        SkBlendMode::kSrcOver, 0);
   SolidColorDrawQuad* quad =
       pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
@@ -77,7 +78,7 @@ void AddRenderPassQuad(RenderPass* to_pass, RenderPass* contributing_pass) {
   viz::SharedQuadState* shared_state =
       to_pass->CreateAndAppendSharedQuadState();
   shared_state->SetAll(gfx::Transform(), output_rect, output_rect, output_rect,
-                       false, 1, SkBlendMode::kSrcOver, 0);
+                       false, false, 1, SkBlendMode::kSrcOver, 0);
   RenderPassDrawQuad* quad =
       to_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
   quad->SetNew(shared_state, output_rect, output_rect, contributing_pass->id, 0,
@@ -94,7 +95,7 @@ void AddRenderPassQuad(RenderPass* to_pass,
   viz::SharedQuadState* shared_state =
       to_pass->CreateAndAppendSharedQuadState();
   shared_state->SetAll(transform, output_rect, output_rect, output_rect, false,
-                       1, blend_mode, 0);
+                       false, 1, blend_mode, 0);
   RenderPassDrawQuad* quad =
       to_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
   gfx::Size arbitrary_nonzero_size(1, 1);
@@ -166,7 +167,7 @@ void AddOneOfEveryQuadType(RenderPass* to_pass,
 
   viz::SharedQuadState* shared_state =
       to_pass->CreateAndAppendSharedQuadState();
-  shared_state->SetAll(gfx::Transform(), rect, rect, rect, false, 1,
+  shared_state->SetAll(gfx::Transform(), rect, rect, rect, false, false, 1,
                        SkBlendMode::kSrcOver, 0);
 
   DebugBorderDrawQuad* debug_border_quad =
@@ -226,7 +227,7 @@ void AddOneOfEveryQuadType(RenderPass* to_pass,
 
   viz::SharedQuadState* shared_state2 =
       to_pass->CreateAndAppendSharedQuadState();
-  shared_state->SetAll(gfx::Transform(), rect, rect, rect, false, 1,
+  shared_state->SetAll(gfx::Transform(), rect, rect, rect, false, false, 1,
                        SkBlendMode::kSrcOver, 0);
 
   TileDrawQuad* tile_quad = to_pass->CreateAndAppendDrawQuad<TileDrawQuad>();

@@ -42,6 +42,10 @@ struct StructTraits<viz::mojom::SharedQuadStateDataView, OptSharedQuadState> {
     return input.sqs->is_clipped;
   }
 
+  static bool are_contents_opaque(const OptSharedQuadState& input) {
+    return input.sqs->are_contents_opaque;
+  }
+
   static float opacity(const OptSharedQuadState& input) {
     return input.sqs->opacity;
   }
@@ -79,6 +83,10 @@ struct StructTraits<viz::mojom::SharedQuadStateDataView, viz::SharedQuadState> {
     return sqs.is_clipped;
   }
 
+  static bool are_contents_opaque(const viz::SharedQuadState& sqs) {
+    return sqs.are_contents_opaque;
+  }
+
   static float opacity(const viz::SharedQuadState& sqs) { return sqs.opacity; }
 
   static uint32_t blend_mode(const viz::SharedQuadState& sqs) {
@@ -99,6 +107,7 @@ struct StructTraits<viz::mojom::SharedQuadStateDataView, viz::SharedQuadState> {
     }
 
     out->is_clipped = data.is_clipped();
+    out->are_contents_opaque = data.are_contents_opaque();
     out->opacity = data.opacity();
     if (data.blend_mode() > static_cast<int>(SkBlendMode::kLastMode))
       return false;

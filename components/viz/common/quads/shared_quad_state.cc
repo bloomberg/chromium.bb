@@ -32,6 +32,7 @@ void SharedQuadState::SetAll(const gfx::Transform& quad_to_target_transform,
                              const gfx::Rect& visible_quad_layer_rect,
                              const gfx::Rect& clip_rect,
                              bool is_clipped,
+                             bool are_contents_opaque,
                              float opacity,
                              SkBlendMode blend_mode,
                              int sorting_context_id) {
@@ -40,6 +41,7 @@ void SharedQuadState::SetAll(const gfx::Transform& quad_to_target_transform,
   this->visible_quad_layer_rect = visible_quad_layer_rect;
   this->clip_rect = clip_rect;
   this->is_clipped = is_clipped;
+  this->are_contents_opaque = are_contents_opaque;
   this->opacity = opacity;
   this->blend_mode = blend_mode;
   this->sorting_context_id = sorting_context_id;
@@ -52,9 +54,9 @@ void SharedQuadState::AsValueInto(base::trace_event::TracedValue* value) const {
                                  visible_quad_layer_rect, value);
 
   value->SetBoolean("is_clipped", is_clipped);
-
   cc::MathUtil::AddToTracedValue("clip_rect", clip_rect, value);
 
+  value->SetBoolean("are_contents_opaque", are_contents_opaque);
   value->SetDouble("opacity", opacity);
   value->SetString("blend_mode", SkBlendMode_Name(blend_mode));
   TracedValue::MakeDictIntoImplicitSnapshotWithCategory(

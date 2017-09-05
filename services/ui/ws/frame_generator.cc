@@ -132,8 +132,11 @@ cc::CompositorFrame FrameGenerator::GenerateCompositorFrame() {
     gfx::Size scaled_bounds = gfx::ScaleToCeiledSize(
         pixel_size_, window_manager_surface_info_.device_scale_factor(),
         window_manager_surface_info_.device_scale_factor());
+    bool is_clipped = false;
+    bool are_contents_opaque = false;
     shared_state->SetAll(gfx::Transform(), gfx::Rect(scaled_bounds), bounds,
-                         bounds, false, 1.f, SkBlendMode::kSrcOver, 0);
+                         bounds, is_clipped, are_contents_opaque, 1.f,
+                         SkBlendMode::kSrcOver, 0);
     auto* quad = invert_pass->CreateAndAppendDrawQuad<cc::RenderPassDrawQuad>();
     frame.render_pass_list.back()->filters.Append(
         cc::FilterOperation::CreateInvertFilter(1.f));
@@ -192,11 +195,12 @@ void FrameGenerator::DrawWindow(cc::RenderPass* pass) {
 
   // TODO(fsamuel): These clipping and visible rects are incorrect. They need
   // to be populated from CompositorFrame structs.
-  sqs->SetAll(
-      quad_to_target_transform, gfx::Rect(scaled_bounds) /* layer_rect */,
-      bounds_at_origin /* visible_layer_bounds */,
-      bounds_at_origin /* clip_rect */, false /* is_clipped */,
-      1.0f /* opacity */, SkBlendMode::kSrcOver, 0 /* sorting-context_id */);
+  sqs->SetAll(quad_to_target_transform,
+              gfx::Rect(scaled_bounds) /* layer_rect */,
+              bounds_at_origin /* visible_layer_bounds */,
+              bounds_at_origin /* clip_rect */, false /* is_clipped */,
+              false /* are_contents_opaque */, 1.0f /* opacity */,
+              SkBlendMode::kSrcOver, 0 /* sorting-context_id */);
   auto* quad = pass->CreateAndAppendDrawQuad<cc::SurfaceDrawQuad>();
   quad->SetAll(sqs, bounds_at_origin /* rect */,
                bounds_at_origin /* visible_rect */, true /* needs_blending*/,

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "cc/layers/painted_overlay_scrollbar_layer_impl.h"
+#include "cc/trees/layer_tree_impl.h"
 
 namespace cc {
 
@@ -91,7 +92,10 @@ void PaintedOverlayScrollbarLayerImpl::AppendQuads(
 
   viz::SharedQuadState* shared_quad_state =
       render_pass->CreateAndAppendSharedQuadState();
-  PopulateSharedQuadState(shared_quad_state);
+  bool are_contents_opaque =
+      contents_opaque() ||
+      layer_tree_impl()->IsUIResourceOpaque(thumb_ui_resource_id_);
+  PopulateSharedQuadState(shared_quad_state, are_contents_opaque);
 
   AppendDebugBorderQuad(render_pass, bounds(), shared_quad_state,
                         append_quads_data);

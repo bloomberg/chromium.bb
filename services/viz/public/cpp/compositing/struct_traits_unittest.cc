@@ -376,13 +376,14 @@ TEST_F(StructTraitsTest, SharedQuadState) {
   const gfx::Rect visible_layer_rect(12, 34, 56, 78);
   const gfx::Rect clip_rect(123, 456, 789, 101112);
   const bool is_clipped = true;
+  bool are_contents_opaque = true;
   const float opacity = 0.9f;
   const SkBlendMode blend_mode = SkBlendMode::kSrcOver;
   const int sorting_context_id = 1337;
   SharedQuadState input_sqs;
   input_sqs.SetAll(quad_to_target_transform, layer_rect, visible_layer_rect,
-                   clip_rect, is_clipped, opacity, blend_mode,
-                   sorting_context_id);
+                   clip_rect, is_clipped, are_contents_opaque, opacity,
+                   blend_mode, sorting_context_id);
   SharedQuadState output_sqs;
   SerializeAndDeserialize<mojom::SharedQuadState>(input_sqs, &output_sqs);
   EXPECT_EQ(quad_to_target_transform, output_sqs.quad_to_target_transform);
@@ -423,13 +424,15 @@ TEST_F(StructTraitsTest, CompositorFrame) {
   const gfx::Rect sqs_visible_layer_rect(12, 34, 56, 78);
   const gfx::Rect sqs_clip_rect(123, 456, 789, 101112);
   const bool sqs_is_clipped = true;
+  bool sqs_are_contents_opaque = false;
   const float sqs_opacity = 0.9f;
   const SkBlendMode sqs_blend_mode = SkBlendMode::kSrcOver;
   const int sqs_sorting_context_id = 1337;
   SharedQuadState* sqs = render_pass->CreateAndAppendSharedQuadState();
   sqs->SetAll(sqs_quad_to_target_transform, sqs_layer_rect,
               sqs_visible_layer_rect, sqs_clip_rect, sqs_is_clipped,
-              sqs_opacity, sqs_blend_mode, sqs_sorting_context_id);
+              sqs_are_contents_opaque, sqs_opacity, sqs_blend_mode,
+              sqs_sorting_context_id);
 
   // cc::DebugBorderDrawQuad.
   const gfx::Rect rect1(1234, 4321, 1357, 7531);
@@ -508,6 +511,7 @@ TEST_F(StructTraitsTest, CompositorFrame) {
   EXPECT_EQ(sqs_visible_layer_rect, out_sqs->visible_quad_layer_rect);
   EXPECT_EQ(sqs_clip_rect, out_sqs->clip_rect);
   EXPECT_EQ(sqs_is_clipped, out_sqs->is_clipped);
+  EXPECT_EQ(sqs_are_contents_opaque, out_sqs->are_contents_opaque);
   EXPECT_EQ(sqs_opacity, out_sqs->opacity);
   EXPECT_EQ(sqs_blend_mode, out_sqs->blend_mode);
   EXPECT_EQ(sqs_sorting_context_id, out_sqs->sorting_context_id);
@@ -707,14 +711,16 @@ TEST_F(StructTraitsTest, RenderPass) {
       gfx::Transform(16.1f, 15.3f, 14.3f, 13.7f, 12.2f, 11.4f, 10.4f, 9.8f,
                      8.1f, 7.3f, 6.3f, 5.7f, 4.8f, 3.4f, 2.4f, 1.2f),
       gfx::Rect(1, 2), gfx::Rect(1337, 5679, 9101112, 131415),
-      gfx::Rect(1357, 2468, 121314, 1337), true, 2, SkBlendMode::kSrcOver, 1);
+      gfx::Rect(1357, 2468, 121314, 1337), true, true, 2, SkBlendMode::kSrcOver,
+      1);
 
   SharedQuadState* shared_state_2 = input->CreateAndAppendSharedQuadState();
   shared_state_2->SetAll(
       gfx::Transform(1.1f, 2.3f, 3.3f, 4.7f, 5.2f, 6.4f, 7.4f, 8.8f, 9.1f,
                      10.3f, 11.3f, 12.7f, 13.8f, 14.4f, 15.4f, 16.2f),
       gfx::Rect(1337, 1234), gfx::Rect(1234, 5678, 9101112, 13141516),
-      gfx::Rect(1357, 2468, 121314, 1337), true, 2, SkBlendMode::kSrcOver, 1);
+      gfx::Rect(1357, 2468, 121314, 1337), true, true, 2, SkBlendMode::kSrcOver,
+      1);
 
   // This quad uses the first shared quad state. The next two quads use the
   // second shared quad state.

@@ -110,6 +110,8 @@ void NeedsBlendingTest(FakeUIResourceLayerTreeHostImpl* host_impl,
   const QuadList& quads = render_pass->quad_list;
   EXPECT_GE(quads.size(), (size_t)0);
   EXPECT_EQ(needs_blending, quads.front()->needs_blending);
+  EXPECT_EQ(quads.front()->needs_blending,
+            !quads.front()->shared_quad_state->are_contents_opaque);
 
   host_impl->active_tree()->DetachLayers();
 }

@@ -207,7 +207,7 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
       render_pass->CreateAndAppendSharedQuadState();
 
   if (raster_source_->IsSolidColor()) {
-    PopulateSharedQuadState(shared_quad_state);
+    PopulateSharedQuadState(shared_quad_state, contents_opaque());
 
     AppendDebugBorderQuad(
         render_pass, bounds(), shared_quad_state, append_quads_data);
@@ -223,7 +223,7 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
       layer_tree_impl() ? layer_tree_impl()->device_scale_factor() : 1;
   float max_contents_scale = MaximumTilingContentsScale();
   PopulateScaledSharedQuadState(shared_quad_state, max_contents_scale,
-                                max_contents_scale);
+                                max_contents_scale, contents_opaque());
   Occlusion scaled_occlusion;
   if (mask_type_ == Layer::LayerMaskType::NOT_MASK) {
     scaled_occlusion =
