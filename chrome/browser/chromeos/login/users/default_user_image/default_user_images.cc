@@ -105,6 +105,11 @@ const int kDefaultImagesCount = arraysize(kDefaultImageResourceIDs);
 
 const int kFirstDefaultImageIndex = 34;
 
+// Limit random default image index to prevent undesirable UI behavior when
+// selecting an image with a high index. E.g. automatic scrolling of picture
+// list that is used to present default images.
+const int kLastRandomDefaultImageIndex = 47;
+
 // The order and the values of these constants are important for histograms
 // of different Chrome OS versions to be merged smoothly.
 const int kHistogramImageFromCamera = 19;
@@ -322,9 +327,9 @@ const gfx::ImageSkia& GetDefaultImage(int index) {
 }
 
 int GetRandomDefaultImageIndex() {
-  int first, last;
-  GetFirstLastIndex(&first, &last);
-  return base::RandInt(first, last);
+  int first;
+  GetFirstLastIndex(&first, nullptr);
+  return base::RandInt(first, kLastRandomDefaultImageIndex);
 }
 
 bool IsInCurrentImageSet(int index) {
