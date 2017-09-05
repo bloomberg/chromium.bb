@@ -106,6 +106,12 @@ class UserEventSyncBridgeTest : public testing::Test {
         &test_global_id_mapper_);
   }
 
+  ~UserEventSyncBridgeTest() override {
+    // Get[All]Data() calls are async, so this will run the verification they
+    // call in their callbacks.
+    base::RunLoop().RunUntilIdle();
+  }
+
   std::string GetStorageKey(const UserEventSpecifics& specifics) {
     EntityData entity_data;
     *entity_data.specifics.mutable_user_event() = specifics;
@@ -113,7 +119,7 @@ class UserEventSyncBridgeTest : public testing::Test {
   }
 
   UserEventSyncBridge* bridge() { return bridge_.get(); }
-  const RecordingModelTypeChangeProcessor& processor() { return *processor_; }
+  RecordingModelTypeChangeProcessor* processor() { return processor_; }
   TestGlobalIdMapper* mapper() { return &test_global_id_mapper_; }
 
  private:
@@ -125,22 +131,27 @@ class UserEventSyncBridgeTest : public testing::Test {
 
 TEST_F(UserEventSyncBridgeTest, MetadataIsInitialized) {
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(processor().metadata()->GetModelTypeState().initial_sync_done());
+  EXPECT_TRUE(processor()->metadata()->GetModelTypeState().initial_sync_done());
 }
 
 TEST_F(UserEventSyncBridgeTest, SingleRecord) {
   const UserEventSpecifics specifics(CreateSpecifics(1u, 2u, 3u));
   bridge()->RecordUserEvent(std::make_unique<UserEventSpecifics>(specifics));
-  EXPECT_EQ(1u, processor().put_multimap().size());
+  EXPECT_EQ(1u, processor()->put_multimap().size());
 
-  const std::string storage_key = processor().put_multimap().begin()->first;
+  const std::string storage_key = processor()->put_multimap().begin()->first;
   bridge()->GetData({storage_key}, VerifyCallback({{storage_key, specifics}}));
   bridge()->GetData({"bogus"}, base::Bind(&VerifyDataBatchCount, 0));
   bridge()->GetAllData(VerifyCallback({{storage_key, specifics}}));
 
   bridge()->DisableSync();
+
+  // Disabling deletes records through multiple round trips, if we quickly call
+  // GetAllData() we're going to beat the deletions to the storage task.
+  base::RunLoop().RunUntilIdle();
+
   bridge()->GetAllData(base::Bind(&VerifyDataBatchCount, 0));
-  EXPECT_EQ(0u, processor().delete_set().size());
+  EXPECT_EQ(0u, processor()->delete_set().size());
 }
 
 TEST_F(UserEventSyncBridgeTest, MultipleRecords) {
@@ -149,13 +160,13 @@ TEST_F(UserEventSyncBridgeTest, MultipleRecords) {
   bridge()->RecordUserEvent(SpecificsUniquePtr(1u, 2u, 2u));
   bridge()->RecordUserEvent(SpecificsUniquePtr(2u, 2u, 2u));
 
-  EXPECT_EQ(4u, processor().put_multimap().size());
+  EXPECT_EQ(4u, processor()->put_multimap().size());
   std::set<std::string> unique_storage_keys;
-  for (const auto& kv : processor().put_multimap()) {
+  for (const auto& kv : processor()->put_multimap()) {
     unique_storage_keys.insert(kv.first);
   }
   EXPECT_EQ(2u, unique_storage_keys.size());
-  bridge()->GetAllData(base::Bind(&VerifyDataBatchCount, 4));
+  bridge()->GetAllData(base::Bind(&VerifyDataBatchCount, 2));
 }
 
 TEST_F(UserEventSyncBridgeTest, ApplySyncChanges) {
@@ -163,7 +174,7 @@ TEST_F(UserEventSyncBridgeTest, ApplySyncChanges) {
   bridge()->RecordUserEvent(SpecificsUniquePtr(2u, 2u, 2u));
   bridge()->GetAllData(base::Bind(&VerifyDataBatchCount, 2));
 
-  const std::string storage_key = processor().put_multimap().begin()->first;
+  const std::string storage_key = processor()->put_multimap().begin()->first;
   auto error_on_delete =
       bridge()->ApplySyncChanges(bridge()->CreateMetadataChangeList(),
                                  {EntityChange::CreateDelete(storage_key)});
@@ -179,17 +190,16 @@ TEST_F(UserEventSyncBridgeTest, HandleGlobalIdChange) {
 
   // This id update should be applied to the event as it is initially recorded.
   mapper()->ChangeId(first_id, second_id);
-  bridge()->RecordUserEvent(
-      std::make_unique<UserEventSpecifics>(CreateSpecifics(1u, first_id, 2u)));
-  const std::string storage_key = processor().put_multimap().begin()->first;
-  EXPECT_EQ(1u, processor().put_multimap().size());
+  bridge()->RecordUserEvent(SpecificsUniquePtr(1u, first_id, 2u));
+  const std::string storage_key = processor()->put_multimap().begin()->first;
+  EXPECT_EQ(1u, processor()->put_multimap().size());
   bridge()->GetAllData(
       VerifyCallback({{storage_key, CreateSpecifics(1u, second_id, 2u)}}));
 
   // This id update is done while the event is "in flight", and should result in
   // it being updated and re-sent to sync.
   mapper()->ChangeId(second_id, third_id);
-  EXPECT_EQ(2u, processor().put_multimap().size());
+  EXPECT_EQ(2u, processor()->put_multimap().size());
   bridge()->GetAllData(
       VerifyCallback({{storage_key, CreateSpecifics(1u, third_id, 2u)}}));
   auto error_on_delete =
@@ -201,7 +211,7 @@ TEST_F(UserEventSyncBridgeTest, HandleGlobalIdChange) {
   // This id update should be ignored, since we received commit confirmation
   // above.
   mapper()->ChangeId(third_id, fourth_id);
-  EXPECT_EQ(2u, processor().put_multimap().size());
+  EXPECT_EQ(2u, processor()->put_multimap().size());
   bridge()->GetAllData(base::Bind(&VerifyDataBatchCount, 0));
 }
 
@@ -235,6 +245,12 @@ TEST_F(UserEventSyncBridgeTest, MulipleEventsChanging) {
       VerifyCallback({{key1, CreateSpecifics(1u, fourth_id, 2u)},
                       {key2, CreateSpecifics(3u, fourth_id, 4u)},
                       {key3, CreateSpecifics(5u, fourth_id, 6u)}}));
+}
+
+TEST_F(UserEventSyncBridgeTest, RecordBeforeMetadataLoads) {
+  processor()->SetIsTrackingMetadata(false);
+  bridge()->RecordUserEvent(SpecificsUniquePtr(1u, 2u, 3u));
+  bridge()->GetAllData(VerifyCallback({}));
 }
 
 }  // namespace
