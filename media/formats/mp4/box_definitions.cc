@@ -665,8 +665,9 @@ bool VPCodecConfigurationRecord::Parse(BoxReader* reader) {
       profile = VP9PROFILE_PROFILE3;
       break;
     default:
-      MEDIA_LOG(ERROR, reader->media_log()) << "Unsupported VP9 profile: "
-                                            << profile_indication;
+      MEDIA_LOG(ERROR, reader->media_log())
+          << "Unsupported VP9 profile: 0x" << std::hex
+          << static_cast<uint32_t>(profile_indication);
       return false;
   }
   return true;
