@@ -98,6 +98,7 @@ bool CleanupDownloadsSync(
   if (!transaction.Begin())
     return false;
 
+  // TODO(carlosk): add UMA to track any extraordinary conditions detected here.
   std::vector<DownloadInfo> outstanding_prefetch_downloads =
       GetAllOutstandingDownloadsSync(db);
   if (outstanding_prefetch_downloads.empty())

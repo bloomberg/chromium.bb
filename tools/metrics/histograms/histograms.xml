@@ -50672,6 +50672,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="OfflinePages.Prefetching.DownloadedFileSize" units="KiB">
+  <owner>carlosk@chromium.org</owner>
+  <summary>
+    Actual size of archive file successfully downloaded by offline page
+    prefetching.
+  </summary>
+</histogram>
+
+<histogram name="OfflinePages.Prefetching.DownloadExpectedFileSize" units="KiB">
+  <owner>carlosk@chromium.org</owner>
+  <summary>
+    Expected size of archive file that started being downloaded by offline page
+    prefetching.
+  </summary>
+</histogram>
+
 <histogram name="OfflinePages.Prefetching.FinishedItemErrorCode"
     enum="OfflinePrefetchItemErrorCode">
   <owner>carlosk@chromium.org</owner>
