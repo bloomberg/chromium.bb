@@ -124,32 +124,32 @@ void AddOneOfEveryQuadType(RenderPass* to_pass,
 
   viz::ResourceId resource1 = resource_provider->CreateResource(
       gfx::Size(45, 5), ResourceProvider::TEXTURE_HINT_IMMUTABLE,
-      resource_provider->best_texture_format(), gfx::ColorSpace());
+      resource_provider->best_texture_format(), gfx::ColorSpace::CreateSRGB());
   resource_provider->AllocateForTesting(resource1);
   viz::ResourceId resource2 = resource_provider->CreateResource(
       gfx::Size(346, 61), ResourceProvider::TEXTURE_HINT_IMMUTABLE,
-      resource_provider->best_texture_format(), gfx::ColorSpace());
+      resource_provider->best_texture_format(), gfx::ColorSpace::CreateSRGB());
   resource_provider->AllocateForTesting(resource2);
   viz::ResourceId resource3 = resource_provider->CreateResource(
       gfx::Size(12, 134), ResourceProvider::TEXTURE_HINT_IMMUTABLE,
-      resource_provider->best_texture_format(), gfx::ColorSpace());
+      resource_provider->best_texture_format(), gfx::ColorSpace::CreateSRGB());
   resource_provider->AllocateForTesting(resource3);
   viz::ResourceId resource4 = resource_provider->CreateResource(
       gfx::Size(56, 12), ResourceProvider::TEXTURE_HINT_IMMUTABLE,
-      resource_provider->best_texture_format(), gfx::ColorSpace());
+      resource_provider->best_texture_format(), gfx::ColorSpace::CreateSRGB());
   resource_provider->AllocateForTesting(resource4);
   gfx::Size resource5_size(73, 26);
   viz::ResourceId resource5 = resource_provider->CreateResource(
       resource5_size, ResourceProvider::TEXTURE_HINT_IMMUTABLE,
-      resource_provider->best_texture_format(), gfx::ColorSpace());
+      resource_provider->best_texture_format(), gfx::ColorSpace::CreateSRGB());
   resource_provider->AllocateForTesting(resource5);
   viz::ResourceId resource6 = resource_provider->CreateResource(
       gfx::Size(64, 92), ResourceProvider::TEXTURE_HINT_IMMUTABLE,
-      resource_provider->best_texture_format(), gfx::ColorSpace());
+      resource_provider->best_texture_format(), gfx::ColorSpace::CreateSRGB());
   resource_provider->AllocateForTesting(resource6);
   viz::ResourceId resource7 = resource_provider->CreateResource(
       gfx::Size(9, 14), ResourceProvider::TEXTURE_HINT_IMMUTABLE,
-      resource_provider->best_texture_format(), gfx::ColorSpace());
+      resource_provider->best_texture_format(), gfx::ColorSpace::CreateSRGB());
   resource_provider->AllocateForTesting(resource7);
 
   unsigned target = GL_TEXTURE_2D;
@@ -238,7 +238,8 @@ void AddOneOfEveryQuadType(RenderPass* to_pass,
   for (int i = 0; i < 4; ++i) {
     plane_resources[i] = resource_provider->CreateResource(
         gfx::Size(20, 12), ResourceProvider::TEXTURE_HINT_IMMUTABLE,
-        resource_provider->best_texture_format(), gfx::ColorSpace());
+        resource_provider->best_texture_format(),
+        gfx::ColorSpace::CreateREC601());
     resource_provider->AllocateForTesting(plane_resources[i]);
   }
   YUVVideoDrawQuad::ColorSpace color_space = YUVVideoDrawQuad::REC_601;
@@ -250,7 +251,7 @@ void AddOneOfEveryQuadType(RenderPass* to_pass,
                    gfx::RectF(.0f, .0f, 50.0f, 50.0f), gfx::Size(100, 100),
                    gfx::Size(50, 50), plane_resources[0], plane_resources[1],
                    plane_resources[2], plane_resources[3], color_space,
-                   gfx::ColorSpace::CreateJpeg(), 0.0, 1.0, 8);
+                   gfx::ColorSpace::CreateREC601(), 0.0, 1.0, 8);
 }
 
 }  // namespace cc

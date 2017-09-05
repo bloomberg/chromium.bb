@@ -2143,23 +2143,25 @@ void GLRenderer::DrawYUVVideoQuad(const cc::YUVVideoDrawQuad* quad,
         break;
     }
   }
-  // Invalid or unspecified color spaces should be treated as REC709.
-  if (!src_color_space.IsValid())
-    src_color_space = gfx::ColorSpace::CreateREC709();
-
-  // The source color space should never be RGB.
-  DCHECK_NE(src_color_space, src_color_space.GetAsFullRangeRGB());
-
   cc::DisplayResourceProvider::ScopedSamplerGL y_plane_lock(
       resource_provider_, quad->y_plane_resource_id(), GL_TEXTURE1, GL_LINEAR);
-  if (base::FeatureList::IsEnabled(media::kVideoColorManagement))
-    DCHECK_EQ(src_color_space, y_plane_lock.color_space());
   cc::DisplayResourceProvider::ScopedSamplerGL u_plane_lock(
       resource_provider_, quad->u_plane_resource_id(), GL_TEXTURE2, GL_LINEAR);
   DCHECK_EQ(y_plane_lock.target(), u_plane_lock.target());
   DCHECK_EQ(y_plane_lock.color_space(), u_plane_lock.color_space());
   // TODO(jbauman): Use base::Optional when available.
   std::unique_ptr<cc::DisplayResourceProvider::ScopedSamplerGL> v_plane_lock;
+
+  // Invalid or unspecified color spaces should be treated as REC709.
+  if (!src_color_space.IsValid())
+    src_color_space = gfx::ColorSpace::CreateREC709();
+#if DCHECK_IS_ON()
+  else if (base::FeatureList::IsEnabled(media::kVideoColorManagement))
+    DCHECK_EQ(src_color_space, y_plane_lock.color_space());
+#endif
+
+  // The source color space should never be RGB.
+  DCHECK_NE(src_color_space, src_color_space.GetAsFullRangeRGB());
 
   if (uv_texture_mode == UV_TEXTURE_MODE_U_V) {
     v_plane_lock.reset(new cc::DisplayResourceProvider::ScopedSamplerGL(
