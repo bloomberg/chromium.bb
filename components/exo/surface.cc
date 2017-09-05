@@ -312,6 +312,8 @@ void Surface::RemoveSubSurface(Surface* sub_surface) {
       FindListEntry(pending_sub_surfaces_, sub_surface));
   DCHECK(ListContainsEntry(sub_surfaces_, sub_surface));
   sub_surfaces_.erase(FindListEntry(sub_surfaces_, sub_surface));
+  // Force recreating resources when the surface is added to a tree again.
+  sub_surface->SurfaceHierarchyResourcesLost();
 }
 
 void Surface::SetSubSurfacePosition(Surface* sub_surface,
@@ -426,7 +428,6 @@ void Surface::Commit() {
 
 void Surface::CommitSurfaceHierarchy(
     const gfx::Point& origin,
-    LayerTreeFrameSinkHolder* frame_sink_holder,
     std::list<FrameCallback>* frame_callbacks,
     std::list<PresentationCallback>* presentation_callbacks) {
   if (needs_commit_surface_) {
@@ -449,10 +450,8 @@ void Surface::CommitSurfaceHierarchy(
     // We update contents if Attach() has been called since last commit.
     if (has_pending_contents_) {
       has_pending_contents_ = false;
-
       current_buffer_ = std::move(pending_buffer_);
-
-      UpdateResource(frame_sink_holder, true);
+      needs_update_resource_ = true;
     }
 
     // Move pending frame callbacks to the end of frame_callbacks.
@@ -506,8 +505,8 @@ void Surface::CommitSurfaceHierarchy(
     // Synchronsouly commit all pending state of the sub-surface and its
     // decendents.
     sub_surface->CommitSurfaceHierarchy(
-        origin + sub_surface_entry.second.OffsetFromOrigin(), frame_sink_holder,
-        frame_callbacks, presentation_callbacks);
+        origin + sub_surface_entry.second.OffsetFromOrigin(), frame_callbacks,
+        presentation_callbacks);
   }
 }
 
@@ -526,6 +525,9 @@ void Surface::AppendSurfaceHierarchyContentsToFrame(
         origin + sub_surface_entry.second.OffsetFromOrigin(),
         device_scale_factor, frame_sink_holder, frame);
   }
+
+  if (needs_update_resource_)
+    UpdateResource(frame_sink_holder);
 
   AppendContentsToFrame(origin, device_scale_factor, frame);
 
@@ -616,12 +618,13 @@ void Surface::SetStylusOnly() {
   window_->SetProperty(kStylusOnlyKey, true);
 }
 
-void Surface::RecreateResources(LayerTreeFrameSinkHolder* frame_sink_holder) {
+void Surface::SurfaceHierarchyResourcesLost() {
+  // Update resource and full damage are needed for next frame.
+  needs_update_resource_ = true;
   damage_.setRect(
       SkIRect::MakeWH(content_size_.width(), content_size_.height()));
-  UpdateResource(frame_sink_holder, false);
   for (const auto& sub_surface : sub_surfaces_)
-    sub_surface.first->RecreateResources(frame_sink_holder);
+    sub_surface.first->SurfaceHierarchyResourcesLost();
 }
 
 bool Surface::FillsBoundsOpaquely() const {
@@ -680,14 +683,22 @@ void Surface::BufferAttachment::Reset(base::WeakPtr<Buffer> buffer) {
   buffer_ = buffer;
 }
 
-void Surface::UpdateResource(LayerTreeFrameSinkHolder* frame_sink_holder,
-                             bool client_usage) {
-  if (current_buffer_.buffer() &&
-      current_buffer_.buffer()->ProduceTransferableResource(
-          frame_sink_holder, state_.only_visible_on_secure_output, client_usage,
-          &current_resource_)) {
-    current_resource_has_alpha_ =
-        FormatHasAlpha(current_buffer_.buffer()->GetFormat());
+void Surface::UpdateResource(LayerTreeFrameSinkHolder* frame_sink_holder) {
+  DCHECK(needs_update_resource_);
+  needs_update_resource_ = false;
+  if (current_buffer_.buffer()) {
+    if (current_buffer_.buffer()->ProduceTransferableResource(
+            frame_sink_holder, state_.only_visible_on_secure_output,
+            &current_resource_)) {
+      current_resource_has_alpha_ =
+          FormatHasAlpha(current_buffer_.buffer()->GetFormat());
+    } else {
+      current_resource_.id = 0;
+      // Use the buffer's size, so the AppendContentsToFrame() will append
+      // a SolidColorDrawQuad with the buffer's size.
+      current_resource_.size = current_buffer_.buffer()->GetSize();
+      current_resource_has_alpha_ = false;
+    }
   } else {
     current_resource_.id = 0;
     current_resource_.size = gfx::Size();
@@ -802,10 +813,11 @@ void Surface::UpdateContentSize() {
         << ") most be expressible using integers when viewport is not set";
     content_size = gfx::ToCeiledSize(state_.crop.size());
   } else {
-    content_size = gfx::ToCeiledSize(
-        gfx::ScaleSize(gfx::SizeF(ToTransformedSize(current_resource_.size,
-                                                    state_.buffer_transform)),
-                       1.0f / state_.buffer_scale));
+    auto size = current_buffer_.buffer() ? current_buffer_.buffer()->GetSize()
+                                         : gfx::Size();
+    content_size = gfx::ToCeiledSize(gfx::ScaleSize(
+        gfx::SizeF(ToTransformedSize(size, state_.buffer_transform)),
+        1.0f / state_.buffer_scale));
   }
 
   // Enable/disable sub-surface based on if it has contents.

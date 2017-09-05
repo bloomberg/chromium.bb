@@ -55,7 +55,6 @@ class Buffer : public base::SupportsWeakPtr<Buffer> {
   bool ProduceTransferableResource(
       LayerTreeFrameSinkHolder* layer_tree_frame_sink_holder,
       bool secure_output_only,
-      bool client_usage,
       viz::TransferableResource* resource);
 
   // This should be called when the buffer is attached to a Surface.

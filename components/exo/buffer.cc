@@ -415,13 +415,9 @@ Buffer::~Buffer() {}
 bool Buffer::ProduceTransferableResource(
     LayerTreeFrameSinkHolder* layer_tree_frame_sink_holder,
     bool secure_output_only,
-    bool client_usage,
     viz::TransferableResource* resource) {
   TRACE_EVENT0("exo", "Buffer::ProduceTransferableResource");
-
   DCHECK(attach_count_);
-  DLOG_IF(WARNING, !release_contents_callback_.IsCancelled() && client_usage)
-      << "Producing a texture mailbox for a buffer that has not been released";
 
   // If textures are lost, destroy them to ensure that we create new ones below.
   if (contents_texture_ && contents_texture_->IsLost())
