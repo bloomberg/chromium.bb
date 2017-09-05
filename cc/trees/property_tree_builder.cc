@@ -343,8 +343,7 @@ void PropertyTreeBuilderContext<LayerType>::AddClipNodeIfNeeded(
     } else {
       DCHECK(Filters(layer).HasFilterThatMovesPixels());
       node.clip_type = ClipNode::ClipType::EXPANDS_CLIP;
-      node.clip_expander =
-          std::make_unique<ClipExpander>(layer->effect_tree_index());
+      node.clip_expander = ClipExpander(layer->effect_tree_index());
     }
     data_for_children->clip_tree_parent = clip_tree_.Insert(node, parent_id);
   }

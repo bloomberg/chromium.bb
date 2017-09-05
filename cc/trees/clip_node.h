@@ -5,9 +5,8 @@
 #ifndef CC_TREES_CLIP_NODE_H_
 #define CC_TREES_CLIP_NODE_H_
 
-#include <memory>
-
 #include "base/containers/stack_container.h"
+#include "base/optional.h"
 #include "cc/cc_export.h"
 #include "cc/trees/clip_expander.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -66,7 +65,7 @@ struct CC_EXPORT ClipNode {
   gfx::RectF cached_accumulated_rect_in_screen_space;
 
   // For nodes that expand, this represents the amount of expansion.
-  std::unique_ptr<ClipExpander> clip_expander;
+  base::Optional<ClipExpander> clip_expander;
 
   // The id of the transform node that defines the clip node's local space.
   int transform_id;
