@@ -1594,4 +1594,38 @@ TEST_F(MultibufferDataSourceTest, Http_CheckLoadingTransition) {
   Stop();
 }
 
+TEST_F(MultibufferDataSourceTest, Http_Seek_Back) {
+  InitializeWith206Response();
+
+  // Read a bit from the beginning.
+  EXPECT_CALL(*this, ReadCallback(kDataSize));
+  ReadAt(0);
+
+  ReadAt(kDataSize);
+  EXPECT_CALL(*this, ReadCallback(kDataSize));
+  EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize * 2));
+  ReceiveData(kDataSize);
+  ReadAt(kDataSize * 2);
+  EXPECT_CALL(*this, ReadCallback(kDataSize));
+  EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize * 3));
+  ReceiveData(kDataSize);
+
+  // Read some data from far ahead.
+  ReadAt(kFarReadPosition);
+  EXPECT_CALL(*this, ReadCallback(kDataSize));
+  EXPECT_CALL(host_, AddBufferedByteRange(kFarReadPosition,
+                                          kFarReadPosition + kDataSize));
+  Respond(response_generator_->Generate206(kFarReadPosition));
+  ReceiveData(kDataSize);
+
+  // This should not close the current connection, because we have
+  // more data buffered at this location than at kFarReadPosition.
+  EXPECT_CALL(*this, ReadCallback(kDataSize));
+  ReadAt(0);
+
+  EXPECT_EQ(kFarReadPosition + kDataSize, loader()->Tell());
+
+  Stop();
+}
+
 }  // namespace media
