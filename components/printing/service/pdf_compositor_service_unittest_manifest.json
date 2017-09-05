@@ -9,7 +9,7 @@
         ]
       },
       "requires": {
-        "pdf_compositor": [ "composite" ],
+        "pdf_compositor": [ "compositor" ],
         "service_manager": [ "service_manager:service_manager" ]
       }
     }
