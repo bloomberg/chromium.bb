@@ -92,10 +92,22 @@ class SigninManager : public SigninManagerBase,
   // in-progress credentials to the new profile.
   virtual void CopyCredentialsFrom(const SigninManager& source);
 
-  // Sign a user out, removing the preference, erasing all keys
-  // associated with the user, and canceling all auth in progress.
-  virtual void SignOut(signin_metrics::ProfileSignout signout_source_metric,
-                       signin_metrics::SignoutDelete signout_delete_metric);
+  // Signs a user out, removing the preference, erasing all keys
+  // associated with the authenticated user, and canceling all auth in progress.
+  // On mobile and on desktop pre-DICE, this also removes all accounts from
+  // Chrome by revoking all refresh tokens.
+  // On desktop with DICE enabled, this will not remove all accounts from
+  // Chrome.
+  void SignOut(signin_metrics::ProfileSignout signout_source_metric,
+               signin_metrics::SignoutDelete signout_delete_metric);
+
+  // Signs a user out, removing the preference, erasing all keys
+  // associated with the authenticated user, and canceling all auth in progress.
+  // It removes removes all accounts from Chrome by revoking all refresh
+  // tokens.
+  void SignOutAndRemoveAllAccounts(
+      signin_metrics::ProfileSignout signout_source_metric,
+      signin_metrics::SignoutDelete signout_delete_metric);
 
   // On platforms where SigninManager is responsible for dealing with
   // invalid username policy updates, we need to check this during
@@ -151,7 +163,8 @@ class SigninManager : public SigninManagerBase,
 
   // The sign out process which is started by SigninClient::PreSignOut()
   virtual void DoSignOut(signin_metrics::ProfileSignout signout_source_metric,
-                         signin_metrics::SignoutDelete signout_delete_metric);
+                         signin_metrics::SignoutDelete signout_delete_metric,
+                         bool remove_all_accounts);
 
  private:
   enum SigninType {
@@ -207,6 +220,11 @@ class SigninManager : public SigninManagerBase,
   // to |error|, sends out a notification of login failure and clears the
   // transient signin data.
   void HandleAuthError(const GoogleServiceAuthError& error);
+
+  // Starts the sign out process.
+  void StartSignOut(signin_metrics::ProfileSignout signout_source_metric,
+                    signin_metrics::SignoutDelete signout_delete_metric,
+                    bool remove_all_accounts);
 
   void OnSigninAllowedPrefChanged();
   void OnGoogleServicesUsernamePatternChanged();

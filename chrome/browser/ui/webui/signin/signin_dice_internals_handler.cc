@@ -25,6 +25,10 @@ void SigninDiceInternalsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "enableSync", base::Bind(&SigninDiceInternalsHandler::HandleEnableSync,
                                base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback(
+      "disableSync", base::Bind(&SigninDiceInternalsHandler::HandleDisableSync,
+                                base::Unretained(this)));
 }
 
 void SigninDiceInternalsHandler::HandleEnableSync(const base::ListValue* args) {
@@ -55,4 +59,17 @@ void SigninDiceInternalsHandler::HandleEnableSync(const base::ListValue* args) {
   OneClickSigninSyncStarter::Callback callback;
   new OneClickSigninSyncStarter(profile_, browser, gaia_id, email,
                                 web_ui()->GetWebContents(), callback);
+}
+
+void SigninDiceInternalsHandler::HandleDisableSync(
+    const base::ListValue* args) {
+  SigninManager* signin_manager = SigninManagerFactory::GetForProfile(profile_);
+  if (!signin_manager->IsAuthenticated()) {
+    VLOG(2) << "[Dice] Cannot disable sync as profile is not authenticated";
+    return;
+  }
+
+  VLOG(2) << "[Dice] Sign out.";
+  signin_manager->SignOut(signin_metrics::USER_TUNED_OFF_SYNC_FROM_DICE_UI,
+                          signin_metrics::SignoutDelete::IGNORE_METRIC);
 }

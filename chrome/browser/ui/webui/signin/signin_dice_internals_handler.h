@@ -25,6 +25,9 @@ class SigninDiceInternalsHandler : public content::WebUIMessageHandler {
   // Handler for enable sync event.
   void HandleEnableSync(const base::ListValue* args);
 
+  // Handler for disable sync event.
+  void HandleDisableSync(const base::ListValue* args);
+
   Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(SigninDiceInternalsHandler);

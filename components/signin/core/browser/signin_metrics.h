@@ -48,6 +48,8 @@ enum ProfileSignout {
   TRANSFER_CREDENTIALS,
   // Signed out because credentials are invalid and force-sign-in is enabled.
   AUTHENTICATION_FAILED_WITH_FORCE_SIGNIN,
+  // The user disables sync from the DICE UI.
+  USER_TUNED_OFF_SYNC_FROM_DICE_UI,
   // Keep this as the last enum.
   NUM_PROFILE_SIGNOUT_METRICS,
 };

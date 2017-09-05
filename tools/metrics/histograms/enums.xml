@@ -35116,6 +35116,9 @@ from previous Chrome versions.
   <int value="7" label="Authentication failed with force signin">
     Signed out because credentials are invalid and force-sign-in is enabled.
   </int>
+  <int value="8" label="User turned off sync from DICE UI.">
+    User turned off sync from the Desktop Identity Consistency internals UI.
+  </int>
 </enum>
 
 <enum name="SigninSource">
