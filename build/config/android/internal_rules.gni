@@ -572,6 +572,9 @@ template("test_runner_script") {
           "@FileArg($_rebased_apk_under_test_build_config:deps_info:enable_relocation_packing)",
         ]
       }
+      if (defined(invoker.proguard_enabled) && invoker.proguard_enabled) {
+        test_runner_args += [ "--enable-java-deobfuscation" ]
+      }
       if (emma_coverage) {
         # Set a default coverage output directory (can be overridden by user
         # passing the same flag).

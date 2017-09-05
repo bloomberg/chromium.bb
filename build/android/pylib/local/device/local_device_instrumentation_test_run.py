@@ -459,16 +459,20 @@ class LocalDeviceInstrumentationTestRun(
     logcat_url = logmon.GetLogcatURL()
     duration_ms = time_ms() - start_ms
 
+    with contextlib_ext.Optional(
+        trace_event.trace('ProcessResults'),
+        self._env.trace_output):
+      output = self._test_instance.MaybeDeobfuscateLines(output)
+      # TODO(jbudorick): Make instrumentation tests output a JSON so this
+      # doesn't have to parse the output.
+      result_code, result_bundle, statuses = (
+          self._test_instance.ParseAmInstrumentRawOutput(output))
+      results = self._test_instance.GenerateTestResults(
+          result_code, result_bundle, statuses, start_ms, duration_ms,
+          device.product_cpu_abi, self._test_instance.symbolizer)
+
     if self._env.trace_output:
       self._SaveTraceData(trace_device_file, device, test['class'])
-
-    # TODO(jbudorick): Make instrumentation tests output a JSON so this
-    # doesn't have to parse the output.
-    result_code, result_bundle, statuses = (
-        self._test_instance.ParseAmInstrumentRawOutput(output))
-    results = self._test_instance.GenerateTestResults(
-        result_code, result_bundle, statuses, start_ms, duration_ms,
-        device.product_cpu_abi, self._test_instance.symbolizer)
 
     def restore_flags():
       if flags_to_add:
