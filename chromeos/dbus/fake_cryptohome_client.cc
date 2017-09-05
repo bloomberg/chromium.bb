@@ -377,9 +377,11 @@ bool FakeCryptohomeClient::InstallAttributesIsFirstInstall(
 
 void FakeCryptohomeClient::TpmAttestationIsPrepared(
     const BoolDBusMethodCallback& callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, DBUS_METHOD_CALL_SUCCESS,
-                                tpm_attestation_is_prepared_));
+  auto task = service_is_available_
+                  ? base::BindOnce(callback, DBUS_METHOD_CALL_SUCCESS,
+                                   tpm_attestation_is_prepared_)
+                  : base::BindOnce(callback, DBUS_METHOD_CALL_FAILURE, false);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(task));
 }
 
 void FakeCryptohomeClient::TpmAttestationIsEnrolled(
