@@ -78,6 +78,11 @@
   width: 15px;
 }
 
+html[dir=rtl] .close-button {
+  left: 0;
+  right: auto;
+}
+
 .close-button:hover {
   opacity: .8;
 }
@@ -189,6 +194,10 @@
   transition: transform 218ms, opacity 218ms ease-in;
 }
 
+html[dir=rtl] .button-container {
+  float: left;
+}
+
 /* Common styles applied to the button-container. */
 .overlay .button-container,
 .overlay-hidden .button-container {
@@ -196,6 +205,12 @@
   right: -70px;
   top: -70px;
   width: 165px;
+}
+
+html[dir=rtl] .overlay .button-container,
+html[dir=rtl] .overlay-hidden .button-container {
+  left: -70px;
+  right: auto;
 }
 
 /* Container style when speech recognition is inactive. */
@@ -244,9 +259,18 @@
               top 0s linear 218ms;
 }
 
+html[dir=rtl] .voice-text {
+  text-align: right;
+}
+
 /* Recognition results text hidden in the Full Page UI. */
 .overlay-hidden .voice-text {
   margin-left: 44px;
+}
+
+html[dir=rtl] .overlay-hidden .voice-text {
+  margin-left: 0;
+  margin-right: 44px;
 }
 
 /* Styles applied to the text output elements. Common style for the text area
@@ -260,11 +284,22 @@
   width: 460px;
 }
 
+html[dir=rtl] .overlay .voice-text,
+html[dir=rtl] .overlay-hidden .voice-text {
+  left: auto;
+  right: -44px;
+}
+
 /* Common style for when the text areas are made visible. */
 .overlay .voice-text {
   margin-left: 0;
   opacity: 1;
   transition: opacity 500ms ease-out, margin-left 500ms ease-out;
+}
+
+html[dir=rtl] .overlay .voice-text {
+  margin-left: auto;
+  margin-right: 0;
 }
 
 /* Interim (low confidence) text. */
@@ -349,6 +384,7 @@
 
 /* Container element for microphone icon. */
 .microphone {
+  direction: ltr;
   height: 87px;
   left: 43px;
   pointer-events: none;
