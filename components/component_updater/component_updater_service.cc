@@ -275,7 +275,7 @@ bool CrxUpdateService::OnDemandUpdateWithCooldown(const std::string& id) {
 
   // Check if the request is too soon.
   const auto* component_state(GetComponentState(id));
-  if (component_state) {
+  if (component_state && !component_state->last_check.is_null()) {
     base::TimeDelta delta =
         base::TimeTicks::Now() - component_state->last_check;
     if (delta < base::TimeDelta::FromSeconds(config_->OnDemandDelay()))
