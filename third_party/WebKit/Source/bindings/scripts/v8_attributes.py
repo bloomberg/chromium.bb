@@ -138,6 +138,7 @@ def attribute_context(interface, attribute, interfaces):
         'has_cross_origin_setter': has_extended_attribute_value(attribute, 'CrossOrigin', 'Setter'),
         'has_custom_getter': has_custom_getter(attribute),
         'has_custom_setter': has_custom_setter(attribute),
+        'has_promise_type': idl_type.name == 'Promise',
         'has_setter': has_setter(interface, attribute),
         'idl_type': str(idl_type),
         'is_cached_accessor': is_cached_accessor,

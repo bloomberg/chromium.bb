@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 589 tests; 540 PASS, 49 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 589 tests; 541 PASS, 48 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Test driver
 PASS EventListener interface: existence and properties of interface object
 PASS NodeList interface: existence and properties of interface object
@@ -284,7 +284,7 @@ PASS PromiseRejectionEvent interface object length
 PASS PromiseRejectionEvent interface object name
 PASS PromiseRejectionEvent interface: existence and properties of interface prototype object
 PASS PromiseRejectionEvent interface: existence and properties of interface prototype object's "constructor" property
-FAIL PromiseRejectionEvent interface: attribute promise Illegal invocation
+PASS PromiseRejectionEvent interface: attribute promise
 PASS PromiseRejectionEvent interface: attribute reason
 PASS Navigator interface: existence and properties of interface object
 PASS PluginArray interface: existence and properties of interface object

@@ -255,9 +255,10 @@ void InstallAccessorInternal(
         config.cached_property_key);
   }
 
-  // Support [LenientThis] by not specifying the signature.  V8 does not do
-  // the type checking against holder if no signature is specified.  Note that
-  // info.Holder() passed to callbacks will be *unsafe*.
+  // Support [LenientThis] and attributes with Promise types by not specifying
+  // the signature. V8 does not do the type checking against holder if no
+  // signature is specified. Note that info.Holder() passed to callbacks will
+  // be *unsafe*.
   if (config.holder_check_configuration ==
       V8DOMConfiguration::kDoNotCheckHolder)
     signature = v8::Local<v8::Signature>();

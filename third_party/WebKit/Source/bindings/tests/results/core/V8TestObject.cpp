@@ -911,6 +911,20 @@ static void anyAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::
 }
 
 static void promiseAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  // This attribute returns a Promise.
+  // Per https://heycam.github.io/webidl/#dfn-attribute-getter, all exceptions
+  // must be turned into a Promise rejection.
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kGetterContext, "TestObject", "promiseAttribute");
+  ExceptionToRejectPromiseScope rejectPromiseScope(info, exceptionState);
+
+  // Returning a Promise type requires us to disable some of V8's type checks,
+  // so we have to manually check that info.Holder() really points to an
+  // instance of the type.
+  if (!V8TestObject::hasInstance(info.Holder(), info.GetIsolate())) {
+    exceptionState.ThrowTypeError("Illegal invocation");
+    return;
+  }
+
   v8::Local<v8::Object> holder = info.Holder();
 
   TestObject* impl = V8TestObject::toImpl(holder);
@@ -13242,7 +13256,7 @@ static const V8DOMConfiguration::AccessorConfiguration V8TestObjectAccessors[] =
 
     { "anyAttribute", V8TestObject::anyAttributeAttributeGetterCallback, V8TestObject::anyAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kAllWorlds },
 
-    { "promiseAttribute", V8TestObject::promiseAttributeAttributeGetterCallback, V8TestObject::promiseAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kAllWorlds },
+    { "promiseAttribute", V8TestObject::promiseAttributeAttributeGetterCallback, V8TestObject::promiseAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kDoNotCheckHolder, V8DOMConfiguration::kAllWorlds },
 
     { "windowAttribute", V8TestObject::windowAttributeAttributeGetterCallback, V8TestObject::windowAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kAllWorlds },
 
