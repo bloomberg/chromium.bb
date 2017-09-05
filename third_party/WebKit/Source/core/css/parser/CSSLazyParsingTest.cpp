@@ -51,7 +51,7 @@ TEST_F(CSSLazyParsingTest, DontLazyParseEmpty) {
   CSSParserContext* context = CSSParserContext::Create(kHTMLStandardMode);
   StyleSheetContents* style_sheet = StyleSheetContents::Create(context);
 
-  String sheet_text = "body {  }";
+  String sheet_text = "body {}";
   CSSParser::ParseSheet(context, style_sheet, sheet_text,
                         true /* lazy parse */);
   StyleRule* rule = RuleAt(style_sheet, 0);
