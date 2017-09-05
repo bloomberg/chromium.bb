@@ -209,7 +209,10 @@ void ProfilingProcessHost::SendPipeToProfilingService(
     base::ProcessId pid) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
-  mojo::edk::PlatformChannelPair data_channel;
+  // Writes to the data_channel must be atomic to ensure that the profiling
+  // process can demux the messages. We accomplish this by making writes
+  // synchronous, and protecting the write() itself with a Lock.
+  mojo::edk::PlatformChannelPair data_channel(true /* client_is_blocking */);
 
   memlog_->AddSender(
       pid,

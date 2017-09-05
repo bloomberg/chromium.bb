@@ -25,17 +25,11 @@ using base::allocator::AllocatorDispatch;
 
 MemlogSenderPipe* g_sender_pipe = nullptr;
 
-#if defined(OS_WIN)
 // Matches the native buffer size on the pipe.
+// On Windows and Linux, the default pipe buffer size is 65536.
+// On macOS, the default pipe buffer size is 16 * 1024, but grows to 64 * 1024
+// for large writes.
 constexpr int kSendBufferSize = 65536;
-#else
-// Writes on Posix greater than PIPE_BUF are not guaranteed to be atomic, but
-// PIPE_BUF is potentially as low as 512, which isn't large enough to accomodate
-// a message with 256 stack frames. Instead, we use a large value [artifically
-// chosen to match that of Windows], and make the Send() method of the
-// MemlogSenderPipe a critical section.
-constexpr int kSendBufferSize = 65536;
-#endif
 
 // Prime since this is used like a hash table. Numbers of this magnitude seemed
 // to provide sufficient parallelism to avoid lock overhead in ad-hoc testing.
