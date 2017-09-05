@@ -41,6 +41,8 @@ namespace content {
 
 namespace {
 
+const auto kIgnoreLogMessageCB = base::BindRepeating([](const std::string&) {});
+
 // Wraps FakeVideoCaptureDeviceFactory to allow mocking of the
 // VideoCaptureDevice MaybeSuspend() and Resume() methods. This is used to check
 // that devices are asked to suspend or resume at the correct times.
@@ -206,8 +208,10 @@ class VideoCaptureManagerTest : public testing::Test {
     auto video_capture_provider =
         base::MakeUnique<InProcessVideoCaptureProvider>(
             std::move(video_capture_system),
-            base::ThreadTaskRunnerHandle::Get());
-    vcm_ = new VideoCaptureManager(std::move(video_capture_provider));
+            base::ThreadTaskRunnerHandle::Get(), kIgnoreLogMessageCB);
+    vcm_ =
+        new VideoCaptureManager(std::move(video_capture_provider),
+                                base::BindRepeating([](const std::string&) {}));
     const int32_t kNumberOfFakeDevices = 2;
     video_capture_device_factory_->SetToDefaultDevicesConfig(
         kNumberOfFakeDevices);

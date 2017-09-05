@@ -54,6 +54,8 @@ const char kZeroResolutionVideoDeviceID[] = "/dev/video2";
 const char* const kDefaultVideoDeviceID = kZeroResolutionVideoDeviceID;
 const char kDefaultAudioDeviceID[] = "fake_audio_input_2";
 
+const auto kIgnoreLogMessageCB = base::BindRepeating([](const std::string&) {});
+
 void PhysicalDevicesEnumerated(base::Closure quit_closure,
                                MediaDeviceEnumeration* out,
                                const MediaDeviceEnumeration& enumeration) {
@@ -103,7 +105,7 @@ class MediaDevicesDispatcherHostTest : public testing::TestWithParam<GURL> {
     auto video_capture_provider =
         base::MakeUnique<InProcessVideoCaptureProvider>(
             std::move(video_capture_system),
-            base::ThreadTaskRunnerHandle::Get());
+            base::ThreadTaskRunnerHandle::Get(), kIgnoreLogMessageCB);
 
     media_stream_manager_ = base::MakeUnique<MediaStreamManager>(
         audio_system_.get(), audio_manager_->GetTaskRunner(),

@@ -23,6 +23,8 @@ namespace content {
 static const std::string kStubDeviceId = "StubDevice";
 static const media::VideoCaptureParams kArbitraryParams;
 static const base::WeakPtr<media::VideoFrameReceiver> kNullReceiver;
+static const auto kIgnoreLogMessageCB =
+    base::BindRepeating([](const std::string&) {});
 
 class MockServiceConnector
     : public ServiceVideoCaptureProvider::ServiceConnector {
@@ -90,7 +92,7 @@ class ServiceVideoCaptureProviderTest : public testing::Test {
     auto mock_service_connector = base::MakeUnique<MockServiceConnector>();
     mock_service_connector_ = mock_service_connector.get();
     provider_ = base::MakeUnique<ServiceVideoCaptureProvider>(
-        std::move(mock_service_connector));
+        std::move(mock_service_connector), kIgnoreLogMessageCB);
 
     ON_CALL(*mock_service_connector_, BindFactoryProvider(_))
         .WillByDefault(

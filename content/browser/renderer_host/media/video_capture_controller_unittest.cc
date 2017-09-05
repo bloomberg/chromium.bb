@@ -142,7 +142,8 @@ class VideoCaptureControllerTest
     auto device_launcher = base::MakeUnique<MockVideoCaptureDeviceLauncher>();
     controller_ = new VideoCaptureController(
         arbitrary_device_id, arbitrary_stream_type, arbitrary_params,
-        std::move(device_launcher));
+        std::move(device_launcher),
+        base::BindRepeating([](const std::string&) {}));
     InitializeNewDeviceClientAndBufferPoolInstances();
     auto mock_launched_device =
         base::MakeUnique<MockLaunchedVideoCaptureDevice>();

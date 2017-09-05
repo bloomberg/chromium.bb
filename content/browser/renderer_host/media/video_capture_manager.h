@@ -54,7 +54,8 @@ class CONTENT_EXPORT VideoCaptureManager
       base::Callback<void(const base::WeakPtr<VideoCaptureController>&)>;
 
   explicit VideoCaptureManager(
-      std::unique_ptr<VideoCaptureProvider> video_capture_provider);
+      std::unique_ptr<VideoCaptureProvider> video_capture_provider,
+      base::RepeatingCallback<void(const std::string&)> emit_log_message_cb);
 
   // AddVideoCaptureObserver() can be called only before any devices are opened.
   // RemoveAllVideoCaptureObservers() can be called only after all devices
@@ -262,6 +263,8 @@ class CONTENT_EXPORT VideoCaptureManager
   bool application_state_has_running_activities_;
 #endif
 
+  void EmitLogMessage(const std::string& message, int verbose_log_level);
+
   // Only accessed on Browser::IO thread.
   base::ObserverList<MediaStreamProviderListener> listeners_;
   media::VideoCaptureSessionId new_capture_session_id_;
@@ -285,6 +288,7 @@ class CONTENT_EXPORT VideoCaptureManager
   std::list<std::pair<int, base::Closure>> photo_request_queue_;
 
   const std::unique_ptr<VideoCaptureProvider> video_capture_provider_;
+  base::RepeatingCallback<void(const std::string&)> emit_log_message_cb_;
 
   base::ObserverList<media::VideoCaptureObserver> capture_observers_;
 

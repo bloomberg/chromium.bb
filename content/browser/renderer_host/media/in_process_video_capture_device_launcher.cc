@@ -77,6 +77,14 @@ void InProcessVideoCaptureDeviceLauncher::LaunchDeviceAsync(
     base::OnceClosure done_cb) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(state_ == State::READY_TO_LAUNCH);
+  if (receiver) {
+    std::ostringstream string_stream;
+    string_stream
+        << "InProcessVideoCaptureDeviceLauncher::LaunchDeviceAsync: Posting "
+           "start request to device thread for device_id = "
+        << device_id;
+    receiver->OnLog(string_stream.str());
+  }
 
   const int max_buffers =
       (stream_type == MEDIA_TAB_VIDEO_CAPTURE ? kMaxNumberOfBuffersForTabCapture
