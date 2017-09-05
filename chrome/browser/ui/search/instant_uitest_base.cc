@@ -63,15 +63,3 @@ void InstantUITestBase::PressEnterAndWaitForFrameLoad() {
 std::string InstantUITestBase::GetOmniboxText() {
   return base::UTF16ToUTF8(omnibox()->GetText());
 }
-
-bool InstantUITestBase::LoadImage(content::RenderViewHost* rvh,
-                                  const std::string& image,
-                                  bool* loaded) {
-  std::string js_chrome =
-      "var img = document.createElement('img');"
-      "img.onerror = function() { domAutomationController.send(false); };"
-      "img.onload  = function() { domAutomationController.send(true); };"
-      "img.src = '" +
-      image + "';";
-  return content::ExecuteScriptAndExtractBool(rvh, js_chrome, loaded);
-}
