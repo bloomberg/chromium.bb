@@ -39,7 +39,8 @@ CASE 2, scrolling y to 80, the "container" element should remain positioned with
       "name": "LayoutView #document",
       "bounds": [785, 4050],
       "contentsOpaque": true,
-      "backgroundColor": "#FFFFFF"
+      "backgroundColor": "#FFFFFF",
+      "transform": 1
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV id='fixed'",
@@ -47,7 +48,8 @@ CASE 2, scrolling y to 80, the "container" element should remain positioned with
       "bounds": [400, 200],
       "contentsOpaque": true,
       "backfaceVisibility": "hidden",
-      "backgroundColor": "#0000FF"
+      "backgroundColor": "#0000FF",
+      "transform": 1
     },
     {
       "name": "LayoutBlockFlow DIV id='compositedInsideFixed'",
@@ -55,14 +57,27 @@ CASE 2, scrolling y to 80, the "container" element should remain positioned with
       "bounds": [50, 50],
       "contentsOpaque": true,
       "backfaceVisibility": "hidden",
-      "backgroundColor": "#FF0000"
+      "backgroundColor": "#FF0000",
+      "transform": 1
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV id='container'",
       "position": [100, 50],
       "bounds": [200, 4000],
       "contentsOpaque": true,
-      "backgroundColor": "#00FFFF"
+      "backgroundColor": "#00FFFF",
+      "transform": 1
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [0, -80, 0, 1]
+      ]
     }
   ]
 }

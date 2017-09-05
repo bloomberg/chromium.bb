@@ -47,35 +47,51 @@ CASE 2, scrolling y by 10 pixels, both the "container" and "inner" should scroll
       "name": "LayoutView #document",
       "bounds": [785, 4100],
       "contentsOpaque": true,
-      "backgroundColor": "#FFFFFF"
+      "backgroundColor": "#FFFFFF",
+      "transform": 1
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV id='backgroundFixed'",
       "position": [0, 10],
       "bounds": [400, 400],
       "contentsOpaque": true,
-      "backgroundColor": "#808080"
+      "backgroundColor": "#808080",
+      "transform": 1
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV id='container'",
       "position": [100, 100],
       "bounds": [100, 4000],
       "contentsOpaque": true,
-      "backgroundColor": "#008000"
+      "backgroundColor": "#008000",
+      "transform": 1
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV id='innerFixed'",
       "position": [100, 160],
       "bounds": [200, 100],
       "contentsOpaque": true,
-      "backgroundColor": "#0000FF"
+      "backgroundColor": "#0000FF",
+      "transform": 1
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV id='innerScrolling'",
       "position": [200, 100],
       "bounds": [100, 100],
       "contentsOpaque": true,
-      "backgroundColor": "#00FF00"
+      "backgroundColor": "#00FF00",
+      "transform": 1
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [0, -10, 0, 1]
+      ]
     }
   ]
 }
@@ -86,14 +102,16 @@ CASE 3, scrolling y further so that "inner" no longer overlaps the fixed-pos lay
       "name": "LayoutView #document",
       "bounds": [785, 4100],
       "contentsOpaque": true,
-      "backgroundColor": "#FFFFFF"
+      "backgroundColor": "#FFFFFF",
+      "transform": 1
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV id='backgroundFixed'",
       "position": [0, 110],
       "bounds": [400, 400],
       "contentsOpaque": true,
-      "backgroundColor": "#808080"
+      "backgroundColor": "#808080",
+      "transform": 1
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV id='container'",
@@ -106,14 +124,27 @@ CASE 3, scrolling y further so that "inner" no longer overlaps the fixed-pos lay
           "rect": [100, 0, 100, 100],
           "reason": "compositing update"
         }
-      ]
+      ],
+      "transform": 1
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV id='innerFixed'",
       "position": [100, 260],
       "bounds": [200, 100],
       "contentsOpaque": true,
-      "backgroundColor": "#0000FF"
+      "backgroundColor": "#0000FF",
+      "transform": 1
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [0, -110, 0, 1]
+      ]
     }
   ],
   "objectPaintInvalidations": [

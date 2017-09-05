@@ -8,16 +8,25 @@
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV id='clip'",
-      "position": [8, 8],
       "bounds": [800, 300],
       "backfaceVisibility": "hidden",
       "backgroundColor": "#FF0000E6",
-      "transform": 1
+      "transform": 2
     }
   ],
   "transforms": [
     {
       "id": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [8, 8, 0, 1]
+      ]
+    },
+    {
+      "id": 2,
+      "parent": 1,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],

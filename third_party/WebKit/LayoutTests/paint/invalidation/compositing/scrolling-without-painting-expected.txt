@@ -20,7 +20,8 @@
     {
       "name": "Scrolling Contents Layer",
       "position": [9, 9],
-      "bounds": [185, 1025]
+      "bounds": [185, 1025],
+      "transform": 1
     },
     {
       "name": "Overflow Controls Host Layer",
@@ -51,6 +52,18 @@
       "name": "Scroll Corner Layer",
       "position": [194, 194],
       "bounds": [15, 15]
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [0, -25, 0, 1]
+      ],
+      "flattenInheritedTransform": false
     }
   ]
 }

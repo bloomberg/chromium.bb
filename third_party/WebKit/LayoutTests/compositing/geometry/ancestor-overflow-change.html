@@ -29,11 +29,8 @@
       height: 100px;
       background-color: red;
     }
-
-    #layers {
-      opacity: 0; /* Hide from pixel results */
-    }
   </style>
+  <script src="../../resources/run-after-layout-and-paint.js"></script>
   <script type="text/javascript" charset="utf-8">
     if (window.testRunner) {
       testRunner.dumpAsTextWithPixelResults();
@@ -44,16 +41,16 @@
     {
       document.getElementById('container').className = 'changed';
 
-      if (window.testRunner)
-        document.getElementById('layers').innerText = window.internals.layerTreeAsText(document);
+      if (window.testRunner && window.internals)
+        testRunner.setCustomTextOutput(internals.layerTreeAsText(document));
       
       if (window.testRunner)
         testRunner.notifyDone();
     }
     
-    window.addEventListener('load', function() {
-      window.setTimeout(changeOverflow, 0);
-    }, false);
+    onload = function() {
+      runAfterLayoutAndPaint(changeOverflow, true);
+    };
   </script>
 </head>
 <body>
@@ -62,7 +59,5 @@
   <div id="container">
     <div class="box"></div>
   </div>
-  
-<pre id="layers">Layer tree goes here in DRT</pre>
 </body>
 </html>

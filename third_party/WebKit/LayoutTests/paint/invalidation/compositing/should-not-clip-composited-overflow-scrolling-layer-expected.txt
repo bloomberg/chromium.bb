@@ -27,7 +27,8 @@
           "rect": [0, 0, 1000, 1000],
           "reason": "style change"
         }
-      ]
+      ],
+      "transform": 1
     },
     {
       "name": "Overflow Controls Host Layer",
@@ -65,6 +66,18 @@
       "name": "Scroll Corner Layer",
       "position": [393, 293],
       "bounds": [15, 15]
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [-500, -400, 0, 1]
+      ],
+      "flattenInheritedTransform": false
     }
   ],
   "objectPaintInvalidations": [
