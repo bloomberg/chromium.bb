@@ -345,11 +345,10 @@
       name: "DecodeToYUV",
       status: "experimental",
     },
-    // Introduced this flag as stable so we can re-enable this feature easily
-    // after we disable this feature.
+    // Remove this flag once we can remove /deep/ at M63.
     {
       name: "DeepCombinatorInCSSDynamicProfile",
-      status: "stable",
+      status: "test",
     },
     {
       name: "DeprecationReporting",
@@ -974,11 +973,10 @@
       name: "ShadowPiercingDescendantCombinator",
       status: "experimental",
     },
-    // Introduced this flag as stable so we can re-enable this feature easily
-    // after we disable this feature.
+    // Remove this flag once we can remove ::shadow at M63.
     {
       name: "ShadowPseudoElementInCSSDynamicProfile",
-      status: "stable",
+      status: "test",
     },
     {
       name: "ShapeDetection",
