@@ -12978,13 +12978,13 @@ TEST_F(LayerTreeHostImplTest, CheckerImagingTileInvalidation) {
 
 TEST_F(LayerTreeHostImplTest, RasterColorSpaceNoColorCorrection) {
   LayerTreeSettings settings = DefaultSettings();
+  settings.enable_color_correct_rasterization = false;
   CreateHostImpl(settings, CreateLayerTreeFrameSink());
   EXPECT_FALSE(host_impl_->GetRasterColorSpace().IsValid());
 }
 
 TEST_F(LayerTreeHostImplTest, RasterColorSpace) {
   LayerTreeSettings settings = DefaultSettings();
-  settings.enable_color_correct_rasterization = true;
   CreateHostImpl(settings, CreateLayerTreeFrameSink());
   // The default raster color space should be sRGB.
   EXPECT_EQ(host_impl_->GetRasterColorSpace(), gfx::ColorSpace::CreateSRGB());

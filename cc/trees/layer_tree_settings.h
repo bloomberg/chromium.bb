@@ -92,7 +92,7 @@ class CC_EXPORT LayerTreeSettings {
   int max_preraster_distance_in_screen_pixels = 1000;
   viz::ResourceFormat preferred_tile_format;
 
-  bool enable_color_correct_rasterization = false;
+  bool enable_color_correct_rasterization = true;
 
   // TODO(sunxd): remove this flag when filter demoting and aa of mask layers
   // are implemented.
