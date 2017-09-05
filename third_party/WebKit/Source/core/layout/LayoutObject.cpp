@@ -3024,6 +3024,8 @@ RefPtr<ComputedStyle> LayoutObject::GetUncachedPseudoStyle(
   Element* element = Traversal<Element>::FirstAncestorOrSelf(*GetNode());
   if (!element)
     return nullptr;
+  if (element->IsPseudoElement())
+    return nullptr;
 
   return element->GetUncachedPseudoStyle(request, parent_style);
 }
