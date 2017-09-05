@@ -165,8 +165,8 @@ class PresubmitUnittest(PresubmitTestsBase):
       'git_footers', 'glob', 'inspect', 'json', 'load_files', 'logging',
       'marshal', 'normpath', 'optparse', 'os', 'owners', 'owners_finder',
       'pickle', 'presubmit_canned_checks', 'random', 're', 'rietveld', 'scm',
-      'subprocess', 'sys', 'tempfile', 'time', 'traceback', 'types', 'unittest',
-      'urllib2', 'warn', 'multiprocessing', 'DoGetTryMasters',
+      'signal', 'subprocess', 'sys', 'tempfile', 'time', 'traceback', 'types',
+      'unittest', 'urllib2', 'warn', 'multiprocessing', 'DoGetTryMasters',
       'GetTryMastersExecuter', 'itertools', 'urlparse', 'gerrit_util',
       'GerritAccessor',
     ]
