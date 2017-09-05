@@ -5,5 +5,5 @@
 
 REM Execute whatever is printed by autoninja.py.
 REM Also print it to reassure that the right settings are being used.
-FOR /f "usebackq tokens=*" %%a in (`python %~dp0autoninja.py %*`) do echo %%a & %%a
+FOR /f "usebackq tokens=*" %%a in (`python %~dp0autoninja.py "%*"`) do echo %%a & %%a
 
