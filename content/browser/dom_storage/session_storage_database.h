@@ -10,8 +10,11 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <vector>
 
+#include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
@@ -51,9 +54,11 @@ class CONTENT_EXPORT SessionStorageDatabase :
   // assumed to be empty and any duplicate keys will be overwritten. If the
   // database exists on disk then it will be opened. If it does not exist then
   // it will not be created and |result| will be unmodified.
-  void ReadAreaValues(const std::string& namespace_id,
-                      const GURL& origin,
-                      DOMStorageValuesMap* result);
+  void ReadAreaValues(
+      const std::string& namespace_id,
+      const std::vector<std::string>& original_permanent_namespace_ids,
+      const GURL& origin,
+      DOMStorageValuesMap* result);
 
   // Updates the data for |namespace_id| and |origin|. Will remove all keys
   // before updating the database if |clear_all_first| is set. Then all entries
@@ -89,6 +94,7 @@ class CONTENT_EXPORT SessionStorageDatabase :
   class DBOperation;
   friend class SessionStorageDatabase::DBOperation;
   friend class SessionStorageDatabaseTest;
+  FRIEND_TEST_ALL_PREFIXES(DOMStorageAreaParamTest, ShallowCopyWithBacking);
 
   ~SessionStorageDatabase();
 

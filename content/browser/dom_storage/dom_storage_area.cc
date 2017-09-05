@@ -19,6 +19,7 @@
 #include "base/time/time.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/process_memory_dump.h"
+#include "build/build_config.h"
 #include "content/browser/dom_storage/dom_storage_namespace.h"
 #include "content/browser/dom_storage/dom_storage_task_runner.h"
 #include "content/browser/dom_storage/local_storage_database_adapter.h"
@@ -69,13 +70,20 @@ base::TimeDelta DOMStorageArea::RateLimiter::ComputeDelayNeeded(
   return base::TimeDelta();
 }
 
-DOMStorageArea::CommitBatch::CommitBatch() : clear_all_first(false) {
-}
+DOMStorageArea::CommitBatch::CommitBatch() : clear_all_first(false) {}
 DOMStorageArea::CommitBatch::~CommitBatch() {}
 
 size_t DOMStorageArea::CommitBatch::GetDataSize() const {
   return DOMStorageMap::CountBytes(changed_values);
 }
+
+DOMStorageArea::CommitBatchHolder::CommitBatchHolder(
+    Type type,
+    scoped_refptr<CommitBatch> batch)
+    : type(type), batch(batch) {}
+DOMStorageArea::CommitBatchHolder::CommitBatchHolder(
+    const DOMStorageArea::CommitBatchHolder& other) = default;
+DOMStorageArea::CommitBatchHolder::~CommitBatchHolder() {}
 
 // static
 const base::FilePath::CharType DOMStorageArea::kDatabaseFileExtension[] =
@@ -111,44 +119,63 @@ DOMStorageArea::DOMStorageArea(const GURL& origin,
       origin_(origin),
       directory_(directory),
       task_runner_(task_runner),
-      map_(new DOMStorageMap(kPerStorageAreaQuota +
-                             kPerStorageAreaOverQuotaAllowance)),
-      is_initial_import_done_(true),
+#if defined(OS_ANDROID)
+      desired_load_state_(directory.empty() ? LOAD_STATE_KEYS_AND_VALUES
+                                            : LOAD_STATE_KEYS_ONLY),
+#else
+      desired_load_state_(LOAD_STATE_KEYS_AND_VALUES),
+#endif
+      load_state_(directory.empty() ? LOAD_STATE_KEYS_AND_VALUES
+                                    : LOAD_STATE_UNLOADED),
+      map_(new DOMStorageMap(
+          kPerStorageAreaQuota + kPerStorageAreaOverQuotaAllowance,
+          desired_load_state_ == LOAD_STATE_KEYS_ONLY)),
       is_shutdown_(false),
-      commit_batches_in_flight_(0),
       start_time_(base::TimeTicks::Now()),
       data_rate_limiter_(kMaxBytesPerHour, base::TimeDelta::FromHours(1)),
       commit_rate_limiter_(kMaxCommitsPerHour, base::TimeDelta::FromHours(1)) {
   if (!directory.empty()) {
     base::FilePath path = directory.Append(DatabaseFileNameFromOrigin(origin_));
     backing_.reset(new LocalStorageDatabaseAdapter(path));
-    is_initial_import_done_ = false;
   }
 }
 
-DOMStorageArea::DOMStorageArea(int64_t namespace_id,
-                               const std::string& persistent_namespace_id,
-                               const GURL& origin,
-                               SessionStorageDatabase* session_storage_backing,
-                               DOMStorageTaskRunner* task_runner)
+DOMStorageArea::DOMStorageArea(
+    int64_t namespace_id,
+    const std::string& persistent_namespace_id,
+    std::unique_ptr<std::vector<std::string>> original_persistent_namespace_ids,
+    const GURL& origin,
+    SessionStorageDatabase* session_storage_backing,
+    DOMStorageTaskRunner* task_runner)
     : namespace_id_(namespace_id),
       persistent_namespace_id_(persistent_namespace_id),
+      original_persistent_namespace_ids_(
+          std::move(original_persistent_namespace_ids)),
       origin_(origin),
       task_runner_(task_runner),
-      map_(new DOMStorageMap(kPerStorageAreaQuota +
-                             kPerStorageAreaOverQuotaAllowance)),
+#if defined(OS_ANDROID)
+      desired_load_state_(session_storage_backing ? LOAD_STATE_KEYS_ONLY
+                                                  : LOAD_STATE_KEYS_AND_VALUES),
+#else
+      desired_load_state_(LOAD_STATE_KEYS_AND_VALUES),
+#endif
+      load_state_(session_storage_backing ? LOAD_STATE_UNLOADED
+                                          : LOAD_STATE_KEYS_AND_VALUES),
+      map_(new DOMStorageMap(
+          kPerStorageAreaQuota + kPerStorageAreaOverQuotaAllowance,
+          desired_load_state_ == LOAD_STATE_KEYS_ONLY)),
       session_storage_backing_(session_storage_backing),
-      is_initial_import_done_(true),
       is_shutdown_(false),
-      commit_batches_in_flight_(0),
       start_time_(base::TimeTicks::Now()),
       data_rate_limiter_(kMaxBytesPerHour, base::TimeDelta::FromHours(1)),
       commit_rate_limiter_(kMaxCommitsPerHour, base::TimeDelta::FromHours(1)) {
   DCHECK(namespace_id != kLocalStorageNamespaceId);
   if (session_storage_backing) {
     backing_.reset(new SessionStorageDatabaseAdapter(
-        session_storage_backing, persistent_namespace_id, origin));
-    is_initial_import_done_ = false;
+        session_storage_backing, persistent_namespace_id,
+        original_persistent_namespace_ids_ ? *original_persistent_namespace_ids_
+                                           : std::vector<std::string>(),
+        origin));
   }
 }
 
@@ -158,57 +185,73 @@ DOMStorageArea::~DOMStorageArea() {
 void DOMStorageArea::ExtractValues(DOMStorageValuesMap* map) {
   if (is_shutdown_)
     return;
-  InitialImportIfNeeded();
-  map_->ExtractValues(map);
+
+  if (load_state_ == LOAD_STATE_KEYS_AND_VALUES) {
+    map_->ExtractValues(map);
+    return;
+  }
+  LoadMapAndApplyUncommittedChangesIfNeeded(map);
 }
 
 unsigned DOMStorageArea::Length() {
   if (is_shutdown_)
     return 0;
-  InitialImportIfNeeded();
+  LoadMapAndApplyUncommittedChangesIfNeeded(nullptr);
   return map_->Length();
 }
 
 base::NullableString16 DOMStorageArea::Key(unsigned index) {
   if (is_shutdown_)
     return base::NullableString16();
-  InitialImportIfNeeded();
+  LoadMapAndApplyUncommittedChangesIfNeeded(nullptr);
   return map_->Key(index);
 }
 
 base::NullableString16 DOMStorageArea::GetItem(const base::string16& key) {
   if (is_shutdown_)
     return base::NullableString16();
-  InitialImportIfNeeded();
+  LoadMapAndApplyUncommittedChangesIfNeeded(nullptr);
   return map_->GetItem(key);
 }
 
 bool DOMStorageArea::SetItem(const base::string16& key,
                              const base::string16& value,
+                             const base::NullableString16& client_old_value,
                              base::NullableString16* old_value) {
   if (is_shutdown_)
     return false;
-  InitialImportIfNeeded();
+  LoadMapAndApplyUncommittedChangesIfNeeded(nullptr);
   if (!map_->HasOneRef())
     map_ = map_->DeepCopy();
   bool success = map_->SetItem(key, value, old_value);
+  if (map_->has_only_keys())
+    *old_value = client_old_value;
   if (success && backing_ &&
       (old_value->is_null() || old_value->string() != value)) {
     CommitBatch* commit_batch = CreateCommitBatchIfNeeded();
-    // Values are populated later to avoid holding duplicate memory.
-    commit_batch->changed_values[key] = base::NullableString16();
+    if (load_state_ == LOAD_STATE_KEYS_AND_VALUES) {
+      // Values are populated later to avoid holding duplicate memory.
+      commit_batch->changed_values[key] = base::NullableString16();
+    } else {
+      commit_batch->changed_values[key] = base::NullableString16(value, false);
+    }
   }
   return success;
 }
 
 bool DOMStorageArea::RemoveItem(const base::string16& key,
+                                const base::NullableString16& client_old_value,
                                 base::string16* old_value) {
   if (is_shutdown_)
     return false;
-  InitialImportIfNeeded();
+  LoadMapAndApplyUncommittedChangesIfNeeded(nullptr);
   if (!map_->HasOneRef())
     map_ = map_->DeepCopy();
   bool success = map_->RemoveItem(key, old_value);
+  if (map_->has_only_keys()) {
+    DCHECK(!client_old_value.is_null());
+    *old_value = client_old_value.string();
+  }
   if (success && backing_) {
     CommitBatch* commit_batch = CreateCommitBatchIfNeeded();
     commit_batch->changed_values[key] = base::NullableString16();
@@ -219,12 +262,13 @@ bool DOMStorageArea::RemoveItem(const base::string16& key,
 bool DOMStorageArea::Clear() {
   if (is_shutdown_)
     return false;
-  InitialImportIfNeeded();
+  LoadMapAndApplyUncommittedChangesIfNeeded(nullptr);
   if (map_->Length() == 0)
     return false;
 
-  map_ = new DOMStorageMap(kPerStorageAreaQuota +
-                           kPerStorageAreaOverQuotaAllowance);
+  map_ = new DOMStorageMap(
+      kPerStorageAreaQuota + kPerStorageAreaOverQuotaAllowance,
+      desired_load_state_ == LOAD_STATE_KEYS_ONLY);
 
   if (backing_) {
     CommitBatch* commit_batch = CreateCommitBatchIfNeeded();
@@ -239,11 +283,12 @@ void DOMStorageArea::FastClear() {
   if (is_shutdown_)
     return;
 
-  map_ = new DOMStorageMap(kPerStorageAreaQuota +
-                           kPerStorageAreaOverQuotaAllowance);
-  // This ensures no import will happen while we're waiting to clear the data
+  map_ = new DOMStorageMap(
+      kPerStorageAreaQuota + kPerStorageAreaOverQuotaAllowance,
+      desired_load_state_ == LOAD_STATE_KEYS_ONLY);
+  // This ensures no load will happen while we're waiting to clear the data
   // from the database.
-  is_initial_import_done_ = true;
+  load_state_ = desired_load_state_;
 
   if (backing_) {
     CommitBatch* commit_batch = CreateCommitBatchIfNeeded();
@@ -258,27 +303,66 @@ DOMStorageArea* DOMStorageArea::ShallowCopy(
   DCHECK_NE(kLocalStorageNamespaceId, namespace_id_);
   DCHECK_NE(kLocalStorageNamespaceId, destination_namespace_id);
 
+  auto original_persistent_namespace_ids =
+      base::MakeUnique<std::vector<std::string>>();
+  original_persistent_namespace_ids->push_back(persistent_namespace_id_);
+  if (original_persistent_namespace_ids_) {
+    original_persistent_namespace_ids->insert(
+        original_persistent_namespace_ids->end(),
+        original_persistent_namespace_ids_->begin(),
+        original_persistent_namespace_ids_->end());
+  }
   DOMStorageArea* copy = new DOMStorageArea(
-      destination_namespace_id, destination_persistent_namespace_id, origin_,
+      destination_namespace_id, destination_persistent_namespace_id,
+      std::move(original_persistent_namespace_ids), origin_,
       session_storage_backing_.get(), task_runner_.get());
+  copy->desired_load_state_ = desired_load_state_;
+  copy->load_state_ = load_state_;
   copy->map_ = map_;
   copy->is_shutdown_ = is_shutdown_;
-  copy->is_initial_import_done_ = true;
 
   // All the uncommitted changes to this area need to happen before the actual
   // shallow copy is made (scheduled by the upper layer sometime after return).
-  if (commit_batch_)
+  if (GetCurrentCommitBatch())
     ScheduleImmediateCommit();
+  if (load_state_ != LOAD_STATE_KEYS_AND_VALUES) {
+    copy->commit_batches_ = commit_batches_;
+    for (auto& it : copy->commit_batches_)
+      it.type = CommitBatchHolder::TYPE_CLONE;
+  }
   return copy;
 }
 
 bool DOMStorageArea::HasUncommittedChanges() const {
-  return commit_batch_.get() || commit_batches_in_flight_;
+  return !commit_batches_.empty();
 }
 
 void DOMStorageArea::ScheduleImmediateCommit() {
   DCHECK(HasUncommittedChanges());
   PostCommitTask();
+}
+
+void DOMStorageArea::ClearShallowCopiedCommitBatches() {
+  if (is_shutdown_)
+    return;
+  while (commit_batches_.back().type == CommitBatchHolder::TYPE_CLONE)
+    commit_batches_.pop_back();
+  original_persistent_namespace_ids_ = nullptr;
+}
+
+void DOMStorageArea::SetCacheOnlyKeys(bool only_keys) {
+  LoadState new_desired_state =
+      only_keys ? LOAD_STATE_KEYS_ONLY : LOAD_STATE_KEYS_AND_VALUES;
+  if (is_shutdown_ || !backing_ || desired_load_state_ == new_desired_state)
+    return;
+
+  desired_load_state_ = new_desired_state;
+  // Do not clear values immediately when desired state is set to keys only.
+  // Either commit timer or a purge call will clear the map, in case new process
+  // tries to open again. When values are desired it is ok to clear the map
+  // immediately. The reload only happens when required.
+  if (!map_->Length() || desired_load_state_ == LOAD_STATE_KEYS_AND_VALUES)
+    UnloadMapIfDesired();
 }
 
 void DOMStorageArea::DeleteOrigin() {
@@ -294,10 +378,11 @@ void DOMStorageArea::DeleteOrigin() {
     Clear();
     return;
   }
-  map_ = new DOMStorageMap(kPerStorageAreaQuota +
-                           kPerStorageAreaOverQuotaAllowance);
+  map_ = new DOMStorageMap(
+      kPerStorageAreaQuota + kPerStorageAreaOverQuotaAllowance,
+      desired_load_state_ == LOAD_STATE_KEYS_ONLY);
   if (backing_) {
-    is_initial_import_done_ = false;
+    load_state_ = LOAD_STATE_UNLOADED;
     backing_->Reset();
     backing_->DeleteFiles();
   }
@@ -306,8 +391,8 @@ void DOMStorageArea::DeleteOrigin() {
 void DOMStorageArea::PurgeMemory() {
   DCHECK(!is_shutdown_);
 
-  if (!is_initial_import_done_ ||  // We're not using any memory.
-      !backing_.get() ||  // We can't purge anything.
+  if (load_state_ == LOAD_STATE_UNLOADED ||  // We're not using any memory.
+      !backing_.get() ||                     // We can't purge anything.
       HasUncommittedChanges())  // We leave things alone with changes pending.
     return;
 
@@ -315,15 +400,41 @@ void DOMStorageArea::PurgeMemory() {
   // and its page cache.
   backing_->Reset();
 
-  // Do not set |is_initial_import_done_| to false if map is empty since
-  // FastClear expects no imports while waiting for clearing database.
+  // Do not set load_state_ to |LOAD_STATE_UNLOADED| if map is empty since
+  // FastClear is efficient with no reloads while waiting for clearing database.
   if (!map_ || !map_->Length())
     return;
 
   // Drop the in memory cache, we'll reload when needed.
-  is_initial_import_done_ = false;
-  map_ = new DOMStorageMap(kPerStorageAreaQuota +
-                           kPerStorageAreaOverQuotaAllowance);
+  load_state_ = LOAD_STATE_UNLOADED;
+  map_ = new DOMStorageMap(
+      kPerStorageAreaQuota + kPerStorageAreaOverQuotaAllowance,
+      desired_load_state_ == LOAD_STATE_KEYS_ONLY);
+}
+
+void DOMStorageArea::UnloadMapIfDesired() {
+  if (load_state_ == LOAD_STATE_UNLOADED || load_state_ == desired_load_state_)
+    return;
+
+  // Do not clear the map if there are uncommitted changes since the commit
+  // batch might not have the values populated.
+  if (!backing_ || HasUncommittedChanges())
+    return;
+
+  if (load_state_ == LOAD_STATE_KEYS_AND_VALUES) {
+    scoped_refptr<DOMStorageMap> keys_values = map_;
+    map_ = new DOMStorageMap(
+        kPerStorageAreaQuota + kPerStorageAreaOverQuotaAllowance,
+        desired_load_state_ == LOAD_STATE_KEYS_ONLY);
+    map_->TakeKeysFrom(keys_values->keys_values());
+    load_state_ = LOAD_STATE_KEYS_ONLY;
+    return;
+  }
+
+  map_ = new DOMStorageMap(
+      kPerStorageAreaQuota + kPerStorageAreaOverQuotaAllowance,
+      desired_load_state_ == LOAD_STATE_KEYS_ONLY);
+  load_state_ = LOAD_STATE_UNLOADED;
 }
 
 void DOMStorageArea::Shutdown() {
@@ -331,7 +442,7 @@ void DOMStorageArea::Shutdown() {
     return;
   is_shutdown_ = true;
 
-  if (commit_batch_) {
+  if (GetCurrentCommitBatch()) {
     DCHECK(backing_);
     PopulateCommitBatchValues();
   }
@@ -346,9 +457,13 @@ void DOMStorageArea::Shutdown() {
   DCHECK(success);
 }
 
+bool DOMStorageArea::IsMapReloadNeeded() {
+  return load_state_ < desired_load_state_;
+}
+
 void DOMStorageArea::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd) {
   task_runner_->AssertIsRunningOnPrimarySequence();
-  if (!is_initial_import_done_)
+  if (is_shutdown_ || load_state_ == LOAD_STATE_UNLOADED)
     return;
 
   // Limit the url length to 50 and strip special characters.
@@ -364,12 +479,15 @@ void DOMStorageArea::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd) {
   const char* system_allocator_name =
       base::trace_event::MemoryDumpManager::GetInstance()
           ->system_allocator_pool_name();
-  if (commit_batch_) {
+  if (!commit_batches_.empty()) {
+    size_t commit_batches_size = 0;
+    for (const auto& it : commit_batches_)
+      commit_batches_size += it.batch->GetDataSize();
     auto* commit_batch_mad = pmd->CreateAllocatorDump(name + "/commit_batch");
     commit_batch_mad->AddScalar(
         base::trace_event::MemoryAllocatorDump::kNameSize,
         base::trace_event::MemoryAllocatorDump::kUnitsBytes,
-        commit_batch_->GetDataSize());
+        commit_batches_size);
     if (system_allocator_name)
       pmd->AddSuballocation(commit_batch_mad->guid(), system_allocator_name);
   }
@@ -380,79 +498,143 @@ void DOMStorageArea::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd) {
     backing_->ReportMemoryUsage(pmd, name + "/local_storage");
 
   // Do not add storage map usage if less than 1KB.
-  if (map_->memory_usage() < 1024)
+  if (map_->memory_used() < 1024)
     return;
 
   auto* map_mad = pmd->CreateAllocatorDump(name + "/storage_map");
   map_mad->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
                      base::trace_event::MemoryAllocatorDump::kUnitsBytes,
-                     map_->memory_usage());
+                     map_->memory_used());
   if (system_allocator_name)
     pmd->AddSuballocation(map_mad->guid(), system_allocator_name);
 }
 
-void DOMStorageArea::InitialImportIfNeeded() {
-  if (is_initial_import_done_)
+void DOMStorageArea::LoadMapAndApplyUncommittedChangesIfNeeded(
+    DOMStorageValuesMap* map) {
+  if (!backing_ || (!IsMapReloadNeeded() && !map))
     return;
 
-  DCHECK(backing_.get());
-
-  base::TimeTicks before = base::TimeTicks::Now();
-  DOMStorageValuesMap initial_values;
-  backing_->ReadAllValues(&initial_values);
-  map_->SwapValues(&initial_values);
-  is_initial_import_done_ = true;
-  base::TimeDelta time_to_import = base::TimeTicks::Now() - before;
-  UMA_HISTOGRAM_TIMES("LocalStorage.BrowserTimeToPrimeLocalStorage",
-                      time_to_import);
-
-  size_t local_storage_size_kb = map_->bytes_used() / 1024;
-  // Track localStorage size, from 0-6MB. Note that the maximum size should be
-  // 5MB, but we add some slop since we want to make sure the max size is always
-  // above what we see in practice, since histograms can't change.
-  UMA_HISTOGRAM_CUSTOM_COUNTS("LocalStorage.BrowserLocalStorageSizeInKB",
-                              local_storage_size_kb,
-                              1, 6 * 1024, 50);
-  if (local_storage_size_kb < 100) {
-    UMA_HISTOGRAM_TIMES(
-        "LocalStorage.BrowserTimeToPrimeLocalStorageUnder100KB",
-        time_to_import);
-  } else if (local_storage_size_kb < 1000) {
-    UMA_HISTOGRAM_TIMES(
-        "LocalStorage.BrowserTimeToPrimeLocalStorage100KBTo1MB",
-        time_to_import);
-  } else {
-    UMA_HISTOGRAM_TIMES(
-        "LocalStorage.BrowserTimeToPrimeLocalStorage1MBTo5MB",
-        time_to_import);
+  DOMStorageValuesMap read_values;
+  auto most_recent_clear_all_iter = commit_batches_.begin();
+  while (most_recent_clear_all_iter != commit_batches_.end()) {
+    if (most_recent_clear_all_iter->batch->clear_all_first)
+      break;
+    ++most_recent_clear_all_iter;
   }
+
+  if (most_recent_clear_all_iter == commit_batches_.end()) {
+    base::TimeTicks before = base::TimeTicks::Now();
+    backing_->ReadAllValues(&read_values);
+
+    base::TimeDelta time_to_prime = base::TimeTicks::Now() - before;
+    UMA_HISTOGRAM_TIMES("LocalStorage.BrowserTimeToPrimeLocalStorage",
+                        time_to_prime);
+
+    size_t local_storage_size_kb =
+        DOMStorageMap::CountBytes(read_values) / 1024;
+    // Track localStorage size, from 0-6MB. Note that the maximum size should be
+    // 5MB, but we add some slop since we want to make sure the max size is
+    // always above what we see in practice, since histograms can't change.
+    UMA_HISTOGRAM_CUSTOM_COUNTS("LocalStorage.BrowserLocalStorageSizeInKB",
+                                local_storage_size_kb, 1, 6 * 1024, 50);
+    if (local_storage_size_kb < 100) {
+      UMA_HISTOGRAM_TIMES(
+          "LocalStorage.BrowserTimeToPrimeLocalStorageUnder100KB",
+          time_to_prime);
+    } else if (local_storage_size_kb < 1000) {
+      UMA_HISTOGRAM_TIMES(
+          "LocalStorage.BrowserTimeToPrimeLocalStorage100KBTo1MB",
+          time_to_prime);
+    } else {
+      UMA_HISTOGRAM_TIMES("LocalStorage.BrowserTimeToPrimeLocalStorage1MBTo5MB",
+                          time_to_prime);
+    }
+  }
+
+  // Apply changes in reverse order of commit batches starting from the most
+  // recent commit batch with clear all flag. It is possible that the changes in
+  // one or more of the commit batches have already been written to the database
+  // and reflected in the map returned by ReadAllValues(). It is okay to
+  // re-apply these changes.
+  auto it = most_recent_clear_all_iter == commit_batches_.end()
+                ? commit_batches_.end()
+                : ++most_recent_clear_all_iter;
+  while (it != commit_batches_.begin()) {
+    --it;
+    for (const auto& item : it->batch->changed_values) {
+      if (item.second.is_null())
+        read_values.erase(item.first);
+      else
+        read_values[item.first] = item.second;
+    }
+  }
+
+  if (!IsMapReloadNeeded()) {
+    map->swap(read_values);
+    return;
+  }
+
+  map_ = new DOMStorageMap(
+      kPerStorageAreaQuota + kPerStorageAreaOverQuotaAllowance,
+      desired_load_state_ == LOAD_STATE_KEYS_ONLY);
+  if (desired_load_state_ == LOAD_STATE_KEYS_ONLY) {
+    map_->TakeKeysFrom(read_values);
+    if (map)
+      map->swap(read_values);
+  } else {
+    map_->SwapValues(&read_values);
+    if (map)
+      map_->ExtractValues(map);
+  }
+  load_state_ = desired_load_state_;
 }
 
 DOMStorageArea::CommitBatch* DOMStorageArea::CreateCommitBatchIfNeeded() {
   DCHECK(!is_shutdown_);
-  if (!commit_batch_) {
-    commit_batch_.reset(new CommitBatch());
+  DCHECK(backing_);
+  if (!GetCurrentCommitBatch()) {
+    commit_batches_.emplace_front(CommitBatchHolder(
+        CommitBatchHolder::TYPE_CURRENT_BATCH, new CommitBatch()));
     BrowserThread::PostAfterStartupTask(
         FROM_HERE, task_runner_,
         base::BindOnce(&DOMStorageArea::StartCommitTimer, this));
   }
-  return commit_batch_.get();
+  return GetCurrentCommitBatch()->batch.get();
+}
+
+const DOMStorageArea::CommitBatchHolder* DOMStorageArea::GetCurrentCommitBatch()
+    const {
+  return (!commit_batches_.empty() &&
+          commit_batches_.front().type == CommitBatchHolder::TYPE_CURRENT_BATCH)
+             ? &commit_batches_.front()
+             : nullptr;
+}
+
+bool DOMStorageArea::HasCommitBatchInFlight() const {
+  for (const auto& batch : commit_batches_) {
+    if (batch.type == CommitBatchHolder::TYPE_IN_FLIGHT)
+      return true;
+  }
+  return false;
 }
 
 void DOMStorageArea::PopulateCommitBatchValues() {
   task_runner_->AssertIsRunningOnPrimarySequence();
-  for (auto& key_value : commit_batch_->changed_values)
+  if (load_state_ != LOAD_STATE_KEYS_AND_VALUES)
+    return;
+  CommitBatch* current_batch = GetCurrentCommitBatch()->batch.get();
+  for (auto& key_value : current_batch->changed_values)
     key_value.second = map_->GetItem(key_value.first);
 }
 
 void DOMStorageArea::StartCommitTimer() {
-  if (is_shutdown_ || !commit_batch_)
+  if (is_shutdown_ || !GetCurrentCommitBatch())
     return;
 
   // Start a timer to commit any changes that accrue in the batch, but only if
   // no commits are currently in flight. In that case the timer will be
   // started after the commits have happened.
-  if (commit_batches_in_flight_)
+  if (HasCommitBatchInFlight())
     return;
 
   task_runner_->PostDelayedTask(
@@ -479,21 +661,23 @@ void DOMStorageArea::OnCommitTimer() {
 
   // It's possible that there is nothing to commit if an immediate
   // commit occured after the timer was scheduled but before it fired.
-  if (!commit_batch_)
+  if (!GetCurrentCommitBatch())
     return;
 
   PostCommitTask();
 }
 
 void DOMStorageArea::PostCommitTask() {
-  if (is_shutdown_ || !commit_batch_)
+  if (is_shutdown_ || !GetCurrentCommitBatch())
     return;
 
   DCHECK(backing_.get());
-
+  CommitBatchHolder& current_batch = commit_batches_.front();
   PopulateCommitBatchValues();
+  current_batch.type = CommitBatchHolder::TYPE_IN_FLIGHT;
+
   commit_rate_limiter_.add_samples(1);
-  data_rate_limiter_.add_samples(commit_batch_->GetDataSize());
+  data_rate_limiter_.add_samples(current_batch.batch->GetDataSize());
 
   // This method executes on the primary sequence, we schedule
   // a task for immediate execution on the commit sequence.
@@ -501,8 +685,7 @@ void DOMStorageArea::PostCommitTask() {
   bool success = task_runner_->PostShutdownBlockingTask(
       FROM_HERE, DOMStorageTaskRunner::COMMIT_SEQUENCE,
       base::BindOnce(&DOMStorageArea::CommitChanges, this,
-                     base::Owned(commit_batch_.release())));
-  ++commit_batches_in_flight_;
+                     base::RetainedRef(current_batch.batch)));
   DCHECK(success);
 }
 
@@ -520,14 +703,20 @@ void DOMStorageArea::CommitChanges(const CommitBatch* commit_batch) {
 void DOMStorageArea::OnCommitComplete() {
   // We're back on the primary sequence in this method.
   task_runner_->AssertIsRunningOnPrimarySequence();
-  --commit_batches_in_flight_;
   if (is_shutdown_)
     return;
-  if (commit_batch_.get() && !commit_batches_in_flight_) {
+
+  DCHECK_EQ(CommitBatchHolder::TYPE_IN_FLIGHT, commit_batches_.back().type);
+  commit_batches_.pop_back();
+  if (GetCurrentCommitBatch() && !HasCommitBatchInFlight()) {
     // More changes have accrued, restart the timer.
     task_runner_->PostDelayedTask(
         FROM_HERE, base::BindOnce(&DOMStorageArea::OnCommitTimer, this),
         ComputeCommitDelay());
+  } else {
+    // When the desired load state is changed, the unload of map is deferred
+    // when there are uncommitted changes. So, try again after committing.
+    UnloadMapIfDesired();
   }
 }
 
@@ -535,14 +724,14 @@ void DOMStorageArea::ShutdownInCommitSequence() {
   // This method executes on the commit sequence.
   task_runner_->AssertIsRunningOnCommitSequence();
   DCHECK(backing_.get());
-  if (commit_batch_) {
+  if (GetCurrentCommitBatch()) {
+    CommitBatch* batch = GetCurrentCommitBatch()->batch.get();
     // Commit any changes that accrued prior to the timer firing.
-    bool success = backing_->CommitChanges(
-        commit_batch_->clear_all_first,
-        commit_batch_->changed_values);
+    bool success =
+        backing_->CommitChanges(batch->clear_all_first, batch->changed_values);
     DCHECK(success);
   }
-  commit_batch_.reset();
+  commit_batches_.clear();
   backing_.reset();
   session_storage_backing_ = NULL;
 }

@@ -355,7 +355,7 @@ void LocalStorageCachedArea::EnsureLoaded() {
   base::TimeDelta time_to_prime = base::TimeTicks::Now() - before;
   UMA_HISTOGRAM_TIMES("LocalStorage.MojoTimeToPrime", time_to_prime);
 
-  size_t local_storage_size_kb = map_->bytes_used() / 1024;
+  size_t local_storage_size_kb = map_->storage_used() / 1024;
   // Track localStorage size, from 0-6MB. Note that the maximum size should be
   // 5MB, but we add some slop since we want to make sure the max size is always
   // above what we see in practice, since histograms can't change.
