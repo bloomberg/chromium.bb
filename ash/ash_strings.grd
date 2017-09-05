@@ -958,7 +958,7 @@ This file contains the strings for ash.
        Stylus battery is low
      </message>
      <message name="IDS_ASH_LOW_STYLUS_BATTERY_NOTIFICATION_BODY" desc="The message of the notification which notifies user of the battery level of a stylus.">
-       Please charge or replace the batteries.
+       Please replace the battery
      </message>
       <message name="IDS_ASH_SCREENSHOT_NOTIFICATION_TITLE_SUCCESS" desc="The title of the notification when a screenshot was taken.">
         Screenshot taken
