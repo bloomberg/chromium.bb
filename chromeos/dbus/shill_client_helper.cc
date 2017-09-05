@@ -281,9 +281,9 @@ void ShillClientHelper::CallVoidMethod(dbus::MethodCall* method_call,
   DCHECK(!callback.is_null());
   proxy_->CallMethod(
       method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-      base::Bind(&OnVoidMethod,
-                 base::Owned(new RefHolder(weak_ptr_factory_.GetWeakPtr())),
-                 base::Passed(std::move(callback))));
+      base::BindOnce(&OnVoidMethod,
+                     base::Owned(new RefHolder(weak_ptr_factory_.GetWeakPtr())),
+                     std::move(callback)));
 }
 
 void ShillClientHelper::CallObjectPathMethod(
@@ -292,9 +292,9 @@ void ShillClientHelper::CallObjectPathMethod(
   DCHECK(!callback.is_null());
   proxy_->CallMethod(
       method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-      base::Bind(&OnObjectPathMethod,
-                 base::Owned(new RefHolder(weak_ptr_factory_.GetWeakPtr())),
-                 callback));
+      base::BindOnce(&OnObjectPathMethod,
+                     base::Owned(new RefHolder(weak_ptr_factory_.GetWeakPtr())),
+                     callback));
 }
 
 void ShillClientHelper::CallObjectPathMethodWithErrorCallback(
@@ -304,14 +304,11 @@ void ShillClientHelper::CallObjectPathMethodWithErrorCallback(
   DCHECK(!callback.is_null());
   DCHECK(!error_callback.is_null());
   proxy_->CallMethodWithErrorCallback(
-      method_call,
-      dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-      base::Bind(&OnObjectPathMethodWithoutStatus,
-                 base::Owned(new RefHolder(weak_ptr_factory_.GetWeakPtr())),
-                 callback,
-                 error_callback),
-      base::Bind(&OnError,
-                 error_callback));
+      method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+      base::BindOnce(&OnObjectPathMethodWithoutStatus,
+                     base::Owned(new RefHolder(weak_ptr_factory_.GetWeakPtr())),
+                     callback, error_callback),
+      base::BindOnce(&OnError, error_callback));
 }
 
 void ShillClientHelper::CallDictionaryValueMethod(
@@ -320,9 +317,9 @@ void ShillClientHelper::CallDictionaryValueMethod(
   DCHECK(!callback.is_null());
   proxy_->CallMethod(
       method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-      base::Bind(&OnDictionaryValueMethod,
-                 base::Owned(new RefHolder(weak_ptr_factory_.GetWeakPtr())),
-                 callback));
+      base::BindOnce(&OnDictionaryValueMethod,
+                     base::Owned(new RefHolder(weak_ptr_factory_.GetWeakPtr())),
+                     callback));
 }
 
 void ShillClientHelper::CallVoidMethodWithErrorCallback(
@@ -333,11 +330,10 @@ void ShillClientHelper::CallVoidMethodWithErrorCallback(
   DCHECK(!error_callback.is_null());
   proxy_->CallMethodWithErrorCallback(
       method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-      base::Bind(&OnVoidMethodWithErrorCallback,
-                 base::Owned(new RefHolder(weak_ptr_factory_.GetWeakPtr())),
-                 callback),
-      base::Bind(&OnError,
-                 error_callback));
+      base::BindOnce(&OnVoidMethodWithErrorCallback,
+                     base::Owned(new RefHolder(weak_ptr_factory_.GetWeakPtr())),
+                     callback),
+      base::BindOnce(&OnError, error_callback));
 }
 
 void ShillClientHelper::CallBooleanMethodWithErrorCallback(
@@ -348,12 +344,10 @@ void ShillClientHelper::CallBooleanMethodWithErrorCallback(
   DCHECK(!error_callback.is_null());
   proxy_->CallMethodWithErrorCallback(
       method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-      base::Bind(&OnBooleanMethodWithErrorCallback,
-                 base::Owned(new RefHolder(weak_ptr_factory_.GetWeakPtr())),
-                 callback,
-                 error_callback),
-      base::Bind(&OnError,
-                 error_callback));
+      base::BindOnce(&OnBooleanMethodWithErrorCallback,
+                     base::Owned(new RefHolder(weak_ptr_factory_.GetWeakPtr())),
+                     callback, error_callback),
+      base::BindOnce(&OnError, error_callback));
 }
 
 void ShillClientHelper::CallStringMethodWithErrorCallback(
@@ -364,12 +358,10 @@ void ShillClientHelper::CallStringMethodWithErrorCallback(
   DCHECK(!error_callback.is_null());
   proxy_->CallMethodWithErrorCallback(
       method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-      base::Bind(&OnStringMethodWithErrorCallback,
-                 base::Owned(new RefHolder(weak_ptr_factory_.GetWeakPtr())),
-                 callback,
-                 error_callback),
-      base::Bind(&OnError,
-                 error_callback));
+      base::BindOnce(&OnStringMethodWithErrorCallback,
+                     base::Owned(new RefHolder(weak_ptr_factory_.GetWeakPtr())),
+                     callback, error_callback),
+      base::BindOnce(&OnError, error_callback));
 }
 
 void ShillClientHelper::CallDictionaryValueMethodWithErrorCallback(
@@ -380,12 +372,10 @@ void ShillClientHelper::CallDictionaryValueMethodWithErrorCallback(
   DCHECK(!error_callback.is_null());
   proxy_->CallMethodWithErrorCallback(
       method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-      base::Bind(&OnDictionaryValueMethodWithErrorCallback,
-                 base::Owned(new RefHolder(weak_ptr_factory_.GetWeakPtr())),
-                 callback,
-                 error_callback),
-      base::Bind(&OnError,
-                 error_callback));
+      base::BindOnce(&OnDictionaryValueMethodWithErrorCallback,
+                     base::Owned(new RefHolder(weak_ptr_factory_.GetWeakPtr())),
+                     callback, error_callback),
+      base::BindOnce(&OnError, error_callback));
 }
 
 void ShillClientHelper::CallListValueMethodWithErrorCallback(
@@ -396,12 +386,10 @@ void ShillClientHelper::CallListValueMethodWithErrorCallback(
   DCHECK(!error_callback.is_null());
   proxy_->CallMethodWithErrorCallback(
       method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-      base::Bind(&OnListValueMethodWithErrorCallback,
-                 base::Owned(new RefHolder(weak_ptr_factory_.GetWeakPtr())),
-                 callback,
-                 error_callback),
-      base::Bind(&OnError,
-                 error_callback));
+      base::BindOnce(&OnListValueMethodWithErrorCallback,
+                     base::Owned(new RefHolder(weak_ptr_factory_.GetWeakPtr())),
+                     callback, error_callback),
+      base::BindOnce(&OnError, error_callback));
 }
 
 namespace {

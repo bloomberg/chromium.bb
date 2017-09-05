@@ -34,11 +34,9 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
     dbus::MethodCall method_call(lorgnette::kManagerServiceInterface,
                                  lorgnette::kListScannersMethod);
     lorgnette_daemon_proxy_->CallMethod(
-        &method_call,
-        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&LorgnetteManagerClientImpl::OnListScanners,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   callback));
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&LorgnetteManagerClientImpl::OnListScanners,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   // LorgnetteManagerClient override.
@@ -79,8 +77,8 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
 
     lorgnette_daemon_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&LorgnetteManagerClientImpl::OnScanImageComplete,
-                   weak_ptr_factory_.GetWeakPtr(), file_callback));
+        base::BindOnce(&LorgnetteManagerClientImpl::OnScanImageComplete,
+                       weak_ptr_factory_.GetWeakPtr(), file_callback));
   }
 
  protected:

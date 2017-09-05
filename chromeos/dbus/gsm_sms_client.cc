@@ -65,10 +65,10 @@ class SMSProxy {
                                  modemmanager::kSMSDeleteFunction);
     dbus::MessageWriter writer(&method_call);
     writer.AppendUint32(index);
-    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-                       base::Bind(&SMSProxy::OnDelete,
-                                  weak_ptr_factory_.GetWeakPtr(),
-                                  callback));
+    proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&SMSProxy::OnDelete, weak_ptr_factory_.GetWeakPtr(),
+                       callback));
   }
 
   // Calls Get method.
@@ -77,20 +77,20 @@ class SMSProxy {
                                  modemmanager::kSMSGetFunction);
     dbus::MessageWriter writer(&method_call);
     writer.AppendUint32(index);
-    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-                       base::Bind(&SMSProxy::OnGet,
-                                  weak_ptr_factory_.GetWeakPtr(),
-                                  callback));
+    proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&SMSProxy::OnGet, weak_ptr_factory_.GetWeakPtr(),
+                       callback));
   }
 
   // Calls List method.
   void List(const ListCallback& callback) {
     dbus::MethodCall method_call(modemmanager::kModemManagerSMSInterface,
                                  modemmanager::kSMSListFunction);
-    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-                       base::Bind(&SMSProxy::OnList,
-                                  weak_ptr_factory_.GetWeakPtr(),
-                                  callback));
+    proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&SMSProxy::OnList, weak_ptr_factory_.GetWeakPtr(),
+                       callback));
   }
 
  private:

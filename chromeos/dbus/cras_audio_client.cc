@@ -46,10 +46,9 @@ class CrasAudioClientImpl : public CrasAudioClient {
     dbus::MethodCall method_call(cras::kCrasControlInterface,
                                  cras::kGetVolumeState);
     cras_proxy_->CallMethod(
-        &method_call,
-        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&CrasAudioClientImpl::OnGetVolumeState,
-                   weak_ptr_factory_.GetWeakPtr(), callback));
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&CrasAudioClientImpl::OnGetVolumeState,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   void GetDefaultOutputBufferSize(
@@ -58,8 +57,8 @@ class CrasAudioClientImpl : public CrasAudioClient {
                                  cras::kGetDefaultOutputBufferSize);
     cras_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&CrasAudioClientImpl::OnGetDefaultOutputBufferSize,
-                   weak_ptr_factory_.GetWeakPtr(), callback));
+        base::BindOnce(&CrasAudioClientImpl::OnGetDefaultOutputBufferSize,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   void GetNodes(const GetNodesCallback& callback,
@@ -67,12 +66,11 @@ class CrasAudioClientImpl : public CrasAudioClient {
     dbus::MethodCall method_call(cras::kCrasControlInterface,
                                  cras::kGetNodes);
     cras_proxy_->CallMethodWithErrorCallback(
-        &method_call,
-        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&CrasAudioClientImpl::OnGetNodes,
-                   weak_ptr_factory_.GetWeakPtr(), callback),
-        base::Bind(&CrasAudioClientImpl::OnError,
-                   weak_ptr_factory_.GetWeakPtr(), error_callback));
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&CrasAudioClientImpl::OnGetNodes,
+                       weak_ptr_factory_.GetWeakPtr(), callback),
+        base::BindOnce(&CrasAudioClientImpl::OnError,
+                       weak_ptr_factory_.GetWeakPtr(), error_callback));
   }
 
   void SetOutputNodeVolume(uint64_t node_id, int32_t volume) override {

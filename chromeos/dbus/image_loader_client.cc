@@ -34,7 +34,7 @@ class ImageLoaderClientImpl : public ImageLoaderClient {
     writer.AppendString(component_folder_abs_path);
     proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&ImageLoaderClientImpl::OnBoolMethod, callback));
+        base::BindOnce(&ImageLoaderClientImpl::OnBoolMethod, callback));
   }
 
   void LoadComponent(const std::string& name,
@@ -45,7 +45,7 @@ class ImageLoaderClientImpl : public ImageLoaderClient {
     writer.AppendString(name);
     proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&ImageLoaderClientImpl::OnStringMethod, callback));
+        base::BindOnce(&ImageLoaderClientImpl::OnStringMethod, callback));
   }
 
   void RequestComponentVersion(
@@ -57,7 +57,7 @@ class ImageLoaderClientImpl : public ImageLoaderClient {
     writer.AppendString(name);
     proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&ImageLoaderClientImpl::OnStringMethod, callback));
+        base::BindOnce(&ImageLoaderClientImpl::OnStringMethod, callback));
   }
 
  protected:

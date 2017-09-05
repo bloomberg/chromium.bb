@@ -63,20 +63,20 @@ class ModemMessagingProxy {
                                  modemmanager::kSMSDeleteFunction);
     dbus::MessageWriter writer(&method_call);
     writer.AppendObjectPath(message_path);
-    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-                       base::Bind(&ModemMessagingProxy::OnDelete,
-                                  weak_ptr_factory_.GetWeakPtr(),
-                                  callback));
+    proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&ModemMessagingProxy::OnDelete,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   // Calls List method.
   virtual void List(const ListCallback& callback) {
     dbus::MethodCall method_call(modemmanager::kModemManager1MessagingInterface,
                                  modemmanager::kSMSListFunction);
-    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-                       base::Bind(&ModemMessagingProxy::OnList,
-                                  weak_ptr_factory_.GetWeakPtr(),
-                                  callback));
+    proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&ModemMessagingProxy::OnList,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
  private:

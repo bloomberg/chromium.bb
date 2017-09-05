@@ -180,10 +180,9 @@ class PowerManagerClientImpl : public PowerManagerClient {
         power_manager::kPowerManagerInterface,
         power_manager::kGetScreenBrightnessPercentMethod);
     power_manager_proxy_->CallMethod(
-        &method_call,
-        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&PowerManagerClientImpl::OnGetScreenBrightnessPercent,
-                   weak_ptr_factory_.GetWeakPtr(), callback));
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&PowerManagerClientImpl::OnGetScreenBrightnessPercent,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   void RequestStatusUpdate() override {
@@ -192,10 +191,10 @@ class PowerManagerClientImpl : public PowerManagerClient {
         power_manager::kPowerManagerInterface,
         power_manager::kGetPowerSupplyPropertiesMethod);
     power_manager_proxy_->CallMethod(
-        &method_call,
-        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&PowerManagerClientImpl::OnGetPowerSupplyPropertiesMethod,
-                   weak_ptr_factory_.GetWeakPtr()));
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(
+            &PowerManagerClientImpl::OnGetPowerSupplyPropertiesMethod,
+            weak_ptr_factory_.GetWeakPtr()));
   }
 
   void RequestSuspend() override {
@@ -295,8 +294,8 @@ class PowerManagerClientImpl : public PowerManagerClient {
                                  power_manager::kGetBacklightsForcedOffMethod);
     power_manager_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&PowerManagerClientImpl::OnGetBacklightsForcedOff,
-                   weak_ptr_factory_.GetWeakPtr(), callback));
+        base::BindOnce(&PowerManagerClientImpl::OnGetBacklightsForcedOff,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   void GetSwitchStates(const GetSwitchStatesCallback& callback) override {
@@ -304,8 +303,8 @@ class PowerManagerClientImpl : public PowerManagerClient {
                                  power_manager::kGetSwitchStatesMethod);
     power_manager_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&PowerManagerClientImpl::OnGetSwitchStates,
-                   weak_ptr_factory_.GetWeakPtr(), callback));
+        base::BindOnce(&PowerManagerClientImpl::OnGetSwitchStates,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   base::Closure GetSuspendReadinessCallback() override {

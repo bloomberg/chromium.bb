@@ -105,10 +105,10 @@ class CryptohomeClientImpl : public CryptohomeClient {
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(cryptohome_id.id());
     writer.AppendString(key);
-    proxy_->CallMethod(&method_call, kTpmDBusTimeoutMs ,
-                       base::Bind(&CryptohomeClientImpl::OnAsyncMethodCall,
-                                  weak_ptr_factory_.GetWeakPtr(),
-                                  callback));
+    proxy_->CallMethod(
+        &method_call, kTpmDBusTimeoutMs,
+        base::BindOnce(&CryptohomeClientImpl::OnAsyncMethodCall,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   // CryptohomeClient override.
@@ -122,10 +122,10 @@ class CryptohomeClientImpl : public CryptohomeClient {
     writer.AppendString(cryptohome_id.id());
     writer.AppendString(from_key);
     writer.AppendString(to_key);
-    proxy_->CallMethod(&method_call, kTpmDBusTimeoutMs ,
-                       base::Bind(&CryptohomeClientImpl::OnAsyncMethodCall,
-                                  weak_ptr_factory_.GetWeakPtr(),
-                                  callback));
+    proxy_->CallMethod(
+        &method_call, kTpmDBusTimeoutMs,
+        base::BindOnce(&CryptohomeClientImpl::OnAsyncMethodCall,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   // CryptohomeClient override.
@@ -135,10 +135,10 @@ class CryptohomeClientImpl : public CryptohomeClient {
                                  cryptohome::kCryptohomeAsyncRemove);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(cryptohome_id.id());
-    proxy_->CallMethod(&method_call, kTpmDBusTimeoutMs ,
-                       base::Bind(&CryptohomeClientImpl::OnAsyncMethodCall,
-                                  weak_ptr_factory_.GetWeakPtr(),
-                                  callback));
+    proxy_->CallMethod(
+        &method_call, kTpmDBusTimeoutMs,
+        base::BindOnce(&CryptohomeClientImpl::OnAsyncMethodCall,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   // CryptohomeClient override.
@@ -156,9 +156,10 @@ class CryptohomeClientImpl : public CryptohomeClient {
     dbus::MessageWriter writer(&method_call);
     writer.AppendProtoAsArrayOfBytes(id_from_proto);
     writer.AppendProtoAsArrayOfBytes(id_to_proto);
-    proxy_->CallMethod(&method_call, kTpmDBusTimeoutMs,
-                       base::Bind(&CryptohomeClientImpl::OnBaseReplyMethod,
-                                  weak_ptr_factory_.GetWeakPtr(), callback));
+    proxy_->CallMethod(
+        &method_call, kTpmDBusTimeoutMs,
+        base::BindOnce(&CryptohomeClientImpl::OnBaseReplyMethod,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   // CryptohomeClient override.
@@ -171,19 +172,20 @@ class CryptohomeClientImpl : public CryptohomeClient {
 
     dbus::MessageWriter writer(&method_call);
     writer.AppendProtoAsArrayOfBytes(id);
-    proxy_->CallMethod(&method_call, kTpmDBusTimeoutMs,
-                       base::Bind(&CryptohomeClientImpl::OnBaseReplyMethod,
-                                  weak_ptr_factory_.GetWeakPtr(), callback));
+    proxy_->CallMethod(
+        &method_call, kTpmDBusTimeoutMs,
+        base::BindOnce(&CryptohomeClientImpl::OnBaseReplyMethod,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   // CryptohomeClient override.
   void GetSystemSalt(const GetSystemSaltCallback& callback) override {
     dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
                                  cryptohome::kCryptohomeGetSystemSalt);
-    proxy_->CallMethod(&method_call, kTpmDBusTimeoutMs ,
-                       base::Bind(&CryptohomeClientImpl::OnGetSystemSalt,
-                                  weak_ptr_factory_.GetWeakPtr(),
-                                  callback));
+    proxy_->CallMethod(
+        &method_call, kTpmDBusTimeoutMs,
+        base::BindOnce(&CryptohomeClientImpl::OnGetSystemSalt,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   // CryptohomeClient override,
@@ -193,10 +195,10 @@ class CryptohomeClientImpl : public CryptohomeClient {
                                  cryptohome::kCryptohomeGetSanitizedUsername);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(cryptohome_id.id());
-    proxy_->CallMethod(&method_call, kTpmDBusTimeoutMs ,
-                       base::Bind(&CryptohomeClientImpl::OnStringMethod,
-                                  weak_ptr_factory_.GetWeakPtr(),
-                                  callback));
+    proxy_->CallMethod(
+        &method_call, kTpmDBusTimeoutMs,
+        base::BindOnce(&CryptohomeClientImpl::OnStringMethod,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   // CryptohomeClient override.
@@ -233,10 +235,10 @@ class CryptohomeClientImpl : public CryptohomeClient {
     writer.AppendBool(flags & cryptohome::ENSURE_EPHEMERAL);
     // deprecated_tracked_subdirectories
     writer.AppendArrayOfStrings(std::vector<std::string>());
-    proxy_->CallMethod(&method_call, kTpmDBusTimeoutMs ,
-                       base::Bind(&CryptohomeClientImpl::OnAsyncMethodCall,
-                                  weak_ptr_factory_.GetWeakPtr(),
-                                  callback));
+    proxy_->CallMethod(
+        &method_call, kTpmDBusTimeoutMs,
+        base::BindOnce(&CryptohomeClientImpl::OnAsyncMethodCall,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   // CryptohomeClient override.
@@ -250,20 +252,20 @@ class CryptohomeClientImpl : public CryptohomeClient {
     writer.AppendString(cryptohome_id.id());
     writer.AppendString(key);
     writer.AppendString(new_key);
-    proxy_->CallMethod(&method_call, kTpmDBusTimeoutMs ,
-                       base::Bind(&CryptohomeClientImpl::OnAsyncMethodCall,
-                                  weak_ptr_factory_.GetWeakPtr(),
-                                  callback));
+    proxy_->CallMethod(
+        &method_call, kTpmDBusTimeoutMs,
+        base::BindOnce(&CryptohomeClientImpl::OnAsyncMethodCall,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   // CryptohomeClient override.
   void AsyncMountGuest(const AsyncMethodCallback& callback) override {
     dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
                                  cryptohome::kCryptohomeAsyncMountGuest);
-    proxy_->CallMethod(&method_call, kTpmDBusTimeoutMs ,
-                       base::Bind(&CryptohomeClientImpl::OnAsyncMethodCall,
-                                  weak_ptr_factory_.GetWeakPtr(),
-                                  callback));
+    proxy_->CallMethod(
+        &method_call, kTpmDBusTimeoutMs,
+        base::BindOnce(&CryptohomeClientImpl::OnAsyncMethodCall,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   // CryptohomeClient override.
@@ -276,10 +278,10 @@ class CryptohomeClientImpl : public CryptohomeClient {
     writer.AppendString(public_mount_id.id());
     writer.AppendBool(flags & cryptohome::CREATE_IF_MISSING);
     writer.AppendBool(flags & cryptohome::ENSURE_EPHEMERAL);
-    proxy_->CallMethod(&method_call, kTpmDBusTimeoutMs ,
-                       base::Bind(&CryptohomeClientImpl::OnAsyncMethodCall,
-                                  weak_ptr_factory_.GetWeakPtr(),
-                                  callback));
+    proxy_->CallMethod(
+        &method_call, kTpmDBusTimeoutMs,
+        base::BindOnce(&CryptohomeClientImpl::OnAsyncMethodCall,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   // CryptohomeClient override.
@@ -309,10 +311,9 @@ class CryptohomeClientImpl : public CryptohomeClient {
     dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
                                  cryptohome::kCryptohomeTpmGetPassword);
     proxy_->CallMethod(
-        &method_call, kTpmDBusTimeoutMs ,
-        base::Bind(&CryptohomeClientImpl::OnStringMethod,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   callback));
+        &method_call, kTpmDBusTimeoutMs,
+        base::BindOnce(&CryptohomeClientImpl::OnStringMethod,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   // CryptohomeClient override.
@@ -382,11 +383,9 @@ class CryptohomeClientImpl : public CryptohomeClient {
     dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
                                  cryptohome::kCryptohomePkcs11GetTpmTokenInfo);
     proxy_->CallMethod(
-        &method_call, kTpmDBusTimeoutMs ,
-        base::Bind(
-            &CryptohomeClientImpl::OnPkcs11GetTpmTokenInfo,
-            weak_ptr_factory_.GetWeakPtr(),
-            callback));
+        &method_call, kTpmDBusTimeoutMs,
+        base::BindOnce(&CryptohomeClientImpl::OnPkcs11GetTpmTokenInfo,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   // CryptohomeClient override.
@@ -400,8 +399,8 @@ class CryptohomeClientImpl : public CryptohomeClient {
     writer.AppendString(cryptohome_id.id());
     proxy_->CallMethod(
         &method_call, kTpmDBusTimeoutMs,
-        base::Bind(&CryptohomeClientImpl::OnPkcs11GetTpmTokenInfo,
-                   weak_ptr_factory_.GetWeakPtr(), callback));
+        base::BindOnce(&CryptohomeClientImpl::OnPkcs11GetTpmTokenInfo,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   // CryptohomeClient override.
@@ -498,10 +497,10 @@ class CryptohomeClientImpl : public CryptohomeClient {
         cryptohome::kCryptohomeAsyncTpmAttestationCreateEnrollRequest);
     dbus::MessageWriter writer(&method_call);
     writer.AppendInt32(pca_type);
-    proxy_->CallMethod(&method_call, kTpmDBusTimeoutMs ,
-                       base::Bind(&CryptohomeClientImpl::OnAsyncMethodCall,
-                                  weak_ptr_factory_.GetWeakPtr(),
-                                  callback));
+    proxy_->CallMethod(
+        &method_call, kTpmDBusTimeoutMs,
+        base::BindOnce(&CryptohomeClientImpl::OnAsyncMethodCall,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   // CryptohomeClient override.
@@ -516,10 +515,10 @@ class CryptohomeClientImpl : public CryptohomeClient {
     writer.AppendArrayOfBytes(
         reinterpret_cast<const uint8_t*>(pca_response.data()),
         pca_response.size());
-    proxy_->CallMethod(&method_call, kTpmDBusTimeoutMs ,
-                       base::Bind(&CryptohomeClientImpl::OnAsyncMethodCall,
-                                  weak_ptr_factory_.GetWeakPtr(),
-                                  callback));
+    proxy_->CallMethod(
+        &method_call, kTpmDBusTimeoutMs,
+        base::BindOnce(&CryptohomeClientImpl::OnAsyncMethodCall,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   // CryptohomeClient override.
@@ -537,10 +536,10 @@ class CryptohomeClientImpl : public CryptohomeClient {
     writer.AppendInt32(certificate_profile);
     writer.AppendString(cryptohome_id.id());
     writer.AppendString(request_origin);
-    proxy_->CallMethod(&method_call, kTpmDBusTimeoutMs ,
-                       base::Bind(&CryptohomeClientImpl::OnAsyncMethodCall,
-                                  weak_ptr_factory_.GetWeakPtr(),
-                                  callback));
+    proxy_->CallMethod(
+        &method_call, kTpmDBusTimeoutMs,
+        base::BindOnce(&CryptohomeClientImpl::OnAsyncMethodCall,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   // CryptohomeClient override.
@@ -561,10 +560,10 @@ class CryptohomeClientImpl : public CryptohomeClient {
     writer.AppendBool(is_user_specific);
     writer.AppendString(cryptohome_id.id());
     writer.AppendString(key_name);
-    proxy_->CallMethod(&method_call, kTpmDBusTimeoutMs ,
-                       base::Bind(&CryptohomeClientImpl::OnAsyncMethodCall,
-                                  weak_ptr_factory_.GetWeakPtr(),
-                                  callback));
+    proxy_->CallMethod(
+        &method_call, kTpmDBusTimeoutMs,
+        base::BindOnce(&CryptohomeClientImpl::OnAsyncMethodCall,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   // CryptohomeClient override.
@@ -598,10 +597,10 @@ class CryptohomeClientImpl : public CryptohomeClient {
     writer.AppendBool(is_user_specific);
     writer.AppendString(cryptohome_id.id());
     writer.AppendString(key_name);
-    proxy_->CallMethod(&method_call, kTpmDBusTimeoutMs ,
-                       base::Bind(&CryptohomeClientImpl::OnDataMethod,
-                                  weak_ptr_factory_.GetWeakPtr(),
-                                  callback));
+    proxy_->CallMethod(
+        &method_call, kTpmDBusTimeoutMs,
+        base::BindOnce(&CryptohomeClientImpl::OnDataMethod,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   // CryptohomeClient override.
@@ -618,10 +617,10 @@ class CryptohomeClientImpl : public CryptohomeClient {
     writer.AppendBool(is_user_specific);
     writer.AppendString(cryptohome_id.id());
     writer.AppendString(key_name);
-    proxy_->CallMethod(&method_call, kTpmDBusTimeoutMs ,
-                       base::Bind(&CryptohomeClientImpl::OnDataMethod,
-                                  weak_ptr_factory_.GetWeakPtr(),
-                                  callback));
+    proxy_->CallMethod(
+        &method_call, kTpmDBusTimeoutMs,
+        base::BindOnce(&CryptohomeClientImpl::OnDataMethod,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   // CryptohomeClient override.
@@ -638,10 +637,10 @@ class CryptohomeClientImpl : public CryptohomeClient {
     writer.AppendBool(is_user_specific);
     writer.AppendString(cryptohome_id.id());
     writer.AppendString(key_name);
-    proxy_->CallMethod(&method_call, kTpmDBusTimeoutMs ,
-                       base::Bind(&CryptohomeClientImpl::OnAsyncMethodCall,
-                                  weak_ptr_factory_.GetWeakPtr(),
-                                  callback));
+    proxy_->CallMethod(
+        &method_call, kTpmDBusTimeoutMs,
+        base::BindOnce(&CryptohomeClientImpl::OnAsyncMethodCall,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   // CryptohomeClient override.
@@ -670,10 +669,10 @@ class CryptohomeClientImpl : public CryptohomeClient {
     writer.AppendBool(include_signed_public_key);
     writer.AppendArrayOfBytes(
         reinterpret_cast<const uint8_t*>(challenge.data()), challenge.size());
-    proxy_->CallMethod(&method_call, kTpmDBusTimeoutMs ,
-                       base::Bind(&CryptohomeClientImpl::OnAsyncMethodCall,
-                                  weak_ptr_factory_.GetWeakPtr(),
-                                  callback));
+    proxy_->CallMethod(
+        &method_call, kTpmDBusTimeoutMs,
+        base::BindOnce(&CryptohomeClientImpl::OnAsyncMethodCall,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   // CryptohomeClient override.
@@ -693,10 +692,10 @@ class CryptohomeClientImpl : public CryptohomeClient {
     writer.AppendString(key_name);
     writer.AppendArrayOfBytes(
         reinterpret_cast<const uint8_t*>(challenge.data()), challenge.size());
-    proxy_->CallMethod(&method_call, kTpmDBusTimeoutMs ,
-                       base::Bind(&CryptohomeClientImpl::OnAsyncMethodCall,
-                                  weak_ptr_factory_.GetWeakPtr(),
-                                  callback));
+    proxy_->CallMethod(
+        &method_call, kTpmDBusTimeoutMs,
+        base::BindOnce(&CryptohomeClientImpl::OnAsyncMethodCall,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   // CryptohomeClient override.
@@ -713,10 +712,10 @@ class CryptohomeClientImpl : public CryptohomeClient {
     writer.AppendBool(is_user_specific);
     writer.AppendString(cryptohome_id.id());
     writer.AppendString(key_name);
-    proxy_->CallMethod(&method_call, kTpmDBusTimeoutMs ,
-                       base::Bind(&CryptohomeClientImpl::OnDataMethod,
-                                  weak_ptr_factory_.GetWeakPtr(),
-                                  callback));
+    proxy_->CallMethod(
+        &method_call, kTpmDBusTimeoutMs,
+        base::BindOnce(&CryptohomeClientImpl::OnDataMethod,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   // CryptohomeClient override.
@@ -760,10 +759,10 @@ class CryptohomeClientImpl : public CryptohomeClient {
   void TpmGetVersion(const StringDBusMethodCallback& callback) override {
     dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
                                  cryptohome::kCryptohomeTpmGetVersion);
-    proxy_->CallMethod(&method_call, kTpmDBusTimeoutMs,
-                       base::Bind(&CryptohomeClientImpl::OnStringMethod,
-                                  weak_ptr_factory_.GetWeakPtr(),
-                                  callback));
+    proxy_->CallMethod(
+        &method_call, kTpmDBusTimeoutMs,
+        base::BindOnce(&CryptohomeClientImpl::OnStringMethod,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   void GetKeyDataEx(const cryptohome::Identification& id,
@@ -780,11 +779,10 @@ class CryptohomeClientImpl : public CryptohomeClient {
     writer.AppendProtoAsArrayOfBytes(auth);
     writer.AppendProtoAsArrayOfBytes(request);
 
-    proxy_->CallMethod(&method_call,
-                       kTpmDBusTimeoutMs,
-                       base::Bind(&CryptohomeClientImpl::OnBaseReplyMethod,
-                                  weak_ptr_factory_.GetWeakPtr(),
-                                  callback));
+    proxy_->CallMethod(
+        &method_call, kTpmDBusTimeoutMs,
+        base::BindOnce(&CryptohomeClientImpl::OnBaseReplyMethod,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   void CheckKeyEx(const cryptohome::Identification& id,
@@ -803,10 +801,10 @@ class CryptohomeClientImpl : public CryptohomeClient {
     writer.AppendProtoAsArrayOfBytes(auth);
     writer.AppendProtoAsArrayOfBytes(request);
 
-    proxy_->CallMethod(&method_call, kTpmDBusTimeoutMs ,
-                        base::Bind(&CryptohomeClientImpl::OnBaseReplyMethod,
-                                   weak_ptr_factory_.GetWeakPtr(),
-                                   callback));
+    proxy_->CallMethod(
+        &method_call, kTpmDBusTimeoutMs,
+        base::BindOnce(&CryptohomeClientImpl::OnBaseReplyMethod,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   void MountEx(const cryptohome::Identification& id,
@@ -825,10 +823,10 @@ class CryptohomeClientImpl : public CryptohomeClient {
     writer.AppendProtoAsArrayOfBytes(auth);
     writer.AppendProtoAsArrayOfBytes(request);
 
-    proxy_->CallMethod(&method_call, kTpmDBusTimeoutMs ,
-                       base::Bind(&CryptohomeClientImpl::OnBaseReplyMethod,
-                                  weak_ptr_factory_.GetWeakPtr(),
-                                  callback));
+    proxy_->CallMethod(
+        &method_call, kTpmDBusTimeoutMs,
+        base::BindOnce(&CryptohomeClientImpl::OnBaseReplyMethod,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   void AddKeyEx(const cryptohome::Identification& id,
@@ -847,10 +845,10 @@ class CryptohomeClientImpl : public CryptohomeClient {
     writer.AppendProtoAsArrayOfBytes(auth);
     writer.AppendProtoAsArrayOfBytes(request);
 
-    proxy_->CallMethod(&method_call, kTpmDBusTimeoutMs,
-                       base::Bind(&CryptohomeClientImpl::OnBaseReplyMethod,
-                                  weak_ptr_factory_.GetWeakPtr(),
-                                  callback));
+    proxy_->CallMethod(
+        &method_call, kTpmDBusTimeoutMs,
+        base::BindOnce(&CryptohomeClientImpl::OnBaseReplyMethod,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   void UpdateKeyEx(const cryptohome::Identification& id,
@@ -869,11 +867,10 @@ class CryptohomeClientImpl : public CryptohomeClient {
     writer.AppendProtoAsArrayOfBytes(auth);
     writer.AppendProtoAsArrayOfBytes(request);
 
-    proxy_->CallMethod(&method_call,
-                       kTpmDBusTimeoutMs ,
-                       base::Bind(&CryptohomeClientImpl::OnBaseReplyMethod,
-                                  weak_ptr_factory_.GetWeakPtr(),
-                                  callback));
+    proxy_->CallMethod(
+        &method_call, kTpmDBusTimeoutMs,
+        base::BindOnce(&CryptohomeClientImpl::OnBaseReplyMethod,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   void RemoveKeyEx(const cryptohome::Identification& id,
@@ -891,11 +888,10 @@ class CryptohomeClientImpl : public CryptohomeClient {
     writer.AppendProtoAsArrayOfBytes(auth);
     writer.AppendProtoAsArrayOfBytes(request);
 
-    proxy_->CallMethod(&method_call,
-                       kTpmDBusTimeoutMs ,
-                       base::Bind(&CryptohomeClientImpl::OnBaseReplyMethod,
-                                  weak_ptr_factory_.GetWeakPtr(),
-                                  callback));
+    proxy_->CallMethod(
+        &method_call, kTpmDBusTimeoutMs,
+        base::BindOnce(&CryptohomeClientImpl::OnBaseReplyMethod,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   void GetBootAttribute(const cryptohome::GetBootAttributeRequest& request,
@@ -949,10 +945,10 @@ class CryptohomeClientImpl : public CryptohomeClient {
 
     // The migration progress takes unpredicatable time depending on the
     // user file size and the number. Setting the time limit to infinite.
-    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-                       base::Bind(&CryptohomeClientImpl::OnVoidMethod,
-                                  weak_ptr_factory_.GetWeakPtr(),
-                                  base::Passed(std::move(callback))));
+    proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&CryptohomeClientImpl::OnVoidMethod,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   void NeedsDircryptoMigration(
@@ -968,9 +964,10 @@ class CryptohomeClientImpl : public CryptohomeClient {
     dbus::MessageWriter writer(&method_call);
     writer.AppendProtoAsArrayOfBytes(id_proto);
 
-    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-                       base::Bind(&CryptohomeClientImpl::OnBoolMethod,
-                                  weak_ptr_factory_.GetWeakPtr(), callback));
+    proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&CryptohomeClientImpl::OnBoolMethod,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
  protected:
@@ -1047,10 +1044,10 @@ class CryptohomeClientImpl : public CryptohomeClient {
   // Calls a method without result values.
   void CallVoidMethod(dbus::MethodCall* method_call,
                       VoidDBusMethodCallback callback) {
-    proxy_->CallMethod(method_call, kTpmDBusTimeoutMs,
-                       base::Bind(&CryptohomeClientImpl::OnVoidMethod,
-                                  weak_ptr_factory_.GetWeakPtr(),
-                                  base::Passed(std::move(callback))));
+    proxy_->CallMethod(
+        method_call, kTpmDBusTimeoutMs,
+        base::BindOnce(&CryptohomeClientImpl::OnVoidMethod,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   void OnVoidMethod(VoidDBusMethodCallback callback, dbus::Response* response) {
@@ -1072,11 +1069,10 @@ class CryptohomeClientImpl : public CryptohomeClient {
   // Calls a method with a bool value result.
   void CallBoolMethod(dbus::MethodCall* method_call,
                       const BoolDBusMethodCallback& callback) {
-    proxy_->CallMethod(method_call, kTpmDBusTimeoutMs ,
-                       base::Bind(
-                           &CryptohomeClientImpl::OnBoolMethod,
-                           weak_ptr_factory_.GetWeakPtr(),
-                           callback));
+    proxy_->CallMethod(
+        method_call, kTpmDBusTimeoutMs,
+        base::BindOnce(&CryptohomeClientImpl::OnBoolMethod,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   // Handles responses for methods with a bool value result.
@@ -1255,9 +1251,10 @@ class CryptohomeClientImpl : public CryptohomeClient {
     dbus::MessageWriter writer(&method_call);
     writer.AppendProtoAsArrayOfBytes(request);
 
-    proxy_->CallMethod(&method_call, kTpmDBusTimeoutMs,
-                       base::Bind(&CryptohomeClientImpl::OnBaseReplyMethod,
-                                  weak_ptr_factory_.GetWeakPtr(), callback));
+    proxy_->CallMethod(
+        &method_call, kTpmDBusTimeoutMs,
+        base::BindOnce(&CryptohomeClientImpl::OnBaseReplyMethod,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   dbus::ObjectProxy* proxy_;

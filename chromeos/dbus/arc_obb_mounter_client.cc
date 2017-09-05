@@ -42,10 +42,10 @@ class ArcObbMounterClientImpl : public ArcObbMounterClient {
     writer.AppendString(obb_file);
     writer.AppendString(mount_path);
     writer.AppendInt32(owner_gid);
-    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-                       base::Bind(&ArcObbMounterClientImpl::OnVoidDBusMethod,
-                                  weak_ptr_factory_.GetWeakPtr(),
-                                  base::Passed(std::move(callback))));
+    proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&ArcObbMounterClientImpl::OnVoidDBusMethod,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   void UnmountObb(const std::string& mount_path,
@@ -53,10 +53,10 @@ class ArcObbMounterClientImpl : public ArcObbMounterClient {
     dbus::MethodCall method_call(kArcObbMounterInterface, kUnmountObbMethod);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(mount_path);
-    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-                       base::Bind(&ArcObbMounterClientImpl::OnVoidDBusMethod,
-                                  weak_ptr_factory_.GetWeakPtr(),
-                                  base::Passed(std::move(callback))));
+    proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&ArcObbMounterClientImpl::OnVoidDBusMethod,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
  protected:

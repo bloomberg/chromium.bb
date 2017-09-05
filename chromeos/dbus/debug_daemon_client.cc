@@ -119,8 +119,8 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
     writer.AppendFileDescriptor(file_descriptor);
     debugdaemon_proxy_->CallMethod(
         &method_call, kBigLogsDBusTimeoutMS,
-        base::Bind(&DebugDaemonClientImpl::OnGetDebugLogs,
-                   weak_ptr_factory_.GetWeakPtr(), callback));
+        base::BindOnce(&DebugDaemonClientImpl::OnGetDebugLogs,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   void SetDebugMode(const std::string& subsystem,
@@ -130,11 +130,9 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(subsystem);
     debugdaemon_proxy_->CallMethod(
-        &method_call,
-        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&DebugDaemonClientImpl::OnSetDebugMode,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   callback));
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&DebugDaemonClientImpl::OnSetDebugMode,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   void GetRoutes(bool numeric,
@@ -156,44 +154,36 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
     sub_writer.CloseContainer(&elem_writer);
     writer.CloseContainer(&sub_writer);
     debugdaemon_proxy_->CallMethod(
-        &method_call,
-        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&DebugDaemonClientImpl::OnGetRoutes,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   callback));
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&DebugDaemonClientImpl::OnGetRoutes,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   void GetNetworkStatus(const GetNetworkStatusCallback& callback) override {
     dbus::MethodCall method_call(debugd::kDebugdInterface,
                                  debugd::kGetNetworkStatus);
     debugdaemon_proxy_->CallMethod(
-        &method_call,
-        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&DebugDaemonClientImpl::OnGetNetworkStatus,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   callback));
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&DebugDaemonClientImpl::OnGetNetworkStatus,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   void GetModemStatus(const GetModemStatusCallback& callback) override {
     dbus::MethodCall method_call(debugd::kDebugdInterface,
                                  debugd::kGetModemStatus);
     debugdaemon_proxy_->CallMethod(
-        &method_call,
-        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&DebugDaemonClientImpl::OnGetModemStatus,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   callback));
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&DebugDaemonClientImpl::OnGetModemStatus,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   void GetWiMaxStatus(const GetWiMaxStatusCallback& callback) override {
     dbus::MethodCall method_call(debugd::kDebugdInterface,
                                  debugd::kGetWiMaxStatus);
     debugdaemon_proxy_->CallMethod(
-        &method_call,
-        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&DebugDaemonClientImpl::OnGetWiMaxStatus,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   callback));
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&DebugDaemonClientImpl::OnGetWiMaxStatus,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   void GetNetworkInterfaces(
@@ -201,11 +191,9 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
     dbus::MethodCall method_call(debugd::kDebugdInterface,
                                  debugd::kGetInterfaces);
     debugdaemon_proxy_->CallMethod(
-        &method_call,
-        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&DebugDaemonClientImpl::OnGetNetworkInterfaces,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   callback));
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&DebugDaemonClientImpl::OnGetNetworkInterfaces,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   void GetPerfOutput(base::TimeDelta duration,
@@ -223,19 +211,17 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
     debugdaemon_proxy_->CallMethodWithErrorCallback(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         dbus::ObjectProxy::EmptyResponseCallback(),
-        base::Bind(&DebugDaemonClientImpl::OnDBusMethodError,
-                   weak_ptr_factory_.GetWeakPtr(), error_callback));
+        base::BindOnce(&DebugDaemonClientImpl::OnDBusMethodError,
+                       weak_ptr_factory_.GetWeakPtr(), error_callback));
   }
 
   void GetScrubbedLogs(const GetLogsCallback& callback) override {
     dbus::MethodCall method_call(debugd::kDebugdInterface,
                                  debugd::kGetFeedbackLogs);
     debugdaemon_proxy_->CallMethod(
-        &method_call,
-        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&DebugDaemonClientImpl::OnGetAllLogs,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   callback));
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&DebugDaemonClientImpl::OnGetAllLogs,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   void GetScrubbedBigLogs(const GetLogsCallback& callback) override {
@@ -255,30 +241,27 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
     DVLOG(1) << "Requesting big feedback logs";
     debugdaemon_proxy_->CallMethod(
         &method_call, kBigLogsDBusTimeoutMS,
-        base::Bind(&DebugDaemonClientImpl::OnBigFeedbackLogsResponse,
-                   weak_ptr_factory_.GetWeakPtr(), pipe_reader->AsWeakPtr()));
+        base::BindOnce(&DebugDaemonClientImpl::OnBigFeedbackLogsResponse,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       pipe_reader->AsWeakPtr()));
   }
 
   void GetAllLogs(const GetLogsCallback& callback) override {
     dbus::MethodCall method_call(debugd::kDebugdInterface,
                                  debugd::kGetAllLogs);
     debugdaemon_proxy_->CallMethod(
-        &method_call,
-        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&DebugDaemonClientImpl::OnGetAllLogs,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   callback));
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&DebugDaemonClientImpl::OnGetAllLogs,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   void GetUserLogFiles(const GetLogsCallback& callback) override {
     dbus::MethodCall method_call(debugd::kDebugdInterface,
                                  debugd::kGetUserLogFiles);
     debugdaemon_proxy_->CallMethod(
-        &method_call,
-        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&DebugDaemonClientImpl::OnGetUserLogFiles,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   callback));
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&DebugDaemonClientImpl::OnGetUserLogFiles,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   void GetLog(const std::string& log_name,
@@ -287,8 +270,8 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
     dbus::MessageWriter(&method_call).AppendString(log_name);
     debugdaemon_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&DebugDaemonClientImpl::OnGetLog,
-                   weak_ptr_factory_.GetWeakPtr(), log_name, callback));
+        base::BindOnce(&DebugDaemonClientImpl::OnGetLog,
+                       weak_ptr_factory_.GetWeakPtr(), log_name, callback));
   }
 
   // base::trace_event::TracingAgent implementation.
@@ -306,10 +289,9 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
 
     DVLOG(1) << "Requesting a systrace start";
     debugdaemon_proxy_->CallMethod(
-        &method_call,
-        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&DebugDaemonClientImpl::OnStartMethod,
-                   weak_ptr_factory_.GetWeakPtr()));
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&DebugDaemonClientImpl::OnStartMethod,
+                       weak_ptr_factory_.GetWeakPtr()));
 
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
@@ -341,8 +323,8 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
     DVLOG(1) << "Requesting a systrace stop";
     debugdaemon_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&DebugDaemonClientImpl::OnStopAgentTracing,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&DebugDaemonClientImpl::OnStopAgentTracing,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
   void SetStopAgentTracingTaskRunner(
@@ -357,11 +339,9 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(ip_address);
     debugdaemon_proxy_->CallMethod(
-        &method_call,
-        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&DebugDaemonClientImpl::OnTestICMP,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   callback));
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&DebugDaemonClientImpl::OnTestICMP,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   void TestICMPWithOptions(const std::string& ip_address,
@@ -389,21 +369,18 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
 
     // Call the function.
     debugdaemon_proxy_->CallMethod(
-        &method_call,
-        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&DebugDaemonClientImpl::OnTestICMP,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   callback));
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&DebugDaemonClientImpl::OnTestICMP,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   void UploadCrashes() override {
     dbus::MethodCall method_call(debugd::kDebugdInterface,
                                  debugd::kUploadCrashes);
     debugdaemon_proxy_->CallMethod(
-        &method_call,
-        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&DebugDaemonClientImpl::OnStartMethod,
-                   weak_ptr_factory_.GetWeakPtr()));
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&DebugDaemonClientImpl::OnStartMethod,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
   void EnableDebuggingFeatures(
@@ -414,11 +391,9 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(password);
     debugdaemon_proxy_->CallMethod(
-        &method_call,
-        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&DebugDaemonClientImpl::OnEnableDebuggingFeatures,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   callback));
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&DebugDaemonClientImpl::OnEnableDebuggingFeatures,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   void QueryDebuggingFeatures(
@@ -427,11 +402,9 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
                                  debugd::kQueryDevFeatures);
     dbus::MessageWriter writer(&method_call);
     debugdaemon_proxy_->CallMethod(
-        &method_call,
-        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&DebugDaemonClientImpl::OnQueryDebuggingFeatures,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   callback));
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&DebugDaemonClientImpl::OnQueryDebuggingFeatures,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   void RemoveRootfsVerification(
@@ -440,11 +413,9 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
                                  debugd::kRemoveRootfsVerification);
     dbus::MessageWriter writer(&method_call);
     debugdaemon_proxy_->CallMethod(
-        &method_call,
-        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&DebugDaemonClientImpl::OnRemoveRootfsVerification,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   callback));
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&DebugDaemonClientImpl::OnRemoveRootfsVerification,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   void WaitForServiceToBeAvailable(
@@ -472,8 +443,8 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
 
     debugdaemon_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&DebugDaemonClientImpl::OnSetOomScoreAdj,
-                   weak_ptr_factory_.GetWeakPtr(), callback));
+        base::BindOnce(&DebugDaemonClientImpl::OnSetOomScoreAdj,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   void CupsAddManuallyConfiguredPrinter(
@@ -493,8 +464,9 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
 
     debugdaemon_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&DebugDaemonClientImpl::OnPrinterAdded,
-                   weak_ptr_factory_.GetWeakPtr(), callback, error_callback));
+        base::BindOnce(&DebugDaemonClientImpl::OnPrinterAdded,
+                       weak_ptr_factory_.GetWeakPtr(), callback,
+                       error_callback));
   }
 
   void CupsAddAutoConfiguredPrinter(
@@ -510,8 +482,9 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
 
     debugdaemon_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&DebugDaemonClientImpl::OnPrinterAdded,
-                   weak_ptr_factory_.GetWeakPtr(), callback, error_callback));
+        base::BindOnce(&DebugDaemonClientImpl::OnPrinterAdded,
+                       weak_ptr_factory_.GetWeakPtr(), callback,
+                       error_callback));
   }
 
   void CupsRemovePrinter(
@@ -525,8 +498,9 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
 
     debugdaemon_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&DebugDaemonClientImpl::OnPrinterRemoved,
-                   weak_ptr_factory_.GetWeakPtr(), callback, error_callback));
+        base::BindOnce(&DebugDaemonClientImpl::OnPrinterRemoved,
+                       weak_ptr_factory_.GetWeakPtr(), callback,
+                       error_callback));
   }
 
  protected:

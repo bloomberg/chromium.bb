@@ -40,8 +40,8 @@ class MediaAnalyticsClientImpl : public MediaAnalyticsClient {
                                  media_perception::kStateFunction);
     dbus_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&MediaAnalyticsClientImpl::OnState,
-                   weak_ptr_factory_.GetWeakPtr(), callback));
+        base::BindOnce(&MediaAnalyticsClientImpl::OnState,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   void SetState(const mri::State& state,
@@ -58,8 +58,8 @@ class MediaAnalyticsClientImpl : public MediaAnalyticsClient {
 
     dbus_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&MediaAnalyticsClientImpl::OnState,
-                   weak_ptr_factory_.GetWeakPtr(), callback));
+        base::BindOnce(&MediaAnalyticsClientImpl::OnState,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   void GetDiagnostics(const DiagnosticsCallback& callback) override {
@@ -68,8 +68,8 @@ class MediaAnalyticsClientImpl : public MediaAnalyticsClient {
     // TODO(lasoren): Verify that this timeout setting is sufficient.
     dbus_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&MediaAnalyticsClientImpl::OnGetDiagnostics,
-                   weak_ptr_factory_.GetWeakPtr(), callback));
+        base::BindOnce(&MediaAnalyticsClientImpl::OnGetDiagnostics,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
  protected:

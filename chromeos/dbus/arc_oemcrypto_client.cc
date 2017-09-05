@@ -30,10 +30,10 @@ class ArcOemCryptoClientImpl : public ArcOemCryptoClient {
                                  arc_oemcrypto::kBootstrapMojoConnection);
     dbus::MessageWriter writer(&method_call);
     writer.AppendFileDescriptor(fd.get());
-    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-                       base::Bind(&ArcOemCryptoClientImpl::OnVoidDBusMethod,
-                                  weak_ptr_factory_.GetWeakPtr(),
-                                  base::Passed(std::move(callback))));
+    proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&ArcOemCryptoClientImpl::OnVoidDBusMethod,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
  protected:
