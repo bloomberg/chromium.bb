@@ -276,6 +276,8 @@ config("compiler") {
     # and build system rebuild things when their commandline changes). Nothing
     # should ever read this define.
     defines += [ "CR_CLANG_REVISION=\"$clang_revision\"" ]
+
+    configs += [ "//build/config/coverage" ]
   }
 
   # Non-Mac Posix compiler flags setup.
