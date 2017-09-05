@@ -68,7 +68,7 @@ class CORE_EXPORT NGLayoutAlgorithm {
     return container_builder_.BfcOffset().value();
   }
 
-  virtual NGInputNodeType Node() const { return node_; }
+  NGInputNodeType Node() const { return node_; }
 
   NGBreakTokenType* BreakToken() const { return break_token_; }
 
