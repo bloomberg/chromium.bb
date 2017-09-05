@@ -13,15 +13,16 @@
 #include "base/strings/string_split.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/payments/core/features.h"
+#include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/passwords/credential_manager_features.h"
-#include "ios/web/public/test/fakes/test_browser_state.h"
 #import "ios/web/public/test/js_test_util.h"
 #include "ios/web/public/test/scoped_testing_web_client.h"
-#include "ios/web/public/test/web_test.h"
 #import "ios/web/public/web_view_creation_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
+#include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -29,8 +30,22 @@
 
 namespace {
 
-// Test fixture for testing ChromeWebClient.
-typedef web::WebTest ChromeWebClientTest;
+class ChromeWebClientTest : public PlatformTest {
+ public:
+  ChromeWebClientTest() {
+    browser_state_ = TestChromeBrowserState::Builder().Build();
+  }
+
+  ~ChromeWebClientTest() override = default;
+
+  ios::ChromeBrowserState* browser_state() { return browser_state_.get(); }
+
+ private:
+  base::test::ScopedTaskEnvironment environment_;
+  std::unique_ptr<ios::ChromeBrowserState> browser_state_;
+
+  DISALLOW_COPY_AND_ASSIGN(ChromeWebClientTest);
+};
 
 TEST_F(ChromeWebClientTest, UserAgent) {
   std::vector<std::string> pieces;
@@ -77,12 +92,11 @@ TEST_F(ChromeWebClientTest, UserAgent) {
 // Tests that ChromeWebClient provides print script for WKWebView.
 TEST_F(ChromeWebClientTest, WKWebViewEarlyPageScriptPrint) {
   // Chrome scripts rely on __gCrWeb object presence.
-  web::TestBrowserState browser_state;
-  WKWebView* web_view = web::BuildWKWebView(CGRectZero, &browser_state);
+  WKWebView* web_view = web::BuildWKWebView(CGRectZero, browser_state());
   web::ExecuteJavaScript(web_view, @"__gCrWeb = {};");
 
   web::ScopedTestingWebClient web_client(base::MakeUnique<ChromeWebClient>());
-  NSString* script = web_client.Get()->GetEarlyPageScript(&browser_state);
+  NSString* script = web_client.Get()->GetEarlyPageScript(browser_state());
   web::ExecuteJavaScript(web_view, script);
   EXPECT_NSEQ(@"object",
               web::ExecuteJavaScript(web_view, @"typeof __gCrWeb.print"));
@@ -92,12 +106,11 @@ TEST_F(ChromeWebClientTest, WKWebViewEarlyPageScriptPrint) {
 // if and only if the feature is enabled.
 TEST_F(ChromeWebClientTest, WKWebViewEarlyPageScriptCredentialManager) {
   // Chrome scripts rely on __gCrWeb object presence.
-  web::TestBrowserState browser_state;
-  WKWebView* web_view = web::BuildWKWebView(CGRectZero, &browser_state);
+  WKWebView* web_view = web::BuildWKWebView(CGRectZero, browser_state());
   web::ExecuteJavaScript(web_view, @"__gCrWeb = {};");
 
   web::ScopedTestingWebClient web_client(base::MakeUnique<ChromeWebClient>());
-  NSString* script = web_client.Get()->GetEarlyPageScript(&browser_state);
+  NSString* script = web_client.Get()->GetEarlyPageScript(browser_state());
   web::ExecuteJavaScript(web_view, script);
   EXPECT_NSEQ(@"undefined", web::ExecuteJavaScript(
                                 web_view, @"typeof navigator.credentials"));
@@ -105,7 +118,7 @@ TEST_F(ChromeWebClientTest, WKWebViewEarlyPageScriptCredentialManager) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(
       credential_manager::features::kCredentialManager);
-  script = web_client.Get()->GetEarlyPageScript(&browser_state);
+  script = web_client.Get()->GetEarlyPageScript(browser_state());
   web::ExecuteJavaScript(web_view, script);
   EXPECT_NSEQ(@"object", web::ExecuteJavaScript(
                              web_view, @"typeof navigator.credentials"));
@@ -115,19 +128,18 @@ TEST_F(ChromeWebClientTest, WKWebViewEarlyPageScriptCredentialManager) {
 // WKWebView unless the feature is enabled.
 TEST_F(ChromeWebClientTest, WKWebViewEarlyPageScriptPaymentRequest) {
   // Chrome scripts rely on __gCrWeb object presence.
-  web::TestBrowserState browser_state;
-  WKWebView* web_view = web::BuildWKWebView(CGRectZero, &browser_state);
+  WKWebView* web_view = web::BuildWKWebView(CGRectZero, browser_state());
   web::ExecuteJavaScript(web_view, @"__gCrWeb = {};");
 
   web::ScopedTestingWebClient web_client(base::MakeUnique<ChromeWebClient>());
-  NSString* script = web_client.Get()->GetEarlyPageScript(&browser_state);
+  NSString* script = web_client.Get()->GetEarlyPageScript(browser_state());
   web::ExecuteJavaScript(web_view, script);
   EXPECT_NSEQ(@"undefined", web::ExecuteJavaScript(
                                 web_view, @"typeof window.PaymentRequest"));
 
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(payments::features::kWebPayments);
-  script = web_client.Get()->GetEarlyPageScript(&browser_state);
+  script = web_client.Get()->GetEarlyPageScript(browser_state());
   web::ExecuteJavaScript(web_view, script);
   EXPECT_NSEQ(@"function", web::ExecuteJavaScript(
                                web_view, @"typeof window.PaymentRequest"));

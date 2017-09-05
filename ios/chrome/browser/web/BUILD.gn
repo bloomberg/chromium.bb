@@ -95,6 +95,7 @@ source_set("unit_tests") {
     "//base:base",
     "//base/test:test_support",
     "//components/strings:components_strings_grit",
+    "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/ui:ui",
     "//ios/chrome/test:test_support",
     "//ios/web:web",
@@ -307,10 +308,11 @@ source_set("perf_tests") {
   ]
   deps = [
     "//base",
+    "//base/test:test_support",
+    "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/test/base:perf_test_support",
     "//ios/web",
     "//ios/web/public/test",
-    "//ios/web/public/test/fakes",
   ]
   libs = [ "WebKit.framework" ]
 }
