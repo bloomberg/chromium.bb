@@ -3650,3 +3650,6 @@ crbug.com/760543 [ Linux Release ] virtual/mojo-loading/http/tests/devtools/trac
 crbug.com/760967 [ Mac ] external/wpt/payment-request/payment-request-ctor-pmi-handling.https.html [ Pass Failure ]
 
 crbug.com/761891 [ Win7 Debug ] virtual/threaded/animations/transition-and-animation-3.html [ Pass Failure Timeout ]
+
+# Test flaky (crashing) on WebKit Android (Nexus4)
+crbug.com/762008 [ Android ] http/tests/appcache/abort-cache-onchecking-resource-404.html [ Pass Crash ]
