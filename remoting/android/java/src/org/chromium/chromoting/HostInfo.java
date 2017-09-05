@@ -95,6 +95,12 @@ public class HostInfo {
                 return R.string.offline_reason_success_exit;
             case "username_mismatch":
                 return R.string.offline_reason_username_mismatch;
+            case "x_server_retries_exceeded":
+                return R.string.offline_reason_x_server_retries_exceeded;
+            case "session_retries_exceeded":
+                return R.string.offline_reason_session_retries_exceeded;
+            case "host_retries_exceeded":
+                return R.string.offline_reason_host_retries_exceeded;
             default:
                 return R.string.offline_reason_unknown;
         }

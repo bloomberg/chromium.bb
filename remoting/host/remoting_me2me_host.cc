@@ -182,6 +182,9 @@ const char kEnableH264SwitchName[] = "enable-h264";
 
 const char kWindowIdSwitchName[] = "window-id";
 
+// Command line switch used to send a custom offline reason and exit.
+const char kReportOfflineReasonSwitchName[] = "report-offline-reason";
+
 // Maximum time to wait for clean shutdown to occur, before forcing termination
 // of the process.
 const int kShutdownTimeoutSeconds = 15;
@@ -440,6 +443,7 @@ class HostProcess : public ConfigWatcher::Delegate,
 
   int* exit_code_out_;
   bool signal_parent_ = false;
+  std::string report_offline_reason_;
 
   scoped_refptr<PairingRegistry> pairing_registry_;
 
@@ -548,6 +552,16 @@ bool HostProcess::InitWithCommandLine(const base::CommandLine* cmd_line) {
   directory_bot_jid_ = service_urls->directory_bot_jid();
 
   signal_parent_ = cmd_line->HasSwitch(kSignalParentSwitchName);
+
+  if (cmd_line->HasSwitch(kReportOfflineReasonSwitchName)) {
+    report_offline_reason_ =
+        cmd_line->GetSwitchValueASCII(kReportOfflineReasonSwitchName);
+    if (report_offline_reason_.empty()) {
+      LOG(ERROR) << "--" << kReportOfflineReasonSwitchName
+                 << " requires an argument.";
+      return false;
+    }
+  }
 
   enable_window_capture_ = cmd_line->HasSwitch(kWindowIdSwitchName);
   if (enable_window_capture_) {
@@ -821,6 +835,13 @@ void HostProcess::StartOnUiThread() {
     return;
   }
 
+  if (!report_offline_reason_.empty()) {
+    // Don't need to do any UI initialization.
+    context_->network_task_runner()->PostTask(
+        FROM_HERE, base::Bind(&HostProcess::StartOnNetworkThread, this));
+    return;
+  }
+
   policy_watcher_ =
       PolicyWatcher::CreateWithTaskRunner(context_->file_task_runner());
   policy_watcher_->StartWatching(
@@ -907,6 +928,9 @@ void HostProcess::OnUnknownHostIdError() {
 }
 
 void HostProcess::OnHeartbeatSuccessful() {
+  if (state_ != HOST_STARTED) {
+    return;
+  }
   HOST_LOG << "Host ready to receive connections.";
 #if defined(OS_POSIX)
   if (signal_parent_) {
@@ -1445,7 +1469,10 @@ void HostProcess::StartHostIfReady() {
 
   // Start the host if both the config and the policies are loaded.
   if (!serialized_config_.empty()) {
-    if (policy_state_ == POLICY_LOADED) {
+    if (!report_offline_reason_.empty()) {
+      SetState(HOST_GOING_OFFLINE_TO_STOP);
+      GoOffline(report_offline_reason_);
+    } else if (policy_state_ == POLICY_LOADED) {
       StartHost();
     } else if (policy_state_ == POLICY_ERROR_REPORT_PENDING) {
       ReportPolicyErrorAndRestartHost();
@@ -1678,13 +1705,16 @@ int HostProcessMain() {
   HOST_LOG << "Starting host process: version " << STRINGIZE(VERSION);
 
 #if defined(OS_LINUX)
-  // Required in order for us to run multiple X11 threads.
-  XInitThreads();
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          kReportOfflineReasonSwitchName)) {
+    // Required in order for us to run multiple X11 threads.
+    XInitThreads();
 
-  // Required for any calls into GTK functions, such as the Disconnect and
-  // Continue windows, though these should not be used for the Me2Me case
-  // (crbug.com/104377).
-  gtk_init(nullptr, nullptr);
+    // Required for any calls into GTK functions, such as the Disconnect and
+    // Continue windows, though these should not be used for the Me2Me case
+    // (crbug.com/104377).
+    gtk_init(nullptr, nullptr);
+  }
 
   // Need to prime the host OS version value for linux to prevent IO on the
   // network thread. base::GetLinuxDistro() caches the result.
