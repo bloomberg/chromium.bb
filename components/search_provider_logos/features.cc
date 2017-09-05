@@ -13,7 +13,7 @@ const base::Feature kUseDdljsonApi{"UseDdljsonApi",
 const char kDdljsonOverrideUrlParam[] = "ddljson-override-url";
 
 const base::Feature kThirdPartyDoodles{"ThirdPartyDoodles",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
+                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
 const char kThirdPartyDoodlesOverrideUrlParam[] =
     "third-party-doodles-override-url";
