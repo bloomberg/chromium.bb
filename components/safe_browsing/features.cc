@@ -45,9 +45,6 @@ const base::Feature kParallelUrlCheck{"S13nSafeBrowsingParallelUrlCheck",
 const base::Feature kPasswordFieldOnFocusPinging{
     "PasswordFieldOnFocusPinging", base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kPasswordProtectionInterstitial{
-    "PasswordProtectionInterstitial", base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kProtectedPasswordEntryPinging{
     "ProtectedPasswordEntryPinging", base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -76,7 +73,6 @@ constexpr struct {
     {&kLocalDatabaseManagerEnabled, true},
     {&kParallelUrlCheck, true},
     {&kPasswordFieldOnFocusPinging, true},
-    {&kPasswordProtectionInterstitial, false},
     {&kProtectedPasswordEntryPinging, true},
     {&kThreatDomDetailsTagAndAttributeFeature, false},
     {&kTriggerThrottlerDailyQuotaFeature, false},

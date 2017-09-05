@@ -57,28 +57,6 @@ std::unique_ptr<KeyedService> BuildFakeUserEventService(
 
 }  // namespace
 
-class MockSafeBrowsingUIManager : public SafeBrowsingUIManager {
- public:
-  explicit MockSafeBrowsingUIManager(SafeBrowsingService* service)
-      : SafeBrowsingUIManager(service) {}
-
-  MOCK_METHOD1(DisplayBlockingPage, void(const UnsafeResource& resource));
-
-  void InvokeOnBlockingPageComplete(
-      const security_interstitials::UnsafeResource::UrlCheckCallback&
-          callback) {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-    if (!callback.is_null())
-      callback.Run(false);
-  }
-
- protected:
-  virtual ~MockSafeBrowsingUIManager() {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockSafeBrowsingUIManager);
-};
-
 class MockChromePasswordProtectionService
     : public ChromePasswordProtectionService {
  public:
@@ -101,13 +79,7 @@ class MockChromePasswordProtectionService
     is_extended_reporting_ = is_extended_reporting;
   }
 
-  void SetUIManager(scoped_refptr<SafeBrowsingUIManager> ui_manager) {
-    ui_manager_ = ui_manager;
-  }
-
-  MockSafeBrowsingUIManager* ui_manager() {
-    return static_cast<MockSafeBrowsingUIManager*>(ui_manager_.get());
-  }
+  SafeBrowsingUIManager* ui_manager() { return ui_manager_.get(); }
 
  protected:
   friend class ChromePasswordProtectionServiceTest;
@@ -133,7 +105,7 @@ class ChromePasswordProtectionServiceTest
         false /* store_last_modified */);
     service_ = base::MakeUnique<MockChromePasswordProtectionService>(
         profile(), content_setting_map_,
-        new testing::StrictMock<MockSafeBrowsingUIManager>(
+        new SafeBrowsingUIManager(
             SafeBrowsingService::CreateSafeBrowsingService()));
     fake_user_event_service_ = static_cast<syncer::FakeUserEventService*>(
         browser_sync::UserEventServiceFactory::GetInstance()
@@ -261,68 +233,6 @@ TEST_F(ChromePasswordProtectionServiceTest,
   service_->ConfigService(true /*incognito*/, true /*SBER*/);
   EXPECT_TRUE(
       service_->IsPingingEnabled(kProtectedPasswordEntryPinging, &reason));
-}
-
-TEST_F(ChromePasswordProtectionServiceTest,
-       ShowInterstitialOnPasswordOnFocusPhishingVerdict) {
-  // Enables kPasswordProtectionInterstitial feature.
-  scoped_feature_list_.InitAndEnableFeature(kPasswordProtectionInterstitial);
-
-  InitializeRequest(LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE);
-  InitializeVerdict(LoginReputationClientResponse::PHISHING);
-
-  security_interstitials::UnsafeResource resource;
-  EXPECT_CALL(*service_->ui_manager(), DisplayBlockingPage(testing::_))
-      .WillOnce(testing::SaveArg<0>(&resource));
-  RequestFinished(request_.get(), std::move(verdict_));
-  EXPECT_EQ(GURL(kPhishingURL), resource.url);
-  EXPECT_EQ(GURL(kPhishingURL), resource.original_url);
-  EXPECT_FALSE(resource.is_subresource);
-  EXPECT_EQ(SB_THREAT_TYPE_URL_PASSWORD_PROTECTION_PHISHING,
-            resource.threat_type);
-  EXPECT_EQ(ThreatSource::PASSWORD_PROTECTION_SERVICE, resource.threat_source);
-  EXPECT_EQ(web_contents(), resource.web_contents_getter.Run());
-
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&MockSafeBrowsingUIManager::InvokeOnBlockingPageComplete,
-                     service_->ui_manager(), resource.callback));
-}
-
-TEST_F(ChromePasswordProtectionServiceTest, NoInterstitialOnOtherVerdicts) {
-  // Enables kPasswordProtectionInterstitial feature.
-  scoped_feature_list_.InitAndEnableFeature(kPasswordProtectionInterstitial);
-
-  // For password on focus request, no interstitial shown if verdict is
-  // LOW_REPUTATION.
-  InitializeRequest(LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE);
-  InitializeVerdict(LoginReputationClientResponse::LOW_REPUTATION);
-
-  security_interstitials::UnsafeResource resource;
-  EXPECT_CALL(*service_->ui_manager(), DisplayBlockingPage(testing::_))
-      .Times(0);
-  RequestFinished(request_.get(), std::move(verdict_));
-
-  // For password on focus request, no interstitial shown if verdict is
-  // SAFE.
-  InitializeVerdict(LoginReputationClientResponse::SAFE);
-  RequestFinished(request_.get(), std::move(verdict_));
-
-  // For protected password entry request, no interstitial shown if verdict is
-  // PHISHING.
-  InitializeRequest(LoginReputationClientRequest::PASSWORD_REUSE_EVENT);
-  InitializeVerdict(LoginReputationClientResponse::PHISHING);
-  RequestFinished(request_.get(), std::move(verdict_));
-
-  // For protected password entry request, no interstitial shown if verdict is
-  // LOW_REPUTATION.
-  InitializeVerdict(LoginReputationClientResponse::LOW_REPUTATION);
-  RequestFinished(request_.get(), std::move(verdict_));
-
-  // For protected password entry request, no interstitial shown if verdict is
-  // SAFE.
-  InitializeVerdict(LoginReputationClientResponse::SAFE);
-  RequestFinished(request_.get(), std::move(verdict_));
 }
 
 TEST_F(ChromePasswordProtectionServiceTest, VerifyGetSyncAccountType) {

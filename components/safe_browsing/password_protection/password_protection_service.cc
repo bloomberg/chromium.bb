@@ -23,7 +23,6 @@
 #include "components/safe_browsing/features.h"
 #include "components/safe_browsing/password_protection/password_protection_request.h"
 #include "components/safe_browsing_db/database_manager.h"
-#include "components/safe_browsing_db/v4_protocol_manager_util.h"
 #include "components/safe_browsing_db/whitelist_checker_client.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
@@ -149,10 +148,9 @@ void PasswordProtectionService::RecordWarningAction(WarningUIType ui_type,
   }
 }
 
-void PasswordProtectionService::OnWarningDone(
-    content::WebContents* web_contents,
-    WarningUIType ui_type,
-    WarningAction action) {
+void PasswordProtectionService::OnWarningDone(WebContents* web_contents,
+                                              WarningUIType ui_type,
+                                              WarningAction action) {
   RecordWarningAction(ui_type, action);
   // TODO(jialiul): Need to send post-warning report, trigger event logger and
   // other tasks.
@@ -166,9 +164,8 @@ void PasswordProtectionService::OnWarningDone(
   }
 }
 
-void PasswordProtectionService::OnWarningShown(
-    content::WebContents* web_contents,
-    WarningUIType ui_type) {
+void PasswordProtectionService::OnWarningShown(WebContents* web_contents,
+                                               WarningUIType ui_type) {
   RecordWarningAction(ui_type, SHOWN);
   // TODO(jialiul): Trigger event logger here.
 }
@@ -434,20 +431,9 @@ void PasswordProtectionService::RequestFinished(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(request);
 
-  if (response) {
-    if (!already_cached) {
-      CacheVerdict(request->main_frame_url(), request->trigger_type(),
-                   response.get(), base::Time::Now());
-    }
-
-    if (request->trigger_type() ==
-            LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE &&
-        response->verdict_type() == LoginReputationClientResponse::PHISHING &&
-        base::FeatureList::IsEnabled(kPasswordProtectionInterstitial)) {
-      ShowPhishingInterstitial(request->main_frame_url(),
-                               response->verdict_token(),
-                               request->web_contents());
-    }
+  if (response && !already_cached) {
+    CacheVerdict(request->main_frame_url(), request->trigger_type(),
+                 response.get(), base::Time::Now());
   }
 
   // Finished processing this request. Remove it from pending list.

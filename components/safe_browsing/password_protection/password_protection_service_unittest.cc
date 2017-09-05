@@ -121,10 +121,6 @@ class TestPasswordProtectionService : public PasswordProtectionService {
       PasswordProtectionService::RequestOutcome,
       const LoginReputationClientResponse*) override {}
 
-  void ShowPhishingInterstitial(const GURL& phishing_url,
-                                const std::string& token,
-                                content::WebContents* web_contents) override {}
-
   bool IsHistorySyncEnabled() override { return false; }
 
   LoginReputationClientRequest::PasswordReuseEvent::SyncAccountType

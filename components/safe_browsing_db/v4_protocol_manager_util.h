@@ -123,8 +123,8 @@ enum SBThreatType {
   // CSD Phishing whitelist.  This "threat" means a URL matched the whitelist.
   SB_THREAT_TYPE_CSD_WHITELIST,
 
-  // Url detected by password protection service.
-  SB_THREAT_TYPE_URL_PASSWORD_PROTECTION_PHISHING,
+  // DEPRECATED. Url detected by password protection service.
+  DEPRECATED_SB_THREAT_TYPE_URL_PASSWORD_PROTECTION_PHISHING,
 
   // Password reuse detected on low reputation page,
   SB_THREAT_TYPE_PASSWORD_REUSE,

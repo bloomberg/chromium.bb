@@ -73,10 +73,6 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   void MaybeLogPasswordReuseDetectedEvent(
       content::WebContents* web_contents) override;
 
-  void ShowPhishingInterstitial(const GURL& phishing_url,
-                                const std::string& token,
-                                content::WebContents* web_contents) override;
-
   PasswordProtectionService::SyncAccountType GetSyncAccountType() override;
 
   void MaybeLogPasswordReuseLookupEvent(

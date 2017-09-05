@@ -291,8 +291,7 @@ BaseBlockingPage::GetInterstitialReason(
       harmful = true;
     } else {
       DCHECK(threat_type == SB_THREAT_TYPE_URL_PHISHING ||
-             threat_type == SB_THREAT_TYPE_URL_CLIENT_SIDE_PHISHING ||
-             threat_type == SB_THREAT_TYPE_URL_PASSWORD_PROTECTION_PHISHING);
+             threat_type == SB_THREAT_TYPE_URL_CLIENT_SIDE_PHISHING);
     }
   }
 
@@ -370,8 +369,7 @@ bool BaseBlockingPage::ShouldReportThreatDetails(SBThreatType threat_type) {
          threat_type == SB_THREAT_TYPE_URL_MALWARE ||
          threat_type == SB_THREAT_TYPE_URL_UNWANTED ||
          threat_type == SB_THREAT_TYPE_URL_CLIENT_SIDE_PHISHING ||
-         threat_type == SB_THREAT_TYPE_URL_CLIENT_SIDE_MALWARE ||
-         threat_type == SB_THREAT_TYPE_URL_PASSWORD_PROTECTION_PHISHING;
+         threat_type == SB_THREAT_TYPE_URL_CLIENT_SIDE_MALWARE;
 }
 
 }  // namespace safe_browsing

@@ -269,10 +269,6 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
 
   virtual bool IsHistorySyncEnabled() = 0;
 
-  virtual void ShowPhishingInterstitial(const GURL& phishing_url,
-                                        const std::string& token,
-                                        content::WebContents* web_contents) = 0;
-
   // Gets the type of sync account associated with current profile or
   // |NOT_SIGNED_IN|.
   virtual SyncAccountType GetSyncAccountType() = 0;
