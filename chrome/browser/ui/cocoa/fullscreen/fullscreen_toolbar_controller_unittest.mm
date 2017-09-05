@@ -85,6 +85,11 @@
 
 @end
 
+@interface NSMenu (PrivateAPI)
+- (void)_lockMenuPosition;
+- (void)_unlockMenuPosition;
+@end
+
 namespace {
 
 class FullscreenToolbarControllerTest : public testing::Test {
@@ -295,6 +300,13 @@ TEST_F(FullscreenToolbarControllerTest, TestHiddenToolbarWithMultipleFactors) {
 
   // Release the toolbar. Toolbar should be hidden.
   [locks releaseToolbarVisibilityForOwner:owner.get() withAnimation:NO];
+}
+
+// Verify that private methods used by FullscreenToolbarController still exist.
+TEST_F(FullscreenToolbarControllerTest, PrivateAPIs) {
+  EXPECT_TRUE([NSMenu instancesRespondToSelector:@selector(_lockMenuPosition)]);
+  EXPECT_TRUE(
+      [NSMenu instancesRespondToSelector:@selector(_unlockMenuPosition)]);
 }
 
 }  // namespace
