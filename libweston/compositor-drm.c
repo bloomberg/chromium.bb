@@ -4593,6 +4593,109 @@ drm_output_init_gamma_size(struct drm_output *output)
 	return 0;
 }
 
+/** Allocate a CRTC for the output
+ *
+ * @param output The output with no allocated CRTC.
+ * @param resources DRM KMS resources.
+ * @param connector The DRM KMS connector data.
+ * @return 0 on success, -1 on failure.
+ *
+ * Finds a free CRTC that can drive the given connector, reserves the CRTC
+ * for the output, and loads the CRTC properties.
+ *
+ * Populates the cursor and scanout planes.
+ *
+ * On failure, the output remains without a CRTC.
+ */
+static int
+drm_output_init_crtc(struct drm_output *output,
+		     drmModeRes *resources, drmModeConnector *connector)
+{
+	struct drm_backend *b = to_drm_backend(output->base.compositor);
+	drmModeObjectPropertiesPtr props;
+	int i;
+
+	assert(output->crtc_id == 0);
+
+	i = find_crtc_for_connector(b, resources, connector);
+	if (i < 0) {
+		weston_log("No usable crtc/encoder pair for connector.\n");
+		return -1;
+	}
+
+	output->crtc_id = resources->crtcs[i];
+	output->pipe = i;
+
+	props = drmModeObjectGetProperties(b->drm.fd, output->crtc_id,
+					   DRM_MODE_OBJECT_CRTC);
+	if (!props) {
+		weston_log("failed to get CRTC properties\n");
+		goto err_crtc;
+	}
+	drm_property_info_populate(b, crtc_props, output->props_crtc,
+				   WDRM_CRTC__COUNT, props);
+	drmModeFreeObjectProperties(props);
+
+	output->scanout_plane =
+		drm_output_find_special_plane(b, output,
+					      WDRM_PLANE_TYPE_PRIMARY);
+	if (!output->scanout_plane) {
+		weston_log("Failed to find primary plane for output %s\n",
+			   output->base.name);
+		goto err_crtc;
+	}
+
+	/* Failing to find a cursor plane is not fatal, as we'll fall back
+	 * to software cursor. */
+	output->cursor_plane =
+		drm_output_find_special_plane(b, output,
+					      WDRM_PLANE_TYPE_CURSOR);
+
+	return 0;
+
+err_crtc:
+	output->crtc_id = 0;
+	output->pipe = 0;
+
+	return -1;
+}
+
+/** Free the CRTC from the output
+ *
+ * @param output The output whose CRTC to deallocate.
+ *
+ * The CRTC reserved for the given output becomes free to use again.
+ */
+static void
+drm_output_fini_crtc(struct drm_output *output)
+{
+	struct drm_backend *b = to_drm_backend(output->base.compositor);
+
+	if (!b->universal_planes && !b->shutting_down) {
+		/* With universal planes, the 'special' planes are allocated at
+		 * startup, freed at shutdown, and live on the plane list in
+		 * between. We want the planes to continue to exist and be freed
+		 * up for other outputs.
+		 *
+		 * Without universal planes, our special planes are
+		 * pseudo-planes allocated at output creation, freed at output
+		 * destruction, and not usable by other outputs.
+		 *
+		 * On the other hand, if the compositor is already shutting down,
+		 * the plane has already been destroyed.
+		 */
+		if (output->cursor_plane)
+			drm_plane_destroy(output->cursor_plane);
+		if (output->scanout_plane)
+			drm_plane_destroy(output->scanout_plane);
+	}
+
+	drm_property_info_free(output->props_crtc, WDRM_CRTC__COUNT);
+	output->crtc_id = 0;
+	output->cursor_plane = NULL;
+	output->scanout_plane = NULL;
+}
+
 static int
 drm_output_enable(struct weston_output *base)
 {
@@ -4715,25 +4818,6 @@ drm_output_destroy(struct weston_output *base)
 	if (output->base.enabled)
 		drm_output_deinit(&output->base);
 
-	if (!b->universal_planes && !b->shutting_down) {
-		/* With universal planes, the 'special' planes are allocated at
-		 * startup, freed at shutdown, and live on the plane list in
-		 * between. We want the planes to continue to exist and be freed
-		 * up for other outputs.
-		 *
-		 * Without universal planes, our special planes are
-		 * pseudo-planes allocated at output creation, freed at output
-		 * destruction, and not usable by other outputs.
-		 *
-		 * On the other hand, if the compositor is already shutting down,
-		 * the plane has already been destroyed.
-		 */
-		if (output->cursor_plane)
-			drm_plane_destroy(output->cursor_plane);
-		if (output->scanout_plane)
-			drm_plane_destroy(output->scanout_plane);
-	}
-
 	wl_list_for_each_safe(drm_mode, next, &output->base.mode_list,
 			      base.link)
 		drm_output_destroy_mode(b, drm_mode);
@@ -4743,9 +4827,9 @@ drm_output_destroy(struct weston_output *base)
 
 	weston_output_release(&output->base);
 
-	drm_property_info_free(output->props_conn, WDRM_CONNECTOR__COUNT);
-	drm_property_info_free(output->props_crtc, WDRM_CRTC__COUNT);
+	drm_output_fini_crtc(output);
 
+	drm_property_info_free(output->props_conn, WDRM_CONNECTOR__COUNT);
 	drmModeFreeConnector(output->connector);
 
 	if (output->backlight)
@@ -4851,19 +4935,11 @@ create_output_for_connector(struct drm_backend *b,
 	const char *serial_number = "unknown";
 	int i;
 
-	i = find_crtc_for_connector(b, resources, connector);
-	if (i < 0) {
-		weston_log("No usable crtc/encoder pair for connector.\n");
-		goto err_init;
-	}
-
 	output = zalloc(sizeof *output);
 	if (output == NULL)
 		goto err_init;
 
 	output->connector = connector;
-	output->crtc_id = resources->crtcs[i];
-	output->pipe = i;
 	output->connector_id = connector->connector_id;
 
 	output->backlight = backlight_init(drm_device,
@@ -4880,15 +4956,8 @@ create_output_for_connector(struct drm_backend *b,
 	output->destroy_pending = 0;
 	output->disable_pending = 0;
 
-	props = drmModeObjectGetProperties(b->drm.fd, output->crtc_id,
-					   DRM_MODE_OBJECT_CRTC);
-	if (!props) {
-		weston_log("failed to get CRTC properties\n");
+	if (drm_output_init_crtc(output, resources, connector) < 0)
 		goto err_output;
-	}
-	drm_property_info_populate(b, crtc_props, output->props_crtc,
-				   WDRM_CRTC__COUNT, props);
-	drmModeFreeObjectProperties(props);
 
 	props = drmModeObjectGetProperties(b->drm.fd, connector->connector_id,
 					   DRM_MODE_OBJECT_CONNECTOR);
@@ -4926,21 +4995,6 @@ create_output_for_connector(struct drm_backend *b,
 			goto err_output;
 		}
 	}
-
-	output->scanout_plane =
-		drm_output_find_special_plane(b, output,
-					      WDRM_PLANE_TYPE_PRIMARY);
-	if (!output->scanout_plane) {
-		weston_log("Failed to find primary plane for output %s\n",
-			   output->base.name);
-		goto err_output;
-	}
-
-	/* Failing to find a cursor plane is not fatal, as we'll fall back
-	 * to software cursor. */
-	output->cursor_plane =
-		drm_output_find_special_plane(b, output,
-					      WDRM_PLANE_TYPE_CURSOR);
 
 	weston_compositor_add_pending_output(&output->base, b->compositor);
 
