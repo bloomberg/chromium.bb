@@ -34,9 +34,6 @@ class ResourceFetcherImpl : public ResourceFetcher {
   void SetHeader(const std::string& header, const std::string& value) override;
   void Start(blink::WebLocalFrame* frame,
              blink::WebURLRequest::RequestContext request_context,
-             Callback callback) override;
-  void Start(blink::WebLocalFrame* frame,
-             blink::WebURLRequest::RequestContext request_context,
              mojom::URLLoaderFactory* url_loader_factory,
              const net::NetworkTrafficAnnotationTag& annotation_tag,
              Callback callback,

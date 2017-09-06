@@ -285,40 +285,6 @@ void ResourceFetcherImpl::SetHeader(const std::string& header,
 void ResourceFetcherImpl::Start(
     blink::WebLocalFrame* frame,
     blink::WebURLRequest::RequestContext request_context,
-    Callback callback) {
-  static const net::NetworkTrafficAnnotationTag annotation_tag =
-      net::DefineNetworkTrafficAnnotation("content_resource_fetcher", R"(
-    semantics {
-      sender: "content ResourceFetcher"
-      description:
-        "Chrome content API initiated request, which includes network error "
-        "pages and mojo internal component downloader."
-      trigger:
-        "Showing network error pages, or needs to download mojo component."
-      data: "Anything the initiator wants."
-      destination: OTHER
-    }
-    policy {
-      cookies_allowed: YES
-      cookies_store: "user"
-      setting: "These requests cannot be disabled in settings."
-      policy_exception_justification:
-        "Not implemented. Without these requests, Chrome will not work."
-    })");
-
-  mojom::URLLoaderFactory* url_loader_factory =
-      RenderFrame::FromWebFrame(frame)
-          ->GetDefaultURLLoaderFactoryGetter()
-          ->GetNetworkLoaderFactory();
-  DCHECK(url_loader_factory);
-
-  Start(frame, request_context, url_loader_factory, annotation_tag,
-        std::move(callback), kDefaultMaximumDownloadSize);
-}
-
-void ResourceFetcherImpl::Start(
-    blink::WebLocalFrame* frame,
-    blink::WebURLRequest::RequestContext request_context,
     mojom::URLLoaderFactory* url_loader_factory,
     const net::NetworkTrafficAnnotationTag& annotation_tag,
     Callback callback,
