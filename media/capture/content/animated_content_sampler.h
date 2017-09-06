@@ -27,6 +27,9 @@ class CAPTURE_EXPORT AnimatedContentSampler {
   explicit AnimatedContentSampler(base::TimeDelta min_capture_period);
   ~AnimatedContentSampler();
 
+  // Sets a new minimum capture period.
+  void SetMinCapturePeriod(base::TimeDelta period);
+
   // Get/Set the target sampling period.  This is used to determine whether to
   // subsample the frames of animated content.
   base::TimeDelta target_sampling_period() const {
@@ -111,7 +114,7 @@ class CAPTURE_EXPORT AnimatedContentSampler {
       base::TimeDelta min_capture_period);
 
   // The client expects frame timestamps to be at least this far apart.
-  const base::TimeDelta min_capture_period_;
+  base::TimeDelta min_capture_period_;
 
   // A recent history of observations in chronological order, maintained by
   // AddObservation().

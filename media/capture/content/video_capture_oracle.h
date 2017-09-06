@@ -30,16 +30,33 @@ class CAPTURE_EXPORT VideoCaptureOracle {
     kNumEvents,
   };
 
-  VideoCaptureOracle(base::TimeDelta min_capture_period,
-                     const gfx::Size& max_frame_size,
-                     media::ResolutionChangePolicy resolution_change_policy,
-                     bool enable_auto_throttling);
+  // Constructs a VideoCaptureOracle with a default min capture period and
+  // capture size constraints. Clients should call SetMinCapturePeriod() and
+  // SetCaptureSizeConstraints() to provide more-accurate hard limits. If
+  // |enable_auto_throttling| is true, enable realtime analysis of system
+  // performance and auto-adjust the capture resolution and sampling decisions
+  // to provide the best user experience.
+  explicit VideoCaptureOracle(bool enable_auto_throttling);
 
   virtual ~VideoCaptureOracle();
 
-  // Sets the source content size.  This may not have an immediate effect on the
-  // proposed capture size, as the oracle will prevent too-frequent changes from
-  // occurring.
+  // Get/Update the minimum capture period.
+  base::TimeDelta min_capture_period() const {
+    return smoothing_sampler_.min_capture_period();
+  }
+  void SetMinCapturePeriod(base::TimeDelta period);
+
+  // Sets the range of acceptable capture sizes and whether a fixed aspect ratio
+  // is required. If a fixed aspect ratio is required, the aspect ratio of
+  // |max_size| is used.
+  void SetCaptureSizeConstraints(const gfx::Size& min_size,
+                                 const gfx::Size& max_size,
+                                 bool use_fixed_aspect_ratio);
+
+  // Get/Update the source content size.  Changes may not have an immediate
+  // effect on the proposed capture size, as the oracle will prevent too-
+  // frequent changes from occurring.
+  gfx::Size source_size() const { return resolution_chooser_.source_size(); }
   void SetSourceSize(const gfx::Size& source_size);
 
   // Record a event of type |event|, and decide whether the caller should do a
@@ -51,7 +68,7 @@ class CAPTURE_EXPORT VideoCaptureOracle {
                                     base::TimeTicks event_time);
 
   // Returns the |frame_number| to be used with CompleteCapture().
-  int next_frame_number() const;
+  int next_frame_number() const { return next_frame_number_; }
 
   // Record and update internal state based on whether the frame capture will be
   // started.  |pool_utilization| is a value in the range 0.0 to 1.0 to indicate
@@ -78,10 +95,6 @@ class CAPTURE_EXPORT VideoCaptureOracle {
   // returned true.
   void RecordConsumerFeedback(int frame_number, double resource_utilization);
 
-  base::TimeDelta min_capture_period() const {
-    return smoothing_sampler_.min_capture_period();
-  }
-
   // Returns the oracle's estimate of the duration of the next frame.  This
   // should be called just after ObserveEventAndDecideCapture(), and will only
   // be non-zero if the call returned true.
@@ -102,6 +115,12 @@ class CAPTURE_EXPORT VideoCaptureOracle {
   // Returns a NUL-terminated string containing a short, human-readable form of
   // |event|.
   static const char* EventAsString(Event event);
+
+  // Default minimum capture period. This is a rather low framerate for safety.
+  // Clients are expected to set a better minimum capture period after
+  // VideoCaptureOracle is constructed.
+  static constexpr base::TimeDelta kDefaultMinCapturePeriod =
+      base::TimeDelta::FromMicroseconds(1000000 / 5);  // 5 FPS
 
  private:
   // Retrieve/Assign a frame timestamp by capture |frame_number|.  Only valid
@@ -138,7 +157,7 @@ class CAPTURE_EXPORT VideoCaptureOracle {
   // size in response to end-to-end utilization.
   const bool auto_throttling_enabled_;
 
-  // Incremented every time a paint or update event occurs.
+  // Incremented every time RecordCapture() is called.
   int next_frame_number_;
 
   // Stores the last |event_time| from the last observation/decision.  Used to

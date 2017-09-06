@@ -51,6 +51,11 @@ AnimatedContentSampler::AnimatedContentSampler(
 AnimatedContentSampler::~AnimatedContentSampler() {
 }
 
+void AnimatedContentSampler::SetMinCapturePeriod(base::TimeDelta period) {
+  DCHECK_GT(period, base::TimeDelta());
+  min_capture_period_ = period;
+}
+
 void AnimatedContentSampler::SetTargetSamplingPeriod(base::TimeDelta period) {
   target_sampling_period_ = period;
 }

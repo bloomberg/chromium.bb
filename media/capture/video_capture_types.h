@@ -122,11 +122,23 @@ typedef std::vector<VideoCaptureFormat> VideoCaptureFormats;
 // format of frames in which the client would like to have captured frames
 // returned.
 struct CAPTURE_EXPORT VideoCaptureParams {
+  // Result struct for SuggestContraints() method.
+  struct SuggestedConstraints {
+    gfx::Size min_frame_size;
+    gfx::Size max_frame_size;
+    bool fixed_aspect_ratio;
+  };
+
   VideoCaptureParams();
 
   // Returns true if requested_format.IsValid() and all other values are within
   // their expected ranges.
   bool IsValid() const;
+
+  // Computes and returns suggested capture constraints based on the requested
+  // format and resolution change policy: minimum resolution, maximum
+  // resolution, and whether a fixed aspect ratio is required.
+  SuggestedConstraints SuggestConstraints() const;
 
   bool operator==(const VideoCaptureParams& other) const {
     return requested_format == other.requested_format &&

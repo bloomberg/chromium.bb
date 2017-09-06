@@ -8,21 +8,16 @@
 #include <vector>
 
 #include "media/capture/capture_export.h"
-#include "media/capture/video_capture_types.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace media {
 
 // Encapsulates the logic that determines the capture frame resolution based on:
-//   1. The configured maximum frame resolution and resolution change policy.
-//   2. Changes to resolution of the source content.
-//   3. Changes to the (externally-computed) target data volume, provided in
+//   1. The configured minimum/maximum frame resolution.
+//   2. Whether the capture frame resolution must be of a fixed aspect ratio.
+//   3. Changes to resolution of the source content.
+//   4. Changes to the (externally-computed) target data volume, provided in
 //      terms of the number of pixels in the frame.
-//
-// CaptureResolutionChooser always computes capture sizes less than the maximum
-// frame size, and adheres to the configured resolution change policy.  Within
-// those hard limits, the capture size is computed to be as close to the
-// targeted frame area as possible.
 //
 // In variable-resolution use cases, the capture sizes are "snapped" to a small
 // (i.e., usually less than a dozen) set of possibilities.  This is to prevent
@@ -33,15 +28,25 @@ namespace media {
 // aspect ratio.
 class CAPTURE_EXPORT CaptureResolutionChooser {
  public:
-  // media::ResolutionChangePolicy determines whether the variable frame
-  // resolutions being computed must adhere to a fixed aspect ratio or not, or
-  // that there must only be a single fixed resolution.
-  CaptureResolutionChooser(const gfx::Size& max_frame_size,
-                           ResolutionChangePolicy resolution_change_policy);
+  // Default constructor. Capture size is fixed at kDefaultCaptureSize until
+  // SetConstraints() is called.
+  CaptureResolutionChooser();
+
   ~CaptureResolutionChooser();
 
   // Returns the current capture frame resolution to use.
-  gfx::Size capture_size() const { return capture_size_; }
+  const gfx::Size& capture_size() const { return capture_size_; }
+
+  // Specifies a new range of acceptable capture resolutions and whether a fixed
+  // aspect ratio is required. When |min_frame_size| is equal to
+  // |max_frame_size|, capture resolution will be held constant. If a fixed
+  // aspect ratio is required, the aspect ratio of |max_frame_size| is used.
+  void SetConstraints(const gfx::Size& min_frame_size,
+                      const gfx::Size& max_frame_size,
+                      bool use_fixed_aspect_ratio);
+
+  // Returns the currently-set source size.
+  const gfx::Size& source_size() const { return source_size_; }
 
   // Updates the capture size based on a change in the resolution of the source
   // content.
@@ -59,19 +64,26 @@ class CAPTURE_EXPORT CaptureResolutionChooser {
   gfx::Size FindLargerFrameSize(int area, int num_steps_up) const;
   gfx::Size FindSmallerFrameSize(int area, int num_steps_down) const;
 
+  // The default capture size, if SetConstraints() is never called.
+  static constexpr gfx::Size kDefaultCaptureSize = gfx::Size(640, 360);
+
  private:
   // Called after any update that requires |capture_size_| be re-computed.
   void RecomputeCaptureSize();
 
   // Recomputes the |snapped_sizes_| cache.
-  void UpdateSnappedFrameSizes(const gfx::Size& constrained_size);
+  void UpdateSnappedFrameSizes();
 
   // Hard constraints.
-  const gfx::Size max_frame_size_;
-  const gfx::Size min_frame_size_;  // Computed from the ctor arguments.
+  gfx::Size min_frame_size_;
+  gfx::Size max_frame_size_;
 
-  // Specifies the set of heuristics to use.
-  const ResolutionChangePolicy resolution_change_policy_;
+  // If true, adjust the |source_size_| to match the aspect ratio of
+  // |max_frame_size_| before computing the snapped frame sizes.
+  bool apply_aspect_ratio_adjustment_;
+
+  // Current source size.
+  gfx::Size source_size_;
 
   // |capture_size_| will be computed such that its area is as close to this
   // value as possible.
