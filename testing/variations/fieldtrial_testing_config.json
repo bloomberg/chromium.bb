@@ -1065,6 +1065,18 @@
             ]
         }
     ],
+    "ExternalDataUseObserver": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled"
+                }
+            ]
+        }
+    ],
     "GoogleBrandedContextMenu": [
         {
             "platforms": [
