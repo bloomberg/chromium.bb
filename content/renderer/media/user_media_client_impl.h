@@ -79,15 +79,15 @@ class CONTENT_EXPORT UserMediaClientImpl
   // MediaStreamDispatcherEventHandler implementation.
   void OnStreamGenerated(int request_id,
                          const std::string& label,
-                         const StreamDeviceInfoArray& audio_array,
-                         const StreamDeviceInfoArray& video_array) override;
+                         const MediaStreamDevices& audio_devices,
+                         const MediaStreamDevices& video_devices) override;
   void OnStreamGenerationFailed(int request_id,
                                 MediaStreamRequestResult result) override;
   void OnDeviceStopped(const std::string& label,
-                       const StreamDeviceInfo& device_info) override;
+                       const MediaStreamDevice& device) override;
   void OnDeviceOpened(int request_id,
                       const std::string& label,
-                      const StreamDeviceInfo& device_info) override;
+                      const MediaStreamDevice& device) override;
   void OnDeviceOpenFailed(int request_id) override;
 
   // RenderFrameObserver override
@@ -112,12 +112,12 @@ class CONTENT_EXPORT UserMediaClientImpl
   // Creates a MediaStreamAudioSource/MediaStreamVideoSource objects.
   // These are virtual for test purposes.
   virtual MediaStreamAudioSource* CreateAudioSource(
-      const StreamDeviceInfo& device,
+      const MediaStreamDevice& device,
       const blink::WebMediaConstraints& constraints,
       const MediaStreamSource::ConstraintsCallback& source_ready,
       bool* has_sw_echo_cancellation);
   virtual MediaStreamVideoSource* CreateVideoSource(
-      const StreamDeviceInfo& device,
+      const MediaStreamDevice& device,
       const MediaStreamSource::SourceStoppedCallback& stop_callback);
 
   // Returns no value if there is no request being processed. Use only for
@@ -152,19 +152,19 @@ class CONTENT_EXPORT UserMediaClientImpl
   // Creates a WebKit representation of stream sources based on
   // |devices| from the MediaStreamDispatcher.
   blink::WebMediaStreamSource InitializeVideoSourceObject(
-      const StreamDeviceInfo& device);
+      const MediaStreamDevice& device);
 
   blink::WebMediaStreamSource InitializeAudioSourceObject(
-      const StreamDeviceInfo& device,
+      const MediaStreamDevice& device,
       const blink::WebMediaConstraints& constraints,
       bool* is_pending);
 
   void CreateVideoTracks(
-      const StreamDeviceInfoArray& devices,
+      const MediaStreamDevices& devices,
       blink::WebVector<blink::WebMediaStreamTrack>* webkit_tracks);
 
   void CreateAudioTracks(
-      const StreamDeviceInfoArray& devices,
+      const MediaStreamDevices& devices,
       const blink::WebMediaConstraints& constraints,
       blink::WebVector<blink::WebMediaStreamTrack>* webkit_tracks);
 
@@ -176,8 +176,8 @@ class CONTENT_EXPORT UserMediaClientImpl
                                      const blink::WebString& result_name);
 
   void OnStreamGeneratedForCancelledRequest(
-      const StreamDeviceInfoArray& audio_array,
-      const StreamDeviceInfoArray& video_array);
+      const MediaStreamDevices& audio_devices,
+      const MediaStreamDevices& video_devices);
 
   static void OnAudioSourceStartedOnAudioThread(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
@@ -204,21 +204,21 @@ class CONTENT_EXPORT UserMediaClientImpl
   // Returns the source that use a device with |device.session_id|
   // and |device.device.id|. NULL if such source doesn't exist.
   const blink::WebMediaStreamSource* FindLocalSource(
-      const StreamDeviceInfo& device) const {
+      const MediaStreamDevice& device) const {
     return FindLocalSource(local_sources_, device);
   }
   const blink::WebMediaStreamSource* FindPendingLocalSource(
-      const StreamDeviceInfo& device) const {
+      const MediaStreamDevice& device) const {
     return FindLocalSource(pending_local_sources_, device);
   }
   const blink::WebMediaStreamSource* FindLocalSource(
       const LocalStreamSources& sources,
-      const StreamDeviceInfo& device) const;
+      const MediaStreamDevice& device) const;
 
   // Looks up a local source and returns it if found. If not found, prepares
   // a new WebMediaStreamSource with a NULL extraData pointer.
   blink::WebMediaStreamSource FindOrInitializeSourceObject(
-      const StreamDeviceInfo& device);
+      const MediaStreamDevice& device);
 
   // Returns true if we do find and remove the |source|.
   // Otherwise returns false.

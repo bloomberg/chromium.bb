@@ -33,20 +33,19 @@ class MockMediaStreamDispatcherEventHandler
  public:
   MockMediaStreamDispatcherEventHandler() : request_id_(-1) {}
 
-  void OnStreamGenerated(
-      int request_id,
-      const std::string& label,
-      const StreamDeviceInfoArray& audio_device_array,
-      const StreamDeviceInfoArray& video_device_array) override {
+  void OnStreamGenerated(int request_id,
+                         const std::string& label,
+                         const MediaStreamDevices& audio_devices,
+                         const MediaStreamDevices& video_devices) override {
     request_id_ = request_id;
     label_ = label;
-    if (audio_device_array.size()) {
-      DCHECK(audio_device_array.size() == 1);
-      audio_device_ = audio_device_array[0];
+    if (audio_devices.size()) {
+      DCHECK(audio_devices.size() == 1);
+      audio_device_ = audio_devices[0];
     }
-    if (video_device_array.size()) {
-      DCHECK(video_device_array.size() == 1);
-      video_device_ = video_device_array[0];
+    if (video_devices.size()) {
+      DCHECK(video_devices.size() == 1);
+      video_device_ = video_devices[0];
     }
   }
 
@@ -56,19 +55,17 @@ class MockMediaStreamDispatcherEventHandler
   }
 
   void OnDeviceStopped(const std::string& label,
-                       const StreamDeviceInfo& device_info) override {
+                       const MediaStreamDevice& device) override {
     device_stopped_label_ = label;
-    if (IsVideoMediaType(device_info.device.type)) {
-      EXPECT_TRUE(StreamDeviceInfo::IsEqual(video_device_, device_info));
-    }
-    if (IsAudioInputMediaType(device_info.device.type)) {
-      EXPECT_TRUE(StreamDeviceInfo::IsEqual(audio_device_, device_info));
-    }
+    if (IsVideoMediaType(device.type))
+      EXPECT_TRUE(device.IsSameDevice(video_device_));
+    if (IsAudioInputMediaType(device.type))
+      EXPECT_TRUE(device.IsSameDevice(audio_device_));
   }
 
   void OnDeviceOpened(int request_id,
                       const std::string& label,
-                      const StreamDeviceInfo& video_device) override {
+                      const MediaStreamDevice& device) override {
     request_id_ = request_id;
     label_ = label;
   }
@@ -79,15 +76,15 @@ class MockMediaStreamDispatcherEventHandler
     request_id_ = -1;
     label_.clear();
     device_stopped_label_.clear();
-    audio_device_ = StreamDeviceInfo();
-    video_device_ = StreamDeviceInfo();
+    audio_device_ = MediaStreamDevice();
+    video_device_ = MediaStreamDevice();
   }
 
   int request_id_;
   std::string label_;
   std::string device_stopped_label_;
-  StreamDeviceInfo audio_device_;
-  StreamDeviceInfo video_device_;
+  MediaStreamDevice audio_device_;
+  MediaStreamDevice video_device_;
 };
 
 class MediaStreamDispatcherTest : public ::testing::Test {
@@ -175,21 +172,13 @@ TEST_F(MediaStreamDispatcherTest, GenerateStreamAndStopDevices) {
 
   // Stop the actual audio device and verify that there is no valid
   // |session_id|.
-  // TODO(c.padhi): Remove this when |audio_device_|'s type is
-  // changed to MediaStreamDevice, see https://crbug.com/760493.
-  MediaStreamDevice audio_device = handler_->audio_device_.device;
-  audio_device.session_id = handler_->audio_device_.session_id;
-  dispatcher_->StopStreamDevice(audio_device);
+  dispatcher_->StopStreamDevice(handler_->audio_device_);
   EXPECT_EQ(dispatcher_->audio_session_id(label1, 0), MediaStreamDevice::kNoId);
   EXPECT_EQ(dispatcher_->audio_session_id(label2, 0), MediaStreamDevice::kNoId);
 
   // Stop the actual video device and verify that there is no valid
   // |session_id|.
-  // TODO(c.padhi): Remove this when |video_device_|'s type is
-  // changed to MediaStreamDevice, see https://crbug.com/760493.
-  MediaStreamDevice video_device = handler_->video_device_.device;
-  video_device.session_id = handler_->video_device_.session_id;
-  dispatcher_->StopStreamDevice(video_device);
+  dispatcher_->StopStreamDevice(handler_->video_device_);
   EXPECT_EQ(dispatcher_->video_session_id(label1, 0), MediaStreamDevice::kNoId);
   EXPECT_EQ(dispatcher_->video_session_id(label2, 0), MediaStreamDevice::kNoId);
 }
@@ -320,11 +309,7 @@ TEST_F(MediaStreamDispatcherTest, DeviceClosed) {
   const std::string& label =
       CompleteGenerateStream(ipc_request_id, kRequestId1);
 
-  // TODO(c.padhi): Remove this when |video_device_|'s type is
-  // changed to MediaStreamDevice, see https://crbug.com/760493.
-  MediaStreamDevice video_device = handler_->video_device_.device;
-  video_device.session_id = handler_->video_device_.session_id;
-  dispatcher_->OnDeviceStopped(label, video_device);
+  dispatcher_->OnDeviceStopped(label, handler_->video_device_);
   // Verify that MediaStreamDispatcherEventHandler::OnDeviceStopped has been
   // called.
   EXPECT_EQ(label, handler_->device_stopped_label_);

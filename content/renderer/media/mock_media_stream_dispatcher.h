@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "content/public/common/media_stream_request.h"
 #include "content/renderer/media/media_stream_dispatcher.h"
 #include "url/origin.h"
 
@@ -43,14 +44,11 @@ class MockMediaStreamDispatcher : public MediaStreamDispatcher {
   int stop_video_device_counter() const { return stop_video_device_counter_; }
 
   const std::string& stream_label() const { return stream_label_;}
-  const StreamDeviceInfoArray& audio_input_array() const {
-    return audio_input_array_;
-  }
-  const StreamDeviceInfoArray& video_array() const { return video_array_; }
+  const MediaStreamDevices& audio_devices() const { return audio_devices_; }
+  const MediaStreamDevices& video_devices() const { return video_devices_; }
 
  private:
-  void AddAudioInputDeviceToArray(bool matched_output,
-                                  const std::string& device_id);
+  void AddAudioDeviceToArray(bool matched_output, const std::string& device_id);
   void AddVideoDeviceToArray(bool facing_user, const std::string& device_id);
 
   int audio_input_request_id_;
@@ -62,8 +60,8 @@ class MockMediaStreamDispatcher : public MediaStreamDispatcher {
   std::string stream_label_;
   int session_id_;
   bool test_same_id_;
-  StreamDeviceInfoArray audio_input_array_;
-  StreamDeviceInfoArray video_array_;
+  MediaStreamDevices audio_devices_;
+  MediaStreamDevices video_devices_;
 
   DISALLOW_COPY_AND_ASSIGN(MockMediaStreamDispatcher);
 };

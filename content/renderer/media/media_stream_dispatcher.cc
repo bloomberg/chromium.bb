@@ -215,15 +215,8 @@ void MediaStreamDispatcher::OnStreamGenerated(
     new_stream.video_devices = video_devices;
     label_stream_map_[label] = new_stream;
     if (request.handler.get()) {
-      // TODO(c.padhi): Remove this when OnStreamGenerated's input types are
-      // changed to MediaStreamDevices, see https://crbug.com/760493.
-      StreamDeviceInfoArray audio_array, video_array;
-      for (const MediaStreamDevice& device : audio_devices)
-        audio_array.push_back(StreamDeviceInfo(device));
-      for (const MediaStreamDevice& device : video_devices)
-        video_array.push_back(StreamDeviceInfo(device));
-      request.handler->OnStreamGenerated(request.request_id, label, audio_array,
-                                         video_array);
+      request.handler->OnStreamGenerated(request.request_id, label,
+                                         audio_devices, video_devices);
       DVLOG(1) << __func__ << " request_id=" << request.request_id
                << " label=" << label;
     }
@@ -270,8 +263,7 @@ void MediaStreamDispatcher::OnDeviceOpened(int32_t request_id,
 
     label_stream_map_[label] = new_stream;
     if (request.handler.get()) {
-      request.handler->OnDeviceOpened(request.request_id, label,
-                                      StreamDeviceInfo(device));
+      request.handler->OnDeviceOpened(request.request_id, label, device);
       DVLOG(1) << __func__ << " request_id=" << request.request_id
                << " label=" << label;
     }
@@ -314,7 +306,7 @@ void MediaStreamDispatcher::OnDeviceStopped(const std::string& label,
     RemoveStreamDeviceFromArray(device, &stream->video_devices);
 
   if (stream->handler.get())
-    stream->handler->OnDeviceStopped(label, StreamDeviceInfo(device));
+    stream->handler->OnDeviceStopped(label, device);
 
   // |it| could have already been invalidated in the function call above. So we
   // need to check if |label| is still in |label_stream_map_| again.
