@@ -515,6 +515,11 @@ public class SpannableAutocompleteEditTextModel implements AutocompleteEditTextM
             Editable editable = mDelegate.getEditableText();
             editable.append(diff);
             decrementBatchEditCount();
+            if (mBatchEditNestCount == 0) { // only at the outermost batch edit
+                // crbug.com/758443: Japanese keyboard does not finish composition when we restore
+                // the deleted text.
+                super.finishComposingText();
+            }
         }
 
         private boolean setAutocompleteSpan() {

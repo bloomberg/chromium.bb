@@ -17,6 +17,7 @@ import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
 import android.view.accessibility.AccessibilityEvent;
+import android.view.inputmethod.BaseInputConnection;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.widget.LinearLayout;
@@ -744,7 +745,7 @@ public class AutocompleteEditTextTest {
         if (isUsingSpannableModel()) {
             // Pretend that we have deleted 'o' first.
             mInOrder.verify(mVerifier).onUpdateSelection(4, 4);
-            // We restore 'o', and clears autocomplete text instead.
+            // We restore 'o', and clear autocomplete text instead.
             mInOrder.verify(mVerifier).onUpdateSelection(5, 5);
             assertTrue(mAutocomplete.isCursorVisible());
             // Autocomplete removed.
@@ -778,12 +779,18 @@ public class AutocompleteEditTextTest {
         assertTexts("hello", "");
     }
 
+    private boolean isComposing() {
+        return BaseInputConnection.getComposingSpanStart(mAutocomplete.getText())
+                != BaseInputConnection.getComposingSpanEnd(mAutocomplete.getText());
+    }
+
     @Test
     @Features(@Features.Register(
             value = ChromeFeatureList.SPANNABLE_INLINE_AUTOCOMPLETE, enabled = true))
     public void testDelete_SetComposingTextWithSpannableModel() {
         // User types "hello".
         assertTrue(mInputConnection.setComposingText("hello", 1));
+        assertTrue(isComposing());
         mInOrder.verify(mVerifier).onUpdateSelection(5, 5);
         verifyOnPopulateAccessibilityEvent(
                 AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED, "hello", "", -1, 0, -1, 0, 5);
@@ -806,9 +813,10 @@ public class AutocompleteEditTextTest {
         assertTrue(mInputConnection.setComposingText("hell", 1));
         // Pretend that we have deleted 'o'.
         mInOrder.verify(mVerifier).onUpdateSelection(4, 4);
-        // We restore 'o', and clear autocomplete text instead.
+        // We restore 'o', finish composition, and clear autocomplete text instead.
         mInOrder.verify(mVerifier).onUpdateSelection(5, 5);
         assertTrue(mAutocomplete.isCursorVisible());
+        assertFalse(isComposing());
         // Remove autocomplete.
         verifyOnPopulateAccessibilityEvent(
                 AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED, "hello", "hello world", -1, 5, -1, 6, 0);
