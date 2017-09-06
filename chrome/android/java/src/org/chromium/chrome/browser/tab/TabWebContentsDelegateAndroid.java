@@ -27,7 +27,6 @@ import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.FullscreenActivity;
 import org.chromium.chrome.browser.RepostFormWarningDialog;
 import org.chromium.chrome.browser.document.DocumentUtils;
@@ -219,8 +218,7 @@ public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
 
     @Override
     public void toggleFullscreenModeForTab(boolean enableFullscreen) {
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.FULLSCREEN_ACTIVITY)
-                && mTab.getActivity().supportsFullscreenActivity()) {
+        if (FullscreenActivity.shouldUseFullscreenActivity(mTab)) {
             FullscreenActivity.toggleFullscreenMode(enableFullscreen, mTab);
         } else {
             mTab.toggleFullscreenMode(enableFullscreen);

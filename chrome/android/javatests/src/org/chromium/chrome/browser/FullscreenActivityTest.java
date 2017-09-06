@@ -5,8 +5,10 @@
 package org.chromium.chrome.browser;
 
 import android.app.Activity;
+import android.app.Instrumentation;
 import android.content.Intent;
 import android.provider.Browser;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.support.test.rule.UiThreadTestRule;
 
@@ -19,6 +21,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -200,5 +203,52 @@ public class FullscreenActivityTest {
         waitForActivity(ChromeTabbedActivity.class);
 
         Assert.assertEquals(old, mActivity.getTabsView().getSystemUiVisibility());
+    }
+
+    /**
+     * When a FullscreenActivity goes to the background it exits fullscreen if the video is paused.
+     * In this case we want to exit fullscreen normally, not through Intenting back to the CTA,
+     * since this will appear to relaunch Chrome.
+     */
+    @Test
+    @MediumTest
+    public void testNoIntentWhenInBackground() throws Throwable {
+        final Boolean[] isTabFullscreen = new Boolean[1];
+        Tab tab = mActivity.getActivityTab();
+        tab.addObserver(new EmptyTabObserver() {
+            @Override
+            public void onToggleFullscreenMode(Tab tab, boolean enable) {
+                isTabFullscreen[0] = enable;
+            }
+        });
+
+        enterFullscreen();
+        Assert.assertTrue(isTabFullscreen[0]);
+        DOMUtils.pauseMedia(tab.getWebContents(), VIDEO_ID);
+
+        // Add a monitor to track any intents launched to a ChromeTabbedActivity.
+        Instrumentation.ActivityMonitor monitor = new Instrumentation.ActivityMonitor(
+                ChromeTabbedActivity.class.getName(), null, true);
+        InstrumentationRegistry.getInstrumentation().addMonitor(monitor);
+
+        Assert.assertEquals(0, monitor.getHits());
+
+        // Launch a ChromeTabbedActivity2 to go foreground and put the FullscreenActivity in the
+        // background.
+        mUiThreadTestRule.runOnUiThread(() -> {
+            Intent intent = new Intent(mActivity, ChromeTabbedActivity2.class);
+            mActivity.startActivity(intent);
+        });
+        waitForActivity(ChromeTabbedActivity2.class);
+
+        // Wait for the Tab to leave fullscreen.
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return !isTabFullscreen[0];
+            }
+        });
+
+        Assert.assertEquals(0, monitor.getHits());
     }
 }

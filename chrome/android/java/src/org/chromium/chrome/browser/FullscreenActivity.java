@@ -10,6 +10,8 @@ import android.provider.Browser;
 import android.view.View;
 import android.view.ViewGroup;
 
+import org.chromium.base.ActivityState;
+import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
@@ -162,5 +164,17 @@ public class FullscreenActivity extends SingleTabActivity {
         intent.putExtra(Browser.EXTRA_APPLICATION_ID, activity.getPackageName());
 
         tab.detachAndStartReparenting(intent, null, setFullscreen);
+    }
+
+    public static boolean shouldUseFullscreenActivity(Tab tab) {
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.FULLSCREEN_ACTIVITY)) return false;
+
+        ChromeActivity activity = tab.getActivity();
+        if (!activity.supportsFullscreenActivity()) return false;
+
+        // FullscreenActivity transitions involve Intent-ing to a new Activity. If the current
+        // Activity is not in the foreground we don't want to do this (as it would re-launch
+        // Chrome).
+        return ApplicationStatus.getStateForActivity(activity) == ActivityState.RESUMED;
     }
 }
