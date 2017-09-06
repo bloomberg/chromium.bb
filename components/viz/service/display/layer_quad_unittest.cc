@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/output/layer_quad.h"
+#include "components/viz/service/display/layer_quad.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/quad_f.h"
 
-namespace cc {
+namespace viz {
 namespace {
 
 TEST(LayerQuadTest, QuadFConversion) {
@@ -66,4 +66,4 @@ TEST(LayerQuadTest, Degenerate) {
 }
 
 }  // namespace
-}  // namespace cc
+}  // namespace viz
