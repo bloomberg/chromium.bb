@@ -29,6 +29,7 @@
 #include "components/user_manager/user_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/message_center/message_center_style.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_delegate.h"
 
@@ -142,11 +143,13 @@ void SigninErrorNotifier::OnErrorChanged() {
   Notification notification(
       message_center::NOTIFICATION_TYPE_SIMPLE,
       l10n_util::GetStringUTF16(IDS_SIGNIN_ERROR_BUBBLE_VIEW_TITLE),
-      GetMessageBody(), ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-                            IDR_NOTIFICATION_ALERT),
-      notifier_id,
-      base::string16(),  // display_source
+      GetMessageBody(),
+      ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+          IDR_NOTIFICATION_ALERT),
+      notifier_id, l10n_util::GetStringUTF16(IDS_SIGNIN_ERROR_DISPLAY_SOURCE),
       GURL(notification_id_), notification_id_, data, delegate);
+  notification.set_accent_color(
+      message_center::kSystemNotificationColorCriticalWarning);
   notification.SetSystemPriority();
 
   // Update or add the notification.
