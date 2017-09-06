@@ -8,11 +8,11 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/child/child_thread_impl.h"
 #include "content/child/service_worker/service_worker_dispatcher.h"
-#include "content/child/service_worker/service_worker_event_dispatcher_holder.h"
 #include "content/child/service_worker/service_worker_handle_reference.h"
 #include "content/child/service_worker/service_worker_registration_handle_reference.h"
 #include "content/child/service_worker/service_worker_subresource_loader.h"
@@ -43,7 +43,6 @@ struct ServiceWorkerProviderContext::ControlleeState {
 
   // S13nServiceWorker:
   // Used when we create |subresource_loader_factory|.
-  scoped_refptr<ServiceWorkerEventDispatcherHolder> event_dispatcher;
   scoped_refptr<ChildURLLoaderFactoryGetter> default_loader_factory_getter;
 
   // Tracks feature usage for UseCounter.
@@ -155,12 +154,14 @@ void ServiceWorkerProviderContext::SetController(
   state->used_features = used_features;
   if (event_dispatcher_ptr_info.is_valid()) {
     CHECK(ServiceWorkerUtils::IsServicificationEnabled());
-    state->event_dispatcher =
-        base::MakeRefCounted<ServiceWorkerEventDispatcherHolder>(
-            std::move(event_dispatcher_ptr_info));
+    mojom::ServiceWorkerEventDispatcherPtr event_dispatcher_ptr;
+    event_dispatcher_ptr.Bind(std::move(event_dispatcher_ptr_info));
+    auto event_dispatcher = base::MakeRefCounted<
+        base::RefCountedData<mojom::ServiceWorkerEventDispatcherPtr>>();
+    event_dispatcher->data = std::move(event_dispatcher_ptr);
     mojo::MakeStrongBinding(
         base::MakeUnique<ServiceWorkerSubresourceLoaderFactory>(
-            state->event_dispatcher, state->default_loader_factory_getter,
+            event_dispatcher, state->default_loader_factory_getter,
             state->controller->url().GetOrigin()),
         mojo::MakeRequest(&state->subresource_loader_factory));
   }

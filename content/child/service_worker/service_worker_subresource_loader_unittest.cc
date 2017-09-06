@@ -6,9 +6,9 @@
 
 #include "base/run_loop.h"
 #include "content/child/child_url_loader_factory_getter_impl.h"
-#include "content/child/service_worker/service_worker_event_dispatcher_holder.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_url_loader_client.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -21,6 +21,10 @@ class ServiceWorkerSubresourceLoaderTest : public ::testing::Test {
    public:
     MockServiceWorkerEventDispatcher() = default;
     ~MockServiceWorkerEventDispatcher() override = default;
+
+    void AddBinding(mojom::ServiceWorkerEventDispatcherRequest request) {
+      bindings_.AddBinding(this, std::move(request));
+    }
 
     // mojom::ServiceWorkerEventDispatcher:
     void DispatchInstallEvent(
@@ -124,6 +128,7 @@ class ServiceWorkerSubresourceLoaderTest : public ::testing::Test {
    private:
     int fetch_event_count_ = 0;
     ServiceWorkerFetchRequest fetch_event_request_;
+    mojo::BindingSet<mojom::ServiceWorkerEventDispatcher> bindings_;
     DISALLOW_COPY_AND_ASSIGN(MockServiceWorkerEventDispatcher);
   };
 
@@ -143,10 +148,15 @@ class ServiceWorkerSubresourceLoaderTest : public ::testing::Test {
 
     EXPECT_EQ(0, event_dispatcher_.fetch_event_count());
 
+    mojom::ServiceWorkerEventDispatcherPtr event_dispatcher_ptr;
+    event_dispatcher_.AddBinding(mojo::MakeRequest(&event_dispatcher_ptr));
+    auto shared_event_dispatcher = base::MakeRefCounted<
+        base::RefCountedData<mojom::ServiceWorkerEventDispatcherPtr>>();
+    shared_event_dispatcher->data = std::move(event_dispatcher_ptr);
+
     ServiceWorkerSubresourceLoaderFactory loader_factory(
-        ServiceWorkerEventDispatcherHolder::CreateForTesting(
-            &event_dispatcher_),
-        loader_factory_getter, request.url.GetOrigin());
+        std::move(shared_event_dispatcher), loader_factory_getter,
+        request.url.GetOrigin());
     loader_factory.CreateLoaderAndStart(
         mojo::MakeRequest(&url_loader), 0, 0, mojom::kURLLoadOptionNone,
         request, url_loader_client.CreateInterfacePtr(),
