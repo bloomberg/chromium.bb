@@ -27,6 +27,13 @@ void FastInkPoints::AddPoint(const gfx::PointF& point,
   points_.push_back(new_point);
 }
 
+void FastInkPoints::AddGap() {
+  // Not doing anything special regarding prediction, as in real usage there
+  // will be a gap in timestamps, and the prediction algorithm will reject the
+  // points that are too old.
+  points_.back().gap_after = true;
+}
+
 void FastInkPoints::MoveForwardToTime(const base::TimeTicks& latest_time) {
   DCHECK_GE(latest_time, collection_latest_time_);
   collection_latest_time_ = latest_time;
