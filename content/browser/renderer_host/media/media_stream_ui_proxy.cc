@@ -7,13 +7,16 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/render_frame_host_delegate.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "media/capture/video/fake_video_capture_device.h"
+#include "third_party/WebKit/public/platform/WebFeaturePolicyFeature.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -50,10 +53,13 @@ class MediaStreamUIProxy::Core {
   void RequestAccess(std::unique_ptr<MediaStreamRequest> request);
   void OnStarted(gfx::NativeViewId* window_id);
 
- private:
-  void ProcessAccessRequestResponse(const MediaStreamDevices& devices,
+  void ProcessAccessRequestResponse(int render_process_id,
+                                    int render_frame_id,
+                                    const MediaStreamDevices& devices,
                                     content::MediaStreamRequestResult result,
                                     std::unique_ptr<MediaStreamUI> stream_ui);
+
+ private:
   void ProcessStopRequestFromUI();
   RenderFrameHostDelegate* GetRenderFrameHostDelegate(int render_process_id,
                                                       int render_frame_id);
@@ -90,7 +96,8 @@ void MediaStreamUIProxy::Core::RequestAccess(
 
   // Tab may have gone away, or has no delegate from which to request access.
   if (!render_delegate) {
-    ProcessAccessRequestResponse(MediaStreamDevices(),
+    ProcessAccessRequestResponse(request->render_process_id,
+                                 request->render_frame_id, MediaStreamDevices(),
                                  MEDIA_DEVICE_FAILED_DUE_TO_SHUTDOWN,
                                  std::unique_ptr<MediaStreamUI>());
     return;
@@ -98,8 +105,10 @@ void MediaStreamUIProxy::Core::RequestAccess(
   SetAndCheckAncestorFlag(request.get());
 
   render_delegate->RequestMediaAccessPermission(
-      *request, base::Bind(&Core::ProcessAccessRequestResponse,
-                           weak_factory_.GetWeakPtr()));
+      *request,
+      base::Bind(&Core::ProcessAccessRequestResponse,
+                 weak_factory_.GetWeakPtr(), request->render_process_id,
+                 request->render_frame_id));
 }
 
 void MediaStreamUIProxy::Core::OnStarted(gfx::NativeViewId* window_id) {
@@ -111,16 +120,42 @@ void MediaStreamUIProxy::Core::OnStarted(gfx::NativeViewId* window_id) {
 }
 
 void MediaStreamUIProxy::Core::ProcessAccessRequestResponse(
+    int render_process_id,
+    int render_frame_id,
     const MediaStreamDevices& devices,
     content::MediaStreamRequestResult result,
     std::unique_ptr<MediaStreamUI> stream_ui) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
+  MediaStreamDevices filtered_devices;
+  if (base::FeatureList::IsEnabled(features::kUseFeaturePolicyForPermissions)) {
+    RenderFrameHost* host =
+        RenderFrameHost::FromID(render_process_id, render_frame_id);
+    for (const MediaStreamDevice& device : devices) {
+      if (device.type == MEDIA_DEVICE_AUDIO_CAPTURE &&
+          !host->IsFeatureEnabled(
+              blink::WebFeaturePolicyFeature::kMicrophone)) {
+        continue;
+      }
+
+      if (device.type == MEDIA_DEVICE_VIDEO_CAPTURE &&
+          !host->IsFeatureEnabled(blink::WebFeaturePolicyFeature::kCamera)) {
+        continue;
+      }
+
+      filtered_devices.push_back(device);
+    }
+    if (filtered_devices.empty() && result == MEDIA_DEVICE_OK)
+      result = MEDIA_DEVICE_PERMISSION_DENIED;
+  } else {
+    filtered_devices = devices;
+  }
+
   ui_ = std::move(stream_ui);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&MediaStreamUIProxy::ProcessAccessRequestResponse, proxy_,
-                     devices, result));
+                     filtered_devices, result));
 }
 
 void MediaStreamUIProxy::Core::ProcessStopRequestFromUI() {
@@ -249,10 +284,12 @@ void FakeMediaStreamUIProxy::RequestAccess(
           switches::kUseFakeUIForMediaStream) == "deny") {
     // Immediately deny the request.
     BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::BindOnce(&MediaStreamUIProxy::ProcessAccessRequestResponse,
-                       weak_factory_.GetWeakPtr(), MediaStreamDevices(),
-                       MEDIA_DEVICE_PERMISSION_DENIED));
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&MediaStreamUIProxy::Core::ProcessAccessRequestResponse,
+                       base::Unretained(core_.get()),
+                       request->render_process_id, request->render_frame_id,
+                       MediaStreamDevices(), MEDIA_DEVICE_PERMISSION_DENIED,
+                       std::unique_ptr<MediaStreamUI>()));
     return;
   }
 
@@ -288,11 +325,13 @@ void FakeMediaStreamUIProxy::RequestAccess(
   }
 
   BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+      BrowserThread::UI, FROM_HERE,
       base::BindOnce(
-          &MediaStreamUIProxy::ProcessAccessRequestResponse,
-          weak_factory_.GetWeakPtr(), devices_to_use,
-          devices_to_use.empty() ? MEDIA_DEVICE_NO_HARDWARE : MEDIA_DEVICE_OK));
+          &MediaStreamUIProxy::Core::ProcessAccessRequestResponse,
+          base::Unretained(core_.get()), request->render_process_id,
+          request->render_frame_id, devices_to_use,
+          devices_to_use.empty() ? MEDIA_DEVICE_NO_HARDWARE : MEDIA_DEVICE_OK,
+          std::unique_ptr<MediaStreamUI>()));
 }
 
 void FakeMediaStreamUIProxy::OnStarted(base::OnceClosure stop_callback,
