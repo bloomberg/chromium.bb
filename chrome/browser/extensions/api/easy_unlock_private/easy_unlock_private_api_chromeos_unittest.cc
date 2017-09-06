@@ -17,7 +17,6 @@
 #include "chrome/browser/extensions/extension_api_unittest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
-#include "chrome/browser/extensions/test_extension_prefs.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/easy_unlock_app_manager.h"
@@ -31,9 +30,7 @@
 #include "components/proximity_auth/switches.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "extensions/browser/api_test_utils.h"
-#include "extensions/browser/event_router.h"
-#include "extensions/browser/event_router_factory.h"
-#include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/test_event_router.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -482,48 +479,10 @@ std::unique_ptr<KeyedService> BuildTestEasyUnlockService(
   return std::move(service);
 }
 
-// A fake EventRouter that logs event it dispatches for testing.
-class FakeEventRouter : public extensions::EventRouter {
- public:
-  FakeEventRouter(
-      Profile* profile,
-      std::unique_ptr<extensions::TestExtensionPrefs> extension_prefs)
-      : EventRouter(profile, extension_prefs->prefs()),
-        extension_prefs_(std::move(extension_prefs)),
-        event_count_(0) {}
-
-  void DispatchEventToExtension(
-      const std::string& extension_id,
-      std::unique_ptr<extensions::Event> event) override {
-    ++event_count_;
-    last_extension_id_ = extension_id;
-    last_event_name_ = event ? event->event_name : std::string();
-  }
-
-  int event_count() const { return event_count_; }
-  const std::string& last_extension_id() const { return last_extension_id_; }
-  const std::string& last_event_name() const { return last_event_name_; }
-
- private:
-  std::unique_ptr<extensions::TestExtensionPrefs> extension_prefs_;
-  int event_count_;
-  std::string last_extension_id_;
-  std::string last_event_name_;
-};
-
-// FakeEventRouter factory function
-std::unique_ptr<KeyedService> FakeEventRouterFactoryFunction(
-    content::BrowserContext* profile) {
-  std::unique_ptr<extensions::TestExtensionPrefs> extension_prefs(
-      new extensions::TestExtensionPrefs(base::ThreadTaskRunnerHandle::Get()));
-  return base::MakeUnique<FakeEventRouter>(static_cast<Profile*>(profile),
-                                           std::move(extension_prefs));
-}
-
 TEST_F(EasyUnlockPrivateApiTest, AutoPairing) {
-  FakeEventRouter* event_router = static_cast<FakeEventRouter*>(
-      extensions::EventRouterFactory::GetInstance()->SetTestingFactoryAndUse(
-          profile(), &FakeEventRouterFactoryFunction));
+  extensions::TestEventRouter* event_router =
+      extensions::CreateAndUseTestEventRouter(profile());
+  event_router->set_expected_extension_id(extension_misc::kEasyUnlockAppId);
 
   EasyUnlockServiceFactory::GetInstance()->SetTestingFactoryAndUse(
       profile(), &BuildTestEasyUnlockService);
@@ -534,12 +493,9 @@ TEST_F(EasyUnlockPrivateApiTest, AutoPairing) {
   EasyUnlockService* service = EasyUnlockService::Get(profile());
   service->StartAutoPairing(base::Bind(&AutoPairingResult::SetResult,
                                        base::Unretained(&result)));
-  EXPECT_EQ(1, event_router->event_count());
-  EXPECT_EQ(extension_misc::kEasyUnlockAppId,
-            event_router->last_extension_id());
-  EXPECT_EQ(
-      extensions::api::easy_unlock_private::OnStartAutoPairing::kEventName,
-      event_router->last_event_name());
+  EXPECT_EQ(1,
+            event_router->GetEventCount(extensions::api::easy_unlock_private::
+                                            OnStartAutoPairing::kEventName));
 
   // Test SetAutoPairingResult call with failure.
   scoped_refptr<EasyUnlockPrivateSetAutoPairingResultFunction> function(
