@@ -544,7 +544,7 @@ void RenderWidget::Init(const ShowCallback& show_callback,
     RenderThreadImpl* render_thread_impl = RenderThreadImpl::current();
 
     widget_input_handler_manager_ = WidgetInputHandlerManager::Create(
-        weak_ptr_factory_.GetWeakPtr(), RenderThread::Get()->GetChannel(),
+        weak_ptr_factory_.GetWeakPtr(),
         render_thread_impl && compositor_
             ? render_thread_impl->compositor_task_runner()
             : nullptr,
@@ -1097,7 +1097,13 @@ void RenderWidget::ClearEditCommands() {
 }
 
 void RenderWidget::OnDidOverscroll(const ui::DidOverscrollParams& params) {
-  Send(new InputHostMsg_DidOverscroll(routing_id_, params));
+  if (widget_input_handler_manager_) {
+    WidgetInputHandlerManager::WidgetInputHandlerHost host =
+        widget_input_handler_manager_->GetWidgetInputHandlerHost();
+    (*host)->DidOverscroll(params);
+  } else {
+    Send(new InputHostMsg_DidOverscroll(routing_id_, params));
+  }
 }
 
 void RenderWidget::SetInputHandler(RenderWidgetInputHandler* input_handler) {
@@ -1677,7 +1683,13 @@ void RenderWidget::OnImeSetComposition(
     // If we failed to set the composition text, then we need to let the browser
     // process to cancel the input method's ongoing composition session, to make
     // sure we are in a consistent state.
-    Send(new InputHostMsg_ImeCancelComposition(routing_id()));
+    if (widget_input_handler_manager_) {
+      WidgetInputHandlerManager::WidgetInputHandlerHost host =
+          widget_input_handler_manager_->GetWidgetInputHandlerHost();
+      (*host)->ImeCancelComposition();
+    } else {
+      Send(new InputHostMsg_ImeCancelComposition(routing_id()));
+    }
   }
   UpdateCompositionInfo(false /* not an immediate request */);
 }
@@ -1926,8 +1938,15 @@ void RenderWidget::UpdateCompositionInfo(bool immediate_request) {
   }
   composition_character_bounds_ = character_bounds;
   composition_range_ = range;
-  Send(new InputHostMsg_ImeCompositionRangeChanged(
-      routing_id(), composition_range_, composition_character_bounds_));
+  if (widget_input_handler_manager_) {
+    WidgetInputHandlerManager::WidgetInputHandlerHost host =
+        widget_input_handler_manager_->GetWidgetInputHandlerHost();
+    (*host)->ImeCompositionRangeChanged(composition_range_,
+                                        composition_character_bounds_);
+  } else {
+    Send(new InputHostMsg_ImeCompositionRangeChanged(
+        routing_id(), composition_range_, composition_character_bounds_));
+  }
 }
 
 void RenderWidget::ConvertViewportToWindow(blink::WebRect* rect) {
@@ -2330,7 +2349,11 @@ void RenderWidget::SetTouchAction(cc::TouchAction touch_action) {
   if (!input_handler_->ProcessTouchAction(touch_action))
     return;
 
-  Send(new InputHostMsg_SetTouchAction(routing_id_, touch_action));
+  if (widget_input_handler_manager_) {
+    widget_input_handler_manager_->ProcessTouchAction(touch_action);
+  } else {
+    Send(new InputHostMsg_SetTouchAction(routing_id_, touch_action));
+  }
 }
 
 void RenderWidget::RegisterRenderFrameProxy(RenderFrameProxy* proxy) {
@@ -2423,9 +2446,11 @@ blink::WebInputMethodController* RenderWidget::GetInputMethodController()
       ->GetActiveWebInputMethodController();
 }
 
-void RenderWidget::GetWidgetInputHandler(
-    mojom::WidgetInputHandlerRequest request) {
+void RenderWidget::SetupWidgetInputHandler(
+    mojom::WidgetInputHandlerRequest request,
+    mojom::WidgetInputHandlerHostPtr host) {
   widget_input_handler_manager_->AddInterface(std::move(request));
+  widget_input_handler_manager_->SetWidgetInputHandlerHost(std::move(host));
 }
 
 void RenderWidget::SetWidgetBinding(mojom::WidgetRequest request) {

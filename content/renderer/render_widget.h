@@ -416,7 +416,9 @@ class CONTENT_EXPORT RenderWidget
   void HandleInputEvent(const blink::WebCoalescedInputEvent& input_event,
                         const ui::LatencyInfo& latency_info,
                         HandledEventCallback callback) override;
-  void GetWidgetInputHandler(mojom::WidgetInputHandlerRequest request) override;
+
+  void SetupWidgetInputHandler(mojom::WidgetInputHandlerRequest request,
+                               mojom::WidgetInputHandlerHostPtr host) override;
 
   scoped_refptr<MainThreadEventQueue> GetInputEventQueue();
 

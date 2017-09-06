@@ -378,8 +378,6 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
   }
 #endif
 
-  SetWidget(std::move(widget));
-
   std::pair<RoutingIDWidgetMap::iterator, bool> result =
       g_routing_id_widget_map.Get().insert(std::make_pair(
           RenderWidgetHostID(process->GetID(), routing_id_), this));
@@ -397,6 +395,7 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
 
   SetupInputRouter();
   touch_emulator_.reset();
+  SetWidget(std::move(widget));
 
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableHangMonitor)) {
@@ -2816,7 +2815,13 @@ void RenderWidgetHostImpl::SetWidgetInputHandler(
 void RenderWidgetHostImpl::SetWidget(mojom::WidgetPtr widget) {
   if (widget && base::FeatureList::IsEnabled(features::kMojoInputMessages)) {
     widget_input_handler_.reset();
-    widget->GetWidgetInputHandler(mojo::MakeRequest(&widget_input_handler_));
+
+    mojom::WidgetInputHandlerHostPtr host;
+    mojom::WidgetInputHandlerHostRequest host_request =
+        mojo::MakeRequest(&host);
+    widget->SetupWidgetInputHandler(mojo::MakeRequest(&widget_input_handler_),
+                                    std::move(host));
+    input_router_->BindHost(std::move(host_request));
   }
 }
 

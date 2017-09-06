@@ -11,7 +11,8 @@ MockWidgetImpl::MockWidgetImpl(mojo::InterfaceRequest<mojom::Widget> request)
 
 MockWidgetImpl::~MockWidgetImpl() {}
 
-void MockWidgetImpl::GetWidgetInputHandler(
-    mojom::WidgetInputHandlerRequest request) {}
+void MockWidgetImpl::SetupWidgetInputHandler(
+    mojom::WidgetInputHandlerRequest request,
+    mojom::WidgetInputHandlerHostPtr host) {}
 
 }  // namespace content

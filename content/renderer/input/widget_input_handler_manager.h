@@ -8,6 +8,7 @@
 #include "content/common/input/input_handler.mojom.h"
 #include "content/renderer/render_frame_impl.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/thread_safe_interface_ptr.h"
 #include "ui/events/blink/input_handler_proxy.h"
 #include "ui/events/blink/input_handler_proxy_client.h"
 
@@ -29,12 +30,12 @@ class WidgetInputHandlerManager
  public:
   static scoped_refptr<WidgetInputHandlerManager> Create(
       base::WeakPtr<RenderWidget> render_widget,
-      IPC::Sender* legacy_host_channel,
       scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
       blink::scheduler::RendererScheduler* renderer_scheduler);
   void AddAssociatedInterface(
       mojom::WidgetInputHandlerAssociatedRequest interface_request);
 
+  void SetWidgetInputHandlerHost(mojom::WidgetInputHandlerHostPtr host);
   void AddInterface(mojom::WidgetInputHandlerRequest interface_request);
 
   // InputHandlerProxyClient overrides.
@@ -71,6 +72,12 @@ class WidgetInputHandlerManager
   void DispatchEvent(std::unique_ptr<content::InputEvent> event,
                      mojom::WidgetInputHandler::DispatchEventCallback callback);
 
+  void ProcessTouchAction(cc::TouchAction touch_action);
+
+  using WidgetInputHandlerHost = scoped_refptr<
+      mojo::ThreadSafeInterfacePtr<mojom::WidgetInputHandlerHost>>;
+  const WidgetInputHandlerHost& GetWidgetInputHandlerHost();
+
  protected:
   friend class base::RefCountedThreadSafe<WidgetInputHandlerManager>;
   ~WidgetInputHandlerManager() override;
@@ -78,7 +85,6 @@ class WidgetInputHandlerManager
  private:
   WidgetInputHandlerManager(
       base::WeakPtr<RenderWidget> render_widget,
-      IPC::Sender* legacy_host_channel,
       scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
       blink::scheduler::RendererScheduler* renderer_scheduler);
   void Init();
@@ -108,14 +114,21 @@ class WidgetInputHandlerManager
       const blink::WebGestureEvent& gesture_event,
       const cc::InputHandlerScrollResult& scroll_result);
 
+  // Only valid to be called on the main thread.
   base::WeakPtr<RenderWidget> render_widget_;
   blink::scheduler::RendererScheduler* renderer_scheduler_;
+
+  // InputHandlerProxy is only interacted with on the compositor
+  // thread.
+  std::unique_ptr<ui::InputHandlerProxy> input_handler_proxy_;
+
+  // The WidgetInputHandlerHost is bound on the compositor task runner
+  // but class can be called on the compositor and main thread.
+  WidgetInputHandlerHost host_;
+
+  // Any thread can access these variables.
   scoped_refptr<MainThreadEventQueue> input_event_queue_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
-
-  std::unique_ptr<ui::InputHandlerProxy> input_handler_proxy_;
-  IPC::Sender* legacy_host_message_sender_;
-  int legacy_host_message_routing_id_;
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(WidgetInputHandlerManager);

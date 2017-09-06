@@ -607,8 +607,14 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // with the interface calls processed on the WidgetInputHandler.
   void SetWidgetInputHandler(
       mojom::WidgetInputHandlerAssociatedPtr widget_input_handler);
-  mojom::WidgetInputHandler* GetWidgetInputHandler() override;
   void SetWidget(mojom::WidgetPtr widget);
+
+  // InputRouterImplClient overrides.
+  mojom::WidgetInputHandler* GetWidgetInputHandler() override;
+  void OnImeCompositionRangeChanged(
+      const gfx::Range& range,
+      const std::vector<gfx::Rect>& character_bounds) override;
+  void OnImeCancelComposition() override;
 
  protected:
   // ---------------------------------------------------------------------------
@@ -676,10 +682,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void OnAutoscrollEnd();
   void OnTextInputStateChanged(const TextInputState& params);
 
-  void OnImeCompositionRangeChanged(
-      const gfx::Range& range,
-      const std::vector<gfx::Rect>& character_bounds);
-  void OnImeCancelComposition();
   void OnLockMouse(bool user_gesture,
                    bool privileged);
   void OnUnlockMouse();
