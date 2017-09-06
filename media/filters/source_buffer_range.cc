@@ -88,7 +88,7 @@ void SourceBufferRange::AdjustEstimatedDurationForNewAppend(
   if (last_appended_buffer->is_duration_estimated()) {
     base::TimeDelta timestamp_delta =
         new_buffers.front()->timestamp() - last_appended_buffer->timestamp();
-    DCHECK(timestamp_delta > base::TimeDelta());
+    DCHECK_GE(timestamp_delta, base::TimeDelta());
     if (last_appended_buffer->duration() != timestamp_delta) {
       DVLOG(1) << "Replacing estimated duration ("
                << last_appended_buffer->duration()
