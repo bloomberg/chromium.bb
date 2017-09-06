@@ -1777,9 +1777,9 @@ void ShelfView::ShowContextMenuForView(views::View* source,
 
   // Get any custom entries; show the context menu in AfterGetContextMenuItems.
   model_->GetShelfItemDelegate(item->id)->GetContextMenuItems(
-      display_id,
-      base::Bind(&ShelfView::AfterGetContextMenuItems,
-                 weak_factory_.GetWeakPtr(), item->id, point, source_type));
+      display_id, base::Bind(&ShelfView::AfterGetContextMenuItems,
+                             weak_factory_.GetWeakPtr(), item->id,
+                             context_menu_point, source_type));
 }
 
 void ShelfView::ShowMenu(std::unique_ptr<ui::MenuModel> menu_model,
