@@ -200,9 +200,6 @@ class ShellSurface : public SurfaceTreeHost,
   // Set the pacity of the background for the window that has a shadow.
   void SetRectangularShadowBackgroundOpacity(float opacity);
 
-  // Enable/disable window frame.
-  void SetFrame(bool enabled);
-
   // Set scale factor for surface. The scale factor will be applied to surface
   // and all descendants.
   void SetScale(double scale);
@@ -232,6 +229,7 @@ class ShellSurface : public SurfaceTreeHost,
   // Overridden from SurfaceDelegate:
   void OnSurfaceCommit() override;
   void OnSurfaceContentSizeChanged() override;
+  void OnSetFrame(SurfaceFrameType type) override;
 
   // Overridden from SurfaceObserver:
   void OnSurfaceDestroying(Surface* surface) override;

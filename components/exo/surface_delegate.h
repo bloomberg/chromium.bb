@@ -7,6 +7,9 @@
 
 namespace exo {
 
+// Frame types that can be used to decorate a surface.
+enum class SurfaceFrameType { NONE, NORMAL, SHADOW };
+
 // Handles events on surfaces in context-specific ways.
 class SurfaceDelegate {
  public:
@@ -19,6 +22,9 @@ class SurfaceDelegate {
   // Returns true if surface is in synchronized mode. ie. commit of
   // double-buffered state should be synchronized with parent surface.
   virtual bool IsSurfaceSynchronized() const = 0;
+
+  // Called when surface was requested specific frame type.
+  virtual void OnSetFrame(SurfaceFrameType type) = 0;
 
  protected:
   virtual ~SurfaceDelegate() {}

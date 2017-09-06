@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<protocol name="aura_shell">
+
+  <copyright>
+    Copyright 2017 The Chromium Authors.
+
+    Permission is hereby granted, free of charge, to any person obtaining a
+    copy of this software and associated documentation files (the "Software"),
+    to deal in the Software without restriction, including without limitation
+    the rights to use, copy, modify, merge, publish, distribute, sublicense,
+    and/or sell copies of the Software, and to permit persons to whom the
+    Software is furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice (including the next
+    paragraph) shall be included in all copies or substantial portions of the
+    Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+    THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+    DEALINGS IN THE SOFTWARE.
+  </copyright>
+
+  <interface name="zaura_shell" version="1">
+    <description summary="aura_shell">
+      The global interface exposing aura shell capabilities is used to
+      instantiate an interface extension for a wl_surface object.
+      This extended interface will then allow the client to use aura shell
+      specific functionality.
+    </description>
+
+    <enum name="error">
+      <entry name="aura_surface_exists" value="0"
+	     summary="the surface already has an aura surface object associated"/>
+    </enum>
+
+    <request name="get_aura_surface">
+      <description summary="extend surface interface for aura shell">
+	Instantiate an interface extension for the given wl_surface to
+	provide aura shell functionality. If the given wl_surface is not
+	associated with a shell surface, the shell_surface_missing protocol
+	error is raised.
+      </description>
+
+      <arg name="id" type="new_id" interface="zaura_surface"
+	   summary="the new aura surface interface id"/>
+      <arg name="surface" type="object" interface="wl_surface"
+	   summary="the surface"/>
+    </request>
+  </interface>
+
+  <interface name="zaura_surface" version="1">
+    <description summary="aura shell interface to a wl_surface">
+      An additional interface to a wl_surface object, which allows the
+      client to access aura shell specific functionality for surface.
+    </description>
+
+    <enum name="frame_type">
+      <description summary="different frame types">
+	Frame types that can be used to decorate a surface.
+      </description>
+      <entry name="none" value="0" summary="no frame"/>
+      <entry name="normal" value="1" summary="caption with shadow" />
+      <entry name="shadow" value="2" summary="shadow only"/>
+    </enum>
+
+    <request name="set_frame">
+      <description summary="request a frame for surface">
+	Suggests a surface should use a specific frame.
+      </description>
+      <arg name="type" type="uint" summary="the new frame type"/>
+    </request>
+  </interface>
+
+</protocol>

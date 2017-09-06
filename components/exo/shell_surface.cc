@@ -640,13 +640,6 @@ void ShellSurface::SetOrientation(Orientation orientation) {
   pending_orientation_ = orientation;
 }
 
-void ShellSurface::SetRectangularShadowEnabled(bool enabled) {
-  TRACE_EVENT1("exo", "ShellSurface::SetRectangularShadowEnabled", "enabled",
-               enabled);
-  pending_shadow_underlay_in_surface_ = false;
-  shadow_enabled_ = enabled;
-}
-
 void ShellSurface::SetRectangularShadow_DEPRECATED(
     const gfx::Rect& content_bounds) {
   TRACE_EVENT1("exo", "ShellSurface::SetRectangularShadow_DEPRECATED",
@@ -675,12 +668,6 @@ void ShellSurface::SetRectangularShadowBackgroundOpacity(float opacity) {
   TRACE_EVENT1("exo", "ShellSurface::SetRectangularShadowBackgroundOpacity",
                "opacity", opacity);
   shadow_background_opacity_ = opacity;
-}
-
-void ShellSurface::SetFrame(bool enabled) {
-  TRACE_EVENT1("exo", "ShellSurface::SetFrame", "enabled", enabled);
-
-  frame_enabled_ = enabled;
 }
 
 void ShellSurface::SetScale(double scale) {
@@ -836,6 +823,25 @@ void ShellSurface::OnSurfaceContentSizeChanged() {
     }
 
     CreateShellSurfaceWidget(ui::SHOW_STATE_NORMAL);
+  }
+}
+
+void ShellSurface::OnSetFrame(SurfaceFrameType type) {
+  // TODO(reveman): Allow frame to change after surface has been enabled.
+  switch (type) {
+    case SurfaceFrameType::NONE:
+      frame_enabled_ = shadow_enabled_ = false;
+      break;
+    case SurfaceFrameType::NORMAL:
+      frame_enabled_ = true;
+      pending_shadow_underlay_in_surface_ = false;
+      shadow_enabled_ = true;
+      break;
+    case SurfaceFrameType::SHADOW:
+      frame_enabled_ = false;
+      pending_shadow_underlay_in_surface_ = false;
+      shadow_enabled_ = true;
+      break;
   }
 }
 

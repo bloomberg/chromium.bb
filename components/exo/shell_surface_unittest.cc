@@ -827,7 +827,7 @@ TEST_F(ShellSurfaceTest, NonSurfaceShadow) {
   EXPECT_FALSE(shadow->layer()->visible());
 
   // 3) Enable a shadow.
-  shell_surface->SetRectangularShadowEnabled(true);
+  shell_surface->OnSetFrame(SurfaceFrameType::SHADOW);
   surface->Commit();
   EXPECT_TRUE(shadow->layer()->visible());
 
@@ -851,14 +851,14 @@ TEST_F(ShellSurfaceTest, NonSurfaceShadow) {
   EXPECT_NE(new_bounds, shadow->layer()->bounds());
 
   // 5) This should disable shadow.
-  shell_surface->SetRectangularShadowEnabled(false);
+  surface->SetFrame(SurfaceFrameType::NONE);
   surface->Commit();
 
   EXPECT_EQ(wm::ShadowElevation::NONE, GetShadowElevation(window));
   EXPECT_FALSE(shadow->layer()->visible());
 
   // 6) This should enable non surface shadow.
-  shell_surface->SetRectangularShadowEnabled(true);
+  surface->SetFrame(SurfaceFrameType::SHADOW);
   surface->Commit();
 
   EXPECT_EQ(wm::ShadowElevation::DEFAULT, GetShadowElevation(window));
@@ -995,12 +995,12 @@ TEST_F(ShellSurfaceTest, ShadowStartMaximized) {
   // Underlay should be created even without shadow.
   ASSERT_TRUE(shell_surface->shadow_underlay());
   EXPECT_TRUE(shell_surface->shadow_underlay()->IsVisible());
-  shell_surface->SetRectangularShadowEnabled(false);
+  surface->SetFrame(SurfaceFrameType::NONE);
   surface->Commit();
   // No underlay if there is no shadow.
   EXPECT_FALSE(shell_surface->shadow_underlay());
 
-  shell_surface->SetRectangularShadowEnabled(true);
+  surface->SetFrame(SurfaceFrameType::SHADOW);
   shell_surface->SetRectangularSurfaceShadow(gfx::Rect(10, 10, 100, 100));
   surface->Commit();
 
