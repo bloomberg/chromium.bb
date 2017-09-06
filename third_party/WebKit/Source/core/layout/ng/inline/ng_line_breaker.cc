@@ -61,6 +61,7 @@ void NGLineBreaker::PrepareNextLine(const NGExclusionSpace& exclusion_space,
                                     NGLineInfo* line_info) {
   NGInlineItemResults* item_results = &line_info->Results();
   item_results->clear();
+  line_info->SetStartOffset(offset_);
   line_info->SetLineStyle(node_, constraint_space_, IsFirstFormattedLine(),
                           line_.is_after_forced_break);
   SetCurrentStyle(line_info->LineStyle());
@@ -103,6 +104,8 @@ bool NGLineBreaker::NextLine(const NGLogicalOffset& content_offset,
   // line boxes. These cases need to be reviewed.
   if (line_.should_create_line_box)
     ComputeLineLocation(line_info);
+
+  line_info->SetEndOffset(offset_);
 
   return true;
 }
@@ -223,7 +226,20 @@ void NGLineBreaker::FindNextLayoutOpportunityWithMinimumInlineSize(
 void NGLineBreaker::ComputeLineLocation(NGLineInfo* line_info) const {
   LayoutUnit line_left = line_.opportunity.value().LineStartOffset() -
                          constraint_space_.BfcOffset().line_offset;
-  line_info->SetLineLocation(line_left, line_.AvailableWidth(),
+  LayoutUnit available_width = line_.AvailableWidth();
+
+  // Indenting should move the current position to compute the size of
+  // tabulations. Since it is computed and stored in NGInlineItemResult,
+  // adjust the positoin of the line box to simplify placing items.
+  if (LayoutUnit text_indent = line_info->TextIndent()) {
+    // Move the line box by indent. Negative indents are ink overflow, let the
+    // line box overflow from the container box.
+    if (IsLtr(node_.BaseDirection()))
+      line_left += text_indent;
+    available_width -= text_indent;
+  }
+
+  line_info->SetLineLocation(line_left, available_width,
                              content_offset_.block_offset);
 }
 

@@ -102,4 +102,14 @@ std::unique_ptr<UChar[]> TextRun::NormalizedUTF16(
   return WrapArrayUnique(buffer);
 }
 
+unsigned TextRun::IndexOfSubRun(const TextRun& sub_run) const {
+  if (Is8Bit() == sub_run.Is8Bit() && sub_run.Bytes() >= Bytes()) {
+    size_t start_index = Is8Bit() ? sub_run.Characters8() - Characters8()
+                                  : sub_run.Characters16() - Characters16();
+    if (start_index + sub_run.length() <= length())
+      return start_index;
+  }
+  return std::numeric_limits<unsigned>::max();
+}
+
 }  // namespace blink

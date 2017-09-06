@@ -32,6 +32,7 @@
 #include "platform/text/TextDirection.h"
 #include "platform/text/TextJustify.h"
 #include "platform/wtf/Allocator.h"
+#include "platform/wtf/Optional.h"
 #include "platform/wtf/text/StringView.h"
 #include "platform/wtf/text/WTFString.h"
 
@@ -149,6 +150,10 @@ class PLATFORM_EXPORT TextRun final {
     result.SetText(Data16(start_offset), length);
     return result;
   }
+
+  // Returns the start index of a sub run if it was created by |SubRun|.
+  // std::numeric_limits<unsigned>::max() if not a sub run.
+  unsigned IndexOfSubRun(const TextRun&) const;
 
   UChar operator[](unsigned i) const {
     SECURITY_DCHECK(i < len_);

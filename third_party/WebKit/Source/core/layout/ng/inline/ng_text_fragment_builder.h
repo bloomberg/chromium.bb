@@ -29,6 +29,10 @@ class CORE_EXPORT NGTextFragmentBuilder final : public NGBaseFragmentBuilder {
 
   NGTextFragmentBuilder& SetShapeResult(RefPtr<const ShapeResult>);
 
+  // The amount of expansion for justification.
+  // Not used in NG paint, only to copy to InlineTextBox::SetExpansion().
+  NGTextFragmentBuilder& SetExpansion(int expansion);
+
   NGTextFragmentBuilder& SetEndEffect(NGTextEndEffect);
 
   // Creates the fragment. Can only be called once.
@@ -42,6 +46,8 @@ class CORE_EXPORT NGTextFragmentBuilder final : public NGBaseFragmentBuilder {
   NGLogicalSize size_;
 
   RefPtr<const ShapeResult> shape_result_;
+
+  int expansion_ = 0;
 
   NGTextEndEffect end_effect_ = NGTextEndEffect::kNone;
 };

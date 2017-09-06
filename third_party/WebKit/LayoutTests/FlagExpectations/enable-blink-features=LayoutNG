@@ -10750,6 +10750,7 @@ crbug.com/591099 fast/text/whitespace/normal-after-nowrap-breaking.html [ Crash 
 crbug.com/591099 fast/text/whitespace/pre-wrap-spaces-after-newline.html [ Failure ]
 crbug.com/591099 fast/text/whitespace/select-new-line-with-line-break-normal.html [ Failure ]
 crbug.com/591099 fast/text/whitespace/tab-character-basics.html [ Failure ]
+crbug.com/636993 fast/text/whitespace/text-align-justify-and-whitespace-pre.html [ Failure ]
 crbug.com/591099 fast/text/whitespace/whitespace-in-pre.html [ Failure ]
 crbug.com/591099 fast/text/wide-preformatted.html [ Failure ]
 crbug.com/591099 fast/text/word-break.html [ Failure Pass ]

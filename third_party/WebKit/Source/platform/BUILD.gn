@@ -1875,6 +1875,7 @@ test("blink_platform_unittests") {
     "text/SuffixTreeTest.cpp",
     "text/TextBreakIteratorTest.cpp",
     "text/TextEncodingDetectorTest.cpp",
+    "text/TextRunTest.cpp",
     "text/UnicodeUtilitiesTest.cpp",
     "text/WritingModeUtilsTest.cpp",
     "threading/BackgroundTaskRunnerTest.cpp",

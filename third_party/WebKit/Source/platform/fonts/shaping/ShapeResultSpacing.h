@@ -20,7 +20,7 @@ class PLATFORM_EXPORT ShapeResultSpacing final {
   STACK_ALLOCATED();
 
  public:
-  ShapeResultSpacing(const TextContainerType&);
+  explicit ShapeResultSpacing(const TextContainerType&);
 
   const TextContainerType& Text() const { return text_; }
   float LetterSpacing() const { return letter_spacing_; }
@@ -31,18 +31,25 @@ class PLATFORM_EXPORT ShapeResultSpacing final {
   // Set letter-spacing and word-spacing.
   bool SetSpacing(const FontDescription&);
 
+  // Set the expansion for the justification.
+  void SetExpansion(float expansion,
+                    TextDirection,
+                    TextJustify,
+                    bool allows_leading_expansion = false,
+                    bool allows_trailing_expansion = false);
+
   // Set letter-spacing, word-spacing, and justification.
   // Available only for TextRun.
   void SetSpacingAndExpansion(const FontDescription&);
 
-  // Compute the sum of all spacings for the specified index.
+  // Compute the sum of all spacings for the specified |index|.
+  // The |index| is for the |TextContainerType| given in the constructor.
   // For justification, this function must be called incrementally since it
   // keeps states and counts consumed justification opportunities.
-  float ComputeSpacing(const TextContainerType&, size_t, float& offset);
+  float ComputeSpacing(unsigned index, float& offset);
 
  private:
   bool IsAfterExpansion() const { return is_after_expansion_; }
-  bool IsFirstRun(const TextContainerType&) const;
 
   void ComputeExpansion(bool allows_leading_expansion,
                         bool allows_trailing_expansion,
