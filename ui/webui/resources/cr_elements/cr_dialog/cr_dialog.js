@@ -212,10 +212,10 @@ Polymer({
 
     this.animate(
         [
-          {transform: 'translate(-50%, -50%) scale(1)', offset: 0},
-          {transform: 'translate(-50%, -50%) scale(1.02)', offset: 0.4},
-          {transform: 'translate(-50%, -50%) scale(1.02)', offset: 0.6},
-          {transform: 'translate(-50%, -50%) scale(1)', offset: 1},
+          {transform: 'scale(1)', offset: 0},
+          {transform: 'scale(1.02)', offset: 0.4},
+          {transform: 'scale(1.02)', offset: 0.6},
+          {transform: 'scale(1)', offset: 1},
         ],
         /** @type {!KeyframeEffectOptions} */ ({
           duration: 180,
