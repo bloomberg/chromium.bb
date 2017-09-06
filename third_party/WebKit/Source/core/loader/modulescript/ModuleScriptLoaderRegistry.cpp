@@ -16,13 +16,12 @@ ModuleScriptLoader* ModuleScriptLoaderRegistry::Fetch(
     const ModuleScriptFetchRequest& request,
     ModuleGraphLevel level,
     Modulator* modulator,
-    ResourceFetcher* fetcher,
     ModuleScriptLoaderClient* client) {
   ModuleScriptLoader* loader =
       ModuleScriptLoader::Create(modulator, this, client);
   DCHECK(loader->IsInitialState());
   active_loaders_.insert(loader);
-  loader->Fetch(request, fetcher, level);
+  loader->Fetch(request, level);
   return loader;
 }
 

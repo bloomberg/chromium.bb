@@ -9,10 +9,8 @@
 namespace blink {
 
 WorkletModuleScriptFetcher::WorkletModuleScriptFetcher(
-    ModuleScriptFetcher::Client* client,
     WorkletModuleResponsesMapProxy* module_responses_map_proxy)
-    : ModuleScriptFetcher(client),
-      module_responses_map_proxy_(module_responses_map_proxy) {
+    : module_responses_map_proxy_(module_responses_map_proxy) {
   DCHECK(module_responses_map_proxy_);
 }
 
@@ -21,7 +19,9 @@ DEFINE_TRACE(WorkletModuleScriptFetcher) {
   ModuleScriptFetcher::Trace(visitor);
 }
 
-void WorkletModuleScriptFetcher::Fetch(FetchParameters& fetch_params) {
+void WorkletModuleScriptFetcher::Fetch(FetchParameters& fetch_params,
+                                       ModuleScriptFetcher::Client* client) {
+  SetClient(client);
   module_responses_map_proxy_->ReadEntry(fetch_params, this);
 }
 

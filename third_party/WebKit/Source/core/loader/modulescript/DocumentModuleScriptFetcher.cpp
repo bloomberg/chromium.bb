@@ -58,13 +58,14 @@ bool WasModuleLoadSuccessful(Resource* resource,
 }  // namespace
 
 DocumentModuleScriptFetcher::DocumentModuleScriptFetcher(
-    ResourceFetcher* fetcher,
-    ModuleScriptFetcher::Client* client)
-    : ModuleScriptFetcher(client), fetcher_(fetcher) {
+    ResourceFetcher* fetcher)
+    : fetcher_(fetcher) {
   DCHECK(fetcher_);
 }
 
-void DocumentModuleScriptFetcher::Fetch(FetchParameters& fetch_params) {
+void DocumentModuleScriptFetcher::Fetch(FetchParameters& fetch_params,
+                                        ModuleScriptFetcher::Client* client) {
+  SetClient(client);
   ScriptResource* resource = ScriptResource::Fetch(fetch_params, fetcher_);
   if (was_fetched_) {
     // ScriptResource::Fetch() has succeeded synchronously,

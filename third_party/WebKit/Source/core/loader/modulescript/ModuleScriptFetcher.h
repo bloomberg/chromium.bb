@@ -27,18 +27,20 @@ class CORE_EXPORT ModuleScriptFetcher
         ConsoleMessage* error_message) = 0;
   };
 
-  explicit ModuleScriptFetcher(Client*);
+  ModuleScriptFetcher() = default;
   virtual ~ModuleScriptFetcher() = default;
 
   // Takes a non-const reference to FetchParameters because
   // ScriptResource::Fetch() requires it.
-  virtual void Fetch(FetchParameters&) = 0;
+  virtual void Fetch(FetchParameters&, Client*) = 0;
 
   DECLARE_VIRTUAL_TRACE();
 
  protected:
   void NotifyFetchFinished(const WTF::Optional<ModuleScriptCreationParams>&,
                            ConsoleMessage*);
+
+  void SetClient(Client*);
 
  private:
   Member<Client> client_;

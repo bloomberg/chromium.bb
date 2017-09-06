@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ModulatorImpl_h
-#define ModulatorImpl_h
+#ifndef ModulatorImplBase_h
+#define ModulatorImplBase_h
 
 #include "bindings/core/v8/ScriptModule.h"
 #include "core/dom/Modulator.h"
@@ -19,21 +19,23 @@ class ModuleMap;
 class ModuleScriptLoaderRegistry;
 class ModuleTreeLinkerRegistry;
 class ModuleTreeReachedUrlSet;
-class ResourceFetcher;
 class ScriptState;
 class WebTaskRunner;
 
-// ModulatorImpl is the implementation of Modulator interface, which represents
-// "environment settings object" concept for module scripts.
-// ModulatorImpl serves as the backplane for tieing all ES6 module algorithm
+// ModulatorImplBase is the base implementation of Modulator interface, which
+// represents "environment settings object" concept for module scripts.
+// ModulatorImplBase serves as the backplane for tieing all ES6 module algorithm
 // components together.
-class ModulatorImpl final : public Modulator {
+class ModulatorImplBase : public Modulator {
  public:
-  static ModulatorImpl* Create(RefPtr<ScriptState>, ResourceFetcher*);
-
-  virtual ~ModulatorImpl();
+  virtual ~ModulatorImplBase();
   DECLARE_TRACE();
   DECLARE_VIRTUAL_TRACE_WRAPPERS();
+
+  ExecutionContext* GetExecutionContext() const;
+
+ protected:
+  explicit ModulatorImplBase(RefPtr<ScriptState>);
 
  private:
   // Implements Modulator
@@ -73,13 +75,8 @@ class ModulatorImpl final : public Modulator {
   Vector<ModuleRequest> ModuleRequestsFromScriptModule(ScriptModule) override;
   void ExecuteModule(const ModuleScript*) override;
 
-  ModulatorImpl(RefPtr<ScriptState>, ResourceFetcher*);
-
-  ExecutionContext* GetExecutionContext() const;
-
   RefPtr<ScriptState> script_state_;
   RefPtr<WebTaskRunner> task_runner_;
-  Member<ResourceFetcher> fetcher_;
   TraceWrapperMember<ModuleMap> map_;
   Member<ModuleScriptLoaderRegistry> loader_registry_;
   TraceWrapperMember<ModuleTreeLinkerRegistry> tree_linker_registry_;

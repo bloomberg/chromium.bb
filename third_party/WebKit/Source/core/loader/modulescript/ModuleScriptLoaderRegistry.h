@@ -16,7 +16,6 @@ class Modulator;
 class ModuleScriptFetchRequest;
 class ModuleScriptLoader;
 class ModuleScriptLoaderClient;
-class ResourceFetcher;
 enum class ModuleGraphLevel;
 
 // ModuleScriptLoaderRegistry keeps active ModuleLoaders alive.
@@ -31,7 +30,6 @@ class CORE_EXPORT ModuleScriptLoaderRegistry final
   ModuleScriptLoader* Fetch(const ModuleScriptFetchRequest&,
                             ModuleGraphLevel,
                             Modulator*,
-                            ResourceFetcher*,
                             ModuleScriptLoaderClient*);
 
  private:

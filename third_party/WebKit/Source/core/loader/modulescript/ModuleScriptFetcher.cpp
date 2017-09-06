@@ -6,10 +6,6 @@
 
 namespace blink {
 
-ModuleScriptFetcher::ModuleScriptFetcher(Client* client) : client_(client) {
-  DCHECK(client_);
-}
-
 DEFINE_TRACE(ModuleScriptFetcher) {
   visitor->Trace(client_);
 }
@@ -18,6 +14,11 @@ void ModuleScriptFetcher::NotifyFetchFinished(
     const WTF::Optional<ModuleScriptCreationParams>& params,
     ConsoleMessage* error_message) {
   client_->NotifyFetchFinished(params, error_message);
+}
+
+void ModuleScriptFetcher::SetClient(Client* client) {
+  DCHECK(!client_);
+  client_ = client;
 }
 
 }  // namespace blink

@@ -113,7 +113,7 @@ class CORE_EXPORT ModuleScript final : public Script, public TraceWrapperBase {
   void RunScript(LocalFrame*, const SecurityOrigin*) const override;
   String InlineSourceTextForCSP() const override;
 
-  friend class ModulatorImpl;
+  friend class ModulatorImplBase;
   friend class ModuleTreeLinkerTestModulator;
   // Access this func only via ModulatorImpl::GetError(),
   // or via Modulator mocks for unit tests.

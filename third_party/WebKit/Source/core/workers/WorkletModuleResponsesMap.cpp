@@ -30,8 +30,8 @@ class WorkletModuleResponsesMap::Entry final
 
   void Fetch(FetchParameters& fetch_params, ResourceFetcher* fetcher) {
     AdvanceState(State::kFetching);
-    module_fetcher_ = new DocumentModuleScriptFetcher(fetcher, this);
-    module_fetcher_->Fetch(fetch_params);
+    module_fetcher_ = new DocumentModuleScriptFetcher(fetcher);
+    module_fetcher_->Fetch(fetch_params, this);
   }
 
   State GetState() const { return state_; }
