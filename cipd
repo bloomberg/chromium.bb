@@ -50,30 +50,38 @@ USER_AGENT="depot_tools/$(git -C $MYPATH rev-parse HEAD 2>/dev/null || echo "???
 
 if [ ! -e "$CLIENT" ]; then
   echo "Bootstrapping cipd client for ${PLAT}-${ARCH} from ${URL}..."
+
+  # Download the client into a temporary file, then move it into the final
+  # location atomically.
+  #
+  # This wonky tempdir method works on Linux and Mac.
+  CIPD_CLIENT_TMP=$(\
+    mktemp -p "$MYPATH" 2>/dev/null || \
+    mktemp "$MYPATH/.cipd_client.XXXXXXX")
+
   if hash curl 2> /dev/null ; then
-    # Download the client into a temporary file, then move it into the final
-    # location atomically.
-    #
-    # This wonky tempdir method works on Linux and Mac.
-    CIPD_CLIENT_TMP=$(\
-      mktemp -p "$MYPATH" 2>/dev/null || \
-      mktemp "$MYPATH/.cipd_client.XXXXXXX")
-
     curl "$URL" -s --show-error -f -A "$USER_AGENT"  -L -o "$CIPD_CLIENT_TMP"
-    chmod +x "$CIPD_CLIENT_TMP"
-
-    set +e
-    mv "$CIPD_CLIENT_TMP" "$CLIENT"
-    set -e
+  elif hash wget 2> /dev/null ; then
+    wget "$URL" -q -U "${USER_AGENT}" -O "${CIPD_CLIENT_TMP}"
   else
-    echo Your platform is missing the \`curl\` command. Please use your package
-    echo manager to install it before continuing.
+    echo Your platform is missing a supported fetch command. Please use your package
+    echo manager to install one before continuing:
+    echo
+    echo  curl
+    echo  wget
     echo
     echo Alternately, manually download:
     echo   "$URL"
     echo To $CLIENT, and then re-run this command.
+    rm "${CIPD_CLIENT_TMP}"
     exit 1
   fi
+
+  chmod +x "$CIPD_CLIENT_TMP"
+
+  set +e
+  mv "$CIPD_CLIENT_TMP" "$CLIENT"
+  set -e
 fi
 
 export CIPD_HTTP_USER_AGENT_PREFIX=$USER_AGENT
