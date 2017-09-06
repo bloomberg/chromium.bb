@@ -236,6 +236,21 @@ void DrawR1ContainsR2(const gfx::RectF& pinned_rect_f,
                         render_text);
 }
 
+void DrawR1HorizontalFullLeftR2(const gfx::RectF& pinned_rect_f,
+                                const gfx::RectF& hovered_rect_f,
+                                const cc::PaintFlags& flags,
+                                gfx::Canvas* canvas,
+                                gfx::RenderText* render_text) {
+  // Horizontal left distance line.
+  float x1 = hovered_rect_f.right();
+  float y1 = hovered_rect_f.y() + hovered_rect_f.height() / 2;
+  float x2 = pinned_rect_f.x();
+  float y2 = y1;
+  canvas->DrawLine(gfx::PointF(x1, y1), gfx::PointF(x2, y2), flags);
+  DrawTextWithAnyBounds(x1, y1, x2, y2, RectSide::BOTTOM_SIDE, canvas,
+                        render_text);
+}
+
 }  // namespace
 
 UIDevToolsDOMAgent::UIDevToolsDOMAgent()
@@ -483,8 +498,12 @@ void UIDevToolsDOMAgent::OnPaintLayer(const ui::PaintContext& context) {
   flags.setPathEffect(0);
   flags.setColor(SK_ColorRED);
 
-  if (pinned_rect_f.Contains(hovered_rect_f))
+  // Make sure |pinned_rect_f| stays on the right or below of |hovered_rect_f|.
+  if (pinned_rect_.x() < hovered_rect_.x() ||
+      (pinned_rect_.x() == hovered_rect_.x() &&
+       pinned_rect_.y() < hovered_rect_.y())) {
     std::swap(pinned_rect_f, hovered_rect_f);
+  }
 
   switch (highlight_rect_config_) {
     case HighlightRectsConfiguration::R1_CONTAINS_R2:
@@ -492,7 +511,8 @@ void UIDevToolsDOMAgent::OnPaintLayer(const ui::PaintContext& context) {
                        render_text_.get());
       return;
     case HighlightRectsConfiguration::R1_HORIZONTAL_FULL_LEFT_R2:
-      NOTIMPLEMENTED();
+      DrawR1HorizontalFullLeftR2(pinned_rect_f, hovered_rect_f, flags, canvas,
+                                 render_text_.get());
       return;
     case HighlightRectsConfiguration::R1_TOP_FULL_LEFT_R2:
       NOTIMPLEMENTED();
