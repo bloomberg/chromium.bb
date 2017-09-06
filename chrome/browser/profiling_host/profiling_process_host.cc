@@ -7,6 +7,7 @@
 #include "base/allocator/features.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
+#include "base/process/process_iterator.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_info.h"
 #include "base/task_scheduler/post_task.h"
@@ -173,13 +174,27 @@ void ProfilingProcessHost::Observe(
 bool ProfilingProcessHost::OnMemoryDump(
     const base::trace_event::MemoryDumpArgs& args,
     base::trace_event::ProcessMemoryDump* pmd) {
-  DCHECK_NE(GetCurrentMode(), Mode::kNone);
-  // TODO: Support dumping all processes for --memlog=all mode.
-  // https://crbug.com/758437.
-  memlog_->DumpProcessForTracing(
-      base::Process::Current().Pid(),
-      base::BindOnce(&ProfilingProcessHost::OnDumpProcessForTracingCallback,
-                     base::Unretained(this)));
+  // Dump the browser process, which happens to be this process.
+  if (GetCurrentMode() == Mode::kBrowser) {
+    memlog_->DumpProcessForTracing(
+        base::Process::Current().Pid(),
+        base::BindOnce(&ProfilingProcessHost::OnDumpProcessForTracingCallback,
+                       base::Unretained(this)));
+    return true;
+  }
+
+  // Attempt to dump all processes. Some of these processes will not be profiled
+  // [e.g. utility processes, including the profiling process]. The profiling
+  // process will gracefully handle these failures.
+  DCHECK_EQ(GetCurrentMode(), Mode::kAll);
+  base::ProcessIterator process_iter(NULL);
+  while (const base::ProcessEntry* process_entry =
+             process_iter.NextProcessEntry()) {
+    memlog_->DumpProcessForTracing(
+        process_entry->pid(),
+        base::BindOnce(&ProfilingProcessHost::OnDumpProcessForTracingCallback,
+                       base::Unretained(this)));
+  }
   return true;
 }
 
@@ -187,7 +202,8 @@ void ProfilingProcessHost::OnDumpProcessForTracingCallback(
     mojo::ScopedSharedBufferHandle buffer,
     uint32_t size) {
   if (!buffer->is_valid()) {
-    DLOG(ERROR) << "Failed to dump process for tracing";
+    // The profiling process host will have logged error messages indicating the
+    // nature of the problem.
     return;
   }
 
