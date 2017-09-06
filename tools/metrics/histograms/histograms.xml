@@ -41616,6 +41616,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.QuicServerInfo.DiskCacheWaitForDataReadyTime" units="ms">
+  <obsolete>
+    Deprecated as of 4/19/2017.
+  </obsolete>
   <owner>rch@chromium.org</owner>
   <summary>
     Time spent waiting to load QUIC server information from disk cache.
