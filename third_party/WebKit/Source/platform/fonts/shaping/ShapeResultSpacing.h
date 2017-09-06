@@ -26,7 +26,6 @@ class PLATFORM_EXPORT ShapeResultSpacing final {
   float LetterSpacing() const { return letter_spacing_; }
   bool HasSpacing() const { return has_spacing_; }
   bool HasExpansion() const { return expansion_opportunity_count_; }
-  bool IsVerticalOffset() const { return is_vertical_offset_; }
 
   // Set letter-spacing and word-spacing.
   bool SetSpacing(const FontDescription&);
@@ -69,7 +68,6 @@ class PLATFORM_EXPORT ShapeResultSpacing final {
   bool normalize_space_;
   bool allow_tabs_;
   bool is_after_expansion_;
-  bool is_vertical_offset_;
 };
 
 // Forward declare so no implicit instantiations happen before the

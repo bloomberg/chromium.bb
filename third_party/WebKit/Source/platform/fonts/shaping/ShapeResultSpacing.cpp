@@ -22,8 +22,7 @@ ShapeResultSpacing<TextContainerType>::ShapeResultSpacing(
       has_spacing_(false),
       normalize_space_(false),
       allow_tabs_(false),
-      is_after_expansion_(false),
-      is_vertical_offset_(false) {}
+      is_after_expansion_(false) {}
 
 template <typename TextContainerType>
 bool ShapeResultSpacing<TextContainerType>::SetSpacing(
@@ -35,7 +34,6 @@ bool ShapeResultSpacing<TextContainerType>::SetSpacing(
 
   letter_spacing_ = font_description.LetterSpacing();
   word_spacing_ = font_description.WordSpacing();
-  is_vertical_offset_ = font_description.IsVerticalAnyUpright();
   DCHECK(!normalize_space_);
   allow_tabs_ = true;
   has_spacing_ = true;
@@ -73,7 +71,6 @@ void ShapeResultSpacing<TextRun>::SetSpacingAndExpansion(
   if (!has_spacing_)
     return;
 
-  is_vertical_offset_ = font_description.IsVerticalAnyUpright();
   normalize_space_ = text_.NormalizeSpace();
   allow_tabs_ = text_.AllowTabs();
 

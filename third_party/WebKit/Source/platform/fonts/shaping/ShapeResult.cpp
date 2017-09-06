@@ -317,8 +317,7 @@ template <typename TextContainerType>
 void ShapeResult::ApplySpacingImpl(
     ShapeResultSpacing<TextContainerType>& spacing,
     int text_start_offset) {
-  float offset_x, offset_y;
-  float& offset = spacing.IsVerticalOffset() ? offset_y : offset_x;
+  float offset = 0;
   float total_space = 0;
   for (auto& run : runs_) {
     if (!run)
@@ -332,15 +331,25 @@ void ShapeResult::ApplySpacingImpl(
       if (i + 1 < run->glyph_data_.size() &&
           glyph_data.character_index ==
               run->glyph_data_[i + 1].character_index) {
-      } else {
-        offset_x = offset_y = 0;
-        float space = spacing.ComputeSpacing(
-            run_start_index + glyph_data.character_index, offset);
-        glyph_data.advance += space;
-        total_space_for_run += space;
-        glyph_data.offset.Expand(offset_x, offset_y);
+        continue;
       }
-      has_vertical_offsets_ |= (glyph_data.offset.Height() != 0);
+
+      float space = spacing.ComputeSpacing(
+          run_start_index + glyph_data.character_index, offset);
+      glyph_data.advance += space;
+      total_space_for_run += space;
+
+      // |offset| is non-zero only when justifying CJK characters that follow
+      // non-CJK characters.
+      if (UNLIKELY(offset)) {
+        if (run->IsHorizontal()) {
+          glyph_data.offset.SetWidth(glyph_data.offset.Width() + offset);
+        } else {
+          glyph_data.offset.SetHeight(glyph_data.offset.Height() + offset);
+          has_vertical_offsets_ = true;
+        }
+        offset = 0;
+      }
     }
     run->width_ += total_space_for_run;
     total_space += total_space_for_run;
