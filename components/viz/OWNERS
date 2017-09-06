@@ -11,7 +11,9 @@ enne@chromium.org
 piman@chromium.org
 vmpstr@chromium.org
 weiliangc@chromium.org
-miu@chromium.org  # CopyOutputRequests/Results
+
+# CopyOutputRequests/Results
+miu@chromium.org
 
 # display_embedder / ozone
 reveman@chromium.org
