@@ -23,9 +23,6 @@ mojom("interfaces") {
   public_deps = [
     ":constants",
   ]
-
-  # TODO(crbug.com/699569): Convert to use the new JS bindings.
-  js_bindings_mode = "both"
 }
 
 mojom("generic_sensor") {
@@ -43,7 +40,4 @@ mojom("constants") {
   sources = [
     "constants.mojom",
   ]
-
-  # TODO(crbug.com/699569): Convert to use the new JS bindings.
-  js_bindings_mode = "both"
 }

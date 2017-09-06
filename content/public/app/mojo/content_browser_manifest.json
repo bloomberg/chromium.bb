@@ -38,6 +38,7 @@
           "content::mojom::URLLoaderFactory",
           "content::mojom::VideoCaptureHost",
           "content::mojom::WorkerURLLoaderFactoryProvider",
+          "device::mojom::BatteryMonitor",
           "device::mojom::GamepadMonitor",
           "discardable_memory::mojom::DiscardableSharedMemoryManager",
           "memory_coordinator::mojom::MemoryCoordinatorHandle",
@@ -74,6 +75,7 @@
         "content_utility": [ "browser" ],
         "data_decoder": [ "image_decoder" ],
         "device": [
+          "device:battery_monitor",
           "device:generic_sensor",
           "device:nfc",
           "device:serial",
