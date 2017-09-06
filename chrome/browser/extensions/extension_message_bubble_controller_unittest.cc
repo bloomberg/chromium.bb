@@ -819,8 +819,9 @@ TEST_F(ExtensionMessageBubbleTest, MAYBE_SettingsApiControllerTest) {
 }
 
 // Tests that a displayed extension bubble will be closed after its associated
-// extension is uninstalled.
-TEST_F(ExtensionMessageBubbleTest, TestBubbleClosedAfterExtensionUninstall) {
+// enabled extension is uninstalled.
+TEST_F(ExtensionMessageBubbleTest,
+       TestBubbleClosedAfterEnabledExtensionUninstall) {
   Init();
   ASSERT_TRUE(LoadExtensionOverridingNtp("1", kId1, Manifest::UNPACKED));
 
@@ -837,6 +838,60 @@ TEST_F(ExtensionMessageBubbleTest, TestBubbleClosedAfterExtensionUninstall) {
   bubble.set_controller(controller.get());
   bubble.set_action_on_show(FakeExtensionMessageBubble::BUBBLE_ACTION_IGNORE);
   bubble.Show();
+  EXPECT_FALSE(bubble.is_closed());
+
+  // Uninstall the extension.
+  service_->UninstallExtension(kId1, UNINSTALL_REASON_FOR_TESTING,
+                               base::Bind(&base::DoNothing), nullptr);
+  ASSERT_EQ(0U, controller->GetExtensionList().size());
+
+  // The bubble should be closed after the extension is uninstalled.
+  EXPECT_TRUE(bubble.is_closed());
+
+  controller.reset();
+}
+
+// Tests that a displayed extension bubble will be closed after its associated
+// disabled extension is uninstalled. Here a suspicious bubble controller is
+// tested, which can display bubbles for disabled extensions.
+TEST_F(ExtensionMessageBubbleTest,
+       TestBubbleClosedAfterDisabledExtensionUninstall) {
+  Init();
+  ASSERT_TRUE(LoadExtensionOverridingNtp("1", kId1, Manifest::COMMAND_LINE));
+
+  auto controller = base::MakeUnique<TestExtensionMessageBubbleController>(
+      new SuspiciousExtensionBubbleDelegate(browser()->profile()), browser());
+  controller->SetIsActiveBubble();
+  FakeExtensionMessageBubble bubble;
+  bubble.set_action_on_show(
+      FakeExtensionMessageBubble::BUBBLE_ACTION_CLICK_DISMISS_BUTTON);
+
+  // Validate that we don't have a suppress value for the extensions.
+  EXPECT_FALSE(controller->delegate()->HasBubbleInfoBeenAcknowledged(kId1));
+  EXPECT_FALSE(controller->delegate()->HasBubbleInfoBeenAcknowledged(kId1));
+
+  EXPECT_FALSE(controller->ShouldShow());
+  std::vector<base::string16> suspicious_extensions =
+      controller->GetExtensionList();
+  EXPECT_EQ(0U, suspicious_extensions.size());
+
+  // Now disable an extension, specifying the wipeout flag.
+  service_->DisableExtension(kId1, disable_reason::DISABLE_NOT_VERIFIED);
+
+  EXPECT_FALSE(controller->delegate()->HasBubbleInfoBeenAcknowledged(kId1));
+  EXPECT_FALSE(controller->delegate()->HasBubbleInfoBeenAcknowledged(kId2));
+  controller.reset(new TestExtensionMessageBubbleController(
+      new SuspiciousExtensionBubbleDelegate(browser()->profile()), browser()));
+  controller->SetIsActiveBubble();
+  controller->ClearProfileListForTesting();
+  EXPECT_TRUE(controller->ShouldShow());
+  suspicious_extensions = controller->GetExtensionList();
+  ASSERT_EQ(1U, suspicious_extensions.size());
+  EXPECT_TRUE(base::ASCIIToUTF16("Extension 1") == suspicious_extensions[0]);
+  bubble.set_controller(controller.get());
+  bubble.set_action_on_show(FakeExtensionMessageBubble::BUBBLE_ACTION_IGNORE);
+  bubble.Show();  // Simulate showing the bubble.
+
   EXPECT_FALSE(bubble.is_closed());
 
   // Uninstall the extension.
@@ -1210,9 +1265,31 @@ TEST_F(ExtensionMessageBubbleTest,
   controller.reset();
 }
 
-// TODO(catmullings): Test disabling an extenion rather than uninstalling. Also,
-// test a suspicious bubble controller + uninstalling, which has disabled
-// extensions.
+// Tests that when an extension -- associated with a bubble controller -- is
+// disabling after the browser is destroyed, the controller does not access
+// the associated browser object and therefore, no use-after-free occurs.
+TEST_F(ExtensionMessageBubbleTest,
+       TestDisablingExtensionAfterBrowserDestroyed) {
+  FeatureSwitch::ScopedOverride force_dev_mode_highlighting(
+      FeatureSwitch::force_dev_mode_highlighting(), true);
+  Init();
+  ToolbarActionsModel* model = ToolbarActionsModel::Get(profile());
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_TRUE(LoadExtensionWithAction("1", kId1, Manifest::UNPACKED));
+
+  auto controller = std::make_unique<TestExtensionMessageBubbleController>(
+      new DevModeBubbleDelegate(browser()->profile()), browser());
+  controller->SetIsActiveBubble();
+  EXPECT_TRUE(controller->ShouldShow());
+  EXPECT_EQ(1u, model->toolbar_items().size());
+  controller->HighlightExtensionsIfNecessary();
+  EXPECT_TRUE(model->is_highlighting());
+  set_browser(nullptr);
+  service_->DisableExtension(kId1, disable_reason::DISABLE_NONE);
+  EXPECT_FALSE(model->is_highlighting());
+  controller.reset();
+}
 
 // Tests if that ShouldShow() returns false if the bubble's associated extension
 // has been removed.
