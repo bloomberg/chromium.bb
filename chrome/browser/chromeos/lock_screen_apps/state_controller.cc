@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "ash/public/interfaces/constants.mojom.h"
+#include "ash/wm/window_animations.h"
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -488,8 +489,14 @@ void StateController::ResetNoteTakingWindowAndMoveToNextState(
     if (focus_cycler_delegate_)
       focus_cycler_delegate_->UnregisterLockScreenAppFocusHandler();
 
-    if (close_window && note_app_window_->GetBaseWindow())
+    if (close_window && note_app_window_->GetBaseWindow()) {
+      // Whenever we close the window we want to immediately hide it without
+      // animating, as the underlying UI implements a special animation. If we
+      // also animate the window the animations will conflict.
+      ::wm::SetWindowVisibilityAnimationTransition(
+          note_app_window_->GetNativeWindow(), ::wm::ANIMATE_NONE);
       note_app_window_->GetBaseWindow()->Close();
+    }
     note_app_window_ = nullptr;
   }
 

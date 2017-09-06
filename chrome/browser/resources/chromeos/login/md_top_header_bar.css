@@ -57,12 +57,8 @@
   pointer-events: none;
 }
 
-.new-note-action:not(.new-note-action-short-transition) {
+.new-note-action {
   transition: all 300ms;
-}
-
-.new-note-action-short-transition {
-  transition: all 5ms;
 }
 
 html[dir=rtl] .new-note-action {
@@ -83,7 +79,6 @@ html[dir=rtl] .new-note-action:focus {
 }
 
 .new-note-action-container-activated > .new-note-action {
-  background-color: #000;
   bottom: auto;
   left: auto;
   position: absolute;
