@@ -62,9 +62,13 @@ UsbChooserDialogAndroid::UsbChooserDialogAndroid(
       weak_factory_(this) {
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host_);
+
+  // TODO(asimjour): This should be removed once we have proper
+  // implementation of USB chooser in VR.
   if (vr::VrTabHelper::IsInVr(web_contents)) {
     DCHECK(!callback_.is_null());
     std::move(callback_).Run(nullptr);
+    vr::VrTabHelper::UISuppressed(vr::UiSuppressedElement::kUsbChooser);
     return;
   }
 
