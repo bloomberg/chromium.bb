@@ -75,75 +75,13 @@ std::string GetHistogramName(Origin origin, const std::string& name) {
   return ComposeHistogramName("none", name);
 }
 
-bool OriginIsOmnibox(Origin origin) {
-  return origin == ORIGIN_OMNIBOX;
-}
-
 const char* FirstContentfulPaintHiddenName(bool was_hidden) {
   return was_hidden ? ".Hidden" : ".Visible";
 }
 
 }  // namespace
 
-// Helper macro for origin-based histogram reporting. All HISTOGRAM arguments
-// must be UMA_HISTOGRAM... macros that contain an argument "name" which this
-// macro will eventually substitute for the actual name used.
-#define PREFIXED_HISTOGRAM(histogram_name, origin, HISTOGRAM)                 \
-  do {                                                                        \
-    {                                                                         \
-      /* Do not rename.  HISTOGRAM expects a local variable "name". */        \
-      std::string name = ComposeHistogramName(std::string(), histogram_name); \
-      HISTOGRAM;                                                              \
-    }                                                                         \
-    /* Do not rename.  HISTOGRAM expects a local variable "name". */          \
-    std::string name = GetHistogramName(origin, histogram_name);              \
-    /* Branching because HISTOGRAM is caching the histogram into a static. */ \
-    if (origin == ORIGIN_OMNIBOX) {                                           \
-      HISTOGRAM;                                                              \
-    } else if (origin == ORIGIN_NONE) {                                       \
-      HISTOGRAM;                                                              \
-    } else if (origin == ORIGIN_LINK_REL_PRERENDER_SAMEDOMAIN) {              \
-      HISTOGRAM;                                                              \
-    } else if (origin == ORIGIN_LINK_REL_PRERENDER_CROSSDOMAIN) {             \
-      HISTOGRAM;                                                              \
-    } else if (origin == ORIGIN_EXTERNAL_REQUEST) {                           \
-      HISTOGRAM;                                                              \
-    } else if (origin == ORIGIN_INSTANT) {                                    \
-      HISTOGRAM;                                                              \
-    } else if (origin == ORIGIN_LINK_REL_NEXT) {                              \
-      HISTOGRAM;                                                              \
-    } else if (origin == ORIGIN_EXTERNAL_REQUEST_FORCED_PRERENDER) {          \
-      HISTOGRAM;                                                              \
-    } else if (origin == ORIGIN_OFFLINE) {                                    \
-      HISTOGRAM;                                                              \
-    } else {                                                                  \
-      HISTOGRAM;                                                              \
-    }                                                                         \
-  } while (0)
-
 PrerenderHistograms::PrerenderHistograms() {}
-
-void PrerenderHistograms::RecordPrerenderStarted(Origin origin) const {
-  if (OriginIsOmnibox(origin)) {
-    UMA_HISTOGRAM_ENUMERATION(
-        "Prerender.OmniboxPrerenderCount", 1, 2);
-  }
-}
-
-void PrerenderHistograms::RecordUsedPrerender(Origin origin) const {
-  if (OriginIsOmnibox(origin)) {
-    UMA_HISTOGRAM_ENUMERATION(
-        "Prerender.OmniboxNavigationsUsedPrerenderCount", 1, 2);
-  }
-}
-
-void PrerenderHistograms::RecordTimeSinceLastRecentVisit(
-    Origin origin,
-    base::TimeDelta delta) const {
-  PREFIXED_HISTOGRAM(
-      "TimeSinceLastRecentVisit", origin,
-      UMA_HISTOGRAM_TIMES(name, delta));
-}
 
 void PrerenderHistograms::RecordPerceivedFirstContentfulPaintStatus(
     Origin origin,
@@ -154,70 +92,20 @@ void PrerenderHistograms::RecordPerceivedFirstContentfulPaintStatus(
                             successful);
 }
 
-void PrerenderHistograms::RecordPercentLoadDoneAtSwapin(Origin origin,
-                                                        double fraction) const {
-  if (fraction < 0.0 || fraction > 1.0)
-    return;
-  int percentage = static_cast<int>(fraction * 100);
-  if (percentage < 0 || percentage > 100)
-    return;
-  PREFIXED_HISTOGRAM("PercentLoadDoneAtSwapin",
-                     origin, UMA_HISTOGRAM_PERCENTAGE(name, percentage));
-}
-
-void PrerenderHistograms::RecordTimeUntilUsed(
-    Origin origin,
-    base::TimeDelta time_until_used) const {
-  PREFIXED_HISTOGRAM(
-      "TimeUntilUsed2", origin,
-      UMA_HISTOGRAM_CUSTOM_TIMES(
-          name,
-          time_until_used,
-          base::TimeDelta::FromMilliseconds(10),
-          base::TimeDelta::FromMinutes(30),
-          50));
-}
-
-void PrerenderHistograms::RecordAbandonTimeUntilUsed(
-    Origin origin,
-    base::TimeDelta time_until_used) const {
-  PREFIXED_HISTOGRAM(
-      "AbandonTimeUntilUsed", origin,
-      UMA_HISTOGRAM_CUSTOM_TIMES(
-          name,
-          time_until_used,
-          base::TimeDelta::FromMilliseconds(10),
-          base::TimeDelta::FromSeconds(30),
-          50));
-}
-
-void PrerenderHistograms::RecordPerSessionCount(Origin origin,
-                                                int count) const {
-  PREFIXED_HISTOGRAM(
-      "PrerendersPerSessionCount", origin,
-      UMA_HISTOGRAM_COUNTS(name, count));
-}
-
-void PrerenderHistograms::RecordTimeBetweenPrerenderRequests(
-    Origin origin, base::TimeDelta time) const {
-  PREFIXED_HISTOGRAM(
-      "TimeBetweenPrerenderRequests", origin,
-      UMA_HISTOGRAM_TIMES(name, time));
-}
-
 void PrerenderHistograms::RecordFinalStatus(
     Origin origin,
     FinalStatus final_status) const {
   DCHECK(final_status != FINAL_STATUS_MAX);
-  PREFIXED_HISTOGRAM(
-      "FinalStatus", origin,
-      UMA_HISTOGRAM_ENUMERATION(name, final_status, FINAL_STATUS_MAX));
+  base::UmaHistogramEnumeration(GetHistogramName(origin, "FinalStatus"),
+                                final_status, FINAL_STATUS_MAX);
+  base::UmaHistogramEnumeration(ComposeHistogramName("", "FinalStatus"),
+                                final_status, FINAL_STATUS_MAX);
 }
 
-void PrerenderHistograms::RecordNetworkBytes(Origin origin,
-                                             bool used,
-                                             int64_t prerender_bytes,
-                                             int64_t profile_bytes) const {
+void PrerenderHistograms::RecordNetworkBytesConsumed(
+    Origin origin,
+    int64_t prerender_bytes,
+    int64_t profile_bytes) const {
   const int kHistogramMin = 1;
   const int kHistogramMax = 100000000;  // 100M.
   const int kBucketCount = 50;
@@ -231,19 +119,12 @@ void PrerenderHistograms::RecordNetworkBytes(Origin origin,
   if (prerender_bytes == 0)
     return;
 
-  if (used) {
-    PREFIXED_HISTOGRAM(
-        "NetworkBytesUsed",
-        origin,
-        UMA_HISTOGRAM_CUSTOM_COUNTS(
-            name, prerender_bytes, kHistogramMin, kHistogramMax, kBucketCount));
-  } else {
-    PREFIXED_HISTOGRAM(
-        "NetworkBytesWasted",
-        origin,
-        UMA_HISTOGRAM_CUSTOM_COUNTS(
-            name, prerender_bytes, kHistogramMin, kHistogramMax, kBucketCount));
-  }
+  base::UmaHistogramCustomCounts(GetHistogramName(origin, "NetworkBytesWasted"),
+                                 prerender_bytes, kHistogramMin, kHistogramMax,
+                                 kBucketCount);
+  base::UmaHistogramCustomCounts(ComposeHistogramName("", "NetworkBytesWasted"),
+                                 prerender_bytes, kHistogramMin, kHistogramMax,
+                                 kBucketCount);
 }
 
 void PrerenderHistograms::RecordPrefetchResponseReceived(

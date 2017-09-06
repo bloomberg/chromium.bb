@@ -348,7 +348,7 @@ class PrerenderManager : public content::NotificationObserver,
 
   // Notification that a prerender has completed and its bytes should be
   // recorded.
-  void RecordNetworkBytes(Origin origin, bool used, int64_t prerender_bytes);
+  void RecordNetworkBytesConsumed(Origin origin, int64_t prerender_bytes);
 
   // Add to the running tally of bytes transferred over the network for this
   // profile if prerendering is currently enabled.
@@ -596,10 +596,6 @@ class PrerenderManager : public content::NotificationObserver,
   static PrerenderManagerMode mode_;
   static PrerenderManagerMode instant_mode_;
   static PrerenderManagerMode omnibox_mode_;
-
-  // A count of how many prerenders we do per session. Initialized to 0 then
-  // incremented and emitted to a histogram on each successful prerender.
-  static int prerenders_per_session_count_;
 
   // RepeatingTimer to perform periodic cleanups of pending prerendered
   // pages.

@@ -160,9 +160,6 @@ class PrerenderManager::OnCloseWebContentsDeleter
 PrerenderManagerObserver::~PrerenderManagerObserver() {}
 
 // static
-int PrerenderManager::prerenders_per_session_count_ = 0;
-
-// static
 PrerenderManager::PrerenderManagerMode PrerenderManager::mode_ =
     PRERENDER_MODE_SIMPLE_LOAD_EXPERIMENT;
 PrerenderManager::PrerenderManagerMode PrerenderManager::instant_mode_ =
@@ -441,20 +438,6 @@ std::unique_ptr<WebContents> PrerenderManager::SwapInternal(
       prerender_data->contents()->GetRenderViewHost()->GetProcess();
   process_host->RemoveObserver(this);
   prerender_process_hosts_.erase(process_host);
-  if (!prerender_data->contents()->load_start_time().is_null()) {
-    histograms_->RecordTimeUntilUsed(
-        prerender_data->contents()->origin(),
-        GetCurrentTimeTicks() - prerender_data->contents()->load_start_time());
-  }
-  histograms_->RecordAbandonTimeUntilUsed(
-      prerender_data->contents()->origin(),
-      prerender_data->abandon_time().is_null() ?
-          base::TimeDelta() :
-          GetCurrentTimeTicks() - prerender_data->abandon_time());
-
-  histograms_->RecordPerSessionCount(prerender_data->contents()->origin(),
-                                     ++prerenders_per_session_count_);
-  histograms_->RecordUsedPrerender(prerender_data->contents()->origin());
 
   PrerenderDataVector::iterator to_erase =
       FindIteratorForPrerenderContents(prerender_data->contents());
@@ -744,11 +727,8 @@ bool PrerenderManager::HasRecentlyBeenNavigatedTo(Origin origin,
   CleanUpOldNavigations(&navigations_, base::TimeDelta::FromMilliseconds(
                                            kNavigationRecordWindowMs));
   for (auto it = navigations_.rbegin(); it != navigations_.rend(); ++it) {
-    if (it->url == url) {
-      base::TimeDelta delta = GetCurrentTimeTicks() - it->time;
-      histograms_->RecordTimeSinceLastRecentVisit(origin, delta);
+    if (it->url == url)
       return true;
-    }
   }
 
   return false;
@@ -1000,7 +980,6 @@ std::unique_ptr<PrerenderHandle> PrerenderManager::AddPrerender(
     return nullptr;
   }
 
-  histograms_->RecordPrerenderStarted(origin);
   DCHECK(!prerender_contents_ptr->prerendering_has_started());
 
   std::unique_ptr<PrerenderHandle> prerender_handle =
@@ -1162,10 +1141,6 @@ bool PrerenderManager::DoesRateLimitAllowPrerender(Origin origin) const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::TimeDelta elapsed_time =
       GetCurrentTimeTicks() - last_prerender_start_time_;
-  histograms_->RecordTimeBetweenPrerenderRequests(origin, elapsed_time);
-  // TODO(gabadie,pasko): Re-implement missing tests for
-  // FINAL_STATUS_RATE_LIMIT_EXCEEDED that where removed by:
-  //    http://crrev.com/a2439eeab37f7cb7a118493fb55ec0cb07f93b49.
   if (origin == ORIGIN_OFFLINE)
     return true;
   if (!config_.rate_limit_enabled)
@@ -1304,17 +1279,16 @@ void PrerenderManager::OnCreatingAudioStream(int render_process_id,
   prerender_contents->Destroy(FINAL_STATUS_CREATING_AUDIO_STREAM);
 }
 
-void PrerenderManager::RecordNetworkBytes(Origin origin,
-                                          bool used,
-                                          int64_t prerender_bytes) {
+void PrerenderManager::RecordNetworkBytesConsumed(Origin origin,
+                                                  int64_t prerender_bytes) {
   if (!IsAnyPrerenderingPossible())
     return;
   int64_t recent_profile_bytes =
       profile_network_bytes_ - last_recorded_profile_network_bytes_;
   last_recorded_profile_network_bytes_ = profile_network_bytes_;
   DCHECK_GE(recent_profile_bytes, 0);
-  histograms_->RecordNetworkBytes(
-      origin, used, prerender_bytes, recent_profile_bytes);
+  histograms_->RecordNetworkBytesConsumed(origin, prerender_bytes,
+                                          recent_profile_bytes);
 }
 
 NetworkPredictionStatus PrerenderManager::GetPredictionStatus() const {

@@ -51,27 +51,8 @@ class PrerenderHistograms {
                                                  bool successful,
                                                  bool was_hidden) const;
 
-  // Records, in a histogram, the percentage of the page load time that had
-  // elapsed by the time it is swapped in.  Values outside of [0, 1.0] are
-  // invalid and ignored.
-  void RecordPercentLoadDoneAtSwapin(Origin origin, double fraction) const;
-
-  // Records the time from when a page starts prerendering to when the user
-  // navigates to it. This must be called on the UI thread.
-  void RecordTimeUntilUsed(Origin origin,
-                           base::TimeDelta time_until_used) const;
-
-  // Records the time from when a prerender is abandoned to when the user
-  // navigates to it. This must be called on the UI thread.
-  void RecordAbandonTimeUntilUsed(Origin origin,
-                                  base::TimeDelta time_until_used) const;
-
   // Record a PerSessionCount data point.
   void RecordPerSessionCount(Origin origin, int count) const;
-
-  // Record time between two prerender requests.
-  void RecordTimeBetweenPrerenderRequests(Origin origin,
-                                          base::TimeDelta time) const;
 
   // Record a final status of a prerendered page in a histogram.
   void RecordFinalStatus(Origin origin, FinalStatus final_status) const;
@@ -79,20 +60,12 @@ class PrerenderHistograms {
   // To be called when a new prerender is started.
   void RecordPrerenderStarted(Origin origin) const;
 
-  // Called when we swap in a prerender.
-  void RecordUsedPrerender(Origin origin) const;
-
-  // Record the time since a page was recently visited.
-  void RecordTimeSinceLastRecentVisit(Origin origin,
-                                      base::TimeDelta time) const;
-
-  // Record the bytes in the prerender, whether it was used or not, and the
+  // Record the histogram for number of bytes consumed by the prerender, and the
   // total number of bytes fetched for this profile since the last call to
   // RecordBytes.
-  void RecordNetworkBytes(Origin origin,
-                          bool used,
-                          int64_t prerender_bytes,
-                          int64_t profile_bytes) const;
+  void RecordNetworkBytesConsumed(Origin origin,
+                                  int64_t prerender_bytes,
+                                  int64_t profile_bytes) const;
 
   // Called when a NoStatePrefetch request has received a response (including
   // redirects). May be called several times per resource, in case of redirects.
