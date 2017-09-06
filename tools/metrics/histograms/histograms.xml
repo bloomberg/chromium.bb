@@ -20966,6 +20966,44 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Extensions.DeclarativeNetRequest.IndexAndPersistRulesTime"
+    units="ms">
+  <owner>karandeepb@chromium.org</owner>
+  <summary>
+    Time taken to index and persist to disk, the deserialized json rules
+    provided by an extension manifest for the Declarative Net Request API. This
+    includes the time recorded in
+    Extensions.DeclarativeNetRequest.IndexRulesTime together with the time taken
+    to persist the ruleset to disk. This is emitted whenever an extension's json
+    ruleset is successfully indexed and persisted. This may happen when a packed
+    extension is installed, an unpacked extension is loaded, an extension's
+    ruleset is re-indexed due to corruption, etc.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.DeclarativeNetRequest.IndexRulesTime" units="ms">
+  <owner>karandeepb@chromium.org</owner>
+  <summary>
+    Time taken to index the deserialized json rules provided by an extension
+    manifest for the Declarative Net Request API. This is emitted whenever an
+    extension's json ruleset is successfully indexed. This may happen when a
+    packed extension is installed, an unpacked extension is loaded, an
+    extension's ruleset is re-indexed due to corruption, etc.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.DeclarativeNetRequest.ManifestRulesCount"
+    units="rules">
+  <owner>karandeepb@chromium.org</owner>
+  <summary>
+    The number of indexed declarative rules provided by an extension manifest
+    for the Declarative Net Request API. This is emitted whenever an extension's
+    json ruleset is indexed. This may happen when a packed extension is
+    installed, an unpacked extension is loaded, an extension's ruleset is re-
+    indexed, due to corruption, etc.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.DeclarativeRulesStorageInitialization" units="ms">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>Time spent until rules storage delegate gets ready.</summary>
