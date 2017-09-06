@@ -392,7 +392,13 @@ class SDKFetcher(object):
           # generating worker processes; therefore the functionality needs to
           # be moved into the DiskCache class itself -
           # i.e.,DiskCache.ParallelSetDefault().
-          self._UpdateTarball(url, ref)
+          try:
+            self._UpdateTarball(url, ref)
+          except gs.GSNoSuchKey:
+            if key == constants.VM_IMAGE_TAR:
+              logging.warning('No VM available.')
+            else:
+              raise
 
       ctx_version = version
       if self.sdk_path is not None:
