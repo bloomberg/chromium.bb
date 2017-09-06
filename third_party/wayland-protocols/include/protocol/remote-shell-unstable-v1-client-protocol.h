@@ -297,7 +297,7 @@ struct zcr_remote_shell_v1_listener {
 	 * initialize scale configuration
 	 *
 	 * Sends the default device scale factor.
-	 * @param scale DP to pixels ratio, in 16.16 fixed point format
+	 * @param scale DP to pixels ratio, in 8.24 fixed point format
 	 * @since 8
 	 */
 	void (*default_device_scale_factor)(void *data,

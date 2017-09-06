@@ -2280,7 +2280,7 @@ class WaylandRemoteShell : public WMHelper::TabletModeObserver,
       float scale_factor =
           WMHelper::GetInstance()->GetDefaultDeviceScaleFactor();
       // Send using 16.16 fixed point.
-      const int kDecimalBits = 16;
+      const int kDecimalBits = 24;
       int32_t fixed_scale =
           static_cast<int32_t>(scale_factor * (1 << kDecimalBits));
       zcr_remote_shell_v1_send_default_device_scale_factor(

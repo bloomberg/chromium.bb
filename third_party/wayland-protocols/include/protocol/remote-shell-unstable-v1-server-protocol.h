@@ -368,7 +368,7 @@ zcr_remote_shell_v1_send_configure(struct wl_resource *resource_, uint32_t layou
  * @ingroup iface_zcr_remote_shell_v1
  * Sends an default_device_scale_factor event to the client owning the resource.
  * @param resource_ The client's resource
- * @param scale DP to pixels ratio, in 16.16 fixed point format
+ * @param scale DP to pixels ratio, in 8.24 fixed point format
  */
 static inline void
 zcr_remote_shell_v1_send_default_device_scale_factor(struct wl_resource *resource_, int32_t scale)
