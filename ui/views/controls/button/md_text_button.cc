@@ -6,6 +6,7 @@
 
 #include "base/i18n/case_conversion.h"
 #include "base/memory/ptr_util.h"
+#include "build/build_config.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
@@ -307,6 +308,21 @@ void MdTextButton::UpdateColors() {
       // alpha for non-Harmony, 757575 @ 1.0 alpha for Harmony and turn it into
       // an effective b2b2b2 @ 1.0 alpha or 000000 @ 0.3 for the stroke_color.
       stroke_alpha = UseMaterialSecondaryButtons() ? 0x8f : 0x77;
+#if defined(OS_MACOSX)
+      // Without full secondary UI MD support, the text color is solid black,
+      // and so the border is too dark on Mac. On Retina it looks OK, so
+      // heuristically determine the scale factor as well.
+      if (!ui::MaterialDesignController::IsSecondaryUiMaterial()) {
+        // The Compositor may only be set when attached to a Widget. But, since
+        // that also determines the theme, UpdateColors() will always be called
+        // after attaching to a Widget.
+        // TODO(tapted): Move this into SolidRoundRectPainter if we like this
+        // logic for Harmony.
+        auto* compositor = layer()->GetCompositor();
+        if (compositor && compositor->device_scale_factor() == 1)
+          stroke_alpha = 0x4d;  // Chosen to match full secondary UI MD (0.3).
+      }
+#endif
     }
     stroke_color = SkColorSetA(text_color, stroke_alpha);
   }
