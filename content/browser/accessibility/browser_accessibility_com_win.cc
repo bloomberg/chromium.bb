@@ -94,77 +94,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_attributes(BSTR* attributes) {
 }
 
 STDMETHODIMP BrowserAccessibilityComWin::scrollTo(IA2ScrollType scroll_type) {
-  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_IA2_SCROLL_TO);
-  if (!owner())
-    return E_FAIL;
-
-  auto* manager = Manager();
-
-  if (!manager)
-    return E_FAIL;
-
-  gfx::Rect r = owner()->GetFrameBoundsRect();
-  switch (scroll_type) {
-    case IA2_SCROLL_TYPE_TOP_LEFT:
-      manager->ScrollToMakeVisible(*owner(), gfx::Rect(r.x(), r.y(), 0, 0));
-      break;
-    case IA2_SCROLL_TYPE_BOTTOM_RIGHT:
-      manager->ScrollToMakeVisible(*owner(),
-                                   gfx::Rect(r.right(), r.bottom(), 0, 0));
-      break;
-    case IA2_SCROLL_TYPE_TOP_EDGE:
-      manager->ScrollToMakeVisible(*owner(),
-                                   gfx::Rect(r.x(), r.y(), r.width(), 0));
-      break;
-    case IA2_SCROLL_TYPE_BOTTOM_EDGE:
-      manager->ScrollToMakeVisible(*owner(),
-                                   gfx::Rect(r.x(), r.bottom(), r.width(), 0));
-      break;
-    case IA2_SCROLL_TYPE_LEFT_EDGE:
-      manager->ScrollToMakeVisible(*owner(),
-                                   gfx::Rect(r.x(), r.y(), 0, r.height()));
-      break;
-    case IA2_SCROLL_TYPE_RIGHT_EDGE:
-      manager->ScrollToMakeVisible(*owner(),
-                                   gfx::Rect(r.right(), r.y(), 0, r.height()));
-      break;
-    case IA2_SCROLL_TYPE_ANYWHERE:
-    default:
-      manager->ScrollToMakeVisible(*owner(), r);
-      break;
-  }
-
-  return S_OK;
-}
-
-STDMETHODIMP BrowserAccessibilityComWin::scrollToPoint(
-    IA2CoordinateType coordinate_type,
-    LONG x,
-    LONG y) {
-  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_SCROLL_TO_POINT);
-  if (!owner())
-    return E_FAIL;
-
-  auto* manager = Manager();
-  if (!manager)
-    return E_FAIL;
-
-  gfx::Point scroll_to(x, y);
-
-  if (coordinate_type == IA2_COORDTYPE_SCREEN_RELATIVE) {
-    scroll_to -= manager->GetViewBounds().OffsetFromOrigin();
-  } else if (coordinate_type == IA2_COORDTYPE_PARENT_RELATIVE) {
-    if (owner()->PlatformGetParent()) {
-      scroll_to +=
-          owner()->PlatformGetParent()->GetFrameBoundsRect().OffsetFromOrigin();
-    }
-  } else {
-    return E_INVALIDARG;
-  }
-
-  manager->ScrollToPoint(*owner(), scroll_to);
-
-  return S_OK;
+  return AXPlatformNodeWin::scrollTo(scroll_type);
 }
 
 //
