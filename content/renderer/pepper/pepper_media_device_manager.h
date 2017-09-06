@@ -63,19 +63,17 @@ class PepperMediaDeviceManager
   int GetSessionID(PP_DeviceType_Dev type, const std::string& label);
 
   // MediaStreamDispatcherEventHandler implementation.
-  void OnStreamGenerated(
-      int request_id,
-      const std::string& label,
-      const StreamDeviceInfoArray& audio_device_array,
-      const StreamDeviceInfoArray& video_device_array) override;
-  void OnStreamGenerationFailed(
-      int request_id,
-      content::MediaStreamRequestResult result) override;
+  void OnStreamGenerated(int request_id,
+                         const std::string& label,
+                         const MediaStreamDevices& audio_devices,
+                         const MediaStreamDevices& video_devices) override;
+  void OnStreamGenerationFailed(int request_id,
+                                MediaStreamRequestResult result) override;
   void OnDeviceStopped(const std::string& label,
-                       const StreamDeviceInfo& device_info) override;
+                       const MediaStreamDevice& device) override;
   void OnDeviceOpened(int request_id,
                       const std::string& label,
-                      const StreamDeviceInfo& device_info) override;
+                      const MediaStreamDevice& device) override;
   void OnDeviceOpenFailed(int request_id) override;
 
   // Stream type conversion.

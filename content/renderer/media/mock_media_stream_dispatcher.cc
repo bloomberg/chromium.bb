@@ -5,7 +5,6 @@
 #include "content/renderer/media/mock_media_stream_dispatcher.h"
 
 #include "base/strings/string_number_conversions.h"
-#include "content/public/common/media_stream_request.h"
 #include "media/base/audio_parameters.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -16,7 +15,7 @@ const char kAudioOutputDeviceIdPrefix[] = "audio_output_device_id";
 namespace content {
 
 MockMediaStreamDispatcher::MockMediaStreamDispatcher()
-    : MediaStreamDispatcher(NULL),
+    : MediaStreamDispatcher(nullptr),
       audio_input_request_id_(-1),
       request_stream_counter_(0),
       stop_audio_device_counter_(0),
@@ -37,11 +36,11 @@ void MockMediaStreamDispatcher::GenerateStream(
   audio_input_request_id_ = request_id;
 
   stream_label_ = "local_stream" + base::IntToString(request_id);
-  audio_input_array_.clear();
-  video_array_.clear();
+  audio_devices_.clear();
+  video_devices_.clear();
 
   if (controls.audio.requested) {
-    AddAudioInputDeviceToArray(false, controls.audio.device_id);
+    AddAudioDeviceToArray(false, controls.audio.device_id);
   }
   if (controls.video.requested) {
     AddVideoDeviceToArray(true, controls.video.device_id);
@@ -82,37 +81,37 @@ int MockMediaStreamDispatcher::audio_session_id(const std::string& label,
   return -1;
 }
 
-void MockMediaStreamDispatcher::AddAudioInputDeviceToArray(
+void MockMediaStreamDispatcher::AddAudioDeviceToArray(
     bool matched_output,
     const std::string& device_id) {
-  StreamDeviceInfo audio;
-  audio.device.id = test_same_id_ ? "test_id" : device_id;
-  audio.device.id = audio.device.id + base::IntToString(session_id_);
-  audio.device.name = "microphone";
-  audio.device.type = MEDIA_DEVICE_AUDIO_CAPTURE;
-  audio.device.video_facing = media::MEDIA_VIDEO_FACING_NONE;
+  MediaStreamDevice audio_device;
+  audio_device.id =
+      (test_same_id_ ? "test_id" : device_id) + base::IntToString(session_id_);
+  audio_device.name = "microphone";
+  audio_device.type = MEDIA_DEVICE_AUDIO_CAPTURE;
+  audio_device.video_facing = media::MEDIA_VIDEO_FACING_NONE;
   if (matched_output) {
-    audio.device.matched_output_device_id =
+    audio_device.matched_output_device_id =
         kAudioOutputDeviceIdPrefix + base::IntToString(session_id_);
   }
-  audio.session_id = session_id_;
-  audio.device.input = media::AudioParameters::UnavailableDeviceParams();
-  audio_input_array_.push_back(audio);
+  audio_device.session_id = session_id_;
+  audio_device.input = media::AudioParameters::UnavailableDeviceParams();
+  audio_devices_.push_back(audio_device);
 }
 
 void MockMediaStreamDispatcher::AddVideoDeviceToArray(
     bool facing_user,
     const std::string& device_id) {
-  StreamDeviceInfo video;
-  video.device.id = test_same_id_ ? "test_id" : device_id;
-  video.device.id = video.device.id + base::IntToString(session_id_);
-  video.device.name = "usb video camera";
-  video.device.type = MEDIA_DEVICE_VIDEO_CAPTURE;
-  video.device.video_facing = facing_user
+  MediaStreamDevice video_device;
+  video_device.id =
+      (test_same_id_ ? "test_id" : device_id) + base::IntToString(session_id_);
+  video_device.name = "usb video camera";
+  video_device.type = MEDIA_DEVICE_VIDEO_CAPTURE;
+  video_device.video_facing = facing_user
                                   ? media::MEDIA_VIDEO_FACING_USER
                                   : media::MEDIA_VIDEO_FACING_ENVIRONMENT;
-  video.session_id = session_id_;
-  video_array_.push_back(video);
+  video_device.session_id = session_id_;
+  video_devices_.push_back(video_device);
 }
 
 }  // namespace content
