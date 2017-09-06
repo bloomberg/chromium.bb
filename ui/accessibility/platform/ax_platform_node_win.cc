@@ -1355,14 +1355,69 @@ STDMETHODIMP AXPlatformNodeWin::get_extendedRole(BSTR* extended_role) {
 }
 
 STDMETHODIMP AXPlatformNodeWin::scrollTo(enum IA2ScrollType scroll_type) {
-  return E_NOTIMPL;
+  COM_OBJECT_VALIDATE();
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_IA2_SCROLL_TO);
+
+  gfx::Rect r = delegate_->GetScreenBoundsRect();
+  switch (scroll_type) {
+    case IA2_SCROLL_TYPE_TOP_LEFT:
+      r = gfx::Rect(r.x(), r.y(), 0, 0);
+      break;
+    case IA2_SCROLL_TYPE_BOTTOM_RIGHT:
+      r = gfx::Rect(r.right(), r.bottom(), 0, 0);
+      break;
+    case IA2_SCROLL_TYPE_TOP_EDGE:
+      r = gfx::Rect(r.x(), r.y(), r.width(), 0);
+      break;
+    case IA2_SCROLL_TYPE_BOTTOM_EDGE:
+      r = gfx::Rect(r.x(), r.bottom(), r.width(), 0);
+      break;
+    case IA2_SCROLL_TYPE_LEFT_EDGE:
+      r = gfx::Rect(r.x(), r.y(), 0, r.height());
+      break;
+    case IA2_SCROLL_TYPE_RIGHT_EDGE:
+      r = gfx::Rect(r.right(), r.y(), 0, r.height());
+      break;
+    case IA2_SCROLL_TYPE_ANYWHERE:
+    default:
+      break;
+  }
+
+  ui::AXActionData action_data;
+  action_data.target_node_id = GetData().id;
+  action_data.action = ui::AX_ACTION_SCROLL_TO_MAKE_VISIBLE;
+  action_data.target_rect = r;
+  delegate_->AccessibilityPerformAction(action_data);
+  return S_OK;
 }
 
 STDMETHODIMP AXPlatformNodeWin::scrollToPoint(
     enum IA2CoordinateType coordinate_type,
     LONG x,
     LONG y) {
-  return E_NOTIMPL;
+  COM_OBJECT_VALIDATE();
+
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_SCROLL_TO_POINT);
+
+  gfx::Point scroll_to(x, y);
+
+  if (coordinate_type == IA2_COORDTYPE_SCREEN_RELATIVE) {
+    scroll_to -= delegate_->GetScreenBoundsRect().OffsetFromOrigin();
+  } else if (coordinate_type == IA2_COORDTYPE_PARENT_RELATIVE) {
+    if (GetParent()) {
+      AXPlatformNodeBase* base = FromNativeViewAccessible(GetParent());
+      scroll_to += base->delegate_->GetScreenBoundsRect().OffsetFromOrigin();
+    }
+  } else {
+    return E_INVALIDARG;
+  }
+
+  ui::AXActionData action_data;
+  action_data.target_node_id = GetData().id;
+  action_data.action = ui::AX_ACTION_SCROLL_TO_POINT;
+  action_data.target_point = scroll_to;
+  delegate_->AccessibilityPerformAction(action_data);
+  return S_OK;
 }
 
 STDMETHODIMP AXPlatformNodeWin::get_nExtendedStates(LONG* n_extended_states) {

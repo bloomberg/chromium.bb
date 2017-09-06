@@ -175,7 +175,12 @@ TestAXNodeWrapper::GetTargetForNativeAccessibilityEvent() {
   return gfx::kNullAcceleratedWidget;
 }
 
-bool TestAXNodeWrapper::AccessibilityPerformAction(const AXActionData& data) {
+bool TestAXNodeWrapper::AccessibilityPerformAction(
+    const ui::AXActionData& data) {
+  if (data.action == ui::AX_ACTION_SCROLL_TO_POINT)
+    g_offset = gfx::Vector2d(data.target_point.x(), data.target_point.x());
+  else if (data.action == ui::AX_ACTION_SCROLL_TO_MAKE_VISIBLE)
+    g_offset = gfx::Vector2d(data.target_rect.x(), data.target_rect.x());
   return true;
 }
 

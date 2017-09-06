@@ -972,6 +972,101 @@ TEST_F(AXPlatformNodeWinTest,
   }
 }
 
+TEST_F(AXPlatformNodeWinTest, TestIAccessible2ScrollToPoint) {
+  AXNodeData root;
+  root.id = 1;
+  root.role = ui::AX_ROLE_ROOT_WEB_AREA;
+  root.location = gfx::RectF(0, 0, 2000, 2000);
+
+  AXNodeData child1;
+  child1.id = 2;
+  child1.role = AX_ROLE_STATIC_TEXT;
+  child1.location = gfx::RectF(10, 10, 10, 10);
+  root.child_ids.push_back(2);
+
+  Init(root, child1);
+
+  ScopedComPtr<IAccessible> root_iaccessible(GetRootIAccessible());
+  ScopedComPtr<IDispatch> result;
+  EXPECT_EQ(S_OK, root_iaccessible->get_accChild(ScopedVariant(1),
+                                                 result.GetAddressOf()));
+  ScopedComPtr<IAccessible2> ax_child1;
+  EXPECT_EQ(S_OK, result.CopyTo(ax_child1.GetAddressOf()));
+  result.Reset();
+
+  LONG x_left, y_top, width, height;
+  EXPECT_EQ(S_OK,
+            ax_child1->accLocation(&x_left, &y_top, &width, &height, SELF));
+  EXPECT_EQ(10, x_left);
+  EXPECT_EQ(10, y_top);
+  EXPECT_EQ(10, width);
+  EXPECT_EQ(10, height);
+
+  ScopedComPtr<IAccessible2> root_iaccessible2 =
+      ToIAccessible2(root_iaccessible);
+  EXPECT_EQ(S_OK, root_iaccessible2->scrollToPoint(
+                      IA2_COORDTYPE_SCREEN_RELATIVE, 600, 650));
+
+  EXPECT_EQ(S_OK,
+            ax_child1->accLocation(&x_left, &y_top, &width, &height, SELF));
+  EXPECT_EQ(610, x_left);
+  EXPECT_EQ(610, y_top);
+  EXPECT_EQ(10, width);
+  EXPECT_EQ(10, height);
+
+  EXPECT_EQ(S_OK, root_iaccessible2->scrollToPoint(
+                      IA2_COORDTYPE_PARENT_RELATIVE, 0, 0));
+
+  EXPECT_EQ(S_OK,
+            ax_child1->accLocation(&x_left, &y_top, &width, &height, SELF));
+  EXPECT_EQ(10, x_left);
+  EXPECT_EQ(10, y_top);
+  EXPECT_EQ(10, width);
+  EXPECT_EQ(10, height);
+}
+
+TEST_F(AXPlatformNodeWinTest, TestIAccessible2ScrollTo) {
+  AXNodeData root;
+  root.id = 1;
+  root.role = ui::AX_ROLE_ROOT_WEB_AREA;
+  root.location = gfx::RectF(0, 0, 2000, 2000);
+
+  AXNodeData child1;
+  child1.id = 2;
+  child1.role = AX_ROLE_STATIC_TEXT;
+  child1.location = gfx::RectF(10, 10, 10, 10);
+  root.child_ids.push_back(2);
+
+  Init(root, child1);
+
+  ScopedComPtr<IAccessible> root_iaccessible(GetRootIAccessible());
+  ScopedComPtr<IDispatch> result;
+  EXPECT_EQ(S_OK, root_iaccessible->get_accChild(ScopedVariant(1),
+                                                 result.GetAddressOf()));
+  ScopedComPtr<IAccessible2> ax_child1;
+  EXPECT_EQ(S_OK, result.CopyTo(ax_child1.GetAddressOf()));
+  result.Reset();
+
+  LONG x_left, y_top, width, height;
+  EXPECT_EQ(S_OK,
+            ax_child1->accLocation(&x_left, &y_top, &width, &height, SELF));
+  EXPECT_EQ(10, x_left);
+  EXPECT_EQ(10, y_top);
+  EXPECT_EQ(10, width);
+  EXPECT_EQ(10, height);
+
+  ScopedComPtr<IAccessible2> root_iaccessible2 =
+      ToIAccessible2(root_iaccessible);
+  EXPECT_EQ(S_OK, ax_child1->scrollTo(IA2_SCROLL_TYPE_ANYWHERE));
+
+  EXPECT_EQ(S_OK,
+            ax_child1->accLocation(&x_left, &y_top, &width, &height, SELF));
+  EXPECT_EQ(20, x_left);
+  EXPECT_EQ(20, y_top);
+  EXPECT_EQ(10, width);
+  EXPECT_EQ(10, height);
+}
+
 TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableGetChildIndex) {
   Init(Build3X3Table());
 

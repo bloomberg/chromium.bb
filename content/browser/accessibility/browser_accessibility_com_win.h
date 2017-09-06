@@ -102,11 +102,6 @@ class __declspec(uuid("562072fe-3390-43b1-9e2c-dd4118f5ac79"))
 
   CONTENT_EXPORT STDMETHODIMP scrollTo(enum IA2ScrollType scroll_type) override;
 
-  CONTENT_EXPORT STDMETHODIMP
-  scrollToPoint(enum IA2CoordinateType coordinate_type,
-                LONG x,
-                LONG y) override;
-
   //
   // IAccessibleApplication methods.
   //

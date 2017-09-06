@@ -992,6 +992,28 @@ bool BrowserAccessibility::AccessibilityPerformAction(
     return true;
   }
 
+  if (data.action == ui::AX_ACTION_SCROLL_TO_POINT) {
+    // target_point is in screen coordinates.  We need to convert this to frame
+    // coordinates because that's what BrowserAccessiblity cares about.
+    gfx::Point target =
+        data.target_point -
+        manager_->GetRootManager()->GetViewBounds().OffsetFromOrigin();
+
+    manager_->ScrollToPoint(*this, target);
+    return true;
+  }
+
+  if (data.action == ui::AX_ACTION_SCROLL_TO_MAKE_VISIBLE) {
+    // target_rect is in screen coordinates.  We need to convert this to frame
+    // coordinates because that's what BrowserAccessiblity cares about.
+    gfx::Rect target =
+        data.target_rect -
+        manager_->GetRootManager()->GetViewBounds().OffsetFromOrigin();
+
+    manager_->ScrollToMakeVisible(*this, target);
+    return true;
+  }
+
   return false;
 }
 
