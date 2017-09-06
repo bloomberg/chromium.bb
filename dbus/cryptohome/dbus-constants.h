@@ -68,17 +68,24 @@ const char kCryptohomeLoadEnrollmentState[] =
     "LoadEnrollmentState";
 const char kCryptohomeTpmIsAttestationPrepared[] = "TpmIsAttestationPrepared";
 const char kCryptohomeTpmIsAttestationEnrolled[] = "TpmIsAttestationEnrolled";
+const char kCryptohomeTpmAttestationCreateEnrollRequest[] =
+    "TpmAttestationCreateEnrollRequest";
 const char kCryptohomeAsyncTpmAttestationCreateEnrollRequest[] =
     "AsyncTpmAttestationCreateEnrollRequest";
 const char kCryptohomeAsyncTpmAttestationCreateEnrollRequestNew[] =
     "AsyncTpmAttestationCreateEnrollRequestNew";
+const char kCryptohomeTpmAttestationEnroll[] = "TpmAttestationEnroll";
 const char kCryptohomeAsyncTpmAttestationEnroll[] = "AsyncTpmAttestationEnroll";
 const char kCryptohomeAsyncTpmAttestationEnrollNew[] =
     "AsyncTpmAttestationEnrollNew";
+const char kCryptohomeTpmAttestationCreateCertRequest[] =
+    "TpmAttestationCreateCertRequest";
 const char kCryptohomeAsyncTpmAttestationCreateCertRequest[] =
     "AsyncTpmAttestationCreateCertRequest";
 const char kCryptohomeAsyncTpmAttestationCreateCertRequestByProfile[] =
     "AsyncTpmAttestationCreateCertRequestByProfile";
+const char kCryptohomeTpmAttestationFinishCertRequest[] =
+    "TpmAttestationFinishCertRequest";
 const char kCryptohomeAsyncTpmAttestationFinishCertRequest[] =
     "AsyncTpmAttestationFinishCertRequest";
 const char kCryptohomeTpmAttestationDoesKeyExist[] =
