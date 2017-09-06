@@ -182,14 +182,14 @@ TEST(ProfilingJsonExporterTest, Simple) {
   BacktraceStorage backtrace_storage;
 
   std::vector<Address> stack1;
-  stack1.push_back(Address(0x1234));
   stack1.push_back(Address(0x5678));
+  stack1.push_back(Address(0x1234));
   const Backtrace* bt1 = backtrace_storage.Insert(std::move(stack1));
 
   std::vector<Address> stack2;
-  stack2.push_back(Address(0x1234));
-  stack2.push_back(Address(0x9012));
   stack2.push_back(Address(0x9013));
+  stack2.push_back(Address(0x9012));
+  stack2.push_back(Address(0x1234));
   const Backtrace* bt2 = backtrace_storage.Insert(std::move(stack2));
 
   AllocationEventSet events;

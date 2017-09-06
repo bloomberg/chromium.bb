@@ -6,6 +6,7 @@
 
 #include <map>
 
+#include "base/containers/adapters.h"
 #include "base/format_macros.h"
 #include "base/json/json_writer.h"
 #include "base/json/string_escape.h"
@@ -126,7 +127,8 @@ size_t AppendBacktraceStrings(const Backtrace& backtrace,
                               BacktraceTable* backtrace_table,
                               StringTable* string_table) {
   int parent = -1;
-  for (const Address& addr : backtrace.addrs()) {
+  // Addresses must be outputted in reverse order.
+  for (const Address& addr : base::Reversed(backtrace.addrs())) {
     static constexpr char kPcPrefix[] = "pc:";
     // std::numeric_limits<>::digits gives the number of bits in the value.
     // Dividing by 4 gives the number of hex digits needed to store the value.
