@@ -111,6 +111,10 @@ public class WebContentsAccessibilityTest {
         Assert.assertEquals(result[0], result[2]);
         Assert.assertEquals(result[0], result[3]);
 
+        // The role string should be a camel cased programmatic identifier.
+        CharSequence roleString = extras.getCharSequence("AccessibilityNodeInfo.chromeRole");
+        Assert.assertEquals("staticText", roleString.toString());
+
         // Wait for inline text boxes to load. Unfortunately we don't have a signal for this,
         // we have to keep sleeping until it loads. In practice it only takes a few milliseconds.
         do {
