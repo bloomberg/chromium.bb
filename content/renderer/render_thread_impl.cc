@@ -1949,7 +1949,6 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
     use_software = true;
 
   bool enable_surface_synchronization =
-      IsRunningInMash() ||
       command_line.HasSwitch(switches::kEnableSurfaceSynchronization);
 
   // In disable gpu vsync mode, also let the renderer tick as fast as it

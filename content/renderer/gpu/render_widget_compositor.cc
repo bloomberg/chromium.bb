@@ -251,11 +251,6 @@ gfx::Size CalculateDefaultTileSize(float initial_device_scale_factor,
   return gfx::Size(default_tile_size, default_tile_size);
 }
 
-bool IsRunningInMash() {
-  const base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
-  return cmdline->HasSwitch(switches::kIsRunningInMash);
-}
-
 // Check cc::BrowserControlsState, and blink::WebBrowserControlsState
 // are kept in sync.
 static_assert(int(blink::kWebBrowserControlsBoth) == int(cc::BOTH),
@@ -462,7 +457,6 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
   settings.initial_debug_state.SetRecordRenderingStats(
       cmd.HasSwitch(cc::switches::kEnableGpuBenchmarking));
   settings.enable_surface_synchronization =
-      IsRunningInMash() ||
       cmd.HasSwitch(switches::kEnableSurfaceSynchronization);
 
   if (cmd.HasSwitch(cc::switches::kSlowDownRasterScaleFactor)) {

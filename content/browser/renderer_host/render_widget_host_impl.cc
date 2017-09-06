@@ -308,11 +308,6 @@ class UnboundWidgetInputHandler : public mojom::WidgetInputHandler {
   }
 };
 
-bool IsRunningInMash() {
-  const base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
-  return cmdline->HasSwitch(switches::kIsRunningInMash);
-}
-
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -411,7 +406,6 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
   enable_surface_synchronization_ =
-      IsRunningInMash() ||
       command_line.HasSwitch(switches::kEnableSurfaceSynchronization);
 
   delegate_->RenderWidgetCreated(this);
