@@ -1,17 +1,13 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/ntp/incognito_panel_controller.h"
-
-#include <string>
+#import "ios/chrome/browser/ui/ntp/incognito_view.h"
 
 #include "components/google/core/browser/google_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/application_context.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#import "ios/chrome/browser/ui/ntp/modal_ntp.h"
-#import "ios/chrome/browser/ui/toolbar/web_toolbar_controller.h"
+#include "ios/chrome/browser/ui/rtl_geometry.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/url_loader.h"
@@ -39,25 +35,10 @@ GURL GetUrlWithLang(const GURL& url) {
   return google_util::AppendGoogleLocaleParam(url, locale);
 }
 
-const CGFloat kDistanceToFadeToolbar = 50.0;
 const int kLinkColor = 0x03A9F4;
-}
+}  // namespace
 
-// The scrollview containing the views. Its content's size is constrained on its
-// superview's size.
-@interface IncognitoNTPView : UIScrollView
-
-// Returns an autoreleased label with the right format.
-- (UILabel*)labelWithString:(NSString*)string
-                       font:(UIFont*)font
-                      alpha:(float)alpha;
-
-// Triggers a navigation to the help page.
-- (void)learnMoreButtonPressed;
-
-@end
-
-@implementation IncognitoNTPView {
+@implementation IncognitoView {
   __weak id<UrlLoader> _loader;
   UIView* _containerView;
 
@@ -190,35 +171,6 @@ const int kLinkColor = 0x03A9F4;
   return self;
 }
 
-- (UILabel*)labelWithString:(NSString*)string
-                       font:(UIFont*)font
-                      alpha:(float)alpha {
-  NSMutableAttributedString* attributedString =
-      [[NSMutableAttributedString alloc] initWithString:string];
-  NSMutableParagraphStyle* paragraphStyle =
-      [[NSMutableParagraphStyle alloc] init];
-  [paragraphStyle setLineSpacing:4];
-  [paragraphStyle setAlignment:NSTextAlignmentJustified];
-  [attributedString addAttribute:NSParagraphStyleAttributeName
-                           value:paragraphStyle
-                           range:NSMakeRange(0, string.length)];
-  UILabel* label = [[UILabel alloc] initWithFrame:CGRectZero];
-  [label setTranslatesAutoresizingMaskIntoConstraints:NO];
-  [label setNumberOfLines:0];
-  [label setFont:font];
-  [label setAttributedText:attributedString];
-  [label setTextColor:[UIColor colorWithWhite:1.0 alpha:alpha]];
-  return label;
-}
-
-- (void)learnMoreButtonPressed {
-  GURL gurl = GetUrlWithLang(GURL(kLearnMoreIncognitoUrl));
-  [_loader loadURL:gurl
-               referrer:web::Referrer()
-             transition:ui::PAGE_TRANSITION_LINK
-      rendererInitiated:NO];
-}
-
 #pragma mark - UIView overrides
 
 - (void)didMoveToSuperview {
@@ -251,103 +203,37 @@ const int kLinkColor = 0x03A9F4;
   [super willMoveToSuperview:newSuperview];
 }
 
-@end
+#pragma mark - Private
 
-@interface IncognitoPanelController ()<UIScrollViewDelegate>
-// Calculate the background alpha for the toolbar based on how much |scrollView|
-// has scrolled up.
-- (CGFloat)toolbarAlphaForScrollView:(UIScrollView*)scrollView;
-
-@property(nonatomic, weak) id<IncognitoViewControllerDelegate> toolbarDelegate;
-@end
-
-@implementation IncognitoPanelController {
-  // The scrollview containing the actual views.
-  IncognitoNTPView* _incognitoView;
+// Returns an autoreleased label with the right format.
+- (UILabel*)labelWithString:(NSString*)string
+                       font:(UIFont*)font
+                      alpha:(float)alpha {
+  NSMutableAttributedString* attributedString =
+      [[NSMutableAttributedString alloc] initWithString:string];
+  NSMutableParagraphStyle* paragraphStyle =
+      [[NSMutableParagraphStyle alloc] init];
+  [paragraphStyle setLineSpacing:4];
+  [paragraphStyle setAlignment:NSTextAlignmentJustified];
+  [attributedString addAttribute:NSParagraphStyleAttributeName
+                           value:paragraphStyle
+                           range:NSMakeRange(0, string.length)];
+  UILabel* label = [[UILabel alloc] initWithFrame:CGRectZero];
+  [label setTranslatesAutoresizingMaskIntoConstraints:NO];
+  [label setNumberOfLines:0];
+  [label setFont:font];
+  [label setAttributedText:attributedString];
+  [label setTextColor:[UIColor colorWithWhite:1.0 alpha:alpha]];
+  return label;
 }
 
-@synthesize toolbarDelegate = _toolbarDelegate;
-
-// Property declared in NewTabPagePanelProtocol.
-@synthesize delegate = _delegate;
-@synthesize view = _view;
-
-- (id)initWithLoader:(id<UrlLoader>)loader
-        browserState:(ios::ChromeBrowserState*)browserState
-     toolbarDelegate:(id<IncognitoViewControllerDelegate>)toolbarDelegate {
-  self = [super init];
-  if (self) {
-    _view = [[UIView alloc]
-        initWithFrame:[UIApplication sharedApplication].keyWindow.bounds];
-    [_view setAccessibilityIdentifier:@"NTP Incognito Panel"];
-    [_view setAutoresizingMask:UIViewAutoresizingFlexibleHeight |
-                               UIViewAutoresizingFlexibleWidth];
-    _incognitoView = [[IncognitoNTPView alloc]
-        initWithFrame:[UIApplication sharedApplication].keyWindow.bounds
-            urlLoader:loader];
-    [_incognitoView setAutoresizingMask:UIViewAutoresizingFlexibleHeight |
-                                        UIViewAutoresizingFlexibleWidth];
-
-    if (!PresentNTPPanelModally()) {
-      [_incognitoView setBackgroundColor:[UIColor clearColor]];
-    } else {
-      [_incognitoView
-          setBackgroundColor:[UIColor colorWithWhite:34 / 255.0 alpha:1.0]];
-    }
-    if (!IsIPadIdiom()) {
-      [_incognitoView setDelegate:self];
-      _toolbarDelegate = toolbarDelegate;
-      [_toolbarDelegate setToolbarBackgroundAlpha:0];
-    }
-    [_view addSubview:_incognitoView];
-  }
-  return self;
-}
-
-- (CGFloat)toolbarAlphaForScrollView:(UIScrollView*)scrollView {
-  CGFloat alpha = scrollView.contentOffset.y / kDistanceToFadeToolbar;
-  return MAX(MIN(alpha, 1), 0);
-}
-
-- (void)dealloc {
-  [self.toolbarDelegate setToolbarBackgroundAlpha:1];
-  [_incognitoView setDelegate:nil];
-}
-
-#pragma mark -
-#pragma mark NewTabPagePanelProtocol
-
-- (void)reload {
-}
-
-- (void)wasShown {
-  CGFloat alpha = [self toolbarAlphaForScrollView:_incognitoView];
-  [self.toolbarDelegate setToolbarBackgroundAlpha:alpha];
-}
-
-- (void)wasHidden {
-  [self.toolbarDelegate setToolbarBackgroundAlpha:1];
-}
-
-- (void)dismissModals {
-}
-
-- (void)dismissKeyboard {
-}
-
-- (void)setScrollsToTop:(BOOL)enable {
-}
-
-- (CGFloat)alphaForBottomShadow {
-  return 0;
-}
-
-#pragma mark -
-#pragma mark UIScrollViewDelegate methods
-
-- (void)scrollViewDidScroll:(UIScrollView*)scrollView {
-  CGFloat alpha = [self toolbarAlphaForScrollView:_incognitoView];
-  [self.toolbarDelegate setToolbarBackgroundAlpha:alpha];
+// Triggers a navigation to the help page.
+- (void)learnMoreButtonPressed {
+  GURL gurl = GetUrlWithLang(GURL(kLearnMoreIncognitoUrl));
+  [_loader loadURL:gurl
+               referrer:web::Referrer()
+             transition:ui::PAGE_TRANSITION_LINK
+      rendererInitiated:NO];
 }
 
 @end

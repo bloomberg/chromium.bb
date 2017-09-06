@@ -47,8 +47,7 @@ class ChromeBrowserState;
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
     NS_UNAVAILABLE;
 
-// TODO(crbug.com/708319): Expose the view controller in preparation for a full
-// view controller conversion.
+// The view controller managed by this coordinator.
 - (UIViewController*)viewController;
 
 @end
