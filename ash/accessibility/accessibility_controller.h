@@ -44,11 +44,16 @@ class ASH_EXPORT AccessibilityController : public SessionObserver {
   static bool RequiresCursorCompositing(PrefService* prefs);
 
   // SessionObserver:
+  void OnSigninScreenPrefServiceInitialized(PrefService* prefs) override;
   void OnActiveUserPrefServiceChanged(PrefService* prefs) override;
 
   void SetPrefServiceForTest(PrefService* prefs);
 
  private:
+  // Observes either the signin screen prefs or active user prefs and loads
+  // initial settings.
+  void ObservePrefs(PrefService* prefs);
+
   // Before login returns the signin screen profile prefs. After login returns
   // the active user profile prefs. Returns null early during startup.
   PrefService* GetActivePrefService() const;

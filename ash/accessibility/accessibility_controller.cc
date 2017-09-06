@@ -21,6 +21,8 @@
 #include "services/ui/public/interfaces/constants.mojom.h"
 #include "ui/base/cursor/cursor_type.h"
 
+using session_manager::SessionState;
+
 namespace ash {
 namespace {
 
@@ -96,9 +98,23 @@ bool AccessibilityController::RequiresCursorCompositing(PrefService* prefs) {
          prefs->GetBoolean(prefs::kAccessibilityScreenMagnifierEnabled);
 }
 
+void AccessibilityController::OnSigninScreenPrefServiceInitialized(
+    PrefService* prefs) {
+  ObservePrefs(prefs);
+}
+
 void AccessibilityController::OnActiveUserPrefServiceChanged(
     PrefService* prefs) {
-  // Watch for pref updates from webui settings.
+  ObservePrefs(prefs);
+}
+
+void AccessibilityController::SetPrefServiceForTest(PrefService* prefs) {
+  pref_service_for_test_ = prefs;
+  ObservePrefs(prefs);
+}
+
+void AccessibilityController::ObservePrefs(PrefService* prefs) {
+  // Watch for pref updates from webui settings and policy.
   pref_change_registrar_ = base::MakeUnique<PrefChangeRegistrar>();
   pref_change_registrar_->Init(prefs);
   pref_change_registrar_->Add(
@@ -114,20 +130,23 @@ void AccessibilityController::OnActiveUserPrefServiceChanged(
       base::Bind(&AccessibilityController::UpdateHighContrastFromPref,
                  base::Unretained(this)));
 
+  // Load current state.
   UpdateLargeCursorFromPref();
   UpdateHighContrastFromPref();
-}
-
-void AccessibilityController::SetPrefServiceForTest(PrefService* prefs) {
-  pref_service_for_test_ = prefs;
-  OnActiveUserPrefServiceChanged(prefs);
 }
 
 PrefService* AccessibilityController::GetActivePrefService() const {
   if (pref_service_for_test_)
     return pref_service_for_test_;
 
-  return Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+  SessionController* session = Shell::Get()->session_controller();
+  // Use the active user prefs once they become available. Check the PrefService
+  // object instead of session state because prefs load is async after login.
+  PrefService* user_prefs = session->GetLastActiveUserPrefService();
+  if (user_prefs)
+    return user_prefs;
+
+  return session->GetSigninScreenPrefService();
 }
 
 void AccessibilityController::UpdateLargeCursorFromPref() {
