@@ -7,7 +7,6 @@
 #include "base/atomic_sequence_num.h"
 #include "base/callback.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "content/child/service_worker/service_worker_event_dispatcher_holder.h"
 #include "content/common/service_worker/service_worker_loader_helpers.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/child/child_url_loader_factory_getter.h"
@@ -37,7 +36,8 @@ ServiceWorkerSubresourceLoader::ServiceWorkerSubresourceLoader(
     const ResourceRequest& resource_request,
     mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
-    scoped_refptr<ServiceWorkerEventDispatcherHolder> event_dispatcher,
+    scoped_refptr<base::RefCountedData<mojom::ServiceWorkerEventDispatcherPtr>>
+        event_dispatcher,
     scoped_refptr<ChildURLLoaderFactoryGetter> default_loader_factory_getter,
     const GURL& controller_origin)
     : url_loader_client_(std::move(client)),
@@ -53,7 +53,7 @@ ServiceWorkerSubresourceLoader::ServiceWorkerSubresourceLoader(
       blob_client_binding_(this),
       default_loader_factory_getter_(std::move(default_loader_factory_getter)),
       weak_factory_(this) {
-  DCHECK(event_dispatcher_ && event_dispatcher_->get());
+  DCHECK(event_dispatcher_ && event_dispatcher_->data);
   url_loader_binding_.set_connection_error_handler(base::BindOnce(
       &ServiceWorkerSubresourceLoader::DeleteSoon, weak_factory_.GetWeakPtr()));
   StartRequest(resource_request);
@@ -80,7 +80,7 @@ void ServiceWorkerSubresourceLoader::StartRequest(
   mojom::ServiceWorkerFetchResponseCallbackPtr response_callback_ptr;
   response_callback_binding_.Bind(mojo::MakeRequest(&response_callback_ptr));
 
-  event_dispatcher_->get()->DispatchFetchEvent(
+  event_dispatcher_->data->DispatchFetchEvent(
       GetNextFetchEventID(), *request, mojom::FetchEventPreloadHandlePtr(),
       std::move(response_callback_ptr),
       base::Bind(&ServiceWorkerSubresourceLoader::OnFetchEventFinished,
@@ -298,7 +298,8 @@ void ServiceWorkerSubresourceLoader::OnComplete(
 // ServiceWorkerSubresourceLoaderFactory ------------------------------------
 
 ServiceWorkerSubresourceLoaderFactory::ServiceWorkerSubresourceLoaderFactory(
-    scoped_refptr<ServiceWorkerEventDispatcherHolder> event_dispatcher,
+    scoped_refptr<base::RefCountedData<mojom::ServiceWorkerEventDispatcherPtr>>
+        event_dispatcher,
     scoped_refptr<ChildURLLoaderFactoryGetter> default_loader_factory_getter,
     const GURL& controller_origin)
     : event_dispatcher_(std::move(event_dispatcher)),

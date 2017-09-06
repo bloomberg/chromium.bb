@@ -148,8 +148,6 @@ target(link_target_type, "child") {
     "service_factory.h",
     "service_worker/service_worker_dispatcher.cc",
     "service_worker/service_worker_dispatcher.h",
-    "service_worker/service_worker_event_dispatcher_holder.cc",
-    "service_worker/service_worker_event_dispatcher_holder.h",
     "service_worker/service_worker_handle_reference.cc",
     "service_worker/service_worker_handle_reference.h",
     "service_worker/service_worker_message_filter.cc",
