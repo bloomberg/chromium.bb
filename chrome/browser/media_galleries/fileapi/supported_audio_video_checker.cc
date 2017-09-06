@@ -16,6 +16,9 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/task_scheduler/task_traits.h"
+#include "base/threading/thread_restrictions.h"
 #include "chrome/browser/media_galleries/fileapi/safe_audio_video_checker.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/mime_util.h"
@@ -52,8 +55,8 @@ class SupportedAudioVideoExtensions {
 base::LazyInstance<SupportedAudioVideoExtensions>::DestructorAtExit
     g_audio_video_extensions = LAZY_INSTANCE_INITIALIZER;
 
-base::File OpenOnFileThread(const base::FilePath& path) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
+base::File OpenBlocking(const base::FilePath& path) {
+  base::ThreadRestrictions::AssertIOAllowed();
   return base::File(path, base::File::FLAG_OPEN | base::File::FLAG_READ);
 }
 
@@ -72,12 +75,11 @@ void SupportedAudioVideoChecker::StartPreWriteValidation(
   DCHECK(callback_.is_null());
   callback_ = result_callback;
 
-  content::BrowserThread::PostTaskAndReplyWithResult(
-      content::BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(&OpenOnFileThread, path_),
-      base::Bind(&SupportedAudioVideoChecker::OnFileOpen,
-                 weak_factory_.GetWeakPtr()));
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+      base::BindOnce(&OpenBlocking, path_),
+      base::BindOnce(&SupportedAudioVideoChecker::OnFileOpen,
+                     weak_factory_.GetWeakPtr()));
 }
 
 SupportedAudioVideoChecker::SupportedAudioVideoChecker(
