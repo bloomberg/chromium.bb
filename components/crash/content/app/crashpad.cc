@@ -188,11 +188,11 @@ void InitializeCrashpadImpl(bool initial_client,
 
 void SetCrashKeyValue(const base::StringPiece& key,
                       const base::StringPiece& value) {
-  g_simple_string_dictionary->SetKeyValue(key.data(), value.data());
+  g_simple_string_dictionary->SetKeyValue(key, value);
 }
 
 void ClearCrashKey(const base::StringPiece& key) {
-  g_simple_string_dictionary->RemoveKey(key.data());
+  g_simple_string_dictionary->RemoveKey(key);
 }
 
 void InitializeCrashpad(bool initial_client, const std::string& process_type) {
