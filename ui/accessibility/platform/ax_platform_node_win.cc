@@ -1328,7 +1328,7 @@ STDMETHODIMP AXPlatformNodeWin::get_groupPosition(LONG* group_level,
   *similar_items_in_group = GetIntAttribute(ui::AX_ATTR_SET_SIZE);
   *position_in_group = GetIntAttribute(ui::AX_ATTR_POS_IN_SET);
 
-  if (*group_level == *similar_items_in_group == *position_in_group == 0)
+  if (!*group_level && !*similar_items_in_group && !*position_in_group)
     return S_FALSE;
   return S_OK;
 }
