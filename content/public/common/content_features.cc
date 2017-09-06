@@ -263,6 +263,11 @@ const base::Feature kSendBeaconThrowForBlobWithNonSimpleType{
     "SendBeaconThrowForBlobWithNonSimpleType",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Service worker based payment apps as defined by w3c here:
+// https://w3c.github.io/webpayments-payment-apps-api/
+const base::Feature kServiceWorkerPaymentApps{
+    "ServiceWorkerPaymentApps", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Streaming installed scripts on starting service workers.
 const base::Feature kServiceWorkerScriptStreaming{
     "ServiceWorkerScriptStreaming", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -418,12 +423,6 @@ const base::Feature kAndroidAutofillAccessibility{
 // Enables hiding incorrectly-sized frames while in fullscreen.
 const base::Feature kHideIncorrectlySizedFullscreenFrames{
     "HideIncorrectlySizedFullscreenFrames", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Service worker based payment apps as defined by w3c here:
-// https://w3c.github.io/webpayments-payment-apps-api/
-const base::Feature kServiceWorkerPaymentApps{
-    "ServiceWorkerPaymentApps",
-    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether the WebNFC API is enabled:
 // https://w3c.github.io/web-nfc/

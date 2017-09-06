@@ -2687,6 +2687,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kWebPaymentsModifiersDescription,
      kOsAndroid | kOsDesktop,
      FEATURE_VALUE_TYPE(payments::features::kWebPaymentsModifiers)},
+    {"service-worker-payment-apps",
+     flag_descriptions::kServiceWorkerPaymentAppsName,
+     flag_descriptions::kServiceWorkerPaymentAppsDescription,
+     kOsAndroid | kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kServiceWorkerPaymentApps)},
 #if defined(OS_ANDROID)
     {"enable-android-pay-integration-v1",
      flag_descriptions::kEnableAndroidPayIntegrationV1Name,
@@ -2712,10 +2717,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"pay-with-google-v1", flag_descriptions::kPayWithGoogleV1Name,
      flag_descriptions::kPayWithGoogleV1Description, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kPayWithGoogleV1)},
-    {"service-worker-payment-apps",
-     flag_descriptions::kServiceWorkerPaymentAppsName,
-     flag_descriptions::kServiceWorkerPaymentAppsDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(features::kServiceWorkerPaymentApps)},
 #endif  // OS_ANDROID
 #if defined(OS_CHROMEOS)
     {"disable-eol-notification", flag_descriptions::kEolNotificationName,
