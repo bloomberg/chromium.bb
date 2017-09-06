@@ -811,12 +811,15 @@ class _BuilderRunBase(object):
           'Android branch could not be determined for %s (no package?)' % board)
     ebuild_path = portage_util.FindEbuildForBoardPackage(android_package, board)
     host_ebuild_path = path_util.FromChrootPath(ebuild_path)
-    ebuild_content = osutils.SourceEnvironment(host_ebuild_path, ['ARM_TARGET'])
     # We assume all targets pull from the same branch and that we always
-    # have an ARM_TARGET.
-    if 'ARM_TARGET' in ebuild_content:
-      return re.search(r'(.*?)-linux-cheets',
-                       ebuild_content['ARM_TARGET']).group(1)
+    # have an ARM_TARGET or an AOSP_X86_USERDEBUG_TARGET.
+    targets = ['ARM_TARGET', 'AOSP_X86_USERDEBUG_TARGET']
+    ebuild_content = osutils.SourceEnvironment(host_ebuild_path, targets)
+    for target in targets:
+      if target in ebuild_content:
+        branch = re.search(r'(.*?)-linux-', ebuild_content[target])
+        if branch is not None:
+          return branch.group(1)
     raise NoAndroidBranchError(
         'Android branch could not be determined for %s (ebuild empty?)' % board)
 
