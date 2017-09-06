@@ -56,6 +56,7 @@
 #if CONFIG_LOOP_RESTORATION
 #include "av1/encoder/pickrst.h"
 #endif  // CONFIG_LOOP_RESTORATION
+#include "av1/encoder/random.h"
 #include "av1/encoder/ratectrl.h"
 #include "av1/encoder/rd.h"
 #include "av1/encoder/segmentation.h"
@@ -848,7 +849,7 @@ void av1_new_framerate(AV1_COMP *cpi, double framerate) {
   cpi->od_rc.framerate = cpi->framerate;
   od_enc_rc_resize(&cpi->od_rc);
 #else
-  av1_rc_update_framerate(cpi);
+  av1_rc_update_framerate(cpi, cpi->common.width, cpi->common.height);
 #endif
 }
 
@@ -3934,7 +3935,8 @@ static void set_size_dependent_vars(AV1_COMP *cpi, int *q, int *bottom_index,
       &cpi->od_rc, cpi->refresh_golden_frame, cpi->refresh_alt_ref_frame,
       frame_type, bottom_index, top_index);
 #else
-  *q = av1_rc_pick_q_and_bounds(cpi, bottom_index, top_index);
+  *q = av1_rc_pick_q_and_bounds(cpi, cm->width, cm->height, bottom_index,
+                                top_index);
 #endif
 
   if (!frame_is_intra_only(cm)) {
@@ -4076,7 +4078,7 @@ static void set_frame_size(AV1_COMP *cpi, int width, int height) {
 
 #if !CONFIG_XIPHRC
   if (cpi->oxcf.pass == 2) {
-    av1_set_target_rate(cpi);
+    av1_set_target_rate(cpi, cm->width, cm->height);
   }
 #endif
 
@@ -4164,24 +4166,130 @@ static void set_frame_size(AV1_COMP *cpi, int width, int height) {
   set_ref_ptrs(cm, xd, LAST_FRAME, LAST_FRAME);
 }
 
-static void setup_frame_size(AV1_COMP *cpi) {
+static uint8_t calculate_next_resize_scale(const AV1_COMP *cpi) {
+  // Choose an arbitrary random number
+  static unsigned int seed = 56789;
+  const AV1EncoderConfig *oxcf = &cpi->oxcf;
+  if (oxcf->pass == 1) return SCALE_DENOMINATOR;
+  uint8_t new_num = SCALE_DENOMINATOR;
+
+  switch (oxcf->resize_mode) {
+    case RESIZE_NONE: new_num = SCALE_DENOMINATOR; break;
+    case RESIZE_FIXED:
+      if (cpi->common.frame_type == KEY_FRAME)
+        new_num = oxcf->resize_kf_scale_numerator;
+      else
+        new_num = oxcf->resize_scale_numerator;
+      break;
+    case RESIZE_RANDOM: new_num = lcg_rand16(&seed) % 9 + 8; break;
+    default: assert(0);
+  }
+  return new_num;
+}
+
+#if CONFIG_FRAME_SUPERRES
+static uint8_t calculate_next_superres_scale(AV1_COMP *cpi) {
+  // Choose an arbitrary random number
+  static unsigned int seed = 34567;
+  const AV1EncoderConfig *oxcf = &cpi->oxcf;
+  if (oxcf->pass == 1) return SCALE_DENOMINATOR;
+  uint8_t new_num = SCALE_DENOMINATOR;
+  int bottom_index, top_index, q, qthresh;
+
+  switch (oxcf->superres_mode) {
+    case SUPERRES_NONE: new_num = SCALE_DENOMINATOR; break;
+    case SUPERRES_FIXED:
+      if (cpi->common.frame_type == KEY_FRAME)
+        new_num = oxcf->superres_kf_scale_numerator;
+      else
+        new_num = oxcf->superres_scale_numerator;
+      break;
+    case SUPERRES_RANDOM: new_num = lcg_rand16(&seed) % 9 + 8; break;
+    case SUPERRES_QTHRESH:
+      qthresh = (cpi->common.frame_type == KEY_FRAME ? oxcf->superres_kf_qthresh
+                                                     : oxcf->superres_qthresh);
+      av1_set_target_rate(cpi, cpi->oxcf.width, cpi->oxcf.height);
+      q = av1_rc_pick_q_and_bounds(cpi, cpi->oxcf.width, cpi->oxcf.height,
+                                   &bottom_index, &top_index);
+      if (q < qthresh) {
+        new_num = SCALE_DENOMINATOR;
+      } else {
+        new_num = SCALE_DENOMINATOR - 1 - ((q - qthresh) >> 3);
+        new_num = AOMMAX(SCALE_DENOMINATOR / 2, new_num);
+        // printf("SUPERRES: q %d, qthresh %d: num %d\n", q, qthresh, new_num);
+      }
+      break;
+    default: assert(0);
+  }
+  return new_num;
+}
+
+static int validate_size_scales(RESIZE_MODE resize_mode,
+                                SUPERRES_MODE superres_mode,
+                                size_params_type *rsz) {
+  if (rsz->resize_num * rsz->superres_num * 2 >
+      SCALE_DENOMINATOR * SCALE_DENOMINATOR)
+    return 1;
+  if (resize_mode != RESIZE_RANDOM && superres_mode == SUPERRES_RANDOM) {
+    rsz->superres_num =
+        (SCALE_DENOMINATOR * SCALE_DENOMINATOR + 2 * rsz->resize_num - 1) /
+        (2 * rsz->resize_num);
+  } else if (resize_mode == RESIZE_RANDOM && superres_mode != SUPERRES_RANDOM) {
+    rsz->resize_num =
+        (SCALE_DENOMINATOR * SCALE_DENOMINATOR + 2 * rsz->superres_num - 1) /
+        (2 * rsz->superres_num);
+  } else if (resize_mode == RESIZE_RANDOM && superres_mode == SUPERRES_RANDOM) {
+    do {
+      if (rsz->resize_num < rsz->superres_num)
+        ++rsz->resize_num;
+      else
+        ++rsz->superres_num;
+    } while (rsz->resize_num * rsz->superres_num * 2 <=
+             SCALE_DENOMINATOR * SCALE_DENOMINATOR);
+  } else {
+    return 0;
+  }
+  return 1;
+}
+#endif  // CONFIG_FRAME_SUPERRES
+
+size_params_type av1_calculate_next_size_params(AV1_COMP *cpi) {
+  const AV1EncoderConfig *oxcf = &cpi->oxcf;
+  size_params_type rsz = {
+    SCALE_DENOMINATOR,
+#if CONFIG_FRAME_SUPERRES
+    SCALE_DENOMINATOR
+#endif  // CONFIG_FRAME_SUPERRES
+  };
+  if (oxcf->pass == 1) return rsz;
+  rsz.resize_num = calculate_next_resize_scale(cpi);
+#if CONFIG_FRAME_SUPERRES
+  rsz.superres_num = calculate_next_superres_scale(cpi);
+  if (!validate_size_scales(oxcf->resize_mode, oxcf->superres_mode, &rsz))
+    assert(0 && "Invalid scale parameters");
+#endif  // CONFIG_FRAME_SUPERRES
+  return rsz;
+}
+
+static void setup_frame_size_from_params(AV1_COMP *cpi, size_params_type *rsz) {
   int encode_width = cpi->oxcf.width;
   int encode_height = cpi->oxcf.height;
-
-  uint8_t resize_num = av1_calculate_next_resize_scale(cpi);
-  av1_calculate_scaled_size(&encode_width, &encode_height, resize_num);
+  av1_calculate_scaled_size(&encode_width, &encode_height, rsz->resize_num);
 
 #if CONFIG_FRAME_SUPERRES
   AV1_COMMON *cm = &cpi->common;
   cm->superres_upscaled_width = encode_width;
   cm->superres_upscaled_height = encode_height;
-  cm->superres_scale_numerator =
-      av1_calculate_next_superres_scale(cpi, encode_width, encode_height);
-  av1_calculate_scaled_size(&encode_width, &encode_height,
-                            cm->superres_scale_numerator);
+  cm->superres_scale_numerator = rsz->superres_num;
+  av1_calculate_scaled_size(&encode_width, &encode_height, rsz->superres_num);
 #endif  // CONFIG_FRAME_SUPERRES
-
   set_frame_size(cpi, encode_width, encode_height);
+}
+
+static void setup_frame_size(AV1_COMP *cpi) {
+  size_params_type rsz;
+  rsz = av1_calculate_next_size_params(cpi);
+  setup_frame_size_from_params(cpi, &rsz);
 }
 
 #if CONFIG_FRAME_SUPERRES
@@ -4326,7 +4434,9 @@ static void encode_without_recode_loop(AV1_COMP *cpi) {
   aom_clear_system_state();
 
   set_size_independent_vars(cpi);
+
   setup_frame_size(cpi);
+
   assert(cm->width == cpi->scaled_source.y_crop_width);
   assert(cm->height == cpi->scaled_source.y_crop_height);
 
@@ -4397,14 +4507,14 @@ static void encode_with_recode_loop(AV1_COMP *cpi, size_t *size,
   cpi->source->buf_8bit_valid = 0;
 #endif
 
+  aom_clear_system_state();
+  setup_frame_size(cpi);
+  set_size_dependent_vars(cpi, &q, &bottom_index, &top_index);
+
   do {
     aom_clear_system_state();
 
-    setup_frame_size(cpi);
-
     if (loop_count == 0) {
-      set_size_dependent_vars(cpi, &q, &bottom_index, &top_index);
-
       // TODO(agrange) Scale cpi->max_mv_magnitude if frame-size has changed.
       set_mv_search_params(cpi);
 
@@ -4572,20 +4682,22 @@ static void encode_with_recode_loop(AV1_COMP *cpi, size_t *size,
 
           if (undershoot_seen || loop_at_this_size > 1) {
             // Update rate_correction_factor unless
-            av1_rc_update_rate_correction_factors(cpi);
+            av1_rc_update_rate_correction_factors(cpi, cm->width, cm->height);
 
             q = (q_high + q_low + 1) / 2;
           } else {
             // Update rate_correction_factor unless
-            av1_rc_update_rate_correction_factors(cpi);
+            av1_rc_update_rate_correction_factors(cpi, cm->width, cm->height);
 
             q = av1_rc_regulate_q(cpi, rc->this_frame_target, bottom_index,
-                                  AOMMAX(q_high, top_index));
+                                  AOMMAX(q_high, top_index), cm->width,
+                                  cm->height);
 
             while (q < q_low && retries < 10) {
-              av1_rc_update_rate_correction_factors(cpi);
+              av1_rc_update_rate_correction_factors(cpi, cm->width, cm->height);
               q = av1_rc_regulate_q(cpi, rc->this_frame_target, bottom_index,
-                                    AOMMAX(q_high, top_index));
+                                    AOMMAX(q_high, top_index), cm->width,
+                                    cm->height);
               retries++;
             }
           }
@@ -4596,12 +4708,12 @@ static void encode_with_recode_loop(AV1_COMP *cpi, size_t *size,
           q_high = q > q_low ? q - 1 : q_low;
 
           if (overshoot_seen || loop_at_this_size > 1) {
-            av1_rc_update_rate_correction_factors(cpi);
+            av1_rc_update_rate_correction_factors(cpi, cm->width, cm->height);
             q = (q_high + q_low) / 2;
           } else {
-            av1_rc_update_rate_correction_factors(cpi);
+            av1_rc_update_rate_correction_factors(cpi, cm->width, cm->height);
             q = av1_rc_regulate_q(cpi, rc->this_frame_target, bottom_index,
-                                  top_index);
+                                  top_index, cm->width, cm->height);
             // Special case reset for qlow for constrained quality.
             // This should only trigger where there is very substantial
             // undershoot on a frame and the auto cq level is above
@@ -4611,9 +4723,9 @@ static void encode_with_recode_loop(AV1_COMP *cpi, size_t *size,
             }
 
             while (q > q_high && retries < 10) {
-              av1_rc_update_rate_correction_factors(cpi);
+              av1_rc_update_rate_correction_factors(cpi, cm->width, cm->height);
               q = av1_rc_regulate_q(cpi, rc->this_frame_target, bottom_index,
-                                    top_index);
+                                    top_index, cm->width, cm->height);
               retries++;
             }
           }
@@ -5004,7 +5116,7 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
     // Since we allocate a spot for the OVERLAY frame in the gf group, we need
     // to do post-encoding update accordingly.
     if (cpi->rc.is_src_frame_alt_ref) {
-      av1_set_target_rate(cpi);
+      av1_set_target_rate(cpi, cm->width, cm->height);
 #if CONFIG_XIPHRC
       frame_type = cm->frame_type == INTER_FRAME ? OD_P_FRAME : OD_I_FRAME;
       drop_this_frame = od_enc_rc_update_state(

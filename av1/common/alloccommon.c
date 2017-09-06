@@ -19,6 +19,22 @@
 #include "av1/common/entropymv.h"
 #include "av1/common/onyxc_int.h"
 
+int av1_get_MBs(int width, int height) {
+  const int aligned_width = ALIGN_POWER_OF_TWO(width, 3);
+  const int aligned_height = ALIGN_POWER_OF_TWO(height, 3);
+  const int mi_cols = aligned_width >> MI_SIZE_LOG2;
+  const int mi_rows = aligned_height >> MI_SIZE_LOG2;
+
+#if CONFIG_CB4X4
+  const int mb_cols = (mi_cols + 2) >> 2;
+  const int mb_rows = (mi_rows + 2) >> 2;
+#else
+  const int mb_cols = (mi_cols + 1) >> 1;
+  const int mb_rows = (mi_rows + 1) >> 1;
+#endif
+  return mb_rows * mb_cols;
+}
+
 void av1_set_mb_mi(AV1_COMMON *cm, int width, int height) {
   // Ensure that the decoded width and height are both multiples of
   // 8 luma pixels (note: this may only be a multiple of 4 chroma pixels if

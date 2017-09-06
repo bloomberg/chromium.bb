@@ -134,14 +134,20 @@ typedef enum {
 #endif
 typedef enum {
   RESIZE_NONE = 0,    // No frame resizing allowed.
-  RESIZE_FIXED = 1,   // All frames are coded at the specified dimension.
-  RESIZE_DYNAMIC = 2  // Coded size of each frame is determined by the codec.
+  RESIZE_FIXED = 1,   // All frames are coded at the specified scale.
+  RESIZE_RANDOM = 2,  // All frames are coded at a random scale.
+  RESIZE_MODES
 } RESIZE_MODE;
 #if CONFIG_FRAME_SUPERRES
 typedef enum {
-  SUPERRES_NONE = 0,
-  SUPERRES_FIXED = 1,
-  SUPERRES_DYNAMIC = 2
+  SUPERRES_NONE = 0,     // No frame superres allowed
+  SUPERRES_FIXED = 1,    // All frames are coded at the specified scale,
+                         // and super-resolved.
+  SUPERRES_RANDOM = 2,   // All frames are coded at a random scale,
+                         // and super-resolved.
+  SUPERRES_QTHRESH = 3,  // Superres scale for a frame is determined based on
+                         // q_index
+  SUPERRES_MODES
 } SUPERRES_MODE;
 #endif  // CONFIG_FRAME_SUPERRES
 
@@ -224,6 +230,8 @@ typedef struct AV1EncoderConfig {
   SUPERRES_MODE superres_mode;
   uint8_t superres_scale_numerator;
   uint8_t superres_kf_scale_numerator;
+  int superres_qthresh;
+  int superres_kf_qthresh;
 #endif  // CONFIG_FRAME_SUPERRES
 
   // Enable feature to reduce the frame quantization every x frames.

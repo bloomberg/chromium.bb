@@ -8,7 +8,6 @@
  * Media Patent License 1.0 was not distributed with this source code in the
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
-
 #include <stdlib.h>
 #include <string.h>
 
@@ -251,17 +250,19 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
                 (MAX_LAG_BUFFERS - 1));
   }
 
-  RANGE_CHECK_HI(cfg, rc_resize_mode, RESIZE_DYNAMIC);
+  RANGE_CHECK_HI(cfg, rc_resize_mode, RESIZE_MODES - 1);
   RANGE_CHECK(cfg, rc_resize_numerator, SCALE_DENOMINATOR / 2,
               SCALE_DENOMINATOR);
   RANGE_CHECK(cfg, rc_resize_kf_numerator, SCALE_DENOMINATOR / 2,
               SCALE_DENOMINATOR);
 #if CONFIG_FRAME_SUPERRES
-  RANGE_CHECK_HI(cfg, rc_superres_mode, SUPERRES_DYNAMIC);
+  RANGE_CHECK_HI(cfg, rc_superres_mode, SUPERRES_MODES - 1);
   RANGE_CHECK(cfg, rc_superres_numerator, SCALE_DENOMINATOR / 2,
               SCALE_DENOMINATOR);
   RANGE_CHECK(cfg, rc_superres_kf_numerator, SCALE_DENOMINATOR / 2,
               SCALE_DENOMINATOR);
+  RANGE_CHECK(cfg, rc_superres_qthresh, 1, 63);
+  RANGE_CHECK(cfg, rc_superres_kf_qthresh, 1, 63);
 #endif  // CONFIG_FRAME_SUPERRES
 
   // AV1 does not support a lower bound on the keyframe interval in
@@ -513,9 +514,19 @@ static aom_codec_err_t set_encoder_config(
   oxcf->superres_mode = (SUPERRES_MODE)cfg->rc_superres_mode;
   oxcf->superres_scale_numerator = (uint8_t)cfg->rc_superres_numerator;
   oxcf->superres_kf_scale_numerator = (uint8_t)cfg->rc_superres_kf_numerator;
+  oxcf->superres_qthresh =
+      extra_cfg->lossless ? 255
+                          : av1_quantizer_to_qindex(cfg->rc_superres_qthresh);
+  oxcf->superres_kf_qthresh =
+      extra_cfg->lossless
+          ? 255
+          : av1_quantizer_to_qindex(cfg->rc_superres_kf_qthresh);
   if (oxcf->superres_mode == SUPERRES_FIXED &&
       oxcf->superres_scale_numerator == SCALE_DENOMINATOR &&
       oxcf->superres_kf_scale_numerator == SCALE_DENOMINATOR)
+    oxcf->superres_mode = SUPERRES_NONE;
+  if (oxcf->superres_mode == SUPERRES_QTHRESH &&
+      oxcf->superres_qthresh == 255 && oxcf->superres_kf_qthresh == 255)
     oxcf->superres_mode = SUPERRES_NONE;
 #endif  // CONFIG_FRAME_SUPERRES
 
@@ -1617,6 +1628,8 @@ static aom_codec_enc_cfg_map_t encoder_usage_cfg_map[] = {
         0,                  // rc_superres_mode
         SCALE_DENOMINATOR,  // rc_superres_numerator
         SCALE_DENOMINATOR,  // rc_superres_kf_numerator
+        63,                 // rc_superres_qthresh
+        63,                 // rc_superres_kf_qthresh
 
         AOM_VBR,      // rc_end_usage
         { NULL, 0 },  // rc_twopass_stats_in

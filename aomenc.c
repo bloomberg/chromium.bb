@@ -302,6 +302,11 @@ static const arg_def_t superres_numerator =
 static const arg_def_t superres_kf_numerator =
     ARG_DEF(NULL, "superres-kf-numerator", 1,
             "Frame super-resolution keyframe numerator");
+static const arg_def_t superres_qthresh = ARG_DEF(
+    NULL, "superres-qthresh", 1, "Frame super-resolution qindex threshold");
+static const arg_def_t superres_kf_qthresh =
+    ARG_DEF(NULL, "superres-kf-qthresh", 1,
+            "Frame super-resolution keyframe qindex threshold");
 #endif  // CONFIG_FRAME_SUPERRES
 static const struct arg_enum_list end_usage_enum[] = { { "vbr", AOM_VBR },
                                                        { "cbr", AOM_CBR },
@@ -334,6 +339,8 @@ static const arg_def_t *rc_args[] = { &dropframe_thresh,
                                       &superres_mode,
                                       &superres_numerator,
                                       &superres_kf_numerator,
+                                      &superres_qthresh,
+                                      &superres_kf_qthresh,
 #endif  // CONFIG_FRAME_SUPERRES
                                       &end_usage,
                                       &target_bitrate,
@@ -1055,6 +1062,10 @@ static int parse_stream_params(struct AvxEncoderConfig *global,
       config->cfg.rc_superres_numerator = arg_parse_uint(&arg);
     } else if (arg_match(&arg, &superres_kf_numerator, argi)) {
       config->cfg.rc_superres_kf_numerator = arg_parse_uint(&arg);
+    } else if (arg_match(&arg, &superres_qthresh, argi)) {
+      config->cfg.rc_superres_qthresh = arg_parse_uint(&arg);
+    } else if (arg_match(&arg, &superres_kf_qthresh, argi)) {
+      config->cfg.rc_superres_kf_qthresh = arg_parse_uint(&arg);
 #endif  // CONFIG_FRAME_SUPERRES
     } else if (arg_match(&arg, &end_usage, argi)) {
       config->cfg.rc_end_usage = arg_parse_enum_or_int(&arg);
@@ -1267,6 +1278,8 @@ static void show_stream_config(struct stream_state *stream,
   SHOW(rc_superres_mode);
   SHOW(rc_superres_numerator);
   SHOW(rc_superres_kf_numerator);
+  SHOW(rc_superres_qthresh);
+  SHOW(rc_superres_kf_qthresh);
 #endif  // CONFIG_FRAME_SUPERRES
   SHOW(rc_end_usage);
   SHOW(rc_target_bitrate);

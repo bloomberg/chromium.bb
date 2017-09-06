@@ -395,7 +395,7 @@ typedef struct aom_codec_enc_cfg {
    * using restoration filters should allow it to outperform normal resizing.
    *
    * Mode 0 is SUPERRES_NONE, mode 1 is SUPERRES_FIXED, and mode 2 is
-   * SUPERRES_DYNAMIC.
+   * SUPERRES_RANDOM.
    */
   unsigned int rc_superres_mode;
 
@@ -407,7 +407,7 @@ typedef struct aom_codec_enc_cfg {
    *
    * Valid numerators are 8 to 16.
    *
-   * Ignored by SUPERRES_DYNAMIC.
+   * Used only by SUPERRES_FIXED.
    */
   unsigned int rc_superres_numerator;
 
@@ -420,6 +420,24 @@ typedef struct aom_codec_enc_cfg {
    * Valid numerators are 8 - 16 for now.
    */
   unsigned int rc_superres_kf_numerator;
+
+  /*!\brief Frame super-resolution q threshold.
+   *
+   * The q level threshold after which superres is used.
+   * Valid values are 1 to 63.
+   *
+   * Used only by SUPERRES_QTHRESH
+   */
+  unsigned int rc_superres_qthresh;
+
+  /*!\brief Keyframe super-resolution q threshold.
+   *
+   * The q level threshold after which superres is used for key frames.
+   * Valid values are 1 to 63.
+   *
+   * Used only by SUPERRES_QTHRESH
+   */
+  unsigned int rc_superres_kf_qthresh;
 
   /*!\brief Rate control algorithm to use.
    *
