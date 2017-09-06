@@ -143,7 +143,7 @@ PaintImage::FrameKey PaintImage::GetKeyForFrame(size_t frame_index) const {
     content_id = paint_record_content_id_;
 
   DCHECK_NE(content_id, kInvalidContentId);
-  return FrameKey(id_, content_id, frame_index, subset_rect_);
+  return FrameKey(content_id, frame_index, subset_rect_);
 }
 
 const std::vector<FrameMetadata>& PaintImage::GetFrameMetadata() const {
@@ -176,17 +176,14 @@ std::string PaintImage::ToString() const {
   return str.str();
 }
 
-PaintImage::FrameKey::FrameKey(Id paint_image_id,
-                               ContentId content_id,
+PaintImage::FrameKey::FrameKey(ContentId content_id,
                                size_t frame_index,
                                gfx::Rect subset_rect)
-    : paint_image_id_(paint_image_id),
-      content_id_(content_id),
+    : content_id_(content_id),
       frame_index_(frame_index),
       subset_rect_(subset_rect) {
-  size_t original_hash = base::HashInts(
-      static_cast<uint64_t>(base::HashInts(paint_image_id_, content_id_)),
-      static_cast<uint64_t>(frame_index_));
+  size_t original_hash = base::HashInts(static_cast<uint64_t>(content_id_),
+                                        static_cast<uint64_t>(frame_index_));
   if (subset_rect_.IsEmpty()) {
     hash_ = original_hash;
   } else {
@@ -200,8 +197,7 @@ PaintImage::FrameKey::FrameKey(Id paint_image_id,
 }
 
 bool PaintImage::FrameKey::operator==(const FrameKey& other) const {
-  return paint_image_id_ == other.paint_image_id_ &&
-         content_id_ == other.content_id_ &&
+  return content_id_ == other.content_id_ &&
          frame_index_ == other.frame_index_ &&
          subset_rect_ == other.subset_rect_;
 }
@@ -212,8 +208,7 @@ bool PaintImage::FrameKey::operator!=(const FrameKey& other) const {
 
 std::string PaintImage::FrameKey::ToString() const {
   std::ostringstream str;
-  str << "paint_image_id: " << paint_image_id_ << ","
-      << "content_id: " << content_id_ << ","
+  str << "content_id: " << content_id_ << ","
       << "frame_index: " << frame_index_ << ","
       << "subset_rect: " << subset_rect_.ToString();
   return str.str();
