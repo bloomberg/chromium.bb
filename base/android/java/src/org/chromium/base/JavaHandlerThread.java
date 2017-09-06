@@ -56,7 +56,7 @@ public class JavaHandlerThread {
     @CalledByNative
     private void stopOnThread(final long nativeThread) {
         nativeStopThread(nativeThread);
-        MessageQueue queue = mThread.getLooper().getQueue();
+        MessageQueue queue = Looper.myQueue();
         // Add an idle handler so that the thread cleanup code can run after the message loop has
         // detected an idle state and quit properly.
         // This matches the behavior of base::Thread in that it will keep running non-delayed posted
