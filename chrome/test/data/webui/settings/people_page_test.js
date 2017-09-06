@@ -166,8 +166,7 @@ cr.define('settings_people_page', function() {
       });
 
       test('getProfileStatsCount', function() {
-        return profileInfoBrowserProxy.whenCalled('getProfileStatsCount')
-            .then(function() {
+        return browserProxy.whenCalled('getSyncStatus').then(function() {
           Polymer.dom.flush();
 
           // Open the disconnect dialog.
@@ -175,8 +174,9 @@ cr.define('settings_people_page', function() {
           assertTrue(!!disconnectButton);
           MockInteractions.tap(disconnectButton);
 
-          return new Promise(function(resolve) { peoplePage.async(resolve); });
+          return profileInfoBrowserProxy.whenCalled('getProfileStatsCount');
         }).then(function() {
+          Polymer.dom.flush();
           assertTrue(peoplePage.$$('#disconnectDialog').open);
 
           // Assert the warning message is as expected.

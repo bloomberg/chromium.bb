@@ -156,6 +156,9 @@ Polymer({
         settings.getCurrentRoute() == settings.routes.IMPORT_DATA;
 
     if (settings.getCurrentRoute() == settings.routes.SIGN_OUT) {
+      // <if expr="not chromeos">
+      settings.ProfileInfoBrowserProxyImpl.getInstance().getProfileStatsCount();
+      // </if>
       // If the sync status has not been fetched yet, optimistically display
       // the disconnect dialog. There is another check when the sync status is
       // fetched. The dialog will be closed then the user is not signed in.
@@ -228,11 +231,6 @@ Polymer({
   handleSyncStatus_: function(syncStatus) {
     if (!this.syncStatus && syncStatus && !syncStatus.signedIn)
       chrome.metricsPrivate.recordUserAction('Signin_Impression_FromSettings');
-
-    // <if expr="not chromeos">
-    if (syncStatus.signedIn)
-      settings.ProfileInfoBrowserProxyImpl.getInstance().getProfileStatsCount();
-    // </if>
 
     if (!syncStatus.signedIn && this.showDisconnectDialog_)
       this.$$('#disconnectDialog').close();
