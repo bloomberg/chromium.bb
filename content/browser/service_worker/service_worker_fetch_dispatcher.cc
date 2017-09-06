@@ -19,8 +19,10 @@
 #include "content/browser/loader/resource_requester_info.h"
 #include "content/browser/loader/url_loader_factory_impl.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
+#include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/browser/service_worker/service_worker_version.h"
+#include "content/browser/url_loader_factory_getter.h"
 #include "content/common/service_worker/service_worker_event_dispatcher.mojom.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/common/service_worker/service_worker_status_code.h"
@@ -114,9 +116,10 @@ void NotifyNavigationPreloadCompletedOnUI(
     agent_host->NavigationPreloadCompleted(request_id, completion_status);
 }
 
-// This class wraps a mojo::InterfacePtr<URLLoaderClient>. It also is a
-// URLLoaderClient implementation and delegates URLLoaderClient calls to the
-// wrapped client.
+// DelegatingURLLoaderClient is the URLLoaderClient for the navigation preload
+// network request. It watches as the response comes in, and pipes the response
+// back to the service worker while also doing extra processing like notifying
+// DevTools.
 class DelegatingURLLoaderClient final : public mojom::URLLoaderClient {
  public:
   using WorkerId = std::pair<int, int>;
@@ -492,7 +495,6 @@ void ServiceWorkerFetchDispatcher::DidFailToStartWorker(
 void ServiceWorkerFetchDispatcher::DispatchFetchEvent() {
   DCHECK_EQ(EmbeddedWorkerStatus::RUNNING, version_->running_status())
       << "Worker stopped too soon after it was started.";
-
   DCHECK(!prepare_callback_.is_null());
   base::Closure prepare_callback = prepare_callback_;
   prepare_callback.Run();
@@ -678,13 +680,83 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
       net::MutableNetworkTrafficAnnotationTag(
           original_request->traffic_annotation()));
 
-  std::unique_ptr<DelegatingURLLoader> url_loader(
-      base::MakeUnique<DelegatingURLLoader>(
-          std::move(url_loader_associated_ptr)));
+  auto url_loader = std::make_unique<DelegatingURLLoader>(
+      std::move(url_loader_associated_ptr));
   preload_handle_->url_loader = url_loader->CreateInterfacePtrAndBind();
-  url_loader_assets_ =
-      new URLLoaderAssets(std::move(url_loader_factory), std::move(url_loader),
-                          std::move(url_loader_client));
+  url_loader_assets_ = base::MakeRefCounted<URLLoaderAssets>(
+      std::move(url_loader_factory), std::move(url_loader),
+      std::move(url_loader_client));
+  return true;
+}
+
+// S13nServiceWorker
+bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreloadWithURLLoader(
+    const ResourceRequest& original_request,
+    URLLoaderFactoryGetter* url_loader_factory_getter,
+    base::OnceClosure on_response) {
+  if (resource_type_ != RESOURCE_TYPE_MAIN_FRAME &&
+      resource_type_ != RESOURCE_TYPE_SUB_FRAME) {
+    return false;
+  }
+  if (!version_->navigation_preload_state().enabled)
+    return false;
+  // TODO(horo): Currently NavigationPreload doesn't support request body.
+  if (!request_->blob_uuid.empty())
+    return false;
+
+  ResourceRequest resource_request(original_request);
+  // Set to SUB_RESOURCE because we shouldn't trigger NavigationResourceThrottle
+  // for the service worker navigation preload request.
+  resource_request.resource_type = RESOURCE_TYPE_SUB_RESOURCE;
+  resource_request.service_worker_mode = ServiceWorkerMode::NONE;
+  resource_request.do_not_prompt_for_login = true;
+  DCHECK(net::HttpUtil::IsValidHeaderValue(
+      version_->navigation_preload_state().header));
+  // TODO(crbug/762357): Record header size UMA, but not until *all* the
+  // navigation preload metrics are recorded on the S13N path; otherwise the
+  // metrics will get unbalanced.
+  // ServiceWorkerMetrics::RecordNavigationPreloadRequestHeaderSize(
+  //     version_->navigation_preload_state().header.length());
+  resource_request.headers.SetHeader(
+      "Service-Worker-Navigation-Preload",
+      version_->navigation_preload_state().header);
+
+  preload_handle_ = mojom::FetchEventPreloadHandle::New();
+
+  // Create the DelegatingURLLoaderClient, which becomes the
+  // URLLoaderClient for the navigation preload network request.
+  mojom::URLLoaderClientPtr url_loader_client_ptr;
+  preload_handle_->url_loader_client_request =
+      mojo::MakeRequest(&url_loader_client_ptr);
+  auto url_loader_client = base::MakeUnique<DelegatingURLLoaderClient>(
+      std::move(url_loader_client_ptr), std::move(on_response),
+      resource_request);
+
+  // Start the network request for the URL using the network loader.
+  // TODO(falken): What to do about routing_id, request_id, traffic annotation?
+  mojom::URLLoaderClientPtr url_loader_client_ptr_to_pass;
+  url_loader_client->Bind(&url_loader_client_ptr_to_pass);
+  mojom::URLLoaderPtr url_loader_associated_ptr;
+  url_loader_factory_getter->GetNetworkFactory()->get()->CreateLoaderAndStart(
+      mojo::MakeRequest(&url_loader_associated_ptr), -1 /* routing_id? */,
+      -1 /* request_id? */, mojom::kURLLoadOptionNone, resource_request,
+      std::move(url_loader_client_ptr_to_pass),
+      net::MutableNetworkTrafficAnnotationTag() /* empty? */);
+
+  // Hook the load up to DelegatingURLLoader, which will call our
+  // DelegatingURLLoaderClient.
+  auto url_loader = std::make_unique<DelegatingURLLoader>(
+      std::move(url_loader_associated_ptr));
+  preload_handle_->url_loader = url_loader->CreateInterfacePtrAndBind();
+
+  DCHECK(!url_loader_assets_);
+  // Unlike the non-S13N code path, we don't own the URLLoaderFactory being used
+  // (it's the generic network factory), so we don't need to pass it to
+  // URLLoaderAssets to keep it alive.
+  mojom::URLLoaderFactoryPtr null_factory;
+  url_loader_assets_ = base::MakeRefCounted<URLLoaderAssets>(
+      std::move(null_factory), std::move(url_loader),
+      std::move(url_loader_client));
   return true;
 }
 

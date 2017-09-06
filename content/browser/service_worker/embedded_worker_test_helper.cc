@@ -364,6 +364,11 @@ class EmbeddedWorkerTestHelper::MockRendererInterface : public mojom::Renderer {
 
 EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(
     const base::FilePath& user_data_directory)
+    : EmbeddedWorkerTestHelper(user_data_directory, nullptr) {}
+
+EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(
+    const base::FilePath& user_data_directory,
+    scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter)
     : browser_context_(base::MakeUnique<TestBrowserContext>()),
       render_process_host_(
           base::MakeUnique<MockRenderProcessHost>(browser_context_.get())),
@@ -375,11 +380,13 @@ EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(
       next_thread_id_(0),
       mock_render_process_id_(render_process_host_->GetID()),
       new_mock_render_process_id_(new_render_process_host_->GetID()),
+      url_loader_factory_getter_(std::move(url_loader_factory_getter)),
       weak_factory_(this) {
   scoped_refptr<base::SequencedTaskRunner> database_task_runner =
       base::ThreadTaskRunnerHandle::Get();
   wrapper_->InitInternal(user_data_directory, std::move(database_task_runner),
-                         nullptr, nullptr, nullptr, nullptr);
+                         nullptr, nullptr, nullptr,
+                         url_loader_factory_getter_.get());
   wrapper_->process_manager()->SetProcessIdForTest(mock_render_process_id());
   wrapper_->process_manager()->SetNewProcessIdForTest(new_render_process_id());
 
