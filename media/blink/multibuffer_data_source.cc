@@ -47,6 +47,12 @@ const int64_t kTargetSecondsBufferedAhead = 10;
 // Keep this many seconds of data for going back by default.
 const int64_t kTargetSecondsBufferedBehind = 2;
 
+// Extra buffer accumulation speed, in terms of download buffer.
+const int kSlowPreloadPercentage = 10;
+
+// Update buffer sizes every 32 progress updates.
+const int kUpdateBufferSizeFrequency = 32;
+
 }  // namespace
 
 namespace media {
@@ -393,6 +399,7 @@ void MultibufferDataSource::ReadTask() {
         static_cast<int>(std::min<int64_t>(available, read_op_->size()));
     bytes_read =
         reader_->TryReadAt(read_op_->position(), read_op_->data(), bytes_read);
+    url_data_->AddBytesRead(bytes_read);
 
     int64_t new_pos = read_op_->position() + bytes_read;
     if (reader_->AvailableAt(new_pos) <= reader_->Available())
@@ -524,6 +531,11 @@ void MultibufferDataSource::ProgressCallback(int64_t begin, int64_t end) {
     host_->AddBufferedByteRange(begin, end);
   }
 
+  if (buffer_size_update_counter_ > 0) {
+    buffer_size_update_counter_--;
+  } else {
+    UpdateBufferSizes();
+  }
   UpdateLoadingState_Locked(false);
 }
 
@@ -568,6 +580,8 @@ void MultibufferDataSource::UpdateBufferSizes() {
   if (!reader_)
     return;
 
+  buffer_size_update_counter_ = kUpdateBufferSizeFrequency;
+
   // Use a default bit rate if unknown and clamp to prevent overflow.
   int64_t bitrate = clamp<int64_t>(bitrate_, 0, kMaxBitrate);
   if (bitrate == 0)
@@ -585,6 +599,15 @@ void MultibufferDataSource::UpdateBufferSizes() {
   // Preload 10 seconds of data, clamped to some min/max value.
   int64_t preload = clamp(kTargetSecondsBufferedAhead * bytes_per_second,
                           kMinBufferPreload, kMaxBufferPreload);
+
+  // Increase buffering slowly at a rate of 10% of data downloaded so
+  // far, maxing out at the preload size.
+  int64_t extra_buffer = std::min(
+      preload, url_data_->BytesReadFromCache() * kSlowPreloadPercentage / 100);
+
+  // Add extra buffer to preload.
+  preload += extra_buffer;
+
   // We preload this much, then we stop unil we read |preload| before resuming.
   int64_t preload_high = preload + kPreloadHighExtra;
 
@@ -604,8 +627,9 @@ void MultibufferDataSource::UpdateBufferSizes() {
   // the data in pinned region is not present in the cache.
   int64_t buffer_size =
       std::min((kTargetSecondsBufferedAhead + kTargetSecondsBufferedBehind) *
-                   bytes_per_second,
-               preload_high + pin_backward);
+                       bytes_per_second +
+                   extra_buffer * 3,
+               preload_high + pin_backward + extra_buffer);
 
   if (url_data_->FullyCached() ||
       (url_data_->length() != kPositionNotSpecified &&

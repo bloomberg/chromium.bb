@@ -139,9 +139,16 @@ class MEDIA_BLINK_EXPORT MultiBuffer {
     explicit GlobalLRU(
         const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
 
-    // Free elements from cache if needed and possible.
+    // Free elements from cache if possible.
     // Don't free more than |max_to_free| blocks.
-    // Virtual for testing purposes.
+    void TryFree(int64_t max_to_free);
+
+    // Free as much memory from the cache as possible.
+    // Only used during critical memory pressure.
+    void TryFreeAll();
+
+    // Like TryFree, but only frees blocks if the data
+    // number of the blocks in the cache is too large.
     void Prune(int64_t max_to_free);
 
     // Returns true if there are prunable blocks.
