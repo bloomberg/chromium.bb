@@ -28,6 +28,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.NativePage;
 import org.chromium.chrome.browser.UrlConstants;
+import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.FullscreenListener;
 import org.chromium.chrome.browser.page_info.PageInfoPopup;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.InterceptNavigationDelegateImpl;
@@ -55,7 +56,8 @@ import org.chromium.ui.display.VirtualDisplayAndroid;
  * This view extends from GvrLayout which wraps a GLSurfaceView that renders VR shell.
  */
 @JNINamespace("vr_shell")
-public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Callback {
+public class VrShellImpl
+        extends GvrLayout implements VrShell, SurfaceHolder.Callback, FullscreenListener {
     private static final String TAG = "VrShellImpl";
     private static final float INCHES_TO_METERS = 0.0254f;
 
@@ -95,6 +97,7 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
     private float mLastContentHeight;
     private float mLastContentDpr;
     private Boolean mPaused;
+    private boolean mPendingVSyncPause;
 
     private AndroidUiGestureTarget mAndroidUiGestureTarget;
 
@@ -106,6 +109,8 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
         mActivity = activity;
         mDelegate = delegate;
         mTabModelSelector = tabModelSelector;
+
+        mActivity.getFullscreenManager().addListener(this);
 
         // This overrides the default intent created by GVR to return to Chrome when the DON flow
         // is triggered by resuming the GvrLayout, which is the usual way Daydream apps enter VR.
@@ -511,6 +516,7 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
 
     @Override
     public void shutdown() {
+        mActivity.getFullscreenManager().removeListener(this);
         reparentAllTabs(mActivity.getWindowAndroid());
         if (mNativeVrShell != 0) {
             nativeDestroy(mNativeVrShell);
@@ -522,9 +528,7 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
         mTab.removeObserver(mTabObserver);
         restoreTabFromVR();
 
-        if (mTab != null) {
-            mTab.updateBrowserControlsState(BrowserControlsState.SHOWN, true);
-        }
+        if (mTab != null) mTab.updateBrowserControlsState(BrowserControlsState.SHOWN, true);
 
         mContentVirtualDisplay.destroy();
         super.shutdown();
@@ -547,9 +551,33 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
 
     @Override
     public void setWebVrModeEnabled(boolean enabled, boolean showToast) {
-        mContentVrWindowAndroid.setVSyncPaused(enabled);
+        if (!enabled && !mPendingVSyncPause) mContentVrWindowAndroid.setVSyncPaused(false);
+        // TODO(mthiesse, crbug.com/760970) We shouldn't have to wait for the controls to be hidden
+        // before pausing VSync. Something is going wrong in the controls code and should be fixed.
+        mPendingVSyncPause = enabled;
+
         nativeSetWebVrMode(mNativeVrShell, enabled, showToast);
     }
+
+    @Override
+    public void onContentOffsetChanged(float offset) {}
+
+    @Override
+    public void onControlsOffsetChanged(float topOffset, float bottomOffset, boolean needsAnimate) {
+        if (!mPendingVSyncPause) return;
+        // As soon as the controls are starting to hide we can set vsync to paused.
+        // For some reason it seems onControlsOffsetChanged is sometimes called when the controls
+        // are partially hidden, but never called again when they're fully hidden.
+        if (mActivity.getFullscreenManager().getBrowserControlHiddenRatio() == 0.0) return;
+        mPendingVSyncPause = false;
+        mContentVrWindowAndroid.setVSyncPaused(true);
+    }
+
+    @Override
+    public void onToggleOverlayVideoMode(boolean enabled) {}
+
+    @Override
+    public void onBottomControlsHeightChanged(int bottomControlsHeight) {}
 
     @Override
     public boolean getWebVrModeEnabled() {

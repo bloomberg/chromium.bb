@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.vr_shell;
 import static org.chromium.chrome.browser.vr_shell.VrTestFramework.PAGE_LOAD_TIMEOUT_S;
 import static org.chromium.chrome.browser.vr_shell.VrTestFramework.POLL_CHECK_INTERVAL_SHORT_MS;
 import static org.chromium.chrome.browser.vr_shell.VrTestFramework.POLL_TIMEOUT_LONG_MS;
+import static org.chromium.chrome.browser.vr_shell.VrTestFramework.POLL_TIMEOUT_SHORT_MS;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_DON_ENABLED;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM;
 
@@ -168,5 +169,29 @@ public class WebVrTransitionTest {
         WebContents wc = mVrTestRule.getActivity().getActivityTab().getWebContents();
         mVrTestFramework.waitOnJavaScriptStep(wc);
         mVrTestFramework.endTest(wc);
+    }
+
+    /**
+     * Tests that the omnibox reappears after exiting VR.
+     */
+    @Test
+    @MediumTest
+    public void testControlsVisibleAfterExitingVr() throws InterruptedException {
+        mVrTestFramework.loadUrlAndAwaitInitialization(
+                VrTestFramework.getHtmlTestFile("generic_webvr_page"), PAGE_LOAD_TIMEOUT_S);
+        VrTransitionUtils.enterPresentationAndWait(
+                mVrTestFramework.getFirstTabCvc(), mVrTestFramework.getFirstTabWebContents());
+        VrTransitionUtils.forceExitVr();
+        // The hiding of the controls may only propagate after VR has exited, so give it a chance
+        // to propagate. In the worst case this test will erroneously pass, but should never
+        // erroneously fail, and should only be flaky if omnibox showing is broken.
+        Thread.sleep(100);
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                ChromeActivity activity = mVrTestFramework.getRule().getActivity();
+                return activity.getFullscreenManager().getBrowserControlHiddenRatio() == 0.0;
+            }
+        }, POLL_TIMEOUT_SHORT_MS, POLL_CHECK_INTERVAL_SHORT_MS);
     }
 }
