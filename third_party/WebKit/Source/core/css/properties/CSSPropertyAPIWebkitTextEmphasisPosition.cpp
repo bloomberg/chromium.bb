@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/properties/CSSPropertyAPITextEmphasisPosition.h"
+#include "core/css/properties/CSSPropertyAPIWebkitTextEmphasisPosition.h"
 
 #include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSValueList.h"
@@ -13,7 +13,7 @@ namespace blink {
 
 // [ over | under ] && [ right | left ]?
 // If [ right | left ] is omitted, it defaults to right.
-const CSSValue* CSSPropertyAPITextEmphasisPosition::ParseSingleValue(
+const CSSValue* CSSPropertyAPIWebkitTextEmphasisPosition::ParseSingleValue(
     CSSPropertyID,
     CSSParserTokenRange& range,
     const CSSParserContext& context,

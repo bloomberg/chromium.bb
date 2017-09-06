@@ -1910,7 +1910,7 @@
     },
     {
       name: "offset-rotate",
-      api_class: "CSSPropertyAPIOffsetRotate",
+      api_class: true,
       api_methods: ["ParseSingleValue"],
       converter: "ConvertOffsetRotate",
       interpolable: true,
@@ -3384,7 +3384,7 @@
     },
     {
       name: "-webkit-text-emphasis-position",
-      api_class: "CSSPropertyAPITextEmphasisPosition",
+      api_class: true,
       api_methods: ["ParseSingleValue"],
       converter: "ConvertTextTextEmphasisPosition",
       inherited: true,

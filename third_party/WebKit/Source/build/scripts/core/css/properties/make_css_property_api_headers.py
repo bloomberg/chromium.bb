@@ -10,7 +10,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '../../..'))
 import json5_generator
 import template_expander
 
-from collections import namedtuple, defaultdict
+from collections import namedtuple, Counter
 from make_css_property_api_base import CSSPropertyAPIWriter
 
 
@@ -35,6 +35,7 @@ class CSSPropertyAPIHeadersWriter(CSSPropertyAPIWriter):
                 return_type=api_method['return_type'],
                 parameters=api_method['parameters'],
             )
+        self.validate_input()
 
         self._outputs = {}
         for property_ in self.properties().values():
@@ -59,6 +60,19 @@ class CSSPropertyAPIHeadersWriter(CSSPropertyAPIWriter):
                 'property': property_,
             }
         return generate_property_api_h
+
+    def validate_input(self):
+        classname_counts = Counter(
+            property_['api_class'] for property_ in self.properties().values()
+            if property_['api_class'] not in (None, True))
+        for property_ in self.properties().values():
+            api_class = property_['api_class']
+            if api_class not in (None, True):
+                assert classname_counts[api_class] != 1,\
+                    ("Unique api_class '" + api_class + "' defined on '" +
+                     property_['name'] + "' property. api_class as string is " +
+                     "reserved for grouped properties. Did you mean " +
+                     "'api_class: true'?")
 
 if __name__ == '__main__':
     json5_generator.Maker(CSSPropertyAPIHeadersWriter).main()
