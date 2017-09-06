@@ -28,7 +28,6 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import os
 import sys
 
 from webkitpy.common import path_finder
@@ -38,15 +37,10 @@ import typ
 
 
 def main():
-    ret = typ.main(top_level_dir=path_finder.get_scripts_dir(),
-                   path=[path_finder.get_webkitpy_thirdparty_dir()],
-                   win_multiprocessing='spawn')
-    if ret:
-        sys.exit(ret)
-    path_finder.add_blink_tools_dir_to_sys_path()
-    sys.exit(typ.main(top_level_dir=path_finder.get_blink_tools_dir(),
-                      path=[],
-                      win_multiprocessing='spawn'))
+    return typ.main(top_level_dirs=[path_finder.get_scripts_dir(),
+                                    path_finder.get_blink_tools_dir()],
+                    path=[path_finder.get_webkitpy_thirdparty_dir()])
+
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

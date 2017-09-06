@@ -980,6 +980,41 @@ if (!is_ios && !is_fuchsia) {
       "//mojo/public/js:new_bindings",
     ]
   }
+
+  group("webkit_python_tests") {
+    data = [
+      "//build/android/",
+      "//components/crash/content/tools/generate_breakpad_symbols.py",
+      "//testing/scripts/common.py",
+      "//testing/scripts/run_isolated_script_test.py",
+      "//testing/test_env.py",
+      "//testing/xvfb.py",
+      "//third_party/WebKit/LayoutTests/ASANExpectations",
+      "//third_party/WebKit/LayoutTests/LeakExpectations",
+      "//third_party/WebKit/LayoutTests/MSANExpectations",
+      "//third_party/WebKit/LayoutTests/NeverFixTests",
+      "//third_party/WebKit/LayoutTests/StaleTestExpectations",
+      "//third_party/WebKit/LayoutTests/SlowTests",
+      "//third_party/WebKit/LayoutTests/TestExpectations",
+      "//third_party/WebKit/LayoutTests/VirtualTestSuites",
+      "//third_party/WebKit/Source/bindings/scripts/",
+      "//third_party/WebKit/Tools/Scripts/",
+      "//third_party/blink/tools/",
+      "//third_party/catapult/common/py_utils/",
+      "//third_party/catapult/devil/",
+      "//third_party/catapult/dependency_manager/",
+      "//third_party/catapult/third_party/zipfile/",
+      "//third_party/depot_tools/pylint.py",
+      "//third_party/depot_tools/pylintrc",
+      "//third_party/depot_tools/third_party/logilab/",
+      "//third_party/depot_tools/third_party/pylint/",
+      "//third_party/depot_tools/third_party/pylint.py",
+      "//third_party/ply/",
+      "//third_party/pymock/",
+      "//third_party/typ/",
+      "//tools/idl_parser/",
+    ]
+  }
 }
 
 group("chromium_builder_perf") {
