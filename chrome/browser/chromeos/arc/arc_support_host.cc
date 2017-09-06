@@ -43,20 +43,19 @@ constexpr char kActionSetWindowBounds[] = "setWindowBounds";
 constexpr char kActionCloseWindow[] = "closeWindow";
 
 // Action to show a page. The message should have "page" field, which is one of
-// IDs for section div elements.
+// IDs for section div elements. For the "active-directory-auth" page, the
+// "federationUrl" and "deviceManagementUrlPrefix" options are required.
 constexpr char kActionShowPage[] = "showPage";
 constexpr char kPage[] = "page";
+constexpr char kOptions[] = "options";
+constexpr char kFederationUrl[] = "federationUrl";
+constexpr char kDeviceManagementUrlPrefix[] = "deviceManagementUrlPrefix";
 
 // Action to show the error page. The message should have "errorMessage",
 // which is a localized error text, and "shouldShowSendFeedback" boolean value.
 constexpr char kActionShowErrorPage[] = "showErrorPage";
 constexpr char kErrorMessage[] = "errorMessage";
 constexpr char kShouldShowSendFeedback[] = "shouldShowSendFeedback";
-
-// Action to set the Active Directory Federation Services SAML redirect URL.
-constexpr char kActionActiveDirectoryAuthUrls[] = "setActiveDirectoryAuthUrls";
-constexpr char kFederationUrl[] = "federationUrl";
-constexpr char kDeviceManagementUrlPrefix[] = "deviceManagementUrlPrefix";
 
 // The preference update should have those two fields.
 constexpr char kEnabled[] = "enabled";
@@ -239,7 +238,6 @@ void ArcSupportHost::ShowActiveDirectoryAuth(
   active_directory_auth_federation_url_ = federation_url;
   active_directory_auth_device_management_url_prefix_ =
       device_management_url_prefix;
-  SendActiveDirectoryAuthUrls();
   ShowPage(UIPage::ACTIVE_DIRECTORY_AUTH);
 }
 
@@ -270,9 +268,15 @@ void ArcSupportHost::ShowPage(UIPage ui_page) {
       message.SetString(kPage, "arc-loading");
       break;
     case UIPage::ACTIVE_DIRECTORY_AUTH:
-      // TODO(ljusten): Change this to a function similar to ShowError that
-      // sends the active_directory_auth* URLS along with the show message.
+      DCHECK(active_directory_auth_federation_url_.is_valid());
+      DCHECK(!active_directory_auth_device_management_url_prefix_.empty());
       message.SetString(kPage, "active-directory-auth");
+      message.SetPath(
+          {kOptions, kFederationUrl},
+          base::Value(active_directory_auth_federation_url_.spec()));
+      message.SetPath(
+          {kOptions, kDeviceManagementUrlPrefix},
+          base::Value(active_directory_auth_device_management_url_prefix_));
       break;
     default:
       NOTREACHED();
@@ -366,26 +370,6 @@ void ArcSupportHost::SendPreferenceCheckboxUpdate(
   message_host_->SendMessage(message);
 }
 
-void ArcSupportHost::SendActiveDirectoryAuthUrls() {
-  // Missing |message_host_| is normal on first run.
-  if (!message_host_)
-    return;
-
-  // URLs might be invalid when called from SetMessageHost.
-  if (!active_directory_auth_federation_url_.is_valid() ||
-      active_directory_auth_device_management_url_prefix_.empty()) {
-    return;
-  }
-
-  base::DictionaryValue message;
-  message.SetString(kAction, kActionActiveDirectoryAuthUrls);
-  message.SetString(kFederationUrl,
-                    active_directory_auth_federation_url_.spec());
-  message.SetString(kDeviceManagementUrlPrefix,
-                    active_directory_auth_device_management_url_prefix_);
-  message_host_->SendMessage(message);
-}
-
 void ArcSupportHost::SetMessageHost(arc::ArcSupportMessageHost* message_host) {
   if (message_host_ == message_host)
     return;
@@ -412,9 +396,6 @@ void ArcSupportHost::SetMessageHost(arc::ArcSupportMessageHost* message_host) {
                                backup_and_restore_checkbox_);
   SendPreferenceCheckboxUpdate(kActionLocationServiceMode,
                                location_services_checkbox_);
-
-  // Send URLs needed for Active Directory SAML authentication.
-  SendActiveDirectoryAuthUrls();
 
   if (ui_page_ == UIPage::NO_PAGE) {
     // Close() is called before opening the window.
@@ -611,6 +592,10 @@ void ArcSupportHost::OnMessage(const base::DictionaryValue& message) {
       NOTREACHED();
       return;
     }
+    // TODO(https://crbug.com/756144): Remove once reason for crash has been
+    // determined.
+    LOG_IF(ERROR, !auth_delegate_)
+        << "auth_delegate_ is NULL, error: " << error_message;
     auth_delegate_->OnAuthFailed(error_message);
   } else if (event == kEventOnAgreed) {
     DCHECK(tos_delegate_);

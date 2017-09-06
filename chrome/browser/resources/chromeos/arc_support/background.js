@@ -425,6 +425,12 @@ class ActiveDirectoryAuthPage {
 
     this.deviceManagementUrlPrefix_ = null;
 
+    // https://crbug.com/756144: Disable event processing while the page is not
+    // shown. The bug seems to be caused by erroneous onErrorOccurred events
+    // that are fired even though authView_.src is never set. This might be
+    // related to a bug in webview, see also CL:638413.
+    this.process_events_ = false;
+
     container.querySelector('#button-active-directory-auth-cancel')
         .addEventListener('click', () => this.onCancel_());
   }
@@ -442,16 +448,31 @@ class ActiveDirectoryAuthPage {
   }
 
   /**
+   * Toggles onCompleted and onErrorOccurred event processing.
+   * @param {boolean} enabled Process (true) or ignore (false) events.
+   */
+  enableEventProcessing(enabled) {
+    this.process_events_ = enabled;
+  }
+
+  /**
    * Auth view onCompleted event handler. Checks whether the SAML flow
    * reached its endpoint, the device management server.
    * @param {!Object} details Event parameters.
    */
   onAuthViewCompleted_(details) {
+    if (!this.process_events_) {
+      console.error(
+          'Unexpected onAuthViewCompleted_ event from URL ' + details.url);
+      return;
+    }
     // See if we hit the device management server. This should happen at the
     // end of the SAML flow. Before that, we're on the Active Directory
     // Federation Services server.
     if (this.deviceManagementUrlPrefix_ &&
         details.url.startsWith(this.deviceManagementUrlPrefix_)) {
+      // Once we hit the final URL, stop processing further events.
+      this.process_events_ = false;
       // Did it actually work?
       if (details.statusCode == 200) {
         // 'code' is unused, but it needs to be there.
@@ -470,13 +491,21 @@ class ActiveDirectoryAuthPage {
    * @param {!Object} details Event parameters.
    */
   onAuthViewErrorOccurred_(details) {
+    if (!this.process_events_) {
+      console.error(
+          'Unexpected onAuthViewErrorOccurred_ event: ' + details.error);
+      return;
+    }
     // Retry triggers net::ERR_ABORTED, so ignore it.
     if (details.error == 'net::ERR_ABORTED')
       return;
+    // Stop processing further events on first error.
+    this.process_events_ = false;
     sendNativeMessage(
         'onAuthFailed', {errorMessage: 'Error occurred: ' + details.error});
   }
 
+  /** Called when the "CANCEL" button is clicked. */
   onCancel_() {
     closeWindow();
   }
@@ -564,16 +593,13 @@ function onNativeMessage(message) {
     termsPage.onLocationServicePreferenceChanged(
         message.enabled, message.managed);
   } else if (message.action == 'showPage') {
-    showPage(message.page);
+    showPage(message.page, message.options);
   } else if (message.action == 'showErrorPage') {
     showErrorPage(message.errorMessage, message.shouldShowSendFeedback);
   } else if (message.action == 'closeWindow') {
     closeWindow();
   } else if (message.action == 'setWindowBounds') {
     setWindowBounds();
-  } else if (message.action == 'setActiveDirectoryAuthUrls') {
-    activeDirectoryAuthPage.setUrls(
-        message.federationUrl, message.deviceManagementUrlPrefix);
   }
 }
 
@@ -590,8 +616,12 @@ function connectPort() {
  * Shows requested page and hide others. Show appWindow if it was hidden before.
  * 'none' hides all views.
  * @param {string} pageDivId id of divider of the page to show.
+ * @param {dictionary=} options Addional options depending on pageDivId. For
+ *     'active-directory-auth', this has to contain keys 'federationUrl' and
+ *     'deviceManagementUrlPrefix' with corresponding values. See
+ *     ActiveDirectoryAuthPage::setUrls for a description of those parameters.
  */
-function showPage(pageDivId) {
+function showPage(pageDivId, options) {
   if (!appWindow) {
     return;
   }
@@ -618,6 +648,14 @@ function showPage(pageDivId) {
         'device_type=arc_plus_plus&device_id=' + currentDeviceId +
         '&hl=' + navigator.language;
   }
+  if (pageDivId == 'active-directory-auth') {
+    activeDirectoryAuthPage.enableEventProcessing(true);
+    activeDirectoryAuthPage.setUrls(
+        options.federationUrl, options.deviceManagementUrlPrefix);
+  } else {
+    activeDirectoryAuthPage.enableEventProcessing(false);
+  }
+
   appWindow.show();
   if (pageDivId == 'terms') {
     termsPage.onShow();
@@ -853,6 +891,9 @@ chrome.app.runtime.onLaunched.addListener(function() {
 
   var onWindowClosed = function() {
     appWindow = null;
+
+    // Turn off event processing.
+    activeDirectoryAuthPage.enableEventProcessing(false);
 
     // Notify to Chrome.
     sendNativeMessage('onWindowClosed');
