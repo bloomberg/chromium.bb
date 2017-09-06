@@ -17,11 +17,12 @@ class MediaClient : public ash::mojom::MediaClient,
   MediaClient();
   ~MediaClient() override;
 
-  // ash::MediaClient:
+  // ash::mojom::MediaClient:
   void HandleMediaNextTrack() override;
   void HandleMediaPlayPause() override;
   void HandleMediaPrevTrack() override;
   void RequestCaptureState() override;
+  void SuspendMediaSessions() override;
 
   // MediaCaptureDevicesDispatcher::Observer:
   void OnRequestUpdate(int render_process_id,

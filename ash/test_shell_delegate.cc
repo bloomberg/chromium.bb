@@ -143,10 +143,6 @@ void TestShellDelegate::SetTouchscreenEnabled(bool enabled,
   global_touchscreen_enabled_ = enabled;
 }
 
-void TestShellDelegate::SuspendMediaSessions() {
-  media_sessions_suspended_ = true;
-}
-
 ui::InputDeviceControllerClient*
 TestShellDelegate::GetInputDeviceControllerClient() {
   return nullptr;

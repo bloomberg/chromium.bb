@@ -1677,6 +1677,8 @@ static_library("test_support_common") {
     "test/test_accessibility_delegate.h",
     "test/ui_controls_factory_ash.cc",
     "test/ui_controls_factory_ash.h",
+    "test_media_client.cc",
+    "test_media_client.h",
     "test_screenshot_delegate.cc",
     "test_screenshot_delegate.h",
     "test_shell_delegate.cc",

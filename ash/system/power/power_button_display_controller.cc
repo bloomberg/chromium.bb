@@ -5,6 +5,7 @@
 #include "ash/system/power/power_button_display_controller.h"
 
 #include "ash/accessibility_delegate.h"
+#include "ash/media_controller.h"
 #include "ash/public/cpp/touchscreen_enabled_source.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
@@ -69,7 +70,7 @@ void PowerButtonDisplayController::SetDisplayForcedOff(bool forced_off) {
   UpdateTouchscreenStatus();
 
   if (backlights_forced_off_)
-    Shell::Get()->shell_delegate()->SuspendMediaSessions();
+    Shell::Get()->media_controller()->SuspendMediaSessions();
 
   // Send an a11y alert.
   Shell::Get()->accessibility_delegate()->TriggerAccessibilityAlert(

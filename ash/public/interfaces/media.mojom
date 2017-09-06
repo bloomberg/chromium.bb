@@ -39,4 +39,7 @@ interface MediaClient {
 
   // Requests that the client resends the NotifyMediaCaptureChanged() message.
   RequestCaptureState();
+
+  // Suspends all WebContents-associated media sessions to stop managed players.
+  SuspendMediaSessions();
 };

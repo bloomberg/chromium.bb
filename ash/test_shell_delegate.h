@@ -52,7 +52,6 @@ class TestShellDelegate : public ShellDelegate {
   bool GetTouchscreenEnabled(TouchscreenEnabledSource source) const override;
   void SetTouchscreenEnabled(bool enabled,
                              TouchscreenEnabledSource source) override;
-  void SuspendMediaSessions() override;
   ui::InputDeviceControllerClient* GetInputDeviceControllerClient() override;
 
   int num_exit_requests() const { return num_exit_requests_; }
@@ -61,14 +60,11 @@ class TestShellDelegate : public ShellDelegate {
     force_maximize_on_first_run_ = maximize;
   }
 
-  bool media_sessions_suspended() const { return media_sessions_suspended_; }
-
  private:
   int num_exit_requests_ = 0;
   bool multi_profiles_enabled_ = false;
   bool force_maximize_on_first_run_ = false;
   bool global_touchscreen_enabled_ = true;
-  bool media_sessions_suspended_ = false;
   std::unique_ptr<ShelfInitializer> shelf_initializer_;
 
   DISALLOW_COPY_AND_ASSIGN(TestShellDelegate);
