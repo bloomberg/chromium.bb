@@ -72,6 +72,7 @@ class CONTENT_EXPORT LegacyInputRouterImpl
   void NotifySiteIsMobileOptimized(bool is_mobile_optimized) override;
   bool HasPendingEvents() const override;
   void SetDeviceScaleFactor(float device_scale_factor) override;
+  void BindHost(mojom::WidgetInputHandlerHostRequest request) override;
 
   // IPC::Listener
   bool OnMessageReceived(const IPC::Message& message) override;

@@ -6,7 +6,7 @@ module content.mojom;
 
 import "content/common/input/input_handler.mojom";
 
-// Interface representing the Widget.
+// Interface exposed by the renderer for Widgets.
 interface Widget {
-  GetWidgetInputHandler(WidgetInputHandler& request);
+  SetupWidgetInputHandler(WidgetInputHandler& request, WidgetInputHandlerHost host);
 };

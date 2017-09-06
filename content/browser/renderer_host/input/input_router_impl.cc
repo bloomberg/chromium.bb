@@ -110,6 +110,7 @@ InputRouterImpl::InputRouterImpl(InputRouterImplClient* client,
       wheel_event_queue_(this, wheel_scroll_latching_enabled_),
       gesture_event_queue_(this, this, config.gesture_config),
       device_scale_factor_(1.f),
+      host_binding_(this),
       weak_ptr_factory_(this) {
   weak_this_ = weak_ptr_factory_.GetWeakPtr();
 
@@ -221,17 +222,54 @@ cc::TouchAction InputRouterImpl::AllowedTouchAction() {
   return touch_action_filter_.allowed_touch_action();
 }
 
+void InputRouterImpl::BindHost(mojom::WidgetInputHandlerHostRequest request) {
+  host_binding_.Close();
+  host_binding_.Bind(std::move(request));
+}
+
+void InputRouterImpl::CancelTouchTimeout() {
+  touch_event_queue_->SetAckTimeoutEnabled(false);
+}
+
+void InputRouterImpl::SetWhiteListedTouchAction(cc::TouchAction touch_action,
+                                                uint32_t unique_touch_event_id,
+                                                InputEventAckState state) {
+  // TODO(hayleyferr): Catch the cases that we have filtered out sending the
+  // touchstart.
+
+  touch_action_filter_.OnSetWhiteListedTouchAction(touch_action);
+  client_->OnSetWhiteListedTouchAction(touch_action);
+}
+
+void InputRouterImpl::DidOverscroll(const ui::DidOverscrollParams& params) {
+  client_->DidOverscroll(params);
+}
+
+void InputRouterImpl::DidStopFlinging() {
+  DCHECK_GT(active_renderer_fling_count_, 0);
+  // Note that we're only guaranteed to get a fling end notification from the
+  // renderer, not from any other consumers. Consequently, the GestureEventQueue
+  // cannot use this bookkeeping for logic like tap suppression.
+  --active_renderer_fling_count_;
+  client_->DidStopFlinging();
+}
+
+void InputRouterImpl::ImeCancelComposition() {
+  client_->OnImeCancelComposition();
+}
+
+void InputRouterImpl::ImeCompositionRangeChanged(
+    const gfx::Range& range,
+    const std::vector<gfx::Rect>& bounds) {
+  client_->OnImeCompositionRangeChanged(range, bounds);
+}
+
 bool InputRouterImpl::OnMessageReceived(const IPC::Message& message) {
   // TODO(dtapuska): Move these to mojo
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(InputRouterImpl, message)
-    IPC_MESSAGE_HANDLER(InputHostMsg_DidOverscroll, OnDidOverscroll)
     IPC_MESSAGE_HANDLER(ViewHostMsg_HasTouchEventHandlers,
                         OnHasTouchEventHandlers)
-    IPC_MESSAGE_HANDLER(InputHostMsg_SetTouchAction, OnSetTouchAction)
-    IPC_MESSAGE_HANDLER(InputHostMsg_SetWhiteListedTouchAction,
-                        OnSetWhiteListedTouchAction)
-    IPC_MESSAGE_HANDLER(InputHostMsg_DidStopFlinging, OnDidStopFlinging)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -473,7 +511,7 @@ void InputRouterImpl::GestureEventHandled(
   if (overscroll) {
     DCHECK_EQ(WebInputEvent::kGestureScrollUpdate,
               gesture_event.event.GetType());
-    OnDidOverscroll(overscroll.value());
+    DidOverscroll(overscroll.value());
   }
 
   // |gesture_event_queue_| will forward to OnGestureEventAck when appropriate.
@@ -496,13 +534,9 @@ void InputRouterImpl::MouseWheelEventHandled(
   event.latency.AddNewLatencyFrom(latency);
 
   if (overscroll)
-    OnDidOverscroll(overscroll.value());
+    DidOverscroll(overscroll.value());
 
   wheel_event_queue_.ProcessMouseWheelAck(state, event.latency);
-}
-
-void InputRouterImpl::OnDidOverscroll(const ui::DidOverscrollParams& params) {
-  client_->DidOverscroll(params);
 }
 
 void InputRouterImpl::OnHasTouchEventHandlers(bool has_handlers) {
@@ -532,26 +566,6 @@ void InputRouterImpl::OnSetTouchAction(cc::TouchAction touch_action) {
   UpdateTouchAckTimeoutEnabled();
 }
 
-void InputRouterImpl::OnSetWhiteListedTouchAction(
-    cc::TouchAction white_listed_touch_action,
-    uint32_t unique_touch_event_id,
-    InputEventAckState ack_result) {
-  // TODO(hayleyferr): Catch the cases that we have filtered out sending the
-  // touchstart.
-
-  touch_action_filter_.OnSetWhiteListedTouchAction(white_listed_touch_action);
-  client_->OnSetWhiteListedTouchAction(white_listed_touch_action);
-}
-
-void InputRouterImpl::OnDidStopFlinging() {
-  DCHECK_GT(active_renderer_fling_count_, 0);
-  // Note that we're only guaranteed to get a fling end notification from the
-  // renderer, not from any other consumers. Consequently, the GestureEventQueue
-  // cannot use this bookkeeping for logic like tap suppression.
-  --active_renderer_fling_count_;
-  client_->DidStopFlinging();
-}
-
 void InputRouterImpl::UpdateTouchAckTimeoutEnabled() {
   // kTouchActionNone will prevent scrolling, in which case the timeout serves
   // little purpose. It's also a strong signal that touch handling is critical
@@ -560,7 +574,5 @@ void InputRouterImpl::UpdateTouchAckTimeoutEnabled() {
       touch_action_filter_.allowed_touch_action() != cc::kTouchActionNone;
   touch_event_queue_->SetAckTimeoutEnabled(touch_ack_timeout_enabled);
 }
-
-
 
 }  // namespace content
