@@ -290,42 +290,16 @@ void LevelDBDatabaseImpl::IteratorPrev(const base::UnguessableToken& iterator,
 bool LevelDBDatabaseImpl::OnMemoryDump(
     const base::trace_event::MemoryDumpArgs& args,
     base::trace_event::ProcessMemoryDump* pmd) {
-  std::string name = base::StringPrintf("leveldb/mojo/0x%" PRIXPTR,
-                                        reinterpret_cast<uintptr_t>(db_.get()));
-  auto* mad = pmd->CreateAllocatorDump(name);
-
-  uint64_t memory_usage = 0;
-  std::string memory_usage_string;
-  bool got_memory_usage =
-      db_->GetProperty("leveldb.approximate-memory-usage",
-                       &memory_usage_string) &&
-      base::StringToUint64(memory_usage_string, &memory_usage);
-  DCHECK(got_memory_usage);
-  mad->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
-                 base::trace_event::MemoryAllocatorDump::kUnitsBytes,
-                 memory_usage);
-  if (cache_) {
-    auto* cache_mad = pmd->CreateAllocatorDump(name + "/block_cache");
-    cache_mad->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
+  auto* dump = leveldb_env::DBTracker::GetOrCreateAllocatorDump(pmd, db_.get());
+  if (!dump)
+    return true;
+  auto* global_dump = pmd->CreateSharedGlobalAllocatorDump(*memory_dump_id_);
+  pmd->AddOwnershipEdge(global_dump->guid(), dump->guid());
+  // Add size to global dump to propagate the size of the database to the
+  // client's dump.
+  global_dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
                          base::trace_event::MemoryAllocatorDump::kUnitsBytes,
-                         cache_->TotalCharge());
-  }
-
-  // All leveldb databases are already dumped by leveldb_env::DBTracker. Add
-  // an edge to avoid double counting.
-  pmd->AddSuballocation(mad->guid(),
-                        leveldb_env::DBTracker::GetMemoryDumpName(db_.get()));
-
-  if (memory_dump_id_) {
-    auto* global_dump = pmd->CreateSharedGlobalAllocatorDump(*memory_dump_id_);
-    pmd->AddOwnershipEdge(global_dump->guid(), mad->guid());
-    // Add size to global dump to propagate the size of the database to the
-    // client's dump.
-    global_dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
-                           base::trace_event::MemoryAllocatorDump::kUnitsBytes,
-                           memory_usage);
-  }
-
+                         dump->GetSizeInternal());
   return true;
 }
 
