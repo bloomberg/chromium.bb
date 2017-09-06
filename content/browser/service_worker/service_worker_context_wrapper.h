@@ -104,9 +104,9 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   void RemoveObserver(ServiceWorkerContextObserver* observer) override;
   void RegisterServiceWorker(const GURL& pattern,
                              const GURL& script_url,
-                             const ResultCallback& continuation) override;
+                             ResultCallback callback) override;
   void UnregisterServiceWorker(const GURL& pattern,
-                               const ResultCallback& continuation) override;
+                               ResultCallback callback) override;
   bool StartingExternalRequest(int64_t service_worker_version_id,
                                const std::string& request_uuid) override;
   bool FinishedExternalRequest(int64_t service_worker_version_id,
@@ -115,8 +115,7 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
       const GURL& url,
       const CountExternalRequestsCallback& callback) override;
   void GetAllOriginsInfo(const GetUsageInfoCallback& callback) override;
-  void DeleteForOrigin(const GURL& origin,
-                       const ResultCallback& callback) override;
+  void DeleteForOrigin(const GURL& origin, ResultCallback callback) override;
   void CheckHasServiceWorker(
       const GURL& url,
       const GURL& other_url,
