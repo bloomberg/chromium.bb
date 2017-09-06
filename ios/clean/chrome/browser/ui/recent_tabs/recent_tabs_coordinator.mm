@@ -21,7 +21,6 @@
 #import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_table_coordinator.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_table_view_controller.h"
 #import "ios/chrome/browser/ui/sync/synced_sessions_bridge.h"
-#include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/clean/chrome/browser/ui/adaptor/application_commands_adaptor.h"
 #import "ios/clean/chrome/browser/ui/adaptor/url_loader_adaptor.h"
 
@@ -46,12 +45,18 @@
 @end
 
 @implementation RecentTabsCoordinator
+@synthesize mode = _mode;
 @synthesize viewController = _viewController;
 @synthesize tableViewController = _tableViewController;
 @synthesize loader = _loader;
 @synthesize applicationCommandAdaptor = _applicationCommandAdaptor;
 
 - (void)start {
+  if (self.started)
+    return;
+
+  DCHECK(self.mode != UNDEFINED);
+
   self.loader = [[URLLoaderAdaptor alloc] init];
   self.applicationCommandAdaptor = [[ApplicationCommandsAdaptor alloc] init];
   // HACK: Re-using old view controllers for now.
@@ -61,7 +66,7 @@
                 dispatcher:self.applicationCommandAdaptor];
   self.tableViewController.delegate = self;
 
-  if (!IsIPadIdiom()) {
+  if (self.mode == PRESENTED) {
     RecentTabsHandsetViewController* handsetViewController =
         [[RecentTabsHandsetViewController alloc]
             initWithViewController:self.tableViewController];

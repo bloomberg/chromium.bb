@@ -66,8 +66,8 @@
   if ([coordinator isKindOfClass:[NTPHomeCoordinator class]]) {
     self.viewController.homeViewController = coordinator.viewController;
 
-  } else if ([coordinator isKindOfClass:[BookmarksCoordinator class]]) {
-    if (IsIPadIdiom()) {
+  } else if (coordinator == self.bookmarksCoordinator) {
+    if (self.bookmarksCoordinator.mode == CONTAINED) {
       self.viewController.bookmarksViewController = coordinator.viewController;
     } else {
       coordinator.viewController.modalPresentationStyle =
@@ -77,8 +77,8 @@
                                       completion:nil];
     }
 
-  } else if ([coordinator isKindOfClass:[RecentTabsCoordinator class]]) {
-    if (IsIPadIdiom()) {
+  } else if (coordinator == self.recentTabsCoordinator) {
+    if (self.recentTabsCoordinator.mode == CONTAINED) {
       self.viewController.recentTabsViewController = coordinator.viewController;
     } else {
       coordinator.viewController.modalPresentationStyle =
@@ -117,7 +117,7 @@
 - (void)showNTPBookmarksPanel {
   if (!self.bookmarksCoordinator) {
     self.bookmarksCoordinator = [[BookmarksCoordinator alloc] init];
-    self.bookmarksCoordinator.contained = IsIPadIdiom();
+    self.bookmarksCoordinator.mode = IsIPadIdiom() ? CONTAINED : PRESENTED;
     [self addChildCoordinator:self.bookmarksCoordinator];
   }
   [self.bookmarksCoordinator start];
@@ -126,6 +126,7 @@
 - (void)showNTPRecentTabsPanel {
   if (!self.recentTabsCoordinator) {
     self.recentTabsCoordinator = [[RecentTabsCoordinator alloc] init];
+    self.recentTabsCoordinator.mode = IsIPadIdiom() ? CONTAINED : PRESENTED;
     [self addChildCoordinator:self.recentTabsCoordinator];
   }
   [self.recentTabsCoordinator start];
