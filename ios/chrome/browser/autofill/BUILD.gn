@@ -15,6 +15,8 @@ source_set("autofill") {
     "form_suggestion_label.h",
     "form_suggestion_label.mm",
     "form_suggestion_provider.h",
+    "form_suggestion_tab_helper.h",
+    "form_suggestion_tab_helper.mm",
     "form_suggestion_view.h",
     "form_suggestion_view.mm",
     "form_suggestion_view_client.h",
