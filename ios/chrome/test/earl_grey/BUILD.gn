@@ -12,6 +12,7 @@ group("all_tests") {
     ":ios_chrome_flaky_egtests",
     ":ios_chrome_integration_egtests",
     ":ios_chrome_multitasking_egtests",
+    ":ios_chrome_perf_egtests",
     ":ios_chrome_reading_list_egtests",
     ":ios_chrome_settings_egtests",
     ":ios_chrome_smoke_egtests",
@@ -109,6 +110,12 @@ chrome_ios_eg_test("ios_chrome_multitasking_egtests") {
   ]
 
   eg_main_application_delegate = "MultitaskingTestApplicationDelegate"
+}
+
+chrome_ios_eg_test("ios_chrome_perf_egtests") {
+  deps = [
+    "//ios/chrome/test/perf:eg_tests",
+  ]
 }
 
 chrome_ios_eg_test("ios_chrome_device_check_egtests") {

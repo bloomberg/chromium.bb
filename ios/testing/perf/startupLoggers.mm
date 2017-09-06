@@ -21,13 +21,10 @@ void RegisterAppStartTime() {
 }
 
 void RegisterAppDidFinishLaunchingTime() {
-  DCHECK(g_start_time);
-  DCHECK(!g_finish_launching_time);
   g_finish_launching_time = new base::Time(base::Time::Now());
 }
 
 void RegisterAppDidBecomeActiveTime() {
-  DCHECK(g_start_time);
   g_become_active_time = new base::Time(base::Time::Now());
 }
 
