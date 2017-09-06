@@ -4,6 +4,7 @@
 
 #include "extensions/shell/browser/media_capture_util.h"
 
+#include <algorithm>
 #include <string>
 #include <utility>
 
@@ -20,17 +21,27 @@ using content::MediaStreamUI;
 
 namespace extensions {
 
+namespace {
+
 const MediaStreamDevice* GetRequestedDeviceOrDefault(
     const MediaStreamDevices& devices,
     const std::string& requested_device_id) {
-  if (!requested_device_id.empty())
-    return devices.FindById(requested_device_id);
+  if (!requested_device_id.empty()) {
+    auto it = std::find_if(
+        devices.begin(), devices.end(),
+        [requested_device_id](const content::MediaStreamDevice& device) {
+          return device.id == requested_device_id;
+        });
+    return it != devices.end() ? &(*it) : nullptr;
+  }
 
   if (!devices.empty())
     return &devices[0];
 
-  return NULL;
+  return nullptr;
 }
+
+}  // namespace
 
 namespace media_capture_util {
 

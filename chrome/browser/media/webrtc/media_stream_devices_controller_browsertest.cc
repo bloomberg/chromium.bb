@@ -544,10 +544,10 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
             GetContentSettings()->GetMicrophoneCameraState());
 
   // Simulate that an a video stream is now being captured.
-  content::MediaStreamDevice fake_video_device(
-      content::MEDIA_DEVICE_VIDEO_CAPTURE, example_video_id(),
-      example_video_id());
-  content::MediaStreamDevices video_devices(1, fake_video_device);
+  content::MediaStreamDevices video_devices(1);
+  video_devices[0] =
+      content::MediaStreamDevice(content::MEDIA_DEVICE_VIDEO_CAPTURE,
+                                 example_video_id(), example_video_id());
   MediaCaptureDevicesDispatcher* dispatcher =
       MediaCaptureDevicesDispatcher::GetInstance();
   dispatcher->SetTestVideoCaptureDevices(video_devices);
