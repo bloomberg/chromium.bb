@@ -578,9 +578,13 @@ typedef NS_ENUM(NSInteger, ItemType) {
   // present before the editor fields.
   NSInteger index = indexPath.section;
   if ([self.collectionViewModel
-          hasSectionForSectionIdentifier:SectionIdentifierHeader])
+          hasSectionForSectionIdentifier:SectionIdentifierHeader]) {
     index--;
-  DCHECK(index >= 0 && index < static_cast<NSInteger>(self.fields.count));
+  }
+  // Early return if the header or the footer sections are selected.
+  if (index < 0 || index >= static_cast<NSInteger>(self.fields.count))
+    return;
+
   EditorField* field = [self.fields objectAtIndex:index];
 
   // If a selector field is selected, blur the focused text field.
