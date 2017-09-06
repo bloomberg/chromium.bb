@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/ntp/new_tab_page_view.h"
 
 #include "base/logging.h"
+#import "ios/chrome/browser/ui/ntp/modal_ntp.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_bar.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_bar_item.h"
 #import "ios/chrome/browser/ui/rtl_geometry.h"
@@ -58,7 +59,7 @@
   [self updateScrollViewContentSize];
 
   // Set the frame of the laid out NTP panels on iPad.
-  if (IsIPadIdiom()) {
+  if (!PresentNTPPanelModally()) {
     NSUInteger index = 0;
     CGFloat selectedItemXOffset = 0;
     for (NewTabPageBarItem* item in self.tabBar.items) {
@@ -114,7 +115,7 @@
   CGSize contentSize = self.scrollView.bounds.size;
   // On iPhone, NTP doesn't scroll horizontally, as alternate panels are shown
   // modally. On iPad, panels are laid out side by side in the scroll view.
-  if (IsIPadIdiom()) {
+  if (!PresentNTPPanelModally()) {
     contentSize.width *= self.tabBar.items.count;
   }
   self.scrollView.contentSize = contentSize;

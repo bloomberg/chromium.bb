@@ -30,6 +30,7 @@
 #import "ios/chrome/browser/ui/ntp/google_landing_mediator.h"
 #import "ios/chrome/browser/ui/ntp/google_landing_view_controller.h"
 #import "ios/chrome/browser/ui/ntp/incognito_panel_controller.h"
+#import "ios/chrome/browser/ui/ntp/modal_ntp.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_bar_item.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_view.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_table_coordinator.h"
@@ -265,7 +266,7 @@ enum {
           newTabPageBarItemWithTitle:incognito
                           identifier:ntp_home::INCOGNITO_PANEL
                                image:[UIImage imageNamed:@"ntp_incognito"]];
-      if (IsIPadIdiom()) {
+      if (!PresentNTPPanelModally()) {
         // Only add the bookmarks tab item for Incognito.
         NewTabPageBarItem* bookmarksItem = [NewTabPageBarItem
             newTabPageBarItemWithTitle:bookmarks
@@ -286,7 +287,7 @@ enum {
                           identifier:ntp_home::BOOKMARKS_PANEL
                                image:[UIImage imageNamed:@"ntp_bookmarks"]];
       [tabBarItems addObject:bookmarksItem];
-      if (IsIPadIdiom()) {
+      if (!PresentNTPPanelModally()) {
         [tabBarItems addObject:homeItem];
       }
 
@@ -297,7 +298,7 @@ enum {
       [tabBarItems addObject:openTabsItem];
       self.ntpView.tabBar.items = tabBarItems;
 
-      if (!IsIPadIdiom()) {
+      if (PresentNTPPanelModally()) {
         itemToDisplay = homeItem;
       } else {
         PrefService* prefs = _browserState->GetPrefs();
@@ -671,7 +672,7 @@ enum {
 
 - (void)scrollToPanel:(NewTabPageBarItem*)item animate:(BOOL)animate {
   NSUInteger index = [self tabBarItemIndex:item];
-  if (IsIPadIdiom()) {
+  if (!PresentNTPPanelModally()) {
     CGRect itemFrame = [self.ntpView panelFrameForItemAtIndex:index];
     CGPoint point = CGPointMake(CGRectGetMinX(itemFrame), 0);
     [self.ntpView.scrollView setContentOffset:point animated:animate];
@@ -693,7 +694,7 @@ enum {
 // scroll view. None of this is applicable for iPhone.
 - (NSUInteger)tabBarItemIndex:(NewTabPageBarItem*)item {
   NSUInteger index = 0;
-  if (IsIPadIdiom()) {
+  if (!PresentNTPPanelModally()) {
     index = [self.ntpView.tabBar.items indexOfObject:item];
     DCHECK(index != NSNotFound);
   }
@@ -701,7 +702,7 @@ enum {
 }
 
 - (ntp_home::PanelIdentifier)selectedPanelID {
-  if (IsIPadIdiom()) {
+  if (!PresentNTPPanelModally()) {
     // |selectedIndex| isn't meaningful here with modal buttons on iPhone.
     NSUInteger index = self.ntpView.tabBar.selectedIndex;
     DCHECK(index != NSNotFound);
@@ -713,8 +714,9 @@ enum {
 
 - (void)updateCurrentController:(NewTabPageBarItem*)item
                           index:(NSUInteger)index {
-  if (!IsIPadIdiom() && (item.identifier == ntp_home::BOOKMARKS_PANEL ||
-                         item.identifier == ntp_home::RECENT_TABS_PANEL)) {
+  if (PresentNTPPanelModally() &&
+      (item.identifier == ntp_home::BOOKMARKS_PANEL ||
+       item.identifier == ntp_home::RECENT_TABS_PANEL)) {
     // Don't update |_currentController| for iPhone since Bookmarks and Recent
     // Tabs are presented in a modal view controller.
     return;
