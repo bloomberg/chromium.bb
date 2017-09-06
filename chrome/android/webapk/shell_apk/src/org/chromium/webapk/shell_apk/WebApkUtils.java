@@ -11,12 +11,14 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.ResolveInfo;
+import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.TypedValue;
 import android.view.View;
+import android.widget.TextView;
 
 import org.chromium.webapk.lib.common.WebApkConstants;
 import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
@@ -32,7 +34,6 @@ import java.util.Set;
  */
 public class WebApkUtils {
     public static final String SHARED_PREF_RUNTIME_HOST = "runtime_host";
-    public static final int PADDING_DP = 20;
 
     /**
      * The package names of the channels of Chrome that support WebAPKs. The most preferred one
@@ -280,26 +281,48 @@ public class WebApkUtils {
         editor.apply();
     }
 
-    /** Converts a dp value to a px value. */
-    public static int dpToPx(Context context, int value) {
-        return Math.round(TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP, value, context.getResources().getDisplayMetrics()));
-    }
-
     /**
      * Android uses padding_left under API level 17 and uses padding_start after that.
      * If we set the padding in resource file, android will create duplicated resource xml
      * with the padding to be different.
      */
-    @SuppressWarnings("deprecation")
-    public static void setPadding(
-            View view, Context context, int start, int top, int end, int bottom) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            view.setPaddingRelative(dpToPx(context, start), dpToPx(context, top),
-                    dpToPx(context, end), dpToPx(context, bottom));
+    public static void setPaddingInPixel(View view, int start, int top, int end, int bottom) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            view.setPaddingRelative(start, top, end, bottom);
         } else {
-            view.setPadding(dpToPx(context, start), dpToPx(context, top), dpToPx(context, end),
-                    dpToPx(context, bottom));
+            view.setPadding(start, top, end, bottom);
+        }
+    }
+
+    /**
+     * Imitates Chrome's @style/AlertDialogContent. We set the style via Java instead of via
+     * specifying the style in the XML to avoid having layout files in both layout-v17/ and in
+     * layout/.
+     */
+    public static void applyAlertDialogContentStyle(
+            Context context, View contentView, TextView titleView) {
+        Resources res = context.getResources();
+        titleView.setTextColor(getColor(res, R.color.black_alpha_87));
+        titleView.setTextSize(
+                TypedValue.COMPLEX_UNIT_PX, res.getDimension(R.dimen.headline_size_medium));
+        int dialogContentPadding = res.getDimensionPixelSize(R.dimen.dialog_content_padding);
+        setPaddingInPixel(
+                titleView, dialogContentPadding, dialogContentPadding, dialogContentPadding, 0);
+
+        int dialogContentTopPadding = res.getDimensionPixelSize(R.dimen.dialog_content_top_padding);
+        setPaddingInPixel(contentView, dialogContentPadding, dialogContentTopPadding,
+                dialogContentPadding, dialogContentPadding);
+    }
+
+    /**
+     * @see android.content.res.Resources#getColor(int id).
+     */
+    @SuppressWarnings("deprecation")
+    public static int getColor(Resources res, int id) throws Resources.NotFoundException {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            return res.getColor(id, null);
+        } else {
+            return res.getColor(id);
         }
     }
 }

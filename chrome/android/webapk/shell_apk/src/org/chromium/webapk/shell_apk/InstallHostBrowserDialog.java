@@ -7,7 +7,6 @@ package org.chromium.webapk.shell_apk;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.graphics.Color;
 import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -38,19 +37,22 @@ public class InstallHostBrowserDialog {
             final String hostBrowserPackageName, String hostBrowserApplicationName,
             int hostBrowserIconId) {
         View view = LayoutInflater.from(context).inflate(R.layout.host_browser_list_item, null);
-        TextView name = (TextView) view.findViewById(R.id.browser_name);
-        WebApkUtils.setPadding(name, context, WebApkUtils.PADDING_DP, 0, 0, 0);
-        ImageView icon = (ImageView) view.findViewById(R.id.browser_icon);
-        WebApkUtils.setPadding(icon, context, WebApkUtils.PADDING_DP, 0, 0, 0);
+        TextView title = new TextView(context);
+        title.setText(context.getString(R.string.install_host_browser_dialog_title, appName));
+        WebApkUtils.applyAlertDialogContentStyle(context, view, title);
 
-        name.setText(hostBrowserApplicationName);
-        name.setTextColor(Color.BLACK);
+        ImageView icon = (ImageView) view.findViewById(R.id.browser_icon);
         icon.setImageResource(hostBrowserIconId);
+
+        TextView name = (TextView) view.findViewById(R.id.browser_name);
+        name.setText(hostBrowserApplicationName);
+        WebApkUtils.setPaddingInPixel(name,
+                context.getResources().getDimensionPixelSize(R.dimen.list_column_padding), 0, 0, 0);
 
         // The context theme wrapper is needed for pre-L.
         AlertDialog.Builder builder = new AlertDialog.Builder(
                 new ContextThemeWrapper(context, android.R.style.Theme_DeviceDefault_Light_Dialog));
-        builder.setTitle(context.getString(R.string.install_host_browser_dialog_title, appName))
+        builder.setCustomTitle(title)
                 .setView(view)
                 .setNegativeButton(R.string.choose_host_browser_dialog_quit,
                         new DialogInterface.OnClickListener() {

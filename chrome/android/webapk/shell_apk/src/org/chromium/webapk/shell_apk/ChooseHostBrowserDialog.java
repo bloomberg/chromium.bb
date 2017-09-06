@@ -9,7 +9,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
-import android.graphics.Color;
+import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
@@ -89,27 +89,30 @@ public class ChooseHostBrowserDialog {
                 getBrowserInfosForHostBrowserSelection(context.getPackageManager(), infos);
 
         // The dialog contains:
-        // 1) a description of the dialog.
-        // 2) a list of browsers for user to choose from.
+        // 1) a title
+        // 2) a description of the dialog
+        // 3) a list of browsers for user to choose from
+        TextView title = new TextView(context);
+        title.setText(context.getString(R.string.choose_host_browser_dialog_title, appName));
         View view = LayoutInflater.from(context).inflate(R.layout.choose_host_browser_dialog, null);
+        WebApkUtils.applyAlertDialogContentStyle(context, view, title);
+
         TextView desc = (TextView) view.findViewById(R.id.desc);
-        ListView browserList = (ListView) view.findViewById(R.id.browser_list);
         desc.setText(R.string.choose_host_browser);
-        WebApkUtils.setPadding(desc, context, WebApkUtils.PADDING_DP, 0, WebApkUtils.PADDING_DP, 0);
+
+        ListView browserList = (ListView) view.findViewById(R.id.browser_list);
         browserList.setAdapter(new BrowserArrayAdapter(context, browserItems));
 
         // The context theme wrapper is needed for pre-L.
         AlertDialog.Builder builder = new AlertDialog.Builder(
                 new ContextThemeWrapper(context, android.R.style.Theme_DeviceDefault_Light_Dialog));
-        builder.setTitle(context.getString(R.string.choose_host_browser_dialog_title, appName))
-                .setView(view)
-                .setNegativeButton(R.string.choose_host_browser_dialog_quit,
-                        new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                listener.onQuit();
-                            }
-                        });
+        builder.setCustomTitle(title).setView(view).setNegativeButton(
+                R.string.choose_host_browser_dialog_quit, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        listener.onQuit();
+                    }
+                });
 
         final AlertDialog dialog = builder.create();
         browserList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -174,24 +177,25 @@ public class ChooseHostBrowserDialog {
         public View getView(int position, View convertView, ViewGroup parent) {
             if (convertView == null) {
                 convertView = LayoutInflater.from(mContext).inflate(
-                        R.layout.host_browser_list_item, null);
+                        R.layout.host_browser_list_item, parent, false);
             }
 
-            TextView name = (TextView) convertView.findViewById(R.id.browser_name);
-            WebApkUtils.setPadding(name, mContext, WebApkUtils.PADDING_DP, 0, 0, 0);
+            Resources res = mContext.getResources();
             ImageView icon = (ImageView) convertView.findViewById(R.id.browser_icon);
-            WebApkUtils.setPadding(icon, mContext, WebApkUtils.PADDING_DP, 0, 0, 0);
-            BrowserItem item = mBrowsers.get(position);
+            TextView name = (TextView) convertView.findViewById(R.id.browser_name);
+            WebApkUtils.setPaddingInPixel(
+                    name, res.getDimensionPixelSize(R.dimen.list_column_padding), 0, 0, 0);
 
+            BrowserItem item = mBrowsers.get(position);
             name.setEnabled(item.supportsWebApks());
             if (item.supportsWebApks()) {
                 name.setText(item.getApplicationName());
-                name.setTextColor(Color.BLACK);
+                name.setTextColor(WebApkUtils.getColor(res, R.color.black_alpha_87));
             } else {
                 name.setText(mContext.getString(R.string.host_browser_item_not_supporting_webapks,
                         item.getApplicationName()));
                 name.setSingleLine(false);
-                name.setTextColor(Color.LTGRAY);
+                name.setTextColor(WebApkUtils.getColor(res, R.color.black_alpha_38));
             }
             icon.setImageDrawable(item.getApplicationIcon());
             icon.setEnabled(item.supportsWebApks());
