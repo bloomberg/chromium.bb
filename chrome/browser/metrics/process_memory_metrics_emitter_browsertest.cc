@@ -21,6 +21,7 @@
 #include "content/public/test/test_utils.h"
 #include "extensions/features/features.h"
 #include "net/dns/mock_host_resolver.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
@@ -44,7 +45,7 @@ using extensions::ProcessManager;
 using extensions::TestExtensionDir;
 #endif
 
-static const char UkmEventName[] = "Memory.Experimental";
+using UkmEntry = ukm::builders::Memory_Experimental;
 
 void RequestGlobalDumpCallback(base::Closure quit_closure,
                                bool success,
@@ -215,57 +216,69 @@ class ProcessMemoryMetricsEmitterTest : public ExtensionBrowserTest {
   std::unique_ptr<ukm::TestAutoSetUkmRecorder> test_ukm_recorder_;
 
   void CheckAllUkmSources(size_t metric_count = 1u) {
-    const std::map<ukm::SourceId, std::unique_ptr<ukm::UkmSource>>& sources =
-        test_ukm_recorder_->GetSources();
-    for (auto& pair : sources) {
-      const ukm::UkmSource* source = pair.second.get();
-      if (ProcessHasTypeForSource(source, ProcessType::BROWSER)) {
-        CheckUkmBrowserSource(source, metric_count);
-      } else if (ProcessHasTypeForSource(source, ProcessType::RENDERER)) {
-        CheckUkmRendererSource(source, metric_count);
+    std::set<ukm::SourceId> source_ids = test_ukm_recorder_->GetSourceIds();
+    for (auto source_id : source_ids) {
+      if (ProcessHasTypeForSource(source_id, ProcessType::BROWSER)) {
+        CheckUkmBrowserSource(source_id, 1);
+      } else if (ProcessHasTypeForSource(source_id, ProcessType::RENDERER)) {
+        // Renderer metrics associate with navigation's source, instead of
+        // creating a new one.
+        CheckUkmRendererSource(source_id, metric_count);
+      } else if (ProcessHasTypeForSource(source_id, ProcessType::GPU)) {
+        // Not checked yet.
       } else {
         // This must be Total2.
-        CheckMemoryMetricWithName(source, "Total2.PrivateMemoryFootprint",
-                                  false, metric_count);
+        CheckMemoryMetricWithName(
+            source_id, UkmEntry::kTotal2_PrivateMemoryFootprintName, false, 1);
       }
     }
   }
 
-  void CheckMemoryMetricWithName(const ukm::UkmSource* source,
+  void CheckMemoryMetricWithName(ukm::SourceId source_id,
                                  const char* name,
                                  bool can_be_zero,
                                  size_t metric_count = 1u) {
-    std::vector<int64_t> metrics =
-        test_ukm_recorder_->GetMetrics(*source, UkmEventName, name);
-    EXPECT_EQ(metric_count, metrics.size());
-    EXPECT_GE(metrics[0], can_be_zero ? 0 : 1) << name;
-    EXPECT_LE(metrics[0], 4000) << name;
+    std::vector<int64_t> metrics = test_ukm_recorder_->GetMetricValues(
+        source_id, UkmEntry::kEntryName, name);
+    EXPECT_EQ(metric_count, metrics.size()) << name;
+    if (metrics.size() > 0) {
+      int64_t metric = *metrics.begin();
+      EXPECT_GE(metric, can_be_zero ? 0 : 1) << name;
+      EXPECT_LE(metric, 4000) << name;
+    }
   }
 
-  void CheckUkmRendererSource(const ukm::UkmSource* source,
+  void CheckUkmRendererSource(ukm::SourceId source_id,
                               size_t metric_count = 1u) {
-    CheckMemoryMetricWithName(source, "Malloc", false, metric_count);
-    CheckMemoryMetricWithName(source, "Resident", false, metric_count);
-    CheckMemoryMetricWithName(source, "PrivateMemoryFootprint", false,
+    CheckMemoryMetricWithName(source_id, UkmEntry::kMallocName, false,
                               metric_count);
-    CheckMemoryMetricWithName(source, "BlinkGC", true, metric_count);
-    CheckMemoryMetricWithName(source, "PartitionAlloc", true, metric_count);
-    CheckMemoryMetricWithName(source, "V8", true, metric_count);
-    CheckMemoryMetricWithName(source, "NumberOfExtensions", true, metric_count);
+    CheckMemoryMetricWithName(source_id, UkmEntry::kResidentName, false,
+                              metric_count);
+    CheckMemoryMetricWithName(source_id, UkmEntry::kPrivateMemoryFootprintName,
+                              false, metric_count);
+    CheckMemoryMetricWithName(source_id, UkmEntry::kBlinkGCName, true,
+                              metric_count);
+    CheckMemoryMetricWithName(source_id, UkmEntry::kPartitionAllocName, true,
+                              metric_count);
+    CheckMemoryMetricWithName(source_id, UkmEntry::kV8Name, true, metric_count);
+    CheckMemoryMetricWithName(source_id, UkmEntry::kNumberOfExtensionsName,
+                              true, metric_count);
   }
 
-  void CheckUkmBrowserSource(const ukm::UkmSource* source,
+  void CheckUkmBrowserSource(ukm::SourceId source_id,
                              size_t metric_count = 1u) {
-    CheckMemoryMetricWithName(source, "Malloc", false, metric_count);
-    CheckMemoryMetricWithName(source, "Resident", false, metric_count);
-    CheckMemoryMetricWithName(source, "PrivateMemoryFootprint", false,
+    CheckMemoryMetricWithName(source_id, UkmEntry::kMallocName, false,
                               metric_count);
+    CheckMemoryMetricWithName(source_id, UkmEntry::kResidentName, false,
+                              metric_count);
+    CheckMemoryMetricWithName(source_id, UkmEntry::kPrivateMemoryFootprintName,
+                              false, metric_count);
   }
 
-  bool ProcessHasTypeForSource(const ukm::UkmSource* source,
+  bool ProcessHasTypeForSource(ukm::SourceId source_id,
                                ProcessType process_type) {
-    std::vector<int64_t> metrics =
-        test_ukm_recorder_->GetMetrics(*source, UkmEventName, "ProcessType");
+    std::vector<int64_t> metrics = test_ukm_recorder_->GetMetricValues(
+        source_id, UkmEntry::kEntryName, UkmEntry::kProcessTypeName);
 
     return std::find(metrics.begin(), metrics.end(),
                      static_cast<int64_t>(process_type)) != metrics.end();

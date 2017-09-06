@@ -58,6 +58,17 @@ TestUkmRecorder::TestUkmRecorder() {
 TestUkmRecorder::~TestUkmRecorder() {
 };
 
+std::set<ukm::SourceId> TestUkmRecorder::GetSourceIds() const {
+  std::set<ukm::SourceId> result;
+  for (const auto& kv : sources()) {
+    result.insert(kv.first);
+  }
+  for (const auto& it : entries()) {
+    result.insert(it->source_id);
+  }
+  return result;
+}
+
 const UkmSource* TestUkmRecorder::GetSourceForUrl(const char* url) const {
   const UkmSource* source = nullptr;
   for (const auto& kv : sources()) {
@@ -238,12 +249,19 @@ void TestUkmRecorder::ExpectMetrics(
       << "Failed to find expected_values for metric: " << metric_name;
 }
 
+std::vector<int64_t> TestUkmRecorder::GetMetricValues(
+    ukm::SourceId source_id,
+    const char* event_name,
+    const char* metric_name) const {
+  mojom::UkmEntryPtr entry = GetMergedEntryForSourceID(source_id, event_name);
+  return GetValuesForMetric(entry.get(), metric_name);
+}
+
 std::vector<int64_t> TestUkmRecorder::GetMetrics(
     const UkmSource& source,
     const char* event_name,
     const char* metric_name) const {
-  mojom::UkmEntryPtr entry = GetMergedEntryForSourceID(source.id(), event_name);
-  return GetValuesForMetric(entry.get(), metric_name);
+  return GetMetricValues(source.id(), event_name, metric_name);
 }
 
 TestAutoSetUkmRecorder::TestAutoSetUkmRecorder() {
