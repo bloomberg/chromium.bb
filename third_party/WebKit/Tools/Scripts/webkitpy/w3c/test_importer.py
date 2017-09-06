@@ -295,7 +295,7 @@ class TestImporter(object):
         # irrelevant and ignored here, because it tests patches *individually*
         # while the importer tries to reapply these patches *cumulatively*.
         commits, _ = exportable_commits_over_last_n_commits(
-            self.host, local_wpt, self.wpt_github, require_clean=False)
+            self.host, local_wpt, self.wpt_github, require_clean=False, verify_merged_pr=True)
         return commits
 
     def _generate_manifest(self):
