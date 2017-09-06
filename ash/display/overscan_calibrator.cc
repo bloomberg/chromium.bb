@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/display/overscan_calibrator.h"
+#include "ash/display/overscan_calibrator.h"
 
 #include <stdint.h>
 
@@ -21,7 +21,7 @@
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/gfx/canvas.h"
 
-namespace chromeos {
+namespace ash {
 namespace {
 
 // The opacity for the arrows of the overscan calibration.
@@ -117,10 +117,8 @@ void OverscanCalibrator::Reset() {
 }
 
 void OverscanCalibrator::UpdateInsets(const gfx::Insets& insets) {
-  insets_.Set(std::max(insets.top(), 0),
-              std::max(insets.left(), 0),
-              std::max(insets.bottom(), 0),
-              std::max(insets.right(), 0));
+  insets_.Set(std::max(insets.top(), 0), std::max(insets.left(), 0),
+              std::max(insets.bottom(), 0), std::max(insets.right(), 0));
   calibration_layer_->SchedulePaint(calibration_layer_->bounds());
 }
 
@@ -145,13 +143,11 @@ void OverscanCalibrator::OnPaintLayer(const ui::PaintContext& context) {
 }
 
 void OverscanCalibrator::OnDelegatedFrameDamage(
-    const gfx::Rect& damage_rect_in_dip) {
-}
+    const gfx::Rect& damage_rect_in_dip) {}
 
-void OverscanCalibrator::OnDeviceScaleFactorChanged(
-    float device_scale_factor) {
+void OverscanCalibrator::OnDeviceScaleFactorChanged(float device_scale_factor) {
   // TODO(mukai): Cancel the overscan calibration when the device
   // configuration has changed.
 }
 
-}  // namespace chromeos
+}  // namespace ash
