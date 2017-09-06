@@ -96,7 +96,6 @@
       'Linux ChromiumOS Builder': 'chromeos_with_codecs_release_bot',
       'Linux ChromiumOS Builder (dbg)': 'chromeos_with_codecs_debug_bot',
       'Linux ChromiumOS Full': 'chromeos_with_codecs_release_bot',
-      'Linux ChromiumOS Ozone Builder': 'chromeos_with_codecs_release_bot',
     },
 
     'chromium.fyi': {
@@ -262,6 +261,7 @@
       'Android Release (Nexus 9)': 'android_release_trybot_arm64',
       'Android Release (NVIDIA Shield TV)': 'android_release_trybot_arm64',
       'GPU Linux Builder': 'gpu_fyi_tests_release_trybot',
+      'GPU Linux Ozone Builder': 'gpu_fyi_tests_ozone_linux_system_gbm_libdrm_release_trybot',
       'GPU Linux Builder (dbg)': 'gpu_fyi_tests_debug_trybot',
       'GPU Linux dEQP Builder': 'deqp_release_trybot',
       'GPU Mac Builder': 'gpu_fyi_tests_release_trybot',
@@ -274,9 +274,6 @@
       'GPU Win x64 Builder': 'gpu_fyi_tests_release_trybot',
       'GPU Win x64 Builder (dbg)': 'gpu_fyi_tests_debug_trybot',
       'GPU Win x64 dEQP Builder': 'deqp_release_no_clang_trybot',
-      'Linux ChromiumOS Builder': 'gpu_fyi_tests_chromeos_cros_release_trybot',
-      # This is, confusingly, apparently not actually building ChromiumOS.
-      'Linux ChromiumOS Ozone Builder': 'gpu_fyi_tests_ozone_linux_system_gbm_libdrm_release_trybot',
       'Linux GPU TSAN Release': 'gpu_fyi_tests_release_trybot_tsan',
       'Mac GPU ASAN Release': 'gpu_fyi_tests_release_trybot_asan',
     },

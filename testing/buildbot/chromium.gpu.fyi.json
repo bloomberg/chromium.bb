@@ -2357,58 +2357,13 @@
   },
   "GPU Linux Builder": {},
   "GPU Linux Builder (dbg)": {},
+  "GPU Linux Ozone Builder": {},
   "GPU Mac Builder": {},
   "GPU Mac Builder (dbg)": {},
   "GPU Win Builder": {},
   "GPU Win Builder (dbg)": {},
   "GPU Win x64 Builder": {},
   "GPU Win x64 Builder (dbg)": {},
-  "Linux ChromiumOS Builder": {
-    "additional_compile_targets": [
-      "All"
-    ]
-  },
-  "Linux ChromiumOS Ozone (Intel)": {
-    "gtest_tests": [
-      {
-        "args": [
-          "--use-gpu-in-tests",
-          "--test-launcher-retry-limit=0"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": false,
-          "dimension_sets": [
-            {
-              "gpu": "8086:1912",
-              "os": "Ubuntu"
-            }
-          ]
-        },
-        "test": "angle_end2end_tests",
-        "use_xvfb": false
-      },
-      {
-        "args": [
-          "--use-gpu-in-tests",
-          "--test-launcher-retry-limit=0",
-          "--no-xvfb"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": false,
-          "dimension_sets": [
-            {
-              "gpu": "8086:1912",
-              "os": "Ubuntu"
-            }
-          ]
-        },
-        "test": "angle_unittests",
-        "use_xvfb": false
-      }
-    ],
-    "isolated_scripts": []
-  },
-  "Linux ChromiumOS Ozone Builder": {},
   "Linux Debug (NVIDIA)": {
     "gtest_tests": [
       {
@@ -2950,6 +2905,46 @@
         }
       }
     ]
+  },
+  "Linux Ozone (Intel)": {
+    "gtest_tests": [
+      {
+        "args": [
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": false,
+          "dimension_sets": [
+            {
+              "gpu": "8086:1912",
+              "os": "Ubuntu"
+            }
+          ]
+        },
+        "test": "angle_end2end_tests",
+        "use_xvfb": false
+      },
+      {
+        "args": [
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0",
+          "--no-xvfb"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": false,
+          "dimension_sets": [
+            {
+              "gpu": "8086:1912",
+              "os": "Ubuntu"
+            }
+          ]
+        },
+        "test": "angle_unittests",
+        "use_xvfb": false
+      }
+    ],
+    "isolated_scripts": []
   },
   "Linux Release (AMD R7 240)": {
     "gtest_tests": [
