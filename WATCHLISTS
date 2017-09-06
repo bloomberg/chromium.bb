@@ -1338,7 +1338,6 @@
     },
     'scheduler': {
       'filepath': 'cc/scheduler'\
-                  '|components/scheduler'\
                   '|content/renderer/scheduler'
     },
     'screen_orientation': {
