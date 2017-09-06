@@ -492,6 +492,8 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
 
 - (void)resetEditNodes {
   _editNodes.clear();
+  // Also update viewcontroler that the edit nodes changed.
+  [self.delegate bookmarkTableView:self selectedEditNodes:_editNodes];
 }
 
 // Removes the sign-in promo view.

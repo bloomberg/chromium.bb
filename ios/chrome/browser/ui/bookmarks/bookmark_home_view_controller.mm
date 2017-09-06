@@ -420,16 +420,45 @@ const CGFloat kSpacer = 50;
   if (nodes.size() == 1) {
     const bookmarks::BookmarkNode* node = *nodes.begin();
     if (node->is_url()) {
-      [self setContextBarState:BookmarksContextBarSingleSelection];
+      [self setContextBarState:BookmarksContextBarSingleURLSelection];
     } else if (node->is_folder()) {
       [self setContextBarState:BookmarksContextBarSingleFolderSelection];
     }
     return;
   }
-  if (nodes.size() > 1) {
-    [self setContextBarState:BookmarksContextBarMultipleSelection];
+  BOOL foundURL = NO;
+  BOOL foundFolder = NO;
+  for (std::set<const bookmarks::BookmarkNode*>::iterator i = nodes.begin();
+       i != nodes.end(); ++i) {
+    const bookmarks::BookmarkNode* node = *i;
+    if (!foundURL && node->is_url()) {
+      foundURL = YES;
+    } else if (!foundFolder && node->is_folder()) {
+      foundFolder = YES;
+    }
+    // Break early, if we found both types of nodes.
+    if (foundURL && foundFolder) {
+      break;
+    }
+  }
+  // Only URLs are selected.
+  if (foundURL && !foundFolder) {
+    [self setContextBarState:BookmarksContextBarMultipleURLSelection];
     return;
   }
+  // Only Folders are selected.
+  if (!foundURL && foundFolder) {
+    [self setContextBarState:BookmarksContextBarMultipleFolderSelection];
+    return;
+  }
+  // Mixed selection.
+  if (foundURL && foundFolder) {
+    [self setContextBarState:BookmarksContextBarMixedSelection];
+    return;
+  }
+
+  NOTREACHED();
+  return;
 }
 
 #pragma mark - BookmarkFolderViewControllerDelegate
@@ -1057,9 +1086,11 @@ const CGFloat kSpacer = 50;
       // point.
       NOTREACHED();
       break;
-    case BookmarksContextBarSingleSelection:
-    case BookmarksContextBarMultipleSelection:
+    case BookmarksContextBarSingleURLSelection:
+    case BookmarksContextBarMultipleURLSelection:
     case BookmarksContextBarSingleFolderSelection:
+    case BookmarksContextBarMultipleFolderSelection:
+    case BookmarksContextBarMixedSelection:
       // Delete clicked.
       [self deleteNodes:nodes];
       break;
@@ -1068,10 +1099,54 @@ const CGFloat kSpacer = 50;
       NOTREACHED();
   }
 }
+
 // Called when the center button is clicked.
 - (void)centerButtonClicked {
-  // TODO(crbug.com/695749): Implement the button action here.
+  const std::set<const bookmarks::BookmarkNode*> nodes =
+      [self.bookmarksTableView editNodes];
+  // Center button is shown and is clickable only when at least
+  // one node is selected.
+  DCHECK(nodes.size() > 0);
+  switch (self.contextBarState) {
+    case BookmarksContextBarDefault:
+      // Center button is disabled in default state.
+      NOTREACHED();
+      break;
+    case BookmarksContextBarBeginSelection:
+      // Center button is disabled in start state.
+      NOTREACHED();
+      break;
+    case BookmarksContextBarSingleURLSelection:
+      // More clicked, show action sheet with context menu.
+      [self presentViewController:[self contextMenuForSingleBookmarkURL]
+                         animated:YES
+                       completion:nil];
+      break;
+    case BookmarksContextBarMultipleURLSelection:
+      // More clicked, show action sheet with context menu.
+      [self presentViewController:[self contextMenuForMultipleBookmarkURLs]
+                         animated:YES
+                       completion:nil];
+      break;
+    case BookmarksContextBarSingleFolderSelection:
+      // Edit clicked, open the editor.
+      [self editNode:*(nodes.begin())];
+      break;
+    case BookmarksContextBarMultipleFolderSelection:
+    case BookmarksContextBarMixedSelection:
+      // More clicked, show action sheet with context menu.
+      [self
+          presentViewController:[self
+                                    contextMenuForMixedAndMultiFolderSelection]
+                       animated:YES
+                     completion:nil];
+      break;
+    case BookmarksContextBarNone:
+    default:
+      NOTREACHED();
+  }
 }
+
 // Called when the trailing button, "Select" or "Cancel" is clicked.
 - (void)trailingButtonClicked {
   // Toggle edit mode.
@@ -1095,8 +1170,10 @@ const CGFloat kSpacer = 50;
         [self setBookmarksContextBarButtonsDefaultState];
       }
       break;
-    case BookmarksContextBarSingleSelection:
-    case BookmarksContextBarMultipleSelection:
+    case BookmarksContextBarSingleURLSelection:
+    case BookmarksContextBarMultipleURLSelection:
+    case BookmarksContextBarMultipleFolderSelection:
+    case BookmarksContextBarMixedSelection:
       // Reset to start state, and then override with customizations that apply.
       [self setBookmarksContextBarSelectionStartState];
       [self.contextBar setButtonEnabled:YES forButton:ContextBarCenterButton];
@@ -1160,6 +1237,97 @@ const CGFloat kSpacer = 50;
                         forButton:ContextBarTrailingButton];
   [self.contextBar setButtonVisibility:YES forButton:ContextBarTrailingButton];
   [self.contextBar setButtonEnabled:YES forButton:ContextBarTrailingButton];
+}
+
+#pragma mark - Context Menu
+
+- (UIAlertController*)contextMenuForMultipleBookmarkURLs {
+  UIAlertController* alert = [UIAlertController
+      alertControllerWithTitle:nil
+                       message:nil
+                preferredStyle:UIAlertControllerStyleActionSheet];
+  alert.view.accessibilityIdentifier = @"bookmark_context_menu";
+
+  UIAlertAction* cancelAction =
+      [UIAlertAction actionWithTitle:l10n_util::GetNSString(IDS_CANCEL)
+                               style:UIAlertActionStyleCancel
+                             handler:nil];
+
+  UIAlertAction* openAllAction = [UIAlertAction
+      actionWithTitle:l10n_util::GetNSString(IDS_IOS_BOOKMARK_CONTEXT_MENU_OPEN)
+                style:UIAlertActionStyleDefault
+              handler:nil];
+
+  UIAlertAction* openInIncognitoAction = [UIAlertAction
+      actionWithTitle:l10n_util::GetNSString(
+                          IDS_IOS_BOOKMARK_CONTEXT_MENU_OPEN_INCOGNITO)
+                style:UIAlertActionStyleDefault
+              handler:nil];
+
+  UIAlertAction* moveAction = [UIAlertAction
+      actionWithTitle:l10n_util::GetNSString(IDS_IOS_BOOKMARK_CONTEXT_MENU_MOVE)
+                style:UIAlertActionStyleDefault
+              handler:nil];
+  [alert addAction:openAllAction];
+  [alert addAction:openInIncognitoAction];
+  [alert addAction:moveAction];
+  [alert addAction:cancelAction];
+  return alert;
+}
+
+- (UIAlertController*)contextMenuForSingleBookmarkURL {
+  UIAlertController* alert = [UIAlertController
+      alertControllerWithTitle:nil
+                       message:nil
+                preferredStyle:UIAlertControllerStyleActionSheet];
+  alert.view.accessibilityIdentifier = @"bookmark_context_menu";
+
+  UIAlertAction* cancelAction =
+      [UIAlertAction actionWithTitle:l10n_util::GetNSString(IDS_CANCEL)
+                               style:UIAlertActionStyleCancel
+                             handler:nil];
+
+  UIAlertAction* editAction = [UIAlertAction
+      actionWithTitle:l10n_util::GetNSString(IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT)
+                style:UIAlertActionStyleDefault
+              handler:nil];
+
+  UIAlertAction* copyAction = [UIAlertAction
+      actionWithTitle:l10n_util::GetNSString(IDS_IOS_BOOKMARK_CONTEXT_MENU_COPY)
+                style:UIAlertActionStyleDefault
+              handler:nil];
+
+  UIAlertAction* openInIncognitoAction = [UIAlertAction
+      actionWithTitle:l10n_util::GetNSString(
+                          IDS_IOS_BOOKMARK_CONTEXT_MENU_OPEN_INCOGNITO)
+                style:UIAlertActionStyleDefault
+              handler:nil];
+  [alert addAction:editAction];
+  [alert addAction:copyAction];
+  [alert addAction:openInIncognitoAction];
+  [alert addAction:cancelAction];
+  return alert;
+}
+
+- (UIAlertController*)contextMenuForMixedAndMultiFolderSelection {
+  UIAlertController* alert = [UIAlertController
+      alertControllerWithTitle:nil
+                       message:nil
+                preferredStyle:UIAlertControllerStyleActionSheet];
+  alert.view.accessibilityIdentifier = @"bookmark_context_menu";
+
+  UIAlertAction* cancelAction =
+      [UIAlertAction actionWithTitle:l10n_util::GetNSString(IDS_CANCEL)
+                               style:UIAlertActionStyleCancel
+                             handler:nil];
+
+  UIAlertAction* moveAction = [UIAlertAction
+      actionWithTitle:l10n_util::GetNSString(IDS_IOS_BOOKMARK_CONTEXT_MENU_MOVE)
+                style:UIAlertActionStyleDefault
+              handler:nil];
+  [alert addAction:moveAction];
+  [alert addAction:cancelAction];
+  return alert;
 }
 
 @end
