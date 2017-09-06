@@ -16,8 +16,9 @@ class QuicStreamSendBuffer;
 // QuicMemSliceSpanImpl wraps a MemSlice span.
 class QUIC_EXPORT_PRIVATE QuicMemSliceSpanImpl {
  public:
-  QuicMemSliceSpanImpl(const std::vector<scoped_refptr<IOBuffer>>* buffers,
-                       const std::vector<int>* lengths);
+  QuicMemSliceSpanImpl(const scoped_refptr<IOBuffer>* buffers,
+                       const int* lengths,
+                       size_t num_buffers);
 
   QuicMemSliceSpanImpl(const QuicMemSliceSpanImpl& other);
   QuicMemSliceSpanImpl& operator=(const QuicMemSliceSpanImpl& other);
@@ -30,11 +31,13 @@ class QUIC_EXPORT_PRIVATE QuicMemSliceSpanImpl {
   // saved mem slices.
   QuicByteCount SaveMemSlicesInSendBuffer(QuicStreamSendBuffer* send_buffer);
 
-  bool empty() const { return buffers_->empty(); }
+  bool empty() const { return num_buffers_ == 0; }
 
  private:
-  const std::vector<scoped_refptr<IOBuffer>>* buffers_;
-  const std::vector<int>* lengths_;
+  const scoped_refptr<IOBuffer>* buffers_;
+  const int* lengths_;
+  // Not const so that the move operator can work properly.
+  size_t num_buffers_;
 };
 
 }  // namespace net

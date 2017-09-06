@@ -549,7 +549,8 @@ bool QuicChromiumClientStream::WritevStreamData(
   DCHECK(!HasBufferedData());
   // Writes the data, or buffers it.
   if (session_->can_use_slices()) {
-    WriteMemSlices(QuicMemSliceSpan(QuicMemSliceSpanImpl(&buffers, &lengths)),
+    WriteMemSlices(QuicMemSliceSpan(QuicMemSliceSpanImpl(
+                       buffers.data(), lengths.data(), buffers.size())),
                    fin);
   } else {
     for (size_t i = 0; i < buffers.size(); ++i) {
