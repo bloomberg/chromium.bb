@@ -10,6 +10,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/ui/ntp/modal_ntp.h"
 #import "ios/chrome/browser/ui/toolbar/web_toolbar_controller.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
@@ -286,7 +287,7 @@ const int kLinkColor = 0x03A9F4;
     [_incognitoView setAutoresizingMask:UIViewAutoresizingFlexibleHeight |
                                         UIViewAutoresizingFlexibleWidth];
 
-    if (IsIPadIdiom()) {
+    if (!PresentNTPPanelModally()) {
       [_incognitoView setBackgroundColor:[UIColor clearColor]];
     } else {
       [_incognitoView

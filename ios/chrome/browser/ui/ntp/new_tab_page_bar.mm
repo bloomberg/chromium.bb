@@ -10,6 +10,7 @@
 #include "base/logging.h"
 
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
+#import "ios/chrome/browser/ui/ntp/modal_ntp.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_bar_button.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_bar_item.h"
 #import "ios/chrome/browser/ui/rtl_geometry.h"
@@ -313,13 +314,13 @@ const int kNumberOfTabsIncognito = 2;
 }
 
 - (BOOL)useIconsInButtons {
-  return !IsIPadIdiom() || IsCompactTablet();
+  return PresentNTPPanelModally() || IsCompactTablet();
 }
 
 - (BOOL)showOverlay {
   // The bar buttons launch modal dialogs on tap on iPhone. Don't show overlay
   // in this case.
-  return IsIPadIdiom();
+  return !PresentNTPPanelModally();
 }
 
 @end

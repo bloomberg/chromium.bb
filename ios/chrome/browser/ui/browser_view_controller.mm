@@ -134,6 +134,7 @@
 #import "ios/chrome/browser/ui/history_popup/requirements/tab_history_presentation.h"
 #import "ios/chrome/browser/ui/history_popup/tab_history_legacy_coordinator.h"
 #import "ios/chrome/browser/ui/key_commands_provider.h"
+#import "ios/chrome/browser/ui/ntp/modal_ntp.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_controller.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_handset_coordinator.h"
 #include "ios/chrome/browser/ui/omnibox/page_info_model.h"
@@ -4427,7 +4428,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
 }
 
 - (void)showBookmarksManager {
-  if (IsIPadIdiom()) {
+  if (!PresentNTPPanelModally()) {
     [self showAllBookmarks];
   } else {
     [self initializeBookmarkInteractionController];
@@ -4436,7 +4437,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
 }
 
 - (void)showRecentTabs {
-  if (IsIPadIdiom()) {
+  if (!PresentNTPPanelModally()) {
     [self showNTPPanel:ntp_home::RECENT_TABS_PANEL];
   } else {
     if (!self.recentTabsCoordinator) {
