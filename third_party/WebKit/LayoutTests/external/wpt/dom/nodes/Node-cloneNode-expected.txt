@@ -1,10 +1,9 @@
 This is a testharness.js-based test.
-Found 133 tests; 131 PASS, 2 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 132 tests; 131 PASS, 1 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS createElement(a)
 PASS createElement(abbr)
 PASS createElement(acronym)
 PASS createElement(address)
-FAIL createElement(applet) assert_true: HTMLAppletElement is not supported expected true got false
 PASS createElement(area)
 PASS createElement(article)
 PASS createElement(aside)

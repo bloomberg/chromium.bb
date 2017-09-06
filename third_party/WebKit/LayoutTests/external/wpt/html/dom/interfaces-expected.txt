@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 5323 tests; 5126 PASS, 197 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 5310 tests; 5126 PASS, 184 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Test driver
 PASS Document interface: attribute domain
 PASS Document interface: attribute referrer
@@ -5180,19 +5180,6 @@ FAIL HTMLAppletElement interface: attribute name assert_own_property: self does 
 FAIL HTMLAppletElement interface: attribute object assert_own_property: self does not have own property "HTMLAppletElement" expected property "HTMLAppletElement" missing
 FAIL HTMLAppletElement interface: attribute vspace assert_own_property: self does not have own property "HTMLAppletElement" expected property "HTMLAppletElement" missing
 FAIL HTMLAppletElement interface: attribute width assert_own_property: self does not have own property "HTMLAppletElement" expected property "HTMLAppletElement" missing
-FAIL HTMLAppletElement must be primary interface of document.createElement("applet") assert_own_property: self does not have own property "HTMLAppletElement" expected property "HTMLAppletElement" missing
-FAIL Stringification of document.createElement("applet") assert_equals: class string of document.createElement("applet") expected "[object HTMLAppletElement]" but got "[object HTMLUnknownElement]"
-FAIL HTMLAppletElement interface: document.createElement("applet") must inherit property "align" with the proper type assert_inherits: property "align" not found in prototype chain
-FAIL HTMLAppletElement interface: document.createElement("applet") must inherit property "alt" with the proper type assert_inherits: property "alt" not found in prototype chain
-FAIL HTMLAppletElement interface: document.createElement("applet") must inherit property "archive" with the proper type assert_inherits: property "archive" not found in prototype chain
-FAIL HTMLAppletElement interface: document.createElement("applet") must inherit property "code" with the proper type assert_inherits: property "code" not found in prototype chain
-FAIL HTMLAppletElement interface: document.createElement("applet") must inherit property "codeBase" with the proper type assert_inherits: property "codeBase" not found in prototype chain
-FAIL HTMLAppletElement interface: document.createElement("applet") must inherit property "height" with the proper type assert_inherits: property "height" not found in prototype chain
-FAIL HTMLAppletElement interface: document.createElement("applet") must inherit property "hspace" with the proper type assert_inherits: property "hspace" not found in prototype chain
-FAIL HTMLAppletElement interface: document.createElement("applet") must inherit property "name" with the proper type assert_inherits: property "name" not found in prototype chain
-FAIL HTMLAppletElement interface: document.createElement("applet") must inherit property "object" with the proper type assert_inherits: property "object" not found in prototype chain
-FAIL HTMLAppletElement interface: document.createElement("applet") must inherit property "vspace" with the proper type assert_inherits: property "vspace" not found in prototype chain
-FAIL HTMLAppletElement interface: document.createElement("applet") must inherit property "width" with the proper type assert_inherits: property "width" not found in prototype chain
 PASS HTMLMarqueeElement interface: existence and properties of interface object
 PASS HTMLMarqueeElement interface object length
 PASS HTMLMarqueeElement interface object name

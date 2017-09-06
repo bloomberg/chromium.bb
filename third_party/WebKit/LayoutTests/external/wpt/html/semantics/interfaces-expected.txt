@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 293 tests; 288 PASS, 5 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 293 tests; 290 PASS, 3 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Interfaces for a
 PASS Interfaces for A
 PASS Interfaces for abbr
@@ -8,8 +8,8 @@ PASS Interfaces for acronym
 PASS Interfaces for ACRONYM
 PASS Interfaces for address
 PASS Interfaces for ADDRESS
-FAIL Interfaces for applet assert_equals: Element applet should have HTMLAppletElement as its primary interface. expected "[object HTMLAppletElement]" but got "[object HTMLUnknownElement]"
-FAIL Interfaces for APPLET assert_equals: Element APPLET should have HTMLAppletElement as its primary interface. expected "[object HTMLAppletElement]" but got "[object HTMLUnknownElement]"
+PASS Interfaces for applet
+PASS Interfaces for APPLET
 PASS Interfaces for area
 PASS Interfaces for AREA
 PASS Interfaces for article
