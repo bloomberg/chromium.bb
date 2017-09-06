@@ -372,7 +372,7 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
 
   bool UsePartialRaster() const;
 
-  void CheckPendingGpuWorkTiles(bool issue_signals);
+  void CheckPendingGpuWorkTiles(bool issue_signals, bool flush);
 
   TileManagerClient* client_;
   base::SequencedTaskRunner* task_runner_;
