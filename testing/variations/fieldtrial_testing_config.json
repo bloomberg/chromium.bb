@@ -2883,6 +2883,21 @@
             ]
         }
     ],
+    "SkipCompositingSmallScrollers": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SkipCompositingSmallScrollers"
+                    ]
+                }
+            ]
+        }
+    ],
     "SocketReadIfReady": [
         {
             "platforms": [
