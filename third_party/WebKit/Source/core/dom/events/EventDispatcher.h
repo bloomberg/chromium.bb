@@ -28,8 +28,8 @@
 #ifndef EventDispatcher_h
 #define EventDispatcher_h
 
-#include "core/dom/SimulatedClickOptions.h"
 #include "core/dom/events/EventDispatchResult.h"
+#include "core/dom/events/SimulatedClickOptions.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/RefPtr.h"
 
