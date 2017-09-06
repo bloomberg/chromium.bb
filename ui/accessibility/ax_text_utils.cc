@@ -126,6 +126,8 @@ base::string16 ActionVerbToLocalizedString(
       return l10n_util::GetStringUTF16(IDS_AX_CHECK_ACTION_VERB);
     case AX_DEFAULT_ACTION_VERB_CLICK:
       return l10n_util::GetStringUTF16(IDS_AX_CLICK_ACTION_VERB);
+    case AX_DEFAULT_ACTION_VERB_CLICK_ANCESTOR:
+      return l10n_util::GetStringUTF16(IDS_AX_CLICK_ANCESTOR_ACTION_VERB);
     case AX_DEFAULT_ACTION_VERB_JUMP:
       return l10n_util::GetStringUTF16(IDS_AX_JUMP_ACTION_VERB);
     case AX_DEFAULT_ACTION_VERB_OPEN:
@@ -153,6 +155,8 @@ base::string16 ActionVerbToUnlocalizedString(
       return base::UTF8ToUTF16("check");
     case ui::AX_DEFAULT_ACTION_VERB_CLICK:
       return base::UTF8ToUTF16("click");
+    case ui::AX_DEFAULT_ACTION_VERB_CLICK_ANCESTOR:
+      return base::UTF8ToUTF16("click-ancestor");
     case ui::AX_DEFAULT_ACTION_VERB_JUMP:
       return base::UTF8ToUTF16("jump");
     case ui::AX_DEFAULT_ACTION_VERB_OPEN:

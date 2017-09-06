@@ -363,8 +363,11 @@ need to be translated for each locale.-->
       <message name="IDS_AX_CHECK_ACTION_VERB" desc="Verb stating the action that will occur when an unchecked checkbox is clicked, as used by accessibility.">
         check
       </message>
-      <message name="IDS_AX_CLICK_ACTION_VERB" desc="Verb stating the action that will occur when clicking on a generic clickable object, when we don't know what that action is, as used by accessibility.">
+      <message name="IDS_AX_CLICK_ACTION_VERB" desc="Verb stating the action that will occur when clicking on a generic clickable object, when we don't have a more specific action description, as used by accessibility.">
         click
+      </message>
+      <message name="IDS_AX_CLICK_ANCESTOR_ACTION_VERB" desc="Verb stating the action that will occur when clicking on a generic object that is not itself clickable but one of its ancestors is, as used by accessibility.">
+        click ancestor
       </message>
       <message name="IDS_AX_JUMP_ACTION_VERB" desc="Verb stating the action that will occur when an element such as an in-page link is activated, as used by accessibility.">
         jump

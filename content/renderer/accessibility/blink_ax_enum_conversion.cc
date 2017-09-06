@@ -392,6 +392,8 @@ ui::AXDefaultActionVerb AXDefaultActionVerbFromBlink(
       return ui::AX_DEFAULT_ACTION_VERB_CHECK;
     case blink::WebAXDefaultActionVerb::kClick:
       return ui::AX_DEFAULT_ACTION_VERB_CLICK;
+    case blink::WebAXDefaultActionVerb::kClickAncestor:
+      return ui::AX_DEFAULT_ACTION_VERB_CLICK_ANCESTOR;
     case blink::WebAXDefaultActionVerb::kJump:
       return ui::AX_DEFAULT_ACTION_VERB_JUMP;
     case blink::WebAXDefaultActionVerb::kOpen:

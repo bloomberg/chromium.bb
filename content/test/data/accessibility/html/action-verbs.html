@@ -1,5 +1,7 @@
 <!--
 @BLINK-ALLOW:defaultActionVerb*
+@WIN-ALLOW:default_action*
+@WIN-ALLOW:action_name*
 -->
 <!doctype html>
 <html>
@@ -22,6 +24,9 @@
   <details><summary>Summary</summary>Details</details>
   <select><option>Pop-up button</select>
   <div onclick="alert('success');">Div with click handler</div>
+  <div onclick="alert('success');" role="group">
+    <p>Paragraph with click handler on parent</p>
+  </div>
   <div role="menu">
     <div role="menuitem">Menu item 1</div>
     <div role="menuitemcheckbox" aria-checked="true">Menu item 2</div>

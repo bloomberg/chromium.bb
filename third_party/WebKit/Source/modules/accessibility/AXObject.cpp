@@ -1368,7 +1368,8 @@ AccessibilityOrientation AXObject::Orientation() const {
 }
 
 AXDefaultActionVerb AXObject::Action() const {
-  if (!ActionElement())
+  Element* action_element = ActionElement();
+  if (!action_element)
     return AXDefaultActionVerb::kNone;
 
   // TODO(dmazzoni): Ensure that combo box text field is handled here.
@@ -1398,7 +1399,9 @@ AXDefaultActionVerb AXObject::Action() const {
     case kPopUpButtonRole:
       return AXDefaultActionVerb::kOpen;
     default:
-      return AXDefaultActionVerb::kClick;
+      if (action_element == GetNode())
+        return AXDefaultActionVerb::kClick;
+      return AXDefaultActionVerb::kClickAncestor;
   }
 }
 

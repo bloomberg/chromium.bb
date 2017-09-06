@@ -31,6 +31,9 @@
   <div id="keydown-listener">Key down listener</div>
   <div id="click-listener">Click listener</div>
   <div id="mousedown-listener">Mouse down listener</div>
+  <div id="ancestor-with-click-listener">
+    <div id="click-listener-on-ancestor">Click listener on ancestor</div>
+  </div>
   <div>
     <a id="empty-anchor" tabindex=0>Empty anchor</a>
     <a id="href-anchor" href="#">Anchor with href</a>
@@ -41,6 +44,7 @@
     document.getElementById('keydown-listener').addEventListener('keydown', function() {}, false);
     document.getElementById('click-listener').addEventListener('click', function() {}, false);
     document.getElementById('mousedown-listener').addEventListener('mousedown', function() {}, false);
+    document.getElementById('ancestor-with-click-listener').addEventListener('click', function() {}, false);
     document.getElementById('click-listener-anchor').addEventListener('click', function() {}, false);
   </script>
 </div>
@@ -87,6 +91,7 @@ if (window.testRunner && window.accessibilityController) {
     shouldBe("isAXElementClickable('keydown-listener')", "false");
     shouldBe("isAXElementClickable('click-listener')", "true");
     shouldBe("isAXElementClickable('mousedown-listener')", "true");
+    shouldBe("isAXElementClickable('click-listener-on-ancestor')", "false");
 
     shouldBe("axRole('empty-anchor')", "'AXRole: AXAnchor'");
     shouldBe("axRole('href-anchor')", "'AXRole: AXLink'");
