@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "ash/ash_switches.h"
+#include "ash/media_controller.h"
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/touchscreen_enabled_source.h"
 #include "ash/session/session_controller.h"
@@ -14,6 +15,7 @@
 #include "ash/shell.h"
 #include "ash/shell_test_api.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test_media_client.h"
 #include "ash/test_shell_delegate.h"
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/lock_state_controller_test_api.h"
@@ -702,11 +704,14 @@ TEST_F(TabletPowerButtonControllerTest, IgnoreSpuriousEventsForLidAngle) {
 // Tests that when backlights get forced off due to tablet power button, media
 // sessions should be suspended.
 TEST_F(TabletPowerButtonControllerTest, SuspendMediaSessions) {
-  ASSERT_FALSE(shell_delegate_->media_sessions_suspended());
+  TestMediaClient client;
+  Shell::Get()->media_controller()->SetClient(client.CreateAssociatedPtrInfo());
+  ASSERT_FALSE(client.media_sessions_suspended());
+
   PressPowerButton();
   ReleasePowerButton();
   ASSERT_TRUE(GetBacklightsForcedOff());
-  EXPECT_TRUE(shell_delegate_->media_sessions_suspended());
+  EXPECT_TRUE(client.media_sessions_suspended());
 }
 
 // Tests that when system is suspended with backlights forced off, and then

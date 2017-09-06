@@ -18,8 +18,10 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "components/user_manager/user_manager.h"
+#include "content/public/browser/media_session.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/service_manager_connection.h"
@@ -177,6 +179,13 @@ void MediaClient::RequestCaptureState() {
   }
 
   media_controller_->NotifyCaptureState(std::move(state));
+}
+
+void MediaClient::SuspendMediaSessions() {
+  for (TabContentsIterator it; !it.done(); it.Next()) {
+    content::MediaSession::Get(*it)->Suspend(
+        content::MediaSession::SuspendType::SYSTEM);
+  }
 }
 
 void MediaClient::OnRequestUpdate(int render_process_id,

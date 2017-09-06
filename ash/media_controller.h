@@ -38,19 +38,20 @@ class MediaController : public mojom::MediaController,
   void AddObserver(MediaCaptureObserver* observer);
   void RemoveObserver(MediaCaptureObserver* observer);
 
+  // mojom::MediaController:
+  void SetClient(mojom::MediaClientAssociatedPtrInfo client) override;
+  void NotifyCaptureState(
+      const std::vector<mojom::MediaCaptureState>& capture_states) override;
+
   // mojom::MediaClient:
   void HandleMediaNextTrack() override;
   void HandleMediaPlayPause() override;
   void HandleMediaPrevTrack() override;
   void RequestCaptureState() override;
+  void SuspendMediaSessions() override;
 
  private:
   friend class MultiProfileMediaTrayItemTest;
-
-  // mojom::MediaController:
-  void SetClient(mojom::MediaClientAssociatedPtrInfo client) override;
-  void NotifyCaptureState(
-      const std::vector<mojom::MediaCaptureState>& capture_states) override;
 
   mojo::BindingSet<mojom::MediaController> bindings_;
 
