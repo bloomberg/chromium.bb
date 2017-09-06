@@ -12,9 +12,9 @@
     },
     {
       "name": "LayoutBlockFlow DIV class='composited'",
-      "position": [8, 8],
       "bounds": [30, 30],
-      "drawsContent": false
+      "drawsContent": false,
+      "transform": 1
     },
     {
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV id='scroller' class='overflow')",
@@ -38,6 +38,18 @@
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (relative positioned) DIV class='box')",
       "position": [43, 184],
       "bounds": [210, 100]
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [8, 8, 0, 1]
+      ],
+      "flattenInheritedTransform": false
     }
   ]
 }

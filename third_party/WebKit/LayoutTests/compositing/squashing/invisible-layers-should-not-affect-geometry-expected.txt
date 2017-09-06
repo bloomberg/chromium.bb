@@ -12,15 +12,27 @@
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='composited box'",
-      "position": [10, 10],
       "bounds": [100, 100],
       "contentsOpaque": true,
-      "backgroundColor": "#008000"
+      "backgroundColor": "#008000",
+      "transform": 1
     },
     {
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='box')",
       "position": [10, 10],
       "bounds": [100, 100]
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [10, 10, 0, 1]
+      ],
+      "flattenInheritedTransform": false
     }
   ]
 }

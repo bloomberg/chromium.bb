@@ -13,15 +13,27 @@ CASE 1, original layer tree
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='composited box behind'",
-      "position": [50, 50],
       "bounds": [100, 100],
       "contentsOpaque": true,
-      "backgroundColor": "#0000FF"
+      "backgroundColor": "#0000FF",
+      "transform": 1
     },
     {
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='box top')",
       "position": [130, 130],
       "bounds": [100, 100]
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [50, 50, 0, 1]
+      ],
+      "flattenInheritedTransform": false
     }
   ]
 }
@@ -40,10 +52,10 @@ CASE 2, change color of "inner" to red
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='composited box behind'",
-      "position": [50, 50],
       "bounds": [100, 100],
       "contentsOpaque": true,
-      "backgroundColor": "#0000FF"
+      "backgroundColor": "#0000FF",
+      "transform": 1
     },
     {
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='box top')",
@@ -56,6 +68,18 @@ CASE 2, change color of "inner" to red
           "reason": "style change"
         }
       ]
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [50, 50, 0, 1]
+      ],
+      "flattenInheritedTransform": false
     }
   ],
   "objectPaintInvalidations": [

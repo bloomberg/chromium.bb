@@ -9,8 +9,19 @@ TEST
     },
     {
       "name": "LayoutBlockFlow DIV class='transform'",
-      "position": [8, 8],
-      "bounds": [100, 30]
+      "bounds": [100, 30],
+      "transform": 1
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [8, 8, 0, 1]
+      ]
     }
   ]
 }

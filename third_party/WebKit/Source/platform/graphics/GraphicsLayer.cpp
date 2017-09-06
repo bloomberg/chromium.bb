@@ -597,7 +597,8 @@ class GraphicsLayer::LayersAsJSONArray {
       layer.AddFlattenInheritedTransformJSON(*scroll_translate_json);
     }
 
-    if (!layer.transform_.IsIdentity() || layer.rendering_context3d_) {
+    if (!layer.transform_.IsIdentity() || layer.rendering_context3d_ ||
+        layer.GetCompositingReasons() & kCompositingReason3DTransform) {
       if (position != FloatPoint()) {
         // Output position offset as a transform.
         auto* position_translate_json = AddTransformJSON(transform_id);
@@ -609,11 +610,14 @@ class GraphicsLayer::LayersAsJSONArray {
           position_translate_json->SetBoolean("flattenInheritedTransform",
                                               false);
         }
+        position = FloatPoint();
       }
 
-      auto* transform_json = AddTransformJSON(transform_id);
-      layer.AddTransformJSONProperties(*transform_json, rendering_context_map_);
-      position = FloatPoint();
+      if (!layer.transform_.IsIdentity() || layer.rendering_context3d_) {
+        auto* transform_json = AddTransformJSON(transform_id);
+        layer.AddTransformJSONProperties(*transform_json,
+                                         rendering_context_map_);
+      }
     }
 
     auto json =

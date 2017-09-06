@@ -8,10 +8,10 @@
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV",
-      "position": [8, 8],
       "bounds": [100, 5000],
       "contentsOpaque": true,
-      "backgroundColor": "#ADD8E6"
+      "backgroundColor": "#ADD8E6",
+      "transform": 1
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV",
@@ -35,6 +35,17 @@
       ]
     }
   ],
+  "transforms": [
+    {
+      "id": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [8, 8, 0, 1]
+      ]
+    }
+  ],
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow (positioned) DIV id='foo'",
@@ -52,10 +63,10 @@
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV",
-      "position": [8, 8],
       "bounds": [100, 5000],
       "contentsOpaque": true,
-      "backgroundColor": "#ADD8E6"
+      "backgroundColor": "#ADD8E6",
+      "transform": 1
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV",
@@ -76,6 +87,17 @@
           "rect": [0, 0, 100, 100],
           "reason": "style change"
         }
+      ]
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [8, 8, 0, 1]
       ]
     }
   ],

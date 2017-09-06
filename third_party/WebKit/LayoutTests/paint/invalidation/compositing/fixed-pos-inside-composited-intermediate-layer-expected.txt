@@ -14,11 +14,10 @@
     },
     {
       "name": "LayoutBlockFlow DIV class='compositedBehind'",
-      "position": [8, 8],
       "bounds": [500, 500],
       "contentsOpaque": true,
       "backgroundColor": "#00FFFF",
-      "transform": 1
+      "transform": 2
     },
     {
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='containerOverlapsComposited')",
@@ -48,6 +47,17 @@
         [0, 0, 1, 0],
         [0, -100, 0, 1]
       ]
+    },
+    {
+      "id": 2,
+      "parent": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [8, 8, 0, 1]
+      ],
+      "flattenInheritedTransform": false
     }
   ],
   "objectPaintInvalidations": [

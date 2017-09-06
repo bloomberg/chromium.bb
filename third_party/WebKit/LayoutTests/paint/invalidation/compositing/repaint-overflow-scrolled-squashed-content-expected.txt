@@ -14,10 +14,10 @@
     },
     {
       "name": "LayoutBlockFlow DIV id='foo2'",
-      "position": [8, 8],
       "bounds": [150, 1000],
       "contentsOpaque": true,
-      "backgroundColor": "#ADD8E6"
+      "backgroundColor": "#ADD8E6",
+      "transform": 1
     },
     {
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV id='foo')",
@@ -30,6 +30,18 @@
           "reason": "style change"
         }
       ]
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [8, 8, 0, 1]
+      ],
+      "flattenInheritedTransform": false
     }
   ],
   "objectPaintInvalidations": [

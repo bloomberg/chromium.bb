@@ -18,8 +18,8 @@
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='composited'",
-      "position": [0, 250],
-      "bounds": [150, 150]
+      "bounds": [150, 150],
+      "transform": 1
     },
     {
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow PRE id='layers')",
@@ -31,6 +31,18 @@
       "bounds": [100, 100],
       "contentsOpaque": true,
       "backgroundColor": "#008000"
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [0, 250, 0, 1]
+      ],
+      "flattenInheritedTransform": false
     }
   ]
 }

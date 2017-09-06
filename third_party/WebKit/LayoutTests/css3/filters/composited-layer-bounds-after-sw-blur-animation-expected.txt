@@ -8,10 +8,21 @@
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV id='composited-layer' class='final-drop-shadow'",
-      "position": [100, 100],
       "bounds": [100, 100],
       "contentsOpaque": true,
-      "backgroundColor": "#008000"
+      "backgroundColor": "#008000",
+      "transform": 1
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [100, 100, 0, 1]
+      ]
     }
   ]
 }

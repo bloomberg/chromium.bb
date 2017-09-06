@@ -8,10 +8,10 @@
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='composited box behind'",
-      "position": [100, 100],
       "bounds": [100, 100],
       "contentsOpaque": true,
-      "backgroundColor": "#0000FF"
+      "backgroundColor": "#0000FF",
+      "transform": 1
     },
     {
       "name": "Squashing Containment Layer",
@@ -22,7 +22,7 @@
       "bounds": [100, 100],
       "contentsOpaque": true,
       "backgroundColor": "#00FF00",
-      "transform": 2
+      "transform": 3
     },
     {
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='box top')",
@@ -37,13 +37,22 @@
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
+        [100, 100, 0, 1]
+      ]
+    },
+    {
+      "id": 2,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
         [20, 20, 0, 1]
       ],
       "flattenInheritedTransform": false
     },
     {
-      "id": 2,
-      "parent": 1,
+      "id": 3,
+      "parent": 2,
       "transform": [
         [0.707106781186548, 0.707106781186548, 0, 0],
         [-0.707106781186548, 0.707106781186548, 0, 0],

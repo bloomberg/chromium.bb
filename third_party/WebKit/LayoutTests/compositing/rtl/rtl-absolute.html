@@ -30,18 +30,12 @@
         /* root element should exactly cover red background */
         background-color: white;
     }
-
-    #layertree {
-        position: absolute;
-        top: 10000px;
-        left: 0px;
-    }
 </style>
 <script>
     function doTest() {
-        if (window.testRunner) {
+        if (window.testRunner && window.internals) {
             if (top == self)
-                document.getElementById('layertree').innerText = window.internals.layerTreeAsText(document);
+                testRunner.setCustomTextOutput(internals.layerTreeAsText(document));
             testRunner.dumpAsTextWithPixelResults();
         }
     }
@@ -51,7 +45,5 @@
     <div id="root"></div>
     <div class="positioned indicator"></div>
     <div class="positioned layer"></div>
-
-    <pre id="layertree"></pre>
 </body>
 </html>

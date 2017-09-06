@@ -38,11 +38,10 @@
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV id='layer' class='positioned'",
-      "position": [51, 50],
       "bounds": [100, 100],
       "contentsOpaque": true,
       "backgroundColor": "#008000",
-      "transform": 1
+      "transform": 2
     },
     {
       "name": "Frame Horizontal Scrollbar Layer",
@@ -70,6 +69,16 @@
         [0, 1, 0, 0],
         [0, 0, 1, 0],
         [-615, 0, 0, 1]
+      ]
+    },
+    {
+      "id": 2,
+      "parent": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [51, 50, 0, 1]
       ]
     }
   ]

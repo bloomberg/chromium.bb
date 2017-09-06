@@ -9,11 +9,10 @@
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV id='indicator'",
-      "position": [100, 1100],
       "bounds": [256, 256],
       "contentsOpaque": true,
       "backgroundColor": "#FF0000",
-      "transform": 1
+      "transform": 2
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV id='overlap'",
@@ -32,6 +31,16 @@
         [0, 1, 0, 0],
         [0, 0, 1, 0],
         [0, -1000, 0, 1]
+      ]
+    },
+    {
+      "id": 2,
+      "parent": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [100, 1100, 0, 1]
       ]
     }
   ]

@@ -43,10 +43,10 @@
     },
     {
       "name": "LayoutBlockFlow DIV id='iframe-content' class='box'",
-      "position": [91, 83],
       "bounds": [210, 210],
       "contentsOpaque": true,
-      "backgroundColor": "#0000FF"
+      "backgroundColor": "#0000FF",
+      "transform": 1
     },
     {
       "name": "Frame Vertical Scrollbar Layer",
@@ -59,6 +59,17 @@
       "position": [5, 5],
       "bounds": [150, 150],
       "backgroundColor": "#00000099"
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [91, 83, 0, 1]
+      ]
     }
   ]
 }

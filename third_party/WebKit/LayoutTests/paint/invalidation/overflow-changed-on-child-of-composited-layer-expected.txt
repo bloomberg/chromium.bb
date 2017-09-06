@@ -8,7 +8,6 @@
     },
     {
       "name": "LayoutBlockFlow DIV id='parent'",
-      "position": [27, 19],
       "bounds": [745, 102],
       "paintInvalidations": [
         {
@@ -21,6 +20,18 @@
           "rect": [0, 0, 102, 102],
           "reason": "style change"
         }
+      ],
+      "transform": 1
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [27, 19, 0, 1]
       ]
     }
   ],

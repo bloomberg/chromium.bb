@@ -8,9 +8,8 @@
     },
     {
       "name": "LayoutBlockFlow BODY",
-      "position": [8, 8],
       "bounds": [284, 500],
-      "transform": 1
+      "transform": 2
     }
   ],
   "transforms": [
@@ -21,6 +20,16 @@
         [0, 1, 0, 0],
         [0, 0, 1, 0],
         [0, -20, 0, 1]
+      ]
+    },
+    {
+      "id": 2,
+      "parent": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [8, 8, 0, 1]
       ]
     }
   ]
