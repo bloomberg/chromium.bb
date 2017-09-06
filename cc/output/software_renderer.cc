@@ -23,6 +23,7 @@
 #include "skia/ext/opacity_filter_canvas.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "third_party/skia/include/core/SkColorSpaceXformCanvas.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
 #include "third_party/skia/include/core/SkMatrix.h"
 #include "third_party/skia/include/core/SkPath.h"
@@ -339,13 +340,17 @@ void SoftwareRenderer::DrawPictureQuad(const PictureDrawQuad* quad) {
 
   TRACE_EVENT0("cc", "SoftwareRenderer::DrawPictureQuad");
 
-  // TODO(ccameron): Determine a color space strategy for software rendering.
-  gfx::ColorSpace canvas_color_space;
-  if (settings_->enable_color_correct_rendering)
-    canvas_color_space = gfx::ColorSpace::CreateSRGB();
+  SkCanvas* raster_canvas = current_canvas_;
 
-  RasterSource::PlaybackSettings playback_settings;
-  playback_settings.playback_to_shared_canvas = true;
+  std::unique_ptr<SkCanvas> color_transform_canvas;
+  if (settings_->enable_color_correct_rendering) {
+    // TODO(enne): color transform needs to be replicated in gles2_cmd_decoder
+    color_transform_canvas = SkCreateColorSpaceXformCanvas(
+        current_canvas_, gfx::ColorSpace::CreateSRGB().ToSkColorSpace());
+    raster_canvas = color_transform_canvas.get();
+  }
+
+  base::Optional<skia::OpacityFilterCanvas> opacity_canvas;
   if (needs_transparency || disable_image_filtering) {
     // TODO(aelias): This isn't correct in all cases. We should detect these
     // cases and fall back to a persistent bitmap backing
@@ -353,21 +358,20 @@ void SoftwareRenderer::DrawPictureQuad(const PictureDrawQuad* quad) {
     // TODO(vmpstr): Fold this canvas into playback and have raster source
     // accept a set of settings on playback that will determine which canvas to
     // apply. (http://crbug.com/594679)
-    skia::OpacityFilterCanvas filtered_canvas(current_canvas_,
-                                              quad->shared_quad_state->opacity,
-                                              disable_image_filtering);
-    quad->raster_source->PlaybackToCanvas(
-        &filtered_canvas, canvas_color_space, quad->content_rect,
-        quad->content_rect,
-        gfx::AxisTransform2d(quad->contents_scale, gfx::Vector2dF()),
-        playback_settings);
-  } else {
-    quad->raster_source->PlaybackToCanvas(
-        current_canvas_, canvas_color_space, quad->content_rect,
-        quad->content_rect,
-        gfx::AxisTransform2d(quad->contents_scale, gfx::Vector2dF()),
-        playback_settings);
+    opacity_canvas.emplace(raster_canvas, quad->shared_quad_state->opacity,
+                           disable_image_filtering);
+    raster_canvas = &*opacity_canvas;
   }
+
+  // Treat all subnormal values as zero for performance.
+  ScopedSubnormalFloatDisabler disabler;
+
+  raster_canvas->save();
+  raster_canvas->translate(-quad->content_rect.x(), -quad->content_rect.y());
+  raster_canvas->clipRect(gfx::RectToSkRect(quad->content_rect));
+  raster_canvas->scale(quad->contents_scale, quad->contents_scale);
+  quad->display_item_list->Raster(raster_canvas);
+  raster_canvas->restore();
 }
 
 void SoftwareRenderer::DrawSolidColorQuad(const SolidColorDrawQuad* quad) {

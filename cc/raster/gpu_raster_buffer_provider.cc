@@ -81,9 +81,9 @@ static void RasterizeSourceOOP(
                           resource_lock->PixelConfig());
   gl->RasterCHROMIUM(setup_list.get(), playback_rect.x(), playback_rect.y(),
                      playback_rect.width(), playback_rect.height());
-  gl->RasterCHROMIUM(raster_source->display_list(), playback_rect.x(),
-                     playback_rect.y(), playback_rect.width(),
-                     playback_rect.height());
+  gl->RasterCHROMIUM(raster_source->GetDisplayItemList().get(),
+                     playback_rect.x(), playback_rect.y(),
+                     playback_rect.width(), playback_rect.height());
   gl->EndRasterCHROMIUM();
 
   gl->DeleteTextures(1, &texture_id);
