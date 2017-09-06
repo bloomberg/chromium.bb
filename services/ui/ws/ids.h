@@ -23,6 +23,9 @@ namespace ws {
 // id.
 const ClientSpecificId kInvalidClientId = 0;
 
+// A client id used to indicate WindowServer.
+const ClientSpecificId kWindowServerClientId = 1;
+
 // Every window has a unique id associated with it (WindowId). The id is a
 // combination of the id assigned to the client (the high order bits) and
 // a unique id for the window. Each client (WindowTree) refers to the window
@@ -91,7 +94,7 @@ inline WindowId InvalidWindowId() {
 
 // Returns a root window id with a given index offset.
 inline WindowId RootWindowId(uint16_t index) {
-  return WindowId(kInvalidClientId, 2 + index);
+  return WindowId(kWindowServerClientId, 2 + index);
 }
 
 struct ClientWindowIdHash {

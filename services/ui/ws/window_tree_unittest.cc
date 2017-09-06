@@ -46,6 +46,8 @@ namespace test {
 namespace {
 
 const UserId kTestUserId1 = "2";
+const std::string kNextWindowClientIdString =
+    std::to_string(kWindowManagerClientId + 1);
 
 std::string WindowIdToString(const WindowId& id) {
   return base::StringPrintf("%d,%d", id.client_id, id.window_id);
@@ -161,7 +163,8 @@ class WindowTreeTest : public testing::Test {
     return window_event_targeting_helper_.window_server();
   }
   WindowTree* wm_tree() {
-    return window_event_targeting_helper_.window_server()->GetTreeWithId(1);
+    return window_event_targeting_helper_.window_server()->GetTreeWithId(
+        kWindowManagerClientId);
   }
   WindowTree* last_tree() {
     return window_event_targeting_helper_.last_binding()
@@ -453,9 +456,8 @@ TEST_F(WindowTreeTest, StartPointerWatcherKeyEventsDisallowed) {
   ui::KeyEvent key_pressed(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE);
   DispatchEventAndAckImmediately(key_pressed);
   EXPECT_EQ(0u, other_binding->client()->tracker()->changes()->size());
-  // clients that created this window is receiving the event, so client_id part
-  // would be reset to 0 before sending back to clients.
-  EXPECT_EQ("InputEvent window=0,3 event_action=7",
+  EXPECT_EQ("InputEvent window=" + std::to_string(kWindowServerClientId) +
+                ",3 event_action=7",
             SingleChangeToDescription(*wm_client()->tracker()->changes()));
 
   WindowTreeTestApi(wm_tree()).StartPointerWatcher(false);
@@ -467,9 +469,8 @@ TEST_F(WindowTreeTest, StartPointerWatcherKeyEventsDisallowed) {
 TEST_F(WindowTreeTest, KeyEventSentToWindowManagerWhenNothingFocused) {
   ui::KeyEvent key_pressed(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE);
   DispatchEventAndAckImmediately(key_pressed);
-  // clients that created this window is receiving the event, so client_id part
-  // would be reset to 0 before sending back to clients.
-  EXPECT_EQ("InputEvent window=0,3 event_action=7",
+  EXPECT_EQ("InputEvent window=" + std::to_string(kWindowServerClientId) +
+                ",3 event_action=7",
             SingleChangeToDescription(*wm_client()->tracker()->changes()));
 }
 
@@ -642,9 +643,8 @@ TEST_F(WindowTreeTest, EventAck) {
   wm_client()->tracker()->changes()->clear();
   DispatchEventWithoutAck(CreateMouseMoveEvent(21, 22));
   ASSERT_EQ(1u, wm_client()->tracker()->changes()->size());
-  // clients that created this window is receiving the event, so client_id part
-  // would be reset to 0 before sending back to clients.
-  EXPECT_EQ("InputEvent window=0,3 event_action=17",
+  EXPECT_EQ("InputEvent window=" + std::to_string(kWindowServerClientId) +
+                ",3 event_action=17",
             ChangesToDescription1(*wm_client()->tracker()->changes())[0]);
   wm_client()->tracker()->changes()->clear();
 
@@ -655,7 +655,8 @@ TEST_F(WindowTreeTest, EventAck) {
   // Ack the first event. That should trigger the dispatch of the second event.
   AckPreviousEvent();
   ASSERT_EQ(1u, wm_client()->tracker()->changes()->size());
-  EXPECT_EQ("InputEvent window=0,3 event_action=17",
+  EXPECT_EQ("InputEvent window=" + std::to_string(kWindowServerClientId) +
+                ",3 event_action=17",
             ChangesToDescription1(*wm_client()->tracker()->changes())[0]);
 }
 
@@ -1478,7 +1479,8 @@ TEST_F(WindowTreeTest, CaptureNotifiesWm) {
   embed_client->tracker()->changes()->clear();
   EXPECT_TRUE(embed_tree->SetCapture(embed_child_window_id));
   ASSERT_TRUE(!wm_client()->tracker()->changes()->empty());
-  EXPECT_EQ("OnCaptureChanged new_window=2,1 old_window=null",
+  EXPECT_EQ("OnCaptureChanged new_window=" + kNextWindowClientIdString +
+                ",1 old_window=null",
             ChangesToDescription1(*wm_client()->tracker()->changes())[0]);
   EXPECT_TRUE(embed_client->tracker()->changes()->empty());
 
@@ -1486,7 +1488,8 @@ TEST_F(WindowTreeTest, CaptureNotifiesWm) {
   wm_client()->tracker()->changes()->clear();
   EXPECT_TRUE(embed_tree->SetCapture(FirstRootId(embed_tree)));
   ASSERT_TRUE(!wm_client()->tracker()->changes()->empty());
-  EXPECT_EQ("OnCaptureChanged new_window=1,1 old_window=2,1",
+  EXPECT_EQ("OnCaptureChanged new_window=" + kWindowManagerClientIdString +
+                ",1 old_window=" + kNextWindowClientIdString + ",1",
             ChangesToDescription1(*wm_client()->tracker()->changes())[0]);
   EXPECT_TRUE(embed_client->tracker()->changes()->empty());
   wm_client()->tracker()->changes()->clear();
@@ -1496,7 +1499,8 @@ TEST_F(WindowTreeTest, CaptureNotifiesWm) {
       ClientWindowIdForWindow(owning_tree, FirstRoot(embed_tree))));
   EXPECT_TRUE(wm_client()->tracker()->changes()->empty());
   ASSERT_TRUE(!embed_client->tracker()->changes()->empty());
-  EXPECT_EQ("OnCaptureChanged new_window=null old_window=1,1",
+  EXPECT_EQ("OnCaptureChanged new_window=null old_window=" +
+                kWindowManagerClientIdString + ",1",
             ChangesToDescription1(*embed_client->tracker()->changes())[0]);
 }
 

@@ -11,6 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "services/ui/common/util.h"
+#include "services/ui/ws/test_utils.h"
 #include "services/ui/ws/window_server_test_base.h"
 #include "ui/aura/client/transient_window_client.h"
 #include "ui/aura/env.h"
@@ -507,10 +508,12 @@ TEST_F(WindowServerTest, Reorder) {
   aura::Window* window12 = NewVisibleWindow(embed_root, embedded);
   ASSERT_TRUE(WaitForTreeSizeToMatch(window1, 3u));
 
-  // |embedded|'s WindowTree has an id_ of 2, so window11's client_id part
-  // should be 2 in the WindowTree for window_manager(). Similar for window12.
-  Id window11_in_wm = 2 << 16 | LoWord(server_id(window11));
-  Id window12_in_wm = 2 << 16 | LoWord(server_id(window12));
+  // |embedded|'s WindowTree has an id_ of embedded_client_id, so window11's
+  // client_id part should be embedded_client_id in the WindowTree for
+  // window_manager(). Similar for window12.
+  ClientSpecificId embedded_client_id = test::kWindowManagerClientId + 1;
+  Id window11_in_wm = embedded_client_id << 16 | LoWord(server_id(window11));
+  Id window12_in_wm = embedded_client_id << 16 | LoWord(server_id(window12));
 
   {
     window11->parent()->StackChildAtTop(window11);
