@@ -46,7 +46,7 @@ class CC_EXPORT VulkanRenderer : public DirectRenderer {
   bool FlippedFramebuffer(const DrawingFrame* frame) const override;
   void EnsureScissorTestEnabled() override;
   void EnsureScissorTestDisabled() override;
-  void CopyCurrentRenderPassToBitmap(
+  void CopyDrawnRenderPass(
       DrawingFrame* frame,
       std::unique_ptr<viz::CopyOutputRequest> request) override;
   bool CanPartialSwap() override;

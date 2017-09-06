@@ -15,19 +15,58 @@
 namespace mojo {
 
 template <>
+struct EnumTraits<cc::mojom::CopyOutputResultFormat,
+                  viz::CopyOutputResult::Format> {
+  static cc::mojom::CopyOutputResultFormat ToMojom(
+      viz::CopyOutputResult::Format format) {
+    switch (format) {
+      case viz::CopyOutputResult::Format::RGBA_BITMAP:
+        return cc::mojom::CopyOutputResultFormat::RGBA_BITMAP;
+      case viz::CopyOutputResult::Format::RGBA_TEXTURE:
+        return cc::mojom::CopyOutputResultFormat::RGBA_TEXTURE;
+    }
+    NOTREACHED();
+    return cc::mojom::CopyOutputResultFormat::RGBA_BITMAP;
+  }
+
+  static bool FromMojom(cc::mojom::CopyOutputResultFormat input,
+                        viz::CopyOutputResult::Format* out) {
+    switch (input) {
+      case cc::mojom::CopyOutputResultFormat::RGBA_BITMAP:
+        *out = viz::CopyOutputResult::Format::RGBA_BITMAP;
+        return true;
+      case cc::mojom::CopyOutputResultFormat::RGBA_TEXTURE:
+        *out = viz::CopyOutputResult::Format::RGBA_TEXTURE;
+        return true;
+    }
+    return false;
+  }
+};
+
+template <>
 struct StructTraits<cc::mojom::CopyOutputResultDataView,
                     std::unique_ptr<viz::CopyOutputResult>> {
-  static const gfx::Size& size(
+  static viz::CopyOutputResult::Format format(
       const std::unique_ptr<viz::CopyOutputResult>& result) {
-    return result->size_;
+    return result->format();
+  }
+
+  static const gfx::Rect& rect(
+      const std::unique_ptr<viz::CopyOutputResult>& result) {
+    return result->rect();
   }
 
   static const SkBitmap& bitmap(
-      const std::unique_ptr<viz::CopyOutputResult>& result);
-
-  static const viz::TextureMailbox& texture_mailbox(
       const std::unique_ptr<viz::CopyOutputResult>& result) {
-    return result->texture_mailbox_;
+    return result->AsSkBitmap();
+  }
+
+  static base::Optional<viz::TextureMailbox> texture_mailbox(
+      const std::unique_ptr<viz::CopyOutputResult>& result) {
+    if (HasTextureResult(*result))
+      return *result->GetTextureMailbox();
+    else
+      return base::nullopt;
   }
 
   static cc::mojom::TextureMailboxReleaserPtr releaser(
@@ -35,6 +74,9 @@ struct StructTraits<cc::mojom::CopyOutputResultDataView,
 
   static bool Read(cc::mojom::CopyOutputResultDataView data,
                    std::unique_ptr<viz::CopyOutputResult>* out_p);
+
+ private:
+  static bool HasTextureResult(const viz::CopyOutputResult& result);
 };
 
 }  // namespace mojo

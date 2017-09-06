@@ -67,7 +67,8 @@ bool PixelTest::RunPixelTestWithReadbackTargetAndArea(
   base::RunLoop run_loop;
 
   std::unique_ptr<viz::CopyOutputRequest> request =
-      viz::CopyOutputRequest::CreateBitmapRequest(
+      std::make_unique<viz::CopyOutputRequest>(
+          viz::CopyOutputRequest::ResultFormat::RGBA_BITMAP,
           base::BindOnce(&PixelTest::ReadbackResult, base::Unretained(this),
                          run_loop.QuitClosure()));
   if (copy_rect)
@@ -98,7 +99,8 @@ bool PixelTest::RunPixelTest(RenderPassList* pass_list,
   RenderPass* target = pass_list->back().get();
 
   std::unique_ptr<viz::CopyOutputRequest> request =
-      viz::CopyOutputRequest::CreateBitmapRequest(
+      std::make_unique<viz::CopyOutputRequest>(
+          viz::CopyOutputRequest::ResultFormat::RGBA_BITMAP,
           base::BindOnce(&PixelTest::ReadbackResult, base::Unretained(this),
                          run_loop.QuitClosure()));
   target->copy_requests.push_back(std::move(request));
@@ -130,8 +132,10 @@ bool PixelTest::RunPixelTest(RenderPassList* pass_list,
 
 void PixelTest::ReadbackResult(base::Closure quit_run_loop,
                                std::unique_ptr<viz::CopyOutputResult> result) {
-  ASSERT_TRUE(result->HasBitmap());
-  result_bitmap_ = result->TakeBitmap();
+  ASSERT_FALSE(result->IsEmpty());
+  EXPECT_EQ(result->format(), viz::CopyOutputResult::Format::RGBA_BITMAP);
+  result_bitmap_ = std::make_unique<SkBitmap>(result->AsSkBitmap());
+  EXPECT_TRUE(result_bitmap_->readyToDraw());
   quit_run_loop.Run();
 }
 

@@ -13,19 +13,19 @@
 
 namespace viz {
 
-CopyOutputRequest::CopyOutputRequest() : force_bitmap_result_(false) {}
-
-CopyOutputRequest::CopyOutputRequest(bool force_bitmap_result,
+CopyOutputRequest::CopyOutputRequest(ResultFormat result_format,
                                      CopyOutputRequestCallback result_callback)
-    : force_bitmap_result_(force_bitmap_result),
+    : result_format_(result_format),
       result_callback_(std::move(result_callback)) {
   DCHECK(!result_callback_.is_null());
   TRACE_EVENT_ASYNC_BEGIN0("viz", "CopyOutputRequest", this);
 }
 
 CopyOutputRequest::~CopyOutputRequest() {
-  if (!result_callback_.is_null())
-    SendResult(CopyOutputResult::CreateEmptyResult());
+  if (!result_callback_.is_null()) {
+    // Send an empty result to indicate the request was never satisfied.
+    SendResult(std::make_unique<CopyOutputResult>(result_format_, gfx::Rect()));
+  }
 }
 
 void CopyOutputRequest::SendResult(std::unique_ptr<CopyOutputResult> result) {
@@ -41,28 +41,18 @@ void CopyOutputRequest::SendResult(std::unique_ptr<CopyOutputResult> result) {
   }
 }
 
-void CopyOutputRequest::SendEmptyResult() {
-  SendResult(CopyOutputResult::CreateEmptyResult());
-}
-
-void CopyOutputRequest::SendBitmapResult(std::unique_ptr<SkBitmap> bitmap) {
-  SendResult(CopyOutputResult::CreateBitmapResult(std::move(bitmap)));
-}
-
-void CopyOutputRequest::SendTextureResult(
-    const gfx::Size& size,
-    const TextureMailbox& texture_mailbox,
-    std::unique_ptr<SingleReleaseCallback> release_callback) {
-  DCHECK(texture_mailbox.IsTexture());
-  SendResult(CopyOutputResult::CreateTextureResult(
-      size, texture_mailbox, std::move(release_callback)));
-}
-
 void CopyOutputRequest::SetTextureMailbox(
     const TextureMailbox& texture_mailbox) {
-  DCHECK(!force_bitmap_result_);
+  DCHECK_EQ(result_format_, ResultFormat::RGBA_TEXTURE);
   DCHECK(texture_mailbox.IsTexture());
   texture_mailbox_ = texture_mailbox;
+}
+
+// static
+std::unique_ptr<CopyOutputRequest> CopyOutputRequest::CreateStubForTesting() {
+  return std::make_unique<CopyOutputRequest>(
+      ResultFormat::RGBA_BITMAP,
+      base::BindOnce([](std::unique_ptr<CopyOutputResult>) {}));
 }
 
 }  // namespace viz

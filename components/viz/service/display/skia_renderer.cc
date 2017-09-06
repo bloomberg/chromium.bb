@@ -617,7 +617,7 @@ void SkiaRenderer::DrawUnsupportedQuad(const cc::DrawQuad* quad) {
                             current_paint_);
 }
 
-void SkiaRenderer::CopyCurrentRenderPassToBitmap(
+void SkiaRenderer::CopyDrawnRenderPass(
     std::unique_ptr<CopyOutputRequest> request) {
   // TODO(weiliangc): Make copy request work. (crbug.com/644851)
   NOTIMPLEMENTED();

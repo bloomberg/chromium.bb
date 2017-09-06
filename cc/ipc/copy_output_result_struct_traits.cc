@@ -16,7 +16,7 @@ namespace {
 // attached to it goes away (i.e. StrongBinding is used).
 class TextureMailboxReleaserImpl : public cc::mojom::TextureMailboxReleaser {
  public:
-  TextureMailboxReleaserImpl(
+  explicit TextureMailboxReleaserImpl(
       std::unique_ptr<viz::SingleReleaseCallback> release_callback)
       : release_callback_(std::move(release_callback)) {
     DCHECK(release_callback_);
@@ -52,27 +52,24 @@ void Release(cc::mojom::TextureMailboxReleaserPtr ptr,
 namespace mojo {
 
 // static
-const SkBitmap& StructTraits<cc::mojom::CopyOutputResultDataView,
-                             std::unique_ptr<viz::CopyOutputResult>>::
-    bitmap(const std::unique_ptr<viz::CopyOutputResult>& result) {
-  static SkBitmap* null_bitmap = new SkBitmap();
-  if (!result->bitmap_)
-    return *null_bitmap;
-  return *result->bitmap_;
-}
-
-// static
 cc::mojom::TextureMailboxReleaserPtr
 StructTraits<cc::mojom::CopyOutputResultDataView,
              std::unique_ptr<viz::CopyOutputResult>>::
     releaser(const std::unique_ptr<viz::CopyOutputResult>& result) {
-  if (!result->release_callback_)
-    return {};
   cc::mojom::TextureMailboxReleaserPtr releaser;
-  auto impl = std::make_unique<TextureMailboxReleaserImpl>(
-      std::move(result->release_callback_));
-  MakeStrongBinding(std::move(impl), MakeRequest(&releaser));
+  if (HasTextureResult(*result)) {
+    MakeStrongBinding(std::make_unique<TextureMailboxReleaserImpl>(
+                          result->TakeTextureOwnership()),
+                      MakeRequest(&releaser));
+  }
   return releaser;
+}
+
+// static
+bool StructTraits<cc::mojom::CopyOutputResultDataView,
+                  std::unique_ptr<viz::CopyOutputResult>>::
+    HasTextureResult(const viz::CopyOutputResult& result) {
+  return result.GetTextureMailbox() && result.GetTextureMailbox()->IsTexture();
 }
 
 // static
@@ -80,55 +77,50 @@ bool StructTraits<cc::mojom::CopyOutputResultDataView,
                   std::unique_ptr<viz::CopyOutputResult>>::
     Read(cc::mojom::CopyOutputResultDataView data,
          std::unique_ptr<viz::CopyOutputResult>* out_p) {
-  // We first read into local variables and then call the appropriate
-  // constructor of viz::CopyOutputResult.
-  gfx::Size size;
-  auto bitmap = std::make_unique<SkBitmap>();
-  viz::TextureMailbox texture_mailbox;
-  std::unique_ptr<viz::SingleReleaseCallback> release_callback;
+  // First read into local variables, and then instantiate an appropriate
+  // implementation of viz::CopyOutputResult.
+  viz::CopyOutputResult::Format format;
+  gfx::Rect rect;
 
-  if (!data.ReadSize(&size))
+  if (!data.ReadFormat(&format) || !data.ReadRect(&rect))
     return false;
 
-  if (!data.ReadBitmap(bitmap.get()))
-    return false;
+  switch (format) {
+    case viz::CopyOutputResult::Format::RGBA_BITMAP: {
+      SkBitmap bitmap;
+      if (!rect.IsEmpty() &&
+          (!data.ReadBitmap(&bitmap) || !bitmap.readyToDraw())) {
+        return false;  // Missing image data!
+      }
+      out_p->reset(new viz::CopyOutputSkBitmapResult(rect, bitmap));
+      return true;
+    }
 
-  if (!data.ReadTextureMailbox(&texture_mailbox))
-    return false;
-
-  auto releaser = data.TakeReleaser<cc::mojom::TextureMailboxReleaserPtr>();
-  if (releaser) {
-    // CopyOutputResult does not have a TextureMailboxReleaserPtr member.
-    // We use base::Bind to turn TextureMailboxReleaser::Release into a
-    // viz::ReleaseCallback.
-    release_callback = viz::SingleReleaseCallback::Create(
-        base::Bind(Release, base::Passed(&releaser)));
+    case viz::CopyOutputResult::Format::RGBA_TEXTURE: {
+      base::Optional<viz::TextureMailbox> texture_mailbox;
+      if (!data.ReadTextureMailbox(&texture_mailbox))
+        return false;
+      if (texture_mailbox && texture_mailbox->IsTexture()) {
+        auto releaser =
+            data.TakeReleaser<cc::mojom::TextureMailboxReleaserPtr>();
+        if (!releaser)
+          return false;  // Illegal to provide texture without Releaser.
+        out_p->reset(new viz::CopyOutputTextureResult(
+            rect, *texture_mailbox,
+            viz::SingleReleaseCallback::Create(
+                base::Bind(Release, base::Passed(&releaser)))));
+      } else {
+        if (!rect.IsEmpty())
+          return false;  // Missing image data!
+        out_p->reset(new viz::CopyOutputTextureResult(
+            rect, viz::TextureMailbox(), nullptr));
+      }
+      return true;
+    }
   }
 
-  // Empty result.
-  if (bitmap->isNull() && !texture_mailbox.IsTexture()) {
-    *out_p = viz::CopyOutputResult::CreateEmptyResult();
-    return true;
-  }
-
-  // Bitmap result.
-  if (!bitmap->isNull()) {
-    // We can't have both a bitmap and a texture.
-    if (texture_mailbox.IsTexture())
-      return false;
-    *out_p = viz::CopyOutputResult::CreateBitmapResult(std::move(bitmap));
-    return true;
-  }
-
-  // Texture result.
-  DCHECK(texture_mailbox.IsTexture());
-  if (size.IsEmpty())
-    return false;
-  if (!release_callback)
-    return false;
-  *out_p = viz::CopyOutputResult::CreateTextureResult(
-      size, texture_mailbox, std::move(release_callback));
-  return true;
+  NOTREACHED();
+  return false;
 }
 
 }  // namespace mojo

@@ -4127,11 +4127,9 @@ class DidDrawCheckLayer : public LayerImpl {
     did_draw_called_ = false;
   }
 
-  static void IgnoreResult(std::unique_ptr<viz::CopyOutputResult> result) {}
-
   void AddCopyRequest() {
     test_properties()->copy_requests.push_back(
-        viz::CopyOutputRequest::CreateRequest(base::BindOnce(&IgnoreResult)));
+        viz::CopyOutputRequest::CreateStubForTesting());
   }
 
  protected:
@@ -9188,9 +9186,6 @@ TEST_F(LayerTreeHostImplTest, CreateETC1UIResource) {
   EXPECT_NE(0u, id1);
 }
 
-void ShutdownReleasesContext_Callback(
-    std::unique_ptr<viz::CopyOutputResult> result) {}
-
 class FrameSinkClient : public viz::TestLayerTreeFrameSinkClient {
  public:
   explicit FrameSinkClient(
@@ -9233,9 +9228,16 @@ TEST_F(LayerTreeHostImplTest, ShutdownReleasesContext) {
   SetupRootLayerImpl(LayerImpl::Create(host_impl_->active_tree(), 1));
 
   LayerImpl* root = host_impl_->active_tree()->root_layer_for_testing();
+  struct Helper {
+    std::unique_ptr<viz::CopyOutputResult> unprocessed_result;
+    void OnResult(std::unique_ptr<viz::CopyOutputResult> result) {
+      unprocessed_result = std::move(result);
+    }
+  } helper;
   root->test_properties()->copy_requests.push_back(
-      viz::CopyOutputRequest::CreateRequest(
-          base::BindOnce(&ShutdownReleasesContext_Callback)));
+      std::make_unique<viz::CopyOutputRequest>(
+          viz::CopyOutputRequest::ResultFormat::RGBA_TEXTURE,
+          base::BindOnce(&Helper::OnResult, base::Unretained(&helper))));
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
 
   TestFrameData frame;
@@ -9243,18 +9245,23 @@ TEST_F(LayerTreeHostImplTest, ShutdownReleasesContext) {
   host_impl_->DrawLayers(&frame);
   host_impl_->DidDrawAllLayers(frame);
 
-  // The CopyOutputResult's callback has a ref on the viz::ContextProvider and a
-  // texture in a texture mailbox.
+  // The CopyOutputResult has a ref on the viz::ContextProvider and a texture in
+  // a texture mailbox.
+  ASSERT_TRUE(helper.unprocessed_result);
   EXPECT_FALSE(context_provider->HasOneRef());
   EXPECT_EQ(1u, context_provider->TestContext3d()->NumTextures());
 
   host_impl_->ReleaseLayerTreeFrameSink();
   host_impl_ = nullptr;
 
-  // The CopyOutputResult's callback was cancelled, the CopyOutputResult
-  // released, and the texture deleted.
+  // The texture release callback that was given to the CopyOutputResult has
+  // been canceled, and the texture deleted.
   EXPECT_TRUE(context_provider->HasOneRef());
   EXPECT_EQ(0u, context_provider->TestContext3d()->NumTextures());
+
+  // When resetting the CopyOutputResult, it will run its texture release
+  // callback. This should not cause a crash, etc.
+  helper.unprocessed_result.reset();
 }
 
 TEST_F(LayerTreeHostImplTest, TouchFlingShouldNotBubble) {

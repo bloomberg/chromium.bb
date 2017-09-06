@@ -362,9 +362,11 @@ void Pointer::CaptureCursor(const gfx::Point& hotspot) {
   host_window()->SetTransform(gfx::GetScaleTransform(gfx::Point(), scale));
 
   std::unique_ptr<viz::CopyOutputRequest> request =
-      viz::CopyOutputRequest::CreateBitmapRequest(base::BindOnce(
-          &Pointer::OnCursorCaptured,
-          cursor_capture_weak_ptr_factory_.GetWeakPtr(), hotspot));
+      std::make_unique<viz::CopyOutputRequest>(
+          viz::CopyOutputRequest::ResultFormat::RGBA_BITMAP,
+          base::BindOnce(&Pointer::OnCursorCaptured,
+                         cursor_capture_weak_ptr_factory_.GetWeakPtr(),
+                         hotspot));
 
   request->set_source(cursor_capture_source_id_);
   host_window()->layer()->RequestCopyOfOutput(std::move(request));
@@ -378,8 +380,8 @@ void Pointer::OnCursorCaptured(const gfx::Point& hotspot,
   if (result->IsEmpty()) {
     cursor_bitmap_.reset();
   } else {
-    DCHECK(result->HasBitmap());
-    cursor_bitmap_ = *result->TakeBitmap();
+    cursor_bitmap_ = result->AsSkBitmap();
+    DCHECK(cursor_bitmap_.readyToDraw());
     cursor_hotspot_ = hotspot;
   }
 

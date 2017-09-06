@@ -363,14 +363,18 @@ void PrepareTextureCopyOutputResult(
       base::Bind(callback, SkBitmap(), READBACK_FAILED));
   TRACE_EVENT0("cc",
                "RenderWidgetHostViewAndroid::PrepareTextureCopyOutputResult");
-  if (!result->HasTexture() || result->IsEmpty() || result->size().IsEmpty())
+  if (result->IsEmpty())
     return;
+
   viz::TextureMailbox texture_mailbox;
   std::unique_ptr<viz::SingleReleaseCallback> release_callback;
-  result->TakeTexture(&texture_mailbox, &release_callback);
-  DCHECK(texture_mailbox.IsTexture());
+  if (auto* mailbox = result->GetTextureMailbox()) {
+    texture_mailbox = *mailbox;
+    release_callback = result->TakeTextureOwnership();
+  }
   if (!texture_mailbox.IsTexture())
     return;
+
   viz::GLHelper* gl_helper = GetPostReadbackGLHelper();
   if (!gl_helper)
     return;

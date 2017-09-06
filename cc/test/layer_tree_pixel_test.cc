@@ -90,14 +90,18 @@ LayerTreePixelTest::CreateDisplayOutputSurfaceOnThread(
 
 std::unique_ptr<viz::CopyOutputRequest>
 LayerTreePixelTest::CreateCopyOutputRequest() {
-  return viz::CopyOutputRequest::CreateBitmapRequest(base::BindOnce(
-      &LayerTreePixelTest::ReadbackResult, base::Unretained(this)));
+  return std::make_unique<viz::CopyOutputRequest>(
+      viz::CopyOutputRequest::ResultFormat::RGBA_BITMAP,
+      base::BindOnce(&LayerTreePixelTest::ReadbackResult,
+                     base::Unretained(this)));
 }
 
 void LayerTreePixelTest::ReadbackResult(
     std::unique_ptr<viz::CopyOutputResult> result) {
-  ASSERT_TRUE(result->HasBitmap());
-  result_bitmap_ = result->TakeBitmap();
+  ASSERT_FALSE(result->IsEmpty());
+  EXPECT_EQ(result->format(), viz::CopyOutputResult::Format::RGBA_BITMAP);
+  result_bitmap_ = std::make_unique<SkBitmap>(result->AsSkBitmap());
+  EXPECT_TRUE(result_bitmap_->readyToDraw());
   EndTest();
 }
 
@@ -224,12 +228,14 @@ void LayerTreePixelTest::SetupTree() {
   LayerTreeTest::SetupTree();
 }
 
-std::unique_ptr<SkBitmap> LayerTreePixelTest::CopyTextureMailboxToBitmap(
+SkBitmap LayerTreePixelTest::CopyTextureMailboxToBitmap(
     const gfx::Size& size,
     const viz::TextureMailbox& texture_mailbox) {
   DCHECK(texture_mailbox.IsTexture());
+
+  SkBitmap bitmap;
   if (!texture_mailbox.IsTexture())
-    return nullptr;
+    return bitmap;
 
   std::unique_ptr<gpu::GLInProcessContext> context =
       CreateTestInProcessContext();
@@ -268,10 +274,11 @@ std::unique_ptr<SkBitmap> LayerTreePixelTest::CopyTextureMailboxToBitmap(
   gl->DeleteFramebuffers(1, &fbo);
   gl->DeleteTextures(1, &texture_id);
 
-  std::unique_ptr<SkBitmap> bitmap(new SkBitmap);
-  bitmap->allocN32Pixels(size.width(), size.height());
+  bitmap.allocN32Pixels(size.width(), size.height());
+  // TODO(miu): Provide color space in this allocN32Pixels() call.
+  // http://crbug.com/758057
 
-  uint8_t* out_pixels = static_cast<uint8_t*>(bitmap->getPixels());
+  uint8_t* out_pixels = static_cast<uint8_t*>(bitmap.getPixels());
 
   size_t row_bytes = size.width() * 4;
   size_t total_bytes = size.height() * row_bytes;

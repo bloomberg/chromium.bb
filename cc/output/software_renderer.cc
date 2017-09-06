@@ -564,21 +564,36 @@ void SoftwareRenderer::DrawUnsupportedQuad(const DrawQuad* quad) {
                             current_paint_);
 }
 
-void SoftwareRenderer::CopyCurrentRenderPassToBitmap(
+void SoftwareRenderer::CopyDrawnRenderPass(
     std::unique_ptr<viz::CopyOutputRequest> request) {
+  // SoftwareRenderer supports RGBA_BITMAP only. For legacy reasons, if a
+  // RGBA_TEXTURE request is being made, clients are prepared to accept
+  // RGBA_BITMAP results.
+  //
+  // TODO(miu): Get rid of the legacy behavior and send empty results for
+  // RGBA_TEXTURE requests once tab capture is moved into VIZ.
+  // http://crbug.com/754872
+  switch (request->result_format()) {
+    case viz::CopyOutputRequest::ResultFormat::RGBA_BITMAP:
+    case viz::CopyOutputRequest::ResultFormat::RGBA_TEXTURE:
+      break;
+  }
+
   gfx::Rect copy_rect = current_frame()->current_render_pass->output_rect;
   if (request->has_area())
     copy_rect.Intersect(request->area());
   gfx::Rect window_copy_rect = MoveFromDrawToWindowSpace(copy_rect);
 
-  std::unique_ptr<SkBitmap> bitmap(new SkBitmap);
-  bitmap->allocPixels(SkImageInfo::MakeN32Premul(window_copy_rect.width(),
-                                                 window_copy_rect.height()));
-  if (!current_canvas_->readPixels(*bitmap, window_copy_rect.x(),
+  SkBitmap bitmap;
+  bitmap.allocPixels(SkImageInfo::MakeN32Premul(
+      window_copy_rect.width(), window_copy_rect.height(),
+      current_canvas_->imageInfo().refColorSpace()));
+  if (!current_canvas_->readPixels(bitmap, window_copy_rect.x(),
                                    window_copy_rect.y()))
-    bitmap->reset();
+    return;  // |request| auto-sends empty result on out-of-scope.
 
-  request->SendBitmapResult(std::move(bitmap));
+  request->SendResult(
+      std::make_unique<viz::CopyOutputSkBitmapResult>(copy_rect, bitmap));
 }
 
 void SoftwareRenderer::SetEnableDCLayers(bool enable) {

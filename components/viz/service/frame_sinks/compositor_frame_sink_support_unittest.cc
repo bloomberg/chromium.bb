@@ -622,7 +622,8 @@ TEST_F(CompositorFrameSinkSupportTest, DuplicateCopyRequest) {
   }
 
   bool called1 = false;
-  auto request = CopyOutputRequest::CreateRequest(
+  auto request = std::make_unique<CopyOutputRequest>(
+      CopyOutputRequest::ResultFormat::RGBA_BITMAP,
       base::BindOnce(&CopyRequestTestCallback, &called1));
   request->set_source(kArbitrarySourceId1);
 
@@ -630,7 +631,8 @@ TEST_F(CompositorFrameSinkSupportTest, DuplicateCopyRequest) {
   EXPECT_FALSE(called1);
 
   bool called2 = false;
-  request = CopyOutputRequest::CreateRequest(
+  request = std::make_unique<CopyOutputRequest>(
+      CopyOutputRequest::ResultFormat::RGBA_BITMAP,
       base::BindOnce(&CopyRequestTestCallback, &called2));
   request->set_source(kArbitrarySourceId2);
 
@@ -640,7 +642,8 @@ TEST_F(CompositorFrameSinkSupportTest, DuplicateCopyRequest) {
   EXPECT_FALSE(called2);
 
   bool called3 = false;
-  request = CopyOutputRequest::CreateRequest(
+  request = std::make_unique<CopyOutputRequest>(
+      CopyOutputRequest::ResultFormat::RGBA_BITMAP,
       base::BindOnce(&CopyRequestTestCallback, &called3));
   request->set_source(kArbitrarySourceId1);
 

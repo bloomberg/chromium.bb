@@ -41,8 +41,10 @@ void AuraDesktopCapturer::Start(webrtc::DesktopCapturer::Callback* callback) {
 
 void AuraDesktopCapturer::CaptureFrame() {
   std::unique_ptr<viz::CopyOutputRequest> request =
-      viz::CopyOutputRequest::CreateBitmapRequest(base::BindOnce(
-          &AuraDesktopCapturer::OnFrameCaptured, weak_factory_.GetWeakPtr()));
+      std::make_unique<viz::CopyOutputRequest>(
+          viz::CopyOutputRequest::ResultFormat::RGBA_BITMAP,
+          base::BindOnce(&AuraDesktopCapturer::OnFrameCaptured,
+                         weak_factory_.GetWeakPtr()));
 
   gfx::Rect window_rect(desktop_window_->bounds().size());
 
@@ -58,12 +60,8 @@ void AuraDesktopCapturer::OnFrameCaptured(
     return;
   }
 
-  DCHECK(result->HasBitmap());
-
-  std::unique_ptr<SkBitmap> bitmap = result->TakeBitmap();
-
-  std::unique_ptr<webrtc::DesktopFrame> frame(
-      SkiaBitmapDesktopFrame::Create(std::move(bitmap)));
+  std::unique_ptr<webrtc::DesktopFrame> frame(SkiaBitmapDesktopFrame::Create(
+      std::make_unique<SkBitmap>(result->AsSkBitmap())));
 
   // |VideoFramePump| will not encode the frame if |updated_region| is empty.
   const webrtc::DesktopRect& rect = webrtc::DesktopRect::MakeWH(

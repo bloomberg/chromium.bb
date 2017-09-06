@@ -54,78 +54,97 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
   DISALLOW_COPY_AND_ASSIGN(StructTraitsTest);
 };
 
-void CopyOutputResultCallback(base::Closure quit_closure,
-                              const gpu::SyncToken& expected_sync_token,
-                              bool expected_is_lost,
-                              const gpu::SyncToken& sync_token,
-                              bool is_lost) {
-  EXPECT_EQ(expected_sync_token, sync_token);
-  EXPECT_EQ(expected_is_lost, is_lost);
-  quit_closure.Run();
-}
-
 }  // namespace
 
-TEST_F(StructTraitsTest, CopyOutputResult_Bitmap) {
-  auto bitmap = std::make_unique<SkBitmap>();
-  bitmap->allocN32Pixels(7, 8);
-  bitmap->eraseARGB(123, 213, 77, 33);
-  auto in_bitmap = std::make_unique<SkBitmap>();
-  in_bitmap->allocN32Pixels(7, 8);
-  in_bitmap->eraseARGB(123, 213, 77, 33);
-  auto input = viz::CopyOutputResult::CreateBitmapResult(std::move(bitmap));
-  auto size = input->size();
+TEST_F(StructTraitsTest, CopyOutputResult_Empty) {
+  auto input = std::make_unique<viz::CopyOutputResult>(
+      viz::CopyOutputResult::Format::RGBA_BITMAP, gfx::Rect());
 
   mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
   std::unique_ptr<viz::CopyOutputResult> output;
   proxy->EchoCopyOutputResult(std::move(input), &output);
 
-  EXPECT_TRUE(output->HasBitmap());
-  EXPECT_FALSE(output->HasTexture());
-  EXPECT_EQ(size, output->size());
+  EXPECT_TRUE(output->IsEmpty());
+  EXPECT_EQ(output->format(), viz::CopyOutputResult::Format::RGBA_BITMAP);
+  EXPECT_TRUE(output->rect().IsEmpty());
+  EXPECT_FALSE(output->AsSkBitmap().readyToDraw());
+  EXPECT_EQ(output->GetTextureMailbox(), nullptr);
+}
 
-  std::unique_ptr<SkBitmap> out_bitmap = output->TakeBitmap();
-  EXPECT_EQ(in_bitmap->getSize(), out_bitmap->getSize());
-  EXPECT_EQ(0, std::memcmp(in_bitmap->getPixels(), out_bitmap->getPixels(),
-                           in_bitmap->getSize()));
+TEST_F(StructTraitsTest, CopyOutputResult_Bitmap) {
+  const gfx::Rect result_rect(42, 43, 7, 8);
+  SkBitmap bitmap;
+  const sk_sp<SkColorSpace> adobe_rgb = SkColorSpace::MakeRGB(
+      SkColorSpace::kSRGB_RenderTargetGamma, SkColorSpace::kAdobeRGB_Gamut);
+  bitmap.allocN32Pixels(7, 8, adobe_rgb);
+  bitmap.eraseARGB(123, 213, 77, 33);
+  auto input =
+      std::make_unique<viz::CopyOutputSkBitmapResult>(result_rect, bitmap);
+
+  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
+  std::unique_ptr<viz::CopyOutputResult> output;
+  proxy->EchoCopyOutputResult(std::move(input), &output);
+
+  EXPECT_FALSE(output->IsEmpty());
+  EXPECT_EQ(output->format(), viz::CopyOutputResult::Format::RGBA_BITMAP);
+  EXPECT_EQ(output->rect(), result_rect);
+  EXPECT_EQ(output->GetTextureMailbox(), nullptr);
+
+  const SkBitmap& out_bitmap = output->AsSkBitmap();
+  EXPECT_TRUE(out_bitmap.readyToDraw());
+  EXPECT_EQ(out_bitmap.width(), result_rect.width());
+  EXPECT_EQ(out_bitmap.height(), result_rect.height());
+
+  // Check that the pixels are the same as the input and the color spaces are
+  // equivalent.
+  SkBitmap expected_bitmap;
+  expected_bitmap.allocN32Pixels(7, 8, adobe_rgb);
+  expected_bitmap.eraseARGB(123, 213, 77, 33);
+  EXPECT_EQ(expected_bitmap.getSize(), out_bitmap.getSize());
+  EXPECT_EQ(0, std::memcmp(expected_bitmap.getPixels(), out_bitmap.getPixels(),
+                           expected_bitmap.getSize()));
+  EXPECT_TRUE(SkColorSpace::Equals(expected_bitmap.colorSpace(),
+                                   out_bitmap.colorSpace()));
 }
 
 TEST_F(StructTraitsTest, CopyOutputResult_Texture) {
-  const gfx::Size size(1234, 5678);
+  const gfx::Rect result_rect(12, 34, 56, 78);
   const int8_t mailbox_name[GL_MAILBOX_SIZE_CHROMIUM] = {
       0, 9, 8, 7, 6, 5, 4, 3, 2, 1, 9, 7, 5, 3, 1, 3};
   const uint32_t target = 3;
   gpu::SyncToken sync_token(gpu::CommandBufferNamespace::GPU_IO, 0,
                             gpu::CommandBufferId::FromUnsafeValue(0x123),
                             71234838);
-  bool is_lost = true;
   base::RunLoop run_loop;
   auto callback = viz::SingleReleaseCallback::Create(base::Bind(
-      CopyOutputResultCallback, run_loop.QuitClosure(), sync_token, is_lost));
+      [](base::Closure quit_closure, const gpu::SyncToken& expected_sync_token,
+         const gpu::SyncToken& sync_token, bool is_lost) {
+        EXPECT_EQ(expected_sync_token, sync_token);
+        EXPECT_TRUE(is_lost);
+        quit_closure.Run();
+      },
+      run_loop.QuitClosure(), sync_token));
   gpu::Mailbox mailbox;
   mailbox.SetName(mailbox_name);
   viz::TextureMailbox texture_mailbox(mailbox, gpu::SyncToken(), target);
-
-  auto input = viz::CopyOutputResult::CreateTextureResult(size, texture_mailbox,
-                                                          std::move(callback));
+  auto input = std::make_unique<viz::CopyOutputTextureResult>(
+      result_rect, texture_mailbox, std::move(callback));
 
   mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
   std::unique_ptr<viz::CopyOutputResult> output;
   proxy->EchoCopyOutputResult(std::move(input), &output);
 
-  EXPECT_FALSE(output->HasBitmap());
-  EXPECT_TRUE(output->HasTexture());
-  EXPECT_EQ(size, output->size());
+  EXPECT_FALSE(output->IsEmpty());
+  EXPECT_EQ(output->format(), viz::CopyOutputResult::Format::RGBA_TEXTURE);
+  EXPECT_EQ(output->rect(), result_rect);
+  ASSERT_NE(output->GetTextureMailbox(), nullptr);
+  EXPECT_EQ(output->GetTextureMailbox()->mailbox(), mailbox);
 
-  viz::TextureMailbox out_mailbox;
-  std::unique_ptr<viz::SingleReleaseCallback> out_callback;
-  output->TakeTexture(&out_mailbox, &out_callback);
-  EXPECT_EQ(mailbox, out_mailbox.mailbox());
-  out_callback->Run(sync_token, is_lost);
-  // If CopyOutputResultCallback is called (which is the intended behaviour),
-  // this will exit. Otherwise, this test will time out and fail.
-  // In CopyOutputResultCallback we verify that the given sync_token and is_lost
-  // have their intended values.
+  std::unique_ptr<viz::SingleReleaseCallback> out_callback =
+      output->TakeTextureOwnership();
+  out_callback->Run(sync_token, true /* is_lost */);
+  // If the CopyOutputResult callback is called (which is the intended
+  // behaviour), this will exit. Otherwise, this test will time out and fail.
   run_loop.Run();
 }
 
