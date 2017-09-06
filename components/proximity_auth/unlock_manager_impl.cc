@@ -212,7 +212,8 @@ void UnlockManagerImpl::OnDecryptResponse(const std::string& decrypted_bytes) {
     AcceptAuthAttempt(false);
   } else {
     sign_in_secret_.reset(new std::string(decrypted_bytes));
-    GetMessenger()->DispatchUnlockEvent();
+    if (GetMessenger())
+      GetMessenger()->DispatchUnlockEvent();
   }
 }
 
@@ -225,14 +226,15 @@ void UnlockManagerImpl::OnUnlockResponse(bool success) {
 
   PA_LOG(INFO) << "Unlock response from remote device: "
                << (success ? "success" : "failure");
-  if (success)
+  if (success && GetMessenger())
     GetMessenger()->DispatchUnlockEvent();
   else
     AcceptAuthAttempt(false);
 }
 
 void UnlockManagerImpl::OnDisconnected() {
-  GetMessenger()->RemoveObserver(this);
+  if (GetMessenger())
+    GetMessenger()->RemoveObserver(this);
 }
 
 void UnlockManagerImpl::OnProximityStateChanged() {
@@ -297,7 +299,7 @@ void UnlockManagerImpl::OnAuthAttempted(mojom::AuthType auth_type) {
 
   is_attempting_auth_ = true;
 
-  if (!life_cycle_) {
+  if (!life_cycle_ || !GetMessenger()) {
     PA_LOG(ERROR) << "No life_cycle active when auth is attempted";
     AcceptAuthAttempt(false);
     UpdateLockScreen();
@@ -351,7 +353,8 @@ void UnlockManagerImpl::SendSignInChallenge() {
 
 void UnlockManagerImpl::OnGotSignInChallenge(const std::string& challenge) {
   PA_LOG(INFO) << "Got sign-in challenge, sending for decryption...";
-  GetMessenger()->RequestDecryption(challenge);
+  if (GetMessenger())
+    GetMessenger()->RequestDecryption(challenge);
 }
 
 ScreenlockState UnlockManagerImpl::GetScreenlockState() {
