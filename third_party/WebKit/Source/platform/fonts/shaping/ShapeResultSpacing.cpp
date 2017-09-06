@@ -43,6 +43,20 @@ bool ShapeResultSpacing<TextContainerType>::SetSpacing(
 }
 
 template <typename TextContainerType>
+void ShapeResultSpacing<TextContainerType>::SetExpansion(
+    float expansion,
+    TextDirection direction,
+    TextJustify text_justify,
+    bool allows_leading_expansion,
+    bool allows_trailing_expansion) {
+  DCHECK_GT(expansion, 0);
+  expansion_ = expansion;
+  ComputeExpansion(allows_leading_expansion, allows_trailing_expansion,
+                   direction, text_justify);
+  has_spacing_ |= HasExpansion();
+}
+
+template <typename TextContainerType>
 void ShapeResultSpacing<TextContainerType>::SetSpacingAndExpansion(
     const FontDescription& font_description) {
   // Available only for TextRun since it has expansion data.
@@ -79,8 +93,12 @@ void ShapeResultSpacing<TextContainerType>::ComputeExpansion(
   DCHECK_GT(expansion_, 0);
 
   text_justify_ = text_justify;
-  is_after_expansion_ = !allows_leading_expansion;
+  if (text_justify_ == TextJustify::kNone) {
+    expansion_opportunity_count_ = 0;
+    return;
+  }
 
+  is_after_expansion_ = !allows_leading_expansion;
   bool is_after_expansion = is_after_expansion_;
   if (text_.Is8Bit()) {
     expansion_opportunity_count_ = Character::ExpansionOpportunityCount(
@@ -119,27 +137,11 @@ float ShapeResultSpacing<TextContainerType>::NextExpansion() {
   return expansion_per_opportunity_;
 }
 
-// Test if the |run| is the first sub-run of the original text container, for
-// containers that can create sub-runs such as TextRun or StringView.
 template <typename TextContainerType>
-inline bool ShapeResultSpacing<TextContainerType>::IsFirstRun(
-    const TextContainerType& run) const {
-  return &run == &text_ || run.Bytes() == text_.Bytes();
-}
-
-template <>
-inline bool ShapeResultSpacing<String>::IsFirstRun(const String& run) const {
-  // String::Substring() should not be used because it copies to a new buffer.
-  return &run == &text_ || run.Impl() == text_.Impl();
-}
-
-template <typename TextContainerType>
-float ShapeResultSpacing<TextContainerType>::ComputeSpacing(
-    const TextContainerType& run,
-    size_t index,
-    float& offset) {
+float ShapeResultSpacing<TextContainerType>::ComputeSpacing(unsigned index,
+                                                            float& offset) {
   DCHECK(has_spacing_);
-  UChar32 character = run[index];
+  UChar32 character = text_[index];
   bool treat_as_space =
       (Character::TreatAsSpace(character) ||
        (normalize_space_ &&
@@ -152,8 +154,7 @@ float ShapeResultSpacing<TextContainerType>::ComputeSpacing(
   if (letter_spacing_ && !Character::TreatAsZeroWidthSpace(character))
     spacing += letter_spacing_;
 
-  if (treat_as_space &&
-      (index || !IsFirstRun(run) || character == kNoBreakSpaceCharacter))
+  if (treat_as_space && (index || character == kNoBreakSpaceCharacter))
     spacing += word_spacing_;
 
   if (!HasExpansion())
@@ -162,15 +163,15 @@ float ShapeResultSpacing<TextContainerType>::ComputeSpacing(
   if (treat_as_space)
     return spacing + NextExpansion();
 
-  if (run.Is8Bit() || text_justify_ != TextJustify::kAuto)
+  if (text_.Is8Bit() || text_justify_ != TextJustify::kAuto)
     return spacing;
 
   // isCJKIdeographOrSymbol() has expansion opportunities both before and
   // after each character.
   // http://www.w3.org/TR/jlreq/#line_adjustment
-  if (U16_IS_LEAD(character) && index + 1 < run.length() &&
-      U16_IS_TRAIL(run[index + 1]))
-    character = U16_GET_SUPPLEMENTARY(character, run[index + 1]);
+  if (U16_IS_LEAD(character) && index + 1 < text_.length() &&
+      U16_IS_TRAIL(text_[index + 1]))
+    character = U16_GET_SUPPLEMENTARY(character, text_[index + 1]);
   if (!Character::IsCJKIdeographOrSymbol(character)) {
     is_after_expansion_ = false;
     return spacing;

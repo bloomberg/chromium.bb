@@ -205,6 +205,12 @@ unsigned ShapeResult::EndIndexForResult() const {
   return StartIndexForResult() + NumCharacters();
 }
 
+RefPtr<ShapeResult> ShapeResult::MutableUnique() const {
+  if (HasOneRef())
+    return const_cast<ShapeResult*>(this);
+  return ShapeResult::Create(*this);
+}
+
 // If the position is outside of the result, returns the start or the end offset
 // depends on the position.
 unsigned ShapeResult::OffsetForPosition(float target_x,
@@ -305,15 +311,19 @@ void ShapeResult::FallbackFonts(
   }
 }
 
+// TODO(kojii): VC2015 fails to explicit instantiation of a member function.
+// Typed functions + this private function are to instantiate instances.
 template <typename TextContainerType>
-void ShapeResult::ApplySpacing(ShapeResultSpacing<TextContainerType>& spacing,
-                               const TextContainerType& text) {
+void ShapeResult::ApplySpacingImpl(
+    ShapeResultSpacing<TextContainerType>& spacing,
+    int text_start_offset) {
   float offset_x, offset_y;
   float& offset = spacing.IsVerticalOffset() ? offset_y : offset_x;
   float total_space = 0;
   for (auto& run : runs_) {
     if (!run)
       continue;
+    unsigned run_start_index = run->start_index_ + text_start_offset;
     float total_space_for_run = 0;
     for (size_t i = 0; i < run->glyph_data_.size(); i++) {
       HarfBuzzRunGlyphData& glyph_data = run->glyph_data_[i];
@@ -325,7 +335,7 @@ void ShapeResult::ApplySpacing(ShapeResultSpacing<TextContainerType>& spacing,
       } else {
         offset_x = offset_y = 0;
         float space = spacing.ComputeSpacing(
-            text, run->start_index_ + glyph_data.character_index, offset);
+            run_start_index + glyph_data.character_index, offset);
         glyph_data.advance += space;
         total_space_for_run += space;
         glyph_data.offset.Expand(offset_x, offset_y);
@@ -340,15 +350,19 @@ void ShapeResult::ApplySpacing(ShapeResultSpacing<TextContainerType>& spacing,
   glyph_bounding_box_.SetWidth(glyph_bounding_box_.Width() + total_space);
 }
 
-void ShapeResult::ApplySpacing(ShapeResultSpacing<String>& spacing) {
-  ApplySpacing(spacing, spacing.Text());
+void ShapeResult::ApplySpacing(ShapeResultSpacing<String>& spacing,
+                               int text_start_offset) {
+  ApplySpacingImpl(spacing, text_start_offset);
 }
 
 PassRefPtr<ShapeResult> ShapeResult::ApplySpacingToCopy(
     ShapeResultSpacing<TextRun>& spacing,
     const TextRun& run) const {
+  unsigned index_of_sub_run = spacing.Text().IndexOfSubRun(run);
+  DCHECK_NE(std::numeric_limits<unsigned>::max(), index_of_sub_run);
   RefPtr<ShapeResult> result = ShapeResult::Create(*this);
-  result->ApplySpacing(spacing, run);
+  if (index_of_sub_run != std::numeric_limits<unsigned>::max())
+    result->ApplySpacingImpl(spacing, index_of_sub_run);
   return result;
 }
 
