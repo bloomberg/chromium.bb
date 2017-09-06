@@ -110,7 +110,7 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_3rtos, false)
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_pcc, false)
 
 // If true, enable QUIC v40.
-QUIC_FLAG(bool, FLAGS_quic_enable_version_40, false)
+QUIC_FLAG(bool, FLAGS_quic_enable_version_40, true)
 
 // In QUIC, QuicSession gets notified when stream frames are acked, discarded or
 // retransmitted.
