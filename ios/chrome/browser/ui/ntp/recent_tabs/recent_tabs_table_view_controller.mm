@@ -37,6 +37,7 @@
 #import "ios/chrome/browser/ui/ntp/recent_tabs/views/signed_in_sync_in_progress_view.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/views/signed_in_sync_off_view.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/views/signed_in_sync_on_no_sessions_view.h"
+#import "ios/chrome/browser/ui/ntp/recent_tabs/views/signed_out_view.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/views/spacers_view.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/url_loader.h"
@@ -83,6 +84,7 @@ enum CellType {
   CELL_SHOW_FULL_HISTORY,
   CELL_SEPARATOR,
   CELL_OTHER_DEVICES_SECTION_HEADER,
+  CELL_OTHER_DEVICES_SIGNED_OUT,
   CELL_OTHER_DEVICES_SIGNED_IN_SYNC_OFF,
   CELL_OTHER_DEVICES_SIGNED_IN_SYNC_ON_NO_SESSIONS,
   CELL_OTHER_DEVICES_SIGNIN_PROMO,
@@ -273,7 +275,10 @@ enum CellType {
       }
       switch (_sessionState) {
         case SessionsSyncUserState::USER_SIGNED_OUT:
-          return CELL_OTHER_DEVICES_SIGNIN_PROMO;
+          if (experimental_flags::IsSigninPromoEnabled()) {
+            return CELL_OTHER_DEVICES_SIGNIN_PROMO;
+          } else
+            return CELL_OTHER_DEVICES_SIGNED_OUT;
         case SessionsSyncUserState::USER_SIGNED_IN_SYNC_OFF:
           return CELL_OTHER_DEVICES_SIGNED_IN_SYNC_OFF;
         case SessionsSyncUserState::USER_SIGNED_IN_SYNC_ON_NO_SESSIONS:
@@ -803,6 +808,12 @@ enum CellType {
       [subview setTag:kSectionHeader];
       break;
     }
+    case CELL_OTHER_DEVICES_SIGNED_OUT:
+      subview = [[SignedOutView alloc] initWithFrame:CGRectZero];
+      [cell setSelectionStyle:UITableViewCellSelectionStyleNone];
+      base::RecordAction(
+          base::UserMetricsAction("Signin_Impression_FromRecentTabs"));
+      break;
     case CELL_OTHER_DEVICES_SIGNED_IN_SYNC_OFF:
       subview = [[SignedInSyncOffView alloc] initWithFrame:CGRectZero
                                               browserState:_browserState];
@@ -909,6 +920,7 @@ enum CellType {
     case CELL_SHOW_FULL_HISTORY:
       return indexPath;
     case CELL_SEPARATOR:
+    case CELL_OTHER_DEVICES_SIGNED_OUT:
     case CELL_OTHER_DEVICES_SIGNED_IN_SYNC_OFF:
     case CELL_OTHER_DEVICES_SIGNED_IN_SYNC_ON_NO_SESSIONS:
     case CELL_OTHER_DEVICES_SIGNIN_PROMO:
@@ -942,6 +954,7 @@ enum CellType {
       [self showFullHistory];
       break;
     case CELL_SEPARATOR:
+    case CELL_OTHER_DEVICES_SIGNED_OUT:
     case CELL_OTHER_DEVICES_SIGNED_IN_SYNC_OFF:
     case CELL_OTHER_DEVICES_SIGNED_IN_SYNC_ON_NO_SESSIONS:
     case CELL_OTHER_DEVICES_SIGNIN_PROMO:
@@ -960,6 +973,8 @@ enum CellType {
       return [ShowFullHistoryView desiredHeightInUITableViewCell];
     case CELL_SEPARATOR:
       return [RecentlyClosedSectionFooter desiredHeightInUITableViewCell];
+    case CELL_OTHER_DEVICES_SIGNED_OUT:
+      return [SignedOutView desiredHeightInUITableViewCell];
     case CELL_OTHER_DEVICES_SIGNED_IN_SYNC_OFF:
       return [SignedInSyncOffView desiredHeightInUITableViewCell];
     case CELL_OTHER_DEVICES_SIGNED_IN_SYNC_ON_NO_SESSIONS:

@@ -26,6 +26,7 @@
 #include "ios/chrome/browser/ui/bookmarks/bookmark_model_bridge_observer.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
 #import "ios/chrome/browser/ui/bookmarks/cells/bookmark_table_cell.h"
+#import "ios/chrome/browser/ui/bookmarks/cells/bookmark_table_promo_cell.h"
 #import "ios/chrome/browser/ui/bookmarks/cells/bookmark_table_signin_promo_cell.h"
 #import "ios/chrome/browser/ui/sync/synced_sessions_bridge.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -52,6 +53,7 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
 
 @interface BookmarkTableView ()<BookmarkModelBridgeObserver,
                                 BookmarkTableCellTitleEditDelegate,
+                                BookmarkTablePromoCellDelegate,
                                 SigninPromoViewConsumer,
                                 SyncedSessionsObserver,
                                 UITableViewDataSource,
@@ -200,17 +202,19 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
 
   _promoVisible = promoVisible;
 
-  if (!promoVisible) {
-    _signinPromoViewMediator.consumer = nil;
-    [_signinPromoViewMediator signinPromoViewRemoved];
-    _signinPromoViewMediator = nil;
-  } else {
-    _signinPromoViewMediator = [[SigninPromoViewMediator alloc]
-        initWithBrowserState:_browserState
-                 accessPoint:signin_metrics::AccessPoint::
-                                 ACCESS_POINT_BOOKMARK_MANAGER];
-    _signinPromoViewMediator.consumer = self;
-    [_signinPromoViewMediator signinPromoViewVisible];
+  if (experimental_flags::IsSigninPromoEnabled()) {
+    if (!promoVisible) {
+      _signinPromoViewMediator.consumer = nil;
+      [_signinPromoViewMediator signinPromoViewRemoved];
+      _signinPromoViewMediator = nil;
+    } else {
+      _signinPromoViewMediator = [[SigninPromoViewMediator alloc]
+          initWithBrowserState:_browserState
+                   accessPoint:signin_metrics::AccessPoint::
+                                   ACCESS_POINT_BOOKMARK_MANAGER];
+      _signinPromoViewMediator.consumer = self;
+      [_signinPromoViewMediator signinPromoViewVisible];
+    }
   }
   [self.tableView reloadData];
 }
@@ -264,21 +268,32 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
   // TODO(crbug.com/695749): Introduce a custom separator for bookmarks
   // section, so that we don't show a separator after promo section.
   if (indexPath.section == self.promoSection) {
-    BookmarkTableSigninPromoCell* signinPromoCell = [self.tableView
-        dequeueReusableCellWithIdentifier:[BookmarkTableSigninPromoCell
-                                              reuseIdentifier]];
-    if (signinPromoCell == nil) {
-      signinPromoCell =
-          [[BookmarkTableSigninPromoCell alloc] initWithFrame:CGRectZero];
+    if (experimental_flags::IsSigninPromoEnabled()) {
+      BookmarkTableSigninPromoCell* signinPromoCell = [self.tableView
+          dequeueReusableCellWithIdentifier:[BookmarkTableSigninPromoCell
+                                                reuseIdentifier]];
+      if (signinPromoCell == nil) {
+        signinPromoCell =
+            [[BookmarkTableSigninPromoCell alloc] initWithFrame:CGRectZero];
+      }
+      signinPromoCell.signinPromoView.delegate = _signinPromoViewMediator;
+      [[_signinPromoViewMediator createConfigurator]
+          configureSigninPromoView:signinPromoCell.signinPromoView];
+      __weak BookmarkTableView* weakSelf = self;
+      signinPromoCell.closeButtonAction = ^() {
+        [weakSelf signinPromoCloseButtonAction];
+      };
+      return signinPromoCell;
+    } else {
+      BookmarkTablePromoCell* promoCell = [self.tableView
+          dequeueReusableCellWithIdentifier:[BookmarkTablePromoCell
+                                                reuseIdentifier]];
+      if (promoCell == nil) {
+        promoCell = [[BookmarkTablePromoCell alloc] initWithFrame:CGRectZero];
+      }
+      promoCell.delegate = self;
+      return promoCell;
     }
-    signinPromoCell.signinPromoView.delegate = _signinPromoViewMediator;
-    [[_signinPromoViewMediator createConfigurator]
-        configureSigninPromoView:signinPromoCell.signinPromoView];
-    __weak BookmarkTableView* weakSelf = self;
-    signinPromoCell.closeButtonAction = ^() {
-      [weakSelf signinPromoCloseButtonAction];
-    };
-    return signinPromoCell;
   }
 
   const BookmarkNode* node = [self nodeAtIndexPath:indexPath];
@@ -367,6 +382,18 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
     _editNodes.erase(node);
     [self.delegate bookmarkTableView:self selectedEditNodes:_editNodes];
   }
+}
+
+#pragma mark - BookmarkTablePromoCellDelegate
+
+- (void)bookmarkTablePromoCellDidTapSignIn:
+    (BookmarkTablePromoCell*)bookmarkTablePromoCell {
+  [self.delegate bookmarkTableViewShowSignIn:self];
+}
+
+- (void)bookmarkTablePromoCellDidTapDismiss:
+    (BookmarkTablePromoCell*)bookmarkTablePromoCell {
+  [self.delegate bookmarkTableViewDismissPromo:self];
 }
 
 #pragma mark - SigninPromoViewConsumer
