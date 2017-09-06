@@ -251,11 +251,6 @@ void TextFieldInputType::ForwardEvent(Event* event) {
   }
 }
 
-void TextFieldInputType::HandleFocusEvent(Element* old_focused_node,
-                                          WebFocusType focus_type) {
-  InputTypeView::HandleFocusEvent(old_focused_node, focus_type);
-}
-
 void TextFieldInputType::HandleBlurEvent() {
   InputTypeView::HandleBlurEvent();
   GetElement().EndEditing();
