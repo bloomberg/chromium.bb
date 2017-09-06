@@ -338,7 +338,6 @@ void HTMLInputElement::EndEditing() {
 
 void HTMLInputElement::HandleFocusEvent(Element* old_focused_element,
                                         WebFocusType type) {
-  input_type_view_->HandleFocusEvent(old_focused_element, type);
   input_type_->EnableSecureTextInput();
 }
 

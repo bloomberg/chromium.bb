@@ -92,7 +92,6 @@ class CORE_EXPORT InputTypeView : public GarbageCollectedMixin {
   virtual bool ShouldSubmitImplicitly(Event*);
   virtual HTMLFormElement* FormForSubmission() const;
   virtual bool HasCustomFocusLogic() const;
-  virtual void HandleFocusEvent(Element* old_focused_element, WebFocusType);
   virtual void HandleFocusInEvent(Element* old_focused_element, WebFocusType);
   virtual void HandleBlurEvent();
   virtual void HandleDOMActivateEvent(Event*);

@@ -108,8 +108,6 @@ bool InputTypeView::HasCustomFocusLogic() const {
   return true;
 }
 
-void InputTypeView::HandleFocusEvent(Element*, WebFocusType) {}
-
 void InputTypeView::HandleBlurEvent() {}
 
 void InputTypeView::HandleFocusInEvent(Element*, WebFocusType) {}
