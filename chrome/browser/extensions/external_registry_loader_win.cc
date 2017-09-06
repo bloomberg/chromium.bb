@@ -215,8 +215,7 @@ void ExternalRegistryLoader::CompleteLoadAndStartWatchingRegistry(
     std::unique_ptr<base::DictionaryValue> prefs) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(prefs);
-  prefs_ = std::move(prefs);
-  LoadFinished();
+  LoadFinished(std::move(prefs));
 
   // Attempt to watch registry if we haven't already.
   if (attempted_watching_registry_)

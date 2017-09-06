@@ -37,10 +37,11 @@ void ExternalLoader::OwnerShutdown() {
 
 ExternalLoader::~ExternalLoader() {}
 
-void ExternalLoader::LoadFinished() {
+void ExternalLoader::LoadFinished(
+    std::unique_ptr<base::DictionaryValue> prefs) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (owner_) {
-    owner_->SetPrefs(std::move(prefs_));
+    owner_->SetPrefs(std::move(prefs));
   }
 }
 

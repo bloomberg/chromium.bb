@@ -24,7 +24,7 @@ ExtensionMigrator::~ExtensionMigrator() {
 }
 
 void ExtensionMigrator::StartLoading() {
-  prefs_.reset(new base::DictionaryValue);
+  auto prefs = std::make_unique<base::DictionaryValue>();
 
   const bool should_have_extension =
       IsAppPresent(old_id_) || IsAppPresent(new_id_);
@@ -33,10 +33,10 @@ void ExtensionMigrator::StartLoading() {
     entry->SetKey(ExternalProviderImpl::kExternalUpdateUrl,
                   base::Value(extension_urls::GetWebstoreUpdateUrl().spec()));
 
-    prefs_->SetWithoutPathExpansion(new_id_, std::move(entry));
+    prefs->SetWithoutPathExpansion(new_id_, std::move(entry));
   }
 
-  LoadFinished();
+  LoadFinished(std::move(prefs));
 }
 
 bool ExtensionMigrator::IsAppPresent(const std::string& app_id) {

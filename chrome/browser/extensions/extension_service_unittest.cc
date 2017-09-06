@@ -303,8 +303,7 @@ class ExternalTestingLoader : public ExternalLoader {
 
   void StartLoading() override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    prefs_.reset(testing_prefs_->DeepCopy());
-    LoadFinished();
+    LoadFinished(testing_prefs_->CreateDeepCopy());
   }
 
  private:

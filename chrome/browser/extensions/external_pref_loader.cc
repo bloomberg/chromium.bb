@@ -16,6 +16,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
+#include "base/scoped_observer.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_scheduler/lazy_task_runner.h"
@@ -25,7 +26,10 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/chrome_paths.h"
+#include "components/browser_sync/profile_sync_service.h"
+#include "components/sync/driver/sync_service_observer.h"
 #include "components/sync_preferences/pref_service_syncable.h"
+#include "components/sync_preferences/pref_service_syncable_observer.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_file_task_runner.h"
 
@@ -77,13 +81,95 @@ std::set<base::FilePath> GetPrefsCandidateFilesFromFolder(
 
 namespace extensions {
 
+// Helper class to wait for priority sync to be ready.
+class ExternalPrefLoader::PrioritySyncReadyWaiter
+    : public sync_preferences::PrefServiceSyncableObserver,
+      public syncer::SyncServiceObserver {
+ public:
+  explicit PrioritySyncReadyWaiter(Profile* profile)
+      : profile_(profile),
+        syncable_pref_observer_(this),
+        sync_service_observer_(this) {}
+
+  ~PrioritySyncReadyWaiter() override {}
+
+  void Start(base::OnceClosure done_closure) {
+    if (IsPrioritySyncing()) {
+      std::move(done_closure).Run();
+      // Note: |this| is deleted here.
+      return;
+    }
+    // Start observing sync changes.
+    DCHECK(profile_);
+    browser_sync::ProfileSyncService* service =
+        ProfileSyncServiceFactory::GetForProfile(profile_);
+    DCHECK(service);
+    if (service->CanSyncStart() && (service->IsFirstSetupComplete() ||
+                                    browser_defaults::kSyncAutoStarts)) {
+      done_closure_ = std::move(done_closure);
+      AddObservers();
+    } else {
+      std::move(done_closure).Run();
+      // Note: |this| is deleted here.
+    }
+  }
+
+  // sync_preferences::PrefServiceSyncableObserver:
+  void OnIsSyncingChanged() override {
+    DCHECK(profile_);
+    if (!IsPrioritySyncing())
+      return;
+
+    Finish();
+    // Note: |this| is deleted here.
+  }
+
+  // syncer::SyncServiceObserver
+  void OnStateChanged(syncer::SyncService* sync) override {
+    if (!sync->CanSyncStart())
+      Finish();
+  }
+
+ private:
+  bool IsPrioritySyncing() {
+    DCHECK(profile_);
+    sync_preferences::PrefServiceSyncable* prefs =
+        PrefServiceSyncableFromProfile(profile_);
+    DCHECK(prefs);
+    return prefs->IsPrioritySyncing();
+  }
+
+  void AddObservers() {
+    sync_preferences::PrefServiceSyncable* prefs =
+        PrefServiceSyncableFromProfile(profile_);
+    DCHECK(prefs);
+    syncable_pref_observer_.Add(prefs);
+
+    browser_sync::ProfileSyncService* service =
+        ProfileSyncServiceFactory::GetForProfile(profile_);
+    sync_service_observer_.Add(service);
+  }
+
+  void Finish() { std::move(done_closure_).Run(); }
+
+  Profile* profile_;
+
+  base::OnceClosure done_closure_;
+
+  // Used for registering observer for sync_preferences::PrefServiceSyncable.
+  ScopedObserver<sync_preferences::PrefServiceSyncable,
+                 sync_preferences::PrefServiceSyncableObserver>
+      syncable_pref_observer_;
+  ScopedObserver<browser_sync::ProfileSyncService, syncer::SyncServiceObserver>
+      sync_service_observer_;
+
+  DISALLOW_COPY_AND_ASSIGN(PrioritySyncReadyWaiter);
+};
+
 ExternalPrefLoader::ExternalPrefLoader(int base_path_id,
                                        Options options,
                                        Profile* profile)
-    : base_path_id_(base_path_id),
-      options_(options),
-      profile_(profile),
-      syncable_pref_observer_(this) {
+    : base_path_id_(base_path_id), options_(options), profile_(profile) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
@@ -101,26 +187,28 @@ void ExternalPrefLoader::StartLoading() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if ((options_ & DELAY_LOAD_UNTIL_PRIORITY_SYNC) &&
       (profile_ && profile_->IsSyncAllowed())) {
-    if (!PostLoadIfPrioritySyncReady()) {
-      DCHECK(profile_);
-      sync_preferences::PrefServiceSyncable* prefs =
-          PrefServiceSyncableFromProfile(profile_);
-      DCHECK(prefs);
-      syncable_pref_observer_.Add(prefs);
-      browser_sync::ProfileSyncService* service =
-          ProfileSyncServiceFactory::GetForProfile(profile_);
-      DCHECK(service);
-      if (service->CanSyncStart() && (service->IsFirstSetupComplete() ||
-                                      browser_defaults::kSyncAutoStarts)) {
-        service->AddObserver(this);
-      } else {
-        PostLoadAndRemoveObservers();
-      }
-    }
+    pending_waiter_list_.push_back(
+        std::make_unique<PrioritySyncReadyWaiter>(profile_));
+    PrioritySyncReadyWaiter* waiter_ptr = pending_waiter_list_.back().get();
+    waiter_ptr->Start(base::BindOnce(&ExternalPrefLoader::OnPrioritySyncReady,
+                                     this, waiter_ptr));
   } else {
     GetExtensionFileTaskRunner()->PostTask(
         FROM_HERE, base::BindOnce(&ExternalPrefLoader::LoadOnFileThread, this));
   }
+}
+
+void ExternalPrefLoader::OnPrioritySyncReady(
+    ExternalPrefLoader::PrioritySyncReadyWaiter* waiter) {
+  // Delete |waiter| from |pending_waiter_list_|.
+  pending_waiter_list_.erase(
+      std::find_if(pending_waiter_list_.begin(), pending_waiter_list_.end(),
+                   [waiter](const std::unique_ptr<PrioritySyncReadyWaiter>& w) {
+                     return w.get() == waiter;
+                   }));
+  // Continue loading.
+  GetExtensionFileTaskRunner()->PostTask(
+      FROM_HERE, base::BindOnce(&ExternalPrefLoader::LoadOnFileThread, this));
 }
 
 // static.
@@ -143,45 +231,6 @@ ExternalPrefLoader::ExtractExtensionPrefs(base::ValueDeserializer* deserializer,
 
   LOG(WARNING) << "Expected a JSON dictionary in file " << path.value() << ".";
   return base::MakeUnique<base::DictionaryValue>();
-}
-
-void ExternalPrefLoader::OnIsSyncingChanged() {
-  PostLoadIfPrioritySyncReady();
-}
-
-void ExternalPrefLoader::OnStateChanged(syncer::SyncService* sync) {
-  if (!sync->CanSyncStart())
-    PostLoadAndRemoveObservers();
-}
-
-bool ExternalPrefLoader::PostLoadIfPrioritySyncReady() {
-  DCHECK(options_ & DELAY_LOAD_UNTIL_PRIORITY_SYNC);
-  DCHECK(profile_);
-
-  sync_preferences::PrefServiceSyncable* prefs =
-      PrefServiceSyncableFromProfile(profile_);
-  DCHECK(prefs);
-  if (prefs->IsPrioritySyncing()) {
-    PostLoadAndRemoveObservers();
-    return true;
-  }
-
-  return false;
-}
-
-void ExternalPrefLoader::PostLoadAndRemoveObservers() {
-  sync_preferences::PrefServiceSyncable* prefs =
-      PrefServiceSyncableFromProfile(profile_);
-  DCHECK(prefs);
-  syncable_pref_observer_.Remove(prefs);
-
-  browser_sync::ProfileSyncService* service =
-      ProfileSyncServiceFactory::GetForProfile(profile_);
-  DCHECK(service);
-  service->RemoveObserver(this);
-
-  GetExtensionFileTaskRunner()->PostTask(
-      FROM_HERE, base::BindOnce(&ExternalPrefLoader::LoadOnFileThread, this));
 }
 
 void ExternalPrefLoader::LoadOnFileThread() {
@@ -207,22 +256,18 @@ void ExternalPrefLoader::LoadOnFileThread() {
     ReadStandaloneExtensionPrefFiles(prefs.get());
   }
 
-  prefs_.swap(prefs);
-
-  if (base_path_id_ == chrome::DIR_EXTERNAL_EXTENSIONS) {
-    UMA_HISTOGRAM_COUNTS_100("Extensions.ExternalJsonCount",
-                             prefs_->size());
-  }
+  if (base_path_id_ == chrome::DIR_EXTERNAL_EXTENSIONS)
+    UMA_HISTOGRAM_COUNTS_100("Extensions.ExternalJsonCount", prefs->size());
 
   // If we have any records to process, then we must have
   // read at least one .json file.  If so, then we should have
   // set |base_path_|.
-  if (!prefs_->empty())
+  if (!prefs->empty())
     CHECK(!base_path_.empty());
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&ExternalPrefLoader::LoadFinished, this));
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::BindOnce(&ExternalPrefLoader::LoadFinished,
+                                         this, std::move(prefs)));
 }
 
 void ExternalPrefLoader::ReadExternalExtensionPrefFile(

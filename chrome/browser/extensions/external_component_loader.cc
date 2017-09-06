@@ -37,44 +37,47 @@ ExternalComponentLoader::ExternalComponentLoader(Profile* profile)
 ExternalComponentLoader::~ExternalComponentLoader() {}
 
 void ExternalComponentLoader::StartLoading() {
-  prefs_.reset(new base::DictionaryValue());
+  auto prefs = std::make_unique<base::DictionaryValue>();
 #if defined(GOOGLE_CHROME_BUILD)
-  AddExternalExtension(extension_misc::kInAppPaymentsSupportAppId);
+  AddExternalExtension(extension_misc::kInAppPaymentsSupportAppId, prefs.get());
 #endif  // defined(GOOGLE_CHROME_BUILD)
 
   if (HotwordServiceFactory::IsHotwordAllowed(profile_))
-    AddExternalExtension(extension_misc::kHotwordSharedModuleId);
+    AddExternalExtension(extension_misc::kHotwordSharedModuleId, prefs.get());
 
 #if defined(OS_CHROMEOS)
   {
     base::CommandLine* const command_line =
         base::CommandLine::ForCurrentProcess();
     if (!command_line->HasSwitch(chromeos::switches::kDisableNewZIPUnpacker))
-      AddExternalExtension(extension_misc::kZIPUnpackerExtensionId);
+      AddExternalExtension(extension_misc::kZIPUnpackerExtensionId,
+                           prefs.get());
   }
 #endif
 
   if (media_router::MediaRouterEnabled(profile_) &&
       FeatureSwitch::load_media_router_component_extension()->IsEnabled()) {
-    AddExternalExtension(extension_misc::kMediaRouterStableExtensionId);
+    AddExternalExtension(extension_misc::kMediaRouterStableExtensionId,
+                         prefs.get());
   }
 
 #if BUILDFLAG(ENABLE_APP_LIST) && defined(OS_CHROMEOS)
   std::string google_now_extension_id;
   if (GetGoogleNowExtensionId(&google_now_extension_id))
-    AddExternalExtension(google_now_extension_id);
+    AddExternalExtension(google_now_extension_id, prefs.get());
 #endif
 
-  LoadFinished();
+  LoadFinished(std::move(prefs));
 }
 
 void ExternalComponentLoader::AddExternalExtension(
-    const std::string& extension_id) {
+    const std::string& extension_id,
+    base::DictionaryValue* prefs) {
   if (!IsComponentExtensionWhitelisted(extension_id))
     return;
 
-  prefs_->SetString(extension_id + ".external_update_url",
-                    extension_urls::GetWebstoreUpdateUrl().spec());
+  prefs->SetString(extension_id + ".external_update_url",
+                   extension_urls::GetWebstoreUpdateUrl().spec());
 }
 
 }  // namespace extensions

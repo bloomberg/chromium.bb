@@ -28,6 +28,8 @@ class KioskAppExternalLoader
  private:
   ~KioskAppExternalLoader() override;
 
+  std::unique_ptr<base::DictionaryValue> prefs_;
+
   DISALLOW_COPY_AND_ASSIGN(KioskAppExternalLoader);
 };
 
