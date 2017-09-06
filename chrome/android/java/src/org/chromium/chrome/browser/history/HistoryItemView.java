@@ -93,17 +93,17 @@ public class HistoryItemView extends SelectableItemView<HistoryItem> implements 
                         getContext().getResources(), R.drawable.ic_block_red,
                         getContext().getTheme());
             }
-            mIconView.setImageDrawable(mBlockedVisitDrawable);
+            setIconDrawable(mBlockedVisitDrawable);
             mTitleView.setTextColor(
                     ApiCompatibilityUtils.getColor(getResources(), R.color.google_red_700));
         } else {
-            mIconView.setImageResource(R.drawable.default_favicon);
+            setIconDrawable(
+                    ApiCompatibilityUtils.getDrawable(getResources(), R.drawable.default_favicon));
             if (mHistoryManager != null) requestIcon();
 
             mTitleView.setTextColor(
                     ApiCompatibilityUtils.getColor(getResources(), R.color.default_text_color));
         }
-        onIconDrawableChanged();
     }
 
     /**
@@ -159,15 +159,14 @@ public class HistoryItemView extends SelectableItemView<HistoryItem> implements 
         if (icon == null) {
             mIconGenerator.setBackgroundColor(fallbackColor);
             icon = mIconGenerator.generateIconForUrl(getItem().getUrl());
-            mIconView.setImageDrawable(new BitmapDrawable(getResources(), icon));
+            setIconDrawable(new BitmapDrawable(getResources(), icon));
         } else {
             RoundedBitmapDrawable roundedIcon = RoundedBitmapDrawableFactory.create(
                     getResources(),
                     Bitmap.createScaledBitmap(icon, mDisplayedIconSize, mDisplayedIconSize, false));
             roundedIcon.setCornerRadius(mCornerRadius);
-            mIconView.setImageDrawable(roundedIcon);
+            setIconDrawable(roundedIcon);
         }
-        onIconDrawableChanged();
     }
 
     private void requestIcon() {

@@ -89,14 +89,13 @@ public class BookmarkItemRow extends BookmarkRow implements LargeIconCallback {
         if (icon == null) {
             mIconGenerator.setBackgroundColor(fallbackColor);
             icon = mIconGenerator.generateIconForUrl(mUrl);
-            mIconView.setImageDrawable(new BitmapDrawable(getResources(), icon));
+            setIconDrawable(new BitmapDrawable(getResources(), icon));
         } else {
             RoundedBitmapDrawable roundedIcon = RoundedBitmapDrawableFactory.create(
                     getResources(),
                     Bitmap.createScaledBitmap(icon, mDisplayedIconSize, mDisplayedIconSize, false));
             roundedIcon.setCornerRadius(mCornerRadius);
-            mIconView.setImageDrawable(roundedIcon);
+            setIconDrawable(roundedIcon);
         }
-        onIconDrawableChanged();
     }
 }
