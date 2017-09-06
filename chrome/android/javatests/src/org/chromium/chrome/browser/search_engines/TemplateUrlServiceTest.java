@@ -270,9 +270,9 @@ public class TemplateUrlServiceTest {
         });
 
         Assert.assertEquals(prepopulatedEngineNum + 3, getSearchEngineCount(templateUrlService));
-        templateUrlService.setFilteringEnabled(false);
+        templateUrlService.setFilteringDisabled(true);
         Assert.assertEquals(prepopulatedEngineNum + 10, getSearchEngineCount(templateUrlService));
-        templateUrlService.setFilteringEnabled(true);
+        templateUrlService.setFilteringDisabled(false);
         Assert.assertEquals(prepopulatedEngineNum + 3, getSearchEngineCount(templateUrlService));
     }
 
