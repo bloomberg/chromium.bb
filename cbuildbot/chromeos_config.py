@@ -2259,6 +2259,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'beaglebone',
       'bob',
       'betty',
+      'betty-arc64',
       'butterfly',
       'caroline',
       'cave',
@@ -2329,7 +2330,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   _paladin_new_boards = frozenset([
       'auron',
       'auron_paine',
-      'betty-arc64',
   ])
 
   # Paladin configs that exist and should stay as experimental until further
