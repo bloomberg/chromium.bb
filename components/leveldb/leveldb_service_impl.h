@@ -33,7 +33,7 @@ class LevelDBServiceImpl : public mojom::LevelDBService {
             leveldb::mojom::LevelDBDatabaseAssociatedRequest database,
             OpenCallback callback) override;
   void OpenWithOptions(
-      leveldb::mojom::OpenOptionsPtr open_options,
+      const leveldb_env::Options& open_options,
       filesystem::mojom::DirectoryPtr directory,
       const std::string& dbname,
       const base::Optional<base::trace_event::MemoryAllocatorDumpGuid>&
