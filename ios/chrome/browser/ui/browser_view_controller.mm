@@ -1590,8 +1590,11 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
       // kTabModelNewTabWillOpenNotification notification). Dispatch the
       // callback asynchronously to be sure the activation is complete.
       dispatch_async(dispatch_get_main_queue(), ^() {
-        self.foregroundTabWasAddedCompletionBlock();
-        self.foregroundTabWasAddedCompletionBlock = nil;
+        // Test existence again as the block may have been deleted.
+        if (self.foregroundTabWasAddedCompletionBlock) {
+          self.foregroundTabWasAddedCompletionBlock();
+          self.foregroundTabWasAddedCompletionBlock = nil;
+        }
       });
     }
     return;
