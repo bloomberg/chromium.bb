@@ -47,18 +47,21 @@ class ExternalEstimateProviderAndroid : public net::ExternalEstimateProvider {
   // Protected for testing.
   void NotifyUpdatedEstimateAvailable() const;
 
- private:
   // Returns the estimated RTT value. If the estimate is unavailable, a negative
-  // value is returned.
-  base::TimeDelta GetRTT() const;
+  // value is returned. Protected for testing.
+  virtual base::TimeDelta GetRTT() const;
 
   // Returns the estimated downstream throughput (in Kbps -- Kilobits
   // per second) is available.  If the estimate is unavailable, a negative value
-  // is returned.
-  int32_t GetDownstreamThroughputKbps() const;
+  // is returned. Protected for testing.
+  virtual int32_t GetDownstreamThroughputKbps() const;
+
+ private:
+  // Creates the corresponding Java object.
+  void CreateJavaObject();
 
   // Value returned if valid value is unavailable.
-  int32_t no_value_ = -1;
+  const int32_t no_value_ = -1;
 
   base::android::ScopedJavaGlobalRef<jobject> j_external_estimate_provider_;
 
