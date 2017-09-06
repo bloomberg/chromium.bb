@@ -38,8 +38,7 @@ class ServiceWorkerContextWrapper;
 // Service Worker database (except for deletions, e.g. it's safe for the Service
 // Worker code to remove a ServiceWorkerRegistration and all its keys).
 //
-// Schema design doc:
-// https://docs.google.com/document/d/1-WPPTP909Gb5PnaBOKP58tPVLw2Fq0Ln-u1EBviIBns/edit
+// Storage schema is documented in the .cc file.
 class CONTENT_EXPORT BackgroundFetchDataManager {
  public:
   using CreateRegistrationCallback =
