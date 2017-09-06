@@ -99,6 +99,7 @@ class ArcSettingsServiceFactory
 class ArcSettingsServiceImpl
     : public chromeos::system::TimezoneSettings::Observer,
       public ArcSessionManager::Observer,
+      public InstanceHolder<mojom::AppInstance>::Observer,
       public chromeos::NetworkStateHandlerObserver {
  public:
   ArcSettingsServiceImpl(content::BrowserContext* context,
@@ -137,7 +138,11 @@ class ArcSettingsServiceImpl
   void SyncInitialSettings() const;
   // Retrieves Chrome's state for the settings that need to be synced on each
   // Android boot and send it to Android.
-  void SyncRuntimeSettings() const;
+  void SyncBootTimeSettings() const;
+  // Retrieves Chrome's state for the settings that need to be synced on each
+  // Android boot after AppInstance is ready and send it to Android.
+  // TODO(crbug.com/762553): Sync settings at proper time.
+  void SyncAppTimeSettings() const;
   // Determine whether a particular setting needs to be synced to Android.
   // Keep these lines ordered lexicographically.
   bool ShouldSyncBackupEnabled() const;
@@ -180,6 +185,9 @@ class ArcSettingsServiceImpl
   void SendSettingsBroadcast(const std::string& action,
                              const base::DictionaryValue& extras) const;
 
+  // InstanceHolder<mojom::AppInstance>::Observer:
+  void OnInstanceReady() override;
+
   content::BrowserContext* const context_;
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
 
@@ -201,13 +209,21 @@ ArcSettingsServiceImpl::ArcSettingsServiceImpl(
       arc_bridge_service_(arc_bridge_service),
       weak_factory_(this) {
   StartObservingSettingsChanges();
-  SyncRuntimeSettings();
+  SyncBootTimeSettings();
   DCHECK(ArcSessionManager::Get());
   ArcSessionManager::Get()->AddObserver(this);
+
+  if (arc_bridge_service_->app()->has_instance())
+    SyncAppTimeSettings();
+  else
+    arc_bridge_service_->app()->AddObserver(this);
 }
 
 ArcSettingsServiceImpl::~ArcSettingsServiceImpl() {
   StopObservingSettingsChanges();
+
+  if (arc_bridge_service_->app()->has_instance())
+    arc_bridge_service_->app()->RemoveObserver(this);
 
   ArcSessionManager* arc_session_manager = ArcSessionManager::Get();
   if (arc_session_manager)
@@ -323,13 +339,12 @@ void ArcSettingsServiceImpl::SyncInitialSettings() const {
   SyncLocationServiceEnabled();
 }
 
-void ArcSettingsServiceImpl::SyncRuntimeSettings() const {
+void ArcSettingsServiceImpl::SyncBootTimeSettings() const {
   // Keep these lines ordered lexicographically.
   SyncAccessibilityLargeMouseCursorEnabled();
   SyncAccessibilityVirtualKeyboardEnabled();
   SyncFocusHighlightEnabled();
   SyncFontSize();
-  SyncLocale();
   SyncProxySettings();
   SyncReportingConsent();
   SyncSpokenFeedbackEnabled();
@@ -341,6 +356,10 @@ void ArcSettingsServiceImpl::SyncRuntimeSettings() const {
     SyncBackupEnabled();
   if (ShouldSyncLocationServiceEnabled())
     SyncLocationServiceEnabled();
+}
+
+void ArcSettingsServiceImpl::SyncAppTimeSettings() const {
+  SyncLocale();
 }
 
 bool ArcSettingsServiceImpl::ShouldSyncBackupEnabled() const {
@@ -600,6 +619,12 @@ void ArcSettingsServiceImpl::SendSettingsBroadcast(
   instance->SendBroadcast(action, "org.chromium.arc.intent_helper",
                           "org.chromium.arc.intent_helper.SettingsReceiver",
                           extras_json);
+}
+
+// InstanceHolder<mojom::AppInstance>::Observer:
+void ArcSettingsServiceImpl::OnInstanceReady() {
+  arc_bridge_service_->app()->RemoveObserver(this);
+  SyncAppTimeSettings();
 }
 
 // static
