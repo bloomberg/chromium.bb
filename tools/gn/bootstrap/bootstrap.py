@@ -610,7 +610,6 @@ def write_gn_ninja(path, root_gen_dir, options):
         'base/synchronization/condition_variable_posix.cc',
         'base/synchronization/lock_impl_posix.cc',
         'base/synchronization/read_write_lock_posix.cc',
-        'base/synchronization/waitable_event_posix.cc',
         'base/sys_info_posix.cc',
         'base/task_scheduler/task_tracker_posix.cc',
         'base/threading/platform_thread_internal_posix.cc',
@@ -618,8 +617,6 @@ def write_gn_ninja(path, root_gen_dir, options):
         'base/threading/thread_local_storage_posix.cc',
         'base/threading/worker_pool_posix.cc',
         'base/time/time_conversion_posix.cc',
-        'base/time/time_exploded_posix.cc',
-        'base/time/time_now_posix.cc',
         'base/trace_event/heap_profiler_allocation_register_posix.cc',
     ])
     static_libraries['libevent'] = {
@@ -664,7 +661,10 @@ def write_gn_ninja(path, root_gen_dir, options):
         'base/process/process_linux.cc',
         'base/process/process_metrics_linux.cc',
         'base/strings/sys_string_conversions_posix.cc',
+        'base/synchronization/waitable_event_posix.cc',
         'base/sys_info_linux.cc',
+        'base/time/time_exploded_posix.cc',
+        'base/time/time_now_posix.cc',
         'base/threading/platform_thread_linux.cc',
     ])
     if is_linux:
@@ -711,6 +711,7 @@ def write_gn_ninja(path, root_gen_dir, options):
         'base/process/process_iterator_mac.cc',
         'base/process/process_metrics_mac.cc',
         'base/strings/sys_string_conversions_mac.mm',
+        'base/synchronization/waitable_event_mac.cc',
         'base/sys_info_mac.mm',
         'base/time/time_mac.cc',
         'base/threading/platform_thread_mac.mm',
