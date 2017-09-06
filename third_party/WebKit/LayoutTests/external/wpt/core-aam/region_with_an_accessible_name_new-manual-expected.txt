@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL region with an accessible name NEW Uncaught ReferenceError: ATTAcomm is not defined
+Harness: the test ran to completion.
+
