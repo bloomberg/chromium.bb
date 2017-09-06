@@ -105,6 +105,8 @@ public class SingleWebsitePreferences extends PreferenceFragment
             PREF_ADS_PERMISSION,
     };
 
+    private static final int REQUEST_CODE_NOTIFICATION_CHANNEL_SETTINGS = 1;
+
     // The website this page is displaying details about.
     private Website mSite;
 
@@ -356,7 +358,7 @@ public class SingleWebsitePreferences extends PreferenceFragment
         }
     }
 
-    private void setUpNotificationsPreference(Preference listPreference) {
+    private void setUpNotificationsPreference(Preference preference) {
         if (BuildInfo.isAtLeastO()
                 && ChromeFeatureList.isEnabled(ChromeFeatureList.SITE_NOTIFICATION_CHANNELS)) {
             final ContentSetting value = mSite.getNotificationPermission();
@@ -364,23 +366,23 @@ public class SingleWebsitePreferences extends PreferenceFragment
                 // TODO(crbug.com/735110): Figure out if this is the correct thing to do, for values
                 // that are non-null, but not ALLOW or BLOCK either. (In setupListPreference we
                 // treat non-ALLOW settings as BLOCK, but here we are simply removing them.)
-                getPreferenceScreen().removePreference(listPreference);
+                getPreferenceScreen().removePreference(preference);
                 return;
             }
-            // On Android O this preference is read-only, so we replace the ListPreference with a
+            // On Android O this preference is read-only, so we replace the existing pref with a
             // regular Preference that takes users to OS settings on click.
-            Preference preference = new Preference(listPreference.getContext());
-            preference.setKey(listPreference.getKey());
-            setUpPreferenceCommon(preference);
+            Preference newPreference = new Preference(preference.getContext());
+            newPreference.setKey(preference.getKey());
+            setUpPreferenceCommon(newPreference);
 
-            preference.setSummary(
+            newPreference.setSummary(
                     getResources().getString(ContentSettingsResources.getSiteSummary(value)));
-            preference.setDefaultValue(value);
+            newPreference.setDefaultValue(value);
 
             // This preference is read-only so should not attempt to persist to shared prefs.
-            preference.setPersistent(false);
+            newPreference.setPersistent(false);
 
-            preference.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+            newPreference.setOnPreferenceClickListener(new OnPreferenceClickListener() {
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
                     // There is no guarantee that a channel has been initialized yet for sites
@@ -395,19 +397,43 @@ public class SingleWebsitePreferences extends PreferenceFragment
                     return true;
                 }
             });
-            preference.setOrder(listPreference.getOrder());
-            getPreferenceScreen().removePreference(listPreference);
-            getPreferenceScreen().addPreference(preference);
+            newPreference.setOrder(preference.getOrder());
+            getPreferenceScreen().removePreference(preference);
+            getPreferenceScreen().addPreference(newPreference);
         } else {
-            setUpListPreference(listPreference, mSite.getNotificationPermission());
+            setUpListPreference(preference, mSite.getNotificationPermission());
         }
     }
 
-    private static void launchOsChannelSettings(Context context, String channelId) {
+    private void launchOsChannelSettings(Context context, String channelId) {
         Intent intent = new Intent(Settings.ACTION_CHANNEL_NOTIFICATION_SETTINGS);
         intent.putExtra(Settings.EXTRA_CHANNEL_ID, channelId);
         intent.putExtra(Settings.EXTRA_APP_PACKAGE, context.getPackageName());
-        context.startActivity(intent);
+        startActivityForResult(intent, REQUEST_CODE_NOTIFICATION_CHANNEL_SETTINGS);
+    }
+
+    /**
+     * If we are returning to Site Settings from another activity, the preferences displayed may be
+     * out of date. Here we refresh any we suspect may have changed.
+     */
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        // The preference screen and mSite may be null if this activity was killed in the
+        // background, and the tasks scheduled from onActivityCreated haven't completed yet. Those
+        // tasks will take care of reinitializing everything afresh so there is no work to do here.
+        if (getPreferenceScreen() == null || mSite == null) {
+            return;
+        }
+        if (requestCode == REQUEST_CODE_NOTIFICATION_CHANNEL_SETTINGS) {
+            // User has navigated back from system channel settings on O+. Ensure notification
+            // preference is up to date, since they might have toggled it from channel settings.
+            Preference notificationsPreference =
+                    getPreferenceScreen().findPreference(PREF_NOTIFICATIONS_PERMISSION);
+            if (notificationsPreference != null) {
+                setUpNotificationsPreference(notificationsPreference);
+            }
+        }
     }
 
     private void setUpUsbPreferences(int maxPermissionOrder) {
