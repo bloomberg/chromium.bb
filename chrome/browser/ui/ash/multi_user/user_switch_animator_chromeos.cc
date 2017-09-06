@@ -17,7 +17,6 @@
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
-#include "chrome/browser/ui/ash/multi_user/multi_user_notification_blocker_chromeos.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_chromeos.h"
 #include "ui/app_list/presenter/app_list.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -378,7 +377,6 @@ void UserSwitchAnimatorChromeOS::TransitionWindows(
         }
       }
 
-      owner_->notification_blocker()->ActiveUserChanged(new_account_id_);
       break;
     }
     case ANIMATION_STEP_ENDED:

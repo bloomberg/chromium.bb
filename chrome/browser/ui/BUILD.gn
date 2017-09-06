@@ -1318,8 +1318,6 @@ split_static_library("ui") {
       "ash/media_client.h",
       "ash/multi_user/multi_user_context_menu.h",
       "ash/multi_user/multi_user_context_menu_chromeos.cc",
-      "ash/multi_user/multi_user_notification_blocker_chromeos.cc",
-      "ash/multi_user/multi_user_notification_blocker_chromeos.h",
       "ash/multi_user/multi_user_util.cc",
       "ash/multi_user/multi_user_util.h",
       "ash/multi_user/multi_user_warning_dialog.cc",
