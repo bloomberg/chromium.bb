@@ -6,10 +6,13 @@
 
 #include <utility>
 
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chromecast/base/cast_features.h"
 #include "chromecast/base/metrics/cast_metrics_helper.h"
 #include "chromecast/browser/cast_web_contents_manager.h"
+#include "content/public/browser/media_capture_devices.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -131,6 +134,72 @@ void CastWebView::LoadingStateChanged(content::WebContents* source,
 void CastWebView::ActivateContents(content::WebContents* contents) {
   DCHECK_EQ(contents, web_contents_.get());
   contents->GetRenderViewHost()->GetWidget()->Focus();
+}
+
+bool CastWebView::CheckMediaAccessPermission(content::WebContents* web_contents,
+                                             const GURL& security_origin,
+                                             content::MediaStreamType type) {
+  if (!base::FeatureList::IsEnabled(kAllowUserMediaAccess)) {
+    LOG(WARNING) << __func__ << ": media access is disabled.";
+    return false;
+  }
+  return true;
+}
+
+const content::MediaStreamDevice* GetRequestedDeviceOrDefault(
+    const content::MediaStreamDevices& devices,
+    const std::string& requested_device_id) {
+  if (!requested_device_id.empty())
+    return devices.FindById(requested_device_id);
+
+  if (!devices.empty())
+    return &devices[0];
+
+  return nullptr;
+}
+
+void CastWebView::RequestMediaAccessPermission(
+    content::WebContents* web_contents,
+    const content::MediaStreamRequest& request,
+    const content::MediaResponseCallback& callback) {
+  if (!base::FeatureList::IsEnabled(kAllowUserMediaAccess)) {
+    LOG(WARNING) << __func__ << ": media access is disabled.";
+    callback.Run(content::MediaStreamDevices(),
+                 content::MEDIA_DEVICE_NOT_SUPPORTED,
+                 std::unique_ptr<content::MediaStreamUI>());
+    return;
+  }
+
+  auto audio_devices =
+      content::MediaCaptureDevices::GetInstance()->GetAudioCaptureDevices();
+  auto video_devices =
+      content::MediaCaptureDevices::GetInstance()->GetVideoCaptureDevices();
+  VLOG(2) << __func__ << " audio_devices=" << audio_devices.size()
+          << " video_devices=" << video_devices.size();
+
+  content::MediaStreamDevices devices;
+  if (request.audio_type == content::MEDIA_DEVICE_AUDIO_CAPTURE) {
+    const content::MediaStreamDevice* device = GetRequestedDeviceOrDefault(
+        audio_devices, request.requested_audio_device_id);
+    if (device) {
+      VLOG(1) << __func__ << "Using audio device: id=" << device->id
+              << " name=" << device->name;
+      devices.push_back(*device);
+    }
+  }
+
+  if (request.video_type == content::MEDIA_DEVICE_VIDEO_CAPTURE) {
+    const content::MediaStreamDevice* device = GetRequestedDeviceOrDefault(
+        video_devices, request.requested_video_device_id);
+    if (device) {
+      VLOG(1) << __func__ << "Using video device: id=" << device->id
+              << " name=" << device->name;
+      devices.push_back(*device);
+    }
+  }
+
+  callback.Run(devices, content::MEDIA_DEVICE_OK,
+               std::unique_ptr<content::MediaStreamUI>());
 }
 
 #if defined(OS_ANDROID)

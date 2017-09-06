@@ -93,6 +93,13 @@ class CastWebView : content::WebContentsObserver, content::WebContentsDelegate {
   void LoadingStateChanged(content::WebContents* source,
                            bool to_different_document) override;
   void ActivateContents(content::WebContents* contents) override;
+  bool CheckMediaAccessPermission(content::WebContents* web_contents,
+                                  const GURL& security_origin,
+                                  content::MediaStreamType type) override;
+  void RequestMediaAccessPermission(
+      content::WebContents* web_contents,
+      const content::MediaStreamRequest& request,
+      const content::MediaResponseCallback& callback) override;
 #if defined(OS_ANDROID)
   base::android::ScopedJavaLocalRef<jobject> GetContentVideoViewEmbedder()
       override;

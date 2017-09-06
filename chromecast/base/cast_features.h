@@ -21,6 +21,7 @@ class ListValue;
 namespace chromecast {
 
 // Add Cast Features here.
+extern const base::Feature kAllowUserMediaAccess;
 extern const base::Feature kEnableQuic;
 extern const base::Feature kTripleBuffer720;
 extern const base::Feature kSingleBuffer;
