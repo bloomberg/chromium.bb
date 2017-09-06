@@ -8752,6 +8752,9 @@ Please help our engineers fix this problem. Tell us what happened right before y
       </message>
 
       <!-- Sync/sign-in error messages -->
+      <message name="IDS_SIGNIN_ERROR_DISPLAY_SOURCE" desc="Context title shown in the notification header of sign-in error notification.">
+        Sign In
+      </message>
       <message name="IDS_SIGNIN_ERROR_BUBBLE_VIEW_TITLE" desc="Title in the sign-in error bubble view/notification.">
         Sign-in Error
       </message>
