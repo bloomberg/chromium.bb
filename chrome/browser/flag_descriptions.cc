@@ -356,12 +356,6 @@ const char kEnableHttpFormWarningDescription[] =
     "Attaches a warning UI to any password or credit card fields detected when "
     "the top-level page is not HTTPS";
 
-const char kEnableIdleTimeSpellCheckingName[] =
-    "Enable idle time spell checker";
-const char kEnableIdleTimeSpellCheckingDescription[] =
-    "Make spell-checking code run only when the browser is idle, so that input "
-    "latency is reduced, especially when editing long articles, emails, etc.";
-
 const char kEnableManualFallbacksFillingName[] =
     "Manual fallbacks for password manager forms filling";
 const char kEnableManualFallbacksFillingDescription[] =

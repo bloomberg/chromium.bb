@@ -375,9 +375,6 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
     WebRuntimeFeatures::EnableWebNfc(true);
 #endif
 
-  if (base::FeatureList::IsEnabled(features::kIdleTimeSpellChecking))
-    WebRuntimeFeatures::EnableFeatureFromString("IdleTimeSpellChecking", true);
-
   if (media::GetEffectiveAutoplayPolicy(command_line) !=
       switches::autoplay::kNoUserGestureRequiredPolicy) {
     WebRuntimeFeatures::EnableAutoplayMutedVideos(true);
