@@ -1260,32 +1260,9 @@ class DBTracker::MemoryDumpProvider
     auto db_visitor = [](const base::trace_event::MemoryDumpArgs& args,
                          base::trace_event::ProcessMemoryDump* pmd,
                          TrackedDB* db) {
-      std::string db_dump_name = DBTracker::GetMemoryDumpName(db);
-      auto* db_dump = pmd->CreateAllocatorDump(db_dump_name.c_str());
-
-      uint64_t db_memory_usage = 0;
-      {
-        std::string usage_string;
-        bool success = db->GetProperty("leveldb.approximate-memory-usage",
-                                       &usage_string) &&
-                       base::StringToUint64(usage_string, &db_memory_usage);
-        DCHECK(success);
-      }
-      db_dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
-                         base::trace_event::MemoryAllocatorDump::kUnitsBytes,
-                         db_memory_usage);
-
-      if (args.level_of_detail !=
-          base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND) {
-        db_dump->AddString("name", "", db->name());
-      }
-
-      const char* system_allocator_name =
-          base::trace_event::MemoryDumpManager::GetInstance()
-              ->system_allocator_pool_name();
-      if (system_allocator_name) {
-        pmd->AddSuballocation(db_dump->guid(), system_allocator_name);
-      }
+      auto* dump = DBTracker::GetOrCreateAllocatorDump(pmd, db);
+      // TODO(ssid): Do not add string attribute in background mode.
+      dump->AddString("name", "", db->name());
     };
 
     DBTracker::GetInstance()->VisitDatabases(
@@ -1308,9 +1285,37 @@ DBTracker* DBTracker::GetInstance() {
   return instance;
 }
 
-std::string DBTracker::GetMemoryDumpName(leveldb::DB* tracked_db) {
-  return base::StringPrintf("leveldatabase/0x%" PRIXPTR,
-                            reinterpret_cast<uintptr_t>(tracked_db));
+// static
+base::trace_event::MemoryAllocatorDump* DBTracker::GetOrCreateAllocatorDump(
+    base::trace_event::ProcessMemoryDump* pmd,
+    leveldb::DB* tracked_db) {
+  if (pmd->dump_args().level_of_detail ==
+      base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND) {
+    return nullptr;
+  }
+  std::string dump_name = base::StringPrintf(
+      "leveldatabase/0x%" PRIXPTR, reinterpret_cast<uintptr_t>(tracked_db));
+  auto* dump = pmd->GetAllocatorDump(dump_name);
+  if (dump)
+    return dump;
+  dump = pmd->CreateAllocatorDump(dump_name);
+
+  uint64_t memory_usage = 0;
+  std::string usage_string;
+  bool success = tracked_db->GetProperty("leveldb.approximate-memory-usage",
+                                         &usage_string) &&
+                 base::StringToUint64(usage_string, &memory_usage);
+  DCHECK(success);
+  dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
+                  base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                  memory_usage);
+
+  const char* system_allocator_name =
+      base::trace_event::MemoryDumpManager::GetInstance()
+          ->system_allocator_pool_name();
+  if (system_allocator_name)
+    pmd->AddSuballocation(dump->guid(), system_allocator_name);
+  return dump;
 }
 
 leveldb::Status DBTracker::OpenDatabase(const leveldb::Options& options,

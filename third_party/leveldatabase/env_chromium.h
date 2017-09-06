@@ -22,6 +22,13 @@
 #include "port/port_chromium.h"
 #include "util/mutexlock.h"
 
+namespace base {
+namespace trace_event {
+class MemoryAllocatorDump;
+class ProcessMemoryDump;
+}  // namespace trace_event
+}  // namespace base
+
 namespace leveldb_env {
 
 // These entries map to values in tools/metrics/histograms/histograms.xml. New
@@ -248,12 +255,14 @@ class DBTracker {
   // DBTracker singleton instance.
   static DBTracker* GetInstance();
 
-  // Returns name of memory-infra dump for |tracked_db|. Can be used to attach
+  // Returns the memory-infra dump for |tracked_db|. Can be used to attach
   // additional info to the database dump, or to properly attribute memory
   // usage in memory dump providers that also dump |tracked_db|.
   // Note that |tracked_db| should be a live database instance produced by
   // OpenDatabase() method or leveldb_env::OpenDB() function.
-  static std::string GetMemoryDumpName(leveldb::DB* tracked_db);
+  static base::trace_event::MemoryAllocatorDump* GetOrCreateAllocatorDump(
+      base::trace_event::ProcessMemoryDump* pmd,
+      leveldb::DB* tracked_db);
 
   // Provides extra information about a tracked database.
   class TrackedDB : public leveldb::DB {
