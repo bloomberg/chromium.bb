@@ -1,5 +1,6 @@
 <html>
 <body>
+<!--This test is specific to Chromium, so it will not be ported to WPT.-->
 <p>Test that 'Save-Data' header is treated as a simple header and preflight request is not created. Should print PASS.</p>
 <div id="log"></div>
 <script>
@@ -15,7 +16,7 @@ if (window.layoutTestController) {
 }
 
 var xhr = new XMLHttpRequest();
-xhr.open("GET", "http://localhost:8000/xmlhttprequest/resources/access-control-preflight-request-invalid-status.php?code=400");
+xhr.open("GET", "http://localhost:8000/xmlhttprequest/chromium/resources/access-control-preflight-request-invalid-status.php?code=400");
 xhr.onerror = function () {
     log("FAIL");
     if (window.layoutTestController)
