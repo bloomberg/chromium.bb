@@ -5157,7 +5157,9 @@ void WebGLRenderingContextBase::texImage2D(ExecutionContext* execution_context,
 }
 
 PassRefPtr<Image> WebGLRenderingContextBase::VideoFrameToImage(
-    HTMLVideoElement* video) {
+    HTMLVideoElement* video,
+    int already_uploaded_id,
+    WebMediaPlayer::VideoFrameUploadMetadata* out_metadata) {
   const IntSize& visible_size = video->videoVisibleSize();
   if (visible_size.IsEmpty()) {
     SynthesizeGLError(GL_INVALID_VALUE, "tex(Sub)Image2D",
@@ -5170,7 +5172,8 @@ PassRefPtr<Image> WebGLRenderingContextBase::VideoFrameToImage(
     return nullptr;
   }
   IntRect dest_rect(0, 0, visible_size.Width(), visible_size.Height());
-  video->PaintCurrentFrame(buf->Canvas(), dest_rect, nullptr);
+  video->PaintCurrentFrame(buf->Canvas(), dest_rect, nullptr,
+                           already_uploaded_id, out_metadata);
   return buf->NewImageSnapshot();
 }
 
@@ -5212,6 +5215,15 @@ void WebGLRenderingContextBase::TexImageHelperHTMLVideoElement(
                        yoffset, zoffset))
     return;
 
+  // For WebGL last-uploaded-frame-metadata API. https://crbug.com/639174
+  WebMediaPlayer::VideoFrameUploadMetadata frame_metadata = {};
+  int already_uploaded_id = -1;
+  WebMediaPlayer::VideoFrameUploadMetadata* frame_metadata_ptr = nullptr;
+  if (RuntimeEnabledFeatures::ExperimentalCanvasFeaturesEnabled()) {
+    already_uploaded_id = texture->GetLastUploadedVideoFrameId();
+    frame_metadata_ptr = &frame_metadata;
+  }
+
   bool source_image_rect_is_default =
       source_image_rect == SentinelEmptyRect() ||
       source_image_rect ==
@@ -5235,8 +5247,9 @@ void WebGLRenderingContextBase::TexImageHelperHTMLVideoElement(
 
     if (video->CopyVideoTextureToPlatformTexture(
             ContextGL(), target, texture->Object(), internalformat, format,
-            type, level, unpack_premultiply_alpha_, unpack_flip_y_)) {
-      texture->UpdateLastUploadedVideo(video->GetWebMediaPlayer());
+            type, level, unpack_premultiply_alpha_, unpack_flip_y_,
+            already_uploaded_id, frame_metadata_ptr)) {
+      texture->UpdateLastUploadedFrame(frame_metadata);
       return;
     }
   }
@@ -5253,7 +5266,7 @@ void WebGLRenderingContextBase::TexImageHelperHTMLVideoElement(
             xoffset, yoffset, zoffset, unpack_flip_y_,
             unpack_premultiply_alpha_ &&
                 unpack_colorspace_conversion_ == GL_NONE)) {
-      texture->UpdateLastUploadedVideo(video->GetWebMediaPlayer());
+      texture->ClearLastUploadedFrame();
       return;
     }
   }
@@ -5274,7 +5287,8 @@ void WebGLRenderingContextBase::TexImageHelperHTMLVideoElement(
         // (though it may still do a CPU conversion and upload the results).
         video->PaintCurrentFrame(
             image_buffer->Canvas(),
-            IntRect(0, 0, video->videoWidth(), video->videoHeight()), nullptr);
+            IntRect(0, 0, video->videoWidth(), video->videoHeight()), nullptr,
+            already_uploaded_id, frame_metadata_ptr);
 
         // This is a straight GPU-GPU copy, any necessary color space conversion
         // was handled in the paintCurrentFrameInContext() call.
@@ -5289,14 +5303,15 @@ void WebGLRenderingContextBase::TexImageHelperHTMLVideoElement(
                 texture->Object(), unpack_premultiply_alpha_, unpack_flip_y_,
                 IntPoint(0, 0),
                 IntRect(0, 0, video->videoWidth(), video->videoHeight()))) {
-          texture->UpdateLastUploadedVideo(video->GetWebMediaPlayer());
+          texture->UpdateLastUploadedFrame(frame_metadata);
           return;
         }
       }
     }
   }
 
-  RefPtr<Image> image = VideoFrameToImage(video);
+  RefPtr<Image> image =
+      VideoFrameToImage(video, already_uploaded_id, frame_metadata_ptr);
   if (!image)
     return;
   TexImageImpl(function_id, target, level, internalformat, xoffset, yoffset,
@@ -5304,7 +5319,7 @@ void WebGLRenderingContextBase::TexImageHelperHTMLVideoElement(
                WebGLImageConversion::kHtmlDomVideo, unpack_flip_y_,
                unpack_premultiply_alpha_, source_image_rect, depth,
                unpack_image_height);
-  texture->UpdateLastUploadedVideo(video->GetWebMediaPlayer());
+  texture->UpdateLastUploadedFrame(frame_metadata);
 }
 
 void WebGLRenderingContextBase::TexImageBitmapByGPU(

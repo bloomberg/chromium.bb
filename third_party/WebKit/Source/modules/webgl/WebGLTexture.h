@@ -47,13 +47,28 @@ class WebGLTexture final : public WebGLSharedPlatform3DObject {
 
   static GLint ComputeLevelCount(GLsizei width, GLsizei height, GLsizei depth);
 
-  void UpdateLastUploadedVideo(WebMediaPlayer*);
-  unsigned lastUploadedVideoWidth() const { return last_uploaded_video_width_; }
+  int GetLastUploadedVideoFrameId() const {
+    return last_uploaded_video_frame_metadata_.frame_id;
+  }
+
+  void UpdateLastUploadedFrame(
+      blink::WebMediaPlayer::VideoFrameUploadMetadata frame_metadata) {
+    last_uploaded_video_frame_metadata_ = frame_metadata;
+  }
+
+  void ClearLastUploadedFrame() { last_uploaded_video_frame_metadata_ = {}; }
+
+  unsigned lastUploadedVideoWidth() const {
+    return last_uploaded_video_frame_metadata_.visible_rect.width();
+  }
   unsigned lastUploadedVideoHeight() const {
-    return last_uploaded_video_height_;
+    return last_uploaded_video_frame_metadata_.visible_rect.height();
   }
   double lastUploadedVideoTimestamp() const {
-    return last_uploaded_video_timestamp_;
+    return last_uploaded_video_frame_metadata_.timestamp.InSecondsF();
+  }
+  bool lastUploadedVideoFrameWasSkipped() const {
+    return last_uploaded_video_frame_metadata_.skipped;
   }
 
  private:
@@ -67,9 +82,8 @@ class WebGLTexture final : public WebGLSharedPlatform3DObject {
 
   GLenum target_;
 
-  unsigned last_uploaded_video_width_ = 0;
-  unsigned last_uploaded_video_height_ = 0;
-  double last_uploaded_video_timestamp_ = 0.0;
+  blink::WebMediaPlayer::VideoFrameUploadMetadata
+      last_uploaded_video_frame_metadata_ = {};
 };
 
 }  // namespace blink

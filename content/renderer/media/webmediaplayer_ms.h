@@ -108,7 +108,9 @@ class CONTENT_EXPORT WebMediaPlayerMS
   // Methods for painting.
   void Paint(blink::WebCanvas* canvas,
              const blink::WebRect& rect,
-             cc::PaintFlags& flags) override;
+             cc::PaintFlags& flags,
+             int already_uploaded_id,
+             VideoFrameUploadMetadata* out_metadata) override;
   media::SkCanvasVideoRenderer* GetSkCanvasVideoRenderer();
   void ResetCanvasCache();
 
@@ -157,15 +159,18 @@ class CONTENT_EXPORT WebMediaPlayerMS
   void OnVolumeMultiplierUpdate(double multiplier) override;
   void OnBecamePersistentVideo(bool value) override;
 
-  bool CopyVideoTextureToPlatformTexture(gpu::gles2::GLES2Interface* gl,
-                                         unsigned target,
-                                         unsigned int texture,
-                                         unsigned internal_format,
-                                         unsigned format,
-                                         unsigned type,
-                                         int level,
-                                         bool premultiply_alpha,
-                                         bool flip_y) override;
+  bool CopyVideoTextureToPlatformTexture(
+      gpu::gles2::GLES2Interface* gl,
+      unsigned target,
+      unsigned int texture,
+      unsigned internal_format,
+      unsigned format,
+      unsigned type,
+      int level,
+      bool premultiply_alpha,
+      bool flip_y,
+      int already_uploaded_id,
+      VideoFrameUploadMetadata* out_metadata) override;
 
   bool TexImageImpl(TexImageFunctionID functionID,
                     unsigned target,

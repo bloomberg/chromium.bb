@@ -74,7 +74,9 @@ class MockWebMediaPlayer : public blink::WebMediaPlayer,
 
   void Paint(blink::WebCanvas* canvas,
              const blink::WebRect& paint_rectangle,
-             cc::PaintFlags&) override {
+             cc::PaintFlags&,
+             int already_uploaded_id,
+             VideoFrameUploadMetadata* out_metadata) override {
     // We could fill in |canvas| with a meaningful pattern in ARGB and verify
     // that is correctly captured (as I420) by HTMLVideoElementCapturerSource
     // but I don't think that'll be easy/useful/robust, so just let go here.
