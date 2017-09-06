@@ -13,7 +13,14 @@ namespace image_fetcher {
 class IOSImageDataFetcherWrapper;
 }
 
-class OmniboxPopupViewIOS;
+class OmniboxPopupMaterialViewControllerDelegate {
+ public:
+  virtual bool IsStarredMatch(const AutocompleteMatch& match) const = 0;
+  virtual void OnMatchSelected(const AutocompleteMatch& match, size_t row) = 0;
+  virtual void OnMatchSelectedForAppending(const AutocompleteMatch& match) = 0;
+  virtual void OnMatchSelectedForDeletion(const AutocompleteMatch& match) = 0;
+  virtual void OnScroll() = 0;
+};
 
 // View controller used to display a list of omnibox autocomplete matches in the
 // omnibox popup.
@@ -24,9 +31,9 @@ class OmniboxPopupViewIOS;
 // Designated initializer.  Creates a table view with UITableViewStylePlain.
 // Takes ownership of |imageFetcher|.
 - (instancetype)
-initWithPopupView:(OmniboxPopupViewIOS*)view
-      withFetcher:(std::unique_ptr<image_fetcher::IOSImageDataFetcherWrapper>)
-                      imageFetcher;
+initWithFetcher:
+    (std::unique_ptr<image_fetcher::IOSImageDataFetcherWrapper>)imageFetcher
+       delegate:(OmniboxPopupMaterialViewControllerDelegate*)delegate;
 
 // Updates the current data and forces a redraw. If animation is YES, adds
 // CALayer animations to fade the OmniboxPopupMaterialRows in.

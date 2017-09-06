@@ -19,7 +19,6 @@
 #include "components/omnibox/browser/suggestion_answer.h"
 #include "ios/chrome/browser/ui/animation_util.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_popup_material_row.h"
-#import "ios/chrome/browser/ui/omnibox/omnibox_popup_view_ios.h"
 #include "ios/chrome/browser/ui/omnibox/omnibox_util.h"
 #import "ios/chrome/browser/ui/omnibox/truncating_attributed_label.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
@@ -81,7 +80,7 @@ UIColor* BackgroundColorIncognito() {
   // Alignment of omnibox text. Popup text should match this alignment.
   NSTextAlignment _alignment;
 
-  OmniboxPopupViewIOS* _popupView;  // weak, owns us
+  OmniboxPopupMaterialViewControllerDelegate* _delegate;  // weak
 
   // Fetcher for Answers in Suggest images.
   std::unique_ptr<image_fetcher::IOSImageDataFetcherWrapper> imageFetcher_;
@@ -107,11 +106,11 @@ UIColor* BackgroundColorIncognito() {
 #pragma mark Initialization
 
 - (instancetype)
-initWithPopupView:(OmniboxPopupViewIOS*)view
-      withFetcher:(std::unique_ptr<image_fetcher::IOSImageDataFetcherWrapper>)
-                      imageFetcher {
+initWithFetcher:
+    (std::unique_ptr<image_fetcher::IOSImageDataFetcherWrapper>)imageFetcher
+       delegate:(OmniboxPopupMaterialViewControllerDelegate*)delegate {
   if ((self = [super init])) {
-    _popupView = view;
+    _delegate = delegate;
     imageFetcher_ = std::move(imageFetcher);
 
     if (IsIPadIdiom()) {
@@ -382,7 +381,7 @@ initWithPopupView:(OmniboxPopupViewIOS*)view
   // iPad.
   if (IsIPadIdiom()) {
     int imageId = GetIconForAutocompleteMatchType(
-        match.type, _popupView->IsStarredMatch(match), _incognito);
+        match.type, _delegate->IsStarredMatch(match), _incognito);
     [row updateLeadingImage:imageId];
   }
 
@@ -658,10 +657,7 @@ initWithPopupView:(OmniboxPopupViewIOS*)view
         base::UserMetricsAction("MobileOmniboxRefineSuggestion.Url"));
   }
 
-  // Make a defensive copy of |match.contents|, as CopyToOmnibox() will trigger
-  // a new round of autocomplete and modify |_currentResult|.
-  base::string16 contents(match.contents);
-  _popupView->CopyToOmnibox(contents);
+  _delegate->OnMatchSelectedForAppending(match);
 }
 
 #pragma mark -
@@ -681,7 +677,7 @@ initWithPopupView:(OmniboxPopupViewIOS*)view
       return;
   }
 
-  _popupView->DidScroll();
+  _delegate->OnScroll();
   for (OmniboxPopupMaterialRow* row in _rows) {
     row.highlighted = NO;
   }
@@ -751,7 +747,17 @@ attributedStringWithString:(NSString*)text
   DCHECK_EQ(0U, (NSUInteger)indexPath.section);
   DCHECK_LT((NSUInteger)indexPath.row, _currentResult.size());
   NSUInteger row = indexPath.row;
-  _popupView->OpenURLForRow(row);
+
+  // Crash reports tell us that |row| is sometimes indexed past the end of
+  // the results array. In those cases, just ignore the request and return
+  // early. See b/5813291.
+  if (row >= _currentResult.size())
+    return;
+
+  const AutocompleteMatch& match =
+      ((const AutocompleteResult&)_currentResult).match_at(row);
+
+  _delegate->OnMatchSelected(match, row);
 }
 
 #pragma mark -
@@ -807,7 +813,7 @@ attributedStringWithString:(NSString*)text
     [_rows[indexPath.row] prepareForReuse];
     const AutocompleteMatch& match =
         ((const AutocompleteResult&)_currentResult).match_at(indexPath.row);
-    _popupView->DeleteMatch(match);
+    _delegate->OnMatchSelectedForDeletion(match);
   }
 }
 

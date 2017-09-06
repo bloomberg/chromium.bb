@@ -12,6 +12,7 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/string16.h"
 #include "components/omnibox/browser/omnibox_popup_view.h"
+#import "ios/chrome/browser/ui/omnibox/omnibox_popup_material_view_controller.h"
 
 class OmniboxEditModel;
 @class OmniboxPopupMaterialViewController;
@@ -25,7 +26,8 @@ class ChromeBrowserState;
 }  // namespace ios
 
 // iOS implementation of AutocompletePopupView.
-class OmniboxPopupViewIOS : public OmniboxPopupView {
+class OmniboxPopupViewIOS : public OmniboxPopupView,
+                            public OmniboxPopupMaterialViewControllerDelegate {
  public:
   OmniboxPopupViewIOS(ios::ChromeBrowserState* browser_state,
                       OmniboxEditModel* edit_model,
@@ -43,13 +45,15 @@ class OmniboxPopupViewIOS : public OmniboxPopupView {
   void PaintUpdatesNow() override {}
   void OnDragCanceled() override {}
 
-  void OpenURLForRow(size_t row);
-  void DidScroll();
   void UpdateEditViewIcon();
-  void CopyToOmnibox(const base::string16& text);
   void SetTextAlignment(NSTextAlignment alignment);
-  bool IsStarredMatch(const AutocompleteMatch& match) const;
-  void DeleteMatch(const AutocompleteMatch& match) const;
+
+  // OmniboxPopupMaterialViewControllerDelegate implementation.
+  bool IsStarredMatch(const AutocompleteMatch& match) const override;
+  void OnMatchSelected(const AutocompleteMatch& match, size_t row) override;
+  void OnMatchSelectedForAppending(const AutocompleteMatch& match) override;
+  void OnMatchSelectedForDeletion(const AutocompleteMatch& match) override;
+  void OnScroll() override;
 
  private:
   std::unique_ptr<OmniboxPopupModel> model_;

@@ -62,8 +62,8 @@ OmniboxPopupViewIOS::OmniboxPopupViewIOS(
           browser_state->GetRequestContext());
 
   popup_controller_.reset([[OmniboxPopupMaterialViewController alloc]
-      initWithPopupView:this
-            withFetcher:std::move(imageFetcher)]);
+      initWithFetcher:std::move(imageFetcher)
+             delegate:this]);
   [popup_controller_ setIncognito:browser_state->IsOffTheRecord()];
   popupView_.reset([[UIView alloc] initWithFrame:CGRectZero]);
   [popupView_ setClipsToBounds:YES];
@@ -251,42 +251,31 @@ gfx::Rect OmniboxPopupViewIOS::GetTargetBounds() {
   return gfx::Rect();
 }
 
-// For phone, allow popup to take focus (and dismiss the keyboard) on scroll.
-void OmniboxPopupViewIOS::DidScroll() {
-  delegate_->OnPopupDidScroll();
-}
-
-// Puts omnibox back into focus with suggested search terms.
-void OmniboxPopupViewIOS::CopyToOmnibox(const base::string16& str) {
-  delegate_->OnSelectedMatchForAppending(str);
-}
-
 void OmniboxPopupViewIOS::SetTextAlignment(NSTextAlignment alignment) {
   [popup_controller_ setTextAlignment:alignment];
 }
+
+bool OmniboxPopupViewIOS::IsOpen() const {
+  return is_open_;
+}
+
+#pragma mark - OmniboxPopupMaterialViewControllerDelegate
 
 bool OmniboxPopupViewIOS::IsStarredMatch(const AutocompleteMatch& match) const {
   return model_->IsStarredMatch(match);
 }
 
-void OmniboxPopupViewIOS::DeleteMatch(const AutocompleteMatch& match) const {
-  model_->autocomplete_controller()->DeleteMatch(match);
-}
-
-void OmniboxPopupViewIOS::OpenURLForRow(size_t row) {
-  // Crash reports tell us that |row| is sometimes indexed past the end of
-  // the results array. In those cases, just ignore the request and return
-  // early. See b/5813291.
-  if (row >= model_->result().size())
-    return;
-
+void OmniboxPopupViewIOS::OnMatchSelected(
+    const AutocompleteMatch& selectedMatch,
+    size_t row) {
   WindowOpenDisposition disposition = WindowOpenDisposition::CURRENT_TAB;
   base::RecordAction(UserMetricsAction("MobileOmniboxUse"));
 
   // OpenMatch() may close the popup, which will clear the result set and, by
   // extension, |match| and its contents.  So copy the relevant match out to
   // make sure it stays alive until the call completes.
-  AutocompleteMatch match = model_->result().match_at(row);
+  AutocompleteMatch match = selectedMatch;
+
   if (match.type == AutocompleteMatchType::CLIPBOARD) {
     base::RecordAction(UserMetricsAction("MobileOmniboxClipboardToURL"));
     UMA_HISTOGRAM_LONG_TIMES_100(
@@ -297,6 +286,19 @@ void OmniboxPopupViewIOS::OpenURLForRow(size_t row) {
                                        base::string16(), row);
 }
 
-bool OmniboxPopupViewIOS::IsOpen() const {
-  return is_open_;
+void OmniboxPopupViewIOS::OnMatchSelectedForAppending(
+    const AutocompleteMatch& match) {
+  // Make a defensive copy of |match.contents|, as CopyToOmnibox() will trigger
+  // a new round of autocomplete and modify |match|.
+  base::string16 contents(match.contents);
+  delegate_->OnSelectedMatchForAppending(contents);
+}
+
+void OmniboxPopupViewIOS::OnMatchSelectedForDeletion(
+    const AutocompleteMatch& match) {
+  model_->autocomplete_controller()->DeleteMatch(match);
+}
+
+void OmniboxPopupViewIOS::OnScroll() {
+  delegate_->OnPopupDidScroll();
 }
