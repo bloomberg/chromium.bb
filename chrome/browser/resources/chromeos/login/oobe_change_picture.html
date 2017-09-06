@@ -53,7 +53,8 @@
       </cr-picture-pane>
       <cr-picture-list id="pictureList"
           camera-present="[[cameraPresent]]"
-          default-images="[[defaultImages]]"
+          default-images="[[getDefaultImages_(defaultImages,
+              firstDefaultImageIndex)]]"
           selected-item="{{selectedItem_}}"
           old-image-label="[[i18nDynamic(locale, 'photoFromCamera')]]"
           profile-image-label="[[i18nDynamic(locale, 'profilePhoto')]]"

@@ -1426,10 +1426,10 @@ login.createScreen(
         selectedUserImage_: -1,
         imagesData: [],
 
-        setDefaultImages: function(imagesData) {
+        setDefaultImages: function(info) {
           var imageGrid = this.getScreenElement('image-grid');
-          imageGrid.setDefaultImages(imagesData);
-          this.imagesData_ = imagesData;
+          imageGrid.setDefaultImages(info.images);
+          this.imagesData_ = info.images;
         },
 
 

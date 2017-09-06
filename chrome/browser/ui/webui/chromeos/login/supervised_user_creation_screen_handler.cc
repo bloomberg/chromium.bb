@@ -407,9 +407,12 @@ void SupervisedUserCreationScreenHandler::HandleAuthenticateManager(
 // TODO(antrim) : this is an explicit code duplications with UserImageScreen.
 // It should be removed by issue 251179.
 void SupervisedUserCreationScreenHandler::HandleGetImages() {
-  std::unique_ptr<base::ListValue> image_urls =
-      default_user_image::GetAsDictionary(false /* all */);
-  CallJS("setDefaultImages", *image_urls);
+  base::DictionaryValue result;
+  result.SetInteger("first", default_user_image::GetFirstDefaultImage());
+  std::unique_ptr<base::ListValue> default_images =
+      default_user_image::GetAsDictionary(true /* all */);
+  result.Set("images", std::move(default_images));
+  CallJS("setDefaultImages", result);
 }
 
 void SupervisedUserCreationScreenHandler::HandlePhotoTaken

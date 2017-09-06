@@ -491,8 +491,7 @@ void SupervisedUserCreationScreen::ApplyPicture() {
       NOTREACHED() << "Supervised users have no profile pictures";
       break;
     default:
-      DCHECK(selected_image_ >= 0 &&
-             selected_image_ < default_user_image::kDefaultImagesCount);
+      DCHECK(default_user_image::IsValidIndex(selected_image_));
       image_manager->SaveUserDefaultImageIndex(selected_image_);
       break;
   }

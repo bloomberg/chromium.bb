@@ -69,6 +69,9 @@ CHROMEOS_EXPORT int GetDefaultImageHistogramValue(int index);
 // Returns a random default image index.
 CHROMEOS_EXPORT int GetRandomDefaultImageIndex();
 
+// Returns true if |index| is a valid default image index.
+CHROMEOS_EXPORT bool IsValidIndex(int index);
+
 // Returns true if |index| is a in the current set of default images.
 CHROMEOS_EXPORT bool IsInCurrentImageSet(int index);
 

@@ -182,8 +182,9 @@ TEST_F('OobeWebUITest', 'DISABLED_OobeSupervisedUsers3', function() {
       {'id'   : 'supervised-user-creation',
        'data' : createOobeWebUITestSupervisedManagerData()});
   $('supervised-user-creation').setDefaultImages(
-      [{'url': 'chrome://nothing/', 'title': 'None'},
-       {'url': 'chrome://nothing/', 'title': 'None'}]);
+      {'first' : 0,
+       'images' : [{'url': 'chrome://nothing/', 'title': 'None'},
+                   {'url': 'chrome://nothing/', 'title': 'None'}]});
   $('supervised-user-creation').setVisiblePage_('username');
 });
 

@@ -36,6 +36,9 @@ Polymer({
       value: false,
     },
 
+    /** Specifies the selected image index. */
+    selectedImageIndex: Number,
+
     /** Specifies the selected image URL, used to specify the initial image. */
     selectedImageUrl: {
       type: String,
@@ -52,6 +55,12 @@ Polymer({
         return [];
       },
     },
+
+    /**
+     * The index of the first default image to use in the selection list.
+     * @private
+     */
+    firstDefaultImageIndex: Number,
 
     /**
      * The currently selected item. This property is bound to the iron-selector
@@ -87,6 +96,15 @@ Polymer({
   },
 
   /**
+   * setProfileImageUrl is called possibly after sync.
+   * @param {string} imageUrl
+   * @param {boolean} selected
+   */
+  setProfileImageUrl: function(imageUrl, selected) {
+    this.pictureList_.setProfileImageUrl(imageUrl, selected);
+  },
+
+  /**
    * @return {string}
    * @private
    */
@@ -101,9 +119,13 @@ Polymer({
    * @private
    */
   selectedImageUrlChanged_: function(selectedImageUrl) {
-    var pictureList = /** @type {CrPictureListElement} */ (this.$.pictureList);
-    pictureList.setSelectedImageUrl(selectedImageUrl);
-    pictureList.setFocus();
+    if (this.selectedImageIndex >= this.firstDefaultImageIndex) {
+      this.pictureList_.setSelectedImageUrl(selectedImageUrl);
+    } else {
+      this.pictureList_.setOldImageUrl(
+          selectedImageUrl, this.selectedImageIndex);
+    }
+    this.pictureList_.setFocus();
   },
 
   /**
@@ -124,7 +146,13 @@ Polymer({
         this.sendSelectImage_(image.dataset.type, '');
         break;
       case CrPicture.SelectionTypes.OLD:
-        this.sendSelectImage_(image.dataset.type, '');
+        var imageIndex = image.dataset.imageIndex;
+        if (imageIndex !== undefined && imageIndex >= 0 && image.src) {
+          this.sendSelectImage_(
+              CrPicture.SelectionTypes.DEFAULT, image.dataset.url);
+        } else {
+          this.sendSelectImage_(image.dataset.type, '');
+        }
         break;
       case CrPicture.SelectionTypes.DEFAULT:
         this.sendSelectImage_(image.dataset.type, image.dataset.url);
@@ -202,5 +230,15 @@ Polymer({
   getImageType_: function(selectedItem) {
     return (selectedItem && selectedItem.dataset.type) ||
         CrPicture.SelectionTypes.NONE;
+  },
+
+  /**
+   * @param {!Array<!OobeDefaultImage>} defaultImages
+   * @param {number} firstDefaultImageIndex
+   * @return {!Array<!OobeDefaultImage>}
+   * @private
+   */
+  getDefaultImages_: function(defaultImages, firstDefaultImageIndex) {
+    return defaultImages.slice(firstDefaultImageIndex);
   },
 });
