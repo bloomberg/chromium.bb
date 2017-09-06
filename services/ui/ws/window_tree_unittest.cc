@@ -1568,8 +1568,6 @@ TEST_F(WindowTreeTest, TestWindowManagerSettingCursorLocation) {
   // Have the window manager move the cursor within the embed window.
   static_cast<mojom::WindowManagerClient*>(wm_tree())
       ->WmMoveCursorToDisplayLocation(gfx::Point(21, 21), -1);
-
-  EXPECT_EQ(ui::CursorType::kIBeam, cursor_type());
 }
 
 TEST_F(WindowTreeTest, TestWindowManagerConfineCursor) {

@@ -57,8 +57,7 @@ EventDispatcher::EventDispatcher(EventDispatcherDelegate* delegate)
       event_targeter_(base::MakeUnique<EventTargeter>(this)),
       mouse_button_down_(false),
       mouse_cursor_source_window_(nullptr),
-      mouse_cursor_in_non_client_area_(false),
-      next_mouse_button_flags_(0) {}
+      mouse_cursor_in_non_client_area_(false) {}
 
 EventDispatcher::~EventDispatcher() {
   SetMouseCursorSourceWindow(nullptr);
@@ -84,22 +83,6 @@ void EventDispatcher::Reset() {
     StopTrackingPointer(pointer_targets_.begin()->first);
 
   mouse_button_down_ = false;
-}
-
-std::unique_ptr<ui::Event> EventDispatcher::GenerateMouseMoveFor(
-    const gfx::Point& display_location) const {
-  // Create a synthetic mouse event and dispatch it directly to ourselves so we
-  // update internal caches and possibly send exit events in case the window
-  // the cursor is over changes.
-  // TODO: This uses state here that may be out of sync at the time the event is
-  // actually processed. Fix.
-  std::unique_ptr<PointerEvent> event = base::MakeUnique<PointerEvent>(
-      ui::ET_POINTER_MOVED, display_location, display_location,
-      next_mouse_button_flags_, 0 /* changed_button_flags */,
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_MOUSE,
-                         ui::MouseEvent::kMousePointerId),
-      base::TimeTicks::Now());
-  return event;
 }
 
 ui::CursorData EventDispatcher::GetCurrentMouseCursor() const {
@@ -503,12 +486,6 @@ void EventDispatcher::ProcessPointerEventOnFoundTargetImpl(
       mouse_button_down_ = true;
     else if (is_pointer_going_up)
       mouse_button_down_ = false;
-
-    if (event.type() == ui::ET_POINTER_UP) {
-      next_mouse_button_flags_ = event.flags() & ~event.changed_button_flags();
-    } else {
-      next_mouse_button_flags_ = event.flags();
-    }
   }
 
   if (drag_controller_) {
