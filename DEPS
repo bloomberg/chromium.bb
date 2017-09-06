@@ -318,12 +318,6 @@ deps = {
 
 deps_os = {
   'win': {
-    'src/third_party/cygwin':
-      Var('chromium_git') + '/chromium/deps/cygwin.git' + '@' + 'c89e446b273697fadf3a10ff1007a97c0b7de6df',
-
-    'src/third_party/psyco_win32':
-      Var('chromium_git') + '/chromium/deps/psyco_win32.git' + '@' + 'f5af9f6910ee5a8075bbaeed0591469f1661d868',
-
     'src/third_party/bison':
       Var('chromium_git') + '/chromium/deps/bison.git' + '@' + '083c9a45e4affdd5464ee2b224c2df649c6e26c3',
 
