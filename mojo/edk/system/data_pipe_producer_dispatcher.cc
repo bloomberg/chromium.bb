@@ -335,6 +335,10 @@ DataPipeProducerDispatcher::Deserialize(const void* data,
   }
 
   const SerializedState* state = static_cast<const SerializedState*>(data);
+  if (!state->options.capacity_num_bytes || !state->options.element_num_bytes ||
+      state->options.capacity_num_bytes < state->options.element_num_bytes) {
+    return nullptr;
+  }
 
   NodeController* node_controller = internal::g_core->GetNodeController();
   ports::PortRef port;
