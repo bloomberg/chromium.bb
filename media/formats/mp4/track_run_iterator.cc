@@ -10,6 +10,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "media/base/timestamp_constants.h"
 #include "media/formats/mp4/rcheck.h"
 #include "media/formats/mp4/sample_to_group_iterator.h"
 #include "media/media_features.h"
@@ -20,7 +21,7 @@ namespace mp4 {
 struct SampleInfo {
   uint32_t size;
   uint32_t duration;
-  int cts_offset;
+  int64_t cts_offset;
   bool is_keyframe;
   uint32_t cenc_group_description_index;
 };
@@ -67,28 +68,41 @@ TrackRunInfo::TrackRunInfo()
 TrackRunInfo::~TrackRunInfo() {}
 
 base::TimeDelta TimeDeltaFromRational(int64_t numer, int64_t denom) {
-  DCHECK_NE(denom, 0);
+  // TODO(sandersd): Change all callers to pass a |denom| as a uint32_t. This is
+  // the correct (and sufficient) type in all cases, but some intermediaries
+  // currently store -1 as a default value.
+  // TODO(sandersd): Change all callers to pass |numer| as a uint64_t. The few
+  // cases that could theoretically be negative would result in negative PTS
+  // anyway, and there are cases where an int64_t is not sufficient to store the
+  // entire representable range.
+  DCHECK_GT(denom, 0);
+  DCHECK_LE(denom, std::numeric_limits<uint32_t>::max());
 
-  // To avoid overflow, split the following calculation:
-  // (numer * base::Time::kMicrosecondsPerSecond) / denom
-  // into:
-  //  (numer / denom) * base::Time::kMicrosecondsPerSecond +
-  // ((numer % denom) * base::Time::kMicrosecondsPerSecond) / denom
-  int64_t a = numer / denom;
-  DCHECK_LE((a > 0 ? a : -a), std::numeric_limits<int64_t>::max() /
-                                  base::Time::kMicrosecondsPerSecond);
-  int64_t timea_in_us = a * base::Time::kMicrosecondsPerSecond;
+  // The maximum number of seconds that a TimeDelta can hold (about 300,000
+  // years worth). There is a (t ~= 0.775)-second fraction that is ignored.
+  const int64_t max_seconds =
+      std::numeric_limits<int64_t>::max() / base::Time::kMicrosecondsPerSecond;
 
-  int64_t b = numer % denom;
-  DCHECK_LE((b > 0 ? b : -b), std::numeric_limits<int64_t>::max() /
-                                  base::Time::kMicrosecondsPerSecond);
-  int64_t timeb_in_us = (b * base::Time::kMicrosecondsPerSecond) / denom;
+  // The integer part of the result, in seconds. There is a (0 <= f < 1)-second
+  // fraction that is not computed. (Also true for negative |numer|, since
+  // rounding of integer division is towards zero in C++.)
+  const int64_t result_seconds = numer / denom;
 
-  DCHECK((timeb_in_us < 0) ||
-         (timea_in_us <= std::numeric_limits<int64_t>::max() - timeb_in_us));
-  DCHECK((timeb_in_us > 0) ||
-         (timea_in_us >= std::numeric_limits<int64_t>::min() - timeb_in_us));
-  return base::TimeDelta::FromMicroseconds(timea_in_us + timeb_in_us);
+  // Reject |actual_seconds == max_seconds| under the assumption that f > t.
+  // This rejects valid times that are within t seconds of the limit.
+  if (result_seconds >= max_seconds || result_seconds <= -max_seconds)
+    return kNoTimestamp;
+
+  // Since (denom <= 2 ** 32), the multiplication fits in 52 bits.
+  // Note: When |numer| is negative, (numer % denom) is also negative. C++
+  // guarantees that ((numer / denom) * denom + (numer % denom) == numer).
+  // TODO(sandersd): Is round-toward-zero the best possible computation here?
+  const int64_t result_microseconds =
+      base::Time::kMicrosecondsPerSecond * (numer % denom) / denom;
+
+  const int64_t total_microseconds =
+      base::Time::kMicrosecondsPerSecond * result_seconds + result_microseconds;
+  return base::TimeDelta::FromMicroseconds(total_microseconds);
 }
 
 DecodeTimestamp DecodeTimestampFromRational(int64_t numer, int64_t denom) {

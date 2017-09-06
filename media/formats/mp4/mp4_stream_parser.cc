@@ -488,6 +488,11 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
   if (moov_->extends.header.fragment_duration > 0) {
     params.duration = TimeDeltaFromRational(
         moov_->extends.header.fragment_duration, moov_->header.timescale);
+    if (params.duration == kNoTimestamp) {
+      MEDIA_LOG(ERROR, media_log_) << "Fragment duration exceeds representable "
+                                   << "limit";
+      return false;
+    }
     params.liveness = DemuxerStream::LIVENESS_RECORDED;
   } else if (moov_->header.duration > 0 &&
              ((moov_->header.version == 0 &&
@@ -503,6 +508,11 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
     // duration".
     params.duration =
         TimeDeltaFromRational(moov_->header.duration, moov_->header.timescale);
+    if (params.duration == kNoTimestamp) {
+      MEDIA_LOG(ERROR, media_log_) << "Movie duration exceeds representable "
+                                   << "limit";
+      return false;
+    }
     params.liveness = DemuxerStream::LIVENESS_RECORDED;
   } else {
     // In ISO/IEC 14496-12:2005(E), 8.30.2: ".. If an MP4 file is created in
@@ -726,9 +736,30 @@ bool MP4StreamParser::EnqueueSample(BufferQueueMap* buffers, bool* err) {
   if (decrypt_config)
     stream_buf->set_decrypt_config(std::move(decrypt_config));
 
-  stream_buf->set_duration(runs_->duration());
-  stream_buf->set_timestamp(runs_->cts());
-  stream_buf->SetDecodeTimestamp(runs_->dts());
+  if (runs_->duration() != kNoTimestamp) {
+    stream_buf->set_duration(runs_->duration());
+  } else {
+    MEDIA_LOG(ERROR, media_log_) << "Frame duration exceeds representable "
+                                 << "limit";
+    *err = true;
+    return false;
+  }
+
+  if (runs_->cts() != kNoTimestamp) {
+    stream_buf->set_timestamp(runs_->cts());
+  } else {
+    MEDIA_LOG(ERROR, media_log_) << "Frame CTS exceeds representable limit";
+    *err = true;
+    return false;
+  }
+
+  if (runs_->dts() != kNoDecodeTimestamp()) {
+    stream_buf->SetDecodeTimestamp(runs_->dts());
+  } else {
+    MEDIA_LOG(ERROR, media_log_) << "Frame DTS exceeds representable limit";
+    *err = true;
+    return false;
+  }
 
   DVLOG(3) << "Emit " << (audio ? "audio" : "video") << " frame: "
            << " track_id=" << runs_->track_id()
