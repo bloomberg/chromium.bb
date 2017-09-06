@@ -46,8 +46,8 @@ class TestNetworkQualityEstimator : public net::NetworkQualityEstimator {
 
   void OnUpdatedEstimateAvailable(const base::TimeDelta& rtt,
                                   int32_t downstream_throughput_kbps) override {
-    EXPECT_GT(base::TimeDelta(), rtt);
-    EXPECT_EQ(-1, downstream_throughput_kbps);
+    EXPECT_EQ(base::TimeDelta::FromSeconds(1), rtt);
+    EXPECT_EQ(200, downstream_throughput_kbps);
     notified_ = true;
     net::NetworkQualityEstimator::OnUpdatedEstimateAvailable(
         rtt, downstream_throughput_kbps);
@@ -66,6 +66,13 @@ class TestExternalEstimateProviderAndroid
       : chrome::android::ExternalEstimateProviderAndroid() {}
   ~TestExternalEstimateProviderAndroid() override {}
   using ExternalEstimateProviderAndroid::NotifyUpdatedEstimateAvailable;
+
+ private:
+  base::TimeDelta GetRTT() const override {
+    return base::TimeDelta::FromSeconds(1);
+  }
+
+  int32_t GetDownstreamThroughputKbps() const override { return 200; }
 };
 
 // Tests if the |ExternalEstimateProviderAndroid| notifies
@@ -88,7 +95,7 @@ TEST(ExternalEstimateProviderAndroidTest, DelegateTest) {
   ptr->NotifyUpdatedEstimateAvailable();
   EXPECT_TRUE(network_quality_estimator.notified());
 
-  histogram_tester.ExpectTotalCount("NQE.ExternalEstimateProviderStatus", 2);
+  histogram_tester.ExpectTotalCount("NQE.ExternalEstimateProviderStatus", 4);
 
   // EXTERNAL_ESTIMATE_PROVIDER_STATUS_AVAILABLE
   histogram_tester.ExpectBucketCount("NQE.ExternalEstimateProviderStatus", 1,
