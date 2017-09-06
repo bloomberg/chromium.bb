@@ -160,6 +160,12 @@ void FileProxyWrapperLinux::CreateTempFileCallback(base::File::Error error) {
     LOG(ERROR) << "Creating the temp file failed with error: " << error;
     CancelWithError(FileErrorToResponseError(error));
   } else {
+    // Now that the temp file has been created successfully, we could lock it
+    // using base::File::Lock(), but this would not prevent the file from being
+    // deleted. When the file is deleted, WriteChunk() will continue to write to
+    // the file as if the file was still there, and an error will occur when
+    // calling base::Move() to move the temp file. Chrome exhibits the same
+    // behavior with its downloads.
     temp_file_created_ = true;
     // Chunks to write may have been queued while we were creating the file,
     // start writing them now if there were any.
