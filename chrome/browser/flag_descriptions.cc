@@ -710,6 +710,12 @@ const char kJavascriptHarmonyShippingDescription[] =
     "conflict with the latest JavaScript features. This flag allows disabling "
     "support of those features for compatibility with such pages.";
 
+const char kKeepAliveRendererForKeepaliveRequestsName[] =
+    "Keep a renderer alive for keepalive fetch requests";
+const char kKeepAliveRendererForKeepaliveRequestsDescription[] =
+    "Keep a render process alive when the process has a pending fetch request "
+    "with `keepalive' specified.";
+
 const char kLcdTextName[] = "LCD text antialiasing";
 const char kLcdTextDescription[] =
     "If disabled, text is rendered with grayscale antialiasing instead of LCD "

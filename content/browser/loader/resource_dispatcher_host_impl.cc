@@ -1811,7 +1811,19 @@ void ResourceDispatcherHostImpl::CancelRequestsForRoute(
       any_requests_transferring = true;
     if (cancel_all_routes || route_id == info->GetRenderFrameID()) {
       if (info->detachable_handler()) {
-        info->detachable_handler()->Detach();
+        if (base::FeatureList::IsEnabled(
+                features::kKeepAliveRendererForKeepaliveRequests)) {
+          // If the feature is enabled, the renderer process's lifetime is
+          // prolonged so there's no need to detach.
+          if (cancel_all_routes) {
+            // If the process is going to shut down for other reasons, we need
+            // to cancel the request.
+            matching_requests.push_back(id);
+          }
+        } else {
+          // Otherwise, use DetachableResourceHandler's functionality.
+          info->detachable_handler()->Detach();
+        }
       } else if (!info->IsDownload() && !info->is_stream() &&
                  !IsTransferredNavigation(id)) {
         matching_requests.push_back(id);

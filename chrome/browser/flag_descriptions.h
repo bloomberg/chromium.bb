@@ -447,6 +447,9 @@ extern const char kJavascriptHarmonyDescription[];
 extern const char kJavascriptHarmonyShippingName[];
 extern const char kJavascriptHarmonyShippingDescription[];
 
+extern const char kKeepAliveRendererForKeepaliveRequestsName[];
+extern const char kKeepAliveRendererForKeepaliveRequestsDescription[];
+
 extern const char kLcdTextName[];
 extern const char kLcdTextDescription[];
 

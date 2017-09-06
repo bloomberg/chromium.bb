@@ -5,10 +5,13 @@
 #ifndef CONTENT_CHILD_WEB_URL_LOADER_IMPL_H_
 #define CONTENT_CHILD_WEB_URL_LOADER_IMPL_H_
 
+#include <vector>
+
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
+#include "content/common/frame.mojom.h"
 #include "content/public/common/resource_response.h"
 #include "content/public/common/url_loader_factory.mojom.h"
 #include "mojo/public/cpp/system/data_pipe.h"
@@ -54,6 +57,12 @@ class CONTENT_EXPORT WebURLLoaderImpl : public blink::WebURLLoader {
   WebURLLoaderImpl(ResourceDispatcher* resource_dispatcher,
                    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
                    mojom::URLLoaderFactory* url_loader_factory);
+  // When non-null |keep_alive_handle| is specified, this loader prolongs
+  // this render process's lifetime.
+  WebURLLoaderImpl(ResourceDispatcher* resource_dispatcher,
+                   scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+                   mojom::URLLoaderFactory* url_loader_factory,
+                   mojom::KeepAliveHandlePtr keep_alive_handle);
   ~WebURLLoaderImpl() override;
 
   static void PopulateURLResponse(const blink::WebURL& url,

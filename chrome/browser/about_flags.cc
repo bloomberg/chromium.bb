@@ -3272,6 +3272,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableOutOfBlinkCORSDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kOutOfBlinkCORS)},
 
+    {"keep-alive-renderer-for-keepalive-requests",
+     flag_descriptions::kKeepAliveRendererForKeepaliveRequestsName,
+     flag_descriptions::kKeepAliveRendererForKeepaliveRequestsDescription,
+     kOsAll,
+     FEATURE_VALUE_TYPE(features::kKeepAliveRendererForKeepaliveRequests)},
+
     {"use-ddljson-api", flag_descriptions::kUseDdljsonApiName,
      flag_descriptions::kUseDdljsonApiDescription, kOsAll,
      FEATURE_WITH_PARAMS_VALUE_TYPE(

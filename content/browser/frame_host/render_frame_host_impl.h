@@ -96,6 +96,7 @@ class FeaturePolicy;
 class FrameTree;
 class FrameTreeNode;
 class GeolocationServiceImpl;
+class KeepAliveHandleFactory;
 class MediaInterfaceProxy;
 class NavigationHandleImpl;
 class PermissionServiceContext;
@@ -839,6 +840,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // mojom::FrameHost
   void CreateNewWindow(mojom::CreateNewWindowParamsPtr params,
                        CreateNewWindowCallback callback) override;
+  void IssueKeepAliveHandle(mojom::KeepAliveHandleRequest request) override;
 
   void RunCreateWindowCompleteCallback(CreateNewWindowCallback callback,
                                        mojom::CreateNewWindowReplyPtr reply,
@@ -1304,6 +1306,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   mojom::FrameInputHandlerPtr frame_input_handler_;
   std::unique_ptr<LegacyIPCFrameInputHandler> legacy_frame_input_handler_;
+
+  std::unique_ptr<KeepAliveHandleFactory> keep_alive_handle_factory_;
 
   // NOTE: This must be the last member.
   base::WeakPtrFactory<RenderFrameHostImpl> weak_ptr_factory_;

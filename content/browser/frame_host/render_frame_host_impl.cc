@@ -34,6 +34,7 @@
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/input/input_injector_impl.h"
 #include "content/browser/frame_host/input/legacy_ipc_frame_input_handler.h"
+#include "content/browser/frame_host/keep_alive_handle_factory.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
@@ -2845,6 +2846,25 @@ void RenderFrameHostImpl::CreateNewWindow(
   RunCreateWindowCompleteCallback(
       std::move(callback), std::move(reply), render_view_route_id,
       main_frame_route_id, main_frame_widget_route_id, cloned_namespace->id());
+}
+
+void RenderFrameHostImpl::IssueKeepAliveHandle(
+    mojom::KeepAliveHandleRequest request) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (!base::FeatureList::IsEnabled(
+          features::kKeepAliveRendererForKeepaliveRequests)) {
+    bad_message::ReceivedBadMessage(
+        GetProcess(), bad_message::RFH_KEEP_ALIVE_HANDLE_REQUESTED_INCORRECTLY);
+    return;
+  }
+  if (GetProcess()->IsKeepAliveRefCountDisabled())
+    return;
+
+  if (!keep_alive_handle_factory_) {
+    keep_alive_handle_factory_ =
+        base::MakeUnique<KeepAliveHandleFactory>(GetProcess());
+  }
+  keep_alive_handle_factory_->Create(std::move(request));
 }
 
 void RenderFrameHostImpl::RunCreateWindowCompleteCallback(
