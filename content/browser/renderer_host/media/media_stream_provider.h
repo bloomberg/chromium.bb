@@ -17,7 +17,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
-#include "content/common/media/media_stream_options.h"
+#include "content/public/common/media_stream_request.h"
 
 namespace content {
 

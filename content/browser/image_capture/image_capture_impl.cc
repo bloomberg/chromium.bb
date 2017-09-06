@@ -11,9 +11,9 @@
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
-#include "content/common/media/media_stream_options.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_features.h"
+#include "content/public/common/media_stream_request.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/scoped_callback_runner.h"
 #include "media/capture/video/video_capture_device.h"
@@ -50,7 +50,7 @@ void GetPhotoStateOnIOThread(const std::string& source_id,
   const int session_id =
       media_stream_manager->VideoDeviceIdToSessionId(source_id);
 
-  if (session_id == StreamDeviceInfo::kNoId)
+  if (session_id == MediaStreamDevice::kNoId)
     return;
   media_stream_manager->video_capture_manager()->GetPhotoState(
       session_id, std::move(callback));
@@ -66,7 +66,7 @@ void SetOptionsOnIOThread(const std::string& source_id,
   const int session_id =
       media_stream_manager->VideoDeviceIdToSessionId(source_id);
 
-  if (session_id == StreamDeviceInfo::kNoId)
+  if (session_id == MediaStreamDevice::kNoId)
     return;
   media_stream_manager->video_capture_manager()->SetPhotoOptions(
       session_id, std::move(settings), std::move(callback));
@@ -80,7 +80,7 @@ void TakePhotoOnIOThread(const std::string& source_id,
   const int session_id =
       media_stream_manager->VideoDeviceIdToSessionId(source_id);
 
-  if (session_id == StreamDeviceInfo::kNoId)
+  if (session_id == MediaStreamDevice::kNoId)
     return;
   media_stream_manager->video_capture_manager()->TakePhoto(session_id,
                                                            std::move(callback));
