@@ -93,7 +93,7 @@ class IOSPaymentInstrumentFinder {
       IOSPaymentInstrumentsFoundCallback callback);
 
  private:
-  friend class IOSPaymentInstrumentFinderTest;
+  friend class PaymentRequestIOSPaymentInstrumentFinderTest;
 
   // Filters out |queried_url_payment_method_identifiers| for any invalid
   // url payment method identifiers queried by the caller. An invalid url

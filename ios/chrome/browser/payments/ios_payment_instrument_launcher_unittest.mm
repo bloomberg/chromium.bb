@@ -71,9 +71,9 @@ class FakePaymentInstrumentDelegate : public PaymentInstrument::Delegate {
 
 }  // namespace
 
-class IOSPaymentInstrumentLauncherTest : public testing::Test {
+class PaymentRequestIOSPaymentInstrumentLauncherTest : public testing::Test {
  protected:
-  IOSPaymentInstrumentLauncherTest()
+  PaymentRequestIOSPaymentInstrumentLauncherTest()
       : chrome_browser_state_(TestChromeBrowserState::Builder().Build()) {}
 
   std::unique_ptr<base::DictionaryValue> SerializeMethodDataWrapper(
@@ -95,7 +95,8 @@ class IOSPaymentInstrumentLauncherTest : public testing::Test {
 
 // Tests that serializing empty stringified method data yields the expected
 // result.
-TEST_F(IOSPaymentInstrumentLauncherTest, EmptyStringifiedMethodDataDictionary) {
+TEST_F(PaymentRequestIOSPaymentInstrumentLauncherTest,
+       EmptyStringifiedMethodDataDictionary) {
   web::PaymentRequest web_payment_request;
   autofill::TestPersonalDataManager personal_data_manager;
   TestPaymentRequest payment_request(web_payment_request,
@@ -111,7 +112,7 @@ TEST_F(IOSPaymentInstrumentLauncherTest, EmptyStringifiedMethodDataDictionary) {
 
 // Tests that serializing populated stringified method data yields the expected
 // result.
-TEST_F(IOSPaymentInstrumentLauncherTest,
+TEST_F(PaymentRequestIOSPaymentInstrumentLauncherTest,
        PopulatedStringifiedMethodDataDictionary) {
   web::PaymentRequest web_payment_request;
   PaymentMethodData method_datum1;
@@ -165,7 +166,7 @@ TEST_F(IOSPaymentInstrumentLauncherTest,
 
 // Tests that attempting to open an invalid universal link calls the
 // OnInstrumentDetailsError() function of the delegate.
-TEST_F(IOSPaymentInstrumentLauncherTest,
+TEST_F(PaymentRequestIOSPaymentInstrumentLauncherTest,
        LaunchIOSPaymentInstrument_MalformedUniversalLink) {
   if (base::ios::IsRunningOnIOS10OrLater()) {
     std::unique_ptr<web::TestNavigationManager> navigation_manager =
@@ -198,7 +199,7 @@ TEST_F(IOSPaymentInstrumentLauncherTest,
 // Tests that if the response from the payment app is not a valid JSON
 // dictionary then the OnInstrumentDetailsError() function of the delegate
 // is called.
-TEST_F(IOSPaymentInstrumentLauncherTest,
+TEST_F(PaymentRequestIOSPaymentInstrumentLauncherTest,
        ReceiveResponseFromIOSPaymentInstrument_ResponseNotDictionary) {
   FakePaymentInstrumentDelegate instrument_delegate;
   IOSPaymentInstrumentLauncher launcher;
@@ -220,7 +221,7 @@ TEST_F(IOSPaymentInstrumentLauncherTest,
 // Tests that if a payment app claims to have not been successful in
 // fulfilling its side of the transaction then OnInstrumentDetailsError()
 // is called.
-TEST_F(IOSPaymentInstrumentLauncherTest,
+TEST_F(PaymentRequestIOSPaymentInstrumentLauncherTest,
        ReceiveResponseFromIOSPaymentInstrument_PaymentAppFailed) {
   FakePaymentInstrumentDelegate instrument_delegate;
   IOSPaymentInstrumentLauncher launcher;
@@ -247,7 +248,7 @@ TEST_F(IOSPaymentInstrumentLauncherTest,
 // Tests that if the response from the payment app does not contain a
 // method name then OnInstrumentDetailsError() of the delegate is
 // called.
-TEST_F(IOSPaymentInstrumentLauncherTest,
+TEST_F(PaymentRequestIOSPaymentInstrumentLauncherTest,
        ReceiveResponseFromIOSPaymentInstrument_NoMethodName) {
   FakePaymentInstrumentDelegate instrument_delegate;
   IOSPaymentInstrumentLauncher launcher;
@@ -273,7 +274,7 @@ TEST_F(IOSPaymentInstrumentLauncherTest,
 // Tests that if the response from the payment app does not contain any
 // stringified details then OnInstrumentDetailsError() of the delegate is
 // called.
-TEST_F(IOSPaymentInstrumentLauncherTest,
+TEST_F(PaymentRequestIOSPaymentInstrumentLauncherTest,
        ReceiveResponseFromIOSPaymentInstrument_NoDetails) {
   FakePaymentInstrumentDelegate instrument_delegate;
   IOSPaymentInstrumentLauncher launcher;
@@ -299,7 +300,7 @@ TEST_F(IOSPaymentInstrumentLauncherTest,
 // Tests that if the response from the payment app has all necessary
 // parameters with valid values then OnInstrumentDetailsReady() of the
 // delegate is called.
-TEST_F(IOSPaymentInstrumentLauncherTest,
+TEST_F(PaymentRequestIOSPaymentInstrumentLauncherTest,
        ReceiveResponseFromIOSPaymentInstrument_WellFormedResponse) {
   FakePaymentInstrumentDelegate instrument_delegate;
   IOSPaymentInstrumentLauncher launcher;

@@ -22,11 +22,6 @@ AddressNormalizationManager::AddressNormalizationManager(
       address_normalizer_(address_normalizer) {
   DCHECK(autofill::data_util::IsValidCountryCode(default_country_code));
   DCHECK(address_normalizer_);
-
-  // Start loading rules for the default country code. This happens
-  // asynchronously, and will speed up normalization later if the rules for the
-  // address' region have already been loaded.
-  address_normalizer_->LoadRulesForRegion(default_country_code);
 }
 
 AddressNormalizationManager::~AddressNormalizationManager() {}
