@@ -8,7 +8,6 @@
 #include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/ui/commands/application_commands.h"
 #include "ios/chrome/browser/ui/commands/browser_commands.h"
-#include "ios/chrome/browser/ui/commands/ios_command_ids.h"
 #import "ios/chrome/browser/ui/tools_menu/new_tab_menu_view_item.h"
 #import "ios/chrome/browser/ui/tools_menu/reading_list_menu_view_item.h"
 #include "ios/chrome/browser/ui/tools_menu/tools_menu_constants.h"
@@ -30,11 +29,6 @@ const NSInteger kVisibleNotIncognitoOnly = 1 << 1;
 // Declare all the possible items. If adding or removing items update
 // kToolsMenuNumberOfItems with the new total count.
 
-// Formatting note: While these items are being refactored to use selectors
-// and the dispatcher instead of ChromeExecuteCommand (see crbug.com/738881),
-// the |command_id| and |selector| fields are grouped together, since one will
-// be either 0 or nullptr. Once the refactor is complete, all of the
-// |command_id| values will be 0, and that struct field will be removed.
 const MenuItemInfo itemInfoList[kToolsMenuNumberOfItems] = {
     // clang-format off
   { IDS_IOS_TOOLS_MENU_NEW_TAB,           kToolsMenuNewTabId,
@@ -78,11 +72,13 @@ const MenuItemInfo itemInfoList[kToolsMenuNumberOfItems] = {
     0,                                    nil },
   { IDS_IOS_TOOLS_MENU_REQUEST_DESKTOP_SITE,
     kToolsMenuRequestDesktopId,
-    IDC_REQUEST_DESKTOP_SITE, nullptr,    ToolbarTypeWebAll,
+    TOOLS_REQUEST_DESKTOP_SITE,
+    @selector(requestDesktopSite),    ToolbarTypeWebAll,
     0,                                    nil },
   { IDS_IOS_TOOLS_MENU_REQUEST_MOBILE_SITE,
     kToolsMenuRequestMobileId,
-    IDC_REQUEST_MOBILE_SITE, nullptr,     ToolbarTypeWebAll,
+    TOOLS_REQUEST_MOBILE_SITE,
+    @selector(requestMobileSite),     ToolbarTypeWebAll,
     0,                                    nil },
   { IDS_IOS_TOOLS_MENU_SETTINGS,          kToolsMenuSettingsId,
     TOOLS_SETTINGS_ITEM,

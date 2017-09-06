@@ -6,8 +6,8 @@
 
 #import "base/mac/scoped_nsobject.h"
 #include "ios/chrome/browser/experimental_flags.h"
-#include "ios/chrome/browser/ui/commands/ios_command_ids.h"
 #import "ios/chrome/browser/ui/tools_menu/tools_menu_configuration.h"
+#import "ios/chrome/browser/ui/tools_menu/tools_menu_constants.h"
 #import "ios/chrome/browser/ui/tools_menu/tools_menu_view_item.h"
 #include "ios/web/public/user_agent.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -44,12 +44,12 @@ TEST_F(ToolsMenuViewControllerTest, TestUserAgentTypeNONE) {
   [controller_ initializeMenuWithConfiguration:configuration_.get()];
 
   ToolsMenuViewItem* desktop_item =
-      GetToolsMenuViewItemWithTag(IDC_REQUEST_DESKTOP_SITE);
+      GetToolsMenuViewItemWithTag(TOOLS_REQUEST_DESKTOP_SITE);
   ASSERT_TRUE(desktop_item);
   EXPECT_FALSE(desktop_item.active);
 
   ToolsMenuViewItem* mobile_item =
-      GetToolsMenuViewItemWithTag(IDC_REQUEST_MOBILE_SITE);
+      GetToolsMenuViewItemWithTag(TOOLS_REQUEST_MOBILE_SITE);
   EXPECT_FALSE(mobile_item);
 }
 
@@ -61,12 +61,12 @@ TEST_F(ToolsMenuViewControllerTest, TestUserAgentTypeMOBILE) {
   [controller_ initializeMenuWithConfiguration:configuration_.get()];
 
   ToolsMenuViewItem* desktop_item =
-      GetToolsMenuViewItemWithTag(IDC_REQUEST_DESKTOP_SITE);
+      GetToolsMenuViewItemWithTag(TOOLS_REQUEST_DESKTOP_SITE);
   ASSERT_TRUE(desktop_item);
   EXPECT_TRUE(desktop_item.active);
 
   ToolsMenuViewItem* mobile_item =
-      GetToolsMenuViewItemWithTag(IDC_REQUEST_MOBILE_SITE);
+      GetToolsMenuViewItemWithTag(TOOLS_REQUEST_MOBILE_SITE);
   EXPECT_FALSE(mobile_item);
 }
 
@@ -80,9 +80,9 @@ TEST_F(ToolsMenuViewControllerTest, TestUserAgentTypeDESKTOP) {
   [controller_ initializeMenuWithConfiguration:configuration_.get()];
 
   ToolsMenuViewItem* desktop_item =
-      GetToolsMenuViewItemWithTag(IDC_REQUEST_DESKTOP_SITE);
+      GetToolsMenuViewItemWithTag(TOOLS_REQUEST_DESKTOP_SITE);
   ToolsMenuViewItem* mobile_item =
-      GetToolsMenuViewItemWithTag(IDC_REQUEST_MOBILE_SITE);
+      GetToolsMenuViewItemWithTag(TOOLS_REQUEST_MOBILE_SITE);
 
   EXPECT_FALSE(desktop_item);
   ASSERT_TRUE(mobile_item);

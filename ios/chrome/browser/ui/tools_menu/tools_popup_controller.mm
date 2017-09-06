@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
-#include "ios/chrome/browser/ui/commands/ios_command_ids.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_view.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/chrome/browser/ui/tools_menu/tools_menu_configuration.h"
@@ -193,10 +192,10 @@ NS_INLINE UIEdgeInsets TabHistoryPopupMenuInsets() {
     case TOOLS_SHARE_ITEM:
       base::RecordAction(UserMetricsAction("MobileMenuShare"));
       break;
-    case IDC_REQUEST_DESKTOP_SITE:
+    case TOOLS_REQUEST_DESKTOP_SITE:
       base::RecordAction(UserMetricsAction("MobileMenuRequestDesktopSite"));
       break;
-    case IDC_REQUEST_MOBILE_SITE:
+    case TOOLS_REQUEST_MOBILE_SITE:
       base::RecordAction(UserMetricsAction("MobileMenuRequestMobileSite"));
       break;
     case TOOLS_SHOW_BOOKMARKS:
