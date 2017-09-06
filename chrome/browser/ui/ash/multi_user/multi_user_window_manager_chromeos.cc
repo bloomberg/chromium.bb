@@ -21,7 +21,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/ash/multi_user/multi_user_notification_blocker_chromeos.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/user_switch_animator_chromeos.h"
 #include "chrome/browser/ui/ash/session_controller_client.h"
@@ -180,9 +179,6 @@ class AppObserver : public extensions::AppWindowRegistry::Observer {
 MultiUserWindowManagerChromeOS::MultiUserWindowManagerChromeOS(
     const AccountId& current_account_id)
     : current_account_id_(current_account_id),
-      notification_blocker_(new MultiUserNotificationBlockerChromeOS(
-          message_center::MessageCenter::Get(),
-          current_account_id)),
       suppress_visibility_changes_(false),
       animation_speed_(ANIMATION_SPEED_NORMAL) {}
 

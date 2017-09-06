@@ -6,6 +6,7 @@
 #define ASH_SYSTEM_WEB_NOTIFICATION_MESSAGE_CENTER_CONTROLLER_H_
 
 #include "ash/system/web_notification/fullscreen_notification_blocker.h"
+#include "ash/system/web_notification/inactive_user_notification_blocker.h"
 #include "ash/system/web_notification/login_state_notification_blocker.h"
 #include "base/macros.h"
 
@@ -22,6 +23,7 @@ class MessageCenterController {
 
  private:
   FullscreenNotificationBlocker fullscreen_notification_blocker_;
+  InactiveUserNotificationBlocker inactive_user_notification_blocker_;
   LoginStateNotificationBlocker login_notification_blocker_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageCenterController);

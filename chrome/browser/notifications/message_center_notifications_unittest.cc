@@ -26,14 +26,6 @@
 #include "ui/message_center/notification_types.h"
 #include "ui/message_center/notifier_settings.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/ui/ash/multi_user/multi_user_notification_blocker_chromeos.h"
-#include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
-#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
-#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_chromeos.h"
-#include "components/signin/core/account_id/account_id.h"
-#endif
-
 namespace message_center {
 
 class MessageCenterNotificationManagerTest : public BrowserWithTestWindowTest {
@@ -125,26 +117,5 @@ TEST_F(MessageCenterNotificationManagerTest, UpdateNotification) {
       notification_manager()->Update(GetANotification("test"), &profile));
   EXPECT_TRUE(message_center()->NotificationCount() == 1);
 }
-
-#if defined(OS_CHROMEOS)
-TEST_F(MessageCenterNotificationManagerTest, MultiUserUpdates) {
-  TestingProfile profile;
-  const AccountId active_user_id(
-      multi_user_util::GetAccountIdFromProfile(&profile));
-  chrome::MultiUserWindowManagerChromeOS* multi_user_window_manager =
-      new chrome::MultiUserWindowManagerChromeOS(active_user_id);
-  multi_user_window_manager->Init();
-  chrome::MultiUserWindowManager::SetInstanceForTest(multi_user_window_manager);
-  std::unique_ptr<MultiUserNotificationBlockerChromeOS> blocker(
-      new MultiUserNotificationBlockerChromeOS(
-          message_center::MessageCenter::Get(), active_user_id));
-  EXPECT_EQ(0u, message_center()->NotificationCount());
-  notification_manager()->Add(GetANotification("test"), &profile);
-  EXPECT_EQ(1u, message_center()->NotificationCount());
-  notification_manager()->Update(GetANotification("test"), &profile);
-  EXPECT_EQ(1u, message_center()->NotificationCount());
-  chrome::MultiUserWindowManager::DeleteInstance();
-}
-#endif
 
 }  // namespace message_center
