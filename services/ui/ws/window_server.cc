@@ -61,7 +61,7 @@ struct WindowServer::CurrentDragLoopState {
 
 WindowServer::WindowServer(WindowServerDelegate* delegate)
     : delegate_(delegate),
-      next_client_id_(1),
+      next_client_id_(kWindowServerClientId + 1),
       display_manager_(new DisplayManager(this, &user_id_tracker_)),
       current_operation_(nullptr),
       in_destructor_(false),
@@ -228,8 +228,8 @@ WindowTree* WindowServer::GetTreeWithClientName(
 }
 
 ServerWindow* WindowServer::GetWindow(const WindowId& id) {
-  // kInvalidClientId is used for Display and WindowManager nodes.
-  if (id.client_id == kInvalidClientId) {
+  // kWindowServerClientId is used for Display and WindowManager nodes.
+  if (id.client_id == kWindowServerClientId) {
     for (Display* display : display_manager_->displays()) {
       ServerWindow* window = display->GetRootWithId(id);
       if (window)

@@ -57,7 +57,8 @@ class WindowManagerStateTest : public testing::Test {
   // This is the tree associated with the WindowManagerState. That is, this is
   // the WindowTree of the WindowManager.
   WindowTree* tree() {
-    return window_event_targeting_helper_.window_server()->GetTreeWithId(1);
+    return window_event_targeting_helper_.window_server()->GetTreeWithId(
+        kWindowManagerClientId);
   }
   // This is *not* the tree associated with the WindowManagerState, use tree()
   // if you need the window manager tree.
@@ -212,8 +213,9 @@ TEST_F(WindowManagerStateTest, NullAccelerator) {
   WindowTree* target_tree = window_tree();
   TestChangeTracker* tracker = window_tree_client()->tracker();
   ASSERT_EQ(1u, tracker->changes()->size());
-  EXPECT_EQ("InputEvent window=1,1 event_action=7",
-            ChangesToDescription1(*tracker->changes())[0]);
+  EXPECT_EQ(
+      "InputEvent window=" + kWindowManagerClientIdString + ",1 event_action=7",
+      ChangesToDescription1(*tracker->changes())[0]);
 
   WindowTreeTestApi(target_tree).AckOldestEvent();
   EXPECT_FALSE(window_manager()->on_accelerator_called());
@@ -231,8 +233,9 @@ TEST_F(WindowManagerStateTest, PostTargetAccelerator) {
   DispatchInputEventToWindow(target, display->GetId(), key, accelerator.get());
   TestChangeTracker* tracker = window_tree_client()->tracker();
   ASSERT_EQ(1u, tracker->changes()->size());
-  EXPECT_EQ("InputEvent window=1,1 event_action=7",
-            ChangesToDescription1(*tracker->changes())[0]);
+  EXPECT_EQ(
+      "InputEvent window=" + kWindowManagerClientIdString + ",1 event_action=7",
+      ChangesToDescription1(*tracker->changes())[0]);
 
   WindowTreeTestApi(window_tree()).AckOldestEvent();
   EXPECT_TRUE(window_manager()->on_accelerator_called());
@@ -382,8 +385,9 @@ TEST_F(WindowManagerStateTest, ClientHandlesEvent) {
   DispatchInputEventToWindow(target, display->GetId(), key, accelerator.get());
   TestChangeTracker* tracker = window_tree_client()->tracker();
   ASSERT_EQ(1u, tracker->changes()->size());
-  EXPECT_EQ("InputEvent window=1,1 event_action=7",
-            ChangesToDescription1(*tracker->changes())[0]);
+  EXPECT_EQ(
+      "InputEvent window=" + kWindowManagerClientIdString + ",1 event_action=7",
+      ChangesToDescription1(*tracker->changes())[0]);
 
   EXPECT_TRUE(WindowManagerStateTestApi(window_manager_state())
                   .AckInFlightEvent(mojom::EventResult::HANDLED));
@@ -402,8 +406,9 @@ TEST_F(WindowManagerStateTest, AcceleratorDeleted) {
   DispatchInputEventToWindow(target, display->GetId(), key, accelerator.get());
   TestChangeTracker* tracker = window_tree_client()->tracker();
   ASSERT_EQ(1u, tracker->changes()->size());
-  EXPECT_EQ("InputEvent window=1,1 event_action=7",
-            ChangesToDescription1(*tracker->changes())[0]);
+  EXPECT_EQ(
+      "InputEvent window=" + kWindowManagerClientIdString + ",1 event_action=7",
+      ChangesToDescription1(*tracker->changes())[0]);
 
   accelerator.reset();
   EXPECT_TRUE(WindowManagerStateTestApi(window_manager_state())
@@ -423,8 +428,9 @@ TEST_F(WindowManagerStateTest, EnqueuedAccelerators) {
   DispatchInputEventToWindow(target, display->GetId(), key, accelerator.get());
   TestChangeTracker* tracker = window_tree_client()->tracker();
   ASSERT_EQ(1u, tracker->changes()->size());
-  EXPECT_EQ("InputEvent window=1,1 event_action=7",
-            ChangesToDescription1(*tracker->changes())[0]);
+  EXPECT_EQ(
+      "InputEvent window=" + kWindowManagerClientIdString + ",1 event_action=7",
+      ChangesToDescription1(*tracker->changes())[0]);
 
   tracker->changes()->clear();
   ui::KeyEvent key2(ui::ET_KEY_PRESSED, ui::VKEY_Y, ui::EF_CONTROL_DOWN);
@@ -440,8 +446,9 @@ TEST_F(WindowManagerStateTest, EnqueuedAccelerators) {
 
   WindowTreeTestApi(window_tree()).AckOldestEvent();
   ASSERT_EQ(1u, tracker->changes()->size());
-  EXPECT_EQ("InputEvent window=1,1 event_action=7",
-            ChangesToDescription1(*tracker->changes())[0]);
+  EXPECT_EQ(
+      "InputEvent window=" + kWindowManagerClientIdString + ",1 event_action=7",
+      ChangesToDescription1(*tracker->changes())[0]);
   EXPECT_TRUE(window_manager()->on_accelerator_called());
   EXPECT_EQ(accelerator->id(), window_manager()->on_accelerator_id());
 }
@@ -457,8 +464,9 @@ TEST_F(WindowManagerStateTest, DeleteTree) {
   DispatchInputEventToWindow(target, display->GetId(), key, accelerator.get());
   TestChangeTracker* tracker = window_tree_client()->tracker();
   ASSERT_EQ(1u, tracker->changes()->size());
-  EXPECT_EQ("InputEvent window=1,1 event_action=7",
-            ChangesToDescription1(*tracker->changes())[0]);
+  EXPECT_EQ(
+      "InputEvent window=" + kWindowManagerClientIdString + ",1 event_action=7",
+      ChangesToDescription1(*tracker->changes())[0]);
 
   window_manager_state()->OnWillDestroyTree(tree());
   EXPECT_FALSE(window_manager()->on_accelerator_called());
@@ -506,8 +514,9 @@ TEST_F(WindowManagerStateTest, DontSendQueuedEventsToADeadTree) {
                        EF_LEFT_MOUSE_BUTTON);
   DispatchInputEventToWindow(target, display->GetId(), press, nullptr);
   ASSERT_EQ(1u, tracker->changes()->size());
-  EXPECT_EQ("InputEvent window=1,1 event_action=1",
-            ChangesToDescription1(*tracker->changes())[0]);
+  EXPECT_EQ(
+      "InputEvent window=" + kWindowManagerClientIdString + ",1 event_action=1",
+      ChangesToDescription1(*tracker->changes())[0]);
   tracker->changes()->clear();
   // The above is not setting TreeAwaitingInputAck.
 
@@ -533,8 +542,9 @@ TEST_F(WindowManagerStateTest, AckTimeout) {
                              accelerator.get());
   TestChangeTracker* tracker = window_tree_client()->tracker();
   ASSERT_EQ(1u, tracker->changes()->size());
-  EXPECT_EQ("InputEvent window=1,1 event_action=7",
-            ChangesToDescription1(*tracker->changes())[0]);
+  EXPECT_EQ(
+      "InputEvent window=" + kWindowManagerClientIdString + ",1 event_action=7",
+      ChangesToDescription1(*tracker->changes())[0]);
 
   OnEventAckTimeout(window()->id().client_id);
   EXPECT_TRUE(window_manager()->on_accelerator_called());
@@ -655,8 +665,9 @@ TEST_F(WindowManagerStateTest, PostAcceleratorForgotten) {
                              accelerator.get());
   TestChangeTracker* tracker = window_tree_client()->tracker();
   ASSERT_EQ(1u, tracker->changes()->size());
-  EXPECT_EQ("InputEvent window=1,1 event_action=7",
-            ChangesToDescription1(*tracker->changes())[0]);
+  EXPECT_EQ(
+      "InputEvent window=" + kWindowManagerClientIdString + ",1 event_action=7",
+      ChangesToDescription1(*tracker->changes())[0]);
   tracker->changes()->clear();
   WindowTreeTestApi(window_tree()).AckLastEvent(mojom::EventResult::HANDLED);
   EXPECT_FALSE(window_manager()->on_accelerator_called());
@@ -668,8 +679,9 @@ TEST_F(WindowManagerStateTest, PostAcceleratorForgotten) {
   DispatchInputEventToWindow(target, display->GetId(), non_accelerator_key,
                              nullptr);
   ASSERT_EQ(1u, tracker->changes()->size());
-  EXPECT_EQ("InputEvent window=1,1 event_action=7",
-            ChangesToDescription1(*tracker->changes())[0]);
+  EXPECT_EQ(
+      "InputEvent window=" + kWindowManagerClientIdString + ",1 event_action=7",
+      ChangesToDescription1(*tracker->changes())[0]);
   WindowTreeTestApi(window_tree()).AckLastEvent(mojom::EventResult::UNHANDLED);
   EXPECT_FALSE(window_manager()->on_accelerator_called());
 }

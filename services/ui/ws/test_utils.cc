@@ -576,7 +576,7 @@ WindowEventTargetingHelper::~WindowEventTargetingHelper() {}
 ServerWindow* WindowEventTargetingHelper::CreatePrimaryTree(
     const gfx::Rect& root_window_bounds,
     const gfx::Rect& window_bounds) {
-  WindowTree* wm_tree = window_server()->GetTreeWithId(1);
+  WindowTree* wm_tree = window_server()->GetTreeWithId(kWindowManagerClientId);
   const ClientWindowId embed_window_id(wm_tree->id(),
                                        next_primary_tree_window_id_++);
   EXPECT_TRUE(wm_tree->NewWindow(embed_window_id, ServerWindow::Properties()));
