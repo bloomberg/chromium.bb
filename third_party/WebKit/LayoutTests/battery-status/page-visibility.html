@@ -2,7 +2,8 @@
 <html>
 <body>
 <script src="../resources/js-test.js"></script>
-<script src="../resources/mojo-helpers.js"></script>
+<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+<script src="file:///gen/services/device/public/interfaces/battery_monitor.mojom.js"></script>
 <script src="resources/mock-battery-monitor.js"></script>
 <script>
 description("Test with page visibility.");
@@ -50,10 +51,8 @@ function failAndFinish() {
 }
 
 debug("page is visible");
-mockBatteryMonitorReady.then(() => {
-    navigator.getBattery().then(batteryStatusSuccess, batteryStatusFailure);
-    setAndFireMockBatteryInfo(false, 10, 20, 0.5);
-});
+navigator.getBattery().then(batteryStatusSuccess, batteryStatusFailure);
+setAndFireMockBatteryInfo(false, 10, 20, 0.5);
 </script>
 </body>
 </html>

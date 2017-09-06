@@ -2,7 +2,8 @@
 <html>
 <body>
 <script src="../resources/js-test.js"></script>
-<script src="../resources/mojo-helpers.js"></script>
+<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+<script src="file:///gen/services/device/public/interfaces/battery_monitor.mojom.js"></script>
 <script src="resources/mock-battery-monitor.js"></script>
 <script>
 description("Test basic API definitions.");
@@ -42,14 +43,11 @@ function batteryStatusSuccess(batteryManager) {
     setTimeout(finishJSTest, 0);
 }
 
-var promise;
-mockBatteryMonitorReady.then(() => {
-    promise = navigator.getBattery();
-    shouldBeDefined("promise");
-    shouldBeDefined("promise.then");
-    promise.then(batteryStatusSuccess, batteryStatusFailure);
-    setAndFireMockBatteryInfo(false, 10, 20, 0.5);
-});
+var promise = navigator.getBattery();
+shouldBeDefined("promise");
+shouldBeDefined("promise.then");
+promise.then(batteryStatusSuccess, batteryStatusFailure);
+setAndFireMockBatteryInfo(false, 10, 20, 0.5);
 </script>
 </body>
 </html>

@@ -2,7 +2,8 @@
 <html>
 <body>
 <script src="../resources/js-test.js"></script>
-<script src="../resources/mojo-helpers.js"></script>
+<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+<script src="file:///gen/services/device/public/interfaces/battery_monitor.mojom.js"></script>
 <script src="resources/mock-battery-monitor.js"></script>
 <script>
 description("Test multiple promise resolution.");
@@ -26,28 +27,26 @@ function finishIfReady() {
 var promise1;
 var promise2;
 
-mockBatteryMonitorReady.then(() => {
-    promise1 = navigator.getBattery();
-    promise1.then(
-        function(battery) {
-            debug('first resolution');
-            testIfBatteryStatusIsUpToDate(battery);
-            promise1Count++;
-            finishIfReady();
-        }, batteryStatusFailure);
+promise1 = navigator.getBattery();
+promise1.then(
+    function(battery) {
+        debug('first resolution');
+        testIfBatteryStatusIsUpToDate(battery);
+        promise1Count++;
+        finishIfReady();
+    }, batteryStatusFailure);
 
-    promise2 = navigator.getBattery();
-    promise2.then(
-        function(battery) {
-            debug('second resolution');
-            testIfBatteryStatusIsUpToDate(battery);
-            promise2Count++;
-            finishIfReady();
-        }, batteryStatusFailure);
+promise2 = navigator.getBattery();
+promise2.then(
+    function(battery) {
+        debug('second resolution');
+        testIfBatteryStatusIsUpToDate(battery);
+        promise2Count++;
+        finishIfReady();
+    }, batteryStatusFailure);
 
-    shouldBeTrue('promise1 === promise2');
-    setAndFireMockBatteryInfo(false, 10, 20, 0.5);
-});
+shouldBeTrue('promise1 === promise2');
+setAndFireMockBatteryInfo(false, 10, 20, 0.5);
 </script>
 </body>
 </html>
