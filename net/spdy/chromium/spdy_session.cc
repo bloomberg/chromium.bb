@@ -3184,7 +3184,7 @@ void SpdySession::DecreaseRecvWindowSize(int32_t delta_window_size) {
 }
 
 void SpdySession::QueueSendStalledStream(const SpdyStream& stream) {
-  DCHECK(stream.send_stalled_by_flow_control());
+  DCHECK(stream.send_stalled_by_flow_control() || IsSendStalled());
   RequestPriority priority = stream.priority();
   CHECK_GE(priority, MINIMUM_PRIORITY);
   CHECK_LE(priority, MAXIMUM_PRIORITY);
@@ -3196,6 +3196,8 @@ void SpdySession::ResumeSendStalledStreams() {
   // doing so would cause IsSendStalled() to return true. But we do
   // have to worry about streams being closed, as well as ourselves
   // being closed.
+
+  std::deque<SpdyStream*> streams_to_requeue;
 
   while (!IsSendStalled()) {
     size_t old_size = 0;
@@ -3210,12 +3212,19 @@ void SpdySession::ResumeSendStalledStreams() {
     // The stream may actually still be send-stalled after this (due
     // to its own send window) but that's okay -- it'll then be
     // resumed once its send window increases.
-    if (it != active_streams_.end())
-      it->second->PossiblyResumeIfSendStalled();
+    if (it != active_streams_.end()) {
+      if (it->second->PossiblyResumeIfSendStalled() == SpdyStream::Requeue)
+        streams_to_requeue.push_back(it->second);
+    }
 
     // The size should decrease unless we got send-stalled again.
     if (!IsSendStalled())
       DCHECK_LT(GetTotalSize(stream_send_unstall_queue_), old_size);
+  }
+  while (!streams_to_requeue.empty()) {
+    SpdyStream* stream = streams_to_requeue.front();
+    streams_to_requeue.pop_front();
+    QueueSendStalledStream(*stream);
   }
 }
 
