@@ -4450,6 +4450,14 @@ bubblePresenterForFeature:(const base::Feature&)feature
   }
 }
 
+- (void)requestDesktopSite {
+  [[_model currentTab] reloadWithUserAgentType:web::UserAgentType::DESKTOP];
+}
+
+- (void)requestMobileSite {
+  [[_model currentTab] reloadWithUserAgentType:web::UserAgentType::MOBILE];
+}
+
 #pragma mark - Command Handling
 
 - (IBAction)chromeExecuteCommand:(id)sender {
@@ -4461,12 +4469,6 @@ bubblePresenterForFeature:(const base::Feature&)feature
   switch (command) {
     case IDC_SHOW_MAIL_COMPOSER:
       [self showMailComposer:sender];
-      break;
-    case IDC_REQUEST_DESKTOP_SITE:
-      [[_model currentTab] reloadWithUserAgentType:web::UserAgentType::DESKTOP];
-      break;
-    case IDC_REQUEST_MOBILE_SITE:
-      [[_model currentTab] reloadWithUserAgentType:web::UserAgentType::MOBILE];
       break;
     default:
       // Unknown commands get sent up the responder chain.

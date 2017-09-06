@@ -16,7 +16,6 @@
 #include "ios/chrome/browser/experimental_flags.h"
 #import "ios/chrome/browser/ui/animation_util.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
-#import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_menu_notification_delegate.h"
@@ -290,13 +289,13 @@ NS_INLINE void AnimateInViews(NSArray* views,
   // "Request Desktop Site" and "Request Mobile Site".
   switch (configuration.userAgentType) {
     case web::UserAgentType::NONE:
-      [self setItemEnabled:NO withTag:IDC_REQUEST_DESKTOP_SITE];
+      [self setItemEnabled:NO withTag:TOOLS_REQUEST_DESKTOP_SITE];
       break;
     case web::UserAgentType::MOBILE:
-      [self setItemEnabled:YES withTag:IDC_REQUEST_DESKTOP_SITE];
+      [self setItemEnabled:YES withTag:TOOLS_REQUEST_DESKTOP_SITE];
       break;
     case web::UserAgentType::DESKTOP:
-      [self setItemEnabled:YES withTag:IDC_REQUEST_MOBILE_SITE];
+      [self setItemEnabled:YES withTag:TOOLS_REQUEST_MOBILE_SITE];
       break;
   }
 
@@ -517,16 +516,12 @@ NS_INLINE void AnimateInViews(NSArray* views,
 #pragma mark - Button event handling
 
 - (void)buttonPressed:(id)sender {
-  int commandId = [sender tag];
-  DCHECK(commandId);
-  // Do not use -chromeExecuteCommand: for tags < 0 -- that is, items that have
-  // been refactored to use the dispatcher.
-  if (commandId > 0) {
-    [self chromeExecuteCommand:sender];
-  }
-
+  int commandID = [sender tag];
+  // All command IDs should have been refactored to be < 0, and not use
+  // ChromeExecuteCommand.
+  DCHECK(commandID < 0);
   // Do any metrics logging for the command, and then close the menu.
-  [_delegate commandWasSelected:commandId];
+  [_delegate commandWasSelected:commandID];
 }
 
 #pragma mark - UICollectionViewDelegate Implementation
@@ -594,13 +589,11 @@ NS_INLINE void AnimateInViews(NSArray* views,
   dispatch_after(
       _waitForInk ? delayTime : 0, dispatch_get_main_queue(), ^(void) {
         ToolsMenuViewItem* menuItem = [_menuItems objectAtIndex:item];
-        DCHECK([menuItem tag]);
+        // Tag values > 0, and use of the ChromeExecuteCommand pattern from the
+        // menu, is no longer supported.
+        DCHECK([menuItem tag] < 0);
         [_delegate commandWasSelected:[menuItem tag]];
-        if ([menuItem tag] > 0) {
-          [self chromeExecuteCommand:menuItem];
-        } else {
-          [menuItem executeCommandWithDispatcher:self.dispatcher];
-        }
+        [menuItem executeCommandWithDispatcher:self.dispatcher];
       });
 }
 
@@ -622,8 +615,8 @@ NS_INLINE void AnimateInViews(NSArray* views,
     ToolsMenuViewToolsCell* cell =
         [view dequeueReusableCellWithReuseIdentifier:kToolsItemCellID
                                         forIndexPath:path];
-    // Add specific target/action dispatch for buttons refactored away from
-    // ChromeExecuteCommand. These need to be added *before* -buttonPressed:,
+    // Add specific target/action dispatch for buttons.
+    // These need to be added *before* -buttonPressed:,
     // because -buttonPressed: closes the popup menu, which will usually
     // destroy the buttons before any other actions can be called.
     [cell.stopButton addTarget:self.dispatcher

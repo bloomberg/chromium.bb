@@ -16,8 +16,6 @@
 #define IDC_SHOW_SIGNIN_IOS                            40905
 #define IDC_SHOW_ADD_ACCOUNT                           40910
 #define IDC_SHOW_SYNC_SETTINGS                         40914
-#define IDC_REQUEST_DESKTOP_SITE                       40921
-#define IDC_REQUEST_MOBILE_SITE                        40922
 #define IDC_CLEAR_BROWSING_DATA_IOS                    40924
 #define IDC_SHOW_MAIL_COMPOSER                         40926
 #define IDC_SHOW_SYNC_PASSPHRASE_SETTINGS              40952

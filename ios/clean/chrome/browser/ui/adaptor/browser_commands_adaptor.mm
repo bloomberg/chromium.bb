@@ -142,6 +142,14 @@
   [self showAlert:@"navigateToHistoryItem:"];
 }
 
+- (void)requestDesktopSite {
+  [self showAlert:@"requestDesktopSite"];
+}
+
+- (void)requestMobileSite {
+  [self showAlert:@"requestMobileSite"];
+}
+
 #pragma mark - Private
 
 // TODO(crbug.com/740793): Remove this method once no method is using it.
