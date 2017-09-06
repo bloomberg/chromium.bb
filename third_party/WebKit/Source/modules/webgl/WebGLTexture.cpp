@@ -109,17 +109,4 @@ GLint WebGLTexture::ComputeLevelCount(GLsizei width,
   return log + 1;
 }
 
-void WebGLTexture::UpdateLastUploadedVideo(WebMediaPlayer* player) {
-  if (player && player->GetLastUploadedFrameInfo(
-                    &last_uploaded_video_width_, &last_uploaded_video_height_,
-                    &last_uploaded_video_timestamp_)) {
-    return;
-  }
-
-  // getCurrentFrameInfo was unavailable or failed
-  last_uploaded_video_width_ = 0;
-  last_uploaded_video_height_ = 0;
-  last_uploaded_video_timestamp_ = 0.0;
-}
-
 }  // namespace blink

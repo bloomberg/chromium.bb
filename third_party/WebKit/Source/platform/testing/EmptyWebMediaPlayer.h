@@ -49,7 +49,11 @@ class EmptyWebMediaPlayer : public WebMediaPlayer {
   unsigned DroppedFrameCount() const override { return 0; }
   size_t AudioDecodedByteCount() const override { return 0; }
   size_t VideoDecodedByteCount() const override { return 0; }
-  void Paint(WebCanvas*, const WebRect&, cc::PaintFlags&) override {}
+  void Paint(WebCanvas*,
+             const WebRect&,
+             cc::PaintFlags&,
+             int already_uploaded_id,
+             VideoFrameUploadMetadata*) override {}
 };
 
 }  // namespace blink

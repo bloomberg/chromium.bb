@@ -312,9 +312,12 @@ void HTMLVideoElement::UpdateDisplayState() {
     SetDisplayMode(kPoster);
 }
 
-void HTMLVideoElement::PaintCurrentFrame(PaintCanvas* canvas,
-                                         const IntRect& dest_rect,
-                                         const PaintFlags* flags) const {
+void HTMLVideoElement::PaintCurrentFrame(
+    PaintCanvas* canvas,
+    const IntRect& dest_rect,
+    const PaintFlags* flags,
+    int already_uploaded_id,
+    WebMediaPlayer::VideoFrameUploadMetadata* out_metadata) const {
   if (!GetWebMediaPlayer())
     return;
 
@@ -326,7 +329,8 @@ void HTMLVideoElement::PaintCurrentFrame(PaintCanvas* canvas,
     media_flags.setFilterQuality(kLow_SkFilterQuality);
   }
 
-  GetWebMediaPlayer()->Paint(canvas, dest_rect, media_flags);
+  GetWebMediaPlayer()->Paint(canvas, dest_rect, media_flags,
+                             already_uploaded_id, out_metadata);
 }
 
 bool HTMLVideoElement::CopyVideoTextureToPlatformTexture(
@@ -338,13 +342,15 @@ bool HTMLVideoElement::CopyVideoTextureToPlatformTexture(
     GLenum type,
     GLint level,
     bool premultiply_alpha,
-    bool flip_y) {
+    bool flip_y,
+    int already_uploaded_id,
+    WebMediaPlayer::VideoFrameUploadMetadata* out_metadata) {
   if (!GetWebMediaPlayer())
     return false;
 
   return GetWebMediaPlayer()->CopyVideoTextureToPlatformTexture(
       gl, target, texture, internal_format, format, type, level,
-      premultiply_alpha, flip_y);
+      premultiply_alpha, flip_y, already_uploaded_id, out_metadata);
 }
 
 bool HTMLVideoElement::TexImageImpl(

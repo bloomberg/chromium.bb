@@ -31,4 +31,5 @@
     [RuntimeEnabled=ExperimentalCanvasFeatures] readonly attribute unsigned long lastUploadedVideoWidth;
     [RuntimeEnabled=ExperimentalCanvasFeatures] readonly attribute unsigned long lastUploadedVideoHeight;
     [RuntimeEnabled=ExperimentalCanvasFeatures] readonly attribute double lastUploadedVideoTimestamp;
+    [RuntimeEnabled=ExperimentalCanvasFeatures] readonly attribute boolean lastUploadedVideoFrameWasSkipped;
 };

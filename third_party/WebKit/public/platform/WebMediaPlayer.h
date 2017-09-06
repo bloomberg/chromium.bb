@@ -108,6 +108,14 @@ class WebMediaPlayer {
     kTexSubImage3D
   };
 
+  // For last-uploaded-frame-metadata API. https://crbug.com/639174
+  struct VideoFrameUploadMetadata {
+    int frame_id = -1;
+    gfx::Rect visible_rect = {};
+    base::TimeDelta timestamp = {};
+    bool skipped = false;
+  };
+
   virtual ~WebMediaPlayer() {}
 
   virtual void Load(LoadType, const WebMediaPlayerSource&, CORSMode) = 0;
@@ -180,21 +188,45 @@ class WebMediaPlayer {
   virtual size_t AudioDecodedByteCount() const = 0;
   virtual size_t VideoDecodedByteCount() const = 0;
 
-  virtual void Paint(WebCanvas*, const WebRect&, cc::PaintFlags&) = 0;
+  // |out_metadata|, if set, is used to return metadata about the frame
+  //   that is uploaded during this call.
+  // |already_uploaded_id| indicates the unique_id of the frame last uploaded
+  //   to this destination. It should only be set by the caller if the contents
+  //   of the destination are known not to have changed since that upload.
+  //   - If |out_metadata| is not null, |already_uploaded_id| is compared with
+  //     the unique_id of the frame being uploaded. If it's the same, the
+  //     upload may be skipped and considered to be successful.
+  virtual void Paint(WebCanvas*,
+                     const WebRect&,
+                     cc::PaintFlags&,
+                     int already_uploaded_id = -1,
+                     VideoFrameUploadMetadata* out_metadata = nullptr) = 0;
 
   // Do a GPU-GPU texture copy of the current video frame to |texture|,
   // reallocating |texture| at the appropriate size with given internal
   // format, format, and type if necessary. If the copy is impossible
   // or fails, it returns false.
-  virtual bool CopyVideoTextureToPlatformTexture(gpu::gles2::GLES2Interface*,
-                                                 unsigned target,
-                                                 unsigned texture,
-                                                 unsigned internal_format,
-                                                 unsigned format,
-                                                 unsigned type,
-                                                 int level,
-                                                 bool premultiply_alpha,
-                                                 bool flip_y) {
+  //
+  // |out_metadata|, if set, is used to return metadata about the frame
+  //   that is uploaded during this call.
+  // |already_uploaded_id| indicates the unique_id of the frame last uploaded
+  //   to this destination. It should only be set by the caller if the contents
+  //   of the destination are known not to have changed since that upload.
+  //   - If |out_metadata| is not null, |already_uploaded_id| is compared with
+  //     the unique_id of the frame being uploaded. If it's the same, the
+  //     upload may be skipped and considered to be successful.
+  virtual bool CopyVideoTextureToPlatformTexture(
+      gpu::gles2::GLES2Interface*,
+      unsigned target,
+      unsigned texture,
+      unsigned internal_format,
+      unsigned format,
+      unsigned type,
+      int level,
+      bool premultiply_alpha,
+      bool flip_y,
+      int already_uploaded_id = -1,
+      VideoFrameUploadMetadata* out_metadata = nullptr) {
     return false;
   }
 
@@ -275,15 +307,6 @@ class WebMediaPlayer {
       const WebVector<TrackId>& enabled_track_ids) {}
   // |selected_track_id| is null if no track is selected.
   virtual void SelectedVideoTrackChanged(TrackId* selected_track_id) {}
-
-  // TODO(kainino): This is for a prototype implementation for getting the
-  // width, height, and timestamp of the last frame uploaded to a WebGL
-  // texture. https://crbug.com/639174
-  virtual bool GetLastUploadedFrameInfo(unsigned* width,
-                                        unsigned* height,
-                                        double* timestamp) {
-    return false;
-  }
 
   // Callback called whenever the media element may have received or last native
   // controls. It might be called twice with the same value: the caller has to

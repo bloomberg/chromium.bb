@@ -28,6 +28,9 @@ function runTest()
     passing &= texture.lastUploadedVideoHeight === 64;
     passing &= texture.lastUploadedVideoWidth === 64;
     passing &= Math.abs(texture.lastUploadedVideoTimestamp - 2.0) < 0.001;
+    passing &= texture.lastUploadedVideoFrameWasSkipped === false;
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, video);
+    passing &= texture.lastUploadedVideoFrameWasSkipped === true;
     if (passing) {
         pass();
     }

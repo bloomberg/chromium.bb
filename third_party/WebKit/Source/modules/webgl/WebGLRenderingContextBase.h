@@ -681,7 +681,10 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                                         int height,
                                         const char* function_name);
 
-  PassRefPtr<Image> VideoFrameToImage(HTMLVideoElement*);
+  PassRefPtr<Image> VideoFrameToImage(
+      HTMLVideoElement*,
+      int already_uploaded_id,
+      WebMediaPlayer::VideoFrameUploadMetadata* out_metadata);
 
   // Structure for rendering to a DrawingBuffer, instead of directly
   // to the back-buffer of m_context.

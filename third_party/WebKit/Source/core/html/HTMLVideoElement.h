@@ -78,18 +78,26 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
   unsigned webkitDroppedFrameCount() const;
 
   // Used by canvas to gain raw pixel access
-  void PaintCurrentFrame(PaintCanvas*, const IntRect&, const PaintFlags*) const;
+  void PaintCurrentFrame(
+      PaintCanvas*,
+      const IntRect&,
+      const PaintFlags*,
+      int already_uploaded_id = -1,
+      WebMediaPlayer::VideoFrameUploadMetadata* = nullptr) const;
 
   // Used by WebGL to do GPU-GPU textures copy if possible.
-  bool CopyVideoTextureToPlatformTexture(gpu::gles2::GLES2Interface*,
-                                         GLenum target,
-                                         GLuint texture,
-                                         GLenum internal_format,
-                                         GLenum format,
-                                         GLenum type,
-                                         GLint level,
-                                         bool premultiply_alpha,
-                                         bool flip_y);
+  bool CopyVideoTextureToPlatformTexture(
+      gpu::gles2::GLES2Interface*,
+      GLenum target,
+      GLuint texture,
+      GLenum internal_format,
+      GLenum format,
+      GLenum type,
+      GLint level,
+      bool premultiply_alpha,
+      bool flip_y,
+      int already_uploaded_id = -1,
+      WebMediaPlayer::VideoFrameUploadMetadata* out_metadata = nullptr);
 
   // Used by WebGL to do CPU-GPU texture upload if possible.
   bool TexImageImpl(WebMediaPlayer::TexImageFunctionID,
