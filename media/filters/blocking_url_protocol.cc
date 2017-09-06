@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "media/base/data_source.h"
 #include "media/ffmpeg/ffmpeg_common.h"
 
@@ -60,7 +61,12 @@ int BlockingUrlProtocol::Read(int size, uint8_t* data) {
   }
 
   base::WaitableEvent* events[] = { &aborted_, &read_complete_ };
-  size_t index = base::WaitableEvent::WaitMany(events, arraysize(events));
+  size_t index;
+  {
+    base::ScopedBlockingCall scoped_blocking_call(
+        base::BlockingType::MAY_BLOCK);
+    index = base::WaitableEvent::WaitMany(events, arraysize(events));
+  }
 
   if (events[index] == &aborted_)
     return AVERROR(EIO);
