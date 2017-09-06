@@ -3660,3 +3660,4 @@ crbug.com/762008 [ Android ] http/tests/appcache/abort-cache-onchecking-resource
 
 # Sheriff failure 2017-09-06
 crbug.com/762390 [ Android ] http/tests/devtools/console/only-one-deprecation-warning.html [ Pass Crash ]
+crbug.com/762423 [ Android ] http/tests/dom/create-contextual-fragment-from-svg-document-range.html [ Pass Crash ]
