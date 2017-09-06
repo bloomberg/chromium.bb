@@ -260,7 +260,8 @@ class MEDIA_EXPORT SourceBufferRange {
   // Called during AppendBuffersToEnd to adjust estimated duration at the
   // end of the last append to match the delta in timestamps between
   // the last append and the upcoming append. This is a workaround for
-  // WebM media where a duration is not always specified.
+  // WebM media where a duration is not always specified. Caller should take
+  // care of updating |highest_frame_|.
   void AdjustEstimatedDurationForNewAppend(const BufferQueue& new_buffers);
 
   // Seeks the range to the next keyframe after |timestamp|. If

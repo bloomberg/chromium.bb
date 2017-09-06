@@ -95,11 +95,6 @@ void SourceBufferRange::AdjustEstimatedDurationForNewAppend(
                << ") from previous range-end with derived duration ("
                << timestamp_delta << ").";
       last_appended_buffer->set_duration(timestamp_delta);
-      // To update the range end time here, there is no need to inspect an
-      // entire GOP or even reset the currently tracked |highest_frame_| because
-      // estimated durations should only occur in WebM, which doesn't contain
-      // out-of-order presentation/decode sequences.
-      CHECK_EQ(last_appended_buffer.get(), highest_frame_.get());
     }
   }
 }
