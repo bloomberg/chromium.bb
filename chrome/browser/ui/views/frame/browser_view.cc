@@ -17,7 +17,6 @@
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -678,19 +677,9 @@ namespace {
 }
 
 void BrowserView::UpdateTitleBar() {
-  // TODO(robliao): Remove ScopedTracker below once https://crbug.com/467185 is
-  // fixed.
-  tracked_objects::ScopedTracker tracking_profile1(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("467185 BrowserView::UpdateTitleBar1"));
   frame_->UpdateWindowTitle();
-  if (ShouldShowWindowIcon() && !loading_animation_timer_.IsRunning()) {
-    // TODO(robliao): Remove ScopedTracker below once https://crbug.com/467185
-    // is fixed.
-    tracked_objects::ScopedTracker tracking_profile2(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "467185 BrowserView::UpdateTitleBar2"));
+  if (ShouldShowWindowIcon() && !loading_animation_timer_.IsRunning())
     frame_->UpdateWindowIcon();
-  }
 }
 
 void BrowserView::BookmarkBarStateChanged(

@@ -15,7 +15,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -843,10 +842,6 @@ int HttpStreamFactoryImpl::Job::DoInitConnection() {
 }
 
 int HttpStreamFactoryImpl::Job::DoInitConnectionImpl() {
-  // TODO(pkasting): Remove ScopedTracker below once crbug.com/462812 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "462812 HttpStreamFactoryImpl::Job::DoInitConnection"));
   DCHECK(!connection_->is_initialized());
 
   if (using_quic_ && !proxy_info_.is_quic() && !proxy_info_.is_direct()) {
@@ -1156,10 +1151,6 @@ int HttpStreamFactoryImpl::Job::SetSpdyHttpStreamOrBidirectionalStreamImpl(
 }
 
 int HttpStreamFactoryImpl::Job::DoCreateStream() {
-  // TODO(pkasting): Remove ScopedTracker below once crbug.com/462811 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "462811 HttpStreamFactoryImpl::Job::DoCreateStream"));
   DCHECK(connection_->socket() || existing_spdy_session_.get() || using_quic_);
   DCHECK(!using_quic_);
 

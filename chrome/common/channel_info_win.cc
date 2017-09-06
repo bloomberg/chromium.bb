@@ -5,7 +5,6 @@
 #include "chrome/common/channel_info.h"
 
 #include "base/debug/profiler.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/install_static/install_util.h"
@@ -13,12 +12,6 @@
 namespace chrome {
 
 std::string GetChannelString() {
-  // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460 is
-  // fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422460 VersionInfo::GetVersionStringModifier"));
-
 #if defined(GOOGLE_CHROME_BUILD)
   base::string16 channel(install_static::GetChromeChannelName());
 #if defined(SYZYASAN)

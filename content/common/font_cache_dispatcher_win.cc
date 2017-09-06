@@ -9,7 +9,6 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/strings/string16.h"
 #include "content/common/child_process_messages.h"
 
@@ -23,10 +22,6 @@ class FontCache {
   static FontCache* GetInstance() { return base::Singleton<FontCache>::get(); }
 
   void PreCacheFont(const LOGFONT& font, FontCacheDispatcher* dispatcher) {
-    // TODO(ananta): Remove ScopedTracker below once crbug.com/90127 is fixed.
-    tracked_objects::ScopedTracker tracking_profile(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION("90127 FontCache::PreCacheFont"));
-
     base::AutoLock lock(mutex_);
 
     // Fetch the font into memory.

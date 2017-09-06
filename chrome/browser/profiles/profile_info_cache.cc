@@ -13,7 +13,6 @@
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/task_scheduler/post_task.h"
@@ -827,11 +826,6 @@ void ProfileInfoCache::DownloadHighResAvatar(
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)
   return;
 #endif
-  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/461175
-  // is fixed.
-  tracked_objects::ScopedTracker tracking_profile1(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "461175 ProfileInfoCache::DownloadHighResAvatar::GetFileName"));
   const char* file_name =
       profiles::GetDefaultAvatarIconFileNameAtIndex(icon_index);
   DCHECK(file_name);
@@ -839,11 +833,6 @@ void ProfileInfoCache::DownloadHighResAvatar(
   if (avatar_images_downloads_in_progress_.count(file_name))
     return;
 
-  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/461175
-  // is fixed.
-  tracked_objects::ScopedTracker tracking_profile2(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "461175 ProfileInfoCache::DownloadHighResAvatar::MakeDownloader"));
   // Start the download for this file. The cache takes ownership of the
   // avatar downloader, which will be deleted when the download completes, or
   // if that never happens, when the ProfileInfoCache is destroyed.
@@ -856,11 +845,6 @@ void ProfileInfoCache::DownloadHighResAvatar(
                      base::Unretained(this),
                      profile_path)));
 
-  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/461175
-  // is fixed.
-  tracked_objects::ScopedTracker tracking_profile3(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "461175 ProfileInfoCache::DownloadHighResAvatar::StartDownload"));
   current_downloader->Start();
 }
 
@@ -897,35 +881,14 @@ void ProfileInfoCache::OnAvatarPictureLoaded(const base::FilePath& profile_path,
                                              const std::string& key,
                                              gfx::Image** image) const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/461175
-  // is fixed.
-  tracked_objects::ScopedTracker tracking_profile1(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "461175 ProfileInfoCache::OnAvatarPictureLoaded::Start"));
-
   cached_avatar_images_loading_[key] = false;
 
   if (*image) {
-    // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/461175
-    // is fixed.
-    tracked_objects::ScopedTracker tracking_profile2(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "461175 ProfileInfoCache::OnAvatarPictureLoaded::SetImage"));
     cached_avatar_images_[key].reset(*image);
   } else {
-    // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/461175
-    // is fixed.
-    tracked_objects::ScopedTracker tracking_profile3(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "461175 ProfileInfoCache::OnAvatarPictureLoaded::MakeEmptyImage"));
     // Place an empty image in the cache to avoid reloading it again.
     cached_avatar_images_[key].reset(new gfx::Image());
   }
-  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/461175
-  // is fixed.
-  tracked_objects::ScopedTracker tracking_profile4(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "461175 ProfileInfoCache::OnAvatarPictureLoaded::DeleteImage"));
   delete image;
 
   for (auto& observer : observer_list_)

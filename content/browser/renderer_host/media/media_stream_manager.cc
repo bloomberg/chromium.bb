@@ -17,7 +17,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/power_monitor/power_monitor.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -1272,34 +1271,12 @@ void MediaStreamManager::InitializeMaybeAsync(
   // callback threads that we don't own and don't want to attach.
   g_media_stream_manager_tls_ptr.Pointer()->Set(this);
 
-  // TODO(dalecurtis): Remove ScopedTracker below once crbug.com/457525 is
-  // fixed.
-  tracked_objects::ScopedTracker tracking_profile1(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "457525 MediaStreamManager::InitializeDeviceManagersOnIOThread 1"));
-
-  // TODO(dalecurtis): Remove ScopedTracker below once crbug.com/457525 is
-  // fixed.
-  tracked_objects::ScopedTracker tracking_profile2(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "457525 MediaStreamManager::InitializeDeviceManagersOnIOThread 2"));
   audio_input_device_manager_ = new AudioInputDeviceManager(audio_system_);
   audio_input_device_manager_->RegisterListener(this);
 
-  // TODO(dalecurtis): Remove ScopedTracker below once crbug.com/457525 is
-  // fixed.
-  tracked_objects::ScopedTracker tracking_profile3(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "457525 MediaStreamManager::InitializeDeviceManagersOnIOThread 3"));
   // We want to be notified of IO message loop destruction to delete the thread
   // and the device managers.
   base::MessageLoop::current()->AddDestructionObserver(this);
-
-  // TODO(dalecurtis): Remove ScopedTracker below once crbug.com/457525 is
-  // fixed.
-  tracked_objects::ScopedTracker tracking_profile4(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "457525 MediaStreamManager::InitializeDeviceManagersOnIOThread 4"));
 
   video_capture_manager_ =
       new VideoCaptureManager(std::move(video_capture_provider),

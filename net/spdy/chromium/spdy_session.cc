@@ -17,7 +17,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -2013,10 +2012,6 @@ int SpdySession::DoWrite() {
       }
     }
 
-    // TODO(pkasting): Remove ScopedTracker below once crbug.com/457517 is
-    // fixed.
-    tracked_objects::ScopedTracker tracking_profile1(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION("457517 SpdySession::DoWrite1"));
     in_flight_write_ = producer->ProduceBuffer();
     if (!in_flight_write_) {
       NOTREACHED();
@@ -2033,9 +2028,6 @@ int SpdySession::DoWrite() {
   // Explicitly store in a scoped_refptr<IOBuffer> to avoid problems
   // with Socket implementations that don't store their IOBuffer
   // argument in a scoped_refptr<IOBuffer> (see crbug.com/232345).
-  // TODO(pkasting): Remove ScopedTracker below once crbug.com/457517 is fixed.
-  tracked_objects::ScopedTracker tracking_profile2(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("457517 SpdySession::DoWrite2"));
   scoped_refptr<IOBuffer> write_io_buffer =
       in_flight_write_->GetIOBufferForRemainingData();
   return connection_->socket()->Write(

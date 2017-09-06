@@ -13,7 +13,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/shared_memory.h"
 #include "base/optional.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
@@ -208,11 +207,6 @@ bool CommandBufferProxyImpl::Initialize(
       channel->ShareToGpuProcess(shared_state_shm_->handle());
   if (!base::SharedMemory::IsHandleValid(handle))
     return false;
-
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/125248 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "125248 CommandBufferProxyImpl::Initialize"));
 
   // Route must be added before sending the message, otherwise messages sent
   // from the GPU process could race against adding ourselves to the filter.

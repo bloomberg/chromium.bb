@@ -18,7 +18,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -400,11 +399,6 @@ class DnsTCPAttempt : public DnsAttempt {
   }
 
   int DoConnectComplete(int rv) {
-    // TODO(rvargas): Remove ScopedTracker below once crbug.com/462784 is fixed.
-    tracked_objects::ScopedTracker tracking_profile(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "462784 DnsTCPAttempt::DoConnectComplete"));
-
     DCHECK_NE(ERR_IO_PENDING, rv);
     if (rv < 0)
       return rv;

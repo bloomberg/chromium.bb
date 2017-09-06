@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/browser_context.h"
@@ -144,10 +143,6 @@ void ExtensionHost::CreateRenderViewSoon() {
 }
 
 void ExtensionHost::CreateRenderViewNow() {
-  // TODO(robliao): Remove ScopedTracker below once crbug.com/464206 is fixed.
-  tracked_objects::ScopedTracker tracking_profile1(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "464206 ExtensionHost::CreateRenderViewNow1"));
   if (!ExtensionRegistry::Get(browser_context_)
            ->ready_extensions()
            .Contains(extension_->id())) {
@@ -157,10 +152,6 @@ void ExtensionHost::CreateRenderViewNow() {
   is_render_view_creation_pending_ = false;
   LoadInitialURL();
   if (IsBackgroundPage()) {
-    // TODO(robliao): Remove ScopedTracker below once crbug.com/464206 is fixed.
-    tracked_objects::ScopedTracker tracking_profile2(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "464206 ExtensionHost::CreateRenderViewNow2"));
     DCHECK(IsRenderViewLive());
     if (extension_) {
       std::string group_name = base::FieldTrialList::FindFullName(
@@ -172,10 +163,6 @@ void ExtensionHost::CreateRenderViewNow() {
         host_contents_->WasHidden();
       }
     }
-    // TODO(robliao): Remove ScopedTracker below once crbug.com/464206 is fixed.
-    tracked_objects::ScopedTracker tracking_profile3(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "464206 ExtensionHost::CreateRenderViewNow3"));
     // Connect orphaned dev-tools instances.
     delegate_->OnRenderViewCreatedForBackgroundPage(this);
   }

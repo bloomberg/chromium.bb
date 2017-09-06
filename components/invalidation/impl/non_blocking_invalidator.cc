@@ -11,7 +11,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -184,10 +183,6 @@ void NonBlockingInvalidator::Core::UpdateRegisteredIds(const ObjectIdSet& ids) {
 
 void NonBlockingInvalidator::Core::UpdateCredentials(const std::string& email,
                                                      const std::string& token) {
-  // TODO(pkasting): Remove ScopedTracker below once crbug.com/477117 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "477117 NonBlockingInvalidator::Core::UpdateCredentials"));
   DCHECK(network_task_runner_->BelongsToCurrentThread());
   invalidation_notifier_->UpdateCredentials(email, token);
 }

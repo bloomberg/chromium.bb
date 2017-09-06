@@ -27,7 +27,6 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/profiler/stack_sampling_profiler.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
@@ -726,22 +725,6 @@ void ChromeBrowserMainParts::SetupMetrics() {
       variations::SyntheticTrialsActiveGroupIdProvider::GetInstance());
   // Now that field trials have been created, initializes metrics recording.
   metrics->InitializeMetricsRecordingState();
-
-  const version_info::Channel channel = chrome::GetChannel();
-
-  // Enable profiler instrumentation depending on the channel.
-  switch (channel) {
-    case version_info::Channel::UNKNOWN:
-    case version_info::Channel::CANARY:
-      tracked_objects::ScopedTracker::Enable();
-      break;
-
-    case version_info::Channel::DEV:
-    case version_info::Channel::BETA:
-    case version_info::Channel::STABLE:
-      // Don't enable instrumentation.
-      break;
-  }
 }
 
 void ChromeBrowserMainParts::StartMetricsRecording() {

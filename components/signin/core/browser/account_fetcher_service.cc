@@ -9,7 +9,6 @@
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -234,12 +233,6 @@ void AccountFetcherService::ResetChildInfo() {
 void AccountFetcherService::RefreshAccountInfo(const std::string& account_id,
                                                bool only_fetch_if_invalid) {
   DCHECK(network_fetches_enabled_);
-  // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460 is
-  // fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422460 AccountFetcherService::RefreshAccountInfo"));
-
   account_tracker_service_->StartTrackingAccount(account_id);
   const AccountInfo& info =
       account_tracker_service_->GetAccountInfo(account_id);

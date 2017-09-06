@@ -11,7 +11,6 @@
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
@@ -128,11 +127,6 @@ void CoreTabHelper::SearchByImageInNewTab(
 // static
 bool CoreTabHelper::GetStatusTextForWebContents(
     base::string16* status_text, content::WebContents* source) {
-  // TODO(robliao): Remove ScopedTracker below once https://crbug.com/467185 is
-  // fixed.
-  tracked_objects::ScopedTracker tracking_profile1(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "467185 CoreTabHelper::GetStatusTextForWebContents1"));
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   auto* guest_manager = guest_view::GuestViewManager::FromBrowserContext(
       source->GetBrowserContext());
@@ -140,11 +134,6 @@ bool CoreTabHelper::GetStatusTextForWebContents(
   if (!source->IsLoading() ||
       source->GetLoadState().state == net::LOAD_STATE_IDLE) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-    // TODO(robliao): Remove ScopedTracker below once https://crbug.com/467185
-    // is fixed.
-    tracked_objects::ScopedTracker tracking_profile2(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "467185 CoreTabHelper::GetStatusTextForWebContents2"));
     if (!guest_manager)
       return false;
     return guest_manager->ForEachGuest(
@@ -154,12 +143,6 @@ bool CoreTabHelper::GetStatusTextForWebContents(
     return false;
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
   }
-
-  // TODO(robliao): Remove ScopedTracker below once https://crbug.com/467185
-  // is fixed.
-  tracked_objects::ScopedTracker tracking_profile3(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "467185 CoreTabHelper::GetStatusTextForWebContents3"));
 
   switch (source->GetLoadState().state) {
     case net::LOAD_STATE_WAITING_FOR_STALLED_SOCKET_POOL:
@@ -240,11 +223,6 @@ bool CoreTabHelper::GetStatusTextForWebContents(
   if (!guest_manager)
     return false;
 
-  // TODO(robliao): Remove ScopedTracker below once https://crbug.com/467185 is
-  // fixed.
-  tracked_objects::ScopedTracker tracking_profile4(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "467185 CoreTabHelper::GetStatusTextForWebContents4"));
   return guest_manager->ForEachGuest(
       source, base::Bind(&CoreTabHelper::GetStatusTextForWebContents,
                          status_text));

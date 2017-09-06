@@ -5,7 +5,6 @@
 #include "content/browser/appcache/chrome_appcache_service.h"
 
 #include "base/files/file_path.h"
-#include "base/profiler/scoped_tracker.h"
 #include "content/browser/appcache/appcache_storage_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -26,10 +25,6 @@ void ChromeAppCacheService::InitializeOnIOThread(
     ResourceContext* resource_context,
     net::URLRequestContextGetter* request_context_getter,
     scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy) {
-  // TODO(pkasting): Remove ScopedTracker below once crbug.com/477117 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "477117 ChromeAppCacheService::InitializeOnIOThread"));
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   cache_path_ = cache_path;

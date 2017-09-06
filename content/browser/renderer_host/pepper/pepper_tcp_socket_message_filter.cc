@@ -13,7 +13,6 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/profiler/scoped_tracker.h"
 #include "build/build_config.h"
 #include "content/browser/renderer_host/pepper/content_browser_pepper_host_factory.h"
 #include "content/browser/renderer_host/pepper/pepper_socket_utils.h"
@@ -798,11 +797,6 @@ void PepperTCPSocketMessageFilter::OnConnectCompleted(
     const ppapi::host::ReplyMessageContext& context,
     int net_result) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  // TODO(rvargas): Remove ScopedTracker below once crbug.com/462784 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "462784 PepperTCPSocketMessageFilter::OnConnectCompleted"));
 
   if (!state_.IsPending(TCPSocketState::CONNECT)) {
     DCHECK(state_.state() == TCPSocketState::CLOSED);

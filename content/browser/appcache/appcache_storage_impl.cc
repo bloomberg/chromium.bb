@@ -17,7 +17,6 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -291,8 +290,6 @@ class AppCacheStorageImpl::InitTask : public DatabaseTask {
 };
 
 void AppCacheStorageImpl::InitTask::Run() {
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("AppCacheStorageImpl::InitTask"));
   // If there is no sql database, ensure there is no disk cache either.
   if (!db_file_path_.empty() &&
       !base::PathExists(db_file_path_) &&
@@ -524,8 +521,6 @@ class AppCacheStorageImpl::CacheLoadTask : public StoreOrLoadTask {
 };
 
 void AppCacheStorageImpl::CacheLoadTask::Run() {
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("AppCacheStorageImpl::CacheLoadTask"));
   success_ =
       database_->FindCache(cache_id_, &cache_record_) &&
       database_->FindGroup(cache_record_.group_id, &group_record_) &&
@@ -569,8 +564,6 @@ class AppCacheStorageImpl::GroupLoadTask : public StoreOrLoadTask {
 };
 
 void AppCacheStorageImpl::GroupLoadTask::Run() {
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("AppCacheStorageImpl::GroupLoadTask"));
   success_ =
       database_->FindGroupForManifestUrl(manifest_url_, &group_record_) &&
       database_->FindCacheForGroup(group_record_.group_id, &cache_record_) &&
@@ -958,9 +951,6 @@ class AppCacheStorageImpl::FindMainResponseTask : public DatabaseTask {
 };
 
 void AppCacheStorageImpl::FindMainResponseTask::Run() {
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "AppCacheStorageImpl::FindMainResponseTask"));
   // NOTE: The heuristics around choosing amoungst multiple candidates
   // is underspecified, and just plain not fully understood. This needs
   // to be refined.
@@ -1341,9 +1331,6 @@ class AppCacheStorageImpl::LazyUpdateLastAccessTimeTask
 };
 
 void AppCacheStorageImpl::LazyUpdateLastAccessTimeTask::Run() {
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "AppCacheStorageImpl::LazyUpdateLastAccessTimeTask"));
   database_->LazyUpdateLastAccessTime(group_id_, last_access_time_);
 }
 
@@ -1361,9 +1348,6 @@ class AppCacheStorageImpl::CommitLastAccessTimesTask
 
   // DatabaseTask:
   void Run() override {
-    tracked_objects::ScopedTracker tracking_profile(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "AppCacheStorageImpl::CommitLastAccessTimesTask"));
     database_->CommitLazyLastAccessTimes();
   }
 
@@ -1396,9 +1380,6 @@ class AppCacheStorageImpl::UpdateEvictionTimesTask
 };
 
 void AppCacheStorageImpl::UpdateEvictionTimesTask::Run() {
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "AppCacheStorageImpl::UpdateEvictionTimes"));
   database_->UpdateEvictionTimes(group_id_,
                                  last_full_update_check_time_,
                                  first_evictable_error_time_);

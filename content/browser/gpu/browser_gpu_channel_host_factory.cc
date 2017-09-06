@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/location.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_restrictions.h"
@@ -98,11 +97,6 @@ BrowserGpuChannelHostFactory::EstablishRequest::EstablishRequest(
       main_task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
 
 void BrowserGpuChannelHostFactory::EstablishRequest::EstablishOnIO() {
-  // TODO(pkasting): Remove ScopedTracker below once crbug.com/477117 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "477117 "
-          "BrowserGpuChannelHostFactory::EstablishRequest::EstablishOnIO"));
   GpuProcessHost* host = GpuProcessHost::Get();
   if (!host) {
     LOG(ERROR) << "Failed to launch GPU process.";
@@ -157,11 +151,6 @@ void BrowserGpuChannelHostFactory::EstablishRequest::FinishOnMain() {
 void BrowserGpuChannelHostFactory::EstablishRequest::Wait() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   {
-    // TODO(vadimt): Remove ScopedTracker below once crbug.com/125248 is fixed.
-    tracked_objects::ScopedTracker tracking_profile(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "125248 BrowserGpuChannelHostFactory::EstablishRequest::Wait"));
-
     // We're blocking the UI thread, which is generally undesirable.
     // In this case we need to wait for this before we can show any UI
     // /anyway/, so it won't cause additional jank.
@@ -316,11 +305,6 @@ void BrowserGpuChannelHostFactory::GpuChannelEstablished() {
   if (!pending_request_->channel_handle().mojo_handle.is_valid()) {
     DCHECK(!gpu_channel_.get());
   } else {
-    // TODO(robliao): Remove ScopedTracker below once https://crbug.com/466866
-    // is fixed.
-    tracked_objects::ScopedTracker tracking_profile1(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "466866 BrowserGpuChannelHostFactory::GpuChannelEstablished1"));
     GetContentClient()->SetGpuInfo(pending_request_->gpu_info());
     gpu_channel_ = gpu::GpuChannelHost::Create(
         this, gpu_client_id_, pending_request_->gpu_info(),
@@ -328,12 +312,6 @@ void BrowserGpuChannelHostFactory::GpuChannelEstablished() {
         gpu_memory_buffer_manager_.get());
   }
   pending_request_ = NULL;
-
-  // TODO(robliao): Remove ScopedTracker below once https://crbug.com/466866 is
-  // fixed.
-  tracked_objects::ScopedTracker tracking_profile2(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "466866 BrowserGpuChannelHostFactory::GpuChannelEstablished2"));
 
   std::vector<gpu::GpuChannelEstablishedCallback> established_callbacks;
   established_callbacks_.swap(established_callbacks);

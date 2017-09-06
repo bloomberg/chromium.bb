@@ -37,7 +37,6 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -2400,10 +2399,6 @@ bool HostResolverImpl::IsIPv6Reachable(const NetLogWithSource& net_log) {
 
 bool HostResolverImpl::IsGloballyReachable(const IPAddress& dest,
                                            const NetLogWithSource& net_log) {
-  // TODO(eroman): Remove ScopedTracker below once crbug.com/455942 is fixed.
-  tracked_objects::ScopedTracker tracking_profile_1(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("455942 IsGloballyReachable"));
-
   std::unique_ptr<DatagramClientSocket> socket(
       ClientSocketFactory::GetDefaultFactory()->CreateDatagramClientSocket(
           DatagramSocket::DEFAULT_BIND, RandIntCallback(), net_log.net_log(),

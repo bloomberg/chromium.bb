@@ -16,7 +16,6 @@
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -148,10 +147,6 @@ void FinishUnregistrationOnIO(ServiceWorkerContext::ResultCallback callback,
 // static
 void ServiceWorkerContext::AddExcludedHeadersForFetchEvent(
     const std::set<std::string>& header_names) {
-  // TODO(pkasting): Remove ScopedTracker below once crbug.com/477117 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "477117 ServiceWorkerContext::AddExcludedHeadersForFetchEvent"));
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   g_excluded_header_name_set.Get().insert(header_names.begin(),
                                           header_names.end());
@@ -816,10 +811,6 @@ void ServiceWorkerContextWrapper::InitInternal(
                        base::RetainedRef(loader_factory_getter)));
     return;
   }
-  // TODO(pkasting): Remove ScopedTracker below once crbug.com/477117 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "477117 ServiceWorkerContextWrapper::InitInternal"));
   DCHECK(!context_core_);
   if (quota_manager_proxy) {
     quota_manager_proxy->RegisterClient(new ServiceWorkerQuotaClient(this));

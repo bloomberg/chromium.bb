@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/profiler/scoped_tracker.h"
-#include "google_apis/gaia/oauth2_token_service.h"
 #include "google_apis/gaia/oauth2_token_service_delegate.h"
+
+#include "google_apis/gaia/oauth2_token_service.h"
 
 OAuth2TokenServiceDelegate::ScopedBatchChange::ScopedBatchChange(
     OAuth2TokenServiceDelegate* delegate)
@@ -75,12 +75,6 @@ void OAuth2TokenServiceDelegate::EndBatchChanges() {
 
 void OAuth2TokenServiceDelegate::FireRefreshTokenAvailable(
     const std::string& account_id) {
-  // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460 is
-  // fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422460 OAuth2TokenService::FireRefreshTokenAvailable"));
-
   for (auto& observer : observer_list_)
     observer.OnRefreshTokenAvailable(account_id);
 }
@@ -92,12 +86,6 @@ void OAuth2TokenServiceDelegate::FireRefreshTokenRevoked(
 }
 
 void OAuth2TokenServiceDelegate::FireRefreshTokensLoaded() {
-  // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460 is
-  // fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422460 OAuth2TokenService::FireRefreshTokensLoaded"));
-
   for (auto& observer : observer_list_)
     observer.OnRefreshTokensLoaded();
 }

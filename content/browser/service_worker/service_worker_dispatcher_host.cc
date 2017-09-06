@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -869,10 +868,6 @@ void ServiceWorkerDispatcherHost::DispatchExtendableMessageEvent(
 
 void ServiceWorkerDispatcherHost::OnProviderCreated(
     ServiceWorkerProviderHostInfo info) {
-  // TODO(pkasting): Remove ScopedTracker below once crbug.com/477117 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "477117 ServiceWorkerDispatcherHost::OnProviderCreated"));
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerDispatcherHost::OnProviderCreated");
   if (!GetContext())

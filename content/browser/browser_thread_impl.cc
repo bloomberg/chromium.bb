@@ -14,7 +14,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
@@ -657,7 +656,6 @@ bool BrowserThread::GetCurrentThreadIdentifier(ID* identifier) {
   // Profiler to track potential contention on |globals.lock|. This only does
   // real work on canary and local dev builds, so the cost of having this here
   // should be minimal.
-  tracked_objects::ScopedTracker tracking_profile(FROM_HERE);
   base::AutoLock lock(globals.lock);
   for (int i = 0; i < ID_COUNT; ++i) {
     if (globals.task_runners[i] &&
