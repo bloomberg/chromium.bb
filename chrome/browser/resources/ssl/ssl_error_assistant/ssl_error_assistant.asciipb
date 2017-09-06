@@ -152,6 +152,117 @@ captive_portal_cert {
 }
 
 mitm_software {
+  name: "Avast Antivirus",
+  issuer_common_name_regex: "avast! Web/Mail Shield Root",
+  issuer_organization_regex: "avast! Web/Mail Shield"
+}
+
+mitm_software {
+  name: "Bitdefender Antivirus",
+  issuer_common_name_regex: "Bitdefender Personal CA.Net-Defender",
+  issuer_organization_regex: "Bitdefender"
+}
+
+mitm_software {
+  name: "Cisco Umbrella",
+  issuer_common_name_regex: "Cisco Umbrella Root CA",
+  issuer_organization_regex: "Cisco"
+}
+
+mitm_software {
+  name: "Cisco Umbrella",
+  issuer_common_name_regex: "Cisco Umbrella Primary SubCA",
+  issuer_organization_regex: "Cisco"
+}
+
+mitm_software {
+  name: "ContentKeeper",
+  issuer_common_name_regex: "ContentKeeper Appliance CA \(\d+\)",
+  issuer_organization_regex: "ContentKeeper Technologies"
+}
+
+mitm_software {
+  name: "Cyberoam Firewall",
+  issuer_organization_regex: "Cyberoam Certificate Authority"
+}
+
+mitm_software {
+  name: "ForcePoint",
+  issuer_common_name_regex: "Forcepoint Cloud CA",
+  issuer_organization_regex: "Forcepoint LLC"
+}
+
+mitm_software {
+  name: "Fortigate",
+  issuer_common_name_regex: "FortiGate CA",
+  issuer_organization_regex: "Fortinet"
+}
+
+mitm_software {
+  name: "Fortinet",
+  issuer_organization_regex: "Fortinet( Ltd.)?"
+}
+
+mitm_software {
   name: "Kaspersky Internet Security",
   issuer_common_name_regex: "Kaspersky Anti-Virus Personal Root Certificate"
+}
+
+mitm_software {
+  name: "McAfee Web Gateway",
+  issuer_common_name_regex: "McAfee Web Gateway"
+}
+
+mitm_software {
+  name: "NetSpark",
+  issuer_common_name_regex: "www.netspark.com",
+  issuer_organization_regex: "NetSpark"
+}
+
+mitm_software {
+  name: "SmoothWall Firewall",
+  issuer_common_name_regex: "Smoothwall-default-root-certificate-authority"
+}
+
+mitm_software {
+  name: "SonicWall Firewall",
+  issuer_organization_regex: "HTTPS Management Certificate for SonicWALL"
+}
+
+mitm_software {
+  name: "Sophos",
+  issuer_common_name_regex: "Sophos SSL CA_[A-Z0-9\-]+",
+  issuer_organization_regex: "Sophos"
+}
+
+mitm_software {
+  name: "Sophos",
+  issuer_common_name_regex: "Sophos_CA_[A-Z0-9]+"
+}
+
+mitm_software {
+  name: "Sophos UTM",
+  issuer_common_name_regex: "sophosutm Proxy CA",
+  issuer_organization_regex: "sophosutm"
+}
+
+mitm_software {
+  name: "Sophos Web Appliance",
+  issuer_common_name_regex: "Sophos Web Appliance",
+  issuer_organization_regex: "Sophos Plc"
+}
+
+mitm_software {
+  name: "Symantec Blue Coat",
+  issuer_organization_regex: "Blue Coat.*"
+}
+
+mitm_software {
+  name: "Trend Micro InterScan Web Security Suite (IWSS)",
+  issuer_common_name_regex: "IWSS.TREND"
+}
+
+mitm_software {
+  name: "Zscaler",
+  issuer_organization_regex: "Zscaler Inc."
 }
