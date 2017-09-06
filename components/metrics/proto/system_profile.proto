@@ -809,7 +809,9 @@ message SystemProfileProto {
     // The organizationally unique identifier, for example "08:9E:08".
     // OUI is the highest three bytes of MAC address
     // Google's OUI (08:9E:08) is encoded as 0x00089E08
-    optional int32 vendor_prefix = 5;
+    // Never recorded server side, but some old clients may send values with
+    // this tag.
+    reserved 5;
   }
   optional ExternalAccessPoint external_access_point = 15;
 
