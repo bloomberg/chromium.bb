@@ -338,7 +338,7 @@ void BrowserPlugin::ViewRectsChanged(const gfx::Rect& view_rect) {
       viz::SurfaceInfo surface_info(
           viz::SurfaceId(frame_sink_id_, local_surface_id_),
           device_scale_factor,
-          gfx::ScaleToCeiledSize(view_rect_.size(), device_scale_factor));
+          gfx::ScaleToCeiledSize(view_rect.size(), device_scale_factor));
       compositing_helper_->SetPrimarySurfaceInfo(surface_info);
     }
   }
