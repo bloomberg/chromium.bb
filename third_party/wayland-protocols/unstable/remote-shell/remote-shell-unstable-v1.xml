@@ -176,7 +176,7 @@
       <description summary="initialize scale configuration">
 	Sends the default device scale factor.
       </description>
-      <arg name="scale" type="int" summary="DP to pixels ratio, in 16.16 fixed point format"/>
+      <arg name="scale" type="int" summary="DP to pixels ratio, in 8.24 fixed point format"/>
     </event>
   </interface>
 
