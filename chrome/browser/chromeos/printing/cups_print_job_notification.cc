@@ -22,6 +22,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/chromeos/resources/grit/ui_chromeos_resources.h"
 #include "ui/message_center/message_center.h"
+#include "ui/message_center/message_center_style.h"
 #include "ui/message_center/notification_types.h"
 
 namespace chromeos {
@@ -71,17 +72,19 @@ CupsPrintJobNotification::CupsPrintJobNotification(
       profile_(profile) {
   // Create a notification for the print job. The title, body, icon and buttons
   // of the notification will be updated in UpdateNotification().
-  notification_.reset(new Notification(
+  notification_ = base::MakeUnique<Notification>(
       message_center::NOTIFICATION_TYPE_SIMPLE,
       base::string16(),  // title
       base::string16(),  // body
       gfx::Image(),      // icon
       message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
                                  kCupsPrintJobNotificationId),
-      base::string16(),  // display_source
+      l10n_util::GetStringUTF16(IDS_PRINT_JOB_NOTIFICATION_DISPLAY_SOURCE),
       GURL(kCupsPrintJobNotificationId),
       notification_id_,  // tag
-      message_center::RichNotificationData(), delegate_.get()));
+      message_center::RichNotificationData(), delegate_.get());
+  notification_->set_accent_color(
+      message_center::kSystemNotificationColorNormal);
   UpdateNotification();
 }
 
