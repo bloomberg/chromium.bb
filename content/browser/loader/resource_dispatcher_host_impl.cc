@@ -695,11 +695,6 @@ void ResourceDispatcherHostImpl::DidFinishLoading(ResourceLoader* loader) {
     UMA_HISTOGRAM_SPARSE_SLOWLY(
         "Net.ErrorCodesForMainFrame3",
         -loader->request()->status().error());
-
-    // Record time to success and error for the most common errors, and for
-    // the aggregate remainder errors.
-    base::TimeDelta request_loading_time(
-        base::TimeTicks::Now() - loader->request()->creation_time());
     if (loader->request()->status().error() == net::ERR_ABORTED) {
       UMA_HISTOGRAM_CUSTOM_COUNTS("Net.ErrAborted.SentBytes",
                                   loader->request()->GetTotalSentBytes(), 1,
@@ -707,11 +702,6 @@ void ResourceDispatcherHostImpl::DidFinishLoading(ResourceLoader* loader) {
       UMA_HISTOGRAM_CUSTOM_COUNTS("Net.ErrAborted.ReceivedBytes",
                                   loader->request()->GetTotalReceivedBytes(), 1,
                                   50000000, 50);
-
-      if (delegate_) {
-        delegate_->OnAbortedFrameLoad(loader->request()->url(),
-                                      request_loading_time);
-      }
     }
 
     if (loader->request()->url().SchemeIsCryptographic()) {
