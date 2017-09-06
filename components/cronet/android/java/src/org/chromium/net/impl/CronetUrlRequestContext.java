@@ -198,7 +198,7 @@ public class CronetUrlRequestContext extends CronetEngineBase {
     public static long createNativeUrlRequestContextConfig(CronetEngineBuilderImpl builder) {
         final long urlRequestContextConfig = nativeCreateRequestContextConfig(
                 builder.getUserAgent(), builder.storagePath(), builder.quicEnabled(),
-                builder.getDefaultQuicUserAgentId(), builder.http2Enabled(), builder.sdchEnabled(),
+                builder.getDefaultQuicUserAgentId(), builder.http2Enabled(),
                 builder.brotliEnabled(), builder.cacheDisabled(), builder.httpCacheMode(),
                 builder.httpCacheMaxSize(), builder.experimentalOptions(),
                 builder.mockCertVerifier(), builder.networkQualityEstimatorEnabled(),
@@ -694,8 +694,8 @@ public class CronetUrlRequestContext extends CronetEngineBase {
     // Native methods are implemented in cronet_url_request_context_adapter.cc.
     private static native long nativeCreateRequestContextConfig(String userAgent,
             String storagePath, boolean quicEnabled, String quicUserAgentId, boolean http2Enabled,
-            boolean sdchEnabled, boolean brotliEnabled, boolean disableCache, int httpCacheMode,
-            long httpCacheMaxSize, String experimentalOptions, long mockCertVerifier,
+            boolean brotliEnabled, boolean disableCache, int httpCacheMode, long httpCacheMaxSize,
+            String experimentalOptions, long mockCertVerifier,
             boolean enableNetworkQualityEstimator,
             boolean bypassPublicKeyPinningForLocalTrustAnchors, String certVerifierData);
 

@@ -17,13 +17,12 @@ import org.chromium.net.impl.CronetUrlRequestContext;
  */
 @JNINamespace("cronet")
 public class CronetTestUtil {
-    static final String SDCH_FAKE_HOST = "fake.sdch.domain";
     // QUIC test domain must match the certificate used
     // (quic_test.example.com.crt and quic_test.example.com.key.pkcs8), and
     // the file served (
     // components/cronet/android/test/assets/test/quic_data/simple.txt).
     static final String QUIC_FAKE_HOST = "test.example.com";
-    private static final String[] TEST_DOMAINS = {SDCH_FAKE_HOST, QUIC_FAKE_HOST};
+    private static final String[] TEST_DOMAINS = {QUIC_FAKE_HOST};
     private static final String LOOPBACK_ADDRESS = "127.0.0.1";
 
     /**
@@ -31,7 +30,6 @@ public class CronetTestUtil {
      * namely:
      * <ul>
      * <li>{@link QuicTestServer#getServerHost}</li>
-     * <li>{@link NativeTestServer#getSdchURL}</li>'s host
      * </ul>
      * Maps the test hostnames to 127.0.0.1.
      */
@@ -44,7 +42,6 @@ public class CronetTestUtil {
      * namely:
      * <ul>
      * <li>{@link QuicTestServer#getServerHost}</li>
-     * <li>{@link NativeTestServer#getSdchURL}</li>'s host
      * </ul>
      * @param destination host to map to
      */

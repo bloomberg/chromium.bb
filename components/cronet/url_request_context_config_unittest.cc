@@ -30,8 +30,6 @@ TEST(URLRequestContextConfigTest, TestExperimentalOptionParsing) {
       "Default QUIC User Agent ID",
       // Enable SPDY.
       true,
-      // Enable SDCH.
-      false,
       // Enable Brotli.
       false,
       // Type of http cache.
@@ -123,8 +121,6 @@ TEST(URLRequestContextConfigTest, SetQuicConnectionMigrationOptions) {
       "Default QUIC User Agent ID",
       // Enable SPDY.
       true,
-      // Enable SDCH.
-      false,
       // Enable Brotli.
       false,
       // Type of http cache.

@@ -139,7 +139,6 @@ URLRequestContextConfig::URLRequestContextConfig(
     bool enable_quic,
     const std::string& quic_user_agent_id,
     bool enable_spdy,
-    bool enable_sdch,
     bool enable_brotli,
     HttpCacheType http_cache,
     int http_cache_max_size,
@@ -154,7 +153,6 @@ URLRequestContextConfig::URLRequestContextConfig(
     : enable_quic(enable_quic),
       quic_user_agent_id(quic_user_agent_id),
       enable_spdy(enable_spdy),
-      enable_sdch(enable_sdch),
       enable_brotli(enable_brotli),
       http_cache(http_cache),
       http_cache_max_size(http_cache_max_size),
@@ -444,7 +442,6 @@ void URLRequestContextConfig::ConfigureURLRequestContextBuilder(
     context_builder->DisableHttpCache();
   }
   context_builder->set_user_agent(user_agent);
-  context_builder->set_sdch_enabled(enable_sdch);
   net::HttpNetworkSession::Params session_params;
   session_params.enable_http2 = enable_spdy;
   session_params.enable_quic = enable_quic;
@@ -480,9 +477,9 @@ URLRequestContextConfigBuilder::~URLRequestContextConfigBuilder() {}
 std::unique_ptr<URLRequestContextConfig>
 URLRequestContextConfigBuilder::Build() {
   return base::MakeUnique<URLRequestContextConfig>(
-      enable_quic, quic_user_agent_id, enable_spdy, enable_sdch, enable_brotli,
-      http_cache, http_cache_max_size, load_disable_cache, storage_path,
-      user_agent, experimental_options, std::move(mock_cert_verifier),
+      enable_quic, quic_user_agent_id, enable_spdy, enable_brotli, http_cache,
+      http_cache_max_size, load_disable_cache, storage_path, user_agent,
+      experimental_options, std::move(mock_cert_verifier),
       enable_network_quality_estimator,
       bypass_public_key_pinning_for_local_trust_anchors, cert_verifier_data);
 }
