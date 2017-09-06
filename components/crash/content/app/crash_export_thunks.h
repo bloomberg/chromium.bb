@@ -58,9 +58,12 @@ void SetCrashKeyValue_ExportThunk(const wchar_t* key, const wchar_t* value);
 
 void ClearCrashKeyValue_ExportThunk(const wchar_t* key);
 
-void SetCrashKeyValueEx_ExportThunk(const char* key, const char* value);
+void SetCrashKeyValueEx_ExportThunk(const char* key,
+                                    size_t key_len,
+                                    const char* value,
+                                    size_t value_len);
 
-void ClearCrashKeyValueEx_ExportThunk(const char* key);
+void ClearCrashKeyValueEx_ExportThunk(const char* key, size_t key_len);
 
 // Injects a thread into a remote process to dump state when there is no crash.
 // |serialized_crash_keys| is a nul terminated string in the address space of

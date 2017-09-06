@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <type_traits>
 
+#include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "components/crash/content/app/crashpad.h"
@@ -65,12 +66,16 @@ void ClearCrashKeyValue_ExportThunk(const wchar_t* key) {
   crash_reporter::ClearCrashKey(base::UTF16ToUTF8(key));
 }
 
-void SetCrashKeyValueEx_ExportThunk(const char* key, const char* value) {
-  crash_reporter::SetCrashKeyValue(key, value);
+void SetCrashKeyValueEx_ExportThunk(const char* key,
+                                    size_t key_len,
+                                    const char* value,
+                                    size_t value_len) {
+  crash_reporter::SetCrashKeyValue(base::StringPiece(key, key_len),
+                                   base::StringPiece(value, value_len));
 }
 
-void ClearCrashKeyValueEx_ExportThunk(const char* key) {
-  crash_reporter::ClearCrashKey(key);
+void ClearCrashKeyValueEx_ExportThunk(const char* key, size_t key_len) {
+  crash_reporter::ClearCrashKey(base::StringPiece(key, key_len));
 }
 
 HANDLE InjectDumpForHungInput_ExportThunk(HANDLE process,
