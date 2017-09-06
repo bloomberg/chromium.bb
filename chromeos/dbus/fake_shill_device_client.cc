@@ -399,6 +399,10 @@ void FakeShillDeviceClient::AddDevice(const std::string& device_path,
     properties->SetKey(shill::kCellularAllowRoamingProperty,
                        base::Value(false));
   }
+  if (type == shill::kTypeWifi) {
+    properties->SetKey(shill::kMACAddressRandomizationSupportedProperty,
+                       base::Value(false));
+  }
 }
 
 void FakeShillDeviceClient::RemoveDevice(const std::string& device_path) {

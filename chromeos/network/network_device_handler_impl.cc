@@ -12,6 +12,7 @@
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
+#include "base/sys_info.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -84,7 +85,6 @@ void RefreshIPConfigsCallback(
   const base::ListValue* ip_configs;
   if (!properties.GetListWithoutPathExpansion(
           shill::kIPConfigsProperty, &ip_configs)) {
-    NET_LOG(ERROR) << "RequestRefreshIPConfigs Failed: " << device_path;
     network_handler::ShillErrorCallbackFunction(
         "RequestRefreshIPConfigs Failed",
         device_path,
@@ -605,14 +605,10 @@ void NetworkDeviceHandlerImpl::HandleMACAddressRandomization(
   bool supported;
   if (!properties.GetBooleanWithoutPathExpansion(
           shill::kMACAddressRandomizationSupportedProperty, &supported)) {
-    NET_LOG(ERROR) << "Failed to determine if device " << device_path
-                   << " supports MAC address randomization";
-    network_handler::ShillErrorCallbackFunction(
-        "Failed to determine if device supports MAC address randomization",
-        device_path, network_handler::ErrorCallback(),
-        std::string("Missing ") +
-            shill::kMACAddressRandomizationSupportedProperty,
-        "");
+    if (base::SysInfo::IsRunningOnChromeOS()) {
+      NET_LOG(ERROR) << "Failed to determine if device " << device_path
+                     << " supports MAC address randomization";
+    }
     return;
   }
 
