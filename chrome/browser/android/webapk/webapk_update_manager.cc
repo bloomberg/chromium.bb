@@ -129,7 +129,6 @@ static void BuildUpdateWebApkProto(
 static void UpdateWebApk(JNIEnv* env,
                          const JavaParamRef<jclass>& clazz,
                          const JavaParamRef<jstring>& java_webapk_package,
-                         const JavaParamRef<jstring>& java_start_url,
                          const JavaParamRef<jstring>& java_short_name,
                          const JavaParamRef<jbyteArray>& java_serialized_proto,
                          const JavaParamRef<jobject>& java_callback) {
@@ -148,13 +147,12 @@ static void UpdateWebApk(JNIEnv* env,
 
   std::string webapk_package =
       ConvertJavaStringToUTF8(env, java_webapk_package);
-  GURL start_url = GURL(ConvertJavaStringToUTF8(env, java_start_url));
   base::string16 short_name = ConvertJavaStringToUTF16(env, java_short_name);
   std::unique_ptr<std::vector<uint8_t>> serialized_proto =
       base::MakeUnique<std::vector<uint8_t>>();
   JavaByteArrayToByteVector(env, java_serialized_proto, serialized_proto.get());
 
   WebApkInstallService::Get(profile)->UpdateAsync(
-      webapk_package, start_url, short_name, std::move(serialized_proto),
+      webapk_package, short_name, std::move(serialized_proto),
       base::Bind(&OnUpdated, callback_ref));
 }

@@ -278,8 +278,7 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
                         WebApkVersion.CURRENT_SHELL_APK_VERSION);
             }
         };
-        nativeUpdateWebApk(info.webApkPackageName(), info.manifestStartUrl(), info.shortName(),
-                serializedProto, callback);
+        nativeUpdateWebApk(info.webApkPackageName(), info.shortName(), serializedProto, callback);
     }
 
     /**
@@ -418,6 +417,6 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
             int displayMode, int orientation, long themeColor, long backgroundColor,
             String manifestUrl, String webApkPackage, int webApkVersion, boolean isManifestStale,
             Callback<byte[]> callback);
-    private static native void nativeUpdateWebApk(String webApkPackage, String startUrl,
-            String shortName, byte[] serializedProto, WebApkUpdateCallback callback);
+    private static native void nativeUpdateWebApk(String webApkPackage, String shortName,
+            byte[] serializedProto, WebApkUpdateCallback callback);
 }

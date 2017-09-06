@@ -73,7 +73,6 @@ class WebApkInstallService : public KeyedService {
   // the Google Play server to install the downloaded WebAPK. Calls
   // |finish_callback| once the update completed or failed.
   void UpdateAsync(const std::string& webapk_package,
-                   const GURL& start_url,
                    const base::string16& short_name,
                    std::unique_ptr<std::vector<uint8_t>> serialized_proto,
                    const FinishCallback& finish_callback);

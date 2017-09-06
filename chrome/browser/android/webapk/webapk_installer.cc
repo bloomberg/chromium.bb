@@ -214,13 +214,12 @@ void WebApkInstaller::InstallAsync(content::BrowserContext* context,
 void WebApkInstaller::UpdateAsync(
     content::BrowserContext* context,
     const std::string& webapk_package,
-    const GURL& start_url,
     const base::string16& short_name,
     std::unique_ptr<std::vector<uint8_t>> serialized_proto,
     const FinishCallback& finish_callback) {
   // The installer will delete itself when it is done.
   WebApkInstaller* installer = new WebApkInstaller(context);
-  installer->UpdateAsync(webapk_package, start_url, short_name,
+  installer->UpdateAsync(webapk_package, short_name,
                          std::move(serialized_proto), finish_callback);
 }
 
@@ -237,11 +236,10 @@ void WebApkInstaller::InstallAsyncForTesting(WebApkInstaller* installer,
 void WebApkInstaller::UpdateAsyncForTesting(
     WebApkInstaller* installer,
     const std::string& webapk_package,
-    const GURL& start_url,
     const base::string16& short_name,
     std::unique_ptr<std::vector<uint8_t>> serialized_proto,
     const FinishCallback& finish_callback) {
-  installer->UpdateAsync(webapk_package, start_url, short_name,
+  installer->UpdateAsync(webapk_package, short_name,
                          std::move(serialized_proto), finish_callback);
 }
 
@@ -287,8 +285,6 @@ void WebApkInstaller::InstallOrUpdateWebApk(const std::string& package_name,
       base::android::ConvertUTF16ToJavaString(env, short_name_);
   base::android::ScopedJavaLocalRef<jstring> java_token =
       base::android::ConvertUTF8ToJavaString(env, token);
-  base::android::ScopedJavaLocalRef<jstring> java_url =
-      base::android::ConvertUTF8ToJavaString(env, start_url_.spec());
 
   if (task_type_ == WebApkInstaller::INSTALL) {
     webapk::TrackRequestTokenDuration(install_duration_timer_->Elapsed());
@@ -296,10 +292,10 @@ void WebApkInstaller::InstallOrUpdateWebApk(const std::string& package_name,
         gfx::ConvertToJavaBitmap(&install_primary_icon_);
     Java_WebApkInstaller_installWebApkAsync(
         env, java_ref_, java_webapk_package, version, java_title, java_token,
-        java_url, install_shortcut_info_->source, java_primary_icon);
+        install_shortcut_info_->source, java_primary_icon);
   } else {
     Java_WebApkInstaller_updateAsync(env, java_ref_, java_webapk_package,
-                                     version, java_title, java_token, java_url);
+                                     version, java_title, java_token);
   }
 }
 
@@ -346,7 +342,6 @@ void WebApkInstaller::InstallAsync(const ShortcutInfo& shortcut_info,
   install_shortcut_info_.reset(new ShortcutInfo(shortcut_info));
   install_primary_icon_ = primary_icon;
   install_badge_icon_ = badge_icon;
-  start_url_ = shortcut_info.url;
   short_name_ = shortcut_info.short_name;
   finish_callback_ = finish_callback;
   task_type_ = INSTALL;
@@ -367,12 +362,10 @@ void WebApkInstaller::InstallAsync(const ShortcutInfo& shortcut_info,
 
 void WebApkInstaller::UpdateAsync(
     const std::string& webapk_package,
-    const GURL& start_url,
     const base::string16& short_name,
     std::unique_ptr<std::vector<uint8_t>> serialized_proto,
     const FinishCallback& finish_callback) {
   webapk_package_ = webapk_package;
-  start_url_ = start_url;
   short_name_ = short_name;
   finish_callback_ = finish_callback;
   task_type_ = UPDATE;
