@@ -187,29 +187,12 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', 'intel', 'd3d11'], bug=666392)
 
     # Win 10 / Intel
-    self.Fail('conformance/rendering/clear-after-copyTexImage2D.html',
-        ['win10', 'intel'], bug=737002)
     self.Fail('deqp/functional/gles3/fbocolorbuffer/clear.html',
         ['win10', 'intel', 'd3d11', 'no_passthrough'], bug=483282)
 
     # Intel HD 530
     self.Fail('conformance2/textures/misc/angle-stuck-depth-textures.html',
         ['win', 'intel', 'no_passthrough', 'd3d11'], bug=680797)
-    self.Fail('deqp/functional/gles3/fboinvalidate/format_00.html',
-        ['win', 'intel', 'd3d11'], bug=680797)
-    self.Fail('deqp/functional/gles3/fboinvalidate/format_01.html',
-        ['win', 'intel', 'd3d11'], bug=680797)
-    self.Fail('deqp/functional/gles3/fboinvalidate/format_02.html',
-        ['win', 'intel', 'd3d11'], bug=680797)
-    self.Fail('deqp/functional/gles3/framebufferblit/' +
-        'default_framebuffer_03.html',
-        ['win', 'intel', 'd3d11'], bug=680797)
-    self.Fail('deqp/functional/gles3/framebufferblit/' +
-        'default_framebuffer_04.html',
-        ['win', 'intel', 'd3d11'], bug=680797)
-    self.Fail('deqp/functional/gles3/framebufferblit/' +
-        'default_framebuffer_06.html',
-        ['win', 'intel', 'd3d11'], bug=680797)
 
     # It's unfortunate that these suppressions need to be so broad, but it
     # looks like the D3D11 device can be lost spontaneously on this

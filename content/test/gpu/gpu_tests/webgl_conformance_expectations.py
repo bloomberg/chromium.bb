@@ -253,10 +253,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         'tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html',
         ['win10', ('nvidia', 0x1cb3)], bug=728670)
 
-    # Win10 / Intel failures
-    self.Fail('conformance/rendering/clear-after-copyTexImage2D.html',
-        ['win10', 'intel'], bug=737002)
-
     # Win7 / Intel failures
     self.Fail('conformance/textures/misc/' +
               'copy-tex-image-and-sub-image-2d.html',
