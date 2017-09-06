@@ -750,13 +750,8 @@ if (enable_java_templates) {
   import("//third_party/ijar/ijar.gni")
   import("//third_party/android_platform/config.gni")
 
-  rebased_android_sdk = rebase_path(android_sdk, root_build_dir)
-  rebased_android_sdk_build_tools =
-      rebase_path(android_sdk_build_tools, root_build_dir)
-
   android_sdk_jar = "$android_sdk/android.jar"
-  rebased_android_sdk_jar = rebase_path(android_sdk_jar, root_build_dir)
-  android_default_aapt_path = "$rebased_android_sdk_build_tools/aapt"
+  android_default_aapt_path = "$android_sdk_build_tools/aapt"
 
   template("android_lint") {
     action(target_name) {
@@ -870,23 +865,20 @@ if (enable_java_templates) {
       # http://crbug.com/725224. Fix for bots running out of memory.
       pool = "//build/toolchain:link_pool($default_toolchain)"
 
+      _output_jar_path = invoker.output_jar_path
+      _proguard_jar_path = _default_proguard_jar_path
       if (defined(invoker.proguard_jar_path)) {
         _proguard_jar_path = invoker.proguard_jar_path
-      } else {
-        _proguard_jar_path = _default_proguard_jar_path
       }
-      _output_jar_path = invoker.output_jar_path
+      _android_sdk_jar = android_sdk_jar
+      if (defined(invoker.alternative_android_sdk_jar)) {
+        _android_sdk_jar = invoker.alternative_android_sdk_jar
+      }
+
       inputs = [
+        _android_sdk_jar,
         _proguard_jar_path,
       ]
-      if (defined(invoker.alternative_android_sdk_jar)) {
-        inputs += [ invoker.alternative_android_sdk_jar ]
-        _rebased_android_sdk_jar =
-            rebase_path(invoker.alternative_android_sdk_jar)
-      } else {
-        inputs += [ android_sdk_jar ]
-        _rebased_android_sdk_jar = rebased_android_sdk_jar
-      }
       if (defined(invoker.inputs)) {
         inputs += invoker.inputs
       }
@@ -906,7 +898,7 @@ if (enable_java_templates) {
         "--output-path",
         rebase_path(_output_jar_path, root_build_dir),
         "--classpath",
-        _rebased_android_sdk_jar,
+        rebase_path(_android_sdk_jar, root_build_dir),
       ]
       if (proguard_verbose) {
         args += [ "--verbose" ]
@@ -1076,7 +1068,7 @@ if (enable_java_templates) {
           "--depfile",
           rebase_path(depfile, root_build_dir),
           "--android-sdk-tools",
-          rebased_android_sdk_build_tools,
+          rebase_path(android_sdk_build_tools, root_build_dir),
           "--main-dex-list-path",
           rebase_path(_main_dex_list_path, root_build_dir),
           "--main-dex-rules-path",
@@ -1128,7 +1120,7 @@ if (enable_java_templates) {
         "--depfile",
         rebase_path(depfile, root_build_dir),
         "--android-sdk-tools",
-        rebased_android_sdk_build_tools,
+        rebase_path(android_sdk_build_tools, root_build_dir),
         "--dex-path",
         rebased_output,
       ]
@@ -1662,36 +1654,36 @@ if (enable_java_templates) {
 
         script = "//build/android/gyp/package_resources.py"
         depfile = "${target_gen_dir}/${target_name}.d"
-        inputs = [
-          invoker.android_manifest,
-        ]
-        if (defined(_resources_zip)) {
-          inputs += [ _resources_zip ]
-        }
         outputs = [
           _resource_packaged_apk_path,
         ]
 
+        _android_aapt_path = android_default_aapt_path
         if (defined(invoker.android_aapt_path)) {
           _android_aapt_path = invoker.android_aapt_path
-        } else {
-          _android_aapt_path = android_default_aapt_path
         }
 
+        _android_sdk_jar = android_sdk_jar
         if (defined(invoker.alternative_android_sdk_jar)) {
-          _rebased_android_sdk_jar =
-              rebase_path(invoker.alternative_android_sdk_jar)
-        } else {
-          _rebased_android_sdk_jar = rebased_android_sdk_jar
+          _android_sdk_jar = invoker.alternative_android_sdk_jar
+        }
+
+        inputs = [
+          _android_aapt_path,
+          _android_sdk_jar,
+          invoker.android_manifest,
+        ]
+        if (defined(_resources_zip)) {
+          inputs += [ _resources_zip ]
         }
 
         args = [
           "--depfile",
           rebase_path(depfile, root_build_dir),
           "--android-sdk-jar",
-          _rebased_android_sdk_jar,
+          rebase_path(_android_sdk_jar, root_build_dir),
           "--aapt-path",
-          _android_aapt_path,
+          rebase_path(_android_aapt_path, root_build_dir),
           "--android-manifest",
           rebase_path(invoker.android_manifest, root_build_dir),
           "--version-code",
@@ -2791,35 +2783,34 @@ if (enable_java_templates) {
         sources += invoker.generated_resource_files
       }
 
+      _android_aapt_path = android_default_aapt_path
+      if (defined(invoker.android_aapt_path)) {
+        _android_aapt_path = invoker.android_aapt_path
+      }
+
+      _android_sdk_jar = android_sdk_jar
+      if (defined(invoker.alternative_android_sdk_jar)) {
+        _android_sdk_jar = invoker.alternative_android_sdk_jar
+      }
+
       inputs = [
         invoker.build_config,
         invoker.android_manifest,
+        _android_aapt_path,
+        _android_sdk_jar,
       ]
 
       _rebased_all_resource_dirs =
           rebase_path(_all_resource_dirs, root_build_dir)
       _rebased_build_config = rebase_path(invoker.build_config, root_build_dir)
 
-      if (defined(invoker.android_aapt_path)) {
-        _android_aapt_path = invoker.android_aapt_path
-      } else {
-        _android_aapt_path = android_default_aapt_path
-      }
-
-      if (defined(invoker.alternative_android_sdk_jar)) {
-        _rebased_android_sdk_jar =
-            rebase_path(invoker.alternative_android_sdk_jar)
-      } else {
-        _rebased_android_sdk_jar = rebased_android_sdk_jar
-      }
-
       args = [
         "--depfile",
         rebase_path(depfile, root_build_dir),
         "--android-sdk-jar",
-        _rebased_android_sdk_jar,
+        rebase_path(_android_sdk_jar, root_build_dir),
         "--aapt-path",
-        _android_aapt_path,
+        rebase_path(_android_aapt_path, root_build_dir),
         "--android-manifest",
         rebase_path(invoker.android_manifest, root_build_dir),
         "--resource-dirs=$_rebased_all_resource_dirs",
